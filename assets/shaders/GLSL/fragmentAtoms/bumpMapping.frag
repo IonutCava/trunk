@@ -72,6 +72,6 @@ vec4 ReliefMapping(in int _light, in vec2 uv){
 
     gl_FragDepth =((planes.x * p.z + planes.y) / -p.z);
     
-	return Phong(uv + uv_offset, normalize(2.0 * texture(texNormalMap, uv + uv_offset).xyz - 1.0));
+    return Phong(uv + uv_offset, normalize(2.0 * texture(texNormalMap, uv + uv_offset).xyz - 1.0));
 }
 

@@ -239,8 +239,6 @@ namespace XML {
         par.setParam("GUI.editorLayout",pt.get("GUI.editorLayoutFile","editor.layout"));
         par.setParam("rendering.detailLevel",pt.get<U8>("rendering.detailLevel",DETAIL_HIGH));
         par.setParam("rendering.anisotropicFilteringLevel", std::max(pt.get<GLint>("rendering.anisotropicFilteringLevel", 1), 1));
-        par.setParam("rendering.fogDetailLevel",pt.get<U8>("rendering.fogDetailLevel",DETAIL_HIGH));
-        par.setParam("rendering.mipMapDetailLevel",pt.get<U8>("rendering.mipMapDetailLevel",DETAIL_HIGH));
         par.setParam("rendering.shadowDetailLevel",shadowDetailLevel);
         par.setParam("rendering.enableFog", pt.get("rendering.enableFog",true));
         vec2<U16> resolution(pt.get("runtime.resolutionWidth",1024), pt.get("runtime.resolutionHeight",768));

@@ -126,6 +126,8 @@ I8 GFXDevice::initHardware(const vec2<U16>& resolution, I32 argc, char **argv) {
     _gpuBlock._ZPlanesCombined.z = ParamHandler::getInstance().getParam<F32>("rendering.zNear");
     _gpuBlock._ZPlanesCombined.w = ParamHandler::getInstance().getParam<F32>("rendering.zFar");
     
+    _loaderThread = New boost::thread(&GFXDevice::loadInContextInternal, this);
+
     return NO_ERR;
 }
 

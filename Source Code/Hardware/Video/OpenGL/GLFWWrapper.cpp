@@ -165,7 +165,7 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
     //Keep track of window focus so no input is processed if the window isn't selected
     glfwSetWindowFocusCallback(Divide::GLUtil::_mainWindow, Divide::GLUtil::glfw_focus_callback);
     //Geometry shaders became core in version 3.3
-    if(!GLEW_VERSION_3_3){
+    if(!GLEW_VERSION_4_3){
         ERROR_FN(Locale::get("ERROR_GFX_DEVICE"),"The OpenGL version supported by the current GPU is too old!");
         return GLEW_OLD_HARDWARE;
     }
@@ -403,6 +403,7 @@ void GL_API::idle() {
 
 void GL_API::loadInContextInternal() {
     boost::this_thread::sleep(boost::posix_time::milliseconds(200));
+    assert(Divide::GLUtil::_loaderWindow != nullptr);
     glfwMakeContextCurrent(Divide::GLUtil::_loaderWindow);
 #ifdef GLEW_MX
     Divide::GLUtil::initGlew();
@@ -411,6 +412,7 @@ void GL_API::loadInContextInternal() {
     glDebugMessageCallback(&Divide::GLUtil::DebugCallback, (GLvoid*)(1));
 #   endif
 #endif
+    _loaderThreadAvailable = true;
     while(!_closeLoadingThread){
         if(GFX_DEVICE.getLoadQueue().empty()){
             boost::this_thread::sleep(boost::posix_time::milliseconds(20));//<Avoid burning the CPU - Ionut
@@ -422,4 +424,5 @@ void GL_API::loadInContextInternal() {
             glFlush();
         }
     }
+    _loaderThreadAvailable = false;
 }

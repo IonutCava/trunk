@@ -70,6 +70,8 @@ void glFramebuffer::InitAttachment(TextureDescriptor::AttachmentType type, const
         if(currentType == TEXTURE_2D_MS)       currentType = TEXTURE_2D;
         if(currentType == TEXTURE_2D_ARRAY_MS) currentType = TEXTURE_2D_ARRAY;
     }
+    
+    bool isLayeredTexture = (currentType == TEXTURE_2D_ARRAY || currentType == TEXTURE_2D_ARRAY_MS || currentType == TEXTURE_CUBE_ARRAY || currentType == TEXTURE_3D);
 
     SamplerDescriptor sampler = texDescriptor.getSampler();
     if(_multisampled)
@@ -89,7 +91,7 @@ void glFramebuffer::InitAttachment(TextureDescriptor::AttachmentType type, const
     _mipMapLevel[slot].set(texDescriptor._mipMinLevel,
                            texDescriptor._mipMaxLevel > 0 ? texDescriptor._mipMaxLevel : 1 + (I16)floorf(log2f(fmaxf((F32)_width, (F32)_height))));
     
-    tex->loadData(glTextureTypeTable[currentType], NULL, vec2<U16>(_width, _height), _mipMapLevel[slot], texDescriptor._internalFormat, texDescriptor._internalFormat);
+    tex->loadData(isLayeredTexture ? 0 : glTextureTypeTable[currentType], NULL, vec2<U16>(_width, _height), _mipMapLevel[slot], texDescriptor._internalFormat, texDescriptor._internalFormat);
     tex->updateMipMaps();
                
     GLint offset = 0;
@@ -99,7 +101,7 @@ void glFramebuffer::InitAttachment(TextureDescriptor::AttachmentType type, const
     //Attach to frame buffer
     if (type == TextureDescriptor::Depth){
         glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, tex->getHandle(), 0);
-        _isLayeredDepth = (currentType == TEXTURE_2D_ARRAY || currentType == TEXTURE_2D_ARRAY_MS || currentType == TEXTURE_CUBE_ARRAY || currentType == TEXTURE_3D);
+        _isLayeredDepth = isLayeredTexture;
     }else{
         
         if(texDescriptor.isCubeTexture() && !_layeredRendering ){

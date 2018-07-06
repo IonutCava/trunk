@@ -12,6 +12,7 @@
 ProfileTimer* s_shadowPassTimer = nullptr;
 
 LightManager::LightManager() : FrameListener(),
+                               _init(false),
                                _shadowMapsEnabled(true),
                                _previewShadowMaps(false),
                                _currentShadowPass(0)
@@ -64,9 +65,13 @@ void LightManager::init(){
         cubeShadowLocation[i]  = maxTextureStorage + 1 + (i * maxSlotsPerLight);
         arrayShadowLocation[i] = maxTextureStorage + 2 + (i * maxSlotsPerLight);
     }
+    _init = true;
 }
 
 bool LightManager::clear(){
+    if(!_init)
+        return true;
+
     UNREGISTER_FRAME_LISTENER(&(this->getInstance()));
 
     //Lights are removed by the sceneGraph
@@ -76,6 +81,8 @@ bool LightManager::clear(){
     }
 
     _lights.clear();
+
+    _init = false;
 
     return _lights.empty();
 }
@@ -177,10 +184,10 @@ bool LightManager::framePreRenderEnded(const FrameEvent& evt){
     //set the current render stage to SHADOW_STAGE
     RenderStage previousRS = GFX_DEVICE.setRenderStage(SHADOW_STAGE);
     //generate shadowmaps for each light
-    FOR_EACH(Light::LightMap::value_type& light, _lights){
+    /*FOR_EACH(Light::LightMap::value_type& light, _lights){
         setCurrentLight(light.second);
         light.second->generateShadowMaps(GET_ACTIVE_SCENE()->renderState());
-    }
+    }*/
 
     //Revert back to the previous stage
     GFX_DEVICE.setRenderStage(previousRS);

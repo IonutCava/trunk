@@ -221,10 +221,10 @@ void GFXDevice::changeResolution(U16 w, U16 h) {
         }
     }
 
+    changeResolutionInternal(w,h);
     // Set the viewport to be the entire window
     forceViewportInternal(vec4<I32>(0, 0, w, h));
     assert(_viewport.size() == 1);
-    changeResolutionInternal(w,h);
     //Inform the Kernel
     Kernel::updateResolutionCallback(w,h);
     //Update post-processing render targets and buffers
@@ -462,10 +462,8 @@ bool GFXDevice::loadInContext(const CurrentContext& context, const DELEGATE_CBK&
     if (callback.empty())
         return false;
 
-    if (context == GFX_LOADING_CONTEXT){
+    if (context == GFX_LOADING_CONTEXT && _loaderThread != nullptr){
         while (!_loadQueue.push(callback));
-        if (!_loaderThread)
-            _loaderThread = New boost::thread(&GFXDevice::loadInContextInternal, this);
     }else{
         callback();
     }

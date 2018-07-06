@@ -63,6 +63,8 @@ protected:
                _lineWidthLimit(1),
                _pointDummyVAO(0)
     {
+        _closeLoadingThread = false;
+        _loaderThreadAvailable = false;
     }
 
     void exitRenderLoop(bool killCommand = false);
@@ -176,6 +178,7 @@ private: //OpenGL specific:
     FontCache  _fonts;
 
     boost::atomic_bool _closeLoadingThread;
+    boost::atomic_bool _loaderThreadAvailable;
 
     static glslopt_ctx* _GLSLOptContex;
     static GLuint _activeVAOId;

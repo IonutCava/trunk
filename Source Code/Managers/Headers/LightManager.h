@@ -115,6 +115,7 @@ private:
 
 private:
     Light::LightMap  _lights;
+    bool      _init;
     bool      _previewShadowMaps;
     Light*    _currLight;
     bool      _shadowMapsEnabled;

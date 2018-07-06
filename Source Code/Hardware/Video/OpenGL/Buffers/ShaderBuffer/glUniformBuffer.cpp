@@ -45,8 +45,8 @@ void glUniformBuffer::Create(U32 primitiveCount, ptrdiff_t primitiveSize) {
 void glUniformBuffer::UpdateData(GLintptr offset, GLsizeiptr size, const GLvoid *data, const bool invalidateBuffer) const {
     DIVIDE_ASSERT(offset + size <= (GLsizeiptr)_bufferSize, "glUniformBuffer error: ChangeSubData was called with an invalid range (buffer overflow)!");
 
-    if(invalidateBuffer)
-        glInvalidateBufferData(_UBOid);
+    /*if(invalidateBuffer)
+        glInvalidateBufferData(_UBOid);*/
     
     if(size == 0 || !data)
         return;
