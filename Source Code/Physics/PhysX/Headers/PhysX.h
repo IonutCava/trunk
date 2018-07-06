@@ -139,7 +139,6 @@ DEFINE_SINGLETON_EXT2_W_SPECIFIER(PhysX, PhysicsAPIWrapper,
     physx::PxProfileZoneManager* _zoneManager;
     physx::PxProfileZone* _profileZone;
     physx::debugger::comm::PvdConnectionManager* _pvdConnection;
-    boost::mutex _physxMutex;
     physx::PxReal _timeStep;
     physx::PxU8   _timeStepFactor;
     physx::PxReal _accumulator;

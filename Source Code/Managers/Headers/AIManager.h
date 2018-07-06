@@ -97,6 +97,14 @@ DEFINE_SINGLETON(AIManager)
     void toggleNavMeshDebugDraw(bool state);
     inline bool navMeshDebugDraw() const { return _navMeshDebugDraw; }
 
+    inline void stop() {
+        _shouldStop = true;
+    }
+
+    inline bool running() const {
+        return _running;
+    }
+
   protected:
     AIManager();
     ~AIManager();
@@ -118,6 +126,8 @@ DEFINE_SINGLETON(AIManager)
     std::atomic<bool> _navMeshDebugDraw;
     std::atomic<bool> _pauseUpdate;
     std::atomic<bool> _updating;
+    std::atomic<bool> _shouldStop;
+    std::atomic<bool> _running;
     NavMeshMap _navMeshes;
     AITeamMap _aiTeams;
     mutable SharedLock _updateMutex;

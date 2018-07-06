@@ -17,10 +17,15 @@ AIManager::AIManager()
       _currentTime(0ULL),
       _previousTime(0ULL)
 {
+    _shouldStop = false;
+    _running = false;
     Navigation::DivideRecast::createInstance();
 }
 
-AIManager::~AIManager() { Destroy(); }
+AIManager::~AIManager()
+{
+    Destroy();
+}
 
 /// Clear up any remaining AIEntities
 void AIManager::Destroy() {
@@ -43,30 +48,49 @@ void AIManager::Destroy() {
 }
 
 void AIManager::update() {
-    /// Lock the entities during update() adding or deleting entities is
-    /// suspended until this returns
-    ReadLock r_lock(_updateMutex);
-    /// use internal delta time calculations
-    _previousTime = _currentTime;
-    _currentTime = Time::ElapsedMicroseconds(true);
-    _deltaTime = _currentTime - _previousTime;
+    static const U64 updateFreq = Time::MillisecondsToMicroseconds(Config::AI_THREAD_UPDATE_FREQUENCY);
+    _previousTime = Time::ApplicationTimer::getInstance().getElapsedTime(true);
+    _running = true;
 
-    if (_aiTeams.empty() || _pauseUpdate) {
-        return;  // nothing to do
-    }
-    _updating = true;
-    if (_sceneCallback) {
-        _sceneCallback();
-    }
+    while(true) {
+        if (_shouldStop) {
+            break;
+        }
 
-    if (processInput(_deltaTime)) {  // sensors
-        if (processData(_deltaTime)) {  // think
-            updateEntities(_deltaTime);  // react
+        _currentTime = Time::ApplicationTimer::getInstance().getElapsedTime(true);
+        if (_currentTime >= _previousTime + updateFreq) {
+
+            /// Lock the entities during update() adding or deleting entities is
+            /// suspended until this returns
+            ReadLock r_lock(_updateMutex);
+            /// use internal delta time calculations
+            _deltaTime = _currentTime - _previousTime;
+
+            if (!_aiTeams.empty() && !_pauseUpdate) {
+                _updating = true;
+                if (_sceneCallback) {
+                    _sceneCallback();
+                }
+
+                if (processInput(_deltaTime)) {  // sensors
+                    if (processData(_deltaTime)) {  // think
+                        updateEntities(_deltaTime);  // react
+                    }
+                }
+    
+                _updating = false;
+            }
+
+            _previousTime = Time::ApplicationTimer::getInstance().getElapsedTime(true);
+
+            if (Config::AI_THREAD_UPDATE_FREQUENCY > Config::MIN_SLEEP_THRESHOLD_MS) {
+                //ToDo: this needs adjustment to account for AI execution time
+                std::this_thread::sleep_for(std::chrono::microseconds(updateFreq));
+            }
         }
     }
-    
-    _updating = false;
-    return;
+
+    _running = false;
 }
 
 bool AIManager::processInput(const U64 deltaTime) {  // sensors

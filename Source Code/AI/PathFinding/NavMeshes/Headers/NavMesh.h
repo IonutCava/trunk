@@ -160,11 +160,13 @@ class NavigationMesh : public GUIDWrapper /*,public SceneObject */ {
    private:
     /// Initiates the build process in a separate thread.
     bool buildThreaded();
+    /// Stop the threaded build process;
+    void stopThreadedBuild();
     /// Runs the build process. Not threadsafe,. so take care to synchronise
     /// calls to this method properly!
     bool buildProcess();
     /// Used for multithreaded loading
-    void buildInternal();
+    void buildInternal(bool stopRequested);
     /// Generates a navigation mesh for the collection of objects in this
     /// mesh. Returns true if successful. Stores the created mesh in tnm.
     bool generateMesh();
@@ -201,11 +203,9 @@ class NavigationMesh : public GUIDWrapper /*,public SceneObject */ {
     /// @}
 
     /// A thread for us to update in.
-    std::shared_ptr<Task> _buildThread;
-    /// A mutex for NavigationMesh builds.
-    boost::mutex _buildLock;
+    I64 _buildJobGUID;
     /// A mutex for accessing our actual NavigationMesh.
-    boost::mutex _navigationMeshLock;
+    std::mutex _navigationMeshLock;
     /// A simple flag to say we are building.
     std::atomic<bool> _building;
     /// A callback function to call after building is complete

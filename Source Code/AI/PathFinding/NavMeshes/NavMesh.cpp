@@ -16,7 +16,8 @@ namespace Divide {
 namespace AI {
 namespace Navigation {
 
-NavigationMesh::NavigationMesh() : GUIDWrapper()
+NavigationMesh::NavigationMesh() : GUIDWrapper(),
+                                   _buildJobGUID(-1)
 {
     ParamHandler& par = ParamHandler::getInstance();
     stringImpl path(par.getParam<stringImpl>("scriptLocation") + "/" +
@@ -49,11 +50,7 @@ NavigationMesh::~NavigationMesh()
 }
 
 bool NavigationMesh::unload() {
-    if (_buildThread) {
-        _buildThread->stopTask();
-        while (!_buildThread->isFinished()) {
-        }
-    }
+    stopThreadedBuild();
 
     if (_navQuery) {
         dtFreeNavMeshQuery(_navQuery);
@@ -67,6 +64,17 @@ bool NavigationMesh::unload() {
     _tempNavMesh = nullptr;
 
     return true;
+}
+
+void NavigationMesh::stopThreadedBuild() {
+    if (_buildJobGUID != -1){
+        TaskHandle buildThread = Application::getInstance().getKernel().getTaskHandle(_buildJobGUID);
+        assert(buildThread._task);
+        if (buildThread._task->jobIdentifier() == getGUID()) {
+            buildThread._task->stopTask();
+            WAIT_FOR_CONDITION(buildThread._task->isFinished());
+        }
+    }
 }
 
 void NavigationMesh::freeIntermediates(bool freeAll) {
@@ -172,61 +180,49 @@ bool NavigationMesh::build(SceneGraphNode& sgn,
 }
 
 bool NavigationMesh::buildThreaded() {
-    boost::mutex::scoped_lock sl(_buildLock);
+    stopThreadedBuild();
 
-    if (!sl.owns_lock()) {
-        return false;
-    }
-
-    if (_buildThread) {
-        _buildThread->stopTask();
-    }
-
-    Kernel& kernel = Application::getInstance().getKernel();
-    _buildThread = kernel.AddTask(
-        0, 1, DELEGATE_BIND(&NavigationMesh::buildInternal, this));
-    _buildThread->startTask(Task::TaskPriority::HIGH);
+    Application::getInstance().getKernel()
+                              .AddTask(getGUID(),
+                                       DELEGATE_BIND(&NavigationMesh::buildInternal, this, std::placeholders::_1))
+                              ._task->startTask(Task::TaskPriority::HIGH);
     return true;
 }
 
-void NavigationMesh::buildInternal() {
+void NavigationMesh::buildInternal(bool stopRequested) {
     _building = true;
     // Create mesh
     D32 timeStart = Time::ElapsedSeconds();
-    bool success = generateMesh();
-    if (!success) {
-        Console::errorfn(Locale::get(_ID("NAV_MESH_GENERATION_INCOMPLETE")),
-                         Time::ElapsedSeconds(true) - timeStart);
+    if (generateMesh()) {
+        Console::printfn(Locale::get(_ID("NAV_MESH_GENERATION_COMPLETE")),  Time::ElapsedSeconds(true) - timeStart);
+
+        {
+            std::lock_guard<std::mutex> lock (_navigationMeshLock);
+            // Copy new NavigationMesh into old.
+            dtNavMesh* old = _navMesh;
+            // I am trusting that this is atomic.
+            _navMesh = _tempNavMesh;
+            dtFreeNavMesh(old);
+            _debugDrawInterface->setDirty(true);
+            _tempNavMesh = nullptr;
+
+            bool navQueryComplete = createNavigationQuery();
+            DIVIDE_ASSERT(
+                navQueryComplete,
+                "NavigationMesh Error: Navigation query creation failed!");
+        }
+
+        // Free structs used during build
+        freeIntermediates(false);
+
+        if (_loadCompleteClbk) {
+            _loadCompleteClbk(this);
+        }
+
+        _building = false;
+    } else {
+        Console::errorfn(Locale::get(_ID("NAV_MESH_GENERATION_INCOMPLETE")), Time::ElapsedSeconds(true) - timeStart);
         return;
-    }
-
-    Console::printfn(Locale::get(_ID("NAV_MESH_GENERATION_COMPLETE")),
-                     Time::ElapsedSeconds(true) - timeStart);
-
-    _navigationMeshLock.lock();
-    {
-        // Copy new NavigationMesh into old.
-        dtNavMesh* old = _navMesh;
-        // I am trusting that this is atomic.
-        _navMesh = _tempNavMesh;
-        dtFreeNavMesh(old);
-        _debugDrawInterface->setDirty(true);
-        _tempNavMesh = nullptr;
-
-        bool navQueryComplete = createNavigationQuery();
-        DIVIDE_ASSERT(
-            navQueryComplete,
-            "NavigationMesh Error: Navigation query creation failed!");
-    }
-    _navigationMeshLock.unlock();
-
-    // Free structs used during build
-    freeIntermediates(false);
-
-    _building = false;
-
-    if (_loadCompleteClbk) {
-        _loadCompleteClbk(this);
     }
 }
 
@@ -669,8 +665,7 @@ bool NavigationMesh::load(SceneGraphNode& sgn) {
         return false;
     }
 
-    boost::mutex::scoped_lock lock(_navigationMeshLock);
-
+    std::lock_guard<std::mutex> lock(_navigationMeshLock);
     temp = dtAllocNavMesh();
 
     if (!temp) {
@@ -729,7 +724,7 @@ bool NavigationMesh::save(SceneGraphNode& sgn) {
         return false;
     }
 
-    boost::mutex::scoped_lock lock(_navigationMeshLock);
+    std::lock_guard<std::mutex> lock(_navigationMeshLock);
 
     // Store header.
     NavMeshSetHeader header;

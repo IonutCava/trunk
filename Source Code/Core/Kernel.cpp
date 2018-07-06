@@ -37,7 +37,7 @@ LoopTimingData::LoopTimingData() : _previousTime(0ULL),
 LoopTimingData Kernel::_timingData;
 Time::ProfileTimer* s_appLoopTimer = nullptr;
 
-boost::lockfree::queue<I64> Kernel::_threadedCallbackBuffer(128);
+boost::lockfree::queue<I64> Kernel::_threadedCallbackBuffer(Config::MAX_POOLED_TASKS);
 Kernel::CallbackFunctions Kernel::_threadedCallbackFunctions;
 
 Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
@@ -49,9 +49,13 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
       _PFX(PXDevice::getInstance()),                 // Physics
       _input(Input::InputInterface::getInstance()),  // Input
       _GUI(GUI::getInstance()),  // Graphical User Interface
-      _sceneMgr(SceneManager::getInstance())  // Scene Manager
+      _sceneMgr(SceneManager::getInstance()),  // Scene Manager
+      _tasksPool(vectorImpl<Task>(Config::MAX_POOLED_TASKS, Task(_mainTaskPool)))
 
 {
+    assert(isPowerOfTwo(Config::MAX_POOLED_TASKS));
+    _allocatedJobs = 0;
+
     ResourceCache::createInstance();
     FrameListenerManager::createInstance();
     // General light management and rendering (individual lights are handled by each scene)
@@ -73,33 +77,51 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
 Kernel::~Kernel()
 {
     _mainTaskPool.wait(0);
-    _tasks.clear();
+    _tasksPool.clear();
 }
 
 void Kernel::threadPoolCompleted(I64 onExitTaskID) {
     WAIT_FOR_CONDITION(_threadedCallbackBuffer.push(onExitTaskID));
 }
 
-Task_ptr Kernel::AddTask(U64 tickInterval, I32 numberOfTicks,
-                         const DELEGATE_CBK<>& threadedFunction,
-                         const DELEGATE_CBK<>& onCompletionFunction) {
-    Task_ptr taskPtr(new Task(_mainTaskPool,
-                              tickInterval,
-                              numberOfTicks,
-                              threadedFunction));
+TaskHandle Kernel::getTaskHandle(I64 taskGUID) {
+    for (Task& freeTask : _tasksPool) {
+        if (freeTask.getGUID() == taskGUID) {
+            return TaskHandle(&freeTask, freeTask.jobIdentifier());
+        }
+    }
+    // return the first task instead of a dummy result
+    return TaskHandle(&_tasksPool.front(), -1);
+}
 
-    taskPtr->onCompletionCbk(DELEGATE_BIND(&Kernel::threadPoolCompleted,
-                                           this,
-                                           std::placeholders::_1));
+TaskHandle Kernel::AddTask(const DELEGATE_CBK_PARAM<bool>& threadedFunction,
+                           const DELEGATE_CBK<>& onCompletionFunction) {
+    return AddTask(-1, threadedFunction, onCompletionFunction);                            
+}
+
+TaskHandle Kernel::AddTask(I64 jobIdentifier,
+                           const DELEGATE_CBK_PARAM<bool>& threadedFunction,
+                           const DELEGATE_CBK<>& onCompletionFunction) {
+
+    assert(threadedFunction);
+
+    Task& freeTask = _tasksPool[(++_allocatedJobs - 1u) & (Config::MAX_POOLED_TASKS - 1u)];
+    if (freeTask.reset()) {
+        _threadedCallbackFunctions.erase(freeTask.getGUID());
+    }
+
+    freeTask.threadedCallback(threadedFunction, jobIdentifier);
+    freeTask.onCompletionCbk(DELEGATE_BIND(&Kernel::threadPoolCompleted,
+                             this,
+                             std::placeholders::_1));
+
     if (onCompletionFunction) {
         hashAlg::emplace(_threadedCallbackFunctions,
-                         taskPtr->getGUID(),
+                         freeTask.getGUID(),
                          onCompletionFunction);
     }
 
-    _tasks.push_back(taskPtr);
-
-    return taskPtr;
+    return TaskHandle(&freeTask, jobIdentifier);
 }
 
 void Kernel::idle() {
@@ -162,8 +184,6 @@ void Kernel::onLoop() {
 
     Kernel::idle();
 
-    Task::update(_timingData._currentTimeDelta);
-
     FrameEvent evt;
     FrameListenerManager& frameMgr = FrameListenerManager::getInstance();
     Application& APP = Application::getInstance();
@@ -223,11 +243,6 @@ void Kernel::onLoop() {
 }
 
 bool Kernel::mainLoopScene(FrameEvent& evt) {
-    _tasks.erase(std::remove_if(std::begin(_tasks), std::end(_tasks),
-                                [](const Task_ptr& task)
-                                    -> bool { return task->isFinished(); }),
-                 std::end(_tasks));
-
     U64 deltaTime = Config::USE_FIXED_TIMESTEP ? Config::SKIP_TICKS 
                                                : _timingData._currentTimeDelta;
     // Update camera
@@ -405,7 +420,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
         return ErrorCode::NOT_ENOUGH_RAM;
     }
 
-    _mainTaskPool.size_controller().resize(std::max(threadCount - 2, 1U));
+    _mainTaskPool.size_controller().resize(std::max(threadCount - 1, 1U));
 
     Console::bindConsoleOutput(
         DELEGATE_BIND(&GUIConsole::printText, GUI::getInstance().getConsole(),

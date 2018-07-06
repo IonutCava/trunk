@@ -49,8 +49,8 @@ class PhysXScene : public Scene {
     void processGUI(const U64 deltaTime);
 
    private:
-    void createStack(U32 size = 10);
-    void createTower(U32 size = 10);
+    void createStack(bool stopRequested, U32 size = 10);
+    void createTower(bool stopRequested, U32 size = 10);
 
    private:
     bool _hasGroundPlane;

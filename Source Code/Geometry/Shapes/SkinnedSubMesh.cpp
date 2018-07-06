@@ -11,7 +11,7 @@
 namespace Divide {
 
 namespace {
-    const bool MULTITHREADED_BOUNDING_BOX_CALCULATION = false;
+    const bool MULTITHREADED_BOUNDING_BOX_CALCULATION = true;
 };
 
 SkinnedSubMesh::SkinnedSubMesh(const stringImpl& name)
@@ -55,7 +55,9 @@ void SkinnedSubMesh::buildBoundingBoxesForAnimCompleted(U32 animationIndex) {
     _boundingBoxesAvailable.at(animationIndex) = true;
 }
 
-void SkinnedSubMesh::buildBoundingBoxesForAnim(U32 animationIndex, AnimationComponent* const animComp) {
+void SkinnedSubMesh::buildBoundingBoxesForAnim(bool stopRequested, 
+                                               U32 animationIndex,
+                                               AnimationComponent* const animComp) {
 
     if (_boundingBoxesComputing.at(animationIndex) == true) {
         return;
@@ -74,6 +76,9 @@ void SkinnedSubMesh::buildBoundingBoxesForAnim(U32 animationIndex, AnimationComp
     U32 i = 0;
     BoundingBoxPerFrame& currentBBs = _boundingBoxes.at(animationIndex);
     for (BoundingBox& bb : currentBBs) {
+        if (stopRequested) {
+            return;
+        }
         bb.reset();
         const vectorImpl<mat4<F32> >& transforms = currentAnimation[i++];
         // loop through all vertex weights of all bones
@@ -103,16 +108,18 @@ void SkinnedSubMesh::computeBoundingBoxForCurrentFrame(SceneGraphNode& sgn) {
     if (_boundingBoxesAvailable.at(animationIndex) == false) {
         if (_boundingBoxesComputing.at(animationIndex) == false) {
             if (MULTITHREADED_BOUNDING_BOX_CALCULATION) {
-                DELEGATE_CBK<> buildBB = DELEGATE_BIND(&SkinnedSubMesh::buildBoundingBoxesForAnim,
-                                                       this, animationIndex, animComp);
+                DELEGATE_CBK_PARAM<bool> buildBB = DELEGATE_BIND(&SkinnedSubMesh::buildBoundingBoxesForAnim,
+                                                                  this, std::placeholders::_1, animationIndex, animComp);
                 DELEGATE_CBK<> builBBComplete = DELEGATE_BIND(&SkinnedSubMesh::buildBoundingBoxesForAnimCompleted,
                                                               this, animationIndex);
-                _bbBuildTasks.push_back(Application::getInstance()
-                    .getKernel()
-                    .AddTask(1, 1, buildBB, builBBComplete));
-                _bbBuildTasks.back().lock()->startTask(Task::TaskPriority::DONT_CARE);
+
+                                                              
+                Application::getInstance().getKernel()
+                                           .AddTask(buildBB, builBBComplete)
+                                           ._task->startTask(Task::TaskPriority::DONT_CARE);
+
             } else {
-                buildBoundingBoxesForAnim(animationIndex, animComp);
+                buildBoundingBoxesForAnim(false, animationIndex, animComp);
                 buildBoundingBoxesForAnimCompleted(animationIndex);
             }
         }

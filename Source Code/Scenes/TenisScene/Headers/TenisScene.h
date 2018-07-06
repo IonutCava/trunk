@@ -68,7 +68,6 @@ class TenisScene : public Scene {
         _scoreTeam1 = 0;
         _scoreTeam2 = 0;
         _gamePlaying = false;
-        _gameGUID = 0;
     }
 
     void preRender();
@@ -84,7 +83,7 @@ class TenisScene : public Scene {
    private:
     // ToDo: replace with Physics system collision detection
     void checkCollisions();
-    void playGame(cdiggins::any a, CallbackParam b);
+    void playGame(bool stopRequested, cdiggins::any a, CallbackParam b);
     void startGame();
     void resetGame();
 
@@ -114,7 +113,6 @@ class TenisScene : public Scene {
     mutable std::atomic_int _scoreTeam1;
     mutable std::atomic_int _scoreTeam2;
     F32 _sideImpulseFactor;
-    I64 _gameGUID;
     /// AIEntities are the "processors" behing the NPC's
     AI::AIEntity* _aiPlayer1, *_aiPlayer2, *_aiPlayer3, *_aiPlayer4;
     /// NPC's are the actual game entities

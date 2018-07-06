@@ -10,112 +10,125 @@
 #include <thread>
 
 namespace Divide {
-namespace {
-    U64 g_sleepThresholdMS = 5UL;
-};
-
-std::atomic<U64> Task::_currentTime(0UL);
-
-Task::Task(ThreadPool& tp, U64 tickInterval, I32 numberOfTicks,
-           const DELEGATE_CBK<>& f)
-    : GUIDWrapper(),
-      _tp(tp),
-      _tickInterval(tickInterval),
-      _callback(f)
+Task::Task(ThreadPool& tp) : GUIDWrapper(),
+                             _tp(tp),
+                             _jobIdentifier(-1),
+                             _priority(TaskPriority::DONT_CARE)
 {
-    _numberOfTicks = numberOfTicks;
-    _end = false;
-    _paused = false;
-    _done = false;
+    /*
+    _parentTask = nullptr;
+    _childTaskCount = 0;
+    */
+    _done = true;
+    _stopRequested = false;
+}
+
+Task::Task(const Task& old) : GUIDWrapper(old),
+                              _tp(old._tp)
+{
+    _done.store(old._done);
+    _stopRequested.store(old._stopRequested);
+    _jobIdentifier.store(old._jobIdentifier);
+    _callback = old._callback;
+    _onCompletionCbk = old._onCompletionCbk;
+    _priority = old._priority;
+
+    /*
+    _childTaskCount = old._childTaskCount;
+    _parentTask = old._parentTask;
+    _childTasks.insert(std::cent(_childTasks), std::cbegin(old._childTasks), std::cend(old._childTasks));
+    */
 }
 
 Task::~Task()
 {
-    if (_end != true) {
-        Console::errorfn(Locale::get(_ID("TASK_DELETE_ACTIVE")));
+    if (_done == false) {
         stopTask();
+        Console::errorfn(Locale::get(_ID("TASK_DELETE_ACTIVE")));
     }
 
     WAIT_FOR_CONDITION(_done || _tp.active() == 0);
 }
 
-void Task::updateTickInterval(U64 tickInterval) {
-    _tickInterval = std::max(tickInterval, Time::MillisecondsToMicroseconds(1));
-}
-
-void Task::updateTickCounter(I32 numberOfTicks) {
-    _numberOfTicks = numberOfTicks;
+bool Task::reset() {
+    bool wasNeeded = false;
+    if (!_done) {
+        wasNeeded = true;
+        stopTask();
+        WAIT_FOR_CONDITION(_done);
+    }
+    _stopRequested = false;
+    _callback = DELEGATE_CBK_PARAM<bool>();
+    _onCompletionCbk = DELEGATE_CBK_PARAM<I64>();
+    _jobIdentifier = -1;
+    _priority = TaskPriority::DONT_CARE;
+    /*
+    _parentTask = nullptr;
+    _childTasks.clear();
+    _childTaskCount = 0;
+    */
+    return wasNeeded;
 }
 
 void Task::startTask(TaskPriority priority) {
-    if (!_tp.schedule(PoolTask(to_uint(priority), DELEGATE_BIND(&Task::run, this))))
-    {
-        Console::errorfn(Locale::get(_ID("TASK_SCHEDULE_FAIL")));
+    _priority = priority;
+
+    /*
+    if (!_childTasks.empty()) {
+        for (Task* child : _childTasks){
+            child.startTask(priority);
+        }
+    } else {
+    */
+        if (!_tp.schedule(PoolTask(to_uint(priority), DELEGATE_BIND(&Task::run, this))))
+        {
+            Console::errorfn(Locale::get(_ID("TASK_SCHEDULE_FAIL")));
+            /*
+            if (_parentTask != nullptr) {
+               _parentTask._childTaskCount = _parentTaskCount + 1;
+            }
+            */
+        }
+    /*
     }
+    */
 }
 
-void Task::stopTask() { 
-    _end = true;
-}
-
-void Task::pauseTask(bool state) {
-    _paused = state;
+void Task::stopTask() {
+    /*
+    for (Task* child : _childTasks){
+        child.stopTask();
+    }
+    */
+    _stopRequested = true;
 }
 
 void Task::run() {
-    Console::d_printfn(Locale::get(_ID("TASK_START_THREAD")), getGUID(), std::this_thread::get_id());
-
-    U64 lastCallTime = _currentTime;
-    // 0 == run forever
-    if (_numberOfTicks == 0) {
-        _numberOfTicks = -1;
-    }
-
-    Application& app = Application::getInstance();
+    Console::d_printfn(Locale::get(_ID("TASK_RUN_IN_THREAD")), getGUID(), std::this_thread::get_id());
 
     _done = !_callback;
+    if (!Application::getInstance().ShutdownRequested()) {
 
-    I32 tickCountTemp = 0;
-    U64 tickIntervalTemp = 0UL;
-    U64 currentTimeTemp = 0UL;
-
-    while (true) {
-        tickCountTemp = _numberOfTicks;
-        tickIntervalTemp = _tickInterval;
-        currentTimeTemp = _currentTime;
-        if (tickCountTemp == 0) {
-            _end = true;
+        if (_callback) {
+            _callback(_stopRequested);
         }
 
-        if (_end || app.ShutdownRequested()) {
-            break;
+        if (_onCompletionCbk) {
+            _onCompletionCbk(getGUID());
         }
 
-        if (_paused) {
-            continue;
-        }
-
-        if (currentTimeTemp >= (lastCallTime + tickIntervalTemp)) {
-            _callback();
-            if (tickCountTemp > 0) {
-                _numberOfTicks--;
-            }
-            lastCallTime = currentTimeTemp;
-            // Sleep does not guarantee a maximum wait time, just a minimum, so g_sleepThresholdMS should be enough margin
-            if (tickIntervalTemp > Time::MillisecondsToMicroseconds(g_sleepThresholdMS)) {
-                // If the tick interval is over 'g_sleepThreshold', sleep for at least half of the duration
-                std::this_thread::sleep_for(std::chrono::microseconds(tickIntervalTemp / 2));
+        /*
+        if (_parentTask != nullptr) {
+            _parentTask._childTaskCount = _parentTask._childTaskCount - 1;
+            if (_parentTask._childTaskCount == 0) {
+                _parentTask.startTask(_parentTask._priority);
             }
         }
-
+        */
     }
 
-    Console::d_printfn(Locale::get(_ID("TASK_DELETE_THREAD")), getGUID(), std::this_thread::get_id());
-
-    if (_onCompletionCbk && !app.ShutdownRequested()) {
-        _onCompletionCbk(getGUID());
-    }
-
+    Console::d_printfn(Locale::get(_ID("TASK_COMPLETE_IN_THREAD")), getGUID(), std::this_thread::get_id());
     _done = true;
 }
+
 };

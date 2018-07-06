@@ -84,7 +84,6 @@ namespace Attorney {
 ///-etc
 class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     friend class Attorney::KernelApplication;
-
    public:
     Kernel(I32 argc, char** argv, Application& parentApp);
     ~Kernel();
@@ -129,18 +128,25 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     bool mouseButtonReleased(const Input::MouseEvent& arg,
                              Input::MouseButton button);
 
+    TaskHandle getTaskHandle(I64 taskGUID);
      /**
      * @brief Creates a new Task that runs in a separate thread
-     * @param tickInterval The delay (in microseconds) between each callback
-     * @param numberOfTicks The number of times to call the callback function
-     * before the Task is deleted. 0 = run forever
+     * @param threadedFunction The callback function to call in a separate thread = the job to execute
      * @param onCompletionFunction The callback function to call when the thread finishes
      */
-    Task_ptr AddTask(
-        U64 tickInterval, I32 numberOfTicks,
-        const DELEGATE_CBK<>& threadedFunction,
-        const DELEGATE_CBK<>& onCompletionFunction = DELEGATE_CBK<>());
+    TaskHandle AddTask(const DELEGATE_CBK_PARAM<bool>& threadedFunction,
+                       const DELEGATE_CBK<>& onCompletionFunction = DELEGATE_CBK<>());
 
+    /**
+    * @brief Creates a new Task that runs in a separate thread
+    * @param jobIdentifier A unique identifier that gets reset when the job finishes.
+    *                      Used to check if the local task handle is still valid
+    * @param threadedFunction The callback function to call in a separate thread = the job to execute
+    * @param onCompletionFunction The callback function to call when the thread finishes
+    */
+    TaskHandle AddTask(I64 jobIdentifier,
+                       const DELEGATE_CBK_PARAM<bool>& threadedFunction,
+                       const DELEGATE_CBK<>& onCompletionFunction = DELEGATE_CBK<>());
    private:
     ErrorCode initialize(const stringImpl& entryPoint);
     void warmup();
@@ -177,7 +183,8 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     static boost::lockfree::queue<I64> _threadedCallbackBuffer;
     static CallbackFunctions _threadedCallbackFunctions;
 
-    vectorImpl<Task_ptr> _tasks;
+    vectorImpl<Task> _tasksPool;
+    std::atomic<U32> _allocatedJobs;
     // Command line arguments
     I32 _argc;
     char** _argv;

@@ -61,7 +61,7 @@ void TenisScene::processTasks(const U64 deltaTime) {
 }
 
 void TenisScene::resetGame() {
-    removeTask(_gameGUID);
+    removeTask(getGUID());
     _collisionPlayer1 = false;
     _collisionPlayer2 = false;
     _collisionPlayer3 = false;
@@ -85,12 +85,13 @@ void TenisScene::resetGame() {
 void TenisScene::startGame() {
     resetGame();
     Kernel& kernel = Application::getInstance().getKernel();
-    Task_ptr newGame(kernel.AddTask(
-        Time::MillisecondsToMicroseconds(15), 0,
-        DELEGATE_BIND(&TenisScene::playGame, this, rand() % 5, CallbackParam::TYPE_INTEGER)));
+    TaskHandle newGame(kernel.AddTask(getGUID(),
+                                      DELEGATE_BIND(&TenisScene::playGame, this,
+                                                    std::placeholders::_1,
+                                                    rand() % 5,
+                                                    CallbackParam::TYPE_INTEGER)));
+    newGame._task->startTask(Task::TaskPriority::HIGH);
     registerTask(newGame);
-    newGame->startTask(Task::TaskPriority::HIGH);
-    _gameGUID = newGame->getGUID();
 }
 
 void TenisScene::checkCollisions() {
@@ -113,155 +114,159 @@ void TenisScene::checkCollisions() {
 
 // Team 1: Player1 + Player2
 // Team 2: Player3 + Player4
-void TenisScene::playGame(cdiggins::any a, CallbackParam b) {
-    bool updated = false;
-    stringImpl message;
-    if (!_gamePlaying) {
-        return;
-    }
-
-    UpgradableReadLock ur_lock(_gameLock);
-    // Shortcut to the scene graph nodes containing our agents
-    SceneGraphNode_ptr Player1(_aiPlayer1->getUnitRef()->getBoundNode().lock());
-    SceneGraphNode_ptr Player2(_aiPlayer2->getUnitRef()->getBoundNode().lock());
-    SceneGraphNode_ptr Player3(_aiPlayer3->getUnitRef()->getBoundNode().lock());
-    SceneGraphNode_ptr Player4(_aiPlayer4->getUnitRef()->getBoundNode().lock());
-
-    // Store by copy (thread-safe) current ball position (getPosition()) should
-    // be threadsafe
-    vec3<F32> netPosition =
-        _net.lock()->get<PhysicsComponent>()->getPosition();
-    vec3<F32> ballPosition =
-        _ballSGN.lock()->get<PhysicsComponent>()->getPosition();
-    vec3<F32> player1Pos =
-        Player1->get<PhysicsComponent>()->getPosition();
-    vec3<F32> player2Pos =
-        Player2->get<PhysicsComponent>()->getPosition();
-    vec3<F32> player3Pos =
-        Player3->get<PhysicsComponent>()->getPosition();
-    vec3<F32> player4Pos =
-        Player4->get<PhysicsComponent>()->getPosition();
-    vec3<F32> netBBMax = _net.lock()->get<BoundsComponent>()->getBoundingBox().getMax();
-    vec3<F32> netBBMin = _net.lock()->get<BoundsComponent>()->getBoundingBox().getMin();
-
-    UpgradeToWriteLock uw_lock(ur_lock);
-    // Is the ball traveling from team 1 to team 2?
-    _directionTeam1ToTeam2 ? ballPosition.z -= 0.123f : ballPosition.z +=
-                                                        0.123f;
-    // Is the ball traveling upwards or is it falling?
-    _upwardsDirection ? ballPosition.y += 0.066f : ballPosition.y -= 0.066f;
-    // In case of a side drift, update accordingly
-    if (_applySideImpulse) ballPosition.x += _sideImpulseFactor;
-
-    // After we finish our computations, apply the new transform
-    // setPosition/getPosition should be thread-safe
-    _ballSGN.lock()->get<PhysicsComponent>()->setPosition(ballPosition);
-    // Add a spin to the ball just for fun ...
-    _ballSGN.lock()->get<PhysicsComponent>()->rotate(
-        vec3<F32>(ballPosition.z, 1, 1));
-
-    //----------------------COLLISIONS------------------------------//
-    // z = depth. Descending to the horizon
-
-    if (_collisionFloor) {
-        if (ballPosition.z > netPosition.z) {
-            _touchedTerrainTeam1 = true;
-            _touchedTerrainTeam2 = false;
-        } else {
-            _touchedTerrainTeam1 = false;
-            _touchedTerrainTeam2 = true;
-        }
-        _upwardsDirection = true;
-    }
-
-    // Where does the Kinetic  energy of the ball run out?
-    if (ballPosition.y > 3.5) _upwardsDirection = false;
-
-    // Did we hit a player?
-
-    bool collisionTeam1 = _collisionPlayer1 || _collisionPlayer2;
-    bool collisionTeam2 = _collisionPlayer3 || _collisionPlayer4;
-
-    if (collisionTeam1 || collisionTeam2) {
-        // Something went very wrong. Very.
-        // assert(collisionTeam1 != collisionTeam2);
-        if (collisionTeam1 == collisionTeam2) {
-            collisionTeam1 = !_directionTeam1ToTeam2;
-            collisionTeam2 = !collisionTeam1;
-            Console::d_errorfn("COLLISION ERROR");
+void TenisScene::playGame(bool stopRequested, cdiggins::any a, CallbackParam b) {
+    while (!stopRequested) {
+        bool updated = false;
+        stringImpl message;
+        if (!_gamePlaying) {
+            continue;
         }
 
-        F32 sideDrift = 0;
+        UpgradableReadLock ur_lock(_gameLock);
+        // Shortcut to the scene graph nodes containing our agents
+        SceneGraphNode_ptr Player1(_aiPlayer1->getUnitRef()->getBoundNode().lock());
+        SceneGraphNode_ptr Player2(_aiPlayer2->getUnitRef()->getBoundNode().lock());
+        SceneGraphNode_ptr Player3(_aiPlayer3->getUnitRef()->getBoundNode().lock());
+        SceneGraphNode_ptr Player4(_aiPlayer4->getUnitRef()->getBoundNode().lock());
 
-        if (collisionTeam1) {
-            _collisionPlayer1 ? sideDrift = player1Pos.x : sideDrift =
-                                                               player2Pos.x;
-        } else if (collisionTeam2) {
-            _collisionPlayer3 ? sideDrift = player3Pos.x : sideDrift =
-                                                               player4Pos.x;
-        }
+        // Store by copy (thread-safe) current ball position (getPosition()) should
+        // be threadsafe
+        vec3<F32> netPosition =
+            _net.lock()->get<PhysicsComponent>()->getPosition();
+        vec3<F32> ballPosition =
+            _ballSGN.lock()->get<PhysicsComponent>()->getPosition();
+        vec3<F32> player1Pos =
+            Player1->get<PhysicsComponent>()->getPosition();
+        vec3<F32> player2Pos =
+            Player2->get<PhysicsComponent>()->getPosition();
+        vec3<F32> player3Pos =
+            Player3->get<PhysicsComponent>()->getPosition();
+        vec3<F32> player4Pos =
+            Player4->get<PhysicsComponent>()->getPosition();
+        vec3<F32> netBBMax = _net.lock()->get<BoundsComponent>()->getBoundingBox().getMax();
+        vec3<F32> netBBMin = _net.lock()->get<BoundsComponent>()->getBoundingBox().getMin();
 
-        _sideImpulseFactor = (ballPosition.x - sideDrift);
-        _applySideImpulse = !IS_ZERO(_sideImpulseFactor);
-        if (_applySideImpulse) _sideImpulseFactor *= 0.025f;
+        UpgradeToWriteLock uw_lock(ur_lock);
+        // Is the ball traveling from team 1 to team 2?
+        _directionTeam1ToTeam2 ? ballPosition.z -= 0.123f : ballPosition.z +=
+                                                            0.123f;
+        // Is the ball traveling upwards or is it falling?
+        _upwardsDirection ? ballPosition.y += 0.066f : ballPosition.y -= 0.066f;
+        // In case of a side drift, update accordingly
+        if (_applySideImpulse) ballPosition.x += _sideImpulseFactor;
 
-        _directionTeam1ToTeam2 = collisionTeam1;
-    }
+        // After we finish our computations, apply the new transform
+        // setPosition/getPosition should be thread-safe
+        _ballSGN.lock()->get<PhysicsComponent>()->setPosition(ballPosition);
+        // Add a spin to the ball just for fun ...
+        _ballSGN.lock()->get<PhysicsComponent>()->rotate(
+            vec3<F32>(ballPosition.z, 1, 1));
 
-    //-----------------VALIDATING THE RESULTS----------------------//
-    // Which team won?
-    if (ballPosition.z >= player1Pos.z && ballPosition.z >= player2Pos.z) {
-        _lostTeam1 = true;
-        updated = true;
-    }
+        //----------------------COLLISIONS------------------------------//
+        // z = depth. Descending to the horizon
 
-    if (ballPosition.z <= player3Pos.z && ballPosition.z <= player4Pos.z) {
-        _lostTeam1 = false;
-        updated = true;
-    }
-    // Which team kicked the ball in the net?
-    if (_collisionNet) {
-        if (ballPosition.y < netBBMax.y - 0.25) {
-            if (_directionTeam1ToTeam2) {
-                _lostTeam1 = true;
-            } else {
-                _lostTeam1 = false;
-            }
-            updated = true;
-        }
-    }
-
-    if (ballPosition.x + 0.5f < netBBMin.x ||
-        ballPosition.x + 0.5f > netBBMax.x) {
-        // If we hit the ball and it touched the opposing team's terrain
-        // Or if the opposing team hit the ball but it didn't land in our
-        // terrain
         if (_collisionFloor) {
-            if ((_touchedTerrainTeam2 && _directionTeam1ToTeam2) ||
-                (!_directionTeam1ToTeam2 && !_touchedTerrainTeam1)) {
-                _lostTeam1 = false;
+            if (ballPosition.z > netPosition.z) {
+                _touchedTerrainTeam1 = true;
+                _touchedTerrainTeam2 = false;
             } else {
-                _lostTeam1 = true;
+                _touchedTerrainTeam1 = false;
+                _touchedTerrainTeam2 = true;
             }
+            _upwardsDirection = true;
+        }
+
+        // Where does the Kinetic  energy of the ball run out?
+        if (ballPosition.y > 3.5) _upwardsDirection = false;
+
+        // Did we hit a player?
+
+        bool collisionTeam1 = _collisionPlayer1 || _collisionPlayer2;
+        bool collisionTeam2 = _collisionPlayer3 || _collisionPlayer4;
+
+        if (collisionTeam1 || collisionTeam2) {
+            // Something went very wrong. Very.
+            // assert(collisionTeam1 != collisionTeam2);
+            if (collisionTeam1 == collisionTeam2) {
+                collisionTeam1 = !_directionTeam1ToTeam2;
+                collisionTeam2 = !collisionTeam1;
+                Console::d_errorfn("COLLISION ERROR");
+            }
+
+            F32 sideDrift = 0;
+
+            if (collisionTeam1) {
+                _collisionPlayer1 ? sideDrift = player1Pos.x : sideDrift =
+                                                                   player2Pos.x;
+            } else if (collisionTeam2) {
+                _collisionPlayer3 ? sideDrift = player3Pos.x : sideDrift =
+                                                                   player4Pos.x;
+            }
+
+            _sideImpulseFactor = (ballPosition.x - sideDrift);
+            _applySideImpulse = !IS_ZERO(_sideImpulseFactor);
+            if (_applySideImpulse) _sideImpulseFactor *= 0.025f;
+
+            _directionTeam1ToTeam2 = collisionTeam1;
+        }
+
+        //-----------------VALIDATING THE RESULTS----------------------//
+        // Which team won?
+        if (ballPosition.z >= player1Pos.z && ballPosition.z >= player2Pos.z) {
+            _lostTeam1 = true;
             updated = true;
         }
-    }
 
-    //-----------------DISPLAY RESULTS---------------------//
-    if (updated) {
-        if (_lostTeam1) {
-            message = "Team 2 scored!";
-            _scoreTeam2++;
-        } else {
-            message = "Team 1 scored!";
-            _scoreTeam1++;
+        if (ballPosition.z <= player3Pos.z && ballPosition.z <= player4Pos.z) {
+            _lostTeam1 = false;
+            updated = true;
         }
-        I32 score1 = _scoreTeam1;
-        I32 score2 = _scoreTeam2;
-        _GUI->modifyText("Team1Score", Util::StringFormat("Team 1 Score: %d", score1));
-        _GUI->modifyText("Team2Score", Util::StringFormat("Team 2 Score: %d", score2));
-        _GUI->modifyText("Message", (char*)message.c_str());
-        _gamePlaying = false;
+        // Which team kicked the ball in the net?
+        if (_collisionNet) {
+            if (ballPosition.y < netBBMax.y - 0.25) {
+                if (_directionTeam1ToTeam2) {
+                    _lostTeam1 = true;
+                } else {
+                    _lostTeam1 = false;
+                }
+                updated = true;
+            }
+        }
+
+        if (ballPosition.x + 0.5f < netBBMin.x ||
+            ballPosition.x + 0.5f > netBBMax.x) {
+            // If we hit the ball and it touched the opposing team's terrain
+            // Or if the opposing team hit the ball but it didn't land in our
+            // terrain
+            if (_collisionFloor) {
+                if ((_touchedTerrainTeam2 && _directionTeam1ToTeam2) ||
+                    (!_directionTeam1ToTeam2 && !_touchedTerrainTeam1)) {
+                    _lostTeam1 = false;
+                } else {
+                    _lostTeam1 = true;
+                }
+                updated = true;
+            }
+        }
+
+        //-----------------DISPLAY RESULTS---------------------//
+        if (updated) {
+            if (_lostTeam1) {
+                message = "Team 2 scored!";
+                _scoreTeam2++;
+            } else {
+                message = "Team 1 scored!";
+                _scoreTeam1++;
+            }
+            I32 score1 = _scoreTeam1;
+            I32 score2 = _scoreTeam2;
+            _GUI->modifyText("Team1Score", Util::StringFormat("Team 1 Score: %d", score1));
+            _GUI->modifyText("Team2Score", Util::StringFormat("Team 2 Score: %d", score2));
+            _GUI->modifyText("Message", (char*)message.c_str());
+            _gamePlaying = false;
+        }
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(15));
     }
 }
 

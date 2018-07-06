@@ -248,6 +248,10 @@ inline U32 powerOfTwo(U32 X) {
     return r;
 }
 
+inline bool isPowerOfTwo(U32 x) {
+    return !(x == 0) && !(x & (x - 1));
+}
+
 static inline size_t realign_offset(size_t offset, size_t align) {
     return (offset + align - 1) & ~(align - 1);
 }

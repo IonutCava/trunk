@@ -93,8 +93,8 @@ class Vegetation : public SceneNode {
 
    private:
     void uploadGrassData();
-    void generateTrees();
-    void generateGrass();
+    void generateTrees(bool stopRequested);
+    void generateGrass(bool stopRequested);
 
     U32 getQueryID();
 
@@ -134,7 +134,6 @@ class Vegetation : public SceneNode {
     vectorImpl<vec4<F32> > _grassPositions;
     GenericVertexData* _grassGPUBuffer[2];
     GenericVertexData* _treeGPUBuffer[2];
-    Task_ptr _generateVegetation;
     ShaderBuffer* _grassMatrices;
     static bool _staticDataUpdated;
     GenericDrawCommand _cullDrawCommand;

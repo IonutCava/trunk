@@ -55,6 +55,11 @@ const unsigned int TICKS_PER_SECOND = TARGET_FRAME_RATE / TICK_DIVISOR;
 /// Maximum frameskip
 const unsigned int MAX_FRAMESKIP = 5;
 const unsigned long long SKIP_TICKS = (1000 * 1000) / Config::TICKS_PER_SECOND;
+/// The minimum threshold needed for a threaded loop to use sleep
+/// Update intervals bellow this threshold will not use sleep!
+const unsigned int MIN_SLEEP_THRESHOLD_MS = 5;
+/// How many tasks should we keep in a pool to avoid using new/delete (must be power of two)
+const unsigned int MAX_POOLED_TASKS = 4096;
 /// AI update frequency
 const unsigned int AI_THREAD_UPDATE_FREQUENCY = TICKS_PER_SECOND;
 /// Toggle multi-threaded resource loading on or off

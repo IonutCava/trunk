@@ -397,12 +397,6 @@ bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
     renderState().getCamera().setMoveSpeedFactor(_paramHandler.getParam<F32>("options.cameraSpeed.move"));
     renderState().getCamera().setTurnSpeedFactor(_paramHandler.getParam<F32>("options.cameraSpeed.turn"));
 
-    // Create an AI thread, but start it only if needed
-    Kernel& kernel = Application::getInstance().getKernel();
-    _aiTask = kernel.AddTask(
-        Time::MillisecondsToMicroseconds(Config::AI_THREAD_UPDATE_FREQUENCY), 0,
-        DELEGATE_BIND(&AI::AIManager::update, &AI::AIManager::getInstance()));
-
     addSelectionCallback(DELEGATE_BIND(&GUI::selectionChangeCallback,
                                        &GUI::getInstance(), this));
 
@@ -604,18 +598,16 @@ bool Scene::loadPhysics(bool continueOnErrors) {
 }
 
 bool Scene::initializeAI(bool continueOnErrors) {
-    _aiTask->startTask(Task::TaskPriority::MAX);
+    _aiTask = std::thread(DELEGATE_BIND(&AI::AIManager::update, &AI::AIManager::getInstance()));
     return true;
 }
 
  /// Shut down AIManager thread
 bool Scene::deinitializeAI(bool continueOnErrors) { 
-    if (_aiTask.get()) {
-        _aiTask->stopTask();
-        _aiTask.reset();
-    }
-    WAIT_FOR_CONDITION(!_aiTask.get());
-    
+    AI::AIManager::getInstance().stop();
+    WAIT_FOR_CONDITION(!AI::AIManager::getInstance().running());
+    _aiTask.join();
+        
     return true;
 }
 
@@ -689,25 +681,34 @@ void Scene::onLostFocus() {
 #endif
 }
 
-void Scene::registerTask(Task_ptr taskItem) { 
+void Scene::registerTask(const TaskHandle& taskItem) { 
     _tasks.push_back(taskItem);
 }
 
 void Scene::clearTasks() {
     Console::printfn(Locale::get(_ID("STOP_SCENE_TASKS")));
-    // Calls the destructor for each task killing it's associated thread
+    // Performance shouldn't be an issue here
+    for (TaskHandle& task : _tasks) {
+        if (task._task->jobIdentifier() == task._jobIdentifier) {
+            task._task->stopTask();
+            WAIT_FOR_CONDITION(task._task->isFinished());
+        }
+    }
+
     _tasks.clear();
 }
 
-void Scene::removeTask(I64 taskGUID) {
-    for (vectorImpl<Task_ptr>::iterator it = std::begin(_tasks);
-         it != std::end(_tasks); ++it) {
-        if ((*it)->getGUID() == taskGUID) {
-            (*it)->stopTask();
+void Scene::removeTask(I64 jobIdentifier) {
+    vectorImpl<TaskHandle>::iterator it;
+    for (it = std::begin(_tasks); it != std::end(_tasks); ++it) {
+        if ((*it)._task->jobIdentifier() == jobIdentifier) {
+            (*it)._task->stopTask();
             _tasks.erase(it);
+            WAIT_FOR_CONDITION((*it)._task->isFinished());
             return;
         }
     }
+
 }
 
 void Scene::processInput(const U64 deltaTime) {

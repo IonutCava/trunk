@@ -78,142 +78,146 @@ void PingPongScene::serveBall() {
     _GUI->modifyText("insults", "");
     resetGame();
 
-    if (getTasks().empty()) {  // A maximum of 1 Tasks allowed
-        Kernel& kernel = Application::getInstance().getKernel();
-        Task_ptr newGame(
-            kernel.AddTask(Time::MillisecondsToMicroseconds(30), 0,
-                           DELEGATE_BIND(&PingPongScene::test, this, rand() % 5,
-                                         CallbackParam::TYPE_INTEGER)));
-        registerTask(newGame);
-        newGame->startTask(Task::TaskPriority::HIGH);
-    }
+    removeTask(getGUID());
+
+    Kernel& kernel = Application::getInstance().getKernel();
+    TaskHandle newGame(kernel.AddTask(getGUID(),
+                                      DELEGATE_BIND(&PingPongScene::test, this,
+                                      std::placeholders::_1,
+                                      rand() % 5,
+                                      CallbackParam::TYPE_INTEGER)));
+    newGame._task->startTask(Task::TaskPriority::HIGH);
+    registerTask(newGame);
 }
 
-void PingPongScene::test(cdiggins::any a, CallbackParam b) {
-    if (getTasks().empty()) return;
-    bool updated = false;
-    stringImpl message;
-    PhysicsComponent* ballTransform =
-        _ballSGN.lock()->get<PhysicsComponent>();
-    vec3<F32> ballPosition = ballTransform->getPosition();
+void PingPongScene::test(bool stopRequested, cdiggins::any a, CallbackParam b) {
+    while (!stopRequested) {
+        bool updated = false;
+        stringImpl message;
+        PhysicsComponent* ballTransform =
+            _ballSGN.lock()->get<PhysicsComponent>();
+        vec3<F32> ballPosition = ballTransform->getPosition();
 
-    SceneGraphNode_ptr table(_sceneGraph.findNode("table").lock());
-    SceneGraphNode_ptr net(_sceneGraph.findNode("net").lock());
-    SceneGraphNode_ptr opponent(_sceneGraph.findNode("opponent").lock());
-    SceneGraphNode_ptr paddle(_sceneGraph.findNode("paddle").lock());
+        SceneGraphNode_ptr table(_sceneGraph.findNode("table").lock());
+        SceneGraphNode_ptr net(_sceneGraph.findNode("net").lock());
+        SceneGraphNode_ptr opponent(_sceneGraph.findNode("opponent").lock());
+        SceneGraphNode_ptr paddle(_sceneGraph.findNode("paddle").lock());
 
-    vec3<F32> paddlePosition =
-        paddle->get<PhysicsComponent>()->getPosition();
-    vec3<F32> opponentPosition =
-        opponent->get<PhysicsComponent>()->getPosition();
-    vec3<F32> tablePosition =
-        table->get<PhysicsComponent>()->getPosition();
+        vec3<F32> paddlePosition =
+            paddle->get<PhysicsComponent>()->getPosition();
+        vec3<F32> opponentPosition =
+            opponent->get<PhysicsComponent>()->getPosition();
+        vec3<F32> tablePosition =
+            table->get<PhysicsComponent>()->getPosition();
 
-    // Is the ball coming towards us or towards the opponent?
-    _directionTowardsAdversary ? ballPosition.z -= 0.11f : ballPosition.z +=
-                                                           0.11f;
-    // Up or down?
-    _upwardsDirection ? ballPosition.y += 0.084f : ballPosition.y -= 0.084f;
+        // Is the ball coming towards us or towards the opponent?
+        _directionTowardsAdversary ? ballPosition.z -= 0.11f : ballPosition.z +=
+                                                               0.11f;
+        // Up or down?
+        _upwardsDirection ? ballPosition.y += 0.084f : ballPosition.y -= 0.084f;
 
-    // Is the ball moving to the right or to the left?
-    ballPosition.x += _sideDrift * 0.15f;
-    if (opponentPosition.x != ballPosition.x)
-        opponent->get<PhysicsComponent>()->translateX(
-            ballPosition.x - opponentPosition.x);
+        // Is the ball moving to the right or to the left?
+        ballPosition.x += _sideDrift * 0.15f;
+        if (opponentPosition.x != ballPosition.x)
+            opponent->get<PhysicsComponent>()->translateX(
+                ballPosition.x - opponentPosition.x);
 
-    ballTransform->translate(ballPosition - ballTransform->getPosition());
+        ballTransform->translate(ballPosition - ballTransform->getPosition());
 
-    // Did we hit the table? Bounce then ...
-    if (table->get<BoundsComponent>()
-             ->getBoundingBox().collision(_ballSGN.lock()->get<BoundsComponent>()
-                                                         ->getBoundingBox()))
-    {
-        if (ballPosition.z > tablePosition.z) {
-            _touchedOwnTableHalf = true;
-            _touchedAdversaryTableHalf = false;
-        } else {
-            _touchedOwnTableHalf = false;
-            _touchedAdversaryTableHalf = true;
-        }
-        _upwardsDirection = true;
-    }
-    // Kinetic  energy depletion
-    if (ballPosition.y > 2.1f) _upwardsDirection = false;
-
-    // Did we hit the paddle?
-    if (_ballSGN.lock()->get<BoundsComponent>()->getBoundingBox().collision(paddle->get<BoundsComponent>()->getBoundingBox())) {
-        _sideDrift = ballPosition.x - paddlePosition.x;
-        // If we hit the ball with the upper margin of the paddle, add a slight
-        // impuls to the ball
-        if (ballPosition.y >= paddlePosition.y) ballPosition.z -= 0.12f;
-
-        _directionTowardsAdversary = true;
-    }
-
-    if (ballPosition.y + 0.75f < table->get<BoundsComponent>()->getBoundingBox().getMax().y) {
-        // If we hit the ball and it landed on the opponent's table half
-        // Or if the opponent hit the ball and it landed on our table half
-        if ((_touchedAdversaryTableHalf && _directionTowardsAdversary) ||
-            (!_directionTowardsAdversary && !_touchedOwnTableHalf))
-            _lost = false;
-        else
-            _lost = true;
-
-        updated = true;
-    }
-    // Did we win or lose?
-    if (ballPosition.z >= paddlePosition.z) {
-        _lost = true;
-        updated = true;
-    }
-    if (ballPosition.z <= opponentPosition.z) {
-        _lost = false;
-        updated = true;
-    }
-
-    if (_ballSGN.lock()->get<BoundsComponent>()->getBoundingBox().collision(net->get<BoundsComponent>()->getBoundingBox())) {
-        if (_directionTowardsAdversary) {
-            // Did we hit the net?
-            _lost = true;
-        } else {
-            // Did the opponent hit the net?
-            _lost = false;
-        }
-        updated = true;
-    }
-
-    // Did we hit the opponent? Then change ball direction ... BUT ...
-    // Add a small chance that we win
-    if (Random(30) != 2)
-        if (_ballSGN.lock()->get<BoundsComponent>()
-                           ->getBoundingBox().collision(opponent->get<BoundsComponent>()
-                                                                ->getBoundingBox())) {
-            _sideDrift =
-                ballPosition.x -
-                opponent->get<PhysicsComponent>()->getPosition().x;
-            _directionTowardsAdversary = false;
-        }
-    // Add a spin effect to the ball
-    ballTransform->rotate(vec3<F32>(ballPosition.z, 1, 1));
-
-    if (updated) {
-        if (_lost) {
-            message = "You lost!";
-            _score--;
-
-            if (b == CallbackParam::TYPE_INTEGER) {
-                I32 quote = a.constant_cast<I32>();
-                if (_score % 3 == 0)
-                    _GUI->modifyText("insults", (char*)_quotes[quote].c_str());
+        // Did we hit the table? Bounce then ...
+        if (table->get<BoundsComponent>()
+                 ->getBoundingBox().collision(_ballSGN.lock()->get<BoundsComponent>()
+                                                             ->getBoundingBox()))
+        {
+            if (ballPosition.z > tablePosition.z) {
+                _touchedOwnTableHalf = true;
+                _touchedAdversaryTableHalf = false;
+            } else {
+                _touchedOwnTableHalf = false;
+                _touchedAdversaryTableHalf = true;
             }
-        } else {
-            message = "You won!";
-            _score++;
+            _upwardsDirection = true;
+        }
+        // Kinetic  energy depletion
+        if (ballPosition.y > 2.1f) _upwardsDirection = false;
+
+        // Did we hit the paddle?
+        if (_ballSGN.lock()->get<BoundsComponent>()->getBoundingBox().collision(paddle->get<BoundsComponent>()->getBoundingBox())) {
+            _sideDrift = ballPosition.x - paddlePosition.x;
+            // If we hit the ball with the upper margin of the paddle, add a slight
+            // impuls to the ball
+            if (ballPosition.y >= paddlePosition.y) ballPosition.z -= 0.12f;
+
+            _directionTowardsAdversary = true;
         }
 
-        _GUI->modifyText("Score", Util::StringFormat("Score: %d", _score));
-        _GUI->modifyText("Message", (char*)message.c_str());
-        resetGame();
+        if (ballPosition.y + 0.75f < table->get<BoundsComponent>()->getBoundingBox().getMax().y) {
+            // If we hit the ball and it landed on the opponent's table half
+            // Or if the opponent hit the ball and it landed on our table half
+            if ((_touchedAdversaryTableHalf && _directionTowardsAdversary) ||
+                (!_directionTowardsAdversary && !_touchedOwnTableHalf))
+                _lost = false;
+            else
+                _lost = true;
+
+            updated = true;
+        }
+        // Did we win or lose?
+        if (ballPosition.z >= paddlePosition.z) {
+            _lost = true;
+            updated = true;
+        }
+        if (ballPosition.z <= opponentPosition.z) {
+            _lost = false;
+            updated = true;
+        }
+
+        if (_ballSGN.lock()->get<BoundsComponent>()->getBoundingBox().collision(net->get<BoundsComponent>()->getBoundingBox())) {
+            if (_directionTowardsAdversary) {
+                // Did we hit the net?
+                _lost = true;
+            } else {
+                // Did the opponent hit the net?
+                _lost = false;
+            }
+            updated = true;
+        }
+
+        // Did we hit the opponent? Then change ball direction ... BUT ...
+        // Add a small chance that we win
+        if (Random(30) != 2)
+            if (_ballSGN.lock()->get<BoundsComponent>()
+                               ->getBoundingBox().collision(opponent->get<BoundsComponent>()
+                                                                    ->getBoundingBox())) {
+                _sideDrift =
+                    ballPosition.x -
+                    opponent->get<PhysicsComponent>()->getPosition().x;
+                _directionTowardsAdversary = false;
+            }
+        // Add a spin effect to the ball
+        ballTransform->rotate(vec3<F32>(ballPosition.z, 1, 1));
+
+        if (updated) {
+            if (_lost) {
+                message = "You lost!";
+                _score--;
+
+                if (b == CallbackParam::TYPE_INTEGER) {
+                    I32 quote = a.constant_cast<I32>();
+                    if (_score % 3 == 0)
+                        _GUI->modifyText("insults", (char*)_quotes[quote].c_str());
+                }
+            } else {
+                message = "You won!";
+                _score++;
+            }
+
+            _GUI->modifyText("Score", Util::StringFormat("Score: %d", _score));
+            _GUI->modifyText("Message", (char*)message.c_str());
+            resetGame();
+        }
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(30));
     }
 }
 

@@ -210,39 +210,43 @@ bool MainScene::unload() {
     return Scene::unload();
 }
 
-void MainScene::test(cdiggins::any a, CallbackParam b) {
-    static bool switchAB = false;
-    vec3<F32> pos;
-    SceneGraphNode_ptr boxNode(_sceneGraph.findNode("box").lock());
+void MainScene::test(bool stopRequested, cdiggins::any a, CallbackParam b) {
+    while (!stopRequested) {
+        static bool switchAB = false;
+        vec3<F32> pos;
+        SceneGraphNode_ptr boxNode(_sceneGraph.findNode("box").lock());
 
-    Object3D* box = nullptr;
-    if (boxNode) {
-        box = boxNode->getNode<Object3D>();
-    }
-    if (box) {
-        pos = boxNode->get<PhysicsComponent>()->getPosition();
-    }
+        Object3D* box = nullptr;
+        if (boxNode) {
+            box = boxNode->getNode<Object3D>();
+        }
+        if (box) {
+            pos = boxNode->get<PhysicsComponent>()->getPosition();
+        }
 
-    if (!switchAB) {
-        if (pos.x < 300 && pos.z == 0) pos.x++;
-        if (pos.x == 300) {
-            if (pos.y < 800 && pos.z == 0) pos.y++;
-            if (pos.y == 800) {
-                if (pos.z > -500) pos.z--;
-                if (pos.z == -500) switchAB = true;
+        if (!switchAB) {
+            if (pos.x < 300 && pos.z == 0) pos.x++;
+            if (pos.x == 300) {
+                if (pos.y < 800 && pos.z == 0) pos.y++;
+                if (pos.y == 800) {
+                    if (pos.z > -500) pos.z--;
+                    if (pos.z == -500) switchAB = true;
+                }
+            }
+        } else {
+            if (pos.x > -300 && pos.z == -500) pos.x--;
+            if (pos.x == -300) {
+                if (pos.y > 100 && pos.z == -500) pos.y--;
+                if (pos.y == 100) {
+                    if (pos.z < 0) pos.z++;
+                    if (pos.z == 0) switchAB = false;
+                }
             }
         }
-    } else {
-        if (pos.x > -300 && pos.z == -500) pos.x--;
-        if (pos.x == -300) {
-            if (pos.y > 100 && pos.z == -500) pos.y--;
-            if (pos.y == 100) {
-                if (pos.z < 0) pos.z++;
-                if (pos.z == 0) switchAB = false;
-            }
-        }
+        if (box) boxNode->get<PhysicsComponent>()->setPosition(pos);
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(30));
     }
-    if (box) boxNode->get<PhysicsComponent>()->setPosition(pos);
 }
 
 bool MainScene::loadResources(bool continueOnErrors) {
@@ -272,12 +276,14 @@ bool MainScene::loadResources(bool continueOnErrors) {
 
     Kernel& kernel = Application::getInstance().getKernel();
 
-    Task_ptr boxMove(
-        kernel.AddTask(Time::MillisecondsToMicroseconds(30), 0,
-                       DELEGATE_BIND(&MainScene::test, this, stringImpl("test"),
-                                     CallbackParam::TYPE_STRING)));
+    TaskHandle boxMove(kernel.AddTask(getGUID(),
+                                      DELEGATE_BIND(&MainScene::test,
+                                      this,
+                                      std::placeholders::_1,
+                                      stringImpl("test"),
+                                      CallbackParam::TYPE_STRING)));
+    boxMove._task->startTask();
     registerTask(boxMove);
-    boxMove->startTask();
 
     ResourceDescriptor backgroundMusic("background music");
     backgroundMusic.setResourceLocation(

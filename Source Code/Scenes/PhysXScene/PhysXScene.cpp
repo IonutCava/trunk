@@ -68,20 +68,16 @@ bool PhysXScene::load(const stringImpl& name, GUI* const gui) {
     _input->addKeyMapping(Input::KeyCode::KC_2, cbks);
     cbks.second = [this]() {
         Kernel& kernel = Application::getInstance().getKernel();
-        Task_ptr e(kernel.AddTask(
-            0, 1,
-            DELEGATE_BIND(&PhysXScene::createTower, this, to_uint(Random(5, 20)))));
+        TaskHandle e(kernel.AddTask(getGUID(), DELEGATE_BIND(&PhysXScene::createTower, this, std::placeholders::_1, to_uint(Random(5, 20)))));
+        e._task->startTask();
         registerTask(e);
-        e->startTask();
     };
     _input->addKeyMapping(Input::KeyCode::KC_3, cbks);
     cbks.second = [this]() {
         Kernel& kernel = Application::getInstance().getKernel();
-        Task_ptr e(kernel.AddTask(
-            0, 1,
-            DELEGATE_BIND(&PhysXScene::createStack, this, to_uint(Random(5, 10)))));
+        TaskHandle e(kernel.AddTask(getGUID(), DELEGATE_BIND(&PhysXScene::createStack, this, std::placeholders::_1, to_uint(Random(5, 10)))));
+        e._task->startTask();
         registerTask(e);
-        e->startTask();
     };
     _input->addKeyMapping(Input::KeyCode::KC_4, cbks);
     cbks.second = []() {
@@ -119,7 +115,7 @@ bool PhysXScene::loadResources(bool continueOnErrors) {
 
 bool PhysXScene::unload() { return Scene::unload(); }
 
-void PhysXScene::createStack(U32 size) {
+void PhysXScene::createStack(bool stopRequested, U32 size) {
     U32 stackSize = size;
     F32 CubeSize = 1.0f;
     F32 Spacing = 0.0001f;
@@ -131,6 +127,9 @@ void PhysXScene::createStack(U32 size) {
     s_sceneState = PhysXState::STATE_ADDING_ACTORS;
 
     while (stackSize) {
+        if (stopRequested){
+            return;
+        }
         for (U16 i = 0; i < stackSize; i++) {
             Pos.x = Offset + i * (CubeSize * 2.0f + Spacing);
             PHYSICS_DEVICE.createBox(Pos, CubeSize);
@@ -143,14 +142,17 @@ void PhysXScene::createStack(U32 size) {
     s_sceneState = PhysXState::STATE_IDLE;
 }
 
-void PhysXScene::createTower(U32 size) {
-    while (s_sceneState == PhysXState::STATE_ADDING_ACTORS)
-        ;
+void PhysXScene::createTower(bool stopRequested, U32 size) {
+    while (s_sceneState == PhysXState::STATE_ADDING_ACTORS);
+        
     s_sceneState = PhysXState::STATE_ADDING_ACTORS;
 
-    for (U8 i = 0; i < size; i++)
+    for (U8 i = 0; i < size; i++) {
+        if (stopRequested) {
+            return;
+        }
         PHYSICS_DEVICE.createBox(vec3<F32>(0, 5.0f + 5 * i, 0), 0.5f);
-
+    }
     s_sceneState = PhysXState::STATE_IDLE;
 }
 

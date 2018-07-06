@@ -110,7 +110,6 @@ class NOINITVTABLE Scene : public Resource {
     void updateSceneState(const U64 deltaTime);
     /// Override this for Scene specific updates
     virtual void updateSceneStateInternal(const U64 deltaTime) {}
-    inline const vectorImpl<Task_ptr>& getTasks() { return _tasks; }
     inline SceneState& state() { return _sceneState; }
     inline const SceneState& state() const { return _sceneState; }
     inline SceneRenderState& renderState() { return _sceneState.renderState(); }
@@ -118,12 +117,9 @@ class NOINITVTABLE Scene : public Resource {
     inline SceneInput& input() { return *_input; }
 
     inline SceneGraph& getSceneGraph() { return _sceneGraph; }
-    void registerTask(Task_ptr taskItem);
+    void registerTask(const TaskHandle& taskItem);
     void clearTasks();
-    void removeTask(I64 taskGUID);
-    inline void removeTask(Task_ptr taskItem) {
-        removeTask(taskItem->getGUID());
-    }
+    void removeTask(I64 jobIdentifier);
 
     inline void addModel(FileData& model) { _modelDataArray.push(model); }
     inline void addTerrain(TerrainDescriptor* ter) {
@@ -188,13 +184,12 @@ class NOINITVTABLE Scene : public Resource {
     /// Schedule a scene graph parse with the physics engine to recreate/recheck
     /// the collision meshes used by each node
     bool _cookCollisionMeshesScheduled;
-    ///_aiTask is the thread handling the AIManager. It is started before each
-    ///scene's "initializeAI" is called
+    ///_aiTask is the thread handling the AIManager. It is started before each scene's "initializeAI" is called
     /// It is destroyed after each scene's "deinitializeAI" is called
-    std::shared_ptr<Task> _aiTask;
+    std::thread _aiTask;
 
    private:
-    vectorImpl<Task_ptr> _tasks;
+    vectorImpl<TaskHandle> _tasks;
     /// Contains all game related info for the scene (wind speed, visibility
     /// ranges, etc)
     SceneState _sceneState;

@@ -58,11 +58,11 @@ class SkinnedSubMesh : public SubMesh {
                      SceneState& sceneState) override;
     void computeBoundingBoxForCurrentFrame(SceneGraphNode& sgn);
     void buildBoundingBoxesForAnimCompleted(U32 animationIndex);
-    void buildBoundingBoxesForAnim(U32 animationIndex,
+    void buildBoundingBoxesForAnim(bool stopRequested,
+                                   U32 animationIndex,
                                    AnimationComponent* const animComp);
 
    private:
-    vectorImpl<Task_weak_ptr> _bbBuildTasks;
     std::shared_ptr<SceneAnimator> _parentAnimatorPtr;
     /// Build status of bounding boxes for each animation (true if BBs are available)
     BoundingBoxPerAnimationStatus _boundingBoxesAvailable;

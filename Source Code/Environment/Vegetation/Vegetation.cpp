@@ -123,11 +123,10 @@ void Vegetation::initialize(TerrainChunk* const terrainChunk) {
     vegMaterial->dumpToFile(false);
     setMaterialTpl(vegMaterial);
 
-    Kernel& kernel = Application::getInstance().getKernel();
-    _generateVegetation =
-        kernel.AddTask(0, 1, DELEGATE_BIND(&Vegetation::generateGrass, this),
-                       DELEGATE_BIND(&Vegetation::uploadGrassData, this));
-    _generateVegetation->startTask(Task::TaskPriority::LOW);
+    Application::getInstance().getKernel()
+                              .AddTask(DELEGATE_BIND(&Vegetation::generateGrass, this, std::placeholders::_1),
+                                       DELEGATE_BIND(&Vegetation::uploadGrassData, this))
+                              ._task->startTask(Task::TaskPriority::LOW);
     setState(ResourceState::RES_LOADED);
 }
 
@@ -282,7 +281,7 @@ void Vegetation::sceneUpdate(const U64 deltaTime,
                              SceneGraphNode& sgn,
                              SceneState& sceneState) {
     if (_threadedLoadComplete && !_success) {
-        generateTrees();
+        generateTrees(false);
         sceneState.renderState().getCameraMgr().addCameraUpdateListener(
             DELEGATE_BIND(&Vegetation::gpuCull, this));
         _success = true;
@@ -429,10 +428,10 @@ bool Vegetation::onRender(SceneGraphNode& sgn, RenderStage renderStage) {
               renderStage == RenderStage::SHADOW));
 }
 
-void Vegetation::generateTrees() {
+void Vegetation::generateTrees(bool stopRequested) {
 }
 
-void Vegetation::generateGrass() {
+void Vegetation::generateGrass(bool stopRequested) {
     return;
 
     const vec2<F32>& chunkPos = _terrainChunk->getOffsetAndSize().xy();
@@ -505,7 +504,7 @@ void Vegetation::generateGrass() {
              width += densityFactor) {
             for (F32 height = 0; height < chunkSize.y - densityFactor;
                  height += densityFactor) {
-                if (_stopLoadingRequest) {
+                if (_stopLoadingRequest || stopRequested) {
                     continue;
                 }
                 F32 x = width + Random(densityFactor) + chunkPos.x;
