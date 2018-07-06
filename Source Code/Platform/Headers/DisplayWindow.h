@@ -156,6 +156,7 @@ public:
     /// Mouse positioning is handled by SDL
     void setCursorPosition(I32 x, I32 y) const;
     void setCursorStyle(CursorStyle style) const;
+    vec2<I32> getCursorPosition() const;
 
     inline void addEventListener(WindowEvent windowEvent, const EventListener& listener);
 

@@ -31,14 +31,12 @@ ImWindow::ImwPlatformWindow* ImwWindowManagerDivide::CreatePlatformWindow(ImWind
 
 ImVec2 ImwWindowManagerDivide::GetCursorPos()
 {
-    POINT oPoint;
-    ::GetCursorPos(&oPoint);
-    return ImVec2((float)oPoint.x, (float)oPoint.y);
+    return ImVec2(vec2<F32>(_context.app().windowManager().getCursorPosition()));
 }
 
 bool ImwWindowManagerDivide::IsLeftClickDown()
 {
-    return GetAsyncKeyState(VK_LBUTTON) != 0;
+    return _context.input().getMouseButtonState(0, Input::MouseButton::MB_Left) == Input::InputState::PRESSED;
 }
 
 }; //namespace Divide

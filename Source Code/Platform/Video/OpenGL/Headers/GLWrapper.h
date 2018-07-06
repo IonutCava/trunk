@@ -48,6 +48,7 @@
 
 struct glslopt_ctx;
 struct FONScontext;
+struct ImDrawData;
 
 namespace CEGUI {
     class OpenGL3Renderer;
@@ -111,6 +112,7 @@ protected:
     /// (https://github.com/memononen/fontstash)
     /// with his OpenGL frontend adapted for core context profiles
     void drawText(const TextElementBatch& batch);
+    void drawIMGUI(ImDrawData* data);
 
     bool draw(const GenericDrawCommand& cmd);
 

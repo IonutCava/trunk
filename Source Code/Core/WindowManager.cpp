@@ -3,6 +3,7 @@
 #include "Headers/WindowManager.h"
 
 #include "Core/Headers/Console.h"
+#include "Core/Headers/Kernel.h"
 #include "Core/Headers/Application.h"
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
@@ -225,6 +226,16 @@ U32 WindowManager::createAPIFlags(RenderAPI api) {
 
 void WindowManager::setCursorPosition(I32 x, I32 y) const {
     getActiveWindow().setCursorPosition(x, y);
+    Attorney::KernelWindowManager::setCursorPosition(_context->app().kernel(), x, y);
+}
+
+vec2<I32> WindowManager::getCursorPosition() const {
+    return getActiveWindow().getCursorPosition();
+}
+
+void WindowManager::snapCursorToCenter() const {
+    const vec2<U16>& center = getActiveWindow().getDimensions();
+    setCursorPosition(to_I32(center.x * 0.5f), to_I32(center.y * 0.5f));
 }
 
 void WindowManager::handleWindowEvent(WindowEvent event, I64 winGUID, I32 data1, I32 data2) {

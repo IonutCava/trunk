@@ -450,6 +450,11 @@ void DisplayWindow::setCursorPosition(I32 x, I32 y) const {
 void DisplayWindow::setCursorStyle(CursorStyle style) const {
     SDL_SetCursor(SDL_CreateSystemCursor(CursorToSDL(style)));
 }
+vec2<I32> DisplayWindow::getCursorPosition() const {
+    I32 x = 0, y = 0;
+    SDL_GetMouseState(&x, &y);
+    return vec2<I32>(x, y);
+}
 
 void DisplayWindow::hidden(const bool state) {
     if (BitCompare(SDL_GetWindowFlags(_sdlWindow), to_U32(SDL_WINDOW_SHOWN)) == state)

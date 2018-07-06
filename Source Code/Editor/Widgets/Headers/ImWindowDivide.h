@@ -40,6 +40,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
     
 FWD_DECLARE_MANAGED_CLASS(Texture);
+FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
 class ImwWindowDivide : public ImWindow::ImwPlatformWindow
 {
     friend class ImwWindowManagerOGL;
@@ -82,6 +83,7 @@ class ImwWindowDivide : public ImWindow::ImwPlatformWindow
   private:
     static U32 m_windowCount;
     PlatformContext& m_context;
+    ShaderProgram_ptr m_imWindowProgram;
 };
 }; //namespace Divide
 

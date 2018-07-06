@@ -400,7 +400,7 @@ void SceneManager::onCameraUpdate(const Camera& camera) {
 void SceneManager::onCameraChange(const Camera& camera) {
     getActiveScene().sceneGraph().onCameraChange(camera);
     if (camera.getType() == Camera::CameraType::THIRD_PERSON) {
-        _platformContext->app().snapCursorToCenter();
+        _platformContext->app().windowManager().snapCursorToCenter();
     }
 }
 

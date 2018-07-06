@@ -975,7 +975,7 @@ bool Scene::mouseMoved(const Input::MouseEvent& arg) {
                                    arg._event.state.Z.rel)))
     {
         if (cam.getType() == Camera::CameraType::THIRD_PERSON) {
-            _context.app().snapCursorToCenter();
+            _context.app().windowManager().snapCursorToCenter();
         }
         return true;
     }

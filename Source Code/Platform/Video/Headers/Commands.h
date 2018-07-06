@@ -36,6 +36,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Platform/Video/Buffers/PixelBuffer/Headers/PixelBuffer.h"
 #include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 
+struct ImDrawData;
+
 namespace Divide {
 namespace GFX {
 
@@ -56,6 +58,7 @@ enum class CommandType : U8 {
     SEND_PUSH_CONSTANTS,
     DRAW_COMMANDS,
     DRAW_TEXT,
+    DRAW_IMGUI,
     DISPATCH_COMPUTE,
     BEGIN_DEBUG_SCOPE,
     END_DEBUG_SCOPE,
@@ -176,8 +179,7 @@ struct SetCameraCommand : Command {
 };
 
 struct SetClipPlanesCommand : Command {
-    SetClipPlanesCommand()
-        : Command(CommandType::SET_CLIP_PLANES),
+    SetClipPlanesCommand() : Command(CommandType::SET_CLIP_PLANES),
         _clippingPlanes(to_base(ClipPlaneIndex::COUNT), Plane<F32>(0.0f, 0.0f, 0.0f, 0.0f))
     {
     }
@@ -216,6 +218,14 @@ struct DrawTextCommand : Command {
     }
 
     TextElementBatch _batch;
+};
+
+struct DrawIMGUICommand : Command {
+    DrawIMGUICommand() : Command(CommandType::DRAW_IMGUI)
+    {
+    }
+
+    ImDrawData* _data = nullptr;
 };
 
 struct DispatchComputeCommand : Command {

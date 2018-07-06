@@ -65,6 +65,8 @@ public:
     inline void targetDisplay(I32 displayIndex);
 
     void setCursorPosition(I32 x, I32 y) const;
+    vec2<I32> getCursorPosition() const;
+    void snapCursorToCenter() const;
 
     inline DisplayWindow& getActiveWindow();
     inline const DisplayWindow& getActiveWindow() const;

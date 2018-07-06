@@ -146,11 +146,6 @@ bool Application::onLoop() {
     return mainLoopActive();
 }
 
-void Application::setCursorPosition(I32 x, I32 y) const {
-    _windowManager.setCursorPosition(x, y);
-    Attorney::KernelApplication::setCursorPosition(*_kernel, x, y);
-}
-
 void Application::onChangeWindowSize(U16 w, U16 h) const {
     Attorney::KernelApplication::onChangeWindowSize(*_kernel, w, h);
 }

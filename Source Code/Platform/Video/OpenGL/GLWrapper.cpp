@@ -33,6 +33,8 @@
 
 #include <SDL_video.h>
 
+#include "imgui.h"
+
 #if !defined(CEGUI_STATIC)
 #define CEGUI_STATIC
 #endif
@@ -835,6 +837,37 @@ void GL_API::drawText(const TextElementBatch& batch) {
     popDebugMessage();
 }
 
+void GL_API::drawIMGUI(ImDrawData* data) {
+    if (data != nullptr && data->Valid) {
+        
+        for (int n = 0; n < data->CmdListsCount; n++) {
+            const ImDrawList* cmd_list = data->CmdLists[n];
+            const unsigned char* vtx_buffer = (const unsigned char*)&cmd_list->VtxBuffer.front();
+            const ImDrawIdx* idx_buffer = &cmd_list->IdxBuffer.front();
+
+            //glVertexPointer(2, GL_FLOAT, sizeof(ImDrawVert), (void*)(vtx_buffer + OFFSETOF(ImDrawVert, pos)));
+            //glTexCoordPointer(2, GL_FLOAT, sizeof(ImDrawVert), (void*)(vtx_buffer + OFFSETOF(ImDrawVert, uv)));
+            //glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(ImDrawVert), (void*)(vtx_buffer + OFFSETOF(ImDrawVert, col)));
+
+            for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.size(); cmd_i++) {
+                const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[cmd_i];
+                if (pcmd->UserCallback) {
+                    pcmd->UserCallback(cmd_list, pcmd);
+                } else {
+                    GL_API::bindTexture(0, (GLuint)(intptr_t)pcmd->TextureId);
+                    GL_API::setScissor((I32)pcmd->ClipRect.x,
+                                       (I32)(s_activeViewport.w - pcmd->ClipRect.w),
+                                       (I32)(pcmd->ClipRect.z - pcmd->ClipRect.x),
+                                       (I32)(pcmd->ClipRect.w - pcmd->ClipRect.y));
+
+                    //glDrawElements(GL_TRIANGLES, (GLsizei)pcmd->ElemCount, sizeof(ImDrawIdx) == 2 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, idx_buffer);
+                }
+                idx_buffer += pcmd->ElemCount;
+            }
+        }
+    }
+}
+
 bool GL_API::bindPipeline(const Pipeline& pipeline) {
     if (s_activePipeline && *s_activePipeline == pipeline) {
         return true;
@@ -1026,6 +1059,12 @@ void GL_API::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
 
                 GFX::DrawTextCommand* crtCmd = static_cast<GFX::DrawTextCommand*>(cmd.get());
                 drawText(crtCmd->_batch);
+            }break;
+            case GFX::CommandType::DRAW_IMGUI: {
+                Attorney::GFXDeviceAPI::uploadGPUBlock(_context);
+
+                GFX::DrawIMGUICommand* crtCmd = static_cast<GFX::DrawIMGUICommand*>(cmd.get());
+                drawIMGUI(crtCmd->_data);
             }break;
             case GFX::CommandType::DRAW_COMMANDS : {
                 Attorney::GFXDeviceAPI::uploadGPUBlock(_context);

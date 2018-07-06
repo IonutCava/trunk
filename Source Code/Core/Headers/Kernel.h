@@ -76,6 +76,7 @@ struct LoopTimingData {
 
 namespace Attorney {
     class KernelApplication;
+    class KernelWindowManager;
 };
 
 namespace Time {
@@ -94,6 +95,8 @@ namespace Input {
 ///-etc
 class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     friend class Attorney::KernelApplication;
+    friend class Attorney::KernelWindowManager;
+
    public:
     Kernel(I32 argc, char** argv, Application& parentApp);
     ~Kernel();
@@ -228,6 +231,7 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
 
 namespace Attorney {
     class KernelApplication {
+      protected:
         static ErrorCode initialize(Kernel& kernel, const stringImpl& entryPoint) {
             return kernel.initialize(entryPoint);
         }
@@ -236,9 +240,6 @@ namespace Attorney {
             kernel.shutdown();
         }
 
-        static bool setCursorPosition(Kernel& kernel, I32 x, I32 y) {
-            return kernel.setCursorPosition(x, y);
-        }
 
         static void onChangeWindowSize(Kernel& kernel, U16 w, U16 h) {
             kernel.onChangeWindowSize(w, h);
@@ -258,6 +259,15 @@ namespace Attorney {
 
         friend class Divide::Application;
         friend class Divide::Attorney::ApplicationTask;
+    };
+
+    class KernelWindowManager {
+      protected:
+        static bool setCursorPosition(Kernel& kernel, I32 x, I32 y) {
+            return kernel.setCursorPosition(x, y);
+        }
+
+        friend class Divide::WindowManager;
     };
 };
 

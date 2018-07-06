@@ -94,6 +94,7 @@ void BeginDebugScope(CommandBuffer& buffer, const BeginDebugScopeCommand& cmd);
 void EndDebugScope(CommandBuffer& buffer, const EndDebugScopeCommand& cmd);
 void AddDrawCommands(CommandBuffer& buffer, const DrawCommand& cmd);
 void AddDrawTextCommand(CommandBuffer& buffer, const DrawTextCommand& cmd);
+void AddDrawIMGUICommand(CommandBuffer& buffer, const DrawIMGUICommand& cmd);
 void AddComputeCommand(CommandBuffer& buffer, const DispatchComputeCommand& cmd);
 
 }; //namespace GFX

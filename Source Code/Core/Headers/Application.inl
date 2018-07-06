@@ -186,11 +186,6 @@ inline void Application::mainLoopPaused(bool state) {
     _mainLoopPaused = state;
 }
 
-inline void Application::snapCursorToCenter() const {
-    const vec2<U16>& center = _windowManager.getActiveWindow().getDimensions();
-    setCursorPosition(to_I32(center.x / 2), to_I32(center.y / 2));
-}
-
 inline void Application::throwError(ErrorCode err) {
     _errorCode = err;
 }
