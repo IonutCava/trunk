@@ -115,7 +115,8 @@ vec4 UnderwaterMappingRoutine(){
 //subroutine uniform TerrainMappingType TerrainMappingRoutine;
 
 vec4 TerrainMappingRoutine(){ // -- HACK - Ionut
-    setAlbedo(dvd_lodLevel == 0 ? computeLightInfoLOD0Frag()
+    setAlbedo(dvd_lodLevel == 0 && dvd_renderDetailLevel() > DETAIL_LOW
+                                ? computeLightInfoLOD0Frag()
                                 : computeLightInfoLOD1Frag());
 
     return getPixelColour(VAR._texCoord);

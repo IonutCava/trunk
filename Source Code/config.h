@@ -107,8 +107,8 @@ constexpr unsigned int  MAX_REFRACTIVE_NODES_IN_VIEW = 4;
 constexpr unsigned int MAX_REFLECTIVE_PROBES_PER_PASS = 6;
 
 /// Reflection render target resolution
-constexpr unsigned int REFLECTION_TARGET_RESOLUTION = 256;
-constexpr unsigned int REFRACTION_TARGET_RESOLUTION = 1024;
+constexpr unsigned int REFLECTION_TARGET_RESOLUTION = 512;
+constexpr unsigned int REFRACTION_TARGET_RESOLUTION = 512;
 /// Generic index value used to separate primitives within the same vertex
 /// buffer
 constexpr unsigned int PRIMITIVE_RESTART_INDEX_L = 0xFFFFFFFF;

@@ -82,6 +82,13 @@ struct RenderCbkParams {
     Camera* _camera;
 };
 
+
+enum class ReflectorType : U32 {
+    PLANAR_REFLECTOR = 0,
+    CUBE_REFLECTOR = 1,
+    COUNT
+};
+
 typedef DELEGATE_CBK<void, RenderCbkParams&> RenderCallback;
 
 class RenderingComponent : public SGNComponent {
@@ -108,6 +115,10 @@ class RenderingComponent : public SGNComponent {
     inline bool renderBoundingBox() const { return _renderBoundingBox; }
     inline bool renderBoundingSphere() const { return _renderBoundingSphere; }
     inline bool renderSkeleton() const { return _renderSkeleton; }
+
+
+    inline bool isVisible() const { return _isVisible; }
+    inline void setVisible(bool state) { _isVisible = state; }
 
     inline U32 renderMask() const {
         U32 mask = 0;
@@ -159,6 +170,7 @@ class RenderingComponent : public SGNComponent {
     void registerTextureDependency(const TextureData& additionalTexture);
     void removeTextureDependency(const TextureData& additionalTexture);
 
+    inline void setReflectionAndRefractionType(ReflectorType type) { _reflectorType = type; }
     inline void setReflectionCallback(RenderCallback cbk) { _reflectionCallback = cbk; }
     inline void setRefractionCallback(RenderCallback cbk) { _refractionCallback = cbk; }
 
@@ -224,6 +236,7 @@ class RenderingComponent : public SGNComponent {
     bool _renderBoundingBox;
     bool _renderBoundingSphere;
     bool _renderSkeleton;
+    bool _isVisible;
     TextureDataContainer _textureDependencies;
     std::array<RenderPackage, to_const_uint(RenderStage::COUNT)> _renderData;
     
@@ -238,6 +251,7 @@ class RenderingComponent : public SGNComponent {
     vectorImpl<Line> _axisLines;
     IMPrimitive* _axisGizmo;
 
+    ReflectorType _reflectorType;
     hashMapImpl<U32, GFXDevice::DebugView_ptr> _debugViews[2];
     ShaderProgram_ptr _previewRenderTarget;
 };

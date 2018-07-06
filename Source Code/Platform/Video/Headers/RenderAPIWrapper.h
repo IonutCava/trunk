@@ -137,6 +137,17 @@ class RingBuffer {
 
 };
 
+struct RenderStagePass {
+    explicit RenderStagePass(RenderStage stage, bool prePass)
+        : _stage(stage),
+          _prePass(prePass)
+    {
+    }
+
+    RenderStage _stage;
+    bool _prePass;
+};
+
 /// Renderer Programming Interface
 class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
    protected:

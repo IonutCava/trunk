@@ -215,11 +215,12 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
     // terrainDescDepth.setZBias(1.0f, 2.0f);
     terrainRenderStateDepth.setColourWrites(true, true, false, false);
 
-    Attorney::TerrainLoader::setRenderStateHashes(
-        *terrain,
-        terrainRenderState.getHash(),
-        terrainRenderStateReflection.getHash(),
-        terrainRenderStateDepth.getHash());
+    terrainMaterial->setRenderStateBlock(terrainRenderState.getHash(), RenderStage::DISPLAY);
+    terrainMaterial->setRenderStateBlock(terrainRenderState.getHash(), RenderStage::Z_PRE_PASS);
+    terrainMaterial->setRenderStateBlock(terrainRenderState.getHash(), RenderStage::REFRACTION);
+    terrainMaterial->setRenderStateBlock(terrainRenderStateReflection.getHash(), RenderStage::REFLECTION);
+    terrainMaterial->setRenderStateBlock(terrainRenderState.getHash(), RenderStage::DISPLAY);
+    terrainMaterial->setRenderStateBlock(terrainRenderStateDepth.getHash(), RenderStage::SHADOW);
 
     return loadThreadedResources(terrain, terrainDescriptor);
 }

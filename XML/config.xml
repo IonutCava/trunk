@@ -33,7 +33,7 @@
 <GUI>
 	<CEGUI>
 		<ExtraStates>false</ExtraStates>
-		<SkipRendering>false</SkipRendering>
+		<SkipRendering>true</SkipRendering>
         <defaultGUIScheme>GWEN</defaultGUIScheme>
 	</CEGUI>
 	
@@ -51,6 +51,7 @@
 	<!-- detail level: off = 0, low = 1 (no blurring, 512x512 base resolution), medium = 2 (blurring, 512x512 base resolution) -->
 	<!--               high = 3 (blurring, 1024x1024 base resolution), ultra = 4 (blurring, 2048x2048 base resolution) -->
 	<shadowDetailLevel>3</shadowDetailLevel>
+  <renderDetailLevel>4</renderDetailLevel>
 	<enableFog>true</enableFog>
 	<fogDensity>3</fogDensity>
 	<fogColour r="0.5" g="0.5" b="0.55"/>

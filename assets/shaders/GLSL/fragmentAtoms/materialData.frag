@@ -13,8 +13,11 @@ layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 layout(binding = TEXTURE_UNIT1) uniform sampler2D texDiffuse1;
 #endif
 
-layout(binding = TEXTURE_REFLECTION) uniform samplerCubeArray texEnvironmentCube;
+layout(binding = TEXTURE_REFLECTION_PLANAR) uniform sampler2D texReflectPlanar;
+layout(binding = TEXTURE_REFRACTION_PLANAR) uniform sampler2D texRefractPlanar;
 
+layout(binding = TEXTURE_REFLECTION_CUBE) uniform samplerCubeArray texEnvironmentCube;
+layout(binding = TEXTURE_REFRACTION_CUBE) uniform samplerCubeArray texEnvRefractCube;
 //Normal or BumpMap
 #if defined(COMPUTE_TBN)
 layout(binding = TEXTURE_NORMALMAP) uniform sampler2D texNormalMap;

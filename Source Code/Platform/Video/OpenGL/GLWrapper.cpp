@@ -228,6 +228,12 @@ bool GL_API::initShaders() {
                          Util::StringFormat("#define GPU_VENDOR %d", to_uint(_context.getGPUVendor())),
                          lineOffsets);
 
+    appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define DETAIL_OFF   %d", to_const_uint(RenderDetailLevel::OFF)),    lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define DETAIL_LOW   %d", to_const_uint(RenderDetailLevel::LOW)),    lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define DETAIL_MED   %d", to_const_uint(RenderDetailLevel::MEDIUM)), lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define DETAIL_HIGH  %d", to_const_uint(RenderDetailLevel::HIGH)),   lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define DETAIL_ULTRA %d", to_const_uint(RenderDetailLevel::ULTRA)),  lineOffsets);
+
     // Add current build environment information to the shaders
     if (Config::Build::IS_DEBUG_BUILD) {
         appendToShaderHeader(ShaderType::COUNT, "#define _DEBUG", lineOffsets);
@@ -407,7 +413,7 @@ bool GL_API::initShaders() {
     appendToShaderHeader(
         ShaderType::COMPUTE,
         "#define TEXTURE_UNIT1 " +
-        to_stringImpl(to_const_uint(ShaderProgram::TextureUsage::UNIT1)),
+            to_stringImpl(to_const_uint(ShaderProgram::TextureUsage::UNIT1)),
         lineOffsets);
 
     appendToShaderHeader(
@@ -437,46 +443,55 @@ bool GL_API::initShaders() {
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define TEXTURE_DEPTH_MAP " +
-        to_stringImpl(to_const_uint(ShaderProgram::TextureUsage::DEPTH)),
+            to_stringImpl(to_const_uint(ShaderProgram::TextureUsage::DEPTH)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define TEXTURE_DEPTH_MAP_PREV " +
-        to_stringImpl(to_const_uint(ShaderProgram::TextureUsage::DEPTH_PREV)),
+            to_stringImpl(to_const_uint(ShaderProgram::TextureUsage::DEPTH_PREV)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
-        "#define TEXTURE_REFLECTION " +
-            to_stringImpl(to_const_uint(ShaderProgram::TextureUsage::REFLECTION)),
+        "#define TEXTURE_REFLECTION_PLANAR " +
+            to_stringImpl(to_const_uint(ShaderProgram::TextureUsage::REFLECTION_PLANAR)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
-        "#define TEXTURE_REFRACTION " +
-            to_stringImpl(to_const_uint(ShaderProgram::TextureUsage::REFRACTION)),
+        "#define TEXTURE_REFRACTION_PLANAR " +
+            to_stringImpl(to_const_uint(ShaderProgram::TextureUsage::REFRACTION_PLANAR)),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::FRAGMENT,
+        "#define TEXTURE_REFLECTION_CUBE " +
+        to_stringImpl(to_const_uint(ShaderProgram::TextureUsage::REFLECTION_CUBE)),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::FRAGMENT,
+        "#define TEXTURE_REFRACTION_CUBE " +
+            to_stringImpl(to_const_uint(ShaderProgram::TextureUsage::REFRACTION_CUBE)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define SHADOW_CUBE_MAP_ARRAY " +
-            to_stringImpl(
-                to_uint(LightPool::getShadowBindSlotOffset(ShadowType::CUBEMAP))),
+            to_stringImpl(to_uint(LightPool::getShadowBindSlotOffset(ShadowType::CUBEMAP))),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define SHADOW_SINGLE_MAP_ARRAY " +
-            to_stringImpl(
-                to_uint(LightPool::getShadowBindSlotOffset(ShadowType::SINGLE))),
+            to_stringImpl(to_uint(LightPool::getShadowBindSlotOffset(ShadowType::SINGLE))),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define SHADOW_LAYERED_MAP_ARRAY " +
-            to_stringImpl(
-                to_uint(LightPool::getShadowBindSlotOffset(ShadowType::LAYERED))),
+            to_stringImpl( to_uint(LightPool::getShadowBindSlotOffset(ShadowType::LAYERED))),
         lineOffsets);
 
     appendToShaderHeader(ShaderType::VERTEX, "invariant gl_Position;", lineOffsets);

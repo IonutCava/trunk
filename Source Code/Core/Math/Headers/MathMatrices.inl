@@ -2096,15 +2096,12 @@ void mat4<T>::reflect(const Plane<U> &plane) {
     U x = eq.x;
     U y = eq.y;
     U z = eq.z;
-    U w = eq.w;
-    U x2 = x * 2.0f;
-    U y2 = y * 2.0f;
-    U z2 = z * 2.0f;
+    U d = eq.w;
 
-    set(1 - x * x2, -x * y2, -x * z2, zero,
-        -y * x2, 1 - y * y2, -y * z2, zero,
-        -z * x2, -z * y2, 1 - z * z2, zero,
-        -w * x2, -w * y2, -w * z2,    one);
+    set( -2 * x * x + 1,  -2 * y * x,      -2 * z * x,      zero,
+         -2 * x * y,      -2 * y * y + 1,  -2 * z * y,      zero,
+         -2 * x * z,      -2 * y * z,      -2 * z * z + 1,  zero,
+         -2 * x * d,      -2 * y * d,      -2 * z * d,      one);
 }
 
 template<typename T>

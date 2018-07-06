@@ -611,6 +611,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     Locale::changeLanguage(config.language);
 
     _platformContext->gfx().shadowDetailLevel(config.rendering.shadowDetailLevel);
+    _platformContext->gfx().renderDetailLevel(config.rendering.renderDetailLevel);
 
     // Create mem log file
     const stringImpl& mem = config.debug.memFile;

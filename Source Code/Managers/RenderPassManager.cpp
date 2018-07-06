@@ -189,12 +189,10 @@ void RenderPassManager::doCustomPass(PassParams& params) {
         GFX::ScopedDebugMessage(_context, Util::StringFormat("Custom pass ( %s ): PrePass", getStageName(params.stage)).c_str(), 0);
 
         _context.setPrePass(true);
-        _context.setRenderStage(RenderStage::Z_PRE_PASS);
 
         Attorney::SceneManagerRenderPass::populateRenderQueue(mgr,
-                                                              params.stage,
+                                                              RenderStagePass(params.stage, true),
                                                               *params.camera,
-                                                              true,
                                                               true,
                                                               params.pass);
 
@@ -228,10 +226,9 @@ void RenderPassManager::doCustomPass(PassParams& params) {
     _context.setRenderStage(params.stage);
 
     Attorney::SceneManagerRenderPass::populateRenderQueue(mgr,
-                                                          params.stage,
+                                                          RenderStagePass(params.stage, false),
                                                           *params.camera,
                                                           !params.doPrePass,
-                                                          false,
                                                           params.pass);
     if (params.target._usage != RenderTargetUsage::COUNT) {
         bool drawToDepth = true;

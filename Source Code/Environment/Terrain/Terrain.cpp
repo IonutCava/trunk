@@ -37,8 +37,6 @@ Terrain::Terrain(GFXDevice& context, ResourceCache& parentCache, const stringImp
     _normalSampler->setAnisotropy(8);
     _normalSampler->toggleMipMaps(true);
     _albedoSampler->toggleSRGBColourSpace(false);
-
-    _terrainStateHash.fill(0);
 }
 
 Terrain::~Terrain() {
@@ -140,7 +138,6 @@ void Terrain::initialiseDrawCommands(SceneGraphNode& sgn,
     GenericDrawCommand cmd;
     cmd.sourceBuffer(getGeometryVB());
     cmd.primitiveType(PrimitiveType::TRIANGLE_STRIP);
-    cmd.stateHash(_terrainStateHash[to_uint(renderStage)]);
     drawCommandsInOut.push_back(cmd);
 
     size_t chunkCount = static_cast<size_t>(_terrainQuadtree.getChunkCount());
@@ -174,7 +171,7 @@ void Terrain::updateDrawCommands(SceneGraphNode& sgn,
     vectorImpl<vec3<U32>> chunkData;
     size_t chunkCount = static_cast<size_t>(_terrainQuadtree.getChunkCount());
     chunkData.reserve(chunkCount);
-    _terrainQuadtree.getChunkBufferData(_context, sceneRenderState, chunkData);
+    _terrainQuadtree.getChunkBufferData(renderStage, sceneRenderState, chunkData);
 
     std::sort(std::begin(chunkData), std::end(chunkData),
                 [](const vec3<U32>& a, const vec3<U32>& b) {

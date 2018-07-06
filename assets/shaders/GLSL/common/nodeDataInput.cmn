@@ -80,6 +80,13 @@ bool dvd_shadowsEnabled() {
     return int(dvd_otherData.z) == 1;
 }
 
+int dvd_renderDetailLevel() {
+    return int(dvd_otherData2.y);
+}
+
+int dvd_shadowDetailLevel() {
+    return int(dvd_otherData2.z);
+}
 #if defined(VERT_SHADER)
 
 out float gl_ClipDistance[MAX_CLIP_PLANES];

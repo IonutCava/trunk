@@ -14,8 +14,10 @@ GFXRTPool::GFXRTPool(GFXDevice& parent)
 {
     _renderTargets[to_uint(RenderTargetUsage::SCREEN)].resize(1, nullptr);
     _renderTargets[to_uint(RenderTargetUsage::SHADOW)].resize(to_const_uint(ShadowType::COUNT), nullptr);
-    _renderTargets[to_uint(RenderTargetUsage::REFLECTION)].resize(Config::MAX_REFLECTIVE_NODES_IN_VIEW, nullptr);
-    _renderTargets[to_uint(RenderTargetUsage::REFRACTION)].resize(Config::MAX_REFRACTIVE_NODES_IN_VIEW, nullptr);
+    _renderTargets[to_uint(RenderTargetUsage::REFLECTION_PLANAR)].resize(Config::MAX_REFLECTIVE_NODES_IN_VIEW, nullptr);
+    _renderTargets[to_uint(RenderTargetUsage::REFRACTION_PLANAR)].resize(Config::MAX_REFRACTIVE_NODES_IN_VIEW, nullptr);
+    _renderTargets[to_uint(RenderTargetUsage::REFLECTION_CUBE)].resize(Config::MAX_REFLECTIVE_NODES_IN_VIEW, nullptr);
+    _renderTargets[to_uint(RenderTargetUsage::REFRACTION_CUBE)].resize(Config::MAX_REFRACTIVE_NODES_IN_VIEW, nullptr);
     _renderTargets[to_uint(RenderTargetUsage::ENVIRONMENT)].resize(1, nullptr);
     _renderTargets[to_uint(RenderTargetUsage::OTHER)].resize(g_maxAdditionalRenderTargets, nullptr);
 }

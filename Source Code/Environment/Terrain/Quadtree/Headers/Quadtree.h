@@ -62,7 +62,7 @@ class Quadtree {
     void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                      SceneState& sceneState);
 
-    void getChunkBufferData(GFXDevice& context,
+    void getChunkBufferData(RenderStage stage,
                             const SceneRenderState& sceneRenderState, 
                             vectorImpl<vec3<U32>>& chunkBufferData) const;
 

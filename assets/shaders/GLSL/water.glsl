@@ -22,8 +22,6 @@ void main(void)
     _underwater = dvd_cameraPosition.y < VAR._vertexW.y ? 1 : 0;
 
     gl_Position = _vertexWVP;
-
-
 }
 
 -- Fragment
@@ -40,11 +38,6 @@ uniform vec2 _noiseTile;
 uniform vec2 _noiseFactor;
 uniform float _waterShininess;
 
-layout(binding = TEXTURE_UNIT0) uniform sampler2D texWaterNoiseNM;
-layout(binding = TEXTURE_UNIT1) uniform sampler2D texWaterReflection;
-layout(binding = 2) uniform sampler2D texWaterRefraction;
-layout(binding = 3) uniform sampler2D texWaterNoiseDUDV;
-
 #include "lightInput.cmn"
 #include "materialData.frag"
 #include "shadowMapping.frag"
@@ -56,22 +49,22 @@ float Fresnel(in vec3 viewDir, in vec3 normal) {
 
 void main (void)
 {  
+#   define texWaterReflection texReflectPlanar
+#   define texWaterRefraction texRefractPlanar
+#   define texWaterNoiseNM texDiffuse0
+#   define texWaterNoiseDUDV texDiffuse1
+
+    float time2 = float(dvd_time) * 0.00001;
+    const float kDistortion = 0.015;
+    vec4 distOffset = texture(texWaterNoiseDUDV, VAR._texCoord + vec2(time2)) * kDistortion;
+
     vec4 uvReflection = _vertexWVP * vec4(1.0 / _vertexWVP.w);
     uvReflection += vec4(1.0);
     uvReflection *= vec4(0.5);
     uvReflection = clamp(uvReflection, vec4(0.001), vec4(0.999));
 
-    float time2 = float(dvd_time) * 0.00001;
-    vec2 uvNormal0 = VAR._texCoord * _noiseTile;
-    uvNormal0.s += time2;
-    uvNormal0.t += time2;
-    vec2 uvNormal1 = VAR._texCoord * _noiseTile;
-    uvNormal1.s -= time2;
-    uvNormal1.t += time2;
-
-    vec3 normal0 = texture(texWaterNoiseNM, uvNormal0).rgb * 2.0 - 1.0;
-    vec3 normal1 = texture(texWaterNoiseNM, uvNormal1).rgb * 2.0 - 1.0;
-    vec3 normal = normalize(normal0 + normal1);
+    vec3 normal = texture(texWaterNoiseNM, vec2(VAR._texCoord + distOffset.xy)).rgb;
+    normal = normalize(normal * 2.0 - 1.0);
 
     vec2 uvFinalReflect = uvReflection.xy + _noiseFactor * normal.xy;
     vec2 uvFinalRefract = uvReflection.xy + _noiseFactor * normal.xy;
@@ -95,4 +88,6 @@ void main (void)
 
     _normalOut = packNormal(N);
     _velocityOut = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
+
+    _colourOut.rgb = ToSRGB(texture(texWaterReflection, VAR._texCoord).rgb);
 }

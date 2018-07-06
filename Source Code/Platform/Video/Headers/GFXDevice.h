@@ -207,18 +207,18 @@ public:  // GPU interface
     /// It renders the entire scene graph (with culling) as default
     /// use the callback param to override the draw function
     void generateCubeMap(RenderTargetID cubeMap,
-                         const U16 arrayOffset,
-                         const vec3<F32>& pos,
-                         const vec2<F32>& zPlanes,
-                         RenderStage renderStage,
-                         U32 passIndex);
+        const U16 arrayOffset,
+        const vec3<F32>& pos,
+        const vec2<F32>& zPlanes,
+        RenderStage renderStage,
+        U32 passIndex);
 
     void generateDualParaboloidMap(RenderTargetID targetBuffer,
-                                   const U16 arrayOffset,
-                                   const vec3<F32>& pos,
-                                   const vec2<F32>& zPlanes,
-                                   RenderStage renderStage,
-                                   U32 passIndex);
+        const U16 arrayOffset,
+        const vec3<F32>& pos,
+        const vec2<F32>& zPlanes,
+        RenderStage renderStage,
+        U32 passIndex);
 
     void getMatrix(const MATRIX& mode, mat4<F32>& mat) const;
     /// Alternative to the normal version of getMatrix
@@ -314,8 +314,14 @@ public:  // Accessors and Mutators
 
     RenderDetailLevel shadowDetailLevel() const { return _shadowDetailLevel; }
 
+    RenderDetailLevel renderDetailLevel() const { return _renderDetailLevel; }
+
     void shadowDetailLevel(RenderDetailLevel detailLevel) {
         _shadowDetailLevel = detailLevel;
+    }
+
+    void renderDetailLevel(RenderDetailLevel detailLevel) {
+        _renderDetailLevel = detailLevel;
     }
 
     inline U32 getFrameCount() const { return FRAME_COUNT; }
@@ -487,6 +493,7 @@ protected:
 
     /// Quality settings
     RenderDetailLevel _shadowDetailLevel;
+    RenderDetailLevel _renderDetailLevel;
 
     typedef std::pair<I64, DELEGATE_CBK<void>> GUID2DCbk;
     mutable SharedLock _2DRenderQueueLock;

@@ -65,8 +65,8 @@ class WaterPlane : public SceneNode {
     inline const std::shared_ptr<Quad3D>& getQuad() const { return _plane; }
 
     void updatePlaneEquation(const SceneGraphNode& sgn,
-                             Plane<F32>& reflectionPlane,
-                             Plane<F32>& refractionPlane);
+                             Plane<F32>& plane,
+                             bool reflection);
 
    protected:
     void initialiseDrawCommands(SceneGraphNode& sgn,

@@ -47,11 +47,13 @@ enum class RenderAPI : U32 {
 
 enum class RenderTargetUsage : U32 {
     SCREEN = 0,
-    REFLECTION = 1,
-    REFRACTION = 2,
-    ENVIRONMENT = 3,
-    SHADOW = 4,
-    OTHER = 5,
+    REFLECTION_PLANAR = 1,
+    REFRACTION_PLANAR = 2,
+    REFLECTION_CUBE = 3,
+    REFRACTION_CUBE = 4,
+    ENVIRONMENT = 5,
+    SHADOW = 6,
+    OTHER = 7,
     COUNT
 };
 

@@ -158,7 +158,6 @@ class Terrain : public Object3D {
     SamplerDescriptor* _normalSampler;
 
     vectorImpl<TerrainChunk*> _terrainChunks;
-    std::array<size_t, to_const_uint(RenderStage::COUNT)> _terrainStateHash;
 };
 
 namespace Attorney {
@@ -199,16 +198,6 @@ class TerrainLoader {
         return to_uint(terrain._terrainTextures.size());
     }
 
-    static void setRenderStateHashes(Terrain& terrain,
-                                     size_t normalStateHash,
-                                     size_t reflectionStateHash,
-                                     size_t depthStateHash) {
-        terrain._terrainStateHash[to_const_uint(RenderStage::DISPLAY)] = normalStateHash;
-        terrain._terrainStateHash[to_const_uint(RenderStage::Z_PRE_PASS)] = normalStateHash;
-        terrain._terrainStateHash[to_const_uint(RenderStage::REFRACTION)] = normalStateHash;
-        terrain._terrainStateHash[to_const_uint(RenderStage::REFLECTION)] = reflectionStateHash;
-        terrain._terrainStateHash[to_const_uint(RenderStage::SHADOW)] = depthStateHash;
-    }
     static VegetationDetails& vegetationDetails(Terrain& terrain) {
         return terrain._vegDetails;
     }

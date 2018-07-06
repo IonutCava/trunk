@@ -33,6 +33,8 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
       _renderBoundingBox(false),
       _renderBoundingSphere(false),
       _renderSkeleton(false),
+      _isVisible(true),
+      _reflectorType(ReflectorType::PLANAR_REFLECTOR),
       _materialInstance(materialInstance),
       _skeletonPrimitive(nullptr)
 {
@@ -174,7 +176,7 @@ bool RenderingComponent::canDraw(RenderStage renderStage) {
                 return false;
             }
         }
-        return true;
+        return isVisible();
     }
 
     return false;
@@ -625,7 +627,7 @@ bool RenderingComponent::clearReflection() {
         return false;
     }
 
-    mat->updateReflectionIndex(-1);
+    mat->updateReflectionIndex(_reflectorType, -1);
     return true;
 }
 
@@ -643,9 +645,11 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
         return false;
     }
 
-    mat->updateReflectionIndex(reflectionIndex);
+    mat->updateReflectionIndex(_reflectorType, reflectionIndex);
 
-    RenderTargetID reflectRTID(RenderTargetUsage::REFLECTION, reflectionIndex);
+    RenderTargetID reflectRTID(_reflectorType == ReflectorType::PLANAR_REFLECTOR ? RenderTargetUsage::REFLECTION_PLANAR
+                                                                                 : RenderTargetUsage::REFRACTION_CUBE, 
+                               reflectionIndex);
 
     if (Config::Build::IS_DEBUG_BUILD) {
         GFXDevice::DebugView_ptr& viewPtr = _debugViews[0][reflectionIndex];
@@ -665,13 +669,15 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
         RenderCbkParams params(_context, _parentSGN, renderState, reflectRTID, reflectionIndex, camera);
         _reflectionCallback(params);
     } else {
-        const vec2<F32>& zPlanes = camera->getZPlanes();
-        _context.generateCubeMap(reflectRTID,
-                                 0,
-                                 camera->getEye(),
-                                 vec2<F32>(zPlanes.x, zPlanes.y * 0.25f),
-                                 RenderStage::REFLECTION,
-                                 reflectionIndex);
+        if (_reflectorType == ReflectorType::CUBE_REFLECTOR) {
+            const vec2<F32>& zPlanes = camera->getZPlanes();
+            _context.generateCubeMap(reflectRTID,
+                                     0,
+                                     camera->getEye(),
+                                     vec2<F32>(zPlanes.x, zPlanes.y * 0.25f),
+                                     RenderStage::REFLECTION,
+                                     reflectionIndex);
+        }
     }
 
     return true;
@@ -685,7 +691,7 @@ bool RenderingComponent::clearRefraction() {
     if (!mat->isTranslucent()) {
         return false;
     }
-    mat->updateRefractionIndex(-1);
+    mat->updateRefractionIndex(_reflectorType, -1);
     return true;
 }
 
@@ -705,27 +711,30 @@ bool RenderingComponent::updateRefraction(U32 refractionIndex,
         return false;
     }
 
-    mat->updateRefractionIndex(refractionIndex);
+    mat->updateRefractionIndex(_reflectorType, refractionIndex);
 
-    RenderTargetID refractRTID(RenderTargetUsage::REFRACTION, refractionIndex);
+    RenderTargetID refractRTID(_reflectorType == ReflectorType::PLANAR_REFLECTOR ? RenderTargetUsage::REFRACTION_PLANAR
+                                                                                 : RenderTargetUsage::REFRACTION_CUBE,
+                               refractionIndex);
+
     if (Config::Build::IS_DEBUG_BUILD) {
         GFXDevice::DebugView_ptr& viewPtr = _debugViews[1][refractionIndex];
         if (!viewPtr) {
-            viewPtr = std::make_shared<GFXDevice::DebugView>();
+            /*viewPtr = std::make_shared<GFXDevice::DebugView>();
             RenderTarget& target = _context.renderTarget(refractRTID);
             viewPtr->_texture = target.getAttachment(RTAttachment::Type::Colour, 0).asTexture();
             viewPtr->_shader = _previewRenderTarget;
             viewPtr->_shaderData._floatValues.push_back(std::make_pair("lodLevel", 0.0f));
             viewPtr->_shaderData._boolValues.push_back(std::make_pair("linearSpace", false));
             viewPtr->_shaderData._boolValues.push_back(std::make_pair("unpack2Channel", false));
-            _context.addDebugView(viewPtr);
+            _context.addDebugView(viewPtr);*/
         }
     }
 
     RenderCbkParams params(_context, _parentSGN, renderState, refractRTID, refractionIndex, camera);
     _refractionCallback(params);
 
-    return true;
+    return false;
 }
 
 void RenderingComponent::updateEnvProbeList(const EnvironmentProbeList& probes) {

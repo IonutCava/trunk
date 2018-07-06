@@ -87,6 +87,7 @@ public:
         U8 msaaSamples;
         U8 anisotropicFilteringLevel;
         RenderDetailLevel shadowDetailLevel;
+        RenderDetailLevel renderDetailLevel;
         bool enableFog;
         F32 fogDensity;
         vec3<F32> fogColour;

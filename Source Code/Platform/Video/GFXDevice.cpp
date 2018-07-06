@@ -67,6 +67,7 @@ GFXDevice::GFXDevice(Kernel& parent)
     _isPrePassStage = false;
     // Enumerated Types
     _shadowDetailLevel = RenderDetailLevel::HIGH;
+    _renderDetailLevel = RenderDetailLevel::HIGH;
     _GPUVendor = GPUVendor::COUNT;
     _GPURenderer = GPURenderer::COUNT;
     _API_ID = RenderAPI::COUNT;

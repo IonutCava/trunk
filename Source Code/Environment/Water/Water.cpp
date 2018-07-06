@@ -72,6 +72,8 @@ void WaterPlane::postLoad(SceneGraphNode& sgn) {
                                                     this,
                                                     std::placeholders::_1));
 
+    renderable->setReflectionAndRefractionType(ReflectorType::PLANAR_REFLECTOR);
+
     SceneNode::postLoad(sgn);
 }
 
@@ -165,10 +167,9 @@ bool WaterPlane::getDrawState(RenderStage currentStage) {
 /// update water refraction
 void WaterPlane::updateRefraction(RenderCbkParams& renderParams) {
     GFXDevice& gfx = renderParams._context;
-    Plane<F32> reflectionPlane, refractionPlane;
-    updatePlaneEquation(renderParams._sgn, reflectionPlane, refractionPlane);
-    gfx.setClipPlane(ClipPlaneIndex::CLIP_PLANE_0, reflectionPlane);
-    gfx.setClipPlane(ClipPlaneIndex::CLIP_PLANE_1, refractionPlane);
+    Plane<F32> refractionPlane;
+    updatePlaneEquation(renderParams._sgn, refractionPlane, false);
+    gfx.setClipPlane(g_refractionClipID, refractionPlane);
 
     bool underwater = pointUnderwater(renderParams._sgn, renderParams._camera->getEye());
 
@@ -182,18 +183,16 @@ void WaterPlane::updateRefraction(RenderCbkParams& renderParams) {
     params.target = renderParams._renderTarget;
     params.drawPolicy = params.doPrePass ? &RenderTarget::defaultPolicyKeepDepth() : &RenderTarget::defaultPolicy();
     params.pass = renderParams._passIndex;
-    params.clippingPlanes[to_uint(underwater ? g_reflectionClipID : g_refractionClipID)] = true;
+    params.clippingPlanes[to_uint(/*underwater ? g_reflectionClipID : */g_refractionClipID)] = true;
     gfx.parent().renderPassManager().doCustomPass(params);
 }
 
 /// Update water reflections
 void WaterPlane::updateReflection(RenderCbkParams& renderParams) {
     GFXDevice& gfx = renderParams._context;
-    Plane<F32> reflectionPlane, refractionPlane;
-    updatePlaneEquation(renderParams._sgn, reflectionPlane, refractionPlane);
-
-    gfx.setClipPlane(ClipPlaneIndex::CLIP_PLANE_0, reflectionPlane);
-    gfx.setClipPlane(ClipPlaneIndex::CLIP_PLANE_1, refractionPlane);
+    Plane<F32> reflectionPlane;
+    updatePlaneEquation(renderParams._sgn, reflectionPlane, true);
+    gfx.setClipPlane(g_reflectionClipID, reflectionPlane);
 
     // Reset reflection cam
     _reflectionCam->fromCamera(*renderParams._camera);
@@ -213,21 +212,14 @@ void WaterPlane::updateReflection(RenderCbkParams& renderParams) {
     gfx.parent().renderPassManager().doCustomPass(params);
 }
 
-void WaterPlane::updatePlaneEquation(const SceneGraphNode& sgn, Plane<F32>& reflectionPlane, Plane<F32>& refractionPlane) {
+void WaterPlane::updatePlaneEquation(const SceneGraphNode& sgn, Plane<F32>& plane, bool reflection) {
     F32 waterLevel = sgn.get<PhysicsComponent>()->getPosition().y;
     const Quaternion<F32>& orientation = sgn.get<PhysicsComponent>()->getOrientation();
 
-    vec3<F32> reflectionNormal(orientation * WORLD_Y_AXIS);
-    reflectionNormal.normalize();
-
-    vec3<F32> refractionNormal(orientation * WORLD_Y_NEG_AXIS);
-    refractionNormal.normalize();
-
-    reflectionPlane.set(reflectionNormal, -waterLevel);
-    reflectionPlane.active(false);
-
-    refractionPlane.set(refractionNormal, -waterLevel);
-    refractionPlane.active(false);
+    vec3<F32> normal(orientation * (reflection ? WORLD_Y_AXIS : WORLD_Y_NEG_AXIS));
+    normal.normalize();
+    plane.set(normal, -waterLevel);
+    plane.active(false);
 }
 
 };

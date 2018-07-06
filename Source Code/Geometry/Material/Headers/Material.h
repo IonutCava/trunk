@@ -50,6 +50,7 @@ class ResourceDescriptor;
 class RenderStateBlock;
 enum class RenderStage : U32;
 enum class BlendProperty : U32;
+enum class ReflectorType : U32;
 
 class Material : public Resource {
    public:
@@ -305,8 +306,8 @@ class Material : public Resource {
 
     bool canDraw(RenderStage renderStage);
 
-    void updateReflectionIndex(I32 index);
-    void updateRefractionIndex(I32 index);
+    void updateReflectionIndex(ReflectorType type, I32 index);
+    void updateRefractionIndex(ReflectorType type, I32 index);
 
     void defaultReflectionTexture(const Texture_ptr& reflectionPtr, U32 arrayIndex);
     void defaultRefractionTexture(const Texture_ptr& reflectionPtr, U32 arrayIndex);

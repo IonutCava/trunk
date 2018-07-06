@@ -148,7 +148,7 @@ void EnvironmentProbe::debugDraw(RenderSubPassCmds& subPassesInOut) {
     RenderSubPassCmd newSubPass;
     newSubPass._textures.addTexture(TextureData(reflectTex->getTextureType(),
                                                 reflectTex->getHandle(),
-                                                to_const_ubyte(ShaderProgram::TextureUsage::REFLECTION)));
+                                                to_const_ubyte(ShaderProgram::TextureUsage::REFLECTION_CUBE)));
     newSubPass._commands.push_back(cmd);
     newSubPass._commands.push_back(_boundingBoxPrimitive->toDrawCommand());
     subPassesInOut.push_back(newSubPass);

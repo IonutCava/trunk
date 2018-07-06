@@ -41,8 +41,10 @@ Material::Material(GFXDevice& context, ResourceCache& parentCache, const stringI
 {
     _textures.fill(nullptr);
     _textureExtenalFlag.fill(false);
-    _textureExtenalFlag[to_const_uint(ShaderProgram::TextureUsage::REFLECTION)] = true;
-    _textureExtenalFlag[to_const_uint(ShaderProgram::TextureUsage::REFRACTION)] = true;
+    _textureExtenalFlag[to_const_uint(ShaderProgram::TextureUsage::REFLECTION_PLANAR)] = true;
+    _textureExtenalFlag[to_const_uint(ShaderProgram::TextureUsage::REFRACTION_PLANAR)] = true;
+    _textureExtenalFlag[to_const_uint(ShaderProgram::TextureUsage::REFLECTION_CUBE)] = true;
+    _textureExtenalFlag[to_const_uint(ShaderProgram::TextureUsage::REFRACTION_CUBE)] = true;
     _textureExtenalFlag[to_const_uint(ShaderProgram::TextureUsage::DEPTH)] = true;
     _textureExtenalFlag[to_const_uint(ShaderProgram::TextureUsage::DEPTH_PREV)] = true;
     defaultReflectionTexture(nullptr, 0);
@@ -178,21 +180,29 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
     }
 
     if (!_textures[slot]) {
-        if (textureUsageSlot != ShaderProgram::TextureUsage::REFLECTION &&
-            textureUsageSlot != ShaderProgram::TextureUsage::REFRACTION) {
+        if (textureUsageSlot != ShaderProgram::TextureUsage::REFLECTION_PLANAR &&
+            textureUsageSlot != ShaderProgram::TextureUsage::REFRACTION_PLANAR) {
             // if we add a new type of texture recompute shaders
             computeShaders = true;
         }
     }
-
+    if (!_textures[slot]) {
+        if (textureUsageSlot != ShaderProgram::TextureUsage::REFLECTION_CUBE &&
+            textureUsageSlot != ShaderProgram::TextureUsage::REFLECTION_CUBE) {
+            // if we add a new type of texture recompute shaders
+            computeShaders = true;
+        }
+    }
     _textures[slot] = texture;
 
     if (computeShaders) {
         recomputeShaders();
     }
 
-    _dirty = textureUsageSlot != ShaderProgram::TextureUsage::REFLECTION &&
-             textureUsageSlot != ShaderProgram::TextureUsage::REFRACTION;
+    _dirty = textureUsageSlot != ShaderProgram::TextureUsage::REFLECTION_PLANAR &&
+             textureUsageSlot != ShaderProgram::TextureUsage::REFRACTION_PLANAR &&
+             textureUsageSlot != ShaderProgram::TextureUsage::REFLECTION_CUBE &&
+             textureUsageSlot != ShaderProgram::TextureUsage::REFRACTION_CUBE;
 
     return true;
 }
@@ -275,25 +285,45 @@ bool Material::canDraw(RenderStage renderStage) {
     return true;
 }
 
-void Material::updateReflectionIndex(I32 index) {
+void Material::updateReflectionIndex(ReflectorType type, I32 index) {
     _reflectionIndex = index;
     if (_reflectionIndex > -1) {
-        RenderTarget& reflectionTarget = _context.renderTarget(RenderTargetID(RenderTargetUsage::REFLECTION, index));
+        RenderTarget& reflectionTarget =
+            _context.renderTarget(RenderTargetID(type == ReflectorType::PLANAR_REFLECTOR
+                                                       ? RenderTargetUsage::REFLECTION_PLANAR
+                                                       : RenderTargetUsage::REFLECTION_CUBE,
+                                  index));
         const Texture_ptr& refTex = reflectionTarget.getAttachment(RTAttachment::Type::Colour, 0).asTexture();
-        setTexture(ShaderProgram::TextureUsage::REFLECTION, refTex);
+        setTexture(type == ReflectorType::PLANAR_REFLECTOR
+                         ? ShaderProgram::TextureUsage::REFLECTION_PLANAR
+                         : ShaderProgram::TextureUsage::REFLECTION_CUBE,
+                   refTex);
     } else {
-        setTexture(ShaderProgram::TextureUsage::REFLECTION, _defaultReflection.first);
+        setTexture(type == ReflectorType::PLANAR_REFLECTOR
+                         ? ShaderProgram::TextureUsage::REFLECTION_PLANAR
+                         : ShaderProgram::TextureUsage::REFLECTION_CUBE, 
+                   _defaultReflection.first);
     }
 }
 
-void Material::updateRefractionIndex(I32 index) {
+void Material::updateRefractionIndex(ReflectorType type, I32 index) {
     _refractionIndex = index;
     if (_refractionIndex > -1) {
-        RenderTarget& refractionTarget = _context.renderTarget(RenderTargetID(RenderTargetUsage::REFRACTION, index));
+        RenderTarget& refractionTarget =
+            _context.renderTarget(RenderTargetID(type == ReflectorType::PLANAR_REFLECTOR
+                                                       ? RenderTargetUsage::REFRACTION_PLANAR
+                                                       : RenderTargetUsage::REFRACTION_CUBE,
+                                  index));
         const Texture_ptr& refTex = refractionTarget.getAttachment(RTAttachment::Type::Colour, 0).asTexture();
-        setTexture(ShaderProgram::TextureUsage::REFRACTION, refTex);
+        setTexture(type == ReflectorType::PLANAR_REFLECTOR
+                         ? ShaderProgram::TextureUsage::REFRACTION_PLANAR
+                         : ShaderProgram::TextureUsage::REFRACTION_CUBE,
+                   refTex);
     } else {
-        setTexture(ShaderProgram::TextureUsage::REFRACTION, _defaultRefraction.first);
+        setTexture(type == ReflectorType::PLANAR_REFLECTOR
+                         ? ShaderProgram::TextureUsage::REFRACTION_PLANAR
+                         : ShaderProgram::TextureUsage::REFRACTION_CUBE,
+                   _defaultRefraction.first);
     }
 }
 
@@ -505,8 +535,10 @@ void Material::getTextureData(TextureDataContainer& textureData) {
         getTextureData(ShaderProgram::TextureUsage::OPACITY, textureData);
         getTextureData(ShaderProgram::TextureUsage::NORMALMAP, textureData);
         getTextureData(ShaderProgram::TextureUsage::SPECULAR, textureData);
-        getTextureData(ShaderProgram::TextureUsage::REFLECTION, textureData);
-        getTextureData(ShaderProgram::TextureUsage::REFRACTION, textureData);
+        getTextureData(ShaderProgram::TextureUsage::REFLECTION_PLANAR, textureData);
+        getTextureData(ShaderProgram::TextureUsage::REFRACTION_PLANAR, textureData);
+        getTextureData(ShaderProgram::TextureUsage::REFLECTION_CUBE, textureData);
+        getTextureData(ShaderProgram::TextureUsage::REFRACTION_CUBE, textureData);
 
         for (std::pair<Texture_ptr, U8>& tex : _customTextures) {
             if (tex.first->flushTextureState()) {

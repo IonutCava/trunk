@@ -243,6 +243,8 @@ void Camera::updateLookAt() {
 }
 
 void Camera::reflect(const Plane<F32>& reflectionPlane) {
+    updateLookAt();
+
     mat4<F32> reflectedMatrix(getViewMatrix());
     reflectedMatrix.reflect(reflectionPlane);
     lookAt(reflectedMatrix * getEye(), getTarget(), reflectedMatrix * getUpDir());

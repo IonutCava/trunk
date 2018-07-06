@@ -92,10 +92,10 @@ public:
 
     /*Base Scene Operations*/
     // generate a list of nodes to render
-    void updateVisibleNodes(RenderStage stage, bool refreshNodeData, bool isPrePass, U32 pass = 0);
+    void updateVisibleNodes(const RenderStagePass& stage, bool refreshNodeData, U32 pass = 0);
 
     // cull the scenegraph against the current view frustum
-    const RenderPassCuller::VisibleNodeList& cullSceneGraph(RenderStage stage, bool isPrePass);
+    const RenderPassCuller::VisibleNodeList& cullSceneGraph(const RenderStagePass& stage);
     // get the full list of reflective nodes
     const RenderPassCuller::VisibleNodeList& getSortedReflectiveNodes();
     // get the full list of refractive nodes
@@ -188,11 +188,7 @@ protected:
     void preRender(const Camera& camera, RenderTarget& target);
     void postRender(const Camera& camera, RenderStage stage, RenderSubPassCmds& subPassesInOut);
     bool generateShadowMaps();
-    bool populateRenderQueue(RenderStage stage,
-        const Camera& camera,
-        bool doCulling,
-        bool isPrePass,
-        U32 passIndex);
+    bool populateRenderQueue(const RenderStagePass& stage, const Camera& camera, bool doCulling, U32 passIndex);
     Camera* getActiveCamera() const;
     void currentPlayerPass(U8 playerIndex);
 
@@ -296,12 +292,11 @@ class SceneManagerKernel {
 class SceneManagerRenderPass {
    private:
     static bool populateRenderQueue(Divide::SceneManager& mgr,
-                                    RenderStage stage,
+                                    const RenderStagePass& stage,
                                     const Camera& camera,
                                     bool doCulling,
-                                    bool isPrePass,
                                     U32 passIndex) {
-        return mgr.populateRenderQueue(stage, camera, doCulling, isPrePass, passIndex);
+        return mgr.populateRenderQueue(stage, camera, doCulling, passIndex);
     }
 
     static void preRender(Divide::SceneManager& mgr, const Camera& camera, RenderTarget& target) {

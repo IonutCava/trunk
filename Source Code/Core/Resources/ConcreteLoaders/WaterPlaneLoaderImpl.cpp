@@ -28,6 +28,9 @@ bool ImplResourceLoader<WaterPlane>::load(std::shared_ptr<WaterPlane> res) {
     Texture_ptr waterNM = CreateResource<Texture>(_cache, waterTexture);
     assert(waterNM != nullptr);
 
+    Texture_ptr waterDUDV = CreateResource<Texture>(_cache, waterTextureDUDV);
+    assert(waterDUDV != nullptr);
+
     ShaderProgram_ptr waterShaderProgram = CreateResource<ShaderProgram>(_cache, waterShader);
     assert(waterShaderProgram != nullptr);
 
@@ -40,6 +43,7 @@ bool ImplResourceLoader<WaterPlane>::load(std::shared_ptr<WaterPlane> res) {
     waterMat->dumpToFile(false);
     waterMat->setShadingMode(Material::ShadingMode::BLINN_PHONG);
     waterMat->setTexture(ShaderProgram::TextureUsage::UNIT0, waterNM);
+    waterMat->setTexture(ShaderProgram::TextureUsage::UNIT1, waterDUDV);
     waterMat->setShaderProgram(waterShaderProgram->getName(), true);
     waterMat->setShaderProgram("depthPass.PrePass", RenderStage::Z_PRE_PASS, true);
 

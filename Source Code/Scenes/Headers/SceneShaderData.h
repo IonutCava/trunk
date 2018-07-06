@@ -91,6 +91,11 @@ class SceneShaderData {
         _bufferData._lightCountPerType[to_uint(type)] = lightCount;
     }
 
+    inline void detailLevel(RenderDetailLevel renderDetailLevel, RenderDetailLevel shadowDetailLevel) {
+        _bufferData._otherData2.y = to_float(renderDetailLevel);
+        _bufferData._otherData2.z = to_float(shadowDetailLevel);
+    }
+
     void uploadToGPU();
 
   private:

@@ -76,7 +76,7 @@ out vec4 _colourOut;
 
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuse0;
-uniform uint layer;
+uniform int layer;
 uniform float lodLevel = 0;
 
 void main()
@@ -92,7 +92,7 @@ void main()
 out vec4 _colourOut;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuse0;
-uniform uint layer;
+uniform int layer;
 uniform float lodLevel = 0.0;
 
 void main()
@@ -110,8 +110,8 @@ void main()
 out vec4 _colourOut;
 
 layout(binding = TEXTURE_UNIT0) uniform samplerCubeArrayShadow texDiffuse0;
-uniform uint layer;
-uniform uint face;
+uniform int layer;
+uniform int face;
 
 void main()
 {
@@ -129,7 +129,7 @@ void main()
 out vec4 _colourOut;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArrayShadow texDiffuse0;
-uniform uint layer;
+uniform int layer;
 
 void main()
 {

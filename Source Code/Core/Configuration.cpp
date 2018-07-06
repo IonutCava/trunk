@@ -33,6 +33,7 @@ Configuration::Configuration() : XML::IXMLSerializable()
     rendering.msaaSamples = 0;
     rendering.anisotropicFilteringLevel = 1;
     rendering.shadowDetailLevel = RenderDetailLevel::HIGH;
+    rendering.renderDetailLevel = RenderDetailLevel::HIGH;
     rendering.enableFog = true;
     rendering.fogDensity = 0.01f; 
     rendering.fogColour.set(0.2f);
@@ -84,6 +85,10 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_TEMP_PARAM(rendering.shadowDetailLevel, detail);
         CLAMP(detail, to_uint(RenderDetailLevel::OFF), to_uint(RenderDetailLevel::COUNT) - 1);
         rendering.shadowDetailLevel = static_cast<RenderDetailLevel>(detail);
+        detail = to_int(rendering.renderDetailLevel);
+        GET_TEMP_PARAM(rendering.renderDetailLevel, detail);
+        CLAMP(detail, to_uint(RenderDetailLevel::OFF), to_uint(RenderDetailLevel::COUNT) - 1);
+        rendering.renderDetailLevel = static_cast<RenderDetailLevel>(detail);
         GET_PARAM(rendering.enableFog);
         GET_PARAM(rendering.fogDensity);
         GET_PARAM_ATTRIB(rendering.fogColour, r);
@@ -132,6 +137,7 @@ bool Configuration::toXML(const char* xmlFile) const {
     PUT_PARAM(rendering.msaaSamples);
     PUT_PARAM(rendering.anisotropicFilteringLevel);
     PUT_TEMP_PARAM(rendering.shadowDetailLevel, to_int(rendering.shadowDetailLevel));
+    PUT_TEMP_PARAM(rendering.renderDetailLevel, to_int(rendering.renderDetailLevel));
     PUT_PARAM(rendering.enableFog);
     PUT_PARAM(rendering.fogDensity);
     PUT_PARAM_ATTRIB(rendering.fogColour, r);

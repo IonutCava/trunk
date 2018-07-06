@@ -186,30 +186,53 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     reflectionSampler.setFilters(TextureFilter::NEAREST);
     reflectionSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
     reflectionSampler.toggleMipMaps(false);
-    TextureDescriptor environmentDescriptor(TextureType::TEXTURE_2D,
-                                            GFXImageFormat::RGBA8,
-                                            GFXDataFormat::UNSIGNED_BYTE);
-    environmentDescriptor.setSampler(reflectionSampler);
 
-    TextureDescriptor depthDescriptor(TextureType::TEXTURE_2D,
-                                      GFXImageFormat::DEPTH_COMPONENT32F,
-                                      GFXDataFormat::FLOAT_32);
+    TextureDescriptor environmentDescriptorCube(TextureType::TEXTURE_CUBE_MAP,
+                                                GFXImageFormat::RGBA8,
+                                                GFXDataFormat::UNSIGNED_BYTE);
+    environmentDescriptorCube.setSampler(reflectionSampler);
 
-    depthDescriptor.setSampler(reflectionSampler);
+    TextureDescriptor depthDescriptorCube(TextureType::TEXTURE_CUBE_MAP,
+                                          GFXImageFormat::DEPTH_COMPONENT32F,
+                                          GFXDataFormat::FLOAT_32);
+
+    depthDescriptorCube.setSampler(reflectionSampler);
+
+    TextureDescriptor environmentDescriptorPlanar(TextureType::TEXTURE_2D,
+                                                  GFXImageFormat::RGBA8,
+                                                  GFXDataFormat::UNSIGNED_BYTE);
+    environmentDescriptorPlanar.setSampler(reflectionSampler);
+
+    TextureDescriptor depthDescriptorPlanar(TextureType::TEXTURE_2D,
+                                            GFXImageFormat::DEPTH_COMPONENT32F,
+                                            GFXDataFormat::FLOAT_32);
+    depthDescriptorPlanar.setSampler(reflectionSampler);
 
     RenderTargetHandle tempHandle;
     for (U32 i = 0; i < Config::MAX_REFLECTIVE_NODES_IN_VIEW; ++i) {
-        tempHandle = allocateRT(RenderTargetUsage::REFLECTION, Util::StringFormat("Reflection_%d", i));
-        tempHandle._rt->addAttachment(environmentDescriptor, RTAttachment::Type::Colour, 0);
-        tempHandle._rt->addAttachment(depthDescriptor, RTAttachment::Type::Depth, 0);
+        tempHandle = allocateRT(RenderTargetUsage::REFLECTION_PLANAR, Util::StringFormat("Reflection_Planar_%d", i));
+        tempHandle._rt->addAttachment(environmentDescriptorPlanar, RTAttachment::Type::Colour, 0);
+        tempHandle._rt->addAttachment(depthDescriptorPlanar, RTAttachment::Type::Depth, 0);
+        tempHandle._rt->create(Config::REFLECTION_TARGET_RESOLUTION);
+        tempHandle._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
+
+        tempHandle = allocateRT(RenderTargetUsage::REFLECTION_CUBE, Util::StringFormat("Reflection_Cube_%d", i));
+        tempHandle._rt->addAttachment(environmentDescriptorCube, RTAttachment::Type::Colour, 0);
+        tempHandle._rt->addAttachment(depthDescriptorCube, RTAttachment::Type::Depth, 0);
         tempHandle._rt->create(Config::REFLECTION_TARGET_RESOLUTION);
         tempHandle._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
     }
 
     for (U32 i = 0; i < Config::MAX_REFRACTIVE_NODES_IN_VIEW; ++i) {
-        tempHandle = allocateRT(RenderTargetUsage::REFRACTION, Util::StringFormat("Refraction_%d", i));
-        tempHandle._rt->addAttachment(environmentDescriptor, RTAttachment::Type::Colour, 0);
-        tempHandle._rt->addAttachment(depthDescriptor, RTAttachment::Type::Depth, 0);
+        tempHandle = allocateRT(RenderTargetUsage::REFRACTION_PLANAR, Util::StringFormat("Refraction_Planar_%d", i));
+        tempHandle._rt->addAttachment(environmentDescriptorPlanar, RTAttachment::Type::Colour, 0);
+        tempHandle._rt->addAttachment(depthDescriptorPlanar, RTAttachment::Type::Depth, 0);
+        tempHandle._rt->create(Config::REFRACTION_TARGET_RESOLUTION);
+        tempHandle._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
+
+        tempHandle = allocateRT(RenderTargetUsage::REFRACTION_CUBE, Util::StringFormat("Refraction_Cube_%d", i));
+        tempHandle._rt->addAttachment(environmentDescriptorCube, RTAttachment::Type::Colour, 0);
+        tempHandle._rt->addAttachment(depthDescriptorCube, RTAttachment::Type::Depth, 0);
         tempHandle._rt->create(Config::REFRACTION_TARGET_RESOLUTION);
         tempHandle._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
     }
