@@ -57,8 +57,6 @@ namespace Navigation {
 			tri_ct= 0;
 			tri_cap = 0;
 			tris = 0;
-			_minValues.set(1,1,1);
-			_maxValues.set(-1,-1,-1);
             valid = false;
 		}
 
@@ -87,10 +85,6 @@ namespace Navigation {
 		U32  tri_ct;
 		U32  tri_cap;
 		I32* tris;
-		///The minimum values on each axis
-		vec3<F32> _minValues;
-		///The maximum values on each axis
-		vec3<F32> _maxValues;
         vectorImpl<SamplePolyAreas > triangleAreaType;
         bool valid;
         std::string navMeshName;

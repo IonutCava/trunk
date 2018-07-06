@@ -45,6 +45,8 @@ public:
 
       void overrideColor(U32 col);
       void cancelOverride();
+	  void beginBatch();
+	  void endBatch();
 
       void begin(duDebugDrawPrimitives prim, F32 size = 1.0f);
       void vertex(const F32* pos, U32 color);

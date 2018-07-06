@@ -213,16 +213,9 @@ namespace Navigation {
 			*dst++ = vertex.y;
 			*dst++ = vertex.z;
 			modelData->vert_ct++;
-
-			if(vertex.x > modelData->_maxValues.x)	modelData->_maxValues.x = vertex.x;
-			if(vertex.y > modelData->_maxValues.y)	modelData->_maxValues.y = vertex.y;
-			if(vertex.z > modelData->_maxValues.z)	modelData->_maxValues.z = vertex.z;
-			if(vertex.x < modelData->_minValues.x)	modelData->_minValues.x = vertex.x;
-			if(vertex.y < modelData->_minValues.y)	modelData->_minValues.y = vertex.y;
-			if(vertex.z < modelData->_minValues.z)	modelData->_minValues.z = vertex.z;
 		}
 			
-		void addTriangle(NavModelData* modelData, const vec3<U32>& triangleIndices,const SamplePolyAreas& areaType){
+		void addTriangle(NavModelData* modelData, const vec3<U32>& triangleIndices, const SamplePolyAreas& areaType){
 			if (modelData->tri_ct+1 > modelData->tri_cap)  {
 				modelData->tri_cap = !modelData->tri_cap ? 8 : modelData->tri_cap*2;
 				I32* nv = new I32[modelData->tri_cap*3];
@@ -341,9 +334,7 @@ namespace Navigation {
 				ERROR_FN(Locale::get("ERROR_RECAST_DETAIL_LEVEL"),level);
 			}
 
-			PRINT_FN(Locale::get("NAV_MESH_ADD_NODE"), sn->getName().c_str(),
-													   data._maxValues.x,data._maxValues.y,data._maxValues.z,
-													   data._minValues.x,data._minValues.y,data._minValues.z);
+			PRINT_FN(Locale::get("NAV_MESH_ADD_NODE"), sn->getName().c_str());
 
 			//altough labels are bad, skipping here using them is the easiest solution to follow -Ionut
 			next:;

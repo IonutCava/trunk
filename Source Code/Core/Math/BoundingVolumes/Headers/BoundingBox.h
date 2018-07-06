@@ -257,13 +257,13 @@ protected:
 
 	void ComputePoints()  {
 		_points[0].set(_min.x, _min.y, _min.z);
-		_points[1].set(_max.x, _min.y, _min.z);
-		_points[2].set(_max.x, _max.y, _min.z);
-		_points[3].set(_min.x, _max.y, _min.z);
-		_points[4].set(_min.x, _min.y, _max.z);
+		_points[1].set(_min.x, _min.y, _max.z);
+		_points[2].set(_min.x, _max.y, _min.z);
+		_points[3].set(_min.x, _max.y, _max.z);
+		_points[4].set(_max.x, _min.y, _min.z);
 		_points[5].set(_max.x, _min.y, _max.z);
-		_points[6].set(_max.x, _max.y, _max.z);
-		_points[7].set(_min.x, _max.y, _max.z);
+		_points[6].set(_max.x, _max.y, _min.z);
+		_points[7].set(_max.x, _max.y, _max.z);
 	}
 
 private:

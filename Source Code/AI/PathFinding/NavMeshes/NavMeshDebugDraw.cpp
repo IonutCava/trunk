@@ -43,6 +43,19 @@ namespace Navigation {
    void NavMeshDebugDraw::releaseMaterial(){
    }
 
+   void NavMeshDebugDraw::beginBatch(){
+	  if(!_primitive){
+          _primitive = GFX_DEVICE.createPrimitive(false);
+          _primitive->setRenderStates(DELEGATE_BIND(&NavMeshDebugDraw::prepareMaterial,this),
+                                      DELEGATE_BIND(&NavMeshDebugDraw::releaseMaterial,this));
+      }
+      _primitive->beginBatch();
+   }
+
+   void NavMeshDebugDraw::endBatch(){
+	   _primitive->endBatch();
+    }
+
    void NavMeshDebugDraw::begin(duDebugDrawPrimitives prim, F32 size){
       switch(prim)
       {
@@ -52,12 +65,6 @@ namespace Navigation {
         case DU_DRAW_QUADS:  _primType = QUADS;
       }
 
-      if(!_primitive){
-          _primitive = GFX_DEVICE.createPrimitive(false);
-          _primitive->setRenderStates(DELEGATE_BIND(&NavMeshDebugDraw::prepareMaterial,this),
-                                      DELEGATE_BIND(&NavMeshDebugDraw::releaseMaterial,this));
-      }
-      _primitive->beginBatch();
       _primitive->attribute4ub("inColorData",vec4<U8>(255,255,255,255));
       _primitive->begin(_primType);
    }
@@ -86,7 +93,6 @@ namespace Navigation {
 
    void NavMeshDebugDraw::end() {
       _primitive->end();
-      _primitive->endBatch();
    }
 
    void NavMeshDebugDraw::overrideColor(U32 col) {

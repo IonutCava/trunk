@@ -64,6 +64,7 @@ namespace Navigation {
             RENDER_DETAILMESH,
             RENDER_PORTALS,
         };
+
 	public:
         inline void setFileName(const std::string& fileName) {_fileName.append(fileName);}
 		/// Initiates the NavigationMesh build process, which includes notifying the
@@ -79,7 +80,7 @@ namespace Navigation {
         inline bool debugDraw() {return _debugDraw;}
         inline void setRenderMode(RenderMode mode) {_renderMode = mode;}
         inline void setRenderConnections(bool state) {_renderConnections = state;}
-
+		
 		NavigationMesh();
 		~NavigationMesh();
 
@@ -102,7 +103,7 @@ namespace Navigation {
 		/// Performs the Detour part of the build process.
 		bool createNavigationMesh(dtNavMeshCreateParams &params);
 		/// Load nav mesh configuration from file
-		bool loadConfigFromFile(const std::string& configPath);
+		bool loadConfigFromFile();
 
 	private:
 		bool _saveIntermediates;
@@ -111,10 +112,6 @@ namespace Navigation {
 		/// @{
 		/// Do we build in a separate thread?
 		bool _buildThreaded;
-		/// @name NavigationMesh build
-		/// @{
-		/// Do we have a valid configuration file for the current scene?
-		bool _configFileValid;
 		/// @name Intermediate data
 		/// @{
 		rcHeightfield        *hf;
@@ -141,6 +138,8 @@ namespace Navigation {
 		static void launchThreadedBuild(void *data);
         /// Data file to store this nav mesh in. (From engine executable dir.)
 		std::string _fileName;
+		/// Configuration file
+		std::string _configFile;
 		///SceneGraphNode from which to build
 		SceneGraphNode* _sgn;
         boost::atomic<bool> _debugDraw;

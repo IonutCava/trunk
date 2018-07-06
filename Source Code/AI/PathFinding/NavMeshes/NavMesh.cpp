@@ -17,9 +17,8 @@ namespace Navigation {
 				     par.getParam<std::string>("scenesLocation") + "/" +
 					 par.getParam<std::string>("currentScene");
 
-        _fileName =  path + "/navMeshes/";
-		_configFileValid = loadConfigFromFile(path + "/navMeshConfig.ini");
-		
+        _fileName   =  path + "/navMeshes/";
+		_configFile = path + "/navMeshConfig.ini";
 		_buildThreaded = true;
         _debugDraw = true;
         _renderConnections = true;
@@ -61,11 +60,11 @@ namespace Navigation {
 		_navigationMeshLock.unlock();
 	}
 
-	bool NavigationMesh::loadConfigFromFile(const std::string& configPath){
+	bool NavigationMesh::loadConfigFromFile(){
 		//Use SimpleIni library for cross-platform INI parsing
 		CSimpleIniA ini;
 		ini.SetUnicode();
-		ini.LoadFile(configPath.c_str());
+		ini.LoadFile(_configFile.c_str());
 
         if(!ini.GetSection("Rasterization") ||
 		   !ini.GetSection("Agent") ||
@@ -98,7 +97,7 @@ namespace Navigation {
 	}
 
 	bool NavigationMesh::build(SceneGraphNode* const sgn,bool threaded){
-		if(!_configFileValid) return false;
+		if(!loadConfigFromFile()) return false;
 
 		if(sgn){
 			_sgn = sgn;
@@ -176,15 +175,17 @@ namespace Navigation {
 		freeIntermediates(true);
 		// Recast initialisation data
 		rcContextDivide ctx(true);
+		ctx.enableTimer(true);
+
 		rcConfig cfg;
 
 		memset(&cfg, 0, sizeof(cfg));
 		_saveIntermediates = _configParams.getKeepInterResults();
 		cfg.cs = _configParams.getCellSize();
 		cfg.ch = _configParams.getCellHeight();
-
 		rcCalcBounds(data.verts, data.getVertCount(), cfg.bmin, cfg.bmax);
 		rcCalcGridSize(cfg.bmin, cfg.bmax, cfg.cs, &cfg.width, &cfg.height);
+		PRINT_FN(Locale::get("NAV_MESH_BOUNDS"),cfg.bmax[0],cfg.bmax[1],cfg.bmax[2],cfg.bmin[0],cfg.bmin[1],cfg.bmin[2]);
 
 		cfg.walkableHeight         = _configParams.base_getWalkableHeight();
 		cfg.walkableClimb          = _configParams.base_getWalkableClimb();
@@ -248,7 +249,11 @@ namespace Navigation {
         }
 		// Create a heightfield to voxelise our input geometry
 		hf = rcAllocHeightfield();
-		ctx->enableTimer(true);
+		if(!hf){
+			ERROR_FN(Locale::get("ERROR_NAV_OUT_OF_MEMORY"), "rcAllocHeightfield", _fileName.c_str());
+			return false;
+		}
+
         // Reset build times gathering.
 	    ctx->resetTimers();
     	// Start the build process.
@@ -257,7 +262,7 @@ namespace Navigation {
 	    ctx->log(RC_LOG_PROGRESS, " - %d x %d cells", cfg.width, cfg.height);
         ctx->log(RC_LOG_PROGRESS, " - %.1fK verts, %.1fK tris", data.getVertCount()/1000.0f, data.getTriCount()/1000.0f);
 
-		if(!hf || !rcCreateHeightfield(ctx, *hf, cfg.width, cfg.height, cfg.bmin, cfg.bmax, cfg.cs, cfg.ch)){
+		if(!rcCreateHeightfield(ctx, *hf, cfg.width, cfg.height, cfg.bmin, cfg.bmax, cfg.cs, cfg.ch)){
 			ERROR_FN(Locale::get("ERROR_NAV_HEIGHTFIELD"), _fileName.c_str());
 			return false;
 		}
@@ -265,29 +270,26 @@ namespace Navigation {
 		U8* areas = New U8[data.getTriCount()];
 
 		if (!areas){
-			ERROR_FN(Locale::get("ERROR_NAV_OUT_OF_MEMORY"), _fileName.c_str());
+			ERROR_FN(Locale::get("ERROR_NAV_OUT_OF_MEMORY"), "areaFlag allocation", _fileName.c_str());
 			return false;
 		}
 
 		memset(areas, 0, data.getTriCount()*sizeof(U8));
 
 		// Subtract 1 from all indices!
-		for(U32 i = 0; i < data.getTriCount(); i++){
+		/*for(U32 i = 0; i < data.getTriCount(); i++){
 			data.tris[i*3]--;
 			data.tris[i*3+1]--;
 			data.tris[i*3+2]--;
-		}
+		}*/
 
 		// Filter triangles by angle and rasterize
-		rcMarkWalkableTriangles(ctx, cfg.walkableSlopeAngle,
-			data.getVerts(), data.getVertCount(),
-			data.getTris(), data.getTriCount(), areas);
+		rcMarkWalkableTriangles(ctx, cfg.walkableSlopeAngle, data.getVerts(), data.getVertCount(),	data.getTris(), data.getTriCount(), areas);
+		rcRasterizeTriangles(ctx, data.getVerts(), data.getVertCount(), data.getTris(), areas, data.getTriCount(), *hf, cfg.walkableClimb);
 
-		rcRasterizeTriangles(ctx, data.getVerts(), data.getVertCount(),
-			data.getTris(), areas, data.getTriCount(),
-			*hf, cfg.walkableClimb);
-
-		SAFE_DELETE_ARRAY(areas);
+		if(!_saveIntermediates){
+			SAFE_DELETE_ARRAY(areas);
+		}
 
 		// Filter out areas with low ceilings and other stuff
 		rcFilterLowHangingWalkableObstacles(ctx, cfg.walkableClimb, *hf);
@@ -393,6 +395,7 @@ namespace Navigation {
          }
 
          _navigationMeshLock.lock();
+		 _debugDrawInterface->beginBatch();
          switch(mode)
          {
             case RENDER_NAVMESH:    if(nm) duDebugDrawNavMesh          (_debugDrawInterface, *nm, 0); break;
@@ -402,6 +405,7 @@ namespace Navigation {
             case RENDER_PORTALS:    if(nm) duDebugDrawNavMeshPortals   (_debugDrawInterface, *nm);    break;
          }
          if(cs && _renderConnections && !_building)   duDebugDrawRegionConnections(_debugDrawInterface, *cs);
+		 _debugDrawInterface->endBatch();
          _navigationMeshLock.unlock();
     }
 
