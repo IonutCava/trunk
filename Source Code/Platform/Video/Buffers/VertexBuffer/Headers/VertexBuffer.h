@@ -77,6 +77,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
           _indexDelimiter(0),
           _primitiveRestartEnabled(false),
           _created(false),
+          _staticBuffer(false),
           _currentPartitionIndex(0),
           _largeIndices(false)
     {
@@ -89,7 +90,11 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
         reset();
     }
 
-    virtual bool create(bool staticDraw = true) = 0;
+    virtual bool create(bool staticDraw = true) {
+        _staticBuffer = staticDraw;
+        return true;
+    }
+
     virtual void destroy() = 0;
     /// Some engine elements, like physics or some geometry shading techniques
     /// require a triangle list.
@@ -211,6 +216,10 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
     inline void modifyPositionValue(U32 index, F32 x, F32 y, F32 z) {
         assert(index < _data.size());
 
+        DIVIDE_ASSERT(_staticBuffer == false ||
+                      (_staticBuffer == true && _created == false),
+                      "VertexBuffer error: Modifying static buffers after creation is not allowed!");
+
         _data[index]._position.set(x, y, z);
         _attribDirty[to_uint(VertexAttribute::ATTRIB_POSITION)] = true;
     }
@@ -221,6 +230,10 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
 
     inline void modifyColorValue(U32 index, U8 r, U8 g, U8 b, U8 a) {
         assert(index < _data.size());
+
+        DIVIDE_ASSERT(_staticBuffer == false ||
+                      (_staticBuffer == true && _created == false),
+                      "VertexBuffer error: Modifying static buffers after creation is not allowed!");
 
         _data[index]._color.set(r, g, b, a);
         _attribDirty[to_uint(VertexAttribute::ATTRIB_COLOR)] = true;
@@ -233,6 +246,10 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
     inline void modifyNormalValue(U32 index, F32 x, F32 y, F32 z) {
         assert(index < _data.size());
 
+        DIVIDE_ASSERT(_staticBuffer == false ||
+                      (_staticBuffer == true && _created == false),
+                      "VertexBuffer error: Modifying static buffers after creation is not allowed!");
+
         _data[index]._normal = Util::PACK_VEC3(x, y, z);
         _attribDirty[to_uint(VertexAttribute::ATTRIB_NORMAL)] = true;
     }
@@ -243,6 +260,10 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
 
     inline void modifyTangentValue(U32 index, F32 x, F32 y, F32 z) {
         assert(index < _data.size());
+
+        DIVIDE_ASSERT(_staticBuffer == false ||
+                     (_staticBuffer == true && _created == false),
+                      "VertexBuffer error: Modifying static buffers after creation is not allowed!");
 
         _data[index]._tangent = Util::PACK_VEC3(x, y, z);
         _attribDirty[to_uint(VertexAttribute::ATTRIB_TANGENT)] = true;
@@ -255,6 +276,10 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
     inline void modifyTexCoordValue(U32 index, F32 s, F32 t) {
         assert(index < _data.size());
 
+        DIVIDE_ASSERT(_staticBuffer == false ||
+                      (_staticBuffer == true && _created == false),
+                      "VertexBuffer error: Modifying static buffers after creation is not allowed!");
+
         _data[index]._texcoord.set(s, t);
         _attribDirty[to_uint(VertexAttribute::ATTRIB_TEXCOORD)] = true;
     }
@@ -262,12 +287,20 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
     inline void modifyBoneIndices(U32 index, P32 indices) {
         assert(index < _data.size());
 
+        DIVIDE_ASSERT(_staticBuffer == false ||
+                      (_staticBuffer == true && _created == false),
+                      "VertexBuffer error: Modifying static buffers after creation is not allowed!");
+
         _data[index]._indices = indices;
         _attribDirty[to_uint(VertexAttribute::ATTRIB_BONE_INDICE)] = true;
     }
 
     inline void modifyBoneWeights(U32 index, const vec4<F32>& weights) {
         assert(index < _data.size());
+
+        DIVIDE_ASSERT(_staticBuffer == false ||
+                      (_staticBuffer == true && _created == false),
+                      "VertexBuffer error: Modifying static buffers after creation is not allowed!");
 
         _data[index]._weights = weights;
         _attribDirty[to_uint(VertexAttribute::ATTRIB_BONE_WEIGHT)] = true;
@@ -314,6 +347,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
 
     inline void reset() {
         _created = false;
+        _staticBuffer = false;
         _primitiveRestartEnabled = false;
         _partitions.clear();
         _data.clear();
@@ -333,6 +367,8 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
     virtual bool createInternal() = 0;
 
    protected:
+    /// If this flag is true, no further modification are allowed on the buffer (static geometry)
+    bool _staticBuffer;
     /// Number of LOD nodes in this buffer
     U8 _LODcount;
     /// The format of the buffer data

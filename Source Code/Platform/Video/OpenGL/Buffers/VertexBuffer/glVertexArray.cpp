@@ -19,7 +19,7 @@ glVertexArray::glVertexArray()
     _usage = GL_STATIC_DRAW;
     _prevSize = -1;
     _prevSizeIndices = -1;
-    _bufferEntrySize = 0;
+    _bufferEntrySize = -1;
     _VAOid = _VBid = _IBid = 0;
 
     _useAttribute.fill(false);
@@ -72,14 +72,16 @@ std::pair<bufferPtr, size_t> glVertexArray::getMinimalData() {
 
     if (useBoneData) {
         _attributeOffset[to_uint(VertexAttribute::ATTRIB_BONE_INDICE)] = prevOffset;
-        prevOffset += sizeof(P32);
+        prevOffset += sizeof(U32);
         _attributeOffset[to_uint(VertexAttribute::ATTRIB_BONE_WEIGHT)] = prevOffset;
         prevOffset += sizeof(vec4<F32>);
     }
 
-    _bufferEntrySize = prevOffset;
+    _bufferEntrySize = static_cast<GLsizei>(prevOffset);
 
-    for (Vertex& data : _data) {
+    _smallData.reserve(_data.size() * _bufferEntrySize);
+
+    for (const Vertex& data : _data) {
         _smallData << data._position.x;
         _smallData << data._position.y;
         _smallData << data._position.z;
@@ -132,7 +134,7 @@ bool glVertexArray::create(bool staticDraw) {
         }
     }
 
-    return true;
+    return VertexBuffer::create(staticDraw);
 }
 
 /// Update internal data based on construction method (dynamic/static)
@@ -141,7 +143,7 @@ bool glVertexArray::refresh() {
     // We can manually override index usage (again, used by the Terrain
     // rendering system)
     DIVIDE_ASSERT(!_hardwareIndicesL.empty() || !_hardwareIndicesS.empty(),
-                  "glVertexArray error: Invalid index data on Refresh()!");
+                  "glVertexArray::refresh error: Invalid index data on Refresh()!");
 
     GLsizei nSizeIndices =
         (GLsizei)(usesLargeIndices() ? _hardwareIndicesL.size() * sizeof(U32)
@@ -178,11 +180,10 @@ bool glVertexArray::refresh() {
     // true)
     if (sizeChanged) {
          Console::d_printfn(Locale::get("DISPLAY_VB_METRICS"), size,  4 * 1024 * 1024);
-        // Allocate sufficient space in our buffer
-        glNamedBufferData(_VBid, size, NULL, _usage);
     }
-
-    glNamedBufferSubData(_VBid, 0, size, bufferData.first);
+    
+    // Allocate sufficient space in our buffer
+    glNamedBufferData(_VBid, size, bufferData.first, _usage);
     _smallData.clear();
 
     // Check if we need to update the IBO (will be true for the first Refresh()
@@ -320,62 +321,55 @@ void glVertexArray::uploadVBAttributes() {
     GL_API::setActiveBuffer(GL_ARRAY_BUFFER, _VBid);
     GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _IBid);
 
-    glEnableVertexAttribArray(to_uint(AttribLocation::VERTEX_POSITION));
+    static const U32 positionLoc = to_const_uint(AttribLocation::VERTEX_POSITION);
+    static const U32 colorLoc = to_const_uint(AttribLocation::VERTEX_COLOR);
+    static const U32 normalLoc = to_const_uint(AttribLocation::VERTEX_NORMAL);
+    static const U32 texCoordLoc = to_const_uint(AttribLocation::VERTEX_TEXCOORD);
+    static const U32 tangentLoc = to_const_uint(AttribLocation::VERTEX_TANGENT);
+    static const U32 boneWeightLoc = to_const_uint(AttribLocation::VERTEX_BONE_WEIGHT);
+    static const U32 boneIndiceLoc = to_const_uint(AttribLocation::VERTEX_BONE_INDICE);
 
-    glVertexAttribPointer(to_uint(AttribLocation::VERTEX_POSITION),
-                          3, GL_FLOAT, GL_FALSE, _bufferEntrySize,
-                          (bufferPtr)(0));
+    glEnableVertexAttribArray(positionLoc);
+    glVertexAttribPointer(positionLoc, 3, GL_FLOAT, GL_FALSE, _bufferEntrySize, (bufferPtr)(_attributeOffset[positionLoc]));
 
-    if (_useAttribute[to_uint(AttribLocation::VERTEX_COLOR)]) {
-        glEnableVertexAttribArray(to_uint(AttribLocation::VERTEX_COLOR));
-        glVertexAttribIPointer(to_uint(AttribLocation::VERTEX_COLOR),
-                               4, GL_UNSIGNED_BYTE, _bufferEntrySize,
-                               (bufferPtr)(_attributeOffset[to_uint(AttribLocation::VERTEX_COLOR)]));
+    if (_useAttribute[colorLoc]) {
+        glEnableVertexAttribArray(colorLoc);
+        glVertexAttribIPointer(colorLoc, 4, GL_UNSIGNED_BYTE, _bufferEntrySize, (bufferPtr)(_attributeOffset[colorLoc]));
     } else {
-        glDisableVertexAttribArray(to_uint(AttribLocation::VERTEX_COLOR));
+        glDisableVertexAttribArray(colorLoc);
     }
 
-    if (_useAttribute[to_uint(AttribLocation::VERTEX_NORMAL)]) {
-        glEnableVertexAttribArray(to_uint(AttribLocation::VERTEX_NORMAL));
-        glVertexAttribPointer(to_uint(AttribLocation::VERTEX_NORMAL),
-                              1, GL_FLOAT, GL_FALSE, _bufferEntrySize,
-                              (bufferPtr)(_attributeOffset[to_uint(AttribLocation::VERTEX_NORMAL)]));
+    if (_useAttribute[normalLoc]) {
+        glEnableVertexAttribArray(normalLoc);
+        glVertexAttribPointer(normalLoc, 1, GL_FLOAT, GL_FALSE, _bufferEntrySize, (bufferPtr)(_attributeOffset[normalLoc]));
     } else {
-        glDisableVertexAttribArray(to_uint(AttribLocation::VERTEX_NORMAL));
+        glDisableVertexAttribArray(normalLoc);
     }
 
-    if (_useAttribute[to_uint(AttribLocation::VERTEX_TEXCOORD)]) {
-        glEnableVertexAttribArray(to_uint(AttribLocation::VERTEX_TEXCOORD));
-        glVertexAttribPointer(to_uint(AttribLocation::VERTEX_TEXCOORD),
-                              2, GL_FLOAT, GL_FALSE, _bufferEntrySize,
-                              (bufferPtr)(_attributeOffset[to_uint(AttribLocation::VERTEX_TEXCOORD)]));
+    if (_useAttribute[texCoordLoc]) {
+        glEnableVertexAttribArray(texCoordLoc);
+        glVertexAttribPointer(texCoordLoc, 2, GL_FLOAT, GL_FALSE, _bufferEntrySize, (bufferPtr)(_attributeOffset[texCoordLoc]));
     } else {
-        glDisableVertexAttribArray(to_uint(AttribLocation::VERTEX_TEXCOORD));
+        glDisableVertexAttribArray(texCoordLoc);
     }
 
-    if (_useAttribute[to_uint(AttribLocation::VERTEX_TANGENT)]) {
-        glEnableVertexAttribArray(to_uint(AttribLocation::VERTEX_TANGENT));
-        glVertexAttribPointer(to_uint(AttribLocation::VERTEX_TANGENT),
-                              1, GL_FLOAT, GL_FALSE, _bufferEntrySize,
-                              (bufferPtr)(_attributeOffset[to_uint(AttribLocation::VERTEX_TANGENT)]));
+    if (_useAttribute[tangentLoc]) {
+        glEnableVertexAttribArray(tangentLoc);
+        glVertexAttribPointer(tangentLoc, 1, GL_FLOAT, GL_FALSE, _bufferEntrySize, (bufferPtr)(_attributeOffset[tangentLoc]));
     } else {
-        glDisableVertexAttribArray(to_uint(AttribLocation::VERTEX_TANGENT));
+        glDisableVertexAttribArray(tangentLoc);
     }
 
-    if (_useAttribute[to_uint(AttribLocation::VERTEX_BONE_WEIGHT)]) {
-        assert(_useAttribute[to_uint(AttribLocation::VERTEX_BONE_INDICE)]);
+    if (_useAttribute[boneWeightLoc]) {
+        assert(_useAttribute[boneIndiceLoc]);
 
-        glEnableVertexAttribArray(to_uint(AttribLocation::VERTEX_BONE_WEIGHT));
-        glEnableVertexAttribArray(to_uint(AttribLocation::VERTEX_BONE_INDICE));
-        glVertexAttribPointer(to_uint(AttribLocation::VERTEX_BONE_WEIGHT),
-                              4, GL_FLOAT, GL_FALSE, _bufferEntrySize,
-                              (bufferPtr)(_attributeOffset[to_uint(AttribLocation::VERTEX_BONE_WEIGHT)]));
-        glVertexAttribIPointer(to_uint(AttribLocation::VERTEX_BONE_INDICE),
-                               1, GL_UNSIGNED_INT, _bufferEntrySize,
-                               (bufferPtr)(_attributeOffset[to_uint(AttribLocation::VERTEX_BONE_INDICE)]));
+        glEnableVertexAttribArray(boneWeightLoc);
+        glEnableVertexAttribArray(boneIndiceLoc);
+        glVertexAttribPointer(boneWeightLoc, 4, GL_FLOAT, GL_FALSE, _bufferEntrySize, (bufferPtr)(_attributeOffset[boneWeightLoc]));
+        glVertexAttribIPointer(boneIndiceLoc,1, GL_UNSIGNED_INT, _bufferEntrySize,  (bufferPtr)(_attributeOffset[boneIndiceLoc]));
     } else {
-        glDisableVertexAttribArray(to_uint(AttribLocation::VERTEX_BONE_WEIGHT));
-        glDisableVertexAttribArray(to_uint(AttribLocation::VERTEX_BONE_INDICE));
+        glDisableVertexAttribArray(boneWeightLoc);
+        glDisableVertexAttribArray(boneIndiceLoc);
     }
 }
 

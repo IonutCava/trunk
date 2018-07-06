@@ -84,126 +84,39 @@ class ByteBuffer {
         put(pos, (U8 *)&value, sizeof(value));
     }
 
-    ByteBuffer &operator<<(U8 value) {
-        append<U8>(value);
+    template <typename T>
+    ByteBuffer &operator<<(T value) {
+        append<T>(value);
         return *this;
     }
-
-    ByteBuffer &operator<<(U16 value) {
-        append<U16>(value);
-        return *this;
-    }
-
-    ByteBuffer &operator<<(U32 value) {
-        append<U32>(value);
-        return *this;
-    }
-
-    ByteBuffer &operator<<(U64 value) {
-        append<U64>(value);
-        return *this;
-    }
-
-    // signed as in 2e complement
-    ByteBuffer &operator<<(I8 value) {
-        append<I8>(value);
-        return *this;
-    }
-
-    ByteBuffer &operator<<(I16 value) {
-        append<I16>(value);
-        return *this;
-    }
-
-    ByteBuffer &operator<<(I32 value) {
-        append<I32>(value);
-        return *this;
-    }
-
-    ByteBuffer &operator<<(I64 value) {
-        append<I64>(value);
-        return *this;
-    }
-
-    // floating points
-    ByteBuffer &operator<<(F32 value) {
-        append<F32>(value);
-        return *this;
-    }
-
-    ByteBuffer &operator<<(D32 value) {
-        append<D32>(value);
-        return *this;
-    }
-
+     
+    template <> 
     ByteBuffer &operator<<(const stringImpl &value) {
         append((U8 const *)value.c_str(), value.length());
         append((U8)0);
         return *this;
     }
 
+    template<>
     ByteBuffer &operator<<(const char *str) {
         append((U8 const *)str, str ? strlen(str) : 0);
         append((U8)0);
         return *this;
     }
 
+    template <typename T>
+    ByteBuffer &operator>>(T &value) {
+        value = read<T>();
+        return *this;
+    }
+
+    template<>
     ByteBuffer &operator>>(bool &value) {
         value = read<char>() > 0 ? true : false;
         return *this;
     }
 
-    ByteBuffer &operator>>(U8 &value) {
-        value = read<U8>();
-        return *this;
-    }
-
-    ByteBuffer &operator>>(U16 &value) {
-        value = read<U16>();
-        return *this;
-    }
-
-    ByteBuffer &operator>>(U32 &value) {
-        value = read<U32>();
-        return *this;
-    }
-
-    ByteBuffer &operator>>(U64 &value) {
-        value = read<U64>();
-        return *this;
-    }
-
-    // signed as in 2e complement
-    ByteBuffer &operator>>(I8 &value) {
-        value = read<I8>();
-        return *this;
-    }
-
-    ByteBuffer &operator>>(I16 &value) {
-        value = read<I16>();
-        return *this;
-    }
-
-    ByteBuffer &operator>>(I32 &value) {
-        value = read<I32>();
-        return *this;
-    }
-
-    ByteBuffer &operator>>(I64 &value) {
-        value = read<I64>();
-        return *this;
-    }
-
-    ByteBuffer &operator>>(F32 &value) {
-        value = read<F32>();
-        return *this;
-    }
-
-    ByteBuffer &operator>>(D32 &value) {
-        value = read<D32>();
-        return *this;
-    }
-
+    template<>
     ByteBuffer &operator>>(stringImpl& value) {
         value.clear();
         while (rpos() <
@@ -300,7 +213,9 @@ class ByteBuffer {
     }
 
     void reserve(size_t ressize) {
-        if (ressize > size()) _storage.reserve(ressize);
+        if (ressize > size()) {
+            _storage.reserve(ressize);
+        }
     }
 
     void append(const stringImpl& str) {
@@ -319,7 +234,9 @@ class ByteBuffer {
     void append(const U8 *src, size_t cnt);
 
     void append(const ByteBuffer &buffer) {
-        if (buffer.wpos()) append(buffer.contents(), buffer.wpos());
+        if (buffer.wpos()) {
+            append(buffer.contents(), buffer.wpos());
+        }
     }
 
     // can be used in SMSG_MONSTER_MOVE opcode
@@ -365,7 +282,7 @@ class ByteBuffer {
     /// pointer and etc) with hard detection problem
     template <typename T>
     void append(T value) {
-        EndianConvert(value);
+        //EndianConvert(value);
         append((U8 *)&value, sizeof(value));
     }
 

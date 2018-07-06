@@ -94,8 +94,8 @@ class glVertexArray : public VertexBuffer {
                           ///This should help with that
     GLsizei _prevSize;
     GLsizei _prevSizeIndices;
+    GLsizei _bufferEntrySize;
     ByteBuffer _smallData;
-    size_t _bufferEntrySize;
     std::array<bool, to_const_uint(VertexAttribute::COUNT)> _useAttribute;
     std::array<size_t, to_const_uint(VertexAttribute::COUNT)> _attributeOffset;
 };

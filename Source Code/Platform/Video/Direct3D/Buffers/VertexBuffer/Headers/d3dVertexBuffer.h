@@ -38,7 +38,9 @@ namespace Divide {
 
 class d3dVertexBuffer : public VertexBuffer {
    public:
-    bool create(bool staticDraw = true) { return true; }
+    bool create(bool staticDraw = true) { 
+        return VertexBuffer::create(staticDraw);
+    }
 
     void destroy() {}
 
