@@ -71,7 +71,7 @@ struct VegetationDetails {
 /// Trees are added to the SceneGraph and handled by the scene.
 class Vegetation : public SceneNode {
    public:
-    Vegetation(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const VegetationDetails& details);
+    Vegetation(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, U32 chunkID, const VegetationDetails& details);
     ~Vegetation();
 
     void initialize(TerrainChunk* const terrainChunk);

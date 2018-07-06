@@ -19,7 +19,8 @@ TerrainChunk::TerrainChunk(GFXDevice& context,
                            QuadtreeNode* const parentNode)
     : _parentNode(parentNode), 
       _parentTerrain(parentTerrain),
-      _vegetation(nullptr)
+      _vegetation(nullptr),
+      _lodIndCount(0)
 {
     _ID = _chunkID++;
 
@@ -31,9 +32,8 @@ TerrainChunk::TerrainChunk(GFXDevice& context,
     _terrain = parentTerrain;
 
     VegetationDetails& vegDetails =  Attorney::TerrainChunk::vegetationDetails(*parentTerrain);
-    vegDetails.name += "_chunk_" + to_stringImpl(_chunkID);
     //<Deleted by the sceneGraph on "unload"
-    _vegetation = MemoryManager_NEW Vegetation(context, parentTerrain->parentResourceCache(), parentTerrain->getDescriptorHash() + _chunkID, vegDetails);
+    _vegetation = MemoryManager_NEW Vegetation(context, parentTerrain->parentResourceCache(), parentTerrain->getDescriptorHash(), _chunkID, vegDetails);
     _vegetation->renderState().useDefaultMaterial(false);
     _vegetation->setMaterialTpl(nullptr);
     assert(_vegetation != nullptr);
@@ -61,11 +61,13 @@ void TerrainChunk::load(U8 depth, const vec2<U32>& pos, U32 _targetChunkDimensio
     F32 height = 0.0f;
     F32 tempMin = std::numeric_limits<F32>::max();
     F32 tempMax = std::numeric_limits<F32>::min();
+
     for (U32 i = 0; i < _lodIndCount; ++i) {
         U32 idx = indices[i];
         if (idx == Config::PRIMITIVE_RESTART_INDEX_L) {
             continue;
         }
+
         height = _terrain->_physicsVerts[idx]._position.y;
 
         if (height > tempMax) {
@@ -77,7 +79,6 @@ void TerrainChunk::load(U8 depth, const vec2<U32>& pos, U32 _targetChunkDimensio
     }
 
     _heightBounds.set(tempMin, tempMax);
-
     _vegetation->initialize(this);
 
     Attorney::TerrainChunk::registerTerrainChunk(*_parentTerrain, this);
@@ -88,6 +89,7 @@ void TerrainChunk::ComputeIndicesArray(U8 depth,
                                        const vec2<U32>& heightMapSize) {
     U32 offset = to_U32(std::pow(2.0f, to_F32(0.0f)));
     U32 div = to_U32(std::pow(2.0f, to_F32(depth)));
+
     vec2<U32> heightmapDataSize = heightMapSize / (div);
 
     U32 nHMWidth = heightmapDataSize.x + 1;
@@ -118,12 +120,12 @@ void TerrainChunk::ComputeIndicesArray(U8 depth,
     assert(nIndice == _lodIndCount);
 }
 
-U8 TerrainChunk::getLoD(const SceneRenderState& sceneRenderState) const {
-    return _parentNode->getLoD(sceneRenderState);
-}
-
 F32 TerrainChunk::waterHeight() const {
     return Attorney::TerrainChunk::waterHeight(*_parentTerrain);
+}
+
+U8 TerrainChunk::getLoD(const vec3<F32>& eyePos) const {
+    return _parentNode->getLoD(eyePos);
 }
 
 };

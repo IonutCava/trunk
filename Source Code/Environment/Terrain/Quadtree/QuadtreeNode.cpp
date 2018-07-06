@@ -113,11 +113,11 @@ bool QuadtreeNode::computeBoundingBox() {
     return true;
 }
 
-U8 QuadtreeNode::getLoD(const SceneRenderState& state) const {
+U8 QuadtreeNode::getLoD(const vec3<F32>& eyePos) const {
     static const U32 TERRAIN_LOD0_SQ = Config::TERRAIN_LOD0 * Config::TERRAIN_LOD0;
     static const U32 TERRAIN_LOD1_SQ = Config::TERRAIN_LOD1 * Config::TERRAIN_LOD1;
 
-    F32 cameraDistanceSQ = _boundingSphere.getCenter().distanceSquared(Camera::activeCamera()->getEye());
+    F32 cameraDistanceSQ = _boundingSphere.getCenter().distanceSquared(eyePos);
 
     return cameraDistanceSQ > TERRAIN_LOD0_SQ
                             ? cameraDistanceSQ > TERRAIN_LOD1_SQ ? 2 : 1

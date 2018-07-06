@@ -8,6 +8,7 @@
 #include "Core/Math/Headers/Transform.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Managers/Headers/SceneManager.h"
+#include "Geometry/Shapes/Headers/Predefined/Patch3D.h"
 
 #include "Geometry/Material/Headers/Material.h"
 #include "Platform/Video/Headers/GFXDevice.h"
@@ -51,7 +52,6 @@ namespace Test {
     // stop subdividing a terrain patch once it's width is
     // less than the cutoff
     #define VMB_TERRAIN_REC_CUTOFF 10
-    #define MAX_TERRAIN_NODES 500
 
     terrainNode_t *terrainTree;
     terrainNode_t *terrainTreeTail;
@@ -62,7 +62,7 @@ namespace Test {
     */
     terrainNode_t* createNode(terrainNode_t *parent, U8 type, F32 x, F32 y, F32 z, F32 width, F32 height)
     {
-        if (numTerrainNodes >= MAX_TERRAIN_NODES)
+        if (numTerrainNodes >= Terrain::MAX_RENDER_NODES)
             return NULL;
         numTerrainNodes++;
 
@@ -88,7 +88,7 @@ namespace Test {
     void terrain_clearTree()
     {
         terrainTreeTail = terrainTree;
-        memset(terrainTree, 0, MAX_TERRAIN_NODES * sizeof(terrainNode_t));
+        memset(terrainTree, 0, Terrain::MAX_RENDER_NODES * sizeof(terrainNode_t));
         numTerrainNodes = 0;
     }
 
@@ -205,7 +205,7 @@ namespace Test {
     */
     void terrain_init()
     {
-        terrainTree = (terrainNode_t*)malloc(MAX_TERRAIN_NODES * sizeof(terrainNode_t));
+        terrainTree = (terrainNode_t*)malloc(Terrain::MAX_RENDER_NODES * sizeof(terrainNode_t));
         terrain_clearTree();
     }
 
@@ -374,14 +374,14 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
 
     SceneGraphNode_ptr planeSGN(sgn.addNode(_plane, normalMask, PhysicsGroup::GROUP_STATIC));
     planeSGN->setActive(false);
-    /*for (TerrainChunk* chunk : _terrainChunks) {
-        SceneGraphNode_ptr vegetation = sgn.addNode(Attorney::TerrainChunkTerrain::getVegetation(*chunk), normalMask);
-        vegetation->lockVisibility(true);
-    }*/
+    for (TerrainChunk* chunk : _terrainChunks) {
+        //SceneGraphNode_ptr vegetation = sgn.addNode(Attorney::TerrainChunkTerrain::getVegetation(*chunk), normalMask);
+        //vegetation->lockVisibility(true);
+    }
     // Skip Object3D::load() to avoid triangle list computation (extremely expensive)!!!
 
     ShaderBufferParams params;
-    params._primitiveCount = MAX_TERRAIN_NODES;
+    params._primitiveCount = Terrain::MAX_RENDER_NODES;
     params._primitiveSizeInBytes = sizeof(Test::NodeData);
     params._ringBufferLength = 1;
     params._unbound = true;
@@ -389,7 +389,7 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
 
     _shaderData = _context.newSB(params);
     sgn.get<RenderingComponent>()->registerShaderBuffer(ShaderBufferLocation::TERRAIN_DATA,
-                                                        vec2<U32>(0, 1),
+                                                        vec2<U32>(0, Terrain::MAX_RENDER_NODES),
                                                         *_shaderData);
 
     Test::terrain_init();
@@ -407,7 +407,6 @@ void Terrain::buildQuadtree() {
 
     // The terrain's final bounding box is the QuadTree's root bounding box
     _boundingBox.set(_terrainQuadtree.computeBoundingBox());
-
 
     const Material_ptr& mat = getMaterialTpl();
 
@@ -489,20 +488,22 @@ void Terrain::initialiseDrawCommands(SceneGraphNode& sgn,
 
     g_PlaneCommandIndex = drawCommandsInOut.size();
     if (renderStagePass._stage == RenderStage::DISPLAY) {
-
-        cmd.primitiveType(PrimitiveType::TRIANGLES);
-        cmd.disableOption(GenericDrawCommand::RenderOptions::RENDER_TESSELLATED);
         //infinite plane
-        VertexBuffer* const vb = _plane->getGeometryVB();
-        cmd.cmd().firstIndex = 0;
-        cmd.cmd().indexCount = vb->getIndexCount();
-        cmd.LoD(0);
-        cmd.sourceBuffer(vb);
-        drawCommandsInOut.push_back(cmd);
+        GenericDrawCommand planeCmd;
+        planeCmd.primitiveType(PrimitiveType::TRIANGLE_STRIP);
+        planeCmd.cmd().firstIndex = 0;
+        planeCmd.cmd().indexCount = _plane->getGeometryVB()->getIndexCount();
+        planeCmd.LoD(0);
+        planeCmd.sourceBuffer(_plane->getGeometryVB());
+        planeCmd.shaderProgram(renderStagePass._passType == RenderPassType::DEPTH_PASS
+                                                          ? _planeDepthShader
+                                                          : _planeShader);
+        drawCommandsInOut.push_back(planeCmd);
 
         //BoundingBoxes
         GenericDrawCommands commands;
         commands.reserve(getQuadtree().getChunkCount());
+
         _terrainQuadtree.drawBBox(_context, commands);
         for (const GenericDrawCommand& crtCmd : commands) {
             drawCommandsInOut.push_back(crtCmd);
@@ -518,7 +519,6 @@ void Terrain::updateDrawCommands(SceneGraphNode& sgn,
                                  GenericDrawCommands& drawCommandsInOut) {
 
     //_context.setClipPlane(ClipPlaneIndex::CLIP_PLANE_0, Plane<F32>(WORLD_Y_AXIS, _waterHeight));
-
     //drawCommandsInOut.front().shaderProgram()->Uniform("dvd_waterHeight", _waterHeight);
     drawCommandsInOut.front().shaderProgram()->Uniform("TerrainOrigin", vec3<F32>(-to_F32(_terrainDimensions.width) / 2.0f, -1024.0f / 2.0f, -to_F32(_terrainDimensions.height) / 2.0f));
     drawCommandsInOut.front().shaderProgram()->Uniform("TerrainHeightOffset", 1024.0f);
@@ -539,9 +539,14 @@ void Terrain::updateDrawCommands(SceneGraphNode& sgn,
 
     if (renderStagePass._stage == RenderStage::DISPLAY) {
         // draw infinite plane
-        drawCommandsInOut[g_PlaneCommandIndex].drawCount(0);
-        //assert(drawCommandsInOut[g_PlaneCommandIndex].drawCount() == 1);
+       assert(drawCommandsInOut[g_PlaneCommandIndex].drawCount() == 1);
 
+        _planeShader->Uniform("underwaterDiffuseScale", _underwaterDiffuseScale);
+        _planeDepthShader->Uniform("underwaterDiffuseScale", _underwaterDiffuseScale);
+        drawCommandsInOut[g_PlaneCommandIndex].shaderProgram(
+            renderStagePass._passType == RenderPassType::DEPTH_PASS
+                                       ? _planeDepthShader
+                                       : _planeShader);
         size_t i = g_PlaneCommandIndex + 1;
 
         if (_drawBBoxes) {
@@ -549,15 +554,15 @@ void Terrain::updateDrawCommands(SceneGraphNode& sgn,
             commands.reserve(getQuadtree().getChunkCount());
             _terrainQuadtree.drawBBox(_context, commands);
 
-            for (const GenericDrawCommand& cmd : commands) {
-                drawCommandsInOut[i++] = cmd;
+            for (const GenericDrawCommand& bbCmd : commands) {
+                drawCommandsInOut[i++] = bbCmd;
             }
 
         } else {
             std::for_each(std::begin(drawCommandsInOut) + i,
                           std::end(drawCommandsInOut),
-                          [](GenericDrawCommand& cmd) {
-                                cmd.drawCount(0);
+                          [](GenericDrawCommand& bbCmd) {
+                                bbCmd.drawCount(0);
                           });
         }
     }
@@ -638,6 +643,7 @@ vec3<F32> Terrain::getNormal(F32 x_clampf, F32 z_clampf) const {
            posI.y >= 0 && posI.y < to_I32(_terrainDimensions.y) - 1);
 
     vec3<F32> normals[4];
+
     Util::UNPACK_VEC3(_physicsVerts[TER_COORD(posI.x, posI.y, to_I32(_terrainDimensions.x))]._normal, normals[0]);
     Util::UNPACK_VEC3(_physicsVerts[TER_COORD(posI.x + 1, posI.y, to_I32(_terrainDimensions.x))]._normal, normals[1]);
     Util::UNPACK_VEC3(_physicsVerts[TER_COORD(posI.x, posI.y + 1, to_I32(_terrainDimensions.x))]._normal, normals[2]);
@@ -668,8 +674,8 @@ vec3<F32> Terrain::getTangent(F32 x_clampf, F32 z_clampf) const {
     assert(posI.x >= 0 && posI.x < to_I32(_terrainDimensions.x) - 1 &&
            posI.y >= 0 && posI.y < to_I32(_terrainDimensions.y) - 1);
 
-    
     vec3<F32> tangents[4];
+
     Util::UNPACK_VEC3(_physicsVerts[TER_COORD(posI.x, posI.y, to_I32(_terrainDimensions.x))]._tangent, tangents[0]);
     Util::UNPACK_VEC3(_physicsVerts[TER_COORD(posI.x + 1, posI.y, to_I32(_terrainDimensions.x))]._tangent, tangents[1]);
     Util::UNPACK_VEC3(_physicsVerts[TER_COORD(posI.x, posI.y + 1, to_I32(_terrainDimensions.x))]._tangent, tangents[2]);

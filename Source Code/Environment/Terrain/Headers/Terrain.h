@@ -94,6 +94,7 @@ class VertexBuffer;
 class TerrainDescriptor;
 
 FWD_DECLARE_MANAGED_CLASS(Quad3D);
+FWD_DECLARE_MANAGED_CLASS(Patch3D);
 FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
 
 namespace Attorney {
@@ -104,6 +105,8 @@ namespace Attorney {
 class Terrain : public Object3D {
     friend class Attorney::TerrainChunk;
     friend class Attorney::TerrainLoader;
+   public:
+     static constexpr U32 MAX_RENDER_NODES = 500;
 
    public:
     explicit Terrain(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name);
@@ -162,6 +165,8 @@ class Terrain : public Object3D {
     F32 _waterHeight;
     bool _drawBBoxes;
     Quad3D_ptr _plane;
+    ShaderProgram_ptr _planeShader;
+    ShaderProgram_ptr _planeDepthShader;
     F32 _underwaterDiffuseScale;
     vec2<F32> _terrainScaleFactor;
     SceneGraphNode_wptr _vegetationGrassNode;
@@ -197,6 +202,7 @@ class TerrainLoader {
                                 TerrainTextureLayer* textureLayer) {
         terrain._terrainTextures.push_back(textureLayer);
     }
+
     static U32 textureLayerCount(Terrain& terrain) {
         return to_U32(terrain._terrainTextures.size());
     }
@@ -204,16 +210,25 @@ class TerrainLoader {
     static VegetationDetails& vegetationDetails(Terrain& terrain) {
         return terrain._vegDetails;
     }
-    static void buildQuadtree(Terrain& terrain) { terrain.buildQuadtree(); }
+
+    static void buildQuadtree(Terrain& terrain) {
+        terrain.buildQuadtree();
+    }
+
     static BoundingBox& boundingBox(Terrain& terrain) {
         return terrain._boundingBox;
     }
 
-    static void plane(Terrain& terrain, Quad3D_ptr plane) { terrain._plane = plane; }
+    static void plane(Terrain& terrain, Quad3D_ptr plane, const ShaderProgram_ptr& shader, const ShaderProgram_ptr& depthShader) {
+        terrain._plane = plane;
+        terrain._planeShader = shader;
+        terrain._planeDepthShader = depthShader;
+    }
 
     static vec2<U16>& dimensions(Terrain& terrain) {
         return terrain._terrainDimensions;
     }
+
     static vec2<F32>& scaleFactor(Terrain& terrain) {
         return terrain._terrainScaleFactor;
     }

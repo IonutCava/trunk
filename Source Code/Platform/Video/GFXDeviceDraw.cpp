@@ -251,12 +251,16 @@ void GFXDevice::buildDrawCommands(RenderPassCuller::VisibleNodeList& visibleNode
 
                 if (refreshNodeData) {
                     for (GenericDrawCommand& cmd : pkg._drawCommands) {
-                        _drawCommandsCache[cmdCount++].set(cmd.cmd());
+                        for (U32 i = 0; i < cmd.drawCount(); ++i) {
+                            _drawCommandsCache[cmdCount++].set(cmd.cmd());
+                        }
                     }
                 } else {
                     if (Config::Build::IS_DEBUG_BUILD) {
                         for (GenericDrawCommand& cmd : pkg._drawCommands) {
-                            DIVIDE_ASSERT(_drawCommandsCache[cmdCount++] == cmd.cmd());
+                            for (U32 i = 0; i < cmd.drawCount(); ++i) {
+                                DIVIDE_ASSERT(_drawCommandsCache[cmdCount++] == cmd.cmd());
+                            }
                         }
                     }
                 }

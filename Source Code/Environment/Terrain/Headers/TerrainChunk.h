@@ -68,21 +68,22 @@ class TerrainChunk {
         return vec4<F32>(_xOffset, _yOffset, _sizeX, _sizeY);
     }
 
-    U8 getLoD(const SceneRenderState& sceneRenderState) const;
-
     F32 waterHeight() const;
+
+    U8 getLoD(const vec3<F32>& eyePos) const;
 
    protected:
     Vegetation* const getVegetation() const { return _vegetation; }
 
    private:
-    void ComputeIndicesArray(U8 depth, const vec2<U32>& position,
-                             const vec2<U32>& heightMapSize);
+
+    void ComputeIndicesArray(U8 depth, const vec2<U32>& position, const vec2<U32>& heightMapSize);
 
    private:
     U32 _ID;
     U32 _lodIndOffset;
     U32 _lodIndCount;
+
     U32 _chunkIndOffset;
     F32 _xOffset;
     F32 _yOffset;

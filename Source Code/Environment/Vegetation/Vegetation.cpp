@@ -16,8 +16,8 @@ namespace Divide {
 
 bool Vegetation::_staticDataUpdated = false;
 
-Vegetation::Vegetation(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const VegetationDetails& details)
-    : SceneNode(parentCache, descriptorHash, details.name, SceneNodeType::TYPE_VEGETATION_GRASS),
+Vegetation::Vegetation(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, U32 chunkID, const VegetationDetails& details)
+    : SceneNode(parentCache, descriptorHash + chunkID, details.name + "_" + to_stringImpl(chunkID), SceneNodeType::TYPE_VEGETATION_GRASS),
       _context(context),
       _billboardCount(details.billboardCount),
       _grassDensity(details.grassDensity),
@@ -335,7 +335,7 @@ void Vegetation::gpuCull(const SceneRenderState& sceneRenderState) {
             _culledFinal = true;
         } break;
     }
-    _parentLoD = _terrainChunk->getLoD(sceneRenderState);
+    _parentLoD = _terrainChunk->getLoD(Camera::activeCamera()->getEye());
     if (draw && _threadedLoadComplete && _parentLoD == 0) {
         GenericVertexData* buffer = _grassGPUBuffer[_writeBuffer];
         //_cullShader->SetSubroutine(VERTEX,

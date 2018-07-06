@@ -9,6 +9,7 @@
 #include "Geometry/Material/Headers/Material.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
+#include "Geometry/Shapes/Headers/Predefined/Patch3D.h"
 
 namespace Divide {
 
@@ -40,8 +41,7 @@ void init(VertexBuffer* vb) {
     vb->addIndex(1);
     vb->addIndex(2);
     vb->addIndex(3);
-};
-
+}
 };
 
 
@@ -71,6 +71,12 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
     normalSampler.setAnisotropy(8);
     normalSampler.toggleMipMaps(true);
     normalSampler.toggleSRGBColourSpace(false);
+
+    SamplerDescriptor heightMapSampler;
+    heightMapSampler.setWrapMode(TextureWrap::CLAMP);
+    heightMapSampler.setAnisotropy(0);
+    heightMapSampler.toggleMipMaps(false);
+    heightMapSampler.toggleSRGBColourSpace(false);
 
     TerrainTextureLayer* textureLayer = nullptr;
     stringImpl layerOffsetStr;
@@ -251,18 +257,19 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
 
     terrainMaterial->setTexture(ShaderProgram::TextureUsage::OPACITY, CreateResource<Texture>(terrain->parentResourceCache(), heightMapTexture));
     terrainMaterial->setShaderLoadThreaded(false);
+
     terrainMaterial->dumpToFile(false);
     terrain->setMaterialTpl(terrainMaterial);
 
     // Generate a render state
     RenderStateBlock terrainRenderState;
-    terrainRenderState.setCullMode(CullMode::CW);
+    terrainRenderState.setCullMode(CullMode::CCW);
     // Generate a render state for drawing reflections
     RenderStateBlock terrainRenderStateReflection;
-    terrainRenderStateReflection.setCullMode(CullMode::CCW);
+    terrainRenderStateReflection.setCullMode(CullMode::CW);
     // Generate a shadow render state
     RenderStateBlock terrainRenderStateDepth;
-    terrainRenderStateDepth.setCullMode(CullMode::CCW);
+    terrainRenderStateDepth.setCullMode(CullMode::CW);
     // terrainDescDepth.setZBias(1.0f, 2.0f);
     terrainRenderStateDepth.setColourWrites(true, true, false, false);
 
@@ -349,8 +356,7 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
             U32 positionCount = to_U32(data.size());
             heightValues.reserve(positionCount / 2);
             for (U32 i = 0; i < positionCount + 1; i += 2) {
-                heightValues.push_back((data[i + 1] << 8) |
-                    data[i]);
+                heightValues.push_back((data[i + 1] << 8) | data[i]);
             }
 
         } else {
@@ -364,6 +370,7 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
         }
 
         terrain->_physicsVerts.resize(terrainWidth * terrainHeight);
+
         // scale and translate all height by half to convert from 0-255 (0-65335) to -127 - 128 (-32767 - 32768)
         if (terrainDescriptor->is16Bit()) {
             const F32 fMax = to_F32(std::numeric_limits<U16>::max() + 1);
@@ -420,7 +427,7 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
         I32 offset = 2;
         U32 idx = 0, idx0 = 0, idx1 = 0;
     
-        #pragma omp parallel for
+       #pragma omp parallel for
         for (I32 j = offset; j < terrainHeight - offset; j++) {
             for (I32 i = offset; i < terrainWidth - offset; i++) {
                 vec3<F32> vU, vV, vUV;
@@ -431,6 +438,7 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
                        terrain->_physicsVerts[TER_COORD(i - offset, j + 0, terrainWidth)]._position);
                 vV.set(terrain->_physicsVerts[TER_COORD(i + 0, j + offset, terrainWidth)]._position -
                        terrain->_physicsVerts[TER_COORD(i + 0, j - offset, terrainWidth)]._position);
+
                 vUV.cross(vV, vU);
                 vUV.normalize();
                 vU = -vU;
@@ -442,7 +450,7 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
                 }
             }
         }
-
+        
         vec3<F32> normal, tangent;
         for (I32 j = 0; j < offset; j++) {
             for (I32 i = 0; i < terrainWidth; i++) {
@@ -498,6 +506,10 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
     initializeVegetation(terrain, terrainDescriptor);
     Attorney::TerrainLoader::buildQuadtree(*terrain);
 
+    ResourceDescriptor planeShaderDesc("terrainPlane.Colour");
+    ShaderProgram_ptr planeShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), planeShaderDesc);
+    planeShaderDesc.setResourceName("terrainPlane.Depth");
+    ShaderProgram_ptr planeDepthShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), planeShaderDesc);
     Quad3D_ptr plane = CreateResource<Quad3D>(terrain->parentResourceCache(), infinitePlane);
     // our bottom plane is placed at the bottom of our water entity
     F32 height = bMin.y + yOffset;
@@ -508,7 +520,11 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
     plane->setCorner(Quad3D::CornerLocation::BOTTOM_LEFT, vec3<F32>(-farPlane * 1.5f, height, farPlane * 1.5f));
     plane->setCorner(Quad3D::CornerLocation::BOTTOM_RIGHT, vec3<F32>(farPlane * 1.5f, height, farPlane * 1.5f));
 
-    Attorney::TerrainLoader::plane(*terrain, plane);
+    Attorney::TerrainLoader::plane(*terrain, plane, planeShader, planeDepthShader);
+
+    ResourceDescriptor renderGeometry("TerrainRenderGeometry");
+    renderGeometry.setFlag(true);  // No default material
+    renderGeometry.setUserPtr((void*)(&dimensions));
 
     Console::printfn(Locale::get(_ID("TERRAIN_LOAD_END")), terrain->getName().c_str());
     return terrain->load(onLoadCallback);
