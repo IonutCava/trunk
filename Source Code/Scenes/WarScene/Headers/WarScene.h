@@ -34,15 +34,15 @@ public:
 	WarScene() : Scene(),
 		_groundPlaceholder(NULL),
 		_faction1(NULL),
-		_faction2(NULL){
+		_faction2(NULL)
+	{
 		_scorTeam1 = 0;
 		_scorTeam2 = 0;
-		_mousePressed = false;
 	}
 
 	void preRender();
 
-	bool load(const std::string& name);
+	bool load(const std::string& name, CameraManager* const cameraMgr);
 	bool loadResources(bool continueOnErrors);
 	bool initializeAI(bool continueOnErrors);
 	bool deinitializeAI(bool continueOnErrors);
@@ -51,7 +51,7 @@ public:
 	void onKeyDown(const OIS::KeyEvent& key);
 	void onKeyUp(const OIS::KeyEvent& key);
 	void onMouseMove(const OIS::MouseEvent& key);
-	void onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID button);
+	void onMouseClickDown(const OIS::MouseEvent& key, OIS::MouseButtonID button);
 	void onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button);
 
 private:
@@ -63,8 +63,6 @@ private:
 	I8 _score;
 	vec4<F32> _sunvector;
 	SceneGraphNode* _groundPlaceholder;
-	vec2<F32> _prevMouse;
-	bool _mousePressed;
 
 private: //Joc
 	I8 _scorTeam1;

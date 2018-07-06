@@ -57,6 +57,9 @@ public:
     void Uniform(const std::string& ext, const mat4<GLfloat>& value, bool rowMajor = false);
 	void Uniform(const std::string& ext, const vectorImpl<GLint >& values);
 	void Uniform(const std::string& ext, const vectorImpl<GLfloat >& values);
+	void Uniform(const std::string& ext, const vectorImpl<vec2<GLfloat> >& values);
+	void Uniform(const std::string& ext, const vectorImpl<vec3<GLfloat> >& values);
+	void Uniform(const std::string& ext, const vectorImpl<vec4<GLfloat> >& values);
 	void Uniform(const std::string& ext, const vectorImpl<mat4<GLfloat> >& values, bool rowMajor = false);
 	//Uniform Texture
 	void UniformTexture(const std::string& ext, GLushort slot);
@@ -69,6 +72,7 @@ private:
 	void threadedLoad(const std::string& name);
 	GLint cachedLoc(const std::string& name, const bool uniform = true);
 	void validateInternal();
+	std::string getLog() const;
 
 private:
 	typedef Unordered_map<std::string, GLint > ShaderVarMap;

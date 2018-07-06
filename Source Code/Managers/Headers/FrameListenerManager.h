@@ -30,6 +30,7 @@
 enum FrameEventType{
 	FRAME_EVENT_ANY,
 	FRAME_EVENT_STARTED,
+	FRAME_PRERENDER_START,
 	FRAME_PRERENDER_END,
 	FRAME_EVENT_PROCESS,
 	FRAME_EVENT_ENDED,
@@ -48,6 +49,7 @@ public:
 	void idle();
 
 	bool frameStarted(const FrameEvent& evt);
+	bool framePreRenderStarted(const FrameEvent& evt);
 	bool framePreRenderEnded(const FrameEvent& evt);
 	bool frameRenderingQueued(const FrameEvent& evt);
 	bool frameEnded(const FrameEvent& evt);
@@ -60,7 +62,7 @@ private:
 private:
 	ListenerMap _listeners;
 	ListenerMap _removedListeners;
-	EventTimeMap _eventTimers[5];
+	EventTimeMap _eventTimers[6];
 
 END_SINGLETON
 

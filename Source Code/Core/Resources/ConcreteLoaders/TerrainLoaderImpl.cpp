@@ -30,16 +30,20 @@ bool ImplResourceLoader<Terrain>::load(Terrain* const res, const std::string& na
 			break;
 		}
 	if(!terrain) return false;
+	SamplerDescriptor terrainDiffuseSampler;
+	terrainDiffuseSampler.setWrapMode(TEXTURE_REPEAT);
 
 	ResourceDescriptor terrainMaterial("terrainMaterial");
 	res->setMaterial(CreateResource<Material>(terrainMaterial));
-	res->getMaterial()->setDiffuse(vec4<F32>(1.0f, 1.0f, 1.0f, 1.0f));
+	res->getMaterial()->setDiffuse(WHITE());
+	res->getMaterial()->setAmbient(WHITE() / 3);
 	res->getMaterial()->setSpecular(vec4<F32>(0.1f, 0.1f, 0.1f, 1.0f));
 	res->getMaterial()->setShininess(20.0f);
 	res->getMaterial()->addShaderDefines("COMPUTE_TBN");
 	res->getMaterial()->setShaderProgram("terrain");
     res->getMaterial()->setShaderProgram("terrain.Depth",DEPTH_STAGE);
 	res->getMaterial()->setShaderLoadThreaded(false);
+
 	ResourceDescriptor textureNormalMap("Terrain Normal Map");
 	textureNormalMap.setResourceLocation(terrain->getVariable("normalMap"));
 	ResourceDescriptor textureRedTexture("Terrain Red Texture");
@@ -52,6 +56,7 @@ bool ImplResourceLoader<Terrain>::load(Terrain* const res, const std::string& na
 	textureWaterCaustics.setResourceLocation(terrain->getVariable("waterCaustics"));
 	ResourceDescriptor textureTextureMap("Terrain Texture Map");
 	textureTextureMap.setResourceLocation(terrain->getVariable("textureMap"));
+	textureTextureMap.setPropertyDescriptor<SamplerDescriptor>(terrainDiffuseSampler);
 
 	res->addTexture(Terrain::TERRAIN_TEXTURE_DIFFUSE, CreateResource<Texture>(textureTextureMap));
 	res->addTexture(Terrain::TERRAIN_TEXTURE_NORMALMAP, CreateResource<Texture>(textureNormalMap));
@@ -65,6 +70,7 @@ bool ImplResourceLoader<Terrain>::load(Terrain* const res, const std::string& na
 		ResourceDescriptor textureAlphaTexture("Terrain Alpha Texture");
 		textureAlphaTexture.setResourceLocation(alphaTextureFile);
 		res->addTexture(Terrain::TERRAIN_TEXTURE_ALPHA, CreateResource<Texture>(textureAlphaTexture));
+		res->getMaterial()->addShaderDefines("USE_ALPHA_TEXTURE");
 	}
 
 	res->loadVisualResources();

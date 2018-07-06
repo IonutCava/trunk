@@ -26,11 +26,15 @@ bool ImplResourceLoader<WaterPlane>::load(WaterPlane* const res, const std::stri
 	quadMask.i = 0;
 	quadMask.b.b0 = true;
 
+	SamplerDescriptor defaultSampler;
+	defaultSampler.setWrapMode(TEXTURE_REPEAT);
+	defaultSampler.toggleMipMaps(false);
 	ResourceDescriptor waterMaterial("waterMaterial");
 	ResourceDescriptor waterShader("water");
 	ResourceDescriptor waterPlane("waterPlane");
 	ResourceDescriptor waterTexture("waterTexture");
 	waterTexture.setResourceLocation(ParamHandler::getInstance().getParam<std::string>("assetsLocation")+"/misc_images/terrain_water_NM.jpg");
+	waterTexture.setPropertyDescriptor(defaultSampler);
 	waterPlane.setFlag(true); //No default material
 	waterPlane.setBoolMask(quadMask);
 	Texture2D* waterNM = CreateResource<Texture2D>(waterTexture);
@@ -47,7 +51,7 @@ bool ImplResourceLoader<WaterPlane>::load(WaterPlane* const res, const std::stri
 	res->setShaderProgram(waterShaderProgram);
 	res->setGeometry(CreateResource<Quad3D>(waterPlane));
 
-	waterMat->setTexture(Material::TEXTURE_BASE, waterNM);
+	waterMat->setTexture(Material::TEXTURE_UNIT0, waterNM);
 	waterMat->setShaderProgram(waterShaderProgram->getName());
 	vec3<F32> waterDiffuse = waterMat->getMaterialMatrix().getCol(1);
 	waterMat->setDiffuse(vec4<F32>(waterDiffuse, 0.5f));

@@ -32,6 +32,7 @@
 
 class Ray;
 class Scene;
+class SceneState;
 class SceneGraph  {
 	
 public:
@@ -59,7 +60,7 @@ public:
 	/// Update transforms and bounding boxes
 	void update();
 	/// Update all nodes. Called from "updateSceneState" from class Scene
-	void sceneUpdate(const U32 sceneTime);
+	void sceneUpdate(const U32 sceneTime, SceneState& sceneState);
 
 	void print();
 

@@ -32,7 +32,7 @@ public:
 	}
 	void render();
 	void preRender();
-	bool load(const std::string& name);
+	bool load(const std::string& name, CameraManager* const cameraMgr);
 	bool loadResources(bool continueOnErrors);
 	void processInput();
 	void processTasks(const U32 time);

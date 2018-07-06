@@ -24,49 +24,120 @@
 #define _TEXTURE_DESCRIPTOR_H_
 
 #include "core.h"
+#include "Core/Resources/Headers/ResourceDescriptor.h"
+#include "Hardware/Video/Headers/RenderAPIEnums.h"
 
-struct SamplerDescriptor {
-    SamplerDescriptor()
+///This class is used to define all of the sampler settings needed to use a texture
+///Apply a sampler descriptor to either a texture's ResourceDescriptor or to a TextureDescriptor to use it
+///We do not definy copy constructors as we must define descriptors only with POD
+class SamplerDescriptor : public PropertyDescriptor {
+public:
+	///The constructer specifies the type so it can be used later for downcasting if needed
+    SamplerDescriptor() : PropertyDescriptor(DESCRIPTOR_SAMPLER)
     {
+		setDefaultValues();
     }
 
-    inline void setWrapMode(TextureWrap wrapU = TEXTURE_CLAMP, TextureWrap wrapV = TEXTURE_CLAMP, TextureWrap wrapW = TEXTURE_CLAMP){
-		_wrapU = wrapU; _wrapV = wrapV; _wrapW = wrapW;
+	///All of these are default values that should be safe for any kind of texture usage
+	inline void setDefaultValues() {
+		setWrapMode();
+		setFilters();
+		setAnisotrophy(16);
+		setLOD();
+		toggleMipMaps(true);
+		//The following 3 are mainly used by depthmaps for hardware comparisons
+		_cmpFunc = CMP_FUNC_LEQUAL;
+		_depthCompareMode = LUMINANCE;
+		_useRefCompare  = false;
+
 	}
+
+	SamplerDescriptor* clone() const {return New SamplerDescriptor(*this);}
+
+	/*
+	*  Sampler states (LOD, wrap modes, anisotrophy levels, etc
+	*/
+	inline void setAnisotrophy(U8 value = 0) {_anisotrophyLevel = value;}
+
+	inline void setLOD(F32 minLOD = -1000.f, F32 maxLOD = 1000.f, F32 biasLOD = 0.f){
+		_minLOD = minLOD; _maxLOD = maxLOD; _biasLOD = biasLOD;
+	}
+
+	inline void setWrapMode(TextureWrap wrapUVW = TEXTURE_REPEAT){
+		setWrapModeU(wrapUVW);
+		setWrapModeV(wrapUVW);
+		setWrapModeW(wrapUVW);
+	}
+
+    inline void setWrapMode(TextureWrap wrapU, TextureWrap wrapV, TextureWrap wrapW = TEXTURE_REPEAT){
+		setWrapModeU(wrapU);
+		setWrapModeV(wrapV);
+		setWrapModeW(wrapW);
+	}
+
+	inline void setWrapMode(I32 wrapU, I32 wrapV, I32 wrapW){
+		setWrapMode(static_cast<TextureWrap>(wrapU), static_cast<TextureWrap>(wrapV), static_cast<TextureWrap>(wrapW));
+	}
+
+	inline void setWrapModeU(TextureWrap wrapU) { _wrapU = wrapU; }
+	inline void setWrapModeV(TextureWrap wrapV) { _wrapV = wrapV; }
+	inline void setWrapModeW(TextureWrap wrapW) { _wrapW = wrapW; }
+	
 
 	inline void setFilters(TextureFilter minFilter = TEXTURE_FILTER_LINEAR, TextureFilter magFilter = TEXTURE_FILTER_LINEAR){
-		_minFilter = minFilter; _magFilter = magFilter;
+		setMinFilter(minFilter); 
+        setMagFilter(magFilter);
 	}
 
-	inline void setAlignment(U8 packAlignment = 1, U8 unpackAlignment = 1) {
-		_packAlignment = packAlignment; _unpackAlignment = unpackAlignment;
+	inline void setMinFilter(TextureFilter minFilter) {_minFilter = minFilter;}
+	inline void setMagFilter(TextureFilter magFilter) {_magFilter = magFilter;}
+
+	inline void toggleMipMaps(bool state) {
+		_generateMipMaps = state;
+		if(state){
+			if(_minFilter == TEXTURE_FILTER_LINEAR) 
+				_minFilter = TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR;
+		}else{
+			if(_minFilter == TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR) 
+				_minFilter = TEXTURE_FILTER_LINEAR;
+		}
 	}
 
-	inline void setMipLevels(U16 mipMinLevel = 0, U16 mipMaxLevel = 1000) {
-		_mipMinLevel = mipMinLevel; _mipMaxLevel = mipMaxLevel;
-	}
+	/*
+	*  "Internal" data
+	*/
 
-	inline void toggleMipMaps(bool state) {_generateMipMaps = state;}
-	inline void setAnisotrophy(U8 value) {_anisotrophyLevel = value;}
+	//HW comparison settings
+	GFXImageFormat     _depthCompareMode;  ///<Used as the basis for DEPTH_TEXTURE_MODE
+	ComparisonFunction _cmpFunc;           ///<Used by RefCompare
+	bool               _useRefCompare;     ///<use red channel as comparison (e.g. for shadows)
 
-    TextureFilter  _minFilter;
-	TextureFilter  _magFilter;
-	TextureWrap    _wrapU;
-	TextureWrap    _wrapV;
-	TextureWrap    _wrapW;
-    bool           _generateMipMaps; ///<create automatic MipMaps
-	bool           _useRefCompare;   ///<use red channel as comparison (e.g. for shadows)
-	U8             _anisotrophyLevel;
-	U8             _packAlignment;
-	U8             _unpackAlignment;
-	U16            _mipMinLevel;
-	U16            _mipMaxLevel;
+	inline TextureWrap   wrapU()            const {return _wrapU;}
+	inline TextureWrap   wrapV()            const {return _wrapV;}
+	inline TextureWrap   wrapW()            const {return _wrapW;}
+	inline TextureFilter minFilter()        const {return _minFilter;}
+	inline TextureFilter magFilter()        const {return _magFilter;}
+	inline F32           minLOD()           const {return _minLOD;}
+	inline F32           maxLOD()           const {return _maxLOD;}
+	inline F32           biasLOD()          const {return _biasLOD;}
+	inline U8            anisotrophyLevel() const {return _anisotrophyLevel;}
+	inline bool          generateMipMaps()  const {return _generateMipMaps;}
+protected:
+	//Sampler states
+    TextureFilter  _minFilter, _magFilter; ///Texture filtering mode
+	TextureWrap    _wrapU, _wrapV, _wrapW; ///<Or S-R-T
+    bool           _generateMipMaps;       ///<If it's set to true we create automatic MipMaps
+	U8             _anisotrophyLevel;      ///<The value must be in the range [0...255] and is automatically clamped by the max HW supported level
+	F32            _minLOD,_maxLOD;        ///<OpenGL eg: used by TEXTURE_MIN_LOD and TEXTURE_MAX_LOD 
+	F32            _biasLOD;               ///<OpenGL eg: used by TEXTURE_LOD_BIAS
 
-	ComparisonFunction _cmpFunc; ///<Used by RefCompare
 };
 
 ///Use to define a texture with details such as type, image formats, etc
-struct TextureDescriptor {
+///We do not definy copy constructors as we must define descriptors only with POD
+class TextureDescriptor : public PropertyDescriptor {
+public:
+	///This enum is used when creating Frame Buffers to define the channel that the texture will attach to
 	enum AttachmentType{
 		Color0 = 0,
 		Color1,
@@ -74,14 +145,12 @@ struct TextureDescriptor {
 		Color3,
 		Depth
 	};
-
-	TextureDescriptor() : _type(TextureType_PLACEHOLDER),
+	
+	TextureDescriptor() : PropertyDescriptor(DESCRIPTOR_TEXTURE),
+						  _type(TextureType_PLACEHOLDER),
 						  _format(IMAGE_FORMAT_PLACEHOLDER),
 						  _internalFormat(IMAGE_FORMAT_PLACEHOLDER),
-						  _dataType(GDF_PLACEHOLDER),
-						  _generateMipMaps(true),
-						  _useRefCompare(false),
-						  _anisotrophyLevel(0)
+						  _dataType(GDF_PLACEHOLDER)
 	{
 		setDefaultValues();
 	}
@@ -89,63 +158,45 @@ struct TextureDescriptor {
 	TextureDescriptor(TextureType type,
 				      GFXImageFormat format,
 					  GFXImageFormat internalFormat,
-					  GFXDataFormat dataType) : _type(type),
-											    _format(format),
+					  GFXDataFormat dataType) : PropertyDescriptor(DESCRIPTOR_TEXTURE),
+												_type(type),
+												_format(format),
 											    _internalFormat(internalFormat),
-												_dataType(dataType),
-												_generateMipMaps(true),
-												_useRefCompare(false),
-												_anisotrophyLevel(0)
+												_dataType(dataType)
 	{
 		setDefaultValues();
 	}
 
+	TextureDescriptor* clone() const {return New TextureDescriptor(*this);}
+
+	///Pixel alignment and miplevels are set to match what the HW sets by default
 	inline void setDefaultValues(){
-		setWrapMode();
-		setFilters();
 		setAlignment();
 		setMipLevels();
-		_cmpFunc = CMP_FUNC_LEQUAL;
-	}
-
-	inline void setWrapMode(TextureWrap wrapU = TEXTURE_CLAMP, TextureWrap wrapV = TEXTURE_CLAMP, TextureWrap wrapW = TEXTURE_CLAMP){
-		_wrapU = wrapU; _wrapV = wrapV; _wrapW = wrapW;
-	}
-
-	inline void setFilters(TextureFilter minFilter = TEXTURE_FILTER_LINEAR, TextureFilter magFilter = TEXTURE_FILTER_LINEAR){
-		_minFilter = minFilter; _magFilter = magFilter;
 	}
 
 	inline void setAlignment(U8 packAlignment = 1, U8 unpackAlignment = 1) {
 		_packAlignment = packAlignment; _unpackAlignment = unpackAlignment;
 	}
-
+	
 	inline void setMipLevels(U16 mipMinLevel = 0, U16 mipMaxLevel = 1000) {
 		_mipMinLevel = mipMinLevel; _mipMaxLevel = mipMaxLevel;
 	}
+	///A TextureDescriptor will always have a sampler, even if it is the default one
+	inline       void               setSampler(const SamplerDescriptor& descriptor) {_samplerDescriptor = descriptor;}
+	inline const SamplerDescriptor& getSampler()                              const {return _samplerDescriptor;}
 
-	inline void toggleMipMaps(bool state) {_generateMipMaps = state;}
-	inline void setAnisotrophy(U8 value) {_anisotrophyLevel = value;}
 
-	GFXImageFormat _format;
-	GFXImageFormat _internalFormat;
-	GFXImageFormat _depthCompareMode;
-	GFXDataFormat  _dataType;
-	TextureType    _type;
-	TextureFilter  _minFilter;
-	TextureFilter  _magFilter;
-	TextureWrap    _wrapU;
-	TextureWrap    _wrapV;
-	TextureWrap    _wrapW;
-	bool           _generateMipMaps; ///<create automatic MipMaps
-	bool           _useRefCompare;   ///<use red channel as comparison (e.g. for shadows)
-	U8             _anisotrophyLevel;
-	U8             _packAlignment;
-	U8             _unpackAlignment;
-	U16            _mipMinLevel;
-	U16            _mipMaxLevel;
+	U8                _packAlignment, _unpackAlignment; ///<Pixel stor information
+	U16               _mipMinLevel, _mipMaxLevel;       ///<MipMap interval selection
 
-	ComparisonFunction _cmpFunc; ///<Used by RefCompare
+	///Texture data information
+	GFXImageFormat    _format;
+	GFXImageFormat    _internalFormat;
+	GFXDataFormat     _dataType;
+	TextureType       _type;
+	///The sampler used to initialize this texture with
+	SamplerDescriptor _samplerDescriptor;
 };
 
 #endif

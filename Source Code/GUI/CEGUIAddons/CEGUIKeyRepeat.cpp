@@ -13,11 +13,11 @@ bool GUIInput::injectOISKey(bool pressed,const OIS::KeyEvent& inKey){
 		end(inKey);
 	}
 	 return true;
- }
+}
 
 void GUIInput::repeatKey(I32 inKey, U32 Char) {
 	// Now remember the key is still down, so we need to simulate the key being released, and then repressed immediatly
     CEGUI_DEFAULT_CONTEXT.injectKeyUp( (CEGUI::Key::Scan)inKey );   // Key UP
     CEGUI_DEFAULT_CONTEXT.injectKeyDown( (CEGUI::Key::Scan)inKey ); // Key Down
     CEGUI_DEFAULT_CONTEXT.injectChar( Char );     // What that key means
- }
+}

@@ -22,6 +22,7 @@ GUI::GUI() : _prevElapsedTime(0),
 {
     //500ms
     _input.setInitialDelay(0.500f);
+	GUIEditor::createInstance();
 }
 
 GUI::~GUI()

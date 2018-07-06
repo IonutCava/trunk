@@ -12,8 +12,8 @@
 SceneNode::SceneNode(const SceneNodeType& type) : Resource(),
 										   _material(NULL),
                                            _customShader(NULL),
-										   _selected(false),
 										   _refreshMaterialData(true),
+										   _isSelectable(false),
 										   _type(type),
 										   _lodLevel(0),
 										   _LODcount(1), ///<Defaults to 1 LOD level
@@ -24,75 +24,77 @@ SceneNode::SceneNode(const SceneNodeType& type) : Resource(),
 SceneNode::SceneNode(const std::string& name,const SceneNodeType& type) : Resource(name),
 															 _material(NULL),
                                                              _customShader(NULL),
-															 _selected(false),
 															 _refreshMaterialData(true),
+															 _isSelectable(false),
 															 _type(type),
 															 _lodLevel(0),
 															 _LODcount(1), ///<Defaults to 1 LOD level
 															 _physicsAsset(NULL)
 {
+	U8 i = 0, j = 0;
+	for(; i <  Material::TEXTURE_UNIT0; ++i)
+		sprintf_s(_textureOperationUniformSlots[i], "textureOperation%d", Material::TEXTURE_UNIT0 + i);
+
+	for(i = Material::TEXTURE_UNIT0; i < Config::MAX_TEXTURE_STORAGE; ++i)
+		sprintf_s(_textureOperationUniformSlots[i], "textureOperation%d", j++);
 }
 
 SceneNode::~SceneNode() {
 	SAFE_DELETE(_physicsAsset);
 }
 
-void SceneNode::sceneUpdate(const U32 sceneTime,SceneGraphNode* const sgn){
-	if(!_material) return;
+void SceneNode::sceneUpdate(const U32 sceneTime, SceneGraphNode* const sgn, SceneState& sceneState){
+	if(!_material) 
+		return;
+
 	_refreshMaterialData = _material->isDirty();
 	_material->clean();
 }
 
 void SceneNode::onDraw(const RenderStage& currentStage){
 	Material* mat = getMaterial();
-	if(mat){
-		mat->computeShader(false);
-		mat->computeShader(false,DEPTH_STAGE);
-	}
+
+	if(!mat)
+		return;
+
+	mat->computeShader(false);
+	mat->computeShader(false,DEPTH_STAGE);
 }
 
 void SceneNode::preFrameDrawEnd(SceneGraphNode* const sgn){
 	//draw bounding box if needed and only in the final stage to prevent Shadow/PostFX artifacts
-	BoundingBox& bb = sgn->getBoundingBox();
 	//Draw the bounding box if it's always on or if the scene demands it
-	if(bb.getVisibility() || GET_ACTIVE_SCENE()->renderState()->drawBBox()){
+	if(sgn->getBoundingBox().getVisibility() || GET_ACTIVE_SCENE()->renderState().drawBBox()){
 		drawBoundingBox(sgn);
 	}
 }
 
-bool SceneNode::isInView(const bool distanceCheck,const BoundingBox& boundingBox,const BoundingSphere& sphere){
+bool SceneNode::isInView(const BoundingBox& boundingBox,const BoundingSphere& sphere, const bool distanceCheck){
 	Frustum& frust = Frustum::getInstance();
-	Scene* activeScene = GET_ACTIVE_SCENE();
-	vec3<F32> center = sphere.getCenter();
-	F32 radius = sphere.getRadius();
-	F32 halfExtent = boundingBox.getHalfExtent().length();
-	vec3<F32> eyeToNode    = center - frust.getEyePos();
+
+	const vec3<F32>& center  = sphere.getCenter();
+	vec3<F32> eyeToNode      = center - frust.getEyePos();
 	F32       cameraDistance = eyeToNode.length();
 
-	if(distanceCheck){
-		if((cameraDistance + halfExtent) > activeScene->state()->getGeneralVisibility()){
+	if(distanceCheck && 
+	   cameraDistance + boundingBox.getHalfExtent().length() > GET_ACTIVE_SCENE()->state().getGeneralVisibility())
 			return false;
+	
+
+	if(!boundingBox.ContainsPoint(frust.getEyePos())){
+		switch(frust.ContainsSphere(center, sphere.getRadius())) {
+			case FRUSTUM_OUT: return false;
+			case FRUSTUM_INTERSECT:	{
+				if(!frust.ContainsBoundingBox(boundingBox)) return false;
+			}
 		}
 	}
 
 	U8 lod = 0;
-	if(cameraDistance > SCENE_NODE_LOD0)		lod = 2;
-	else if(cameraDistance > SCENE_NODE_LOD1)	lod = 1;
+	if(cameraDistance > Config::SCENE_NODE_LOD0)		lod = 2;
+	else if(cameraDistance > Config::SCENE_NODE_LOD1)	lod = 1;
 	_lodLevel = lod;
 
-    const vec3<F32>& eye = frust.getEyePos();
-	if(!boundingBox.ContainsPoint(eye)){
-		I8 resSphereInFrustum = frust.ContainsSphere(center, radius);
-		switch(resSphereInFrustum) {
-			case FRUSTUM_OUT: return false;
-			case FRUSTUM_INTERSECT:	{
-				I8 resBoxInFrustum = frust.ContainsBoundingBox(boundingBox);
-				switch(resBoxInFrustum) {
-					case FRUSTUM_OUT: return false;
-				}
-			}
-		}
-	}
 	return true;
 }
 
@@ -140,39 +142,29 @@ void SceneNode::clearMaterials(){
 
 void SceneNode::prepareMaterial(SceneGraphNode* const sgn){
     //UpgradableReadLock ur_lock(_materialLock);
-    if(!_material)  return;
+    if(!_material)  
+		return;
 
-	if(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE)){
+	if(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE))
 		SET_STATE_BLOCK(_material->getRenderState(REFLECTION_STAGE));
-	}else{
+	else
 		SET_STATE_BLOCK(_material->getRenderState(FINAL_STAGE));
-	}
-
+	
 	ShaderProgram* s = _material->getShaderProgram();
 	Scene* activeScene = GET_ACTIVE_SCENE();
 	LightManager& lightMgr = LightManager::getInstance();
 
-	Texture2D* baseTexture = _material->getTexture(Material::TEXTURE_BASE);
-	Texture2D* bumpTexture = _material->getTexture(Material::TEXTURE_BUMP);
-	Texture2D* secondTexture = _material->getTexture(Material::TEXTURE_SECOND);
-	Texture2D* opacityMap = _material->getTexture(Material::TEXTURE_OPACITY);
-	Texture2D* specularMap = _material->getTexture(Material::TEXTURE_SPECULAR);
-
 	s->bind();
 
-	if(baseTexture) {
-		baseTexture->Bind(Material::FIRST_TEXTURE_UNIT);
-		s->Uniform("texDiffuse0Op", (I32)_material->getTextureOperation(Material::TEXTURE_BASE));
-	}
-	if(secondTexture){
-		secondTexture->Bind(Material::SECOND_TEXTURE_UNIT);
-		s->Uniform("texDiffuse1Op", (I32)_material->getTextureOperation(Material::TEXTURE_SECOND));
-	}
+	Texture2D* texture = NULL;
+	for(U16 i = 0; i < Config::MAX_TEXTURE_STORAGE; ++i)
+		if((texture = _material->getTexture(i)) != NULL){
+			texture->Bind(i);
 
-	if(bumpTexture)   bumpTexture->Bind(Material::BUMP_TEXTURE_UNIT);
-	if(opacityMap) 	  opacityMap->Bind(Material::OPACITY_TEXTURE_UNIT);
-	if(specularMap)   specularMap->Bind(Material::SPECULAR_TEXTURE_UNIT);
-    
+			if(i >= Material::TEXTURE_UNIT0)
+				s->Uniform(_textureOperationUniformSlots[i], (I32)_material->getTextureOperation(i));
+		}
+
 	s->Uniform("material",_material->getMaterialMatrix());
 	s->Uniform("opacity", _material->getOpacityValue());
 	s->Uniform("textureCount",_material->getTextureCount());
@@ -190,8 +182,8 @@ void SceneNode::prepareMaterial(SceneGraphNode* const sgn){
     s->Uniform("dvd_lightEnabled",     lightMgr.getLightsEnabledForCurrentNode());
 	s->Uniform("dvd_lightCastsShadows",lightMgr.getShadowCastingLightsForCurrentNode());
 
-	s->Uniform("windDirection",vec2<F32>(activeScene->state()->getWindDirX(),activeScene->state()->getWindDirZ()));
-	s->Uniform("windSpeed", activeScene->state()->getWindSpeed());
+	s->Uniform("windDirection",vec2<F32>(activeScene->state().getWindDirX(),activeScene->state().getWindDirZ()));
+	s->Uniform("windSpeed", activeScene->state().getWindSpeed());
 
 	if(!sgn->animationTransforms().empty()){
 		s->Uniform("hasAnimations", true);
@@ -205,21 +197,16 @@ void SceneNode::releaseMaterial(){
     //UpgradableReadLock ur_lock(_materialLock);
 	if(!_material) return;
 
-	Texture2D* baseTexture = _material->getTexture(Material::TEXTURE_BASE);
-	Texture2D* bumpTexture = _material->getTexture(Material::TEXTURE_BUMP);
-	Texture2D* secondTexture = _material->getTexture(Material::TEXTURE_SECOND);
-	Texture2D* opacityMap = _material->getTexture(Material::TEXTURE_OPACITY);
-	Texture2D* specularMap = _material->getTexture(Material::TEXTURE_SPECULAR);
-
-	if(specularMap) specularMap->Unbind(4);
-	if(opacityMap) opacityMap->Unbind(3);
-	if(bumpTexture) bumpTexture->Unbind(2);
-	if(secondTexture) secondTexture->Unbind(1);
-	if(baseTexture) baseTexture->Unbind(0);
+	Texture2D* texture = NULL;
+	for(U16 i = 0; i < Config::MAX_TEXTURE_STORAGE; ++i)
+		if((texture = _material->getTexture(i)) != NULL)
+			texture->Unbind(i);
 }
 
 void SceneNode::prepareDepthMaterial(SceneGraphNode* const sgn){
-	if(getType() != TYPE_OBJECT3D && getType() != TYPE_TERRAIN) return;
+	if(getType() != TYPE_OBJECT3D && getType() != TYPE_TERRAIN) 
+		return;
+
     //UpgradableReadLock ur_lock(_materialLock);
 	// general depth descriptor for objects without material
 	if(!_material) {
@@ -235,7 +222,8 @@ void SceneNode::prepareDepthMaterial(SceneGraphNode* const sgn){
 
 	Texture2D* opacityMap = _material->getTexture(Material::TEXTURE_OPACITY);
 
-	if(opacityMap)	opacityMap->Bind(Material::OPACITY_TEXTURE_UNIT );
+	if(opacityMap)
+		opacityMap->Bind(Material::TEXTURE_OPACITY);
 	
 	s->Uniform("opacity", _material->getOpacityValue());
 
@@ -249,9 +237,12 @@ void SceneNode::prepareDepthMaterial(SceneGraphNode* const sgn){
 
 void SceneNode::releaseDepthMaterial(){
     //UpgradableReadLock ur_lock(_materialLock);
-	if(!_material) return;
+	if(!_material)
+		return;
+
 	Texture2D* opacityMap = _material->getTexture(Material::TEXTURE_OPACITY);
-	if(opacityMap) opacityMap->Unbind(0);
+	if(opacityMap) 
+		opacityMap->Unbind(Material::TEXTURE_OPACITY);
 }
 
 bool SceneNode::computeBoundingBox(SceneGraphNode* const sgn) {
@@ -271,12 +262,12 @@ bool SceneNode::unload(){
 }
 
 void SceneNode::drawBoundingBox(SceneGraphNode* const sgn){
-	BoundingBox& bb = sgn->getBoundingBox();
-	mat4<F32> boundingBoxTransformMatrix;
-	/*Transform* tempTransform = sgn->getTransform();
+	const BoundingBox& bb = sgn->getBoundingBox();
+	/*mat4<F32> boundingBoxTransformMatrix;
+	Transform* tempTransform = sgn->getTransform();
 	if(tempTransform){
 		boundingBoxTransformMatrix = tempTransform->getGlobalMatrix();
 	}*/
 
-	GFX_DEVICE.drawBox3D(bb.getMin(),bb.getMax(),boundingBoxTransformMatrix);
+	GFX_DEVICE.drawBox3D(bb.getMin(),bb.getMax(),/*boundingBoxTransformMatrix*/mat4<F32>());
 }

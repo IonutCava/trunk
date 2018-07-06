@@ -6,7 +6,7 @@
 U32 maxAlloc = 0;
 char* zMaxFile = "";
 I16 nMaxLine = 0;
-
+/*
 void* operator new(size_t t ,char* zFile, I32 nLine){
 #ifdef _DEBUG
 	if (t > maxAlloc)	{
@@ -58,3 +58,4 @@ void free_simd(void * pxData){
 	free(p);
 #endif
 }
+*/

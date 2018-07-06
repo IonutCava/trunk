@@ -14,18 +14,17 @@ glMSTextureBufferObject::glMSTextureBufferObject() : glFrameBufferObject(FBO_2D_
 }
 
 bool glMSTextureBufferObject::Create(GLushort width, GLushort height, GLubyte imageLayers){
-	if(!_attachementDirty[TextureDescriptor::Color0]){
+	if(!_attachementDirty[TextureDescriptor::Color0])
 		return true;
-	}
 
 	D_PRINT_FN(Locale::get("GL_FBO_GEN_COLOR_MS"),width,height);
 	Destroy();
 	TextureDescriptor texDescriptor = _attachement[TextureDescriptor::Color0];
+	const SamplerDescriptor& sampler = texDescriptor.getSampler();
 	///And get the image formats and data type
 	if(_textureType != glTextureTypeTable[texDescriptor._type]){
 		ERROR_FN(Locale::get("ERROR_FBO_ATTACHEMENT_DIFFERENT"), (I32)TextureDescriptor::Color0);
 	}
-	if(!_attachementDirty[TextureDescriptor::Color0]) return true;
 
 	if(_msaaBufferResolver <= 0){
 		// create a new fbo with multisampled color and depth attachements
@@ -45,15 +44,15 @@ bool glMSTextureBufferObject::Create(GLushort width, GLushort height, GLubyte im
 	GLCheck(glBindTexture(_textureType, _textureId[0]));
 
 	///General texture parameters for either color or depth
-	if(texDescriptor._generateMipMaps){
+	if(sampler.generateMipMaps()){
 		///(depth doesn't need mipmaps, but no need for another "if" to complicate things)
 		GLCheck(glTexParameteri(_textureType, GL_TEXTURE_BASE_LEVEL, texDescriptor._mipMinLevel));
 		GLCheck(glTexParameteri(_textureType, GL_TEXTURE_MAX_LEVEL,  texDescriptor._mipMaxLevel));
 	}
-	GLCheck(glTexParameterf(_textureType, GL_TEXTURE_MAG_FILTER, glTextureFilterTable[texDescriptor._magFilter]));
-	GLCheck(glTexParameterf(_textureType, GL_TEXTURE_MIN_FILTER, glTextureFilterTable[texDescriptor._minFilter]));
-	GLCheck(glTexParameterf(_textureType, GL_TEXTURE_WRAP_S,     glWrapTable[texDescriptor._wrapU]));
-	GLCheck(glTexParameterf(_textureType, GL_TEXTURE_WRAP_T,     glWrapTable[texDescriptor._wrapV]));
+	GLCheck(glTexParameterf(_textureType, GL_TEXTURE_MAG_FILTER, glTextureFilterTable[sampler.magFilter()]));
+	GLCheck(glTexParameterf(_textureType, GL_TEXTURE_MIN_FILTER, glTextureFilterTable[sampler.minFilter()]));
+	GLCheck(glTexParameterf(_textureType, GL_TEXTURE_WRAP_S,     glWrapTable[sampler.wrapU()]));
+	GLCheck(glTexParameterf(_textureType, GL_TEXTURE_WRAP_T,     glWrapTable[sampler.wrapV()]));
 
 	GLCheck(glTexImage2D(_textureType,
 						 0,

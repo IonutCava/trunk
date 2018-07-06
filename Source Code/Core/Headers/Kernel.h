@@ -29,7 +29,7 @@
 
 class GUI;
 class Task;
-class Camera;
+class Scene;
 class PXDevice;
 class GFXDevice;
 class SFXDevice;
@@ -46,6 +46,7 @@ namespace OIS {
 	class JoyStickEvent;
 	enum MouseButtonID;
 }
+struct FrameEvent;
 class InputInterface;
 ///The kernel is the main interface to our engine components:
 ///-video
@@ -108,8 +109,8 @@ public: ///Input
 
 private:
    static void FirstLoop();
-   bool MainLoopScene();
-   bool presentToScreen();
+   bool MainLoopScene(FrameEvent& evt);
+   bool presentToScreen(FrameEvent& evt);
 
 private:
 	Application&    _APP;
@@ -123,12 +124,12 @@ private:
 	GUI&			_GUI;
 	///The SceneManager/ Scene Pool
 	SceneManager&	_sceneMgr;
+	///The active scene
+	Scene*          _activeScene;
     ///The ShaderMAnager
     ShaderManager&  _shaderMgr;
 	///The manager class responsible for sending frame update events
 	FrameListenerManager& _frameMgr;
-	///Pointer to the current camera
-	Camera*			_camera;
 	///Access to all of the input devices
 	InputInterface& _inputInterface;
 	///General light management and rendering (individual lights are handled by each scene)

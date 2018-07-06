@@ -36,16 +36,19 @@ PSShadowMaps::PSShadowMaps(Light* light) : ShadowMap(light)
 	createJitterTexture(JITTER_SIZE,8,8);
 
 	_depthMap = GFX_DEVICE.newFBO(FBO_2D_ARRAY_DEPTH);
+	
+	SamplerDescriptor depthMapSampler;
+	depthMapSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
+	depthMapSampler.toggleMipMaps(false);
+	depthMapSampler._useRefCompare = true; //< Use compare function
+	depthMapSampler._cmpFunc = CMP_FUNC_LEQUAL; //< Use less or equal
+	depthMapSampler._depthCompareMode = INTENSITY;
 
 	TextureDescriptor depthMapDescriptor(TEXTURE_2D_ARRAY,
 										 DEPTH_COMPONENT,
 										 DEPTH_COMPONENT24,
 										 UNSIGNED_BYTE); ///Default filters, LINEAR is OK for this
-	depthMapDescriptor.setWrapMode(TEXTURE_CLAMP_TO_EDGE,TEXTURE_CLAMP_TO_EDGE);
-	depthMapDescriptor._useRefCompare = true; //< Use compare function
-	depthMapDescriptor._cmpFunc = CMP_FUNC_LEQUAL; //< Use less or equal
-	depthMapDescriptor._depthCompareMode = LUMINANCE;
-    depthMapDescriptor.toggleMipMaps(false);
+	depthMapDescriptor.setSampler(depthMapSampler);
 	_depthMap->AddAttachment(depthMapDescriptor, TextureDescriptor::Depth);
 	_depthMap->toggleColorWrites(false); //<do not draw colors
     _depthMap->toggleDepthBuffer(false); //<do not create a depth buffer
@@ -100,14 +103,14 @@ PSShadowMaps::~PSShadowMaps()
 	SAFE_DELETE(_jitterTexture);
 }
 
-void PSShadowMaps::resolution(U16 resolution,SceneRenderState* sceneRenderState){
+void PSShadowMaps::resolution(U16 resolution, const SceneRenderState& sceneRenderState){
     vec2<F32> zPlanes = Frustum::getInstance().getZPlanes();
     calculateSplitPoints( _light->getShadowMapInfo()->_numSplits, zPlanes.x,zPlanes.y);
     setOptimalAdjustFactor(0, 5);
 	setOptimalAdjustFactor(1, 1);
     setOptimalAdjustFactor(2, 0);
 
-	U8 resolutionFactorTemp = sceneRenderState->shadowMapResolutionFactor();
+	U8 resolutionFactorTemp = sceneRenderState.shadowMapResolutionFactor();
 	CLAMP<U8>(resolutionFactorTemp, 1, 4);
 	U16 maxResolutionTemp = resolution;
 	if(resolutionFactorTemp != _resolutionFactor || _maxResolution != maxResolutionTemp){
@@ -122,20 +125,19 @@ void PSShadowMaps::resolution(U16 resolution,SceneRenderState* sceneRenderState)
 	ShadowMap::resolution(resolution,sceneRenderState);
 }
 
-void PSShadowMaps::render(SceneRenderState* sceneRenderState, boost::function0<void> sceneRenderFunction){
-	///Only if we have a valid callback;
+void PSShadowMaps::render(const SceneRenderState& renderState, boost::function0<void> sceneRenderFunction){
+	//Only if we have a valid callback;
 	if(sceneRenderFunction.empty()) {
 		ERROR_FN(Locale::get("ERROR_LIGHT_INVALID_SHADOW_CALLBACK"), _light->getId());
 		return;
 	}
-    F32 ortho = GET_ACTIVE_SCENE()->getSceneGraph()->getRoot()->getBoundingBox().getWidth() * 0.5f;
-
+    F32 ortho = GET_ACTIVE_SCENEGRAPH()->getRoot()->getBoundingBox().getWidth() * 0.5f;
+	CLAMP<F32>(ortho, 1.0f, (F32)Config::DIRECTIONAL_LIGHT_DISTANCE);
     for(U8 i = 0; i < _numSplits; i++){
-        F32 div = (1.0f + i) * (1.0f + i) + i;
-        _orthoPerPass[_numSplits - i - 1] = ortho / div;
+        _orthoPerPass[_numSplits - i - 1] = ortho / ((1.0f + i) * (1.0f + i) + i);
     }
 	_callback = sceneRenderFunction;
-	renderInternal(sceneRenderState);
+	renderInternal(renderState);
 }
 
 void PSShadowMaps::setOptimalAdjustFactor(U8 index, F32 value){
@@ -163,10 +165,12 @@ void PSShadowMaps::calculateSplitPoints(U8 splitCount, F32 nearDist, F32 farDist
 	_splitPoints[splitCount] = farDist;
 }
 
-void PSShadowMaps::renderInternal(SceneRenderState* renderState) const {
+void PSShadowMaps::renderInternal(const SceneRenderState& renderState) const {
+	Scene* activeScene = GET_ACTIVE_SCENE();
+	boost::function0<void> renderFunction = _callback.empty() ? SCENE_GRAPH_UPDATE(activeScene->getSceneGraph()) : _callback;
 	GFXDevice& gfx = GFX_DEVICE;
 	//Get our eye view
-	const vec3<F32>& eyePos = renderState->getCamera()->getEye();
+	const vec3<F32>& eyePos = renderState.getCameraConst().getEye();
 	//For every depth map
 	//Lock our projection matrix so no changes will be permanent during the rest of the frame
     //Lock our model view matrix so no camera transforms will be saved beyond this light's scope
@@ -181,12 +185,7 @@ void PSShadowMaps::renderInternal(SceneRenderState* renderState) const {
 		_light->renderFromLightView(i, _orthoPerPass[i]);
 		_depthMap->DrawToLayer(0,i);
 			//draw the scene
-        	Scene* activeScene = GET_ACTIVE_SCENE();
-    		if(_callback.empty()){
-				GFX_DEVICE.render(SCENE_GRAPH_UPDATE(activeScene->getSceneGraph()), activeScene->renderState());
-			}else{
-				GFX_DEVICE.render(_callback, activeScene->renderState());
-			}
+			GFX_DEVICE.render(renderFunction, renderState);
 	}
 	_depthMap->End();
 	//get all the required information (light MVP matrix for example)
@@ -207,17 +206,17 @@ void PSShadowMaps::previewShadowMaps(){
 	_depthMap->Bind(0,1);
 	GFX_DEVICE.toggle2D(true);
 		_previewDepthMapShader->Uniform("layer",0);
-		GFX_DEVICE.renderInViewport(vec4<I32>(0,0,128,128),
+		GFX_DEVICE.renderInViewport(vec4<U32>(0,0,128,128),
 								    DELEGATE_BIND(&GFXDevice::renderInstance,
 									            DELEGATE_REF(GFX_DEVICE),
 												DELEGATE_REF(_renderQuad->renderInstance())));
 		_previewDepthMapShader->Uniform("layer",1);
-		GFX_DEVICE.renderInViewport(vec4<I32>(130,0,128,128),
+		GFX_DEVICE.renderInViewport(vec4<U32>(130,0,128,128),
 			                        DELEGATE_BIND(&GFXDevice::renderInstance,
 									             DELEGATE_REF(GFX_DEVICE),
 												 DELEGATE_REF(_renderQuad->renderInstance())));
 		_previewDepthMapShader->Uniform("layer",2);
-		GFX_DEVICE.renderInViewport(vec4<I32>(260,0,128,128),
+		GFX_DEVICE.renderInViewport(vec4<U32>(260,0,128,128),
 			                        DELEGATE_BIND(&GFXDevice::renderInstance,
 									            DELEGATE_REF(GFX_DEVICE),
 												DELEGATE_REF(_renderQuad->renderInstance())));

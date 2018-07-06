@@ -2095,7 +2095,7 @@ bool dtTileCacheHeaderSwapEndian(unsigned char* data, const int dataSize)
 	dtSwapEndian(&swappedVersion);
 
 	if ((header->magic != DT_TILECACHE_MAGIC || header->version != DT_TILECACHE_VERSION) &&
-		(header->magic != swappedMagic || header->version != swappedVersion))
+		(header->magic != swappedMagic || header->version != swappedVersion) || dataSize == 0)
 	{
 		return false;
 	}

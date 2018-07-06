@@ -39,11 +39,10 @@ out vec4 _colorOut;
 
 uniform sampler2DArray tex;
 uniform int layer;
+uniform vec2 dvd_zPlanes;
 
 void main()
 {
-	float fLayer = layer;
-	vec3 tex_coord = vec3(_texCoord, fLayer);
-	_colorOut = texture(tex, tex_coord);
-	_colorOut.a = 0;
+	float linearDepth = (2 * dvd_zPlanes.x) / (dvd_zPlanes.y + dvd_zPlanes.x - texture(tex, vec3(_texCoord, layer)).x * (dvd_zPlanes.y - dvd_zPlanes.x));
+	_colorOut = vec4(linearDepth, linearDepth, linearDepth, 0.0);
 }

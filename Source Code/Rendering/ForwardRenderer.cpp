@@ -9,7 +9,7 @@ ForwardRenderer::~ForwardRenderer()
 {
 }
 
-void ForwardRenderer::render(boost::function0<void> renderCallback,SceneRenderState* const sceneRenderState) {
+void ForwardRenderer::render(boost::function0<void> renderCallback, const SceneRenderState& sceneRenderState) {
 	renderCallback();
 	RenderPassManager::getInstance().render(sceneRenderState);
 }

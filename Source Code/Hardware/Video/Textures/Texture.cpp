@@ -1,4 +1,5 @@
 #include "Headers/Texture.h"
+
 #include "Utility/Headers/ImageTools.h"
 #include "Core/Headers/ParamHandler.h"
 
@@ -6,11 +7,8 @@ Unordered_map<U8, U32> Texture::textureBoundMap;
 
 Texture::Texture(const bool flipped) : HardwareResource(),
 							  		   _flipped(flipped),
-								       _minFilter(TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR),
-								       _magFilter(TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR),
 								       _handle(0),
 								       _bound(false),
-                                       _generateMipmaps(true),
 								       _hasTransparency(false)
 {
 	if(textureBoundMap.empty()){
@@ -19,11 +17,6 @@ Texture::Texture(const bool flipped) : HardwareResource(),
 			textureBoundMap.insert(std::make_pair(i,0));
 		}
 	}
-	/// Defaults
-	_wrapU = TEXTURE_REPEAT;
-	_wrapV = TEXTURE_REPEAT;
-	_wrapW = TEXTURE_REPEAT;
-	setAnisotrophyLevel(ParamHandler::getInstance().getParam<U8>("rendering.anisotropicFilteringLevel",1));
 }
 
 /// Use DevIL to load a file intro a Texture Object
@@ -32,27 +25,30 @@ bool Texture::LoadFile(U32 target, const std::string& name){
 	// Create a new imageData object
 	ImageTools::ImageData img;
 	// Flip image if needed
-	img._flip = _flipped;
+	img.flip(_flipped);
 	// Save file contents in  the "img" object
-	ImageTools::OpenImage(name,img,_hasTransparency);
+	img.create(name);
+	_hasTransparency = img.alpha();
 	// validate data
-	if(!img.data) {
+	if(!img.data()) {
 		ERROR_FN(Locale::get("ERROR_TEXTURE_LOAD"), name.c_str());
 		///Missing texture fallback
 		ParamHandler& par = ParamHandler::getInstance();
-		ImageTools::OpenImage(par.getParam<std::string>("assetsLocation")+"/"+
-			                  par.getParam<std::string>("defaultTextureLocation") +"/"+
-							  "missing_texture.jpg", img,_hasTransparency);
+		img.flip(false);
+		img.create(par.getParam<std::string>("assetsLocation")+"/"+
+			       par.getParam<std::string>("defaultTextureLocation") +"/"+
+				   "missing_texture.jpg");
 	}
 
 	// Get width
-	_width = img.w;
+	_width = img.dimensions().width;
 	// Get height
-	_height = img.h;
+	_height = img.dimensions().height;
 	// Get bitdepth
-	_bitDepth = img.d;
+	_bitDepth = img.bpp();
+	GFXImageFormat texture_format = img.format();
 	// Create a new API-dependent texture object
-	LoadData(target, img.data, _width, _height, _bitDepth);
+	loadData(target, img.data(), img.dimensions(), _bitDepth, texture_format);
 	// Unload file data - ImageData destruction handles this
 	//img.Destroy();
 	return true;

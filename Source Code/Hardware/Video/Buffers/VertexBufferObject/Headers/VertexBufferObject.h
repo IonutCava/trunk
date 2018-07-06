@@ -87,10 +87,21 @@ public:
 	inline void reserveBiTangentCount(U32 size) {_dataBiTangent.reserve(size);}
 	inline void reserveIndexCount(U32 size)     {_largeIndices ? _hardwareIndicesL.reserve(size) :_hardwareIndicesS.reserve(size);}
 
-	inline void resizePositionCount(U32 size, const vec3<F32>& defaultValue = vec3<F32>(0,0,0))  {_dataPosition.resize(size,defaultValue);}
-	inline void resizeNormalCount(U32 size, const vec3<F32>& defaultValue = vec3<F32>(0,0,0))    {_dataNormal.resize(size,defaultValue);}
-	inline void resizeTangentCount(U32 size, const vec3<F32>& defaultValue = vec3<F32>(0,0,0))   {_dataTangent.resize(size,defaultValue);}
-	inline void resizeBiTangentCount(U32 size, const vec3<F32>& defaultValue = vec3<F32>(0,0,0)) {_dataBiTangent.resize(size,defaultValue);}
+	inline void resizePositionCount(U32 size, const vec3<F32>& defaultValue = vec3<F32>(0.0f))  {
+		_dataPosition.resize(size,defaultValue);
+	}
+
+	inline void resizeNormalCount(U32 size, const vec3<F32>& defaultValue = vec3<F32>(0.0f))    {
+		_dataNormal.resize(size,defaultValue);
+	}
+
+	inline void resizeTangentCount(U32 size, const vec3<F32>& defaultValue = vec3<F32>(0.0f))   {
+		_dataTangent.resize(size,defaultValue);
+	}
+
+	inline void resizeBiTangentCount(U32 size, const vec3<F32>& defaultValue = vec3<F32>(0.0f)) {
+		_dataBiTangent.resize(size,defaultValue);
+	}
 
 	inline vectorImpl<vec2<F32> >&  getTexcoord()    { _texcoordDirty  = true; return _dataTexcoord;}
 	inline vectorImpl<vec4<U8>  >&  getBoneIndices() { _indicesDirty   = true; return _boneIndices;}
@@ -198,10 +209,10 @@ public:
 		_hardwareIndicesL.clear();
 		_hardwareIndicesS.clear();
 		_dataTriangles.clear();
-		_indiceLimits.resize(SCENE_NODE_LOD, vec2<U32>(0,0));
+		_indiceLimits.resize(Config::SCENE_NODE_LOD, vec2<U32>(0,0));
 		_positionDirty = _normalDirty = _texcoordDirty = _tangentDirty = _bitangentDirty = _indicesDirty = _weightsDirty = true;
-		_minPosition = vec3<F32>(10000.0f,10000.0f,10000.0f);
-		_maxPosition = vec3<F32>(-10000.0f,-10000.0f,-10000.0f);
+		_minPosition = vec3<F32>(10000.0f);
+		_maxPosition = vec3<F32>(-10000.0f);
 	}
 
 protected:

@@ -4,12 +4,12 @@
 #include "GUI/Headers/GUI.h"
 #include "GUI/Headers/GUIText.h"
 #include "GUI/Headers/GUIFlash.h"
+#include "Core/Math/Headers/Plane.h"
 #include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Rendering/Headers/Frustum.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/ShaderManager.h"
-#include "Rendering/Headers/Renderer.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
 #include "Rendering/Camera/Headers/Camera.h"
 #include "Rendering/RenderPass/Headers/RenderPass.h"
@@ -21,7 +21,7 @@
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Text3D.h"
 
-GFXDevice::GFXDevice() : _api(GL_API::getInstance()) ///<Defaulting to OpenGL if no api has been defined
+GFXDevice::GFXDevice() : _api(GL_API::getOrCreateInstance()) ///<Defaulting to OpenGL if no api has been defined
 {
    _prevShaderId = 0;
    _prevTextureId = 0;
@@ -30,18 +30,20 @@ GFXDevice::GFXDevice() : _api(GL_API::getInstance()) ///<Defaulting to OpenGL if
    _previousStateBlock = NULL;
    _stateBlockDirty = false;
    _drawDebugAxis = false;
+   _clippingPlanesDirty = true;
    _renderer = NULL;
    _renderStage = INVALID_STAGE;
+   Frustum::createInstance();
    RenderPass* diffusePass = New RenderPass("diffusePass");
-   RenderPassManager::getInstance().addRenderPass(diffusePass,1);
+   RenderPassManager::getOrCreateInstance().addRenderPass(diffusePass,1);
    //RenderPassManager::getInstance().addRenderPass(shadowPass,2);
 }
 
 void GFXDevice::setApi(const RenderAPI& api){
 	switch(api)	{
 		default:
-		case OpenGL:    _api = GL_API::getInstance();	break;
-		case Direct3D:	_api = DX_API::getInstance();	break;
+		case OpenGL:    _api = GL_API::getOrCreateInstance();	break;
+		case Direct3D:	_api = DX_API::getOrCreateInstance();	break;
 
 		case GFX_RENDER_API_PLACEHOLDER: ///< Placeholder - OpenGL 4.0 and DX 11 in another life maybe :) - Ionut
 		case Software:
@@ -57,6 +59,7 @@ void GFXDevice::closeRenderingApi(){
 		SAFE_DELETE(it.second);
 	}
 	_stateBlockMap.clear();
+	Frustum::DestroyInstance();
 	///Destroy all rendering Passes
 	RenderPassManager::getInstance().DestroyInstance();
 }
@@ -70,28 +73,32 @@ void GFXDevice::renderInstance(RenderInstance* const instance){
 	//All geometry is stored in VBO format
 	assert(instance->object3D() != NULL);
 
-	if(instance->preDraw()){
+	if(instance->preDraw())
 		instance->object3D()->onDraw(getRenderStage());
-	}
-	
+		
 	if(instance->draw2D()){
 		//toggle2D(true);
 	}
-	if(_stateBlockDirty) updateStates();
+
+	if(_stateBlockDirty)
+		updateStates();
 
 	_api.renderInstance(instance);
 }
 
 void GFXDevice::renderBuffer(VertexBufferObject* const vbo,Transform* const vboTransform){
-	if(_stateBlockDirty) updateStates();
+	if(_stateBlockDirty)
+		updateStates();
 
 	_api.renderBuffer(vbo,vboTransform);
 }
 
 void GFXDevice::renderGUIElement(GUIElement* const element,ShaderProgram* const guiShader){
-	if(!element) return; //< Console not created, for example
+	if(!element)
+		return; //< Console not created, for example
 
-	if(_stateBlockDirty) updateStates();
+	if(_stateBlockDirty)
+		updateStates();
 
 	switch(element->getGuiType()){
         case GUI_TEXT:{
@@ -107,7 +114,7 @@ void GFXDevice::renderGUIElement(GUIElement* const element,ShaderProgram* const 
 	};
 }
 
-void GFXDevice::render(boost::function0<void> renderFunction,SceneRenderState* const sceneRenderState){
+void GFXDevice::render(boost::function0<void> renderFunction, const SceneRenderState& sceneRenderState){
 	//Call the specific renderfunction that prepares the scene for presentation
 	_renderer->render(renderFunction,sceneRenderState);
 }
@@ -118,43 +125,61 @@ bool GFXDevice::isCurrentRenderStage(U16 renderStageMask){
 }
 
 void GFXDevice::setRenderer(Renderer* const renderer) {
+	assert(renderer != NULL);
 	SAFE_UPDATE(_renderer,renderer);
 }
 
-bool GFXDevice::getDeferredRendering(){
-	assert(_renderer != NULL);
-	return (_renderer->getType() != RENDERER_FORWARD);
-}
-
 void  GFXDevice::generateCubeMap(FrameBufferObject& cubeMap,
-								 Camera* const activeCamera,
 								 const vec3<F32>& pos,
-								 boost::function0<void> callback){
+								 boost::function0<void> callback,
+								 const RenderStage& renderStage){
 	//Don't need to override cubemap rendering callback
 	if(callback.empty()){
-		SceneGraph* sg = GET_ACTIVE_SCENE()->getSceneGraph();
 		//Default case is that everything is reflected
-		callback = SCENE_GRAPH_UPDATE(sg);
+		callback = SCENE_GRAPH_UPDATE(GET_ACTIVE_SCENEGRAPH());
 	}
 	//Only use cube map FBO's
-	if(cubeMap.getType() != FBO_CUBE_COLOR){
-		ERROR_FN(Locale::get("ERROR_GFX_DEVICE_INVALID_FBO_CUBEMAP"));
+	if(cubeMap.getType() != FBO_CUBE_COLOR && cubeMap.getType() != FBO_CUBE_DEPTH){
+		if(cubeMap.getType() != FBO_CUBE_COLOR) {
+			ERROR_FN(Locale::get("ERROR_GFX_DEVICE_INVALID_FBO_CUBEMAP"));
+		}else{
+			ERROR_FN(Locale::get("ERROR_GFX_DEVICE_INVALID_FBO_CUBEMAP_SHADOW"));
+		}
 		return;
 	}
-	//Save our current camera settings
-	activeCamera->SaveCamera();
+
+	static vec3<F32> TabUp[6] = {	
+		vec3<F32>(0.0f,	-1.0f,	0.0f),
+		vec3<F32>(0.0f,	-1.0f,	0.0f),
+		vec3<F32>(0.0f,	 0.0f,	1.0f),
+		vec3<F32>(0.0f,  0.0f, -1.0f),
+		vec3<F32>(0.0f,	-1.0f,	0.0f),
+		vec3<F32>(0.0f,	-1.0f,	0.0f)
+	};
+
+	///Get the center and up vectors for each cube face
+	vec3<F32> TabCenter[6] = {	
+		vec3<F32>(pos.x+1.0f,	pos.y,		pos.z),
+		vec3<F32>(pos.x-1.0f,	pos.y,		pos.z),
+		vec3<F32>(pos.x,		pos.y+1.0f,	pos.z),
+		vec3<F32>(pos.x,		pos.y-1.0f,	pos.z),
+      	vec3<F32>(pos.x,		pos.y,		pos.z+1.0f),
+		vec3<F32>(pos.x,		pos.y,		pos.z-1.0f)
+	};
+
 	//And save all camera transform matrices
     lockMatrices(PROJECTION_MATRIX,true,true);
 	//set a 90 degree vertical FoV perspective projection
 	setPerspectiveProjection(90.0,1,Frustum::getInstance().getZPlanes());
-	//Save our old rendering stage
-	RenderStage prev = getRenderStage();
 	//And set the current render stage to
-	setRenderStage(ENVIRONMENT_MAPPING_STAGE);
+	setRenderStage(renderStage);
 	//For each of the environment's faces (TOP,DOWN,NORTH,SOUTH,EAST,WEST)
 	for(U8 i = 0; i < 6; i++){
-		//Set the correct camera orientation and position for current face
-		activeCamera->RenderLookAtToCubeMap( pos, i );
+		///Set our Rendering API to render the desired face
+		GFX_DEVICE.lookAt(pos,TabCenter[i],TabUp[i]);
+		GET_ACTIVE_SCENE()->renderState().getCamera().updateListeners();
+		///Extract the view frustum associated with this face
+		Frustum::getInstance().Extract(pos);
 		//Bind our FBO's current face
 		cubeMap.Begin(i);
 			//draw our scene
@@ -163,11 +188,9 @@ void  GFXDevice::generateCubeMap(FrameBufferObject& cubeMap,
 		cubeMap.End(i);
 	}
 	//Return to our previous rendering stage
-	setRenderStage(prev);
+	setPreviousRenderStage();
 	//Restore transfom matrices
 	releaseMatrices();
-	//And restore camera
-	activeCamera->RestoreCamera();
 }
 
 RenderStateBlock* GFXDevice::createStateBlock(const RenderStateBlockDescriptor& descriptor){
@@ -206,11 +229,12 @@ RenderStateBlock* GFXDevice::setStateBlockByDesc( const RenderStateBlockDescript
 void GFXDevice::updateStates(bool force) {
 	//Verify render states
 	if(force){
-		if ( _newStateBlock ){
+		if ( _newStateBlock )
 			updateStateInternal(_newStateBlock, true);
-		}
+		
 		_currentStateBlock = _newStateBlock;
 	}
+
 	if (_stateBlockDirty && !force) {
 		updateStateInternal(_newStateBlock);
 		_currentStateBlock = _newStateBlock;
@@ -218,6 +242,7 @@ void GFXDevice::updateStates(bool force) {
     _stateBlockDirty = false;
 
    LightManager::getInstance().update();
+
 }
 
 bool GFXDevice::excludeFromStateChange(const SceneNodeType& currentType){

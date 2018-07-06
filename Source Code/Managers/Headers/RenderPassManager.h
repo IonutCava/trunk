@@ -20,8 +20,8 @@
 
  */
 
-#ifndef _RENDER_PASS_MANAGER_H_
-#define _RENDER_PASS_MANAGER_H_
+#ifndef _MANAGERS_RENDER_PASS_MANAGER_H_
+#define _MANAGERS_RENDER_PASS_MANAGER_H_
 
 #include "core.h"
 class RenderPass;
@@ -40,16 +40,17 @@ DEFINE_SINGLETON (RenderPassManager)
 
 public:
 	///Call every renderqueue's render function in order
-	void render(SceneRenderState* const sceneRenderState = NULL);
+	void render(const SceneRenderState& sceneRenderState);
 	///Add a new pass with the specified key
 	void addRenderPass(RenderPass* const renderPass, U8 orderKey);
 	///Remove a renderpass from the manager, optionally not deleting it
 	void removeRenderPass(RenderPass* const renderPass,bool deleteRP = true);
 	///Find a renderpass by name and remove it from the manager, optionally not deleting it
 	void removeRenderPass(const std::string& name,bool deleteRP = true);
-	U16 getLastTotalBinSize(U8 renderPassId);
+	U16 getLastTotalBinSize(U8 renderPassId) const;
 
 private:
+	RenderPassManager();
 	~RenderPassManager();
 	vectorImpl<RenderPassItem > _renderPasses;
 

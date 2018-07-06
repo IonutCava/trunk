@@ -32,35 +32,53 @@
 #ifndef _CONFIG_HEADER_
 #define _CONFIG_HEADER_
 
-///Application desired framerate for physics simulations
-#define TARGET_FRAME_RATE 60
-///Application update rate
-#define TICKS_PER_SECOND 25
-///Maximum frameskip
-#define MAX_FRAMESKIP 5
-///Minimum triangle count for a mesh to apply depth rendering optimisations
-#define DEPTH_VBO_MIN_TRIANGLES 1000
-///Minimum vbo size in bytes for a mesh to apply depth rendering optimisations (4MB default)
-#define DEPTH_VBO_MIN_BYTES 4 * 1024 * 1024
+namespace Config
+{
+	/// How many textures to store per material. bump(0) + opacity(1) + spec(2) + tex[3..MAX_TEXTURE_STORAGE - 1]
+	const int MAX_TEXTURE_STORAGE = 6;
+	/// Application desired framerate for physics simulations
+	const int TARGET_FRAME_RATE = 60;
+	///	Application update rate
+	const int TICKS_PER_SECOND = 25;
+	/// Maximum frameskip
+	const int MAX_FRAMESKIP = 5;
+	/// Minimum triangle count for a mesh to apply depth rendering optimisations
+	const int DEPTH_VBO_MIN_TRIANGLES = 1000;
+	/// Minimum vbo size in bytes for a mesh to apply depth rendering optimisations (4MB default)
+	const int DEPTH_VBO_MIN_BYTES = 4 * 1024 * 1024;
 
+	/// How many clip planes should the shaders us
+	const int MAX_CLIP_PLANES = 6;
+	/// How many lights should affect a single node
+	const int MAX_LIGHTS_PER_SCENE_NODE = 4;
+	const int MAX_SHADOW_CASTING_LIGHTS_PER_NODE = 2;
+	/// How many "units" away should a directional light source be from the camera's position
+	const int DIRECTIONAL_LIGHT_DISTANCE = 500;
+	/// Terrain LOD configuration
+	/// Camera distance to the terrain chunk is calculated as follows:
+	///	vector EyeToChunk = terrainBoundingBoxCenter - EyePos; cameraDistance = EyeToChunk.length();
+	const int TERRAIN_CHUNKS_LOD = 3; //< Number of LOD levels for the terrain
+	const int TERRAIN_CHUNK_LOD0 = 100; //< Relative distance for LOD0->LOD1 selection
+	const int TERRAIN_CHUNK_LOD1 = 180; //< Relative distance for LOD0->LOD2 selection
+
+	/// SceneNode LOD selection
+	/// Distance computation is identical to the of the terrain (using SceneNode's bounding box)
+	const int SCENE_NODE_LOD = 3;
+	const int SCENE_NODE_LOD0 = 100; //< Relative distance for LOD0->LOD1 selection
+	const int SCENE_NODE_LOD1 = 180; //< Relative distance for LOD0->LOD2 selection
+
+	/// Edit the maximum number of concurrent threads that this application may start excluding tasks.
+	/// Default 2 without: Rendering + Update + A.I. + Networking + PhysX
+	const int THREAD_LIMIT = 2;
+}
+
+///Direct 3D desired target version
 #define TARGET_D3D_VERSION D3D11 /*or D3D10*/
 
-///How many lights should affect a single node
-#define MAX_LIGHTS_PER_SCENE_NODE 4
-#define MAX_SHADOW_CASTING_LIGHTS_PER_NODE 2
-
-///Terrain LOD configuration
-///Camera distance to the terrain chunk is calculated as follows:
-///	vector EyeToChunk = terrainBoundingBoxCenter - EyePos; cameraDistance = EyeToChunk.length();
-#define TERRAIN_CHUNKS_LOD 3 //< Number of LOD levels for the terrain
-#define TERRAIN_CHUNK_LOD0 100.0f //< Relative distance for LOD0->LOD1 selection
-#define TERRAIN_CHUNK_LOD1 180.0f //< Relative distance for LOD0->LOD2 selection
-
-///SceneNode LOD selection
-///Distance computation is identical to the of the terrain (using SceneNode's bounding box)
-#define SCENE_NODE_LOD 3
-#define SCENE_NODE_LOD0 100.0f //< Relative distance for LOD0->LOD1 selection
-#define SCENE_NODE_LOD1 180.0f //< Relative distance for LOD0->LOD2 selection
+///Comment this out to show the debug console
+#ifndef HIDE_DEBUG_CONSOLE
+#define HIDE_DEBUG_CONSOLE
+#endif //HIDE_DEBUG_CONSOLE
 
 ///Current platform
 #ifndef _WIN32
@@ -76,22 +94,20 @@
 //#define LINUX
 #endif
 
+///OS specific stuff
+#if defined( __WIN32__ ) || defined( _WIN32 )
+	#define OS_WINDOWS
+#elif defined( __APPLE_CC__ ) // Apple OS X could be supported in the future
+	#define OS_APPLE
+#else //Linux is the only other OS supported
+	#define OS_NIX 
+#endif
+
 //#define HAVE_POSIX_MEMALIGN
 #define HAVE_ALIGNED_MALLOC
 #ifdef HAVE_ALIGNED_MALLOC
 //#define __GNUC__
 #endif
-
-///Edit the maximum number of concurrent threads that this application may start excluding tasks.
-///Default 2 without: Rendering + Update + A.I. + Networking + PhysX
-#ifndef THREAD_LIMIT
-#define THREAD_LIMIT 2
-#endif //THREAD_LIMIT
-
-///Comment this out to show the debug console
-#ifndef HIDE_DEBUG_CONSOLE
-#define HIDE_DEBUG_CONSOLE
-#endif //HIDE_DEBUG_CONSOLE
 
 ///Please enter the desired log file name
 #ifndef OUTPUT_LOG_FILE
@@ -101,11 +117,6 @@
 #ifndef ERROR_LOG_FILE
 #define ERROR_LOG_FILE "errors.log"
 #endif //ERROR_LOG_FILE
-
-///Show log timestamps
-#ifndef SHOW_LOG_TIMESTAMPS
-#define SHOW_LOG_TIMESTAMPS
-#endif //SHOW_LOG_TIMESTAMPS
 
 ///Reduce Build time on Windows Platform
 #ifndef VC_EXTRALEAN
@@ -157,4 +168,8 @@
 #define MAX_ALLOWED_JOYSTICKS 4
 #endif
 
+///If the target machine uses the nVidia Optimus layout (IntelHD + nVidia discreet GPU) this will force the engine to use the nVidia GPU always
+#ifdef WINDOWS_OS
+#define FORCE_NV_OPTIMUS_HIGHPERFORMANCE
+#endif
 #endif //_CONFIG_HEADER

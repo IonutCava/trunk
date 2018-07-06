@@ -47,6 +47,7 @@ public:
 	/// Destroy all entities
 	void Destroy();
 	inline void setSceneCallback(boost::function0<void> callback) {WriteLock w_lock(_updateMutex); _sceneCallback = callback;}
+	inline void pauseUpdate(bool state) {_pauseUpdate = state;}
 	///Toggle NavMesh debugDraw
     void toggleNavMeshDebugDraw(bool state);
 
@@ -59,6 +60,7 @@ private:
 
 private:
     boost::atomic<bool> _navMeshDebugDraw;
+	boost::atomic<bool> _pauseUpdate;
 	AIEntityMap _aiEntities;
 	mutable SharedLock _updateMutex;
     mutable SharedLock _navMeshMutex;

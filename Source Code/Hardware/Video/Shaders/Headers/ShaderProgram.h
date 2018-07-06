@@ -57,6 +57,9 @@ public:
 	virtual void Uniform(const std::string& ext, const mat4<F32>& value, bool rowMajor = false) = 0;
 	virtual void Uniform(const std::string& ext, const vectorImpl<I32 >& values) = 0;
 	virtual void Uniform(const std::string& ext, const vectorImpl<F32 >& values) = 0;
+	virtual void Uniform(const std::string& ext, const vectorImpl<vec2<F32> >& values) = 0;
+	virtual void Uniform(const std::string& ext, const vectorImpl<vec3<F32> >& values) = 0;
+	virtual void Uniform(const std::string& ext, const vectorImpl<vec4<F32> >& values) = 0;
 	virtual void Uniform(const std::string& ext, const vectorImpl<mat4<F32> >& values, bool rowMajor = false) = 0;
 	///Uniform Texture
 	virtual void UniformTexture(const std::string& ext, U16 slot) = 0;
@@ -73,9 +76,12 @@ public:
            void recompile(const bool vertex, const bool fragment, const bool geometry = false, const bool tessellation = false);
 	//calling refresh will force an update on default shader uniforms
 		   void refresh() {_dirty = true;}
-
+	//add global shader defines
 	inline void addShaderDefine(const std::string& define) {_definesList.push_back(define);}
            void removeShaderDefine(const std::string& define);
+	//add either fragment or vertex uniforms (without the "uniform" word. e.g. addShaderUniform("vec3 eyePos", VERTEX_SHADER);)
+		   void addShaderUniform(const std::string& uniform, const ShaderType& type);
+		   void removeUniform(const std::string& uniform, const ShaderType& type);
 
     inline void setShaderMask(const P32 mask) {
         _useVertex       = (mask.b.b0 == 1);
@@ -123,7 +129,6 @@ protected:
 	boost::atomic_bool _bound;
 	boost::atomic_bool _compiled;
 	U32 _shaderProgramId; //<not thread-safe. Make sure assignment is protected with a mutex or something
-	U32 _invalidShaderProgramId;
 	I32 _maxCombinedTextureUnits;
     /**Skip or include certain matrices. Can change at any time:
     /*b0 = normal_matrix
@@ -133,10 +138,17 @@ protected:
     P32 _matrixMask;
 	///A list of preprocessor defines
 	vectorImpl<std::string > _definesList;
+	///A list of vertex shader uniforms
+	vectorImpl<std::string > _vertUniforms;
+	///A list of fragment shader uniforms
+	vectorImpl<std::string > _fragUniforms;
 	///ID<->shaders pair
 	typedef Unordered_map<U32, Shader* > ShaderIdMap;
 	ShaderIdMap _shaderIdMap;
-
+	///cached clipping planes
+	vectorImpl<vec4<F32> > _clipPlanes;
+	///cached clippin planes' states
+	vectorImpl<I32 >       _clipPlanesStates;
 private:
 	///Small hack to avoid stack allocations 
 	mat4<F32> _cachedMatrix;

@@ -35,7 +35,7 @@ static void ioprintf(duFileIO* io, const char* format, ...)
 	char line[256];
 	va_list ap;
 	va_start(ap, format);
-	const int n = vsnprintf(line, sizeof(line), format, ap);
+	const int n = vsnprintf_s(line, sizeof(line), _TRUNCATE, format, ap);
 	va_end(ap);
 	if (n > 0)
 		io->write(line, sizeof(char)*n);

@@ -148,14 +148,16 @@ void RenderBin::render(const RenderStage& currentRenderStage){
 	LightManager& lightMgr = LightManager::getInstance();
 	//if needed, add more stages to which lighting is applied
     U32 lightValidStages = DISPLAY_STAGE | REFLECTION_STAGE;
-
 	bool isDepthPass = bitCompare(DEPTH_STAGE, currentRenderStage);
     bool isLightValidStage = bitCompare(lightValidStages, currentRenderStage);
+
 	for(U16 j = 0; j < getBinSize(); j++){
 		//Get the current scene node and validate it
-		sgn = getItem(j)._node; assert(sgn);
+		sgn = getItem(j)._node;
+		assert(sgn);
 	   	//And get it's attached SceneNode and validate it
-		sn = sgn->getNode<SceneNode>(); assert(sn);
+		sn = sgn->getNode<SceneNode>();
+		assert(sn);
 
 		//Call any pre-draw operations on the SceneNode (refresh VBO, update materials, etc)
 		sn->onDraw(currentRenderStage);
@@ -173,7 +175,7 @@ void RenderBin::render(const RenderStage& currentRenderStage){
 				//Only 2 sets of shadow maps for every node
             }
 			
-			CLAMP<U8>(lightCount, 0, MAX_SHADOW_CASTING_LIGHTS_PER_NODE);
+			CLAMP<U8>(lightCount, 0, Config::MAX_SHADOW_CASTING_LIGHTS_PER_NODE);
 			//Apply shadows only from the most important MAX_SHADOW_CASTING_LIGHTS_PER_NODE lights
 			if(isLightValidStage){
 				U8 offset = 9;
@@ -187,6 +189,7 @@ void RenderBin::render(const RenderStage& currentRenderStage){
 			//As nodes are sorted, this should be very fast
 			//We need to apply different materials for each stage
  			isDepthPass ?  sn->prepareDepthMaterial(sgn) : sn->prepareMaterial(sgn);
+
 		    //Call render and the stage exclusion mask should do the rest
 			sn->render(sgn);
 

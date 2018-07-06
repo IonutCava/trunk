@@ -30,7 +30,7 @@ class ForwardRenderer : public Renderer {
 public:
 	ForwardRenderer();
 	~ForwardRenderer();
-	void render(boost::function0<void> renderCallback, SceneRenderState* const sceneRenderState);
+	void render(boost::function0<void> renderCallback, const SceneRenderState& sceneRenderState);
 	void toggleDebugView() {_debugView = !_debugView;}
 private:
 	bool _debugView;

@@ -44,9 +44,11 @@ public:
 
 	///This function should be unique to every reflector. Portals may need special effects, mirrors some special lighting, etc
 	virtual void updateReflection() = 0;
-
-	inline FrameBufferObject* getReflectionFBO(){return _reflectedTexture;}
-
+	///Each reflector has a certain plane equation. Update this after each transform to obtain proper reflections
+	virtual void updatePlaneEquation() = 0;
+	///Retrieves the reflection texture
+	inline FrameBufferObject* getReflectionFBO()   {return _reflectedTexture;}
+	inline const Plane<F32>&  getReflectionPlane() {return _reflectionPlane;}
 	///Rendering callback is that function in the scene used to render the reflection
 	///The SceneGraph is not the default rendering class for reflections as some elements (i.e. Sky) are not part of it
 	///As the sky and other elements should be included in the reflection, we should set a custom callback
@@ -56,6 +58,10 @@ public:
     void togglePreviewReflection() {_previewReflection = !_previewReflection;}
     ///Draw a small quad with our reflection buffer as a texture
     void previewReflection();
+
+private:
+	/// Create FBO
+	bool  build();
 
 protected:
 	///This is inherited from FrameListener and is used to queue upreflection on every frame start
@@ -73,19 +79,18 @@ protected:
 	/// Use this to force current reflector to draw itself in reflection
 	bool _excludeSelfReflection;
     bool _previewReflection;
-private:
-	/// Create FBO
-	bool  build();
 
-protected:
 	boost::function0<void> _renderCallback;
 	FrameBufferObject* _reflectedTexture;
-    Quad3D* _renderQuad;
+    Quad3D*    _renderQuad;
+	Plane<F32> _reflectionPlane;
 	ShaderProgram* _previewReflectionShader;
 	/// used for render exclusion. Do not render self in own reflection
 	bool _updateSelf;
 	/// Have we initialized our FBO?
 	bool _createdFBO;
+	/// does the reflector plane need updating?
+	bool _planeDirty;
 };
 
 #endif

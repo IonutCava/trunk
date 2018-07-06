@@ -27,11 +27,19 @@ void DX_API::changeResolution(U16 w, U16 h)
 {
 }
 
-void DX_API::setWindowPos(U16 w, U16 h)
+void DX_API::setWindowPos(U16 w, U16 h) const
 {
 }
 
-void DX_API::lookAt(const vec3<F32>& eye,const vec3<F32>& center,const vec3<F32>& up,const bool invertx,const bool inverty)
+void DX_API::setMousePosition(D32 x, D32 y) const
+{
+}
+
+void DX_API::lookAt(const mat4<F32>& viewMatrix, const vec3<F32>& viewDirection)
+{
+}
+
+void DX_API::lookAt(const vec3<F32>& eye, const vec3<F32>& target, const vec3<F32>& up) 
 {
 }
 
@@ -83,6 +91,14 @@ void DX_API::setPerspectiveProjection(F32 FoV,F32 aspectRatio, const vec2<F32>& 
 {
 }
 
+void DX_API::setAnaglyphFrustum(F32 camIOD, bool rightFrustum)
+{
+}
+
+void DX_API::updateClipPlanes()
+{
+}
+
 void DX_API::drawText(const std::string& text, const I32 width, const std::string& fontName, const F32 fontSize)
 {
 }
@@ -103,7 +119,7 @@ void DX_API::debugDraw()
 {
 }
 
-void DX_API::renderInViewport(const vec4<I32>& rect, boost::function0<void> callback)
+void DX_API::renderInViewport(const vec4<U32>& rect, boost::function0<void> callback)
 {
 }
 

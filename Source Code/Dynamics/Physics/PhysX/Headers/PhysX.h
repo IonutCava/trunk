@@ -102,8 +102,8 @@ public:
    PhysicsSceneInterface* NewSceneInterface(Scene* scene);
 
   //Default Shapes:
-   bool createPlane(const vec3<F32>& position = vec3<F32>(0,0,0), U32 size = 1);
-   bool createBox(const vec3<F32>& position = vec3<F32>(0,0,0), F32 size = 1);
+   bool createPlane(const vec3<F32>& position = vec3<F32>(0.0f), U32 size = 1);
+   bool createBox(const vec3<F32>& position = vec3<F32>(0.0f), F32 size = 1.0f);
    bool createActor(SceneGraphNode* const node, PhysicsActorMask mask,PhysicsCollisionGroup group);
    inline physx::PxPhysics* const getSDK() {return _gPhysicsSDK;}
    inline const physx::PxSimulationFilterShader& getFilterShader() {return _gDefaultFilterShader;}

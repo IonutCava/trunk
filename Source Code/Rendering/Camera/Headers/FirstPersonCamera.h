@@ -24,12 +24,11 @@
 #define _FIRST_PERSON_CAMERA_H_
 
 #include "Camera.h"
-///clasic first person camera
+
+///The classic first person camera. Similar to the "Free fly" camera, but more restrained in it's movement.
 class FirstPersonCamera : public Camera {
 public:
-	FirstPersonCamera() : Camera(FIRST_PERSON)
-	{
-	}
+	FirstPersonCamera();
 };
 
 #endif

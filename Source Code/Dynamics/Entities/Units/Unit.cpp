@@ -20,69 +20,55 @@ bool Unit::moveTo(const vec3<F32>& targetPosition){
 	_currentPosition = _node->getTransform()->getPosition();
 	_currentTargetPosition = targetPosition;
 
-	if(_prevTime <= 0) _prevTime = GETMSTIME();
-	/// Get current time in ms
+	if(_prevTime <= 0) 
+		_prevTime = GETMSTIME();
+	// Get current time in ms
 	U32 currentTime = GETMSTIME();
-	/// figure out how many milliseconds have elapsed since last move time
+	// figure out how many milliseconds have elapsed since last move time
     U32 timeDif = currentTime - _prevTime;
-	/// 'moveSpeed' m/s = '0.001 * moveSpeed' m / ms
-	/// distance = timeDif * 0.001 * moveSpeed
+	CLAMP<U32>(timeDif, 0, timeDif);
+	// 'moveSpeed' m/s = '0.001 * moveSpeed' m / ms
+	// distance = timeDif * 0.001 * moveSpeed
 	F32 moveDistance = _moveSpeed * (getMsToSec(timeDif));
-	/// apply framerate varyance
-	F32 speedFactor = FRAME_SPEED_FACTOR;
-	moveDistance *= speedFactor;
-	/// update previous time
-	_prevTime = currentTime;
-
+	CLAMP<F32>(moveDistance, EPSILON, _moveSpeed);
+	// apply framerate varyance
+	moveDistance *= FRAME_SPEED_FACTOR;
+	
     F32 xDelta = _currentTargetPosition.x - _currentPosition.x;
     F32 yDelta = _currentTargetPosition.y - _currentPosition.y;
 	F32 zDelta = _currentTargetPosition.z - _currentPosition.z;
 
-    /*if(_prevTime <= 0) _prevTime = 0;
-	// Get current time in ms
-	U32 currentTime = GETMSTIME();
-	// figure out how many milliseconds have elapsed since last move time
-    assert(currentTime >= _prevTime);
-    U32 timeDiff = currentTime - _prevTime;
-    MsToSec(timeDiff);
-	// 'moveSpeed' m/s = '0.001 * moveSpeed' m / ms
-	// distance = timeDif * 0.001 * moveSpeed
-    // apply framerate varyance
-	F32 moveDistance = _moveSpeed * timeDiff * FRAME_SPEED_FACTOR;
-	assert(moveDistance >= 0);
-*/
-	/// Compute the destination point for current frame step
-	vec3<F32> interpPosition;
-    bool returnValue = false;
-	if(!IS_TOLERANCE(yDelta,_moveTolerance) && !IS_ZERO(_moveSpeed)){
-		if( !IS_ZERO( yDelta ) ){
+    bool returnValue = IS_ZERO(_moveSpeed);
+	if(!returnValue){
+		// Compute the destination point for current frame step
+		vec3<F32> interpPosition;
+		if(!IS_TOLERANCE(yDelta,_moveTolerance) && !IS_ZERO( yDelta ) )
 			interpPosition.y = ( _currentPosition.y > _currentTargetPosition.y ? -moveDistance : moveDistance );
+	
+		if((!IS_TOLERANCE(xDelta,_moveTolerance) || !IS_TOLERANCE(zDelta,_moveTolerance))) {
+			// Update target
+			if( IS_ZERO( xDelta ) ){
+				interpPosition.z = ( _currentPosition.z > _currentTargetPosition.z ? -moveDistance : moveDistance );
+			}else if( IS_ZERO( zDelta ) ){
+				interpPosition.x = ( _currentPosition.x > _currentTargetPosition.x ? -moveDistance : moveDistance );
+			}else if( fabs( xDelta ) > fabs( zDelta ) ) {
+				F32 value = fabs( zDelta / xDelta ) * moveDistance;
+				interpPosition.z = ( _currentPosition.z > _currentTargetPosition.z ? -value : value );
+				interpPosition.x = ( _currentPosition.x > _currentTargetPosition.x ? -moveDistance : moveDistance );
+			}else {
+				F32 value = fabs( xDelta / zDelta ) * moveDistance;
+				interpPosition.x = ( _currentPosition.x > _currentTargetPosition.x ? -value : value );
+				interpPosition.z = ( _currentPosition.z > _currentTargetPosition.z ? -moveDistance : moveDistance );
+			}
+			// commit transformations
+			_node->getTransform()->translate(interpPosition);
+			// Update current position
+			_currentPosition = _node->getTransform()->getPosition();
 		}
-	}
-	if((!IS_TOLERANCE(xDelta,_moveTolerance) || !IS_TOLERANCE(zDelta,_moveTolerance)) && !IS_ZERO(_moveSpeed)) {
-		/// Update target
-		if( IS_ZERO( xDelta ) ){
-            interpPosition.z = ( _currentPosition.z > _currentTargetPosition.z ? -moveDistance : moveDistance );
-		}else if( IS_ZERO( zDelta ) ){
-            interpPosition.x = ( _currentPosition.x > _currentTargetPosition.x ? -moveDistance : moveDistance );
-		}else if( fabs( xDelta ) > fabs( zDelta ) ) {
-            F32 value = fabs( zDelta / xDelta ) * moveDistance;
-            interpPosition.z = ( _currentPosition.z > _currentTargetPosition.z ? -value : value );
-            interpPosition.x = ( _currentPosition.x > _currentTargetPosition.x ? -moveDistance : moveDistance );
-         }else {
-            F32 value = fabs( xDelta / zDelta ) * moveDistance;
-            interpPosition.x = ( _currentPosition.x > _currentTargetPosition.x ? -value : value );
-            interpPosition.z = ( _currentPosition.z > _currentTargetPosition.z ? -moveDistance : moveDistance );
-         }
-		/// commit transformations
-        _node->getTransform()->translate(interpPosition);
-		/// Update current position
-		_currentPosition = _node->getTransform()->getPosition();
-    }else{
-		returnValue = true; //< yes
-	}
+    }
     // update previous time
 	_prevTime = currentTime;
+
     return returnValue;
 }
 

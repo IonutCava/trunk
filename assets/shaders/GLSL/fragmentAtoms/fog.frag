@@ -1,4 +1,4 @@
-uniform bool  enableFog = true;
+uniform bool  dvd_enableFog = true;
 uniform float fogStart;
 uniform float fogEnd;
 uniform float fogDensity;
@@ -7,13 +7,14 @@ uniform int   fogDetailLevel;
 uniform vec3  fogColor;
 
 const float LOG2 = 1.442695;
-float zDepth = gl_FragCoord.z / gl_FragCoord.w;
 
 void applyFog(inout vec4 color){
-	if(!enableFog) return;
+	if(!dvd_enableFog)
+		return;
 
-	float fogFactor = exp2( -fogDensity * fogDensity * zDepth * zDepth * LOG2 );
-	fogFactor = clamp(fogFactor, 0.0, 1.0);
-	color.rgb = mix(fogColor, color.rgb, fogFactor);
+	float zDepth = gl_FragCoord.z / gl_FragCoord.w;
+	color.rgb = mix(fogColor, 
+		            color.rgb,
+					clamp(exp2( -fogDensity * fogDensity * zDepth * zDepth * LOG2 ), 0.0, 1.0));
 
 }  

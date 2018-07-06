@@ -1,11 +1,15 @@
 #include "Headers/Transform.h"
 
-Transform::Transform()	: _dirty(false), _rebuildMatrix(false) //<no trasforms applied
+Transform::Transform()	: _dirty(true), 
+	                      _rebuildMatrix(true),
+						  _hasParentTransform(false),
+						  _scale(vec3<F32>(1.0f)),
+						  _translation(vec3<F32>()),
+						  _parentTransform(NULL)
+
 {
-	WriteLock w_lock(_lock);
+	_orientation.identity();
 	_worldMatrix.identity();
-	_parentMatrix.identity();
-	_scale = vec3<F32>(1,1,1);
 }
 
 Transform::Transform(const Quaternion<F32>& orientation, 
@@ -14,25 +18,27 @@ Transform::Transform(const Quaternion<F32>& orientation,
 												_translation(translation),
 												_scale(scale),
 												_dirty(true), 
-												_rebuildMatrix(true)
+												_rebuildMatrix(true),
+												_hasParentTransform(false),
+												_parentTransform(NULL)
 {
-	WriteLock w_lock(_lock);
-	_parentMatrix.identity();
+	_worldMatrix.identity();
 }
 
 Transform::~Transform()
 {
-
 }
 
 void Transform::applyTransforms(){
-	if(!_dirty) return;
+	if(!_dirty)
+		return;
+
 	WriteLock w_lock(_lock);
 	if(_rebuildMatrix){
 		// Ordering - a la Ogre:
 		_worldMatrix.identity();
 		//    1. Scale
-		_worldMatrix.scale(_scale);
+		_worldMatrix.setScale(_scale);
 		//    2. Rotate
 		_worldMatrix *= _orientation.getMatrix(); 
 	}
@@ -42,9 +48,9 @@ void Transform::applyTransforms(){
 	this->clean();
 }
 
-bool Transform::compare(Transform* t){
+bool Transform::compare(const Transform* const t){
     ReadLock r_lock(_lock);
-	if(_scale.compare(t->_scale) &&  _orientation.compare(t->_orientation) && _translation.compare(t->_translation))
-		   return true;
-	return false;
+	return (_scale.compare(t->_scale) &&  
+		    _orientation.compare(t->_orientation) &&
+			_translation.compare(t->_translation));
 }

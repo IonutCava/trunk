@@ -46,13 +46,11 @@ private:
 	void closeRenderingApi();
 	void initDevice(U32 targetFrameRate);
 	void changeResolution(U16 w, U16 h);
+	void setMousePosition(D32 x, D32 y) const;
 	///Change the window's position
-	void setWindowPos(U16 w, U16 h);
-	void lookAt(const vec3<F32>& eye,
-                const vec3<F32>& center,
-                const vec3<F32>& up = vec3<F32>(0,1,0),
-                const bool invertx = false,
-                const bool inverty = false);
+	void setWindowPos(U16 w, U16 h)  const;
+	void lookAt(const mat4<F32>& viewMatrix, const vec3<F32>& viewDirection);
+	void lookAt(const vec3<F32>& eye, const vec3<F32>& target, const vec3<F32>& up);
 	void idle();
 	void flush();
 	void beginFrame();
@@ -90,6 +88,7 @@ private:
 	void releaseMatrices(const MATRIX_MODE& setCurrentMatrix, bool releaseView = true, bool releaseProjection = true);
 	void setOrthoProjection(const vec4<F32>& rect, const vec2<F32>& planes);
 	void setPerspectiveProjection(F32 FoV,F32 aspectRatio, const vec2<F32>& planes);
+	void setAnaglyphFrustum(F32 camIOD, bool rightFrustum = false);
 
 	void toggle2D(bool _2D);
 
@@ -107,8 +106,8 @@ private:
 	void renderInstance(RenderInstance* const instance);
 	void renderBuffer(VertexBufferObject* const vbo, Transform* const vboTransform = NULL);
 
-	void renderInViewport(const vec4<I32>& rect, boost::function0<void> callback);
-
+	void renderInViewport(const vec4<U32>& rect, boost::function0<void> callback);
+	void updateClipPlanes();
 	friend class GFXDevice;
 	typedef void (*callback)();
 	void dxCommand(callback f){(*f)();};

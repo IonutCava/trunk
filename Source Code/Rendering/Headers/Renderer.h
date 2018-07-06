@@ -37,22 +37,10 @@ class Renderer {
 public:
 	Renderer(RendererType type) : _type(type) {}
 	virtual ~Renderer() {}
-	virtual void render(boost::function0<void> renderCallback, SceneRenderState* const sceneRenderState) = 0;
+	virtual void render(boost::function0<void> renderCallback, const SceneRenderState& sceneRenderState) = 0;
 	virtual void toggleDebugView() = 0;
 	inline RendererType getType() {return _type;}
-	inline std::string  getTypeToString(){
-		switch(_type){
-			default:
-			case RENDERER_PLACEHOLDER:
-				return "Unknown Renderer Type";
-			case RENDERER_FORWARD:
-				return "Forward Renderer";
-			case RENDERER_DEFERRED_SHADING:
-				return "Deferred Shading Renderer";
-			case RENDERER_DEFERRED_LIGHTING:
-				return "Deferred Lighting Renderer";
-		}
-	}
+	
 protected:
 	RendererType _type;
 };

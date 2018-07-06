@@ -24,6 +24,7 @@
 #define _GL_TEXTURE_H_
 
 #include "core.h"
+#include "glSamplerObject.h"
 #include "Hardware/Video/Textures/Headers/Texture.h"
 
 class glTexture : public Texture {
@@ -35,24 +36,29 @@ public:
 
 	void Bind(GLushort unit);
 	void Unbind(GLushort unit);
-
-	void LoadData(GLuint target, GLubyte* ptr, GLushort& w, GLushort& h, GLubyte d);
+	void setMipMapRange(U32 base = 0, U32 max = 1000);
+	void loadData(GLuint target, const GLubyte* const ptr, const vec2<U16>& dimensions, GLubyte bpp, GFXImageFormat format);
 
 protected:
 	bool generateHWResource(const std::string& name);
 	void threadedLoad(const std::string& name);
-private:
 
+private:
 	void Bind() const;
 	void Unbind() const;
 	void Destroy();
 	void reserveStorage(GLint w, GLint h);
+	void createSampler();
+
 private:
 	GLenum _format;
 	GLenum _internalFormat;
 	GLenum _type;
 	bool  _reservedStorage;   ///<Used glTexStorage2D for this texture
 	GLboolean  _canReserveStorage; ///<Can use glTexStorage2D
+
+	///We currently only use one sampler per texture. When the texture is destroyed, the sampler is destroyed!!!!
+	glSamplerObject  _sampler;
 };
 
 #endif

@@ -5,13 +5,13 @@
 
 SceneGraph::SceneGraph(){
 	_root = New SceneGraphNode(New SceneRoot);
-    _root->setBBExclusionMask(TYPE_SKY | TYPE_LIGHT);
+    _root->setBBExclusionMask(TYPE_SKY | TYPE_LIGHT | TYPE_TRIGGER |TYPE_PARTICLE_EMITTER);
     _root->setSceneGraph(this);
 	_updateRunning = false;
 }
 
 void SceneGraph::update(){
-    _root->getBoundingBox().reset();//<reset world box
+    //_root->getBoundingBox().reset();//<reset world box
 	_root->checkBoundingBoxes();
 	_root->updateTransforms();
 	_root->updateVisualInformation();
@@ -37,8 +37,8 @@ void SceneGraph::print(){
 void SceneGraph::startUpdateThread(){
 }
 
-void SceneGraph::sceneUpdate(const U32 sceneTime){
-	_root->sceneUpdate(sceneTime);
+void SceneGraph::sceneUpdate(const U32 sceneTime, SceneState& sceneState){
+	_root->sceneUpdate(sceneTime, sceneState);
 }
 
 SceneGraphNode* SceneGraph::Intersect(const Ray& ray, F32 start, F32 end){

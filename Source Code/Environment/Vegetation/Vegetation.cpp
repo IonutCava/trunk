@@ -41,7 +41,7 @@ void Vegetation::initialize(const std::string& grassShader, Terrain* const terra
 	_grassVBO->getTexcoord().reserve( size );
     _grassVBOBillboardIndice.resize(_billboardCount,0);
 
-    assert(_map.data);
+    assert(_map.data() != NULL);
 	_success = generateGrass(_billboardCount,size);
    
 	_grassShader->Uniform("lod_metric", 100.0f);
@@ -60,20 +60,19 @@ void Vegetation::initialize(const std::string& grassShader, Terrain* const terra
 	_render = true;
 }
 
-void Vegetation::sceneUpdate(const U32 sceneTime,SceneGraphNode* const sgn){
+void Vegetation::sceneUpdate(const U32 sceneTime, SceneGraphNode* const sgn, SceneState& sceneState){
 	if(!_render || !_success) return;
 	///Query shadow state every "_stateRefreshInterval" milliseconds
 	if (sceneTime - _stateRefreshIntervalBuffer >= _stateRefreshInterval){
-		Scene* activeScene = GET_ACTIVE_SCENE();
-		_windX = activeScene->state()->getWindDirX();
-		_windZ = activeScene->state()->getWindDirZ();
-		_windS = activeScene->state()->getWindSpeed();
+		_windX = sceneState.getWindDirX();
+		_windZ = sceneState.getWindDirZ();
+		_windS = sceneState.getWindSpeed();
 		_shadowMapped = ParamHandler::getInstance().getParam<bool>("rendering.enableShadows");
         _grassShader->bind();
         _grassShader->Uniform("windDirection",vec2<F32>(_windX,_windZ));
 	    _grassShader->Uniform("windSpeed", _windS);
     	_grassShader->Uniform("dvd_enableShadowMapping", _shadowMapped);
-        _grassShader->Uniform("worldHalfExtent", GET_ACTIVE_SCENE()->getSceneGraph()->getRoot()->getBoundingBox().getWidth() * 0.5f);
+        _grassShader->Uniform("worldHalfExtent", GET_ACTIVE_SCENEGRAPH()->getRoot()->getBoundingBox().getWidth() * 0.5f);
         _grassShader->unbind();
 		_stateRefreshIntervalBuffer += _stateRefreshInterval;
 	}
@@ -130,13 +129,13 @@ bool Vegetation::generateGrass(U32 billboardCount, U32 size){
 		    F32 y = random(1.0f);
 
 			const vec3<F32>& P = _terrain->getPosition(x, y);
-		    if(P.y < GET_ACTIVE_SCENE()->state()->getWaterLevel()){
+		    if(P.y < GET_ACTIVE_SCENE()->state().getWaterLevel()){
 			    k--;
 			    continue;
 		    }
 
 		    uv_offset.y = random(3)==0 ? 0.0f : 0.5f;
-		    map_color.set(_map.getColor((U16)(x * _map.w), (U16)(y * _map.h)));
+		    map_color.set(_map.getColor((U16)(x * _map.dimensions().width), (U16)(y * _map.dimensions().height)));
 
 		    if(map_color.g < 150) {
     			k--;
@@ -202,17 +201,17 @@ bool Vegetation::generateTrees(){
 	PRINT_FN(Locale::get("CREATE_TREE_START"), _treeDensity);
 
 	for(U16 k=0; k<(U16)_treeDensity; k++) {
-		I16 map_x = (I16)random((F32)_map.w);
-		I16 map_y = (I16)random((F32)_map.h);
+		I16 map_x = (I16)random((F32)_map.dimensions().width);
+		I16 map_y = (I16)random((F32)_map.dimensions().height);
 		vec3<I32> map_color = _map.getColor(map_x, map_y);
 		if(map_color.g < 55) {
 			k--;
 			continue;
 		}
 
-		vec3<F32> P = _terrain->getPosition(((F32)map_x)/_map.w, ((F32)map_y)/_map.h);
+		vec3<F32> P = _terrain->getPosition(((F32)map_x)/_map.dimensions().width, ((F32)map_y)/_map.dimensions().height);
 		P.y -= 0.2f;
-		if(P.y < GET_ACTIVE_SCENE()->state()->getWaterLevel()){
+		if(P.y < GET_ACTIVE_SCENE()->state().getWaterLevel()){
 			k--;
 			continue;
 		}

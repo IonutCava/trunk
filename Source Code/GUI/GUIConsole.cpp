@@ -8,16 +8,32 @@
 #include "Core/Headers/ParamHandler.h"
 #include <boost/lockfree/queue.hpp>
 
-#ifndef CEGUI_DEFAULT_CONTEXT
-#define CEGUI_DEFAULT_CONTEXT CEGUI::System::getSingleton().getDefaultGUIContext()
-#endif
+namespace {
+#	ifndef CEGUI_DEFAULT_CONTEXT
+#		define CEGUI_DEFAULT_CONTEXT CEGUI::System::getSingleton().getDefaultGUIContext()
+#	endif
 
-struct MessageStruct{
-	std::string _msg;
-	bool        _error;
+	class MessageStruct {
+	public:
+		MessageStruct(const char* msg, bool error) : _error(error)
+		{
+			_msg = _strdup(msg);
+		}
+		~MessageStruct()
+		{
+			SAFE_DELETE(_msg);
+		}
+
+		const char* msg()   const {return _msg;}
+			  bool  error() const {return _error;}
+	private:
+		char* _msg;
+		bool  _error;
+	};
+
+	/// Used to queue output text to be displayed when '_init' becomes true
+	static boost::lockfree::queue<MessageStruct*, boost::lockfree::capacity<256> >  _outputBuffer;
 };
-/// Used to queue output text to be displayed when '_init' becomes true
-static boost::lockfree::queue<MessageStruct*, boost::lockfree::capacity<256> >  _outputBuffer;
 
 
 GUIConsole::GUIConsole() : _consoleWindow(NULL),
@@ -34,14 +50,16 @@ GUIConsole::~GUIConsole()
 {
 	_init = false;
     setVisible(false);
-	if (_consoleWindow){
+	if (_consoleWindow)
 		CEGUI_DEFAULT_CONTEXT.getRootWindow()->removeChild(_consoleWindow);
-	}
+	
 	SAFE_DELETE(_cmdParser);
 }
 
 void GUIConsole::CreateCEGUIWindow(){
-	if(_init) ERROR_FN(Locale::get("ERROR_CONSOLE_DOUBLE_INIT"));
+	if(_init) 
+		ERROR_FN(Locale::get("ERROR_CONSOLE_DOUBLE_INIT"));
+
 	// Get a local pointer to the CEGUI Window Manager, Purely for convenience to reduce typing
 	CEGUI::WindowManager *pWindowManager = CEGUI::WindowManager::getSingletonPtr();
 
@@ -69,9 +87,11 @@ void GUIConsole::CreateCEGUIWindow(){
 void GUIConsole::RegisterHandlers(){
 	assert(_editBox != NULL);
 	//We need to monitor text/command submission from the editBox
-    _editBox->subscribeEvent(CEGUI::Editbox::EventTextAccepted,CEGUI::Event::Subscriber(&GUIConsole::Handle_TextSubmitted,this));
+    _editBox->subscribeEvent(CEGUI::Editbox::EventTextAccepted,
+		                     CEGUI::Event::Subscriber(&GUIConsole::Handle_TextSubmitted,this));
 	//we also monitor any key presses to make sure we do not accidentally hide the console in the middle of a sentence
-	_editBox->subscribeEvent(CEGUI::Editbox::EventKeyUp,CEGUI::Event::Subscriber(&GUIConsole::Handle_TextInput,this));
+	_editBox->subscribeEvent(CEGUI::Editbox::EventKeyUp,
+		                     CEGUI::Event::Subscriber(&GUIConsole::Handle_TextInput,this));
 }
 
 bool GUIConsole::Handle_TextInput(const CEGUI::EventArgs &e){
@@ -106,9 +126,9 @@ bool GUIConsole::Handle_TextSubmitted(const CEGUI::EventArgs &e){
     _editBox->setText("");
 	_inputHistory.push_back(_inputBuffer);
 	//Keep command history low
-	if(_inputHistory.size() > _CEGUI_MAX_CONSOLE_ENTRIES){
+	if(_inputHistory.size() > _CEGUI_MAX_CONSOLE_ENTRIES)
 		_inputHistory.pop_front();
-	}
+	
 	_inputHistoryIndex = _inputHistory.size()-1;
 	//reset the inputbuffer so we can handle console closing properly
 	_inputBuffer.clear();
@@ -117,7 +137,9 @@ bool GUIConsole::Handle_TextSubmitted(const CEGUI::EventArgs &e){
 
 void GUIConsole::setVisible(bool visible){
 	//if it's not the first key (e.g., if the toggle key is "~", then "lorem~ipsum" should not close the Window)
-	if(!_inputBuffer.empty()) return;
+	if(!_inputBuffer.empty()) 
+		return;
+
 	assert(_editBox != NULL);
 	_consoleWindow->setVisible(visible);
 
@@ -135,29 +157,27 @@ bool GUIConsole::isVisible(){
     return _consoleWindow->isVisible();
 }
 
-void GUIConsole::printText(const std::string& output,bool error){
+void GUIConsole::printText(const char* output, bool error){
 	if(!_init || !Application::getInstance().isMainThread()){
 		//If the console Window isn't loaded, create an output buffer
-		MessageStruct* msg = New MessageStruct;
-		msg->_msg = output;
-		msg->_error = error;
+		MessageStruct* msg = New MessageStruct(output, error);
 		while(!_outputBuffer.push(msg));
 		return;
 	}
-
-
+	
    //print it all at once
 	MessageStruct* outMsg = NULL;
 	while(_outputBuffer.pop(outMsg)){
-		OutputText(outMsg->_msg, outMsg->_error ? CEGUI::Colour(1.0f,0.0f,0.0f) : CEGUI::Colour(0.4f,0.4f,0.3f));
+		OutputText(outMsg->msg(), outMsg->error());
 		SAFE_DELETE(outMsg);
 	}
 	
 
-	OutputText(output,error ? CEGUI::Colour(1.0f,0.0f,0.0f) : CEGUI::Colour(0.4f,0.4f,0.3f));
+	OutputText(output, error);
  }
 
-void GUIConsole::OutputText(const std::string& inMsg, CEGUI::Colour color){
+void GUIConsole::OutputText(const char* inMsg, const bool error){
+	CEGUI::Colour color = error ? CEGUI::Colour(1.0f,0.0f,0.0f) : CEGUI::Colour(0.4f,0.4f,0.3f);
 	// Create a new List Box item that uses wordwrap. This will hold the output from the command
 	// Append the response with left wordwrap alignement
 	CEGUI::FormattedListboxTextItem *newItem = New CEGUI::FormattedListboxTextItem(inMsg,CEGUI::HTF_WORDWRAP_LEFT_ALIGNED);
@@ -170,7 +190,6 @@ void GUIConsole::OutputText(const std::string& inMsg, CEGUI::Colour color){
  	// Always make sure the last item is visible (auto-scroll)
 	_outputWindow->ensureItemIsVisible(newItem);
 	   // Try to not overfill the listbox but make room for the new item
-    if(_outputWindow->getItemCount() > _CEGUI_MAX_CONSOLE_ENTRIES) {
+    if(_outputWindow->getItemCount() > _CEGUI_MAX_CONSOLE_ENTRIES) 
          _outputWindow->removeItem(_outputWindow->getListboxItemFromIndex(0));
-    }
 }

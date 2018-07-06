@@ -16,7 +16,7 @@ RenderPass::~RenderPass()
 {
 }
 
-void RenderPass::render(SceneRenderState* const sceneRenderState){
+void RenderPass::render(const SceneRenderState& renderState) {
 	const RenderStage& currentStage = GFX_DEVICE.getRenderStage();
 		  RenderQueue& renderQueue = RenderQueue::getInstance();
 	//Sort the render queue by the specified key
@@ -25,7 +25,7 @@ void RenderPass::render(SceneRenderState* const sceneRenderState){
 	   _lastTotalBinSize = renderQueue.getRenderQueueStackSize();
 	//Draw the entire queue;
 	//Limited to 65536 (2^16) items per queue pass!
-    if(sceneRenderState->drawObjects()){
+    if(renderState.drawObjects()){
 		for(U16 i = 0; i < renderBinCount; i++){
 			renderQueue.getBinSorted(i)->render(currentStage);
 		}
@@ -37,7 +37,7 @@ void RenderPass::render(SceneRenderState* const sceneRenderState){
 		for(U16 i = 0; i < renderBinCount; i++){
 			renderQueue.getBinSorted(i)->postRender();
 		}
-        SceneGraphNode* root = GET_ACTIVE_SCENE()->getSceneGraph()->getRoot();
+        SceneGraphNode* root = GET_ACTIVE_SCENEGRAPH()->getRoot();
         root->getNode<SceneNode>()->preFrameDrawEnd(root);
 	}
 

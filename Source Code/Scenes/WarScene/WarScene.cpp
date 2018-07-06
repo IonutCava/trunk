@@ -3,8 +3,11 @@
 
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
+#include "Rendering/Camera/Headers/ThirdPersonCamera.h"
+#include "Rendering/Camera/Headers/FirstPersonCamera.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "Dynamics/Entities/Units/Headers/NPC.h"
+#include "Managers/Headers/CameraManager.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/AIManager.h"
 #include "Rendering/Headers/Frustum.h"
@@ -31,7 +34,7 @@ void WarScene::processTasks(const U32 time){
 }
 
 void WarScene::resetSimulation(){
-	removeTasks();
+	clearTasks();
 }
 
 void WarScene::startSimulation(){
@@ -52,15 +55,23 @@ void WarScene::processSimulation(boost::any a, CallbackParam b){
 }
 
 void WarScene::processInput(){
-	if(state()->_angleLR) renderState()->getCamera()->RotateX(state()->_angleLR);
-	if(state()->_angleUD) renderState()->getCamera()->RotateY(state()->_angleUD);
-	if(state()->_moveFB)  renderState()->getCamera()->MoveForward(state()->_moveFB /5);
-	if(state()->_moveLR)  renderState()->getCamera()->MoveStrafe(state()->_moveLR /5);
+	if(state()._moveFB)  renderState().getCamera().moveForward(state()._moveFB);
+	if(state()._moveLR)  renderState().getCamera().moveStrafe(state()._moveLR);
+
+	Camera& cam = renderState().getCamera();
+	switch(cam.getType()){
+		default:
+		case Camera::FREE_FLY:{
+			if(state()._angleLR) renderState().getCamera().rotateYaw(state()._angleLR);
+			if(state()._angleUD) renderState().getCamera().rotatePitch(state()._angleUD);
+			if(state()._roll)    renderState().getCamera().rotateRoll(state()._roll);
+		}break;
+	}
 }
 
-bool WarScene::load(const std::string& name){
-	///Load scene resources
-	SCENE_LOAD(name,true,true);
+bool WarScene::load(const std::string& name, CameraManager* const cameraMgr){
+	//Load scene resources
+	bool loadState = SCENE_LOAD(name,cameraMgr,true,true);
 	//Add a light
 	Light* light = addDefaultLight();
 	light->setLightProperties(LIGHT_PROPERTY_AMBIENT,WHITE());
@@ -69,9 +80,8 @@ bool WarScene::load(const std::string& name){
 	//Add a skybox
 	addDefaultSky();
 	//Position camera
-	renderState()->getCamera()->RotateX(RADIANS(45));
-	renderState()->getCamera()->RotateY(RADIANS(25));
-	renderState()->getCamera()->setEye(vec3<F32>(14,5.5f,11.5f));
+	renderState().getCamera().setEye(vec3<F32>(14,5.5f,11.5f));
+	renderState().getCamera().setGlobalRotation(-45/*yaw*/,25/*pitch*/);
 	//Create 2 AI teams
 	_faction1 = New AICoordination(1);
 	_faction2 = New AICoordination(2);
@@ -89,6 +99,7 @@ bool WarScene::initializeAI(bool continueOnErrors){
 	AIEntity* aiSoldier = NULL;
 	SceneGraphNode* soldierMesh = _sceneGraph->findNode("Soldier1");
 	if(soldierMesh){
+		soldierMesh->getNode<SceneNode>()->setSelectable(true);
 		AIEntity* aiSoldier = New AIEntity("Soldier1");
 		aiSoldier->attachNode(soldierMesh);
 		aiSoldier->addSensor(VISUAL_SENSOR,New VisualSensor());
@@ -97,9 +108,9 @@ bool WarScene::initializeAI(bool continueOnErrors){
 		aiSoldier->setTeam(_faction1);
 		_army1.push_back(aiSoldier);
 	}
-
 	soldierMesh = _sceneGraph->findNode("Soldier2");
 	if(soldierMesh){
+		soldierMesh->getNode<SceneNode>()->setSelectable(true);
 		aiSoldier = New AIEntity("Soldier2");
 		aiSoldier->attachNode(soldierMesh);
 		aiSoldier->addSensor(VISUAL_SENSOR,New VisualSensor());
@@ -108,7 +119,11 @@ bool WarScene::initializeAI(bool continueOnErrors){
 		aiSoldier->setTeam(_faction2);
 		_army2.push_back(aiSoldier);
 	}
-	//----------------------- Unitati ce vor fi controlate de AI ---------------------//
+	soldierMesh = _sceneGraph->findNode("Soldier3");
+	if(soldierMesh){
+		soldierMesh->getNode<SceneNode>()->setSelectable(true);
+	}
+	//----------------------- AI controlled units ---------------------//
 	for(U8 i = 0; i < _army1.size(); i++){
 		NPC* soldier = New NPC(_army1[i]);
 		soldier->setMovementSpeed(1.2f); /// 1.2 m/s
@@ -153,9 +168,9 @@ bool WarScene::deinitializeAI(bool continueOnErrors){
 }
 
 bool WarScene::loadResources(bool continueOnErrors){
-	GUI::getInstance().addButton("Simulate", "Simulate", vec2<I32>(renderState()->cachedResolution().width-220 ,
-																   renderState()->cachedResolution().height/1.1f),
-													     vec2<U32>(100,25),vec3<F32>(0.65f,0.65f,0.65f),
+	GUI::getInstance().addButton("Simulate", "Simulate", vec2<I32>(renderState().cachedResolution().width-220 ,
+																   renderState().cachedResolution().height/1.1f),
+													     vec2<U32>(100,25),vec3<F32>(0.65f),
 														 DELEGATE_BIND(&WarScene::startSimulation,this));
 
 	GUI::getInstance().addText("fpsDisplay",           //Unique ID
@@ -168,6 +183,18 @@ bool WarScene::loadResources(bool continueOnErrors){
 								 Font::DIVIDE_DEFAULT,
 								vec3<F32>(0.6f,0.2f,0.2f),
 								"Number of items in Render Bin: %d",0);
+	
+
+	//Add a first person camera
+	Camera* cam = New FirstPersonCamera();
+	cam->setMoveSpeedFactor(0.2f);
+	cam->setTurnSpeedFactor(0.1f);
+	_cameraMgr->addNewCamera("fpsCamera", cam);
+	//Add a third person camera
+	cam = New ThirdPersonCamera();
+	cam->setMoveSpeedFactor(0.02f);
+	cam->setTurnSpeedFactor(0.01f);
+	_cameraMgr->addNewCamera("tpsCamera", cam);
 
 	_taskTimers.push_back(0.0f); //Fps
 	return true;
@@ -176,73 +203,75 @@ bool WarScene::loadResources(bool continueOnErrors){
 void WarScene::onKeyDown(const OIS::KeyEvent& key){
 	Scene::onKeyDown(key);
 	switch(key.key)	{
-		case OIS::KC_W:
-			state()->_moveFB = 0.25f;
-			break;
-		case OIS::KC_A:
-			state()->_moveLR = 0.25f;
-			break;
-		case OIS::KC_S:
-			state()->_moveFB = -0.25f;
-			break;
-		case OIS::KC_D:
-			state()->_moveLR = -0.25f;
-			break;
-		default:
-			break;
+		default: break;
+		case OIS::KC_W: state()._moveFB =  1; break;
+		case OIS::KC_A:	state()._moveLR = -1; break;
+		case OIS::KC_S:	state()._moveFB = -1; break;
+		case OIS::KC_D:	state()._moveLR =  1; break;
+		case OIS::KC_Q: state()._roll   = -1; break;
+		case OIS::KC_E: state()._roll   =  1; break;
 	}
 }
 
 void WarScene::onKeyUp(const OIS::KeyEvent& key){
+	static bool fpsCameraActive = false;
+	static bool tpsCameraActive = false;
+	static bool flyCameraActive = true;
+
 	Scene::onKeyUp(key);
 	switch(key.key)	{
+		default: break;
 		case OIS::KC_W:
-		case OIS::KC_S:
-			state()->_moveFB = 0;
-			break;
+		case OIS::KC_S:	state()._moveFB = 0; break;
 		case OIS::KC_A:
-		case OIS::KC_D:
-			state()->_moveLR = 0;
-			break;
-		case OIS::KC_F1:
-			_sceneGraph->print();
-			break;
-		default:
-			break;
+		case OIS::KC_D: state()._moveLR = 0; break;
+		case OIS::KC_Q: 
+		case OIS::KC_E: state()._roll   = 0; break;
+		case OIS::KC_F1: _sceneGraph->print(); break;
+		case OIS::KC_TAB:{
+			if(_currentSelection != NULL){
+				/*if(flyCameraActive){
+					_cameraMgr->setActiveCamera("fpsCamera");
+					flyCameraActive = false; fpsCameraActive = true;
+				}else if(fpsCameraActive){*/
+				if(flyCameraActive){
+					_cameraMgr->setActiveCamera("tpsCamera");
+					/*fpsCameraActive*/flyCameraActive = false; tpsCameraActive = true;
+				}else if(tpsCameraActive){
+					_cameraMgr->setActiveCamera("defaultCamera");
+					tpsCameraActive = false; flyCameraActive = true;
+				}
+			}
+//			renderState().getCamera().setTargetNode(_currentSelection);
+		}break;
 	}
 }
 void WarScene::onMouseMove(const OIS::MouseEvent& key){
-	if(_mousePressed){
-		if(_prevMouse.x - key.state.X.abs > 1 )
-			state()->_angleLR = -0.15f;
-		else if(_prevMouse.x - key.state.X.abs < -1 )
-			state()->_angleLR = 0.15f;
-		else
-			state()->_angleLR = 0;
+	if(_mousePressed[OIS::MB_Right]){
+		if(_previousMousePos.x - key.state.X.abs > 1 )   	 state()._angleLR = -1;
+		else if(_previousMousePos.x - key.state.X.abs < -1 ) state()._angleLR =  1;
+		else 			                                     state()._angleLR =  0;
 
-		if(_prevMouse.y - key.state.Y.abs > 1 )
-			state()->_angleUD = -0.1f;
-		else if(_prevMouse.y - key.state.Y.abs < -1 )
-			state()->_angleUD = 0.1f;
-		else
-			state()->_angleUD = 0;
+		if(_previousMousePos.y - key.state.Y.abs > 1 )		 state()._angleUD = -1;
+		else if(_previousMousePos.y - key.state.Y.abs < -1 ) state()._angleUD =  1;
+		else 	                                             state()._angleUD =  0;
 	}
 
-	_prevMouse.x = key.state.X.abs;
-	_prevMouse.y = key.state.Y.abs;
+	_previousMousePos.x = key.state.X.abs;
+	_previousMousePos.y = key.state.Y.abs;
 }
 
-void WarScene::onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID button){
+void WarScene::onMouseClickDown(const OIS::MouseEvent& key, OIS::MouseButtonID button){
 	Scene::onMouseClickDown(key,button);
-	if(button == 0)
-		_mousePressed = true;
-}
+	if(_mousePressed[OIS::MB_Left]){
+		findSelection(renderState().getCamera().getEye(), _previousMousePos.x, _previousMousePos.y);
+	}
+} 
 
-void WarScene::onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button){
+void WarScene::onMouseClickUp(const OIS::MouseEvent& key, OIS::MouseButtonID button){
 	Scene::onMouseClickUp(key,button);
-	if(button == 0)	{
-		_mousePressed = false;
-		state()->_angleUD = 0;
-		state()->_angleLR = 0;
+	if(!_mousePressed[OIS::MB_Right]){
+		state()._angleUD = 0;
+		state()._angleLR = 0;
 	}
 }

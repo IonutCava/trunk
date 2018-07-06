@@ -20,8 +20,8 @@
 
  */
 
-#ifndef _RENDER_PASS_H_
-#define _RENDER_PASS_H_
+#ifndef _RENDERING_RENDER_PASS_RENDERPASS_H_
+#define _RENDERING_RENDER_PASS_RENDERPASS_H_
 
 #include <string>
 #include "Hardware/Platform/Headers/PlatformDefines.h"
@@ -33,9 +33,9 @@ public:
 	RenderPass(const std::string& name);
 	~RenderPass();
 
-	virtual void render(SceneRenderState* const sceneRenderState = NULL);
-	inline U16 getLasTotalBinSize() {return _lastTotalBinSize;}
-	inline const std::string& getName() {return _name;}
+	virtual void render(const SceneRenderState& renderState);
+	inline U16 getLasTotalBinSize()     const {return _lastTotalBinSize;}
+	inline const std::string& getName() const {return _name;}
 
 private:
 	std::string _name;

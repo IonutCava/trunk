@@ -45,7 +45,7 @@ public:
 	void renderSkeleton(SceneGraphNode* const sgn);
 	void updateBBatCurrentFrame(SceneGraphNode* const sgn);
 	/// Called from SceneGraph "sceneUpdate"
-	void sceneUpdate(const U32 sceneTime,SceneGraphNode* const sgn);
+	void sceneUpdate(const U32 sceneTime,SceneGraphNode* const sgn, SceneState& sceneState);
 	void updateAnimations(D32 timeIndex,SceneGraphNode* const sgn);
 	void postLoad(SceneGraphNode* const sgn);
 	void preFrameDrawEnd(SceneGraphNode* const sgn);

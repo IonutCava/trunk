@@ -54,6 +54,9 @@ public:
     void Uniform(const std::string& ext, const mat4<F32>& value, bool rowMajor = false){}
 	void Uniform(const std::string& ext, const vectorImpl<I32 >& values) {}
 	void Uniform(const std::string& ext, const vectorImpl<F32 >& values) {}
+	void Uniform(const std::string& ext, const vectorImpl<vec2<F32> >& values) {}
+	void Uniform(const std::string& ext, const vectorImpl<vec3<F32> >& values) {}
+	void Uniform(const std::string& ext, const vectorImpl<vec4<F32> >& values) {}
 	void Uniform(const std::string& ext, const vectorImpl<mat4<F32> >& values, bool rowMajor = false){}
 	//Uniform Texture
 	void UniformTexture(const std::string& ext, U16 slot){}

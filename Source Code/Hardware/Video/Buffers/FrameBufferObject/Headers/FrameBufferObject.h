@@ -35,18 +35,21 @@ public:
 	virtual bool Create(U16 width, U16 height, U8 imageLayers = 0) = 0;
 
 	virtual void Destroy() = 0;
-	virtual void DrawToLayer(U8 face, U8 layer) {} ///<Use by multilayerd FBO's
+	virtual void DrawToLayer(U8 face, U8 layer) const {} ///<Use by multilayerd FBO's
 	virtual void Begin(U8 nFace=0) const = 0;
 	virtual void End(U8 nFace=0) const = 0;
 
-	virtual void Bind(U8 unit = 0, U8 texture = 0);
-	virtual void Unbind(U8 unit=0);
+	virtual void Bind(U8 unit = 0, U8 texture = 0) const;
+	virtual void Unbind(U8 unit=0) const ;
 
-	virtual void BlitFrom(FrameBufferObject* inputFBO) = 0;
+	virtual void BlitFrom(FrameBufferObject* inputFBO) const = 0;
 	//Enable/Disable color writes
 	virtual void toggleColorWrites(bool state) {_disableColorWrites = !state;}
     //Enable/Disable the presence of a depth renderbuffer
 	virtual void toggleDepthBuffer(bool state) {_useDepthBuffer = state;}
+	//Set the color the FBO will clear to when drawing to it
+	inline void setClearColor(const vec4<F32>& clearColor) { _clearColor = clearColor; }
+
 	inline U16 getWidth()  const	{return _width;}
 	inline U16 getHeight() const	{return _height;}
 	inline U8  getType()   const	{return _fboType;}
@@ -56,7 +59,7 @@ public:
 	virtual ~FrameBufferObject();
 
 protected:
-	virtual bool checkStatus() = 0;
+	virtual bool checkStatus() const = 0;
 
 protected:
 	typedef Unordered_map<TextureDescriptor::AttachmentType, TextureDescriptor >  TextureAttachements;
@@ -68,7 +71,7 @@ protected:
 	U32		    _depthBufferHandle;
 	U32		    _textureType;
 	U8          _fboType;
-
+	vec4<F32>   _clearColor;
 	TextureAttachements _attachement;
 	Unordered_map<TextureDescriptor::AttachmentType, bool > _attachementDirty;
 };

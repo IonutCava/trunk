@@ -143,7 +143,7 @@ namespace Navigation {
       if(idx < getCount() && idx >= 0)
          return _points[idx];
 
-      return vec3<F32>(0,0,0);
+      return vec3<F32>();
    }
 
    I32 NavigationPath::getCount()  {

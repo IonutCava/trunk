@@ -35,7 +35,7 @@ typedef Texture Texture2D;
 class FrameBufferObject;
 class SSAOPreRenderOperator : public PreRenderOperator {
 public:
-	SSAOPreRenderOperator(Quad3D* const target, FrameBufferObject* result, const vec2<U16>& resolution);
+	SSAOPreRenderOperator(Quad3D* const target, FrameBufferObject* result, const vec2<U16>& resolution, SamplerDescriptor* const sampler);
 	~SSAOPreRenderOperator();
 
 	void operation();

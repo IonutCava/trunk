@@ -36,8 +36,8 @@ public:
 
 	void Bind(U16 unit){}
 	void Unbind(U16 unit){}
-
-	void LoadData(U32 target, U8* ptr, U16& w, U16& h, U8 d){}
+	void setMipMapRange(U32 base = 0, U32 max = 1000){}
+	void loadData(U32 target, const U8* const ptr, const vec2<U16>& dimensions, U8 bpp, GFXImageFormat format){}
 
 private:
 

@@ -72,7 +72,10 @@ namespace GL_ENUM_TABLE {
 
 	   glImageFormatTable[LUMINANCE] = GL_LUMINANCE;
 	   glImageFormatTable[LUMINANCE_ALPHA] = GL_LUMINANCE_ALPHA;
+	   glImageFormatTable[INTENSITY] = GL_INTENSITY;
+	   glImageFormatTable[ALPHA] = GL_ALPHA;
 	   glImageFormatTable[RGB] = GL_RGB;
+	   glImageFormatTable[BGR] = GL_BGR;
 	   glImageFormatTable[RGB8] = GL_RGB8;
 	   glImageFormatTable[RGB8I] = GL_RGB8I;
 	   glImageFormatTable[RGB16] = GL_RGB16;

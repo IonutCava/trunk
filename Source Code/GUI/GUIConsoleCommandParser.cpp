@@ -134,7 +134,7 @@ void GUIConsoleCommandParser::handlePlaySoundCommand(const std::string& args){
 void GUIConsoleCommandParser::handleNavMeshCommand(const std::string& args){
     SceneGraphNode* sgn = NULL;
     if(!args.empty()){
-        sgn = GET_ACTIVE_SCENE()->getSceneGraph()->findNode("args");
+        sgn = GET_ACTIVE_SCENEGRAPH()->findNode("args");
         if(!sgn){
             ERROR_FN(Locale::get("CONSOLE_NAVMESH_NO_NODE"),args.c_str());
             return;

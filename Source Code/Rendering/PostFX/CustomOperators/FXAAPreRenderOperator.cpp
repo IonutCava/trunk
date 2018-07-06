@@ -7,13 +7,14 @@
 
 FXAAPreRenderOperator::FXAAPreRenderOperator(Quad3D* target,
 											 FrameBufferObject* result,
-											 const vec2<U16>& resolution) : PreRenderOperator(FXAA_STAGE,target,resolution),
-																	         _outputFBO(result)
+											 const vec2<U16>& resolution,
+											 SamplerDescriptor* const sampler) : PreRenderOperator(FXAA_STAGE,target,resolution,sampler),
+																	             _outputFBO(result)
 {
 	_samplerCopy = GFX_DEVICE.newFBO(FBO_2D_COLOR);
 	TextureDescriptor fxaaDescriptor(TEXTURE_2D, RGBA,RGBA8,FLOAT_32);
-	fxaaDescriptor.setWrapMode(TEXTURE_CLAMP_TO_EDGE,TEXTURE_CLAMP_TO_EDGE);
-	fxaaDescriptor._generateMipMaps = false; //it's a flat texture on a full screen quad. really?
+	fxaaDescriptor.setSampler(*_internalSampler);
+
 	_samplerCopy->AddAttachment(fxaaDescriptor,TextureDescriptor::Color0);
 	_samplerCopy->toggleDepthBuffer(false);
 	_samplerCopy->Create(resolution.width,resolution.height);

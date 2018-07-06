@@ -34,13 +34,12 @@ public:
 				  _waterGraphNode(NULL),
 				  _water(NULL),
 				  _beep(NULL),
-				  _mousePressed(false),
                   _freeflyCamera(false){}
 
 	/*General Scene Requirement*/
 	void preRender();
     void postRender();
-	bool load(const std::string& name);
+	bool load(const std::string& name, CameraManager* const cameraMgr);
 	bool unload();
 	bool loadResources(bool continueOnErrors);
 
@@ -54,7 +53,6 @@ private:
 	void onKeyDown(const OIS::KeyEvent& key);
 	void onKeyUp(const OIS::KeyEvent& key);
 	void onMouseMove(const OIS::MouseEvent& key);
-	void onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID button);
 	void onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button);
 
 private:
@@ -62,8 +60,6 @@ private:
 	vec2<F32> _sunAngle;
 	vec4<F32> _sunvector,_sunColor;
 	F32  _sun_cosy;
-	vec2<F32> _prevMouse;
-	bool _mousePressed;
     bool _freeflyCamera;
 	AudioDescriptor* _beep;
 	vectorImpl<Terrain*> _visibleTerrains;

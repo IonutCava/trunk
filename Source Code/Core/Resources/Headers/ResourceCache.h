@@ -89,8 +89,9 @@ inline T* CreateResource(const ResourceDescriptor& descriptor){
 	return ResourceCache::getInstance().loadResource<T>(descriptor);
 }
 
-inline Resource* const FindResource(const std::string& name){
-	return ResourceCache::getInstance().find(name);
+template<class T>
+inline T* const FindResource(const std::string& name){
+	return static_cast<T*>(ResourceCache::getInstance().find(name));
 }
 
 #endif

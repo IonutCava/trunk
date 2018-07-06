@@ -9,6 +9,9 @@ ShaderManager::ShaderManager() : _nullShader(NULL), _init(false)
 
 ShaderManager::~ShaderManager()
 {
+}
+
+void ShaderManager::Destroy() {
     GFX_DEVICE.deInitShaders();
     RemoveResource(_nullShader);
 }

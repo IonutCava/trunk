@@ -31,33 +31,35 @@ public:
 
 	glFrameBufferObject(FBOType type) : FrameBufferObject(type)
 	{
-		_textureId[0] = 0;
-		_textureId[1] = 0;
-		_textureId[2] = 0;
-		_textureId[3] = 0;
-		_depthId      = 0;
-		_imageLayers  = 0;
+		memset(_textureId, 0, 4 * sizeof(GLuint));
+		_depthId = _imageLayers = 0;
 	}
-	virtual ~glFrameBufferObject() {}
+
+	virtual ~glFrameBufferObject()
+	{
+	}
 
 	virtual bool Create(GLushort width, GLushort height, GLubyte imageLayers = 0);
 	virtual void Destroy();
-	virtual void DrawToLayer(GLubyte face, GLubyte layer) {} ///<Use by multilayerd FBO's
+	virtual void DrawToLayer(GLubyte face, GLubyte layer) const
+	{
+	} ///<Use by multilayerd FBO's
 
 	virtual void Begin(GLubyte nFace=0) const;
 	virtual void End(GLubyte nFace=0) const;
-	virtual void Bind(GLubyte unit=0, GLubyte texture = 0);
-	virtual void Unbind(GLubyte unit=0);
+	virtual void Bind(GLubyte unit=0, GLubyte texture = 0) const;
+	virtual void Unbind(GLubyte unit=0) const;
 
-	void BlitFrom(FrameBufferObject* inputFBO);
+	void BlitFrom(FrameBufferObject* inputFBO) const;
 
 protected:
-	bool checkStatus();
+	bool checkStatus() const;
 
 protected:
 	GLuint _textureId[4];  ///<Color attachements
 	GLuint _depthId;      ///<Depth attachement
 	GLuint _imageLayers;
+	GLuint _clearBufferMask;
 };
 
 #endif

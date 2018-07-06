@@ -24,22 +24,46 @@
 #define _PLATFORM_DEFINES_H_
 
 ///Data Types
+#ifndef U8
 #define U8   unsigned char
+#endif
+#ifndef U16
 #define U16  unsigned short
+#endif
+#ifndef U32
 #define U32  unsigned int
+#endif
+#ifndef UL32
 #define UL32 unsigned long
+#endif
+#ifndef U64
 #define U64  unsigned long long
+#endif
 
+#ifndef I8
 #define I8  signed char
+#endif
+#ifndef I16
 #define I16 signed short
+#endif
+#ifndef I32
 #define I32 signed int
+#endif
+#ifndef L32
 #define L32 signed long
+#endif
+#ifndef I64
 #define I64 signed long long
+#endif
+#ifndef _I64
 #define _I64 __int64
-
+#endif
+#ifndef F32
 #define F32 float
+#endif
+#ifndef D32
 #define D32 double
-
+#endif
 #ifndef _P_D_TYPES_ONLY_
 
 #define TEST_EPSILON std::numeric_limits<F32>::epsilon()

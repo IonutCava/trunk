@@ -12,7 +12,7 @@ Impostor::Impostor(const std::string& name, F32 radius) : _visible(false){
 	impostorDesc.setFlag(true); //No default material
 	_dummy = CreateResource<Sphere3D>(impostorDesc);
 	_dummy->setMaterial(CreateResource<Material>(materialDescriptor));
-	if(GFX_DEVICE.getDeferredRendering()){
+	if(GFX_DEVICE.getRenderer()->getType() != RENDERER_FORWARD){
 		_dummy->getMaterial()->setShaderProgram("DeferredShadingPass1.Impostor");
 	}else{
 		_dummy->getMaterial()->setShaderProgram("lighting");

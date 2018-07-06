@@ -2,10 +2,14 @@
 #include "Headers/AIManager.h"
 
 #include "SceneList.h"
-#include "Rendering/Headers/Renderer.h"
 #include "Geometry/Importer/Headers/DVDConverter.h"
 
-SceneManager::SceneManager() : _activeScene(NULL){
+SceneManager::SceneManager() : FrameListener(),
+							   _activeScene(NULL),
+							   _init(false)
+{
+	DVDConverter::createInstance();
+	AIManager::createInstance();
 }
 
 SceneManager::~SceneManager(){
@@ -20,7 +24,14 @@ SceneManager::~SceneManager(){
 	DVDConverter::getInstance().DestroyInstance();
 }
 
-bool SceneManager::load(const std::string& sceneName, const vec2<U16>& resolution, Camera* const camera){
+bool SceneManager::init(){
+	REGISTER_FRAME_LISTENER(&(this->getInstance()));
+	_init = true;
+	return true;
+}
+
+bool SceneManager::load(const std::string& sceneName, const vec2<U16>& resolution, CameraManager* const cameraMgr){
+	assert(_init == true);
 	PRINT_FN(Locale::get("SCENE_MANAGER_LOAD_SCENE_DATA"));
 	//Initialize the model importer:
 	if(!DVDConverter::getInstance().init()){
@@ -33,34 +44,40 @@ bool SceneManager::load(const std::string& sceneName, const vec2<U16>& resolutio
 	cacheResolution(resolution);
 	_activeScene->preLoad();
 	_activeScene->loadXMLAssets();
-	PRINT_FN(Locale::get("SCENE_MANAGER_ADD_DEFAULT_CAMERA"));
-	_activeScene->renderState()->updateCamera(camera);
-	return _activeScene->load(sceneName);
+	return _activeScene->load(sceneName, cameraMgr);
 }
 
 Scene* SceneManager::createScene(const std::string& name){
 	Scene* scene = NULL;
 
-	if(!name.empty()){
+	if(!name.empty())
 		scene = _sceneFactory[name]();
-	}
-	if(scene != NULL){
+	
+	if(scene != NULL)
 		_sceneMap.insert(std::make_pair(name, scene));
-	}
 
 	return scene;
 }
 
+bool SceneManager::framePreRenderStarted(const FrameEvent& evt){
+	_activeScene->renderState().getCamera().renderLookAt();
+	return true;
+}
+
 void SceneManager::render(const RenderStage& stage) {
+	assert(_activeScene != NULL);
+
+	if(_renderFunction.empty()){
+		if(_activeScene->renderCallback().empty()){
+			_renderFunction = DELEGATE_BIND(&SceneGraph::update, _activeScene->getSceneGraph());
+		}else{
+			_renderFunction = _activeScene->renderCallback();
+		}
+	}
+
 	GFXDevice& GFX = GFX_DEVICE;
 	GFX.setRenderStage(stage);
-	assert(_activeScene != NULL);
-	if(_activeScene->renderCallback().empty()){
-		SceneGraph* sg = _activeScene->getSceneGraph();
-		GFX.render(DELEGATE_BIND(&SceneGraph::update,sg),_activeScene->renderState());
-	}else{
-		GFX.render(_activeScene->renderCallback(),_activeScene->renderState());
-	}
+	GFX.render(_renderFunction,_activeScene->renderState());
 
 	if(bitCompare(stage,FINAL_STAGE) || bitCompare(stage,DEFERRED_STAGE)){
 		// Draw bounding boxes, skeletons, axis gizmo, etc.

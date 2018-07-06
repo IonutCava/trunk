@@ -39,11 +39,12 @@ public:
 	virtual void Begin(U8 nFace=0) const = 0;
 	virtual void End(U8 nFace=0) const  = 0;
 
-	virtual void Bind(U8 unit=0, U8 texture = 0)  = 0;
-	virtual void Unbind(U8 unit=0) = 0;
-	void BlitFrom(FrameBufferObject* inputFBO);
+	virtual void Bind(U8 unit=0, U8 texture = 0) const = 0;
+	virtual void Unbind(U8 unit=0) const = 0;
+	void BlitFrom(FrameBufferObject* inputFBO) const;
+
 protected:
-	bool checkStatus();
+	bool checkStatus() const;
 };
 
 #endif

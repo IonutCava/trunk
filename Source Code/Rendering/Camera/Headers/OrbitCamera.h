@@ -24,12 +24,12 @@
 #define _ORBIT_CAMERA_H_
 
 #include "Camera.h"
-///Fixed camera that orbits a certain point
+
+///Fixed camera that orbits a certain point. It's position can't change.
 class OrbitCamera : public Camera {
 public:
-	OrbitCamera() : Camera(ORBIT)
-	{
-	}
+	OrbitCamera(const CameraType& type = ORBIT);
+
 };
 
 #endif

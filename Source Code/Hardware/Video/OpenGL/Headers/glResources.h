@@ -23,9 +23,11 @@
 #ifndef _GL_RESOURCES_H_
 #define _GL_RESOURCES_H_
 
+#include "config.h"
+
 enum MATRIX_MODE;
 enum EXTENDED_MATRIX;
-#if defined( __WIN32__ ) || defined( _WIN32 )
+#if defined( OS_WINDOWS )
 #  ifndef WIN32_LEAN_AND_MEAN
 #    define WIN32_LEAN_AND_MEAN
 #  endif
@@ -38,11 +40,11 @@ enum EXTENDED_MATRIX;
 #  endif
 //////////////////////////////////////////////////////////////////////
 ////////////////////////////////////Needed Linux Headers//////////////
-#elif defined OIS_LINUX_PLATFORM
+#elif defined OS_LINUX
 #  include <X11/Xlib.h>
 //////////////////////////////////////////////////////////////////////
 ////////////////////////////////////Needed Mac Headers//////////////
-#elif defined OIS_APPLE_PLATFORM
+#elif defined OS_APPLE
 #  include <Carbon/Carbon.h>
 #endif
 
@@ -54,7 +56,7 @@ enum EXTENDED_MATRIX;
 #define GLEW_MX
 #endif
 #include <glew.h>
-#if defined(_WIN32)
+#if defined( OS_WINDOWS )
 #include <wglew.h>
 #else
 #include <glxew.h>
@@ -66,6 +68,7 @@ enum EXTENDED_MATRIX;
 #include <glm.hpp>
 #include <GL/glfw3.h>
 #include "Utility/Headers/Vector.h"
+#include "Hardware/Platform/Headers/PlatformDefines.h"
 #include <CEGUI/RendererModules/OpenGL/GL3Renderer.h>
 #include <boost/thread/tss.hpp>
 
@@ -226,9 +229,12 @@ namespace glDataConversion {
 
 template<class T> class mat4;
 template<class T> class mat3;
+template<class T> class vec3;
+template<class T> class vec4;
 
 namespace Divide {
     namespace GL {
+
 	///State the various attribute locations to use in GLSL with VAO/VBO's
 	enum {
 		 VERTEX_POSITION_LOCATION    = 0,
@@ -239,28 +245,55 @@ namespace Divide {
 		 VERTEX_BONE_WEIGHT_LOCATION = 5,
 		 VERTEX_BONE_INDICE_LOCATION = 6
 	};
+	
+	/*----------- GLU overrides ------*/
+    typedef std::stack<glm::mat4, vectorImpl<glm::mat4 > > matrixStack;
+	typedef std::stack<vec3<F32>, vectorImpl<vec3<F32> > > vector3Stack;
+	typedef std::stack<vec4<U32>, vectorImpl<vec4<U32> > > viewportStack;
 
+	/*--------- Object Management-------*/
+	extern GLuint _invalidObjectID;
 	/*--------- Context Management -----*/
 	extern bool _applicationClosing;
 	extern bool _contextAvailable;
 	extern bool _useDebugOutputCallback;
-
+	
 	///Main rendering window
 	extern GLFWwindow* _mainWindow;
 	///Background thread for loading resources
 	extern GLFWwindow* _loaderWindow;
-
-	/*----------- GLU overrides ------*/
-    typedef std::stack<glm::mat4, vectorImpl<glm::mat4 > > matrixStack;
-	typedef std::stack<glm::vec3, vectorImpl<glm::vec3 > > vector3Stack;
+	 ///Matrix management
+    ///Current active matrix for push/pop operations: PROJECTION/VIEW/TEXTURE
+    extern MATRIX_MODE _currentMatrixMode;
+    ///Current view matrix. Changed only by LookAt call
+	extern matrixStack _viewMatrix;
+    ///Current projection matrix. Changed by Perspective and Ortho calls
+	extern matrixStack _projectionMatrix;
+    ///Current texture matrix. Multiply and change manually if needed
+    extern matrixStack _textureMatrix;
+	///Current viewpoert stack
+	extern viewportStack _viewport;
+    ///The current model matrix. Change per model or set to identity
+    extern glm::mat4   _modelMatrix;
+    ///A bias matrix is useful for shadow calculations
+    extern glm::mat4   _biasMatrix;
+	///A cache value for anaglyph eye offset
+	extern GLfloat     _anaglyphIOD;
+	///current camera view direction
+	extern vector3Stack _currentViewDirection;
+    ///If the model matrix had a uniform scale applied or not
+    extern bool _isUniformScaled;
+	///Use for lazy reset of the model matrix
+	extern bool _resetModelMatrixFlag;
 
     void _initStacks();
     /*-----------------BEGIN: FIXED PIPELINE EMULATION -----------------------*/
-	void _matrixMode(const MATRIX_MODE& mode);
+	inline void _matrixMode(const MATRIX_MODE& mode) { _currentMatrixMode = mode; }
 
-    void _LookAt(const glm::vec3& eye,const glm::vec3& lookAt,const glm::vec3& up, bool invertx, bool inverty);
+    void _LookAt(const GLfloat* viewMatrix, const vec3<F32>& viewDirection);
     void _ortho(GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat zNear, GLfloat zFar);
     void _perspective(GLfloat fovy, GLfloat aspect, GLfloat zNear,  GLfloat zFar);
+	void _anaglyph(GLfloat IOD, GLdouble zNear, GLdouble zFar, GLfloat aspect, GLfloat fovy, bool rightFrustum = false);
     void _pushMatrix();
     void _popMatrix();
     void _loadIdentity();
@@ -298,10 +331,10 @@ namespace Divide {
     extern glm::mat4   _modelMatrix;
     ///A bias matrix is useful for shadow calculations
     extern glm::mat4   _biasMatrix;
-	///current View_Matrix eye vector
-	extern vector3Stack _currentEyeVector;
-	///current View_Matrix look-at vector
-	extern vector3Stack _currentLookAtVector;
+	///A cache value for anaglyph eye offset
+	extern GLfloat     _anaglyphIOD;
+	///current camera view direction
+	extern vector3Stack _currentViewDirection;
     ///If the model matrix had a uniform scale applied or not
     extern bool _isUniformScaled;
 	///Use for lazy reset of the model matrix
@@ -311,11 +344,11 @@ namespace Divide {
 
 #ifdef GLEW_MX
 	GLEWContext* glewGetContext();
-#	if defined(_WIN32)
+#   if defined( OS_WINDOWS )
 		WGLEWContext* wglewGetContext();
-#	else//_WIN32
+#	else
 		GLXEWContext* glxewGetContext();
-#	endif//_WIN32
+#	endif
 #endif//GLEW_MX
 
 #if defined(_MSC_VER)

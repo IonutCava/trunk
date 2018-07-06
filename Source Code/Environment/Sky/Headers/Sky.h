@@ -47,8 +47,6 @@ public:
 	void prepareMaterial(SceneGraphNode* const sgn);
 	void releaseMaterial();
 
-    void setInvertPlane(F32 invertPlaneY);
-    void setInverted(bool state){_invert = state;}
     void setSunVector(const vec3<F32>& sunVect);
 
 	void addToDrawExclusionMask(I32 stageMask);
@@ -56,18 +54,17 @@ public:
 	///Draw states are used to test if the current object should be drawn depending on the current render pass
 	bool getDrawState(const RenderStage& currentStage) const;
 	///Skies are always visible (for now. Interiors will change that. Windows will reuqire a occlusion querry(?))
-	bool isInView(const bool distanceCheck,const BoundingBox& boundingBox,const BoundingSphere& sphere) {return true;}
+	bool isInView(const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck = false) {return true;}
 	void postLoad(SceneGraphNode* const sgn);
 
 private:
 	bool load();
 
 private:
-	bool			  _init,_invert,_drawSky,_drawSun;
+	bool			  _init,_drawSky,_drawSun;
 	ShaderProgram*	  _skyShader;
 	TextureCubemap*	  _skybox;
 	vec3<F32>		  _sunVect;
-    F32               _invertPlaneY;
 	Sphere3D          *_sky,*_sun;
 	SceneGraphNode    *_sunNode, *_skyGeom;
 	U8				  _exclusionMask;

@@ -23,11 +23,12 @@
 #ifndef _FRAMERATE_H_
 #define _FRAMERATE_H_
 
+#include "config.h"
 #include "Hardware/Platform/Headers/PlatformDefines.h"
 #include "Core/Headers/Singleton.h"
 #include <boost/atomic.hpp>
 
-#if defined( __WIN32__ ) || defined( _WIN32 )
+#if defined( OS_WINDOWS )
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
@@ -35,7 +36,7 @@
 #define WIN32_LEAN_AND_MEAN
 #endif
 #include <windows.h>
-#elif defined( __APPLE_CC__ ) // Apple OS X
+#elif defined( OS_APPLE ) // Apple OS X
 ///??
 #else //Linux
 #include <sys/time.h>
@@ -46,54 +47,52 @@
 
 DEFINE_SINGLETON(Framerate)
 
-#if defined( __WIN32__ ) || defined( _WIN32 )
+#if defined( OS_WINDOWS )
   typedef LARGE_INTEGER LI;
-#elif defined( __APPLE_CC__ ) // Apple OS X
+#elif defined( OS_APPLE ) // Apple OS X
 	//??
 #else //Linux
   typedef timeval LI;
 #endif
 
 private:
-	Framerate() :
-		_targetFrameRate(60),
-		_ticksPerMillisecond(0),
-		_speedfactor(1.0f),
-		_init(false),
-		_benchmark(false){}
+	Framerate() : _targetFrameRate(60),
+				  _ticksPerMillisecond(0),
+				  _speedfactor(1.0f),
+		          _init(false),
+		          _benchmark(false)
+	{
+	}
 
-  F32           _targetFrameRate;
-  F32           _frameTime;
-  U32           _elapsedTime;
-  LI			_ticksPerSecond; //Processor's ticks per second
-  LI			_frameDelay;     //Previous frame's number of ticks
-  LI			_startupTicks;   //Ticks at class initialization
-  bool          _benchmark;      //Measure average FPS and output max/min/average fps to console
+    U8   _targetFrameRate;
+    F32  _frameTime;
+    LI	 _ticksPerSecond; //Processor's ticks per second
+    LI	 _frameDelay;     //Previous frame's number of ticks
+    LI	 _startupTicks;   //Ticks at class initialization
+	LI   _currentTicks;
+    bool _benchmark;      //Measure average FPS and output max/min/average fps to console
 
-  boost::atomic_bool _init;
-  boost::atomic<LI>	 _currentTicks;   //Current number of ticks
-  boost::atomic<F32> _speedfactor;
-  boost::atomic<F32> _fps;
-  boost::atomic<D32> _ticksPerMillisecond;
+    boost::atomic_bool _init;
+    boost::atomic_uint _ticksPerMillisecond;
+    boost::atomic<F32> _speedfactor;
+    boost::atomic<F32> _fps;
+public:
 
- public:
+    void Init(U8 targetFrameRate);
+    void SetSpeedFactor();
+	
+	inline void benchmark(bool state)  {_benchmark = state;}
+	inline bool benchmark()      const {return _benchmark;}
+    inline F32  getFps()         const {return _fps;}
+    inline F32  getFrameTime()   const {return _frameTime;}
+    inline F32  getSpeedfactor() const {return _speedfactor;}
 
-  void          Init(U8 tfps);
-  void          SetSpeedFactor();
+    inline U32 getElapsedTime(){ //in milliseconds
+	    if(!_init)
+			return 0;
 
-  inline void benchmark(bool state) {_benchmark = state;}
-
-  inline bool benchmark()      const {return _benchmark;}
-  inline F32  getFps()         const {return _fps;}
-  inline F32  getFrameTime()   const {return _frameTime;}
-  inline F32  getSpeedfactor() const {return _speedfactor;}
-
-  inline U32 getElapsedTime(){ //in milliseconds
-	  if(!_init) return 0;
-	  LI currentTicks;
-	  QueryPerformanceCounter(&currentTicks);
-	  _currentTicks = currentTicks;
-	  return static_cast<U32>((currentTicks.QuadPart-_startupTicks.QuadPart) / _ticksPerMillisecond);
+	    QueryPerformanceCounter(&_currentTicks);
+	    return (_currentTicks.QuadPart-_startupTicks.QuadPart) / _ticksPerMillisecond;
   }
 
 protected:

@@ -26,12 +26,21 @@
 template <class T>
 class Singleton{
 public :
-	inline static T& getInstance() {
+	inline static T& getOrCreateInstance() {
 		if (!_instance){
 			_instance = new T;
 		}
 
 		return *_instance;
+	}
+
+	inline static T& getInstance() {
+		return *_instance;
+	}
+
+	inline static void createInstance() {
+		if (!_instance)
+			_instance = new T;
 	}
 
 	inline static void DestroyInstance() {

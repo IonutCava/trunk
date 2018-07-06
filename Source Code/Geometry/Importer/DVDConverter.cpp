@@ -25,8 +25,8 @@ bool DVDConverter::init(){
 		return false;
 	}
 
-	aiTextureMapModeTable[aiTextureMapMode_Wrap]   = TEXTURE_REPEAT;
-	aiTextureMapModeTable[aiTextureMapMode_Clamp]  = TEXTURE_CLAMP;
+	aiTextureMapModeTable[aiTextureMapMode_Wrap]   = TEXTURE_CLAMP;
+	aiTextureMapModeTable[aiTextureMapMode_Clamp]  = TEXTURE_CLAMP_TO_EDGE;
 	aiTextureMapModeTable[aiTextureMapMode_Decal]  = TEXTURE_DECAL;
 	aiTextureMapModeTable[aiTextureMapMode_Mirror] = TEXTURE_REPEAT;
 	aiShadingModeInternalTable[aiShadingMode_Fresnel]      = Material::SHADING_FRESNEL;
@@ -122,6 +122,7 @@ Mesh* DVDConverter::load(const std::string& file){
 												   std::string(s->getName()+ "_material"));
 				s->setMaterial(m);
 				m->setHardwareSkinning(skinnedSubMesh);
+				m->setTriangleStripInput(true);
 			}//else the Resource manager created a copy of the material
 			tempMesh->addSubMesh(s->getName());
 		}
@@ -157,7 +158,7 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,U8 count){
 	if(temp.find(".LOD1") != std::string::npos ||
 		temp.find(".LOD2") != std::string::npos/* ||
 		temp.find(".LODn") != std::string::npos*/){ ///Add as many LOD levels as you please
-		tempSubMesh = dynamic_cast<SubMesh* >(FindResource(_fileLocation.substr(0,_fileLocation.rfind(".LOD"))));
+		tempSubMesh = FindResource<SubMesh>(_fileLocation.substr(0,_fileLocation.rfind(".LOD")));
 		assert(tempSubMesh != NULL);
 		tempSubMesh->incLODcount();
 	}else{
@@ -285,7 +286,7 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
 	// If it's not defined in an XML File, see if it was previously loaded by the Resource Cache
 	bool skip = false;
 	ResourceDescriptor tempMaterialDescriptor(materialName);
-	if(FindResource(materialName)) skip = true;
+	if(FindResource<Material>(materialName)) skip = true;
 	// If we found it in the Resource Cache, return a copy of it
 	tempMaterial = CreateResource<Material>(tempMaterialDescriptor);
 	if(skip) return tempMaterial;
@@ -374,8 +375,9 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
 	U32 uvInd;
 	F32 blend;
 	aiTextureOp op = aiTextureOp_Multiply;
-	aiTextureMapMode mode[3] = {aiTextureMapMode_Clamp,aiTextureMapMode_Clamp,aiTextureMapMode_Clamp};
+	aiTextureMapMode mode[3] = {_aiTextureMapMode_Force32Bit,_aiTextureMapMode_Force32Bit,_aiTextureMapMode_Force32Bit};
 
+	SamplerDescriptor textureSampler;
 	U8 count = 0;
 	// While we still have diffuse textures
 	while(result == AI_SUCCESS){
@@ -399,16 +401,18 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
 		// if we have a name and an extension
 		if(!img_name.substr(img_name.find_first_of(".")).empty()){
 			// Is this the base texture or the secondary?
-			Material::TextureUsage item = Material::TEXTURE_BASE;
-			if(count == 1) item = Material::TEXTURE_SECOND;
+			U32 item = Material::TEXTURE_UNIT0;
+			if(count == 1) item++;
 			// Load the texture resource
+			if(mode[0] != _aiTextureMapMode_Force32Bit)
+				textureSampler.setWrapMode(aiTextureMapModeTable[mode[0]],
+										   aiTextureMapModeTable[mode[1]],
+										   aiTextureMapModeTable[mode[2]]);
 			ResourceDescriptor texture(img_name);
 			texture.setResourceLocation(path);
 			texture.setFlag(true);
+			texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
 			Texture2D* textureRes = CreateResource<Texture2D>(texture);
-			textureRes->setTextureWrap(aiTextureMapModeTable[mode[0]],
-									   aiTextureMapModeTable[mode[1]],
-									   aiTextureMapModeTable[mode[2]]);
 			assert(tempMaterial != NULL);
 			assert(textureRes != NULL);
 			//The first texture is always "Replace"
@@ -417,8 +421,8 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
 
 		tName.Clear();
 		count++;
-#pragma message("ToDo: Use more than 2 textures for each material. Fix This! -Ionut")
 		if(count == 2) break;
+		#pragma message("ToDo: Use more than 2 textures for each material. Fix This! -Ionut")
 	}//endwhile
 
 	result = source->GetTexture(aiTextureType_NORMALS, 0, &tName, &mapping, &uvInd, &blend, &op, mode);
@@ -429,17 +433,20 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
 
 		std::string pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
 		if(img_name.rfind('.') !=  std::string::npos){
+			if(mode[0] != _aiTextureMapMode_Force32Bit)
+				textureSampler.setWrapMode(aiTextureMapModeTable[mode[0]],
+										   aiTextureMapModeTable[mode[1]],
+										   aiTextureMapModeTable[mode[2]]);
 			ResourceDescriptor texture(img_name);
 			texture.setResourceLocation(path);
 			texture.setFlag(true);
+			texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
 			Texture2D* textureRes = CreateResource<Texture2D>(texture);
 			tempMaterial->setTexture(Material::TEXTURE_NORMALMAP,textureRes,aiTextureOperationTable[op]);
 			tempMaterial->setBumpMethod(Material::BUMP_NORMAL);
-			textureRes->setTextureWrap(aiTextureMapModeTable[mode[0]],
-									   aiTextureMapModeTable[mode[1]],
-									   aiTextureMapModeTable[mode[2]]);
 		}//endif
 	}//endif
+
 	result = source->GetTexture(aiTextureType_HEIGHT, 0, &tName, &mapping, &uvInd, &blend, &op, mode);
 	if(result == AI_SUCCESS){
 		std::string path = tName.data;
@@ -447,15 +454,17 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
 		path = par.getParam<std::string>("assetsLocation")+"/"+par.getParam<std::string>("defaultTextureLocation") +"/"+ path;
 		std::string pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
 		if(img_name.rfind('.') !=  std::string::npos){
+			if(mode[0] != _aiTextureMapMode_Force32Bit)
+				textureSampler.setWrapMode(aiTextureMapModeTable[mode[0]],
+										   aiTextureMapModeTable[mode[1]],
+			 							   aiTextureMapModeTable[mode[2]]);
 			ResourceDescriptor texture(img_name);
 			texture.setResourceLocation(path);
 			texture.setFlag(true);
+			texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
 			Texture2D* textureRes = CreateResource<Texture2D>(texture);
-			tempMaterial->setTexture(Material::TEXTURE_BUMP,textureRes,aiTextureOperationTable[op]);
+			tempMaterial->setTexture(Material::TEXTURE_NORMALMAP,textureRes,aiTextureOperationTable[op]);
 			tempMaterial->setBumpMethod(Material::BUMP_NORMAL);
-			textureRes->setTextureWrap(aiTextureMapModeTable[mode[0]],
-									   aiTextureMapModeTable[mode[1]],
-									   aiTextureMapModeTable[mode[2]]);
 		}//endif
 	}//endif
 	result = source->GetTexture(aiTextureType_OPACITY, 0, &tName, &mapping, &uvInd, &blend, &op, mode);
@@ -467,15 +476,17 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
 		path = par.getParam<std::string>("assetsLocation")+"/"+par.getParam<std::string>("defaultTextureLocation") +"/"+ path;
 
 		if(img_name.rfind('.') !=  std::string::npos){
+			if(mode[0] != _aiTextureMapMode_Force32Bit)
+				textureSampler.setWrapMode(aiTextureMapModeTable[mode[0]],
+										   aiTextureMapModeTable[mode[1]],
+										   aiTextureMapModeTable[mode[2]]);
 			ResourceDescriptor texture(img_name);
 			texture.setResourceLocation(path);
 			texture.setFlag(true);
+			texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
 			Texture2D* textureRes = CreateResource<Texture2D>(texture);
 			tempMaterial->setTexture(Material::TEXTURE_OPACITY,textureRes,aiTextureOperationTable[op]);
 			tempMaterial->setDoubleSided(true);
-			textureRes->setTextureWrap(aiTextureMapModeTable[mode[0]],
-									   aiTextureMapModeTable[mode[1]],
-									   aiTextureMapModeTable[mode[2]]);
 		}//endif
 	}else{
 		I32 flags = 0;
@@ -483,10 +494,10 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
 
 		// try to find out whether the diffuse texture has any
 		// non-opaque pixels. If we find a few, use it as opacity texture
-		if (tempMaterial->getTexture(Material::TEXTURE_BASE)){
+		if (tempMaterial->getTexture(Material::TEXTURE_UNIT0)){
 			if(!(flags & aiTextureFlags_IgnoreAlpha) &&
-				tempMaterial->getTexture(Material::TEXTURE_BASE)->hasTransparency()){
-					Texture2D* textureRes = CreateResource<Texture2D>(ResourceDescriptor(tempMaterial->getTexture(Material::TEXTURE_BASE)->getName()));
+				tempMaterial->getTexture(Material::TEXTURE_UNIT0)->hasTransparency()){
+					Texture2D* textureRes = CreateResource<Texture2D>(ResourceDescriptor(tempMaterial->getTexture(Material::TEXTURE_UNIT0)->getName()));
 					tempMaterial->setTexture(Material::TEXTURE_OPACITY,textureRes);
 			}
 		}
@@ -501,14 +512,16 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
 		path = par.getParam<std::string>("assetsLocation")+"/"+par.getParam<std::string>("defaultTextureLocation") +"/"+ path;
 
 		if(img_name.rfind('.') !=  std::string::npos){
+			if(mode[0] != _aiTextureMapMode_Force32Bit)
+				textureSampler.setWrapMode(aiTextureMapModeTable[mode[0]],
+										   aiTextureMapModeTable[mode[1]],
+										   aiTextureMapModeTable[mode[2]]);
 			ResourceDescriptor texture(img_name);
 			texture.setResourceLocation(path);
 			texture.setFlag(true);
+			texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
 			Texture2D* textureRes = CreateResource<Texture2D>(texture);
 			tempMaterial->setTexture(Material::TEXTURE_SPECULAR,textureRes,aiTextureOperationTable[op]);
-			textureRes->setTextureWrap(aiTextureMapModeTable[mode[0]],
-									   aiTextureMapModeTable[mode[1]],
-									   aiTextureMapModeTable[mode[2]]);
 		}//endif
 	}//endif
 

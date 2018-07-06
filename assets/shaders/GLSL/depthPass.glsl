@@ -71,24 +71,24 @@ in vec4 _vertexMV;
 out vec4 _colorOut;
 //Opacity and specular maps
 uniform float opacity;
-uniform sampler2D opacityMap;
+#if defined(USE_OPACITY_MAP)
+//Opacity and specular maps
+uniform sampler2D texOpacityMap;
+#endif
 
 void main(){
 
+	float opacityValue = opacity;
 #if defined(USE_OPACITY_MAP)
-	if(texture(opacityMap, _texCoord).a < ALPHA_DISCARD_THRESHOLD) discard;
-#else
-	if(opacity < ALPHA_DISCARD_THRESHOLD) discard;
+	opacityValue = 1.1 - texture(texOpacityMap, _texCoord).a;
 #endif
 
-	float depth = _vertexMV.z / _vertexMV.w ;
-	depth = depth * 0.5 + 0.5;
-	float moment1 = depth;
-	float moment2 = depth * depth;
-	
+	/*if(opacityValue < ALPHA_DISCARD_THRESHOLD)
+		gl_FragDepth = 1.0; //Discard for depth, basically*/
+
+	float depth = (_vertexMV.z / _vertexMV.w) * 0.5 + 0.5;
 	// Adjusting moments (this is sort of bias per pixel) using partial derivative
 	float dx = dFdx(depth);
 	float dy = dFdy(depth);
-	moment2 += 0.25*(dx*dx+dy*dy) ;
-	_colorOut =  vec4( moment1,moment2, 0.0, 0.0 );
+	_colorOut =  vec4(depth , (depth * depth) + 0.25 * (dx * dx + dy * dy), 0.0, 0.0);
 }

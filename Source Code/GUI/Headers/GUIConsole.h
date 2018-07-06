@@ -49,7 +49,7 @@ class GUIConsole{
        void setVisible(bool visible);         //< Hide or show the console
        bool isVisible();                      //< Return true if console is visible, false if is hidden
 	   ///add text to the console Window. Uses a text buffer if the console isn't ready for display yet
-	   void printText(const std::string& output,bool error);
+	   void printText(const char* output,bool error);
 	
     protected:
 
@@ -61,7 +61,7 @@ class GUIConsole{
 	   friend class GUI;
        void CreateCEGUIWindow();                                  //< The function which will load in the CEGUI Window and register event handlers
  	   // Post the message to the ChatHistory listbox with a white color default
-       void OutputText(const std::string& inMsg, CEGUI::Colour color = CEGUI::Colour( 0xFFFFFFFF));
+       void OutputText(const char* inMsg, const bool error = false);
 
 	protected:
 		bool _init;                          //< used to check if the console is ready

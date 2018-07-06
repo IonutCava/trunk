@@ -53,7 +53,11 @@ public:
 	inline bool isMainThread()                                       const {return (_threadId == boost::this_thread::get_id());}
 	inline void setMemoryLogFile(const std::string& fileName)              {memLogBuffer.open(fileName.c_str());}
 	inline void logMemoryAllocation(const std::stringstream& buffer)       {if(memLogBuffer.is_open()){ memLogBuffer << buffer.str();}}
-    
+
+protected:
+	friend class InputInterface;
+	void setMousePosition(D32 x, D32 y) const;
+
 private:
 	Application();
 	~Application();

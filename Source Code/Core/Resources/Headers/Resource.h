@@ -130,4 +130,5 @@ struct TerrainInfo {
 	bool   active;
 };
 
+
 #endif

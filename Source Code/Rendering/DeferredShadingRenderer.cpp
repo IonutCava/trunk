@@ -24,31 +24,33 @@ DeferredShadingRenderer::DeferredShadingRenderer() : Renderer(RENDERER_DEFERRED_
 
 	ResourceDescriptor deferredPreview("deferredPreview");
 	_previewDeferredShader = CreateResource<ShaderProgram>(deferredPreview);
+	SamplerDescriptor gBufferSampler;
+	gBufferSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
+
 	TextureDescriptor gBuffer[4]; /// 4 Gbuffer elements (mipmaps are ignored for deferredBufferObjects)
 	//Albedo
 	gBuffer[0] = TextureDescriptor(TEXTURE_2D,
 								   RGBA,
 								   RGBA8,  //R8G8B8A8, 32bit format for diffuse
 								   UNSIGNED_BYTE);
-	gBuffer[0].setWrapMode(TEXTURE_CLAMP_TO_EDGE,TEXTURE_CLAMP_TO_EDGE);
+
 	//Position
 	gBuffer[1] = TextureDescriptor(TEXTURE_2D,
 								   RGBA,
 								   RGBA32F, //R32G32B32A32, HDR 128bit format for position data
 								   FLOAT_32);
-	gBuffer[1].setWrapMode(TEXTURE_CLAMP_TO_EDGE,TEXTURE_CLAMP_TO_EDGE);
 	//Normals
 	gBuffer[2] = TextureDescriptor(TEXTURE_2D,
 								   RGBA,
 								   RGBA16F, //R16G16B16A16, 64bit format for normals
 								   FLOAT_32);
-	gBuffer[2].setWrapMode(TEXTURE_CLAMP_TO_EDGE,TEXTURE_CLAMP_TO_EDGE);
     //Blend (for transparent objects - unused for now)
     gBuffer[3] = TextureDescriptor(TEXTURE_2D,
 								   RGBA,
 								   RGBA8, //R8G8B8A8, 32bit format for blend
 								   UNSIGNED_BYTE);
-	gBuffer[3].setWrapMode(TEXTURE_CLAMP_TO_EDGE,TEXTURE_CLAMP_TO_EDGE);
+
+	for(U8 i = 0; i < 4; i++) gBuffer[i].setSampler(gBufferSampler);
 
 	_deferredBuffer->AddAttachment(gBuffer[0],TextureDescriptor::Color0);
 	_deferredBuffer->AddAttachment(gBuffer[1],TextureDescriptor::Color1);
@@ -137,7 +139,7 @@ DeferredShadingRenderer::~DeferredShadingRenderer()
 	SAFE_DELETE(_lightTexture);
 }
 
-void DeferredShadingRenderer::render(boost::function0<void> renderCallback, SceneRenderState* const sceneRenderState) {
+void DeferredShadingRenderer::render(boost::function0<void> renderCallback, const SceneRenderState& sceneRenderState) {
 	GFX_DEVICE.setRenderStage(DEFERRED_STAGE);
 	SET_DEFAULT_STATE_BLOCK();
 	LightManager::LightMap& lights = LightManager::getInstance().getLights();
@@ -166,7 +168,7 @@ void DeferredShadingRenderer::render(boost::function0<void> renderCallback, Scen
 	secondPass(sceneRenderState);
 }
 
-void DeferredShadingRenderer::firstPass(boost::function0<void> renderCallback, SceneRenderState* const sceneRenderState){
+void DeferredShadingRenderer::firstPass(boost::function0<void> renderCallback, const SceneRenderState& sceneRenderState){
 	//Pass 1
 	//Draw the geometry, saving parameters into the buffer
 	_deferredBuffer->Begin();
@@ -175,7 +177,7 @@ void DeferredShadingRenderer::firstPass(boost::function0<void> renderCallback, S
 	_deferredBuffer->End();
 }
 
-void DeferredShadingRenderer::secondPass(SceneRenderState* const sceneRenderState){
+void DeferredShadingRenderer::secondPass(const SceneRenderState& sceneRenderState){
 	//Pass 2
 	//Draw a 2D fullscreen quad that has the lighting shader applied to it and all generated textures bound to that shader
 	GFX_DEVICE.toggle2D(true);

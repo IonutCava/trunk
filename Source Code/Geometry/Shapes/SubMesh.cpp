@@ -1,14 +1,19 @@
 #include "Headers/SubMesh.h"
 #include "Headers/Mesh.h"
+
 #include "Core/Resources/Headers/ResourceCache.h"
+#include "Core/Math/Headers/Transform.h"
 #include "Core/Headers/ParamHandler.h"
+#include "Graphs/Headers/SceneGraphNode.h"
 
 SubMesh::~SubMesh(){
 }
 
 bool SubMesh::computeBoundingBox(SceneGraphNode* const sgn){
 	BoundingBox& bb = sgn->getBoundingBox();
-	if(bb.isComputed()) return true;
+	if(bb.isComputed()) 
+		return true;
+
 	bb.set(getGeometryVBO()->getMinPosition(),getGeometryVBO()->getMaxPosition());
 	return SceneNode::computeBoundingBox(sgn);
 }
@@ -26,11 +31,17 @@ void SubMesh::onDraw(const RenderStage& currentStage){
 }
 
 /// Called from SceneGraph "sceneUpdate"
-void SubMesh::sceneUpdate(const U32 sceneTime,SceneGraphNode* const sgn){
-	Object3D::sceneUpdate(sceneTime, sgn);
+void SubMesh::sceneUpdate(const U32 sceneTime,SceneGraphNode* const sgn, SceneState& sceneState){
+	Object3D::sceneUpdate(sceneTime, sgn,sceneState);
 }
 
 void SubMesh::updateTransform(SceneGraphNode* const sgn){
+	Transform* parentTransform = sgn->getParent()->getTransform();
+	//a mesh should always have a transform
+	assert(parentTransform);
+	if(parentTransform->isDirty()){
+		sgn->updateBoundingBoxTransform(parentTransform->getGlobalMatrix());
+	}
 }
 
 void SubMesh::updateBBatCurrentFrame(SceneGraphNode* const sgn){

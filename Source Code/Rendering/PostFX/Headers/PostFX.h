@@ -91,7 +91,7 @@ private:
 public:
 	void init(const vec2<U16>& resolution);
 	void idle();
-	void render(Camera* const camera);
+	void render();
 	void reshapeFBO(I32 newwidth , I32 newheight);
 
 END_SINGLETON

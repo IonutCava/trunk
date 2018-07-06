@@ -146,15 +146,15 @@ void QuadtreeNode::DrawGround(I32 options,VertexBufferObject* const terrainVBO){
 		assert(_terrainChunk);
 
 		if(options & CHUNK_BIT_WATERREFLECTION) {
-			_terrainChunk->DrawGround(TERRAIN_CHUNKS_LOD-1,_parentShaderProgram,terrainVBO);
+			_terrainChunk->DrawGround(Config::TERRAIN_CHUNKS_LOD-1,_parentShaderProgram,terrainVBO);
 			return;
 		}
 
 		vec3<F32> vEyeToChunk = vec3<F32>(center - eyePos);
 		_camDistance = vEyeToChunk.length();
 
-		if(_camDistance > TERRAIN_CHUNK_LOD1)		_LOD = 2;
-		else if(_camDistance > TERRAIN_CHUNK_LOD0)	_LOD = 1;
+		if(_camDistance > Config::TERRAIN_CHUNK_LOD1)		_LOD = 2;
+		else if(_camDistance > Config::TERRAIN_CHUNK_LOD0)	_LOD = 1;
 
 		_terrainChunk->DrawGround(_LOD,_parentShaderProgram,terrainVBO);
 	}else{

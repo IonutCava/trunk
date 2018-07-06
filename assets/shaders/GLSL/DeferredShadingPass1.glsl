@@ -85,7 +85,7 @@ out vec4 normOutput;    // layout(location = 2)
 out vec4 blendOutput;   // layout(location = 3)
 
 uniform sampler2D  texDiffuse0;
-uniform sampler2D  texBump;
+uniform sampler2D  texNormalMap;
 
 void main( void ){
 
@@ -94,7 +94,7 @@ void main( void ){
    
    diffuseOutput = color;
    posOutput     = vec4(position,1);
-   normOutput    = (texture(texBump,_texCoord) * 2 -
+   normOutput    = (texture(texNormalMap,_texCoord) * 2 -
                      vec4(1,1,1,0)) * TBN;
    blendOutput.rgb = color.rgb * color.a; // Pre multiplied alpha
    blendOutput.a = color.a;

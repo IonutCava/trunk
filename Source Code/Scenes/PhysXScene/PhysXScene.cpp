@@ -21,16 +21,16 @@ void PhysXScene::processTasks(const U32 time){
 }
 
 void PhysXScene::processInput(){
-	if(state()->_angleLR) renderState()->getCamera()->RotateX(state()->_angleLR);
-	if(state()->_angleUD) renderState()->getCamera()->RotateY(state()->_angleUD);
-	if(state()->_moveFB)  renderState()->getCamera()->MoveForward(state()->_moveFB /5);
-	if(state()->_moveLR)  renderState()->getCamera()->MoveStrafe(state()->_moveLR /5);
+	if(state()._angleLR) renderState().getCamera().rotateYaw(state()._angleLR);
+	if(state()._angleUD) renderState().getCamera().rotatePitch(state()._angleUD);
+	if(state()._moveFB)  renderState().getCamera().moveForward(state()._moveFB);
+	if(state()._moveLR)  renderState().getCamera().moveStrafe(state()._moveLR);
 }
 
-bool PhysXScene::load(const std::string& name){
-	///Load scene resources
-	SCENE_LOAD(name,true,true);
-	///Add a light
+bool PhysXScene::load(const std::string& name, CameraManager* const cameraMgr){
+	//Load scene resources
+	bool loadState = SCENE_LOAD(name,cameraMgr,true,true);
+	//Add a light
 	vec2<F32> sunAngle(0.0f, RADIANS(45.0f));
 	_sunvector = vec3<F32>(-cosf(sunAngle.x) * sinf(sunAngle.y),-cosf(sunAngle.y),-sinf(sunAngle.x) * sinf(sunAngle.y));
 	Light* light = addDefaultLight();
@@ -43,7 +43,6 @@ bool PhysXScene::load(const std::string& name){
 }
 
 bool PhysXScene::loadResources(bool continueOnErrors){
-	 _mousePressed = false;
 
 	GUI::getInstance().addText("fpsDisplay",           //Unique ID
 		                       vec2<I32>(60,20),          //Position
@@ -57,9 +56,8 @@ bool PhysXScene::loadResources(bool continueOnErrors){
 								"Number of items in Render Bin: %d",0);
 
 	_taskTimers.push_back(0.0f); //Fps
-	renderState()->getCamera()->RotateX(RADIANS(-75));
-	renderState()->getCamera()->RotateY(RADIANS(25));
-	renderState()->getCamera()->setEye(vec3<F32>(0,30,-40));
+	renderState().getCamera().setRotation(25/*yaw*/,-75/*pitch*/);
+	renderState().getCamera().setEye(vec3<F32>(0,30,-40));
     _addingActors = false;
     ParamHandler::getInstance().setParam("rendering.enableFog",false);
     ParamHandler::getInstance().setParam("postProcessing.bloomFactor",0.1f);
@@ -102,37 +100,23 @@ void PhysXScene::createTower(U32 size){
 void PhysXScene::onKeyDown(const OIS::KeyEvent& key){
 	Scene::onKeyDown(key);
 	switch(key.key)	{
-		case OIS::KC_W:
-			state()->_moveFB = 0.25f;
-			break;
-		case OIS::KC_A:
-			state()->_moveLR = 0.25f;
-			break;
-		case OIS::KC_S:
-			state()->_moveFB = -0.25f;
-			break;
-		case OIS::KC_D:
-			state()->_moveLR = -0.25f;
-			break;
-		default:
-			break;
+		default: break;
+		case OIS::KC_W: state()._moveFB =  1; break;
+		case OIS::KC_A:	state()._moveLR = -1; break;
+		case OIS::KC_S:	state()._moveFB = -1; break;
+		case OIS::KC_D:	state()._moveLR =  1; break;
 	}
 }
 
 void PhysXScene::onKeyUp(const OIS::KeyEvent& key){
 	Scene::onKeyUp(key);
 	switch(key.key)	{
+		default: break;
 		case OIS::KC_W:
-		case OIS::KC_S:
-			state()->_moveFB = 0;
-			break;
+		case OIS::KC_S:	state()._moveFB = 0; break;
 		case OIS::KC_A:
-		case OIS::KC_D:
-			state()->_moveLR = 0;
-			break;
-		case OIS::KC_F1:
-			_sceneGraph->print();
-			break;
+		case OIS::KC_D:	state()._moveLR = 0; break;
+		case OIS::KC_F1: _sceneGraph->print(); break;
         case OIS::KC_1:
 			PHYSICS_DEVICE.createPlane(vec3<F32>(0,0,0),random(0.5f,2.0f));
 			break;
@@ -149,43 +133,28 @@ void PhysXScene::onKeyUp(const OIS::KeyEvent& key){
 			Task_ptr e(New Task(kernel->getThreadPool(),0,true,true,DELEGATE_BIND(&PhysXScene::createStack, DELEGATE_REF(*this),(U32)random(5,10))));
 			addTask(e);
 		} break;
-		default:
-			break;
 	}
 }
 
 void PhysXScene::onMouseMove(const OIS::MouseEvent& key){
-	if(_mousePressed){
-		if(_prevMouse.x - key.state.X.abs > 1 )
-			state()->_angleLR = -0.15f;
-		else if(_prevMouse.x - key.state.X.abs < -1 )
-			state()->_angleLR = 0.15f;
-		else
-			state()->_angleLR = 0;
+	if(_mousePressed[OIS::MB_Right]){
+		if(_previousMousePos.x - key.state.X.abs > 1 )		 state()._angleLR = -1;
+		else if(_previousMousePos.x - key.state.X.abs < -1 ) state()._angleLR =  1;
+		else			                                     state()._angleLR =  0;
 
-		if(_prevMouse.y - key.state.Y.abs > 1 )
-			state()->_angleUD = -0.1f;
-		else if(_prevMouse.y - key.state.Y.abs < -1 )
-			state()->_angleUD = 0.1f;
-		else
-			state()->_angleUD = 0;
+		if(_previousMousePos.y - key.state.Y.abs > 1 )		 state()._angleUD = -1;
+		else if(_previousMousePos.y - key.state.Y.abs < -1 ) state()._angleUD =  1;
+		else 			                                     state()._angleUD =  0;
 	}
 
-	_prevMouse.x = key.state.X.abs;
-	_prevMouse.y = key.state.Y.abs;
-}
-
-void PhysXScene::onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID button){
-	Scene::onMouseClickDown(key,button);
-	if(button == 0)
-		_mousePressed = true;
+	_previousMousePos.x = key.state.X.abs;
+	_previousMousePos.y = key.state.Y.abs;
 }
 
 void PhysXScene::onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button){
 	Scene::onMouseClickUp(key,button);
-	if(button == 0)	{
-		_mousePressed = false;
-		state()->_angleUD = 0;
-		state()->_angleLR = 0;
+	if(!_mousePressed[OIS::MB_Right]){
+		state()._angleUD = 0;
+		state()._angleLR = 0;
 	}
 }

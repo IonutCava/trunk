@@ -212,6 +212,7 @@
     <ClCompile Include="..\..\Source Code\AI\PathFinding\Waypoints\Waypoint.cpp" />
     <ClCompile Include="..\..\Source Code\AI\PathFinding\Waypoints\WaypointGraph.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Kernel.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Math\MathClasses.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Math\MathHelper.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Math\Transform.cpp" />
     <ClCompile Include="..\..\Source Code\Core\MemoryManagement\TrackedObject.cpp" />
@@ -233,6 +234,7 @@
     <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\WaterPlaneLoaderImpl.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Resources\Resource.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Resources\ResourceCache.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Resources\ResourceDescriptor.cpp" />
     <ClCompile Include="..\..\Source Code\Dynamics\Entities\Impostor.cpp" />
     <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\Particle.cpp" />
     <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ParticleEmitter.cpp" />
@@ -323,6 +325,11 @@
     <ClCompile Include="..\..\Source Code\Managers\LightManager.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\RenderPassManager.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\ShaderManager.cpp" />
+    <ClCompile Include="..\..\Source Code\Rendering\Camera\FirstPersonCamera.cpp" />
+    <ClCompile Include="..\..\Source Code\Rendering\Camera\FreeFlyCamera.cpp" />
+    <ClCompile Include="..\..\Source Code\Rendering\Camera\OrbitCamera.cpp" />
+    <ClCompile Include="..\..\Source Code\Rendering\Camera\ScriptedCamera.cpp" />
+    <ClCompile Include="..\..\Source Code\Rendering\Camera\ThirdPersonCamera.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\DeferredLightingRenderer.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\DeferredShadingRenderer.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\ForwardRenderer.cpp" />
@@ -359,6 +366,7 @@
     <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderBinTranslucent.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderPass.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderQueue.cpp" />
+    <ClCompile Include="..\..\Source Code\Scenes\SceneInput.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\WarScene\WarScene.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\WarScene\WarSceneAIActionList.cpp" />
     <ClCompile Include="..\..\Source Code\Utility\CommandParser.cpp" />
@@ -417,6 +425,9 @@
     <ClInclude Include="..\..\Source Code\Core\Math\BoundingVolumes\Headers\BoundingSphere.h" />
     <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathFPU.h" />
     <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathSIMD.h" />
+    <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathVectors-Inl.h" />
+    <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathVectors.h" />
+    <ClInclude Include="..\..\Source Code\Core\Math\Headers\Plane.h" />
     <ClInclude Include="..\..\Source Code\Core\MemoryManagement\Headers\SmartPointer.h" />
     <ClInclude Include="..\..\Source Code\Core\MemoryManagement\Headers\TrackedObject.h" />
     <ClInclude Include="..\..\Source Code\Core\Resources\Headers\HardwareResource.h" />
@@ -497,6 +508,7 @@
     <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Shaders\Headers\d3dShader.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Shaders\Headers\d3dShaderProgram.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Textures\Headers\d3dTexture.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\GFXDevice-Inl.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\GFXDevice.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\ImmediateModeEmulation.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\OcclusionQuery.h" />
@@ -538,6 +550,7 @@
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\FirstPersonCamera.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\FreeFlyCamera.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\OrbitCamera.h" />
+    <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\ScriptedCamera.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\ThirdPersonCamera.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Headers\DeferredLightingRenderer.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Headers\DeferredShadingRenderer.h" />

@@ -6,6 +6,8 @@
 #include <iomanip>
 #include <stdarg.h>
 
+#define CONSOLE_OUTPUT_BUFFER_SIZE 2048
+
 //! Do not remove the following license without express permission granted bu DIVIDE-Studio
 void Console::printCopyrightNotice() const {
 	std::cout << "------------------------------------------------------------------------------" << std::endl;
@@ -37,152 +39,109 @@ void Console::printCopyrightNotice() const {
 #ifdef _DEBUG
 void Console::d_printfn(const char* format, ...) const {
 	va_list args;
-	std::string fmt_text;
+	char text[CONSOLE_OUTPUT_BUFFER_SIZE] = {};
 	va_start(args, format);
-	I32 len = _vscprintf(format, args) + 1;
-	char *text = new char[len];
-	vsprintf_s(text, len, format, args);
-	fmt_text.append(text);
-	fmt_text.append("\n");
-	delete[] text;
-	text = NULL;
+	assert(_vscprintf(format, args) - 1 < CONSOLE_OUTPUT_BUFFER_SIZE);
+	vsprintf_s(text, sizeof(text), format, args);
+	strcat(text, "\n");
 	va_end(args);
-	output(fmt_text);
-	fmt_text.empty();
+	output(text);
 }
 
 void Console::d_printf(const char* format, ...) const {
 	va_list args;
-	std::string fmt_text;
+	char text[CONSOLE_OUTPUT_BUFFER_SIZE] = {};
 	va_start(args, format);
-	I32 len = _vscprintf(format, args) + 1;
-	char *text = new char[len];
-	vsprintf_s(text, len, format, args);
-	fmt_text.append(text);
-	delete[] text;
-	text = NULL;
+	assert(_vscprintf(format, args) + 1 < CONSOLE_OUTPUT_BUFFER_SIZE);
+	vsprintf_s(text, sizeof(text), format, args);
 	va_end(args);
-	output(fmt_text);
-	fmt_text.empty();
+	output(text);
 }
-#endif
-
-void Console::printfn(const char* format, ...) const {
-	va_list args;
-	std::string fmt_text;
-	va_start(args, format);
-	I32 len = _vscprintf(format, args) + 1;
-	char *text = new char[len];
-	vsprintf_s(text, len, format, args);
-	fmt_text.append(text);
-	fmt_text.append("\n");
-	delete[] text;
-	text = NULL;
-	va_end(args);
-	output(fmt_text);
-	fmt_text.empty();
-}
-
-void Console::printf(const char* format, ...) const {
-	va_list args;
-	std::string fmt_text;
-	va_start(args, format);
-	I32 len = _vscprintf(format, args) + 1;
-	char *text = new char[len];
-	vsprintf_s(text, len, format, args);
-	fmt_text.append(text);
-	delete[] text;
-	text = NULL;
-	va_end(args);
-	output(fmt_text);
-	fmt_text.empty();
-}
-
-#ifdef _DEBUG
 
 void Console::d_errorfn(const char* format, ...) const {
 	va_list args;
-	std::string fmt_text;
+	char text[CONSOLE_OUTPUT_BUFFER_SIZE] = {};
 	va_start(args, format);
-	I32 len = _vscprintf(format, args) + 1;
-	char *text = new char[len];
-	vsprintf_s(text, len, format, args);
-	fmt_text.append("Error: ");
-	fmt_text.append(text);
-	fmt_text.append("\n");
-	delete[] text;
-	text = NULL;
+	assert(_vscprintf(format, args) + 3 < CONSOLE_OUTPUT_BUFFER_SIZE);
+	vsprintf_s(text, sizeof(text), format, args);
+	strcat(text, "\n");
 	va_end(args);
-	output(fmt_text,true);
-	fmt_text.empty();
+	output(text,true);
 }
 
 void Console::d_errorf(const char* format, ...) const {
 	va_list args;
-	std::string fmt_text;
+	char text[CONSOLE_OUTPUT_BUFFER_SIZE] = {};
 	va_start(args, format);
-	I32 len = _vscprintf(format, args) + 1;
-	char *text = new char[len];
-	vsprintf_s(text, len, format, args);
-	fmt_text.append("Error: ");
-	fmt_text.append(text);
-	delete[] text;
-	text = NULL;
+	assert(_vscprintf(format, args) + 1 < CONSOLE_OUTPUT_BUFFER_SIZE);
+	vsprintf_s(text, sizeof(text), format, args);
 	va_end(args);
-	output(fmt_text,true);
-	fmt_text.empty();
+	output(text,true);
 }
+
 #endif
+void Console::printfn(const char* format, ...) const {
+	va_list args;
+	char text[CONSOLE_OUTPUT_BUFFER_SIZE] = {};
+	va_start(args, format);
+	assert(_vscprintf(format, args) + 3 < CONSOLE_OUTPUT_BUFFER_SIZE);
+	vsprintf_s(text, sizeof(text), format, args);
+	strcat(text, "\n");
+	va_end(args);
+	output(text);
+}
+
+void Console::printf(const char* format, ...) const {
+	va_list args;
+	char text[CONSOLE_OUTPUT_BUFFER_SIZE] = {};
+	va_start(args, format);
+	assert(_vscprintf(format, args) + 1 < CONSOLE_OUTPUT_BUFFER_SIZE);
+	vsprintf_s(text, sizeof(text), format, args);
+	va_end(args);
+	output(text);
+}
 
 void Console::errorfn(const char* format, ...) const {
 	va_list args;
-	std::string fmt_text;
+	char text[CONSOLE_OUTPUT_BUFFER_SIZE] = {};
 	va_start(args, format);
-	I32 len = _vscprintf(format, args) + 1;
-	char *text = new char[len];
-	vsprintf_s(text, len, format, args);
-	fmt_text.append("Error: ");
-	fmt_text.append(text);
-	fmt_text.append("\n");
-	delete[] text;
-	text = NULL;
+	assert(_vscprintf(format, args) + 3 < CONSOLE_OUTPUT_BUFFER_SIZE);
+	vsprintf_s(text, sizeof(text), format, args);
+	strcat(text, "\n");
 	va_end(args);
-	output(fmt_text,true);
-	fmt_text.empty();
+	output(text,true);
 }
 
 void Console::errorf(const char* format, ...) const {
 	va_list args;
-	std::string fmt_text;
+	char text[CONSOLE_OUTPUT_BUFFER_SIZE] = {};
 	va_start(args, format);
-	I32 len = _vscprintf(format, args) + 1;
-	char *text = new char[len];
-	vsprintf_s(text, len, format, args);
-	fmt_text.append("Error: ");
-	fmt_text.append(text);
-	delete[] text;
-	text = NULL;
+	assert(_vscprintf(format, args) + 1 < CONSOLE_OUTPUT_BUFFER_SIZE);
+	vsprintf_s(text, sizeof(text), format, args);
 	va_end(args);
-	output(fmt_text,true);
-	fmt_text.empty();
+	output(text,true);
 }
 
-void Console::output(const std::string& output,const bool error) const {
-	boost::mutex::scoped_lock  lock(io_mutex);
-	if(_timestamps){
-		if(error){
-			std::cerr << "[ " << std::setprecision(4) << GETTIME() << " ] " << output << std::flush;
-		}else{
-			std::cout << "[ " << std::setprecision(4) << GETTIME() << " ] " << output << std::flush;
-		}
-	}else{
-		if(error){
-			std::cerr << output << std::flush;
-		}else{
-			std::cout << output << std::flush;
-		}
-	}
+void Console::output(const char* output, const bool error) const {
 	if(!_guiConsoleCallback.empty()){
-		_guiConsoleCallback(output,error);
+		if(error){
+			std::string outputString("Error: ");
+			outputString.append(output);
+			_guiConsoleCallback(outputString.c_str(),error);
+		}else{
+			_guiConsoleCallback(output,error);
+		}
 	}
+
+	boost::mutex::scoped_lock lock(io_mutex);
+
+	std::ostream& outputStream = error ? std::cerr : std::cout;
+
+	if(_timestamps)
+		outputStream << "[ " << std::setprecision(4) << GETTIME() << " ] ";
+
+	if(error)
+		outputStream << " Error: ";
+
+	outputStream << output << std::flush;
 }

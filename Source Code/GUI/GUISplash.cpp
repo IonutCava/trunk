@@ -12,12 +12,18 @@ GUISplash::GUISplash(const std::string& splashImageName,const vec2<U16>& dimensi
 	_renderQuad = CreateResource<Quad3D>(mrt);
 	assert(_renderQuad);
 	_renderQuad->setDimensions(vec4<F32>(0,0,dimensions.width,dimensions.height));
+	SamplerDescriptor splashSampler;
+	splashSampler.toggleMipMaps(true);
+	splashSampler.setAnisotrophy(16);
+	splashSampler.setWrapMode(TEXTURE_CLAMP);
 	ResourceDescriptor splashImage("SplashScreen Texture");
 	splashImage.setFlag(true);
 	splashImage.setThreadedLoading(false);
+	splashImage.setPropertyDescriptor<SamplerDescriptor>(splashSampler);
 	std::string splashImageLocation = ParamHandler::getInstance().getParam<std::string>("assetsLocation") + "/misc_images/";
 	splashImageLocation += splashImageName;
 	splashImage.setResourceLocation(splashImageLocation);
+
 	_splashImage = CreateResource<Texture>(splashImage);
     ResourceDescriptor splashShader("fboPreview");
 	splashShader.setThreadedLoading(false);

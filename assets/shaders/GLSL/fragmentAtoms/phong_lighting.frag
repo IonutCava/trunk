@@ -15,23 +15,24 @@ uniform float opacity;
 vec4 Phong(in vec2 texCoord, in vec3 normal){
     
 #if defined(USE_OPACITY_MAP)
-	float alpha = texture(opacityMap, texCoord).a;
 	// discard material if it is bellow opacity threshold
-	if(alpha < ALPHA_DISCARD_THRESHOLD) discard;
-#endif
+	if(texture(texOpacityMap, texCoord).a < ALPHA_DISCARD_THRESHOLD) discard;
+#else
 	if(opacity< ALPHA_DISCARD_THRESHOLD) discard;
+#endif
+
 
 #ifndef SKIP_TEXTURES
 	//this shader is generated only for nodes with at least 1 texture
 	vec4 tBase;
 
 	//Get the texture color. use Replace for the first texture
-	applyTexture(texDiffuse0, texDiffuse0Op, 0, texCoord, tBase);
+	applyTexture(texDiffuse0, textureOperation0, 0, texCoord, tBase);
 	
 	//If we have a second diffuse texture
 	if(textureCount > 1){
 		//Apply the second texture over the first
-		applyTexture(texDiffuse1, texDiffuse1Op, 0, texCoord, tBase);
+		applyTexture(texDiffuse1, textureOperation1, 0, texCoord, tBase);
 	}
 	//If the texture's alpha channel is less than 1/3, discard current fragment
 	if(tBase.a < ALPHA_DISCARD_THRESHOLD) discard;

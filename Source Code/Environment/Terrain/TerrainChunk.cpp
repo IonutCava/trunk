@@ -9,13 +9,13 @@
 #include "Geometry/Material/Headers/Material.h"
 
 void TerrainChunk::Load(U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize){
-	for(U8 i=0; i < TERRAIN_CHUNKS_LOD; i++) ComputeIndicesArray(i, depth, pos, HMsize);
+	for(U8 i=0; i < Config::TERRAIN_CHUNKS_LOD; i++) ComputeIndicesArray(i, depth, pos, HMsize);
 
-	_grassData._grassVisibility = GET_ACTIVE_SCENE()->state()->getGrassVisibility();
+	_grassData._grassVisibility = GET_ACTIVE_SCENE()->state().getGrassVisibility();
 }
 
 void TerrainChunk::ComputeIndicesArray(I8 lod, U8 depth, const vec2<U32>& position, const vec2<U32>& heightMapSize){
-	assert(lod < TERRAIN_CHUNKS_LOD);
+	assert(lod < Config::TERRAIN_CHUNKS_LOD);
 
 	U32 offset = (U32)pow(2.0f, (F32)(lod));
 	U32 div = (U32)pow(2.0f, (F32)(depth+lod));
@@ -50,7 +50,7 @@ void TerrainChunk::ComputeIndicesArray(I8 lod, U8 depth, const vec2<U32>& positi
 }
 
 void TerrainChunk::Destroy(){
-	for(U8 i=0; i<TERRAIN_CHUNKS_LOD; i++){
+	for(U8 i = 0; i < Config::TERRAIN_CHUNKS_LOD; i++){
 		_indice[i].clear();
 		_indOffsetW[i] = 0;
 		_indOffsetH[i] = 0;
@@ -59,7 +59,7 @@ void TerrainChunk::Destroy(){
 }
 
 I32 TerrainChunk::DrawGround(I8 lod, ShaderProgram* const program, VertexBufferObject* const vbo){
-	assert(lod < TERRAIN_CHUNKS_LOD);
+	assert(lod < Config::TERRAIN_CHUNKS_LOD);
 	if(lod>0) lod--;
 
     program->Uniform("LODFactor", 1.0f / (lod+1));
@@ -72,7 +72,7 @@ I32 TerrainChunk::DrawGround(I8 lod, ShaderProgram* const program, VertexBufferO
 }
 
 void  TerrainChunk::DrawGrass(I8 lod, F32 d,U32 geometryIndex, Transform* const parentTransform){
-	assert(lod < TERRAIN_CHUNKS_LOD);
+	assert(lod < Config::TERRAIN_CHUNKS_LOD);
 	if(lod != 0) return;
 	if(d > _grassData._grassVisibility) { //if we go beyond grass visibility limit ...
 		return; // ... do not draw grass

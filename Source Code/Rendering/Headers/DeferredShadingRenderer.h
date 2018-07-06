@@ -24,7 +24,7 @@
 #define _DEF_SHADE_RENDERER_H_
 
 #include "Renderer.h"
-#include "Utility/Headers/vector.h"
+#include "Utility/Headers/Vector.h"
 #include "Hardware/Platform/Headers/PlatformDefines.h"
 
 class Quad3D;
@@ -37,11 +37,11 @@ class DeferredShadingRenderer : public Renderer {
 public:
 	DeferredShadingRenderer();
 	~DeferredShadingRenderer();
-	void render(boost::function0<void> renderCallback, SceneRenderState* const sceneRenderState);
+	void render(boost::function0<void> renderCallback, const SceneRenderState& sceneRenderState);
 	void toggleDebugView();
 private:
-	void firstPass(boost::function0<void> renderCallback, SceneRenderState* const sceneRenderState);
-	void secondPass(SceneRenderState* const sceneRenderState);
+	void firstPass(boost::function0<void> renderCallback, const SceneRenderState& sceneRenderState);
+	void secondPass(const SceneRenderState& sceneRenderState);
 
 private:
 	U16 _cachedLightCount;

@@ -1,7 +1,10 @@
 //OpenGL state management: Lights, matrices, viewport, bound objects etc
 #include "Headers/GLWrapper.h"
 #include "Headers/glRenderStateBlock.h"
+
+#include "Core/Headers/ParamHandler.h"
 #include "Managers/Headers/ShaderManager.h"
+#include "Rendering/Headers/Frustum.h"
 #include "Rendering/Lighting/Headers/Light.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Hardware/Video/OpenGL/Buffers/VertexBufferObject/Headers/glVertexArrayObject.h"
@@ -12,8 +15,6 @@
 glShaderProgram* GL_API::_activeShaderProgram = NULL;
 GLuint GL_API::_activeVAOId = 0;
 GLuint GL_API::_activeTextureUnit = 0;
-vec4<GLint> GL_API::_prevViewportRect = vec4<GLint>(0,0,0,0);
-vec4<GLint> GL_API::_currentviewportRect = vec4<GLint>(0,0,0,0);
 vec4<GLfloat> GL_API::_prevClearColor = DIVIDE_BLUE();
 
 void GL_API::clearStates(const bool skipShader,const bool skipTextures,const bool skipBuffers, const bool forceAll){
@@ -59,7 +60,6 @@ void GL_API::getMatrix(const EXTENDED_MATRIX& mode, mat3<GLfloat>& mat){
     assert(mode == NORMAL_MATRIX /* || mode = ...*/);
     Divide::GL::_queryMatrix(NORMAL_MATRIX,mat);
 }
-
 
 void GL_API::toggle2D(bool state){
 	if(state == _2DRendering) return;
@@ -138,16 +138,14 @@ void GL_API::updateViewMatrix(){
 //Setting _LookAt here for camera's or shadow projection
 // -set the current matrix to GL_MODELVIEW
 // -reset it to identity
-void GL_API::lookAt(const vec3<GLfloat>& eye,
-                    const vec3<GLfloat>& center,
-                    const vec3<GLfloat>& up,
-                    const bool invertx,
-                    const bool inverty){
-    Divide::GL::_LookAt(glm::vec3(eye.x,eye.y,eye.z),
-						glm::vec3(center.x,center.y,center.z),
-						glm::vec3(up.x,up.y,up.z),
-						invertx,
-						inverty);
+
+void GL_API::lookAt(const vec3<F32>& eye, const vec3<F32>& target, const vec3<F32>& up){
+	vec3<F32> viewDirection(eye-target);
+
+	Divide::GL::_LookAt(glm::value_ptr(glm::lookAt(glm::vec3(eye.x, eye.y, eye.z),
+		                                           glm::vec3(target.x, target.y, target.z),
+												   glm::vec3(up.x, up.y, up.z))),
+		                normalize(viewDirection));
 }
 
 void GL_API::lockMatrices(const MATRIX_MODE& setCurrentMatrix, bool lockView, bool lockProjection){
@@ -161,7 +159,7 @@ void GL_API::lockMatrices(const MATRIX_MODE& setCurrentMatrix, bool lockView, bo
 	    Divide::GL::_pushMatrix();
     }
 
-    ///This is such a cheap operation that no other checks are needed (even if we double set the VIEW_MATRIX)
+    //This is such a cheap operation that no other checks are needed (even if we double set the VIEW_MATRIX)
     Divide::GL::_matrixMode(setCurrentMatrix);
 }
 
@@ -176,7 +174,7 @@ void GL_API::releaseMatrices( const MATRIX_MODE& setCurrentMatrix, bool releaseV
         Divide::GL::_popMatrix();
     }
 
-    ///This is such a cheap operation that no other checks are needed (even if we double set the VIEW_MATRIX)
+    //This is such a cheap operation that no other checks are needed (even if we double set the VIEW_MATRIX)
     Divide::GL::_matrixMode(setCurrentMatrix);
 }
 
@@ -200,14 +198,47 @@ void GL_API::setPerspectiveProjection(GLfloat FoV,GLfloat aspectRatio, const vec
 	Divide::GL::_matrixMode(VIEW_MATRIX);
 }
 
+void GL_API::setAnaglyphFrustum(F32 camIOD, bool rightFrustum){
+	ParamHandler& par = ParamHandler::getInstance();
+	const vec2<GLfloat>& zPlanes = Frustum::getInstance().getZPlanes();
+	GLfloat fov    = par.getParam<GLfloat>("runtime.verticalFOV");
+	GLfloat ratio  = par.getParam<GLfloat>("runtime.aspectRatio");
+	Divide::GL::_anaglyph(camIOD,(GLdouble)zPlanes.x, (GLdouble)zPlanes.y,ratio,fov,rightFrustum);
+}
+
+void GL_API::updateClipPlanes(){
+	//ToDo: Hack because clearly, HW clipping is too complicated for some ATI cards ... -Ionut
+	if(getGPUVendor() == GPU_VENDOR_AMD) 
+		return;
+
+	const PlaneList& list = GFX_DEVICE.getClippingPlanes();
+	bool clipPlaneState = false;
+	for(GLuint clipPlaneIndex = 0; clipPlaneIndex < list.size(); clipPlaneIndex++){
+		clipPlaneState = list[clipPlaneIndex].active();
+		if(clipPlaneState != _activeClipPlanes[clipPlaneIndex]){
+			_activeClipPlanes[clipPlaneIndex] = clipPlaneState;
+			if(clipPlaneState){
+				GLCheck(glEnable(GL_CLIP_DISTANCE0 + clipPlaneIndex));
+			}else{
+				GLCheck(glDisable(GL_CLIP_DISTANCE0 + clipPlaneIndex));
+			}
+		}
+	}
+
+}
+
 void GL_API::setActiveTextureUnit(GLuint unit,const bool force){
-	if(_activeTextureUnit == unit && !force) return; //< prevent double bind
+	if(_activeTextureUnit == unit && !force) 
+		return; //< prevent double bind
+
     _activeTextureUnit = unit;
 	GLCheck(glActiveTexture(GL_TEXTURE0 + unit));
 }
 
 void GL_API::setActiveVAO(GLuint id,const bool force){
-	if(_activeVAOId == id && !force) return; //<prevent double bind
+	if(_activeVAOId == id && !force) 
+		return; //<prevent double bind
+
     _activeVAOId = id;
     GLCheck(glBindVertexArray(id));
 }
@@ -215,7 +246,8 @@ void GL_API::setActiveVAO(GLuint id,const bool force){
 void GL_API::setActiveProgram(glShaderProgram* const program,const bool force){
 	U32 newProgramId = (program != NULL) ? program->getId() : 0;
 	U32 oldProgramId = (_activeShaderProgram != NULL) ? _activeShaderProgram->getId() : 0;
-	if(oldProgramId == newProgramId && !force) return; //<prevent double bind
+	if(oldProgramId == newProgramId && !force) 
+		return; //<prevent double bind
 
 	if(_activeShaderProgram != NULL) _activeShaderProgram->unbind(false);
 
@@ -234,18 +266,24 @@ void GL_API::clearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a, bool force){
 	}
 }
 
+static bool popViewport = false;
 void GL_API::restoreViewport(){
-    if(_currentviewportRect != _prevViewportRect){
-        _currentviewportRect = _prevViewportRect;
-        GLCheck(glViewport(_currentviewportRect.x,_currentviewportRect.y,_currentviewportRect.z,_currentviewportRect.w));
-    }
+	if(popViewport)
+		Divide::GL::_viewport.pop();
+	const vec4<U32>& prevViewport = Divide::GL::_viewport.top();
+	GLCheck(glViewport(prevViewport.x, prevViewport.y, prevViewport.z, prevViewport.w));
 }
 
-void GL_API::setViewport(GLint x, GLint y, GLint width, GLint height,bool force){
-    vec4<GLint> viewportRect(x,y,width,height);
-     if(_currentviewportRect != viewportRect){
-        _prevViewportRect = force ? viewportRect : _currentviewportRect;
-        _currentviewportRect = viewportRect;
-        GLCheck(glViewport(_currentviewportRect.x,_currentviewportRect.y,_currentviewportRect.z,_currentviewportRect.w));
-     }
+vec4<U32> GL_API::setViewport(const vec4<U32>& viewport, bool force){
+	bool updateGL = !viewport.compare(Divide::GL::_viewport.top());
+	popViewport = !force;
+	if(force)
+		Divide::GL::_viewport.top() = viewport;
+	else
+		Divide::GL::_viewport.push(viewport);
+
+	if(updateGL)
+		GLCheck(glViewport(viewport.x,viewport.y,viewport.z,viewport.w));
+
+	return Divide::GL::_viewport.top();
 }

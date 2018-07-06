@@ -7,8 +7,9 @@
 #include "Core/Math/Headers/Transform.h"
 
 #include "Utility/Headers/XMLParser.h"
-#include "Rendering/Headers/Frustum.h"
 #include "Managers/Headers/AIManager.h"
+#include "Managers/Headers/CameraManager.h"
+#include "Rendering/Camera/Headers/FreeFlyCamera.h"
 
 #include "Environment/Sky/Headers/Sky.h"
 #include "Environment/Terrain/Headers/Terrain.h"
@@ -24,23 +25,29 @@
 #include "Dynamics/Physics/Headers/PhysicsSceneInterface.h"
 
 Scene::Scene() :  Resource(),
-			   _GFX(GFX_DEVICE),
-			   _FBSpeedFactor(1.0f),
-			   _LRSpeedFactor(5.0f),
-			   _loadComplete(false),
-			   _paramHandler(ParamHandler::getInstance()),
-			   _currentSelection(NULL),
- 			   _physicsInterface(NULL),
-			   _sceneGraph(New SceneGraph()),
-			   _sceneState(New SceneState()),
-			   _sceneRenderState(New SceneRenderState())
+			     _GFX(GFX_DEVICE),
+			     _FBSpeedFactor(1.0f),
+			     _LRSpeedFactor(5.0f),
+			     _loadComplete(false),
+			     _paramHandler(ParamHandler::getInstance()),
+			     _currentSelection(NULL),
+ 			     _physicsInterface(NULL),
+				 _cameraMgr(NULL),
+			     _sceneGraph(New SceneGraph())
 {
+	_mousePressed[OIS::MB_Left]    = false;
+	_mousePressed[OIS::MB_Right]   = false;
+	_mousePressed[OIS::MB_Middle]  = false;
+	_mousePressed[OIS::MB_Button3] = false;
+	_mousePressed[OIS::MB_Button4] = false;
+	_mousePressed[OIS::MB_Button5] = false;
+	_mousePressed[OIS::MB_Button6] = false;
+	_mousePressed[OIS::MB_Button7] = false;
 }
 
-Scene::~Scene() {
-	SAFE_DELETE(_sceneState);
-	SAFE_DELETE(_sceneRenderState);
-};
+Scene::~Scene() 
+{
+}
 
 bool Scene::idle(){ //Called when application is idle
 	if(_sceneGraph){
@@ -73,6 +80,10 @@ bool Scene::idle(){ //Called when application is idle
 		}
 	}
 	return true;
+}
+
+void Scene::updateCameras(){
+	renderState().updateCamera(_cameraMgr->getActiveCamera());
 }
 
 void Scene::postRender(){
@@ -180,6 +191,20 @@ void Scene::addLight(Light* const lightItem){
 	LightManager::getInstance().addLight(lightItem);
 }
 
+Camera* Scene::addDefaultCamera(){
+	PRINT_FN(Locale::get("SCENE_ADD_DEFAULT_CAMERA"), getName().c_str());
+	Camera* camera = New FreeFlyCamera();
+	// force all lights to update on camera change (to keep them still actually)
+	camera->addUpdateListener(DELEGATE_BIND(&LightManager::update, DELEGATE_REF(LightManager::getInstance())));
+	camera->setMoveSpeedFactor(_paramHandler.getParam<F32>("options.cameraSpeed.move"));
+	camera->setTurnSpeedFactor(_paramHandler.getParam<F32>("options.cameraSpeed.turn"));
+	camera->setFixedYawAxis(true);
+	//As soon as a camera is added to the camera manager, the manager is responsible for cleaning it up
+	_cameraMgr->addNewCamera("defaultCamera", camera);
+	_cameraMgr->setActiveCamera("defaultCamera");
+	return camera;
+}
+
 Light* Scene::addDefaultLight(){
 	std::stringstream ss; ss << LightManager::getInstance().getLights().size();
 	ResourceDescriptor defaultLight("Default directional light "+ss.str());
@@ -193,8 +218,8 @@ Light* Scene::addDefaultLight(){
 	return l;
 }
 ///Add skies
-Sky* Scene::addDefaultSky(){
 #pragma message("ToDo: load skyboxes from XML")
+Sky* Scene::addDefaultSky(){
 	Sky* tempSky = New Sky("Default Sky");
 	_skiesSGN.push_back(_sceneGraph->getRoot()->addNode(tempSky));
 	return tempSky;
@@ -215,19 +240,20 @@ bool Scene::removeGeometry(SceneNode* node){
 }
 
 bool Scene::preLoad() {
-    ParamHandler& par = ParamHandler::getInstance();
-    _GFX.enableFog(_sceneState->getFogDesc()._fogMode,
-                   _sceneState->getFogDesc()._fogDensity,
-                   _sceneState->getFogDesc()._fogColor,
-                   _sceneState->getFogDesc()._fogStartDist,
-                   _sceneState->getFogDesc()._fogEndDist);
-	_sceneRenderState->shadowMapResolutionFactor() = par.getParam<U8>("rendering.shadowResolutionFactor");
+    _GFX.enableFog(_sceneState.getFogDesc()._fogMode,
+                   _sceneState.getFogDesc()._fogDensity,
+                   _sceneState.getFogDesc()._fogColor,
+                   _sceneState.getFogDesc()._fogStartDist,
+                   _sceneState.getFogDesc()._fogEndDist);
+	renderState().shadowMapResolutionFactor(_paramHandler.getParam<U8>("rendering.shadowResolutionFactor"));
 	return true;
 }
 
-bool Scene::load(const std::string& name){
+bool Scene::load(const std::string& name, CameraManager* const cameraMgr){
+	_cameraMgr = cameraMgr;
+	addDefaultCamera();
 	SceneGraphNode* root = _sceneGraph->getRoot();
-	///Add terrain from XML
+	//Add terrain from XML
 	if(!_terrainInfoArray.empty()){
 		for(U8 i = 0; i < _terrainInfoArray.size(); i++){
 			ResourceDescriptor terrain(_terrainInfoArray[i]->getVariable("terrainName"));
@@ -241,20 +267,19 @@ bool Scene::load(const std::string& name){
 			temp->initializeVegetation(_terrainInfoArray[i],terrainTemp);
 		}
 	}
-	///Camera position is overriden in the scene's XML configuration file
+	//Camera position is overriden in the scene's XML configuration file
 	if(ParamHandler::getInstance().getParam<bool>("options.cameraStartPositionOverride")){
-		renderState()->getCamera()->setEye(vec3<F32>(_paramHandler.getParam<F32>("options.cameraStartPosition.x"),
+		renderState().getCamera().setEye(vec3<F32>(_paramHandler.getParam<F32>("options.cameraStartPosition.x"),
 													 _paramHandler.getParam<F32>("options.cameraStartPosition.y"),
 													 _paramHandler.getParam<F32>("options.cameraStartPosition.z")));
 		vec2<F32> camOrientation(_paramHandler.getParam<F32>("options.cameraStartOrientation.xOffsetDegrees"),
 								 _paramHandler.getParam<F32>("options.cameraStartOrientation.yOffsetDegrees"));
-		renderState()->getCamera()->setAngleX(RADIANS(camOrientation.x));
-		renderState()->getCamera()->setAngleY(RADIANS(camOrientation.y));
+		renderState().getCamera().setGlobalRotation(camOrientation.y/*yaw*/,camOrientation.x/*pitch*/);
 	}else{
-		renderState()->getCamera()->setEye(vec3<F32>(0,50,0));
+		renderState().getCamera().setEye(vec3<F32>(0,50,0));
 	}
 
-	///Create an AI thread, but start it only if needed
+	//Create an AI thread, but start it only if needed
 	Kernel* kernel = Application::getInstance().getKernel();
 	_aiTask.reset(New Task(kernel->getThreadPool(),10,false,false,DELEGATE_BIND(&AIManager::tick, DELEGATE_REF(AIManager::getInstance()))));
 	_loadComplete = true;
@@ -321,211 +346,8 @@ void Scene::clearLights(){
 	LightManager::getInstance().clear();
 }
 
-void Scene::clearTasks(){
-	PRINT_FN(Locale::get("STOP_SCENE_TASKS"));
-    removeTasks();
-}
-
-void Scene::onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID button){
-}
-
-void Scene::onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button){
-}
-
-static F32 speedFactor = 0.25f;
-void Scene::onKeyDown(const OIS::KeyEvent& key){
-	switch(key.key){
-		case OIS::KC_LEFT :
-			state()->_angleLR = -(speedFactor/2.5);
-			break;
-		case OIS::KC_RIGHT :
-			state()->_angleLR = speedFactor/2.5;
-			break;
-		case OIS::KC_UP :
-			state()->_angleUD = -(speedFactor/5);
-			break;
-		case OIS::KC_DOWN :
-			state()->_angleUD = speedFactor/5;
-			break;
-		case OIS::KC_END:
-			deleteSelection();
-			break;
-		case OIS::KC_F2:{
-			D_PRINT_FN(Locale::get("TOGGLE_SCENE_SKELETONS"));
-			renderState()->toggleSkeletons();
-			}break;
-		case OIS::KC_B:{
-			D_PRINT_FN(Locale::get("TOGGLE_SCENE_BOUNDING_BOXES"));
-			renderState()->toggleBoundingBoxes();
-			}break;
-		case OIS::KC_ADD:
-			if (speedFactor < 10)  speedFactor += 0.1f;
-			break;
-		case OIS::KC_SUBTRACT:
-			if (speedFactor > 0.1f)   speedFactor -= 0.1f;
-			break;
-		case OIS::KC_F8:
-			ParamHandler::getInstance().setParam("postProcessing.enablePostFX",!ParamHandler::getInstance().getParam<bool>("postProcessing.enablePostFX"));
-			break;
-		case OIS::KC_F10:
-			LightManager::getInstance().togglePreviewShadowMaps();
-			break;
-		case OIS::KC_F12:
-			GFX_DEVICE.Screenshot("screenshot_",vec4<F32>(0,0,renderState()->_cachedResolution.x,renderState()->_cachedResolution.y));
-			break;
-		default:
-			break;
-	}
-}
-
-void Scene::onKeyUp(const OIS::KeyEvent& key){
-	switch( key.key ){
-		case OIS::KC_LEFT:
-		case OIS::KC_RIGHT:
-			state()->_angleLR = 0.0f;
-			break;
-		case OIS::KC_UP:
-		case OIS::KC_DOWN:
-			state()->_angleUD = 0.0f;
-			break;
-		case OIS::KC_F3:
-			_paramHandler.setParam("postProcessing.enableDepthOfField", !_paramHandler.getParam<bool>("postProcessing.enableDepthOfField"));
-			break;
-        case OIS::KC_F4:
-            _paramHandler.setParam("postProcessing.enableBloom", !_paramHandler.getParam<bool>("postProcessing.enableBloom"));
-            break;
-        case OIS::KC_F5:
-            GFX_DEVICE.drawDebugAxis(!GFX_DEVICE.drawDebugAxis());
-            break;
-		default:
-			break;
-	}
-}
-
-void Scene::onJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis,I32 deadZone){
-	if(key.device->getID() != InputInterface::JOY_1) return;
-	if(axis == 1){
-		if(key.state.mAxes[axis].abs > deadZone)
-			state()->_angleLR = speedFactor/5;
-		else if(key.state.mAxes[axis].abs < -deadZone)
-			state()->_angleLR = -(speedFactor/5);
-		else
-			state()->_angleLR = 0;
-	}else if(axis == 0){
-		if(key.state.mAxes[axis].abs > deadZone)
-			state()->_angleUD = speedFactor/5;
-		else if(key.state.mAxes[axis].abs < -deadZone)
-			state()->_angleUD = -(speedFactor/5);
-		else
-			state()->_angleUD = 0;
-	}else if(axis == 2){
-		if(key.state.mAxes[axis].abs < -deadZone)
-			state()->_moveFB = 0.25f;
-		else if(key.state.mAxes[axis].abs > deadZone)
-			state()->_moveFB = -0.25f;
-		else
-			state()->_moveFB = 0;
-	}else if(axis == 3){
-		if(key.state.mAxes[axis].abs < -deadZone)
-			state()->_moveLR = 0.25f;
-		else if(key.state.mAxes[axis].abs > deadZone)
-			state()->_moveLR = -0.25f;
-		else
-			state()->_moveLR = 0;
-	}
-}
-
 void Scene::updateSceneState(const U32 sceneTime){
-	_sceneGraph->sceneUpdate(sceneTime);
-}
-
-void Scene::findSelection(const vec3<F32>& camOrigin, U32 x, U32 y){
-    F32 value_fov = 0.7853f;    //this is 45 degrees converted to radians
-    F32 value_aspect = _paramHandler.getParam<F32>("runtime.aspectRatio");
-	F32 half_resolution_width = renderState()->_cachedResolution.width / 2.0f;
-	F32 half_resolution_height = renderState()->_cachedResolution.height / 2.0f;
-
-    F32 modifier_x, modifier_y;
-        //mathematical handling of the difference between
-        //your mouse position and the 'center' of the window
-
-    vec3<F32> point;
-        //the untransformed ray will be put here
-
-    F32 point_dist = _paramHandler.getParam<F32>("runtime.zFar");
-        //it'll be put this far on the Z plane
-
-    vec3<F32> camera_origin;
-        //this is where the camera sits, in 3dspace
-
-    vec3<F32> point_xformed;
-        //this is the transformed point
-
-    vec3<F32> final_point;
-    vec4<F32> color(0.0, 1.0, 0.0, 1.0);
-
-    //These lines are the biggest part of this function.
-    //This is where the mouse position is turned into a mathematical
-    //'relative' of 3d space. The conversion to an actual point
-    modifier_x = (F32)tan( value_fov * 0.5f )
-        * (( 1.0f - x / half_resolution_width ) * ( value_aspect ) );
-    modifier_y = (F32)tan( value_fov * 0.5f )
-        * -( 1.0f - y / half_resolution_height );
-
-    //These 3 take our modifier_x/y values and our 'casting' distance
-    //to throw out a point in space that lies on the point_dist plane.
-    //If we were using completely untransformed, untranslated space,
-    //this would be fine - but we're not :)
-    point.x = modifier_x * point_dist;
-    point.y = modifier_y * point_dist;
-    point.z = point_dist;
-
-    //Next we make an openGL call to grab our MODELVIEW_MATRIX -
-    //This is the matrix that rasters 3d points to 2d space - which is
-    //kinda what we're doing, in reverse
-    mat4<GLfloat> temp;
-    GFX_DEVICE.getMatrix(MV_MATRIX,temp);
-    //Some folks would then invert the matrix - I invert the results.
-
-    //First, to get the camera_origin, we transform the 12, 13, 14
-    //slots of our pulledMatrix - this gets us the actual viewing
-    //position we are 'sitting' at when the function is called
-    camera_origin.x = -(
-        temp.mat[0] * temp.mat[12] +
-        temp.mat[1] * temp.mat[13] +
-        temp.mat[2] * temp.mat[14]);
-    camera_origin.y = -(
-        temp.mat[4] * temp.mat[12] +
-        temp.mat[5] * temp.mat[13] +
-        temp.mat[6] * temp.mat[14]);
-    camera_origin.z = -(
-        temp.mat[8] * temp.mat[12] +
-        temp.mat[9] * temp.mat[13] +
-        temp.mat[10] * temp.mat[14]);
-
-    //Second, we transform the position we generated earlier - the '3d'
-    //mouse position - by our viewing matrix.
-    point_xformed.x = -(
-        temp.mat[0] * point[0] +
-        temp.mat[1] * point[1] +
-        temp.mat[2] * point[2]);
-    point_xformed.y = -(
-        temp.mat[4] * point[0] +
-        temp.mat[5] * point[1] +
-        temp.mat[6] * point[2]);
-    point_xformed.z = -(
-        temp.mat[8] * point[0] +
-        temp.mat[9] * point[1] +
-        temp.mat[10] * point[2]);
-
-    final_point = point_xformed + camera_origin;
-
-	vec3<F32> origin(camOrigin);
-	vec3<F32> dir = origin.direction(final_point);
-
-	Ray r(origin,dir);
-	_currentSelection = _sceneGraph->Intersect(r,Frustum::getInstance().getZPlanes().x,
-												 Frustum::getInstance().getZPlanes().y/2.0f);
+	_sceneGraph->sceneUpdate(sceneTime, _sceneState);
 }
 
 void Scene::deleteSelection(){
@@ -534,7 +356,12 @@ void Scene::deleteSelection(){
 	}
 }
 
-void Scene::removeTasks(){
+void Scene::addTask(Task_ptr taskItem) {
+	_tasks.push_back(taskItem);
+}
+
+void Scene::clearTasks(){
+	PRINT_FN(Locale::get("STOP_SCENE_TASKS"));
     for_each(Task_ptr& task, _tasks){
         task->stopTask();
     }
@@ -560,8 +387,4 @@ void Scene::removeTask(U32 guid){
             return;
         }
     }
-}
-
-void Scene::addTask(Task_ptr taskItem) {
-	_tasks.push_back(taskItem);
 }

@@ -28,6 +28,7 @@
 class Terrain;
 class Texture;
 class Transform;
+class SceneState;
 class ShaderProgram;
 class SceneGraphNode;
 class RenderStateBlock;
@@ -57,15 +58,14 @@ public:
 	  _stateRefreshIntervalBuffer(0),
 	  _stateRefreshInterval(1000) ///<Every second?
 	  {
-		  bool alpha = false;
-		  ImageTools::OpenImage(map,_map,alpha);
+		  _map.create(map);
 	  }
 	~Vegetation();
 	void initialize(const std::string& grassShader, Terrain* const terrain,SceneGraphNode* const terrainSGN);
 	inline void toggleRendering(bool state){_render = state;}
 	///parentTransform: the transform of the parent terrain node
 	void draw(const RenderStage& currentStage, Transform* const parentTransform);
-	void sceneUpdate(const U32 sceneTime,SceneGraphNode* const sgn);
+	void sceneUpdate(const U32 sceneTime, SceneGraphNode* const sgn, SceneState& sceneState);
 
 private:
 	bool generateTrees();			   ///< True = Everything OK, False = Error. Check _errorCode

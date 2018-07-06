@@ -1,7 +1,7 @@
 
 //Normal or BumpMap
-uniform sampler2D texBump;
-uniform vec2 zPlanes;
+uniform sampler2D texNormalMap;
+uniform vec2 dvd_zPlanes;
 uniform float parallax_factor = 1.0f;
 uniform float relief_factor = 1.0f;
 uniform int bumpMapLightId = 0;
@@ -11,12 +11,12 @@ uniform int bumpMapLightId = 0;
 #define MODE_PARALLAX	2
 #define MODE_RELIEF		3
 
+const int num_steps_lin = 10;
+const int num_steps_bin = 15;
+float linear_step = 1.0 / (float(num_steps_lin));
+
 float ReliefMapping_RayIntersection(in vec2 A, in vec2 AB){
 
-	const int num_steps_lin = 10;
-	const int num_steps_bin = 15;
-	
-	float linear_step = 1.0 / (float(num_steps_lin));
 	//Current depth position
 	float depth = 0.0; 
 	//Best match found (starts with last position 1.0)
@@ -25,29 +25,22 @@ float ReliefMapping_RayIntersection(in vec2 A, in vec2 AB){
 	//Search from front to back for first point inside the object
 	for(int i=0; i<num_steps_lin-1; i++){
 		depth += step;
-		float h = 1.0 - texture(texBump, A+AB*depth).a;
-		
-		if (depth >= h) {
+		if (depth >= 1.0 - texture(texNormalMap, A+AB*depth).a) {
 			best_depth = depth; //Store best depth
 			i = num_steps_lin-1;
 		}
 	}
 	//The point of intersection is found between (depth) and (depth-step)
 	//so start from (depth - step/2)
-	step = linear_step/2.0;
+	step = linear_step * 0.5;
 	depth = best_depth - step;
 	// binary search
-	for(int i=0; i<num_steps_bin; i++){
-
-		float h = 1.0 - texture(texBump, A+AB*depth).a;
-		
-		step /= 2.0;
-		if (depth >= h) {
-			best_depth = depth;
+	for(int i = 0; i < num_steps_bin; ++i){
+		step *= 0.5;
+		best_depth = depth;
+		if (depth >= 1.0 - texture(texNormalMap, A + AB * depth).a) {
 			depth -= step;
-		}
-		else {
-			best_depth = depth;
+		}else {
 			depth += step;
 		}
 	}
@@ -56,32 +49,27 @@ float ReliefMapping_RayIntersection(in vec2 A, in vec2 AB){
 
 vec4 NormalMapping(in vec2 uv){
 	//Normal mapping in TBN space
-	vec3 normalTBN = normalize(texture(texBump, uv).xyz * 2.0 - 1.0);
-	//Lighting
-	return Phong(uv, normalTBN);
+	return Phong(uv, normalize(2.0 * texture(texNormalMap, uv).xyz - 1.0));
 }
 
 vec4 ParallaxMapping(in vec2 uv, in vec3 pixelToLightTBN){
 	vec3 lightVecTBN = normalize(pixelToLightTBN);
 	vec3 viewVecTBN = normalize(_viewDirection);
 	
-	//Offset, scale and biais
-	float height = texture(texBump, uv).a;
-	vec2 vTexCoord = uv + ((height-0.5)* parallax_factor * (vec2(viewVecTBN.x, -viewVecTBN.y)/viewVecTBN.z));
-	
+	//Offset, scale and bias
+	vec2 vTexCoord = uv + ((texture(texNormalMap, uv).a - 0.5) * parallax_factor * 
+		             (vec2(viewVecTBN.x, -viewVecTBN.y) / viewVecTBN.z));
+
 	//Normal mapping in TBN space
-	vec3 normalTBN = normalize(texture(texBump, vTexCoord).xyz * 2.0 - 1.0);
-	//Lighting
-	return Phong(vTexCoord, normalTBN);
+	return Phong(vTexCoord, normalize(2.0 * texture(texNormalMap, vTexCoord).xyz - 1.0));
 }
 
 vec4 ReliefMapping(in int _light, in vec2 uv){
 	vec3 viewVecTBN = normalize(_viewDirection);
 	//Size and search starting position in texture space
-	vec2 A = uv;
 	vec2 AB = relief_factor * vec2(-viewVecTBN.x, viewVecTBN.y)/viewVecTBN.z;
 
-	float h = ReliefMapping_RayIntersection(A, AB);
+	float h = ReliefMapping_RayIntersection(uv, AB);
 	
 	vec2 uv_offset = h * AB;
 	
@@ -91,10 +79,11 @@ vec4 ReliefMapping(in int _light, in vec2 uv){
 	p += v*h*viewVecTBN.z;	
 	
 	vec2 planes;
-	planes.x = -zPlanes.y/(zPlanes.y-zPlanes.x);
-	planes.y = -zPlanes.y*zPlanes.x/(zPlanes.y-zPlanes.x);
-	gl_FragDepth =((planes.x*p.z+planes.y)/-p.z);
+	planes.x = -dvd_zPlanes.y / (dvd_zPlanes.y - dvd_zPlanes.x);
+	planes.y = -dvd_zPlanes.y * dvd_zPlanes.x / (dvd_zPlanes.y - dvd_zPlanes.x);
+
+	gl_FragDepth =((planes.x * p.z + planes.y) / -p.z);
 	
-	return NormalMapping(uv+uv_offset);
+	return NormalMapping(uv + uv_offset);
 }
 

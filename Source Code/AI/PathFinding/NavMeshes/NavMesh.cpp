@@ -107,7 +107,7 @@ namespace Navigation {
 			return false;
 		}
 
-		_sgn = (sgn != NULL) ? sgn : _sgn = GET_ACTIVE_SCENE()->getSceneGraph()->getRoot();
+		_sgn = (sgn != NULL) ? sgn : _sgn = GET_ACTIVE_SCENEGRAPH()->getRoot();
 
 		if(_buildThreaded && threaded) return buildThreaded();
 

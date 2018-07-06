@@ -47,6 +47,7 @@ private:
 	vec3<F32> _eyePos;
 	vec2<F32> _zPlanes;
 	vec4<F32> _frustumPlanes[6];
+	mat4<F32> _modelViewProjectionMatrixCache;
 
 END_SINGLETON
 

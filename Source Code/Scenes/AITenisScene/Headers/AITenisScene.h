@@ -54,14 +54,13 @@ public:
 		_applySideImpulse = false;
 		_scoreTeam1 = 0;
 		_scoreTeam2 = 0;
-		_mousePressed = false;
 		_gamePlaying = false;
         _gameGUID = 0;
 	}
 
 	void preRender();
 
-	bool load(const std::string& name);
+	bool load(const std::string& name, CameraManager* const cameraMgr);
 	bool loadResources(bool continueOnErrors);
 	bool initializeAI(bool continueOnErrors);
 	bool deinitializeAI(bool continueOnErrors);
@@ -70,7 +69,6 @@ public:
 	void onKeyDown(const OIS::KeyEvent& key);
 	void onKeyUp(const OIS::KeyEvent& key);
 	void onMouseMove(const OIS::MouseEvent& key);
-	void onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID button);
 	void onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button);
 	void onJoystickMovePOV(const OIS::JoyStickEvent& key,I8 pov);
 
@@ -87,8 +85,6 @@ private:
 	SceneGraphNode* _ballSGN;
 	SceneGraphNode* _net;
 	SceneGraphNode* _floor;
-	vec2<F32> _prevMouse;
-	bool _mousePressed;
 
 private: //Game stuff
 	mutable SharedLock _gameLock;

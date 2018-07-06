@@ -6,7 +6,7 @@
 #include <boost/function.hpp>
 
 DEFINE_SINGLETON(Console)
-	typedef boost::function2<void, std::string, bool > consolePrintCallback;
+	typedef boost::function2<void, const char*, bool > consolePrintCallback;
 
 public:
 	void printCopyrightNotice() const;
@@ -24,8 +24,10 @@ public:
 	inline void toggleTimeStamps(const bool state)                                {_timestamps = state;}
 	inline void bindConsoleOutput(const consolePrintCallback& guiConsoleCallback) {_guiConsoleCallback = guiConsoleCallback;}
 
+protected:
+	void output(const char* text,const bool error = false) const;
+
 private:
-	void output(const std::string& text,const bool error = false) const;
 	mutable boost::mutex io_mutex;
 	consolePrintCallback _guiConsoleCallback;
 	bool _timestamps;

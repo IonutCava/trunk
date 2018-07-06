@@ -499,6 +499,11 @@ public:
     inline JoystickInterface* getJoystickInterface(){ return _pJoystickInterface; }
     inline EffectManager* getEffectManager(){ return _pEffectMgr; }
 
+	inline bool setMousePosition(D32 x, D32 y) const{
+		Application::getInstance().setMousePosition(x, y);
+		return true;
+	}
+
 END_SINGLETON
 
 #endif

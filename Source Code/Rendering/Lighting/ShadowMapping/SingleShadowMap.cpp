@@ -24,15 +24,20 @@ SingleShadowMap::SingleShadowMap(Light* light) : ShadowMap(light)
 	_previewDepthMapShader = CreateResource<ShaderProgram>(shadowPreviewShader);
     _renderQuad->setCustomShader(_previewDepthMapShader);
 	_renderQuad->renderInstance()->draw2D(true);
+
+	SamplerDescriptor depthMapSampler;
+	depthMapSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
+	depthMapSampler.toggleMipMaps(false);
+	depthMapSampler._useRefCompare = true; //< Use compare function
+	depthMapSampler._cmpFunc = CMP_FUNC_LEQUAL; //< Use less or equal
+	depthMapSampler._depthCompareMode = LUMINANCE;
+
 	TextureDescriptor depthMapDescriptor(TEXTURE_2D,
 										 DEPTH_COMPONENT,
 										 DEPTH_COMPONENT,
 										 UNSIGNED_BYTE); ///Default filters, LINEAR is OK for this
-	depthMapDescriptor.setWrapMode(TEXTURE_CLAMP_TO_EDGE,TEXTURE_CLAMP_TO_EDGE);
-	depthMapDescriptor._useRefCompare = true; //< Use compare function
-	depthMapDescriptor._cmpFunc = CMP_FUNC_LEQUAL; //< Use less or equal
-	depthMapDescriptor._depthCompareMode = LUMINANCE;
 
+	depthMapDescriptor.setSampler(depthMapSampler);
 	_depthMap = GFX_DEVICE.newFBO(FBO_2D_DEPTH);
 	_depthMap->AddAttachment(depthMapDescriptor, TextureDescriptor::Depth);
 	_depthMap->toggleColorWrites(false);
@@ -44,8 +49,8 @@ SingleShadowMap::~SingleShadowMap()
 	RemoveResource(_renderQuad);
 }
 
-void SingleShadowMap::resolution(U16 resolution,SceneRenderState* sceneRenderState){
-	U8 resolutionFactorTemp = sceneRenderState->shadowMapResolutionFactor();
+void SingleShadowMap::resolution(U16 resolution, const SceneRenderState& renderState){
+	U8 resolutionFactorTemp = renderState.shadowMapResolutionFactor();
 	CLAMP<U8>(resolutionFactorTemp, 1, 4);
 	U16 maxResolutionTemp = resolution;
 	if(resolutionFactorTemp != _resolutionFactor || _maxResolution != maxResolutionTemp){
@@ -56,11 +61,11 @@ void SingleShadowMap::resolution(U16 resolution,SceneRenderState* sceneRenderSta
 		U16 shadowMapDimension = _maxResolution/_resolutionFactor;
 		_depthMap->Create(shadowMapDimension,shadowMapDimension);
 	}
-	ShadowMap::resolution(resolution,sceneRenderState);
+	ShadowMap::resolution(resolution, renderState);
 	_renderQuad->setDimensions(vec4<F32>(0,0,_depthMap->getWidth(),_depthMap->getHeight()));
 }
 
-void SingleShadowMap::render(SceneRenderState* renderState, boost::function0<void> sceneRenderFunction){
+void SingleShadowMap::render(const SceneRenderState& renderState, boost::function0<void> sceneRenderFunction){
 	///Only if we have a valid callback;
 	if(sceneRenderFunction.empty()) {
 		ERROR_FN(Locale::get("ERROR_LIGHT_INVALID_SHADOW_CALLBACK"), _light->getId());
@@ -71,10 +76,10 @@ void SingleShadowMap::render(SceneRenderState* renderState, boost::function0<voi
 	renderInternal(renderState);
 }
 
-void SingleShadowMap::renderInternal(SceneRenderState* renderState) const {
+void SingleShadowMap::renderInternal(const SceneRenderState& renderState) const {
 	GFXDevice& gfx = GFX_DEVICE;
 	//Get our eye view
-	vec3<F32> eyePos = renderState->getCamera()->getEye();
+	vec3<F32> eyePos = renderState.getCameraConst().getEye();
 	//For every depth map
 	//Lock our projection matrix so no changes will be permanent during the rest of the frame
     //Lock our model view matrix so no camera transforms will be saved beyond this light's scope
@@ -86,7 +91,7 @@ void SingleShadowMap::renderInternal(SceneRenderState* renderState) const {
 	//bind the associated depth map
 	_depthMap->Begin();
 	//draw the scene
-	GFX_DEVICE.render(_callback, GET_ACTIVE_SCENE()->renderState());
+	GFX_DEVICE.render(_callback, renderState);
 	//unbind the associated depth map
 	_depthMap->End();
 
@@ -105,7 +110,7 @@ void SingleShadowMap::previewShadowMaps(){
     _previewDepthMapShader->bind();
     _previewDepthMapShader->UniformTexture("tex",0);
 	GFX_DEVICE.toggle2D(true);
-		GFX_DEVICE.renderInViewport(vec4<I32>(0,0,256,256),
+		GFX_DEVICE.renderInViewport(vec4<U32>(0,0,256,256),
 								    boost::bind(&GFXDevice::renderInstance,
 									            DELEGATE_REF(GFX_DEVICE),
 												DELEGATE_REF(_renderQuad->renderInstance())));

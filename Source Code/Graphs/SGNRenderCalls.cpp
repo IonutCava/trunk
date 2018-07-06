@@ -1,11 +1,20 @@
 #include "Headers/SceneGraphNode.h"
 
+#include "Scenes/Headers/SceneState.h"
 #include "Core/Math/Headers/Transform.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Geometry/Shapes/Headers/Mesh.h"
 #include "Geometry/Shapes/Headers/SubMesh.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
+
+bool SceneRoot::computeBoundingBox(SceneGraphNode* const sgn) {
+	sgn->getBoundingBox().reset();
+	for_each(SceneGraphNode::NodeChildren::value_type& s, sgn->getChildren()){
+		sgn->addBoundingBox(s.second->getBoundingBoxTransformed(), s.second->getNode<SceneNode>()->getType());
+	}
+	return true;
+}
 
 ///Please call in MAIN THREAD! Nothing is thread safe here (for now) -Ionut
 void SceneGraphNode::checkBoundingBoxes(){
@@ -15,64 +24,61 @@ void SceneGraphNode::checkBoundingBoxes(){
 	for_each(NodeChildren::value_type& it, _children){
 		it.second->checkBoundingBoxes();
 	}
-	// don't update root;
-	if(!getParent()) return;
 
-	if(_node->getState() != RES_LOADED) return;
+	if(_node->getState() != RES_LOADED)
+		return;
+
 	//Compute the BoundingBox if it isn't already
     if(!_boundingBox.isComputed()){
         _node->computeBoundingBox(this);
         _boundingSphere.fromBoundingBox(_boundingBox);
     }
-    if(_node->getDrawState()) {
-        getRoot()->addBoundingBox(_boundingBox,_node->getType());
-    }
-	///Recreate bounding boxes for current frame
+
+	//Recreate bounding boxes for current frame
 	_node->updateBBatCurrentFrame(this);
 }
 
 //This function eats up a lot of processing power
-//It compute's the BoundingBoxes of all transformed nodes and updates transforms
+//It computes the BoundingBoxes of all transformed nodes and updates transforms
 void SceneGraphNode::updateTransforms(){
 	//Better version: move to new thread with DoubleBuffering?
 	//Get our transform and our parent's as well
 	Transform* transform = getTransform();
-	if(transform && _parent && _parent->getTransform()){
-		Transform* parentTransform = _parent->getTransform();
-		//If we have a transform and a parent's transform
-		//Update the relationship between the two
-        if(transform->getParentMatrix() != parentTransform->getMatrix()){
-			transform->setParentMatrix(parentTransform->getMatrix());
-        }
-        updateBoundingBoxTransform();
+	Transform* parentTransform = NULL;
+	if(transform){
+		parentTransform = (_parent != NULL ? _parent->getTransform() : NULL);
+		transform->setParentTransform(parentTransform);
+		if(_transform->isDirty() || (parentTransform && parentTransform->isDirty()))
+			updateBoundingBoxTransform(_transform->getGlobalMatrix());
     }
+
+	_node->updateTransform(this);
 
  	for_each(NodeChildren::value_type& it, _children){
 		it.second->updateTransforms();
 	}
 }
 
-void SceneGraphNode::updateBoundingBoxTransform(){
-    //Transform the bounding box if we have a new transform
-	if(_transform->isDirty()){
-		_node->updateTransform(this);
+void SceneGraphNode::updateBoundingBoxTransform(const mat4<F32>& transform){
+	if(!getParent())
+		return;
 
-        WriteLock w_lock(_queryLock);
-		_boundingBox.Transform(_initialBoundingBox,_transform->getGlobalMatrix());
-        //Update the bounding sphere
-        _boundingSphere.fromBoundingBox(_boundingBox);
-    }
+    //Transform the bounding box if we have a new transform
+    WriteLock w_lock(_queryLock);
+	_boundingBox.Transform(_initialBoundingBox,transform);
+    //Update the bounding sphere
+    _boundingSphere.fromBoundingBox(_boundingBox);
 }
 
 ///Another resource hungry subroutine
 ///After all bounding boxes and transforms have been updated,
 ///perform Frustum Culling on the entire scene.
 void SceneGraphNode::updateVisualInformation(){
-	//Hold a pointer to the current active scene
-	Scene* curentScene = GET_ACTIVE_SCENE();
 	//No point in updating visual information if the scene disabled object rendering
 	//or rendering of their bounding boxes
-	if(!curentScene->renderState()->drawObjects() && !curentScene->renderState()->drawBBox()) return;
+	if(!_currentSceneState->getRenderState().drawObjects() && !_currentSceneState->getRenderState().drawBBox())
+		return;
+
 	//Bounding Boxes should be updated, so we can early cull now.
 	bool skipChildren = false;
 	//Skip all of this for inactive nodes.
@@ -84,14 +90,14 @@ void SceneGraphNode::updateVisualInformation(){
 			switch(GFX_DEVICE.getRenderStage()){
 				default: {
 					//Perform visibility test on current node
-					_inView = _node->isInView(true,getBoundingBox(),getBoundingSphere());
+					_inView = _node->isInView(getBoundingBox(),getBoundingSphere());
 				} break;
 
 				case SHADOW_STAGE: {
 					_inView = false;
 					if(_node->getMaterial()){
 						if(_node->getMaterial()->getCastsShadows()){
-							_inView = _node->isInView(true,getBoundingBox(),getBoundingSphere());
+							_inView = _node->isInView(getBoundingBox(),getBoundingSphere());
 						}
 					}
 				}break;
@@ -106,6 +112,7 @@ void SceneGraphNode::updateVisualInformation(){
 			//If the current node is visible, add it to the render queue
 			RenderQueue::getInstance().addNodeToQueue(this);
 		}
+		
 	}
 	//If we don't need to skip child testing
 	if(!skipChildren){
@@ -115,15 +122,23 @@ void SceneGraphNode::updateVisualInformation(){
 	}
 }
 
-void SceneGraphNode::sceneUpdate(const U32 sceneTime) {
+void SceneGraphNode::sceneUpdate(const U32 sceneTime, SceneState& sceneState) {
 	for_each(NodeChildren::value_type& it, _children){
-		it.second->sceneUpdate(sceneTime);
+		it.second->sceneUpdate(sceneTime, sceneState);
 	}
 
-	if(_node){
-		_node->sceneUpdate(sceneTime,this);
-	}
-	if(_shouldDelete){
-		GET_ACTIVE_SCENE()->getSceneGraph()->addToDeletionQueue(this);
-	}
+	_currentSceneState = &sceneState;
+
+	if(_node)        
+		_node->sceneUpdate(sceneTime, this, sceneState);
+
+	if(_shouldDelete)
+		GET_ACTIVE_SCENEGRAPH()->addToDeletionQueue(this);
+
+}
+
+void SceneGraphNode::setSelected(const bool state) {
+	_selected = state;
+	WriteLock w_lock(_queryLock);
+	_boundingBox.setVisibility(_selected);
 }

@@ -38,8 +38,8 @@ public:
 	void Begin(U8 nFace=0) const {}
 	void End(U8 nFace=0) const {}
 
-	void Bind(U8 unit=0, U8 texture = 0) {}
-	void Unbind(U8 unit=0) {}
+	void Bind(U8 unit=0, U8 texture = 0) const {}
+	void Unbind(U8 unit=0) const {}
 
 private:
 	U32  _textureId;

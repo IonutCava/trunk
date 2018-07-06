@@ -55,7 +55,7 @@ public:
 	virtual void updateBBatCurrentFrame(SceneGraphNode* const sgn);
 
 	/// Called from SceneGraph "sceneUpdate"
-	virtual void sceneUpdate(const U32 sceneTime,SceneGraphNode* const sgn);
+	virtual void sceneUpdate(const U32 sceneTime, SceneGraphNode* const sgn, SceneState& sceneState);
 	virtual void postLoad(SceneGraphNode* const sgn);
 	virtual	void onDraw(const RenderStage& currentStage);
 	inline  void render(SceneGraphNode* const sgn){};

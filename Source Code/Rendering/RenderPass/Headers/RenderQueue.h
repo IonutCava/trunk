@@ -40,11 +40,13 @@ public:
 	void refresh();
 	void addNodeToQueue(SceneGraphNode* const sgn);
 	U16 getRenderQueueStackSize();
-	inline U16 getRenderQueueBinSize() {return _sortedRenderBins.size();}
 	SceneGraphNode* getItem(U16 renderBin, U16 index);
-	RenderBin*      getBinSorted(U16 renderBin);
-	RenderBin*      getBin(U16 renderBin);
 	RenderBin*      getBin(RenderBin::RenderBinType rbType);
+
+
+	inline U16        getRenderQueueBinSize()     { return _sortedRenderBins.size(); }
+	inline RenderBin* getBinSorted(U16 renderBin) { return _sortedRenderBins[renderBin]; }
+	inline RenderBin* getBin(U16 renderBin)       { return getBin(_renderBinId[renderBin]); }
 
 private:
 	~RenderQueue();

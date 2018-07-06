@@ -4,6 +4,7 @@ FrameBufferObject::FrameBufferObject(FBOType type) : _frameBufferHandle(0),
 												     _width(0),
 						  						     _height(0),
 													 _textureType(0),
+													 _clearColor(BLACK()),
 													 _fboType(type),
 													 _useDepthBuffer(false),
 													 _disableColorWrites(false)
@@ -18,7 +19,7 @@ FrameBufferObject::~FrameBufferObject()
 
 bool FrameBufferObject::AddAttachment(const TextureDescriptor& descriptor,
 									  TextureDescriptor::AttachmentType slot){
-//Validation
+	//Validation
 	switch(_fboType){
 		case FBO_2D_DEFERRED:
 		case FBO_2D_COLOR_MS:
@@ -55,8 +56,8 @@ bool FrameBufferObject::AddAttachment(const TextureDescriptor& descriptor,
 	return true;
 }
 
-void FrameBufferObject::Bind(U8 unit, U8 texture) {
+void FrameBufferObject::Bind(U8 unit, U8 texture) const {
 }
 
-void FrameBufferObject::Unbind(U8 unit) {
+void FrameBufferObject::Unbind(U8 unit) const {
 }

@@ -72,9 +72,9 @@ private:
 	void ComputeIndicesArray(I8 lod, U8 depth,const vec2<U32>& position,const vec2<U32>& heightMapSize);
 
 private:
-	vectorImpl<U32> 	_indice[TERRAIN_CHUNKS_LOD];
-	U16					_indOffsetW[TERRAIN_CHUNKS_LOD];
-	U16  				_indOffsetH[TERRAIN_CHUNKS_LOD];
+	vectorImpl<U32> 	_indice[Config::TERRAIN_CHUNKS_LOD];
+	U16					_indOffsetW[Config::TERRAIN_CHUNKS_LOD];
+	U16  				_indOffsetH[Config::TERRAIN_CHUNKS_LOD];
     ChunkGrassData      _grassData;
 };
 

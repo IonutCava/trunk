@@ -6,12 +6,14 @@
 
 DoFPreRenderOperator::DoFPreRenderOperator(Quad3D* target,
 										   FrameBufferObject* result,
-										   const vec2<U16>& resolution) : PreRenderOperator(DOF_STAGE,target,resolution),
-																	      _outputFBO(result)
+										   const vec2<U16>& resolution,
+										   SamplerDescriptor* const sampler) : PreRenderOperator(DOF_STAGE,target,resolution,sampler),
+																	           _outputFBO(result)
 {
+
     TextureDescriptor dofDescriptor(TEXTURE_2D, RGBA,RGBA8,FLOAT_32);
-	dofDescriptor.setWrapMode(TEXTURE_CLAMP_TO_EDGE,TEXTURE_CLAMP_TO_EDGE);
-	dofDescriptor._generateMipMaps = false; //it's a flat texture on a full screen quad. really?
+	dofDescriptor.setSampler(*_internalSampler);
+
 	_outputFBO->AddAttachment(dofDescriptor,TextureDescriptor::Color0);
 	_outputFBO->Create(_resolution.width, _resolution.height);
 	_dofShader = CreateResource<ShaderProgram>(ResourceDescriptor("DepthOfField"));

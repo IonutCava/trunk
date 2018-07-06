@@ -60,7 +60,7 @@ public:
 		this->_radius = s._radius;
 	}
 
-	void fromBoundingBox(BoundingBox& bBox){
+	void fromBoundingBox(const BoundingBox& bBox){
 		_center = bBox.getCenter();
 		_radius = (bBox.getMax()-_center).length();
 	};

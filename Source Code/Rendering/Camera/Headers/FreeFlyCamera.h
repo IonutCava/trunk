@@ -24,12 +24,10 @@
 #define _FREE_FLY_CAMERA_H_
 
 #include "Camera.h"
-
+// A "god-mode" camera. It can move freely around the world
 class FreeFlyCamera : public Camera {
 public:
-	FreeFlyCamera() : Camera(FREE_FLY)
-	{
-	}
+	FreeFlyCamera();
 };
 
 #endif

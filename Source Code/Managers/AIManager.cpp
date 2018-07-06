@@ -1,6 +1,6 @@
 #include "Headers/AIManager.h"
 
-AIManager::AIManager() : _navMeshDebugDraw(false)
+AIManager::AIManager() : _navMeshDebugDraw(false), _pauseUpdate(true)
 {
 }
 
@@ -8,10 +8,12 @@ AIManager::AIManager() : _navMeshDebugDraw(false)
 U8 AIManager::tick(){
 	///Lock the entities during tick() adding or deleting entities is suspended until this returns
 	ReadLock r_lock(_updateMutex);
-	if(_aiEntities.empty()){
+	if(_aiEntities.empty() || _pauseUpdate){
+		boost::this_thread::sleep(boost::posix_time::milliseconds(10));
 		return 1; //nothing to do
 	}
-	if(!_sceneCallback.empty()) _sceneCallback();
+	if(!_sceneCallback.empty())
+		_sceneCallback();
 	processInput();  //sensors
 	processData();   //think
 	updateEntities();//react

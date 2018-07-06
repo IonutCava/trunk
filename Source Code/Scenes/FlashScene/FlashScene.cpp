@@ -10,10 +10,10 @@ void FlashScene::preRender(){
 }
 
 void FlashScene::processInput(){
-	if(state()->_angleLR) renderState()->getCamera()->RotateX(state()->_angleLR);
-	if(state()->_angleUD) renderState()->getCamera()->RotateY(state()->_angleUD );
-	if(state()->_moveFB)  renderState()->getCamera()->MoveForward(state()->_moveFB /5);
-	if(state()->_moveLR)  renderState()->getCamera()->MoveStrafe(state()->_moveLR /5);
+	if(state()._angleLR) renderState().getCamera().rotateYaw(state()._angleLR);
+	if(state()._angleUD) renderState().getCamera().rotatePitch(state()._angleUD );
+	if(state()._moveFB)  renderState().getCamera().moveForward(state()._moveFB);
+	if(state()._moveLR)  renderState().getCamera().moveStrafe(state()._moveLR);
 }
 
 void FlashScene::processTasks(const U32 time){
@@ -24,9 +24,9 @@ void FlashScene::processTasks(const U32 time){
 	}
 }
 
-bool FlashScene::load(const std::string& name){
-	///Load scene resources
-	SCENE_LOAD(name,true,true);
+bool FlashScene::load(const std::string& name, CameraManager* const cameraMgr){
+	//Load scene resources
+	bool loadState = SCENE_LOAD(name,cameraMgr,true,true);
 	addDefaultLight();
 	addDefaultSky();
 	return loadState;

@@ -15,8 +15,6 @@ Sky::Sky(const std::string& name) : SceneNode(TYPE_SKY),
 									_skybox(NULL),
 									_skyGeom(NULL),
 									_init(false),
-                                    _invert(false),
-                                    _invertPlaneY(0),
 									_exclusionMask(0)
 {
 	///The sky doesn't cast shadows, doesn't need ambient occlusion and doesn't have real "depth"
@@ -39,23 +37,32 @@ Sky::~Sky(){
 bool Sky::load() {
 	if(_init) return false;
    	std::string location = ParamHandler::getInstance().getParam<std::string>("assetsLocation")+"/misc_images/";
-	ResourceDescriptor skybox("SkyBox");
-	skybox.setFlag(true); //no default material;
-	ResourceDescriptor sun("Sun");
-	sun.setFlag(true);
-	ResourceDescriptor skyShaderDescriptor("sky");
+
+	SamplerDescriptor skyboxSampler;
+	skyboxSampler.toggleMipMaps(false);
+	skyboxSampler.setAnisotrophy(16);
+	skyboxSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);   
+
 	ResourceDescriptor skyboxTextures("SkyboxTextures");
 	skyboxTextures.setResourceLocation(location+"skybox_2.jpg "+ location+"skybox_1.jpg "+
 								       location+"skybox_5.jpg "+ location+"skybox_6.jpg "+
 									   location+"skybox_3.jpg "+ location+"skybox_4.jpg");
     skyboxTextures.setEnumValue(TEXTURE_CUBE_MAP);
-    P32 mipMapMask; mipMapMask.i = 0; mipMapMask.b.b0 = 1;//<disable mipmaps;
-    skyboxTextures.setBoolMask(mipMapMask);
-    skyboxTextures.setId(16);
-	_sky = CreateResource<Sphere3D>(skybox);
-	_sun = CreateResource<Sphere3D>(sun);
+	skyboxTextures.setPropertyDescriptor<SamplerDescriptor>(skyboxSampler);
 	_skybox =  CreateResource<TextureCubemap>(skyboxTextures);
+
+	ResourceDescriptor skybox("SkyBox");
+	skybox.setFlag(true); //no default material;
+	_sky = CreateResource<Sphere3D>(skybox);
+	
+	ResourceDescriptor sun("Sun");
+	sun.setFlag(true);
+	_sun = CreateResource<Sphere3D>(sun);
+
+
+	ResourceDescriptor skyShaderDescriptor("sky");
 	_skyShader = CreateResource<ShaderProgram>(skyShaderDescriptor);
+
 	_skyShader->setMatrixMask(false,false,false,true);
 	assert(_skyShader);
 	_sky->setResolution(4);
@@ -94,10 +101,6 @@ void Sky::onDraw(const RenderStage& currentStage){
 void Sky::render(SceneGraphNode* const sgn){
 	vec3<F32> eyeTemp(Frustum::getInstance().getEyePos());
 
-    if(_invert){
-        eyeTemp.y = _invertPlaneY - eyeTemp.y;
-    }
-
 	sgn->getTransform()->setPosition(eyeTemp);
 
 	if (_drawSky){
@@ -131,10 +134,6 @@ void Sky::setRenderingOptions(bool drawSun, bool drawSky) {
 void Sky::setSunVector(const vec3<F32>& sunVect) {
 	_sunVect = sunVect;
 	_skyShader->Uniform("sun_vector", _sunVect);
-}
-
-void Sky::setInvertPlane(F32 invertPlaneY){
-    _invertPlaneY = invertPlaneY;
 }
 
 void Sky::removeFromDrawExclusionMask(I32 stageMask) {

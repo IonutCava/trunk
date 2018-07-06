@@ -7,7 +7,7 @@ out vec3  _normalMV;
 out vec3  _viewDirection;
 out vec3 _lightDirection[MAX_LIGHT_COUNT]; //<Light direction
 out vec4 _shadowCoord[MAX_SHADOW_CASTING_LIGHTS];
-out float _attenuation[MAX_LIGHT_COUNT];
+smooth out float _attenuation[MAX_LIGHT_COUNT];
 
 
 uniform bool dvd_enableShadowMapping;
@@ -17,7 +17,6 @@ uniform mat4 dvd_TestViewMatrix;
 const float pidiv180 = 0.0174532777777778; //3.14159 / 180.0; // 36 degrees
 
 void computeLightVectors(){
-	vec4 vertexM  = dvd_ModelMatrix * dvd_Vertex;
 	_vertexMV = dvd_ModelViewMatrix * dvd_Vertex; 	   //< ModelView Vertex  
 	_normalMV = normalize(dvd_NormalMatrix * dvd_Normal); //<ModelView Normal 
 
@@ -48,7 +47,7 @@ void computeLightVectors(){
 
 		lightPos = mat3(dvd_ViewMatrix) * gl_LightSource[i].position.xyz;
         //lightPosMV.w will be 0 for Directional Lights and 1 for Spot or Omni, so this avoids an "if/else"
-		lightDirection = mix(-lightPos, normalize(lightPos - vertexM.xyz), lightType);
+		lightDirection = mix(-lightPos, normalize(lightPos - _vertexM.xyz), lightType);
 
         distance = length(lightDirection);
 		//either _attenuation == 1 if light is directional or we compute the actual value for omni and spot
@@ -81,7 +80,7 @@ void computeLightVectors(){
 		// position multiplied by the inverse of the camera matrix
 		// position multiplied by the light matrix. The vertex's position from the light's perspective
 		for(int i = 0; i < MAX_SHADOW_CASTING_LIGHTS; i++){
-			_shadowCoord[i] = dvd_lightProjectionMatrices[i] * vertexM;
+			_shadowCoord[i] = dvd_lightProjectionMatrices[i] * _vertexM;
 		}
 	}	
 }

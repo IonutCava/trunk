@@ -12,6 +12,7 @@ Material::Material() : Resource(),
 					   _castsShadows(true),
 					   _receiveShadows(true),
 					   _hardwareSkinning(false),
+					   _useStripInput(false),
 					   _shadingMode(SHADING_PHONG), /// phong shading by default
 					   _bumpMethod(BUMP_NONE)
 {
@@ -22,27 +23,13 @@ Material::Material() : Resource(),
                                       _shaderData._emissive.x,
                                       _shaderData._emissive.y,
                                       _shaderData._emissive.z));
-	_bumpMethodTable[BUMP_NONE] = 0;
-	_bumpMethodTable[BUMP_NORMAL] = 1;
-	_bumpMethodTable[BUMP_PARALLAX] = 2;
-	_bumpMethodTable[BUMP_RELIEF] = 3;
 
-	_textureOperationTable[TextureOperation_Replace]   = 0;
-	_textureOperationTable[TextureOperation_Multiply]  = 1;
-	_textureOperationTable[TextureOperation_Decal]     = 2;
-	_textureOperationTable[TextureOperation_Blend]     = 3;
-	_textureOperationTable[TextureOperation_Add]       = 4;
-	_textureOperationTable[TextureOperation_SmoothAdd] = 5;
-	_textureOperationTable[TextureOperation_SignedAdd] = 6;
-	_textureOperationTable[TextureOperation_Divide]    = 7;
-	_textureOperationTable[TextureOperation_Subtract]  = 8;
-	_textureOperationTable[TextureOperation_Combine]   = 9;
-
-   _textures[TEXTURE_BASE] = NULL;
-   _textures[TEXTURE_BUMP] = NULL;
-   _textures[TEXTURE_SECOND] = NULL;
-   _textures[TEXTURE_OPACITY] = NULL;
-   _textures[TEXTURE_SPECULAR] = NULL;
+   for(U8 i = 0; i < Config::MAX_TEXTURE_STORAGE; ++i)
+	   _textures[i] = NULL;
+   for(U8 i = 0; i < Config::MAX_TEXTURE_STORAGE - TEXTURE_UNIT0; ++i)
+	   _operations[i] = TextureOperation_Replace;
+   //std::fill(_textures, _textures + Config::MAX_TEXTURE_STORAGE, static_cast<Texture2D*>(NULL));
+   //std::fill(_operations, _operations + (Config::MAX_TEXTURE_STORAGE - TEXTURE_UNIT0), TextureOperation_Replace);
 
    /// Normal state for final rendering
    RenderStateBlockDescriptor normalStateDescriptor;
@@ -103,63 +90,29 @@ RenderStateBlock* Material::setRenderStateBlock(const RenderStateBlockDescriptor
 //base = base texture
 //second = second texture used for multitexturing
 //bump = bump map
-void Material::setTexture(const TextureUsage& textureUsage, Texture2D* const texture, const TextureOperation& op) {
-	if(_textures[textureUsage]){
-		UNREGISTER_TRACKED_DEPENDENCY(_textures[textureUsage]);
-		RemoveResource(_textures[textureUsage]);
-        if(textureUsage == TEXTURE_OPACITY || textureUsage == TEXTURE_SPECULAR){
+void Material::setTexture(U32 textureUsageSlot, Texture2D* const texture, const TextureOperation& op) {
+	if(_textures[textureUsageSlot]){
+		UNREGISTER_TRACKED_DEPENDENCY(_textures[textureUsageSlot]);
+		RemoveResource(_textures[textureUsageSlot]);
+        if(textureUsageSlot == TEXTURE_OPACITY || textureUsageSlot == TEXTURE_SPECULAR){
             _computedShaderTextures = false;
         }
 	}else{
 		//if we add a new type of texture
 		_computedShader[0] = false; //recompute shaders on texture change
 	}
-	_textures[textureUsage] = texture;
-	_operations[textureUsage] = op;
-	REGISTER_TRACKED_DEPENDENCY(_textures[textureUsage]);
-    if(textureUsage == TEXTURE_BASE || textureUsage == TEXTURE_SECOND){
+	_textures[textureUsageSlot] = texture;
+
+	if(textureUsageSlot >= TEXTURE_UNIT0)
+		_operations[textureUsageSlot - TEXTURE_UNIT0] = op;
+
+	REGISTER_TRACKED_DEPENDENCY(_textures[textureUsageSlot]);
+
+    if(textureUsageSlot >= TEXTURE_UNIT0){
         texture ? _shaderData._textureCount++ : _shaderData._textureCount--;
     }
 
 	_dirty = true;
-}
-
-Material::TextureOperation Material::getTextureOperation(U32 op){
-	TextureOperation operation = TextureOperation_Replace;
-	switch(op){
-		default:
-		case 0:
-			operation = TextureOperation_Replace;
-			break;
-		case 1:
-			operation = TextureOperation_Multiply;
-			break;
-		case 2:
-			operation = TextureOperation_Decal;
-			break;
-		case 3:
-			operation = TextureOperation_Blend;
-			break;
-		case 4:
-			operation = TextureOperation_Add;
-			break;
-		case 5:
-			operation = TextureOperation_SmoothAdd;
-			break;
-		case 6:
-			operation = TextureOperation_SignedAdd;
-			break;
-		case 7:
-			operation = TextureOperation_Divide;
-			break;
-		case 8:
-			operation = TextureOperation_Subtract;
-			break;
-		case 9:
-			operation = TextureOperation_Combine;
-			break;
-	};
-	return operation;
 }
 
 //Here we set the shader's name
@@ -170,7 +123,7 @@ ShaderProgram* Material::setShaderProgram(const std::string& shader, const Rende
 	if(!_shader[id].empty()){
 		//and we are trying to assing the same one again, return.
 		if(_shader[id].compare(shader) == 0){
-			shaderReference = static_cast<ShaderProgram* >(FindResource(_shader[id]));
+			shaderReference = FindResource<ShaderProgram>(_shader[id]);
 			return shaderReference;
 		}else{
 			PRINT_FN(Locale::get("REPLACE_SHADER"),_shader[id].c_str(),shader.c_str());
@@ -179,12 +132,12 @@ ShaderProgram* Material::setShaderProgram(const std::string& shader, const Rende
 
 	(!shader.empty()) ? _shader[id] = shader : _shader[id] = "NULL_SHADER";
 
-	shaderReference = static_cast<ShaderProgram* >(FindResource(_shader[id]));
+	shaderReference = FindResource<ShaderProgram>(_shader[id]);
 	if(!shaderReference){
 		ResourceDescriptor shaderDescriptor(_shader[id]);
 		std::stringstream ss;
-		if(!_shaderDefines.empty()){
-			for_each(std::string& shaderDefine, _shaderDefines){
+		if(!_shaderDefines[id].empty()){
+			for_each(std::string& shaderDefine, _shaderDefines[id]){
 				ss << shaderDefine;
 				ss << ",";
 			}
@@ -225,21 +178,21 @@ void Material::computeShader(bool force, const RenderStage& renderStage){
 	if(_computedShader[id] && !force && (id == 0 && _computedShaderTextures)) return;
 	if(_shader[id].empty() || (id == 0 && !_computedShaderTextures)){
 		//the base shader is either for a Deferred Renderer or a Forward  one ...
-		std::string shader = (GFX_DEVICE.getDeferredRendering() ? "DeferredShadingPass1" : 
+		std::string shader = (GFX_DEVICE.getRenderer()->getType() != RENDERER_FORWARD ? "DeferredShadingPass1" : 
 							 (renderStage == DEPTH_STAGE ? "depthPass" : "lighting"));
 
 		//What kind of effects do we need?
-		if(_textures[TEXTURE_BASE]){
+		if(_textures[TEXTURE_UNIT0]){
 			//Bump mapping?
-			if(_textures[TEXTURE_BUMP] && _bumpMethod != BUMP_NONE){
-                addShaderDefines("COMPUTE_TBN");
+			if(_textures[TEXTURE_NORMALMAP] && _bumpMethod != BUMP_NONE){
+                addShaderDefines(id, "COMPUTE_TBN");
 				shader += ".Bump"; //Normal Mapping
 				if(_bumpMethod == 2){ //Parallax Mapping
 					shader += ".Parallax";
-					addShaderDefines("USE_PARALLAX_MAPPING");
+					addShaderDefines(id, "USE_PARALLAX_MAPPING");
 				}else if(_bumpMethod == 3){ //Relief Mapping
 					shader += ".Relief";
-					addShaderDefines("USE_RELIEF_MAPPING");
+					addShaderDefines(id, "USE_RELIEF_MAPPING");
 				}
 			}else{
 				// Or simple texture mapping?
@@ -251,17 +204,23 @@ void Material::computeShader(bool force, const RenderStage& renderStage){
 
         if(_textures[TEXTURE_OPACITY]){   
 			shader += ".Opacity";
-			addShaderDefines("USE_OPACITY_MAP");
+			addShaderDefines(id, "USE_OPACITY_MAP");
 		}
         if(_textures[TEXTURE_SPECULAR]){
 			shader += ".Specular";
-			addShaderDefines("USE_SPECULAR_MAP");
+			addShaderDefines(id, "USE_SPECULAR_MAP");
+		}
+		//if this is true, geometry shader will take a triangle strip as input, else it will use triangles
+		if(_useStripInput){
+			shader += ".Strip";
+			addShaderDefines(id, "USE_GEOMETRY_STRIP_INPUT");
 		}
 		//Add the GPU skinnig module to the vertex shader?
 		if(_hardwareSkinning){
-			addShaderDefines("USE_GPU_SKINNING");
+			addShaderDefines(id, "USE_GPU_SKINNING");
 			shader += ",Skinned"; //<Use "," instead of "." will add a Vertex only property
 		}
+
 		//Add any modifiers you wish
 		if(!_shaderModifier.empty()){
 			shader += ".";
@@ -275,13 +234,16 @@ void Material::computeShader(bool force, const RenderStage& renderStage){
 ShaderProgram* const Material::getShaderProgram(RenderStage renderStage) {
 	ShaderProgram* shaderPr = _shaderRef[renderStage];
 
-    if(shaderPr == NULL) shaderPr = _imShader;
+    if(shaderPr == NULL) 
+		shaderPr = _imShader;
 
     return shaderPr;
 }
 
 void Material::setCastsShadows(bool state) {
-	if(_castsShadows == state) return;
+	if(_castsShadows == state)
+		return;
+
 	_castsShadows = state;
 	_dirty = true;
 
@@ -323,8 +285,8 @@ void Material::addShaderModifier(const std::string& shaderModifier,bool force) {
 	}
 }
 
-void Material::addShaderDefines(const std::string& shaderDefines,bool force) {
-	_shaderDefines.push_back(shaderDefines);
+void Material::addShaderDefines(U8 shaderId, const std::string& shaderDefines, bool force) {
+	_shaderDefines[shaderId].push_back(shaderDefines);
 	if(force){
 		_shader[FINAL_STAGE].clear();
 		_shader[DEPTH_STAGE].clear();
@@ -334,20 +296,21 @@ void Material::addShaderDefines(const std::string& shaderDefines,bool force) {
 }
 
 bool Material::unload(){
-	for_each(textureMap::value_type& iter , _textures){
-		if(iter.second){
-			UNREGISTER_TRACKED_DEPENDENCY(iter.second);
-			RemoveResource(iter.second);
+	for(U8 i = 0; i < Config::MAX_TEXTURE_STORAGE; ++i){
+		if(_textures[i] != NULL){
+			UNREGISTER_TRACKED_DEPENDENCY(_textures[i]);
+			RemoveResource(_textures[i]);
 		}
 	}
-	_textures.clear();
 	UNREGISTER_TRACKED_DEPENDENCY(_imShader);
 	RemoveResource(_imShader);
 	return true;
 }
 
 void Material::setDoubleSided(bool state) {
-	if(_doubleSided == state) return;
+	if(_doubleSided == state) 
+		return;
+
 	_doubleSided = state;
 	/// Update all render states for this item
 	if(_doubleSided){
@@ -364,18 +327,20 @@ void Material::setDoubleSided(bool state) {
 bool Material::isTranslucent() {
 	bool state = false;
 	// base texture is translucent
-	if(_textures[TEXTURE_BASE]){
-		if(_textures[TEXTURE_BASE]->hasTransparency()) state = true;
+	if(_textures[TEXTURE_UNIT0]){
+		if(_textures[TEXTURE_UNIT0]->hasTransparency()) state = true;
 	}
 	// opacity map
-	if(_textures[TEXTURE_OPACITY]) state = true;
+	if(_textures[TEXTURE_OPACITY]) 
+		state = true;
 	// diffuse channel alpha
-	if(_materialMatrix.getCol(1).a < 1.0f) state = true;
+	if(_materialMatrix.getCol(1).a < 1.0f)
+		state = true;
 
 	// if we have a global opacity value
-	if(getOpacityValue() < 1.0f){
+	if(getOpacityValue() < 1.0f)
 		state = true;
-	}
+	
 	// Disable culling for translucent items
 	if(state){
 		typedef Unordered_map<RenderStage, RenderStateBlock* >::value_type stateValue;

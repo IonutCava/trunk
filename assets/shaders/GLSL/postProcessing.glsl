@@ -22,9 +22,9 @@ uniform sampler2D texBruit2;
 
 uniform bool enable_underwater;
 
-uniform float noise_tile;
-uniform float noise_factor;
-uniform float time;
+uniform float _noiseTile;
+uniform float _noiseFactor;
+uniform float dvd_time;
 
 #if defined(POSTFX_ENABLE_BLOOM)
 uniform sampler2D texBloom;
@@ -41,18 +41,18 @@ uniform sampler2D texSSAO;
 #if defined(POSTFX_ENABLE_DOF)
 #endif
 
-uniform bool enable_vignette;
-uniform bool enable_noise;
+uniform bool  enable_vignette;
+uniform bool  enable_noise;
 uniform float randomCoeffNoise;
 uniform float randomCoeffFlash;
 
 const vec3 luminance = vec3 (0.299, 0.587, 0.114);
 
 #if defined(POSTFX_ENABLE_SSAO)
-vec4 SSAO(vec4 color){
+vec4 SSAO(in vec4 color){
 	float ssaoFilter = texture(texSSAO, _texCoord).r;
 	if(ssaoFilter > 0){
-		//color.rgb = color.rgb * ssaoFilter;
+		color.rgb = color.rgb * ssaoFilter;
 	}
 	return color;
 }
@@ -80,7 +80,7 @@ vec4 LevelOfGrey(in vec4 colorIn)
 	return vec4(colorIn.r * luminance.x, colorIn.g * luminance.y,colorIn.b * luminance.z,colorIn.a);
 }
 
-vec4 NoiseEffect(vec4 colorIn)
+vec4 NoiseEffect(in vec4 colorIn)
 {
 	vec4 colorOut = LevelOfGrey(colorIn);
 	vec4 colorNoise = texture(texBruit, _texCoord + vec2(randomCoeffNoise,randomCoeffNoise));
@@ -89,9 +89,8 @@ vec4 NoiseEffect(vec4 colorIn)
 	return colorOut;
 }
 
-vec4 VignetteEffect(vec4 colorIn)
+vec4 VignetteEffect(in vec4 colorIn)
 {
-	
 	vec4 ColorVignette = texture(texVignette, _texCoord);
 	
 	vec4 colorOut = colorIn - (vec4(1,1,1,2)-ColorVignette);
@@ -105,22 +104,20 @@ vec4 UnderWater()
 {
 	vec4 colorOut;
 	
-	float time2 = time*0.0001;
-	vec2 uvNormal0 = _texCoord*noise_tile;
-	uvNormal0.s += time2;
-	uvNormal0.t += time2;
-	vec2 uvNormal1 = _texCoord*noise_tile;
+	float time2 = dvd_time*0.0001;
+	vec2 noiseUV = _texCoord*_noiseTile;
+	vec2 uvNormal0 = noiseUV + time2;
+	vec2 uvNormal1 = noiseUV;
 	uvNormal1.s -= time2;
-	uvNormal1.t += time2;
+	uvNormal1.t = uvNormal0.t;
 		
 	vec3 normal0 = texture(texWaterNoiseNM, uvNormal0).rgb * 2.0 - 1.0;
-//	vec3 normal1 = texture(texWaterNoiseNM, uvNormal1).rgb * 2.0 - 1.0;
-//	vec3 normal = normalize(normal0+normal1);
+	vec3 normal1 = texture(texWaterNoiseNM, uvNormal1).rgb * 2.0 - 1.0;
+	vec3 normal = normalize(normal0+normal1);
 	
-	
-	colorOut = texture(texScreen, _texCoord + noise_factor*normal0.st);
-	
-	colorOut = clamp(colorOut, vec4(0.0, 0.0, 0.0, 0.0),  vec4(1.0, 1.0, 1.0, 1.0));
+	colorOut = clamp(texture(texScreen, _texCoord + _noiseFactor*normal0.st), 
+				     vec4(0.0, 0.0, 0.0, 0.0),  
+					 vec4(1.0, 1.0, 1.0, 1.0));
 	
 	return colorOut;
 }
@@ -130,10 +127,9 @@ void main(void){
 	
     _colorOut = texture(texScreen, _texCoord);
 
-	if(enable_underwater){
+	if(enable_underwater)
 		_colorOut = UnderWater();
-	}
-
+	
 #if defined(POSTFX_ENABLE_SSAO)
 	_colorOut = SSAO(_colorOut);
 #endif
@@ -142,11 +138,9 @@ void main(void){
 	_colorOut = Bloom(_colorOut);
 #endif
 
-	if(enable_noise){
+	if(enable_noise)
 		_colorOut = NoiseEffect(_colorOut);
-	}
 	
-	if(enable_vignette){
+	if(enable_vignette)
 		_colorOut = VignetteEffect(_colorOut);
-	}
 }

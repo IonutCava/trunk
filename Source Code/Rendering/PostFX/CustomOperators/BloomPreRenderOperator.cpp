@@ -8,22 +8,23 @@
 
 BloomPreRenderOperator::BloomPreRenderOperator(Quad3D* target,
 											   FrameBufferObject* result,
-											   const vec2<U16>& resolution) : PreRenderOperator(BLOOM_STAGE,target,resolution),
-																			  _outputFBO(result)
+											   const vec2<U16>& resolution,
+											   SamplerDescriptor* const sampler) : PreRenderOperator(BLOOM_STAGE,target,resolution,sampler),
+																			       _outputFBO(result)
 {
 	F32 width = _resolution.width;
 	F32 height = _resolution.height;
 	_tempBloomFBO = GFX_DEVICE.newFBO(FBO_2D_COLOR);
 
 	TextureDescriptor tempBloomDescriptor(TEXTURE_2D, RGBA,RGBA8,FLOAT_32);
-	tempBloomDescriptor.setWrapMode(TEXTURE_CLAMP_TO_EDGE,TEXTURE_CLAMP_TO_EDGE);
-	tempBloomDescriptor._generateMipMaps = false; //it's a flat texture on a full screen quad. really?
+	tempBloomDescriptor.setSampler(*_internalSampler);
+
 	_tempBloomFBO->AddAttachment(tempBloomDescriptor,TextureDescriptor::Color0);
 	_tempBloomFBO->Create(width/4,height/4);
 
 	TextureDescriptor outputBloomDescriptor(TEXTURE_2D, RGBA,RGBA8,FLOAT_32);
-	outputBloomDescriptor.setWrapMode(TEXTURE_CLAMP_TO_EDGE,TEXTURE_CLAMP_TO_EDGE);
-	outputBloomDescriptor._generateMipMaps = false; //it's a flat texture on a full screen quad. really?
+	outputBloomDescriptor.setSampler(*_internalSampler);
+
 	_outputFBO->AddAttachment(tempBloomDescriptor,TextureDescriptor::Color0);
 	_outputFBO->Create(width, height);
 	_bright = CreateResource<ShaderProgram>(ResourceDescriptor("bright"));
@@ -39,9 +40,8 @@ BloomPreRenderOperator::~BloomPreRenderOperator(){
 void BloomPreRenderOperator::reshape(I32 width, I32 height){
 	I32 w = width/4;
 	I32 h = height/4;
-	if(_tempBloomFBO){
+	if(_tempBloomFBO)
 		_tempBloomFBO->Create(w,h);
-	}
 	_outputFBO->Create(w, h);
 }
 

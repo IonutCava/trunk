@@ -1,6 +1,7 @@
 #include "Headers/SceneGraph.h"
 #include "Headers/SceneGraphNode.h"
 
+#include "Scenes/Headers/SceneState.h"
 #include "Core/Math/Headers/Transform.h"
 #include "Geometry/Shapes/Headers/Object3D.h"
 #include "Geometry/Material/Headers/Material.h"
@@ -12,8 +13,10 @@ SceneGraphNode::SceneGraphNode(SceneNode* const node) : _node(node),
 												  _parent(NULL),
 												  _grandParent(NULL),
 												  _transform(NULL),
+												  _currentSceneState(NULL),
 												  _wasActive(true),
 											      _active(true),
+												  _selected(false),
 												  _noDefaultTransform(false),
 												  _inView(true),
 												  _sorted(false),
@@ -44,25 +47,29 @@ SceneGraphNode::~SceneGraphNode(){
 }
 
 void SceneGraphNode::addBoundingBox(const BoundingBox& bb, const SceneNodeType& type) {
-    if(!bitCompare(_bbAddExclusionList, type)){
+    if(!bitCompare(_bbAddExclusionList, type))
         _boundingBox.Add(bb);
-    }
 }
 
-SceneGraphNode*  SceneGraphNode::getRoot() const {
+SceneGraphNode* SceneGraphNode::getRoot() const {
     return _sceneGraph->getRoot();
 }
 
 vectorImpl<BoundingBox >&  SceneGraphNode::getBBoxes(vectorImpl<BoundingBox >& boxes ){
-	//Unload every sub node recursively
 	for_each(NodeChildren::value_type& it, _children){
 		it.second->getBBoxes(boxes);
 	}
+
     ReadLock r_lock(_queryLock);
 	boxes.push_back(_boundingBox);
 	return boxes;
 }
 
+const BoundingBox& SceneGraphNode::getBoundingBoxTransformed() {
+	if(_transform)
+		updateBoundingBoxTransform(_transform->getGlobalMatrix());
+	return _boundingBox;
+}
 ///When unloading the current graph node
 bool SceneGraphNode::unload(){
 	//Unload every sub node recursively
@@ -156,29 +163,20 @@ SceneGraphNode* SceneGraphNode::addNode(SceneNode* const node,const std::string&
 	//Validate it to be safe
 	assert(sceneGraphNode);
 	//We need to name the new SceneGraphNode
-	//We start off with the name passed as a parameter as it has a higher priority
-	std::string sgName(name);
-	//If we did not supply a custom name
-	if(sgName.empty()){
-		//Use the SceneNode's name
-		sgName = node->getName();
-	}
+	//If we did not supply a custom name use the SceneNode's name
+	std::string sgName(name.empty() ? node->getName() : name);
 	//Name the new SceneGraphNode
 	sceneGraphNode->setName(sgName);
-
-	//Get our current's node parent
-	SceneGraphNode* parentNode = getParent();
 	//Set the current node's parent as the new node's grandparent
-	sceneGraphNode->setGrandParent(parentNode);
+	sceneGraphNode->setGrandParent(getParent());
 	//Get the new node's transform
 	Transform* nodeTransform = sceneGraphNode->getTransform();
 	//If the current node and the new node have transforms,
 	//Update the relationship between the 2
 	if(nodeTransform && getTransform()){
-		//The child node's parentMatrix is our current transform matrix
-		nodeTransform->setParentMatrix(getTransform()->getMatrix());
+		//The child node's parent transform is our current transform matrix
+		nodeTransform->setParentTransform(getTransform());
 	}
-
 	//Set the current node as the new node's parrent
 	sceneGraphNode->setParent(this);
     sceneGraphNode->setSceneGraph(_sceneGraph);
@@ -198,9 +196,8 @@ void SceneGraphNode::removeNode(SceneGraphNode* node){
 		//Remove it from the map
 		_children.erase(it);
 	}else{
-		for_each(NodeChildren::value_type& childIt, _children){
+		for(U8 i = 0; i < _children.size(); ++i)
 			removeNode(node);
-		}
 	}
 	//Beware. Removing a node, does no unload it!
 	//Call delete on the SceneGraphNode's pointer to do that
@@ -247,11 +244,14 @@ SceneGraphNode* SceneGraphNode::findNode(const std::string& name, bool sceneNode
 SceneGraphNode* SceneGraphNode::Intersect(const Ray& ray, F32 start, F32 end){
 	//Null return value as default
 	SceneGraphNode* returnValue = NULL;
-    ReadLock r_lock(_queryLock);
-	if(_boundingBox.Intersect(ray,start,end)){
-		return this;
+
+	if(_node->isSelectable()){
+		ReadLock r_lock(_queryLock);
+		if(_boundingBox.Intersect(ray,start,end)){
+			return this;
+		}
+		r_lock.unlock();
 	}
-    r_lock.unlock();
 
 	for_each(NodeChildren::value_type& it, _children){
 		returnValue = it.second->Intersect(ray,start,end);

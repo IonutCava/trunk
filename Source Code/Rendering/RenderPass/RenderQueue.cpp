@@ -32,14 +32,6 @@ U16 RenderQueue::getRenderQueueStackSize() {
 	return temp;
 }
 
-RenderBin* RenderQueue::getBinSorted(U16 renderBin){
-	return _sortedRenderBins[renderBin];
-}
-
-RenderBin* RenderQueue::getBin(U16 renderBin){
-	return getBin(_renderBinId[renderBin]);
-}
-
 RenderBin* RenderQueue::getBin(RenderBin::RenderBinType rbType){
 	RenderBin* temp = NULL;
 	RenderBinMap::iterator binMapiter = _renderBins.find(rbType);
@@ -99,6 +91,7 @@ RenderBin* RenderQueue::getOrCreateBin(const RenderBin::RenderBinType& rbType){
 				temp = New RenderBinParticles(RenderBin::RBT_PARTICLES,RenderingOrder::BACK_TO_FRONT,0.8);
 				break;
 			case RenderBin::RBT_TRANSLUCENT:
+				///When rendering translucent objects, we should also sort each object's polygons depending on it's distance from the camera
 				temp = New RenderBinTranslucent(RenderBin::RBT_TRANSLUCENT,RenderingOrder::BACK_TO_FRONT,0.9);
 				break;
 			default:

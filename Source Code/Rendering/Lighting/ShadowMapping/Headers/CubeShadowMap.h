@@ -29,15 +29,15 @@ class CubeShadowMap : public ShadowMap {
 public:
 	CubeShadowMap(Light* light);
 	~CubeShadowMap();
-	void render(SceneRenderState* renderState, boost::function0<void> sceneRenderFunction);
+	void render(const SceneRenderState& renderState, boost::function0<void> sceneRenderFunction);
 
 	///Get the current shadow mapping tehnique
 	ShadowType getShadowMapType() const {return SHADOW_TYPE_CubeMap;}
 	///Update depth maps
-	void resolution(U16 resolution,SceneRenderState* sceneRenderState);
+	void resolution(U16 resolution, const SceneRenderState& renderState);
 	void previewShadowMaps() {}
 protected:
-	void renderInternal(SceneRenderState* renderState) const;
+	void renderInternal(const SceneRenderState& renderState) const;
 };
 
 #endif

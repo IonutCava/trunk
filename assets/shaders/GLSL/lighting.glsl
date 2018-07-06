@@ -1,3 +1,6 @@
+//-- Geometry
+//#include "inOut.geom"
+
 -- Vertex
 #include "vboInputData.vert"
 #include "lightingDefaults.vert"

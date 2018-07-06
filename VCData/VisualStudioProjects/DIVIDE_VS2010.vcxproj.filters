@@ -1172,6 +1172,30 @@
     <ClCompile Include="..\..\Source Code\AI\PathFinding\NavMeshes\DetourTileCache\DivideTileCache.cpp">
       <Filter>AI\PathFinding\NavMeshes\DetourTileCaching</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Scenes\SceneInput.cpp">
+      <Filter>Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\Camera\ThirdPersonCamera.cpp">
+      <Filter>Rendering\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\Camera\FirstPersonCamera.cpp">
+      <Filter>Rendering\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\Camera\FreeFlyCamera.cpp">
+      <Filter>Rendering\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\Camera\ScriptedCamera.cpp">
+      <Filter>Rendering\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\Camera\OrbitCamera.cpp">
+      <Filter>Rendering\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Math\MathClasses.cpp">
+      <Filter>Core\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Resources\ResourceDescriptor.cpp">
+      <Filter>Core\Resources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h">
@@ -1864,6 +1888,21 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\DetourTileCache\Headers\DivideTileCache.h">
       <Filter>AI\PathFinding\NavMeshes\DetourTileCaching\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\ScriptedCamera.h">
+      <Filter>Rendering\Camera\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\Math\Headers\Plane.h">
+      <Filter>Core\Math\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathVectors.h">
+      <Filter>Core\Math\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathVectors-Inl.h">
+      <Filter>Core\Math\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\GFXDevice-Inl.h">
+      <Filter>Hardware\Video\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

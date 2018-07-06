@@ -41,7 +41,7 @@ void MainScene::postRender(){
 }
 
 void MainScene::renderEnvironment(bool waterReflection){
-	const vec3<F32>& eyePos = renderState()->getCamera()->getEye();
+	const vec3<F32>& eyePos = renderState().getCamera().getEye();
 
 	bool underwater = _water->isPointUnderWater(eyePos);
 
@@ -52,12 +52,8 @@ void MainScene::renderEnvironment(bool waterReflection){
     }
 
 	if(waterReflection){
-        F32 waterLevel = 2.0f*state()->getWaterLevel();
-		renderState()->getCamera()->RenderLookAt(false,true,waterLevel);
-        getSkySGN(0)->getNode<Sky>()->setInvertPlane(waterLevel);
+		renderState().getCamera().renderLookAtReflected(_water->getReflectionPlane());
     }
-
-    getSkySGN(0)->getNode<Sky>()->setInverted(waterReflection);
 
     for_each(Terrain* ter, _visibleTerrains){
         ter->toggleReflection(waterReflection);
@@ -67,48 +63,48 @@ void MainScene::renderEnvironment(bool waterReflection){
 
 void MainScene::processInput(){
 	bool update = false;
-    Camera* cam = renderState()->getCamera();
-	if(state()->_angleLR){
-		cam->RotateX((state()->_angleLR)/_LRSpeedFactor);
+    Camera& cam = renderState().getCamera();
+	if(state()._angleLR){
+		cam.rotateYaw(state()._angleLR);
 		update = true;
 	}
-	if(state()->_angleUD){
-		cam->RotateY((state()->_angleUD)/_LRSpeedFactor);
+	if(state()._angleUD){
+		cam.rotatePitch(state()._angleUD);
 		update = true;
 	}
 
-	if(state()->_moveFB || state()->_moveLR){
-		if(state()->_moveFB) cam->MoveForward((state()->_moveFB) / _FBSpeedFactor);
-		if(state()->_moveLR) cam->MoveStrafe((state()->_moveLR) / _FBSpeedFactor);
+	if(state()._moveFB || state()._moveLR){
+		if(state()._moveFB) cam.moveForward(state()._moveFB);
+		if(state()._moveLR) cam.moveStrafe(state()._moveLR);
 		update = true;
 	}
 
 	if(update){
         if(!_freeflyCamera){
             F32 terrainHeight = 0.0f;
-            vec3<F32> eyePosition = cam->getEye();
+            vec3<F32> eyePosition = cam.getEye();
             for_each(Terrain* ter, _visibleTerrains){
                 terrainHeight = ter->getPositionFromGlobal(eyePosition.x,eyePosition.z).y;
                 if(!IS_ZERO(terrainHeight)){
                     eyePosition.y = terrainHeight + 0.45f;
-                    cam->setEye(eyePosition);
+                    cam.setEye(eyePosition);
                     break;
                 }
 	        }
             GUI::getInstance().modifyText("camPosition","[ X: %5.2f | Y: %5.2f | Z: %5.2f ] [Pitch: %5.2f | Yaw: %5.2f] [TerHght: %5.2f ]",
-							  cam->getEye().x,
-							  cam->getEye().y,
-							  cam->getEye().z,
-							  DEGREES(cam->getAngleX()),
-							  DEGREES(cam->getAngleY()),
+							  cam.getEye().x,
+							  cam.getEye().y,
+							  cam.getEye().z,
+							  cam.getEuler().pitch,
+							  cam.getEuler().yaw,
                               terrainHeight);
         }else{
             GUI::getInstance().modifyText("camPosition","[ X: %5.2f | Y: %5.2f | Z: %5.2f ] [Pitch: %5.2f | Yaw: %5.2f]",
-							  cam->getEye().x,
-							  cam->getEye().y,
-							  cam->getEye().z,
-							  DEGREES(cam->getAngleX()),
-							  DEGREES(cam->getAngleY()));
+							  cam.getEye().x,
+							  cam.getEye().y,
+							  cam.getEye().z,
+							  cam.getEuler().pitch,
+							  cam.getEuler().yaw);
         }
 		update = false;
 	}
@@ -130,7 +126,7 @@ void MainScene::processTasks(const U32 time){
 
 	if (timeSec - _taskTimers[1] >= FpsDisplay){
 		GUI::getInstance().modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", Framerate::getInstance().getFps(), Framerate::getInstance().getFrameTime());
-        GUI::getInstance().modifyText("underwater","Underwater [ %s ] | WaterLevel [%f] ]", _paramHandler.getParam<bool>("scene.camera.underwater") ? "true" : "false", state()->getWaterLevel());
+        GUI::getInstance().modifyText("underwater","Underwater [ %s ] | WaterLevel [%f] ]", _paramHandler.getParam<bool>("scene.camera.underwater") ? "true" : "false", state().getWaterLevel());
 		GUI::getInstance().modifyText("RenderBinCount", "Number of items in Render Bin: %d", GFX_RENDER_BIN_SIZE);
 		_taskTimers[1] += FpsDisplay;
 	}
@@ -141,14 +137,13 @@ void MainScene::processTasks(const U32 time){
 	}
 }
 
-bool MainScene::load(const std::string& name){
-	 _mousePressed = false;
+bool MainScene::load(const std::string& name, CameraManager* const cameraMgr){
 	bool computeWaterHeight = false;
 
-	///Load scene resources
-	SCENE_LOAD(name,true,true);
+	//Load scene resources
+	bool loadState = SCENE_LOAD(name,cameraMgr,true,true);
 
-	if(state()->getWaterLevel() == RAND_MAX) computeWaterHeight = true;
+	if(state().getWaterLevel() == RAND_MAX) computeWaterHeight = true;
 	Light* light = addDefaultLight();
 	light->setLightProperties(LIGHT_PROPERTY_AMBIENT,WHITE());
 	light->setLightProperties(LIGHT_PROPERTY_DIFFUSE,WHITE());
@@ -163,7 +158,7 @@ bool MainScene::load(const std::string& name){
 				_visibleTerrains.push_back(tempTerrain);
 				if(computeWaterHeight){
 					F32 tempMin = terrainNode->getBoundingBox().getMin().y;
-					if(state()->_waterHeight > tempMin) state()->_waterHeight = tempMin;
+					if(state()._waterHeight > tempMin) state()._waterHeight = tempMin;
 				}
 			}
 		}else{
@@ -172,7 +167,7 @@ bool MainScene::load(const std::string& name){
 	}
 	ResourceDescriptor infiniteWater("waterEntity");
 	_water = CreateResource<WaterPlane>(infiniteWater);
-	_water->setParams(40.0f,25,0.4f,0.45f);
+	_water->setParams(200.0f,vec2<F32>(85.0f, 92.5f),vec2<F32>(0.4f,0.35f),0.34f);
 	_waterGraphNode = _sceneGraph->getRoot()->addNode(_water);
 	_waterGraphNode->useDefaultTransform(false);
 	_waterGraphNode->setTransform(NULL);
@@ -192,15 +187,15 @@ bool MainScene::unload(){
 	return Scene::unload();
 }
 
-bool _switchAB = false;
 void MainScene::test(boost::any a, CallbackParam b){
+	static bool switchAB = false;
 	vec3<F32> pos;
 	SceneGraphNode* boxNode = _sceneGraph->findNode("box");
 	Object3D* box = NULL;
 	if(boxNode) box = boxNode->getNode<Object3D>();
 	if(box) pos = boxNode->getTransform()->getPosition();
 
-	if(!_switchAB){
+	if(!switchAB){
 		if(pos.x < 300 && pos.z == 0)		   pos.x++;
 		if(pos.x == 300)
 		{
@@ -208,7 +203,7 @@ void MainScene::test(boost::any a, CallbackParam b){
 			if(pos.y == 800)
 			{
 				if(pos.z > -500)   pos.z--;
-				if(pos.z == -500)  _switchAB = true;
+				if(pos.z == -500)  switchAB = true;
 			}
 		}
 	} else {
@@ -218,7 +213,7 @@ void MainScene::test(boost::any a, CallbackParam b){
 			if(pos.y > 100 && pos.z == -500)    pos.y--;
 			if(pos.y == 100) {
 				if(pos.z < 0)    pos.z++;
-				if(pos.z == 0)   _switchAB = false;
+				if(pos.z == 0)   switchAB = false;
 			}
 		}
 	}
@@ -269,18 +264,18 @@ bool MainScene::loadResources(bool continueOnErrors){
 	ResourceDescriptor beepSound("beep sound");
 	beepSound.setResourceLocation(_paramHandler.getParam<std::string>("assetsLocation")+"/sounds/beep.wav");
 	beepSound.setFlag(false);
-	state()->_backgroundMusic["generalTheme"] = CreateResource<AudioDescriptor>(backgroundMusic);
+	state()._backgroundMusic["generalTheme"] = CreateResource<AudioDescriptor>(backgroundMusic);
 	_beep = CreateResource<AudioDescriptor>(beepSound);
 
 	gui.addText("camPosition",  vec2<I32>(60,100),
 								Font::DIVIDE_DEFAULT,
 								vec3<F32>(0.2f,0.8f,0.2f),
 								"Position [ X: %5.0f | Y: %5.0f | Z: %5.0f ] [Pitch: %5.2f | Yaw: %5.2f]",
-								renderState()->getCamera()->getEye().x,
-								renderState()->getCamera()->getEye().y,
-								renderState()->getCamera()->getEye().z,
-								DEGREES(renderState()->getCamera()->getAngleX()),
-							    DEGREES(renderState()->getCamera()->getAngleY()));
+								renderState().getCamera().getEye().x,
+								renderState().getCamera().getEye().y,
+								renderState().getCamera().getEye().z,
+								renderState().getCamera().getEuler().pitch,
+							    renderState().getCamera().getEuler().yaw);
 
 	return true;
 }
@@ -288,20 +283,11 @@ bool MainScene::loadResources(bool continueOnErrors){
 void MainScene::onKeyDown(const OIS::KeyEvent& key){
 	Scene::onKeyDown(key);
 	switch(key.key)	{
-		case OIS::KC_W:
-			state()->_moveFB = 0.75f;
-			break;
-		case OIS::KC_A:
-			state()->_moveLR = 0.75f;
-			break;
-		case OIS::KC_S:
-			state()->_moveFB = -0.75f;
-			break;
-		case OIS::KC_D:
-			state()->_moveLR = -0.75f;
-			break;
-		default:
-			break;
+		default: break;
+		case OIS::KC_W: state()._moveFB =  1; break;
+		case OIS::KC_A:	state()._moveLR = -1; break;
+		case OIS::KC_S:	state()._moveFB = -1; break;
+		case OIS::KC_D:	state()._moveLR =  1; break;
 	}
 }
 
@@ -309,21 +295,16 @@ bool _playMusic = false;
 void MainScene::onKeyUp(const OIS::KeyEvent& key){
 	Scene::onKeyUp(key);
 	switch(key.key)	{
+		default: break;
 		case OIS::KC_W:
-		case OIS::KC_S:
-			state()->_moveFB = 0;
-			break;
+		case OIS::KC_S:	state()._moveFB = 0; break;
 		case OIS::KC_A:
-		case OIS::KC_D:
-			state()->_moveLR = 0;
-			break;
-		case OIS::KC_X:
-			SFX_DEVICE.playSound(_beep);
-			break;
+		case OIS::KC_D: state()._moveLR = 0; break;
+		case OIS::KC_X:	SFX_DEVICE.playSound(_beep); break;
 		case OIS::KC_M:{
 			_playMusic = !_playMusic;
 			if(_playMusic){
-				SFX_DEVICE.playMusic(state()->_backgroundMusic["generalTheme"]);
+				SFX_DEVICE.playMusic(state()._backgroundMusic["generalTheme"]);
 			}else{
 				SFX_DEVICE.stopMusic();
 			}
@@ -344,43 +325,28 @@ void MainScene::onKeyUp(const OIS::KeyEvent& key){
 				ter->toggleBoundingBoxes();
 			}
 			break;
-		default:
-			break;
 	}
 }
 
 void MainScene::onMouseMove(const OIS::MouseEvent& key){
-	if(_mousePressed){
-		if(_prevMouse.x - key.state.X.abs > 1 )
-			state()->_angleLR = -0.15f;
-		else if(_prevMouse.x - key.state.X.abs < -1 )
-			state()->_angleLR = 0.15f;
-		else
-			state()->_angleLR = 0;
+	if(_mousePressed[OIS::MB_Right]){
+		if(_previousMousePos.x - key.state.X.abs > 1 )		 state()._angleLR = -1;
+		else if(_previousMousePos.x - key.state.X.abs < -1 ) state()._angleLR =  1;
+		else			                                     state()._angleLR =  0;
 
-		if(_prevMouse.y - key.state.Y.abs > 1 )
-			state()->_angleUD = -0.1f;
-		else if(_prevMouse.y - key.state.Y.abs < -1 )
-			state()->_angleUD = 0.1f;
-		else
-			state()->_angleUD = 0;
+		if(_previousMousePos.y - key.state.Y.abs > 1 )		 state()._angleUD = -1;
+		else if(_previousMousePos.y - key.state.Y.abs < -1 ) state()._angleUD =  1;
+		else 			                                     state()._angleUD =  0;
 	}
 
-	_prevMouse.x = key.state.X.abs;
-	_prevMouse.y = key.state.Y.abs;
-}
-
-void MainScene::onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID button){
-	Scene::onMouseClickDown(key,button);
-	if(button == 0)
-		_mousePressed = true;
+	_previousMousePos.x = key.state.X.abs;
+	_previousMousePos.y = key.state.Y.abs;
 }
 
 void MainScene::onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button){
 	Scene::onMouseClickUp(key,button);
-	if(button == 0)	{
-		_mousePressed = false;
-		state()->_angleUD = 0;
-		state()->_angleLR = 0;
+	if(!_mousePressed[OIS::MB_Right]){
+		state()._angleUD = 0;
+		state()._angleLR = 0;
 	}
 }

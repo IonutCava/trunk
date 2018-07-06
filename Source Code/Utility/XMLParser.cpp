@@ -2,7 +2,6 @@
 
 #include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
-#include "Rendering/Headers/Renderer.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Geometry/Material/Headers/Material.h"
@@ -11,6 +10,185 @@
 namespace XML {
 	using boost::property_tree::ptree;
 	ptree pt;
+
+	namespace {
+		
+		const char* getFilterName(TextureFilter filter)	{
+			if(filter == TEXTURE_FILTER_LINEAR)
+				return "TEXTURE_FILTER_LINEAR";
+			else if(filter == TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST)
+				return "TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST";
+			else if(filter == TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST)
+				return "TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST";
+			else if(filter == TEXTURE_FILTER_NEAREST_MIPMAP_LINEAR)
+				return "TEXTURE_FILTER_NEAREST_MIPMAP_LINEAR";
+			else if(filter == TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR)
+				return "TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR";
+
+			return "TEXTURE_FILTER_NEAREST";
+		}
+		
+		TextureFilter getFilter(const char* filter)	{
+
+			if(strcmp(filter, "TEXTURE_FILTER_LINEAR") == 0 )
+				return TEXTURE_FILTER_LINEAR;
+			else if(strcmp(filter, "TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST") == 0 )
+				return TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST;
+			else if(strcmp(filter, "TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST") == 0 )
+				return TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST;
+			else if(strcmp(filter, "TEXTURE_FILTER_NEAREST_MIPMAP_LINEAR") == 0 )
+				return TEXTURE_FILTER_NEAREST_MIPMAP_LINEAR;
+			else if(strcmp(filter, "TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR") == 0 )
+				return TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR;
+
+			return TEXTURE_FILTER_NEAREST;
+		}
+		
+		const char* getWrapModeName(TextureWrap wrapMode) {
+			if(wrapMode == TEXTURE_CLAMP)
+				return "TEXTURE_CLAMP";
+			else if(wrapMode == TEXTURE_CLAMP_TO_EDGE)
+				return "TEXTURE_CLAMP_TO_EDGE";
+			else if(wrapMode == TEXTURE_CLAMP_TO_BORDER)
+				return "TEXTURE_CLAMP_TO_BORDER";
+			else if(wrapMode == TEXTURE_DECAL)
+				return "TEXTURE_DECAL";
+		
+			return "TEXTURE_REPEAT";
+		}
+		
+		TextureWrap getWrapMode(const char* wrapMode) {
+			if(strcmp(wrapMode, "TEXTURE_CLAMP") == 0)
+				return TEXTURE_CLAMP;
+			else if(strcmp(wrapMode, "TEXTURE_CLAMP_TO_EDGE")  == 0 )
+				return TEXTURE_CLAMP_TO_EDGE;
+			else if(strcmp(wrapMode, "TEXTURE_CLAMP_TO_BORDER") == 0 )
+				return TEXTURE_CLAMP_TO_BORDER;
+			else if(strcmp(wrapMode, "TEXTURE_DECAL") == 0 )
+				return TEXTURE_DECAL;
+
+			return TEXTURE_REPEAT;
+		}
+
+		const char* getBumpMethodName(Material::BumpMethod bumpMethod)	{
+			if(bumpMethod == Material::BUMP_NORMAL)
+				return "BUMP_NORMAL";
+			else if(bumpMethod == Material::BUMP_PARALLAX)
+				return "BUMP_PARALLAX";
+			else if(bumpMethod == Material::BUMP_RELIEF)
+				return "BUMP_RELIEF";
+
+			return "BUMP_NONE";
+		}
+
+		Material::BumpMethod getBumpMethod(const char* bumpMethod) {
+			if(strcmp(bumpMethod, "BUMP_NORMAL") == 0 )
+				return Material::BUMP_NORMAL;
+			else if(strcmp(bumpMethod, "BUMP_PARALLAX") == 0 )
+				return Material::BUMP_PARALLAX;
+			else if(strcmp(bumpMethod, "BUMP_RELIEF") == 0 )
+				return Material::BUMP_RELIEF;
+
+			return Material::BUMP_NONE;
+		}
+
+		const char* getTextureOperationName(Material::TextureOperation textureOp) {
+			if(textureOp == Material::TextureOperation_Multiply)
+				return "TEX_OP_MULTIPLY";
+			else if(textureOp == Material::TextureOperation_Decal)
+				return "TEX_OP_DECAL";
+			else if(textureOp == Material::TextureOperation_Blend)
+				return "TEX_OP_BLEND";
+			else if(textureOp == Material::TextureOperation_Add)
+				return "TEX_OP_ADD";
+			else if(textureOp == Material::TextureOperation_SmoothAdd)
+				return "TEX_OP_SMOOTH_ADD";
+			else if(textureOp == Material::TextureOperation_SignedAdd)
+				return "TEX_OP_SIGNED_ADD";
+			else if(textureOp == Material::TextureOperation_Divide)
+				return "TEX_OP_DIVIDE";
+			else if(textureOp == Material::TextureOperation_Subtract)
+				return "TEX_OP_SUBTRACT";
+			else if(textureOp == Material::TextureOperation_Combine)
+				return "TEX_OP_COMBINE";
+
+			return "TEX_OP_REPLACE";
+		}
+
+		Material::TextureOperation getTextureOperation(const char* operation) {
+			if(strcmp(operation, "TEX_OP_MULTIPLY") == 0 )
+				return Material::TextureOperation_Multiply;
+			else if(strcmp(operation, "TEX_OP_DECAL") == 0 )
+				return Material::TextureOperation_Decal;
+			else if(strcmp(operation, "TEX_OP_BLEND") == 0 )
+				return Material::TextureOperation_Blend;
+			else if(strcmp(operation, "TEX_OP_ADD") == 0 )
+				return Material::TextureOperation_Add;
+			else if(strcmp(operation, "TEX_OP_SMOOTH_ADD") == 0 )
+				return Material::TextureOperation_SmoothAdd;
+			else if(strcmp(operation, "TEX_OP_SIGNED_ADD") == 0 )
+				return Material::TextureOperation_SignedAdd;
+			else if(strcmp(operation, "TEX_OP_DIVIDE") == 0 )
+				return Material::TextureOperation_Divide;
+			else if(strcmp(operation, "TEX_OP_SUBTRACT") == 0 )
+				return Material::TextureOperation_Subtract;
+			else if(strcmp(operation, "TEX_OP_COMBINE") == 0 )
+				return Material::TextureOperation_Combine;
+
+			return Material::TextureOperation_Replace;
+		}
+
+		void saveTextureXML(const std::string& textureNode, const char* operation, Texture* texture) {
+		    const SamplerDescriptor& sampler = texture->getCurrentSampler();
+			pt.put(textureNode+".file",texture->getResourceLocation());
+            pt.put(textureNode+".flip",texture->isFlipped());
+			pt.put(textureNode+".MapU", getWrapModeName(sampler.wrapU()));
+			pt.put(textureNode+".MapV", getWrapModeName(sampler.wrapV()));
+			pt.put(textureNode+".MapW", getWrapModeName(sampler.wrapW()));
+			pt.put(textureNode+".minFilter",getFilterName(sampler.minFilter()));
+			pt.put(textureNode+".magFilter",getFilterName(sampler.magFilter()));
+			pt.put(textureNode+".anisotrophy",(U32)sampler.anisotrophyLevel());
+			pt.put(textureNode+".operation", operation);
+		}
+
+		Texture* loadTextureXML(const std::string& textureNode, const std::string& textureName) {
+			std::string img_name = textureName.substr( textureName.find_last_of( '/' ) + 1 );
+			std::string pathName = textureName.substr( 0, textureName.rfind("/")+1 );
+
+			TextureWrap wrapU = getWrapMode(pt.get<std::string>(textureNode+".MapU","TEXTURE_REPEAT").c_str());
+			TextureWrap wrapV = getWrapMode(pt.get<std::string>(textureNode+".MapV","TEXTURE_REPEAT").c_str());
+			TextureWrap wrapW = getWrapMode(pt.get<std::string>(textureNode+".MapW","TEXTURE_REPEAT").c_str());
+			TextureFilter minFilterValue = getFilter(pt.get<std::string>(textureNode+".minFilter","TEXTURE_FILTER_LINEAR").c_str());
+			TextureFilter magFilterValue = getFilter(pt.get<std::string>(textureNode+".magFilter","TEXTURE_FILTER_LINEAR").c_str());
+			U32 anisotrophy = pt.get(textureNode+".anisotrophy", 0);
+
+			SamplerDescriptor sampDesc;
+			sampDesc.setWrapMode(wrapU,wrapV,wrapW);
+			sampDesc.setFilters(minFilterValue,magFilterValue);
+			sampDesc.setAnisotrophy(anisotrophy);
+
+			ResourceDescriptor texture(img_name);
+			texture.setResourceLocation(pathName + img_name);
+			texture.setFlag(pt.get(textureNode+".flip",true));
+			texture.setPropertyDescriptor<SamplerDescriptor>(sampDesc);
+
+			return CreateResource<Texture2D>(texture);
+		}
+
+		inline std::string getRendererTypeName(RendererType type){
+			switch(type){
+				default:
+			case RENDERER_PLACEHOLDER:
+					return "Unknown Renderer Type";
+			case RENDERER_FORWARD:
+				return "Forward Renderer";
+			case RENDERER_DEFERRED_SHADING:
+				return "Deferred Shading Renderer";
+			case RENDERER_DEFERRED_LIGHTING:
+				return "Deferred Lighting Renderer";
+		}
+	}
+	}
 
 	std::string loadScripts(const std::string& file){
 		ParamHandler &par = ParamHandler::getInstance();
@@ -68,8 +246,6 @@ namespace XML {
 		par.setParam("rendering.FSAAsamples",aaSamples);
 		par.setParam("rendering.FSAAmethod",aaMethod);
 		par.setParam("rendering.detailLevel",pt.get<U8>("rendering.detailLevel",DETAIL_HIGH));
-		par.setParam("rendering.overrideRefreshRate",pt.get<bool>("rendering.overrideRefreshRate",false));
-		par.setParam("rendering.targetRefreshRate",pt.get<U8>("rendering.targetRefreshRate",75));
 		par.setParam("rendering.anisotropicFilteringLevel",pt.get<U8>("rendering.anisotropicFilteringLevel",1));
 		par.setParam("rendering.fogDetailLevel",pt.get<U8>("rendering.fogDetailLevel",DETAIL_HIGH));
 		par.setParam("rendering.mipMapDetailLevel",pt.get<U8>("rendering.mipMapDetailLevel",DETAIL_HIGH));
@@ -79,10 +255,11 @@ namespace XML {
 		par.setParam("rendering.enableFog", pt.get("rendering.enableFog",true));
 		U16 resWidth = pt.get("runtime.resolutionWidth",1024);
 		U16 resHeight = pt.get("runtime.resolutionHeight",768);
+		par.setParam("runtime.overrideRefreshRate",pt.get<bool>("runtime.overrideRefreshRate",false));
+		par.setParam("runtime.targetRefreshRate",pt.get<U8>("runtime.targetRefreshRate",75));
 		par.setParam("runtime.zNear",(F32)pt.get("runtime.zNear",0.1f));
 		par.setParam("runtime.zFar",(F32)pt.get("runtime.zFar",1200.0f));
 		par.setParam("runtime.verticalFOV",(F32)pt.get("runtime.verticalFOV",60));
-		par.setParam("runtime.GLminorVer",(U8)pt.get("runtime.GLminorVer",2));
 		par.setParam("runtime.useGLCompatProfile",pt.get("runtime.useGLCompatProfile",true));
 		par.setParam("runtime.aspectRatio",1.0f * (I32)resWidth / (I32)resHeight);
 		par.setParam("runtime.resolutionWidth",resWidth);
@@ -141,16 +318,16 @@ namespace XML {
 
 		sceneMgr.setActiveScene(scene);
 		scene->setName(sceneName);
-		scene->state()->getGrassVisibility() = pt.get("vegetation.grassVisibility",1000.0f);
-		scene->state()->getTreeVisibility()  = pt.get("vegetation.treeVisibility",1000.0f);
-		scene->state()->getGeneralVisibility()  = pt.get("options.visibility",1000.0f);
+		scene->state().getGrassVisibility() = pt.get("vegetation.grassVisibility",1000.0f);
+		scene->state().getTreeVisibility()  = pt.get("vegetation.treeVisibility",1000.0f);
+		scene->state().getGeneralVisibility()  = pt.get("options.visibility",1000.0f);
 
-		scene->state()->getWindDirX()  = pt.get("wind.windDirX",1.0f);
-		scene->state()->getWindDirZ()  = pt.get("wind.windDirZ",1.0f);
-		scene->state()->getWindSpeed() = pt.get("wind.windSpeed",1.0f);
+		scene->state().getWindDirX()  = pt.get("wind.windDirX",1.0f);
+		scene->state().getWindDirZ()  = pt.get("wind.windDirZ",1.0f);
+		scene->state().getWindSpeed() = pt.get("wind.windSpeed",1.0f);
 
-		scene->state()->getWaterLevel() = pt.get("water.waterLevel",0.0f);
-		scene->state()->getWaterDepth() = pt.get("water.waterDepth",-75);
+		scene->state().getWaterLevel() = pt.get("water.waterLevel",0.0f);
+		scene->state().getWaterDepth() = pt.get("water.waterDepth",-75);
 		if(boost::optional<ptree &> cameraPositionOverride = pt.get_child_optional("options.cameraStartPosition")){
 			par.setParam("options.cameraStartPosition.x", pt.get("options.cameraStartPosition.<xmlattr>.x",0.0f));
 			par.setParam("options.cameraStartPosition.y", pt.get("options.cameraStartPosition.<xmlattr>.y",0.0f));
@@ -161,7 +338,14 @@ namespace XML {
 		}else{
 			par.setParam("options.cameraStartPositionOverride",false);
 		}
-		
+		if(boost::optional<ptree &> cameraPositionOverride = pt.get_child_optional("options.cameraSpeed")){
+			par.setParam("options.cameraSpeed.move",pt.get("options.cameraSpeed.<xmlattr>.move",1.0f));
+			par.setParam("options.cameraSpeed.turn",pt.get("options.cameraSpeed.<xmlattr>.turn",1.0f));
+		}else{
+			par.setParam("options.cameraSpeed.move",0.5f);
+			par.setParam("options.cameraSpeed.turn",1.0f);
+		}
+
 		if(boost::optional<ptree &> fog = pt.get_child_optional("fog")){
 			par.setParam("rendering.sceneState.fogStart",   pt.get("fog.fogStartDistance",300.0f));
 			par.setParam("rendering.sceneState.fogEnd",     pt.get("fog.fogEndDistance",800.0f));
@@ -171,10 +355,10 @@ namespace XML {
 			par.setParam("rendering.sceneState.fogColor.b",	pt.get<F32>("fog.fogColor.<xmlattr>.b", 0.2f));
 		}
 
-		scene->state()->getFogDesc()._fogStartDist = par.getParam<F32>("rendering.sceneState.fogStart");
-		scene->state()->getFogDesc()._fogEndDist   = par.getParam<F32>("rendering.sceneState.fogEnd");
-		scene->state()->getFogDesc()._fogDensity   = par.getParam<F32>("rendering.sceneState.fogDensity");
-		scene->state()->getFogDesc()._fogColor.set(par.getParam<F32>("rendering.sceneState.fogColor.r"),
+		scene->state().getFogDesc()._fogStartDist = par.getParam<F32>("rendering.sceneState.fogStart");
+		scene->state().getFogDesc()._fogEndDist   = par.getParam<F32>("rendering.sceneState.fogEnd");
+		scene->state().getFogDesc()._fogDensity   = par.getParam<F32>("rendering.sceneState.fogDensity");
+		scene->state().getFogDesc()._fogColor.set(par.getParam<F32>("rendering.sceneState.fogColor.r"),
 											       par.getParam<F32>("rendering.sceneState.fogColor.g"),
 												   par.getParam<F32>("rendering.sceneState.fogColor.b"));
 
@@ -376,7 +560,7 @@ namespace XML {
 	}
 
 	Material* loadMaterialXML(const std::string &matName){
-		std::string materialFile(matName+"-"+GFX_DEVICE.getRenderer()->getTypeToString()+".xml");
+		std::string materialFile(matName+"-"+getRendererTypeName(GFX_DEVICE.getRenderer()->getType())+".xml");
 		pt.clear();
 		std::ifstream inp;
 		inp.open(materialFile.c_str(),
@@ -393,7 +577,7 @@ namespace XML {
 
 		std::string materialName = matName.substr(matName.rfind("/")+1,matName.length());
 
-		if(FindResource(materialName)) skip = true;
+		if(FindResource<Material>(materialName)) skip = true;
 		Material* mat = CreateResource<Material>(ResourceDescriptor(materialName));
 		if(skip) return mat;
 		///Skip if the material was cooked by a different renderer
@@ -413,30 +597,35 @@ namespace XML {
 		mat->setEmissive(vec3<F32>(pt.get<F32>("material.emissive.<xmlattr>.r",1.f),
 			                       pt.get<F32>("material.emissive.<xmlattr>.g",1.f),
 							       pt.get<F32>("material.emissive.<xmlattr>.b",1.f)));
+
 		mat->setShininess(pt.get<F32>("material.shininess.<xmlattr>.v",50.f));
+
 		mat->setDoubleSided(pt.get<bool>("material.doubleSided",false));
+
+		Texture* tempTexture = NULL;
 		if(boost::optional<ptree &> child = pt.get_child_optional("diffuseTexture1")){
-			mat->setTexture(Material::TEXTURE_BASE,loadTextureXML("diffuseTexture1", pt.get("diffuseTexture1.file","none")),
-							mat->getTextureOperation(pt.get("diffuseTexture1.operation",0)));
+			tempTexture = loadTextureXML("diffuseTexture1", pt.get("diffuseTexture1.file","none"));
+			mat->setTexture(Material::TEXTURE_UNIT0, tempTexture,
+							getTextureOperation(pt.get<std::string>("diffuseTexture1.operation","TEX_OP_MULTIPLY").c_str()));
 		}
 		if(boost::optional<ptree &> child = pt.get_child_optional("diffuseTexture2")){
-			mat->setTexture(Material::TEXTURE_SECOND,loadTextureXML("diffuseTexture2", pt.get("diffuseTexture2.file","none")),
-							mat->getTextureOperation(pt.get("diffuseTexture2.operation",0)));
+			mat->setTexture(Material::TEXTURE_UNIT0 + 1,loadTextureXML("diffuseTexture2", pt.get("diffuseTexture2.file","none")),
+							getTextureOperation(pt.get<std::string>("diffuseTexture2.operation","TEX_OP_MULTIPLY").c_str()));
 		}
 		if(boost::optional<ptree &> child = pt.get_child_optional("bumpMap")){
-			mat->setTexture(Material::TEXTURE_BUMP,loadTextureXML("bumpMap", pt.get("bumpMap.file","none")),
-							mat->getTextureOperation(pt.get("bumpMap.operation",0)));
+			mat->setTexture(Material::TEXTURE_NORMALMAP,loadTextureXML("bumpMap", pt.get("bumpMap.file","none")),
+				            getTextureOperation(pt.get<std::string>("bumpMap.operation", "BUMP_NONE").c_str()));
 			if(boost::optional<ptree &> child = pt.get_child_optional("bumpMap.method")){
-				mat->setBumpMethod(pt.get("bumpMap.method",(U32)Material::BUMP_NORMAL));
+				mat->setBumpMethod(getBumpMethod(pt.get<std::string>("bumpMap.method","BUMP_NORMAL").c_str()));
 			}
 		}
 		if(boost::optional<ptree &> child = pt.get_child_optional("opacityMap")){
 			mat->setTexture(Material::TEXTURE_OPACITY,loadTextureXML("opacityMap", pt.get("opacityMap.file","none")),
-							mat->getTextureOperation(pt.get("opacityMap.operation",0)));
+							getTextureOperation(pt.get<std::string>("opacityMap.operation","TEX_OP_REPLACE").c_str()));
 		}
 		if(boost::optional<ptree &> child = pt.get_child_optional("specularMap")){
 			mat->setTexture(Material::TEXTURE_SPECULAR,loadTextureXML("specularMap", pt.get("specularMap.file","none")),
-							mat->getTextureOperation(pt.get("specularMap.operation",0)));
+							getTextureOperation(pt.get<std::string>("specularMap.operation","TEX_OP_REPLACE").c_str()));
 		}
 		//if(boost::optional<ptree &> child = pt.get_child_optional("shaderProgram")){
 		//	mat->setShaderProgram(pt.get("shaderProgram.effect","NULL_SHADER"));
@@ -448,109 +637,75 @@ namespace XML {
 		return mat;
 	}
 
-	void dumpMaterial(Material* const mat){
-		if(!mat->isDirty()) return;
+	void dumpMaterial(Material& mat){
+		if(!mat.isDirty()) return;
 
 		ParamHandler &par = ParamHandler::getInstance();
-		std::string file = mat->getName();
+		std::string file = mat.getName();
 		file = file.substr(file.rfind("/")+1,file.length());
 
 		std::string location = par.getParam<std::string>("scriptLocation") + "/" +
-				                    par.getParam<std::string>("scenesLocation") + "/" +
-									par.getParam<std::string>("currentScene") + "/materials/";
+				               par.getParam<std::string>("scenesLocation") + "/" +
+							   par.getParam<std::string>("currentScene") + "/materials/";
 
-		std::string fileLocation = location +  file + "-" + GFX_DEVICE.getRenderer()->getTypeToString() + ".xml";
+		std::string fileLocation = location +  file + "-" + getRendererTypeName(GFX_DEVICE.getRenderer()->getType()) + ".xml";
 		pt.clear();
 		pt.put("material.name",file);
-		pt.put("material.ambient.<xmlattr>.r",mat->getMaterialMatrix().getCol(0).x);
-		pt.put("material.ambient.<xmlattr>.g",mat->getMaterialMatrix().getCol(0).y);
-		pt.put("material.ambient.<xmlattr>.b",mat->getMaterialMatrix().getCol(0).z);
-		pt.put("material.ambient.<xmlattr>.a",mat->getMaterialMatrix().getCol(0).w);
-		pt.put("material.diffuse.<xmlattr>.r",mat->getMaterialMatrix().getCol(1).x);
-		pt.put("material.diffuse.<xmlattr>.g",mat->getMaterialMatrix().getCol(1).y);
-		pt.put("material.diffuse.<xmlattr>.b",mat->getMaterialMatrix().getCol(1).z);
-		pt.put("material.diffuse.<xmlattr>.a",mat->getMaterialMatrix().getCol(1).w);
-		pt.put("material.specular.<xmlattr>.r",mat->getMaterialMatrix().getCol(2).x);
-		pt.put("material.specular.<xmlattr>.g",mat->getMaterialMatrix().getCol(2).y);
-		pt.put("material.specular.<xmlattr>.b",mat->getMaterialMatrix().getCol(2).z);
-		pt.put("material.specular.<xmlattr>.a",mat->getMaterialMatrix().getCol(2).w);
-		pt.put("material.shininess.<xmlattr>.v",mat->getMaterialMatrix().getCol(3).x);
-		pt.put("material.emissive.<xmlattr>.r",mat->getMaterialMatrix().getCol(3).y);
-		pt.put("material.emissive.<xmlattr>.g",mat->getMaterialMatrix().getCol(3).z);
-		pt.put("material.emissive.<xmlattr>.b",mat->getMaterialMatrix().getCol(3).w);
-		pt.put("material.doubleSided", mat->isDoubleSided());
-		Texture* baseTexture = mat->getTexture(Material::TEXTURE_BASE);
-		pt.put("material.textureWrapDescription" , "Wrap: 0 = CLAMP, 1 = CLAMP_TO_EDGE, 2 = CLAMP_TO_BORDER, 3 = DECAL, 4 = REPEAT");
-		pt.put("material.textureFilterDescription" , "Filter: 0 = LINEAR, 1 = NEAREST, 2 = NEAREST_MIPMAP_NEAREST, 3 = LINEAR_MIPMAP_NEAREST, 4 = NEAREST_MIPMAP_LINEAR, 5 = LINEAR_MIPMAP_LINEAR");
+		pt.put("material.ambient.<xmlattr>.r",mat.getMaterialMatrix().getCol(0).x);
+		pt.put("material.ambient.<xmlattr>.g",mat.getMaterialMatrix().getCol(0).y);
+		pt.put("material.ambient.<xmlattr>.b",mat.getMaterialMatrix().getCol(0).z);
+		pt.put("material.ambient.<xmlattr>.a",mat.getMaterialMatrix().getCol(0).w);
+		pt.put("material.diffuse.<xmlattr>.r",mat.getMaterialMatrix().getCol(1).x);
+		pt.put("material.diffuse.<xmlattr>.g",mat.getMaterialMatrix().getCol(1).y);
+		pt.put("material.diffuse.<xmlattr>.b",mat.getMaterialMatrix().getCol(1).z);
+		pt.put("material.diffuse.<xmlattr>.a",mat.getMaterialMatrix().getCol(1).w);
+		pt.put("material.specular.<xmlattr>.r",mat.getMaterialMatrix().getCol(2).x);
+		pt.put("material.specular.<xmlattr>.g",mat.getMaterialMatrix().getCol(2).y);
+		pt.put("material.specular.<xmlattr>.b",mat.getMaterialMatrix().getCol(2).z);
+		pt.put("material.specular.<xmlattr>.a",mat.getMaterialMatrix().getCol(2).w);
+		pt.put("material.shininess.<xmlattr>.v",mat.getMaterialMatrix().getCol(3).x);
+		pt.put("material.emissive.<xmlattr>.r", mat.getMaterialMatrix().getCol(3).y);
+		pt.put("material.emissive.<xmlattr>.g", mat.getMaterialMatrix().getCol(3).z);
+		pt.put("material.emissive.<xmlattr>.b", mat.getMaterialMatrix().getCol(3).w);
+		pt.put("material.doubleSided", mat.isDoubleSided());
 
-		if(baseTexture){
-			saveTextureXML("diffuseTexture1",mat->getTextureOperation(Material::TEXTURE_BASE), baseTexture);
-		}
-		Texture* secondTexture = mat->getTexture(Material::TEXTURE_SECOND);
-		if(secondTexture){
-			saveTextureXML("diffuseTexture2",mat->getTextureOperation(Material::TEXTURE_SECOND), secondTexture);
-		}
-		Texture* bumpTexture = mat->getTexture(Material::TEXTURE_BUMP);
-		if(bumpTexture){
-			saveTextureXML("bumpMap",mat->getTextureOperation(Material::TEXTURE_BUMP), bumpTexture);
-			pt.put("bumpMap.method",mat->getBumpMethod());
-		}
-		Texture* opacityMap = mat->getTexture(Material::TEXTURE_OPACITY);
-		if(opacityMap){
-			saveTextureXML("opacityMap",mat->getTextureOperation(Material::TEXTURE_OPACITY), opacityMap);
-		}
-		Texture* specularMap = mat->getTexture(Material::TEXTURE_SPECULAR);
-		if(specularMap){
-			saveTextureXML("specularMap",mat->getTextureOperation(Material::TEXTURE_SPECULAR), specularMap);
+		Texture* texture = NULL;
+
+		if((texture = mat.getTexture(Material::TEXTURE_UNIT0)) != NULL){
+			saveTextureXML("diffuseTexture1",getTextureOperationName(mat.getTextureOperation(Material::TEXTURE_UNIT0)), texture);
 		}
 
-		ShaderProgram* s = mat->getShaderProgram();
+		if((texture = mat.getTexture(Material::TEXTURE_UNIT0 + 1)) != NULL){
+			saveTextureXML("diffuseTexture2",getTextureOperationName(mat.getTextureOperation(Material::TEXTURE_UNIT0 + 1)), texture);
+		}
+		
+		if((texture = mat.getTexture(Material::TEXTURE_NORMALMAP)) != NULL){
+			saveTextureXML("bumpMap", getTextureOperationName(mat.getTextureOperation(Material::TEXTURE_NORMALMAP)), texture);
+			pt.put("bumpMap.method", getBumpMethodName(mat.getBumpMethod()));
+		}
+
+		if((texture = mat.getTexture(Material::TEXTURE_OPACITY)) != NULL){
+			saveTextureXML("opacityMap",getTextureOperationName(mat.getTextureOperation(Material::TEXTURE_OPACITY)), texture);
+		}
+
+		if((texture = mat.getTexture(Material::TEXTURE_SPECULAR)) != NULL){
+			saveTextureXML("specularMap", getTextureOperationName(mat.getTextureOperation(Material::TEXTURE_SPECULAR)), texture);
+		}
+
+		ShaderProgram* s = mat.getShaderProgram();
 		if(s){
 			pt.put("shaderProgram.effect",s->getName());
 		}
-		s = mat->getShaderProgram(DEPTH_STAGE);
+		s = mat.getShaderProgram(DEPTH_STAGE);
 		if(s){
 			pt.put("shaderProgram.depthEffect",s->getName());
 		}
-		pt.put("shadows.castsShadows", mat->getCastsShadows());
-		pt.put("shadows.receiveShadows", mat->getReceivesShadows());
+		pt.put("shadows.castsShadows", mat.getCastsShadows());
+		pt.put("shadows.receiveShadows", mat.getReceivesShadows());
 		boost::property_tree::xml_writer_settings<char> settings('\t', 1);
 		FILE * xml = fopen(fileLocation.c_str(), "w");
 		write_xml(fileLocation, pt,std::locale(),settings);
 		fclose(xml);
 	}
 
-	void saveTextureXML(const std::string& textureNode, U32 operation, Texture* texture){
-			pt.put(textureNode+".file",texture->getResourceLocation());
-            pt.put(textureNode+".flip",texture->isFlipped());
-			pt.put(textureNode+".MapU", texture->getTextureWrap(0));
-			pt.put(textureNode+".MapV", texture->getTextureWrap(1));
-			pt.put(textureNode+".MapW", texture->getTextureWrap(2));
-			pt.put(textureNode+".minFilter",texture->getFilter(0));
-			pt.put(textureNode+".magFilter",texture->getFilter(1));
-			pt.put(textureNode+".anisotrophy",texture->getAnisotrophy());
-			pt.put(textureNode+".operation",operation);
-	}
-
-	Texture*  loadTextureXML(const std::string& textureNode, const std::string& textureName){
-		std::string img_name = textureName.substr( textureName.find_last_of( '/' ) + 1 );
-		std::string pathName = textureName.substr( 0, textureName.rfind("/")+1 );
-
-		ResourceDescriptor texture(img_name);
-		texture.setResourceLocation(pathName + img_name);
-		texture.setFlag(pt.get(textureNode+".flip",true));
-		Texture* tex = CreateResource<Texture2D>(texture);
-		I32 wrapU = pt.get(textureNode+".MapU",0);;
-		I32 wrapV = pt.get(textureNode+".MapV",0);
-		I32 wrapW = pt.get(textureNode+".MapW",0);
-		tex->setTextureWrap(wrapU,wrapV,wrapW);
-
-		U32 minFilterValue = pt.get(textureNode+".minFilter",0);
-		U32 magFilterValue = pt.get(textureNode+".magFilter",0);
-		tex->setTextureFilters(minFilterValue,magFilterValue);
-
-		U32 anisotrophy = pt.get(textureNode+".anisotrophy", 0);
-		tex->setAnisotrophyLevel(anisotrophy);
-		return tex;
-	}
 }

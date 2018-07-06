@@ -1,7 +1,7 @@
 -- Vertex
 
-in vec3  inVertexData;
-in vec3 cameraPosition;
+in vec3 inVertexData;
+in vec3 dvd_cameraPosition;
 
 uniform mat4 dvd_ModelViewProjectionMatrix;
 
@@ -9,7 +9,7 @@ out vec3 _eyePos;
 
 void main( void ){
 
-   _eyePos = cameraPosition;
+   _eyePos = dvd_cameraPosition;
    gl_Position = dvd_ModelViewProjectionMatrix * vec4(inVertexData,1.0);
    gl_FrontColor = vec4(1.0, 1.0, 1.0, 1.0);
 } 

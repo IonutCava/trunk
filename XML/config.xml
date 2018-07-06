@@ -20,11 +20,14 @@
 	<resolutionHeight>600</resolutionHeight>
 	<windowedMode>true</windowedMode>
 	<allowWindowResize>false</allowWindowResize>
-	<enableVSync>false</enableVSync>
+	<enableVSync>true</enableVSync>
+	<!-- use custom refresh rate: true / false -->
+	<overrideRefreshRate>false</overrideRefreshRate>
+	<!-- if "overrideRefreshRate" == true, set refresh rate to this value -->
+	<targetRefreshRate>75</targetRefreshRate>
 	<zNear>0.125</zNear>
 	<zFar>1000.0</zFar>
 	<verticalFOV>60</verticalFOV>
-	<GLminorVer>2</GLminorVer>
 	<useGLCompatProfile>true</useGLCompatProfile>
 </runtime>	
 
@@ -39,10 +42,6 @@
 </GUI>
 
 <rendering>
-	<!-- use custom refresh rate: true / false -->
-	<overrideRefreshRate>false</overrideRefreshRate>
-	<!-- if "overrideRefreshRate" == true, set refresh rate to this value -->
-	<targetRefreshRate>75</targetRefreshRate>
 	<!-- detail level: low = 0, medium = 1, high = 2 -->
 	<detailLevel>2</detailLevel>
 	<!-- AA method: 1 = MSAA, 2 = FXAA, 3 = SMAA, 4 = MSAA+FXAA -->

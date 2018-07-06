@@ -42,6 +42,8 @@ public:
 
 	void addCameraChangeListener(boost::function0<void> f) {_listeners.push_back(f);}
 
+	void tick(U32 elapsedTime);
+
 private:
 	Camera* _camera;
 	CameraPool _cameraPool;

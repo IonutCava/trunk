@@ -37,7 +37,7 @@ class AIEntity : public GUIDWrapper {
 
 public:
 	AIEntity(const std::string& name);
-
+	~AIEntity();
 	void processInput();
 	void processData();
 	void update();
@@ -73,9 +73,10 @@ private:
 	mutable SharedLock    _updateMutex;
 	mutable SharedLock    _managerQueryMutex;
 
-	CommunicationInterface*             _comInterface;
-	Unordered_map<SensorType, Sensor*> _sensorList;
-	NPC* _unitRef;
+	typedef Unordered_map<SensorType, Sensor*> sensorMap;
+	CommunicationInterface* _comInterface;
+	sensorMap               _sensorList;
+	NPC*                    _unitRef;
 };
 
 #endif

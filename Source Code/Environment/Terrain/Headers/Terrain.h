@@ -66,7 +66,7 @@ public:
 	void releaseMaterial();
     void prepareDepthMaterial(SceneGraphNode* const sgn);
 	void releaseDepthMaterial();
-	void sceneUpdate(const U32 sceneTime,SceneGraphNode* const sgn);
+	void sceneUpdate(const U32 sceneTime, SceneGraphNode* const sgn, SceneState& sceneState);
 	void drawBoundingBox(SceneGraphNode* const sgn);
 
 	inline void toggleBoundingBoxes(){ _drawBBoxes = !_drawBBoxes; }
@@ -88,7 +88,7 @@ public:
 	inline void toggleVegetation(bool state){ _veg->toggleRendering(state); }
     inline void toggleReflection(bool state){ _drawReflected = state;}
 	bool computeBoundingBox(SceneGraphNode* const sgn);
-	inline bool isInView(const bool distanceCheck,const BoundingBox& boundingBox,const BoundingSphere& sphere) {return true;}
+	inline bool isInView(const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck = true) {return true;}
 
 	void addTexture(TerrainTextureUsage channel, Texture2D* const texture);
 	inline Texture2D* getTexture(TerrainTextureUsage channel) {return _terrainTextures[channel];}

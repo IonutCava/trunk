@@ -33,14 +33,9 @@ bool Terrain::unload(){
 
 /// Visual resources must be loaded in the rendering thread to gain acces to the current graphic context
 void Terrain::loadVisualResources(){
-	_terrainTextures[TERRAIN_TEXTURE_DIFFUSE]->setTextureWrap(TEXTURE_REPEAT,
-															  TEXTURE_REPEAT,
-															  TEXTURE_REPEAT);
 
-	if(_terrainTextures[TERRAIN_TEXTURE_ALPHA] != NULL){
-		_alphaTexturePresent = true;
-	}
-
+	_alphaTexturePresent = (_terrainTextures[TERRAIN_TEXTURE_ALPHA] != NULL);
+	
 	//Generate a render state
 	RenderStateBlockDescriptor terrainDesc;
 	terrainDesc.setCullMode(CULL_MODE_CW);
@@ -76,12 +71,13 @@ bool Terrain::loadThreadedResources(TerrainDescriptor* const terrain){
 	const vectorImpl<vec3<F32> >& normalData	= _groundVBO->getNormal();
 	const vectorImpl<vec3<F32> >& tangentData	= _groundVBO->getTangent();
 
-	U8 d; U32 t, id;
-	bool alpha = false;
-	U8* data = ImageTools::OpenImage(terrain->getVariable("heightmap"),
-									_terrainWidth,
-									_terrainHeight,
-									 d, t, id,alpha);
+	ImageTools::ImageData img;
+	img.create(terrain->getVariable("heightmap"));
+	///data will be destroyed when img gets out of scope
+	const U8* data = img.data();
+
+	_terrainWidth = img.dimensions().width;
+	_terrainHeight = img.dimensions().height;
 
 	D_PRINT_FN(Locale::get("TERRAIN_INFO"),_terrainWidth, _terrainHeight);
 	assert(data);
@@ -114,13 +110,12 @@ bool Terrain::loadThreadedResources(TerrainDescriptor* const terrain){
 
 			U32 idxIMG = COORD(	i<heightmapWidth? i : i-1, j<heightmapHeight? j : j-1,	heightmapWidth);
 
-			F32 h = (F32)(data[idxIMG*d + 0] + data[idxIMG*d + 1] + data[idxIMG*d + 2])/3.0f;
+			F32 h = (F32)(data[idxIMG*img.bpp() + 0] + data[idxIMG*img.bpp() + 1] + data[idxIMG*img.bpp() + 2])/3.0f;
 
 			vertexData.y = (bMin.y + ((F32)h) * (bMax.y - bMin.y)/(255)) * _terrainHeightScaleFactor;
 			_groundVBO->modifyPositionValue(idxHM,vertexData);
 		}
 	}
-	SAFE_DELETE_ARRAY(data);
 
 	U32 offset = 2;
 	vec3<F32> vU, vV, vUV;
@@ -168,18 +163,19 @@ bool Terrain::loadThreadedResources(TerrainDescriptor* const terrain){
 			_groundVBO->modifyTangentValue(idx0,normalData[idx1]);
 		}
 	}
-	///Use primitive restart for each strip
+	//Terrain dimensions
+	vec2<U32> terrainDim(_terrainWidth, _terrainHeight);
+	//Use primitive restart for each strip
 	_groundVBO->setIndicesDelimiter(TERRAIN_STRIP_RESTART_INDEX);
 	_terrainQuadtree->setParentShaderProgram(getMaterial()->getShaderProgram());
     _terrainQuadtree->setParentVBO(_groundVBO);
-	_terrainQuadtree->Build(_boundingBox, vec2<U32>(_terrainWidth, _terrainHeight), terrain->getChunkSize(), _groundVBO);
+	_terrainQuadtree->Build(_boundingBox, terrainDim, terrain->getChunkSize(), _groundVBO);
 
 	ResourceDescriptor infinitePlane("infinitePlane");
 	infinitePlane.setFlag(true); //No default material
 	_plane = CreateResource<Quad3D>(infinitePlane);
-
-	F32 depth = GET_ACTIVE_SCENE()->state()->getWaterDepth();
-	F32 height = GET_ACTIVE_SCENE()->state()->getWaterLevel()- depth;
+	F32 depth = GET_ACTIVE_SCENE()->state().getWaterDepth();
+	F32 height = GET_ACTIVE_SCENE()->state().getWaterLevel()- depth;
 	_farPlane = 2.0f * ParamHandler::getInstance().getParam<F32>("runtime.zFar");
     _plane->setCorner(Quad3D::TOP_LEFT, vec3<F32>(   -_farPlane, height, -_farPlane));
 	_plane->setCorner(Quad3D::TOP_RIGHT, vec3<F32>(   _farPlane, height, -_farPlane));
@@ -208,12 +204,11 @@ void Terrain::postLoad(SceneGraphNode* const sgn){
 	computeBoundingBox(_node);
 	ShaderProgram* s = getMaterial()->getShaderProgram();
 	
-	s->Uniform("alphaTexture", _alphaTexturePresent);
-	s->Uniform("detail_scale", _normalMapUVScale);
+	s->Uniform("detail_scale",  _normalMapUVScale);
     s->Uniform("diffuse_scale", _diffuseUVScale);
 	s->Uniform("bbox_min", _boundingBox.getMin());
-	s->Uniform("bbox_max", _boundingBox.getMax());
-	s->Uniform("water_height", GET_ACTIVE_SCENE()->state()->getWaterLevel());
+	s->Uniform("bbox_diff", _boundingBox.getMax() - _boundingBox.getMin());
+	s->Uniform("_waterHeight", GET_ACTIVE_SCENE()->state().getWaterLevel());
 	s->Uniform("dvd_lightCount", 1);
 	s->UniformTexture("texDiffuseMap", 0);
 	s->UniformTexture("texNormalHeightMap", 1);

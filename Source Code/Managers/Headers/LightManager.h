@@ -55,15 +55,14 @@ public:
 	inline Light*    getLight(U32 id) {return _lights[id];}
 	inline Light*    getLightForCurrentNode(U8 index) {assert(index < _currLightsPerNode.size()); _currLight = _currLightsPerNode[index]; return _currLight;}
 	///shadow mapping
-	void bindDepthMaps(Light* light,U8 lightIndex, U8 offset = 8, bool overrideDominant = false);
-	void unbindDepthMaps(Light* light, U8 offset = 8, bool overrideDominant = false);
+	void bindDepthMaps(Light* light,U8 lightIndex, U8 offset = Config::MAX_TEXTURE_STORAGE, bool overrideDominant = false);
+	void unbindDepthMaps(Light* light, U8 offset = Config::MAX_TEXTURE_STORAGE, bool overrideDominant = false);
 	bool shadowMappingEnabled() const;
 	inline void setDominantLight(Light* const light) {_dominantLight = light;}
 
 	///shadow mapping
 	void previewShadowMaps(Light* light = NULL);
 	inline void togglePreviewShadowMaps() {_previewShadowMaps = !_previewShadowMaps;}
-	vectorImpl<I32 > getDepthMapResolution() const;
 
 	inline       U16                     getLightCountForCurrentNode()          const {return _currLightsPerNode.size();}
 	inline const vectorImpl<mat4<F32> >& getLightProjectionMatricesCache()      const {return _lightProjectionMatricesCache;}
@@ -74,7 +73,7 @@ public:
 	void drawDepthMap(U8 light, U8 index);
 
 protected:
-	///This is inherited from FrameListener and is used to queue upreflection on every frame start
+	///This is inherited from FrameListener and is used to queue up reflection on every frame start
 	bool framePreRenderEnded(const FrameEvent& evt);
 
 private:
@@ -87,13 +86,12 @@ private:
 	Light*    _dominantLight;
 	Light*    _currLight;
 	bool      _shadowMapsEnabled;
-	I32       _shadowArrayOffset;
-	I32       _shadowCubeOffset;
 	vec4<F32> _ambientLight;
 	vectorImpl<I32>         _currLightTypes;
     vectorImpl<I32>         _currLightsEnabled;
 	vectorImpl<I32>         _currShadowLights;
 	vectorImpl<Light* >     _currLightsPerNode;
+	vectorImpl<Light* >     _tempLightsPerNode;
 	vectorImpl<mat4<F32 > > _lightProjectionMatricesCache;
 END_SINGLETON
 

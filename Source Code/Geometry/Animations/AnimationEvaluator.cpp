@@ -23,7 +23,7 @@ AnimEvaluator::AnimEvaluator( const aiAnimation* pAnim) {
 		_channels[a]._numScalingKeys  = pAnim->mChannels[a]->mNumScalingKeys;
 	}
 
-	_lastPositions.resize( pAnim->mNumChannels, vec3<U32>( 0, 0, 0));
+	_lastPositions.resize( pAnim->mNumChannels, vec3<U32>());
 
 	D_PRINT_FN(Locale::get("CREATE_ANIMATION_END"), _name.c_str());
 }

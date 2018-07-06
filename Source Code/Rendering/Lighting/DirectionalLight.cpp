@@ -69,20 +69,18 @@ void DirectionalLight::updateSplitDist(frustum f[3], F32 nearPlane, F32 farPlane
 
 void DirectionalLight::setCameraToLightView(const vec3<F32>& eyePos){
 	_eyePos = eyePos;
-	///Set the virtual light position 500 units above our eye position
-	///This is one example why we have different setup functions for each light type
-	///This isn't valid for omni or spot
-	_lightPos = vec3<F32>(_eyePos.x - 500*_properties._position.x,
-					      _eyePos.y - 500*_properties._position.y,
-					      _eyePos.z - 500*_properties._position.z);
+	//Set the virtual light position DIRECTIONAL_LIGHT_DISTANCE units above our eye position
+	//This is one example why we have different setup functions for each light type
+	//This isn't valid for omni or spot
+	_lightPos = _eyePos - _properties._position.xyz() * Config::DIRECTIONAL_LIGHT_DISTANCE;
 
-	///Tell our rendering API to move the camera
+	//Tell our rendering API to move the camera
 	GFX_DEVICE.lookAt(_lightPos,    //the light's virtual position
 					   _eyePos);    //the light's target
 }
 
 #pragma message("ToDo: Near and far planes. Should optimize later! -Ionut")
-void DirectionalLight::renderFromLightView(const U8 depthPass,const F32 sceneHalfExtent){
+void DirectionalLight::renderFromLightView(const U8 depthPass, const F32 sceneHalfExtent){
 	_zPlanes = Frustum::getInstance().getZPlanes();
 	//Set the current projection depending on the current depth pass
 	GFX_DEVICE.setOrthoProjection(vec4<F32>(-sceneHalfExtent,

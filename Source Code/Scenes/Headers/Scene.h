@@ -78,10 +78,11 @@ public:
 	inline vectorImpl<FileData>&           getModelDataArray()      {return _modelDataArray;}
 	inline vectorImpl<FileData>&           getVegetationDataArray() {return _vegetationDataArray;}
 	inline const vectorImpl<Task_ptr>&     getTasks()               {return _tasks;}
+	inline SceneState&                     state()                  {return _sceneState;}
+	inline SceneRenderState&               renderState()            {return _sceneState.getRenderState();}
 	inline SceneGraph*					   getSceneGraph()	        {return _sceneGraph;}
-	inline SceneState*                     state()                  {return _sceneState;}
-	inline SceneRenderState*               renderState()            {return _sceneRenderState;}
-           void removeTasks();
+	
+	       void clearTasks();
            void removeTask(Task_ptr taskItem);
            void removeTask(U32 guid);
 	       void addTask(Task_ptr taskItem);
@@ -90,7 +91,9 @@ public:
 	       void addPatch(vectorImpl<FileData>& data);
 	       void addLight(Light* const lightItem);
 
-	inline void cacheResolution(const vec2<U16>& newResolution) {_sceneRenderState->_cachedResolution = newResolution;}
+	inline void cacheResolution(const vec2<U16>& newResolution) {
+		_sceneState.getRenderState()._cachedResolution = newResolution;
+	}
 
 	///Object picking
 	void findSelection(const vec3<F32>& camOrigin, U32 x, U32 y);
@@ -100,14 +103,17 @@ public:
 	void renderCallback(boost::function0<void> renderCallback) {_renderCallback = renderCallback;}
 	boost::function0<void> renderCallback() {return _renderCallback;}
 
+	///Update all cameras
+	void updateCameras();
     ///Override this if you need a custom physics implementation (idle,update,process,etc)
     virtual PhysicsSceneInterface* createPhysicsImplementation();
 
 protected:
 	///Global info
-	GFXDevice&    _GFX;
-	ParamHandler& _paramHandler;
-	SceneGraph*   _sceneGraph;
+	GFXDevice&     _GFX;
+	ParamHandler&  _paramHandler;
+	SceneGraph*    _sceneGraph;
+	CameraManager* _cameraMgr;
 
 	PhysicsSceneInterface*         _physicsInterface;
 	///Datablocks for models,vegetation,terrains,tasks etc
@@ -134,10 +140,8 @@ protected:
 
 private:
 	vectorImpl<Task_ptr> _tasks;
-	///saves all the rendering information for the scene (camera position, light info, draw states)
-	SceneRenderState* _sceneRenderState;
 	///Contains all game related info for the scene (wind speed, visibility ranges, etc)
-	SceneState*      _sceneState;
+	SceneState       _sceneState;
 	vectorImpl<SceneGraphNode* >   _skiesSGN;///<Add multiple skies that you can toggle through
 
 protected:
@@ -150,7 +154,7 @@ protected:
 	virtual bool loadTasks(bool continueOnErrors)      {return true;}
     virtual bool loadPhysics(bool continueOnErrors);
 	virtual void loadXMLAssets();
-	virtual bool load(const std::string& name);
+	virtual bool load(const std::string& name, CameraManager* const cameraMgr);
 			bool loadModel(const FileData& data);
 			bool loadGeometry(const FileData& data);
 	virtual bool unload();
@@ -159,9 +163,7 @@ protected:
 	///Description in SceneManager
 	virtual bool deinitializeAI(bool continueOnErrors);
 	///Check if Scene::load() was called
-	bool checkLoadFlag() {return _loadComplete;}
-	///End all tasks
-	void clearTasks();
+	bool checkLoadFlag() const {return _loadComplete;}
 	///Unload scenegraph
 	void clearObjects();
 	///Destroy lights
@@ -170,8 +172,29 @@ protected:
     void clearPhysics();
 	/**End loading and unloading logic*/
 
-	Light* addDefaultLight();
-	Sky*   addDefaultSky();
+	Light*  addDefaultLight();
+	Sky*    addDefaultSky();
+	Camera* addDefaultCamera();//Default camera
+	///simple function to load the scene elements. 
+	inline bool SCENE_LOAD(const std::string& name, CameraManager* const cameraMgr, const bool contOnErrorRes, const bool contOnErrorTasks){
+		if(!Scene::load(name,cameraMgr)) {
+			ERROR_FN(Locale::get("ERROR_SCENE_LOAD"), "scene load function");
+			return false;
+		}
+		if(!loadResources(contOnErrorRes)){
+			ERROR_FN(Locale::get("ERROR_SCENE_LOAD"), "scene load resources");
+			if(!contOnErrorRes) return false;
+		}
+		if(!loadTasks(contOnErrorTasks)){
+			ERROR_FN(Locale::get("ERROR_SCENE_LOAD"), "scene load tasks");
+			if(!contOnErrorTasks) return false;
+		}
+		if(!loadPhysics(contOnErrorTasks)){
+			ERROR_FN(Locale::get("ERROR_SCENE_LOAD"), "scene load physics");
+			if(!contOnErrorTasks) return false;
+		}
+		return true;
+	}
 
 public: //Input
 	virtual void onKeyDown(const OIS::KeyEvent& key);
@@ -185,21 +208,17 @@ public: //Input
 	virtual void onMouseMove(const OIS::MouseEvent& key){}
 	virtual void onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID button);
 	virtual void onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button);
+
+protected: //Input
+	vec2<F32> _previousMousePos;
+	bool _mousePressed[8];
 };
 
 ///usage: REGISTER_SCENE(A,B) where: - A is the scene's class name
 ///									  -B is the name used to refer to that scene in the XML files
 ///Call this function after each scene declaration
-#define REGISTER_SCENE_W_NAME(scene, sceneName) bool scene ## _registered = SceneManager::getInstance().registerScene<scene>(#sceneName);
+#define REGISTER_SCENE_W_NAME(scene, sceneName) bool scene ## _registered = SceneManager::getOrCreateInstance().registerScene<scene>(#sceneName);
 ///same as REGISTER_SCENE(A,B) but in this case the scene's name in XML must be the same as the class name
-#define REGISTER_SCENE(scene) bool scene ## _registered = SceneManager::getInstance().registerScene<scene>(#scene);
-///simple macro to load the scene elements. Use "loadState' as loading flag
-#define SCENE_LOAD(Name, ContOnErrorRes, ContOnErrorTasks) bool loadState = Scene::load(Name); \
-											                if(loadState) loadState = loadResources(ContOnErrorRes); \
-															if(loadState) loadState = loadTasks(ContOnErrorTasks); \
-                                                            if(loadState) loadState = loadPhysics(ContOnErrorTasks); \
-															if(!loadState) return false;
-
-///Add all of the hardware headers in one:
+#define REGISTER_SCENE(scene) bool scene ## _registered = SceneManager::getOrCreateInstance().registerScene<scene>(#scene);
 
 #endif

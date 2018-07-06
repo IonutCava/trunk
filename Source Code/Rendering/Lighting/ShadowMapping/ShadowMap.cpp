@@ -30,7 +30,7 @@ ShadowMapInfo::~ShadowMapInfo(){
 	SAFE_DELETE(_shadowMap);
 }
 
-ShadowMap* ShadowMapInfo::getOrCreateShadowMap(SceneRenderState* sceneRenderState){
+ShadowMap* ShadowMapInfo::getOrCreateShadowMap(const SceneRenderState& renderState){
 	if(_shadowMap) return _shadowMap;
 	if(!_light->castsShadows()) return NULL;
 	switch(_light->getLightType()){
@@ -46,24 +46,29 @@ ShadowMap* ShadowMapInfo::getOrCreateShadowMap(SceneRenderState* sceneRenderStat
 	default:
 		break;
 	};
-	_shadowMap->resolution(_resolution,sceneRenderState);
+	_shadowMap->resolution(_resolution, renderState);
 	return _shadowMap;
 }
 
 bool ShadowMap::Bind(U8 offset){
-	if(_isBound) return false;
+	if(_isBound) 
+		return false;
+
 	_isBound = true;
-	if(_depthMap){
+
+	if(_depthMap)
 		_depthMap->Bind(offset);
-	}
+	
 	return true;
 }
 
 bool ShadowMap::Unbind(U8 offset){
-	if(!_isBound) return false;
-	if(_depthMap){
+	if(!_isBound)
+		return false;
+
+	if(_depthMap)
 		_depthMap->Unbind(offset);
-	}
+	
 	_isBound = false;
 	return true;
 }

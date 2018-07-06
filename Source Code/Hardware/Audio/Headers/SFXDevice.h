@@ -46,7 +46,7 @@ public:
 	inline void setSoundVolume(I8 value){_api.setSoundVolume(value);}
 
 private:
-	SFXDevice(): _api(SDL_API::getInstance()) //Defaulting to SDL if no api has been defined
+	SFXDevice(): _api(SDL_API::getOrCreateInstance()) //Defaulting to SDL if no api has been defined
 	{
 	}
 

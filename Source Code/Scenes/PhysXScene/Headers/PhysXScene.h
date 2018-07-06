@@ -27,12 +27,13 @@
 
 class PhysXScene : public Scene {
 public:
-	PhysXScene() : Scene(),
-				  _mousePressed(false){}
+	PhysXScene() : Scene()
+	{
+	}
 
 	void preRender();
 
-	bool load(const std::string& name);
+	bool load(const std::string& name, CameraManager* const cameraMgr);
 	bool loadResources(bool continueOnErrors);
 	bool unload();
 	void processInput();
@@ -40,7 +41,6 @@ public:
 	void onKeyDown(const OIS::KeyEvent& key);
 	void onKeyUp(const OIS::KeyEvent& key);
 	void onMouseMove(const OIS::MouseEvent& key);
-	void onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID button);
 	void onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button);
 
 private:
@@ -49,8 +49,6 @@ private:
 
 private:
 	vec3<F32> _sunvector;
-	bool      _mousePressed;
-	vec2<F32> _prevMouse;
     boost::atomic<bool> _addingActors;
 };
 

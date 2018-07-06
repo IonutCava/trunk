@@ -28,7 +28,7 @@
 	<model>models/dwarf.x</model>
 	<scale x="0.03" y="0.03" z="0.03" />
 	<position x="3.5" y="0" z="7.5" />
-	<orientation x="-180" y="0" z="0" />
+	<orientation x="0" y="180" z="0" />
 	<version>1.0</version>
 </Player1>
 
@@ -36,7 +36,7 @@
 	<model>models/dwarf.x</model>
 	<scale x="0.03" y="0.03" z="0.03" />
 	<position x="-3.5" y="0" z="7.5" />
-	<orientation x="-180" y="0" z="0" />
+	<orientation x="0" y="-180" z="0" />
 	<version>1.0</version>
 </Player2>
 

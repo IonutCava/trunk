@@ -15,6 +15,7 @@ glShaderProgram::glShaderProgram(const bool optimise) : ShaderProgram(optimise),
 														_validationQueued(false),
 														_shaderProgramIdTemp(0)
 {
+	_shaderProgramId = Divide::GL::_invalidObjectID;
 	//3 buffers: Matrices, Materials and Lights
 	_UBOLocation.resize(UBO_PLACEHOLDER,-1);
 	_uniformBufferObjects.resize(UBO_PLACEHOLDER, NULL);
@@ -26,7 +27,7 @@ glShaderProgram::glShaderProgram(const bool optimise) : ShaderProgram(optimise),
 
 glShaderProgram::~glShaderProgram()
 {
-	if(_shaderProgramId > 0 && _shaderProgramId != _invalidShaderProgramId){
+	if(_shaderProgramId > 0 && _shaderProgramId != Divide::GL::_invalidObjectID){
 		for_each(ShaderIdMap::value_type& it, _shaderIdMap){
 			it.second->removeParentProgram(this);
 			GLCheck(glDetachShader(_shaderProgramId, it.second->getShaderId()));
@@ -48,27 +49,36 @@ U8 glShaderProgram::tick(const U32 deltaTime){
 	return ShaderProgram::tick(deltaTime);
 }
 
+
+std::string glShaderProgram::getLog() const {
+
+	std::string validationBuffer("[OK]");
+	GLint length = 0;
+	
+	GLCheck(glGetProgramiv(_threadedLoadComplete ? _shaderProgramId : _shaderProgramIdTemp, GL_INFO_LOG_LENGTH, &length));
+
+	if(length > 1){
+		validationBuffer = "\n -- ";
+		std::vector<char> shaderProgramLog(length);
+		GLCheck(glGetProgramInfoLog(_threadedLoadComplete ? _shaderProgramId : _shaderProgramIdTemp, length, NULL, &shaderProgramLog[0]));
+		validationBuffer.append(&shaderProgramLog[0]);
+	}
+
+	return validationBuffer;
+}
+
 void glShaderProgram::validateInternal()  {
-	std::string validationBuffer; 
+	
 
 	GLCheck(glValidateProgram(_shaderProgramId));
 
-	GLint length = 0, status = 0;
+	GLint status = 0;
 	GLCheck(glGetProgramiv(_shaderProgramId, GL_VALIDATE_STATUS, &status));
-	GLCheck(glGetProgramiv(_shaderProgramId, GL_INFO_LOG_LENGTH, &length));
-	if(length > 0){
-		validationBuffer = "\n -- ";
-		std::vector<char> shaderProgramLog(length);
-		GLCheck(glGetProgramInfoLog(_shaderProgramId, length, NULL, &shaderProgramLog[0]));
-		shaderProgramLog.push_back('\n');
-		validationBuffer.append(&shaderProgramLog[0]);
-	
-	}
-	
+
 	if (status == GL_FALSE){
-		ERROR_FN(Locale::get("GLSL_VALIDATING_PROGRAM"), getName().c_str(), validationBuffer.c_str());
+		ERROR_FN(Locale::get("GLSL_VALIDATING_PROGRAM"), getName().c_str(), getLog().c_str());
 	}else{
-		D_PRINT_FN(Locale::get("GLSL_VALIDATING_PROGRAM"), getName().c_str(), validationBuffer.c_str());
+		D_PRINT_FN(Locale::get("GLSL_VALIDATING_PROGRAM"), getName().c_str(), getLog().c_str());
 	}
 
 	_validationQueued = false;
@@ -140,8 +150,16 @@ void glShaderProgram::initUBO(){
 }
 
 void glShaderProgram::link(){
+	GLint linkStatus = 0;
 	D_PRINT_FN(Locale::get("GLSL_LINK_PROGRAM"),getName().c_str(), _shaderProgramIdTemp);
 	GLCheck(glLinkProgram(_shaderProgramIdTemp));
+	GLCheck(glGetProgramiv(_shaderProgramIdTemp, GL_LINK_STATUS, &linkStatus));
+
+	if(linkStatus == GL_FALSE){
+		ERROR_FN(Locale::get("GLSL_LINK_PROGRAM_LOG"), getName().c_str(), getLog().c_str());
+	}else{
+		D_PRINT_FN(Locale::get("GLSL_LINK_PROGRAM_LOG"), getName().c_str(), getLog().c_str());
+	}
 	_compiled = true;
 }
 
@@ -174,13 +192,13 @@ bool glShaderProgram::generateHWResource(const std::string& name){
     //Use the specified shader path
 	glswSetPath(std::string(getResourceLocation()+"GLSL/").c_str(), ".glsl");
 	//Mirror initial shader defines to match line count
-	GLint lineCountOffset = 9;
-	if(GFX_DEVICE.getGPUVendor() == GPU_VENDOR_NVIDIA || GFX_DEVICE.getGPUVendor() == GPU_VENDOR_AMD){
-		lineCountOffset++;
-        if(GFX_DEVICE.getGPUVendor() == GPU_VENDOR_NVIDIA){ //nVidia specific
-            lineCountOffset += 5;
-        }else{//AMD specific
-        }
+	GLint lineCountOffset = 11;
+	GLint lineCountOffsetFrag = 2; //< for the EXT_texture_array define
+	GLint lineCountOffsetVert = 0;
+    if(GFX_DEVICE.getGPUVendor() == GPU_VENDOR_NVIDIA){ //nVidia specific
+        lineCountOffset += 5;
+    }else if(GFX_DEVICE.getGPUVendor() == GPU_VENDOR_AMD){//AMD specific
+		lineCountOffset += 1;
 	}
 
     std::string shaderSourceHeader;
@@ -192,6 +210,22 @@ bool glShaderProgram::generateHWResource(const std::string& name){
         lineCountOffset++;
 	}
 
+	std::string shaderSourceVertUniforms;
+	//get all of the preprocessor defines
+	for(U8 i = 0; i < _vertUniforms.size(); i++){
+		shaderSourceVertUniforms.append("uniform ");
+		shaderSourceVertUniforms.append(_vertUniforms[i]);
+        shaderSourceVertUniforms.append(";\n");
+        lineCountOffsetVert++;
+	}
+	std::string shaderSourceFragUniforms;
+	//get all of the preprocessor defines
+	for(U8 i = 0; i < _vertUniforms.size(); i++){
+		shaderSourceFragUniforms.append("uniform ");
+		shaderSourceFragUniforms.append(_fragUniforms[i]);
+        shaderSourceFragUniforms.append(";\n");
+        lineCountOffsetFrag++;
+	}
     lineCountOffset += 1;//the last new line
 
 	//Split the shader name to get the effect file name and the effect properties
@@ -235,13 +269,14 @@ bool glShaderProgram::generateHWResource(const std::string& name){
 	    //If it doesn't
 	    if(!vertexShader){
 		    //Use glsw to read the vertex part of the effect
-		    const char* vs = glswGetShader(vertexShaderName.c_str(),lineCountOffset,_refreshVert);
+		    const char* vs = glswGetShader(vertexShaderName.c_str(),lineCountOffset + lineCountOffsetVert,_refreshVert);
 			if(!vs) ERROR_FN("[GLSL]  %s",glswGetError());
 			assert(vs != NULL);
 
  		    //If reading was succesfull
 		    std::string vsString(vs);
-            Util::replaceStringInPlace(vsString, "__CUSTOM_DEFINES__", shaderSourceHeader);
+            Util::replaceStringInPlace(vsString, "//__CUSTOM_DEFINES__", shaderSourceHeader);
+			//Util::replaceStringInPlace(vsString, "//__CUSTOM_VERTEX_UNIFORMS__",shaderSourceVertUniforms);
     		//Load our shader and save it in the manager in case a new Shader Program needs it
 	    	vertexShader = ShaderManager::getInstance().loadShader(vertexShaderName,vsString,VERTEX_SHADER,_refreshVert);
 	    }
@@ -267,13 +302,14 @@ bool glShaderProgram::generateHWResource(const std::string& name){
 
 	    if(!fragmentShader){
 			//Get our shader source
-		    const char* fs = glswGetShader(fragmentShaderName.c_str(),lineCountOffset,_refreshFrag);
+		    const char* fs = glswGetShader(fragmentShaderName.c_str(),lineCountOffset + lineCountOffsetFrag, _refreshFrag);
 			if(!fs) ERROR_FN("[GLSL] %s",glswGetError());
 			assert(fs != NULL);
 
             std::string fsString(fs);
 			//Insert our custom defines in the special define slot
-            Util::replaceStringInPlace(fsString, "__CUSTOM_DEFINES__", shaderSourceHeader);
+            Util::replaceStringInPlace(fsString, "//__CUSTOM_DEFINES__", shaderSourceHeader);
+			Util::replaceStringInPlace(fsString, "//__CUSTOM_FRAGMENT_UNIFORMS__",shaderSourceFragUniforms);
 			//Load and compile the shader
 		    fragmentShader = ShaderManager::getInstance().loadShader(fragmentShaderName,fsString,FRAGMENT_SHADER,_refreshFrag);
 	    }
@@ -299,7 +335,7 @@ bool glShaderProgram::generateHWResource(const std::string& name){
 		    const char* gs = glswGetShader(geometryShaderName.c_str(),lineCountOffset,_refreshGeom);
 		    if(gs != NULL){
                 std::string gsString(gs);
-                Util::replaceStringInPlace(gsString, "__CUSTOM_DEFINES__", shaderSourceHeader);
+                Util::replaceStringInPlace(gsString, "//__CUSTOM_DEFINES__", shaderSourceHeader);
 			    geometryShader = ShaderManager::getInstance().loadShader(geometryShaderName,gsString,GEOMETRY_SHADER,_refreshGeom);
 		    }else{
 			    //Use debug output for geometry and tessellation shaders as they are not vital for the application as of yet
@@ -329,7 +365,7 @@ bool glShaderProgram::generateHWResource(const std::string& name){
 		    const char* ts = glswGetShader(tessellationShaderName.c_str(),lineCountOffset,_refreshTess);
 		    if(ts != NULL){
                 std::string tsString(ts);
-                Util::replaceStringInPlace(tsString, "__CUSTOM_DEFINES__", shaderSourceHeader);
+                Util::replaceStringInPlace(tsString, "//__CUSTOM_DEFINES__", shaderSourceHeader);
 			    tessellationShader = ShaderManager::getInstance().loadShader(tessellationShaderName,tsString,TESSELATION_SHADER,_refreshTess);
 		    }else{
 			    //Use debug output for geometry and tessellation shaders as they are not vital for the application as of yet
@@ -377,7 +413,7 @@ GLint glShaderProgram::cachedLoc(const std::string& name, const bool uniform){
 void glShaderProgram::bind() {
 	//If we did not create the hardware resource, do not try and bind it, as it is invalid
 	while(!isHWInitComplete()){}
-	assert(_shaderProgramId != _invalidShaderProgramId);
+	assert(_shaderProgramId != Divide::GL::_invalidObjectID);
 	
 	GL_API::setActiveProgram(this); 
 	
@@ -518,6 +554,33 @@ void glShaderProgram::Uniform(const std::string& ext, const vectorImpl<GLfloat >
 	if(!_bound) GLCheck(glProgramUniform1fvEXT(_shaderProgramId, location, values.size(),&values.front()));
 	else        GLCheck(glUniform1fv(location,values.size(),&values.front()));
     
+}
+
+void glShaderProgram::Uniform(const std::string& ext, const vectorImpl<vec2<GLfloat> >& values) {
+	if(values.empty()) return;
+	GLint location = cachedLoc(ext);
+	if(location == -1) return;
+
+	if(!_bound) GLCheck(glProgramUniform2fvEXT(_shaderProgramId, location, values.size(), values.front()));
+	else        GLCheck(glUniform2fv(location, values.size(), values.front()));
+}
+
+void glShaderProgram::Uniform(const std::string& ext, const vectorImpl<vec3<GLfloat> >& values) {
+	if(values.empty()) return;
+	GLint location = cachedLoc(ext);
+	if(location == -1) return;
+
+	if(!_bound) GLCheck(glProgramUniform3fvEXT(_shaderProgramId, location, values.size(), values.front()));
+	else        GLCheck(glUniform3fv(location, values.size(), values.front()));
+}
+
+void glShaderProgram::Uniform(const std::string& ext, const vectorImpl<vec4<GLfloat> >& values) {
+	if(values.empty()) return;
+	GLint location = cachedLoc(ext);
+	if(location == -1) return;
+
+	if(!_bound) GLCheck(glProgramUniform4fvEXT(_shaderProgramId, location, values.size(), values.front()));
+	else        GLCheck(glUniform4fv(location, values.size(), values.front()));
 }
 
 void glShaderProgram::Uniform(const std::string& ext, const vectorImpl<mat4<GLfloat> >& values, bool rowMajor){

@@ -53,13 +53,14 @@ public:
     void releaseDepthMaterial(){}
 	bool getDrawState(const RenderStage& currentStage)  const;
 
-	bool isInView(const bool distanceCheck,const BoundingBox& boundingBox,const BoundingSphere& sphere) {return true;}
+	bool isInView(const BoundingBox& boundingBox,const BoundingSphere& sphere, const bool distanceCheck = true) {return true;}
 
-	void setParams(F32 shininess, F32 noiseTile, F32 noiseFactor, F32 transparency);
+	void setParams(F32 shininess, const vec2<F32>& noiseTile, const vec2<F32>& noiseFactor, F32 transparency);
 	inline Quad3D*     getQuad()    {return _plane;}
 
 	/// Reflector overwrite
 	void updateReflection();
+	void updatePlaneEquation();
 	/// Used for many things, such as culling switches, and underwater effects
 	inline bool isPointUnderWater(const vec3<F32>& pos) { return (pos.y < _waterLevel); }
 
@@ -75,13 +76,22 @@ private:
 	bool computeBoundingBox(SceneGraphNode* const sgn);
 
 private:
+	/// number of lights in the scene
 	U8                 _lightCount;
+	/// the hw clip-plane index for the water
+	I32                _clippingPlaneID;
 	/// cached far plane value
 	F32				   _farPlane;
 	/// cached water level
 	F32                _waterLevel;
+	/// cached water depth
+	F32                _waterDepth;
 	/// Last known camera position
 	vec3<F32>          _eyePos;
+	/// Camera's position delta from the previous frame only on the XY plane
+	vec2<F32>          _eyeDiff;
+	/// The plane's transformed normal
+	vec3<F32>          _absNormal;
 	/// the water's "geometry"
 	Quad3D*			   _plane;
 	Texture2D*		   _texture;

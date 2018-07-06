@@ -10,186 +10,252 @@
 
 namespace Divide {
 	namespace GL {
-/*-----------Context Management----*/
-	bool _applicationClosing = false;
-	bool _contextAvailable = false;
-	bool _useDebugOutputCallback = false;
-	GLFWwindow* _mainWindow     = NULL;
-	GLFWwindow* _loaderWindow   = NULL;
-/*----------- GLU overrides ------*/
-    ///Matrix management
-	MATRIX_MODE  _currentMatrixMode;
-	matrixStack  _viewMatrix;
-	matrixStack  _projectionMatrix;
-    matrixStack  _textureMatrix;
-    glm::mat4    _MVPCachedMatrix;
-    glm::mat4    _MVCachedMatrix;
-	glm::mat4    _identityMatrix;
-    glm::mat4    _biasMatrix;
-    glm::mat4    _modelMatrix;
-	vector3Stack _currentEyeVector;
-	vector3Stack _currentLookAtVector;
+		///Used for anaglyph rendering
+		struct CameraFrustum {
+			GLdouble leftfrustum;
+			GLdouble rightfrustum;
+			GLdouble bottomfrustum;
+			GLdouble topfrustum;
+			GLfloat modeltranslation;
+		} _leftCam, _rightCam;
 
-    bool _MDirty = true;
-	bool _VDirty = true;
-	bool _PDirty = true;
-    bool _isUniformScaled = true;
-	bool _resetModelMatrixFlag = true;
+		/*-----------Object Management----*/
+		GLuint _invalidObjectID = std::numeric_limits<U32>::max();
 
-	void _matrixMode(const MATRIX_MODE& mode) {
-		_currentMatrixMode = mode;
-	}
+		/*-----------Context Management----*/
+		bool _applicationClosing = false;
+		bool _contextAvailable = false;
+		bool _useDebugOutputCallback = false;
+		GLFWwindow* _mainWindow     = NULL;
+		GLFWwindow* _loaderWindow   = NULL;
 
-    void _initStacks(){
-		_currentEyeVector.push(glm::vec3());
-		_currentLookAtVector.push(glm::vec3());
-        _projectionMatrix.push(_identityMatrix);
-        _viewMatrix.push(_identityMatrix);
-        _textureMatrix.push(_identityMatrix);
-        _biasMatrix = glm::mat4(0.5, 0.0, 0.0, 0.0,
-		                        0.0, 0.5, 0.0, 0.0,
-		                        0.0, 0.0, 0.5, 0.0,
-		                        0.5, 0.5, 0.5, 1.0);
-    }
+		/*----------- GLU overrides ------*/
+		///Matrix management
+		MATRIX_MODE   _currentMatrixMode;
+		matrixStack   _viewMatrix;
+		matrixStack   _projectionMatrix;
+		matrixStack   _textureMatrix;
+		viewportStack _viewport;
+		glm::mat4     _MVPCachedMatrix;
+		glm::mat4     _MVCachedMatrix;
+		glm::mat4     _identityMatrix;
+		glm::mat4     _biasMatrix;
+		glm::mat4     _modelMatrix;
+		vector3Stack  _currentViewDirection;
 
-    void _LookAt(const glm::vec3& eye,const glm::vec3& lookAt,const glm::vec3& up, bool invertx, bool inverty){
-       _matrixMode(VIEW_MATRIX);
-	   _currentEyeVector.top() = eye;
-	   _currentLookAtVector.top() = lookAt;
-       _viewMatrix.top() = glm::lookAt(_currentEyeVector.top(),_currentLookAtVector.top(),up);
-       if(invertx) glm::scale(_viewMatrix.top(),glm::vec3(-1,1,1));
-	   GL_API::getInstance().updateViewMatrix();
-	   _VDirty = true;
-    }
+		bool _MDirty = true;
+		bool _VDirty = true;
+		bool _PDirty = true;
+		bool _isUniformScaled = true;
+		bool _resetModelMatrixFlag = true;
+		GLfloat  _anaglyphIOD = -0.01f;
 
-    void _ortho(GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat zNear, GLfloat zFar){
-        _matrixMode(PROJECTION_MATRIX);
-        _projectionMatrix.top() = glm::ortho(left,right,bottom,top,zNear,zFar);
-		GL_API::getInstance().updateProjectionMatrix();
-        _PDirty = true;
-    }
+		void _initStacks(){
+			_currentViewDirection.push(vec3<F32>());
+			_projectionMatrix.push(_identityMatrix);
+			_viewMatrix.push(_identityMatrix);
+			_textureMatrix.push(_identityMatrix);
+			_viewport.push(vec4<U32>(0,0,0,0));
+			_biasMatrix = glm::mat4(0.5, 0.0, 0.0, 0.0,
+									0.0, 0.5, 0.0, 0.0,
+									0.0, 0.0, 0.5, 0.0,
+									0.5, 0.5, 0.5, 1.0);
+		}
 
-    void _perspective(GLfloat fovy, GLfloat aspect, GLfloat zNear, GLfloat zFar){
-        _matrixMode(PROJECTION_MATRIX);
-        _projectionMatrix.top() = glm::perspective(fovy,aspect,zNear,zFar);
-		GL_API::getInstance().updateProjectionMatrix();
-        _PDirty = true;
-    }
+		void _LookAt(const GLfloat* viewMatrix, const vec3<F32>& viewDirection){
+		   _matrixMode(VIEW_MATRIX);
+		   _currentViewDirection.top() = viewDirection;
+		   _viewMatrix.top() = glm::make_mat4(viewMatrix);
+		   GL_API::getInstance().updateViewMatrix();
+		   _VDirty = true;
+		}
 
-	void _resetModelMatrix(bool force){
-		_resetModelMatrixFlag = !force;
+		void _ortho(GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat zNear, GLfloat zFar){
+			_matrixMode(PROJECTION_MATRIX);
+			_projectionMatrix.top() = glm::ortho(left,right,bottom,top,zNear,zFar);
+			GL_API::getInstance().updateProjectionMatrix();
+			_PDirty = true;
+		}
 
-		if(force){
+		void _perspective(GLfloat fovy, GLfloat aspect, GLfloat zNear, GLfloat zFar){
+			_matrixMode(PROJECTION_MATRIX);
+			_projectionMatrix.top() = glm::perspective(fovy,aspect,zNear,zFar);
+			GL_API::getInstance().updateProjectionMatrix();
+			_PDirty = true;
+		}
+
+		void _anaglyph(GLfloat IOD, GLdouble zNear, GLdouble zFar, GLfloat aspect, GLfloat fovy, bool rightFrustum){
+			if(!FLOAT_COMPARE(_anaglyphIOD,IOD)){
+				static const GLdouble DTR = 0.0174532925;
+				static const GLdouble screenZ = 10.0;
+				
+				//sets top of frustum based on fovy and near clipping plane
+				GLdouble top = zNear*tan(DTR*fovy/2);            
+				GLdouble right = aspect*top;                           
+				//sets right of frustum based on aspect ratio
+				GLdouble frustumshift = (IOD/2)*zNear/screenZ;
+
+				_leftCam.topfrustum = top;
+				_leftCam.bottomfrustum = -top;
+				_leftCam.leftfrustum = -right + frustumshift;
+				_leftCam.rightfrustum = right + frustumshift;
+				_leftCam.modeltranslation = IOD/2;
+
+				_rightCam.topfrustum = top;
+				_rightCam.bottomfrustum = -top;
+				_rightCam.leftfrustum = -right - frustumshift;
+				_rightCam.rightfrustum = right - frustumshift;
+				_rightCam.modeltranslation = -IOD/2;
+
+				_anaglyphIOD = IOD;
+			}
+
+			_matrixMode(PROJECTION_MATRIX);
+
+			CameraFrustum& tempCamera = rightFrustum ? _rightCam : _leftCam;
+
+			_projectionMatrix.top() = glm::frustum(tempCamera.leftfrustum,
+												   tempCamera.rightfrustum,
+												   tempCamera.bottomfrustum,
+												   tempCamera.topfrustum,
+												   zNear,
+												   zFar);
+			//translate to cancel parallax
+			glm::translate(_projectionMatrix.top(), glm::vec3(tempCamera.modeltranslation, 0.0, 0.0)); 
+		
+			GL_API::getInstance().updateProjectionMatrix();
+			_PDirty = true;
+
+			_matrixMode(VIEW_MATRIX);
+		}
+
+		void _resetModelMatrix(bool force){
+			_resetModelMatrixFlag = !force;
+
+			if(!force)
+				return;
+
 			_modelMatrix = _identityMatrix;
 			_isUniformScaled = _MDirty = true;
 		}
-	}
 
-    void _setModelMatrix(const mat4<F32>& matrix,bool uniform){
-        _modelMatrix = glm::make_mat4(matrix.mat);
-        _isUniformScaled = uniform;
-		_resetModelMatrixFlag = false;
-        _MDirty = true;
-    }
-
-    void _pushMatrix(){
-        if(_currentMatrixMode == PROJECTION_MATRIX)   _projectionMatrix.push(_projectionMatrix.top());
-        else if(_currentMatrixMode == VIEW_MATRIX){   
-			_viewMatrix.push(_viewMatrix.top());
-			_currentEyeVector.push(_currentEyeVector.top());
-			_currentLookAtVector.push(_currentLookAtVector.top());
+		void _setModelMatrix(const mat4<F32>& matrix, bool uniform){
+			_modelMatrix = glm::make_mat4(matrix.mat);
+			_isUniformScaled = uniform;
+			_resetModelMatrixFlag = false;
+			_MDirty = true;
 		}
-        else if(_currentMatrixMode == TEXTURE_MATRIX) _textureMatrix.push(_textureMatrix.top());
-        else assert(_currentMatrixMode == -1);
-    }
 
-    void _popMatrix(){
-        if(_currentMatrixMode == PROJECTION_MATRIX){
-            _projectionMatrix.pop();
-			_PDirty = true;
-			GL_API::getInstance().updateProjectionMatrix();
-        }else if(_currentMatrixMode == VIEW_MATRIX){
-            _viewMatrix.pop();
-			_currentEyeVector.pop();
-			_currentLookAtVector.pop();
-			GL_API::getInstance().updateViewMatrix();
-			_VDirty = true;
-        }else if(_currentMatrixMode == TEXTURE_MATRIX){
-            _textureMatrix.pop();
-        }else{
-            assert(_currentMatrixMode == -1);
-        }
-    }
+		void _pushMatrix(){
+			if(_currentMatrixMode == PROJECTION_MATRIX) {
+				_projectionMatrix.push(_projectionMatrix.top());
+			}else if(_currentMatrixMode == VIEW_MATRIX){   
+				_viewMatrix.push(_viewMatrix.top());
+				_currentViewDirection.push(_currentViewDirection.top());
+			}else if(_currentMatrixMode == TEXTURE_MATRIX) {
+				_textureMatrix.push(_textureMatrix.top());
+			}else {
+				assert(_currentMatrixMode == -1);
+			}
+		}
 
-    void _loadIdentity(){
-        if(_currentMatrixMode == PROJECTION_MATRIX){
-            _projectionMatrix.top() = _identityMatrix;
-			_PDirty = true;
-			GL_API::getInstance().updateProjectionMatrix();
-        }else if(_currentMatrixMode == VIEW_MATRIX){
-            _viewMatrix.top() = _identityMatrix;
-			_currentEyeVector.top() = glm::vec3();
-			_currentLookAtVector.top() = glm::vec3();
-			GL_API::getInstance().updateViewMatrix();
-			_VDirty = true;
-        }else if(_currentMatrixMode == TEXTURE_MATRIX){
-            _textureMatrix.top() = _identityMatrix;
-        }else{
-            assert(_currentMatrixMode == -1);
-        }
-    }
+		void _popMatrix(){
+			if(_currentMatrixMode == PROJECTION_MATRIX){
+				_projectionMatrix.pop();
+				_PDirty = true;
+				GL_API::getInstance().updateProjectionMatrix();
+			}else if(_currentMatrixMode == VIEW_MATRIX){
+				_viewMatrix.pop();
+				_currentViewDirection.pop();
+				GL_API::getInstance().updateViewMatrix();
+				_VDirty = true;
+			}else if(_currentMatrixMode == TEXTURE_MATRIX){
+				_textureMatrix.pop();
+			}else{
+				assert(_currentMatrixMode == -1);
+			}
+		}
 
-    void _queryMatrix(const MATRIX_MODE& mode, mat4<GLfloat>& mat){
-        if(mode == VIEW_MATRIX)            mat.set(glm::value_ptr(_viewMatrix.top()));
-        else if(mode == PROJECTION_MATRIX) mat.set(glm::value_ptr(_projectionMatrix.top()));
-        else if(mode == TEXTURE_MATRIX)    mat.set(glm::value_ptr(_textureMatrix.top()));
-        else assert(mode == -1);
-    }
+		void _loadIdentity(){
+			if(_currentMatrixMode == PROJECTION_MATRIX){
+				_projectionMatrix.top() = _identityMatrix;
+				_PDirty = true;
+				GL_API::getInstance().updateProjectionMatrix();
+			}else if(_currentMatrixMode == VIEW_MATRIX){
+				_viewMatrix.top() = _identityMatrix;
+				_currentViewDirection.top() = vec3<F32>();
+				GL_API::getInstance().updateViewMatrix();
+				_VDirty = true;
+			}else if(_currentMatrixMode == TEXTURE_MATRIX){
+				_textureMatrix.top() = _identityMatrix;
+			}else{
+				assert(_currentMatrixMode == -1);
+			}
+		}
 
-    void _queryMatrix(const EXTENDED_MATRIX& mode, mat4<GLfloat>& mat){
-        assert(mode != NORMAL_MATRIX /*|| mode != ... */);
+		void _queryMatrix(const MATRIX_MODE& mode, mat4<GLfloat>& mat){
+			if(mode == VIEW_MATRIX)            
+				mat.set(glm::value_ptr(_viewMatrix.top()));
+			else if(mode == PROJECTION_MATRIX)
+				mat.set(glm::value_ptr(_projectionMatrix.top()));
+			else if(mode == TEXTURE_MATRIX)   
+				mat.set(glm::value_ptr(_textureMatrix.top()));
+			else
+				assert(mode == -1);
+		}
 
-        switch(mode){
-            case MODEL_MATRIX:{ //check if we need to reset our model matrix
-				if(_resetModelMatrixFlag) _resetModelMatrix(true);
-				mat.set(glm::value_ptr(_modelMatrix));
-				}break;
-            case MV_MATRIX:{
-				_clean(); //refresh cache
-                mat.set(glm::value_ptr(_MVCachedMatrix));
-               }break;
-            case MV_INV_MATRIX:{
-				_clean(); //refresh cache
-                mat.set(glm::value_ptr(glm::inverse(_MVCachedMatrix)));
-                }break;
-            case MVP_MATRIX:{
-				_clean(); //refresh cache
-                mat.set(glm::value_ptr(_MVPCachedMatrix));
-                }break;
-            case BIAS_MATRIX:
-                mat.set(glm::value_ptr(_biasMatrix));
-                break;
-        };
-    }
+		void _queryMatrix(const EXTENDED_MATRIX& mode, mat4<GLfloat>& mat){
+			assert(mode != NORMAL_MATRIX /*|| mode != ... */);
+			const GLfloat* matrixValue = NULL;
 
-    void _queryMatrix(const EXTENDED_MATRIX& mode, mat3<GLfloat>& mat){
-        assert(mode == NORMAL_MATRIX /*|| mode == ... */);
-        _clean();
-		// Normal Matrix
-       _isUniformScaled ? mat.set(glm::value_ptr(glm::mat3(_MVCachedMatrix))) : 
-						  mat.set(glm::value_ptr(glm::inverseTranspose(glm::mat3(_MVCachedMatrix))));
-    }
+			switch(mode){
+				case MODEL_MATRIX:{ //check if we need to reset our model matrix
+					if(_resetModelMatrixFlag)
+						_resetModelMatrix(true);
+					matrixValue = glm::value_ptr(_modelMatrix);
+					}break;
+				case MV_MATRIX:{
+					_clean(); //refresh cache
+					matrixValue = glm::value_ptr(_MVCachedMatrix);
+				   }break;
+				case MV_INV_MATRIX:{
+					_clean(); //refresh cache
+					matrixValue = glm::value_ptr(glm::inverse(_MVCachedMatrix));
+					}break;
+				case MVP_MATRIX:{
+					_clean(); //refresh cache
+					matrixValue = glm::value_ptr(_MVPCachedMatrix);
+					}break;
+				case BIAS_MATRIX:
+					matrixValue = glm::value_ptr(_biasMatrix);
+					break;
+			};
 
-     void _clean(){
-		if(_resetModelMatrixFlag) _resetModelMatrix(true);
+			assert(matrixValue != NULL);
+			mat.set(matrixValue);
+		}
 
-		bool MVDirty = (_MDirty || _VDirty);
+		void _queryMatrix(const EXTENDED_MATRIX& mode, mat3<GLfloat>& mat){
+			assert(mode == NORMAL_MATRIX /*|| mode == ... */);
+			_clean();
+			// Normal Matrix
+		   _isUniformScaled ? mat.set(glm::value_ptr(glm::mat3(_MVCachedMatrix))) : 
+							  mat.set(glm::value_ptr(glm::inverseTranspose(glm::mat3(_MVCachedMatrix))));
+		}
 
-		if(MVDirty)	            _MVCachedMatrix = _viewMatrix.top() * _modelMatrix;
-		if(_PDirty || MVDirty)	_MVPCachedMatrix = _projectionMatrix.top() * _MVCachedMatrix;
+		 void _clean(){
+			if(_resetModelMatrixFlag) 
+				_resetModelMatrix(true);
+
+			bool MVDirty = (_MDirty || _VDirty);
+
+			if(MVDirty)	            
+				_MVCachedMatrix = _viewMatrix.top() * _modelMatrix;
+			if(_PDirty || MVDirty)	
+				_MVPCachedMatrix = _projectionMatrix.top() * _MVCachedMatrix;
 		
 
-		_MDirty = _VDirty = _PDirty = false;
-    }
-}//namespace GL
+			_MDirty = _VDirty = _PDirty = false;
+		}
+	}//namespace GL
 }// namespace Divide

@@ -9,7 +9,7 @@ glTextureArrayBufferObject::glTextureArrayBufferObject(bool cubeMap, bool depthO
 	toggleColorWrites(!depthOnly); ///<Use glDepthBufferObject instead.
 }
 
-void glTextureArrayBufferObject::DrawToLayer(GLubyte face, GLubyte layer){
+void glTextureArrayBufferObject::DrawToLayer(GLubyte face, GLubyte layer) const {
 	GLCheck(glFramebufferTextureLayerEXT(GL_FRAMEBUFFER,GL_DEPTH_ATTACHMENT, _depthBufferHandle, 0, layer));
 	GLCheck(glFramebufferTextureLayerEXT(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0, _textureId[0], 0, layer));
 }

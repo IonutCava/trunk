@@ -16,7 +16,7 @@ public:
 
 private:
 	vectorImpl<PreRenderOperator* >	_operators;
-	bool								_isValid;		//True if the filter is valid
+	bool							_isValid;		//True if the filter is valid
 };
 
 #endif

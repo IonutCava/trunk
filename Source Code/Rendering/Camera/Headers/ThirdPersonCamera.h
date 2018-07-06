@@ -23,13 +23,13 @@
 #ifndef _THIRD_PERSON_CAMERA_H_
 #define _THIRD_PERSON_CAMERA_H_
 
-#include "Camera.h"
+#include "OrbitCamera.h"
+
 ///Movable camera that orbits a certain point
-class ThirdPersonCamera : public Camera {
+class ThirdPersonCamera : public OrbitCamera {
 public:
-	ThirdPersonCamera() : Camera(THIRD_PERSON)
-	{
-	}
+	ThirdPersonCamera();
+
 };
 
 #endif

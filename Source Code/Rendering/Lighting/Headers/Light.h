@@ -168,7 +168,7 @@ public:
     ///--The higher the pass, the closer the view
     ///sceneHalfExtent is the half extent of the world bounding box
 	virtual void renderFromLightView(const U8 depthPass,const F32 sceneHalfExtent = 1) = 0;
-	virtual void generateShadowMaps(SceneRenderState* const renderState);
+	virtual void generateShadowMaps(const SceneRenderState& sceneRenderState);
 
 protected:
 	///Set light type

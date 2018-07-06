@@ -34,10 +34,6 @@ namespace IMPrimitiveValidation{
 	}
 }
 
-bool GL_API::_coreGeomShadersAvailable = false;
-bool GL_API::_arbGeomShadersAvailable = false;
-bool GL_API::_extGeomShadersAvailable = false;
-
 void GL_API::beginFrame(){
 	GLCheck(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
 	GL_API::clearColor(DIVIDE_BLUE());
@@ -121,10 +117,10 @@ void GL_API::flush(){
     clearStates(false,false,false,false);
 }
 
-void GL_API::renderInViewport(const vec4<GLint>& rect, boost::function0<void> callback){
-    setViewport(rect.x, rect.y, rect.z, rect.w);
+void GL_API::renderInViewport(const vec4<GLuint>& rect, boost::function0<void> callback){
+    setViewport(rect);
 	callback();
-    restoreViewport();
+	restoreViewport();
 }
 
 void GL_API::drawBox3D(const vec3<GLfloat>& min,const vec3<GLfloat>& max, const mat4<GLfloat>& globalOffset){
@@ -171,7 +167,7 @@ void GL_API::setupLineState(const OffsetMatrix& mat, RenderStateBlock* const dra
     SET_STATE_BLOCK(drawState,true);
 
 	if(ortho){
-		setViewport(_cachedResolution.width - 128, 0, 128, 128);
+		setViewport(vec4<U32>(_cachedResolution.width - 128, 0, 128, 128));
 		Divide::GL::_matrixMode(VIEW_MATRIX);
 		Divide::GL::_pushMatrix();
 		Divide::GL::_loadIdentity();
@@ -215,16 +211,15 @@ void GL_API::drawDebugAxisInternal(){
         axisData = true;
     }
 
-	glm::vec3 eyeVector = glm::normalize(Divide::GL::_currentLookAtVector.top() - Divide::GL::_currentEyeVector.top());
-	eyeVector.x *= 2; 
-	eyeVector.y *= 2; 
-	eyeVector.z *= 2;
-    drawLines(_pointsA,
-			  _pointsB,
-			  _colors,
-			  mat4<GLfloat>(glm::value_ptr(glm::lookAt(eyeVector,
-			                                           glm::vec3(0,0,0),
-													   glm::vec3(0,1,0)))),
+	vec3<F32> eyeVector = - (Divide::GL::_currentViewDirection.top() * 2);
+	const glm::mat4& viewMatrix = Divide::GL::_viewMatrix.top();
+
+    drawLines(_pointsA, _pointsB, _colors,
+			  mat4<GLfloat>(glm::value_ptr(glm::lookAt(glm::vec3(eyeVector.x, eyeVector.y, eyeVector.z),
+			                                           glm::vec3(0.0f),
+													   glm::vec3(viewMatrix[0][1], 
+													             viewMatrix[1][1],
+																 viewMatrix[2][1])))),
 			  true,
 			  true);
 }
@@ -374,5 +369,5 @@ void GL_API::Screenshot(char *filename, const vec4<GLfloat>& rect){
 	// read the pixels from the frame buffer
 	GLCheck(glReadPixels(rect.x,rect.y,rect.z,rect.w,GL_RGBA,GL_UNSIGNED_BYTE, (GLvoid*)imageData));
 	//save to file
-	ImageTools::SaveSeries(filename,w,h,32,imageData);
+	ImageTools::SaveSeries(filename,vec2<U16>(w,h),32,imageData);
 }

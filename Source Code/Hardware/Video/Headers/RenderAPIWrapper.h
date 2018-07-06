@@ -28,7 +28,7 @@
 #include <boost/function.hpp>
 #include "Utility/Headers/Vector.h"
 #include "Core/Math/Headers/MathClasses.h"
-#if defined( __WIN32__ ) || defined( _WIN32 )
+#if defined( OS_WINDOWS )
 #  ifndef WIN32_LEAN_AND_MEAN
 #    define WIN32_LEAN_AND_MEAN
 #  endif
@@ -93,7 +93,8 @@ enum ShaderType;
 ///FWD DECLARE TYPEDEFS
 typedef Texture Texture2D;
 typedef Texture TextureCubemap;
-
+template<class T> class Plane;
+typedef vectorImpl<Plane<F32> > PlaneList;
 ///FWD DECLARE STRUCTS
 class RenderStateBlockDescriptor;
 
@@ -126,11 +127,8 @@ protected:
 	///Clear buffers,shaders, etc.
 	virtual void flush() = 0;
 
-	virtual void lookAt(const vec3<F32>& eye,
-                        const vec3<F32>& center,
-                        const vec3<F32>& up = vec3<F32>(0,1,0),
-                        const bool invertx = false,
-                        const bool inverty = false) = 0;
+	virtual void lookAt(const mat4<F32>& viewMatrix, const vec3<F32>& viewDirection) = 0;
+	virtual void lookAt(const vec3<F32>& eye, const vec3<F32>& target, const vec3<F32>& up) = 0;
 
 	virtual void idle() = 0;
 	virtual void getMatrix(const MATRIX_MODE& mode, mat4<F32>& mat) = 0;
@@ -140,8 +138,9 @@ protected:
 	///Change the resolution and reshape all graphics data
 	virtual void changeResolution(U16 w, U16 h) = 0;
 	///Change the window's position
-	virtual void setWindowPos(U16 w, U16 h) = 0;
-
+	virtual void setWindowPos(U16 w, U16 h) const = 0;
+	///Platform specific cursor manipulation. Set's the cursor's location to the specified X and Y relative to the edge of the window
+	virtual void setMousePosition(D32 x, D32 y) const = 0;
 	virtual FrameBufferObject*  newFBO(const FBOType& type = FBO_2D_COLOR) = 0;
 	virtual VertexBufferObject* newVBO(const PrimitiveType& type = TRIANGLES) = 0;
 	virtual PixelBufferObject*  newPBO(const PBOType& type = PBO_TEXTURE_2D) = 0;
@@ -170,7 +169,9 @@ protected:
 	virtual void drawText(const std::string& text,  const I32 width, const vec2<I32> position, const std::string& fontName, const F32 fontSize) = 0;
 
 	/*Object viewing*/
-	virtual void renderInViewport(const vec4<I32>& rect, boost::function0<void> callback) = 0;
+	virtual void renderInViewport(const vec4<U32>& rect, boost::function0<void> callback) = 0;
+	virtual void setAnaglyphFrustum(F32 camIOD, bool rightFrustum = false) = 0;
+	virtual void updateClipPlanes() = 0;
 	/*Object viewing*/
 
 	/*Primitives Rendering*/
@@ -204,9 +205,9 @@ protected:
 
 public: //RenderAPIWrapper global
 
-#if defined( __WIN32__ ) || defined( _WIN32 )
+#if defined( OS_WINDOWS )
 	virtual HWND getHWND() {return _hwnd;}
-#elif defined( __APPLE_CC__ ) // Apple OS X
+#elif defined( OS_APPLE ) // Apple OS X
 	??
 #else //Linux
 	virtual Display* getDisplay() {return _dpy;}
@@ -221,10 +222,10 @@ private:
 	RenderAPIVersion _apiVersionId;
 
 protected:
-#if defined( __WIN32__ ) || defined( _WIN32 )
+#if defined( OS_WINDOWS )
 	HWND _hwnd;
 	HDC  _hdc ;
-#elif defined( __APPLE_CC__ ) // Apple OS X
+#elif defined( OS_APPLE ) // Apple OS X
 	??
 #else //Linux
 	Display* _dpy;

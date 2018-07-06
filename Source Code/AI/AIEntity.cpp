@@ -15,6 +15,16 @@ AIEntity::AIEntity(const std::string& name)  : GUIDWrapper(),
 {
 }
 
+AIEntity::~AIEntity()
+{
+	SAFE_DELETE(_comInterface);
+	SAFE_DELETE(_actionProcessor);
+	for_each(sensorMap::value_type& it , _sensorList){
+		SAFE_DELETE(it.second);
+	}
+	_sensorList.clear();
+}
+
 void AIEntity::sendMessage(AIEntity* receiver, AIMsg msg,const boost::any& msg_content){
 	CommunicationInterface* com = getCommunicationInterface();
 	if(com){
@@ -30,6 +40,9 @@ void AIEntity::receiveMessage(AIEntity* sender, AIMsg msg, const boost::any& msg
 }
 
 void AIEntity::processMessage(AIEntity* sender, AIMsg msg, const boost::any& msg_content) {
+	if(!_actionProcessor)
+		return;
+
 	ReadLock r_lock(_updateMutex);
 	_actionProcessor->processMessage(sender, msg, msg_content);
 }

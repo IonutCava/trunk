@@ -75,12 +75,15 @@ private:
 	void initDevice(GLuint targetFrameRate);
 	inline void changeResolution(GLushort w, GLushort h) {changeResolutionInternal(w,h);}
 	///Change the window's position
-	void setWindowPos(U16 w, U16 h);
-	void lookAt(const vec3<GLfloat>& eye,
-                const vec3<GLfloat>& center,
-                const vec3<GLfloat>& up = vec3<GLfloat>(0,1,0),
-                const bool invertx = false,
-                const bool inverty = false);
+	void setWindowPos(U16 w, U16 h) const;
+	void setMousePosition(D32 x, D32 y) const;
+
+	void lookAt(const vec3<F32>& eye, const vec3<F32>& target, const vec3<F32>& up);
+
+	inline void lookAt(const mat4<F32>& viewMatrix, const vec3<F32>& viewDirection) {
+		Divide::GL::_LookAt(viewMatrix.mat, viewDirection);
+	}
+
 	void beginFrame();
 	void endFrame();
 	void idle();
@@ -107,6 +110,8 @@ private:
 
 	void setOrthoProjection(const vec4<GLfloat>& rect, const vec2<GLfloat>& planes);
 	void setPerspectiveProjection(GLfloat FoV,GLfloat aspectRatio, const vec2<GLfloat>& planes);
+	void setAnaglyphFrustum(F32 camIOD, bool rightFrustum = false);
+	void updateClipPlanes();
 
 	void toggle2D(bool state);
 
@@ -125,7 +130,7 @@ private:
     IMPrimitive* createPrimitive(bool allowPrimitiveRecycle = true);
     /*immediate mode emmlation end*/
 
-	void renderInViewport(const vec4<GLint>& rect, boost::function0<GLvoid> callback);
+	void renderInViewport(const vec4<GLuint>& rect, boost::function0<GLvoid> callback);
 
 	void renderInstance(RenderInstance* const instance);
 	void renderBuffer(VertexBufferObject* const vbo, Transform* const vboTransform = NULL);
@@ -139,28 +144,32 @@ private:
 
     bool loadInContext(const CurrentContext& context, boost::function0<GLvoid> callback);
 
-    inline static GLuint getActiveTextureUnit()       {return _activeTextureUnit;}
-    inline static GLuint getActiveVAOId()             {return _activeVAOId;}
-
 protected:
 	friend class glVertexArrayObject;
 	inline static glShaderProgram* getActiveProgram()  {return _activeShaderProgram;}
+    inline static GLuint getActiveVAOId()              {return _activeVAOId;}
 
 protected:
     friend class glFrameBufferObject;
     friend class glDeferredBufferObject;
            static void restoreViewport();
-           static void setViewport(GLint x, GLint y, GLint width, GLint height,bool force = false);
+		   static vec4<U32> setViewport(const vec4<U32>& viewport ,bool force = false);
 		   static void clearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a, bool force = false);
-		   inline static void clearColor(const vec4<F32>& color,bool force = false) {clearColor(color.r,color.g,color.b,color.a,force);}
-
+		   inline static void clearColor(const vec4<F32>& color,bool force = false) {
+			   clearColor(color.r,color.g,color.b,color.a,force);
+		   }
 protected:
     friend class glShader;
     friend class glShaderProgram;
     inline static glslopt_ctx* getGLSLOptContext()                    {return _GLSLOptContex;}
 	inline        glUniformBufferObject* getUBO(const UBO_NAME& name) {return _uniformBufferObjects[name]; }
 
+protected:
+	friend class glSamplerObject;
+	inline static GLuint getActiveTextureUnit() {return _activeTextureUnit;}
+
 public:
+
     static void setActiveTextureUnit(GLuint unit,const bool force = false);
     static void setActiveVAO(GLuint id,const bool force = false);
 	static void setActiveProgram(glShaderProgram* const program,const bool force = false);
@@ -182,6 +191,7 @@ private:
 	void setupLineStateViewPort(const OffsetMatrix& mat);
 	void releaseLineStateViewPort();
 	void changeResolutionInternal(U16 w, U16 h);
+
 private: //OpenGL specific:
 
 	///Text Rendering
@@ -197,11 +207,10 @@ private: //OpenGL specific:
 	F32 _prevWidthString;
 	///Window management:
 	vec2<GLushort> _cachedResolution; ///<Current window resolution
-
 	//Render state specific:
 	glRenderStateBlock*   _currentGLRenderStateBlock; //<Currently active rendering states used by OpenGL
 	RenderStateBlock*     _state2DRendering;    //<Special render state for 2D rendering
-	    RenderStateBlock*     _defaultStateNoDepth; //<The default render state buth with GL_DEPTH_TEST false
+	RenderStateBlock*     _defaultStateNoDepth; //<The default render state buth with GL_DEPTH_TEST false
     bool                  _2DRendering;
 
     vectorImpl<vec3<GLfloat> > _pointsA;
@@ -220,15 +229,12 @@ private: //OpenGL specific:
 	bool       _useMSAA;///<set to falls for FXAA or SMAA
 
     static glslopt_ctx* _GLSLOptContex;
-	static bool   _coreGeomShadersAvailable;
-	static bool   _arbGeomShadersAvailable;
-	static bool   _extGeomShadersAvailable;
     static glShaderProgram* _activeShaderProgram;
     static GLuint _activeVAOId;
     static GLuint _activeTextureUnit;
-    static vec4<GLint>   _currentviewportRect;
-    static vec4<GLint>   _prevViewportRect;
 	static vec4<GLfloat> _prevClearColor;
+
+	bool _activeClipPlanes[Config::MAX_CLIP_PLANES];
 
 END_SINGLETON
 

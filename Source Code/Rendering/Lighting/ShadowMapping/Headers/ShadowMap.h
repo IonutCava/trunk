@@ -43,7 +43,7 @@ public:
 	ShadowMap(Light* light);
 	virtual ~ShadowMap();
 	///Render the scene and save the frame to the shadow map
-	virtual void render(SceneRenderState* renderState, boost::function0<void> sceneRenderFunction) = 0;
+	virtual void render(const SceneRenderState& renderState, boost::function0<void> sceneRenderFunction) = 0;
 	///Setup needed before rendering the light
 	void preRender();
 	///Setup needed after rendering the light
@@ -54,12 +54,13 @@ public:
 	inline  FrameBufferObject* getDepthMap() {return _depthMap;}
 	inline  bool isBound() {return _isBound;}
 	        U16  resolution();
-	virtual void resolution(U16 resolution,SceneRenderState* sceneRenderState) {_init = true;}
+	virtual void resolution(U16 resolution, const SceneRenderState& sceneRenderState) {_init = true;}
 	virtual bool Bind(U8 offset);
 	virtual bool Unbind(U8 offset);
 	virtual void previewShadowMaps() = 0;
+
 protected:
-	virtual void renderInternal(SceneRenderState* renderState) const = 0;
+	virtual void renderInternal(const SceneRenderState& renderState) const = 0;
 
 protected:
 	///The depth maps. Number depends on the current method
@@ -80,9 +81,15 @@ public:
 	ShadowMapInfo(Light* light);
 	virtual ~ShadowMapInfo();
 	inline ShadowMap* getShadowMap() {return _shadowMap;}
-	       ShadowMap* getOrCreateShadowMap(SceneRenderState* sceneRenderState);
-	inline U16  resolution() {return _resolution;}
-	inline void resolution(U16 resolution,SceneRenderState* sceneRenderState) {_resolution = resolution; if(_shadowMap) _shadowMap->resolution(_resolution,sceneRenderState);}
+	       ShadowMap* getOrCreateShadowMap(const SceneRenderState& sceneRenderState);
+	inline U16  resolution() const {return _resolution;}
+
+	inline void resolution(U16 resolution, const SceneRenderState& sceneRenderState) {
+		_resolution = resolution;
+		if(_shadowMap) 
+			_shadowMap->resolution(_resolution,sceneRenderState);
+	}
+
 private:
 	U16        _resolution;
 	ShadowMap* _shadowMap;

@@ -44,8 +44,10 @@ protected:
 	inline void  setName(const std::string& name) {_listenerName = name;}
 	///Adapter patern instead of pure interface for the same reason as the Ogre boys pointed out:
 	///Implement what you need without filling classes with dummy functions
-	///frameStarted is calld at the beggining of a new frame
+	///frameStarted is calld at the beggining of a new frame before processing the logic aspect of a scene
 	virtual bool frameStarted(const FrameEvent& evt) {return true;}
+	///framePreRenderStarted is called when we need to start processing the visual aspect of a scene
+	virtual bool framePreRenderStarted(const FrameEvent& evt) {return true;}
 	///framePreRenderEnded is called after all the prerendering has finished and rendering should start
 	virtual bool framePreRenderEnded(const FrameEvent& evt) {return true;}
 	///frameRendering Queued is called after all the frame setup/rendering but before the call to SwapBuffers

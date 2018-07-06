@@ -39,7 +39,7 @@ public:
 
 	/// Checks if the unit has activated this trigger and launches the Task
 	/// If we receive a NULL unit as a param, we use the camera position
-	bool check(Unit* const unit,const vec3<F32>& camEyePos = vec3<F32>(0,0,0));
+	bool check(Unit* const unit,const vec3<F32>& camEyePos = vec3<F32>(0.0f));
 	/// Sets a new Task for this trigger
 	void updateTriggeredTask(Task_ptr triggeredTask);
 	/// Trigger's the Task regardless of position
@@ -65,7 +65,9 @@ public:
 	virtual void render(SceneGraphNode* const sgn);
 
 	///SceneNode test
-	bool isInView(const bool distanceCheck,const BoundingBox& boundingBox,const BoundingSphere& sphere){return _drawImpostor;}
+	bool isInView(const BoundingBox& boundingBox,const BoundingSphere& sphere, const bool distanceCheck = false) {
+		return _drawImpostor;
+	}
 
 private:
 	/// The Task to be launched when triggered

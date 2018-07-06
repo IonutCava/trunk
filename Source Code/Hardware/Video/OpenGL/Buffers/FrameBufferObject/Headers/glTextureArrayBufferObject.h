@@ -31,7 +31,7 @@ public:
 	glTextureArrayBufferObject(bool cubeMap = false, bool depthOnly = false);
 	~glTextureArrayBufferObject() {Destroy();}
 
-	void DrawToLayer(GLubyte face, GLubyte layer);
+	void DrawToLayer(GLubyte face, GLubyte layer) const;
 };
 
 #endif

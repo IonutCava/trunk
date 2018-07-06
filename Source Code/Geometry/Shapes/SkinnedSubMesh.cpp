@@ -19,11 +19,13 @@ void SkinnedSubMesh::postLoad(SceneGraphNode* const sgn){
 	Object3D::postLoad(sgn);
 }
 
-void SkinnedSubMesh::sceneUpdate(const U32 sceneTime, SceneGraphNode* const sgn){
-	if(_playAnimations)	sgn->animationTransforms(_animator->GetTransforms(_deltaTime));
-	else                sgn->animationTransforms().clear();
+void SkinnedSubMesh::sceneUpdate(const U32 sceneTime, SceneGraphNode* const sgn, SceneState& sceneState){
+	if(_playAnimations)
+		sgn->animationTransforms(_animator->GetTransforms(_deltaTime));
+	else             
+		sgn->animationTransforms().clear();
 
-	Object3D::sceneUpdate(sceneTime,sgn);
+	Object3D::sceneUpdate(sceneTime,sgn,sceneState);
 }
 
 /// Create a mesh animator from assimp imported data
@@ -37,7 +39,7 @@ bool SkinnedSubMesh::createAnimatorFromScene(const aiScene* scene,U8 subMeshPoin
 }
 
 void SkinnedSubMesh::renderSkeleton(SceneGraphNode* const sgn){
-	if(!_skeletonAvailable || !GET_ACTIVE_SCENE()->renderState()->drawSkeletons()) return;
+	if(!_skeletonAvailable || !GET_ACTIVE_SCENE()->renderState().drawSkeletons()) return;
 	// update possible animation
 	assert(_animator != NULL);
 
@@ -50,7 +52,8 @@ void SkinnedSubMesh::updateAnimations(D32 timeIndex, SceneGraphNode* const sgn){
 	_skeletonAvailable = false;
 	_deltaTime = timeIndex;
 
-	if(!_animator ||!GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE)) return;
+	if(!_animator ||!GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE))
+		return;
 
 	if(ParamHandler::getInstance().getParam<bool>("mesh.playAnimations")){
 		_playAnimations = dynamic_cast<SkinnedMesh*>(getParentMesh())->playAnimations();
@@ -63,7 +66,8 @@ void SkinnedSubMesh::updateAnimations(D32 timeIndex, SceneGraphNode* const sgn){
 	_skeletonAvailable = true;
 
 	///Software skinning
-	if(!_softwareSkinning) return;
+	if(!_softwareSkinning)
+		return;
 
 	if(_origVerts.empty()){
 		for(U32 i = 0; i < _geometry->getPosition().size(); i++){
@@ -106,9 +110,18 @@ void SkinnedSubMesh::updateAnimations(D32 timeIndex, SceneGraphNode* const sgn){
 }
 
 void SkinnedSubMesh::updateTransform(SceneGraphNode* const sgn){
-	if(_animator != NULL  && _playAnimations){
+	Transform* transform = sgn->getTransform();
+	//a submesh should always have a transform
+	assert(transform);
+	if(transform->isDirty() && _animator != NULL  && _playAnimations){
 		_animator->setGlobalMatrix(sgn->getTransform()->getGlobalMatrix());
 	}
+	transform = sgn->getParent()->getTransform();
+	//a mesh should always have a transform
+	assert(transform);
+	//if(transform->isDirty()){
+		sgn->updateBoundingBoxTransform(transform->getGlobalMatrix());
+	//}
 }
 
 void SkinnedSubMesh::preFrameDrawEnd(SceneGraphNode* const sgn){

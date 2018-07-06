@@ -42,6 +42,15 @@ bool FrameListenerManager::frameStarted(const FrameEvent& evt){
 	return true;
 }
 
+bool FrameListenerManager::framePreRenderStarted(const FrameEvent& evt){
+	for_each(ListenerMap::value_type& listener, _listeners){
+		if(!listener.second->framePreRenderStarted(evt)){
+			return false;
+		}
+	}
+	return true;
+}
+
 bool FrameListenerManager::framePreRenderEnded(const FrameEvent& evt){
 	for_each(ListenerMap::value_type& listener, _listeners){
 		if(!listener.second->framePreRenderEnded(evt)){

@@ -8,7 +8,6 @@
 #include "Geometry/Material/Headers/Material.h"
 
 ShaderProgram::ShaderProgram(const bool optimise) : HardwareResource(),
-													_invalidShaderProgramId(std::numeric_limits<U32>::max()),
 													_optimise(optimise),
 													_useTessellation(false),
 													_useGeometry(false),
@@ -18,18 +17,19 @@ ShaderProgram::ShaderProgram(const bool optimise) : HardwareResource(),
 													_bound(false),
 													_dirty(true),
 													_wasBound(false)
-    {
-		_shaderProgramId = _invalidShaderProgramId;
-		_refreshVert = _refreshFrag = _refreshGeom = _refreshTess = false;
-        //Enable all matrix uploads by default (note: projection and view matrices are ALWAYS uploaded)
-        _matrixMask.b.b0 = 1;
-        _matrixMask.b.b1 = 1;
-        _matrixMask.b.b2 = 1;
-        _matrixMask.b.b3 = 1;
-		_maxCombinedTextureUnits = ParamHandler::getInstance().getParam<I32>("GFX_DEVICE.maxTextureCombinedUnits",16);
-    }
+{
+	_shaderProgramId = 0;//<Override in concrete implementations with appropriate invalid values
+	_refreshVert = _refreshFrag = _refreshGeom = _refreshTess = false;
+    //Enable all matrix uploads by default (note: projection and view matrices are ALWAYS uploaded)
+    _matrixMask.b.b0 = 1;
+    _matrixMask.b.b1 = 1;
+    _matrixMask.b.b2 = 1;
+    _matrixMask.b.b3 = 1;
+	_maxCombinedTextureUnits = ParamHandler::getInstance().getParam<I32>("GFX_DEVICE.maxTextureCombinedUnits",16);
+}
 
-ShaderProgram::~ShaderProgram(){
+ShaderProgram::~ShaderProgram()
+{
 	D_PRINT_FN(Locale::get("SHADER_PROGRAM_REMOVE"), getName().c_str());
 	for_each(ShaderIdMap::value_type& it, _shaderIdMap){
 		ShaderManager::getInstance().removeShader(it.second);
@@ -40,28 +40,36 @@ ShaderProgram::~ShaderProgram(){
 
 U8 ShaderProgram::tick(const U32 deltaTime){
 	ParamHandler& par = ParamHandler::getInstance();
-    this->Uniform("enableFog",par.getParam<bool>("rendering.enableFog"));
+    this->Uniform("dvd_enableFog",par.getParam<bool>("rendering.enableFog"));
 	this->Uniform("dvd_lightAmbient", LightManager::getInstance().getAmbientLight());
-
+	
 	if(_dirty){
-		//Apply global shader values valid throughout application runtime:
-		std::string shadowMaps("texDepthMapFromLight");
-		std::stringstream ss;
-		for(I32 i = 0; i < MAX_SHADOW_CASTING_LIGHTS_PER_NODE; i++){
-			ss.str(std::string());
-			ss << shadowMaps << i;
-			this->UniformTexture(ss.str(),10+i); //Shadow Maps always bound from 8 and above
-		}
-
-		this->Uniform("zPlanes",  Frustum::getInstance().getZPlanes());
+		this->Uniform("dvd_zPlanes",  Frustum::getInstance().getZPlanes());
 		this->Uniform("screenDimension", Application::getInstance().getResolution());
-		this->UniformTexture("texDepthMapFromLightArray",_maxCombinedTextureUnits - 2); //Reserve first for directional shadows
-		this->UniformTexture("texDepthMapFromLightCube", _maxCombinedTextureUnits - 1); //Reserve second for point shadows
-		this->UniformTexture("texSpecular",Material::SPECULAR_TEXTURE_UNIT);
-		this->UniformTexture("opacityMap",Material::OPACITY_TEXTURE_UNIT);
-		this->UniformTexture("texBump",Material::BUMP_TEXTURE_UNIT);
-		this->UniformTexture("texDiffuse1",Material::SECOND_TEXTURE_UNIT);
-		this->UniformTexture("texDiffuse0", Material::FIRST_TEXTURE_UNIT);
+		U8 shadowMapSlot = Config::MAX_TEXTURE_STORAGE;
+		//Apply global shader values valid throughout application runtime:
+		char depthMapSampler[32];
+		for(I32 i = 0; i < Config::MAX_SHADOW_CASTING_LIGHTS_PER_NODE; i++){
+			sprintf_s(depthMapSampler, "texDepthMapFromLight%d", i);
+			 //Shadow Maps always bound from the last texture slot upwards
+			this->UniformTexture(depthMapSampler,shadowMapSlot++);
+		}
+		shadowMapSlot =  Config::MAX_TEXTURE_STORAGE + Config::MAX_SHADOW_CASTING_LIGHTS_PER_NODE;
+		//Reserve first for directional shadows
+		this->UniformTexture("texDepthMapFromLightArray", shadowMapSlot); 
+		 //Reserve second for point shadows
+		this->UniformTexture("texDepthMapFromLightCube", shadowMapSlot + 1);
+
+		this->UniformTexture("texNormalMap",    Material::TEXTURE_NORMALMAP);
+		this->UniformTexture("texOpacityMap",   Material::TEXTURE_OPACITY);
+		this->UniformTexture("texSpecular",     Material::TEXTURE_SPECULAR);
+
+		for(U32 i = Material::TEXTURE_UNIT0, j = 0; i < Config::MAX_TEXTURE_STORAGE; ++i)
+		{
+			char uniformSlot[32];
+			sprintf_s(uniformSlot, "texDiffuse%d", j++);
+			this->UniformTexture(uniformSlot, i);
+		}
 
 		this->Uniform("fogColor",  vec3<F32>(par.getParam<F32>("rendering.sceneState.fogColor.r"),
 										 	 par.getParam<F32>("rendering.sceneState.fogColor.g"),
@@ -104,13 +112,13 @@ void ShaderProgram::bind(){
 	if(_shaderProgramId == 0) return;
 
 	//Apply global shader values valid throughout current render call:
-    this->Uniform("time", static_cast<F32>(GETMSTIME()));
-    this->Attribute("cameraPosition",Frustum::getInstance().getEyePos());
+    this->Uniform("dvd_time", static_cast<F32>(GETMSTIME()));
+    this->Attribute("dvd_cameraPosition",Frustum::getInstance().getEyePos());
 }
 
 void ShaderProgram::uploadModelMatrices(){
 	GFXDevice& GFX = GFX_DEVICE;
-	/*Get matrix data*/
+	/*Get and upload matrix data*/
     if(_matrixMask.b.b0){
         GFX.getMatrix(NORMAL_MATRIX,_cachedNormalMatrix);
         this->Uniform("dvd_NormalMatrix",_cachedNormalMatrix);
@@ -127,6 +135,28 @@ void ShaderProgram::uploadModelMatrices(){
         GFX.getMatrix(MVP_MATRIX,_cachedMatrix);
         this->Uniform("dvd_ModelViewProjectionMatrix",_cachedMatrix);
     }
+	
+	GFX.getMatrix(MV_INV_MATRIX,_cachedMatrix);
+    this->Uniform("dvd_ModelViewMatrixInverse",_cachedMatrix);
+
+	/*Get and upload clip plane data*/
+	if(GFX_DEVICE.clippingPlanesDirty()){
+		GFX_DEVICE.updateClipPlanes();
+		U32 planeCount = GFX_DEVICE.getClippingPlanes().size();
+		this->Uniform("dvd_clip_plane_count", (I32)planeCount);
+		if(planeCount == 0) return;
+
+		_clipPlanes.resize(planeCount);
+		_clipPlanesStates.resize(planeCount, false);
+		for(U32 i = 0; i < planeCount; i++){
+			const Plane<F32>& currentPlane = GFX_DEVICE.getClippingPlanes()[i];
+			_clipPlanes[i] = currentPlane.getEquation();
+			_clipPlanesStates[i] = currentPlane.active() ? 1 : 0;
+		}
+
+		this->Uniform("dvd_clip_plane", _clipPlanes);
+		this->Uniform("dvd_clip_plane_active",_clipPlanesStates);
+	}
 }
 
 
@@ -148,6 +178,26 @@ void ShaderProgram::removeShaderDefine(const std::string& define){
     vectorImpl<std::string >::iterator it = find(_definesList.begin(), _definesList.end(), define);
     if (it != _definesList.end()) _definesList.erase(it);
     else D_ERROR_FN(Locale::get("ERROR_INVALID_SHADER_DEFINE_DELETE"),define.c_str(),getName().c_str());
+}
+
+void ShaderProgram::addShaderUniform(const std::string& uniform, const ShaderType& type) {
+	if(type == FRAGMENT_SHADER) 
+		_fragUniforms.push_back(uniform);
+	else
+		_vertUniforms.push_back(uniform);
+}
+
+void ShaderProgram::removeUniform(const std::string& uniform, const ShaderType& type) {
+	vectorImpl<std::string >::iterator it;
+	if(type == FRAGMENT_SHADER){
+		it = find(_fragUniforms.begin(), _fragUniforms.end(), uniform);
+		if (it != _fragUniforms.end()) _fragUniforms.erase(it);
+		else D_ERROR_FN(Locale::get("ERROR_INVALID_SHADER_UNIFORM_DELETE"),uniform.c_str(),"fragment", getName().c_str());
+	}else{
+		it = find(_vertUniforms.begin(), _vertUniforms.end(), uniform);
+		if (it != _vertUniforms.end()) _vertUniforms.erase(it);
+		else D_ERROR_FN(Locale::get("ERROR_INVALID_SHADER_DEFINE_DELETE"),uniform.c_str(), "vertex", getName().c_str());
+	}
 }
 
 void ShaderProgram::recompile(const bool vertex,

@@ -1,5 +1,6 @@
 #include "Headers/RenderPassManager.h"
 #include "Rendering/RenderPass/Headers/RenderPass.h"
+#include "Rendering/RenderPass/Headers/RenderQueue.h"
 
 struct RenderPassCallOrder{
 	bool operator()(const RenderPassItem& a, const RenderPassItem& b) const {
@@ -7,15 +8,21 @@ struct RenderPassCallOrder{
 	}
 };
 
+RenderPassManager::RenderPassManager()
+{
+	RenderQueue::createInstance();
+}
+
 RenderPassManager::~RenderPassManager()
 {
 	for_each(RenderPassItem& rpi, _renderPasses){
 		SAFE_DELETE(rpi._rp);
 	}
 	_renderPasses.clear();
+	RenderQueue::DestroyInstance();
 }
 
-void RenderPassManager::render(SceneRenderState* const sceneRenderState) {
+void RenderPassManager::render(const SceneRenderState& sceneRenderState) {
 	for_each(RenderPassItem& rpi, _renderPasses){
 		rpi._rp->render(sceneRenderState);
 	}
@@ -51,7 +58,7 @@ void RenderPassManager::removeRenderPass(const std::string& name,bool deleteRP) 
 	}
 }
 
-U16 RenderPassManager::getLastTotalBinSize(U8 renderPassId){
+U16 RenderPassManager::getLastTotalBinSize(U8 renderPassId) const {
 	if(renderPassId < _renderPasses.size()){
 		return _renderPasses[renderPassId]._rp->getLasTotalBinSize();
 	}

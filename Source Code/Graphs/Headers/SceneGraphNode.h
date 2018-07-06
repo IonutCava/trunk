@@ -30,11 +30,13 @@
 
 class Transform;
 class SceneGraph;
+class SceneState;
 class SceneRoot : public SceneNode{
 public:
 	SceneRoot() : SceneNode("root",TYPE_ROOT)
 	{
 		_renderState.useDefaultMaterial(false);
+		setState(RES_LOADED);
 	}
 
 	void render(SceneGraphNode* const sgn)             {return;}
@@ -43,7 +45,7 @@ public:
 	void updateTransform(SceneGraphNode* const sgn)    {return;}
 	bool unload()                                      {return true;}
 	bool load(const std::string& name)                 {return true;}
-    bool computeBoundingBox(SceneGraphNode* const sgn) {return true;}
+    bool computeBoundingBox(SceneGraphNode* const sgn);
 
 };
 
@@ -73,11 +75,11 @@ public:
 	/// Position, rotation, scale updates
 	void updateTransforms();
     /// Apply current transform to the node's BB
-    void updateBoundingBoxTransform();
+    void updateBoundingBoxTransform(const mat4<F32>& transform);
 	/// Culling and visibility checks
 	void updateVisualInformation();
 	/// Called from SceneGraph "sceneUpdate"
-	void sceneUpdate(const U32 sceneTime);
+	void sceneUpdate(const U32 sceneTime, SceneState& sceneState);
 	/*Node Management*/
 	template<class T>
 	///Always use the level of redirection needed to reduce virtual function overhead
@@ -91,6 +93,10 @@ public:
 	SceneGraphNode* findNode(const std::string& name, bool sceneNodeName = false);
 	///Find the graph node whom's bounding box intersects the given ray
 	SceneGraphNode* Intersect(const Ray& ray, F32 start, F32 end);
+
+	///Selection helper functions
+	     	void setSelected(const bool state);
+	inline 	bool isSelected()	               const {return _selected;}
 
 	const  std::string& getName() const {return _name;}
 	/*Node Management*/
@@ -115,6 +121,7 @@ public:
 		_boundingBox = box;
 	}
 
+		   const BoundingBox&     getBoundingBoxTransformed();
 	inline       BoundingBox&     getBoundingBox()         {ReadLock r_lock(_queryLock); return _boundingBox;}
 	inline const BoundingBox&     getInitialBoundingBox()  {ReadLock r_lock(_queryLock); return _initialBoundingBox;}
 	
@@ -170,10 +177,12 @@ private:
 	NodeChildren _children;
 	SceneGraphNode *_parent, *_grandParent;
     SceneGraph     *_sceneGraph;
-
+	// keep track of the scene state
+	SceneState* _currentSceneState;
     boost::atomic<bool> _active;
 	//Used to skip certain BB's (sky, ligts, etc);
     U32 _bbAddExclusionList;
+	bool _selected;
     bool _wasActive;
 	bool _noDefaultTransform;
 	bool _inView;

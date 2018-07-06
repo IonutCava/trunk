@@ -45,6 +45,7 @@ typedef std::stack<ShaderProgram*, vectorImpl<ShaderProgram* > > ShaderQueue;
 public:
 	///Create rendering API specific initialization of shader libraries
     bool    init();
+	void    Destroy();
 	///Called once per frame
 	///deltaTime = elapsed time in milliseconds
 	U8      tick(const U32 deltaTime);

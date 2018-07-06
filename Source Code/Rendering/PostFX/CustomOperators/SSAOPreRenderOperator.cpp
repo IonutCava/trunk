@@ -8,8 +8,9 @@
 
 SSAOPreRenderOperator::SSAOPreRenderOperator(Quad3D* target,
 											 FrameBufferObject* result,
-											 const vec2<U16>& resolution) : PreRenderOperator(SSAO_STAGE,target,resolution),
-																		    _outputFBO(result)
+											 const vec2<U16>& resolution,
+											 SamplerDescriptor* const sampler) : PreRenderOperator(SSAO_STAGE,target,resolution,sampler),
+																		         _outputFBO(result)
 {
 	F32 width = _resolution.width;
 	F32 height = _resolution.height;
@@ -19,8 +20,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(Quad3D* target,
 	_colorNoise = CreateResource<Texture>(colorNoiseTexture);
 
 	TextureDescriptor normalsDescriptor(TEXTURE_2D, RGBA,RGBA8,FLOAT_32);
-	normalsDescriptor.setWrapMode(TEXTURE_CLAMP_TO_EDGE,TEXTURE_CLAMP_TO_EDGE);
-	normalsDescriptor._generateMipMaps = false; //it's a flat texture on a full screen quad. really?
+	normalsDescriptor.setSampler(*_internalSampler);
 	_normalsFBO->AddAttachment(normalsDescriptor,TextureDescriptor::Color0);
 	_normalsFBO->toggleDepthBuffer(false);
 
@@ -28,8 +28,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(Quad3D* target,
 	_normalsFBO->Create(width,height);
 
 	TextureDescriptor outputDescriptor(TEXTURE_2D, RGBA,RGBA8,FLOAT_32);
-	outputDescriptor.setWrapMode(TEXTURE_CLAMP_TO_EDGE,TEXTURE_CLAMP_TO_EDGE);
-	outputDescriptor._generateMipMaps = false; //it's a flat texture on a full screen quad. really?
+	outputDescriptor.setSampler(*_internalSampler);
 	_outputFBO->AddAttachment(outputDescriptor,TextureDescriptor::Color0);
 	_outputFBO->Create(width, height);
 	_stage1Shader = CreateResource<ShaderProgram>(ResourceDescriptor("SSAOPass1"));

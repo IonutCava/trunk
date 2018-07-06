@@ -55,17 +55,16 @@ void CubeScene::preRender() {
 }
 
 void CubeScene::processInput(){
-	if(state()->_angleLR) renderState()->getCamera()->RotateX(state()->_angleLR);
-	if(state()->_angleUD) renderState()->getCamera()->RotateY(state()->_angleUD);
-	if(state()->_moveFB)  renderState()->getCamera()->MoveForward(state()->_moveFB /5);
-	if(state()->_moveLR)  renderState()->getCamera()->MoveStrafe(state()->_moveLR /5);
+	if(state()._angleLR) renderState().getCamera().rotateYaw(state()._angleLR);
+	if(state()._angleUD) renderState().getCamera().rotatePitch(state()._angleUD);
+	if(state()._moveFB)  renderState().getCamera().moveForward(state()._moveFB);
+	if(state()._moveLR)  renderState().getCamera().moveStrafe(state()._moveLR);
 }
 
-bool CubeScene::load(const std::string& name){
+bool CubeScene::load(const std::string& name, CameraManager* const cameraMgr){
 	GFX_DEVICE.setRenderer(New DeferredShadingRenderer());
-	///Load scene resources
-	SCENE_LOAD(name,true,true);
-	return loadState;
+	//Load scene resources
+	return SCENE_LOAD(name,cameraMgr,true,true);
 }
 
 bool CubeScene::loadResources(bool continueOnErrors){
@@ -94,25 +93,13 @@ bool CubeScene::loadResources(bool continueOnErrors){
 void CubeScene::onKeyDown(const OIS::KeyEvent& key)
 {
 	Scene::onKeyDown(key);
-	switch(key.key)
-	{
-		case OIS::KC_W:
-			state()->_moveFB = 0.75f;
-			break;
-		case OIS::KC_A:
-			state()->_moveLR = 0.75f;
-			break;
-		case OIS::KC_S:
-			state()->_moveFB = -0.75f;
-			break;
-		case OIS::KC_D:
-			state()->_moveLR = -0.75f;
-			break;
-		case OIS::KC_T:
-			_GFX.getRenderer()->toggleDebugView();
-			break;
-		default:
-			break;
+	switch(key.key)	{
+		default: break;
+		case OIS::KC_W: state()._moveFB =  1; break;
+		case OIS::KC_A:	state()._moveLR = -1; break;
+		case OIS::KC_S:	state()._moveFB = -1; break;
+		case OIS::KC_D:	state()._moveLR =  1; break;
+		case OIS::KC_T:	_GFX.getRenderer()->toggleDebugView(); break;
 	}
 }
 
@@ -122,14 +109,9 @@ void CubeScene::onKeyUp(const OIS::KeyEvent& key)
 	switch(key.key)
 	{
 		case OIS::KC_W:
-		case OIS::KC_S:
-			state()->_moveFB = 0;
-			break;
+		case OIS::KC_S:	state()._moveFB = 0;	break;
 		case OIS::KC_A:
-		case OIS::KC_D:
-			state()->_moveLR = 0;
-			break;
-		default:
-			break;
+		case OIS::KC_D:	state()._moveLR = 0;	break;
+		default: break;
 	}
 }

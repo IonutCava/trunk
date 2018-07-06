@@ -1,7 +1,8 @@
 #include "Headers/CameraManager.h"
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
 
-CameraManager::CameraManager() : _camera(NULL) {
+CameraManager::CameraManager() : _camera(NULL)
+{
 }
 
 CameraManager::~CameraManager() {
@@ -13,6 +14,13 @@ CameraManager::~CameraManager() {
 	}
 	_cameraPool.clear();
 }
+
+void CameraManager::tick(U32 elapsedTime){
+	for_each(CameraPool::value_type& it, _cameraPool){
+		it.second->tick(elapsedTime);
+	}
+}
+
 Camera* const CameraManager::getActiveCamera() {
 	if(!_camera && !_cameraPool.empty())
 		_camera = _cameraPool.begin()->second;
@@ -20,15 +28,10 @@ Camera* const CameraManager::getActiveCamera() {
 }
 
 void CameraManager::setActiveCamera(const std::string& name) {
-	if(!_cameraPool.empty()){
-		if(_cameraPool.find(name) != _cameraPool.end())
-			_camera = _cameraPool[name];
-		else _camera = _cameraPool.begin()->second;
-	}else{
-		_camera = New FreeFlyCamera();
-		assert(_camera != NULL);
-		addNewCamera(name, _camera);
-	}
+	assert(!_cameraPool.empty());
+	if(_cameraPool.find(name) != _cameraPool.end()) 	_camera = _cameraPool[name];
+	else  		                                        _camera = _cameraPool.begin()->second;
+	
 	for_each(boost::function0<void > listener, _listeners){
 		listener();
 	}
@@ -39,5 +42,6 @@ void CameraManager::addNewCamera(const std::string& cameraName, Camera* const ca
 		ERROR_FN(Locale::get("ERROR_CAMERA_MANAGER_CREATION"),cameraName.c_str());
 		return;
 	}
+	camera->setName(cameraName);
 	_cameraPool.insert(make_pair(cameraName,camera));
 }

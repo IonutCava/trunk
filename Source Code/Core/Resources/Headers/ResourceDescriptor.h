@@ -25,24 +25,50 @@
 #define RESOURCE_DESCRIPTOR_H_
 
 #include "core.h"
+#include <boost/shared_ptr.hpp>
+ 
+///Dummy class so that resource loaders can have fast access to extra information in a general format
+class PropertyDescriptor {
+public:
+
+	enum descriptorType{
+		DESCRIPTOR_TEXTURE = 0,
+		DESCRIPTOR_SAMPLER = 1
+	};
+
+	PropertyDescriptor(const descriptorType& type) : _type(type) {}
+
+protected:
+	friend class ResourceDescriptor;
+	///Initialize descriptor values to their safe defaults
+	virtual void setDefaultValues() = 0;
+	///Used to clone the property descriptor pointer
+	virtual PropertyDescriptor* clone() const = 0;
+
+protected:
+	///usefull for switch statements
+	descriptorType _type;
+};
 
 class ResourceDescriptor{
 public:
 	ResourceDescriptor(const std::string& name = "default",
 					   const std::string& resourceLocation = "default",
-					   bool flag = false, U32 id = RAND_MAX, U8 enumValue = -1) : _name(name),
-															  _resourceLocation(resourceLocation),
-															  _flag(flag),
-															  _id(id),
-															  _enumValue(enumValue)
-    {
-        _mask.i = 0;
-		_threaded = true;
-    }
+					   bool flag = false, U32 id = RAND_MAX, U8 enumValue = -1);
 
-	const  std::string& getPropertyListString() const {return _properties;}
-	const  std::string& getResourceLocation()   const {return _resourceLocation;}
-	const  std::string& getName()			    const {return _name;}
+	~ResourceDescriptor();
+
+	ResourceDescriptor(const ResourceDescriptor& old);
+	ResourceDescriptor& operator= (ResourceDescriptor const& old);
+
+	inline const  std::string&         getPropertyListString()  const {return _properties;}
+	inline const  std::string&         getResourceLocation()    const {return _resourceLocation;}
+	inline const  std::string&         getName()			    const {return _name;}
+
+	template<class T>
+	inline const  T*  getPropertyDescriptor()  const {return dynamic_cast<T*>(_propertyDescriptor); }
+
+	inline bool hasPropertyDescriptor()         const {return _propertyDescriptor != NULL;}
 	inline bool getFlag()					    const {return _flag;}
 	inline bool getThreaded()                   const {return _threaded;}
 	inline U8   getEnumValue()                  const {return _enumValue;}
@@ -58,6 +84,12 @@ public:
     inline void setBoolMask(P32 mask)                                     {_mask = mask;}
 	inline void setThreadedLoading(const bool threaded)                   {_threaded = threaded;}
 
+	
+	template<class T>
+	inline void setPropertyDescriptor(const T& descriptor) {
+		_propertyDescriptor = New T(descriptor);
+	}
+
 private:
 	std::string _name;			   ///< Item name
 	std::string _resourceLocation; ///< Physical file location
@@ -67,6 +99,8 @@ private:
 	U32         _id;
     P32         _mask;             ///<4 bool values representing  ... anything ...
 	U8          _enumValue;
+
+	PropertyDescriptor* _propertyDescriptor; ///< Use for extra resource properties: textures, samplers, terrain etc.
 };
 
 #endif

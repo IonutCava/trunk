@@ -21,10 +21,10 @@ void NetworkScene::preRender(){
 }
 
 void NetworkScene::processInput(){
-	if(state()->_angleLR) renderState()->getCamera()->RotateX(state()->_angleLR);
-	if(state()->_angleUD) renderState()->getCamera()->RotateY(state()->_angleUD);
-	if(state()->_moveFB)  renderState()->getCamera()->MoveForward(state()->_moveFB /5);
-	if(state()->_moveLR)  renderState()->getCamera()->MoveStrafe(state()->_moveLR /5);
+	if(state()._angleLR) renderState().getCamera().rotateYaw(state()._angleLR);
+	if(state()._angleUD) renderState().getCamera().rotatePitch(state()._angleUD);
+	if(state()._moveFB)  renderState().getCamera().moveForward(state()._moveFB);
+	if(state()._moveLR)  renderState().getCamera().moveStrafe(state()._moveLR);
 }
 
 void NetworkScene::processTasks(const U32 time){
@@ -67,17 +67,17 @@ bool NetworkScene::preLoad(){
 	return Scene::preLoad();
 }
 
-bool NetworkScene::load(const std::string& name){
+bool NetworkScene::load(const std::string& name, CameraManager* const cameraMgr){
     std::string ipAdress = _paramHandler.getParam<std::string>("serverAddress");
     std::string port = "443";
 	ASIOImpl::getInstance().init(ipAdress,port);
-	///Load scene resources
-	SCENE_LOAD(name,true,true);
+	//Load scene resources
+	bool loadState = SCENE_LOAD(name,cameraMgr,true,true);
 
 	_paramHandler.setParam("serverResponse",std::string("waiting"));
 	addDefaultLight();
 	addDefaultSky();
-	renderState()->getCamera()->setEye(vec3<F32>(0,30,-30));
+	renderState().getCamera().setEye(vec3<F32>(0,30,-30));
 
 	return loadState;
 }
@@ -123,28 +123,28 @@ bool NetworkScene::loadResources(bool continueOnErrors)
 								vec3<F32>(0.6f,0.2f,0.2f),
 								"Elapsed time: %5.0f",GETTIME());
 
-	gui.addText("serverMessage", vec2<I32>(renderState()->cachedResolution().width / 4.0f,
-		                                   renderState()->cachedResolution().height / 1.6f),
+	gui.addText("serverMessage", vec2<I32>(renderState().cachedResolution().width / 4.0f,
+		                                   renderState().cachedResolution().height / 1.6f),
 								 Font::DIVIDE_DEFAULT,
 								vec3<F32>(0.5f,0.5f,0.2f),
 								"Server says: %s", "<< nothing yet >>");
 	gui.addText("statusText",
-								vec2<I32>(renderState()->cachedResolution().width / 3.0f,
-								          renderState()->cachedResolution().height / 1.2f),
+								vec2<I32>(renderState().cachedResolution().width / 3.0f,
+								          renderState().cachedResolution().height / 1.2f),
 								 Font::DIVIDE_DEFAULT,
 								vec3<F32>(0.2f,0.5f,0.2f),
 								"");
 
-	gui.addButton("getPing", "ping me", vec2<I32>(60 , renderState()->cachedResolution().height/1.1f),
+	gui.addButton("getPing", "ping me", vec2<I32>(60 , renderState().cachedResolution().height/1.1f),
 										vec2<U32>(100,25),vec3<F32>(0.6f,0.6f,0.6f),
 										DELEGATE_BIND(&NetworkScene::test,this));
-	gui.addButton("disconnect", "disconnect", vec2<I32>(180 , renderState()->cachedResolution().height/1.1f),
+	gui.addButton("disconnect", "disconnect", vec2<I32>(180 , renderState().cachedResolution().height/1.1f),
 										vec2<U32>(100,25),vec3<F32>(0.5f,0.5f,0.5f),
 										DELEGATE_BIND(&NetworkScene::disconnect,this));
-	gui.addButton("connect", "connect", vec2<I32>(300 , renderState()->cachedResolution().height/1.1f),
+	gui.addButton("connect", "connect", vec2<I32>(300 , renderState().cachedResolution().height/1.1f),
 										vec2<U32>(100,25),vec3<F32>(0.65f,0.65f,0.65f),
 										DELEGATE_BIND(&NetworkScene::connect,this));
-	gui.addButton("patch", "patch",     vec2<I32>(420 , renderState()->cachedResolution().height/1.1f),
+	gui.addButton("patch", "patch",     vec2<I32>(420 , renderState().cachedResolution().height/1.1f),
 										vec2<U32>(100,25),vec3<F32>(0.65f,0.65f,0.65f),
 										DELEGATE_BIND(&NetworkScene::checkPatches,this));
 

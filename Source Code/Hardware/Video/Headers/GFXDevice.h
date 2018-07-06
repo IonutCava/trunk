@@ -20,12 +20,20 @@
 
  */
 
-#ifndef _GFX_DEVICE_H
-#define _GFX_DEVICE_H
+#ifndef _HARDWARE_VIDEO_GFX_DEVICE_H_
+#define _HARDWARE_VIDEO_GFX_DEVICE_H_
 
 #include "Hardware/Video/OpenGL/Headers/GLWrapper.h"
 #include "Hardware/Video/Direct3D/Headers/DXWrapper.h"
 #include "Managers/Headers/RenderPassManager.h" ///<For GFX_RENDER_BIN_SIZE
+#include "Rendering/Headers/Renderer.h"
+
+#ifdef FORCE_NV_OPTIMUS_HIGHPERFORMANCE
+extern "C" {
+	_declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
+}
+#endif
+
 enum RenderStage;
 enum SceneNodeType;
 
@@ -33,7 +41,6 @@ class Light;
 class Camera;
 class Object3D;
 class Framerate;
-class Renderer;
 class SceneRenderState;
 ///Rough around the edges Adapter pattern
 DEFINE_SINGLETON_EXT1(GFXDevice,RenderAPIWrapper)
@@ -52,7 +59,7 @@ public:
 	inline void registerKernel(Kernel* const kernel)     {_kernel = kernel;}
 	inline void initDevice(U32 targetFrameRate)          {_api.initDevice(targetFrameRate);}
 	inline void changeResolution(U16 w, U16 h)           {_api.changeResolution(w,h);}
-	inline void setWindowPos(U16 w, U16 h)               {_api.setWindowPos(w,h);}
+	inline void setWindowPos(U16 w, U16 h)      const    {_api.setWindowPos(w,h);}
 
 	inline void exitRenderLoop(const bool killCommand = false) {_api.exitRenderLoop(killCommand);}
 	       void closeRenderingApi();
@@ -79,11 +86,8 @@ public:
 	void enableFog(FogMode mode, F32 density, const vec3<F32>& color, F32 startDist, F32 endDist);
 
 	inline void toggle2D(bool _2D)  {_api.toggle2D(_2D);}
-	inline void lookAt(const vec3<F32>& eye,
-					   const vec3<F32>& center,
-					   const vec3<F32>& up = vec3<F32>(0,1,0),
-					   const bool invertx = false,
-					   const bool inverty = false)	{ _api.lookAt(eye,center,up,invertx,inverty); }
+	inline void lookAt(const mat4<F32>& viewMatrix, const vec3<F32>& viewDirection)	{ _api.lookAt(viewMatrix, viewDirection); }
+	inline void lookAt(const vec3<F32>& eye, const vec3<F32>& target, const vec3<F32>& up = WORLD_Y_AXIS) {_api.lookAt(eye,target,up);}
     ///Usually, after locking and releasing our matrices we want to revert to the View matrix to render geometry
     inline void lockMatrices(const MATRIX_MODE& setCurrentMatrix = VIEW_MATRIX, bool lockView = true, bool lockProjection = true)          {_api.lockMatrices(setCurrentMatrix,lockView,lockProjection);}
     inline void releaseMatrices(const MATRIX_MODE& setCurrentMatrix = VIEW_MATRIX, bool releaseView = true, bool releaseProjection = true) {_api.releaseMatrices(setCurrentMatrix,releaseView,releaseProjection);}
@@ -91,9 +95,11 @@ public:
     inline void setOrthoProjection(const vec4<F32>& rect, const vec2<F32>& planes){_api.setOrthoProjection(rect,planes);}
     ///sets a perspective projection, updating any listeners if needed
 	inline void setPerspectiveProjection(F32 FoV,F32 aspectRatio, const vec2<F32>& planes) { _api.setPerspectiveProjection(FoV,aspectRatio,planes);}
+	///sets the view frustum to either the left or right eye position for anaglyph rendering
+	inline void setAnaglyphFrustum(F32 camIOD, bool rightFrustum = false)  {_api.setAnaglyphFrustum(camIOD,rightFrustum);}
 			///sets a new horizontal FoV
 			void setHorizontalFoV(I32 newFoV);
-	inline void renderInViewport(const vec4<I32>& rect, boost::function0<void> callback)  {_api.renderInViewport(rect,callback);}
+	inline void renderInViewport(const vec4<U32>& rect, boost::function0<void> callback)  {_api.renderInViewport(rect,callback);}
 	//returns an immediate mode emulation buffer that can be used to construct geometry in a vertex by vertex manner. 
 	//allowPrimitiveRecycle = do not reause old primitives and do not delete it after x-frames. (Don't use the primitive zombie feature)
     inline IMPrimitive* createPrimitive(bool allowPrimitiveRecycle = true) { return _api.createPrimitive(allowPrimitiveRecycle); }
@@ -116,18 +122,18 @@ public:
 	///The render callback must update all visual information and populate the "RenderBin"'s!
 	///Use the sceneGraph::update callback as default using the macro SCENE_GRAPH_UPDATE(pointer)
 	///pointer = a pointer to the sceneGraph instance used for rendering
-	void render(boost::function0<void> renderFunction,SceneRenderState* const sceneRenderState);
+	void render(boost::function0<void> renderFunction, const SceneRenderState& sceneRenderState);
 	///Update light properties internally in the Rendering API
 	inline void setLight(Light* const light)           {_api.setLight(light);}
-	///Sets the current render state.
+	///Sets the current render stage.
 	///@param stage Is used to inform the rendering pipeline what we are rendering. Shadows? reflections? etc
-	inline void  setRenderStage(RenderStage stage) {_renderStage = stage;}
+	inline void  setRenderStage(RenderStage stage) {_prevRenderStage = _renderStage; _renderStage = stage;}
+	///Restores the render stage to the previous one calling it multiple times will ping-pong between stages
+	inline void  setPreviousRenderStage()          {setRenderStage(_prevRenderStage);}
     ///Checks if the current rendering stage is any of the stages defined in renderStageMask
 	///@param renderStageMask Is a bitmask of the stages we whish to check if active
-		   bool isCurrentRenderStage(U16 renderStageMask);
-           bool getDeferredRendering();
-
-	inline RenderStage  getRenderStage()                 {return _renderStage;}
+		   bool         isCurrentRenderStage(U16 renderStageMask);
+ 	inline RenderStage  getRenderStage()                 {return _renderStage;}
 	inline void         setPrevShaderId(const U32& id)   {_prevShaderId = id;}
 	inline U32          getPrevShaderId()                {return _prevShaderId;}
 	inline void         setPrevTextureId(const U32& id)  {_prevTextureId = id;}
@@ -135,14 +141,40 @@ public:
 	inline Renderer*    getRenderer()                    {assert(_renderer != NULL); return _renderer;}
 	       void         setRenderer(Renderer* const renderer);
 		   void         closeRenderer();
+
+	/*
+	/* Clipping plane management. All the clipping planes are handled by shader programs only!
+	*/
+	///enable-disable HW clipping
+	inline void updateClipPlanes() {_api.updateClipPlanes(); }
+	/// add a new clipping plane. This will be limited by the actual shaders (how many planes they use)
+	/// this function returns the newly added clip plane's index in the vector
+	inline I32 addClipPlane(const Plane<F32>& p);
+	/// add a new clipping plane defined by it's equation's coefficients
+	inline I32 addClipPlane(F32 A, F32 B, F32 C, F32 D);
+	/// remove a clip plane by index
+	inline bool removeClipPlane(U32 index);
+	/// disable a clip plane by index
+	inline bool disableClipPlane(U32 index);
+	/// enable a clip plane by index
+	inline bool enableClipPlane(U32 index);
+	/// modify a single clip plane by index
+	inline void setClipPlane(U32 index, const Plane<F32>& p);
+	/// set a new list of clipping planes. The old one is discarded
+	inline void setClipPlanes(const PlaneList& clipPlanes);
+	/// clear all clipping planes
+	inline void resetClipPlanes();
+	/// have the clipping planes changed?
+	inline bool clippingPlanesDirty()           const {return _clippingPlanesDirty;}
+	/// get the entire list of clipping planes
+	inline const PlaneList& getClippingPlanes() const {return _clippingPlanes;}
 	///Save a screenshot in TGA format
 	inline void Screenshot(char *filename, const vec4<F32>& rect){_api.Screenshot(filename,rect);}
 	/// Some Scene Node Types are excluded from certain operations (lights triggers, etc)
 	bool excludeFromStateChange(const SceneNodeType& currentType);
 	///Creates a new API dependend stateblock based on the received description
 	///Calls newRenderStateBlock and also saves the new block in the state block map
-	RenderStateBlock* GFXDevice::createStateBlock(const RenderStateBlockDescriptor& descriptor);
-
+	RenderStateBlock* createStateBlock(const RenderStateBlockDescriptor& descriptor);
 	///Sets the current state block to the one passed as a param
 	///It is not set immediately, but a call to "updateStates" is required
     RenderStateBlock* setStateBlock(RenderStateBlock* block, bool forceUpdate = false);
@@ -162,23 +194,28 @@ public:
 	///It renders the entire scene graph (with culling) as default
 	///use the callback param to override the draw function
 	void  generateCubeMap(FrameBufferObject& cubeMap,
-						  Camera* const activeCamera,
 						  const vec3<F32>& pos,
-						  boost::function0<void> callback = 0);
+						  boost::function0<void> callback = 0,
+						  const RenderStage& renderStage = ENVIRONMENT_MAPPING_STAGE);
 
 	inline bool loadInContext(const CurrentContext& context, boost::function0<void> callback) {return _api.loadInContext(context, callback);}
 	inline void getMatrix(const MATRIX_MODE& mode, mat4<F32>& mat)       {_api.getMatrix(mode, mat);}
     inline void getMatrix(const EXTENDED_MATRIX& mode, mat4<F32>& mat)   {_api.getMatrix(mode, mat);}
     inline void getMatrix(const EXTENDED_MATRIX& mode, mat3<F32>& mat)   {_api.getMatrix(mode, mat);}
 
-#if defined( __WIN32__ ) || defined( _WIN32 )
+#if defined(OS_WINDOWS)
 	HWND getHWND() {return _api.getHWND();}
-#elif defined( __APPLE_CC__ ) // Apple OS X
+#elif defined(OS_APPLE)
 	??
 #else //Linux
 	Display* getDisplay() {return _api.getDisplay();}
 	GLXDrawable getDrawSurface() {return _api.getDrawSurface();}
 #endif
+
+protected:
+	friend class Kernel;
+	friend class Application;
+	inline void setMousePosition(D32 x, D32 y) const {_api.setMousePosition(x,y);}
 
 private:
 
@@ -193,7 +230,7 @@ private:
 private:
 	RenderAPIWrapper& _api;
 	bool _deviceStateDirty;
-	RenderStage _renderStage;
+	RenderStage _renderStage, _prevRenderStage;
     U32  _prevShaderId,  _prevTextureId;
     bool _drawDebugAxis;
 
@@ -212,21 +249,11 @@ protected:
 	RenderStateBlock* _defaultStateBlock;
 	///Pointer to current kernel
 	Kernel* _kernel;
+	PlaneList _clippingPlanes;
+	bool      _clippingPlanesDirty;
 
 END_SINGLETON
 
-#define GFX_DEVICE GFXDevice::getInstance()
-#define GFX_RENDER_BIN_SIZE RenderPassManager::getInstance().getLastTotalBinSize(0)
+#include "GFXDevice-Inl.h"
 
-inline RenderStateBlock* SET_STATE_BLOCK(RenderStateBlock* const block, bool forceUpdate = false){
-    return GFX_DEVICE.setStateBlock(block,forceUpdate);
-}
-
-inline RenderStateBlock* SET_DEFAULT_STATE_BLOCK(bool forceUpdate = false){
-    return GFX_DEVICE.setDefaultStateBlock(forceUpdate);
-}
-
-inline RenderStateBlock* SET_PREVIOUS_STATE_BLOCK(bool forceUpdate = false){
-    return GFX_DEVICE.setPreviousStateBlock(forceUpdate);
-}
 #endif

@@ -47,7 +47,7 @@ glslopt_ctx* GL_API::_GLSLOptContex = NULL;
 ///GLEW_MX requirement
 static boost::thread_specific_ptr<GLEWContext> _GLEWContextPtr;
 GLEWContext * glewGetContext(){ return _GLEWContextPtr.get(); }
-#if defined(_WIN32)
+#if defined( OS_WINDOWS )
 static boost::thread_specific_ptr<WGLEWContext> _WGLEWContextPtr;
 WGLEWContext* wglewGetContext(){ return _WGLEWContextPtr.get(); }
 #else
@@ -80,7 +80,7 @@ namespace Divide{
 				exit(GLEW_INIT_ERROR);
 			}
 #ifdef GLEW_MX
-	#if defined(_WIN32)
+	#if defined( OS_WINDOWS )
 
 			WGLEWContext * currentWGLEWContextsPtr =  _WGLEWContextPtr.get();
 			if (currentWGLEWContextsPtr == NULL)	{
@@ -139,14 +139,13 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, I32 argc, char **a
 	
 	if(_msaaSamples > 1 && _useMSAA)	glfwWindowHint(GLFW_SAMPLES, _msaaSamples);
 	
-	if(par.getParam<bool>("rendering.overrideRefreshRate",false)){
-		//glfwWindowHint(GLFW_REFRESH_RATE,par.getParam<U8>("rendering.targetRefreshRate",75));
+	if(par.getParam<bool>("runtime.overrideRefreshRate",false)){
+		//glfwWindowHint(GLFW_REFRESH_RATE,par.getParam<U8>("runtime.targetRefreshRate",75));
 	}
 
-	GLint glMinorVer = static_cast<GLint>(par.getParam<GLubyte>("runtime.GLminorVer",2));
-	glfwWindowHint(GLFW_RESIZABLE,!par.getParam<bool>("runtime.allowWindowResize",true));
+	glfwWindowHint(GLFW_RESIZABLE,par.getParam<bool>("runtime.allowWindowResize",false));
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR,3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR,glMinorVer);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR,3);
 	///32Bit RGBA (R8G8B8A8), 24bit Depth, 8bit Stencil
 	glfwWindowHint(GLFW_RED_BITS,8);
 	glfwWindowHint(GLFW_GREEN_BITS,8);
@@ -154,13 +153,8 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, I32 argc, char **a
 	glfwWindowHint(GLFW_ALPHA_BITS,8);
 	glfwWindowHint(GLFW_DEPTH_BITS,24);
 	glfwWindowHint(GLFW_STENCIL_BITS,8);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, par.getParam<bool>("runtime.useGLCompatProfile",true) ? GLFW_OPENGL_COMPAT_PROFILE : GLFW_OPENGL_CORE_PROFILE);
 	
-	if(glMinorVer > 1 && par.getParam<bool>("runtime.useGLCompatProfile",true)){
-		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
-	}else{
-		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	}
-
 	//Store the main window ID for future reference
 	// Open an OpenGL window; resolution is specified in the external XML files
 	bool window = par.getParam<bool>("runtime.windowedMode",true);
@@ -178,6 +172,12 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, I32 argc, char **a
 	glfwMakeContextCurrent(Divide::GL::_mainWindow);
 	//Init glew for main context
 	Divide::GL::initGlew();
+	
+	//Geometry shaders became core in version 3.3
+	if(!GLEW_VERSION_3_3){
+		ERROR_FN(Locale::get("ERROR_GFX_DEVICE"),"The OpenGL version supported by the current GPU is too old!");
+		return GLEW_OLD_HARDWARE;
+	}
 
 	glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
 	Divide::GL::_loaderWindow = glfwCreateWindow(1,1,"divide-res-loader",NULL, Divide::GL::_mainWindow);
@@ -185,18 +185,6 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, I32 argc, char **a
 		glfwTerminate();
 		return( GLFW_WINDOW_INIT_ERROR );
 	}
-
-	bool coreGeomShaders = (glewIsSupported("ARB_geometry_shader4") == GL_TRUE);
-	bool arbGeomShaders  = (glewIsSupported("GL_ARB_geometry_shader4") == GL_TRUE);
-	bool extGeomShaders  = (glewIsSupported("GL_EXT_geometry_shader4") == GL_TRUE);
-
-	if(!coreGeomShaders && !extGeomShaders && !arbGeomShaders){
-		ERROR_FN(Locale::get("ERROR_GFX_DEVICE"),"geometry shaders are not supported by the current GPU!");
-		return GLEW_OLD_HARDWARE;
-	}
-	GL_API::_coreGeomShadersAvailable = coreGeomShaders;
-	GL_API::_arbGeomShadersAvailable  = arbGeomShaders;
-	GL_API::_extGeomShadersAvailable  = extGeomShaders;
 
 #ifdef _DEBUG
 	if(GLEW_ARB_debug_output) {
@@ -229,10 +217,10 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, I32 argc, char **a
 	I32 width = return_struct->width;
 	glfwSetWindowPos(Divide::GL::_mainWindow, (width - resolution.width)*0.5f,(height - resolution.height)*0.5f);
 
-#if defined( __WIN32__ ) || defined( _WIN32 )
+#if defined( OS_WINDOWS )
 	_hwnd = FindWindow(NULL,par.getParam<std::string>("appTitle").c_str());
 	_hdc = GetDC(_hwnd);
-#elif defined( __APPLE_CC__ ) // Apple OS X
+#elif defined( OS_APPLE ) // Apple OS X
 ///??
 #else //Linux
 	_dpy = XOpenDisplay();
@@ -243,7 +231,7 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, I32 argc, char **a
 	GLint max_frag_uniform = 0, max_varying_floats = 0;
 	GLint max_vertex_uniform = 0, max_vertex_attrib = 0,max_texture_units = 0;
 	GLint buffers = 0,samplesEffective = 0;
-	GLint major = 0, minor = 0;
+	GLint major = 0, minor = 0, maxMinor = 0;
 	GLint maxAnisotrophy = 0;
 	GLint maxUBOBindings = 0, maxUBOBlockSize = 0;
 
@@ -273,6 +261,9 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, I32 argc, char **a
 		gpuVendorByte = "Unknown GPU Vendor";
 	}
 
+	//Shader selection based on detail
+	par.setParam("shaderDetailToken",par.getParam<GLubyte>("rendering.detailLevel"));
+	par.setParam("GFX_DEVICE.maxTextureCombinedUnits",max_texture_units);
 	//Cap max aniso to what the hardware supports
 	if(maxAnisotrophy < par.getParam<U8>("rendering.anisotropicFilteringLevel",1)){
 		par.setParam("rendering.anisotropicFilteringLevel",maxAnisotrophy);
@@ -284,31 +275,31 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, I32 argc, char **a
 		PRINT_FN(Locale::get("WARN_SWITCH_D3D"));
 		PRINT_FN(Locale::get("WARN_APPLICATION_CLOSE"));
 		return GLEW_OLD_HARDWARE;
-	}else {
-		//OpenGL 3.1 introduced v140 for GLSL, so use a maximum of "medium" shaders
-		//some "high" shaders need v150
-		if(minor < 2){
-			//If settings are set to low, use "low" shaders else cap at "medium" level
-			par.setParam("shaderDetailToken",(par.getParam<GLubyte>("rendering.detailLevel") == DETAIL_LOW) ? DETAIL_LOW : DETAIL_MEDIUM);
-		}else{	//If we got here, full OpenGL 3.2/3.3 is supported so use full shaders
-			//Same shader selection based on detail level as above
-			par.setParam("shaderDetailToken",par.getParam<GLubyte>("rendering.detailLevel"));
-		}
-		major == 3 ? setVersionId(OpenGL3x) : setVersionId(OpenGL4x);
+	}else if(major == 3){
+		setVersionId(OpenGL3x);
+		maxMinor = 3;
+	}else{
+		setVersionId(OpenGL4x);
+		/*   if(GLEW_VERSION_4_4) maxMinor = 4;
+		else*/if(GLEW_VERSION_4_3) maxMinor = 3;
+		else  if(GLEW_VERSION_4_2) maxMinor = 2;
+		else  if(GLEW_VERSION_4_1) maxMinor = 1;
 	}
-	par.setParam("GFX_DEVICE.maxTextureCombinedUnits",max_texture_units);
+
 	//Print all of the OpenGL functionality info to the console
 	PRINT_FN(Locale::get("GL_MAX_UNIFORM"),max_frag_uniform);
 	PRINT_FN(Locale::get("GL_MAX_FRAG_VARYING"),max_varying_floats);
 	PRINT_FN(Locale::get("GL_MAX_VERT_UNIFORM"),max_vertex_uniform);
 	PRINT_FN(Locale::get("GL_MAX_VERT_ATTRIB"),max_vertex_attrib);
 	PRINT_FN(Locale::get("GL_MAX_TEX_UNITS"),max_texture_units);
-	PRINT_FN(Locale::get("GL_MAX_VERSION"),major,minor);
+	PRINT_FN(Locale::get("GL_MAX_VERSION"),major,maxMinor);
 	PRINT_FN(Locale::get("GL_GLSL_SUPPORT"),glslVersionSupported);
 	PRINT_FN(Locale::get("GL_VENDOR_STRING"),gpuVendorByte.c_str(), glGetString(GL_RENDERER));
 	PRINT_FN(Locale::get("GL_MULTI_SAMPLE_INFO"),samplesEffective,buffers);
 	PRINT_FN(Locale::get("GL_UBO_INFO"),maxUBOBindings, maxUBOBlockSize);
+
 	GL_ENUM_TABLE::fill();
+
 	//Set the clear color to a nice blue
 	GL_API::clearColor(DIVIDE_BLUE());
 	if(glewIsSupported("GL_ARB_seamless_cube_map")){
@@ -348,13 +339,17 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, I32 argc, char **a
 	_uniformBufferObjects[Matrices_UBO]->ReserveBuffer(2 * 16, sizeof(F32)); //View and Projection 2 x 16 float values
 	_uniformBufferObjects[Lights_UBO]  = New glUniformBufferObject();
 	_uniformBufferObjects[Lights_UBO]->Create(Lights_UBO,true,false);
-	_uniformBufferObjects[Lights_UBO]->ReserveBuffer(MAX_LIGHTS_PER_SCENE_NODE, sizeof(LightProperties)); //Usually less or equal to 4
+	_uniformBufferObjects[Lights_UBO]->ReserveBuffer(Config::MAX_LIGHTS_PER_SCENE_NODE, sizeof(LightProperties)); //Usually less or equal to 4
 
 /*
 	_uniformBufferObjects[Material_UBO]  = New glUniformBufferObject();
 	_uniformBufferObjects[Material_UBO]->Create(Material_UBO,true,false);
 	_uniformBufferObjects[Material_UBO]->ReserveBuffer(num materials here, sizeof(_mat->getShaderData()) );
 */
+	for(GLuint index = 0; index < Config::MAX_CLIP_PLANES; ){
+		_activeClipPlanes[index++] = false;
+	}
+
 	//That's it. Everything should be ready for draw calls
 	PRINT_FN(Locale::get("START_OGL_API_OK"));
 
@@ -389,16 +384,20 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, I32 argc, char **a
 }
 
 void GL_API::exitRenderLoop(const bool killCommand) {
-	Divide::GL::_applicationClosing = killCommand;
+	Divide::GL::_applicationClosing = true;
 	glfwSetWindowShouldClose(Divide::GL::_mainWindow,true);
 	glfwSetWindowShouldClose(Divide::GL::_loaderWindow,true);
-	_closeLoadingThread = true;
-	_loaderThread->join();
 }
 
 ///clear up stuff ...
 void GL_API::closeRenderingApi(){
-	SAFE_DELETE(_loaderThread);
+	_closeLoadingThread = true;
+	_loaderThread->join();
+
+	Divide::GL::_applicationClosing = true;
+	glfwSetWindowShouldClose(Divide::GL::_mainWindow,true);
+	glfwSetWindowShouldClose(Divide::GL::_loaderWindow,true);
+
 	try{
 		CEGUI::System::destroy();
 	}
@@ -420,6 +419,12 @@ void GL_API::closeRenderingApi(){
 	_glimInterfaces.clear(); //<Should call all destructors
 	SAFE_DELETE(_prevPointString);
 	SAFE_DELETE(_state2DRendering);
+
+	glfwDestroyWindow(Divide::GL::_mainWindow);
+	glfwDestroyWindow(Divide::GL::_loaderWindow);
+	glfwTerminate();
+	
+	SAFE_DELETE(_loaderThread);
 }
 
 void GL_API::initDevice(GLuint targetFrameRate){
@@ -427,46 +432,40 @@ void GL_API::initDevice(GLuint targetFrameRate){
 	while(!glfwWindowShouldClose(Divide::GL::_mainWindow)) {
 		Kernel::MainLoopStatic();
 	}
-
-	glfwDestroyWindow(Divide::GL::_mainWindow);
-	glfwDestroyWindow(Divide::GL::_loaderWindow);
-	glfwTerminate();
 }
 
 bool GL_API::initShaders(){
     //Init glsw library
 	I32 glswState = glswInit();
     glswAddDirectiveToken("","#version 130\n/*“Copyright 2009-2013 DIVIDE-Studio”*/");
-    glswAddDirectiveToken("","#extension GL_EXT_texture_array : require");
+    glswAddDirectiveToken("Fragment","#extension GL_EXT_texture_array : require");
 	glswAddDirectiveToken("","#extension GL_ARB_uniform_buffer_object : require");
-	if(!GL_API::_coreGeomShadersAvailable){
-		if(GL_API::_arbGeomShadersAvailable){
-			glswAddDirectiveToken("","#extension GL_ARB_geometry_shader4 : enable");
-		}else{
-			glswAddDirectiveToken("","#extension GL_EXT_geometry_shader4 : enable");
-		}
-	}
-	
-    if(GFX_DEVICE.getGPUVendor() == GPU_VENDOR_NVIDIA || GFX_DEVICE.getGPUVendor() == GPU_VENDOR_AMD){
-		glswAddDirectiveToken("","#extension GL_EXT_gpu_shader4 : enable");
+	glswAddDirectiveToken("","#extension GL_EXT_gpu_shader4 : enable");
 
-        if(GFX_DEVICE.getGPUVendor() == GPU_VENDOR_NVIDIA){ //nVidia specific
-            glswAddDirectiveToken("","#pragma optionNV(fastmath on)");
-            glswAddDirectiveToken("","#pragma optionNV(fastprecision on)");
-            glswAddDirectiveToken("","#pragma optionNV(inline all)");
-            glswAddDirectiveToken("","#pragma optionNV(strict on)");
-            glswAddDirectiveToken("","#pragma optionNV(unroll all)");
-        }else{//AMD specific
-        }
+    if(getGPUVendor() == GPU_VENDOR_NVIDIA){ //nVidia specific
+        glswAddDirectiveToken("","#pragma optionNV(fastmath on)");
+        glswAddDirectiveToken("","#pragma optionNV(fastprecision on)");
+        glswAddDirectiveToken("","#pragma optionNV(inline all)");
+        glswAddDirectiveToken("","#pragma optionNV(strict on)");
+        glswAddDirectiveToken("","#pragma optionNV(unroll all)");
 	}
-	
-    std::string lightCount("#define MAX_LIGHT_COUNT " + Util::toString(MAX_LIGHTS_PER_SCENE_NODE));
-	std::string shadowCount("#define MAX_SHADOW_CASTING_LIGHTS " + Util::toString(MAX_SHADOW_CASTING_LIGHTS_PER_NODE));
+
+	if(getGPUVendor() == GPU_VENDOR_AMD){
+		glswAddDirectiveToken("","#define SKIP_HARDWARE_CLIPPING");
+	}
+
+	std::string clipPlanes("#define MAX_CLIP_PLANES " + Util::toString(Config::MAX_CLIP_PLANES));
+    std::string lightCount("#define MAX_LIGHT_COUNT " + Util::toString(Config::MAX_LIGHTS_PER_SCENE_NODE));
+	std::string shadowCount("#define MAX_SHADOW_CASTING_LIGHTS " + Util::toString(Config::MAX_SHADOW_CASTING_LIGHTS_PER_NODE));
+	glswAddDirectiveToken("", clipPlanes.c_str());
 	glswAddDirectiveToken("", lightCount.c_str());
 	glswAddDirectiveToken("", shadowCount.c_str());
     glswAddDirectiveToken("","#define Z_TEST_SIGMA 0.0001");
     glswAddDirectiveToken("","#define ALPHA_DISCARD_THRESHOLD 0.2");
-    glswAddDirectiveToken("","__CUSTOM_DEFINES__");
+    glswAddDirectiveToken("","//__CUSTOM_DEFINES__");
+	glswAddDirectiveToken("Fragment","//__CUSTOM_FRAGMENT_UNIFORMS__");
+	glswAddDirectiveToken("Vertex","//__CUSTOM_VERTEX_UNIFORMS__");
+
     GL_API::_GLSLOptContex = glslopt_initialize(GFX_DEVICE.getApi() == OpenGLES);
     if(glswState == 1 && GL_API::_GLSLOptContex != NULL){
         return true;
@@ -493,7 +492,7 @@ void GL_API::changeResolutionInternal(U16 w, U16 h){
     Divide::GL::_matrixMode(PROJECTION_MATRIX);
 	Divide::GL::_loadIdentity();
 	// Set the viewport to be the entire window
-    GL_API::setViewport(0,0,w,h,true);
+    GL_API::setViewport(vec4<U32>(0,0,w,h),true);
 	// Set the clipping volume
 	Divide::GL::_perspective(fov,ratio,zNear,zFar);
 
@@ -508,8 +507,12 @@ void GL_API::changeResolutionInternal(U16 w, U16 h){
 	Kernel::updateResolutionCallback(w,h);
 }
 
-void GL_API::setWindowPos(GLushort w, GLushort h){
+void GL_API::setWindowPos(GLushort w, GLushort h) const {
 	glfwSetWindowPos(Divide::GL::_mainWindow,w,h);
+}
+
+void GL_API::setMousePosition(D32 x, D32 y) const {
+	glfwSetCursorPos(Divide::GL::_mainWindow,x,y);
 }
 
 void GL_API::idle(){
@@ -517,7 +520,8 @@ void GL_API::idle(){
 }
 
 bool GL_API::loadInContext(const CurrentContext& context, boost::function0<GLvoid> callback) {
-	if(callback.empty()) return false;
+	if(callback.empty())
+		return false;
 
 	if(context == GFX_LOADING_CONTEXT){
 		while(!_loadQueue.push(callback));
@@ -534,7 +538,7 @@ void GL_API::loadInContextInternal(){
 #endif
 	while(!_closeLoadingThread){
 		if(_loadQueue.empty()){
-			boost::this_thread::sleep(boost::posix_time::milliseconds(5));//<Avoid burning the CPU - Ionut
+			boost::this_thread::sleep(boost::posix_time::milliseconds(10));//<Avoid burning the CPU - Ionut
 			continue;
 		}
 		boost::function0<GLvoid> callback;

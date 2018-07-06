@@ -40,6 +40,7 @@
 #define M_PI2				9.869604401089358618834490999876f		//  PI ^ 2
 #define M_PIDIV180			0.01745329251994329576923690768488f		//  PI / 180
 #define M_180DIVPI			57.295779513082320876798154814105f		//  180 / PI
+#define M_PIDIV360          0.00872664625997164788461845384244f     //  PI / 180 / 2 - PI / 360
 
 #define DegToRad(a)	(a)*=M_PIDIV180
 #define RadToDeg(a)	(a)*=M_180DIVPI
@@ -58,13 +59,36 @@
 #define MsToSec(a)   (a)*=0.001f
 #define SecToMs(a)   (a)*=1000.0f
 
+const  F32 INV_RAND_MAX = 1.0 / (RAND_MAX + 1);
+inline F32 random(F32 max=1.0)      { return max * rand() * INV_RAND_MAX; }
+inline F32 random(F32 min, F32 max) { return min + (max - min) * INV_RAND_MAX * rand(); }
+inline I32 random(I32 max=RAND_MAX) { return rand()%(max+1); }
+inline bool bitCompare(U32 bitMask, U32 bit) {return ((bitMask & bit) == bit);}
+
+// bit manipulation 
+#define ToBit(posn)      (1 << posn)
+#define BitSet(arg,posn) (arg |=  1 << posn)
+#define BitClr(arg,posn) (arg &= ~(1 << (posn)))
+#define BitTst(arg,posn) ((arg &   1 << (posn)) != 0)
+
+#define BitDiff(arg1,arg2) (arg1 ^ arg2)
+#define BitCmp(arg1,arg2,posn) ((arg1<<posn) == (arg2<<posn))
+
+// bitmask manipulation
+#define BitMaskSet(arg,mask) ((arg) |= (mask))
+#define BitMaskClear(arg,mask) ((arg) &= (~(mask)))
+#define BitMaskFlip(arg,mask) ((arg) ^= (mask))
+#define BitMaskCheck(arg,mask) ((arg) & (mask))
+
+template <typename T>
+class mat4;
+template <typename T>
+class vec3;
+template <typename T>
+class Quaternion;
+
 namespace Util {
-	template <typename T>
-	class mat4;
-	template <typename T>
-	class vec3;
-	template <typename T>
-	class Quaternion;
+
 
     inline void replaceStringInPlace(std::string& subject, const std::string& search, const std::string& replace) {
         size_t pos = 0;
@@ -141,10 +165,10 @@ namespace Util {
 	}
 	namespace Mat4{
 		// ----------------------------------------------------------------------------------------
-		template <typename T>
-		void decompose (const mat4<T>& matrix, vec3<T>& scale, Quaternion<T>& rotation,	vec3<T>& position);
-		template <typename T>
-		void decomposeNoScaling(const mat4<T>& matrix, Quaternion<T>& rotation,	vec3<T>& position);
+		template<class Type>
+		void decompose (const mat4<Type>& matrix, vec3<Type>& scale, Quaternion<Type>& rotation, vec3<Type>& position);
+		template<class Type>
+		void decomposeNoScaling(const mat4<Type>& matrix, Quaternion<Type>& rotation,	vec3<Type>& position);
 	}
 }
 

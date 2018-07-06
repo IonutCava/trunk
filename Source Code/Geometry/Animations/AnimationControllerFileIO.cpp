@@ -81,7 +81,7 @@ void AnimEvaluator::Load(std::ifstream& file){
 			file.read(reinterpret_cast<char*>(&_channels[j]._scalingKeys[i].mValue), sizeof(_channels[j]._scalingKeys[i].mValue));// pos key
 		}
 	}
-	_lastPositions.resize( _channels.size(), vec3<U32>( 0, 0, 0));
+	_lastPositions.resize( _channels.size(), vec3<U32>());
 }
 
 void SceneAnimator::Save(std::ofstream& file){

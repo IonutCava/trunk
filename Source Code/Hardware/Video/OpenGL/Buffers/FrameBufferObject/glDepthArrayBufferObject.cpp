@@ -12,12 +12,12 @@ glDepthArrayBufferObject::glDepthArrayBufferObject() : glFrameBufferObject(FBO_2
 	_textureType = GL_TEXTURE_2D_ARRAY_EXT;
 }
 
-void glDepthArrayBufferObject::DrawToLayer(GLubyte face, GLubyte layer){
+void glDepthArrayBufferObject::DrawToLayer(GLubyte face, GLubyte layer) const {
 	GLCheck(glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _depthId, 0, layer));
-	GLCheck(glClear( GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT ));
+	GLCheck(glClear( _clearBufferMask ));
 }
 
-void glDepthArrayBufferObject::Bind(GLubyte unit, GLubyte texture) {
+void glDepthArrayBufferObject::Bind(GLubyte unit, GLubyte texture) const {
 	FrameBufferObject::Bind(unit);
     GL_API::setActiveTextureUnit(unit);
 	GLCheck(glBindTexture(_textureType, _depthId));

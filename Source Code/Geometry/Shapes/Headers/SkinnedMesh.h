@@ -34,9 +34,10 @@ public:
 	~SkinnedMesh()
 	{
 	}
-	void sceneUpdate(const U32 sceneTime,SceneGraphNode* const sgn);
+	void sceneUpdate(const U32 sceneTime,SceneGraphNode* const sgn, SceneState& sceneState);
     bool playAnimations();
 	void preFrameDrawEnd() {}
+	void updateTransform(SceneGraphNode* const sgn);
 
 private:
 	bool _playAnimations;

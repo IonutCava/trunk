@@ -61,8 +61,8 @@ protected:
     virtual void idle() = 0;
 	virtual PhysicsSceneInterface* NewSceneInterface(Scene* scene) = 0;
 
-	virtual bool createPlane(const vec3<F32>& position = vec3<F32>(0,0,0), U32 size = 1) = 0;
-	virtual bool createBox(const vec3<F32>& position = vec3<F32>(0,0,0), F32 size = 1) = 0;
+	virtual bool createPlane(const vec3<F32>& position = vec3<F32>(0.0f), U32 size = 1) = 0;
+	virtual bool createBox(const vec3<F32>& position = vec3<F32>(0.0f), F32 size = 1.0f) = 0;
 	virtual bool createActor(SceneGraphNode* const node, PhysicsActorMask mask,PhysicsCollisionGroup group) = 0;
     virtual void setPhysicsScene(PhysicsSceneInterface* const targetScene) = 0;
     virtual void initScene() = 0;

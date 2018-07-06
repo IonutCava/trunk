@@ -25,15 +25,21 @@
 
 #include "Hardware/Video/OpenGL/Headers/glResources.h"
 
-struct SamplerDescriptor;
+class SamplerDescriptor;
 
 class glSamplerObject {
 public:
     glSamplerObject();
     ~glSamplerObject();
 
+	bool Destroy();
     bool Create(const SamplerDescriptor& descriptor);
-    void Bind(GLuint textureUnit);
+
+    void Bind(GLuint textureUnit) const;
+	void Unbind(GLuint textureUnit) const;
+	void Bind() const;
+	void Unbind() const;
+
     inline GLuint getObjectHandle() {return _samplerID;}
 
 private:

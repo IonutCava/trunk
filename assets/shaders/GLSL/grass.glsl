@@ -34,8 +34,7 @@ void main(void){
 	_normalMV = normalize(dvd_NormalMatrix * dvd_Normal);
 
 	computeFoliageMovementGrass(dvd_Normal, _normalMV, dvd_Vertex);
-	 vec4 vertexM = dvd_ModelMatrix * dvd_Vertex;
-    _vertexMV = dvd_ViewMatrix * vertexM; 	   //< ModelView Vertex  
+    _vertexMV = dvd_ViewMatrix * _vertexM; 	   //< ModelView Vertex  
 
 	computeLightVectorsPhong();
 	vec3 vLightPosMVTemp = _lightDirection[0];
@@ -49,7 +48,7 @@ void main(void){
 	if(dvd_enableShadowMapping) {
 		// position multiplied by the light matrix. 
 		//The vertex's position from the light's perspective
-		_shadowCoord[0] = dvd_lightProjectionMatrices[0] * vertexM;
+		_shadowCoord[0] = dvd_lightProjectionMatrices[0] * _vertexM;
 	}
 }
 

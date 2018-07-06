@@ -26,7 +26,7 @@
 #ifdef HIDE_DEBUG_CONSOLE
 	#pragma comment( linker,"/subsystem:\"windows\" /entry:\"mainCRTStartup\"" )
 #endif
-
+/*
 #define NEW_PARAM (__FILE__, __LINE__)
 #define PLACEMENTNEW_PARAM ,__FILE__, __LINE__
 #define NEW_DECL , char* zFile, int nLine
@@ -35,8 +35,8 @@ void* operator new(size_t t ,char* zFile, int nLine);
 void operator delete(void * pxData ,char* zFile, int nLine);
 void * malloc_simd(const size_t bytes);
 void free_simd(void * pxData);
-
-#define New new NEW_PARAM
+*/
+#define New new //NEW_PARAM
 
 #ifndef NOMINMAX
 #define NOMINMAX
@@ -47,7 +47,7 @@ void free_simd(void * pxData);
 #include <stdio.h>
 #include <iostream>
 #include <assert.h>
-#include <memory.h>
+#include <memory>
 #include <malloc.h>
 #include <typeinfo.h>
 #include <time.h>
@@ -64,8 +64,13 @@ void free_simd(void * pxData);
 
 #define PNew(macroparam) new (macroparam PLACEMENTNEW_PARAM)
 
-#define GETTIME()   getMsToSec(Framerate::getInstance().getElapsedTime())
-#define GETMSTIME() Framerate::getInstance().getElapsedTime()
+inline U32 GETTIME() {
+	return getMsToSec(Framerate::getInstance().getElapsedTime());
+}
+
+inline U32 GETMSTIME() {
+	return Framerate::getInstance().getElapsedTime();
+}
 
 template <class T>
 inline T squared(T n){

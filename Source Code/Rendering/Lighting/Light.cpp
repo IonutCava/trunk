@@ -25,7 +25,7 @@ Light::Light(const U8 slot,const F32 range,const LightType& type) :
 												   _shadowMapInfo(NULL),
 												   _score(0)
 {
-	///All lights default to fully dynamic for now.
+	//All lights default to fully dynamic for now.
 	setLightMode(LIGHT_MODE_MOVABLE);
 
 	_properties._ambient = vec4<F32>(0.1f,0.1f,0.1f,1.0f);
@@ -36,7 +36,7 @@ Light::Light(const U8 slot,const F32 range,const LightType& type) :
 	_properties._attenuation = vec4<F32>(1.0f, 0.1f, 0.0f, range); //constAtt, linearAtt, quadAtt, range
 	_properties._brightness;
 	_properties._padding = 1.0f;
-	setShadowMappingCallback(SCENE_GRAPH_UPDATE(GET_ACTIVE_SCENE()->getSceneGraph()));
+	setShadowMappingCallback(SCENE_GRAPH_UPDATE(GET_ACTIVE_SCENEGRAPH()));
 	setRange(1);//<Default range of 1
 	_dirty = true;
 	_enabled = true;
@@ -61,35 +61,42 @@ void Light::postLoad(SceneGraphNode* const sgn) {
 }
 
 void Light::updateState(){
-	if(_dirty){
-        if(_drawImpostor){
-            if(!_impostor){
-                _impostor = New Impostor(_name,_properties._attenuation.w);
-                _impostor->getDummy()->getSceneNodeRenderState().setDrawState(false);
-		        _impostorSGN = _lightSGN->addNode(_impostor->getDummy());
-                _impostorSGN->setActive(false);
-            }
-			_lightSGN->getTransform()->setPosition(_properties._position);
-			_impostor->getDummy()->getMaterial()->setDiffuse(getDiffuseColor());
-			_impostor->getDummy()->getMaterial()->setAmbient(getDiffuseColor());
-			_impostorSGN->getTransform()->setPosition(_properties._position);
-			///Updating impostor range is expensive, so check if we need to
-			F32 range = _properties._attenuation.w;
-			if(!FLOAT_COMPARE(range,_impostor->getDummy()->getRadius())){
-				_impostor->getDummy()->setRadius(range);
-			}
-		}
+	if(!_dirty)
+		return;
 
-		///Do not set GL lights for deferred rendering
-		if(!GFX_DEVICE.getDeferredRendering()){	GFX_DEVICE.setLight(this);	
-		}
-		_dirty = false;
+    if(_drawImpostor){
+		Sphere3D* lightDummy = NULL;
+        if(!_impostor){
+            _impostor = New Impostor(_name,_properties._attenuation.w);
+			lightDummy = _impostor->getDummy();
+            lightDummy->getSceneNodeRenderState().setDrawState(false);
+	        _impostorSGN = _lightSGN->addNode(lightDummy);
+            _impostorSGN->setActive(false);
+        }
+
+		lightDummy = _impostor->getDummy();
+		_lightSGN->getTransform()->setPosition(_properties._position);
+		lightDummy->getMaterial()->setDiffuse(getDiffuseColor());
+		lightDummy->getMaterial()->setAmbient(getDiffuseColor());
+		_impostorSGN->getTransform()->setPosition(_properties._position);
+		//Updating impostor range is expensive, so check if we need to
+		F32 range = _properties._attenuation.w;
+
+		if(!FLOAT_COMPARE(range, lightDummy->getRadius()))
+			_impostor->getDummy()->setRadius(range);
 	}
+
+	//Do not set GL lights for deferred rendering
+	if(GFX_DEVICE.getRenderer()->getType() == RENDERER_FORWARD)
+		GFX_DEVICE.setLight(this);	
+	
+	_dirty = false;
 }
 
 void Light::setLightProperties(const LightPropertiesV& key, const vec4<F32>& value){
 	///Light properties are very dependent on scene state. Some lights can't be changed on runtime!
-	if(!GET_ACTIVE_SCENE()->state()->getRunningState()) return;
+	if(!GET_ACTIVE_SCENE()->state().getRunningState()) 
+		return;
 
 	///Simple light's can't be changed. Period!
 	if(_mode == LIGHT_MODE_SIMPLE){
@@ -99,10 +106,10 @@ void Light::setLightProperties(const LightPropertiesV& key, const vec4<F32>& val
 
 	///Movable lights have no restrictions
 	switch(key){
-		default: ERROR_FN(Locale::get("WARNING_INVALID_PROPERTY_SET"),_id); return;
-		case LIGHT_PROPERTY_DIFFUSE  : _properties._diffuse = value; break;
-		case LIGHT_PROPERTY_AMBIENT  : _properties._ambient = value; break;
-		case LIGHT_PROPERTY_SPECULAR : _properties._specular = value; break;
+		default: ERROR_FN(Locale::get("WARNING_INVALID_PROPERTY_SET"),_id);	return;
+		case LIGHT_PROPERTY_DIFFUSE  : 	_properties._diffuse = value;		break;
+		case LIGHT_PROPERTY_AMBIENT  :	_properties._ambient = value;		break;
+		case LIGHT_PROPERTY_SPECULAR :	_properties._specular = value;		break;
 	};
 
 	_dirty = true;
@@ -130,17 +137,20 @@ void Light::setDirection(const vec3<F32>& newDirection){
 
 void Light::setLightProperties(const LightPropertiesF& key, F32 value){
 	//Light properties are very dependent on scene state. Some lights can't be changed on runtime!
-	if(! GET_ACTIVE_SCENE()->state()->getRunningState()) return;
+	if(! GET_ACTIVE_SCENE()->state().getRunningState())
+		return;
 
 	if(key == LIGHT_PROPERTY_RANGE){
 		setRange(value);
 		return;
 	}
+
 	//Simple light's can't be changed. Period!
 	if(_mode == LIGHT_MODE_SIMPLE){
 		ERROR_FN(Locale::get("WARNING_ILLEGAL_PROPERTY"),_id, "Light_Simple",LightEnum(key));
 		return;
 	}
+
 	//Togglable lights can't be moved.
 	if(_mode == LIGHT_MODE_TOGGLABLE){
 		if(key == LIGHT_PROPERTY_RANGE || key == LIGHT_PROPERTY_BRIGHTNESS ||
@@ -204,29 +214,31 @@ void Light::updateBBatCurrentFrame(SceneGraphNode* const sgn){
 }
 
 bool Light::computeBoundingBox(SceneGraphNode* const sgn){
-    if(sgn->getBoundingBox().isComputed()) return true;
+    if(sgn->getBoundingBox().isComputed()) 
+		return true;
+
     F32 range = getRange() * 0.5f; //diameter to radius
-	sgn->getBoundingBox().set(vec3<F32>(-range,-range,-range),vec3<F32>(range,range,range));
+	sgn->getBoundingBox().set(vec3<F32>(-range), vec3<F32>(range));
 	return SceneNode::computeBoundingBox(sgn);
 }
 
 bool Light::isInView(const bool distanceCheck,const BoundingBox& boundingBox,const BoundingSphere& sphere){
-    if(!_drawImpostor) return false;
-    return (_impostorSGN != NULL);
+    return ((_impostorSGN != NULL) && _drawImpostor);
 }
 
 void Light::render(SceneGraphNode* const sgn){
 	///The isInView call should stop impostor rendering if needed
-	if(!_impostor) return;
+	if(!_impostor)
+		return;
+
 	_impostor->render(_impostorSGN);
 }
 
 void  Light::setRange(F32 range) {
 	_dirty = true;
 	_properties._attenuation.w = range;
-	if(_impostor){
+	if(_impostor)
 		_impostor->setRadius(range);
-	}
 }
 
 void Light::addShadowMapInfo(ShadowMapInfo* shadowMapInfo){
@@ -239,24 +251,24 @@ bool Light::removeShadowMapInfo(){
 }
 
 void Light::setCameraToSceneView(){
-	GFXDevice& gfx = GFX_DEVICE;
-	Frustum& frust = Frustum::getInstance();
 	//Set the ortho projection so that it encompasses the entire scene
-	gfx.setOrthoProjection(vec4<F32>(-1.0, 1.0, -1.0, 1.0), _zPlanes);
+	GFX_DEVICE.setOrthoProjection(vec4<F32>(-1.0, 1.0, -1.0, 1.0), _zPlanes);
 	//Extract the view frustum from this projection mode
-	frust.Extract(_eyePos - _lightPos);
+	Frustum::getInstance().Extract(_eyePos - _lightPos);
 	//get the MVP from the new Frustum as this is the light's full MVP
     //mat4<F32> bias;
-    gfx.getMatrix(MVP_MATRIX,_lightProjectionMatrix);
+    GFX_DEVICE.getMatrix(MVP_MATRIX,_lightProjectionMatrix);
     //gfx.getMatrix(BIAS_MATRIX,bias);
     //_lightProjectionMatrix = bias * _lightProjectionMatrix;
 }
 
-void Light::generateShadowMaps(SceneRenderState* renderState){
-	ShadowMap* sm = _shadowMapInfo->getOrCreateShadowMap(renderState);
-	if(sm){
-		sm->render(renderState, _callback);
-	}
+void Light::generateShadowMaps(const SceneRenderState& sceneRenderState){
+	ShadowMap* sm = _shadowMapInfo->getOrCreateShadowMap(sceneRenderState);
+
+	if(!sm)
+		return;
+
+	sm->render(sceneRenderState, _callback);
 }
 
 void Light::setShadowMappingCallback(boost::function0<void> callback) {
@@ -266,9 +278,8 @@ void Light::setShadowMappingCallback(boost::function0<void> callback) {
 void Light::setLightMode(const LightMode& mode) {
 	_mode = mode;
 	//if the light became dominant, inform the lightmanager
-	if(mode == LIGHT_MODE_DOMINANT){
+	if(mode == LIGHT_MODE_DOMINANT)
 		LightManager::getInstance().setDominantLight(this);
-	}
 }
 
 const char* Light::LightEnum(const LightPropertiesV& key) const {

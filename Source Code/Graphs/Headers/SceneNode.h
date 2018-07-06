@@ -44,8 +44,10 @@ enum SceneNodeType{
 
 class Scene;
 class Material;
+class SceneState;
 class ShaderProgram;
 enum  RenderStage;
+
 class SceneNode : public Resource {
 	friend class SceneGraphNode;
 	friend class RenderQueue;
@@ -64,7 +66,7 @@ public:
 	/*//Rendering/Processing*/
 
 	virtual	bool	  unload();
-	virtual bool	  isInView(const bool distanceCheck,const BoundingBox& boundingBox,const BoundingSphere& sphere);
+	virtual bool	  isInView(const BoundingBox& boundingBox,const BoundingSphere& sphere,const bool distanceCheck = true);
     virtual	void	  setMaterial(Material* const m);
 			void	  clearMaterials();
 		    Material* getMaterial();
@@ -93,20 +95,20 @@ public:
 	virtual void drawBoundingBox(SceneGraphNode* const sgn);
 	virtual void postLoad(SceneGraphNode* const sgn) = 0; //Post insertion calls (Use this to setup child objects during creation)
 	/// Called from SceneGraph "sceneUpdate"
-	virtual void sceneUpdate(const U32 sceneTime,SceneGraphNode* const sgn);
-
-	inline 	void setSelected(const bool state)       {_selected = state;}
-	inline 	bool isSelected()	               const {return _selected;}
+	virtual void sceneUpdate(const U32 sceneTime, SceneGraphNode* const sgn, SceneState& sceneState);
 
 	inline       void           setType(const SceneNodeType& type)        {_type = type;}
 	inline const SceneNodeType& getType()					        const {return _type;}
-
+	
 	inline SceneNodeRenderState& getSceneNodeRenderState() {return _renderState;}
 
 	inline void incLODcount() {_LODcount++;}
 	inline void decLODcount() {_LODcount--;}
 	inline U8   getLODcount()   const {return _LODcount;}
 	inline U8   getCurrentLOD() const {return (_lodLevel < (_LODcount-1) ? _lodLevel : (_LODcount-1));}
+
+	inline bool  isSelectable()                 const {return _isSelectable;}
+	inline void  setSelectable(const bool state)      {_isSelectable = state;}
 
 protected:
     ShaderProgram*        _customShader;
@@ -121,9 +123,10 @@ protected:
 private:
     //mutable SharedLock _materialLock;
 	Material*	  _material;
-	bool          _selected;
 	bool          _refreshMaterialData;
+	bool          _isSelectable;
 	SceneNodeType _type;
+	char   _textureOperationUniformSlots[Config::MAX_TEXTURE_STORAGE][32];
 };
 
 #endif

@@ -30,40 +30,46 @@
 #include "Utility/Headers/Localization.h"
 #include "Hardware/Platform/Headers/SharedMutex.h"
 #include "Hardware/Platform/Headers/PlatformDefines.h"
+#include <boost/atomic.hpp>
 
 DEFINE_SINGLETON (ParamHandler)
 typedef Unordered_map<std::string, cdiggins::any> ParamMap;
 typedef Unordered_map<std::string, const char* >  ParamTypeMap;
-typedef cdiggins::anyimpl::bad_any_cast BadAnyCast;
+
 public:
 
 	template <class T>
-	T getParam(const std::string& name, const T& defaultValue = T()) {
+
+#ifndef _DEBUG
+	inline
+#endif
+
+	const T& getParam(const std::string& name, const T& defaultValue = T()) const {
 		ReadLock r_lock(_mutex);
-		ParamMap::iterator it = _params.find(name);
+		ParamMap::const_iterator it = _params.find(name);
+		if(it != _params.end()) {
 #ifdef _DEBUG
-		if(it != _params.end()){
-			try	{
-				return it->second.cast<T>();
-			}catch(BadAnyCast){
-				ERROR_FN(Locale::get("ERROR_PARAM_CAST"),name.c_str(),typeid(T).name());
-			}
+		try	{
+			return it->second.constant_cast<T>();
+		}
+		catch(cdiggins::anyimpl::bad_any_cast ) {
+			ERROR_FN(Locale::get("ERROR_PARAM_CAST"),name.c_str(),typeid(T).name());
 		}
 #else
-	if(it != _params.end()){
-		return it->second.cast<T>();
-	}
+		return it->second.constant_cast<T>();
 #endif
+		}
 		return defaultValue; //integrals will be 0, string will be empty, etc;
 	}
 
-	void setParam(const std::string& name, const cdiggins::any& value){
+	void setParam(const std::string& name, const cdiggins::any& value) {
 		WriteLock w_lock(_mutex);
 		std::pair<ParamMap::iterator, bool> result = _params.insert(std::make_pair(name,value));
-		if(!result.second) (result.first)->second = value;
+		if(!result.second) 
+			(result.first)->second = value;
 	}
 
-	inline void delParam(const std::string& name){
+	inline void delParam(const std::string& name) {
 		if(isParam(name)){
 			WriteLock w_lock(_mutex);
 			_params.erase(name);
@@ -73,14 +79,22 @@ public:
 		}
 	}
 
-	inline void setDebugOutput(const bool logState) {WriteLock w_lock(_mutex); _logState = logState;}
+	inline void setDebugOutput(bool logState) {
+		_logState = logState;
+	}
 
-	inline U32 getSize() const {ReadLock r_lock(_mutex); return _params.size();}
+	inline U32 getSize() const {
+		ReadLock r_lock(_mutex); 
+		return _params.size();
+	}
 
-	inline bool isParam(const std::string& param) const {ReadLock r_lock(_mutex); return _params.find(param) != _params.end();}
+	inline bool isParam(const std::string& param) const {
+		ReadLock r_lock(_mutex);
+		return _params.find(param) != _params.end();
+	}
 
 private:
-	bool _logState;
+	boost::atomic_bool _logState;
 	ParamMap _params;
 	mutable SharedLock _mutex;
 

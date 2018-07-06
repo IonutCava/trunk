@@ -10,6 +10,9 @@
 
 GUIEditor::GUIEditor() : _init(false), _editorWindow(NULL)
 {
+	GUIEditorAIInterface::createInstance();
+	GUIEditorLightInterface::createInstance();
+	GUIEditorSceneGraphInterface::createInstance();
 }
 
 GUIEditor::~GUIEditor()

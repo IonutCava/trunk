@@ -23,7 +23,8 @@ uniform samplerCube texSky;
 void main (void){
 
 	vec4 sky_color = texture(texSky, _vertex.xyz);
-	
+	_skyColor = sky_color;
+
 	if(enable_sun){
 
 		vec3 vert = normalize(_vertex);
@@ -31,18 +32,14 @@ void main (void){
 		
 		float day_factor = max(-sun.y, 0.0);
 		
-		
 		float dotv = max(dot(vert, -sun), 0.0);
 		vec4 sun_color = clamp(gl_LightSource[0].diffuse*1.5, 0.0, 1.0);
 	
 		float pow_factor = day_factor * 175.0 + 25.0;
 		float sun_factor = clamp(pow(dotv, pow_factor), 0.0, 1.0);
 		
-		
-		_skyColor = sky_color * day_factor + sun_color * sun_factor;
+		_skyColor *= day_factor + sun_color * sun_factor;
 	
-    }else{
-		_skyColor = sky_color;
     }
 
 	_skyColor.a = 1.0;

@@ -52,7 +52,7 @@ Terrain::~Terrain()
 {
 }
 
-void Terrain::sceneUpdate(const U32 sceneTime,SceneGraphNode* const sgn){
+void Terrain::sceneUpdate(const U32 sceneTime, SceneGraphNode* const sgn, SceneState& sceneState){
 	///Query shadow state every "_stateRefreshInterval" milliseconds
 
 	if (sceneTime - _stateRefreshIntervalBuffer >= _stateRefreshInterval){
@@ -60,9 +60,9 @@ void Terrain::sceneUpdate(const U32 sceneTime,SceneGraphNode* const sgn){
 
 		_stateRefreshIntervalBuffer += _stateRefreshInterval;
 	}
-	_veg->sceneUpdate(sceneTime,sgn);
+	_veg->sceneUpdate(sceneTime,sgn,sceneState);
 
-	SceneNode::sceneUpdate(sceneTime, sgn);
+	SceneNode::sceneUpdate(sceneTime, sgn, sceneState);
 }
 
 #pragma message("ToDo: Add multiple local lights for terrain, such as torches, rockets, flashlights etc - Ionut")
@@ -82,7 +82,7 @@ void Terrain::prepareMaterial(SceneGraphNode* const sgn){
 	}
 	CLAMP<U8>(_lightCount, 0, 1);
 	if(GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE)){
-		U8 offset = 9;
+		U8 offset = Config::MAX_TEXTURE_STORAGE;
 		for(U8 n = 0; n < _lightCount; n++, offset++){
 			Light* l = LightManager::getInstance().getLightForCurrentNode(n);
 			LightManager::getInstance().bindDepthMaps(l, n, offset);
@@ -107,15 +107,12 @@ void Terrain::prepareMaterial(SceneGraphNode* const sgn){
 	_terrainTextures[TERRAIN_TEXTURE_RED]->Bind(3);      //AlphaMap: RED
 	_terrainTextures[TERRAIN_TEXTURE_GREEN]->Bind(4);    //AlphaMap: GREEN
 	_terrainTextures[TERRAIN_TEXTURE_BLUE]->Bind(5);     //AlphaMap: BLUE
-
-	terrainShader->bind();
-    terrainShader->Uniform("material",getMaterial()->getMaterialMatrix());
-	terrainShader->Uniform("water_reflection_rendering", GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE));
 	if(_alphaTexturePresent){
 		_terrainTextures[TERRAIN_TEXTURE_ALPHA]->Bind(6); //AlphaMap: Alpha
 	}
-
-    terrainShader->Uniform("worldHalfExtent", GET_ACTIVE_SCENE()->getSceneGraph()->getRoot()->getBoundingBox().getWidth() * 0.5f);
+	terrainShader->bind();
+    terrainShader->Uniform("material",getMaterial()->getMaterialMatrix());
+    terrainShader->Uniform("worldHalfExtent", GET_ACTIVE_SCENEGRAPH()->getRoot()->getBoundingBox().getWidth() * 0.5f);
 	terrainShader->Uniform("dvd_enableShadowMapping", _shadowMapped);
 	terrainShader->Uniform("dvd_lightProjectionMatrices",LightManager::getInstance().getLightProjectionMatricesCache());
 	terrainShader->Uniform("dvd_lightType",types);
@@ -133,7 +130,7 @@ void Terrain::releaseMaterial(){
 	_terrainTextures[TERRAIN_TEXTURE_DIFFUSE]->Unbind(0);
 
 	if(GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE)){
-		U8 offset = (_lightCount - 1) + 9;
+		U8 offset = (_lightCount - 1) + Config::MAX_TEXTURE_STORAGE;
 		for(I32 n = _lightCount - 1; n >= 0; n--,offset--){
 			Light* l = LightManager::getInstance().getLightForCurrentNode(n);
 			LightManager::getInstance().unbindDepthMaps(l, offset);
@@ -166,7 +163,7 @@ void Terrain::drawBoundingBox(SceneGraphNode* const sgn){
 }
 
 void Terrain::onDraw(const RenderStage& currentStage){
-    _eyePos = GET_ACTIVE_SCENE()->renderState()->getCamera()->getEye();
+    _eyePos = GET_ACTIVE_SCENE()->renderState().getCamera().getEye();
 }
 
 void Terrain::postDraw(const RenderStage& currentStage){
@@ -174,13 +171,12 @@ void Terrain::postDraw(const RenderStage& currentStage){
 }
 
 void Terrain::drawInfinitePlain(){
+	if(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE | DEPTH_STAGE)) return;
+
     SET_STATE_BLOCK(_terrainDepthRenderState);
     _planeTransform->setPosition(vec3<F32>(_eyePos.x,_planeTransform->getPosition().y,_eyePos.z));
 	_planeSGN->getBoundingBox().Transform(_planeSGN->getInitialBoundingBox(),
 										  _planeTransform->getMatrix());
-
-	if(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE)) return;
-    if(GFX_DEVICE.isCurrentRenderStage(DEPTH_STAGE)) return;
 
 	GFX_DEVICE.renderInstance(_plane->renderInstance());
 }
@@ -205,7 +201,8 @@ vec3<F32> Terrain::getPositionFromGlobal(F32 x, F32 z) const {
 }
 
 vec3<F32> Terrain::getPosition(F32 x_clampf, F32 z_clampf) const{
-	if(x_clampf<.0f || z_clampf<.0f || x_clampf>1.0f || z_clampf>1.0f) return vec3<F32>(0.0f, 0.0f, 0.0f);
+	if(x_clampf<.0f || z_clampf<.0f || x_clampf>1.0f || z_clampf>1.0f)
+		return vec3<F32>(0.0f);
 
 	vec2<F32>  posF(	x_clampf * _terrainWidth, z_clampf * _terrainHeight );
 	vec2<U32>  posI(	(I32)(posF.x), (I32)(posF.y) );

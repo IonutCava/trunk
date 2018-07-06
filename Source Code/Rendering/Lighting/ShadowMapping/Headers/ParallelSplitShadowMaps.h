@@ -32,14 +32,14 @@ class PSShadowMaps : public ShadowMap {
 public:
 	PSShadowMaps(Light* light);
 	~PSShadowMaps();
-	void render(SceneRenderState* sceneRenderState, boost::function0<void> sceneRenderFunction);
+	void render(const SceneRenderState& renderState, boost::function0<void> sceneRenderFunction);
 	///Get the current shadow mapping tehnique
 	ShadowType getShadowMapType() const {return SHADOW_TYPE_PSSM;}
 	///Update depth maps
-	void resolution(U16 resolution,SceneRenderState* sceneRenderState);
+	void resolution(U16 resolution, const SceneRenderState& renderState);
 	void previewShadowMaps();
 protected:
-	void renderInternal(SceneRenderState* renderState) const;
+	void renderInternal(const SceneRenderState& renderState) const;
 	void createJitterTexture(I32 size, I32 samples_u, I32 samples_v);
     //OGRE! I know .... sorry -Ionut
     void calculateSplitPoints(U8 splitCount, F32 nearDist, F32 farDist, F32 lambda = 0.95);

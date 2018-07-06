@@ -13,7 +13,7 @@ class ShaderProgram;
 class Quad3D;
 class PreRenderStage;
 class FrameBufferObject;
-
+struct ScreenSampler;
 DEFINE_SINGLETON(PreRenderStageBuilder)
 
 public:
@@ -27,7 +27,7 @@ public:
 												  bool& state,
 												  FrameBufferObject* result,
 												  const vec2<U16>& resolution){
-			return addToStage(New T(target,result,resolution),state);
+			return addToStage(New T(target,result,resolution,_screenSampler),state);
    }
 
    inline PreRenderStage*	getPreRenderBatch() { return _renderStage; };
@@ -37,8 +37,8 @@ private:
 
 private:
 
-	PreRenderStage	*_renderStage;
-
+	PreRenderStage*    _renderStage;
+	SamplerDescriptor* _screenSampler;
 END_SINGLETON
 
 #endif

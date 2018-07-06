@@ -26,25 +26,27 @@ PostFX::PostFX(): _underwaterTexture(NULL),
 	_currentCamera(NULL),
 	_underwater(false),
 	_FXAAinit(false),
-	_gfx(GFX_DEVICE){
-	_anaglyphFBO[0] = NULL;
-	_anaglyphFBO[1] = NULL;
+	_gfx(GFX_DEVICE)
+{
+	PreRenderStageBuilder::createInstance();
+	_anaglyphFBO[0] = _anaglyphFBO[1] = NULL;
 }
 
-PostFX::~PostFX(){
-	if(_renderQuad){
+PostFX::~PostFX()
+{
+	if(_renderQuad)
 		RemoveResource(_renderQuad);
-	}
-
+	
 	if(_enablePostProcessing){
-		if(_underwaterTexture){
+
+		if(_underwaterTexture)
 			RemoveResource(_underwaterTexture);
-		}
 
 		SAFE_DELETE(_screenFBO);
 		SAFE_DELETE(_depthFBO);
 
 		RemoveResource(_postProcessingShader);
+
 		if(_enableAnaglyph){
 			RemoveResource(_anaglyphShader);
 			SAFE_DELETE(_anaglyphFBO[0]);
@@ -52,20 +54,19 @@ PostFX::~PostFX(){
 		}
 
 		if(_enableDOF || _enableBloom){
-			if(_enableBloom){
+			if(_enableBloom)
 				SAFE_DELETE(_bloomFBO);
-			}
-			if(_enableDOF){
+			if(_enableDOF)
 				SAFE_DELETE(_depthOfFieldFBO);
-			}
 		}
+
 		if(_enableNoise){
 			RemoveResource(_noise);
 			RemoveResource(_screenBorder);
 		}
-		if(_enableSSAO){
+
+		if(_enableSSAO)
 			SAFE_DELETE(_SSAO_FBO);
-		}
 	}
 	PreRenderStageBuilder::getInstance().DestroyInstance();
 }
@@ -84,17 +85,19 @@ void PostFX::init(const vec2<U16>& resolution){
     _enableHDR = par.getParam<bool>("rendering.enableHDR");
 
 	if(_enablePostProcessing){
-		///Screen FBO should use MSAA if available, else fallback to normal color FBO (no AA or FXAA)
+		//Screen FBO should use MSAA if available, else fallback to normal color FBO (no AA or FXAA)
 		_screenFBO = _gfx.newFBO(FBO_2D_COLOR_MS);
 		_depthFBO  = _gfx.newFBO(FBO_2D_DEPTH);
 
+		SamplerDescriptor screenSampler;
 	    TextureDescriptor screenDescriptor(TEXTURE_2D,
 										   RGBA,
 										   RGBA8,
-										   UNSIGNED_BYTE); ///Default filters, LINEAR is OK for this
+										   UNSIGNED_BYTE); //Default filters, LINEAR is OK for this
 
-		screenDescriptor.setWrapMode(TEXTURE_CLAMP_TO_EDGE,TEXTURE_CLAMP_TO_EDGE);
-		screenDescriptor._generateMipMaps = false; //it's a flat texture on a full screen quad. really?
+		screenSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
+		screenSampler.toggleMipMaps(false); //it's a flat texture on a full screen quad. really?
+		screenDescriptor.setSampler(screenSampler);
 
 		_screenFBO->AddAttachment(screenDescriptor,TextureDescriptor::Color0);
 		_screenFBO->toggleDepthBuffer(true);//Do we need a depth buffer?
@@ -103,9 +106,10 @@ void PostFX::init(const vec2<U16>& resolution){
 										  DEPTH_COMPONENT,
 										  DEPTH_COMPONENT,
 										  UNSIGNED_BYTE); ///Default filters, LINEAR is OK for this
-		depthDescriptor._useRefCompare = true; //< Use compare function
-		depthDescriptor._cmpFunc = CMP_FUNC_LEQUAL; //< Use less or equal
-		depthDescriptor._depthCompareMode = LUMINANCE;
+		screenSampler._useRefCompare = true; //< Use compare function
+		screenSampler._cmpFunc = CMP_FUNC_LEQUAL; //< Use less or equal
+		screenSampler._depthCompareMode = LUMINANCE;
+		depthDescriptor.setSampler(screenSampler);
 
 		_depthFBO->AddAttachment(depthDescriptor, TextureDescriptor::Depth);
 		_depthFBO->toggleColorWrites(false);
@@ -133,8 +137,8 @@ void PostFX::init(const vec2<U16>& resolution){
 
 		createOperators();
 		
-		_postProcessingShader->Uniform("noise_tile", 0.05f);
-		_postProcessingShader->Uniform("noise_factor", 0.02f);
+		_postProcessingShader->Uniform("_noiseTile", 0.05f);
+		_postProcessingShader->Uniform("_noiseFactor", 0.02f);
 	}
 
 	_timer = 0;
@@ -151,19 +155,22 @@ void PostFX::createOperators(){
 	ParamHandler& par = ParamHandler::getInstance();
 
 	if(_enableAnaglyph && !_anaglyphFBO[0]){
-		 TextureDescriptor screenDescriptor(TEXTURE_2D,
+		SamplerDescriptor screenSampler;
+		TextureDescriptor screenDescriptor(TEXTURE_2D,
 										   RGBA,
 										   RGBA8,
 										   FLOAT_32); ///Default filters, LINEAR is OK for this
 
-		screenDescriptor.setWrapMode(TEXTURE_CLAMP_TO_EDGE,TEXTURE_CLAMP_TO_EDGE);
-		screenDescriptor._generateMipMaps = false; //it's a flat texture on a full screen quad. really?
+		screenSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
+		screenSampler.toggleMipMaps(false); //it's a flat texture on a full screen quad. really?
+		screenDescriptor.setSampler(screenSampler);
 
 		_anaglyphFBO[0] = _gfx.newFBO(FBO_2D_COLOR_MS);
 		_anaglyphFBO[1] = _gfx.newFBO(FBO_2D_COLOR_MS);
 		_anaglyphFBO[0]->AddAttachment(screenDescriptor,TextureDescriptor::Color0);
 		_anaglyphFBO[1]->AddAttachment(screenDescriptor,TextureDescriptor::Color0);
-
+		_anaglyphFBO[0]->toggleDepthBuffer(true);//Do we need a depth buffer?
+		_anaglyphFBO[1]->toggleDepthBuffer(true);//Do we need a depth buffer?
 		_anaglyphShader = CreateResource<ShaderProgram>(ResourceDescriptor("anaglyph"));
 		_eyeOffset = par.getParam<F32>("postProcessing.anaglyphOffset");
 	}
@@ -214,12 +221,13 @@ void PostFX::reshapeFBO(I32 width , I32 height){
 }
 
 void PostFX::displaySceneWithAnaglyph(bool deferred){
-	_currentCamera->SaveCamera();
-	F32 _eyePos[2] = {_eyeOffset/2, -_eyeOffset};
+	_currentCamera->saveCamera();
+
+	_currentCamera->setIOD(_eyeOffset);
 
 	for(I32 i=0; i<2; i++){
-		_currentCamera->MoveAnaglyph(_eyePos[i]);
-		_currentCamera->RenderLookAt();
+
+		_currentCamera->renderAnaglyph(i == 0 ? true : false);
 
 		_anaglyphFBO[i]->Begin();
 
@@ -228,7 +236,7 @@ void PostFX::displaySceneWithAnaglyph(bool deferred){
 		_anaglyphFBO[i]->End();
 	}
 
-	_currentCamera->RestoreCamera();
+	_currentCamera->restoreCamera();
 
 	_anaglyphShader->bind();
 	{
@@ -244,11 +252,10 @@ void PostFX::displaySceneWithAnaglyph(bool deferred){
 		_anaglyphFBO[1]->Unbind(1);
 		_anaglyphFBO[0]->Unbind(0);
 	}
-	//_anaglyphShader->unbind();
 }
 
 void PostFX::displaySceneWithoutAnaglyph(bool deferred){
-	_currentCamera->RenderLookAt();
+	_currentCamera->renderLookAt();
 
 	if(_enableDOF){
 		_depthFBO->Begin();
@@ -329,13 +336,14 @@ void PostFX::displaySceneWithoutAnaglyph(bool deferred){
 }
 
 ///Post-Processing in deferred renderer is disabled for now (needs a lot of work)
-void PostFX::render(Camera* const camera){
-	_currentCamera = camera;
-	bool deferred = GFX_DEVICE.getDeferredRendering();
+void PostFX::render(){
+	_currentCamera = &(GET_ACTIVE_SCENE()->renderState().getCamera());
+
+	bool deferred = GFX_DEVICE.getRenderer()->getType() != RENDERER_FORWARD;
 	if(_enablePostProcessing && !deferred){ /*deferred check here is temporary until PostFx are compatible with deferred rendering -Ionut*/
 		_enableAnaglyph ? displaySceneWithAnaglyph(deferred) : 	displaySceneWithoutAnaglyph(deferred);
 	}else{
-		_currentCamera->RenderLookAt();
+		_currentCamera->renderLookAt();
 		SceneManager::getInstance().render(deferred ? DEFERRED_STAGE : FINAL_STAGE);
 	}
 }

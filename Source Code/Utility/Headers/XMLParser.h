@@ -50,11 +50,10 @@ namespace XML {
 	void loadGeometry(const std::string& file, Scene* const scene);
 	void loadTerrain(const std::string& file, Scene* const scene);
 	Material* loadMaterial(const std::string &file);
-	void dumpMaterial(Material* const mat);
+	void dumpMaterial(Material& mat);
 
 	Material* loadMaterialXML(const std::string& location);
-	Texture*  loadTextureXML(const std::string& textureNode, const std::string& textureName);
-	void      saveTextureXML(const std::string& textureNode, unsigned int operation, Texture* texture);
+
 }
 
 #if defined(_MSC_VER)
