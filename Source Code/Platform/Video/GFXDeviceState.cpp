@@ -231,14 +231,16 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
         revealageDescriptor.setSampler(accumulationSampler);
 
         vector<RTAttachmentDescriptor> attachments = {
-            { accumulationDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::ACCUMULATION), VECTOR4_ZERO },
-            { revealageDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::REVEALAGE), VECTOR4_UNIT }
+            { accumulationDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::ACCUMULATION), DefaultColours::BLACK },
+            { revealageDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::REVEALAGE), DefaultColours::WHITE }
         };
 
         const RTAttachment_ptr& screenAttchment = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachmentPtr(RTAttachmentType::Colour, 0);
+        const RTAttachment_ptr& screenDepthAttachment = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachmentPtr(RTAttachmentType::Depth, 0);
 
         vector<ExternalRTAttachmentDescriptor> externalAttachments = {
-            { screenAttchment, to_U8(ScreenTargets::MODULATE) }
+            { screenAttchment,  RTAttachmentType::Colour, to_U8(ScreenTargets::MODULATE) },
+            { screenDepthAttachment,  RTAttachmentType::Depth }
         };
 
         RenderTargetDescriptor oitDesc = {};

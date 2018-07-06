@@ -48,10 +48,12 @@ enum class RTAttachmentType : U8 {
     COUNT
 };
 
-// Only for colour attachments
+// External attachments get added last and OVERRIDE any normal attachments found at the same type+index location
 struct ExternalRTAttachmentDescriptor {
     RTAttachment_ptr _attachment;
+    RTAttachmentType _type = RTAttachmentType::COUNT;
     U8 _index = 0;
+    FColour _clearColour = DefaultColours::WHITE;
 };
 
 struct RTAttachmentDescriptor {

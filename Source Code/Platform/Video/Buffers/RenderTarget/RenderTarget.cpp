@@ -53,7 +53,11 @@ RenderTarget::RenderTarget(GFXDevice& context, const RenderTargetDescriptor& des
             ++colourAttachmentCount;
         }
     }
-    colourAttachmentCount += descriptor._externalAttachmentCount;
+    for (U8 i = 0; i < descriptor._externalAttachmentCount; ++i) {
+        if (descriptor._externalAttachments[i]._type == RTAttachmentType::Colour) {
+            ++colourAttachmentCount;
+        }
+    }
 
     _attachmentPool = MemoryManager_NEW RTAttachmentPool(*this, colourAttachmentCount);
 

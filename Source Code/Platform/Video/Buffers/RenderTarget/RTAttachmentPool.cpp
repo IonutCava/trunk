@@ -114,7 +114,8 @@ RTAttachment_ptr& RTAttachmentPool::update(const RTAttachmentDescriptor& descrip
 RTAttachment_ptr& RTAttachmentPool::update(const ExternalRTAttachmentDescriptor& descriptor) {
     RTAttachmentDescriptor internalDescriptor = descriptor._attachment->descriptor();
     internalDescriptor._index = descriptor._index;
-    internalDescriptor._type = RTAttachmentType::Colour;
+    internalDescriptor._type = descriptor._type;
+    internalDescriptor._clearColour = descriptor._clearColour;
 
     RTAttachmentType type = internalDescriptor._type;
     RTAttachment_ptr& ptr = checkAndRemoveExistingAttachment(type, internalDescriptor._index);
