@@ -91,5 +91,5 @@ void main(void){
     }
 
     float depth = textureLod(texDepthMap, getScreenPositionNormalised(), 0).r;
-    _colourOut = vec4(applyFog(depth, colour.rgb), colour.a);
+    _colourOut = applyFog(depth, colour);
 }

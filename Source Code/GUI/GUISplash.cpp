@@ -22,7 +22,9 @@ GUISplash::GUISplash(ResourceCache& cache,
     splashSampler.toggleMipMaps(false);
     splashSampler.setAnisotropy(0);
     splashSampler.setWrapMode(TextureWrap::CLAMP);
-    splashSampler.toggleSRGBColourSpace(true);
+    // splash shader doesn't do gamma correction since that's a post processing step
+    // so fake gamma correction by loading an sRGB image as a linear one.
+    splashSampler.toggleSRGBColourSpace(false);
 
     ResourceDescriptor splashImage("SplashScreen Texture");
     splashImage.setThreadedLoading(false);

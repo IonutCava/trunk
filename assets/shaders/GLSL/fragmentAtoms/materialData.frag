@@ -107,8 +107,6 @@ vec4 getTextureColour(in vec2 uv) {
             colour = (colour + colour2) - (colour * colour2);
         }break;
     }
-    
-#endif
 
     return saturate(colour);
 }
