@@ -44,6 +44,7 @@ void Task::reset() {
     _jobIdentifier = -1;
     _priority = TaskPriority::DONT_CARE;
     _parentTask = nullptr;
+    _childTasks.fill(nullptr);
     _childTaskCount = 0;
 }
 
@@ -149,7 +150,7 @@ void Task::wait() {
     _taskDoneCV.wait(lk,
                      [this]() -> bool {
                         return _done;
-                      });
+                     });
 }
 
 void Task::run() {

@@ -145,8 +145,8 @@ class Task : public GUIDWrapper, private NonCopyable {
     U32 _poolIndex;
 
     Task* _parentTask;
-    std::array<Task*, MAX_CHILD_TASKS> _childTasks;
     std::atomic_short _childTaskCount;
+    std::array<Task*, MAX_CHILD_TASKS> _childTasks;
 };
 
 // A task object may be used for multiple jobs

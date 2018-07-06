@@ -34,7 +34,7 @@ void ShaderComputeQueue::idle() {
     _totalShaderComputeCountThisFrame = 0;
 
     WAIT_FOR_CONDITION(!(stepQueue() &&
-                         _totalShaderComputeCountThisFrame++ < g_MaxShadersComputedPerFrame));
+                         ++_totalShaderComputeCountThisFrame < g_MaxShadersComputedPerFrame));
 
     _shadersComputedThisFrame = true;
 }

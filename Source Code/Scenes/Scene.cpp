@@ -988,7 +988,7 @@ void Scene::onLostFocus() {
         state().playerState(_scenePlayers[i]->index()).resetMovement();
     }
 
-    _paramHandler.setParam(_ID("freezeLoopTime"), true);
+    //_paramHandler.setParam(_ID("freezeLoopTime"), true);
 }
 
 I64 Scene::registerTask(const TaskHandle& taskItem, bool start, U32 flags, Task::TaskPriority priority) {

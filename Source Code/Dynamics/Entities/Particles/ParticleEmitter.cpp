@@ -286,6 +286,9 @@ bool ParticleEmitter::onRender(const RenderStagePass& renderStagePass) {
 void ParticleEmitter::sceneUpdate(const U64 deltaTime,
                                   SceneGraphNode& sgn,
                                   SceneState& sceneState) {
+
+    static const U32 s_particlesPerThread = 1024;
+
     if (_enabled) {
         U32 aliveCount = getAliveParticleCount();
         renderState().setDrawState(aliveCount > 0);
@@ -305,10 +308,14 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime,
 
         aliveCount = getAliveParticleCount();
 
-        for (U32 i = 0; i < aliveCount; ++i) {
-            _particles->_position[i].w = _particles->_misc[i].z;
-            _particles->_acceleration[i].set(0.0f);
-        }
+        auto updateSize = [this](const Task& parentTask, U32 start, U32 end) {
+            for (U32 i = start; i < end; ++i) {
+                _particles->_position[i].w = _particles->_misc[i].z;
+                _particles->_acceleration[i].set(0.0f);
+            }
+        };
+
+        parallel_for(updateSize, aliveCount, s_particlesPerThread, Task::TaskPriority::HIGH);
 
         ParticleData& data = *_particles;
         for (std::shared_ptr<ParticleUpdater>& up : _updaters) {
