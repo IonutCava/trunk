@@ -365,6 +365,13 @@ void GFXDevice::onChangeResolution(U16 w, U16 h) {
     // Update render targets with the new resolution
     _rtPool->resizeTargets(RenderTargetUsage::SCREEN, w, h);
 
+    U16 reflectRes = std::max(w, h) / Config::REFLECTION_TARGET_RESOLUTION_DOWNSCALE_FACTOR;
+
+    _rtPool->resizeTargets(RenderTargetUsage::REFLECTION_PLANAR, reflectRes, reflectRes);
+    _rtPool->resizeTargets(RenderTargetUsage::REFRACTION_PLANAR, reflectRes, reflectRes);
+    _rtPool->resizeTargets(RenderTargetUsage::REFLECTION_CUBE, reflectRes, reflectRes);
+    _rtPool->resizeTargets(RenderTargetUsage::REFRACTION_CUBE, reflectRes, reflectRes);
+
     for (Texture_ptr& tex : _prevDepthBuffers) {
         vec2<U16> mipLevel(0,
             tex->getDescriptor().getSampler().generateMipMaps()

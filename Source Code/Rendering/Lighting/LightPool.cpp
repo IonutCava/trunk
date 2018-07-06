@@ -16,9 +16,9 @@
 namespace Divide {
 
 std::array<U8, to_const_uint(ShadowType::COUNT)> LightPool::_shadowLocation = { {
-    to_const_ubyte(ShaderProgram::TextureUsage::COUNT) + 2u, //Single
-    to_const_ubyte(ShaderProgram::TextureUsage::COUNT) + 3u, //Layered
-    to_const_ubyte(ShaderProgram::TextureUsage::COUNT) + 1u  //Cubemap
+    to_const_ubyte(ShaderProgram::TextureUsage::SHADOW_SINGLE),
+    to_const_ubyte(ShaderProgram::TextureUsage::SHADOW_LAYERED),
+    to_const_ubyte(ShaderProgram::TextureUsage::SHADOW_CUBE)
 }};
 
 Light* LightPool::_currentShadowCastingLight = nullptr;

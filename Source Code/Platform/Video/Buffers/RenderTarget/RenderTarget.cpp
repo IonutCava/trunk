@@ -79,10 +79,6 @@ TextureDescriptor& RenderTarget::getDescriptor(RTAttachment::Type type, U8 index
     return _attachmentPool->get(type, index)->descriptor();
 }
 
-bool RenderTarget::create(U16 widthAndHeight) {
-    return create(widthAndHeight, widthAndHeight);
-}
-
 /// Used by cubemap FB's
 void RenderTarget::drawToFace(RTAttachment::Type type, U8 index, U16 nFace, bool includeDepth) {
     drawToLayer(type, index, nFace, includeDepth);

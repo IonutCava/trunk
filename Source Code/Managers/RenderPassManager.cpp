@@ -197,6 +197,7 @@ void RenderPassManager::doCustomPass(PassParams& params) {
             }
         }
     }
+
     _context.setRenderStagePass(RenderStagePass(params.stage, RenderPassType::COLOUR_PASS));
     GFX::ScopedDebugMessage(_context, Util::StringFormat("Custom pass ( %s ): RenderPass", TypeUtil::renderStageToString(params.stage)).c_str(), 1);
 

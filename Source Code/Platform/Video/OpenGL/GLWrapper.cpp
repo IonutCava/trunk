@@ -479,19 +479,19 @@ bool GL_API::initShaders() {
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define SHADOW_CUBE_MAP_ARRAY " +
-            to_stringImpl(to_uint(LightPool::getShadowBindSlotOffset(ShadowType::CUBEMAP))),
+            to_stringImpl(to_const_uint(ShaderProgram::TextureUsage::SHADOW_CUBE)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define SHADOW_SINGLE_MAP_ARRAY " +
-            to_stringImpl(to_uint(LightPool::getShadowBindSlotOffset(ShadowType::SINGLE))),
+            to_stringImpl(to_uint(ShaderProgram::TextureUsage::SHADOW_SINGLE)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define SHADOW_LAYERED_MAP_ARRAY " +
-            to_stringImpl( to_uint(LightPool::getShadowBindSlotOffset(ShadowType::LAYERED))),
+            to_stringImpl( to_uint(ShaderProgram::TextureUsage::SHADOW_LAYERED)),
         lineOffsets);
 
     appendToShaderHeader(ShaderType::VERTEX, "invariant gl_Position;", lineOffsets);

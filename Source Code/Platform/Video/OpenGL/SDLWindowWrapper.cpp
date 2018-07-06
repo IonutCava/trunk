@@ -157,6 +157,9 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, const Configuration&
     s_maxAttribBindings = GLUtil::getIntegerv(GL_MAX_VERTEX_ATTRIB_BINDINGS);
     s_vaoBufferData.init(s_maxAttribBindings);
 
+    assert(to_const_uint(ShaderProgram::TextureUsage::COUNT) < to_uint(s_maxTextureUnits) &&
+           "GL Wrapper: insufficient number of texture image units available on current hardware!");
+
     assert(to_const_uint(AttribLocation::COUNT) < to_uint(s_maxAttribBindings) &&
            "GL Wrapper: insufficient number of attribute binding locations available on current hardware!");
 

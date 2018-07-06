@@ -342,6 +342,24 @@ TEST_MEMBER_FUNCTION(matN, divideOperator, scalar)
     CHECK_TRUE((input4 / 2) == (input4 * 0.5f));
 }
 
+TEST_MEMBER_FUNCTION(mat4, Reflect, Plane)
+{
+    const vec3<F32> input(2, 2, 2);
+    const vec3<F32> result(2, -2, 2);
+
+    const Plane<F32> reflectPlane1(vec3<F32>(0.0f, 1.0f, 0.0f), 0.0f);
+    const Plane<F32> reflectPlane2(vec3<F32>(0.0f, -1.0f, 0.0f), 0.0f);
+
+    mat4<F32> reflectMat;
+    reflectMat.reflect(reflectPlane1);
+
+    CHECK_TRUE(result == reflectMat * input);
+
+    reflectMat.reflect(reflectPlane2);
+
+    CHECK_TRUE(result == reflectMat * input);
+}
+
 TEST_MEMBER_FUNCTION(matN, multiplyOperator, matN)
 {
     mat2<I32> inputIdentity2x2;

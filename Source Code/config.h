@@ -106,9 +106,13 @@ constexpr unsigned int  MAX_REFRACTIVE_NODES_IN_VIEW = 4;
 #   endif
 constexpr unsigned int MAX_REFLECTIVE_PROBES_PER_PASS = 6;
 
-/// Reflection render target resolution
-constexpr unsigned int REFLECTION_TARGET_RESOLUTION = 512;
-constexpr unsigned int REFRACTION_TARGET_RESOLUTION = 512;
+/// Reflection render target resolution downscale: how many times lower shoudl the resolution of reflection/refraction
+/// targets be when compared to the main screen resolution. E.g.: 1920x1080 with a factor of 2: max(1920, 1080) / 2 = 960x960 render targets
+constexpr unsigned int REFLECTION_TARGET_RESOLUTION_DOWNSCALE_FACTOR = 2;
+
+/// Resolution used for environment probe rendering
+constexpr unsigned int REFLECTION_TARGET_RESOLUTION_ENVIRONMENT_PROBE = 256;
+
 /// Generic index value used to separate primitives within the same vertex
 /// buffer
 constexpr unsigned int PRIMITIVE_RESTART_INDEX_L = 0xFFFFFFFF;

@@ -115,7 +115,6 @@ class NOINITVTABLE RenderTarget : public GraphicsResource, public GUIDWrapper {
 
     TextureDescriptor& getDescriptor(RTAttachment::Type type, U8 index);
     void addAttachment(const TextureDescriptor& descriptor, RTAttachment::Type type, U8 index);
-    bool create(U16 widthAndHeight);
     /// Used by cubemap FB's
     void drawToFace(RTAttachment::Type type, U8 index, U16 nFace, bool includeDepth = true);
 

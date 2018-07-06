@@ -187,12 +187,12 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     reflectionSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
     reflectionSampler.toggleMipMaps(false);
 
-    TextureDescriptor environmentDescriptorCube(TextureType::TEXTURE_CUBE_MAP,
+    TextureDescriptor environmentDescriptorCube(TextureType::TEXTURE_CUBE_ARRAY,
                                                 GFXImageFormat::RGBA8,
                                                 GFXDataFormat::UNSIGNED_BYTE);
     environmentDescriptorCube.setSampler(reflectionSampler);
 
-    TextureDescriptor depthDescriptorCube(TextureType::TEXTURE_CUBE_MAP,
+    TextureDescriptor depthDescriptorCube(TextureType::TEXTURE_CUBE_ARRAY,
                                           GFXImageFormat::DEPTH_COMPONENT32F,
                                           GFXDataFormat::FLOAT_32);
 
@@ -213,13 +213,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
         tempHandle = allocateRT(RenderTargetUsage::REFLECTION_PLANAR, Util::StringFormat("Reflection_Planar_%d", i));
         tempHandle._rt->addAttachment(environmentDescriptorPlanar, RTAttachment::Type::Colour, 0);
         tempHandle._rt->addAttachment(depthDescriptorPlanar, RTAttachment::Type::Depth, 0);
-        tempHandle._rt->create(Config::REFLECTION_TARGET_RESOLUTION);
-        tempHandle._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
-
-        tempHandle = allocateRT(RenderTargetUsage::REFLECTION_CUBE, Util::StringFormat("Reflection_Cube_%d", i));
-        tempHandle._rt->addAttachment(environmentDescriptorCube, RTAttachment::Type::Colour, 0);
-        tempHandle._rt->addAttachment(depthDescriptorCube, RTAttachment::Type::Depth, 0);
-        tempHandle._rt->create(Config::REFLECTION_TARGET_RESOLUTION);
         tempHandle._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
     }
 
@@ -227,15 +220,19 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
         tempHandle = allocateRT(RenderTargetUsage::REFRACTION_PLANAR, Util::StringFormat("Refraction_Planar_%d", i));
         tempHandle._rt->addAttachment(environmentDescriptorPlanar, RTAttachment::Type::Colour, 0);
         tempHandle._rt->addAttachment(depthDescriptorPlanar, RTAttachment::Type::Depth, 0);
-        tempHandle._rt->create(Config::REFRACTION_TARGET_RESOLUTION);
-        tempHandle._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
-
-        tempHandle = allocateRT(RenderTargetUsage::REFRACTION_CUBE, Util::StringFormat("Refraction_Cube_%d", i));
-        tempHandle._rt->addAttachment(environmentDescriptorCube, RTAttachment::Type::Colour, 0);
-        tempHandle._rt->addAttachment(depthDescriptorCube, RTAttachment::Type::Depth, 0);
-        tempHandle._rt->create(Config::REFRACTION_TARGET_RESOLUTION);
         tempHandle._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
     }
+
+
+    tempHandle = allocateRT(RenderTargetUsage::REFLECTION_CUBE, "Reflection_Cube_Array");
+    tempHandle._rt->addAttachment(environmentDescriptorCube, RTAttachment::Type::Colour, 0);
+    tempHandle._rt->addAttachment(depthDescriptorCube, RTAttachment::Type::Depth, 0);
+    tempHandle._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
+
+    tempHandle = allocateRT(RenderTargetUsage::REFRACTION_CUBE, "Refraction_Cube_Array");
+    tempHandle._rt->addAttachment(environmentDescriptorCube, RTAttachment::Type::Colour, 0);
+    tempHandle._rt->addAttachment(depthDescriptorCube, RTAttachment::Type::Depth, 0);
+    tempHandle._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
 
     // Initialized our HierarchicalZ construction shader (takes a depth
     // attachment and down-samples it for every mip level)

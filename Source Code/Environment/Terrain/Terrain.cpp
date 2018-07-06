@@ -118,7 +118,7 @@ void Terrain::buildQuadtree() {
                 drawShader->Uniform(("diffuseScale[" + layerIndex + "]").c_str(), textureLayer->getDiffuseScales());
                 drawShader->Uniform(("detailScale[" + layerIndex + "]").c_str(), textureLayer->getDetailScales());
 
-                if (i == 0) {
+                if (pass == 0 && i == 0 ) {
                     getMaterialTpl()->addCustomTexture(textureLayer->blendMap(), layerOffset);
                     getMaterialTpl()->addCustomTexture(textureLayer->tileMaps(), layerOffset + 1);
                     getMaterialTpl()->addCustomTexture(textureLayer->normalMaps(), layerOffset + 2);
