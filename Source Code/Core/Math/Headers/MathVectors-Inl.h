@@ -27,12 +27,12 @@
 */
 /// general vec2 cross function
 template<class T>
-inline vec2<T> Cross(const vec2<T> &v1, const vec2<T> &v2) {
+inline vec2<T> cross(const vec2<T> &v1, const vec2<T> &v2) {
     return v1.x * v2.y - v1.y * v2.x;
 }
 
 template<class T>
-inline vec2<T> Inverse(const vec2<T>& v) {
+inline vec2<T> inverse(const vec2<T>& v) {
     return vec2<T>(v.y, v.x); 
 }
 
@@ -44,7 +44,7 @@ inline vec2<T> operator*(T fl, const vec2<T>& v) {
 
 /// general vec2 dot product
 template<class T>
-inline T Dot(const vec2<T>& a, const vec2<T>& b) {
+inline T dot(const vec2<T>& a, const vec2<T>& b) {
     return(a.x*b.x+a.y*b.y);
 }
 
@@ -56,18 +56,18 @@ inline vec3<T> operator*(T fl, const vec3<T>& v) {
 
 /// general vec3 dot product
 template<class T>
-inline T Dot(const vec3<T>& a, const vec3<T>& b) {
+inline T dot(const vec3<T>& a, const vec3<T>& b) {
     return(a.x*b.x+a.y*b.y+a.z*b.z);
 }
 
 /// general vec3 cross function
 template<class T>
-inline vec3<T> Cross(const vec3<T> &v1, const vec3<T> &v2) {
+inline vec3<T> cross(const vec3<T> &v1, const vec3<T> &v2) {
     return vec3<T>(v1.y * v2.z - v1.z * v2.y, v1.z * v2.x - v1.x * v2.z, v1.x * v2.y - v1.y * v2.x);
 }
 
 template<class T>
-inline vec3<T> Inverse(const vec3<T>& v) {
+inline vec3<T> inverse(const vec3<T>& v) {
     return vec3<T>(v.z, v.y, v.x); 
 }
 /// multiply a vector by a value
@@ -225,7 +225,7 @@ inline void vec3<T>::cross(const vec3 &v2) {
 /// calculate the dot product between this vector and the specified one
 template<class T>
 inline T vec3<T>::dot(const vec3 &v) const {
-    return ((this->x*v.x) + (this->y*v.y) + (this->z*v.z));
+    return ::dot(*this, v);
 }
 
 /// compute the vector's distance to another specified vector
@@ -410,6 +410,18 @@ inline void vec4<T>::swap(vec4 &iv) {
     std::swap(this->y, iv.y);
     std::swap(this->z, iv.z);
     std::swap(this->w, iv.w);
+}
+
+/// general vec4 dot product
+template<class T>
+inline T dot(const vec4<T>& a, const vec4<T>& b) {
+    return (a.x * b.x + a.y * b.y+ a.z * b.z + a.w * b.w);
+}
+
+/// calculate the dot product between this vector and the specified one
+template<class T>
+inline T vec4<T>::dot(const vec4 &v) const {
+    return ::dot(*this, v);
 }
 
 /// return the squared distance of the vector

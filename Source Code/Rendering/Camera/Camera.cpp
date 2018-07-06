@@ -301,7 +301,7 @@ bool Camera::updateViewMatrix(){
     _orientation.normalize();
 
     // Reconstruct the view matrix.
-    _viewMatrix = _orientation.getMatrix();
+    _orientation.getMatrix(_viewMatrix);
 
     _xAxis.set(_viewMatrix.m[0][0], _viewMatrix.m[1][0], _viewMatrix.m[2][0]);
     _yAxis.set(_viewMatrix.m[0][1], _viewMatrix.m[1][1], _viewMatrix.m[2][1]);

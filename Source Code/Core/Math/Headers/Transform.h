@@ -252,7 +252,7 @@ private:
     ///The actual scale, rotation and translation values
     TransformValues _transformValues;
     ///This is the actual model matrix, but it will not convert to world space as it depends on it's parent in graph
-    mat4<F32> _worldMatrix;
+    mat4<F32> _worldMatrix, _worldMatrixInterp;
     ///_dirty is set to true whenever a translation, rotation or scale is applied
     boost::atomic_bool _dirty;
     ///_changedLastFrame is set to false only if nothing changed within the transform during the last frame

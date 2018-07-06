@@ -379,6 +379,8 @@ public:
     inline void swap(vec4 &iv);
     /// transform the vector to unit length
     inline T    normalize();
+    /// calculate the dot product between this vector and the specified one
+    inline T    dot(const vec4 &v) const;
     /// return the vector's length
     inline T    length()    const {return square_root_tpl(lengthSquared()); }
     /// return the squared distance of the vector

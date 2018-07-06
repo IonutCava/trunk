@@ -532,7 +532,6 @@
     <ClCompile Include="..\..\Source Code\Utility\XMLParser.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Application.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Console.cpp" />
-    <ClCompile Include="..\..\Source Code\Core\Math\Quaternion.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\Scene.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\CubeScene\CubeScene.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\FlashScene\FlashScene.cpp" />

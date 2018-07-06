@@ -64,8 +64,10 @@ void glUniformBuffer::UpdateData(GLintptr offset, GLsizeiptr size, const GLvoid 
 
 bool glUniformBuffer::BindRange(Divide::ShaderBufferLocation bindIndex, U32 offsetElementCount, U32 rangeElementCount) const {
     DIVIDE_ASSERT(_UBOid != 0, "glUniformBuffer error: Tried to bind an uninitialized UBO");
+
     if(_persistentMapped)
         _lockManager->WaitForLockedRange();
+
     glBindBufferRange(_target, bindIndex, _UBOid, _primitiveSize * offsetElementCount, _primitiveSize * rangeElementCount);
     return true;
 }

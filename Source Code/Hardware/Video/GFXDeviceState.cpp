@@ -28,7 +28,6 @@ I8 GFXDevice::initHardware(const vec2<U16>& resolution, I32 argc, char **argv) {
 
     _nodeBuffer = newSB(true);
     _nodeBuffer->Create(Config::MAX_VISIBLE_NODES, sizeof(NodeData));
-    _nodeBuffer->Bind(Divide::SHADER_BUFFER_NODE_INFO);
 
     changeResolution(resolution);
 

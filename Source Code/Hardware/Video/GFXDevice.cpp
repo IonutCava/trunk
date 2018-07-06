@@ -76,8 +76,7 @@ void GFXDevice::setBufferData(const GenericDrawCommand& cmd) {
     
     assert(cmd._drawID < (I32)_matricesData.size());
 
-    if(cmd._drawID > -1)
-        _nodeBuffer->BindRange(Divide::SHADER_BUFFER_NODE_INFO, cmd._drawID, 1);
+    _nodeBuffer->BindRange(Divide::SHADER_BUFFER_NODE_INFO, std::max(cmd._drawID, 0), 1);
         
     setStateBlock(cmd._stateHash);
 }
@@ -413,6 +412,11 @@ void GFXDevice::forceViewportInternal(const vec4<I32>& viewport){
 }
 
 void GFXDevice::processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleNodes){
+    if(visibleNodes.empty()){
+        //_nodeBuffer->SetData(NULL);
+        return;
+    }
+
     // Generate and upload all lighting data
     
     //LightManager::getInstance().buildLightGrid(_viewMatrix, _projectionMatrix, _gpuBlock._ZPlanesCombined.xy());
@@ -422,13 +426,11 @@ void GFXDevice::processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleN
     _sgnToDrawIDMap.clear();
     _matricesData.clear();
 
-    if(visibleNodes.empty()){
-        _nodeBuffer->SetData(NULL);
-        return;
-    }
-    _matricesData.reserve(visibleNodes.size());
+    _matricesData.reserve(visibleNodes.size() + 1);
 
     NodeData temp; 
+    _matricesData.push_back(temp);
+
     for(U16 i = 0; i < visibleNodes.size(); ++i){
         SceneGraphNode* crtNode = visibleNodes[i];
         Transform* transform = crtNode->getTransform();

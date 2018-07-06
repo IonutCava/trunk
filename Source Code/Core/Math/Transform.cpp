@@ -44,7 +44,7 @@ const mat4<F32>& Transform::applyTransforms(){
             //    1. Scale
             _worldMatrix.setScale(_transformValues._scale);
             //    2. Rotate
-            _worldMatrix *= _transformValues._orientation.getMatrix();
+            _worldMatrix *= ::getMatrix(_transformValues._orientation);
         }
         //    3. Translate
         _worldMatrix.setTranslation(_transformValues._translation);
@@ -56,17 +56,13 @@ const mat4<F32>& Transform::applyTransforms(){
 }
 
 mat4<F32> Transform::interpolate(const TransformValues& prevTransforms, const D32 factor){
-   if(factor < 0.95 && false){
-        mat4<F32> interpMatrix;
-        Quaternion<F32> prevOrientation(prevTransforms._orientation);
+   if(factor < 0.90){
+        _worldMatrixInterp.identity();
+        _worldMatrixInterp.setScale(lerp(prevTransforms._scale, getLocalScale(), (F32)factor));
+        _worldMatrixInterp *= ::getMatrix(slerp(prevTransforms._orientation, getLocalOrientation(), (F32)factor));
+        _worldMatrixInterp.setTranslation(lerp(prevTransforms._translation, getLocalPosition(), (F32)factor));
 
-        prevOrientation.slerp(getOrientation(), (F32)factor);
-
-        interpMatrix.setScale(lerp(prevTransforms._scale, getLocalScale(), (F32)factor));
-        interpMatrix *= prevOrientation.getMatrix();
-        interpMatrix.setTranslation(lerp(prevTransforms._translation, getLocalPosition(), (F32)factor));
-
-        return interpMatrix * getParentMatrix();
+        return _worldMatrixInterp * getParentMatrix();
     }
 
     return getGlobalMatrix();

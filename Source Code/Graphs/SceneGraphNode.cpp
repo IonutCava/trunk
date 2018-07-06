@@ -20,6 +20,7 @@ SceneGraphNode::SceneGraphNode(SceneGraph* const sg, SceneNode* const node) : GU
                                                   _elapsedTime(0ULL),
                                                   _parent(nullptr),
                                                   _transform(nullptr),
+                                                  _prevTransformValues(nullptr),
                                                   _loaded(true),
                                                   _wasActive(true),
                                                   _active(true),
@@ -40,7 +41,6 @@ SceneGraphNode::SceneGraphNode(SceneGraph* const sg, SceneNode* const node) : GU
                                                   _usageContext(NODE_DYNAMIC)
 {
     assert(_node != nullptr);
-    _prevTransformValues = New TransformValues();
 
     _components[SGNComponent::SGN_COMP_ANIMATION]  = nullptr;
     _components[SGNComponent::SGN_COMP_NAVIGATION] = New NavigationComponent(this);
@@ -255,6 +255,10 @@ Transform* const SceneGraphNode::getTransform(){
 
 const mat4<F32>& SceneGraphNode::getWorldMatrix(D32 interpolationFactor){
     if(getTransform()){
+        if(!_prevTransformValues) {
+            _prevTransformValues = New TransformValues();
+            _transform->getValues(*_prevTransformValues);
+        }
         _worldMatrixInterp.set(_transform->interpolate(*_prevTransformValues, interpolationFactor));
         _transform->getValues(*_prevTransformValues);
     }

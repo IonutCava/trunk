@@ -445,9 +445,6 @@
     <ClCompile Include="..\..\Source Code\Core\Console.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Core\Math\Quaternion.cpp">
-      <Filter>Core\Math</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Scenes\Scene.cpp">
       <Filter>Scenes</Filter>
     </ClCompile>
