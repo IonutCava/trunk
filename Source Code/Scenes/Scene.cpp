@@ -2,6 +2,7 @@
 
 #include "ASIO.h"
 #include "GUI/Headers/GUI.h"
+//#include "GUI/Headers/GUIConsole.h"
 #include "Utility/Headers/Guardian.h"
 #include "Utility/Headers/XMLParser.h"
 #include "Managers/Headers/SceneManager.h" //Object selection
@@ -328,9 +329,6 @@ void Scene::onKeyDown(const OIS::KeyEvent& key){
 		case OIS::KC_END:
 			SceneManager::getInstance().deleteSelection();
 			break;
-		case OIS::KC_R:
-			Guardian::getInstance().ReloadEngine();
-			break;
 		case OIS::KC_F2:{
 			PRINT_FN("Toggling Skeleton Visibility");
 			SceneManager::getInstance().toggleSkeletons();
@@ -368,8 +366,12 @@ void Scene::onKeyUp(const OIS::KeyEvent& key){
 			Application::getInstance().angleUD = 0.0f;
 			break;
 		case OIS::KC_F:
-			bool pdc = _paramHandler.getParam<bool>("enableDepthOfField");
-			_paramHandler.setParam("enableDepthOfField", !pdc); 
+			_paramHandler.setParam("enableDepthOfField", !_paramHandler.getParam<bool>("enableDepthOfField")); 
+			break;
+//		case OIS::KC_GRAVE: ///tilde
+//			GUI::getInstance().toggleConsole();
+//			break;
+		default:
 			break;
 	}
 }

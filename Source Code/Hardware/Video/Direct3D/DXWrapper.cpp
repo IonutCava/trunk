@@ -71,7 +71,7 @@ void DX_API::setOrthoProjection(const vec4<F32>& rect, const vec2<F32>& planes)
 void DX_API::setPerspectiveProjection(F32 FoV,F32 aspectRatio, const vec2<F32>& planes)
 {
 }
-void DX_API::drawTextToScreen(GuiElement* const text)
+void DX_API::drawTextToScreen(GUIElement* const text)
 {
 }
 
@@ -79,11 +79,15 @@ void DX_API::drawCharacterToScreen(void* ,char)
 {
 }
 
-void DX_API::drawButton(GuiElement* const button)
+void DX_API::drawButton(GUIElement* const button)
 {
 }
 
-void DX_API::drawFlash(GuiElement* const flash)
+void DX_API::drawFlash(GUIElement* const flash)
+{
+}
+
+void DX_API::drawConsole()
 {
 }
 

@@ -73,11 +73,11 @@ private:
 public:
   void          Init(F32 tfps);
   void          SetSpeedFactor();
-  F32           getFps(){return _fps;}
-  F32           getSpeedfactor(){boost::mutex::scoped_lock lock(_speedLockMutex); return _speedfactor;}
-  F32           getElapsedTime(){if(!_init) return 0.0f; QueryPerformanceCounter(&_currentticks); return (F32)(_currentticks.QuadPart-_startupTime.QuadPart) *1000/(F32)_tickspersecond.QuadPart;}
+  inline F32    getFps(){return _fps;}
+  inline F32    getSpeedfactor(){ReadLock r_lock(_speedLockMutex); return _speedfactor;}
+  inline F32    getElapsedTime(){if(!_init) return 0.0f; QueryPerformanceCounter(&_currentticks); return (F32)(_currentticks.QuadPart-_startupTime.QuadPart) *1000/(F32)_tickspersecond.QuadPart;}
   void          benchmark();
-  boost::mutex  _speedLockMutex;
+  mutable Lock  _speedLockMutex;
 END_SINGLETON
 
 #endif

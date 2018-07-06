@@ -40,15 +40,15 @@ class Mesh : public Object3D {
 	typedef unordered_map<std::string, SceneGraphNode*> childrenNodes;
 public:
 	Mesh() : Object3D(MESH), _visibleToNetwork(true),
-							 _loaded(false),
 							 _playAnimations(true),
 							 _hasAnimations(false),
-							 _updateBB(false)
+							 _loaded(false)
 	{
 		_refreshVBO = false;
 	}
 
-	~Mesh();
+	~Mesh() {}
+
 	inline void addSubMesh(const std::string& subMesh){_subMeshes.push_back(subMesh);}
 
 	bool computeBoundingBox(SceneGraphNode* const sgn);
@@ -56,11 +56,12 @@ public:
 	inline std::vector<std::string>&   getSubMeshes()   {return _subMeshes;}
 	inline bool hasAnimations() {return _hasAnimations;}
 
-	bool load(const std::string& file);
+	bool load(const std::string& name) {_name = name;	return true; }
+
 	void postLoad(SceneGraphNode* const sgn);
-	void render(SceneGraphNode* const sgn){};
+	inline void render(SceneGraphNode* const sgn){};
 	void createCopy();
-	void removeCopy();
+	inline void removeCopy(){ 	SceneNode::removeCopy(); }
 
 	void onDraw();
 
@@ -77,7 +78,6 @@ protected:
 	bool						 _visibleToNetwork, _loaded;
 	bool                         _playAnimations;
 	bool                         _hasAnimations;
-	bool                         _updateBB;
 	std::vector<std::string >	 _subMeshes;
 	typedef unordered_map<U32, SubMesh*> subMeshRefMap;
 	subMeshRefMap _subMeshRefMap;

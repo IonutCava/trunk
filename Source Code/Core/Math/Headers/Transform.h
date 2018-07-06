@@ -20,8 +20,8 @@
 
 #include "Quaternion.h"
 
-class Transform
-{
+class Transform {
+
 public:
 	Transform()	: _dirty(true){
 		_worldMatrix.identity();
@@ -44,6 +44,7 @@ public:
 	}
 
 	void setPosition(const vec3<F32>& position){
+		WriteLock w_lock(_lock);
 		_translation = position;
 		_translationMatrix.identity();
 		_translationMatrix.translate(_translation);
@@ -51,6 +52,7 @@ public:
 	}
 
 	void setPositionX(F32 position){
+		WriteLock w_lock(_lock);
 		_translation.x = position;
 		_translationMatrix.identity();
 		_translationMatrix.translate(_translation);
@@ -58,6 +60,7 @@ public:
 	}
 
 	void setPositionY(F32 position){
+		WriteLock w_lock(_lock);
 		_translation.y = position;
 		_translationMatrix.identity();
 		_translationMatrix.translate(_translation);
@@ -65,6 +68,7 @@ public:
 	}
 	
 	void setPositionZ(F32 position){
+		WriteLock w_lock(_lock);
 		_translation.z = position;
 		_translationMatrix.identity();
 		_translationMatrix.translate(_translation);
@@ -72,30 +76,35 @@ public:
 	}
 
 	void translate(const vec3<F32>& position){
+		WriteLock w_lock(_lock);
 		_translation  += position;
 		_translationMatrix.translate(_translation);
 		_dirty = true;
 	}
 
 	void translateX(const F32 positionX){
+		WriteLock w_lock(_lock);
 		_translation.x += positionX;
 		_translationMatrix.translate(_translation); 
 		_dirty = true;
 	}
 
 	void translateY(const F32 positionY){
+		WriteLock w_lock(_lock);
 		_translation.y += positionY;
 		_translationMatrix.translate(_translation); 
 		_dirty = true;
 	}
 
 	void translateZ(const F32 positionZ){
+		WriteLock w_lock(_lock);
 		_translation.z += positionZ;
 		_translationMatrix.translate(_translation);
 		_dirty = true;
 	}
 
 	void scale(const vec3<F32>& scale){
+		WriteLock w_lock(_lock);
 		_scaleMatrix.scale(scale);
 		_scale = scale; 
 		_dirty = true;
@@ -107,6 +116,7 @@ public:
 	inline void scaleZ(const F32 scale) {this->scale(vec3<F32>(_scale.x,_scale.y,scale));}
 
 	void rotate(const vec3<F32>& axis, F32 degrees){
+		WriteLock w_lock(_lock);
 		_orientation.FromAxis(axis,degrees);
 		_rotationMatrix = _orientation.getMatrix();
 		_axis = axis;
@@ -115,6 +125,7 @@ public:
 	}
 
 	void rotateEuler(const vec3<F32>& euler){
+		WriteLock w_lock(_lock);
 		_orientation.FromEuler(euler);
 		_orientation.getAxisAngle(&_axis,&_angle,true);
 		_rotationMatrix = _orientation.getMatrix();
@@ -122,6 +133,7 @@ public:
 	}
 
 	void rotateQuaternion(const Quaternion<F32>& quat){
+		WriteLock w_lock(_lock);
 		_orientation = quat; 
 		_rotationMatrix = _orientation.getMatrix();
 		_dirty = true;
@@ -130,39 +142,49 @@ public:
 	inline void rotateX(F32 angle){this->rotate(vec3<F32>(1,0,0),angle);}
 	inline void rotateY(F32 angle){this->rotate(vec3<F32>(0,1,0),angle);}
 	inline void rotateZ(F32 angle){this->rotate(vec3<F32>(0,0,1),angle);}
-	inline mat4<F32> const& getRotationMatrix() { return _orientation.getMatrix();}
-	inline mat4<F32> const& getParentMatrix()   const {return _parentMatrix;}
-	inline vec3<F32> const& getPosition()       const {return _translation;}
-	inline vec3<F32> const& getScale()          const {return _scale;}
 
-	inline Quaternion<F32> const& getOrientation() const {return _orientation;}
-	inline mat4<F32> const& getMatrix()       {this->applyTransforms(); return this->_worldMatrix;}
-	inline mat4<F32> const& getGlobalMatrix() {this->applyTransforms(); return this->_globalMatrix;}
+	inline mat4<F32> const& getRotationMatrix()       {ReadLock r_lock(_lock); return _orientation.getMatrix();}
+	inline mat4<F32> const& getParentMatrix()   const {ReadLock r_lock(_lock); return _parentMatrix;}
+	inline vec3<F32> const& getPosition()       const {ReadLock r_lock(_lock); return _translation;}
+	inline vec3<F32> const& getScale()          const {ReadLock r_lock(_lock); return _scale;}
+
+	inline Quaternion<F32> const& getOrientation() const {ReadLock r_lock(_lock); return _orientation;}
+
+	inline mat4<F32> const& getMatrix()       {this->applyTransforms(); 
+											   ReadLock r_lock(_lock);
+											   return this->_worldMatrix;}
+	inline mat4<F32> const& getGlobalMatrix() {this->applyTransforms();
+	                                           ReadLock r_lock(_lock);
+											   return this->_globalMatrix;}
 
 	void applyTransforms(){
-		if(isDirty()){
-			_worldMatrix.identity();
-			_worldMatrix *= _translationMatrix;
-			_worldMatrix *= _rotationMatrix;
-			_worldMatrix *= _scaleMatrix;
-			_globalMatrix = _worldMatrix * _parentMatrix; 
-			this->clean();
-		}
+		UpgradableReadLock ur_lock(_lock);
+		if(!_dirty) return;
+		UpgradeToWriteLock uw_lock(ur_lock);
+
+		_worldMatrix.identity();
+		_worldMatrix *= _translationMatrix;
+		_worldMatrix *= _rotationMatrix;
+		_worldMatrix *= _scaleMatrix;
+		_globalMatrix = _worldMatrix * _parentMatrix; 
+		this->clean();
 	}
 
 	void setTransforms(const mat4<F32>& transform){
+		WriteLock w_lock(_lock);
 		_worldMatrix = transform;
 		this->clean();
 	}
 
 	void setParentMatrix(const mat4<F32>& transform){
+		WriteLock w_lock(_lock);
 		_dirty = true;
 		_parentMatrix = transform;
 	}
 
 	bool compare(Transform* t){
 		bool result = false;
-
+		ReadLock r_lock(_lock);
 		if(_scale.compare(t->_scale) &&  
 		   _orientation.compare(t->_orientation) &&
 		   _translation.compare(t->_translation))
@@ -171,7 +193,7 @@ public:
 		return result;
 	}
 
-	inline bool isDirty() {return _dirty;}
+	inline bool isDirty() {ReadLock r_lock(_lock); return _dirty;}
 
 private:
 	inline void clean()   {_dirty = false;} 
@@ -187,6 +209,7 @@ private:
 	mat4<F32> _globalMatrix; /// world * parent
 	mat4<F32> _scaleMatrix,_rotationMatrix,_translationMatrix;
 	bool _dirty;
+	mutable Lock _lock;
 };
 
 #endif

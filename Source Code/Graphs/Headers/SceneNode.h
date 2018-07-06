@@ -39,16 +39,19 @@ enum SCENE_NODE_TYPE{
 class Scene;
 enum  RENDER_STAGE;
 class SceneNode : public Resource {
+
 	friend class SceneGraphNode;
 	friend class RenderQueue;
+
 public:
+
 	SceneNode(SCENE_NODE_TYPE type);
 	SceneNode(std::string name, SCENE_NODE_TYPE type);
 	virtual ~SceneNode();
 
 	/*Rendering/Processing*/
 	virtual void render(SceneGraphNode* const sgn) = 0; //Sounds are played, geometry is displayed etc.
-			void setDrawState(bool state) {_drawState = state;}
+	inline  void setDrawState(bool state) {_drawState = state;}
 	virtual	bool getDrawState()  const {return _drawState;} 
 			void addToDrawExclusionMask(U8 stageMask);
 			void removeFromDrawExclusionMask(U8 stageMask);
@@ -64,7 +67,7 @@ public:
 		    Material*		getMaterial();
 
 	/* Normal material */
-	virtual	void            prepareMaterial(SceneGraphNode* const sgn);
+	virtual	void            prepareMaterial(SceneGraphNode const* const sgn);
 	virtual	void            releaseMaterial();
 	/* Depth map material */
 	virtual	void            prepareShadowMaterial(SceneGraphNode* const sgn);
@@ -72,22 +75,24 @@ public:
 
 	/// Every SceneNode computes a bounding box in it's own way. 
 	virtual	bool    computeBoundingBox(SceneGraphNode* const sgn);
+	/// Special BB transforms may be required at a certain frame
+	virtual void    updateBBatCurrentFrame(SceneGraphNode* const sgn);
 	virtual void    updateTransform(SceneGraphNode* const sgn);
 	virtual void    onDraw();
 	virtual void    postDraw();
 	virtual void    drawBoundingBox(SceneGraphNode* const sgn);
 	virtual void    postLoad(SceneGraphNode* const sgn) = 0; //Post insertion calls (Use this to setup child objects during creation)
-	void    useDefaultMaterial(bool state) {_noDefaultMaterial = !state;}
 	/// Called from SceneGraph "sceneUpdate"
 	virtual void sceneUpdate(D32 sceneTime);
 
-	inline	void	setSelected(bool state)  {_selected = state;}
-	inline	bool    isSelected()	const	 {return _selected;}
+	inline  void    useDefaultMaterial(bool state) {_noDefaultMaterial = !state;}
+	inline 	void	setSelected(bool state)  {_selected = state;}
+	inline 	bool    isSelected()	const	 {return _selected;}
 	virtual void    createCopy();
 	virtual void    removeCopy();
 
-	SCENE_NODE_TYPE getType()					  {return _type;}
-	void            setType(SCENE_NODE_TYPE type) {_type = type;}
+	inline SCENE_NODE_TYPE getType()					  {return _type;}
+	inline void            setType(SCENE_NODE_TYPE type) {_type = type;}
 
 protected:
 	U8          _exclusionMask;

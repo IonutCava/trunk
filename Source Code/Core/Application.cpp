@@ -66,8 +66,8 @@ void Application::DrawSceneStatic(){
 		_keepAlive = FrameListenerManager::getInstance().frameEnded(evt);
 
 	}else{
-
-		Guardian::getInstance().TerminateApplication();
+		Application::getInstance().Deinitialize(); ///Destroy platform
+		Guardian::getInstance().TerminateApplication(); ///Free resources
 	}
 }
 
@@ -109,4 +109,19 @@ void Application::Initialize(){
 	_GFX.enableFog(0.01f,fogColor);
 	PostFX::getInstance().init();
 	PHYSICS_DEVICE.initPhysics();
+	_gui.createConsole();
+}
+
+void Application::Deinitialize(){
+	_gui.DestroyInstance(); ///Deactivate GUI
+	PRINT_FN("Closing application!");
+	PHYSICS_DEVICE.exitPhysics();
+	PostFX::getInstance().DestroyInstance();
+	
+	PRINT_FN("Closing hardware interface(GFX,SFX,PhysX, input,network) engine ...");
+	_SFX.closeAudioApi();
+	_SFX.DestroyInstance();
+	_GFX.closeRenderingApi();
+	_GFX.DestroyInstance();
+
 }

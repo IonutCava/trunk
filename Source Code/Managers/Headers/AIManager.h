@@ -41,7 +41,7 @@ private:
 private:
 	///ToDo: Maybe create the "Unit" class and agregate it with AIEntity? -Ionut
 	AIEntityMap _aiEntities;
-	boost::mutex _updateMutex;
+	mutable Lock _updateMutex;
 
 END_SINGLETON
 

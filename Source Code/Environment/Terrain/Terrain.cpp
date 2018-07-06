@@ -33,7 +33,7 @@ Terrain::Terrain() : SceneNode(TYPE_TERRAIN),
 {}
 
 
-void Terrain::prepareMaterial(SceneGraphNode* const sgn){
+void Terrain::prepareMaterial(SceneGraphNode const* const sgn){
 
 	ShaderProgram* terrainShader = getMaterial()->getShaderProgram();
 	SET_STATE_BLOCK(_terrainRenderState);

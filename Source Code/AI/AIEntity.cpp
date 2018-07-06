@@ -23,6 +23,7 @@ void AIEntity::receiveMessage(AIEntity* sender, AI_MSG msg, const boost::any& ms
 }
 
 void AIEntity::processMessage(AIEntity* sender, AI_MSG msg, const boost::any& msg_content) {
+	WriteLock w_lock(_updateMutex);
 	_actionProcessor->processMessage(sender, msg, msg_content);
 }
 
@@ -44,37 +45,36 @@ bool AIEntity::addSensor(SENSOR_TYPE type, Sensor* sensor){
 
 
 bool AIEntity::addActionProcessor(ActionList* actionProcessor){
+	WriteLock w_lock(_updateMutex);
 	if(_actionProcessor){
-		_updateMutex.lock();
 		delete _actionProcessor;
-		_updateMutex.unlock();
 	}
-	_updateMutex.lock();
 	_actionProcessor = actionProcessor;
 	_actionProcessor->addEntityRef(this);
-	_updateMutex.unlock();
 	return true;
 }
 
 void AIEntity::processInput(){
+	ReadLock r_lock(_managerQueryMutex);
 	if(!_actionProcessor) return;
 	_actionProcessor->processInput();
 }
 
 void AIEntity::processData(){
+	ReadLock r_lock(_managerQueryMutex);
 	if(!_actionProcessor) return;
 	_actionProcessor->processData();
 }
 
 void AIEntity::update(){
+	ReadLock r_lock(_managerQueryMutex);
 	if(!_actionProcessor) return;
-	_updateMutex.lock();
 	_actionProcessor->update(_node, _unitRef);
-	_updateMutex.unlock();
 }
 
 
 void AIEntity::setTeam(AICoordination* const coordination) {
+	ReadLock r_lock(_updateMutex);
 	if(_coordination){
 		///Remove from old team
 		_coordination->removeTeamMember(this);
@@ -86,6 +86,7 @@ void AIEntity::setTeam(AICoordination* const coordination) {
 }
 
 bool AIEntity::addFriend(AIEntity* const friendEntity){
+	ReadLock r_lock(_updateMutex);
 	AICoordination* friendTeam = friendEntity->getTeam();
 	///If no team, check if our friend has a team and add ourself to it
 	if(!_coordination){

@@ -2,6 +2,7 @@
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Geometry/Shapes/Headers/SubMesh.h"
+#include "Geometry/Shapes/Headers/Mesh.h"
 
 void SceneGraphNode::checkBoundingBoxes(){
 	//Update order is very important!
@@ -17,6 +18,8 @@ void SceneGraphNode::checkBoundingBoxes(){
 	if(!getBoundingBox().isComputed()){
 		_node->computeBoundingBox(this);
 	}
+	///Recreate bounding boxes for current frame	
+	_node->updateBBatCurrentFrame(this);
 }
 
 //This function eats up a lot of processing power

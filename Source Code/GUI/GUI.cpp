@@ -1,29 +1,16 @@
-#include "Headers/GUI.h"
-#include "Headers/guiFlash.h"
-
 #include <stdarg.h>
+
+#include "Headers/GUI.h"
+#include "Headers/GUIFlash.h"
+#include "Headers/GUIText.h"
+#include "Headers/GUIButton.h"
+#include "Headers/GUIConsole.h"
 #include "Hardware/Video/GFXDevice.h"
 #include "Core/Headers/Application.h"
 #include "Hardware/Video/RenderStateBlock.h"
 
 using namespace std;
 
-GuiElement::GuiElement() : _guiType(GUI_PLACEHOLDER),
-						   _parent(NULL),
-						   _active(false) {
-						   _name = "defaultGuiControl";
-						   _visible = true;
-	RenderStateBlockDescriptor d;
-	d.setCullMode(CULL_MODE_None);
-	d.setZEnable(false);
-	_guiSB = GFX_DEVICE.createStateBlock(d);
-
-}
-
-GuiElement::~GuiElement(){
-
-	SAFE_DELETE(_guiSB);
-}
 
 void GUI::onResize(F32 newWidth, F32 newHeight){
 
@@ -39,7 +26,7 @@ void GUI::draw(){
 	gfx.toggle2D(true);
     //------------------------------------------------------------------------
 		for_each(guiMap::value_type& guiStackIterator,_guiStack){
-			GuiElement* guiElement = guiStackIterator.second;
+			GUIElement* guiElement = guiStackIterator.second;
 			if(!guiElement->isVisible()) continue;
 			SET_STATE_BLOCK(guiElement->_guiSB);
 			gfx.renderGUIElement(guiElement);
@@ -48,6 +35,9 @@ void GUI::draw(){
 	//------------------------------------------------------------------------
 	gfx.toggle2D(false);
 		
+}
+
+GUI::GUI(){
 }
 
 GUI::~GUI(){
@@ -60,31 +50,43 @@ void GUI::close(){
 	_guiStack.clear();
 }
 
-void GUI::checkItem(U16 x, U16 y){
+void GUI::createConsole() {
+	if(_guiStack.find("console") == _guiStack.end()){
+		///Console is a default GUI element
+		_guiStack.insert(std::make_pair("console",&GUIConsole::getInstance()));
+	}
+}
 
-	GuiEvent event;
+void GUI::toggleConsole(){
+
+	GUIConsole::getInstance().toggleConsole();
+}
+
+void GUI::checkItem(U16 x, U16 y ){
+
+	GUIEvent event;
 	event.mousePoint.x = x;
 	event.mousePoint.y = y;
 
-	for_each(guiMap::value_type& guiStackIterator,_guiStack){
+	for_each(guiMap::value_type& guiStackIterator,_guiStack) {
 
-		GuiElement* gui = guiStackIterator.second;
+		GUIElement* gui = guiStackIterator.second;
 		switch(gui->getGuiType()){
 
 			case GUI_BUTTON :
 			{
-				Button *b = dynamic_cast<Button*>(gui);
+				GUIButton *b = dynamic_cast<GUIButton*>(gui);
 				b->onMouseMove(event);
 				
 			}break;
 			case GUI_FLASH:
 			{
-				GuiFlash* f = dynamic_cast<GuiFlash*>(gui);
+				GUIFlash* f = dynamic_cast<GUIFlash*>(gui);
 				f->onMouseMove(event);
 			}break;
 			case GUI_TEXT:
 			{
-				Text *t = dynamic_cast<Text*>(gui);
+				GUIText *t = dynamic_cast<GUIText*>(gui);
 				t->onMouseMove(event);
 			}break;
 			default:
@@ -93,29 +95,29 @@ void GUI::checkItem(U16 x, U16 y){
 	}
 }
 
-void GUI::clickCheck(){
+void GUI::clickCheck() {
 
-	GuiEvent event;
+	GUIEvent event;
 	event.mouseClickCount = 0;
 
-	for_each(guiMap::value_type& guiStackIterator,_guiStack){
+	for_each(guiMap::value_type& guiStackIterator,_guiStack) {
 
-		GuiElement* gui = guiStackIterator.second;
+		GUIElement* gui = guiStackIterator.second;
 		switch(gui->getGuiType()){
 
 			case GUI_BUTTON :
 			{
-				Button *b = dynamic_cast<Button*>(gui);
+				GUIButton *b = dynamic_cast<GUIButton*>(gui);
 				b->onMouseDown(event);
 			}break;
 			case GUI_FLASH:
 			{
-				GuiFlash* f = dynamic_cast<GuiFlash*>(gui);
+				GUIFlash* f = dynamic_cast<GUIFlash*>(gui);
 				f->onMouseDown(event);
 			}break;
 			case GUI_TEXT:
 			{
-				Text *t = dynamic_cast<Text*>(gui);
+				GUIText *t = dynamic_cast<GUIText*>(gui);
 				t->onMouseDown(event);
 			}break;
 			default:
@@ -124,28 +126,27 @@ void GUI::clickCheck(){
 	}
 }
 
-void GUI::clickReleaseCheck()
-{
-	GuiEvent event;
+void GUI::clickReleaseCheck() {
+	GUIEvent event;
 	event.mouseClickCount = 1;
 
-	for_each(guiMap::value_type& guiStackIterator,_guiStack){
+	for_each(guiMap::value_type& guiStackIterator,_guiStack) {
 
-		GuiElement* gui = guiStackIterator.second;
+		GUIElement* gui = guiStackIterator.second;
 		switch(gui->getGuiType()){
 			case GUI_BUTTON :
 			{
-				Button *b = dynamic_cast<Button*>(gui);
+				GUIButton *b = dynamic_cast<GUIButton*>(gui);
 				b->onMouseUp(event);
 			}break;
 			case GUI_FLASH:
 			{
-				GuiFlash* f = dynamic_cast<GuiFlash*>(gui);
+				GUIFlash* f = dynamic_cast<GUIFlash*>(gui);
 				f->onMouseUp(event);
 			}break;
 			case GUI_TEXT:
 			{
-				Text* t = dynamic_cast<Text*>(gui);
+				GUIText* t = dynamic_cast<GUIText*>(gui);
 				t->onMouseUp(event);
 			}break;
 			default:
@@ -157,7 +158,7 @@ void GUI::clickReleaseCheck()
 
 void GUI::addButton(const string& id, string text,const vec2<F32>& position,const vec2<F32>& dimensions,const vec3<F32>& color,ButtonCallback callback){
 
-	_guiStack[id] = New Button(id,text,position,dimensions,color,callback);
+	_guiStack[id] = New GUIButton(id,text,position,dimensions,color,callback);
 }
 
 void GUI::addText(const string& id,const vec3<F32> &position, Font font,const vec3<F32> &color, char* format, ...){
@@ -173,7 +174,7 @@ void GUI::addText(const string& id,const vec3<F32> &position, Font font,const ve
 	SAFE_DELETE_ARRAY(text);
     va_end(args);
 
-	GuiElement *t = New Text(id,fmt_text,position,(void*)font,color);
+	GUIElement *t = New GUIText(id,fmt_text,position,(void*)font,color);
 	_resultGuiElement = _guiStack.insert(make_pair(id,t));
 	if(!_resultGuiElement.second) (_resultGuiElement.first)->second = t;
 	fmt_text.empty();
@@ -181,9 +182,9 @@ void GUI::addText(const string& id,const vec3<F32> &position, Font font,const ve
 
 void GUI::addFlash(const string& id, string movie, const vec2<F32>& position, const vec2<F32>& extent){
 
-	GuiFlash *flash = New GuiFlash();
-	_resultGuiElement = _guiStack.insert(make_pair(id,dynamic_cast<GuiElement*>(flash)));
-	if(!_resultGuiElement.second) (_resultGuiElement.first)->second = dynamic_cast<GuiElement*>(flash);
+	GUIFlash *flash = New GUIFlash();
+	_resultGuiElement = _guiStack.insert(make_pair(id,flash));
+	if(!_resultGuiElement.second) (_resultGuiElement.first)->second = flash;
 }
 
 void GUI::modifyText(const string& id, char* format, ...){
@@ -200,45 +201,8 @@ void GUI::modifyText(const string& id, char* format, ...){
     va_end(args);
 
 	if(_guiStack[id]->getGuiType() == GUI_TEXT)
-		dynamic_cast<Text*>(_guiStack[id])->_text = fmt_text;
+		dynamic_cast<GUIText*>(_guiStack[id])->_text = fmt_text;
 	fmt_text.empty();
-}
-
-
-void Button::onMouseMove(const GuiEvent &event){
-
-	if(event.mousePoint.x > _position.x   &&  event.mousePoint.x < _position.x+_dimensions.x &&
-	   event.mousePoint.y > _position.y   &&  event.mousePoint.y < _position.y+_dimensions.y )	{
-		if(isActive()) _highlight = true;
-	}else{
-		_highlight = false;
-	}
-}
-
-void Button::onMouseUp(const GuiEvent &event){
-
-	if (_pressed){
-		if (_callbackFunction) 	_callbackFunction();
-		_pressed = false;
-	}
-}
-
-void Button::onMouseDown(const GuiEvent &event){
-
-	if (_highlight) _pressed = true;
-	else _pressed = false;
-}
-
-void Text::onMouseMove(const GuiEvent &event){
-
-}
-
-void Text::onMouseUp(const GuiEvent &event){
-
-}
-
-void Text::onMouseDown(const GuiEvent &event){
-
 }
 
 /*   void onRightMouseUp(const GuiEvent &event);

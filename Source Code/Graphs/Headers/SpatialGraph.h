@@ -32,13 +32,13 @@ public:
 		SAFE_DELETE(_root);
 	}
 
-	SceneGraphNode* getRoot(){ return _root; }
+	inline SceneGraphNode* getRoot(){ return _root; }
 
-	SceneGraphNode* findNode(const std::string& name){
+	inline SceneGraphNode* findNode(const std::string& name){
 		return _root->findNode(name);
 	}
 	
-	void render() {	_root->render(); }
+	inline void render() {	_root->render(); }
 
 private:
 	SceneGraphNode* _root;

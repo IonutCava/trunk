@@ -19,8 +19,8 @@
 #define _EVENT_H_
 
 #include "resource.h"
+#include "Hardware/Platform/Threading.h"
 #include <boost/any.hpp>
-#include <boost/thread.hpp>
 #include <boost/enable_shared_from_this.hpp> 
 
 using boost::any_cast;
@@ -95,7 +95,7 @@ private:
 	F32 _tickInterval;
 	U32 _numberOfTicks;
 	std::tr1::shared_ptr<boost::thread> _thisThread;
-	boost::mutex _mutex;
+	Lock _mutex;
 	volatile bool _end;
 	boost::function0<void> _callback;
 

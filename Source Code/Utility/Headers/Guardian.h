@@ -17,15 +17,14 @@
 
 #include "resource.h"
 
+///Simple class that initializes our app, read XML settings and frees resources on shutdown
 DEFINE_SINGLETON( Guardian )
 
 
 public:
 	void LoadSettings();
 	void LoadApplication(const std::string& entryPoint);
-	void ReloadSettings();
 	void TerminateApplication();
-	void ReloadEngine();
 	std::ofstream myfile;
 
 private:

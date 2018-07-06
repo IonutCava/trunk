@@ -40,7 +40,7 @@ void AITenisScene::processEvents(F32 time){
 	F32 FpsDisplay = 0.3f;
 	if (time - _eventTimers[0] >= FpsDisplay){
 		GUI::getInstance().modifyText("fpsDisplay", "FPS: %5.2f", Framerate::getInstance().getFps());
-		GUI::getInstance().modifyText("RenderBinCount", "Number of items in Render Bin: %d", RenderQueue::getInstance().getRenderQueueStackSize());
+		GUI::getInstance().modifyText("RenderBinCount", "Number of items in Render Bin: %d", GFX_RENDER_BIN_SIZE);
 		_eventTimers[0] += FpsDisplay;
 	}
 }
@@ -54,7 +54,9 @@ void AITenisScene::reseteazaJoc(){
 	_pierdutEchipa1 = false;
 	_aplicaImpulsLateral = false;
 	_impulsLateral = 0;
+	_ballPositionUpdate.lock();
 	_mingeSGN->getTransform()->setPosition(vec3<F32>(3.0f, 0.2f ,7.0f));
+	_ballPositionUpdate.unlock();
 }
 
 void AITenisScene::startJoc(){
@@ -88,8 +90,10 @@ void AITenisScene::procesareJoc(boost::any a, CallbackParam b){
 	assert(_fileu);assert(_podea);assert(_mingeSGN);
 
 	//Memoram (prin copie. thread-safe) pozitia actuala a mingii
+	_ballPositionQuery.lock();
 	Transform* mingeT = _mingeSGN->getTransform();
 	vec3<F32> pozitieMinge = mingeT->getPosition();
+	_ballPositionQuery.unlock();
 	vec3<F32> pozitieFileu  = _fileu->getTransform()->getPosition();
 	//Mingea se deplaseaza de la Echipa 1 la Echipa 2?
 	_directieEchipa1SpreEchipa2 ? pozitieMinge.z -= 0.123f : pozitieMinge.z += 0.123f;
@@ -101,10 +105,13 @@ void AITenisScene::procesareJoc(boost::any a, CallbackParam b){
 	}
 	//Dupa finalizarea calculelor de pozitie, aplicam transformarea
 	//ToDo: mutex aici!;
+	_ballPositionUpdate.lock();
+	_ballPositionQuery.lock();
 	mingeT->translate(pozitieMinge - mingeT->getPosition());
+	_ballPositionQuery.unlock();
 	//Rotim mingea doar de efect ...
 	mingeT->rotateEuler(vec3<F32>(pozitieMinge.z,1,1));
-
+	_ballPositionUpdate.unlock();
 	//----------------------COLIZIUNI------------------------------//
 	//z = adancime. Descendent spre orizont;
 	if(_podea->getBoundingBox().Collision(_mingeSGN->getBoundingBox())){
@@ -132,16 +139,14 @@ void AITenisScene::procesareJoc(boost::any a, CallbackParam b){
 	bool coliziuneEchipa2 = coliziunePlayer3 || coliziunePlayer4;
 
 	//fiecare echipa are o sansa mica de a rata lovitura
-	if(coliziuneEchipa1 && random(30) != 2){
-		//if(pasa) {caz special}
+	if(coliziuneEchipa1){
 		F32 decalajLateral = 0;
 		coliziunePlayer1 ? decalajLateral = Player1->getTransform()->getPosition().x : decalajLateral = Player2->getTransform()->getPosition().x;
 		_impulsLateral = pozitieMinge.x - decalajLateral;
 		_directieEchipa1SpreEchipa2 = true;
 	}
 
-	if(coliziuneEchipa2 && random(30) != 2){
-		//if(pasa) {caz special}
+	if(coliziuneEchipa2){
 		F32 decalajLateral = 0;
 		coliziunePlayer3 ? decalajLateral = Player3->getTransform()->getPosition().x : decalajLateral = Player4->getTransform()->getPosition().x;
 		_impulsLateral = pozitieMinge.x - decalajLateral;
@@ -174,7 +179,7 @@ void AITenisScene::procesareJoc(boost::any a, CallbackParam b){
 			updated = true;
 		}
     }
-	if(pozitieMinge.x + 1 < _fileu->getBoundingBox().getMin().x || pozitieMinge.x + 1 > _fileu->getBoundingBox().getMax().x){
+	if(pozitieMinge.x + 0.5f < _fileu->getBoundingBox().getMin().x || pozitieMinge.x + 0.5f > _fileu->getBoundingBox().getMax().x){
 		//Daca am lovit noi si am atins terenul adversarului
 		//Sau daca a lovit adversarul si nu a atins terenul nostru
 		if(_podea->getBoundingBox().Collision(_mingeSGN->getBoundingBox())){
@@ -305,10 +310,10 @@ bool AITenisScene::initializeAI(bool continueOnErrors){
 		_player3 = New NPC(_aiPlayer3);
 		_player4 = New NPC(_aiPlayer4);
 
-		_player1->setMovementSpeed(1.5);
-		_player2->setMovementSpeed(1.5);
-		_player3->setMovementSpeed(1.5);
-		_player4->setMovementSpeed(1.5);
+		_player1->setMovementSpeed(6);
+		_player2->setMovementSpeed(6);
+		_player3->setMovementSpeed(6);
+		_player4->setMovementSpeed(6);
 	}
 
 	return state;
@@ -368,8 +373,6 @@ bool AITenisScene::loadResources(bool continueOnErrors){
 								BITMAP_8_BY_13,
 								vec3<F32>(0.6f,0.2f,0.2f),
 								"Number of items in Render Bin: %d",0);
-
-	
 	_eventTimers.push_back(0.0f); //Fps
 	return true;
 }

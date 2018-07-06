@@ -20,7 +20,6 @@
 
 #include "resource.h"
 #include <boost/any.hpp>
-#include <boost/thread/thread.hpp>
 
 using boost::any_cast;
 
@@ -33,22 +32,22 @@ public:
 	T getParam(const std::string& name);
 
 	void setParam(const std::string& name, const boost::any& value){
-		_mutex.lock();
+		WriteLock w_lock(_mutex);
 		std::pair<ParamMap::iterator, bool> result = _params.insert(std::make_pair(name,value));
 		if(!result.second) (result.first)->second = value;
 		if (_logState) printOutput(name,value,result.second);
-		_mutex.unlock();
 
 	}
 
-	void delParam(const std::string& name){
+	inline void delParam(const std::string& name){
+		WriteLock w_lock(_mutex);
 		_params.erase(name); 
 		if(_logState) PRINT_FN("ParamHandler: Removed saved parameter [ %s ]", name.c_str());
 	} 
 
-	inline void setDebugOutput(bool logState) {_logState = logState;}
+	inline void setDebugOutput(bool logState) {WriteLock w_lock(_mutex); _logState = logState;}
 
-	int getSize(){return _params.size();}
+	inline int getSize(){ReadLock r_lock(_mutex); return _params.size();}
 
 private: 
 	void printOutput(const std::string& name, const boost::any& value,bool inserted);
@@ -56,7 +55,7 @@ private:
 private:
 	bool _logState;
 	ParamMap _params;
-	boost::mutex _mutex;
+	mutable Lock _mutex;
  
 END_SINGLETON
 

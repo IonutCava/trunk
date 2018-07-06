@@ -33,12 +33,13 @@ public:
 	virtual ~Shader();
 
 	virtual bool load(const std::string& name) = 0;
-	U16  getShaderId() {return _shader;}
-	void incRefCount() {_refCount++;}
-	void decRefCount() {_refCount--;}
-	U32  getRefCount() {return _refCount;}
-	SHADER_TYPE getType() {return _type;}
-	std::string& getName() {return _name;}
+
+	inline U16          getShaderId() {return _shader;}
+	inline void         incRefCount() {_refCount++;}
+	inline void         decRefCount() {_refCount--;}
+	inline U32          getRefCount() {return _refCount;}
+	inline SHADER_TYPE  getType()     {return _type;}
+	inline std::string& getName()     {return _name;}
 
 protected:
 	virtual void validate() = 0;

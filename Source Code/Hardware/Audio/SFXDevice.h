@@ -26,19 +26,19 @@ DEFINE_SINGLETON_EXT1(SFXDevice,AudioAPIWrapper)
 
 public:
 	
-	void initHardware(){_api.initHardware();}
-	void closeAudioApi(){_api.closeAudioApi();}
-	void initDevice(){_api.initDevice();}
+	inline void initHardware()  {_api.initHardware();}
+	inline void closeAudioApi() {_api.closeAudioApi();}
+	inline void initDevice()    {_api.initDevice();}
 
-	void playSound(AudioDescriptor* sound){_api.playSound(sound);}
-	void playMusic(AudioDescriptor* music){_api.playMusic(music);}
+	inline void playSound(AudioDescriptor* sound){_api.playSound(sound);}
+	inline void playMusic(AudioDescriptor* music){_api.playMusic(music);}
 
-	void pauseMusic(){_api.pauseMusic();}
-	void stopMusic(){_api.stopMusic();}
-	void stopAllSounds(){_api.stopAllSounds();}
+	inline void pauseMusic()    {_api.pauseMusic();}
+	inline void stopMusic()     {_api.stopMusic();}
+	inline void stopAllSounds() {_api.stopAllSounds();}
 
-	void setMusicVolume(I8 value){_api.setMusicVolume(value);}
-	void setSoundVolume(I8 value){_api.setSoundVolume(value);}
+	inline void setMusicVolume(I8 value){_api.setMusicVolume(value);}
+	inline void setSoundVolume(I8 value){_api.setSoundVolume(value);}
 
 private:
 	SFXDevice(): _api(SDL_API::getInstance()) //Defaulting to SDL if no api has been defined

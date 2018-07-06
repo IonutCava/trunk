@@ -2,6 +2,7 @@
 #include "Headers/Mesh.h"
 #include "Managers/Headers/ResourceManager.h"
 #include "Geometry/Animations/Headers/AnimationController.h"
+#include "Core/Headers/ParamHandler.h"
 
 SubMesh::~SubMesh(){
 	SAFE_DELETE(_animator);
@@ -29,55 +30,51 @@ void SubMesh::postLoad(SceneGraphNode* const sgn){
 	Object3D::postLoad(sgn);
 }
 
-bool SubMesh::unload(){
-	return SceneNode::unload();
-}
-
-void SubMesh::setSceneMatrix(const mat4<F32>& sceneMatrix){
-	_sceneRootMatrix = sceneMatrix;
-}
-
 void SubMesh::updateBBatCurrentFrame(SceneGraphNode* const sgn){
-	if(_animator != NULL  && getParentMesh()->_playAnimations){
-		_currentAnimationID = _animator->GetAnimationIndex();
-		_currentFrameIndex = _animator->GetFrameIndex();
-		if(_boundingBoxes.find(_currentAnimationID) == _boundingBoxes.end()){
-			tempHolder.clear();
-			std::vector<vec3<F32> >& verts   = _geometry->getPosition();
-			std::vector<vec4<U8>  >& indices = _geometry->getBoneIndices();
-			std::vector<vec4<F32> >& weights = _geometry->getBoneWeights();
+	if(!_animator) return;
+	if(!getParentMesh()->_playAnimations) return;
+	if(!ParamHandler::getInstance().getParam<bool>("mesh.playAnimations")) return;
 
-			for(U16 i = 0; i < _animator->GetFrameCount(); i++){
+	_currentAnimationID = _animator->GetAnimationIndex();
+	_currentFrameIndex = _animator->GetFrameIndex();
 
-				std::vector<mat4<F32> > transforms = _animator->GetTransformsByIndex(i);
+	if(_boundingBoxes.find(_currentAnimationID) == _boundingBoxes.end()){
+		tempHolder.clear();
+		std::vector<vec3<F32> >& verts   = _geometry->getPosition();
+		std::vector<vec4<U8>  >& indices = _geometry->getBoneIndices();
+		std::vector<vec4<F32> >& weights = _geometry->getBoneWeights();
 
-				BoundingBox bb(vec3<F32>(100000.0f, 100000.0f, 100000.0f),vec3<F32>(-100000.0f, -100000.0f, -100000.0f));
+		for(U16 i = 0; i < _animator->GetFrameCount(); i++){
 
-				/// loop through all vertex weights of all bones 
-				for( size_t j = 0; j < verts.size(); ++j) { 
-					vec4<U8>&  ind = indices[j];
-					vec4<F32>& wgh = weights[j];
-					F32 finalWeight = 1.0f - ( wgh.x + wgh.y + wgh.z );
+			std::vector<mat4<F32> > transforms = _animator->GetTransformsByIndex(i);
 
-					vec4<F32> pos1 = wgh.x       * (transforms[ind.x] * verts[j]);
-					vec4<F32> pos2 = wgh.y       * (transforms[ind.y] * verts[j]);
-					vec4<F32> pos3 = wgh.z       * (transforms[ind.z] * verts[j]);
-					vec4<F32> pos4 = finalWeight * (transforms[ind.w] * verts[j]);
-					vec4<F32> finalPosition =  pos1 + pos2 + pos3 + pos4;
-					bb.Add( finalPosition );
-				}
-				bb.isComputed() = true;
-				tempHolder[i] = bb;
+			BoundingBox bb(vec3<F32>(100000.0f, 100000.0f, 100000.0f),vec3<F32>(-100000.0f, -100000.0f, -100000.0f));
+
+			/// loop through all vertex weights of all bones 
+			for( size_t j = 0; j < verts.size(); ++j) { 
+				vec4<U8>&  ind = indices[j];
+				vec4<F32>& wgh = weights[j];
+				F32 finalWeight = 1.0f - ( wgh.x + wgh.y + wgh.z );
+
+				vec4<F32> pos1 = wgh.x       * (transforms[ind.x] * verts[j]);
+				vec4<F32> pos2 = wgh.y       * (transforms[ind.y] * verts[j]);
+				vec4<F32> pos3 = wgh.z       * (transforms[ind.z] * verts[j]);
+				vec4<F32> pos4 = finalWeight * (transforms[ind.w] * verts[j]);
+				vec4<F32> finalPosition =  pos1 + pos2 + pos3 + pos4;
+				bb.Add( finalPosition );
 			}
-			_boundingBoxes.insert(std::make_pair(_currentAnimationID,tempHolder));
-		}else{
-			BoundingBox& bb1 = _boundingBoxes[_currentAnimationID][_currentFrameIndex];
-			BoundingBox& bb2 = sgn->getBoundingBox();
-			if(!bb1.Compare(bb2)){
-				bb2 = bb1;
-				SceneNode::computeBoundingBox(sgn);
-			}
+			bb.isComputed() = true;
+			tempHolder[i] = bb;
 		}
+		_boundingBoxes.insert(std::make_pair(_currentAnimationID,tempHolder));
+	}
+
+	BoundingBox& bb1 = _boundingBoxes[_currentAnimationID][_currentFrameIndex];
+	BoundingBox& bb2 = sgn->getBoundingBox();
+	if(!bb1.Compare(bb2)){
+		bb2 = bb1;
+		SceneNode::computeBoundingBox(sgn);
+		sgn->getParent()->updateBB(true);
 	}
 }
 
@@ -135,30 +132,26 @@ void SubMesh::onDraw(){
 
 /// Called from SceneGraph "sceneUpdate"
 void SubMesh::sceneUpdate(D32 sceneTime){
+
+}
+
+void SubMesh::updateAnimations(D32 timeIndex){
 	// update possible animation
 	_renderSkeleton = false;
 	if(GFX_DEVICE.getRenderStage() == FINAL_STAGE){
 		if (_animator != NULL && getParentMesh()->_playAnimations) {
-			///sceneTime is in miliseconds. Convert to seconds
-			 _deltaTime = sceneTime/1000.0f;
+			 _deltaTime = timeIndex;
 			  //set the bone animation to the specified timestamp
 			 _transforms = _animator->GetTransforms(_deltaTime);
-			 if(!_transforms.empty()){
-				 getParentMesh()->_updateBB = true;
-			 }
-			_renderSkeleton = true;
+			 _renderSkeleton = true;
 		}
 	}
-}
 
-std::vector<mat4<F32> >& SubMesh::GetTransforms(){ 
-	return _transforms; 
 }
-
 void SubMesh::renderSkeleton(){
 	// update possible animation
-	//assert(_animator != NULL);
 	if(_renderSkeleton) {
+		assert(_animator != NULL);
 		_animator->RenderSkeleton(_deltaTime);
 	}
 }

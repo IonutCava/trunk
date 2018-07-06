@@ -102,7 +102,7 @@ void WaterPlane::onDraw(){
 	_planeTransform->setPosition(vec3<F32>(eyePos.x,bb.getMax().y,eyePos.z));
 }
 
-void WaterPlane::prepareMaterial(SceneGraphNode* const sgn){
+void WaterPlane::prepareMaterial(SceneGraphNode const* const sgn){
 	
 	SET_STATE_BLOCK(_waterStateBlock);
 

@@ -18,17 +18,17 @@
 #ifndef SINGLETON_H_
 #define SINGLETON_H_
 
-#include <boost/thread.hpp>
+#include "Hardware/Platform/Threading.h"
 
 template <class T>
 class Singleton{
 
 public :
 	inline static T& getInstance() {
-		
 		if (!_instance)   {
-			boost::lock_guard<boost::mutex> lock(_singletonMutex);
+			UpgradableReadLock ur_lock(_singletonMutex);
 			if (!_instance){ //double-checked lock
+				UpgradeToWriteLock uw_lock(ur_lock); 
 				_instance = new T;
 			}
 		}
@@ -36,7 +36,7 @@ public :
 	}
 
 	inline static void DestroyInstance() {
-		boost::lock_guard<boost::mutex> lock(_singletonMutex);
+		WriteLock w_lock(_singletonMutex);
 		SAFE_DELETE(_instance);
 	}
 
@@ -51,11 +51,11 @@ private :
 
 	Singleton(Singleton&);
 	void operator =(Singleton&);
-	static boost::mutex _singletonMutex;
+	static Lock _singletonMutex;
 };
 
 template <class T> T* Singleton<T>::_instance = 0;
-template <class T> boost::mutex Singleton<T>::_singletonMutex;
+template <class T> Lock Singleton<T>::_singletonMutex;
 
 #define DEFINE_SINGLETON(class_name) \
 	class class_name : public Singleton<class_name> { \

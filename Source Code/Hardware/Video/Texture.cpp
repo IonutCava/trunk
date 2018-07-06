@@ -1,5 +1,6 @@
 #include "texture.h"
 #include "Utility/Headers/ImageTools.h"
+#include "Core/Headers/ParamHandler.h"
 
 bool Texture::_generateMipmaps = true;
 unordered_map<U8, U32> Texture::textureBoundMap;
@@ -27,7 +28,6 @@ Texture::Texture(bool flipped) : Resource(),
 
 /// Use DevIL to load a file intro a Texture Object
 bool Texture::LoadFile(U32 target, const std::string& name){
-
 	setResourceLocation(name);
 	/// Create a new imageData object
 	ImageTools::ImageData img;
@@ -40,7 +40,12 @@ bool Texture::LoadFile(U32 target, const std::string& name){
 	/// validate data
 	if(!img.data) {
 		ERROR_FN("Texture: Unable to load texture [ %s ]", name.c_str());
-		return false;
+		///Missing texture fallback
+		ParamHandler& par = ParamHandler::getInstance();
+		ImageTools::OpenImage(par.getParam<std::string>("assetsLocation")+"/"+
+			                  par.getParam<std::string>("defaultTextureLocation") +"/"+
+							  "missing_texture.jpg", img,_hasTransparency);
+		//return false;
 	}
 
 	/// Get width

@@ -100,15 +100,9 @@ class JoystickManager
 		_pInputMgr->destroyInputObject( _vecJoys[nJoyInd] );
 	}
 
-    size_t getNumberOfJoysticks() const
-    {
-	  return _vecJoys.size();
-	}
+    inline size_t getNumberOfJoysticks() const { return _vecJoys.size(); }
 
-    bool wasFFDetected() const
-    {
-	  return _bFFFound;
-	}
+    inline bool wasFFDetected() const { return _bFFFound; }
 
 	enum EWhichJoystick { ePrevious=-1, eNext=+1 };
 
@@ -135,10 +129,7 @@ class JoystickManager
 	  }
 	}
 
-    OIS::ForceFeedback* getCurrentFFDevice()
-    {
-	  return (_nCurrJoyInd >= 0) ? _vecFFDev[_nCurrJoyInd] : 0;
-	}
+    inline OIS::ForceFeedback* getCurrentFFDevice(){  return (_nCurrJoyInd >= 0) ? _vecFFDev[_nCurrJoyInd] : 0; }
 
     void changeMasterGain(float dDeltaPercent)
     {

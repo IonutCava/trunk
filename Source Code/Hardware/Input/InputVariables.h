@@ -164,26 +164,11 @@ class VariableEffect
 	  
 	}
 
-    void setActive(bool bActive = true)
-    {
-	  reset();
-	  _bActive = bActive;
-	}
+    inline void setActive(bool bActive = true) { reset(); _bActive = bActive; }
+    inline bool isActive(){  return _bActive; }
+	inline OIS::Effect* getFFEffect()  { return _pEffect; }
 
-    bool isActive()
-    {
-	  return _bActive;
-	}
-
-	OIS::Effect* getFFEffect()
-	{
-	  return _pEffect;
-	}
-
-	const char* getDescription() const
-	{
-	  return _pszDesc;
-	}
+	const char* getDescription() const { return _pszDesc; }
 
     void update()
     {

@@ -205,10 +205,10 @@ public:
 		return thisQ.compare(otherQ);
 	}
 
-	T const& getX() const {return _x;}
-	T const& getY() const {return _y;}
-	T const& getZ() const {return _z;}
-	T const& getW() const {return _w;}
+	inline T const& getX() const {return _x;}
+	inline T const& getY() const {return _y;}
+	inline T const& getZ() const {return _z;}
+	inline T const& getW() const {return _w;}
 
 private:
 	T _x,_y,_z,_w;

@@ -1,6 +1,7 @@
 #include "EventHandler.h"
 #include "InputManager.h"
 #include "Managers/Headers/SceneManager.h"
+#include "GUI/Headers/GUIConsole.h"
 
 using namespace OIS;
 
@@ -10,76 +11,87 @@ EventHandler::EventHandler(InputManagerInterface* pApp)
 	_activeScene = SceneManager::getInstance().getActiveScene();
 }
 
-void EventHandler::initialize(JoystickManager* pJoystickMgr, EffectManager* pEffectMgr)
-{
+void EventHandler::initialize(JoystickManager* pJoystickMgr, EffectManager* pEffectMgr){
 
   _pJoystickMgr = pJoystickMgr;
   _pEffectMgr = pEffectMgr;
 }
 
-bool EventHandler::keyPressed( const OIS::KeyEvent &arg )
-{
+/// Input events are either handled by the current scene or by the console if it's open
+bool EventHandler::keyPressed( const OIS::KeyEvent &arg ) {
 	//boost::mutex::scoped_lock l(_mutex);
-	_activeScene->onKeyDown(arg);
+	if(GUIConsole::getInstance().isConsoleOpen()){
+		GUIConsole::getInstance().onKeyDown(arg);
+	}else{
+		_activeScene->onKeyDown(arg);
+	}
     return true;
 }
 
-bool EventHandler::keyReleased( const OIS::KeyEvent &arg )
-{
+bool EventHandler::keyReleased( const OIS::KeyEvent &arg ) {
 	//boost::mutex::scoped_lock l(_mutex);
-	_activeScene->onKeyUp(arg);
+	if(GUIConsole::getInstance().isConsoleOpen()){
+		GUIConsole::getInstance().onKeyUp(arg);
+	}else{
+		_activeScene->onKeyUp(arg);
+	}
 	return true;
 }
 
-bool EventHandler::buttonPressed( const OIS::JoyStickEvent &arg, I8 button )
-{
+bool EventHandler::buttonPressed( const OIS::JoyStickEvent &arg, I8 button ){
   //boost::mutex::scoped_lock l(_mutex);
   _activeScene->OnJoystickButtonDown(arg,button);
   return true;
 }
 
-bool EventHandler::buttonReleased( const OIS::JoyStickEvent &arg, I8 button )
-{
+bool EventHandler::buttonReleased( const OIS::JoyStickEvent &arg, I8 button ){
   //boost::mutex::scoped_lock l(_mutex);
   _activeScene->OnJoystickButtonUp(arg,button);
   return true;
 }
 
-bool EventHandler::axisMoved( const OIS::JoyStickEvent &arg, I8 axis )
-{
+bool EventHandler::axisMoved( const OIS::JoyStickEvent &arg, I8 axis ){
    //boost::mutex::scoped_lock l(_mutex);
   _activeScene->OnJoystickMoveAxis(arg,axis);
   return true;
 }
 
-bool EventHandler::povMoved( const OIS::JoyStickEvent &arg, I8 pov )
-{
-   //boost::mutex::scoped_lock l(_mutex);
+bool EventHandler::povMoved( const OIS::JoyStickEvent &arg, I8 pov ){  
+	//boost::mutex::scoped_lock l(_mutex);
   _activeScene->OnJoystickMovePOV(arg,pov);
   return true;
 }
 
-bool EventHandler::mouseMoved( const MouseEvent &arg )
-{
+bool EventHandler::mouseMoved( const MouseEvent &arg ){
 	//boost::mutex::scoped_lock l(_mutex);
 	const OIS::MouseState& s = arg.state;
-	_activeScene->onMouseMove(arg);
+	if(GUIConsole::getInstance().isConsoleOpen()){
+		GUIConsole::getInstance().onMouseMove(arg);
+	}else{
+		_activeScene->onMouseMove(arg);
+	}
 	return true;
 }
 
-bool EventHandler::mousePressed( const MouseEvent &arg, MouseButtonID id )
-{
+bool EventHandler::mousePressed( const MouseEvent &arg, MouseButtonID id ) {
 	//boost::mutex::scoped_lock l(_mutex);
 	const OIS::MouseState& s = arg.state;
-	_activeScene->onMouseClickDown(arg,id);
+	if(GUIConsole::getInstance().isConsoleOpen()){
+		GUIConsole::getInstance().onMouseClickDown(arg,id);
+	}else{
+		_activeScene->onMouseClickDown(arg,id);
+	}
 	return true;
 }
 
-bool EventHandler::mouseReleased( const MouseEvent &arg, MouseButtonID id )
-{
+bool EventHandler::mouseReleased( const MouseEvent &arg, MouseButtonID id ) {
 	//boost::mutex::scoped_lock l(_mutex);
 	const OIS::MouseState& s = arg.state;
-	_activeScene->onMouseClickUp(arg,id);
+	if(GUIConsole::getInstance().isConsoleOpen()){
+		GUIConsole::getInstance().onMouseClickUp(arg,id);
+	}else{
+		_activeScene->onMouseClickUp(arg,id);
+	}
 	return true;
 }
 

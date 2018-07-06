@@ -4,18 +4,6 @@
 
 using namespace std;
 
-Mesh::~Mesh(){
-}
-
-bool Mesh::load(const string& name){
-	_name = name;
-	return true;
-}
-
-void Mesh::removeCopy(){
-	SceneNode::removeCopy();
-}
-
 void Mesh::createCopy(){
 	SceneNode::createCopy();
 	for_each(std::string& it, _subMeshes){
@@ -25,14 +13,15 @@ void Mesh::createCopy(){
 }
 
 void Mesh::updateBBatCurrentFrame(SceneGraphNode* const sgn){
-	if(_updateBB){
+	if(!ParamHandler::getInstance().getParam<bool>("mesh.playAnimations")) return;
+	if(sgn->updateBB()){
 		BoundingBox& bb = sgn->getBoundingBox();
 		bb.set(vec3<F32>(100000.0f, 100000.0f, 100000.0f),vec3<F32>(-100000.0f, -100000.0f, -100000.0f));
 		for_each(childrenNodes::value_type& s, sgn->getChildren()){
 			bb.Add(s.second->getBoundingBox());
 		}
 		SceneNode::computeBoundingBox(sgn);
-		_updateBB = false;
+		SceneNode::updateBBatCurrentFrame(sgn);
 	}
 }
 
@@ -40,6 +29,10 @@ void Mesh::updateBBatCurrentFrame(SceneGraphNode* const sgn){
 bool Mesh::computeBoundingBox(SceneGraphNode* const sgn){
 	BoundingBox& bb = sgn->getBoundingBox();
 	if(bb.isComputed()) return true;
+	bb.set(vec3<F32>(100000.0f, 100000.0f, 100000.0f),vec3<F32>(-100000.0f, -100000.0f, -100000.0f));
+	for_each(childrenNodes::value_type& s, sgn->getChildren()){
+		bb.Add(s.second->getBoundingBox());
+	}
 	return SceneNode::computeBoundingBox(sgn);
 }
 
@@ -66,8 +59,9 @@ void Mesh::postLoad(SceneGraphNode* const sgn){
 }
 
 void Mesh::onDraw(){
-	if(!_loaded) return;
 
+	if(!_loaded) return;
+	_playAnimations = ParamHandler::getInstance().getParam<bool>("mesh.playAnimations");
 	Object3D::onDraw();
 }
 
@@ -77,5 +71,10 @@ void Mesh::updateTransform(SceneGraphNode* const sgn){
 
 /// Called from SceneGraph "sceneUpdate"
 void Mesh::sceneUpdate(D32 sceneTime){
+	///sceneTime is in miliseconds. Convert to seconds
+	D32 timeIndex = sceneTime/1000.0;
+	for_each(subMeshRefMap::value_type& subMesh, _subMeshRefMap){
+		subMesh.second->updateAnimations(timeIndex);
+	}
 }
 

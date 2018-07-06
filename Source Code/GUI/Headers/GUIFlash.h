@@ -18,16 +18,13 @@
 #ifndef _GUI_FLASH_H
 #define _GUI_FLASH_H
 
-#include "GUI/Headers/GUI.h"
+#include "GUIElement.h"
 
-class GuiFlash : public GuiElement
-{
-private:
-   typedef GuiElement Parent;
+class GUIFlash : public GUIElement {
 
 public:
-   GuiFlash();
-   ~GuiFlash();
+   GUIFlash();
+   ~GUIFlash();
 
 	void playMovie();
 	

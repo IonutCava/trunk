@@ -23,7 +23,7 @@ DEFINE_SINGLETON_EXT1(PXDevice, PhysicsAPIWrapper)
 
 public:
 	void setApi(PhysicsAPI api);
-	I8  getApi(){return _api.getId(); }
+	inline I8  getApi(){return _api.getId(); }
 
 	inline bool initPhysics() {return _api.initPhysics();}
 	inline bool exitPhysics() {return _api.exitPhysics();}

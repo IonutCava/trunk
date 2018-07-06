@@ -577,7 +577,23 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\Source Code\GUI\GUIButton.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\GUI\GUIConsole.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\GUI\GUIElement.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\Source Code\GUI\GUIFlash.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\GUI\GUIText.cpp"
 				>
 			</File>
 			<Filter
@@ -588,7 +604,23 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\Source Code\GUI\Headers\GUIButton.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\GUI\Headers\GUIConsole.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\GUI\Headers\GUIElement.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\Source Code\GUI\Headers\GUIFlash.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\GUI\Headers\GUIText.h"
 					>
 				</File>
 			</Filter>
@@ -789,6 +821,10 @@
 				</File>
 				<File
 					RelativePath="..\..\Source Code\Core\Headers\Singleton.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Core\Headers\Thread.h"
 					>
 				</File>
 			</Filter>
@@ -1401,6 +1437,10 @@
 				>
 				<File
 					RelativePath="..\..\Source Code\Hardware\Platform\PlatformDefines.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Hardware\Platform\Threading.h"
 					>
 				</File>
 			</Filter>

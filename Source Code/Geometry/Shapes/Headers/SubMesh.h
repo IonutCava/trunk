@@ -62,9 +62,11 @@ public:
 	~SubMesh();
 
 	bool load(const std::string& name) {return true;}
-	bool unload();
+	bool unload() { return SceneNode::unload(); }
+
 	bool computeBoundingBox(SceneGraphNode* const sgn);
 	void updateTransform(SceneGraphNode* const sgn);
+
 	inline U32  getId() {return _id;}
 	/// When loading a submesh, the ID is the node index from the imported scene
 	/// scene->mMeshes[n] == (SubMesh with _id == n)
@@ -75,16 +77,19 @@ public:
 	void onDraw();
 
 	/// Called from SceneGraph "sceneUpdate"
+	inline std::vector<mat4<F32> >& GetTransforms(){ return _transforms; }
+
 	void sceneUpdate(D32 sceneTime);
-	std::vector<mat4<F32> >& GetTransforms();
 	bool createAnimatorFromScene(const aiScene* scene,U8 subMeshPointer);
 	void renderSkeleton();
-	void setSceneMatrix(const mat4<F32>& sceneMatrix);
 	void updateBBatCurrentFrame(SceneGraphNode* const sgn);
+
+	inline void setSceneMatrix(const mat4<F32>& sceneMatrix){ _sceneRootMatrix = sceneMatrix; }
 
 protected:
 	friend class Mesh;
 	inline void setParentMesh(Mesh* const parentMesh) {_parentMesh = parentMesh;}
+		   void updateAnimations(D32 timeIndex);
 	bool _hasAnimations;
 	friend class DVDConverter;
 	mat4<F32> _sceneRootMatrix;

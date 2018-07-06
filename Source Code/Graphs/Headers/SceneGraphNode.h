@@ -79,6 +79,8 @@ inline   	 void    		  setInitialBoundingBox(BoundingBox& initialBoundingBox){_i
 inline const BoundingBox&     getInitialBoundingBox()		  {return _initialBoundingBox;}
 inline       BoundingBox&	  getBoundingBox()                {return _boundingBox;}
 std::vector<BoundingBox >&    getBBoxes(std::vector<BoundingBox >& boxes );
+inline       void             updateBB(bool state) {_updateBB = state;}
+inline       bool             updateBB() {return _updateBB;}
 /*Bounding Box Management*/
 
 /*Transform management*/
@@ -105,8 +107,12 @@ private:
 	SceneNode* _node;
 	NodeChildren _children;
 	SceneGraphNode *_parent, *_grandParent;
-	bool _active, _wasActive,_noDefaultTransform,_inView, _sorted, _silentDispose;
-
+	bool _active, _wasActive;
+	bool _noDefaultTransform;
+	bool _inView;
+	bool _sorted;
+	bool _silentDispose;
+	bool _updateBB;
 	///_initialBoundingBox is a copy of the initialy calculate BB for transformation
 	///it should be copied in every computeBoungingBox call;
 	BoundingBox _initialBoundingBox;
@@ -116,6 +122,8 @@ private:
 	SceneGraph* _sceneGraph;
 	U32 _childQueue,_updateTimer;
 	std::string _name;
+	boost::mutex _transformLock;
+	boost::mutex _renderQueueLock;
 };
 
 #endif

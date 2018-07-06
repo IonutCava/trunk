@@ -90,6 +90,7 @@ struct RenderQueueDistanceFrontToBack{
 };
 
 void RenderQueue::sort(){
+	WriteLock w_lock(_renderQueueGetMutex);
 	const vec3<F32>& eye = Frustum::getInstance().getEyePos();
 	std::sort( _translucentStack.begin(), _translucentStack.end(), RenderQueueDistanceBacktoFront());
 	std::sort( _opaqueStack.begin(), _opaqueStack.end(), RenderQueueKeyCompare()  );
@@ -105,7 +106,7 @@ void RenderQueue::sort(){
 
 void RenderQueue::addNodeToQueue(SceneGraphNode* const sgn){
 	assert(sgn != NULL);
-	boost::unique_lock< boost::mutex > lock_access_here(_renderQueueMutex);
+	WriteLock w_lock(_renderQueueGetMutex);
 	if(sgn->getNode()){
 		P32 key;
 		Material* nodeMaterial = sgn->getNode()->getMaterial();
@@ -124,18 +125,18 @@ void RenderQueue::addNodeToQueue(SceneGraphNode* const sgn){
 }
 
 const RenderQueueItem& RenderQueue::getItem(I32 index){
-	boost::unique_lock< boost::mutex > lock_access_here(_renderQueueMutex);
+	ReadLock r_lock(_renderQueueGetMutex);
 	return _renderQueue[index];
 }
  
 void RenderQueue::refresh(){
-	boost::unique_lock< boost::mutex > lock_access_here(_renderQueueMutex);
+	WriteLock w_lock(_renderQueueGetMutex);
 	_renderQueue.resize(0);
 	_translucentStack.resize(0);
 	_opaqueStack.resize(0);
 }
 
 U32 RenderQueue::getRenderQueueStackSize(){
-	boost::unique_lock< boost::mutex > lock_access_here(_renderQueueMutex);
+	ReadLock r_lock(_renderQueueGetMutex);
 	return _renderQueue.size();
 }

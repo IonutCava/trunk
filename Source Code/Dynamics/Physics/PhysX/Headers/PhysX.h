@@ -63,9 +63,9 @@ public:
    bool createPlane(PhysicsSceneInterface* targetScene,const vec3<F32>& position = vec3<F32>(0,0,0), U32 size = 1);
    bool createBox(PhysicsSceneInterface* targetScene,const vec3<F32>& position = vec3<F32>(0,0,0), F32 size = 1);
    bool createActor(PhysicsSceneInterface* targetScene, SceneGraphNode* node, PhysicsActorMask mask,PhysicsCollisionGroup group);
-   void registerActiveScene(PhysXSceneInterface* activeScene) {_currentScene = activeScene;}
-   physx::PxPhysics* const getSDK() {return _gPhysicsSDK;}
-   const physx::PxSimulationFilterShader& getFilterShader() {return _gDefaultFilterShader;}
+   inline void registerActiveScene(PhysXSceneInterface* activeScene) {_currentScene = activeScene;}
+   inline physx::PxPhysics* const getSDK() {return _gPhysicsSDK;}
+   inline const physx::PxSimulationFilterShader& getFilterShader() {return _gDefaultFilterShader;}
 
 private:
 	PhysXSceneInterface* _currentScene;

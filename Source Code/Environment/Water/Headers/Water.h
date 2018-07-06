@@ -42,7 +42,7 @@ public:
 	void onDraw();
 	void render(SceneGraphNode* const sgn);
 	void postLoad(SceneGraphNode* const sgn);
-	void prepareMaterial(SceneGraphNode* const sgn);
+	void prepareMaterial(SceneGraphNode const* const sgn);
 	void releaseMaterial();
 	bool getDrawState(RENDER_STAGE currentStage)  const;
 

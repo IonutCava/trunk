@@ -36,22 +36,23 @@ public:
 	bool  load(const std::string& name) {_name = name; return true;}
 	bool  unload() {return true;}
 
-	bool& isLooping()  {return _isLooping;}
-	bool& is3D()       {return _is3D;}
+	inline bool& isLooping()  {return _isLooping;}
+	inline bool& is3D()       {return _is3D;}
 
-	void  setVolume(I8 value) {_volume = value;}
-	I32   getVolume()          {return _volume;}
+	inline void  setVolume(I8 value) {_volume = value;}
+	inline I32   getVolume()          {return _volume;}
 
-	void  setFrequency(F32 value) {_frequency = value;}
-	F32   getFrequency()          {return _frequency;}
+	inline void  setFrequency(F32 value) {_frequency = value;}
+	inline F32   getFrequency()          {return _frequency;}
 
-	void  setBitDepth(I8 bitDepth) {_bitDepth = bitDepth;}
-	I8    getBitDepth()            {return _bitDepth;}
+	inline void setBitDepth(I8 bitDepth) {_bitDepth = bitDepth;}
+	inline I8   getBitDepth()            {return _bitDepth;}
+	inline void setChannel(I8 id)		 {_channelId = id;}
+	inline I8   getChannel()			 {return _channelId;}
 
-	void setChannel(I8 id)		   {_channelId = id;}
-	I8   getChannel()			   {return _channelId;}
-	void createCopy(){incRefCount();}
-	void removeCopy(){decRefCount();}
+	inline void createCopy()             {incRefCount();}
+	inline void removeCopy()             {decRefCount();}
+
 private:
 	bool _isLooping, _is3D;
 	F32 _frequency;

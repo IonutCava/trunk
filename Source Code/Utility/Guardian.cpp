@@ -29,28 +29,11 @@ void Guardian::LoadApplication(const string& entryPoint){
 	_closing = false;
 }
 
-void Guardian::ReloadSettings(){
-	LoadSettings();
-}
-
-void Guardian::ReloadEngine(){
-/*
-*/
-}
-
 void Guardian::TerminateApplication(){
 
-	PRINT_FN("Closing application!");
-	PostFX::getInstance().DestroyInstance();
-	PHYSICS_DEVICE.exitPhysics();
 	SceneManager::getInstance().deinitializeAI(true);
 	SceneManager::getInstance().DestroyInstance();
 	ResourceManager::getInstance().DestroyInstance();
-	PRINT_FN("Closing hardware interface(GFX,SFX,PhysX, input,network) engine ...");
-	GFX_DEVICE.closeRenderingApi();
-	GFX_DEVICE.DestroyInstance();
-	SFX_DEVICE.closeAudioApi();
-	SFX_DEVICE.DestroyInstance();
 	PRINT_FN("Application shutdown complete!");
 }
 

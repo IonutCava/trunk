@@ -10,8 +10,6 @@ SceneGraph::SceneGraph() : _scene(NULL){
 }
 
 void SceneGraph::update(){
-	RenderQueue::getInstance().refresh();
-	boost::unique_lock< boost::mutex > lock_access_here(_rootAccessMutex);
 	_root->checkBoundingBoxes();
 	_root->updateTransforms();
 	_root->updateVisualInformation();
@@ -24,12 +22,12 @@ void SceneGraph::render(){
 		_scene = SceneManager::getInstance().getActiveScene();
 	}
 	ParamHandler& par = ParamHandler::getInstance();
-
-	if(!_updateRunning){
-		startUpdateThread();
-	}
-
+	update(); ///< Call the very first update and the last one to take place before "processRenderQueue"
+	///Render current frame
 	GFX_DEVICE.processRenderQueue();
+
+	///Update visual information while GPU is bussy
+	//update();
 }
 
 void SceneGraph::print(){
@@ -41,9 +39,6 @@ void SceneGraph::print(){
 }
 
 void SceneGraph::startUpdateThread(){
-	//New Event(1,true,false,boost::bind(&SceneGraph::update,this));
-	//_updateRunning = true;
-	update();
 }
 
 void SceneGraph::sceneUpdate(D32 sceneTime){

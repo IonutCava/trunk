@@ -51,7 +51,7 @@ void CubeScene::render(){
 	}
 	_GFX.toggle2D(false);
 
-	GuiElement* guiElement = gui.getGuiElement("FinalImage");
+	GUIElement* guiElement = gui.getGuiElement("FinalImage");
 	if(guiElement){
 		guiElement->setVisible(_showTextures);
 	}

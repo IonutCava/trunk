@@ -46,17 +46,18 @@ public:
 	const vec2<F32>& getWindowDimensions() const {return _dimensions;}
 	inline void setWindowWidth(U16 w){_dimensions.x = w;}
 	inline void setWindowHeight(U16 h){_dimensions.y = h;}
-
+	inline void killApplication() {_keepAlive = false;}
 	F32 moveFB,moveLR,angleUD,angleLR;
 
 	void Initialize(); ///< Set up the rendering platform
+	void Deinitialize(); ///< Destroy rendering platform
 
 	static void DrawSceneStatic();
 	static void Idle();
 
 	inline I8 const&  getMainWindowId() {return mainWindowId;}
 	inline void setMainWindowId(U8 id)  {mainWindowId = id;}
-	void   togglePreviewDepthMaps() {_previewDepthMaps = !_previewDepthMaps;}
+	inline void togglePreviewDepthMaps() {_previewDepthMaps = !_previewDepthMaps;}
 
 	/// get elapsed time since application start
 	inline D32 getCurrentTime() {return _currentTime;}

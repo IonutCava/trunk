@@ -33,8 +33,8 @@ public:
 	Sensor(SENSOR_TYPE type){_type = type;}
 	virtual void updatePosition(const vec3<F32>& newPosition) {_position = newPosition;}
 	/// return the coordinates at which the sensor is found (or the entity it's attached to)
-	vec3<F32>& getSpatialPosition()                    {return _position;}  
-	SENSOR_TYPE getSensorType() {return _type;}
+	inline vec3<F32>& getSpatialPosition() {return _position;}  
+	inline SENSOR_TYPE getSensorType()     {return _type;}
 	
 protected:
 

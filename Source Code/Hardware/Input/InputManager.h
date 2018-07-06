@@ -268,15 +268,16 @@ class EffectManager{
 	  }
 	}
 
-    void printEffect(size_t nEffInd)
-    {
+    inline void printEffect(size_t nEffInd){
+
 		PRINT_FN("InputManager: * #%d : %s",nEffInd,_vecEffects[nEffInd]->getDescription());
 	}
 
-    void printEffects()
-    {
-	  for (size_t nEffInd = 0; nEffInd < _vecEffects.size(); nEffInd++)
+    inline void printEffects(){
+
+		for (size_t nEffInd = 0; nEffInd < _vecEffects.size(); nEffInd++){
 		  printEffect(nEffInd);
+		}
 	}
 
    
@@ -467,10 +468,7 @@ public:
 	  return _nStatus;
 	}
 
-    void stop()
-    {
-	  _bMustStop = true;
-	}
+    inline void stop(){ _bMustStop = true; }
 
     void terminate()
     {
@@ -500,15 +498,8 @@ public:
 #endif
 	}
 
-    JoystickManager* getJoystickManager()
-    {
-	  return _pJoystickMgr;
-	}
-
-    EffectManager* getEffectManager()
-    {
-	  return _pEffectMgr;
-	}
+    inline JoystickManager* getJoystickManager(){ return _pJoystickMgr; }
+    inline EffectManager* getEffectManager(){ return _pEffectMgr; }
 
 
 END_SINGLETON

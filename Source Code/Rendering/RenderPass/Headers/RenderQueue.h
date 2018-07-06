@@ -42,6 +42,7 @@ struct RenderingOrder{
 
 DEFINE_SINGLETON( RenderQueue )
 	typedef std::vector< RenderQueueItem > RenderQueueStack;
+
 public:
 	void sort();
 	void refresh();
@@ -56,7 +57,9 @@ private:
 		_lowestKey = 0;
 		_highestKey = 0;
 	}
-	boost::mutex _renderQueueMutex; 
+	
+	mutable Lock _renderQueueGetMutex; 
+
 	RenderQueueStack _opaqueStack;
 	RenderQueueStack _translucentStack;
 	RenderQueueStack _renderQueue;

@@ -45,8 +45,8 @@ class PhysicsAPIWrapper {
 protected:
 	friend class PXDevice;
 	PhysicsAPIWrapper() : _apiId(PX_PLACEHOLDER){}
-	void setId(PhysicsAPI api) {_apiId = api;}
-	PhysicsAPI getId() { return _apiId;}
+	inline void setId(PhysicsAPI api) {_apiId = api;}
+	inline PhysicsAPI getId() { return _apiId;}
 
     virtual bool initPhysics() = 0;  
 	virtual bool exitPhysics() = 0;

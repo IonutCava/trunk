@@ -102,6 +102,8 @@ private: //Joc
 	NPC *_player1, *_player2, *_player3, *_player4;
 	///Team's are factions for AIEntites so they can manage friend/foe situations
 	AICoordination *_team1, *_team2;
+	boost::mutex _ballPositionQuery;
+	boost::mutex _ballPositionUpdate;
 };
 
 #endif

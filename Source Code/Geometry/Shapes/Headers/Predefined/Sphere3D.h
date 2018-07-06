@@ -30,7 +30,7 @@ public:
 										_dirty = true;
 										}
 	
-	bool load(const std::string &name) {_name = name; return true;}
+	inline bool load(const std::string &name) {_name = name; return true;}
 
 	inline F32	  getRadius()    {return _radius;}
 	inline F32    getResolution() {return _resolution;}

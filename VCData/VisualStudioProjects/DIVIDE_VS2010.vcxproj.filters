@@ -407,6 +407,9 @@
     <Filter Include="Scenes\WarScene\Resources\Support\Army\Headers">
       <UniqueIdentifier>{16411be4-155d-4c7a-8b60-ad55a7eb3ed2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Hardware\Platform">
+      <UniqueIdentifier>{42339953-c419-4eb8-8752-96c6e1e03820}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Rendering\Framerate.cpp">
@@ -420,12 +423,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Rendering\PostFX\PostFX.cpp">
       <Filter>Rendering\PostFX</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\GUI\GUI.cpp">
-      <Filter>GUI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\GUI\GUIFlash.cpp">
-      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Environment\Terrain\Terrain.cpp">
       <Filter>Environment\Terrain</Filter>
@@ -836,6 +833,24 @@
     <ClCompile Include="..\..\Source Code\Core\Math\MathHelper.cpp">
       <Filter>Core\Math</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\GUI\GUI.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\GUI\GUIButton.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\GUI\GUIConsole.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\GUI\GUIElement.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\GUI\GuiFlash.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\GUI\GUIText.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h">
@@ -861,12 +876,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\Headers\Frustum.h">
       <Filter>Rendering\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\GUI\Headers\GUI.h">
-      <Filter>GUI\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\GUI\Headers\GUIFlash.h">
-      <Filter>GUI\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Environment\Terrain\Quadtree\Headers\Quadtree.h">
       <Filter>Environment\Terrain\Quadtree\Headers</Filter>
@@ -1351,6 +1360,30 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\Bone.h">
       <Filter>Geometry\Animations\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\GUI\Headers\GUI.h">
+      <Filter>GUI\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\GUI\Headers\GUIButton.h">
+      <Filter>GUI\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\GUI\Headers\GUIConsole.h">
+      <Filter>GUI\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\GUI\Headers\GUIElement.h">
+      <Filter>GUI\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\GUI\Headers\GUIFlash.h">
+      <Filter>GUI\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\GUI\Headers\GUIText.h">
+      <Filter>GUI\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Platform\PlatformDefines.h">
+      <Filter>Hardware\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Platform\Threading.h">
+      <Filter>Hardware\Platform</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

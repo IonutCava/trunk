@@ -1,5 +1,6 @@
 #include "GFXDevice.h"
 #include "GUI/Headers/GUI.h"
+#include "GUI/Headers/GUIConsole.h"
 #include "RenderStateBlock.h"
 #include "Core/Headers/Application.h"
 
@@ -13,7 +14,6 @@
 
 #include "Geometry/Shapes/Headers/Object3D.h"
 #include "Geometry/Importer/Headers/DVDConverter.h"
-#include "Geometry/Shapes/Headers/Mesh.h"
 #include "Geometry/Shapes/Headers/SubMesh.h"
 #include "Geometry/Shapes/Headers/Predefined/Box3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
@@ -94,10 +94,11 @@ void GFXDevice::drawLines(const std::vector<vec3<F32> >& pointsA,const std::vect
 	_api.drawLines(pointsA,pointsB,colors,globalOffset);
 }
 
-void GFXDevice::renderGUIElement(GuiElement* const element){
+void GFXDevice::renderGUIElement(GUIElement* const element){
 	if(_stateBlockDirty){
 		updateStates();
 	}
+	if(!element) return; ///< Console not created, for example
 
 	switch(element->getGuiType()){
 		case GUI_TEXT:
@@ -109,6 +110,8 @@ void GFXDevice::renderGUIElement(GuiElement* const element){
 		case GUI_FLASH:
 			drawFlash(element);
 			break;
+		case GUI_CONSOLE:///Console is singleton so no parameter needed
+			drawConsole();
 		default:
 			break;
 	};
@@ -136,11 +139,11 @@ void GFXDevice::processRenderQueue(){
 		LightManager::getInstance().bindDepthMaps();
 	}
 
-
+	_renderBinCount = RenderQueue::getInstance().getRenderQueueStackSize();
 	///Draw the entire queue;
 	///Limited to 65536 (2^16) items per queue pass!
 	if(SceneManager::getInstance().getActiveScene()->drawObjects()){
-		for(U16 i = 0; i < RenderQueue::getInstance().getRenderQueueStackSize(); i++){
+		for(U16 i = 0; i < _renderBinCount; i++){
 			//Get the current scene node
 			sgn = RenderQueue::getInstance().getItem(i)._node;
 			///And validate it
@@ -164,18 +167,6 @@ void GFXDevice::processRenderQueue(){
 				///Transform the Object (Rot, Trans, Scale)
 				if(!excludeFromStateChange(sn->getType())){ ///< only if the node is not in the exclusion mask
 					setObjectState(t,false,s);
-					///Recreate bounding boxes for current frame	
-					if(sgn->getNode()->getType() == TYPE_OBJECT3D){
-						Object3D* obj = dynamic_cast<Object3D*>(sgn->getNode());
-						assert(obj != NULL);
-						/// For SubMesh objects
-						if(obj->getType() == SUBMESH){
-							dynamic_cast<SubMesh*>(obj)->updateBBatCurrentFrame(sgn);
-						}
-						if(obj->getType() == MESH){
-							dynamic_cast<Mesh*>(obj)->updateBBatCurrentFrame(sgn);
-						}
-					}
 				}
 				///setup materials and render the node
 				///As nodes are sorted, this should be very fast
@@ -226,7 +217,7 @@ void GFXDevice::processRenderQueue(){
 		///Draw all BBoxes
 		_drawBBoxes = SceneManager::getInstance().getActiveScene()->drawBBox();
 		_drawSkeleton = SceneManager::getInstance().getActiveScene()->drawSkeletons();
-		for(U16 i = 0; i < RenderQueue::getInstance().getRenderQueueStackSize(); i++){
+		for(U16 i = 0; i < _renderBinCount; i++){
 			///Get the current scene node
 			sgn = RenderQueue::getInstance().getItem(i)._node;
 			///draw bounding box if needed and only in the final stage to prevent Shadow/PostFX artifcats
@@ -248,6 +239,7 @@ void GFXDevice::processRenderQueue(){
 			}
 		}
 	}
+	RenderQueue::getInstance().refresh();
 }
 
 void GFXDevice::renderInViewport(const vec4<F32>& rect, boost::function0<void> callback){

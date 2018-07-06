@@ -9,14 +9,15 @@
 SceneGraphNode::SceneGraphNode(SceneNode* node) : _node(node), 
 												  _parent(NULL),
 												  _grandParent(NULL),
+												  _transform(NULL),
+												  _sceneGraph(NULL),
 												  _wasActive(true),
 											      _active(true),
-								                  _transform(NULL),
-								                  _noDefaultTransform(false),
+												  _noDefaultTransform(false),
 												  _inView(true),
 												  _sorted(false),
 												  _silentDispose(false),
-												  _sceneGraph(NULL),
+												  _updateBB(true),
 												  _updateTimer(GETMSTIME()),
 												  _childQueue(0)
 {

@@ -72,12 +72,12 @@ PostFX::~PostFX(){
 void PostFX::init(){
 	ParamHandler& par = ParamHandler::getInstance();
 
-	_enablePostProcessing = par.getParam<bool>("enablePostFX");
-	_enableAnaglyph = par.getParam<bool>("enable3D");
-	_enableBloom = par.getParam<bool>("enableBloom");
-	_enableSSAO = par.getParam<bool>("enableSSAO");
-	_enableDOF = par.getParam<bool>("enableDepthOfField");
-	_enableNoise = par.getParam<bool>("enableNoise");
+	_enablePostProcessing = par.getParam<bool>("postProcessing.enablePostFX");
+	_enableAnaglyph = par.getParam<bool>("postProcessing.enable3D");
+	_enableBloom = par.getParam<bool>("postProcessing.enableBloom");
+	_enableSSAO = par.getParam<bool>("postProcessing.enableSSAO");
+	_enableDOF = par.getParam<bool>("postProcessing.enableDepthOfField");
+	_enableNoise = par.getParam<bool>("postProcessing.enableNoise");
 	_blurShader = NULL;
 	_screenFBO = _gfx.newFBO();
 	_depthFBO  = _gfx.newFBO();
@@ -96,7 +96,7 @@ void PostFX::init(){
 			_anaglyphFBO[0] = _gfx.newFBO();
 			_anaglyphFBO[1] = _gfx.newFBO();
 			_anaglyphShader = CreateResource<ShaderProgram>(ResourceDescriptor("anaglyph"));
-			_eyeOffset = par.getParam<F32>("anaglyphOffset");
+			_eyeOffset = par.getParam<F32>("postProcessing.anaglyphOffset");
 		}
 		if(_enableBloom){
 			_bloomFBO = _gfx.newFBO();
@@ -138,7 +138,7 @@ void PostFX::init(){
 	_randomNoiseCoefficient = 0;
 	_randomFlashCoefficient = 0;
 
-	par.setParam("enableDepthOfField", false); //enable using keyboard;
+	par.setParam("postProcessing.enableDepthOfField", false); //enable using keyboard;
 	PostFX::getInstance().reshapeFBO(Application::getInstance().getWindowDimensions().width, Application::getInstance().getWindowDimensions().height);
 }
 
@@ -328,12 +328,12 @@ void PostFX::render(){
 void PostFX::idle(){
 	ParamHandler& par = ParamHandler::getInstance();
 	//Update states
-	_enablePostProcessing = par.getParam<bool>("enablePostFX");
-	_enableAnaglyph = par.getParam<bool>("enable3D");
-	_enableBloom = par.getParam<bool>("enableBloom");
-	_enableSSAO = par.getParam<bool>("enableSSAO");
-	_enableDOF = par.getParam<bool>("enableDepthOfField");
-	_enableNoise = par.getParam<bool>("enableNoise");
+	_enablePostProcessing = par.getParam<bool>("postProcessing.enablePostFX");
+	_enableAnaglyph = par.getParam<bool>("postProcessing.enable3D");
+	_enableBloom = par.getParam<bool>("postProcessing.enableBloom");
+	_enableSSAO = par.getParam<bool>("postProcessing.enableSSAO");
+	_enableDOF = par.getParam<bool>("postProcessing.enableDepthOfField");
+	_enableNoise = par.getParam<bool>("postProcessing.enableNoise");
 
 	if(_enablePostProcessing){
 		if(_enableNoise){

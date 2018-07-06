@@ -46,8 +46,8 @@ protected:
 
 	friend class SFXDevice;
 	
-	void setId(AudioAPI api) {_apiId = api;}
-	AudioAPI getId() { return _apiId;}
+	inline void setId(AudioAPI api) {_apiId = api;}
+	inline AudioAPI getId() { return _apiId;}
 
 	
 	virtual void initHardware() = 0;
@@ -70,8 +70,8 @@ protected:
 
 public: //RenderAPI global
 	
-	void setAudioState(AudioState& state){_state = state; }
-	AudioState& getActiveAudioState() {return _state;}
+	inline void setAudioState(AudioState& state){_state = state; }
+	inline AudioState& getActiveAudioState() {return _state;}
 
 private:
 	AudioAPI _apiId;

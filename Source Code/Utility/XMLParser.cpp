@@ -55,18 +55,19 @@ namespace XML
 		Application::getInstance().setWindowHeight(winHeight);
 		Application::getInstance().setWindowWidth(winWidth);
 		bool postProcessing = pt.get("rendering.enablePostFX",false);
-		par.setParam("enablePostFX",postProcessing);
+		par.setParam("postProcessing.enablePostFX",postProcessing);
 		if(postProcessing){
 			bool enable3D = pt.get("rendering.enable3D",false);
-			par.setParam("enable3D",enable3D);
+			par.setParam("postProcessing.enable3D",enable3D);
 			if(enable3D){
-				par.setParam("anaglyphOffset",pt.get("rendering.anaglyphOffset",0.16f));
+				par.setParam("postProcessing.anaglyphOffset",pt.get("rendering.anaglyphOffset",0.16f));
 			}
-			par.setParam("enableNoise",pt.get("rendering.enableNoise",false));
-			par.setParam("enableDepthOfField",pt.get("rendering.enableDepthOfField",false));
-			par.setParam("enableBloom",pt.get("rendering.enableBloom",false));
-			par.setParam("enableSSAO",pt.get("rendering.enableSSAO",false));
+			par.setParam("postProcessing.enableNoise",pt.get("rendering.enableNoise",false));
+			par.setParam("postProcessing.enableDepthOfField",pt.get("rendering.enableDepthOfField",false));
+			par.setParam("postProcessing.enableBloom",pt.get("rendering.enableBloom",false));
+			par.setParam("postProcessing.enableSSAO",pt.get("rendering.enableSSAO",false));
 		}
+		par.setParam("mesh.playAnimations",pt.get("mesh.playAnimations",true));
 	}
 
 	void loadScene(const string& sceneName){

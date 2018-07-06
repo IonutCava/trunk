@@ -2,7 +2,10 @@
 #include "GLWrapper.h"
 #include "glRenderStateBlock.h"
 #include "GUI/Headers/GUI.h"
+#include "GUI/Headers/GUIText.h"
 #include "GUI/Headers/GUIFlash.h"
+#include "GUI/Headers/GUIButton.h"
+#include "GUI/Headers/GUIConsole.h"
 #include "Utility/Headers/Guardian.h"
 #include "Core/Headers/Application.h"
 #include "Graphs/Headers/SceneGraph.h"
@@ -251,7 +254,7 @@ void GL_API::initHardware(){
 void GL_API::closeApplication(){
 	//glutLeaveMainLoop();
 	_applicationClosing = true;
-	Guardian::getInstance().TerminateApplication();
+	Application::getInstance().killApplication();
 	
 }
 
@@ -330,8 +333,8 @@ void GL_API::enableFog(F32 density, F32* color){
 	glFogf (GL_FOG_END,    8000.0f);
 }
 
-void GL_API::drawTextToScreen(GuiElement* const textElement){
-	Text* text = dynamic_cast<Text* >(textElement);
+void GL_API::drawTextToScreen(GUIElement* const textElement){
+	GUIText* text = dynamic_cast<GUIText* >(textElement);
 	assert(text != NULL);
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
 	glPushMatrix();
@@ -358,16 +361,16 @@ void GL_API::drawCharacterToScreen(void* font,char text){
 #endif
 }
 
-void GL_API::drawFlash(GuiElement* const flash){
+void GL_API::drawFlash(GUIElement* const flash){
 	assert(flash != NULL);
-	dynamic_cast<GuiFlash* >(flash)->playMovie();
+	dynamic_cast<GUIFlash* >(flash)->playMovie();
 }
 
-void GL_API::drawButton(GuiElement* const button){
-	Button* b = dynamic_cast<Button* >(button);
+void GL_API::drawButton(GUIElement* const button){
+	GUIButton* b = dynamic_cast<GUIButton* >(button);
 	F32 fontx;
 	F32 fonty;
-	Text *t = NULL;	
+	GUIText *t = NULL;	
 
 	if(b){
 		glPushAttrib(GL_COLOR_BUFFER_BIT);
@@ -441,7 +444,7 @@ void GL_API::drawButton(GuiElement* const button){
 		 *	If the cursor is currently over the button we offset the text string and draw a shadow
 		 */
 		if(!t){/* delete t;*/
-			t = new Text(string("1"),b->_text,vec2<F32>(fontx,fonty),GLUT_BITMAP_HELVETICA_10,vec3<F32>(0,0,0));
+			t = new GUIText(string("1"),b->_text,vec2<F32>(fontx,fonty),GLUT_BITMAP_HELVETICA_10,vec3<F32>(0,0,0));
 		}
 		t->_text = b->_text;
 		if(b->_highlight){
@@ -459,8 +462,49 @@ void GL_API::drawButton(GuiElement* const button){
 	SAFE_DELETE(t);
 
 }
+void GL_API::drawConsole(){
+	GUIConsole& console = GUIConsole::getInstance();
+	if(!console.isConsoleOpen()) return;
 
-bool _depthMapRendering = false;
+	ParamHandler& par = ParamHandler::getInstance();
+	glPushAttrib(GL_ENABLE_BIT | GL_DEPTH_BUFFER_BIT | GL_SCISSOR_BIT | GL_TRANSFORM_BIT);
+	setMaterial(console.getRenderQuad()->getMaterial());
+
+	//get the width and heigtht of the viewport
+	struct {GLint x, y, width, height;} viewport;
+	glGetIntegerv(GL_VIEWPORT, &viewport.x);
+	console.getViewportDimensions().x = viewport.width;
+	console.getViewportDimensions().y = viewport.height;
+
+	//reset matrices and switch to ortho view
+						
+	glMatrixMode(GL_PROJECTION);						
+	glPushMatrix();										
+	glLoadIdentity();									
+	glOrtho(0,console.getViewportDimensions().x,0,console.getViewportDimensions().y,-1,1);							
+				
+		
+	//set up a scissor region to draw the console in
+	glScissor(1	,console.getViewportDimensions().y - console.getConsoleHeight(), //bottom coord
+				console.getViewportDimensions().x, //width
+				console.getViewportDimensions().y); //top coord
+	glEnable(GL_SCISSOR_TEST);
+		
+	//render transparent background
+	console.getRenderQuad()->setDimensions(vec4<F32>(0,0, console.getViewportDimensions().x - 1,
+		                                                  console.getViewportDimensions().y - 1));
+	GFX_DEVICE.renderModel(console.getRenderQuad());
+
+	//draw text
+	//RenderText();
+
+	//restore old matrices and properties...	
+			
+	glPopMatrix();
+	glPopAttrib();
+}
+
+
 void GL_API::toggleDepthMapRendering(bool state) {
 	if(state){
 		if(!_depthMapRendering){
@@ -512,6 +556,7 @@ void GL_API::releaseObjectState(Transform* const transform, ShaderProgram* const
 
 void GL_API::setMaterial(Material* mat){
 	assert(mat != NULL);
+	glColor4fv(&mat->getMaterialMatrix().getCol(1)[0]);
 	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,mat->getMaterialMatrix().getCol(1));
 	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,mat->getMaterialMatrix().getCol(0));
 	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,mat->getMaterialMatrix().getCol(2));

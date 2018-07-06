@@ -11,14 +11,14 @@ Unit::~Unit(){}
 
 /// Pathfinding, collision detection, animation playback should all be controlled from here
 bool Unit::moveTo(const vec3<F32>& targetPosition){
-
+	WriteLock w_lock(_unitUpdateMutex);
 	/// We should always have a node
 	assert(_node != NULL);
 	/// We receive move request every frame for now (or every event tick)
 	/// Start plotting a course from our current position
 	_currentPosition = _node->getTransform()->getPosition();
 	_currentTargetPosition = targetPosition;
-
+	
 	/// Get current time in ms
 	F32 currentTime = GETMSTIME();
 	/// figure out how many milliseconds have elapsed since last move time
@@ -77,19 +77,25 @@ bool Unit::moveTo(const vec3<F32>& targetPosition){
 /// Move along the X axis
 bool Unit::moveToX(const F32 targetPosition){
 	/// Update current position
+	WriteLock w_lock(_unitUpdateMutex);
 	_currentPosition = _node->getTransform()->getPosition();
+	w_lock.unlock();
 	return moveTo(vec3<F32>(targetPosition,_currentPosition.y,_currentPosition.z));
 }
 /// Move along the Y axis
 bool Unit::moveToY(const F32 targetPosition){
 	/// Update current position
+	WriteLock w_lock(_unitUpdateMutex);
 	_currentPosition = _node->getTransform()->getPosition();
+	w_lock.unlock();
 	return moveTo(vec3<F32>(_currentPosition.x,targetPosition,_currentPosition.z));
 }
 /// Move along the Z axis
 bool Unit::moveToZ(const F32 targetPosition){
 	/// Update current position
+	WriteLock w_lock(_unitUpdateMutex);
 	_currentPosition = _node->getTransform()->getPosition();
+	w_lock.unlock();
 	return moveTo(vec3<F32>(_currentPosition.x,_currentPosition.y,targetPosition));
 }
 
@@ -97,6 +103,7 @@ bool Unit::moveToZ(const F32 targetPosition){
 bool Unit::teleportTo(const vec3<F32>& targetPosition){
 	/// We should always have a node
 	assert(_node != NULL);
+	WriteLock w_lock(_unitUpdateMutex);
 	/// We receive move request every frame for now (or every event tick)
 	/// Check if the current request is already processed
 	if(!_currentTargetPosition.compare(targetPosition,0.00001f)){

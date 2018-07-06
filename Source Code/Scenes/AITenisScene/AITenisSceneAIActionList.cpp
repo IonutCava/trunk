@@ -28,10 +28,11 @@ void AITenisSceneAIActionList::processMessage(AIEntity* sender, AI_MSG msg, cons
 	switch(msg){
 		case REQUEST_DISTANCE_TO_TARGET:
 				updatePositions();
-				_entity->sendMessage(sender, RECEIVE_DISTANCE_TO_TARGET, _pozitieEntitate.distance(_pozitieMinge));
+				_entity->sendMessage(sender, RECEIVE_DISTANCE_TO_TARGET, distanceToBall(_pozitieInitiala,_pozitieMinge));
 			break;
 		case RECEIVE_DISTANCE_TO_TARGET:
-			_membruDistanta[sender] = boost::any_cast<F32>(msg_content);
+			assert(_entity->getTeam());
+			_entity->getTeam()->getMemberVariable()[sender] = boost::any_cast<F32>(msg_content);
 			break;
 		case LOVESTE_MINGEA:
 			currentTeam = _entity->getTeam();
@@ -54,7 +55,7 @@ void AITenisSceneAIActionList::processMessage(AIEntity* sender, AI_MSG msg, cons
 					_atacaMingea = false;
 				}
 			}
-				break;
+			break;
 		case NU_LOVI_MINGEA: 
 			_atacaMingea = false;
 			break;
@@ -66,7 +67,7 @@ void AITenisSceneAIActionList::updatePositions(){
 	VisualSensor* visualSensor = dynamic_cast<VisualSensor*>(_entity->getSensor(VISUAL_SENSOR));
 	if(visualSensor){
 		_tickCount++;
-		if(_tickCount == 512){
+		if(_tickCount == 128){
 			_pozitieMingeAnterioara = _pozitieMinge;
 			_tickCount = 0;
 		}
@@ -87,9 +88,8 @@ void AITenisSceneAIActionList::processInput(){
 	updatePositions();
 	AICoordination* currentTeam = _entity->getTeam();
 	assert(currentTeam != NULL);
-	AICoordination::teamMap& team = currentTeam->getTeam();
-	_membruDistanta.clear();
-	for_each(AICoordination::teamMap::value_type& member, team){
+	_entity->getTeam()->getMemberVariable()[_entity] = distanceToBall(_pozitieInitiala,_pozitieMinge);
+	for_each(AICoordination::teamMap::value_type& member, currentTeam->getTeam()){
 		//Cerem tuturor coechipierilor sa ne transmita pozitia lor actuala
 		//Pentru fiecare membru din echipa, ii trimitem un request sa ne returneze pozitia
 		if(_entity->getGUID() != member.second->getGUID()){
@@ -100,14 +100,14 @@ void AITenisSceneAIActionList::processInput(){
 
 void AITenisSceneAIActionList::processData(){
 	AIEntity* celMaiApropiat = _entity;
-	F32 distanta = _pozitieEntitate.distance(_pozitieMinge);
-	for_each(membruDistantaMap::value_type& pereche, _membruDistanta){
-		if(pereche.second < distanta){
-			distanta = pereche.second;
-			celMaiApropiat = pereche.first;
+	F32 distanta = _entity->getTeam()->getMemberVariable()[_entity];
+	typedef unordered_map<AIEntity*, F32 > memberVariable;
+	for_each(memberVariable::value_type& member, _entity->getTeam()->getMemberVariable()){
+		if(member.second < distanta && member.first->getGUID() != _entity->getGUID()){
+			distanta = member.second;
+			celMaiApropiat = member.first;
 		}
 	}
-
 	_entity->sendMessage(celMaiApropiat, LOVESTE_MINGEA, distanta);
 }
 
@@ -131,4 +131,10 @@ void AITenisSceneAIActionList::update(SceneGraphNode* node, NPC* unitRef){
 	if(visualSensor){
 		visualSensor->updatePosition(node->getTransform()->getPosition());
 	}
+}
+
+
+///Only X axis absolute value is important
+F32 AITenisSceneAIActionList::distanceToBall(const vec3<F32>& pozitieEntitate, const vec3<F32> pozitieMinge) {
+	return abs(pozitieMinge.x - pozitieEntitate.x);
 }

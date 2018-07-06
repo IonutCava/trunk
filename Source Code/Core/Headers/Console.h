@@ -2,7 +2,6 @@
 #define _CONSOLE_H_
 
 #include "resource.h"
-#include <boost/thread.hpp>
 
 DEFINE_SINGLETON(Console)
 
@@ -16,7 +15,7 @@ public:
 	void d_printf(char* format, ...);
 	void d_errorfn(char* format, ...);
 	void d_errorf(char* format, ...);
-	void toggleTimeStamps(bool state){_timestamps = state;}
+	inline void toggleTimeStamps(bool state){_timestamps = state;}
 private:
 	void output(const std::string& text,bool error = false);
 	boost::mutex io_mutex;

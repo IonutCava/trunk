@@ -70,7 +70,7 @@ public:
 
 	void resize(U16 width, U16 height);
 
-	U32     getTextureWrap(U32 index) {
+	inline U32 getTextureWrap(U32 index) {
 		switch(index){
 			default:
 			case 0:
@@ -82,6 +82,7 @@ public:
 
 		};
 	}   
+
 	inline	U32 getHandle() const {return _handle;} 
 	inline	U16 getWidth() const {return _width;}
 	inline	U16 getHeight() const {return _height;}

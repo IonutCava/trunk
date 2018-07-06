@@ -2,7 +2,7 @@
 
 template <class T>	
 T ParamHandler::getParam(const std::string& name){
-	boost::mutex::scoped_lock  lock(mutex_);
+	ReadLock r_lock(_mutex);
 	params::iterator it = _params.find(name);
 	if(it != _params.end())
 		return it->second;
@@ -12,7 +12,7 @@ T ParamHandler::getParam(const std::string& name){
 
 template<>
 F32 ParamHandler::getParam<F32>(const std::string& name){
-	boost::mutex::scoped_lock  lock(_mutex);
+	ReadLock r_lock(_mutex);
 	ParamMap::iterator it = _params.find(name);
 	if(it != _params.end()){
 		try	{
@@ -31,7 +31,7 @@ F32 ParamHandler::getParam<F32>(const std::string& name){
 
 template<>
 U8 ParamHandler::getParam<U8>(const std::string& name){
-	boost::mutex::scoped_lock  lock(_mutex);
+	ReadLock r_lock(_mutex);
 	ParamMap::iterator it = _params.find(name);
 	if(it != _params.end())	{
 		try
@@ -48,7 +48,7 @@ U8 ParamHandler::getParam<U8>(const std::string& name){
 
 template<>
 U16 ParamHandler::getParam<U16>(const std::string& name){
-	boost::mutex::scoped_lock  lock(_mutex);
+	ReadLock r_lock(_mutex);
 	ParamMap::iterator it = _params.find(name);
 	if(it != _params.end())	{
 		try
@@ -65,7 +65,7 @@ U16 ParamHandler::getParam<U16>(const std::string& name){
 
 template<>
 U32 ParamHandler::getParam<U32>(const std::string& name){
-	boost::mutex::scoped_lock  lock(_mutex);
+	ReadLock r_lock(_mutex);
 	ParamMap::iterator it = _params.find(name);
 	if(it != _params.end())	{
 		try
@@ -80,9 +80,9 @@ U32 ParamHandler::getParam<U32>(const std::string& name){
 	}else return 0;
 }
 
-	template<>
+template<>
 I8 ParamHandler::getParam<I8>(const std::string& name){
-	boost::mutex::scoped_lock  lock(_mutex);
+	ReadLock r_lock(_mutex);
 	ParamMap::iterator it = _params.find(name);
 	if(it != _params.end())	{
 		try
@@ -98,7 +98,7 @@ I8 ParamHandler::getParam<I8>(const std::string& name){
 
 template<>
 I16 ParamHandler::getParam<I16>(const std::string& name){
-	boost::mutex::scoped_lock  lock(_mutex);
+	ReadLock r_lock(_mutex);
 	ParamMap::iterator it = _params.find(name);
 	if(it != _params.end())	{
 		try
@@ -114,7 +114,7 @@ I16 ParamHandler::getParam<I16>(const std::string& name){
 
 template<>
 I32 ParamHandler::getParam<I32>(const std::string& name){
-	boost::mutex::scoped_lock  lock(_mutex);
+	ReadLock r_lock(_mutex);
 	ParamMap::iterator it = _params.find(name);
 	if(it != _params.end())	{
 		try
@@ -130,7 +130,7 @@ I32 ParamHandler::getParam<I32>(const std::string& name){
 
 template<>
 bool ParamHandler::getParam<bool>(const std::string& name){
-	boost::mutex::scoped_lock  lock(_mutex);
+	ReadLock r_lock(_mutex);
 	ParamMap::iterator it = _params.find(name);
 	if(it != _params.end())	{
 		try
@@ -146,7 +146,7 @@ bool ParamHandler::getParam<bool>(const std::string& name){
 
 template<>
 const char* ParamHandler::getParam<const char*>(const std::string& name){
-	boost::mutex::scoped_lock  lock(_mutex);
+	ReadLock r_lock(_mutex);
 	ParamMap::iterator it = _params.find(name);
 	if(it != _params.end())	{
 		try
@@ -163,9 +163,8 @@ const char* ParamHandler::getParam<const char*>(const std::string& name){
 
 template<>
 std::string ParamHandler::getParam<std::string>(const std::string& name){
-	_mutex.lock();
+	ReadLock r_lock(_mutex);
 	ParamMap::iterator it = _params.find(name);
-	_mutex.unlock();
 	if(it != _params.end())	{
 		try
 		{

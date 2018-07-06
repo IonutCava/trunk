@@ -43,7 +43,7 @@ class Material;
 class Object3D;
 class Transform;
 class SceneGraph;
-class GuiElement;
+class GUIElement;
 class ShaderProgram;
 class SceneGraphNode;
 class RenderStateBlock;
@@ -69,11 +69,11 @@ protected:
 
 	friend class GFXDevice;
 	
-	void setId(RENDER_API apiId)                        {_apiId = apiId;}
-	void setVersionId(RENDER_API_VERSION apiVersionId)  {_apiVersionId = apiVersionId;}
+	inline void setId(RENDER_API apiId)                        {_apiId = apiId;}
+	inline void setVersionId(RENDER_API_VERSION apiVersionId)  {_apiVersionId = apiVersionId;}
 
-	RENDER_API         getId()        { return _apiId;}
-	RENDER_API_VERSION getVersionId() { return _apiVersionId;}
+	inline RENDER_API         getId()        { return _apiId;}
+	inline RENDER_API_VERSION getVersionId() { return _apiVersionId;}
 
 	virtual void lookAt(const vec3<F32>& eye,const vec3<F32>& center,const vec3<F32>& up = vec3<F32>(0,1,0), bool invertx = false, bool inverty = false) = 0;
 	virtual void idle() = 0;
@@ -112,10 +112,12 @@ protected:
 	virtual void toggle2D(bool _2D) = 0;
 
 	/*GUI Rendering*/
-	virtual void drawTextToScreen(GuiElement* const) = 0;
+	virtual void drawTextToScreen(GUIElement* const) = 0;
 	virtual void drawCharacterToScreen(void* ,char) = 0;
-	virtual void drawButton(GuiElement* const) = 0;
-	virtual void drawFlash(GuiElement* const) = 0;
+	virtual void drawButton(GUIElement* const) = 0;
+	virtual void drawFlash(GUIElement* const) = 0;
+	///console is singleton and viewport dimensions are updated by the API
+	virtual void drawConsole( ) = 0;
 	/*GUI Rendering*/
 
 	/*Object viewing*/

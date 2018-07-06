@@ -35,7 +35,6 @@ public:
 	vec3<F32>  getPositionOfObject(SceneGraphNode* node);    
 	AIEntity*  getNearestFriendlyEntity()         {}  ///< get closest visible friendly entity
 	AIEntity*  getNearestHostileEntity()          {}  ///< get closest visible hostile entity
-
 };
 
 #endif

@@ -44,14 +44,13 @@ private:
 	void getModelViewMatrix(mat4<F32>& mvMat);
 	void getProjectionMatrix(mat4<F32>& projMat);
 
-	FrameBufferObject*  newFBO(){return New d3dFrameBufferObject();}
-	VertexBufferObject* newVBO(){return New d3dVertexBufferObject();}
-	PixelBufferObject*  newPBO(){return New d3dPixelBufferObject();}
-
-	Texture2D*          newTexture2D(bool flipped = false){return New d3dTexture(d3dTextureTypeTable[TEXTURE_2D]);}
-	TextureCubemap*     newTextureCubemap(bool flipped = false){return New d3dTexture(d3dTextureTypeTable[TEXTURE_CUBE_MAP]);}
-	ShaderProgram*      newShaderProgram(){return New d3dShaderProgram();}
-	Shader*             newShader(const std::string& name, SHADER_TYPE type) {return New d3dShader(name,type);}
+	inline FrameBufferObject*  newFBO()                                             {return New d3dFrameBufferObject();}
+	inline VertexBufferObject* newVBO()                                             {return New d3dVertexBufferObject();}
+	inline PixelBufferObject*  newPBO()                                             {return New d3dPixelBufferObject();}
+	inline Texture2D*          newTexture2D(bool flipped = false)                   {return New d3dTexture(d3dTextureTypeTable[TEXTURE_2D]);}
+	inline TextureCubemap*     newTextureCubemap(bool flipped = false)              {return New d3dTexture(d3dTextureTypeTable[TEXTURE_CUBE_MAP]);}
+	inline ShaderProgram*      newShaderProgram()                                   {return New d3dShaderProgram();}
+	inline Shader*             newShader(const std::string& name, SHADER_TYPE type) {return New d3dShader(name,type);}
 	
 	void clearBuffers(U8 buffer_mask);
 	void swapBuffers();
@@ -66,10 +65,11 @@ private:
 
 	void toggle2D(bool _2D);
 
-	void drawTextToScreen(GuiElement* const);
+	void drawTextToScreen(GUIElement* const);
 	void drawCharacterToScreen(void* ,char);
-	void drawButton(GuiElement* const);
-	void drawFlash(GuiElement* const);
+	void drawButton(GUIElement* const);
+	void drawFlash(GUIElement* const);
+	void drawConsole();
 
 	void drawBox3D(const vec3<F32>& min,const vec3<F32>& max, const mat4<F32>& globalOffset);
 	void drawLines(const std::vector<vec3<F32> >& pointsA,const std::vector<vec3<F32> >& pointsB,const std::vector<vec4<F32> >& colors, const mat4<F32>& globalOffset);

@@ -44,7 +44,7 @@ public:
 	void drawInfinitePlain();
 	void render(SceneGraphNode* const sgn);
 	void postDraw();
-	void prepareMaterial(SceneGraphNode* const sgn);
+	void prepareMaterial(SceneGraphNode const* const sgn);
 	void releaseMaterial();
 
 	void drawBoundingBox(SceneGraphNode* const sgn);
@@ -56,21 +56,21 @@ public:
 	vec3<F32>  getTangent(F32 x_clampf, F32 z_clampf) const;
 	vec2<F32>  getDimensions(){return vec2<F32>((F32)_terrainWidth, (F32)_terrainHeight);}
 
-	void  setLoaded(bool state) {_loaded = state;}
+	inline void  setLoaded(bool state) {_loaded = state;}
 	void  postLoad(SceneGraphNode* const sgn);	
 
-	Vegetation* const getVegetation() const {return _veg;}
+	inline Vegetation* const getVegetation() const {return _veg;}
 
-	Quadtree& getQuadtree() const {return *_terrainQuadtree;}
+	inline Quadtree& getQuadtree() const {return *_terrainQuadtree;}
 
 	void  terrainSmooth(F32 k);
 
-	void addVegetation(Vegetation* veg, std::string grassShader){_veg = veg; _grassShader = grassShader;} 
+	inline void addVegetation(Vegetation* veg, std::string grassShader){_veg = veg; _grassShader = grassShader;} 
 	void initializeVegetation(TerrainDescriptor* terrain);
 	void toggleVegetation(bool state){ _veg->toggleRendering(state); }
 	inline void setRenderingOptions(bool drawInReflection){_drawInReflection = drawInReflection;}
 	bool computeBoundingBox(SceneGraphNode* const sgn);
-	bool isInView(bool distanceCheck,BoundingBox& boundingBox) {return true;}
+	inline bool isInView(bool distanceCheck,BoundingBox& boundingBox) {return true;}
 
 private:
 

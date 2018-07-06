@@ -24,6 +24,7 @@ class AIEntity;
 class AICoordination {
 public:
 	typedef unordered_map<U32, AIEntity*> teamMap;
+	typedef unordered_map<AIEntity*, F32 > memberVariable;
 	AICoordination(U32 id);
 
 	bool addTeamMember(AIEntity* entity);
@@ -36,11 +37,14 @@ public:
 	inline teamMap& getTeam()         {return _team;}
 	inline teamMap& getEnemyTeam()    {return _enemyTeam;}
 
+	inline memberVariable&  getMemberVariable()    {return _memberVariable;}
 private:
 	U32 _teamID;
 	teamMap _team;
 	teamMap _enemyTeam;
-	boost::mutex _updateMutex;
+	/// Container with data per team member. For example a map of distances
+	memberVariable _memberVariable;
+	mutable Lock _updateMutex;
 };
 
 #endif

@@ -33,8 +33,12 @@ void GLCheckError(const std::string& File, unsigned int Line, char* operation);
 
 DEFINE_SINGLETON_EXT1(GL_API,RenderAPIWrapper)
 	typedef unordered_map<std::string, SceneGraphNode*> sceneGraphMap;
+	typedef void (*callback)();	void glCommand(callback f){f();}
+
 private:
-	GL_API() : RenderAPIWrapper(), _windowId(0), _currentGLRenderStateBlock(NULL), _state2DRendering(NULL) {}
+
+	GL_API() : RenderAPIWrapper(), _windowId(0), _currentGLRenderStateBlock(NULL), _state2DRendering(NULL), _depthMapRendering(false) {}
+
 	static void closeApplication();
 	void initHardware();
 	void closeRenderingApi();
@@ -46,17 +50,13 @@ private:
     void getModelViewMatrix(mat4<F32>& mvMat);
 	void getProjectionMatrix(mat4<F32>& projMat);
 
-	FrameBufferObject*  newFBO(){return New glFrameBufferObject(); }
-	VertexBufferObject* newVBO(){return New glVertexBufferObject(); }
-	PixelBufferObject*  newPBO(){return New glPixelBufferObject(); }
-
-	Texture2D*          newTexture2D(bool flipped = false){return New glTexture(glTextureTypeTable[TEXTURE_2D],flipped);}
-	TextureCubemap*     newTextureCubemap(bool flipped = false){return New glTexture(glTextureTypeTable[TEXTURE_CUBE_MAP],flipped);}
-
-	ShaderProgram* newShaderProgram(){return New glShaderProgram(); }
-	Shader*        newShader(const std::string& name, SHADER_TYPE type)       {return New glShader(name,type); }
-
-	typedef void (*callback)();	void glCommand(callback f){f();}
+	inline FrameBufferObject*  newFBO()                                              {return New glFrameBufferObject(); }
+	inline VertexBufferObject* newVBO()                                              {return New glVertexBufferObject(); }
+	inline PixelBufferObject*  newPBO()                                              {return New glPixelBufferObject(); }
+	inline Texture2D*          newTexture2D(bool flipped = false)                    {return New glTexture(glTextureTypeTable[TEXTURE_2D],flipped);}
+	inline TextureCubemap*     newTextureCubemap(bool flipped = false)               {return New glTexture(glTextureTypeTable[TEXTURE_CUBE_MAP],flipped);}
+	inline ShaderProgram*      newShaderProgram()                                    {return New glShaderProgram(); }
+	inline Shader*             newShader(const std::string& name, SHADER_TYPE type)  {return New glShader(name,type); }
 
 	void clearBuffers(U8 buffer_mask);
 	void swapBuffers();
@@ -72,10 +72,11 @@ private:
 
 	void toggle2D(bool state);
 
-	void drawTextToScreen(GuiElement* const);
+	void drawTextToScreen(GUIElement* const);
 	void drawCharacterToScreen(void* ,char);
-	void drawButton(GuiElement* const);
-	void drawFlash(GuiElement* const);
+	void drawButton(GUIElement* const);
+	void drawFlash(GUIElement* const);
+	void drawConsole();
 
 	void drawBox3D(const vec3<F32>& min,const vec3<F32>& max, const mat4<F32>& globalOffset);
 	void drawLines(const std::vector<vec3<F32> >& pointsA,const std::vector<vec3<F32> >& pointsB,const std::vector<vec4<F32> >& colors, const mat4<F32>& globalOffset);
@@ -106,6 +107,8 @@ private: //OpenGL specific:
 	U8 _windowId;
 	glRenderStateBlock* _currentGLRenderStateBlock;
 	RenderStateBlock*   _state2DRendering;
+	bool _depthMapRendering;
+
 END_SINGLETON
 
 #endif

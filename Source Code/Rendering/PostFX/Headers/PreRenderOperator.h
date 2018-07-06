@@ -16,8 +16,8 @@ public:
 	virtual void operation() = 0;
 	virtual void reshape(I32 width, I32 height) = 0;
 	///Reference to state
-	void setEnabled(bool& state) {_enabled = state;}
-	bool getEnabled()           {return _enabled; }
+	inline void setEnabled(bool& state) {_enabled = state;}
+	inline bool getEnabled()            {return _enabled; }
 	
 	inline void addInputFBO(FrameBufferObject* input) {_inputFBO.push_back(input);}
 

@@ -120,7 +120,7 @@ void SceneNode::clearMaterials(){
 	setMaterial(NULL);
 }
 
-void SceneNode::prepareMaterial(SceneGraphNode* const sgn){
+void SceneNode::prepareMaterial(SceneGraphNode const* const sgn){
 	if(!_material/* || !sgn*/) return;
 	if(GFX_DEVICE.getRenderStage() == REFLECTION_STAGE){
 		SET_STATE_BLOCK(_material->getRenderState(REFLECTION_STAGE));
@@ -157,7 +157,7 @@ void SceneNode::prepareMaterial(SceneGraphNode* const sgn){
 	s->Uniform("hasAnimations",false);
 	s->Uniform("shadowPass", false);
 	/// For 3D objects
-	if(getType() == TYPE_OBJECT3D){
+	if(getType() == TYPE_OBJECT3D && ParamHandler::getInstance().getParam<bool>("mesh.playAnimations")){
 		Object3D* obj = dynamic_cast<Object3D* >(this);
 		/// For Mesh objects
 		if(obj->getType() == SUBMESH){
@@ -284,6 +284,7 @@ void SceneNode::prepareShadowMaterial(SceneGraphNode* const sgn){
 
 
 void SceneNode::releaseShadowMaterial(){
+	if(!_material) return;
 	Texture2D* opacityMap = _material->getTexture(Material::TEXTURE_OPACITY);
 	if(opacityMap) opacityMap->Unbind(3);
 }
@@ -293,6 +294,10 @@ bool SceneNode::computeBoundingBox(SceneGraphNode* const sgn) {
 	sgn->setInitialBoundingBox(bb);
 	bb.isComputed() = true;
 	return true;
+}
+
+void SceneNode::updateBBatCurrentFrame(SceneGraphNode* const sgn){
+	sgn->updateBB(false);
 }
 
 void SceneNode::updateTransform(SceneGraphNode* const sgn) {

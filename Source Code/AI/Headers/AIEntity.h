@@ -37,8 +37,8 @@ public:
 	void processData();
 	void update();
 
-	inline SceneGraphNode* getBoundNode() {return _node;}
-	inline bool attachNode(SceneGraphNode* const sgn) {_node = sgn; return true;}
+	SceneGraphNode* getBoundNode() {return _node;}
+	bool attachNode(SceneGraphNode* const sgn) {_node = sgn; return true;}
 	bool addSensor(SENSOR_TYPE type, Sensor* sensor);
 	bool addActionProcessor(ActionList* actionProcessor);
 	Sensor* getSensor(SENSOR_TYPE type);
@@ -66,7 +66,8 @@ private:
 	SceneGraphNode* _node;
 	AICoordination* _coordination;
 	ActionList*     _actionProcessor;
-	boost::mutex    _updateMutex;
+	mutable Lock    _updateMutex;
+	mutable Lock    _managerQueryMutex;
 
 	unordered_map<SENSOR_TYPE, Sensor*> _sensorList;
 	NPC* _unitRef;

@@ -85,7 +85,9 @@
 //#define make_tuple_impl std::make_tuple
 //#define tuple_impl std::tuple
 
+#include <boost/function.hpp>                  //For callbacks and delegates
 #include "Hardware/Platform/PlatformDefines.h" //For data types
+#include "Hardware/Platform/Threading.h"       //For multi-threading
 #include "Core/Math/Headers/MathClasses.h"     //For math classes (mat3,mat4,vec2,vec3,vec4 etc)
 #include "Rendering/Headers/Framerate.h"       //For time management
 #include "Core/Headers/Console.h"              //For printing to the standard output

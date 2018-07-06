@@ -68,7 +68,7 @@ public:
 		_refreshVBO = true;
 	}
 
-	bool load(const std::string &name) {_name = name; return true;}
+	inline bool load(const std::string &name) {_name = name; return true;}
 
 	inline F32 getSize()    {return _size;}
 

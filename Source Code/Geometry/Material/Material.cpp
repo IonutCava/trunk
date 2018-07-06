@@ -117,6 +117,7 @@ void Material::createCopy(){
 //second = second texture used for multitexturing
 //bump = bump map
 void Material::setTexture(TextureUsage textureUsage, Texture2D* const texture, TextureOperation op) {
+	boost::unique_lock< boost::mutex > lock_access_here(_materialMutex);
 	if(_textures[textureUsage]){
 		RemoveResource(_textures[textureUsage]);
 	}else{
@@ -199,6 +200,7 @@ ShaderProgram* const Material::getShaderProgram(){
 }
 
 Texture2D* const  Material::getTexture(TextureUsage textureUsage)  {
+	boost::mutex::scoped_lock(_materialMutex);
 	return _textures[textureUsage];
 }
 

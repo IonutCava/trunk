@@ -3,13 +3,13 @@
 #include "Hardware/Video/GFXDevice.h"
 #include "Core/Headers/ParamHandler.h"
 
-GuiFlash::GuiFlash(){
+GUIFlash::GUIFlash(){
 	_guiType = GUI_FLASH;
 }
 
-GuiFlash::~GuiFlash(){
+GUIFlash::~GUIFlash(){
 }
 
-void GuiFlash::playMovie(){
+void GUIFlash::playMovie(){
 }
 

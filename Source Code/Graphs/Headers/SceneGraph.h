@@ -34,11 +34,15 @@ class SceneGraph  {
 		SAFE_DELETE(_root);
 	}
 
-	SceneGraphNode* getRoot(){ return _root; }
-	std::vector<BoundingBox >& getBBoxes(){
+	inline  SceneGraphNode* getRoot(){ 
+		return _root; 
+	}
+
+	inline  std::vector<BoundingBox >& getBBoxes(){
 		return _root->getBBoxes(_boundingBoxes);
 	}
-	SceneGraphNode* findNode(const std::string& name,bool sceneNodeName = false){
+
+	inline  SceneGraphNode* findNode(const std::string& name,bool sceneNodeName = false){
 		return _root->findNode(name,sceneNodeName);
 	}
 	
@@ -49,6 +53,7 @@ class SceneGraph  {
 	void sceneUpdate(D32 sceneTime);
 
 	void print();
+
 	void startUpdateThread();
 
 private:

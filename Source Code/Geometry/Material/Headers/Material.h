@@ -167,6 +167,8 @@ private:
   textureOperation _operations;
   /// Map texture operation to values the shader understands
   U32 _textureOperationTable[TextureOperation_PLACEHOLDER];
+
+  boost::mutex _materialMutex;
 };
 
 #endif
