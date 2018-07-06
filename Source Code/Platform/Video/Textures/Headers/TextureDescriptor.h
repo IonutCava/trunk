@@ -163,7 +163,7 @@ class SamplerDescriptor {
         Util::Hash_combine(hash, _borderColour.g);
         Util::Hash_combine(hash, _borderColour.b);
         Util::Hash_combine(hash, _borderColour.a);
-
+        Util::Hash_combine(hash, _msaaSamples);
         return hash;
     }
     /*
@@ -209,6 +209,8 @@ class SamplerDescriptor {
     F32 _biasLOD;
     /// Used with CLAMP_TO_BORDER as the background colour outside of the texture border
     vec4<F32> _borderColour;
+    /// number of MSAA samples: -1 (default) - max supported by implementation/settings, 0 - disabled
+    I32 _msaaSamples;
 };
 
 /// Use to define a texture with details such as type, image formats, etc
@@ -247,7 +249,8 @@ class TextureDescriptor : public PropertyDescriptor {
           _type(type),
           _compressed(false),
           _automaticMipMaps(true),
-          _mipLevels(0u, 1u)
+          _mipLevels(0u, 1u),
+          _msaaSamples(-1)
     {
         internalFormat(internalFmt);
     }
@@ -271,6 +274,7 @@ class TextureDescriptor : public PropertyDescriptor {
         _type = TextureType::TEXTURE_2D;
         _automaticMipMaps = true;
         _mipLevels.set(0u, 1u);
+        _msaaSamples = -1;
     }
 
     inline void setLayerCount(U32 layerCount) { 
@@ -329,6 +333,10 @@ class TextureDescriptor : public PropertyDescriptor {
 
     inline TextureType type() const { return _type; }
 
+    inline I16 msaaSamples() const { return _msaaSamples; }
+
+    inline void msaaSamples(I16 sampleCount) { _msaaSamples = sampleCount; }
+
     inline size_t getHash() const override {
         size_t hash = 0;
         Util::Hash_combine(hash, _layerCount);
@@ -336,16 +344,13 @@ class TextureDescriptor : public PropertyDescriptor {
         Util::Hash_combine(hash, to_U32(_type));
         Util::Hash_combine(hash, _compressed);
         Util::Hash_combine(hash, _automaticMipMaps);
-
-        // Not needed as these will always be the same when everything else matches
-        //Util::Hash_combine(hash, _baseFormat); 
-        //Util::Hash_combine(hash, _dataType);
-
-        Util::Hash_combine(hash, _samplerDescriptor.getHash());
-        Util::Hash_combine(hash, PropertyDescriptor::getHash());
-
+        Util::Hash_combine(hash, _baseFormat); 
+        Util::Hash_combine(hash, _dataType);
         Util::Hash_combine(hash, _mipLevels.min);
         Util::Hash_combine(hash, _mipLevels.max);
+        Util::Hash_combine(hash, _msaaSamples);
+        Util::Hash_combine(hash, _samplerDescriptor.getHash());
+        Util::Hash_combine(hash, PropertyDescriptor::getHash());
 
         return hash;
     }
@@ -359,6 +364,8 @@ class TextureDescriptor : public PropertyDescriptor {
     SamplerDescriptor _samplerDescriptor;
     /// Mip levels
     vec2<U16> _mipLevels;
+    /// How many MSAA samples to use: -1 (default) = max available, 0 = disabled
+    I16 _msaaSamples;
 
   private:
      GFXImageFormat _baseFormat;

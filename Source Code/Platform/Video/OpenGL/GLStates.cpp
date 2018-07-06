@@ -25,7 +25,6 @@ GLint  GL_API::s_maxFBOAttachments = 0;
 GLuint GL_API::s_activeShaderProgram = 0;
 GLuint GL_API::s_indirectDrawBuffer = 0;
 GLuint GL_API::s_anisoLevel = 0;
-GLuint GL_API::s_msaaSamples = 0;
 GLint  GL_API::s_activePackUnpackAlignments[] = {1, 1};
 GLint  GL_API::s_activePackUnpackRowLength[] = {0, 0};
 GLint  GL_API::s_activePackUnpackSkipPixels[] = {0, 0};

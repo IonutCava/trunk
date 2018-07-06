@@ -68,21 +68,13 @@ void glFramebuffer::updateDescriptor(RTAttachment::Type type, U8 index) {
         return;
     }
 
-    TextureDescriptor texDescriptor(attachment->descriptor());
-    SamplerDescriptor samplerDescriptor(texDescriptor.getSampler());
-
-    bool multisampled = _resolveBuffer != nullptr;
-    if ((type == RTAttachment::Type::Colour && index == 0) ||
-         type == RTAttachment::Type::Depth) {
-        multisampled = texDescriptor._type == TextureType::TEXTURE_2D_MS ||
-                       texDescriptor._type == TextureType::TEXTURE_2D_ARRAY_MS;
-        multisampled = multisampled && GL_API::s_msaaSamples > 0;
-    }
-
-
-    if (multisampled) {
-        if (!_resolveBuffer) {
-             _resolveBuffer = MemoryManager_NEW glFramebuffer(_context, _name + "_resolve");
+    // If this is a multisampled FBO, create a resolve buffer
+    TextureType texType = attachment->descriptor().type();
+    if ((type == RTAttachment::Type::Colour && index == 0) || type == RTAttachment::Type::Depth) {
+        if (texType == TextureType::TEXTURE_2D_MS || texType == TextureType::TEXTURE_2D_ARRAY_MS) {
+            if(_resolveBuffer == nullptr) {
+                _resolveBuffer = MemoryManager_NEW glFramebuffer(_context, _name + "_resolve");
+            }
         }
     }
 }
@@ -184,9 +176,13 @@ bool glFramebuffer::create(U16 width, U16 height) {
         for (U8 i = 0; i < to_base(RTAttachment::Type::COUNT); ++i) {
             RTAttachment::Type type = static_cast<RTAttachment::Type>(i);
             for (U8 j = 0; j < _attachmentPool->attachmentCount(type); ++j) {
+                // Resolve buffers have all attachments identical but without multisampling
                 const RTAttachment_ptr& att = _attachmentPool->get(type, j);
+                TextureDescriptor attDescriptor = att->descriptor();
+                attDescriptor.msaaSamples(0);
+
                 const RTAttachment_ptr& resAtt = _resolveBuffer->_attachmentPool->get(type, j);
-                resAtt->fromDescriptor(att->descriptor());
+                resAtt->fromDescriptor(attDescriptor);
                 resAtt->clearColour(att->clearColour());
             }
         }

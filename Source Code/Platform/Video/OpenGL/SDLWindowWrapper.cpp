@@ -241,13 +241,10 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     // count
     GLint samplerBuffers = GLUtil::getIntegerv(GL_SAMPLES);
     GLint sampleCount = GLUtil::getIntegerv(GL_SAMPLE_BUFFERS);
-    Console::printfn(Locale::get(_ID("GL_MULTI_SAMPLE_INFO")), sampleCount,
-                     samplerBuffers);
-    // If we do not support MSAA on a hardware level for whatever reason,
-    // override user set MSAA levels
-    GL_API::s_msaaSamples = config.rendering.msaaSamples;
+    Console::printfn(Locale::get(_ID("GL_MULTI_SAMPLE_INFO")), sampleCount, samplerBuffers);
+    // If we do not support MSAA on a hardware level for whatever reason, override user set MSAA levels
     if (samplerBuffers == 0 || sampleCount == 0) {
-        GL_API::s_msaaSamples = config.rendering.msaaSamples = 0;
+        config.rendering.msaaSamples = 0;
     }
     // Print all of the OpenGL functionality info to the console and log
     // How many uniforms can we send to fragment shaders
@@ -304,7 +301,8 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
     //glEnable(GL_FRAMEBUFFER_SRGB);
     // Enable multisampling if we actually support and request it
-    GL_API::s_msaaSamples  > 0 ? glEnable(GL_MULTISAMPLE) :  glDisable(GL_MULTISAMPLE);
+    config.rendering.msaaSamples > 0 ? glEnable(GL_MULTISAMPLE)
+                                     :  glDisable(GL_MULTISAMPLE);
 
     // Line smoothing should almost always be used
     if (Config::USE_HARDWARE_AA_LINES) {

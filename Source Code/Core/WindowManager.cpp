@@ -1,9 +1,12 @@
 #include "stdafx.h"
 
 #include "Headers/WindowManager.h"
+
+#include "Core/Headers/Console.h"
 #include "Core/Headers/Application.h"
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
+#include "Utility/Headers/Localization.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 
 namespace Divide {
@@ -126,35 +129,63 @@ U32 WindowManager::createAPIFlags(RenderAPI api) {
                            SDL_GL_CONTEXT_RESET_ISOLATION_FLAG;
         }
 
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, OpenGLFlags);
-        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+        auto validate = [](I32 errCode) -> bool {
+            if (errCode != 0) {
+                Console::errorfn(Locale::get(_ID("SDL_ERROR")), SDL_GetError());
+                return false;
+            }
+
+            return true;
+        };
+
+        auto validateAssert = [&validate](I32 errCode) -> bool {
+            if (!validate(errCode)) {
+                assert(errCode == 0);
+                return false;
+            }
+
+            return true;
+        };
+
+        validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, OpenGLFlags));
+        validateAssert(SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1));
         // 32Bit RGBA (R8G8B8A8), 24bit Depth, 8bit Stencil
-        SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
-        SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
-        SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
-        SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
-        SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-        SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
+        validateAssert(SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8));
+        validateAssert(SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8));
+        validateAssert(SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8));
+        validateAssert(SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8));
+        validateAssert(SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8));
+        validateAssert(SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24));
+        validateAssert(SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1));
         // Toggle multi-sampling if requested.
         // This options requires a client-restart, sadly.
-        I32 msaaSamples = _context->config().rendering.msaaSamples;
+        I32 msaaSamples = to_I32(_context->config().rendering.msaaSamples);
         if (msaaSamples > 0) {
-            SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-            SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, msaaSamples);
+            if (validate(SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1))) {
+                while (!validate(SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, msaaSamples))) {
+                    msaaSamples = msaaSamples / 2;
+                    if (msaaSamples == 0) {
+                        validate(SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0));
+                        break;
+                    }
+                }
+            } else {
+                msaaSamples = 0;
+            }
         }
+        _context->config().rendering.msaaSamples = to_U8(msaaSamples);
 
         // OpenGL ES is not yet supported, but when added, it will need to mirror
         // OpenGL functionality 1-to-1
         if (api == RenderAPI::OpenGLES) {
-            SDL_GL_SetAttribute(SDL_GL_CONTEXT_EGL, 1);
-            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+            validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_EGL, 1));
+            validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES));
+            validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3));
+            validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1));
         }  else {
-            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5);
+            validate(SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE));
+            validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4));
+            validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5));
         }
 
         windowFlags |= SDL_WINDOW_OPENGL;

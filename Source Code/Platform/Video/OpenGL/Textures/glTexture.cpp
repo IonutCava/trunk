@@ -27,15 +27,6 @@ glTexture::glTexture(GFXDevice& context,
       glObject(glObjectType::TYPE_TEXTURE),
      _lockManager(MemoryManager_NEW glLockManager())
 {
-    if (GL_API::s_msaaSamples == 0) {
-        if (_descriptor.type() == TextureType::TEXTURE_2D_MS) {
-            _descriptor.type(TextureType::TEXTURE_2D);
-        }
-        if (_descriptor.type() == TextureType::TEXTURE_2D_ARRAY_MS) {
-            _descriptor.type(TextureType::TEXTURE_2D_ARRAY);
-        }
-    }
-
     GL_API::getOrCreateSamplerObject(_descriptor.getSampler());
 
     _allocatedStorage = false;
@@ -129,6 +120,7 @@ void glTexture::reserveStorage() {
 
     GLenum glInternalFormat = GLUtil::glImageFormatTable[to_U32(_descriptor.internalFormat())];
     GLuint handle = _textureData.getHandleHigh();
+    GLuint msaaSamples = static_cast<GLuint>(_descriptor.msaaSamples());
     GLushort mipMaxLevel = _descriptor._mipLevels.max;
 
     switch (_textureData._textureType) {
@@ -151,7 +143,7 @@ void glTexture::reserveStorage() {
         case TextureType::TEXTURE_2D_MS: {
             glTextureStorage2DMultisample(
                 handle,
-                GL_API::s_msaaSamples,
+                msaaSamples,
                 glInternalFormat,
                 _width,
                 _height,
@@ -160,7 +152,7 @@ void glTexture::reserveStorage() {
         case TextureType::TEXTURE_2D_ARRAY_MS: {
             glTextureStorage3DMultisample(
                 handle,
-                GL_API::s_msaaSamples,
+                msaaSamples,
                 glInternalFormat,
                 _width,
                 _height,

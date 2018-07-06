@@ -3,8 +3,10 @@
 #include "Headers/Texture.h"
 
 #include "Core/Headers/Console.h"
-#include "Core/Headers/EngineTaskPool.h"
+#include "Core/Headers/Kernel.h"
 #include "Core/Headers/StringHelper.h"
+#include "Core/Headers/Configuration.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Utility/Headers/Localization.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/File/Headers/FileManagement.h"
@@ -35,6 +37,19 @@ Texture::Texture(GFXDevice& context,
       _flipped(isFlipped),
       _asyncLoad(asyncLoad)
 {
+    if (_descriptor.msaaSamples() == -1) {
+        _descriptor.msaaSamples(context.parent().platformContext().config().rendering.msaaSamples);
+    }
+
+    if (_descriptor.msaaSamples() == 0) {
+        if (_descriptor.type() == TextureType::TEXTURE_2D_MS) {
+            _descriptor.type(TextureType::TEXTURE_2D);
+        }
+        if (_descriptor.type() == TextureType::TEXTURE_2D_ARRAY_MS) {
+            _descriptor.type(TextureType::TEXTURE_2D_ARRAY);
+        }
+    }
+
     _width = _height = 0;
     _textureData._textureType = _descriptor.type();
     _textureData._samplerHash = _descriptor._samplerDescriptor.getHash();

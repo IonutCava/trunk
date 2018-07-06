@@ -268,8 +268,6 @@ private:
     static GLuint s_indirectDrawBuffer;
     /// Preferred anisotropic filtering level
     static GLuint s_anisoLevel;
-    /// Preferred msaa sample count
-    static GLuint s_msaaSamples;
     /// A cache of all fonts used
     typedef hashMapImpl<U64, I32> FontCache;
     FontCache _fonts;
