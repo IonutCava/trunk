@@ -77,7 +77,7 @@ class GUIElement {
     inline const GUIType getType() const { return _guiType; }
     inline U32 getStateBlockHash() const { return _guiSBHash; }
     inline const bool isActive() const { return _active; }
-    inline const bool isVisible() const { return _visible; }
+    virtual const bool isVisible() const { return _visible; }
 
     inline  void setName(const stringImpl& name) { _name = name; }
     virtual void setVisible(const bool visible) { _visible = visible; }

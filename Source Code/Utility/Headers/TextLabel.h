@@ -54,13 +54,10 @@ class TextLabel {
     }
 
     inline void text(const stringImpl& text) {
-        _text = text;
-        size_t newLinePos = _text.find('\n');
-        _multiLine = (newLinePos != stringImpl::npos) &&
-                     (newLinePos != _text.length() - 1);
+        Util::Split(text, '\n', _text);
     }
 
-    inline const stringImpl& text() const {
+    inline const vectorImpl<stringImpl>& text() const {
         return _text;
     }
 
@@ -73,10 +70,9 @@ class TextLabel {
     vec4<U8> _color;
     bool _bold;
     bool _italic;
-    bool _multiLine;
 
 private:
-    stringImpl _text;
+    vectorImpl<stringImpl> _text;
 };
 
 };  // namespace Divide

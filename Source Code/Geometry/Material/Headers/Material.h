@@ -244,25 +244,10 @@ class Material : public Resource, public FrameListener {
                     const TextureOperation& op = TextureOperation::REPLACE);
     /// Add a texture <-> bind slot pair to be bound with the default textures
     /// on each "bindTexture" call
-    inline void addCustomTexture(Texture* texture, U8 offset) {
-        // custom textures are not material dependencies!
-        _customTextures.push_back(std::make_pair(texture, offset));
-    }
+    void addCustomTexture(Texture* texture, U8 offset);
 
     /// Remove the custom texture assigned to the specified offset
-    inline bool removeCustomTexture(U8 index) {
-        vectorImpl<std::pair<Texture*, U8>>::iterator it =
-            std::find_if(std::begin(_customTextures), std::end(_customTextures),
-                         [&index](const std::pair<Texture*, U8>& tex)
-                             -> bool { return tex.second == index; });
-        if (it == std::end(_customTextures)) {
-            return false;
-        }
-
-        _customTextures.erase(it);
-
-        return true;
-    }
+    bool removeCustomTexture(U8 index);
 
     /// Set the desired bump mapping method.
     void setBumpMethod(const BumpMethod& newBumpMethod);
@@ -390,6 +375,10 @@ class Material : public Resource, public FrameListener {
                                   RenderStage renderStage,
                                   const bool computeOnAdd);
 
+    inline bool isExternalTexture(ShaderProgram::TextureUsage slot) const {
+        return _textureExtenalFlag[to_uint(slot)];
+    }
+
    private:
     typedef std::pair<U32, ResourceDescriptor> ShaderQueueElement;
     std::deque<ShaderQueueElement> _shaderComputeQueue;
@@ -408,13 +397,13 @@ class Material : public Resource, public FrameListener {
     /// Use shaders that have bone transforms implemented
     bool _hardwareSkinning;
     std::array<ShaderInfo, to_const_uint(RenderStage::COUNT)> _shaderInfo;
-    std::array<std::array<U32, 3>,
-               to_const_uint(RenderStage::COUNT)> _defaultRenderStates;
+    std::array<std::array<U32, 3>,  to_const_uint(RenderStage::COUNT)> _defaultRenderStates;
 
     bool _shaderThreadedLoad;
     bool _highPriority;
     /// use this map to add textures to the material
-    vectorImpl<Texture*> _textures;
+    std::array<Texture*, to_const_uint(ShaderProgram::TextureUsage::COUNT)> _textures;
+    std::array<bool, to_const_uint(ShaderProgram::TextureUsage::COUNT)> _textureExtenalFlag;
     vectorImpl<std::pair<Texture*, U8>> _customTextures;
 
     /// use the below map to define texture operation

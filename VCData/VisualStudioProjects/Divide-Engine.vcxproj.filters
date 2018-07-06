@@ -877,15 +877,6 @@
     <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\Vector.h">
       <Filter>Core\TemplateLibraries\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\BoostHashMap.h">
-      <Filter>Core\TemplateLibraries\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\STLHashMap.h">
-      <Filter>Core\TemplateLibraries\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\EASTLHashMap.h">
-      <Filter>Core\TemplateLibraries\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\BoostVector.h">
       <Filter>Core\TemplateLibraries\Headers</Filter>
     </ClInclude>

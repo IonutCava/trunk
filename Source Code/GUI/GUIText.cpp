@@ -16,6 +16,13 @@ GUIText::GUIText(const stringImpl& id,
 {
 }
 
+const bool GUIText::isVisible() const {
+    if (!text().empty()) {
+        return GUIElement::isVisible();
+    }
+
+    return false;
+}
 
 void GUIText::draw() const {
     Attorney::GFXDeviceGUI::drawText(*this,

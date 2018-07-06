@@ -89,8 +89,8 @@ class MemoryTracker {
         MemoryTracker& _tracer;
     };
 
-    typedef hashMapImpl<void*, Entry>::iterator iterator;
-    typedef hashMapImpl<void*, Entry>::const_iterator citerator;
+    typedef hashMapImplAligned<void*, Entry>::iterator iterator;
+    typedef hashMapImplAligned<void*, Entry>::const_iterator citerator;
     friend class Lock;
 
    public:
@@ -184,7 +184,7 @@ class MemoryTracker {
 
    private:
     mutable SharedLock _mutex;
-    hashMapImpl<void*, Entry> _map;
+    hashMapImplAligned<void*, Entry> _map;
     std::atomic_bool _locked;
 };
 

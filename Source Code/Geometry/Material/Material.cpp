@@ -39,9 +39,11 @@ Material::Material()
       _shadingMode(ShadingMode::COUNT),
       _bumpMethod(BumpMethod::NONE)
 {
-    REGISTER_FRAME_LISTENER(this, 9999);
+    _textures.fill(nullptr);
+    _textureExtenalFlag.fill(false);
+    _textureExtenalFlag[to_const_uint(ShaderProgram::TextureUsage::REFLECTION)] = true;
 
-    _textures.resize(to_const_uint(ShaderProgram::TextureUsage::COUNT), nullptr);
+    REGISTER_FRAME_LISTENER(this, 9999);
 
     _operation = TextureOperation::REPLACE;
 
@@ -127,7 +129,7 @@ Material* Material::clone(const stringImpl& nameSuffix) {
 
     for (U8 i = 0; i < to_ubyte(base._textures.size()); ++i) {
         ShaderProgram::TextureUsage usage = static_cast<ShaderProgram::TextureUsage>(i);
-        if (usage != ShaderProgram::TextureUsage::REFLECTION) {
+        if (!isExternalTexture(usage)) {
             Texture* const tex = base._textures[i];
             if (tex) {
                 tex->AddRef();
@@ -211,7 +213,7 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
     }
 
     if (_textures[slot]) {
-        if (textureUsageSlot != ShaderProgram::TextureUsage::REFLECTION) {
+        if (!isExternalTexture(textureUsageSlot)) {
             UNREGISTER_TRACKED_DEPENDENCY(_textures[slot]);
             RemoveResource(_textures[slot]);
         }
@@ -225,7 +227,7 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
     _textures[slot] = texture;
 
     if (texture) {
-        if (textureUsageSlot != ShaderProgram::TextureUsage::REFLECTION) {
+        if (!isExternalTexture(textureUsageSlot)) {
             REGISTER_TRACKED_DEPENDENCY(_textures[slot]);
         }
     }
@@ -523,6 +525,28 @@ void Material::computeShaderInternal() {
     _shaderComputeQueue.pop_front();
 }
 
+/// Add a texture <-> bind slot pair to be bound with the default textures
+/// on each "bindTexture" call
+void Material::addCustomTexture(Texture* texture, U8 offset) {
+    // custom textures are not material dependencies!
+    _customTextures.push_back(std::make_pair(texture, offset));
+}
+
+/// Remove the custom texture assigned to the specified offset
+bool Material::removeCustomTexture(U8 index) {
+    vectorImpl<std::pair<Texture*, U8>>::iterator it =
+        std::find_if(std::begin(_customTextures), std::end(_customTextures),
+            [&index](const std::pair<Texture*, U8>& tex)
+            -> bool { return tex.second == index; });
+    if (it == std::end(_customTextures)) {
+        return false;
+    }
+
+    _customTextures.erase(it);
+
+    return true;
+}
+
 void Material::getTextureData(ShaderProgram::TextureUsage slot,
                               TextureDataContainer& container) {
     U32 slotValue = to_uint(slot);
@@ -535,7 +559,7 @@ void Material::getTextureData(ShaderProgram::TextureUsage slot,
 }
 
 void Material::getTextureData(TextureDataContainer& textureData) {
-    U32 textureCount = to_const_uint(ShaderProgram::TextureUsage::COUNT);
+    const U32 textureCount = to_const_uint(ShaderProgram::TextureUsage::COUNT);
 
     if (!GFX_DEVICE.isDepthStage()) {
         textureData.reserve(textureCount + _customTextures.size());
@@ -587,12 +611,16 @@ void Material::setShadingMode(const ShadingMode& mode) {
 }
 
 bool Material::unload() {
-    for (Texture*& tex : _textures) {
-        if (tex != nullptr) {
+
+    size_t textureCount = _textures.size();
+    for (size_t i = 0; i < textureCount; ++i) {
+        Texture*& tex = _textures[i];
+        if (tex != nullptr && !isExternalTexture(static_cast<ShaderProgram::TextureUsage>(i))) {
             UNREGISTER_TRACKED_DEPENDENCY(tex);
             RemoveResource(tex);
         }
     }
+
     _customTextures.clear();
     for (ShaderInfo& info : _shaderInfo) {
         ShaderProgram* shader = FindResourceImpl<ShaderProgram>(info._shader);

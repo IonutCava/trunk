@@ -665,53 +665,37 @@ void GL_API::drawText(const TextLabel& textLabel, const vec2<F32>& position) {
     if (font == FONS_INVALID) {
         return;
     }
-    static vectorImpl<stringImpl> lines;
     // See FontStash documentation for the following block
     {
         fonsClearState(_fonsContext);
-        fonsSetSize(_fonsContext, to_float(textLabel._height));
-        fonsSetFont(_fonsContext, font);
+
         F32 lh = 0;
         fonsVertMetrics(_fonsContext, nullptr, nullptr, &lh);
+        fonsSetBlur(_fonsContext, textLabel._blurAmount);
+        fonsSetBlur(_fonsContext, textLabel._spacing);
+        fonsSetAlign(_fonsContext, textLabel._alignFlag);
+        fonsSetSize(_fonsContext, to_float(textLabel._height));
+        fonsSetFont(_fonsContext, font);
+
         fonsSetColor(_fonsContext,
                      textLabel._color.r,
                      textLabel._color.g,
                      textLabel._color.b,
                      textLabel._color.a);
 
-        if (textLabel._blurAmount > 0.01f) {
-            fonsSetBlur(_fonsContext, textLabel._blurAmount);
-        }
-
-        if (textLabel._spacing > 0.01f) {
-            fonsSetBlur(_fonsContext, textLabel._spacing);
-        }
-
-        if (textLabel._alignFlag != 0) {
-            fonsSetAlign(_fonsContext, textLabel._alignFlag);
-        }
-
-        if (textLabel._multiLine) {
-            lines.resize(0);
-            Util::Split(textLabel.text(), '\n', lines);
-            vectorAlg::vecSize lineCount = lines.size();
-            for (vectorAlg::vecSize i = 0; i < lineCount; ++i) {
-                fonsDrawText(_fonsContext,
-                             position.x,
-                             position.y - (lh * i),
-                             lines[i].c_str(),
-                             nullptr);
-            }
-        } else {
-                fonsDrawText(_fonsContext,
-                             position.x,
-                             position.y,
-                             textLabel.text().c_str(),
-                             nullptr);
+      
+        const vectorImpl<stringImpl>& text = textLabel.text();
+        vectorAlg::vecSize lineCount = text.size();
+        for (vectorAlg::vecSize i = 0; i < lineCount; ++i) {
+            fonsDrawText(_fonsContext,
+                         position.x,
+                         position.y - (lh * i),
+                         text[i].c_str(),
+                         nullptr);
+            // Register each label rendered as a draw call
+            GFX_DEVICE.registerDrawCall();
         }
     }
-    // Register each label rendered as a draw call
-    GFX_DEVICE.registerDrawCall();
     // glPopDebugGroup();
 }
 
