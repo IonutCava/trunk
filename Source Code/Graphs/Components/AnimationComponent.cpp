@@ -122,15 +122,10 @@ bool AnimationComponent::onDraw(RenderStage currentStage) {
     }
 
     if (_previousAnimationIndex != -1) {
-        std::shared_ptr<AnimEvaluator> animation = getAnimationByIndex(_previousAnimationIndex);
-        std::shared_ptr<ShaderBuffer> boneBuffer = animation->getBoneBuffer().lock();
-
-        assert(boneBuffer != nullptr);
-
-        _parentSGN.getComponent<RenderingComponent>()->registerShaderBuffer(
-            ShaderBufferLocation::BONE_TRANSFORMS,
-            vec2<U32>(_previousFrameIndex, 1),
-            *boneBuffer.get());
+        ShaderBuffer& boneBuffer = getAnimationByIndex(_previousAnimationIndex).getBoneBuffer();
+        _parentSGN.getComponent<RenderingComponent>()->registerShaderBuffer(ShaderBufferLocation::BONE_TRANSFORMS,
+                                                                            vec2<U32>(_previousFrameIndex, 1),
+                                                                            boneBuffer);
     }
 
     return true;
@@ -175,8 +170,7 @@ Bone* AnimationComponent::getBoneByName(const stringImpl& bname) const {
     return _animator.boneByName(bname);
 }
 
-std::shared_ptr<AnimEvaluator> 
-AnimationComponent::getAnimationByIndex(I32 animationID) const {
+AnimEvaluator& AnimationComponent::getAnimationByIndex(I32 animationID) const {
     return _animator.animationByIndex(animationID);
 }
 };

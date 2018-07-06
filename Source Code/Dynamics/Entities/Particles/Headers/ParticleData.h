@@ -39,6 +39,8 @@ namespace Divide {
 /// Container to store data for a given set of particles
 class ParticleData {
    public:
+    static const U32 g_threadPartitionSize = 256;
+
     enum class Properties : U32 {
         PROPERTIES_POS = toBit(1),
         PROPERTIES_VEL = toBit(2),
@@ -60,7 +62,7 @@ class ParticleData {
     /// x = time; y = interp; z = 1 / time;  w = distance to camera sq;
     vectorImpl<vec4<F32>> _misc;
     /// r,g,b,a = color and transparency
-    vectorImpl<vec4<U8>> _color;
+    vectorImpl<vec4<F32>> _color;
     /// r,g,b,a = color and transparency
     vectorImpl<vec4<F32>> _startColor;
     /// r,g,b,a = color and transparency

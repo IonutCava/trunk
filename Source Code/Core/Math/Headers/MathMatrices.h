@@ -1180,6 +1180,20 @@ struct Line {
     {
     }
 
+    void color(U8 r, U8 g, U8 b, U8 a) {
+        _colorStart.set(r,g,b,a);
+        _colorEnd.set(r,g,b,a);
+    }
+
+    void width(F32 width) {
+        _widthStart = _widthEnd = width;
+    }
+
+    void segment(F32 startX, F32 startY, F32 startZ, 
+                 F32 endX, F32 endY, F32 endZ) {
+        _startPoint.set(startX, startY, startZ);
+        _endPoint.set(endX, endY, endZ);
+    }
 };
 
 /// Converts a point from world coordinates to projection coordinates

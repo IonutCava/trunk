@@ -255,9 +255,6 @@ void ParticleEmitter::uploadToGPU() {
     if (_uploaded || getAliveParticleCount() == 0) {
         return;
     }
-    
-    //_updateTask.wait();
-    //_updateTask.get();
 
     _particles->sort();
     
@@ -314,31 +311,25 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
         const vec3<F32>& eyePos = sceneState.renderState().getCameraConst().getEye();
         U8 lodLevel = sgn.getComponent<RenderingComponent>()->lodLevel();
 
-        //std::packaged_task<void()> task([this, &eyePos, &deltaTime, &lodLevel]() {
-        
-            for (std::shared_ptr<ParticleSource>& source : _sources) {
-                source->emit(deltaTime, _particles);
-            }
+        for (std::shared_ptr<ParticleSource>& source : _sources) {
+            source->emit(deltaTime, _particles);
+        }
             
-            U32 count = _particles->totalCount();
-            for (U32 i = 0; i < count; ++i) {
-                _particles->_misc[i].w =  _particles->_position[i].xyz().distanceSquared(eyePos);
-                _particles->_position[i].w = 1.0f * _particles->_misc[i].z;
-                _particles->_acceleration[i].set(0.0f);
-                _particles->lodLevel(lodLevel);
-            }
+        U32 count = _particles->totalCount();
+        for (U32 i = 0; i < count; ++i) {
+            _particles->_misc[i].w =  _particles->_position[i].xyz().distanceSquared(eyePos);
+            _particles->_position[i].w = 1.0f * _particles->_misc[i].z;
+            _particles->_acceleration[i].set(0.0f);
+            _particles->lodLevel(lodLevel);
+        }
 
-            for (std::shared_ptr<ParticleUpdater>& up : _updaters) {
-                up->update(deltaTime, _particles);
-            }
+        for (std::shared_ptr<ParticleUpdater>& up : _updaters) {
+            up->update(deltaTime, _particles);
+        }
 
-            // const vec3<F32>& origin = transform->getPosition();
-            // const Quaternion<F32>& orientation = transform->getOrientation();
-        //});
-
-        //_updateTask = task.get_future();  // get a future
-        //std::thread(std::move(task)).detach(); // launch on a thread
-   // }
+        // const vec3<F32>& origin = transform->getPosition();
+        // const Quaternion<F32>& orientation = transform->getOrientation();
+    // }
 
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }

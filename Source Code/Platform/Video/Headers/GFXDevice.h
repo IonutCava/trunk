@@ -130,7 +130,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
                 const vec2<U32>& range);
    };
 
-   typedef vectorImpl<RenderPassCuller::RenderableNode> VisibleNodeList;
+   typedef vectorImpl<SceneGraphNode_wptr> VisibleNodeList;
    typedef vectorImpl<ShaderBufferBinding> ShaderBufferList;
 
    struct RenderPackage {
@@ -464,11 +464,13 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     inline void drawPoints(U32 numPoints) override { 
         uploadGPUBlock();
         _api->drawPoints(numPoints); 
+        registerDrawCall();
     }
 
     inline void drawTriangle() override {
         uploadGPUBlock();
         _api->drawTriangle();
+        registerDrawCall();
     }
 
     inline void drawText(const TextLabel& text,
@@ -541,8 +543,8 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     size_t setStateBlock(size_t stateBlockHash);
     ErrorCode createAPIInstance();
 
-    void processVisibleNode(const RenderPassCuller::RenderableNode& node,
-                            NodeData& dataOut);
+    void processVisibleNode(SceneGraphNode_wptr node, NodeData& dataOut);
+
   private:
     Camera* _cubeCamera;
     Camera* _2DCamera;

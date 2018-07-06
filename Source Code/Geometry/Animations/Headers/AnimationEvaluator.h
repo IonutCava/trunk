@@ -141,8 +141,8 @@ class AnimEvaluator {
     static void save(const AnimEvaluator& evaluator, ByteBuffer& dataOut);
     static void load(AnimEvaluator& evaluator, ByteBuffer& dataIn);
 
-    std::weak_ptr<ShaderBuffer> getBoneBuffer() const {
-        return _boneTransformBuffer;
+    ShaderBuffer& getBoneBuffer() const {
+        return *_boneTransformBuffer;
     }
 
    protected:

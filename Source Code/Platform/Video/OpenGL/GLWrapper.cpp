@@ -532,7 +532,7 @@ I32 GL_API::getFont(const stringImpl& fontName) {
         // Search for the requested font by name
         FontCache::const_iterator it = _fonts.find(fontName);
         // If we failed to find it, it wasn't loaded yet
-        if (it == std::end(_fonts)) {
+        if (it == std::cend(_fonts)) {
             // Fonts are stored in the general asset directory -> in the GUI
             // subfolder -> in the fonts subfolder
             stringImpl fontPath(
@@ -634,13 +634,11 @@ void GL_API::drawText(const TextLabel& textLabel, const vec2<F32>& relativeOffse
 void GL_API::drawPoints(GLuint numPoints) {
     GL_API::setActiveVAO(_dummyVAO);
     glDrawArrays(GL_POINTS, 0, numPoints);
-    GFX_DEVICE.registerDrawCall();
 }
 
 void GL_API::drawTriangle() {
     GL_API::setActiveVAO(_dummyVAO);
     glDrawArrays(GL_TRIANGLES, 0, 3);
-    GFX_DEVICE.registerDrawCall();
 }
 
 void GL_API::registerCommandBuffer(const ShaderBuffer& commandBuffer) const {

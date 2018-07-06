@@ -42,6 +42,8 @@ ShaderProgram::~ShaderProgram()
 
 /// Called once per frame. Update common values used across programs
 bool ShaderProgram::update(const U64 deltaTime) {
+    static const stringImpl fogParamName("rendering.enableFog");
+
     ParamHandler& par = ParamHandler::getInstance();
     LightManager& lightMgr = LightManager::getInstance();
 
@@ -53,7 +55,7 @@ bool ShaderProgram::update(const U64 deltaTime) {
         return false;
     }
     // Toggle fog on or off
-    bool enableFog = par.getParam<bool>("rendering.enableFog");
+    bool enableFog = par.getParam<bool>(fogParamName);
 #ifdef _DEBUG
     // Shadow splits are only visible in debug builds
     this->Uniform("dvd_showShadowDebugInfo",

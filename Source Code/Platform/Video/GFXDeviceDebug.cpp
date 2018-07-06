@@ -79,6 +79,7 @@ void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState) {
         _imShader->Uniform("dvd_WorldMatrix", prim->worldMatrix());
         // Submit the render call. We do not support instancing yet!
         prim->render(prim->forceWireframe(), 1);
+        registerDrawCall();
         // Call any "postDraw" function the primitive may have attached
         prim->resetStates();
         if (prim->_canZombify) {

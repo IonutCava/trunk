@@ -1,7 +1,7 @@
 #include "Headers/RenderPassCuller.h"
 
 #include "Scenes/Headers/SceneState.h"
-#include "Graphs/Headers/SceneGraphNode.h"
+#include "Graphs/Headers/SceneGraph.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 
 namespace Divide {
@@ -26,74 +26,99 @@ void RenderPassCuller::refresh() {
     }
 }
 
-RenderPassCuller::VisibleNodeCache& RenderPassCuller::getNodeCache(RenderStage stage) {
-    RenderPassCuller::VisibleNodeCache& nodes = _visibleNodes[0];
+RenderPassCuller::VisibleNodeCache&
+RenderPassCuller::getNodeCache(RenderStage stage) {
     switch (stage) {
-        default:
-            nodes = _visibleNodes[0];
-            break;
         case RenderStage::REFLECTION:
-            nodes = _visibleNodes[1];
-            break;
+            return _visibleNodes[1];
         case RenderStage::SHADOW:
-            nodes = _visibleNodes[2];
+            return _visibleNodes[2];
+        default:
             break;
     }
 
-    return nodes;
+    return _visibleNodes[0];
 }
 
-/// This method performs the visibility check on the given node and all of its
-/// children and adds them to the RenderQueue
-RenderPassCuller::VisibleNodeCache& RenderPassCuller::frustumCull(
-    SceneGraphNode& currentNode, SceneState& sceneState,
-    const std::function<bool(const SceneGraphNode&)>& cullingFunction) 
+void RenderPassCuller::frustumCull(SceneGraph& sceneGraph,
+                                   SceneState& sceneState,
+                                   const CullingFunction& cullingFunction)
 {
-    VisibleNodeCache& nodes = getNodeCache(GFX_DEVICE.getRenderStage());
-
-    if (nodes._visibleNodes.empty()) {
+    RenderStage stage = GFX_DEVICE.getRenderStage();
+    VisibleNodeCache& nodeCache = getNodeCache(stage);
+    nodeCache._locked = !nodeCache._visibleNodes.empty();
+    if (!nodeCache._locked && sceneState.renderState().drawGeometry()) {
+        _cullingFunction = cullingFunction;
+        SceneRenderState& renderState = sceneState.renderState();
         // No point in updating visual information if the scene disabled object
         // rendering or rendering of their bounding boxes
-        if (sceneState.renderState().drawGeometry()) {
-            cullSceneGraphCPU(nodes, currentNode, sceneState.renderState(),
-                              cullingFunction);
-            nodes._sorted = false;
+        SceneGraphNode& root = *sceneGraph.getRoot();
+        if (!frustumCullNode(root, stage, renderState)) {
+            vectorImpl<std::future<void>> tasks;
+            U32 childCount = root.getChildCount();
+            tasks.reserve(childCount);
+            _perThreadNodeList.resize(childCount);
+            for (U32 i = 0; i < childCount; ++i) {
+                SceneGraphNode& child = root.getChild(i, childCount);
+                VisibleNodeList& container = _perThreadNodeList[i];
+                container.resize(0);
+                tasks.push_back(std::async(/*std::launch::async | */std::launch::deferred, [&]() {
+                    frustumCullRecursive(child, stage, renderState, container);
+                }));
+            }
+
+            for (std::future<void>& task : tasks) {
+                task.get();
+            }
+
+            for (VisibleNodeList& nodeList : _perThreadNodeList) {
+                for (SceneGraphNode_wptr ptr : nodeList) {
+                    nodeCache._visibleNodes.push_back(ptr);
+                }
+            }
         }
-        nodes._locked = false;
-    } else {
-        nodes._locked = true;
+        nodeCache._sorted = false;
     }
-    return nodes;
 }
 
-void RenderPassCuller::cullSceneGraphCPU(VisibleNodeCache& nodes,
-                                         SceneGraphNode& currentNode,
-                                         SceneRenderState& sceneRenderState,
-                                         const std::function<bool(const SceneGraphNode&)>& cullingFunction) {
-    if (currentNode.getParent().lock()) {
-        currentNode.setInView(false);
+bool RenderPassCuller::frustumCullNode(SceneGraphNode& node,
+                                       RenderStage currentStage,
+                                       SceneRenderState& sceneRenderState) {
+    bool nodeVisible = false;
+
+    if (node.getParent().lock()) {
         // Skip all of this for inactive nodes.
-        if (currentNode.isActive()) {
+        if (node.isActive()) {
             // Perform visibility test on current node
-            if (currentNode.canDraw(sceneRenderState,
-                                    GFX_DEVICE.getRenderStage())) {
+            if (node.canDraw(sceneRenderState, currentStage)) {
                 // If the current node is visible, add it to the render
                 // queue (if it passes our custom culling function)
-                if (!cullingFunction(currentNode)) {
-                    nodes._visibleNodes.push_back(RenderableNode(currentNode));
-                    currentNode.setInView(true);
+                if (!_cullingFunction(node)) {
+                    nodeVisible = true;
                 }
-            } else {
-                // Skip processing children if the parent node isn't visible
-                return;
             }
         }
     }
 
-    // Process children if we did not early-out of the culling loop
-    U32 childCount = currentNode.getChildCount();
-    for (U32 i = 0; i < childCount; ++i) {
-        cullSceneGraphCPU(nodes, currentNode.getChild(i, childCount), sceneRenderState, cullingFunction);
+    node.setInView(nodeVisible);
+    return nodeVisible;
+}
+
+/// This method performs the visibility check on the given node and all of its
+/// children and adds them to the RenderQueue
+void RenderPassCuller::frustumCullRecursive(SceneGraphNode& currentNode,
+                                            RenderStage currentStage,
+                                            SceneRenderState& sceneRenderState,
+                                            VisibleNodeList& nodes)
+{
+    // Skip processing children if the parent node isn't visible
+    if (!frustumCullNode(currentNode, currentStage, sceneRenderState)) {
+        nodes.push_back(currentNode.shared_from_this());
+        // Process children if we did not early-out of the culling loop
+        U32 childCount = currentNode.getChildCount();
+        for (U32 i = 0; i < childCount; ++i) {
+            frustumCullRecursive(currentNode.getChild(i, childCount), currentStage, sceneRenderState, nodes);
+        }
     }
 }
 

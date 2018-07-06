@@ -105,7 +105,6 @@ class ParticleEmitter : public SceneNode {
 
    private:
     vec3<F32> _camUp, _camRight;
-    std::future<void> _updateTask;
     std::shared_ptr<ParticleData> _particles;
 
     vectorImpl<std::shared_ptr<ParticleSource>> _sources;

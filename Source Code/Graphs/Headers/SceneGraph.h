@@ -45,7 +45,7 @@ namespace Attorney {
     class SceneGraphSGN;
 };
 
-class SceneGraph : private NonCopyable {
+class SceneGraph : private NonCopyable, public FrameListener {
     friend class Attorney::SceneGraphSGN;
    public:
     SceneGraph();
@@ -72,6 +72,9 @@ class SceneGraph : private NonCopyable {
     void onNodeDestroy(SceneGraphNode& oldNode);
     void onNodeAdd(SceneGraphNode_ptr newNode);
     void unregisterNode(I64 guid, SceneGraphNode::UsageContext usage);
+
+    bool frameStarted(const FrameEvent& evt);
+    bool frameEnded(const FrameEvent& evt);
 
    private:
     SceneGraphNode_ptr _root;

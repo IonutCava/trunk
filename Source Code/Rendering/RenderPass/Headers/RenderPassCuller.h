@@ -39,25 +39,14 @@
 namespace Divide {
 class SceneState;
 class SceneRenderState;
-class SceneGraphNode;
 
+class SceneGraph;
+class SceneGraphNode;
+typedef std::weak_ptr<SceneGraphNode> SceneGraphNode_wptr;
 class RenderPassCuller {
    public:
-    struct RenderableNode {
-        //ToDo: Add more data as needed
-        SceneGraphNode* _visibleNode;
-        explicit RenderableNode()
-            : _visibleNode(nullptr)
-        {
-        }
-
-        explicit RenderableNode(SceneGraphNode& node)
-            : _visibleNode(&node)
-        {
-        }
-    };
-
-    typedef vectorImpl<RenderableNode> VisibleNodeList;
+    typedef vectorImpl<SceneGraphNode_wptr> VisibleNodeList;
+    typedef std::function<bool(const SceneGraphNode&)> CullingFunction;
 
     struct VisibleNodeCache {
         VisibleNodeList _visibleNodes;
@@ -69,23 +58,27 @@ class RenderPassCuller {
    public:
     RenderPassCuller();
     ~RenderPassCuller();
-    VisibleNodeCache& frustumCull(
-        SceneGraphNode& currentNode, SceneState& sceneState,
-        const std::function<bool(const SceneGraphNode&)>& cullingFunction);
+
     void refresh();
+    VisibleNodeCache& getNodeCache(RenderStage stage);
+    void frustumCull(SceneGraph& sceneGraph,
+                     SceneState& sceneState,
+                     const CullingFunction& cullingFunction);
+   protected:
+    // return false if node is inside the frustum (node was not culled)
+    bool frustumCullNode(SceneGraphNode& node,
+                         RenderStage currentStage,
+                         SceneRenderState& sceneRenderState);
+
+    void frustumCullRecursive(SceneGraphNode& node,
+                              RenderStage currentStage,
+                              SceneRenderState& sceneRenderState,
+                              VisibleNodeList& nodes);
 
    protected:
-    /// Perform CPU-based culling (Frustrum - AABB, distance check, etc)
-    void cullSceneGraphCPU(
-        VisibleNodeCache& nodes,
-        SceneGraphNode& currentNode,
-        SceneRenderState& sceneRenderState,
-        const std::function<bool(const SceneGraphNode&)>& cullingFunction);
-    VisibleNodeCache& getNodeCache(RenderStage stage);
-   protected:
-    std::array<VisibleNodeCache, to_const_uint(RenderStage::COUNT)>
-        _visibleNodes;
-    bool _visibleNodesSorted;
+    CullingFunction _cullingFunction;
+    vectorImpl<VisibleNodeList> _perThreadNodeList;
+    std::array<VisibleNodeCache, to_const_uint(RenderStage::COUNT)> _visibleNodes;
 };
 
 };  // namespace Divide

@@ -11,22 +11,15 @@ void ParticleVelocityColorUpdater::update(const U64 deltaTime,
 
     vec3<F32> floatColorRGB;
     for (U32 i = 0; i < endID; ++i) {
-        floatColorRGB.set(
+        p->_color[i].set(
             (p->_velocity[i].x - _minVel.x) /
                 diffr,  // lerp(p->_startColor[i].r, p->_endColor[i].r, scaler),
             (p->_velocity[i].y - _minVel.y) /
                 diffg,  // lerp(p->_startColor[i].g, p->_endColor[i].g, scaleg),
             (p->_velocity[i].z - _minVel.z) /
-                diffb);  // lerp(p->_startColor[i].b, p->_endColor[i].b,
+                diffb,  // lerp(p->_startColor[i].b, p->_endColor[i].b,
                          // scaleb),
-
-        p->_color[i].set(
-            Util::ToByteColor(floatColorRGB),
-            to_ubyte(
-                Lerp(p->_startColor[i].a,
-                     p->_endColor[i].a,
-                     p->_misc[i].y) *
-                255.0f));
+            Lerp(p->_startColor[i].a, p->_endColor[i].a, p->_misc[i].y) * 255.0f);
     }
 }
 };

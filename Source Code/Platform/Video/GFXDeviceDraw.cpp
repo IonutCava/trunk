@@ -102,6 +102,12 @@ void GFXDevice::processCommand(const GenericDrawCommand& cmd, bool useIndirectRe
     if (setBufferData(cmd)) {
         // Same rules about pre-processing the draw command apply
         cmd.sourceBuffer()->draw(cmd, useIndirectRender);
+        if (cmd.renderGeometry()) {
+            registerDrawCall();
+        }
+        if (cmd.renderWireframe()) {
+            registerDrawCall();
+        }
     }
 }
 
@@ -181,21 +187,19 @@ void GFXDevice::addToRenderQueue(const RenderPackage& package) {
 }
 
 /// Prepare the list of visible nodes for rendering
-void GFXDevice::processVisibleNode(const RenderPassCuller::RenderableNode& node,
-                                   NodeData& dataOut) {
+void GFXDevice::processVisibleNode(SceneGraphNode_wptr node, NodeData& dataOut) {
 
-    assert(node._visibleNode != nullptr);
+    SceneGraphNode_ptr nodePtr = node.lock();
+    assert(nodePtr);
 
-    const SceneGraphNode& nodeRef = *node._visibleNode;
-
-    RenderingComponent* const renderable = nodeRef.getComponent<RenderingComponent>();
-    AnimationComponent* const animComp = nodeRef.getComponent<AnimationComponent>();
-    PhysicsComponent* const transform = nodeRef.getComponent<PhysicsComponent>();
+    RenderingComponent* const renderable = nodePtr->getComponent<RenderingComponent>();
+    AnimationComponent* const animComp = nodePtr->getComponent<AnimationComponent>();
+    PhysicsComponent* const transform = nodePtr->getComponent<PhysicsComponent>();
 
     mat4<F32>& modelMatrix = dataOut._matrix[0];
     mat4<F32>& normalMatrix = dataOut._matrix[1];
 
-    dataOut._boundingSphere.set(nodeRef.getBoundingSphereConst().asVec4());
+    dataOut._boundingSphere.set(nodePtr->getBoundingSphereConst().asVec4());
 
     // Extract transform data (if available)
     // (Nodes without transforms are considered as using identity matrices)
@@ -239,11 +243,11 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
     U32 nodeCount = 1; U32 cmdCount = 1;
     std::for_each(std::begin(visibleNodes), std::end(visibleNodes),
         [&](GFXDevice::VisibleNodeList::value_type& node) -> void {
-        SceneGraphNode& nodeRef = *node._visibleNode;
+        SceneGraphNode_ptr nodeRef = node.lock();
 
         RenderPackage& pkg =
             Attorney::RenderingCompGFXDevice::getDrawPackage(
-                *nodeRef.getComponent<RenderingComponent>(),
+                *nodeRef->getComponent<RenderingComponent>(),
                 sceneRenderState,
                 currentStage);
 

@@ -33,6 +33,7 @@
 #define _PARTICLE_GENERATOR_H_
 
 #include "ParticleData.h"
+#include <future>
 
 namespace Divide {
 
@@ -41,7 +42,8 @@ class NOINITVTABLE ParticleGenerator {
     ParticleGenerator() {}
     virtual ~ParticleGenerator() {}
 
-    virtual void generate(const U64 deltaTime,
+    virtual void generate(vectorImpl<std::future<void>>& packagedTasks,
+                          const U64 deltaTime,
                           std::shared_ptr<ParticleData> p,
                           U32 startIndex,
                           U32 endIndex) = 0;

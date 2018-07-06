@@ -15,9 +15,11 @@ namespace {
                           to_uint(SceneNodeType::TYPE_VEGETATION_GRASS);
 };
 
-SceneGraph::SceneGraph()
-    : _root(nullptr)
+SceneGraph::SceneGraph() : FrameListener(),
+                           _root(nullptr)
 {
+    REGISTER_FRAME_LISTENER(this, 1);
+
     SceneNode* rootNode = MemoryManager_NEW SceneRoot();
     _root = std::make_shared<SceneGraphNode>(*rootNode, "ROOT");
     _root->getComponent<RenderingComponent>()->castsShadows(false);
@@ -34,10 +36,20 @@ SceneGraph::SceneGraph()
 
 SceneGraph::~SceneGraph()
 { 
+    UNREGISTER_FRAME_LISTENER(this);
     Console::d_printfn(Locale::get("DELETE_SCENEGRAPH"));
     // Should recursively delete the entire scene graph
     assert(_root.unique());
     _root.reset();
+}
+
+bool SceneGraph::frameStarted(const FrameEvent& evt) {
+    return true;
+}
+
+bool SceneGraph::frameEnded(const FrameEvent& evt) {
+    _root->frameEnded();
+    return true;
 }
 
 void SceneGraph::unregisterNode(I64 guid, SceneGraphNode::UsageContext usage) {

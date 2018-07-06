@@ -395,7 +395,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     std::shared_ptr<ParticleSource> particleSource =  std::make_shared<ParticleSource>(emitRate);
 
     std::shared_ptr<ParticleBoxGenerator> boxGenerator = std::make_shared<ParticleBoxGenerator>();
-    boxGenerator->_maxStartPosOffset.set(0.3f, 0.0f, 0.3f, 1.0f);
+    boxGenerator->maxStartPosOffset(vec4<F32>(0.3f, 0.0f, 0.3f, 1.0f));
     particleSource->addGenerator(boxGenerator);
 
     std::shared_ptr<ParticleColorGenerator> colGenerator = std::make_shared<ParticleColorGenerator>();
@@ -422,7 +422,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     test->setDrawImpostor(true);
     test->enableEmitter(true);
     test->addSource(particleSource);
-    boxGenerator->_pos.set(testSGN->getComponent<PhysicsComponent>()->getPosition());
+    boxGenerator->pos(vec4<F32>(testSGN->getComponent<PhysicsComponent>()->getPosition()));
 
     std::shared_ptr<ParticleEulerUpdater> eulerUpdater = std::make_shared<ParticleEulerUpdater>();
     eulerUpdater->_globalAcceleration.set(0.0f, -20.0f, 0.0f);

@@ -43,7 +43,8 @@ class ParticleSphereVelocityGenerator : public ParticleGenerator {
    public:
     ParticleSphereVelocityGenerator() : _minVel(0.0f), _maxVel(0.0f) {}
 
-    virtual void generate(const U64 deltaTime,
+    virtual void generate(vectorImpl<std::future<void>>& packagedTasks, 
+                          const U64 deltaTime,
                           std::shared_ptr<ParticleData> p,
                           U32 startIndex,
                           U32 endIndex) override;

@@ -7,10 +7,13 @@
 namespace Divide {
 namespace GLUtil {
 
+static THREAD_LOCAL stringImpl g_tempOutputString;
+
 /// Print OpenGL specific messages
 void
 DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
               GLsizei length, const GLchar* message, const void* userParam) {
+
     // Translate message source
     const char* gl_source = "Unknown Source";
     if (source == GL_DEBUG_SOURCE_API) {
@@ -41,7 +44,7 @@ DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
     } else if (type == GL_DEBUG_TYPE_OTHER) {
         gl_type = "Other";
     }
-    bool isError = true;
+
     // Translate message severity
     const char* gl_severity = "Unknown Severity";
     if (severity == GL_DEBUG_SEVERITY_HIGH) {
@@ -52,21 +55,23 @@ DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
         gl_severity = "Low";
     } else if (severity == GL_DEBUG_SEVERITY_NOTIFICATION) {
         gl_severity = "Info";
-        isError = false;
     }
 
-    stringImpl msg(Util::StringFormat(Locale::get("ERROR_GENERIC_GL_DEBUG"),
-                                      userParam == nullptr
+    g_tempOutputString = Util::StringFormat(Locale::get("ERROR_GENERIC_GL_DEBUG"),
+                                             userParam == nullptr
                                                  ? " [Main Thread] "
                                                  : " [Loader Thread] ",
-                                      gl_source,
-                                      gl_type,
-                                      id,
-                                      gl_severity,
-                                      message));
+                                             gl_source, gl_type, id, gl_severity, message).c_str();
 
     // Print the message and the details
-    isError ? Console::errorfn(msg.c_str()) : Console::printfn(msg.c_str());
+    if (severity != GL_DEBUG_SEVERITY_NOTIFICATION) {
+        Console::errorfn(g_tempOutputString.c_str());
+    } else {
+#if defined(_DEBUG)
+        Console::printfn(g_tempOutputString.c_str());
+#endif
+    }
+
 }
 }  // namespace GLUtil
 }  // namespace Divide

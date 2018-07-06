@@ -99,13 +99,22 @@ class SceneAnimator {
         return _animations[animationIndex]->frameIndexAt(dt);
     }
 
-    inline const vectorImpl<mat4<F32>>& transforms(I32 animationIndex,
-                                                   U32 index) const {
+    inline const vectorImpl<mat4<F32>>& transforms(I32 animationIndex, U32 index) const {
         return _animations[animationIndex]->transforms(index);
     }
 
-    inline const std::shared_ptr<AnimEvaluator> animationByIndex(I32 animationIndex) const {
-        return _animations[animationIndex];
+    inline const AnimEvaluator& animationByIndex(I32 animationIndex) const {
+        assert(IS_IN_RANGE_INCLUSIVE(animationIndex, 0, to_int(_animations.size()) - 1));
+        std::shared_ptr<AnimEvaluator> animation = _animations.at(animationIndex);
+        assert(animation != nullptr);
+        return *animation;
+    }
+
+    inline AnimEvaluator& animationByIndex(I32 animationIndex) {
+        assert(IS_IN_RANGE_INCLUSIVE(animationIndex, 0, to_int(_animations.size()) - 1));
+        std::shared_ptr<AnimEvaluator> animation = _animations.at(animationIndex);
+        assert(animation != nullptr);
+        return *animation;
     }
 
     inline U32 frameCount(I32 animationIndex) const {

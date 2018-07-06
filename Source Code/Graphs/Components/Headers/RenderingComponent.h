@@ -92,15 +92,11 @@ class RenderingComponent : public SGNComponent {
 
     size_t getDrawStateHash(RenderStage renderStage);
 
-    inline void getMaterialColorMatrix(mat4<F32>& matOut) const {
-        return matOut.set(_materialColorMatrix);
-    }
+    void getMaterialColorMatrix(mat4<F32>& matOut) const;
 
-    inline void getMaterialPropertyMatrix(mat4<F32>& matOut) const {
-        return matOut.set(_materialPropertyMatrix);
-    }
+    void getMaterialPropertyMatrix(mat4<F32>& matOut) const;
 
-    inline Material* const getMaterialInstance() { return _materialInstance; }
+    inline Material* const getMaterialInstance() const { return _materialInstance; }
 
     void makeTextureResident(const Texture& texture, U8 slot, RenderStage currentStage);
 
@@ -129,7 +125,6 @@ class RenderingComponent : public SGNComponent {
     ~RenderingComponent();
 
    protected:
-    void inViewCallback();
     void boundingBoxUpdatedCallback();
 
     bool canDraw(const SceneRenderState& sceneRenderState,
@@ -166,8 +161,6 @@ class RenderingComponent : public SGNComponent {
     bool _nodeSkinned;
     bool _isSubMesh;
     bool _impostorDirty;
-    mat4<F32> _materialColorMatrix;
-    mat4<F32> _materialPropertyMatrix;
     TextureDataContainer _textureDependencies;
     std::array<GFXDevice::RenderPackage, to_const_uint(RenderStage::COUNT)> _renderData;
     
@@ -207,10 +200,6 @@ class RenderingCompGFXDevice {
 
 class RenderingCompSceneGraph {
    private:
-    static void inViewCallback(RenderingComponent& renderable) {
-        renderable.inViewCallback();
-    }
-
     static void boundingBoxUpdatedCallback(RenderingComponent& renderable) {
         renderable.boundingBoxUpdatedCallback();
     }

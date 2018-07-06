@@ -118,7 +118,6 @@ void Scene::addPatch(vectorImpl<FileData>& data) {
 }
 
 void Scene::loadXMLAssets(bool singleStep) {
-    //vectorImpl<FileData> models;
     while (!_modelDataArray.empty()) {
         const FileData& it = _modelDataArray.top();
         // vegetation is loaded elsewhere
@@ -128,7 +127,6 @@ void Scene::loadXMLAssets(bool singleStep) {
             loadGeometry(it);
         } else {
             loadModel(it);
-            //models.push_back(it);
         }
         _modelDataArray.pop();
 
@@ -136,17 +134,6 @@ void Scene::loadXMLAssets(bool singleStep) {
             break;
         }
     }
-
-    /*vectorImpl<std::future<void>> futures;
-    for (FileData& model : models) {
-        futures.push_back(std::async(std::launch::async, [this, &model]() {
-            loadModel(model);
-        }));
-    }
-
-    for (std::future<void>& future : futures) {
-        future.get();
-    }*/
 }
 
 bool Scene::loadModel(const FileData& data) {

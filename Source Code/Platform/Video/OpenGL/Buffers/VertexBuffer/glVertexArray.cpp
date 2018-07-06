@@ -344,13 +344,6 @@ void glVertexArray::draw(const GenericDrawCommand& command,
             }
         }
     }
-    if (command.renderGeometry()) {
-        GFX_DEVICE.registerDrawCall();
-    }
-
-    if (command.renderWireframe()) {
-        GFX_DEVICE.registerDrawCall();
-    }
 }
 
 /// Set the current buffer as active

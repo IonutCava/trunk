@@ -116,12 +116,11 @@ void SceneManager::sortVisibleNodes(
 
     RenderPassCuller::VisibleNodeList& visibleNodes = nodes._visibleNodes;
     std::sort(std::begin(visibleNodes), std::end(visibleNodes),
-              [](const RenderPassCuller::RenderableNode& nodeA,
-                 const RenderPassCuller::RenderableNode& nodeB) {
+              [](SceneGraphNode_wptr nodeA, SceneGraphNode_wptr nodeB) {
                   RenderingComponent* renderableA =
-                      nodeA._visibleNode->getComponent<RenderingComponent>();
+                      nodeA.lock()->getComponent<RenderingComponent>();
                   RenderingComponent* renderableB =
-                      nodeB._visibleNode->getComponent<RenderingComponent>();
+                      nodeA.lock()->getComponent<RenderingComponent>();
                   return renderableA->drawOrder() < renderableB->drawOrder();
               });
 
@@ -138,8 +137,8 @@ void SceneManager::updateVisibleNodes(bool flushCache) {
         return false;
     };
 
-    auto meshCullingFunction = [](const RenderPassCuller::RenderableNode& node) -> bool {
-        const SceneGraphNode* sgnNode = node._visibleNode;
+    auto meshCullingFunction = [](SceneGraphNode_wptr node) -> bool {
+        SceneGraphNode_ptr sgnNode = node.lock();
         if (sgnNode->getNode()->getType() == SceneNodeType::TYPE_OBJECT3D) {
             Object3D::ObjectType type =
                 sgnNode->getNode<Object3D>()->getObjectType();
@@ -152,19 +151,17 @@ void SceneManager::updateVisibleNodes(bool flushCache) {
         _renderPassCuller->refresh();
     }
 
-    RenderQueue& queue = _renderPassManager->getQueue();
-    RenderPassCuller::VisibleNodeCache& nodes =
-        _renderPassCuller->frustumCull(
-            *GET_ACTIVE_SCENEGRAPH().getRoot(), _activeScene->state(),
-            cullingFunction);
-
     RenderStage stage = GFX_DEVICE.getRenderStage();
+    RenderQueue& queue = _renderPassManager->getQueue();
+
+    _renderPassCuller->frustumCull(GET_ACTIVE_SCENEGRAPH(), _activeScene->state(), cullingFunction);
+    RenderPassCuller::VisibleNodeCache& nodes = _renderPassCuller->getNodeCache(stage);
     bool refreshNodeData = !nodes._locked;
     if (refreshNodeData) {
         queue.refresh();
         vec3<F32> eyePos(_activeScene->renderState().getCameraConst().getEye());
-        for (RenderPassCuller::RenderableNode& node : nodes._visibleNodes) {
-            queue.addNodeToQueue(*node._visibleNode, eyePos);
+        for (SceneGraphNode_wptr node : nodes._visibleNodes) {
+            queue.addNodeToQueue(*node.lock(), eyePos);
         }
 
         // Generate and upload all lighting data

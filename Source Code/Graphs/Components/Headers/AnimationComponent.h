@@ -84,9 +84,9 @@ class AnimationComponent : public SGNComponent {
 
     inline I32 animationIndex() const { return _currentAnimIndex; }
 
-    std::shared_ptr<AnimEvaluator> getAnimationByIndex(I32 animationID) const;
+    AnimEvaluator& getAnimationByIndex(I32 animationID) const;
 
-    inline std::shared_ptr<AnimEvaluator> getCurrentAnimation() const {
+    inline AnimEvaluator& getCurrentAnimation() const {
         return getAnimationByIndex(animationIndex());
     }
 

@@ -276,14 +276,6 @@ void glGenericVertexData::draw(const GenericDrawCommand& command,
                 }
             }
         }
-
-        // Count the draw calls
-        if (command.renderGeometry()) {
-            GFX_DEVICE.registerDrawCall();
-        }
-        if (command.renderWireframe()) {
-            GFX_DEVICE.registerDrawCall();
-        }
     }
 
     // Deactivate transform feedback if needed

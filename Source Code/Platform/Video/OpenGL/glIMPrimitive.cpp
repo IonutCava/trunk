@@ -1,7 +1,7 @@
 #include "Headers/glIMPrimitive.h"
 #include "Headers/glResources.h"
 #include "Headers/GLWrapper.h"
-#include "Platform/Video/Headers/GFXDevice.h"
+//#include "Platform/Video/Headers/GFXDevice.h"
 
 #include <GLIM/glim.h>
 
@@ -61,7 +61,5 @@ void glIMPrimitive::render(bool forceWireframe, U32 instanceCount) {
     _imInterface->RenderBatchInstanced(instanceCount,
                                        forceWireframe || _forceWireframe);
     zombieCounter(0);
-
-    GFX_DEVICE.registerDrawCall();
 }
 };

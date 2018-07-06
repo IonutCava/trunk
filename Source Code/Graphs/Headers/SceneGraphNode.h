@@ -190,7 +190,7 @@ class SceneGraphNode : public GUIDWrapper,
     void restoreActive();
     inline void scheduleDeletion() { _shouldDelete = true; }
     
-    inline bool inView() const { return _inView; }
+    inline bool wasInView() const { return _inView; }
     inline bool isActive() const { return _active; }
 
     inline U32 getInstanceID() const { return _instanceID; }
@@ -270,6 +270,10 @@ class SceneGraphNode : public GUIDWrapper,
     friend class RenderingComponent;
     bool prepareDraw(const SceneRenderState& sceneRenderState,
                      RenderStage renderStage);
+   protected:
+    friend class SceneGraph;
+    void frameEnded();
+
    private:
     inline void setName(const stringImpl& name) { _name = name; }
 

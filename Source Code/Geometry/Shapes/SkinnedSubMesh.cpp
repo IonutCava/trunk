@@ -70,7 +70,7 @@ void SkinnedSubMesh::buildBoundingBoxesForAnim(U32 animationIndex, AnimationComp
     _boundingBoxesAvailable.at(animationIndex) = false;
 
     const vectorImpl<vectorImpl<mat4<F32>>>& currentAnimation = 
-        animComp->getAnimationByIndex(animationIndex)->transforms();
+        animComp->getAnimationByIndex(animationIndex).transforms();
 
     VertexBuffer* parentVB = _parentMesh->getGeometryVB();
     U32 partitionOffset = parentVB->getPartitionOffset(_geometryPartitionID);

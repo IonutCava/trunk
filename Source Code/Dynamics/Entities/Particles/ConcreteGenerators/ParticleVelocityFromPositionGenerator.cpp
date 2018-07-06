@@ -2,7 +2,8 @@
 
 namespace Divide {
 
-void ParticleVelocityFromPositionGenerator::generate(const U64 deltaTime,
+void ParticleVelocityFromPositionGenerator::generate(vectorImpl<std::future<void>>& packagedTasks, 
+                                                     const U64 deltaTime,
                                                      std::shared_ptr<ParticleData> p,
                                                      U32 startIndex,
                                                      U32 endIndex) {

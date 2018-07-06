@@ -266,7 +266,23 @@ std::unique_ptr<T> copy_unique(const std::unique_ptr<T>& source)
     return source ? make_unique<T>(*source) : nullptr;
 }
 
-
+//ref: http://stackoverflow.com/questions/14226952/partitioning-batch-chunk-a-container-into-equal-sized-pieces-using-std-algorithm
+template<typename Iterator>
+void for_each_interval(Iterator from, Iterator to, std::ptrdiff_t partition_size,
+                       std::function<void(Iterator, Iterator)> operation) 
+{
+    Iterator partition_end = from;
+    while (partition_end != to) 
+    {
+        while (partition_end != to &&
+               std::distance(from, partition_end) < partition_size) 
+        {
+            ++partition_end;
+        }
+        operation(from, partition_end);
+        from = partition_end;
+    }
+}
 /* See
 
 http://randomascii.wordpress.com/2012/01/11/tricks-with-the-floating-point-format/

@@ -320,7 +320,7 @@ void SceneGraphNode::onCameraUpdate(Camera& camera) {
         getChild(i, childCount).onCameraUpdate(camera);
     }
 
-    Attorney::SceneNodeSceneGraph::onCameraUpdate(*_node, *this,         camera);
+    Attorney::SceneNodeSceneGraph::onCameraUpdate(*_node, *this, camera);
 }
 
 /// Please call in MAIN THREAD! Nothing is thread safe here (for now) -Ionut
@@ -405,12 +405,16 @@ bool SceneGraphNode::prepareDraw(const SceneRenderState& sceneRenderState,
     return true;
 }
 
+void SceneGraphNode::frameEnded() {
+    setInView(false);
+    U32 childCount = getChildCount();
+    for (U32 i = 0; i < childCount; ++i) {
+        getChild(i, childCount).frameEnded();
+    }
+}
+
 void SceneGraphNode::setInView(const bool state) {
     _inView = state;
-    if (state) {
-        Attorney::RenderingCompSceneGraph::inViewCallback(
-            *getComponent<RenderingComponent>());
-    }
 }
 
 bool SceneGraphNode::canDraw(const SceneRenderState& sceneRenderState,

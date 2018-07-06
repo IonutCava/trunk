@@ -8,6 +8,7 @@ namespace Divide {
 glBufferLockManager::glBufferLockManager()
     : glLockManager()
 {
+    _bufferLocks.reserve(128);
 }
 
 // --------------------------------------------------------------------------------------------------------------------

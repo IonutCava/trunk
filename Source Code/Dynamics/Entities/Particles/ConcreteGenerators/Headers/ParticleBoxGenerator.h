@@ -37,16 +37,31 @@
 namespace Divide {
 class ParticleBoxGenerator : public ParticleGenerator {
    public:
-    vec4<F32> _pos;
-    vec4<F32> _maxStartPosOffset;
-
-   public:
     ParticleBoxGenerator() {}
 
-    virtual void generate(const U64 deltaTime,
+    virtual void generate(vectorImpl<std::future<void>>& packagedTasks,
+                          const U64 deltaTime,
                           std::shared_ptr<ParticleData> p,
                           U32 startIndex,
                           U32 endIndex) override;
+
+    inline void pos(const vec4<F32>& pos) {
+        _pos.set(pos);
+        _posMin.set(_pos.xyz() - _maxStartPosOffset.xyz());
+        _posMax.set(_pos.xyz() + _maxStartPosOffset.xyz());
+    }
+
+    inline void maxStartPosOffset(const vec4<F32>& maxStartPosOffset) {
+        _maxStartPosOffset.set(maxStartPosOffset);
+        _posMin.set(_pos.xyz() - _maxStartPosOffset.xyz());
+        _posMax.set(_pos.xyz() + _maxStartPosOffset.xyz());
+    }
+
+private:
+    vec4<F32> _pos;
+    vec4<F32> _maxStartPosOffset;
+    vec3<F32> _posMin;
+    vec3<F32> _posMax;
 };
 };
 

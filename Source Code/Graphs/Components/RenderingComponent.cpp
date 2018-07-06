@@ -294,9 +294,40 @@ bool RenderingComponent::receivesShadows() const {
     return _receiveShadows && _shadowMappingEnabled;
 }
 
+void RenderingComponent::getMaterialColorMatrix(mat4<F32>& matOut) const {
+    matOut.zero();
+
+    Material* mat = getMaterialInstance();
+    if (mat) {
+        mat->getMaterialMatrix(matOut);
+    }
+}
+
+void RenderingComponent::getMaterialPropertyMatrix(mat4<F32>& matOut) const {
+    matOut.zero();
+    matOut.setCol(0,
+                  vec4<F32>(_parentSGN.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTION_SELECTED
+                                                          ? -1.0f
+                                                          : _parentSGN.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTION_HOVER
+                                                                                          ? 1.0f
+                                                                                          : 0.0f,
+                           receivesShadows() ? 1.0f : 0.0f,
+                           to_float(lodLevel()),
+                           0.0));
+    Material* mat = getMaterialInstance();
+    if (mat) {
+        bool isTranslucent = mat->isTranslucent() ? (mat->useAlphaTest() || GFX_DEVICE.getRenderStage() == RenderStage::SHADOW)
+                                                  : false;
+        matOut.setCol(1,
+                      vec4<F32>(isTranslucent ? 1.0f : 0.0f,
+                                to_float(mat->getTextureOperation()),
+                                to_float(mat->getTextureCount()),
+                                mat->getParallaxFactor()));
+    }
+}
+
 bool RenderingComponent::preDraw(const SceneRenderState& renderState,
                                  RenderStage renderStage) const {
-    
     return _parentSGN.prepareDraw(renderState, renderStage);
 }
 
@@ -461,38 +492,6 @@ RenderingComponent::getDrawPackage(const SceneRenderState& sceneRenderState,
 GFXDevice::RenderPackage& 
 RenderingComponent::getDrawPackage(RenderStage renderStage) {
     return _renderData[to_uint(renderStage)];
-}
-
-void RenderingComponent::inViewCallback() {
-    _materialColorMatrix.zero();
-    _materialPropertyMatrix.zero();
-
-    _materialPropertyMatrix.setCol(
-        0, 
-        vec4<F32>(_parentSGN.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTION_SELECTED
-                  ? -1.0f 
-                  : _parentSGN.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTION_HOVER
-                    ? 1.0f 
-                    : 0.0f,
-                  receivesShadows() ? 1.0f : 0.0f,
-                  to_float(lodLevel()),
-                  0.0));
-;
-
-    Material* mat = getMaterialInstance();
-
-    if (mat) {
-        mat->getMaterialMatrix(_materialColorMatrix);
-        bool isTranslucent =
-            mat->isTranslucent()
-                ? (mat->useAlphaTest() ||
-                   GFX_DEVICE.getRenderStage() == RenderStage::SHADOW)
-                : false;
-        _materialPropertyMatrix.setCol(
-            1, vec4<F32>(
-                   isTranslucent ? 1.0f : 0.0f, to_float(mat->getTextureOperation()),
-                   to_float(mat->getTextureCount()), mat->getParallaxFactor()));
-    }
 }
 
 void RenderingComponent::boundingBoxUpdatedCallback() {
