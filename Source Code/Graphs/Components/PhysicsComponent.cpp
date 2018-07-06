@@ -11,13 +11,14 @@ namespace Divide {
 
 PhysicsComponent::PhysicsComponent(SceneGraphNode& parentSGN)
     : SGNComponent(SGNComponent::ComponentType::PHYSICS, parentSGN),
-      _physicsCollisionGroup(PhysicsGroup::NODE_COLLIDE_IGNORE),
+      _ignoreView(false),
       _physicsAsset(nullptr),
+      _physicsCollisionGroup(PhysicsGroup::NODE_COLLIDE_IGNORE),
+      _transform(MemoryManager_NEW Transform()),
       _dirty(true),
       _dirtyInterp(true),
       _prevInterpValue(0.0)
 {
-    _transform = MemoryManager_NEW Transform();
     reset();
 }
 
@@ -125,9 +126,9 @@ void PhysicsComponent::setRotation(const vec3<F32>& axis, F32 degrees,
     setTransformDirty(TransformType::ROTATION);
 }
 
-void PhysicsComponent::setRotation(const vec3<F32>& euler, bool inDegrees) {
+void PhysicsComponent::setRotation(F32 pitch, F32 yaw, F32 roll, bool inDegrees) {
     if (_transform) {
-        _transform->setRotation(euler, inDegrees);
+        _transform->setRotation(pitch, yaw, roll, inDegrees);
     }
     setTransformDirty(TransformType::ROTATION);
 }
@@ -154,9 +155,9 @@ void PhysicsComponent::rotate(const vec3<F32>& axis, F32 degrees,
      setTransformDirty(TransformType::ROTATION);
 }
 
-void PhysicsComponent::rotate(const vec3<F32>& euler, bool inDegrees) {
+void PhysicsComponent::rotate(F32 pitch, F32 yaw, F32 roll, bool inDegrees) {
     if (_transform) {
-        _transform->rotate(euler, inDegrees);
+        _transform->rotate(pitch, yaw, roll, inDegrees);
     }
     setTransformDirty(TransformType::ROTATION);
 }
@@ -368,21 +369,32 @@ const mat4<F32>& PhysicsComponent::getWorldMatrix(D32 interpolationFactor) {
                  grandParent->getComponent<PhysicsComponent>()->getWorldMatrix(interpolationFactor);
         }
         _dirtyInterp = false;
+
     }
 
-    
+
+    if (ignoreView()) {
+        _worldMatrixInterp = _worldMatrixInterp * GFX_DEVICE.getMatrix(MATRIX::VIEW_INV);
+    }
+
     return _worldMatrixInterp;
 }
 
 const mat4<F32>& PhysicsComponent::getWorldMatrix() {
     if (_dirty || isParentTransformDirty(false)){
         _worldMatrix.set(getLocalMatrix());
+
         SceneGraphNode_ptr grandParent = _parentSGN.getParent().lock();
         if (grandParent) {
             _worldMatrix *=
                 grandParent->getComponent<PhysicsComponent>()->getWorldMatrix();
         }
+
         _dirty = false;
+    }
+
+    if (ignoreView()) {
+        _worldMatrix = _worldMatrix * GFX_DEVICE.getMatrix(MATRIX::VIEW_INV);
     }
 
     return _worldMatrix;

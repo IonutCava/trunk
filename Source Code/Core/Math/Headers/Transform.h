@@ -100,9 +100,9 @@ class Transform : public GUIDWrapper, private NonCopyable {
 
     /// Set the local orientation using the Euler system.
     /// The angles can be in either degrees(default) or radians
-    void setRotation(const vec3<F32>& euler, bool inDegrees = true) {
+    void setRotation(F32 pitch, F32 yaw, F32 roll, bool inDegrees = true) {
         setRotation(
-            Quaternion<F32>(euler.pitch, euler.yaw, euler.roll, inDegrees));
+            Quaternion<F32>(pitch, yaw, roll, inDegrees));
     }
 
     /// Set the local orientation so that it matches the specified quaternion.
@@ -140,8 +140,8 @@ class Transform : public GUIDWrapper, private NonCopyable {
     /// Apply the specified Euler rotation starting from the current
     /// orientation.
     /// The angles can be in either degrees(default) or radians
-    void rotate(const vec3<F32>& euler, bool inDegrees = true) {
-        rotate(Quaternion<F32>(euler.pitch, euler.yaw, euler.roll, inDegrees));
+    void rotate(F32 pitch, F32 yaw, F32 roll, bool inDegrees = true) {
+        rotate(Quaternion<F32>(pitch, yaw, roll, inDegrees));
     }
 
     /// Apply the specified Quaternion rotation starting from the current orientation.

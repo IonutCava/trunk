@@ -39,48 +39,6 @@ bool SceneNode::getDrawState(RenderStage currentStage) {
     return _renderState.getDrawState(currentStage);
 }
 
-bool SceneNode::isInView(const SceneRenderState& sceneRenderState,
-                         const SceneGraphNode& sgn,
-                         Frustum::FrustCollision& collisionType,
-                         bool distanceCheck) const
-{
-    assert(_sgnParentCount != 0);
-
-    const BoundingBox& boundingBox = sgn.getBoundingBoxConst();
-    const BoundingSphere& sphere = sgn.getBoundingSphereConst();
-
-    const Camera& cam = sceneRenderState.getCameraConst();
-    const vec3<F32>& eye = cam.getEye();
-    const Frustum& frust = cam.getFrustumConst();
-    F32 radius = sphere.getRadius();
-    const vec3<F32>& center = sphere.getCenter();
-    F32 cameraDistance = center.distance(eye);
-    F32 visibilityDistance = GET_ACTIVE_SCENE().state().generalVisibility() + radius;
-
-    if (distanceCheck && cameraDistance > visibilityDistance) {
-        if (boundingBox.nearestDistanceFromPointSquared(eye) >
-            std::min(visibilityDistance, sceneRenderState.getCameraConst().getZPlanes().y)) {
-            return false;
-        }
-    }
-
-    if (!boundingBox.containsPoint(eye)) {
-        collisionType = frust.ContainsSphere(center, radius);
-        switch (collisionType) {
-            case Frustum::FrustCollision::FRUSTUM_OUT: {
-                return false;
-            };
-            case Frustum::FrustCollision::FRUSTUM_INTERSECT: {
-                collisionType = frust.ContainsBoundingBox(boundingBox);
-                if (collisionType == Frustum::FrustCollision::FRUSTUM_OUT) {
-                    return false;
-                }
-            };
-        }
-    }
-
-    return true;
-}
 
 Material* const SceneNode::getMaterialTpl() {
     // UpgradableReadLock ur_lock(_materialLock);

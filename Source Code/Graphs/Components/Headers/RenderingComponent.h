@@ -145,7 +145,6 @@ class RenderingComponent : public SGNComponent {
    protected:
     Material* _materialInstance;
     /// LOD level is updated at every visibility check
-    /// (SceneNode::isInView(...));
     U8  _lodLevel;  ///<Relative to camera distance
     U32 _drawOrder;
     U32 _commandIndex;

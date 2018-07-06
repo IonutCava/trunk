@@ -110,6 +110,7 @@ class NOINITVTABLE Scene : public Resource {
     inline const vectorImpl<Task_ptr>& getTasks() { return _tasks; }
     inline SceneState& state() { return _sceneState; }
     inline SceneRenderState& renderState() { return _sceneState.renderState(); }
+    inline const SceneRenderState& renderState() const { return _sceneState.renderState(); }
     inline SceneInput& input() { return *_input; }
 
     inline SceneGraph& getSceneGraph() { return _sceneGraph; }

@@ -16,15 +16,16 @@ namespace Divide {
 
 SceneGraphNode::SceneGraphNode(SceneNode& node, const stringImpl& name)
     : GUIDWrapper(),
-      _node(&node),
+      _updateTimer(Time::ElapsedMilliseconds()),
       _elapsedTime(0ULL),
+      _node(&node),
       _active(true),
+      _visibilityLocked(false),
       _isSelectable(false),
+      _selectionFlag(SelectionFlag::SELECTION_NONE),
       _boundingBoxDirty(true),
       _lockBBTransforms(false),
-      _updateTimer(Time::ElapsedMilliseconds()),
-      _usageContext(UsageContext::NODE_DYNAMIC),
-      _selectionFlag(SelectionFlag::SELECTION_NONE)
+      _usageContext(UsageContext::NODE_DYNAMIC)
 {
     assert(_node != nullptr);
     _children.resize(INITIAL_CHILD_COUNT);
@@ -225,32 +226,48 @@ void SceneGraphNode::intersect(const Ray& ray,
 }
 
 void SceneGraphNode::setSelectionFlag(SelectionFlag flag) {
-    _selectionFlag = flag;
-    U32 childCount = getChildCount();
-    for (U32 i = 0; i < childCount; ++i) {
-        getChild(i, childCount).setSelectionFlag(flag);
+    if (_selectionFlag != flag) {
+        _selectionFlag = flag;
+        U32 childCount = getChildCount();
+        for (U32 i = 0; i < childCount; ++i) {
+            getChild(i, childCount).setSelectionFlag(flag);
+        }
     }
 }
 
 void SceneGraphNode::setSelectable(const bool state) {
-    _isSelectable = state;
-    U32 childCount = getChildCount();
-    for (U32 i = 0; i < childCount; ++i) {
-        getChild(i, childCount).setSelectable(state);
+    if (_isSelectable != state) {
+        _isSelectable = state;
+        U32 childCount = getChildCount();
+        for (U32 i = 0; i < childCount; ++i) {
+            getChild(i, childCount).setSelectable(state);
+        }
+    }
+}
+
+void SceneGraphNode::lockVisibility(const bool state) {
+    if (_visibilityLocked != state) {
+        _visibilityLocked = state;
+        U32 childCount = getChildCount();
+        for (U32 i = 0; i < childCount; ++i) {
+            getChild(i, childCount).lockVisibility(state);
+        }
     }
 }
 
 void SceneGraphNode::setActive(const bool state) {
-    _active = state;
-    for (std::unique_ptr<SGNComponent>& comp : _components) {
-        if (comp) {
-            comp->setActive(state);
+    if (_active != state) {
+        _active = state;
+        for (std::unique_ptr<SGNComponent>& comp : _components) {
+            if (comp) {
+                comp->setActive(state);
+            }
         }
-    }
 
-    U32 childCount = getChildCount();
-    for (U32 i = 0; i < childCount; ++i) {
-        getChild(i, childCount).setActive(state);
+        U32 childCount = getChildCount();
+        for (U32 i = 0; i < childCount; ++i) {
+            getChild(i, childCount).setActive(state);
+        }
     }
 }
 
@@ -343,13 +360,45 @@ void SceneGraphNode::frameEnded() {
 bool SceneGraphNode::cullNode(const SceneRenderState& sceneRenderState,
                               Frustum::FrustCollision& collisionType,
                               RenderStage currentStage) const {
+    if (visibilityLocked()) {
+        collisionType = Frustum::FrustCollision::FRUSTUM_IN;
+        return false;
+    }
 
+    bool distanceCheck = currentStage != RenderStage::SHADOW;
+    const BoundingBox& boundingBox = getBoundingBoxConst();
+    const BoundingSphere& sphere = getBoundingSphereConst();
 
+    const Camera& cam = sceneRenderState.getCameraConst();
+    const vec3<F32>& eye = cam.getEye();
+    const Frustum& frust = cam.getFrustumConst();
+    F32 radius = sphere.getRadius();
+    const vec3<F32>& center = sphere.getCenter();
+    F32 cameraDistance = center.distance(eye);
+    F32 visibilityDistance = GET_ACTIVE_SCENE().state().generalVisibility() + radius;
 
-    return !Attorney::SceneNodeSceneGraph::isInView(*getNode(),
-                                                    sceneRenderState,
-                                                    *this,
-                                                    collisionType,
-                                                    currentStage != RenderStage::SHADOW);
+    if (distanceCheck && cameraDistance > visibilityDistance) {
+        if (boundingBox.nearestDistanceFromPointSquared(eye) >
+            std::min(visibilityDistance, sceneRenderState.getCameraConst().getZPlanes().y)) {
+            return true;
+        }
+    }
+
+    if (!boundingBox.containsPoint(eye)) {
+        collisionType = frust.ContainsSphere(center, radius);
+        switch (collisionType) {
+            case Frustum::FrustCollision::FRUSTUM_OUT: {
+                return true;
+            } break;
+            case Frustum::FrustCollision::FRUSTUM_INTERSECT: {
+                collisionType = frust.ContainsBoundingBox(boundingBox);
+                if (collisionType == Frustum::FrustCollision::FRUSTUM_OUT) {
+                    return true;
+                }
+            } break;
+        }
+    }
+
+    return false;
 }
 };

@@ -313,7 +313,9 @@ SceneGraphNode_ptr Scene::addSky() {
 }
 
 SceneGraphNode_ptr Scene::addSky(Sky& skyItem) {
-    return _sceneGraph.getRoot().addNode(skyItem);
+     SceneGraphNode_ptr skyNode = _sceneGraph.getRoot().addNode(skyItem);
+     skyNode->lockVisibility(true);
+     return skyNode;
 }
 
 bool Scene::load(const stringImpl& name, GUI* const guiInterface) {

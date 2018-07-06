@@ -492,6 +492,15 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
 
     flagRComp->getMaterialInstance()->setDiffuse(vec4<F32>(1.0f, 0.0f, 0.0f, 1.0f));
 
+    SceneGraphNode_ptr firstPersonFlag = _sceneGraph.getRoot().addNode(*flagNode, "FirstPersonFlag");
+    firstPersonFlag->lockVisibility(true);
+    flagPComp = firstPersonFlag->getComponent<PhysicsComponent>();
+    flagPComp->ignoreView(true);
+    flagPComp->setScale(0.0015f);
+    flagPComp->setPosition(1.25f, -1.5f, 0.15f);
+    flagPComp->rotate(-20.0f, -70.0f, 50.0f);
+    _firstPersonWeapon = firstPersonFlag;
+
     AI::WarSceneAIProcessor::registerFlags(_flag[0], _flag[1]);
 
     AI::WarSceneAIProcessor::registerScoreCallback([&](U8 teamID, const stringImpl& unitName) {

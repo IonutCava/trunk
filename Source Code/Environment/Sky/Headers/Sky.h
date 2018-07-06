@@ -51,16 +51,6 @@ class Sky : public SceneNode {
 
     bool onDraw(SceneGraphNode& sgn, RenderStage currentStage) override;
     void setSunProperties(const vec3<F32>& sunVect, const vec4<F32>& sunColor);
-    /// Skies are always visible (for now. Interiors will change that. Windows
-    /// will require a occlusion query(?))
-    bool isInView(const SceneRenderState& sceneRenderState,
-                  const SceneGraphNode& sgn,
-                  Frustum::FrustCollision& collisionType,
-                  const bool distanceCheck = false) const override {
-        collisionType = Frustum::FrustCollision::FRUSTUM_IN;
-        return true;
-    }
-
     inline Texture* getCubemap() const { return _skybox; }
 
    protected:

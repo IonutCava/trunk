@@ -54,7 +54,8 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
     SceneGraphNode_ptr planeSGN(sgn.addNode(*_plane));
     planeSGN->setActive(false);
     for (TerrainChunk* chunk : _terrainChunks) {
-        sgn.addNode(*Attorney::TerrainChunkTerrain::getVegetation(*chunk));
+        SceneGraphNode_ptr vegetation = sgn.addNode(*Attorney::TerrainChunkTerrain::getVegetation(*chunk));
+        vegetation->lockVisibility(true);
     }
     SceneNode::postLoad(sgn);
 }

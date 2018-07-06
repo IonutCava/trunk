@@ -140,12 +140,12 @@ class PhysicsComponent : public SGNComponent {
     void setPosition(const vec3<F32>& position);
     void setScale(const vec3<F32>& scale);
     void setRotation(const vec3<F32>& axis, F32 degrees, bool inDegrees = true);
-    void setRotation(const vec3<F32>& euler, bool inDegrees = true);
+    void setRotation(F32 pitch, F32 yaw, F32 roll, bool inDegrees = true);
     void setRotation(const Quaternion<F32>& quat);
     void translate(const vec3<F32>& axisFactors);
     void scale(const vec3<F32>& axisFactors);
     void rotate(const vec3<F32>& axis, F32 degrees, bool inDegrees = true);
-    void rotate(const vec3<F32>& euler, bool inDegrees = true);
+    void rotate(F32 pitch, F32 yaw, F32 roll, bool inDegrees = true);
     void rotate(const Quaternion<F32>& quat);
     void rotateSlerp(const Quaternion<F32>& quat, const D32 deltaTime);
     void setScale(const F32 scale);
@@ -169,6 +169,40 @@ class PhysicsComponent : public SGNComponent {
     void setPositionY(const F32 positionY);
     void setPositionZ(const F32 positionZ);
 
+    inline void setPosition(F32 x, F32 y, F32 z) {
+        setPosition(vec3<F32>(x,y,z));
+    }
+
+    inline void setScale(F32 x, F32 y, F32 z) {
+        setScale(vec3<F32>(x,y,z));
+    }
+
+    inline void setRotation(const vec3<F32>& euler, bool inDegrees = true) {
+        setRotation(euler.pitch, euler.yaw, euler.roll, inDegrees);
+    }
+
+    inline void translate(F32 x, F32 y, F32 z) {
+        translate(vec3<F32>(x,y,z));
+    }
+
+    inline void scale(F32 x, F32 y, F32 z) {
+        scale(vec3<F32>(x, y, z));
+    }
+
+    inline void rotate(F32 xAxis, F32 yAxis, F32 zAxis, F32 degrees, bool inDegrees = true) {
+        rotate(vec3<F32>(xAxis, yAxis, zAxis), degrees, inDegrees);
+    }
+
+    inline void rotate(const vec3<F32>& euler, bool inDegrees = true) {
+        rotate(euler.pitch, euler.yaw, euler.roll, inDegrees);
+    }
+
+    inline void setTransform(const TransformValues& values) {
+        setPosition(values._translation);
+        setRotation(values._orientation);
+        setScale(values._scale);
+    }
+
     inline bool isUniformScaled() const {
         return _transform != nullptr ? _transform->isUniformScaled() : true;
     }
@@ -182,6 +216,16 @@ class PhysicsComponent : public SGNComponent {
 
     void pushTransforms();
     bool popTransforms();
+    
+    inline bool ignoreView() const { return _ignoreView; }
+
+    inline void ignoreView(const bool state) { 
+        if (_ignoreView != state) {
+            _ignoreView = state;
+            _dirty = true;
+            _dirtyInterp = true;
+        }
+    }
 
    protected:
     friend class SceneGraphNode;
@@ -203,6 +247,7 @@ class PhysicsComponent : public SGNComponent {
     bool isParentTransformDirty(bool interp) const;
 
    protected:
+    bool _ignoreView;
     PhysicsAsset* _physicsAsset;
     PhysicsGroup _physicsCollisionGroup;
     Transform* _transform;

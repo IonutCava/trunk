@@ -92,6 +92,7 @@ class WarScene : public Scene {
     IMPrimitive* _targetLines;
     SceneGraphNode_wptr _flag[2];
     SceneGraphNode_wptr _particleEmitter;
+    SceneGraphNode_wptr _firstPersonWeapon;
     /// Teams are factions for AIEntites so they can manage friend/foe situations
     AI::AITeam* _faction[2];
 };

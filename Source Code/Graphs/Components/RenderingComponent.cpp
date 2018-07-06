@@ -200,93 +200,107 @@ bool RenderingComponent::onDraw(RenderStage currentStage) {
 }
 
 void RenderingComponent::renderGeometry(const bool state) {
-    _renderGeometry = state;
+    if (_renderGeometry != state) {
+        _renderGeometry = state;
 
-    U32 childCount = _parentSGN.getChildCount();
-    for (U32 i = 0; i < childCount; ++i) {
-        RenderingComponent* const renderable = 
-            _parentSGN.getChild(i, childCount).getComponent<RenderingComponent>();
-        if (renderable) {
-            renderable->renderGeometry(state);
+        U32 childCount = _parentSGN.getChildCount();
+        for (U32 i = 0; i < childCount; ++i) {
+            RenderingComponent* const renderable = 
+                _parentSGN.getChild(i, childCount).getComponent<RenderingComponent>();
+            if (renderable) {
+                renderable->renderGeometry(state);
+            }
         }
     }
 }
 
 void RenderingComponent::renderWireframe(const bool state) {
-    _renderWireframe = state;
+    if (_renderWireframe != state) {
+        _renderWireframe = state;
     
-    U32 childCount = _parentSGN.getChildCount();
-    for (U32 i = 0; i < childCount; ++i) {
-        RenderingComponent* const renderable = _parentSGN.getChild(i, childCount).getComponent<RenderingComponent>();
-        if (renderable) {
-            renderable->renderWireframe(state);
+        U32 childCount = _parentSGN.getChildCount();
+        for (U32 i = 0; i < childCount; ++i) {
+            RenderingComponent* const renderable = _parentSGN.getChild(i, childCount).getComponent<RenderingComponent>();
+            if (renderable) {
+                renderable->renderWireframe(state);
+            }
         }
     }
 }
 
 void RenderingComponent::renderBoundingBox(const bool state) {
-    _renderBoundingBox = state;
-    if (!state) {
-        _boundingBoxPrimitive[0]->paused(true);
-        _boundingBoxPrimitive[1]->paused(true);
-    }
-    U32 childCount = _parentSGN.getChildCount();
-    for (U32 i = 0; i < childCount; ++i) {
-        RenderingComponent* const renderable = _parentSGN.getChild(i, childCount).getComponent<RenderingComponent>();
-        if (renderable) {
-            renderable->renderBoundingBox(state);
+    if (_renderBoundingBox != state) {
+        _renderBoundingBox = state;
+        if (!state) {
+            _boundingBoxPrimitive[0]->paused(true);
+            _boundingBoxPrimitive[1]->paused(true);
+        }
+        U32 childCount = _parentSGN.getChildCount();
+        for (U32 i = 0; i < childCount; ++i) {
+            RenderingComponent* const renderable = _parentSGN.getChild(i, childCount).getComponent<RenderingComponent>();
+            if (renderable) {
+                renderable->renderBoundingBox(state);
+            }
         }
     }
 }
 
 void RenderingComponent::renderBoundingSphere(const bool state) {
-    _renderBoundingSphere = state;
-    if (!state) {
-        _boundingSpherePrimitive->paused(true);
-    }
-    U32 childCount = _parentSGN.getChildCount();
-    for (U32 i = 0; i < childCount; ++i) {
-        RenderingComponent* const renderable = _parentSGN.getChild(i, childCount).getComponent<RenderingComponent>();
-        if (renderable) {
-            renderable->renderBoundingSphere(state);
+    if (_renderBoundingSphere != state) {
+        _renderBoundingSphere = state;
+        if (!state) {
+            _boundingSpherePrimitive->paused(true);
+        }
+        U32 childCount = _parentSGN.getChildCount();
+        for (U32 i = 0; i < childCount; ++i) {
+            RenderingComponent* const renderable = _parentSGN.getChild(i, childCount).getComponent<RenderingComponent>();
+            if (renderable) {
+                renderable->renderBoundingSphere(state);
+            }
         }
     }
 }
 
 void RenderingComponent::renderSkeleton(const bool state) {
-    _renderSkeleton = state;
-    if (!state && _skeletonPrimitive) {
-        _skeletonPrimitive->paused(true);
-    }
-    U32 childCount = _parentSGN.getChildCount();
-    for (U32 i = 0; i < childCount; ++i) {
-        RenderingComponent* const renderable = _parentSGN.getChild(i, childCount).getComponent<RenderingComponent>();
-        if (renderable) {
-            renderable->renderSkeleton(state);
+    if (_renderSkeleton != state) {
+        _renderSkeleton = state;
+        if (!state && _skeletonPrimitive) {
+            _skeletonPrimitive->paused(true);
+        }
+        U32 childCount = _parentSGN.getChildCount();
+        for (U32 i = 0; i < childCount; ++i) {
+            RenderingComponent* const renderable = _parentSGN.getChild(i, childCount).getComponent<RenderingComponent>();
+            if (renderable) {
+                renderable->renderSkeleton(state);
+            }
         }
     }
 }
 
 void RenderingComponent::castsShadows(const bool state) {
-    _castsShadows = state;
+    if (_castsShadows != state) {
+        _castsShadows = state;
     
-    U32 childCount = _parentSGN.getChildCount();
-    for (U32 i = 0; i < childCount; ++i) {
-        RenderingComponent* const renderable = _parentSGN.getChild(i, childCount).getComponent<RenderingComponent>();
-        if (renderable) {
-            renderable->castsShadows(_castsShadows);
+        U32 childCount = _parentSGN.getChildCount();
+        for (U32 i = 0; i < childCount; ++i) {
+            RenderingComponent* const renderable = _parentSGN.getChild(i, childCount).getComponent<RenderingComponent>();
+            if (renderable) {
+                renderable->castsShadows(_castsShadows);
+            }
         }
     }
 }
 
 void RenderingComponent::receivesShadows(const bool state) {
-    _receiveShadows = state;
+    if (_receiveShadows != state) {
+        _receiveShadows = state;
     
-    U32 childCount = _parentSGN.getChildCount();
-    for (U32 i = 0; i < childCount; ++i) {
-        RenderingComponent* const renderable = _parentSGN.getChild(i, childCount).getComponent<RenderingComponent>();
-        if (renderable) {
-            renderable->receivesShadows(_receiveShadows);
+        U32 childCount = _parentSGN.getChildCount();
+        for (U32 i = 0; i < childCount; ++i) {
+            RenderingComponent* const renderable = _parentSGN.getChild(i, childCount).getComponent<RenderingComponent>();
+            if (renderable) {
+                renderable->receivesShadows(_receiveShadows);
+            }
         }
     }
 }

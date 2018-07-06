@@ -223,6 +223,10 @@ class SceneState {
     inline SceneRenderState& renderState()  { return _renderState; }
     inline MusicPlaylist& backgroundMusic() { return _backgroundMusic; }
 
+    inline const FogDescriptor& fogDescriptor() const { return _fog; }
+    inline const SceneRenderState& renderState() const { return _renderState; }
+    inline const MusicPlaylist& backgroundMusic() const { return _backgroundMusic; }
+
     inline void windSpeed(F32 speed) { _windSpeed = speed; }
     inline F32  windSpeed()    const { return _windSpeed; }
 

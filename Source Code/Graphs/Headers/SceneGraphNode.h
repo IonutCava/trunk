@@ -151,6 +151,9 @@ class SceneGraphNode : public GUIDWrapper,
     void setSelectable(const bool state);
     inline bool isSelectable() const { return _isSelectable; }
 
+    void lockVisibility(const bool state);
+    inline bool visibilityLocked() const { return _visibilityLocked; }
+
     const stringImpl& getName() const { return _name; }
     /*Node Management*/
 
@@ -276,6 +279,7 @@ class SceneGraphNode : public GUIDWrapper,
     std::atomic_uint _childCount;
     mutable SharedLock _childLock;
     std::atomic<bool> _active;
+    std::atomic<bool> _visibilityLocked;
 
     bool _isSelectable;
     SelectionFlag _selectionFlag;
