@@ -37,11 +37,10 @@ GFXDevice::GFXDevice()
     // Pointers
     _axisGizmo = nullptr;
     _imShader = nullptr;
-    _imShaderLines = nullptr;
     _gfxDataBuffer = nullptr;
     _HIZConstructProgram = nullptr;
     _HIZCullProgram = nullptr;
-    _framebufferDraw = nullptr;
+    _renderTargetDraw = nullptr;
     _previewDepthMapShader = nullptr;
     _displayShader = nullptr;
     _activeRenderTarget = nullptr;
@@ -70,14 +69,14 @@ GFXDevice::GFXDevice()
     // Clipping planes
     _clippingPlanes.resize(Config::MAX_CLIP_PLANES, Plane<F32>(0, 0, 0, 0));
     // Render targets
-    for (RenderTarget& renderTarget : _renderTarget) {
-        renderTarget._buffer = nullptr;
+    for (RenderTargetWrapper& renderTarget : _renderTarget) {
+        renderTarget._target = nullptr;
     }
-    for (RenderTarget& renderTarget : _reflectionTarget) {
-        renderTarget._buffer = nullptr;
+    for (RenderTargetWrapper& renderTarget : _reflectionTarget) {
+        renderTarget._target = nullptr;
     }
-    for (RenderTarget& renderTarget : _refractionTarget) {
-        renderTarget._buffer = nullptr;
+    for (RenderTargetWrapper& renderTarget : _refractionTarget) {
+        renderTarget._target = nullptr;
     }
     // To allow calls to "setBaseViewport"
     
@@ -111,8 +110,8 @@ GFXDevice::~GFXDevice()
 {
 }
 
-/// Generate a cube texture and store it in the provided framebuffer
-void GFXDevice::generateCubeMap(Framebuffer& cubeMap,
+/// Generate a cube texture and store it in the provided RenderTarget
+void GFXDevice::generateCubeMap(RenderTarget& cubeMap,
                                 const U32 arrayOffset,
                                 const vec3<F32>& pos,
                                 const vec2<F32>& zPlanes,
@@ -162,7 +161,7 @@ void GFXDevice::generateCubeMap(Framebuffer& cubeMap,
     // Set the desired render stage, remembering the previous one
     RenderStage prevRenderStage = setRenderStage(renderStage);
     // Enable our render target
-    cubeMap.begin(Framebuffer::defaultPolicy());
+    cubeMap.begin(RenderTarget::defaultPolicy());
     // For each of the environment's faces (TOP, DOWN, NORTH, SOUTH, EAST, WEST)
     for (U8 i = 0; i < 6; ++i) {
         // Draw to the current cubemap face
@@ -184,7 +183,7 @@ void GFXDevice::generateCubeMap(Framebuffer& cubeMap,
     kernel.getCameraMgr().popActiveCamera();
 }
 
-void GFXDevice::generateDualParaboloidMap(Framebuffer& targetBuffer,
+void GFXDevice::generateDualParaboloidMap(RenderTarget& targetBuffer,
                                           const U32 arrayOffset,
                                           const vec3<F32>& pos,
                                           const vec2<F32>& zPlanes,
@@ -217,7 +216,7 @@ void GFXDevice::generateDualParaboloidMap(Framebuffer& targetBuffer,
     // Set the desired render stage, remembering the previous one
     RenderStage prevRenderStage = setRenderStage(renderStage);
     // Enable our render target
-    targetBuffer.begin(Framebuffer::defaultPolicy());
+    targetBuffer.begin(RenderTarget::defaultPolicy());
         for (U8 i = 0; i < 2; ++i) {
             targetBuffer.drawToLayer(hasColor ? TextureDescriptor::AttachmentType::Color0
                                               : TextureDescriptor::AttachmentType::Depth,
@@ -349,16 +348,16 @@ void GFXDevice::toggleFullScreen() {
 /// The main entry point for any resolution change request
 void GFXDevice::onChangeResolution(U16 w, U16 h) {
     // Make sure we are in a valid state that allows resolution updates
-    if (_renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer != nullptr) {
+    if (_renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target != nullptr) {
         // Update resolution only if it's different from the current one.
         // Avoid resolution change on minimize so we don't thrash render targets
-        if (vec2<U16>(w, h) ==  _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer->getResolution() ||
+        if (vec2<U16>(w, h) ==  _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->getResolution() ||
            !(w > 1 && h > 1)) {
             return;
         }
         // Update render targets with the new resolution
         for (U32 i = 0; i < to_const_uint(RenderTargetID::COUNT); ++i) {
-            Framebuffer* renderTarget = _renderTarget[i]._buffer;
+            RenderTarget* renderTarget = _renderTarget[i]._target;
             if (renderTarget) {
                 renderTarget->create(w, h);
             }
@@ -634,7 +633,7 @@ void GFXDevice::constructHIZ() {
     };
 
     // The depth buffer's resolution should be equal to the screen's resolution
-    Framebuffer* screenTarget = _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer;
+    RenderTarget* screenTarget = _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target;
     vec2<U16> resolution = screenTarget->getResolution();
     // Bind the depth texture to the first texture unit
     screenTarget->bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH), TextureDescriptor::AttachmentType::Depth);
@@ -642,7 +641,7 @@ void GFXDevice::constructHIZ() {
     // We will use a state block that disables color writes as we will render only a depth image,
     // disables depth testing but allows depth writes
     // Set the depth buffer as the currently active render target
-    Framebuffer::FramebufferTarget depthOnlyTarget;
+    RenderTarget::RenderTargetDrawDescriptor depthOnlyTarget;
     depthOnlyTarget._clearColorBuffersOnBind = false;
     depthOnlyTarget._clearDepthBufferOnBind = false;
     depthOnlyTarget._changeViewport = false;
@@ -707,13 +706,13 @@ IMPrimitive* GFXDevice::getOrCreatePrimitive(bool allowPrimitiveRecycle) {
 void GFXDevice::Screenshot(const stringImpl& filename) {
     // Get the screen's resolution
     const vec2<U16>& resolution =
-        _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer
+        _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target
             ->getResolution();
     // Allocate sufficiently large buffers to hold the pixel data
     U32 bufferSize = resolution.width * resolution.height * 4;
     U8* imageData = MemoryManager_NEW U8[bufferSize];
     // Read the pixels from the main render target (RGBA16F)
-    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer->readData(
+    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->readData(
         GFXImageFormat::RGBA, GFXDataFormat::UNSIGNED_BYTE, imageData);
     // Save to file
     ImageTools::SaveSeries(filename,

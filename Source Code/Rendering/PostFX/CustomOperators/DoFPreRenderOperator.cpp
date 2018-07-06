@@ -7,10 +7,10 @@
 
 namespace Divide {
 
-DoFPreRenderOperator::DoFPreRenderOperator(Framebuffer* hdrTarget, Framebuffer* ldrTarget)
+DoFPreRenderOperator::DoFPreRenderOperator(RenderTarget* hdrTarget, RenderTarget* ldrTarget)
     : PreRenderOperator(FilterType::FILTER_DEPTH_OF_FIELD, hdrTarget, ldrTarget)
 {
-    _samplerCopy = GFX_DEVICE.newFB();
+    _samplerCopy = GFX_DEVICE.newRT();
     _samplerCopy->addAttachment(_hdrTarget->getDescriptor(), TextureDescriptor::AttachmentType::Color0);
     _samplerCopy->useAutoDepthBuffer(false);
 

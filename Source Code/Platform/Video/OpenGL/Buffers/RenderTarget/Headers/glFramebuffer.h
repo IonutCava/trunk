@@ -33,10 +33,10 @@
 #define _GL_FRAME_BUFFER_OBJECT_H
 
 #include "Platform/Video/OpenGL/Headers/glResources.h"
-#include "Platform/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
+#include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 
 namespace Divide {
-class glFramebuffer : public Framebuffer {
+class glFramebuffer : public RenderTarget {
     DECLARE_ALLOCATOR
    public:
     /// if resolveBuffer is not null, we add all of our attachments to it and
@@ -57,7 +57,7 @@ class glFramebuffer : public Framebuffer {
                      TextureDescriptor::AttachmentType slot);
     void resetMipLevel(TextureDescriptor::AttachmentType slot);
     void addDepthBuffer();
-    void begin(const FramebufferTarget& drawPolicy);
+    void begin(const RenderTargetDrawDescriptor& drawPolicy);
     void end();
 
     void bind(U8 unit = 0,
@@ -66,20 +66,20 @@ class glFramebuffer : public Framebuffer {
               bool flushStateOnRequest = true);
     void readData(const vec4<U16>& rect, GFXImageFormat imageFormat,
                   GFXDataFormat dataType, void* outData);
-    void blitFrom(Framebuffer* inputFB, TextureDescriptor::AttachmentType slot =
+    void blitFrom(RenderTarget* inputFB, TextureDescriptor::AttachmentType slot =
                                             TextureDescriptor::AttachmentType::Color0,
                   bool blitColor = true, bool blitDepth = false);
 
    protected:
     void resolve();
-    void clear(const FramebufferTarget& drawPolicy) const override;
+    void clear(const RenderTargetDrawDescriptor& drawPolicy) const override;
     bool checkStatus() const;
     void setInitialAttachments();
 
     void initAttachment(TextureDescriptor::AttachmentType type,
                         TextureDescriptor& texDescriptor,
                         bool resize);
-    void resetMipMaps(const FramebufferTarget& drawPolicy);
+    void resetMipMaps(const RenderTargetDrawDescriptor& drawPolicy);
 
     void toggleAttachment(TextureDescriptor::AttachmentType type, bool state);
 
@@ -112,7 +112,7 @@ class glFramebuffer : public Framebuffer {
     std::array<std::pair<GLenum, U32>, to_const_uint(AttType::COUNT)> _attachments;
     std::array<bool, to_const_uint(AttType::COUNT)> _attachmentState;
     std::array<vec2<U16>, to_const_uint(AttType::COUNT)> _mipMapLevel;
-    FramebufferTarget::FBOBufferMask _previousMask;
+    RenderTargetDrawDescriptor::FBOBufferMask _previousMask;
 };
 
 };  // namespace Divide

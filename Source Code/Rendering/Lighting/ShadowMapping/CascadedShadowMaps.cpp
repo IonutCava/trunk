@@ -32,7 +32,7 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera, U8 nu
     _splitFrustumCornersVS.resize(8);
     _horizBlur = 0;
     _vertBlur = 0;
-    _renderPolicy = MemoryManager_NEW Framebuffer::FramebufferTarget(Framebuffer::defaultPolicy());
+    _renderPolicy = MemoryManager_NEW RenderTarget::RenderTargetDrawDescriptor(RenderTarget::defaultPolicy());
     // We clear the FB on each face draw call, not on Begin()
     _renderPolicy->_clearDepthBufferOnBind = false;
     _renderPolicy->_clearColorBuffersOnBind = false;
@@ -63,7 +63,7 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera, U8 nu
     blurMapDescriptor.setLayerCount(_numSplits);
     blurMapDescriptor.setSampler(blurMapSampler);
     
-    _blurBuffer = GFX_DEVICE.newFB(false);
+    _blurBuffer = GFX_DEVICE.newRT(false);
     _blurBuffer->addAttachment(blurMapDescriptor,
                                TextureDescriptor::AttachmentType::Color0);
     _blurBuffer->setClearColor(DefaultColors::WHITE());
@@ -83,7 +83,7 @@ CascadedShadowMaps::~CascadedShadowMaps()
 
 void CascadedShadowMaps::init(ShadowMapInfo* const smi) {
     _numSplits = smi->numLayers();
-    Framebuffer* depthMap = getDepthMap();
+    RenderTarget* depthMap = getDepthMap();
     _blurBuffer->create(depthMap->getWidth(), depthMap->getHeight());
     _horizBlur = _blurDepthMapShader->GetSubroutineIndex(ShaderType::GEOMETRY, "computeCoordsH");
     _vertBlur = _blurDepthMapShader->GetSubroutineIndex(ShaderType::GEOMETRY, "computeCoordsV");
@@ -229,14 +229,14 @@ void CascadedShadowMaps::postRender() {
 
     // Blur horizontally
     _blurDepthMapShader->SetSubroutine(ShaderType::GEOMETRY, _horizBlur);
-    _blurBuffer->begin(Framebuffer::defaultPolicy());
+    _blurBuffer->begin(RenderTarget::defaultPolicy());
     getDepthMap()->bind(0, TextureDescriptor::AttachmentType::Color0, false);
         GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true), _blurDepthMapShader);
     getDepthMap()->end();
 
     // Blur vertically
     _blurDepthMapShader->SetSubroutine(ShaderType::GEOMETRY, _vertBlur);
-    getDepthMap()->begin(Framebuffer::defaultPolicy());
+    getDepthMap()->begin(RenderTarget::defaultPolicy());
     _blurBuffer->bind();
         GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true), _blurDepthMapShader);
     getDepthMap()->end();

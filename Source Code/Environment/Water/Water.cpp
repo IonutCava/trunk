@@ -169,7 +169,7 @@ bool WaterPlane::getDrawState(RenderStage currentStage) {
 /// update water refraction
 void WaterPlane::updateRefraction(const SceneGraphNode& sgn,
                                   const SceneRenderState& sceneRenderState,
-                                  GFXDevice::RenderTarget& renderTarget) {
+                                  GFXDevice::RenderTargetWrapper& renderTarget) {
     if (cameraUnderwater(sgn, sceneRenderState)) {
         return;
     }
@@ -181,10 +181,10 @@ void WaterPlane::updateRefraction(const SceneGraphNode& sgn,
     GFX_DEVICE.toggleClipPlane(g_refractionClipID, true);
     _cameraMgr.getActiveCamera().renderLookAt();
     // bind the refractive texture
-    renderTarget._buffer->begin(Framebuffer::defaultPolicy());
+    renderTarget._target->begin(RenderTarget::defaultPolicy());
     // render to the reflective texture
     SceneManager::instance().renderVisibleNodes(RenderStage::DISPLAY, true, 0);
-    renderTarget._buffer->end();
+    renderTarget._target->end();
 
     GFX_DEVICE.toggleClipPlane(g_refractionClipID, false);
     GFX_DEVICE.setRenderStage(prevRenderStage);
@@ -195,7 +195,7 @@ void WaterPlane::updateRefraction(const SceneGraphNode& sgn,
 /// Update water reflections
 void WaterPlane::updateReflection(const SceneGraphNode& sgn,
                                   const SceneRenderState& sceneRenderState,
-                                  GFXDevice::RenderTarget& renderTarget) {
+                                  GFXDevice::RenderTargetWrapper& renderTarget) {
     // ToDo: this will cause problems later with multiple reflectors.
     // Fix it! -Ionut
     _reflectionRendering = true;
@@ -214,9 +214,9 @@ void WaterPlane::updateReflection(const SceneGraphNode& sgn,
     underwater ? _cameraMgr.getActiveCamera().renderLookAt()
                : _cameraMgr.getActiveCamera().renderLookAtReflected(reflectionPlane);
 
-    renderTarget._buffer->begin(Framebuffer::defaultPolicy());
+    renderTarget._target->begin(RenderTarget::defaultPolicy());
     SceneManager::instance().renderVisibleNodes(RenderStage::REFLECTION, true, 0);
-    renderTarget._buffer->end();
+    renderTarget._target->end();
 
     GFX_DEVICE.toggleClipPlane(g_reflectionClipID, false);
     GFX_DEVICE.setRenderStage(prevRenderStage);

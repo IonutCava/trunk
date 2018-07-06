@@ -37,7 +37,7 @@
 namespace Divide {
 
 class Quad3D;
-class Framebuffer;
+class RenderTarget;
 class PixelBuffer;
 class ShaderProgram;
 
@@ -64,7 +64,7 @@ class DeferredShadingRenderer : public Renderer {
    private:
     U16 _cachedLightCount;
     vectorImpl<std::shared_ptr<Quad3D>> _renderQuads;
-    Framebuffer* _deferredBuffer;
+    RenderTarget* _deferredBuffer;
     ShaderProgram_ptr _deferredShader;
     ShaderProgram_ptr _previewDeferredShader;
     PixelBuffer* _lightTexture;

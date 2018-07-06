@@ -57,7 +57,7 @@ namespace Attorney {
 
 typedef DELEGATE_CBK_PARAM_3<const SceneGraphNode&, 
                              const SceneRenderState&,
-                             GFXDevice::RenderTarget&> RenderCallback;
+                             GFXDevice::RenderTargetWrapper&> RenderCallback;
 
 class RenderingComponent : public SGNComponent {
     friend class Attorney::RenderingCompRenderPass;

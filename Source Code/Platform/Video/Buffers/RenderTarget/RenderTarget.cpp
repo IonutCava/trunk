@@ -1,11 +1,11 @@
-#include "Headers/Framebuffer.h"
+#include "Headers/RenderTarget.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
 
 #include "Core/Resources/Headers/ResourceCache.h"
 
 namespace Divide {
 
-Framebuffer::Framebuffer(GFXDevice& context, bool multiSampled)
+RenderTarget::RenderTarget(GFXDevice& context, bool multiSampled)
     : GraphicsResource(context),
       GUIDWrapper(),
       _shouldRebuild(true),
@@ -21,25 +21,25 @@ Framebuffer::Framebuffer(GFXDevice& context, bool multiSampled)
     _attachmentTexture.fill(nullptr);
 }
 
-Framebuffer::~Framebuffer()
+RenderTarget::~RenderTarget()
 {
 }
 
-void Framebuffer::addAttachment(const TextureDescriptor& descriptor,
-                                TextureDescriptor::AttachmentType type) {
+void RenderTarget::addAttachment(const TextureDescriptor& descriptor,
+                                 TextureDescriptor::AttachmentType type) {
     _attachmentChanged[to_uint(type)] = true;
     _attachment[to_uint(type)] = descriptor;
     _shouldRebuild = true;
 }
 
-void Framebuffer::addAttachment(const Texture_ptr& texture,
-                                TextureDescriptor::AttachmentType type) {
+void RenderTarget::addAttachment(const Texture_ptr& texture,
+                                 TextureDescriptor::AttachmentType type) {
     addAttachment(texture->getDescriptor(), type);
     _attachmentTexture[to_uint(type)] = texture;
 }
 
-const Texture_ptr& Framebuffer::getAttachment(TextureDescriptor::AttachmentType slot,
-                                                           bool flushStateOnRequest) {
+const Texture_ptr& RenderTarget::getAttachment(TextureDescriptor::AttachmentType slot,
+                                               bool flushStateOnRequest) {
     static Texture_ptr defaultAttachment;
 
     Texture_ptr& tex = _attachmentTexture[to_uint(slot)];
@@ -51,7 +51,7 @@ const Texture_ptr& Framebuffer::getAttachment(TextureDescriptor::AttachmentType 
 }
 
 
-void Framebuffer::setMipLevel(U16 mipMinLevel, U16 mipMaxLevel, U16 writeLevel) {
+void RenderTarget::setMipLevel(U16 mipMinLevel, U16 mipMaxLevel, U16 writeLevel) {
     for (U32 i = 0; i < to_const_uint(TextureDescriptor::AttachmentType::COUNT); ++i) {
         const Texture_ptr& tex = _attachmentTexture[i];
         if (tex != nullptr) {
@@ -60,7 +60,7 @@ void Framebuffer::setMipLevel(U16 mipMinLevel, U16 mipMaxLevel, U16 writeLevel) 
     }
 }
 
-void Framebuffer::resetMipLevel() {
+void RenderTarget::resetMipLevel() {
     for (U32 i = 0; i < to_const_uint(TextureDescriptor::AttachmentType::COUNT); ++i) {
         const Texture_ptr& tex = _attachmentTexture[i];
         if (tex != nullptr) {

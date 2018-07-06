@@ -34,7 +34,7 @@
 
 #include "Geometry/Shapes/Headers/Object3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
-#include "Platform/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
+#include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 
 namespace Divide {
 
@@ -84,10 +84,10 @@ class WaterPlane : public SceneNode {
     void updateBoundsInternal(SceneGraphNode& sgn) override;
     void updateReflection(const SceneGraphNode& sgn,
                           const SceneRenderState& sceneRenderState,
-                          GFXDevice::RenderTarget& renderTarget);
+                          GFXDevice::RenderTargetWrapper& renderTarget);
     void updateRefraction(const SceneGraphNode& sgn,
                           const SceneRenderState& sceneRenderState,
-                          GFXDevice::RenderTarget& renderTarget);
+                          GFXDevice::RenderTargetWrapper& renderTarget);
     bool cameraUnderwater(const SceneGraphNode& sgn, const SceneRenderState& sceneRenderState);
 
    private:

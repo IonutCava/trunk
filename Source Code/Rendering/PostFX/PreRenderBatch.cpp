@@ -34,13 +34,13 @@ void PreRenderBatch::destroy() {
     MemoryManager::DELETE(_postFXOutput);
 }
 
-void PreRenderBatch::init(Framebuffer* renderTarget) {
+void PreRenderBatch::init(RenderTarget* renderTarget) {
     assert(_postFXOutput == nullptr);
     _renderTarget = renderTarget;
 
-    _previousLuminance = GFX_DEVICE.newFB();
-    _currentLuminance = GFX_DEVICE.newFB();
-    _postFXOutput = GFX_DEVICE.newFB();
+    _previousLuminance = GFX_DEVICE.newRT();
+    _currentLuminance = GFX_DEVICE.newRT();
+    _postFXOutput = GFX_DEVICE.newRT();
     SamplerDescriptor screenSampler;
     screenSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
     screenSampler.setFilters(TextureFilter::LINEAR);
@@ -124,7 +124,7 @@ void PreRenderBatch::execute(U32 filterMask) {
         _renderTarget->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0));
         _previousLuminance->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT1));
 
-        _currentLuminance->begin(Framebuffer::defaultPolicy());
+        _currentLuminance->begin(RenderTarget::defaultPolicy());
             GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true), _luminanceCalc);
         _currentLuminance->end();
 
@@ -146,7 +146,7 @@ void PreRenderBatch::execute(U32 filterMask) {
         _currentLuminance->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT1));
     }
 
-    _postFXOutput->begin(Framebuffer::defaultPolicy());
+    _postFXOutput->begin(RenderTarget::defaultPolicy());
         GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true),
                                 _adaptiveExposureControl ? _toneMapAdaptive : _toneMap);
     _postFXOutput->end();

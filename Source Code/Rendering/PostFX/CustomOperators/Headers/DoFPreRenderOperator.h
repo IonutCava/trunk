@@ -38,7 +38,7 @@ namespace Divide {
 
 class DoFPreRenderOperator : public PreRenderOperator {
    public:
-    DoFPreRenderOperator(Framebuffer* hdrTarget, Framebuffer* ldrTarget);
+    DoFPreRenderOperator(RenderTarget* hdrTarget, RenderTarget* ldrTarget);
     ~DoFPreRenderOperator();
 
     void idle() override;
@@ -46,7 +46,7 @@ class DoFPreRenderOperator : public PreRenderOperator {
     void reshape(U16 width, U16 height) override;
 
    private:
-       ShaderProgram_ptr _dofShader;
+     ShaderProgram_ptr _dofShader;
 };
 
 };  // namespace Divide

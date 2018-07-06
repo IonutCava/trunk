@@ -4,13 +4,12 @@
 #include "Core/Math/Headers/MathMatrices.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
-#include "Platform/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
+#include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 
 namespace Divide {
 
 class Quad3D;
 class Texture;
-class Framebuffer;
 class ShaderProgram;
 class SamplerDescriptor;
 
@@ -43,7 +42,7 @@ class NOINITVTABLE PreRenderOperator {
     /// doing to set up apropriate states
     /// The target is the full screen quad to which we want to apply our
     /// operation to generate the result
-    PreRenderOperator(FilterType operatorType, Framebuffer* hdrTarget, Framebuffer* ldrTarget)
+    PreRenderOperator(FilterType operatorType, RenderTarget* hdrTarget, RenderTarget* ldrTarget)
         :  _operatorType(operatorType),
            _hdrTarget(hdrTarget),
            _ldrTarget(ldrTarget),
@@ -67,7 +66,7 @@ class NOINITVTABLE PreRenderOperator {
         }
     }
 
-    inline void addInputFB(Framebuffer* const input) {
+    inline void addInputFB(RenderTarget* const input) {
         _inputFB.push_back(input);
     }
 
@@ -78,18 +77,18 @@ class NOINITVTABLE PreRenderOperator {
     virtual void debugPreview(U8 slot) const {
     };
 
-    virtual Framebuffer* getOutput() const {
+    virtual RenderTarget* getOutput() const {
         return _hdrTarget;
     }
 
    protected:
-    Framebuffer* _hdrTarget;
-    Framebuffer* _ldrTarget;
-    Framebuffer* _samplerCopy;
+    RenderTarget* _hdrTarget;
+    RenderTarget* _ldrTarget;
+    RenderTarget* _samplerCopy;
 
-    Framebuffer::FramebufferTarget _screenOnlyDraw;
+    RenderTarget::RenderTargetDrawDescriptor _screenOnlyDraw;
     FilterType  _operatorType;
-    vectorImpl<Framebuffer*> _inputFB;
+    vectorImpl<RenderTarget*> _inputFB;
 };
 
 };  // namespace Divide

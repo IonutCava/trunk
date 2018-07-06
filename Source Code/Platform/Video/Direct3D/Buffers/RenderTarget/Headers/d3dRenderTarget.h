@@ -32,11 +32,11 @@
 #ifndef _D3D_FRAME_BUFFER_OBJECT_H_
 #define _D3D_FRAME_BUFFER_OBJECT_H_
 
-#include "Platform/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
+#include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 
 namespace Divide {
     
-class d3dRenderTarget : public Framebuffer {
+class d3dRenderTarget : public RenderTarget {
     DECLARE_ALLOCATOR
    public:
     d3dRenderTarget(GFXDevice& context, bool multisampled);
@@ -50,7 +50,7 @@ class d3dRenderTarget : public Framebuffer {
     void setMipLevel(U16 mipLevel, U16 mipMaxLevel, U16 writeLevel,
                      TextureDescriptor::AttachmentType slot);
     void resetMipLevel(TextureDescriptor::AttachmentType slot);
-    void begin(const FramebufferTarget& drawPolicy);
+    void begin(const RenderTargetDrawDescriptor& drawPolicy);
     void end();
 
     void bind(U8 unit = 0,
@@ -59,11 +59,11 @@ class d3dRenderTarget : public Framebuffer {
               bool flushStateOnRequest = true);
     void readData(const vec4<U16>& rect, GFXImageFormat imageFormat,
                   GFXDataFormat dataType, void* outData);
-    void blitFrom(Framebuffer* inputFB,
+    void blitFrom(RenderTarget* inputFB,
                   TextureDescriptor::AttachmentType slot =
                       TextureDescriptor::AttachmentType::Color0,
                   bool blitColor = true, bool blitDepth = false);
-    void clear(const FramebufferTarget& drawPolicy) const override;
+    void clear(const RenderTargetDrawDescriptor& drawPolicy) const override;
 
    protected:
     bool checkStatus() const;

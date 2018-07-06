@@ -37,11 +37,12 @@
 
 namespace Divide {
 class GL_API;
+class glShader;
 class glLockManager;
 namespace Attorney {
     class GLAPIShaderProgram;
 };
-/// OpenGL implementation of the Shader entity
+/// OpenGL implementation of the ShaderProgram entity
 class glShaderProgram final : public ShaderProgram {
     DECLARE_ALLOCATOR
     friend class Attorney::GLAPIShaderProgram;
@@ -53,9 +54,7 @@ class glShaderProgram final : public ShaderProgram {
     ~glShaderProgram();
 
     /// Make sure this program is ready for deletion
-    inline bool unload() override {
-        return ShaderProgram::unload();
-    }
+    bool unload() override;
     /// Bind this shader program
     bool bind() override;
     /// Returns true if the shader is currently active
@@ -65,10 +64,6 @@ class glShaderProgram final : public ShaderProgram {
     bool isValid() const override;
     /// Called once per frame. Used to update internal state
     bool update(const U64 deltaTime) override;
-    /// Add a new shader stage to this program
-    void attachShader(Shader* const shader, const bool refresh = false) override;
-    /// Remove a shader stage from this program
-    void detachShader(Shader* const shader) override;
     /// This is used to set all of the subroutine indices for the specified
     /// shader stage for this program
     void SetSubroutines(ShaderType type, const vectorImpl<U32>& indices) const override;
@@ -154,6 +149,11 @@ class glShaderProgram final : public ShaderProgram {
     /// Retrieve the program's validation log if we need it
     stringImpl getLog() const;
 
+    /// Add a new shader stage to this program
+    void attachShader(glShader* const shader, const bool refresh = false);
+    /// Remove a shader stage from this program
+    void detachShader(glShader* const shader);
+
    private:
     typedef hashMapImpl<ULL, I32> ShaderVarMap;
     typedef hashMapImpl<I32, U32> ShaderVarU32Map;
@@ -187,7 +187,10 @@ class glShaderProgram final : public ShaderProgram {
     bool _loadedFromBinary;
     GLuint _shaderProgramIDTemp;
     static std::array<U32, to_const_uint(ShaderType::COUNT)> _lineOffset;
-    std::array<Shader*, to_const_uint(ShaderType::COUNT)> _shaderStage;
+    std::array<glShader*, to_const_uint(ShaderType::COUNT)> _shaderStage;
+    /// ID<->shaders pair
+    typedef hashMapImpl<U32, glShader*> ShaderIDMap;
+    ShaderIDMap _shaderIDMap;
 
     glLockManager* _lockManager;
 };

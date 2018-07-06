@@ -7,12 +7,12 @@
 
 namespace Divide {
 
-PostAAPreRenderOperator::PostAAPreRenderOperator(Framebuffer* hdrTarget, Framebuffer* ldrTarget)
+PostAAPreRenderOperator::PostAAPreRenderOperator(RenderTarget* hdrTarget, RenderTarget* ldrTarget)
     : PreRenderOperator(FilterType::FILTER_SS_ANTIALIASING, hdrTarget, ldrTarget),
       _useSMAA(false),
       _postAASamples(0)
 {
-    _samplerCopy = GFX_DEVICE.newFB();
+    _samplerCopy = GFX_DEVICE.newRT();
     _samplerCopy->addAttachment(_ldrTarget->getDescriptor(), TextureDescriptor::AttachmentType::Color0);
     _samplerCopy->useAutoDepthBuffer(false);
 
@@ -49,7 +49,7 @@ void PostAAPreRenderOperator::execute() {
     _samplerCopy->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0));
 
     // Apply FXAA/SMAA to the specified render target
-    _ldrTarget->begin(Framebuffer::defaultPolicy());
+    _ldrTarget->begin(RenderTarget::defaultPolicy());
         GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true), _useSMAA ? _smaa : _fxaa);
     _ldrTarget->end();
 }

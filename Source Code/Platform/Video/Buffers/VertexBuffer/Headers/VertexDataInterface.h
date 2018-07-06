@@ -39,14 +39,8 @@ namespace Divide {
 class NOINITVTABLE VertexDataInterface : protected GraphicsResource, public GUIDWrapper {
     DECLARE_ALLOCATOR
    public:
-    VertexDataInterface(GFXDevice& context) : GraphicsResource(context),
-                                              GUIDWrapper()
-    {
-    }
-
-    virtual ~VertexDataInterface() 
-    {
-    }
+    VertexDataInterface(GFXDevice& context);
+    virtual ~VertexDataInterface();
 
     virtual void draw(const GenericDrawCommand& command,
                       bool useCmdBuffer = false) = 0;

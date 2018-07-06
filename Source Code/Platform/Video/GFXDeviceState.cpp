@@ -10,7 +10,7 @@
 #include "Platform/Video/Headers/IMPrimitive.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
-#include "Platform/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
+#include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 
 #include "Platform/Video/OpenGL/Headers/GLWrapper.h"
@@ -142,7 +142,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     // special, on demand,
     // down-sampled version of the depth buffer
     // Screen FB should use MSAA if available
-    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer = newFB(true);
+    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target = newRT(true);
     // We need to create all of our attachments for the default render targets
     // Start with the screen render target: Try a half float, multisampled
     // buffer (MSAA + HDR rendering if possible)
@@ -172,13 +172,13 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     normalDescriptor.setSampler(screenSampler);
     
     // Add the attachments to the render targets
-    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer->addAttachment(screenDescriptor, TextureDescriptor::AttachmentType::Color0);
-    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer->addAttachment(normalDescriptor, TextureDescriptor::AttachmentType::Color1);
-    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer->addAttachment(hiZDescriptor,  TextureDescriptor::AttachmentType::Depth);
-    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer->setClearColor(DefaultColors::DIVIDE_BLUE());
-    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer->setClearColor(DefaultColors::WHITE(), TextureDescriptor::AttachmentType::Color1);
+    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->addAttachment(screenDescriptor, TextureDescriptor::AttachmentType::Color0);
+    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->addAttachment(normalDescriptor, TextureDescriptor::AttachmentType::Color1);
+    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->addAttachment(hiZDescriptor,  TextureDescriptor::AttachmentType::Depth);
+    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->setClearColor(DefaultColors::DIVIDE_BLUE());
+    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->setClearColor(DefaultColors::WHITE(), TextureDescriptor::AttachmentType::Color1);
 
-    _activeRenderTarget = _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer;
+    _activeRenderTarget = _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target;
 
     // Reflection Targets
     SamplerDescriptor reflectionSampler;
@@ -190,19 +190,19 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
                                             GFXDataFormat::FLOAT_16);
     environmentDescriptor.setSampler(reflectionSampler);
 
-    for (RenderTarget& target : _reflectionTarget) {
-        Framebuffer*& buffer = target._buffer;
+    for (RenderTargetWrapper& target : _reflectionTarget) {
+        RenderTarget*& buffer = target._target;
 
-        buffer = newFB(false);
+        buffer = newRT(false);
         buffer->addAttachment(environmentDescriptor, TextureDescriptor::AttachmentType::Color0);
         buffer->useAutoDepthBuffer(true);
         buffer->create(Config::REFLECTION_TARGET_RESOLUTION);
         buffer->setClearColor(DefaultColors::WHITE());
     }
-    for (RenderTarget& target : _refractionTarget) {
-        Framebuffer*& buffer = target._buffer;
+    for (RenderTargetWrapper& target : _refractionTarget) {
+        RenderTarget*& buffer = target._target;
 
-        buffer = newFB(false);
+        buffer = newRT(false);
         buffer->addAttachment(environmentDescriptor, TextureDescriptor::AttachmentType::Color0);
         buffer->useAutoDepthBuffer(true);
         buffer->create(Config::REFRACTION_TARGET_RESOLUTION);
@@ -237,8 +237,8 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 
     ResourceDescriptor previewNormalsShader("fbPreview");
     previewNormalsShader.setThreadedLoading(false);
-    _framebufferDraw = CreateResource<ShaderProgram>(previewNormalsShader);
-    assert(_framebufferDraw != nullptr);
+    _renderTargetDraw = CreateResource<ShaderProgram>(previewNormalsShader);
+    assert(_renderTargetDraw != nullptr);
 
     // Create initial buffers, cameras etc for this resolution. It should match window size
     WindowManager& winMgr = Application::instance().windowManager();
@@ -248,7 +248,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
                              to_int(renderResolution.height));
     setBaseViewport(vec4<I32>(0, 0, to_int(renderResolution.width), to_int(renderResolution.height)));
 
-    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer
+    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target
         ->getAttachment(TextureDescriptor::AttachmentType::Depth)
         ->lockAutomaticMipMapGeneration(true);
 
@@ -296,22 +296,21 @@ void GFXDevice::closeRenderingAPI() {
     // Destroy all rendering passes and rendering bins
     RenderPassManager::destroyInstance();
     // Delete all of our rendering targets
-    for (RenderTarget& renderTarget : _renderTarget) {
-        MemoryManager::DELETE(renderTarget._buffer);
+    for (RenderTargetWrapper& renderTarget : _renderTarget) {
+        MemoryManager::DELETE(renderTarget._target);
     }
-    for (RenderTarget& renderTarget : _reflectionTarget) {
-        MemoryManager::DELETE(renderTarget._buffer);
+    for (RenderTargetWrapper& renderTarget : _reflectionTarget) {
+        MemoryManager::DELETE(renderTarget._target);
     }
-    for (RenderTarget& renderTarget : _refractionTarget) {
-        MemoryManager::DELETE(renderTarget._buffer);
+    for (RenderTargetWrapper& renderTarget : _refractionTarget) {
+        MemoryManager::DELETE(renderTarget._target);
     }
     _previewDepthMapShader.reset();
-    _framebufferDraw.reset();
+    _renderTargetDraw.reset();
     _HIZConstructProgram.reset();
     _HIZCullProgram.reset();
     _displayShader.reset();
     _imShader.reset();
-    _imShaderLines.reset();
 
     // Close the shader manager
     ShaderProgram::destroyStaticData();
@@ -445,11 +444,11 @@ ErrorCode GFXDevice::createAPIInstance() {
     return ErrorCode::NO_ERR;
 }
 
-Framebuffer& GFXDevice::activeRenderTarget() {
+RenderTarget& GFXDevice::activeRenderTarget() {
     return *_activeRenderTarget;
 }
 
-const Framebuffer& GFXDevice::activeRenderTarget() const {
+const RenderTarget& GFXDevice::activeRenderTarget() const {
     return *_activeRenderTarget;
 }
 };

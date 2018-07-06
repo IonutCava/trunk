@@ -25,7 +25,7 @@ DeferredShadingRenderer::DeferredShadingRenderer()
     ResourceDescriptor deferred("DeferredShadingPass2");
     deferred.setThreadedLoading(false);
     _deferredShader = CreateResource<ShaderProgram>(deferred);
-    _deferredBuffer = GFX_DEVICE.newFB();
+    _deferredBuffer = GFX_DEVICE.newRT();
 
     ResourceDescriptor deferredPreview("deferredPreview");
     deferredPreview.setThreadedLoading(false);
@@ -75,7 +75,7 @@ DeferredShadingRenderer::DeferredShadingRenderer()
     STUBBED("Shadow maps are currently disabled for Deferred Rendering! -Ionut")
     par.setParam(_ID("rendering.enableShadows"), false);
 
-    vec2<U16> resolution = GFX_DEVICE.getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._buffer->getResolution();
+    vec2<U16> resolution = GFX_DEVICE.getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._target->getResolution();
     U16 width = resolution.width;
     U16 height = resolution.height;
 
@@ -147,12 +147,11 @@ void DeferredShadingRenderer::render(const DELEGATE_CBK<>& renderCallback,
     secondPass(sceneRenderState);
 }
 
-void DeferredShadingRenderer::firstPass(
-    const DELEGATE_CBK<>& renderCallback,
-    const SceneRenderState& sceneRenderState) {
+void DeferredShadingRenderer::firstPass(const DELEGATE_CBK<>& renderCallback,
+                                        const SceneRenderState& sceneRenderState) {
     // Pass 1
     // Draw the geometry, saving parameters into the buffer
-    _deferredBuffer->begin(Framebuffer::defaultPolicy());
+    _deferredBuffer->begin(RenderTarget::defaultPolicy());
     renderCallback();
     _deferredBuffer->end();
 }

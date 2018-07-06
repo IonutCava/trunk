@@ -35,13 +35,12 @@
 #include "config.h"
 
 #include "Core/Resources/Headers/Resource.h"
-#include "Platform/Video/Shaders/Headers/Shader.h"
+#include "Platform/Video/Headers/GraphicsResource.h"
 
 namespace Divide {
 
 class Camera;
 class Material;
-class Shader;
 class ShaderBuffer;
 struct GenericDrawCommand;
 
@@ -178,9 +177,6 @@ class NOINITVTABLE ShaderProgram : public Resource,
         Uniform(location, value ? 1 : 0);
     }
 
-    virtual void attachShader(Shader* const shader,
-                              const bool refresh = false) = 0;
-    virtual void detachShader(Shader* const shader) = 0;
     /// ShaderProgram object id (i.e.: for OGL _shaderProgramID =
     /// glCreateProgram())
     inline U32 getID() const { return _shaderProgramID; }
@@ -290,9 +286,6 @@ class NOINITVTABLE ShaderProgram : public Resource,
     // with a mutex or something
     /// A list of preprocessor defines
     vectorImpl<stringImpl> _definesList;
-    /// ID<->shaders pair
-    typedef hashMapImpl<U32, Shader*> ShaderIDMap;
-    ShaderIDMap _shaderIDMap;
     std::array<bool, to_const_uint(ShaderType::COUNT)> _refreshStage;
 
    private:

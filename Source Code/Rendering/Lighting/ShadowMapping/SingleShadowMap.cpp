@@ -38,7 +38,7 @@ void SingleShadowMap::render(SceneRenderState& renderState) {
     renderState.getCameraMgr().pushActiveCamera(_shadowCamera);
     _shadowCamera->renderLookAt();
 
-    getDepthMap()->begin(Framebuffer::defaultPolicy());
+    getDepthMap()->begin(RenderTarget::defaultPolicy());
         SceneManager::instance().renderVisibleNodes(RenderStage::SHADOW, true);
     getDepthMap()->end();
     renderState.getCameraMgr().popActiveCamera();

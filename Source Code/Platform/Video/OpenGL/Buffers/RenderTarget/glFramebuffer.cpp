@@ -40,7 +40,7 @@ const char* getAttachmentName(AttachmentType type) {
 
 IMPLEMENT_ALLOCATOR(glFramebuffer, 0, 0)
 glFramebuffer::glFramebuffer(GFXDevice& context, bool useResolveBuffer)
-    : Framebuffer(context, useResolveBuffer),
+    : RenderTarget(context, useResolveBuffer),
       _resolveBuffer(useResolveBuffer ? MemoryManager_NEW glFramebuffer(context)
                                       : nullptr),
       _resolved(false),
@@ -265,7 +265,7 @@ bool glFramebuffer::create(U16 width, U16 height) {
                                         _colorBuffers.data());
     }
 
-    clear(Framebuffer::defaultPolicy());
+    clear(RenderTarget::defaultPolicy());
 
     _isCreated = checkStatus();
     _shouldRebuild = !_isCreated;
@@ -294,7 +294,7 @@ void glFramebuffer::resolve() {
     }
 }
 
-void glFramebuffer::blitFrom(Framebuffer* inputFB,
+void glFramebuffer::blitFrom(RenderTarget* inputFB,
                              AttachmentType slot,
                              bool blitColor,
                              bool blitDepth) {
@@ -309,9 +309,9 @@ void glFramebuffer::blitFrom(Framebuffer* inputFB,
         input->resolve();
     }
 
-    GLuint previousFB = GL_API::getActiveFB(Framebuffer::FramebufferUsage::FB_READ_WRITE);
-    GL_API::setActiveFB(Framebuffer::FramebufferUsage::FB_READ_ONLY, input->_framebufferHandle);
-    GL_API::setActiveFB(Framebuffer::FramebufferUsage::FB_WRITE_ONLY, this->_framebufferHandle);
+    GLuint previousFB = GL_API::getActiveFB(RenderTarget::RenderTargetUsage::RT_READ_WRITE);
+    GL_API::setActiveFB(RenderTarget::RenderTargetUsage::RT_READ_ONLY, input->_framebufferHandle);
+    GL_API::setActiveFB(RenderTarget::RenderTargetUsage::RT_WRITE_ONLY, this->_framebufferHandle);
 
     if (blitColor && hasColor()) {
         size_t colorCount = _colorBuffers.size();
@@ -334,7 +334,7 @@ void glFramebuffer::blitFrom(Framebuffer* inputFB,
         _context.registerDrawCall();
     }
 
-    GL_API::setActiveFB(Framebuffer::FramebufferUsage::FB_READ_WRITE, previousFB);
+    GL_API::setActiveFB(RenderTarget::RenderTargetUsage::RT_READ_WRITE, previousFB);
 }
 
 const Texture_ptr& glFramebuffer::getAttachment(AttachmentType slot, bool flushStateOnRequest) {
@@ -343,7 +343,7 @@ const Texture_ptr& glFramebuffer::getAttachment(AttachmentType slot, bool flushS
         return _resolveBuffer->getAttachment(slot, flushStateOnRequest);
     }
 
-    return Framebuffer::getAttachment(slot, flushStateOnRequest);
+    return RenderTarget::getAttachment(slot, flushStateOnRequest);
 }
 
 void glFramebuffer::bind(U8 unit, AttachmentType slot, bool flushStateOnRequest) {
@@ -353,7 +353,7 @@ void glFramebuffer::bind(U8 unit, AttachmentType slot, bool flushStateOnRequest)
     }
 }
 
-void glFramebuffer::resetMipMaps(const FramebufferTarget& drawPolicy) {
+void glFramebuffer::resetMipMaps(const RenderTargetDrawDescriptor& drawPolicy) {
     for (U8 i = 0; i < to_const_uint(AttachmentType::COUNT); ++i) {
         if (drawPolicy._drawMask[i]) {
             if (_attachmentTexture[i] != nullptr) {
@@ -363,7 +363,7 @@ void glFramebuffer::resetMipMaps(const FramebufferTarget& drawPolicy) {
     }
 }
 
-void glFramebuffer::begin(const FramebufferTarget& drawPolicy) {
+void glFramebuffer::begin(const RenderTargetDrawDescriptor& drawPolicy) {
     static vectorImpl<GLenum> colorBuffers;
 
     DIVIDE_ASSERT(_framebufferHandle != 0,
@@ -382,7 +382,7 @@ void glFramebuffer::begin(const FramebufferTarget& drawPolicy) {
         _context.setViewport(vec4<GLint>(0, 0, _width, _height));
     }
 
-    GL_API::setActiveFB(Framebuffer::FramebufferUsage::FB_READ_WRITE, _framebufferHandle);
+    GL_API::setActiveFB(RenderTarget::RenderTargetUsage::RT_READ_WRITE, _framebufferHandle);
 
     if (_resolveBuffer) {
         _resolved = false;
@@ -419,7 +419,7 @@ void glFramebuffer::end() {
                       "End() called without a previous call to Begin()");
 #   endif
 
-    GL_API::setActiveFB(Framebuffer::FramebufferUsage::FB_READ_WRITE, 0);
+    GL_API::setActiveFB(RenderTarget::RenderTargetUsage::RT_READ_WRITE, 0);
     if (_viewportChanged) {
         _context.restoreViewport();
         _viewportChanged = false;
@@ -443,7 +443,7 @@ void glFramebuffer::setInitialAttachments() {
     _attDirty.fill(false);
 }
 
-void glFramebuffer::clear(const FramebufferTarget& drawPolicy) const {
+void glFramebuffer::clear(const RenderTargetDrawDescriptor& drawPolicy) const {
     if (hasColor() && drawPolicy._clearColorBuffersOnBind) {
         GLuint index = 0;
         for (; index < _colorBuffers.size(); ++index) {
@@ -547,7 +547,7 @@ void glFramebuffer::readData(const vec4<U16>& rect,
         _resolveBuffer->readData(rect, imageFormat, dataType, outData);
     } else {
         GL_API::setPixelPackUnpackAlignment();
-        GL_API::setActiveFB(Framebuffer::FramebufferUsage::FB_READ_ONLY, _framebufferHandle);
+        GL_API::setActiveFB(RenderTarget::RenderTargetUsage::RT_READ_ONLY, _framebufferHandle);
         glReadPixels(
             rect.x, rect.y, rect.z, rect.w,
             GLUtil::glImageFormatTable[to_uint(imageFormat)],
@@ -564,39 +564,39 @@ bool glFramebuffer::checkStatus() const {
             return true;
         }
         case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT: {
-            Console::errorfn(Locale::get(_ID("ERROR_FB_ATTACHMENT_INCOMPLETE")));
+            Console::errorfn(Locale::get(_ID("ERROR_RT_ATTACHMENT_INCOMPLETE")));
             return false;
         }
         case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: {
-            Console::errorfn(Locale::get(_ID("ERROR_FB_NO_IMAGE")));
+            Console::errorfn(Locale::get(_ID("ERROR_RT_NO_IMAGE")));
             return false;
         }
         case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER: {
-            Console::errorfn(Locale::get(_ID("ERROR_FB_INCOMPLETE_DRAW_BUFFER")));
+            Console::errorfn(Locale::get(_ID("ERROR_RT_INCOMPLETE_DRAW_BUFFER")));
             return false;
         }
         case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER: {
-            Console::errorfn(Locale::get(_ID("ERROR_FB_INCOMPLETE_READ_BUFFER")));
+            Console::errorfn(Locale::get(_ID("ERROR_RT_INCOMPLETE_READ_BUFFER")));
             return false;
         }
         case GL_FRAMEBUFFER_UNSUPPORTED: {
-            Console::errorfn(Locale::get(_ID("ERROR_FB_UNSUPPORTED")));
+            Console::errorfn(Locale::get(_ID("ERROR_RT_UNSUPPORTED")));
             return false;
         }
         case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE: {
-            Console::errorfn(Locale::get(_ID("ERROR_FB_INCOMPLETE_MULTISAMPLE")));
+            Console::errorfn(Locale::get(_ID("ERROR_RT_INCOMPLETE_MULTISAMPLE")));
             return false;
         }
         case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS: {
-            Console::errorfn(Locale::get(_ID("ERROR_FB_INCOMPLETE_LAYER_TARGETS")));
+            Console::errorfn(Locale::get(_ID("ERROR_RT_INCOMPLETE_LAYER_TARGETS")));
             return false;
         }
         case gl::GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT: {
-            Console::errorfn(Locale::get(_ID("ERROR_FB_DIMENSIONS")));
+            Console::errorfn(Locale::get(_ID("ERROR_RT_DIMENSIONS")));
             return false;
         }
         case gl::GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT: {
-             Console::errorfn(Locale::get(_ID("ERROR_FB_FORMAT")));
+             Console::errorfn(Locale::get(_ID("ERROR_RT_FORMAT")));
              return false;
         }
         default: {

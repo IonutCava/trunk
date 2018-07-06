@@ -407,12 +407,11 @@ typedef vectorImpl<TextureData> TextureDataContainer;
 typedef std::array<IndirectDrawCommand, Config::MAX_VISIBLE_NODES> DrawCommandList;
 
 enum class ShaderType : U32;
-class Shader;
 class Texture;
 class TextureData;
 class IMPrimitive;
 class PixelBuffer;
-class Framebuffer;
+class RenderTarget;
 class ShaderBuffer;
 class VertexBuffer;
 class ShaderProgram;
@@ -465,7 +464,7 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
     /// Clear shaders, restore active texture units, etc
     virtual void endFrame(bool swapBuffers) = 0;
     virtual IMPrimitive* newIMP(GFXDevice& context) const = 0;
-    virtual Framebuffer* newFB(GFXDevice& context, bool multisampled) const = 0;
+    virtual RenderTarget* newRT(GFXDevice& context, bool multisampled) const = 0;
     virtual VertexBuffer* newVB(GFXDevice& context) const = 0;
     virtual ShaderBuffer* newSB(GFXDevice& context,
                                 const stringImpl& bufferName,
@@ -480,9 +479,6 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
                                const PBType& type = PBType::PB_TEXTURE_2D) const = 0;
     virtual Texture* newTexture(GFXDevice& context, const stringImpl& name, const stringImpl& resourceLocation, TextureType type, bool asyncLoad) const = 0;
     virtual ShaderProgram* newShaderProgram(GFXDevice& context, const stringImpl& name, const stringImpl& resourceLocation, bool asyncLoad) const = 0;
-    virtual Shader* newShader(GFXDevice& context,
-                              const stringImpl& name, const ShaderType& type,
-                              const bool optimise = false) const = 0;
 
     virtual bool initShaders() = 0;
     virtual bool deInitShaders() = 0;

@@ -28,12 +28,6 @@ bool d3dShaderProgram::isValid() const {
     return false;
 }
 
-void d3dShaderProgram::attachShader(Shader* const shader, const bool refresh) {
-}
-
-void d3dShaderProgram::detachShader(Shader* const shader) {
-}
-
 // Subroutines
 void d3dShaderProgram::SetSubroutines(ShaderType type, const vectorImpl<U32>& indices) const {
 }

@@ -833,8 +833,7 @@ void Scene::debugDraw(RenderStage stage) {
 
         for (size_t i = 0; i < regionCount; ++i) {
             const BoundingBox& box = _octreeBoundingBoxes[i];
-            IMPrimitive& prim = *_octreePrimitives[i];
-            gfx.drawBox3D(prim, box.getMin(), box.getMax(), vec4<U8>(255, 0, 255, 255));
+            _octreePrimitives[i]->fromBox(box.getMin(), box.getMax(), vec4<U8>(255, 0, 255, 255));
         }
     }
 

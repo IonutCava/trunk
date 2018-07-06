@@ -3,7 +3,7 @@
 
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/OpenGL/glsw/Headers/glsw.h"
-#include "Platform/Video/OpenGL/Buffers/Framebuffer/Headers/glFramebuffer.h"
+#include "Platform/Video/OpenGL/Buffers/RenderTarget/Headers/glFramebuffer.h"
 #include "Platform/Video/OpenGL/Buffers/PixelBuffer/Headers/glPixelBuffer.h"
 #include "Platform/Video/OpenGL/Buffers/VertexBuffer/Headers/glVertexArray.h"
 #include "Platform/Video/OpenGL/Buffers/VertexBuffer/Headers/glGenericVertexData.h"
@@ -785,15 +785,15 @@ IMPrimitive* GL_API::newIMP(GFXDevice& context) const {
 
 /// Create and return a new framebuffer. The callee is responsible for it's
 /// deletion!
-Framebuffer* GL_API::newFB(GFXDevice& context, bool multisampled) const {
+RenderTarget* GL_API::newRT(GFXDevice& context, bool multisampled) const {
     // If MSAA is disabled, this will be a simple color / depth buffer
     // If we requested a MultiSampledFramebuffer and MSAA is enabled, we also
     // allocate a resolve framebuffer
     // We set the resolve framebuffer as the requested framebuffer's child.
     // The framebuffer is responsible for deleting it's own resolve child!
     return MemoryManager_NEW glFramebuffer(context,
-        (multisampled &&
-         ParamHandler::instance().getParam<I32>(_ID("rendering.MSAAsampless"), 0) > 0));
+                                           (multisampled &&
+                                            ParamHandler::instance().getParam<I32>(_ID("rendering.MSAAsampless"), 0) > 0));
 }
 
 /// Create and return a new vertex array (VAO + VB + IB). The callee is
@@ -843,16 +843,6 @@ Texture* GL_API::newTexture(GFXDevice& context, const stringImpl& name, const st
 /// The callee is responsible for it's deletion!
 ShaderProgram* GL_API::newShaderProgram(GFXDevice& context, const stringImpl& name, const stringImpl& resourceLocation, bool asyncLoad) const {
     return MemoryManager_NEW glShaderProgram(context, name, resourceLocation, asyncLoad);
-}
-
-/// Create and return a new shader of the specified type by loading the
-/// specified name (optionally, post load optimised).
-/// The callee is responsible for it's deletion!
-Shader* GL_API::newShader(GFXDevice& context,
-                          const stringImpl& name,
-                          const ShaderType& type,
-                          const bool optimise) const {
-    return MemoryManager_NEW glShader(context, name, type, optimise);
 }
 
 };

@@ -298,7 +298,10 @@ class SceneManager {
     static bool updateCameraControls(Scene& scene) {
         return scene.updateCameraControls();
     }
-    static bool checkLoadFlag(Scene& scene) { return scene.checkLoadFlag(); }
+
+    static bool checkLoadFlag(const Scene& scene) {
+        return scene.checkLoadFlag();
+    }
 
     static bool deinitializeAI(Scene& scene) {
         return scene.deinitializeAI(true);

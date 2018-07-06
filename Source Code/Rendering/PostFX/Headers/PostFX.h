@@ -40,7 +40,6 @@ namespace Divide {
 class Quad3D;
 class Camera;
 class GFXDevice;
-class Framebuffer;
 class ShaderProgram;
 class Texture;
 
@@ -113,7 +112,7 @@ DEFINE_SINGLETON(PostFX)
     vectorImpl<U32> _shaderFunctionSelection;
     vectorImpl<I32> _shaderFunctionList;
 
-    Framebuffer::FramebufferTarget _postFXTarget;
+    RenderTarget::RenderTargetDrawDescriptor _postFXTarget;
 
     //fade settings
     D64 _currentFadeTimeMS;

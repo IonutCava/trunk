@@ -40,7 +40,7 @@
 #include "Platform/Video/OpenGL/Shaders/Headers/glShader.h"
 #include "Platform/Video/OpenGL/Textures/Headers/glSamplerObject.h"
 #include "Platform/Video/OpenGL/Textures/Headers/glTexture.h"
-#include "Platform/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
+#include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 
 struct glslopt_ctx;
 struct FONScontext;
@@ -126,7 +126,7 @@ DEFINE_SINGLETON_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     IMPrimitive* newIMP(GFXDevice& context) const override;
     /// Create and return a new framebuffer. The callee is responsible for it's
     /// deletion!
-    Framebuffer* newFB(GFXDevice& context, bool multisampled) const override;
+    RenderTarget* newRT(GFXDevice& context, bool multisampled) const override;
     /// Create and return a new vertex array (VAO + VB + IB). The callee is
     /// responsible for it's deletion!
     VertexBuffer* newVB(GFXDevice& context) const override;
@@ -136,10 +136,8 @@ DEFINE_SINGLETON_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// Create and return a new generic vertex data object
     /// The callee is responsible for it's deletion!
     GenericVertexData* newGVD(GFXDevice& context, const U32 ringBufferLength = 1) const override;
-    /// Create and return a new shader buffer. The callee is responsible for it's
-    /// deletion!
-    /// The OpenGL implementation creates either an 'Uniform Buffer Object' if
-    /// unbound is false
+    /// Create and return a new shader buffer. The callee is responsible for it's deletion!
+    /// The OpenGL implementation creates either an 'Uniform Buffer Object' if unbound is false
     /// or a 'Shader Storage Block Object' otherwise
     ShaderBuffer* newSB(GFXDevice& context,
                         const stringImpl& bufferName,
@@ -153,13 +151,6 @@ DEFINE_SINGLETON_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// Create and return a new shader program.
     /// The callee is responsible for it's deletion!
     ShaderProgram* newShaderProgram(GFXDevice& context, const stringImpl& name, const stringImpl& resourceLocation, bool asyncLoad) const override;
-    /// Create and return a new shader of the specified type by loading the
-    /// specified name (optionally, post load optimised).
-    /// The callee is responsible for it's deletion!
-    Shader* newShader(GFXDevice& context,
-                      const stringImpl& name,
-                      const ShaderType& type,
-                      const bool optimise = false) const override;
 
     inline void toggleDepthWrites(bool state) override {
         glDepthMask(state ? GL_TRUE : GL_FALSE);
@@ -192,9 +183,8 @@ DEFINE_SINGLETON_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// Return the time it took to render a single frame (in nanoseconds). Only
     /// works in debug builds
     GLuint64 getFrameDurationGPU() override;
-    /// Return the OpenGL framebuffer handle bound and assigned for the specified
-    /// usage
-    inline static GLuint getActiveFB(Framebuffer::FramebufferUsage usage) {
+    /// Return the OpenGL framebuffer handle bound and assigned for the specified usage
+    inline static GLuint getActiveFB(RenderTarget::RenderTargetUsage usage) {
         return _activeFBID[to_uint(usage)];
     }
     /// Try to find the requested font in the font cache. Load on cache miss.
@@ -228,10 +218,10 @@ DEFINE_SINGLETON_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     static bool setActiveBuffer(GLenum target, GLuint ID, GLuint& previousID);
     /// Switch the current framebuffer by binding it as either a R/W buffer, read
     /// buffer or write buffer
-    static bool setActiveFB(Framebuffer::FramebufferUsage usage, GLuint ID);
+    static bool setActiveFB(RenderTarget::RenderTargetUsage usage, GLuint ID);
     /// Switch the current framebuffer by binding it as either a R/W buffer, read
     /// buffer or write buffer
-    static bool setActiveFB(Framebuffer::FramebufferUsage usage, GLuint ID, GLuint& previousID);
+    static bool setActiveFB(RenderTarget::RenderTargetUsage usage, GLuint ID, GLuint& previousID);
     /// Bind the specified transform feedback object
     static bool setActiveTransformFeedback(GLuint ID);
     /// Bind the specified transform feedback object

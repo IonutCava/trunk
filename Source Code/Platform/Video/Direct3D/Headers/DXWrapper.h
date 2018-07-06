@@ -34,13 +34,12 @@
 
 #include "Platform/Video/Headers/RenderAPIWrapper.h"
 
-#include "Platform/Video/Direct3D/Buffers/Framebuffer/Headers/d3dRenderTarget.h"
+#include "Platform/Video/Direct3D/Buffers/RenderTarget/Headers/d3dRenderTarget.h"
 #include "Platform/Video/Direct3D/Buffers/VertexBuffer/Headers/d3dVertexBuffer.h"
 #include "Platform/Video/Direct3D/Buffers/VertexBuffer/Headers/d3dGenericVertexData.h"
 #include "Platform/Video/Direct3D/Buffers/ShaderBuffer/Headers/d3dConstantBuffer.h"
 #include "Platform/Video/Direct3D/Buffers/PixelBuffer/Headers/d3dPixelBuffer.h"
 #include "Platform/Video/Direct3D/Shaders/Headers/d3dShaderProgram.h"
-#include "Platform/Video/Direct3D/Shaders/Headers/d3dShader.h"
 #include "Platform/Video/Direct3D/Textures/Headers/d3dTexture.h"
 #include "Platform/Video/Direct3D/Headers/d3dEnumTable.h"
 
@@ -77,7 +76,7 @@ DEFINE_SINGLETON_W_SPECIFIER(DX_API, RenderAPIWrapper, final)
 
     inline IMPrimitive* newIMP(GFXDevice& context) const override { return nullptr; }
 
-    inline Framebuffer* newFB(GFXDevice& context, bool multisampled) const override {
+    inline RenderTarget* newRT(GFXDevice& context, bool multisampled) const override {
         return MemoryManager_NEW d3dRenderTarget(context, multisampled);
     }
 
@@ -100,13 +99,6 @@ DEFINE_SINGLETON_W_SPECIFIER(DX_API, RenderAPIWrapper, final)
 
     inline ShaderProgram* newShaderProgram(GFXDevice& context, const stringImpl& name, const stringImpl& resourceLocation, bool asyncLoad) const override {
         return MemoryManager_NEW d3dShaderProgram(context, name, resourceLocation, asyncLoad);
-    }
-
-    inline Shader* newShader(GFXDevice& context,
-                             const stringImpl& name,
-                             const ShaderType& type,
-                             const bool optimise = false) const override {
-        return MemoryManager_NEW d3dShader(context, name, type, optimise);
     }
 
     bool initShaders() override;

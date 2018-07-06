@@ -41,7 +41,7 @@ namespace Divide {
 
 class Transform;
 class SceneState;
-class Framebuffer;
+class RenderTarget;
 class ShaderBuffer;
 class TerrainChunk;
 class SceneGraphNode;

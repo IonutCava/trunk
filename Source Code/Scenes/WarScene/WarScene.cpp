@@ -302,7 +302,7 @@ void WarScene::updateSceneStateInternal(const U64 deltaTime) {
             }
         }
     }
-    GFX_DEVICE.drawLines(*_targetLines, paths, vec4<I32>());
+    _targetLines->fromLines(paths);
 
     if (!_aiManager->updatePaused()) {
         _elapsedGameTime += deltaTime;

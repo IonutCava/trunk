@@ -36,12 +36,12 @@
 
 namespace Divide {
 
-class Framebuffer;
+class RenderTarget;
 class ShaderProgram;
 
 class BloomPreRenderOperator : public PreRenderOperator {
    public:
-    BloomPreRenderOperator(Framebuffer* hdrTarget, Framebuffer* ldrTarget);
+    BloomPreRenderOperator(RenderTarget* hdrTarget, RenderTarget* ldrTarget);
     ~BloomPreRenderOperator();
 
     void idle() override;
@@ -50,8 +50,8 @@ class BloomPreRenderOperator : public PreRenderOperator {
     void debugPreview(U8 slot) const;
 
    private:
-    Framebuffer* _bloomOutput;
-    Framebuffer* _bloomBlurBuffer[2];
+    RenderTarget* _bloomOutput;
+    RenderTarget* _bloomBlurBuffer[2];
 
     ShaderProgram_ptr _blur;
     ShaderProgram_ptr _bloomCalc;

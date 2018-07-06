@@ -11,7 +11,7 @@
 #include "Core/Time/Headers/ApplicationTimer.h"
 #include "Scenes/Headers/SceneState.h"
 #include "Geometry/Material/Headers/Material.h"
-#include "Platform/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
+#include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 #include "Platform/Video/Buffers/VertexBuffer/Headers/GenericVertexData.h"
 
 namespace Divide {
@@ -174,7 +174,7 @@ bool ParticleEmitter::unload() {
 }
 
 void ParticleEmitter::postLoad(SceneGraphNode& sgn) {
-    Framebuffer* depthBuffer = GFX_DEVICE.getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._buffer;
+    RenderTarget* depthBuffer = GFX_DEVICE.getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._target;
     TextureData depthBufferData = depthBuffer->getAttachment(TextureDescriptor::AttachmentType::Depth)->getData();
     depthBufferData.setHandleLow(to_const_uint(ShaderProgram::TextureUsage::DEPTH));
     sgn.get<RenderingComponent>()->registerTextureDependency(depthBufferData);

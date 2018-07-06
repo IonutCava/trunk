@@ -54,7 +54,7 @@ void GL_API::clearStates() {
     
     setPixelPackUnpackAlignment();
     setActiveVAO(0);
-    setActiveFB(Framebuffer::FramebufferUsage::FB_READ_WRITE, 0);
+    setActiveFB(RenderTarget::RenderTargetUsage::RT_READ_WRITE, 0);
     setActiveBuffer(GL_ARRAY_BUFFER, 0);
     setActiveBuffer(GL_TEXTURE_BUFFER, 0);
     setActiveBuffer(GL_UNIFORM_BUFFER, 0);
@@ -325,13 +325,13 @@ bool GL_API::bindActiveBuffer(GLuint vaoID, GLuint location, GLuint bufferID, GL
     return true;
 }
 
-bool GL_API::setActiveFB(Framebuffer::FramebufferUsage usage, GLuint ID) {
+bool GL_API::setActiveFB(RenderTarget::RenderTargetUsage usage, GLuint ID) {
     GLuint temp = 0;
     return setActiveFB(usage, ID, temp);
 }
 /// Switch the current framebuffer by binding it as either a R/W buffer, read
 /// buffer or write buffer
-bool GL_API::setActiveFB(Framebuffer::FramebufferUsage usage, GLuint ID, GLuint& previousID) {
+bool GL_API::setActiveFB(RenderTarget::RenderTargetUsage usage, GLuint ID, GLuint& previousID) {
     // We may query the active framebuffer handle and get an invalid handle in
     // return and then try to bind the queried handle
     // This is, for example, in save/restore FB scenarios. An invalid handle
@@ -342,9 +342,9 @@ bool GL_API::setActiveFB(Framebuffer::FramebufferUsage usage, GLuint ID, GLuint&
     previousID = _activeFBID[to_uint(usage)];
     // Prevent double bind
     if (_activeFBID[to_uint(usage)] == ID) {
-        if (usage == Framebuffer::FramebufferUsage::FB_READ_WRITE) {
-            if (_activeFBID[to_const_uint(Framebuffer::FramebufferUsage::FB_READ_ONLY)] == ID &&
-                _activeFBID[to_const_uint(Framebuffer::FramebufferUsage::FB_WRITE_ONLY)] == ID) {
+        if (usage == RenderTarget::RenderTargetUsage::RT_READ_WRITE) {
+            if (_activeFBID[to_const_uint(RenderTarget::RenderTargetUsage::RT_READ_ONLY)] == ID &&
+                _activeFBID[to_const_uint(RenderTarget::RenderTargetUsage::RT_WRITE_ONLY)] == ID) {
                 return false;
             }
         } else {
@@ -353,19 +353,19 @@ bool GL_API::setActiveFB(Framebuffer::FramebufferUsage usage, GLuint ID, GLuint&
     }
     // Bind the requested buffer to the appropriate target
     switch (usage) {
-        case Framebuffer::FramebufferUsage::FB_READ_WRITE: {
+        case RenderTarget::RenderTargetUsage::RT_READ_WRITE: {
             // According to documentation this is equivalent to independent
             // calls to
             // bindFramebuffer(read, ID) and bindFramebuffer(write, ID)
             glBindFramebuffer(GL_FRAMEBUFFER, ID);
             // This also overrides the read and write bindings
-            _activeFBID[to_const_uint(Framebuffer::FramebufferUsage::FB_READ_ONLY)] = ID;
-            _activeFBID[to_const_uint(Framebuffer::FramebufferUsage::FB_WRITE_ONLY)] = ID;
+            _activeFBID[to_const_uint(RenderTarget::RenderTargetUsage::RT_READ_ONLY)] = ID;
+            _activeFBID[to_const_uint(RenderTarget::RenderTargetUsage::RT_WRITE_ONLY)] = ID;
         } break;
-        case Framebuffer::FramebufferUsage::FB_READ_ONLY: {
+        case RenderTarget::RenderTargetUsage::RT_READ_ONLY: {
             glBindFramebuffer(GL_READ_FRAMEBUFFER, ID);
         } break;
-        case Framebuffer::FramebufferUsage::FB_WRITE_ONLY: {
+        case RenderTarget::RenderTargetUsage::RT_WRITE_ONLY: {
             glBindFramebuffer(GL_DRAW_FRAMEBUFFER, ID);
         } break;
     };

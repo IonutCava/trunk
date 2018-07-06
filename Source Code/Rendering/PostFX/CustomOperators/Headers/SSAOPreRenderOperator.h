@@ -38,7 +38,7 @@ namespace Divide {
 
 class SSAOPreRenderOperator : public PreRenderOperator {
    public:
-    SSAOPreRenderOperator(Framebuffer* hdrTarget, Framebuffer* ldrTarget);
+    SSAOPreRenderOperator(RenderTarget* hdrTarget, RenderTarget* ldrTarget);
     ~SSAOPreRenderOperator();
 
     void idle() override;
@@ -47,8 +47,8 @@ class SSAOPreRenderOperator : public PreRenderOperator {
     void debugPreview(U8 slot) const;
 
    private:
-    Framebuffer* _ssaoOutput;
-    Framebuffer* _ssaoOutputBlurred;
+    RenderTarget* _ssaoOutput;
+    RenderTarget* _ssaoOutputBlurred;
     ShaderProgram_ptr _ssaoGenerateShader;
     ShaderProgram_ptr _ssaoApplyShader;
     ShaderProgram_ptr _ssaoBlurShader;

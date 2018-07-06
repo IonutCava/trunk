@@ -10,7 +10,7 @@ class PreRenderBatch {
     PreRenderBatch();
     ~PreRenderBatch();
 
-    void init(Framebuffer* renderTarget);
+    void init(RenderTarget* renderTarget);
     void destroy();
 
     void idle();
@@ -63,10 +63,10 @@ class PreRenderBatch {
     bool _adaptiveExposureControl;
 
     PreRenderOperator* _debugOperator;
-    Framebuffer* _postFXOutput;
-    Framebuffer* _renderTarget;
-    Framebuffer* _previousLuminance;
-    Framebuffer* _currentLuminance;
+    RenderTarget* _postFXOutput;
+    RenderTarget* _renderTarget;
+    RenderTarget* _previousLuminance;
+    RenderTarget* _currentLuminance;
     ShaderProgram_ptr _toneMap;
     ShaderProgram_ptr _toneMapAdaptive;
     ShaderProgram_ptr _luminanceCalc;

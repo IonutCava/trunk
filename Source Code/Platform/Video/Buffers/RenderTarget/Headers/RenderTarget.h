@@ -29,8 +29,8 @@
 
  */
 
-#ifndef _FRAME_BUFFER_H_
-#define _FRAME_BUFFER_H_
+#ifndef _RENDER_TARGET_H_
+#define _RENDER_TARGET_H_
 
 #include "Platform/Video/Headers/GraphicsResource.h"
 #include "Platform/Video/Textures/Headers/TextureDescriptor.h"
@@ -39,9 +39,9 @@ namespace Divide {
 
 FWD_DECLARE_MANAGED_CLASS(Texture);
 
-class NOINITVTABLE Framebuffer : protected GraphicsResource, public GUIDWrapper {
+class NOINITVTABLE RenderTarget : protected GraphicsResource, public GUIDWrapper {
    public:
-    struct FramebufferTarget {
+    struct RenderTargetDrawDescriptor {
         typedef std::array<bool, to_const_uint(TextureDescriptor::AttachmentType::COUNT)> FBOBufferMask;
 
         FBOBufferMask _drawMask;
@@ -49,7 +49,7 @@ class NOINITVTABLE Framebuffer : protected GraphicsResource, public GUIDWrapper 
         bool _clearDepthBufferOnBind;
         bool _changeViewport;
 
-        FramebufferTarget()
+        RenderTargetDrawDescriptor()
             : _clearColorBuffersOnBind(true),
               _clearDepthBufferOnBind(true),
               _changeViewport(true)
@@ -58,14 +58,14 @@ class NOINITVTABLE Framebuffer : protected GraphicsResource, public GUIDWrapper 
         }
     };
 
-    enum class FramebufferUsage : U32 {
-        FB_READ_WRITE = 0,
-        FB_READ_ONLY = 1,
-        FB_WRITE_ONLY = 2
+    enum class RenderTargetUsage : U32 {
+        RT_READ_WRITE = 0,
+        RT_READ_ONLY = 1,
+        RT_WRITE_ONLY = 2
     };
 
-    inline static FramebufferTarget& defaultPolicy() {
-        static FramebufferTarget _defaultPolicy;
+    inline static RenderTargetDrawDescriptor& defaultPolicy() {
+        static RenderTargetDrawDescriptor _defaultPolicy;
         return _defaultPolicy;
     }
 
@@ -111,7 +111,7 @@ class NOINITVTABLE Framebuffer : protected GraphicsResource, public GUIDWrapper 
 
     void resetMipLevel();
 
-    virtual void begin(const FramebufferTarget& drawPolicy) = 0;
+    virtual void begin(const RenderTargetDrawDescriptor& drawPolicy) = 0;
 
     virtual void end() = 0;
 
@@ -129,9 +129,9 @@ class NOINITVTABLE Framebuffer : protected GraphicsResource, public GUIDWrapper 
                  outData);
     }
 
-    virtual void clear(const FramebufferTarget& drawPolicy) const = 0;
+    virtual void clear(const RenderTargetDrawDescriptor& drawPolicy) const = 0;
 
-    virtual void blitFrom(Framebuffer* inputFB,
+    virtual void blitFrom(RenderTarget* inputFB,
                           TextureDescriptor::AttachmentType
                               slot = TextureDescriptor::AttachmentType::Color0,
                           bool blitColor = true, bool blitDepth = false) = 0;
@@ -171,8 +171,8 @@ class NOINITVTABLE Framebuffer : protected GraphicsResource, public GUIDWrapper 
         return vec2<U16>(_width, _height);
     }
 
-    Framebuffer(GFXDevice& context, bool multiSample);
-    virtual ~Framebuffer();
+    RenderTarget(GFXDevice& context, bool multiSample);
+    virtual ~RenderTarget();
 
    protected:
     virtual bool checkStatus() const = 0;
@@ -192,4 +192,5 @@ class NOINITVTABLE Framebuffer : protected GraphicsResource, public GUIDWrapper 
 };
 
 };  // namespace Divide
-#endif
+
+#endif //_RENDER_TARGET_H_

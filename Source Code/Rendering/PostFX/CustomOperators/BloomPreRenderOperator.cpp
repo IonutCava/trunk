@@ -9,17 +9,17 @@
 
 namespace Divide {
 
-BloomPreRenderOperator::BloomPreRenderOperator(Framebuffer* hdrTarget, Framebuffer* ldrTarget)
+BloomPreRenderOperator::BloomPreRenderOperator(RenderTarget* hdrTarget, RenderTarget* ldrTarget)
     : PreRenderOperator(FilterType::FILTER_BLOOM, hdrTarget, ldrTarget)
 {
     for (U8 i = 0; i < 2; ++i) {
-        _bloomBlurBuffer[i] = GFX_DEVICE.newFB();
+        _bloomBlurBuffer[i] = GFX_DEVICE.newRT();
         _bloomBlurBuffer[i]->addAttachment(_hdrTarget->getDescriptor(), TextureDescriptor::AttachmentType::Color0);
         _bloomBlurBuffer[i]->useAutoDepthBuffer(false);
         _bloomBlurBuffer[i]->setClearColor(DefaultColors::BLACK());
     }
 
-    _bloomOutput = GFX_DEVICE.newFB();
+    _bloomOutput = GFX_DEVICE.newRT();
     _bloomOutput->addAttachment(_hdrTarget->getDescriptor(), TextureDescriptor::AttachmentType::Color0);
     _bloomOutput->useAutoDepthBuffer(false);
     _bloomOutput->setClearColor(DefaultColors::BLACK());
@@ -71,7 +71,7 @@ void BloomPreRenderOperator::execute() {
      // Step 1: generate bloom
     _hdrTarget->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0)); //screen
     // render all of the "bright spots"
-    _bloomOutput->begin(Framebuffer::defaultPolicy());
+    _bloomOutput->begin(RenderTarget::defaultPolicy());
         GFX_DEVICE.drawTriangle(defaultStateHash, _bloomCalc);
     _bloomOutput->end();
 
@@ -80,14 +80,14 @@ void BloomPreRenderOperator::execute() {
     // Blur horizontally
     _blur->SetSubroutine(ShaderType::FRAGMENT, _horizBlur);
     _bloomOutput->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0));
-    _bloomBlurBuffer[0]->begin(Framebuffer::defaultPolicy());
+    _bloomBlurBuffer[0]->begin(RenderTarget::defaultPolicy());
         GFX_DEVICE.drawTriangle(defaultStateHash, _blur);
     _bloomBlurBuffer[0]->end();
 
     // Blur vertically (recycle the render target. We have a copy)
     _blur->SetSubroutine(ShaderType::FRAGMENT, _vertBlur);
     _bloomBlurBuffer[0]->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0));
-    _bloomBlurBuffer[1]->begin(Framebuffer::defaultPolicy());
+    _bloomBlurBuffer[1]->begin(RenderTarget::defaultPolicy());
         GFX_DEVICE.drawTriangle(defaultStateHash, _blur);
     _bloomBlurBuffer[1]->end();
         

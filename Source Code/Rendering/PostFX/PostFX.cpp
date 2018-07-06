@@ -8,7 +8,7 @@
 #include "Managers/Headers/SceneManager.h"
 #include "Rendering/Camera/Headers/Camera.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
-#include "Platform/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
+#include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 
 namespace Divide {
 
@@ -102,12 +102,12 @@ void PostFX::init() {
      borderTexture.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
      _screenBorder = CreateResource<Texture>(borderTexture);
 
-     _preRenderBatch.init(_gfx->getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._buffer);
+     _preRenderBatch.init(_gfx->getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._target);
     PreRenderOperator& SSAOOp = _preRenderBatch.getOperator(FilterType::FILTER_SS_AMBIENT_OCCLUSION);
-    SSAOOp.addInputFB(_gfx->getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._buffer);
+    SSAOOp.addInputFB(_gfx->getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._target);
 
     PreRenderOperator& DOFOp = _preRenderBatch.getOperator(FilterType::FILTER_DEPTH_OF_FIELD);
-    DOFOp.addInputFB(_gfx->getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._buffer);
+    DOFOp.addInputFB(_gfx->getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._target);
     
     _noiseTimer = 0.0;
     _tickInterval = 1.0f / 24.0f;
@@ -143,9 +143,9 @@ void PostFX::apply() {
     _noise->Bind(to_const_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_NOISE));
     _screenBorder->Bind(to_const_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_BORDER));
 
-    _gfx->getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._buffer->begin(_postFXTarget);
+    _gfx->getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._target->begin(_postFXTarget);
         _gfx->drawTriangle(_gfx->getDefaultStateBlock(true), _postProcessingShader);
-    _gfx->getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._buffer->end();
+    _gfx->getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._target->end();
 }
 
 void PostFX::idle() {

@@ -31,32 +31,80 @@
 
 #ifndef GL_H_
 #define GL_H_
+
 #include "Platform/Video/OpenGL/Headers/glResources.h"
-#include "Platform/Video/Shaders/Headers/Shader.h"
+#include "Platform/Video/Headers/GraphicsResource.h"
+#include "Core/MemoryManagement/Headers/TrackedObject.h"
 
 namespace Divide {
 
-class glShader : public Shader {
+/// glShader represents one of a program's rendering stages (vertex, geometry, fragment, etc)
+/// It can be used simultaneously in multiple programs/pipelines
+class glShader : protected GraphicsResource, public TrackedObject {
     DECLARE_ALLOCATOR
    public:
+    typedef hashMapImpl<ULL, glShader*> ShaderMap;
+
+    static const char* CACHE_LOCATION_TEXT;
+    static const char* CACHE_LOCATION_BIN;
+
+   public:
+    /// The shader's name is the period-separated list of properties, type is
+    /// the render stage this shader is used for
     glShader(GFXDevice& context,
              const stringImpl& name,
              const ShaderType& type,
              const bool optimise = false);
     ~glShader();
 
-    bool load(const stringImpl& source) override;
+    bool load(const stringImpl& source);
     bool compile();
     bool validate();
 
+    /// Shader's API specific handle
+    inline U32 getShaderID() const { return _shader; }
+    /// The pipeline stage this shader is used for
+    inline const ShaderType getType() const { return _type; }
+    /// The shader's name is a period-separated list of strings used to define
+    /// the main shader file and the properties to load
+    inline const stringImpl& getName() const { return _name; }
+
+   public:
+    // ======================= static data ========================= //
+    /// Remove a shader from the cache
+    static void removeShader(glShader* s);
+    /// Return a new shader reference
+    static glShader* getShader(const stringImpl& name,
+                               const bool recompile = false);
+    /// Add or refresh a shader from the cache
+    static glShader* loadShader(const stringImpl& name,
+                                const stringImpl& location,
+                                const ShaderType& type,
+                                const bool parseCode,
+                                const bool recompile = false);
    private:
     stringImpl preprocessIncludes(const stringImpl& source,
                                   const stringImpl& filename,
                                   GLint level /*= 0 */);
 
-    private:
+    inline void skipIncludes(bool state) {
+        _skipIncludes = state;
+    }
+
+   private:
+    stringImpl _name;
+    ShaderType _type;
+    bool _skipIncludes;
+    /// The API dependent object handle. Not thread-safe!
+    U32 _shader;
+    std::atomic_bool _compiled;
+
     //extra entry for "common" location
     static stringImpl shaderAtomLocationPrefix[to_const_uint(ShaderType::COUNT) + 1];
+    
+   private:
+    /// Shader cache
+    static ShaderMap _shaderNameMap;
 };
 
 };  // namespace Divide

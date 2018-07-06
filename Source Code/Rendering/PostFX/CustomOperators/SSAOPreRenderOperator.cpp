@@ -8,11 +8,11 @@
 namespace Divide {
 
 //ref: http://john-chapman-graphics.blogspot.co.uk/2013/01/ssao-tutorial.html
-SSAOPreRenderOperator::SSAOPreRenderOperator(Framebuffer* hdrTarget, Framebuffer* ldrTarget)
+SSAOPreRenderOperator::SSAOPreRenderOperator(RenderTarget* hdrTarget, RenderTarget* ldrTarget)
     : PreRenderOperator(FilterType::FILTER_SS_AMBIENT_OCCLUSION, hdrTarget, ldrTarget)
 {
 
-    _samplerCopy = GFX_DEVICE.newFB();
+    _samplerCopy = GFX_DEVICE.newRT();
     _samplerCopy->addAttachment(_hdrTarget->getDescriptor(), TextureDescriptor::AttachmentType::Color0);
     _samplerCopy->useAutoDepthBuffer(false);
 
@@ -68,7 +68,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(Framebuffer* hdrTarget, Framebuffer
     screenSampler.toggleMipMaps(false);
     screenSampler.setAnisotropy(0);
 
-    _ssaoOutput = GFX_DEVICE.newFB();
+    _ssaoOutput = GFX_DEVICE.newRT();
     TextureDescriptor outputDescriptor(TextureType::TEXTURE_2D,
                                        GFXImageFormat::RED16,
                                        GFXDataFormat::FLOAT_16);
@@ -77,7 +77,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(Framebuffer* hdrTarget, Framebuffer
     //Color0 holds the AO texture
     _ssaoOutput->addAttachment(outputDescriptor, TextureDescriptor::AttachmentType::Color0);
 
-    _ssaoOutputBlurred = GFX_DEVICE.newFB();
+    _ssaoOutputBlurred = GFX_DEVICE.newRT();
     _ssaoOutputBlurred->addAttachment(outputDescriptor, TextureDescriptor::AttachmentType::Color0);
 
     ResourceDescriptor ssaoGenerate("SSAOPass.SSAOCalc");
@@ -131,14 +131,14 @@ void SSAOPreRenderOperator::execute() {
     _inputFB[0]->bind(to_const_ubyte(ShaderProgram::TextureUsage::NORMALMAP),
                       TextureDescriptor::AttachmentType::Color1);  // normals
     
-    _ssaoOutput->begin(Framebuffer::defaultPolicy());
+    _ssaoOutput->begin(RenderTarget::defaultPolicy());
         GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true), _ssaoGenerateShader);
     _ssaoOutput->end();
 
 
     _ssaoOutput->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0),
                       TextureDescriptor::AttachmentType::Color0);  // AO texture
-    _ssaoOutputBlurred->begin(Framebuffer::defaultPolicy());
+    _ssaoOutputBlurred->begin(RenderTarget::defaultPolicy());
         GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true), _ssaoBlurShader);
     _ssaoOutputBlurred->end();
     

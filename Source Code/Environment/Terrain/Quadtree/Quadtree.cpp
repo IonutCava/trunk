@@ -44,11 +44,9 @@ void Quadtree::drawBBox() const {
     primitive->name("QuadtreeBoundingBox");
     RenderStateBlock primitiveRenderState;
     primitive->stateHash(primitiveRenderState.getHash());
-
-    GFX_DEVICE.drawBox3D(*primitive,
-                         _root->getBoundingBox().getMin(),
-                         _root->getBoundingBox().getMax(),
-                         vec4<U8>(0, 64, 255, 255));
+    primitive->fromBox(_root->getBoundingBox().getMin(),
+                       _root->getBoundingBox().getMax(),
+                       vec4<U8>(0, 64, 255, 255));
 }
 
 QuadtreeNode* Quadtree::findLeaf(const vec2<F32>& pos) {

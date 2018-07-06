@@ -74,10 +74,10 @@ class CascadedShadowMaps : public ShadowMap {
     mat4<F32> _viewInvMatrixCache;
     ShaderProgram_ptr _previewDepthMapShader;
     ShaderProgram_ptr _blurDepthMapShader;
-    Framebuffer::FramebufferTarget* _renderPolicy;
+    RenderTarget::RenderTargetDrawDescriptor* _renderPolicy;
     /// Shortcut for the owning directional light
     DirectionalLight* _dirLight;
-    Framebuffer* _blurBuffer;
+    RenderTarget* _blurBuffer;
     vectorImpl<vec3<F32> > _frustumCornersVS;
     vectorImpl<vec3<F32> > _frustumCornersWS;
     vectorImpl<vec3<F32> > _frustumCornersLS;

@@ -43,66 +43,14 @@ public:
     static bool saveScene(const Scene& activeScene);
 };
 
-struct SceneShaderData {
-    SceneShaderData()
-    {
-    }
-
-    vec4<F32> _fogDetails;
-    vec4<F32> _windDetails;
-    vec4<F32> _shadowingSettings;
-    vec4<F32> _otherData;
-    vec4<F32> _otherData2;
-    vec4<U32> _lightCountPerType;
-    //U32       _lightCountPerType[to_const_uint(LightType::COUNT)];
-
-    inline void fogDetails(F32 colorR, F32 colorG, F32 colorB, F32 density) {
-        _fogDetails.set(colorR, colorG, colorB, density);
-    }
-
-    inline void fogDensity(F32 density) {
-        _fogDetails.w = density;
-    }
-
-    inline void shadowingSettings(F32 lightBleedBias, F32 minShadowVariance, F32 shadowFadeDist, F32 shadowMaxDist) {
-        _shadowingSettings.set(lightBleedBias, minShadowVariance, shadowFadeDist, shadowMaxDist);
-    }
-
-    inline void windDetails(F32 directionX, F32 directionY, F32 directionZ, F32 speed) {
-        _windDetails.set(directionX, directionY, directionZ, speed);
-    }
-
-    inline void elapsedTime(U32 timeMS) {
-        _otherData.x = to_float(timeMS);
-    }
-
-    inline void enableDebugRender(bool state) {
-        _otherData.y = state ? 1.0f : 0.0f;
-    }
-
-    inline void toggleShadowMapping(bool state) {
-        _otherData.z = state ? 1.0f : 0.0f;
-    }
-
-    inline void setRendererFlag(U32 flag) {
-        _otherData.w = to_float(flag);
-    }
-
-    inline void deltaTime(F32 deltaTimeSeconds) {
-        _otherData2.x = deltaTimeSeconds;
-    }
-
-    inline void lightCount(LightType type, U32 lightCount) {
-        _lightCountPerType[to_uint(type)] = lightCount;
-    }
-};
-
 enum class RenderStage : U32;
 namespace Attorney {
     class SceneManagerKernel;
     class SceneManagerRenderPass;
 };
 
+class ScenePool;
+class SceneShaderData;
 DEFINE_SINGLETON(SceneManager, FrameListener, Input::InputAggregatorInterface)
     friend class Attorney::SceneManagerKernel;
     friend class Attorney::SceneManagerRenderPass;
@@ -113,9 +61,8 @@ DEFINE_SINGLETON(SceneManager, FrameListener, Input::InputAggregatorInterface)
 
     vectorImpl<stringImpl> sceneNameList() const;
 
-    inline Scene& getActiveScene() { 
-        return _activeScene == nullptr ? *_defaultScene 
-                                       : *_activeScene; }
+    Scene& getActiveScene();
+    const Scene& getActiveScene() const;
 
     void setActiveScene(Scene& scene);
 
@@ -133,34 +80,29 @@ DEFINE_SINGLETON(SceneManager, FrameListener, Input::InputAggregatorInterface)
     // get the full list of reflective nodes
     const RenderPassCuller::VisibleNodeList& getSortedReflectiveNodes();
 
-    inline void onLostFocus() { _activeScene->onLostFocus(); }
+    void onLostFocus();
     bool unloadCurrentScene();
     /// Check if the scene was loaded properly
     inline bool checkLoadFlag() const {
-        return Attorney::SceneManager::checkLoadFlag(*_activeScene);
+        return Attorney::SceneManager::checkLoadFlag(getActiveScene());
     }
     /// Update animations, network data, sounds, triggers etc.
     void updateSceneState(const U64 deltaTime);
 
     /// Gather input events and process them in the current scene
     inline void processInput(const U64 deltaTime) {
-        _activeScene->processInput(deltaTime);
-        Attorney::SceneManager::updateCameraControls(*_activeScene);
+        getActiveScene().processInput(deltaTime);
+        Attorney::SceneManager::updateCameraControls(getActiveScene());
     }
 
     inline void processTasks(const U64 deltaTime) {
-        _activeScene->processTasks(deltaTime);
+        getActiveScene().processTasks(deltaTime);
     }
     inline void processGUI(const U64 deltaTime) {
-        _activeScene->processGUI(deltaTime);
+        getActiveScene().processGUI(deltaTime);
     }
 
     void enableFog(F32 density, const vec3<F32>& color);
-
-
-    SceneShaderData& sceneData() {
-        return _sceneData;
-    }
 
     RenderPassCuller::VisibleNodeList& getVisibleNodesCache(RenderStage stage);
 
@@ -198,6 +140,7 @@ DEFINE_SINGLETON(SceneManager, FrameListener, Input::InputAggregatorInterface)
     bool switchScene(const stringImpl& name, bool unloadPrevious, bool threaded = true);
 
   protected:
+    friend class ScenePool;
     void initPostLoadState();
     /// Lookup the factory methods table and return the pointer to a newly
     /// constructed scene bound to that name
@@ -220,11 +163,6 @@ DEFINE_SINGLETON(SceneManager, FrameListener, Input::InputAggregatorInterface)
     typedef hashMapImpl<stringImpl, Scene*> SceneMap;
     bool _init;
     bool _processInput;
-    /// Pointer to the currently active scene
-    Scene* _activeScene;
-    Scene* _loadedScene;
-    Scene* _defaultScene;
-    vectorImpl<Scene*> _loadedScenes;
     /// Pointer to the GUI interface
     GUI* _GUI;
     /// Pointer to the scene graph culler that's used to determine what nodes are
@@ -232,11 +170,10 @@ DEFINE_SINGLETON(SceneManager, FrameListener, Input::InputAggregatorInterface)
     RenderPassCuller* _renderPassCuller;
     /// Pointer to the render pass manager
     RenderPassManager* _renderPassManager;
-    /// Generic scene data that doesn't change per shader
-    ShaderBuffer* _sceneShaderData;
     /// Scene pool
     SceneMap _sceneMap;
-    SceneShaderData _sceneData;
+    ScenePool* _scenePool;
+    SceneShaderData* _sceneData;
     U64 _elapsedTime;
     U32 _elapsedTimeMS;
     U64 _saveTimer;

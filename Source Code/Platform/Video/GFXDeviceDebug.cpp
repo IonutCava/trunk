@@ -9,7 +9,7 @@
 #include "Platform/Video/Headers/IMPrimitive.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
-#include "Platform/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
+#include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 
 namespace Divide {
 /// Show the contents of the depth buffer in a small rectangle in the bottom
@@ -36,8 +36,8 @@ void GFXDevice::previewDepthBuffer() {
         return;
     }
 
-    U16 screenWidth = std::max(_renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer->getResolution().width, to_const_ushort(768));
-    Texture_ptr depthTex = _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer->getAttachment(TextureDescriptor::AttachmentType::Depth);
+    U16 screenWidth = std::max(_renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->getResolution().width, to_const_ushort(768));
+    Texture_ptr depthTex = _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->getAttachment(TextureDescriptor::AttachmentType::Depth);
     depthTex->Bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0));
     {
         //HiZ preview
@@ -54,13 +54,13 @@ void GFXDevice::previewDepthBuffer() {
     }
     {
         //Normals preview
-        _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer
+        _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target
             ->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0),
                    TextureDescriptor::AttachmentType::Color1);
 
         GFX::ScopedViewport viewport(screenWidth - 768, 0, 256, 256);
-        _framebufferDraw->Uniform("linearSpace", false);
-        drawTriangle(_defaultStateNoDepthHash, _framebufferDraw);
+        _renderTargetDraw->Uniform("linearSpace", false);
+        drawTriangle(_defaultStateNoDepthHash, _renderTargetDraw);
     }
 #endif
 }
@@ -132,10 +132,7 @@ void GFXDevice::drawDebugAxis(const SceneRenderState& sceneRenderState) {
     // Apply the inverse view matrix so that it cancels out in the shader
     // Submit the draw command, rendering it in a tiny viewport in the lower
     // right corner
-    U16 windowWidth = _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer->getWidth();
-    drawLines(*_axisGizmo,
-              _axisLines,
-              vec4<I32>(windowWidth - 120, 8, 128, 128),
-              true);
+    U16 windowWidth = _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->getWidth();
+    _axisGizmo->fromLines(_axisLines, vec4<I32>(windowWidth - 120, 8, 128, 128));
 }
 };

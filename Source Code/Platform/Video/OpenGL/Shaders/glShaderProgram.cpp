@@ -7,7 +7,6 @@
 
 #include "Core/Headers/ParamHandler.h"
 #include "Platform/Video/Headers/GFXDevice.h"
-#include "Platform/Video/Shaders/Headers/Shader.h"
 #include "Platform/Video/OpenGL/Headers/GLWrapper.h"
 
 namespace Divide {
@@ -46,12 +45,20 @@ glShaderProgram::~glShaderProgram() {
     }
 }
 
+bool glShaderProgram::unload() {
+    // Remove every shader attached to this program
+    for (ShaderIDMap::value_type& it : _shaderIDMap) {
+        glShader::removeShader(it.second);
+    }
+    return ShaderProgram::unload();
+}
+
 /// Basic OpenGL shader program validation (both in debug and in release)
 bool glShaderProgram::validateInternal() {
     bool shaderError = false;
     for (U32 i = 0; i < to_const_uint(ShaderType::COUNT); ++i) {
         // Get the shader pointer for that stage
-        Shader* shader = _shaderStage[i];
+        glShader* shader = _shaderStage[i];
         // If a shader exists for said stage
         if (shader) {
             // Validate it
@@ -115,7 +122,7 @@ bool glShaderProgram::update(const U64 deltaTime) {
             glGetProgramBinary(_shaderProgramID, binaryLength, NULL, &_binaryFormat, binary);
             if (_binaryFormat != GL_NONE) {
                 // dump the buffer to file
-                stringImpl outFileName(Shader::CACHE_LOCATION_BIN + getName() + ".bin");
+                stringImpl outFileName(glShader::CACHE_LOCATION_BIN + getName() + ".bin");
                 FILE* outFile = fopen(outFileName.c_str(), "wb");
                 if (outFile != NULL) {
                     fwrite(binary, binaryLength, 1, outFile);
@@ -180,14 +187,14 @@ stringImpl glShaderProgram::getLog() const {
 }
 
 /// Remove a shader stage from this program
-void glShaderProgram::detachShader(Shader* const shader) {
+void glShaderProgram::detachShader(glShader* const shader) {
     glDetachShader(_shaderProgramID, shader->getShaderID());
     // glUseProgramStages(_shaderProgramID,
     // GLUtil::glShaderStageTable[to_uint(shader->getType())], 0);
 }
 
 /// Add a new shader stage to this program
-void glShaderProgram::attachShader(Shader* const shader, const bool refresh) {
+void glShaderProgram::attachShader(glShader* const shader, const bool refresh) {
     if (!shader) {
         return;
     }
@@ -234,7 +241,7 @@ void glShaderProgram::threadedLoad() {
         // For every possible stage that the program might use
         for (U32 i = 0; i < to_const_uint(ShaderType::COUNT); ++i) {
             // Get the shader pointer for that stage
-            Shader* shader = _shaderStage[i];
+            glShader* shader = _shaderStage[i];
             // If a shader exists for said stage
             if (shader) {
                 // Attach it
@@ -426,7 +433,7 @@ bool glShaderProgram::load() {
             // pointer for the stage's shader already
             if (!_refreshStage[i]) {
                 // Else, we ask the shader manager to see if it was previously loaded elsewhere
-                _shaderStage[i] = Shader::getShader(shaderCompileName, refresh);
+                _shaderStage[i] = glShader::getShader(shaderCompileName, refresh);
             }
 
             // If this is the first time this shader is loaded ...
@@ -435,7 +442,7 @@ bool glShaderProgram::load() {
 
                 stringImpl sourceCode;
                 if (Config::USE_SHADER_TEXT_CACHE) {
-                    ShaderProgram::shaderFileRead(Shader::CACHE_LOCATION_TEXT + shaderCompileName,
+                    ShaderProgram::shaderFileRead(glShader::CACHE_LOCATION_TEXT + shaderCompileName,
                                                   true,
                                                   sourceCode);
                 }
@@ -458,7 +465,7 @@ bool glShaderProgram::load() {
                 }
                 if (!sourceCode.empty()){
                     // Load our shader from the final string and save it in the manager in case a new Shader Program needs it
-                    _shaderStage[i] = Shader::loadShader(shaderCompileName, sourceCode, type, parseIncludes, _refreshStage[i]);
+                    _shaderStage[i] = glShader::loadShader(shaderCompileName, sourceCode, type, parseIncludes, _refreshStage[i]);
                 }
             }
             // Show a message, in debug, if we don't have a shader for this stage

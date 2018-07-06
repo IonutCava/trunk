@@ -41,7 +41,7 @@ namespace Divide {
 
 class PostAAPreRenderOperator : public PreRenderOperator {
    public:
-    PostAAPreRenderOperator(Framebuffer* hdrTarget, Framebuffer* ldrTarget);
+    PostAAPreRenderOperator(RenderTarget* hdrTarget, RenderTarget* ldrTarget);
     ~PostAAPreRenderOperator();
 
     void idle() override;

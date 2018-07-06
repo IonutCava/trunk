@@ -384,8 +384,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
     // Shadow/PostFX artifacts
     if (renderBoundingBox() || sceneRenderState.drawBoundingBoxes()) {
         const BoundingBox& bb = _parentSGN.get<BoundsComponent>()->getBoundingBox();
-        GFX_DEVICE.drawBox3D(*_boundingBoxPrimitive[0], bb.getMin(), bb.getMax(), vec4<U8>(0, 0, 255, 255));
-
+        _boundingBoxPrimitive[0]->fromBox(bb.getMin(), bb.getMax(), vec4<U8>(0, 0, 255, 255));
 
         if (_parentSGN.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTION_SELECTED) {
             renderBoundingSphere(true);
@@ -401,7 +400,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
                                    renderParentBBFlagInitialized);
             if (!renderParentBB || !renderParentBBFlagInitialized) {
                 const BoundingBox& bbGrandParent = grandParent->get<BoundsComponent>()->getBoundingBox();
-                GFX_DEVICE.drawBox3D(*_boundingBoxPrimitive[1],
+                _boundingBoxPrimitive[1]->fromBox(
                                      bbGrandParent.getMin() - vec3<F32>(0.0025f),
                                      bbGrandParent.getMax() + vec3<F32>(0.0025f),
                                      vec4<U8>(0, 128, 128, 255));
@@ -416,8 +415,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
     
     if (renderBoundingSphere()) {
         const BoundingSphere& bs = _parentSGN.get<BoundsComponent>()->getBoundingSphere();
-        GFX_DEVICE.drawSphere3D(*_boundingSpherePrimitive, bs.getCenter(), bs.getRadius(),
-                                vec4<U8>(0, 255, 0, 255));
+        _boundingSpherePrimitive->fromSphere(bs.getCenter(), bs.getRadius(), vec4<U8>(0, 255, 0, 255));
     } else {
         _boundingSpherePrimitive->paused(true);
     }
@@ -439,9 +437,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
                 const vectorImpl<Line>& skeletonLines = childAnimComp->skeletonLines();
                 _skeletonPrimitive->worldMatrix(_parentSGN.get<PhysicsComponent>()->getWorldMatrix());
                 // Submit the skeleton lines to the GPU for rendering
-                GFX_DEVICE.drawLines(*_skeletonPrimitive, skeletonLines,
-                                     vec4<I32>(),
-                                     false);
+                _skeletonPrimitive->fromLines(skeletonLines);
                 parentStates.setTrackedValue(
                     StateTracker<bool>::State::SKELETON_RENDERED, true);
             }
@@ -623,15 +619,15 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
 
     mat->updateReflectionIndex(reflectionIndex);
 
-    GFXDevice::RenderTarget& reflectionTarget = GFX_DEVICE.reflectionTarget(reflectionIndex);
-    assert(reflectionTarget._buffer != nullptr);
+    GFXDevice::RenderTargetWrapper& reflectionTarget = GFX_DEVICE.reflectionTarget(reflectionIndex);
+    assert(reflectionTarget._target != nullptr);
 
     if (_reflectionCallback) {
         _reflectionCallback(_parentSGN, renderState, reflectionTarget);
     } else {
         const vec2<F32>& camZPlanes = renderState.getCameraConst().getZPlanes();
 
-        GFX_DEVICE.generateCubeMap(*reflectionTarget._buffer, 0, camPos,
+        GFX_DEVICE.generateCubeMap(*reflectionTarget._target, 0, camPos,
                                    vec2<F32>(camZPlanes.x, camZPlanes.y * 0.25f),
                                    RenderStage::REFLECTION);
     }
@@ -673,8 +669,8 @@ bool RenderingComponent::updateRefraction(U32 refractionIndex,
 
     mat->updateRefractionIndex(refractionIndex);
 
-    GFXDevice::RenderTarget& refractionTarget = GFX_DEVICE.refractionTarget(refractionIndex);
-    assert(refractionTarget._buffer != nullptr);
+    GFXDevice::RenderTargetWrapper& refractionTarget = GFX_DEVICE.refractionTarget(refractionIndex);
+    assert(refractionTarget._target != nullptr);
     _refractionCallback(_parentSGN, renderState, refractionTarget);
 
     return true;

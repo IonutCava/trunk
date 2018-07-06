@@ -40,17 +40,9 @@ bool ShaderProgram::load() {
 }
 
 bool ShaderProgram::unload() {
-    // Remove every shader attached to this program
-    for (ShaderIDMap::value_type& it : _shaderIDMap) {
-        Shader::removeShader(it.second);
-    }
-    bool isClosing = false;
-    {
-        ReadLock r_lock(_programLock);
-        isClosing = _shaderPrograms.empty();
-    }
     // Unregister the program from the manager
-    if (!isClosing) {
+    ReadLock r_lock(_programLock);
+    if (!_shaderPrograms.empty()) {
         unregisterShaderProgram(getName());
     }
 

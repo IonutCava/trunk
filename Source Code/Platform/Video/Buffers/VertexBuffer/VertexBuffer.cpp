@@ -1,6 +1,25 @@
 #include "Headers/VertexBuffer.h"
 
 namespace Divide {
+VertexBuffer::VertexBuffer(GFXDevice& context)
+    : VertexDataInterface(context),
+     _format(GFXDataFormat::UNSIGNED_SHORT),
+     _primitiveRestartEnabled(false),
+     _staticBuffer(false),
+     _keepDataInMemory(false)
+{
+    reset();
+}
+
+VertexBuffer::~VertexBuffer()
+{
+    reset();
+}
+
+bool VertexBuffer::create(bool staticDraw) {
+    _staticBuffer = staticDraw;
+    return true;
+}
 
 bool VertexBuffer::createInternal() {
     return true;
@@ -99,4 +118,100 @@ void VertexBuffer::computeTangents() {
     }
 }
 
+void VertexBuffer::fromBuffer(VertexBuffer& other) {
+    reset();
+    _staticBuffer = other._staticBuffer;
+    _format = other._format;
+    _partitions = other._partitions;
+    _hardwareIndicesL = other._hardwareIndicesL;
+    _hardwareIndicesS = other._hardwareIndicesS;
+    _data = other._data;
+    _primitiveRestartEnabled = other._primitiveRestartEnabled;
+    _attribDirty = other._attribDirty;
+}
+
+bool VertexBuffer::deserialize(ByteBuffer& dataIn) {
+    assert(!dataIn.empty());
+    stringImpl idString;
+    dataIn >> idString;
+    if (idString.compare("VB") != 0) {
+        return false;
+    }
+
+    reset();
+    U32 format, data1, data2, count;
+
+    dataIn >> _staticBuffer;
+    dataIn >> _keepDataInMemory;
+    dataIn >> format;
+    _format = static_cast<GFXDataFormat>(format);
+
+    dataIn >> count;
+    _partitions.reserve(count);
+    for (U32 i = 0; i < count; ++i) {
+        dataIn >> data1;
+        dataIn >> data2;
+        _partitions.push_back(std::make_pair(data1, data2));
+    }
+    dataIn >> _hardwareIndicesL;
+    dataIn >> _hardwareIndicesS;
+
+    dataIn >> count;
+    _data.resize(count);
+    for (U32 i = 0; i < count; ++i) {
+        Vertex& vert = _data[i];
+        dataIn >> vert._color;
+        dataIn >> vert._indices.i;
+        dataIn >> vert._normal;
+        dataIn >> vert._position;
+        dataIn >> vert._tangent;
+        dataIn >> vert._texcoord;
+        dataIn >> vert._weights;
+    }
+
+    for (bool& state : _attribDirty) {
+        dataIn >> state;
+    }
+
+    dataIn >> _primitiveRestartEnabled;
+
+    return true;
+}
+
+bool VertexBuffer::serialize(ByteBuffer& dataOut) const {
+    if (!_data.empty()) {
+        dataOut << stringImpl("VB");
+        dataOut << _staticBuffer;
+        dataOut << _keepDataInMemory;
+        dataOut << to_uint(_format);
+        dataOut << to_uint(_partitions.size());
+        for (const std::pair<U32, U32>& partition : _partitions) {
+            dataOut << partition.first;
+            dataOut << partition.second;
+        }
+
+        dataOut << _hardwareIndicesL;
+        dataOut << _hardwareIndicesS;
+
+        dataOut << to_uint(_data.size());
+        for (Vertex vert : _data) {
+            dataOut << vert._color;
+            dataOut << vert._indices.i;
+            dataOut << vert._normal;
+            dataOut << vert._position;
+            dataOut << vert._tangent;
+            dataOut << vert._texcoord;
+            dataOut << vert._weights;
+        }
+
+        for (bool state : _attribDirty) {
+            dataOut << state;
+        }
+
+        dataOut << _primitiveRestartEnabled;
+
+        return true;
+    }
+    return false;
+}
 };

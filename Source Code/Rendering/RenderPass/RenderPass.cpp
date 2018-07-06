@@ -16,8 +16,8 @@
 namespace Divide {
 
 namespace {
-    Framebuffer::FramebufferTarget _noDepthClear;
-    Framebuffer::FramebufferTarget _depthOnly;
+    RenderTarget::RenderTargetDrawDescriptor _noDepthClear;
+    RenderTarget::RenderTargetDrawDescriptor _depthOnly;
 
     // We need a proper, time-based system, to check reflection budget
     namespace ReflectionUtil {
@@ -173,8 +173,8 @@ bool RenderPass::preRender(SceneRenderState& renderState, U32 pass) {
             if (_useZPrePass) {
                 GFX.toggleDepthWrites(false);
             }
-            GFX.getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._buffer->begin(_useZPrePass ? _noDepthClear
-                                                                                               : Framebuffer::defaultPolicy());
+            GFX.getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._target->begin(_useZPrePass ? _noDepthClear
+                                                                                               : RenderTarget::defaultPolicy());
         } break;
         case RenderStage::REFLECTION: {
             bindShadowMaps = true;
@@ -182,7 +182,7 @@ bool RenderPass::preRender(SceneRenderState& renderState, U32 pass) {
         case RenderStage::SHADOW: {
         } break;
         case RenderStage::Z_PRE_PASS: {
-            GFX.getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._buffer->begin(_depthOnly);
+            GFX.getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._target->begin(_depthOnly);
         } break;
     };
     
@@ -204,8 +204,8 @@ bool RenderPass::postRender(SceneRenderState& renderState, U32 pass) {
     switch (_stageFlags[pass]) {
         case RenderStage::DISPLAY:
         case RenderStage::Z_PRE_PASS: {
-            GFXDevice::RenderTarget& renderTarget = GFX.getRenderTarget(GFXDevice::RenderTargetID::SCREEN);
-            renderTarget._buffer->end();
+            GFXDevice::RenderTargetWrapper& renderTarget = GFX.getRenderTarget(GFXDevice::RenderTargetID::SCREEN);
+            renderTarget._target->end();
 
             if (_stageFlags[pass] == RenderStage::Z_PRE_PASS) {
                 GFX.constructHIZ();

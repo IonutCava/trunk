@@ -52,9 +52,6 @@ class d3dShaderProgram final : public ShaderProgram {
 
     bool isBound() const override;
     bool isValid() const override;
-
-    void attachShader(Shader* const shader, const bool refresh = false) override;
-    void detachShader(Shader* const shader)  override;
     
     // Subroutines
     void SetSubroutines(ShaderType type, const vectorImpl<U32>& indices) const override;

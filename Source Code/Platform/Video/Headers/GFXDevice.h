@@ -202,11 +202,11 @@ DEFINE_SINGLETON(GFXDevice)
        }
    };
 
-   struct RenderTarget {
-       Framebuffer* _buffer;
+   struct RenderTargetWrapper {
+       RenderTarget* _target;
        DisplaySettings _renderSettings;
 
-       RenderTarget() : _buffer(nullptr)
+       RenderTargetWrapper() : _target(nullptr)
        {
        }
 
@@ -277,20 +277,8 @@ DEFINE_SINGLETON(GFXDevice)
      *(Don't use the primitive zombie feature)
      */
     IMPrimitive* getOrCreatePrimitive(bool allowPrimitiveRecycle = true);
-
     void debugDraw(const SceneRenderState& sceneRenderState);
-    void drawSphere3D(IMPrimitive& primitive,
-                      const vec3<F32>& center,
-                      F32 radius,
-                      const vec4<U8>& color);
-    void drawBox3D(IMPrimitive& primitive,
-                   const vec3<F32>& min,
-                   const vec3<F32>& max,
-                   const vec4<U8>& color);
-    void drawLines(IMPrimitive& primitive,
-                   const vectorImpl<Line>& lines,
-                   const vec4<I32>& viewport,  //<only for ortho mode
-                   const bool inViewport = false);
+
     void drawPoints(U32 numPoints, size_t stateHash, const ShaderProgram_ptr& shaderProgram);
     void drawTriangle(size_t stateHash, const ShaderProgram_ptr& shaderProgram);
 
@@ -321,13 +309,13 @@ DEFINE_SINGLETON(GFXDevice)
     /// Generate a cubemap from the given position
     /// It renders the entire scene graph (with culling) as default
     /// use the callback param to override the draw function
-    void generateCubeMap(Framebuffer& cubeMap,
+    void generateCubeMap(RenderTarget& cubeMap,
                          const U32 arrayOffset,
                          const vec3<F32>& pos,
                          const vec2<F32>& zPlanes,
                          RenderStage renderStage);
 
-    void generateDualParaboloidMap(Framebuffer& targetBuffer,
+    void generateDualParaboloidMap(RenderTarget& targetBuffer,
                                    const U32 arrayOffset,
                                    const vec3<F32>& pos,
                                    const vec2<F32>& zPlanes,
@@ -391,16 +379,16 @@ DEFINE_SINGLETON(GFXDevice)
         return (noDepth ? _defaultStateNoDepthHash : _defaultStateBlockHash);
     }
 
-    inline RenderTarget& getRenderTarget(RenderTargetID target) {
+    inline RenderTargetWrapper& getRenderTarget(RenderTargetID target) {
         return _renderTarget[to_uint(target)];
     }
     
-    inline RenderTarget& reflectionTarget(I32 index) {
+    inline RenderTargetWrapper& reflectionTarget(I32 index) {
         assert(index < _reflectionTarget.size());
         return _reflectionTarget[index];
     }
 
-    inline RenderTarget& refractionTarget(I32 index) {
+    inline RenderTargetWrapper& refractionTarget(I32 index) {
         assert(index < _refractionTarget.size());
         return _refractionTarget[index];
     }
@@ -434,8 +422,8 @@ DEFINE_SINGLETON(GFXDevice)
 
     inline bool deInitShaders() { return _api->deInitShaders(); }
 
-    inline Framebuffer* newFB(bool multisampled = false) {
-        return _api->newFB(*this, multisampled);
+    inline RenderTarget* newRT(bool multisampled = false) {
+        return _api->newRT(*this, multisampled);
     }
 
     inline VertexBuffer* newVB() {
@@ -457,13 +445,7 @@ DEFINE_SINGLETON(GFXDevice)
     inline ShaderProgram* newShaderProgram(const stringImpl& name, const stringImpl& resourceLocation, bool asyncLoad) {
         return _api->newShaderProgram(*this, name, resourceLocation, asyncLoad);
     }
-
-    inline Shader* newShader(const stringImpl& name,
-                             const ShaderType& type,
-                             const bool optimise = false) {
-        return _api->newShader(*this, name, type, optimise);
-    }
-
+    
     inline ShaderBuffer* newSB(const stringImpl& bufferName,
                                const U32 ringBufferLength = 1,
                                const bool unbound = false,
@@ -568,15 +550,15 @@ DEFINE_SINGLETON(GFXDevice)
 
     ShaderBuffer& getNodeBuffer(RenderStage stage, U32 pass) const;
 
-    Framebuffer& activeRenderTarget();
-    const Framebuffer& activeRenderTarget() const;
+    RenderTarget& activeRenderTarget();
+    const RenderTarget& activeRenderTarget() const;
 
   private:
     Camera* _cubeCamera;
     Camera* _2DCamera;
     Camera* _dualParaboloidCamera;
 
-    Framebuffer* _activeRenderTarget;
+    RenderTarget* _activeRenderTarget;
     RenderAPIWrapper* _api;
     RenderStage _renderStage;
     RenderStage _prevRenderStage;
@@ -591,9 +573,9 @@ DEFINE_SINGLETON(GFXDevice)
     GPUVendor _GPUVendor;
     GPUState _state;
     /* Rendering buffers*/
-    std::array<RenderTarget, to_const_uint(RenderTargetID::COUNT)> _renderTarget;
-    std::array<RenderTarget, Config::MAX_REFLECTIVE_NODES_IN_VIEW> _reflectionTarget;
-    std::array<RenderTarget, Config::MAX_REFRACTIVE_NODES_IN_VIEW> _refractionTarget;
+    std::array<RenderTargetWrapper, to_const_uint(RenderTargetID::COUNT)> _renderTarget;
+    std::array<RenderTargetWrapper, Config::MAX_REFLECTIVE_NODES_IN_VIEW> _reflectionTarget;
+    std::array<RenderTargetWrapper, Config::MAX_REFRACTIVE_NODES_IN_VIEW> _refractionTarget;
     /*State management */
     RenderStateMap _stateBlockMap;
     bool _stateBlockByDescription;
@@ -617,7 +599,7 @@ DEFINE_SINGLETON(GFXDevice)
     U32 FRAME_COUNT;
     /// shader used to preview the depth buffer
     ShaderProgram_ptr _previewDepthMapShader;
-    ShaderProgram_ptr _framebufferDraw;
+    ShaderProgram_ptr _renderTargetDraw;
     ShaderProgram_ptr _HIZConstructProgram;
     ShaderProgram_ptr _HIZCullProgram;
     ShaderProgram_ptr _displayShader;
@@ -632,7 +614,6 @@ DEFINE_SINGLETON(GFXDevice)
 
     /// Immediate mode emulation shader
     ShaderProgram_ptr _imShader;
-    ShaderProgram_ptr _imShaderLines;
     I32 _imShaderTextureFlag;
     I32 _imShaderWorldMatrix;
     /// The interface that coverts IM calls to VB data

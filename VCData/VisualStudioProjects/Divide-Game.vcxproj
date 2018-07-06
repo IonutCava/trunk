@@ -90,6 +90,8 @@
     <ClCompile Include="..\..\Source Code\Scenes\Scene.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\SceneInput.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\SceneInputActions.cpp" />
+    <ClCompile Include="..\..\Source Code\Scenes\ScenePool.cpp" />
+    <ClCompile Include="..\..\Source Code\Scenes\SceneShaderData.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\SceneState.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\ShadowScene\ShadowScene.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\TenisScene\TenisScene.cpp" />
@@ -171,6 +173,8 @@
     <ClInclude Include="..\..\Source Code\Scenes\Headers\SceneComponent.h" />
     <ClInclude Include="..\..\Source Code\Scenes\Headers\SceneInput.h" />
     <ClInclude Include="..\..\Source Code\Scenes\Headers\SceneInputActions.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\Headers\ScenePool.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\Headers\SceneShaderData.h" />
     <ClInclude Include="..\..\Source Code\Scenes\Headers\SceneState.h" />
     <ClInclude Include="..\..\Source Code\Scenes\MainScene\Headers\MainScene.h" />
     <ClInclude Include="..\..\Source Code\Scenes\NetworkScene\Headers\NetworkScene.h" />

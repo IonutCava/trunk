@@ -8,11 +8,11 @@
 #include "Rendering/Lighting/Headers/DirectionalLight.h"
 #include "Rendering/Lighting/Headers/LightPool.h"
 #include "Platform/Video/Headers/GFXDevice.h"
-#include "Platform/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
+#include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 
 namespace Divide {
 
-std::array<Framebuffer*, to_const_uint(ShadowType::COUNT)> ShadowMap::_depthMaps;
+std::array<RenderTarget*, to_const_uint(ShadowType::COUNT)> ShadowMap::_depthMaps;
 std::array<ShadowMap::LayerUsageMask, to_const_uint(ShadowType::COUNT)> ShadowMap::_depthMapUsage;
 
 void ShadowMap::initShadowMaps() {
@@ -42,7 +42,7 @@ void ShadowMap::initShadowMaps() {
                 depthMapDescriptor.setLayerCount(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
                 depthMapDescriptor.setSampler(depthMapSampler);
 
-                _depthMaps[i] = GFX_DEVICE.newFB();
+                _depthMaps[i] = GFX_DEVICE.newRT();
                 _depthMaps[i]->addAttachment(depthMapDescriptor, TextureDescriptor::AttachmentType::Depth);
             } break;
 
@@ -59,7 +59,7 @@ void ShadowMap::initShadowMaps() {
                                                  Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
                 depthMapDescriptor.setSampler(depthMapSampler);
 
-                _depthMaps[i] = GFX_DEVICE.newFB(false);
+                _depthMaps[i] = GFX_DEVICE.newRT(false);
                 _depthMaps[i]->addAttachment(depthMapDescriptor, TextureDescriptor::AttachmentType::Color0);
                 _depthMaps[i]->setClearColor(DefaultColors::WHITE());
             } break;
@@ -78,7 +78,7 @@ void ShadowMap::initShadowMaps() {
                 depthMapDescriptor.setSampler(depthMapSampler);
                 depthMapDescriptor.setLayerCount(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
 
-                _depthMaps[i] = GFX_DEVICE.newFB();
+                _depthMaps[i] = GFX_DEVICE.newRT();
                 _depthMaps[i]->addAttachment(depthMapDescriptor, TextureDescriptor::AttachmentType::Depth);
             } break;
         };
@@ -106,7 +106,7 @@ void ShadowMap::bindShadowMaps() {
 
 void ShadowMap::clearShadowMapBuffers() {
     for (U8 i = 0; i < to_const_ubyte(ShadowType::COUNT); ++i) {
-        _depthMaps[i]->clear(Framebuffer::defaultPolicy());
+        _depthMaps[i]->clear(RenderTarget::defaultPolicy());
     }
 }
 

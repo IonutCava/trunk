@@ -177,7 +177,7 @@ GFXDevice::RenderQueue::unlock() {
 }
 
 inline void
-GFXDevice::RenderTarget::cacheSettings() {
+GFXDevice::RenderTargetWrapper::cacheSettings() {
     _renderSettings._aspectRatio = GFX_DEVICE.renderingData().aspectRatio();
     _renderSettings._zPlanes.set(GFX_DEVICE.renderingData().currentZPlanes());
     GFX_DEVICE.getMatrix(MATRIX::PROJECTION, _renderSettings._projectionMatrix);
