@@ -65,7 +65,7 @@ void Task::run() {
         }
 
         while ((_paused && !_end) ||
-               (app.mainLoopPaused() && !app.ShutdownRequested())) {
+            (app.mainLoopPaused() && !app.ShutdownRequested())) {
             continue;
         }
 

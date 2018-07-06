@@ -57,7 +57,8 @@ TimeValue ApplicationTimer::getCurrentTicksInternal() const {
 }
 
 U64 ApplicationTimer::getElapsedTimeInternal(TimeValue currentTicks) const {
-    return Time::SecondsToMicroseconds(to_float(currentTicks - _startupTicks) / _ticksPerSecond);
+    U64 microseconds = Time::SecondsToMicroseconds(currentTicks - _startupTicks);
+    return microseconds / _ticksPerSecond;
 }
 
 void ApplicationTimer::update(U32 frameCount) {

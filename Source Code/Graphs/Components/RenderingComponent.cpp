@@ -215,7 +215,9 @@ void RenderingComponent::renderWireframe(const bool state) {
 
 void RenderingComponent::renderBoundingBox(const bool state) {
     _renderBoundingBox = state;
-
+    if (!state) {
+        _boundingBoxPrimitive->paused(true);
+    }
     for (SceneGraphNode::NodeChildren::value_type& it : _parentSGN.getChildren()) {
         RenderingComponent* const renderable =
             it.second->getComponent<RenderingComponent>();
@@ -227,7 +229,9 @@ void RenderingComponent::renderBoundingBox(const bool state) {
 
 void RenderingComponent::renderSkeleton(const bool state) {
     _renderSkeleton = state;
-    
+    if (!state && _skeletonPrimitive) {
+        _skeletonPrimitive->paused(true);
+    }
     for (SceneGraphNode::NodeChildren::value_type it : _parentSGN.getChildren()) {
         RenderingComponent* const renderable =
             it.second->getComponent<RenderingComponent>();

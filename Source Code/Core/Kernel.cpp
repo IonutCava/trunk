@@ -148,6 +148,12 @@ void Kernel::mainLoopApp() {
     _currentTime = Time::ElapsedMicroseconds();
     _currentTimeDelta = _currentTime - _previousTime;
 
+    // In case we break in the debugger
+    if (_currentTimeDelta > Time::SecondsToMicroseconds(1)) {
+        _currentTimeDelta = Config::SKIP_TICKS;
+        _previousTime = _currentTime - _currentTimeDelta;
+    }
+
     FrameEvent evt;
     FrameListenerManager& frameMgr = FrameListenerManager::getInstance();
     Application& APP = Application::getInstance();

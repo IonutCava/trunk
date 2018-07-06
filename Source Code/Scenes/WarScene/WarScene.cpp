@@ -171,6 +171,9 @@ void WarScene::updateSceneStateInternal(const U64 deltaTime) {
     }
 
     // renderState().drawDebugLines(true);
+    vec3<F32> tempDestination;
+    vec4<U8> redLine(255,0,0,128);
+    vec4<U8> blueLine(0,0,255,128);
     vectorImpl<Line> paths;
     paths.reserve(_army[0].size() + _army[1].size());
     for (U8 i = 0; i < 2; ++i) {
@@ -178,12 +181,14 @@ void WarScene::updateSceneStateInternal(const U64 deltaTime) {
             if (!character->getUnitRef()->getBoundNode().lock()->isActive()) {
                 continue;
             }
-
-            vectorAlg::emplace_back(paths, 
-                                    character->getPosition(),
-                                    character->getDestination(),
-                                    vec4<U8>(i == 0 ? 0 : 255, 0, i == 0 ? 255 : 0, 255),
-                                    vec4<U8>(i == 0 ? 0 : 64, 0, i == 0 ? 64 : 0, 128));
+            tempDestination.set(character->getDestination());
+            if (!tempDestination.isZeroLength()) {
+                vectorAlg::emplace_back(paths,
+                    character->getPosition(),
+                    tempDestination,
+                    i == 0 ? blueLine : redLine,
+                    i == 0 ? blueLine / 2 : redLine / 2);
+            }
         }
     }
     GFX_DEVICE.drawLines(*_targetLines, paths, mat4<F32>(), vec4<I32>());
@@ -357,9 +362,9 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     timeGenerator->_maxTime = 5.5f;
     particleSource->addGenerator(timeGenerator);
 
-    SceneGraphNode_ptr testSGN = addParticleEmitter("TESTPARTICLES", particles, _sceneGraph->getRoot());
+    //SceneGraphNode_ptr testSGN = addParticleEmitter("TESTPARTICLES", particles, _sceneGraph->getRoot());
 
-    ParticleEmitter* test = testSGN->getNode<ParticleEmitter>();
+/*    ParticleEmitter* test = testSGN->getNode<ParticleEmitter>();
     testSGN->getComponent<PhysicsComponent>()->translateY(5);
     test->setDrawImpostor(true);
     test->enableEmitter(true);
@@ -372,7 +377,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     test->addUpdater(std::make_shared<ParticleBasicTimeUpdater>());
     test->addUpdater(std::make_shared<ParticleBasicColorUpdater>());
     test->addUpdater(std::make_shared<ParticleFloorUpdater>());
-
+    */
     state().generalVisibility(state().generalVisibility() * 2);
 
     Application::getInstance()
@@ -433,7 +438,7 @@ bool WarScene::loadResources(bool continueOnErrors) {
                     DELEGATE_BIND(&WarScene::startSimulation, this));
 
     _GUI->addText("scoreDisplay", 
-                  vec2<I32>(60, 50),  // Position
+                  vec2<I32>(60, 135),  // Position
                   Font::DIVIDE_DEFAULT,  // Font
                   vec3<F32>(1.0f, 0.0f, 1.0f),  // Color
                   "Score: A -  %s B - %s", 0);  // Text and arguments
@@ -443,11 +448,11 @@ bool WarScene::loadResources(bool continueOnErrors) {
                   vec3<F32>(0.0f, 0.2f, 1.0f),  // Color
                   "FPS: %s", 0);  // Text and arguments
     _GUI->addText("RenderBinCount",
-                  vec2<I32>(60, 73),
+                  vec2<I32>(60, 83),
                   Font::DIVIDE_DEFAULT,
                   vec3<F32>(0.6f, 0.2f, 0.2f),
                   "Number of items in Render Bin: %d", 0);
-    _GUI->addText("camPosition", vec2<I32>(60, 103),
+    _GUI->addText("camPosition", vec2<I32>(60, 113),
                   Font::DIVIDE_DEFAULT,
                   vec3<F32>(0.2f, 0.8f, 0.2f),
                   "Position [ X: %5.0f | Y: %5.0f | Z: %5.0f ] [Pitch: %5.2f | "
