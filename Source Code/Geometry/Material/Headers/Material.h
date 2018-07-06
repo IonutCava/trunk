@@ -64,14 +64,12 @@ public:
         std::string _shader;
         bool _computedShader;
         vectorImpl<std::string> _shaderDefines;
-        P32 _matId;
 
         ShaderInfo()
         {
             _shaderRef = nullptr;
             _shader = "";
             _computedShader = false;
-            _matId.i = 0;
         }
     };
 
@@ -187,16 +185,16 @@ public:
     ///toggle multi-threaded shader loading on or off for this material
     inline void setShaderLoadThreaded(const bool state) {_shaderThreadedLoad = state;}
     void setShaderProgram(const std::string& shader, const RenderStage& renderStage = FINAL_STAGE);
-    RenderStateBlock* setRenderStateBlock(const RenderStateBlockDescriptor& descriptor,const RenderStage& renderStage);
+    RenderStateBlock* setRenderStateBlock(RenderStateBlockDescriptor& descriptor,const RenderStage& renderStage);
 
-    inline P32 getMaterialId(const RenderStage& renderStage = FINAL_STAGE) { return _shaderInfo[renderStage]._matId; }
+    void getSortKeys(I32& shaderKey, I32& textureKey) const;
 
     inline const mat4<F32>& getMaterialMatrix(U8 index = 0)  const {return _materialMatrix[index];}
                
     inline F32   getOpacityValue(U8 index = 0)    const {return _shaderData[index]._opacity;}
     inline U8    getTextureCount(U8 index = 0)    const {return _shaderData[index]._textureCount;}
 
-    inline RenderStateBlock* getRenderState(RenderStage currentStage) { return _defaultRenderStates[currentStage]; }
+           RenderStateBlock* getRenderState(RenderStage currentStage);
     inline Texture2D*	     const getTexture(U32 textureUsage) {return _textures[textureUsage];}
            ShaderProgram*    const getShaderProgram(RenderStage renderStage = FINAL_STAGE);
 

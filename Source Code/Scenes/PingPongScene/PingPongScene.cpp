@@ -78,7 +78,7 @@ void PingPongScene::serveBall(){
     }
 }
 
-void PingPongScene::test(boost::any a, CallbackParam b){
+void PingPongScene::test(cdiggins::any a, CallbackParam b){
     if(getTasks().empty()) return;
     bool updated = false;
     std::string message;

@@ -28,7 +28,7 @@
 #include "Scenes/NetworkScene/Headers/NetworkScene.h"
 #include "Scenes/PingPongScene/Headers/PingPongScene.h"
 #include "Scenes/FlashScene/Headers/FlashScene.h"
-#include "Scenes/AITenisScene/Headers/AITenisScene.h"
+#include "Scenes/TenisScene/Headers/TenisScene.h"
 #include "Scenes/PhysXScene/Headers/PhysXScene.h"
 #include "Scenes/WarScene/Headers/WarScene.h"
 #endif

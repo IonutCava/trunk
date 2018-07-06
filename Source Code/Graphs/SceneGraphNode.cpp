@@ -116,7 +116,7 @@ bool SceneGraphNode::unload(){
         PRINT_FN(Locale::get("REMOVE_SCENEGRAPH_NODE"),_node->getName().c_str(), getName().c_str());
     }
     //if not root
-    if(getParent()){
+    if (_node && getParent()){
         _node->decReferenceCount();
         if(_node->getReferenceCount() == 0) {
             RemoveResource(_node);

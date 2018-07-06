@@ -147,7 +147,7 @@ void Kernel::mainLoopApp(){
     static I32 count = 0;
     count++;
     if(count > 600){
-        PRINT_FN("GPU: [ %5.5f ]", getUsToSec(GFX_DEVICE.getFrameDurationGPU()));
+        PRINT_FN("GPU: [ %5.5f ] [DrawCalls: %d]", getUsToSec(GFX_DEVICE.getFrameDurationGPU()), GFX_DEVICE.getDrawCallCount());
         count = 0;
     }
 #endif
@@ -349,7 +349,7 @@ void Kernel::submitRenderCall(const RenderStage& stage, const SceneRenderState& 
     _GFX.setRenderStage(stage);
     _GFX.render(sceneRenderCallback, sceneRenderState);
 
-    if(bitCompare(stage,FINAL_STAGE) || bitCompare(stage,DEFERRED_STAGE)){
+    if (bitCompare(FINAL_STAGE, stage) || bitCompare(DEFERRED_STAGE, stage)){
         // Draw bounding boxes, skeletons, axis gizmo, etc.
         _GFX.debugDraw();
         // Show NavMeshes

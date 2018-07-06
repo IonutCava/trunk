@@ -54,7 +54,7 @@ public:
 	bool onJoystickButtonUp(const OIS::JoyStickEvent& key, I8 button);
 
 private:
-	void test(boost::any a, CallbackParam b);
+	void test(cdiggins::any a, CallbackParam b);
 	void serveBall();
 	void resetGame();
 

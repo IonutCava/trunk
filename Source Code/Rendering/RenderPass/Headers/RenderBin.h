@@ -38,11 +38,12 @@ class SceneGraphNode;
 
 struct RenderBinItem{
     SceneGraphNode  *_node;
-    P32              _sortKey;
+    I32              _sortKeyA; 
+    I32              _sortKeyB;
     I64              _stateHash;
 
     RenderBinItem() : _node(nullptr){}
-    RenderBinItem(P32 sortKey, SceneGraphNode *node );
+    RenderBinItem(I32 sortKeyA, I32 sortKeyB, SceneGraphNode *node );
 };
 
 struct RenderingOrder{
@@ -87,10 +88,10 @@ public:
     {
     }
 
-    virtual void sort();
-    virtual void preRender();
+    virtual void sort(const RenderStage& currentRenderStage);
+    virtual void preRender(const RenderStage& currentRenderStage);
     virtual void render(const RenderStage& currentRenderStage);
-    virtual void postRender();
+    virtual void postRender(const RenderStage& currentRenderStage);
     virtual void refresh();
 
     virtual void addNodeToBin(SceneGraphNode* const sgn);

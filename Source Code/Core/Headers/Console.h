@@ -3,6 +3,7 @@
 
 #include "Core/Headers/Singleton.h"
 #include <boost/thread/mutex.hpp>
+#include <boost/function.hpp>
 
 #ifndef I32
 #define I32 int
@@ -12,8 +13,6 @@ DEFINE_SINGLETON(Console)
 	typedef boost::function2<void, const char*, bool > consolePrintCallback;
 
 public:
-	static const I32 CONSOLE_OUTPUT_BUFFER_SIZE = 5096 * 16;
-
 	void printCopyrightNotice() const;
 	void printfn(const char* format, ...) const;
 	void printf(const char* format, ...) const;
@@ -30,12 +29,15 @@ public:
 	inline void bindConsoleOutput(const consolePrintCallback& guiConsoleCallback) {_guiConsoleCallback = guiConsoleCallback;}
 
 protected:
+    Console();
+    ~Console();
 	void output(const char* text,const bool error = false) const;
 
 private:
 	mutable boost::mutex io_mutex;
 	consolePrintCallback _guiConsoleCallback;
 	bool _timestamps;
+    char* _textBuffer;
 
 END_SINGLETON
 

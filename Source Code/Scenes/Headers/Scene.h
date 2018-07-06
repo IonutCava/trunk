@@ -24,6 +24,7 @@
 #define _SCENE_H_
 
 #include "SceneState.h"
+#include "Core/Headers/cdigginsAny.h"
 #include "Hardware/Platform/Headers/Task.h"
 
 class Sky;

@@ -104,7 +104,7 @@ void SceneNode::setMaterial(Material* const m){
     if(m){ //If we need to update the material
         //UpgradableReadLock ur_lock(_materialLock);
         if(_material){ //If we had an old material
-            if(_material->getMaterialId().i != m->getMaterialId().i){ //if the old material isn't the same as the new one
+            if(_material->getGUID() != m->getGUID()){ //if the old material isn't the same as the new one
                 PRINT_FN(Locale::get("REPLACE_MATERIAL"),_material->getName().c_str(),m->getName().c_str());
                 //UpgradeToWriteLock uw_lock(ur_lock);
                 RemoveResource(_material);			//remove the old material

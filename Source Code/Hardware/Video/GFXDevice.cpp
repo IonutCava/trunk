@@ -336,7 +336,7 @@ void  GFXDevice::generateCubeMap(FrameBuffer& cubeMap,
     releaseMatrices();
 }
 
-RenderStateBlock* GFXDevice::getOrCreateStateBlock(const RenderStateBlockDescriptor& descriptor){
+RenderStateBlock* GFXDevice::getOrCreateStateBlock(RenderStateBlockDescriptor& descriptor){
    size_t hashValue = descriptor.getHash();
 
    if (_stateBlockMap.find(hashValue) != _stateBlockMap.end())

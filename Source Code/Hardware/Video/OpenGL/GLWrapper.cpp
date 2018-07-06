@@ -18,6 +18,10 @@
 //Max number of frames before an unused primitive is deleted (default: 180 - 3 seconds at 60 fps)
 const GLint GLIM_MAX_FRAMES_ZOMBIE_COUNT = 180;
 
+GLint GL_API::FRAME_DRAW_CALLS = 0;
+GLint GL_API::FRAME_DRAW_CALLS_PREV = 0;
+GLuint64 GL_API::FRAME_DURATION_GPU = 0;
+
 #include <glim.h>
 #include <gtc/matrix_transform.hpp>
 #include <gtc/type_ptr.hpp>
@@ -56,7 +60,7 @@ void GL_API::endFrame(){
 
     glfwSwapBuffers(Divide::GL::_mainWindow);
     glEndQuery(GL_TIME_ELAPSED);
-    glGetQueryObjectui64v(_queryID[_queryFrontBuffer][0], GL_QUERY_RESULT, &_frameDurationGPU);
+    glGetQueryObjectui64v(_queryID[_queryFrontBuffer][0], GL_QUERY_RESULT, &GL_API::FRAME_DURATION_GPU);
 
     if (_queryBackBuffer) {
         _queryBackBuffer = 0;
@@ -65,6 +69,9 @@ void GL_API::endFrame(){
         _queryBackBuffer = 1;
         _queryFrontBuffer = 0;
     }
+
+    GL_API::FRAME_DRAW_CALLS_PREV = GL_API::FRAME_DRAW_CALLS;
+    GL_API::FRAME_DRAW_CALLS = 0;
 }
 
 void GL_API::debugDraw(){

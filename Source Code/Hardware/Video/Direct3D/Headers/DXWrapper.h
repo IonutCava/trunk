@@ -104,6 +104,7 @@ protected:
     bool loadInContext(const CurrentContext& context, const DELEGATE_CBK& callback);
 
     U64 getFrameDurationGPU() const { return 0; }
+    I32 getDrawCallCount()    const { return 0; }
 
     void activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlock* const oldBlock);
 

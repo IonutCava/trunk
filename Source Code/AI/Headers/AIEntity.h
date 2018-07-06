@@ -22,22 +22,24 @@
 #ifndef _AI_ENTITY_H_
 #define _AI_ENTITY_H_
 
-#include "core.h"
-#include "CommunicationInterface.h"
+#include "Core/Headers/cdigginsAny.h"
+#include "AI/Headers/GOAPContext.h"
 #include "AI/Sensors/Headers/VisualSensor.h"
 #include "AI/ActionInterface/Headers/AITeam.h"
 #include "Utility/Headers/GUIDWrapper.h"
+#include <AesopPlanner.h>
 
-class ActionList;
+class AISceneImpl;
 class SceneGraphNode;
 class NPC;
-
+enum  AIMsg; //< scene dependent message list
 struct dtCrowdAgent;
 namespace Navigation {
     class DivideRecast;
     class DivideDtCrowd;
     class NavigationMesh;
-}
+};
+
 /// Based on OgreCrowd.
 class AIEntity : public GUIDWrapper {
     friend class AIManager;
@@ -49,28 +51,23 @@ public:
     void load(const vec3<F32>& position);
     void unload();
 
-    void processInput(const U64 deltaTime);
-    void processData(const U64 deltaTime);
-    void update(const U64 deltaTime);
-
     bool addSensor(SensorType type, Sensor* sensor);
-    bool setComInterface() {SAFE_UPDATE(_comInterface, New CommunicationInterface(this)); return true;}
-    bool addActionProcessor(ActionList* actionProcessor);
-
+    bool addAISceneImpl(AISceneImpl* AISceneImpl);
+    bool addGOAPPlanner(const Aesop::Planner& planner, bool startOnAdd = false);
+    void sendMessage(AIEntity* receiver,  AIMsg msg, const cdiggins::any& msg_content);
+    void receiveMessage(AIEntity* sender, AIMsg msg, const cdiggins::any& msg_content);
+    void processMessage(AIEntity* sender, AIMsg msg, const cdiggins::any& msg_content);
     Sensor* getSensor(SensorType type);
-    CommunicationInterface* getCommunicationInterface() {return _comInterface;}
 
     inline AITeam* getTeam() {return _coordination; }
     inline U32  getTeamID() const    {if(_coordination != nullptr) { return _coordination->getTeamID();} return 0; }
 
-    ///Set a team for this Entity. If the enitity belonged to a different team, remove it from that team first
+    inline void updateGOAPPlan() { _updateGOAPPlan  = true; }
+    ///Set a team for this Entity. If the entity belonged to a different team, remove it from that team first
     void setTeam(AITeam* const coordination);
     ///Add a friend to our team
     bool addFriend(AIEntity* const friendEntity);
 
-    void sendMessage(AIEntity* receiver, AIMsg msg,const boost::any& msg_content);
-    void receiveMessage(AIEntity* sender, AIMsg msg,const boost::any& msg_content);
-    void processMessage(AIEntity* sender, AIMsg msg, const boost::any& msg_content);
     const std::string& getName() {return _name;}
 
            void addUnitRef(NPC* const npc);
@@ -83,7 +80,7 @@ public:
     inline const dtCrowdAgent* getAgent() const { return _agent; }
     inline bool  isAgentLoaded() const { return _agentID >= 0; }
      /// Set the crowd object
-    void   resetCrowd(Navigation::DivideDtCrowd* const crowd = nullptr);
+    void resetCrowd(Navigation::DivideDtCrowd* const crowd = nullptr);
     /// The height of the agent for this character.
     D32 getAgentHeight() const;
     /// The radius of the agent for this character.
@@ -96,13 +93,13 @@ public:
     **/
     void updateDestination(const vec3<F32>& destination, bool updatePreviousPath = false);
     /// The destination set for this agent.
-    vec3<F32> getDestination() const;
+    const vec3<F32>& getDestination() const;
     /// Returns true when this agent has reached its set destination.
     bool destinationReached();
     /// Place agent at new position.
     void setPosition(const vec3<F32> position);
     /// The current position of the agent. Is only up to date once update() has been called in a frame.
-    vec3<F32> getPosition() const;
+    const vec3<F32>& getPosition() const;
     /// The maximum speed this character can attain.
     /// This parameter is configured for the agent controlling this character.
     D32 getMaxSpeed();
@@ -133,6 +130,7 @@ public:
     D32 getSpeed()  const { return getVelocity().length(); }
     /// Returns true if this character is moving.
     bool isMoving() const  {return !_stopped || !IS_ZERO(getSpeed()); }
+
 protected:
     /**
       * Update current position of this character to the current position of its agent.
@@ -146,15 +144,23 @@ protected:
     **/
     void setDestination(const vec3<F32>& destination);
 
+protected:
+    friend class AIManager;
+    void processInput(const U64 deltaTime);
+    void processData(const U64 deltaTime);
+    void update(const U64 deltaTime);
+
 private:
-    std::string     _name;
-    AITeam* _coordination;
-    ActionList*     _actionProcessor;
+    std::string           _name;
+    AITeam*               _coordination;
+    AISceneImpl*          _AISceneImpl;
+    GOAPContext           _goapContext;
+    Aesop::Planner        _goapPlanner;
+
     mutable SharedLock    _updateMutex;
     mutable SharedLock    _managerQueryMutex;
 
     typedef Unordered_map<SensorType, Sensor*> sensorMap;
-    CommunicationInterface* _comInterface;
     sensorMap               _sensorList;
     NPC*                    _unitRef;
     /// PathFinding
@@ -179,6 +185,8 @@ private:
     U64       _moveWaitTimer;
     /// True if this character is stopped.
     bool _stopped;
+    /// True if the GOAP plan needs an update
+    bool _updateGOAPPlan;
 };
 
 #endif

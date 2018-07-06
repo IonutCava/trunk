@@ -1,5 +1,5 @@
 #include "Headers/AIEntity.h"
-#include "ActionInterface/Headers/ActionList.h"
+#include "ActionInterface/Headers/AISceneImpl.h"
 
 #include "Core/Math/Headers/Transform.h"
 #include "Graphs/Headers/SceneGraphNode.h"
@@ -10,14 +10,17 @@
 #include "AI/PathFinding/Headers/DivideRecast.h"
 #include "AI/PathFinding/NavMeshes/Headers/NavMesh.h"
 
+#include <Aesop.h>
+
+
 static const D32 DESTINATION_RADIUS = 1.5 * 1.5;
 
 AIEntity::AIEntity(const vec3<F32>& currentPosition, const std::string& name)  : GUIDWrapper(),
                                               _name(name),
-                                              _actionProcessor(nullptr),
+                                              _AISceneImpl(nullptr),
+                                              _updateGOAPPlan(false),
                                               _unitRef(nullptr),
                                               _coordination(nullptr),
-                                              _comInterface(nullptr),
                                               _detourCrowd(nullptr),
                                               _agent(nullptr),
                                               _agentID(-1),
@@ -37,8 +40,7 @@ AIEntity::~AIEntity()
     _agentID = -1;
     _agent = nullptr;
 
-    SAFE_DELETE(_comInterface);
-    SAFE_DELETE(_actionProcessor);
+    SAFE_DELETE(_AISceneImpl);
     FOR_EACH(sensorMap::value_type& it , _sensorList){
         SAFE_DELETE(it.second);
     }
@@ -49,11 +51,7 @@ void AIEntity::load(const vec3<F32>& position) {
     setPosition(position);
 
     if(!isAgentLoaded() && _detourCrowd) {
-        if(_unitRef){
-            _agentID = _detourCrowd->addAgent(position, _unitRef->getMovementSpeed(), 10.0f);
-        }else{
-            _agentID = _detourCrowd->addAgent(position, (_detourCrowd->getAgentHeight()/2)*3.5f, 10.0f);
-        }
+        _agentID = _detourCrowd->addAgent(position, _unitRef ? _unitRef->getMovementSpeed() : (_detourCrowd->getAgentHeight() / 2)*3.5f, 10.0f);
         _agent = _detourCrowd->getAgent(_agentID);
         _destination = position;
     }
@@ -69,26 +67,21 @@ void AIEntity::unload() {
     _agent = nullptr;
 }
 
-void AIEntity::sendMessage(AIEntity* receiver, AIMsg msg,const boost::any& msg_content){
-    CommunicationInterface* com = getCommunicationInterface();
-    if(com){
-        com->sendMessageToEntity(receiver, msg,msg_content);
-    }
+void AIEntity::sendMessage(AIEntity* receiver, AIMsg msg, const cdiggins::any& msg_content){
+    assert(receiver != nullptr);
+
+    receiver->receiveMessage(this, msg, msg_content);
 }
 
-void AIEntity::receiveMessage(AIEntity* sender, AIMsg msg, const boost::any& msg_content){
-    CommunicationInterface* com = getCommunicationInterface();
-    if(com){
-        com->receiveMessageFromEntity(sender, msg,msg_content);
-    }
+void AIEntity::receiveMessage(AIEntity* sender, AIMsg msg, const cdiggins::any& msg_content){
+    this->processMessage(sender, msg, msg_content);
 }
 
-void AIEntity::processMessage(AIEntity* sender, AIMsg msg, const boost::any& msg_content) {
-    if(!_actionProcessor)
-        return;
+void AIEntity::processMessage(AIEntity* sender, AIMsg msg, const cdiggins::any& msg_content) {
+    assert(_AISceneImpl);
 
     ReadLock r_lock(_updateMutex);
-    _actionProcessor->processMessage(sender, msg, msg_content);
+    _AISceneImpl->processMessage(sender, msg, msg_content);
 }
 
 Sensor* AIEntity::getSensor(SensorType type){
@@ -109,30 +102,36 @@ bool AIEntity::addSensor(SensorType type, Sensor* sensor){
     return true;
 }
 
-bool AIEntity::addActionProcessor(ActionList* actionProcessor){
+bool AIEntity::addAISceneImpl(AISceneImpl* AISceneImpl){
+    assert(AISceneImpl);
+
     WriteLock w_lock(_updateMutex);
-    SAFE_UPDATE(_actionProcessor, actionProcessor);
-    _actionProcessor->addEntityRef(this);
+    SAFE_UPDATE(_AISceneImpl, AISceneImpl);
+    _AISceneImpl->addEntityRef(this);
+    _goapContext = _AISceneImpl->getGOAPContext();
     return true;
 }
 
 void AIEntity::processInput(const U64 deltaTime){
     ReadLock r_lock(_managerQueryMutex);
-    if(!_actionProcessor) return;
-    _actionProcessor->processInput(deltaTime);
+    if (!_AISceneImpl) return;
+    _AISceneImpl->processInput(deltaTime);
 }
 
 void AIEntity::processData(const U64 deltaTime){
     ReadLock r_lock(_managerQueryMutex);
-    if(!_actionProcessor) return;
-    _actionProcessor->processData(deltaTime);
+    if (!_AISceneImpl) return;
+    _AISceneImpl->processData(deltaTime);
 }
 
 void AIEntity::update(const U64 deltaTime){
     ReadLock r_lock(_managerQueryMutex);
-    if(!_actionProcessor) return;
-
-    _actionProcessor->update(_unitRef);
+    if (!_AISceneImpl) return;
+    if (_updateGOAPPlan){
+        _goapPlanner.plan(&_goapContext);
+        _updateGOAPPlan = false;
+    }
+    _AISceneImpl->update(_unitRef);
 
     if(_unitRef)
         _unitRef->update(deltaTime);
@@ -270,11 +269,11 @@ void AIEntity::updateDestination(const vec3<F32>& destination, bool updatePrevio
     _stopped = false;
 }
 
-vec3<F32> AIEntity::getPosition() const {
+const vec3<F32>& AIEntity::getPosition() const {
     return _currentPosition;
 }
 
-vec3<F32> AIEntity::getDestination() const {
+const vec3<F32>& AIEntity::getDestination() const {
     if (isAgentLoaded())
         return _destination;
 
@@ -343,4 +342,11 @@ D32 AIEntity::getMaxSpeed(){
 
 D32 AIEntity::getMaxAcceleration(){
     return (isAgentLoaded()  ? getAgent()->params.maxAcceleration : 0.0);
+}
+
+bool AIEntity::addGOAPPlanner(const Aesop::Planner& planner, bool startOnAdd){
+    _goapPlanner = planner;
+
+    if (startOnAdd) _updateGOAPPlan = true;
+    return true;
 }

@@ -94,7 +94,7 @@ namespace Navigation {
             I32 face[32];
             F32 x,y,z;
             I32 nv;
-
+            I32 result;
             while (src < srcEnd)   {
                 // Parse one row
                 row[0] = '\0';
@@ -104,8 +104,9 @@ namespace Navigation {
 
                 if (row[0] == 'v' && row[1] != 'n' && row[1] != 't') {
                     // Vertex pos
-                    sscanf(row+1, "%f %f %f", &x, &y, &z);
-                    addVertex(&outData, vec3<F32>(x, y, z));
+                    result = sscanf(row + 1, "%f %f %f", &x, &y, &z);
+                    if(result != 0)
+                        addVertex(&outData, vec3<F32>(x, y, z));
                 }
                 if (row[0] == 'f')  {
                     // Faces
@@ -164,7 +165,7 @@ namespace Navigation {
             // Create the file if it doesn't exists
             FILE *fp = nullptr;
             fopen_s(&fp,filename,"w");
-            fclose(fp);
+            if (fp) fclose(fp);
 
             std::ofstream myfile;
             myfile.open(filename);

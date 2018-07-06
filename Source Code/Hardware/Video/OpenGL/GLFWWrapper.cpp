@@ -549,6 +549,7 @@ void GL_API::drawText(const TextLabel& textLabel, const vec2<I32>& position){
         fonsSetAlign(_fonsContext, textLabel._alignFlag);
     }
     fonsDrawText(_fonsContext, dx,dy,textLabel._text.c_str(),nullptr);
+    GL_API::registerDrawCall();
 }
 
 vec3<GLfloat> GL_API::unproject(const vec3<GLfloat>& windowCoord) const {

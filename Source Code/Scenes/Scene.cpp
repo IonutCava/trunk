@@ -60,7 +60,7 @@ bool Scene::idle(){ //Called when application is idle
     if(!_modelDataArray.empty())
         loadXMLAssets(true);
 
-    if(_cookCollisionMeshesScheduled){
+    if (_cookCollisionMeshesScheduled && _sceneGraph){
         if(SceneManager::getInstance().getFrameCount() > 1){
             _sceneGraph->getRoot()->getComponent<PhysicsComponent>()->cookCollisionMesh(_name);
             _cookCollisionMeshesScheduled = false;

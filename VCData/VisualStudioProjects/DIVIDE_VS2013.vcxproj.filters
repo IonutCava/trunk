@@ -80,12 +80,6 @@
     <Filter Include="Scenes">
       <UniqueIdentifier>{5ad9851d-7bc1-45df-852f-c0f1e4fdd533}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Scenes\AITenisScene">
-      <UniqueIdentifier>{ac00b097-333f-4fa4-8c0b-69ae4a80d1a1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Scenes\AITenisScene\Headers">
-      <UniqueIdentifier>{18e31dd7-6ff8-40bd-8150-c4364c02b1eb}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Scenes\CubeScene">
       <UniqueIdentifier>{c2b687d4-bc39-4ed1-92b6-ac15d9978aca}</UniqueIdentifier>
     </Filter>
@@ -404,6 +398,12 @@
     <Filter Include="AI\AESOP\Headers">
       <UniqueIdentifier>{9111c95a-07c0-4e56-91ce-398630769324}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scenes\TenisScene">
+      <UniqueIdentifier>{ac00b097-333f-4fa4-8c0b-69ae4a80d1a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes\TenisScene\Headers">
+      <UniqueIdentifier>{18e31dd7-6ff8-40bd-8150-c4364c02b1eb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Rendering\Frustum.cpp">
@@ -453,12 +453,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Scenes\Scene.cpp">
       <Filter>Scenes</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Scenes\AITenisScene\AITenisScene.cpp">
-      <Filter>Scenes\AITenisScene</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Scenes\AITenisScene\AITenisSceneAIActionList.cpp">
-      <Filter>Scenes\AITenisScene</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Scenes\CubeScene\CubeScene.cpp">
       <Filter>Scenes\CubeScene</Filter>
@@ -602,9 +596,6 @@
     <ClCompile Include="..\..\Source Code\Scenes\WarScene\WarScene.cpp">
       <Filter>Scenes\WarScene</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Scenes\WarScene\WarSceneAIActionList.cpp">
-      <Filter>Scenes\WarScene</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Geometry\Animations\AnimationController.cpp">
       <Filter>Geometry\Animations</Filter>
     </ClCompile>
@@ -700,9 +691,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Utility\Localization.cpp">
       <Filter>Utility</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\CommunicationInterface.cpp">
-      <Filter>AI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Rendering\Lighting\DirectionalLight.cpp">
       <Filter>Rendering\Lighting</Filter>
@@ -884,6 +872,18 @@
     <ClCompile Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\CascadedShadowMaps.cpp">
       <Filter>Rendering\Lighting\ShadowMapping</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\GOAPContext.cpp">
+      <Filter>AI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Scenes\TenisScene\TenisScene.cpp">
+      <Filter>Scenes\TenisScene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Scenes\TenisScene\TenisSceneAISceneImpl.cpp">
+      <Filter>Scenes\TenisScene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Scenes\WarScene\WarSceneAISceneImpl.cpp">
+      <Filter>Scenes\WarScene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h">
@@ -963,12 +963,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Core\Math\Headers\Transform.h">
       <Filter>Core\Math\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Scenes\AITenisScene\Headers\AITenisScene.h">
-      <Filter>Scenes\AITenisScene\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Scenes\AITenisScene\Headers\AITenisSceneAIActionList.h">
-      <Filter>Scenes\AITenisScene\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Scenes\CubeScene\Headers\CubeScene.h">
       <Filter>Scenes\CubeScene\Headers</Filter>
@@ -1051,9 +1045,6 @@
     <ClInclude Include="..\..\Source Code\AI\Sensors\Headers\VisualSensor.h">
       <Filter>AI\Sensors\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\ActionInterface\Headers\ActionList.h">
-      <Filter>AI\ActionInterface\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\AI\Headers\AIEntity.h">
       <Filter>AI\Headers</Filter>
     </ClInclude>
@@ -1132,9 +1123,6 @@
     <ClInclude Include="..\..\Source Code\Scenes\WarScene\Headers\WarScene.h">
       <Filter>Scenes\WarScene\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Scenes\WarScene\Headers\WarSceneAIActionList.h">
-      <Filter>Scenes\WarScene\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\AnimationController.h">
       <Filter>Geometry\Animations\Headers</Filter>
     </ClInclude>
@@ -1195,9 +1183,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Utility\Headers\UnorderedMap.h">
       <Filter>Utility\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\Headers\CommunicationInterface.h">
-      <Filter>AI\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\Lighting\Headers\DirectionalLight.h">
       <Filter>Rendering\Lighting\Headers</Filter>
@@ -1420,6 +1405,21 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\Headers\CascadedShadowMaps.h">
       <Filter>Rendering\Lighting\ShadowMapping\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\Headers\GOAPContext.h">
+      <Filter>AI\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\ActionInterface\Headers\AISceneImpl.h">
+      <Filter>AI\ActionInterface\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Scenes\TenisScene\Headers\TenisScene.h">
+      <Filter>Scenes\TenisScene\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Scenes\TenisScene\Headers\TenisSceneAISceneImpl.h">
+      <Filter>Scenes\TenisScene\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Scenes\WarScene\Headers\WarSceneAISceneImpl.h">
+      <Filter>Scenes\WarScene\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

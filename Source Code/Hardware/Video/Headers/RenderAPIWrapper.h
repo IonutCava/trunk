@@ -166,7 +166,7 @@ protected:
     virtual bool loadInContext(const CurrentContext& context, const DELEGATE_CBK& callback) = 0;
 
     virtual U64 getFrameDurationGPU() const = 0;
-
+    virtual I32 getDrawCallCount() const = 0;
     virtual void activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlock* const oldBlock) = 0;
 
 protected:

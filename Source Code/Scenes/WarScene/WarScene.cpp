@@ -1,5 +1,5 @@
 #include "Headers/WarScene.h"
-#include "Headers/WarSceneAIActionList.h"
+#include "Headers/WarSceneAISceneImpl.h"
 
 #include "Geometry/Material/Headers/Material.h"
 #include "Core/Math/Headers/Transform.h"
@@ -107,7 +107,7 @@ void WarScene::startSimulation(){
 
 }
 
-void WarScene::processSimulation(boost::any a, CallbackParam b){
+void WarScene::processSimulation(cdiggins::any a, CallbackParam b){
     if(getTasks().empty()) return;
     //SceneGraphNode* Soldier1 = _sceneGraph->findNode("Soldier1");
     //assert(Soldier1);
@@ -359,8 +359,7 @@ bool WarScene::initializeAI(bool continueOnErrors){
 
             aiSoldier = New AIEntity(currentNode->getTransform()->getPosition(), currentNode->getName());
             aiSoldier->addSensor(VISUAL_SENSOR,New VisualSensor());
-            aiSoldier->setComInterface();
-            aiSoldier->addActionProcessor(New WarSceneAIActionList());
+            aiSoldier->addAISceneImpl(New WarSceneAISceneImpl(_GOAPContext));
             aiSoldier->setTeam(k == 0 ? _faction1 : _faction2);
             soldier = New NPC(currentNode, aiSoldier);
             soldier->setMovementSpeed(speed); 

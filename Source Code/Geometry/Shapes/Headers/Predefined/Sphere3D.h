@@ -74,7 +74,7 @@ private:
         F32 dt = 1.0f / (F32) stacks;
         F32 t = 1.0f;
         F32 s = 0.0f;
-        F32 i, j;     // Looping variables
+        U32 i, j;     // Looping variables
         U32 index = 0; ///for the index buffer
 
         for (i = 0; i < stacks; i++) {
@@ -116,7 +116,7 @@ private:
         }
 
         vec2<U32> indiceLimits;
-        for(U32 i = 0 ; i < _geometry->getIndexCount(); i++){
+        for(i = 0 ; i < _geometry->getIndexCount(); i++){
             if(indiceLimits.x > _geometry->getIndex(i))
                 indiceLimits.x = _geometry->getIndex(i);
             if(indiceLimits.y < _geometry->getIndex(i))

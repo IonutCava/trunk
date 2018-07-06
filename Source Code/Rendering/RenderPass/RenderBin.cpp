@@ -7,64 +7,20 @@
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Hardware/Video/Headers/RenderStateBlock.h"
 
-RenderBinItem::RenderBinItem(P32 sortKey, SceneGraphNode* const node ) : _node( node ),
-                                                                         _sortKey( sortKey ),
-                                                                         _stateHash(0)//< Defaulting to a null state hash
+RenderBinItem::RenderBinItem(I32 sortKeyA, I32 sortKeyB, SceneGraphNode* const node ) : _node( node ),
+                                                                                        _sortKeyA( sortKeyA ),
+                                                                                        _sortKeyB( sortKeyB )
 {
-    RenderStateBlock* currentStateBlock = nullptr;
     Material* mat = _node->getNode()->getMaterial();
     // If we do not have a material, no need to continue
     if(!mat) return;
 
     // Sort by state hash depending on the current rendering stage
-    if(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE)){
-        // Check if we have a reflection state
-        currentStateBlock = mat->getRenderState(REFLECTION_STAGE);
-         // else, use the final rendering state as that will be used to render in reflection
-        if(!currentStateBlock){
-            // all materials should have at least one final render state
-            currentStateBlock = mat->getRenderState(FINAL_STAGE);
-            assert(currentStateBlock != nullptr);
-        }
-    }else if(GFX_DEVICE.isCurrentRenderStage(SHADOW_STAGE)){
-        // Check if we have a shadow state
-        currentStateBlock = mat->getRenderState(SHADOW_STAGE);
-        // If we do not have a special shadow state, don't worry, just use 0 for all similar nodes
-        // the SceneGraph will use a global state on them, so using 0 is still sort-correct
-        if(!currentStateBlock)	return;
-    }else if(GFX_DEVICE.isCurrentRenderStage(Z_PRE_PASS_STAGE)){
-        // Check if we have a z prepass state
-        currentStateBlock = mat->getRenderState(Z_PRE_PASS_STAGE);
-        // If we do not have a special shadow state, don't worry, just use 0 for all similar nodes
-        // the SceneGraph will use a global state on them, so using 0 is still sort-correct
-        if(!currentStateBlock)	return;
-    }else{
-        // all materials should have at least one final render state
-        currentStateBlock = mat->getRenderState(FINAL_STAGE);
-        assert(currentStateBlock != nullptr);
-    }
+    RenderStateBlock* currentStateBlock = mat->getRenderState(GFX_DEVICE.getRenderStage());
+    assert(currentStateBlock != nullptr);
     // Save the render state hash value for sorting
-    _stateHash = currentStateBlock->getDescriptorConst().getHash();
+    _stateHash = currentStateBlock->getDescriptor().getHash();
 }
-
-/// Sorting opaque items is a 2 step process:
-/// 1: sort by shaders
-/// 2: if the shader is identical, sort by state hash
-struct RenderQueueKeyCompare{
-    //Sort
-    bool operator()( const RenderBinItem &a, const RenderBinItem &b ) const{
-        //Sort by shader in all states
-        // The sort key is the shader id (for now)
-        if(  a._sortKey.i < b._sortKey.i )
-            return true;
-        // The _stateHash is a CRC value created based on the RenderState.
-        // Might wanna generate a hash based on mose important values instead, but it's not important at this stage
-        if( a._sortKey.i == b._sortKey.i )
-            return a._stateHash < b._stateHash;
-        // different shaders
-        return false;
-    }
-};
 
 struct RenderQueueDistanceBacktoFront{
     bool operator()( const RenderBinItem &a, const RenderBinItem &b) const {
@@ -81,6 +37,31 @@ struct RenderQueueDistanceFrontToBack{
         F32 dist_a = a._node->getBoundingBoxConst().nearestDistanceFromPointSquared(eye);
         F32 dist_b = b._node->getBoundingBoxConst().nearestDistanceFromPointSquared(eye);
         return dist_a > dist_b;
+    }
+};
+
+/// Sorting opaque items is a 3 step process:
+/// 1: sort by shaders
+/// 2: if the shader is identical, sort by state hash
+/// 3: if shader is identical and state hash is identical, sort by albedo ID
+struct RenderQueueKeyCompare{
+    //Sort
+    bool operator()(const RenderBinItem &a, const RenderBinItem &b) const{
+        //Sort by shader in all states The sort key is the shader id (for now)
+        if (a._sortKeyA < b._sortKeyA)
+            return true;
+        if (a._sortKeyA > b._sortKeyA)
+            return false;
+
+            // If the shader values are the same, we use the state hash for sorting
+            // The _stateHash is a CRC value created based on the RenderState.
+        if (a._stateHash < b._stateHash)
+            return true;
+        if (a._stateHash > b._stateHash)
+            return false;
+
+        // If both the shader are the same and the state hashes match, we sort by the secondary key (usually the texture id)
+        return (a._sortKeyB < b._sortKeyB);
     }
 };
 
@@ -104,13 +85,16 @@ RenderBin::RenderBin(const RenderBinType& rbType,const RenderingOrder::List& ren
     renderBinTypeToNameMap[RBT_SHADOWS]     = "Shadow Bin";
 }
 
-void RenderBin::sort(){
+void RenderBin::sort(const RenderStage& currentRenderStage){
     //WriteLock w_lock(_renderBinGetMutex);
     switch(_renderOrder){
         default:
-        case RenderingOrder::BY_STATE :
-            std::sort(_renderBinStack.begin(), _renderBinStack.end(), RenderQueueKeyCompare());
-            break;
+        case RenderingOrder::BY_STATE:{
+            if(bitCompare(DEPTH_STAGE, currentRenderStage))
+                std::sort(_renderBinStack.begin(), _renderBinStack.end(), RenderQueueDistanceFrontToBack());
+            else
+                std::sort(_renderBinStack.begin(), _renderBinStack.end(), RenderQueueKeyCompare());
+            }break;
         case RenderingOrder::BACK_TO_FRONT:
             std::sort(_renderBinStack.begin(), _renderBinStack.end(), RenderQueueDistanceBacktoFront());
             break;
@@ -134,16 +118,16 @@ void RenderBin::refresh(){
 
 void RenderBin::addNodeToBin(SceneGraphNode* const sgn){
     SceneNode* sn = sgn->getNode();
-    P32 key;
-    key.i = (U32)_renderBinStack.size() + 1;
+    I32 keyA = (U32)_renderBinStack.size() + 1;
+    I32 keyB = keyA;
     Material* nodeMaterial = sn->getMaterial();
     if(nodeMaterial){
-        key = nodeMaterial->getMaterialId();
+        nodeMaterial->getSortKeys(keyA, keyB);
     }
-    _renderBinStack.push_back(RenderBinItem(key,sgn));
+    _renderBinStack.push_back(RenderBinItem(keyA, keyB, sgn));
 }
 
-void RenderBin::preRender(){
+void RenderBin::preRender(const RenderStage& currentRenderStage){
 }
 
 void RenderBin::render(const RenderStage& currentRenderStage){
@@ -209,7 +193,7 @@ void RenderBin::render(const RenderStage& currentRenderStage){
     }
 }
 
-void RenderBin::postRender(){
+void RenderBin::postRender(const RenderStage& currentRenderStage){
     SceneGraphNode* sgn = nullptr;
 
     for(U16 j = 0; j < getBinSize(); j++){

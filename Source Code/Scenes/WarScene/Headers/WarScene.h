@@ -24,6 +24,7 @@
 #define _WAR_SCENE_H
 
 #include "Scenes/Headers/Scene.h"
+#include "AI/Headers/GOAPContext.h"
 
 class SkinnedSubMesh;
 class AITeam;
@@ -65,7 +66,7 @@ public:
     bool onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button);
 
 private:
-    void processSimulation(boost::any a, CallbackParam b);
+    void processSimulation(cdiggins::any a, CallbackParam b);
     void startSimulation();
     void resetSimulation();
 
@@ -92,7 +93,8 @@ private: //Game
     SceneGraphNode *_lampLightNode;
     SceneGraphNode *_lampTransformNode;
     SceneNode      *_lampTransform;
-    
+    ///GOAP context (mainly for logging)
+    GOAPContext _GOAPContext;
 };
 
 #endif

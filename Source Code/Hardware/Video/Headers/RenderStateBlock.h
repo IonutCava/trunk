@@ -33,65 +33,76 @@ protected:
     friend class GL_API;
     friend class DX_API;
     /// Color Writes
-    bool _enableColorWrite;
     bool _writeRedChannel;
     bool _writeBlueChannel;
     bool _writeGreenChannel;
     bool _writeAlphaChannel;
 
     // Blending
-    bool _blendDefined;
     bool _blendEnable;
     BlendProperty _blendSrc;
     BlendProperty _blendDest;
     BlendOperation _blendOp;
 
     /// Rasterizer
-    bool _cullDefined;
     CullMode _cullMode;
 
     /// Depth
-    bool _zDefined;
     bool _zEnable;
     bool _zWriteEnable;
-
-    /// Stencil
-    bool _stencilDefined;
-    bool _stencilEnable;
-    StencilOperation _stencilFailOp;
-    StencilOperation _stencilZFailOp;
-    StencilOperation _stencilPassOp;
-    ComparisonFunction  _stencilFunc;
-    U32 _stencilRef;
-    U32 _stencilMask;
-    U32 _stencilWriteMask;
-
-    FillMode   _fillMode;
-
-public:
     ComparisonFunction _zFunc;
     F32 _zBias;
     F32 _zUnits;
 
+    /// Stencil
+    bool _stencilEnable;
+    U32  _stencilRef;
+    U32  _stencilMask;
+    U32  _stencilWriteMask;
+    StencilOperation _stencilFailOp;
+    StencilOperation _stencilZFailOp;
+    StencilOperation _stencilPassOp;
+    ComparisonFunction  _stencilFunc;
+    
+    FillMode   _fillMode;
+
+private:
+    U32  _cachedHash;
+    bool _dirty;
+    
+    void clean();
+
+public:
+
     RenderStateBlockDescriptor();
 
+    void setDefaultValues();
     void fromDescriptor( const RenderStateBlockDescriptor& descriptor );
 
-    inline void setFillMode(FillMode mode)      { _fillMode = mode;  }
-
+    void setFillMode(FillMode mode);
+    void setZBias(F32 zBias, F32 zUnits, ComparisonFunction zFunc = CMP_FUNC_LEQUAL);
     void flipCullMode();
-    void setCullMode(CullMode mode );
+    void setCullMode(CullMode mode);
     void setZEnable(bool enable);
     void setZReadWrite(bool read, bool write = true);
-
+    
     void setBlend( bool enable,
-                    BlendProperty src = BLEND_PROPERTY_SRC_ALPHA,
-                    BlendProperty dest = BLEND_PROPERTY_INV_SRC_ALPHA,
-                    BlendOperation op = BLEND_OPERATION_ADD );
+                   BlendProperty src = BLEND_PROPERTY_SRC_ALPHA,
+                   BlendProperty dest = BLEND_PROPERTY_INV_SRC_ALPHA,
+                   BlendOperation op = BLEND_OPERATION_ADD );
+
+    void setStencil( bool enable, 
+                     U32 stencilRef = 0, 
+                     StencilOperation stencilFailOp = STENCIL_OPERATION_KEEP,
+                     StencilOperation stencilZFailOp = STENCIL_OPERATION_KEEP,
+                     StencilOperation stencilPassOp = STENCIL_OPERATION_KEEP,
+                     ComparisonFunction stencilFunc = CMP_FUNC_NEVER);
+    
+    void setStencilReadWriteMask(U32 read, U32 write);
 
     void setColorWrites( bool red, bool green, bool blue, bool alpha );
-
-    inline U32 getHash() const { return Util::CRC32(this, sizeof(RenderStateBlockDescriptor)); }
+    
+    inline U32 getHash()       { clean(); return _cachedHash; }
     inline U32 getGUID() const { return getGUID(); }
 };
 
@@ -111,15 +122,17 @@ public:
     const RenderStateBlockDescriptor& getDescriptorConst() const { return _descriptor; }
 
     bool operator == (RenderStateBlock& RSB) const {
-        return Compare(RSB);
+        assert(false);
+        return false;
     }
 
     bool operator != (RenderStateBlock& RSB) const {
-        return !Compare(RSB);
+        assert(false);
+        return false;
     }
 
-    inline bool Compare(const RenderStateBlock& RSB) const { 
-        return getDescriptorConst().getHash() == RSB.getDescriptorConst().getHash();
+    inline bool Compare(RenderStateBlock& RSB) { 
+        return getDescriptor().getHash() == RSB.getDescriptor().getHash();
     }
 
     protected:

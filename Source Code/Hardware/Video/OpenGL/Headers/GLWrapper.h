@@ -43,6 +43,13 @@ DEFINE_SINGLETON_EXT1(GL_API,RenderAPIWrapper)
     typedef Unordered_map<std::string, SceneGraphNode*> sceneGraphMap;
     typedef void (*callback)();	void glCommand(callback f){f();}
 
+    friend class glShader;
+    friend class glIMPrimitive;
+    friend class glFrameBuffer;
+    friend class glVertexArray;
+    friend class glShaderProgram;
+    friend class glSamplerObject;
+    friend class glGenericVertexData;
 protected:
 
     GL_API() : RenderAPIWrapper(),
@@ -53,7 +60,6 @@ protected:
                _prevWidthString(0),
                _prevSizeNode(0),
                _prevSizeString(0),
-               _frameDurationGPU(0),
                _lineWidthLimit(1)
     {
     }
@@ -125,20 +131,14 @@ protected:
 
     bool loadInContext(const CurrentContext& context, const DELEGATE_CBK& callback);
 
-    inline GLuint64 getFrameDurationGPU() const {
-#if defined(_DEBUG) || defined(_PROFILE)
-        return _frameDurationGPU; 
-#else
-        return 0;
-#endif
-    }
-protected:
-    friend class glVertexArray;
+    inline GLuint64 getFrameDurationGPU() const { return GL_API::FRAME_DURATION_GPU; }
+    inline GLint    getDrawCallCount()    const { return GL_API::FRAME_DRAW_CALLS_PREV; }
+
+    inline static void registerDrawCall() { GL_API::FRAME_DRAW_CALLS++; }
+
     inline static glShaderProgram* getActiveProgram()  {return _activeShaderProgram;}
     inline static GLuint getActiveVAOId()              {return _activeVAOId;}
 
-protected:
-    friend class glFrameBuffer;
     static void restoreViewport();
     static vec4<GLint> setViewport(const vec4<GLint>& viewport, bool force = false);
     static void clearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a, bool force = false);
@@ -147,14 +147,10 @@ protected:
     }
     inline static GLuint getActiveFB() { return _activeFBId; }
 
-protected:
-    friend class glShader;
-    friend class glShaderProgram;
+
     inline static glslopt_ctx* getGLSLOptContext()                    {return _GLSLOptContex;}
     inline        glUniformBufferObject* getUBO(const UBO_NAME& name) {return _uniformBufferObjects[name]; }
 
-protected:
-    friend class glSamplerObject;
     inline static GLuint getActiveTextureUnit() {return _activeTextureUnit;}
 
 public:
@@ -236,9 +232,13 @@ private: //OpenGL specific:
     static const GLint PERFORMANCE_COUNTER_BUFFERS = 2;
     // number of queries
     static const GLint PERFORMANCE_COUNTERS = 1;
+    // number of draw calls (rough estimate)
+    static GLint FRAME_DRAW_CALLS;
+    static GLint FRAME_DRAW_CALLS_PREV;
+
     GLuint _queryID[PERFORMANCE_COUNTER_BUFFERS][PERFORMANCE_COUNTERS];
     GLuint _queryBackBuffer, _queryFrontBuffer;
-    GLuint64 _frameDurationGPU;
+    static GLuint64 FRAME_DURATION_GPU;
 
     struct FONScontext* _fonsContext;
 

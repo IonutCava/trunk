@@ -109,6 +109,7 @@ void LightManager::updateResolution(I32 newWidth, I32 newHeight){
 ///Also, search for the dominant light if any
 void LightManager::update(const bool force){
     for(Light* light : _currLightsPerNode){
+        assert(light != nullptr);
         light->updateState(force);
         if(!_dominantLight){ //if we do not have a dominant light registered, search for one
             if(light->getLightMode() == LIGHT_MODE_DOMINANT){

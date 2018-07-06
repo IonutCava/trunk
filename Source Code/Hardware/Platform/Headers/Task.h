@@ -24,12 +24,9 @@
 #define _TASKS_H_
 
 #include "SharedMutex.h"
-#include <boost/any.hpp>
 #include <boost/atomic.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include "Utility/Headers/GUIDWrapper.h"
-
-using boost::any_cast;
 
 enum CallbackParam
 {

@@ -72,6 +72,7 @@ U8 glShaderProgram::update(const U64 deltaTime){
    
             glGetProgramiv(_shaderProgramId, GL_PROGRAM_BINARY_LENGTH, &binaryLength);
             void* binary = (void*)malloc(binaryLength);
+            assert(binary != NULL);
             glGetProgramBinary(_shaderProgramId, binaryLength, nullptr, &_binaryFormat, binary);
  
             std::string outFileName("shaderCache/Binary/"+getName()+".bin");
@@ -97,8 +98,8 @@ std::string glShaderProgram::getLog() const {
         vectorImpl<char> shaderProgramLog(length);
         glGetProgramInfoLog(_shaderProgramIDTemp, length, nullptr, &shaderProgramLog[0]);
         validationBuffer.append(&shaderProgramLog[0]);
-        if(validationBuffer.size() > Console::CONSOLE_OUTPUT_BUFFER_SIZE){
-            validationBuffer.resize(Console::CONSOLE_OUTPUT_BUFFER_SIZE - strlen(Locale::get("GLSL_LINK_PROGRAM_LOG")) - 10);
+        if(validationBuffer.size() > 4096 * 16){
+            validationBuffer.resize(4096 * 16 - strlen(Locale::get("GLSL_LINK_PROGRAM_LOG")) - 10);
             validationBuffer.append(" ... ");
         }
     }

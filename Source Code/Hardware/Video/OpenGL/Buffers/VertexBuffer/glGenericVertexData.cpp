@@ -33,6 +33,7 @@ void glGenericVertexData::Create(U8 numBuffers){
 
     GL_API::setActiveVAO(_currentVAO);
     glDrawArraysInstanced(glPrimitiveTypeTable[type], min, max, count);
+    GL_API::registerDrawCall();
 }
 
 void glGenericVertexData::Draw(const PrimitiveType& type, U32 min, U32 max){
@@ -41,4 +42,5 @@ void glGenericVertexData::Draw(const PrimitiveType& type, U32 min, U32 max){
 
     GL_API::setActiveVAO(_currentVAO);
     glDrawArrays(glPrimitiveTypeTable[type], min, max);
+    GL_API::registerDrawCall();
 }

@@ -45,13 +45,17 @@ void SceneGraph::print(){
 
 ///Prints out the SceneGraph structure to the Console
 void SceneGraph::printInternal(SceneGraphNode* const sgn){
+    if (!sgn)
+        return;
+
     //Starting from the current node
     SceneGraphNode* parent = sgn;
+    SceneGraphNode* tempParent = parent;
     U8 i = 0;
     //Count how deep in the graph we are
     //by counting how many ancestors we have before the "root" node
-    while (parent != nullptr){
-        parent = parent->getParent();
+    while (tempParent != nullptr){
+        tempParent = tempParent->getParent();
         i++;
     }
     //get out material's name

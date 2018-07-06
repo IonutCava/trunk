@@ -52,6 +52,11 @@ public:
         RenderTarget_PLACEHOLDER = 3
     };
 
+    enum SortReservedValues {
+        SORT_DEPTH_STAGE = -222,
+        SORT_NO_VALUE = -333
+    };
+
     void setApi(const RenderAPI& api);
 
     inline RenderAPI        getApi()        {return _api.getId(); }
@@ -193,12 +198,12 @@ public:
     inline void Screenshot(char *filename, const vec4<F32>& rect){_api.Screenshot(filename,rect);}
     /// Some Scene Node Types are excluded from certain operations (lights triggers, etc)
     bool excludeFromStateChange(const SceneNodeType& currentType);
-    ///Creates a new API dependend stateblock based on the received description
+    ///Creates a new API dependent stateblock based on the received description
     ///Sets the current state block to the one passed as a param
     ///It is not set immediately, but a call to "updateStates" is required
     RenderStateBlock* setStateBlock(RenderStateBlock* block, bool forceUpdate = false);
-    /// Return or create a new state block using the given descritpor. DO NOT DELETE THE RETURNED STATE BLOCK! GFXDevice handles that!
-    RenderStateBlock* getOrCreateStateBlock(const RenderStateBlockDescriptor& descriptor);
+    /// Return or create a new state block using the given descriptor. DO NOT DELETE THE RETURNED STATE BLOCK! GFXDevice handles that!
+    RenderStateBlock* getOrCreateStateBlock(RenderStateBlockDescriptor& descriptor);
     ///Set previous state block - (deep, I know -Ionut)
     inline RenderStateBlock* setPreviousStateBlock(bool forceUpdate = false) {return setStateBlock(_previousStateBlock, forceUpdate);}
     ///Sets a standard state block
@@ -235,7 +240,7 @@ public:
     inline void setProjectionDirty(const bool state)  {_PDirty = state;}
 
     inline U64 getFrameDurationGPU() const { return _api.getFrameDurationGPU(); }
-
+    inline I32 getDrawCallCount()    const { return _api.getDrawCallCount(); }
     inline void togglePreviewDepthBuffer() { _previewDepthBuffer = !_previewDepthBuffer; }
 
     inline bool MSAAEnabled() const { return _MSAASamples > 0; }

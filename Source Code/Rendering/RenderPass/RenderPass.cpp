@@ -20,7 +20,7 @@ void RenderPass::render(const SceneRenderState& renderState, SceneGraph* activeS
     const RenderStage& currentStage = GFX_DEVICE.getRenderStage();
           RenderQueue& renderQueue = RenderQueue::getInstance();
     //Sort the render queue by the specified key
-    renderQueue.sort();
+    renderQueue.sort(currentStage);
 
     U16 renderBinCount   = renderQueue.getRenderQueueBinSize();
        _lastTotalBinSize = renderQueue.getRenderQueueStackSize();
@@ -36,7 +36,7 @@ void RenderPass::render(const SceneRenderState& renderState, SceneGraph* activeS
 
     if(GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE)){
         for(U16 i = 0; i < renderBinCount; i++){
-            renderQueue.getBinSorted(i)->postRender();
+            renderQueue.getBinSorted(i)->postRender(currentStage);
         }
         SceneGraphNode* root = activeSceneGraph->getRoot();
         root->getNode()->preFrameDrawEnd(root);

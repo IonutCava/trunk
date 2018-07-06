@@ -172,7 +172,7 @@ bool MainScene::unload(){
     return Scene::unload();
 }
 
-void MainScene::test(boost::any a, CallbackParam b){
+void MainScene::test(cdiggins::any a, CallbackParam b){
     static bool switchAB = false;
     vec3<F32> pos;
     SceneGraphNode* boxNode = _sceneGraph->findNode("box");

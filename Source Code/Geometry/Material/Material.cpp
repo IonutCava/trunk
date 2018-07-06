@@ -50,7 +50,7 @@ Material::Material() : Resource("temp_material"),
    RenderStateBlockDescriptor shadowDescriptor(stateDescriptor);
    shadowDescriptor.setCullMode(CULL_MODE_CCW);
    /// set a polygon offset
-   shadowDescriptor._zBias = 1.0f;
+   shadowDescriptor.setZBias(1.0f, 2.0f);
    /// ignore colors - Some shadowing techniques require drawing to the a color buffer
    shadowDescriptor.setColorWrites(true, true, false, false);
    _defaultRenderStates.insert(std::make_pair(SHADOW_STAGE, GFX_DEVICE.getOrCreateStateBlock(shadowDescriptor)));
@@ -73,7 +73,14 @@ void Material::update(const U64 deltaTime){
     computeShaderInternal();
 }
 
-RenderStateBlock* Material::setRenderStateBlock(const RenderStateBlockDescriptor& descriptor,const RenderStage& renderStage){
+RenderStateBlock* Material::getRenderState(RenderStage currentStage) {
+    if (_defaultRenderStates.find(currentStage) == _defaultRenderStates.end())
+        return _defaultRenderStates[FINAL_STAGE];
+
+   return _defaultRenderStates[currentStage]; 
+}
+
+RenderStateBlock* Material::setRenderStateBlock(RenderStateBlockDescriptor& descriptor,const RenderStage& renderStage){
     if(descriptor.getHash() == _defaultRenderStates[renderStage]->getDescriptor().getHash()){
         return _defaultRenderStates[renderStage];
     }
@@ -146,9 +153,6 @@ void Material::setShaderProgram(const std::string& shader, const RenderStage& re
 void Material::clean() {
     if(_dirty){
         isTranslucent();
-        _shaderInfo[FINAL_STAGE]._matId.i = (_shaderInfo[FINAL_STAGE]._shaderRef != nullptr ? _shaderInfo[FINAL_STAGE]._shaderRef->getId() : 0);
-        _shaderInfo[Z_PRE_PASS_STAGE]._matId.i = (_shaderInfo[Z_PRE_PASS_STAGE]._shaderRef != nullptr ? _shaderInfo[Z_PRE_PASS_STAGE]._shaderRef->getId() : 0);
-        _shaderInfo[SHADOW_STAGE]._matId.i = (_shaderInfo[SHADOW_STAGE]._shaderRef != nullptr ? _shaderInfo[SHADOW_STAGE]._shaderRef->getId() : 0);
         XML::dumpMaterial(*this);
        _dirty = false;
     }
@@ -357,4 +361,16 @@ bool Material::isTranslucent(U8 index) {
         _translucencyCheck = true;
     }
     return state;
+}
+
+void Material::getSortKeys(I32& shaderKey, I32& textureKey) const {
+    Unordered_map<RenderStage, ShaderInfo >::const_iterator it = _shaderInfo.find(FINAL_STAGE);
+    if (it != _shaderInfo.end()){
+        ShaderProgram* shader = it->second._shaderRef;
+        shaderKey = shader ? shader->getId() : -1;
+    }else{
+        shaderKey = GFXDevice::SORT_NO_VALUE;
+    }
+
+    textureKey = _textures[TEXTURE_UNIT0] ? _textures[TEXTURE_UNIT0]->getHandle() : GFXDevice::SORT_NO_VALUE;
 }

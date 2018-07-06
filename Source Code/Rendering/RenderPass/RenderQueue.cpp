@@ -65,7 +65,7 @@ RenderBin* RenderQueue::getOrCreateBin(const RenderBin::RenderBinType& rbType){
     }else{
         switch(rbType){
             case RenderBin::RBT_MESH :
-                temp = New RenderBinMesh(RenderBin::RBT_MESH,RenderingOrder::BY_STATE, 0.0f);
+                temp = New RenderBinMesh(RenderBin::RBT_MESH,RenderingOrder::BY_STATE, 0.0f); //< "By state varies based on the current rendering stage"
                 break;
             case RenderBin::RBT_TERRAIN:
                 temp = New RenderBinDelegate(RenderBin::RBT_TERRAIN,RenderingOrder::FRONT_TO_BACK, 1.0f);
@@ -147,13 +147,13 @@ void RenderQueue::addNodeToQueue(SceneGraphNode* const sgn){
     _isSorted = false;
 }
 
-void RenderQueue::sort(){
-    if(_renderQueueLocked && _isSorted)
-        return;
+void RenderQueue::sort(const RenderStage& currentRenderStage){
+    /*if(_renderQueueLocked && _isSorted)
+        return;*/
 
     FOR_EACH(RenderBinMap::value_type& renderBin, _renderBins){
         assert(renderBin.second);
-        renderBin.second->sort();
+        renderBin.second->sort(currentRenderStage);
     }
     _isSorted = true;
 }

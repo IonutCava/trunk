@@ -1,0 +1,91 @@
+<geometry>
+	<item>Net</item>
+	<item>Player1</item>
+	<item>Player2</item>
+	<item>Player3</item>
+	<item>Player4</item>
+	<item>cylinder</item>
+	<!--<item>Sponza</item>-->
+</geometry>
+
+<primitives>
+	<item>Floor</item>
+</primitives>
+
+<Net>
+	<model>models/gardulet.obj</model>
+	<scale x="0.3" y="0.7" z="0.1" />
+	<position x="0" y="-7.5" z="0" />
+	<orientation x="0" y="0" z="0" />
+	<version>1.0</version>
+	<staticObject>true</staticObject>
+	<addToNavigation>true</addToNavigation>
+	<useHighNavigationDetail>true</useHighNavigationDetail>
+</Net>
+
+
+<Player1>
+	<model>models/dwarf.x</model>
+	<scale x="0.03" y="0.03" z="0.03" />
+	<position x="3.5" y="0" z="7.5" />
+	<orientation x="0" y="180" z="0" />
+	<version>1.0</version>
+</Player1>
+
+<Player2>
+	<model>models/dwarf.x</model>
+	<scale x="0.03" y="0.03" z="0.03" />
+	<position x="-3.5" y="0" z="7.5" />
+	<orientation x="0" y="-180" z="0" />
+	<version>1.0</version>
+</Player2>
+
+<Player3>
+	<scale x="0.03" y="0.03" z="0.03" />
+	<position x="3.5" y="0" z="-7.5" />
+	<orientation x="0" y="0" z="0" />
+	<color r="0.8" g="0.7" b="0.4"/>
+	<model>models/dwarf.x</model>
+	<version>1.0</version>
+</Player3>
+
+<Player4>
+	<scale x="0.03" y="0.03" z="0.03" />
+	<position x="-3.5" y="0" z="-7.5" />
+	<orientation x="0" y="0" z="0" />
+	<color r="0.8" g="0.7" b="0.4"/>
+	<model>models/dwarf.x</model>
+	<version>1.0</version>
+</Player4>
+
+<Floor>
+	<model>Quad3D</model>
+	<scale x="50" y="50" z="50" />
+	<position x="-25" y="0" z="-25" />
+	<orientation x="0" y="0" z="-90" />
+	<color r="0.1" g="0.4" b="0.1"/>
+	<version>1.0</version>
+	<staticObject>true</staticObject>
+	<addToNavigation>true</addToNavigation>
+</Floor>
+
+<Sponza>
+	<model>models/sponza.obj</model>
+	<scale x="0.1" y="0.1" z="0.1" />
+	<position x="0" y="0" z="0" />
+	<orientation x="-90" y="0" z="0" />
+	<version>1.0</version>
+	<staticObject>true</staticObject>
+	<addToNavigation>true</addToNavigation>
+</Sponza>
+
+<cylinder>
+	<model>models/cylinder.obj</model>
+	<scale x="5" y="5" z="5" />
+	<position x="-15" y="0" z="-15" />
+	<orientation x="0" y="0" z="0" />
+	<version>1.0</version>
+	<staticObject>true</staticObject>
+	<addToNavigation>true</addToNavigation>
+	<useHighNavigationDetail>true</useHighNavigationDetail>
+</cylinder>

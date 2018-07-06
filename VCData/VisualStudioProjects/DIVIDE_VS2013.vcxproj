@@ -386,7 +386,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Source Code\AI\CommunicationInterface.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\GOAPContext.cpp" />
     <ClCompile Include="..\..\Source Code\AI\PathFinding\DivideCrowd.cpp" />
     <ClCompile Include="..\..\Source Code\AI\PathFinding\DivideRecast.cpp" />
     <ClCompile Include="..\..\Source Code\AI\PathFinding\NavMeshes\DetourTileCache\DivideTileCache.cpp">
@@ -518,8 +518,10 @@
     <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderPassCuller.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderQueue.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\SceneInput.cpp" />
+    <ClCompile Include="..\..\Source Code\Scenes\TenisScene\TenisScene.cpp" />
+    <ClCompile Include="..\..\Source Code\Scenes\TenisScene\TenisSceneAISceneImpl.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\WarScene\WarScene.cpp" />
-    <ClCompile Include="..\..\Source Code\Scenes\WarScene\WarSceneAIActionList.cpp" />
+    <ClCompile Include="..\..\Source Code\Scenes\WarScene\WarSceneAISceneImpl.cpp" />
     <ClCompile Include="..\..\Source Code\Utility\CommandParser.cpp" />
     <ClCompile Include="..\..\Source Code\Utility\CRC.cpp" />
     <ClCompile Include="..\..\Source Code\Utility\GUIDWrapper.cpp" />
@@ -530,8 +532,6 @@
     <ClCompile Include="..\..\Source Code\Core\Console.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Math\Quaternion.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\Scene.cpp" />
-    <ClCompile Include="..\..\Source Code\Scenes\AITenisScene\AITenisScene.cpp" />
-    <ClCompile Include="..\..\Source Code\Scenes\AITenisScene\AITenisSceneAIActionList.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\CubeScene\CubeScene.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\FlashScene\FlashScene.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\MainScene\MainScene.cpp" />
@@ -555,7 +555,7 @@
     <ClCompile Include="..\..\Source Code\main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Source Code\AI\Headers\CommunicationInterface.h" />
+    <ClInclude Include="..\..\Source Code\AI\Headers\GOAPContext.h" />
     <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\DivideCrowd.h" />
     <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\DivideRecast.h" />
     <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\DetourTileCache\Headers\DivideTileCache.h" />
@@ -681,8 +681,10 @@
     <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\RenderPassCuller.h" />
     <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\RenderQueue.h" />
     <ClInclude Include="..\..\Source Code\Scenes\Headers\SceneState.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\TenisScene\Headers\TenisScene.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\TenisScene\Headers\TenisSceneAISceneImpl.h" />
     <ClInclude Include="..\..\Source Code\Scenes\WarScene\Headers\WarScene.h" />
-    <ClInclude Include="..\..\Source Code\Scenes\WarScene\Headers\WarSceneAIActionList.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\WarScene\Headers\WarSceneAISceneImpl.h" />
     <ClInclude Include="..\..\Source Code\Utility\Headers\CommandParser.h" />
     <ClInclude Include="..\..\Source Code\Utility\Headers\CRC.h" />
     <ClInclude Include="..\..\Source Code\Utility\Headers\GUIDWrapper.h" />
@@ -701,8 +703,6 @@
     <ClInclude Include="..\..\Source Code\Core\Math\Headers\Quaternion.h" />
     <ClInclude Include="..\..\Source Code\Core\Math\Headers\Ray.h" />
     <ClInclude Include="..\..\Source Code\Core\Math\Headers\Transform.h" />
-    <ClInclude Include="..\..\Source Code\Scenes\AITenisScene\Headers\AITenisScene.h" />
-    <ClInclude Include="..\..\Source Code\Scenes\AITenisScene\Headers\AITenisSceneAIActionList.h" />
     <ClInclude Include="..\..\Source Code\Scenes\CubeScene\Headers\CubeScene.h" />
     <ClInclude Include="..\..\Source Code\Scenes\FlashScene\Headers\FlashScene.h" />
     <ClInclude Include="..\..\Source Code\Scenes\MainScene\Headers\MainScene.h" />
@@ -730,7 +730,7 @@
     <ClInclude Include="..\..\Source Code\AI\Sensors\Headers\AudioSensor.h" />
     <ClInclude Include="..\..\Source Code\AI\Sensors\Headers\Sensor.h" />
     <ClInclude Include="..\..\Source Code\AI\Sensors\Headers\VisualSensor.h" />
-    <ClInclude Include="..\..\Source Code\AI\ActionInterface\Headers\ActionList.h" />
+    <ClInclude Include="..\..\Source Code\AI\ActionInterface\Headers\AISceneImpl.h" />
     <ClInclude Include="..\..\Source Code\AI\ActionInterface\Headers\AITeam.h" />
     <ClInclude Include="..\..\Source Code\AI\Headers\AIEntity.h" />
     <ClInclude Include="..\..\Source Code\config.h" />

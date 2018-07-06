@@ -6,6 +6,18 @@
 #include <iomanip>
 #include <stdarg.h>
 
+static const int CONSOLE_OUTPUT_BUFFER_SIZE = 4096 * 16;
+
+Console::Console() : Singleton()
+{
+    _textBuffer = new char[CONSOLE_OUTPUT_BUFFER_SIZE];
+}
+
+Console::~Console()
+{
+    delete [] _textBuffer;
+}
+
 //! Do not remove the following license without express permission granted bu DIVIDE-Studio
 void Console::printCopyrightNotice() const {
     std::cout << "------------------------------------------------------------------------------" << std::endl;
@@ -37,87 +49,79 @@ void Console::printCopyrightNotice() const {
 #ifdef _DEBUG
 void Console::d_printfn(const char* format, ...) const {
     va_list args;
-    char text[CONSOLE_OUTPUT_BUFFER_SIZE] = {};
     va_start(args, format);
     assert(_vscprintf(format, args) - 1 < CONSOLE_OUTPUT_BUFFER_SIZE);
-    vsprintf_s(text, sizeof(text), format, args);
-    strcat(text, "\n");
+    vsprintf_s(_textBuffer, sizeof(char)* CONSOLE_OUTPUT_BUFFER_SIZE, format, args);
+    strcat(_textBuffer, "\n");
     va_end(args);
-    output(text);
+    output(_textBuffer);
 }
 
 void Console::d_printf(const char* format, ...) const {
     va_list args;
-    char text[CONSOLE_OUTPUT_BUFFER_SIZE] = {};
     va_start(args, format);
     assert(_vscprintf(format, args) + 1 < CONSOLE_OUTPUT_BUFFER_SIZE);
-    vsprintf_s(text, sizeof(text), format, args);
+    vsprintf_s(_textBuffer, sizeof(char)* CONSOLE_OUTPUT_BUFFER_SIZE, format, args);
     va_end(args);
-    output(text);
+    output(_textBuffer);
 }
 
 void Console::d_errorfn(const char* format, ...) const {
     va_list args;
-    char text[CONSOLE_OUTPUT_BUFFER_SIZE] = {};
     va_start(args, format);
     assert(_vscprintf(format, args) + 3 < CONSOLE_OUTPUT_BUFFER_SIZE);
-    vsprintf_s(text, sizeof(text), format, args);
-    strcat(text, "\n");
+    vsprintf_s(_textBuffer, sizeof(char)* CONSOLE_OUTPUT_BUFFER_SIZE, format, args);
+    strcat(_textBuffer, "\n");
     va_end(args);
-    output(text,true);
+    output(_textBuffer,true);
 }
 
 void Console::d_errorf(const char* format, ...) const {
     va_list args;
-    char text[CONSOLE_OUTPUT_BUFFER_SIZE] = {};
     va_start(args, format);
     assert(_vscprintf(format, args) + 1 < CONSOLE_OUTPUT_BUFFER_SIZE);
-    vsprintf_s(text, sizeof(text), format, args);
+    vsprintf_s(_textBuffer, sizeof(char)* CONSOLE_OUTPUT_BUFFER_SIZE, format, args);
     va_end(args);
-    output(text,true);
+    output(_textBuffer,true);
 }
 
 #endif
 void Console::printfn(const char* format, ...) const {
     va_list args;
-    char text[CONSOLE_OUTPUT_BUFFER_SIZE] = {};
     va_start(args, format);
     assert(_vscprintf(format, args) + 3 < CONSOLE_OUTPUT_BUFFER_SIZE);
-    vsprintf_s(text, sizeof(text), format, args);
-    strcat(text, "\n");
+    vsprintf_s(_textBuffer, sizeof(char)* CONSOLE_OUTPUT_BUFFER_SIZE, format, args);
+    strcat(_textBuffer, "\n");
     va_end(args);
-    output(text);
+    output(_textBuffer);
 }
 
 void Console::printf(const char* format, ...) const {
     va_list args;
-    char text[CONSOLE_OUTPUT_BUFFER_SIZE] = {};
     va_start(args, format);
     assert(_vscprintf(format, args) + 1 < CONSOLE_OUTPUT_BUFFER_SIZE);
-    vsprintf_s(text, sizeof(text), format, args);
+    vsprintf_s(_textBuffer, sizeof(char)* CONSOLE_OUTPUT_BUFFER_SIZE, format, args);
     va_end(args);
-    output(text);
+    output(_textBuffer);
 }
 
 void Console::errorfn(const char* format, ...) const {
     va_list args;
-    char text[CONSOLE_OUTPUT_BUFFER_SIZE] = {};
     va_start(args, format);
     assert(_vscprintf(format, args) + 3 < CONSOLE_OUTPUT_BUFFER_SIZE);
-    vsprintf_s(text, sizeof(text), format, args);
-    strcat(text, "\n");
+    vsprintf_s(_textBuffer, sizeof(char)* CONSOLE_OUTPUT_BUFFER_SIZE, format, args);
+    strcat(_textBuffer, "\n");
     va_end(args);
-    output(text,true);
+    output(_textBuffer, true);
 }
 
 void Console::errorf(const char* format, ...) const {
     va_list args;
-    char text[CONSOLE_OUTPUT_BUFFER_SIZE] = {};
     va_start(args, format);
     assert(_vscprintf(format, args) + 1 < CONSOLE_OUTPUT_BUFFER_SIZE);
-    vsprintf_s(text, sizeof(text), format, args);
+    vsprintf_s(_textBuffer, sizeof(char)* CONSOLE_OUTPUT_BUFFER_SIZE, format, args);
     va_end(args);
-    output(text,true);
+    output(_textBuffer, true);
 }
 
 void Console::output(const char* output, const bool error) const {
