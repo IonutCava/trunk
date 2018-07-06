@@ -43,7 +43,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
         // Initialize the rendering API
         if (Config::ENABLE_GPU_VALIDATION) {
            //_renderDocManager = 
-           //   std::make_shared<RenderDocManager>(Application::instance().sysInfo()._windowHandle,
+           //   std::make_shared<RenderDocManager>(const_sysInfo()._windowHandle,
            //                                      ".\\RenderDoc\\renderdoc.dll",
            //                                      L"\\RenderDoc\\Captures\\");
         }

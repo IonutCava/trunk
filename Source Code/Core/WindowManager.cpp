@@ -36,7 +36,7 @@ ErrorCode WindowManager::init(PlatformContext& context,
 
     targetDisplay(std::max(std::min(targetDisplayIndex, SDL_GetNumVideoDisplays() - 1), 0));
 
-    SysInfo& systemInfo = Application::instance().sysInfo();
+    SysInfo& systemInfo = sysInfo();
     SDL_DisplayMode displayMode;
     SDL_GetCurrentDisplayMode(targetDisplay(), &displayMode);
     systemInfo._systemResolutionWidth = displayMode.w;
@@ -109,7 +109,7 @@ ErrorCode WindowManager::initWindow(U32 index,
 void WindowManager::setActiveWindow(U32 index) {
     index = std::min(index, to_uint(_windows.size() -1));
     _activeWindowGUID = _windows[index]->getGUID();
-    SysInfo& systemInfo = Application::instance().sysInfo();
+    SysInfo& systemInfo = sysInfo();
     getWindowHandle(_windows[index]->getRawWindow(), systemInfo);
 }
 

@@ -49,7 +49,7 @@ ErrorCode InputInterface::init(Kernel& kernel, const vec2<U16>& inputAreaDimensi
     OIS::ParamList pl;
 
     std::stringstream ss;
-    ss << (size_t)(Application::instance().sysInfo()._windowHandle);
+    ss << (size_t)(const_sysInfo()._windowHandle);
     // Create OIS input manager
     pl.insert(std::make_pair("WINDOW", ss.str()));
     pl.insert(std::make_pair("GLXWINDOW", ss.str()));

@@ -61,6 +61,7 @@ namespace Divide {
         size_t _availableRam;
         int _systemResolutionWidth;
         int _systemResolutionHeight;
+        FileWithPath _pathAndFilename;
     };
 
 }; //namespace Divide

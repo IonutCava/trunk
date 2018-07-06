@@ -159,18 +159,27 @@ FORCE_INLINE bufferPtr bufferOffset(size_t offset) {
 
 struct SysInfo;
 
+SysInfo& sysInfo();
+const SysInfo& const_sysInfo();
+
+void InitSysInfo(SysInfo& info, I32 argc, char** argv);
+
 extern void getWindowHandle(void* window, SysInfo& info);
 extern void setThreadName(std::thread* thread, const char* threadName);
 extern void setThreadName(const char* threadName);
 extern bool createDirectory(const char* path);
 
+//ref: http://stackoverflow.com/questions/1528298/get-path-of-executable
+extern FileWithPath getExecutableLocation(I32 argc, char** argv);
+FileWithPath getExecutableLocation(char* argv0);
+
 bool createDirectories(const char* path);
 
-bool PlatformInit();
+bool PlatformInit(int argc, char** argv);
 bool PlatformClose();
-bool CheckMemory(const U32 physicalRAMNeeded, SysInfo& info);
+bool GetAvailableMemory(SysInfo& info);
 
-bool PlatformPostInit();
+bool PlatformPostInit(int argc, char** argv);
 
 template <typename T>
 struct synchronized {

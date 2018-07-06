@@ -13,7 +13,15 @@
 
 #include "Utility/Headers/MemoryTracker.h"
 
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/path.hpp>
+
 namespace Divide {
+
+namespace {
+    SysInfo g_sysInfo;
+};
+
 namespace MemoryManager {
 void log_new(void* p, size_t size, const char* zFile, size_t nLine) {
     if (Config::Build::IS_DEBUG_BUILD) {
@@ -32,9 +40,24 @@ void log_delete(void* p) {
 }
 };  // namespace MemoryManager
 
-bool PlatformPostInit() {
+SysInfo& sysInfo() {
+    return g_sysInfo;
+}
+
+const SysInfo& const_sysInfo() {
+    return g_sysInfo;
+}
+
+bool PlatformPostInit(int argc, char** argv) {
     SeedRandom();
+    InitSysInfo(sysInfo(), argc, argv);
+
     return true;
+}
+
+void InitSysInfo(SysInfo& info, I32 argc, char** argv) {
+    GetAvailableMemory(info);
+    info._pathAndFilename = getExecutableLocation(argc, argv);
 }
 
 U32 HARDWARE_THREAD_COUNT() {
@@ -59,23 +82,36 @@ bool preAssert(const bool expression, const char* failMessage) {
 }
 
 bool createDirectories(const char* path) {
+    assert(path != nullptr && strlen(path) > 0);
     //Always end in a '/'
-    assert(path != nullptr && strlen(path) > 0 && path[strlen(path) -1] == '/');
+    assert(path[strlen(path) - 1] == '/');
 
     vectorImpl<stringImpl> directories = Util::Split(path, '/');
     if (directories.empty()) {
         directories = Util::Split(path, '\\');
     }
 
+    stringImpl previousPath = "..";
     for (const stringImpl& dir : directories) {
-        if (!createDirectory(dir.c_str())) {
+        if (!createDirectory((previousPath + "/" + dir).c_str())) {
             return false;
         }
+        previousPath += "/" + dir;
     }
 
     return true;
 }
 
+FileWithPath getExecutableLocation(char* argv0) {
+    if (argv0 == nullptr || argv0[0] == 0)
+    {
+        return FileWithPath();
+    }
+
+    boost::system::error_code ec;
+    boost::filesystem::path p(boost::filesystem::canonical(argv0, boost::filesystem::current_path(), ec));
+    return splitPathToNameAndLocation(p.make_preferred().string());
+}
 };  // namespace Divide
 
 #if defined(_DEBUG)

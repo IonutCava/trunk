@@ -221,7 +221,7 @@ void tcp_session_tpl::check_deadline(boost::asio::deadline_timer* deadline) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
-//                                     UDP //
+//                                     UDP                                           //
 ///////////////////////////////////////////////////////////////////////////////////////
 
 udp_broadcaster::udp_broadcaster(boost::asio::io_service& io_service,

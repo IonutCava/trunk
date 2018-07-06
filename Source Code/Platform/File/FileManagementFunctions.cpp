@@ -1,5 +1,6 @@
 #include "Headers/FileManagement.h"
 
+#include "Core/Headers/Application.h"
 #include "Core/Headers/StringHelper.h"
 #include <fstream>
 
@@ -119,6 +120,9 @@ bool writeFile(const stringImpl& filePath, const vectorImplFast<Byte>& content, 
 
 FileWithPath splitPathToNameAndLocation(const stringImpl& input) {
     size_t pathNameSplitPoint = input.find_last_of('/') + 1;
+    if (pathNameSplitPoint == 0) {
+        pathNameSplitPoint = input.find_last_of("\\") + 1;
+    }
     return FileWithPath{
         input.substr(pathNameSplitPoint, stringImpl::npos),
         input.substr(0, pathNameSplitPoint)
@@ -134,7 +138,8 @@ bool createFile(const char* filePath, bool overwriteExisting) {
         return std::ifstream(filePath, std::fstream::in | std::fstream::trunc).good();
     }
 
-    createDirectories(splitPathToNameAndLocation(filePath)._path.c_str());
+    const SysInfo& systemInfo = const_sysInfo();
+    createDirectories((systemInfo._pathAndFilename._path + "\\" + splitPathToNameAndLocation(filePath)._path).c_str());
 
     return std::ifstream(filePath, std::fstream::in).good();
 

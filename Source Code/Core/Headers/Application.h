@@ -88,8 +88,6 @@ DEFINE_SINGLETON(Application)
     inline void throwError(ErrorCode err);
     inline ErrorCode errorCode() const;
 
-    inline SysInfo& sysInfo();
-    inline const SysInfo& sysInfo() const;
     /// Add a list of callback functions that should be called when the application
     /// instance is destroyed
     /// (release hardware, file handlers, etc)
@@ -103,8 +101,8 @@ DEFINE_SINGLETON(Application)
 
     //ToDo: Remove this hack - Ionut
     void warmup();
+
   private:
-    SysInfo _sysInfo;
     WindowManager _windowManager;
      
     ErrorCode _errorCode;

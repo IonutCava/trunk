@@ -553,8 +553,8 @@ void Kernel::warmup() {
 }
 
 ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
-    SysInfo& systemInfo = Application::instance().sysInfo();
-    if (!CheckMemory(Config::REQUIRED_RAM_SIZE, systemInfo)) {
+    const SysInfo& systemInfo = const_sysInfo();
+    if (Config::REQUIRED_RAM_SIZE > systemInfo._availableRam) {
         return ErrorCode::NOT_ENOUGH_RAM;
     }
 

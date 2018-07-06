@@ -14,7 +14,7 @@ void  malloc_free(void*& ptr) {
 
 namespace Divide {
 
-    bool PlatformInit() {
+    bool PlatformInit(int argc, char** argv) {
         return PlatformPostInit();
     }
 
@@ -22,19 +22,18 @@ namespace Divide {
         return true;
     }
 
-    bool CheckMemory(const U32 physicalRAMNeeded, SysInfo& info) {
+    bool GetAvailableMemory(SysInfo& info) {
         I32 mib[2] = { CTL_HW, HW_MEMSIZE };
         U32 namelen = sizeof(mib) / sizeof(mib[0]);
         U64 size;
         size_t len = sizeof(size);
         if (sysctl(mib, namelen, &size, &len, NULL, 0) < 0) {
             perror("sysctl");
-        }
-        else {
+        } else {
             info._availableRam = static_cast<size_t>(size);
         }
 
-        return info._availableRam > physicalRAMNeeded;
+        return true;
     }
 
     void getWindowHandle(void* window, SysInfo& info) {
@@ -51,12 +50,30 @@ namespace Divide {
     }
 
     bool createDirectory(const char* path) {
-        return mkdir(path, 0777) == 0;
+        int ret = mkdir(path, 0777);
+        if (ret != 0) {
+            return errno == EEXIST;
+        }
+
+        return true;
     }
 
     #include <sys/prctl.h>
     void setThreadName(const char* threadName) {
         prctl(PR_SET_NAME, threadName, 0, 0, 0);
+    }
+
+    FileWithPath getExecutableLocation(I32 argc, char** argv) {
+        ACKNOWLEDGE_UNUSED(argc);
+        char buf[1024] = { 0 };
+        uint32_t size = sizeof(buf);
+        int ret = _NSGetExecutablePath(buf, &size);
+        if (0 != ret)
+        {
+            return getExecutableLocation(argv0);
+        }
+
+        return splitPathToNameAndLocation(buf);
     }
 
 }; //namespace Divide

@@ -198,14 +198,6 @@ inline void Application::registerShutdownCallback(const DELEGATE_CBK<>& cbk) {
     _shutdownCallback.push_back(cbk);
 }
 
-inline SysInfo& Application::sysInfo() {
-    return _sysInfo;
-}
-
-inline const SysInfo& Application::sysInfo() const {
-    return _sysInfo;
-}
-
 };  // namespace Divide
 
 #endif  //_CORE_APPLICATION_INL_

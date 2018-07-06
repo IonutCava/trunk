@@ -25,7 +25,7 @@ int _vscprintf (const char * format, va_list pargs) {
 
 namespace Divide {
 
-    bool PlatformInit() {
+    bool PlatformInit(int argc, char** argv) {
         return PlatformPostInit();
     }
 
@@ -33,11 +33,11 @@ namespace Divide {
         return true;
     }
 
-    bool CheckMemory(const unsigned int physicalRAMNeeded, SysInfo& info) {
+    bool GetAvailableMemory(SysInfo& info) {
         long pages = sysconf(_SC_PHYS_PAGES);
         long page_size = sysconf(_SC_PAGESIZE);
         info._availableRam = pages * page_size;
-        return info._availableRam > physicalRAMNeeded;
+        return true;
     }
 
     void getWindowHandle(void* window, SysInfo& info) {
@@ -54,13 +54,31 @@ namespace Divide {
     }
 
     void createDirectory(const char* path) {
-        return mkdir(path, 0777) == 0;
+        int ret = mkdir(path, 0777);
+        if (ret != 0) {
+            return errno == EEXIST;
+        }
+
+        return true;
     }
 
     #include <sys/prctl.h>
     void setThreadName(const char* threadName) {
         prctl(PR_SET_NAME, threadName, 0, 0, 0);
     }
+
+    FileWithPath getExecutableLocation(I32 argc, char** argv) {
+        ACKNOWLEDGE_UNUSED(argc);
+        char buf[1024] = { 0 };
+        ssize_t size = readlink("/proc/self/exe", buf, sizeof(buf));
+        if (size == 0 || size == sizeof(buf))
+        {
+            return getExecutableLocation(argv0);
+        }
+
+        return splitPathToNameAndLocation(stringImpl(buf, size));
+    }
+
 }; //namespace Divide
 
 #endif //defined(_UNIX)

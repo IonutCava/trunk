@@ -14,6 +14,7 @@ bool MemoryManager::MemoryTracker::Ready = false;
 bool MemoryManager::MemoryTracker::LogAllAllocations = false;
 MemoryManager::MemoryTracker MemoryManager::AllocTracer;
 void DIVIDE_ASSERT_MSG_BOX(const char* failMessage) {
+    ACKNOWLEDGE_UNUSED(failMessage);
 }
 
 Server::Server()

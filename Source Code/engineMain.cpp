@@ -52,7 +52,7 @@ Engine::~Engine()
 bool Engine::init(int argc, char** argv) {
     ErrorCode err = ErrorCode::NO_ERR;
 
-    if (!PlatformInit()) {
+    if (!PlatformInit(argc, argv)) {
         err = ErrorCode::PLATFORM_INIT_ERROR;
     } else {
         // Start our application based on XML configuration.

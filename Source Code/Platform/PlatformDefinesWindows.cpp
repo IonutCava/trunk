@@ -6,6 +6,7 @@
 #endif
 
 #include "Headers/PlatformDefines.h"
+#include "Core/Headers/StringHelper.h"
 #include <iostream>
 #if defined(USE_VLD)
 #include <vld.h>
@@ -156,21 +157,21 @@ namespace Divide {
         info._windowHandle = wmInfo.info.win.window;
     }
 
-    bool PlatformInit() {
-        return PlatformPostInit();
+    bool PlatformInit(int argc, char** argv) {
+        return PlatformPostInit(argc, argv);
     }
 
     bool PlatformClose() {
         return true;
     }
 
-    bool CheckMemory(const U32 physicalRAMNeeded, SysInfo& info) {
+    bool GetAvailableMemory(SysInfo& info) {
         MEMORYSTATUSEX status; 
         status.dwLength = sizeof(status);
         BOOL infoStatus = GlobalMemoryStatusEx(&status);
         if (infoStatus != FALSE) {
             info._availableRam = status.ullAvailPhys;
-            return info._availableRam > physicalRAMNeeded;
+            return true;
         } else {
             CHAR msgText[256];
             getLastErrorText(msgText,sizeof(msgText));
@@ -220,7 +221,24 @@ namespace Divide {
     }
 
     bool createDirectory(const char* path) {
-        return _mkdir(path) == 0;
+        int ret = _mkdir(path);
+        if (ret != 0) {
+            return errno == EEXIST;
+        }
+
+        return true;
+    }
+
+    FileWithPath getExecutableLocation(I32 argc, char** argv) {
+        ACKNOWLEDGE_UNUSED(argc);
+
+        char buf[1024] = { 0 };
+        DWORD ret = GetModuleFileNameA(NULL, buf, sizeof(buf));
+        if (ret == 0 || ret == sizeof(buf))
+        {
+            return getExecutableLocation(argv[0]);
+        }
+        return splitPathToNameAndLocation(buf);
     }
 
 }; //namespace Divide
