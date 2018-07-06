@@ -294,7 +294,6 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain, cons
     F32 maxAltitude = terrainDescriptor->getAltitudeRange().y;
     F32 altitudeRange = maxAltitude - minAltitude;
 
-
     BoundingBox& terrainBB = Attorney::TerrainLoader::boundingBox(*terrain);
 
     terrainBB.set(
@@ -446,7 +445,6 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain, cons
     initializeVegetation(terrain, terrainDescriptor);
     Attorney::TerrainLoader::buildQuadtree(*terrain);
 
-
     Quad3D_ptr plane = CreateResource<Quad3D>(terrain->parentResourceCache(), infinitePlane);
     // our bottom plane is placed at the bottom of our water entity
     F32 height = bMin.y + yOffset;
@@ -459,9 +457,8 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain, cons
 
     Attorney::TerrainLoader::plane(*terrain, plane);
 
-    Console::printfn(Locale::get(_ID("TERRAIN_LOAD_END")),
-                     terrain->getName().c_str());
-    return true;
+    Console::printfn(Locale::get(_ID("TERRAIN_LOAD_END")), terrain->getName().c_str());
+    return terrain->load();
 }
 
 void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,

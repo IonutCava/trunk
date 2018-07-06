@@ -86,7 +86,7 @@ RenderBin::~RenderBin()
 {
 }
 
-void RenderBin::sort(const std::atomic_bool& stopRequested, RenderStage renderStage) {
+void RenderBin::sort(const Task& parentTask, RenderStage renderStage) {
     // WriteLock w_lock(_renderBinGetMutex);
     switch (_renderOrder) {
         default:
@@ -151,11 +151,11 @@ void RenderBin::addNodeToBin(const SceneGraphNode& sgn, RenderStage stage, const
                             *renderable);
 }
 
-void RenderBin::populateRenderQueue(const std::atomic_bool& stopRequested, RenderStage renderStage) {
+void RenderBin::populateRenderQueue(const Task& parentTask, RenderStage renderStage) {
     I32 renderQueueIndex = _context.reserveRenderQueue();
     // We need to apply different materials for each stage. As nodes are sorted, this should be very fast
     for (const RenderBinItem& item : _renderBinStack) {
-        if (stopRequested) {
+        if (parentTask.stopRequested()) {
             break;
         }
         _context.addToRenderQueue(renderQueueIndex,

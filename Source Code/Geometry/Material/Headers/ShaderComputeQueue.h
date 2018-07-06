@@ -67,7 +67,8 @@ public:
     // Process the first entry in the queue immediatelly
     // This is called in a loop in the 'update' call, but can be user 
     // called as well if the shader is needed immediatelly
-    void stepQueue();
+    // Return true if the queue wasn't empty
+    bool stepQueue();
 
 protected:
     bool frameStarted(const FrameEvent& evt) override;
@@ -78,6 +79,7 @@ private:
 
     Time::ProfileTimer& _queueComputeTimer;
 
+    SharedLock _queueLock;
     std::deque<ShaderQueueElement> _shaderComputeQueue;
     bool _shadersComputedThisFrame = false;
     U32  _totalShaderComputeCountThisFrame = 0;

@@ -500,14 +500,15 @@ void GFXDevice::onCameraChange(const Camera& camera) {
 
 /// Depending on the context, either immediately call the function, or pass it
 /// to the loading thread via a queue
-bool GFXDevice::loadInContext(const CurrentContext& context, const DELEGATE_CBK_PARAM<bool>& callback) {
+bool GFXDevice::loadInContext(const CurrentContext& context, const DELEGATE_CBK_PARAM<const Task&>& callback) {
+    static const Task mainTask;
     // Skip invalid callbacks
     if (callback) {
         if (context == CurrentContext::GFX_LOADING_CTX && Config::USE_GPU_THREADED_LOADING) {
             CreateTask(callback)._task->startTask(Task::TaskPriority::HIGH, to_const_uint(Task::TaskFlags::SYNC_WITH_GPU));
         } else {
             if (Application::isMainThread()) {
-                callback(false);
+                callback(mainTask);
             } else {
                 WriteLock w_lock(_GFXLoadQueueLock);
                 _GFXLoadQueue.push_back(callback);

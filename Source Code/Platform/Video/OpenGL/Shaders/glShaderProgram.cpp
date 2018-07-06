@@ -499,7 +499,7 @@ bool glShaderProgram::load() {
         !_loadedFromBinary && _asyncLoad
             ? CurrentContext::GFX_LOADING_CTX
             : CurrentContext::GFX_RENDERING_CTX,
-        [&](bool stopRequested){
+        [&](const Task& parent){
             threadedLoad(false);
         });
 }

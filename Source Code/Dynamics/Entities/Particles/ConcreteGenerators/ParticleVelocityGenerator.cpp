@@ -19,7 +19,7 @@ void ParticleVelocityGenerator::generate(TaskHandle& packagedTasksParent,
                               [&](iter_t from, iter_t to)
     {
         packagedTasksParent.addChildTask(CreateTask(tp,
-            [from, to, min, max](const std::atomic_bool& stopRequested) mutable
+            [from, to, min, max](const Task& parentTask) mutable
             {
                 std::for_each(from, to, [&](iter_t::value_type& velocity)
                 {

@@ -41,6 +41,7 @@ namespace Divide {
 class SceneState;
 class SceneRenderState;
 
+class Task;
 class Camera;
 class SceneGraph;
 
@@ -75,7 +76,7 @@ class RenderPassCuller {
 
    protected:
 
-    void frumstumPartitionCuller(const std::atomic_bool& stopRequested,
+    void frumstumPartitionCuller(const Task& parentTask,
                                  U32 start,
                                  U32 end,
                                  SceneGraphNode& root,
@@ -83,7 +84,7 @@ class RenderPassCuller {
                                  RenderStage stage,
                                  F32 cullMaxDistance);
     // return true if the node is not currently visible
-    void frustumCullNode(const std::atomic_bool& stopRequested,
+    void frustumCullNode(const Task& parentTask,
                          const SceneGraphNode& node,
                          const Camera& currentCamera,
                          RenderStage currentStage,

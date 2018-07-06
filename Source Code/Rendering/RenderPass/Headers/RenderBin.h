@@ -45,6 +45,7 @@
 
 namespace Divide {
 
+class Task;
 class GFXDevice;
 class SceneGraphNode;
 class RenderingComponent;
@@ -106,8 +107,8 @@ class RenderBin {
 
     ~RenderBin();
 
-    void sort(const std::atomic_bool& stopRequested, RenderStage renderStage);
-    void populateRenderQueue(const std::atomic_bool& stopRequested, RenderStage renderStage);
+    void sort(const Task& parentTask, RenderStage renderStage);
+    void populateRenderQueue(const Task& parentTask, RenderStage renderStage);
     void postRender(const SceneRenderState& renderState, RenderStage renderStage, RenderSubPassCmds& subPassesInOut);
     void refresh();
 

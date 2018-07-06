@@ -155,7 +155,7 @@ void PBR(in int lightIndex,
     in vec3 albedo,
     in vec3 specular,
     in float reflectivity,
-    inout vec4 colourInOut,
+    inout vec3 colourInOut,
     inout float reflectionCoeff)
 {
     float roughness = reflectivity;
@@ -182,5 +182,5 @@ void PBR(in int lightIndex,
 
     reflectionCoeff = saturate(reflectionCoeff + length(specularFactor));
 
-    colourInOut.rgb += (lightColour * result * att) / M_PI;
+    colourInOut += (lightColour * result * att) / M_PI;
 }

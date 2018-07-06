@@ -337,7 +337,7 @@ void glTexture::loadDataUncompressed(const TextureLoadInfo& info, bufferPtr data
             case TextureType::TEXTURE_CUBE_MAP:
             case TextureType::TEXTURE_CUBE_ARRAY: {
                 glTextureSubImage3D(handle, 0, 0, 0, (info._cubeMapCount * 6) + info._layerIndex, _width, _height, 1, format, type, data);
-                _mipMapsDirty = info._layerIndex == _numLayers;
+                _mipMapsDirty = info._layerIndex == _numLayers - 1;
             } break;
         }
     }

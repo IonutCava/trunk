@@ -226,8 +226,8 @@ bool MainScene::unload() {
     return Scene::unload();
 }
 
-void MainScene::test(const std::atomic_bool& stopRequested, cdiggins::any a, CallbackParam b) {
-    while (!stopRequested) {
+void MainScene::test(const Task& parentTask, cdiggins::any a, CallbackParam b) {
+    while (!parentTask.stopRequested()) {
         static bool switchAB = false;
         vec3<F32> pos;
         SceneGraphNode_ptr boxNode(_sceneGraph->findNode("box").lock());
@@ -276,15 +276,13 @@ bool MainScene::loadResources(bool continueOnErrors) {
                   -sinf(_sunAngle.x) * sinf(_sunAngle.y), 0.0f);
 
     TaskHandle boxMove(CreateTask(getGUID(),
-                               DELEGATE_BIND(&MainScene::test,
-                               this,
-                               std::placeholders::_1,
-                               stringImpl("test"),
-                               CallbackParam::TYPE_STRING)));
+                                  DELEGATE_BIND(&MainScene::test,
+                                  this,
+                                  std::placeholders::_1,
+                                  stringImpl("test"),
+                                  CallbackParam::TYPE_STRING)));
     boxMove.startTask();
     registerTask(boxMove);
-
-  
 
     ResourceDescriptor beepSound("beep sound");
     beepSound.setResourceLocation(

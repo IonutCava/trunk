@@ -37,11 +37,11 @@ void RenderPassManager::destroy() {
 void RenderPassManager::render(SceneRenderState& sceneRenderState) {
     // Attempt to build draw commands in parallel
     TaskPool& pool = Application::instance().kernel().taskPool();
-    TaskHandle renderCommandTask = CreateTask(pool, DELEGATE_CBK_PARAM<bool>());
+    TaskHandle renderCommandTask = CreateTask(pool, DELEGATE_CBK_PARAM<const Task&>());
     for (RenderPass* rp : _renderPasses)
     {
         renderCommandTask.addChildTask(CreateTask(pool,
-            [rp](const std::atomic_bool& stopRequested) mutable
+            [rp](const Task& parentTask) mutable
             {
                 rp->generateDrawCommands();
             })._task

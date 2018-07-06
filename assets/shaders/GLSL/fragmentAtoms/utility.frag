@@ -34,6 +34,14 @@ bool isSamplerSet(sampler2D sampler) {
     return textureSize(sampler, 0).x > 0;
 }
 
+vec2 scaledTextureCoords(inout vec2 texCoord, in vec2 scaleFactor) {
+    return vec2(.5, .5) + ((texCoord - vec2(.5, .5)) * scaleFactor);
+}
+
+vec2 scaledTextureCoords(inout vec2 texCoord, in float scaleFactor) {
+    return scaledTextureCoords(texCoord, vec2(scaleFactor));
+}
+
 //Box Projected Cube Environment Mapping by Bartosz Czuba
 vec3 bpcem(in vec3 v, vec3 Emax, vec3 Emin, vec3 Epos)
 {

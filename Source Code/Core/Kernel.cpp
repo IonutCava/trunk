@@ -574,9 +574,9 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
 void Kernel::shutdown() {
     Console::printfn(Locale::get(_ID("STOP_KERNEL")));
-    _taskPool.waitForAllTasks(true, true, true);
     SceneManager::onShutdown();
     _sceneManager.reset();
+    _taskPool.waitForAllTasks(true, true, true);
     // release the scene
     Console::bindConsoleOutput(std::function<void(const char*, bool)>());
     _platformContext->gui().destroy();  /// Deactivate GUI 

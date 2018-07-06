@@ -95,12 +95,12 @@ vec4 getFinalPixelColour() {
 
 void main (void){
     _colourOut = ToSRGB(applyFog(getFinalPixelColour()));
-    _normalOut = packNormal(processedNormal);
+    _normalOut = packNormal(getProcessedNormal());
     _velocityOut = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
 
 #if defined(_DEBUG)
     if (dvd_NormalsOnly) {
-        _colourOut.rgb = processedNormal;
+        _colourOut.rgb = getProcessedNormal();
     }
 #endif
 

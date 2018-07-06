@@ -111,8 +111,7 @@ void Vegetation::initialize(TerrainChunk* const terrainChunk) {
                                   RenderStage::SHADOW, true);
     vegMaterial->setShaderProgram(_grassShaderName + ".PrePass",
                                   RenderStage::Z_PRE_PASS, true);
-    vegMaterial->addCustomTexture(_grassBillboards,
-                                  to_const_ubyte(ShaderProgram::TextureUsage::UNIT0));
+    vegMaterial->setTexture(ShaderProgram::TextureUsage::UNIT0, _grassBillboards);
     vegMaterial->setShaderLoadThreaded(false);
     vegMaterial->dumpToFile(false);
     setMaterialTpl(vegMaterial);
@@ -273,8 +272,10 @@ void Vegetation::uploadGrassData() {
 void Vegetation::sceneUpdate(const U64 deltaTime,
                              SceneGraphNode& sgn,
                              SceneState& sceneState) {
+    static const Task updateTask;
+
     if (_threadedLoadComplete && !_success) {
-        generateTrees(false);
+        generateTrees(updateTask);
         Camera::addUpdateListener(DELEGATE_BIND(&Vegetation::gpuCull, this));
         _success = true;
     }
@@ -422,10 +423,10 @@ bool Vegetation::onRender(RenderStage renderStage) {
               renderStage == RenderStage::SHADOW));
 }
 
-void Vegetation::generateTrees(const std::atomic_bool& stopRequested) {
+void Vegetation::generateTrees(const Task& parentTask) {
 }
 
-void Vegetation::generateGrass(const std::atomic_bool& stopRequested) {
+void Vegetation::generateGrass(const Task& parentTask) {
     
     //const vec2<F32>& chunkPos = _terrainChunk->getOffsetAndSize().xy();
     const vec2<F32>& chunkSize = _terrainChunk->getOffsetAndSize().zw();

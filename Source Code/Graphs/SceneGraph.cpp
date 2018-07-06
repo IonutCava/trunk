@@ -162,7 +162,7 @@ void SceneGraph::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
 
     if (_loadComplete) {
         CreateTask(
-            [this, deltaTime](const std::atomic_bool& stopRequested) mutable
+            [this, deltaTime](const Task& parentTask) mutable
             {
                 _octreeUpdating = true;
                 if (_octreeChanged) {

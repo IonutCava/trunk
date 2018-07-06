@@ -47,9 +47,13 @@ Terrain::~Terrain() {
     MemoryManager::DELETE(_normalSampler);
 }
 
+bool Terrain::load() {
+    return Object3D::load();
+}
+
 bool Terrain::unload() {
     MemoryManager::DELETE_VECTOR(_terrainTextures);
-    return SceneNode::unload();
+    return Object3D::unload();
 }
 
 void Terrain::postLoad(SceneGraphNode& sgn) {
@@ -64,6 +68,8 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
         SceneGraphNode_ptr vegetation = sgn.addNode(Attorney::TerrainChunkTerrain::getVegetation(*chunk), normalMask);
         vegetation->lockVisibility(true);
     }*/
+    // Skip Object3D::load() to avoid triangle list computation (extremely expensive)!!!
+
     SceneNode::postLoad(sgn);
 }
 
@@ -90,23 +96,25 @@ void Terrain::buildQuadtree() {
         drawShader->Uniform("bbox_extent", _boundingBox.getExtent());
         drawShader->Uniform("underwaterDiffuseScale", _underwaterDiffuseScale);
 
-        U8 textureOffset = to_const_ubyte(ShaderProgram::TextureUsage::NORMALMAP) + 1;
+        U8 textureOffset = to_const_ubyte(ShaderProgram::TextureUsage::COUNT);
         U8 layerOffset = 0;
         stringImpl layerIndex;
         for (U8 k = 0; k < _terrainTextures.size(); ++k) {
             layerOffset = k * 3 + textureOffset;
             layerIndex = to_stringImpl(k);
             TerrainTextureLayer* textureLayer = _terrainTextures[k];
+
             drawShader->Uniform(("texBlend[" + layerIndex + "]").c_str(), layerOffset);
             drawShader->Uniform(("texTileMaps[" + layerIndex + "]").c_str(), layerOffset + 1);
             drawShader->Uniform(("texNormalMaps[" + layerIndex + "]").c_str(), layerOffset + 2);
-
-            getMaterialTpl()->addCustomTexture(textureLayer->blendMap(), layerOffset);
-            getMaterialTpl()->addCustomTexture(textureLayer->tileMaps(), layerOffset + 1);
-            getMaterialTpl()->addCustomTexture(textureLayer->normalMaps(), layerOffset + 2);
-
             drawShader->Uniform(("diffuseScale[" + layerIndex + "]").c_str(), textureLayer->getDiffuseScales());
             drawShader->Uniform(("detailScale[" + layerIndex + "]").c_str(), textureLayer->getDetailScales());
+
+            if (i == 0) {
+                getMaterialTpl()->addCustomTexture(textureLayer->blendMap(), layerOffset);
+                getMaterialTpl()->addCustomTexture(textureLayer->tileMaps(), layerOffset + 1);
+                getMaterialTpl()->addCustomTexture(textureLayer->normalMaps(), layerOffset + 2);
+            }
         }
     }
 }
@@ -114,9 +122,15 @@ void Terrain::buildQuadtree() {
 void Terrain::sceneUpdate(const U64 deltaTime,
                           SceneGraphNode& sgn,
                           SceneState& sceneState) {
+    static Plane<F32> previousWaterPlane;
     _terrainQuadtree.sceneUpdate(deltaTime, sgn, sceneState);
     _waterHeight = sceneState.waterLevel();
-    SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
+    Plane<F32> currentWaterPlane(WORLD_Y_AXIS, _waterHeight);
+    if (previousWaterPlane != currentWaterPlane) {
+        previousWaterPlane = currentWaterPlane;
+        _context.setClipPlane(ClipPlaneIndex::CLIP_PLANE_0, currentWaterPlane);
+    }
+    Object3D::sceneUpdate(deltaTime, sgn, sceneState);
 }
 
 void Terrain::initialiseDrawCommands(SceneGraphNode& sgn,
@@ -129,7 +143,8 @@ void Terrain::initialiseDrawCommands(SceneGraphNode& sgn,
     cmd.stateHash(_terrainStateHash[to_uint(renderStage)]);
     drawCommandsInOut.push_back(cmd);
 
-    for (U32 i = 0; i < _terrainQuadtree.getChunkCount(); ++i) {
+    size_t chunkCount = static_cast<size_t>(_terrainQuadtree.getChunkCount());
+    for (U32 i = 0; i < chunkCount; ++i) {
         drawCommandsInOut.push_back(cmd);
     }
     //infinite plane
@@ -141,9 +156,9 @@ void Terrain::initialiseDrawCommands(SceneGraphNode& sgn,
     drawCommandsInOut.push_back(cmd);
 
     //BoundingBoxes
-    for (U32 i = 0; i < _terrainQuadtree.getChunkCount(); ++i) {
-        GenericDrawCommand bbCommand;
-        bbCommand.drawCount(0);
+    GenericDrawCommand bbCommand;
+    bbCommand.drawCount(0);
+    for (U32 i = 0; i < chunkCount + 1; ++i) {
         drawCommandsInOut.push_back(bbCommand);
     }
 
@@ -167,13 +182,15 @@ void Terrain::updateDrawCommands(SceneGraphNode& sgn,
                     return a.z < b.z; 
                 });
 
-    size_t i = 0;
+    size_t i = 0; size_t dataCount = chunkData.size();
     for (;i < chunkCount; ++i) {
-        vec3<U32>& cmdData = chunkData[i];
-        GenericDrawCommand& cmd = drawCommandsInOut[i + 1];
-        cmd.cmd().firstIndex = cmdData.x;
-        cmd.cmd().indexCount = cmdData.y;
-        cmd.LoD(to_byte(cmdData.z));
+        if (i < dataCount) {
+            vec3<U32>& cmdData = chunkData[i];
+            GenericDrawCommand& cmd = drawCommandsInOut[i + 1];
+            cmd.cmd().firstIndex = cmdData.x;
+            cmd.cmd().indexCount = cmdData.y;
+            cmd.LoD(to_byte(cmdData.z));
+        }
     }
 
     // draw infinite plane

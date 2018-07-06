@@ -135,7 +135,7 @@ void RenderQueue::addNodeToQueue(const SceneGraphNode& sgn, RenderStage stage, c
 void RenderQueue::populateRenderQueues(RenderStage renderStage) {
     TaskPool& pool = Application::instance().kernel().taskPool();
 
-    TaskHandle populateTask = CreateTask(pool, DELEGATE_CBK_PARAM<bool>());
+    TaskHandle populateTask = CreateTask(pool, DELEGATE_CBK_PARAM<const Task&>());
     for (RenderBin* renderBin : _activeBins) {
         if (!renderBin->empty()) {
             populateTask.addChildTask(CreateTask(pool,
@@ -163,7 +163,7 @@ void RenderQueue::sort(RenderStage renderStage) {
     }
 
     TaskPool& pool = Application::instance().kernel().taskPool();
-    TaskHandle sortTask = CreateTask(pool, DELEGATE_CBK_PARAM<bool>());
+    TaskHandle sortTask = CreateTask(pool, DELEGATE_CBK_PARAM<const Task&>());
     for (RenderBin* renderBin : _activeBins) {
         if (!renderBin->empty()) {
             sortTask.addChildTask(CreateTask(pool,

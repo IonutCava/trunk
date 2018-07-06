@@ -91,8 +91,8 @@ void PingPongScene::serveBall(I64 btnGUID) {
     registerTask(newGame);
 }
 
-void PingPongScene::test(const std::atomic_bool& stopRequested, cdiggins::any a, CallbackParam b) {
-    while (!stopRequested) {
+void PingPongScene::test(const Task& parentTask, cdiggins::any a, CallbackParam b) {
+    while (!parentTask.stopRequested()) {
         bool updated = false;
         stringImpl message;
         PhysicsComponent* ballTransform =

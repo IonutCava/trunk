@@ -127,7 +127,7 @@ void PhysXScene::postLoadMainThread() {
 
 bool PhysXScene::unload() { return Scene::unload(); }
 
-void PhysXScene::createStack(const std::atomic_bool& stopRequested, U32 size) {
+void PhysXScene::createStack(const Task& parentTask, U32 size) {
     U32 stackSize = size;
     F32 CubeSize = 1.0f;
     F32 Spacing = 0.0001f;
@@ -139,7 +139,7 @@ void PhysXScene::createStack(const std::atomic_bool& stopRequested, U32 size) {
     s_sceneState = PhysXState::STATE_ADDING_ACTORS;
 
     while (stackSize) {
-        if (stopRequested){
+        if (parentTask.stopRequested()){
             return;
         }
         for (U16 i = 0; i < stackSize; i++) {
@@ -155,13 +155,13 @@ void PhysXScene::createStack(const std::atomic_bool& stopRequested, U32 size) {
     s_sceneState = PhysXState::STATE_IDLE;
 }
 
-void PhysXScene::createTower(const std::atomic_bool& stopRequested, U32 size) {
+void PhysXScene::createTower(const Task& parentTask, U32 size) {
     while (s_sceneState == PhysXState::STATE_ADDING_ACTORS);
         
     s_sceneState = PhysXState::STATE_ADDING_ACTORS;
 
     for (U8 i = 0; i < size; i++) {
-        if (stopRequested) {
+        if (parentTask.stopRequested()) {
             return;
         }
         DIVIDE_UNEXPECTED_CALL();

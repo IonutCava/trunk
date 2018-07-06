@@ -250,11 +250,11 @@ Light* LightPool::getLight(I64 lightGUID, LightType type) {
 void LightPool::updateAndUploadLightData(const vec3<F32>& eyePos, const mat4<F32>& viewMatrix) {
     // Sort all lights (Sort in parallel by type)
     TaskPool& pool = Application::instance().kernel().taskPool();
-    TaskHandle cullTask = CreateTask(pool, DELEGATE_CBK_PARAM<bool>());
+    TaskHandle cullTask = CreateTask(pool, DELEGATE_CBK_PARAM<const Task&>());
     for (Light::LightList& lights : _lights) {
         if (!lights.empty()) {
             cullTask.addChildTask(CreateTask(pool,
-                [&eyePos, &lights](const std::atomic_bool& stopRequested) mutable
+                [&eyePos, &lights](const Task& parentTask) mutable
                 {
                     std::sort(std::begin(lights), std::end(lights),
                               [&eyePos](Light* a, Light* b) -> bool

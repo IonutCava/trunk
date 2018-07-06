@@ -55,7 +55,7 @@ class MainScene : public Scene {
     void processInput(const U64 deltaTime)override;
     void processTasks(const U64 deltaTime)override;
     void processGUI(const U64 deltaTime)override;
-    void test(const std::atomic_bool& stopRequested, cdiggins::any a, CallbackParam b);
+    void test(const Task& parentTask, cdiggins::any a, CallbackParam b);
     U16 registerInputActions() override;
 
    private:

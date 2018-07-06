@@ -211,7 +211,7 @@ bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious, bool
     }
 
     CreateTask(
-        [this, name, unloadPrevious, &sceneToUnload](const std::atomic_bool& stopRequested)
+        [this, name, unloadPrevious, &sceneToUnload](const Task& parentTask)
         {
             // Load first, unload after to make sure we don't reload common resources
             if (load(name) != nullptr) {

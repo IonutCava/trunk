@@ -32,7 +32,7 @@ TEST(ParallelForTest)
 
     std::atomic_uint loopCounter = 0;
     std::atomic_uint totalCounter = 0;
-    auto loop = [&totalCounter, &loopCounter](const std::atomic_bool& stopRequested, U32 start, U32 end) {
+    auto loop = [&totalCounter, &loopCounter](const Task& parentTask, U32 start, U32 end) {
         ++loopCounter;
         for (U32 i = start; i < end; ++i) {
             ++totalCounter;
@@ -53,7 +53,7 @@ TEST(TaskCallbackTest)
 
     std::atomic_bool testValue = false;
 
-    auto task = [](const std::atomic_bool& stopRequested) {
+    auto task = [](const Task& parentTask) {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     };
 
@@ -91,7 +91,7 @@ namespace {
             return _testValue;
         }
 
-        void threadedFunction(const std::atomic_bool& stopRequested) {
+        void threadedFunction(const Task& parentTask) {
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
       private:
@@ -130,7 +130,7 @@ TEST(TaskPriorityTest)
     CHECK_TRUE(init);
 
     U32 callbackValue = 0;
-    auto testFunction = [&callbackValue](const std::atomic_bool& stopRequested) {
+    auto testFunction = [&callbackValue](const Task& parentTask) {
         callbackValue++;
     };
 

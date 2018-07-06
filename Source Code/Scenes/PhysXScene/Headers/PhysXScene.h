@@ -53,8 +53,8 @@ class PhysXScene : public Scene {
     U16 registerInputActions() override;
 
    private:
-    void createStack(const std::atomic_bool& stopRequested, U32 size = 10);
-    void createTower(const std::atomic_bool& stopRequested, U32 size = 10);
+    void createStack(const Task& parentTask, U32 size = 10);
+    void createTower(const Task& parentTask, U32 size = 10);
 
    private:
     bool _hasGroundPlane;

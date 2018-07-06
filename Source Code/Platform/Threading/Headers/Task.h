@@ -98,7 +98,11 @@ class Task : public GUIDWrapper, private NonCopyable {
         return _poolIndex;
     }
 
-    inline void threadedCallback(const DELEGATE_CBK_PARAM<bool>& cbk, I64 jobIdentifier) {
+    inline bool stopRequested() const {
+        return _stopRequested;
+    }
+
+    inline void threadedCallback(const DELEGATE_CBK_PARAM<const Task&>& cbk, I64 jobIdentifier) {
         _callback = cbk;
         _jobIdentifier = jobIdentifier;
     }
@@ -129,7 +133,7 @@ class Task : public GUIDWrapper, private NonCopyable {
 
     std::atomic_bool _stopRequested;
 
-    DELEGATE_CBK_PARAM<const std::atomic_bool&> _callback;
+    DELEGATE_CBK_PARAM<const Task&> _callback;
     
     TaskPriority _priority;
     TaskPool* _tp;

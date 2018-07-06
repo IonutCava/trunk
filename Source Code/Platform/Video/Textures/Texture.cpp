@@ -37,7 +37,7 @@ Texture::~Texture()
 bool Texture::load() {
     _context.loadInContext(_asyncLoad ? CurrentContext::GFX_LOADING_CTX
                                       : CurrentContext::GFX_RENDERING_CTX,
-        [&](const std::atomic_bool& stopRequested) {
+        [&](const Task& parent) {
             threadedLoad();
             Resource::load();
         }
@@ -139,7 +139,7 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name) {
         // should this be atomic? At most, we run an extra task -Ionut
         std::atomic_bool abort = false;
 
-        auto findAlpha = [&abort, &img, height](const std::atomic_bool& stopRequested, U32 start, U32 end) {
+        auto findAlpha = [&abort, &img, height](const Task& parent, U32 start, U32 end) {
             U8 tempR, tempG, tempB, tempA;
             for (U32 i = start; i < end; ++i) {
                 for (I32 j = 0; j < height; ++j) {
@@ -150,7 +150,7 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name) {
                         }
                     }
                 }
-                if (stopRequested) {
+                if (parent.stopRequested()) {
                     break;
                 }
             }

@@ -48,7 +48,7 @@ TerrainChunk::~TerrainChunk() {
     _lodIndCount.fill(0);
     _chunkIndOffset = 0;
     _terrainVB = nullptr;
-    _vegetation = nullptr;
+    MemoryManager::DELETE(_vegetation);
 }
 
 void TerrainChunk::load(U8 depth, const vec2<U32>& pos, U32 minHMSize, const vec2<U32>& HMsize) {

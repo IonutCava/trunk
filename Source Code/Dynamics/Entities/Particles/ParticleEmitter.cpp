@@ -294,7 +294,7 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime,
                 }
 
                 CreateTask(
-                    [this, aliveCount, averageEmitRate](const std::atomic_bool& stopRequested) {
+                    [this, aliveCount, averageEmitRate](const Task& parentTask) {
                         // invalidateCache means that the existing particle data is no longer partially sorted
                         _particles->sort(true);
 

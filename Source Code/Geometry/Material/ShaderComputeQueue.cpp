@@ -24,39 +24,45 @@ ShaderComputeQueue::~ShaderComputeQueue()
 
 void ShaderComputeQueue::idle() {
     Time::ScopedTimer timer(_queueComputeTimer);
-    if (_shaderComputeQueue.empty() || _shadersComputedThisFrame) {
-        return;
+    {
+        ReadLock r_lock(_queueLock);
+        if (_shaderComputeQueue.empty() || _shadersComputedThisFrame) {
+            return;
+        }
     }
 
     _totalShaderComputeCountThisFrame = 0;
 
-    while(!_shaderComputeQueue.empty() &&
-          _totalShaderComputeCountThisFrame++ < g_MaxShadersComputedPerFrame)
-    {
-        stepQueue();
-    }
+    WAIT_FOR_CONDITION(!(stepQueue() &&
+                         _totalShaderComputeCountThisFrame++ < g_MaxShadersComputedPerFrame));
 
     _shadersComputedThisFrame = true;
 }
 
-void ShaderComputeQueue::stepQueue() {
+bool ShaderComputeQueue::stepQueue() {
+    UpgradableReadLock r_lock(_queueLock);
     if (!_shaderComputeQueue.empty()) {
+        UpgradeToWriteLock w_lock(r_lock);
         const ShaderQueueElement& currentItem = _shaderComputeQueue.front();
         ShaderProgramInfo& info = *currentItem._shaderData;
         info._shaderRef = CreateResource<ShaderProgram>(_cache,
                                                         currentItem._shaderDescriptor);
         info.computeStage(ShaderProgramInfo::BuildStage::COMPUTED);
         _shaderComputeQueue.pop_front();
+        return true;
     }
+
+    return false;
 }
 
-
 void ShaderComputeQueue::addToQueueFront(const ShaderQueueElement& element) {
+    WriteLock w_lock(_queueLock);
     element._shaderData->computeStage(ShaderProgramInfo::BuildStage::QUEUED);
     _shaderComputeQueue.push_front(element);
 }
 
 void ShaderComputeQueue::addToQueueBack(const ShaderQueueElement& element) {
+    WriteLock w_lock(_queueLock);
     element._shaderData->computeStage(ShaderProgramInfo::BuildStage::QUEUED);
     _shaderComputeQueue.push_back(element);
 }

@@ -88,7 +88,7 @@ TaskHandle GetTaskHandle(I64 taskGUID);
 * @param threadedFunction The callback function to call in a separate thread = the job to execute
 * @param onCompletionFunction The callback function to call when the thread finishes
 */
-TaskHandle CreateTask(const DELEGATE_CBK_PARAM<bool>& threadedFunction,
+TaskHandle CreateTask(const DELEGATE_CBK_PARAM<const Task&>& threadedFunction,
                       const DELEGATE_CBK<>& onCompletionFunction = DELEGATE_CBK<>());
 
 /**
@@ -99,7 +99,7 @@ TaskHandle CreateTask(const DELEGATE_CBK_PARAM<bool>& threadedFunction,
 * @param onCompletionFunction The callback function to call when the thread finishes
 */
 TaskHandle CreateTask(I64 jobIdentifier,
-                      const DELEGATE_CBK_PARAM<bool>& threadedFunction,
+                      const DELEGATE_CBK_PARAM<const Task&>& threadedFunction,
                       const DELEGATE_CBK<>& onCompletionFunction = DELEGATE_CBK<>());
 
 
@@ -108,20 +108,20 @@ TaskHandle CreateTask(I64 jobIdentifier,
 TaskHandle GetTaskHandle(TaskPool& pool,
                          I64 taskGUID);
 TaskHandle CreateTask(TaskPool& pool,
-                   const DELEGATE_CBK_PARAM<bool>& threadedFunction,
+                   const DELEGATE_CBK_PARAM<const Task&>& threadedFunction,
                    const DELEGATE_CBK<>& onCompletionFunction = DELEGATE_CBK<>());
 TaskHandle CreateTask(TaskPool& pool, 
                    I64 jobIdentifier,
-                   const DELEGATE_CBK_PARAM<bool>& threadedFunction,
+                   const DELEGATE_CBK_PARAM<const Task&>& threadedFunction,
                    const DELEGATE_CBK<>& onCompletionFunction = DELEGATE_CBK<>());
-TaskHandle parallel_for(const DELEGATE_CBK_PARAM_3<const std::atomic_bool&, U32, U32>& cbk,
+TaskHandle parallel_for(const DELEGATE_CBK_PARAM_3<const Task&, U32, U32>& cbk,
                         U32 count,
                         U32 partitionSize,
                         Task::TaskPriority priority = Task::TaskPriority::HIGH,
                         U32 taskFlags = 0,
                         bool waitForResult = true);
 TaskHandle parallel_for(TaskPool& pool, 
-                        const DELEGATE_CBK_PARAM_3<const std::atomic_bool&, U32, U32>& cbk,
+                        const DELEGATE_CBK_PARAM_3<const Task&, U32, U32>& cbk,
                         U32 count,
                         U32 partitionSize,
                         Task::TaskPriority priority = Task::TaskPriority::HIGH,

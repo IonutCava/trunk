@@ -55,7 +55,7 @@ void SkinnedSubMesh::buildBoundingBoxesForAnimCompleted(U32 animationIndex) {
     _boundingBoxesAvailable.at(animationIndex) = true;
 }
 
-void SkinnedSubMesh::buildBoundingBoxesForAnim(const std::atomic_bool& stopRequested,
+void SkinnedSubMesh::buildBoundingBoxesForAnim(const Task& parentTask,
                                                U32 animationIndex,
                                                AnimationComponent* const animComp) {
 
@@ -76,7 +76,7 @@ void SkinnedSubMesh::buildBoundingBoxesForAnim(const std::atomic_bool& stopReque
     U32 i = 0;
     BoundingBoxPerFrame& currentBBs = _boundingBoxes.at(animationIndex);
     for (BoundingBox& bb : currentBBs) {
-        if (stopRequested) {
+        if (parentTask.stopRequested()) {
             return;
         }
         bb.reset();

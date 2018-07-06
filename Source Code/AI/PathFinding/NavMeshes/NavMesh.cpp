@@ -194,7 +194,7 @@ bool NavigationMesh::buildThreaded() {
     return true;
 }
 
-void NavigationMesh::buildInternal(const std::atomic_bool& stopRequested) {
+void NavigationMesh::buildInternal(const Task& parentTask) {
     _building = true;
     // Create mesh
     Time::ProfileTimer importTimer;

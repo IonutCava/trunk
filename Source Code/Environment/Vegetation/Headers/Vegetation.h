@@ -97,8 +97,8 @@ class Vegetation : public SceneNode {
 
    private:
     void uploadGrassData();
-    void generateTrees(const std::atomic_bool& stopRequested);
-    void generateGrass(const std::atomic_bool& stopRequested);
+    void generateTrees(const Task& parentTask);
+    void generateGrass(const Task& parentTask);
 
     U32 getQueryID();
 

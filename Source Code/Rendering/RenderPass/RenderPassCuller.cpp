@@ -115,7 +115,7 @@ void RenderPassCuller::frustumCull(SceneGraph& sceneGraph,
     }
 }
 
-void RenderPassCuller::frumstumPartitionCuller(const std::atomic_bool& stopRequested,
+void RenderPassCuller::frumstumPartitionCuller(const Task& parentTask,
                                                U32 start,
                                                U32 end,
                                                SceneGraphNode& root,
@@ -123,13 +123,13 @@ void RenderPassCuller::frumstumPartitionCuller(const std::atomic_bool& stopReque
                                                RenderStage stage,
                                                F32 cullMaxDistance)
 {
-    root.forEachChild([this, &stopRequested, &camera, stage, cullMaxDistance](const SceneGraphNode& child, I32 i) {
-        frustumCullNode(stopRequested, child, camera, stage, cullMaxDistance, i, true);
+    root.forEachChild([this, &parentTask, &camera, stage, cullMaxDistance](const SceneGraphNode& child, I32 i) {
+        frustumCullNode(parentTask, child, camera, stage, cullMaxDistance, i, true);
     }, start, end);
 }
 /// This method performs the visibility check on the given node and all of its
 /// children and adds them to the RenderQueue
-void RenderPassCuller::frustumCullNode(const std::atomic_bool&stopRequested,
+void RenderPassCuller::frustumCullNode(const Task& parentTask,
                                        const SceneGraphNode& currentNode,
                                        const Camera& currentCamera,
                                        RenderStage currentStage,
@@ -156,12 +156,12 @@ void RenderPassCuller::frustumCullNode(const std::atomic_bool&stopRequested,
     Frustum::FrustCollision collisionResult = Frustum::FrustCollision::FRUSTUM_OUT;
     isVisible = isVisible && !currentNode.cullNode(currentCamera, cullMaxDistance, currentStage, collisionResult);
 
-    if (isVisible && !stopRequested) {
+    if (isVisible && !parentTask.stopRequested()) {
         vectorAlg::emplace_back(nodes, 0, currentNode.shared_from_this());
         if (collisionResult == Frustum::FrustCollision::FRUSTUM_INTERSECT) {
             // Parent node intersects the view, so check children
-            currentNode.forEachChild([this, &stopRequested, &currentCamera, currentStage, cullMaxDistance, nodeListIndex](const SceneGraphNode& child) {
-                frustumCullNode(stopRequested, child, currentCamera, currentStage, cullMaxDistance, nodeListIndex, false);
+            currentNode.forEachChild([this, &parentTask, &currentCamera, currentStage, cullMaxDistance, nodeListIndex](const SceneGraphNode& child) {
+                frustumCullNode(parentTask, child, currentCamera, currentStage, cullMaxDistance, nodeListIndex, false);
             });
         } else {
             // All nodes are in view entirely

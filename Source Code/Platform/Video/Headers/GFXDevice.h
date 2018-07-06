@@ -218,7 +218,7 @@ public:  // GPU interface
     void increaseResolution();
     void decreaseResolution();
     bool loadInContext(const CurrentContext& context,
-        const DELEGATE_CBK_PARAM<bool>& callback);
+        const DELEGATE_CBK_PARAM<const Task&>& callback);
 
     /// Save a screenshot in TGA format
     void Screenshot(const stringImpl& filename);
@@ -466,7 +466,7 @@ protected:
     vectorImpl<RenderPackageQueue> _renderQueues;
 
     mutable SharedLock _GFXLoadQueueLock;
-    std::deque<DELEGATE_CBK_PARAM<bool>> _GFXLoadQueue;
+    std::deque<DELEGATE_CBK_PARAM<const Task&>> _GFXLoadQueue;
 
     ShaderBuffer* _gfxDataBuffer;
     GenericDrawCommand _defaultDrawCmd;

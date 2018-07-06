@@ -325,6 +325,7 @@ void GFXDevice::closeRenderingAPI() {
 /// After a swap buffer call, the CPU may be idle waiting for the GPU to draw to
 /// the screen, so we try to do some processing
 void GFXDevice::idle() {
+    static const Task idleTask;
     // Update the zPlanes if needed
     _gpuBlock._data._ZPlanesCombined.zw(vec2<F32>(
         ParamHandler::instance().getParam<F32>(_ID("rendering.zNear")),
@@ -337,8 +338,8 @@ void GFXDevice::idle() {
 
     UpgradableReadLock r_lock(_GFXLoadQueueLock);
     if (!_GFXLoadQueue.empty()) {
-        for(DELEGATE_CBK_PARAM<bool>& cbk : _GFXLoadQueue) {
-            cbk(false);
+        for(DELEGATE_CBK_PARAM<const Task&>& cbk : _GFXLoadQueue) {
+            cbk(idleTask);
         }
         UpgradeToWriteLock w_lock(r_lock);
         _GFXLoadQueue.clear();

@@ -98,20 +98,20 @@ void ParticleData::sort(bool invalidateCache) {
 
     std::sort(std::begin(_indices), std::end(_indices), sortFunc);
 
-   auto parsePositions = [count, this](const std::atomic_bool& stopRequested) -> void {
+   auto parsePositions = [count, this](const Task& parentTask) -> void {
         for (U32 i = 0; i < count; ++i) {
             _renderingPositions[i].set(_position[_indices[i].first]);
         }
     };
 
-    auto parseColours = [count, this](const std::atomic_bool& stopRequested) -> void {
+    auto parseColours = [count, this](const Task& parentTask) -> void {
         for (U32 i = 0; i < count; ++i) {
             Util::ToByteColour(_colour[_indices[i].first], _renderingColours[i]);
         }
     };
     
     TaskPool& pool = Application::instance().kernel().taskPool();
-    TaskHandle updateTask = CreateTask(pool, DELEGATE_CBK_PARAM<bool>());
+    TaskHandle updateTask = CreateTask(pool, DELEGATE_CBK_PARAM<const Task&>());
     updateTask.addChildTask(CreateTask(pool, parsePositions)._task)->startTask(Task::TaskPriority::HIGH);
     updateTask.addChildTask(CreateTask(pool, parseColours)._task)->startTask(Task::TaskPriority::HIGH);
     updateTask.startTask(Task::TaskPriority::HIGH);

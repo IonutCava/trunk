@@ -8,15 +8,14 @@
 #include "pbr.frag"
 #include "phong_lighting.frag"
 
-vec3 processedNormal = vec3(0.0, 0.0, 1.0);
-
-void getBRDFFactors(in int lightIndex,
-                    in vec3 normalWV,
-                    in vec3 albedo,
-                    in vec3 specular,
-                    in float reflectivity, //PBR: roughness. Phong: shininess
-                    inout vec3 colourInOut,
-                    inout float reflectionCoeff)
+void
+getBRDFFactors(in int lightIndex,
+               in vec3 normalWV,
+               in vec3 albedo,
+               in vec3 specular,
+               in float reflectivity, //PBR: roughness. Phong: shininess
+               inout vec3 colourInOut,
+               inout float reflectionCoeff)
 {
 #if defined(USE_SHADING_PHONG) || defined (USE_SHADING_BLINN_PHONG)
     Phong(lightIndex, normalWV, albedo, specular, reflectivity, colourInOut, reflectionCoeff);
@@ -46,17 +45,15 @@ bool isReflective(float specularCoeff) {
     return specularCoeff > 0.75 && dvd_lodLevel < 1;
 }
 
-vec4 getPixelColour(const in vec2 texCoord, in vec3 normalWV) {
+vec4 getPixelColour(const in vec2 texCoord) {
     //Occlusion culling visibility debug code
 #if defined(USE_HIZ_CULLING) && defined(DEBUG_HIZ_CULLING)
     if (dvd_customData > 2.0) {
         return vec4(1.0, 0.0, 0.0, 1.0);
     }
 #endif
-
     vec4 albedo = getAlbedo();
-
-    processedNormal = normalWV;
+    vec3 processedNormal = getProcessedNormal();
 
 #   if defined (USE_DOUBLE_SIDED)
         processedNormal = gl_FrontFacing ? processedNormal : -processedNormal;
@@ -135,6 +132,11 @@ vec4 getPixelColour(const in vec2 texCoord, in vec3 normalWV) {
 #endif
 
     return vec4(colour, albedo.a);
+}
+
+vec4 getPixelColour(const in vec2 texCoord, const in vec3 normalWV) {
+    setProcessedNormal(normalWV);
+    return getPixelColour(texCoord);
 }
 
 #endif

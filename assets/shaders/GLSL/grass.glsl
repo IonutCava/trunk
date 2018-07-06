@@ -47,10 +47,12 @@ void main()
 -- Fragment
 
 #include "BRDF.frag"
+#include "velocityCalc.frag"
 
 flat in int _arrayLayer;
 layout(location = 0) out vec4 _colourOut;
 layout(location = 1) out vec2 _normalOut;
+layout(location = 2) out vec2 _velocityOut;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuseGrass;
 
@@ -59,9 +61,11 @@ void main (void){
     if (colour.a < ALPHA_DISCARD_THRESHOLD) {
         discard;
     }
+
     //colour = getPixelColour(VAR._texCoord, VAR._normalWV);
     _colourOut = ToSRGB(applyFog(colour));
-    _normalOut = packNormal(normalize(f_in._normalWV));
+    _normalOut = packNormal(normalize(VAR._normalWV));
+    _velocityOut = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
 }
 
 --Fragment.Shadow

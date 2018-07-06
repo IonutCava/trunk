@@ -241,6 +241,12 @@
     <Filter Include="Scenes\ReflectionScene\Headers">
       <UniqueIdentifier>{ff852d32-4bb2-42cb-bafe-14a73e79f572}</UniqueIdentifier>
     </Filter>
+    <Filter Include="XML">
+      <UniqueIdentifier>{74b390db-e360-4bda-801a-d95346f48b9d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="XML\Scenes">
+      <UniqueIdentifier>{cc279e81-c977-4f11-8ca2-941e72dda610}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\AI\AIEntity.cpp">
@@ -765,5 +771,46 @@
     <ClInclude Include="..\..\Source Code\Scenes\Headers\SceneEnvironmentProbePool.h">
       <Filter>Scenes\Headers</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="..\..\main.xml">
+      <Filter>XML</Filter>
+    </Xml>
+    <Xml Include="..\..\XML\config.xml">
+      <Filter>XML</Filter>
+    </Xml>
+    <Xml Include="..\..\XML\defaultMaterial.xml">
+      <Filter>XML</Filter>
+    </Xml>
+    <Xml Include="..\..\XML\keyBindings.xml">
+      <Filter>XML</Filter>
+    </Xml>
+    <Xml Include="..\..\XML\scenes.xml">
+      <Filter>XML</Filter>
+    </Xml>
+    <Xml Include="..\..\XML\Scenes\AITenisScene.xml">
+      <Filter>XML\Scenes</Filter>
+    </Xml>
+    <Xml Include="..\..\XML\Scenes\CubeScene.xml">
+      <Filter>XML\Scenes</Filter>
+    </Xml>
+    <Xml Include="..\..\XML\Scenes\FlashScene.xml">
+      <Filter>XML\Scenes</Filter>
+    </Xml>
+    <Xml Include="..\..\XML\Scenes\MainScene.xml">
+      <Filter>XML\Scenes</Filter>
+    </Xml>
+    <Xml Include="..\..\XML\Scenes\NetworkScene.xml">
+      <Filter>XML\Scenes</Filter>
+    </Xml>
+    <Xml Include="..\..\XML\Scenes\PhysXScene.xml">
+      <Filter>XML\Scenes</Filter>
+    </Xml>
+    <Xml Include="..\..\XML\Scenes\PingPongScene.xml">
+      <Filter>XML\Scenes</Filter>
+    </Xml>
+    <Xml Include="..\..\XML\Scenes\WarScene.xml">
+      <Filter>XML\Scenes</Filter>
+    </Xml>
   </ItemGroup>
 </Project>

@@ -67,7 +67,6 @@ vec4 ParallaxMapping(in int bumpMapLightID, in vec2 uv){
                      (vec2(viewVecTBN.x, -viewVecTBN.y) / 
                      viewVecTBN.z));
 
-    
     return getPixelColour(vTexCoord, getTBNNormal(getBump(vTexCoord)));
 }
 

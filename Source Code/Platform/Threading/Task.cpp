@@ -40,7 +40,7 @@ void Task::reset() {
     }
 
     _stopRequested = false;
-    _callback = [](bool){};
+    _callback = [](const Task&){};
     _jobIdentifier = -1;
     _priority = TaskPriority::DONT_CARE;
     _parentTask = nullptr;
@@ -156,7 +156,7 @@ void Task::run() {
     }
 
     if (_callback) {
-        _callback(_stopRequested);
+        _callback(*this);
     }
 
     if (_parentTask != nullptr) {

@@ -26,16 +26,43 @@ void main(void){
     _uv1 = noiseUV + time2;
     _uv0.s -= time2;
 
+    setClipPlanes(VAR._vertexW);
 
     gl_Position = dvd_ViewProjectionMatrix * VAR._vertexW;
 }
 
 -- Fragment
 
-#define USE_CUSTOM_ALBEDO
+#define CUSTOM_MATERIAL_DATA
 
 #include "BRDF.frag"
 #include "terrainSplatting.frag"
+#include "velocityCalc.frag"
+
+float getOpacity() {
+    return 1.0;
+}
+
+vec4 private_albedo = vec4(1.0);
+void setAlbedo(in vec4 albedo) {
+    private_albedo = albedo;
+}
+
+vec4 getAlbedo() {
+    return private_albedo;
+}
+
+vec3 getEmissive() {
+    return private_getEmissive();
+}
+
+vec3 getSpecular() {
+    return private_getSpecular();
+}
+
+float getShininess() {
+    return private_getShininess();
+}
 
 in vec2 _uv0;
 in vec2 _uv1;
@@ -44,18 +71,27 @@ smooth in float _waterDepth;
 
 layout(location = 0) out vec4 _colourOut;
 layout(location = 1) out vec2 _normalOut;
+layout(location = 2) out vec2 _velocityOut;
+
 //subroutine vec4 TerrainMappingType();
 
 //subroutine(TerrainMappingType) 
 vec4 computeLightInfoLOD1Frag() {
-    getColourNormal(getAlbedo());
-    return getPixelColour(VAR._texCoord, VAR._normalWV);
+    vec4 albedo = vec4(1.0);
+    getColourNormal(albedo);
+    setProcessedNormal(VAR._normalWV);
+
+    return albedo;
 }
 
 //subroutine(TerrainMappingType)
 vec4 computeLightInfoLOD0Frag() {
-    getColourAndTBNNormal(getAlbedo(), processedNormal);
-    return getPixelColour(VAR._texCoord, processedNormal);
+    vec4 albedo = vec4(1.0);
+    vec3 normal = vec3(1.0);
+    getColourAndTBNNormal(albedo, normal);
+    setProcessedNormal(normal);
+
+    return albedo;
 }
 
 vec4 CausticsColour() {
@@ -64,21 +100,30 @@ vec4 CausticsColour() {
 }
 
 vec4 UnderwaterColour() {
-    getColourAndTBNUnderwater(getAlbedo(), processedNormal);
-    return getPixelColour(VAR._texCoord, processedNormal);
+    vec4 albedo = vec4(1.0);
+    vec3 normal = vec3(1.0);
+    getColourAndTBNUnderwater(albedo, normal);
+    setAlbedo(albedo);
+    setProcessedNormal(normal);
+
+    return getPixelColour(VAR._texCoord);
 }
 
 vec4 UnderwaterMappingRoutine(){
-    return mix(CausticsColour(), UnderwaterColour(), _waterDepth);
+    return vec4(vec3(0.0), 1.0);//mix(CausticsColour(), UnderwaterColour(), _waterDepth);
 }
 
 //subroutine uniform TerrainMappingType TerrainMappingRoutine;
 
 vec4 TerrainMappingRoutine(){ // -- HACK - Ionut
-    return dvd_lodLevel == 0 ? computeLightInfoLOD0Frag() :  computeLightInfoLOD1Frag();
+    setAlbedo(dvd_lodLevel == 0 ? computeLightInfoLOD0Frag()
+                                : computeLightInfoLOD1Frag());
+
+    return getPixelColour(VAR._texCoord);
 }
 
 void main(void) {
    _colourOut = ToSRGB(applyFog(gl_ClipDistance[0] > 0.0 ? TerrainMappingRoutine() : UnderwaterMappingRoutine()));
-   _normalOut = packNormal(processedNormal);
+   _normalOut = packNormal(getProcessedNormal());
+   _velocityOut = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
 }

@@ -59,6 +59,13 @@ void TaskPool::waitForAllTasks(bool yeld, bool flushCallbacks, bool forceClear) 
     bool finished = _workerThreadCount == 0;
     while (!finished) {
         std::unique_lock<std::mutex> lk(_taskStateLock);
+        if (forceClear) {
+            std::for_each(std::begin(_tasksPool),
+                          std::end(_tasksPool),
+                          [](Task& task) {
+                              task.stopTask();
+                          });
+        }
         // Possible race condition. Try to set all child states to false as well!
         finished = std::find_if(std::cbegin(_taskStates),
                                 std::cend(_taskStates),
@@ -176,14 +183,14 @@ TaskHandle GetTaskHandle(TaskPool& pool, I64 taskGUID) {
     return pool.getTaskHandle(taskGUID);
 }
 
-TaskHandle CreateTask(const DELEGATE_CBK_PARAM<bool>& threadedFunction,
+TaskHandle CreateTask(const DELEGATE_CBK_PARAM<const Task&>& threadedFunction,
                       const DELEGATE_CBK<>& onCompletionFunction)
 {
     return CreateTask(-1, threadedFunction, onCompletionFunction);
 }
 
 TaskHandle CreateTask(TaskPool& pool,
-                   const DELEGATE_CBK_PARAM<bool>& threadedFunction,
+                   const DELEGATE_CBK_PARAM<const Task&>& threadedFunction,
                    const DELEGATE_CBK<>& onCompletionFunction)
 {
     return CreateTask(pool, -1, threadedFunction, onCompletionFunction);
@@ -197,7 +204,7 @@ TaskHandle CreateTask(TaskPool& pool,
 * @param onCompletionFunction The callback function to call when the thread finishes
 */
 TaskHandle CreateTask(I64 jobIdentifier,
-                      const DELEGATE_CBK_PARAM<bool>& threadedFunction,
+                      const DELEGATE_CBK_PARAM<const Task&>& threadedFunction,
                       const DELEGATE_CBK<>& onCompletionFunction)
 {
     TaskPool& pool = Application::instance().kernel().taskPool();
@@ -206,7 +213,7 @@ TaskHandle CreateTask(I64 jobIdentifier,
 
 TaskHandle CreateTask(TaskPool& pool,
                       I64 jobIdentifier,
-                      const DELEGATE_CBK_PARAM<bool>& threadedFunction,
+                      const DELEGATE_CBK_PARAM<const Task&>& threadedFunction,
                       const DELEGATE_CBK<>& onCompletionFunction)
 {
     Task& freeTask = pool.getAvailableTask();
@@ -229,7 +236,7 @@ void WaitForAllTasks(TaskPool& pool, bool yeld, bool flushCallbacks) {
     pool.waitForAllTasks(yeld, flushCallbacks);
 }
 
-TaskHandle parallel_for(const DELEGATE_CBK_PARAM_3<const std::atomic_bool&, U32, U32>& cbk,
+TaskHandle parallel_for(const DELEGATE_CBK_PARAM_3<const Task&, U32, U32>& cbk,
                         U32 count,
                         U32 partitionSize,
                         Task::TaskPriority priority,
@@ -241,7 +248,7 @@ TaskHandle parallel_for(const DELEGATE_CBK_PARAM_3<const std::atomic_bool&, U32,
 }
 
 TaskHandle parallel_for(TaskPool& pool, 
-                        const DELEGATE_CBK_PARAM_3<const std::atomic_bool&, U32, U32>& cbk,
+                        const DELEGATE_CBK_PARAM_3<const Task&, U32, U32>& cbk,
                         U32 count,
                         U32 partitionSize,
                         Task::TaskPriority priority,
@@ -252,19 +259,19 @@ TaskHandle parallel_for(TaskPool& pool,
     U32 partitionCount = count / crtPartitionSize;
     U32 remainder = count % crtPartitionSize;
 
-    TaskHandle updateTask = CreateTask(pool, DELEGATE_CBK_PARAM<bool>());
+    TaskHandle updateTask = CreateTask(pool, DELEGATE_CBK_PARAM<const Task&>());
     for (U32 i = 0; i < partitionCount; ++i) {
         U32 start = i * crtPartitionSize;
         U32 end = start + crtPartitionSize;
         updateTask.addChildTask(CreateTask(pool,
-                                           [&cbk, start, end](const std::atomic_bool& stopRequested) {
-                                               cbk(stopRequested, start, end);
+                                           [&cbk, start, end](const Task& parentTask) {
+                                               cbk(parentTask, start, end);
                                            })._task)->startTask(priority, taskFlags);
     }
     if (remainder > 0) {
         updateTask.addChildTask(CreateTask(pool,
-                                          [&cbk, count, remainder](const std::atomic_bool& stopRequested) {
-                                              cbk(stopRequested, count - remainder, count);
+                                          [&cbk, count, remainder](const Task& parentTask) {
+                                              cbk(parentTask, count - remainder, count);
                                           })._task)->startTask(priority, taskFlags);
     }
 
