@@ -15,6 +15,14 @@ namespace {
 
 void WarScene::registerPoint(U8 teamID) {
     _resetUnits = true;
+
+    for (U8 i = 0; i < 2; ++i) {
+        PhysicsComponent* flagPComp = _flag[0]->getComponent<PhysicsComponent>();
+        WAIT_FOR_CONDITION(!flagPComp->popTransforms());
+        _flag[0]->setParent(GET_ACTIVE_SCENEGRAPH().getRoot());
+        flagPComp->setPosition(vec3<F32>(25.0f, 0.1f, i == 0 ? -206.0f : 206.0f));
+        AI::WarSceneAISceneImpl::reset();
+    }
 }
 
 bool WarScene::initializeAI(bool continueOnErrors) {
@@ -93,6 +101,12 @@ bool WarScene::addUnits() {
     captureEnemyFlag.setPrecondition(GOAPFact(Fact::AT_HOME_BASE), GOAPValue(false));
     captureEnemyFlag.setEffect(GOAPFact(Fact::HAS_ENEMY_FLAG), GOAPValue(true));
 
+    // Kill the enemy flag carrier to recover our own flag and return it to base
+    WarSceneAction recoverFlag(ActionType::RECOVER_FLAG, "RecoverFlag");
+    recoverFlag.setPrecondition(GOAPFact(Fact::ENEMY_HAS_FLAG), GOAPValue(true));
+    recoverFlag.setPrecondition(GOAPFact(Fact::ENEMY_DEAD), GOAPValue(true));
+    recoverFlag.setEffect(GOAPFact(Fact::ENEMY_HAS_FLAG), GOAPValue(false));
+
     // A general purpose "go home" action
     WarSceneAction returnToBase(ActionType::RETURN_TO_BASE, "ReturnToBase");
     returnToBase.setPrecondition(GOAPFact(Fact::AT_HOME_BASE), GOAPValue(false));
@@ -115,6 +129,9 @@ bool WarScene::addUnits() {
     attackAction.setPrecondition(GOAPFact(Fact::ENEMY_DEAD), GOAPValue(false));
     attackAction.setEffect(GOAPFact(Fact::ENEMY_DEAD), GOAPValue(true));
 
+    GOAPGoal recoverOwnFlag("Recover flag", to_uint(WarSceneOrder::WarOrder::RECOVER_FLAG));
+    recoverOwnFlag.setVariable(GOAPFact(Fact::ENEMY_HAS_FLAG), GOAPValue(false));
+    
     GOAPGoal captureFlag("Capture enemy flag", to_uint(WarSceneOrder::WarOrder::CAPTURE_ENEMY_FLAG));
     captureFlag.setVariable(GOAPFact(Fact::HAS_ENEMY_FLAG), GOAPValue(true));
     captureFlag.setVariable(GOAPFact(Fact::AT_HOME_BASE), GOAPValue(true));
@@ -142,8 +159,11 @@ bool WarScene::addUnits() {
 
         goapPackage._actionSet.push_back(idleAction);
         goapPackage._actionSet.push_back(attackAction);
+        goapPackage._actionSet.push_back(recoverFlag);
+        goapPackage._actionSet.push_back(protectFlagInBase);
         goapPackage._goalList.push_back(idle);
         goapPackage._goalList.push_back(killEnemy);
+        goapPackage._goalList.push_back(recoverOwnFlag);
     }
 
     GOAPPackage& animalPackage = goapPackages[to_uint(WarSceneAISceneImpl::AIType::ANIMAL)];
@@ -157,7 +177,6 @@ bool WarScene::addUnits() {
     heavyPackage._goalList.push_back(captureFlag);
     heavyPackage._goalList.push_back(scoreFlag);
     heavyPackage._goalList.push_back(protectFlagCarrier);
-
     lightPackage._goalList.push_back(protectFlagCarrier);
 
     SceneGraphNode* lightNode = _sceneGraph.findNode("Soldier1");
@@ -188,14 +207,14 @@ bool WarScene::addUnits() {
                 currentScale =
                     lightNode->getComponent<PhysicsComponent>()->getScale();
                 currentName = Util::stringFormat("Soldier_1_%d_%d", k, i);
-                speed = 7.5f;
+                speed = random(6.5f, 8.5f);
                 type = AI::WarSceneAISceneImpl::AIType::LIGHT;
             } else if (IS_IN_RANGE_INCLUSIVE(i, 5, 9)) {
                 currentMesh = animalNodeMesh;
                 currentScale =
                     animalNode->getComponent<PhysicsComponent>()->getScale();
                 currentName = Util::stringFormat("Soldier_2_%d_%d", k, i % 5);
-                speed = 9.5f;
+                speed = random(8.5f, 10.5f);
                 zFactor = 1.0f;
                 type = AI::WarSceneAISceneImpl::AIType::ANIMAL;
                 damage = 10;
@@ -204,7 +223,7 @@ bool WarScene::addUnits() {
                 currentScale =
                     heavyNode->getComponent<PhysicsComponent>()->getScale();
                 currentName = Util::stringFormat("Soldier_3_%d_%d", k, i % 10);
-                speed = 5.5f;
+                speed = random(4.5f, 6.5f);
                 zFactor = 2.0f;
                 type = AI::WarSceneAISceneImpl::AIType::HEAVY;
                 damage = 15;
@@ -380,6 +399,8 @@ void WarScene::startSimulation() {
                 AI::WarSceneOrder::WarOrder::KILL_ENEMY));
             _faction[i]->addOrder(std::make_shared<AI::WarSceneOrder>(
                 AI::WarSceneOrder::WarOrder::PROTECT_FLAG_CARRIER));
+            _faction[i]->addOrder(std::make_shared<AI::WarSceneOrder>(
+                AI::WarSceneOrder::WarOrder::RECOVER_FLAG));
         }
     } else {
         stringImpl info(

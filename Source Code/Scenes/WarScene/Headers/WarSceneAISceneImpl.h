@@ -116,13 +116,17 @@ public:
         _flags[1].value(nullptr);
         _flagCarriers[0].value(nullptr);
         _flagCarriers[1].value(nullptr);
+        _flagsAtBase[0].value(true);
+        _flagsAtBase[1].value(true);
     }
 
     SGNNodeFact _flags[2];
     AINodeFact  _flagCarriers[2];
     SmallCounterFact _score[2];
     SmallCounterFact _teamAliveCount[2];
+    SmallCounterFact _flagRetrieverCount[2];
     PositionFact _teamFlagPosition[2];
+    ToggleStateFact _flagsAtBase[2];
 };
 
 class LocalWorkingMemory {
@@ -131,11 +135,13 @@ class LocalWorkingMemory {
         _hasEnemyFlag.value(false);
         _enemyHasFlag.value(false);
         _currentTarget.value(nullptr);
+        _isFlagRetriever.value(false);
     }
 
     SGNNodeFact _currentTarget;
     ToggleStateFact _hasEnemyFlag;
     ToggleStateFact _enemyHasFlag;
+    ToggleStateFact _isFlagRetriever;
 };
 
 class WarSceneOrder : public Order {
@@ -146,6 +152,7 @@ class WarSceneOrder : public Order {
         SCORE_ENEMY_FLAG = 2,
         KILL_ENEMY = 3,
         PROTECT_FLAG_CARRIER = 4,
+        RECOVER_FLAG = 5,
         COUNT
     };
 
@@ -195,6 +202,12 @@ class WarSceneAISceneImpl : public AISceneImpl {
         _globalWorkingMemory._flags[1].value(&flag2);
     }
 
+    static U8 getScore(U8 teamID) {
+        return _globalWorkingMemory._score[teamID].value();
+    }
+
+    static void reset();
+
    protected:
     bool preAction(ActionType type, const WarSceneAction* warAction);
     bool postAction(ActionType type, const WarSceneAction* warAction);
@@ -202,12 +215,6 @@ class WarSceneAISceneImpl : public AISceneImpl {
     stringImpl toString() const;
 
    private:
-       // Helper queries
-       bool atHomeBase() const;
-       bool atEnemyBase() const;
-       bool nearOwnFlag() const;
-       bool nearEnemyFlag() const;
-
     bool DIE();
     void requestOrders();
     void updatePositions();
@@ -216,7 +223,7 @@ class WarSceneAISceneImpl : public AISceneImpl {
     bool printActionStats(const GOAPAction& planStep) const;
     void printWorkingMemory() const;
     void initInternal();
-
+    void beginPlan(const GOAPGoal& currentGoal);
     AIEntity* getUnitForNode(U32 teamID, SceneGraphNode* node) const;
 
     template <typename... T>
@@ -226,13 +233,17 @@ class WarSceneAISceneImpl : public AISceneImpl {
         #endif
     }
 
-   private:
+    bool atHomeBase() const;
+    bool nearOwnFlag() const;
+    bool nearEnemyFlag() const;
+
+  private:
     AIType _type;
     U16 _tickCount;
     U64 _deltaTime;
-    U8 _orderRequestTryCount;
     U8 _visualSensorUpdateCounter;
     U64 _attackTimer;
+    stringImpl _planStatus;
     VisualSensor* _visualSensor;
     AudioSensor* _audioSensor;
     LocalWorkingMemory _localWorkingMemory;

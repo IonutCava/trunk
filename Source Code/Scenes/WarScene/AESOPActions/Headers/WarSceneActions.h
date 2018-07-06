@@ -43,6 +43,7 @@ enum class ActionType : U32 {
     RETURN_TO_BASE = 3,
     IDLE = 4,
     ATTACK_ENEMY = 5,
+    RECOVER_FLAG = 6,
     COUNT
 };
 

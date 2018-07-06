@@ -123,7 +123,7 @@ class PhysicsComponent : public SGNComponent {
     const Quaternion<F32>& getOrientation(const bool local = false);
 
     void pushTransforms();
-    void popTransforms();
+    bool popTransforms();
 
    protected:
     friend class SceneGraphNode;

@@ -318,14 +318,17 @@ void PhysicsComponent::pushTransforms() {
     }
 }
 
-void PhysicsComponent::popTransforms() {
-    assert(!_transformStack.empty());
-    if (_transform) {
-        _transform->setValues(_transformStack.top());
-        _prevTransformValues = _transform->getValues();
-        _transformStack.pop();
-        setTransformDirty();
+bool PhysicsComponent::popTransforms() {
+    if (!_transformStack.empty()) {
+        if (_transform) {
+            _transform->setValues(_transformStack.top());
+            _prevTransformValues = _transform->getValues();
+            _transformStack.pop();
+            setTransformDirty();
+        }
+        return true;
     }
+    return false;
 }
 
 const mat4<F32>& PhysicsComponent::getWorldMatrix(D32 interpolationFactor,

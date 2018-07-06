@@ -90,6 +90,10 @@ void WarScene::processGUI(const U64 deltaTime) {
                 _GUI->modifyText("entityState", entity->toString().c_str());
             }
         }
+
+            _GUI->modifyText("scoreDisplay", "Score: A -  %d B - %d", 
+                AI::WarSceneAISceneImpl::getScore(0),
+                AI::WarSceneAISceneImpl::getScore(1));
         _guiTimers[1] = 0.0;
     }
     Scene::processGUI(deltaTime);
@@ -398,16 +402,23 @@ bool WarScene::loadResources(bool continueOnErrors) {
                     vec2<U32>(100, 25), vec3<F32>(0.65f),
                     DELEGATE_BIND(&WarScene::startSimulation, this));
 
+    _GUI->addText("scoreDisplay", 
+                  vec2<I32>(60, 50),  // Position
+                  Font::DIVIDE_DEFAULT,  // Font
+                  vec3<F32>(1.0f, 0.0f, 1.0f),  // Color
+                  "Score: A -  %s B - %s", 0);  // Text and arguments
     _GUI->addText("fpsDisplay",  // Unique ID
-                  vec2<I32>(60, 60),  // Position
+                  vec2<I32>(60, 63),  // Position
                   Font::DIVIDE_DEFAULT,  // Font
                   vec3<F32>(0.0f, 0.2f, 1.0f),  // Color
                   "FPS: %s", 0);  // Text and arguments
-    _GUI->addText("RenderBinCount", vec2<I32>(60, 70), Font::DIVIDE_DEFAULT,
+    _GUI->addText("RenderBinCount",
+                  vec2<I32>(60, 73),
+                  Font::DIVIDE_DEFAULT,
                   vec3<F32>(0.6f, 0.2f, 0.2f),
                   "Number of items in Render Bin: %d", 0);
-
-    _GUI->addText("camPosition", vec2<I32>(60, 100), Font::DIVIDE_DEFAULT,
+    _GUI->addText("camPosition", vec2<I32>(60, 103),
+                  Font::DIVIDE_DEFAULT,
                   vec3<F32>(0.2f, 0.8f, 0.2f),
                   "Position [ X: %5.0f | Y: %5.0f | Z: %5.0f ] [Pitch: %5.2f | "
                   "Yaw: %5.2f]",
@@ -416,8 +427,7 @@ bool WarScene::loadResources(bool continueOnErrors) {
                   renderState().getCamera().getEye().z,
                   renderState().getCamera().getEuler().pitch,
                   renderState().getCamera().getEuler().yaw);
-
-    _GUI->addText("entityState", vec2<I32>(60, 120), Font::DIVIDE_DEFAULT,
+    _GUI->addText("entityState", vec2<I32>(60, 123), Font::DIVIDE_DEFAULT,
                   vec3<F32>(0.0f, 0.0f, 0.0f),
                   "");
 
