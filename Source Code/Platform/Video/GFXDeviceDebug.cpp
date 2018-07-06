@@ -71,12 +71,11 @@ void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
             AlphaAccumulation->_shaderData.set("linearSpace", GFX::PushConstantType::UINT, 1u);
             AlphaAccumulation->_shaderData.set("unpack2Channel", GFX::PushConstantType::UINT, 0u);
 
-            addDebugView(HiZ);
+            HiZPtr = addDebugView(HiZ);
             addDebugView(DepthPreview);
             addDebugView(NormalPreview);
             addDebugView(VelocityPreview);
             addDebugView(AlphaAccumulation);
-            HiZPtr = HiZ.get();
         }
 
         RenderTarget& screenRT = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
@@ -171,7 +170,7 @@ void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
 }
 
 
-void GFXDevice::addDebugView(const std::shared_ptr<DebugView>& view) {
+GFXDevice::DebugView* GFXDevice::addDebugView(const std::shared_ptr<DebugView>& view) {
     _debugViews.push_back(view);
     if (_debugViews.back()->_sortIndex == -1) {
         _debugViews.back()->_sortIndex = to_I16(_debugViews.size());
@@ -181,6 +180,8 @@ void GFXDevice::addDebugView(const std::shared_ptr<DebugView>& view) {
               [](const std::shared_ptr<DebugView>& a, const std::shared_ptr<DebugView>& b)-> bool {
                   return a->_sortIndex < b->_sortIndex;
                });
+
+    return view.get();
 }
 
 void GFXDevice::drawDebugFrustum(GFX::CommandBuffer& bufferInOut) {

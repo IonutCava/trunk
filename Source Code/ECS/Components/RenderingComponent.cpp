@@ -19,7 +19,7 @@
 
 namespace Divide {
 
-hashMapImpl<U32, GFXDevice::DebugView_ptr> RenderingComponent::s_debugViews[2];
+hashMapImpl<U32, GFXDevice::DebugView*> RenderingComponent::s_debugViews[2];
 
 RenderingComponent::RenderingComponent(GFXDevice& context,
                                        Material_ptr materialInstance,
@@ -639,9 +639,9 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
     if (Config::Build::IS_DEBUG_BUILD) {
         const RenderTarget& target = _context.renderTargetPool().renderTarget(reflectRTID);
 
-        GFXDevice::DebugView_ptr& viewPtr = s_debugViews[0][reflectionIndex];
-        if (!viewPtr) {
-            viewPtr = std::make_shared<GFXDevice::DebugView>();
+        GFXDevice::DebugView* debugView = s_debugViews[0][reflectionIndex];
+        if (debugView == nullptr) {
+            GFXDevice::DebugView_ptr viewPtr = std::make_shared<GFXDevice::DebugView>();
             viewPtr->_texture = target.getAttachment(RTAttachmentType::Colour, 0).texture();
             viewPtr->_shader = _previewRenderTargetColour;
             viewPtr->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, 0.0f);
@@ -649,19 +649,18 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
             viewPtr->_shaderData.set("unpack2Channel", GFX::PushConstantType::BOOL, false);
 
             viewPtr->_name = Util::StringFormat("REFLECTION_%d", reflectRTID._index);
-            _context.addDebugView(viewPtr);
+            debugView = _context.addDebugView(viewPtr);
+            s_debugViews[0][reflectionIndex] = debugView;
         } else {
             if (_context.getFrameCount() % (Config::TARGET_FRAME_RATE * 15) == 0) {
-                if (viewPtr->_shader->getGUID() == _previewRenderTargetColour->getGUID()) {
-                    viewPtr->_texture = target.getAttachment(RTAttachmentType::Depth, 0).texture();
-                    viewPtr->_shader = _previewRenderTargetDepth;
+                if (debugView->_shader->getGUID() == _previewRenderTargetColour->getGUID()) {
+                    debugView->_texture = target.getAttachment(RTAttachmentType::Depth, 0).texture();
+                    debugView->_shader = _previewRenderTargetDepth;
                 } else {
-                    viewPtr->_texture = target.getAttachment(RTAttachmentType::Colour, 0).texture();
-                    viewPtr->_shader = _previewRenderTargetColour;
+                    debugView->_texture = target.getAttachment(RTAttachmentType::Colour, 0).texture();
+                    debugView->_shader = _previewRenderTargetColour;
                 }
-                
             }
-
         }
     }
 
@@ -722,24 +721,25 @@ bool RenderingComponent::updateRefraction(U32 refractionIndex,
     if (Config::Build::IS_DEBUG_BUILD) {
         const RenderTarget& target = _context.renderTargetPool().renderTarget(refractRTID);
 
-        GFXDevice::DebugView_ptr& viewPtr = s_debugViews[1][refractionIndex];
-        if (!viewPtr) {
-            viewPtr = std::make_shared<GFXDevice::DebugView>();
+        GFXDevice::DebugView* debugView = s_debugViews[1][refractionIndex];
+        if (debugView == nullptr) {
+            GFXDevice::DebugView_ptr viewPtr = std::make_shared<GFXDevice::DebugView>();
             viewPtr->_texture = target.getAttachment(RTAttachmentType::Colour, 0).texture();
             viewPtr->_shader = _previewRenderTargetColour;
             viewPtr->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, 0.0f);
             viewPtr->_shaderData.set("linearSpace", GFX::PushConstantType::BOOL, false);
             viewPtr->_shaderData.set("unpack2Channel", GFX::PushConstantType::BOOL, false);
             viewPtr->_name = Util::StringFormat("REFRACTION_%d", refractRTID._index);
-            _context.addDebugView(viewPtr);
+            debugView = _context.addDebugView(viewPtr);
+            s_debugViews[1][refractionIndex] = debugView;
         } else {
             if (_context.getFrameCount() % (Config::TARGET_FRAME_RATE * 15) == 0) {
-                if (viewPtr->_shader->getGUID() == _previewRenderTargetColour->getGUID()) {
-                    viewPtr->_texture = target.getAttachment(RTAttachmentType::Depth, 0).texture();
-                    viewPtr->_shader = _previewRenderTargetDepth;
+                if (debugView->_shader->getGUID() == _previewRenderTargetColour->getGUID()) {
+                    debugView->_texture = target.getAttachment(RTAttachmentType::Depth, 0).texture();
+                    debugView->_shader = _previewRenderTargetDepth;
                 } else {
-                    viewPtr->_texture = target.getAttachment(RTAttachmentType::Colour, 0).texture();
-                    viewPtr->_shader = _previewRenderTargetColour;
+                    debugView->_texture = target.getAttachment(RTAttachmentType::Colour, 0).texture();
+                    debugView->_shader = _previewRenderTargetColour;
                 }
             } 
         }

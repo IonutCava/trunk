@@ -242,7 +242,7 @@ class RenderingComponent : public SGNComponent<RenderingComponent> {
     ShaderProgram_ptr _previewRenderTargetColour;
     ShaderProgram_ptr _previewRenderTargetDepth;
 
-    static hashMapImpl<U32, GFXDevice::DebugView_ptr> s_debugViews[2];
+    static hashMapImpl<U32, GFXDevice::DebugView*> s_debugViews[2];
 };
 
 namespace Attorney {

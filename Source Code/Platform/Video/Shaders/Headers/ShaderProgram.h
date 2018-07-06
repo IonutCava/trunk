@@ -211,19 +211,19 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
 
    protected:
     /// Shaders loaded from files are kept as atoms
-    static SharedLock _atomLock;
-    static AtomMap _atoms;
+    static SharedLock s_atomLock;
+    static AtomMap s_atoms;
     /// Used to render geometry without valid materials.
     /// Should emulate the basic fixed pipeline functions (no lights, just colour and texture)
-    static ShaderProgram_ptr _imShader;
+    static ShaderProgram_ptr s_imShader;
     /// Pointer to a shader that we will perform operations on
-    static ShaderProgram_ptr _nullShader;
+    static ShaderProgram_ptr s_nullShader;
     /// Only 1 shader program per frame should be recompiled to avoid a lot of stuttering
-    static ShaderQueue _recompileQueue;
+    static ShaderQueue s_recompileQueue;
     /// Shader program cache
-    static ShaderProgramMap _shaderPrograms;
+    static ShaderProgramMap s_shaderPrograms;
 
-    static SharedLock _programLock;
+    static SharedLock s_programLock;
 
    protected:
     template <typename T>

@@ -322,7 +322,7 @@ public:  // Accessors and Mutators
 
     inline const RenderStagePass& setRenderStagePass(const RenderStagePass& stage);
 
-    void addDebugView(const std::shared_ptr<DebugView>& view);
+    DebugView* addDebugView(const std::shared_ptr<DebugView>& view);
 
     static void setFrameInterpolationFactor(const D64 interpolation) { s_interpolationFactor = interpolation; }
     static D64 getFrameInterpolationFactor() { return s_interpolationFactor; }

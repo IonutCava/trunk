@@ -23,14 +23,14 @@ namespace {
     });
 };
 
-ShaderProgram_ptr ShaderProgram::_imShader;
-ShaderProgram_ptr ShaderProgram::_nullShader;
-ShaderProgram::AtomMap ShaderProgram::_atoms;
-ShaderProgram::ShaderQueue ShaderProgram::_recompileQueue;
-ShaderProgram::ShaderProgramMap ShaderProgram::_shaderPrograms;
+ShaderProgram_ptr ShaderProgram::s_imShader;
+ShaderProgram_ptr ShaderProgram::s_nullShader;
+ShaderProgram::AtomMap ShaderProgram::s_atoms;
+ShaderProgram::ShaderQueue ShaderProgram::s_recompileQueue;
+ShaderProgram::ShaderProgramMap ShaderProgram::s_shaderPrograms;
 
-SharedLock ShaderProgram::_atomLock;
-SharedLock ShaderProgram::_programLock;
+SharedLock ShaderProgram::s_atomLock;
+SharedLock ShaderProgram::s_programLock;
 
 I64 ShaderProgram::s_shaderFileWatcherID = -1;
 
@@ -124,12 +124,12 @@ void ShaderProgram::registerAtomFile(const stringImpl& atomFile) {
 //================================ static methods ========================================
 void ShaderProgram::idle() {
     // If we don't have any shaders queued for recompilation, return early
-    if (!_recompileQueue.empty()) {
+    if (!s_recompileQueue.empty()) {
         // Else, recompile the top program from the queue
-        if (!_recompileQueue.top()->recompile()) {
+        if (!s_recompileQueue.top()->recompile()) {
             // error
         }
-        _recompileQueue.pop();
+        s_recompileQueue.pop();
     }
 }
 
@@ -137,15 +137,15 @@ void ShaderProgram::idle() {
 /// that matches the name specified
 bool ShaderProgram::recompileShaderProgram(const stringImpl& name) {
     bool state = false;
-    ReadLock r_lock(_programLock);
+    ReadLock r_lock(s_programLock);
 
     // Find the shader program
-    for (ShaderProgramMap::value_type& it : _shaderPrograms) {
+    for (ShaderProgramMap::value_type& it : s_shaderPrograms) {
         const stringImpl& shaderName = it.second->name();
         // Check if the name matches any of the program's name components    
         if (shaderName.find(name) != stringImpl::npos || shaderName.compare(name) == 0) {
             // We process every partial match. So add it to the recompilation queue
-            _recompileQueue.push(it.second);
+            s_recompileQueue.push(it.second);
             // Mark as found
             state = true;
         }
@@ -162,10 +162,10 @@ bool ShaderProgram::recompileShaderProgram(const stringImpl& name) {
 const stringImpl& ShaderProgram::shaderFileRead(const stringImpl& filePath, const stringImpl& atomName) {
     U64 atomNameHash = _ID_RT(atomName);
     // See if the atom was previously loaded and still in cache
-    UpgradableReadLock ur_lock(_atomLock);
-    AtomMap::iterator it = _atoms.find(atomNameHash);
+    UpgradableReadLock ur_lock(s_atomLock);
+    AtomMap::iterator it = s_atoms.find(atomNameHash);
     // If that's the case, return the code from cache
-    if (it != std::cend(_atoms)) {
+    if (it != std::cend(s_atoms)) {
         return it->second;
     }
 
@@ -177,7 +177,7 @@ const stringImpl& ShaderProgram::shaderFileRead(const stringImpl& filePath, cons
     readFile(filePath, atomName, output, FileType::TEXT);
 
     UpgradeToWriteLock w_lock(ur_lock);
-    std::pair<AtomMap::iterator, bool> result = hashAlg::insert(_atoms, atomNameHash, output);
+    std::pair<AtomMap::iterator, bool> result = hashAlg::insert(s_atoms, atomNameHash, output);
 
     assert(result.second);
 
@@ -236,34 +236,34 @@ void ShaderProgram::onStartup(GFXDevice& context, ResourceCache& parentCache) {
     // Create an immediate mode rendering shader that simulates the fixed function pipeline
     ResourceDescriptor immediateModeShader("ImmediateModeEmulation");
     immediateModeShader.setThreadedLoading(false);
-    _imShader = CreateResource<ShaderProgram>(parentCache, immediateModeShader);
-    assert(_imShader != nullptr);
+    s_imShader = CreateResource<ShaderProgram>(parentCache, immediateModeShader);
+    assert(s_imShader != nullptr);
 
     // Create a null shader (basically telling the API to not use any shaders when bound)
-    _nullShader = CreateResource<ShaderProgram>(parentCache, ResourceDescriptor("NULL"));
+    s_nullShader = CreateResource<ShaderProgram>(parentCache, ResourceDescriptor("NULL"));
     // The null shader should never be nullptr!!!!
-    assert(_nullShader != nullptr);  // LoL -Ionut
+    assert(s_nullShader != nullptr);  // LoL -Ionut
 }
 
 void ShaderProgram::onShutdown() {
     // Make sure we unload all shaders
     {
         //WriteLock w_lock(_programLock);
-        _shaderPrograms.clear();
+        s_shaderPrograms.clear();
     }
-    _nullShader.reset();
-    _imShader.reset();
-    while (!_recompileQueue.empty()) {
-        _recompileQueue.pop();
+    s_nullShader.reset();
+    s_imShader.reset();
+    while (!s_recompileQueue.empty()) {
+        s_recompileQueue.pop();
     }
     FileWatcherManager::deallocateWatcher(s_shaderFileWatcherID);
     s_shaderFileWatcherID = -1;
 }
 
 bool ShaderProgram::updateAll(const U64 deltaTimeUS) {
-    ReadLock r_lock(_programLock);
+    ReadLock r_lock(s_programLock);
     // Pass the update call to all registered programs
-    for (ShaderProgramMap::value_type& it : _shaderPrograms) {
+    for (ShaderProgramMap::value_type& it : s_shaderPrograms) {
         if (!it.second->update(deltaTimeUS)) {
             // If an update call fails, stop updating
             return false;
@@ -277,17 +277,22 @@ void ShaderProgram::registerShaderProgram(const ShaderProgram_ptr& shaderProgram
     size_t shaderHash = shaderProgram->getDescriptorHash();
     unregisterShaderProgram(shaderHash);
 
-    WriteLock w_lock(_programLock);
-    hashAlg::insert(_shaderPrograms, shaderHash, shaderProgram);
+    WriteLock w_lock(s_programLock);
+    hashAlg::insert(s_shaderPrograms, shaderHash, shaderProgram);
 }
 
 /// Unloading/Deleting a program will unregister it from the manager
 bool ShaderProgram::unregisterShaderProgram(size_t shaderHash) {
-    UpgradableReadLock ur_lock(_programLock);
-    ShaderProgramMap::const_iterator it = _shaderPrograms.find(shaderHash);
-    if (it != std::cend(_shaderPrograms)) {
+    UpgradableReadLock ur_lock(s_programLock);
+    if (s_shaderPrograms.empty()) {
+        // application shutdown?
+        return true;
+    }
+
+    ShaderProgramMap::const_iterator it = s_shaderPrograms.find(shaderHash);
+    if (it != std::cend(s_shaderPrograms)) {
         UpgradeToWriteLock w_lock(ur_lock);
-        _shaderPrograms.erase(it);
+        s_shaderPrograms.erase(it);
         return true;
     }
 
@@ -295,17 +300,17 @@ bool ShaderProgram::unregisterShaderProgram(size_t shaderHash) {
 }
 
 const ShaderProgram_ptr& ShaderProgram::defaultShader() {
-    return _imShader;
+    return s_imShader;
 }
 
 const ShaderProgram_ptr& ShaderProgram::nullShader() {
-    return _nullShader;
+    return s_nullShader;
 }
 
 void ShaderProgram::rebuildAllShaders() {
-    ReadLock r_lock(_programLock);
-    for (ShaderProgramMap::value_type& shader : _shaderPrograms) {
-        _recompileQueue.push(shader.second);
+    ReadLock r_lock(s_programLock);
+    for (ShaderProgramMap::value_type& shader : s_shaderPrograms) {
+        s_recompileQueue.push(shader.second);
     }
 }
 
@@ -320,18 +325,18 @@ void ShaderProgram::onAtomChange(const char* atomName, FileUpdateEvent evt) {
     // Clear the atom from the cache
 
     {
-        WriteLock w_lock(_atomLock);
-        AtomMap::iterator it = _atoms.find(_ID_RT(atomName));
-        if (it != std::cend(_atoms)) {
-            it = _atoms.erase(it);
+        WriteLock w_lock(s_atomLock);
+        AtomMap::iterator it = s_atoms.find(_ID_RT(atomName));
+        if (it != std::cend(s_atoms)) {
+            it = s_atoms.erase(it);
         }
     }
     //Get list of shader programs that use the atom and rebuild all shaders in list;
-    ReadLock r_lock(_programLock);
-    for (ShaderProgramMap::value_type& program : _shaderPrograms) {
+    ReadLock r_lock(s_programLock);
+    for (ShaderProgramMap::value_type& program : s_shaderPrograms) {
         for (const stringImpl& atom : program.second->_usedAtoms) {
             if (Util::CompareIgnoreCase(atom, atomName)) {
-                _recompileQueue.push(program.second);
+                s_recompileQueue.push(program.second);
                 break;
             }
         }
