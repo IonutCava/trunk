@@ -83,6 +83,8 @@ class ParticleEmitter : public SceneNode {
         _sources.push_back(source);
     }
 
+    U32 getAliveParticleCount() const;
+
    protected:
     void postLoad(SceneGraphNode& sgn);
 
@@ -114,7 +116,6 @@ class ParticleEmitter : public SceneNode {
     U32 _readOffset, _writeOffset;
     /// create particles
     bool _enabled;
-    bool _created;
     bool _uploaded;
     /// draw the impostor?
     bool _drawImpostor;

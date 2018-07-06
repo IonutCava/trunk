@@ -247,6 +247,10 @@ void glShaderProgram::link() {
     Console::d_printfn(Locale::get("GLSL_LINK_PROGRAM"), getName().c_str(),
                        _shaderProgramIDTemp);
 
+    /*glProgramParameteri(_shaderProgramIDTemp, 
+                        GL_PROGRAM_SEPARABLE,
+                        1);
+    */
     // If we require specific outputs from the shader for transform feedback, we
     // need to set them up before linking
     if (_outputCount > 0) {

@@ -18,7 +18,6 @@ ParticleEmitter::ParticleEmitter()
       _particleStateBlockHash(0),
       _enabled(false),
       _uploaded(false),
-      _created(false),
       _particleTexture(nullptr),
       _particleShader(nullptr),
       _particleGPUBuffer(nullptr),
@@ -81,12 +80,12 @@ bool ParticleEmitter::initData(std::shared_ptr<ParticleData> particleData) {
 }
 
 bool ParticleEmitter::updateData(std::shared_ptr<ParticleData> particleData) {
-    DIVIDE_ASSERT(particleData.get() == nullptr,
+    DIVIDE_ASSERT(particleData.get() != nullptr,
                   "ParticleEmitter::updateData error: Invalid particle data!");
 
-    _created = false;
-    U32 particleCount = _particles->totalCount();
     _particles = particleData;
+
+    U32 particleCount = _particles->totalCount();
 
     _particleGPUBuffer->SetBuffer(1, particleCount * 3, 4 * sizeof(F32), 1,
                                   NULL, true, true, /*true*/ false);
@@ -127,9 +126,8 @@ bool ParticleEmitter::updateData(std::shared_ptr<ParticleData> particleData) {
 
         REGISTER_TRACKED_DEPENDENCY(_particleTexture);
     }
-    _created = true;
 
-    return _created;
+    return true;
 }
 
 bool ParticleEmitter::unload() {
@@ -146,7 +144,7 @@ bool ParticleEmitter::unload() {
 
     MemoryManager::DELETE(_particleGPUBuffer);
 
-    _created = false;
+    _particles.reset();
 
     return SceneNode::unload();
 }
@@ -157,10 +155,13 @@ void ParticleEmitter::postLoad(SceneGraphNode& sgn) {
 }
 
 bool ParticleEmitter::computeBoundingBox(SceneGraphNode& sgn) {
-    if (!_enabled || !_created) {
+    if (!_enabled) {
         return false;
     }
-
+    DIVIDE_ASSERT(_particles.get() != nullptr,
+                  "ParticleEmitter::computeBoundingBox error: BoundingBox "
+                  "calculation requested without valid particle data "
+                  "available!");
     _updateParticleEmitterBB = true;
     sgn.getBoundingBox().set(vec3<F32>(-5), vec3<F32>(5));
     return SceneNode::computeBoundingBox(sgn);
@@ -190,8 +191,8 @@ void ParticleEmitter::getDrawCommands(
     SceneGraphNode& sgn, const RenderStage& currentRenderStage,
     SceneRenderState& sceneRenderState,
     vectorImpl<GenericDrawCommand>& drawCommandsOut) {
-    U32 particleCount = _particles->aliveCount();
-    if (!(particleCount > 0 && _enabled && _created)) {
+    U32 particleCount = getAliveParticleCount();
+    if (!_enabled || particleCount == 0) {
         return;
     }
 
@@ -211,8 +212,9 @@ void ParticleEmitter::getDrawCommands(
 void ParticleEmitter::render(SceneGraphNode& sgn,
                              const SceneRenderState& sceneRenderState,
                              const RenderStage& currentRenderStage) {
-    U32 particleCount = _particles->aliveCount();
-    if (particleCount > 0 && _enabled && _created) {
+    U32 particleCount =  getAliveParticleCount();
+
+    if (particleCount > 0 && _enabled) {
         _particleTexture->Bind(ShaderProgram::TEXTURE_UNIT0);
         GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)
             ->Bind(ShaderProgram::TEXTURE_UNIT1, TextureDescriptor::Depth);
@@ -224,7 +226,7 @@ void ParticleEmitter::render(SceneGraphNode& sgn,
 void ParticleEmitter::uploadToGPU() {
     static const size_t attribSize_float = 4 * sizeof(F32);
     static const size_t attribSize_char = 4 * sizeof(U8);
-    if (_uploaded || !_created) {
+    if (_uploaded || getAliveParticleCount() == 0) {
         return;
     }
 
@@ -252,7 +254,7 @@ void ParticleEmitter::uploadToGPU() {
 /// The onDraw call will emit particles
 bool ParticleEmitter::onDraw(SceneGraphNode& sgn,
                              const RenderStage& currentStage) {
-    if (!_enabled || _particles->aliveCount() == 0 || !_created) {
+    if (!_enabled || getAliveParticleCount() == 0) {
         return false;
     }
     _particles->sort();
@@ -265,7 +267,7 @@ bool ParticleEmitter::onDraw(SceneGraphNode& sgn,
 void ParticleEmitter::sceneUpdate(const U64 deltaTime,
                                   SceneGraphNode& sgn,
                                   SceneState& sceneState) {
-    if (!_enabled || !_created) {
+    if (!_enabled || getAliveParticleCount() == 0) {
         return;
     }
 
@@ -295,11 +297,18 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime,
         up->update(deltaTime, _particles.get());
     }
 
-    //        const vec3<F32>& origin = transform->getPosition();
-    //        const Quaternion<F32>& orientation = transform->getOrientation();
+    //const vec3<F32>& origin = transform->getPosition();
+    //const Quaternion<F32>& orientation = transform->getOrientation();
 
     _uploaded = false;
 
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
+}
+
+U32 ParticleEmitter::getAliveParticleCount() const {
+    if (!_particles.get()) {
+        return 0;
+    }
+    return _particles->aliveCount();
 }
 };
