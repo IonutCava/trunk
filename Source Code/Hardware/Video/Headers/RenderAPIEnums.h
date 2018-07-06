@@ -99,8 +99,9 @@ enum ClipPlaneIndex {
     CLIP_PLANE_3 = 3,
     CLIP_PLANE_4 = 4,
     CLIP_PLANE_5 = 5,
-    ClipPlaneIndex_PLACEHOLDER = 0,
+    ClipPlaneIndex_PLACEHOLDER = 6,
 };
+
 enum PBType {
     PB_TEXTURE_1D,
     PB_TEXTURE_2D,

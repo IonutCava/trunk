@@ -10,14 +10,6 @@ out vec4 vertexVP;
 uniform vec3 CameraRight_worldspace;
 uniform vec3 CameraUp_worldspace;
 
-layout(binding = SHADER_BUFFER_CAM_MATRICES, std140) uniform dvd_MatrixBlock
-{
-   mat4 dvd_ProjectionMatrix;
-   mat4 dvd_ViewMatrix;
-   mat4 dvd_ViewProjectionMatrix;
-   vec4 dvd_ViewPort;
-};
-
 void main()
 {
     float particleSize = particleNormalData.w; // because we encoded it this way.

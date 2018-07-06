@@ -46,7 +46,6 @@ public:
 
     virtual bool SetActive();
 
-    void Draw(const GenericDrawCommand& command, bool skipBind = false);
     void Draw(const vectorImpl<GenericDrawCommand>& commands, bool skipBind = false);
 
     ///Never call Refresh() just queue it and the data will update before drawing
@@ -61,6 +60,8 @@ protected:
     void Upload_VB_Attributes();
     /// Integrity checks
     void checkStatus();
+    /// Internal draw command for a single command
+    void Draw(const GenericDrawCommand& command, bool skipBind = false);
 
 protected:
     U8 _prevLoD;

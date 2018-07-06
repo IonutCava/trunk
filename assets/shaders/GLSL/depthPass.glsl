@@ -1,17 +1,9 @@
 -- Vertex.Shadow
 
-#include "clippingPlanes.vert"
 #if defined(USE_GPU_SKINNING)
 #include "boneTransforms.vert"
 #endif
 
-layout(binding = SHADER_BUFFER_CAM_MATRICES, std140) uniform dvd_MatrixBlock
-{
-    mat4 dvd_ProjectionMatrix;
-    mat4 dvd_ViewMatrix;
-    mat4 dvd_ViewProjectionMatrix;
-    vec4 dvd_ViewPort;
-};
 
 uniform int  dvd_drawID = 0;
 uniform mat4 dvd_WorldMatrix[MAX_INSTANCES];

@@ -93,9 +93,10 @@ void GL_API::debugDraw(const SceneRenderState& sceneRenderState){
 
         if(!priv->_setupStates.empty()){
             priv->_setupStates();
-        }else{
-            SET_DEFAULT_STATE_BLOCK(true);
         }
+        
+        SET_STATE_BLOCK(priv->stateHash(), true);
+        
         if(priv->_hasLines){
             glLineWidth(std::min(priv->_lineWidth, (F32)_lineWidthLimit));
         }
@@ -137,7 +138,8 @@ void GL_API::drawBox3D(const vec3<GLfloat>& min,const vec3<GLfloat>& max, const 
     priv->_lineWidth = 4.0f;
     mat4<F32> offset(globalOffset);
 
-    priv->setRenderStates(DELEGATE_BIND(&GL_API::setupLineState, this, offset,  GFX_DEVICE._defaultStateBlockHash, false),
+    priv->stateHash(GFX_DEVICE._defaultStateBlockHash);
+    priv->setRenderStates(DELEGATE_BIND(&GL_API::setupLineState, this, offset, false),
                           DELEGATE_BIND(&GL_API::releaseLineState, this, false));
     priv->beginBatch();
 
@@ -172,9 +174,8 @@ void GL_API::drawBox3D(const vec3<GLfloat>& min,const vec3<GLfloat>& max, const 
     priv->endBatch();
 }
 
-void GL_API::setupLineState(const mat4<F32>& mat, I64 drawStateHash, const bool ortho){
+void GL_API::setupLineState(const mat4<F32>& mat, const bool ortho){
     GFX_DEVICE.pushWorldMatrix(mat,true);
-    SET_STATE_BLOCK(drawStateHash);
 
     if(ortho)
         GFX_DEVICE.setViewport(vec4<GLint>(_cachedResolution.width - 128, 0, 128, 128));
@@ -234,7 +235,8 @@ void GL_API::drawLines(const vectorImpl<vec3<GLfloat> >& pointsA,
     priv->_lineWidth = std::min((F32)_lineWidthLimit, 5.0f);
 
     if(!priv->hasRenderStates()){
-        priv->setRenderStates(DELEGATE_BIND(&GL_API::setupLineState, this, globalOffset, disableDepth ? GFX_DEVICE._defaultStateNoDepthHash : GFX_DEVICE._defaultStateBlockHash,orthoMode),
+        priv->stateHash(disableDepth ? GFX_DEVICE._defaultStateNoDepthHash : GFX_DEVICE._defaultStateBlockHash);
+        priv->setRenderStates(DELEGATE_BIND(&GL_API::setupLineState, this, globalOffset, orthoMode),
                               DELEGATE_BIND(&GL_API::releaseLineState, this, orthoMode));
     }
 

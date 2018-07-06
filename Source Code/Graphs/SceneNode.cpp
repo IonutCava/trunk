@@ -149,14 +149,16 @@ bool SceneNode::prepareMaterial(SceneGraphNode* const sgn){
 
     getMaterial()->UploadToShader(shaderInfo);
     bool temp = sgn->isSelected();
-    if(shaderInfo.getTrackedBool(0) != temp){
+    if(sgn->getTrackedBool(0) != temp || shaderInfo.getTrackedBool(0) != temp){
         shaderInfo.setTrackedBool(0, temp);
+        sgn->setTrackedBool(0, temp);
         _drawShader->Uniform("dvd_isSelected", temp);
     }
     
     temp = lightMgr.shadowMappingEnabled() && sgn->getReceivesShadows();
-    if(shaderInfo.getTrackedBool(1) != temp){
+    if(sgn->getTrackedBool(1) != temp || shaderInfo.getTrackedBool(1) != temp){
         shaderInfo.setTrackedBool(1, temp);
+        sgn->setTrackedBool(1, temp);
         _drawShader->Uniform("dvd_enableShadowMapping", temp);
     }        
 
@@ -165,8 +167,9 @@ bool SceneNode::prepareMaterial(SceneGraphNode* const sgn){
     if(temp){
         _drawShader->Uniform("dvd_boneOffset", (I32)(sgn->getInstanceID() * animComponent->animationTransforms().size()));
     }
-    if(shaderInfo.getTrackedBool(2) != temp){
+    if(sgn->getTrackedBool(2) != temp || shaderInfo.getTrackedBool(2) != temp){
         shaderInfo.setTrackedBool(2, temp);
+        sgn->setTrackedBool(2, temp);
         _drawShader->Uniform("dvd_hasAnimations", temp);
     }
 
@@ -209,8 +212,9 @@ bool SceneNode::prepareDepthMaterial(SceneGraphNode* const sgn){
     if(temp){
         _drawShader->Uniform("dvd_boneOffset", (I32)(sgn->getInstanceID() * animComponent->animationTransforms().size()));
     }
-    if(shaderInfo.getTrackedBool(2) != temp){
+    if(sgn->getTrackedBool(2) != temp || shaderInfo.getTrackedBool(2) != temp){
         shaderInfo.setTrackedBool(2, temp);
+        sgn->setTrackedBool(2, temp);
         _drawShader->Uniform("dvd_hasAnimations", temp);
     }
     return true;

@@ -7,13 +7,6 @@ uniform vec3 ObjectExtent;
 uniform float dvd_visibilityDistance;
 uniform float dvd_frustumBias = 0.01;
 
-layout(binding = SHADER_BUFFER_CAM_MATRICES, std140) uniform dvd_MatrixBlock
-{
-    mat4 dvd_ProjectionMatrix;
-    mat4 dvd_ViewMatrix;
-    mat4 dvd_ViewProjectionMatrix;
-    vec4 dvd_ViewPort;
-};
 
 /*layout(std430, binding = 10) buffer dvd_transformBlock{
     coherent readonly mat4 transform[];

@@ -61,18 +61,16 @@ void GL_API::togglePrimitiveRestart(bool state, bool smallIndices){
 }
 
 void GL_API::updateClipPlanes(){
-    GLuint clipPlaneIndex = 0;
     bool   clipPlaneActive = false;
 
     const PlaneList& list = GFX_DEVICE.getClippingPlanes();
     
-    for (const Plane<F32>& clipPlane : list){
-        clipPlaneIndex  = clipPlane.getIndex();
-        clipPlaneActive = clipPlane.active();
+    for (U8 i = 0; i < Config::MAX_CLIP_PLANES; ++i){
+        clipPlaneActive = list[i].active();
 
-        if (_activeClipPlanes[clipPlaneIndex] != clipPlaneActive){
-            _activeClipPlanes[clipPlaneIndex]  = clipPlaneActive;
-            clipPlaneActive ? glEnable(GL_CLIP_DISTANCE0 + clipPlaneIndex) : glDisable(GL_CLIP_DISTANCE0 + clipPlaneIndex);
+        if (_activeClipPlanes[i] != clipPlaneActive){
+            _activeClipPlanes[i]  = clipPlaneActive;
+            clipPlaneActive ? glEnable(GL_CLIP_DISTANCE0 + i) : glDisable(GL_CLIP_DISTANCE0 + i);
         }
     }
 }

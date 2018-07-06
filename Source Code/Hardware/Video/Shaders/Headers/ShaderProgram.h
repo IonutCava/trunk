@@ -158,7 +158,6 @@ protected:
     friend class ShaderManager;
     vectorImpl<Shader* > getShaders(const ShaderType& type) const;
     inline void setMatricesDirty()  { _extendedMatricesDirty = true; }
-    inline void updateClipPlanes()  { _clipPlanesDirty = true; }
     inline void setSceneDataDirty() { _sceneDataDirty = true; }
     static void updateCamera(const Camera& activeCamera);
     I32 operator==(const ShaderProgram &_v) { return this->getGUID() == _v.getGUID(); }
@@ -195,8 +194,6 @@ protected:
     ///ID<->shaders pair
     typedef Unordered_map<U32, Shader* > ShaderIdMap;
     ShaderIdMap _shaderIdMap;
-    ///cached clipping planes
-    vectorImpl<vec4<F32> > _clipPlanes;
     ///Active camera's cached eye position
     static vec3<F32> _cachedCamEye;
     ///Active camera's cached zPlanes
@@ -205,17 +202,15 @@ protected:
     static vec2<F32> _cachedSceneZPlanes;
     vectorImpl<U32> _lodVertLight;
     vectorImpl<U32> _lodFragLight;
+
 private:
     Camera* _activeCamera;
     Unordered_map<EXTENDED_MATRIX, I32  > _extendedMatrixEntry;
     bool _extendedMatricesDirty;
-    bool _clipPlanesDirty;
     bool _sceneDataDirty;
     ///Various uniform/attribute locations
     I32 _timeLoc;
     I32 _cameraLocationLoc;
-    I32 _clipPlanesLoc;
-    I32 _clipPlaneCountLoc;
     I32 _enableFogLoc;
     I32 _lightAmbientLoc;
     I32 _zPlanesLoc;

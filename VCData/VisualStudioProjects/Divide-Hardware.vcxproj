@@ -438,6 +438,7 @@
       <FileType>Document</FileType>
     </None>
     <None Include="..\..\assets\shaders\GLSL\common\lightInput.cmn" />
+    <None Include="..\..\assets\shaders\GLSL\common\matrixInput.cmn" />
     <None Include="..\..\assets\shaders\GLSL\deferredPreview.glsl">
       <FileType>Document</FileType>
     </None>
@@ -517,7 +518,6 @@
     <None Include="..\..\assets\shaders\GLSL\vertexAtoms\boneTransforms.vert">
       <FileType>Document</FileType>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\clippingPlanes.vert" />
     <None Include="..\..\assets\shaders\GLSL\vertexAtoms\foliage.vert">
       <FileType>Document</FileType>
     </None>

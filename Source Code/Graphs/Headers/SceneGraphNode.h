@@ -191,6 +191,15 @@ public:
     template<>
     inline PhysicsComponent* getComponent() { return dynamic_cast<PhysicsComponent*>(_components[SGNComponent::SGN_COMP_PHYSICS]); }
 
+    inline bool getTrackedBool(U8 index) const {
+        assert(index < 10); 
+        return _trackedBools[index];
+    }
+
+    inline void setTrackedBool(U8 index, const bool state){
+        assert(index < 10);
+        _trackedBools[index] = state;
+    }
 protected:
     friend class RenderPassCuller;
     inline void inView(const bool isInView) { _inView = isInView; }
@@ -240,6 +249,8 @@ private:
     NodeComponents _components;
 
     Unordered_map<RenderStage, bool> _drawReset;
+
+    bool _trackedBools[10];
 };
 
 #endif

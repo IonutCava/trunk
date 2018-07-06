@@ -136,7 +136,7 @@ void glGenericVertexData::Draw(const GenericDrawCommand& command) {
 
     if (cmd.instanceCount == 0) return;
 
-    GFX_DEVICE.setStateBlock(command._stateHash);
+    SET_STATE_BLOCK(command._stateHash, true);
     
     DIVIDE_ASSERT(_currentShader->isBound() && _currentShader->getId() != 0, "glGenericVertexData error: Draw shader state is not valid for the current draw operation!");
 

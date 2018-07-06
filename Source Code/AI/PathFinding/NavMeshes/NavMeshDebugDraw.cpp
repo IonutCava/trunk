@@ -43,7 +43,6 @@ namespace Navigation {
    }
 
    void NavMeshDebugDraw::setDrawState(){
-        SET_STATE_BLOCK(_navMeshStateBlockHash, true);
         GFX_DEVICE.pushWorldMatrix(mat4<F32>(), true);
    }
 
@@ -55,6 +54,7 @@ namespace Navigation {
       if(!_primitive){
           _dirty = true;
           _primitive = GFX_DEVICE.createPrimitive(false);
+          _primitive->stateHash(_navMeshStateBlockHash);
           _primitive->setRenderStates(DELEGATE_BIND(&NavMeshDebugDraw::setDrawState, this),
                                       DELEGATE_BIND(&NavMeshDebugDraw::releaseDrawState, this));
       }

@@ -48,8 +48,8 @@ public:
 
     inline Quad3D* getQuad() const {return _plane;}
 
-    inline const I32  getReflectionPlaneId() { return _reflectionPlaneID; }
-    inline const I32  getRefractionPlaneID() { return _refractionPlaneID; }
+    inline const ClipPlaneIndex  getReflectionPlaneId() { return _reflectionPlaneID; }
+    inline const ClipPlaneIndex  getRefractionPlaneID() { return _refractionPlaneID; }
     /// Reflector overwrite
     void updateReflection();
 	void updateRefraction();
@@ -76,8 +76,8 @@ private:
 
 private:
     /// the hw clip-plane index for the water
-    I32              _reflectionPlaneID;
-    I32              _refractionPlaneID;
+    ClipPlaneIndex   _reflectionPlaneID;
+    ClipPlaneIndex   _refractionPlaneID;
     /// cached far plane value
     F32				 _farPlane;
     /// cached water level

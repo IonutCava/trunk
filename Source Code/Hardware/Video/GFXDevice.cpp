@@ -32,7 +32,7 @@ extern "C" {
 
 ShaderProgram* GFXDevice::_activeShaderProgram = nullptr;
 ShaderProgram* GFXDevice::_HIZConstructProgram = nullptr;
-ShaderProgram* GFXDevice::_depthRangesConstrucProgram = nullptr;
+ShaderProgram* GFXDevice::_depthRangesConstructProgram = nullptr;
 
 GFXDevice::GFXDevice() : _api(GL_API::getOrCreateInstance()),
                          _postFX(PostFX::getOrCreateInstance()),
@@ -51,7 +51,6 @@ GFXDevice::GFXDevice() : _api(GL_API::getOrCreateInstance()),
    _enablePostProcessing = false;
    _enableAnaglyph = false;
    _enableHDR = false;
-   _clippingPlanesDirty = true;
    _isDepthPrePass = false;
    _previewDepthBuffer = false;
     _stateBlockDirty = true;
@@ -63,6 +62,7 @@ GFXDevice::GFXDevice() : _api(GL_API::getOrCreateInstance()),
    _shadowDetailLevel = DETAIL_HIGH;
    _renderStage = INVALID_STAGE;
    _worldMatrices.push(mat4<F32>(/*identity*/));
+   _clippingPlanes.resize(Config::MAX_CLIP_PLANES, Plane<F32>(0,0,0,0));
    _isUniformedScaled = true;
    _WDirty = _VDirty = _PDirty = true;
    _WVCachedMatrix.identity();
@@ -113,7 +113,8 @@ I8 GFXDevice::initHardware(const vec2<U16>& resolution, I32 argc, char **argv) {
 
     if(hardwareState == NO_ERR){
         _matricesBuffer = newSB();
-        _matricesBuffer->Create(true, false, 3 * 16 + 4, sizeof(F32)); //View, Projection, ViewProjection and Viewport 3 x 16 + 4 float values
+        //View, Projection, ViewProjection, Viewport and ClipPlanes[MAX_CLIP_PLANES] 3 x 16 + 4 + 4 * MAX_CLIP_PLANES float values
+        _matricesBuffer->Create(true, false, 3 * 16 + 4 + 4 * Config::MAX_CLIP_PLANES, sizeof(F32)); 
         _matricesBuffer->Bind(Divide::SHADER_BUFFER_CAM_MATRICES);
         changeResolution(resolution);
 
@@ -205,8 +206,8 @@ I8 GFXDevice::initHardware(const vec2<U16>& resolution, I32 argc, char **argv) {
 
         ResourceDescriptor rangesDesc("DepthRangesConstruct");
         rangesDesc.setPropertyList("LIGHT_GRID_TILE_DIM_X " + Util::toString(Config::Lighting::LIGHT_GRID_TILE_DIM_X) + "," + "LIGHT_GRID_TILE_DIM_Y " + Util::toString(Config::Lighting::LIGHT_GRID_TILE_DIM_Y));
-        _depthRangesConstrucProgram = CreateResource<ShaderProgram>(rangesDesc);
-        _depthRangesConstrucProgram->UniformTexture("depthTex", 0);
+        _depthRangesConstructProgram = CreateResource<ShaderProgram>(rangesDesc);
+        _depthRangesConstructProgram->UniformTexture("depthTex", 0);
     }
 
     return hardwareState;
@@ -235,7 +236,7 @@ void GFXDevice::closeRenderingApi(){
 
 void GFXDevice::closeRenderer(){
     RemoveResource(_HIZConstructProgram);
-    RemoveResource(_depthRangesConstrucProgram);
+    RemoveResource(_depthRangesConstructProgram);
     PRINT_FN(Locale::get("STOP_POST_FX"));
     _postFX.destroyInstance();
     _shaderManager.Destroy();
@@ -252,11 +253,10 @@ void GFXDevice::idle() {
 }
 
 void GFXDevice::drawPoints(U32 numPoints) {
-    updateStates();
-
     if (_activeShaderProgram)
         _activeShaderProgram->uploadNodeMatrices();
 
+    updateStates();
     _api.drawPoints(numPoints); 
 }
 
@@ -277,8 +277,6 @@ void GFXDevice::renderInstance(RenderInstance* const instance){
         if (!model->onDraw(nullptr, getRenderStage()))
             return;
     }
-
-    updateStates();
 
     Transform* transform = instance->transform();
     if (transform) {
@@ -391,23 +389,13 @@ I64 GFXDevice::setStateBlock(I64 stateBlockHash, bool forceUpdate) {
    return prevStateHash;
 }
 
-void GFXDevice::updateStates(bool force) {
-    I64 oldStateBlockHash = 0;
-    //Verify render states
-    if(force){
-        _stateBlockDirty = true;
-    }else{
-        oldStateBlockHash = _currentStateBlockHash;
-    }
-
+void GFXDevice::updateStates() {
     if (_newStateBlockHash && _stateBlockDirty){
-        activateStateBlock(*_stateBlockMap[_newStateBlockHash], _stateBlockMap[oldStateBlockHash]);
+        activateStateBlock(*_stateBlockMap[_newStateBlockHash], _stateBlockMap[_currentStateBlockHash]);
         _stateBlockDirty = false;
     }
 
     _currentStateBlockHash = _newStateBlockHash;
-    
-    updateClipPlanes();
 }
 
 const RenderStateBlockDescriptor& GFXDevice::getStateBlockDescriptor(I64 renderStateBlockHash) const {
@@ -523,6 +511,15 @@ void GFXDevice::updateProjectionMatrix(){
 
     _matricesBuffer->UpdateData(0, 3 * mat4Size, matrixDataProjection);
     _PDirty = true; 
+}
+
+void GFXDevice::updateClipPlanes(){
+    const size_t mat4Size = 16 * sizeof(F32);
+    const size_t vec4Size = 4  * sizeof(F32);
+    vectorImpl<vec4<F32> > clipPlanes; clipPlanes.resize(Config::MAX_CLIP_PLANES, vec4<F32>());
+    for(U8 i = 0 ; i < Config::MAX_CLIP_PLANES; ++i)
+        clipPlanes[i] = _clippingPlanes[i].getEquation();
+    _matricesBuffer->UpdateData(3 * mat4Size + vec4Size, Config::MAX_CLIP_PLANES * vec4Size, &clipPlanes.front());
 }
 
 void GFXDevice::updateViewMatrix(){
@@ -658,15 +655,6 @@ void GFXDevice::previewDepthBuffer(){
     renderInViewport(vec4<I32>(Application::getInstance().getResolution().width-256,0,256,256), DELEGATE_BIND(&GFXDevice::drawPoints, this, 1));
 }
 
-void GFXDevice::updateClipPlanes() {
-    if (!_clippingPlanesDirty)
-        return;
-
-    _api.updateClipPlanes(); 
-    _clippingPlanesDirty = false;
-    _shaderManager.updateClipPlanes();
-}
-
 void GFXDevice::postProcessingEnabled(const bool state) {
     if (_enablePostProcessing != state){
         _enablePostProcessing = state; 
@@ -762,8 +750,8 @@ void GFXDevice::DownSampleDepthBuffer(vectorImpl<vec2<F32>> &depthRanges){
 
     _depthRanges->Begin(FrameBuffer::defaultPolicy());
     _renderTarget[RENDER_TARGET_DEPTH]->Bind(0, TextureDescriptor::Depth);
-    SET_STATE_BLOCK(_defaultStateNoDepthHash, true);
-    _depthRangesConstrucProgram->bind();
+    SET_STATE_BLOCK(_defaultStateNoDepthHash);
+    _depthRangesConstructProgram->bind();
     drawPoints(1);
     depthRanges.resize(_depthRanges->getWidth() * _depthRanges->getHeight());
     _depthRanges->ReadData(RG, FLOAT_32, &depthRanges[0]);

@@ -156,7 +156,7 @@ protected:
     I32 getFont(const std::string& fontName);
     glIMPrimitive* getOrCreateIMPrimitive(bool allowPrimitiveRecycle = true);
     ///Used for rendering skeletons
-    void setupLineState(const mat4<F32>& mat, I64 drawStateHash,const bool ortho);
+    void setupLineState(const mat4<F32>& mat, const bool ortho);
     void releaseLineState(const bool ortho);
     void drawDebugAxisInternal(const SceneRenderState& sceneRenderState);
     void setupLineStateViewPort(const mat4<F32>& mat);

@@ -32,7 +32,6 @@ ShaderProgram::ShaderProgram(const bool optimise) : HardwareResource("temp_shade
     _maxCombinedTextureUnits = ParamHandler::getInstance().getParam<I32>("GFX_DEVICE.maxTextureCombinedUnits",16);
 
     _extendedMatricesDirty = true;
-    _clipPlanesDirty = true;
     _sceneDataDirty = true;
     _extendedMatrixEntry[WORLD_MATRIX]  = -1;
     _extendedMatrixEntry[WV_MATRIX]     = -1;
@@ -42,8 +41,6 @@ ShaderProgram::ShaderProgram(const bool optimise) : HardwareResource("temp_shade
     _invProjMatrixEntry  = -1;
     _timeLoc             = -1;
     _cameraLocationLoc   = -1;
-    _clipPlanesLoc       = -1;
-    _clipPlaneCountLoc   = -1;
     _enableFogLoc        = -1;
     _lightAmbientLoc     = -1;
     _zPlanesLoc          = -1;
@@ -151,8 +148,6 @@ bool ShaderProgram::generateHWResource(const std::string& name){
     _invProjMatrixEntry  = this->cachedLoc("dvd_ProjectionMatrixInverse");
     _timeLoc             = this->cachedLoc("dvd_time");
     _cameraLocationLoc   = this->cachedLoc("dvd_cameraPosition");
-    _clipPlanesLoc       = this->cachedLoc("dvd_clip_plane");
-    _clipPlaneCountLoc   = this->cachedLoc("dvd_clip_plane_count");
     _enableFogLoc        = this->cachedLoc("dvd_enableFog");
     _lightAmbientLoc     = this->cachedLoc("dvd_lightAmbient");
     _zPlanesLoc          = this->cachedLoc("dvd_zPlanes");
@@ -220,23 +215,6 @@ void ShaderProgram::uploadNodeMatrices(){
             this->Uniform(currentLocation, GFX.getMatrix(PROJECTION_INV_MATRIX));
         }
         _extendedMatricesDirty = false;
-    }
-
-    /*Get and upload clip plane data*/
-    //GFX_DEVICE.updateClipPlanes();
-
-    if (_clipPlanesDirty == true){
-        _clipPlanesDirty = false;
-        _clipPlanes.resize(0);
-
-        for (const Plane<F32>& currentPlane : GFX.getClippingPlanes())
-            _clipPlanes.push_back(currentPlane.getEquation());
-
-        this->Uniform(_clipPlaneCountLoc, (I32)_clipPlanes.size());
-
-        if (_clipPlanes.empty()) return;
-
-        this->Uniform(_clipPlanesLoc, _clipPlanes);
     }
 }
 

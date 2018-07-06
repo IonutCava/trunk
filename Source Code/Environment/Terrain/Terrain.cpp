@@ -150,9 +150,7 @@ bool Terrain::prepareMaterial(SceneGraphNode* const sgn){
 }
 
 bool Terrain::prepareDepthMaterial(SceneGraphNode* const sgn){
-    bool depthPrePass = GFX_DEVICE.isDepthPrePass();
-
-    SET_STATE_BLOCK(depthPrePass ? _terrainRenderStateHash : _terrainDepthRenderStateHash);
+    SET_STATE_BLOCK(GFX_DEVICE.isDepthPrePass() ? _terrainRenderStateHash : _terrainDepthRenderStateHash);
     _plane->setCustomShader(_drawShader);
 
     return _drawShader->bind();

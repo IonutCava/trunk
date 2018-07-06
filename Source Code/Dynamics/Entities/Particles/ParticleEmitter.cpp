@@ -171,7 +171,6 @@ bool ParticleEmitter::prepareMaterial(SceneGraphNode* const sgn){
 ///When the SceneGraph calls the particle emitter's render function, we draw the impostor if needed
 void ParticleEmitter::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState){
     if(_particlesCurrentCount > 0 && _enabled && _created){
-		GFX_DEVICE.updateStates();
         _drawCommand.setStateHash(_particleStateBlockHash);
         _drawCommand.setInstanceCount(_particlesCurrentCount);
         _particleGPUBuffer->Draw(_drawCommand);

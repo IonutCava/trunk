@@ -8,8 +8,8 @@
 
 
 WaterPlane::WaterPlane() : SceneNode(TYPE_WATER), Reflector(TYPE_WATER_SURFACE,vec2<U16>(1024,1024)),
-                           _plane(nullptr),  _planeTransform(nullptr), _node(nullptr), _planeSGN(nullptr), _waterLevel(0), _waterDepth(0), _refractionPlaneID(-1), 
-                           _reflectionPlaneID(-1), _reflectionRendering(false), _refractionRendering(false), _refractionTexture(nullptr), _dirty(true), _cameraUnderWater(false),
+                           _plane(nullptr),  _planeTransform(nullptr), _node(nullptr), _planeSGN(nullptr), _waterLevel(0), _waterDepth(0), _refractionPlaneID(ClipPlaneIndex_PLACEHOLDER), 
+                           _reflectionPlaneID(ClipPlaneIndex_PLACEHOLDER), _reflectionRendering(false), _refractionRendering(false), _refractionTexture(nullptr), _dirty(true), _cameraUnderWater(false),
                            _cameraMgr(Application::getInstance().getKernel()->getCameraMgr())
 {
     //Set water plane to be single-sided
@@ -220,13 +220,11 @@ void WaterPlane::updatePlaneEquation(){
     _reflectionPlane.active(false);
     _refractionPlane.set(refractionNormal, -_waterLevel);
     _refractionPlane.active(false);
-    if(_reflectionPlaneID == -1){
-        _reflectionPlaneID = GFX_DEVICE.addClipPlane(_reflectionPlane, CLIP_PLANE_0);
-        _refractionPlaneID = GFX_DEVICE.addClipPlane(_refractionPlane, CLIP_PLANE_1);
-    }else{
-        GFX_DEVICE.setClipPlane(_reflectionPlaneID, _reflectionPlane);
-        GFX_DEVICE.setClipPlane(_refractionPlaneID, _refractionPlane);
-    }
+    _reflectionPlaneID = CLIP_PLANE_0;
+    _refractionPlaneID = CLIP_PLANE_1;
+
+    GFX_DEVICE.setClipPlane(_reflectionPlaneID, _reflectionPlane);
+    GFX_DEVICE.setClipPlane(_refractionPlaneID, _refractionPlane);
     
     _dirty = true;
 }

@@ -9,16 +9,6 @@ uniform mat4 dvd_WorldMatrix[MAX_INSTANCES];
 uniform mat3 dvd_NormalMatrix[MAX_INSTANCES];
 uniform mat4 dvd_WorldViewProjectionMatrix;
 
-
-layout(binding = SHADER_BUFFER_CAM_MATRICES, std140) uniform dvd_MatrixBlock
-{
-   mat4 dvd_ProjectionMatrix;
-   mat4 dvd_ViewMatrix;
-   mat4 dvd_ViewProjectionMatrix;
-   vec4 dvd_ViewPort;
-};
-
-#include "clippingPlanes.vert"
 #if defined(USE_GPU_SKINNING)
 #include "boneTransforms.vert"
 #endif

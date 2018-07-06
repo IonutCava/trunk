@@ -79,8 +79,6 @@ public:
 
     void setMatricesDirty();
 
-    void updateClipPlanes();
-
     void updateCamera();
 
 private:
@@ -101,6 +99,7 @@ private:
     bool             _init;
     ///A pointer to the active kernel (for simplicity)
     Kernel*          _activeKernel;
+
 private:
     ShaderManager();
     ~ShaderManager();

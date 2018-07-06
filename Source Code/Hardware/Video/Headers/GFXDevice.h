@@ -156,29 +156,30 @@ public:
     /* Clipping plane management. All the clipping planes are handled by shader programs only!
     */
           void updateClipPlanes();
-    /// add a new clipping plane. This will be limited by the actual shaders (how many planes they use)
-    /// this function returns the newly added clip plane's index in the vector
-    inline I32 addClipPlane(Plane<F32>& p, ClipPlaneIndex clipIndex);
-    /// add a new clipping plane defined by it's equation's coefficients
-    inline I32 addClipPlane(F32 A, F32 B, F32 C, F32 D, ClipPlaneIndex clipIndex);
-    /// change the clip plane index of the current plane
-    inline bool changeClipIndex(U32 index, ClipPlaneIndex clipIndex);
-    /// remove a clip plane by index
-    inline bool removeClipPlane(U32 index);
     /// disable a clip plane by index
-    inline bool disableClipPlane(U32 index);
+    inline void GFXDevice::disableClipPlane(ClipPlaneIndex index) { assert(index != ClipPlaneIndex_PLACEHOLDER); _clippingPlanes[index].active(false); _api.updateClipPlanes(); }
     /// enable a clip plane by index
-    inline bool enableClipPlane(U32 index);
+    inline void GFXDevice::enableClipPlane(ClipPlaneIndex index)  { assert(index != ClipPlaneIndex_PLACEHOLDER); _clippingPlanes[index].active(true);  _api.updateClipPlanes(); }
     /// modify a single clip plane by index
-    inline void setClipPlane(U32 index, const Plane<F32>& p);
+    inline void GFXDevice::setClipPlane(ClipPlaneIndex index, const Plane<F32>& p) { assert(index != ClipPlaneIndex_PLACEHOLDER); _clippingPlanes[index] = p; updateClipPlanes(); }
     /// set a new list of clipping planes. The old one is discarded
-    inline void setClipPlanes(const PlaneList& clipPlanes);
+    inline void GFXDevice::setClipPlanes(const PlaneList& clipPlanes)  {
+        if (clipPlanes != _clippingPlanes) {
+            _clippingPlanes = clipPlanes;
+            updateClipPlanes();
+            _api.updateClipPlanes(); 
+        }
+    }
+
     /// clear all clipping planes
-    inline void resetClipPlanes();
-    /// have the clipping planes changed?
-    inline bool clippingPlanesDirty()           const {return _clippingPlanesDirty;}
+    inline void GFXDevice::resetClipPlanes() {
+        _clippingPlanes.resize(Config::MAX_CLIP_PLANES, Plane<F32>(0,0,0,0));
+        updateClipPlanes();
+        _api.updateClipPlanes(); 
+    }
+
     /// get the entire list of clipping planes
-    inline const PlaneList& getClippingPlanes() const {return _clippingPlanes;}
+    inline const PlaneList& getClippingPlanes()         const {return _clippingPlanes;}
     /// Post Processing state
     inline bool postProcessingEnabled()                 const {return _enablePostProcessing;}
            void postProcessingEnabled(const bool state);
@@ -210,7 +211,7 @@ public:
     ///Sets a standard state block
     inline I64 setDefaultStateBlock(bool forceUpdate = false)  {return setStateBlock(_defaultStateBlockHash, forceUpdate);}
     ///If a new state has been set, update the Graphics pipeline
-           void updateStates(bool force = false);
+           void updateStates();
     /*//Render State Management */
 
     ///Generate a cubemap from the given position
@@ -355,7 +356,6 @@ protected:
     ///Pointer to current kernel
     Kernel*   _kernel;
     PlaneList _clippingPlanes;
-    bool      _clippingPlanesDirty;
     bool      _enablePostProcessing;
     bool      _enableAnaglyph;
     bool      _enableHDR;
@@ -364,7 +364,7 @@ protected:
     ///shader used to preview the depth buffer
     ShaderProgram* _previewDepthMapShader;
     static ShaderProgram* _HIZConstructProgram;
-    static ShaderProgram* _depthRangesConstrucProgram;
+    static ShaderProgram* _depthRangesConstructProgram;
     bool    _previewDepthBuffer;
     ///getMatrix cache
     mat4<F32> _mat4Cache;
