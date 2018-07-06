@@ -51,6 +51,8 @@ GUI::GUI(Kernel& parent)
     _debugVarCacheCount(0),
     _activeScene(nullptr),
     _console(nullptr),
+    _ceguiContext(nullptr),
+    _ceguiRenderTextureTarget(nullptr),
     _textRenderInterval(Time::MillisecondsToMicroseconds(10))
 {
     // 500ms
@@ -93,7 +95,7 @@ void GUI::onUnloadScene(Scene* scene) {
     }
 }
 
-void GUI::draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) const {
+void GUI::draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) {
     if (!_init || !_activeScene) {
         return;
     }
@@ -132,10 +134,19 @@ void GUI::draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) const {
         it->second->draw(context, bufferInOut);
     }
 
-    // CEGUI handles its own states, so render it after we clear our states but before we swap buffers
     if (parent().platformContext().config().gui.cegui.enabled) {
         if (!parent().platformContext().config().gui.cegui.skipRendering) {
+            GFX::SetBlendCommand blendCmd;
+            blendCmd._enabled = true;
+            blendCmd._blendProperties = BlendingProperties{
+                BlendProperty::SRC_ALPHA,
+                BlendProperty::INV_SRC_ALPHA
+            };
+            GFX::SetBlend(bufferInOut, blendCmd);
+
             GFX::DrawCEGUICommand drawCEGUICmd;
+            drawCEGUICmd._context = &getCEGUIContext();
+            drawCEGUICmd._textureTarget = _ceguiRenderTextureTarget;
             GFX::AddDrawCEGUICommand(bufferInOut, drawCEGUICmd);
         }
     }
@@ -207,8 +218,15 @@ bool GUI::init(PlatformContext& context, ResourceCache& cache, const vec2<U16>& 
     _rootSheet = CEGUI::WindowManager::getSingleton().createWindow(
         "DefaultWindow", "root_window");
     _rootSheet->setMousePassThroughEnabled(true);
-    CEGUI_DEFAULT_CTX.setRootWindow(_rootSheet);
-    CEGUI_DEFAULT_CTX.setDefaultTooltipType((_defaultGUIScheme + "/Tooltip").c_str());
+
+    CEGUI::Sizef size(static_cast<float>(renderResolution.width), static_cast<float>(renderResolution.height));
+    // We create a CEGUI texture target and create a GUIContext that will use it.
+    CEGUI::TextureTarget* renderTextureTarget = CEGUI::System::getSingleton().getRenderer()->createTextureTarget();
+    renderTextureTarget->declareRenderSize(size);
+    _ceguiContext = &CEGUI::System::getSingleton().createGUIContext(static_cast<CEGUI::RenderTarget&>(*renderTextureTarget));
+
+    getCEGUIContext().setRootWindow(_rootSheet);
+    getCEGUIContext().setDefaultTooltipType((_defaultGUIScheme + "/Tooltip").c_str());
 
     _rootSheet->setPixelAligned(false);
     assert(_console);
@@ -283,9 +301,9 @@ void GUI::selectionChangeCallback(Scene* const activeScene, PlayerIndex idx) {
     ACKNOWLEDGE_UNUSED(idx);
 }
 
-void GUI::setCursorPosition(I32 x, I32 y) const {
+void GUI::setCursorPosition(I32 x, I32 y) {
     if (parent().platformContext().config().gui.cegui.enabled) {
-        CEGUI_DEFAULT_CTX.injectMousePosition(to_F32(x), to_F32(y));
+        getCEGUIContext().injectMousePosition(to_F32(x), to_F32(y));
     }
 }
 
@@ -497,5 +515,13 @@ GUIElement* GUI::getGUIElementImpl(I64 sceneID, I64 elementID, GUIType type) con
 
     return nullptr;
 }
+CEGUI::GUIContext& GUI::getCEGUIContext() {
+    assert(_ceguiContext != nullptr);
+    return *_ceguiContext;
+}
 
+const CEGUI::GUIContext& GUI::getCEGUIContext() const {
+    assert(_ceguiContext != nullptr);
+    return *_ceguiContext;
+}
 };

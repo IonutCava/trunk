@@ -56,8 +56,6 @@ class RenderStateBlock;
 
 FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
 
-#define CEGUI_DEFAULT_CTX CEGUI::System::getSingleton().getDefaultGUIContext()
-
 class Scene;
 struct SizeChangeParams;
 /// Graphical User Interface
@@ -77,7 +75,8 @@ public:
     bool init(PlatformContext& context, ResourceCache& cache, const vec2<U16>& renderResolution);
     void destroy();
 
-    void draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) const;
+    void draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut);
+    void updateCEGUI();
 
     void onSizeChange(const SizeChangeParams& params) override;
     void onChangeScene(Scene* newScene);
@@ -119,7 +118,7 @@ public:
         _textRenderInterval = renderIntervalUs;
     }
     /// Mouse cursor forced to a certain position
-    void setCursorPosition(I32 x, I32 y) const;
+    void setCursorPosition(I32 x, I32 y);
     /// Key pressed: return true if input was consumed
     bool onKeyDown(const Input::KeyEvent& key);
     /// Key released: return true if input was consumed
@@ -149,6 +148,9 @@ public:
         return _activeScene;
     }
 
+    CEGUI::GUIContext& getCEGUIContext();
+    const CEGUI::GUIContext& getCEGUIContext() const;
+
 protected:
     GUIElement* getGUIElementImpl(I64 sceneID, U64 elementName, GUIType type) const;
     GUIElement* getGUIElementImpl(I64 sceneID, I64 elementID, GUIType type) const;
@@ -157,8 +159,8 @@ protected:
     friend class SceneGUIElements;
     CEGUI::Window* _rootSheet;  //< gui root Window
     stringImpl _defaultGUIScheme;
-
-    
+    CEGUI::GUIContext* _ceguiContext;
+    CEGUI::TextureTarget* _ceguiRenderTextureTarget;
 
 private:
     bool _init;              //< Set to true when the GUI has finished loading

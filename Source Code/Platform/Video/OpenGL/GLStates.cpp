@@ -797,6 +797,13 @@ bool GL_API::setScissor(I32 x, I32 y, I32 width, I32 height) {
 GLuint GL_API::getBoundTextureHandle(GLuint slot) {
     return s_textureBoundMap[slot];
 }
+
+void GL_API::getActiveViewport(GLint* vp) {
+    if (vp != nullptr) {
+        vp = (GLint*)s_activeViewport._v;
+    }
+}
+
 /// A state block should contain all rendering state changes needed for the next draw call.
 /// Some may be redundant, so we check each one individually
 void GL_API::activateStateBlock(const RenderStateBlock& newBlock,

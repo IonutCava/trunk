@@ -80,9 +80,9 @@ public:
     inline I32 targetDisplay() const;
     inline void targetDisplay(I32 displayIndex);
 
-    void setCursorPosition(I32 x, I32 y) const;
+    void setCursorPosition(I32 x, I32 y);
     vec2<I32> getCursorPosition() const;
-    void snapCursorToCenter() const;
+    void snapCursorToCenter();
 
     inline DisplayWindow& getActiveWindow();
     inline const DisplayWindow& getActiveWindow() const;

@@ -784,7 +784,7 @@ void Kernel::onSizeChange(const SizeChangeParams& params) const {
 }
 
 ///--------------------------Input Management-------------------------------------///
-bool Kernel::setCursorPosition(I32 x, I32 y) const {
+bool Kernel::setCursorPosition(I32 x, I32 y) {
     _platformContext->gui().setCursorPosition(x, y);
     return true;
 }

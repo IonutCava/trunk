@@ -118,6 +118,7 @@ protected:
     /// with his OpenGL frontend adapted for core context profiles
     void drawText(const TextElementBatch& batch);
     void drawIMGUI(ImDrawData* data);
+    void drawCEGUI(const GFX::DrawCEGUICommand& ceguiCommand);
 
     bool draw(const GenericDrawCommand& cmd);
 
@@ -268,8 +269,11 @@ public:
     inline static bool changeViewport(const vec4<I32>& newViewport) {
         changeViewport(newViewport.x, newViewport.y, newViewport.z, newViewport.w);
     }
+
     static bool restoreViewport();
     static GLuint getBoundTextureHandle(GLuint slot);
+
+    static void getActiveViewport(GLint* vp);
 
 private:
     /// Prepare our shader loading system

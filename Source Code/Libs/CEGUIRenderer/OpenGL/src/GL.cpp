@@ -86,28 +86,10 @@ void OpenGLInfo::initTypeAndVer()
 //----------------------------------------------------------------------------//
 void OpenGLInfo::initSupportedFeatures()
 {
-
-    d_isS3tcSupported = false;
-    int ext_count = 0;
-    glGetIntegerv(GL_NUM_EXTENSIONS, &ext_count);
-    if ((glGetError() == GL_NO_ERROR)  && (ext_count >= 0)  )
-    {  
-        for (int i = 0; i < ext_count; ++i)
-        {
-            const char* extension
-              (reinterpret_cast<const char*>(glGetStringi(GL_EXTENSIONS, i)));
-            if ((glGetError() == GL_NO_ERROR)  &&
-                extension  &&
-                !std::strcmp(extension, "GL_EXT_texture_compression_s3tc"))
-            {
-                d_isS3tcSupported = true;
-                break;
-            }
-        }
-    }
-    
+    d_isS3tcSupported = true;
     d_isNpotTextureSupported = true;
-    d_isPolygonModeSupported = d_isSizedInternalFormatSupported;
+    d_isSizedInternalFormatSupported = true;
+    d_isPolygonModeSupported = true;
 }
 
 } // namespace CEGUI

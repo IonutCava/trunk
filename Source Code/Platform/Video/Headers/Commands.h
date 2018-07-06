@@ -38,6 +38,11 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 struct ImDrawData;
 
+namespace CEGUI {
+    class GUIContext;
+    class TextureTarget;
+};
+
 namespace Divide {
 namespace GFX {
 
@@ -237,6 +242,9 @@ struct DrawCEGUICommand : Command {
     DrawCEGUICommand() : Command(CommandType::DRAW_CEGUI)
     {
     }
+
+    CEGUI::GUIContext* _context = nullptr;
+    CEGUI::TextureTarget* _textureTarget = nullptr;
 };
 
 struct DrawIMGUICommand : Command {

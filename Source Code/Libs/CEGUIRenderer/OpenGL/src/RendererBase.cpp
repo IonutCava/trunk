@@ -119,7 +119,8 @@ OpenGLRendererBase::~OpenGLRendererBase()
 void OpenGLRendererBase::initialiseDisplaySizeWithViewportSize()
 {
     GLint vp[4];
-    glGetIntegerv(GL_VIEWPORT, vp);
+    Divide::GL_API::getActiveViewport(vp);
+
     d_displaySize = Sizef(static_cast<float>(vp[2]),
                           static_cast<float>(vp[3]));
 }
@@ -127,9 +128,7 @@ void OpenGLRendererBase::initialiseDisplaySizeWithViewportSize()
 //----------------------------------------------------------------------------//
 void OpenGLRendererBase::initialiseMaxTextureSize()
 {
-    GLint max_tex_size;
-    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_tex_size);
-    d_maxTextureSize = max_tex_size;
+    d_maxTextureSize = Divide::GLUtil::getIntegerv(GL_MAX_TEXTURE_SIZE);
 }
 
 //----------------------------------------------------------------------------//

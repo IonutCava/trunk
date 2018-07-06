@@ -356,7 +356,7 @@ U32 WindowManager::createAPIFlags(RenderAPI api) {
     return windowFlags;
 }
 
-void WindowManager::setCursorPosition(I32 x, I32 y) const {
+void WindowManager::setCursorPosition(I32 x, I32 y) {
     getActiveWindow().setCursorPosition(x, y);
     Attorney::KernelWindowManager::setCursorPosition(_context->app().kernel(), x, y);
 }
@@ -365,7 +365,7 @@ vec2<I32> WindowManager::getCursorPosition() const {
     return getActiveWindow().getCursorPosition();
 }
 
-void WindowManager::snapCursorToCenter() const {
+void WindowManager::snapCursorToCenter() {
     const vec2<U16>& center = getActiveWindow().getDimensions();
     setCursorPosition(to_I32(center.x * 0.5f), to_I32(center.y * 0.5f));
 }

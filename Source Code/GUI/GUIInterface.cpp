@@ -158,7 +158,7 @@ GUIButton* GUIInterface::addButton(U64 guiID,
 
     CEGUI::Window* parent = nullptr;
     if (!rootSheetID.empty()) {
-        parent = CEGUI_DEFAULT_CTX.getRootWindow()->getChild(rootSheetID.c_str());
+        parent = _context->getCEGUIContext().getRootWindow()->getChild(rootSheetID.c_str());
     }
 
     if (!parent) {

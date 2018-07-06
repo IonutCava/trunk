@@ -258,7 +258,7 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     void stopSplashScreen();
     bool mainLoopScene(FrameEvent& evt, const U64 deltaTimeUS);
     bool presentToScreen(FrameEvent& evt, const U64 deltaTimeUS);
-    bool setCursorPosition(I32 x, I32 y) const;
+    bool setCursorPosition(I32 x, I32 y);
     /// Update all engine components that depend on the current screen size
     void onSizeChange(const SizeChangeParams& params) const;
 
