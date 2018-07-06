@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include "Headers/RenderPassCuller.h"
 
 #include "Core/Headers/TaskPool.h"

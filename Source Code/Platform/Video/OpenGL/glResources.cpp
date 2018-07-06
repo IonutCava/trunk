@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include "Headers/glResources.h"
 
 #include "Platform/Video/Headers/RenderAPIEnums.h"

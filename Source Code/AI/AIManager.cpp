@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include "Headers/AIManager.h"
 
 #include "AI/ActionInterface/Headers/AITeam.h"

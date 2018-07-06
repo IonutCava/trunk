@@ -46,7 +46,7 @@ void TaskPool::flushCallbackQueue()
         if (cbk) {
             cbk();
             _taskStates[taskIndex] = false;
-            _taskCallbacks[taskIndex].swap(DELEGATE_CBK<>());
+            _taskCallbacks[taskIndex] = DELEGATE_CBK<>();
         }
     }
 }

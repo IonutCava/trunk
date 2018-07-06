@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include "Platform/Video/OpenGL/Headers/glResources.h"
 #include "Platform/Video/OpenGL/Headers/glLockManager.h"
 

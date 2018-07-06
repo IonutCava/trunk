@@ -1,6 +1,6 @@
 #include "Headers/glGenericVertexData.h"
 #include "Platform/Video/Headers/GFXDevice.h"
-#include "Platform/Video/OpenGL/Buffers/Headers/glMemoryManager.h"
+#include "Platform/Video/OpenGL/Buffers/Headers/glBufferImpl.h"
 
 #include "Utility/Headers/Localization.h"
 
@@ -22,14 +22,12 @@ bool glGenericVertexData::setIfDifferentBindRange(GLuint bindIndex, const Buffer
     return true;
 }
 
-glGenericVertexData::glGenericVertexData(GFXDevice& context, bool persistentMapped, const U32 ringBufferLength)
-    : GenericVertexData(context, persistentMapped, ringBufferLength),
+glGenericVertexData::glGenericVertexData(GFXDevice& context, const U32 ringBufferLength)
+    : GenericVertexData(context, ringBufferLength),
       _bufferSet(nullptr),
-      _bufferPersistent(nullptr),
       _bufferIsRing(nullptr),
       _elementCount(nullptr),
       _elementSize(nullptr),
-      _bufferPersistentData(nullptr),
       _prevResult(nullptr)
 {
     _numQueries = 0;
@@ -48,15 +46,11 @@ glGenericVertexData::glGenericVertexData(GFXDevice& context, bool persistentMapp
 glGenericVertexData::~glGenericVertexData() {
     if (!_bufferObjects.empty()) {
         for (U8 i = 0; i < _bufferObjects.size(); ++i) {
-            if (_persistentMapped) {
-                _lockManagers[i].WaitForLockedRange(0,
-                                                    _elementCount[i] * _elementSize[i] 
-                                                       * (_bufferIsRing[i] ? queueLength() : 1),
-                                                    true);
-            }
-            GLUtil::freeBuffer(_bufferObjects[i]._id, _bufferPersistentData[i]);
+            _bufferObjects[i]->destroy();
+            MemoryManager::DELETE(_bufferObjects[i]);
         }
     }
+
     // Make sure we don't have any of our VAOs bound
     GL_API::setActiveVAO(0);
     // Delete the rendering VAO
@@ -90,17 +84,12 @@ glGenericVertexData::~glGenericVertexData() {
     // Delete the rest of the data
     MemoryManager::DELETE_ARRAY(_prevResult);
     MemoryManager::DELETE_ARRAY(_bufferSet);
-    MemoryManager::DELETE_ARRAY(_bufferPersistent);
     MemoryManager::DELETE_ARRAY(_bufferIsRing);
     MemoryManager::DELETE_ARRAY(_elementCount);
     MemoryManager::DELETE_ARRAY(_elementSize);
-    if (_bufferPersistentData != nullptr) {
-        free(_bufferPersistentData);
-    }
 
     _bufferObjects.clear();
     _feedbackBuffers.clear();
-    _lockManagers.clear();
 }
 
 /// Create the specified number of buffers and queries and attach them to this
@@ -117,7 +106,7 @@ void glGenericVertexData::create(U8 numBuffers, U8 numQueries) {
     // Create a transform feedback object
     glGenTransformFeedbacks(1, &_transformFeedback);
     // Create our buffer objects
-    _bufferObjects.resize(numBuffers);
+    _bufferObjects.resize(numBuffers, nullptr);
     // Prepare our generic queries
     _numQueries = numQueries;
     for (U8 i = 0; i < 2; ++i) {
@@ -143,23 +132,9 @@ void glGenericVertexData::create(U8 numBuffers, U8 numQueries) {
     // The element size for each buffer (in bytes)
     _elementSize = MemoryManager_NEW size_t[numBuffers];
     memset(_elementSize, 0, numBuffers * sizeof(size_t));
-    // A flag to check if the buffer is or isn't persistently mapped
-    _bufferPersistent = MemoryManager_NEW bool[numBuffers];
-    memset(_bufferPersistent, false, numBuffers * sizeof(bool));
     // A flag to check if the buffer uses the RingBuffer system
     _bufferIsRing = MemoryManager_NEW bool[numBuffers];
     memset(_bufferIsRing, false, numBuffers * sizeof(bool));
-    // Persistently mapped data (array of void* pointers)
-    _bufferPersistentData =
-        (bufferPtr*)malloc(sizeof(bufferPtr) * numBuffers);
-
-    for (U8 i = 0; i < numBuffers; ++i) {
-        _bufferPersistentData[i] = nullptr;
-    }
-
-    if (_persistentMapped) {
-        _lockManagers.resize(numBuffers);
-    }
 }
 
 void glGenericVertexData::incQueryQueue() {
@@ -172,8 +147,7 @@ void glGenericVertexData::incQueryQueue() {
 }
 
 /// Bind a specific range of the transform feedback buffer for writing
-/// (specified in the number of elements to offset by and the number of elements
-/// to be written)
+/// (specified in the number of elements to offset by and the number of elements to be written)
 void glGenericVertexData::bindFeedbackBufferRange(U32 buffer,
                                                   U32 elementCountOffset,
                                                   size_t elementCount) {
@@ -183,17 +157,15 @@ void glGenericVertexData::bindFeedbackBufferRange(U32 buffer,
                   "non-feedback buffer!");
 
     GL_API::setActiveTransformFeedback(_transformFeedback);
-    glBindBufferRange(
-        GL_TRANSFORM_FEEDBACK_BUFFER,
-        getBindPoint(_bufferObjects[buffer]._id),
-        _bufferObjects[buffer]._id,
-        elementCountOffset * _elementSize[buffer],
-        elementCount * _elementSize[buffer]);
+    glBindBufferRange(GL_TRANSFORM_FEEDBACK_BUFFER,
+                      getBindPoint(_bufferObjects[buffer]->bufferID()),
+                      _bufferObjects[buffer]->bufferID(),
+                      elementCountOffset * _elementSize[buffer],
+                      elementCount * _elementSize[buffer]);
 }
 
 /// Submit a draw command to the GPU using this object and the specified command
-void glGenericVertexData::draw(const GenericDrawCommand& command,
-                               bool useCmdBuffer) {
+void glGenericVertexData::draw(const GenericDrawCommand& command, bool useCmdBuffer) {
 
     U32 drawBufferID = command.drawToBuffer();
     // Check if we are rendering to the screen or to a buffer
@@ -224,18 +196,14 @@ void glGenericVertexData::draw(const GenericDrawCommand& command,
         _resultAvailable[_currentWriteQuery][command.drawToBuffer()] = true;
     }
 
-    if (_persistentMapped) {
-        vectorAlg::vecSize bufferCount = _bufferObjects.size();
-        for (vectorAlg::vecSize i = 0; i < bufferCount; ++i) {
-            size_t bufferSize = _elementCount[i] * _elementSize[i];
-            if (_bufferPersistent[i]) {
-                size_t offset = 0;
-                if (_bufferIsRing[i]) {
-                    offset += bufferSize * queueReadIndex();
-                }
-                _lockManagers[i].LockRange(offset, bufferSize, false);
-            }
+    vectorAlg::vecSize bufferCount = _bufferObjects.size();
+    for (vectorAlg::vecSize i = 0; i < bufferCount; ++i) {
+        size_t range = _elementCount[i] * _elementSize[i];
+        size_t offset = 0;
+        if (_bufferIsRing[i]) {
+            offset += range * queueReadIndex();
         }
+        _bufferObjects[i]->lockRange(static_cast<GLuint>(offset), static_cast<GLuint>(range));
     }
 }
 
@@ -297,12 +265,9 @@ void glGenericVertexData::setBuffer(U32 buffer,
                   "created buffer!");
     // Make sure we allow persistent mapping
     if (persistentMapped) {
-        persistentMapped = _persistentMapped;
+        persistentMapped = !Config::Profile::DISABLE_PERSISTENT_BUFFER;
     }
 
-    DIVIDE_ASSERT((persistentMapped && _persistentMapped) || !persistentMapped,
-                  "glGenericVertexData error: persistent map flag is not "
-                  "compatible with object details!");
     // Remember the element count and size for the current buffer
     _elementCount[buffer] = elementCount;
     _elementSize[buffer] = elementSize;
@@ -311,56 +276,32 @@ void glGenericVertexData::setBuffer(U32 buffer,
     size_t bufferSize = elementCount * elementSize;
     GLuint sizeFactor = useRingBuffer ? queueLength() : 1;
     size_t totalSize = bufferSize * sizeFactor;
-    GLuint currentBuffer = _bufferObjects[buffer]._id;
+
+    assert(_bufferObjects[buffer] == nullptr &&
+           "glGenericVertexData::setBuffer : buffer repurposing is not supported at the moment");
+
+    GLenum usage = isFeedbackBuffer(buffer) ? GL_TRANSFORM_FEEDBACK : GL_BUFFER;
     if (persistentMapped) {
-        // If we requested a persistently mapped buffer, we use glBufferStorage
-        // to pin it in memory
-        BufferStorageMask storageMask = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
-        BufferAccessMask accessMask =   GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
-
-        if (currentBuffer == 0) {
-            _bufferPersistentData[buffer] = 
-                GLUtil::createAndAllocPersistentBuffer(totalSize, storageMask, accessMask, currentBuffer);
-            _bufferObjects[buffer]._id = currentBuffer;
-        } else {
-            _bufferPersistentData[buffer] = 
-                GLUtil::allocPersistentBuffer(currentBuffer, totalSize, storageMask, accessMask);
-        }
-        DIVIDE_ASSERT(_bufferPersistentData[buffer] != nullptr,
-                      "glGenericVertexData error: persistent mapping failed "
-                      "when setting the current buffer!");
-
-        // Create sizeFactor copies of the data and store them in the buffer
-        if (data != nullptr) {
-            for (U8 i = 0; i < sizeFactor; ++i) {
-                bufferPtr dst = (U8*)_bufferPersistentData[buffer] + (bufferSize * i);
-                memcpy(dst, data, bufferSize);
-            }
-        }
-       
+        _bufferObjects[buffer] = MemoryManager_NEW glPersistentBuffer(usage);
     } else {
-        GLenum flag =
-            isFeedbackBuffer(buffer)
-                ? (dynamic ? (stream ? GL_STREAM_COPY : GL_DYNAMIC_COPY)
-                           : GL_STATIC_COPY)
-                : (dynamic ? (stream ? GL_STREAM_DRAW : GL_DYNAMIC_DRAW)
-                           : GL_STATIC_DRAW);
-        if (currentBuffer == 0) {
-            GLUtil::createAndAllocBuffer(totalSize, flag, currentBuffer);
-            _bufferObjects[buffer]._id = currentBuffer;
-        } else {
-            // If the buffer is not persistently mapped, allocate storage the classic way
-            glNamedBufferData(currentBuffer, totalSize, NULL, flag);
-        }
-        // And upload sizeFactor copies of the data
-        if (data != nullptr) {
-            for (U8 i = 0; i < sizeFactor; ++i) {
-                glNamedBufferSubData(currentBuffer, i * bufferSize, bufferSize, data);
-            }
+        _bufferObjects[buffer] = MemoryManager_NEW glRegularBuffer(usage);
+    }
+
+    glBufferImpl* bufferObj = _bufferObjects[buffer];
+
+    BufferUpdateFrequency frequency = dynamic ? stream ? BufferUpdateFrequency::OFTEN 
+                                                       : BufferUpdateFrequency::OCASSIONAL
+                                              : BufferUpdateFrequency::ONCE;
+    bufferObj->create(frequency, totalSize);
+
+    // Create sizeFactor copies of the data and store them in the buffer
+    if (data != nullptr) {
+        for (U8 i = 0; i < sizeFactor; ++i) {
+            bufferObj->updateData(i * bufferSize, bufferSize, data);
         }
     }
+
     _bufferSet[buffer] = true;
-    _bufferPersistent[buffer] = persistentMapped;
 }
 
 /// Update the elementCount worth of data contained in the buffer starting from
@@ -378,19 +319,7 @@ void glGenericVertexData::updateBuffer(U32 buffer,
         offset += _elementCount[buffer] * _elementSize[buffer] * queueWriteIndex();
     }
 
-    if (!_bufferPersistent[buffer]) {
-        // Update part of the data in the buffer at the specified buffer in the
-        // copy that's ready for writing
-        glNamedBufferSubData(_bufferObjects[buffer]._id, offset, dataCurrentSize, data);
-    } else {
-        // Wait for the target part of the buffer to become available for writing
-        _lockManagers[buffer].WaitForLockedRange(offset, dataCurrentSize, true);
-        // Offset the data pointer by the required offset taking in account the
-        // current data copy we are writing into
-        bufferPtr dst = (U8*)_bufferPersistentData[buffer] + offset;
-        // Update the data
-        memcpy(dst, data, dataCurrentSize);
-    }
+    _bufferObjects[buffer]->updateData(offset, dataCurrentSize, data);
 }
 
 /// Update the appropriate attributes (either for drawing or for transform
@@ -413,7 +342,7 @@ void glGenericVertexData::setAttributeInternal(AttributeDescriptor& descriptor) 
         offset += _elementCount[bufferIndex] * _elementSize[bufferIndex] * queueReadIndex();
     }
 
-    BufferBindConfig crtConfig = BufferBindConfig(_bufferObjects[bufferIndex]._id,
+    BufferBindConfig crtConfig = BufferBindConfig(_bufferObjects[bufferIndex]->bufferID(),
                                                   offset,
                                                   static_cast<GLsizei>(_elementSize[bufferIndex]));
 
@@ -480,5 +409,32 @@ U32 glGenericVertexData::getFeedbackPrimitiveCount(U8 queryID) {
     // Return either the previous value or the current one depending on the
     // previous check
     return _prevResult[queryID];
+}
+
+void glGenericVertexData::setFeedbackBuffer(U32 buffer, U32 bindPoint) {
+    if (!isFeedbackBuffer(buffer)) {
+        _feedbackBuffers.push_back(_bufferObjects[buffer]->bufferID());
+        _fdbkBindPoints.push_back(bindPoint);
+    }
+
+    GL_API::setActiveTransformFeedback(_transformFeedback);
+    glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, bindPoint, _bufferObjects[buffer]->bufferID());
+}
+
+bool glGenericVertexData::isFeedbackBuffer(U32 index) {
+    for (U32 handle : _feedbackBuffers)
+        if (handle == _bufferObjects[index]->bufferID()) {
+            return true;
+        }
+    return false;
+}
+
+U32 glGenericVertexData::getBindPoint(U32 bufferHandle) {
+    for (U8 i = 0; i < _feedbackBuffers.size(); ++i) {
+        if (_feedbackBuffers[i] == bufferHandle) {
+            return _fdbkBindPoints[i];
+        }
+    }
+    return _fdbkBindPoints[0];
 }
 };

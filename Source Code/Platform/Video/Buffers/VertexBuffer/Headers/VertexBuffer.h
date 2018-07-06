@@ -32,6 +32,8 @@
 #ifndef _VERTEX_BUFFER_OBJECT_H
 #define _VERTEX_BUFFER_OBJECT_H
 
+#include "config.h"
+
 #include "VertexDataInterface.h"
 #include "Platform/Headers/ByteBuffer.h"
 

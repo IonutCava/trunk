@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include "Headers/RenderPass.h"
 
 #include "Graphs/Headers/SceneGraph.h"

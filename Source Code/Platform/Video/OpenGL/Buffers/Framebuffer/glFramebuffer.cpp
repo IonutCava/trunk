@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include "Headers/glFramebuffer.h"
 
 #include "Platform/Video/OpenGL/Headers/GLWrapper.h"
@@ -510,7 +512,7 @@ void glFramebuffer::drawToLayer(TextureDescriptor::AttachmentType slot,
     checkStatus();
 }
 
-void glFramebuffer::setMipLevel(U16 mipLevel, U16 mipMaxLevel, U16 writeLevel, TextureDescriptor::AttachmentType slot) {
+void glFramebuffer::setMipLevel(U16 mipMinLevel, U16 mipMaxLevel, U16 writeLevel, TextureDescriptor::AttachmentType slot) {
     for (U8 i = 0; i < to_uint(AttachmentType::COUNT); ++i) {
         AttachmentType tempSlot = static_cast<AttachmentType>(i);
         if (tempSlot != slot) {
@@ -519,11 +521,14 @@ void glFramebuffer::setMipLevel(U16 mipLevel, U16 mipMaxLevel, U16 writeLevel, T
         }
     }
 
+    Texture* attachment = _attachmentTexture[to_uint(slot)].get();
+    attachment->setMipMapRange(mipMinLevel, mipMaxLevel);
+
     glFramebufferTexture(GL_FRAMEBUFFER,
                             slot == TextureDescriptor::AttachmentType::Depth
                             ? GL_DEPTH_ATTACHMENT
                             : _colorBuffers[to_uint(slot)],
-                         _attachmentTexture[to_uint(slot)]->getHandle(),
+                         attachment->getHandle(),
                          writeLevel);
     checkStatus();
 }

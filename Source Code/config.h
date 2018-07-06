@@ -127,7 +127,7 @@ const bool USE_SHADER_TEXT_CACHE = true;
 /// If true, Hi-Z based occlusion culling is used
 const bool USE_HIZ_CULLING = true;
 /// If true, Hi-Z culling is disabled and potentially culled nodes are drawn in bright red and double in size
-const bool DEBUG_HIZ_CULLING = true;
+const bool DEBUG_HIZ_CULLING = false;
 /// If true, the depth pass acts as a zPrePass for the main draw pass as well
 /// If false, the main draw pass will clear the depth buffer and populate a new one instead
 const bool USE_Z_PRE_PASS = true;
@@ -151,8 +151,8 @@ const bool BENCHMARK_PERFORMANCE = true;
 #else
 const bool BENCHMARK_PERFORMANCE = false;
 #endif
-/// Benchmark reset frequency in seconds
-const unsigned int BENCHMARK_FREQUENCY = 10;
+/// Benchmark reset frequency in milliseconds
+const unsigned int BENCHMARK_FREQUENCY = 500;
 /// use only a basic shader
 const bool DISABLE_SHADING = false;
 /// skip all draw calls

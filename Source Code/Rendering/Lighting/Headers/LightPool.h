@@ -32,6 +32,8 @@
 #ifndef _LIGHT_POOL_H_
 #define _LIGHT_POOL_H_
 
+#include "config.h"
+
 #include "Rendering/Lighting/Headers/Light.h"
 
 namespace Divide {

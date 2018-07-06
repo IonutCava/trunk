@@ -1,7 +1,6 @@
 #include "Headers/Console.h"
 
 #include "Core/Time/Headers/ApplicationTimer.h"
-#include "config.h"
 #include <iomanip>
 #include <stdarg.h>
 #include <thread>

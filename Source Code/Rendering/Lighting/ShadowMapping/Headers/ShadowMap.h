@@ -32,6 +32,8 @@
 #ifndef _SHADOW_MAP_H_
 #define _SHADOW_MAP_H_
 
+#include "config.h"
+
 #include "Core/Math/Headers/MathMatrices.h"
 #include "Platform/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
 

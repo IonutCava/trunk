@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include "Headers/PlatformDefines.h"
 
 #include "GUI/Headers/GUI.h"

@@ -75,7 +75,7 @@ namespace GLUtil {
     struct AllocationHandle {
         explicit AllocationHandle()
             : _id(0),
-            _offset(0)
+              _offset(0)
         {
         }
 

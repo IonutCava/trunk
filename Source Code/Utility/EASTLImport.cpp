@@ -6,9 +6,8 @@
 #include <EASTL/src/fixed_pool.cpp>
 #include <EASTL/src/hashtable.cpp>
 #include <EASTL/src/red_black_tree.cpp>
-#else
-#include <assert.h>
 #endif
+#include <assert.h>
 
 void* operator new[](size_t size, size_t alignment, size_t alignmentOffset,
                      const char* pName, int flags, unsigned int debugFlags,

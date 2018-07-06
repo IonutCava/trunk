@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include "Headers/RenderingComponent.h"
 
 #include "Core/Headers/ParamHandler.h"
@@ -38,6 +40,7 @@ RenderingComponent::RenderingComponent(Material_ptr materialInstance,
     bool nodeSkinned = parentSGN.getNode<Object3D>()->getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED);
 
     if (_materialInstance) {
+        assert(!_materialInstance->getName().empty());
         if (!isSubMesh) {
             _materialInstance->addShaderModifier(RenderStage::SHADOW, "TriangleStrip");
             _materialInstance->setShaderDefines(RenderStage::SHADOW, "USE_TRIANGLE_STRIP");

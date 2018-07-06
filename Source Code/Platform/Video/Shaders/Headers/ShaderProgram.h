@@ -32,6 +32,8 @@
 #ifndef _HANDLER_H_
 #define _HANDLER_H_
 
+#include "config.h"
+
 #include "Core/Resources/Headers/Resource.h"
 #include "Platform/Video/Shaders/Headers/Shader.h"
 

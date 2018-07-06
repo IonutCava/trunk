@@ -44,10 +44,10 @@ Vegetation::Vegetation(const VegetationDetails& details)
 
     _map = details.map;
     _grassShaderName = details.grassShaderName;
-    _grassGPUBuffer[0] = GFX_DEVICE.newGVD(false, 3);
-    _grassGPUBuffer[1] = GFX_DEVICE.newGVD(false, 3);
-    _treeGPUBuffer[0] = GFX_DEVICE.newGVD(false, 1);
-    _treeGPUBuffer[1] = GFX_DEVICE.newGVD(false, 1);
+    _grassGPUBuffer[0] = GFX_DEVICE.newGVD(3);
+    _grassGPUBuffer[1] = GFX_DEVICE.newGVD(3);
+    _treeGPUBuffer[0] = GFX_DEVICE.newGVD(1);
+    _treeGPUBuffer[1] = GFX_DEVICE.newGVD(1);
 
     _cullDrawCommand = GenericDrawCommand(PrimitiveType::API_POINTS, 0, 1);
 

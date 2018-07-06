@@ -17,11 +17,19 @@ void main(void)
 --Fragment
 
 layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D LastMip;
-uniform ivec2 LastMipSize;
 
 void main(void)
 {
-    vec4 texels = textureGather(LastMip, VAR._texCoord, 0);
+    ivec2 LastMipSize = ivec2(dvd_ViewPort.z, dvd_ViewPort.w);
+
+    // texture should not be linear, so this wouldn't work
+    //vec4 texels = textureGather(LastMip, VAR._texCoord, 0);
+    vec4 texels;
+    texels.x = texture(LastMip, VAR._texCoord).x;
+    texels.y = textureOffset(LastMip, VAR._texCoord, ivec2(-1,  0)).x;
+    texels.z = textureOffset(LastMip, VAR._texCoord, ivec2(-1, -1)).x;
+    texels.w = textureOffset(LastMip, VAR._texCoord, ivec2( 0, -1)).x;
+
     float maxZ = max(max(texels.x, texels.y), max(texels.z, texels.w));
 
     vec3 extra;
@@ -32,12 +40,12 @@ void main(void)
             extra.z = textureOffset(LastMip, VAR._texCoord, ivec2(1, 1)).x;
             maxZ = max(maxZ, extra.z);
         }
-        extra.x = textureOffset(LastMip, VAR._texCoord, ivec2(1, 0)).x;
+        extra.x = textureOffset(LastMip, VAR._texCoord, ivec2(1,  0)).x;
         extra.y = textureOffset(LastMip, VAR._texCoord, ivec2(1, -1)).x;
         maxZ = max(maxZ, max(extra.x, extra.y));
     // if we are reducing an odd-height texture then the edge fragments have to fetch additional texels
     } else if (((LastMipSize.y & 1) != 0) && (int(gl_FragCoord.y) == LastMipSize.y - 3)) {
-        extra.x = textureOffset(LastMip, VAR._texCoord, ivec2(0, 1)).x;
+        extra.x = textureOffset(LastMip, VAR._texCoord, ivec2( 0, 1)).x;
         extra.y = textureOffset(LastMip, VAR._texCoord, ivec2(-1, 1)).x;
         maxZ = max(maxZ, max(extra.x, extra.y));
     }

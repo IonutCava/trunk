@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include "Headers/ForwardPlusRenderer.h"
 
 #include "Core/Headers/Console.h"

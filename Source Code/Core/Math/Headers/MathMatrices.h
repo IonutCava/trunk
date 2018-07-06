@@ -108,7 +108,6 @@ smasherprog@gmail.com or visit www.nolimitsdesigns.com
 #ifndef _MATH_MATRICES_H_
 #define _MATH_MATRICES_H_
 
-#include "config.h"
 #include "Plane.h"
 
 namespace Divide {

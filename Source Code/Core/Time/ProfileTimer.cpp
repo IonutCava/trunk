@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include "Headers/ProfileTimer.h"
 #include "Headers/ApplicationTimer.h"
 #include "Core/Headers/Console.h"

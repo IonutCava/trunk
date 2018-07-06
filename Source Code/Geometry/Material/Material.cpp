@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include "Headers/Material.h"
 
 #include "Rendering/Headers/Renderer.h"

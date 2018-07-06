@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include "Headers/ShaderBuffer.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 
@@ -19,8 +21,7 @@ namespace Divide {
                                                         _alignmentRequirement(0),
                                                         _frequency(frequency),
                                                         _unbound(unbound),
-                                                        _persistentMapped(persistentMapped && false &&
-                                                            !Config::Profile::DISABLE_PERSISTENT_BUFFER)
+                                                        _persistentMapped(persistentMapped && !Config::Profile::DISABLE_PERSISTENT_BUFFER)
 #  if defined(ENABLE_GPU_VALIDATION)
                                                         ,_bufferName(bufferName)
 #   endif

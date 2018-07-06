@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include "Headers/GFXDevice.h"
 
 #include "GUI/Headers/GUI.h"

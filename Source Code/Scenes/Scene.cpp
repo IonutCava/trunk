@@ -378,11 +378,11 @@ U16 Scene::registerInputActions() {
     auto rollCCW = [this](InputParams param) {state().roll(SceneState::MoveDirection::POSITIVE);};
     auto rollCW = [this](InputParams param) {state().roll(SceneState::MoveDirection::NEGATIVE);};
     auto stopRollCCWCW = [this](InputParams param) {state().roll(SceneState::MoveDirection::NONE);};
-    auto turnLeft = [this](InputParams param) { state().angleLR(SceneState::MoveDirection::POSITIVE);};
-    auto turnRight = [this](InputParams param) { state().angleLR(SceneState::MoveDirection::NEGATIVE);};
+    auto turnLeft = [this](InputParams param) { state().angleLR(SceneState::MoveDirection::NEGATIVE);};
+    auto turnRight = [this](InputParams param) { state().angleLR(SceneState::MoveDirection::POSITIVE);};
     auto stopTurnLeftRight = [this](InputParams param) { state().angleLR(SceneState::MoveDirection::NONE);};
-    auto turnUp = [this](InputParams param) {state().angleUD(SceneState::MoveDirection::POSITIVE);};
-    auto turnDown = [this](InputParams param) {state().angleUD(SceneState::MoveDirection::NEGATIVE);};
+    auto turnUp = [this](InputParams param) {state().angleUD(SceneState::MoveDirection::NEGATIVE);};
+    auto turnDown = [this](InputParams param) {state().angleUD(SceneState::MoveDirection::POSITIVE);};
     auto stopTurnUpDown = [this](InputParams param) {state().angleUD(SceneState::MoveDirection::NONE);};
     auto togglePauseState = [](InputParams param){
         ParamHandler& par = ParamHandler::instance();
@@ -580,8 +580,7 @@ bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
     _terrainInfoArray.clear();
 
     // Camera position is overridden in the scene's XML configuration file
-    if (ParamHandler::instance().getParam<bool>(
-        _ID("options.cameraStartPositionOverride"))) {
+    if (ParamHandler::instance().getParam<bool>(_ID("options.cameraStartPositionOverride"))) {
         renderState().getCamera().setEye(vec3<F32>(
             _paramHandler.getParam<F32>(_ID("options.cameraStartPosition.x")),
             _paramHandler.getParam<F32>(_ID("options.cameraStartPosition.y")),

@@ -718,7 +718,7 @@ void GL_API::drawTriangle() {
 }
 
 void GL_API::registerCommandBuffer(const ShaderBuffer& commandBuffer) const {
-    _indirectDrawBuffer = static_cast<const glUniformBuffer&>(commandBuffer).getBufferID();
+    _indirectDrawBuffer = static_cast<const glUniformBuffer&>(commandBuffer).bufferID();
     GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, _indirectDrawBuffer);
 }
 
@@ -805,11 +805,10 @@ PixelBuffer* GL_API::newPB(GFXDevice& context, const PBType& type) const {
     return MemoryManager_NEW glPixelBuffer(context, type);
 }
 
-/// Create and return a new generic vertex data object and, optionally set it as
-/// persistently mapped.
+/// Create and return a new generic vertex data object
 /// The callee is responsible for it's deletion!
-GenericVertexData* GL_API::newGVD(GFXDevice& context, const bool persistentMapped, const U32 ringBufferLength) const {
-    return MemoryManager_NEW glGenericVertexData(context, persistentMapped, ringBufferLength);
+GenericVertexData* GL_API::newGVD(GFXDevice& context, const U32 ringBufferLength) const {
+    return MemoryManager_NEW glGenericVertexData(context, ringBufferLength);
 }
 
 /// Create and return a new shader buffer. The callee is responsible for it's

@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include "Headers/Kernel.h"
 
 #include "GUI/Headers/GUI.h"
@@ -178,8 +180,7 @@ void Kernel::onLoop() {
         }
     }
 
-if (Config::Profile::BENCHMARK_PERFORMANCE ||
-    Config::Profile::ENABLE_FUNCTION_PROFILING)
+if (Config::Profile::BENCHMARK_PERFORMANCE || Config::Profile::ENABLE_FUNCTION_PROFILING)
 {
     U32 frameCount = _GFX.getFrameCount();
     // Should be approximatelly 2 times a seconds

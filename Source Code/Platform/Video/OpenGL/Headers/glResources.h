@@ -32,8 +32,6 @@
 #ifndef _GL_RESOURCES_H_
 #define _GL_RESOURCES_H_
 
-#include "config.h"
-
 #include "Platform/Headers/PlatformDefines.h"
 #ifndef GLBINDING_STATIC
 #define GLBINDING_STATIC

@@ -32,6 +32,8 @@
 #ifndef _RENDER_API_H_
 #define _RENDER_API_H_
 
+#include "config.h"
+
 #include "Core/Math/Headers/MathMatrices.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
 
@@ -471,7 +473,6 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
                                 BufferUpdateFrequency frequency =
                                     BufferUpdateFrequency::ONCE) const = 0;
     virtual GenericVertexData* newGVD(GFXDevice& context, 
-                                      const bool persistentMapped = false,
                                       const U32 ringBufferLength = 1) const = 0;
     virtual PixelBuffer* newPB(GFXDevice& context,
                                const PBType& type = PBType::PB_TEXTURE_2D) const = 0;

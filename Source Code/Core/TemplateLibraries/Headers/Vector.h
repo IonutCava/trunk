@@ -31,7 +31,7 @@
 
 #ifndef _VECTOR_H_
 #define _VECTOR_H_
-#include "config.h"
+
 /// boost vectors have a completely different interface,
 /// so we can't actually use them
 #if defined(VECTOR_IMP) && VECTOR_IMP == BOOST_IMP

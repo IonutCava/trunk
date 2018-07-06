@@ -3,6 +3,7 @@
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/OpenGL/Headers/glResources.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
+#include "Platform/Video/OpenGL/Buffers/Headers/glBufferImpl.h"
 #include "Platform/Video/OpenGL/Buffers/Headers/glBufferLockManager.h"
 #include "Core/Headers/ParamHandler.h"
 
@@ -11,28 +12,6 @@
 
 namespace Divide {
 
-namespace {
-
-    typedef std::array<vec3<U32>, to_const_uint(ShaderBufferLocation::COUNT)> BindConfig;
-    BindConfig g_currentBindConfig;
-
-    bool setIfDifferentBindRange(U32 UBOid,
-                                 U32 bindIndex,
-                                 U32 offsetElementCount,
-                                 U32 rangeElementCount) {
-
-        vec3<U32>& crtConfig = g_currentBindConfig[bindIndex];
-
-        if (crtConfig.x != UBOid ||
-            crtConfig.y != offsetElementCount ||
-            crtConfig.z != rangeElementCount) {
-            crtConfig.set(UBOid, offsetElementCount, rangeElementCount);
-            return true;
-        }
-
-        return false;
-    }
-};
 IMPLEMENT_ALLOCATOR(glUniformBuffer, 0, 0)
 glUniformBuffer::glUniformBuffer(GFXDevice& context,
                                  const stringImpl& bufferName,
@@ -41,19 +20,19 @@ glUniformBuffer::glUniformBuffer(GFXDevice& context,
                                  bool persistentMapped,
                                  BufferUpdateFrequency frequency)
     : ShaderBuffer(context, bufferName, ringBufferLength, unbound, persistentMapped, frequency),
-      _UBOid(0),
       _mappedBuffer(nullptr),
       _alignment(0),
       _allignedBufferSize(0),
-      _target(_unbound ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER),
-      _lockManager(_persistentMapped
-                       ? std::make_unique<glBufferLockManager>()
-                       : nullptr)
-
+      _target(_unbound ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER)
 {
     _updated = false;
     _alignmentRequirement = _unbound ? ParamHandler::instance().getParam<I32>(_ID("rendering.SSBOAligment"), 32)
                                      : ParamHandler::instance().getParam<I32>(_ID("rendering.UBOAligment"), 32);
+    if (persistentMapped) {
+        _buffer = std::make_unique<glPersistentBuffer>(_target);
+    } else {
+        _buffer = std::make_unique<glRegularBuffer>(_target);
+    }
 }
 
 glUniformBuffer::~glUniformBuffer() 
@@ -61,52 +40,22 @@ glUniformBuffer::~glUniformBuffer()
     destroy();
 }
 
-void glUniformBuffer::destroy() {
-    if (_UBOid > 0) {
-        if (_persistentMapped) {
-            _lockManager->WaitForLockedRange(0, _allignedBufferSize, false);
-        } else {
-            glInvalidateBufferData(_UBOid);
-        }
-        GLUtil::freeBuffer(_UBOid, _mappedBuffer);
+GLuint glUniformBuffer::bufferID() const {
+    return _buffer->bufferID();
+}
 
-        for (AtomicCounter& counter : _atomicCounters) {
-            glDeleteBuffers(1, &counter._handle);
-        }
-        _atomicCounters.clear();
+void glUniformBuffer::destroy() {
+    _buffer->destroy();
+    for (AtomicCounter& counter : _atomicCounters) {
+        glDeleteBuffers(1, &counter._handle);
     }
+    _atomicCounters.clear();
 }
 
 void glUniformBuffer::create(U32 primitiveCount, ptrdiff_t primitiveSize, U32 sizeFactor) {
-    DIVIDE_ASSERT(
-        _UBOid == 0,
-        "glUniformBuffer::Create error: Tried to double create current UBO");
-
     ShaderBuffer::create(primitiveCount, primitiveSize, sizeFactor);
-
     _allignedBufferSize = realign_offset(_bufferSize, _alignmentRequirement);
-
-    if (_persistentMapped) {
-        _mappedBuffer = 
-            GLUtil::createAndAllocPersistentBuffer(_allignedBufferSize * sizeFactor * queueLength(),
-                                                   GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT,
-                                                   GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT,
-                                                   _UBOid);
-
-        DIVIDE_ASSERT(_mappedBuffer != nullptr,
-                        "glUniformBuffer::Create error: "
-                        "Can't mapped persistent buffer!");
-        
-    } else {
-        GLenum _usage = _frequency == BufferUpdateFrequency::ONCE 
-                                    ? GL_STATIC_DRAW
-                                    : _frequency == BufferUpdateFrequency::OCASSIONAL
-                                                  ? GL_DYNAMIC_DRAW
-                                                  : GL_STREAM_DRAW;
-        GLUtil::createAndAllocBuffer(_allignedBufferSize * sizeFactor * queueLength(),
-                                     _usage,
-                                     _UBOid);
-    }
+    _buffer->create(_frequency, _allignedBufferSize * sizeFactor * queueLength());
 }
 
 void glUniformBuffer::getData(GLintptr offsetElementCount,
@@ -116,13 +65,13 @@ void glUniformBuffer::getData(GLintptr offsetElementCount,
         GLintptr range = rangeElementCount * _primitiveSize;
         GLintptr offset = offsetElementCount * _primitiveSize;
 
-        DIVIDE_ASSERT(offset + range <= (GLsizeiptr)_bufferSize,
+        DIVIDE_ASSERT(offset + range <= (GLsizeiptr)_allignedBufferSize,
             "glUniformBuffer::UpdateData error: was called with an "
             "invalid range (buffer overflow)!");
 
         offset += queueWriteIndex() * _allignedBufferSize;
 
-        glGetNamedBufferSubData(_UBOid, offset, range, result);
+        glGetNamedBufferSubData(bufferID(), offset, range, result);
     }
 }
 
@@ -134,55 +83,28 @@ void glUniformBuffer::updateData(GLintptr offsetElementCount,
         return;
     }
 
-    DIVIDE_ASSERT(_persistentMapped == (_mappedBuffer != nullptr),
-                  "glUniformBuffer::UpdateData error: was called for an "
-                  "unmapped buffer!");
-
     GLintptr range = rangeElementCount * _primitiveSize;
     GLintptr offset = offsetElementCount * _primitiveSize;
 
-    DIVIDE_ASSERT(offset + range <= (GLsizeiptr)_bufferSize,
+    DIVIDE_ASSERT(offset + range <= (GLsizeiptr)_allignedBufferSize,
         "glUniformBuffer::UpdateData error: was called with an "
         "invalid range (buffer overflow)!");
 
     offset += queueWriteIndex() * _allignedBufferSize;
 
-    if (_persistentMapped) {
-        _lockManager->WaitForLockedRange(offset, range, true);
-        memcpy((U8*)(_mappedBuffer) + offset, data, range);
-    } else {
-        //glInvalidateBufferSubData(_UBOid, offset, range);
-        glNamedBufferSubData(_UBOid, offset, range, data);
-    }
+    _buffer->updateData(offset, range, data);
 }
 
 bool glUniformBuffer::bindRange(U32 bindIndex, U32 offsetElementCount, U32 rangeElementCount) {
-    DIVIDE_ASSERT(_UBOid != 0,
-                  "glUniformBuffer error: Tried to bind an uninitialized UBO");
-
     if (rangeElementCount == 0)  {
         return false;
     }
 
-    size_t range = rangeElementCount * _primitiveSize;
-    size_t offset = offsetElementCount * _primitiveSize;
-    offset += queueReadIndex() * _allignedBufferSize;
+    GLuint range = static_cast<GLuint>(rangeElementCount * _primitiveSize);
+    GLuint offset = static_cast<GLuint>(offsetElementCount * _primitiveSize);
+    offset += static_cast<GLuint>(queueReadIndex() * _allignedBufferSize);
 
-    bool success = false;
-    if (setIfDifferentBindRange(_UBOid, 
-                                bindIndex,
-                                offsetElementCount,
-                                rangeElementCount))
-    {
-        glBindBufferRange(_target, bindIndex, _UBOid, offset, range);
-        success = true;
-    }
-
-    if (_persistentMapped) {
-        _lockManager->LockRange(offset, range, false);
-    }
-
-    return success;
+    return _buffer->bindRange(bindIndex, offset, range);
 }
 
 bool glUniformBuffer::bind(U32 bindIndex) {
@@ -235,10 +157,6 @@ void glUniformBuffer::printInfo(const ShaderProgram* shaderProgram,
 
     if (prog <= 0 || block_index < 0 || _unbound) {
         return;
-    }
-
-    if (_persistentMapped) {
-        _lockManager->WaitForLockedRange(0, _bufferSize, false);
     }
 
     // Fetch uniform block name:

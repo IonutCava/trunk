@@ -32,6 +32,8 @@
 #ifndef DIVIDE_LIGHT_H_
 #define DIVIDE_LIGHT_H_
 
+#include "config.h"
+
 #include "Graphs/Headers/SceneNode.h"
 #include "Rendering/Lighting/ShadowMapping/Headers/ShadowMap.h"
 

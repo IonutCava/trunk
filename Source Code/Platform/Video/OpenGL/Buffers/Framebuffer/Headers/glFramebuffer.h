@@ -53,7 +53,7 @@ class glFramebuffer : public Framebuffer {
 
     void drawToLayer(TextureDescriptor::AttachmentType slot, U32 layer,
                      bool includeDepth = true);
-    void setMipLevel(U16 mipLevel, U16 mipMaxLevel, U16 writeLevel,
+    void setMipLevel(U16 mipMinLevel, U16 mipMaxLevel, U16 writeLevel,
                      TextureDescriptor::AttachmentType slot);
     void resetMipLevel(TextureDescriptor::AttachmentType slot);
     void addDepthBuffer();

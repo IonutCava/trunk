@@ -32,6 +32,8 @@
 #ifndef _GL_WRAPPER_H_
 #define _GL_WRAPPER_H_
 
+#include "config.h"
+
 #include "glResources.h"
 #include "Platform/Video/Headers/IMPrimitive.h"
 #include "Platform/Video/OpenGL/Shaders/Headers/glShaderProgram.h"
@@ -131,10 +133,9 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// Create and return a new pixel buffer using the requested format. The callee
     /// is responsible for it's deletion!
     PixelBuffer* newPB(GFXDevice& context, const PBType& type) const override;
-    /// Create and return a new generic vertex data object and, optionally set it as
-    /// persistently mapped.
+    /// Create and return a new generic vertex data object
     /// The callee is responsible for it's deletion!
-    GenericVertexData* newGVD(GFXDevice& context, const bool persistentMapped, const U32 ringBufferLength = 1) const override;
+    GenericVertexData* newGVD(GFXDevice& context, const U32 ringBufferLength = 1) const override;
     /// Create and return a new shader buffer. The callee is responsible for it's
     /// deletion!
     /// The OpenGL implementation creates either an 'Uniform Buffer Object' if

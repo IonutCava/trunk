@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include "Headers/GFXDevice.h"
 
 #include "Core/Headers/Kernel.h"
@@ -311,6 +313,14 @@ void GFXDevice::closeRenderingAPI() {
     for (RenderTarget& renderTarget : _refractionTarget) {
         MemoryManager::DELETE(renderTarget._buffer);
     }
+    _previewDepthMapShader.reset();
+    _framebufferDraw.reset();
+    _HIZConstructProgram.reset();
+    _HIZCullProgram.reset();
+    _displayShader.reset();
+    _imShader.reset();
+    _imShaderLines.reset();
+
     // Close the shader manager
     ShaderProgram::destroyStaticData();
     // Close the rendering API

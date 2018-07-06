@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include "Headers/glShaderProgram.h"
 
 #include "Platform/Video/OpenGL/glsw/Headers/glsw.h"

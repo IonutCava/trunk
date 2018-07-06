@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include "Headers/SceneAnimator.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Headers/AnimationUtils.h"

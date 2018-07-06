@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include "Headers/ParticleEmitter.h"
 
 #include "Core/Headers/TaskPool.h"
@@ -49,8 +51,7 @@ bool ParticleEmitter::initData(std::shared_ptr<ParticleData> particleData) {
     DIVIDE_ASSERT(_particleGPUBuffer == nullptr,
                   "ParticleEmitter::initData error: Double initData detected!");
 
-    _particleGPUBuffer = GFX_DEVICE.newGVD(g_usePersistentlyMappedBuffers,
-                                           g_particleBufferSizeFactor);
+    _particleGPUBuffer = GFX_DEVICE.newGVD(g_particleBufferSizeFactor);
     _particleGPUBuffer->create(3);
 
     static F32 particleQuad[] = {

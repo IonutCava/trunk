@@ -32,6 +32,8 @@
 #ifndef _HARDWARE_VIDEO_GFX_DEVICE_H_
 #define _HARDWARE_VIDEO_GFX_DEVICE_H_
 
+#include "config.h"
+
 #include "GFXState.h"
 #include "ScopedStates.h"
 
@@ -446,8 +448,8 @@ DEFINE_SINGLETON(GFXDevice)
         return _api->newPB(*this, type);
     }
 
-    inline GenericVertexData* newGVD(const bool persistentMapped, const U32 ringBufferLength) {
-        return _api->newGVD(*this, persistentMapped, ringBufferLength);
+    inline GenericVertexData* newGVD(const U32 ringBufferLength) {
+        return _api->newGVD(*this, ringBufferLength);
     }
 
     inline Texture* newTexture(const stringImpl& name, const stringImpl& resourceLocation, TextureType type, bool asyncLoad) {

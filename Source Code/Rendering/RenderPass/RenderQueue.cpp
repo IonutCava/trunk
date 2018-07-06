@@ -155,10 +155,12 @@ void RenderQueue::sort(RenderStage renderStage) {
 
     TaskHandle sortTask = CreateTask(DELEGATE_CBK_PARAM<bool>());
     for (RenderBin* renderBin : _activeBins) {
-        sortTask.addChildTask(CreateTask(DELEGATE_BIND(&RenderBin::sort,
-                                                    renderBin,
-                                                    std::placeholders::_1,
-                                                    renderStage))._task)->startTask(Task::TaskPriority::HIGH);
+        if (!renderBin->empty()) {
+            sortTask.addChildTask(CreateTask(DELEGATE_BIND(&RenderBin::sort,
+                                                        renderBin,
+                                                        std::placeholders::_1,
+                                                        renderStage))._task)->startTask(Task::TaskPriority::HIGH);
+        }
     }
     sortTask.startTask(Task::TaskPriority::MAX);
     sortTask.wait();

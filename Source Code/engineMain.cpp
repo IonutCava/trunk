@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include "engineMain.h"
 
 #include "Core/Headers/Console.h"

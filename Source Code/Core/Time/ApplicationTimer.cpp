@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include "Headers/ApplicationTimer.h"
 #include "Headers/ProfileTimer.h"
 
@@ -37,8 +39,7 @@ void ApplicationTimer::update() {
     
     if (Config::Profile::BENCHMARK_PERFORMANCE) {
 
-        if (elapsedTime - _lastBenchmarkTimeStamp >
-            Time::SecondsToMicroseconds(Config::Profile::BENCHMARK_FREQUENCY))
+        if (elapsedTime - _lastBenchmarkTimeStamp > Time::MillisecondsToMicroseconds(Config::Profile::BENCHMARK_FREQUENCY))
         {
             _lastBenchmarkTimeStamp = elapsedTime;
             _lastBenchmarkReport = 

@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include "Headers/GLWrapper.h"
 
 #include "Core/Headers/ParamHandler.h"

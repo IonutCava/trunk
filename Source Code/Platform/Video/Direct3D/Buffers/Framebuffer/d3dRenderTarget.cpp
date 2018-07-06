@@ -27,7 +27,7 @@ void d3dRenderTarget::drawToLayer(TextureDescriptor::AttachmentType slot,
                                   U32 layer,
                                   bool includeDepth) {}
 
-void d3dRenderTarget::setMipLevel(U16 mipLevel, U16 mipMaxLevel, U16 writeLevel,
+void d3dRenderTarget::setMipLevel(U16 mipMinLevel, U16 mipMaxLevel, U16 writeLevel,
                                   TextureDescriptor::AttachmentType slot) {}
 
 void d3dRenderTarget::resetMipLevel(TextureDescriptor::AttachmentType slot) {}

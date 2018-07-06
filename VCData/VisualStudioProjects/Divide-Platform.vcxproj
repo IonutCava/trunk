@@ -93,6 +93,7 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\RenderStateBlock.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\ScopedStates.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\Framebuffer\Headers\glFramebuffer.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\Headers\glBufferImpl.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\Headers\glBufferLockManager.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\Headers\glMemoryManager.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\PixelBuffer\Headers\glPixelBuffer.h" />
@@ -165,6 +166,7 @@
     <ClCompile Include="..\..\Source Code\Platform\Video\GFXState.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\IMPrimitive.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\Framebuffer\glFramebuffer.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\glBufferImpl.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\glBufferLockManager.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\glMemoryManager.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\PixelBuffer\glPixelBuffer.cpp" />

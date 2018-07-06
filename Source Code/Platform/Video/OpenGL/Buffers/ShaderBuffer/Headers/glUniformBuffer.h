@@ -39,6 +39,7 @@
 namespace Divide {
 
 /// Base class for shader uniform blocks
+class glBufferImpl;
 class glBufferLockManager;
 class glUniformBuffer final : public ShaderBuffer {
     DECLARE_ALLOCATOR
@@ -69,7 +70,7 @@ class glUniformBuffer final : public ShaderBuffer {
 
     bool bind(U32 bindIndex) override;
 
-    GLuint getBufferID() const { return _UBOid; }
+    GLuint bufferID() const;
 
     void addAtomicCounter(U32 sizeFactor = 1) override;
 
@@ -91,13 +92,12 @@ class glUniformBuffer final : public ShaderBuffer {
         GLuint _readHead;
     };
 
-    GLuint _UBOid;
+    std::unique_ptr<glBufferImpl> _buffer;
     size_t     _allignedBufferSize;
     GLsizeiptr _alignment;
     bufferPtr _mappedBuffer;
     bool _updated;
     const GLenum _target;
-    const std::unique_ptr<glBufferLockManager> _lockManager;
     vectorImpl<AtomicCounter> _atomicCounters;
 };
 

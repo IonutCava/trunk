@@ -41,6 +41,7 @@
 
 namespace Divide {
 
+class glBufferImpl;
 class glGenericVertexData : public GenericVertexData {
     DECLARE_ALLOCATOR
     enum class GVDUsage : U32 {
@@ -80,7 +81,7 @@ class glGenericVertexData : public GenericVertexData {
     };
 
    public:
-    glGenericVertexData(GFXDevice& context, bool persistentMapped, const U32 ringBufferLength);
+    glGenericVertexData(GFXDevice& context, const U32 ringBufferLength);
     ~glGenericVertexData();
 
     void create(U8 numBuffers = 1, U8 numQueries = 1);
@@ -97,15 +98,7 @@ class glGenericVertexData : public GenericVertexData {
 
     void bindFeedbackBufferRange(U32 buffer, U32 elementCountOffset, size_t elementCount);
 
-    inline void setFeedbackBuffer(U32 buffer, U32 bindPoint) {
-        if (!isFeedbackBuffer(buffer)) {
-            _feedbackBuffers.push_back(_bufferObjects[buffer]._id);
-            _fdbkBindPoints.push_back(bindPoint);
-        }
-
-        GL_API::setActiveTransformFeedback(_transformFeedback);
-        glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, bindPoint, _bufferObjects[buffer]._id);
-    }
+    void setFeedbackBuffer(U32 buffer, U32 bindPoint);
 
    protected:
     friend class GFXDevice;
@@ -116,20 +109,8 @@ class glGenericVertexData : public GenericVertexData {
     void setAttributes(bool feedbackPass);
     void setAttributeInternal(AttributeDescriptor& descriptor);
 
-    inline bool isFeedbackBuffer(U32 index) {
-        for (U32 handle : _feedbackBuffers)
-            if (handle == _bufferObjects[index]._id) {
-                return true;
-            }
-        return false;
-    }
-
-    inline U32 getBindPoint(U32 bufferHandle) {
-        for (U8 i = 0; i < _feedbackBuffers.size(); ++i) {
-            if (_feedbackBuffers[i] == bufferHandle) return _fdbkBindPoints[i];
-        }
-        return _fdbkBindPoints[0];
-    }
+    bool isFeedbackBuffer(U32 index);
+    U32 getBindPoint(U32 bufferHandle);
 
     void incQueryQueue() override;
 
@@ -142,20 +123,17 @@ class glGenericVertexData : public GenericVertexData {
     GLuint _transformFeedback;
     GLuint _numQueries;
     bool* _bufferSet;
-    bool* _bufferPersistent;
     bool* _bufferIsRing;
     GLuint* _elementCount;
     size_t* _elementSize;
-    bufferPtr* _bufferPersistentData;
     GLuint* _prevResult;
     std::array<GLuint*, 2> _feedbackQueries;
     std::array<bool*, 2> _resultAvailable;
     GLuint _currentWriteQuery;
     GLuint _currentReadQuery;
     vectorImpl<U32> _fdbkBindPoints;
-    vectorImpl<GLUtil::AllocationHandle> _bufferObjects;
+    vectorImpl<glBufferImpl*> _bufferObjects;
     std::array<GLuint, to_const_uint(GVDUsage::COUNT)> _vertexArray;
-    vectorImpl<glBufferLockManager > _lockManagers;
 
     static hashMapImpl<GLuint, BufferBindConfig> _bindConfigs;
 };

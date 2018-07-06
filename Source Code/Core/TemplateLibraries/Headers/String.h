@@ -32,8 +32,6 @@
 #ifndef _STRING_H_
 #define _STRING_H_
 
-#include "config.h"
-
 /// Only STL string is used as Boost and EASTL do not offer valid/useful alternatives
 /// All string implementations must be API/ABI compatible with std::string (use wrapper classes if needed)
 #include "STLString.h"

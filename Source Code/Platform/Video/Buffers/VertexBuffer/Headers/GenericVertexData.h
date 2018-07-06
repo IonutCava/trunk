@@ -32,6 +32,8 @@
 #ifndef _GENERIC_VERTEX_DATA_H
 #define _GENERIC_VERTEX_DATA_H
 
+#include "config.h"
+
 #include "VertexDataInterface.h"
 
 /// This class is used to upload generic VB data to the GPU that can be rendered
@@ -140,11 +142,9 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
         GFXDataFormat _type;
     };
 
-    GenericVertexData(GFXDevice& context, bool persistentMapped, const U32 ringBufferLength)
+    GenericVertexData(GFXDevice& context, const U32 ringBufferLength)
         : VertexDataInterface(context),
-          RingBuffer(ringBufferLength),
-          _persistentMapped(persistentMapped &&
-                            !Config::Profile::DISABLE_PERSISTENT_BUFFER)
+          RingBuffer(ringBufferLength)
     {
         _doubleBufferedQuery = true;
     }
@@ -202,8 +202,6 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
     vectorImpl<U32> _feedbackBuffers;
     attributeMap _attributeMapDraw;
     attributeMap _attributeMapFdbk;
-
-    const bool _persistentMapped;
 };
 
 };  // namespace Divide

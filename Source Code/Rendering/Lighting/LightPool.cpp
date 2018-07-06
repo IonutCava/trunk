@@ -249,17 +249,19 @@ void LightPool::updateAndUploadLightData(const vec3<F32>& eyePos, const mat4<F32
     // Sort all lights (Sort in parallel by type)   
     TaskHandle cullTask = CreateTask(DELEGATE_CBK_PARAM<bool>());
     for (Light::LightList& lights : _lights) {
-        cullTask.addChildTask(CreateTask(
-            [&eyePos, &lights](const std::atomic_bool& stopRequested) mutable
-            {
-                std::sort(std::begin(lights), std::end(lights),
-                          [&eyePos](Light* a, Light* b) -> bool
+        if (!lights.empty()) {
+            cullTask.addChildTask(CreateTask(
+                [&eyePos, &lights](const std::atomic_bool& stopRequested) mutable
                 {
-                    return a->getPosition().distanceSquared(eyePos) <
-                           b->getPosition().distanceSquared(eyePos);
-                });
-            })._task
-        )->startTask(Task::TaskPriority::HIGH);
+                    std::sort(std::begin(lights), std::end(lights),
+                              [&eyePos](Light* a, Light* b) -> bool
+                    {
+                        return a->getPosition().distanceSquared(eyePos) <
+                               b->getPosition().distanceSquared(eyePos);
+                    });
+                })._task
+            )->startTask(Task::TaskPriority::HIGH);
+        }
     }
 
     cullTask.startTask(Task::TaskPriority::HIGH);

@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include "Headers/GFXState.h"
 #include "Headers/GFXDevice.h"
 

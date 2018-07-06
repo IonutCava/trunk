@@ -304,6 +304,9 @@
     <ClInclude Include="..\..\Source Code\Libs\Allocator\xallocator.h">
       <Filter>Memory\Allocator</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\Headers\glBufferImpl.h">
+      <Filter>Video\OpenGL\Buffers\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Platform\Input\AutoKeyRepeat.cpp">
@@ -506,6 +509,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Platform\Input\InputAggregatorInterface.cpp">
       <Filter>Input</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\glBufferImpl.cpp">
+      <Filter>Video\OpenGL\Buffers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

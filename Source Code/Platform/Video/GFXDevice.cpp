@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include "Headers/GFXDevice.h"
 
 #include "Core/Headers/ParamHandler.h"
@@ -623,15 +625,21 @@ bool GFXDevice::loadInContext(const CurrentContext& context,
 
 /// Transform our depth buffer to a HierarchicalZ buffer (for occlusion queries and screen space reflections)
 void GFXDevice::constructHIZ() {
+    auto setAndGetHalfViewport = [](vec4<I32>& viewportIn) -> vec4<I32>& {
+        viewportIn /= 2;
+        // Ensure that the viewport size is always at least 1x1
+        viewportIn.z = viewportIn.z > 0 ? viewportIn.z : 1;
+        viewportIn.w = viewportIn.w > 0 ? viewportIn.w : 1;
+        return viewportIn;
+    };
+
     // The depth buffer's resolution should be equal to the screen's resolution
     Framebuffer* screenTarget = _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer;
     vec2<U16> resolution = screenTarget->getResolution();
     // Bind the depth texture to the first texture unit
-    screenTarget->bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH),
-                       TextureDescriptor::AttachmentType::Depth);
+    screenTarget->bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH), TextureDescriptor::AttachmentType::Depth);
     // We use a special shader that downsamples the buffer
-    // We will use a state block that disables color writes as we will render
-    // only a depth image,
+    // We will use a state block that disables color writes as we will render only a depth image,
     // disables depth testing but allows depth writes
     // Set the depth buffer as the currently active render target
     Framebuffer::FramebufferTarget depthOnlyTarget;
@@ -646,21 +654,13 @@ void GFXDevice::constructHIZ() {
     U32 numLevels = 1 + to_uint(floorf(log2f(fmaxf(to_float(resolution.width),
                                                    to_float(resolution.height)))));
     // Store the current width and height of each mip
-    U16 currentWidth = resolution.width;
-    U16 currentHeight = resolution.height;
+    vec4<I32> currentViewport(0, 0, resolution.width, resolution.height);
     vec4<I32> previousViewport(_viewport.top());
     // We skip the first level as that's our full resolution image
     for (U16 i = 1; i < numLevels; ++i) {
-        // Inform the shader of the resolution we are downsampling from
-        _HIZConstructProgram->Uniform("LastMipSize", vec2<I32>(currentWidth, currentHeight));
         // Calculate next viewport size
-        currentWidth /= 2;
-        currentHeight /= 2;
-        // Ensure that the viewport size is always at least 1x1
-        currentWidth = currentWidth > 0 ? currentWidth : 1;
-        currentHeight = currentHeight > 0 ? currentHeight : 1;
         // Update the viewport with the new resolution
-        updateViewportInternal(vec4<I32>(0, 0, currentWidth, currentHeight));
+        updateViewportInternal(setAndGetHalfViewport(currentViewport));
         // Bind next mip level for rendering but first restrict fetches only to previous level
         screenTarget->setMipLevel(i - 1, i - 1, i, TextureDescriptor::AttachmentType::Depth);
         // Dummy draw command as the full screen quad is generated completely in the vertex shader
@@ -671,7 +671,6 @@ void GFXDevice::constructHIZ() {
     screenTarget->resetMipLevel(TextureDescriptor::AttachmentType::Depth);
     // Unbind the render target
     screenTarget->end();
-    
 }
 
 /// Find an unused primitive object or create a new one and return it
