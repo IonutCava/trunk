@@ -62,10 +62,10 @@ bool ImplResourceLoader<WaterPlane>::load(WaterPlane* const res,
                                true);
     waterMat->setShaderProgram("depthPass.PrePass", RenderStage::Z_PRE_PASS, true);
 
-    RenderStateBlockDescriptor waterMatDesc(GFX_DEVICE.getStateBlockDescriptor(
-        waterMat->getRenderStateBlock(RenderStage::DISPLAY)));
+    size_t hash = waterMat->getRenderStateBlock(RenderStage::DISPLAY);
+    RenderStateBlock waterMatDesc(GFX_DEVICE.getRenderStateBlock(hash));
     waterMatDesc.setCullMode(CullMode::NONE);
-    waterMat->setRenderStateBlock(waterMatDesc, RenderStage::DISPLAY);
+    waterMat->setRenderStateBlock(waterMatDesc.getHash(), RenderStage::DISPLAY);
 
     return true;
 }

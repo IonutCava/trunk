@@ -45,7 +45,7 @@ namespace Divide {
 
 class RenderStateBlock;
 class ResourceDescriptor;
-class RenderStateBlockDescriptor;
+class RenderStateBlock;
 enum class RenderStage : U32;
 enum class BlendProperty : U32;
 
@@ -304,8 +304,10 @@ class Material : public Resource {
         setShaderProgram(shader, RenderStage::REFLECTION, computeOnAdd);
     }
 
-    size_t setRenderStateBlock(const RenderStateBlockDescriptor& descriptor,
-                               RenderStage renderStage);
+    inline void setRenderStateBlock(size_t renderStateBlockHash,
+                                    RenderStage renderStage) {
+        _defaultRenderStates[to_uint(renderStage)] = renderStateBlockHash;
+    }
 
     inline void setParallaxFactor(F32 factor) {
         _parallaxFactor = std::min(0.01f, factor);

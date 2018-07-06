@@ -209,20 +209,22 @@ bool TerrainLoader::loadTerrain(Terrain* terrain,
     terrain->setMaterialTpl(terrainMaterial);
 
     // Generate a render state
-    RenderStateBlockDescriptor terrainDesc;
-    terrainDesc.setCullMode(CullMode::CW);
-    RenderStateBlockDescriptor terrainDescRef;
-    terrainDescRef.setCullMode(CullMode::CCW);
+    RenderStateBlock terrainRenderState;
+    terrainRenderState.setCullMode(CullMode::CW);
+    // Generate a render state for drawing reflections
+    RenderStateBlock terrainRenderStateReflection;
+    terrainRenderStateReflection.setCullMode(CullMode::CCW);
     // Generate a shadow render state
-    RenderStateBlockDescriptor terrainDescDepth;
-    terrainDescDepth.setCullMode(CullMode::CCW);
+    RenderStateBlock terrainRenderStateDepth;
+    terrainRenderStateDepth.setCullMode(CullMode::CCW);
     // terrainDescDepth.setZBias(1.0f, 2.0f);
-    terrainDescDepth.setColorWrites(true, true, false, false);
+    terrainRenderStateDepth.setColorWrites(true, true, false, false);
 
     Attorney::TerrainLoader::setRenderStateHashes(
-        *terrain, GFX_DEVICE.getOrCreateStateBlock(terrainDesc),
-        GFX_DEVICE.getOrCreateStateBlock(terrainDescRef),
-        GFX_DEVICE.getOrCreateStateBlock(terrainDescDepth));
+        *terrain,
+        terrainRenderState.getHash(),
+        terrainRenderStateReflection.getHash(),
+        terrainRenderStateDepth.getHash());
 
     return loadThreadedResources(terrain, terrainDescriptor);
 }

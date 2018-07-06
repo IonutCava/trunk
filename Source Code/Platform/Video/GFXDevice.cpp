@@ -184,21 +184,19 @@ void GFXDevice::generateCubeMap(Framebuffer& cubeMap, const vec3<F32>& pos,
     kernel.getCameraMgr().popActiveCamera();
 }
 
-/// Try to find the render state block that matches our specified descriptor.
-/// Create a new one if none are found
-size_t GFXDevice::getOrCreateStateBlock(
-    const RenderStateBlockDescriptor& descriptor) {
+/// If the stateBlock doesn't exist in the state block map, add it for future reference
+bool GFXDevice::registerRenderStateBlock(
+    const RenderStateBlock& descriptor) {
     // Each combination of render states has a unique hash value
     size_t hashValue = descriptor.getHash();
     // Find the corresponding render state block
-    if (_stateBlockMap.find(hashValue) == std::end(_stateBlockMap)) {
-        // Create a new one if none are found. The GFXDevice class is
-        // responsible for deleting these!
+    // Create a new one if none are found. The GFXDevice class is
+    // responsible for deleting these!
+    std::pair<RenderStateMap::iterator, bool> result =
         hashAlg::emplace(_stateBlockMap, hashValue,
                          MemoryManager_NEW RenderStateBlock(descriptor));
-    }
-    // Return the descriptor's hash value
-    return hashValue;
+    // Return true if registration was successful 
+    return result.second;
 }
 
 /// Activate the render state block described by the specified hash value (0 ==
@@ -230,20 +228,16 @@ size_t GFXDevice::setStateBlock(size_t stateBlockHash) {
     return _previousStateBlockHash;
 }
 
-/// Return the descriptor of the render state block defined by the specified
-/// hash value.
-/// The state block must be created prior to calling this!
-const RenderStateBlockDescriptor& GFXDevice::getStateBlockDescriptor(
-    size_t renderStateBlockHash) const {
+/// Return the the render state block defined by the specified hash value.
+const RenderStateBlock& GFXDevice::getRenderStateBlock(size_t renderStateBlockHash) const {
     // Find the render state block associated with the received hash value
-    RenderStateMap::const_iterator it =
-        _stateBlockMap.find(renderStateBlockHash);
+    RenderStateMap::const_iterator it = _stateBlockMap.find(renderStateBlockHash);
     // Assert if it doesn't exist. Avoids programming errors.
     DIVIDE_ASSERT(it != std::end(_stateBlockMap),
                   "GFXDevice error: Invalid render state block hash specified "
-                  "for getStateBlockDescriptor!");
+                  "for getRenderStateBlock!");
     // Return the state block's descriptor
-    return it->second->getDescriptor();
+    return *it->second;
 }
 
 /// The main entry point for any resolution change request

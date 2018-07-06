@@ -38,7 +38,7 @@
 
 namespace Divide {
 
-class RenderStateBlockDescriptor : public GUIDWrapper {
+class RenderStateBlock : public GUIDWrapper {
    protected:
     friend class GL_API;
     friend class DX_API;
@@ -79,12 +79,12 @@ class RenderStateBlockDescriptor : public GUIDWrapper {
     bool _lockHash;
 
   private:
-    void operator=(const RenderStateBlockDescriptor& b) = delete;
+    void operator=(const RenderStateBlock& b) = delete;
     void clean();
 
    public:
-    RenderStateBlockDescriptor();
-    RenderStateBlockDescriptor(const RenderStateBlockDescriptor& b);
+    RenderStateBlock();
+    RenderStateBlock(const RenderStateBlock& b);
 
     void setDefaultValues();
     
@@ -119,36 +119,13 @@ class RenderStateBlockDescriptor : public GUIDWrapper {
 
     inline size_t getHash() const { return _cachedHash; }
 
-    bool operator==(RenderStateBlockDescriptor& RSBD) const {
+    bool operator==(RenderStateBlock& RSBD) const {
         return getHash() == RSBD.getHash();
     }
 
-    bool operator!=(RenderStateBlockDescriptor& RSBD) const {
+    bool operator!=(RenderStateBlock& RSBD) const {
         return !(*this == RSBD);
     }
-};
-
-class RenderStateBlock : public GUIDWrapper {
-   public:
-    RenderStateBlock(const RenderStateBlockDescriptor& descriptor)
-        : GUIDWrapper(), _descriptor(descriptor) {}
-
-    virtual ~RenderStateBlock() {}
-
-    inline const RenderStateBlockDescriptor& getDescriptor() const {
-        return _descriptor;
-    }
-
-    bool operator==(RenderStateBlock& RSB) const {
-        return _descriptor == RSB._descriptor;
-    }
-
-    bool operator!=(RenderStateBlock& RSB) const { return !(*this == RSB); }
-
-    inline bool Compare(RenderStateBlock& RSB) const { return (*this == RSB); }
-
-   protected:
-    RenderStateBlockDescriptor _descriptor;
 };
 
 };  // namespace Divide

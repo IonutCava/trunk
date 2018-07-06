@@ -504,108 +504,100 @@ void GL_API::changeViewport(const vec4<I32>& newViewport) const {
 /// Some may be redundant, so we check each one individually
 void GL_API::activateStateBlock(const RenderStateBlock& newBlock,
                                 RenderStateBlock* const oldBlock) const {
-    // Get the new block's descriptor
-    const RenderStateBlockDescriptor& newDescriptor = newBlock.getDescriptor();
-    const RenderStateBlockDescriptor* oldDescriptor = oldBlock ? &oldBlock->getDescriptor() : nullptr;
 
     auto toggle = [](bool flag, GLenum state) {
         flag ? glEnable(state) : glDisable(state);
     };
 
     // Compare toggle-only states with the previous block
-    if (!oldDescriptor || oldDescriptor->_blendEnable != newDescriptor._blendEnable) {
-        toggle(newDescriptor._blendEnable, GL_BLEND);
+    if (!oldBlock || oldBlock->_blendEnable != newBlock._blendEnable) {
+        toggle(newBlock._blendEnable, GL_BLEND);
     }
 
-    if (!oldDescriptor || oldDescriptor->_cullEnabled != newDescriptor._cullEnabled) {
-        toggle(newDescriptor._cullEnabled, GL_CULL_FACE);
+    if (!oldBlock || oldBlock->_cullEnabled != newBlock._cullEnabled) {
+        toggle(newBlock._cullEnabled, GL_CULL_FACE);
     }
-    if (!oldDescriptor || oldDescriptor->_stencilEnable != newDescriptor._stencilEnable) {
-        toggle(newDescriptor._stencilEnable, GL_STENCIL_TEST);
+    if (!oldBlock || oldBlock->_stencilEnable != newBlock._stencilEnable) {
+        toggle(newBlock._stencilEnable, GL_STENCIL_TEST);
     }
-    if (!oldDescriptor || oldDescriptor->_zEnable != newDescriptor._zEnable) {
-        toggle(newDescriptor._zEnable, GL_DEPTH_TEST);
+    if (!oldBlock || oldBlock->_zEnable != newBlock._zEnable) {
+        toggle(newBlock._zEnable, GL_DEPTH_TEST);
     }
     // Check line width
-    if (!oldDescriptor || FLOAT_COMPARE(oldDescriptor->_lineWidth, newDescriptor._lineWidth)) {
-        glLineWidth(std::min(newDescriptor._lineWidth, (GLfloat)_lineWidthLimit));
+    if (!oldBlock || FLOAT_COMPARE(oldBlock->_lineWidth, newBlock._lineWidth)) {
+        glLineWidth(std::min(newBlock._lineWidth, (GLfloat)_lineWidthLimit));
     }
     // Check separate blend functions
-    if (!oldDescriptor ||
-        oldDescriptor->_blendSrc != newDescriptor._blendSrc ||
-        oldDescriptor->_blendDest != newDescriptor._blendDest) {
-        glBlendFuncSeparate(
-            GLUtil::glBlendTable[to_uint(newDescriptor._blendSrc)],
-            GLUtil::glBlendTable[to_uint(newDescriptor._blendDest)],
-            GL_ONE, GL_ZERO);
+    if (!oldBlock ||
+        oldBlock->_blendSrc != newBlock._blendSrc ||
+        oldBlock->_blendDest != newBlock._blendDest) {
+        glBlendFuncSeparate(GLUtil::glBlendTable[to_uint(newBlock._blendSrc)],
+                            GLUtil::glBlendTable[to_uint(newBlock._blendDest)],
+                            GL_ONE,
+                            GL_ZERO);
     }
 
     // Check the blend equation
-    if (!oldDescriptor || oldDescriptor->_blendOp != newDescriptor._blendOp) {
-        glBlendEquation(
-            GLUtil::glBlendOpTable[to_uint(newDescriptor._blendOp)]);
+    if (!oldBlock || oldBlock->_blendOp != newBlock._blendOp) {
+        glBlendEquation(GLUtil::glBlendOpTable[to_uint(newBlock._blendOp)]);
     }
     // Check culling mode (back (CW) / front (CCW) by default)
-    if (!oldDescriptor || oldDescriptor->_cullMode != newDescriptor._cullMode) {
-        if (newDescriptor._cullMode != CullMode::NONE) {
-            glCullFace(
-                GLUtil::glCullModeTable[to_uint(newDescriptor._cullMode)]);
+    if (!oldBlock || oldBlock->_cullMode != newBlock._cullMode) {
+        if (newBlock._cullMode != CullMode::NONE) {
+            glCullFace(GLUtil::glCullModeTable[to_uint(newBlock._cullMode)]);
         }
     }
     // Check rasterization mode
-    if (!oldDescriptor || oldDescriptor->_fillMode != newDescriptor._fillMode) {
-        glPolygonMode(
-            GL_FRONT_AND_BACK,
-            GLUtil::glFillModeTable[to_uint(newDescriptor._fillMode)]);
+    if (!oldBlock || oldBlock->_fillMode != newBlock._fillMode) {
+        glPolygonMode(GL_FRONT_AND_BACK,
+                      GLUtil::glFillModeTable[to_uint(newBlock._fillMode)]);
     }
     // Check the depth function
-    if (!oldDescriptor || oldDescriptor->_zFunc != newDescriptor._zFunc) {
-        glDepthFunc(GLUtil::glCompareFuncTable[to_uint(newDescriptor._zFunc)]);
+    if (!oldBlock || oldBlock->_zFunc != newBlock._zFunc) {
+        glDepthFunc(GLUtil::glCompareFuncTable[to_uint(newBlock._zFunc)]);
     }
     // Check if we need to toggle the depth mask
-    if (!oldDescriptor || oldDescriptor->_zWriteEnable != newDescriptor._zWriteEnable) {
-        glDepthMask(newDescriptor._zWriteEnable ? GL_TRUE : GL_FALSE);
+    if (!oldBlock || oldBlock->_zWriteEnable != newBlock._zWriteEnable) {
+        glDepthMask(newBlock._zWriteEnable ? GL_TRUE : GL_FALSE);
     }
     // Check if we need to change the stencil mask
-    if (!oldDescriptor || oldDescriptor->_stencilWriteMask != newDescriptor._stencilWriteMask) {
-        glStencilMask(newDescriptor._stencilWriteMask);
+    if (!oldBlock || oldBlock->_stencilWriteMask != newBlock._stencilWriteMask) {
+        glStencilMask(newBlock._stencilWriteMask);
     }
     // Stencil function is dependent on 3 state parameters set together
-    if (!oldDescriptor ||
-        oldDescriptor->_stencilFunc != newDescriptor._stencilFunc ||
-        oldDescriptor->_stencilRef  != newDescriptor._stencilRef ||
-        oldDescriptor->_stencilMask != newDescriptor._stencilMask) {
-        glStencilFunc(
-            GLUtil::glCompareFuncTable[to_uint(newDescriptor._stencilFunc)],
-            newDescriptor._stencilRef, newDescriptor._stencilMask);
+    if (!oldBlock ||
+        oldBlock->_stencilFunc != newBlock._stencilFunc ||
+        oldBlock->_stencilRef  != newBlock._stencilRef ||
+        oldBlock->_stencilMask != newBlock._stencilMask) {
+        glStencilFunc(GLUtil::glCompareFuncTable[to_uint(newBlock._stencilFunc)],
+                      newBlock._stencilRef,
+                      newBlock._stencilMask);
     }
     // Stencil operation is also dependent  on 3 state parameters set together
-    if (!oldDescriptor ||
-        oldDescriptor->_stencilFailOp != newDescriptor._stencilFailOp ||
-        oldDescriptor->_stencilZFailOp != newDescriptor._stencilZFailOp ||
-        oldDescriptor->_stencilPassOp != newDescriptor._stencilPassOp) {
-        glStencilOp(
-            GLUtil::glStencilOpTable[to_uint(newDescriptor._stencilFailOp)],
-            GLUtil::glStencilOpTable[to_uint(newDescriptor._stencilZFailOp)],
-            GLUtil::glStencilOpTable[to_uint(newDescriptor._stencilPassOp)]);
+    if (!oldBlock ||
+        oldBlock->_stencilFailOp != newBlock._stencilFailOp ||
+        oldBlock->_stencilZFailOp != newBlock._stencilZFailOp ||
+        oldBlock->_stencilPassOp != newBlock._stencilPassOp) {
+        glStencilOp(GLUtil::glStencilOpTable[to_uint(newBlock._stencilFailOp)],
+                    GLUtil::glStencilOpTable[to_uint(newBlock._stencilZFailOp)],
+                    GLUtil::glStencilOpTable[to_uint(newBlock._stencilPassOp)]);
     }
     // Check and set polygon offset
-    if (!oldDescriptor || FLOAT_COMPARE(oldDescriptor->_zBias, newDescriptor._zBias)) {
-        if (IS_ZERO(newDescriptor._zBias)) {
+    if (!oldBlock || FLOAT_COMPARE(oldBlock->_zBias, newBlock._zBias)) {
+        if (IS_ZERO(newBlock._zBias)) {
             glDisable(GL_POLYGON_OFFSET_FILL);
         } else {
             glEnable(GL_POLYGON_OFFSET_FILL);
-            glPolygonOffset(newDescriptor._zBias, newDescriptor._zUnits);
+            glPolygonOffset(newBlock._zBias, newBlock._zUnits);
         }
     }
 
     // Check and set color mask
-    if (!oldDescriptor || oldDescriptor->_colorWrite.i != newDescriptor._colorWrite.i) {
-        glColorMask(
-            newDescriptor._colorWrite.b[0] == 1 ? GL_TRUE : GL_FALSE,   // R
-            newDescriptor._colorWrite.b[1] == 1 ? GL_TRUE : GL_FALSE,   // G
-            newDescriptor._colorWrite.b[2] == 1 ? GL_TRUE : GL_FALSE,   // B
-            newDescriptor._colorWrite.b[3] == 1 ? GL_TRUE : GL_FALSE);  // A
+    if (!oldBlock || oldBlock->_colorWrite.i != newBlock._colorWrite.i) {
+        glColorMask(newBlock._colorWrite.b[0] == 1 ? GL_TRUE : GL_FALSE,   // R
+                    newBlock._colorWrite.b[1] == 1 ? GL_TRUE : GL_FALSE,   // G
+                    newBlock._colorWrite.b[2] == 1 ? GL_TRUE : GL_FALSE,   // B
+                    newBlock._colorWrite.b[3] == 1 ? GL_TRUE : GL_FALSE);  // A
     }
 }
 };

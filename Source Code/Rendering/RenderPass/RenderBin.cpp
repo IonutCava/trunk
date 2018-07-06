@@ -27,9 +27,7 @@ RenderBinItem::RenderBinItem(I32 sortKeyA,
     }
     // Sort by state hash depending on the current rendering stage
     // Save the render state hash value for sorting
-    _stateHash = GFX_DEVICE.getStateBlockDescriptor(
-                                nodeMaterial->getRenderStateBlock(
-                                    GFX_DEVICE.getRenderStage())).getHash();
+    _stateHash = nodeMaterial->getRenderStateBlock(GFX_DEVICE.getRenderStage());
 }
 
 struct RenderQueueDistanceBacktoFront {

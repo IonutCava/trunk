@@ -60,7 +60,7 @@ Scene::Scene()
 
 #ifdef _DEBUG
 
-    RenderStateBlockDescriptor primitiveDescriptor;
+    RenderStateBlock primitiveDescriptor;
     primitiveDescriptor.setLineWidth(3.0f);
 
     _linesPrimitive[to_uint(DebugLines::DEBUG_LINE_OBJECT_TO_TARGET)] =
@@ -68,14 +68,14 @@ Scene::Scene()
     _linesPrimitive[to_uint(DebugLines::DEBUG_LINE_OBJECT_TO_TARGET)]->name(
         "LinesObjectToTarget");
     _linesPrimitive[to_uint(DebugLines::DEBUG_LINE_OBJECT_TO_TARGET)]
-        ->stateHash(GFX_DEVICE.getOrCreateStateBlock(primitiveDescriptor));
+        ->stateHash(primitiveDescriptor.getHash());
 
     _linesPrimitive[to_uint(DebugLines::DEBUG_LINE_RAY_PICK)] =
         GFX_DEVICE.getOrCreatePrimitive(false);
     _linesPrimitive[to_uint(DebugLines::DEBUG_LINE_RAY_PICK)]->name(
         "LinesRayPick");
     _linesPrimitive[to_uint(DebugLines::DEBUG_LINE_RAY_PICK)]->stateHash(
-        GFX_DEVICE.getOrCreateStateBlock(primitiveDescriptor));
+        primitiveDescriptor.getHash());
 #endif
 }
 

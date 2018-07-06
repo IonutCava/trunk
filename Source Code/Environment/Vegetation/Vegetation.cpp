@@ -102,10 +102,10 @@ void Vegetation::initialize(TerrainChunk* const terrainChunk) {
     _instanceRoutineIdx[to_uint(CullType::HI_Z_CULL)] = _cullShader->GetSubroutineIndex(
         ShaderType::VERTEX, "HiZOcclusionCull");
 
-    RenderStateBlockDescriptor transparent;
-    transparent.setCullMode(CullMode::CW);
+    RenderStateBlock transparentRenderState;
+    transparentRenderState.setCullMode(CullMode::CW);
     // transparent.setBlend(true);
-    _grassStateBlockHash = GFX_DEVICE.getOrCreateStateBlock(transparent);
+    _grassStateBlockHash = transparentRenderState.getHash();
 
     ResourceDescriptor vegetationMaterial("vegetationMaterial" + getName());
     Material* vegMaterial = CreateResource<Material>(vegetationMaterial);

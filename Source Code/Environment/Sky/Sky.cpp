@@ -20,14 +20,13 @@ Sky::Sky(const stringImpl& name)
     _renderState.addToDrawExclusionMask(RenderStage::SHADOW);
 
     // Generate a render state
-    RenderStateBlockDescriptor skyboxDesc;
-    skyboxDesc.setCullMode(CullMode::CCW);
+    RenderStateBlock skyboxRenderState;
+    skyboxRenderState.setCullMode(CullMode::CCW);
     // skyboxDesc.setZReadWrite(false, false); - not needed anymore. Using
     // gl_Position.z = gl_Position.w - 0.0001 in GLSL -Ionut
-    _skyboxRenderStateHash = GFX_DEVICE.getOrCreateStateBlock(skyboxDesc);
-    skyboxDesc.setCullMode(CullMode::CW);
-    _skyboxRenderStateReflectedHash =
-        GFX_DEVICE.getOrCreateStateBlock(skyboxDesc);
+    _skyboxRenderStateHash = skyboxRenderState.getHash();
+    skyboxRenderState.setCullMode(CullMode::CW);
+    _skyboxRenderStateReflectedHash = skyboxRenderState.getHash();
 }
 
 Sky::~Sky()

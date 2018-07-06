@@ -28,28 +28,24 @@ Material::Material()
     _operation = TextureOperation::REPLACE;
 
     /// Normal state for final rendering
-    RenderStateBlockDescriptor stateDescriptor;
-    _defaultRenderStates[to_uint(RenderStage::DISPLAY)] =
-        GFX_DEVICE.getOrCreateStateBlock(stateDescriptor);
+    RenderStateBlock stateDescriptor;
+    setRenderStateBlock(stateDescriptor.getHash(), RenderStage::DISPLAY);
     /// the reflection descriptor is the same as the normal descriptor
-    RenderStateBlockDescriptor reflectorDescriptor(stateDescriptor);
-    _defaultRenderStates[to_uint(RenderStage::REFLECTION)] =
-        GFX_DEVICE.getOrCreateStateBlock(reflectorDescriptor);
+    RenderStateBlock reflectorDescriptor(stateDescriptor);
+    setRenderStateBlock(reflectorDescriptor.getHash(), RenderStage::REFLECTION);
     /// the z-pre-pass descriptor does not process colors
-    RenderStateBlockDescriptor zPrePassDescriptor(stateDescriptor);
+    RenderStateBlock zPrePassDescriptor(stateDescriptor);
     zPrePassDescriptor.setColorWrites(false, false, false, false);
-    _defaultRenderStates[to_uint(RenderStage::Z_PRE_PASS)] =
-        GFX_DEVICE.getOrCreateStateBlock(zPrePassDescriptor);
+    setRenderStateBlock(zPrePassDescriptor.getHash(), RenderStage::Z_PRE_PASS);
     /// A descriptor used for rendering to depth map
-    RenderStateBlockDescriptor shadowDescriptor(stateDescriptor);
+    RenderStateBlock shadowDescriptor(stateDescriptor);
     shadowDescriptor.setCullMode(CullMode::CCW);
     /// set a polygon offset
     // shadowDescriptor.setZBias(1.0f, 2.0f);
     /// ignore colors - Some shadowing techniques require drawing to the a color
     /// buffer
     shadowDescriptor.setColorWrites(true, true, false, false);
-    _defaultRenderStates[to_uint(RenderStage::SHADOW)] =
-        GFX_DEVICE.getOrCreateStateBlock(shadowDescriptor);
+    setRenderStateBlock(shadowDescriptor.getHash(), RenderStage::SHADOW);
 }
 
 Material::~Material()
@@ -137,15 +133,6 @@ void Material::update(const U64 deltaTime) {
 
 size_t Material::getRenderStateBlock(RenderStage currentStage) {
     return _defaultRenderStates[to_uint(currentStage)];
-}
-
-size_t Material::setRenderStateBlock(
-    const RenderStateBlockDescriptor& descriptor,
-    RenderStage renderStage) {
-    size_t stateBlockHash = GFX_DEVICE.getOrCreateStateBlock(descriptor);
-    _defaultRenderStates[to_uint(renderStage)] = stateBlockHash;
-
-    return stateBlockHash;
 }
 
 // base = base texture
@@ -545,13 +532,13 @@ void Material::setDoubleSided(const bool state, const bool useAlphaTest) {
     if (_doubleSided) {
         for (U32 index = 0; index < to_uint(RenderStage::COUNT); index++) {
             size_t hash = _defaultRenderStates[index];
-            RenderStateBlockDescriptor descriptor(
-                GFX_DEVICE.getStateBlockDescriptor(hash));
+            RenderStateBlock descriptor(GFX_DEVICE.getRenderStateBlock(hash));
             descriptor.setCullMode(CullMode::NONE);
             if (!_translucencySource.empty()) {
                 descriptor.setBlend(true);
             }
-            setRenderStateBlock(descriptor, static_cast<RenderStage>(index));
+            setRenderStateBlock(descriptor.getHash(),
+                                static_cast<RenderStage>(index));
         }
     }
 

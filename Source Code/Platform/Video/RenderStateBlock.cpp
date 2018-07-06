@@ -1,9 +1,10 @@
 #include "Headers/RenderStateBlock.h"
 #include "Core/Math/Headers/MathHelper.h"
+#include "Platform/Video/Headers/GFXDevice.h"
 
 namespace Divide {
 
-RenderStateBlockDescriptor::RenderStateBlockDescriptor()
+RenderStateBlock::RenderStateBlock()
     : GUIDWrapper(), 
     _cachedHash(0),
     _lockHash(false)
@@ -11,7 +12,7 @@ RenderStateBlockDescriptor::RenderStateBlockDescriptor()
     setDefaultValues();
 }
 
-RenderStateBlockDescriptor::RenderStateBlockDescriptor(const RenderStateBlockDescriptor& other)
+RenderStateBlock::RenderStateBlock(const RenderStateBlock& other)
     : GUIDWrapper(other),
      _lockHash(false),
      _colorWrite(other._colorWrite),
@@ -40,7 +41,7 @@ RenderStateBlockDescriptor::RenderStateBlockDescriptor(const RenderStateBlockDes
 {
 }
 
-void RenderStateBlockDescriptor::flipCullMode() {
+void RenderStateBlock::flipCullMode() {
     if (_cullMode == CullMode::NONE) {
         _cullMode = CullMode::ALL;
     }
@@ -56,35 +57,35 @@ void RenderStateBlockDescriptor::flipCullMode() {
     clean();
 }
 
-void RenderStateBlockDescriptor::setCullMode(CullMode mode) {
+void RenderStateBlock::setCullMode(CullMode mode) {
     _cullMode = mode;
     _cullEnabled = _cullMode == CullMode::NONE ? false : true;
     clean();
 }
 
-void RenderStateBlockDescriptor::setZEnable(const bool enable) {
+void RenderStateBlock::setZEnable(const bool enable) {
     _zEnable = enable;
 
     clean();
 }
 
-void RenderStateBlockDescriptor::setZReadWrite(bool read, bool write) {
+void RenderStateBlock::setZReadWrite(bool read, bool write) {
     _zEnable = read;
     _zWriteEnable = write;
 
     clean();
 }
 
-void RenderStateBlockDescriptor::setLineWidth(F32 width) {
+void RenderStateBlock::setLineWidth(F32 width) {
     _lineWidth = width;
 
     clean();
 }
 
-void RenderStateBlockDescriptor::setBlend(bool enable,
-                                          BlendProperty src,
-                                          BlendProperty dest,
-                                          BlendOperation op) {
+void RenderStateBlock::setBlend(bool enable,
+                                BlendProperty src,
+                                BlendProperty dest,
+                                BlendOperation op) {
     _blendEnable = enable;
     _blendSrc = src;
     _blendDest = dest;
@@ -93,10 +94,10 @@ void RenderStateBlockDescriptor::setBlend(bool enable,
     clean();
 }
 
-void RenderStateBlockDescriptor::setColorWrites(bool red,
-                                                bool green,
-                                                bool blue,
-                                                bool alpha) {
+void RenderStateBlock::setColorWrites(bool red,
+                                      bool green,
+                                      bool blue,
+                                      bool alpha) {
     _colorWrite.b[0] = red ? 1 : 0;
     _colorWrite.b[1] = green ? 1 : 0;
     _colorWrite.b[2] = blue ? 1 : 0;
@@ -105,38 +106,38 @@ void RenderStateBlockDescriptor::setColorWrites(bool red,
     clean();
 }
 
-void RenderStateBlockDescriptor::setZBias(F32 zBias, F32 zUnits) {
+void RenderStateBlock::setZBias(F32 zBias, F32 zUnits) {
     _zBias = zBias;
     _zUnits = zUnits;
 
     clean();
 }
 
-void RenderStateBlockDescriptor::setZFunc(ComparisonFunction zFunc) {
+void RenderStateBlock::setZFunc(ComparisonFunction zFunc) {
     _zFunc = zFunc;
 
     clean();
 }
 
-void RenderStateBlockDescriptor::setFillMode(FillMode mode) {
+void RenderStateBlock::setFillMode(FillMode mode) {
     _fillMode = mode;
 
     clean();
 }
 
-void RenderStateBlockDescriptor::setStencilReadWriteMask(U32 read, U32 write) {
+void RenderStateBlock::setStencilReadWriteMask(U32 read, U32 write) {
     _stencilMask = read;
     _stencilWriteMask = write;
 
     clean();
 }
 
-void RenderStateBlockDescriptor::setStencil(bool enable,
-                                            U32 stencilRef,
-                                            StencilOperation stencilFailOp,
-                                            StencilOperation stencilZFailOp,
-                                            StencilOperation stencilPassOp,
-                                            ComparisonFunction stencilFunc) {
+void RenderStateBlock::setStencil(bool enable,
+                                  U32 stencilRef,
+                                  StencilOperation stencilFailOp,
+                                  StencilOperation stencilZFailOp,
+                                  StencilOperation stencilPassOp,
+                                  ComparisonFunction stencilFunc) {
     _stencilEnable = enable;
     _stencilRef = stencilRef;
     _stencilFailOp = stencilFailOp;
@@ -147,7 +148,7 @@ void RenderStateBlockDescriptor::setStencil(bool enable,
     clean();
 }
 
-void RenderStateBlockDescriptor::setDefaultValues() {
+void RenderStateBlock::setDefaultValues() {
     _lockHash = true;
     setZBias(0.0f, 1.0f);
     setZFunc();
@@ -166,10 +167,15 @@ void RenderStateBlockDescriptor::setDefaultValues() {
     clean();
 }
 
-void RenderStateBlockDescriptor::clean() {
+void RenderStateBlock::clean() {
     if (_lockHash) {
         return;
     }
+    size_t previousCache = _cachedHash;
+
+    // Avoid small float rounding errors offsetting the general hash value
+    U32 zUnits = floor((_zUnits * 100.0) + 0.5);
+    U32 lineWidth = floor((_lineWidth * 100.0) + 0.5);
 
     _cachedHash = 0;
     Util::Hash_combine(_cachedHash, _colorWrite.i);
@@ -177,14 +183,14 @@ void RenderStateBlockDescriptor::clean() {
     Util::Hash_combine(_cachedHash, _blendSrc);
     Util::Hash_combine(_cachedHash, _blendDest);
     Util::Hash_combine(_cachedHash, _blendOp);
-    Util::Hash_combine(_cachedHash, _lineWidth);
+    Util::Hash_combine(_cachedHash, lineWidth);
     Util::Hash_combine(_cachedHash, _cullMode);
     Util::Hash_combine(_cachedHash, _cullEnabled);
     Util::Hash_combine(_cachedHash, _zEnable);
     Util::Hash_combine(_cachedHash, _zWriteEnable);
     Util::Hash_combine(_cachedHash, _zFunc);
     Util::Hash_combine(_cachedHash, _zBias);
-    Util::Hash_combine(_cachedHash, _zUnits);
+    Util::Hash_combine(_cachedHash, zUnits);
     Util::Hash_combine(_cachedHash, _stencilEnable);
     Util::Hash_combine(_cachedHash, _stencilRef);
     Util::Hash_combine(_cachedHash, _stencilMask);
@@ -194,5 +200,9 @@ void RenderStateBlockDescriptor::clean() {
     Util::Hash_combine(_cachedHash, _stencilPassOp);
     Util::Hash_combine(_cachedHash, _stencilFunc);
     Util::Hash_combine(_cachedHash, _fillMode);
+
+    if (previousCache != _cachedHash) {
+        Attorney::GFXDeviceRenderStateBlock::registerStateBlock(GFX_DEVICE, *this);
+    }
 }
 };

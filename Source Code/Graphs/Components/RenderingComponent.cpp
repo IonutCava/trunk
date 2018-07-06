@@ -30,19 +30,19 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
 
 
     // Prepare it for rendering lines
-    RenderStateBlockDescriptor primitiveDescriptor;
-    primitiveDescriptor.setLineWidth(4.0f);
+    RenderStateBlock primitiveStateBlock;
+    primitiveStateBlock.setLineWidth(4.0f);
 
     _boundingBoxPrimitive = GFX_DEVICE.getOrCreatePrimitive(false);
     _boundingBoxPrimitive->name("BoundingBox_" + _parentSGN.getName());
-    _boundingBoxPrimitive->stateHash(GFX_DEVICE.getOrCreateStateBlock(primitiveDescriptor));
+    _boundingBoxPrimitive->stateHash(primitiveStateBlock.getHash());
 
     if (_nodeSkinned) {
-        primitiveDescriptor.setLineWidth(2.0f);
-        primitiveDescriptor.setZReadWrite(false, true);
+        primitiveStateBlock.setLineWidth(2.0f);
+        primitiveStateBlock.setZReadWrite(false, true);
         _skeletonPrimitive = GFX_DEVICE.getOrCreatePrimitive(false);
         _skeletonPrimitive->name("Skeleton_" + _parentSGN.getName());
-        _skeletonPrimitive->stateHash(GFX_DEVICE.getOrCreateStateBlock(primitiveDescriptor));
+        _skeletonPrimitive->stateHash(primitiveStateBlock.getHash());
     }
 #ifdef _DEBUG
     // Red X-axis
@@ -57,10 +57,10 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
     _axisGizmo = GFX_DEVICE.getOrCreatePrimitive(false);
     // Prepare it for line rendering
     size_t noDepthStateBlock = GFX_DEVICE.getDefaultStateBlock(true);
-    RenderStateBlockDescriptor stateBlockDescriptor(GFX_DEVICE.getStateBlockDescriptor(noDepthStateBlock));
-    stateBlockDescriptor.setLineWidth(5.0f);
+    RenderStateBlock stateBlock(GFX_DEVICE.getRenderStateBlock(noDepthStateBlock));
+    stateBlock.setLineWidth(5.0f);
     _axisGizmo->name("AxisGizmo_" + parentSGN.getName());
-    _axisGizmo->stateHash(GFX_DEVICE.getOrCreateStateBlock(stateBlockDescriptor));
+    _axisGizmo->stateHash(stateBlock.getHash());
     _axisGizmo->paused(true);
     // Create the object containing all of the lines
     _axisGizmo->beginBatch(true, to_uint(_axisLines.size()) * 2);

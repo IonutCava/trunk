@@ -7,21 +7,21 @@ SceneNodeRenderState::~SceneNodeRenderState() {}
 
 size_t SceneNodeRenderState::getDepthStateBlock() {
     if (_depthStateBlockHash == 0) {
-        RenderStateBlockDescriptor depthDesc;
+        RenderStateBlock depthDesc;
         depthDesc.setColorWrites(false, false, false, false);
-        _depthStateBlockHash = GFX_DEVICE.getOrCreateStateBlock(depthDesc);
+        _depthStateBlockHash = depthDesc.getHash();
     }
     return _depthStateBlockHash;
 }
 
 size_t SceneNodeRenderState::getShadowStateBlock() {
     if (_shadowStateBlockHash == 0) {
-        RenderStateBlockDescriptor depthDesc;
+        RenderStateBlock depthDesc;
         /// Cull back faces for shadow rendering
         depthDesc.setCullMode(CullMode::CCW);
         // depthDesc.setZBias(1.0f, 2.0f);
         depthDesc.setColorWrites(true, true, false, false);
-        _shadowStateBlockHash = GFX_DEVICE.getOrCreateStateBlock(depthDesc);
+        _shadowStateBlockHash = depthDesc.getHash();
     }
     return _shadowStateBlockHash;
 }

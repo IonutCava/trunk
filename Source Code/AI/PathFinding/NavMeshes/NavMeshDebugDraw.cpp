@@ -11,18 +11,19 @@
 namespace Divide {
 namespace AI {
 namespace Navigation {
+
 NavMeshDebugDraw::NavMeshDebugDraw()
     : _overrideColor(false),
       _dirty(true),
       _paused(false),
       _color(0),
-      _primitive(nullptr) {
+      _primitive(nullptr)
+{
     // Generate a render state
-    RenderStateBlockDescriptor navigationDebugDesc;
-    navigationDebugDesc.setCullMode(CullMode::NONE);
-    navigationDebugDesc.setBlend(true);
-    _navMeshStateBlockHash =
-        GFX_DEVICE.getOrCreateStateBlock(navigationDebugDesc);
+    RenderStateBlock navigationDebugStateBlock;
+    navigationDebugStateBlock.setCullMode(CullMode::NONE);
+    navigationDebugStateBlock.setBlend(true);
+    _navMeshStateBlockHash = navigationDebugStateBlock.getHash();
 }
 
 NavMeshDebugDraw::~NavMeshDebugDraw() {
@@ -40,10 +41,11 @@ void NavMeshDebugDraw::paused(bool state) {
 }
 
 void NavMeshDebugDraw::depthMask(bool state) {
-    RenderStateBlockDescriptor newDepthDesc(
-        GFX_DEVICE.getStateBlockDescriptor(_navMeshStateBlockHash));
+    RenderStateBlock newDepthDesc(
+        GFX_DEVICE.getRenderStateBlock(_navMeshStateBlockHash));
+
     newDepthDesc.setZReadWrite(true, state);
-    _navMeshStateBlockHash = GFX_DEVICE.getOrCreateStateBlock(newDepthDesc);
+    _navMeshStateBlockHash = newDepthDesc.getHash();
 }
 
 void NavMeshDebugDraw::beginBatch() {

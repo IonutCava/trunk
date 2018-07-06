@@ -53,12 +53,11 @@ bool ParticleEmitter::initData(std::shared_ptr<ParticleData> particleData) {
     updateData(particleData);
 
     // Generate a render state
-    RenderStateBlockDescriptor particleStateDesc;
-    particleStateDesc.setCullMode(CullMode::NONE);
-    particleStateDesc.setBlend(true, BlendProperty::SRC_ALPHA,
-                               BlendProperty::INV_SRC_ALPHA);
-    _particleStateBlockHash =
-        GFX_DEVICE.getOrCreateStateBlock(particleStateDesc);
+    RenderStateBlock particleRenderState;
+    particleRenderState.setCullMode(CullMode::NONE);
+    particleRenderState.setBlend(true, BlendProperty::SRC_ALPHA,
+                                  BlendProperty::INV_SRC_ALPHA);
+    _particleStateBlockHash = particleRenderState.getHash();
 
     ResourceDescriptor particleShaderDescriptor("particles");
     _particleShader = CreateResource<ShaderProgram>(particleShaderDescriptor);

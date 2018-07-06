@@ -56,23 +56,25 @@ ErrorCode GFXDevice::initRenderingAPI(const vec2<U16>& resolution, I32 argc,
     // Resize our window to the target resolution (usually, the splash screen
     // resolution)
     changeResolution(resolution.width, resolution.height);
-    // Create general purpose render state blocks
-    RenderStateBlockDescriptor defaultStateDescriptor;
-    _defaultStateBlockHash = getOrCreateStateBlock(defaultStateDescriptor);
 
-    RenderStateBlockDescriptor defaultStateDescriptorNoDepth;
-    defaultStateDescriptorNoDepth.setZReadWrite(false, true);
-    _defaultStateNoDepthHash =
-        getOrCreateStateBlock(defaultStateDescriptorNoDepth);
-    RenderStateBlockDescriptor state2DRenderingDesc;
-    state2DRenderingDesc.setCullMode(CullMode::NONE);
-    state2DRenderingDesc.setZReadWrite(false, true);
-    _state2DRenderingHash = getOrCreateStateBlock(state2DRenderingDesc);
-    RenderStateBlockDescriptor stateDepthOnlyRendering;
+    // Create general purpose render state blocks
+    RenderStateBlock defaultState;
+    _defaultStateBlockHash = defaultState.getHash();
+
+    RenderStateBlock defaultStateNoDepth;
+    defaultStateNoDepth.setZReadWrite(false, true);
+    _defaultStateNoDepthHash = defaultStateNoDepth.getHash();
+
+    RenderStateBlock state2DRendering;
+    state2DRendering.setCullMode(CullMode::NONE);
+    state2DRendering.setZReadWrite(false, true);
+    _state2DRenderingHash = state2DRendering.getHash();
+
+    RenderStateBlock stateDepthOnlyRendering;
     stateDepthOnlyRendering.setColorWrites(false, false, false, false);
     stateDepthOnlyRendering.setZFunc(ComparisonFunction::ALWAYS);
-    _stateDepthOnlyRenderingHash =
-        getOrCreateStateBlock(stateDepthOnlyRendering);
+    _stateDepthOnlyRenderingHash = stateDepthOnlyRendering.getHash();
+
     // Block with hash 0 is null, and it's used to force a block update,
     // bypassing state comparison with previous blocks
     _stateBlockMap[0] = nullptr;

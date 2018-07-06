@@ -113,9 +113,9 @@ void GFXDevice::drawDebugAxis(const SceneRenderState& sceneRenderState) {
 
     IMPrimitive* primitive = getOrCreatePrimitive();
     primitive->name("GFXDeviceAxisGizmo");
-    RenderStateBlockDescriptor primitiveDescriptor(getStateBlockDescriptor(getDefaultStateBlock(true)));
+    RenderStateBlock primitiveDescriptor(getRenderStateBlock(getDefaultStateBlock(true)));
     primitiveDescriptor.setLineWidth(3.0f);
-    primitive->stateHash(GFX_DEVICE.getOrCreateStateBlock(primitiveDescriptor));
+    primitive->stateHash(primitiveDescriptor.getHash());
     drawLines(*primitive,
               _axisLines,
               offset * _gpuBlock._ViewMatrix.getInverse(),

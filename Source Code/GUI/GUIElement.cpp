@@ -13,12 +13,12 @@ GUIElement::GUIElement(CEGUI::Window* const parent, const GUIType& type,
     _name = "defaultGuiControl";
     _visible = true;
 
-    RenderStateBlockDescriptor desc;
-    desc.setCullMode(CullMode::NONE);
-    desc.setZEnable(false);
-    desc.setBlend(true, BlendProperty::SRC_ALPHA,
-                  BlendProperty::INV_SRC_ALPHA);
-    _guiSBHash = GFX_DEVICE.getOrCreateStateBlock(desc);
+    RenderStateBlock stateBlock;
+    stateBlock.setCullMode(CullMode::NONE);
+    stateBlock.setZEnable(false);
+    stateBlock.setBlend(true, BlendProperty::SRC_ALPHA,
+                        BlendProperty::INV_SRC_ALPHA);
+    _guiSBHash = stateBlock.getHash();
 }
 
 GUIElement::~GUIElement() {}

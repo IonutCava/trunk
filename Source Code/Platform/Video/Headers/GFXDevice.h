@@ -68,13 +68,14 @@ namespace Time {
 
 namespace Attorney {
     class GFXDeviceGUI;
+    class GFXDeviceRenderStateBlock;
 };
 
 /// Rough around the edges Adapter pattern abstracting the actual rendering API
 /// and access to the GPU
 DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     friend class Attorney::GFXDeviceGUI;
-
+    friend class Attorney::GFXDeviceRenderStateBlock;
   protected:
     typedef hashMapImpl<size_t, RenderStateBlock*> RenderStateMap;
     typedef std::stack<vec4<I32>, vectorImpl<vec4<I32> > > ViewportStack;
@@ -234,11 +235,9 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     inline void setClipPlanes(const PlaneList& clipPlanes);
     /// clear all clipping planes
     inline void resetClipPlanes();
-    /// Return or create a new state block using the given descriptor.
-    /// DO NOT DELETE THE RETURNED STATE BLOCK! GFXDevice handles that!
-    size_t getOrCreateStateBlock(const RenderStateBlockDescriptor& descriptor);
-    const RenderStateBlockDescriptor& getStateBlockDescriptor(
-        size_t renderStateBlockHash) const;
+    /// Retrieve a state block by hash value.
+    /// If the hash value doesn't exist in the state block map, return the default state block
+    const RenderStateBlock& getRenderStateBlock(size_t renderStateBlockHash) const;
 
     /// Generate a cubemap from the given position
     /// It renders the entire scene graph (with culling) as default
@@ -460,6 +459,9 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
         RenderStateBlock* const oldBlock) const override {
         _api->activateStateBlock(newBlock, oldBlock);
     }
+    
+    /// If the stateBlock doesn't exist in the state block map, add it for future reference
+    bool registerRenderStateBlock(const RenderStateBlock& stateBlock);
 
     inline void drawText(const TextLabel& textLabel,
                          const vec2<I32>& position) override {
@@ -563,6 +565,15 @@ namespace Attorney {
 
         friend class Divide::GUI;
         friend class Divide::GUIText;
+    };
+
+    class GFXDeviceRenderStateBlock {
+    private:
+        static bool registerStateBlock(GFXDevice& gfxDevice, const RenderStateBlock& block) {
+            return gfxDevice.registerRenderStateBlock(block);
+        }
+
+        friend class Divide::RenderStateBlock;
     };
 };  // namespace Attorney
 };  // namespace Divide
