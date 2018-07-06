@@ -290,13 +290,15 @@ D64 to_double(const T value) {
 struct SysInfo;
 
 extern void getWindowHandle(void* window, SysInfo& info);
-
 extern void setThreadName(std::thread* thread, const char* threadName);
 extern void setThreadName(const char* threadName);
 
 bool PlatformInit();
 bool PlatformClose();
 bool CheckMemory(const U32 physicalRAMNeeded, SysInfo& info);
+
+bool PlatformPostInit();
+
 /// Converts an arbitrary positive integer value to a bitwise value used for masks
 template<typename T>
 constexpr T toBit(const T X) {

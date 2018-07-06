@@ -254,7 +254,7 @@ class PhysicsComponent : public SGNComponent, public TransformInterface {
 
    protected:
 
-    TransformInterface* _transformInterface;
+    std::unique_ptr<TransformInterface> _transformInterface;
     IgnoreViewSettings _ignoreViewSettings;
     PhysicsGroup _physicsCollisionGroup;
     TransformValues _prevTransformValues;

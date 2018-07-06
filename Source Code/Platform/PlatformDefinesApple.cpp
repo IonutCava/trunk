@@ -16,7 +16,7 @@ void  malloc_free(void*& ptr) {
 namespace Divide {
 
     bool PlatformInit() {
-        return true;
+        return PlatformPostInit();
     }
 
     bool PlatformClose() {

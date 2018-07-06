@@ -166,7 +166,7 @@ void RenderPass::render(SceneRenderState& renderState) {
             //Part 1 - update envirnoment maps:
             SceneEnvironmentProbePool* envProbPool =  Attorney::SceneRenderPass::getEnvProbes(renderState.parentScene());
             const EnvironmentProbeList& probes = envProbPool->getNearestSorted();
-            for (EnvironmentProbe* probe : probes) {
+            for (EnvironmentProbe_ptr& probe : probes) {
                 probe->refresh();
             }
             RenderPassCuller::VisibleNodeList& mainNodeCache = mgr.getVisibleNodesCache(RenderStage::DISPLAY);

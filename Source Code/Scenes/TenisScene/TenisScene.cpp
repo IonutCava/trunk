@@ -112,7 +112,7 @@ void TenisScene::startGame(I64 btnGUID) {
     TaskHandle newGame(CreateTask(getGUID(),
                                DELEGATE_BIND(&TenisScene::playGame, this,
                                              std::placeholders::_1,
-                                             rand() % 5,
+                                             Random(4),
                                              CallbackParam::TYPE_INTEGER)));
     newGame.startTask(Task::TaskPriority::HIGH);
     registerTask(newGame);

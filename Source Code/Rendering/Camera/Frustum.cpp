@@ -7,12 +7,14 @@
 namespace Divide {
 
 Frustum::Frustum(Camera& parentCamera)
-    : _pointsDirty(true), _parentCamera(parentCamera) {}
+    : _parentCamera(parentCamera),
+      _pointsDirty(true)
+{
+}
 
 Frustum::FrustCollision Frustum::ContainsPoint(const vec3<F32>& point) const {
     for (const Plane<F32>& frustumPlane : _frustumPlanes) {
-        if (frustumPlane.classifyPoint(point) !=
-            Plane<F32>::Side::POSITIVE_SIDE) {
+        if (frustumPlane.classifyPoint(point) != Plane<F32>::Side::POSITIVE_SIDE) {
             return FrustCollision::FRUSTUM_OUT;
         }
     }
@@ -50,14 +52,6 @@ Frustum::FrustCollision Frustum::ContainsBoundingBox(const BoundingBox& bbox) co
         // According to the plane normal we can know the
         // indices of the positive vertex
         const vec3<F32>& normal = frustumPlane.getNormal();
-        /*const I32 px = static_cast<I32>(p.x < 0.0f);
-        const I32 py = static_cast<I32>(p.y < 0.0f);
-        const I32 pz = static_cast<I32>(p.z < 0.0f);
-
-        vmin.set(box[1 - px]->x, box[1 - py]->y, box[1 - pz]->z);
-        vmax.set(box[px]->x, box[py]->y, box[pz]->z);*/
-
-
         if (frustumPlane.signedDistanceToPoint(bbox.getPVertex(normal)) < 0) {
             return FrustCollision::FRUSTUM_OUT;
         }
@@ -71,46 +65,32 @@ Frustum::FrustCollision Frustum::ContainsBoundingBox(const BoundingBox& bbox) co
 }
 
 void Frustum::Extract(const mat4<F32>& viewMatrix, const mat4<F32>& projectionMatrix) {
+
     mat4<F32>::Multiply(viewMatrix, projectionMatrix, _viewProjectionMatrixCache);
-    //GFXDevice::computeFrustumPlanes(_viewProjectionMatrixCache.getInverse(), _frustumPlanes);
 
-    Plane<F32> tempPlanes[6];
-    /*Plane<F32>& leftPlane = _frustumPlanes[0];
-    Plane<F32>& rightPlane = _frustumPlanes[1];
-    Plane<F32>& nearPlane = _frustumPlanes[2];
-    Plane<F32>& farPlane = _frustumPlanes[3];
-    Plane<F32>& topPlane = _frustumPlanes[4];
-    Plane<F32>& bottomPlane = _frustumPlanes[5];*/
-    Plane<F32>& leftPlane = tempPlanes[0];
-    Plane<F32>& rightPlane = tempPlanes[1];
-    Plane<F32>& nearPlane = tempPlanes[2];
-    Plane<F32>& farPlane = tempPlanes[3];
-    Plane<F32>& topPlane = tempPlanes[4];
-    Plane<F32>& bottomPlane = tempPlanes[5];
+#if 0
+    GFXDevice::computeFrustumPlanes(_viewProjectionMatrixCache.getInverse(), _frustumPlanes);
+#else
+    Plane<F32>& leftPlane   = _frustumPlanes[to_const_uint(FrustPlane::PLANE_LEFT)];
+    Plane<F32>& rightPlane  = _frustumPlanes[to_const_uint(FrustPlane::PLANE_RIGHT)];
+    Plane<F32>& nearPlane   = _frustumPlanes[to_const_uint(FrustPlane::PLANE_NEAR)];
+    Plane<F32>& farPlane    = _frustumPlanes[to_const_uint(FrustPlane::PLANE_FAR)];
+    Plane<F32>& topPlane    = _frustumPlanes[to_const_uint(FrustPlane::PLANE_TOP)];
+    Plane<F32>& bottomPlane = _frustumPlanes[to_const_uint(FrustPlane::PLANE_BOTTOM)];
 
-    const F32* mat = &_viewProjectionMatrixCache.mat[0];
+    const F32* const mat = &_viewProjectionMatrixCache.mat[0];
 
-    rightPlane.set(mat[3] - mat[0], mat[7] - mat[4], mat[11] - mat[8], mat[15] - mat[12]);
-    rightPlane.normalize();
+    leftPlane.set(  mat[3] + mat[0], mat[7] + mat[4], mat[11] + mat[8],  mat[15] + mat[12]);
+    rightPlane.set( mat[3] - mat[0], mat[7] - mat[4], mat[11] - mat[8],  mat[15] - mat[12]);
+    topPlane.set(   mat[3] - mat[1], mat[7] - mat[5], mat[11] - mat[9],  mat[15] - mat[13]);
+    bottomPlane.set(mat[3] + mat[1], mat[7] + mat[5], mat[11] + mat[9],  mat[15] + mat[13]);
+    nearPlane.set(  mat[3] + mat[2], mat[7] + mat[6], mat[11] + mat[10], mat[15] + mat[14]);
+    farPlane.set(   mat[3] - mat[2], mat[7] - mat[6], mat[11] - mat[10], mat[15] - mat[14]);
 
-    leftPlane.set(mat[3] + mat[0], mat[7] + mat[4], mat[11] + mat[8], mat[15] + mat[12]);
-    leftPlane.normalize();
-
-    bottomPlane.set(mat[3] + mat[1], mat[7] + mat[5], mat[11] + mat[9], mat[15] + mat[13]);
-    bottomPlane.normalize();
-
-    topPlane.set(mat[3] - mat[1], mat[7] - mat[5], mat[11] - mat[9], mat[15] - mat[13]);
-    topPlane.normalize();
-
-    farPlane.set(mat[3] - mat[2], mat[7] - mat[6], mat[11] - mat[10], mat[15] - mat[14]);
-    farPlane.normalize();
-
-    nearPlane.set(mat[3] + mat[2], mat[7] + mat[6], mat[11] + mat[10], mat[15] + mat[14]);
-    nearPlane.normalize();
-
-    /*for (U8 i = 0; i < 6; ++i) {
-        assert(tempPlanes[i].compare(_frustumPlanes[i], 0.05));
-    }*/
+    for (Plane<F32>& plane : _frustumPlanes) {
+        plane.normalize();
+    }
+#endif
 
     _pointsDirty = true;
 }
@@ -124,37 +104,35 @@ void Frustum::intersectionPoint(const Plane<F32>& a, const Plane<F32>& b,
 }
 
 void Frustum::updatePoints() {
-    if (!_pointsDirty) {
-        return;
+    if (_pointsDirty) {
+        const Plane<F32>& leftPlane   = _frustumPlanes[to_const_uint(FrustPlane::PLANE_LEFT)];
+        const Plane<F32>& rightPlane  = _frustumPlanes[to_const_uint(FrustPlane::PLANE_RIGHT)];
+        const Plane<F32>& nearPlane   = _frustumPlanes[to_const_uint(FrustPlane::PLANE_NEAR)];
+        const Plane<F32>& farPlane    = _frustumPlanes[to_const_uint(FrustPlane::PLANE_FAR)];
+        const Plane<F32>& topPlane    = _frustumPlanes[to_const_uint(FrustPlane::PLANE_TOP)];
+        const Plane<F32>& bottomPlane = _frustumPlanes[to_const_uint(FrustPlane::PLANE_BOTTOM)];
+
+        intersectionPoint(nearPlane, leftPlane,  topPlane,    _frustumPoints[to_const_uint(FrustPoints::NEAR_LEFT_TOP)]);
+        intersectionPoint(nearPlane, rightPlane, topPlane,    _frustumPoints[to_const_uint(FrustPoints::NEAR_RIGHT_TOP)]);
+        intersectionPoint(nearPlane, rightPlane, bottomPlane, _frustumPoints[to_const_uint(FrustPoints::NEAR_RIGHT_BOTTOM)]);
+        intersectionPoint(nearPlane, leftPlane,  bottomPlane, _frustumPoints[to_const_uint(FrustPoints::NEAR_LEFT_BOTTOM)]);
+        intersectionPoint(farPlane,  leftPlane,  topPlane,    _frustumPoints[to_const_uint(FrustPoints::FAR_LEFT_TOP)]);
+        intersectionPoint(farPlane,  rightPlane, topPlane,    _frustumPoints[to_const_uint(FrustPoints::FAR_RIGHT_TOP)]);
+        intersectionPoint(farPlane,  rightPlane, bottomPlane, _frustumPoints[to_const_uint(FrustPoints::FAR_RIGHT_BOTTOM)]);
+        intersectionPoint(farPlane,  leftPlane,  bottomPlane, _frustumPoints[to_const_uint(FrustPoints::FAR_LEFT_BOTTOM)]);
+
+        _pointsDirty = false;
     }
-
-    const Plane<F32>& leftPlane = _frustumPlanes[0];
-    const Plane<F32>& rightPlane = _frustumPlanes[1];
-    const Plane<F32>& nearPlane = _frustumPlanes[2];
-    const Plane<F32>& farPlane = _frustumPlanes[3];
-    const Plane<F32>& topPlane = _frustumPlanes[4];
-    const Plane<F32>& bottomPlane = _frustumPlanes[5];
-
-    intersectionPoint(nearPlane, leftPlane, topPlane, _frustumPoints[0]);
-    intersectionPoint(nearPlane, rightPlane, topPlane, _frustumPoints[1]);
-    intersectionPoint(nearPlane, rightPlane, bottomPlane, _frustumPoints[2]);
-    intersectionPoint(nearPlane, leftPlane, bottomPlane, _frustumPoints[3]);
-    intersectionPoint(farPlane, leftPlane, topPlane, _frustumPoints[4]);
-    intersectionPoint(farPlane, rightPlane, topPlane, _frustumPoints[5]);
-    intersectionPoint(farPlane, rightPlane, bottomPlane, _frustumPoints[6]);
-    intersectionPoint(farPlane, leftPlane, bottomPlane, _frustumPoints[7]);
-
-    _pointsDirty = false;
 }
 
 // Get the frustum corners in WorldSpace. cornerWS must be a vector with at
 // least 8 allocated slots
 void Frustum::getCornersWorldSpace(vectorImpl<vec3<F32> >& cornersWS) {
-    assert(cornersWS.size() >= 8);
+    assert(cornersWS.size() >= static_cast<size_t>(FrustPoints::COUNT));
 
     updatePoints();
 
-    for (U8 i = 0; i < 8; ++i) {
+    for (U8 i = 0; i < to_const_ubyte(FrustPoints::COUNT); ++i) {
         cornersWS[i].set(_frustumPoints[i]);
     }
 }
@@ -162,12 +140,12 @@ void Frustum::getCornersWorldSpace(vectorImpl<vec3<F32> >& cornersWS) {
 // Get the frustum corners in ViewSpace. cornerVS must be a vector with at least
 // 8 allocated slots
 void Frustum::getCornersViewSpace(vectorImpl<vec3<F32> >& cornersVS) {
-    assert(cornersVS.size() >= 8);
+    assert(cornersVS.size() >= static_cast<size_t>(FrustPoints::COUNT));
 
     updatePoints();
 
     const mat4<F32>& viewMatrix = _parentCamera.getViewMatrix();
-    for (U8 i = 0; i < 8; ++i) {
+    for (U8 i = 0; i < to_const_ubyte(FrustPoints::COUNT); ++i) {
         cornersVS[i].set(viewMatrix.transformHomogeneous(_frustumPoints[i]));
     }
 }

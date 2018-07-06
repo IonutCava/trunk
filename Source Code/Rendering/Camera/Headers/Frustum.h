@@ -52,6 +52,29 @@ class Frustum {
         FRUSTUM_INTERSECT = 2
     };
 
+    enum class FrustPlane : U32 {
+        PLANE_LEFT = 0,
+        PLANE_RIGHT,
+        PLANE_NEAR,
+        PLANE_FAR,
+        PLANE_TOP,
+        PLANE_BOTTOM,
+        COUNT
+    };
+
+    enum class FrustPoints : U32 {
+        NEAR_LEFT_TOP = 0,
+        NEAR_RIGHT_TOP,
+        NEAR_RIGHT_BOTTOM,
+        NEAR_LEFT_BOTTOM,
+        FAR_LEFT_TOP,
+        FAR_RIGHT_TOP,
+        FAR_RIGHT_BOTTOM,
+        FAR_LEFT_BOTTOM,
+        COUNT
+    };
+
+   public:
     FrustCollision ContainsPoint(const vec3<F32>& point) const;
     FrustCollision ContainsBoundingBox(const BoundingBox& bbox) const;
     FrustCollision ContainsSphere(const vec3<F32>& center, F32 radius) const;
@@ -72,9 +95,10 @@ class Frustum {
    private:
     Camera& _parentCamera;
     bool _pointsDirty;
-    vec3<F32> _frustumPoints[8];
-    Plane<F32> _frustumPlanes[6];
+
     mat4<F32> _viewProjectionMatrixCache;
+    std::array<Plane<F32>, to_const_uint(FrustPlane::COUNT)> _frustumPlanes;
+    std::array<vec3<F32>, to_const_uint(FrustPoints::COUNT)> _frustumPoints;
 };
 
 };  // namespace Divide

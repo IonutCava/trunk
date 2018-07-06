@@ -45,6 +45,7 @@
 #include <cctype>
 #include <cstring>
 #include <assert.h>
+#include <random>
 
 namespace Divide {
 
@@ -59,14 +60,40 @@ namespace Divide {
     constexpr F32 INV_RAND_MAX = 0.0000305185094f;
     constexpr D64 M_PI2 = M_2PI;
 
-template <typename T>
-T Random(const T max = RAND_MAX);
+template<typename T>
+using SignedIntegerBasedOnSize = typename std::conditional<sizeof(T) == 8, I64, I32>::type;
+template<typename T>
+using UnsignedIntegerBasedOnSize = typename std::conditional<sizeof(T) == 8, U64, U32>::type;
+template<typename T>
+using IntegerTypeBasedOnSign = typename std::conditional<std::is_unsigned<T>::value,
+                                                         UnsignedIntegerBasedOnSize<T>,
+                                                         SignedIntegerBasedOnSize<T>>::type;
 
-template <>
-I32 Random(const I32 max);
+template<typename T>
+using DefaultDistribution = typename std::conditional<std::is_integral<T>::value, 
+                                     std::uniform_int_distribution<IntegerTypeBasedOnSign<T>>,
+                                     std::uniform_real_distribution<T>>::type;
 
-template <typename T>
-T Random(const T min, const T max);
+template <typename T, 
+          typename Engine = std::mt19937_64,
+          typename Distribution = DefaultDistribution<T>>
+T Random(T min, T max);
+
+template <typename T,
+          typename Engine = std::mt19937_64,
+          typename Distribution = DefaultDistribution<T>>
+T Random(T max);
+
+template <typename T,
+          typename Engine = std::mt19937_64,
+          typename Distribution = DefaultDistribution<T>>
+T Random();
+
+template<typename Engine = std::mt19937_64>
+void SeedRandom();
+
+template<typename Engine = std::mt19937_64>
+void SeedRandom(U32 seed);
 
 template<typename T>
 bool BitCompare(const T bitMask, const T bit);

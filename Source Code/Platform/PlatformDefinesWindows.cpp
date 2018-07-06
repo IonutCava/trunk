@@ -155,7 +155,7 @@ namespace Divide {
     }
 
     bool PlatformInit() {
-        return true;
+        return PlatformPostInit();
     }
 
     bool PlatformClose() {

@@ -700,7 +700,7 @@ void RenderingComponent::updateEnvProbeList(const EnvironmentProbeList& probes) 
     PhysicsComponent* const transform = _parentSGN.get<PhysicsComponent>();
     if (transform) {
         const vec3<F32>& nodePos = transform->getPosition();
-        auto sortFunc = [&nodePos](EnvironmentProbe* a, EnvironmentProbe* b) -> bool {
+        auto sortFunc = [&nodePos](const EnvironmentProbe_ptr& a, const EnvironmentProbe_ptr& b) -> bool {
             return a->distanceSqTo(nodePos) < b->distanceSqTo(nodePos);
         };
 

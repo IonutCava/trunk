@@ -156,19 +156,12 @@ I32 DivideRecast::getTarget(I32 pathSlot) {
     return _pathStore[pathSlot].Target;
 }
 
-namespace {
-    /// Random number generator implementation used by navmesh query methods.
-    inline F32 frand() {
-        return rand() / to_float(RAND_MAX);
-    }
-}
-
 bool DivideRecast::getRandomNavMeshPoint(const NavigationMesh& navMesh,
                                          vec3<F32>& resultPt) {
     if (navMesh.getNavQuery().getAttachedNavMesh() != nullptr) {
         dtPolyRef resultPoly;
         dtStatus status = navMesh.getNavQuery().findRandomPoint(_filter,
-                                                                frand,
+                                                                Random<F32>,
                                                                 &resultPoly,
                                                                 resultPt._v);
 
@@ -203,7 +196,7 @@ bool DivideRecast::getRandomPointAroundCircle(const NavigationMesh& navMesh,
                                                            centerPosition._v,
                                                            radius,
                                                            _filter,
-                                                           frand,
+                                                           Random<F32>,
                                                            &resultPoly,
                                                            resultPt._v);
                 ACKNOWLEDGE_UNUSED(status);

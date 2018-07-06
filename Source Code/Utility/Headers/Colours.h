@@ -50,7 +50,10 @@ inline vec4<F32> BLUE() { return vec4<F32>(0.0f, 0.0f, 1.0f, 1.0f); }
 inline vec4<F32> DIVIDE_BLUE() { return vec4<F32>(0.1f, 0.1f, 0.8f, 1.0f); }
 
 inline vec4<U8> RANDOM() {
-    return vec4<U8>(rand() % 256, rand() % 256, rand() % 256, 255);
+    return vec4<U8>(Random<U8>(255),
+                    Random<U8>(255),
+                    Random<U8>(255),
+                    to_ubyte(255));
 }
 
 inline vec4<F32> RANDOM_NORMALIZED() {

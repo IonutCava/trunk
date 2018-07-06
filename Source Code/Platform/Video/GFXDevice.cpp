@@ -634,11 +634,11 @@ void GFXDevice::Screenshot(const stringImpl& filename) {
 }
 
 void GFXDevice::computeFrustumPlanes(const mat4<F32>& invViewProj, Plane<F32>* planesOut) {
-    static vec4<F32> planesTemp[6];
-    computeFrustumPlanes(invViewProj, planesTemp);
-    for (U8 i = 0; i < 6; ++i) {
-        const vec4<F32>& planeTemp = planesTemp[i];
-        planesOut[i].set(planeTemp.xyz(), planeTemp.w);
+    std::array<vec4<F32>, to_const_uint(Frustum::FrustPlane::COUNT)> planesTemp;
+
+    computeFrustumPlanes(invViewProj, planesTemp.data());
+    for (U8 i = 0; i < to_ubyte(Frustum::FrustPoints::COUNT); ++i) {
+        planesOut[i].set(planesTemp[i]);
     }
 }
 
@@ -682,11 +682,11 @@ void GFXDevice::computeFrustumPlanes(const mat4<F32>& invViewProj, vec4<F32>* pl
     vec3<F32> far_normal(Cross(rtf_pos - rbf_pos, lbf_pos - rbf_pos));
     far_normal.normalize();
 
-    planesOut[0].set(left_normal,   -Dot(left_normal, lbn_pos));   // Left
-    planesOut[1].set(right_normal,  -Dot(right_normal, rbn_pos));  // Right
-    planesOut[2].set(near_normal,   -Dot(near_normal, lbn_pos));   // Near
-    planesOut[3].set(far_normal,    -Dot(far_normal, lbf_pos));    // Far
-    planesOut[4].set(top_normal,    -Dot(top_normal, ltn_pos));    // Top
-    planesOut[5].set(bottom_normal, -Dot(bottom_normal, lbn_pos)); // Bottom
+    planesOut[to_const_uint(Frustum::FrustPlane::PLANE_LEFT)].set(  left_normal,   -Dot(left_normal, lbn_pos));
+    planesOut[to_const_uint(Frustum::FrustPlane::PLANE_RIGHT)].set( right_normal,  -Dot(right_normal, rbn_pos));
+    planesOut[to_const_uint(Frustum::FrustPlane::PLANE_NEAR)].set(  near_normal,   -Dot(near_normal, lbn_pos));
+    planesOut[to_const_uint(Frustum::FrustPlane::PLANE_FAR)].set(   far_normal,    -Dot(far_normal, lbf_pos));
+    planesOut[to_const_uint(Frustum::FrustPlane::PLANE_TOP)].set(   top_normal,    -Dot(top_normal, ltn_pos));
+    planesOut[to_const_uint(Frustum::FrustPlane::PLANE_BOTTOM)].set(bottom_normal, -Dot(bottom_normal, lbn_pos));
 }
 };

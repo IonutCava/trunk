@@ -27,7 +27,7 @@ int _vscprintf (const char * format, va_list pargs) {
 namespace Divide {
 
     bool PlatformInit() {
-        return true;
+        return PlatformPostInit();
     }
 
     bool PlatformClose() {

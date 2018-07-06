@@ -34,37 +34,93 @@
 
 namespace Divide {
 
-template <typename T>
-T Random(const T max) {
-    return max * rand() * static_cast<T>(INV_RAND_MAX);
+namespace customRNG
+{
+    namespace detail
+    {
+        template<typename Engine>
+        Engine& getEngine() noexcept {
+            static thread_local std::random_device rnddev{};
+            static thread_local auto rndeng = Engine(rnddev());
+            return rndeng;
+        }
+    }  // namespace detail
+
+    template<typename Engine>
+    void srand(const U32 seed) noexcept {
+        detail::getEngine<Engine>().seed(seed);
+    }
+
+    template<typename Engine>
+    void srand() {
+        std::random_device rnddev{};
+        srand<Engine>(rnddev());
+    }
+
+    template<typename T,
+             typename Engine,
+             typename Distribution>
+    typename std::enable_if<std::is_fundamental<T>::value, T>::type
+    rand(T min, T max) noexcept {
+        return static_cast<T>(Distribution{ min, max }(detail::getEngine<Engine>()));
+    }
+
+    template<typename T,
+             typename Engine,
+             typename Distribution>
+    T rand() noexcept {
+        return rand<T, Engine, Distribution>(T(0), std::numeric_limits<T>::max());
+    }
+}  // namespace customRNG
+
+template <typename T,
+          typename Engine,
+          typename Distribution>
+T Random(T min, T max) {
+    if (min > max) {
+        std::swap(min, max);
+    }
+
+    return customRNG::rand<T, Engine, Distribution>(min, max);
 }
 
-template <>
-inline I32 Random(const I32 max) {
-    return rand() % (max + 1);
+template <typename T,
+          typename Engine,
+          typename Distribution>
+T Random(T max) {
+    return Random<T, Engine, Distribution>(max < 0 ? std::numeric_limits<T>::min() : 0, max);
 }
 
-template <typename T>
-inline T Random(const T min, const T max) {
-    return min + (max - min) * 
-           static_cast<T>(INV_RAND_MAX) * 
-           static_cast<T>(rand());
+template <typename T,
+          typename Engine,
+          typename Distribution>
+T Random() {
+    return Random<T, Engine, Distribution>(std::numeric_limits<T>::max());
+}
+
+template<typename Engine>
+void SeedRandom() {
+    customRNG::srand<Engine>();
+}
+
+template<typename Engine>
+void SeedRandom(U32 seed) {
+    customRNG::srand<Engine>(seed);
 }
 
 /// Clamps value n between min and max
 template <typename T>
-inline void CLAMP(T& n, const T min, const T max) {
+void CLAMP(T& n, const T min, const T max) {
     n = std::min(std::max(n, min), max);
 }
 
 template <typename T>
-inline T CLAMPED(const T& n, const T min, const T max) {
+T CLAMPED(const T& n, const T min, const T max) {
     return std::min(std::max(n, min), max);
 }
 
-
 template<typename T>
-inline bool BitCompare(const T bitMask, const T bit) {
+bool BitCompare(const T bitMask, const T bit) {
     return BitCompare(to_uint(bitMask), to_uint(bit));
 }
 

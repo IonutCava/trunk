@@ -45,9 +45,9 @@ public:
 
     const EnvironmentProbeList& getNearestSorted();
 
-    EnvironmentProbe* addInfiniteProbe(const vec3<F32>& position);
-    EnvironmentProbe* addLocalProbe(const vec3<F32>& bbMin, const vec3<F32>& bbMax);
-    void removeProbe(EnvironmentProbe*& probe);
+    EnvironmentProbe_wptr addInfiniteProbe(const vec3<F32>& position);
+    EnvironmentProbe_wptr addLocalProbe(const vec3<F32>& bbMin, const vec3<F32>& bbMax);
+    void removeProbe(EnvironmentProbe_wptr probe);
 
     void debugDraw(RenderSubPassCmds& subPassesInOut);
 

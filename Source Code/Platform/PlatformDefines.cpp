@@ -6,6 +6,7 @@
 #include "GUI/Headers/GUIMessageBox.h"
 
 #include "Core/Headers/Console.h"
+#include "Core/Math/Headers/MathHelper.h"
 
 #if defined(USE_CUSTOM_MEMORY_ALLOCATORS)
 #include <Allocator/xallocator.h>
@@ -31,6 +32,11 @@ void log_delete(void* p) {
     }
 }
 };  // namespace MemoryManager
+
+bool PlatformPostInit() {
+    SeedRandom();
+    return true;
+}
 
 U32 HARDWARE_THREAD_COUNT() {
     return std::max(std::thread::hardware_concurrency(), 2u);

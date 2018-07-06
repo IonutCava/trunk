@@ -113,12 +113,17 @@ class Plane {
     }
 
     inline T& getDistance() { return _distance; }
-    inline T getDistance() const { return _distance; }
+    inline T  getDistance() const { return _distance; }
+
+    inline void set(const vec4<T>& equation) {
+        set(equation.xyz(), equation.w);
+    }
 
     inline void set(const vec3<T>& normal, T distance) {
         _normal = normal;
         _distance = distance;
     }
+
     inline void set(T a, T b, T c, T distance) {
         set(vec3<T>(a, b, c), distance);
     }
@@ -136,6 +141,7 @@ class Plane {
         _normal = normal;
         _distance = _normal.dot(point);
     }
+
     inline vec4<T> getEquation() const { return vec4<T>(_normal, _distance); }
 
     inline vec3<T>& getNormal() { return _normal; }
@@ -162,10 +168,11 @@ class Plane {
 
     T normalize() {
         T length = _normal.length();
-        assert(length > 0.0f);
-        T invLength = 1.0f / length;
-        _normal *= invLength;
-        _distance *= invLength;
+        if (length > 0.0f) {
+            T invLength = 1.0f / length;
+            _normal *= invLength;
+            _distance *= invLength;
+        }
         
         return length;
     }

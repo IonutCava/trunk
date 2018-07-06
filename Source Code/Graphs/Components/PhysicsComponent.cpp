@@ -21,9 +21,9 @@ PhysicsComponent::PhysicsComponent(SceneGraphNode& parentSGN, PhysicsGroup physi
       _prevInterpValue(0.0)
 {
     if (physicsDriven()) {
-        _transformInterface = PHYSICS_DEVICE.createRigidActor(parentSGN);
+        _transformInterface.reset(PHYSICS_DEVICE.createRigidActor(parentSGN));
     } else {
-        _transformInterface = MemoryManager_NEW Transform();
+        _transformInterface = std::make_unique<Transform>();
     }
 
     reset();
@@ -31,7 +31,6 @@ PhysicsComponent::PhysicsComponent(SceneGraphNode& parentSGN, PhysicsGroup physi
 
 PhysicsComponent::~PhysicsComponent()
 {
-    MemoryManager::DELETE(_transformInterface);
 }
 
 void PhysicsComponent::update(const U64 deltaTime) {
@@ -429,12 +428,12 @@ bool PhysicsComponent::isUniformScaled() const {
 
 Transform* PhysicsComponent::getTransform() const {
     assert(!physicsDriven());
-    return static_cast<Transform*>(_transformInterface);
+    return static_cast<Transform*>(_transformInterface.get());
 }
 
 PhysicsAsset* PhysicsComponent::getPhysicsAsset() const {
     assert(physicsDriven());
-    return static_cast<PhysicsAsset*>(_transformInterface);
+    return static_cast<PhysicsAsset*>(_transformInterface.get());
 }
 
 bool PhysicsComponent::physicsDriven() const {

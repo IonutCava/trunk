@@ -44,6 +44,7 @@ class ImpostorSphere;
 struct RenderSubPassCmd;
 typedef vectorImpl<RenderSubPassCmd> RenderSubPassCmds;
 
+FWD_DECLARE_MANAGED_CLASS(EnvironmentProbe);
 class EnvironmentProbe : public GUIDWrapper {
 public:
     enum class ProbeType {
@@ -91,7 +92,7 @@ private:
     static RenderTargetHandle s_reflection;
 };
 
-typedef vectorImpl<EnvironmentProbe*> EnvironmentProbeList;
+typedef vectorImpl<EnvironmentProbe_ptr> EnvironmentProbeList;
 
 }; //namespace Divide
 
