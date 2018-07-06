@@ -22,7 +22,6 @@ PostFX::PostFX()
       _randomFlashCoefficient(0.0f),
       _timer(0.0),
       _tickInterval(1),
-      _anaglyphShader(nullptr),
       _postProcessingShader(nullptr),
       _underwaterTexture(nullptr),
       _gfx(nullptr)
@@ -33,7 +32,6 @@ PostFX::PostFX()
 PostFX::~PostFX()
 {
     RemoveResource(_postProcessingShader);
-    RemoveResource(_anaglyphShader);
     RemoveResource(_underwaterTexture);
     RemoveResource(_noise);
     RemoveResource(_screenBorder);
@@ -46,12 +44,6 @@ void PostFX::init(const vec2<U16>& resolution) {
     _gfx = &GFX_DEVICE;
     _enableNoise = par.getParam<bool>("postProcessing.enableNoise");
     _enableVignette = par.getParam<bool>("postProcessing.enableVignette");
-
-    ResourceDescriptor anaglyph("anaglyph");
-    anaglyph.setThreadedLoading(false);
-    _anaglyphShader = CreateResource<ShaderProgram>(anaglyph);
-    _anaglyphShader->Uniform("texRightEye", to_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_RIGHT_EYE));
-    _anaglyphShader->Uniform("texLeftEye", to_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_LEFT_EYE));
 
     ResourceDescriptor postFXShader("postProcessing");
     postFXShader.setThreadedLoading(false);
@@ -105,10 +97,10 @@ void PostFX::init(const vec2<U16>& resolution) {
 
      _preRenderBatch.init(_gfx->getRenderTarget(GFXDevice::RenderTarget::SCREEN));
     PreRenderOperator& SSAOOp = _preRenderBatch.getOperator(FilterType::FILTER_SS_AMBIENT_OCCLUSION);
-    SSAOOp.addInputFB(_gfx->getRenderTarget(GFXDevice::RenderTarget::DEPTH));
+    SSAOOp.addInputFB(_gfx->getRenderTarget(GFXDevice::RenderTarget::SCREEN));
 
     PreRenderOperator& DOFOp = _preRenderBatch.getOperator(FilterType::FILTER_DEPTH_OF_FIELD);
-    DOFOp.addInputFB(_gfx->getRenderTarget(GFXDevice::RenderTarget::DEPTH));
+    DOFOp.addInputFB(_gfx->getRenderTarget(GFXDevice::RenderTarget::SCREEN));
     
     _timer = 0;
     _tickInterval = 1.0f / 24.0f;
@@ -131,37 +123,29 @@ void PostFX::updateResolution(U16 width, U16 height) {
     _preRenderBatch.reshape(width, height);
 }
 
-void PostFX::displayScene() {
+void PostFX::apply() {
     _shaderFunctionSelection[0] = _shaderFunctionList[_enableVignette ? 0 : 4];
     _shaderFunctionSelection[1] = _shaderFunctionList[_enableNoise ? 1 : 4];
     _shaderFunctionSelection[2] = _shaderFunctionList[_underwater ? 2 : 3];
 
     GFX::Scoped2DRendering scoped2D(true);
-    ShaderProgram* drawShader = nullptr;
-    if (_gfx->anaglyphEnabled()) {
-        STUBBED("ToDo: Add PostFX support for anaglyph rendering! -Ionut")
+    _preRenderBatch.execute(_filterMask);
+    _postProcessingShader->bind();
+    _postProcessingShader->SetSubroutines(ShaderType::FRAGMENT, _shaderFunctionSelection);
 
-        drawShader = _anaglyphShader;
-        _gfx->getRenderTarget(GFXDevice::RenderTarget::SCREEN)
-            ->bind(to_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_RIGHT_EYE));
+    _preRenderBatch.bindOutput(to_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN));
+    _underwaterTexture->Bind(to_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER));
+    _noise->Bind(to_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_NOISE));
+    _screenBorder->Bind(to_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_BORDER));
 
-        _gfx->getRenderTarget(GFXDevice::RenderTarget::ANAGLYPH)
-            ->bind(to_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_LEFT_EYE));
-    } else {
-        _preRenderBatch.execute(_filterMask);
+    Framebuffer::FramebufferTarget clearColor;
+    clearColor._clearDepthBufferOnBind = false;
+    clearColor._drawMask.fill(false);
+    clearColor._drawMask[0] = true;
 
-        drawShader = _postProcessingShader;
-        _postProcessingShader->bind();
-        _postProcessingShader->SetSubroutines(ShaderType::FRAGMENT, _shaderFunctionSelection);
-
-        _preRenderBatch.bindOutput(to_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN));
-
-        _underwaterTexture->Bind(to_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER));
-        _noise->Bind(to_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_NOISE));
-        _screenBorder->Bind(to_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_BORDER));
-    }
-
-    _gfx->drawTriangle(_gfx->getDefaultStateBlock(true), drawShader);
+    _gfx->getRenderTarget(GFXDevice::RenderTarget::SCREEN)->begin(clearColor);
+        _gfx->drawTriangle(_gfx->getDefaultStateBlock(true), _postProcessingShader);
+    _gfx->getRenderTarget(GFXDevice::RenderTarget::SCREEN)->end();
 }
 
 void PostFX::idle() {

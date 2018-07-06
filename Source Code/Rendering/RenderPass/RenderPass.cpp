@@ -86,11 +86,11 @@ bool RenderPass::preRender(SceneRenderState& renderState, bool anaglyph, U32 pas
             bindShadowMaps = true;
             GFX.occlusionCull(0);
 
+            Framebuffer* screenBuffer = GFX.getRenderTarget(GFXDevice::RenderTarget::SCREEN);
             Framebuffer::FramebufferTarget noDepthClear;
             noDepthClear._clearDepthBufferOnBind = false;
-            GFXDevice::RenderTarget eyeTarget = anaglyph ? GFXDevice::RenderTarget::ANAGLYPH
-                                                         : GFXDevice::RenderTarget::SCREEN;
-            GFX.getRenderTarget(eyeTarget)->begin(noDepthClear);
+            noDepthClear._drawMask[1] = false;
+            screenBuffer->begin(noDepthClear);
         } break;
         case RenderStage::REFLECTION: {
             bindShadowMaps = true;
@@ -98,14 +98,15 @@ bool RenderPass::preRender(SceneRenderState& renderState, bool anaglyph, U32 pas
         case RenderStage::SHADOW: {
         } break;
         case RenderStage::Z_PRE_PASS: {
-            GFX.getRenderTarget(GFXDevice::RenderTarget::DEPTH)->begin(Framebuffer::defaultPolicy());
+            GFX.getRenderTarget(GFXDevice::RenderTarget::SCREEN)->begin(Framebuffer::defaultPolicy());
         } break;
     };
 
 
     if (bindShadowMaps) {
         LightManager::getInstance().bindShadowMaps();
-        GFX.getRenderTarget(GFXDevice::RenderTarget::DEPTH)->bind(0, TextureDescriptor::AttachmentType::Depth);
+        GFX.getRenderTarget(GFXDevice::RenderTarget::SCREEN)->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0),
+                                                                   TextureDescriptor::AttachmentType::Depth);
     }
 
     return true;
@@ -124,16 +125,14 @@ bool RenderPass::postRender(SceneRenderState& renderState, bool anaglyph, U32 pa
 
     switch (_stageFlags[pass]) {
         case RenderStage::DISPLAY: {
-            GFXDevice::RenderTarget eyeTarget = anaglyph ? GFXDevice::RenderTarget::ANAGLYPH
-                                                         : GFXDevice::RenderTarget::SCREEN;
-            GFX.getRenderTarget(eyeTarget)->end();
+            GFX.getRenderTarget(GFXDevice::RenderTarget::SCREEN)->end();
         } break;
         case RenderStage::REFLECTION: {
         } break;
         case RenderStage::SHADOW: {
         } break;
         case RenderStage::Z_PRE_PASS: {
-            GFX.getRenderTarget(GFXDevice::RenderTarget::DEPTH)->end();
+            GFX.getRenderTarget(GFXDevice::RenderTarget::SCREEN)->end();
             GFX.constructHIZ();
             LightManager::getInstance().updateAndUploadLightData(renderState.getCameraConst().getEye(), 
                                                                  GFX.getMatrix(MATRIX::VIEW));

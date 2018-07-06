@@ -40,7 +40,7 @@ void ForwardPlusRenderer::preRender() {
     lightMgr.uploadLightData(LightType::POINT, ShaderBufferLocation::LIGHT_CULL_POINT);
     lightMgr.uploadLightData(LightType::SPOT, ShaderBufferLocation::LIGHT_CULL_SPOT);
 
-    Framebuffer* depthBuffer = GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::DEPTH);
+    Framebuffer* depthBuffer = GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::SCREEN);
     Texture* depthTexture = depthBuffer->getAttachment(TextureDescriptor::AttachmentType::Depth);
     depthTexture->Bind(to_ubyte(ShaderProgram::TextureUsage::DEPTH));
 

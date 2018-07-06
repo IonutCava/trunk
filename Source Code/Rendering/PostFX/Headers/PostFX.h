@@ -51,8 +51,6 @@ DEFINE_SINGLETON(PostFX)
           TEX_BIND_POINT_BORDER = 1,
           TEX_BIND_POINT_NOISE = 2,
           TEX_BIND_POINT_UNDERWATER = 3,
-          TEX_BIND_POINT_LEFT_EYE = 4,
-          TEX_BIND_POINT_RIGHT_EYE = 5,
           COUNT
       };
 
@@ -61,7 +59,7 @@ DEFINE_SINGLETON(PostFX)
     PostFX();
 
   public:
-    void displayScene();
+    void apply();
 
     void init(const vec2<U16>& resolution);
     void idle();
@@ -91,7 +89,6 @@ DEFINE_SINGLETON(PostFX)
     F32 _randomNoiseCoefficient, _randomFlashCoefficient;
     D32 _timer, _tickInterval;
 
-    ShaderProgram* _anaglyphShader;
     ShaderProgram* _postProcessingShader;
     Texture* _underwaterTexture;
     GFXDevice* _gfx;

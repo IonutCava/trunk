@@ -20,11 +20,17 @@ void main(void)
 
 out vec4 _colorOut;
 
-uniform sampler2D texLeftEye;
-uniform sampler2D texRightEye;
+layout(binding = TEXTURE_UNIT0) uniform sampler2D texLeftEye;
+layout(binding = TEXTURE_UNIT0) uniform sampler2D texRightEye;
+
+uniform bool anaglyphEnabled;
 
 void main(void){
     vec4 colorLeftEye = texture(texLeftEye, VAR._texCoord);
-    vec4 colorRightEye = texture(texRightEye, VAR._texCoord);
-    _colorOut = vec4(colorLeftEye.r, colorRightEye.g, colorRightEye.b, 1.0);
+    if (anaglyphEnabled) {
+        vec4 colorRightEye = texture(texRightEye, VAR._texCoord);
+        _colorOut = vec4(colorLeftEye.r, colorRightEye.g, colorRightEye.b, 1.0);
+    } else {
+        _colorOut = colorLeftEye;
+    }
 }

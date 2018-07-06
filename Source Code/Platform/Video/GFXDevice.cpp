@@ -52,6 +52,7 @@ GFXDevice::GFXDevice()
     _HIZCullProgram = nullptr;
     _previewNormalsShader = nullptr;
     _previewDepthMapShader = nullptr;
+    _displayShader = nullptr;
     _commandBuildTimer = nullptr;
     // Integers
     FRAME_COUNT = 0;
@@ -649,10 +650,10 @@ void GFXDevice::constructHIZ() {
     // only a depth image,
     // disables depth testing but allows depth writes
     // Set the depth buffer as the currently active render target
-    _renderTarget[to_uint(RenderTarget::DEPTH)]->begin(hizTarget);
+    _renderTarget[to_uint(RenderTarget::SCREEN)]->begin(hizTarget);
     // Bind the depth texture to the first texture unit
-    _renderTarget[to_uint(RenderTarget::DEPTH)]->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0),
-                                                      TextureDescriptor::AttachmentType::Depth);
+    _renderTarget[to_uint(RenderTarget::SCREEN)]->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0),
+                                                       TextureDescriptor::AttachmentType::Depth);
     // Calculate the number of mipmap levels we need to generate
     U32 numLevels = 1 + to_uint(floorf(log2f(fmaxf(to_float(resolution.width),
                                                    to_float(resolution.height)))));
@@ -673,17 +674,17 @@ void GFXDevice::constructHIZ() {
         // Update the viewport with the new resolution
         updateViewportInternal(vec4<I32>(0, 0, currentWidth, currentHeight));
         // Bind next mip level for rendering but first restrict fetches only to previous level
-        _renderTarget[to_uint(RenderTarget::DEPTH)]->setMipLevel(
+        _renderTarget[to_uint(RenderTarget::SCREEN)]->setMipLevel(
             i - 1, i - 1, i, TextureDescriptor::AttachmentType::Depth);
         // Dummy draw command as the full screen quad is generated completely in the vertex shader
         drawTriangle(_stateDepthOnlyRenderingHash, _HIZConstructProgram);
     }
     updateViewportInternal(previousViewport);
     // Reset mipmap level range for the depth buffer
-    _renderTarget[to_uint(RenderTarget::DEPTH)]
+    _renderTarget[to_uint(RenderTarget::SCREEN)]
         ->resetMipLevel(TextureDescriptor::AttachmentType::Depth);
     // Unbind the render target
-    _renderTarget[to_uint(RenderTarget::DEPTH)]->end();
+    _renderTarget[to_uint(RenderTarget::SCREEN)]->end();
     
 }
 

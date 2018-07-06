@@ -42,16 +42,16 @@ void GFXDevice::previewDepthBuffer() {
     }
 
     { //Depth preview
-        Texture* depthTex = _renderTarget[to_uint(RenderTarget::DEPTH)]->getAttachment(TextureDescriptor::AttachmentType::Depth);
+        Texture* depthTex = _renderTarget[to_uint(RenderTarget::SCREEN)]->getAttachment(TextureDescriptor::AttachmentType::Depth);
         _previewDepthMapShader->Uniform("lodLevel", to_float(to_uint((Time::ElapsedMilliseconds() / 750.0)) % (depthTex->getMaxMipLevel() - 1)));
         depthTex->Bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0));
-        GFX::ScopedViewport viewport(_renderTarget[to_uint(RenderTarget::DEPTH)]->getResolution().width - 256, 0,256, 256);
+        GFX::ScopedViewport viewport(_renderTarget[to_uint(RenderTarget::SCREEN)]->getResolution().width - 256, 0,256, 256);
         drawTriangle(_defaultStateNoDepthHash, _previewDepthMapShader);
     }
     { //Normals preview
-        Texture* normalsPreview = _renderTarget[to_uint(RenderTarget::DEPTH)]->getAttachment(TextureDescriptor::AttachmentType::Color0);
+        Texture* normalsPreview = _renderTarget[to_uint(RenderTarget::SCREEN)]->getAttachment(TextureDescriptor::AttachmentType::Color1);
         normalsPreview->Bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0));
-        GFX::ScopedViewport viewport(_renderTarget[to_uint(RenderTarget::DEPTH)]->getResolution().width - 512, 0, 256, 256);
+        GFX::ScopedViewport viewport(_renderTarget[to_uint(RenderTarget::SCREEN)]->getResolution().width - 512, 0, 256, 256);
         drawTriangle(_defaultStateNoDepthHash, _previewNormalsShader);
     }
 #endif

@@ -130,7 +130,7 @@ void SSAOPreRenderOperator::execute() {
     _inputFB[0]->bind(to_ubyte(ShaderProgram::TextureUsage::DEPTH),
                       TextureDescriptor::AttachmentType::Depth);  // depth
     _inputFB[0]->bind(to_ubyte(ShaderProgram::TextureUsage::NORMALMAP),
-                      TextureDescriptor::AttachmentType::Color0);  // normals
+                      TextureDescriptor::AttachmentType::Color1);  // normals
     
     _ssaoOutput->begin(Framebuffer::defaultPolicy());
         GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true), _ssaoGenerateShader);

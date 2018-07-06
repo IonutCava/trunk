@@ -170,7 +170,6 @@ void PreRenderBatch::execute(U32 filterMask) {
             op->execute();
         }
     }
-    
 }
 
 void PreRenderBatch::reshape(U16 width, U16 height) {

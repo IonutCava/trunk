@@ -48,7 +48,7 @@ void main()
 #if defined(SHADOW_PASS)
 out vec2 _colorOut;
 #else
-out vec3 _colorOut;
+layout(location = 1) out vec3 _colorOut;
 #endif
 
 #include "nodeBufferedInput.cmn"

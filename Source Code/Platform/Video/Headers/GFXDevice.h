@@ -190,8 +190,7 @@ DEFINE_SINGLETON(GFXDevice)
    enum class RenderTarget : U32 {
        SCREEN = 0,
        ANAGLYPH = 1,
-       DEPTH = 2,
-       ENVIRONMENT = 3,
+       ENVIRONMENT = 2,
        COUNT
    };
 
@@ -275,6 +274,7 @@ DEFINE_SINGLETON(GFXDevice)
 
     void addToRenderQueue(const RenderPackage& package);
     void flushRenderQueue();
+
     /// Sets the current render stage.
     ///@param stage Is used to inform the rendering pipeline what we are rendering.
     ///Shadows? reflections? etc
@@ -491,6 +491,9 @@ DEFINE_SINGLETON(GFXDevice)
 
     void onCameraUpdate(Camera& camera);
 
+    void flushDisplay();
+    void flushAnaglyph();
+
    protected:
     friend class SceneManager;
     friend class RenderPass;
@@ -580,6 +583,7 @@ DEFINE_SINGLETON(GFXDevice)
     ShaderProgram* _previewNormalsShader;
     ShaderProgram* _HIZConstructProgram;
     ShaderProgram* _HIZCullProgram;
+    ShaderProgram* _displayShader;
     /// getMatrix cache
     mat4<F32> _mat4Cache;
     /// Quality settings
@@ -636,6 +640,14 @@ namespace Attorney {
     private:
         static void onCameraUpdate(Camera& camera) {
             GFXDevice::getInstance().onCameraUpdate(camera);
+        }
+
+        static void flushDisplay() {
+            GFXDevice::getInstance().flushDisplay();
+        }
+
+        static void flushAnaglyph() {
+            GFXDevice::getInstance().flushAnaglyph();
         }
 
         friend class Divide::Kernel;

@@ -146,8 +146,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     // down-sampled version of the depth buffer
     // Screen FB should use MSAA if available
     _renderTarget[to_uint(RenderTarget::SCREEN)] = newFB(true);
-    // The depth buffer should probably be merged into the screen buffer
-    _renderTarget[to_uint(RenderTarget::DEPTH)] = newFB(false);
     // This is an environment cube map centered around the camera
     _renderTarget[to_uint(RenderTarget::ENVIRONMENT)] = newFB(false);
     // We need to create all of our attachments for the default render targets
@@ -180,23 +178,22 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
         GFXImageFormat::RGB16F,
         GFXDataFormat::FLOAT_16);
     normalDescriptor.setSampler(screenSampler);
-    _renderTarget[to_uint(RenderTarget::DEPTH)]->addAttachment(depthDescriptor, TextureDescriptor::AttachmentType::Depth);
-    _renderTarget[to_uint(RenderTarget::DEPTH)]->addAttachment(normalDescriptor, TextureDescriptor::AttachmentType::Color0);
-    _renderTarget[to_uint(RenderTarget::DEPTH)]->create(resolution.width, resolution.height);
-    Texture* depthAttchment = _renderTarget[to_uint(RenderTarget::DEPTH)]->getAttachment(TextureDescriptor::AttachmentType::Depth);
-    depthAttchment->lockAutomaticMipMapGeneration(true);
-
+    
     // Add the attachments to the render targets
     _renderTarget[to_uint(RenderTarget::SCREEN)]->addAttachment(screenDescriptor, TextureDescriptor::AttachmentType::Color0);
-    _renderTarget[to_uint(RenderTarget::SCREEN)]->addAttachment(*depthAttchment, TextureDescriptor::AttachmentType::Depth);
+    _renderTarget[to_uint(RenderTarget::SCREEN)]->addAttachment(normalDescriptor, TextureDescriptor::AttachmentType::Color1);
+    _renderTarget[to_uint(RenderTarget::SCREEN)]->addAttachment(depthDescriptor, TextureDescriptor::AttachmentType::Depth);
     _renderTarget[to_uint(RenderTarget::SCREEN)]->create(resolution.width, resolution.height);
     _renderTarget[to_uint(RenderTarget::SCREEN)]->setClearColor(DefaultColors::DIVIDE_BLUE());
+
+    Texture* depthAttchment = _renderTarget[to_uint(RenderTarget::SCREEN)]->getAttachment(TextureDescriptor::AttachmentType::Depth);
+    depthAttchment->lockAutomaticMipMapGeneration(true);
     // If we enabled anaglyph rendering, we need a second target, identical to
     // the screen target
     // used to render the scene at an offset
     _renderTarget[to_uint(RenderTarget::ANAGLYPH)] = newFB(true);
     _renderTarget[to_uint(RenderTarget::ANAGLYPH)]->addAttachment(screenDescriptor, TextureDescriptor::AttachmentType::Color0);
-    _renderTarget[to_uint(RenderTarget::ANAGLYPH)]->addAttachment(*depthAttchment, TextureDescriptor::AttachmentType::Depth);
+    _renderTarget[to_uint(RenderTarget::ANAGLYPH)]->useAutoDepthBuffer(false);
     _renderTarget[to_uint(RenderTarget::ANAGLYPH)]->create(resolution.width, resolution.height);
     _renderTarget[to_uint(RenderTarget::ANAGLYPH)]->setClearColor(DefaultColors::DIVIDE_BLUE());
 
@@ -213,6 +210,8 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     // attachment and down-samples it for every mip level)
     _HIZConstructProgram = CreateResource<ShaderProgram>(ResourceDescriptor("HiZConstruct"));
     _HIZCullProgram = CreateResource<ShaderProgram>(ResourceDescriptor("HiZOcclusionCull"));
+    _displayShader = CreateResource<ShaderProgram>(ResourceDescriptor("display"));
+
     // Store our target z distances
     _gpuBlock._data._ZPlanesCombined.zw(vec2<F32>(
         ParamHandler::getInstance().getParam<F32>("rendering.zNear"),
@@ -262,6 +261,7 @@ void GFXDevice::closeRenderingAPI() {
     // Delete the internal shader
     RemoveResource(_HIZConstructProgram);
     RemoveResource(_HIZCullProgram);
+    RemoveResource(_displayShader);
     // Destroy our post processing system
     Console::printfn(Locale::get(_ID("STOP_POST_FX")));
     PostFX::destroyInstance();

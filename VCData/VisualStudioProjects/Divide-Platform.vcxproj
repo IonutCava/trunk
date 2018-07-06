@@ -176,7 +176,7 @@
     <ClCompile Include="..\..\Source Code\Platform\Video\Textures\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\assets\shaders\GLSL\anaglyph.glsl" />
+    <None Include="..\..\assets\shaders\GLSL\display.glsl" />
     <None Include="..\..\assets\shaders\GLSL\blur.glsl" />
     <None Include="..\..\assets\shaders\GLSL\bloom.glsl" />
     <None Include="..\..\assets\shaders\GLSL\common\HiZCullingAlgorithm.cmn" />
