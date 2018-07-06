@@ -34,6 +34,22 @@
 
 namespace Divide {
 namespace Config {
+namespace Build {
+#if defined(_DEBUG)
+    const bool IS_DEBUG_BUILD = true;
+    const bool IS_PROFILE_BUILD = false;
+    const bool IS_RELEASE_BUILD = false;
+#elif defined(_PROFILE)
+    const bool IS_DEBUG_BUILD = false;
+    const bool IS_PROFILE_BUILD = true;
+    const bool IS_RELEASE_BUILD = false;
+#else
+    const bool IS_DEBUG_BUILD = false;
+    const bool IS_PROFILE_BUILD = false;
+    const bool IS_RELEASE_BUILD = true;
+#endif
+};
+
 /// Use OpenGL/OpenGL ES for rendering
 const bool USE_OPENGL_RENDERING = true;
 /// Select between desktop GL and ES GL

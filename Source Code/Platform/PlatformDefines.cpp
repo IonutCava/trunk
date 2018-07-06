@@ -18,19 +18,19 @@
 namespace Divide {
 namespace MemoryManager {
 void log_new(void* p, size_t size, const char* zFile, size_t nLine) {
-#if defined(_DEBUG)
-    if (MemoryTracker::Ready) {
-         AllocTracer.Add( p, size, zFile, nLine );
+    if (Config::Build::IS_DEBUG_BUILD) {
+        if (MemoryTracker::Ready) {
+             AllocTracer.Add( p, size, zFile, nLine );
+        }
     }
-#endif
 }
 
 void log_delete(void* p) {
-#if defined(_DEBUG)
-    if (MemoryTracker::Ready) {
-        AllocTracer.Remove( p );
+    if (Config::Build::IS_DEBUG_BUILD) {
+        if (MemoryTracker::Ready) {
+            AllocTracer.Remove( p );
+        }
     }
-#endif
 }
 };  // namespace MemoryManager
 

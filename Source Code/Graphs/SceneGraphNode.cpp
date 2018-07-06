@@ -89,11 +89,12 @@ SceneGraphNode::~SceneGraphNode()
     Console::printfn(Locale::get(_ID("REMOVE_SCENEGRAPH_NODE")),
         getName().c_str(), _node->getName().c_str());
 
-#if defined(_DEBUG)
-    for (U32 i = 0; i < getChildCount(); ++i) {
-        DIVIDE_ASSERT(_children[i].unique(), "SceneGraphNode::~SceneGraphNode error: child still in use!");
+    if (Config::Build::IS_DEBUG_BUILD) {
+        for (U32 i = 0; i < getChildCount(); ++i) {
+            DIVIDE_ASSERT(_children[i].unique(), "SceneGraphNode::~SceneGraphNode error: child still in use!");
+        }
     }
-#endif
+
     Attorney::SceneNodeSceneGraph::unregisterSGNParent(*_node, getGUID());
 
     if (isHelperNode(*_node)) {

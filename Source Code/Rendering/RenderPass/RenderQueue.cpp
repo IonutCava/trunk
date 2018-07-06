@@ -140,7 +140,7 @@ void RenderQueue::populateRenderQueues(RenderStage renderStage) {
     populateTask.wait();
 }
 
-void RenderQueue::postRender(SceneRenderState& renderState, RenderStage renderStage) {
+void RenderQueue::postRender(const SceneRenderState& renderState, RenderStage renderStage) {
     for (RenderBin* renderBin : _activeBins) {
         renderBin->postRender(renderState, renderStage);
     }

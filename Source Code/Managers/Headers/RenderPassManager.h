@@ -37,20 +37,32 @@
 
 namespace Divide {
 
+class Camera;
 class SceneGraph;
 class RenderQueue;
-class SceneRenderState;
+class RenderTarget;
+class RTDrawDescriptor;
 enum class RenderStage : U32;
 
 DEFINE_SINGLETON(RenderPassManager)
-
+  public:
+      struct PassParams {
+          RenderTarget* target = nullptr;
+          RTDrawDescriptor* drawPolicy = nullptr;
+          RenderStage stage = RenderStage::COUNT;
+          Camera* camera = nullptr;
+          Plane<F32>* reflectionPlane = nullptr;
+          bool occlusionCull = false;
+          bool doPrePass = true;
+          U32 pass = 0;
+      };
   public:
     /// Call every renderqueue's render function in order
     void render(SceneRenderState& sceneRenderState);
     /// Add a new pass that will run once for each of the RenderStages specified
     RenderPass& addRenderPass(const stringImpl& renderPassName, 
                               U8 orderKey,
-                              std::initializer_list<RenderStage> renderStages);
+                              RenderStage renderStage);
     /// Find a renderpass by name and remove it from the manager
     void removeRenderPass(const stringImpl& name);
     U16  getLastTotalBinSize(RenderStage renderStage) const;
@@ -59,17 +71,17 @@ DEFINE_SINGLETON(RenderPassManager)
         return *_renderQueue;
     }
 
-    RenderPass::BufferData&
-    getBufferData(RenderStage renderStage, I32 pass, U32 stage);
+    RenderPass::BufferData& getBufferData(RenderStage renderStage, I32 bufferIndex);
+    const RenderPass::BufferData& getBufferData(RenderStage renderStage, I32 bufferIndex) const;
 
-    const RenderPass::BufferData&
-    getBufferData(RenderStage renderStage, I32 pass, U32 stage) const;
+    void doCustomPass(PassParams& params);
 
   private:
     RenderPassManager();
     ~RenderPassManager();
 
     RenderPass* getPassForStage(RenderStage renderStage) const;
+
   private:
     // Some vector implementations are not move-awarem so use STL in this case
     vectorImpl<RenderPass*> _renderPasses;

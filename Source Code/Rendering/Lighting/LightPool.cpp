@@ -176,14 +176,12 @@ bool LightPool::generateShadowMaps(SceneRenderState& sceneRenderState) {
     I32 idx = 0;
     for (Light* light : _shadowCastingLights) {
         if(light != nullptr) {
-            Attorney::SceneRenderStateLightPool::currentStagePass(sceneRenderState, idx++);
             _currentShadowCastingLight = light;
             light->validateOrCreateShadowMaps(sceneRenderState);
-            light->generateShadowMaps(sceneRenderState);
+            light->generateShadowMaps(sceneRenderState, idx++ * 6);
         }
     }
 
-    Attorney::SceneRenderStateLightPool::currentStagePass(sceneRenderState , -1);
     _currentShadowCastingLight = nullptr;
     return true;
 }
@@ -199,7 +197,10 @@ void LightPool::togglePreviewShadowMaps() {
 }
 
 void LightPool::previewShadowMaps(Light* light) {
-//#ifdef _DEBUG
+    if (!Config::Build::IS_DEBUG_BUILD) {
+        return;
+    }
+
     // Stop if we have shadows disabled
     if (!_shadowMapsEnabled || !_previewShadowMaps || _lights.empty() ||
         GFX_DEVICE.getRenderStage() != RenderStage::DISPLAY) {
@@ -223,7 +224,6 @@ void LightPool::previewShadowMaps(Light* light) {
         assert(light->getShadowMapInfo()->getShadowMap() != nullptr);
         light->getShadowMapInfo()->getShadowMap()->previewShadowMaps(0);
     }
-//#endif
 }
 
 // If we have computed shadowmaps, bind them before rendering any geometry;

@@ -97,7 +97,7 @@ void CascadedShadowMaps::init(ShadowMapInfo* const smi) {
     _init = true;
 }
 
-void CascadedShadowMaps::render(SceneRenderState& renderState) {
+void CascadedShadowMaps::render(SceneRenderState& renderState, U32 passIdx) {
     _splitLogFactor = _dirLight->csmSplitLogFactor();
     _nearClipOffset = _dirLight->csmNearClipOffset();
     _lightPosition.set(_light->getPosition());
@@ -128,9 +128,18 @@ void CascadedShadowMaps::render(SceneRenderState& renderState) {
     _shadowMatricesBuffer->incQueue();
 
     renderState.getCameraMgr().pushActiveCamera(_shadowCamera);
-    getDepthMap().begin(*_renderPolicy);
-        SceneManager::instance().renderVisibleNodes(RenderStage::SHADOW, true);
-    getDepthMap().end();
+
+    RenderPassManager& passMgr = RenderPassManager::instance();
+    RenderPassManager::PassParams params;
+    params.doPrePass = false;
+    params.occlusionCull = false;
+    params.camera = _shadowCamera;
+    params.stage = RenderStage::SHADOW;
+    params.target = &getDepthMap();
+    params.drawPolicy = _renderPolicy;
+    params.pass = passIdx;
+
+    passMgr.doCustomPass(params);
     renderState.getCameraMgr().popActiveCamera();
 
     postRender();

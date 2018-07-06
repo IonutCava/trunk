@@ -67,8 +67,7 @@ SceneManager::SceneManager()
       _init(false),
       _elapsedTime(0ULL),
       _elapsedTimeMS(0),
-      _saveTimer(0ULL),
-      _sceneGraphCullTimer(Time::ADD_TIMER("SceneGraph cull timer"))
+      _saveTimer(0ULL)
 {
     ADD_FILE_DEBUG_GROUP();
     ADD_DEBUG_VAR_FILE(&_elapsedTime, CallbackParam::TYPE_LARGE_INTEGER, false);
@@ -76,6 +75,16 @@ SceneManager::SceneManager()
 
     _sceneData = MemoryManager_NEW SceneShaderData();
     _scenePool = MemoryManager_NEW ScenePool(*this);
+
+    _sceneGraphCullTimers[0][to_uint(RenderStage::DISPLAY)] = &Time::ADD_TIMER("SceneGraph cull timer: Display");
+    _sceneGraphCullTimers[0][to_uint(RenderStage::REFLECTION)] = &Time::ADD_TIMER("SceneGraph cull timer: Reflection");
+    _sceneGraphCullTimers[0][to_uint(RenderStage::REFRACTION)] = &Time::ADD_TIMER("SceneGraph cull timer: Refraction");
+    _sceneGraphCullTimers[0][to_uint(RenderStage::SHADOW)] = &Time::ADD_TIMER("SceneGraph cull timer: Shadow");
+
+    _sceneGraphCullTimers[1][to_uint(RenderStage::DISPLAY)] = &Time::ADD_TIMER("SceneGraph cull timer: Display PrePass");
+    _sceneGraphCullTimers[1][to_uint(RenderStage::REFLECTION)] = &Time::ADD_TIMER("SceneGraph cull timer: Reflection PrePass");
+    _sceneGraphCullTimers[1][to_uint(RenderStage::REFRACTION)] = &Time::ADD_TIMER("SceneGraph cull timer: Refraction PrePass");
+    _sceneGraphCullTimers[1][to_uint(RenderStage::SHADOW)] = &Time::ADD_TIMER("SceneGraph cull timer: Shadow PrePass");
 }
 
 SceneManager::~SceneManager()
@@ -317,12 +326,21 @@ void SceneManager::updateSceneState(const U64 deltaTime) {
     }
 }
 
-void SceneManager::preRender() {
+void SceneManager::preRender(RenderTarget& target) {
     Scene& activeScene = getActiveScene();
     LightPool* lightPool = Attorney::SceneManager::lightPool(activeScene);
     lightPool->updateAndUploadLightData(activeScene.renderState().getCameraConst().getEye(), GFX_DEVICE.getMatrix(MATRIX::VIEW));
-    getRenderer().preRender(*lightPool);
-    PostFX::instance().cacheDisplaySettings(GFX_DEVICE);
+    getRenderer().preRender(target, *lightPool);
+
+    if (GFX_DEVICE.getRenderStage() == RenderStage::DISPLAY) {
+        PostFX::instance().cacheDisplaySettings(GFX_DEVICE);
+    }
+}
+
+void SceneManager::postRender(RenderStage stage) {
+    RenderPassManager& passMgr = RenderPassManager::instance();
+    passMgr.getQueue().postRender(getActiveScene().renderState(), stage);
+    Attorney::SceneManager::debugDraw(getActiveScene(), stage);
 }
 
 bool SceneManager::generateShadowMaps() {
@@ -338,7 +356,7 @@ SceneManager::getSortedCulledNodes(const std::function<bool(const RenderPassCull
     const vec3<F32>& camPos = renderState.getCameraConst().getEye();
 
     // Get list of nodes in view from the previous frame
-    RenderPassCuller::VisibleNodeList& nodeCache = getVisibleNodesCache(RenderStage::Z_PRE_PASS);
+    RenderPassCuller::VisibleNodeList& nodeCache = getVisibleNodesCache(RenderStage::DISPLAY);
 
     RenderPassCuller::VisibleNodeList waterNodes;
     _tempNodesCache.resize(0);
@@ -398,7 +416,7 @@ const RenderPassCuller::VisibleNodeList& SceneManager::getSortedRefractiveNodes(
 }
 
 
-const RenderPassCuller::VisibleNodeList& SceneManager::cullSceneGraph(RenderStage stage) {
+const RenderPassCuller::VisibleNodeList& SceneManager::cullSceneGraph(RenderStage stage, bool isPrePass) {
     Scene& activeScene = getActiveScene();
 
     auto cullingFunction = [](const SceneGraphNode& node) -> bool {
@@ -425,9 +443,10 @@ const RenderPassCuller::VisibleNodeList& SceneManager::cullSceneGraph(RenderStag
 
     // If we are rendering a high node count, we might want to use async frustum culling
     bool cullAsync = _renderPassManager->getLastTotalBinSize(stage) > g_asyncCullThreshold;
+
     _renderPassCuller->frustumCull(activeScene.sceneGraph(),
                                    activeScene.state(),
-                                   stage,
+                                   isPrePass ? RenderStage::Z_PRE_PASS : stage,
                                    cullAsync,
                                    cullingFunction);
     RenderPassCuller::VisibleNodeList& visibleNodes = _renderPassCuller->getNodeCache(stage);
@@ -453,7 +472,7 @@ SceneManager::getVisibleNodesCache(RenderStage stage) {
     return _renderPassCuller->getNodeCache(stage);
 }
 
-void SceneManager::updateVisibleNodes(RenderStage stage, bool refreshNodeData, U32 pass) {
+void SceneManager::updateVisibleNodes(RenderStage stage, bool refreshNodeData, bool isPrePass, U32 pass) {
     Scene& activeScene = getActiveScene();
 
     RenderQueue& queue = _renderPassManager->getQueue();
@@ -464,11 +483,11 @@ void SceneManager::updateVisibleNodes(RenderStage stage, bool refreshNodeData, U
         queue.refresh();
         const vec3<F32>& eyePos = activeScene.renderState().getCameraConst().getEye();
         for (RenderPassCuller::VisibleNode& node : visibleNodes) {
-            queue.addNodeToQueue(*node.second.lock(), stage, eyePos);
+            queue.addNodeToQueue(*node.second.lock(), isPrePass ? RenderStage::Z_PRE_PASS : stage, eyePos);
         }
     }
     
-    queue.sort(stage);
+    queue.sort(isPrePass ? RenderStage::Z_PRE_PASS : stage);
     for (RenderPassCuller::VisibleNode& node : visibleNodes) {
         node.first = node.second.lock()->get<RenderingComponent>()->drawOrder();
     }
@@ -482,25 +501,32 @@ void SceneManager::updateVisibleNodes(RenderStage stage, bool refreshNodeData, U
     );
 
     SceneRenderState& renderState = activeScene.renderState();
-    RenderPass::BufferData& bufferData = 
-        RenderPassManager::instance().getBufferData(stage, renderState.currentStagePass(), pass);
+    RenderPass::BufferData& bufferData = RenderPassManager::instance().getBufferData(stage, pass);
 
     GFX_DEVICE.buildDrawCommands(visibleNodes, renderState, bufferData, refreshNodeData);
 }
 
-void SceneManager::renderVisibleNodes(RenderStage stage, bool refreshNodeData, U32 pass) {
-    if (refreshNodeData) {
-        Time::ScopedTimer timer(_sceneGraphCullTimer);
-        cullSceneGraph(stage);
+bool SceneManager::populateRenderQueue(RenderStage stage, 
+                                       bool doCulling,
+                                       U32 passIndex) {
+
+    RenderPassManager& passMgr = RenderPassManager::instance();
+    RenderQueue& queue = passMgr.getQueue();
+    bool isPrePass = GFX_DEVICE.isPrePass();
+
+    if (doCulling) {
+        Time::ScopedTimer timer(*_sceneGraphCullTimers[isPrePass ? 0 : 1][to_uint(stage)]);
+        cullSceneGraph(stage, isPrePass);
     }
 
-    updateVisibleNodes(stage, refreshNodeData, pass);
+    updateVisibleNodes(stage, doCulling, isPrePass, passIndex);
 
     if (getActiveScene().renderState().drawGeometry()) {
-        RenderPassManager::instance().getQueue().populateRenderQueues(stage);
+        queue.populateRenderQueues(stage);
     }
 
-    GFX_DEVICE.flushRenderQueues();
+    return queue.getRenderQueueStackSize() > 0;
+
 }
 
 Renderer& SceneManager::getRenderer() const {

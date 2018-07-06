@@ -167,30 +167,32 @@ const stringImpl& ShaderProgram::shaderFileRead(const stringImpl& atomName, cons
 void ShaderProgram::shaderFileRead(const stringImpl& filePath,
                                    bool buildVariant,
                                    stringImpl& sourceCodeOut) {
-    static const char* variant =
-#if defined(_DEBUG)
-        ".debug";
-#elif defined(_PROFILE)
-        ".profile";
-#else
-        ".release";
-#endif
-
-    Util::ReadTextFile(buildVariant ? (filePath + variant) : filePath, sourceCodeOut);
+    if (buildVariant) {
+        stringImpl variant = filePath;
+        if (Config::Build::IS_DEBUG_BUILD) {
+            variant.append(".debug");
+        } else if (Config::Build::IS_PROFILE_BUILD) {
+            variant.append(".profile");
+        } else {
+            variant.append(".release");
+        }
+        Util::ReadTextFile(variant, sourceCodeOut);
+    } else {
+        Util::ReadTextFile(filePath, sourceCodeOut);
+    }
 }
 
 /// Dump the source code 's' of atom file 'atomName' to file
 void ShaderProgram::shaderFileWrite(const stringImpl& atomName, const char* sourceCode) {
-    static const char* variant =
-#if defined(_DEBUG)
-        ".debug";
-#elif defined(_PROFILE)
-        ".profile";
-#else
-        ".release";
-#endif
-
-    Util::WriteTextFile(atomName + variant, sourceCode);
+    stringImpl variant = atomName;
+    if (Config::Build::IS_DEBUG_BUILD) {
+        variant.append(".debug");
+    } else if (Config::Build::IS_PROFILE_BUILD) {
+        variant.append(".profile");
+    } else {
+        variant.append(".release");
+    }
+        Util::WriteTextFile(variant, sourceCode);
 }
 
 void ShaderProgram::initStaticData() {

@@ -28,12 +28,13 @@ void CubeShadowMap::init(ShadowMapInfo* const smi) {
     _init = true;
 }
 
-void CubeShadowMap::render(SceneRenderState& renderState) {
+void CubeShadowMap::render(SceneRenderState& renderState, U32 passIdx) {
     GFX_DEVICE.generateCubeMap(getDepthMap(),
                                _arrayOffset,
                                _light->getPosition(),
                                vec2<F32>(0.1f, _light->getRange()),
-                               RenderStage::SHADOW);
+                               RenderStage::SHADOW,
+                               passIdx);
 }
 
 void CubeShadowMap::previewShadowMaps(U32 rowIndex) {

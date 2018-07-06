@@ -195,9 +195,9 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     _gpuBlock._updated = true;
 
     // Register a 2D function used for previewing the depth buffer.
-#ifdef _DEBUG
-    add2DRenderFunction(GUID_DELEGATE_CBK(DELEGATE_BIND(&GFXDevice::previewDepthBuffer, this)), 0);
-#endif
+    if (Config::Build::IS_DEBUG_BUILD) {
+        add2DRenderFunction(GUID_DELEGATE_CBK(DELEGATE_BIND(&GFXDevice::previewDepthBuffer, this)), 0);
+    }
 
     ParamHandler::instance().setParam<bool>(_ID("rendering.previewDepthBuffer"), false);
     // If render targets ready, we initialize our post processing system

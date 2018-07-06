@@ -34,13 +34,13 @@ ForwardPlusRenderer::~ForwardPlusRenderer()
 {
 }
 
-void ForwardPlusRenderer::preRender(LightPool& lightPool) {
-    Renderer::preRender(lightPool);
+void ForwardPlusRenderer::preRender(RenderTarget& target, LightPool& lightPool) {
+    Renderer::preRender(target, lightPool);
 
     lightPool.uploadLightData(ShaderBufferLocation::LIGHT_NORMAL);
 
-    GFX_DEVICE.renderTarget(RenderTargetID::SCREEN).bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH),
-                                                         RTAttachment::Type::Depth, 0);
+    target.bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH),
+                RTAttachment::Type::Depth, 0);
 
     _flag = getMaxNumLightsPerTile();
     _lightCullComputeShader->bind();

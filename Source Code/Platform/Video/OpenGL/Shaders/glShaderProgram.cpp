@@ -253,13 +253,14 @@ void glShaderProgram::threadedLoad(bool skipRegister) {
 /// Linking a shader program also sets up all pre-link properties for the shader
 /// (varying locations, attrib bindings, etc)
 void glShaderProgram::link() {
-#if !defined(_DEBUG)
-    // Loading from binary is optional, but it using it does require sending the
-    // driver a hint to give us access to it later
-    if (Config::USE_SHADER_BINARY) {
-        glProgramParameteri(_shaderProgramIDTemp, GL_PROGRAM_BINARY_RETRIEVABLE_HINT, 1);
+    if (!Config::Build::IS_DEBUG_BUILD) {
+        // Loading from binary is optional, but it using it does require sending the
+        // driver a hint to give us access to it later
+        if (Config::USE_SHADER_BINARY) {
+            glProgramParameteri(_shaderProgramIDTemp, GL_PROGRAM_BINARY_RETRIEVABLE_HINT, 1);
+        }
     }
-#endif
+
     Console::d_printfn(Locale::get(_ID("GLSL_LINK_PROGRAM")), getName().c_str(),
                        _shaderProgramIDTemp);
 
@@ -310,56 +311,57 @@ void glShaderProgram::link() {
 
 bool glShaderProgram::loadFromBinary() {
     _loadedFromBinary = false;
-#if !defined(_DEBUG)
-    // Load the program from the binary file, if available and allowed, to avoid linking.
-    if (Config::USE_SHADER_BINARY && false) {
-        // Only available for new programs
-        assert(_shaderProgramIDTemp == 0);
-        stringImpl fileName(glShader::CACHE_LOCATION_BIN + _name + ".bin");
-        // Load the program's binary format from file
-        FILE* inFile = fopen((fileName + ".fmt").c_str(), "wb");
-        if (inFile) {
-            fread(&_binaryFormat, sizeof(GLenum), 1, inFile);
-            fclose(inFile);
-            // If we loaded the binary format successfully, load the binary
-            inFile = fopen(fileName.c_str(), "rb");
-        }
-        else {
-            // If the binary format load failed, we don't need to load the
-            // binary code as it's useless without a proper format
-            inFile = nullptr;
-        }
-        if (inFile && _binaryFormat != GL_ZERO && _binaryFormat != GL_NONE) {
-            // Jump to the end of the file
-            fseek(inFile, 0, SEEK_END);
-            // And get the file's content size
-            GLint binaryLength = (GLint)ftell(inFile);
-            // Allocate a sufficiently large local buffer to hold the contents
-            void* binary = (void*)malloc(binaryLength);
-            // Jump back to the start of the file
-            fseek(inFile, 0, SEEK_SET);
-            // Read the contents from the file and save them locally
-            fread(binary, binaryLength, 1, inFile);
-            // Allocate a new handle
-            _shaderProgramIDTemp = glCreateProgram();
-            // glCreateProgramPipelines(1, &_shaderProgramIDTemp);
-            // Load binary code on the GPU
-            glProgramBinary(_shaderProgramIDTemp, _binaryFormat, binary, binaryLength);
-            // Delete the local binary code buffer
-            free(binary);
-            // Check if the program linked successfully on load
-            GLint success = 0;
-            glGetProgramiv(_shaderProgramIDTemp, GL_LINK_STATUS, &success);
-            // If it loaded properly set all appropriate flags (this also
-            // prevents low level access to the program's shaders)
-            if (success == 1) {
-                _loadedFromBinary = _linked = true;
+
+    if (!Config::Build::IS_DEBUG_BUILD) {
+        // Load the program from the binary file, if available and allowed, to avoid linking.
+        if (Config::USE_SHADER_BINARY && false) {
+            // Only available for new programs
+            assert(_shaderProgramIDTemp == 0);
+            stringImpl fileName(glShader::CACHE_LOCATION_BIN + _name + ".bin");
+            // Load the program's binary format from file
+            FILE* inFile = fopen((fileName + ".fmt").c_str(), "wb");
+            if (inFile) {
+                fread(&_binaryFormat, sizeof(GLenum), 1, inFile);
+                fclose(inFile);
+                // If we loaded the binary format successfully, load the binary
+                inFile = fopen(fileName.c_str(), "rb");
             }
+            else {
+                // If the binary format load failed, we don't need to load the
+                // binary code as it's useless without a proper format
+                inFile = nullptr;
+            }
+            if (inFile && _binaryFormat != GL_ZERO && _binaryFormat != GL_NONE) {
+                // Jump to the end of the file
+                fseek(inFile, 0, SEEK_END);
+                // And get the file's content size
+                GLint binaryLength = (GLint)ftell(inFile);
+                // Allocate a sufficiently large local buffer to hold the contents
+                void* binary = (void*)malloc(binaryLength);
+                // Jump back to the start of the file
+                fseek(inFile, 0, SEEK_SET);
+                // Read the contents from the file and save them locally
+                fread(binary, binaryLength, 1, inFile);
+                // Allocate a new handle
+                _shaderProgramIDTemp = glCreateProgram();
+                // glCreateProgramPipelines(1, &_shaderProgramIDTemp);
+                // Load binary code on the GPU
+                glProgramBinary(_shaderProgramIDTemp, _binaryFormat, binary, binaryLength);
+                // Delete the local binary code buffer
+                free(binary);
+                // Check if the program linked successfully on load
+                GLint success = 0;
+                glGetProgramiv(_shaderProgramIDTemp, GL_LINK_STATUS, &success);
+                // If it loaded properly set all appropriate flags (this also
+                // prevents low level access to the program's shaders)
+                if (success == 1) {
+                    _loadedFromBinary = _linked = true;
+                }
+            }
+            // Close the file
+            fclose(inFile);
         }
-        // Close the file
-        fclose(inFile);
     }
-#endif
 
     return _loadedFromBinary;
 }

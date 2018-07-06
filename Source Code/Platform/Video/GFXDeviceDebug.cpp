@@ -16,60 +16,60 @@ namespace Divide {
 /// right of the screen
 void GFXDevice::previewDepthBuffer() {
 // As this is touched once per frame, we'll only enable it in debug builds
-#ifdef _DEBUG
-    // Early out if we didn't request the preview
-    if (!ParamHandler::instance().getParam<bool>(
-        _ID("rendering.previewDepthBuffer"), false)) {
-        return;
-    }
-    // Lazy-load preview shader
-    if (!_previewDepthMapShader) {
-        // The LinearDepth variant converts the depth values to linear values
-        // between the 2 scene z-planes
-        ResourceDescriptor fbPreview("fbPreview.LinearDepth.ScenePlanes");
-        fbPreview.setPropertyList("USE_SCENE_ZPLANES");
-        _previewDepthMapShader = CreateResource<ShaderProgram>(fbPreview);
-        assert(_previewDepthMapShader != nullptr);
-    }
+    if (Config::Build::IS_DEBUG_BUILD) {
+        // Early out if we didn't request the preview
+        if (!ParamHandler::instance().getParam<bool>(
+            _ID("rendering.previewDepthBuffer"), false)) {
+            return;
+        }
+        // Lazy-load preview shader
+        if (!_previewDepthMapShader) {
+            // The LinearDepth variant converts the depth values to linear values
+            // between the 2 scene z-planes
+            ResourceDescriptor fbPreview("fbPreview.LinearDepth.ScenePlanes");
+            fbPreview.setPropertyList("USE_SCENE_ZPLANES");
+            _previewDepthMapShader = CreateResource<ShaderProgram>(fbPreview);
+            assert(_previewDepthMapShader != nullptr);
+        }
 
-    if (_previewDepthMapShader->getState() != ResourceState::RES_LOADED) {
-        return;
-    }
+        if (_previewDepthMapShader->getState() != ResourceState::RES_LOADED) {
+            return;
+        }
 
-    GenericDrawCommand triangleCmd;
-    triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
-    triangleCmd.drawCount(1);
-    triangleCmd.stateHash(_defaultStateNoDepthHash);
-    triangleCmd.shaderProgram(_previewDepthMapShader);
+        GenericDrawCommand triangleCmd;
+        triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
+        triangleCmd.drawCount(1);
+        triangleCmd.stateHash(_defaultStateNoDepthHash);
+        triangleCmd.shaderProgram(_previewDepthMapShader);
 
-    U16 screenWidth = std::max(renderTarget(RenderTargetID::SCREEN).getWidth(), to_const_ushort(768));
-    RenderTarget& rt = renderTarget(RenderTargetID::SCREEN);
-    rt.bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Depth, 0);
-    {
-        //HiZ preview
-        _previewDepthMapShader->Uniform("lodLevel",
-                                        to_float(to_uint((Time::ElapsedMilliseconds() / 750.0)) % 
-                                        (rt.getAttachment(RTAttachment::Type::Depth, 0).asTexture()->getMaxMipLevel() - 1)));
-        GFX::ScopedViewport viewport(screenWidth - 256, 0, 256, 256);
-        draw(triangleCmd);
-    }
-    {
-        //Depth preview
-        _previewDepthMapShader->Uniform("lodLevel", to_float(0));
-        GFX::ScopedViewport viewport(screenWidth - 512, 0, 256, 256);
-        draw(triangleCmd);
-    }
-    {
-        //Normals preview
-        renderTarget(RenderTargetID::SCREEN).bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0),
-                                                  RTAttachment::Type::Colour, 1);
+        U16 screenWidth = std::max(renderTarget(RenderTargetID::SCREEN).getWidth(), to_const_ushort(768));
+        RenderTarget& rt = renderTarget(RenderTargetID::SCREEN);
+        rt.bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Depth, 0);
+        {
+            //HiZ preview
+            _previewDepthMapShader->Uniform("lodLevel",
+                                            to_float(to_uint((Time::ElapsedMilliseconds() / 750.0)) % 
+                                            (rt.getAttachment(RTAttachment::Type::Depth, 0).asTexture()->getMaxMipLevel() - 1)));
+            GFX::ScopedViewport viewport(screenWidth - 256, 0, 256, 256);
+            draw(triangleCmd);
+        }
+        {
+            //Depth preview
+            _previewDepthMapShader->Uniform("lodLevel", to_float(0));
+            GFX::ScopedViewport viewport(screenWidth - 512, 0, 256, 256);
+            draw(triangleCmd);
+        }
+        {
+            //Normals preview
+            renderTarget(RenderTargetID::SCREEN).bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0),
+                                                      RTAttachment::Type::Colour, 1);
 
-        GFX::ScopedViewport viewport(screenWidth - 768, 0, 256, 256);
-        _renderTargetDraw->Uniform("linearSpace", false);
-        triangleCmd.shaderProgram(_renderTargetDraw);
-        draw(triangleCmd);
+            GFX::ScopedViewport viewport(screenWidth - 768, 0, 256, 256);
+            _renderTargetDraw->Uniform("linearSpace", false);
+            triangleCmd.shaderProgram(_renderTargetDraw);
+            draw(triangleCmd);
+        }
     }
-#endif
 }
 
 /// Render all of our immediate mode primitives. This isn't very optimised and

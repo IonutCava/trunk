@@ -79,10 +79,10 @@ DEFINE_SINGLETON(SceneManager, FrameListener, Input::InputAggregatorInterface)
     const ShaderComputeQueue& shaderComputeQueue() const;
 
     // generate a list of nodes to render
-    void updateVisibleNodes(RenderStage stage, bool refreshNodeData, U32 pass = 0);
-    void renderVisibleNodes(RenderStage stage, bool refreshNodeData, U32 pass = 0);
+    void updateVisibleNodes(RenderStage stage, bool refreshNodeData, bool isPrePass, U32 pass = 0);
+
     // cull the scenegraph against the current view frustum
-    const RenderPassCuller::VisibleNodeList& cullSceneGraph(RenderStage stage);
+    const RenderPassCuller::VisibleNodeList& cullSceneGraph(RenderStage stage, bool isPrePass);
     // get the full list of reflective nodes
     const RenderPassCuller::VisibleNodeList& getSortedReflectiveNodes();
     // get the full list of refractive nodes
@@ -157,8 +157,12 @@ DEFINE_SINGLETON(SceneManager, FrameListener, Input::InputAggregatorInterface)
     bool frameStarted(const FrameEvent& evt) override;
     bool frameEnded(const FrameEvent& evt) override;
     void onCameraUpdate(Camera& camera);
-    void preRender();
+    void preRender(RenderTarget& target);
+    void postRender(RenderStage stage);
     bool generateShadowMaps();
+    bool populateRenderQueue(RenderStage stage,
+                             bool doCulling,
+                             U32 passIndex);
 
   private:
     SceneManager();
@@ -185,7 +189,9 @@ DEFINE_SINGLETON(SceneManager, FrameListener, Input::InputAggregatorInterface)
     Renderer* _renderer;
     Material_ptr _defaultMaterial;
     RenderPassCuller::VisibleNodeList _tempNodesCache;
-    Time::ProfileTimer& _sceneGraphCullTimer;
+
+    typedef std::array<Time::ProfileTimer*, to_const_uint(RenderStage::COUNT)> CullTimersPerPass;
+    std::array<CullTimersPerPass, 2> _sceneGraphCullTimers;
 
     struct SwitchSceneTarget {
         SwitchSceneTarget()
@@ -253,8 +259,19 @@ class SceneManagerKernel {
 
 class SceneManagerRenderPass {
    private:
-    static void preRender(Divide::SceneManager& mgr) {
-        mgr.preRender();
+    static bool populateRenderQueue(Divide::SceneManager& mgr,
+                                    RenderStage stage,
+                                    bool doCulling,
+                                    U32 passIndex) {
+        return mgr.populateRenderQueue(stage, doCulling, passIndex);
+    }
+
+    static void preRender(Divide::SceneManager& mgr, RenderTarget& target) {
+        mgr.preRender(target);
+    }
+
+    static void postRender(Divide::SceneManager& mgr, RenderStage stage) {
+        mgr.postRender(stage);
     }
 
     static bool generateShadowMaps(Divide::SceneManager& mgr) {
@@ -262,6 +279,7 @@ class SceneManagerRenderPass {
     }
 
     friend class Divide::RenderPass;
+    friend class Divide::RenderPassManager;
 };
 
 };  // namespace Attorney

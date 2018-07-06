@@ -35,30 +35,30 @@
 namespace Divide {
 template <typename... Args>
 void Console::d_printfn(const char* format, Args&&... args) {
-#ifdef _DEBUG
-    printfn(format, std::forward<Args>(args)...);
-#endif
+    if (Config::Build::IS_DEBUG_BUILD) {
+        printfn(format, std::forward<Args>(args)...);
+    }
 }
 
 template <typename... Args>
 void Console::d_printf(const char* format, Args&&... args) {
-#ifdef _DEBUG
-    printf(format, std::forward<Args>(args)...);
-#endif
+    if (Config::Build::IS_DEBUG_BUILD) {
+        printf(format, std::forward<Args>(args)...);
+    }
 }
 
 template <typename... Args>
 void Console::d_errorfn(const char* format, Args&&... args) {
-#ifdef _DEBUG
-    errorfn(format, std::forward<Args>(args)...);
-#endif
+    if (Config::Build::IS_DEBUG_BUILD) {
+        errorfn(format, std::forward<Args>(args)...);
+    }
 }
 
 template <typename... Args>
 void Console::d_errorf(const char* format, Args&&... args) {
-#ifdef _DEBUG
-    errorf(format, std::forward<Args>(args)...);
-#endif
+    if (Config::Build::IS_DEBUG_BUILD) {
+        errorf(format, std::forward<Args>(args)...);
+    }
 }
 
 template <typename... Args>
@@ -102,30 +102,30 @@ void Console::errorf(std::ofstream& outStream, const char* format, Args&&... arg
 
 template <typename... Args>
 void Console::d_printfn(std::ofstream& outStream, const char* format, Args&&... args) {
-#ifdef _DEBUG
-    printfn(outStream, format, std::forward<Args>(args)...);
-#endif
+    if (Config::Build::IS_DEBUG_BUILD) {
+        printfn(outStream, format, std::forward<Args>(args)...);
+    }
 }
 
 template <typename... Args>
 void Console::d_printf(std::ofstream& outStream, const char* format, Args&&... args) {
-#ifdef _DEBUG
-    printf(outStream, format, std::forward<Args>(args)...);
-#endif
+    if (Config::Build::IS_DEBUG_BUILD) {
+        printf(outStream, format, std::forward<Args>(args)...);
+    }
 }
 
 template <typename... Args>
 void Console::d_errorfn(std::ofstream& outStream, const char* format, Args&&... args) {
-#ifdef _DEBUG
-    errorfn(outStream, format, std::forward<Args>(args)...);
-#endif
+    if (Config::Build::IS_DEBUG_BUILD) {
+        errorfn(outStream, format, std::forward<Args>(args)...);
+    }
 }
 
 template <typename... Args>
 void Console::d_errorf(std::ofstream& outStream, const char* format, Args&&... args) {
-#ifdef _DEBUG
-    errorf(outStream, format, std::forward<Args>(args)...);
-#endif
+    if (Config::Build::IS_DEBUG_BUILD) {
+        errorf(outStream, format, std::forward<Args>(args)...);
+    }
 }
 
 };

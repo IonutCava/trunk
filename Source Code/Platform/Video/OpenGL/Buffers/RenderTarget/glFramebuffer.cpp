@@ -531,7 +531,7 @@ void glFramebuffer::clear(const RTDrawDescriptor& drawPolicy) const {
     if (hasColour() && drawPolicy._clearColourBuffersOnBind) {
         for (U8 index = 0; index < _attachments.attachmentCount(RTAttachment::Type::Colour); ++index) {
             const RTAttachment_ptr& att = _attachments.get(RTAttachment::Type::Colour, index);
-            if (att->enabled()) {
+            if (att->enabled()) { //<ToDo: enabled is bugged. Unused attachments still get cleared! -Ionut
                 GFXDataFormat dataType = att->descriptor().dataType();
                 if(dataType == GFXDataFormat::FLOAT_16 ||dataType == GFXDataFormat::FLOAT_32) {
                     glClearNamedFramebufferfv(_framebufferHandle, GL_COLOR, index, att->clearColour()._v);

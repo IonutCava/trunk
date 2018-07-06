@@ -195,8 +195,7 @@ GFXDevice::setViewport(I32 x, I32 y, I32 width, I32 height) {
 
 inline bool 
 GFXDevice::isDepthStage() const {
-    return getRenderStage() == RenderStage::SHADOW ||
-           getRenderStage() == RenderStage::Z_PRE_PASS;
+    return getRenderStage() == RenderStage::SHADOW || isPrePass();
 }
 
 /// Query rasterization state
@@ -216,6 +215,15 @@ GFXDevice::toggleDepthWrites(bool state) {
     _api->toggleDepthWrites(state);
 }
 
+inline bool 
+GFXDevice::isPrePass() const {
+    return _isPrePassStage;
+}
+
+inline void 
+GFXDevice::setPrePass(const bool state) {
+    _isPrePassStage = state;
+}
 
 /// Toggle hardware rasterization on or off.
 inline void 

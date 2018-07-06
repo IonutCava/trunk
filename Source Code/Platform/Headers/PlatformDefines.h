@@ -659,15 +659,15 @@ bool preAssert(const bool expression, const char* failMessage);
 /// It is safe to call evaluate expressions and call functions inside the assert
 /// check as it will compile for every build type
 FORCE_INLINE bool DIVIDE_ASSERT(const bool expression, const char* failMessage) {
-#if defined(_DEBUG) || defined(_PROFILE)
-    if (preAssert(expression, failMessage)) {
-#   if defined(_DEBUG)
-        assert(expression && failMessage);
-#   endif
+    if (!Config::Build::IS_RELEASE_BUILD) {
+        if (preAssert(expression, failMessage)) {
+            if (Config::Build::IS_DEBUG_BUILD) {
+                assert(expression && failMessage);
+            }
+        }
+    } else {
+        ACKNOWLEDGE_UNUSED(failMessage);
     }
-#else
-    ACKNOWLEDGE_UNUSED(failMessage);
-#endif
     return expression;
 }
 
@@ -709,6 +709,9 @@ using DELEGATE_CBK_PARAM_2 = std::function < T(P1 param1, P2 param2) >;
 
 template <typename P1, typename P2, typename P3, typename T = void>
 using DELEGATE_CBK_PARAM_3 = std::function < T(P1 param1, P2 param2, P3 param3) >;
+
+template <typename P1, typename P2, typename P3, typename P4, typename T = void>
+using DELEGATE_CBK_PARAM_4 = std::function < T(P1 param1, P2 param2, P3 param3, P4 param4) >;
 
 class GUID_DELEGATE_CBK : public GUIDWrapper {
   public:

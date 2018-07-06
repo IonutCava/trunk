@@ -96,17 +96,12 @@ class LightPool;
 class RenderPass;
 namespace Attorney {
     class SceneRenderStateScene;
-    class SceneStateScene;
-    class SceneRenderStateLightPool;
-    class SceneRenderStateRenderPass;
 };
 
 /// Contains all the information needed to render the scene: camera position,
 /// render state, etc
 class SceneRenderState : public SceneComponent {
     friend class Attorney::SceneRenderStateScene;
-    friend class Attorney::SceneRenderStateLightPool;
-    friend class Attorney::SceneRenderStateRenderPass;
 
    public:
     enum class GizmoState : U32 {
@@ -192,10 +187,6 @@ class SceneRenderState : public SceneComponent {
     inline void gizmoState(GizmoState newState) {
         _gizmoState = newState;
     }
-
-    inline I32 currentStagePass() {
-        return _currentStagePass;
-    }
     
     inline GizmoState gizmoState() const {
         return _gizmoState;
@@ -223,10 +214,6 @@ class SceneRenderState : public SceneComponent {
         _playAnimations = state; 
     }
 
-    inline void currentStagePass(I32 idx) {
-        _currentStagePass = idx;
-    }
-
    protected:
     bool _drawBB;
     bool _debugDrawLines;
@@ -239,14 +226,11 @@ class SceneRenderState : public SceneComponent {
     bool _drawWireframe;
     bool _drawOctreeRegions;
 
-    I32 _currentStagePass;
-
     GizmoState _gizmoState;
     CameraManager* _cameraMgr;
 };
 
 class SceneState : public SceneComponent {
-    friend class Attorney::SceneStateScene;
    public:
        enum class MoveDirection : I32 {
            NONE = 0,
@@ -395,31 +379,6 @@ class SceneRenderStateScene {
                                bool playAnimations) {
         sceneRenderState.playAnimations(playAnimations);
     }
-    friend class Divide::Scene;
-};
-
-class SceneRenderStateLightPool {
-   private:
-    static void currentStagePass(SceneRenderState& sceneRenderState,
-                                 I32 currentStagePass) {
-        sceneRenderState.currentStagePass(currentStagePass);
-    }
-
-    friend class Divide::LightPool;
-};
-
-class SceneRenderStateRenderPass {
-   private:
-    static void currentStagePass(SceneRenderState& sceneRenderState,
-                                 I32 currentStagePass) {
-        sceneRenderState.currentStagePass(currentStagePass);
-    }
-
-    friend class Divide::RenderPass;
-};
-
-class SceneStateScene {
-private:
     friend class Divide::Scene;
 };
 

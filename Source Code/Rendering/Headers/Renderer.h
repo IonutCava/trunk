@@ -51,7 +51,7 @@ class NOINITVTABLE Renderer {
 
     virtual ~Renderer() {}
 
-    virtual void preRender(LightPool& lightPool) {
+    virtual void preRender(RenderTarget& target, LightPool& lightPool) {
         Attorney::GFXDeviceRenderer::uploadGPUBlock();
     }
 

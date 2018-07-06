@@ -48,7 +48,7 @@ class DeferredShadingRenderer : public Renderer {
     DeferredShadingRenderer();
     ~DeferredShadingRenderer();
 
-    void preRender(LightPool& lightPool) override;
+    void preRender(RenderTarget& target, LightPool& lightPool) override;
 
     void render(const DELEGATE_CBK<>& renderCallback,
                 const SceneRenderState& sceneRenderState) override;

@@ -193,12 +193,14 @@ if (Config::Profile::BENCHMARK_PERFORMANCE || Config::Profile::ENABLE_FUNCTION_P
 {
     U32 frameCount = _GFX.getFrameCount();
     // Should be approximatelly 2 times a seconds
-#   if defined(_DEBUG)
-    if (frameCount % (Config::TARGET_FRAME_RATE / 4) == 0)
-#   else
-    if (frameCount % (Config::TARGET_FRAME_RATE / 2) == 0)
-#   endif
-    {
+    bool print = false;
+    if (Config::Build::IS_DEBUG_BUILD) {
+        print = frameCount % (Config::TARGET_FRAME_RATE / 4) == 0;
+    } else {
+        print = frameCount % (Config::TARGET_FRAME_RATE / 2) == 0;
+    }
+
+    if (print) {
         stringImpl profileData(Util::StringFormat("Scene Update Loops: %d", _timingData._updateLoops));
 
         if (Config::Profile::BENCHMARK_PERFORMANCE) {
@@ -459,10 +461,10 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     }
 
     // Add our needed app-wide render passes. RenderPassManager is responsible for deleting these!
-    RenderPassManager::instance().addRenderPass("shadowPass", 0, { RenderStage::SHADOW });
-    RenderPassManager::instance().addRenderPass("reflectionPass", 1, { RenderStage::REFLECTION });
-    RenderPassManager::instance().addRenderPass("refractionPass", 2, { RenderStage::REFRACTION });
-    RenderPassManager::instance().addRenderPass("displayStage", 3, { RenderStage::Z_PRE_PASS, RenderStage::DISPLAY });
+    RenderPassManager::instance().addRenderPass("shadowPass",     0, RenderStage::SHADOW);
+    RenderPassManager::instance().addRenderPass("reflectionPass", 1, RenderStage::REFLECTION);
+    RenderPassManager::instance().addRenderPass("refractionPass", 2, RenderStage::REFRACTION);
+    RenderPassManager::instance().addRenderPass("displayStage",   3, RenderStage::DISPLAY);
 
     Console::printfn(Locale::get(_ID("SCENE_ADD_DEFAULT_CAMERA")));
 

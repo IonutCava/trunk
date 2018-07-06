@@ -85,11 +85,11 @@ void Task::startTask(TaskPriority priority, U32 taskFlags) {
 }
 
 void Task::stopTask() {
-#if defined(_DEBUG)
-    if (isRunning()) {
-        Console::errorfn(Locale::get(_ID("TASK_DELETE_ACTIVE")));
+    if (Config::Build::IS_DEBUG_BUILD) {
+        if (isRunning()) {
+            Console::errorfn(Locale::get(_ID("TASK_DELETE_ACTIVE")));
+        }
     }
-#endif
 
     for (Task* child : _childTasks){
         child->stopTask();

@@ -306,6 +306,11 @@ class SceneManager {
         return scene.deinitializeAI(true);
     }
 
+    /// Draw debug entities
+    static void debugDraw(Scene& scene, RenderStage stage) {
+        scene.debugDraw(stage);
+    }
+
     static bool frameStarted(Scene& scene) { return scene.frameStarted(); }
     static bool frameEnded(Scene& scene) { return scene.frameEnded(); }
     static bool load(Scene& scene, const stringImpl& name) {
@@ -348,11 +353,6 @@ class SceneManager {
 
 class SceneRenderPass {
  private:
-    /// Draw debug entities
-    static void debugDraw(Scene& scene, RenderStage stage) {
-        scene.debugDraw(stage);
-    }
-
     static SceneEnvironmentProbePool* getEnvProbes(Scene& scene) {
         return scene._envProbePool;
     }

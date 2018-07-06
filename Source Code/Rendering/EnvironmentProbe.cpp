@@ -85,7 +85,8 @@ void EnvironmentProbe::refresh() {
                                    _currentArrayIndex,
                                    _aabb.getCenter(),
                                    vec2<F32>(0.1f, (_aabb.getMax() - _aabb.getCenter()).length()),
-                                   RenderStage::REFLECTION);
+                                   RenderStage::REFLECTION,
+                                   getRTIndex());
         _currentUpdateCall = 0;
     }
     _boundingBoxPrimitive->paused(true);

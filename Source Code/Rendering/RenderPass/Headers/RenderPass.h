@@ -37,6 +37,10 @@
 
 namespace Divide {
 
+namespace Time {
+    class ProfileTimer;
+};
+
 class SceneGraph;
 class ShaderBuffer;
 class SceneRenderState;
@@ -59,17 +63,16 @@ class RenderPass : private NonCopyable {
    protected:
 
     struct BufferDataPool {
-        explicit BufferDataPool(U32 maxPasses, U32 maxStages);
+        explicit BufferDataPool(U32 maxBuffers);
         ~BufferDataPool();
 
-        BufferData& getBufferData(U32 pass, I32 idx);
-        typedef vectorImpl<BufferData*> BufferPool;
-        vectorImpl<BufferPool> _buffers;
+        BufferData& getBufferData(I32 bufferIndex);
+        vectorImpl<BufferData*> _buffers;
     };
 
    public:
     // passStageFlags: the first stage specified will determine the data format used by the additional stages in the list
-    RenderPass(stringImpl name, U8 sortKey, std::initializer_list<RenderStage> passStageFlags);
+    RenderPass(stringImpl name, U8 sortKey, RenderStage passStageFlags);
     ~RenderPass();
 
     void generateDrawCommands();
@@ -78,28 +81,20 @@ class RenderPass : private NonCopyable {
     inline U16 getLastTotalBinSize() const { return _lastTotalBinSize; }
     inline const stringImpl& getName() const { return _name; }
 
-    inline bool hasStageFlag(RenderStage stageFlag) const {
-        return std::find_if(std::cbegin(_stageFlags), std::cend(_stageFlags),
-                            [&stageFlag](RenderStage stage) {
-                                return (stage == stageFlag);
-                            }) != std::cend(_stageFlags);
-    }
+    inline RenderStage stageFlag() const { return _stageFlag; }
 
 
-    BufferData& getBufferData(U32 pass, I32 idx);
+    BufferData& getBufferData(I32 bufferIndex);
+
    protected:
-    bool preRender(SceneRenderState& renderState, U32 pass);
-    bool postRender(SceneRenderState& renderState, U32 pass);
-
-    std::pair<U32, U32> getRenderPassInfoForStages(const vectorImpl<RenderStage>& stages) const;
+    U32 getBufferCountForStage(RenderStage stages) const;
 
    private:
     U8 _sortKey;
     stringImpl _name;
     U16 _lastTotalBinSize;
-    vectorImpl<RenderStage> _stageFlags;
+    RenderStage _stageFlag;
     BufferDataPool* _passBuffers;
-
     vectorImpl<GenericDrawCommand> _drawCommandsCache;
 };
 

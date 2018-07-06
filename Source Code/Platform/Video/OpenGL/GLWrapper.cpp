@@ -219,13 +219,13 @@ bool GL_API::initShaders() {
                          lineOffsets);
 
     // Add current build environment information to the shaders
-#if defined(_DEBUG)
-    appendToShaderHeader(ShaderType::COUNT, "#define _DEBUG", lineOffsets);
-#elif defined(_PROFILE)
-    appendToShaderHeader(ShaderType::COUNT, "#define _PROFILE", lineOffsets);
-#else
-    appendToShaderHeader(ShaderType::COUNT, "#define _RELEASE", lineOffsets);
-#endif
+    if (Config::Build::IS_DEBUG_BUILD) {
+        appendToShaderHeader(ShaderType::COUNT, "#define _DEBUG", lineOffsets);
+    } else if(Config::Build::IS_PROFILE_BUILD) {
+        appendToShaderHeader(ShaderType::COUNT, "#define _PROFILE", lineOffsets);
+    } else {
+        appendToShaderHeader(ShaderType::COUNT, "#define _RELEASE", lineOffsets);
+    }
 
     // Shader stage level reflection system. A shader stage must know what stage
     // it's used for

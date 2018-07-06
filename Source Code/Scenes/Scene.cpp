@@ -830,54 +830,56 @@ void Scene::processTasks(const U64 deltaTime) {
 }
 
 void Scene::debugDraw(RenderStage stage) {
-#ifdef _DEBUG
-    const SceneRenderState::GizmoState& currentGizmoState = renderState().gizmoState();
-
-    GFX_DEVICE.drawDebugAxis(currentGizmoState != SceneRenderState::GizmoState::NO_GIZMO);
-
-    if (currentGizmoState == SceneRenderState::GizmoState::SELECTED_GIZMO) {
-        SceneGraphNode_ptr selection(_currentSelection.lock());
-        if (selection != nullptr) {
-            selection->get<RenderingComponent>()->drawDebugAxis();
-        }
+    if (stage != RenderStage::DISPLAY) {
+        return;
     }
 
-    if (renderState().drawOctreeRegions()) {
-        for (IMPrimitive* prim : _octreePrimitives) {
-            prim->paused(true);
-        }
+    if (Config::Build::IS_DEBUG_BUILD) {
+        const SceneRenderState::GizmoState& currentGizmoState = renderState().gizmoState();
 
-        GFXDevice& gfx = GFX_DEVICE;
+        GFX_DEVICE.drawDebugAxis(currentGizmoState != SceneRenderState::GizmoState::NO_GIZMO);
 
-        _octreeBoundingBoxes.resize(0);
-        sceneGraph().getOctree().getAllRegions(_octreeBoundingBoxes);
-
-        size_t primitiveCount = _octreePrimitives.size();
-        size_t regionCount = _octreeBoundingBoxes.size();
-        if (regionCount > primitiveCount) {
-            size_t diff = regionCount - primitiveCount;
-            for (size_t i = 0; i < diff; ++i) {
-                _octreePrimitives.push_back(gfx.getOrCreatePrimitive(false));
+        if (currentGizmoState == SceneRenderState::GizmoState::SELECTED_GIZMO) {
+            SceneGraphNode_ptr selection(_currentSelection.lock());
+            if (selection != nullptr) {
+                selection->get<RenderingComponent>()->drawDebugAxis();
             }
         }
 
-        assert(_octreePrimitives.size() >= _octreeBoundingBoxes.size());
+        if (renderState().drawOctreeRegions()) {
+            for (IMPrimitive* prim : _octreePrimitives) {
+                prim->paused(true);
+            }
 
-        for (size_t i = 0; i < regionCount; ++i) {
-            const BoundingBox& box = _octreeBoundingBoxes[i];
-            _octreePrimitives[i]->fromBox(box.getMin(), box.getMax(), vec4<U8>(255, 0, 255, 255));
+            GFXDevice& gfx = GFX_DEVICE;
+
+            _octreeBoundingBoxes.resize(0);
+            sceneGraph().getOctree().getAllRegions(_octreeBoundingBoxes);
+
+            size_t primitiveCount = _octreePrimitives.size();
+            size_t regionCount = _octreeBoundingBoxes.size();
+            if (regionCount > primitiveCount) {
+                size_t diff = regionCount - primitiveCount;
+                for (size_t i = 0; i < diff; ++i) {
+                    _octreePrimitives.push_back(gfx.getOrCreatePrimitive(false));
+                }
+            }
+
+            assert(_octreePrimitives.size() >= _octreeBoundingBoxes.size());
+
+            for (size_t i = 0; i < regionCount; ++i) {
+                const BoundingBox& box = _octreeBoundingBoxes[i];
+                _octreePrimitives[i]->fromBox(box.getMin(), box.getMax(), vec4<U8>(255, 0, 255, 255));
+            }
         }
     }
 
-#endif
-    if (stage == RenderStage::DISPLAY) {
-        // Draw bounding boxes, skeletons, axis gizmo, etc.
-        GFX_DEVICE.debugDraw(renderState());
-        // Show NavMeshes
-        _aiManager->debugDraw(false);
-        _lightPool->drawLightImpostors();
-        _envProbePool->debugDraw();
-    }
+    // Draw bounding boxes, skeletons, axis gizmo, etc.
+    GFX_DEVICE.debugDraw(renderState());
+    // Show NavMeshes
+    _aiManager->debugDraw(false);
+    _lightPool->drawLightImpostors();
+    _envProbePool->debugDraw();
 }
 
 void Scene::findHoverTarget() {
@@ -894,7 +896,7 @@ void Scene::findHoverTarget() {
     // see if we select another one
     _sceneSelectionCandidates.clear();
     // get the list of visible nodes (use Z_PRE_PASS because the nodes are sorted by depth, front to back)
-    RenderPassCuller::VisibleNodeList& nodes = SceneManager::instance().getVisibleNodesCache(RenderStage::Z_PRE_PASS);
+    RenderPassCuller::VisibleNodeList& nodes = SceneManager::instance().getVisibleNodesCache(RenderStage::DISPLAY);
 
     // Cast the picking ray and find items between the nearPlane and far Plane
     Ray mouseRay(startRay, startRay.direction(endRay));

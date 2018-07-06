@@ -89,10 +89,10 @@ bool ImageData::create(const stringImpl& filename) {
     image._size = width * height * _bpp / 8;
 
     if (isHDR) {
-        image.setData(dataf, image._size / 4);
+        image.setData(dataf, to_uint(image._size / 4));
         stbi_image_free(dataf);
     } else {
-        image.setData(data, image._size);
+        image.setData(data, to_uint(image._size));
         stbi_image_free(data);
     }
 

@@ -52,7 +52,7 @@ class CascadedShadowMaps : public ShadowMap {
    public:
     CascadedShadowMaps(Light* light, Camera* shadowCamera, U8 numSplits);
     ~CascadedShadowMaps();
-    void render(SceneRenderState& renderState);
+    void render(SceneRenderState& renderState, U32 passIdx);
     void postRender();
     /// Update depth maps
     void previewShadowMaps(U32 callIndex);

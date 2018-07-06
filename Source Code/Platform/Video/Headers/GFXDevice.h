@@ -71,6 +71,7 @@ class PixelBuffer;
 class VertexBuffer;
 class SceneGraphNode;
 class SceneRenderState;
+FWD_DECLARE_MANAGED_CLASS(Texture);
 
 namespace Time {
     class ProfileTimer;
@@ -315,7 +316,8 @@ DEFINE_SINGLETON(GFXDevice)
     ///@param stage Is used to inform the rendering pipeline what we are rendering.
     ///Shadows? reflections? etc
     inline bool isDepthStage() const;
-
+    inline bool isPrePass() const;
+    inline void setPrePass(const bool state);
     /// Clipping plane management. All the clipping planes are handled by shader
     /// programs only!
     void updateClipPlanes();
@@ -338,13 +340,15 @@ DEFINE_SINGLETON(GFXDevice)
                          const U32 arrayOffset,
                          const vec3<F32>& pos,
                          const vec2<F32>& zPlanes,
-                         RenderStage renderStage);
+                         RenderStage renderStage,
+                         U32 passIndex);
 
     void generateDualParaboloidMap(RenderTarget& targetBuffer,
                                    const U32 arrayOffset,
                                    const vec3<F32>& pos,
                                    const vec2<F32>& zPlanes,
-                                   RenderStage renderStage);
+                                   RenderStage renderStage,
+                                   U32 passIndex);
                                      
     void getMatrix(const MATRIX& mode, mat4<F32>& mat) const;
     /// Alternative to the normal version of getMatrix
@@ -512,14 +516,17 @@ DEFINE_SINGLETON(GFXDevice)
    protected:
     friend class SceneManager;
     friend class RenderPass;
-    void occlusionCull(const RenderPass::BufferData& bufferData);
+    friend class RenderPassManager;
+
+    void occlusionCull(const RenderPass::BufferData& bufferData,
+                       const Texture_ptr& depthBuffer);
     void buildDrawCommands(RenderPassCuller::VisibleNodeList& visibleNodes,
                            SceneRenderState& sceneRenderState,
                            RenderPass::BufferData& bufferData,
                            bool refreshNodeData);
     bool batchCommands(GenericDrawCommand& previousIDC,
                        GenericDrawCommand& currentIDC) const;
-    void constructHIZ();
+    void constructHIZ(RenderTarget& depthBuffer);
 
     RenderAPIWrapper& getAPIImpl() { return *_api; }
     const RenderAPIWrapper& getAPIImpl() const { return *_api; }
@@ -589,6 +596,7 @@ DEFINE_SINGLETON(GFXDevice)
     bool _2DRendering;
     bool _rasterizationEnabled;
     bool _zWriteEnabled;
+    bool _isPrePassStage;
     // number of draw calls (rough estimate)
     I32 FRAME_DRAW_CALLS;
     U32 FRAME_DRAW_CALLS_PREV;

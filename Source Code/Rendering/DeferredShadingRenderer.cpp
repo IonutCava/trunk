@@ -111,8 +111,8 @@ DeferredShadingRenderer::~DeferredShadingRenderer()
     MemoryManager::DELETE(_lightTexture);
 }
 
-void DeferredShadingRenderer::preRender(LightPool& lightPool) {
-    Renderer::preRender(lightPool);
+void DeferredShadingRenderer::preRender(RenderTarget& target, LightPool& lightPool) {
+    Renderer::preRender(target, lightPool);
 
     Light::LightList& lights = lightPool.getLights(LightType::POINT);
 

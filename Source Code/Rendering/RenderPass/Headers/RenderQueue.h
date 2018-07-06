@@ -49,7 +49,7 @@ class RenderQueue {
     ~RenderQueue();
 
     void populateRenderQueues(RenderStage renderStage);
-    void postRender(SceneRenderState& renderState, RenderStage renderStage);
+    void postRender(const SceneRenderState& renderState, RenderStage renderStage);
     void sort(RenderStage renderStage);
     void refresh();
     void addNodeToQueue(const SceneGraphNode& sgn, RenderStage stage, const vec3<F32>& eyePos);

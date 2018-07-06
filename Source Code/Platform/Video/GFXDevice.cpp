@@ -61,6 +61,7 @@ GFXDevice::GFXDevice()
     _viewportUpdate = false;
     _rasterizationEnabled = true;
     _zWriteEnabled = true;
+    _isPrePassStage = false;
     // Enumerated Types
     _shadowDetailLevel = RenderDetailLevel::HIGH;
     _GPUVendor = GPUVendor::COUNT;
@@ -103,7 +104,8 @@ void GFXDevice::generateCubeMap(RenderTarget& cubeMap,
                                 const U32 arrayOffset,
                                 const vec3<F32>& pos,
                                 const vec2<F32>& zPlanes,
-                                RenderStage renderStage) {
+                                RenderStage renderStage,
+                                U32 passIndex) {
     // Only the first colour attachment or the depth attachment is used for now
     // and it must be a cube map texture
     const RTAttachment& colourAttachment = cubeMap.getAttachment(RTAttachment::Type::Colour, 0, false);
@@ -149,6 +151,15 @@ void GFXDevice::generateCubeMap(RenderTarget& cubeMap,
     // Enable our render target
     cubeMap.begin(RenderTarget::defaultPolicy());
     // For each of the environment's faces (TOP, DOWN, NORTH, SOUTH, EAST, WEST)
+
+    RenderPassManager& passMgr = RenderPassManager::instance();
+    RenderPassManager::PassParams params;
+    params.doPrePass = renderStage != RenderStage::SHADOW;
+    params.occlusionCull = params.doPrePass;
+    params.camera = _cubeCamera;
+    params.stage = renderStage;
+    params.target = nullptr;
+
     for (U8 i = 0; i < 6; ++i) {
         // Draw to the current cubemap face
         cubeMap.drawToFace(hasColour ? RTAttachment::Type::Colour
@@ -157,11 +168,11 @@ void GFXDevice::generateCubeMap(RenderTarget& cubeMap,
                            i + arrayOffset);
         // Point our camera to the correct face
         _cubeCamera->lookAt(pos, TabCenter[i], TabUp[i]);
-        // And generated required matrices
-        _cubeCamera->renderLookAt();
         // Pass our render function to the renderer
-        SceneManager::instance().renderVisibleNodes(renderStage, true, i);
+        params.pass = passIndex + i;
+        passMgr.doCustomPass(params);
     }
+
     // Resolve our render target
     cubeMap.end();
     // Return to our previous rendering stage
@@ -174,7 +185,8 @@ void GFXDevice::generateDualParaboloidMap(RenderTarget& targetBuffer,
                                           const U32 arrayOffset,
                                           const vec3<F32>& pos,
                                           const vec2<F32>& zPlanes,
-                                          RenderStage renderStage)
+                                          RenderStage renderStage,
+                                          U32 passIndex)
 {
     const RTAttachment& colourAttachment = targetBuffer.getAttachment(RTAttachment::Type::Colour, 0, false);
     const RTAttachment& depthAttachment = targetBuffer.getAttachment(RTAttachment::Type::Depth, 0, false);
@@ -202,6 +214,15 @@ void GFXDevice::generateDualParaboloidMap(RenderTarget& targetBuffer,
     kernel.getCameraMgr().pushActiveCamera(_dualParaboloidCamera);
     // Set the desired render stage, remembering the previous one
     RenderStage prevRenderStage = setRenderStage(renderStage);
+
+    RenderPassManager& passMgr = RenderPassManager::instance();
+    RenderPassManager::PassParams params;
+    params.doPrePass = renderStage != RenderStage::SHADOW;
+    params.occlusionCull = params.doPrePass;
+    params.camera = _dualParaboloidCamera;
+    params.stage = renderStage;
+    params.target = nullptr;
+
     // Enable our render target
     targetBuffer.begin(RenderTarget::defaultPolicy());
         for (U8 i = 0; i < 2; ++i) {
@@ -212,9 +233,9 @@ void GFXDevice::generateDualParaboloidMap(RenderTarget& targetBuffer,
             // Point our camera to the correct face
             _dualParaboloidCamera->lookAt(pos, (i == 0 ? WORLD_Z_NEG_AXIS : WORLD_Z_AXIS) + pos, WORLD_Y_AXIS);
             // And generated required matrices
-            _dualParaboloidCamera->renderLookAt();
             // Pass our render function to the renderer
-            SceneManager::instance().renderVisibleNodes(renderStage, true, i);
+            params.pass = passIndex + i;
+            passMgr.doCustomPass(params);
         }
     targetBuffer.end();
     // Return to our previous rendering stage
@@ -606,7 +627,7 @@ bool GFXDevice::loadInContext(const CurrentContext& context, const DELEGATE_CBK_
 }
 
 /// Transform our depth buffer to a HierarchicalZ buffer (for occlusion queries and screen space reflections)
-void GFXDevice::constructHIZ() {
+void GFXDevice::constructHIZ(RenderTarget& depthBuffer) {
     static bool firstRun = true;
     static RTDrawDescriptor depthOnlyTarget;
 
@@ -633,12 +654,11 @@ void GFXDevice::constructHIZ() {
     };
 
     // The depth buffer's resolution should be equal to the screen's resolution
-    RenderTarget& screenTarget = renderTarget(RenderTargetID::SCREEN);
+    RenderTarget& screenTarget = depthBuffer;
     U16 width = screenTarget.getWidth();
     U16 height = screenTarget.getHeight();
     // Bind the depth texture to the first texture unit
     screenTarget.bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH), RTAttachment::Type::Depth, 0);
-
 
     screenTarget.begin(depthOnlyTarget);
     // Calculate the number of mipmap levels we need to generate

@@ -192,9 +192,11 @@ bool GUI::init(const vec2<U16>& renderResolution) {
     onChangeResolution(renderResolution.width, renderResolution.height);
 
     _enableCEGUIRendering = !(ParamHandler::instance().getParam<bool>(_ID("GUI.CEGUI.SkipRendering")));
-#ifdef _DEBUG
-    CEGUI::Logger::getSingleton().setLoggingLevel(CEGUI::Informative);
-#endif
+
+    if (Config::Build::IS_DEBUG_BUILD) {
+        CEGUI::Logger::getSingleton().setLoggingLevel(CEGUI::Informative);
+    }
+
     CEGUI::DefaultResourceProvider* rp
         = static_cast<CEGUI::DefaultResourceProvider*>(
             CEGUI::System::getSingleton().getResourceProvider());
@@ -310,12 +312,12 @@ bool GUI::onKeyUp(const Input::KeyEvent& key) {
         _console->setVisible(!_console->isVisible());
     }
 
-#ifdef _DEBUG
-    if (key._key == Input::KeyCode::KC_F11) {
-        GUIEditor::instance().setVisible(
-            !GUIEditor::instance().isVisible());
+    if (Config::Build::IS_DEBUG_BUILD) {
+        if (key._key == Input::KeyCode::KC_F11) {
+            GUIEditor::instance().setVisible(
+                !GUIEditor::instance().isVisible());
+        }
     }
-#endif
 
     return !_ceguiInput.onKeyUp(key);
 }

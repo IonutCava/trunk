@@ -62,14 +62,14 @@ inline T ParamHandler::getParam(ULL nameID, T defaultValue) const {
     if (it != std::cend(_params)) {
         bool success = false;
         const T& ret = it->second.constant_cast<T>(success);
-#ifdef _DEBUG
-        if (!success) {
-            Console::errorfn(Locale::get(_ID("ERROR_PARAM_CAST")), nameID);
-            DIVIDE_ASSERT(success,
-                          "ParamHandler error: Can't cast requested param to "
-                          "specified type!");
+        if (Config::Build::IS_DEBUG_BUILD) {
+            if (!success) {
+                Console::errorfn(Locale::get(_ID("ERROR_PARAM_CAST")), nameID);
+                DIVIDE_ASSERT(success,
+                              "ParamHandler error: Can't cast requested param to "
+                              "specified type!");
+            }
         }
-#endif
 
         return ret;
     }

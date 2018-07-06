@@ -632,7 +632,7 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
     RenderTarget& reflectionTarget = GFX_DEVICE.renderTarget(RenderTargetID::REFLECTION, reflectionIndex);
 
     if (_reflectionCallback) {
-        _reflectionCallback(_parentSGN, renderState, reflectionTarget);
+        _reflectionCallback(_parentSGN, renderState, reflectionTarget, reflectionIndex);
     } else {
         const vec2<F32>& camZPlanes = renderState.getCameraConst().getZPlanes();
 
@@ -640,7 +640,8 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
                                    0,
                                    camPos,
                                    vec2<F32>(camZPlanes.x, camZPlanes.y * 0.25f),
-                                   RenderStage::REFLECTION);
+                                   RenderStage::REFLECTION,
+                                   reflectionIndex);
     }
 
     return true;
@@ -682,7 +683,8 @@ bool RenderingComponent::updateRefraction(U32 refractionIndex,
 
     _refractionCallback(_parentSGN,
                         renderState,
-                        GFX_DEVICE.renderTarget(RenderTargetID::REFRACTION, refractionIndex));
+                        GFX_DEVICE.renderTarget(RenderTargetID::REFRACTION, refractionIndex),
+                        refractionIndex);
 
     return true;
 }

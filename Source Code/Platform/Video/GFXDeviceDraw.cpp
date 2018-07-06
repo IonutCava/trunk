@@ -10,6 +10,7 @@
 #include "Managers/Headers/SceneManager.h"
 #include "Core/Time/Headers/ProfileTimer.h"
 #include "Platform/Video/Headers/IMPrimitive.h"
+#include "Platform/Video/Textures/Headers/Texture.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 
@@ -323,17 +324,16 @@ void GFXDevice::buildDrawCommands(RenderPassCuller::VisibleNodeList& visibleNode
     }
 }
 
-void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData) {
+void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData, const Texture_ptr& depthBuffer) {
     static const U32 GROUP_SIZE_AABB = 64;
     uploadGPUBlock();
 
     bufferData._cmdBuffer->bind(ShaderBufferLocation::GPU_COMMANDS);
     bufferData._cmdBuffer->bindAtomicCounter();
 
-    renderTarget(RenderTargetID::SCREEN).bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH),
-                                              RTAttachment::Type::Depth, 0);
-
+    depthBuffer->bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH));
     U32 cmdCount = bufferData._lastCommandCount;
+
     _HIZCullProgram->bind();
     _HIZCullProgram->Uniform("dvd_numEntities", cmdCount);
     _HIZCullProgram->DispatchCompute((cmdCount + GROUP_SIZE_AABB - 1) / GROUP_SIZE_AABB, 1, 1);
@@ -342,7 +342,7 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData) {
 
 U32 GFXDevice::getLastCullCount() const {
     const RenderPass::BufferData& bufferData = 
-        RenderPassManager::instance().getBufferData(RenderStage::DISPLAY, 0, 0);
+        RenderPassManager::instance().getBufferData(RenderStage::DISPLAY, 0);
 
     U32 cullCount = bufferData._cmdBuffer->getAtomicCounter();
     if (cullCount > 0) {

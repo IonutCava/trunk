@@ -54,12 +54,12 @@ ErrorCode PhysX::initPhysicsAPI(U8 targetFrameRate) {
 
     bool recordMemoryAllocations = false;
 
-#ifdef _DEBUG
-    recordMemoryAllocations = true;
-    _zoneManager = 
-        &physx::PxProfileZoneManager::createProfileZoneManager(_foundation);
-    assert(_zoneManager != nullptr);
-#endif
+    if (Config::Build::IS_DEBUG_BUILD) {
+        recordMemoryAllocations = true;
+        _zoneManager = 
+            &physx::PxProfileZoneManager::createProfileZoneManager(_foundation);
+        assert(_zoneManager != nullptr);
+    }
 
     _gPhysicsSDK =
         PxCreatePhysics(PX_PHYSICS_VERSION, 
@@ -71,23 +71,23 @@ ErrorCode PhysX::initPhysicsAPI(U8 targetFrameRate) {
         return ErrorCode::PHYSX_INIT_ERROR;
     }
 
-#ifdef _DEBUG
-    if (getOrCreateProfileZone(*_foundation)) {
-        _zoneManager->addProfileZone(*_profileZone);
-    }
+    if (Config::Build::IS_DEBUG_BUILD) {
+        if (getOrCreateProfileZone(*_foundation)) {
+            _zoneManager->addProfileZone(*_profileZone);
+        }
 
-    _pvdConnection = _gPhysicsSDK->getPvdConnectionManager();
-    _gPhysicsSDK->getPvdConnectionManager()->addHandler(*this);
+        _pvdConnection = _gPhysicsSDK->getPvdConnectionManager();
+        _gPhysicsSDK->getPvdConnectionManager()->addHandler(*this);
 
-    if (_pvdConnection != nullptr) {
-        if (physx::PxVisualDebuggerExt::createConnection(_pvdConnection,
-                                                         "localhost",
-                                                         5425, 10000) 
-                                                         != nullptr) {
-            Console::d_printfn(Locale::get(_ID("CONNECT_PVD_OK")));
+        if (_pvdConnection != nullptr) {
+            if (physx::PxVisualDebuggerExt::createConnection(_pvdConnection,
+                                                             "localhost",
+                                                             5425, 10000) 
+                                                             != nullptr) {
+                Console::d_printfn(Locale::get(_ID("CONNECT_PVD_OK")));
+            }
         }
     }
-#endif
 
     if (!PxInitExtensions(*_gPhysicsSDK)) {
         Console::errorfn(Locale::get(_ID("ERROR_EXTENSION_PHYSX_API")));

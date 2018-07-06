@@ -159,13 +159,13 @@ bool MainScene::load(const stringImpl& name) {
     waterGraphNode->get<NavigationComponent>()->navigationContext(NavigationComponent::NavigationContext::NODE_IGNORE);
     waterGraphNode->get<PhysicsComponent>()->setPositionY(state().waterLevel);
 
-    // Render the scene for water reflection FB generation
-    _water->setReflectionCallback(DELEGATE_BIND(&SceneManager::renderVisibleNodes,
-                                                &SceneManager::instance(),
-                                                RenderStage::REFLECTION, true, 0));
-    _water->setRefractionCallback(DELEGATE_BIND(&SceneManager::renderVisibleNodes,
-                                                &SceneManager::instance(),
-                                                RenderStage::DISPLAY, true, 0));*/
+    // Render the scene for water reflection FB generation (Outdated)
+    //_water->setReflectionCallback(DELEGATE_BIND(&SceneManager::renderVisibleNodes,
+    //                                            &SceneManager::instance(),
+    //                                            RenderStage::REFLECTION, true, 0));
+    //_water->setRefractionCallback(DELEGATE_BIND(&SceneManager::renderVisibleNodes,
+    //                                            &SceneManager::instance(),
+    //                                            RenderStage::DISPLAY, true, 0));*/
     return loadState;
 }
 

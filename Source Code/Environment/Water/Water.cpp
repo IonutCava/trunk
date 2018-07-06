@@ -66,12 +66,14 @@ void WaterPlane::postLoad(SceneGraphNode& sgn) {
                                                     this,
                                                     std::placeholders::_1,
                                                     std::placeholders::_2,
-                                                    std::placeholders::_3));
+                                                    std::placeholders::_3,
+                                                    std::placeholders::_4));
     renderable->setRefractionCallback(DELEGATE_BIND(&WaterPlane::updateRefraction,
                                                     this,
                                                     std::placeholders::_1,
                                                     std::placeholders::_2,
-                                                    std::placeholders::_3));
+                                                    std::placeholders::_3,
+                                                    std::placeholders::_4));
     SceneNode::postLoad(sgn);
 }
 
@@ -168,7 +170,8 @@ bool WaterPlane::getDrawState(RenderStage currentStage) {
 /// update water refraction
 void WaterPlane::updateRefraction(const SceneGraphNode& sgn,
                                   const SceneRenderState& sceneRenderState,
-                                  RenderTarget& renderTarget) {
+                                  RenderTarget& renderTarget,
+                                  U32 passIndex) {
     if (cameraUnderwater(sgn, sceneRenderState)) {
         return;
     }
@@ -178,12 +181,18 @@ void WaterPlane::updateRefraction(const SceneGraphNode& sgn,
     // If we are below, we render the scene normally
     RenderStage prevRenderStage = GFX_DEVICE.setRenderStage(RenderStage::DISPLAY);
     GFX_DEVICE.toggleClipPlane(g_refractionClipID, true);
-    _cameraMgr.getActiveCamera().renderLookAt();
-    // bind the refractive texture
-    renderTarget.begin(RenderTarget::defaultPolicy());
-    // render to the reflective texture
-    SceneManager::instance().renderVisibleNodes(RenderStage::DISPLAY, true, 0);
-    renderTarget.end();
+
+    RenderPassManager& passMgr = RenderPassManager::instance();
+    RenderPassManager::PassParams params;
+    params.doPrePass = true;
+    params.occlusionCull = true;
+    params.camera = &_cameraMgr.getActiveCamera();
+    params.stage = RenderStage::REFRACTION;
+    params.target = &renderTarget;
+    params.drawPolicy = &RenderTarget::defaultPolicy();
+    params.pass = passIndex;
+
+    passMgr.doCustomPass(params);
 
     GFX_DEVICE.toggleClipPlane(g_refractionClipID, false);
     GFX_DEVICE.setRenderStage(prevRenderStage);
@@ -194,7 +203,8 @@ void WaterPlane::updateRefraction(const SceneGraphNode& sgn,
 /// Update water reflections
 void WaterPlane::updateReflection(const SceneGraphNode& sgn,
                                   const SceneRenderState& sceneRenderState,
-                                  RenderTarget& renderTarget) {
+                                  RenderTarget& renderTarget,
+                                 U32 passIndex) {
     // ToDo: this will cause problems later with multiple reflectors.
     // Fix it! -Ionut
     _reflectionRendering = true;
@@ -210,12 +220,21 @@ void WaterPlane::updateReflection(const SceneGraphNode& sgn,
     RenderStage prevRenderStage = GFX_DEVICE.setRenderStage(underwater ? RenderStage::DISPLAY : RenderStage::REFLECTION);
     GFX_DEVICE.toggleClipPlane(g_reflectionClipID, true);
 
-    underwater ? _cameraMgr.getActiveCamera().renderLookAt()
-               : _cameraMgr.getActiveCamera().renderLookAtReflected(reflectionPlane);
 
-    renderTarget.begin(RenderTarget::defaultPolicy());
-    SceneManager::instance().renderVisibleNodes(RenderStage::REFLECTION, true, 0);
-    renderTarget.end();
+    RenderPassManager& passMgr = RenderPassManager::instance();
+    RenderPassManager::PassParams params;
+    params.doPrePass = true;
+    params.occlusionCull = true;
+    params.camera = &_cameraMgr.getActiveCamera();
+    if (!underwater) {
+        params.reflectionPlane = &reflectionPlane;
+    }
+    params.stage = RenderStage::REFLECTION;
+    params.target = &renderTarget;
+    params.drawPolicy = &RenderTarget::defaultPolicy();
+    params.pass = passIndex;
+
+    passMgr.doCustomPass(params);
 
     GFX_DEVICE.toggleClipPlane(g_reflectionClipID, false);
     GFX_DEVICE.setRenderStage(prevRenderStage);

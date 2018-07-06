@@ -183,7 +183,7 @@ void Light::validateOrCreateShadowMaps(SceneRenderState& sceneRenderState) {
     _shadowMapInfo->createShadowMap(sceneRenderState, shadowCamera());
 }
 
-void Light::generateShadowMaps(SceneRenderState& sceneRenderState) {
+void Light::generateShadowMaps(SceneRenderState& sceneRenderState, U32 passIdx) {
     ShadowMap* sm = _shadowMapInfo->getShadowMap();
 
     DIVIDE_ASSERT(sm != nullptr,
@@ -191,7 +191,7 @@ void Light::generateShadowMaps(SceneRenderState& sceneRenderState) {
                   "with no shadow map found!");
 
     _shadowProperties._arrayOffset.set(sm->getArrayOffset());
-    sm->render(sceneRenderState);
+    sm->render(sceneRenderState, passIdx);
 
 }
 

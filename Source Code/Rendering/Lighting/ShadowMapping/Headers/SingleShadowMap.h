@@ -44,7 +44,7 @@ class SingleShadowMap : public ShadowMap {
     SingleShadowMap(Light* light, Camera* shadowCamera);
     ~SingleShadowMap();
 
-    void render(SceneRenderState& renderState);
+    void render(SceneRenderState& renderState, U32 passIdx);
     void init(ShadowMapInfo* const smi);
     void previewShadowMaps(U32 rowIndex);
 

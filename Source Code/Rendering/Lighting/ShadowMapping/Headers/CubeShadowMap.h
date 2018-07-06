@@ -40,7 +40,7 @@ class CubeShadowMap : public ShadowMap {
    public:
     CubeShadowMap(Light* light, Camera* shadowCamera);
     ~CubeShadowMap();
-    void render(SceneRenderState& renderState);
+    void render(SceneRenderState& renderState, U32 passIdx);
 
     /// Update depth maps
     void previewShadowMaps(U32 rowIndex);
