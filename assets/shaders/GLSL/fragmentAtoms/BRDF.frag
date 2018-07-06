@@ -8,7 +8,7 @@
 #include "shadowMapping.frag"
 #include "phong_lighting.frag"
 
-vec3 processedNormal;
+vec3 processedNormal = vec3(0.0, 0.0, 1.0);
 
 //TEMP PBR
 /// Smith GGX Visibility

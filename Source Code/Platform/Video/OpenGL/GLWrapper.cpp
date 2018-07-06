@@ -313,6 +313,13 @@ bool GL_API::initShaders() {
 
     appendToShaderHeader(ShaderType::FRAGMENT, "const uint DEPTH_EXP_WARP = 32;", lineOffsets);
 
+    if (Config::USE_HIZ_CULLING) {
+        appendToShaderHeader(ShaderType::COUNT, "#define USE_HIZ_CULLING", lineOffsets);
+    }
+    if (Config::DEBUG_HIZ_CULLING) {
+        appendToShaderHeader(ShaderType::COUNT, "#define DEBUG_HIZ_CULLING", lineOffsets);
+    }
+
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define MAX_CLIP_PLANES " + std::to_string(Config::MAX_CLIP_PLANES),

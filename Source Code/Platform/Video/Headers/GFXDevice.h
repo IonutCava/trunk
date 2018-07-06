@@ -237,6 +237,7 @@ DEFINE_SINGLETON(GFXDevice)
            vec4<F32> _ZPlanesCombined;  // xy - current, zw - main scene
            vec4<F32> _invScreenDimension; //xy - dims, zw - reserved;
            vec4<F32> _renderProperties;
+           vec4<F32> _frustumPlanes[6];
            vec4<F32> _clipPlanes[Config::MAX_CLIP_PLANES];
 
            inline F32 aspectRatio() const;
@@ -296,7 +297,7 @@ DEFINE_SINGLETON(GFXDevice)
     void drawPoints(U32 numPoints, U32 stateHash, ShaderProgram* const shaderProgram);
     void drawTriangle(U32 stateHash, ShaderProgram* const shaderProgram);
 
-    void addToRenderQueue(U32 binPropertyMask, const RenderPackage& package);
+    void addToRenderQueue(U32 queueIndex, const RenderPackage& package);
     void flushRenderQueues();
     I32  reserveRenderQueue();
 
@@ -505,6 +506,9 @@ DEFINE_SINGLETON(GFXDevice)
     }
 
     void drawDebugAxis(const SceneRenderState& sceneRenderState);
+
+    void computeFrustumPlanes();
+    void computeFrustumPlanes(const mat4<F32>& invViewProj, vec4<F32>* planesOut);
 
   protected:
     friend class Camera;

@@ -67,6 +67,7 @@ class RenderPass {
    private:
     U8 _sortKey;
     stringImpl _name;
+    bool _useZPrePass;
     U16 _lastTotalBinSize;
     vectorImpl<RenderStage> _stageFlags;
 };

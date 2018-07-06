@@ -1,7 +1,6 @@
 layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D HiZBuffer;
 
 vec4 BoundingBox[8];
-
 int PassThrough(const in vec3 position, const in vec3 extents) {
     return 1;
 }
@@ -34,10 +33,55 @@ int InstanceCloudReduction(const in vec3 position, const in vec3 extents) {
 
     int inFrustum = 1;
 
-    for (int i = 0; i<6; i++)
-        if (outOfBound[i] == 8) inFrustum = 0;
+    for (int i = 0; i<6; i++) {
+        if (outOfBound[i] == 8) {
+            inFrustum = 0;
+        }
+    }
 
     return inFrustum;
+}
+
+//Return: 0 = culled, 1 = visible
+int zBufferCull(const in vec3 view_center, const in float radius) {
+    float nearest_z = view_center.z + radius;
+
+    float az_plane_horiz_length = length(view_center.xz);
+    float az_plane_vert_length = length(view_center.yz);
+    vec2 az_plane_horiz_norm = view_center.xz / az_plane_horiz_length;
+    vec2 az_plane_vert_norm = view_center.yz / az_plane_vert_length;
+
+    vec2 t = sqrt(vec2(az_plane_horiz_length, az_plane_vert_length) * vec2(az_plane_horiz_length, az_plane_vert_length) - radius * radius);
+    vec4 w = vec4(t, radius, radius) / vec2(az_plane_horiz_length, az_plane_vert_length).xyxy;
+
+    vec4 horiz_cos_sin = az_plane_horiz_norm.xyyx * t.x * vec4(w.xx, -w.z, w.z);
+    vec4 vert_cos_sin = az_plane_vert_norm.xyyx * t.y * vec4(w.yy, -w.w, w.w);
+
+    vec2 horiz0 = horiz_cos_sin.xy + horiz_cos_sin.zw;
+    vec2 horiz1 = horiz_cos_sin.xy - horiz_cos_sin.zw;
+    vec2 vert0 = vert_cos_sin.xy + vert_cos_sin.zw;
+    vec2 vert1 = vert_cos_sin.xy - vert_cos_sin.zw;
+
+    vec4 projected = -0.5 *
+                     vec4(dvd_ProjectionMatrix[0][0],
+                          dvd_ProjectionMatrix[0][0],
+                          dvd_ProjectionMatrix[1][1],
+                          dvd_ProjectionMatrix[1][1]) *
+                     vec4(horiz0.x, horiz1.x, vert0.x, vert1.x) /
+                     vec4(horiz0.y, horiz1.y, vert0.y, vert1.y) + 0.5;
+
+    vec2 min_xy = projected.yw;
+    vec2 max_xy = projected.xz;
+
+    vec2 zw = mat2(dvd_ProjectionMatrix[2].zw, dvd_ProjectionMatrix[3].zw) * vec2(nearest_z, 1.0);
+    nearest_z = 0.5 * zw.x / zw.y + 0.5;
+
+    vec2 diff_pix = (max_xy - min_xy) * vec2(textureSize(HiZBuffer, 0));
+    float max_diff = max(max(diff_pix.x, diff_pix.y), 1.0);
+    float lod = ceil(log2(max_diff));
+    vec2 mid_pix = 0.5 * (max_xy + min_xy);
+
+    return (nearest_z < textureLod(HiZBuffer, mid_pix, lod).r) ? 0 : 1;
 }
 
 //Return: 0 = culled, 1 = visible
