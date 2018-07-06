@@ -20,7 +20,7 @@ bool Mesh::computeBoundingBox(SceneGraphNode* const sgn){
     BoundingBox& bb = sgn->getBoundingBox();
 
     bb.reset();
-    for_each(childrenNodes::value_type& s, sgn->getChildren()){
+    FOR_EACH(childrenNodes::value_type& s, sgn->getChildren()){
         bb.Add(s.second->getInitialBoundingBox());
     }
     _maxBoundingBox.Add(bb);
@@ -40,7 +40,7 @@ void Mesh::addSubMesh(SubMesh* const subMesh){
 
 /// After we loaded our mesh, we need to add submeshes as children nodes
 void Mesh::postLoad(SceneGraphNode* const sgn){
-    for_each(std::string& it, _subMeshes){
+    FOR_EACH(std::string& it, _subMeshes){
         ResourceDescriptor subMesh(it);
         // Find the SubMesh resource
         SubMesh* s = FindResourceImpl<SubMesh>(it);

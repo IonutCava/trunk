@@ -10,7 +10,7 @@
 
 bool SceneRoot::computeBoundingBox(SceneGraphNode* const sgn) {
     sgn->getBoundingBox().reset();
-    for_each(SceneGraphNode::NodeChildren::value_type& s, sgn->getChildren()){
+    FOR_EACH(SceneGraphNode::NodeChildren::value_type& s, sgn->getChildren()){
         sgn->addBoundingBox(s.second->getBoundingBoxTransformed(), s.second->getSceneNode()->getType());
     }
     sgn->getBoundingBox().setComputed(true);
@@ -27,7 +27,7 @@ void SceneGraphNode::updateTransforms(){
             updateBoundingBoxTransform(_transform->getGlobalMatrix());
     }
 
-    for_each(NodeChildren::value_type& it, _children){
+    FOR_EACH(NodeChildren::value_type& it, _children){
         it.second->updateTransforms();
     }
 }
@@ -37,7 +37,7 @@ void SceneGraphNode::checkBoundingBoxes(){
     //Update order is very important!
     //Ex: Mesh BB is composed of SubMesh BB's.
     //Compute from leaf to root to ensure proper calculations
-    for_each(NodeChildren::value_type& it, _children){
+    FOR_EACH(NodeChildren::value_type& it, _children){
         it.second->checkBoundingBoxes();
     }
 
@@ -84,13 +84,13 @@ void SceneGraphNode::setInitialBoundingBox(const BoundingBox& initialBoundingBox
 
 void SceneGraphNode::setSelected(bool state) {
     _selected = state;
-     for_each(NodeChildren::value_type& it, _children){
+     FOR_EACH(NodeChildren::value_type& it, _children){
         it.second->setSelected(_selected);
     }
 }
 
 void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
-    for_each(NodeChildren::value_type& it, _children){
+    FOR_EACH(NodeChildren::value_type& it, _children){
         it.second->sceneUpdate(deltaTime, sceneState);
     }
     _elapsedTime += deltaTime;

@@ -34,7 +34,7 @@ void FrameListenerManager::removeFrameListener(FrameListener* listener){
 ///If any Listener returns false, the whole manager returns false for this specific step
 ///If the manager returns false at any step, the application exists
 bool FrameListenerManager::frameStarted(const FrameEvent& evt){
-    for_each(ListenerMap::value_type& listener, _listeners){
+    FOR_EACH(ListenerMap::value_type& listener, _listeners){
         if(!listener.second->frameStarted(evt)){
             return false;
         }
@@ -43,7 +43,7 @@ bool FrameListenerManager::frameStarted(const FrameEvent& evt){
 }
 
 bool FrameListenerManager::framePreRenderStarted(const FrameEvent& evt){
-    for_each(ListenerMap::value_type& listener, _listeners){
+    FOR_EACH(ListenerMap::value_type& listener, _listeners){
         if(!listener.second->framePreRenderStarted(evt)){
             return false;
         }
@@ -52,7 +52,7 @@ bool FrameListenerManager::framePreRenderStarted(const FrameEvent& evt){
 }
 
 bool FrameListenerManager::framePreRenderEnded(const FrameEvent& evt){
-    for_each(ListenerMap::value_type& listener, _listeners){
+    FOR_EACH(ListenerMap::value_type& listener, _listeners){
         if(!listener.second->framePreRenderEnded(evt)){
             return false;
         }
@@ -61,7 +61,7 @@ bool FrameListenerManager::framePreRenderEnded(const FrameEvent& evt){
 }
 
 bool FrameListenerManager::frameRenderingQueued(const FrameEvent& evt){
-    for_each(ListenerMap::value_type& listener, _listeners){
+    FOR_EACH(ListenerMap::value_type& listener, _listeners){
         if(!listener.second->frameRenderingQueued(evt)){
             return false;
         }
@@ -70,7 +70,7 @@ bool FrameListenerManager::frameRenderingQueued(const FrameEvent& evt){
 }
 
 bool FrameListenerManager::frameEnded(const FrameEvent& evt){
-    for_each(ListenerMap::value_type& listener, _listeners){
+    FOR_EACH(ListenerMap::value_type& listener, _listeners){
         if(!listener.second->frameEnded(evt)){
             return false;
         }
@@ -80,7 +80,7 @@ bool FrameListenerManager::frameEnded(const FrameEvent& evt){
 
 ///When the application is idle, we should really clear up old events
 void FrameListenerManager::idle(){
-    for_each(ListenerMap::value_type& listener, _removedListeners){
+    FOR_EACH(ListenerMap::value_type& listener, _removedListeners){
         _listeners.erase(listener.second->getName());
     }
     _removedListeners.clear();

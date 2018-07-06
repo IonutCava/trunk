@@ -75,7 +75,7 @@ DeferredShadingRenderer::DeferredShadingRenderer() : Renderer(RENDERER_DEFERRED_
     _renderQuads.push_back(CreateResource<Quad3D>(mrt3));
     _renderQuads.push_back(CreateResource<Quad3D>(mrt4));
     _renderQuads.push_back(CreateResource<Quad3D>(mrtPreviewSmall));
-    for_each(Quad3D* renderQuad, _renderQuads){
+    FOR_EACH(Quad3D* renderQuad, _renderQuads){
         assert(renderQuad);
         renderQuad->setCustomShader(_previewDeferredShader);
         renderQuad->renderInstance()->preDraw(true);

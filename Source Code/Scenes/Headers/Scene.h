@@ -151,7 +151,7 @@ protected:
     bool _cookCollisionMeshesScheduled;
     ///_aiTask is the thread handling the AIManager. It is started before each scene's "initializeAI" is called
     ///It is destroyed after each scene's "deinitializeAI" is called
-    std::tr1::shared_ptr<Task>  _aiTask;
+    std::shared_ptr<Task>  _aiTask;
 
     typedef Unordered_map<std::string, ParticleEmitter *> ParticleEmitterMap;
     ParticleEmitterMap _particleEmitters;

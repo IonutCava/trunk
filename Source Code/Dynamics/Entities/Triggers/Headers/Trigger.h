@@ -31,7 +31,7 @@ class Task;
 class Impostor;
 /// When a unit touches the circle described by
 class Trigger  : public SceneNode {
-    typedef std::tr1::shared_ptr<Task> Task_ptr;
+    typedef std::shared_ptr<Task> Task_ptr;
 
 public:
     Trigger();

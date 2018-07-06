@@ -54,7 +54,7 @@ SceneGraphNode::~SceneGraphNode(){
 
     PRINT_FN(Locale::get("DELETE_SCENEGRAPH_NODE"), getName().c_str());
     //delete children nodes recursively
-    for_each(NodeChildren::value_type it, _children){
+    FOR_EACH(NodeChildren::value_type it, _children){
         SAFE_DELETE(it.second);
     }
 
@@ -75,7 +75,7 @@ SceneGraphNode* SceneGraphNode::getRoot() const {
 }
 
 vectorImpl<BoundingBox >&  SceneGraphNode::getBBoxes(vectorImpl<BoundingBox >& boxes ){
-    for_each(NodeChildren::value_type& it, _children){
+    FOR_EACH(NodeChildren::value_type& it, _children){
         it.second->getBBoxes(boxes);
     }
 
@@ -93,7 +93,7 @@ const BoundingBox& SceneGraphNode::getBoundingBoxTransformed() {
 ///When unloading the current graph node
 bool SceneGraphNode::unload(){
     //Unload every sub node recursively
-    for_each(NodeChildren::value_type& it, _children){
+    FOR_EACH(NodeChildren::value_type& it, _children){
         it.second->unload();
     }
     //Some debug output ...
@@ -153,7 +153,7 @@ void SceneGraphNode::print(){
                                                        depthShader.c_str());
     //Repeat for each child, but prefix it with the appropriate number of dashes
     //Based on our ancestor counting earlier
-    for_each(NodeChildren::value_type& it, _children){
+    FOR_EACH(NodeChildren::value_type& it, _children){
         for(U8 j = 0; j < i; j++){
             PRINT_F("-");
         }
@@ -253,7 +253,7 @@ SceneGraphNode* SceneGraphNode::findNode(const std::string& name, bool sceneNode
         }
 
         //The current node isn't the one we wan't, so recursively check all children
-        for_each(NodeChildren::value_type& it, _children){
+        FOR_EACH(NodeChildren::value_type& it, _children){
             returnValue = it.second->findNode(name);
                 if(returnValue != nullptr){
                     // if it is not nullptr it is the node we are looking for
@@ -278,7 +278,7 @@ void SceneGraphNode::Intersect(const Ray& ray, F32 start, F32 end, vectorImpl<Sc
         r_lock.unlock();
     }
 
-    for_each(NodeChildren::value_type& it, _children){
+    FOR_EACH(NodeChildren::value_type& it, _children){
         it.second->Intersect(ray,start,end,selectionHits);
     }
 }
@@ -301,7 +301,7 @@ const mat4<F32>& SceneGraphNode::getBoneTransform(const std::string& name) {
 void SceneGraphNode::setTransform(Transform* const t) {
     SAFE_UPDATE(_transform,t);
     // Update children
-    for_each(NodeChildren::value_type& it, _children){
+    FOR_EACH(NodeChildren::value_type& it, _children){
         Transform* nodeTransform = it.second->getTransform();
         if(nodeTransform)
             nodeTransform->setParentTransform(_transform);
@@ -348,14 +348,14 @@ Transform* const SceneGraphNode::getTransform(){
 
 void SceneGraphNode::setNavigationContext(const NavigationContext& newContext) {
     _navigationContext = newContext;
-    for_each(NodeChildren::value_type& it, _children){
+    FOR_EACH(NodeChildren::value_type& it, _children){
         it.second->setNavigationContext(_navigationContext);
     }
 }
 
 void  SceneGraphNode::setNavigationDetailOverride(const bool detailOverride){
     _overrideNavMeshDetail = detailOverride;
-    for_each(NodeChildren::value_type& it, _children){
+    FOR_EACH(NodeChildren::value_type& it, _children){
         it.second->setNavigationDetailOverride(detailOverride);
     }
 }
@@ -364,7 +364,7 @@ void  SceneGraphNode::setNavigationDetailOverride(const bool detailOverride){
 void  SceneGraphNode::cookCollisionMesh(const std::string& sceneName) {
     SceneNodeType nodeType = _node->getType();
     if(nodeType != TYPE_SKY && nodeType != TYPE_WATER && nodeType != TYPE_TERRAIN)
-        for_each(NodeChildren::value_type& it, _children){
+        FOR_EACH(NodeChildren::value_type& it, _children){
             it.second->cookCollisionMesh(sceneName);
         }
 

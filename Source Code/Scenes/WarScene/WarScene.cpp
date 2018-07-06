@@ -175,13 +175,13 @@ void WarScene::updateSceneState(const U64 deltaTime){
     renderState().drawDebugLines(true);
 
     U32 count = 0;
-    for_each(AIEntity* character, _army1){
+    FOR_EACH(AIEntity* character, _army1){
         _pointsA[DEBUG_LINE_OBJECT_TO_TARGET][count].set(character->getPosition());
         _pointsB[DEBUG_LINE_OBJECT_TO_TARGET][count].set(character->getDestination());
         count++;
     }
     
-    for_each(AIEntity* character, _army2){
+    FOR_EACH(AIEntity* character, _army2){
        _pointsA[DEBUG_LINE_OBJECT_TO_TARGET][count].set(character->getPosition());
        _pointsB[DEBUG_LINE_OBJECT_TO_TARGET][count].set(character->getDestination());
         count++;

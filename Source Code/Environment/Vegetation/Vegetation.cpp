@@ -223,7 +223,7 @@ bool Vegetation::generateTrees(){
             continue;
         }
         bool continueLoop = true;
-        for_each(vec3<F32>& it, positions){
+        FOR_EACH(vec3<F32>& it, positions){
             if(it.compare(P) || (it.distance(P) < 0.02f)){
                 k--;
                 continueLoop = false;

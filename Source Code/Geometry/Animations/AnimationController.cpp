@@ -5,20 +5,20 @@ using namespace boost;
 
 void SceneAnimator::Release(){// this should clean everything up
     _currentAnimIndex = -1;
-    for_each(pointCollection::value_type& it, _pointsA){
-        for_each(pointMap::value_type& it2, it.second){
+    FOR_EACH(pointCollection::value_type& it, _pointsA){
+        FOR_EACH(pointMap::value_type& it2, it.second){
             it2.second.clear();
         }
     }
 
-    for_each(pointCollection::value_type& it, _pointsB){
-        for_each(pointMap::value_type& it2, it.second){
+    FOR_EACH(pointCollection::value_type& it, _pointsB){
+        FOR_EACH(pointMap::value_type& it2, it.second){
             it2.second.clear();
         }
      }
 
-    for_each(colorCollection::value_type& it, _colors){
-        for_each(colorMap::value_type& it2, it.second){
+    FOR_EACH(colorCollection::value_type& it, _colors){
+        FOR_EACH(colorMap::value_type& it2, it.second){
             it2.second.clear();
         }
      }
@@ -103,7 +103,7 @@ void SceneAnimator::ExtractAnimations(const aiScene* pScene){
     }
     // get all the animation names so I can reference them by name and get the correct id
     U16 i = 0;
-    for_each(AnimEvaluator& animation, _animations){
+    FOR_EACH(AnimEvaluator& animation, _animations){
         _animationNameToId.insert(Unordered_map<std::string, U32>::value_type(animation._name, i++));
     }
     _currentAnimIndex=0;
@@ -165,7 +165,7 @@ Bone* SceneAnimator::CreateBoneTree( aiNode* pNode, Bone* parent){
 void SceneAnimator::UpdateTransforms(Bone* pNode) {
     CalculateBoneToWorldTransform( pNode);// update global transform as well
     /// continue for all children
-    for_each(Bone* bone, pNode->_children){
+    FOR_EACH(Bone* bone, pNode->_children){
         UpdateTransforms( bone );
     }
 }
@@ -253,7 +253,7 @@ I32 SceneAnimator::CreateSkeleton(Bone* piNode, const aiMatrix4x4& parent, vecto
     }
 
     // render all child nodes
-    for_each(Bone* bone, piNode->_children){
+    FOR_EACH(Bone* bone, piNode->_children){
         CreateSkeleton(bone, me, pointsA, pointsB, colors);
     }
 

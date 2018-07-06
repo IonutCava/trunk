@@ -85,7 +85,7 @@ void GUIConsoleCommandParser::handleQuitCommand(const std::string& args){
 void GUIConsoleCommandParser::handleHelpCommand(const std::string& args){
     if(args.empty()){
         PRINT_FN(Locale::get("HELP_CONSOLE_COMMAND"));
-        for_each(CommandMap::value_type& it,_commandMap){
+        FOR_EACH(CommandMap::value_type& it,_commandMap){
             if(it.first.find("invalid") == std::string::npos){
                 PRINT_FN("/%s - %s",it.first.c_str(),_commandHelp[it.first]);
             }

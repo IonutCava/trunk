@@ -44,7 +44,7 @@ void ShaderManager::registerShaderProgram(const std::string& name, ShaderProgram
 }
 
 U8 ShaderManager::update(const U64 deltaTime){
-    for_each(ShaderProgramMap::value_type& it, _shaderPrograms){
+    FOR_EACH(ShaderProgramMap::value_type& it, _shaderPrograms){
         std::string name = it.first;
         if(it.second->update(deltaTime) == 0)
             return 0;//+ Error
@@ -60,7 +60,7 @@ U8 ShaderManager::idle(){
 }
 
 void ShaderManager::refresh(){
-    for_each(ShaderProgramMap::value_type& it, _shaderPrograms){
+    FOR_EACH(ShaderProgramMap::value_type& it, _shaderPrograms){
         it.second->refresh();
     }
 }
@@ -158,7 +158,7 @@ Shader* ShaderManager::loadShader(const std::string& name, const std::string& so
 
 bool ShaderManager::recompileShaderProgram(const std::string& name) {
     bool state = false;
-    for_each(ShaderProgramMap::value_type& it, _shaderPrograms){
+    FOR_EACH(ShaderProgramMap::value_type& it, _shaderPrograms){
         const std::string& shaderName = it.second->getName();
         if(shaderName.find(name) != std::string::npos || shaderName.compare(name) == 0){
             _recompileQueue.push(it.second);

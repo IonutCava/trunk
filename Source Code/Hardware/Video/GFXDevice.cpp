@@ -134,7 +134,7 @@ void GFXDevice::setApi(const RenderAPI& api){
 void GFXDevice::closeRenderingApi(){
     ShaderManager::getInstance().destroyInstance();
     _api.closeRenderingApi();
-    for_each(RenderStateMap::value_type& it, _stateBlockMap){
+    FOR_EACH(RenderStateMap::value_type& it, _stateBlockMap){
         SAFE_DELETE(it.second);
     }
     _stateBlockMap.clear();

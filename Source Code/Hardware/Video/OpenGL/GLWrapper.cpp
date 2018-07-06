@@ -74,7 +74,7 @@ void GL_API::debugDraw(){
 
     NS_GLIM::GLIM_BATCH::s_bForceWireframe = false;
 
-    for_each(glIMPrimitive* priv, _glimInterfaces){
+    FOR_EACH(glIMPrimitive* priv, _glimInterfaces){
         if(priv->paused())
             continue;
         if(!priv->_inUse && priv->_canZombify) {

@@ -22,7 +22,7 @@
 
 #ifndef _PLATFORM_DEFINES_H_
 #define _PLATFORM_DEFINES_H_
-#include "boost/config/compiler/visualc.hpp"
+
 #include <limits>
 #include <boost/function.hpp>
 ///Data Types

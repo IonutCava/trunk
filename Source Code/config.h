@@ -68,7 +68,7 @@ namespace Config
     const int TERRAIN_CHUNKS_LOD = 3; //< Number of LOD levels for the terrain
     const int TERRAIN_CHUNK_LOD0 = 100; //< Relative distance for LOD0->LOD1 selection
     const int TERRAIN_CHUNK_LOD1 = 180; //< Relative distance for LOD0->LOD2 selection
-	const int MAX_GRASS_BATCHES  = 2000000; //< How many grass elements (3 quads p.e.) to add to each terrain element
+    const int MAX_GRASS_BATCHES  = 2000000; //< How many grass elements (3 quads p.e.) to add to each terrain element
     /// SceneNode LOD selection
     /// Distance computation is identical to the of the terrain (using SceneNode's bounding box)
     const int SCENE_NODE_LOD = 3;
@@ -80,8 +80,8 @@ namespace Config
     const int THREAD_LIMIT = 2;
     /// Use "precompiled" shaders if possible
     const bool USE_SHADER_BINARY = true;
-	/// Use HW AA'ed lines
-	const bool USE_HARDWARE_AA_LINES = true;
+    /// Use HW AA'ed lines
+    const bool USE_HARDWARE_AA_LINES = true;
 }
 
 /// if this is 0, a variable timestep will be used for the game loop
@@ -92,26 +92,24 @@ namespace Config
 
 ///Comment this out to show the debug console
 #ifndef HIDE_DEBUG_CONSOLE
-#define HIDE_DEBUG_CONSOLE
+    #define HIDE_DEBUG_CONSOLE
 #endif //HIDE_DEBUG_CONSOLE
 
 ///Current platform
 #ifndef _WIN32
-#define _WIN32
-#endif
-#ifndef WIN32
-#define WIN32 //for Physx
+    #define _WIN32
 #endif
 #ifndef __APPLE_CC__
-//#define __APPLE_CC__
+    //#define __APPLE_CC__
 #endif
 #ifndef LINUX
-//#define LINUX
+    //#define LINUX
 #endif
 
 ///OS specific stuff
 #if defined( __WIN32__ ) || defined( _WIN32 )
     #define OS_WINDOWS
+    #define WIN32 //for Physx
 #elif defined( __APPLE_CC__ ) // Apple OS X could be supported in the future
     #define OS_APPLE
 #else //Linux is the only other OS supported
@@ -120,71 +118,60 @@ namespace Config
 
 //#define HAVE_POSIX_MEMALIGN
 #define HAVE_ALIGNED_MALLOC
-#ifdef HAVE_ALIGNED_MALLOC
-//#define __GNUC__
+    #ifdef HAVE_ALIGNED_MALLOC
+    //#define __GNUC__
 #endif
 
 ///Please enter the desired log file name
 #ifndef OUTPUT_LOG_FILE
-#define OUTPUT_LOG_FILE "console.log"
+    #define OUTPUT_LOG_FILE "console.log"
 #endif //OUTPUT_LOG_FILE
 
 #ifndef ERROR_LOG_FILE
-#define ERROR_LOG_FILE "errors.log"
+    #define ERROR_LOG_FILE "errors.log"
 #endif //ERROR_LOG_FILE
 
 ///Reduce Build time on Windows Platform
-#ifndef VC_EXTRALEAN
-#define VC_EXTRALEAN
-#endif //VC_EXTRALEAN
-
 #ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN 1
+    #define WIN32_LEAN_AND_MEAN 1
+    #ifndef VC_EXTRALEAN
+        #define VC_EXTRALEAN
+    #endif //VC_EXTRALEAN
 #endif //WIN32_LEAN_AND_MEAN
 
 ///Use SSE functions for math calculations: usefull for release
 #ifndef USE_MATH_SIMD
-//#define USE_MATH_SIMD
-#define ALIGNED_BYTES 16
+    //#define USE_MATH_SIMD
+    #define ALIGNED_BYTES 16
 #endif //USE_MATH_SIMD
 
-///Use boost or std::tr1 unordered_map
+///Use boost or std unordered_map
 ///0 = BOOST
-///1 = TR1
+///1 = STL
 #ifndef UNORDERED_MAP_IMP
-#define UNORDERED_MAP_IMP 0
+    #define UNORDERED_MAP_IMP 0
 #endif //UNORDERED_MAP_IMP
 
 ///Use stlport or stl vector
 ///0 = Boost
 ///1 = STL
-/// STL note: Due to a bug in STL, fixed in VC++ 11, SIMD and std::vector's do not go along
-///           To fix this change line 716 of <vector.h> from
-///                       "void resize(size_type _Newsize, _Ty _Val)"
-///           to
-///                       "void resize(size_type _Newsize,const _Ty& _Val)"
 #ifndef VECTOR_IMP
-#define VECTOR_IMP 1
+    #define VECTOR_IMP 1
 #endif //VECTOR_IMP
-
-///Use boost or std for_each
-#ifndef FOR_EACH_IMPLEMENTATION
-#define FOR_EACH_IMPLEMENTATION BOOST
-//#define FOR_EACH_IMPLEMENTATION STD
-#endif //FOR_EACH_IMPLEMENTATION
 
 ///Disable the use of the PhysXAPI
 #ifndef _USE_PHYSX_API_
-#define _USE_PHYSX_API_
+    #define _USE_PHYSX_API_
 #endif
 
 ///Maximum number of joysticks to use. Remeber to update the "Joystics" enum from InputInterface.h
 #ifndef MAX_ALLOWED_JOYSTICKS
-#define MAX_ALLOWED_JOYSTICKS 4
+    #define MAX_ALLOWED_JOYSTICKS 4
 #endif
 
 ///If the target machine uses the nVidia Optimus layout (IntelHD + nVidia discreet GPU) this will force the engine to use the nVidia GPU always
 #ifdef WINDOWS_OS
-#define FORCE_NV_OPTIMUS_HIGHPERFORMANCE
+    #define FORCE_NV_OPTIMUS_HIGHPERFORMANCE
 #endif
+
 #endif //_CONFIG_HEADER

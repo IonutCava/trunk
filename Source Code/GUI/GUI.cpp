@@ -38,7 +38,7 @@ void GUI::onResize(const vec2<U16>& newResolution){
     vec2<I32> difDimensions(_cachedResolution.width - newResolution.width,
                             _cachedResolution.height - newResolution.height);
 
-    for_each(guiMap::value_type& guiStackIterator,_guiStack){
+    FOR_EACH(guiMap::value_type& guiStackIterator,_guiStack){
         guiStackIterator.second->onResize(difDimensions);
     }
     _cachedResolution = newResolution;
@@ -55,7 +55,7 @@ void GUI::draw(const U64 deltaTime, const D32 interpolationFactor){
     _guiShader->uploadNodeMatrices();
 
     //------------------------------------------------------------------------
-    for_each(guiMap::value_type& guiStackIterator,_guiStack){
+    FOR_EACH(guiMap::value_type& guiStackIterator,_guiStack){
         GUIElement* guiElement = guiStackIterator.second;
         if(!guiElement->isVisible() || guiElement->getGuiType() == GUI_BUTTON) continue;
         SET_STATE_BLOCK(guiElement->_guiSB);
@@ -135,7 +135,7 @@ bool GUI::init(){
 void GUI::close(){
     SAFE_DELETE(_console);
     RemoveResource(_guiShader);
-    for_each(guiMap::value_type it, _guiStack) {
+    FOR_EACH(guiMap::value_type it, _guiStack) {
         SAFE_DELETE(it.second);
     }
     _guiStack.clear();
@@ -147,7 +147,7 @@ bool GUI::checkItem(const OIS::MouseEvent& arg ){
     event.mousePoint.x = arg.state.X.abs;
     event.mousePoint.y = arg.state.Y.abs;
 
-    for_each(guiMap::value_type& guiStackIterator,_guiStack) {
+    FOR_EACH(guiMap::value_type& guiStackIterator,_guiStack) {
         guiStackIterator.second->onMouseMove(event);
     }
     CEGUI_DEFAULT_CONTEXT.injectMousePosition(arg.state.X.abs, arg.state.Y.abs);
@@ -181,7 +181,7 @@ bool GUI::clickCheck(OIS::MouseButtonID button, bool pressed) {
                 CEGUI_DEFAULT_CONTEXT.injectMouseButtonDown(CEGUI::LeftButton);
                 GUIEvent event;
                 event.mouseClickCount = 0;
-                for_each(guiMap::value_type& guiStackIterator,_guiStack) {
+                FOR_EACH(guiMap::value_type& guiStackIterator,_guiStack) {
                     guiStackIterator.second->onMouseDown(event);
                 }
                 }break;
@@ -206,7 +206,7 @@ bool GUI::clickCheck(OIS::MouseButtonID button, bool pressed) {
                 CEGUI_DEFAULT_CONTEXT.injectMouseButtonUp(CEGUI::LeftButton);
                 GUIEvent event;
                 event.mouseClickCount = 1;
-                for_each(guiMap::value_type& guiStackIterator,_guiStack) {
+                FOR_EACH(guiMap::value_type& guiStackIterator,_guiStack) {
                     guiStackIterator.second->onMouseUp(event);
                 }
                 }break;

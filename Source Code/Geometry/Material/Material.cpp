@@ -139,7 +139,7 @@ ShaderProgram* Material::setShaderProgram(const std::string& shader, const Rende
     ResourceDescriptor shaderDescriptor(_shader[id]);
     std::stringstream ss;
     if(!_shaderDefines[id].empty()){
-        for_each(std::string& shaderDefine, _shaderDefines[id]){
+        FOR_EACH(std::string& shaderDefine, _shaderDefines[id]){
             ss << shaderDefine;
             ss << ",";
         }
@@ -323,7 +323,7 @@ void Material::setDoubleSided(bool state) {
     /// Update all render states for this item
     if(_doubleSided){
         typedef Unordered_map<RenderStage, RenderStateBlock* >::value_type stateValue;
-        for_each(stateValue& it, _defaultRenderStates){
+        FOR_EACH(stateValue& it, _defaultRenderStates){
             RenderStateBlockDescriptor& desc =  it.second->getDescriptor();
             desc.setCullMode(CULL_MODE_NONE);
         }
@@ -365,7 +365,7 @@ bool Material::isTranslucent(U8 index) {
     // Disable culling for translucent items
     if(state && !_translucencyCheck){
         typedef Unordered_map<RenderStage, RenderStateBlock* >::value_type stateValue;
-        for_each(stateValue& it, _defaultRenderStates){
+        FOR_EACH(stateValue& it, _defaultRenderStates){
             it.second->getDescriptor().setCullMode(CULL_MODE_NONE);
             if(!_useAlphaTest) it.second->getDescriptor().setBlend(true);
         }

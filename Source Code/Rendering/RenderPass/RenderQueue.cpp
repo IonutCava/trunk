@@ -18,12 +18,12 @@ struct RenderBinCallOrder{
 
 RenderQueue::RenderQueue() : _renderQueueLocked(false), _isSorted(false)
 {
-    _renderBins.reserve(RenderBin::RBT_PLACEHOLDER);
+    //_renderBins.reserve(RenderBin::RBT_PLACEHOLDER);
 }
 
 RenderQueue::~RenderQueue()
 {
-    for_each(RenderBinMap::value_type& renderBins, _renderBins){
+    FOR_EACH(RenderBinMap::value_type& renderBins, _renderBins){
         SAFE_DELETE(renderBins.second);
     }
     _renderBins.clear();
@@ -31,7 +31,7 @@ RenderQueue::~RenderQueue()
 
 U16 RenderQueue::getRenderQueueStackSize() {
     U16 temp = 0;
-    for_each(RenderBinMap::value_type& renderBins, _renderBins){
+    FOR_EACH(RenderBinMap::value_type& renderBins, _renderBins){
         temp += (renderBins.second)->getBinSize();
     }
     return temp;
@@ -151,7 +151,7 @@ void RenderQueue::sort(){
     if(_renderQueueLocked && _isSorted)
         return;
 
-    for_each(RenderBinMap::value_type& renderBin, _renderBins){
+    FOR_EACH(RenderBinMap::value_type& renderBin, _renderBins){
         assert(renderBin.second);
         renderBin.second->sort();
     }
@@ -162,7 +162,7 @@ void RenderQueue::refresh(bool force){
     if(_renderQueueLocked && !force)
         return;
 
-    for_each(RenderBinMap::value_type& renderBin, _renderBins){
+    FOR_EACH(RenderBinMap::value_type& renderBin, _renderBins){
         assert(renderBin.second);
         renderBin.second->refresh();
     }

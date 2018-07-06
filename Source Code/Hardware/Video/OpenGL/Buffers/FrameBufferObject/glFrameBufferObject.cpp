@@ -212,7 +212,7 @@ bool glFrameBufferObject::Create(GLushort width, GLushort height, GLubyte imageL
     vectorImpl<GLenum >buffers;
 
     //For every attachement, be it a color or depth attachement ...
-    for_each(TextureAttachements::value_type& it, _attachement){
+    FOR_EACH(TextureAttachements::value_type& it, _attachement){
        InitAttachement(it.first, it.second);
        if(it.first != TextureDescriptor::Depth)
            buffers.insert(buffers.begin(), GL_COLOR_ATTACHMENT0 + it.first);

@@ -38,7 +38,7 @@ void AITenisSceneAIActionList::processMessage(AIEntity* sender, AIMsg msg, const
         case ATTACK_BALL:
             currentTeam = _entity->getTeam();
             assert(currentTeam);
-            for_each(AICoordination::teamMap::value_type const& member, currentTeam->getTeam()){
+            FOR_EACH(AICoordination::teamMap::value_type const& member, currentTeam->getTeam()){
                 if(_entity->getGUID() != member.second->getGUID()){
                     _entity->sendMessage(member.second, DONT_ATTACK_BALL, 0);
                 }
@@ -88,7 +88,7 @@ void AITenisSceneAIActionList::processInput(const U64 deltaTime){
     AICoordination* currentTeam = _entity->getTeam();
     assert(currentTeam != nullptr);
     _entity->getTeam()->getMemberVariable()[_entity] = distanceToBall(_initialPosition,_ballPosition);
-    for_each(AICoordination::teamMap::value_type& member, currentTeam->getTeam()){
+    FOR_EACH(AICoordination::teamMap::value_type& member, currentTeam->getTeam()){
         ///Ask all of our team-mates to send us their distance to the ball
         if(_entity->getGUID() != member.second->getGUID()){
             _entity->sendMessage(member.second, REQUEST_DISTANCE_TO_TARGET, 0);
@@ -100,7 +100,7 @@ void AITenisSceneAIActionList::processData(const U64 deltaTime){
     AIEntity* nearestEntity = _entity;
     F32 distance = _entity->getTeam()->getMemberVariable()[_entity];
     typedef Unordered_map<AIEntity*, F32 > memberVariable;
-    for_each(memberVariable::value_type& member, _entity->getTeam()->getMemberVariable()){
+    FOR_EACH(memberVariable::value_type& member, _entity->getTeam()->getMemberVariable()){
         if(member.second < distance && member.first->getGUID() != _entity->getGUID()){
             distance = member.second;
             nearestEntity = member.first;

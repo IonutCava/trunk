@@ -17,7 +17,7 @@ void SceneGraph::update(){
 
 void SceneGraph::idle(){
     typedef Unordered_map<std::string, SceneGraphNode*> NodeChildren;
-    for_each(SceneGraphNode* it, _pendingDeletionNodes){
+    FOR_EACH(SceneGraphNode* it, _pendingDeletionNodes){
         it->unload();
         it->getParent()->removeNode(it);
         SAFE_DELETE(it);

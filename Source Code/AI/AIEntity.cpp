@@ -39,7 +39,7 @@ AIEntity::~AIEntity()
 
     SAFE_DELETE(_comInterface);
     SAFE_DELETE(_actionProcessor);
-    for_each(sensorMap::value_type& it , _sensorList){
+    FOR_EACH(sensorMap::value_type& it , _sensorList){
         SAFE_DELETE(it.second);
     }
     _sensorList.clear();

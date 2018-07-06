@@ -113,6 +113,6 @@ protected:
     void run();
 };
 
-typedef std::tr1::shared_ptr<Task> Task_ptr;
+typedef std::shared_ptr<Task> Task_ptr;
 
 #endif

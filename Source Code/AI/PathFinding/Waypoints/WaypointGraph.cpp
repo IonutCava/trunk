@@ -29,7 +29,7 @@ namespace Navigation {
 	   _positions.clear();
 	   _rotations.clear();
 	   _times.clear();
-	   for_each(wp::value_type waypoint, _waypoints){
+	   FOR_EACH(wp::value_type waypoint, _waypoints){
 		  _positions.push_back((waypoint.second)->_position);
 		  _rotations.push_back((waypoint.second)->_orientation);
 		  _times.push_back((waypoint.second)->_time);

@@ -20,7 +20,7 @@ bool Terrain::unload(){
     SAFE_DELETE(_terrainReflectionRenderState);
 
     assert(!_terrainTextures.empty());
-    for_each(TerrainTextureMap::value_type& it, _terrainTextures){
+    FOR_EACH(TerrainTextureMap::value_type& it, _terrainTextures){
         if(it.second != nullptr){///Remember kids, alpha channel is optional ;) -Ionut
             RemoveResource(it.second);
         }

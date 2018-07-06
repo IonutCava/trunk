@@ -64,7 +64,7 @@ void WarSceneAIActionList::processInput(const U64 deltaTime){
         }
 
         AICoordination::teamMap& team = currentTeam->getTeam();
-        for_each(AICoordination::teamMap::value_type& member, team){
+        FOR_EACH(AICoordination::teamMap::value_type& member, team){
             if(_entity->getGUID() != member.second->getGUID()){
                 _entity->sendMessage(member.second, CHANGE_DESTINATION_POINT, 0);
                 if(!foundId) _indexInMap++;

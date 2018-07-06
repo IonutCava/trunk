@@ -411,7 +411,7 @@ void Scene::addTask(Task_ptr taskItem) {
 
 void Scene::clearTasks(){
     PRINT_FN(Locale::get("STOP_SCENE_TASKS"));
-    for_each(Task_ptr& task, _tasks){
+    FOR_EACH(Task_ptr& task, _tasks){
         task->stopTask();
     }
     _tasks.clear();

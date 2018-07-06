@@ -29,7 +29,7 @@ glShaderProgram::glShaderProgram(const bool optimise) : ShaderProgram(optimise),
 glShaderProgram::~glShaderProgram()
 {
     if(_shaderProgramId > 0 && _shaderProgramId != Divide::GL::_invalidObjectID){
-        for_each(ShaderIdMap::value_type& it, _shaderIdMap){
+        FOR_EACH(ShaderIdMap::value_type& it, _shaderIdMap){
             it.second->removeParentProgram(this);
             GLCheck(glDetachShader(_shaderProgramId, it.second->getShaderId()));
         }
@@ -127,7 +127,7 @@ void glShaderProgram::attachShader(Shader* const shader,const bool refresh){
 
 void glShaderProgram::threadedLoad(const std::string& name){
     //Link and validate shaders into this program and update state
-    for_each(ShaderIdMap::value_type& it, _shaderIdMap){
+    FOR_EACH(ShaderIdMap::value_type& it, _shaderIdMap){
         if(!it.second->compile()){
             ERROR_FN(Locale::get("ERROR_GLSL_SHADER_COMPILE"),it.second->getShaderId());
         }

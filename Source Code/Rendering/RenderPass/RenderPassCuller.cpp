@@ -26,7 +26,7 @@ void RenderPassCuller::cullSceneGraph(SceneGraphNode* const currentNode, SceneSt
 
     assert(_visibleNodes.empty());
     cullSceneGraphCPU(currentNode, sceneState.getRenderState());
-    for_each(SceneGraphNode* node, _visibleNodes){
+    FOR_EACH(SceneGraphNode* node, _visibleNodes){
         RenderQueue::getInstance().addNodeToQueue(node);
     }
     cullSceneGraphGPU(sceneState);
@@ -66,7 +66,7 @@ void RenderPassCuller::cullSceneGraphCPU(SceneGraphNode* const currentNode, Scen
 
     //If we don't need to skip child testing
     if(!skipChildren){
-        for_each(SceneGraphNode::NodeChildren::value_type& it, currentNode->getChildren()) {
+        FOR_EACH(SceneGraphNode::NodeChildren::value_type& it, currentNode->getChildren()) {
             cullSceneGraphCPU(it.second, sceneRenderState);
         }
     }

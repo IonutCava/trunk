@@ -28,7 +28,7 @@ ShaderProgram::ShaderProgram(const bool optimise) : HardwareResource(),
 ShaderProgram::~ShaderProgram()
 {
     D_PRINT_FN(Locale::get("SHADER_PROGRAM_REMOVE"), getName().c_str());
-    for_each(ShaderIdMap::value_type& it, _shaderIdMap){
+    FOR_EACH(ShaderIdMap::value_type& it, _shaderIdMap){
         ShaderManager::getInstance().removeShader(it.second);
     }
     ShaderManager::getInstance().unregisterShaderProgram(getName());
@@ -159,7 +159,7 @@ void ShaderProgram::unbind(bool resetActiveProgram){
 
 vectorImpl<Shader* > ShaderProgram::getShaders(const ShaderType& type) const{
     vectorImpl<Shader* > returnShaders;
-    for_each(ShaderIdMap::value_type it, _shaderIdMap){
+    FOR_EACH(ShaderIdMap::value_type it, _shaderIdMap){
         if(it.second->getType() == type){
             returnShaders.push_back(it.second);
         }

@@ -453,7 +453,7 @@ void GL_API::closeRenderingApi(){
     try { CEGUI::System::destroy();}
     catch( ... ){ D_ERROR_FN(Locale::get("ERROR_CEGUI_DESTROY")); }
 
-    for_each(glIMPrimitive* priv, _glimInterfaces){
+    FOR_EACH(glIMPrimitive* priv, _glimInterfaces){
         SAFE_DELETE(priv);
     }
     for(GLubyte i = 0; i < UBO_PLACEHOLDER; i++){

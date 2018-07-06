@@ -14,11 +14,11 @@ AIManager::~AIManager()
 ///Clear up any remaining AIEntities
 void AIManager::Destroy(){
     WriteLock w_lock(_updateMutex);
-    for_each(AIEntityMap::value_type& entity, _aiEntities){
+    FOR_EACH(AIEntityMap::value_type& entity, _aiEntities){
         SAFE_DELETE(entity.second);
     }
     _aiEntities.clear();
-    for_each(Navigation::NavigationMesh* navMesh, _navMeshes){
+    FOR_EACH(Navigation::NavigationMesh* navMesh, _navMeshes){
          SAFE_DELETE(navMesh);
     }
     _navMeshes.clear();
@@ -48,29 +48,29 @@ U8 AIManager::update(){
 }
 
 void AIManager::processInput(const U64 deltaTime){  //sensors
-    for_each(AIEntityMap::value_type& entity, _aiEntities){
+    FOR_EACH(AIEntityMap::value_type& entity, _aiEntities){
         entity.second->processInput(deltaTime);
     }
 }
 
 void AIManager::processData(const U64 deltaTime){   //think
-    for_each(AIEntityMap::value_type& entity, _aiEntities){
+    FOR_EACH(AIEntityMap::value_type& entity, _aiEntities){
         entity.second->processData(deltaTime);
     }
 }
 
 void AIManager::updateEntities(const U64 deltaTime){//react
-    for_each(AIEntityMap::value_type& entity, _aiEntities){
+    FOR_EACH(AIEntityMap::value_type& entity, _aiEntities){
         entity.second->update(deltaTime);
     }
     
-    for_each(AITeamMap::value_type& team, _aiTeams){
+    FOR_EACH(AITeamMap::value_type& team, _aiTeams){
         team.second->update(deltaTime);
     }
 
     if(_updateNavMeshes){
         ReadLock w_lock(_navMeshMutex);
-        for_each(AITeamMap::value_type& team, _aiTeams){
+        FOR_EACH(AITeamMap::value_type& team, _aiTeams){
             team.second->resetNavMeshes();
         }
         _updateNavMeshes = false;
@@ -144,7 +144,7 @@ void AIManager::toggleNavMeshDebugDraw(Navigation::NavigationMesh* navMesh, bool
 
 void AIManager::toggleNavMeshDebugDraw(bool state) {
     WriteLock w_lock(_navMeshMutex);
-    for_each(Navigation::NavigationMesh* navMesh, _navMeshes){
+    FOR_EACH(Navigation::NavigationMesh* navMesh, _navMeshes){
         navMesh->debugDraw(state);
     }
     _navMeshDebugDraw = state;
@@ -152,7 +152,7 @@ void AIManager::toggleNavMeshDebugDraw(bool state) {
 
 void AIManager::debugDraw(bool forceAll){
     ReadLock r_lock(_navMeshMutex);
-    for_each(Navigation::NavigationMesh* navMesh, _navMeshes){
+    FOR_EACH(Navigation::NavigationMesh* navMesh, _navMeshes){
         navMesh->update(_deltaTime);
         if(forceAll || navMesh->debugDraw()){
             navMesh->render();

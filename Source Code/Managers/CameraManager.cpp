@@ -10,7 +10,7 @@ CameraManager::CameraManager() : _camera(nullptr)
 CameraManager::~CameraManager() {
     PRINT_FN(Locale::get("CAMERA_MANAGER_DELETE"));
     PRINT_FN(Locale::get("CAMERA_MANAGER_REMOVE_CAMERAS"));
-    for_each(CameraPool::value_type& it, _cameraPool){
+    FOR_EACH(CameraPool::value_type& it, _cameraPool){
         it.second->unload();
         SAFE_DELETE(it.second);
     }
@@ -43,7 +43,7 @@ void CameraManager::setActiveCamera(const std::string& name) {
 
     _camera->onActivate();
 
-    for_each(const DELEGATE_CBK& listener, _changeCameralisteners){
+    FOR_EACH(const DELEGATE_CBK& listener, _changeCameralisteners){
         listener();
     }
 }
@@ -56,7 +56,7 @@ void CameraManager::addNewCamera(const std::string& cameraName, Camera* const ca
     camera->setIOD(ParamHandler::getInstance().getParam<F32>("postProcessing.anaglyphOffset"));
     camera->setName(cameraName);
 
-    for_each(const DELEGATE_CBK& listener, _updateCameralisteners){
+    FOR_EACH(const DELEGATE_CBK& listener, _updateCameralisteners){
         camera->addUpdateListener(listener);
     }
     _cameraPool.insert(make_pair(cameraName,camera));

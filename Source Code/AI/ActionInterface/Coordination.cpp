@@ -41,7 +41,7 @@ void AICoordination::resetNavMeshes() {
             _teamCrowd[i]->setNavMesh(navMesh);
         }
     }
-    for_each(teamMap::value_type& aiEntity, _team){
+    FOR_EACH(teamMap::value_type& aiEntity, _team){
         aiEntity.second->resetCrowd(_teamCrowd[0]);
     }
 }

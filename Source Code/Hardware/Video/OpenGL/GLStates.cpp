@@ -31,7 +31,7 @@ void GL_API::clearStates(const bool skipShader,const bool skipTextures,const boo
     }
 
     if(!skipTextures || forceAll){
-        for_each(glTexture::textureBoundMapDef::value_type& it, glTexture::textureBoundMap){
+        FOR_EACH(glTexture::textureBoundMapDef::value_type& it, glTexture::textureBoundMap){
             if(it.second.second != GL_NONE){
                 setActiveTextureUnit(it.first);
                 glSamplerObject::Unbind(it.first);

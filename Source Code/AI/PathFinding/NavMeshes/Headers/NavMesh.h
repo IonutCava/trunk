@@ -167,7 +167,7 @@ namespace Navigation {
         /// @}
 
         /// A thread for us to update in.
-        std::tr1::shared_ptr<Task> _buildThread;
+        std::shared_ptr<Task> _buildThread;
         /// A mutex for NavigationMesh builds.
         boost::mutex _buildLock;
         /// A mutex for accessing our actual NavigationMesh.

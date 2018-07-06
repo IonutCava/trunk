@@ -17,7 +17,7 @@ SkinnedMesh::~SkinnedMesh()
 void SkinnedMesh::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState){
     bool playAnimation = (_playAnimation && ParamHandler::getInstance().getParam<bool>("mesh.playAnimations"));
 
-    for_each(subMeshRefMap::value_type& subMesh, _subMeshRefMap){
+    FOR_EACH(subMeshRefMap::value_type& subMesh, _subMeshRefMap){
         dynamic_cast<SkinnedSubMesh*>(subMesh.second)->playAnimation(playAnimation);
     }
 
@@ -27,7 +27,7 @@ void SkinnedMesh::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, Sc
 /// Select next available animation
 bool SkinnedMesh::playNextAnimation(){
     bool success = true;
-    for_each(subMeshRefMap::value_type& subMesh, _subMeshRefMap){
+    FOR_EACH(subMeshRefMap::value_type& subMesh, _subMeshRefMap){
         if(!dynamic_cast<SkinnedSubMesh*>(subMesh.second)->playNextAnimation())
             success =  false;
     }
@@ -37,7 +37,7 @@ bool SkinnedMesh::playNextAnimation(){
 /// Select an animation by index
 bool SkinnedMesh::playAnimation(I32 index){
     bool success = true;
-    for_each(subMeshRefMap::value_type& subMesh, _subMeshRefMap){
+    FOR_EACH(subMeshRefMap::value_type& subMesh, _subMeshRefMap){
         if(!dynamic_cast<SkinnedSubMesh*>(subMesh.second)->playAnimation(index))
             success =  false;
     }
@@ -48,7 +48,7 @@ bool SkinnedMesh::playAnimation(I32 index){
 /// Select an animation by name
 bool SkinnedMesh::playAnimation(const std::string& animationName){
     bool success = true;
-    for_each(subMeshRefMap::value_type& subMesh, _subMeshRefMap){
+    FOR_EACH(subMeshRefMap::value_type& subMesh, _subMeshRefMap){
         if(!dynamic_cast<SkinnedSubMesh*>(subMesh.second)->playAnimation(animationName))
             success =  false;
     }

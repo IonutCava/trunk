@@ -31,7 +31,7 @@ void LightManager::init(){
 
 bool LightManager::clear(){
     //Lights are removed by the sceneGraph
-    for_each(LightMap::value_type it, _lights){
+    FOR_EACH(LightMap::value_type it, _lights){
         //in case we had some light hanging
         RemoveResource(it.second);
     }
@@ -84,7 +84,7 @@ U32 LightManager::generateNewID(){
 }
 
 bool LightManager::checkId(U32 value){
-    for_each(LightMap::value_type& it, _lights)
+    FOR_EACH(LightMap::value_type& it, _lights)
         if(it.second->getId() == value)
             return false;
 
@@ -104,7 +104,7 @@ void LightManager::idle(){
 ///Update only if needed. Get projection and view matrices if they changed
 ///Also, search for the dominant light if any
 void LightManager::update(const bool force){
-    for_each(Light* light, _currLightsPerNode){
+    FOR_EACH(Light* light, _currLightsPerNode){
         light->updateState(force);
         if(!_dominantLight){ //if we do not have a dominant light registered, search for one
             if(light->getLightMode() == LIGHT_MODE_DOMINANT){
@@ -135,7 +135,7 @@ bool LightManager::framePreRenderEnded(const FrameEvent& evt){
         _dominantLight->generateShadowMaps(GET_ACTIVE_SCENE()->renderState());
     }else{
         //generate shadowmaps for each light
-        for_each(LightMap::value_type& light, _lights){
+        FOR_EACH(LightMap::value_type& light, _lights){
             light.second->generateShadowMaps(GET_ACTIVE_SCENE()->renderState());
         }
     }
@@ -219,7 +219,7 @@ bool LightManager::shadowMappingEnabled() const {
     if(!_shadowMapsEnabled)
         return false;
 
-    for_each(LightMap::value_type light, _lights){
+    FOR_EACH(LightMap::value_type light, _lights){
         if(!light.second->castsShadows())
             continue;
 
@@ -261,7 +261,7 @@ U8 LightManager::findLightsForSceneNode(SceneGraphNode* const node, LightType ty
     _currShadowLights.resize(0);
     // loop over every light in the scene
     // ToDo: add a grid based light search system? -Ionut
-    for_each(LightMap::value_type& lightIt, _lights){
+    FOR_EACH(LightMap::value_type& lightIt, _lights){
         Light* light = lightIt.second;
         if(!light->getEnabled())
             continue;

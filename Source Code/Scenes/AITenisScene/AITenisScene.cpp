@@ -259,7 +259,7 @@ bool AITenisScene::load(const std::string& name, CameraManager* const cameraMgr,
 
     //------------------------ Load up game elements -----------------------------///
     _net = _sceneGraph->findNode("Net");
-    //for_each(SceneGraphNode::NodeChildren::value_type& it, _net->getChildren()){
+    //FOR_EACH(SceneGraphNode::NodeChildren::value_type& it, _net->getChildren()){
         //it.second->setReceivesShadows(false);
     //}
     _floor = _sceneGraph->findNode("Floor");
