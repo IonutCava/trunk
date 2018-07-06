@@ -10,10 +10,6 @@
 #include "Geometry/Material/Headers/Material.h"
 #include "Rendering/Lighting/ShadowMapping/Headers/ShadowMap.h"
 
-vec3<F32> ShaderProgram::_cachedCamEye;
-vec2<F32> ShaderProgram::_cachedZPlanes;
-vec2<F32> ShaderProgram::_cachedSceneZPlanes;
-
 ShaderProgram::ShaderProgram(const bool optimise) : HardwareResource("temp_shader_program"),
                                                     _activeCamera(nullptr),
                                                     _optimise(optimise),
@@ -33,19 +29,11 @@ ShaderProgram::ShaderProgram(const bool optimise) : HardwareResource("temp_shade
 
     _extendedMatricesDirty = true;
     _sceneDataDirty = true;
-    _extendedMatrixEntry[WORLD_MATRIX]  = -1;
-    _extendedMatrixEntry[WV_MATRIX]     = -1;
-    _extendedMatrixEntry[WV_INV_MATRIX] = -1;
-    _extendedMatrixEntry[WVP_MATRIX]    = -1;
-    _extendedMatrixEntry[NORMAL_MATRIX] = -1;
-    _invProjMatrixEntry  = -1;
+    _worldMatrixLoc      = -1;
+    _normalMatrixLoc     = -1;
     _timeLoc             = -1;
-    _cameraLocationLoc   = -1;
     _enableFogLoc        = -1;
     _lightAmbientLoc     = -1;
-    _zPlanesLoc          = -1;
-    _sceneZPlanesLoc     = -1;
-    _screenDimensionLoc  = -1;
     _invScreenDimension  = -1;
     _fogColorLoc       = -1;
     _fogDensityLoc     = -1;
@@ -62,11 +50,6 @@ ShaderProgram::~ShaderProgram()
     }
     ShaderManager::getInstance().unregisterShaderProgram(getName());
     _shaderIdMap.clear();
-}
-
-void ShaderProgram::updateCamera(const Camera& activeCamera) {
-    _cachedCamEye = activeCamera.getEye();
-    _cachedZPlanes = activeCamera.getZPlanes();
 }
 
 U8 ShaderProgram::update(const U64 deltaTime){
@@ -100,7 +83,6 @@ U8 ShaderProgram::update(const U64 deltaTime){
     }
     if(_dirty){
         const vec2<U16>& screenRes = GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)->getResolution();
-        this->Uniform(_screenDimensionLoc, screenRes);
         this->Uniform(_invScreenDimension, vec2<F32>(1.0f / screenRes.width, 1.0f / screenRes.height));
         //Apply global shader values valid throughout application runtime:
         char depthMapSampler1[32], depthMapSampler2[32], depthMapSampler3[32];
@@ -140,19 +122,11 @@ bool ShaderProgram::generateHWResource(const std::string& name){
 
     DIVIDE_ASSERT(isHWInitComplete(), "ShaderProgram error: hardware initialization failed!");
 
-    _extendedMatrixEntry[WORLD_MATRIX]  = this->cachedLoc("dvd_WorldMatrix[0]");
-    _extendedMatrixEntry[WV_MATRIX]     = this->cachedLoc("dvd_WorldViewMatrix");
-    _extendedMatrixEntry[WV_INV_MATRIX] = this->cachedLoc("dvd_WorldViewMatrixInverse");
-    _extendedMatrixEntry[WVP_MATRIX]    = this->cachedLoc("dvd_WorldViewProjectionMatrix");
-    _extendedMatrixEntry[NORMAL_MATRIX] = this->cachedLoc("dvd_NormalMatrix[0]");
-    _invProjMatrixEntry  = this->cachedLoc("dvd_ProjectionMatrixInverse");
+    _worldMatrixLoc      = this->cachedLoc("dvd_WorldMatrix[0]");
+    _normalMatrixLoc     = this->cachedLoc("dvd_NormalMatrix[0]");
     _timeLoc             = this->cachedLoc("dvd_time");
-    _cameraLocationLoc   = this->cachedLoc("dvd_cameraPosition");
     _enableFogLoc        = this->cachedLoc("dvd_enableFog");
     _lightAmbientLoc     = this->cachedLoc("dvd_lightAmbient");
-    _zPlanesLoc          = this->cachedLoc("dvd_zPlanes");
-    _sceneZPlanesLoc     = this->cachedLoc("dvd_sceneZPlanes");
-    _screenDimensionLoc  = this->cachedLoc("dvd_screenDimension");
     _invScreenDimension  = this->cachedLoc("dvd_invScreenDimension");
     _fogColorLoc         = this->cachedLoc("fogColor");
     _fogDensityLoc       = this->cachedLoc("fogDensity");
@@ -173,49 +147,16 @@ bool ShaderProgram::bind(){
 }
 
 void ShaderProgram::uploadNodeMatrices(){
-    DIVIDE_ASSERT(_bound, "ShaderProgram error: tried to upload transform data to an unbound shader program!");
+    if(!_extendedMatricesDirty)
+        return;
 
-    GFXDevice& GFX = GFX_DEVICE;
+    if (_normalMatrixLoc != -1)
+        this->Uniform(_normalMatrixLoc, GFX_DEVICE.getMatrix3(NORMAL_MATRIX));
+     
+    if (_worldMatrixLoc != -1)
+        this->Uniform(_worldMatrixLoc, GFX_DEVICE.getMatrix4(WORLD_MATRIX));
 
-    this->Uniform(_cameraLocationLoc, _cachedCamEye);
-    this->Uniform(_zPlanesLoc, _cachedZPlanes);
-    this->Uniform(_sceneZPlanesLoc, _cachedSceneZPlanes);
-
-    I32 currentLocation = -1;
-    /*Get and upload matrix data*/
-    if (_extendedMatricesDirty == true){
-
-        currentLocation = _extendedMatrixEntry[NORMAL_MATRIX];
-        if (currentLocation != -1){
-            this->Uniform(currentLocation, GFX.getMatrix3(NORMAL_MATRIX));
-        }
-        
-        currentLocation = _extendedMatrixEntry[WORLD_MATRIX];
-        if (currentLocation != -1){
-            this->Uniform(currentLocation, GFX.getMatrix4(WORLD_MATRIX));
-        }
-
-        currentLocation = _extendedMatrixEntry[WV_MATRIX];
-        if (currentLocation != -1){
-            this->Uniform(currentLocation, GFX.getMatrix4(WV_MATRIX));
-        }
-
-        currentLocation = _extendedMatrixEntry[WV_INV_MATRIX];
-        if (currentLocation != -1){
-            this->Uniform(currentLocation, GFX.getMatrix4(WV_INV_MATRIX));
-        }
- 
-        currentLocation = _extendedMatrixEntry[WVP_MATRIX];
-        if (currentLocation != -1){
-            this->Uniform(currentLocation, GFX.getMatrix4(WVP_MATRIX));
-        }
-
-        currentLocation = _invProjMatrixEntry;
-        if (currentLocation != -1){
-            this->Uniform(currentLocation, GFX.getMatrix(PROJECTION_INV_MATRIX));
-        }
-        _extendedMatricesDirty = false;
-    }
+    _extendedMatricesDirty = false;
 }
 
 void ShaderProgram::SetLOD(U8 currentLOD){

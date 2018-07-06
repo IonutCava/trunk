@@ -79,8 +79,6 @@ public:
 
     void setMatricesDirty();
 
-    void updateCamera();
-
 private:
     ///Shader cache
     ShaderMap        _shaderNameMap;

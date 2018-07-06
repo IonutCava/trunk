@@ -113,8 +113,10 @@ I8 GFXDevice::initHardware(const vec2<U16>& resolution, I32 argc, char **argv) {
 
     if(hardwareState == NO_ERR){
         _matricesBuffer = newSB();
-        //View, Projection, ViewProjection, Viewport and ClipPlanes[MAX_CLIP_PLANES] 3 x 16 + 4 + 4 * MAX_CLIP_PLANES float values
-        _matricesBuffer->Create(true, false, 3 * 16 + 4 + 4 * Config::MAX_CLIP_PLANES, sizeof(F32)); 
+        //View, Projection, ViewProjection,
+        //Camera Position, Viewport, 
+        //zPlanes and ClipPlanes[MAX_CLIP_PLANES] 3 x 16 + 4 + 4 + 4 + 4 * MAX_CLIP_PLANES float values
+        _matricesBuffer->Create(true, false, 3 * 16 + 4 + 4 + 4 + 4 * Config::MAX_CLIP_PLANES, sizeof(F32)); 
         _matricesBuffer->Bind(Divide::SHADER_BUFFER_CAM_MATRICES);
         changeResolution(resolution);
 
@@ -198,7 +200,6 @@ I8 GFXDevice::initHardware(const vec2<U16>& resolution, I32 argc, char **argv) {
 
         _postFX.init(resolution);
         add2DRenderFunction(DELEGATE_BIND(&GFXDevice::previewDepthBuffer, this), 0);
-        _kernel->getCameraMgr().addCameraUpdateListener(DELEGATE_BIND(&ShaderManager::updateCamera, DELEGATE_REF(_shaderManager)));
         _kernel->getCameraMgr().addNewCamera("2DRenderCamera", _2DCamera);
 
         _HIZConstructProgram = CreateResource<ShaderProgram>(ResourceDescriptor("HiZConstruct"));
@@ -208,6 +209,8 @@ I8 GFXDevice::initHardware(const vec2<U16>& resolution, I32 argc, char **argv) {
         rangesDesc.setPropertyList("LIGHT_GRID_TILE_DIM_X " + Util::toString(Config::Lighting::LIGHT_GRID_TILE_DIM_X) + "," + "LIGHT_GRID_TILE_DIM_Y " + Util::toString(Config::Lighting::LIGHT_GRID_TILE_DIM_Y));
         _depthRangesConstructProgram = CreateResource<ShaderProgram>(rangesDesc);
         _depthRangesConstructProgram->UniformTexture("depthTex", 0);
+
+        _cachedSceneZPlanes.set(ParamHandler::getInstance().getParam<F32>("rendering.zNear"), ParamHandler::getInstance().getParam<F32>("rendering.zFar"));
     }
 
     return hardwareState;
@@ -246,7 +249,7 @@ void GFXDevice::closeRenderer(){
 
 void GFXDevice::idle() {
     if (!_renderer) return;
-
+    _cachedSceneZPlanes.set(ParamHandler::getInstance().getParam<F32>("rendering.zNear"), ParamHandler::getInstance().getParam<F32>("rendering.zFar"));
     _postFX.idle();
     _shaderManager.idle();
     _api.idle();
@@ -497,62 +500,71 @@ void GFXDevice::cleanMatrices(){
     _VDirty = _PDirty = _WDirty = false;
 }
 
+void GFXDevice::updateClipPlanes(){
+    const size_t vec4Size = 4 * sizeof(F32);
+    const size_t mat4Size = 4 * vec4Size;
 
-void GFXDevice::updateProjectionMatrix(){
-    const size_t mat4Size = 16 * sizeof(F32);
+    vectorImpl<vec4<F32> > clipPlanes; clipPlanes.resize(Config::MAX_CLIP_PLANES, vec4<F32>());
+    for(U8 i = 0 ; i < Config::MAX_CLIP_PLANES; ++i)
+        clipPlanes[i] = _clippingPlanes[i].getEquation();
 
+    _matricesBuffer->UpdateData(3 * mat4Size + 3 * vec4Size, Config::MAX_CLIP_PLANES * vec4Size, &clipPlanes.front());
+}
+
+void GFXDevice::updateProjectionMatrix(const vec2<F32>& zPlanes){
+    const size_t vec4Size = 4 * sizeof(F32);
+    const size_t mat4Size = 4 * vec4Size;
+
+    F32 zPlaneData[4]; zPlanes.get(zPlaneData);
+    zPlaneData[2] = _cachedSceneZPlanes.x;
+    zPlaneData[3] = _cachedSceneZPlanes.y;
     F32 matrixDataProjection[3 * 16];
 
     _viewProjectionMatrix.set(_viewMatrix * _projectionMatrix);
 
-    memcpy(matrixDataProjection, _projectionMatrix.mat, mat4Size);
-    memcpy(matrixDataProjection + 16, _viewMatrix.mat, mat4Size);
+    memcpy(matrixDataProjection,      _projectionMatrix.mat,     mat4Size);
+    memcpy(matrixDataProjection + 16, _viewMatrix.mat,           mat4Size);
     memcpy(matrixDataProjection + 32, _viewProjectionMatrix.mat, mat4Size);
 
     _matricesBuffer->UpdateData(0, 3 * mat4Size, matrixDataProjection);
+    _matricesBuffer->UpdateData(3 * mat4Size + 2 * vec4Size, vec4Size, zPlaneData);
     _PDirty = true; 
 }
 
-void GFXDevice::updateClipPlanes(){
-    const size_t mat4Size = 16 * sizeof(F32);
-    const size_t vec4Size = 4  * sizeof(F32);
-    vectorImpl<vec4<F32> > clipPlanes; clipPlanes.resize(Config::MAX_CLIP_PLANES, vec4<F32>());
-    for(U8 i = 0 ; i < Config::MAX_CLIP_PLANES; ++i)
-        clipPlanes[i] = _clippingPlanes[i].getEquation();
-    _matricesBuffer->UpdateData(3 * mat4Size + vec4Size, Config::MAX_CLIP_PLANES * vec4Size, &clipPlanes.front());
-}
+void GFXDevice::updateViewMatrix(const vec3<F32>& eyePos){
+    const size_t vec4Size = 4 * sizeof(F32);
+    const size_t mat4Size = 4 * vec4Size;
+    F32 camPos[4]; eyePos.get(camPos);
 
-void GFXDevice::updateViewMatrix(){
-    const size_t mat4Size = 16 * sizeof(F32);
-
-    F32 matrixDataView[2 * 16];
+    F32 matrixDataView[2 * 16 + 4];
 
     _viewProjectionMatrix.set(_viewMatrix * _projectionMatrix);
 
-    memcpy(matrixDataView, _viewMatrix.mat, mat4Size);
+    memcpy(matrixDataView,      _viewMatrix.mat,           mat4Size);
     memcpy(matrixDataView + 16, _viewProjectionMatrix.mat, mat4Size);
+    memcpy(matrixDataView + 32, eyePos,                    vec4Size);
 
-    _matricesBuffer->UpdateData(mat4Size, 2 * mat4Size, matrixDataView);
+    _matricesBuffer->UpdateData(mat4Size, 2 * mat4Size + vec4Size, matrixDataView);
     _VDirty = true;
 }
 
-F32* GFXDevice::lookAt(const mat4<F32>& viewMatrix) {
+F32* GFXDevice::lookAt(const mat4<F32>& viewMatrix, const vec3<F32>& eyePos) {
     _viewMatrix.set(viewMatrix);
-    updateViewMatrix();
+    updateViewMatrix(eyePos);
     return _viewMatrix.mat;
 }
 
 //Setting ortho projection:
 F32* GFXDevice::setProjection(const vec4<F32>& rect, const vec2<F32>& planes) {
     _projectionMatrix.ortho(rect.x, rect.y, rect.z, rect.w, planes.x, planes.y);
-    updateProjectionMatrix();
+    updateProjectionMatrix(planes);
     return _projectionMatrix.mat;
 }
 
 //Setting perspective projection:
 F32* GFXDevice::setProjection(F32 FoV, F32 aspectRatio, const vec2<F32>& planes) {
     _projectionMatrix.perspective(RADIANS(FoV), aspectRatio, planes.x, planes.y);
-    updateProjectionMatrix();
+    updateProjectionMatrix(planes);
     return _projectionMatrix.mat;
 }
 
@@ -611,7 +623,7 @@ void GFXDevice::setAnaglyphFrustum(F32 camIOD, const vec2<F32>& zPlanes, F32 asp
     //translate to cancel parallax
     _projectionMatrix.translate(tempCamera.modeltranslation, 0.0, 0.0);
 
-    updateProjectionMatrix();
+    updateProjectionMatrix(vec2<F32>(zNear, zFar));
 }
 
 void GFXDevice::toggle2D(bool state) {
@@ -637,13 +649,11 @@ void GFXDevice::previewDepthBuffer(){
         return;
 
     if(!_previewDepthMapShader){
-        ParamHandler& par = ParamHandler::getInstance();
         ResourceDescriptor shadowPreviewShader("fbPreview.LinearDepth");
         _previewDepthMapShader = CreateResource<ShaderProgram>(shadowPreviewShader);
         assert(_previewDepthMapShader != nullptr);
         _previewDepthMapShader->UniformTexture("tex", 0);
         _previewDepthMapShader->Uniform("useScenePlanes", true);
-        _previewDepthMapShader->Uniform("dvd_sceneZPlanes", vec2<F32>(par.getParam<F32>("rendering.zNear"), par.getParam<F32>("rendering.zFar")));
     }
 
     if(_previewDepthMapShader->getState() != RES_LOADED)
@@ -690,7 +700,7 @@ void GFXDevice::updateViewportInternal(const vec4<I32>& viewport){
     const size_t mat4Size = 16 * sizeof(F32);
     viewportF.set(viewport.x, viewport.y, viewport.z, viewport.w);
     changeViewport(viewport);
-    _matricesBuffer->UpdateData(3 * mat4Size, vec4Size, &viewportF[0]);
+    _matricesBuffer->UpdateData(3 * mat4Size + vec4Size, vec4Size, &viewportF[0]);
 }
 
 bool GFXDevice::loadInContext(const CurrentContext& context, const DELEGATE_CBK& callback) {
@@ -752,6 +762,8 @@ void GFXDevice::DownSampleDepthBuffer(vectorImpl<vec2<F32>> &depthRanges){
     _renderTarget[RENDER_TARGET_DEPTH]->Bind(0, TextureDescriptor::Depth);
     SET_STATE_BLOCK(_defaultStateNoDepthHash);
     _depthRangesConstructProgram->bind();
+    _depthRangesConstructProgram->Uniform("dvd_ProjectionMatrixInverse", getMatrix(PROJECTION_INV_MATRIX));
+    _depthRangesConstructProgram->Uniform("dvd_screenDimension", _renderTarget[RENDER_TARGET_DEPTH]->getResolution());
     drawPoints(1);
     depthRanges.resize(_depthRanges->getWidth() * _depthRanges->getHeight());
     _depthRanges->ReadData(RG, FLOAT_32, &depthRanges[0]);

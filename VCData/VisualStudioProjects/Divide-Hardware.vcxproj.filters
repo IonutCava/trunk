@@ -703,7 +703,7 @@
     <None Include="..\..\assets\shaders\GLSL\HiZConstruct.glsl">
       <Filter>shaders\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\common\matrixInput.cmn">
+    <None Include="..\..\assets\shaders\GLSL\common\nodeDataInput.cmn">
       <Filter>shaders\GLSL\common</Filter>
     </None>
   </ItemGroup>

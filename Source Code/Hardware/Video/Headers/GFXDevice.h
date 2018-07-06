@@ -283,7 +283,7 @@ protected:
 protected:
     friend class Camera;
 
-    F32* lookAt(const mat4<F32>& viewMatrix);
+    F32* lookAt(const mat4<F32>& viewMatrix, const vec3<F32>& eyePos);
     ///sets an ortho projection, updating any listeners if needed
     F32* setProjection(const vec4<F32>& rect, const vec2<F32>& planes);
     ///sets a perspective projection, updating any listeners if needed
@@ -291,8 +291,8 @@ protected:
     ///sets the view frustum to either the left or right eye position for anaglyph rendering
     void setAnaglyphFrustum(F32 camIOD, const vec2<F32>& zPlanes, F32 aspectRatio, F32 verticalFoV, bool rightFrustum = false);
 
-    void updateViewMatrix();
-    void updateProjectionMatrix();
+    void updateViewMatrix(const vec3<F32>& eyePos);
+    void updateProjectionMatrix(const vec2<F32>& zPlanes);
 
 private:
 
@@ -369,6 +369,8 @@ protected:
     ///getMatrix cache
     mat4<F32> _mat4Cache;
     mat3<F32> _mat3Cache;
+    ///Default camera's cached zPlanes
+    vec2<F32> _cachedSceneZPlanes;
     /// AA system
     U8        _MSAASamples;
     U8        _FXAASamples;

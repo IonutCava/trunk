@@ -1,0 +1,44 @@
+
+layout(binding = SHADER_BUFFER_CAM_MATRICES, std140) uniform dvd_MatrixBlock
+{
+    mat4 dvd_ProjectionMatrix;
+    mat4 dvd_ViewMatrix;
+    mat4 dvd_ViewProjectionMatrix;
+    vec4 dvd_cameraPosition;
+    vec4 dvd_ViewPort;
+    vec4 dvd_ZPlanesCombined; //xy - current, zw - main scene 
+    vec4 dvd_clip_plane[MAX_CLIP_PLANES];
+};
+
+vec2 dvd_sceneZPlanes = dvd_ZPlanesCombined.zw;
+vec2 dvd_zPlanes = dvd_ZPlanesCombined.xy;
+
+uniform int  dvd_drawID = 0;
+uniform mat4 dvd_WorldMatrix[MAX_INSTANCES];
+uniform mat3 dvd_NormalMatrix[MAX_INSTANCES];
+
+#if defined(VERT_SHADER)
+
+out float gl_ClipDistance[MAX_CLIP_PLANES];
+
+void setClipPlanes(in vec4 worldSpaceVertex) {
+#if MAX_CLIP_PLANES > 0
+    gl_ClipDistance[0] = dot(worldSpaceVertex, dvd_clip_plane[0]);
+#endif
+#if MAX_CLIP_PLANES > 1
+    gl_ClipDistance[1] = dot(worldSpaceVertex, dvd_clip_plane[1]);
+#endif
+#if MAX_CLIP_PLANES > 2
+    gl_ClipDistance[2] = dot(worldSpaceVertex, dvd_clip_plane[2]);
+#endif
+#if MAX_CLIP_PLANES > 3
+    gl_ClipDistance[3] = dot(worldSpaceVertex, dvd_clip_plane[3]);
+#endif
+#if MAX_CLIP_PLANES > 4
+    gl_ClipDistance[4] = dot(worldSpaceVertex, dvd_clip_plane[4]);
+#endif
+#if MAX_CLIP_PLANES > 5
+    gl_ClipDistance[5] = dot(worldSpaceVertex, dvd_clip_plane[5]);
+#endif
+}
+#endif

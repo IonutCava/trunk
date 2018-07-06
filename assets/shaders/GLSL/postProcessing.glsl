@@ -42,7 +42,6 @@ uniform sampler2D texVignette;
 uniform sampler2D texWaterNoiseNM;
 
 uniform sampler2D texNoise;
-uniform vec2 dvd_sceneZPlanes;
 
 uniform float _noiseTile;
 uniform float _noiseFactor;

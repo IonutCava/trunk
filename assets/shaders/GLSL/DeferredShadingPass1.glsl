@@ -4,13 +4,11 @@ out vec3 normals;
 out vec3 position;
 out mat4 TBN;
 
-uniform mat4 dvd_WorldViewMatrix;
-
 void main( void ){
     computeData();
     gl_Position = dvd_ViewProjectionMatrix * _vertexW;
 
-    position = vec3(transpose(dvd_WorldViewMatrix) * dvd_Vertex);
+    position = vec3(transpose(dvd_ViewMatrix * dvd_WorldMatrix[dvd_drawID]) * dvd_Vertex);
     normals = normalize(dvd_NormalMatrix[dvd_drawID] * dvd_Normal);
     vec3 t = normalize(dvd_NormalMatrix[dvd_drawID] * dvd_Tangent);
     vec3 n = normals;
@@ -26,19 +24,16 @@ void main( void ){
 
 -- Vertex.Impostor
 
-uniform mat3 dvd_NormalMatrix;
-uniform mat4 dvd_WorldViewMatrix;
-
 out vec3 normals;
 out vec3 position;
 
 void main( void ){
     vec4 dvd_Vertex     = vec4(inVertexData,1.0);
     vec3 dvd_Normal     = inNormalData;
+    mat 4 worldView = dvd_ViewMatrix * dvd_WorldMatrix[dvd_drawID];
+    gl_Position = dvd_ProjectionMatrix * worldView * dvd_Vertex;
 
-    gl_Position = dvd_ProjectionMatrix * dvd_WorldViewMatrix * dvd_Vertex;
-
-    position = vec3(transpose(dvd_WorldViewMatrix) * dvd_Vertex);
+    position = vec3(transpose(worldView) * dvd_Vertex);
     normals = normalize(dvd_NormalMatrix[dvd_drawID] * dvd_Normal);
 } 
 

@@ -1,19 +1,12 @@
 -- Vertex
 
-in int  inSkipMVP;
-
 out vec2 _texCoord;
 out vec4 _color;
-
-uniform mat4 dvd_WorldViewProjectionMatrix;
 
 void main(){
   _texCoord = inTexCoordData;
   _color = inColorData;
-  if (inSkipMVP < 1)
-      gl_Position = dvd_WorldViewProjectionMatrix * vec4(inVertexData,1.0);
-  else
-      gl_Position = vec4(inVertexData, 1.0);
+  gl_Position = dvd_ViewProjectionMatrix * dvd_WorldMatrix[dvd_drawID] * vec4(inVertexData,1.0);
 } 
 
 -- Vertex.GUI

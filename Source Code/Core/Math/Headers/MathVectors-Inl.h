@@ -165,6 +165,13 @@ inline vec2<T>::vec2(const vec4<T> &v) {
     this->y = v.y;
 }
 
+/// export the vector's components in the first 2 positions of the specified array
+template<class T>
+inline void vec2<T>::get(T * v) const {
+    v[0] = (T)this->_v[0];
+    v[1] = (T)this->_v[1];
+}
+
 /*
 *  vec3 inline definitions
 */

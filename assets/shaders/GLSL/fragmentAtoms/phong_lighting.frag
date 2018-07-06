@@ -1,4 +1,3 @@
-uniform vec2  dvd_zPlanes;
 uniform mat4  material;
 uniform bool  dvd_isSelected;
 uniform int   lodLevel = 0;

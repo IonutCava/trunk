@@ -1,14 +1,13 @@
 -- Vertex
 #include "vertexDefault.vert"
 
-uniform vec3 dvd_cameraPosition;
 out vec3 _eyePos;
 
 void main(void)
 {
 
 	computeData();
-	_eyePos = dvd_cameraPosition;
+	_eyePos = dvd_cameraPosition.xyz;
 }
 
 -- Fragment

@@ -4,10 +4,6 @@ out vec4 _vertexW;
 out vec2 _texCoord;
 
 uniform int lodLevel = 0;
-uniform int  dvd_drawID = 0;
-uniform mat4 dvd_WorldMatrix[MAX_INSTANCES];
-uniform mat3 dvd_NormalMatrix[MAX_INSTANCES];
-uniform mat4 dvd_WorldViewProjectionMatrix;
 
 #if defined(USE_GPU_SKINNING)
 #include "boneTransforms.vert"

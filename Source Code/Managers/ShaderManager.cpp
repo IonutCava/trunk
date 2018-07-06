@@ -59,16 +59,12 @@ U8 ShaderManager::update(const U64 deltaTime){
 }
 
 U8 ShaderManager::idle(){
-    ParamHandler& par = ParamHandler::getInstance();
-    ShaderProgram::_cachedSceneZPlanes.set(par.getParam<F32>("rendering.zNear"), par.getParam<F32>("rendering.zFar"));
-    if(_recompileQueue.empty()) return 0;
+    if(_recompileQueue.empty())
+        return 0;
+
     _recompileQueue.top()->recompile(true,true,true,true,true);
     _recompileQueue.pop();
     return 1;
-}
-
-void ShaderManager::updateCamera() {
-    ShaderProgram::updateCamera(*(_activeKernel->getCameraMgr().getActiveCamera()));
 }
 
 void ShaderManager::refresh(){

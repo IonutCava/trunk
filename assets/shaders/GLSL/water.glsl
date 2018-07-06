@@ -35,7 +35,7 @@ uniform vec2 _noiseFactor;
 uniform float _waterShininess;
 uniform float _transparencyBias;
 uniform bool  underwater;
-uniform int   dvd_drawID = 0;
+
 uniform sampler2D texWaterReflection;
 uniform sampler2D texWaterRefraction;
 uniform sampler2D texWaterNoiseNM;
@@ -43,9 +43,8 @@ uniform sampler2D texWaterNoiseDUDV;
 
 uniform mat4  material;
 uniform float dvd_time;
-uniform mat3  dvd_NormalMatrix[MAX_INSTANCES];
-uniform ivec2 dvd_screenDimension;
 uniform ivec2 dvd_invScreenDimension;
+
 #include "lightInput.cmn"
 #include "lightingDefaults.frag"
 #include "shadowMapping.frag"

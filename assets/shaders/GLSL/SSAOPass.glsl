@@ -35,7 +35,6 @@ void main() {
 
 in vec2 _texCoord;
 
-uniform vec2 dvd_zPlanes;
 uniform sampler2D texDepth;
 uniform sampler2D texScreen;
  

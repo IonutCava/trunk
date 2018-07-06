@@ -1,12 +1,10 @@
 -- Vertex
 
-uniform vec3 dvd_cameraPosition;
-
 out vec3 _vertex;
 
 void main(void){
     _vertex = normalize(inVertexData);
-    gl_Position = dvd_ViewProjectionMatrix * vec4(inVertexData + dvd_cameraPosition, 1.0);
+    gl_Position = dvd_ViewProjectionMatrix * vec4(inVertexData + dvd_cameraPosition.xyz, 1.0);
     gl_Position.z = gl_Position.w -0.00001; //fix to far plane.
 }
 

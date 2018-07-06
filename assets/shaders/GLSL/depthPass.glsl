@@ -4,10 +4,6 @@
 #include "boneTransforms.vert"
 #endif
 
-
-uniform int  dvd_drawID = 0;
-uniform mat4 dvd_WorldMatrix[MAX_INSTANCES];
-
 out vec2 _texCoord;
 
 void main(void){

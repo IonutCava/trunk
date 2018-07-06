@@ -260,7 +260,8 @@ void Camera::lookAtInternal() {
     updateMatrices();
 
     //Tell the Rendering API to draw from our desired PoV
-    GFX_DEVICE.lookAt(_reflectionRendering ? (_reflectedViewMatrix * _viewMatrix) : _viewMatrix);
+    GFX_DEVICE.lookAt(_reflectionRendering ? (_reflectedViewMatrix * _viewMatrix) : _viewMatrix,
+                      _reflectionRendering ? _reflectedEye : _eye);
 
     updateFrustum();
     //Inform all listeners of a new event

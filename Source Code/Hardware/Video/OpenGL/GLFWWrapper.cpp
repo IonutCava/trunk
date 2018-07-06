@@ -433,7 +433,7 @@ bool GL_API::initShaders(){
     glswAddDirectiveToken("", std::string("#define SHADER_BUFFER_LIGHT_NORMAL " + Util::toString(Divide::SHADER_BUFFER_LIGHT_NORMAL)).c_str());
     glswAddDirectiveToken("", std::string("#define SHADER_BUFFER_CAM_MATRICES " + Util::toString(Divide::SHADER_BUFFER_CAM_MATRICES)).c_str());
     glswAddDirectiveToken("", std::string("#define SHADER_BUFFER_LIGHT_PER_NODE " + Util::toString(Divide::SHADER_BUFFER_LIGHT_PER_NODE)).c_str());
-    glswAddDirectiveToken("", std::string("#include \"matrixInput.cmn\"").c_str());
+    glswAddDirectiveToken("", std::string("#include \"nodeDataInput.cmn\"").c_str());
     glswAddDirectiveToken("", "const float Z_TEST_SIGMA = 0.0001;");
     glswAddDirectiveToken("", "const float ALPHA_DISCARD_THRESHOLD = 0.1;");
     glswAddDirectiveToken("", "//__CUSTOM_DEFINES__");

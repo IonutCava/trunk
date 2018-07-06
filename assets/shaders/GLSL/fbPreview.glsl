@@ -51,8 +51,6 @@ out vec4 _colorOut;
 
 uniform bool useScenePlanes = false;
 uniform sampler2D tex;
-uniform vec2 dvd_zPlanes;
-uniform vec2 dvd_sceneZPlanes;
 
 void main()
 {
@@ -89,8 +87,6 @@ out vec4 _colorOut;
 
 uniform sampler2DArray tex;
 uniform int layer;
-uniform vec2 dvd_zPlanes;
-uniform vec2 dvd_sceneZPlanes;
 uniform bool useScenePlanes = false;
 
 void main()

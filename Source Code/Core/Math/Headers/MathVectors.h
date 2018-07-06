@@ -137,6 +137,8 @@ public:
     inline vec2 lerp(const vec2 &u, const vec2 &v, T factor) const;
     /// lerp between the 2 specified vectors by the specified amount for each component
     inline vec2 lerp(const vec2 &u, const vec2 &v, const vec2& factor) const;
+     /// export the vector's components in the first 2 positions of the specified array
+    inline void get(T * v) const;
 
     union {
         struct {T x,y;};
