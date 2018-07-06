@@ -19,6 +19,9 @@ DisplayWindow::DisplayWindow()
    _internalMoveEvent(false),
    _externalResizeEvent(false)
 {
+    _windowPosition.fill(vec2<I32>(0));
+    _prevDimensions.fill(vec2<U16>(1));
+    _windowDimensions.fill(vec2<U16>(1));
 }
 
 DisplayWindow::~DisplayWindow() 
@@ -37,7 +40,7 @@ ErrorCode DisplayWindow::destroyWindow() {
     return ErrorCode::NO_ERR;
 }
 
-ErrorCode DisplayWindow::init(U32 windowFlags, WindowType initialType, ResolutionByType initialResolutions) {
+ErrorCode DisplayWindow::init(U32 windowFlags, WindowType initialType, const ResolutionByType& initialResolutions) {
     ParamHandler& par = ParamHandler::instance();
     Application& app = Application::instance();
     WindowManager& wManager = app.windowManager();

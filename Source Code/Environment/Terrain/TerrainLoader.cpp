@@ -238,7 +238,6 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain, cons
     U16 heightmapWidth = terrainDimensions.width;
     U16 heightmapHeight = terrainDimensions.height;
     vectorImpl<U16> heightValues;
-    stringImpl terrainName(terrainDescriptor->getVariable("terrainName"));
     stringImpl terrainRawFile(terrainDescriptor->getVariable("heightmap"));
     if (terrainDescriptor->is16Bit()) {
         assert(heightmapWidth != 0 && heightmapHeight != 0);

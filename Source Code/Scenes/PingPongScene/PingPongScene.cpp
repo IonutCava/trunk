@@ -9,6 +9,22 @@
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
 
 namespace Divide {
+PingPongScene::PingPongScene(const stringImpl& name)
+    : Scene(name)
+{
+    _sideDrift = 0;
+    _directionTowardsAdversary = true;
+    _upwardsDirection = false;
+    _touchedOwnTableHalf = false;
+    _touchedAdversaryTableHalf = false;
+    _lost = false;
+    _ball = nullptr;
+    _freeFlyCam = nullptr;
+    _paddleCam = nullptr;
+    _score = 0;
+    _freeFly = false;
+    _wasInFreeFly = false;
+}
 
 void PingPongScene::processGUI(const U64 deltaTime) {
     D64 FpsDisplay = Time::SecondsToMilliseconds(0.3);

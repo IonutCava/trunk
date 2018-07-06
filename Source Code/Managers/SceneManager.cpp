@@ -159,9 +159,7 @@ bool SceneManager::unloadScene(Scene* scene) {
     
     if (Attorney::SceneManager::deinitializeAI(*scene)) {
         _GUI->onUnloadScene(scene);
-        if (Attorney::SceneManager::unload(*scene)) {
-            return _scenePool->deleteScene(scene);
-        }
+        return Attorney::SceneManager::unload(*scene);
     }
 
     return false;
@@ -579,6 +577,10 @@ bool SceneManager::joystickVector3DMoved(const Input::JoystickEvent& arg,
 }
 
 bool LoadSave::loadScene(Scene& activeScene) {
+    if (activeScene.state().saveLoadDisabled()) {
+        return true;
+    }
+
     const stringImpl& sceneName = activeScene.getName();
 
     stringImpl path = Util::StringFormat("SaveData/%s_", sceneName.c_str());
@@ -608,6 +610,10 @@ bool LoadSave::loadScene(Scene& activeScene) {
 }
 
 bool LoadSave::saveScene(const Scene& activeScene) {
+    if (activeScene.state().saveLoadDisabled()) {
+        return true;
+    }
+
     const stringImpl& sceneName = activeScene.getName();
     stringImpl path = Util::StringFormat("SaveData/%s_", sceneName.c_str());
     stringImpl savePath = path + "current_save.sav";

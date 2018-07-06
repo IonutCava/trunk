@@ -507,14 +507,13 @@ size_t RenderingComponent::getDrawStateHash(RenderStage renderStage) {
                                        : (reflectionStage ? RenderStage::REFLECTION
                                                           : RenderStage::DISPLAY);
     I32 variant = 0;
-
     if (shadowStage) {
         LightType type = LightPool::currentShadowCastingLight()->getLightType();
-        type == LightType::DIRECTIONAL
-               ? 0
-               : type == LightType::POINT 
-                       ? 1
-                       : 2;
+        variant = (type == LightType::DIRECTIONAL
+                         ? 0
+                         : type == LightType::POINT 
+                                 ? 1
+                                 : 2);
     }
 
     return _materialInstance->getRenderStateBlock(blockStage, variant);

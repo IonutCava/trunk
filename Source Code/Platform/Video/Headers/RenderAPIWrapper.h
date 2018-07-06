@@ -435,15 +435,15 @@ class RingBuffer {
 
         inline void incQueue() { 
             if (queueLength() > 1) {
-                _queueWriteIndex = ++_queueWriteIndex % _queueLength;
-                _queueReadIndex = ++_queueReadIndex % _queueLength;
+                ++_queueWriteIndex %= _queueLength;
+                ++_queueReadIndex  %= _queueLength;
             }
         }
 
         inline void decQueue() {
             if (queueLength() > 1) {
-                _queueWriteIndex = --_queueWriteIndex % _queueLength;
-                _queueReadIndex = --_queueReadIndex % _queueLength;
+                --_queueWriteIndex %= _queueLength;
+                --_queueReadIndex  %= _queueLength;
             }
         }
 

@@ -9,6 +9,7 @@ Resource::Resource(const stringImpl& name)
       _name(name),
       _resourceState(ResourceState::RES_CREATED)
 {
+    _loadingCallbacks.fill(DELEGATE_CBK<>());
 }
 
 Resource::Resource(const stringImpl& name,

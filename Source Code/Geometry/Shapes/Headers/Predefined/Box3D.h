@@ -80,7 +80,7 @@ class Box3D : public Object3D {
         setFlag(UpdateFlag::BOUNDS_CHANGED);
     }
 
-    inline void setHalfExtent(const vec3<F32> halfExtent) {
+    inline void setHalfExtent(const vec3<F32>& halfExtent) {
         static const vec3<F32> vertices[] = {
             vec3<F32>(-1.0f, -1.0f,  1.0f),
             vec3<F32>( 1.0f, -1.0f,  1.0f),

@@ -14,7 +14,9 @@ PreRenderBatch::PreRenderBatch() : _adaptiveExposureControl(true),
                                    _debugOperator(nullptr),
                                    _postFXOutput(nullptr),
                                    _renderTarget(nullptr),
-                                   _toneMap(nullptr)
+                                   _toneMap(nullptr),
+                                   _previousLuminance(nullptr),
+                                   _currentLuminance(nullptr)
 {
 }
 

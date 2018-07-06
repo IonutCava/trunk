@@ -55,6 +55,7 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
               _wasSet(false),
               _dirty(false),
               _normalized(false),
+              _stride(0),
               _type(GFXDataFormat::UNSIGNED_INT)
         {
         }

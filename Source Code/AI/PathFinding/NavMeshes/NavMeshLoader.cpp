@@ -266,6 +266,8 @@ NavModelData mergeModels(NavModelData& a,
 }
 
 void addVertex(NavModelData* modelData, const vec3<F32>& vertex) {
+    assert(modelData != nullptr);
+
     if (modelData->getVertCount() + 1 > modelData->_vertexCapacity) {
         modelData->_vertexCapacity =
             !modelData->_vertexCapacity ? 8 : modelData->_vertexCapacity * 2;

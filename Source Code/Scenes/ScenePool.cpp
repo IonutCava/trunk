@@ -19,10 +19,22 @@ ScenePool::ScenePool(SceneManager& parentMgr)
 
 ScenePool::~ScenePool()
 {
-    //WriteLock w_lock(_sceneLock);
-    for (Scene* scene : _createdScenes) {
+    vectorImpl<Scene*> tempScenes;
+    {   
+        ReadLock r_lock(_sceneLock);
+        tempScenes.insert(std::cend(tempScenes),
+                          std::cbegin(_createdScenes),
+                          std::cend(_createdScenes));
+    }
+
+    for (Scene* scene : tempScenes) {
         _parentMgr.unloadScene(scene);
         deleteScene(scene);
+    }
+
+    {
+        WriteLock w_lock(_sceneLock);
+        _createdScenes.clear();
     }
 }
 
@@ -91,8 +103,8 @@ Scene* ScenePool::getOrCreateScene(const stringImpl& name, bool& foundInCache) {
 bool ScenePool::deleteScene(Scene*& scene) {
     if (scene != nullptr) {
         I64 targetGUID = scene->getGUID();
-        I64 defaultGUID = _defaultScene->getGUID();
-        I64 activeGUID = _activeScene->getGUID();
+        I64 defaultGUID = _defaultScene ? _defaultScene->getGUID() : 0;
+        I64 activeGUID = _activeScene ? _activeScene->getGUID() : 0;
 
         if (targetGUID != defaultGUID) {
             if (targetGUID == activeGUID) {

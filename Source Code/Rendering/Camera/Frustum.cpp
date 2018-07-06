@@ -40,7 +40,7 @@ Frustum::FrustCollision Frustum::ContainsSphere(const vec3<F32>& center,
 }
 
 Frustum::FrustCollision Frustum::ContainsBoundingBox(const BoundingBox& bbox) const {
-    const vec3<F32>* box[] = {&bbox.getMin(), &bbox.getMax()};
+    //const vec3<F32>* box[] = {&bbox.getMin(), &bbox.getMax()};
     vec3<F32> vmin, vmax;
     vec3<F32> bmin = bbox.getMin();
     vec3<F32> bmax = bbox.getMax();

@@ -17,6 +17,7 @@ VBO::VBO() : _handle(0),
              _usage(GL_NONE),
              _filledManually(false)
 {
+    _chunkUsageState.fill(std::make_pair(false, 0));
 }
 
 VBO::~VBO()

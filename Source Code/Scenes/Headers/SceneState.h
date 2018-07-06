@@ -72,7 +72,8 @@ class SceneRenderState : public SceneComponent {
         NO_GIZMO = toBit(1),
         SCENE_GIZMO = toBit(2),
         SELECTED_GIZMO = toBit(3),
-        ALL_GIZMO = SCENE_GIZMO | SELECTED_GIZMO
+        ALL_GIZMO = SCENE_GIZMO | SELECTED_GIZMO,
+        COUNT = 4
     };
 
     explicit SceneRenderState(Scene& parentScene);
@@ -171,7 +172,7 @@ class SceneRenderState : public SceneComponent {
     inline bool playAnimations() const {
         return _playAnimations;
     }
-   
+
    protected:
 
     inline void playAnimations(bool state) { 
@@ -212,7 +213,8 @@ class SceneState : public SceneComponent {
           _renderState(parentScene),
           _cameraUnderwater(false), 
           _cameraUpdated(false),
-          _cameraLockedToMouse(false)
+          _cameraLockedToMouse(false),
+          _saveLoadDisabled(false)
     {
         resetMovement();
         _fog._fogColor = vec3<F32>(0.2f, 0.2f, 0.2f);
@@ -291,12 +293,16 @@ class SceneState : public SceneComponent {
     inline void mouseYDelta(I32 depth) { _mouseYDelta = depth; }
     inline I32  mouseYDelta()    const { return _mouseYDelta; }
 
+    inline void saveLoadDisabled(const bool state) { _saveLoadDisabled = state; }
+    inline bool saveLoadDisabled()           const { return _saveLoadDisabled; }
+
 protected:
     MusicPlaylist _backgroundMusic;
 
     I32 _mouseXDelta;
     I32 _mouseYDelta;
     bool _cameraLockedToMouse;
+    bool _saveLoadDisabled;
 
     MoveDirection _moveFB;   ///< forward-back move change detected
     MoveDirection _moveLR;   ///< left-right move change detected

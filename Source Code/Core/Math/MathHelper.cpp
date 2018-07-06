@@ -21,7 +21,7 @@ void GetPermutations(const stringImpl& inputString,
 }
 
 bool IsNumber(const stringImpl& s) {
-    F32 number;
+    F32 number = 0.0f;
     if (istringstreamImpl(s) >> number) {
         return !(number == 0 && s[0] != 0);
     }

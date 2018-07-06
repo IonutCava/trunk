@@ -51,6 +51,8 @@ glFramebuffer::glFramebuffer(GFXDevice& context, bool useResolveBuffer)
     _attDirty.fill(false);
     _attachmentState.fill(false);
     _previousMask.fill(true);
+    _attachments.fill(std::make_pair(GL_NONE, 0u));
+    _mipMapLevel.fill(vec2<U16>(0, 1));
 }
 
 glFramebuffer::~glFramebuffer() {

@@ -17,6 +17,7 @@ RenderTarget::RenderTarget(GFXDevice& context, bool multiSampled)
       _framebufferHandle(0)
 {
     _clearColors.fill(DefaultColors::WHITE());
+    _attachment.fill(TextureDescriptor());
     _attachmentChanged.fill(false);
     _attachmentTexture.fill(nullptr);
 }
@@ -43,7 +44,11 @@ const Texture_ptr& RenderTarget::getAttachment(TextureDescriptor::AttachmentType
     static Texture_ptr defaultAttachment;
 
     Texture_ptr& tex = _attachmentTexture[to_uint(slot)];
-    if (tex && ((flushStateOnRequest && tex->flushTextureState())  || !flushStateOnRequest)) {
+    if (tex) {
+        if (flushStateOnRequest) {
+            tex->flushTextureState();
+        }
+
         return tex;
     }
 

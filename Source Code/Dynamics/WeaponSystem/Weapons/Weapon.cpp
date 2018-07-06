@@ -2,7 +2,10 @@
 
 namespace Divide {
 
-Weapon::Weapon(WeaponType type) : _type(type) {
+Weapon::Weapon(WeaponType type)
+    : _type(type),
+      _properyMask(0)
+{
     /// no placeholders please
     assert(_type != WeaponType::COUNT);
 }

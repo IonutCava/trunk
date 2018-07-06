@@ -12,7 +12,8 @@ Trigger::Trigger(const stringImpl& name)
     : SceneNode(name, SceneNodeType::TYPE_TRIGGER),
       _drawImpostor(false),
       _triggerImpostor(nullptr),
-      _enabled(true)
+      _enabled(true),
+      _radius(1.0f)
 {
 }
 

@@ -3,7 +3,9 @@
 namespace Divide {
 
 Vehicle::Vehicle(SceneGraphNode_ptr node)
-    : Unit(Unit::UnitType::UNIT_TYPE_VEHICLE, node) {
+    : Unit(Unit::UnitType::UNIT_TYPE_VEHICLE, node),
+      _vehicleTypeMask(0)
+{
     _playerControlled = false;
 }
 

@@ -41,15 +41,7 @@ class WaterPlane;
 
 class MainScene : public Scene {
    public:
-    explicit MainScene(const stringImpl& name)
-        : Scene(name),
-          _water(nullptr),
-          _beep(nullptr),
-          _freeflyCamera(false),
-          _updateLights(true),
-          _musicPlaying(false)
-    {
-    }
+    explicit MainScene(const stringImpl& name);
 
     /*General Scene Requirement*/
     bool load(const stringImpl& name);

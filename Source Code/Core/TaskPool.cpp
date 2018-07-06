@@ -4,7 +4,8 @@
 namespace Divide {
 
 TaskPool::TaskPool(U32 maxTaskCount)
-    : _threadedCallbackBuffer(maxTaskCount),
+    : _mainTaskPool(ThreadPool()),
+      _threadedCallbackBuffer(maxTaskCount),
       _workerThreadCount(0u),
       _tasksPool(maxTaskCount),
       _taskCallbacks(maxTaskCount),

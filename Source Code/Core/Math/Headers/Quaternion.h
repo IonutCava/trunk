@@ -151,7 +151,7 @@ class Quaternion {
 /// (from Ogre3D!)
 template <typename T>
 inline Quaternion<T> RotationFromVToU(const vec3<T>& v, const vec3<T>& u,
-                                      const vec3<T> fallbackAxis = VECTOR3_ZERO);
+                                      const vec3<T>& fallbackAxis = VECTOR3_ZERO);
 template <typename T>
 inline Quaternion<T> Slerp(const Quaternion<T>& q0, const Quaternion<T>& q1, F32 t);
 

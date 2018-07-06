@@ -20,6 +20,7 @@ Octree::Octree(U32 nodeMask)
 {
     _region.set(VECTOR3_ZERO, VECTOR3_ZERO);
     _activeNodes.fill(false);
+    _childNodes.fill(nullptr);
 }
 
 Octree::Octree(U32 nodeMask, const BoundingBox& rootAABB)
@@ -68,7 +69,7 @@ void Octree::update(const U64 deltaTime) {
                                   std::end(_objects),
                                   [](SceneGraphNode_wptr crtNode) -> bool {
                                       SceneGraphNode_ptr node = crtNode.lock();
-                                      return !node || (node && !node->isActive());
+                                      return !node || !node->isActive();
                                   }),
                    std::end(_objects));
 
@@ -191,14 +192,16 @@ void Octree::insert(SceneGraphNode_wptr object) {
 
     //Find or create subdivided regions for each octant in the current region
     BoundingBox childOctant[8];
-    childOctant[0].set((_childNodes[0] != nullptr) ? _childNodes[0]->_region : BoundingBox(_region.getMin(), center));
-    childOctant[1].set((_childNodes[1] != nullptr) ? _childNodes[1]->_region : BoundingBox(vec3<F32>(center.x, _region.getMin().y, _region.getMin().z), vec3<F32>(_region.getMax().x, center.y, center.z)));
-    childOctant[2].set((_childNodes[2] != nullptr) ? _childNodes[2]->_region : BoundingBox(vec3<F32>(center.x, _region.getMin().y, center.z), vec3<F32>(_region.getMax().x, center.y, _region.getMax().z)));
-    childOctant[3].set((_childNodes[3] != nullptr) ? _childNodes[3]->_region : BoundingBox(vec3<F32>(_region.getMin().x, _region.getMin().y, center.z), vec3<F32>(center.x, center.y, _region.getMax().z)));
-    childOctant[4].set((_childNodes[4] != nullptr) ? _childNodes[4]->_region : BoundingBox(vec3<F32>(_region.getMin().x, center.y, _region.getMin().z), vec3<F32>(center.x, _region.getMax().y, center.z)));
-    childOctant[5].set((_childNodes[5] != nullptr) ? _childNodes[5]->_region : BoundingBox(vec3<F32>(center.x, center.y, _region.getMin().z), vec3<F32>(_region.getMax().x, _region.getMax().y, center.z)));
-    childOctant[6].set((_childNodes[6] != nullptr) ? _childNodes[6]->_region : BoundingBox(center, _region.getMax()));
-    childOctant[7].set((_childNodes[7] != nullptr) ? _childNodes[7]->_region : BoundingBox(vec3<F32>(_region.getMin().x, center.y, center.z), vec3<F32>(center.x, _region.getMax().y, _region.getMax().z)));
+    const vec3<F32>& regMin = _region.getMin();
+    const vec3<F32>& regMax = _region.getMax();
+    childOctant[0].set((_childNodes[0] != nullptr) ? _childNodes[0]->_region : BoundingBox(regMin, center));
+    childOctant[1].set((_childNodes[1] != nullptr) ? _childNodes[1]->_region : BoundingBox(vec3<F32>(center.x, regMin.y, regMin.z), vec3<F32>(regMax.x, center.y, center.z)));
+    childOctant[2].set((_childNodes[2] != nullptr) ? _childNodes[2]->_region : BoundingBox(vec3<F32>(center.x, regMin.y, center.z), vec3<F32>(regMax.x, center.y, regMax.z)));
+    childOctant[3].set((_childNodes[3] != nullptr) ? _childNodes[3]->_region : BoundingBox(vec3<F32>(regMin.x, regMin.y, center.z), vec3<F32>(center.x, center.y, regMax.z)));
+    childOctant[4].set((_childNodes[4] != nullptr) ? _childNodes[4]->_region : BoundingBox(vec3<F32>(regMin.x, center.y, regMin.z), vec3<F32>(center.x, regMax.y, center.z)));
+    childOctant[5].set((_childNodes[5] != nullptr) ? _childNodes[5]->_region : BoundingBox(vec3<F32>(center.x, center.y, regMin.z), vec3<F32>(regMax.x, regMax.y, center.z)));
+    childOctant[6].set((_childNodes[6] != nullptr) ? _childNodes[6]->_region : BoundingBox(center, regMax));
+    childOctant[7].set((_childNodes[7] != nullptr) ? _childNodes[7]->_region : BoundingBox(vec3<F32>(regMin.x, center.y, center.z), vec3<F32>(center.x, regMax.y, regMax.z)));
 
     const BoundingBox& bb = object.lock()->get<BoundsComponent>()->getBoundingBox();
 
@@ -661,7 +664,7 @@ vectorImpl<IntersectionRecord> Octree::allIntersections(const Frustum& region, U
     return getIntersection(region, typeFilterMask);
 }
 
-void Octree::handleIntersection(IntersectionRecord intersection) const {
+void Octree::handleIntersection(const IntersectionRecord& intersection) const {
     SceneGraphNode_ptr obj1 = intersection._intersectedObject1.lock();
     SceneGraphNode_ptr obj2 = intersection._intersectedObject2.lock();
     if (obj1 != nullptr && obj2 != nullptr) {

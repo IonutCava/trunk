@@ -79,7 +79,7 @@ void WindowManager::close() {
 
 ErrorCode WindowManager::initWindow(U32 index,
                                     U32 windowFlags,
-                                    ResolutionByType initialResolutions,
+                                    const ResolutionByType& initialResolutions,
                                     bool startFullScreen,
                                     I32 targetDisplayIndex) {
     index = std::min(index, to_uint(_windows.size() - 1));

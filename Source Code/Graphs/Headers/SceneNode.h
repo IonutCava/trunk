@@ -117,7 +117,7 @@ class NOINITVTABLE SceneNode : public Resource {
     /*//Rendering/Processing*/
 
     virtual bool unload();
-    virtual void setMaterialTpl(Material_ptr material);
+    virtual void setMaterialTpl(const Material_ptr& material);
     const Material_ptr& getMaterialTpl();
 
     virtual void postRender(SceneGraphNode& sgn) const;

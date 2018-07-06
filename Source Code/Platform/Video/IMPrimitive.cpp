@@ -10,7 +10,7 @@ IMPrimitive::IMPrimitive(GFXDevice& context)
       _canZombify(true),
       _forceWireframe(false),
       _paused(true),
-      _zombieCounter(0),
+      _zombieCounter(0u),
       _texture(nullptr),
       _drawShader(nullptr),
       _stateHash(0)

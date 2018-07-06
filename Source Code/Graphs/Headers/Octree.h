@@ -80,7 +80,7 @@ class Octree : public std::enable_shared_from_this<Octree> {
         size_t getTotalObjectCount() const;
         void updateIntersectionCache(vectorImpl<SceneGraphNode_wptr>& parentObjects, U32 typeFilterMask);
         
-        void handleIntersection(IntersectionRecord intersection) const;
+        void handleIntersection(const IntersectionRecord& intersection) const;
         bool getIntersection(SceneGraphNode& node, const Frustum& frustum, IntersectionRecord& irOut) const;
         bool getIntersection(SceneGraphNode& node1, SceneGraphNode& node2, IntersectionRecord& irOut) const;
         bool getIntersection(SceneGraphNode& node, const Ray& intersectRay, F32 start, F32 end, IntersectionRecord& irOut) const;

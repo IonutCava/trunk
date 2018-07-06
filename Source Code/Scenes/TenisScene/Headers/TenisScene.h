@@ -46,29 +46,7 @@ class NPC;
 
 class TenisScene : public Scene {
    public:
-    explicit TenisScene(const stringImpl& name)
-        : Scene(name),
-          _aiPlayer1(nullptr),
-          _aiPlayer2(nullptr),
-          _aiPlayer3(nullptr),
-          _aiPlayer4(nullptr),
-          _player1(nullptr),
-          _player2(nullptr),
-          _player3(nullptr),
-          _player4(nullptr),
-          _ball(nullptr)
- {
-        _sideImpulseFactor = 0;
-        _directionTeam1ToTeam2 = true;
-        _upwardsDirection = true;
-        _touchedTerrainTeam1 = false;
-        _touchedTerrainTeam2 = false;
-        _lostTeam1 = false;
-        _applySideImpulse = false;
-        _scoreTeam1 = 0;
-        _scoreTeam2 = 0;
-        _gamePlaying = false;
-    }
+    explicit TenisScene(const stringImpl& name);
 
     bool load(const stringImpl& name);
     bool loadResources(bool continueOnErrors);

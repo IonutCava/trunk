@@ -16,7 +16,6 @@ SceneRenderState::SceneRenderState(Scene& parentScene)
       _debugDrawLines(false),
       _debugDrawTargetLines(false),
       _playAnimations(true)
-
 {
     _gizmoState = GizmoState::NO_GIZMO;
     _cameraMgr = &Application::instance().kernel().getCameraMgr();
@@ -35,7 +34,7 @@ void SceneRenderState::toggleBoundingBoxes() {
 void SceneRenderState::toggleAxisLines() {
     static U32 selection = 0;
     Console::d_printfn(Locale::get(_ID("TOGGLE_SCENE_AXIS_GIZMO")));
-    selection = ++selection % 4;
+    ++selection %= to_const_uint(GizmoState::COUNT);
     switch (selection) {
         case 0:
             gizmoState(GizmoState::SELECTED_GIZMO);

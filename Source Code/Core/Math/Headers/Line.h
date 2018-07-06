@@ -37,7 +37,8 @@ namespace Divide {
 
 class Line {
     public:
-    Line()
+    Line() : _widthStart(1.0f),
+             _widthEnd(1.0f)
     {
     }
 

@@ -11,6 +11,16 @@
 #include "Environment/Terrain/Headers/TerrainDescriptor.h"
 
 namespace Divide {
+MainScene::MainScene(const stringImpl& name)
+    : Scene(name),
+    _water(nullptr),
+    _beep(nullptr),
+    _freeflyCamera(false),
+    _updateLights(true),
+    _musicPlaying(false),
+    _sun_cosy(0.0f)
+{
+}
 
 void MainScene::updateLights() {
     if (!_updateLights) return;

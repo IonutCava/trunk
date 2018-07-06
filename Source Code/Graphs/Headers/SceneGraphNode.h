@@ -225,11 +225,11 @@ class SceneGraphNode : public GUIDWrapper,
         _updateFlags[to_uint(flag)] = false;
     }
 
-    bool operator==(const SceneGraphNode_ptr other) const {
+    bool operator==(const SceneGraphNode_ptr& other) const {
         return this->getGUID() == other->getGUID();
     }
 
-    bool operator!=(const SceneGraphNode_ptr other) const {
+    bool operator!=(const SceneGraphNode_ptr& other) const {
         return this->getGUID() != other->getGUID();
     }
 

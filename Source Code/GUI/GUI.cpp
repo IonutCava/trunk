@@ -195,9 +195,10 @@ bool GUI::init(const vec2<U16>& renderResolution) {
 #ifdef _DEBUG
     CEGUI::Logger::getSingleton().setLoggingLevel(CEGUI::Informative);
 #endif
-    CEGUI::DefaultResourceProvider* rp = nullptr;
-    rp = static_cast<CEGUI::DefaultResourceProvider*>(
-        CEGUI::System::getSingleton().getResourceProvider());
+    CEGUI::DefaultResourceProvider* rp
+        = static_cast<CEGUI::DefaultResourceProvider*>(
+            CEGUI::System::getSingleton().getResourceProvider());
+
     CEGUI::String CEGUIInstallSharePath(
         ParamHandler::instance().getParam<stringImpl>(_ID("assetsLocation")).c_str());
     CEGUIInstallSharePath += "/GUI/";

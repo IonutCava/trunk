@@ -70,6 +70,14 @@ class Ray {
         memcpy(sign, r.sign, 3 * sizeof(I32));
     }
 
+    Ray& operator=(const Ray &r) {
+        origin.set(r.origin);
+        direction.set(r.direction);
+        inv_direction.set(r.inv_direction);
+        memcpy(sign, r.sign, 3 * sizeof(I32));
+        return *this;
+    }
+
     inline void identity() {
         set(VECTOR3_ZERO, WORLD_Y_AXIS);
     }

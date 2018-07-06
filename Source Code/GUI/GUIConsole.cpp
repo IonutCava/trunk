@@ -183,11 +183,12 @@ void GUIConsole::OutputText(const char* inMsg, const bool error) {
         _outputWindow->removeItem(_outputWindow->getListboxItemFromIndex(0));
     }
 
-    CEGUI::FormattedListboxTextItem* crtItem = nullptr;
-    crtItem = new CEGUI::FormattedListboxTextItem(
-        CEGUI::String(inMsg), error ? CEGUI::Colour(1.0f, 0.0f, 0.0f)
-                                    : CEGUI::Colour(0.4f, 0.4f, 0.3f),
-        CEGUI::HTF_WORDWRAP_LEFT_ALIGNED);
+    CEGUI::FormattedListboxTextItem* crtItem =
+        new CEGUI::FormattedListboxTextItem(
+            CEGUI::String(inMsg), error ? CEGUI::Colour(1.0f, 0.0f, 0.0f)
+                                        : CEGUI::Colour(0.4f, 0.4f, 0.3f),
+            CEGUI::HTF_WORDWRAP_LEFT_ALIGNED);
+
     crtItem->setTextParsingEnabled(false);
     _outputWindow->addItem(crtItem);
     _outputWindow->ensureItemIsVisible(crtItem);

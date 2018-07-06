@@ -18,7 +18,9 @@ NavMeshDebugDraw::NavMeshDebugDraw()
       _dirty(true),
       _paused(false),
       _color(0),
-      _primitive(nullptr)
+      _primitive(nullptr),
+      _primType(PrimitiveType::COUNT),
+      _vertCount(0)
 {
     // Generate a render state
     RenderStateBlock navigationDebugStateBlock;

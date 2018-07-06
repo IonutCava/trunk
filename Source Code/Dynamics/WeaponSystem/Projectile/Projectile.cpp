@@ -2,7 +2,10 @@
 
 namespace Divide {
 
-Projectile::Projectile(ProjectileType type) : _type(type) {
+Projectile::Projectile(ProjectileType type)
+    : _type(type),
+      _properyMask(0)
+{
     /// no placeholders please
     assert(_type != ProjectileType::COUNT);
 }

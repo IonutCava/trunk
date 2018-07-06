@@ -5,7 +5,8 @@ namespace Divide {
         : PhysicsAsset(parent),
         _actor(nullptr),
         _isDynamic(false),
-        _userData(0.0f)
+        _userData(0.0f),
+        _type(physx::PxGeometryType::eINVALID)
     {
     }
 

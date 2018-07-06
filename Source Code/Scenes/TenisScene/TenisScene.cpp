@@ -19,6 +19,31 @@ namespace {
     std::atomic_bool s_gameStarted;
 };
 
+TenisScene::TenisScene(const stringImpl& name)
+    : Scene(name),
+    _aiPlayer1(nullptr),
+    _aiPlayer2(nullptr),
+    _aiPlayer3(nullptr),
+    _aiPlayer4(nullptr),
+    _player1(nullptr),
+    _player2(nullptr),
+    _player3(nullptr),
+    _player4(nullptr),
+    _ball(nullptr)
+{
+    _sideImpulseFactor = 0;
+    _directionTeam1ToTeam2 = true;
+    _upwardsDirection = true;
+    _touchedTerrainTeam1 = false;
+    _touchedTerrainTeam2 = false;
+    _lostTeam1 = false;
+    _applySideImpulse = false;
+    _scoreTeam1 = 0;
+    _scoreTeam2 = 0;
+    _gamePlaying = false;
+    _team1 = nullptr;
+    _team2 = nullptr;
+}
 
 void TenisScene::processGUI(const U64 deltaTime) {
     D64 FpsDisplay = 0.7;

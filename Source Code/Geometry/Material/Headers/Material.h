@@ -150,6 +150,8 @@ class Material : public Resource, public FrameListener {
             _shaderRef = nullptr;
             _shader = "";
             _shaderCompStage = ShaderCompilationStage::UNHANDLED;
+            _stage = RenderStage::COUNT;
+
             for (U32 i = 0; i < to_const_uint(ShaderType::COUNT); ++i) {
                 _shadingFunction[i].fill(0);
             }

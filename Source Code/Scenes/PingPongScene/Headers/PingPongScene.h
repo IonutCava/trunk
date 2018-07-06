@@ -40,19 +40,7 @@ class Sphere3D;
 
 class PingPongScene : public Scene {
    public:
-    explicit PingPongScene(const stringImpl& name)
-        : Scene(name)
-    {
-        _sideDrift = 0;
-        _directionTowardsAdversary = true;
-        _upwardsDirection = false;
-        _touchedOwnTableHalf = false;
-        _touchedAdversaryTableHalf = false;
-        _lost = false;
-        _ball = nullptr;
-        _freeFlyCam = nullptr;
-        _paddleCam = nullptr;
-    }
+    explicit PingPongScene(const stringImpl& name);
 
     ~PingPongScene() {}
 

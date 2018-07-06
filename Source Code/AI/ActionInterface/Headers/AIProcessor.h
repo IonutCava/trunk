@@ -168,7 +168,7 @@ class NOINITVTABLE AIProcessor : private NonCopyable {
         if (!plan.empty()) {
             _currentStep++;
             const GOAPAction* crtAction = getActiveAction();
-            if (!crtAction || (crtAction && !performAction(*crtAction))) {
+            if (!crtAction || !performAction(*crtAction)) {
                 invalidateCurrentPlan();
                 return false;
             }

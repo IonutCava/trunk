@@ -32,7 +32,7 @@ struct selectionQueueDistanceFrontToBack {
     selectionQueueDistanceFrontToBack(const vec3<F32>& eyePos)
         : _eyePos(eyePos) {}
 
-    bool operator()(SceneGraphNode_wptr a, SceneGraphNode_wptr b) const {
+    bool operator()(const SceneGraphNode_wptr& a, const SceneGraphNode_wptr& b) const {
         F32 dist_a =
             a.lock()->get<BoundsComponent>()->getBoundingBox().nearestDistanceFromPointSquared(_eyePos);
         F32 dist_b =
@@ -226,7 +226,7 @@ bool Scene::loadGeometry(const FileData& data) {
         return false;
     }
     STUBBED("Load material from XML disabled for primitives! - Ionut")
-    Material_ptr tempMaterial; /* = XML::loadMaterial(data.ItemName + "_material")*/;
+    Material_ptr tempMaterial = nullptr; /* = XML::loadMaterial(data.ItemName + "_material")*/;
     if (!tempMaterial) {
         ResourceDescriptor materialDescriptor(data.ItemName + "_material");
         tempMaterial = CreateResource<Material>(materialDescriptor);
@@ -454,8 +454,8 @@ U16 Scene::registerInputActions() {
         I32 axis = param._var[2];
         Input::Joystick joystick = static_cast<Input::Joystick>(param._var[3]);
 
-        Input::JoystickInterface* joyInterface = nullptr;
-        joyInterface = Input::InputInterface::instance().getJoystickInterface();
+        Input::JoystickInterface* joyInterface
+            = Input::InputInterface::instance().getJoystickInterface();
         
         const Input::JoystickData& joyData = joyInterface->getJoystickData(joystick);
         I32 deadZone = joyData._deadZone;
@@ -846,15 +846,16 @@ void Scene::debugDraw(RenderStage stage) {
 }
 
 void Scene::findHoverTarget() {
+    const Camera& crtCamera = renderState().getCameraConst();
     const vec2<U16>& displaySize = Application::instance().windowManager().getActiveWindow().getDimensions();
-    const vec2<F32>& zPlanes = renderState().getCameraConst().getZPlanes();
+    const vec2<F32>& zPlanes = crtCamera.getZPlanes();
     const vec2<I32>& mousePos = _input->getMousePosition();
 
     F32 mouseX = to_float(mousePos.x);
     F32 mouseY = displaySize.height - to_float(mousePos.y) - 1;
 
-    vec3<F32> startRay = renderState().getCameraConst().unProject(mouseX, mouseY, 0.0f);
-    vec3<F32> endRay = renderState().getCameraConst().unProject(mouseX, mouseY, 1.0f);
+    vec3<F32> startRay = crtCamera.unProject(mouseX, mouseY, 0.0f);
+    vec3<F32> endRay = crtCamera.unProject(mouseX, mouseY, 1.0f);
     // see if we select another one
     _sceneSelectionCandidates.clear();
     // get the list of visible nodes (use Z_PRE_PASS because the nodes are sorted by depth, front to back)

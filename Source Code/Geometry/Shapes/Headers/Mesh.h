@@ -67,7 +67,7 @@ class Mesh : public Object3D {
 
     void addSubMesh(SubMesh_ptr subMesh);
 
-    void setAnimator(std::shared_ptr<SceneAnimator> animator) {
+    void setAnimator(const std::shared_ptr<SceneAnimator>& animator) {
         assert(getObjectFlag(ObjectFlag::OBJECT_FLAG_SKINNED));
         _animator = animator;
     }

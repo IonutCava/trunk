@@ -5,7 +5,12 @@ namespace Divide {
 namespace Input {
 
 AutoRepeatKey::AutoRepeatKey(D64 repeatDelay, D64 initialDelay)
-    : _repeatDelay(repeatDelay), _initialDelay(initialDelay) {}
+    : _repeatDelay(repeatDelay), 
+      _initialDelay(initialDelay),
+      _elapsed(0.0),
+      _delay(initialDelay)
+{
+}
 
 void AutoRepeatKey::begin(const KeyEvent &evt) {
     _key = evt;

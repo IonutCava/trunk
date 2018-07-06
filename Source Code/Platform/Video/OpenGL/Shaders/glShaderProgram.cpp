@@ -14,12 +14,16 @@ namespace Divide {
 std::array<U32, to_const_uint(ShaderType::COUNT)> glShaderProgram::_lineOffset;
 
 IMPLEMENT_ALLOCATOR(glShaderProgram, 0, 0);
-glShaderProgram::glShaderProgram(GFXDevice& context, const stringImpl& name, const stringImpl& resourceLocation, bool asyncLoad)
+glShaderProgram::glShaderProgram(GFXDevice& context,
+                                 const stringImpl& name,
+                                 const stringImpl& resourceLocation,
+                                 bool asyncLoad)
     : ShaderProgram(context, name, resourceLocation, asyncLoad),
       _loadedFromBinary(false),
       _validated(false),
       _shaderProgramIDTemp(0),
-      _lockManager(MemoryManager_NEW glLockManager())
+      _lockManager(MemoryManager_NEW glLockManager()),
+      _binaryFormat(GL_NONE)
 {
     _validationQueued = false;
     // each API has it's own invalid id. This is OpenGL's
@@ -340,7 +344,7 @@ bool glShaderProgram::load() {
     if (Config::USE_SHADER_BINARY && !refresh && false && _context.getGPUVendor() == GPUVendor::NVIDIA) {
         // Only available for new programs
         assert(_shaderProgramIDTemp == 0);
-        stringImpl fileName(Shader::CACHE_LOCATION_BIN + _name + ".bin");
+        stringImpl fileName(glShader::CACHE_LOCATION_BIN + _name + ".bin");
         // Load the program's binary format from file
         FILE* inFile = fopen((fileName + ".fmt").c_str(), "wb");
         if (inFile) {

@@ -46,7 +46,7 @@ class SceneAnimator;
 class SceneGraphNode;
 class AnimationComponent : public SGNComponent {
    public:
-    inline void updateAnimator(std::shared_ptr<SceneAnimator> animator) {
+    inline void updateAnimator(const std::shared_ptr<SceneAnimator>& animator) {
         _animator = animator;
     }
 
@@ -118,8 +118,6 @@ class AnimationComponent : public SGNComponent {
     U64 _parentTimeStamp;
     /// Animation playback toggle
     bool _playAnimations;
-    /// Animation timestamp changed
-    bool _updateAnimations;
 };
 
 };  // namespace Divide

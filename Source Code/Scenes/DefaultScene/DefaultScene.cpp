@@ -22,6 +22,9 @@ bool DefaultScene::load(const stringImpl& name) {
     
     light.lock()->get<PhysicsComponent>()->setPosition(sunvector);
     _currentSky.lock()->getNode<Sky>()->setSunProperties(sunvector, light.lock()->getNode<Light>()->getDiffuseColor());
+
+    state().saveLoadDisabled(true);
+
     return loadState;
 }
 

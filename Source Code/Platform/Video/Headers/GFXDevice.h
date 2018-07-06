@@ -109,7 +109,10 @@ DEFINE_SINGLETON(GFXDevice)
        ShaderBuffer* _buffer;
        vec2<U32>    _range;
 
-       ShaderBufferBinding() : _buffer(nullptr)
+       ShaderBufferBinding() 
+            : ShaderBufferBinding(ShaderBufferLocation::COUNT,
+                                  nullptr,
+                                  vec2<U32>(0,0))
        {
        }
 
@@ -222,11 +225,30 @@ DEFINE_SINGLETON(GFXDevice)
    static const U32 MAX_PASSES_PER_STAGE = 6;
 
    struct GPUBlock {
-       GPUBlock() : _updated(true)
+       GPUBlock() : _updated(true),
+                    _data(GPUData())
        {
        }
 
        struct GPUData {
+           GPUData()
+           {
+               _ProjectionMatrix.identity();
+               _ViewMatrix.identity();
+               _ViewProjectionMatrix.identity();
+               _cameraPosition.set(0.0f);
+               _ViewPort.set(1.0f);
+               _ZPlanesCombined.set(1.0f, 1.1f, 1.0f, 1.1f);
+               _invScreenDimension.set(1.0f);
+               _renderProperties.set(0.0f);
+               for (U8 i = 0; i < 6; ++i) {
+                   _frustumPlanes[i].set(0.0f);
+               }
+               for (U8 i = 0; i < Config::MAX_CLIP_PLANES; ++i) {
+                   _frustumPlanes[i].set(1.0f);
+               }
+           }
+
            mat4<F32> _ProjectionMatrix;
            mat4<F32> _ViewMatrix;
            mat4<F32> _ViewProjectionMatrix;

@@ -272,7 +272,7 @@ class vec2 {
         this->y = static_cast<T>(_y);
     }
     /// set the 2 components of the vector using a source vector
-    inline void set(const vec2<T> v) { this->set(v.x, v.y); }
+    inline void set(const vec2<T> &v) { this->set(v.x, v.y); }
     /// set the 2 components of the vector using the first 2 components of the
     /// source vector
     inline void set(const vec3<T> &v) { this->set(v.x, v.y); }

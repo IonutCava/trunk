@@ -20,7 +20,9 @@ Terrain::Terrain(const stringImpl& name)
       _alphaTexturePresent(false),
       _plane(nullptr),
       _drawBBoxes(false),
-      _underwaterDiffuseScale(100.0f)
+      _underwaterDiffuseScale(100.0f),
+      _chunkSize(1),
+      _waterHeight(0.0f)
 {
     getGeometryVB()->useLargeIndices(true);  //<32bit indices
 

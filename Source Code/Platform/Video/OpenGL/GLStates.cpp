@@ -581,10 +581,11 @@ void GL_API::activateStateBlock(const RenderStateBlock& newBlock,
 
     // Check and set color mask
     if (oldBlock.colorWrite().i != newBlock.colorWrite().i) {
-        glColorMask(newBlock.colorWrite().b[0] == 1 ? GL_TRUE : GL_FALSE,   // R
-                    newBlock.colorWrite().b[1] == 1 ? GL_TRUE : GL_FALSE,   // G
-                    newBlock.colorWrite().b[2] == 1 ? GL_TRUE : GL_FALSE,   // B
-                    newBlock.colorWrite().b[3] == 1 ? GL_TRUE : GL_FALSE);  // A
+        P32 cWrite = newBlock.colorWrite();
+        glColorMask(cWrite.b[0] == 1 ? GL_TRUE : GL_FALSE,   // R
+                    cWrite.b[1] == 1 ? GL_TRUE : GL_FALSE,   // G
+                    cWrite.b[2] == 1 ? GL_TRUE : GL_FALSE,   // B
+                    cWrite.b[3] == 1 ? GL_TRUE : GL_FALSE);  // A
     }
 }
 };

@@ -106,8 +106,8 @@ class NOINITVTABLE IMPrimitive : protected GraphicsResource, public GUIDWrapper 
     inline bool paused() const { return _paused; }
     inline void inUse(bool state) { _inUse = state; }
     inline bool inUse() const { return _inUse; }
-    inline void zombieCounter(U8 count) { _zombieCounter = count; }
-    inline U8   zombieCounter() const { return _zombieCounter; }
+    inline void zombieCounter(U32 count) { _zombieCounter = count; }
+    inline U32  zombieCounter() const { return _zombieCounter; }
     inline void forceWireframe(bool state) { _forceWireframe = state; }
     inline bool forceWireframe() const { return _forceWireframe; }
     inline bool hasRenderStates() const {
@@ -165,7 +165,7 @@ class NOINITVTABLE IMPrimitive : protected GraphicsResource, public GUIDWrapper 
     bool _forceWireframe;
 
    private:
-    U8   _zombieCounter;
+    U32  _zombieCounter;
     bool _inUse;
     /// If _pause is true, rendering for the current primitive is skipped and
     /// nothing is modified (e.g. zombie counters)

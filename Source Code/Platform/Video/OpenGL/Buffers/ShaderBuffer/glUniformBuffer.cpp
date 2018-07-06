@@ -59,14 +59,14 @@ void glUniformBuffer::create(U32 primitiveCount, ptrdiff_t primitiveSize, U32 si
     _buffer->create(_frequency, _allignedBufferSize * sizeFactor * queueLength());
 }
 
-void glUniformBuffer::getData(GLintptr offsetElementCount,
-                              GLsizeiptr rangeElementCount,
+void glUniformBuffer::getData(ptrdiff_t offsetElementCount,
+                              ptrdiff_t rangeElementCount,
                               bufferPtr result) const {
     if (rangeElementCount > 0) {
-        GLintptr range = rangeElementCount * _primitiveSize;
-        GLintptr offset = offsetElementCount * _primitiveSize;
+        ptrdiff_t range = rangeElementCount * _primitiveSize;
+        ptrdiff_t offset = offsetElementCount * _primitiveSize;
 
-        DIVIDE_ASSERT(offset + range <= (GLsizeiptr)_allignedBufferSize,
+        DIVIDE_ASSERT(offset + range <= (ptrdiff_t)_allignedBufferSize,
             "glUniformBuffer::UpdateData error: was called with an "
             "invalid range (buffer overflow)!");
 
@@ -76,18 +76,18 @@ void glUniformBuffer::getData(GLintptr offsetElementCount,
     }
 }
 
-void glUniformBuffer::updateData(GLintptr offsetElementCount, 
-                                 GLsizeiptr rangeElementCount,
+void glUniformBuffer::updateData(ptrdiff_t offsetElementCount,
+                                 ptrdiff_t rangeElementCount,
                                  const bufferPtr data) {
 
     if (rangeElementCount == 0) {
         return;
     }
 
-    GLintptr range = rangeElementCount * _primitiveSize;
-    GLintptr offset = offsetElementCount * _primitiveSize;
+    ptrdiff_t range = rangeElementCount * _primitiveSize;
+    ptrdiff_t offset = offsetElementCount * _primitiveSize;
 
-    DIVIDE_ASSERT(offset + range <= (GLsizeiptr)_allignedBufferSize,
+    DIVIDE_ASSERT(offset + range <= (ptrdiff_t)_allignedBufferSize,
         "glUniformBuffer::UpdateData error: was called with an "
         "invalid range (buffer overflow)!");
 
@@ -156,7 +156,7 @@ void glUniformBuffer::printInfo(const ShaderProgram* shaderProgram,
     GLuint prog = shaderProgram->getID();
     GLuint block_index = bindIndex;
 
-    if (prog <= 0 || block_index < 0 || _unbound) {
+    if (prog <= 0 || _unbound) {
         return;
     }
 

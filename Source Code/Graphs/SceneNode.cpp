@@ -87,7 +87,7 @@ const Material_ptr& SceneNode::getMaterialTpl() {
     return _materialTemplate;
 }
 
-void SceneNode::setMaterialTpl(Material_ptr material) {
+void SceneNode::setMaterialTpl(const Material_ptr& material) {
     if (material) {  // If we need to update the material
         // UpgradableReadLock ur_lock(_materialLock);
 

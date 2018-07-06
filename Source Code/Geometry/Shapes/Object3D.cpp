@@ -51,15 +51,16 @@ Object3D::Object3D(const stringImpl& name, const stringImpl& resourceLocation, O
         case ObjectType::TEXT_3D :
             _rigidBodyShape = RigidBodyShape::SHAPE_TRIANGLEMESH;
         case ObjectType::MESH: {
-            if (true) { // general meshes? Maybe have a concave flag?
+            STUBBED("ToDo: Add capsule and convex mesh support for 3D Objects! -Ionut");
+            //if (true) { // general meshes? Maybe have a concave flag?
                 _rigidBodyShape = RigidBodyShape::SHAPE_TRIANGLEMESH;
-            } else { 
+            /*} else { 
                 if (true) { // skinned characters?
                     _rigidBodyShape = RigidBodyShape::SHAPE_CAPSULE;
                 } else { // have a convex flag for imported meshes?
                     _rigidBodyShape = RigidBodyShape::SHAPE_CONVEXMESH;
                 }
-            }
+            }*/
             } break;
         default:
             _rigidBodyShape = RigidBodyShape::SHAPE_COUNT;

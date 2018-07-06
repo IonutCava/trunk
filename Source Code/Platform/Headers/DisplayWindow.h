@@ -58,7 +58,7 @@ class DisplayWindow : public GUIDWrapper {
 public:
     DisplayWindow();
     ~DisplayWindow();
-    ErrorCode init(U32 windowFlags, WindowType initialType, ResolutionByType initialResolutions);
+    ErrorCode init(U32 windowFlags, WindowType initialType, const ResolutionByType& initialResolutions);
     void update();
 
     ErrorCode destroyWindow();

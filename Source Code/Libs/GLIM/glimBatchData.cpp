@@ -480,18 +480,19 @@ void glimBatchData::UploadOGL(unsigned int uiCurrentProgram) {
 
     // now upload each attribute array one after another
     for (it = std::begin(m_Attributes); it != itend; ++it) {
+        GlimArrayData& data = it->second;
         m_bufferData.insert(std::end(m_bufferData),
-                            std::begin(it->second.m_ArrayData),
-                            std::end(it->second.m_ArrayData));
+                            std::begin(data.m_ArrayData),
+                            std::end(data.m_ArrayData));
         const unsigned int uiAttributeSize =
-            (unsigned int)(it->second.m_ArrayData.size()) *
+            (unsigned int)(data.m_ArrayData.size()) *
             sizeof(Glim4ByteData);  // already includes the number of vertices
 
         // free the temporary buffer in RAM
-        it->second.m_ArrayData.clear();
-        it->second.m_uiBufferStride = uiAttributeSize / uiVertices;
+        data.m_ArrayData.clear();
+        data.m_uiBufferStride = uiAttributeSize / uiVertices;
         // store the buffer offset for later use
-        it->second.m_uiBufferOffset = uiOffset;
+        data.m_uiBufferOffset = uiOffset;
         // increase the buffer offset
         uiOffset += uiAttributeSize;
     }

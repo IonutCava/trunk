@@ -59,6 +59,7 @@ public:
   future_impl()
   : m_ready(false)
   , m_is_cancelled(false)
+  , m_executing(false)
   {
   }
 

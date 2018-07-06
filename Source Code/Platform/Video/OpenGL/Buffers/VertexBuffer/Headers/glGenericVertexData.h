@@ -75,9 +75,9 @@ class glGenericVertexData : public GenericVertexData {
                    _stride == other._stride;
         }
 
+        GLsizei _stride;
         GLuint _buffer;
         GLintptr _offset;
-        GLsizei _stride;
     };
 
    public:

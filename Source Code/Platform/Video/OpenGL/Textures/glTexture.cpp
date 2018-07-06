@@ -385,19 +385,22 @@ bool glTexture::flushTextureState() {
 }
 
 void glTexture::Bind(U8 unit, bool flushStateOnRequest) {
-    if ((flushStateOnRequest && flushTextureState()) || !flushStateOnRequest) {
-        GL_API::bindTexture(unit, _textureData.getHandleHigh(), _type,
-                            _textureData._samplerHash);
+    if (flushStateOnRequest) {
+        flushTextureState();
     }
+
+    GL_API::bindTexture(unit, _textureData.getHandleHigh(), _type, _textureData._samplerHash);
 }
 
 void glTexture::BindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write, bool flushStateOnRequest) {
-    if ((flushStateOnRequest && flushTextureState()) || !flushStateOnRequest) {
-        GLenum access = read ? (write ? GL_READ_WRITE : GL_READ_ONLY)
-                             : (write ? GL_WRITE_ONLY : GL_NONE);
-        GL_API::bindTextureImage(slot, _textureData.getHandleHigh(), level, layered, layer, access, 
-                                 GLUtil::glImageFormatTable[to_uint(_descriptor._internalFormat)]);
+    if (flushStateOnRequest) {
+        flushTextureState();
     }
+
+    GLenum access = read ? (write ? GL_READ_WRITE : GL_READ_ONLY)
+                            : (write ? GL_WRITE_ONLY : GL_NONE);
+    GL_API::bindTextureImage(slot, _textureData.getHandleHigh(), level, layered, layer, access, 
+                                GLUtil::glImageFormatTable[to_uint(_descriptor._internalFormat)]);
 }
 
 };

@@ -69,7 +69,7 @@ public:
     void setActiveWindow(U32 index);
     ErrorCode initWindow(U32 index,
                          U32 windowFlags,
-                         ResolutionByType initialResolutions,
+                         const ResolutionByType& initialResolutions,
                          bool startFullScreen,
                          I32 targetDisplayIndex);
     inline I32 targetDisplay() const;

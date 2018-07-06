@@ -343,7 +343,7 @@ void GL_API::syncToThread(std::thread::id threadID) {
         // This also makes the context current
         SDL_GLContext ctx;
         bool ctxFound = g_ContextPool.getAvailableContext(ctx);
-        assert(ctxFound);
+        DIVIDE_ASSERT(ctxFound, "GL_API::syncToThread: context not found for current thread!");
 
         hashAlg::emplace(GLUtil::_glSecondaryContexts, threadHash, ctx);
 
