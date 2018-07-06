@@ -83,6 +83,11 @@ inline F32 random(F32 max=1.0) { return max * rand() * INV_RAND_MAX; }
 inline F32 random(F32 min, F32 max) { return min + (max - min) * INV_RAND_MAX * rand(); }
 inline I32 random(I32 max=RAND_MAX) { return rand()%(max+1); }
 
+
+//#include <Eigen/Dense>
+//using Eigen::Matrix3f;
+//using Eigen::Matrix4f;
+
 template<class T>
 class vec2;
 template<class T>
@@ -935,6 +940,7 @@ public:
 	}
 
 	T mat[16];
+	//Eigen::Matrix<T,4,4> _emat;
 };
 template<class T>
 inline mat3<T>::mat3(const mat4<T> &m) {

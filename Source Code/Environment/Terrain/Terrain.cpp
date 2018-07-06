@@ -119,7 +119,7 @@ vec3<F32> Terrain::getPosition(F32 x_clampf, F32 z_clampf) const{
 
 	if(posI.x >= (U32)_terrainWidth-1)	posI.x = _terrainWidth-2;
 	if(posI.y >= (U32)_terrainHeight-1)	posI.y = _terrainHeight-2;
-	assert(posI.x>=0 && posI.x<(I32)_terrainWidth-1 && posI.y>=0 && posI.y<(I32)_terrainHeight-1);
+	assert(posI.x>=0 && posI.x<(U32)_terrainWidth-1 && posI.y>=0 && posI.y<(U32)_terrainHeight-1);
 
 	vec3<F32> pos(_boundingBox.getMin().x + x_clampf * (_boundingBox.getMax().x - _boundingBox.getMin().x), 0.0f, _boundingBox.getMin().z + z_clampf * (_boundingBox.getMax().z - _boundingBox.getMin().z));
 	pos.y =   (_groundVBO->getPosition()[ COORD(posI.x,  posI.y,  _terrainWidth) ].y)  * (1.0f-posD.x) * (1.0f-posD.y)
@@ -138,7 +138,7 @@ vec3<F32> Terrain::getNormal(F32 x_clampf, F32 z_clampf) const{
 
 	if(posI.x >= (U32)_terrainWidth-1)		posI.x = _terrainWidth-2;
 	if(posI.y >= (U32)_terrainHeight-1)	posI.y = _terrainHeight-2;
-	assert(posI.x>=0 && posI.x<(I32)_terrainWidth-1 && posI.y>=0 && posI.y<(I32)_terrainHeight-1);
+	assert(posI.x>=0 && posI.x<(U32)_terrainWidth-1 && posI.y>=0 && posI.y<(U32)_terrainHeight-1);
 
 	return    (_groundVBO->getNormal()[ COORD(posI.x,  posI.y,  _terrainWidth) ])  * (1.0f-posD.x) * (1.0f-posD.y)
 			+ (_groundVBO->getNormal()[ COORD(posI.x+1,posI.y,  _terrainWidth) ])  *       posD.x  * (1.0f-posD.y)
@@ -155,7 +155,7 @@ vec3<F32> Terrain::getTangent(F32 x_clampf, F32 z_clampf) const{
 
 	if(posI.x >= (U32)_terrainWidth-1)		posI.x = _terrainWidth-2;
 	if(posI.y >= (U32)_terrainHeight-1)	posI.y = _terrainHeight-2;
-	assert(posI.x>=0 && posI.x<(I32)_terrainWidth-1 && posI.y>=0 && posI.y<(I32)_terrainHeight-1);
+	assert(posI.x>=0 && posI.x<(U32)_terrainWidth-1 && posI.y>=0 && posI.y<(U32)_terrainHeight-1);
 
 	return    (_groundVBO->getTangent()[ COORD(posI.x,  posI.y,  _terrainWidth) ])  * (1.0f-posD.x) * (1.0f-posD.y)
 			+ (_groundVBO->getTangent()[ COORD(posI.x+1,posI.y,  _terrainWidth) ])  *       posD.x  * (1.0f-posD.y)

@@ -45,6 +45,18 @@ namespace Util {
 		return (a<b) ? a : b;
 	}
 
+	//inline D32 square_root(D32 n){
+	//	return sqrt(n);
+	//}
+	inline D32 __declspec (naked) __fastcall square_root(D32 n){
+		_asm fld qword ptr [esp+4]
+		_asm fsqrt
+		_asm ret 8
+	} 
+	inline F32 square_root_f(F32 n){
+		return (F32)square_root((F32)n);
+	}
+
 #if defined  USE_MATH_SSE		
 	static const __m128 one = _mm_set_ps1(1.0f);
 	///dot
@@ -56,14 +68,6 @@ namespace Util {
 		__m128 add1 = _mm_add_ps(add0, swp1);
 		return add1;
 	}
-
-
-	inline D32 __declspec (naked) __fastcall square_root(D32 n){
-	
-		_asm fld qword ptr [esp+4]
-		_asm fsqrt
-		_asm ret 8
-	} 
 
 
 	namespace Mat4{
@@ -334,12 +338,6 @@ namespace Util {
 
 #else
 
-	inline D32 square_root(D32 n){
-		return sqrt(n);
-	}
-	inline F32 square_root_f(F32 n){
-		return sqrtf(n);
-	}
 	namespace Mat4{
 		inline void mmul(const float *a, const float *b, float *r){
 			for (int i=0; i<16; i+=4){
