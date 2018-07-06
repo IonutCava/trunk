@@ -29,11 +29,20 @@ bool GPUState::stopLoaderThread() {
 void GPUState::registerDisplayMode(const GPUVideoMode& mode) {
     // this is terribly slow, but should only be called a couple of times and
     // only on video hardware init
-    if (std::find(std::begin(_supportedDislpayModes),
-                  std::end(_supportedDislpayModes),
-                  mode) != std::end(_supportedDislpayModes)) {
-        _supportedDislpayModes.push_back(mode);
+    for (GPUVideoMode& crtMode : _supportedDislpayModes) {
+        if (crtMode._resolution == mode._resolution &&
+            crtMode._bitDepth == mode._bitDepth) {
+            U8 crtRefresh = mode._refreshRate.front();
+            if (std::find_if(std::begin(crtMode._refreshRate),
+                std::end(crtMode._refreshRate),
+                [&crtRefresh](U8 refresh)
+                -> bool { return refresh == crtRefresh; }) == std::end(crtMode._refreshRate)){
+                crtMode._refreshRate.push_back(crtRefresh);
+            }
+            return;
+        }
     }
+    _supportedDislpayModes.push_back(mode);
 }
 
 };  // namespace Divide

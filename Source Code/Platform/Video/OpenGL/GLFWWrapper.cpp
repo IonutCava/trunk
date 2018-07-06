@@ -61,7 +61,7 @@ ErrorCode GL_API::initRenderingAPI(const vec2<GLushort>& resolution, GLint argc,
     glfwWindowHint(GLFW_STENCIL_BITS, 8);
     glfwWindowHint(GLFW_DEPTH_BITS, 24);
 
-        // OpenGL ES is not yet supported, but when added, it will need to mirror
+    // OpenGL ES is not yet supported, but when added, it will need to mirror
     // OpenGL functionality 1-to-1
     if (GFX_DEVICE.getAPI() == GFXDevice::RenderAPI::OpenGLES) {
         glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
@@ -299,12 +299,23 @@ ErrorCode GL_API::initRenderingAPI(const vec2<GLushort>& resolution, GLint argc,
         tempDisplayMode._resolution.set(temp.width, temp.height);
         tempDisplayMode._bitDepth.set(temp.redBits, temp.greenBits,
                                       temp.blueBits);
-        tempDisplayMode._refreshRate = temp.refreshRate;
+        tempDisplayMode._refreshRate.push_back(temp.refreshRate);
         GFX_DEVICE.gpuState().registerDisplayMode(tempDisplayMode);
+        tempDisplayMode._refreshRate.clear();
+    }
+
+    stringImpl refreshRates;
+    const vectorImpl<GPUState::GPUVideoMode>& registeredModes = GFX_DEVICE.gpuState().getDisplayModes();
+    for (const GPUState::GPUVideoMode& mode : registeredModes) {
         // Optionally, output to console/file each display mode
-        Console::d_printfn(Locale::get("CURRENT_DISPLAY_MODE"), temp.width,
-                           temp.height, temp.redBits, temp.greenBits,
-                           temp.blueBits, temp.refreshRate);
+        refreshRates = std::to_string(mode._refreshRate.front());
+        vectorAlg::vecSize refreshRateCount = mode._refreshRate.size();
+        for (vectorAlg::vecSize i = 1; i < refreshRateCount; ++i) {
+            refreshRates += ", " + std::to_string(mode._refreshRate[i]);
+        }
+        Console::d_printfn(Locale::get("CURRENT_DISPLAY_MODE"), mode._resolution.width,
+            mode._resolution.height, mode._bitDepth.r, mode._bitDepth.g,
+            mode._bitDepth.b, refreshRates.c_str());
     }
 
     // Prepare font rendering subsystem
@@ -323,8 +334,8 @@ ErrorCode GL_API::initRenderingAPI(const vec2<GLushort>& resolution, GLint argc,
     // Allocate a buffer for indirect draw used to store the query results
     // without a round-trip to the CPU
     glGenBuffers(1, &_indirectDrawBuffer);
-// In debug, we also have various performance counters to profile GPU rendering
-// operations
+    // In debug, we also have various performance counters to profile GPU rendering
+    // operations
 #ifdef _DEBUG
     // We have multiple counter buffers, and each can be multi-buffered
     // (currently, only double-buffered, front and back)

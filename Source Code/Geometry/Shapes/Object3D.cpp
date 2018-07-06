@@ -7,13 +7,12 @@
 namespace Divide {
 
 Object3D::Object3D(ObjectType type, ObjectFlag flag)
-    : Object3D("", type, to_uint(flag)) 
+    : Object3D("", type, to_uint(flag))
 {
 }
 
 Object3D::Object3D(ObjectType type, U32 flagMask)
     : Object3D("", type, flagMask)
-
 {
 }
 
@@ -27,14 +26,16 @@ Object3D::Object3D(const stringImpl& name, ObjectType type, U32 flagMask)
       _update(false),
       _geometryType(type),
       _geometryFlagMask(flagMask),
-      _geometryPartitionID(0) {
-    _buffer = bitCompare(_geometryFlagMask,
-                         to_uint(ObjectFlag::OBJECT_FLAG_NO_VB))
-                  ? nullptr
-                  : GFX_DEVICE.newVB();
+      _geometryPartitionID(0)
+{
+    _buffer =
+        bitCompare(_geometryFlagMask, to_uint(ObjectFlag::OBJECT_FLAG_NO_VB))
+            ? nullptr
+            : GFX_DEVICE.newVB();
 }
 
-Object3D::~Object3D() {
+Object3D::~Object3D()
+{
     if (!bitCompare(_geometryFlagMask,
                     to_uint(ObjectFlag::OBJECT_FLAG_NO_VB))) {
         MemoryManager::DELETE(_buffer);
@@ -48,10 +49,13 @@ void Object3D::setGeometryVB(VertexBuffer* const vb) {
     _buffer = vb;
 }
 
-VertexBuffer* const Object3D::getGeometryVB() const { return _buffer; }
+VertexBuffer* const Object3D::getGeometryVB() const {
+    return _buffer;
+}
 
 void Object3D::getDrawCommands(
-    SceneGraphNode& sgn, const RenderStage& currentRenderStage,
+    SceneGraphNode& sgn,
+    const RenderStage& currentRenderStage,
     SceneRenderState& sceneRenderState,
     vectorImpl<GenericDrawCommand>& drawCommandsOut) {
     RenderingComponent* const renderable =
@@ -86,7 +90,8 @@ bool Object3D::onDraw(const RenderStage& currentStage) {
 }
 
 void Object3D::computeNormals() {
-    if (!getGeometryVB()) return;
+    if (!getGeometryVB())
+        return;
 
     vec3<F32> v1, v2, normal;
     // Code from
@@ -135,7 +140,8 @@ void Object3D::computeNormals() {
 }
 
 void Object3D::computeTangents() {
-    if (!getGeometryVB()) return;
+    if (!getGeometryVB())
+        return;
 
     // Code from:
     // http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-13-normal-mapping/#header-1
@@ -196,7 +202,7 @@ bool Object3D::computeTriangleList(bool force) {
     U32 partitionOffset = geometry->getPartitionOffset(_geometryPartitionID);
     U32 partitionCount = geometry->getPartitionCount(_geometryPartitionID);
     PrimitiveType type = (_geometryType == ObjectType::MESH ||
-                                  _geometryType == ObjectType::SUBMESH
+                          _geometryType == ObjectType::SUBMESH
                               ? PrimitiveType::TRIANGLES
                               : PrimitiveType::TRIANGLE_STRIP);
     // We can't have a VB without vertex positions
@@ -204,9 +210,11 @@ bool Object3D::computeTriangleList(bool force) {
                   "Object3D error: computeTriangleList called with no position "
                   "data available!");
 
-    if (!_geometryTriangles.empty() && force) _geometryTriangles.resize(0);
+    if (!_geometryTriangles.empty() && force)
+        _geometryTriangles.resize(0);
 
-    if (geometry->getIndexCount() == 0) return false;
+    if (geometry->getIndexCount() == 0)
+        return false;
 
     U32 indiceCount = partitionCount;
     bool largeIndices = geometry->usesLargeIndices();
@@ -220,7 +228,8 @@ bool Object3D::computeTriangleList(bool force) {
             for (U32 i = indiceStart; i < indiceEnd; i++) {
                 curTriangle.set(indices[i - 2], indices[i - 1], indices[i]);
                 // Check for correct winding
-                if (i % 2 != 0) std::swap(curTriangle.y, curTriangle.z);
+                if (i % 2 != 0)
+                    std::swap(curTriangle.y, curTriangle.z);
                 _geometryTriangles.push_back(curTriangle);
             }
         } else {
@@ -228,7 +237,8 @@ bool Object3D::computeTriangleList(bool force) {
             for (U32 i = indiceStart; i < indiceEnd; i++) {
                 curTriangle.set(indices[i - 2], indices[i - 1], indices[i]);
                 // Check for correct winding
-                if (i % 2 != 0) std::swap(curTriangle.y, curTriangle.z);
+                if (i % 2 != 0)
+                    std::swap(curTriangle.y, curTriangle.z);
                 _geometryTriangles.push_back(curTriangle);
             }
         }

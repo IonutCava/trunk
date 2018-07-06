@@ -93,7 +93,7 @@ void Vegetation::initialize(TerrainChunk* const terrainChunk) {
     _terrainChunk = terrainChunk;
 
     _cullShader->Uniform("ObjectExtent", vec3<F32>(1.0f, 1.0f, 1.0f));
-    _cullShader->UniformTexture("HiZBuffer", 0);
+    _cullShader->Uniform("HiZBuffer", ShaderProgram::TextureUsage::TEXTURE_UNIT0);
     _cullShader->Uniform("dvd_frustumBias", 12.5f);
     _instanceRoutineIdx[to_uint(CullType::PASS_THROUGH)] = _cullShader->GetSubroutineIndex(
         ShaderType::VERTEX_SHADER, "PassThrough");
@@ -234,7 +234,7 @@ void Vegetation::uploadGrassData() {
         shaderProg->Uniform("texCoordOffsets", texCoord);
         shaderProg->Uniform("rotationMatrices", rotationMatrices);
         shaderProg->Uniform("lod_metric", 100.0f);
-        shaderProg->UniformTexture("texDiffuseGrass", 0);
+        shaderProg->Uniform("texDiffuseGrass", ShaderProgram::TextureUsage::TEXTURE_UNIT0);
     }
 
     for (U8 i = 0; i < 2; ++i) {

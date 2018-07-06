@@ -28,12 +28,6 @@ ShaderProgram::ShaderProgram(const bool optimise)
            to_uint(ShaderType::COUNT) * sizeof(bool));
     // Cache some frequently updated uniform locations
     _sceneDataDirty = true;
-    _timeLoc = -1;
-    _enableFogLoc = -1;
-    _lightAmbientLoc = -1;
-    _invScreenDimension = -1;
-    _fogColorLoc = -1;
-    _fogDensityLoc = -1;
 }
 
 ShaderProgram::~ShaderProgram() {
@@ -67,21 +61,22 @@ bool ShaderProgram::update(const U64 deltaTime) {
     this->Uniform("dvd_showShadowSplits",
                   par.getParam<bool>("rendering.debug.showSplits"));
 #endif
+
     // Time, fog, ambient light
-    this->Uniform(_timeLoc, _elapsedTimeMS);
-    this->Uniform(_enableFogLoc, enableFog);
-    this->Uniform(_lightAmbientLoc, lightMgr.getAmbientLight());
+    this->Uniform("dvd_time", _elapsedTimeMS);
+    this->Uniform("dvd_enableFog", enableFog);
+    this->Uniform("dvd_lightAmbient", lightMgr.getAmbientLight());
     // Scene specific data is updated only if it changed
     if (_sceneDataDirty) {
         // Check and update fog properties
         if (enableFog) {
             this->Uniform(
-                _fogColorLoc,
+                "fogColor",
                 vec3<F32>(
                     par.getParam<F32>("rendering.sceneState.fogColor.r"),
                     par.getParam<F32>("rendering.sceneState.fogColor.g"),
                     par.getParam<F32>("rendering.sceneState.fogColor.b")));
-            this->Uniform(_fogDensityLoc,
+            this->Uniform("fogDensity",
                           par.getParam<F32>("rendering.sceneState.fogDensity"));
         }
         // Upload wind data
@@ -99,8 +94,8 @@ bool ShaderProgram::update(const U64 deltaTime) {
         const vec2<U16>& screenRes =
             GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_SCREEN)
                 ->getResolution();
-        this->Uniform(_invScreenDimension, vec2<F32>(1.0f / screenRes.width,
-                                                     1.0f / screenRes.height));
+        this->Uniform("dvd_invScreenDimension", vec2<F32>(1.0f / screenRes.width,
+                                                          1.0f / screenRes.height));
         // Shadow mapping specific values
         this->Uniform("dvd_lightBleedBias", 0.0000002f);
         this->Uniform("dvd_minShadowVariance", 0.0002f);
@@ -125,15 +120,7 @@ bool ShaderProgram::generateHWResource(const stringImpl& name) {
     // Validate loading state
     DIVIDE_ASSERT(isHWInitComplete(),
                   "ShaderProgram error: hardware initialization failed!");
-    // Get the location for our frequently used uniforms
-    if (_linked) {
-        _timeLoc = this->cachedLoc("dvd_time");
-        _enableFogLoc = this->cachedLoc("dvd_enableFog");
-        _lightAmbientLoc = this->cachedLoc("dvd_lightAmbient");
-        _invScreenDimension = this->cachedLoc("dvd_invScreenDimension");
-        _fogColorLoc = this->cachedLoc("fogColor");
-        _fogDensityLoc = this->cachedLoc("fogDensity");
-    }
+
     // Make sure the first call to update processes all of the needed data
     _dirty = _sceneDataDirty = true;
 

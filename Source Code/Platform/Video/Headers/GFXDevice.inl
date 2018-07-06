@@ -51,10 +51,7 @@ inline bool GFXDevice::isCurrentRenderStage(U32 renderStageMask) {
 }
 
 inline bool GFXDevice::isCurrentRenderStage(RenderStage renderStage) {
-        DIVIDE_ASSERT(renderStage != RenderStage::INVALID_STAGE,
-        "GFXDevice error: render stage query received an invalid bitmask!");
-
-    return renderStage == _renderStage;
+    return isCurrentRenderStage(to_uint(renderStage));
 }
 /// Change the width of rendered lines to the specified value
 inline void GFXDevice::setLineWidth(F32 width) {

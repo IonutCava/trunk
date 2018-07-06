@@ -45,7 +45,7 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera,
     ResourceDescriptor blurDepthMapShader("blur.GaussBlur");
     blurDepthMapShader.setThreadedLoading(false);
     _blurDepthMapShader = CreateResource<ShaderProgram>(blurDepthMapShader);
-    _blurDepthMapShader->UniformTexture("texScreen", 0);
+    _blurDepthMapShader->Uniform("texScreen", ShaderProgram::TextureUsage::TEXTURE_UNIT0);
 
     Console::printfn(Locale::get("LIGHT_CREATE_SHADOW_FB"), light->getGUID(),
                      "EVCSM");

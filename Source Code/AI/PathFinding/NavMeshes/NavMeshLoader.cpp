@@ -336,14 +336,11 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn) {
         }
 
         if (nodeType == SceneNodeType::TYPE_OBJECT3D) {
-            U32 ignored3DObjectType =
-                to_uint(Object3D::ObjectType::MESH) |
-                to_uint(Object3D::ObjectType::TEXT_3D) |
-                to_uint(Object3D::ObjectType::FLYWEIGHT);
-            if (bitCompare(ignored3DObjectType,
-                           to_uint(dynamic_cast<Object3D*>(sn)->getObjectType())))
-            {
-                goto next;
+            Object3D::ObjectType crtType = dynamic_cast<Object3D*>(sn)->getObjectType();
+            if (crtType == Object3D::ObjectType::TEXT_3D || 
+                crtType == Object3D::ObjectType::MESH || 
+                crtType == Object3D::ObjectType::FLYWEIGHT) {
+                    goto next;
             }
         }
 

@@ -42,22 +42,22 @@ class BoundingBox;
 class Object3D : public SceneNode {
    public:
     enum class ObjectType : U32 {
-        SPHERE_3D = toBit(0),
-        BOX_3D = toBit(1),
-        QUAD_3D = toBit(2),
-        TEXT_3D = toBit(3),
-        MESH = toBit(4),
-        SUBMESH = toBit(5),
-        TERRAIN = toBit(6),
-        FLYWEIGHT = toBit(7),
-        COUNT = toBit(8)
+        SPHERE_3D = 0,
+        BOX_3D = 1,
+        QUAD_3D = 2,
+        TEXT_3D = 3,
+        MESH = 4,
+        SUBMESH = 5,
+        TERRAIN = 6,
+        FLYWEIGHT = 7,
+        COUNT
     };
 
     enum class ObjectFlag : U32 {
         OBJECT_FLAG_NONE = toBit(0),
         OBJECT_FLAG_SKINNED = toBit(1),
         OBJECT_FLAG_NO_VB = toBit(2),
-        COUNT = toBit(3)
+        COUNT
     };
 
     explicit Object3D(ObjectType type, ObjectFlag flag);

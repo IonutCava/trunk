@@ -21,8 +21,8 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(Framebuffer* result,
     ResourceDescriptor ssao("SSAOPass");
     ssao.setThreadedLoading(false);
     _ssaoShader = CreateResource<ShaderProgram>(ssao);
-    _ssaoShader->UniformTexture("texScreen", 0);
-    _ssaoShader->UniformTexture("texDepth", 1);
+    _ssaoShader->Uniform("texScreen", ShaderProgram::TextureUsage::TEXTURE_UNIT0);
+    _ssaoShader->Uniform("texDepth", ShaderProgram::TextureUsage::TEXTURE_UNIT1);
 }
 
 SSAOPreRenderOperator::~SSAOPreRenderOperator() { RemoveResource(_ssaoShader); }

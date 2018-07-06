@@ -78,23 +78,23 @@ void PostFX::init(const vec2<U16>& resolution) {
         postFXShader.setThreadedLoading(false);
         std::stringstream ss;
         ss << "TEX_BIND_POINT_SCREEN "
-           << std::to_string(to_uint(
-                  TexOperatorBindPoint::TEX_BIND_POINT_SCREEN)) << ", ";
+           << std::to_string(
+                  to_uint(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN)) << ", ";
         ss << "TEX_BIND_POINT_BLOOM "
-           << std::to_string(to_uint(
-                  TexOperatorBindPoint::TEX_BIND_POINT_BLOOM)) << ", ";
+           << std::to_string(
+                  to_uint(TexOperatorBindPoint::TEX_BIND_POINT_BLOOM)) << ", ";
         ss << "TEX_BIND_POINT_SSAO "
-           << std::to_string(to_uint(
-                  TexOperatorBindPoint::TEX_BIND_POINT_SSAO)) << ", ";
+           << std::to_string(to_uint(TexOperatorBindPoint::TEX_BIND_POINT_SSAO))
+           << ", ";
         ss << "TEX_BIND_POINT_NOISE "
-           << std::to_string(to_uint(
-                  TexOperatorBindPoint::TEX_BIND_POINT_NOISE)) << ", ";
+           << std::to_string(
+                  to_uint(TexOperatorBindPoint::TEX_BIND_POINT_NOISE)) << ", ";
         ss << "TEX_BIND_POINT_BORDER "
-           << std::to_string(to_uint(
-                  TexOperatorBindPoint::TEX_BIND_POINT_BORDER)) << ", ";
+           << std::to_string(
+                  to_uint(TexOperatorBindPoint::TEX_BIND_POINT_BORDER)) << ", ";
         ss << "TEX_BIND_POINT_UNDERWATER "
-           << std::to_string(to_uint(
-                  TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER));
+           << std::to_string(
+                  to_uint(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER));
         postFXShader.setPropertyList(stringAlg::toBase(ss.str()));
         _postProcessingShader = CreateResource<ShaderProgram>(postFXShader);
 
@@ -156,10 +156,10 @@ void PostFX::createOperators() {
         ResourceDescriptor anaglyph("anaglyph");
         anaglyph.setThreadedLoading(false);
         _anaglyphShader = CreateResource<ShaderProgram>(anaglyph);
-        _anaglyphShader->UniformTexture(
+        _anaglyphShader->Uniform(
             "texRightEye",
             to_uint(TexOperatorBindPoint::TEX_BIND_POINT_RIGHT_EYE));
-        _anaglyphShader->UniformTexture(
+        _anaglyphShader->Uniform(
             "texLeftEye",
             to_uint(TexOperatorBindPoint::TEX_BIND_POINT_LEFT_EYE));
     }
@@ -268,8 +268,7 @@ void PostFX::displayScene() {
         }
 
         if (_noise) {
-            _noise->Bind(
-                to_uint(TexOperatorBindPoint::TEX_BIND_POINT_NOISE));
+            _noise->Bind(to_uint(TexOperatorBindPoint::TEX_BIND_POINT_NOISE));
         }
 
         if (_screenBorder) {
@@ -278,13 +277,11 @@ void PostFX::displayScene() {
         }
 
         if (_bloomFB) {
-            _bloomFB->Bind(
-                to_uint(TexOperatorBindPoint::TEX_BIND_POINT_BLOOM));
+            _bloomFB->Bind(to_uint(TexOperatorBindPoint::TEX_BIND_POINT_BLOOM));
         }
 
         if (_SSAO_FB) {
-            _SSAO_FB->Bind(
-                to_uint(TexOperatorBindPoint::TEX_BIND_POINT_SSAO));
+            _SSAO_FB->Bind(to_uint(TexOperatorBindPoint::TEX_BIND_POINT_SSAO));
         }
     }
 
@@ -338,23 +335,19 @@ void PostFX::idle() {
     // recreate only the fragment shader
     if (recompileShader) {
         _postProcessingShader->recompile(false, true);
-        _postProcessingShader->UniformTexture(
-            "texScreen",
-            to_uint(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN));
-        _postProcessingShader->UniformTexture(
-            "texBloom",
-            to_uint(TexOperatorBindPoint::TEX_BIND_POINT_BLOOM));
-        _postProcessingShader->UniformTexture(
-            "texSSAO", to_uint(TexOperatorBindPoint::TEX_BIND_POINT_SSAO));
-        _postProcessingShader->UniformTexture(
-            "texNoise",
-            to_uint(TexOperatorBindPoint::TEX_BIND_POINT_NOISE));
-        _postProcessingShader->UniformTexture(
-            "texVignette",
-            to_uint(TexOperatorBindPoint::TEX_BIND_POINT_BORDER));
-        _postProcessingShader->UniformTexture(
+        _postProcessingShader->Uniform(
+            "texScreen", to_int(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN));
+        _postProcessingShader->Uniform(
+            "texBloom", to_int(TexOperatorBindPoint::TEX_BIND_POINT_BLOOM));
+        _postProcessingShader->Uniform(
+            "texSSAO", to_int(TexOperatorBindPoint::TEX_BIND_POINT_SSAO));
+        _postProcessingShader->Uniform(
+            "texNoise", to_int(TexOperatorBindPoint::TEX_BIND_POINT_NOISE));
+        _postProcessingShader->Uniform(
+            "texVignette", to_int(TexOperatorBindPoint::TEX_BIND_POINT_BORDER));
+        _postProcessingShader->Uniform(
             "texWaterNoiseNM",
-            to_uint(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER));
+            to_int(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER));
     }
 
     if (_enableBloom) {

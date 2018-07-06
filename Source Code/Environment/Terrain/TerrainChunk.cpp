@@ -120,8 +120,8 @@ void TerrainChunk::ComputeIndicesArray(I8 lod, U8 depth,
             indexB = iOffset + (jOffset + (offset)) * nHMTotalWidth;
             _indice[lod].push_back(indexA);
             _indice[lod].push_back(indexB);
-            _terrainVB->addIndexL(indexA);
-            _terrainVB->addIndexL(indexB);
+            _terrainVB->addIndex(indexA);
+            _terrainVB->addIndex(indexB);
         }
         _indice[lod].push_back(Config::PRIMITIVE_RESTART_INDEX_L);
         _terrainVB->addRestartIndex();

@@ -51,7 +51,7 @@ class GPUState : private NonCopyable {
         // R,G,B
         vec3<U8> _bitDepth;
         // Max supported
-        U8 _refreshRate;
+        vectorImpl<U8> _refreshRate;
 
         bool operator==(const GPUVideoMode& other) const {
             return _resolution == other._resolution &&
@@ -67,6 +67,10 @@ class GPUState : private NonCopyable {
     void registerDisplayMode(const GPUVideoMode& mode);
     bool startLoaderThread(const DELEGATE_CBK<>& loadingFunction);
     bool stopLoaderThread();
+
+    inline const vectorImpl<GPUVideoMode>& getDisplayModes() const {
+        return _supportedDislpayModes;
+    }
 
     inline LoadQueue& getLoadQueue() { return _loadQueue; }
 

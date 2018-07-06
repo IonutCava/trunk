@@ -225,13 +225,16 @@ void glGenericVertexData::Draw(const GenericDrawCommand& command,
 
         if (_indexBuffer > 0) {
             GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
-            glMultiDrawElementsIndirect(
+            glDrawElementsInstancedBaseVertexBaseInstance(type, cmd.count, GL_UNSIGNED_INT, (void*)(cmd.firstIndex * sizeof(GL_UNSIGNED_INT)), cmd.instanceCount, cmd.baseVertex, cmd.baseInstance);
+            /*glMultiDrawElementsIndirect(
                 type, GL_UNSIGNED_INT,
-                (void*)(cmd.baseInstance * sizeof(IndirectDrawCommand)), 1, 0);
+                (void*)(cmd.baseInstance * sizeof(IndirectDrawCommand)), 1, 0);*/
         } else {
+            glDrawArraysInstancedBaseInstance(type, cmd.firstIndex, cmd.count, cmd.instanceCount, cmd.baseInstance);
+            /*
             glMultiDrawArraysIndirect(
                 type, (void*)(cmd.baseInstance * sizeof(IndirectDrawCommand)),
-                1, 0);
+                1, 0);*/
         }
     }
 

@@ -23,7 +23,7 @@ ForwardPlusRenderer::ForwardPlusRenderer()
     rangesDesc.setPropertyList(gridDim);
 
     _depthRangesConstructProgram = CreateResource<ShaderProgram>(rangesDesc);
-    _depthRangesConstructProgram->UniformTexture("depthTex", 0);
+    _depthRangesConstructProgram->Uniform("depthTex", ShaderProgram::TextureUsage::TEXTURE_UNIT0);
     /// Depth ranges are used for grid based light culling
     SamplerDescriptor depthRangesSampler;
     depthRangesSampler.setFilters(TextureFilter::TEXTURE_FILTER_NEAREST);

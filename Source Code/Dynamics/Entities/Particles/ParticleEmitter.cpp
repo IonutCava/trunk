@@ -62,7 +62,7 @@ bool ParticleEmitter::initData(std::shared_ptr<ParticleData> particleData) {
 
     ResourceDescriptor particleShaderDescriptor("particles");
     _particleShader = CreateResource<ShaderProgram>(particleShaderDescriptor);
-    _particleShader->UniformTexture("depthBuffer", 1);
+    _particleShader->Uniform("depthBuffer", ShaderProgram::TextureUsage::TEXTURE_UNIT1);
     REGISTER_TRACKED_DEPENDENCY(_particleShader);
 
     ResourceDescriptor particleDepthShaderDescriptor("particles.Depth");
@@ -220,7 +220,7 @@ void ParticleEmitter::render(SceneGraphNode& sgn,
                              const RenderStage& currentRenderStage) {
     U32 particleCount = getAliveParticleCount();
 
-    if (particleCount > 0 && _enabled) {
+    /*if (particleCount > 0 && _enabled) {
         _particleTexture->Bind(
             to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0));
         GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_DEPTH)
@@ -228,7 +228,7 @@ void ParticleEmitter::render(SceneGraphNode& sgn,
                    TextureDescriptor::AttachmentType::Depth);
         GFX_DEVICE.submitRenderCommand(
             sgn.getComponent<RenderingComponent>()->getDrawCommands());
-    }
+    }*/
 }
 
 void ParticleEmitter::uploadToGPU() {

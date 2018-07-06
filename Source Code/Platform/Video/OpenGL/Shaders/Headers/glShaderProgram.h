@@ -29,8 +29,8 @@
 
  */
 
-#ifndef GLSL_H_
-#define GLSL_H_
+#ifndef _PLATFORM_VIDEO_OPENGL_SHADERS_SHADER_PROGRAM_H_
+#define _PLATFORM_VIDEO_OPENGL_SHADERS_SHADER_PROGRAM_H_
 
 #include "Platform/Video/OpenGL/Headers/glResources.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
@@ -61,7 +61,7 @@ class glShaderProgram : public ShaderProgram {
     void attachShader(Shader* const shader, const bool refresh = false);
     /// Remove a shader stage from this program
     void detachShader(Shader* const shader);
-    /// Register a shader buffer to be used every time the shader is 
+    /// Register a shader buffer to be used every time the shader is
     /// used to render. Makes sure the buffer is bound to the proper location
     void registerShaderBuffer(ShaderBuffer& buffer);
     /// This is used to set all of the subroutine indices for the specified
@@ -78,32 +78,58 @@ class glShaderProgram : public ShaderProgram {
                                      const stringImpl& name) const;
     U32 GetSubroutineUniformCount(ShaderType type) const;
     /// Set an uniform value
-    void Uniform(GLint location, U32 value) const;
-    void Uniform(GLint location, I32 value) const;
-    void Uniform(GLint location, F32 value) const;
-    void Uniform(GLint location, const vec2<F32>& value) const;
-    void Uniform(GLint location, const vec2<I32>& value) const;
-    void Uniform(GLint location, const vec2<U16>& value) const;
-    void Uniform(GLint location, const vec3<F32>& value) const;
-    void Uniform(GLint location, const vec4<F32>& value) const;
-    void Uniform(GLint location, const mat3<F32>& value,
-                 bool rowMajor = false) const;
-    void Uniform(GLint location, const mat4<F32>& value,
-                 bool rowMajor = false) const;
-    void Uniform(GLint location, const vectorImpl<I32>& values) const;
-    void Uniform(GLint location, const vectorImpl<F32>& values) const;
-    void Uniform(GLint location, const vectorImpl<vec2<F32> >& values) const;
-    void Uniform(GLint location, const vectorImpl<vec3<F32> >& values) const;
-    void Uniform(GLint location, const vectorImpl<vec4<F32> >& values) const;
-    void Uniform(GLint location, const vectorImpl<mat3<F32> >& values,
-                 bool rowMajor = false) const;
-    void Uniform(GLint location, const vectorImpl<mat4<F32> >& values,
-                 bool rowMajor = false) const;
-    /// Bind a sampler to specific texture unit, checking double bind to avoid
-    /// programming errors in debug
-    void UniformTexture(GLint location, GLushort slot);
-    /// Clear location cache if needed (e.g. after a refresh)
-    inline void flushLocCache() { _shaderVars.clear(); }
+    inline void Uniform(const stringImpl& ext, U8 slot);
+    inline void Uniform(const stringImpl& ext, U32 value);
+    inline void Uniform(const stringImpl& ext, I32 value);
+    inline void Uniform(const stringImpl& ext, F32 value);
+    inline void Uniform(const stringImpl& ext, const vec2<F32>& value);
+    inline void Uniform(const stringImpl& ext, const vec2<I32>& value);
+    inline void Uniform(const stringImpl& ext, const vec2<U16>& value);
+    inline void Uniform(const stringImpl& ext, const vec3<F32>& value);
+    inline void Uniform(const stringImpl& ext, const vec4<F32>& value);
+    inline void Uniform(const stringImpl& ext,
+                        const mat3<F32>& value,
+                        bool rowMajor = false);
+    inline void Uniform(const stringImpl& ext,
+                        const mat4<F32>& value,
+                        bool rowMajor = false);
+    inline void Uniform(const stringImpl& ext, const vectorImpl<I32>& values);
+    inline void Uniform(const stringImpl& ext, const vectorImpl<F32>& values);
+    inline void Uniform(const stringImpl& ext,
+                        const vectorImpl<vec2<F32>>& values);
+    inline void Uniform(const stringImpl& ext,
+                        const vectorImpl<vec3<F32>>& values);
+    inline void Uniform(const stringImpl& ext,
+                        const vectorImpl<vec4<F32>>& values);
+    inline void Uniform(const stringImpl& ext,
+                        const vectorImpl<mat3<F32>>& values,
+                        bool rowMajor = false);
+    inline void Uniform(const stringImpl& ext,
+                        const vectorImpl<mat4<F32>>& values,
+                        bool rowMajor = false);
+
+    void Uniform(I32 location, U8 slot);
+    void Uniform(I32 location, U32 value);
+    void Uniform(I32 location, I32 value);
+    void Uniform(I32 location, F32 value);
+    void Uniform(I32 location, const vec2<F32>& value);
+    void Uniform(I32 location, const vec2<I32>& value);
+    void Uniform(I32 location, const vec2<U16>& value);
+    void Uniform(I32 location, const vec3<F32>& value);
+    void Uniform(I32 location, const vec4<F32>& value);
+    void Uniform(I32 location, const mat3<F32>& value, bool rowMajor = false);
+    void Uniform(I32 location, const mat4<F32>& value, bool rowMajor = false);
+    void Uniform(I32 location, const vectorImpl<I32>& values);
+    void Uniform(I32 location, const vectorImpl<F32>& values);
+    void Uniform(I32 location, const vectorImpl<vec2<F32>>& values);
+    void Uniform(I32 location, const vectorImpl<vec3<F32>>& values);
+    void Uniform(I32 location, const vectorImpl<vec4<F32>>& values);
+    void Uniform(I32 location,
+                 const vectorImpl<mat3<F32>>& values,
+                 bool rowMajor = false);
+    void Uniform(I32 location,
+                 const vectorImpl<mat4<F32>>& values,
+                 bool rowMajor = false);
 
    protected:
     /// Creation of a new shader program. Pass in a shader token and use glsw to
@@ -116,7 +142,13 @@ class glShaderProgram : public ShaderProgram {
     /// present, and it's not recommended (yet)
     void threadedLoad(const stringImpl& name);
     /// Cache uniform/attribute locations for shader programs
-    GLint cachedLoc(const stringImpl& name);
+    GLint cachedLocation(const stringImpl& name);
+    template <typename T>
+    inline bool cachedValueUpdate(I32 location, const T& value) {
+        static_assert(
+            false,
+            "glShaderProgram::cachedValue error: unsupported data type!");
+    }
     /// Basic OpenGL shader program validation (both in debug and in release)
     void validateInternal();
     /// Retrieve the program's validation log if we need it
@@ -125,19 +157,40 @@ class glShaderProgram : public ShaderProgram {
     bool checkSlotUsage(GLint location, GLushort slot);
 
    private:
-    typedef hashMapImpl<stringImpl, GLint> ShaderVarMap;
-    typedef hashMapImpl<GLushort, GLint> TextureSlotMap;
+    typedef hashMapImpl<stringImpl, I32> ShaderVarMap;
+    typedef hashMapImpl<I32, U8> ShaderVarU8Map;
+    typedef hashMapImpl<I32, U16> ShaderVarU16Map;
+    typedef hashMapImpl<I32, U32> ShaderVarU32Map;
+    typedef hashMapImpl<I32, I32> ShaderVarI32Map;
+    typedef hashMapImpl<I32, F32> ShaderVarF32Map;
+    typedef hashMapImpl<I32, vec2<F32>> ShaderVarVec2F32Map;
+    typedef hashMapImpl<I32, vec2<I32>> ShaderVarvec2I32Map;
+    typedef hashMapImpl<I32, vec2<U16>> ShaderVarVec2U16Map;
+    typedef hashMapImpl<I32, vec3<F32>> ShaderVarVec3F32Map;
+    typedef hashMapImpl<I32, vec4<F32>> ShaderVarVec4F32Map;
+    typedef hashMapImpl<I32, mat3<F32>> ShaderVarMat3Map;
+    typedef hashMapImpl<I32, mat4<F32>> ShaderVarMat4Map;
 
-    ShaderVarMap _shaderVars;
-    TextureSlotMap _textureSlots;
+    ShaderVarU8Map _shaderVarsU8;
+    ShaderVarU16Map _shaderVarsU16;
+    ShaderVarU32Map _shaderVarsU32;
+    ShaderVarI32Map _shaderVarsI32;
+    ShaderVarF32Map _shaderVarsF32;
+    ShaderVarVec2F32Map _shaderVarsVec2F32;
+    ShaderVarvec2I32Map _shaderVarsVec2I32;
+    ShaderVarVec2U16Map _shaderVarsVec2U16;
+    ShaderVarVec3F32Map _shaderVarsVec3F32;
+    ShaderVarVec4F32Map _shaderVarsVec4F32;
+    ShaderVarMat3Map _shaderVarsMat3;
+    ShaderVarMat4Map _shaderVarsMat4;
+
+    ShaderVarMap _shaderVarLocation;
     std::atomic_bool _validationQueued;
     GLenum _binaryFormat;
     bool _validated;
     bool _loadedFromBinary;
-    Shader*
-        _shaderStage[to_const_uint(ShaderType::COUNT)];
-    GLenum _shaderStageTable[to_const_uint(
-        ShaderType::COUNT)];
+    Shader* _shaderStage[to_const_uint(ShaderType::COUNT)];
+    GLenum _shaderStageTable[to_const_uint(ShaderType::COUNT)];
     GLuint _shaderProgramIDTemp;
     static stringImpl _lastPathPrefix;
     static stringImpl _lastPathSuffix;
@@ -145,4 +198,6 @@ class glShaderProgram : public ShaderProgram {
 
 };  // namespace Divide
 
-#endif
+#endif  //_PLATFORM_VIDEO_OPENGL_SHADERS_SHADER_PROGRAM_H_
+
+#include "glShaderProgram.inl"

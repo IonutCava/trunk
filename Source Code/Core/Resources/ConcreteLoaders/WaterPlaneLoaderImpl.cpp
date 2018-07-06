@@ -43,10 +43,10 @@ bool ImplResourceLoader<WaterPlane>::load(WaterPlane* const res,
 
     ShaderProgram* waterShaderProgram =
         CreateResource<ShaderProgram>(waterShader);
-    waterShaderProgram->UniformTexture("texWaterNoiseNM", 0);
-    waterShaderProgram->UniformTexture("texWaterReflection", 1);
-    waterShaderProgram->UniformTexture("texWaterRefraction", 2);
-    waterShaderProgram->UniformTexture("texWaterNoiseDUDV", 3);
+    waterShaderProgram->Uniform("texWaterNoiseNM", ShaderProgram::TextureUsage::TEXTURE_UNIT0);
+    waterShaderProgram->Uniform("texWaterReflection", ShaderProgram::TextureUsage::TEXTURE_UNIT1);
+    waterShaderProgram->Uniform("texWaterRefraction", 2);
+    waterShaderProgram->Uniform("texWaterNoiseDUDV", 3);
     assert(waterShaderProgram != nullptr);
 
     Material* waterMat = CreateResource<Material>(waterMaterial);

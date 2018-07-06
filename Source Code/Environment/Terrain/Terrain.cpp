@@ -27,8 +27,7 @@ Terrain::Terrain()
       _terrainDepthRenderStateHash(0),
       _terrainReflectionRenderStateHash(0),
       _terrainInView(false),
-      _planeInView(false)
-{
+      _planeInView(false) {
     getGeometryVB()->useLargeIndices(true);  //<32bit indices
 
     _albedoSampler = MemoryManager_NEW SamplerDescriptor();
@@ -80,33 +79,34 @@ void Terrain::buildQuadtree() {
         ShaderProgram* const drawShader =
             mat->getShaderInfo(i == 0
                                    ? RenderStage::FINAL_STAGE
-                                   : (i == 1 ? RenderStage::SHADOW_STAGE : RenderStage::Z_PRE_PASS_STAGE))
+                                   : (i == 1 ? RenderStage::SHADOW_STAGE
+                                             : RenderStage::Z_PRE_PASS_STAGE))
                 .getProgram();
         drawShader->Uniform("dvd_waterHeight",
                             GET_ACTIVE_SCENE()->state().getWaterLevel());
         drawShader->Uniform("bbox_min", _boundingBox.getMin());
         drawShader->Uniform("bbox_extent", _boundingBox.getExtent());
-        drawShader->UniformTexture("texWaterCaustics",
-                                   ShaderProgram::TextureUsage::TEXTURE_UNIT0);
-        drawShader->UniformTexture("texUnderwaterAlbedo",
-                                   ShaderProgram::TextureUsage::TEXTURE_UNIT1);
-        drawShader->UniformTexture("texUnderwaterDetail",
-                                   ShaderProgram::TextureUsage::TEXTURE_NORMALMAP);
+        drawShader->Uniform("texWaterCaustics",
+                            ShaderProgram::TextureUsage::TEXTURE_UNIT0);
+        drawShader->Uniform("texUnderwaterAlbedo",
+                            ShaderProgram::TextureUsage::TEXTURE_UNIT1);
+        drawShader->Uniform("texUnderwaterDetail",
+                            ShaderProgram::TextureUsage::TEXTURE_NORMALMAP);
         drawShader->Uniform("underwaterDiffuseScale", _underwaterDiffuseScale);
 
-        U8 textureOffset = to_uint(ShaderProgram::TextureUsage::TEXTURE_NORMALMAP) + 1;
+        U8 textureOffset =
+            to_uint(ShaderProgram::TextureUsage::TEXTURE_NORMALMAP) + 1;
         U8 layerOffset = 0;
         stringImpl layerIndex;
         for (U32 k = 0; k < _terrainTextures.size(); ++k) {
             layerOffset = k * 3 + textureOffset;
             layerIndex = std::to_string(k);
             TerrainTextureLayer* textureLayer = _terrainTextures[k];
-            drawShader->UniformTexture("texBlend[" + layerIndex + "]",
-                                       layerOffset);
-            drawShader->UniformTexture("texTileMaps[" + layerIndex + "]",
-                                       layerOffset + 1);
-            drawShader->UniformTexture("texNormalMaps[" + layerIndex + "]",
-                                       layerOffset + 2);
+            drawShader->Uniform("texBlend[" + layerIndex + "]", layerOffset);
+            drawShader->Uniform("texTileMaps[" + layerIndex + "]",
+                                layerOffset + 1);
+            drawShader->Uniform("texNormalMaps[" + layerIndex + "]",
+                                layerOffset + 2);
 
             getMaterialTpl()->addCustomTexture(textureLayer->blendMap(),
                                                layerOffset);
@@ -130,18 +130,19 @@ bool Terrain::computeBoundingBox(SceneGraphNode& sgn) {
 }
 
 bool Terrain::isInView(const SceneRenderState& sceneRenderState,
-                       SceneGraphNode& sgn, const bool distanceCheck) {
+                       SceneGraphNode& sgn,
+                       const bool distanceCheck) {
     _terrainInView = SceneNode::isInView(sceneRenderState, sgn, distanceCheck);
     _planeInView = _terrainInView
                        ? false
                        : _plane->isInView(sceneRenderState,
-                                          *sgn.getChildren()[0],
-                                          distanceCheck);
+                                          *sgn.getChildren()[0], distanceCheck);
 
     return _terrainInView || _planeInView;
 }
 
-void Terrain::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
+void Terrain::sceneUpdate(const U64 deltaTime,
+                          SceneGraphNode& sgn,
                           SceneState& sceneState) {
     _terrainQuadtree.sceneUpdate(deltaTime, sgn, sceneState);
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
@@ -168,8 +169,9 @@ void Terrain::getDrawCommands(SceneGraphNode& sgn,
     assert(renderable != nullptr);
 
     ShaderProgram* drawShader = renderable->getDrawShader(
-        currentRenderStage == RenderStage::REFLECTION_STAGE ? RenderStage::FINAL_STAGE
-                                                            : currentRenderStage);
+        currentRenderStage == RenderStage::REFLECTION_STAGE
+            ? RenderStage::FINAL_STAGE
+            : currentRenderStage);
 
     if (_terrainInView) {
         vectorImpl<GenericDrawCommand> tempCommands;
@@ -193,8 +195,9 @@ void Terrain::getDrawCommands(SceneGraphNode& sgn,
     }
 
     // draw infinite plane
-    if (GFX_DEVICE.isCurrentRenderStage(to_uint(RenderStage::FINAL_STAGE) |
-                                        to_uint(RenderStage::Z_PRE_PASS_STAGE)) &&
+    if (GFX_DEVICE.isCurrentRenderStage(
+            to_uint(RenderStage::FINAL_STAGE) |
+            to_uint(RenderStage::Z_PRE_PASS_STAGE)) &&
         _planeInView) {
         GenericDrawCommand cmd(PrimitiveType::TRIANGLE_STRIP, 0, 1);
         cmd.renderWireframe(renderable->renderWireframe());

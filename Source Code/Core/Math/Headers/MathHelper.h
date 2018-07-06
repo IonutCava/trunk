@@ -88,7 +88,6 @@ F32 PACK_FLOAT(U8 x, U8 y, U8 z);
 void UNPACK_FLOAT(F32 src, F32& r, F32& g, F32& b);
 
 // bit manipulation
-#define ToBit(posn) (1 << posn)
 #define BitSet(arg, posn) (arg |= 1 << posn)
 #define BitClr(arg, posn) (arg &= ~(1 << (posn)))
 #define BitTst(arg, posn) ((arg & 1 << (posn)) != 0)

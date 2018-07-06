@@ -204,6 +204,7 @@
     <None Include="..\..\assets\shaders\GLSL\vertexAtoms\vertexDefault.vert" />
     <None Include="..\..\assets\shaders\GLSL\water.glsl" />
     <None Include="..\..\Source Code\Platform\Video\Headers\GFXDevice.inl" />
+    <None Include="..\..\Source Code\Platform\Video\OpenGL\Shaders\Headers\glShaderProgram.inl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{CE681ABE-38E0-4445-92A0-0F17EE225473}</ProjectGuid>

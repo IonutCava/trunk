@@ -164,7 +164,7 @@ ErrorCode GFXDevice::initRenderingAPI(const vec2<U16>& resolution, I32 argc,
     // attachment and down-samples it for every mip level)
     _HIZConstructProgram =
         CreateResource<ShaderProgram>(ResourceDescriptor("HiZConstruct"));
-    _HIZConstructProgram->UniformTexture("LastMip", 0);
+    _HIZConstructProgram->Uniform("LastMip", ShaderProgram::TextureUsage::TEXTURE_UNIT0);
     // Store our target z distances
     _gpuBlock._ZPlanesCombined.z =
         ParamHandler::getInstance().getParam<F32>("rendering.zNear");

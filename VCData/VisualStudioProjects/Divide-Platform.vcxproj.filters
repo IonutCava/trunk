@@ -757,5 +757,8 @@
     <None Include="..\..\assets\shaders\GLSL\vertexAtoms\vertexDefault.vert">
       <Filter>Video\ShaderSource\GLSL\vertexAtoms</Filter>
     </None>
+    <None Include="..\..\Source Code\Platform\Video\OpenGL\Shaders\Headers\glShaderProgram.inl">
+      <Filter>Video\OpenGL\Shaders\Headers</Filter>
+    </None>
   </ItemGroup>
 </Project>

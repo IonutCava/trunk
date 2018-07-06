@@ -21,8 +21,7 @@ glShaderProgram::glShaderProgram(const bool optimise)
     // each API has it's own invalid id. This is OpenGL's
     _shaderProgramID = GLUtil::_invalidObjectID;
     // some basic translation tables for shade types
-    _shaderStageTable[to_uint(ShaderType::VERTEX_SHADER)] =
-        GL_VERTEX_SHADER;
+    _shaderStageTable[to_uint(ShaderType::VERTEX_SHADER)] = GL_VERTEX_SHADER;
     _shaderStageTable[to_uint(ShaderType::FRAGMENT_SHADER)] =
         GL_FRAGMENT_SHADER;
     _shaderStageTable[to_uint(ShaderType::GEOMETRY_SHADER)] =
@@ -31,8 +30,7 @@ glShaderProgram::glShaderProgram(const bool optimise)
         GL_TESS_CONTROL_SHADER;
     _shaderStageTable[to_uint(ShaderType::TESSELATION_EVAL_SHADER)] =
         GL_TESS_EVALUATION_SHADER;
-    _shaderStageTable[to_uint(ShaderType::COMPUTE_SHADER)] =
-        GL_COMPUTE_SHADER;
+    _shaderStageTable[to_uint(ShaderType::COMPUTE_SHADER)] = GL_COMPUTE_SHADER;
     // pointers to all of our shader stages
     _shaderStage[to_uint(ShaderType::VERTEX_SHADER)] = nullptr;
     _shaderStage[to_uint(ShaderType::FRAGMENT_SHADER)] = nullptr;
@@ -50,7 +48,7 @@ glShaderProgram::~glShaderProgram() {
     // delete shader program
     if (_shaderProgramID > 0 && _shaderProgramID != GLUtil::_invalidObjectID) {
         glDeleteProgram(_shaderProgramID);
-        //glDeleteProgramPipelines(1, &_shaderProgramID);
+        // glDeleteProgramPipelines(1, &_shaderProgramID);
     }
 }
 
@@ -59,8 +57,8 @@ void glShaderProgram::validateInternal() {
     GLint status = 0;
     glValidateProgram(_shaderProgramID);
     glGetProgramiv(_shaderProgramID, GL_VALIDATE_STATUS, &status);
-    //glValidateProgramPipeline(_shaderProgramID);
-    //glGetProgramPipelineiv(_shaderProgramID, GL_VALIDATE_STATUS, &status);
+    // glValidateProgramPipeline(_shaderProgramID);
+    // glGetProgramPipelineiv(_shaderProgramID, GL_VALIDATE_STATUS, &status);
     // we print errors in debug and in release, but everything else only in
     // debug
     // the validation log is only retrieved if we request it. (i.e. in release,
@@ -92,7 +90,8 @@ bool glShaderProgram::update(const U64 deltaTime) {
             GLint binaryLength = 0;
             glGetProgramiv(_shaderProgramID, GL_PROGRAM_BINARY_LENGTH,
                            &binaryLength);
-            //glGetProgramPipelineiv(_shaderProgramID, GL_PROGRAM_BINARY_LENGTH,
+            // glGetProgramPipelineiv(_shaderProgramID,
+            // GL_PROGRAM_BINARY_LENGTH,
             //                       &binaryLength);
             // allocate a big enough buffer to hold it
             void* binary = (void*)malloc(binaryLength);
@@ -136,7 +135,8 @@ stringImpl glShaderProgram::getLog() const {
     // Query the size of the log
     GLint length = 0;
     glGetProgramiv(_shaderProgramIDTemp, GL_INFO_LOG_LENGTH, &length);
-    //glGetProgramPipelineiv(_shaderProgramIDTemp, GL_INFO_LOG_LENGTH, &length);
+    // glGetProgramPipelineiv(_shaderProgramIDTemp, GL_INFO_LOG_LENGTH,
+    // &length);
     // If we actually have something in the validation log
     if (length > 1) {
         // Delete our OK string, and start on a new line
@@ -146,7 +146,7 @@ stringImpl glShaderProgram::getLog() const {
         vectorImpl<char> shaderProgramLog(length);
         glGetProgramInfoLog(_shaderProgramIDTemp, length, NULL,
                             &shaderProgramLog[0]);
-        //glGetProgramPipelineInfoLog(_shaderProgramIDTemp, length, NULL,
+        // glGetProgramPipelineInfoLog(_shaderProgramIDTemp, length, NULL,
         //                    &shaderProgramLog[0]);
         // Append the program's log to the output message
         validationBuffer.append(&shaderProgramLog[0]);
@@ -172,7 +172,8 @@ void glShaderProgram::detachShader(Shader* const shader) {
                   "glShaderProgram error: tried to detach a shader from a "
                   "program that didn't finish loading!");
     glDetachShader(_shaderProgramID, shader->getShaderID());
-    //glUseProgramStages(_shaderProgramID, _shaderStageTable[to_uint(shader->getType())], 0);
+    // glUseProgramStages(_shaderProgramID,
+    // _shaderStageTable[to_uint(shader->getType())], 0);
 
     shader->removeParentProgram(this);
 }
@@ -206,7 +207,8 @@ void glShaderProgram::attachShader(Shader* const shader, const bool refresh) {
 
     // Attach the shader
     glAttachShader(_shaderProgramIDTemp, shaderID);
-    //glUseProgramStages(_shaderProgramIDTemp, _shaderStageTable[to_uint(shader->getType())], shaderID);
+    // glUseProgramStages(_shaderProgramIDTemp,
+    // _shaderStageTable[to_uint(shader->getType())], shaderID);
     // And register the program with the shader
     shader->addParentProgram(this);
     // Clear the 'linked' flag. Program must be re-linked before usage
@@ -222,11 +224,10 @@ void glShaderProgram::threadedLoad(const stringImpl& name) {
         // If we try to refresh the program, we already have a handle
         if (_shaderProgramID == GLUtil::_invalidObjectID) {
             _shaderProgramIDTemp = glCreateProgram();
-            //glCreateProgramPipelines(1, &_shaderProgramIDTemp);
+            // glCreateProgramPipelines(1, &_shaderProgramIDTemp);
         }
         // For every possible stage that the program might use
-        for (U32 i = 0; i < to_uint(ShaderType::COUNT);
-             ++i) {
+        for (U32 i = 0; i < to_uint(ShaderType::COUNT); ++i) {
             // Get the shader pointer for that stage
             Shader* shader = _shaderStage[i];
             // If a shader exists for said stage
@@ -244,8 +245,6 @@ void glShaderProgram::threadedLoad(const stringImpl& name) {
     }
     // This was once an atomic swap. Might still be in the future
     _shaderProgramID = _shaderProgramIDTemp;
-    // Clear texture<->binding map
-    _textureSlots.clear();
     // Pass the rest of the loading steps to the parent class
     ShaderProgram::generateHWResource(name);
 }
@@ -297,6 +296,20 @@ void glShaderProgram::link() {
         // The linked flag is set to true only if linking succeeded
         _linked = true;
     }
+
+    _shaderVarsU8.clear();
+    _shaderVarsU16.clear();
+    _shaderVarsU32.clear();
+    _shaderVarsI32.clear();
+    _shaderVarsF32.clear();
+    _shaderVarsVec2F32.clear();
+    _shaderVarsVec2I32.clear();
+    _shaderVarsVec2U16.clear();
+    _shaderVarsVec3F32.clear();
+    _shaderVarsVec4F32.clear();
+    _shaderVarsMat3.clear();
+    _shaderVarsMat4.clear();
+    _shaderVarLocation.clear();
 }
 
 /// Creation of a new shader program. Pass in a shader token and use glsw to
@@ -360,7 +373,7 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
             fclose(inFile);
             // Allocate a new handle
             _shaderProgramIDTemp = glCreateProgram();
-            //glCreateProgramPipelines(1, &_shaderProgramIDTemp);
+            // glCreateProgramPipelines(1, &_shaderProgramIDTemp);
             // Load binary code on the GPU
             glProgramBinary(_shaderProgramIDTemp, _binaryFormat, binary,
                             binaryLength);
@@ -416,13 +429,10 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
         }
         // Now that we have an offset for the general header, we need to move to
         // per-stage offsets
-        GLint lineCountOffset[to_const_uint(
-            ShaderType::COUNT)];
+        GLint lineCountOffset[to_const_uint(ShaderType::COUNT)];
         // Every stage has it's own uniform specific header
-        stringImpl shaderSourceUniforms[to_const_uint(
-            ShaderType::COUNT)];
-        for (U32 i = 0; i < to_uint(ShaderType::COUNT);
-             ++i) {
+        stringImpl shaderSourceUniforms[to_const_uint(ShaderType::COUNT)];
+        for (U32 i = 0; i < to_uint(ShaderType::COUNT); ++i) {
             // We start off from the general offset
             lineCountOffset[i] = initialOffset;
             // And add every custom uniform specified (yet again, we add all the
@@ -470,8 +480,7 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
         }
 
         // Create an appropriate name for every shader stage
-        stringImpl shaderCompileName[to_const_uint(
-            ShaderType::COUNT)];
+        stringImpl shaderCompileName[to_const_uint(ShaderType::COUNT)];
         shaderCompileName[to_uint(ShaderType::VERTEX_SHADER)] =
             shaderName + ".Vertex" + vertexProperties;
         shaderCompileName[to_uint(ShaderType::FRAGMENT_SHADER)] =
@@ -486,8 +495,7 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
             shaderName + ".Compute" + shaderProperties;
 
         // For every stage
-        for (U32 i = 0; i < to_uint(ShaderType::COUNT);
-             ++i) {
+        for (U32 i = 0; i < to_uint(ShaderType::COUNT); ++i) {
             // Brute force conversion to an enum
             ShaderType type = static_cast<ShaderType>(i);
 
@@ -564,7 +572,7 @@ bool glShaderProgram::isValid() const {
 /// queried the location before
 /// If we didn't, ask the GPU to give us the variables address and save it for
 /// later use
-GLint glShaderProgram::cachedLoc(const stringImpl& name) {
+GLint glShaderProgram::cachedLocation(const stringImpl& name) {
     // If the shader can't be used for rendering, just return an invalid address
     if (!isValid()) {
         return -1;
@@ -575,8 +583,8 @@ GLint glShaderProgram::cachedLoc(const stringImpl& name) {
                   "before threaded load completed!");
 
     // Check the cache for the location
-    ShaderVarMap::const_iterator it = _shaderVars.find(name);
-    if (it != std::end(_shaderVars)) {
+    ShaderVarMap::const_iterator it = _shaderVarLocation.find(name);
+    if (it != std::end(_shaderVarLocation)) {
         return it->second;
     }
 
@@ -584,7 +592,7 @@ GLint glShaderProgram::cachedLoc(const stringImpl& name) {
     GLint location = glGetUniformLocation(_shaderProgramID, name.c_str());
 
     // Save it for later reference
-    hashAlg::emplace(_shaderVars, name, location);
+    hashAlg::emplace(_shaderVarLocation, name, location);
 
     // Return the location
     return location;
@@ -624,7 +632,8 @@ void glShaderProgram::unbind(bool resetActiveProgram) {
     ShaderProgram::unbind(resetActiveProgram);
 }
 
-void glShaderProgram::registerShaderBuffer(ShaderBuffer& buffer) {}
+void glShaderProgram::registerShaderBuffer(ShaderBuffer& buffer) {
+}
 
 /// This is used to set all of the subroutine indices for the specified shader
 /// stage for this program
@@ -640,6 +649,7 @@ void glShaderProgram::SetSubroutines(ShaderType type,
                                 (GLsizei)indices.size(), indices.data());
     }
 }
+
 /// This works exactly like SetSubroutines, but for a single index.
 /// If the shader has multiple subroutine uniforms, this will reset the rest!!!
 void glShaderProgram::SetSubroutine(ShaderType type, U32 index) const {
@@ -649,8 +659,7 @@ void glShaderProgram::SetSubroutine(ShaderType type, U32 index) const {
 
     if (index != GLUtil::_invalidObjectID) {
         U32 value[] = {index};
-        glUniformSubroutinesuiv(_shaderStageTable[to_uint(type)], 1,
-                                value);
+        glUniformSubroutinesuiv(_shaderStageTable[to_uint(type)], 1, value);
     }
 }
 
@@ -666,10 +675,12 @@ U32 glShaderProgram::GetSubroutineUniformCount(ShaderType type) const {
 
     return std::max(subroutineCount, 0);
 }
+
 /// Get the uniform location of the specified subroutine uniform for the
 /// specified stage. Not cached!
 U32 glShaderProgram::GetSubroutineUniformLocation(
-    ShaderType type, const stringImpl& name) const {
+    ShaderType type,
+    const stringImpl& name) const {
     DIVIDE_ASSERT(isValid(),
                   "glShaderProgram error: tried to query subroutines on an "
                   "invalid program!");
@@ -686,112 +697,129 @@ U32 glShaderProgram::GetSubroutineIndex(ShaderType type,
                   "glShaderProgram error: tried to query subroutines on an "
                   "invalid program!");
 
-    return glGetSubroutineIndex(
-        _shaderProgramID, _shaderStageTable[to_uint(type)], name.c_str());
+    return glGetSubroutineIndex(_shaderProgramID,
+                                _shaderStageTable[to_uint(type)], name.c_str());
 }
 
 /// Set an uniform value
-void glShaderProgram::Uniform(GLint location, GLuint value) const {
+void glShaderProgram::Uniform(GLint location, U32 value) {
     if (location == -1) {
         return;
     }
 
-    glProgramUniform1ui(_shaderProgramID, location, value);
+    if (cachedValueUpdate(location, value)) {
+        glProgramUniform1ui(_shaderProgramID, location, value);
+    }
 }
 
 /// Set an uniform value
-void glShaderProgram::Uniform(GLint location, GLint value) const {
+void glShaderProgram::Uniform(GLint location, I32 value) {
     if (location == -1) {
         return;
     }
 
-    glProgramUniform1i(_shaderProgramID, location, value);
+    if (cachedValueUpdate(location, value)) {
+        glProgramUniform1i(_shaderProgramID, location, value);
+    }
 }
 
 /// Set an uniform value
-void glShaderProgram::Uniform(GLint location, GLfloat value) const {
+void glShaderProgram::Uniform(GLint location, F32 value) {
     if (location == -1) {
         return;
     }
 
-    glProgramUniform1f(_shaderProgramID, location, value);
+    if (cachedValueUpdate(location, value)) {
+        glProgramUniform1f(_shaderProgramID, location, value);
+    }
+}
+
+/// Set an uniform value
+void glShaderProgram::Uniform(GLint location, const vec2<F32>& value) {
+    if (location == -1) {
+        return;
+    }
+
+    if (cachedValueUpdate(location, value)) {
+        glProgramUniform2fv(_shaderProgramID, location, 1, value);
+    }
+}
+
+/// Set an uniform value
+void glShaderProgram::Uniform(GLint location, const vec2<I32>& value) {
+    if (location == -1) {
+        return;
+    }
+
+    if (cachedValueUpdate(location, value)) {
+        glProgramUniform2iv(_shaderProgramID, location, 1, value);
+    }
+}
+
+/// Set an uniform value
+void glShaderProgram::Uniform(GLint location, const vec2<U16>& value) {
+    if (location == -1) {
+        return;
+    }
+
+    if (cachedValueUpdate(location, value)) {
+        glProgramUniform2uiv(_shaderProgramID, location, 1,
+                             vec2<U32>(value.x, value.y));
+    }
+}
+
+/// Set an uniform value
+void glShaderProgram::Uniform(GLint location, const vec3<F32>& value) {
+    if (location == -1) {
+        return;
+    }
+
+    if (cachedValueUpdate(location, value)) {
+        glProgramUniform3fv(_shaderProgramID, location, 1, value);
+    }
+}
+
+/// Set an uniform value
+void glShaderProgram::Uniform(GLint location, const vec4<F32>& value) {
+    if (location == -1) {
+        return;
+    }
+
+    if (cachedValueUpdate(location, value)) {
+        glProgramUniform4fv(_shaderProgramID, location, 1, value);
+    }
 }
 
 /// Set an uniform value
 void glShaderProgram::Uniform(GLint location,
-                              const vec2<GLfloat>& value) const {
+                              const mat3<F32>& value,
+                              bool rowMajor) {
     if (location == -1) {
         return;
     }
 
-    glProgramUniform2fv(_shaderProgramID, location, 1, value);
-}
-
-/// Set an uniform value
-void glShaderProgram::Uniform(GLint location, const vec2<GLint>& value) const {
-    if (location == -1) {
-        return;
+    if (cachedValueUpdate(location, value)) {
+        glProgramUniformMatrix3fv(_shaderProgramID, location, 1,
+                                  rowMajor ? GL_TRUE : GL_FALSE, value.mat);
     }
-
-    glProgramUniform2iv(_shaderProgramID, location, 1, value);
 }
 
 /// Set an uniform value
 void glShaderProgram::Uniform(GLint location,
-                              const vec2<GLushort>& value) const {
+                              const mat4<F32>& value,
+                              bool rowMajor) {
     if (location == -1) {
         return;
     }
 
-    glProgramUniform2iv(_shaderProgramID, location, 1,
-                        vec2<I32>(value.x, value.y));
-}
-
-/// Set an uniform value
-void glShaderProgram::Uniform(GLint location,
-                              const vec3<GLfloat>& value) const {
-    if (location == -1) {
-        return;
+    if (cachedValueUpdate(location, value)) {
+        glProgramUniformMatrix4fv(_shaderProgramID, location, 1,
+                                  rowMajor ? GL_TRUE : GL_FALSE, value.mat);
     }
-
-    glProgramUniform3fv(_shaderProgramID, location, 1, value);
 }
 
 /// Set an uniform value
-void glShaderProgram::Uniform(GLint location,
-                              const vec4<GLfloat>& value) const {
-    if (location == -1) {
-        return;
-    }
-
-    glProgramUniform4fv(_shaderProgramID, location, 1, value);
-}
-
-/// Set an uniform value
-void glShaderProgram::Uniform(GLint location, const mat3<GLfloat>& value,
-                              bool rowMajor) const {
-    if (location == -1) {
-        return;
-    }
-
-    glProgramUniformMatrix3fv(_shaderProgramID, location, 1,
-                              rowMajor ? GL_TRUE : GL_FALSE, value.mat);
-}
-
-/// Set an uniform value
-void glShaderProgram::Uniform(GLint location, const mat4<GLfloat>& value,
-                              bool rowMajor) const {
-    if (location == -1) {
-        return;
-    }
-
-    glProgramUniformMatrix4fv(_shaderProgramID, location, 1,
-                              rowMajor ? GL_TRUE : GL_FALSE, value.mat);
-}
-
-/// Set an uniform value
-void glShaderProgram::Uniform(GLint location,
-                              const vectorImpl<GLint>& values) const {
+void glShaderProgram::Uniform(GLint location, const vectorImpl<I32>& values) {
     if (values.empty()) {
         return;
     }
@@ -801,8 +829,7 @@ void glShaderProgram::Uniform(GLint location,
 }
 
 /// Set an uniform value
-void glShaderProgram::Uniform(GLint location,
-                              const vectorImpl<GLfloat>& values) const {
+void glShaderProgram::Uniform(GLint location, const vectorImpl<F32>& values) {
     if (values.empty() || location == -1) {
         return;
     }
@@ -813,7 +840,7 @@ void glShaderProgram::Uniform(GLint location,
 
 /// Set an uniform value
 void glShaderProgram::Uniform(GLint location,
-                              const vectorImpl<vec2<GLfloat> >& values) const {
+                              const vectorImpl<vec2<F32> >& values) {
     if (values.empty() || location == -1) {
         return;
     }
@@ -824,7 +851,7 @@ void glShaderProgram::Uniform(GLint location,
 
 /// Set an uniform value
 void glShaderProgram::Uniform(GLint location,
-                              const vectorImpl<vec3<GLfloat> >& values) const {
+                              const vectorImpl<vec3<F32> >& values) {
     if (values.empty() || location == -1) {
         return;
     }
@@ -835,7 +862,7 @@ void glShaderProgram::Uniform(GLint location,
 
 /// Set an uniform value
 void glShaderProgram::Uniform(GLint location,
-                              const vectorImpl<vec4<GLfloat> >& values) const {
+                              const vectorImpl<vec4<F32> >& values) {
     if (values.empty() || location == -1) {
         return;
     }
@@ -847,7 +874,7 @@ void glShaderProgram::Uniform(GLint location,
 /// Set an uniform value
 void glShaderProgram::Uniform(GLint location,
                               const vectorImpl<mat3<F32> >& values,
-                              bool rowMajor) const {
+                              bool rowMajor) {
     if (values.empty() || location == -1) {
         return;
     }
@@ -859,8 +886,8 @@ void glShaderProgram::Uniform(GLint location,
 
 /// Set an uniform value
 void glShaderProgram::Uniform(GLint location,
-                              const vectorImpl<mat4<GLfloat> >& values,
-                              bool rowMajor) const {
+                              const vectorImpl<mat4<F32> >& values,
+                              bool rowMajor) {
     if (values.empty() || location == -1) {
         return;
     }
@@ -870,29 +897,13 @@ void glShaderProgram::Uniform(GLint location,
                               rowMajor ? GL_TRUE : GL_FALSE, values.front());
 }
 
-/// Bind a sampler to specific texture unit, checking double bind to avoid
-/// programming errors in debug
-void glShaderProgram::UniformTexture(GLint location, GLushort slot) {
-    if (location == -1 || !checkSlotUsage(location, slot)) {
+void glShaderProgram::Uniform(GLint location, U8 slot) {
+    if (location == -1) {
         return;
     }
 
-    glProgramUniform1i(_shaderProgramID, location, slot);
-}
-
-/// If a slot is assigned to multiple locations, prevent binding it and print an
-/// error. Only in Debug builds!
-bool glShaderProgram::checkSlotUsage(GLint location, GLushort slot) {
-#ifdef _DEBUG
-    const TextureSlotMap::const_iterator& it = _textureSlots.find(slot);
-    if (it == std::end(_textureSlots) || it->second == location) {
-        _textureSlots[slot] = location;
-        return true;
+    if (cachedValueUpdate(location, slot)) {
+        glProgramUniform1i(_shaderProgramID, location, static_cast<I32>(slot));
     }
-    Console::errorfn(Locale::get("ERROR_SHADER_TEXTURE_MULTI_BIND"));
-    return false;
-#else
-    return true;
-#endif
 }
 };

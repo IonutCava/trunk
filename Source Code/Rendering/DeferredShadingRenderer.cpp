@@ -186,17 +186,17 @@ void DeferredShadingRenderer::secondPass(
     cmd.shaderProgram(_previewDeferredShader);
     if (_debugView) {
         _previewDeferredShader->bind();
-        _previewDeferredShader->UniformTexture("texDiffuse0", 4);
+        _previewDeferredShader->Uniform("texDiffuse0", 4);
         if (_renderQuads[1]->onDraw(GFX_DEVICE.getRenderStage())) {
             cmd.sourceBuffer(_renderQuads[1]->getGeometryVB());
             GFX_DEVICE.submitRenderCommand(cmd);
         }
-        _previewDeferredShader->UniformTexture("texDiffuse0", 1);
+        _previewDeferredShader->Uniform("texDiffuse0", 1);
         if (_renderQuads[2]->onDraw(GFX_DEVICE.getRenderStage())) {
             cmd.sourceBuffer(_renderQuads[2]->getGeometryVB());
             GFX_DEVICE.submitRenderCommand(cmd);
         }
-        _previewDeferredShader->UniformTexture("texDiffuse0", 2);
+        _previewDeferredShader->Uniform("texDiffuse0", 2);
         if (_renderQuads[3]->onDraw(GFX_DEVICE.getRenderStage())) {
             cmd.sourceBuffer(_renderQuads[3]->getGeometryVB());
             GFX_DEVICE.submitRenderCommand(cmd);

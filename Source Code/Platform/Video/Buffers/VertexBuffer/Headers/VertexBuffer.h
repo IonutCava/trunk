@@ -92,8 +92,8 @@ class VertexBuffer : public VertexDataInterface {
                       "VertexBuffer error: Index format type specified before "
                       "buffer creation!");
         _largeIndices = state;
-        _format = _largeIndices ? GFXDataFormat::UNSIGNED_INT
-                                : GFXDataFormat::UNSIGNED_SHORT;
+        _format = state ? GFXDataFormat::UNSIGNED_INT
+                        : GFXDataFormat::UNSIGNED_SHORT;
     }
 
     inline void reservePositionCount(U32 size) { _dataPosition.reserve(size); }
@@ -105,8 +105,8 @@ class VertexBuffer : public VertexDataInterface {
     }
 
     inline void reserveIndexCount(U32 size) {
-        _largeIndices ? _hardwareIndicesL.reserve(size)
-                      : _hardwareIndicesS.reserve(size);
+        usesLargeIndices() ? _hardwareIndicesL.reserve(size)
+                           : _hardwareIndicesS.reserve(size);
     }
 
     inline void resizePositionCount(
@@ -175,13 +175,17 @@ class VertexBuffer : public VertexDataInterface {
     virtual bool queueRefresh() = 0;
 
     inline bool usesLargeIndices() const { return _largeIndices; }
+
     inline U32 getIndexCount() const {
-        return static_cast<U32>(_largeIndices ? _hardwareIndicesL.size()
-                                              : _hardwareIndicesS.size());
+        return static_cast<U32>(usesLargeIndices() ? _hardwareIndicesL.size()
+                                                   : _hardwareIndicesS.size());
     }
+
     inline U32 getIndex(U32 index) const {
-        return _largeIndices ? _hardwareIndicesL[index]
-                             : _hardwareIndicesS[index];
+        assert(index < getIndexCount());
+
+        return usesLargeIndices() ? _hardwareIndicesL[index]
+                                  : _hardwareIndicesS[index];
     }
 
     template<typename T>
@@ -199,18 +203,17 @@ class VertexBuffer : public VertexDataInterface {
         return _hardwareIndicesS;
     }
 
-    inline void addIndex(U32 index) {
-        _largeIndices ? addIndexL(index) : addIndexS(static_cast<U16>(index));
+    template<typename T>
+    inline void addIndex(T index) {
+        usesLargeIndices()
+            ? _hardwareIndicesL.push_back(static_cast<U32>(index))
+            : _hardwareIndicesS.push_back(static_cast<U16>(index));
     }
-
-    inline void addIndexL(U32 index) { _hardwareIndicesL.push_back(index); }
-
-    inline void addIndexS(U16 index) { _hardwareIndicesS.push_back(index); }
 
     inline void addRestartIndex() {
         _primitiveRestartEnabled = true;
-        addIndex(_largeIndices ? Config::PRIMITIVE_RESTART_INDEX_L
-                               : Config::PRIMITIVE_RESTART_INDEX_S);
+        addIndex(usesLargeIndices() ? Config::PRIMITIVE_RESTART_INDEX_L
+                                    : Config::PRIMITIVE_RESTART_INDEX_S);
     }
 
     inline void addPosition(const vec3<F32>& pos) {
@@ -402,8 +405,6 @@ class VertexBuffer : public VertexDataInterface {
     vectorImpl<vec4<F32> > _boneWeights;
     vectorImpl<vec3<F32> > _minPosition;
     vectorImpl<vec3<F32> > _maxPosition;
-    /// Use either U32 or U16 indices. Always prefer the later
-    bool _largeIndices;
     /// Cache system to update only required data
     bool _attribDirty[to_const_uint(VertexAttribute::COUNT)];
     bool _primitiveRestartEnabled;
@@ -412,6 +413,8 @@ class VertexBuffer : public VertexDataInterface {
 
    private:
     U32 _currentPartitionIndex;
+    /// Use either U32 or U16 indices. Always prefer the later
+    bool _largeIndices;
 };
 
 };  // namespace Divide
