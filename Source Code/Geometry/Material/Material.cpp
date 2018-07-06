@@ -562,7 +562,7 @@ void Material::getSortKeys(I32& shaderKey, I32& textureKey) const {
     shaderInfoMap::const_iterator it = _shaderInfo.find(FINAL_STAGE);
 
     shaderKey = (it != std::end(_shaderInfo) && it->second._shaderRef)
-                    ? it->second._shaderRef->getId()
+                    ? it->second._shaderRef->getID()
                     : -std::numeric_limits<I8>::max();
     textureKey = _textures[ShaderProgram::TEXTURE_UNIT0]
                      ? _textures[ShaderProgram::TEXTURE_UNIT0]->getHandle()

@@ -446,8 +446,10 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     Console::bindConsoleOutput(
         DELEGATE_BIND(&GUIConsole::printText, GUI::getInstance().getConsole(),
                       std::placeholders::_1, std::placeholders::_2));
+    _PFX.setAPI(PXDevice::PhysX);
+    _SFX.setAPI(SFXDevice::SDL);
     // Using OpenGL for rendering as default
-    _GFX.setApi(OpenGL);
+    _GFX.setAPI(GFXDevice::OpenGL);
     _GFX.setStateChangeExclusionMask(
         TYPE_LIGHT | TYPE_TRIGGER | TYPE_PARTICLE_EMITTER | TYPE_SKY |
         TYPE_VEGETATION_GRASS | TYPE_VEGETATION_TREES);
@@ -463,7 +465,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     vec2<U16> resolution = _APP.getResolution();
     F32 aspectRatio = (F32)resolution.width / (F32)resolution.height;
     ErrorCode initError =
-        _GFX.initRenderingApi(vec2<U16>(400, 300), _argc, _argv);
+        _GFX.initRenderingAPI(vec2<U16>(400, 300), _argc, _argv);
     // If we could not initialize the graphics device, exit
     if (initError != NO_ERR) {
         return initError;
@@ -490,12 +492,12 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     LightManager::getInstance().init();
 
     Console::printfn(Locale::get("START_SOUND_INTERFACE"));
-    if ((initError = _SFX.initAudioApi()) != NO_ERR) {
+    if ((initError = _SFX.initAudioAPI()) != NO_ERR) {
         return initError;
     }
 
     Console::printfn(Locale::get("START_PHYSICS_INTERFACE"));
-    if ((initError = _PFX.initPhysicsApi(Config::TARGET_FRAME_RATE)) !=
+    if ((initError = _PFX.initPhysicsAPI(Config::TARGET_FRAME_RATE)) !=
         NO_ERR) {
         return initError;
     }
@@ -569,11 +571,11 @@ void Kernel::shutdown() {
     LightManager::destroyInstance();
     Console::printfn(Locale::get("STOP_ENGINE_OK"));
     Console::printfn(Locale::get("STOP_PHYSICS_INTERFACE"));
-    _PFX.closePhysicsApi();
+    _PFX.closePhysicsAPI();
     PXDevice::destroyInstance();
     Console::printfn(Locale::get("STOP_HARDWARE"));
-    _SFX.closeAudioApi();
-    _GFX.closeRenderingApi();
+    _SFX.closeAudioAPI();
+    _GFX.closeRenderingAPI();
     _mainTaskPool->wait();
     Input::InputInterface::destroyInstance();
     SFXDevice::destroyInstance();

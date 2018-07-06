@@ -16,7 +16,7 @@ Object3D::Object3D(const stringImpl& name, const ObjectType& type, U32 flag)
       _update(false),
       _geometryType(type),
       _geometryFlagMask(flag),
-      _geometryPartitionId(0) {
+      _geometryPartitionID(0) {
     _buffer = bitCompare(_geometryFlagMask, OBJECT_FLAG_NO_VB)
                   ? nullptr
                   : GFX_DEVICE.newVB();
@@ -181,8 +181,8 @@ bool Object3D::computeTriangleList(bool force) {
                   "Object3D error: Please specify a valid VertexBuffer before "
                   "calculating the triangle list!");
 
-    U32 partitionOffset = geometry->getPartitionOffset(_geometryPartitionId);
-    U32 partitionCount = geometry->getPartitionCount(_geometryPartitionId);
+    U32 partitionOffset = geometry->getPartitionOffset(_geometryPartitionID);
+    U32 partitionCount = geometry->getPartitionCount(_geometryPartitionID);
     PrimitiveType type =
         (_geometryType == MESH || _geometryType == SUBMESH ? TRIANGLES
                                                            : TRIANGLE_STRIP);

@@ -91,10 +91,9 @@ inline void shrinkToFit(vectorImpl<T>& inputVector) {
 }
 
 template <typename T, class... Args>
-inline typename vectorImpl<T>::iterator emplace_back(vectorImpl<T>& inputVector,
+inline void emplace_back(vectorImpl<T>& inputVector,
                                                      Args&&... args) {
     new (inputVector.push_back_uninitialized()) T(std::forward<Args>(args)...);
-    return &inputVector.back();
 }
 
 #ifndef EASTL_PAIR_FUNCS
@@ -131,11 +130,10 @@ inline void shrinkToFit(vectorImpl<T>& inputVector) {
     inputVector.shrink_to_fit();
 }
 
-template <typename T, class... _Valty>
-inline typename vectorImpl<T>::iterator emplace_back(vectorImpl<T>& inputVector,
-                                                     _Valty&&... _Val) {
+template <typename T, class... Args>
+inline void emplace_back(vectorImpl<T>& inputVector,
+                                                     Args&&... args) {
     inputVector.emplace_back(std::forward<Args>(args)...);
-    return inputVector.back();
 }
 
 #ifndef STD_PAIR_FUNCS
@@ -155,6 +153,6 @@ inline std::pair<K, V> makePairCpy(const K& key, V val) {
 
 #define SET_VECTOR_EMPLACE_FRIEND                                    \
     template <typename T, typename... Args>                          \
-    friend typename vectorImpl<T>::iterator vectorAlg::emplace_back( \
+    friend void vectorAlg::emplace_back( \
         vectorImpl<T>& inputVector, Args&&... args);
 #endif

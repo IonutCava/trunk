@@ -372,6 +372,9 @@
     <ClCompile Include="..\..\Source Code\Platform\Video\ScopedStates.cpp">
       <Filter>Video</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\Audio\SFXDevice.cpp">
+      <Filter>Audio</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Audio">

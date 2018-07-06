@@ -102,7 +102,8 @@ bool DVDConverter::init() {
         aiProcess_Triangulate | aiProcess_GenUVCoords | aiProcess_SortByPType |
         aiProcess_FindDegenerates | aiProcess_FindInvalidData | 0;
 
-    if (GFX_DEVICE.getApi() != OpenGL && GFX_DEVICE.getApi() != OpenGLES) {
+    if (GFX_DEVICE.getAPI() != GFXDevice::OpenGL && 
+        GFX_DEVICE.getAPI() != GFXDevice::OpenGLES) {
         _ppsteps |= aiProcess_ConvertToLeftHanded;
     }
 
@@ -252,7 +253,7 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,
         // Submesh is created as a resource when added to the scenegraph
         ResourceDescriptor submeshdesc(temp);
         submeshdesc.setFlag(true);
-        submeshdesc.setId(count);
+        submeshdesc.setID(count);
         if (skinned) {
             submeshdesc.setEnumValue(Object3D::OBJECT_FLAG_SKINNED);
         }
@@ -318,7 +319,7 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,
             assert(weightsPerVertex[j].size() <= 4);
 
             for (U8 a = 0; a < weightsPerVertex[j].size(); a++) {
-                boneIndices[a] = weightsPerVertex[j][a]._boneId;
+                boneIndices[a] = weightsPerVertex[j][a]._boneID;
                 boneWeights[a] = weightsPerVertex[j][a]._boneWeight;
             }
 
@@ -368,7 +369,7 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,
         tempSubMesh->addTriangle(triangleTemp);
     }
 
-    tempSubMesh->setGeometryPartitionId(vb->partitionBuffer(idxCount));
+    tempSubMesh->setGeometryPartitionID(vb->partitionBuffer(idxCount));
     vb->shrinkAllDataToFit();
 
     return baseMeshLoading ? tempSubMesh : nullptr;

@@ -44,14 +44,25 @@
 namespace Divide {
 namespace Util {
 
-struct GraphPlot2D {
+struct GraphPlot {
     const char* _plotName;
-    vectorImpl<vec2<F32>> _coords;
+    virtual bool empty() const = 0;
 };
 
-struct GraphPlot3D {
-    const char* _plotName;
+struct GraphPlot2D : public GraphPlot {
+    vectorImpl<vec2<F32>> _coords;
+     
+    bool empty() const {
+        return _coords.empty();
+    }
+};
+
+struct GraphPlot3D : public GraphPlot {
     vectorImpl<vec3<F32>> _coords;
+
+    bool empty() const {
+        return _coords.empty();
+    }
 };
 
 };  // namespace Util

@@ -200,9 +200,9 @@ class ShaderProgram : public HardwareResource {
     virtual void attachShader(Shader* const shader,
                               const bool refresh = false) = 0;
     virtual void detachShader(Shader* const shader) = 0;
-    /// ShaderProgram object id (i.e.: for OGL _shaderProgramId =
+    /// ShaderProgram object id (i.e.: for OGL _shaderProgramID =
     /// glCreateProgram())
-    inline U32 getId() const { return _shaderProgramId; }
+    inline U32 getID() const { return _shaderProgramID; }
     /// Currently active
     inline bool isBound() const { return _bound; }
     /// Is the shader ready for drawing?
@@ -295,7 +295,7 @@ class ShaderProgram : public HardwareResource {
     bool _dirty;
     std::atomic_bool _bound;
     std::atomic_bool _linked;
-    U32 _shaderProgramId;  //<not thread-safe. Make sure assignment is protected
+    U32 _shaderProgramID;  //<not thread-safe. Make sure assignment is protected
                            //with a mutex or something
     U64 _elapsedTime;
     F32 _elapsedTimeMS;
@@ -305,8 +305,8 @@ class ShaderProgram : public HardwareResource {
     /// A list of custom shader uniforms
     vectorImpl<stringImpl> _customUniforms[ShaderType_PLACEHOLDER];
     /// ID<->shaders pair
-    typedef hashMapImpl<U32, Shader*> ShaderIdMap;
-    ShaderIdMap _shaderIdMap;
+    typedef hashMapImpl<U32, Shader*> ShaderIDMap;
+    ShaderIDMap _shaderIDMap;
 
    private:
     bool _sceneDataDirty;

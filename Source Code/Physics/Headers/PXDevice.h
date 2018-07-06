@@ -39,56 +39,39 @@
 
 namespace Divide {
 
-DEFINE_SINGLETON_EXT1(PXDevice, PhysicsAPIWrapper)
+DEFINE_SINGLETON_EXT1_W_SPECIFIER(PXDevice, PhysicsAPIWrapper, final)
 
   public:
-    void setApi(PhysicsAPI api);
-    inline PhysicsAPI getApi() const { return _api.getId(); }
+    enum PhysicsAPI { PhysX, ODE, Bullet, PX_PLACEHOLDER };
 
-    inline ErrorCode initPhysicsApi(U8 targetFrameRate) {
-        return _api.initPhysicsApi(targetFrameRate);
-    }
-    inline bool closePhysicsApi() { return _api.closePhysicsApi(); }
-    inline void updateTimeStep(U8 timeStepFactor) {
-        _api.updateTimeStep(timeStepFactor);
-    }
-    inline void updateTimeStep() { _api.updateTimeStep(); }
-    inline void update(const U64 deltaTime) { _api.update(deltaTime); }
-    inline void process(const U64 deltaTime) { _api.process(deltaTime); }
-    inline void idle() { _api.idle(); }
-    inline void setPhysicsScene(PhysicsSceneInterface* const targetScene) {
-        _api.setPhysicsScene(targetScene);
-    }
-    inline void initScene() { _api.initScene(); }
+    inline void setAPI(PhysicsAPI API) { _API_ID = API; }
+    inline PhysicsAPI getAPI() const { return _API_ID; }
 
-    inline PhysicsSceneInterface* NewSceneInterface(Scene* scene) {
-        return _api.NewSceneInterface(scene);
-    }
+    ErrorCode initPhysicsAPI(U8 targetFrameRate);
+    bool closePhysicsAPI();
 
-    inline bool createPlane(const vec3<F32>& position = VECTOR3_ZERO,
-                            U32 size = 1) {
-        return _api.createPlane(position, size);
-    }
+    void updateTimeStep(U8 timeStepFactor);
+    void updateTimeStep();
+    void update(const U64 deltaTime);
+    void process(const U64 deltaTime);
+    void idle();
+    void setPhysicsScene(PhysicsSceneInterface* const targetScene);
+    void initScene();
 
-    inline bool createBox(const vec3<F32>& position = VECTOR3_ZERO,
-                          F32 size = 1.0f) {
-        return _api.createBox(position, size);
-    }
+    PhysicsSceneInterface* NewSceneInterface(Scene* scene);
 
-    inline bool createActor(SceneGraphNode& node, const stringImpl& sceneName,
-                            PhysicsActorMask mask, PhysicsCollisionGroup group) {
-        return _api.createActor(node, sceneName, mask, group);
-    }
+    bool createPlane(const vec3<F32>& position = VECTOR3_ZERO, U32 size = 1);
+    bool createBox(const vec3<F32>& position = VECTOR3_ZERO, F32 size = 1.0f);
+    bool createActor(SceneGraphNode& node, const stringImpl& sceneName,
+        PhysicsActorMask mask, PhysicsCollisionGroup group);
 
   private:
-    PXDevice()
-        : _api(PhysX::getOrCreateInstance())  // Defaulting to nothing if no api has
-                                              // been defined
-    {}
+    PXDevice();
+    ~PXDevice();
 
-    ~PXDevice() { PhysX::destroyInstance(); }
-
-    PhysicsAPIWrapper& _api;
+  private:
+    PhysicsAPI _API_ID;
+    PhysicsAPIWrapper* _api;
 
 END_SINGLETON
 

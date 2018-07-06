@@ -162,7 +162,7 @@ vectorImpl<dtCrowdAgent*> DivideDtCrowd::getActiveAgents() {
     return result;
 }
 
-vectorImpl<I32> DivideDtCrowd::getActiveAgentIds() {
+vectorImpl<I32> DivideDtCrowd::getActiveAgentIDs() {
     vectorImpl<I32> result;
     result.reserve(getMaxNbAgents());
     const dtCrowdAgent* agent = nullptr;
@@ -174,8 +174,8 @@ vectorImpl<I32> DivideDtCrowd::getActiveAgentIds() {
     return result;
 }
 
-void DivideDtCrowd::removeAgent(const I32 idx) {
-    _crowd->removeAgent(idx);
+void DivideDtCrowd::removeAgent(const I32 ID) {
+    _crowd->removeAgent(ID);
     _activeAgents--;
 }
 
@@ -222,7 +222,7 @@ void DivideDtCrowd::setMoveTarget(const vec3<F32>& position, bool adjust) {
     }
 }
 
-void DivideDtCrowd::setMoveTarget(I32 agentId, const vec3<F32>& position,
+void DivideDtCrowd::setMoveTarget(I32 agentID, const vec3<F32>& position,
                                   bool adjust) {
     // TODO extract common method
     // Find nearest point on navmesh and set move request to that location.
@@ -234,25 +234,25 @@ void DivideDtCrowd::setMoveTarget(I32 agentId, const vec3<F32>& position,
     navquery.findNearestPoly(p, ext, filter, &_targetRef, _targetPos);
     // ----
     if (adjust) {
-        const dtCrowdAgent* ag = getAgent(agentId);
+        const dtCrowdAgent* ag = getAgent(agentID);
         F32 vel[3];
         calcVel(vel, ag->npos, p, ag->params.maxSpeed);
-        crowd->requestMoveVelocity(agentId, vel);
+        crowd->requestMoveVelocity(agentID, vel);
     } else {
-        _crowd->requestMoveTarget(agentId, _targetRef, _targetPos);
+        _crowd->requestMoveTarget(agentID, _targetRef, _targetPos);
     }
 }
 
-bool DivideDtCrowd::requestVelocity(I32 agentId, const vec3<F32>& velocity) {
-    if (!getAgent(agentId)->active) return false;
+bool DivideDtCrowd::requestVelocity(I32 agentID, const vec3<F32>& velocity) {
+    if (!getAgent(agentID)->active) return false;
 
-    return _crowd->requestMoveVelocity(agentId, &velocity.x);
+    return _crowd->requestMoveVelocity(agentID, &velocity.x);
 }
 
-bool DivideDtCrowd::stopAgent(I32 agentId) {
+bool DivideDtCrowd::stopAgent(I32 agentID) {
     F32 zeroVel[] = {0, 0, 0};
-    return _crowd->resetMoveTarget(agentId) &&
-           _crowd->requestMoveVelocity(agentId, zeroVel);
+    return _crowd->resetMoveTarget(agentID) &&
+           _crowd->requestMoveVelocity(agentID, zeroVel);
 }
 
 F32 DivideDtCrowd::getDistanceToGoal(const dtCrowdAgent* agent,

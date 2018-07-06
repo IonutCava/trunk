@@ -300,27 +300,27 @@ bool GUI::joystickVector3DMoved(const Input::JoystickEvent& arg, I8 index) {
     return _ceguiInput.joystickVector3DMoved(arg, index);
 }
 
-GUIButton* GUI::addButton(const stringImpl& id, const stringImpl& text,
+GUIButton* GUI::addButton(const stringImpl& ID, const stringImpl& text,
                           const vec2<I32>& position,
                           const vec2<U32>& dimensions, const vec3<F32>& color,
                           ButtonCallback callback,
-                          const stringImpl& rootSheetId) {
+                          const stringImpl& rootSheetID) {
     CEGUI::Window* parent = nullptr;
-    if (!rootSheetId.empty()) {
+    if (!rootSheetID.empty()) {
         parent = CEGUI_DEFAULT_CONTEXT.getRootWindow()->getChild(
-            rootSheetId.c_str());
+            rootSheetID.c_str());
     }
     if (!parent) {
         parent = _rootSheet;
     }
     GUIButton* btn =
-        MemoryManager_NEW GUIButton(id, text, _defaultGUIScheme, position,
+        MemoryManager_NEW GUIButton(ID, text, _defaultGUIScheme, position,
                                     dimensions, color, parent, callback);
-    guiMap::iterator it = _guiStack.find(id);
+    guiMap::iterator it = _guiStack.find(ID);
     if (it != std::end(_guiStack)) {
         MemoryManager::SAFE_UPDATE(it->second, btn);
     } else {
-        hashAlg::insert(_guiStack, hashAlg::makePair(id, btn));
+        hashAlg::insert(_guiStack, hashAlg::makePair(ID, btn));
     }
 
     return btn;

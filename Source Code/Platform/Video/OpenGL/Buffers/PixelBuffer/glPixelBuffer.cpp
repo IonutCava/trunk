@@ -45,9 +45,9 @@ glPixelBuffer::glPixelBuffer(PBType type) : PixelBuffer(type) {
 }
 
 void glPixelBuffer::Destroy() {
-    if (_textureId > 0) {
-        glDeleteTextures(1, &_textureId);
-        _textureId = 0;
+    if (_textureID > 0) {
+        glDeleteTextures(1, &_textureID);
+        _textureID = 0;
     }
 
     if (_pixelBufferHandle > 0) {
@@ -65,7 +65,7 @@ void* glPixelBuffer::Begin(GLubyte nFace) const {
         "glPixelBuffer error: Tried to map an invalid PBO texture's face!");
 
     GLenum textureTypeEnum = static_cast<GLenum>(_textureType);
-    GL_API::bindTexture(0, _textureId, textureTypeEnum);
+    GL_API::bindTexture(0, _textureID, textureTypeEnum);
     GL_API::setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, _pixelBufferHandle);
     switch (_pbtype) {
         case PB_TEXTURE_1D:
@@ -110,7 +110,7 @@ void glPixelBuffer::End() const {
 }
 
 void glPixelBuffer::Bind(GLubyte unit) const {
-    GL_API::bindTexture(unit, _textureId, static_cast<GLenum>(_textureType));
+    GL_API::bindTexture(unit, _textureID, static_cast<GLenum>(_textureType));
 }
 
 bool glPixelBuffer::Create(GLushort width, GLushort height, GLushort depth,
@@ -134,9 +134,9 @@ bool glPixelBuffer::Create(GLushort width, GLushort height, GLushort depth,
 
     size *= 4 /*channels*/;
 
-    glGenTextures(1, &_textureId);
+    glGenTextures(1, &_textureID);
     GL_API::setPixelPackUnpackAlignment();
-    GL_API::bindTexture(0, _textureId, textureTypeEnum);
+    GL_API::bindTexture(0, _textureID, textureTypeEnum);
     glTexParameteri(textureTypeEnum, GL_GENERATE_MIPMAP, 0);
     glTexParameteri(textureTypeEnum, GL_TEXTURE_MIN_FILTER,
                     GLUtil::GLenum_to_uint(GL_NEAREST));
@@ -213,7 +213,7 @@ bool glPixelBuffer::Create(GLushort width, GLushort height, GLushort depth,
 }
 
 void glPixelBuffer::updatePixels(const GLfloat* const pixels) {
-    GL_API::bindTexture(0, _textureId, static_cast<GLenum>(_textureType));
+    GL_API::bindTexture(0, _textureID, static_cast<GLenum>(_textureType));
     GL_API::setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, _pixelBufferHandle);
     switch (_pbtype) {
         case PB_TEXTURE_1D:

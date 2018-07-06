@@ -53,7 +53,7 @@ class Shader : public TrackedObject {
     virtual ~Shader();
 
     /// Shader's API specific handle
-    inline U32 getShaderId() const { return _shader; }
+    inline U32 getShaderID() const { return _shader; }
     /// The pipeline stage this shader is used for
     inline const ShaderType getType() const { return _type; }
     /// The shader's name is a period-separated list of strings used to define

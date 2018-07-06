@@ -4,13 +4,13 @@ namespace Divide {
 
 void ParticlePositionColorUpdater::update(const U64 deltaTime,
                                           ParticleData *p) {
-    const U32 endId = p->aliveCount();
+    const U32 endID = p->aliveCount();
     F32 diffr = _maxPos.x - _minPos.x;
     F32 diffg = _maxPos.y - _minPos.y;
     F32 diffb = _maxPos.z - _minPos.z;
 
     vec3<F32> floatColorRGB;
-    for (U32 i = 0; i < endId; ++i) {
+    for (U32 i = 0; i < endID; ++i) {
         floatColorRGB.set(
             (p->_position[i].x - _minPos.x) /
                 diffr,  // lerp(p->_startColor[i].r, p->_endColor[i].r, scaler),

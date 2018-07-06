@@ -60,7 +60,7 @@ DEFINE_SINGLETON(RenderQueue)
         return _sortedRenderBins[renderBin];
     }
     inline RenderBin* getBin(U16 renderBin) {
-        return getBin(_renderBinId[renderBin]);
+        return getBin(_renderBinID[renderBin]);
     }
     inline bool isSorted() { return _isSorted; }
 
@@ -80,7 +80,7 @@ DEFINE_SINGLETON(RenderQueue)
 
   private:
     RenderBinMap _renderBins;
-    RenderBinIDType _renderBinId;
+    RenderBinIDType _renderBinID;
     vectorImpl<RenderBin*> _sortedRenderBins;
     bool _renderQueueLocked;
     bool _isSorted;

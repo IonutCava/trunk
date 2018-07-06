@@ -51,11 +51,11 @@ DEFINE_SINGLETON(AIManager)
     /// Add an AI Entity to a specific team.
     /// Entities can be added to multiple teams. Caller is responsible for the
     /// lifetime of entity
-    bool registerEntity(U32 teamId, AIEntity* entity);
+    bool registerEntity(U32 teamID, AIEntity* entity);
     /// Remove an AI Entity from a specific teams. Entities can be added to multiple
     /// teams.
     /// Caller is responsible for the lifetime of entity
-    void unregisterEntity(U32 teamId, AIEntity* entity);
+    void unregisterEntity(U32 teamID, AIEntity* entity);
     /// Remove an AI Entity from all teams. Entities can be added to multiple teams.
     /// Caller is responsible for the lifetime of entity
     void unregisterEntity(AIEntity* entity);

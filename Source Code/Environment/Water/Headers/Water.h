@@ -56,7 +56,7 @@ class WaterPlane : public SceneNode, public Reflector {
 
     inline Quad3D* getQuad() const { return _plane; }
 
-    inline const ClipPlaneIndex getReflectionPlaneId() {
+    inline const ClipPlaneIndex getReflectionPlaneID() {
         return _reflectionPlaneID;
     }
     inline const ClipPlaneIndex getRefractionPlaneID() {

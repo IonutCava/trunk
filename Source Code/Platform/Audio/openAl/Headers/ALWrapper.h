@@ -36,10 +36,10 @@
 
 namespace Divide {
 
-DEFINE_SINGLETON_EXT1(OpenAL_API, AudioAPIWrapper)
+DEFINE_SINGLETON_EXT1_W_SPECIFIER(OpenAL_API, AudioAPIWrapper, final)
   public:
-    ErrorCode initAudioApi();
-    void closeAudioApi();
+    ErrorCode initAudioAPI();
+    void closeAudioAPI();
 
     void playSound(AudioDescriptor* sound);
     void playMusic(AudioDescriptor* music);

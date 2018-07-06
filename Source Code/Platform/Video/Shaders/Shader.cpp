@@ -23,12 +23,12 @@ Shader::~Shader() {
 /// Register the given shader program with this shader
 void Shader::addParentProgram(ShaderProgram* const shaderProgram) {
     // simple, handle-base check
-    U32 parentShaderID = shaderProgram->getId();
+    U32 parentShaderID = shaderProgram->getID();
     vectorImpl<ShaderProgram*>::iterator it;
     it = std::find_if(std::begin(_parentShaderPrograms),
                       std::end(_parentShaderPrograms),
                       [&parentShaderID](ShaderProgram const* sp)
-                          -> bool { return sp->getId() == parentShaderID; });
+                          -> bool { return sp->getID() == parentShaderID; });
     // assert if we register the same shaderProgram with the same shader
     // multiple times
     assert(it == std::end(_parentShaderPrograms));
@@ -39,13 +39,13 @@ void Shader::addParentProgram(ShaderProgram* const shaderProgram) {
 /// Unregister the given shader program from this shader
 void Shader::removeParentProgram(ShaderProgram* const shaderProgram) {
     // program matching works like in 'addParentProgram'
-    U32 parentShaderID = shaderProgram->getId();
+    U32 parentShaderID = shaderProgram->getID();
 
     vectorImpl<ShaderProgram*>::iterator it;
     it = std::find_if(std::begin(_parentShaderPrograms),
                       std::end(_parentShaderPrograms),
                       [&parentShaderID](ShaderProgram const* sp)
-                          -> bool { return sp->getId() == parentShaderID; });
+                          -> bool { return sp->getID() == parentShaderID; });
     // assert if the specified shader program wasn't registered
     assert(it != std::end(_parentShaderPrograms));
     // actually unregister the shader

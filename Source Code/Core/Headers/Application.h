@@ -45,19 +45,21 @@ enum ErrorCode {
     MISSING_SCENE_LOAD_CALL = -2,
     GFX_NOT_SUPPORTED = -3,
     GFX_NON_SPECIFIED = -4,
-    GLFW_INIT_ERROR = -5,
-    GLFW_WINDOW_INIT_ERROR = -6,
-    GLBINGING_INIT_ERROR = -7,
-    GL_OLD_HARDWARE = -8,
-    DX_INIT_ERROR = -9,
-    DX_OLD_HARDWARE = -10,
-    SDL_AUDIO_INIT_ERROR = -11,
-    SDL_AUDIO_MIX_INIT_ERROR = -12,
-    FMOD_AUDIO_INIT_ERROR = -13,
-    OAL_INIT_ERROR = -14,
-    PHYSX_INIT_ERROR = -15,
-    PHYSX_EXTENSION_ERROR = -16,
-    NO_LANGUAGE_INI = -17
+    SFX_NON_SPECIFIED = -5,
+    PFX_NON_SPECIFIED = -6,
+    GLFW_INIT_ERROR = -7,
+    GLFW_WINDOW_INIT_ERROR = -8,
+    GLBINGING_INIT_ERROR = -9,
+    GL_OLD_HARDWARE = -10,
+    DX_INIT_ERROR = -11,
+    DX_OLD_HARDWARE = -12,
+    SDL_AUDIO_INIT_ERROR = -13,
+    SDL_AUDIO_MIX_INIT_ERROR = -14,
+    FMOD_AUDIO_INIT_ERROR = -15,
+    OAL_INIT_ERROR = -16,
+    PHYSX_INIT_ERROR = -17,
+    PHYSX_EXTENSION_ERROR = -18,
+    NO_LANGUAGE_INI = -19
 };
 
 class Kernel;
@@ -87,7 +89,7 @@ DEFINE_SINGLETON(Application)
     inline Kernel& getKernel() const;
 
     inline bool isMainThread() const;
-    inline const std::thread::id& getMainThreadId() const;
+    inline const std::thread::id& getMainThreadID() const;
     inline void setMemoryLogFile(const stringImpl& fileName);
 
     inline bool hasFocus() const;
@@ -136,8 +138,8 @@ DEFINE_SINGLETON(Application)
     /// buffer to register all of the memory allocations recorded via
     /// "MemoryManager_NEW"
     stringImpl _memLogBuffer;
-    /// Main application thread id
-    std::thread::id _threadId;
+    /// Main application thread ID
+    std::thread::id _threadID;
     /// A list of callback functions that get called when the application instance
     /// is destroyed
     vectorImpl<DELEGATE_CBK<> > _shutdownCallback;

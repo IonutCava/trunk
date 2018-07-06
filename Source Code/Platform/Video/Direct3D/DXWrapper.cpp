@@ -12,7 +12,7 @@
 
 namespace Divide {
 
-ErrorCode DX_API::initRenderingApi(const vec2<U16>& resolution, I32 argc,
+ErrorCode DX_API::initRenderingAPI(const vec2<U16>& resolution, I32 argc,
                                    char** argv) {
     Console::printfn(Locale::get("START_D3D_API"));
     D3D_ENUM_TABLE::fill();
@@ -21,7 +21,7 @@ ErrorCode DX_API::initRenderingApi(const vec2<U16>& resolution, I32 argc,
     return DX_INIT_ERROR;
 }
 
-void DX_API::closeRenderingApi() {}
+void DX_API::closeRenderingAPI() {}
 
 void DX_API::changeResolution(U16 w, U16 h) {}
 

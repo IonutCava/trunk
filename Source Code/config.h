@@ -215,14 +215,14 @@ const unsigned int NUM_POSSIBLE_LIGHTS = 1024;
 /// 0 = EASTL
 /// 1 = STL
 #ifndef STRING_IMP
-#define STRING_IMP 0
+#define STRING_IMP 1
 #endif  // STRING_IMP
 
 /// Use boost, eastl or stl vector
 /// 0 = EASTL
 /// 1 = STL
 #ifndef VECTOR_IMP
-#define VECTOR_IMP 0
+#define VECTOR_IMP 1
 #endif  // VECTOR_IMP
 
 /// Use boost, eastl or stl hash maps / unordered maps
@@ -230,7 +230,7 @@ const unsigned int NUM_POSSIBLE_LIGHTS = 1024;
 /// 1 = EASTL
 /// 2 = STL
 #ifndef HASH_MAP_IMP
-#define HASH_MAP_IMP 1
+#define HASH_MAP_IMP 2
 #endif  // HASH_MAP_IMP
 
 /// Enable move semantings in EASTL libraries

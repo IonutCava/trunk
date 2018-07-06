@@ -17,7 +17,7 @@ namespace Divide {
 
 /// Try and create a valid OpenGL context taking in account the specified
 /// resolution and command line arguments
-ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
+ErrorCode GL_API::initRenderingAPI(const vec2<GLushort>& resolution, GLint argc,
                                    char** argv) {
     // Fill our (abstract API <-> openGL) enum translation tables with proper
     // values
@@ -49,18 +49,6 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
         glfwWindowHint(GLFW_SAMPLES, GFX_DEVICE.gpuState().MSAASamples());
     }
 
-    // OpenGL ES is not yet supported, but when added, it will need to mirror
-    // OpenGL functionality 1-to-1
-    if (GFX_DEVICE.getApi() == OpenGLES) {
-        glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-    } else {
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
-    }
-
     // I REALLY think re-sizable windows are a bad idea. Increase the resolution
     // instead of messing up render targets
     glfwWindowHint(GLFW_RESIZABLE,
@@ -72,6 +60,18 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
     glfwWindowHint(GLFW_ALPHA_BITS, 8);
     glfwWindowHint(GLFW_STENCIL_BITS, 8);
     glfwWindowHint(GLFW_DEPTH_BITS, 24);
+
+        // OpenGL ES is not yet supported, but when added, it will need to mirror
+    // OpenGL functionality 1-to-1
+    if (GFX_DEVICE.getAPI() == GFXDevice::OpenGLES) {
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+    } else {
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
+    }
 
     // Open an OpenGL window; resolution and windowed mode is specified in the
     // external XML files
@@ -113,7 +113,7 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
     // can't create it
     if (!GLUtil::_loaderWindow) {
         glfwTerminate();
-        return (GLFW_WINDOW_INIT_ERROR);
+        return GLFW_WINDOW_INIT_ERROR;
     }
 
     // Get the current display mode used by the focused monitor
@@ -125,6 +125,8 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
                      (return_struct->width - resolution.width) * 0.5f,
                      (return_struct->height - resolution.height) * 0.5f);
 
+    DIVIDE_ASSERT(glfwExtensionSupported("GL_EXT_direct_state_access") == 1,
+        "GL_API::initRenderingAPI error: DSA is not supported!");
 // OpenGL has a nifty error callback system, available in every build
 // configuration if required
 #if defined(_DEBUG) || defined(_PROFILE) || defined(_GLDEBUG_IN_RELEASE)
@@ -358,8 +360,8 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
     return NO_ERR;
 }
 
-/// Clear everything that was setup in initRenderingApi()
-void GL_API::closeRenderingApi() {
+/// Clear everything that was setup in initRenderingAPI()
+void GL_API::closeRenderingAPI() {
     CEGUI::OpenGL3Renderer::destroy(*_GUIGLrenderer);
     _GUIGLrenderer = nullptr;
     // Close the loading thread

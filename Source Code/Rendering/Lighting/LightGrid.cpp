@@ -138,7 +138,7 @@ void LightGrid::build(const vec2<U16>& tileSize, const vec2<U16>& resolution,
     if (m_screenRects.size() && !m_tileLightIndexLists.empty()) {
         I32* data = &m_tileLightIndexLists[0];
         for (vectorAlg::vecSize i = 0; i < m_screenRects.size(); ++i) {
-            U32 lightId = U32(i);
+            U32 lightID = U32(i);
 
             LightInternal light = m_viewSpaceLights[i];
             ScreenRect r = m_screenRects[i];
@@ -157,7 +157,7 @@ void LightGrid::build(const vec2<U16>& tileSize, const vec2<U16>& resolution,
                                         light)) {
                         // store reversely into next free slot
                         offset = GRID_OFFSETS(x, y) - 1;
-                        data[offset] = lightId;
+                        data[offset] = lightID;
                         GRID_OFFSETS(x, y) = offset;
                     }
                 }

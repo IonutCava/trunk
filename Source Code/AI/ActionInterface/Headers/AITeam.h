@@ -45,7 +45,7 @@ class NavigationMesh;
 class Order {
    public:
     Order(U32 id) : _id(id), _locked(false) {}
-    inline U32 getId() const { return _id; }
+    inline U32 getID() const { return _id; }
     inline bool locked() const { return _locked; }
     virtual void lock() { _locked = true; }
     virtual void unlock() { _locked = false; }
@@ -131,10 +131,10 @@ class AITeam : public GUIDWrapper {
    protected:
     inline vectorImpl<Order*>::iterator findOrder(Order* const order) {
         assert(order != nullptr);
-        U32 orderId = order->getId();
+        U32 orderID = order->getID();
         return vectorAlg::find_if(std::begin(_orders), std::end(_orders),
-                                  [&orderId](Order* const order) -> bool {
-                                      return orderId == order->getId();
+                                  [&orderID](Order* const order) -> bool {
+                                      return orderID == order->getID();
                                   });
     }
 

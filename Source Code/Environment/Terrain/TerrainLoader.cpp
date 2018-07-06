@@ -92,7 +92,7 @@ bool TerrainLoader::loadTerrain(Terrain* terrain,
         ResourceDescriptor textureTileMaps("Terrain Tile Maps_" + name +
                                            "_layer_" + layerOffsetStr);
         textureTileMaps.setEnumValue(TEXTURE_2D_ARRAY);
-        textureTileMaps.setId(textureCountAlbedo);
+        textureTileMaps.setID(textureCountAlbedo);
         textureTileMaps.setResourceLocation(arrayLocation);
         textureTileMaps.setPropertyDescriptor(
             TerrainLoaderAttorney::getAlbedoSampler(*terrain));
@@ -143,7 +143,7 @@ bool TerrainLoader::loadTerrain(Terrain* terrain,
         ResourceDescriptor textureNormalMaps("Terrain Normal Maps_" + name +
                                              "_layer_" + layerOffsetStr);
         textureNormalMaps.setEnumValue(TEXTURE_2D_ARRAY);
-        textureNormalMaps.setId(textureCountDetail);
+        textureNormalMaps.setID(textureCountDetail);
         textureNormalMaps.setResourceLocation(arrayLocation);
         textureNormalMaps.setPropertyDescriptor(
             TerrainLoaderAttorney::getNormalSampler(*terrain));
@@ -498,7 +498,7 @@ void TerrainLoader::initializeVegetation(Terrain* terrain,
     grassSampler.setWrapMode(TextureWrap::TEXTURE_CLAMP);
     ResourceDescriptor textureDetailMaps("Vegetation Billboards");
     textureDetailMaps.setEnumValue(TEXTURE_2D_ARRAY);
-    textureDetailMaps.setId(textureCount);
+    textureDetailMaps.setID(textureCount);
     textureDetailMaps.setResourceLocation(textureLocation);
     textureDetailMaps.setPropertyDescriptor(grassSampler);
     Texture* grassBillboardArray = CreateResource<Texture>(textureDetailMaps);

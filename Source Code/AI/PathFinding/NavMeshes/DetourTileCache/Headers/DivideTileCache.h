@@ -510,7 +510,7 @@ class DivideTileCache {
       * If removedObstacle is a valid pointer it will contain a reference to the
       *removed obstacle.
       **/
-    bool removeConvexShapeObstacleById(
+    bool removeConvexShapeObstacleByID(
         I32 obstacleIndex, ConvexVolume** removedObstacle = nullptr);
 
     /**
@@ -525,10 +525,10 @@ class DivideTileCache {
     /**
       * Returns the id of the specified convex obstacle. Returns -1 if this
       *obstacle is not currently added to the tilecache.
-      * Note: Ids are just array indices and can change when obstacles are added
+      * Note: IDs are just array indices and can change when obstacles are added
       *or removed. Use with care!
       **/
-    I32 getConvexShapeObstacleId(ConvexVolume* convexHull);
+    I32 getConvexShapeObstacleID(ConvexVolume* convexHull);
 
     /**
       * Returns the convex obstacle with specified id or index.

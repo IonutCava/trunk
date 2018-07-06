@@ -67,10 +67,10 @@ class SubMesh : public Object3D {
 
     bool computeBoundingBox(SceneGraphNode& sgn);
 
-    inline U32 getId() { return _id; }
+    inline U32 getID() { return _ID; }
     /// When loading a submesh, the ID is the node index from the imported scene
-    /// scene->mMeshes[n] == (SubMesh with _id == n)
-    inline void setId(U32 id) { _id = id; }
+    /// scene->mMeshes[n] == (SubMesh with _ID == n)
+    inline void setID(U32 ID) { _ID = ID; }
     inline Mesh* getParentMesh() { return _parentMesh; }
 
    protected:
@@ -84,7 +84,7 @@ class SubMesh : public Object3D {
    protected:
     bool _visibleToNetwork;
     bool _render;
-    U32 _id;
+    U32 _ID;
     Mesh* _parentMesh;
     BoundingBox _importBB;
     GenericDrawCommand _drawCmd;

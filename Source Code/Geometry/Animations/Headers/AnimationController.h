@@ -112,11 +112,11 @@ class SceneAnimator {
     inline const stringImpl& GetAnimationName(I32 animationIndex) const {
         return _animations[animationIndex]._name;
     }
-    inline bool GetAnimationID(const stringImpl& animationName, U32& id) {
+    inline bool GetAnimationID(const stringImpl& animationName, U32& ID) {
         hashMapImpl<stringImpl, U32>::iterator itr =
-            _animationNameToId.find(animationName);
-        if (itr != std::end(_animationNameToId)) {
-            id = itr->second;
+            _animationNameToID.find(animationName);
+        if (itr != std::end(_animationNameToID)) {
+            ID = itr->second;
             return true;
         }
         return false;
@@ -186,7 +186,7 @@ class SceneAnimator {
     hashMapImpl<stringImpl,
                 U32> _bonesToIndex; /** Name to node map to quickly find nodes
                                        by their name */
-    hashMapImpl<stringImpl, U32> _animationNameToId;  // find animations quickly
+    hashMapImpl<stringImpl, U32> _animationNameToID;  // find animations quickly
 
     vectorImpl<Bone*> _bones;  // DO NOT DELETE THESE when the destructor
                                // runs... THEY ARE JUST REFERENCES!!

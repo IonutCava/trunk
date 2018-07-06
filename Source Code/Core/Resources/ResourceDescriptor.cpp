@@ -4,12 +4,12 @@ namespace Divide {
 
 ResourceDescriptor::ResourceDescriptor(const stringImpl& name,
                                        const stringImpl& resourceLocation,
-                                       bool flag, U32 id, U8 enumValue)
+                                       bool flag, U32 ID, U8 enumValue)
     : _propertyDescriptor(nullptr),
       _name(name),
       _resourceLocation(resourceLocation),
       _flag(flag),
-      _id(id),
+      _ID(ID),
       _enumValue(enumValue) {
     _mask.i = 0;
     _threaded = true;
@@ -26,7 +26,7 @@ ResourceDescriptor::ResourceDescriptor(const ResourceDescriptor& old)
     _properties = old._properties;
     _flag = old._flag;
     _threaded = old._threaded;
-    _id = old._id;
+    _ID = old._ID;
     _mask = old._mask;
     _enumValue = old._enumValue;
     if (old._propertyDescriptor != nullptr) {
@@ -42,7 +42,7 @@ ResourceDescriptor& ResourceDescriptor::operator=(
         _properties = old._properties;
         _flag = old._flag;
         _threaded = old._threaded;
-        _id = old._id;
+        _ID = old._ID;
         _mask = old._mask;
         _enumValue = old._enumValue;
         if (old._propertyDescriptor != nullptr) {

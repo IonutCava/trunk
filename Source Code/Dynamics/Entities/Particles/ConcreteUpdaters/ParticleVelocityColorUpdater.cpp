@@ -4,13 +4,13 @@ namespace Divide {
 
 void ParticleVelocityColorUpdater::update(const U64 deltaTime,
                                           ParticleData *p) {
-    const U32 endId = p->aliveCount();
+    const U32 endID = p->aliveCount();
     F32 diffr = _maxVel.x - _minVel.x;
     F32 diffg = _maxVel.y - _minVel.y;
     F32 diffb = _maxVel.z - _minVel.z;
 
     vec3<F32> floatColorRGB;
-    for (U32 i = 0; i < endId; ++i) {
+    for (U32 i = 0; i < endID; ++i) {
         floatColorRGB.set(
             (p->_velocity[i].x - _minVel.x) /
                 diffr,  // lerp(p->_startColor[i].r, p->_endColor[i].r, scaler),

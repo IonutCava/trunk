@@ -15,13 +15,13 @@ GLint GL_API::_activePackUnpackAlignments[] = {1, 1};
 GLint GL_API::_activePackUnpackRowLength[] = {0, 0};
 GLint GL_API::_activePackUnpackSkipPixels[] = {0, 0};
 GLint GL_API::_activePackUnpackSkipRows[] = {0, 0};
-GLuint GL_API::_activeVAOId = GLUtil::_invalidObjectID;
+GLuint GL_API::_activeVAOID = GLUtil::_invalidObjectID;
 GLuint GL_API::_activeTextureUnit = GLUtil::_invalidObjectID;
 GLuint GL_API::_activeTransformFeedback = GLUtil::_invalidObjectID;
-GLuint GL_API::_activeFBId[] = {GLUtil::_invalidObjectID,
+GLuint GL_API::_activeFBID[] = {GLUtil::_invalidObjectID,
                                 GLUtil::_invalidObjectID,
                                 GLUtil::_invalidObjectID};
-GLuint GL_API::_activeBufferId[] = {
+GLuint GL_API::_activeBufferID[] = {
     GLUtil::_invalidObjectID, GLUtil::_invalidObjectID,
     GLUtil::_invalidObjectID, GLUtil::_invalidObjectID,
     GLUtil::_invalidObjectID, GLUtil::_invalidObjectID,
@@ -238,19 +238,19 @@ bool GL_API::bindTexture(GLuint unit, GLuint handle, GLenum type,
 
 /// Switch the current framebuffer by binding it as either a R/W buffer, read
 /// buffer or write buffer
-bool GL_API::setActiveFB(GLuint id, Framebuffer::FramebufferUsage usage) {
+bool GL_API::setActiveFB(GLuint ID, Framebuffer::FramebufferUsage usage) {
     // We may query the active framebuffer handle and get an invalid handle in
     // return and then try to bind the queried handle
     // This is, for example, in save/restore FB scenarios. An invalid handle
     // will just reset the buffer binding
-    if (id == GLUtil::_invalidObjectID) {
-        id = 0;
+    if (ID == GLUtil::_invalidObjectID) {
+        ID = 0;
     }
     // Prevent double bind
-    if (_activeFBId[usage] == id) {
+    if (_activeFBID[usage] == ID) {
         if (usage == Framebuffer::FB_READ_WRITE) {
-            if (_activeFBId[Framebuffer::FB_READ_ONLY] == id &&
-                _activeFBId[Framebuffer::FB_WRITE_ONLY] == id) {
+            if (_activeFBID[Framebuffer::FB_READ_ONLY] == ID &&
+                _activeFBID[Framebuffer::FB_WRITE_ONLY] == ID) {
                 return false;
             }
         } else {
@@ -262,54 +262,54 @@ bool GL_API::setActiveFB(GLuint id, Framebuffer::FramebufferUsage usage) {
         case Framebuffer::FB_READ_WRITE: {
             // According to documentation this is equivalent to independent
             // calls to
-            // bindFramebuffer(read, id) and bindFramebuffer(write, id)
-            glBindFramebuffer(GL_FRAMEBUFFER, id);
+            // bindFramebuffer(read, ID) and bindFramebuffer(write, ID)
+            glBindFramebuffer(GL_FRAMEBUFFER, ID);
             // This also overrides the read and write bindings
-            _activeFBId[Framebuffer::FB_READ_ONLY] = id;
-            _activeFBId[Framebuffer::FB_WRITE_ONLY] = id;
+            _activeFBID[Framebuffer::FB_READ_ONLY] = ID;
+            _activeFBID[Framebuffer::FB_WRITE_ONLY] = ID;
         } break;
         case Framebuffer::FB_READ_ONLY: {
-            glBindFramebuffer(GL_READ_FRAMEBUFFER, id);
+            glBindFramebuffer(GL_READ_FRAMEBUFFER, ID);
         } break;
         case Framebuffer::FB_WRITE_ONLY: {
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, id);
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, ID);
         } break;
     };
     // Remember the new binding state for future reference
-    _activeFBId[usage] = id;
+    _activeFBID[usage] = ID;
     return true;
 }
 
 /// Switch the currently active vertex array object
-bool GL_API::setActiveVAO(GLuint id) {
+bool GL_API::setActiveVAO(GLuint ID) {
     // Prevent double bind
-    if (_activeVAOId == id) {
+    if (_activeVAOID == ID) {
         return false;
     }
     // Remember the new binding for future reference
-    _activeVAOId = id;
+    _activeVAOID = ID;
     // Activate the specified VAO
-    glBindVertexArray(id);
+    glBindVertexArray(ID);
 
     return true;
 }
 
 /// Bind the specified transform feedback object
-bool GL_API::setActiveTransformFeedback(GLuint id) {
+bool GL_API::setActiveTransformFeedback(GLuint ID) {
     // Prevent double bind
-    if (_activeTransformFeedback == id) {
+    if (_activeTransformFeedback == ID) {
         return false;
     }
     // Remember the new binding for future reference
-    _activeTransformFeedback = id;
+    _activeTransformFeedback = ID;
     // Activate the specified TFO
-    glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, id);
+    glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, ID);
 
     return true;
 }
 
 /// Single place to change buffer objects for every target available
-bool GL_API::setActiveBuffer(GLenum target, GLuint id) {
+bool GL_API::setActiveBuffer(GLenum target, GLuint ID) {
     // We map buffer targets from 0 to n in a static array
     GLint index = -1;
     // Select the appropriate index in the array based on the buffer target
@@ -345,13 +345,13 @@ bool GL_API::setActiveBuffer(GLenum target, GLuint id) {
     };
 
     // Prevent double bind
-    if (_activeBufferId[index] == id) {
+    if (_activeBufferID[index] == ID) {
         return false;
     }
     // Remember the new binding for future reference
-    _activeBufferId[index] = id;
+    _activeBufferID[index] = ID;
     // Bind the specified buffer handle to the desired buffer target
-    glBindBuffer(target, id);
+    glBindBuffer(target, ID);
 
     return true;
 }
@@ -360,13 +360,13 @@ bool GL_API::setActiveBuffer(GLenum target, GLuint id) {
 /// (will use program 0)
 bool GL_API::setActiveProgram(glShaderProgram* const program) {
     // Check if we are binding a new program or unbinding all shaders
-    GLuint newProgramId = (program != nullptr) ? program->getId() : 0;
+    GLuint newProgramID = (program != nullptr) ? program->getID() : 0;
     // Get the previous program's handle to compare against.
-    GLuint oldProgramId = (GL_API::_activeShaderProgram != nullptr)
-                              ? GL_API::_activeShaderProgram->getId()
+    GLuint oldProgramID = (GL_API::_activeShaderProgram != nullptr)
+                              ? GL_API::_activeShaderProgram->getID()
                               : 0;
     // Prevent double bind
-    if (oldProgramId == newProgramId) {
+    if (oldProgramID == newProgramID) {
         return false;
     }
     // Unbind the previous program (if we had one)
@@ -376,7 +376,7 @@ bool GL_API::setActiveProgram(glShaderProgram* const program) {
     // Remember the new binding for future reference
     GL_API::_activeShaderProgram = program;
     // Bind the new program
-    glUseProgram(newProgramId);
+    glUseProgram(newProgramID);
 
     return true;
 }

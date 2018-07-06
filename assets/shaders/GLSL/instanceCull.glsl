@@ -144,14 +144,14 @@ out vec4 outData0;
 out float outData1;
 flat out int outData2;
 
-//uniform uint queryId;
+//uniform uint queryID;
 //layout(binding = 0, offset = 0) uniform atomic_uint primitiveCount[5];
 
 void main() {
 
     // only emit primitive if the object is visible 
     if (objectVisible[0] == 1)  {
-        //atomicCounterIncrement(primitiveCount[queryId]);
+        //atomicCounterIncrement(primitiveCount[queryID]);
         outData0 = OrigData0[0];
         outData1 = OrigData1[0];
         outData2 = OrigData2[0];

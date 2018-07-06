@@ -89,10 +89,10 @@ DEFINE_SINGLETON_EXT1(GUI, Input::InputAggregatorInterface)
     /// The root of the window positioning system is bottom left, so 100,60 will
     /// place the button 100 pixels to the right and 60 up
     /// from the bottom
-    GUIButton* addButton(const stringImpl& id, const stringImpl& text,
+    GUIButton* addButton(const stringImpl& ID, const stringImpl& text,
                          const vec2<I32>& position, const vec2<U32>& dimensions,
                          const vec3<F32>& color, ButtonCallback callback,
-                         const stringImpl& rootSheetId = "");
+                         const stringImpl& rootSheetID = "");
     /// Add a flash element -DEPRECATED-
     GUIFlash* addFlash(const stringImpl& id, stringImpl movie,
                        const vec2<U32>& position, const vec2<U32>& extent);

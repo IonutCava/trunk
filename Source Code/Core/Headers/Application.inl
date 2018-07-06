@@ -56,6 +56,14 @@ inline const char* getErrorCodeName(ErrorCode code) {
             return "No rendering API specified before trying to initialize the "
                    "GFX Device";
         };
+        case SFX_NON_SPECIFIED: {
+            return "No audio API specified before trying to initialize the "
+                   "SFX Device";
+        };
+        case PFX_NON_SPECIFIED:{
+            return "No physx API specified before trying to initialize the "
+                   "PFX Device";
+        };
         case GLFW_INIT_ERROR: {
             return "GLFW system failed to initialize";
         };
@@ -138,12 +146,12 @@ inline bool Application::ShutdownRequested() const { return _requestShutdown; }
 
 inline Kernel& Application::getKernel() const { return *_kernel; }
 
-inline const std::thread::id& Application::getMainThreadId() const {
-    return _threadId;
+inline const std::thread::id& Application::getMainThreadID() const {
+    return _threadID;
 }
 
 inline bool Application::isMainThread() const {
-    return (_threadId == std::this_thread::get_id());
+    return (_threadID == std::this_thread::get_id());
 }
 
 inline void Application::setMemoryLogFile(const stringImpl& fileName) {

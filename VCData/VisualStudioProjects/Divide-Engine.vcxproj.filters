@@ -509,6 +509,9 @@
     <ClCompile Include="..\..\Source Code\Core\Math\BoundingVolumes\BoundingSphere.cpp">
       <Filter>Core\Math\BoundingVolumes</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Physics\PXDevice.cpp">
+      <Filter>Physics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h">

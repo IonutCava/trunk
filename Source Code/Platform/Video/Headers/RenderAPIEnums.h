@@ -104,15 +104,6 @@ enum ClipPlaneIndex {
 
 enum PBType { PB_TEXTURE_1D, PB_TEXTURE_2D, PB_TEXTURE_3D };
 
-enum RenderAPI {
-    OpenGL,    ///< 4.x+
-    OpenGLES,  ///< 3.x+
-    Direct3D,  ///< 11.x+
-    Mantle,    ///< not supported yet
-    None,      ///< not supported yet
-    GFX_RENDER_API_PLACEHOLDER
-};
-
 enum PrimitiveType {
     API_POINTS = 0x0000,
     LINES = 0x0001,

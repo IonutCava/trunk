@@ -45,10 +45,9 @@ enum PhysicsCollisionGroup {
 
 enum PhysicsActorMask { MASK_RIGID_STATIC, MASK_RIGID_DYNAMIC };
 
-enum PhysicsAPI { PHYSX, ODE, BULLET, PX_PLACEHOLDER };
-
 class Scene;
 class SceneGraphNode;
+class PhysicsSceneInterface;
 
 class PhysicsAsset {
    public:
@@ -68,16 +67,11 @@ class PhysicsAsset {
     PhysicsComponent* _parentComponent;
 };
 
-class PhysicsSceneInterface;
 class PhysicsAPIWrapper {
    protected:
     friend class PXDevice;
-    PhysicsAPIWrapper() : _apiId(PX_PLACEHOLDER) {}
-    inline void setId(PhysicsAPI api) { _apiId = api; }
-    inline PhysicsAPI getId() { return _apiId; }
-
-    virtual ErrorCode initPhysicsApi(U8 targetFrameRate) = 0;
-    virtual bool closePhysicsApi() = 0;
+    virtual ErrorCode initPhysicsAPI(U8 targetFrameRate) = 0;
+    virtual bool closePhysicsAPI() = 0;
     virtual void updateTimeStep(U8 timeStepFactor) = 0;
     virtual void updateTimeStep() = 0;
     virtual void update(const U64 deltaTime) = 0;
@@ -94,9 +88,6 @@ class PhysicsAPIWrapper {
                              PhysicsCollisionGroup group) = 0;
     virtual void setPhysicsScene(PhysicsSceneInterface* const targetScene) = 0;
     virtual void initScene() = 0;
-
-   private:
-    PhysicsAPI _apiId;
 };
 
 };  // namespace Divide

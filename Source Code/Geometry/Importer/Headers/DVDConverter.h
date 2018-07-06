@@ -95,9 +95,9 @@ DEFINE_SINGLETON(DVDConverter)
 
   private:
     struct vertexWeight {
-        U8 _boneId;
+        U8 _boneID;
         F32 _boneWeight;
-        vertexWeight(U8 id, F32 weight) : _boneId(id), _boneWeight(weight) {}
+        vertexWeight(U8 ID, F32 weight) : _boneID(ID), _boneWeight(weight) {}
     };
 
     Assimp::Importer* importer;

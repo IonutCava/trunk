@@ -107,6 +107,7 @@
     <ClCompile Include="..\..\Source Code\Libs\src\GLIM\Stuff.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Audio\openAl\ALWrapper.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Audio\sdl_mixer\SDLWrapper.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Audio\SFXDevice.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\DataTypes\PlatformDefines.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Input\AutoKeyRepeat.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Input\EffectManager.cpp" />

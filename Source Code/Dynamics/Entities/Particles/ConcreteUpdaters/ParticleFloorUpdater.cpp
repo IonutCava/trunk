@@ -3,10 +3,10 @@
 namespace Divide {
 
 void ParticleFloorUpdater::update(const U64 deltaTime, ParticleData *p) {
-    const U32 endId = p->aliveCount();
+    const U32 endID = p->aliveCount();
 
     vec3<F32> force;
-    for (U32 i = 0; i < endId; ++i) {
+    for (U32 i = 0; i < endID; ++i) {
         if (p->_position[i].y < _floorY) {
             force.set(p->_acceleration[i]);
 

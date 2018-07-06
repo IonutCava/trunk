@@ -66,10 +66,10 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
 
     /// Try and create a valid OpenGL context taking in account the specified
     /// resolution and command line arguments
-    ErrorCode initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
+    ErrorCode initRenderingAPI(const vec2<GLushort>& resolution, GLint argc,
                                char** argv) override;
-    /// Clear everything that was setup in initRenderingApi()
-    void closeRenderingApi() override;
+    /// Clear everything that was setup in initRenderingAPI()
+    void closeRenderingAPI() override;
     /// Prepare our shader loading system
     bool initShaders() override;
     /// Revert everything that was set up in "initShaders()"
@@ -154,7 +154,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// Return the OpenGL framebuffer handle bound and assigned for the specified
     /// usage
     inline static GLuint getActiveFB(Framebuffer::FramebufferUsage usage) {
-        return _activeFBId[usage];
+        return _activeFBID[usage];
     }
     /// Change the clear color for the specified renderTarget
     static void clearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a);
@@ -261,12 +261,12 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// Optimisation context for shaders (used for post-load optimisation)
     glslopt_ctx* _GLSLOptContex;
     /// Current active vertex array object's handle
-    static GLuint _activeVAOId;
+    static GLuint _activeVAOID;
     /// 0 - current framebuffer, 1 - current read only framebuffer, 2 - current
     /// write only framebuffer
-    static GLuint _activeFBId[3];
+    static GLuint _activeFBID[3];
     /// VB, IB, SB, TB, UB, PUB, DIB
-    static GLuint _activeBufferId[7];
+    static GLuint _activeBufferID[7];
     static GLuint _activeTextureUnit;
     static GLuint _activeTransformFeedback;
     static GLint _activePackUnpackAlignments[2];

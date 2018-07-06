@@ -76,6 +76,15 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     };
 
   public:  // GPU specific data
+      enum RenderAPI {
+        OpenGL,    ///< 4.x+
+        OpenGLES,  ///< 3.x+
+        Direct3D,  ///< 11.x+ (not supported yet)
+        Mantle,    ///< not supported yet
+        None,      ///< not supported yet
+        GFX_RENDER_API_PLACEHOLDER
+    };
+
     struct GPUBlock {
         mat4<F32> _ProjectionMatrix;
         mat4<F32> _ViewMatrix;
@@ -94,9 +103,12 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     };
 
   public:  // GPU interface
-    ErrorCode initRenderingApi(const vec2<U16>& resolution, I32 argc,
+    ErrorCode initRenderingAPI(const vec2<U16>& resolution, I32 argc,
                                char** argv) override;
-    void closeRenderingApi() override;
+    void closeRenderingAPI() override;
+
+    inline void setAPI(RenderAPI API) { _API_ID = API; }
+    inline RenderAPI getAPI() const { return _API_ID; }
 
     void idle();
     void beginFrame() override;
@@ -204,10 +216,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     }
 
     inline D32 getInterpolation() const { return _interpolationFactor; }
-
-    inline void setApi(const RenderAPI& apiId) { _apiId = apiId; }
-
-    inline const RenderAPI& getApi() const { return _apiId; }
 
     inline void setGPUVendor(const GPUVendor& gpuvendor) { _GPUVendor = gpuvendor; }
 
@@ -406,7 +414,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     vectorImpl<Line> _axisLinesTrasnformed;
 
   protected:
-    RenderAPI _apiId;
+    RenderAPI _API_ID;
     GPUVendor _GPUVendor;
     GPUState _state;
     /* Rendering buffers*/

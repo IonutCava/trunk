@@ -119,8 +119,9 @@ class PxDefaultAllocator : public physx::PxAllocatorCallback {
 
 class SceneGraphNode;
 class PhysXSceneInterface;
-DEFINE_SINGLETON_EXT2(PhysX, PhysicsAPIWrapper,
-                      physx::debugger::comm::PvdConnectionHandler)
+DEFINE_SINGLETON_EXT2_W_SPECIFIER(PhysX, PhysicsAPIWrapper,
+                      physx::debugger::comm::PvdConnectionHandler,
+                      final)
 
   private:
     PhysX();
@@ -133,8 +134,8 @@ DEFINE_SINGLETON_EXT2(PhysX, PhysicsAPIWrapper,
         physx::debugger::comm::PvdConnection& inFactory) {}
 
   public:
-    ErrorCode initPhysicsApi(U8 targetFrameRate);
-    bool closePhysicsApi();
+    ErrorCode initPhysicsAPI(U8 targetFrameRate);
+    bool closePhysicsAPI();
     void update(const U64 deltaTime);
     void process(const U64 deltaTime);
     void idle();

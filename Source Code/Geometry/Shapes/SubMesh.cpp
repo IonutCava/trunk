@@ -13,7 +13,7 @@ SubMesh::SubMesh(const stringImpl& name, ObjectFlag flag)
     : Object3D(name, SUBMESH, flag | OBJECT_FLAG_NO_VB),
       _visibleToNetwork(true),
       _render(true),
-      _id(0),
+      _ID(0),
       _parentMesh(nullptr) {
     _drawCmd.primitiveType(TRIANGLES);
     _drawCmd.firstIndex(0);
@@ -28,9 +28,9 @@ void SubMesh::setParentMesh(Mesh* const parentMesh) {
     // If the mesh has animation data, use dynamic VB's if we use software
     // skinning
     _drawCmd.firstIndex(
-        getGeometryVB()->getPartitionOffset(_geometryPartitionId));
+        getGeometryVB()->getPartitionOffset(_geometryPartitionID));
     _drawCmd.indexCount(
-        getGeometryVB()->getPartitionCount(_geometryPartitionId));
+        getGeometryVB()->getPartitionCount(_geometryPartitionID));
 }
 
 bool SubMesh::computeBoundingBox(SceneGraphNode& sgn) {

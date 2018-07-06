@@ -19,7 +19,7 @@ SubMesh* ImplResourceLoader<SubMesh>::operator()() {
         if (_descriptor.getFlag()) {
             ptr->renderState().useDefaultMaterial(false);
         }
-        ptr->setId(_descriptor.getId());
+        ptr->setID(_descriptor.getID());
     }
     return ptr;
 }

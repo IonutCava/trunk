@@ -78,8 +78,8 @@ class Object3D : public SceneNode {
     virtual bool onDraw(const RenderStage& currentStage);
 
     virtual bool updateAnimations(SceneGraphNode& sgn) { return false; }
-    inline void setGeometryPartitionId(size_t idx) {
-        _geometryPartitionId = (U32)idx;
+    inline void setGeometryPartitionID(size_t ID) {
+        _geometryPartitionID = (U32)ID;
     }
 
     inline const vectorImpl<vec3<U32> >& getTriangles() const {
@@ -114,7 +114,7 @@ class Object3D : public SceneNode {
    protected:
     bool _update;
     U32 _geometryFlagMask;
-    U32 _geometryPartitionId;
+    U32 _geometryPartitionID;
     ObjectType _geometryType;
     /// 3 indices, pointing to position values, that form a triangle in the
     /// mesh.

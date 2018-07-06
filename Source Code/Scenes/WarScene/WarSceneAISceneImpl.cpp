@@ -126,32 +126,32 @@ void WarSceneAISceneImpl::requestOrders() {
     printWorkingMemory();
 
     for (Order* const order : orders) {
-        WarSceneOrder::WarOrder orderId = static_cast<WarSceneOrder::WarOrder>(
-            dynamic_cast<WarSceneOrder*>(order)->getId());
-        switch (orderId) {
+        WarSceneOrder::WarOrder orderID = static_cast<WarSceneOrder::WarOrder>(
+            dynamic_cast<WarSceneOrder*>(order)->getID());
+        switch (orderID) {
             case WarSceneOrder::ORDER_FIND_ENEMY_FLAG: {
                 if (!_workingMemory._hasEnemyFlag.value() &&
                     !_workingMemory._enemyFlagNear.value() &&
                     !_workingMemory._teamMateHasFlag.value()) {
-                    priority[orderId] = 240;
+                    priority[orderID] = 240;
                 }
             } break;
             case WarSceneOrder::ORDER_CAPTURE_ENEMY_FLAG: {
                 if (!_workingMemory._hasEnemyFlag.value() &&
                     _workingMemory._enemyFlagNear.value() &&
                     !_workingMemory._teamMateHasFlag.value()) {
-                    priority[orderId] = 245;
+                    priority[orderID] = 245;
                 }
             } break;
             case WarSceneOrder::ORDER_RETURN_ENEMY_FLAG: {
                 if (_workingMemory._hasEnemyFlag.value()) {
-                    priority[orderId] = 250;
+                    priority[orderID] = 250;
                 }
             } break;
             case WarSceneOrder::ORDER_PROTECT_FLAG_CARRIER: {
                 if (!_workingMemory._hasEnemyFlag.value() &&
                     _workingMemory._teamMateHasFlag.value()) {
-                    priority[orderId] =
+                    priority[orderID] =
                         WorkingMemory::_flagProtectors[_entity->getTeamID()]
                                     .value() > 2
                             ? 125
@@ -161,16 +161,16 @@ void WarSceneAISceneImpl::requestOrders() {
             case WarSceneOrder::ORDER_RETRIEVE_FLAG: {
                 if (_workingMemory._enemyHasFlag.value() &&
                     !_workingMemory._hasEnemyFlag.value()) {
-                    priority[orderId] =
+                    priority[orderID] =
                         WorkingMemory::_flagRetrievers[_entity->getTeamID()]
                                     .value() > 1
                             ? 125
                             : 200;
                     if (_workingMemory._friendlyFlagNear.value()) {
-                        priority[orderId] += 2;
+                        priority[orderID] += 2;
                     }
                     if (_workingMemory._enemyFlagNear.value()) {
-                        priority[orderId] -= 2;
+                        priority[orderID] -= 2;
                     }
                 }
             } break;

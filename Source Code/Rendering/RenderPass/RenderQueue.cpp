@@ -40,7 +40,7 @@ RenderBin* RenderQueue::getBin(RenderBin::RenderBinType rbType) {
 SceneGraphNode* RenderQueue::getItem(U16 renderBin, U16 index) {
     SceneGraphNode* temp = nullptr;
     if (renderBin < _renderBins.size()) {
-        RenderBin* tempBin = _renderBins[_renderBinId[renderBin]];
+        RenderBin* tempBin = _renderBins[_renderBinID[renderBin]];
         if (index < tempBin->getBinSize()) {
             temp = tempBin->getItem(index)._node;
         }
@@ -121,7 +121,7 @@ RenderBin* RenderQueue::getOrCreateBin(const RenderBin::RenderBinType& rbType) {
     };
 
     hashAlg::emplace(_renderBins, rbType, temp);
-    hashAlg::emplace(_renderBinId, static_cast<U16>(_renderBins.size() - 1),
+    hashAlg::emplace(_renderBinID, static_cast<U16>(_renderBins.size() - 1),
                      rbType);
 
     _sortedRenderBins.insert(

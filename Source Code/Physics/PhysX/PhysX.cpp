@@ -12,15 +12,13 @@
 #include <Samples/PxToolkit/include/PxTkNamespaceMangle.h>
 #include <PsFile.h>
 
-using namespace physx;
-
 namespace Divide {
 
 physx::PxDefaultAllocator PhysX::_gDefaultAllocatorCallback;
 physx::PxDefaultErrorCallback PhysX::_gDefaultErrorCallback;
 
 physx::PxProfileZone* PhysX::getOrCreateProfileZone(
-    PxFoundation& inFoundation) {
+    physx::PxFoundation& inFoundation) {
 #ifdef PHYSX_PROFILE_SDK
     if (_profileZone == nullptr) {
         _profileZone =
@@ -43,24 +41,27 @@ PhysX::PhysX()
       _timeStepFactor(0.0f),
       _timeStep(0.0f) {}
 
-ErrorCode PhysX::initPhysicsApi(U8 targetFrameRate) {
+ErrorCode PhysX::initPhysicsAPI(U8 targetFrameRate) {
     Console::printfn(Locale::get("START_PHYSX_API"));
 
     // create foundation object with default error and allocator callbacks.
-    _foundation = PxCreateFoundation(
-        PX_PHYSICS_VERSION, _gDefaultAllocatorCallback, _gDefaultErrorCallback);
+    _foundation = PxCreateFoundation(PX_PHYSICS_VERSION,
+                                     _gDefaultAllocatorCallback,
+                                     _gDefaultErrorCallback);
     assert(_foundation != nullptr);
 
     bool recordMemoryAllocations = false;
 
 #ifdef _DEBUG
     recordMemoryAllocations = true;
-    _zoneManager = &PxProfileZoneManager::createProfileZoneManager(_foundation);
+    _zoneManager = 
+        &physx::PxProfileZoneManager::createProfileZoneManager(_foundation);
     assert(_zoneManager != nullptr);
 #endif
 
     _gPhysicsSDK =
-        PxCreatePhysics(PX_PHYSICS_VERSION, *_foundation, PxTolerancesScale(),
+        PxCreatePhysics(PX_PHYSICS_VERSION, 
+                        *_foundation, physx::PxTolerancesScale(),
                         recordMemoryAllocations, _zoneManager);
 
     if (_gPhysicsSDK == nullptr) {
@@ -77,8 +78,10 @@ ErrorCode PhysX::initPhysicsApi(U8 targetFrameRate) {
     _gPhysicsSDK->getPvdConnectionManager()->addHandler(*this);
 
     if (_pvdConnection != nullptr) {
-        if (PxVisualDebuggerExt::createConnection(_pvdConnection, "localhost",
-                                                  5425, 10000) != nullptr) {
+        if (physx::PxVisualDebuggerExt::createConnection(_pvdConnection,
+                                                         "localhost",
+                                                         5425, 10000) 
+                                                         != nullptr) {
             Console::d_printfn(Locale::get("CONNECT_PVD_OK"));
         }
     }
@@ -90,9 +93,9 @@ ErrorCode PhysX::initPhysicsApi(U8 targetFrameRate) {
     }
 
     if (!_cooking) {
-        PxCookingParams* cookparams =
-            MemoryManager_NEW PxCookingParams(PxTolerancesScale());
-        cookparams->targetPlatform = PxPlatform::ePC;
+        physx::PxCookingParams* cookparams =
+            MemoryManager_NEW physx::PxCookingParams(physx::PxTolerancesScale());
+        cookparams->targetPlatform = physx::PxPlatform::ePC;
         _cooking =
             PxCreateCooking(PX_PHYSICS_VERSION, *_foundation, *cookparams);
         MemoryManager::DELETE(cookparams);
@@ -104,7 +107,7 @@ ErrorCode PhysX::initPhysicsApi(U8 targetFrameRate) {
     return NO_ERR;
 }
 
-bool PhysX::closePhysicsApi() {
+bool PhysX::closePhysicsAPI() {
     if (!_gPhysicsSDK) {
         return false;
     }
@@ -113,7 +116,7 @@ bool PhysX::closePhysicsApi() {
 
     DIVIDE_ASSERT(_targetScene == nullptr,
                   "PhysX error: target scene not destroyed before calling "
-                  "closePhysicsApi."
+                  "closePhysicsAPI."
                   "Call \"setPhysicsScene( nullptr )\" first");
 
     if (_cooking) {
@@ -197,7 +200,7 @@ bool PhysX::createActor(SceneGraphNode& node, const stringImpl& sceneName,
     bool ok = false;
     if (fp) {
         fseek(fp, 0, SEEK_END);
-        PxU32 filesize = ftell(fp);
+        physx::PxU32 filesize = ftell(fp);
         fclose(fp);
         ok = (filesize != 0);
     }
@@ -219,13 +222,13 @@ bool PhysX::createActor(SceneGraphNode& node, const stringImpl& sceneName,
             nodeVB = node.getParent()->getNode<Object3D>()->getGeometryVB();
         }
 
-        PxDefaultFileOutputStream stream(nodeName.c_str());
+        physx::PxDefaultFileOutputStream stream(nodeName.c_str());
 
-        PxTriangleMeshDesc meshDesc;
-        meshDesc.points.count = (PxU32)nodeVB->getPosition().size();
+        physx::PxTriangleMeshDesc meshDesc;
+        meshDesc.points.count = (physx::PxU32)nodeVB->getPosition().size();
         meshDesc.points.stride = sizeof(vec3<F32>);
         meshDesc.points.data = &nodeVB->getPosition()[0];
-        meshDesc.triangles.count = (PxU32)triangles.size();
+        meshDesc.triangles.count = (physx::PxU32)triangles.size();
         meshDesc.triangles.stride = 3 * sizeof(U32);
         meshDesc.triangles.data = triangles.data();
         if (!nodeVB->usesLargeIndices()) {
@@ -258,9 +261,11 @@ bool PhysX::createActor(SceneGraphNode& node, const stringImpl& sceneName,
         const vec4<F32>& orientation = nodePhysics->getOrientation().asVec4();
 
         physx::PxTransform posePxTransform(
-            PxVec3(position.x, position.y, position.z),
-            PxQuat(orientation.x, orientation.y, orientation.z, orientation.w)
-                .getConjugate());
+            physx::PxVec3(position.x, position.y, position.z),
+            physx::PxQuat(orientation.x,
+                          orientation.y,
+                          orientation.z,
+                          orientation.w).getConjugate());
 
         if (mask != MASK_RIGID_DYNAMIC) {
             tempActor->_actor =
@@ -276,7 +281,7 @@ bool PhysX::createActor(SceneGraphNode& node, const stringImpl& sceneName,
             return false;
         }
 
-        tempActor->_type = PxGeometryType::eTRIANGLEMESH;
+        tempActor->_type = physx::PxGeometryType::eTRIANGLEMESH;
         // If we got here, the new actor was just created (didn't exist
         // previously in the scene), so add it
         targetScene->addRigidActor(tempActor, false);
@@ -284,7 +289,7 @@ bool PhysX::createActor(SceneGraphNode& node, const stringImpl& sceneName,
 
     assert(tempActor->_actor);
 
-    PxDefaultFileInputData stream(nodeName.c_str());
+    physx::PxDefaultFileInputData stream(nodeName.c_str());
     physx::PxTriangleMesh* triangleMesh =
         _gPhysicsSDK->createTriangleMesh(stream);
 
@@ -294,9 +299,10 @@ bool PhysX::createActor(SceneGraphNode& node, const stringImpl& sceneName,
     }
 
     const vec3<F32>& scale = tempActor->getComponent()->getScale();
-    PxTriangleMeshGeometry triangleGeometry(
+    physx::PxTriangleMeshGeometry triangleGeometry(
         triangleMesh,
-        PxMeshScale(PxVec3(scale.x, scale.y, scale.z), PxQuat(PxIdentity)));
+        physx::PxMeshScale(physx::PxVec3(scale.x, scale.y, scale.z), 
+                           physx::PxQuat(physx::PxIdentity)));
     tempActor->_actor->createShape(
         triangleGeometry, *_gPhysicsSDK->createMaterial(0.7f, 0.7f, 1.0f));
 

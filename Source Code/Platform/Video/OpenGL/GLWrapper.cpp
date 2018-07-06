@@ -277,7 +277,8 @@ bool GL_API::initShaders() {
     // Create an optimisation context used for post-processing shaders
     // (using Aras Pranckevičius's glsl-optimizer:
     // https://github.com/aras-p/glsl-optimizer )
-    _GLSLOptContex = glslopt_initialize(GFX_DEVICE.getApi() == OpenGLES
+    _GLSLOptContex = 
+        glslopt_initialize(GFX_DEVICE.getAPI() == GFXDevice::OpenGLES
                                             ? kGlslTargetOpenGLES30
                                             : kGlslTargetOpenGL);
     // Check initialization status for GLSL and glsl-optimizer

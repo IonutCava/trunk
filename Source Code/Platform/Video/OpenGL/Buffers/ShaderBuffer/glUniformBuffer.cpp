@@ -45,13 +45,30 @@ void glUniformBuffer::Create(U32 primitiveCount, ptrdiff_t primitiveSize) {
                   "glUniformBuffer::Create error: UBO creation failed");
 
     if (_persistentMapped) {
-        glNamedBufferStorage(_UBOid, _bufferSize, NULL, GL_MAP_WRITE_BIT |
-                                                        GL_MAP_PERSISTENT_BIT |
-                                                        GL_MAP_COHERENT_BIT);
-        _mappedBuffer = glMapNamedBufferRange(_UBOid, 0, _bufferSize,
-                                                        GL_MAP_WRITE_BIT | 
-                                                        GL_MAP_PERSISTENT_BIT |
-                                                        GL_MAP_COHERENT_BIT);
+        MapBufferUsageMask usage = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT |
+                                   GL_MAP_COHERENT_BIT;
+        BufferAccessMask mask = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT |
+                                GL_MAP_COHERENT_BIT;
+
+        glNamedBufferStorage(_UBOid, _bufferSize, NULL, usage);
+        _mappedBuffer = glMapNamedBufferRange(_UBOid, 0, _bufferSize, mask);
+
+        STUBBED("Remove this hack when proper OpenGL4.5 support is available!")
+        if (!_mappedBuffer) {
+            gl45ext::glNamedBufferStorageEXT(_UBOid, _bufferSize, NULL, usage);
+            _mappedBuffer = gl45ext::glMapNamedBufferRangeEXT(_UBOid, 0, _bufferSize, mask);
+        }
+
+        if (!_mappedBuffer) {
+            GL_API::setActiveBuffer(_target, _UBOid);
+            glBufferStorage(_target, _bufferSize, NULL, usage);
+            _mappedBuffer = glMapBufferRange(_target, 0, _bufferSize, mask);
+        }
+        
+        DIVIDE_ASSERT(_mappedBuffer != nullptr,
+                        "glUniformBuffer::Create error: "
+                        "Can't mapped persistent buffer!");
+        
     } else {
         glNamedBufferData(_UBOid, _bufferSize, NULL, GL_DYNAMIC_DRAW);
     }
@@ -72,7 +89,7 @@ void glUniformBuffer::UpdateData(GLintptr offset, GLsizeiptr size,
     DIVIDE_ASSERT(offset + size <= (GLsizeiptr)_bufferSize,
                    "glUniformBuffer::UpdateData error: was called with an "
                   "invalid range (buffer overflow)!");
-    DIVIDE_ASSERT(_mappedBuffer != nullptr,
+    DIVIDE_ASSERT(_persistentMapped == (_mappedBuffer != nullptr),
                    "glUniformBuffer::UpdateData error: was called for an "
                    "unmapped buffer!");
 
@@ -118,7 +135,7 @@ bool glUniformBuffer::Bind(ShaderBufferLocation bindIndex) const {
 
 void glUniformBuffer::PrintInfo(const ShaderProgram* shaderProgram,
                                 ShaderBufferLocation bindIndex) {
-    GLuint prog = shaderProgram->getId();
+    GLuint prog = shaderProgram->getID();
     GLuint block_index = bindIndex;
 
     if (prog <= 0 || block_index < 0 || _unbound) {

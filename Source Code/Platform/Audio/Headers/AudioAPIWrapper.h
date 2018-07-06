@@ -41,23 +41,14 @@ class AudioState {
     AudioState(bool enableA, bool enableB, bool enableC, bool enableD) {}
 };
 
-enum AudioAPI { FMOD, OpenAL, SDL };
-
 static const U32 MAX_SOUND_BUFFERS = 64;
 
 /// Audio Programming Interface
 class AudioAPIWrapper {
    protected:
-    AudioAPIWrapper()
-        : _apiId(SDL), _state(AudioState(true, true, true, true)) {}
-
     friend class SFXDevice;
-
-    inline void setId(AudioAPI api) { _apiId = api; }
-    inline AudioAPI getId() { return _apiId; }
-
-    virtual ErrorCode initAudioApi() = 0;
-    virtual void closeAudioApi() = 0;
+    virtual ErrorCode initAudioAPI() = 0;
+    virtual void closeAudioAPI() = 0;
 
     virtual void playSound(AudioDescriptor* sound) = 0;
     virtual void playMusic(AudioDescriptor* music) = 0;
@@ -69,17 +60,6 @@ class AudioAPIWrapper {
     virtual void setMusicVolume(I8 value) = 0;
     virtual void setSoundVolume(I8 value) = 0;
 
-    virtual ~AudioAPIWrapper(){};
-
-   public:  // RenderAPI global
-    inline void setAudioState(AudioState& state) { _state = state; }
-    inline AudioState& getActiveAudioState() { return _state; }
-
-   private:
-    AudioAPI _apiId;
-
-   protected:
-    AudioState _state;
 };
 
 };  // namespace Divide

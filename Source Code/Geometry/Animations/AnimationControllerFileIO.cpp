@@ -169,7 +169,7 @@ void SceneAnimator::Load(std::ifstream& file) {
     // get all the animation names so I can reference them by name and get the
     // correct id
     for (uint32_t i(0); i < _animations.size(); i++) {
-        _animationNameToId.insert(hashMapImpl<stringImpl, uint32_t>::value_type(
+        _animationNameToID.insert(hashMapImpl<stringImpl, uint32_t>::value_type(
             _animations[i]._name, i));
     }
 

@@ -47,12 +47,12 @@ vec4 mappingNormal(){
 
 //subroutine(MappingRoutineType)
 vec4 mappingRelief(){
-    return ReliefMapping(bumpMapLightId,_texCoord);
+    return ReliefMapping(bumpMapLightID,_texCoord);
 }
 
 //subroutine(MappingRoutineType)
 vec4 mappingParallax(){
-    return ParallaxMapping(bumpMapLightId, _texCoord);
+    return ParallaxMapping(bumpMapLightID, _texCoord);
 }
 #endif
 

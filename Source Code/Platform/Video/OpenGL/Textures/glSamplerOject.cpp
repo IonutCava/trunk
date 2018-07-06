@@ -7,7 +7,7 @@
 #include "Platform/Video/Textures/Headers/TextureDescriptor.h"
 
 namespace Divide {
-
+    
 glSamplerObject::glSamplerObject(const SamplerDescriptor& descriptor) {
     DIVIDE_ASSERT(glfwExtensionSupported("GL_ARB_sampler_objects") == 1,
                   Locale::get("ERROR_NO_SAMPLER_SUPPORT"));

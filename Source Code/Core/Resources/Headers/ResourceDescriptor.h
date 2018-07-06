@@ -67,7 +67,7 @@ class ResourceDescriptor {
    public:
     explicit ResourceDescriptor(const stringImpl& name = "default",
                                 const stringImpl& resourceLocation = "default",
-                                bool flag = false, U32 id = 0,
+                                bool flag = false, U32 ID = 0,
                                 U8 enumValue = 0);
 
     virtual ~ResourceDescriptor();
@@ -94,7 +94,7 @@ class ResourceDescriptor {
     inline bool getFlag() const { return _flag; }
     inline bool getThreaded() const { return _threaded; }
     inline U8 getEnumValue() const { return _enumValue; }
-    inline U32 getId() const { return _id; }
+    inline U32 getID() const { return _ID; }
     inline P32 getMask() const { return _mask; }
 
     inline void setPropertyList(const stringImpl& propertyListString) {
@@ -106,7 +106,7 @@ class ResourceDescriptor {
     inline void setEnumValue(U8 enumValue) { _enumValue = enumValue; }
     inline void setName(const stringImpl& name) { _name = name; }
     inline void setFlag(bool flag) { _flag = flag; }
-    inline void setId(U32 id) { _id = id; }
+    inline void setID(U32 ID) { _ID = ID; }
     inline void setBoolMask(P32 mask) { _mask = mask; }
     inline void setThreadedLoading(const bool threaded) {
         _threaded = threaded;
@@ -127,7 +127,7 @@ class ResourceDescriptor {
     stringImpl _properties;
     bool _flag;
     bool _threaded;
-    U32 _id;
+    U32 _ID;
     /// 4 bool values representing  ... anything ...
     P32 _mask;
     U8 _enumValue;

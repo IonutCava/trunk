@@ -300,22 +300,22 @@ class VertexBuffer : public VertexDataInterface {
         return _currentPartitionIndex - 1;
     }
 
-    inline U32 getPartitionCount(U16 partitionIdx) {
+    inline U32 getPartitionCount(U16 partitionID) {
         if (_partitions.empty()) {
             return getIndexCount();
         }
-        DIVIDE_ASSERT(partitionIdx < _partitions.size(),
+        DIVIDE_ASSERT(partitionID < _partitions.size(),
                       "VertexBuffer error: Invalid partition offset!");
-        return _partitions[partitionIdx].second;
+        return _partitions[partitionID].second;
     }
 
-    inline U32 getPartitionOffset(U16 partitionIdx) {
+    inline U32 getPartitionOffset(U16 partitionID) {
         if (_partitions.empty()) {
             return 0;
         }
-        DIVIDE_ASSERT(partitionIdx < _partitions.size(),
+        DIVIDE_ASSERT(partitionID < _partitions.size(),
                       "VertexBuffer error: Invalid partition offset!");
-        return _partitions[partitionIdx].first;
+        return _partitions[partitionID].first;
     }
 
     inline U32 getLastPartitionOffset() {

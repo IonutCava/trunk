@@ -52,7 +52,7 @@ class PixelBuffer {
     virtual void Bind(U8 unit = 0) const = 0;
 
     virtual void updatePixels(const F32* const pixels) = 0;
-    inline U32 getTextureHandle() const { return _textureId; }
+    inline U32 getTextureHandle() const { return _textureID; }
     inline U16 getWidth() const { return _width; }
     inline U16 getHeight() const { return _height; }
     inline U16 getDepth() const { return _depth; }
@@ -61,7 +61,7 @@ class PixelBuffer {
     virtual ~PixelBuffer(){};
     PixelBuffer(PBType type)
         : _pbtype(type),
-          _textureId(0),
+          _textureID(0),
           _width(0),
           _height(0),
           _depth(0),
@@ -70,7 +70,7 @@ class PixelBuffer {
 
    protected:
     PBType _pbtype;
-    U32 _textureId;
+    U32 _textureID;
     U16 _width, _height, _depth;
     U32 _pixelBufferHandle;
     U32 _textureType;

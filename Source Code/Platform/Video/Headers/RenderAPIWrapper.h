@@ -173,14 +173,8 @@ class RenderStateBlockDescriptor;
 
 /// Renderer Programming Interface
 class RenderAPIWrapper {
-   public:  // RenderAPIWrapper global
    protected:
     friend class GFXDevice;
-
-    RenderAPIWrapper() {}
-
-    virtual ~RenderAPIWrapper() {}
-
     /*Application display frame*/
     /// Clear buffers, set default states, etc
     virtual void beginFrame() = 0;
@@ -210,9 +204,9 @@ class RenderAPIWrapper {
     virtual bool initShaders() = 0;
     virtual bool deInitShaders() = 0;
 
-    virtual ErrorCode initRenderingApi(const vec2<U16>& resolution, I32 argc,
+    virtual ErrorCode initRenderingAPI(const vec2<U16>& resolution, I32 argc,
                                        char** argv) = 0;
-    virtual void closeRenderingApi() = 0;
+    virtual void closeRenderingAPI() = 0;
 
     virtual void toggleRasterization(bool state) = 0;
     virtual void setLineWidth(F32 width) = 0;

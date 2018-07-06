@@ -46,7 +46,7 @@ class AudioDescriptor : public Resource {
           _volume(100),
           _frequency(44.2f),
           _bitDepth(16),
-          _channelId(-1),
+          _channelID(-1),
           _isLooping(false) {}
 
     ~AudioDescriptor() {}
@@ -64,13 +64,13 @@ class AudioDescriptor : public Resource {
 
     inline void setBitDepth(I8 bitDepth) { _bitDepth = bitDepth; }
     inline I8 getBitDepth() { return _bitDepth; }
-    inline void setChannel(I8 id) { _channelId = id; }
-    inline I8 getChannel() { return _channelId; }
+    inline void setChannel(I8 ID) { _channelID = ID; }
+    inline I8 getChannel() { return _channelID; }
 
    private:
     bool _isLooping, _is3D;
     F32 _frequency;
-    I8 _bitDepth, _channelId, _volume;
+    I8 _bitDepth, _channelID, _volume;
     stringImpl _audioFile;
 };
 

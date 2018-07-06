@@ -3,9 +3,11 @@
 #include <al.h>
 #include <alc.h>
 
+#pragma comment(lib, "OpenAL32.lib")
+
 namespace Divide {
 
-ErrorCode OpenAL_API::initAudioApi() {
+ErrorCode OpenAL_API::initAudioAPI() {
     // Initialization
     ALCdevice* device = alcOpenDevice(NULL);  // select the "preferred device"
     if (device) {
@@ -26,7 +28,7 @@ ErrorCode OpenAL_API::initAudioApi() {
     return OAL_INIT_ERROR;
 }
 
-void OpenAL_API::closeAudioApi() {}
+void OpenAL_API::closeAudioAPI() {}
 
 void OpenAL_API::playSound(AudioDescriptor* sound) {}
 

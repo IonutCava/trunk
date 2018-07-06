@@ -1,7 +1,7 @@
 #ifndef _BUMP_MAPPING_FRAG_
 #define _BUMP_MAPPING_FRAG_
 
-uniform int bumpMapLightId = 0;
+uniform int bumpMapLightID = 0;
 
 float ReliefMapping_RayIntersection(in vec2 A, in vec2 AB){
     const int num_steps_lin = 10;
@@ -37,15 +37,15 @@ float ReliefMapping_RayIntersection(in vec2 A, in vec2 AB){
     return best_depth;
 }
 
-vec4 ParallaxMapping(in uint bumpMapLightId, in vec2 uv){
+vec4 ParallaxMapping(in uint bumpMapLightID, in vec2 uv){
     vec3 lightVecTBN = vec3(0.0);
-    switch (dvd_LightSource[bumpMapLightId]._options.x){
+    switch (dvd_LightSource[bumpMapLightID]._options.x){
         case LIGHT_DIRECTIONAL      : 
-            lightVecTBN = -normalize(dvd_LightSource[bumpMapLightId]._position.xyz); 
+            lightVecTBN = -normalize(dvd_LightSource[bumpMapLightID]._position.xyz); 
             break;
         case LIGHT_OMNIDIRECTIONAL  : 
         case LIGHT_SPOT             : 
-            lightVecTBN = normalize(_viewDirection + dvd_LightSource[bumpMapLightId]._position.xyz); 
+            lightVecTBN = normalize(_viewDirection + dvd_LightSource[bumpMapLightID]._position.xyz); 
             break;
     };
 

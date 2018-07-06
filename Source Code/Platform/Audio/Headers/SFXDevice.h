@@ -32,36 +32,41 @@
 #ifndef _SFX_DEVICE_H
 #define _SFX_DEVICE_H
 
-#include "Platform/Audio/fmod/Headers/FmodWrapper.h"
-#include "Platform/Audio/SDL_mixer/Headers/SDLWrapper.h"
-#include "Platform/Audio/openAl/Headers/ALWrapper.h"
+#include "AudioAPIWrapper.h"
 
 namespace Divide {
 
-DEFINE_SINGLETON_EXT1(SFXDevice, AudioAPIWrapper)
+DEFINE_SINGLETON_EXT1_W_SPECIFIER(SFXDevice, AudioAPIWrapper, final)
   public:
-    inline ErrorCode initAudioApi() { return _api.initAudioApi(); }
-    inline void closeAudioApi() { _api.closeAudioApi(); }
+    enum AudioAPI { FMOD, OpenAL, SDL, SFX_PLACEHOLDER };
 
-    inline void playSound(AudioDescriptor* sound) { _api.playSound(sound); }
-    inline void playMusic(AudioDescriptor* music) { _api.playMusic(music); }
+    ErrorCode initAudioAPI();
+    void closeAudioAPI();
 
-    inline void pauseMusic() { _api.pauseMusic(); }
-    inline void stopMusic() { _api.stopMusic(); }
-    inline void stopAllSounds() { _api.stopAllSounds(); }
+    inline void setAPI(AudioAPI API) { _API_ID = API; }
+    inline AudioAPI getAPI() const { return _API_ID; }
 
-    inline void setMusicVolume(I8 value) { _api.setMusicVolume(value); }
-    inline void setSoundVolume(I8 value) { _api.setSoundVolume(value); }
+    inline void setAudioState(AudioState& state) { _state = state; }
+    inline AudioState& getActiveAudioState() { return _state; }
+
+    void playSound(AudioDescriptor* sound);
+    void playMusic(AudioDescriptor* music);
+    void pauseMusic();
+    void stopMusic();
+    void stopAllSounds();
+    void setMusicVolume(I8 value);
+    void setSoundVolume(I8 value);
+    
+  private:
+    SFXDevice();
+    ~SFXDevice();
+
+  protected:
+    AudioState _state;
 
   private:
-    SFXDevice()
-        : _api(SDL_API::getOrCreateInstance())  // Defaulting to SDL if no api has
-                                                // been defined
-    {}
-
-    ~SFXDevice() { SDL_API::destroyInstance(); }
-
-    AudioAPIWrapper& _api;
+    AudioAPI _API_ID;
+    AudioAPIWrapper* _api;
 
 END_SINGLETON
 

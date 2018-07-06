@@ -86,9 +86,9 @@ void AIManager::updateEntities(const U64 deltaTime) {  // react
     }
 }
 
-bool AIManager::registerEntity(U32 teamId, AIEntity* entity) {
+bool AIManager::registerEntity(U32 teamID, AIEntity* entity) {
     WriteLock w_lock(_updateMutex);
-    AITeamMap::const_iterator it = _aiTeams.find(teamId);
+    AITeamMap::const_iterator it = _aiTeams.find(teamID);
     DIVIDE_ASSERT(it != std::end(_aiTeams),
                   "AIManager error: attempt to register an AI Entity to a "
                   "non-existent team!");
@@ -102,9 +102,9 @@ void AIManager::unregisterEntity(AIEntity* entity) {
     }
 }
 
-void AIManager::unregisterEntity(U32 teamId, AIEntity* entity) {
+void AIManager::unregisterEntity(U32 teamID, AIEntity* entity) {
     WriteLock w_lock(_updateMutex);
-    AITeamMap::const_iterator it = _aiTeams.find(teamId);
+    AITeamMap::const_iterator it = _aiTeams.find(teamID);
     DIVIDE_ASSERT(it != std::end(_aiTeams),
                   "AIManager error: attempt to remove an AI Entity from a "
                   "non-existent team!");

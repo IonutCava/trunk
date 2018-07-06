@@ -83,7 +83,7 @@ GFXDevice::GFXDevice() : _api(nullptr), _renderStage(INVALID_STAGE)
     // Enumerated Types
     _shadowDetailLevel = DETAIL_HIGH;
     _GPUVendor = GPU_VENDOR_PLACEHOLDER;
-    _apiId = GFX_RENDER_API_PLACEHOLDER;
+    _API_ID = GFX_RENDER_API_PLACEHOLDER;
     // Utility cameras
     _2DCamera = MemoryManager_NEW FreeFlyCamera();
     _2DCamera->lockView(true);
@@ -829,6 +829,10 @@ IMPrimitive* GFXDevice::getOrCreatePrimitive(bool allowPrimitiveRecycle) {
 }
 /// Renders the result of plotting the specified 2D graph
 void GFXDevice::plot2DGraph(const Util::GraphPlot2D& plot2D, const vec4<U8>& color) const {
+    if (plot2D.empty())
+    {
+        return;
+    }
     Util::GraphPlot3D plot3D;
     plot3D._plotName = plot2D._plotName;
     plot3D._coords.reserve(plot2D._coords.size());
@@ -840,6 +844,10 @@ void GFXDevice::plot2DGraph(const Util::GraphPlot2D& plot2D, const vec4<U8>& col
 
 /// Renders the result of plotting the specified 3D graph
 void GFXDevice::plot3DGraph(const Util::GraphPlot3D& plot3D, const vec4<U8>& color) const {
+    if (plot3D.empty())
+    {
+        return;
+    }
     vectorImpl<Line> plotLines;
     plotLines.reserve(plot3D._coords.size());
     vectorAlg::vecSize coordCount = plot3D._coords.size();

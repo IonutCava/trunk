@@ -6,7 +6,7 @@
 
 namespace Divide {
 
-ErrorCode SDL_API::initAudioApi() {
+ErrorCode SDL_API::initAudioAPI() {
     I32 flags = MIX_INIT_OGG | MIX_INIT_MP3;
     I32 ret = Mix_Init(flags);
     if ((ret & flags) == flags) {
@@ -30,7 +30,7 @@ ErrorCode SDL_API::initAudioApi() {
     return SDL_AUDIO_INIT_ERROR;
 }
 
-void SDL_API::closeAudioApi() {
+void SDL_API::closeAudioAPI() {
     if (_music != nullptr) {
         Mix_HaltMusic();
         Mix_FreeMusic(_music);

@@ -13,12 +13,12 @@ namespace Divide {
 
 /// Create a display context using the selected API and create all of the needed
 /// primitives needed for frame rendering
-ErrorCode GFXDevice::initRenderingApi(const vec2<U16>& resolution, I32 argc,
+ErrorCode GFXDevice::initRenderingAPI(const vec2<U16>& resolution, I32 argc,
                                       char** argv) {
     ErrorCode hardwareState = createAPIInstance();
     if (hardwareState == NO_ERR) {
         // Initialize the rendering API
-        _api->initRenderingApi(resolution, argc, argv);
+        _api->initRenderingAPI(resolution, argc, argv);
     } else {
         // Validate initialization
         return hardwareState;
@@ -181,7 +181,10 @@ ErrorCode GFXDevice::initRenderingApi(const vec2<U16>& resolution, I32 argc,
 }
 
 /// Revert everything that was set up in initRenderingAPI()
-void GFXDevice::closeRenderingApi() {
+void GFXDevice::closeRenderingAPI() {
+   DIVIDE_ASSERT(_api != nullptr,
+                 "GFXDevice error: closeRenderingAPI called without init!");
+
     // Delete the internal shader
     RemoveResource(_HIZConstructProgram);
     // Destroy our post processing system
@@ -203,11 +206,11 @@ void GFXDevice::closeRenderingApi() {
     // Close the shader manager
     ShaderManager::getInstance().destroy();
     // Close the rendering API
-    _api->closeRenderingApi();
+    _api->closeRenderingAPI();
     // Wait for the loading thread to terminate
     _state.stopLoaderThread();
 
-    switch (_apiId) {
+    switch (_API_ID) {
         case RenderAPI::OpenGL:
         case RenderAPI::OpenGLES: {
             GL_API::destroyInstance();
@@ -219,7 +222,9 @@ void GFXDevice::closeRenderingApi() {
         } break;
         case RenderAPI::None: {
         } break;
-        default: { } break; };
+        default: { 
+        } break; 
+    };
 }
 
 /// After a swap buffer call, the CPU may be idle waiting for the GPU to draw to
@@ -304,7 +309,7 @@ void GFXDevice::setRenderer(RendererType rendererType) {
 ErrorCode GFXDevice::createAPIInstance() {
     DIVIDE_ASSERT(_api == nullptr,
                   "GFXDevice error: initRenderingAPI called twice!");
-    switch (_apiId) {
+    switch (_API_ID) {
         case RenderAPI::OpenGL:
         case RenderAPI::OpenGLES: {
             _api = &GL_API::getOrCreateInstance();

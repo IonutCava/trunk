@@ -67,9 +67,9 @@ void RenderPassManager::removeRenderPass(const stringImpl& name) {
     }
 }
 
-U16 RenderPassManager::getLastTotalBinSize(U8 renderPassId) const {
-    if (renderPassId < _renderPasses.size()) {
-        return _renderPasses[renderPassId].renderPass().getLasTotalBinSize();
+U16 RenderPassManager::getLastTotalBinSize(U8 renderPassID) const {
+    if (renderPassID < _renderPasses.size()) {
+        return _renderPasses[renderPassID].renderPass().getLasTotalBinSize();
     }
 
     return 0;

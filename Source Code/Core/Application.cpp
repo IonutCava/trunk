@@ -19,7 +19,7 @@ Application::Application() : _kernel(nullptr), _hasFocus(true) {
     _requestShutdown = false;
     _mainLoopActive = false;
     _mainLoopPaused = false;
-    _threadId = std::this_thread::get_id();
+    _threadID = std::this_thread::get_id();
     _errorCode = NO_ERR;
     ParamHandler::createInstance();
     Time::ApplicationTimer::createInstance();

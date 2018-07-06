@@ -50,9 +50,9 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(DX_API, RenderAPIWrapper, final)
   protected:
     DX_API() : RenderAPIWrapper() {}
 
-    ErrorCode initRenderingApi(const vec2<U16>& resolution, I32 argc,
+    ErrorCode initRenderingAPI(const vec2<U16>& resolution, I32 argc,
                                char** argv) override;
-    void closeRenderingApi() override;
+    void closeRenderingAPI() override;
     void changeResolution(U16 w, U16 h) override;
     void changeViewport(const vec4<I32>& newViewport) const override;
     void setCursorPosition(U16 x, U16 y) const override;

@@ -56,9 +56,9 @@ void SkinnedSubMesh::buildBoundingBoxesForAnim(
     currentBBComputing = true;
 
     VertexBuffer* parentVB = _parentMesh->getGeometryVB();
-    U32 partitionOffset = parentVB->getPartitionOffset(_geometryPartitionId);
+    U32 partitionOffset = parentVB->getPartitionOffset(_geometryPartitionID);
     U32 partitionCount =
-        parentVB->getPartitionCount(_geometryPartitionId) + partitionOffset;
+        parentVB->getPartitionCount(_geometryPartitionID) + partitionOffset;
 
     const vectorImpl<vec3<F32> >& verts = parentVB->getPosition();
     const vectorImpl<vec4<U8> >& indices = parentVB->getBoneIndices();

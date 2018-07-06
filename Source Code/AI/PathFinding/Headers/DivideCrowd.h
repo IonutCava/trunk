@@ -129,16 +129,16 @@ class DivideDtCrowd {
       * close to the previously set one, for example when chasing a moving
       *entity.
       **/
-    void setMoveTarget(I32 agentId, const vec3<F32>& position, bool adjust);
+    void setMoveTarget(I32 agentID, const vec3<F32>& position, bool adjust);
     /**
       * Request a specified velocity for the agent with specified index.
       * Requesting a velocity means manually controlling an agent.
       * Returns true if the request was successful.
       **/
-    bool requestVelocity(I32 agentId, const vec3<F32>& velocity);
+    bool requestVelocity(I32 agentID, const vec3<F32>& velocity);
     /// Cancels any request for the specified agent, making it stop.
     /// Returns true if the request was successul.
-    bool stopAgent(I32 agentId);
+    bool stopAgent(I32 agentID);
     /**
       * Helper that calculates the needed velocity to steer an agent to a target
       *destination.
@@ -205,7 +205,7 @@ class DivideDtCrowd {
     /// Get all (active) agents in this crowd.
     vectorImpl<dtCrowdAgent*> getActiveAgents(void);
     /// Get the IDs of all (active) agents in this crowd.
-    vectorImpl<I32> getActiveAgentIds(void);
+    vectorImpl<I32> getActiveAgentIDs(void);
     /// The last set destination for the crowd.
     /// This is the destination that will be assigned to newly added agents.
     inline vec3<F32> DivideDtCrowd::getLastDestination() const {

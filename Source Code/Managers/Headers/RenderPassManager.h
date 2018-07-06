@@ -72,7 +72,7 @@ DEFINE_SINGLETON(RenderPassManager)
     void addRenderPass(const stringImpl& renderPassName, U8 orderKey);
     /// Find a renderpass by name and remove it from the manager
     void removeRenderPass(const stringImpl& name);
-    U16 getLastTotalBinSize(U8 renderPassId) const;
+    U16 getLastTotalBinSize(U8 renderPassID) const;
 
     /// Lock or unlock the render bin (if nothing changes: camera, nodes' positions,
     /// etc)

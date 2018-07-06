@@ -43,11 +43,11 @@ namespace Divide {
 /*    Visit: http://www.fmod.org/index.php/sales  for more details -Ionut */
 /*****************************************************************************************/
 
-DEFINE_SINGLETON_EXT1(FMOD_API, AudioAPIWrapper)
+DEFINE_SINGLETON_EXT1_W_SPECIFIER(FMOD_API, AudioAPIWrapper, final)
   public:
-    ErrorCode initAudioApi() { return FMOD_AUDIO_INIT_ERROR; }
+    ErrorCode initAudioAPI() { return FMOD_AUDIO_INIT_ERROR; }
 
-    void closeAudioApi() {}
+    void closeAudioAPI() {}
 
     void playSound(AudioDescriptor* sound) {}
     void playMusic(AudioDescriptor* music) {}
