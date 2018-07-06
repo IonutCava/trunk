@@ -59,7 +59,7 @@ Allocator::~Allocator()
 void* Allocator::Allocate(size_t size)
 {
     assert(size <= m_objectSize);
-	
+	(void)size;
     // If can't obtain existing block then get a new one
     void* pBlock = Pop();
     if (!pBlock)

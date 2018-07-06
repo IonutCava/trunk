@@ -33,10 +33,6 @@ LoopTimingData::LoopTimingData() : _previousTime(0ULL),
 {
 }
 
-namespace {
-    Time::ProfileTimer& g_appLoopTimer = Time::ADD_TIMER("Main Loop Timer");
-};
-
 bool Kernel::initStaticData() {
     return SceneManager::initStaticData();
 }
@@ -51,7 +47,8 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
       _PFX(PXDevice::instance()),                 // Physics
       _input(Input::InputInterface::instance()),  // Input
       _GUI(GUI::instance()),                      // Graphical User Interface
-      _sceneMgr(SceneManager::instance())         // Scene Manager
+      _sceneMgr(SceneManager::instance()),        // Scene Manager
+      _appLoopTimer(Time::ADD_TIMER("Main Loop Timer"))
 
 {
     ResourceCache::createInstance();
@@ -111,7 +108,7 @@ void Kernel::onLoop() {
 
 
     {
-        Time::ScopedTimer timer(g_appLoopTimer);
+        Time::ScopedTimer timer(_appLoopTimer);
    
         // Update time at every render loop
         _timingData._previousTime = _timingData._currentTime;
@@ -174,7 +171,7 @@ void Kernel::onLoop() {
     }
 
     Util::RecordFloatEvent("kernel.mainLoopApp",
-                           to_float(g_appLoopTimer.get()),
+                           to_float(_appLoopTimer.get()),
                            _timingData._currentTime);
 #endif
 }

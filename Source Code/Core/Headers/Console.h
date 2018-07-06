@@ -54,7 +54,7 @@ class Console : private NonCopyable {
         {
         }
 
-        stringImpl _text;
+        stringImplAligned _text;
         bool _error;
     };
 

@@ -235,7 +235,7 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     U64 _saveTimer;
     std::unique_ptr<Renderer> _renderer;
     RenderPassCuller::VisibleNodeList _reflectiveNodesCache;
-
+    Time::ProfileTimer& _sceneGraphCullTimer;
 END_SINGLETON
 
 namespace Attorney {

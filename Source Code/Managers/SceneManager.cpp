@@ -14,9 +14,6 @@
 
 namespace Divide {
 
-namespace {
-    Time::ProfileTimer& g_sceneGraphCullTimer = Time::ADD_TIMER("SceneGraph cull timer");
-};
 
 INIT_SCENE_FACTORY
 
@@ -60,7 +57,8 @@ SceneManager::SceneManager()
       _init(false),
       _elapsedTime(0ULL),
       _elapsedTimeMS(0),
-      _saveTimer(0ULL)
+      _saveTimer(0ULL),
+      _sceneGraphCullTimer(Time::ADD_TIMER("SceneGraph cull timer"))
 {
     assert(!g_sceneFactory.empty());
     AI::AIManager::createInstance();
@@ -342,7 +340,7 @@ void SceneManager::updateVisibleNodes(RenderStage stage, bool refreshNodeData, U
 
 void SceneManager::renderVisibleNodes(RenderStage stage, bool refreshNodeData, U32 pass) {
     if (refreshNodeData) {
-        Time::ScopedTimer timer(g_sceneGraphCullTimer);
+        Time::ScopedTimer timer(_sceneGraphCullTimer);
         cullSceneGraph(stage);
     }
 

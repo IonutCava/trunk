@@ -42,6 +42,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Test-Engine", "VisualStudio
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Divide-Executable", "VisualStudioProjects\Divide-GameExecutable.vcxproj", "{87F22E92-2988-41FA-9E23-00033408A869}"
 	ProjectSection(ProjectDependencies) = postProject
+		{9D7BBBC8-E5CF-475D-8531-4520B605833C} = {9D7BBBC8-E5CF-475D-8531-4520B605833C}
 		{3CD700EA-0C66-4FA7-9C66-D8E63CA952CB} = {3CD700EA-0C66-4FA7-9C66-D8E63CA952CB}
 	EndProjectSection
 EndProject

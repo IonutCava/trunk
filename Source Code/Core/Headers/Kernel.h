@@ -76,7 +76,10 @@ struct LoopTimingData {
 namespace Attorney {
     class KernelApplication;
 };
-    
+
+namespace Time {
+    class ProfileTimer;
+};
 /// The kernel is the main interface to our engine components:
 ///-video
 ///-audio
@@ -171,6 +174,7 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
 
     TaskPool _taskPool;
 
+    Time::ProfileTimer& _appLoopTimer;
     // Command line arguments
     I32 _argc;
     char** _argv;

@@ -1,6 +1,7 @@
 #include "Headers/GFXDevice.h"
 
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/ProfileTimer.h"
 #include "Managers/Headers/SceneManager.h"
 
 #include "Rendering/Headers/Renderer.h"
@@ -33,7 +34,8 @@ F32 _anaglyphIOD = -0.01f;
 GFXDevice::GFXDevice()
     : _api(nullptr), 
     _renderStage(RenderStage::DISPLAY),
-    _prevRenderStage(RenderStage::COUNT)
+    _prevRenderStage(RenderStage::COUNT),
+    _commandBuildTimer(Time::ADD_TIMER("Command Generation Timer"))
 {
     // Hash values
     _state2DRenderingHash = 0;

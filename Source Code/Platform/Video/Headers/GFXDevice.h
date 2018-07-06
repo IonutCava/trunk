@@ -649,6 +649,8 @@ DEFINE_SINGLETON(GFXDevice)
     std::array<RenderStageBuffer, to_const_uint(RenderStage::COUNT) - 1> _nodeBuffers;
     GenericDrawCommand _defaultDrawCmd;
 
+    Time::ProfileTimer& _commandBuildTimer;
+
 END_SINGLETON
 
 namespace Attorney {

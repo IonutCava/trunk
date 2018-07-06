@@ -15,18 +15,15 @@
 
 namespace Divide {
 
-namespace {
-    // shadowPassTimer is used to measure the CPU-duration of shadow map generation step
-    Time::ProfileTimer& g_shadowPassTimer = Time::ADD_TIMER("Shadow Pass Timer");
-}
-
 LightManager::LightManager()
     : _init(false),
       _shadowMapsEnabled(true),
       _previewShadowMaps(false),
       _currentShadowCastingLight(nullptr),
       _lightImpostorShader(nullptr),
-      _lightIconsTexture(nullptr)
+      _lightIconsTexture(nullptr),
+     // shadowPassTimer is used to measure the CPU-duration of shadow map generation step
+     _shadowPassTimer(Time::ADD_TIMER("Shadow Pass Timer"))
 {
     _activeLightCount.fill(0);
     _lightTypeState.fill(true);
@@ -167,7 +164,7 @@ void LightManager::idle() {
     _shadowMapsEnabled =
         ParamHandler::instance().getParam<bool>(_ID("rendering.enableShadows"));
 
-    g_shadowPassTimer.pause(!_shadowMapsEnabled);
+    _shadowPassTimer.pause(!_shadowMapsEnabled);
 }
 
 U8 LightManager::getShadowBindSlotOffset(ShadowType type) {
@@ -182,7 +179,7 @@ bool LightManager::generateShadowMaps() {
         return true;
     }
     ShadowMap::clearShadowMapBuffers();
-    Time::ScopedTimer timer(g_shadowPassTimer);
+    Time::ScopedTimer timer(_shadowPassTimer);
     SceneRenderState& state = GET_ACTIVE_SCENE().renderState();
     // generate shadowmaps for each light
     for (Light* light : _shadowCastingLights) {
