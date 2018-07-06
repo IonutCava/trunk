@@ -134,7 +134,7 @@ void TenisScene::playGame(cdiggins::any a, CallbackParam b){
     //setPosition/getPosition should be thread-safe
     _ballSGN->getTransform()->setPosition(ballPosition);
     //Add a spin to the ball just for fun ...
-    _ballSGN->getTransform()->rotateEuler(vec3<F32>(ballPosition.z,1,1));
+    _ballSGN->getTransform()->rotate(vec3<F32>(ballPosition.z,1,1));
 
     //----------------------COLLISIONS------------------------------//
     //z = depth. Descending to the horizon

@@ -1,17 +1,7 @@
 #include "Headers/Transform.h"
 
-Transform::Transform()	: GUIDWrapper(),
-                          _dirty(true),
-                          _physicsDirty(true),
-                          _rebuildMatrix(true),
-                          _hasParentTransform(false)
-
+Transform::Transform() : Transform(Quaternion<F32>(), vec3<F32>(0.0f), vec3<F32>(1.0f))
 {
-    _transformValues._scale.set(1.0f);
-    _transformValues._translation.set(0.0f);
-    _transformValues._orientation.identity();
-    _worldMatrix.identity();
-    _parentTransform = nullptr;
 }
 
 Transform::Transform(const Quaternion<F32>& orientation,
@@ -20,9 +10,7 @@ Transform::Transform(const Quaternion<F32>& orientation,
                                                 _dirty(true),
                                                 _physicsDirty(true),
                                                 _rebuildMatrix(true),
-                                                _hasParentTransform(false)/*,
-                                                _changedLastFrame(false),
-                                                _changedLastFramePrevious(false)*/
+                                                _hasParentTransform(false)
 {
     _transformValues._scale.set(scale);
     _transformValues._translation.set(translation);
@@ -35,10 +23,10 @@ Transform::~Transform()
 {
 }
 
-const mat4<F32>& Transform::applyTransforms(){
-    if(_dirty){
+const mat4<F32>& Transform::applyTransforms() {
+    if (_dirty) {
         WriteLock w_lock(_lock);
-        if(_rebuildMatrix){
+        if (_rebuildMatrix) {
             // Ordering - a la Ogre:
             _worldMatrix.identity();
             //    1. Scale
@@ -55,8 +43,8 @@ const mat4<F32>& Transform::applyTransforms(){
     return _worldMatrix;
 }
 
-mat4<F32> Transform::interpolate(const TransformValues& prevTransforms, const D32 factor){
-   if(factor < 0.90){
+mat4<F32> Transform::interpolate(const TransformValues& prevTransforms, const D32 factor) {
+   if (factor < 0.90) {
         _worldMatrixInterp.identity();
         _worldMatrixInterp.setScale(lerp(prevTransforms._scale, getLocalScale(), (F32)factor));
         _worldMatrixInterp *= ::getMatrix(slerp(prevTransforms._orientation, getLocalOrientation(), (F32)factor));
@@ -74,7 +62,7 @@ void Transform::getValues(TransformValues& transforms) {
     transforms._translation.set(getLocalPosition());
 }
 
-bool Transform::compare(const Transform* const t){
+bool Transform::compare(const Transform* const t) {
     ReadLock r_lock(_lock);
     return (_transformValues._scale.compare(t->_transformValues._scale) &&
             _transformValues._orientation.compare(t->_transformValues._orientation) &&
@@ -83,7 +71,7 @@ bool Transform::compare(const Transform* const t){
 
 void Transform::identity() {
     WriteLock w_lock(_lock);
-    _transformValues._scale = vec3<F32>(1.0f);
+    _transformValues._scale.set(1.0f);
     _transformValues._translation.reset();
     _transformValues._orientation.identity();
     _worldMatrix.identity();

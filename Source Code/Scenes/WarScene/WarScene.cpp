@@ -248,7 +248,7 @@ bool WarScene::load(const std::string& name, CameraManager* const cameraMgr, GUI
         currentNode->getComponent<NavigationComponent>()->setNavigationContext(baseNode->getComponent<NavigationComponent>()->getNavigationContext());
         currentNode->getComponent<NavigationComponent>()->setNavigationDetailOverride(baseNode->getComponent<NavigationComponent>()->getNavMeshDetailOverride());
         
-        currentNode->getTransform()->scale(baseNode->getTransform()->getScale());
+        currentNode->getTransform()->setScale(baseNode->getTransform()->getScale());
         currentNode->getTransform()->setPosition(vec3<F32>(currentPos.first, -0.01f, currentPos.second));
     }
 
@@ -341,7 +341,7 @@ bool WarScene::initializeAI(bool continueOnErrors){
             }
 
             currentNode = _sceneGraph->getRoot()->addNode(currentMesh, currentName);
-            currentNode->getTransform()->scale(currentScale);
+            currentNode->getTransform()->setScale(currentScale);
             DIVIDE_ASSERT(currentNode != nullptr, "WarScene error: INVALID SOLDIER NODE TEMPLATE!");
             currentNode->setSelectable(true);
             I8 side = k == 0 ? -1 : 1;

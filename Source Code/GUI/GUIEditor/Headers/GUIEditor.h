@@ -33,7 +33,7 @@ namespace CEGUI {
 
 #include "Core/Headers/Singleton.h"
 #include "Hardware/Platform/Headers/PlatformDefines.h"
-
+class SceneGraphNode;
 ///Our world editor interface
 DEFINE_SINGLETON( GUIEditor )
     public:
@@ -41,12 +41,19 @@ DEFINE_SINGLETON( GUIEditor )
         void setVisible(bool visible); //< Hide or show the editor
         bool isVisible();              //< Return true if editor is visible, false if is hidden
         bool update(const U64 deltaTime);    //< Used to update time dependent elements
+        bool Handle_ChangeSelection(SceneGraphNode* const newNode);
+
+        /// Returns true if the last click was in one of the editor's windows
+        inline bool wasControlClick() { return _wasControlClick; }
 
     private:
         GUIEditor();
         ~GUIEditor();
         void RegisterHandlers();   
+        void UpdateControls();
+        void TrackSelection();
 
+        bool Handle_MenuBarClickOn(const CEGUI::EventArgs &e);
         bool Handle_CreateNavMesh(const CEGUI::EventArgs &e);
         bool Handle_SaveScene(const CEGUI::EventArgs &e);
         bool Handle_SaveSelection(const CEGUI::EventArgs &e);
@@ -117,17 +124,25 @@ DEFINE_SINGLETON( GUIEditor )
             CONTROL_FIELD_GRANULARITY = 3,
             ControlField_PLACEHOLDER = 4
         };
+        enum TransformFields {
+            TRANSFORM_POSITION = 0,
+            TRANSFORM_ROTATION = 1,
+            TRANSFORM_SCALE = 2,
+            TransformFields_PLACEHOLDER = 3
+        };
 
         bool _init;
+        bool _wasControlClick;
         bool _createNavMeshQueued;
-        CEGUI::Window *_editorWindow;  //< This will be a pointer to the EditorRoot window.
+        SceneGraphNode      *_currentSelection;
+        CEGUI::Window       *_editorWindow;  //< This will be a pointer to the EditorRoot window.
+        CEGUI::Window       *_saveSelectionButton;
+        CEGUI::Window       *_deleteSelectionButton;
         CEGUI::ToggleButton *_toggleButtons[ToggleButtons_PLACEHOLDER];
-        CEGUI::Editbox      *_positionValuesField[ControlField_PLACEHOLDER];
-        CEGUI::Editbox      *_rotationValuesField[ControlField_PLACEHOLDER];
-        CEGUI::Editbox      *_scaleValuesField[ControlField_PLACEHOLDER];
-        F32 _currentPositionValues[ControlField_PLACEHOLDER];
-        F32 _currentRotationValues[ControlField_PLACEHOLDER];   
-        F32 _currentScaleValues[ControlField_PLACEHOLDER];
+        CEGUI::Window       *_transformButtonsInc[TransformFields_PLACEHOLDER][ControlField_PLACEHOLDER];
+        CEGUI::Window       *_transformButtonsDec[TransformFields_PLACEHOLDER][ControlField_PLACEHOLDER];
+        CEGUI::Editbox      *_valuesField[TransformFields_PLACEHOLDER][ControlField_PLACEHOLDER];
+        F32                  _currentValues[TransformFields_PLACEHOLDER][ControlField_PLACEHOLDER];
 
 END_SINGLETON
 

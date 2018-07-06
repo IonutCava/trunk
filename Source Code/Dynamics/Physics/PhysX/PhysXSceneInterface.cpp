@@ -252,7 +252,7 @@ SceneGraphNode* PhysXSceneInterface::addToScene(PhysXActor& actor){
         }else{
             actor._actorName = sgnName;
             actor._transform = tempNode->getTransform();
-            actor._transform->scale(actor._userData);
+            actor._transform->setScale(actor._userData);
             actor._transform->cleanPhysics();
         }
     }

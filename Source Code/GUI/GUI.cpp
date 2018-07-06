@@ -7,6 +7,8 @@
 #include "Headers/GUIButton.h"
 #include "Headers/GUIConsole.h"
 #include "GUIEditor/Headers/GUIEditor.h"
+
+#include "Scenes/Headers/Scene.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 
@@ -136,6 +138,10 @@ bool GUI::init(const vec2<U16>& resolution) {
     return true;
 }
 
+void GUI::selectionChangeCallback(Scene* const activeScene) {
+    GUIEditor::getInstance().Handle_ChangeSelection(activeScene->getCurrentSelection());
+}
+
 bool GUI::checkItem(const OIS::MouseEvent& arg) {
     if (!_init) { 
         return true;
@@ -230,7 +236,7 @@ bool GUI::clickCheck(OIS::MouseButtonID button, bool pressed) {
                 break;
         }
     }
-    return !_console->isVisible() && !GUIEditor::getInstance().isVisible();
+    return !_console->isVisible() && !GUIEditor::getInstance().wasControlClick();
 }
 
 GUIButton* GUI::addButton(const std::string& id, const std::string& text,

@@ -599,12 +599,11 @@ void GFXDevice::processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleN
             // ... get the node's world matrix properly interpolated
             temp._matrix[0].set(crtNode->getWorldMatrix(_interpolationFactor));
             // Calculate the normal matrix (world * view)
+            // If the world matrix is uniform scaled, inverseTranspose is a double transpose (no-op) so we can skip it
+            temp._matrix[1].set(mat3<F32>(temp._matrix[0] * _gpuBlock._ViewMatrix));
             if (!transform->isUniformScaled()) {
                 // Non-uniform scaling requires an inverseTranspose to negate scaling contribution but preserve rotation
                 temp._matrix[1].set(mat3<F32>(temp._matrix[0] * _gpuBlock._ViewMatrix).getInverseTranspose());
-            } else {
-                // If the world matrix is uniform scaled, inverseTranspose is a double transpose (no-op) so we can skip it
-                temp._matrix[1].set(mat3<F32>(temp._matrix[0] * _gpuBlock._ViewMatrix));
             }
         } else {
             // Nodes without transforms are considered as using identity matrices

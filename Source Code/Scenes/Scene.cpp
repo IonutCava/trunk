@@ -121,9 +121,9 @@ bool Scene::loadModel(const FileData& data){
     SceneGraphNode* meshNode = _sceneGraph->getRoot()->addNode(thisObj, data.ItemName);
     meshNode->setCastsShadows(data.castsShadows);
     meshNode->setReceivesShadows(data.receivesShadows);
-    meshNode->getTransform()->scale(data.scale);
-    meshNode->getTransform()->rotateEuler(data.orientation);
-    meshNode->getTransform()->translate(data.position);
+    meshNode->getTransform()->setScale(data.scale);
+    meshNode->getTransform()->setRotation(data.orientation);
+    meshNode->getTransform()->setPosition(data.position);
     if(data.staticUsage){
         meshNode->setUsageContext(SceneGraphNode::NODE_STATIC);
     }
@@ -178,9 +178,9 @@ bool Scene::loadGeometry(const FileData& data){
 
     thisObj->setMaterial(tempMaterial);
     SceneGraphNode* thisObjSGN = _sceneGraph->getRoot()->addNode(thisObj);
-    thisObjSGN->getTransform()->scale(data.scale);
-    thisObjSGN->getTransform()->rotateEuler(data.orientation);
-    thisObjSGN->getTransform()->translate(data.position);
+    thisObjSGN->getTransform()->setScale(data.scale);
+    thisObjSGN->getTransform()->setRotation(data.orientation);
+    thisObjSGN->getTransform()->setPosition(data.position);
     thisObjSGN->setCastsShadows(data.castsShadows);
     thisObjSGN->setReceivesShadows(data.receivesShadows);
     if(data.staticUsage){
@@ -305,6 +305,8 @@ bool Scene::load(const std::string& name, CameraManager* const cameraMgr, GUI* c
     Kernel* kernel = Application::getInstance().getKernel();
     _aiTask.reset(kernel->AddTask(1000.0 / Config::AI_THREAD_UPDATE_FREQUENCY, false, false,
                                   DELEGATE_BIND(&AIManager::update, DELEGATE_REF(AIManager::getInstance()))));
+
+    addSelectionCallback(DELEGATE_BIND(&GUI::selectionChangeCallback, DELEGATE_REF(GUI::getInstance()), this));
     _loadComplete = true;
     return _loadComplete;
 }

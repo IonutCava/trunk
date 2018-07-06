@@ -168,7 +168,7 @@ void PingPongScene::test(cdiggins::any a, CallbackParam b){
         _directionTowardsAdversary = false;
     }
     //Add a spin effect to the ball
-    ballTransform->rotateEuler(vec3<F32>(ballPosition.z,1,1));
+    ballTransform->rotate(vec3<F32>(ballPosition.z,1,1));
 
     if(updated){
         if(_lost){

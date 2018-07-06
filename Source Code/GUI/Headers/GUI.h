@@ -55,6 +55,7 @@ namespace OIS {
 
 #define CEGUI_DEFAULT_CONTEXT CEGUI::System::getSingleton().getDefaultGUIContext()
 
+class Scene;
 class GUIText;
 class GUIFlash;
 class GUIButton;
@@ -93,9 +94,10 @@ public:
     bool init(const vec2<U16>& resolution);
     /// Used by CEGUI to setup rendering (D3D/OGL/OGRE/etc)
     bool bindRenderer(CEGUI::Renderer& renderer);
+    void selectionChangeCallback(Scene* const activeScene);
     /// Used to prevent text updating every frame
     inline void setTextRenderTimer(const U64 renderIntervalUs) {_textRenderInterval = renderIntervalUs;}
-
+    
 private:
     GUI();               //< Constructor
     ~GUI();              //< Destructor

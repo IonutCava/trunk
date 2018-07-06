@@ -30,14 +30,17 @@ namespace {
     static vectorImpl<SceneGraphNode* > _sceneSelectionCandidates;
 }
 
-void Scene::findSelection(F32 mouseX, F32 mouseY){
+void Scene::findSelection(F32 mouseX, F32 mouseY) {
     mouseY = renderState().cachedResolution().height - mouseY - 1;
     vec3<F32> startRay = renderState().getCameraConst().unProject(vec3<F32>(mouseX, mouseY, 0.0f));
     vec3<F32> endRay   = renderState().getCameraConst().unProject(vec3<F32>(mouseX, mouseY, 1.0f));
     const vec2<F32>& zPlanes = renderState().getCameraConst().getZPlanes();
 
     // deselect old node
-    if(_currentSelection) _currentSelection->setSelected(false);
+    if (_currentSelection) {
+        _currentSelection->setSelected(false);
+    }
+
     _currentSelection = nullptr;
 
     // see if we select another one
@@ -52,6 +55,10 @@ void Scene::findSelection(F32 mouseX, F32 mouseY){
 #ifdef _DEBUG
         _lines[DEBUG_LINE_RAY_PICK].push_back(Line(startRay, endRay, vec4<U8>(0, 255, 0, 255)));
 #endif
+    }
+
+    FOR_EACH(DELEGATE_CBK& cbk, _selectionChangeCallbacks) {
+        cbk();
     }
 }
 

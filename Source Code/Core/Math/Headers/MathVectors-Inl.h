@@ -185,7 +185,8 @@ inline bool vec3<T>::compare(const vec3 &v, F32 epsi = EPSILON_F32) const {
 /// uniform vector: x = y = z
 template<typename T>
 inline bool vec3<T>::isUniform() const {
-    return IS_ZERO(this->x - this->y) && IS_ZERO(this->y - this->z);
+    return FLOAT_COMPARE(this->x, this->y) &&
+           FLOAT_COMPARE(this->y, this->z);
 }
 
 /// return the squared distance of the vector
