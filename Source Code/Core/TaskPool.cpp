@@ -46,21 +46,44 @@ void TaskPool::flushCallbackQueue()
         if (cbk) {
             cbk();
             _taskStates[taskIndex] = false;
+            _taskCallbacks[taskIndex].swap(DELEGATE_CBK<>());
         }
+    }
+}
+
+void TaskPool::waitForAllTasks(bool yeld, bool flushCallbacks) {
+    bool finished = false;
+    while (!finished) {
+        finished = true;
+        for (bool state : _taskStates) {
+            if (state) {
+                finished = false;
+                break;
+            }
+        }
+        if (yeld) {
+            std::this_thread::yield();
+        }
+    }
+    if (flushCallbacks) {
+        flushCallbackQueue();
     }
 }
 
 void TaskPool::setTaskCallback(const TaskHandle& handle,
                                const DELEGATE_CBK<>& callback) {
-    _taskCallbacks[handle._task->poolIndex()] = callback;
+    U32 index = handle._task->poolIndex();
+    assert(!_taskCallbacks[index]);
+
+    _taskCallbacks[index] = callback;
 }
 
 void TaskPool::taskCompleted(U32 poolIndex) {
     if (!_taskCallbacks[poolIndex]) {
         _taskStates[poolIndex] = false;
+    } else {
+        WAIT_FOR_CONDITION(_threadedCallbackBuffer.push(poolIndex));
     }
-
-    WAIT_FOR_CONDITION(_threadedCallbackBuffer.push(poolIndex));
     // Signal main thread to execute callback
 }
 
@@ -147,6 +170,14 @@ TaskHandle CreateTask(TaskPool& pool,
     return handle;
 }
 
+void WaitForAllTasks(bool yeld, bool flushCallbacks) {
+    TaskPool& pool = Application::instance().kernel().taskPool();
+    WaitForAllTasks(pool, yeld, flushCallbacks);
+}
+
+void WaitForAllTasks(TaskPool& pool, bool yeld, bool flushCallbacks) {
+    pool.waitForAllTasks(yeld, flushCallbacks);
+}
 
 TaskHandle parallel_for(const DELEGATE_CBK_PARAM_3<const std::atomic_bool&, U32, U32>& cbk,
                         U32 count,

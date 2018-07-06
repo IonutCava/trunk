@@ -32,6 +32,10 @@ RenderPassCuller::RenderPassCuller() {
 }
 
 RenderPassCuller::~RenderPassCuller() {
+    clear();
+}
+
+void RenderPassCuller::clear() {
     for (VisibleNodeList& cache : _visibleNodes) {
         cache.clear();
     }

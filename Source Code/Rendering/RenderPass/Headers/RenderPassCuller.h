@@ -58,6 +58,9 @@ class RenderPassCuller {
     RenderPassCuller();
     ~RenderPassCuller();
 
+    // flush all caches
+    void clear();
+
     VisibleNodeList& getNodeCache(RenderStage stage);
     const VisibleNodeList& getNodeCache(RenderStage stage) const;
 

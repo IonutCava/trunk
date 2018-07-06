@@ -1,7 +1,6 @@
 #include "Headers/GUIConsoleCommandParser.h"
 
 #include "Core/Headers/ParamHandler.h"
-#include "Managers/Headers/AIManager.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "AI/PathFinding/NavMeshes/Headers/NavMesh.h"  ///< For NavMesh creation
@@ -174,10 +173,9 @@ void GUIConsoleCommandParser::handleNavMeshCommand(const stringImpl& args) {
             return;
         }
     }
+    AI::AIManager& aiManager = GET_ACTIVE_SCENEGRAPH().parentScene().aiManager();
     // Check if we already have a NavMesh created
-    AI::Navigation::NavigationMesh* temp =
-        AI::AIManager::instance().getNavMesh(
-            AI::AIEntity::PresetAgentRadius::AGENT_RADIUS_SMALL);
+    AI::Navigation::NavigationMesh* temp = aiManager.getNavMesh(AI::AIEntity::PresetAgentRadius::AGENT_RADIUS_SMALL);
     // Create a new NavMesh if we don't currently have one
     if (!temp) {
         temp = MemoryManager_NEW AI::Navigation::NavigationMesh();
@@ -196,8 +194,7 @@ void GUIConsoleCommandParser::handleNavMeshCommand(const stringImpl& args) {
     }
     // If we loaded/built the NavMesh correctly, add it to the AIManager
     if (loaded) {
-        AI::AIManager::instance().addNavMesh(
-            AI::AIEntity::PresetAgentRadius::AGENT_RADIUS_SMALL, temp);
+        aiManager.addNavMesh(AI::AIEntity::PresetAgentRadius::AGENT_RADIUS_SMALL, temp);
     }
 }
 

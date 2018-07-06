@@ -16,12 +16,12 @@ ResourceCache::ResourceCache()
 }
 
 ResourceCache::~ResourceCache() {
-    Destroy();
+    destroy();
     // DELETE(_loadingPool);
     Console::printfn(Locale::get(_ID("RESOURCE_CACHE_DELETE")));
 }
 
-void ResourceCache::Destroy() {
+void ResourceCache::destroy() {
     Console::printfn(Locale::get(_ID("STOP_RESOURCE_CACHE")));
     for (ResourceMap::iterator it = std::begin(_resDB); it != std::end(_resDB);)
     {

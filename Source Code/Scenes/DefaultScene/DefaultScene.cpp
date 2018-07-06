@@ -123,4 +123,22 @@ void DefaultScene::loadScene(I64 btnGUID) {
     }
 }
 
+void DefaultScene::onSetActive() {
+    vectorImpl<stringImpl> scenes = SceneManager::instance().sceneNameList();
+
+    for (const stringImpl& scene : scenes) {
+        GUIButton* btn = _GUI->getGuiElement<GUIButton>(getGUID(), _ID_RT("StartScene" + scene));
+        
+        btn->setText(scene);
+        btn->setActive(true);
+        btn->setVisible(true);
+    }
+
+    Scene::onSetActive();
+}
+
+void DefaultScene::onRemoveActive() {
+    Scene::onRemoveActive();
+}
+
 };

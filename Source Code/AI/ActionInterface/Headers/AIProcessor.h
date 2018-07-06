@@ -40,11 +40,12 @@ namespace Divide {
 class Texture;
 namespace AI {
 
+class AIManager;
 enum class AIMsg : U32;
 /// Provides a scene-level AI implementation
 class NOINITVTABLE AIProcessor : private NonCopyable {
    public:
-    AIProcessor();
+    AIProcessor(AIManager& parentManager);
     virtual ~AIProcessor();
     virtual void addEntityRef(AIEntity* entity);
 
@@ -228,6 +229,7 @@ class NOINITVTABLE AIProcessor : private NonCopyable {
 
    protected:
     AIEntity* _entity;
+    AIManager& _parentManager;
 
    private:
     I32 _currentStep;

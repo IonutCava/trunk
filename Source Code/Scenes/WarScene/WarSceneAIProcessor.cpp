@@ -5,7 +5,6 @@
 #include "AI/Sensors/Headers/VisualSensor.h"
 #include "AI/ActionInterface/Headers/AITeam.h"
 
-#include "Managers/Headers/AIManager.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Core/Headers/Console.h"
 #include "Core/Math/Headers/Transform.h"
@@ -27,8 +26,9 @@ vec3<F32> WarSceneAIProcessor::_initialFlagPositions[2];
 GlobalWorkingMemory WarSceneAIProcessor::_globalWorkingMemory;
 DELEGATE_CBK_PARAM_2<U8, const stringImpl&> WarSceneAIProcessor::_scoreCallback;
 DELEGATE_CBK_PARAM_2<U8, const stringImpl&> WarSceneAIProcessor::_messageCallback;
-WarSceneAIProcessor::WarSceneAIProcessor(AIType type)
-    : AIProcessor(),
+
+WarSceneAIProcessor::WarSceneAIProcessor(AIType type, AIManager& parentManager)
+    : AIProcessor(parentManager),
       _type(type),
       _tickCount(0),
       _visualSensorUpdateCounter(0),
@@ -102,7 +102,7 @@ void WarSceneAIProcessor::initInternal() {
                   "current AI entity!");
 
     AITeam* currentTeam = _entity->getTeam();
-    AITeam* enemyTeam = AIManager::instance().getTeamByID(currentTeam->getEnemyTeamID(0));
+    AITeam* enemyTeam = _parentManager.getTeamByID(currentTeam->getEnemyTeamID(0));
     const AITeam::TeamMap& teamAgents = currentTeam->getTeamMembers();
     const AITeam::TeamMap& enemyMembers = enemyTeam->getTeamMembers();
 
@@ -177,7 +177,7 @@ bool WarSceneAIProcessor::DIE() {
         g_flagContainer,
         _globalWorkingMemory._flags[1].value().lock()->getGUID());
 
-    AITeam* enemyTeam = AIManager::instance().getTeamByID(currentTeam->getEnemyTeamID(0));
+    AITeam* enemyTeam = _parentManager.getTeamByID(currentTeam->getEnemyTeamID(0));
     const AITeam::TeamMap& teamAgents = currentTeam->getTeamMembers();
     const AITeam::TeamMap& enemyMembers = enemyTeam->getTeamMembers();
 
@@ -490,7 +490,7 @@ bool WarSceneAIProcessor::postAction(ActionType type,
                 _entity->sendMessage(*member.second, AIMsg::HAVE_FLAG, _entity);
             }
             
-            const AITeam* const enemyTeam = AIManager::instance().getTeamByID(currentTeam->getEnemyTeamID(0));
+            const AITeam* const enemyTeam = _parentManager.getTeamByID(currentTeam->getEnemyTeamID(0));
             for (const AITeam::TeamMap::value_type& enemy : enemyTeam->getTeamMembers()) {
                 _entity->sendMessage(*enemy.second, AIMsg::ENEMY_HAS_FLAG, _entity);
             }
@@ -695,7 +695,7 @@ void WarSceneAIProcessor::updatePositions() {
             _initialFlagPositions[1]) <= g_ATTACK_RADIUS_SQ);
 
     AITeam* currentTeam = _entity->getTeam();
-    AITeam* enemyTeam = AIManager::instance().getTeamByID(currentTeam->getEnemyTeamID(0));
+    AITeam* enemyTeam = _parentManager.getTeamByID(currentTeam->getEnemyTeamID(0));
 
     bool atHome = atHomeBase();
     U32 teamID = currentTeam->getTeamID();
@@ -764,7 +764,7 @@ bool WarSceneAIProcessor::processData(const U64 deltaTime) {
         return true;
     }
 
-    if (!AIManager::instance().getNavMesh(_entity->getAgentRadiusCategory())) {
+    if (!_parentManager.getNavMesh(_entity->getAgentRadiusCategory())) {
         return false;
     }
 

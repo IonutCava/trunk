@@ -2,6 +2,7 @@
 
 #include "AI/ActionInterface/Headers/AITeam.h"
 #include "AI/PathFinding/Headers/DivideRecast.h"
+#include "AI/PathFinding/NavMeshes/Headers/NavMesh.h"
 
 #include "Core/Time/Headers/ApplicationTimer.h"
 
@@ -9,8 +10,9 @@ namespace Divide {
 
 using namespace AI;
 
-AIManager::AIManager()
-    : _navMeshDebugDraw(false),
+AIManager::AIManager(Scene& parentScene)
+    : _parentScene(parentScene),
+      _navMeshDebugDraw(false),
       _pauseUpdate(true),
       _updating(false),
       _deltaTime(0ULL),
@@ -19,16 +21,15 @@ AIManager::AIManager()
 {
     _shouldStop = false;
     _running = false;
-    Navigation::DivideRecast::createInstance();
 }
 
 AIManager::~AIManager()
 {
-    Destroy();
+    destroy();
 }
 
 /// Clear up any remaining AIEntities
-void AIManager::Destroy() {
+void AIManager::destroy() {
     {
         WriteLock w_lock(_updateMutex);
         for (AITeamMap::value_type& entity : _aiTeams) {
@@ -42,8 +43,6 @@ void AIManager::Destroy() {
             MemoryManager::DELETE(it.second);
         }
         _navMeshes.clear();
-
-        Navigation::DivideRecast::destroyInstance();
     }
 }
 
@@ -62,7 +61,6 @@ void AIManager::update() {
             
             /// use internal delta time calculations
             _deltaTime = _currentTime - _previousTime;
-
             {
                 /// Lock the entities during update() adding or deleting entities is
                 /// suspended until this returns

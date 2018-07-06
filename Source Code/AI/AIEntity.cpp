@@ -10,7 +10,6 @@
 #include "PathFinding/Waypoints/Headers/WaypointGraph.h"  ///< For waypoint movement
 #include "PathFinding/NavMeshes/Headers/NavMesh.h"  ///< For NavMesh movement
 #include "Dynamics/Entities/Units/Headers/NPC.h"
-#include "Managers/Headers/AIManager.h"
 
 namespace Divide {
 using namespace AI;

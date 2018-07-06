@@ -189,7 +189,7 @@ class WarSceneAIProcessor : public AIProcessor {
            HEAVY = 2,
            COUNT
        };
-    WarSceneAIProcessor(AIType type);
+    WarSceneAIProcessor(AIType type, AIManager& parentManager);
     ~WarSceneAIProcessor();
 
     void registerGOAPPackage(const GOAPPackage& package);

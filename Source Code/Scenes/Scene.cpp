@@ -6,7 +6,6 @@
 #include "Core/Math/Headers/Transform.h"
 
 #include "Utility/Headers/XMLParser.h"
-#include "Managers/Headers/AIManager.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/CameraManager.h"
 #include "Rendering/Headers/Renderer.h"
@@ -58,9 +57,8 @@ Scene::Scene(const stringImpl& name)
 {
     _sceneTimer = 0UL;
     _input.reset(new SceneInput(*this));
-
     _sceneGraph.reset(new SceneGraph(*this));
-
+    _aiManager.reset(new AI::AIManager(*this));
 #ifdef _DEBUG
 
     RenderStateBlock primitiveDescriptor;
@@ -614,6 +612,7 @@ bool Scene::unload() {
     if (!checkLoadFlag()) {
         return false;
     }
+    _GUI->onUnloadScene(getGUID());
     clearTasks();
     _lightPool->clear();
     /// Destroy physics (:D)
@@ -631,11 +630,11 @@ void Scene::postLoad() {
 }
 
 void Scene::onSetActive() {
-    AI::AIManager::instance().pauseUpdate(false);
+    _aiManager->pauseUpdate(false);
 }
 
 void Scene::onRemoveActive() {
-    AI::AIManager::instance().pauseUpdate(true);
+    _aiManager->pauseUpdate(true);
 }
 
 PhysicsSceneInterface* Scene::createPhysicsImplementation() {
@@ -656,14 +655,14 @@ bool Scene::loadPhysics(bool continueOnErrors) {
 }
 
 bool Scene::initializeAI(bool continueOnErrors) {
-    _aiTask = std::thread(DELEGATE_BIND(&AI::AIManager::update, &AI::AIManager::instance()));
+    _aiTask = std::thread(DELEGATE_BIND(&AI::AIManager::update, _aiManager.get()));
     return true;
 }
 
  /// Shut down AIManager thread
 bool Scene::deinitializeAI(bool continueOnErrors) { 
-    AI::AIManager::instance().stop();
-    WAIT_FOR_CONDITION(!AI::AIManager::instance().running());
+    _aiManager->stop();
+    WAIT_FOR_CONDITION(!_aiManager->running());
     _aiTask.join();
         
     return true;
@@ -825,7 +824,7 @@ void Scene::debugDraw(RenderStage stage) {
         // Draw bounding boxes, skeletons, axis gizmo, etc.
         GFX_DEVICE.debugDraw(renderState());
         // Show NavMeshes
-        AI::AIManager::instance().debugDraw(false);
+        _aiManager->debugDraw(false);
         _lightPool->drawLightImpostors();
     }
 }

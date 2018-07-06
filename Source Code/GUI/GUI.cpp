@@ -46,7 +46,9 @@ GUI::~GUI()
     GUIEditor::destroyInstance();
     MemoryManager::DELETE(_console);
     for (GUIMapPerScene::value_type& it : _guiStack) {
-        MemoryManager::DELETE_HASHMAP(it.second);
+        for (GUIMap::value_type& it2 : it.second) {
+            MemoryManager::DELETE(it2.second.first);
+        }
     }
     _guiStack.clear();
 
@@ -67,12 +69,31 @@ I64 GUI::activeSceneGUID() const {
 void GUI::onChangeScene(I64 newSceneGUID) {
     if (_activeSceneGUID > 0 && _activeSceneGUID != newSceneGUID) {
         GUIMapPerScene::const_iterator it = _guiStack.find(_activeSceneGUID);
+        if (it != std::cend(_guiStack)) {
+            for (const GUIMap::value_type& guiStackIterator : it->second) {
+               guiStackIterator.second.first->setVisible(false);
+            }
+        }
+    }
+
+    GUIMapPerScene::const_iterator it = _guiStack.find(newSceneGUID);
+    if (it != std::cend(_guiStack)) {
         for (const GUIMap::value_type& guiStackIterator : it->second) {
-           guiStackIterator.second->setVisible(false);
+            guiStackIterator.second.first->setVisible(guiStackIterator.second.second);
         }
     }
 
     _activeSceneGUID = newSceneGUID;
+}
+
+void GUI::onUnloadScene(I64 sceneGUID) {
+    GUIMapPerScene::iterator it = _guiStack.find(sceneGUID);
+    if (it != std::cend(_guiStack)) {
+        for (GUIMap::value_type& guiStackIterator : it->second) {
+            MemoryManager::DELETE(guiStackIterator.second.first);
+        }
+    }
+    _guiStack.erase(it);
 }
 
 void GUI::draw() const {
@@ -85,7 +106,7 @@ void GUI::draw() const {
     // global elements
     GUIMapPerScene::const_iterator it = _guiStack.find(0);
     for (const GUIMap::value_type& guiStackIterator : it->second) {
-        GUIElement& element = *guiStackIterator.second;
+        GUIElement& element = *guiStackIterator.second.first;
         // Skip hidden elements
         if (element.isVisible()) {
             element.draw();
@@ -96,7 +117,7 @@ void GUI::draw() const {
     it = _guiStack.find(_activeSceneGUID);
     if (it != std::cend(_guiStack)) {
         for (const GUIMap::value_type& guiStackIterator : it->second) {
-            GUIElement& element = *guiStackIterator.second;
+            GUIElement& element = *guiStackIterator.second.first;
             // Skip hidden elements
             if (element.isVisible()) {
                 element.draw();
@@ -268,7 +289,7 @@ void GUI::onChangeResolution(U16 w, U16 h) {
     
     for (const GUIMapPerScene::value_type& guiSceneIterator : _guiStack) {
         for (const GUIMap::value_type& guiStackIterator : guiSceneIterator.second) {
-            guiStackIterator.second->onChangeResolution(w, h);
+            guiStackIterator.second.first->onChangeResolution(w, h);
         }
     }
 }
@@ -320,7 +341,7 @@ bool GUI::mouseMoved(const Input::MouseEvent& arg) {
     GUIMapPerScene::const_iterator it = _guiStack.find(_activeSceneGUID);
     assert(it != std::cend(_guiStack));
     for (const GUIMap::value_type& guiStackIterator : it->second) {
-        guiStackIterator.second->mouseMoved(event);
+        guiStackIterator.second.first->mouseMoved(event);
     }
 
     return !_ceguiInput.mouseMoved(arg);
@@ -340,7 +361,7 @@ bool GUI::mouseButtonPressed(const Input::MouseEvent& arg,
             GUIMapPerScene::const_iterator it = _guiStack.find(_activeSceneGUID);
             assert(it != std::cend(_guiStack));
             for (GUIMap::value_type guiStackIterator : it->second) {
-                guiStackIterator.second->onMouseDown(event);
+                guiStackIterator.second.first->onMouseDown(event);
             }
         }
         processed = true;
@@ -363,7 +384,7 @@ bool GUI::mouseButtonReleased(const Input::MouseEvent& arg,
             GUIMapPerScene::const_iterator it = _guiStack.find(_activeSceneGUID);
             assert(it != std::cend(_guiStack));
             for (GUIMap::value_type guiStackIterator : it->second) {
-                guiStackIterator.second->onMouseUp(event);
+                guiStackIterator.second.first->onMouseUp(event);
             }
         }
         processed = true;
@@ -403,9 +424,10 @@ void GUI::addElement(ULL id, I64 sceneID, GUIElement* element) {
 
     GUIMap::iterator it2 = stack.find(id);
     if (it2 != std::end(stack)) {
-        MemoryManager::SAFE_UPDATE(it2->second, element);
+        MemoryManager::SAFE_UPDATE(it2->second.first, element);
+        it2->second.second = element ? element->isVisible() : false;
     } else {
-        hashAlg::insert(stack, std::make_pair(id, element));
+        hashAlg::insert(stack, std::make_pair(id, std::make_pair(element, element ? element->isVisible() : false)));
     }
 }
 
@@ -558,7 +580,7 @@ GUIText* GUI::modifyText(ULL ID, const stringImpl& text) {
         return nullptr;
     }
  
-    GUIElement* element = it2->second;
+    GUIElement* element = it2->second.first;
     assert(element->getType() == GUIType::GUI_TEXT);
 
     GUIText* textElement = dynamic_cast<GUIText*>(element);
@@ -578,7 +600,7 @@ GUIText* GUI::modifyGlobalText(ULL ID, const stringImpl& text) {
         return nullptr;
     }
 
-    GUIElement* element = it2->second;
+    GUIElement* element = it2->second.first;
     assert(element->getType() == GUIType::GUI_TEXT);
 
     GUIText* textElement = dynamic_cast<GUIText*>(element);

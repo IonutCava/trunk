@@ -111,6 +111,8 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
   public:
     static bool initStaticData();
 
+    void idle();
+
     vectorImpl<stringImpl> sceneNameList() const;
 
     inline Scene& getActiveScene() { 
@@ -134,7 +136,6 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     const RenderPassCuller::VisibleNodeList& getSortedReflectiveNodes();
 
     inline void onLostFocus() { _activeScene->onLostFocus(); }
-    inline void idle() { _activeScene->idle(); }
     bool unloadCurrentScene();
     Scene* load(stringImpl name);
     /// Check if the scene was loaded properly
@@ -246,6 +247,8 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     Material_ptr _defaultMaterial;
     RenderPassCuller::VisibleNodeList _reflectiveNodesCache;
     Time::ProfileTimer& _sceneGraphCullTimer;
+
+    std::pair<stringImpl, bool> _sceneSwitchTarget;
 END_SINGLETON
 
 namespace Attorney {

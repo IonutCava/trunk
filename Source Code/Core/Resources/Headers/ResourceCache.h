@@ -74,7 +74,7 @@ DEFINE_SINGLETON(ResourceCache)
     ResourceCache();
     ~ResourceCache();
     /// Empty the entire cache of resources
-    void Destroy();
+    void destroy();
     /// this method handles cache lookups and reference counting
     Resource_ptr loadResource(const stringImpl& name);
 

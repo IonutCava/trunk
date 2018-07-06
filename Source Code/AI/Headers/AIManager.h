@@ -33,19 +33,28 @@
 #define _AI_MANAGER_G_
 
 #include "AI/Headers/AIEntity.h"
-#include "AI/PathFinding/NavMeshes/Headers/NavMesh.h"
 
 namespace Divide {
 
+class Scene;
 namespace AI {
-DEFINE_SINGLETON(AIManager)
+
+namespace Navigation {
+    class NavigationMesh;
+}; //namespace Navigation
+
+class AIManager
+{
   public:
     typedef hashMapImpl<U32, AITeam*> AITeamMap;
     typedef hashMapImpl<AIEntity::PresetAgentRadius,
                         Navigation::NavigationMesh*> NavMeshMap;
 
+    AIManager(Scene& parentScene);
+    ~AIManager();
+
     /// Clear all AI related data (teams, entities, NavMeshes, etc);
-    void Destroy();
+    void destroy();
     /// Called at a fixed interval (preferably in a separate thread);
     void update();
     /// Add an AI Entity to a specific team.
@@ -106,10 +115,6 @@ DEFINE_SINGLETON(AIManager)
     }
 
   protected:
-    AIManager();
-    ~AIManager();
-
-  protected:
     friend class AITeam;
     /// Register an AI Team
     void registerTeam(AITeam* const team);
@@ -122,6 +127,7 @@ DEFINE_SINGLETON(AIManager)
     bool updateEntities(const U64 deltaTime);  ///< react
 
   private:
+    Scene& _parentScene;
     U64 _deltaTime, _currentTime, _previousTime;
     std::atomic<bool> _navMeshDebugDraw;
     std::atomic<bool> _pauseUpdate;
@@ -134,7 +140,7 @@ DEFINE_SINGLETON(AIManager)
     mutable SharedLock _navMeshMutex;
     DELEGATE_CBK<> _sceneCallback;
 
-END_SINGLETON
+};
 
 };  // namespace AI
 };  // namespace Divide

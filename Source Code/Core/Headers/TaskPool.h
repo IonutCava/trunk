@@ -44,6 +44,7 @@ class TaskPool {
     
     bool init(U32 threadCount);
     void flushCallbackQueue();
+    void waitForAllTasks(bool yeld, bool flushCallbacks);
 
     TaskHandle getTaskHandle(I64 taskGUID);
     Task& getAvailableTask();
@@ -76,7 +77,6 @@ class TaskPool {
 
 // The following calls should work with any taskpool, 
 // but will default to the one created by the kernel
-
 TaskHandle GetTaskHandle(I64 taskGUID);
 /**
 * @brief Creates a new Task that runs in a separate thread
@@ -120,6 +120,9 @@ TaskHandle parallel_for(TaskPool& pool,
                         U32 partitionSize,
                         Task::TaskPriority priority = Task::TaskPriority::HIGH,
                         bool waitForResult = true);
+
+void WaitForAllTasks(bool yeld, bool flushCallbacks);
+void WaitForAllTasks(TaskPool& pool, bool yeld, bool flushCallbacks);
 };
 
 #endif _TASK_POOL_H_

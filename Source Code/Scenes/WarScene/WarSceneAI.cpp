@@ -2,10 +2,11 @@
 #include "Headers/WarSceneAIProcessor.h"
 
 #include "GUI/Headers/GUIMessageBox.h"
-#include "Managers/Headers/AIManager.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
 #include "Dynamics/Entities/Units/Headers/NPC.h"
+
+#include "AI/PathFinding/NavMeshes/Headers/NavMesh.h"
 
 namespace Divide {
 
@@ -124,7 +125,7 @@ bool WarScene::initializeAI(bool continueOnErrors) {
     //------------------------Artificial Intelligence------------------------//
     // Create 2 AI teams
     for (U8 i = 0; i < 2; ++i) {
-        _faction[i] = MemoryManager_NEW AI::AITeam(i);
+        _faction[i] = MemoryManager_NEW AI::AITeam(i, *_aiManager);
     }
     // Make the teams fight each other
     _faction[0]->addEnemyTeam(_faction[1]->getTeamID());
@@ -143,11 +144,11 @@ bool WarScene::initializeAI(bool continueOnErrors) {
 }
 
 bool WarScene::removeUnits(bool removeNodesOnCall) {
-    WAIT_FOR_CONDITION(!AI::AIManager::instance().updating());
+    WAIT_FOR_CONDITION(!_aiManager->updating());
 
     for (U8 i = 0; i < 2; ++i) {
         for (AI::AIEntity* const entity : _army[i]) {
-            AI::AIManager::instance().unregisterEntity(entity);
+            _aiManager->unregisterEntity(entity);
         }
 
         MemoryManager::DELETE_VECTOR(_army[i]);
@@ -358,8 +359,7 @@ bool WarScene::addUnits() {
                 : currentNode->get<RenderingComponent>()
                       ->renderSkeleton(true);
 
-            AI::WarSceneAIProcessor* brain =
-                MemoryManager_NEW AI::WarSceneAIProcessor(type);
+            AI::WarSceneAIProcessor* brain = MemoryManager_NEW AI::WarSceneAIProcessor(type, *_aiManager);
 
             // GOAP
             brain->registerGOAPPackage(goapPackages[to_uint(type)]);
@@ -380,7 +380,7 @@ bool WarScene::addUnits() {
     //----------------------- AI controlled units ---------------------//
     for (U8 i = 0; i < 2; ++i) {
         for (U8 j = 0; j < _army[i].size(); ++j) {
-            AI::AIManager::instance().registerEntity(i, _army[i][j]);
+            _aiManager->registerEntity(i, _army[i][j]);
         }
     }
 
@@ -402,17 +402,17 @@ AI::AIEntity* WarScene::findAI(SceneGraphNode_ptr node) {
 }
 
 bool WarScene::resetUnits() {
-    AI::AIManager::instance().pauseUpdate(true);
+    _aiManager->pauseUpdate(true);
     bool state = false;
     if (removeUnits(true)) {
        state = addUnits();
     }
-    AI::AIManager::instance().pauseUpdate(false);
+    _aiManager->pauseUpdate(false);
     return state;
 }
 
 bool WarScene::deinitializeAI(bool continueOnErrors) {
-    AI::AIManager::instance().pauseUpdate(true);
+    _aiManager->pauseUpdate(true);
     if (removeUnits(true)) {
         for (U8 i = 0; i < 2; ++i) {
             MemoryManager::DELETE(_faction[i]);
@@ -430,7 +430,7 @@ void WarScene::startSimulation(I64 btnGUID) {
 
     g_navMeshStarted = true;
 
-    AI::AIManager::instance().pauseUpdate(true);
+    _aiManager->pauseUpdate(true);
     _infoBox->setTitle("NavMesh state");
     _infoBox->setMessageType(GUIMessageBox::MessageType::MESSAGE_INFO);
     bool previousMesh = false;
@@ -439,13 +439,10 @@ void WarScene::startSimulation(I64 btnGUID) {
     U64 diffTime = currentTime - _lastNavMeshBuildTime;
     if (_lastNavMeshBuildTime == 0UL ||
         diffTime > Time::SecondsToMicroseconds(10)) {
-        AI::Navigation::NavigationMesh* navMesh =
-            AI::AIManager::instance().getNavMesh(
-                _army[0][0]->getAgentRadiusCategory());
+        AI::Navigation::NavigationMesh* navMesh = _aiManager->getNavMesh(_army[0][0]->getAgentRadiusCategory());
         if (navMesh) {
             previousMesh = true;
-            AI::AIManager::instance().destroyNavMesh(
-                _army[0][0]->getAgentRadiusCategory());
+            _aiManager->destroyNavMesh(_army[0][0]->getAgentRadiusCategory());
         }
         navMesh = MemoryManager_NEW AI::Navigation::NavigationMesh();
         navMesh->setFileName(getName());
@@ -456,15 +453,13 @@ void WarScene::startSimulation(I64 btnGUID) {
                 _army[0][0]->getAgentRadiusCategory();
             navMesh->build(
                 _sceneGraph->getRoot(),
-                [&radius](AI::Navigation::NavigationMesh* navMesh) {
-                AI::AIManager::instance().toggleNavMeshDebugDraw(true);
-                AI::AIManager::instance().addNavMesh(radius, navMesh);
+                [&radius, this](AI::Navigation::NavigationMesh* navMesh) {
+                _aiManager->toggleNavMeshDebugDraw(true);
+                _aiManager->addNavMesh(radius, navMesh);
                 g_navMeshStarted = false;
             });
-        }
-        else {
-            AI::AIManager::instance().addNavMesh(
-                _army[0][0]->getAgentRadiusCategory(), navMesh);
+        } else {
+            _aiManager->addNavMesh(_army[0][0]->getAgentRadiusCategory(), navMesh);
 #ifdef _DEBUG
             navMesh->debugDraw(true);
 #endif
@@ -519,7 +514,7 @@ void WarScene::startSimulation(I64 btnGUID) {
         _infoBox->show();
     }
 
-    AI::AIManager::instance().pauseUpdate(false);
+    _aiManager->pauseUpdate(false);
 }
 
 };  // namespace Divide

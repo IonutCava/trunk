@@ -69,7 +69,7 @@ class Scene;
 /// Graphical User Interface
 
 DEFINE_SINGLETON_EXT1(GUI, Input::InputAggregatorInterface)
-    typedef hashMapImpl<ULL, GUIElement*> GUIMap;
+    typedef hashMapImpl<ULL, std::pair<GUIElement*, bool/*last state*/>> GUIMap;
     typedef hashMapImpl<I64, GUIMap> GUIMapPerScene;
 
     typedef DELEGATE_CBK_PARAM<I64> ButtonCallback;
@@ -79,6 +79,7 @@ DEFINE_SINGLETON_EXT1(GUI, Input::InputAggregatorInterface)
     bool init(const vec2<U16>& renderResolution);
     void onChangeResolution(U16 w, U16 h);
     void onChangeScene(I64 newSceneGUID);
+    void onUnloadScene(I64 sceneGUID);
     I64  activeSceneGUID() const;
     /// Main update call
     void update(const U64 deltaTime);
@@ -139,7 +140,7 @@ DEFINE_SINGLETON_EXT1(GUI, Input::InputAggregatorInterface)
     template<typename T = GUIElement>
     inline T* getGuiElement(I64 sceneID, ULL elementName) { 
         static_assert(std::is_base_of<GUIElement, T>::value, "getGuiElement error: Target is not a valid GUI item");
-        return static_cast<T*>(_guiStack[sceneID][elementName]);
+        return static_cast<T*>(_guiStack[sceneID][elementName].first);
     }
     template<typename T = GUIElement>
     inline T* getGuiElement(I64 sceneID, I64 elementID) {
@@ -148,8 +149,8 @@ DEFINE_SINGLETON_EXT1(GUI, Input::InputAggregatorInterface)
 
         GUIElement* element = nullptr;
         for (GUIMap::value_type it : guiStackForScene) {
-            if (it.second->getGUID() == elementID) {
-                element = it.second;
+            if (it.second.first->getGUID() == elementID) {
+                element = it.second.first;
                 break;
             }
         }

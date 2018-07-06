@@ -52,6 +52,7 @@
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Input/Headers/InputInterface.h"
 // Scene Elements
+#include "AI/Headers/AIManager.h"
 #include "Environment/Sky/Headers/Sky.h"
 #include "Rendering/Lighting/Headers/Light.h"
 #include "Rendering/Lighting/Headers/DirectionalLight.h"
@@ -156,9 +157,13 @@ class Scene : public Resource {
         return _vegetationDataArray;
     }
 
+
+    inline AI::AIManager& aiManager() { return *_aiManager; }
+    inline const AI::AIManager& aiManager() const { return *_aiManager; }
+
    protected:
-    void onSetActive();
-    void onRemoveActive();
+    virtual void onSetActive();
+    virtual void onRemoveActive();
     // returns the first available action ID
     virtual U16 registerInputActions();
     virtual void loadKeyBindings();
@@ -204,23 +209,19 @@ class Scene : public Resource {
                            const bool contOnErrorTasks) {
         _lightPool.reset(new LightPool());
         if (!Scene::load(name, gui)) {
-            Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD")),
-                             "scene load function");
+            Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD")), "scene load function");
             return false;
         }
         if (!loadResources(contOnErrorRes)) {
-            Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD")),
-                             "scene load resources");
+            Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD")), "scene load resources");
             if (!contOnErrorRes) return false;
         }
         if (!loadTasks(contOnErrorTasks)) {
-            Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD")),
-                             "scene load tasks");
+            Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD")), "scene load tasks");
             if (!contOnErrorTasks) return false;
         }
         if (!loadPhysics(contOnErrorTasks)) {
-            Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD")),
-                             "scene load physics");
+            Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD")), "scene load physics");
             if (!contOnErrorTasks) return false;
         }
 
@@ -236,6 +237,7 @@ class Scene : public Resource {
        GUI* _GUI;
        ParamHandler& _paramHandler;
        std::unique_ptr<SceneGraph> _sceneGraph;
+       std::unique_ptr<AI::AIManager> _aiManager;
 
        U64 _sceneTimer;
        vectorImpl<D64> _taskTimers;

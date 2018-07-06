@@ -37,6 +37,8 @@
 namespace Divide {
 namespace AI {
 
+class AIManager;
+
 namespace Navigation {
     class DivideDtCrowd;
     class NavigationMesh;
@@ -64,7 +66,7 @@ class AITeam : public GUIDWrapper {
     typedef std::shared_ptr<Order> OrderPtr;
     typedef vectorImpl<OrderPtr> OrderList;
    public:
-    AITeam(U32 id);
+    AITeam(U32 id, AIManager& parentManager);
     ~AITeam();
 
     inline CrowdPtr const getCrowd(AIEntity::PresetAgentRadius radius) const {
@@ -154,6 +156,7 @@ class AITeam : public GUIDWrapper {
    private:
     U32 _teamID;
     TeamMap _team;
+    AI::AIManager& _parentManager;
     /// Container with data per team member. For example a map of distances
     MemberVariable _memberVariable;
     AITeamCrowd _aiTeamCrowd;

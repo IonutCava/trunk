@@ -11,8 +11,8 @@ namespace Divide {
 
 using namespace AI;
 
-TenisSceneAIProcessor::TenisSceneAIProcessor(SceneGraphNode_wptr target)
-    : AIProcessor(),
+TenisSceneAIProcessor::TenisSceneAIProcessor(SceneGraphNode_wptr target, AIManager& parentManager)
+    : AIProcessor(parentManager),
       _target(target),
       _attackBall(false),
       _ballToTeam2(true),

@@ -358,7 +358,6 @@
     <ClCompile Include="..\..\Source Code\Utility\XMLParser.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Application.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Console.cpp" />
-    <ClCompile Include="..\..\Source Code\Managers\AIManager.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\CameraManager.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\SceneManager.cpp" />
     <ClCompile Include="..\..\Source Code\Geometry\Material\Material.cpp" />
@@ -494,7 +493,6 @@
     <ClInclude Include="..\..\Source Code\Core\Math\Headers\Quaternion.h" />
     <ClInclude Include="..\..\Source Code\Core\Math\Headers\Ray.h" />
     <ClInclude Include="..\..\Source Code\Core\Math\Headers\Transform.h" />
-    <ClInclude Include="..\..\Source Code\Managers\Headers\AIManager.h" />
     <ClInclude Include="..\..\Source Code\Managers\Headers\CameraManager.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Material\Headers\Material.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Importer\Headers\DVDConverter.h" />

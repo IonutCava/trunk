@@ -1,12 +1,16 @@
 #include "Headers/AIProcessor.h"
 
+#include "AI/Headers/AIManager.h"
 #include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
 namespace AI {
 
-AIProcessor::AIProcessor()
-    : _entity(nullptr), _activeGoal(nullptr), _currentStep(-1)
+AIProcessor::AIProcessor(AIManager& parentManager)
+    : _parentManager(parentManager),
+      _entity(nullptr),
+      _activeGoal(nullptr),
+      _currentStep(-1)
 {
     _init = false;
 }

@@ -1,5 +1,4 @@
 #include "Headers/SceneManager.h"
-#include "Headers/AIManager.h"
 
 #include "SceneList.h"
 #include "Core/Headers/ParamHandler.h"
@@ -8,6 +7,7 @@
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "Rendering/Headers/ForwardPlusRenderer.h"
 #include "Rendering/Headers/DeferredShadingRenderer.h"
+#include "AI/PathFinding/Headers/DivideRecast.h"
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 
 #include "Core/Debugging/Headers/DebugInterface.h"
@@ -59,10 +59,10 @@ SceneManager::SceneManager()
       _sceneGraphCullTimer(Time::ADD_TIMER("SceneGraph cull timer"))
 {
     assert(!g_sceneFactory.empty());
-    AI::AIManager::createInstance();
 
     ADD_FILE_DEBUG_GROUP();
     ADD_DEBUG_VAR_FILE(&_elapsedTime, CallbackParam::TYPE_LARGE_INTEGER, false);
+    AI::Navigation::DivideRecast::createInstance();
 }
 
 SceneManager::~SceneManager()
@@ -78,7 +78,6 @@ SceneManager::~SceneManager()
     }
 
     _sceneShaderData->destroy();
-    AI::AIManager::destroyInstance();
     UNREGISTER_FRAME_LISTENER(&(this->instance()));
     Console::printfn(Locale::get(_ID("STOP_SCENE_MANAGER")));
     // Console::printfn(Locale::get("SCENE_MANAGER_DELETE"));
@@ -86,6 +85,16 @@ SceneManager::~SceneManager()
     MemoryManager::DELETE_HASHMAP(_sceneMap);
     MemoryManager::DELETE(_renderPassCuller);
     _renderer.reset(nullptr);
+    AI::Navigation::DivideRecast::destroyInstance();
+}
+
+void SceneManager::idle() {
+    if (!_sceneSwitchTarget.first.empty()) {
+        switchScene(_sceneSwitchTarget.first, _sceneSwitchTarget.second);
+        WaitForAllTasks(true, true);
+    } else {
+        _activeScene->idle();
+    }
 }
 
 bool SceneManager::init(GUI* const gui) {
@@ -171,15 +180,19 @@ Scene* SceneManager::load(stringImpl sceneName) {
     if (!state) {
         _GUI->onChangeScene(guiSceneCache);
     } else {
-        if (!loadDefaultScene) {
-            _GUI->addButton(_ID_RT("Back"),
-                            "Back",
-                            vec2<I32>(15, 15),
-                            vec2<U32>(50, 25),
-                            [this](I64 btnGUID)
-                            {
-                                load("");
-                            });
+        if (!isAlreadyLoaded) {
+            if (!loadDefaultScene) {
+                _GUI->addButton(_ID_RT("Back"),
+                                "Back",
+                                vec2<I32>(15, 15),
+                                vec2<U32>(50, 25),
+                                [this](I64 btnGUID)
+                                {
+                                    _sceneSwitchTarget.first = "DefaultScene";
+                                    _sceneSwitchTarget.second = true;
+                                });
+            }
+          _loadedScenes.push_back(loadingScene);
         }
     }
 
@@ -190,12 +203,18 @@ bool SceneManager::unloadScene(Scene*& scene) {
     assert(scene != nullptr);
     I64 targetGUID = scene->getGUID();
 
-    AI::AIManager::instance().pauseUpdate(true);
-
     bool isDefaultScene = scene->getGUID() == _defaultScene->getGUID();
 
     bool state = Attorney::SceneManager::deinitializeAI(*scene);
     if (state) {
+        _loadedScenes.erase(
+            std::find_if(std::cbegin(_loadedScenes),
+                std::cend(_loadedScenes),
+                [&targetGUID](Scene* scene) -> bool
+                {
+                    return scene->getGUID() == targetGUID;
+                }));
+
         state = Attorney::SceneManager::unload(*scene);
 
         if (!isDefaultScene) {
@@ -208,13 +227,8 @@ bool SceneManager::unloadScene(Scene*& scene) {
         } else {
             _defaultScene.reset(nullptr);
         }
-
-        _loadedScenes.erase(
-            std::remove_if(std::begin(_loadedScenes), std::end(_loadedScenes),
-                [&targetGUID](Scene* scene)
-                -> bool { return scene->getGUID() == targetGUID; }),
-            std::end(_loadedScenes));
     }
+
     return state;
 }
 
@@ -234,9 +248,13 @@ void SceneManager::setActiveScene(Scene& scene) {
 
 bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious) {
     if (unloadPrevious) {
+        Attorney::SceneManager::onRemoveActive(*_activeScene);
         unloadScene(_activeScene);
     }
+    _reflectiveNodesCache.clear();
+    _renderPassCuller->clear();
     SceneManager::instance().setActiveScene(*load(name));
+    _sceneSwitchTarget.first = "";
     return true;
 }
 

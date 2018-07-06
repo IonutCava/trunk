@@ -465,6 +465,9 @@
     <ClCompile Include="..\..\Source Code\Scenes\SceneInputActions.cpp">
       <Filter>Scenes</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\AIManager.cpp">
+      <Filter>AI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\AI\Sensors\Headers\AudioSensor.h">
@@ -704,6 +707,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Scenes\Headers\SceneInputActions.h">
       <Filter>Scenes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\Headers\AIManager.h">
+      <Filter>AI\Headers</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

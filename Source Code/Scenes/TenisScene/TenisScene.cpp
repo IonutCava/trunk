@@ -10,7 +10,6 @@
 #include "Managers/Headers/SceneManager.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
 #include "Core/Math/Headers/Transform.h"
-#include "Managers/Headers/AIManager.h"
 #include "GUI/Headers/GUIButton.h"
 #include "GUI/Headers/GUI.h"
 
@@ -295,7 +294,7 @@ bool TenisScene::load(const stringImpl& name, GUI* const gui) {
     _floor = _sceneGraph->findNode("Floor");
     _floor.lock()->get<RenderingComponent>()->castsShadows(false);
 
-    AI::AIManager::instance().pauseUpdate(false);
+    _aiManager->pauseUpdate(false);
     return loadState;
 }
 
@@ -326,29 +325,25 @@ bool TenisScene::initializeAI(bool continueOnErrors) {
     _aiPlayer3->addSensor(AI::SensorType::VISUAL_SENSOR);
     _aiPlayer4->addSensor(AI::SensorType::VISUAL_SENSOR);
 
-    _aiPlayer1->setAIProcessor(
-        MemoryManager_NEW AI::TenisSceneAIProcessor(_ballSGN));
-    _aiPlayer2->setAIProcessor(
-        MemoryManager_NEW AI::TenisSceneAIProcessor(_ballSGN));
-    _aiPlayer3->setAIProcessor(
-        MemoryManager_NEW AI::TenisSceneAIProcessor(_ballSGN));
-    _aiPlayer4->setAIProcessor(
-        MemoryManager_NEW AI::TenisSceneAIProcessor(_ballSGN));
+    _aiPlayer1->setAIProcessor(MemoryManager_NEW AI::TenisSceneAIProcessor(_ballSGN, *_aiManager));
+    _aiPlayer2->setAIProcessor(MemoryManager_NEW AI::TenisSceneAIProcessor(_ballSGN, *_aiManager));
+    _aiPlayer3->setAIProcessor(MemoryManager_NEW AI::TenisSceneAIProcessor(_ballSGN, *_aiManager));
+    _aiPlayer4->setAIProcessor(MemoryManager_NEW AI::TenisSceneAIProcessor(_ballSGN, *_aiManager));
 
-    _team1 = MemoryManager_NEW AI::AITeam(1);
-    _team2 = MemoryManager_NEW AI::AITeam(2);
+    _team1 = MemoryManager_NEW AI::AITeam(1, *_aiManager);
+    _team2 = MemoryManager_NEW AI::AITeam(2, *_aiManager);
 
     if (state || continueOnErrors) {
-        state = AI::AIManager::instance().registerEntity(0, _aiPlayer1);
+        state = _aiManager->registerEntity(0, _aiPlayer1);
     }
     if (state || continueOnErrors) {
-        state = AI::AIManager::instance().registerEntity(0, _aiPlayer2);
+        state = _aiManager->registerEntity(0, _aiPlayer2);
     }
     if (state || continueOnErrors) {
-        state = AI::AIManager::instance().registerEntity(1, _aiPlayer3);
+        state = _aiManager->registerEntity(1, _aiPlayer3);
     }
     if (state || continueOnErrors) {
-        state = AI::AIManager::instance().registerEntity(1, _aiPlayer4);
+        state = _aiManager->registerEntity(1, _aiPlayer4);
     }
     if (state || continueOnErrors) {
         //----------------------- AI controlled units (NPC's)
@@ -369,12 +364,12 @@ bool TenisScene::initializeAI(bool continueOnErrors) {
 }
 
 bool TenisScene::deinitializeAI(bool continueOnErrors) {
-    AI::AIManager::instance().pauseUpdate(true);
+    _aiManager->pauseUpdate(true);
 
-    AI::AIManager::instance().unregisterEntity(_aiPlayer1);
-    AI::AIManager::instance().unregisterEntity(_aiPlayer2);
-    AI::AIManager::instance().unregisterEntity(_aiPlayer3);
-    AI::AIManager::instance().unregisterEntity(_aiPlayer4);
+    _aiManager->unregisterEntity(_aiPlayer1);
+    _aiManager->unregisterEntity(_aiPlayer2);
+    _aiManager->unregisterEntity(_aiPlayer3);
+    _aiManager->unregisterEntity(_aiPlayer4);
     MemoryManager::DELETE(_aiPlayer1);
     MemoryManager::DELETE(_aiPlayer2);
     MemoryManager::DELETE(_aiPlayer3);

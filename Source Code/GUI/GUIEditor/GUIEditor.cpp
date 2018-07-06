@@ -5,8 +5,8 @@
 #include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Math/Headers/Transform.h"
-#include "Managers/Headers/AIManager.h"
 #include "Managers/Headers/SceneManager.h"
+#include "AI/PathFinding/NavMeshes/Headers/NavMesh.h"
 
 #ifndef CEGUI_STATIC
 #define CEGUI_STATIC
@@ -236,14 +236,13 @@ bool GUIEditor::update(const U64 deltaTime) {
     _wasControlClick = false;
     bool state = true;
     if (_createNavMeshQueued) {
+        AI::AIManager& aiManager = GET_ACTIVE_SCENEGRAPH().parentScene().aiManager();
+
         state = false;
         // Check if we already have a NavMesh created
-        AI::Navigation::NavigationMesh *temp =
-            AI::AIManager::instance().getNavMesh(
-                AI::AIEntity::PresetAgentRadius::AGENT_RADIUS_SMALL);
+        AI::Navigation::NavigationMesh *temp = aiManager.getNavMesh(AI::AIEntity::PresetAgentRadius::AGENT_RADIUS_SMALL);
         // Check debug rendering status
-        AI::AIManager::instance().toggleNavMeshDebugDraw(
-            toggleButton(ToggleButtons::TOGGLE_NAV_MESH_DRAW)->isSelected());
+        aiManager.toggleNavMeshDebugDraw(toggleButton(ToggleButtons::TOGGLE_NAV_MESH_DRAW)->isSelected());
         // Create a new NavMesh if we don't currently have one
         if (!temp) {
             temp = MemoryManager_NEW AI::Navigation::NavigationMesh();
@@ -262,8 +261,7 @@ bool GUIEditor::update(const U64 deltaTime) {
         }
         // If we loaded/built the NavMesh correctly, add it to the AIManager
         if (loaded) {
-            state = AI::AIManager::instance().addNavMesh(
-                AI::AIEntity::PresetAgentRadius::AGENT_RADIUS_SMALL, temp);
+            state = aiManager.addNavMesh(AI::AIEntity::PresetAgentRadius::AGENT_RADIUS_SMALL, temp);
         }
 
         _createNavMeshQueued = false;
@@ -1042,8 +1040,10 @@ bool GUIEditor::Handle_DrawNavMeshToggle(const CEGUI::EventArgs &e) {
     } else {
         Console::d_printfn("[Editor]: NavMesh rendering disabled!");
     }
-    AI::AIManager::instance().toggleNavMeshDebugDraw(
-        toggleButton(ToggleButtons::TOGGLE_NAV_MESH_DRAW)->isSelected());
+    GET_ACTIVE_SCENEGRAPH()
+        .parentScene()
+        .aiManager()
+        .toggleNavMeshDebugDraw(toggleButton(ToggleButtons::TOGGLE_NAV_MESH_DRAW)->isSelected());
     return true;
 }
 

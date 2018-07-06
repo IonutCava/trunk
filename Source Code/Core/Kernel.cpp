@@ -5,7 +5,6 @@
 #include "GUI/Headers/GUIConsole.h"
 #include "Utility/Headers/XMLParser.h"
 #include "Core/Headers/ParamHandler.h"
-#include "Managers/Headers/AIManager.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Core/Time/Headers/ProfileTimer.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
@@ -86,6 +85,8 @@ Kernel::~Kernel()
 }
 
 void Kernel::idle() {
+    _taskPool.flushCallbackQueue();
+
     _GFX.idle();
     _PFX.idle();
     _sceneMgr.idle();
@@ -105,7 +106,6 @@ void Kernel::idle() {
         Locale::changeLanguage(pendingLanguage);
     }
 
-    _taskPool.flushCallbackQueue();
 }
 
 void Kernel::onLoop() {

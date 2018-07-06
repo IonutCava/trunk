@@ -1,22 +1,25 @@
 #include "Headers/AITeam.h"
 
 #include "AI/Headers/AIEntity.h"
+#include "AI/Headers/AIManager.h"
 #include "AI/PathFinding/Headers/DivideCrowd.h"
-#include "Managers/Headers/AIManager.h"
 #include "Dynamics/Entities/Units/Headers/NPC.h"
 
 namespace Divide {
-using namespace AI;
+namespace AI {
 
-AITeam::AITeam(U32 id) : GUIDWrapper(), _teamID(id)
+AITeam::AITeam(U32 id, AIManager& parentManager)
+     : GUIDWrapper(),
+       _parentManager(parentManager),
+       _teamID(id)
 {
     _team.clear();
-    AIManager::instance().registerTeam(this);
+    _parentManager.registerTeam(this);
 }
 
 AITeam::~AITeam()
 {
-    AIManager::instance().unregisterTeam(this);
+    _parentManager.unregisterTeam(this);
     {
         WriteLock w1_lock(_crowdMutex);
         MemoryManager::DELETE_HASHMAP(_aiTeamCrowd);
@@ -153,4 +156,5 @@ bool AITeam::removeEnemyTeam(U32 enemyTeamID) {
     return false;
 }
 
-};  // namespace Divide
+}; // namespace AI
+}; // namespace Divide

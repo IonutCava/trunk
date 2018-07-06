@@ -208,9 +208,6 @@
     <ClCompile Include="..\..\Source Code\Core\Console.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Managers\AIManager.cpp">
-      <Filter>Managers</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Managers\CameraManager.cpp">
       <Filter>Managers</Filter>
     </ClCompile>
@@ -588,9 +585,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Core\Math\Headers\Transform.h">
       <Filter>Core\Math\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Managers\Headers\AIManager.h">
-      <Filter>Managers\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Managers\Headers\CameraManager.h">
       <Filter>Managers\Headers</Filter>

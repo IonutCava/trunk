@@ -88,6 +88,10 @@ class SceneGraph : private NonCopyable, public GUIDWrapper, public FrameListener
 
     void postLoad();
 
+    inline Scene& parentScene() { return _parentScene; }
+
+    inline const Scene& parentScene() const { return _parentScene; }
+
    protected:
     void onNodeDestroy(SceneGraphNode& oldNode);
     void onNodeAdd(SceneGraphNode& newNode);

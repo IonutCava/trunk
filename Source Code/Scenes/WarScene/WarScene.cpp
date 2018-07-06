@@ -16,7 +16,6 @@
 #include "Dynamics/Entities/Units/Headers/NPC.h"
 #include "Managers/Headers/CameraManager.h"
 #include "Managers/Headers/SceneManager.h"
-#include "Managers/Headers/AIManager.h"
 #include "Platform/Video/Headers/IMPrimitive.h"
 
 #include "Dynamics/Entities/Particles/ConcreteUpdaters/Headers/ParticleBasicTimeUpdater.h"
@@ -278,8 +277,7 @@ void WarScene::updateSceneStateInternal(const U64 deltaTime) {
         pComp->rotateY(phi);
     }
 
-    if (!AI::AIManager::instance().getNavMesh(
-            _army[0][0]->getAgentRadiusCategory())) {
+    if (!_aiManager->getNavMesh(_army[0][0]->getAgentRadiusCategory())) {
         return;
     }
 
@@ -306,7 +304,7 @@ void WarScene::updateSceneStateInternal(const U64 deltaTime) {
     }
     GFX_DEVICE.drawLines(*_targetLines, paths, vec4<I32>());
 
-    if (!AI::AIManager::instance().updatePaused()) {
+    if (!_aiManager->updatePaused()) {
         _elapsedGameTime += deltaTime;
         checkGameCompletion();
     }

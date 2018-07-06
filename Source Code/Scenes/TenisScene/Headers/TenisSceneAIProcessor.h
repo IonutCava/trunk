@@ -46,7 +46,7 @@ enum class AIMsg : U32 {
 
 class TenisSceneAIProcessor : public AIProcessor {
    public:
-    TenisSceneAIProcessor(SceneGraphNode_wptr target);
+    TenisSceneAIProcessor(SceneGraphNode_wptr target, AIManager& parentManager);
     bool processData(const U64 deltaTime);
     bool processInput(const U64 deltaTime);
     bool update(const U64 deltaTime, NPC* unitRef = nullptr);
