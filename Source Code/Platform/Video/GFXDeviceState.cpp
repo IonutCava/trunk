@@ -346,7 +346,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     _textRenderConstants.set("dvd_WorldMatrix", PushConstantType::MAT4, mat4<F32>());
     PipelineDescriptor descriptor;
     descriptor._shaderProgram = _textRenderShader;
-    descriptor._stateHash = _defaultStateNoDepthHash;
+    descriptor._stateHash = get2DStateBlock();
     _textRenderPipeline = newPipeline(descriptor);
 
 

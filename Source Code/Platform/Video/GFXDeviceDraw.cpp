@@ -270,6 +270,9 @@ void GFXDevice::drawText(const TextElementBatch& batch, GFX::CommandBuffer& buff
 
     drawTextCommand._batch = batch;
 
+    GFX::SetCameraCommand setCameraCommand;
+    setCameraCommand._camera = Camera::utilityCamera(Camera::UtilityCamera::_2D);
+    GFX::SetCamera(bufferInOut, setCameraCommand);
     GFX::BindPipeline(bufferInOut, bindPipelineCmd);
     GFX::SendPushConstants(bufferInOut, pushConstantsCommand);
     GFX::AddDrawTextCommand(bufferInOut, drawTextCommand);

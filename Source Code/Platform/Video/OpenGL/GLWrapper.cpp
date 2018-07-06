@@ -1021,6 +1021,10 @@ void GL_API::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
             case GFX::CommandType::END_DEBUG_SCOPE: {
                 popDebugMessage(_context);
             } break;
+            case GFX::CommandType::DRAW_TEXT: {
+                GFX::DrawTextCommand* crtCmd = static_cast<GFX::DrawTextCommand*>(cmd.get());
+                drawText(crtCmd->_batch);
+            }break;
             case GFX::CommandType::DRAW_COMMANDS : {
                 Attorney::GFXDeviceAPI::uploadGPUBlock(_context);
 
