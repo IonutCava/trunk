@@ -84,7 +84,6 @@ class glGenericVertexData : public GenericVertexData {
     glGenericVertexData(GFXDevice& context, const U32 ringBufferLength);
     ~glGenericVertexData();
 
-    void destroy() override;
     void create(U8 numBuffers = 1, U8 numQueries = 1) override;
     U32 getFeedbackPrimitiveCount(U8 queryID) override;
 

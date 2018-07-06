@@ -32,7 +32,7 @@
 #ifndef _INPUT_AGGREGATOR_INIT_H_
 #define _INPUT_AGGREGATOR_INIT_H_
 
-#include "Platform/Headers/PlatformDefines.h"
+#include "Platform/Headers/PlatformDataTypes.h"
 #include <OIS.h>
 
 namespace Divide {
@@ -99,7 +99,7 @@ enum class InputState : U32 {
     COUNT
 };
 
-class NOINITVTABLE InputAggregatorInterface {
+class InputAggregatorInterface {
    public:
     /// Keyboard
     virtual bool onKeyDown(const KeyEvent &arg) = 0;

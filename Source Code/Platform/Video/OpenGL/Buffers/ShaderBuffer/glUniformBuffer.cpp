@@ -82,17 +82,12 @@ glUniformBuffer::glUniformBuffer(GFXDevice& context,
 
 glUniformBuffer::~glUniformBuffer() 
 {
-    destroy();
+    MemoryManager::DELETE_VECTOR(_atomicCounters);
     MemoryManager::DELETE(_buffer);
 }
 
 GLuint glUniformBuffer::bufferID() const {
     return _buffer->bufferID();
-}
-
-void glUniformBuffer::destroy() {
-    _buffer->destroy();
-    MemoryManager::DELETE_VECTOR(_atomicCounters);
 }
 
 void glUniformBuffer::create(U32 primitiveCount, ptrdiff_t primitiveSize, U32 sizeFactor) {

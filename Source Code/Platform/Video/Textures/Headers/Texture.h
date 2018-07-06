@@ -43,7 +43,7 @@
 namespace Divide {
 
 /// An API-independent representation of a texture
-class NOINITVTABLE Texture : protected GraphicsResource, public Resource {
+class NOINITVTABLE Texture : public GraphicsResource, public Resource {
     friend class ResourceCache;
     friend class ResourceLoader;
     template <typename T>

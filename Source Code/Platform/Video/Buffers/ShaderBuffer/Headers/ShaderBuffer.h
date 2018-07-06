@@ -38,7 +38,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 class ShaderProgram;
-class NOINITVTABLE ShaderBuffer : protected GraphicsResource, 
+class NOINITVTABLE ShaderBuffer : public GraphicsResource,
                                   public RingBuffer,
                                   public GUIDWrapper {
     USE_CUSTOM_ALLOCATOR
@@ -53,7 +53,6 @@ class NOINITVTABLE ShaderBuffer : protected GraphicsResource,
 
     /// Create a new buffer to hold our shader data
     virtual void create(U32 primitiveCount, ptrdiff_t primitiveSize, U32 sizeFactor = 1);
-    virtual void destroy() = 0;
 
     virtual void updateData(ptrdiff_t offsetElementCount,
                             ptrdiff_t rangeElementCount,

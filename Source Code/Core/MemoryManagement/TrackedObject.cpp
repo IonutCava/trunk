@@ -1,5 +1,8 @@
 #include "Headers/TrackedObject.h"
 
+#include <assert.h>
+#include <algorithm>
+
 namespace Divide {
 
 TrackedObject::TrackedObject() : GUIDWrapper(), _refCount(1) {

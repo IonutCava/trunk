@@ -46,7 +46,6 @@ public:
     virtual void create(BufferUpdateFrequency frequency, size_t size, const char* name = nullptr);
     virtual bool bindRange(GLuint bindIndex, size_t offset, size_t range);
     virtual void lockRange(size_t offset, size_t range);
-    virtual void destroy() = 0;
     virtual void updateData(size_t offset, size_t range, const bufferPtr data) = 0;
     virtual void readData(size_t offset, size_t range, const bufferPtr data) = 0;
 
@@ -62,7 +61,6 @@ public:
     ~glRegularBuffer();
 
     void create(BufferUpdateFrequency frequency, size_t size, const char* name = nullptr) override;
-    void destroy() override;
     void updateData(size_t offset, size_t range, const bufferPtr data) override;
     void readData(size_t offset, size_t range, const bufferPtr data) override;
 private:
@@ -75,7 +73,6 @@ public:
     ~glPersistentBuffer();
 
     void create(BufferUpdateFrequency frequency, size_t size, const char* name = nullptr) override;
-    void destroy() override;
     void updateData(size_t offset, size_t range, const bufferPtr data) override;
     void readData(size_t offset, size_t range, const bufferPtr data) override;
     bool bindRange(GLuint bindIndex, size_t offset, size_t range) override;

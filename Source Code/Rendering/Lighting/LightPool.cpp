@@ -54,8 +54,6 @@ LightPool::LightPool(Scene& parentScene, GFXDevice& context)
 LightPool::~LightPool()
 {
     clear();
-	_lightShaderBuffer[to_const_uint(ShaderBufferType::NORMAL)]->destroy();
-    _lightShaderBuffer[to_const_uint(ShaderBufferType::SHADOW)]->destroy();
 }
 
 void LightPool::init() {

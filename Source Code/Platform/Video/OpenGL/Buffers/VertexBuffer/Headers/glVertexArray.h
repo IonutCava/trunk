@@ -55,11 +55,10 @@ namespace Divide {
 class glVertexArray : public VertexBuffer {
     USE_CUSTOM_ALLOCATOR
    public:
-    glVertexArray(GFXDevice& context);
+    explicit glVertexArray(GFXDevice& context);
     ~glVertexArray();
 
     bool create(bool staticDraw = true);
-    void destroy();
 
     /// Never call Refresh() just queue it and the data will update before
     /// drawing

@@ -77,8 +77,6 @@ RenderPass::BufferData::BufferData(GFXDevice& context)
 
 RenderPass::BufferData::~BufferData()
 {
-    _cmdBuffer->destroy();
-    _renderData->destroy();
 }
 
 RenderPass::BufferDataPool::BufferDataPool(GFXDevice& context, U32 maxBuffers)

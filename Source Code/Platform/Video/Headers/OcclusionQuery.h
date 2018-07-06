@@ -32,7 +32,7 @@
 #ifndef _OCCLUSION_QUERY_H
 #define _OCCLUSION_QUERY_H
 
-#include "Platform/Headers/PlatformDefines.h"
+#include "Platform/Headers/PlatformDataTypes.h"
 
 namespace Divide {
 

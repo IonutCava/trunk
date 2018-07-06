@@ -27,10 +27,6 @@ glGenericVertexData::glGenericVertexData(GFXDevice& context, const U32 ringBuffe
 
 glGenericVertexData::~glGenericVertexData()
 {
-   destroy();
-}
-
-void glGenericVertexData::destroy() {
     if (!_bufferObjects.empty()) {
         for (U8 i = 0; i < _bufferObjects.size(); ++i) {
             MemoryManager::DELETE(_bufferObjects[i]);
@@ -53,8 +49,8 @@ void glGenericVertexData::destroy() {
     // If we have a transform feedback object, delete it
     if (_transformFeedback > 0) {
         glDeleteTransformFeedbacks(1, &_transformFeedback);
-        _transformFeedback = 0;
     }
+
     // Delete all of our query objects
     if (_numQueries > 0) {
         for (U8 i = 0; i < 2; ++i) {
@@ -62,15 +58,10 @@ void glGenericVertexData::destroy() {
             MemoryManager::DELETE_ARRAY(_feedbackQueries[i]);
             MemoryManager::DELETE_ARRAY(_resultAvailable[i]);
         }
-        _numQueries = 0;
     }
     GLUtil::freeBuffer(_indexBuffer);
-    _indexBufferSize = 0;
     // Delete the rest of the data
     MemoryManager::DELETE_ARRAY(_prevResult);
-
-    _bufferObjects.clear();
-    _feedbackBuffers.clear();
 }
 
 /// Create the specified number of buffers and queries and attach them to this

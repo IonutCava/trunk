@@ -23,7 +23,6 @@ namespace {
 namespace Import {
     ImportData::~ImportData()
     {
-        _vertexBuffer->destroy();
     }
 
     bool ImportData::saveToFile(PlatformContext& context, const stringImpl& fileName) {

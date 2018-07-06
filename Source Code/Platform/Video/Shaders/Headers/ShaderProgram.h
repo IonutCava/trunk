@@ -50,7 +50,7 @@ class GenericDrawCommand;
 FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
 
 class NOINITVTABLE ShaderProgram : public Resource, 
-                                   protected GraphicsResource,
+                                   public GraphicsResource,
                                    public std::enable_shared_from_this<ShaderProgram> {
    public:
     typedef hashMapImpl<U64, ShaderProgram_ptr> ShaderProgramMap;

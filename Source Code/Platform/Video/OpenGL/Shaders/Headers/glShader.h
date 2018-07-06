@@ -40,7 +40,7 @@ namespace Divide {
 
 /// glShader represents one of a program's rendering stages (vertex, geometry, fragment, etc)
 /// It can be used simultaneously in multiple programs/pipelines
-class glShader : protected GraphicsResource, public TrackedObject {
+class glShader : public GraphicsResource, public TrackedObject {
     USE_CUSTOM_ALLOCATOR
    public:
     typedef hashMapImpl<U64, glShader*> ShaderMap;

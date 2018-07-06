@@ -51,17 +51,14 @@ glPixelBuffer::glPixelBuffer(GFXDevice& context, PBType type) : PixelBuffer(cont
     };
 }
 
-void glPixelBuffer::destroy() {
+glPixelBuffer::~glPixelBuffer()
+{
     if (_textureID > 0) {
         glDeleteTextures(1, &_textureID);
         _textureID = 0;
     }
 
     GLUtil::freeBuffer(_pixelBufferHandle);
-
-    _width = 0;
-    _height = 0;
-    _depth = 0;
 }
 
 bufferPtr glPixelBuffer::begin() const {
@@ -126,7 +123,6 @@ bool glPixelBuffer::create(GLushort width, GLushort height, GLushort depth,
     _format = GLUtil::glImageFormatTable[to_uint(formatEnum)];
     _dataType = GLUtil::glDataFormat[to_uint(dataTypeEnum)];
 
-    destroy();
     Console::printfn(Locale::get(_ID("GL_PB_GEN")), width, height);
     _width = width;
     _height = height;
@@ -158,6 +154,11 @@ bool glPixelBuffer::create(GLushort width, GLushort height, GLushort depth,
     }
     _bufferSize *= _dataSizeBytes;
 
+    if (_textureID > 0) {
+        glDeleteTextures(1, &_textureID);
+        _textureID = 0;
+    }
+
     glCreateTextures(textureTypeEnum, 1, &_textureID);
     glTextureParameteri(_textureID, GL_GENERATE_MIPMAP, 0);
     glTextureParameteri(_textureID, GL_TEXTURE_MIN_FILTER, to_const_int(GL_NEAREST));
@@ -187,8 +188,13 @@ bool glPixelBuffer::create(GLushort width, GLushort height, GLushort depth,
             break;
     };
 
+    if (_pixelBufferHandle > 0) {
+        GLUtil::freeBuffer(_pixelBufferHandle);
+    }
+
     GLUtil::createAndAllocBuffer(_bufferSize, GL_STREAM_DRAW, _pixelBufferHandle, NULL);
-    return true;
+
+    return _pixelBufferHandle != 0 && _textureID != 0;
 }
 
 void glPixelBuffer::updatePixels(const GLfloat* const pixels,

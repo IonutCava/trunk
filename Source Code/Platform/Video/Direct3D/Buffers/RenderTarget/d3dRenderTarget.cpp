@@ -14,12 +14,9 @@ d3dRenderTarget::~d3dRenderTarget()
 
 bool d3dRenderTarget::create(U16 width, U16 height) { return true; }
 
-void d3dRenderTarget::destroy() {}
-
 void d3dRenderTarget::begin(const RTDrawDescriptor& drawPolicy) {}
 
-void d3dRenderTarget::end() {
-}
+void d3dRenderTarget::end() {}
 
 void d3dRenderTarget::bind(U8 unit, RTAttachment::Type type, U8 index, bool flushStateOnRequest) {}
 

@@ -32,7 +32,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _SCENE_SHADER_DATA_H_
 #define _SCENE_SHADER_DATA_H_
 
-#include "Platform/Headers/PlatformDefines.h"
 #include "Rendering/Lighting/Headers/Light.h"
 
 namespace Divide {
@@ -93,7 +92,6 @@ class SceneShaderData {
     }
 
     void uploadToGPU();
-    void init();
 
   private:
       GFXDevice& _context;

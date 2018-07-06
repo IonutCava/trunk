@@ -11,14 +11,10 @@ d3dVertexBuffer::d3dVertexBuffer(GFXDevice& context)
 
 d3dVertexBuffer::~d3dVertexBuffer()
 {
-    destroy();
 }
 
 bool d3dVertexBuffer::create(bool staticDraw) {
     return VertexBuffer::create(staticDraw);
-}
-
-void d3dVertexBuffer::destroy() {
 }
 
 void d3dVertexBuffer::draw(const GenericDrawCommand& command) {

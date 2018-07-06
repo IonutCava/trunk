@@ -33,6 +33,7 @@
 #define _RENDER_TARGET_H_
 
 #include "RTDrawDescriptor.h"
+#include "RTAttachmentPool.h"
 #include "Platform/Video/Headers/GraphicsResource.h"
 
 namespace Divide {
@@ -73,7 +74,7 @@ struct RenderTargetHandle {
     RenderTargetID _targetID;
 };
 
-class NOINITVTABLE RenderTarget : protected GraphicsResource, public GUIDWrapper {
+class NOINITVTABLE RenderTarget : public GraphicsResource, public GUIDWrapper {
    public:
     enum class RenderTargetUsage : U32 {
         RT_READ_WRITE = 0,
@@ -82,7 +83,7 @@ class NOINITVTABLE RenderTarget : protected GraphicsResource, public GUIDWrapper
     };
 
    protected:
-    RenderTarget(GFXDevice& context, const stringImpl& name);
+    explicit RenderTarget(GFXDevice& context, const stringImpl& name);
 
    public:
     virtual ~RenderTarget();
@@ -96,8 +97,8 @@ class NOINITVTABLE RenderTarget : protected GraphicsResource, public GUIDWrapper
     virtual bool create(U16 width, U16 height) = 0;
     virtual const RTAttachment& getAttachment(RTAttachment::Type type, U8 index, bool flushStateOnRequest = true);
     virtual const RTAttachment& getAttachment(RTAttachment::Type type, U8 index) const;
-    virtual const RTAttachment_ptr& getPrevFrameAttachment(RTAttachment::Type type, U8 index) const;
-    virtual void destroy() = 0;
+    virtual const RTAttachment& getPrevFrameAttachment(RTAttachment::Type type, U8 index) const;
+
     /// Use by multilayered FB's
     virtual void drawToLayer(RTAttachment::Type type, U8 index, U32 layer, bool includeDepth = true) = 0;
     // This call also limits the min and max mip levels of the attachment
@@ -141,7 +142,7 @@ class NOINITVTABLE RenderTarget : protected GraphicsResource, public GUIDWrapper
     U16 _width, _height;
     F32 _depthValue;
     stringImpl _name;
-    RTAttachmentPool _attachments;
+    RTAttachmentPool* _attachmentPool;
 };
 
 };  // namespace Divide

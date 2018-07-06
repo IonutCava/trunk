@@ -10,9 +10,9 @@ namespace Divide {
                                bool unbound,
                                bool persistentMapped,
                                BufferUpdateFrequency frequency)
-                                                      : GraphicsResource(context),
+                                                      : GUIDWrapper(),
+                                                        GraphicsResource(context, getGUID()),
                                                         RingBuffer(ringBufferLength),
-                                                        GUIDWrapper(),
                                                         _sizeFactor(1),
                                                         _bufferSize(0),
                                                         _primitiveSize(0),

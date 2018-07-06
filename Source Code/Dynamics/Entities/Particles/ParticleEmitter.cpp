@@ -49,7 +49,6 @@ ParticleEmitter::ParticleEmitter(GFXDevice& context, ResourceCache& parentCache,
 ParticleEmitter::~ParticleEmitter()
 { 
     unload(); 
-    _particleGPUBuffer->destroy();
 }
 
 bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData) {

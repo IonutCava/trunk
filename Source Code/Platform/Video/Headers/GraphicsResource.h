@@ -33,16 +33,20 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _GRAPHICS_RESOURCE_H_
 
 #include "Core/Headers/NonCopyable.h"
+#include "Platform/Headers/PlatformDataTypes.h"
 
 namespace Divide {
 
 class GFXDevice;
 class GraphicsResource : private NonCopyable {
 protected:
-    explicit GraphicsResource(GFXDevice& context);
+    explicit GraphicsResource(GFXDevice& context, I64 GUID);
     virtual ~GraphicsResource();
 
     GFXDevice& _context;
+
+private:
+    I64 _GUID;
 };
 
 }; //namespace Divide

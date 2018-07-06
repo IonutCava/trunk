@@ -8,7 +8,6 @@ d3dPixelBuffer::d3dPixelBuffer(GFXDevice& context, PBType type)
 
 d3dPixelBuffer::~d3dPixelBuffer()
 {
-    destroy();
 }
 
 bool d3dPixelBuffer::create(U16 width, U16 height, U16 depth,
@@ -16,9 +15,6 @@ bool d3dPixelBuffer::create(U16 width, U16 height, U16 depth,
                             GFXImageFormat formatEnum,
                             GFXDataFormat dataTypeEnum) {
     return true;
-}
-
-void d3dPixelBuffer::destroy() {
 }
 
 bufferPtr d3dPixelBuffer::begin() const {

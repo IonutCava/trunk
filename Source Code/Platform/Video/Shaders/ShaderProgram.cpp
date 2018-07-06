@@ -19,7 +19,7 @@ SharedLock ShaderProgram::_programLock;
 
 ShaderProgram::ShaderProgram(GFXDevice& context, const stringImpl& name, const stringImpl& resourceLocation, bool asyncLoad)
     : Resource(ResourceType::GPU_OBJECT, name, resourceLocation),
-      GraphicsResource(context),
+      GraphicsResource(context, getGUID()),
       _asyncLoad(asyncLoad)
 {
     _linked = false;

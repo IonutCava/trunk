@@ -59,7 +59,7 @@ glVertexArray::glVertexArray(GFXDevice& context)
 
 glVertexArray::~glVertexArray()
 {
-    destroy();
+    GLUtil::releaseVBO(_VBHandle._id, _VBHandle._offset);
 }
 
 void glVertexArray::reset() {
@@ -71,11 +71,6 @@ void glVertexArray::reset() {
     _useAttribute.fill(false);
     _attributeOffset.fill(0);
     VertexBuffer::reset();
-}
-
-/// Delete buffer
-void glVertexArray::destroy() {
-    GLUtil::releaseVBO(_VBHandle._id, _VBHandle._offset);
 }
 
 /// Trim down the Vertex vector to only upload the minimal ammount of data to the GPU

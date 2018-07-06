@@ -33,6 +33,7 @@
 #define _INPUT_VARIABLES_H_
 
 #include "EventHandler.h"
+#include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
 namespace Input {

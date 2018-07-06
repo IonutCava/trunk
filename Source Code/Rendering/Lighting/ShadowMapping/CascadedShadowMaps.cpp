@@ -71,7 +71,6 @@ CascadedShadowMaps::CascadedShadowMaps(GFXDevice& context, Light* light, Camera*
 CascadedShadowMaps::~CascadedShadowMaps()
 {
     _context.deallocateRT(_blurBuffer);
-    _shadowMatricesBuffer->destroy();
 }
 
 void CascadedShadowMaps::init(ShadowMapInfo* const smi) {

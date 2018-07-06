@@ -19,7 +19,6 @@ glGenericBuffer::glGenericBuffer(GLenum usage,
 
 glGenericBuffer::~glGenericBuffer()
 {
-    _buffer->destroy();
     MemoryManager::DELETE(_buffer);
 }
 

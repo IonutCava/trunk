@@ -38,15 +38,30 @@
 
 namespace Divide {
 
-class NOINITVTABLE PixelBuffer : protected GraphicsResource {
+class NOINITVTABLE PixelBuffer : public GraphicsResource, public GUIDWrapper {
    public:
+       PixelBuffer(GFXDevice& context, PBType type)
+         : GUIDWrapper(),
+           GraphicsResource(context, getGUID()),
+           _pbtype(type),
+           _textureID(0),
+           _width(0),
+           _height(0),
+           _depth(0),
+           _pixelBufferHandle(0),
+           _textureType(0)
+       {
+       }
+
+       virtual ~PixelBuffer()
+       {
+       }
+
     virtual bool create(
         U16 width, U16 height, U16 depth = 0,
         GFXImageFormat internalFormatEnum = GFXImageFormat::RGBA8,
         GFXImageFormat formatEnum = GFXImageFormat::RGBA,
         GFXDataFormat dataTypeEnum = GFXDataFormat::FLOAT_32) = 0;
-
-    virtual void destroy() = 0;
 
     virtual bufferPtr begin() const = 0;
     virtual void end() const = 0;
@@ -60,21 +75,6 @@ class NOINITVTABLE PixelBuffer : protected GraphicsResource {
     inline U16 getDepth() const { return _depth; }
     inline PBType getType() const { return _pbtype; }
 
-    PixelBuffer(GFXDevice& context, PBType type)
-        : GraphicsResource(context),
-          _pbtype(type),
-          _textureID(0),
-          _width(0),
-          _height(0),
-          _depth(0),
-          _pixelBufferHandle(0),
-          _textureType(0)
-    {
-    }
-
-    virtual ~PixelBuffer()
-    {
-    }
    protected:
     PBType _pbtype;
     U32 _textureID;

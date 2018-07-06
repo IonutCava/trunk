@@ -308,7 +308,6 @@ void GFXDevice::closeRenderingAPI() {
     // Delete the renderer implementation
     Console::printfn(Locale::get(_ID("CLOSING_RENDERER")));
     RenderStateBlock::clear();
-    _gfxDataBuffer->destroy();
 
     EnvironmentProbe::onShutdown(*this);
     _rtPool.clear();
@@ -328,8 +327,8 @@ void GFXDevice::closeRenderingAPI() {
     // Close the rendering API
     _api->closeRenderingAPI();
     _api.release();
-    if (_graphicResources > 0) {
-        Console::errorfn(Locale::get(_ID("ERROR_GFX_LEAKED_RESOURCES")), (I32)_graphicResources);
+    if (!_graphicResources.empty()) {
+        Console::errorfn(Locale::get(_ID("ERROR_GFX_LEAKED_RESOURCES")), _graphicResources.size());
     }
 }
 

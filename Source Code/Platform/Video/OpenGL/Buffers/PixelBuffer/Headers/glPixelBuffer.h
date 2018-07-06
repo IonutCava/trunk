@@ -38,25 +38,22 @@ namespace Divide {
 
 class glPixelBuffer : public PixelBuffer {
    public:
-    glPixelBuffer(GFXDevice& context, PBType type);
-    ~glPixelBuffer() { destroy(); }
+    explicit glPixelBuffer(GFXDevice& context, PBType type);
+    ~glPixelBuffer();
 
     bool create(GLushort width, GLushort height, GLushort depth = 0,
                 GFXImageFormat internalFormatEnum = GFXImageFormat::RGBA8,
                 GFXImageFormat formatEnum = GFXImageFormat::RGBA,
-                GFXDataFormat dataTypeEnum = GFXDataFormat::FLOAT_32);
+                GFXDataFormat dataTypeEnum = GFXDataFormat::FLOAT_32) override;
 
-    void destroy();
+    bufferPtr begin() const  override;
+    void end() const  override;
 
-    bufferPtr begin() const;
-    void end() const;
+    void bind(GLubyte unit = 0) const  override;
 
-    void bind(GLubyte unit = 0) const;
-
-    void updatePixels(const GLfloat* const pixels, GLuint pixelCount);
+    void updatePixels(const GLfloat* const pixels, GLuint pixelCount)  override;
 
    private:
-    bool checkStatus();
     size_t sizeOf(GLenum dataType) const;
 
    private:

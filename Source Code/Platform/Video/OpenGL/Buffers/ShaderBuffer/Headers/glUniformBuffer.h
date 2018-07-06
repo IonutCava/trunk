@@ -54,7 +54,6 @@ class glUniformBuffer final : public ShaderBuffer {
                      BufferUpdateFrequency frequency);
     ~glUniformBuffer();
 
-    void destroy() override;
     /// Create a new buffer object to hold our uniform shader data
     void create(U32 primitiveCount, ptrdiff_t primitiveSize, U32 sizeFactor = 1) override;
 

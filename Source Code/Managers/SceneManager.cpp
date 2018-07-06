@@ -127,7 +127,6 @@ bool SceneManager::init(PlatformContext& platformContext, ResourceCache& cache) 
         _defaultMaterial->dumpToFile(false);
         _sceneData = MemoryManager_NEW SceneShaderData(platformContext.gfx());
         _renderPassCuller = MemoryManager_NEW RenderPassCuller();
-        _sceneData->init();
         _scenePool->init();
         _init = true;
     } else {

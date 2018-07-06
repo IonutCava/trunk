@@ -33,7 +33,7 @@
 #define _RENDER_STATE_BLOCK_H
 
 #include "RenderAPIEnums.h"
-#include "Utility/Headers/CRC.h"
+#include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
 

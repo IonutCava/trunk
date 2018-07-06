@@ -121,7 +121,7 @@ DeferredShadingRenderer::~DeferredShadingRenderer()
     Console::printfn(Locale::get(_ID("DEFERRED_RT_DELETE")));
     _renderQuads.clear();
     _context.gfx().deallocateRT(_deferredBuffer);
-	_lightTexture->destroy();}
+}
 
 void DeferredShadingRenderer::preRender(RenderTarget& target, LightPool& lightPool) {
     Renderer::preRender(target, lightPool);

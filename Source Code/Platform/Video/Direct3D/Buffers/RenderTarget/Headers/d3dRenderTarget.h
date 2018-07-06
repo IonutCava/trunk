@@ -44,7 +44,6 @@ class d3dRenderTarget : public RenderTarget {
 
     bool create(U16 width, U16 height) override;
 
-    void destroy() override;
     void drawToLayer(RTAttachment::Type type,
                      U8 index,
                      U32 layer,

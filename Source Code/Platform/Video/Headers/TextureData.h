@@ -33,7 +33,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _TEXTURE_DATA_H_
 
 #include "RenderAPIEnums.h"
-#include "Platform/Headers/PlatformDefines.h"
+#include "Core/TemplateLibraries/Headers/Vector.h"
 
 namespace Divide {
 class TextureData {
@@ -43,7 +43,7 @@ public:
     }
 
     TextureData(TextureType type, U32 handle, U8 slot)
-        : _textureType(type),
+      : _textureType(type),
         _samplerHash(0),
         _textureHandle(0)
     {
@@ -52,7 +52,7 @@ public:
     }
 
     TextureData(const TextureData& other)
-        : _textureType(other._textureType),
+      : _textureType(other._textureType),
         _samplerHash(other._samplerHash),
         _textureHandle(other._textureHandle)
     {

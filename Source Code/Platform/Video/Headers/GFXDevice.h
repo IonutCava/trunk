@@ -310,6 +310,7 @@ public:
         const bool persistentMapped = true,
         BufferUpdateFrequency frequency =
         BufferUpdateFrequency::ONCE) const;
+
 public:  // Direct API calls
 
 
@@ -441,7 +442,8 @@ protected:
     mutable SharedLock _2DRenderQueueLock;
     vectorImpl<std::pair<U32, GUID2DCbk > > _2dRenderQueue;
 
-    std::atomic_int _graphicResources;
+    SharedLock _graphicsResourceMutex;
+    vectorImpl<I64> _graphicResources;
     /// Current viewport stack
     ViewportStack _viewport;
 
@@ -467,7 +469,6 @@ protected:
     std::shared_ptr<RenderDocManager> _renderDocManager;
     mutable std::mutex _gpuObjectArenaMutex;
     mutable MyArena<Config::REQUIRED_RAM_SIZE / 4> _gpuObjectArena;
-
 
     static D64 s_interpolationFactor;
 };
@@ -526,11 +527,19 @@ namespace Attorney {
 
     class GFXDeviceGraphicsResource {
        private:
-       static void onResourceCreate(GFXDevice& device) {
-           device._graphicResources++;
+       static void onResourceCreate(GFXDevice& device, I64 GUID) {
+           WriteLock w_lock(device._graphicsResourceMutex);
+           device._graphicResources.push_back(GUID);
        }
-       static void onResourceDestroy(GFXDevice& device) {
-           device._graphicResources--;
+       static void onResourceDestroy(GFXDevice& device, I64 GUID) {
+           WriteLock w_lock(device._graphicsResourceMutex);
+           vectorImpl<I64>::iterator it;
+           it = std::find_if(std::begin(device._graphicResources),
+                std::end(device._graphicResources),
+                [&GUID](I64 crtGUID) -> bool { return GUID == crtGUID; });
+           assert(it != std::cend(device._graphicResources));
+           device._graphicResources.erase(it);
+   
        }
        friend class Divide::GraphicsResource;
     };

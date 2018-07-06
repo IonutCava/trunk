@@ -32,7 +32,7 @@
 #ifndef _GFX_ENUMS_H
 #define _GFX_ENUMS_H
 
-#include "Platform/Headers/PlatformDefines.h"
+#include "Platform/Headers/PlatformDataTypes.h"
 
 namespace Divide {
 

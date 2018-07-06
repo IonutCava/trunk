@@ -72,6 +72,10 @@ glRegularBuffer::glRegularBuffer(GLenum target)
 
 glRegularBuffer::~glRegularBuffer()
 {
+    if (_handle > 0) {
+        glInvalidateBufferData(_handle);
+        GLUtil::freeBuffer(_handle, nullptr);
+    }
 }
 
 void glRegularBuffer::create(BufferUpdateFrequency frequency, size_t size, const char* name)
@@ -90,14 +94,6 @@ void glRegularBuffer::create(BufferUpdateFrequency frequency, size_t size, const
                                             ? GL_DYNAMIC_DRAW
                                             : GL_STREAM_DRAW;
     GLUtil::createAndAllocBuffer(size, _usage, _handle, NULL, name);
-}
-
-void glRegularBuffer::destroy()
-{
-    if (_handle > 0) {
-        glInvalidateBufferData(_handle);
-        GLUtil::freeBuffer(_handle, nullptr);
-    }
 }
 
 void glRegularBuffer::updateData(size_t offset, size_t range, const bufferPtr data)
@@ -126,6 +122,10 @@ glPersistentBuffer::glPersistentBuffer(GLenum target)
 
 glPersistentBuffer::~glPersistentBuffer()
 {
+    if (_handle > 0) {
+        _lockManager->WaitForLockedRange(0, _alignedSize, false);
+        GLUtil::freeBuffer(_handle, _mappedBuffer);
+    }
     MemoryManager::DELETE(_lockManager);
 }
 
@@ -142,14 +142,6 @@ void glPersistentBuffer::create(BufferUpdateFrequency frequency, size_t size, co
             name);
 
     assert(_mappedBuffer != nullptr && "PersistentBuffer::Create error: Can't mapped persistent buffer!");
-}
-
-void glPersistentBuffer::destroy()
-{
-    if (_handle > 0) {
-        _lockManager->WaitForLockedRange(0, _alignedSize, false);
-        GLUtil::freeBuffer(_handle, _mappedBuffer);
-    }
 }
 
 void glPersistentBuffer::updateData(size_t offset, size_t range, const bufferPtr data)

@@ -47,14 +47,13 @@ class glFramebuffer : public RenderTarget {
     ~glFramebuffer();
 
     bool create(U16 width, U16 height) override;
-    void destroy() override;
 
     const RTAttachment& getAttachment(RTAttachment::Type type,
                                       U8 index,
                                       bool flushStateOnRequest = true) override;
 
-    const RTAttachment_ptr& getPrevFrameAttachment(RTAttachment::Type type,
-                                                   U8 index) const override;
+    const RTAttachment& getPrevFrameAttachment(RTAttachment::Type type,
+                                               U8 index) const override;
 
     void drawToLayer(RTAttachment::Type type,
                      U8 index,
@@ -110,9 +109,9 @@ class glFramebuffer : public RenderTarget {
     void toggleAttachment(RTAttachment::Type type, U8 index, bool state);
 
     inline bool hasDepth() const {
-        U8 depthAttCount = _attachments.attachmentCount(RTAttachment::Type::Depth);
+        U8 depthAttCount = _attachmentPool->attachmentCount(RTAttachment::Type::Depth);
         for (U8 i = 0; i < depthAttCount; ++i) {
-            if (_attachments.get(RTAttachment::Type::Depth, i)->used()) {
+            if (_attachmentPool->get(RTAttachment::Type::Depth, i)->used()) {
                 return true;
             }
         }
@@ -121,9 +120,9 @@ class glFramebuffer : public RenderTarget {
     }
 
     inline bool hasColour() const {
-        U8 colourAttCount = _attachments.attachmentCount(RTAttachment::Type::Colour);
+        U8 colourAttCount = _attachmentPool->attachmentCount(RTAttachment::Type::Colour);
         for (U8 i = 0; i < colourAttCount; ++i) {
-            if (_attachments.get(RTAttachment::Type::Colour, i)->used()) {
+            if (_attachmentPool->get(RTAttachment::Type::Colour, i)->used()) {
                 return true;
             }
         }

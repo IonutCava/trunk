@@ -34,7 +34,6 @@
 
 #include <ReCast/DebugUtils/Include/DebugDraw.h>
 #include "Platform/Video/Headers/RenderAPIEnums.h"
-#include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
 

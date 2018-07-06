@@ -34,8 +34,6 @@
 
 static const char* DEFAULT_LANG = "enGB";
 
-#include "Core/TemplateLibraries/Headers/HashMap.h"
-#include "Core/TemplateLibraries/Headers/String.h"
 #include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {

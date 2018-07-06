@@ -36,8 +36,11 @@
 
 #ifndef TRACKED_OBJECT_H_
 #define TRACKED_OBJECT_H_
+
+#include "Core/Headers/NonCopyable.h"
+#include "Core/Headers/GUIDWrapper.h"
 #include <list>
-#include "Platform/Headers/PlatformDefines.h"
+#include <atomic>
 
 namespace Divide {
 

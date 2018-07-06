@@ -33,17 +33,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _RENDER_TARGET_DRAW_DESCRIPTOR_H_
 
 #include "RTAttachment.h"
-#include "Platform/Video/Textures/Headers/TextureDescriptor.h"
 
 namespace Divide {
-
-struct RTDrawDescriptorHandle {
-    RTDrawDescriptorHandle() : _handle(0)
-    {
-    }
-
-    U32 _handle;
-};
 
 class RTDrawMask {
   public:
@@ -89,6 +80,7 @@ class RTDrawDescriptor {
     RTDrawMask _drawMask;
     U32 _stateMask;
 };
+
 }; //namespace Divide
 
 #endif //_RENDER_TARGET_DRAW_DESCRIPTOR_H_

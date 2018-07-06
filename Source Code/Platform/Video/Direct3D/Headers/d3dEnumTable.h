@@ -34,6 +34,7 @@
 
 #include "Platform/Video/Headers/RenderAPIEnums.h"
 #include "d3dResources.h"
+#include <array>
 
 namespace Divide {
 

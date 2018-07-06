@@ -35,13 +35,12 @@
 // Adapted from:
 // http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Auto+Repeat+Key+Input
 #include "Platform/Input/Headers/InputAggregatorInterface.h"
-#include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
 namespace Input {
 /// A class that repeatedly calls "repeatKey" between "begin" and "end" calls at
 /// specified intervals
-class NOINITVTABLE AutoRepeatKey {
+class AutoRepeatKey {
    private:
     Input::KeyEvent _key;
 

@@ -72,10 +72,6 @@ Object3D::Object3D(GFXDevice& context, ResourceCache& parentCache, const stringI
 
 Object3D::~Object3D()
 {
-    if (!BitCompare(_geometryFlagMask,
-                    to_const_uint(ObjectFlag::OBJECT_FLAG_NO_VB))) {
-        _buffer->destroy();
-    }
 }
 
 bool Object3D::isPrimitive() {

@@ -57,7 +57,6 @@ GFXDevice::GFXDevice(Kernel& parent)
     FRAME_COUNT = 0;
     FRAME_DRAW_CALLS = 0;
     FRAME_DRAW_CALLS_PREV = FRAME_DRAW_CALLS;
-    _graphicResources = 0;
     // Cameras
     _2DCamera = nullptr;
     _cubeCamera = nullptr;
@@ -529,7 +528,8 @@ bool GFXDevice::loadInContext(const CurrentContext& context, const DELEGATE_CBK_
 void GFXDevice::constructHIZ(RenderTarget& depthBuffer) {
     static bool firstRun = true;
     static RTDrawDescriptor depthOnlyTarget;
-
+    static GenericDrawCommand triangleCmd;
+    
     if (firstRun) {
         // We use a special shader that downsamples the buffer
         // We will use a state block that disables colour writes as we will render only a depth image,
@@ -540,6 +540,11 @@ void GFXDevice::constructHIZ(RenderTarget& depthBuffer) {
         depthOnlyTarget.disableState(RTDrawDescriptor::State::CHANGE_VIEWPORT);
         depthOnlyTarget.drawMask().disableAll();
         depthOnlyTarget.drawMask().setEnabled(RTAttachment::Type::Depth, 0, true);
+
+        triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
+        triangleCmd.drawCount(1);
+        triangleCmd.stateHash(_stateDepthOnlyRenderingHash);
+        triangleCmd.shaderProgram(_HIZConstructProgram);
 
         firstRun = false;
     }
@@ -556,12 +561,6 @@ void GFXDevice::constructHIZ(RenderTarget& depthBuffer) {
 
     // Store the current width and height of each mip
     vec4<I32> previousViewport(_viewport.top());
-
-    GenericDrawCommand triangleCmd;
-    triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
-    triangleCmd.drawCount(1);
-    triangleCmd.stateHash(_stateDepthOnlyRenderingHash);
-    triangleCmd.shaderProgram(_HIZConstructProgram);
 
     // Bind the depth texture to the first texture unit
     screenTarget.bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH), RTAttachment::Type::Depth, 0);

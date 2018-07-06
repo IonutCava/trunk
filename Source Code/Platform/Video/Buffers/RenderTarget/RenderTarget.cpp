@@ -9,29 +9,30 @@ namespace Divide {
 U8 RenderTarget::g_maxColourAttachments = 4;
 
 RenderTarget::RenderTarget(GFXDevice& context, const stringImpl& name)
-    : GraphicsResource(context),
-      GUIDWrapper(),
+    : GUIDWrapper(),
+      GraphicsResource(context, getGUID()),
       _width(0),
       _height(0),
       _depthValue(1.0),
       _name(name)
 {
-    _attachments.init(this, g_maxColourAttachments);
+    _attachmentPool = MemoryManager_NEW RTAttachmentPool(*this, g_maxColourAttachments);
 }
 
 RenderTarget::~RenderTarget()
 {
+    MemoryManager::DELETE(_attachmentPool);
 }
 
 void RenderTarget::addAttachment(const TextureDescriptor& descriptor,
                                  RTAttachment::Type type,
                                  U8 index,
                                  bool keepPreviousFrame) {
-    _attachments.add(type, index, descriptor, keepPreviousFrame);
+    _attachmentPool->add(type, index, descriptor, keepPreviousFrame);
 }
 
 const RTAttachment& RenderTarget::getAttachment(RTAttachment::Type type, U8 index, bool flushStateOnRequest) {
-    RTAttachment&  att = *_attachments.get(type, index);
+    RTAttachment&  att = *_attachmentPool->get(type, index);
     if (flushStateOnRequest) {
         att.flush();
     }
@@ -39,17 +40,17 @@ const RTAttachment& RenderTarget::getAttachment(RTAttachment::Type type, U8 inde
 }
 
 const RTAttachment& RenderTarget::getAttachment(RTAttachment::Type type, U8 index) const {
-    return *_attachments.get(type, index);
+    return *_attachmentPool->get(type, index);
 }
 
-const RTAttachment_ptr& RenderTarget::getPrevFrameAttachment(RTAttachment::Type type, U8 index) const {
-    return _attachments.getPrevFrame(type, index);
+const RTAttachment& RenderTarget::getPrevFrameAttachment(RTAttachment::Type type, U8 index) const {
+    return *_attachmentPool->getPrevFrame(type, index);
 }
 
 void RenderTarget::setMipLevel(U16 mipMinLevel, U16 mipMaxLevel, U16 writeLevel) {
     for (U8 i = 0; i < to_const_ubyte(RTAttachment::Type::COUNT); ++i) {
         RTAttachment::Type type = static_cast<RTAttachment::Type>(i);
-        for (U8 j = 0; j < _attachments.attachmentCount(type); ++j) {
+        for (U8 j = 0; j < _attachmentPool->attachmentCount(type); ++j) {
             setMipLevel(mipMinLevel, mipMaxLevel, writeLevel, type, j);
         }
     }
@@ -58,7 +59,7 @@ void RenderTarget::setMipLevel(U16 mipMinLevel, U16 mipMaxLevel, U16 writeLevel)
 void RenderTarget::setMipLevel(U16 writeLevel) {
     for (U8 i = 0; i < to_const_ubyte(RTAttachment::Type::COUNT); ++i) {
         RTAttachment::Type type = static_cast<RTAttachment::Type>(i);
-        for (U8 j = 0; j < _attachments.attachmentCount(type); ++j) {
+        for (U8 j = 0; j < _attachmentPool->attachmentCount(type); ++j) {
             setMipLevel(writeLevel, type, j);
         }
     }
@@ -67,7 +68,7 @@ void RenderTarget::setMipLevel(U16 writeLevel) {
 void RenderTarget::resetMipLevel() {
     for (U8 i = 0; i < to_const_ubyte(RTAttachment::Type::COUNT); ++i) {
         RTAttachment::Type type = static_cast<RTAttachment::Type>(i);
-        for (U8 j = 0; j < _attachments.attachmentCount(type); ++j) {
+        for (U8 j = 0; j < _attachmentPool->attachmentCount(type); ++j) {
             resetMipLevel(type, j);
         }
     }
@@ -93,7 +94,7 @@ RTDrawDescriptor& RenderTarget::defaultPolicyDepthOnly() {
 }
 
 TextureDescriptor& RenderTarget::getDescriptor(RTAttachment::Type type, U8 index) {
-    return _attachments.get(type, index)->descriptor();
+    return _attachmentPool->get(type, index)->descriptor();
 }
 
 bool RenderTarget::create(U16 widthAndHeight) {
@@ -114,12 +115,12 @@ void RenderTarget::setClearColour(RTAttachment::Type type, U8 index, const vec4<
     if (type == RTAttachment::Type::COUNT) {
         for (U8 i = 0; i < to_const_ubyte(RTAttachment::Type::COUNT); ++i) {
             type = static_cast<RTAttachment::Type>(i);
-            for (U8 j = 0; j < _attachments.attachmentCount(type); ++j) {
-                _attachments.get(type, j)->clearColour(clearColour);
+            for (U8 j = 0; j < _attachmentPool->attachmentCount(type); ++j) {
+                _attachmentPool->get(type, j)->clearColour(clearColour);
             }
         }
     } else {
-        _attachments.get(type, index)->clearColour(clearColour);
+        _attachmentPool->get(type, index)->clearColour(clearColour);
     }
 }
 

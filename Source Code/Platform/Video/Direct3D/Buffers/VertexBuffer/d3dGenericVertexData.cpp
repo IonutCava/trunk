@@ -10,6 +10,6 @@ d3dGenericVertexData::d3dGenericVertexData(GFXDevice& context, const U32 ringBuf
 
 d3dGenericVertexData::~d3dGenericVertexData()
 {
-    destroy();
 }
+
 }; //namespace Divide

@@ -35,7 +35,7 @@ void GFXRTPool::clear() {
 void GFXRTPool::set(RenderTargetID target, RenderTarget* newTarget) {
     RenderTarget*& oldTarget = _renderTargets[to_uint(target._usage)][target._index];
     if (oldTarget) {
-        oldTarget->destroy();
+        //overriding old target
     }
 
     oldTarget = newTarget;

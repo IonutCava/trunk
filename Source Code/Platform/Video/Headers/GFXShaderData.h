@@ -32,7 +32,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _HARDWARE_VIDEO_GFX_SHADER_DATA_H_
 #define _HARDWARE_VIDEO_GFX_SHADER_DATA_H_
 
-#include "Platform/Headers/PlatformDefines.h"
 #include "Rendering/Camera/Headers/Frustum.h"
 
 namespace Divide {

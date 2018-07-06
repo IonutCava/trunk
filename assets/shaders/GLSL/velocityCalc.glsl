@@ -19,5 +19,6 @@ void main(void)
     vec4 crtPos = positionFromDepth(crtDepth, dvd_InvProjectionMatrix, screenNormalized);
     vec4 prevPos = positionFromDepth(prevDepth, dvd_InvProjectionMatrix, screenNormalized);
 
-   imageStore(velocityTex, position, prevPos - crtPos);
+    vec4 velocity = (crtPos - prevPos) * 0.5f;
+    imageStore(velocityTex, position, velocity);
 }

@@ -7,10 +7,6 @@ SceneShaderData::SceneShaderData(GFXDevice& context)
     : _context(context),
       _sceneShaderData(nullptr)
 {
-
-}
-
-void SceneShaderData::init() {
     _sceneShaderData = _context.newSB(1, false, false, BufferUpdateFrequency::OFTEN);
     _sceneShaderData->create(1, sizeof(SceneShaderData));
     _sceneShaderData->bind(ShaderBufferLocation::SCENE_DATA);
@@ -19,15 +15,10 @@ void SceneShaderData::init() {
 
 SceneShaderData::~SceneShaderData()
 {
-    if (_sceneShaderData) {
-        _sceneShaderData->destroy();
-    }
 }
 
 void SceneShaderData::uploadToGPU() {
-    if (_sceneShaderData) {
-        _sceneShaderData->setData(&_bufferData);
-    }
+    _sceneShaderData->setData(&_bufferData);
 }
 
 }; //namespace Divide
