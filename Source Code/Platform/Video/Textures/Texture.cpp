@@ -9,6 +9,7 @@ namespace Divide {
 Texture::Texture(TextureType type)
     : HardwareResource("temp_texture"),
       _numLayers(1),
+      _lockMipMaps(false),
       _samplerDirty(true),
       _mipMapsDirty(true),
       _hasTransparency(false),

@@ -69,7 +69,7 @@ class SamplerDescriptor : public PropertyDescriptor {
         // The following 2 are mainly used by depthmaps for hardware comparisons
         _cmpFunc = ComparisonFunction::LEQUAL;
         _useRefCompare = false;
-        _mipmaps = false;
+        _mipmaps = true;
         _borderColor.set(DefaultColors::BLACK());
     }
 
@@ -269,18 +269,12 @@ class TextureDescriptor : public PropertyDescriptor {
     /// default
     inline void setDefaultValues() {
         setAlignment();
-        setMipLevels();
         _layerCount = 1;
     }
 
     inline void setAlignment(U8 packAlignment = 1, U8 unpackAlignment = 1) {
         _packAlignment = packAlignment;
         _unpackAlignment = unpackAlignment;
-    }
-
-    inline void setMipLevels(U16 mipMinLevel = 0, U16 mipMaxLevel = 0) {
-        _mipMinLevel = mipMinLevel;
-        _mipMaxLevel = mipMaxLevel;
     }
 
     inline void setLayerCount(U8 layerCount) { _layerCount = layerCount; }
@@ -351,7 +345,6 @@ class TextureDescriptor : public PropertyDescriptor {
 
     U8 _layerCount;
     U8 _packAlignment, _unpackAlignment;  ///<Pixel store information
-    U16 _mipMinLevel, _mipMaxLevel;       ///<MipMap interval selection
     /// Texture data information
     GFXImageFormat _baseFormat;
     GFXImageFormat _internalFormat;

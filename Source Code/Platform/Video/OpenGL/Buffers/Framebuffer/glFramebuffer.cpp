@@ -136,14 +136,10 @@ void glFramebuffer::InitAttachment(AttachmentType type,
     }
 
     tex->setNumLayers(texDescriptor._layerCount);
-    _mipMapLevel[slot].set(
-        texDescriptor._mipMinLevel,
-        sampler.generateMipMaps() 
-            ?  texDescriptor._mipMaxLevel > 0
-               ? texDescriptor._mipMaxLevel
-               : 1 + (I16)floorf(log2f(fmaxf(to_float(_width), to_float(_height))))
-            : 1);
-
+    _mipMapLevel[slot].set(0,
+                           sampler.generateMipMaps() 
+                              ? 1 + (I16)floorf(log2f(fmaxf(to_float(_width), to_float(_height))))
+                              : 1);
     if (resize) {
         tex->resize(NULL, vec2<U16>(_width, _height), _mipMapLevel[slot]);
     } else {
@@ -551,8 +547,7 @@ void glFramebuffer::SetMipLevel(U16 mipLevel, U16 mipMaxLevel, U16 writeLevel,
 }
 
 void glFramebuffer::ResetMipLevel(TextureDescriptor::AttachmentType slot) {
-    SetMipLevel(_mipMapLevel[to_uint(slot)].x, _mipMapLevel[to_uint(slot)].y, 0,
-                slot);
+    SetMipLevel(_mipMapLevel[to_uint(slot)].x, _mipMapLevel[to_uint(slot)].y, 0, slot);
 }
 
 void glFramebuffer::ReadData(const vec4<U16>& rect,

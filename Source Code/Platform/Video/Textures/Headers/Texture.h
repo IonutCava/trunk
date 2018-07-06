@@ -125,7 +125,10 @@ class NOINITVTABLE Texture : public HardwareResource {
     /// Get the type of the texture
     inline TextureType getTextureType() const { return _textureData._textureType; }
     /// Force a full refresh of the mip chain on the next texture bind
-    inline void refreshMipMaps() { _mipMapsDirty = true; }
+    inline void refreshMipMaps() { _mipMapsDirty = !_lockMipMaps; }
+    /// Disable/enable automatic calls to mipmap generation calls (e.g. glGenerateMipmaps)
+    /// Useful if we compute our own mipmaps
+    inline void lockAutomaticMipMapGeneration(bool state) { _lockMipMaps = state; }
     /// Force a full update of the texture (all pending changes and mipmap refresh);
     /// Returns false if the texture is not ready or in an invalid state
     virtual bool flushTextureState() = 0;
@@ -148,6 +151,7 @@ class NOINITVTABLE Texture : public HardwareResource {
     U16 _height;
     U16 _mipMaxLevel;
     U16 _mipMinLevel;
+    bool _lockMipMaps;
     bool _mipMapsDirty;
     bool _samplerDirty;
     bool _hasTransparency;

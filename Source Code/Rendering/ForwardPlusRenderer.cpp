@@ -28,6 +28,7 @@ ForwardPlusRenderer::ForwardPlusRenderer()
     SamplerDescriptor depthRangesSampler;
     depthRangesSampler.setFilters(TextureFilter::NEAREST);
     depthRangesSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
+    depthRangesSampler.toggleMipMaps(false);
     TextureDescriptor depthRangesDescriptor(TextureType::TEXTURE_2D,
                                             GFXImageFormat::RGBA32F,
                                             GFXDataFormat::FLOAT_32);

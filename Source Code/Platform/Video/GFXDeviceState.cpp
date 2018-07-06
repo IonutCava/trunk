@@ -149,34 +149,26 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
                                       GFXDataFormat::FLOAT_32);
     depthDescriptor.setSampler(depthSampler);
     // Add the attachments to the render targets
-    _renderTarget[to_uint(RenderTarget::SCREEN)]->AddAttachment(
-        screenDescriptor, TextureDescriptor::AttachmentType::Color0);
-    _renderTarget[to_uint(RenderTarget::SCREEN)]->AddAttachment(
-        depthDescriptor, TextureDescriptor::AttachmentType::Depth);
-    _renderTarget[to_uint(RenderTarget::SCREEN)]->Create(resolution.width,
-                                                         resolution.height);
+    _renderTarget[to_uint(RenderTarget::SCREEN)]->AddAttachment(screenDescriptor, TextureDescriptor::AttachmentType::Color0);
+    _renderTarget[to_uint(RenderTarget::SCREEN)]->AddAttachment(depthDescriptor, TextureDescriptor::AttachmentType::Depth);
+    _renderTarget[to_uint(RenderTarget::SCREEN)]->Create(resolution.width, resolution.height);
     // If we enabled anaglyph rendering, we need a second target, identical to
     // the screen target
     // used to render the scene at an offset
     if (_enableAnaglyph) {
         _renderTarget[to_uint(RenderTarget::ANAGLYPH)] = newFB(true);
-        _renderTarget[to_uint(RenderTarget::ANAGLYPH)]->AddAttachment(
-            screenDescriptor, TextureDescriptor::AttachmentType::Color0);
-        _renderTarget[to_uint(RenderTarget::ANAGLYPH)]->AddAttachment(
-            depthDescriptor, TextureDescriptor::AttachmentType::Depth);
-        _renderTarget[to_uint(RenderTarget::ANAGLYPH)]->Create(
-            resolution.width, resolution.height);
+        _renderTarget[to_uint(RenderTarget::ANAGLYPH)]->AddAttachment(screenDescriptor, TextureDescriptor::AttachmentType::Color0);
+        _renderTarget[to_uint(RenderTarget::ANAGLYPH)]->AddAttachment(depthDescriptor, TextureDescriptor::AttachmentType::Depth);
+        _renderTarget[to_uint(RenderTarget::ANAGLYPH)]->Create(resolution.width, resolution.height);
     }
 
     depthSampler.toggleMipMaps(true);
     depthSampler.setMinFilter(TextureFilter::NEAREST_MIPMAP_NEAREST);
     depthDescriptor.setSampler(depthSampler);
-    _renderTarget[to_uint(RenderTarget::DEPTH)]->AddAttachment(
-        depthDescriptor, TextureDescriptor::AttachmentType::Depth);
+    _renderTarget[to_uint(RenderTarget::DEPTH)]->AddAttachment(depthDescriptor, TextureDescriptor::AttachmentType::Depth);
     _renderTarget[to_uint(RenderTarget::DEPTH)]->toggleColorWrites(false);
-    _renderTarget[to_uint(RenderTarget::DEPTH)]->Create(resolution.width,
-        resolution.height);
-
+    _renderTarget[to_uint(RenderTarget::DEPTH)]->Create(resolution.width, resolution.height);
+    _renderTarget[to_uint(RenderTarget::DEPTH)]->GetAttachment(TextureDescriptor::AttachmentType::Depth)->lockAutomaticMipMapGeneration(true);
     // We also add a couple of useful cameras used by this class. One for
     // rendering in 2D and one for generating cube maps
     Application::getInstance().getKernel().getCameraMgr().addNewCamera(

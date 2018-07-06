@@ -51,6 +51,7 @@ bool Sky::load() {
 
     SamplerDescriptor skyboxSampler;
     skyboxSampler.toggleMipMaps(false);
+    skyboxSampler.setFilters(TextureFilter::LINEAR);
     skyboxSampler.toggleSRGBColorSpace(true);
     skyboxSampler.setAnisotropy(16);
     skyboxSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
