@@ -469,7 +469,7 @@ void GFXDevice::getMatrix(const EXTENDED_MATRIX& mode, mat3<GLfloat>& mat){
      cleanMatrices();
             
      // Normal Matrix
-     mat.set(_isUniformedScaled ? _WVCachedMatrix : _WVCachedMatrix.inverseTranspose());
+     mat.set(_isUniformedScaled ? _WVCachedMatrix : _WVCachedMatrix.getInverseTranspose());
 }
 
 void GFXDevice::getMatrix(const EXTENDED_MATRIX& mode, mat4<F32>& mat) {
@@ -701,6 +701,16 @@ void GFXDevice::updateViewportInternal(const vec4<I32>& viewport){
     viewportF.set(viewport.x, viewport.y, viewport.z, viewport.w);
     changeViewport(viewport);
     _matricesBuffer->UpdateData(3 * mat4Size + vec4Size, vec4Size, &viewportF[0]);
+}
+
+void GFXDevice::processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleNodes){
+    _nodeData.resize(0);
+    _nodeData.reserve(visibleNodes.size());
+    for(U16 i = 0; i < visibleNodes.size(); ++i){
+        SceneGraphNode* crtNode = visibleNodes[i];
+        crtNode->updateShaderData(_viewMatrix, _interpolationFactor);
+        _nodeData.push_back(crtNode->getShaderData());
+    }
 }
 
 bool GFXDevice::loadInContext(const CurrentContext& context, const DELEGATE_CBK& callback) {

@@ -144,26 +144,18 @@ void RenderBin::render(const SceneRenderState& renderState, const RenderStage& c
         if (!sn) continue;
         //Check if we should draw the node. (only after onDraw as it may contain exclusion mask changes before draw)
         if (sn->getDrawState(currentRenderStage) && sn->isReadyForDraw(currentRenderStage)) {
-            U8 lightCount = 0;
-            if(!isDepthPass && sn->getType() != TYPE_SKY){
-                //Find the most influential lights for this node.
-                //Use MAX_LIGHTS_PER_SCENE_NODE to allow more lights to affect this node
-                lightCount = lightMgr.findLightsForSceneNode(sgn);
+            if(isLightValidStage){
+                U32 lightCount = std::min(/*sgn->getShaderData()._lightInfo.x*/(U32)lightMgr.findLightsForSceneNode(sgn), 
+                                          Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE);
+                //Apply shadows only from the most important MAX_SHADOW_CASTING_LIGHTS_PER_NODE lights
+                for (U32 lightIndex = 0; lightIndex < lightCount; lightIndex++)
+                    lightMgr.bindDepthMaps(lightIndex);
             }
-            //Only 2 sets of shadow maps for every node
-            CLAMP<U8>(lightCount, 0, Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE);
-            //Apply shadows only from the most important MAX_SHADOW_CASTING_LIGHTS_PER_NODE lights
-            for (U8 lightIndex = 0; lightIndex < lightCount && isLightValidStage; lightIndex++)
-                lightMgr.bindDepthMaps(lightIndex);
 
-            //setup materials and render the node
-            //As nodes are sorted, this should be very fast
-            //We need to apply different materials for each stage
-            if (isDepthPass ? sn->prepareDepthMaterial(sgn) : sn->prepareMaterial(sgn)){
-                //Call render and the stage exclusion mask should do the rest
+            //We need to apply different materials for each stage. As nodes are sorted, this should be very fast
+            //Call render and the stage exclusion mask should do the rest
+            if (sn->prepareMaterial(sgn, isDepthPass))
                 sn->render(sgn, renderState);
-            }
-
         }
 
         sgn->postDraw(currentRenderStage);

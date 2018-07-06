@@ -61,7 +61,7 @@ public:
     void onCameraChange();
     inline Light::LightMap& getLights() {return _lights;}
            Light* getLight(U32 slot);
-    inline Light*    getLightForCurrentNode(U8 index) {assert(index < _currLightsPerNode.size()); _currLight = _currLightsPerNode[index]; return _currLight;}
+    inline Light*    getLightForCurrentNode(U32 index) {assert(index < _currLightsPerNode.size()); _currLight = _currLightsPerNode[index]; return _currLight;}
 
     inline Light*    getCurrentLight()             const { return _currLight; }
     inline void      setCurrentLight(Light* light)       { _currLight = light; _currentShadowPass = 0; }
@@ -69,14 +69,12 @@ public:
     void updateResolution(I32 newWidth, I32 newHeight);
 
     ///shadow mapping
-    void bindDepthMaps(U8 lightIndex, bool overrideDominant = false);
+    void bindDepthMaps(U32 lightIndex, bool overrideDominant = false);
     bool shadowMappingEnabled() const;
 
     ///shadow mapping
     void previewShadowMaps(Light* light = nullptr);
     void togglePreviewShadowMaps();
-
-    void drawDepthMap(U8 light, U8 index);
 
     inline U8   currentShadowPass()  const { return _currentShadowPass; }
     inline void registerShadowPass()       { _currentShadowPass++; }

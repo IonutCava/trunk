@@ -593,13 +593,14 @@ public:
                     this->mat[12], this->mat[13], this->mat[14], this->mat[15]);
     }
 
-    inline T det(void)             const { return Util::Mat4::det(this->mat); }
-    inline mat4 getInverse()       const { mat4 ret; this->inverse(ret); return ret;}
-    inline void inverse(mat4& ret) const { Util::Mat4::Inverse(this->mat, ret.mat); }
-    inline void inverse()                { mat4 ret; this->inverse(ret); this->set(ret.mat); }
-    inline void zero()                   { memset(this->mat, 0.0, sizeof(T) * 16); }
-    inline mat4 inverseTranspose() const { mat4 ret; this->inverse(ret); return ret.transpose(); }
-    inline void inverseTranspose(mat4& ret) const { ret.set(inverseTranspose()); }
+    inline T det(void)                      const { return Util::Mat4::det(this->mat); }
+    inline mat4 getInverse()                const { mat4 ret; this->inverse(ret); return ret;}
+    inline void inverse(mat4& ret)          const { Util::Mat4::Inverse(this->mat, ret.mat); }
+    inline void inverse()                         { mat4 ret; this->inverse(ret); this->set(ret.mat); }
+    inline void zero()                            { memset(this->mat, 0.0, sizeof(T) * 16); }
+    inline mat4 getInverseTranspose()       const { mat4 ret; this->inverse(ret); return ret.transpose(); }
+    inline void inverseTranspose(mat4& ret) const { ret.set(mat); ret.inverseTranspose(); }
+    inline void inverseTranspose()                { this->inverse(); this->transpose(); }
 
     inline void identity() {
         zero();

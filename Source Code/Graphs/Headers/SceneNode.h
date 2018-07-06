@@ -107,11 +107,8 @@ protected:
     /*Rendering/Processing*/
     virtual void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState) = 0; //Sounds are played, geometry is displayed etc.
 
-    /* Normal material */
-    virtual	bool prepareMaterial(SceneGraphNode* const sgn);
-
-    /* Depth map material */
-    virtual	bool prepareDepthMaterial(SceneGraphNode* const sgn);
+    /* Material */
+    virtual	bool prepareMaterial(SceneGraphNode* const sgn, bool depthPass);
 
     /// Perform any last minute operations before the frame drawing ends (this is after shader and shodawmap unbindng)
     virtual void preFrameDrawEnd(SceneGraphNode* const sgn);

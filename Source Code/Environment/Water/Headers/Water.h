@@ -64,8 +64,7 @@ protected:
     void postDraw(SceneGraphNode* const sgn, const RenderStage& currentStage);
     void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState);
     void postLoad(SceneGraphNode* const sgn);
-    bool prepareMaterial(SceneGraphNode* const sgn);
-    bool prepareDepthMaterial(SceneGraphNode* const sgn);
+    bool prepareMaterial(SceneGraphNode* const sgn, bool depthPass);
     bool previewReflection();
 
     inline const Plane<F32>&  getRefractionPlane() { return _refractionPlane; }

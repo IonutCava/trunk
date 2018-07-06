@@ -39,6 +39,8 @@ public:
     /// This method performs the visibility check on the given node and all of it's children and adds them to the RenderQueue
     void cullSceneGraph(SceneGraphNode* const currentNode, SceneState& sceneState);
     void refresh();
+    
+    const vectorImpl<SceneGraphNode* >& getVisibleNodes() const { return _visibleNodes; }
 
 protected:
     /// Perform CPU-based culling (Frustrum - AABB, distance check, etc)

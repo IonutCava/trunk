@@ -101,9 +101,7 @@ protected:
     void postDraw(SceneGraphNode* const sgn, const RenderStage& currentStage) {}
 
     void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState);
-    bool prepareMaterial(SceneGraphNode* const sgn);
-
-    bool prepareDepthMaterial(SceneGraphNode* const sgn);
+    bool prepareMaterial(SceneGraphNode* const sgn, bool depthPass);
 
     void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
 

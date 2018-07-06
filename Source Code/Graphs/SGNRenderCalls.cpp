@@ -25,6 +25,14 @@ void SceneGraphNode::setSelected(bool state) {
     }
 }
 
+bool SceneGraphNode::getCastsShadows() const {
+    return _castsShadows && LightManager::getInstance().shadowMappingEnabled();
+}
+
+bool SceneGraphNode::getReceivesShadows() const {
+    return _receiveShadows && LightManager::getInstance().shadowMappingEnabled();
+}
+
 void SceneGraphNode::updateBoundingBoxTransform(const mat4<F32>& transform){
     if (_boundingBox.Transform(_initialBoundingBox, transform, !_initialBoundingBox.Compare(_initialBoundingBoxCache)))
         _initialBoundingBoxCache = _initialBoundingBox;
@@ -119,3 +127,26 @@ void SceneGraphNode::postDraw(RenderStage renderStage){
     if (_node) _node->postDraw(this, renderStage);
 }
 
+void SceneGraphNode::updateShaderData(const mat4<F32>& viewMatrix, const D32 interpolationFactor){
+    Transform* transform = getTransform();
+    if (transform) {
+        _nodeShaderData._worldMatrix.set(transform->interpolate(getPrevTransform(), interpolationFactor));
+        _nodeShaderData._normalMatrix.set(_nodeShaderData._worldMatrix * viewMatrix);
+
+        if(!transform->isUniformScaled())
+            _nodeShaderData._normalMatrix.inverseTranspose();
+    }else{
+        _nodeShaderData._worldMatrix.identity();
+        _nodeShaderData._normalMatrix.identity();
+    }
+
+    _nodeShaderData._integerValues.x = isSelected() ? 1 : 0;
+    _nodeShaderData._integerValues.y = getReceivesShadows() ? 1 : 0;
+
+    AnimationComponent* animComponent = getComponent<AnimationComponent>();
+    if(animComponent && !animComponent->animationTransforms().empty()){
+        _nodeShaderData._integerValues.z = (U32)(getInstanceID() * animComponent->animationTransforms().size());
+    }
+
+    _nodeShaderData._lightInfo.set(LightManager::getInstance().findLightsForSceneNode(this), 0, 0, 0);
+}

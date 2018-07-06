@@ -268,6 +268,8 @@ public:
     void ConstructHIZ();
     void DownSampleDepthBuffer(vectorImpl<vec2<F32>> &depthRanges);
 
+    void processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleNodes);
+
 protected:
     typedef boost::lockfree::spsc_queue<DELEGATE_CBK, boost::lockfree::capacity<15> > LoadQueue;
 
@@ -386,8 +388,10 @@ protected:
     typedef std::stack<vec4<I32>, vectorImpl<vec4<I32> > > viewportStack;
     viewportStack _viewport;
 
-    ShaderBuffer*  _matricesBuffer;
+    vectorImpl<SceneGraphNode::NodeShaderData> _nodeData;
 
+    ShaderBuffer*  _matricesBuffer;
+    ShaderBuffer*  _nodeDataBuffer;
 END_SINGLETON
 
 #include "GFXDevice-Inl.h"

@@ -109,6 +109,7 @@ void SceneManager::preRender() {
 
 void SceneManager::updateVisibleNodes() {
     _renderPassCuller->cullSceneGraph(_activeScene->getSceneGraph()->getRoot(), _activeScene->state());
+    GFX_DEVICE.processVisibleNodes(_renderPassCuller->getVisibleNodes());
 }
 
 void SceneManager::renderVisibleNodes() {

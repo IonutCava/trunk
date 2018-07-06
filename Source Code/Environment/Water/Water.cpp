@@ -123,10 +123,10 @@ bool WaterPlane::onDraw(SceneGraphNode* const sgn, const RenderStage& currentSta
 void WaterPlane::postDraw(SceneGraphNode* const sgn, const RenderStage& currentStage){
 }
 
-bool WaterPlane::prepareMaterial(SceneGraphNode* const sgn){
+bool WaterPlane::prepareMaterial(SceneGraphNode* const sgn, bool depthPass){
 
     Material* waterMat = getMaterial();
-    _drawShader = waterMat->getShaderInfo().getProgram();
+    _drawShader = waterMat->getShaderInfo(depthPass ? Z_PRE_PASS_STAGE : FINAL_STAGE).getProgram();
     waterMat->getTexture(Material::TEXTURE_UNIT0)->Bind(0);
     _reflectedTexture->Bind(1);
     if (!_cameraUnderWater){
@@ -136,12 +136,6 @@ bool WaterPlane::prepareMaterial(SceneGraphNode* const sgn){
     _drawShader->Uniform("underwater", _cameraUnderWater);
     _drawShader->Uniform("material", getMaterial()->getMaterialMatrix());
 
-    _plane->setCustomShader(_drawShader);
-    return _drawShader->bind();
-}
-
-bool WaterPlane::prepareDepthMaterial(SceneGraphNode* const sgn){ 
-    _drawShader = getMaterial()->getShaderInfo(Z_PRE_PASS_STAGE).getProgram();
     _plane->setCustomShader(_drawShader);
     return _drawShader->bind();
 }

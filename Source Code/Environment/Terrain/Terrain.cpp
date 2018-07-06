@@ -120,7 +120,13 @@ void Terrain::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneS
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }
 
-bool Terrain::prepareMaterial(SceneGraphNode* const sgn){
+bool Terrain::prepareMaterial(SceneGraphNode* const sgn, bool depthPass){
+    if(depthPass){
+        SET_STATE_BLOCK(GFX_DEVICE.isDepthPrePass() ? _terrainRenderStateHash : _terrainDepthRenderStateHash);
+        _plane->setCustomShader(_drawShader);
+        return _drawShader->bind();
+    }
+
     if (!GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE | REFLECTION_STAGE))
         return false;
 
@@ -151,13 +157,6 @@ bool Terrain::prepareMaterial(SceneGraphNode* const sgn){
         _drawShader->Uniform("dvd_enableShadowMapping", temp);
     }        
 
-    _plane->setCustomShader(_drawShader);
-
-    return _drawShader->bind();
-}
-
-bool Terrain::prepareDepthMaterial(SceneGraphNode* const sgn){
-    SET_STATE_BLOCK(GFX_DEVICE.isDepthPrePass() ? _terrainRenderStateHash : _terrainDepthRenderStateHash);
     _plane->setCustomShader(_drawShader);
 
     return _drawShader->bind();

@@ -248,7 +248,7 @@ void LightManager::previewShadowMaps(Light* light) {
 
 //If we have computed shadowmaps, bind them before rendering any geometry;
 //Always bind shadowmaps to slots Config::MAX_TEXTURE_STORAGE, Config::MAX_TEXTURE_STORAGE+1, Config::MAX_TEXTURE_STORAGE+2 ...
-void LightManager::bindDepthMaps(U8 lightIndex, bool overrideDominant){
+void LightManager::bindDepthMaps(U32 lightIndex, bool overrideDominant){
     //Skip applying shadows if we are rendering to depth map, or we have shadows disabled
     if(!_shadowMapsEnabled)
         return;

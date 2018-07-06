@@ -127,28 +127,37 @@ void SceneNode::setMaterial(Material* const m){
     }
 }
 
-bool SceneNode::prepareMaterial(SceneGraphNode* const sgn){
+bool SceneNode::prepareMaterial(SceneGraphNode* const sgn, bool depthPass){
     assert(_nodeReady);
 
+    if(getType() != TYPE_OBJECT3D)
+            return true;
+
+    bool shadowStage = GFX_DEVICE.isCurrentRenderStage(SHADOW_STAGE);
+    bool reflectionStage = GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE);
+
+    RenderStage currentStage = depthPass ? (shadowStage ? SHADOW_STAGE : Z_PRE_PASS_STAGE) :
+                                           (reflectionStage ? REFLECTION_STAGE : FINAL_STAGE);
     //UpgradableReadLock ur_lock(_materialLock);
+    if(!_material && depthPass) {
+        SET_STATE_BLOCK(shadowStage ? _renderState.getShadowStateBlock() : _renderState.getDepthStateBlock());
+        return true;
+    }
+
     if(!_material)
         return true;
 
-    if(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE))
-        SET_STATE_BLOCK(_material->getRenderStateBlock(REFLECTION_STAGE));
-    else
-        SET_STATE_BLOCK(_material->getRenderStateBlock(FINAL_STAGE));
+    SET_STATE_BLOCK(_material->getRenderStateBlock(currentStage));
 
-    Material::ShaderInfo& shaderInfo = _material->getShaderInfo();
+    Material::ShaderInfo& shaderInfo = _material->getShaderInfo(currentStage);
+
     _drawShader = shaderInfo.getProgram();
-
-    LightManager& lightMgr = LightManager::getInstance();
+    assert(_drawShader != nullptr);
 
     if (!_drawShader->bind())
         return false;
 
     getMaterial()->UploadToShader(shaderInfo);
-
 
     StateTracker<bool>& shaderStates = shaderInfo.getTrackedBools();
     StateTracker<bool>& sgnStates = sgn->getTrackedBools();
@@ -162,7 +171,7 @@ bool SceneNode::prepareMaterial(SceneGraphNode* const sgn){
         _drawShader->Uniform("dvd_isSelected", temp);
     }   
 
-    temp = lightMgr.shadowMappingEnabled() && sgn->getReceivesShadows();
+    temp = sgn->getReceivesShadows();
     shaderStates.initTrackedValue(1, !temp);
     sgnStates.initTrackedValue(1, !temp);
     if(shaderStates.getTrackedValue(1) != temp || sgnStates.getTrackedValue(1) != temp){
@@ -173,9 +182,9 @@ bool SceneNode::prepareMaterial(SceneGraphNode* const sgn){
 
     AnimationComponent* animComponent = sgn->getComponent<AnimationComponent>();
     temp = animComponent != nullptr && !animComponent->animationTransforms().empty();
-    if(temp){
+    if(temp)
         _drawShader->Uniform("dvd_boneOffset", (I32)(sgn->getInstanceID() * animComponent->animationTransforms().size()));
-    }
+
     shaderStates.initTrackedValue(2, !temp);
     sgnStates.initTrackedValue(2, !temp);
     if(shaderStates.getTrackedValue(2) != temp || sgnStates.getTrackedValue(2) != temp){
@@ -184,57 +193,6 @@ bool SceneNode::prepareMaterial(SceneGraphNode* const sgn){
         _drawShader->Uniform("dvd_hasAnimations", temp);
     }
 
-    return true;
-}
-
-bool SceneNode::prepareDepthMaterial(SceneGraphNode* const sgn){
-    assert(_nodeReady);
-
-    if(getType() != TYPE_OBJECT3D)
-        return true;
-
-    bool shadowStage = GFX_DEVICE.isCurrentRenderStage(SHADOW_STAGE);
-    
-    //UpgradableReadLock ur_lock(_materialLock);
-    if(!_material) {
-        SET_STATE_BLOCK(shadowStage ? _renderState.getShadowStateBlock() : _renderState.getDepthStateBlock());
-        return true;
-    }
-    SET_STATE_BLOCK(_material->getRenderStateBlock(shadowStage ? SHADOW_STAGE : Z_PRE_PASS_STAGE));
-
-    Material::ShaderInfo& shaderInfo = _material->getShaderInfo(shadowStage ? SHADOW_STAGE : Z_PRE_PASS_STAGE);
-    StateTracker<bool>& shaderStates = shaderInfo.getTrackedBools();
-    StateTracker<bool>& sgnStates = sgn->getTrackedBools();
-
-    _drawShader = shaderInfo.getProgram();
-
-    assert(_drawShader != nullptr);
-
-    if (!_drawShader->bind())
-        return false;
-
-    getMaterial()->UploadToShader(shaderInfo);
-    if (_material->isTranslucent()){
-        if (_material->getTexture(Material::TEXTURE_OPACITY)) 
-            _material->getTexture(Material::TEXTURE_OPACITY)->Bind(Material::TEXTURE_OPACITY);
-        if (_material->getTexture(Material::TEXTURE_UNIT0))
-            _material->getTexture(Material::TEXTURE_UNIT0)->Bind(Material::TEXTURE_UNIT0);
-    }
-
-    AnimationComponent* animComponent = sgn->getComponent<AnimationComponent>();
-    bool temp = animComponent != nullptr && !animComponent->animationTransforms().empty();
-    if(temp){
-        _drawShader->Uniform("dvd_boneOffset", (I32)(sgn->getInstanceID() * animComponent->animationTransforms().size()));
-    }
-
-    shaderStates.initTrackedValue(2, !temp);
-    sgnStates.initTrackedValue(2, !temp);
-
-    if(shaderStates.getTrackedValue(2) != temp || sgnStates.getTrackedValue(2) != temp){
-        shaderStates.setTrackedValue(2, temp);
-        sgnStates.setTrackedValue(2, temp);
-        _drawShader->Uniform("dvd_hasAnimations", temp);
-    }
     return true;
 }
 

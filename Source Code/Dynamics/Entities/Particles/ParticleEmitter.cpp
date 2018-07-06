@@ -131,37 +131,21 @@ bool ParticleEmitter::computeBoundingBox(SceneGraphNode* const sgn){
     return SceneNode::computeBoundingBox(sgn);
 }
 
-bool ParticleEmitter::prepareDepthMaterial(SceneGraphNode* const sgn){
+bool ParticleEmitter::prepareMaterial(SceneGraphNode* const sgn, bool depthPass){
     if(!_enabled || !_created)
         return false;
 
     SET_STATE_BLOCK(_particleStateBlockHash);
 
-    if(!_particleDepthShader->bind())
+    ShaderProgram* shader = (depthPass ? _particleDepthShader : _particleShader);
+    if(!shader->bind())
         return false;
 
     const mat4<F32>& viewMatrixCache = GFX_DEVICE.getMatrix(VIEW_MATRIX);
-    _particleDepthShader->Uniform("CameraRight_worldspace", vec3<F32>(viewMatrixCache.m[0][0], viewMatrixCache.m[1][0], viewMatrixCache.m[2][0]));
-    _particleDepthShader->Uniform("CameraUp_worldspace",    vec3<F32>(viewMatrixCache.m[0][1], viewMatrixCache.m[1][1], viewMatrixCache.m[2][1]));
-    _particleGPUBuffer->setShaderProgram(_particleDepthShader);
-
-    return true;
-}
-
-bool ParticleEmitter::prepareMaterial(SceneGraphNode* const sgn){
-    if(!_enabled || !_created)
-        return false;
-
-    SET_STATE_BLOCK(_particleStateBlockHash);
-
-    if(!_particleShader->bind())
-        return false;
-
-    const mat4<F32>& viewMatrixCache = GFX_DEVICE.getMatrix(VIEW_MATRIX);
-    _particleShader->Uniform("size", vec2<F32>(Application::getInstance().getResolution().width, Application::getInstance().getResolution().height));
-    _particleShader->Uniform("CameraRight_worldspace", vec3<F32>(viewMatrixCache.m[0][0], viewMatrixCache.m[1][0], viewMatrixCache.m[2][0]));
-    _particleShader->Uniform("CameraUp_worldspace",    vec3<F32>(viewMatrixCache.m[0][1], viewMatrixCache.m[1][1], viewMatrixCache.m[2][1]));
-    _particleGPUBuffer->setShaderProgram(_particleShader);
+    shader->Uniform("size", vec2<F32>(Application::getInstance().getResolution().width, Application::getInstance().getResolution().height));
+    shader->Uniform("CameraRight_worldspace", vec3<F32>(viewMatrixCache.m[0][0], viewMatrixCache.m[1][0], viewMatrixCache.m[2][0]));
+    shader->Uniform("CameraUp_worldspace",    vec3<F32>(viewMatrixCache.m[0][1], viewMatrixCache.m[1][1], viewMatrixCache.m[2][1]));
+    _particleGPUBuffer->setShaderProgram(shader);
 
     _particleTexture->Bind(Material::TEXTURE_UNIT0);
     GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->Bind(1, TextureDescriptor::Depth);

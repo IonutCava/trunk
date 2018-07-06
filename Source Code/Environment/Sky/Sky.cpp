@@ -78,7 +78,7 @@ void Sky::postLoad(SceneGraphNode* const sgn){
     SceneNode::postLoad(sgn);
 }
 
-bool Sky::prepareMaterial(SceneGraphNode* const sgn) {
+bool Sky::prepareMaterial(SceneGraphNode* const sgn, bool depthPass) {
     _sky->renderInstance()->stateHash(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE) ? _skyboxRenderStateReflectedHash : _skyboxRenderStateHash);
 	SET_STATE_BLOCK(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE) ? _skyboxRenderStateReflectedHash : _skyboxRenderStateHash);    return true;
 }

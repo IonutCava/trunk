@@ -77,6 +77,13 @@ public:
     typedef Unordered_map<std::string, SceneGraphNode*> NodeChildren;
     typedef Unordered_map<SGNComponent::ComponentType, SGNComponent* > NodeComponents;
 
+    struct NodeShaderData {
+        mat4<F32> _worldMatrix;
+        mat4<F32> _normalMatrix;
+        vec4<U32> _lightInfo; //< x - lightCount; y,z,w - reserved
+        vec4<U32> _integerValues; //< x - isSelected; y - isShadowMapped; z - boneOffset; w - reserved
+    };
+
     ///Usage context affects lighting, navigation, physics, etc
     enum UsageContext {
         NODE_DYNAMIC = 0,
@@ -163,8 +170,9 @@ public:
 
     inline void setCastsShadows(const bool state)    {_castsShadows = state;}
     inline void setReceivesShadows(const bool state) {_receiveShadows = state;}
-    inline bool getCastsShadows()    const {return _castsShadows;}
-    inline bool getReceivesShadows() const {return _receiveShadows;}
+
+    bool getCastsShadows()    const;
+    bool getReceivesShadows() const;
 
     void getShadowCastersAndReceivers(vectorImpl<const SceneGraphNode* >& casters, vectorImpl<const SceneGraphNode* >& receivers, bool visibleOnly = false) const;
 
@@ -193,6 +201,9 @@ public:
     inline PhysicsComponent* getComponent() { return dynamic_cast<PhysicsComponent*>(_components[SGNComponent::SGN_COMP_PHYSICS]); }
     
     inline StateTracker<bool>& getTrackedBools() { return _trackedBools; }
+
+    void updateShaderData(const mat4<F32>& viewMatrix, const D32 interpolationFactor);
+    inline const NodeShaderData& getShaderData() const { return _nodeShaderData; }
 
 protected:
     friend class RenderPassCuller;
@@ -245,6 +256,8 @@ private:
     Unordered_map<RenderStage, bool> _drawReset;
 
     StateTracker<bool> _trackedBools;
+
+    NodeShaderData  _nodeShaderData;
 };
 
 #endif

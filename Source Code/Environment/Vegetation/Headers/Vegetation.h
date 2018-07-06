@@ -72,8 +72,7 @@ protected:
     void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
     bool onDraw(SceneGraphNode* const sgn, const RenderStage& renderStage);
     void gpuCull();
-    //bool prepareMaterial(SceneGraphNode* const sgn);
-    //bool prepareDepthMaterial(SceneGraphNode* const sgn);
+    //bool prepareMaterial(SceneGraphNode* const sgn, bool depthPass);
     bool setMaterialInternal(SceneGraphNode* const sgn);
 
 private:
