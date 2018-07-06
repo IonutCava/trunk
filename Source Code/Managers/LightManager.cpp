@@ -13,7 +13,8 @@ ProfileTimer* s_shadowPassTimer = NULL;
 LightManager::LightManager() : FrameListener(),
                                _shadowMapsEnabled(true),
                                _previewShadowMaps(false),
-                               _dominantLight(NULL)
+                               _dominantLight(NULL),
+                               _worldHalfExtent(0.0f)
 {
     s_shadowPassTimer = ADD_TIMER("ShadowPassTimer");
 }
@@ -87,6 +88,10 @@ bool LightManager::checkId(U32 value){
 
 void LightManager::idle(){
     _shadowMapsEnabled = ParamHandler::getInstance().getParam<bool>("rendering.enableShadows");
+    F32 worldWidth = GET_ACTIVE_SCENEGRAPH()->getRoot()->getBoundingBox().getWidth();
+    F32 worldDepth = GET_ACTIVE_SCENEGRAPH()->getRoot()->getBoundingBox().getDepth();
+    _worldHalfExtent = std::max(worldWidth, worldDepth) * 0.5f;
+    CLAMP<F32>(_worldHalfExtent, 1.0f, (F32)Config::DIRECTIONAL_LIGHT_DISTANCE);
 }
 
 ///Check light properties for every light (this is bound to the camera change listener group

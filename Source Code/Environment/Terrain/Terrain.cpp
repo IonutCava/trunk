@@ -112,7 +112,7 @@ void Terrain::prepareMaterial(SceneGraphNode* const sgn){
     }
     terrainShader->bind();
     terrainShader->Uniform("material",getMaterial()->getMaterialMatrix());
-    terrainShader->Uniform("worldHalfExtent", GET_ACTIVE_SCENEGRAPH()->getRoot()->getBoundingBox().getWidth() * 0.5f);
+    terrainShader->Uniform("worldHalfExtent", LightManager::getInstance().getLigthOrthoHalfExtent());
     terrainShader->Uniform("dvd_enableShadowMapping", _shadowMapped);
     terrainShader->Uniform("dvd_lightProjectionMatrices",LightManager::getInstance().getLightProjectionMatricesCache());
     terrainShader->Uniform("dvd_lightType",types);

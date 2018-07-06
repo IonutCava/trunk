@@ -108,41 +108,24 @@ RenderBin* RenderQueue::getOrCreateBin(const RenderBin::RenderBinType& rbType){
 }
 
 RenderBin* RenderQueue::getBinForNode(SceneNode* const node){
-    RenderBin* rb = NULL;
     switch(node->getType()){
-        default:
-            //skip
-            break;
-        case TYPE_TERRAIN :
-            rb = getOrCreateBin(RenderBin::RBT_TERRAIN);
-            break;
-        case TYPE_LIGHT :
-            rb = getOrCreateBin(RenderBin::RBT_IMPOSTOR);
-            break;
-        case TYPE_WATER :
-            rb = getOrCreateBin(RenderBin::RBT_WATER);
-            break;
-        case TYPE_PARTICLE_EMITTER :
-            rb = getOrCreateBin(RenderBin::RBT_PARTICLES);
-            break;
-        case TYPE_SKY:
-            rb = getOrCreateBin(RenderBin::RBT_SKY);
-            break;
-        case TYPE_OBJECT3D : {
-            ///Check if the object has a material with translucency
+        case TYPE_TERRAIN          : return getOrCreateBin(RenderBin::RBT_TERRAIN);
+        case TYPE_LIGHT            : return getOrCreateBin(RenderBin::RBT_IMPOSTOR);
+        case TYPE_WATER            : return getOrCreateBin(RenderBin::RBT_WATER);
+        case TYPE_PARTICLE_EMITTER : return getOrCreateBin(RenderBin::RBT_PARTICLES);
+        case TYPE_SKY              : return getOrCreateBin(RenderBin::RBT_SKY);
+        case TYPE_OBJECT3D         : { 
+            //Check if the object has a material with translucency
             Material* nodeMaterial = node->getMaterial();
-            if(nodeMaterial){
-                if(nodeMaterial->isTranslucent()){
-                    ///Add it to the appropriate bin if so ...
-                    rb = getOrCreateBin(RenderBin::RBT_TRANSLUCENT);
-                    break;
-                }
+            if(nodeMaterial && nodeMaterial->isTranslucent()){
+                //Add it to the appropriate bin if so ...
+                return getOrCreateBin(RenderBin::RBT_TRANSLUCENT);
             }
-            ///... else add it to the general geoemtry bin
-            rb = getOrCreateBin(RenderBin::RBT_MESH);
-            }break;
-        };
-    return rb;
+            //... else add it to the general geoemtry bin
+            return getOrCreateBin(RenderBin::RBT_MESH);
+        }
+    }
+    return NULL;
 }
 
 void RenderQueue::addNodeToQueue(SceneGraphNode* const sgn){

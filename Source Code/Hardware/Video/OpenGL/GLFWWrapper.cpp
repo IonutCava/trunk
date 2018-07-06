@@ -437,7 +437,6 @@ bool GL_API::initShaders(){
     //Init glsw library
     GLint glswState = glswInit();
     glswAddDirectiveToken("","#version 130\n/*“Copyright 2009-2013 DIVIDE-Studio”*/");
-    glswAddDirectiveToken("Fragment","#extension GL_EXT_texture_array : require");
     glswAddDirectiveToken("","#extension GL_ARB_uniform_buffer_object : require");
     glswAddDirectiveToken("","#extension GL_EXT_gpu_shader4 : enable");
 

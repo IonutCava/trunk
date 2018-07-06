@@ -56,7 +56,6 @@ public:
 		WV_INV_MATRIX  = 2, //<WorldViewInverse matrix: (ViewMatrix * WorldMatrix)^-1
 		WVP_MATRIX     = 4, //<WorldViewProjection matrix: ProjectionMatrix * ViewMatrix * WorldMatrix
 		NORMAL_MATRIX  = 6, //<Normal matrix - for non-uniform scaled models: top left 3x3 of ((ViewMatrix * WorldMatrix)^-1)^T; for uniform scaled models: top left 3x3 of (ViewMatrix*WorldMatrix)
-		BIAS_MATRIX    = 7  //<Bias matrix - scales and biases coordinates from [-1,1] to [0,1]
 	};
 
     void setApi(const RenderAPI& api);

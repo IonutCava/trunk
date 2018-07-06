@@ -159,7 +159,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt){
     {
         // Update scene based on input
         _sceneMgr.processInput(_currentTimeDelta);
-
+ 
         // process all scene events
         _sceneMgr.processTasks(_currentTimeDelta);
 
@@ -256,8 +256,8 @@ I8 Kernel::initialize(const std::string& entryPoint) {
 
     PostFX::getInstance().init(resolution);
 
-	size_t windowHandle = (size_t)_GFX.getHWND();
-	std::string windowTitle = par.getParam<std::string>("appTitle");
+    size_t windowHandle = (size_t)_GFX.getHWND();
+    std::string windowTitle = par.getParam<std::string>("appTitle");
     //Bind the kernel with the input interface
     _inputInterface.initialize(this,windowTitle,windowHandle);
 

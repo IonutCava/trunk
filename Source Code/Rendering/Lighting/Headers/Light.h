@@ -204,6 +204,7 @@ private:
 
 protected:
     mat4<F32> _lightProjectionMatrix;
+    mat4<F32> _bias;
     vec3<F32> _lightPos;
     vec2<F32> _zPlanes;
     vec3<F32> _eyePos;

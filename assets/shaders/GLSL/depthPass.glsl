@@ -1,33 +1,25 @@
 -- Vertex
 #include "vboInputData.vert"
    
-#if defined(USE_GPU_SKINNING)
-#include "boneTransforms.vert"
-#endif
-
-out vec4 _vertexWV;
+out vec4 _vertexWVP;
 
 void main(void){
 
     computeData();
     
-    #if defined(USE_GPU_SKINNING)
-     	applyBoneTransforms(dvd_Vertex, dvd_Normal);
- 	#endif
-
     // Transformed position 
-    _vertexWV = dvd_WorldViewMatrix * dvd_Vertex;
+    _vertexWVP = dvd_WorldViewProjectionMatrix * dvd_Vertex;
     //Compute the final vert position
-    gl_Position = dvd_ProjectionMatrix * _vertexWV;
+    gl_Position = _vertexWVP;
 }
 
 -- Fragment
 
 in vec2 _texCoord;
-in vec4 _vertexWV;
+in vec4 _vertexWVP;
 
 //Opacity and specular maps
-uniform float opacity;
+uniform float opacity = 1.0;
 #if defined(USE_OPACITY_MAP)
 //Opacity and specular maps
 uniform sampler2D texOpacityMap;
@@ -36,19 +28,20 @@ uniform sampler2D texOpacityMap;
 out vec4 _colorOut;
 
 void main(){
-
+    
     float opacityValue = opacity;
+
 #if defined(USE_OPACITY_MAP)
-    opacityValue = 1.1 - texture(texOpacityMap, _texCoord).a;
+    // discard material if it is bellow opacity threshold
+    if(texture(texOpacityMap, _texCoord).a < ALPHA_DISCARD_THRESHOLD) discard;
+#else
+    if(opacity< ALPHA_DISCARD_THRESHOLD) discard;
 #endif
 
-    /*if(opacityValue < ALPHA_DISCARD_THRESHOLD)
-        gl_FragDepth = 1.0; //Discard for depth, basically*/
-
-    float depth = (_vertexWV.z / _vertexWV.w) * 0.5 + 0.5;
+    float depth = 0.5 * (_vertexWVP.z / _vertexWVP.w) + 0.5;
     // Adjusting moments (this is sort of bias per pixel) using partial derivative
     float dx = dFdx(depth);
     float dy = dFdy(depth);
-
-    _colorOut = vec4(depth, 0.0, 0.0, (depth * depth) + 0.25 * (dx * dx + dy * dy));
+    
+    _colorOut = vec4(depth, depth * depth + 0.25 * (dx * dx + dy * dy), 0.0, 1.0);
 }

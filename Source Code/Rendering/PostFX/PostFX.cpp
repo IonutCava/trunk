@@ -140,8 +140,8 @@ void PostFX::createOperators(){
 
     TextureDescriptor depthDescriptor(TEXTURE_2D,
                                       DEPTH_COMPONENT,
-                                      DEPTH_COMPONENT24,
-                                      UNSIGNED_BYTE);
+                                      DEPTH_COMPONENT,
+                                      UNSIGNED_INT);
 
     screenSampler._useRefCompare = true; //< Use compare function
     screenSampler._cmpFunc = CMP_FUNC_LEQUAL; //< Use less or equal

@@ -107,6 +107,7 @@ namespace GL_ENUM_TABLE {
        glImageFormatTable[DEPTH_COMPONENT16] = GL_DEPTH_COMPONENT16;
        glImageFormatTable[DEPTH_COMPONENT24] = GL_DEPTH_COMPONENT24;
        glImageFormatTable[DEPTH_COMPONENT32] = GL_DEPTH_COMPONENT32;
+       glImageFormatTable[DEPTH_COMPONENT32F] = GL_DEPTH_COMPONENT32F;
 
        glPrimitiveTypeTable[API_POINTS] = GL_POINTS;
        glPrimitiveTypeTable[LINES] = GL_LINES;

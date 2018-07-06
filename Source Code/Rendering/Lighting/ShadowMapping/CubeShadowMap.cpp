@@ -16,8 +16,8 @@ CubeShadowMap::CubeShadowMap(Light* light) : ShadowMap(light, SHADOW_TYPE_CubeMa
 	PRINT_FN(Locale::get("LIGHT_CREATE_SHADOW_FBO"), light->getId(), "Single Shadow Map");
 	TextureDescriptor depthMapDescriptor(TEXTURE_2D,
 										 DEPTH_COMPONENT,
-										 DEPTH_COMPONENT24,
-										 UNSIGNED_BYTE); ///Default filters, LINEAR is OK for this
+										 DEPTH_COMPONENT,
+										 UNSIGNED_INT); ///Default filters, LINEAR is OK for this
 
 	SamplerDescriptor depthMapSampler;
 	depthMapSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);

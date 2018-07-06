@@ -12,7 +12,7 @@ void NetworkScene::preRender(){
                                                       vec4<F32>(1.0f, 1.0f, 0.8f, 1.0f),
                                                       0.25f + cosf(_sunAngle.y) * 0.75f);
 
-    light->setPosition(_sunvector);
+    light->setDirection(_sunvector);
     light->setLightProperties(LIGHT_PROPERTY_AMBIENT,DefaultColors::WHITE());
     light->setLightProperties(LIGHT_PROPERTY_DIFFUSE,vSunColor);
     light->setLightProperties(LIGHT_PROPERTY_SPECULAR,vSunColor);

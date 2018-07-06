@@ -47,7 +47,7 @@ public:
     ///Setup needed before rendering the light
     void preRender();
     ///Setup needed after rendering the light
-    void postRender();
+    virtual void postRender();
     ///Get the current shadow mapping tehnique
     inline ShadowType getShadowMapType() const {return _shadowMapType;};
 

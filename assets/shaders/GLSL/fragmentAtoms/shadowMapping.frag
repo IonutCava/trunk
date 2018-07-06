@@ -1,6 +1,6 @@
 in vec4 _shadowCoord[MAX_SHADOW_CASTING_LIGHTS];
 
-uniform sampler2DArrayShadow texDepthMapFromLightArray;
+uniform sampler2DArrayShadow       texDepthMapFromLightArray;
 uniform samplerCubeShadow    texDepthMapFromLightCube;
 uniform sampler2DShadow      texDepthMapFromLight0;
 uniform sampler2DShadow      texDepthMapFromLight1;

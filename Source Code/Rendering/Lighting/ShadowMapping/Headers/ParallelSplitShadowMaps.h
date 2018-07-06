@@ -33,12 +33,14 @@ public:
     PSShadowMaps(Light* light);
     ~PSShadowMaps();
     void render(const SceneRenderState& renderState, boost::function0<void> sceneRenderFunction);
+    void postRender();
     ///Update depth maps
     void resolution(U16 resolution, const SceneRenderState& renderState);
     void previewShadowMaps();
+
 protected:
     void renderInternal(const SceneRenderState& renderState) const;
-    void createJitterTexture(I32 size, I32 samples_u, I32 samples_v);
+    //void createJitterTexture(I32 size, I32 samples_u, I32 samples_v);
     //OGRE! I know .... sorry -Ionut
     void calculateSplitPoints(U8 splitCount, F32 nearDist, F32 farDist, F32 lambda = 0.95);
     //
@@ -49,9 +51,12 @@ protected:
     U8  _splitPadding; //<Avoid artifacts;
     Quad3D* _renderQuad;
     ShaderProgram*  _previewDepthMapShader;
+    ShaderProgram*  _blurDepthMapShader;
     vectorImpl<F32> _splitPoints;
     vectorImpl<F32> _optAdjustFactor;
     vectorImpl<F32> _orthoPerPass;
-    PixelBufferObject* _jitterTexture; ///<For blurring
+    //PixelBufferObject* _jitterTexture; ///<For blurring
+    ///The blur buffer
+    FrameBufferObject*  _blurBuffer;
 };
 #endif 

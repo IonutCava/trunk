@@ -191,7 +191,7 @@ bool glShaderProgram::generateHWResource(const std::string& name){
     glswSetPath(std::string(getResourceLocation()+"GLSL/").c_str(), ".glsl");
     //Mirror initial shader defines to match line count
     GLint lineCountOffset = 11;
-    GLint lineCountOffsetFrag = 2; //< for the EXT_texture_array define
+    GLint lineCountOffsetFrag = 0;
     GLint lineCountOffsetVert = 0;
     if(GFX_DEVICE.getGPUVendor() == GPU_VENDOR_NVIDIA){ //nVidia specific
         lineCountOffset += 5;
@@ -458,7 +458,7 @@ void glShaderProgram::Uniform(const std::string& ext, GLuint value){
     GLint location = cachedLoc(ext);
     if(location == -1) return;
 
-    if(!_bound) GLCheck(glProgramUniform1uiEXT(_shaderProgramId, location, value));
+    if(!_bound) GLCheck(glProgramUniform1ui(_shaderProgramId, location, value));
     else        GLCheck(glUniform1ui(location, value));
 }
 
@@ -466,7 +466,7 @@ void glShaderProgram::Uniform(const std::string& ext, GLint value){
     GLint location = cachedLoc(ext);
     if(location == -1) return;
 
-    if(!_bound) GLCheck(glProgramUniform1iEXT(_shaderProgramId, location, value));
+    if(!_bound) GLCheck(glProgramUniform1i(_shaderProgramId, location, value));
     else        GLCheck(glUniform1i(location, value));
 }
 
@@ -474,7 +474,7 @@ void glShaderProgram::Uniform(const std::string& ext, GLfloat value){
     GLint location = cachedLoc(ext);
     if(location == -1) return;
 
-    if(!_bound) GLCheck(glProgramUniform1fEXT(_shaderProgramId, location, value));
+    if(!_bound) GLCheck(glProgramUniform1f(_shaderProgramId, location, value));
     else        GLCheck(glUniform1f(location, value));
 }
 
@@ -482,7 +482,7 @@ void glShaderProgram::Uniform(const std::string& ext, const vec2<GLfloat>& value
     GLint location = cachedLoc(ext);
     if(location == -1) return;
 
-    if(!_bound) GLCheck(glProgramUniform2fvEXT(_shaderProgramId, location, 1, value));
+    if(!_bound) GLCheck(glProgramUniform2fv(_shaderProgramId, location, 1, value));
     else        GLCheck(glUniform2fv(location, 1, value));
 }
 
@@ -490,7 +490,7 @@ void glShaderProgram::Uniform(const std::string& ext, const vec2<GLint>& value){
     GLint location = cachedLoc(ext);
     if(location == -1) return;
 
-    if(!_bound) GLCheck(glProgramUniform2ivEXT(_shaderProgramId, location, 1, value));
+    if(!_bound) GLCheck(glProgramUniform2iv(_shaderProgramId, location, 1, value));
     else        GLCheck(glUniform2iv(location, 1, value));
 }
 
@@ -498,7 +498,7 @@ void glShaderProgram::Uniform(const std::string& ext, const vec2<GLushort>& valu
     GLint location = cachedLoc(ext);
     if(location == -1) return;
 
-    if(!_bound) GLCheck(glProgramUniform2ivEXT(_shaderProgramId, location, 1, vec2<I32>(value.x, value.y)));
+    if(!_bound) GLCheck(glProgramUniform2iv(_shaderProgramId, location, 1, vec2<I32>(value.x, value.y)));
     else        GLCheck(glUniform2iv(location, 1, vec2<I32>(value.x, value.y)));
 }
 
@@ -506,7 +506,7 @@ void glShaderProgram::Uniform(const std::string& ext, const vec3<GLfloat>& value
     GLint location = cachedLoc(ext);
     if(location == -1) return;
 
-    if(!_bound) GLCheck(glProgramUniform3fvEXT(_shaderProgramId, location, 1, value));
+    if(!_bound) GLCheck(glProgramUniform3fv(_shaderProgramId, location, 1, value));
     else        GLCheck(glUniform3fv(location, 1, value));
 }
 
@@ -514,7 +514,7 @@ void glShaderProgram::Uniform(const std::string& ext, const vec4<GLfloat>& value
     GLint location = cachedLoc(ext);
     if(location == -1) return;
 
-    if(!_bound) GLCheck(glProgramUniform4fvEXT(_shaderProgramId, location, 1, value));
+    if(!_bound) GLCheck(glProgramUniform4fv(_shaderProgramId, location, 1, value));
     else        GLCheck(glUniform4fv(location, 1, value));
 }
 
@@ -522,7 +522,7 @@ void glShaderProgram::Uniform(const std::string& ext, const mat3<GLfloat>& value
     GLint location = cachedLoc(ext);
     if(location == -1) return;
 
-    if(!_bound) GLCheck(glProgramUniformMatrix3fvEXT(_shaderProgramId, location, 1, rowMajor, value));
+    if(!_bound) GLCheck(glProgramUniformMatrix3fv(_shaderProgramId, location, 1, rowMajor, value));
     else        GLCheck(glUniformMatrix3fv(location, 1,rowMajor, value));
 }
 
@@ -530,7 +530,7 @@ void glShaderProgram::Uniform(const std::string& ext, const mat4<GLfloat>& value
     GLint location = cachedLoc(ext);
     if(location == -1) return;
 
-    if(!_bound) GLCheck(glProgramUniformMatrix4fvEXT(_shaderProgramId, location, 1, rowMajor, value));
+    if(!_bound) GLCheck(glProgramUniformMatrix4fv(_shaderProgramId, location, 1, rowMajor, value));
     else        GLCheck(glUniformMatrix4fv(location, 1, rowMajor, value.mat));
 }
 
@@ -539,7 +539,7 @@ void glShaderProgram::Uniform(const std::string& ext, const vectorImpl<GLint >& 
     GLint location = cachedLoc(ext);
     if(location == -1) return;
 
-    if(!_bound) GLCheck(glProgramUniform1ivEXT(_shaderProgramId, location, values.size(),&values.front()));
+    if(!_bound) GLCheck(glProgramUniform1iv(_shaderProgramId, location, values.size(),&values.front()));
     else        GLCheck(glUniform1iv(location,values.size(),&values.front()));
 }
 
@@ -548,7 +548,7 @@ void glShaderProgram::Uniform(const std::string& ext, const vectorImpl<GLfloat >
     GLint location = cachedLoc(ext);
     if(location == -1) return;
 
-    if(!_bound) GLCheck(glProgramUniform1fvEXT(_shaderProgramId, location, values.size(),&values.front()));
+    if(!_bound) GLCheck(glProgramUniform1fv(_shaderProgramId, location, values.size(),&values.front()));
     else        GLCheck(glUniform1fv(location,values.size(),&values.front()));
 }
 
@@ -557,7 +557,7 @@ void glShaderProgram::Uniform(const std::string& ext, const vectorImpl<vec2<GLfl
     GLint location = cachedLoc(ext);
     if(location == -1) return;
 
-    if(!_bound) GLCheck(glProgramUniform2fvEXT(_shaderProgramId, location, values.size(), values.front()));
+    if(!_bound) GLCheck(glProgramUniform2fv(_shaderProgramId, location, values.size(), values.front()));
     else        GLCheck(glUniform2fv(location, values.size(), values.front()));
 }
 
@@ -566,7 +566,7 @@ void glShaderProgram::Uniform(const std::string& ext, const vectorImpl<vec3<GLfl
     GLint location = cachedLoc(ext);
     if(location == -1) return;
 
-    if(!_bound) GLCheck(glProgramUniform3fvEXT(_shaderProgramId, location, values.size(), values.front()));
+    if(!_bound) GLCheck(glProgramUniform3fv(_shaderProgramId, location, values.size(), values.front()));
     else        GLCheck(glUniform3fv(location, values.size(), values.front()));
 }
 
@@ -575,7 +575,7 @@ void glShaderProgram::Uniform(const std::string& ext, const vectorImpl<vec4<GLfl
     GLint location = cachedLoc(ext);
     if(location == -1) return;
 
-    if(!_bound) GLCheck(glProgramUniform4fvEXT(_shaderProgramId, location, values.size(), values.front()));
+    if(!_bound) GLCheck(glProgramUniform4fv(_shaderProgramId, location, values.size(), values.front()));
     else        GLCheck(glUniform4fv(location, values.size(), values.front()));
 }
 
@@ -584,7 +584,7 @@ void glShaderProgram::Uniform(const std::string& ext, const vectorImpl<mat4<GLfl
     GLint location = cachedLoc(ext);
     if(location == -1) return;
 
-    if(!_bound) GLCheck(glProgramUniformMatrix4fvEXT(_shaderProgramId, location, values.size(),rowMajor, values.front()));
+    if(!_bound) GLCheck(glProgramUniformMatrix4fv(_shaderProgramId, location, values.size(),rowMajor, values.front()));
     else        GLCheck(glUniformMatrix4fv(location, values.size(), rowMajor, values.front()));
 }
 
@@ -592,6 +592,6 @@ void glShaderProgram::UniformTexture(const std::string& ext, GLushort slot){
     GLint location = cachedLoc(ext);
     if(location == -1) return;
 
-    if(!_bound) GLCheck(glProgramUniform1iEXT(_shaderProgramId, location, slot));
+    if(!_bound) GLCheck(glProgramUniform1i(_shaderProgramId, location, slot));
     else        GLCheck(glUniform1i(location, slot));
 }

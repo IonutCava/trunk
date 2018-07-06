@@ -23,7 +23,7 @@ void AITenisScene::preRender(){
                             -cosf(_sunAngle.y),
                             -sinf(_sunAngle.x) * sinf(_sunAngle.y));
 
-    //LightManager::getInstance().getLight(0)->setPosition(_sunvector);
+    //LightManager::getInstance().getLight(0)->setDirection(_sunvector);
     getSkySGN(0)->getNode<Sky>()->setSunVector(_sunvector);
 }
 

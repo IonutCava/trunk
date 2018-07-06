@@ -340,14 +340,13 @@ void GFXDevice::getMatrix(const EXTENDED_MATRIX& mode, mat4<F32>& mat) {
      assert(mode != NORMAL_MATRIX /*|| mode != ... */);
 
      //refresh cache
-     if(mode != WORLD_MATRIX && mode != BIAS_MATRIX)
+     if(mode != WORLD_MATRIX)
           cleanMatrices();
       
       switch(mode){
           case WORLD_MATRIX:  mat.set(_worldMatrices.top()); break;
           case WV_MATRIX:     mat.set(_WVCachedMatrix);      break;
           case WVP_MATRIX:    mat.set(_WVPCachedMatrix);     break;
-          case BIAS_MATRIX:   mat.bias();                    break;
           case WV_INV_MATRIX: _WVCachedMatrix.inverse(mat);  break;
       }
 }

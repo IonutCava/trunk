@@ -44,7 +44,7 @@ bool PhysXScene::load(const std::string& name, CameraManager* const cameraMgr){
     vec2<F32> sunAngle(0.0f, RADIANS(45.0f));
     _sunvector = vec3<F32>(-cosf(sunAngle.x) * sinf(sunAngle.y),-cosf(sunAngle.y),-sinf(sunAngle.x) * sinf(sunAngle.y));
     Light* light = addDefaultLight();
-    light->setPosition(_sunvector);
+    light->setDirection(_sunvector);
     light->setLightProperties(LIGHT_PROPERTY_AMBIENT,vec4<F32>(1.0f,1.0f,1.0f,1.0f));
     light->setLightProperties(LIGHT_PROPERTY_DIFFUSE,vec4<F32>(1.0f,1.0f,1.0f,1.0f));
     light->setLightProperties(LIGHT_PROPERTY_SPECULAR,vec4<F32>(1.0f,1.0f,1.0f,1.0f));

@@ -13,6 +13,7 @@ Material::Material() : Resource(),
                        _receiveShadows(true),
                        _hardwareSkinning(false),
                        _useStripInput(false),
+                       _translucencyCheck(false),
                        _shadingMode(SHADING_PHONG), /// phong shading by default
                        _bumpMethod(BUMP_NONE)
 {
@@ -32,23 +33,18 @@ Material::Material() : Resource(),
    //std::fill(_operations, _operations + (Config::MAX_TEXTURE_STORAGE - TEXTURE_UNIT0), TextureOperation_Replace);
 
    /// Normal state for final rendering
-   RenderStateBlockDescriptor normalStateDescriptor;
-
+   RenderStateBlockDescriptor stateDescriptor;
+   _defaultRenderStates.insert(std::make_pair(FINAL_STAGE, GFX_DEVICE.createStateBlock(stateDescriptor)));
+   /// the reflection descriptor is the same as the normal descriptor
+   _defaultRenderStates.insert(std::make_pair(REFLECTION_STAGE, GFX_DEVICE.createStateBlock(stateDescriptor)));
    /// A descriptor used for rendering to depth map
-   RenderStateBlockDescriptor depthDescriptor;
-   depthDescriptor.setCullMode(CULL_MODE_CCW);
+   stateDescriptor.setCullMode(CULL_MODE_CCW);
    /// set a polygon offset
-   depthDescriptor._zBias = 1.1f;
-   /// ignore colors
-   depthDescriptor.setColorWrites(false,false,false,true);
-
-   /// the reflection descriptor is the same as the normal descriptor, but with special culling
-   RenderStateBlockDescriptor reflectionStateDescriptor;
-   reflectionStateDescriptor.fromDescriptor(normalStateDescriptor);
-
-   _defaultRenderStates.insert(std::make_pair(FINAL_STAGE, GFX_DEVICE.createStateBlock(normalStateDescriptor)));
-   _defaultRenderStates.insert(std::make_pair(DEPTH_STAGE, GFX_DEVICE.createStateBlock(depthDescriptor)));
-   _defaultRenderStates.insert(std::make_pair(REFLECTION_STAGE, GFX_DEVICE.createStateBlock(reflectionStateDescriptor)));
+   stateDescriptor._zBias = 1.1f;
+   /// ignore colors - Some shadowing techniques require drawing to the a color buffer
+   stateDescriptor.setColorWrites(true,true,false,false);
+   _defaultRenderStates.insert(std::make_pair(DEPTH_STAGE, GFX_DEVICE.createStateBlock(stateDescriptor)));
+   
 
     assert(_defaultRenderStates[FINAL_STAGE] != NULL);
     assert(_defaultRenderStates[DEPTH_STAGE] != NULL);
@@ -58,8 +54,7 @@ Material::Material() : Resource(),
     _shaderRef[DEPTH_STAGE] = NULL;
 
     //Create an immediate mode shader (one should exist already)
-    ResourceDescriptor immediateModeShader("ImmediateModeEmulation");
-    _imShader = CreateResource<ShaderProgram>(immediateModeShader);
+    _imShader = CreateResource<ShaderProgram>(ResourceDescriptor("ImmediateModeEmulation"));
     REGISTER_TRACKED_DEPENDENCY(_imShader);
 
     _computedShader[0] = false;
@@ -157,6 +152,7 @@ ShaderProgram* Material::setShaderProgram(const std::string& shader, const Rende
 
 void Material::clean() {
     if(_dirty){
+        isTranslucent();
         _matId[0].i = (_shaderRef[FINAL_STAGE] != NULL ?  _shaderRef[FINAL_STAGE]->getId() : 0);
         _matId[1].i = (_shaderRef[DEPTH_STAGE] != NULL ?  _shaderRef[DEPTH_STAGE]->getId() : 0);
         dumpToXML();
@@ -171,12 +167,15 @@ void Material::setReceivesShadows(const bool state) {
 ///If the current material doesn't have a shader associated with it, then add the default ones.
 ///Manually setting a shader, overrides this function by setting _computedShaders to "true"
 void Material::computeShader(bool force, const RenderStage& renderStage){
+    bool deferredPassShader = GFX_DEVICE.getRenderer()->getType() != RENDERER_FORWARD;
+    bool depthPassShader = renderStage == DEPTH_STAGE;
+    //bool forwardPassShader = !deferredPassShader && !depthPassShader;
+
     U8 id = (renderStage == FINAL_STAGE ? 0 : 1);
     if(_computedShader[id] && !force && (id == 0 && _computedShaderTextures)) return;
     if(_shader[id].empty() || (id == 0 && !_computedShaderTextures)){
         //the base shader is either for a Deferred Renderer or a Forward  one ...
-        std::string shader = (GFX_DEVICE.getRenderer()->getType() != RENDERER_FORWARD ? "DeferredShadingPass1" :
-                             (renderStage == DEPTH_STAGE ? "depthPass" : "lighting"));
+        std::string shader = (deferredPassShader ? "DeferredShadingPass1" : (depthPassShader ? "depthPass" : "lighting"));
 
         //What kind of effects do we need?
         if(_textures[TEXTURE_UNIT0]){
@@ -195,14 +194,13 @@ void Material::computeShader(bool force, const RenderStage& renderStage){
                 // Or simple texture mapping?
                 shader += ".Texture";
             }
-        }else{
-            // Or just color mapping? Use the simple fragment
         }
 
-        if(_textures[TEXTURE_OPACITY]){
+        if(_textures[TEXTURE_OPACITY] || (depthPassShader && isTranslucent())){
             shader += ".Opacity";
             addShaderDefines(id, "USE_OPACITY_MAP");
         }
+
         if(_textures[TEXTURE_SPECULAR]){
             shader += ".Specular";
             addShaderDefines(id, "USE_SPECULAR_MAP");
@@ -307,7 +305,7 @@ bool Material::unload(){
 void Material::setDoubleSided(bool state) {
     if(_doubleSided == state)
         return;
-
+    
     _doubleSided = state;
     /// Update all render states for this item
     if(_doubleSided){
@@ -339,12 +337,12 @@ bool Material::isTranslucent() {
         state = true;
 
     // Disable culling for translucent items
-    if(state){
+    if(state && !_translucencyCheck){
         typedef Unordered_map<RenderStage, RenderStateBlock* >::value_type stateValue;
-        for_each(stateValue it, _defaultRenderStates){
-            RenderStateBlockDescriptor& desc =  it.second->getDescriptor();
-            desc.setCullMode(CULL_MODE_NONE);
+        for_each(stateValue& it, _defaultRenderStates){
+            it.second->getDescriptor().setCullMode(CULL_MODE_NONE);
         }
+        _translucencyCheck = true;
     }
     return state;
 }

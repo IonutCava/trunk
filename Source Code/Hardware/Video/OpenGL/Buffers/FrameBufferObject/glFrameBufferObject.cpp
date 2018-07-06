@@ -12,7 +12,7 @@ glFrameBufferObject::glFrameBufferObject(FBOType type) : FrameBufferObject(type)
     memset(_mipMapEnabled, false, 5 * sizeof(bool));
 
     _imageLayers = 0;
-    _hasDepth = _hasColor = false;
+    _mipMapsDirty = _hasDepth = _hasColor = false;
 
     switch(type){
         default:
@@ -22,7 +22,7 @@ glFrameBufferObject::glFrameBufferObject(FBOType type) : FrameBufferObject(type)
         case FBO_CUBE_DEPTH:
         case FBO_CUBE_COLOR: _textureType = GL_TEXTURE_CUBE_MAP; break;
         case FBO_2D_ARRAY_COLOR:
-        case FBO_2D_ARRAY_DEPTH : _textureType = GL_TEXTURE_2D_ARRAY_EXT; break;
+        case FBO_2D_ARRAY_DEPTH : _textureType = GL_TEXTURE_2D_ARRAY; break;
         case FBO_CUBE_COLOR_ARRAY:
         case FBO_CUBE_DEPTH_ARRAY: _textureType = GL_TEXTURE_CUBE_MAP_ARRAY; break;
     };
@@ -30,28 +30,10 @@ glFrameBufferObject::glFrameBufferObject(FBOType type) : FrameBufferObject(type)
     if(type == FBO_CUBE_DEPTH || type == FBO_2D_ARRAY_DEPTH || type == FBO_CUBE_DEPTH_ARRAY || type == FBO_2D_DEPTH){
         toggleColorWrites(false);
     }
-
-    if((_textureType == GL_TEXTURE_2D_ARRAY_EXT || _textureType == GL_TEXTURE_CUBE_MAP_ARRAY) &&
-       !glewIsSupported("GL_EXT_texture_array") && !glewIsSupported("GL_MESA_texture_array")){
-            ERROR_FN(Locale::get("ERROR_GL_NO_TEXTURE_ARRAY"));
-    }
 }
 
 glFrameBufferObject::~glFrameBufferObject()
 {
-}
-
-void glFrameBufferObject::DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer) const
-{
-    // only for array textures
-    assert(_textureType == GL_TEXTURE_2D_ARRAY_EXT || _textureType == GL_TEXTURE_CUBE_MAP_ARRAY);
-
-    if(_hasDepth)
-        GLCheck(glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _textureId[TextureDescriptor::Depth], 0, layer));
-    if(_hasColor)
-        GLCheck(glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + slot, _textureId[slot], 0, layer));
-
-    if(_clearBuffersState)   GLCheck(glClear(_clearBufferMask));
 }
 
 void glFrameBufferObject::InitAttachement(TextureDescriptor::AttachmentType type, const TextureDescriptor& texDescriptor){
@@ -129,7 +111,7 @@ void glFrameBufferObject::InitAttachement(TextureDescriptor::AttachmentType type
                                                 0, format, dataType, NULL));
                     }
             }break;
-            case GL_TEXTURE_2D_ARRAY_EXT:
+            case GL_TEXTURE_2D_ARRAY:
             case GL_TEXTURE_3D:{
                 GLCheck(glTexImage3D(_textureType,   0, internalFormat,
                                         _width, _height, _imageLayers,//Use as depth for GL_TEXTURE_3D
@@ -167,8 +149,8 @@ void glFrameBufferObject::InitAttachement(TextureDescriptor::AttachmentType type
             case GL_TEXTURE_CUBE_MAP: 
                 GLCheck(glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, _textureType, _textureId[slot], 0));
                 break;
-            case GL_TEXTURE_2D_ARRAY_EXT:
-                GLCheck(glFramebufferTextureEXT(GL_FRAMEBUFFER, attachment, _textureId[slot], 0));
+            case GL_TEXTURE_2D_ARRAY:
+                GLCheck(glFramebufferTexture(GL_FRAMEBUFFER, attachment, _textureId[slot], 0));
                 break;
             case GL_TEXTURE_3D:
             case GL_TEXTURE_2D_MULTISAMPLE_ARRAY:
@@ -184,7 +166,7 @@ void glFrameBufferObject::InitAttachement(TextureDescriptor::AttachmentType type
 
 void glFrameBufferObject::AddDepthBuffer(){
         
-    TextureType texType = (_textureType == GL_TEXTURE_2D_ARRAY_EXT || 
+    TextureType texType = (_textureType == GL_TEXTURE_2D_ARRAY || 
                            _textureType == GL_TEXTURE_CUBE_MAP_ARRAY) ? 
                            TEXTURE_2D_ARRAY : TEXTURE_2D;
 
@@ -194,8 +176,8 @@ void glFrameBufferObject::AddDepthBuffer(){
     screenSampler.toggleMipMaps(false);
     TextureDescriptor depthDescriptor(texType,
                                       DEPTH_COMPONENT,
-                                      DEPTH_COMPONENT24,
-                                      UNSIGNED_BYTE);
+                                      _fpDepth ? DEPTH_COMPONENT32F : DEPTH_COMPONENT,
+                                      _fpDepth ? FLOAT_32 : UNSIGNED_INT);
         
     screenSampler._useRefCompare = true; //< Use compare function
     screenSampler._cmpFunc = CMP_FUNC_LEQUAL; //< Use less or equal
@@ -291,6 +273,7 @@ void glFrameBufferObject::BlitFrom(FrameBufferObject* inputFBO) const {
     GLCheck(glBlitFramebuffer(0, 0, inputFBO->getWidth(), inputFBO->getHeight(), 0, 0, 
                               this->_width, this->_height, GL_COLOR_BUFFER_BIT, GL_LINEAR));
     GLCheck(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+    _mipMapsDirty = true;
 }
 
 void glFrameBufferObject::Bind(GLubyte unit, TextureDescriptor::AttachmentType slot) const {
@@ -322,13 +305,29 @@ void glFrameBufferObject::End(GLubyte nFace) const {
     assert(nFace<6);
     GLCheck(glBindFramebuffer(GL_FRAMEBUFFER, 0));
     GL_API::restoreViewport();
+    _mipMapsDirty = true;
+}
+
+void glFrameBufferObject::DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer) const
+{
+    // only for array textures (it's better to simply ignore the command if the fomrat isn't supported (debugging reasons)
+    if(_textureType != GL_TEXTURE_2D_ARRAY && _textureType != GL_TEXTURE_CUBE_MAP_ARRAY)
+        return;
+
+    if(_hasDepth)
+        GLCheck(glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _textureId[TextureDescriptor::Depth], 0, layer));
+    if(_hasColor)
+        GLCheck(glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + slot, _textureId[slot], 0, layer));
+
+     if(_clearBuffersState) GLCheck(glClear(_clearBufferMask));
 }
 
 void glFrameBufferObject::UpdateMipMaps(TextureDescriptor::AttachmentType slot) const {
-    if(!_mipMapEnabled[slot] || !_bound)
+    if(!_mipMapEnabled[slot] || !_bound || !_mipMapsDirty)
         return;
 
     GLCheck(glGenerateMipmap(_textureType));
+    _mipMapsDirty = false;
 }
 
 bool glFrameBufferObject::checkStatus() const {
@@ -371,7 +370,7 @@ bool glFrameBufferObject::checkStatus() const {
         ERROR_FN(Locale::get("ERROR_FBO_UNSUPPORTED"));
         return false;
                                     }
-    case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE_EXT:{
+    case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:{
         ERROR_FN(Locale::get("ERROR_FBO_INCOMPLETE_MULTISAMPLE"));
         return false;
                                                    }

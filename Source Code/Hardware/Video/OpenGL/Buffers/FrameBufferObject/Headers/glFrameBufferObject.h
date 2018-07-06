@@ -58,6 +58,7 @@ protected:
     bool   _mipMapEnabled[5]; ///< depth may have mipmaps if needed, too
     bool   _hasDepth;
     bool   _hasColor;
+    mutable bool _mipMapsDirty;
 };
 
 #endif

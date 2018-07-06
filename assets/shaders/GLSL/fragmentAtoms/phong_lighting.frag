@@ -54,7 +54,7 @@ vec4 Phong(in vec2 texCoord, in vec3 normal){
     //Add material color terms to the final color
     vec4 linearColor = materialProp.ambient + materialProp.diffuse + materialProp.specular;
     //Apply shadowing
-    linearColor *= (0.2 + 0.8 * materialProp.shadowFactor);
+    linearColor *= (0.4 + 0.6 * materialProp.shadowFactor);
 
     //vec3 gamma = vec3(1.0/2.2);
 //	return vec4(pow(linearColor, gamma), linearColor.a);

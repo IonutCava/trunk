@@ -40,6 +40,7 @@ Light::Light(const U8 slot,const F32 range,const LightType& type) :
     setRange(1);//<Default range of 1
     _dirty = true;
     _enabled = true;
+    _bias.bias();
 }
 
 Light::~Light()
@@ -123,6 +124,9 @@ void Light::setPosition(const vec3<F32>& newPosition){
     }
     _properties._position = vec4<F32>(newPosition,_properties._position.w);
     _dirty = true;
+
+    if(_type == LIGHT_TYPE_DIRECTIONAL)
+        _properties._direction = _properties._position;
 }
 
 void Light::setDirection(const vec3<F32>& newDirection){
@@ -133,6 +137,8 @@ void Light::setDirection(const vec3<F32>& newDirection){
     }
     _properties._direction = vec4<F32>(newDirection,1.0f);
     _dirty = true;
+    if(_type == LIGHT_TYPE_DIRECTIONAL)
+        _properties._position = _properties._direction;
 }
 
 void Light::setLightProperties(const LightPropertiesF& key, F32 value){
@@ -217,7 +223,15 @@ void Light::updateBBatCurrentFrame(SceneGraphNode* const sgn){
 
 bool Light::computeBoundingBox(SceneGraphNode* const sgn){
     F32 range = getRange() * 0.5f; //diameter to radius
-    sgn->getBoundingBox().set(vec3<F32>(-range), vec3<F32>(range));
+    if(_type == LIGHT_TYPE_DIRECTIONAL){
+        vec4<F32> directionalLightPosition = _properties._direction * Config::DIRECTIONAL_LIGHT_DISTANCE * -1.0f;
+
+        sgn->getBoundingBox().set(directionalLightPosition.xyz() - vec3<F32>(10), 
+                                  directionalLightPosition.xyz() + vec3<F32>(10));
+    }else{
+        sgn->getBoundingBox().set(vec3<F32>(-range), vec3<F32>(range));
+    }
+
     return SceneNode::computeBoundingBox(sgn);
 }
 
@@ -255,10 +269,8 @@ void Light::setCameraToSceneView(){
     //Extract the view frustum from this projection mode
     Frustum::getInstance().Extract(_eyePos - _lightPos);
     //get the VP from the new Frustum as this is the light's full MVP
-    //mat4<F32> bias;
     GFX_DEVICE.getMatrix(VIEW_PROJECTION_MATRIX, _lightProjectionMatrix);
-    //gfx.getMatrix(GFXDevice::BIAS_MATRIX,bias);
-    //_lightProjectionMatrix = bias * _lightProjectionMatrix;
+    //_lightProjectionMatrix.set(_bias * _lightProjectionMatrix);
 }
 
 void Light::generateShadowMaps(const SceneRenderState& sceneRenderState){
@@ -268,6 +280,7 @@ void Light::generateShadowMaps(const SceneRenderState& sceneRenderState){
         return;
 
     sm->render(sceneRenderState, _callback);
+    sm->postRender();
 }
 
 void Light::setShadowMappingCallback(boost::function0<void> callback) {

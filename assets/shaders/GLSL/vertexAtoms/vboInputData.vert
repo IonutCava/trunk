@@ -58,6 +58,9 @@ layout(std140) uniform dvd_MatrixBlock
 //};
 
 void setClipPlanes(){
+    if(dvd_clip_plane_count == 0)
+        return;
+
 #if defined(SKIP_HARDWARE_CLIPPING)
 
 #if MAX_CLIP_PLANES > 0
@@ -113,20 +116,32 @@ void setClipPlanes(){
 #endif //skip clip planes
 }
 
-void computeData(){
-
-    dvd_Vertex     = vec4(inVertexData,1.0);
-    dvd_Normal     = inNormalData;
-    _texCoord      = inTexCoordData;
-    dvd_Tangent    = inTangentData;
-    dvd_BiTangent  = inBiTangentData;
-    _vertexW       = dvd_WorldMatrix * dvd_Vertex;
-    setClipPlanes();
-}
-
 void computeBoneData(){
     dvd_BoneWeight = inBoneWeightData;
     dvd_BoneIndice = inBoneIndiceData;
 }
+
+#if defined(USE_GPU_SKINNING)
+#include "boneTransforms.vert"
+#endif
+
+void computeData(){
+
+    dvd_Vertex     = vec4(inVertexData,1.0);
+    dvd_Normal     = inNormalData;
+    dvd_Tangent    = inTangentData;
+    dvd_BiTangent  = inBiTangentData;
+
+    #if defined(USE_GPU_SKINNING)
+    applyBoneTransforms(dvd_Vertex, dvd_Normal);
+    #endif
+
+    _texCoord = inTexCoordData;
+    _vertexW  = dvd_WorldMatrix * dvd_Vertex;
+
+    setClipPlanes();
+}
+
+
 
 

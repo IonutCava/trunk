@@ -85,11 +85,7 @@ void GL_API::setLight(Light* const light){
 
     LightType type = light->getLightType();
 
-    glm::vec4 position(light->getPosition().x,
-                       light->getPosition().y,
-                       light->getPosition().z,
-                       (type == LIGHT_TYPE_DIRECTIONAL) ? 0.0f : 1.0f);
-
+    vec4<F32> position(light->getPosition(), type == LIGHT_TYPE_DIRECTIONAL ? 0.0f : 1.0f);
     GLCheck(glLightfv(GL_LIGHT0+slot, GL_POSITION, &position.x));
 
     GLCheck(glLightfv(GL_LIGHT0+slot, GL_AMBIENT,  light->getVProperty(LIGHT_PROPERTY_AMBIENT)));

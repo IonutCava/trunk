@@ -4,19 +4,13 @@
 -- Vertex
 #include "vboInputData.vert"
 #include "lightingDefaults.vert"
-#if defined(USE_GPU_SKINNING)
-#include "boneTransforms.vert"
-#endif
+
 #if defined(ADD_FOLIAGE)
 #include "foliage.vert"
 #endif
 void main(void){
 
     computeData();
-
-#if defined(USE_GPU_SKINNING)
-    applyBoneTransforms(dvd_Vertex, dvd_Normal);
-#endif
 
 #if defined(ADD_FOLIAGE) && defined(IS_TREE)
     computeFoliageMovementTree(dvd_Vertex);

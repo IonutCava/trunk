@@ -187,6 +187,7 @@ private:
   std::string _shaderModifier; //<use for special shader tokens, such as "Tree"
   vectorImpl<std::string > _shaderDefines[2]; //<Add shader preprocessor defines;
   bool _dirty;
+  bool _translucencyCheck;
   bool _doubleSided;
   bool _castsShadows;
   bool _receiveShadows;

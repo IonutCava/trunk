@@ -18,6 +18,12 @@ SceneNode::SceneNode(const SceneNodeType& type) : Resource(),
                                            _LODcount(1), ///<Defaults to 1 LOD level
                                            _physicsAsset(NULL)
 {
+    U8 i = 0, j = 0;
+    for(; i <  Material::TEXTURE_UNIT0; ++i)
+        sprintf_s(_textureOperationUniformSlots[i], "textureOperation%d", Material::TEXTURE_UNIT0 + i);
+
+    for(i = Material::TEXTURE_UNIT0; i < Config::MAX_TEXTURE_STORAGE; ++i)
+        sprintf_s(_textureOperationUniformSlots[i], "textureOperation%d", j++);
 }
 
 SceneNode::SceneNode(const std::string& name,const SceneNodeType& type) : Resource(name),
@@ -168,7 +174,7 @@ void SceneNode::prepareMaterial(SceneGraphNode* const sgn){
     s->Uniform("isSelected", sgn->isSelected() ? 1 : 0);
 
     if(lightMgr.shadowMappingEnabled()){
-        s->Uniform("worldHalfExtent", activeScene->getSceneGraph()->getRoot()->getBoundingBox().getWidth() * 0.5f);
+        s->Uniform("worldHalfExtent", lightMgr.getLigthOrthoHalfExtent());
         s->Uniform("dvd_lightProjectionMatrices",lightMgr.getLightProjectionMatricesCache());
         s->Uniform("dvd_enableShadowMapping",_material->getReceivesShadows());
     }else{
@@ -217,12 +223,19 @@ void SceneNode::prepareDepthMaterial(SceneGraphNode* const sgn){
     assert(s != NULL);
     s->bind();
 
-    Texture2D* opacityMap = _material->getTexture(Material::TEXTURE_OPACITY);
+    if(_material->isTranslucent()){
+    
+        Texture2D* opacityMap = _material->getTexture(Material::TEXTURE_OPACITY);
+        if(opacityMap)
+            opacityMap->Bind(Material::TEXTURE_OPACITY);
+        else{
+            // maybe the diffuse texture has an alpha channel so use it as an opacity map
+            Texture2D* diffuse = _material->getTexture(Material::TEXTURE_UNIT0);
+            diffuse->Bind(Material::TEXTURE_OPACITY);
+        }
 
-    if(opacityMap)
-        opacityMap->Bind(Material::TEXTURE_OPACITY);
-
-    s->Uniform("opacity", _material->getOpacityValue());
+        s->Uniform("opacity", _material->getOpacityValue());
+    }
 
     if(!sgn->animationTransforms().empty()){
         s->Uniform("hasAnimations", true);
@@ -237,9 +250,18 @@ void SceneNode::releaseDepthMaterial(){
     if(!_material)
         return;
 
-    Texture2D* opacityMap = _material->getTexture(Material::TEXTURE_OPACITY);
-    if(opacityMap)
-        opacityMap->Unbind(Material::TEXTURE_OPACITY);
+    if(_material->isTranslucent()){
+    
+        Texture2D* opacityMap = _material->getTexture(Material::TEXTURE_OPACITY);
+        if(opacityMap)
+            opacityMap->Unbind(Material::TEXTURE_OPACITY);
+        else{
+            // maybe the diffuse texture has an alpha channel so use it as an opacity map
+            Texture2D* diffuse = _material->getTexture(Material::TEXTURE_UNIT0);
+            diffuse->Unbind(Material::TEXTURE_OPACITY);
+        }
+
+    }
 }
 
 bool SceneNode::computeBoundingBox(SceneGraphNode* const sgn) {
@@ -260,11 +282,5 @@ bool SceneNode::unload(){
 
 void SceneNode::drawBoundingBox(SceneGraphNode* const sgn){
     const BoundingBox& bb = sgn->getBoundingBox();
-    /*mat4<F32> boundingBoxTransformMatrix;
-    Transform* tempTransform = sgn->getTransform();
-    if(tempTransform){
-        boundingBoxTransformMatrix = tempTransform->getGlobalMatrix();
-    }*/
-
-    GFX_DEVICE.drawBox3D(bb.getMin(),bb.getMax(),/*boundingBoxTransformMatrix*/mat4<F32>());
+    GFX_DEVICE.drawBox3D(bb.getMin(),bb.getMax(),mat4<F32>());
 }

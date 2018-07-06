@@ -35,7 +35,7 @@ SingleShadowMap::SingleShadowMap(Light* light) : ShadowMap(light, SHADOW_TYPE_Si
     TextureDescriptor depthMapDescriptor(TEXTURE_2D,
                                          DEPTH_COMPONENT,
                                          DEPTH_COMPONENT,
-                                         UNSIGNED_BYTE); ///Default filters, LINEAR is OK for this
+                                         UNSIGNED_INT); ///Default filters, LINEAR is OK for this
 
     depthMapDescriptor.setSampler(depthMapSampler);
     _depthMap = GFX_DEVICE.newFBO(FBO_2D_DEPTH);

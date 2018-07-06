@@ -14,10 +14,11 @@ uniform bool dvd_enableShadowMapping;
 uniform int  dvd_lightCount;
 uniform mat4 dvd_lightProjectionMatrices[MAX_SHADOW_CASTING_LIGHTS];
 uniform mat4 dvd_TestViewMatrix;
+
 const float pidiv180 = 0.0174532777777778; //3.14159 / 180.0; // 36 degrees
 
 void computeLightVectors(){
-    _vertexWV = dvd_WorldViewMatrix * dvd_Vertex; 	      //<ModelView Vertex  
+    _vertexWV = dvd_ViewMatrix * _vertexW; 	      //<ModelView Vertex  
     _normalWV = normalize(dvd_NormalMatrix * dvd_Normal); //<ModelView Normal 
 
 #if defined(COMPUTE_TBN)
@@ -43,7 +44,8 @@ void computeLightVectors(){
         if(dvd_lightCount == i) break;
 
         //lightPos  = mat3(dvd_ViewMatrix) * gl_LightSource[i].position.xyz;	
-        lightType = clamp(gl_LightSource[i].position.w, 0.0, 1.0);//Directional light => lightType == 0; Spot or Omni => lightType == 1
+        //Directional light => lightType == 0; Spot or Omni => lightType == 1
+        lightType = clamp(gl_LightSource[i].position.w, 0.0, 1.0);
 
         lightPos = mat3(dvd_ViewMatrix) * gl_LightSource[i].position.xyz;
         //lightPosMV.w will be 0 for Directional Lights and 1 for Spot or Omni, so this avoids an "if/else"
@@ -67,8 +69,7 @@ void computeLightVectors(){
             }
         }
     
-
- #if defined(COMPUTE_TBN)
+#if defined(COMPUTE_TBN)
         _lightDirection[i] = vec3(dot(lightDirection, T), dot(lightDirection, B), dot(lightDirection, _normalWV));
 #else
         _lightDirection[i] = lightDirection;
@@ -77,9 +78,9 @@ void computeLightVectors(){
     }
 
     if(dvd_enableShadowMapping) {
-        // position multiplied by the inverse of the camera matrix
-        // position multiplied by the light matrix. The vertex's position from the light's perspective
         for(int i = 0; i < MAX_SHADOW_CASTING_LIGHTS; i++){
+            if(dvd_lightCount == i) break;
+
             _shadowCoord[i] = dvd_lightProjectionMatrices[i] * _vertexW;
         }
     }	

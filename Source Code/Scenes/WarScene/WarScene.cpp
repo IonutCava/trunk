@@ -15,12 +15,24 @@
 REGISTER_SCENE(WarScene);
 
 void WarScene::preRender(){
-    vec2<F32> _sunAngle = vec2<F32>(0.0f, RADIANS(45.0f));
+    static vec2<F32> _sunAngle = vec2<F32>(0.0f, RADIANS(45.0f));
+    static bool direction = false;
+    if(!direction){
+        _sunAngle.y += 0.005f;
+        _sunAngle.x += 0.005f;
+    }else{
+        _sunAngle.y -= 0.005f;
+        _sunAngle.x -= 0.005f;
+    }
+
+    if(_sunAngle.y  <= RADIANS(25) || _sunAngle.y >= RADIANS(70))
+        direction = !direction;
+
     _sunvector = vec3<F32>(	-cosf(_sunAngle.x) * sinf(_sunAngle.y),
                             -cosf(_sunAngle.y),
                             -sinf(_sunAngle.x) * sinf(_sunAngle.y));
 
-    //LightManager::getInstance().getLight(0)->setPosition(_sunvector);
+    LightManager::getInstance().getLight(0)->setDirection(_sunvector);
     getSkySGN(0)->getNode<Sky>()->setSunVector(_sunvector);
 }
 

@@ -6,6 +6,7 @@
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Rendering/Camera/Headers/Camera.h"
 #include "Rendering/Headers/Frustum.h"
+#include "Managers/Headers/LightManager.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 #include "Hardware/Video/Buffers/PixelBufferObject/Headers/PixelBufferObject.h"
@@ -23,40 +24,48 @@ PSShadowMaps::PSShadowMaps(Light* light) : ShadowMap(light, SHADOW_TYPE_PSSM)
 
     ResourceDescriptor shadowPreviewShader("fboPreview.Layered");
     _previewDepthMapShader = CreateResource<ShaderProgram>(shadowPreviewShader);
-
+    //ResourceDescriptor blurShader("blur.Box");
+    //_blurDepthMapShader = CreateResource<ShaderProgram>(blurShader);
     std::stringstream ss;
     ss << "Light " << (U32)light->getId() << " viewport ";
     ResourceDescriptor mrt(ss.str());
     mrt.setFlag(true); //No default Material;
     _renderQuad = CreateResource<Quad3D>(mrt);
-    _renderQuad->setCustomShader(_previewDepthMapShader);
     _renderQuad->renderInstance()->draw2D(true);
-    _jitterTexture = GFX_DEVICE.newPBO(PBO_TEXTURE_3D);
+    _renderQuad->setCustomShader(_previewDepthMapShader);
 
-    createJitterTexture(JITTER_SIZE,8,8);
+    //_jitterTexture = GFX_DEVICE.newPBO(PBO_TEXTURE_3D);
+    //createJitterTexture(JITTER_SIZE,8,8);
 
     SamplerDescriptor depthMapSampler;
-    //depthMapSampler.setFilters(TEXTURE_FILTER_NEAREST, TEXTURE_FILTER_NEAREST);
+    //depthMapSampler.setFilters(TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR, TEXTURE_FILTER_LINEAR);
+    depthMapSampler.setFilters(TEXTURE_FILTER_NEAREST);
     depthMapSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
-    depthMapSampler.toggleMipMaps(false);
+    //depthMapSampler.toggleMipMaps(true);
+    //depthMapSampler.setAnisotrophy(8);
     depthMapSampler._useRefCompare = true; //< Use compare function
     depthMapSampler._cmpFunc = CMP_FUNC_LEQUAL; //< Use less or equal
-    depthMapSampler._depthCompareMode = INTENSITY;
-    
+    depthMapSampler._depthCompareMode = LUMINANCE;
+
     TextureDescriptor depthMapDescriptor(TEXTURE_2D_ARRAY,
-                                         DEPTH_COMPONENT,//LUMINANCE_ALPHA,
-                                         DEPTH_COMPONENT24,//LUMINANCE_ALPHA32F,
-                                         UNSIGNED_BYTE); ///Default filters, LINEAR is OK for this
+                                         DEPTH_COMPONENT,//RG,
+                                         DEPTH_COMPONENT,//RG32F,
+                                         UNSIGNED_INT);//FLOAT_32);
     depthMapDescriptor.setSampler(depthMapSampler);
 
-    _depthMap = GFX_DEVICE.newFBO(FBO_2D_ARRAY_DEPTH);
-    _depthMap->AddAttachment(depthMapDescriptor, TextureDescriptor::Depth);
-    _depthMap->toggleColorWrites(false); //<do not draw colors
-    _depthMap->toggleDepthBuffer(false); //<create a depth buffer
+    _depthMap = GFX_DEVICE.newFBO(FBO_2D_ARRAY_DEPTH);//COLOR);
+    _depthMap->AddAttachment(depthMapDescriptor, TextureDescriptor::Depth/*Color0*/);
+    //_depthMap->toggleDepthBuffer(true); //<create a floating point depth buffer
+    _depthMap->toggleColorWrites(false);
     _depthMap->setClearColor(DefaultColors::WHITE());
+
+    /*_blurBuffer = GFX_DEVICE.newFBO(FBO_2D_ARRAY_COLOR);
+    _blurBuffer->AddAttachment(depthMapDescriptor, TextureDescriptor::Color0);
+    _blurBuffer->toggleDepthBuffer(false);
+    _blurBuffer->setClearColor(DefaultColors::WHITE());*/
 }
 
-void PSShadowMaps::createJitterTexture(I32 size, I32 samples_u, I32 samples_v) {
+/*void PSShadowMaps::createJitterTexture(I32 size, I32 samples_u, I32 samples_v) {
     _jitterTexture->Create(size, size, samples_u * samples_v / 2, RGBA4, RGBA, UNSIGNED_BYTE);
     U8* data = (U8*)_jitterTexture->Begin();
 
@@ -97,17 +106,19 @@ void PSShadowMaps::createJitterTexture(I32 size, I32 samples_u, I32 samples_v) {
     }
     _jitterTexture->End();
 }
-
+*/
 PSShadowMaps::~PSShadowMaps()
 {
+    //RemoveResource(_blurDepthMapShader);
     RemoveResource(_previewDepthMapShader);
     RemoveResource(_renderQuad);
-    SAFE_DELETE(_jitterTexture);
+    //SAFE_DELETE(_blurBuffer);
+    //SAFE_DELETE(_jitterTexture);
 }
 
 void PSShadowMaps::resolution(U16 resolution, const SceneRenderState& sceneRenderState){
     vec2<F32> zPlanes = Frustum::getInstance().getZPlanes();
-    calculateSplitPoints( _light->getShadowMapInfo()->_numSplits, zPlanes.x,zPlanes.y);
+    calculateSplitPoints(_light->getShadowMapInfo()->_numSplits, zPlanes.x,zPlanes.y);
     setOptimalAdjustFactor(0, 5);
     setOptimalAdjustFactor(1, 1);
     setOptimalAdjustFactor(2, 0);
@@ -122,6 +133,7 @@ void PSShadowMaps::resolution(U16 resolution, const SceneRenderState& sceneRende
         PRINT_FN(Locale::get("LIGHT_INIT_SHADOW_FBO"), _light->getId());
         U16 shadowMapDimension = _maxResolution/_resolutionFactor;
         _depthMap->Create(shadowMapDimension,shadowMapDimension,_numSplits);
+        //_blurBuffer->Create(shadowMapDimension,shadowMapDimension,_numSplits);
         _renderQuad->setDimensions(vec4<F32>(0,0,shadowMapDimension,shadowMapDimension));
     }
     ShadowMap::resolution(resolution,sceneRenderState);
@@ -133,9 +145,7 @@ void PSShadowMaps::render(const SceneRenderState& renderState, boost::function0<
         ERROR_FN(Locale::get("ERROR_LIGHT_INVALID_SHADOW_CALLBACK"), _light->getId());
         return;
     }
-
-    F32 ortho = GET_ACTIVE_SCENEGRAPH()->getRoot()->getBoundingBox().getWidth() * 0.5f;
-    CLAMP<F32>(ortho, 1.0f, (F32)Config::DIRECTIONAL_LIGHT_DISTANCE);
+    F32 ortho = LightManager::getInstance().getLigthOrthoHalfExtent();
     for(U8 i = 0; i < _numSplits; i++){
         _orthoPerPass[_numSplits - i - 1] = ortho / ((1.0f + i) * (1.0f + i) + i);
     }
@@ -169,8 +179,9 @@ void PSShadowMaps::calculateSplitPoints(U8 splitCount, F32 nearDist, F32 farDist
 }
 
 void PSShadowMaps::renderInternal(const SceneRenderState& renderState) const {
-    Scene* activeScene = GET_ACTIVE_SCENE();
-    boost::function0<void> renderFunction = _callback.empty() ? SCENE_GRAPH_UPDATE(activeScene->getSceneGraph()) : _callback;
+    // it's not hard to set a rendering callback, so just use that
+    assert(!_callback.empty());
+
     GFXDevice& gfx = GFX_DEVICE;
     //Get our eye view
     const vec3<F32>& eyePos = renderState.getCameraConst().getEye();
@@ -183,15 +194,15 @@ void PSShadowMaps::renderInternal(const SceneRenderState& renderState) const {
     //bind the associated depth map
     _depthMap->Begin();
     //For each depth pass
-    for(U8 i = 0; i < _numSplits; i++)
-    {
+    for(U8 i = 0; i < _numSplits; i++) {
         //Set the appropriate projection
         _light->renderFromLightView(i, _orthoPerPass[i]);
-        _depthMap->DrawToLayer(TextureDescriptor::Depth, i);
-            //draw the scene
-            GFX_DEVICE.render(renderFunction, renderState);
+        _depthMap->DrawToLayer(TextureDescriptor::Depth/*Color0*/, i);
+        //draw the scene
+        GFX_DEVICE.render(_callback, renderState);
     }
     _depthMap->End();
+
     //get all the required information (light VP matrix for example)
     //and restore to the proper camera view
     _light->setCameraToSceneView();
@@ -201,12 +212,33 @@ void PSShadowMaps::renderInternal(const SceneRenderState& renderState) const {
     Frustum::getInstance().Extract(eyePos);
 }
 
+void PSShadowMaps::postRender(){
+    /*_renderQuad->setCustomShader(_blurDepthMapShader);
+    _renderQuad->onDraw(DISPLAY_STAGE);
+    _blurBuffer->Begin();
+    _blurDepthMapShader->bind();
+
+    _depthMap->Bind(0, TextureDescriptor::Color0);
+        
+    _blurDepthMapShader->UniformTexture("tex", 0);
+    GFX_DEVICE.toggle2D(true);
+    GFX_DEVICE.renderInViewport(vec4<U32>(0,0,_blurBuffer->getWidth(),_blurBuffer->getHeight()),
+                                DELEGATE_BIND(&GFXDevice::renderInstance,
+                                DELEGATE_REF(GFX_DEVICE),
+                                DELEGATE_REF(_renderQuad->renderInstance())));
+    GFX_DEVICE.toggle2D(false);
+    _depthMap->Bind(0, TextureDescriptor::Color0);
+    _blurBuffer->End();*/
+}
+
 void PSShadowMaps::previewShadowMaps(){
     _renderQuad->onDraw(DISPLAY_STAGE);
 
+    _depthMap->Bind(0, TextureDescriptor::Depth/*Color0*/);
+    //_depthMap->UpdateMipMaps(TextureDescriptor::Color0);
     _previewDepthMapShader->bind();
-    _previewDepthMapShader->UniformTexture("tex",0);
-    _depthMap->Bind(0, TextureDescriptor::Depth);
+    _previewDepthMapShader->UniformTexture("tex", 0);
+    
     GFX_DEVICE.toggle2D(true);
         _previewDepthMapShader->Uniform("layer",0);
         GFX_DEVICE.renderInViewport(vec4<U32>(0,0,128,128),

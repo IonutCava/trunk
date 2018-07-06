@@ -47,7 +47,7 @@ public:
     //Enable/Disable color writes
     virtual void toggleColorWrites(bool state) {_disableColorWrites = !state;}
     //Enable/Disable the presence of a depth renderbuffer
-    virtual void toggleDepthBuffer(bool state) {_useDepthBuffer = state;}
+    virtual void toggleDepthBuffer(bool state, bool useFloatingPoint = false) {_useDepthBuffer = state; _fpDepth = useFloatingPoint;}
     //Set the color the FBO will clear to when drawing to it
     inline void setClearColor(const vec4<F32>& clearColor) { _clearColor.set(clearColor); }
 
@@ -74,6 +74,7 @@ protected:
     bool        _clearBuffersState;
     bool        _clearColorState;
     bool		_useDepthBuffer;
+    bool        _fpDepth;
     bool        _disableColorWrites;
     U16		    _width, _height;
     U32		    _frameBufferHandle;

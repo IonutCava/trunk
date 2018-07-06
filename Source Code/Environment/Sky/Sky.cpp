@@ -10,7 +10,7 @@
 #include "Geometry/Material/Headers/Material.h"
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 
-Sky::Sky(const std::string& name) : SceneNode(TYPE_SKY),
+Sky::Sky(const std::string& name) : SceneNode(name, TYPE_SKY),
                                     _skyShader(NULL),
                                     _skybox(NULL),
                                     _skyGeom(NULL),
@@ -22,7 +22,7 @@ Sky::Sky(const std::string& name) : SceneNode(TYPE_SKY),
 
     ///Generate a render state
     RenderStateBlockDescriptor skyboxDesc;
-    skyboxDesc.setCullMode(CULL_MODE_NONE);
+    skyboxDesc.setCullMode(CULL_MODE_CCW);
     skyboxDesc.setZReadWrite(false,false);
     _skyboxRenderState = GFX_DEVICE.createStateBlock(skyboxDesc);
 }

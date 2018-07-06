@@ -7,6 +7,7 @@ FrameBufferObject::FrameBufferObject(FBOType type) : _frameBufferHandle(0),
                                                      _useDepthBuffer(false),
                                                      _disableColorWrites(false),
                                                      _bound(false),
+                                                     _fpDepth(false),
                                                      _clearBuffersState(true),
                                                      _clearColorState(true)
 {

@@ -64,6 +64,7 @@ public:
     void previewShadowMaps(Light* light = NULL);
     inline void togglePreviewShadowMaps() {_previewShadowMaps = !_previewShadowMaps;}
 
+    inline       F32                     getLigthOrthoHalfExtent()              const {return _worldHalfExtent;}
     inline       U16                     getLightCountForCurrentNode()          const {return _currLightsPerNode.size();}
     inline const vectorImpl<mat4<F32> >& getLightProjectionMatricesCache()      const {return _lightProjectionMatricesCache;}
     inline const vectorImpl<I32>&        getLightTypesForCurrentNode()          const {return _currLightTypes;}
@@ -85,6 +86,7 @@ private:
     Light*    _dominantLight;
     Light*    _currLight;
     bool      _shadowMapsEnabled;
+    F32       _worldHalfExtent;
     vec4<F32> _ambientLight;
     vectorImpl<I32>         _currLightTypes;
     vectorImpl<I32>         _currShadowLights;

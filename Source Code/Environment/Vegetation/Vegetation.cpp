@@ -72,7 +72,7 @@ void Vegetation::sceneUpdate(const D32 deltaTime, SceneGraphNode* const sgn, Sce
         _grassShader->Uniform("windDirection",vec2<F32>(_windX,_windZ));
         _grassShader->Uniform("windSpeed", _windS);
         _grassShader->Uniform("dvd_enableShadowMapping", _shadowMapped);
-        _grassShader->Uniform("worldHalfExtent", GET_ACTIVE_SCENEGRAPH()->getRoot()->getBoundingBox().getWidth() * 0.5f);
+        _grassShader->Uniform("worldHalfExtent", LightManager::getInstance().getLigthOrthoHalfExtent());
         _grassShader->unbind();
         _stateRefreshIntervalBuffer -= _stateRefreshInterval;
     }

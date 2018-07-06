@@ -19,7 +19,7 @@ bool MainScene::updateLights(){
                                             vec4<F32>(1.0f, 1.0f, 0.8f, 1.0f),
                                             0.25f + _sun_cosy * 0.75f);
 
-    light->setPosition(_sunvector);
+    light->setDirection(_sunvector);
     light->setLightProperties(LIGHT_PROPERTY_DIFFUSE,_sunColor);
     light->setLightProperties(LIGHT_PROPERTY_SPECULAR,_sunColor);
     getSkySGN(0)->getNode<Sky>()->setSunVector(_sunvector);
