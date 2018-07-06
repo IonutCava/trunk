@@ -201,8 +201,7 @@ bool GL_API::initShaders() {
              ShaderBufferLocation::SHADER_BUFFER_LIGHT_SHADOW))).c_str());
     glswAddDirectiveToken(
         "Fragment", ("#define MAX_TEXTURE_SLOTS " +
-                     std::to_string(ParamHandler::getInstance().getParam<I32>(
-                         "rendering.maxTextureSlots", 16))).c_str());
+                     std::to_string(GL_API::_maxTextureUnits)).c_str());
     glswAddDirectiveToken(
         "Fragment", ("#define TEXTURE_UNIT0 " +
                      std::to_string(to_uint(

@@ -10,6 +10,9 @@
 
 namespace Divide {
 
+glUniformBuffer::bindIndexMap glUniformBuffer::_bindIndexMap;
+glUniformBuffer::bindRangeIndexMap glUniformBuffer::_bindRangeIndexMap;
+
 glUniformBuffer::glUniformBuffer(const stringImpl& bufferName, bool unbound,
                                  bool persistentMapped)
     : ShaderBuffer(bufferName, unbound, persistentMapped),
@@ -95,20 +98,25 @@ bool glUniformBuffer::BindRange(U32 bindIndex,
                   "glUniformBuffer error: Tried to bind an uninitialized UBO");
 
     vec3<U32> bindConfiguration(_UBOid, offsetElementCount, rangeElementCount);
-    bindRangeIndexMap::iterator it = _bindRangeIndexMap.find(bindIndex);
-    if (it == std::end(_bindRangeIndexMap)) {
+
+    bindRangeIndexMap::iterator it1 = _bindRangeIndexMap.find(bindIndex);
+    if (it1 == std::end(_bindRangeIndexMap)) {
         hashAlg::emplace(_bindRangeIndexMap, bindIndex, bindConfiguration);
     } else {
         // Prevent double bind only if the range is identical
-        if (it->second == bindConfiguration) {
+        if (it1->second == bindConfiguration) {
             return false;
         } else {
             // Remember the new binding state for future reference
-            it->second = bindConfiguration;
+            it1->second = bindConfiguration;
         }
     }
-    // Remove default bind check cache
-    _bindIndexMap.erase(_bindIndexMap.find(bindIndex));
+
+   // Remove default bind check cache
+    bindIndexMap::const_iterator it2 = _bindIndexMap.find(bindIndex);
+    if (it2 != std::end(_bindIndexMap)) {
+        _bindIndexMap.erase(it2);
+    }
 
     glBindBufferRange(_target, bindIndex, _UBOid,
                       _primitiveSize * offsetElementCount,
@@ -120,21 +128,24 @@ bool glUniformBuffer::Bind(U32 bindIndex) {
     DIVIDE_ASSERT(_UBOid != 0,
                   "glUniformBuffer error: Tried to bind an uninitialized UBO");
 
-    bindIndexMap::iterator it = _bindIndexMap.find(bindIndex);
-    if (it == std::end(_bindIndexMap)) {
+    bindIndexMap::iterator it1 = _bindIndexMap.find(bindIndex);
+    if (it1 == std::end(_bindIndexMap)) {
         hashAlg::emplace(_bindIndexMap, bindIndex, _UBOid);
     } else {
         // Prevent double bind
-        if (it->second == _UBOid) {
+        if (it1->second == _UBOid) {
             return false;
         } else {
             // Remember the new binding state for future reference
-            it->second = _UBOid;
+            it1->second = _UBOid;
         }
     }
 
     // Remove ranged bind check cache
-    _bindRangeIndexMap.erase(_bindRangeIndexMap.find(bindIndex));
+    bindRangeIndexMap::const_iterator it2 = _bindRangeIndexMap.find(bindIndex);
+    if (it2 != std::end(_bindRangeIndexMap)) {
+        _bindRangeIndexMap.erase(it2);
+    }
 
     glBindBufferBase(_target, bindIndex, _UBOid);
 

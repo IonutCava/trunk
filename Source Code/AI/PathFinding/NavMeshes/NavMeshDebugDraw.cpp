@@ -28,12 +28,16 @@ NavMeshDebugDraw::NavMeshDebugDraw()
 
 NavMeshDebugDraw::~NavMeshDebugDraw() {
     // Allow the primitive to be deleted
-    if (_primitive) _primitive->_canZombify = true;
+    if (_primitive) {
+        _primitive->_canZombify = true;
+    }
 }
 
 void NavMeshDebugDraw::paused(bool state) {
     _paused = state;
-    if (_primitive) _primitive->paused(_paused);
+    if (_primitive) {
+        _primitive->paused(_paused);
+    }
 }
 
 void NavMeshDebugDraw::depthMask(bool state) {
@@ -52,19 +56,27 @@ void NavMeshDebugDraw::beginBatch() {
 
     assert(_primitive != nullptr);
 
-    if (_dirty) _primitive->beginBatch();
+    if (_dirty) {
+        _primitive->beginBatch();
+    }
 }
 
 void NavMeshDebugDraw::endBatch() {
-    if (!_dirty) return;
+    if (!_dirty) {
+        return;
+    }
 
-    if (_primitive) _primitive->endBatch();
+    if (_primitive) {
+        _primitive->endBatch();
+    }
 
     _dirty = false;
 }
 
 void NavMeshDebugDraw::begin(duDebugDrawPrimitives prim, F32 size) {
-    if (!_dirty || !_primitive) return;
+    if (!_dirty || !_primitive) {
+        return;
+    }
 
     switch (prim) {
         default:
@@ -104,7 +116,9 @@ void NavMeshDebugDraw::vertex(const F32 x, const F32 y, const F32 z,
 }
 
 void NavMeshDebugDraw::end() {
-    if (_dirty && _primitive) _primitive->end();
+    if (_dirty && _primitive) {
+        _primitive->end();
+    }
 }
 
 void NavMeshDebugDraw::overrideColor(U32 col) {

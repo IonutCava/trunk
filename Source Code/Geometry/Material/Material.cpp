@@ -7,6 +7,7 @@
 #include "Platform/Video/Shaders/Headers/ShaderManager.h"
 
 #include "Core/Headers/Console.h"
+#include "Core/Headers/ParamHandler.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 
 namespace Divide {
@@ -64,6 +65,9 @@ Material::Material()
         hashAlg::makePair(RenderStage::SHADOW_STAGE,
                           GFX_DEVICE.getOrCreateStateBlock(shadowDescriptor)));
 
+
+    _textureData.reserve(ParamHandler::getInstance().getParam<I32>("rendering.maxTextureSlots", 16));
+
     _computedShaderTextures = false;
 }
 
@@ -96,7 +100,7 @@ Material* Material::clone(const stringImpl& nameSuffix) {
                                  tex);
         }
     }
-    for (const std::pair<Texture*, U32>& tex : base._customTextures) {
+    for (const std::pair<Texture*, U8>& tex : base._customTextures) {
         if (tex.first) {
             tex.first->AddRef();
             cloneMat->addCustomTexture(tex.first, tex.second);
@@ -432,43 +436,27 @@ void Material::computeShaderInternal() {
     _shaderComputeQueue.pop();
 }
 
-void Material::bindTextures() {
-    if (_textures[to_uint(ShaderProgram::TextureUsage::TEXTURE_OPACITY)]) {
-        _textures[to_uint(ShaderProgram::TextureUsage::TEXTURE_OPACITY)]
-            ->Bind(to_uint(ShaderProgram::TextureUsage::TEXTURE_OPACITY));
+void Material::bindTexture(ShaderProgram::TextureUsage slot) {
+    U8 slotValue = to_uint(slot);
+    Texture* crtTexture = _textures[slotValue];
+    if (crtTexture) {
+        crtTexture->Bind(slotValue);
+        //_textureData.push_back(std::make_pair(slotValue, crtTexture->getData()));
     }
+}
 
-    if (_textures[to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0)]) {
-        _textures[to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0)]
-            ->Bind(to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0));
-    }
+void Material::bindTextures() {
+    bindTexture(ShaderProgram::TextureUsage::TEXTURE_OPACITY);
+    bindTexture(ShaderProgram::TextureUsage::TEXTURE_UNIT0);
 
     if (!GFX_DEVICE.isCurrentRenderStage(RenderStage::DEPTH_STAGE)) {
-        if (_textures[to_uint(
-                ShaderProgram::TextureUsage::TEXTURE_NORMALMAP)]) {
-            _textures[to_uint(
-                          ShaderProgram::TextureUsage::TEXTURE_NORMALMAP)]
-                ->Bind(to_uint(
-                    ShaderProgram::TextureUsage::TEXTURE_NORMALMAP));
-        }
+        bindTexture(ShaderProgram::TextureUsage::TEXTURE_UNIT1);
+        bindTexture(ShaderProgram::TextureUsage::TEXTURE_NORMALMAP);
+        bindTexture(ShaderProgram::TextureUsage::TEXTURE_SPECULAR);
 
-        if (_textures[to_uint(
-                ShaderProgram::TextureUsage::TEXTURE_SPECULAR)]) {
-            _textures[to_uint(
-                          ShaderProgram::TextureUsage::TEXTURE_SPECULAR)]
-                ->Bind(to_uint(
-                    ShaderProgram::TextureUsage::TEXTURE_SPECULAR));
-        }
-
-        if (_textures[to_uint(
-                ShaderProgram::TextureUsage::TEXTURE_UNIT1)]) {
-            _textures[to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT1)]
-                ->Bind(
-                    to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT1));
-        }
-
-        for (std::pair<Texture*, U32>& tex : _customTextures) {
+        for (std::pair<Texture*, U8>& tex : _customTextures) {
             tex.first->Bind(tex.second);
+            //_textureData.push_back(std::make_pair(tex.second, tex.first->getData()));
         }
     }
 }

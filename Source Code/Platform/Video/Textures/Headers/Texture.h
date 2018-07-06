@@ -44,9 +44,22 @@ class Texture : public HardwareResource {
     template <typename T>
     friend class ImplResourceLoader;
 
+  public:
+   class TextureData {
+      public:
+       TextureData()
+           : _textureType(TextureType::TEXTURE_2D),
+             _textureHandle(0)
+       {
+       }
+       TextureType _textureType;
+       std::atomic<U32> _textureHandle;
+       SamplerDescriptor _samplerDescriptor;
+   };
+
    public:
     /// Bind the texture to the specified texture unit
-    virtual void Bind(U16 slot) = 0;
+    virtual void Bind(U8 slot) = 0;
     /// Change the texture's mip levels. This can be called at any time
     virtual void setMipMapRange(U16 base = 0, U16 max = 1000) = 0;
     // API-dependent loading function that uploads ptr data to the GPU using the
@@ -61,14 +74,18 @@ class Texture : public HardwareResource {
     /// shaders
     inline void setCurrentSampler(const SamplerDescriptor& descriptor) {
         // This can be called at any time
-        _samplerDescriptor = descriptor;
+        _textureData._samplerDescriptor = descriptor;
         // The sampler will be updated before the next bind call and used in
         // that bind
         _samplerDirty = true;
     }
     /// Get the sampler descriptor used by this texture
     inline const SamplerDescriptor& getCurrentSampler() const {
-        return _samplerDescriptor;
+        return _textureData._samplerDescriptor;
+    }
+
+    inline TextureData& getData() {
+        return _textureData;
     }
     /// Set/Get the number of layers (used by texture arrays)
     inline void setNumLayers(U8 numLayers) { _numLayers = numLayers; }
@@ -81,14 +98,14 @@ class Texture : public HardwareResource {
     inline U16 getHeight() const { return _height; }
     /// A rendering API level handle used to uniquely identify this texture
     /// (e.g. for OpenGL, it's the texture object)
-    inline U32 getHandle() const { return _handle; }
+    inline U32 getHandle() const { return _textureData._textureHandle; }
     /// Simple flag to check if the texture was flipped vertically
     inline bool isVerticallyFlipped() const { return _flipped; }
     /// If the texture has an alpha channel and at least one pixel is
     /// translucent, return true
     inline bool hasTransparency() const { return _hasTransparency; }
     /// Get the type of the texture
-    inline TextureType getTextureType() const { return _textureType; }
+    inline TextureType getTextureType() const { return _textureData._textureType; }
     /// Force a full refresh of the mip chain on the next texture bind
     inline void refreshMipMaps() { _mipMapsDirty = true; }
 
@@ -115,10 +132,8 @@ class Texture : public HardwareResource {
     bool _samplerDirty;
     bool _hasTransparency;
     bool _power2Size;
-    TextureType _textureType;
     mat4<F32> _transformMatrix;
-    std::atomic<U32> _handle;
-    SamplerDescriptor _samplerDescriptor;
+    TextureData  _textureData;
 };
 
 };  // namespace Divide

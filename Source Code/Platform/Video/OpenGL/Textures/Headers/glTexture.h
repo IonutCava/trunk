@@ -43,7 +43,7 @@ class glTexture : public Texture {
 
     bool unload();
 
-    void Bind(GLushort unit);
+    void Bind(GLubyte unit);
 
     void setMipMapRange(GLushort base = 0, GLushort max = 1000);
 
@@ -60,11 +60,9 @@ class glTexture : public Texture {
     void updateSampler();
 
    private:
-    GLenum _type;
     GLenum _format;
     GLenum _internalFormat;
     std::atomic_bool _allocatedStorage;
-    std::atomic_bool _samplerCreated;
     size_t _samplerHash;
     GLushort _mipMaxLevel;
     GLushort _mipMinLevel;

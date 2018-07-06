@@ -38,7 +38,6 @@ namespace Divide {
 class Quad3D;
 class Camera;
 class GFXDevice;
-class IMPrimitive;
 class ShaderProgram;
 class SceneGraphNode;
 

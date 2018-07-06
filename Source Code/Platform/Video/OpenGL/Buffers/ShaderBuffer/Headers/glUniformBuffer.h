@@ -67,11 +67,11 @@ class glUniformBuffer final : public ShaderBuffer {
    protected:
     typedef hashMapImpl<U32, U32> bindIndexMap;
     typedef hashMapImpl<U32, vec3<U32>> bindRangeIndexMap;
+    static bindIndexMap _bindIndexMap;
+    static bindRangeIndexMap _bindRangeIndexMap;
 
     GLuint _UBOid;
     bufferPtr _mappedBuffer;
-    bindIndexMap _bindIndexMap;
-    bindRangeIndexMap _bindRangeIndexMap;
 
     const GLenum _target;
     const std::unique_ptr<glBufferLockManager> _lockManager;

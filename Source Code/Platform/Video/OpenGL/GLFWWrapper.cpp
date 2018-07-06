@@ -260,6 +260,8 @@ ErrorCode GL_API::initRenderingAPI(const vec2<GLushort>& resolution, GLint argc,
     // Enable multisampling if we actually support and request it
     if (GFX_DEVICE.gpuState().MSAAEnabled()) {
         glEnable(GL_MULTISAMPLE);
+    } else {
+        glDisable(GL_MULTISAMPLE);
     }
 
     // Line smoothing should almost always be used
@@ -273,10 +275,6 @@ ErrorCode GL_API::initRenderingAPI(const vec2<GLushort>& resolution, GLint argc,
     // Culling is enabled by default, but RenderStateBlocks can toggle it on a
     // per-draw call basis
     glEnable(GL_CULL_FACE);
-    // Primitive restart indexes can either be a predefined short value (_S) or
-    // a predefined int value (_L),
-    // depending on the index buffer
-    glPrimitiveRestartIndex(Config::PRIMITIVE_RESTART_INDEX_S);
     // Vsync is toggled on or off via the external config file
     glfwSwapInterval(par.getParam<bool>("runtime.enableVSync", false) ? 1 : 0);
 

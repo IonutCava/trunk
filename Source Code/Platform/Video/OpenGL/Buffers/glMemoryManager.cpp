@@ -41,7 +41,7 @@ bufferPtr allocPersistentBuffer(GLsizeiptr bufferSize,
         bufferIdOut != 0,
         "GLUtil::allocPersistentBuffer error: buffer creation failed");
 
-    return allocPersistentBuffer(bufferSize, bufferIdOut, usageMask, accessMask,
+    return allocPersistentBuffer(bufferIdOut, bufferSize, usageMask, accessMask,
                                  data);
 }
 
@@ -60,7 +60,7 @@ void allocBuffer(GLsizeiptr bufferSize,
     glGenBuffers(1, &bufferIdOut);
     DIVIDE_ASSERT(bufferIdOut != 0,
                   "GLUtil::allocBuffer error: buffer creation failed");
-    return allocBuffer(bufferSize, bufferIdOut, usageMask, data);
+    return allocBuffer(bufferIdOut, bufferSize, usageMask, data);
 }
 
 void updateBuffer(GLuint bufferId,

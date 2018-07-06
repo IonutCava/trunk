@@ -38,11 +38,11 @@
 #include "Core/Resources/Headers/ResourceDescriptor.h"
 
 #include "Platform/Video/Headers/RenderAPIEnums.h"
+#include "Platform/Video/Textures/Headers/Texture.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 
 namespace Divide {
 
-class Texture;
 class RenderStateBlock;
 class ResourceDescriptor;
 class RenderStateBlockDescriptor;
@@ -238,16 +238,16 @@ class Material : public Resource {
                         TextureOperation::TextureOperation_Replace);
     /// Add a texture <-> bind slot pair to be bound with the default textures
     /// on each "bindTexture" call
-    inline void addCustomTexture(Texture* texture, U32 offset) {
+    inline void addCustomTexture(Texture* texture, U8 offset) {
         // custom textures are not material dependencies!
         _customTextures.push_back(std::make_pair(texture, offset));
     }
 
     /// Remove the custom texture assigned to the specified offset
-    inline bool removeCustomTexture(U32 index) {
-        vectorImpl<std::pair<Texture*, U32>>::iterator it =
+    inline bool removeCustomTexture(U8 index) {
+        vectorImpl<std::pair<Texture*, U8>>::iterator it =
             std::find_if(std::begin(_customTextures), std::end(_customTextures),
-                         [&index](const std::pair<Texture*, U32>& tex)
+                         [&index](const std::pair<Texture*, U8>& tex)
                              -> bool { return tex.second == index; });
         if (it == std::end(_customTextures)) {
             return false;
@@ -360,6 +360,7 @@ class Material : public Resource {
     }
 
    private:
+    void bindTexture(ShaderProgram::TextureUsage slot);
     void recomputeShaders();
     void computeShaderInternal();
     void setShaderProgramInternal(const stringImpl& shader,
@@ -378,6 +379,8 @@ class Material : public Resource {
    private:
     static bool _shaderQueueLocked;
     static bool _serializeShaderLoad;
+
+    vectorImpl<std::pair<U8, Texture::TextureData>> _textureData;
 
     std::queue<std::tuple<RenderStage, ResourceDescriptor, DELEGATE_CBK<>>>
         _shaderComputeQueue;
@@ -408,7 +411,7 @@ class Material : public Resource {
 
     /// use this map to add textures to the material
     vectorImpl<Texture*> _textures;
-    vectorImpl<std::pair<Texture*, U32>> _customTextures;
+    vectorImpl<std::pair<Texture*, U8>> _customTextures;
 
     /// use the below map to define texture operation
     TextureOperation _operation;

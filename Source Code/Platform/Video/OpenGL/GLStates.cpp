@@ -28,7 +28,6 @@ GLuint GL_API::_activeBufferID[] = {
     GLUtil::_invalidObjectID, GLUtil::_invalidObjectID,
     GLUtil::_invalidObjectID};
 
-bool GL_API::_lastRestartIndexSmall = true;
 bool GL_API::_primitiveRestartEnabled = false;
 vec4<GLfloat> GL_API::_prevClearColor;
 GL_API::textureBoundMapDef GL_API::_textureBoundMap;
@@ -141,18 +140,11 @@ bool GL_API::setPixelUnpackAlignment(GLint unpackAlignment, GLint rowLength,
 /// Enable or disable primitive restart and ensure that the correct index size
 /// is used
 void GL_API::togglePrimitiveRestart(bool state, bool smallIndices) {
-    // Only change in index if we need primitive restart (we mostly don't)
-    if (_lastRestartIndexSmall != smallIndices && state) {
-        _lastRestartIndexSmall = smallIndices;
-        glPrimitiveRestartIndex(smallIndices
-                                    ? Config::PRIMITIVE_RESTART_INDEX_S
-                                    : Config::PRIMITIVE_RESTART_INDEX_L);
-    }
     // Toggle primitive restart on or off
     if (_primitiveRestartEnabled != state) {
         _primitiveRestartEnabled = state;
-        state ? glEnable(GL_PRIMITIVE_RESTART)
-              : glDisable(GL_PRIMITIVE_RESTART);
+        state ? glEnable(GL_PRIMITIVE_RESTART_FIXED_INDEX)
+              : glDisable(GL_PRIMITIVE_RESTART_FIXED_INDEX);
     }
 }
 

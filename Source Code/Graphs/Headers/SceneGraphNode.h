@@ -93,7 +93,6 @@ class SceneTransform : public SceneNode {
     bool computeBoundingBox(SceneGraphNode& sgn) { return true; }
 };
 
-class IMPrimitive;
 class SceneGraphNode : public GUIDWrapper, private NonCopyable {
    public:
     typedef hashMapImpl<stringImpl, SceneGraphNode*> NodeChildren;

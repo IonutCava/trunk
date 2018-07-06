@@ -73,10 +73,8 @@ const unsigned int MAX_VISIBLE_NODES = 2048;
 const unsigned int MAX_CLIP_PLANES = 6;
 /// Generic index value used to separate primitives within the same vertex
 /// buffer
-const unsigned int PRIMITIVE_RESTART_INDEX_L =
-    static_cast<unsigned int>(1 << 31);
-const unsigned int PRIMITIVE_RESTART_INDEX_S =
-    static_cast<unsigned int>(1 << 15);
+const unsigned int PRIMITIVE_RESTART_INDEX_L = 0xFFFFFFFF;
+const unsigned int PRIMITIVE_RESTART_INDEX_S = 0xFFFF;
 /// Terrain LOD configuration
 /// Camera distance to the terrain chunk is calculated as follows:
 ///    vector EyeToChunk = terrainBoundingBoxCenter - EyePos; cameraDistance =
