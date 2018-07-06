@@ -522,10 +522,6 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
             Time::ScopedTimer time2(getTimer(_flushToScreenTimer, _renderTimer, i, "Render Timer"));
             _renderPassManager->render(_sceneManager->getActiveScene().renderState());
         }
-        {
-            Time::ScopedTimer time3(getTimer(_flushToScreenTimer, _postFxRenderTimer, i, "PostFX Timer"));
-            PostFX::instance().apply();
-        }
 
         if (!frameMgr.createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_SCENERENDER_END, evt)) {
             return false;
@@ -542,10 +538,8 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
 
     for (U32 i = playerCount; i < to_U32(_renderTimer.size()); ++i) {
         Time::ProfileTimer::removeTimer(*_renderTimer[i]);
-        Time::ProfileTimer::removeTimer(*_postFxRenderTimer[i]);
         Time::ProfileTimer::removeTimer(*_blitToDisplayTimer[i]);
         _renderTimer.erase(std::begin(_renderTimer) + i);
-        _postFxRenderTimer.erase(std::begin(_postFxRenderTimer) + i);
         _blitToDisplayTimer.erase(std::begin(_blitToDisplayTimer) + i);
     }
 

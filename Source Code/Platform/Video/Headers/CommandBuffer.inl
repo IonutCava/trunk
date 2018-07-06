@@ -39,31 +39,47 @@ namespace GFX {
 
 template<typename T>
 inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, void>::type
-CommandBuffer::add(T& command) {
-    GFX::CommandType type = command._type;
-    _commands.insert(command);
+CommandBuffer::add(const T* command) {
+    GFX::CommandType type = command->_type;
+
+#if defined(USE_BOOST_POLY)
+    _commands.insert(*command);
     _commandOrder.emplace_back(type, _commands.size(getType(type)) - 1);
+#else
+    _commands.insert(static_cast<size_t>(type), std::shared_ptr<T>(new T(*command)));
+    _commandOrder.emplace_back(type, _commands.size(static_cast<size_t>(type)) - 1);
+#endif
 }
 
 template<typename T>
 inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
 CommandBuffer::getCommandInternal(const CommandEntry& commandEntry) {
+#if defined(USE_BOOST_POLY)
     const std::type_info& typeInfo = getType(commandEntry.first);
     return static_cast<T*>(&(*(_commands.begin(typeInfo) + commandEntry.second)));
+#else
+    return static_cast<T*>(&_commands.get(static_cast<size_t>(commandEntry.first), commandEntry.second));
+#endif
 }
 
 template<typename T>
 inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, const T&>::type
 CommandBuffer::getCommand(const CommandEntry& commandEntry) const {
+#if defined(USE_BOOST_POLY)
     const std::type_info& typeInfo = getType(commandEntry.first);
     return static_cast<const T&>(*(_commands.begin(typeInfo) + commandEntry.second));
+#else
+    return static_cast<const T&>(_commands.get(static_cast<size_t>(commandEntry.first), commandEntry.second));
+#endif
 }
 
 template<typename T>
 inline bool CommandBuffer::registerType() {
+#if defined(USE_BOOST_POLY)
     if (!_commands.is_registered<T>()) {
         _commands.register_types<T>();
     }
+#endif
 
     return true;
 }

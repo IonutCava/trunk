@@ -283,7 +283,6 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     Time::ProfileTimer& _preRenderTimer;
     Time::ProfileTimer& _postRenderTimer;
     vector<Time::ProfileTimer*> _renderTimer;
-    vector<Time::ProfileTimer*> _postFxRenderTimer;
     vector<Time::ProfileTimer*> _blitToDisplayTimer;
 
     // Command line arguments

@@ -34,9 +34,84 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _COMMAND_BUFFER_H_
 
 #include "Commands.h"
+
+#if defined(USE_BOOST_POLY)
 #include <boost/poly_collection/base_collection.hpp>
+#endif
 
 namespace Divide {
+
+#if !defined(USE_BOOST_POLY)
+    template<typename T, size_t N>
+    struct PolyContainer {
+
+        template<typename U>
+        inline typename std::enable_if<std::is_base_of<T, U>::value, void>::type
+        insert(size_t index, std::shared_ptr<U> cmd) {
+            _collection[index].push_back(cmd);
+        }
+
+        template<typename U>
+        inline typename std::enable_if<std::is_base_of<T, U>::value, void>::type
+            insert(size_t index, std::shared_ptr<const U> cmd) {
+            _collection[index].push_back(std::const_pointer_cast<U>(cmd));
+        }
+
+        inline T& get(size_t index, size_t entry) {
+            return *_collection[index][entry];
+        }
+
+        inline const T& get(size_t index, size_t entry) const {
+            return *_collection[index][entry];
+        }
+
+        inline vec_size_eastl size(size_t index) {
+            return _collection[index].size();
+        }
+
+        inline void reserve(size_t size) {
+            for (auto& col : _collection) {
+                col.reserve(size);
+            }
+        }
+
+        inline void reserve(size_t index, size_t size) {
+             _collection[index].reserve(size);
+        }
+
+        inline void clear(bool clearMemory = false) {
+            if (clearMemory) {
+                for (auto& col : _collection) {
+                    col.clear();
+                }
+            } else {
+                for (auto& col : _collection) {
+                    col.resize(0);
+                }
+            }
+        }
+
+        inline void clear(size_t index, bool clearMemory = false) {
+            if (clearMemory) {
+                _collection[index].clear();
+            }  else {
+                _collection[index].resize(0);
+            }
+        }
+
+        inline bool empty() const {
+            for (auto col : _collection) {
+                if (!col.empty()) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        std::array<vectorEASTL<std::shared_ptr<T>>, N> _collection;
+    };
+#endif
 
 namespace GFX {
 
@@ -59,7 +134,7 @@ class CommandBuffer {
 
     template<typename T>
     inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, void>::type
-    add(T& command);
+    add(const T* command);
 
     bool validate() const;
 
@@ -94,7 +169,9 @@ class CommandBuffer {
     void toString(const GFX::CommandBase& cmd, I32& crtIndent, stringImpl& out) const;
     bool resetMerge(GFX::CommandType type) const;
 
+#if defined(USE_BOOST_POLY)
     const std::type_info& getType(GFX::CommandType type) const;
+#endif
 
     template<typename T>
     typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
@@ -104,16 +181,19 @@ class CommandBuffer {
     bool registerType();
 
   protected:
-    vectorEASTL<CommandEntry> _commandOrder;
+      vectorEASTL<CommandEntry> _commandOrder;
+
+#if defined(USE_BOOST_POLY)
     boost::base_collection<GFX::CommandBase, dvd_allocator<GFX::CommandBase>> _commands;
+#else
+    PolyContainer<GFX::CommandBase, to_base(GFX::CommandType::COUNT)> _commands;
+#endif
 };
 
 template<typename T>
 inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, void>::type
 EnqueueCommand(CommandBuffer& buffer, T& cmd) {
-    if (cmd.onBufferAdd(buffer)) {
-        buffer.add(cmd);
-    }
+    cmd.addToBuffer(buffer);
 }
 
 }; //namespace GFX

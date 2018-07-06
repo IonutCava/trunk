@@ -6,8 +6,10 @@
 #include "Core/Headers/TaskPool.h"
 #include "Core/Headers/StringHelper.h"
 #include "Core/Headers/PlatformContext.h"
+#include "Core/Time/Headers/ProfileTimer.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Rendering/Camera/Headers/Camera.h"
+#include "Rendering/PostFX/Headers/PostFX.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
@@ -26,10 +28,12 @@ namespace {
 RenderPassManager::RenderPassManager(Kernel& parent, GFXDevice& context)
     : KernelComponent(parent),
      _renderQueue(parent),
-     _context(context)
+     _context(context),
+     _postFxRenderTimer(&Time::ADD_TIMER("PostFX Timer"))
 {
     ResourceDescriptor shaderDesc("OITComposition");
     _OITCompositionShader = CreateResource<ShaderProgram>(parent.resourceCache(), shaderDesc);
+    _renderPassCommandBuffer.push_back(GFX::allocateCommandBuffer(true));
 }
 
 RenderPassManager::~RenderPassManager()
@@ -43,7 +47,7 @@ void RenderPassManager::render(SceneRenderState& sceneRenderState) {
     TaskPriority priority = Config::USE_THREADED_COMMAND_GENERATION ? TaskPriority::DONT_CARE : TaskPriority::REALTIME;
 
     TaskPool& pool = parent().platformContext().taskPool();
-    TaskHandle renderTarsk = CreateTask(pool, DELEGATE_CBK<void, const Task&>());
+    TaskHandle renderTask = CreateTask(pool, DELEGATE_CBK<void, const Task&>());
 
     U8 renderPassCount = to_U8(_renderPasses.size());
 
@@ -51,19 +55,29 @@ void RenderPassManager::render(SceneRenderState& sceneRenderState) {
         std::shared_ptr<RenderPass>& rp = _renderPasses[i];
         GFX::CommandBuffer& buf = *_renderPassCommandBuffer[i];
         CreateTask(pool,
-                   &renderTarsk,
+                   &renderTask,
                    [&rp, &buf, &sceneRenderState](const Task& parentTask) {
                        buf.clear();
                        rp->render(sceneRenderState, buf);
+                       buf.batch();
                    }).startTask(priority);
     }
 
-    renderTarsk.startTask(priority).wait();
+    CreateTask(pool,
+               &renderTask,
+               [this](const Task& parentTask) {
+                  Time::ScopedTimer time3(*_postFxRenderTimer);
+                  GFX::CommandBuffer& buf = *_renderPassCommandBuffer.back();
+                  buf.clear();
+                  PostFX::instance().apply(buf);
+                  buf.batch();
+               }).startTask(priority);
 
-    
+    renderTask.startTask(priority).wait();
+
     //ToDo: Maybe handle this differently?
-#if 1 //Direct render
-    for (U8 i = 0; i < renderPassCount; ++i) {
+#if 0 //Direct render and clear
+    for (vec_size_eastl i = 0; i < _renderPassCommandBuffer.size(); ++i) {
         _context.flushCommandBuffer(*_renderPassCommandBuffer[i]);
     }
 #else // Maybe better batching and validation?
@@ -71,7 +85,6 @@ void RenderPassManager::render(SceneRenderState& sceneRenderState) {
     for (vec_size_eastl i = 0; i < _renderPassCommandBuffer.size(); ++i) {
         GFX::CommandBuffer& buf = *_renderPassCommandBuffer[i];
         sBuffer().add(buf);
-        buf.clear();
     }
     _context.flushCommandBuffer(sBuffer());
 #endif
@@ -104,7 +117,7 @@ void RenderPassManager::removeRenderPass(const stringImpl& name) {
             _renderPasses.erase(it);
             // Remove one command buffer
             GFX::CommandBuffer* buf = _renderPassCommandBuffer.back();
-            GFX::deallocateCommandBuffer(buf);
+            GFX::deallocateCommandBuffer(buf, true);
             _renderPassCommandBuffer.pop_back();
             break;
         }
@@ -204,9 +217,11 @@ void RenderPassManager::refreshNodeData(RenderStagePass stagePass, const PassPar
     RenderQueue::SortedQueues sortedQueues = getQueue().getSortedQueues(stagePass._stage, queueSize);
 
     const mat4<F32>& viewMatrix = params._camera->getViewMatrix();
-
     g_nodeData.resize(0);
-    g_nodeData.reserve(queueSize * Config::MAX_VISIBLE_NODES);
+    g_nodeData.reserve(sortedQueues.size() * Config::MAX_VISIBLE_NODES);
+
+    g_drawCommands.resize(0);
+    g_drawCommands.reserve(Config::MAX_VISIBLE_NODES);
 
     g_drawCommands.resize(0);
     g_drawCommands.reserve(Config::MAX_VISIBLE_NODES);

@@ -87,8 +87,7 @@ void RenderPackage::addDrawCommand(const GFX::DrawCommand& cmd) {
 }
 
 void RenderPackage::setDrawOption(CmdRenderOptions option, bool state) {
-    for (I32 cmdIdx = 0; cmdIdx < drawCommandCount(); ++cmdIdx) {
-        GFX::DrawCommand& cmd = _drawCommands[cmdIdx];
+    for (GFX::DrawCommand& cmd : _drawCommands) {
         for (GenericDrawCommand& drawCmd : cmd._drawCommands) {
             setOption(drawCmd, option, state);
         }
@@ -96,8 +95,7 @@ void RenderPackage::setDrawOption(CmdRenderOptions option, bool state) {
 }
 
 void RenderPackage::setLoD(U8 LoDIntex) {
-    for (I32 cmdIdx = 0; cmdIdx < drawCommandCount(); ++cmdIdx) {
-        GFX::DrawCommand& cmd = _drawCommands[cmdIdx];
+    for (GFX::DrawCommand& cmd : _drawCommands) {
         for (GenericDrawCommand& drawCmd : cmd._drawCommands) {
             drawCmd._lodIndex = LoDIntex;
         }

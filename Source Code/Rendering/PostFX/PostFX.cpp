@@ -135,11 +135,7 @@ void PostFX::updateResolution(U16 width, U16 height) {
     _preRenderBatch->reshape(width, height);
 }
 
-void PostFX::apply() {
-    GFX::ScopedCommandBuffer sBuffer = GFX::allocateScopedCommandBuffer();
-
-    GFX::CommandBuffer& buffer = sBuffer();
-
+void PostFX::apply(GFX::CommandBuffer& bufferInOut) {
     if (_filtersDirty) {
         _shaderFunctionSelection[0] = _shaderFunctionList[getFilterState(FilterType::FILTER_VIGNETTE) ? 0 : 4];
         _shaderFunctionSelection[1] = _shaderFunctionList[getFilterState(FilterType::FILTER_NOISE) ? 1 : 4];
@@ -153,9 +149,9 @@ void PostFX::apply() {
 
     GFX::SetCameraCommand setCameraCommand;
     setCameraCommand._camera = Camera::utilityCamera(Camera::UtilityCamera::_2D);
-    GFX::EnqueueCommand(buffer, setCameraCommand);
+    GFX::EnqueueCommand(bufferInOut, setCameraCommand);
 
-    _preRenderBatch->execute(_filterStackCount, buffer);
+    _preRenderBatch->execute(_filterStackCount, bufferInOut);
 
     TextureData output = _preRenderBatch->getOutput();
     TextureData data0 = _underwaterTexture->getData();
@@ -169,15 +165,15 @@ void PostFX::apply() {
     beginRenderPassCmd._target = RenderTargetID(RenderTargetUsage::SCREEN);
     beginRenderPassCmd._descriptor = _postFXTarget;
     beginRenderPassCmd._name = "DO_POSTFX_PASS";
-    GFX::EnqueueCommand(buffer, beginRenderPassCmd);
+    GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
     GFX::BindPipelineCommand bindPipelineCmd;
     bindPipelineCmd._pipeline = _drawPipeline;
-    GFX::EnqueueCommand(buffer, bindPipelineCmd);
+    GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
 
     GFX::SendPushConstantsCommand sendPushConstantsCmd;
     sendPushConstantsCmd._constants = _drawConstants;
-    GFX::EnqueueCommand(buffer, sendPushConstantsCmd);
+    GFX::EnqueueCommand(bufferInOut, sendPushConstantsCmd);
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd;
     bindDescriptorSetsCmd._set = _gfx->newDescriptorSet();
@@ -186,16 +182,14 @@ void PostFX::apply() {
     bindDescriptorSetsCmd._set->_textureData.addTexture(data0, to_U8(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER));
     bindDescriptorSetsCmd._set->_textureData.addTexture(data1, to_U8(TexOperatorBindPoint::TEX_BIND_POINT_NOISE));
     bindDescriptorSetsCmd._set->_textureData.addTexture(data2, to_U8(TexOperatorBindPoint::TEX_BIND_POINT_BORDER));
-    GFX::EnqueueCommand(buffer, bindDescriptorSetsCmd);
+    GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
 
     GFX::DrawCommand drawCommand;
     drawCommand._drawCommands.push_back(_drawCommand);
-    GFX::EnqueueCommand(buffer, drawCommand);
+    GFX::EnqueueCommand(bufferInOut, drawCommand);
 
     GFX::EndRenderPassCommand endRenderPassCmd;
-    GFX::EnqueueCommand(buffer, endRenderPassCmd);
-
-    _gfx->flushCommandBuffer(buffer);
+    GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
 }
 
 void PostFX::idle(const Configuration& config) {
