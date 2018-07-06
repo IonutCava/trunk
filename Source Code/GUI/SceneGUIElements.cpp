@@ -25,14 +25,14 @@ SceneGUIElements::~SceneGUIElements()
 {
 }
 
-void SceneGUIElements::draw(GFXDevice& context) {
+void SceneGUIElements::draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) {
     for (U8 i = 0; i < to_base(GUIType::COUNT); ++i) {
         if (i != to_base(GUIType::GUI_TEXT)) {
             for (const GUIMap::value_type& guiStackIterator : _guiElements[i]) {
                 GUIElement& element = *guiStackIterator.second.first;
                 // Skip hidden elements
                 if (element.isVisible()) {
-                    element.draw(context);
+                    element.draw(context, bufferInOut);
                 }
             }
         }
@@ -47,7 +47,7 @@ void SceneGUIElements::draw(GFXDevice& context) {
     }
 
     if (!batch().empty()) {
-        Attorney::GFXDeviceGUI::drawText(context, batch);
+        Attorney::GFXDeviceGUI::drawText(context, batch, bufferInOut);
     }
 }
 

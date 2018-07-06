@@ -18,7 +18,7 @@
 
 namespace Divide {
 
-void GFXDevice::renderDebugViews() {
+void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
     static DebugView* HiZPtr;
     static size_t labelStyleHash = TextLabelStyle(Font::DROID_SERIF_BOLD, vec4<U8>(255), 96).getHash();
 
@@ -123,9 +123,6 @@ void GFXDevice::renderDebugViews() {
         GFX::DrawCommand drawCommand;
         drawCommand._drawCommands.push_back(triangleCmd);
 
-        GFX::ScopedCommandBuffer sBuffer = GFX::allocateScopedCommandBuffer();
-        GFX::CommandBuffer& buffer = sBuffer();
-
         I32 viewIndex = 0;
         for (U8 i = 0; i < rowCount; ++i) {
             for (U8 j = 0; j < columnCount; ++j) {
@@ -133,20 +130,20 @@ void GFXDevice::renderDebugViews() {
                 pipelineDesc._shaderProgram = view._shader;
 
                 bindPipeline._pipeline = &newPipeline(pipelineDesc);
-                GFX::BindPipeline(buffer, bindPipeline);
+                GFX::BindPipeline(bufferInOut, bindPipeline);
 
                 pushConstants._constants = view._shaderData;
-                GFX::SendPushConstants(buffer, pushConstants);
+                GFX::SendPushConstants(bufferInOut, pushConstants);
 
                 setViewport._viewport.set(viewport);
-                GFX::SetViewPort(buffer, setViewport);
+                GFX::SetViewPort(bufferInOut, setViewport);
 
                 bindDescriptorSets._set._textureData.clear();
                 bindDescriptorSets._set._textureData.addTexture(view._texture->getData(),
                                                                 view._textureBindSlot);
-                GFX::BindDescriptorSets(buffer, bindDescriptorSets);
+                GFX::BindDescriptorSets(bufferInOut, bindDescriptorSets);
 
-                GFX::AddDrawCommands(buffer, drawCommand);
+                GFX::AddDrawCommands(bufferInOut, drawCommand);
 
                 if (!view._name.empty()) {
                     labelStack.emplace_back(view._name, viewport);
@@ -164,14 +161,12 @@ void GFXDevice::renderDebugViews() {
         for (const std::pair<stringImpl, vec4<I32>>& entry : labelStack) {
             // Draw labels at the end to reduce number of state changes
             setViewport._viewport.set(entry.second);
-            GFX::SetViewPort(buffer, setViewport);
+            GFX::SetViewPort(bufferInOut, setViewport);
 
             text._position.y = entry.second.sizeY - 10.0f;
             text.text(entry.first);
-            drawText(text, buffer);
+            drawText(text, bufferInOut);
         }
-
-        flushCommandBuffer(buffer);
     }
 }
 

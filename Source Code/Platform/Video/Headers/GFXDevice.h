@@ -228,10 +228,6 @@ public:  // GPU interface
     inline const mat4<F32>& getMatrix(const MATRIX& mode) const;
     /// Access (Read Only) rendering data used by the GFX
     inline const GFXShaderData::GPUData& renderingData() const;
-    /// Register a function to be called in the 2D rendering fase of the GFX Flush
-    /// routine. Use callOrder for sorting purposes
-    inline void add2DRenderFunction(const GUID_DELEGATE_CBK& callback, U32 callOrder);
-    inline void remove2DRenderFunction(const GUID_DELEGATE_CBK& callback);
     /// Returns true if the viewport was changed
     bool setViewport(const vec4<I32>& viewport);
     inline bool setViewport(I32 x, I32 y, I32 width, I32 height);
@@ -365,13 +361,16 @@ protected:
 
     void onChangeResolution(U16 w, U16 h);
 
-    void renderDebugViews();
+    void renderDebugViews(GFX::CommandBuffer& bufferInOut);
     
 protected:
     void onCameraUpdate(const Camera& camera);
     void onCameraChange(const Camera& camera);
 
     void blitToScreen(const vec4<I32>& targetViewport);
+
+    void blitToRenderTarget(RenderTargetID targetID, const vec4<I32>& targetViewport);
+    void blitToBuffer(GFX::CommandBuffer& bufferInOut, const vec4<I32>& targetViewport);
 
 protected:
     friend class SceneManager;
@@ -461,11 +460,7 @@ protected:
     /// Quality settings
     RenderDetailLevel _shadowDetailLevel;
     RenderDetailLevel _renderDetailLevel;
-
-    typedef std::pair<I64, DELEGATE_CBK<void>> GUID2DCbk;
-    mutable SharedLock _2DRenderQueueLock;
-    vectorImpl<std::pair<U32, GUID2DCbk > > _2dRenderQueue;
-
+    
     SharedLock _graphicsResourceMutex;
     vectorImpl<I64> _graphicResources;
     /// Current viewport stack
@@ -509,10 +504,9 @@ protected:
 namespace Attorney {
     class GFXDeviceGUI {
     private:
-        static void drawText(GFXDevice& device, const TextElementBatch& batch) {
-            return device.drawText(batch);
+        static void drawText(GFXDevice& device, const TextElementBatch& batch, GFX::CommandBuffer& bufferInOut) {
+            return device.drawText(batch, bufferInOut);
         }
-
         friend class Divide::GUI;
         friend class Divide::GUIText;
         friend class Divide::SceneGUIElements;

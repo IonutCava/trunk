@@ -48,7 +48,7 @@ class GUIText : public GUIElement, public TextElement {
             CEGUI::Window* parent,
             U8 fontSize = 16u);
 
-    void draw(GFXDevice& context) const;
+    void draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) const override;
     // Return true if input was consumed
     bool mouseMoved(const GUIEvent& event) override;
     // Return true if input was consumed

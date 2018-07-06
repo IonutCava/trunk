@@ -95,7 +95,7 @@ void GUI::onUnloadScene(Scene* scene) {
     }
 }
 
-void GUI::draw(GFXDevice& context) const {
+void GUI::draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) const {
     if (!_init || !_activeScene) {
         return;
     }
@@ -109,7 +109,7 @@ void GUI::draw(GFXDevice& context) const {
                 GUIElement& element = *guiStackIterator.second.first;
                 // Skip hidden elements
                 if (element.isVisible()) {
-                    element.draw(context);
+                    element.draw(context, bufferInOut);
                 }
             }
         }
@@ -124,20 +124,21 @@ void GUI::draw(GFXDevice& context) const {
     }
 
     if (!textBatch().empty()) {
-        Attorney::GFXDeviceGUI::drawText(context, textBatch);
+        Attorney::GFXDeviceGUI::drawText(context, textBatch, bufferInOut);
     }
 
     ReadLock r_lock(_guiStackLock);
     // scene specific
     GUIMapPerScene::const_iterator it = _guiStack.find(_activeScene->getGUID());
     if (it != std::cend(_guiStack)) {
-        it->second->draw(context);
+        it->second->draw(context, bufferInOut);
     }
 
     // CEGUI handles its own states, so render it after we clear our states but before we swap buffers
     if (parent().platformContext().config().gui.cegui.enabled) {
         if (!parent().platformContext().config().gui.cegui.skipRendering) {
-            CEGUI::System::getSingleton().renderAllGUIContexts();
+            GFX::DrawCEGUICommand drawCEGUICmd;
+            GFX::AddDrawCEGUICommand(bufferInOut, drawCEGUICmd);
         }
     }
 }
@@ -220,11 +221,6 @@ bool GUI::init(PlatformContext& context, ResourceCache& cache, const vec2<U16>& 
     assert(_console);
     //_console->CreateCEGUIWindow();
     _guiEditor->init();
-
-    context.gfx().add2DRenderFunction(GUID_DELEGATE_CBK([this, &context]() {
-                                          draw(context.gfx());
-                                      }),
-                                      std::numeric_limits<U32>::max() - 1);
 
     const OIS::MouseState& mouseState = context.input().getKeyboardMousePair(0).second->getMouseState();
 

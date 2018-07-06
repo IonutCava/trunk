@@ -40,6 +40,10 @@ namespace CEGUI {
 
 namespace Divide {
 
+namespace GFX {
+    class CommandBuffer;
+};
+
 enum class GUIType : U32 {
     GUI_TEXT = 0,
     GUI_BUTTON = 1,
@@ -95,7 +99,7 @@ class GUIElement : public GUIDWrapper {
     GUIElement(U64 guiID, CEGUI::Window* const parent, const GUIType& type);
     virtual ~GUIElement();
 
-    virtual void draw(GFXDevice& context) const = 0;
+    virtual void draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) const = 0;
 
     inline const stringImpl& getName() const { return _name; }
     inline const GUIType getType() const { return _guiType; }

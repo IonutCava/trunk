@@ -306,59 +306,97 @@ void GFXDevice::drawText(const TextElementBatch& batch) {
     drawText(batch, buffer);
     flushCommandBuffer(sBuffer());
 }
-
 void GFXDevice::blitToScreen(const vec4<I32>& targetViewport) {
     GFX::ScopedCommandBuffer sBuffer(GFX::allocateScopedCommandBuffer());
     GFX::CommandBuffer& buffer = sBuffer();
 
-    PipelineDescriptor pipelineDescriptor;
-    pipelineDescriptor._stateHash = get2DStateBlock();
-    pipelineDescriptor._shaderProgram = _displayShader;
-
-    GenericDrawCommand triangleCmd;
-    triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
-    triangleCmd.drawCount(1);
-
-    GFX::BeginDebugScopeCommand beginDebugScopeCmd;
-    beginDebugScopeCmd._scopeID = 12345;
-    beginDebugScopeCmd._scopeName = "Flush Display";
-    GFX::BeginDebugScope(buffer, beginDebugScopeCmd);
-
-    GFX::SetCameraCommand setCameraCommand;
-    setCameraCommand._camera = Camera::utilityCamera(Camera::UtilityCamera::_2D);
-    GFX::SetCamera(buffer, setCameraCommand);
-
-    GFX::BindPipelineCommand bindPipelineCmd;
-    bindPipelineCmd._pipeline = &newPipeline(pipelineDescriptor);
-    GFX::BindPipeline(buffer, bindPipelineCmd);
-
-    RenderTarget& screen = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
-    TextureData texData = screen.getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO)).texture()->getData();
-
-    GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd;
-    bindDescriptorSetsCmd._set._textureData.addTexture(texData, to_U8(ShaderProgram::TextureUsage::UNIT0));
-    GFX::BindDescriptorSets(buffer, bindDescriptorSetsCmd);
-    
-    GFX::SetViewportCommand viewportCommand;
-    viewportCommand._viewport.set(targetViewport);
-    GFX::SetViewPort(buffer, viewportCommand);
-
-    // Blit render target to screen
-    GFX::DrawCommand drawCmd;
-    drawCmd._drawCommands.push_back(triangleCmd);
-    GFX::AddDrawCommands(buffer, drawCmd);
-
-    GFX::EndDebugScopeCommand endDebugScopeCommand;
-    GFX::EndDebugScope(buffer, endDebugScopeCommand);
+    blitToBuffer(buffer, targetViewport);
     
     flushCommandBuffer(buffer);
-    
-    // Render all 2D debug info and call API specific flush function
-    ReadLock r_lock(_2DRenderQueueLock);
-    for (std::pair<U32, GUID2DCbk>& callbackFunction : _2dRenderQueue) {
-        callbackFunction.second.second();
-    }
-
 }
 
+void GFXDevice::blitToRenderTarget(RenderTargetID targetID, const vec4<I32>& targetViewport) {
+    GFX::ScopedCommandBuffer sBuffer(GFX::allocateScopedCommandBuffer());
+    GFX::CommandBuffer& buffer = sBuffer();
+
+    GFX::BeginRenderPassCommand beginRenderPassCmd;
+    beginRenderPassCmd._target = targetID;
+    beginRenderPassCmd._name = "BLIT_TO_RENDER_TARGET";
+    GFX::BeginRenderPass(buffer, beginRenderPassCmd);
+
+    blitToBuffer(buffer, targetViewport);
+
+    GFX::EndRenderPassCommand endRenderPassCmd;
+    GFX::EndRenderPass(buffer, endRenderPassCmd);
+
+    flushCommandBuffer(buffer);
+}
+
+void GFXDevice::blitToBuffer(GFX::CommandBuffer& bufferInOut, const vec4<I32>& targetViewport) {
+    {
+        PipelineDescriptor pipelineDescriptor;
+        pipelineDescriptor._stateHash = get2DStateBlock();
+        pipelineDescriptor._shaderProgram = _displayShader;
+
+        GenericDrawCommand triangleCmd;
+        triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
+        triangleCmd.drawCount(1);
+
+        GFX::BeginDebugScopeCommand beginDebugScopeCmd;
+        beginDebugScopeCmd._scopeID = 12345;
+        beginDebugScopeCmd._scopeName = "Flush Display";
+        GFX::BeginDebugScope(bufferInOut, beginDebugScopeCmd);
+
+        GFX::SetCameraCommand setCameraCommand;
+        setCameraCommand._camera = Camera::utilityCamera(Camera::UtilityCamera::_2D);
+        GFX::SetCamera(bufferInOut, setCameraCommand);
+
+        GFX::BindPipelineCommand bindPipelineCmd;
+        bindPipelineCmd._pipeline = &newPipeline(pipelineDescriptor);
+        GFX::BindPipeline(bufferInOut, bindPipelineCmd);
+
+        RenderTarget& screen = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
+        TextureData texData = screen.getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO)).texture()->getData();
+
+        GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd;
+        bindDescriptorSetsCmd._set._textureData.addTexture(texData, to_U8(ShaderProgram::TextureUsage::UNIT0));
+        GFX::BindDescriptorSets(bufferInOut, bindDescriptorSetsCmd);
+
+        GFX::SetViewportCommand viewportCommand;
+        viewportCommand._viewport.set(targetViewport);
+        GFX::SetViewPort(bufferInOut, viewportCommand);
+
+        // Blit render target to screen
+        GFX::DrawCommand drawCmd;
+        drawCmd._drawCommands.push_back(triangleCmd);
+        GFX::AddDrawCommands(bufferInOut, drawCmd);
+
+        GFX::EndDebugScopeCommand endDebugScopeCommand;
+        GFX::EndDebugScope(bufferInOut, endDebugScopeCommand);
+    }
+    {
+        GFX::BeginDebugScopeCommand beginDebugScopeCmd;
+        beginDebugScopeCmd._scopeID = 123456;
+        beginDebugScopeCmd._scopeName = "Render GUI";
+        GFX::BeginDebugScope(bufferInOut, beginDebugScopeCmd);
+
+        _parent.platformContext().gui().draw(*this, bufferInOut);
+
+        GFX::EndDebugScopeCommand endDebugScopeCommand;
+        GFX::EndDebugScope(bufferInOut, endDebugScopeCommand);
+    }
+
+    if (Config::Build::IS_DEBUG_BUILD)
+    {
+        GFX::BeginDebugScopeCommand beginDebugScopeCmd;
+        beginDebugScopeCmd._scopeID = 123456;
+        beginDebugScopeCmd._scopeName = "Render Debug Views";
+        GFX::BeginDebugScope(bufferInOut, beginDebugScopeCmd);
+
+        renderDebugViews(bufferInOut);
+
+        GFX::EndDebugScopeCommand endDebugScopeCommand;
+        GFX::EndDebugScope(bufferInOut, endDebugScopeCommand);
+    }
+}
 };

@@ -296,11 +296,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     _displayShader = CreateResource<ShaderProgram>(cache, ResourceDescriptor("display"));
 
     PostFX& postFX = PostFX::instance();
-
-    // Register a 2D function used for previewing the depth buffer.
-    if (Config::Build::IS_DEBUG_BUILD) {
-        add2DRenderFunction(GUID_DELEGATE_CBK([this]() { renderDebugViews(); }), 0);
-    }
     
     ParamHandler::instance().setParam<bool>(_ID("rendering.previewDebugViews"), false);
     // If render targets ready, we initialize our post processing system

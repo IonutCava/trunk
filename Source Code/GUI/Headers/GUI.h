@@ -44,6 +44,10 @@ class Renderer;
 
 namespace Divide {
 
+namespace GFX {
+    class CommandBuffer;
+};
+
 class GUIEditor;
 class GUIConsole;
 class GUIElement;
@@ -73,6 +77,8 @@ public:
     /// Create the GUI
     bool init(PlatformContext& context, ResourceCache& cache, const vec2<U16>& renderResolution);
     void destroy();
+
+    void draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) const;
 
     void onChangeResolution(U16 w, U16 h) override;
     void onChangeScene(Scene* newScene);
@@ -156,8 +162,7 @@ protected:
     CEGUI::Window* _rootSheet;  //< gui root Window
     stringImpl _defaultGUIScheme;
 
-private:
-    void draw(GFXDevice& context) const;
+    
 
 private:
     bool _init;              //< Set to true when the GUI has finished loading

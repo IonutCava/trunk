@@ -44,7 +44,7 @@ public:
     SceneGUIElements(Scene& parentScene, GUI& context);
     ~SceneGUIElements();
 
-    void draw(GFXDevice& context);
+    void draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut);
 
     void onEnable();
     void onDisable();

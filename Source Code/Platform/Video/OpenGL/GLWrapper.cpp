@@ -33,12 +33,12 @@
 
 #include <SDL_video.h>
 
-#include "imgui.h"
-
 #if !defined(CEGUI_STATIC)
 #define CEGUI_STATIC
 #endif
 #include <CEGUI/CEGUI.h>
+
+#include "imgui.h"
 
 namespace Divide {
 
@@ -1092,6 +1092,10 @@ void GL_API::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
                 GFX::DrawTextCommand* crtCmd = static_cast<GFX::DrawTextCommand*>(cmd.get());
                 drawText(crtCmd->_batch);
             }break;
+            case GFX::CommandType::DRAW_CEGUI: {
+                //GFX::DrawCEGUICommand* crtCmd = static_cast<GFX::DrawCEGUICommand*>(cmd.get());
+                CEGUI::System::getSingleton().renderAllGUIContexts();
+            }
             case GFX::CommandType::DRAW_IMGUI: {
                 Attorney::GFXDeviceAPI::uploadGPUBlock(_context);
 

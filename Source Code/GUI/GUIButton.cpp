@@ -57,8 +57,9 @@ void GUIButton::setText(const stringImpl& text) {
     _btnWindow->setText(text.c_str());
 }
 
-void GUIButton::draw(GFXDevice& context) const {
+void GUIButton::draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) const {
     ACKNOWLEDGE_UNUSED(context);
+    ACKNOWLEDGE_UNUSED(bufferInOut);
     //Nothing. CEGUI should handle this
 }
 

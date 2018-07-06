@@ -75,7 +75,7 @@ class GUIButton : public GUIElement {
               AudioDescriptor_ptr onClickSound);
     ~GUIButton();
 
-    void draw(GFXDevice& context) const;
+    void draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) const override;
     bool buttonPressed(const CEGUI::EventArgs& /*e*/);
 
    protected:;

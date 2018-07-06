@@ -54,7 +54,7 @@ class GUIMessageBox : public GUIElement {
         MESSAGE_ERROR = 2
     };
 
-    void draw(GFXDevice& context) const;
+    void draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) const override;
     bool onConfirm(const CEGUI::EventArgs& /*e*/);
     void setTitle(const stringImpl& titleText);
     void setMessage(const stringImpl& message);
