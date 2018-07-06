@@ -1095,7 +1095,7 @@ void GL_API::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
             case GFX::CommandType::DRAW_CEGUI: {
                 //GFX::DrawCEGUICommand* crtCmd = static_cast<GFX::DrawCEGUICommand*>(cmd.get());
                 CEGUI::System::getSingleton().renderAllGUIContexts();
-            }
+            }break;
             case GFX::CommandType::DRAW_IMGUI: {
                 Attorney::GFXDeviceAPI::uploadGPUBlock(_context);
 
