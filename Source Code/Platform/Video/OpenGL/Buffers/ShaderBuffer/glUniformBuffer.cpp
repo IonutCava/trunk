@@ -12,6 +12,8 @@
 #include "Core/Headers/StringHelper.h"
 #include "Utility/Headers/Localization.h"
 
+#include <iomanip>
+
 namespace Divide {
 
 namespace {

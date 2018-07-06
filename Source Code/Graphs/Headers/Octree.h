@@ -35,6 +35,8 @@
 #include "IntersectionRecord.h"
 #include "SceneGraphNode.h"
 
+#include <queue>
+
 namespace Divide {
 // ref: http://www.gamedev.net/page/resources/_/technical/game-programming/introduction-to-octrees-r3529
 class Octree : public std::enable_shared_from_this<Octree> {

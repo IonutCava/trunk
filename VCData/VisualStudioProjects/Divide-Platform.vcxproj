@@ -29,6 +29,7 @@
     <ClInclude Include="..\..\Source Code\Libs\RenderDoc-Manager\RenderDocManager.h" />
     <ClInclude Include="..\..\Source Code\Libs\RenderDoc-Manager\renderdoc_app.h" />
     <ClInclude Include="..\..\Source Code\Libs\SimpleCL\include\simpleCL.h" />
+    <ClInclude Include="..\..\Source Code\Libs\Threadpool-c++11\Threadpool.hpp" />
     <ClInclude Include="..\..\Source Code\Libs\Threadpool\include\threadpool.hpp" />
     <ClInclude Include="..\..\Source Code\Libs\Threadpool\include\threadpool\detail\future.hpp" />
     <ClInclude Include="..\..\Source Code\Libs\Threadpool\include\threadpool\detail\locking_ptr.hpp" />
@@ -68,7 +69,7 @@
     <ClInclude Include="..\..\Source Code\Platform\Input\Headers\JoystickInterface.h" />
     <ClInclude Include="..\..\Source Code\Platform\Threading\Headers\SharedMutex.h" />
     <ClInclude Include="..\..\Source Code\Platform\Threading\Headers\Task.h" />
-    <ClInclude Include="..\..\Source Code\Platform\Threading\Headers\Thread.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Threading\Headers\ThreadPool.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Buffers\PixelBuffer\Headers\PixelBuffer.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Buffers\RenderTarget\Headers\RenderTarget.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Buffers\RenderTarget\Headers\RTAttachment.h" />
@@ -147,6 +148,7 @@
     <ClCompile Include="..\..\Source Code\Libs\simplefilewatcher\source\FileWatcherLinux.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\simplefilewatcher\source\FileWatcherOSX.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\simplefilewatcher\source\FileWatcherWin32.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\Threadpool-c++11\Threadpool.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Audio\openAl\ALWrapper.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Audio\sdl_mixer\SDLWrapper.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Audio\SFXDevice.cpp" />
@@ -164,6 +166,7 @@
     <ClCompile Include="..\..\Source Code\Platform\PlatformDefinesUnix.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\PlatformDefinesWindows.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Threading\Task.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Threading\ThreadPoolImpl.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\Buffers\RenderTarget\RenderTarget.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\Buffers\RenderTarget\RTAttachment.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\Buffers\RenderTarget\RTAttachmentPool.cpp" />

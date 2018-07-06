@@ -119,12 +119,8 @@ void Task::startTask(TaskPriority priority, U32 taskFlags) {
         priority != TaskPriority::REALTIME_WITH_CALLBACK &&
         _tp != nullptr && _tp->workerThreadCount() > 0)
     {
-        U32 failCount = 0;
-        while (!_tp->threadPool().schedule(getRunTask(priority, taskFlags))) {
-            ++failCount;
-        }
-        if (failCount > 0) {
-            Console::errorfn(Locale::get(_ID("TASK_SCHEDULE_FAIL")), failCount);
+        if (!_tp->threadPool().enqueue(getRunTask(priority, taskFlags))) {
+            Console::errorfn(Locale::get(_ID("TASK_SCHEDULE_FAIL")), 1);
         }
     } else {
         getRunTask(priority, taskFlags)();

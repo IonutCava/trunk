@@ -32,13 +32,15 @@
 #ifndef _TASKS_H_
 #define _TASKS_H_
 
-#include "Platform/Threading/Headers/Thread.h"
+#include "Platform/Threading/Headers/ThreadPool.h"
 #include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
 
 class Application;
+
 class TaskPool;
+
 /**
  *@brief Using std::atomic for thread-shared data to avoid locking
  */

@@ -39,10 +39,17 @@ namespace Divide {
 
 class TaskPool {
   public:
+    enum class TaskPoolType : U32 {
+        PRIORITY_QUEUE = 0,
+        FIFO_QUEUE,
+        DONT_CARE,
+        COUNT
+    };
+
     explicit TaskPool(U32 maxTaskCount);
     ~TaskPool();
     
-    bool init(U32 threadCount, const stringImpl& workerName = "DVD_WORKER_");
+    bool init(U32 threadCount, TaskPoolType type, const stringImpl& workerName = "DVD_WORKER_");
     void flushCallbackQueue();
     void waitForAllTasks(bool yeld, bool flushCallbacks, bool forceClear = false);
 
@@ -60,14 +67,15 @@ class TaskPool {
     friend class Task;
     void taskCompleted(U32 poolIndex, Task::TaskPriority priority);
     inline ThreadPool& threadPool() {
-        return _mainTaskPool;
+        assert(_mainTaskPool != nullptr);
+        return *_mainTaskPool;
     }
 
     void nameThreadpoolWorkers(const char* name, ThreadPool& pool);
     void runCbkAndClearTask(U32 taskIndex);
 
   private:
-    ThreadPool _mainTaskPool;
+    std::unique_ptr<ThreadPool> _mainTaskPool;
     boost::lockfree::queue<U32> _threadedCallbackBuffer;
 
     vectorImpl<Task> _tasksPool;
@@ -90,12 +98,12 @@ TaskHandle CreateTask(TaskPool& pool,
                    const DELEGATE_CBK<void, const Task&>& threadedFunction,
                    const DELEGATE_CBK<void>& onCompletionFunction = DELEGATE_CBK<void>());
 
-TaskHandle CreateTask(TaskPool& pool, 
+TaskHandle CreateTask(TaskPool& pool,
                    I64 jobIdentifier,
                    const DELEGATE_CBK<void, const Task&>& threadedFunction,
                    const DELEGATE_CBK<void>& onCompletionFunction = DELEGATE_CBK<void>());
 
-TaskHandle parallel_for(TaskPool& pool, 
+TaskHandle parallel_for(TaskPool& pool,
                         const DELEGATE_CBK<void, const Task&, U32, U32>& cbk,
                         U32 count,
                         U32 partitionSize,

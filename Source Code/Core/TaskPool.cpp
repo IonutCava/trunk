@@ -4,8 +4,7 @@
 namespace Divide {
 
 TaskPool::TaskPool(U32 maxTaskCount)
-    : _mainTaskPool(ThreadPool()),
-      _threadedCallbackBuffer(maxTaskCount),
+    : _threadedCallbackBuffer(maxTaskCount),
       _workerThreadCount(0u),
       _tasksPool(maxTaskCount),
       _taskCallbacks(maxTaskCount),
@@ -22,20 +21,29 @@ TaskPool::TaskPool(U32 maxTaskCount)
 
 TaskPool::~TaskPool()
 {
-    _mainTaskPool.clear();
-    WAIT_FOR_CONDITION(_mainTaskPool.active() == 0);
-
-    _mainTaskPool.wait(0);
 }
 
-bool TaskPool::init(U32 threadCount, const stringImpl& workerName) {
-    if (threadCount <= 2) {
+bool TaskPool::init(U32 threadCount, TaskPoolType type, const stringImpl& workerName) {
+    if (threadCount <= 2 || _mainTaskPool != nullptr) {
         return false;
     }
 
-    _workerThreadCount = std::max(threadCount + 1, 2U);
-    _mainTaskPool.size_controller().resize(_workerThreadCount);
-    nameThreadpoolWorkers(workerName.c_str(), _mainTaskPool);
+    _workerThreadCount = threadCount - 1;
+
+    switch (type) {
+        case TaskPoolType::PRIORITY_QUEUE:
+            _mainTaskPool = std::make_unique<ThreadPoolBoostPrio>(_workerThreadCount);
+            break;
+        case TaskPoolType::FIFO_QUEUE:
+            _mainTaskPool = std::make_unique<ThreadPoolBoostFifo>(_workerThreadCount);
+            break;
+        case TaskPoolType::DONT_CARE:
+        default:
+            _mainTaskPool = std::make_unique<ThreadPoolC11>(_workerThreadCount);
+            break;
+    };
+
+    nameThreadpoolWorkers(workerName.c_str(), *_mainTaskPool);
 
     return true;
 }
@@ -81,9 +89,8 @@ void TaskPool::waitForAllTasks(bool yeld, bool flushCallbacks, bool forceClear) 
         flushCallbackQueue();
     }
 
-    _mainTaskPool.clear();
-    WAIT_FOR_CONDITION(_mainTaskPool.active() == 0);
-    _mainTaskPool.wait(0);
+    _mainTaskPool->stopAll();
+    _mainTaskPool->waitAll();
 }
 
 void TaskPool::setTaskCallback(const TaskHandle& handle,
@@ -147,13 +154,13 @@ Task& TaskPool::getAvailableTask() {
 
 //Ref: https://gist.github.com/shotamatsuda/e11ed41ee2978fa5a2f1/
 void TaskPool::nameThreadpoolWorkers(const char* name, ThreadPool& pool) {
-    pool.wait();
+    pool.waitAll();
     std::mutex mutex;
     std::condition_variable condition;
     bool predicate = false;
     std::unique_lock<std::mutex> lock(mutex);
-    for (std::size_t i = 0; i < pool.size(); ++i) {
-        pool.schedule(PoolTask(1, [i, &name, &mutex, &condition, &predicate]() {
+    for (std::size_t i = 0; i < pool.numThreads(); ++i) {
+        pool.enqueue(PoolTask(1, [i, &name, &mutex, &condition, &predicate]() {
             std::unique_lock<std::mutex> lock(mutex);
             while (!predicate) {
                 condition.wait(lock);
@@ -164,7 +171,7 @@ void TaskPool::nameThreadpoolWorkers(const char* name, ThreadPool& pool) {
     predicate = true;
     condition.notify_all();
     lock.unlock();
-    pool.wait();
+    pool.waitAll();
 }
 
 TaskHandle GetTaskHandle(TaskPool& pool, I64 taskGUID) {

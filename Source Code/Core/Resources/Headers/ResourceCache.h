@@ -33,7 +33,7 @@
 #define RESOURCE_MANAGER_H_
 
 #include "ResourceLoader.h"
-#include "Platform/Threading/Headers/Thread.h"
+#include "Platform/Threading/Headers/ThreadPool.h"
 
 #include "Utility/Headers/Localization.h"
 
