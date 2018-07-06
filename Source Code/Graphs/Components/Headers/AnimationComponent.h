@@ -31,6 +31,7 @@ namespace Divide {
 
 class Bone;
 class ShaderBuffer;
+class AnimEvaluator;
 class SceneAnimator;
 class SceneGraphNode;
 class AnimationComponent : public SGNComponent {
@@ -38,11 +39,12 @@ class AnimationComponent : public SGNComponent {
 public:
     typedef hashMapImpl<U32 /*frame index*/, BoundingBox>  boundingBoxPerFrame;
     typedef hashMapImpl<U32 /*animation ID*/, boundingBoxPerFrame> boundingBoxPerAnimation;
+    typedef hashMapImpl<U32 /*animationID*/, I32 /*last frame index*/> frameIndexes;
 
     AnimationComponent(SceneAnimator* animator, SceneGraphNode* const parentSGN);
     ~AnimationComponent();
     bool onDraw(RenderStage currentStage);
-    
+
     void update(const U64 deltaTime);
 
     void renderSkeleton();
@@ -52,25 +54,45 @@ public:
     bool playAnimation(I32  pAnimIndex);
     /// Select next available animation
     bool playNextAnimation();
-    
-   
-    I32 frameIndex() const;
-    I32 frameCount() const;
-    U32 boneCount()  const;
 
-    const vectorImpl<mat4<F32> >& transformsByIndex(U32 index) const;
-    const mat4<F32>& currentBoneTransform(const stringImpl& name);
+    inline I32 frameIndex() const {
+        return frameIndex(_currentAnimIndex);
+    }
+    inline I32 frameCount() const {
+        return frameCount(_currentAnimIndex);
+    }
+    I32 frameIndex(U32 animationID) const;
+    I32 frameCount(U32 animationID) const;
+
+    inline const vectorImpl<mat4<F32> >& transformsByIndex(U32 index) const {
+        return transformsByIndex(_currentAnimIndex, index);
+    }
+    const vectorImpl<mat4<F32> >& transformsByIndex(U32 animationID, U32 index) const;
+
+    U32 boneCount() const;
     Bone* getBoneByName(const stringImpl& bname) const;
-    const mat4<F32>& getBoneTransform(const stringImpl& name);
+
+    inline const mat4<F32>& currentBoneTransform(const stringImpl& name) {
+        return currentBoneTransform(_currentAnimIndex, name);
+    }
+
+    inline const mat4<F32>& getBoneTransform(const stringImpl& name) {
+        return getBoneTransform(_currentAnimIndex, name);
+    }
+
+    const mat4<F32>& currentBoneTransform(U32 animationID, const stringImpl& name);
+    const mat4<F32>& getBoneTransform(U32 animationID, const stringImpl& name);
 
     inline bool playAnimations()           const { return _playAnimations; }
     inline void playAnimations(bool state)       { _playAnimations = state; }
-
     
-    inline I32  animationIndex()      const { return _currentAnimIndex; }
-    inline const vectorImpl<mat4<F32> >& animationTransforms() const { return _animationTransforms; }
+    inline I32  animationIndex() const { return _currentAnimIndex; }
 
-    inline boundingBoxPerFrame& getBBoxesForAnimation(U32 animationId) { return _boundingBoxes[animationId]; }
+    inline boundingBoxPerFrame& getBBoxesForAnimation(U32 animationID) { 
+        return _boundingBoxes[animationID]; 
+    }
+
+    const AnimEvaluator& GetAnimationByIndex(I32 animationID) const;
 
     void resetTimers();
 
@@ -81,13 +103,8 @@ protected:
     I32 _currentAnimIndex;
     /// Current animation timestamp for the current SGN
     D32 _currentTimeStamp;
-    ///Animations (current and previous for interpolation)
-    vectorImpl<mat4<F32> > _animationTransforms;
-    vectorImpl<mat4<F32> > _animationTransformsPrev;
-    /// Current animation ID
-    U32 _currentAnimationID;
-    /// Current animation frame wrapped in animation time [0 ... 1]
-    U32 _currentFrameIndex;
+    /// Last updated frame indexes for each animation
+    frameIndexes _lastFrameIndexes;
     /// Does the mesh have a valid skeleton?
     bool _skeletonAvailable; 
     /// Animation playback toggle

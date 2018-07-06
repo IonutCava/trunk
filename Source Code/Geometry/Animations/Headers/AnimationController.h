@@ -38,7 +38,7 @@ namespace Divide {
 class SceneAnimator{
 public:
     typedef hashMapImpl<I32/*frameIndex*/, vectorAlg::vecSize/*vectorIntex*/> LineMap;
-    typedef hashMapImpl<I32/*animationId*/, LineMap> LineCollection;
+    typedef hashMapImpl<I32/*animationID*/, LineMap> LineCollection;
 
     SceneAnimator(): _skeleton(0)
     {
@@ -82,9 +82,11 @@ public:
     inline vectorImpl<mat4<F32> >& GetTransformsByIndex(I32 animationIndex, U32 index) { 
         return _animations[animationIndex]._transforms[index]; 
     }
-    inline I32 GetFrameIndex(I32 animationIndex) const { 
-        return _animations[animationIndex].GetFrameIndex(); 
+
+    inline const AnimEvaluator& GetAnimationByIndex(I32 animationIndex) const {
+        return _animations[animationIndex];
     }
+
     inline U32 GetFrameCount(I32 animationIndex) const { 
         return _animations[animationIndex].GetFrameCount(); 
     }

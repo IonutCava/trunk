@@ -179,7 +179,7 @@ void SceneAnimator::CalculateBoneToWorldTransform(Bone* child){
 const vectorImpl<Line >& SceneAnimator::getSkeletonLines(I32 animationIndex, const D32 dt) {
 
     // typedef hashMapImpl<I32/*frameIndex*/, vectorAlg::vecSize/*vectorIntex*/> LineMap;
-    // typedef hashMapImpl<I32/*animationId*/, LineMap> LineCollection;
+    // typedef hashMapImpl<I32/*animationID*/, LineMap> LineCollection;
     // LineCollection _skeletonLines;
     // vectorImpl<vectorImpl<Line >> _skeletonLinesContainer;
 

@@ -27,13 +27,13 @@
 #ifndef ANIMATION_UTILITIES_H_
 #define ANIMATION_UTILITIES_H_
 
-#define ANIMATION_TICKS_PER_SECOND 20.0f
-#define MAXBONESPERMESH 60
-
 #include "Core/Math/Headers/MathMatrices.h"
 #include <assimp/types.h>
 
 namespace Divide {
+
+const static F32 ANIMATION_TICKS_PER_SECOND = 20.0f;
+const static U32 MAX_BONES_PER_MESH = 60;
 
 namespace AnimUtils {
     void TransformMatrix(const aiMatrix4x4& in, mat4<F32>& out);

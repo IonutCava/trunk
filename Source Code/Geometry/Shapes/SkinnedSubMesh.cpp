@@ -10,9 +10,12 @@
 
 namespace Divide {
 
+const static bool USE_MUTITHREADED_LOADING = true;
+
 SkinnedSubMesh::SkinnedSubMesh(const stringImpl& name) : SubMesh(name, Object3D::OBJECT_FLAG_SKINNED)
 {
     _animator = MemoryManager_NEW SceneAnimator();
+    _buildingBoundingBoxes = false;
 }
 
 SkinnedSubMesh::~SkinnedSubMesh()
@@ -33,49 +36,94 @@ bool SkinnedSubMesh::updateAnimations(SceneGraphNode* const sgn){
     return getBoundingBoxForCurrentFrame(sgn);
 }
 
-bool SkinnedSubMesh::getBoundingBoxForCurrentFrame(SceneGraphNode* const sgn){
-    AnimationComponent* animComp = sgn->getComponent<AnimationComponent>();
-    if (!animComp->playAnimations()) return false;
+void SkinnedSubMesh::buildBoundingBoxesForAnimCompleted(U32 animationIndex) {
+    _buildingBoundingBoxes = false;
+}
+
+void SkinnedSubMesh::buildBoundingBoxesForAnim(U32 animationIndex, AnimationComponent* const animComp) {
+    typedef hashMapImpl<U32 /*frame index*/, BoundingBox>  animBBs;
+    const AnimEvaluator& currentAnimation = animComp->GetAnimationByIndex(animationIndex);
+
+    animBBs currentBBs;
 
     VertexBuffer* parentVB = _parentMesh->getGeometryVB();
-
     U32 partitionOffset = parentVB->getPartitionOffset(_geometryPartitionId);
     U32 partitionCount  = parentVB->getPartitionCount(_geometryPartitionId) + partitionOffset;
 
-    AnimationComponent::boundingBoxPerFrame& animBB = animComp->getBBoxesForAnimation(animComp->animationIndex());
-    
-    if (animBB.empty()){
-        const vectorImpl<vec3<F32> >& verts   = parentVB->getPosition();
-        const vectorImpl<vec4<U8>  >& indices = parentVB->getBoneIndices();
-        const vectorImpl<vec4<F32> >& weights = parentVB->getBoneWeights();
+    const vectorImpl<vec3<F32> >& verts   = parentVB->getPosition();
+    const vectorImpl<vec4<U8>  >& indices = parentVB->getBoneIndices();
+    const vectorImpl<vec4<F32> >& weights = parentVB->getBoneWeights();
 
-        //#pragma omp parallel for
-        for (I32 i = 0; i < animComp->frameCount(); i++){
-            BoundingBox& bb = animBB[i];
-            bb.reset();
+    I32 frameCount = animComp->frameCount(animationIndex);
+    //#pragma omp parallel for
+    for (I32 i = 0; i < frameCount; ++i) {
+        BoundingBox& bb = currentBBs[i];
+        bb.reset();
 
-            const vectorImpl<mat4<F32> >& transforms = animComp->transformsByIndex(i);
+        const vectorImpl<mat4<F32> >& transforms = currentAnimation.GetTransformsConst(static_cast<U32>(i));
 
-            // loop through all vertex weights of all bones
-            for (U32 j = partitionOffset; j < partitionCount; ++j) {
-                U32 idx = parentVB->getIndex(j);
-                const vec4<U8>&  ind = indices[idx];
-                const vec4<F32>& wgh = weights[idx];
-                const vec3<F32>& curentVert = verts[idx];
+        // loop through all vertex weights of all bones
+        for (U32 j = partitionOffset; j < partitionCount; ++j) {
+            U32 idx = parentVB->getIndex(j);
+            const vec4<U8>&  ind = indices[idx];
+            const vec4<F32>& wgh = weights[idx];
+            const vec3<F32>& curentVert = verts[idx];
 
-                F32 fwgh = 1.0f - ( wgh.x + wgh.y + wgh.z );
+            F32 fwgh = 1.0f - ( wgh.x + wgh.y + wgh.z );
 
-                bb.Add((wgh.x * (transforms[ind.x] * curentVert)) +
-                       (wgh.y * (transforms[ind.y] * curentVert)) +
-                       (wgh.z * (transforms[ind.z] * curentVert)) +
-                       (fwgh  * (transforms[ind.w] * curentVert)));
-            }
-
-            bb.setComputed(true);
+            bb.Add((wgh.x * (transforms[ind.x] * curentVert)) +
+                   (wgh.y * (transforms[ind.y] * curentVert)) +
+                   (wgh.z * (transforms[ind.z] * curentVert)) +
+                   (fwgh  * (transforms[ind.w] * curentVert)));
         }
+
+        bb.setComputed(true);
     }
 
-    sgn->setInitialBoundingBox(animBB[animComp->frameIndex()]);
+    animBBs& oldAnim = animComp->getBBoxesForAnimation(animationIndex);
+
+    oldAnim.clear();
+    oldAnim.swap(currentBBs);
+}
+
+bool SkinnedSubMesh::getBoundingBoxForCurrentFrame(SceneGraphNode* const sgn){
+    AnimationComponent* animComp = sgn->getComponent<AnimationComponent>();
+    if (!animComp->playAnimations()) {
+        return _buildingBoundingBoxes;
+    }
+
+    if (_buildingBoundingBoxes) {
+        return true;
+    }
+
+    U32 animationIndex = animComp->animationIndex();
+    AnimationComponent::boundingBoxPerFrame& animBB = animComp->getBBoxesForAnimation(animationIndex);
+    
+    if (animBB.empty()){
+        if (!_buildingBoundingBoxes) {
+            _buildingBoundingBoxes = true;
+            if (USE_MUTITHREADED_LOADING) {
+                Kernel* kernel = Application::getInstance().getKernel();
+                Task* task = kernel->AddTask(1,
+                                             1,
+                                             DELEGATE_BIND(&SkinnedSubMesh::buildBoundingBoxesForAnim,
+                                                           this,
+                                                           animationIndex,
+                                                           animComp),
+                                             DELEGATE_BIND(&SkinnedSubMesh::buildBoundingBoxesForAnimCompleted,
+                                                           this,
+                                                           animationIndex));
+                task->startTask();
+            } else {
+                buildBoundingBoxesForAnim(animationIndex, animComp);
+                buildBoundingBoxesForAnimCompleted(animationIndex);
+            }
+        }
+
+    } else {
+        sgn->setInitialBoundingBox(animBB[animComp->frameIndex()]);
+    }
+
     return true;
 }
 

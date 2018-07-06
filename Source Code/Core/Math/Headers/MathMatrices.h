@@ -988,7 +988,6 @@ public:
 };
 
 
-
 struct Line {
     vec3<F32> _startPoint;
     vec3<F32> _endPoint;

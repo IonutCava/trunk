@@ -11,7 +11,7 @@ namespace Divide {
 // Constructor on a given animation.
 AnimEvaluator::AnimEvaluator( const aiAnimation* pAnim) {
     _lastTime = 0.0;
-    _ticksPerSecond = pAnim->mTicksPerSecond != 0.0f ? pAnim->mTicksPerSecond : ANIMATION_TICKS_PER_SECOND;
+    _ticksPerSecond = !IS_ZERO(pAnim->mTicksPerSecond) ? pAnim->mTicksPerSecond : ANIMATION_TICKS_PER_SECOND;
     _duration = pAnim->mDuration;
     _name = pAnim->mName.data;
 
@@ -19,19 +19,22 @@ AnimEvaluator::AnimEvaluator( const aiAnimation* pAnim) {
 
     _channels.resize(pAnim->mNumChannels);
     for( U32 a = 0; a < pAnim->mNumChannels; a++){
-        _channels[a]._name = pAnim->mChannels[a]->mNodeName.data;
-        for (U32 i(0); i < pAnim->mChannels[a]->mNumPositionKeys; i++) {
-            _channels[a]._positionKeys.push_back(pAnim->mChannels[a]->mPositionKeys[i]);
+        aiNodeAnim* srcChannel = pAnim->mChannels[a];
+        AnimationChannel& dstChannel = _channels[a];
+
+        dstChannel._name = srcChannel->mNodeName.data;
+        for (U32 i(0); i < srcChannel->mNumPositionKeys; i++) {
+            dstChannel._positionKeys.push_back(srcChannel->mPositionKeys[i]);
         }
-        for (U32 i(0); i < pAnim->mChannels[a]->mNumRotationKeys; i++) {
-            _channels[a]._rotationKeys.push_back(pAnim->mChannels[a]->mRotationKeys[i]);
+        for (U32 i(0); i < srcChannel->mNumRotationKeys; i++) {
+            dstChannel._rotationKeys.push_back(srcChannel->mRotationKeys[i]);
         }
-        for (U32 i(0); i < pAnim->mChannels[a]->mNumScalingKeys; i++) {
-            _channels[a]._scalingKeys.push_back(pAnim->mChannels[a]->mScalingKeys[i]);
+        for (U32 i(0); i < srcChannel->mNumScalingKeys; i++) {
+            dstChannel._scalingKeys.push_back(srcChannel->mScalingKeys[i]);
         }
-        _channels[a]._numPositionKeys = pAnim->mChannels[a]->mNumPositionKeys;
-        _channels[a]._numRotationKeys = pAnim->mChannels[a]->mNumRotationKeys;
-        _channels[a]._numScalingKeys  = pAnim->mChannels[a]->mNumScalingKeys;
+        dstChannel._numPositionKeys = srcChannel->mNumPositionKeys;
+        dstChannel._numRotationKeys = srcChannel->mNumRotationKeys;
+        dstChannel._numScalingKeys  = srcChannel->mNumScalingKeys;
     }
 
     _lastPositions.resize( pAnim->mNumChannels, vec3<U32>());
@@ -39,22 +42,22 @@ AnimEvaluator::AnimEvaluator( const aiAnimation* pAnim) {
     D_PRINT_FN(Locale::get("CREATE_ANIMATION_END"), _name.c_str());
 }
 
-I32 AnimEvaluator::GetFrameIndexAt(const D32 elapsedTime){
-    // get a [0.f ... 1.f) value by allowing the percent to wrap around 1
-    D32 ptime = elapsedTime * _ticksPerSecond;
-
+I32 AnimEvaluator::GetFrameIndexAt(const D32 elapsedTime) const {
     D32 time = 0.0f;
-    if( _duration > 0.0)
-        time = fmod( ptime, _duration);
+    if (_duration > 0.0) {
+        // get a [0.f ... 1.f) value by allowing the percent to wrap around 1
+        time = fmod(elapsedTime * _ticksPerSecond, _duration);
+    }
 
     F32 percent = time / _duration;
 
-    if(!_playAnimationForward)
-        percent= (percent-1.0f)*-1.0f;// this will invert the percent so the animation plays backwards
+    // this will invert the percent so the animation plays backwards
+    if (!_playAnimationForward) {
+        percent = (percent - 1.0f)*-1.0f;
+    }
 
-    _lastFrameIndex = std::min(static_cast<I32>(_transforms.size() * percent), static_cast<I32>(_transforms.size() - 1));
-
-    return _lastFrameIndex;
+    return std::min(static_cast<I32>(_transforms.size() * percent), 
+                    static_cast<I32>(_transforms.size() - 1));
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -63,8 +66,10 @@ void AnimEvaluator::Evaluate(const D32 dt, hashMapImpl<stringImpl, Bone*>& bones
     D32 pTime = dt * _ticksPerSecond;
 
     D32 time = 0.0f;
-    if( _duration > 0.0)
-        time = fmod( pTime, _duration);
+    if (_duration > 0.0) {
+        time = fmod(pTime, _duration);
+    }
+
     GetFrameIndexAt(pTime);
     hashMapImpl<stringImpl, Bone*>::iterator bonenode;
     // calculate the transformations for each animation channel

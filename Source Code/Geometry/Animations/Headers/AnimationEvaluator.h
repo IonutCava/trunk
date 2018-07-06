@@ -51,26 +51,38 @@ public:
 class AnimEvaluator{
 public:
 
-    AnimEvaluator(): _lastFrameIndex(0),
-                     _lastTime(0.0),
-                     _ticksPerSecond(0.0),
-                     _duration(0.0),
-                     _playAnimationForward(true)
-    {}
+    AnimEvaluator() : _lastTime(0.0),
+                      _ticksPerSecond(0.0),
+                      _duration(0.0),
+                      _playAnimationForward(true)
+    {
+    }
 
     AnimEvaluator( const aiAnimation* pAnim);
 
     void Evaluate(const D32 dt, hashMapImpl<stringImpl, Bone*>& bones);
     void Save(std::ofstream& file);
     void Load(std::ifstream& file);
-    I32 GetFrameIndexAt(const D32 elapsedTime);
+    I32 GetFrameIndexAt(const D32 elapsedTime) const;
 
-    inline I32 GetFrameIndex() const {return _lastFrameIndex;}
     inline U32 GetFrameCount() const {return (U32)_transforms.size();}
-    inline vectorImpl<mat4<F32> >& GetTransforms(const D32 elapsedTime) {
-        I32 frameIndex = GetFrameIndexAt(elapsedTime);
+
+    inline vectorImpl<mat4<F32> >& GetTransforms(const U32 frameIndex) {
         assert(frameIndex < static_cast<I32>(_transforms.size()));
         return _transforms[frameIndex];
+    }
+
+    inline vectorImpl<mat4<F32> >& GetTransforms(const D32 elapsedTime) {
+        return GetTransforms(static_cast<U32>(GetFrameIndexAt(elapsedTime)));
+    }
+
+    inline const vectorImpl<mat4<F32> >& GetTransformsConst(const U32 frameIndex) const {
+         assert(frameIndex < static_cast<I32>(_transforms.size()));
+         return _transforms[frameIndex];
+    }
+
+    inline const vectorImpl<mat4<F32> >& GetTransformsConst(const D32 elapsedTime) const {
+        return GetTransformsConst(static_cast<U32>(GetFrameIndexAt(elapsedTime)));
     }
 
 protected:
@@ -89,7 +101,6 @@ protected:
 
 private:
 
-    I32 _lastFrameIndex;
     vectorImpl<vec3<U32> > _lastPositions;
     ///vector that holds all bone channels
     vectorImpl<AnimationChannel> _channels;

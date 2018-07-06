@@ -43,12 +43,15 @@ protected:
     
 private:
     bool getBoundingBoxForCurrentFrame(SceneGraphNode* const sgn);
-    
+    void buildBoundingBoxesForAnimCompleted(U32 animationIndex);
+    void buildBoundingBoxesForAnim(U32 animationIndex, AnimationComponent* const animComp);
+
 private:
     vectorImpl<vec3<F32> > _origVerts;
     vectorImpl<vec3<F32> > _origNorms;
     /// Animation player to animate the mesh if necessary
     SceneAnimator* _animator;
+    std::atomic_bool _buildingBoundingBoxes;
 };
 
 }; //namespace Divide
