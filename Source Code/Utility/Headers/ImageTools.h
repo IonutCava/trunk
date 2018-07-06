@@ -49,11 +49,13 @@ class ImageData : private NonCopyable {
     inline void flip(bool state) { _flip = state; }
     inline bool flip() const { return _flip; }
     /// set and get the image's actual data
-    inline const bufferPtr data() const { return (bufferPtr)_data.data(); }
+    inline const bufferPtr data(U32 mipLevel = 0) const { return (bufferPtr)_data[mipLevel].data(); }
     /// width * height * bpp
     inline const U32 imageSize() const { return _imageSize; }
     /// set and get the image's compression state
     inline bool compressed() const { return _compressed; }
+    /// get the number of pre-loaded mip maps
+    inline U32 mipCount() const { return to_uint(_data.size()); }
     /// image transparency information
     inline bool alpha() const { return _alpha; }
     /// image depth information
@@ -65,8 +67,8 @@ class ImageData : private NonCopyable {
     /// the image format as given by DevIL
     inline GFXImageFormat format() const { return _format; }
     /// get the texel color at the specified offset from the origin
-    vec4<U8> getColor(I32 x, I32 y) const;
-    void getColor(I32 x, I32 y, U8& r, U8& g, U8& b, U8& a) const;
+    vec4<U8> getColor(I32 x, I32 y, U32 mipLevel = 0) const;
+    void getColor(I32 x, I32 y, U8& r, U8& g, U8& b, U8& a, U32 mipLevel = 0) const;
 
   protected:
     friend class ImageDataInterface;
@@ -79,9 +81,8 @@ class ImageData : private NonCopyable {
     void throwLoadError(const stringImpl& fileName);
 
    private:
-    /// the image data as it was read from the file / memory
-    //U8* _data;
-    vectorImpl<U8> _data;
+    /// the image data as it was read from the file / memory. Each entry is a separate mip map
+    vectorImpl<vectorImpl<U8>> _data;
     /// is the image stored as a regular image or in a compressed format? (eg.
     /// DXT1 / DXT3 / DXT5)
     bool _compressed;

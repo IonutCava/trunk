@@ -19,16 +19,15 @@ Mesh::~Mesh()
 {
 }
 
-/// Mesh bounding box is built from all the SubMesh bounding boxes
-void Mesh::computeBoundingBox() {
-    _boundingBox.reset();
-}
-
 void Mesh::addSubMesh(SubMesh* const subMesh) {
     // Hold a reference to the submesh by ID (used for animations)
     _subMeshList.push_back(subMesh);
     Attorney::SubMeshMesh::setParentMesh(*subMesh, this);
-    computeBoundingBox();
+    setFlag(UpdateFlag::BOUNDS_CHANGED);
+}
+
+void Mesh::updateBoundsInternal() {
+    _boundingBox.reset();
 }
 
 /// After we loaded our mesh, we need to add submeshes as children nodes
@@ -45,7 +44,7 @@ void Mesh::postLoad(SceneGraphNode& sgn) {
 
     for (SubMesh* submesh : _subMeshList) {
         sgn.addNode(*submesh,
-                    submesh->hasFlag(ObjectFlag::OBJECT_FLAG_SKINNED) ? skinnedMask : normalMask,
+                    submesh->getObjectFlag(ObjectFlag::OBJECT_FLAG_SKINNED) ? skinnedMask : normalMask,
                     Util::StringFormat("%s_%d",
                                         sgn.getName().c_str(),
                                         submesh->getID()));
@@ -57,7 +56,7 @@ void Mesh::postLoad(SceneGraphNode& sgn) {
 /// Called from SceneGraph "sceneUpdate"
 void Mesh::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                        SceneState& sceneState) {
-    if (hasFlag(ObjectFlag::OBJECT_FLAG_SKINNED)) {
+    if (getObjectFlag(ObjectFlag::OBJECT_FLAG_SKINNED)) {
         bool playAnimations = sceneState.renderState().playAnimations() && _playAnimations;
         U32 childCount = sgn.getChildCount();
         for (U32 i = 0; i < childCount; ++i) {
@@ -70,6 +69,7 @@ void Mesh::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
         }
     }
 
-    SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
+    Object3D::sceneUpdate(deltaTime, sgn, sceneState);
 }
+
 };

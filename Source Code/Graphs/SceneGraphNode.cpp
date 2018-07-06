@@ -76,24 +76,18 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph,
 }
 
 void SceneGraphNode::setComponent(SGNComponent::ComponentType type, SGNComponent* component) {
-    I8 idx = getComponentIdx(type);
     // We have a component registered for the specified slot
-    if (idx != -1) {
-        assert(_components[idx] != nullptr);
+    if (getComponent(type) != nullptr) {
         if (component != nullptr) {
             // We want to replace the existing entry, so keep the same index
-            _components[idx].reset(component);
         } else {
             // We want to delete the existing entry, so destroy the index as well
-            _components.erase(std::cbegin(_components) + idx);
-            setComponentIdx(type, -1);
         }
-    // We are adding a new component type
     } else {
-        vectorAlg::emplace_back(_components, component);
-        setComponentIdx(type, to_byte(_components.size() - 1));
+        // We are adding a new component type
     }
-    
+
+    _components[getComponentIdx(type)].reset(component);
 }
 
 void SceneGraphNode::usageContext(const UsageContext& newContext) {
@@ -405,9 +399,9 @@ void SceneGraphNode::lockVisibility(const bool state) {
 void SceneGraphNode::setActive(const bool state) {
     if (_active != state) {
         _active = state;
-        for (std::unique_ptr<SGNComponent>& comp : _components) {
-            if (comp) {
-                comp->setActive(state);
+        for (std::unique_ptr<SGNComponent>& component : _components) {
+            if (component != nullptr) {
+                component->setActive(state);
             }
         }
 
@@ -441,7 +435,9 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
 
     // update all of the internal components (animation, physics, etc)
     for (std::unique_ptr<SGNComponent>& component : _components) {
-        component->update(deltaTime);
+        if (component != nullptr) {
+            component->update(deltaTime);
+         }
     }
 
     Attorney::SceneNodeSceneGraph::sceneUpdate(*_node, deltaTime, *this, sceneState);
@@ -462,8 +458,8 @@ void SceneGraphNode::onTransform() {
 
 bool SceneGraphNode::prepareDraw(const SceneRenderState& sceneRenderState,
                                  RenderStage renderStage) {
-    for (std::unique_ptr<SGNComponent>& comp : _components) {
-        if (comp && !comp->onRender(renderStage)) {
+    for (std::unique_ptr<SGNComponent>& component : _components) {
+        if (component && !component->onRender(renderStage)) {
             return false;
         }
     }

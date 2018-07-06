@@ -39,7 +39,8 @@ namespace Divide {
 
 class Box3D : public Object3D {
    public:
-    Box3D(const vec3<F32>& size) : Object3D(ObjectType::BOX_3D, ObjectFlag::OBJECT_FLAG_NONE) {
+    Box3D(const vec3<F32>& size) : Object3D(ObjectType::BOX_3D, ObjectFlag::OBJECT_FLAG_NONE)
+    {
         _halfExtent.set(size / 2);
 
         static const vec3<F32> vertices[] = {
@@ -75,7 +76,7 @@ class Box3D : public Object3D {
         }
 
         vb->create(false);
-        computeBoundingBox();
+        setFlag(UpdateFlag::BOUNDS_CHANGED);
     }
 
     inline void setHalfExtent(const vec3<F32> halfExtent) {
@@ -98,7 +99,7 @@ class Box3D : public Object3D {
         }
 
         vb->queueRefresh();
-        computeBoundingBox();
+        setFlag(UpdateFlag::BOUNDS_CHANGED);
     }
 
     inline void fromPoints(const std::initializer_list<vec3<F32>>& points,
@@ -108,11 +109,12 @@ class Box3D : public Object3D {
         vb->modifyPositionValues(0, points);
         vb->queueRefresh();
         _halfExtent = halfExtent;
-        computeBoundingBox();
+        setFlag(UpdateFlag::BOUNDS_CHANGED);
     }
 
-    inline void computeBoundingBox() {
+    inline void updateBoundsInternal() override {
         _boundingBox.set(-_halfExtent * 0.5f, _halfExtent * 0.5f);
+        Object3D::updateBoundsInternal();
     }
 
    private:

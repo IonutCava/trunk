@@ -260,7 +260,8 @@ class TextureDescriptor : public PropertyDescriptor {
           _baseFormat(GFXImageFormat::COUNT),
           _internalFormat(internalFormat),
           _dataType(dataType),
-          _type(type)
+          _type(type),
+          _compressed(false)
     {
         _baseFormat = baseFromInternalFormat(internalFormat);
     }
@@ -327,6 +328,7 @@ class TextureDescriptor : public PropertyDescriptor {
     /// Texture data information
     GFXImageFormat _internalFormat;
     TextureType _type;
+    bool _compressed;
     /// The sampler used to initialize this texture with
     SamplerDescriptor _samplerDescriptor;
 

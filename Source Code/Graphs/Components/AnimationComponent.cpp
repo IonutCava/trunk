@@ -179,7 +179,7 @@ const mat4<F32>& AnimationComponent::getBoneTransform(U32 animationID,
 
     if (node->getObjectType() != Object3D::ObjectType::SUBMESH ||
         (node->getObjectType() == Object3D::ObjectType::SUBMESH &&
-         !node->hasFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED))) {
+         !node->getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED))) {
         return _parentSGN.get<PhysicsComponent>()->getWorldMatrix();
     }
 

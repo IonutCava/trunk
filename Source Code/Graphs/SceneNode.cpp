@@ -30,13 +30,22 @@ void SceneNode::sceneUpdate(const U64 deltaTime,
                             SceneGraphNode& sgn,
                             SceneState& sceneState)
 {
-    for (SceneGraphNode_wptr nodeWptr : _sgnParents) {
-        if (!nodeWptr.expired()) {
-            if (checkBoundingBox(*nodeWptr.lock())) {
-                sgn.get<BoundsComponent>()->onBoundsChange(_boundingBox);
+    bool bbUpdated = getFlag(UpdateFlag::BOUNDS_CHANGED);
+    if (bbUpdated) {
+        updateBoundsInternal();
+        for (SceneGraphNode_wptr nodeWptr : _sgnParents) {
+            if (!nodeWptr.expired() && bbUpdated) {
+                BoundsComponent* bComp = sgn.get<BoundsComponent>();
+                if (bComp) {
+                    bComp->onBoundsChange(_boundingBox);
+                }
             }
         }
+        clearFlag(UpdateFlag::BOUNDS_CHANGED);
     }
+}
+
+void SceneNode::updateBoundsInternal() {
 }
 
 void SceneNode::postLoad(SceneGraphNode& sgn) {
@@ -46,7 +55,7 @@ void SceneNode::postLoad(SceneGraphNode& sgn) {
 
     _sgnParents.push_back(sgn.shared_from_this());
 
-    checkBoundingBox(sgn);
+    updateBoundsInternal();
 
     sgn.get<BoundsComponent>()->onBoundsChange(_boundingBox);
     sgn.postLoad();
@@ -54,10 +63,6 @@ void SceneNode::postLoad(SceneGraphNode& sgn) {
 
 bool SceneNode::getDrawState(RenderStage currentStage) {
     return _renderState.getDrawState(currentStage);
-}
-
-bool SceneNode::checkBoundingBox(const SceneGraphNode& sgn) {
-    return false;
 }
 
 Material* const SceneNode::getMaterialTpl() {

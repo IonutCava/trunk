@@ -80,7 +80,7 @@ class Object3D : public SceneNode {
 
     virtual bool onRender(RenderStage currentStage);
 
-    inline bool hasFlag(ObjectFlag flag) const {
+    inline bool getObjectFlag(ObjectFlag flag) const {
         return BitCompare(getFlagMask(), to_uint(flag));
     }
 

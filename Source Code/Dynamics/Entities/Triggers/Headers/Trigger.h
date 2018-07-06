@@ -72,10 +72,6 @@ class Trigger : public SceneNode {
     /// SceneNode concrete implementations
     bool unload();
 
-   protected:
-    void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
-                     SceneState& sceneState) {}
-
    private:
     /// The Task to be launched when triggered
     Task_ptr _triggeredTask;

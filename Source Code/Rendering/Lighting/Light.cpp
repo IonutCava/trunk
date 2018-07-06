@@ -77,7 +77,6 @@ void Light::postLoad(SceneGraphNode& sgn) {
     _lightSGN = &sgn;
     _lightSGN->get<PhysicsComponent>()->setPosition(_positionAndRange.xyz());
     _lightSGN->get<BoundsComponent>()->lockBBTransforms(true);
-    computeBoundingBox();
     SceneNode::postLoad(sgn);
 }
 
@@ -104,12 +103,12 @@ void Light::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn, SceneState& sc
     dir.normalize();
     _spotProperties.xyz(dir);
     _positionAndRange.xyz(_lightSGN->get<PhysicsComponent>()->getPosition());
-    computeBoundingBox();
+    setFlag(UpdateFlag::BOUNDS_CHANGED);
 
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }
 
-void Light::computeBoundingBox() {
+void Light::updateBoundsInternal() {
     if (_type == LightType::DIRECTIONAL) {
         vec3<F32> directionalLightPosition =
             _positionAndRange.xyz() * 
@@ -124,6 +123,7 @@ void Light::computeBoundingBox() {
     if (_type == LightType::SPOT) {
         _boundingBox.multiply(0.5f);
     }
+    SceneNode::updateBoundsInternal();
 }
 
 bool Light::onRender(SceneGraphNode& sgn, RenderStage currentStage) {

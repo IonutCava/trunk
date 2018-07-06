@@ -249,6 +249,7 @@ void ReadTextFile(const stringImpl& filePath, stringImpl& contentOut);
 stringImpl ReadTextFile(const stringImpl& filePath);
 void WriteTextFile(const stringImpl& filePath, const stringImpl& content);
 
+bool CompareIgnoreCase(const stringImpl& a, const stringImpl&b);
 // U = to data type, T = from data type
 template <typename U, typename T>
 U ConvertData(const T& data);

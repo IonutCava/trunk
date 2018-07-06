@@ -141,7 +141,10 @@ void fillEnumTables() {
     glImageFormatTable[to_const_uint(GFXImageFormat::DEPTH_COMPONENT24)] = GL_DEPTH_COMPONENT24;
     glImageFormatTable[to_const_uint(GFXImageFormat::DEPTH_COMPONENT32)] = GL_DEPTH_COMPONENT32;
     glImageFormatTable[to_const_uint(GFXImageFormat::DEPTH_COMPONENT32F)] = GL_DEPTH_COMPONENT32F;
-
+    glImageFormatTable[to_const_uint(GFXImageFormat::COMPRESSED_DXT1)] = gl::GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+    glImageFormatTable[to_const_uint(GFXImageFormat::COMPRESSED_DXT3)] = gl::GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+    glImageFormatTable[to_const_uint(GFXImageFormat::COMPRESSED_DXT5)] = gl::GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+    
     glPrimitiveTypeTable[to_const_uint(PrimitiveType::API_POINTS)] = GL_POINTS;
     glPrimitiveTypeTable[to_const_uint(PrimitiveType::LINES)] = GL_LINES;
     glPrimitiveTypeTable[to_const_uint(PrimitiveType::LINE_LOOP)] =  GL_LINE_LOOP;

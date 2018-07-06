@@ -69,7 +69,7 @@ WaterPlane::WaterPlane()
                                       TextureDescriptor::AttachmentType::Color0);
     _refractionTexture->useAutoDepthBuffer(true);
     _refractionTexture->create(_resolution.x, _resolution.y);
-    computeBoundingBox();
+    setFlag(UpdateFlag::BOUNDS_CHANGED);
 }
 
 WaterPlane::~WaterPlane()
@@ -108,7 +108,7 @@ void WaterPlane::postLoad(SceneGraphNode& sgn) {
     SceneNode::postLoad(sgn);
 }
 
-void WaterPlane::computeBoundingBox() {
+void WaterPlane::updateBoundsInternal() {
     _waterLevel = GET_ACTIVE_SCENE().state().waterLevel();
     _waterDepth = GET_ACTIVE_SCENE().state().waterDepth();
     _boundingBox.set(vec3<F32>(-_farPlane, _waterLevel - _waterDepth, -_farPlane),
@@ -117,6 +117,7 @@ void WaterPlane::computeBoundingBox() {
     Console::printfn(Locale::get(_ID("WATER_CREATE_DETAILS_2")), _boundingBox.getMin().y);
     
     _dirty = true;
+    SceneNode::updateBoundsInternal();
 }
 
 bool WaterPlane::unload() {
@@ -152,6 +153,8 @@ void WaterPlane::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
         shader->Uniform("_transparencyBias", _transparency);
         _paramsDirty = false;
     }
+
+    SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }
 
 bool WaterPlane::onRender(SceneGraphNode& sgn, RenderStage currentStage) {

@@ -35,7 +35,7 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
 {
     Object3D::ObjectType type = _parentSGN.getNode<Object3D>()->getObjectType();
     bool isSubMesh = type == Object3D::ObjectType::SUBMESH;
-    bool nodeSkinned = parentSGN.getNode<Object3D>()->hasFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED);
+    bool nodeSkinned = parentSGN.getNode<Object3D>()->getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED);
 
     if (_materialInstance) {
         if (!isSubMesh) {
@@ -137,7 +137,7 @@ void RenderingComponent::update(const U64 deltaTime) {
     {
         _parentSGN.getParent().lock()->getTrackedBools().setTrackedValue(StateTracker<bool>::State::BOUNDING_BOX_RENDERED, false);
 
-        if (_parentSGN.getNode<Object3D>()->hasFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED)) {
+        if (_parentSGN.getNode<Object3D>()->getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED)) {
             _parentSGN.getParent().lock()->getTrackedBools().setTrackedValue(StateTracker<bool>::State::SKELETON_RENDERED, false);
             _skeletonPrimitive->paused(true);
         }
@@ -427,7 +427,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
         // Continue only for skinned submeshes
         Object3D::ObjectType type = _parentSGN.getNode<Object3D>()->getObjectType();
         bool isSubMesh = type == Object3D::ObjectType::SUBMESH;
-        if (isSubMesh && _parentSGN.getNode<Object3D>()->hasFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED))
+        if (isSubMesh && _parentSGN.getNode<Object3D>()->getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED))
         {
             bool renderSkeletonFlagInitialized = false;
             bool renderSkeleton = parentStates.getTrackedValue(StateTracker<bool>::State::SKELETON_RENDERED,

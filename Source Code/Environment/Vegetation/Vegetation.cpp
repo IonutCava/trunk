@@ -288,35 +288,36 @@ void Vegetation::sceneUpdate(const U64 deltaTime,
         _success = true;
     }
 
-    if (!_render || !_success)
-        return;
-
-    // Query shadow state every "_stateRefreshInterval" microseconds
-    if (_stateRefreshIntervalBuffer >= _stateRefreshInterval) {
-        if (!_staticDataUpdated) {
-            _windX = sceneState.windDirX();
-            _windZ = sceneState.windDirZ();
-            _windS = sceneState.windSpeed();
-            Material* mat =
-                sgn.get<RenderingComponent>()->getMaterialInstance();
-            for (U8 i = 0; i < 3; ++i) {
-                RenderStage stage =
-                    (i == 0 ? RenderStage::DISPLAY
-                            : (i == 1 ? RenderStage::SHADOW : RenderStage::Z_PRE_PASS));
-                mat->getShaderInfo(stage).getProgram()->Uniform(
-                    "grassScale", /* _grassSize*/ 1.0f);
+    if (_render && _success) {
+        // Query shadow state every "_stateRefreshInterval" microseconds
+        if (_stateRefreshIntervalBuffer >= _stateRefreshInterval) {
+            if (!_staticDataUpdated) {
+                _windX = sceneState.windDirX();
+                _windZ = sceneState.windDirZ();
+                _windS = sceneState.windSpeed();
+                Material* mat =
+                    sgn.get<RenderingComponent>()->getMaterialInstance();
+                for (U8 i = 0; i < 3; ++i) {
+                    RenderStage stage =
+                        (i == 0 ? RenderStage::DISPLAY
+                                : (i == 1 ? RenderStage::SHADOW : RenderStage::Z_PRE_PASS));
+                    mat->getShaderInfo(stage).getProgram()->Uniform(
+                        "grassScale", /* _grassSize*/ 1.0f);
+                }
+                _stateRefreshIntervalBuffer -= _stateRefreshInterval;
+                _cullShader->Uniform("dvd_visibilityDistance",
+                                     sceneState.grassVisibility());
+                _staticDataUpdated = true;
             }
-            _stateRefreshIntervalBuffer -= _stateRefreshInterval;
-            _cullShader->Uniform("dvd_visibilityDistance",
-                                 sceneState.grassVisibility());
-            _staticDataUpdated = true;
         }
-    }
-    _stateRefreshIntervalBuffer += deltaTime;
+        _stateRefreshIntervalBuffer += deltaTime;
 
-    _writeBuffer = (_writeBuffer + 1) % 2;
-    _readBuffer = (_writeBuffer + 1) % 2;
-    _culledFinal = false;
+        _writeBuffer = (_writeBuffer + 1) % 2;
+        _readBuffer = (_writeBuffer + 1) % 2;
+        _culledFinal = false;
+    }
+
+    SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }
 
 U32 Vegetation::getQueryID() {

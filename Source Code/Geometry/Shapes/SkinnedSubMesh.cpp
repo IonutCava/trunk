@@ -119,7 +119,9 @@ void SkinnedSubMesh::computeBoundingBoxForCurrentFrame(SceneGraphNode& sgn) {
     }
 }
 
-bool SkinnedSubMesh::checkBoundingBox(const SceneGraphNode& sgn) {
+void SkinnedSubMesh::sceneUpdate(const U64 deltaTime,
+                                 SceneGraphNode& sgn,
+                                 SceneState& sceneState) {
     AnimationComponent* animComp = sgn.get<AnimationComponent>();
 
     // If animations are paused or unavailable, keep the current BB
@@ -128,11 +130,10 @@ bool SkinnedSubMesh::checkBoundingBox(const SceneGraphNode& sgn) {
         U32 animationIndex = animComp->animationIndex();
         if (_boundingBoxesAvailable.at(animationIndex) == true) {
             _boundingBox.set(_boundingBoxes.at(animationIndex).at(animComp->frameIndex()));
-            return true;
+            setFlag(UpdateFlag::BOUNDS_CHANGED);
         }
     }
-
-    return SceneNode::checkBoundingBox(sgn);
+    SubMesh::sceneUpdate(deltaTime, sgn, sceneState);
 }
 
 };

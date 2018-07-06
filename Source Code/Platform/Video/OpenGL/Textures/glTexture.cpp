@@ -202,62 +202,78 @@ void glTexture::loadData(const TextureLoadInfo& info,
     }
 
     assert(_allocatedStorage);
-
-    bool generateMipMaps = false;
-    if (ptr) {
-        GL_API::setPixelPackUnpackAlignment();
-        switch (_textureData._textureType) {
-            case TextureType::TEXTURE_1D: {
-                glTextureSubImage1D(
-                    _textureData.getHandleHigh(),
-                    0,
-                    0,
-                    _width,
-                    glFormat,
-                    dataType,
-                    ptr);
-                generateMipMaps = true;
-            } break;
-            case TextureType::TEXTURE_2D:
-            case TextureType::TEXTURE_2D_MS: {
-                glTextureSubImage2D(
-                    _textureData.getHandleHigh(),
-                    0, 
-                    0,
-                    0,
-                    _width,
-                    _height,
-                    glFormat,
-                    dataType,
-                    ptr);
-                generateMipMaps = true;
-            } break;
-
-            case TextureType::TEXTURE_3D:
-            case TextureType::TEXTURE_2D_ARRAY:
-            case TextureType::TEXTURE_2D_ARRAY_MS:
-            case TextureType::TEXTURE_CUBE_MAP:
-            case TextureType::TEXTURE_CUBE_ARRAY: {
-                glTextureSubImage3D(
-                    _textureData.getHandleHigh(),
-                    0,
-                    0,
-                    0,
-                    (info._cubeMapCount * 6) + info._layerIndex,
-                    _width,
-                    _height,
-                    1,
-                    glFormat,
-                    dataType,
-                    ptr);
-                generateMipMaps = info._layerIndex == _numLayers;
-            } break;
+    if (descriptor._compressed) {
+        I32 w = dimensions.width;
+        I32 h = dimensions.height;
+        I32 bpp = _descriptor.baseFormat() == GFXImageFormat::COMPRESSED_DXT1 
+                                            ? 8 
+                                            : 16;
+        I32 offset = 0;
+        I32 size = std::max(4, w) / 4 * std::max(4, h) / 4 * bpp;
+        for (I32 i = 0; i < _mipMaxLevel; ++i) {
+            glCompressedTextureSubImage2D(_textureData.getHandleHigh(), i, 0, 0, w, h, glFormat, size, (U8*)ptr + offset);
+            offset += size;
+            w = (w + 1) >> 1;
+            h = (h + 1) >> 1;
+            size = std::max(4, w) / 4 * std::max(4, h) / 4 * bpp;
         }
-    }
+    } else {
+        bool generateMipMaps = false;
+        if (ptr) {
+            GL_API::setPixelPackUnpackAlignment();
+            switch (_textureData._textureType) {
+                case TextureType::TEXTURE_1D: {
+                    glTextureSubImage1D(
+                        _textureData.getHandleHigh(),
+                        0,
+                        0,
+                        _width,
+                        glFormat,
+                        dataType,
+                        ptr);
+                    generateMipMaps = true;
+                } break;
+                case TextureType::TEXTURE_2D:
+                case TextureType::TEXTURE_2D_MS: {
+                    glTextureSubImage2D(
+                        _textureData.getHandleHigh(),
+                        0, 
+                        0,
+                        0,
+                        _width,
+                        _height,
+                        glFormat,
+                        dataType,
+                        ptr);
+                    generateMipMaps = true;
+                } break;
 
-    if (generateMipMaps) {
-        glGenerateTextureMipmap(_textureData.getHandleHigh());
-        _mipMapsDirty = false;
+                case TextureType::TEXTURE_3D:
+                case TextureType::TEXTURE_2D_ARRAY:
+                case TextureType::TEXTURE_2D_ARRAY_MS:
+                case TextureType::TEXTURE_CUBE_MAP:
+                case TextureType::TEXTURE_CUBE_ARRAY: {
+                    glTextureSubImage3D(
+                        _textureData.getHandleHigh(),
+                        0,
+                        0,
+                        0,
+                        (info._cubeMapCount * 6) + info._layerIndex,
+                        _width,
+                        _height,
+                        1,
+                        glFormat,
+                        dataType,
+                        ptr);
+                    generateMipMaps = info._layerIndex == _numLayers;
+                } break;
+            }
+        }
+
+        if (generateMipMaps) {
+            glGenerateTextureMipmap(_textureData.getHandleHigh());
+            _mipMapsDirty = false;
+        }
     }
 
     DIVIDE_ASSERT(_width > 0 && _height > 0,

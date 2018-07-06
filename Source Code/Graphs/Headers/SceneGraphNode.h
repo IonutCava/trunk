@@ -301,27 +301,12 @@ class SceneGraphNode : public GUIDWrapper,
 
     void setComponent(SGNComponent::ComponentType type, SGNComponent* component);
 
-    inline I8 getComponentIdx(SGNComponent::ComponentType cmpType) const {
-        for (std::pair<I8, SGNComponent::ComponentType> entry : _componentIdx) {
-            if (cmpType == entry.second) {
-                return entry.first;
-            }
-        }
-        // should be easy to debug
-        return -1;
+    inline U32 getComponentIdx(SGNComponent::ComponentType type) const {
+        return powerOfTwo(to_uint(type)) - 1;
     }
 
-    inline void setComponentIdx(SGNComponent::ComponentType cmpType, I8 newIdx) {
-        if (getComponentIdx(cmpType) == -1) {
-            _componentIdx.push_back(std::make_pair(newIdx, cmpType));
-        } else {
-            for (std::pair<U8, SGNComponent::ComponentType> entry : _componentIdx) {
-                if (cmpType == entry.second) {
-                    entry.first = newIdx;
-                    return;
-                }
-            }
-        }
+    inline SGNComponent* getComponent(SGNComponent::ComponentType type) const {
+        return _components[getComponentIdx(type)].get();
     }
 
    private:
@@ -349,45 +334,42 @@ class SceneGraphNode : public GUIDWrapper,
 
     DELEGATE_CBK_PARAM<SceneGraphNode_cptr> _collisionCbk;
 
-    vectorImpl<std::unique_ptr<SGNComponent>> _components;
-    // keeping a separate index list should be faster than checking each component for its type
-    vectorImpl<std::pair<I8, SGNComponent::ComponentType>> _componentIdx;
+    std::array<std::unique_ptr<SGNComponent>, to_const_uint(SGNComponent::ComponentType::COUNT)> _components;
 };
 
 template <>
 inline AnimationComponent* SceneGraphNode::get() const {
-    I8 idx = getComponentIdx(SGNComponent::ComponentType::ANIMATION);
-	return idx == -1 ? nullptr : static_cast<AnimationComponent*>(_components[idx].get());
+    return static_cast<AnimationComponent*>(getComponent(SGNComponent::ComponentType::ANIMATION));
 }
+
 template <>
 inline IKComponent* SceneGraphNode::get() const {
-    I8 idx = getComponentIdx(SGNComponent::ComponentType::INVERSE_KINEMATICS);
-    return idx == -1 ? nullptr : static_cast<IKComponent*>(_components[idx].get());
+    return static_cast<IKComponent*>(getComponent(SGNComponent::ComponentType::INVERSE_KINEMATICS));
 }
+
 template <>
 inline RagdollComponent* SceneGraphNode::get() const {
-    I8 idx = getComponentIdx(SGNComponent::ComponentType::RAGDOLL);
-    return idx == -1 ? nullptr : static_cast<RagdollComponent*>(_components[idx].get());
+    return static_cast<RagdollComponent*>(getComponent(SGNComponent::ComponentType::RAGDOLL));
 }
+
 template <>
 inline BoundsComponent* SceneGraphNode::get() const {
-    I8 idx = getComponentIdx(SGNComponent::ComponentType::BOUNDS);
-    return idx == -1 ? nullptr : static_cast<BoundsComponent*>(_components[idx].get());
+    return static_cast<BoundsComponent*>(getComponent(SGNComponent::ComponentType::BOUNDS));
 }
+
 template <>
 inline NavigationComponent* SceneGraphNode::get() const {
-    I8 idx = getComponentIdx(SGNComponent::ComponentType::NAVIGATION);
-    return idx == -1 ? nullptr : static_cast<NavigationComponent*>(_components[idx].get());
+    return static_cast<NavigationComponent*>(getComponent(SGNComponent::ComponentType::NAVIGATION));
 }
+
 template <>
 inline PhysicsComponent* SceneGraphNode::get() const {
-    I8 idx = getComponentIdx(SGNComponent::ComponentType::PHYSICS);
-    return idx == -1 ? nullptr : static_cast<PhysicsComponent*>(_components[idx].get());
+    return static_cast<PhysicsComponent*>(getComponent(SGNComponent::ComponentType::PHYSICS));
 }
+
 template <>
 inline RenderingComponent* SceneGraphNode::get() const {
-    I8 idx = getComponentIdx(SGNComponent::ComponentType::RENDERING);
-    return idx == -1 ? nullptr : static_cast<RenderingComponent*>(_components[idx].get());
+    return static_cast<RenderingComponent*>(getComponent(SGNComponent::ComponentType::RENDERING));
 }
 
 };  // namespace Divide

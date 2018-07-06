@@ -143,7 +143,13 @@ class Sphere3D : public Object3D {
 
         vb->create();
         vb->queueRefresh();
+        setFlag(UpdateFlag::BOUNDS_CHANGED);
+    }
+
+    inline void updateBoundsInternal() override {
+        // add some depth padding for collision and nav meshes
         _boundingBox.set(vec3<F32>(-_radius), vec3<F32>(_radius));
+        Object3D::updateBoundsInternal();
     }
 
    protected:

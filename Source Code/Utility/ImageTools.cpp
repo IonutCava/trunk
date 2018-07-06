@@ -134,7 +134,8 @@ bool ImageData::create(const stringImpl& filename) {
                                      _dimensions.height *
                                      _bpp);
     ILubyte* data = ilGetData();
-    _data.assign(data, data + _imageSize);
+    _data.resize(1);
+    _data[0].assign(data, data + _imageSize);
 
     ilBindImage(0);
     ilDeleteImage(ilTexture);
@@ -142,18 +143,18 @@ bool ImageData::create(const stringImpl& filename) {
     return true;
 }
 
-vec4<U8> ImageData::getColor(I32 x, I32 y) const {
+vec4<U8> ImageData::getColor(I32 x, I32 y, U32 mipLevel) const {
     vec4<U8> returnColor;
-    getColor(x, y, returnColor.r, returnColor.g, returnColor.b, returnColor.a);
+    getColor(x, y, returnColor.r, returnColor.g, returnColor.b, returnColor.a, mipLevel);
     return returnColor;
 }
 
-void ImageData::getColor(I32 x, I32 y, U8& r, U8& g, U8& b, U8& a) const {
+void ImageData::getColor(I32 x, I32 y, U8& r, U8& g, U8& b, U8& a, U32 mipLevel) const {
     I32 idx = (y * _dimensions.width + x) * _bpp;
-    r = _data[idx + 0];
-    g = _data[idx + 1];
-    b = _data[idx + 2];
-    a = _alpha ? _data[idx + 3] : 255;
+    r = _data[mipLevel][idx + 0];
+    g = _data[mipLevel][idx + 1];
+    b = _data[mipLevel][idx + 2];
+    a = _alpha ? _data[mipLevel][idx + 3] : 255;
 }
 
 std::mutex ImageDataInterface::_loadingMutex;

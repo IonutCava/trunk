@@ -101,6 +101,19 @@ stringImpl StringFormat(const stringImpl fmt_str, ...) {
     return formatted.get();
 }
 
+bool CompareIgnoreCase(const stringImpl& a, const stringImpl&b) {
+    if (a.length() == b.length()) {
+        return std::equal(std::cbegin(b), 
+                          std::cend(b),
+                          std::cbegin(a),
+                          [](unsigned char a, unsigned char b) {
+                              return std::tolower(a) == std::tolower(b);
+                          });
+    }
+    
+    return false;
+}
+
 void CStringRemoveChar(char* str, char charToRemove) {
     char *src, *dst;
     for (src = dst = str; *src != '\0'; src++) {

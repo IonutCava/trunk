@@ -51,9 +51,11 @@ class SkinnedSubMesh : public SubMesh {
 
    protected:
     void updateAnimations(SceneGraphNode& sgn);
-    bool checkBoundingBox(const SceneGraphNode& sgn) override;
 
    private:
+    void sceneUpdate(const U64 deltaTime,
+                     SceneGraphNode& sgn,
+                     SceneState& sceneState) override;
     void computeBoundingBoxForCurrentFrame(SceneGraphNode& sgn);
     void buildBoundingBoxesForAnimCompleted(U32 animationIndex);
     void buildBoundingBoxesForAnim(U32 animationIndex,

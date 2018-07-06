@@ -276,7 +276,7 @@ namespace Import {
             mesh->addSubMesh(tempSubMesh);
         }
 
-        mesh->getGeometryVB()->create(!mesh->hasFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
+        mesh->getGeometryVB()->create(!mesh->getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
         
         elapsed = Time::ElapsedMilliseconds(true) - start;
         Console::d_printfn(Locale::get(_ID("PARSE_MESH_TIME")), dataIn._modelName.c_str(),Time::MillisecondsToSeconds(elapsed));

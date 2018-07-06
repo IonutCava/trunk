@@ -186,14 +186,27 @@ bool Texture::LoadFile(const TextureLoadInfo& info, const stringImpl& name) {
                 srgb ? GFXImageFormat::SRGBA8 : 
                        GFXImageFormat::RGBA8;
             break;
+        case GFXImageFormat::COMPRESSED_DXT1:
+        case GFXImageFormat::COMPRESSED_DXT3:
+        case GFXImageFormat::COMPRESSED_DXT5: {
+            _descriptor._internalFormat = img.format();
+            _descriptor._compressed = true;
+        }break;
     }
 
-    U16 mipMaxLevel = 1;
-    if (_descriptor._samplerDescriptor.generateMipMaps()) {
-        mipMaxLevel = to_ushort(floorf(log2f(fmaxf(width, height))));
+    U16 mipMaxLevel = to_ushort(img.mipCount());
+    
+    if (!_descriptor._compressed) {
+        if (_descriptor._samplerDescriptor.generateMipMaps()) {
+            mipMaxLevel = to_ushort(floorf(log2f(fmaxf(width, height))));
+        }
     }
     // Uploading to the GPU dependents on the rendering API
-    loadData(info, _descriptor, img.data(), img.dimensions(), vec2<U16>(0, mipMaxLevel));
+    loadData(info,
+             _descriptor,
+             img.data(),
+             img.dimensions(),
+             vec2<U16>(0, mipMaxLevel));
 
     // We will always return true because we load the "missing_texture.jpg" in
     // case of errors

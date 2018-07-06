@@ -679,12 +679,10 @@ IntersectionRecord Octree::getIntersection(SceneGraphNode& node, const Frustum& 
 
 IntersectionRecord Octree::getIntersection(SceneGraphNode& node1, SceneGraphNode& node2) const {
     if (node1.getGUID() != node2.getGUID()) {
-        if (node1.get<BoundsComponent>()->getBoundingSphere().collision(
-            node2.get<BoundsComponent>()->getBoundingSphere()))
-        {
-            const BoundingBox& bb1 = node1.get<BoundsComponent>()->getBoundingBox();
-            const BoundingBox& bb2 = node2.get<BoundsComponent>()->getBoundingBox();
-            if (bb1.collision(bb2)) {
+        BoundsComponent* bComp1 = node1.get<BoundsComponent>();
+        BoundsComponent* bComp2 = node2.get<BoundsComponent>();
+        if (bComp1->getBoundingSphere().collision(bComp2->getBoundingSphere())) {
+            if (bComp1->getBoundingBox().collision(bComp2->getBoundingBox())) {
                 IntersectionRecord ir(node1.shared_from_this());
                 ir._intersectedObject2 = node2.shared_from_this();
                 ir._treeNode = shared_from_this();

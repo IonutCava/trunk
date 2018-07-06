@@ -74,6 +74,12 @@ namespace Attorney {
 class NOINITVTABLE SceneNode : public Resource {
     friend class Attorney::SceneNodeSceneGraph;
    public:
+      enum class UpdateFlag : U32 {
+        BOUNDS_CHANGED = 0,
+        COUNT
+      };
+
+   public:
     SceneNode(const SceneNodeType& type);
     SceneNode(const stringImpl& name, const SceneNodeType& type);
     virtual ~SceneNode();
@@ -117,7 +123,19 @@ class NOINITVTABLE SceneNode : public Resource {
 
     // Post insertion calls (Use this to setup child objects during creation)
     virtual void postLoad(SceneGraphNode& sgn);
-    virtual bool checkBoundingBox(const SceneGraphNode& sgn);
+    virtual void updateBoundsInternal();
+
+    inline void setFlag(UpdateFlag flag) {
+        _updateFlags[to_uint(flag)] = true;
+    }
+
+    inline void clearFlag(UpdateFlag flag) {
+        _updateFlags[to_uint(flag)] = false;
+    }
+
+    inline bool getFlag(UpdateFlag flag) {
+        return _updateFlags[to_uint(flag)];
+    }
 
    protected:
     /// The various states needed for rendering
@@ -128,9 +146,10 @@ class NOINITVTABLE SceneNode : public Resource {
     BoundingBox _boundingBox;
 
    private:
-    vectorImpl<SceneGraphNode_wptr> _sgnParents;
     SceneNodeType _type;
     Material* _materialTemplate;
+    vectorImpl<SceneGraphNode_wptr> _sgnParents;
+    std::array<bool, to_const_uint(UpdateFlag::COUNT)> _updateFlags;
 };
 
 namespace Attorney {

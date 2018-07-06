@@ -208,7 +208,7 @@ bool Scene::loadGeometry(const FileData& data) {
         item.setResourceLocation(data.data3);
         item.setPropertyList(data.data2);
         thisObj = CreateResource<Text3D>(item);
-        static_cast<Text3D*>(thisObj)->getWidth() = data.data;
+        static_cast<Text3D*>(thisObj)->setWidth(data.data);
     } else {
         Console::errorfn(Locale::get(_ID("ERROR_SCENE_UNSUPPORTED_GEOM")),
                          data.ModelName.c_str());

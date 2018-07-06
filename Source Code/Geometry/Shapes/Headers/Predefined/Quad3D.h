@@ -40,7 +40,8 @@ namespace Divide {
 class ShaderProgram;
 class Quad3D : public Object3D {
    public:
-    Quad3D(const bool doubleSided = true) : Object3D(ObjectType::QUAD_3D, ObjectFlag::OBJECT_FLAG_NONE) {
+    Quad3D(const bool doubleSided = true) : Object3D(ObjectType::QUAD_3D, ObjectFlag::OBJECT_FLAG_NONE)
+    {
         U16 indices[] = {2, 0, 1, 1, 2, 3, 1, 0, 2, 2, 1, 3};
 
         getGeometryVB()->setVertexCount(4);
@@ -72,7 +73,7 @@ class Quad3D : public Object3D {
 
         getGeometryVB()->computeTangents();
         getGeometryVB()->create();
-        computeBoundingBox();
+        setFlag(UpdateFlag::BOUNDS_CHANGED);
     }
 
     enum class CornerLocation : U32 {
@@ -125,7 +126,6 @@ class Quad3D : public Object3D {
                 break;
         }
         getGeometryVB()->queueRefresh();
-        computeBoundingBox();
     }
 
     void setCorner(CornerLocation corner, const vec3<F32>& value) {
@@ -146,7 +146,7 @@ class Quad3D : public Object3D {
                 break;
         }
         getGeometryVB()->queueRefresh();
-        computeBoundingBox();
+        setFlag(UpdateFlag::BOUNDS_CHANGED);
     }
 
     // rect.xy = Top Left; rect.zw = Bottom right
@@ -157,14 +157,16 @@ class Quad3D : public Object3D {
         getGeometryVB()->modifyPositionValue(2, rect.x, rect.y, 0);
         getGeometryVB()->modifyPositionValue(3, rect.z, rect.y, 0);
         getGeometryVB()->queueRefresh();
-        computeBoundingBox();
+        setFlag(UpdateFlag::BOUNDS_CHANGED);
     }
 
-    inline void computeBoundingBox() {
+    inline void updateBoundsInternal() override {
         // add some depth padding for collision and nav meshes
         _boundingBox.setMax(getGeometryVB()->getPosition(1));
         _boundingBox.setMin(getGeometryVB()->getPosition(2) + vec3<F32>(0.0f, 0.0f, 0.0025f));
+        Object3D::updateBoundsInternal();
     }
+
 };
 
 };  // namespace Divide

@@ -15,7 +15,7 @@ Text3D* ImplResourceLoader<Text3D>::operator()() {
         if (_descriptor.getFlag()) {
             ptr->renderState().useDefaultMaterial(false);
         }
-        ptr->getText() = _descriptor.getPropertyListString();
+        ptr->setText(_descriptor.getPropertyListString());
     }
     return ptr;
 }

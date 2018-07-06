@@ -60,19 +60,17 @@ class Mesh : public Object3D {
 
     virtual ~Mesh();
 
-    void computeBoundingBox();
-
     virtual void postLoad(SceneGraphNode& sgn);
 
     virtual void addSubMesh(SubMesh* const subMesh);
 
     void setAnimator(std::shared_ptr<SceneAnimator> animator) {
-        assert(hasFlag(ObjectFlag::OBJECT_FLAG_SKINNED));
+        assert(getObjectFlag(ObjectFlag::OBJECT_FLAG_SKINNED));
         _animator = animator;
     }
 
     inline std::shared_ptr<SceneAnimator> getAnimator() { 
-        assert(hasFlag(ObjectFlag::OBJECT_FLAG_SKINNED));
+        assert(getObjectFlag(ObjectFlag::OBJECT_FLAG_SKINNED));
         return _animator; 
     }
 
@@ -81,6 +79,7 @@ class Mesh : public Object3D {
     virtual void sceneUpdate(const U64 deltaTime,
                              SceneGraphNode& sgn,
                              SceneState& sceneState);
+    void updateBoundsInternal() override;
 
    protected:
     typedef hashMapImpl<U32, SubMesh*> SubMeshRefMap;
