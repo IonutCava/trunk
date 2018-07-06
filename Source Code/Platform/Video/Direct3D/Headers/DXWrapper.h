@@ -49,6 +49,7 @@ namespace Divide {
 DEFINE_SINGLETON_EXT1_W_SPECIFIER(DX_API, RenderAPIWrapper, final)
   protected:
     DX_API() : RenderAPIWrapper() {}
+    virtual ~DX_API() {}
 
     ErrorCode initRenderingAPI(I32 argc, char** argv) override;
     void closeRenderingAPI() override;

@@ -190,21 +190,6 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\Shaders\Headers\ShaderProgram.h">
       <Filter>Video\Shaders\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\src\GLIM\Declarations.h">
-      <Filter>Video\OpenGL\GLIM</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\src\GLIM\glim.h">
-      <Filter>Video\OpenGL\GLIM</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\src\GLIM\glimBatch.h">
-      <Filter>Video\OpenGL\GLIM</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\src\GLIM\glimBatchData.h">
-      <Filter>Video\OpenGL\GLIM</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\src\GLIM\glimInterface.h">
-      <Filter>Video\OpenGL\GLIM</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\GFXState.h">
       <Filter>Video\Headers</Filter>
     </ClInclude>
@@ -228,6 +213,21 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Platform\Platform\Headers\PlatformDefinesUnix.h">
       <Filter>Platform\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\GLIM\Declarations.h">
+      <Filter>Video\OpenGL\GLIM\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\GLIM\glim.h">
+      <Filter>Video\OpenGL\GLIM\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\GLIM\glimBatch.h">
+      <Filter>Video\OpenGL\GLIM\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\GLIM\glimBatchData.h">
+      <Filter>Video\OpenGL\GLIM\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\GLIM\glimInterface.h">
+      <Filter>Video\OpenGL\GLIM\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -360,21 +360,6 @@
     <ClCompile Include="..\..\Source Code\Platform\Video\Shaders\ShaderProgram.cpp">
       <Filter>Video\Shaders</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\GLIM\glimBatch.cpp">
-      <Filter>Video\OpenGL\GLIM</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\GLIM\glimBatchAttributes.cpp">
-      <Filter>Video\OpenGL\GLIM</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\GLIM\glimBatchData.cpp">
-      <Filter>Video\OpenGL\GLIM</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\GLIM\glimD3D11.cpp">
-      <Filter>Video\OpenGL\GLIM</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\GLIM\Stuff.cpp">
-      <Filter>Video\OpenGL\GLIM</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Platform\Video\GFXState.cpp">
       <Filter>Video</Filter>
     </ClCompile>
@@ -410,6 +395,21 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\SDLWindowWrapper.cpp">
       <Filter>Video\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\GLIM\glimBatch.cpp">
+      <Filter>Video\OpenGL\GLIM</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\GLIM\glimBatchAttributes.cpp">
+      <Filter>Video\OpenGL\GLIM</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\GLIM\glimBatchData.cpp">
+      <Filter>Video\OpenGL\GLIM</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\GLIM\glimD3D11.cpp">
+      <Filter>Video\OpenGL\GLIM</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\GLIM\Stuff.cpp">
+      <Filter>Video\OpenGL\GLIM</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -643,6 +643,9 @@
     </Filter>
     <Filter Include="Platform\Headers">
       <UniqueIdentifier>{5b4d06b0-2fe8-43de-831b-24831692845d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Video\OpenGL\GLIM\Headers">
+      <UniqueIdentifier>{b9e334c3-13a5-4fce-a825-6abd3bab77c9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

@@ -36,11 +36,14 @@ namespace {
 };
 
 ImageData::ImageData()
-   : _flip(false),
+   :_compressed(false),
+    _flip(false),
     _alpha(false),
     _bpp(0),
-    _compressed(false)
+    _imageSize(0)
+
 {
+    _format = GFXImageFormat::COUNT;
     _dimensions.set(0, 0);
 }
 

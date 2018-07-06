@@ -412,10 +412,10 @@ void operator delete(void* p);
 void* operator new[](size_t size);
 void operator delete[](void* p);
 
-void* operator new(size_t size, char* zFile, Divide::I32 nLine);
-void operator delete(void* ptr, char* zFile, Divide::I32 nLine);
-void* operator new[](size_t size, char* zFile, Divide::I32 nLine);
-void operator delete[](void* ptr, char* zFile, Divide::I32 nLine);
+void* operator new(size_t size, const char* zFile, Divide::I32 nLine);
+void operator delete(void* ptr, const char* zFile, Divide::I32 nLine);
+void* operator new[](size_t size, const char* zFile, Divide::I32 nLine);
+void operator delete[](void* ptr, const char* zFile, Divide::I32 nLine);
 
 #define MemoryManager_NEW new (__FILE__, __LINE__)
 #endif

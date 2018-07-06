@@ -1,7 +1,7 @@
 #include "Headers/tcp_session_impl.h"
-#include "Headers/Server.h"
 
-#include "Utility/Headers/Patch.h"
+#include "Server/Headers/Server.h"
+#include "Server/Utility/Headers/Patch.h"
 
 #include "Scenes/NetworkScene/Network/Headers/OPCodesImpl.h"
 

@@ -77,24 +77,24 @@ void operator delete[](void* ptr) {
     free(ptr);
 }
 
-void* operator new(size_t size, char* zFile, Divide::I32 nLine) {
+void* operator new(size_t size, const char* zFile, Divide::I32 nLine) {
     void* ptr = malloc(size);
     Divide::MemoryManager::log_new(ptr, size, zFile, nLine);
     return ptr;
 }
 
-void operator delete(void* ptr, char* zFile, Divide::I32 nLine) {
+void operator delete(void* ptr, const char* zFile, Divide::I32 nLine) {
     Divide::MemoryManager::log_delete(ptr);
     free(ptr);
 }
 
-void* operator new[](size_t size, char* zFile, Divide::I32 nLine) {
+void* operator new[](size_t size, const char* zFile, Divide::I32 nLine) {
     void* ptr = malloc(size);
     Divide::MemoryManager::log_new(ptr, size, zFile, nLine);
     return ptr;
 }
 
-void operator delete[](void* ptr, char* zFile, Divide::I32 nLine) {
+void operator delete[](void* ptr, const char* zFile, Divide::I32 nLine) {
     Divide::MemoryManager::log_delete(ptr);
     free(ptr);
 }

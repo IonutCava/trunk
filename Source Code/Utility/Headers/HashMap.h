@@ -36,10 +36,20 @@
 
 #if defined(HASH_MAP_IMP) && HASH_MAP_IMP == 0
 #include <boost/Unordered_Map.hpp>
+#elif defined(HASH_MAP_IMP) && HASH_MAP_IMP == 1
+#include <EASTL/hash_map.h>
+#else  // defined(HASH_MAP_IMP) && HASH_MAP_IMP == 2
+#include <unordered_map>
+#endif
+
+template <typename Key>
+using HashType = typename std::conditional<std::is_enum<Key>::value, std::hash<typename std::underlying_type<Key>::type>, std::hash<Key>>::type;
+
+#if defined(HASH_MAP_IMP) && HASH_MAP_IMP == 0
 
 namespace hashAlg = boost;
 
-template <typename K, typename V, typename HashFun = boost::hash<K> >
+template <typename K, typename V, typename HashFun = HashType<K> >
 using hashMapImpl = boost::unordered_map<K, V, HashFun>;
 
 namespace boost {
@@ -53,27 +63,27 @@ struct hash<stringImpl> {
 };
 #endif
 
-template <typename K, typename V, typename HashFun = boost::hash<K> >
+template <typename K, typename V, typename HashFun = HashType<K> >
 using hashPairReturn =
     std::pair<typename hashMapImpl<K, V, HashFun>::iterator, bool>;
 
 template <typename T1, typename T2>
 using pair = std::pair<T1, T2>;
 
-template <typename K, typename V, typename HashFun = hashAlg::hash<K> >
+template <typename K, typename V, typename HashFun = HashType<K> >
 inline hashPairReturn<K, V, HashFun> emplace(hashMapImpl<K, V, HashFun>& map,
                                              K key, const V& val) {
     return map.emplace(key, val);
 }
 
-template <typename K, typename V, typename HashFun = hashAlg::hash<K> >
+template <typename K, typename V, typename HashFun = HashType<K> >
 inline hashPairReturn<K, V, HashFun> insert(
     hashMapImpl<K, V, HashFun>& map,
     const typename hashMapImpl<K, V, HashFun>::value_type& valuePair) {
     return map.insert(valuePair);
 }
 
-template <typename K, typename V, typename HashFun = hashAlg::hash<K> >
+template <typename K, typename V, typename HashFun = HashType<K> >
 inline void fastClear(hashMapImpl<K, V, HashFun>& map) {
     map.clear();
 }
@@ -94,27 +104,26 @@ inline std::pair<K, V> makePairCpy(const K& key, V val) {
 
 #elif defined(HASH_MAP_IMP) && HASH_MAP_IMP == 1
 
-#include <EASTL/hash_map.h>
-
 namespace hashAlg = eastl;
 
-template <typename K, typename V, typename HashFun = eastl::hash<K> >
+template <typename K, typename V, typename HashFun = HashType<K> >
 using hashMapImpl = eastl::hash_map<K, V, HashFun>;
 
-namespace eastl {
 
+#if defined(STRING_IMP) && STRING_IMP == 0
 template <>
 struct hash<std::string> {
     size_t operator()(const std::string& x) const {
         return std::hash<std::string>()(x);
     }
 };
+#endif
 
-template <typename K, typename V, typename HashFun = eastl::hash<K> >
+template <typename K, typename V, typename HashFun = HashType<K> >
 using hashPairReturn =
     eastl::pair<typename hashMapImpl<K, V, HashFun>::iterator, bool>;
 
-template <typename K, typename V, typename HashFun = eastl::hash<K> >
+template <typename K, typename V, typename HashFun = HashType<K> >
 inline hashPairReturn<K, V, HashFun> emplace(hashMapImpl<K, V, HashFun>& map,
                                              K key, const V& val) {
     hashMapImpl<K, V, HashFun>::value_type value(key);
@@ -122,14 +131,14 @@ inline hashPairReturn<K, V, HashFun> emplace(hashMapImpl<K, V, HashFun>& map,
     return map.insert(value);
 }
 
-template <typename K, typename V, typename HashFun = hashAlg::hash<K> >
+template <typename K, typename V, typename HashFun = HashType<K> >
 inline hashPairReturn<K, V, HashFun> insert(
     hashMapImpl<K, V, HashFun>& map,
     const typename hashMapImpl<K, V, HashFun>::value_type& valuePair) {
     return map.insert(valuePair);
 }
 
-template <typename K, typename V, typename HashFun = hashAlg::hash<K> >
+template <typename K, typename V, typename HashFun = HashType<K> >
 inline void fastClear(hashMapImpl<K, V, HashFun>& map) {
     // map.reset(); // leaks memory -Ionut
     map.clear();
@@ -150,11 +159,10 @@ inline eastl::pair<K, V> makePairCpy(const K& key, V val) {
 };
 
 #else  // defined(HASH_MAP_IMP) && HASH_MAP_IMP == 2
-#include <unordered_map>
 
 namespace hashAlg = std;
 
-template <typename K, typename V, typename HashFun = std::hash<K> >
+template <typename K, typename V, typename HashFun = HashType<K> >
 using hashMapImpl = std::unordered_map<K, V, HashFun>;
 
 namespace std {
@@ -168,24 +176,24 @@ struct hash<eastl::string> {
 };
 #endif
 
-template <typename K, typename V, typename HashFun = std::hash<K> >
+template <typename K, typename V, typename HashFun = HashType<K> >
 using hashPairReturn =
     std::pair<typename hashMapImpl<K, V, HashFun>::iterator, bool>;
 
-template <typename K, typename V, typename HashFun = hashAlg::hash<K> >
+template <typename K, typename V, typename HashFun = HashType<K> >
 inline hashPairReturn<K, V, HashFun> emplace(hashMapImpl<K, V, HashFun>& map,
                                              K key, const V& val) {
     return map.emplace(key, val);
 }
 
-template <typename K, typename V, typename HashFun = hashAlg::hash<K> >
+template <typename K, typename V, typename HashFun = HashType<K> >
 inline hashPairReturn<K, V, HashFun> insert(
     hashMapImpl<K, V, HashFun>& map,
     const typename hashMapImpl<K, V, HashFun>::value_type& valuePair) {
     return map.insert(valuePair);
 }
 
-template <typename K, typename V, typename HashFun = hashAlg::hash<K> >
+template <typename K, typename V, typename HashFun = HashType<K> >
 inline void fastClear(hashMapImpl<K, V, HashFun>& map) {
     map.clear();
 }

@@ -77,6 +77,11 @@ typedef timeval TimeValue;
 }; //namespace Divide
 
 
+template<typename T>
+inline bool isfinite(T val) {
+	return std::isfinite(val);
+}
+
 // HACK FOR MISSING C++1y features:
 namespace std {
 // TEMPLATE FUNCTIONS cbegin AND cend

@@ -1,7 +1,7 @@
 #ifndef _SESSION_IMPL_H_
 #define _SESSION_IMPL_H_
 
-#include <DivideNetworking/tcp_session_tpl.h>
+#include "Networking/Headers/tcp_session_tpl.h"
 
 using boost::asio::deadline_timer;
 using boost::asio::ip::tcp;

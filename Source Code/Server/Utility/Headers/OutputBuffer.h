@@ -1,7 +1,7 @@
 #ifndef _OUTPUT_BUFFER_H_
 #define _OUTPUT_BUFFER_H_
 
-#include "Headers/resource.h"
+#include "Server/Headers/resource.h"
 
 //------------------------------------------------------------------------------
 namespace Divide {
@@ -29,7 +29,7 @@ class basic_teebuf : public std::basic_streambuf<charT, traits> {
         setp(m_buffer, m_buffer + BUFFER_SIZE);
     }  // constructor
 
-    ~basic_teebuf() {
+    virtual ~basic_teebuf() {
         std::basic_streambuf<charT, traits>::pubsync();
         delete[] m_buffer;
     }  // destructor

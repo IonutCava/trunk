@@ -40,12 +40,12 @@ class SceneInput : public Input::InputAggregatorInterface {
     enum class InputState : U32 { PRESSED = 0, RELEASED = 1, COUNT };
 
     typedef hashAlg::pair<DELEGATE_CBK<>, DELEGATE_CBK<>> PressReleaseActions;
-    typedef hashMapImpl<Input::KeyCode, PressReleaseActions> KeyMap;
-    typedef hashMapImpl<Input::MouseButton, PressReleaseActions> MouseMap;
+    typedef hashMapImpl<Input::KeyCode, PressReleaseActions, std::hash<I32>> KeyMap;
+    typedef hashMapImpl<Input::MouseButton, PressReleaseActions, std::hash<I32>> MouseMap;
     typedef hashMapImpl<Input::JoystickButton, PressReleaseActions> JoystickMap;
 
-    typedef hashMapImpl<Input::KeyCode, InputState> KeyState;
-    typedef hashMapImpl<Input::MouseButton, InputState> MouseBtnState;
+    typedef hashMapImpl<Input::KeyCode, InputState, std::hash<I32>> KeyState;
+    typedef hashMapImpl<Input::MouseButton, InputState, std::hash<I32>> MouseBtnState;
     typedef hashMapImpl<Input::JoystickButton, InputState> JoystickBtnState;
 
     explicit SceneInput(Scene &parentScene);

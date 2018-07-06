@@ -42,7 +42,7 @@ class SceneNode;
 /// This class manages all of the RenderBins and renders them in the correct
 /// order
 DEFINE_SINGLETON(RenderQueue)
-    typedef hashMapImpl<RenderBin::RenderBinType, RenderBin* >
+    typedef hashMapImpl<RenderBin::RenderBinType, RenderBin*>
         RenderBinMap;
     typedef hashMapImpl<U16, RenderBin::RenderBinType> RenderBinIDType;
 

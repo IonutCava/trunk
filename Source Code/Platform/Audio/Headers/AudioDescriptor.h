@@ -41,15 +41,20 @@ class AudioDescriptor : public Resource {
    public:
     AudioDescriptor(const stringImpl& audioFile)
         : Resource(audioFile),
-          _audioFile(audioFile),
+          _isLooping(false),
           _is3D(false),
-          _volume(100),
           _frequency(44.2f),
           _bitDepth(16),
           _channelID(-1),
-          _isLooping(false) {}
+          _volume(100),
+          _audioFile(audioFile)
+   {
+   }
 
-    ~AudioDescriptor() {}
+    ~AudioDescriptor()
+    {
+
+    }
 
     bool unload() { return true; }
     inline const stringImpl& getAudioFile() { return _audioFile; }

@@ -45,7 +45,14 @@ class Variable {
     D32 _dValue;
 
    public:
-    Variable(D32 dInitValue) : _dInitValue(dInitValue) { reset(); }
+    Variable(D32 dInitValue) : _dInitValue(dInitValue)
+    {
+        reset();
+    }
+
+    virtual ~Variable()
+    {
+    }
 
     D32 getValue() const { return _dValue; }
 

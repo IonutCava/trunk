@@ -7,6 +7,8 @@ namespace Divide {
 namespace Locale {
 
 static CSimpleIni g_languageFile;
+/// Is everything loaded and ready for use?
+static bool g_initialized = false;
 
 bool init(const stringImpl& newLanguage) {
     changeLanguage(newLanguage);

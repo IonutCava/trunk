@@ -50,12 +50,14 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface {
               _divisor(0),
               _parentBuffer(0),
               _componentsPerElement(0),
+              _elementCountOffset(0),
+              _wasSet(false),
+              _dirty(false),
               _normalized(false),
               _stride(0),
-              _type(GFXDataFormat::UNSIGNED_INT),
-              _wasSet(false),
-              _elementCountOffset(0),
-              _dirty(false) {}
+              _type(GFXDataFormat::UNSIGNED_INT)
+        {
+        }
 
         void set(U32 bufferIndex, U32 instanceDivisor, U32 componentsPerElement,
                  bool normalized, size_t stride, U32 elementCountOffset,

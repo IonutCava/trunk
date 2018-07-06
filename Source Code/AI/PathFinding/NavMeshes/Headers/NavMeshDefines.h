@@ -37,10 +37,10 @@
 #ifndef RECAST_UTIL_PROPERTIES
 #define RECAST_UTIL_PROPERTIES
 #endif
-#include <ReCast/Include/Recast.h>
-#include <Detour/Include/DetourNavMesh.h>
-#include <Detour/Include/DetourNavMeshQuery.h>
-#include <Detour/Include/DetourNavMeshBuilder.h>
+#include "ReCast/Include/Recast.h"
+#include "Detour/Include/DetourNavMesh.h"
+#include "Detour/Include/DetourNavMeshQuery.h"
+#include "Detour/Include/DetourNavMeshBuilder.h"
 
 #define MAX_PATHSLOT 128  // how many paths we can store
 #define MAX_PATHPOLY 256  // max number of polygons in a path

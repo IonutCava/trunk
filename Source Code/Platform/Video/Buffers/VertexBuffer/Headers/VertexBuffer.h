@@ -59,16 +59,19 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
    public:
     VertexBuffer()
         : VertexDataInterface(),
-          _largeIndices(false),
+          _LODcount(0),
           _format(GFXDataFormat::UNSIGNED_SHORT),
-          _primitiveRestartEnabled(false),
           _indexDelimiter(0),
-          _currentPartitionIndex(0) {
-        _LODcount = 0;
+          _primitiveRestartEnabled(false),
+          _created(false),
+          _currentPartitionIndex(0),
+          _largeIndices(false)
+    {
         Reset();
     }
 
-    virtual ~VertexBuffer() {
+    virtual ~VertexBuffer()
+    {
         _LODcount = 1;
         Reset();
     }
@@ -173,34 +176,29 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
                                   : _hardwareIndicesS[index];
     }
 
+    //template<typename T> struct fake_dependency: public std::false_type {};
     template<typename T>
-    inline const vectorImpl<T>& getIndices() const {
-        static_assert(false, "VertexBuffer::getIndices error: Need valid index data type!");
+    const vectorImpl<T>& getIndices() const;/* {
+        static_assert(fake_dependency::value,
+                "VertexBuffer::getIndices error: Need valid index data type!");
+    }*/
+
+    inline void addIndex(U32 index) {
+    	assert(usesLargeIndices());
+    	_hardwareIndicesL.push_back(index);
     }
 
-    template<>
-    inline const vectorImpl<U32>& getIndices() const {
-        return _hardwareIndicesL;
-    }
-
-    template<>
-    inline const vectorImpl<U16>& getIndices() const {
-        return _hardwareIndicesS;
-    }
-
-    template<typename T>
-    inline void addIndex(T index) {
-        usesLargeIndices()
-            ? _hardwareIndicesL.push_back(static_cast<U32>(index))
-            : _hardwareIndicesS.push_back(static_cast<U16>(index));
+    inline void addIndex(U16 index) {
+    	assert(!usesLargeIndices());
+    	_hardwareIndicesS.push_back(index);
     }
 
     inline void addRestartIndex() {
         _primitiveRestartEnabled = true;
         if (usesLargeIndices()) {
-        	addIndex<U32>(Config::PRIMITIVE_RESTART_INDEX_L);
+        	addIndex(Config::PRIMITIVE_RESTART_INDEX_L);
         } else {
-            addIndex<U16>(Config::PRIMITIVE_RESTART_INDEX_S);
+            addIndex(Config::PRIMITIVE_RESTART_INDEX_S);
         }
     }
 
@@ -390,5 +388,14 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     bool _largeIndices;
 };
 
+template<>
+inline const vectorImpl<U32>& VertexBuffer::getIndices<U32>() const {
+    return _hardwareIndicesL;
+}
+
+template<>
+inline const vectorImpl<U16>& VertexBuffer::getIndices<U16>() const {
+    return _hardwareIndicesS;
+}
 };  // namespace Divide
 #endif

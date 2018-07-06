@@ -27,11 +27,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Source Code\Libs\src\GLIM\Declarations.h" />
-    <ClInclude Include="..\..\Source Code\Libs\src\GLIM\glim.h" />
-    <ClInclude Include="..\..\Source Code\Libs\src\GLIM\glimBatch.h" />
-    <ClInclude Include="..\..\Source Code\Libs\src\GLIM\glimBatchData.h" />
-    <ClInclude Include="..\..\Source Code\Libs\src\GLIM\glimInterface.h" />
+    <ClInclude Include="..\..\Source Code\Libs\GLIM\Declarations.h" />
+    <ClInclude Include="..\..\Source Code\Libs\GLIM\glim.h" />
+    <ClInclude Include="..\..\Source Code\Libs\GLIM\glimBatch.h" />
+    <ClInclude Include="..\..\Source Code\Libs\GLIM\glimBatchData.h" />
+    <ClInclude Include="..\..\Source Code\Libs\GLIM\glimInterface.h" />
     <ClInclude Include="..\..\Source Code\Platform\Audio\fmod\Headers\FmodWrapper.h" />
     <ClInclude Include="..\..\Source Code\Platform\Audio\Headers\AudioAPIWrapper.h" />
     <ClInclude Include="..\..\Source Code\Platform\Audio\Headers\AudioDescriptor.h" />
@@ -105,11 +105,11 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\Textures\Headers\TextureDescriptor.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Source Code\Libs\src\GLIM\glimBatch.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\GLIM\glimBatchAttributes.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\GLIM\glimBatchData.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\GLIM\glimD3D11.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\GLIM\Stuff.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\GLIM\glimBatch.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\GLIM\glimBatchAttributes.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\GLIM\glimBatchData.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\GLIM\glimD3D11.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\GLIM\Stuff.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Audio\openAl\ALWrapper.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Audio\sdl_mixer\SDLWrapper.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Audio\SFXDevice.cpp" />

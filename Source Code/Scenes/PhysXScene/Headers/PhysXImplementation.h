@@ -1,4 +1,4 @@
-/*“Copyright 2009-2013 DIVIDE-Studio”*/
+/*ï¿½Copyright 2009-2013 DIVIDE-Studioï¿½*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -18,8 +18,8 @@
 #ifndef _PHYSX_PROCESSOR_H_
 #define _PHYSX_PROCESSPR_H_
 
-#include "Dynamics/Physics/Headers/PXDevice.h"
-#include "Dynamics/Physics/PhysX/Headers/PhysicsSceneInterface.h"
+#include "Physics/Headers/PXDevice.h"
+#include "Physics/PhysX/Headers/PhysXSceneInterface.h"
 
 class PhysXImplementation : public PhysXSceneInterface {
 public:

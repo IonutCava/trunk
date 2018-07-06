@@ -46,8 +46,6 @@ namespace Locale {
 static hashMapImpl<stringImpl, stringImpl> g_languageTable;
 /// Default language can be set at compile time
 static stringImpl g_localeFile = DEFAULT_LANG;
-/// Is everything loaded and ready for use?
-static bool g_initialized = false;
 /// Reset everything and load the specified language file.
 bool init(const stringImpl& newLanguage = DEFAULT_LANG);
 /// clear the language table

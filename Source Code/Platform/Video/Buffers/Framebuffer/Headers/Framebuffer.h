@@ -55,9 +55,9 @@ class NOINITVTABLE Framebuffer : private NonCopyable, public GUIDWrapper {
 
         FramebufferTarget()
             : _drawMask(BufferMask::BOTH),
+              _numColorChannels(1),
               _clearBuffersOnBind(true),
-              _changeViewport(true),
-              _numColorChannels(1)
+              _changeViewport(true)
         {
         }
     };

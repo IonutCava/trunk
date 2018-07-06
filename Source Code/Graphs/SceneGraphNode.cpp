@@ -114,6 +114,10 @@ void SceneGraphNode::getBBoxes(vectorImpl<BoundingBox>& boxes) const {
     boxes.push_back(_boundingBox);
 }
 
+void SceneGraphNode::useDefaultTransform(const bool state) {
+    getComponent<PhysicsComponent>()->useDefaultTransform(!state);
+}
+
 /// Change current SceneGraphNode's parent
 void SceneGraphNode::setParent(SceneGraphNode_ptr parent) {
     assert(parent->getGUID() != getGUID());

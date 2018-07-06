@@ -11,6 +11,7 @@ void APIENTRY
 DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
               GLsizei length, const GLchar* message, const void* userParam) {
     // Translate message source
+    std::isfinite(1);
     const char* gl_source = "Unknown Source";
     if (source == GL_DEBUG_SOURCE_API) {
         gl_source = "OpenGL";

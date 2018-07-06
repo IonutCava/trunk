@@ -2,7 +2,7 @@
 #define _DIVIDE_BOOST_ASIO_IMPL_H_
 
 #include "OPCodesImpl.h"
-#include <DivideNetworking\ASIO.h>
+#include "Networking/Headers/ASIO.h"
 
 namespace Divide {
 

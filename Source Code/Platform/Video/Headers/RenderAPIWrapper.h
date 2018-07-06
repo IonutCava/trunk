@@ -100,6 +100,7 @@ struct GenericDrawCommand {
     U8 _queryID;
     U8 _lodIndex;
     U16 _drawCount;
+    bool _locked;
     bool _drawToBuffer;
     bool _renderWireframe;
     bool _renderGeometry;
@@ -108,8 +109,6 @@ struct GenericDrawCommand {
     IndirectDrawCommand _cmd;
     ShaderProgram* _shaderProgram;
     VertexDataInterface* _sourceBuffer;
-
-    bool _locked;
 
    public:
     inline void lock() { _locked = true; }
@@ -207,15 +206,15 @@ struct GenericDrawCommand {
 
     GenericDrawCommand(const PrimitiveType& type, U32 firstIndex, U32 count,
                        U32 primCount = 1)
-        : _type(type),
+        : _queryID(0),
           _lodIndex(0),
-          _stateHash(0),
-          _queryID(0),
           _drawCount(1),
           _locked(false),
           _drawToBuffer(false),
           _renderWireframe(false),
           _renderGeometry(true),
+          _stateHash(0),
+    	  _type(type),
           _shaderProgram(nullptr),
           _sourceBuffer(nullptr)
     {
@@ -258,7 +257,8 @@ class TextureData {
     public:
     TextureData()
         : _textureType(TextureType::TEXTURE_2D),
-          _textureHandle(0)
+          _textureHandle(0),
+          _samplerHash(0)
     {
     }
 

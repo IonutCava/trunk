@@ -14,7 +14,7 @@
 #include <deque>
 #include <set>
 
-#include "Utility/Headers/DataTypes.h"
+#include "Platform/Platform/Headers/PlatformDefines.h"
 
 void* operator new[](size_t size, size_t alignment, size_t alignmentOffset,
                      const char* pName, int flags, unsigned debugFlags,

@@ -50,10 +50,14 @@ class SamplerDescriptor : public PropertyDescriptor {
    public:
     /// The constructer specifies the type so it can be used later for
     /// downcasting if needed
-    SamplerDescriptor() : PropertyDescriptor(DescriptorType::DESCRIPTOR_SAMPLER) {
+    SamplerDescriptor() : PropertyDescriptor(DescriptorType::DESCRIPTOR_SAMPLER)
+    {
         setDefaultValues();
     }
+    virtual ~SamplerDescriptor()
+    {
 
+    }
     /// All of these are default values that should be safe for any kind of
     /// texture usage
     inline void setDefaultValues() {
@@ -122,6 +126,8 @@ class SamplerDescriptor : public PropertyDescriptor {
             case TextureFilter::NEAREST_MIPMAP_NEAREST:
                 setMagFilter(TextureFilter::NEAREST);
                 break;
+            default:
+                break;
         }
     }
 
@@ -149,6 +155,8 @@ class SamplerDescriptor : public PropertyDescriptor {
                 case TextureFilter::NEAREST:
                     _minFilter = TextureFilter::NEAREST_MIPMAP_NEAREST;
                     break;
+                default:
+                    break;
             };
         } else {
             switch (_minFilter) {
@@ -160,6 +168,8 @@ class SamplerDescriptor : public PropertyDescriptor {
                 case TextureFilter::NEAREST_MIPMAP_NEAREST:
                     _minFilter = TextureFilter::NEAREST;
                     break;
+                default:
+                    break;
             };
         }
     }
@@ -168,14 +178,14 @@ class SamplerDescriptor : public PropertyDescriptor {
 
     inline size_t getHash() const {
         size_t hash = 0;
-        Util::Hash_combine(hash, _cmpFunc);
+        Util::Hash_combine(hash, to_uint(_cmpFunc));
         Util::Hash_combine(hash, _useRefCompare);
         Util::Hash_combine(hash, _srgb);
-        Util::Hash_combine(hash, _wrapU);
-        Util::Hash_combine(hash, _wrapV);
-        Util::Hash_combine(hash, _wrapW);
-        Util::Hash_combine(hash, _minFilter);
-        Util::Hash_combine(hash, _magFilter);
+        Util::Hash_combine(hash, to_uint(_wrapU));
+        Util::Hash_combine(hash, to_uint(_wrapV));
+        Util::Hash_combine(hash, to_uint(_wrapW));
+        Util::Hash_combine(hash, to_uint(_minFilter));
+        Util::Hash_combine(hash, to_uint(_magFilter));
         Util::Hash_combine(hash, _minLOD);
         Util::Hash_combine(hash, _maxLOD);
         Util::Hash_combine(hash, _biasLOD);
@@ -255,12 +265,20 @@ class TextureDescriptor : public PropertyDescriptor {
     TextureDescriptor(TextureType type, GFXImageFormat internalFormat,
                       GFXDataFormat dataType)
         : PropertyDescriptor(DescriptorType::DESCRIPTOR_TEXTURE),
-          _type(type),
+          _layerCount(1),
+          _packAlignment(1),
+          _unpackAlignment(1),
+          _baseFormat(internalFormat),
           _internalFormat(internalFormat),
-          _dataType(dataType)
+          _dataType(dataType),
+          _type(type)
     {
         _baseFormat = baseFromInternalFormat(internalFormat);
         setDefaultValues();
+    }
+
+    virtual ~TextureDescriptor()
+    {
     }
 
     TextureDescriptor* clone() const {
@@ -343,6 +361,9 @@ class TextureDescriptor : public PropertyDescriptor {
             case GFXImageFormat::DEPTH_COMPONENT32:
             case GFXImageFormat::DEPTH_COMPONENT32F:
                 return GFXImageFormat::DEPTH_COMPONENT;
+
+            default:
+            	return internalFormat;
         };
 
         return internalFormat;

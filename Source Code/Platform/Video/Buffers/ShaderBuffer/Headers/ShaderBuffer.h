@@ -43,14 +43,16 @@ class NOINITVTABLE ShaderBuffer : private NonCopyable, public GUIDWrapper {
     ShaderBuffer(const stringImpl& bufferName, bool unbound,
                  bool persistentMapped)
         : GUIDWrapper(),
-          _bufferName(bufferName),
-          _unbound(unbound),
-          _primitiveSize(0),
-          _primitiveCount(0),
-          _sizeFactor(0),
           _bufferSize(0),
+          _primitiveSize(0),
+          _sizeFactor(0),
+          _primitiveCount(0),
+          _unbound(unbound),
           _persistentMapped(persistentMapped &&
-                            !Config::Profile::DISABLE_PERSISTENT_BUFFER) {}
+                            !Config::Profile::DISABLE_PERSISTENT_BUFFER),
+          _bufferName(bufferName)
+    {
+    }
 
     virtual ~ShaderBuffer()
     {

@@ -32,7 +32,7 @@
 #ifndef _OPCODES_IMPL_H_
 #define _OPCODES_IMPL_H_
 
-#include <DivideNetworking/OPCodesTpl.h>
+#include "Networking/Headers/OPCodesTpl.h"
 
 namespace Divide {
 

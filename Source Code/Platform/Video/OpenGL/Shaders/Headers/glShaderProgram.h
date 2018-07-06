@@ -150,12 +150,15 @@ class glShaderProgram : public ShaderProgram {
     void threadedLoad(const stringImpl& name);
     /// Cache uniform/attribute locations for shader programs
     GLint cachedLocation(const stringImpl& name);
+
+    //template<typename T> struct fake_dependency: public std::false_type {};
     template <typename T>
-    inline bool cachedValueUpdate(I32 location, const T& value) {
+    bool cachedValueUpdate(I32 location, const T& value);/* {
         static_assert(
-            false,
+                fake_dependency::value,
             "glShaderProgram::cachedValue error: unsupported data type!");
-    }
+        return false;
+    }*/
     /// Basic OpenGL shader program validation (both in debug and in release)
     void validateInternal();
     /// Retrieve the program's validation log if we need it

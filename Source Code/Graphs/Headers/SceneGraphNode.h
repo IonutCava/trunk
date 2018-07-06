@@ -185,9 +185,7 @@ class SceneGraphNode : public GUIDWrapper,
     void getBBoxes(vectorImpl<BoundingBox>& boxes) const;
     /*Bounding Box Management*/
 
-    inline void useDefaultTransform(const bool state) {
-        getComponent<PhysicsComponent>()->useDefaultTransform(!state);
-    }
+    void useDefaultTransform(const bool state);
 
     /*Node State*/
     void setActive(const bool state);
