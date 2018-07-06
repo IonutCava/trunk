@@ -110,7 +110,7 @@ namespace std {
         static int compare(const char* s1,
             const char* s2,
             size_t n) {
-            return memicmp(s1, s2, n);
+            return _memicmp(s1, s2, n);
             // if available on your compiler,
             //  otherwise you can roll your own
         }

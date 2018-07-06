@@ -43,11 +43,10 @@ TaskHandle parallel_for(const PlatformContext& context,
                         U32 count,
                         U32 partitionSize,
                         Task::TaskPriority priority,
-                        U32 taskFlags,
-                        bool waitForResult)
+                        U32 taskFlags)
 {
     TaskPool& pool = context.app().kernel().taskPool();
-    return parallel_for(pool, cbk, count, partitionSize, priority, taskFlags, waitForResult);
+    return parallel_for(pool, cbk, count, partitionSize, priority, taskFlags);
 }
 
 }; //namespace Divide

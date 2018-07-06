@@ -68,8 +68,7 @@ TaskHandle parallel_for(const PlatformContext& context,
                         U32 count,
                         U32 partitionSize,
                         Task::TaskPriority priority = Task::TaskPriority::HIGH,
-                        U32 taskFlags = 0,
-                        bool waitForResult = true);
+                        U32 taskFlags = 0);
 
 void WaitForAllTasks(const PlatformContext& context, bool yeld, bool flushCallbacks, bool foceClear);
 

@@ -107,8 +107,7 @@ TaskHandle parallel_for(TaskPool& pool,
                         U32 count,
                         U32 partitionSize,
                         Task::TaskPriority priority = Task::TaskPriority::HIGH,
-                        U32 taskFlags = 0,
-                        bool waitForResult = true);
+                        U32 taskFlags = 0);
 
 void WaitForAllTasks(TaskPool& pool, bool yeld, bool flushCallbacks, bool foceClear);
 

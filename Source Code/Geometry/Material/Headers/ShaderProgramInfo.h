@@ -50,6 +50,7 @@ public:
     explicit ShaderProgramInfo();
     ShaderProgramInfo(const ShaderProgramInfo& other);
     ShaderProgramInfo& operator=(const ShaderProgramInfo& other);
+
     const ShaderProgram_ptr& getProgram() const;
 
     bool update();
@@ -59,7 +60,6 @@ public:
 
     bool _customShader;
     ShaderProgram_ptr _shaderRef;
-    stringImpl _shader;
     vectorImpl<stringImpl> _shaderDefines;
 
 private:

@@ -211,8 +211,7 @@ TaskHandle parallel_for(TaskPool& pool,
                         U32 count,
                         U32 partitionSize,
                         Task::TaskPriority priority,
-                        U32 taskFlags,
-                        bool waitForResult)
+                        U32 taskFlags)
 {
     TaskHandle updateTask = CreateTask(pool, DELEGATE_CBK<void, const Task&>());
     if (count > 0) {
@@ -238,9 +237,7 @@ TaskHandle parallel_for(TaskPool& pool,
     }
 
     updateTask.startTask(priority, taskFlags);
-    if (waitForResult) {
-        updateTask.wait();
-    }
+    updateTask.wait();
 
     return updateTask;
 }

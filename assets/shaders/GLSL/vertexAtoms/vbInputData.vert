@@ -16,8 +16,8 @@ vec3 UNPACK_FLOAT(in float value) {
     return (fract(vec3(1.0, 256.0, 65536.0) * value)* 2.0) - 1.0;
 }
 
-void computeData(){
-    VAR.dvd_instanceID  = gl_BaseInstanceARB;
+void computeData() {
+    VAR.dvd_instanceID = gl_BaseInstanceARB;
     VAR.dvd_drawID = gl_DrawIDARB;
     dvd_Vertex  = vec4(inVertexData, 1.0);
     //Occlusion culling visibility debug code

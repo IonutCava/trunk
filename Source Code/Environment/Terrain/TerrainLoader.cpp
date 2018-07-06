@@ -204,12 +204,13 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
     Attorney::TerrainLoader::altitudeRange(*terrain).set(altitudeRange);
 
     F32 underwaterDiffuseScale = terrainDescriptor->getVariablef("underwaterDiffuseScale");
-
-    terrainMaterial->setDiffuse(
-        vec4<F32>(DefaultColours::WHITE().rgb() / 2, 1.0f));
+    terrainMaterial->setDiffuse(vec4<F32>(DefaultColours::WHITE().rgb() / 2, 1.0f));
     terrainMaterial->setSpecular(vec4<F32>(0.1f, 0.1f, 0.1f, 1.0f));
     terrainMaterial->setShininess(20.0f);
     terrainMaterial->setShadingMode(Material::ShadingMode::BLINN_PHONG);
+
+    //terrainMaterial->setShaderLoadThreaded(false);
+    //terrainMaterial->setShaderDefines("TOGGLE_WIREFRAME");
     terrainMaterial->setShaderDefines("COMPUTE_TBN");
     terrainMaterial->setShaderDefines("SKIP_TEXTURES");
     terrainMaterial->setShaderDefines("USE_SHADING_PHONG");
@@ -221,8 +222,8 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
     terrainMaterial->setShaderDefines("TERRAIN_HEIGHT_RANGE " + to_stringImpl(altitudeRange.y - altitudeRange.x));
     terrainMaterial->setShaderDefines("UNDERWATER_DIFFUSE_SCALE " + to_stringImpl(underwaterDiffuseScale));
     terrainMaterial->setShaderProgram("terrainTess." + name, true);
-    terrainMaterial->setShaderProgram("terrainTess.Shadow." + name, RenderStage::SHADOW, true);
     terrainMaterial->setShaderProgram("terrainTess.PrePass." + name, RenderPassType::DEPTH_PASS, true);
+    terrainMaterial->setShaderProgram("terrainTess.Shadow." + name, RenderStage::SHADOW, true);
 
     TextureDescriptor miscTexDescriptor(TextureType::TEXTURE_2D);
     miscTexDescriptor.setSampler(albedoSampler);
@@ -253,7 +254,6 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
     heightMapTexture.setFlag(true);
 
     terrainMaterial->setTexture(ShaderProgram::TextureUsage::OPACITY, CreateResource<Texture>(terrain->parentResourceCache(), heightMapTexture));
-    terrainMaterial->setShaderLoadThreaded(false);
 
     terrainMaterial->dumpToFile(false);
     terrain->setMaterialTpl(terrainMaterial);
@@ -465,14 +465,6 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
         terrainCache >> terrain->_physicsVerts;
     }
 
-    VertexBuffer* vb = terrain->getGeometryVB();
-    Attorney::TerrainTessellatorLoader::initTessellationPatch(vb);
-    vb->keepData(false);
-    vb->create(true);
-
-    initializeVegetation(terrain, terrainDescriptor);
-    Attorney::TerrainLoader::buildQuadtree(*terrain);
-
     F32 underwaterDiffuseScale = terrainDescriptor->getVariablef("underwaterDiffuseScale");
 
     ResourceDescriptor planeShaderDesc("terrainPlane.Colour");
@@ -491,11 +483,14 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
     plane->setCorner(Quad3D::CornerLocation::BOTTOM_LEFT, vec3<F32>(-farPlane * 1.5f, height, farPlane * 1.5f));
     plane->setCorner(Quad3D::CornerLocation::BOTTOM_RIGHT, vec3<F32>(farPlane * 1.5f, height, farPlane * 1.5f));
 
-    Attorney::TerrainLoader::plane(*terrain, plane, planeShader, planeDepthShader);
+    VertexBuffer* vb = terrain->getGeometryVB();
+    Attorney::TerrainTessellatorLoader::initTessellationPatch(vb);
+    vb->keepData(false);
+    vb->create(true);
 
-    ResourceDescriptor renderGeometry("TerrainRenderGeometry");
-    renderGeometry.setFlag(true);  // No default material
-    renderGeometry.setUserPtr((void*)(&terrainDimensions));
+    initializeVegetation(terrain, terrainDescriptor);
+    Attorney::TerrainLoader::buildQuadtree(*terrain);
+    Attorney::TerrainLoader::plane(*terrain, plane, planeShader, planeDepthShader);
 
     Console::printfn(Locale::get(_ID("TERRAIN_LOAD_END")), terrain->getName().c_str());
     return terrain->load(onLoadCallback);

@@ -85,6 +85,8 @@ CachedResource_ptr ResourceCache::find(size_t descriptorHash) {
 }
 
 void ResourceCache::remove(CachedResource* resource) {
+    WAIT_FOR_CONDITION(resource->getState() != ResourceState::RES_LOADING);
+
     size_t resourceHash = resource->getDescriptorHash();
     const stringImpl& name = resource->getName();
 

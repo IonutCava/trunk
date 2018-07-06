@@ -6,7 +6,7 @@ namespace Divide {
 
 ShaderProgramInfo::ShaderProgramInfo()
     : _customShader(false),
-      _shaderRef(ShaderProgram::defaultShader()),
+      _shaderRef(nullptr),
       _shaderCompStage(BuildStage::COUNT)
 {
 }
@@ -14,7 +14,6 @@ ShaderProgramInfo::ShaderProgramInfo()
 ShaderProgramInfo::ShaderProgramInfo(const ShaderProgramInfo& other)
   : _customShader(other._customShader),
     _shaderRef(other._shaderRef),
-    _shader(other._shader),
     _shaderDefines(other._shaderDefines)
 {
     _shaderCompStage.store(other._shaderCompStage);
@@ -23,7 +22,6 @@ ShaderProgramInfo::ShaderProgramInfo(const ShaderProgramInfo& other)
 ShaderProgramInfo& ShaderProgramInfo::operator=(const ShaderProgramInfo& other) {
     _customShader = other._customShader;
     _shaderRef = other._shaderRef;
-    _shader = other._shader;
     _shaderCompStage.store(other._shaderCompStage);
     _shaderDefines = other._shaderDefines;
     return *this;
@@ -31,7 +29,7 @@ ShaderProgramInfo& ShaderProgramInfo::operator=(const ShaderProgramInfo& other) 
 
 bool ShaderProgramInfo::update() {
     if (computeStage() == ShaderProgramInfo::BuildStage::COMPUTED) {
-        if (_shaderRef->getState() == ResourceState::RES_LOADED) {
+        if (_shaderRef != nullptr && _shaderRef->getState() == ResourceState::RES_LOADED) {
             computeStage(ShaderProgramInfo::BuildStage::READY);
             return true;
         }

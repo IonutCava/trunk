@@ -209,7 +209,6 @@ void Material::setShaderProgramInternal(const ShaderProgram_ptr& shader,
     ShaderProgramInfo& info = shaderInfo(renderStagePass);
     if (shader != nullptr) {
         info._customShader = true;
-        info._shader = shader->getName();
         info._shaderRef = shader;
         info.computeStage(ShaderProgramInfo::BuildStage::COMPUTED);
     } else {
@@ -222,38 +221,43 @@ void Material::setShaderProgramInternal(const stringImpl& shader,
                                         const bool computeOnAdd) {
     ShaderProgramInfo& info = shaderInfo(renderStagePass);
 
-    info._shader = (shader.empty() ? "NULL" : shader);
+    ResourceDescriptor shaderDescriptor(shader.empty() ? "NULL" : shader);
 
-    ResourceDescriptor shaderDescriptor(info._shader);
-    stringstreamImpl ss;
     if (!info._shaderDefines.empty()) {
+        stringstreamImpl ss;
         for (stringImpl& shaderDefine : info._shaderDefines) {
             ss << shaderDefine;
             ss << ",";
         }
+        ss << "DEFINE_PLACEHOLDER";
+        shaderDescriptor.setPropertyList(ss.str());
     }
-    ss << "DEFINE_PLACEHOLDER";
-    shaderDescriptor.setPropertyList(ss.str());
+
     shaderDescriptor.setThreadedLoading(_shaderThreadedLoad);
 
-    // if we already had a shader assigned ...
-    if (!info._shader.empty()) {
-        // and we are trying to assign the same one again, return.
-        info._shaderRef = FindResourceImpl<ShaderProgram>(_parentCache, shaderDescriptor.getHash());
-        if (info._shader.compare(shader) != 0) {
-            Console::printfn(Locale::get(_ID("REPLACE_SHADER")), info._shader.c_str(), shader.c_str());
-        }
+    // if we already have a different shader assigned ...
+    if (info._shaderRef != nullptr && info._shaderRef->getName().compare(shader) != 0)
+    {
+        // We cannot replace a shader that is still loading in the background
+        WAIT_FOR_CONDITION(info._shaderRef->getState() == ResourceState::RES_LOADED);
+        Console::printfn(Locale::get(_ID("REPLACE_SHADER")), info._shaderRef->getName().c_str(), shader.c_str());
     }
+    else
+    {
 
-    ShaderComputeQueue::ShaderQueueElement queueElement(shaderDescriptor);
-    queueElement._shaderData = &shaderInfo(renderStagePass);
+        ShaderComputeQueue::ShaderQueueElement queueElement(shaderDescriptor);
+        queueElement._shaderData = &shaderInfo(renderStagePass);
     
-    ShaderComputeQueue& shaderQueue = _context.shaderComputeQueue();
-    if (computeOnAdd) {
-        shaderQueue.addToQueueFront(queueElement);
-        shaderQueue.stepQueue();
-    } else {
-        shaderQueue.addToQueueBack(queueElement);
+        ShaderComputeQueue& shaderQueue = _context.shaderComputeQueue();
+        if (computeOnAdd)
+        {
+            shaderQueue.addToQueueFront(queueElement);
+            shaderQueue.stepQueue();
+        }
+        else
+        {
+            shaderQueue.addToQueueBack(queueElement);
+        }
     }
 }
 

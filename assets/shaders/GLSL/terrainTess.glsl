@@ -326,10 +326,9 @@ void main()
 
     // Project the vertex to clip space and send it along
     vec3 offset = dvd_TerrainData[VAR[0].dvd_drawID]._positionAndTileScale.xyz;
-    _out._vertexW = vec4(gl_Position.xyz + offset, gl_Position.w);
+    _out._vertexW = dvd_WorldMatrix(VAR[0].dvd_instanceID) * vec4(gl_Position.xyz + offset, gl_Position.w);
 
 #if !defined(SHADOW_PASS)
-    _out._vertexW = dvd_WorldMatrix(VAR[0].dvd_instanceID) * _out._vertexW;
     mat3 normalMatrix = dvd_NormalMatrixWV(VAR[0].dvd_instanceID);
     vec3 normal = getNormal(sampleHeight, heightOffsets);
     _out._normalWV = normalize(normalMatrix * normal);
@@ -348,8 +347,6 @@ void main()
 --Geometry
 
 #include "nodeBufferedInput.cmn"
-
-uniform float ToggleWireframe = 0.0;
 
 layout(triangles) in;
 
@@ -371,13 +368,11 @@ noperspective out vec3 gs_edgeDist;
 out vec4 geom_vertexWVP;
 #endif
 
-void waterDetails(in int index, in mat4 worldMat) {
+void waterDetails(in int index, in float minHeight) {
     vec3 vertexW = VAR[index]._vertexW.xyz;
 
     float maxDistance = 0.0;
     float minDepth = 1.0;
-
-    float minHeight = (worldMat * vec4(0.0, TERRAIN_MIN_HEIGHT, 0.0, 1.0)).y;
 
     //for (int i = 0; i < MAX_WATER_BODIES; ++i)
     {
@@ -429,7 +424,7 @@ vec4 getWVPPositon(int index) {
     return dvd_ViewProjectionMatrix * gl_in[index].gl_Position;
 }
 
-void PerVertex(in int i, in vec3 edge_dist, in vec4 wireColor, in mat4 worldMat) {
+void PerVertex(in int i, in vec3 edge_dist, in vec4 wireColor, in float minHeight) {
     PassData(i);
 #if defined(SHADOW_PASS)
     geom_vertexWVP = gl_in[i].gl_Position;
@@ -441,7 +436,7 @@ void PerVertex(in int i, in vec3 edge_dist, in vec4 wireColor, in mat4 worldMat)
     setClipPlanes(gl_in[i].gl_Position);
 
 
-    waterDetails(i, worldMat);
+    waterDetails(i, minHeight);
     scrollingUV(i);
 
 #   if defined(_DEBUG)
@@ -462,13 +457,10 @@ void main(void)
 {
     vec4 wireColor = wireframeColor();
 
-    const uint index = _in[0].dvd_instanceID;
-    mat4 worldMat = dvd_WorldMatrix(index);
-
     // Calculate edge distances for wireframe
     vec3 edge_dist = vec3(0.0);
-#if defined(_DEBUG)
-    if (ToggleWireframe == 1.0)
+
+#if defined(TOGGLE_WIREFRAME)
     {
         vec4 pos0 = getWVPPositon(0);
         vec4 pos1 = getWVPPositon(1);
@@ -489,15 +481,17 @@ void main(void)
     }
 #endif
 
+    float minHeight = dvd_WorldMatrix(VAR[0].dvd_instanceID) * vec4(0.0, TERRAIN_MIN_HEIGHT, 0.0, 1.0)).y;
+
     // Output verts
     for (int i = 0; i < gl_in.length(); ++i)
     {
-        PerVertex(i, edge_dist, wireColor, worldMat);
+        PerVertex(i, edge_dist, wireColor, minHeight);
         EmitVertex();
     }
 
     // This closes the triangle
-    PerVertex(0, edge_dist, wireColor, worldMat);
+    PerVertex(0, edge_dist, wireColor, minHeight);
     EmitVertex();
 
     EndPrimitive();
@@ -542,8 +536,6 @@ void main()
 #include "BRDF.frag"
 #include "terrainSplatting.frag"
 #include "velocityCalc.frag"
-
-uniform float ToggleWireframe = 0.0;
 
 in vec4 _scrollingUV;
 // x = distance, y = depth
@@ -592,7 +584,7 @@ vec4 UnderwaterMappingRoutine() {
 vec4 TerrainMappingRoutine() {
     setAlbedo(getTerrainAlbedo());
 
-    return getAlbedo();//getPixelColour(VAR._texCoord);
+    return getPixelColour(VAR._texCoord);
 }
 
 void main(void)
@@ -603,12 +595,10 @@ void main(void)
 
     _colourOut = mix(TerrainMappingRoutine(), UnderwaterMappingRoutine(), _waterDetails.x);
 
-#if defined(_DEBUG)
-    if (ToggleWireframe == 1.0) {
-        const float LineWidth = 0.75;
-        float d = min(min(gs_edgeDist.x, gs_edgeDist.y), gs_edgeDist.z);
-        _colourOut = mix(gs_wireColor, _colourOut, smoothstep(LineWidth - 1, LineWidth + 1, d));
-    }
+#if defined(TOGGLE_WIREFRAME)
+    const float LineWidth = 0.75;
+    float d = min(min(gs_edgeDist.x, gs_edgeDist.y), gs_edgeDist.z);
+    _colourOut = mix(gs_wireColor, _colourOut, smoothstep(LineWidth - 1, LineWidth + 1, d));
 #endif
 
     _normalOut = packNormal(getProcessedNormal());

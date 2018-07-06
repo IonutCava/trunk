@@ -102,16 +102,16 @@ void Vegetation::initialize(TerrainChunk* const terrainChunk) {
     ResourceDescriptor vegetationMaterial("vegetationMaterial" + getName());
     Material_ptr vegMaterial = CreateResource<Material>(_parentCache, vegetationMaterial);
 
+    //vegMaterial->setShaderLoadThreaded(false);
     vegMaterial->setDiffuse(DefaultColours::WHITE());
     vegMaterial->setSpecular(vec4<F32>(0.1f, 0.1f, 0.1f, 1.0f));
     vegMaterial->setShininess(5.0f);
     vegMaterial->setShadingMode(Material::ShadingMode::BLINN_PHONG);
     vegMaterial->setShaderDefines("SKIP_TEXTURES");
     vegMaterial->setShaderProgram(_grassShaderName, RenderStage::DISPLAY, true);
+    vegMaterial->setShaderProgram(_grassShaderName + ".PrePass", RenderPassType::DEPTH_PASS, true);
     vegMaterial->setShaderProgram(_grassShaderName + ".Shadow", RenderStage::SHADOW, true);
-    vegMaterial->setShaderProgram(_grassShaderName + ".PrePass",RenderPassType::DEPTH_PASS, true);
     vegMaterial->setTexture(ShaderProgram::TextureUsage::UNIT0, _grassBillboards);
-    vegMaterial->setShaderLoadThreaded(false);
     vegMaterial->dumpToFile(false);
     setMaterialTpl(vegMaterial);
 

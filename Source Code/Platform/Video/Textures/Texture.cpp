@@ -169,6 +169,7 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name) {
     U16 width = img.dimensions().width;
     U16 height = img.dimensions().height;
     // If we have an alpha channel, we must check for translucency/transparency
+
     if (img.alpha()) {
         auto findAlpha = [this, &img, height](const Task& parent, U32 start, U32 end) {
             U8 tempA;
@@ -181,6 +182,9 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name) {
                     if (IS_IN_RANGE_INCLUSIVE(tempA, 0, 254)) {
                         _hasTransparency = true;
                         _hasTranslucency = tempA > 0;
+                        if (_hasTranslucency) {
+                            return;
+                        }
                     }
                 }
                 if (parent.stopRequested()) {
@@ -189,7 +193,7 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name) {
             }
         };
 
-        parallel_for(_context.parent().platformContext(), findAlpha, width, g_partitionSize);
+        parallel_for(_context.parent().platformContext(), findAlpha, width, g_partitionSize)
     }
 
     Console::d_printfn(Locale::get(_ID("TEXTURE_HAS_TRANSPARENCY")),
