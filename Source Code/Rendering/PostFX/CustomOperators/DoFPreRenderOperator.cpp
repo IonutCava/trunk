@@ -39,7 +39,7 @@ void DoFPreRenderOperator::execute() {
     _inputFB[0]->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT1),
                       TextureDescriptor::AttachmentType::Depth);  // depthFB
         
-    _hdrTarget->begin(Framebuffer::defaultPolicy());
+    _hdrTarget->begin(_screenOnlyDraw);
         GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true), _dofShader);
     _hdrTarget->end();
 }

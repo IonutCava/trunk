@@ -282,7 +282,8 @@ void glTexture::loadData(const TextureLoadInfo& info,
         }
     }
     
-    _mipMapsDirty = true;
+    glGenerateTextureMipmap(_textureData.getHandleHigh());
+    _mipMapsDirty = false;
 
     DIVIDE_ASSERT(_width > 0 && _height > 0,
                   "glTexture error: Invalid texture dimensions!");

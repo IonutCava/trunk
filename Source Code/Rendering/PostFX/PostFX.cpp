@@ -27,6 +27,10 @@ PostFX::PostFX()
       _gfx(nullptr)
 {
     ParamHandler::getInstance().setParam<bool>(_ID("postProcessing.enableVignette"), false);
+
+    _postFXTarget._clearDepthBufferOnBind = false;
+    _postFXTarget._drawMask.fill(false);
+    _postFXTarget._drawMask[0] = true;
 }
 
 PostFX::~PostFX()
@@ -138,12 +142,7 @@ void PostFX::apply() {
     _noise->Bind(to_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_NOISE));
     _screenBorder->Bind(to_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_BORDER));
 
-    Framebuffer::FramebufferTarget clearColor;
-    clearColor._clearDepthBufferOnBind = false;
-    clearColor._drawMask.fill(false);
-    clearColor._drawMask[0] = true;
-
-    _gfx->getRenderTarget(GFXDevice::RenderTarget::SCREEN)->begin(clearColor);
+    _gfx->getRenderTarget(GFXDevice::RenderTarget::SCREEN)->begin(_postFXTarget);
         _gfx->drawTriangle(_gfx->getDefaultStateBlock(true), _postProcessingShader);
     _gfx->getRenderTarget(GFXDevice::RenderTarget::SCREEN)->end();
 }

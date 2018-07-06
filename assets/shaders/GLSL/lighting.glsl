@@ -28,7 +28,7 @@ void main(void){
     #include "bumpMapping.frag"
 #endif
 
-out vec4 _colorOut;
+layout(location = 0) out vec4 _colorOut;
 
 //subroutine vec4 MappingRoutineType();
 

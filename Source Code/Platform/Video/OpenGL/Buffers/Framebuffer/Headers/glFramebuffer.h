@@ -78,7 +78,7 @@ class glFramebuffer : public Framebuffer {
     void initAttachment(TextureDescriptor::AttachmentType type,
                         TextureDescriptor& texDescriptor,
                         bool resize);
-    void resetMipMaps(FramebufferTarget::FBOBufferMask mask);
+    void resetMipMaps(const FramebufferTarget& drawPolicy);
 
     void toggleAttachment(TextureDescriptor::AttachmentType type, bool state);
 

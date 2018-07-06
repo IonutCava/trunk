@@ -49,6 +49,8 @@ class NOINITVTABLE PreRenderOperator {
            _ldrTarget(ldrTarget),
            _samplerCopy(nullptr)
     {
+        _screenOnlyDraw._drawMask.fill(false);
+        _screenOnlyDraw._drawMask[0] = true;
     }
 
     virtual ~PreRenderOperator() 
@@ -85,6 +87,7 @@ class NOINITVTABLE PreRenderOperator {
     Framebuffer* _ldrTarget;
     Framebuffer* _samplerCopy;
 
+    Framebuffer::FramebufferTarget _screenOnlyDraw;
     FilterType  _operatorType;
     vectorImpl<Framebuffer*> _inputFB;
 };

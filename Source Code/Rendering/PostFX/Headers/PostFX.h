@@ -95,6 +95,8 @@ DEFINE_SINGLETON(PostFX)
     vec2<U16> _resolutionCache;
     vectorImpl<U32> _shaderFunctionSelection;
     vectorImpl<I32> _shaderFunctionList;
+
+    Framebuffer::FramebufferTarget _postFXTarget;
 END_SINGLETON
 
 };  // namespace Divide

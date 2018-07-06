@@ -27,7 +27,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(Framebuffer* hdrTarget, Framebuffer
         noise.normalize();
     }
 
-    U16 kernelSize = 16;
+    U16 kernelSize = 32;
     vectorImpl<vec3<F32>> kernel(kernelSize);
     for (U16 i = 0; i < kernelSize; ++i) {
         vec3<F32>& k = kernel[i];
@@ -53,7 +53,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(Framebuffer* hdrTarget, Framebuffer
     _noiseTexture = CreateResource<Texture>(textureAttachment);
 
     TextureDescriptor noiseDescriptor;
-    noiseDescriptor._internalFormat = GFXImageFormat::RGB32F;
+    noiseDescriptor._internalFormat = GFXImageFormat::RGB16F;
     noiseDescriptor._samplerDescriptor = noiseSampler;
     noiseDescriptor._type = TextureType::TEXTURE_2D;
     _noiseTexture->loadData(Texture::TextureLoadInfo(),
@@ -70,8 +70,8 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(Framebuffer* hdrTarget, Framebuffer
 
     _ssaoOutput = GFX_DEVICE.newFB();
     TextureDescriptor outputDescriptor(TextureType::TEXTURE_2D,
-                                       GFXImageFormat::RED8,
-                                       GFXDataFormat::UNSIGNED_BYTE);
+                                       GFXImageFormat::RED16,
+                                       GFXDataFormat::FLOAT_16);
     outputDescriptor.setSampler(screenSampler);
     
     //Color0 holds the AO texture
@@ -149,7 +149,7 @@ void SSAOPreRenderOperator::execute() {
     _ssaoOutputBlurred->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT1),
                              TextureDescriptor::AttachmentType::Color0);  // AO texture
 
-    _hdrTarget->begin(Framebuffer::defaultPolicy());
+    _hdrTarget->begin(_screenOnlyDraw);
         GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true), _ssaoApplyShader);
     _hdrTarget->end();
     

@@ -38,12 +38,6 @@ layout(binding = TEXTURE_NORMALMAP) uniform sampler2D texNormal;
 
 out float _ssaoOut;
 
-// This constant removes artifacts caused by neighbour fragments with minimal depth difference.
-#define CAP_MIN_DISTANCE 0.0001
-
-// This constant avoids the influence of fragments, which are too far away.
-#define CAP_MAX_DISTANCE 0.005
-
 float ssao(in mat3 kernelBasis, in vec3 originPos) {
     float occlusion = 0.0;
 
@@ -55,32 +49,32 @@ float ssao(in mat3 kernelBasis, in vec3 originPos) {
         // project sample position:
         vec4 offset = projectionMatrix * vec4(samplePos, 1.0);
         offset.xyz /= offset.w;
-
         // get sample depth:
-        float sampleDepth = texture(texDepth, 0.5 * offset.xy + 0.5).r;
+        float sampleDepth = 2.0 * textureLod(texDepth, offset.xy * 0.5 + 0.5, 0).r - 1.0;
 
-        // range check & accumulate:
-        if (InRangeExclusive(offset.z - (2.0 * sampleDepth - 1.0), CAP_MIN_DISTANCE, CAP_MAX_DISTANCE))
-        {
+        float delta = offset.z - sampleDepth;
+
+        if (delta > 0.0001 && delta < 0.005) {
             float rangeCheck = smoothstep(1.0, 0.0, radius / abs(originPos.z - sampleDepth));
-            occlusion += rangeCheck * step(samplePos.z, 2.0 * sampleDepth - 1.0);
+            occlusion += rangeCheck * step(samplePos.z, sampleDepth);
         }
+        
     }
 
-    occlusion = 1.0 - occlusion / (float(KERNEL_SIZE) - 1.0);
+    occlusion = 1.0 - (occlusion / float(KERNEL_SIZE));
     return pow(occlusion, power);
 }
 
 void main(void) {
     //	get view space origin:
-    float originDepth = texture(texDepth, VAR._texCoord).r;
+    float originDepth = textureLod(texDepth, VAR._texCoord, 0).r;
     vec4 originPos = positionFromDepth(originDepth, invProjectionMatrix, VAR._texCoord);
 
     //	get view space normal:
     vec3 normal = 2.0 * normalize(texture(texNormal, VAR._texCoord).rgb) - 1.0;
 
     //	construct kernel basis matrix:
-    vec3 rvec = 2.0 * texture(texNoise, noiseScale * VAR._texCoord).rgb - 1.0;
+    vec3 rvec = normalize(2.0 * texture(texNoise, noiseScale * VAR._texCoord).rgb - 1.0);
     vec3 tangent = normalize(rvec - normal * dot(rvec, normal));
     vec3 bitangent = cross(tangent, normal);
     mat3 kernelBasis = mat3(tangent, bitangent, normal);
@@ -97,7 +91,7 @@ uniform vec2 ssaoTexelSize;
 out float _colorOut;
 
 void main() {
-    _colorOut = 0.0;
+    float colorOut = 0.0;
     vec2 hlim = vec2(float(-BLUR_SIZE) * 0.5 + 0.5);
     for (int x = 0; x < BLUR_SIZE; ++x) {
         for (int y = 0; y < BLUR_SIZE; ++y) {
@@ -105,11 +99,11 @@ void main() {
             offset += hlim;
             offset *= ssaoTexelSize;
 
-            _colorOut += texture(texSSAO, VAR._texCoord + offset).r;
+            colorOut += texture(texSSAO, VAR._texCoord + offset).r;
         }
     }
 
-    _colorOut = _colorOut / float(BLUR_SIZE * BLUR_SIZE);
+    _colorOut = colorOut / float(BLUR_SIZE * BLUR_SIZE);
 }
 
 --Fragment.SSAOApply
@@ -120,10 +114,6 @@ layout(binding = TEXTURE_UNIT1) uniform sampler2D texSSAO;
 out vec4 _colorOut;
 
 void main() {
-    float ssaoFilter = texture(texSSAO, VAR._texCoord).r;
-    _colorOut = texture(texScreen, VAR._texCoord);
-
-    if (ssaoFilter > 0) {
-        _colorOut.rgb = _colorOut.rgb * ssaoFilter;
-    }
+    _colorOut.rgb = texture(texScreen, VAR._texCoord).rgb * 1.0;
+                    //texture(texSSAO, VAR._texCoord).r;
 }

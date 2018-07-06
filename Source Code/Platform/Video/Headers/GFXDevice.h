@@ -584,6 +584,7 @@ DEFINE_SINGLETON(GFXDevice)
     ShaderProgram* _HIZConstructProgram;
     ShaderProgram* _HIZCullProgram;
     ShaderProgram* _displayShader;
+
     /// getMatrix cache
     mat4<F32> _mat4Cache;
     /// Quality settings

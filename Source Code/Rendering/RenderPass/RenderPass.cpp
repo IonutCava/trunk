@@ -14,6 +14,10 @@
 
 namespace Divide {
 
+namespace {
+    Framebuffer::FramebufferTarget _noDepthClear;
+};
+
 RenderPass::RenderPass(stringImpl name, U8 sortKey, std::initializer_list<RenderStage> passStageFlags)
     : _sortKey(sortKey),
       _specialFlag(false),
@@ -21,6 +25,9 @@ RenderPass::RenderPass(stringImpl name, U8 sortKey, std::initializer_list<Render
       _stageFlags(passStageFlags)
 {
     _lastTotalBinSize = 0;
+
+    _noDepthClear._clearDepthBufferOnBind = false;
+    _noDepthClear._drawMask[1] = false;
 }
 
 RenderPass::~RenderPass() 
@@ -85,12 +92,7 @@ bool RenderPass::preRender(SceneRenderState& renderState, bool anaglyph, U32 pas
             _lastTotalBinSize = renderQueue.getRenderQueueStackSize();
             bindShadowMaps = true;
             GFX.occlusionCull(0);
-
-            Framebuffer* screenBuffer = GFX.getRenderTarget(GFXDevice::RenderTarget::SCREEN);
-            Framebuffer::FramebufferTarget noDepthClear;
-            noDepthClear._clearDepthBufferOnBind = false;
-            noDepthClear._drawMask[1] = false;
-            screenBuffer->begin(noDepthClear);
+            GFX.getRenderTarget(GFXDevice::RenderTarget::SCREEN)->begin(_noDepthClear);
         } break;
         case RenderStage::REFLECTION: {
             bindShadowMaps = true;

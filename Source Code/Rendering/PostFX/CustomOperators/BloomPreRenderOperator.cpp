@@ -100,7 +100,7 @@ void BloomPreRenderOperator::execute() {
     _bloomBlurBuffer[0]->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0)); //Screen
     _bloomBlurBuffer[1]->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT1),
                               TextureDescriptor::AttachmentType::Color0); //Bloom
-    _hdrTarget->begin(Framebuffer::defaultPolicy());
+    _hdrTarget->begin(_screenOnlyDraw);
         GFX_DEVICE.drawTriangle(defaultStateHash, _bloomApply);
     _hdrTarget->end();
 }

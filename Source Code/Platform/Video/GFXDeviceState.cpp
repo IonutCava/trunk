@@ -156,7 +156,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
                                        GFXDataFormat::FLOAT_16);
     TextureDescriptor depthDescriptor(TextureType::TEXTURE_2D_MS,
                                       GFXImageFormat::DEPTH_COMPONENT32F,
-                                      GFXDataFormat::FLOAT_16);
+                                      GFXDataFormat::FLOAT_32);
     SamplerDescriptor screenSampler;
     screenSampler.setFilters(TextureFilter::NEAREST);
     screenSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
@@ -165,18 +165,17 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     // Next, create a depth attachment for the screen render target.
     // Must also multisampled. Use full float precision for long view distances
     SamplerDescriptor depthSampler;
-    depthSampler.setFilters(TextureFilter::NEAREST);
+    depthSampler.setFilters(TextureFilter::NEAREST_MIPMAP_NEAREST, 
+                            TextureFilter::NEAREST);
     depthSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
-    // Use greater or equal depth compare function, but depth comparison is
-    // disabled, anyway.
+    // Use greater or equal depth compare function, but depth comparison is disabled, anyway.
     depthSampler._cmpFunc = ComparisonFunction::GEQUAL;
     depthSampler.toggleMipMaps(true);
-    depthSampler.setMinFilter(TextureFilter::NEAREST_MIPMAP_NEAREST);
     depthDescriptor.setSampler(depthSampler);
 
     TextureDescriptor normalDescriptor(TextureType::TEXTURE_2D_MS,
-        GFXImageFormat::RGB16F,
-        GFXDataFormat::FLOAT_16);
+                                       GFXImageFormat::RGB16F,
+                                       GFXDataFormat::FLOAT_16);
     normalDescriptor.setSampler(screenSampler);
     
     // Add the attachments to the render targets

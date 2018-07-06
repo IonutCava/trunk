@@ -19,7 +19,7 @@ int _shadowTempInt = -2;
 float getShadowFactor(int lightIndex) {
     switch (dvd_LightSource[lightIndex]._options.x) {
         case LIGHT_DIRECTIONAL     : return applyShadowDirectional(dvd_LightSource[lightIndex]._options.z);
-        case LIGHT_OMNIDIRECTIONAL : return applyShadowPoint(dvd_LightSource[lightIndex]._options.z);
+        //case LIGHT_OMNIDIRECTIONAL : return applyShadowPoint(dvd_LightSource[lightIndex]._options.z);
         case LIGHT_SPOT            : return applyShadowSpot(dvd_LightSource[lightIndex]._options.z); 
     }
 }

@@ -17,6 +17,10 @@
 
 namespace Divide {
 
+namespace {
+    Framebuffer::FramebufferTarget _hizTarget;
+};
+
 std::array<VertexBuffer::AttribFlags, to_const_uint(RenderStage::COUNT)> VertexBuffer::_attribMaskPerStage;
 
 namespace {
@@ -106,6 +110,15 @@ GFXDevice::GFXDevice()
     VertexBuffer::setAttribMask(RenderStage::Z_PRE_PASS, flags);
     flags[to_uint(VertexBuffer::VertexAttribute::ATTRIB_NORMAL)] = false;
     VertexBuffer::setAttribMask(RenderStage::SHADOW, flags);
+
+    // We don't want to change the viewport or clear the buffer when starting to render to the buffer
+    // We want to process the data already in the buffer
+    _hizTarget._clearDepthBufferOnBind = false;
+    _hizTarget._clearColorBuffersOnBind = false;
+    // And we calculate the target viewport for each loop
+    _hizTarget._changeViewport = false;
+    _hizTarget._drawMask.fill(false);
+    _hizTarget._drawMask[to_uint(TextureDescriptor::AttachmentType::Depth)] = true;
 }
 
 GFXDevice::~GFXDevice()
@@ -631,16 +644,6 @@ bool GFXDevice::loadInContext(const CurrentContext& context,
 
 /// Transform our depth buffer to a HierarchicalZ buffer (for occlusion queries)
 void GFXDevice::constructHIZ() {
-    // We don't want to change the viewport or clear the buffer when starting to
-    // render to the buffer
-    Framebuffer::FramebufferTarget hizTarget;
-    // We want to process the data already in the buffer
-    hizTarget._clearDepthBufferOnBind = false;
-    hizTarget._clearColorBuffersOnBind = false;
-    // And we calculate the target viewport for each loop
-    hizTarget._changeViewport = false;
-    hizTarget._drawMask.fill(false);
-    hizTarget._drawMask[to_uint(TextureDescriptor::AttachmentType::Depth)] = true;
     // The depth buffer's resolution should be equal to the screen's resolution
     vec2<U16> resolution =
         _renderTarget[to_uint(RenderTarget::SCREEN)]
@@ -650,7 +653,7 @@ void GFXDevice::constructHIZ() {
     // only a depth image,
     // disables depth testing but allows depth writes
     // Set the depth buffer as the currently active render target
-    _renderTarget[to_uint(RenderTarget::SCREEN)]->begin(hizTarget);
+    _renderTarget[to_uint(RenderTarget::SCREEN)]->begin(_hizTarget);
     // Bind the depth texture to the first texture unit
     _renderTarget[to_uint(RenderTarget::SCREEN)]->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0),
                                                        TextureDescriptor::AttachmentType::Depth);

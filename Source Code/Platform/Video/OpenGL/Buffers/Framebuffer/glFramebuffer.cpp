@@ -149,7 +149,7 @@ void glFramebuffer::initAttachment(AttachmentType type,
             texDescriptor._type == TextureType::TEXTURE_3D);
     } else {
         if (slot > 0) {
-            offset = _attOffset[slot - 1];
+            offset += _attOffset[slot - 1];
         }
         attachment = GL_COLOR_ATTACHMENT0 + offset;
     }
@@ -355,9 +355,9 @@ void glFramebuffer::bind(U8 unit, AttachmentType slot, bool flushStateOnRequest)
     }
 }
 
-void glFramebuffer::resetMipMaps(FramebufferTarget::FBOBufferMask mask) {
+void glFramebuffer::resetMipMaps(const FramebufferTarget& drawPolicy) {
     for (U8 i = 0; i < to_uint(AttachmentType::COUNT); ++i) {
-        if (mask[i]) {
+        if (drawPolicy._drawMask[i]) {
             if (_attachmentTexture[i] != nullptr) {
                 _attachmentTexture[i]->refreshMipMaps();
             }
@@ -424,7 +424,7 @@ void glFramebuffer::begin(const FramebufferTarget& drawPolicy) {
 
     clear(drawPolicy);
 
-    resetMipMaps(drawPolicy._drawMask);
+    resetMipMaps(drawPolicy);
 
     glFramebuffer::_bufferBound = true;
 }
@@ -522,21 +522,21 @@ void glFramebuffer::drawToLayer(TextureDescriptor::AttachmentType slot,
     checkStatus();
 }
 
-void glFramebuffer::setMipLevel(U16 mipLevel, U16 mipMaxLevel, U16 writeLevel,
-                                TextureDescriptor::AttachmentType slot) {
-    GLenum textureType = GLUtil::glTextureTypeTable[to_uint(
-        _attachmentTexture[to_uint(slot)]->getTextureType())];
-    // Only 2D texture support for now
-    DIVIDE_ASSERT(textureType == GL_TEXTURE_2D || textureType == GL_TEXTURE_2D_MULTISAMPLE,
-                  "glFramebuffer error: Changing mip level is only available "
-                  "for 2D textures!");
-    _attachmentTexture[to_uint(slot)]->setMipMapRange(mipLevel, mipMaxLevel);
-    glFramebufferTexture(
-        GL_FRAMEBUFFER, slot == TextureDescriptor::AttachmentType::Depth
+void glFramebuffer::setMipLevel(U16 mipLevel, U16 mipMaxLevel, U16 writeLevel, TextureDescriptor::AttachmentType slot) {
+    for (U8 i = 0; i < to_uint(AttachmentType::COUNT); ++i) {
+        AttachmentType tempSlot = static_cast<AttachmentType>(i);
+        if (tempSlot != slot) {
+            toggleAttachment(tempSlot, false);
+            _attDirty[i] = true;
+        }
+    }
+
+    glFramebufferTexture(GL_FRAMEBUFFER,
+                            slot == TextureDescriptor::AttachmentType::Depth
                             ? GL_DEPTH_ATTACHMENT
                             : _colorBuffers[to_uint(slot)],
-        _attachmentTexture[to_uint(slot)]->getHandle(), writeLevel);
-
+                         _attachmentTexture[to_uint(slot)]->getHandle(),
+                         writeLevel);
     checkStatus();
 }
 
@@ -598,8 +598,8 @@ bool glFramebuffer::checkStatus() const {
             return false;
         }
         case glext::GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT: {
-            Console::errorfn(Locale::get(_ID("ERROR_FB_DIMENSIONS")));
-            return false;
+            //Console::errorfn(Locale::get(_ID("ERROR_FB_DIMENSIONS")));
+            //return false;
         }
         case glext::GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT: {
              Console::errorfn(Locale::get(_ID("ERROR_FB_FORMAT")));

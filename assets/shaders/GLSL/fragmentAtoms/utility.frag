@@ -40,7 +40,7 @@ float ToLinearDepth(in float depthIn) {
     float f = dvd_ZPlanesCombined.y * 0.5;
 #endif
 
-    return (2 * n) / (f + n - (depthIn)* (f - n));
+    return (2 * n) / (f + n - (depthIn) * (f - n));
 }
 
 float ToLinearDepth(in float depthIn, in mat4 projMatrix) {
