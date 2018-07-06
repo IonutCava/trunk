@@ -761,22 +761,16 @@ void Kernel::shutdown() {
     ECSManager::destroy();
     ECS::Terminate();
 
-    // release the scene
-    _platformContext->gui().destroy();  /// Deactivate GUI 
-    Camera::destroyPool();
     ShadowMap::clearShadowMaps(_platformContext->gfx());
-    Console::printfn(Locale::get(_ID("STOP_ENGINE_OK")));
-    Console::printfn(Locale::get(_ID("STOP_PHYSICS_INTERFACE")));
-    _platformContext->pfx().closePhysicsAPI();
-    Console::printfn(Locale::get(_ID("STOP_HARDWARE")));
     OpenCLInterface::instance().deinit();
     _renderPassManager.reset();
-    _platformContext->sfx().closeAudioAPI();
-    _platformContext->gfx().closeRenderingAPI();
+
+    Camera::destroyPool();
     _platformContext->terminate();
     _resCache->clear();
     FrameListenerManager::destroyInstance();
-    Camera::destroyPool();
+
+    Console::printfn(Locale::get(_ID("STOP_ENGINE_OK")));
 }
 
 void Kernel::onSizeChange(const SizeChangeParams& params) const {

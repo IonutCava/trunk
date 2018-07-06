@@ -52,6 +52,8 @@ Editor::Editor(PlatformContext& context, Theme theme, Theme lostFocusTheme, Them
       _currentTheme(theme),
       _currentLostFocusTheme(lostFocusTheme),
       _currentDimmedTheme(dimmedTheme),
+      _mainWindow(nullptr),
+      _imguiContext(nullptr),
       _running(false),
       _sceneHovered(false),
       _sceneWasHovered(false),
@@ -59,7 +61,7 @@ Editor::Editor(PlatformContext& context, Theme theme, Theme lostFocusTheme, Them
       _scenePreviewWasFocused(false),
       _showDebugWindow(false),
       _showSampleWindow(false),
-      _activeWindowGUID(-1),
+      _activeWindowGUID(0),
       _consoleCallbackIndex(0),
       _editorUpdateTimer(Time::ADD_TIMER("Editor Update Timer")),
       _editorRenderTimer(Time::ADD_TIMER("Editor Render Timer"))
@@ -109,7 +111,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
     }
     _activeWindowGUID = _mainWindow->getGUID();
 
-    ImGui::CreateContext();
+    _imguiContext = ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
     unsigned char* pPixels;
     int iWidth;
@@ -130,23 +132,21 @@ bool Editor::init(const vec2<U16>& renderResolution) {
     textureDescriptor.setFlag(true);
     textureDescriptor.setPropertyDescriptor(descriptor);
 
-    ResourceCache& parentCache = _context.gfx().parent().resourceCache();
+    ResourceCache& parentCache = _context.kernel().resourceCache();
     _fontTexture = CreateResource<Texture>(parentCache, textureDescriptor);
     assert(_fontTexture);
 
     Texture::TextureLoadInfo info;
-
     _fontTexture->loadData(info, (bufferPtr)pPixels, vec2<U16>(iWidth, iHeight));
 
     ResourceDescriptor shaderDescriptor("IMGUI");
     shaderDescriptor.setThreadedLoading(false);
-    _imguiProgram = CreateResource<ShaderProgram>(_context.gfx().parent().resourceCache(), shaderDescriptor);
+    _imguiProgram = CreateResource<ShaderProgram>(parentCache, shaderDescriptor);
 
     // Store our identifier
     io.Fonts->TexID = (void *)(intptr_t)_fontTexture->getHandle();
     io.Fonts->ClearInputData();
     io.Fonts->ClearTexData();
-
 
     
     io.KeyMap[ImGuiKey_Tab] = Input::KeyCode::KC_TAB;
@@ -173,20 +173,25 @@ bool Editor::init(const vec2<U16>& renderResolution) {
     io.GetClipboardTextFn = GetClipboardText;
     io.ClipboardUserData = nullptr;
     io.RenderDrawListsFn = nullptr;
+    io.ImeWindowHandle = _mainWindow->handle()._handle;
     io.DisplaySize = ImVec2((float)renderResolution.width, (float)renderResolution.height);
+    io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
 
-    _panelManager->init(renderResolution);
+    _panelManager->init(_mainWindow->getDrawableSize());
 
     ImGui::ResetStyle(imguiThemeMap[to_base(_currentTheme)]);
 
     _consoleCallbackIndex = Console::bindConsoleOutput([this](const Console::OutputEntry& entry) {
-        _applicationOutput->printText(entry);
+        if (_applicationOutput != nullptr) {
+            _applicationOutput->printText(entry);
+        }
     });
 
     return true;
 }
 
 void Editor::close() {
+    Console::unbindConsoleOutput(_consoleCallbackIndex);
 
     if (_mainWindow != nullptr) {
         for (U8 i = 0; i < to_base(WindowEvent::COUNT); ++i) {
@@ -199,9 +204,11 @@ void Editor::close() {
     }
     _fontTexture.reset();
     _imguiProgram.reset();
-    Console::unbindConsoleOutput(_consoleCallbackIndex);
     _panelManager->destroy();
-    ImGui::DestroyContext();
+    if (_imguiContext != nullptr) {
+        ImGui::DestroyContext();
+        _imguiContext = nullptr;
+    }
 }
 
 void Editor::toggle(const bool state) {
@@ -302,8 +309,6 @@ bool Editor::renderMinimal(const U64 deltaTime) {
 }
 
 bool Editor::renderFull(const U64 deltaTime) {
-    static mat4<F32> matrix;
-
     drawMenuBar();
     _panelManager->draw(deltaTime);
     renderMinimal(deltaTime);
@@ -326,21 +331,7 @@ bool Editor::framePostRenderStarted(const FrameEvent& evt) {
             return false;
         }
     }
-    /*
-    static mat4<F32> matrix;
-
-    ImGuizmo::BeginFrame();
-    ImGuizmo::Enable(true);
-    ImGuiIO& io = ImGui::GetIO();
-    ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
-    
-    Camera& cam = *Camera::utilityCamera(Camera::UtilityCamera::DEFAULT);
-    const mat4<F32>& view = cam.getViewMatrix().getTranspose();
-    const mat4<F32>& projection = cam.getProjectionMatrix().getTranspose();
-
-    ImGuizmo::DrawCube(view.mat, projection.mat, matrix.mat);
-    ImGuizmo::Manipulate(view.mat, projection.mat, ImGuizmo::ROTATE, ImGuizmo::WORLD, matrix.mat);
-    */
+  
     ImGui::Render();
     renderDrawList(ImGui::GetDrawData(), _mainWindow->getGUID());
     
@@ -705,21 +696,25 @@ void Editor::OnFocus(bool bHasFocus) {
 }
 
 void Editor::onSizeChange(const SizeChangeParams& params) {
-    ACKNOWLEDGE_UNUSED(params);
+    if (_mainWindow != nullptr) {
+        ImGuiIO& io = ImGui::GetIO();
+        if (params.isWindowResize) {
+            _panelManager->resize(params.width, params.height);
+        } else {
+            io.DisplaySize.x = (float)params.width;
+            io.DisplaySize.y = (float)params.height;
+        }
+
+        vec2<U16> renderResolution = context().gfx().renderingResolution();
+        vec2<U16> display_size = _mainWindow->getDrawableSize();
+        io.DisplayFramebufferScale.x = params.width > 0 ? ((float)display_size.w / renderResolution.width) : 0;
+        io.DisplayFramebufferScale.y = params.height > 0 ? ((float)display_size.h / renderResolution.height) : 0;
+    }
 }
 
 void Editor::OnSize(int iWidth, int iHeight) {
-    if (_mainWindow != nullptr) {
-        ImGuiIO& io = ImGui::GetIO();
-        io.DisplaySize.x = (float)iWidth;
-        io.DisplaySize.y = (float)iHeight;
-
-        vec2<U16> display_size = _mainWindow->getDrawableSize();
-        io.DisplayFramebufferScale.x = iWidth > 0 ? ((float)display_size.w / iWidth) : 0;
-        io.DisplayFramebufferScale.y = iHeight > 0 ? ((float)display_size.h / iHeight) : 0;
-
-        _panelManager->resize(iWidth, iHeight);
-    }
+    ACKNOWLEDGE_UNUSED(iWidth);
+    ACKNOWLEDGE_UNUSED(iHeight);
 }
 
 void Editor::OnUTF8(const char* text) {

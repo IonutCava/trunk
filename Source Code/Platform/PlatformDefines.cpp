@@ -176,13 +176,17 @@ FileWithPath getExecutableLocation(char* argv0) {
     return splitPathToNameAndLocation(p.make_preferred().string());
 }
 
-const char* GetClipboardText(void*)
+const char* GetClipboardText(void* user_data)
 {
+    ACKNOWLEDGE_UNUSED(user_data);
+
     return SDL_GetClipboardText();
 }
 
-void SetClipboardText(void*, const char* text)
+void SetClipboardText(void* user_data, const char* text)
 {
+    ACKNOWLEDGE_UNUSED(user_data);
+
     SDL_SetClipboardText(text);
 }
 

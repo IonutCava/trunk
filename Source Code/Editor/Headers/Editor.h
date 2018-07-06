@@ -37,6 +37,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Core/Headers/PlatformContextComponent.h"
 
 #include "Rendering/Headers/FrameListener.h"
+
+#include "Platform/Headers/DisplayWindow.h"
 #include "Platform/Input/Headers/InputAggregatorInterface.h"
 
 struct ImDrawData;
@@ -183,7 +185,7 @@ class Editor : public PlatformContextComponent,
     DisplayWindow*    _mainWindow;
     Texture_ptr       _fontTexture;
     ShaderProgram_ptr _imguiProgram;
-
+    ImGuiContext*     _imguiContext;
     Time::ProfileTimer& _editorUpdateTimer;
     Time::ProfileTimer& _editorRenderTimer;
 

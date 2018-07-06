@@ -4,6 +4,9 @@
 #include "Headers/XMLEntryData.h"
 #include "Headers/Configuration.h"
 
+#include "Core/Headers/Console.h"
+#include "Utility/Headers/Localization.h"
+
 #include "GUI/Headers/GUI.h"
 #include "Editor/Headers/Editor.h"
 #include "Physics/Headers/PXDevice.h"
@@ -40,15 +43,26 @@ void PlatformContext::init() {
 }
 
 void PlatformContext::terminate() {
-    _gfx.reset();
-    _sfx.reset();
-    _pfx.reset();
-    _gui.reset();
+
+    _editor.reset();
     _entryData.reset();
     _config.reset();
     _client.reset();
     _debug.reset();
-    _editor.reset();
+
+    _gui->destroy(); 
+    _gui.reset();
+
+    Console::printfn(Locale::get(_ID("STOP_PHYSICS_INTERFACE")));
+    _pfx->closePhysicsAPI();
+    _pfx.reset();
+
+    Console::printfn(Locale::get(_ID("STOP_HARDWARE")));
+    _sfx->closeAudioAPI();
+    _sfx.reset();
+
+    _gfx->closeRenderingAPI();
+    _gfx.reset();
 }
 
 void PlatformContext::beginFrame() {

@@ -137,18 +137,17 @@ namespace Divide {
 
     inline I64 DisplayWindow::addEventListener(WindowEvent windowEvent, const EventListener& listener) {
         EventListeners& listeners = _eventListeners[to_base(windowEvent)];
-
-        listeners.push_back(GUID_DELEGATE_CBK<void, WindowEventArgs>(listener));
-        return listeners.back().getGUID();
+        listeners.emplace_back(std::make_shared<GUID_DELEGATE_CBK<void, WindowEventArgs>>(listener));
+        return listeners.back()->getGUID();
     }
 
     inline void DisplayWindow::removeEventlistener(WindowEvent windowEvent, I64 listenerGUID) {
         EventListeners& listeners = _eventListeners[to_base(windowEvent)];
         listeners.erase(
-            std::remove_if(std::begin(listeners), std::end(listeners),
-                           [&listenerGUID](const GUID_DELEGATE_CBK<void, WindowEventArgs>& it)
+            std::find_if(std::begin(listeners), std::end(listeners),
+                           [&listenerGUID](const std::shared_ptr<GUID_DELEGATE_CBK<void, WindowEventArgs>>& it)
                            -> bool { 
-                                listenerGUID == it.getGUID();
+                                return it->getGUID() == listenerGUID;
                             }),
             std::end(listeners));
     }

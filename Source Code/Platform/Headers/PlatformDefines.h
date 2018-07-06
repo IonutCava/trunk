@@ -139,8 +139,8 @@ ErrorCode PlatformPostInit(int argc, char** argv);
 ErrorCode PlatformInitImpl(int argc, char** argv);
 bool PlatformCloseImpl();
 
-const char* GetClipboardText(void*);
-void SetClipboardText(void*, const char* text);
+const char* GetClipboardText(void* user_data);
+void SetClipboardText(void* user_data, const char* text);
 
 void ToggleCursor(bool state);
 
@@ -654,6 +654,14 @@ class GUID_DELEGATE_CBK : public GUIDWrapper {
         : GUIDWrapper(),
           _callback(cbk)
     {
+    }
+
+    inline bool operator==(const GUID_DELEGATE_CBK& rhs) const {
+        return getGUID() == rhs.getGUID();
+    }
+
+    inline bool operator!=(const GUID_DELEGATE_CBK& rhs) const {
+        return getGUID() != rhs.getGUID();
     }
 
     DELEGATE_CBK<Ret, Args...> _callback;
