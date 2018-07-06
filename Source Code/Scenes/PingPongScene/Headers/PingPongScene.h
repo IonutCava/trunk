@@ -55,14 +55,13 @@ class PingPongScene : public Scene {
     }
 
     ~PingPongScene() {}
-    void preRender();
 
-    bool load(const stringImpl& name, GUI* const gui);
-    bool loadResources(bool continueOnErrors);
-    void processInput(const U64 deltaTime);
-    void processTasks(const U64 deltaTime);
-    void processGUI(const U64 deltaTime);
-
+    bool load(const stringImpl& name, GUI* const gui) override;
+    bool loadResources(bool continueOnErrors) override;
+    void processInput(const U64 deltaTime) override;
+    void processTasks(const U64 deltaTime) override;
+    void processGUI(const U64 deltaTime) override;
+    U16 registerInputActions() override;
    private:
     void test(const std::atomic_bool& stopRequested, cdiggins::any a, CallbackParam b);
     void serveBall();

@@ -59,11 +59,12 @@ class MainScene : public Scene {
    private:
     /*Specific Scene Requirement*/
     void updateLights();
-    void processInput(const U64 deltaTime);
-    void processTasks(const U64 deltaTime);
-    void processGUI(const U64 deltaTime);
+    void processInput(const U64 deltaTime)override;
+    void processTasks(const U64 deltaTime)override;
+    void processGUI(const U64 deltaTime)override;
     void test(const std::atomic_bool& stopRequested, cdiggins::any a, CallbackParam b);
-  
+    U16 registerInputActions() override;
+
    private:
     vec2<F32> _sunAngle;
     vec4<F32> _sunvector, _sunColor;

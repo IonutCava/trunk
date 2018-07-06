@@ -32,6 +32,10 @@
 #ifndef _DIVIDE_SCENE_LIST_H_
 #define _DIVIDE_SCENE_LIST_H_
 
+// Initial application scene (menu, scene transition, etc) :
+#include "Scenes/DefaultScene/Headers/DefaultScene.h"
+
+// Factory scenes:
 #include "Scenes/MainScene/Headers/MainScene.h"
 #include "Scenes/CubeScene/Headers/CubeScene.h"
 #include "Scenes/NetworkScene/Headers/NetworkScene.h"

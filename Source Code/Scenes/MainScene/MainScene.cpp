@@ -155,15 +155,22 @@ bool MainScene::load(const stringImpl& name, GUI* const gui) {
     _water->setRefractionCallback(DELEGATE_BIND(&SceneManager::renderVisibleNodes,
                                                 &SceneManager::instance(),
                                                 RenderStage::DISPLAY, true, 0));*/
+    return loadState;
+}
 
-    SceneInput::PressReleaseActions cbks;
-    cbks.second = [this]() {
-        SFX_DEVICE.playSound(_beep);
-    };
+U16 MainScene::registerInputActions() {
+    U16 actionID = Scene::registerInputActions();
 
-    _input->addKeyMapping(Input::KeyCode::KC_X, cbks);
+    //ToDo: Move these to per-scene XML file
+    PressReleaseActions actions;
 
-    cbks.second = [this]() {
+    _input->actionList().registerInputAction(actionID, [this]() {SFX_DEVICE.playSound(_beep);});
+    actions._onReleaseAction = actionID;
+    _input->addKeyMapping(Input::KeyCode::KC_X, actions);
+    actionID++;
+    
+
+    _input->actionList().registerInputAction(actionID, [this]() {
         _musicPlaying = !_musicPlaying;
         if (_musicPlaying) {
             SceneState::MusicPlaylist::const_iterator it;
@@ -171,33 +178,39 @@ bool MainScene::load(const stringImpl& name, GUI* const gui) {
             if (it != std::end(state().backgroundMusic())) {
                 SFX_DEVICE.playMusic(it->second);
             }
-        } else {
+        }
+        else {
             SFX_DEVICE.stopMusic();
         }
-    };
+    });
+    actions._onReleaseAction = actionID;
+    _input->addKeyMapping(Input::KeyCode::KC_M, actions);
+    actionID++;
 
-    _input->addKeyMapping(Input::KeyCode::KC_M, cbks);
 
-    cbks.second = [this]() { _water->togglePreviewReflection(); };
-    _input->addKeyMapping(Input::KeyCode::KC_R, cbks);
+    _input->actionList().registerInputAction(actionID, [this]() { _water->togglePreviewReflection(); });
+    actions._onReleaseAction = actionID;
+    _input->addKeyMapping(Input::KeyCode::KC_R, actions);
+    actionID++;
 
-    cbks.second = [this]() {
-
+    _input->actionList().registerInputAction(actionID, [this]() {
         _freeflyCamera = !_freeflyCamera;
         renderState().getCamera().setMoveSpeedFactor(_freeflyCamera ? 20.0f
-                                                                    : 10.0f);
-    };
+            : 10.0f);
+    });
+    actions._onReleaseAction = actionID;
+    _input->addKeyMapping(Input::KeyCode::KC_L, actions);
+    actionID++;
 
-    _input->addKeyMapping(Input::KeyCode::KC_L, cbks);
-    cbks.second = [this]() {
+    _input->actionList().registerInputAction(actionID, [this]() {
         for (SceneGraphNode_wptr ter : _visibleTerrains) {
             ter.lock()->getNode<Terrain>()->toggleBoundingBoxes();
         }
-    };
+    });
+    actions._onReleaseAction = actionID;
+    _input->addKeyMapping(Input::KeyCode::KC_T, actions);
 
-    _input->addKeyMapping(Input::KeyCode::KC_T, cbks);
-
-    return loadState;
+    return actionID++;
 }
 
 bool MainScene::unload() {

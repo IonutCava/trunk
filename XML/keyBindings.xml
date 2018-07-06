@@ -1,0 +1,89 @@
+<actions>
+<!--
+#These actions are mapped in C++ code. Name is only provided as a hint. 
+#Action description could become desynchronized if XML is not updated according to the C++ code 
+-->
+<action id="0" name="none" />
+<action id="1" name="delete selection"/>
+<action id="2" name="increase camera speed"/>
+<action id="3" name="decrease camera speed"/>
+<action id="4" name="increase resolution"/>
+<action id="5" name="decrease resolution"/>
+<action id="6" name="move forward"/>
+<action id="7" name="move backwards"/>
+<action id="8" name="stop move forward/backwards"/>
+<action id="9" name="strafe left"/>
+<action id="10" name="strafe right"/>
+<action id="11" name="stop strafe left/right"/>
+<action id="12" name="roll ccw"/>
+<action id="13" name="roll cw"/>
+<action id="14" name="stop roll ccw/cw"/>
+<action id="15" name="turn left"/>
+<action id="16" name="turn right"/>
+<action id="17" name="stop turn left/right"/>
+<action id="18" name="turn up"/>
+<action id="19" name="turn down"/>
+<action id="20" name="stop turn up/down"/>
+<action id="21" name="toggle pause state"/>
+<action id="22" name="toggle depth of field"/>
+<action id="23" name="toggle bloom"/>
+<action id="24" name="toggle skeleton rendering"/>
+<action id="25" name="toggle axis line rendering"/>
+<action id="26" name="toggle wireframe rendering"/>
+<action id="27" name="toggle geometry rendering"/>
+<action id="28" name="toggle debug lines"/>
+<action id="29" name="toggle bounding box rendering"/>
+<action id="30" name="toggle shadow map + depth buffer preview"/>
+<action id="31" name="take screenshot"/>
+<action id="32" name="toggle fullscreen"/>
+<action id="33" name="toggle flashlight"/>
+<action id="34" name="toggle octree region rendering"/>
+<action id="35" name="select"/>
+<action id="36" name="lock camera to mouse"/>
+<action id="37" name="release camera from mouse"/>
+<action id="38" name="renderer debug view"/>
+<action id="39" name="shutdown"/>
+</actions>
+
+<keys>
+<!--
+#provide at least one action per mapped key, even if said action is "0", otherwise skip key declaration entirely. Will assert.
+#do not duplicate action declarations. Will assert.
+#actionDown, actionUp = on button press / on button release action
+#action L/R Alt/Ctrl Up/Down = action to be performed on key down / key up when specified modifier (left alt, right alt, left control or right control) is held down
+<key actionDown="1", actionUp="2", actionLCtrlDown="3", actionLCtrlUp="4", actionRCtrlDown="5", actionRCtrlUp = "6", actionLAltDown="6", actionLAtlUp="7", actionRAltDown="8", actionRAltUp="9">KEY</key>
+-->
+<key actionUp="1">END</key>
+<key actionDown="2", actionLCtrlUp="4">ADD</key>
+<key actionDown="3", actionLCtrlUp="5">SUBTRACT</key>
+<key actionDown="6", actionUp="8">W</key>
+<key actionDown="7", actionUp="8">S</key>
+<key actionDown="9", actionUp="11">A</key>
+<key actionDown="10", actionUp="11">D</key>
+<key actionDown="12", actionUp="14", actionLCtrlUp="39">Q</key>
+<key actionDown="13", actionUp="14">E</key>
+<key actionDown="15", actionUp="17">LEFT</key>
+<key actionDown="16", actionUp="17">RIGHT</key>
+<key actionDown="18", actionUp="20">UP</key>
+<key actionDown="19", actionUp="20">DOWN</key>
+<key actionUp="21">P</key>
+<key actionUp="22">F2</key>
+<key actionUp="23">F3</key>
+<key actionUp="24">F4</key>
+<key actionUp="25">F5</key>
+<key actionUp="26">F6</key>
+<key actionUp="27">F7</key>
+<key actionUp="28">F8</key>
+<key actionUp="29">B</key>
+<key actionUp="30">F10</key>
+<key actionUp="31">SYSRQ</key>
+<key actionLAtlUp="32">RETURN</key>
+<key actionUp="33">F</key>
+<key actionUp="34">Y</key>
+<key actionUp="39">T</key>
+</keys>
+
+<mouseButtons>
+<button actionUp="35">LEFT</button>
+<button actionDown="36", actionUp="37">RIGHT</button>
+</mouseButtons>

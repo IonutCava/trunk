@@ -68,8 +68,6 @@ RenderPass::~RenderPass()
 }
 
 void RenderPass::render(SceneRenderState& renderState) {
-    GFXDevice& GFX = GFX_DEVICE;
-
     U32 idx = 0;
     for (RenderStage stageFlag : _stageFlags) {
         preRender(renderState, idx);

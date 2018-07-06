@@ -209,7 +209,8 @@ class SceneState {
     SceneState()
         : _cameraUnderwater(false), 
           _cameraUpdated(false),
-          _isRunning(false)
+          _isRunning(false),
+          _cameraLockedToMouse(false)
     {
         resetMovement();
         _fog._fogColor = vec3<F32>(0.2f, 0.2f, 0.2f);
@@ -285,6 +286,9 @@ class SceneState {
     inline void roll(MoveDirection factor) { _roll = factor; }
     inline MoveDirection  roll()     const { return _roll; }
 
+    inline void cameraLockedToMouse(bool state) { _cameraLockedToMouse = state; }
+    inline bool cameraLockedToMouse()     const { return _cameraLockedToMouse; }
+
     inline void mouseXDelta(I32 depth) { _mouseXDelta = depth; }
     inline I32  mouseXDelta()    const { return _mouseXDelta; }
 
@@ -296,6 +300,8 @@ protected:
 
     I32 _mouseXDelta;
     I32 _mouseYDelta;
+    bool _cameraLockedToMouse;
+
     MoveDirection _moveFB;   ///< forward-back move change detected
     MoveDirection _moveLR;   ///< left-right move change detected
     MoveDirection _angleUD;  ///< up-down angle change detected

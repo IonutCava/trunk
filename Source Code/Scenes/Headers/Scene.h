@@ -160,44 +160,9 @@ class Scene : public Resource {
     }
 
    protected:
-    /// Global info
-    GFXDevice& _GFX;
-    GUI* _GUI;
-    ParamHandler& _paramHandler;
-    SceneGraph _sceneGraph;
-
-    U64 _sceneTimer;
-    vectorImpl<D64> _taskTimers;
-    vectorImpl<D64> _guiTimers;
-    /// Datablocks for models,vegetation,terrains,tasks etc
-    FileDataStack _modelDataArray;
-    vectorImpl<FileData> _vegetationDataArray;
-    vectorImpl<TerrainDescriptor*> _terrainInfoArray;
-    F32 _LRSpeedFactor;
-    /// Current selection
-    SceneGraphNode_wptr _currentSelection;
-    SceneGraphNode_wptr _currentHoverTarget;
-    SceneGraphNode_wptr _currentSky;
-    SceneGraphNode_wptr _flashLight;
-
-    /// Scene::load must be called by every scene. Add a load flag to make sure!
-    bool _loadComplete;
-    /// Schedule a scene graph parse with the physics engine to recreate/recheck
-    /// the collision meshes used by each node
-    bool _cookCollisionMeshesScheduled;
-    ///_aiTask is the thread handling the AIManager. It is started before each scene's "initializeAI" is called
-    /// It is destroyed after each scene's "deinitializeAI" is called
-    std::thread _aiTask;
-
-   private:
-    vectorImpl<TaskHandle> _tasks;
-    /// Contains all game related info for the scene (wind speed, visibility
-    /// ranges, etc)
-    SceneState _sceneState;
-    vectorImpl<DELEGATE_CBK<> > _selectionChangeCallbacks;
-    vectorImpl<SceneGraphNode_cwptr> _sceneSelectionCandidates;
-
-   protected:
+    // returns the first available action ID
+    virtual U16 registerInputActions();
+    
     void resetSelection();
     void findHoverTarget();
     void toggleFlashlight();
@@ -257,15 +222,56 @@ class Scene : public Resource {
                              "scene load physics");
             if (!contOnErrorTasks) return false;
         }
+
+        registerInputActions();
+
         return true;
     }
 
    protected:
-    std::unique_ptr<SceneInput> _input;
+       /// Global info
+       GFXDevice& _GFX;
+       GUI* _GUI;
+       ParamHandler& _paramHandler;
+       SceneGraph _sceneGraph;
+
+       U64 _sceneTimer;
+       vectorImpl<D64> _taskTimers;
+       vectorImpl<D64> _guiTimers;
+       /// Datablocks for models,vegetation,terrains,tasks etc
+       FileDataStack _modelDataArray;
+       vectorImpl<FileData> _vegetationDataArray;
+       vectorImpl<TerrainDescriptor*> _terrainInfoArray;
+       F32 _LRSpeedFactor;
+       /// Current selection
+       SceneGraphNode_wptr _currentSelection;
+       SceneGraphNode_wptr _currentHoverTarget;
+       SceneGraphNode_wptr _currentSky;
+       SceneGraphNode_wptr _flashLight;
+
+       /// Scene::load must be called by every scene. Add a load flag to make sure!
+       bool _loadComplete;
+       /// Schedule a scene graph parse with the physics engine to recreate/recheck
+       /// the collision meshes used by each node
+       bool _cookCollisionMeshesScheduled;
+       ///_aiTask is the thread handling the AIManager. It is started before each scene's "initializeAI" is called
+       /// It is destroyed after each scene's "deinitializeAI" is called
+       std::thread _aiTask;
+
+   private:
+       vectorImpl<TaskHandle> _tasks;
+       /// Contains all game related info for the scene (wind speed, visibility
+       /// ranges, etc)
+       SceneState _sceneState;
+       vectorImpl<DELEGATE_CBK<> > _selectionChangeCallbacks;
+       vectorImpl<SceneGraphNode_cwptr> _sceneSelectionCandidates;
+
+   protected:
+       std::unique_ptr<SceneInput> _input;
 #ifdef _DEBUG
-    IMPrimitive* _linesPrimitive;
-    vectorImpl<IMPrimitive*> _octreePrimitives;
-    vectorImpl<BoundingBox> _octreeBoundingBoxes;
+       IMPrimitive* _linesPrimitive;
+       vectorImpl<IMPrimitive*> _octreePrimitives;
+       vectorImpl<BoundingBox> _octreeBoundingBoxes;
 #endif
 };
 

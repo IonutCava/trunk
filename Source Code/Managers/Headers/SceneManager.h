@@ -217,6 +217,7 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     bool _processInput;
     /// Pointer to the currently active scene
     std::unique_ptr<Scene> _activeScene;
+    std::unique_ptr<Scene> _defaultScene;
     /// Pointer to the GUI interface
     GUI* _GUI;
     /// Pointer to the scene graph culler that's used to determine what nodes are

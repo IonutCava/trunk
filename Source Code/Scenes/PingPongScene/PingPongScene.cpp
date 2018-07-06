@@ -10,18 +10,6 @@
 
 namespace Divide {
 
-// begin copy-paste
-void PingPongScene::preRender() {
-    vec2<F32> _sunAngle = vec2<F32>(0.0f, Angle::DegreesToRadians(45.0f));
-    _sunvector =
-        vec3<F32>(-cosf(_sunAngle.x) * sinf(_sunAngle.y), -cosf(_sunAngle.y),
-                  -sinf(_sunAngle.x) * sinf(_sunAngle.y));
-
-    _sun.lock()->get<PhysicsComponent>()->setPosition(_sunvector);
-    _currentSky.lock()->getNode<Sky>()->setSunProperties(_sunvector, vec4<F32>(1.0f));
-}
-//<<end copy-paste
-
 void PingPongScene::processGUI(const U64 deltaTime) {
     D64 FpsDisplay = Time::SecondsToMilliseconds(0.3);
     if (_guiTimers[0] >= FpsDisplay) {
@@ -280,19 +268,31 @@ bool PingPongScene::load(const stringImpl& name, GUI* const gui) {
     _paddleCam->setEye(vec3<F32>(0, 2.5f, 6.5f));
     _freeFlyCam->setEye(vec3<F32>(0, 2.5f, 6.5f));
 
-    SceneInput::PressReleaseActions cbks;
-    cbks.second = DELEGATE_BIND(&PingPongScene::serveBall, this);
-    _input->addJoystickMapping(0, cbks);
-    cbks.second = [this]() {
+    return loadState;
+}
+
+U16 PingPongScene::registerInputActions() {
+    U16 actionID = Scene::registerInputActions();
+
+    //ToDo: Move these to per-scene XML file
+    PressReleaseActions actions;
+
+    _input->actionList().registerInputAction(actionID, DELEGATE_BIND(&PingPongScene::serveBall, this));
+    actions._onReleaseAction = actionID;
+    _input->addJoystickMapping(0, actions);
+    actionID++;
+
+    _input->actionList().registerInputAction(actionID, [this]() {
         _freeFly = !_freeFly;
         if (!_freeFly)
             renderState().getCameraMgr().pushActiveCamera(_paddleCam);
         else
             renderState().getCameraMgr().popActiveCamera();
-    };
-    _input->addKeyMapping(Input::KeyCode::KC_L, cbks);
+    });
+    actions._onReleaseAction = actionID;
+    _input->addKeyMapping(Input::KeyCode::KC_L, actions);
 
-    return loadState;
+    return actionID++;
 }
 
 bool PingPongScene::loadResources(bool continueOnErrors) {

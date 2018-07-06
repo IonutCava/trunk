@@ -50,6 +50,7 @@ SceneManager::SceneManager()
     : FrameListener(),
       _GUI(nullptr),
       _activeScene(nullptr),
+      _defaultScene(nullptr),
       _renderPassCuller(nullptr),
       _renderPassManager(nullptr),
       _defaultMaterial(nullptr),
@@ -99,17 +100,24 @@ bool SceneManager::init(GUI* const gui) {
     _sceneShaderData->bind(ShaderBufferLocation::SCENE_DATA);
     _sceneData.shadowingSettings(0.0000002f, 0.0002f, 150.0f, 250.0f);
 
+    _defaultScene.reset(new DefaultScene());
     _init = true;
     return true;
 }
 
 bool SceneManager::load(const stringImpl& sceneName) {
+    ParamHandler& par = ParamHandler::instance();
     assert(_init == true && _GUI != nullptr);
     Console::printfn(Locale::get(_ID("SCENE_MANAGER_LOAD_SCENE_DATA")));
-    XML::loadScene(sceneName, *this);
-    if (!_activeScene) {
+    par.setParam(_ID("currentScene"), sceneName);
+    Scene *scene = createScene(sceneName);
+    if (!scene) {
+        Console::errorfn(Locale::get(_ID("ERROR_XML_LOAD_INVALID_SCENE")));
         return false;
     }
+    setActiveScene(*scene);
+
+    XML::loadScene(sceneName, scene);
 
     bool state = Attorney::SceneManager::load(*_activeScene, sceneName, _GUI);
     if (state) {

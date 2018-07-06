@@ -220,6 +220,12 @@
     <Filter Include="Scenes\TenisScene\Headers">
       <UniqueIdentifier>{0cf3d47e-edf2-4487-84a6-9c2e4c5fc754}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scenes\DefaultScene">
+      <UniqueIdentifier>{db3ffd4f-d955-4148-bdcb-75dbe778c509}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes\DefaultScene\Headers">
+      <UniqueIdentifier>{122eb966-83ad-47d9-85f1-3ac4f98b4016}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\AI\AIEntity.cpp">
@@ -456,6 +462,12 @@
     <ClCompile Include="..\..\Source Code\Scenes\TenisScene\TenisSceneAIProcessor.cpp">
       <Filter>Scenes\TenisScene</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Scenes\DefaultScene\DefaultScene.cpp">
+      <Filter>Scenes\DefaultScene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Scenes\SceneInputActions.cpp">
+      <Filter>Scenes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\AI\Sensors\Headers\AudioSensor.h">
@@ -690,5 +702,11 @@
       <Filter>Scenes\TenisScene\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\SceneList.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\DefaultScene\Headers\DefaultScene.h">
+      <Filter>Scenes\DefaultScene\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Scenes\Headers\SceneInputActions.h">
+      <Filter>Scenes\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

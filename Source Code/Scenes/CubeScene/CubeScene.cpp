@@ -9,8 +9,6 @@
 
 namespace Divide {
 
-void CubeScene::render() {}
-
 void CubeScene::processTasks(const U64 deltaTime) {
     D64 updateLights = Time::SecondsToMilliseconds(0.05);
 
@@ -46,7 +44,8 @@ void CubeScene::processTasks(const U64 deltaTime) {
 I8 g_j = 1;
 F32 g_i = 0;
 bool _switch = false;
-void CubeScene::preRender() {
+
+void CubeScene::processInput(const U64 deltaTime) {
     if (g_i >= 360)
         _switch = true;
     else if (g_i <= 0)
@@ -72,18 +71,8 @@ void CubeScene::preRender() {
     dwarf->get<PhysicsComponent>()->rotate(vec3<F32>(0, 1, 0), g_i);
 }
 
-void CubeScene::processInput(const U64 deltaTime) {}
-
 bool CubeScene::load(const stringImpl& name, GUI* const gui) {
     SceneManager::instance().setRenderer(RendererType::RENDERER_DEFERRED_SHADING);
-
-    SceneInput::PressReleaseActions cbks;
-    cbks.second = []() {
-        SceneManager::instance().getRenderer().toggleDebugView();
-    };
-    _input->addKeyMapping(Input::KeyCode::KC_T, cbks);
-            
-
     // Load scene resources
     return SCENE_LOAD(name, gui, true, true);
 }

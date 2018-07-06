@@ -20,16 +20,6 @@ namespace {
     std::atomic_bool s_gameStarted;
 };
 
-void TenisScene::preRender() {
-    vec2<F32> _sunAngle = vec2<F32>(0.0f, Angle::DegreesToRadians(45.0f));
-    _sunvector =
-        vec3<F32>(-cosf(_sunAngle.x) * sinf(_sunAngle.y), -cosf(_sunAngle.y),
-                  -sinf(_sunAngle.x) * sinf(_sunAngle.y));
-
-    _sun.lock()->get<PhysicsComponent>()->setPosition(_sunvector);
-    _currentSky.lock()->getNode<Sky>()->setSunProperties(_sunvector,
-                                                         _sun.lock()->getNode<Light>()->getDiffuseColor());
-}
 
 void TenisScene::processGUI(const U64 deltaTime) {
     D64 FpsDisplay = 0.7;
@@ -58,6 +48,15 @@ void TenisScene::processTasks(const U64 deltaTime) {
         s_gameStarted = false;
         _GUI->modifyText(_ID("Message"), Util::StringFormat("Team %d won!", _scoreTeam1 == 10 ? 1 : 2));
     }
+
+    vec2<F32> _sunAngle = vec2<F32>(0.0f, Angle::DegreesToRadians(45.0f));
+    _sunvector =
+        vec3<F32>(-cosf(_sunAngle.x) * sinf(_sunAngle.y), -cosf(_sunAngle.y),
+            -sinf(_sunAngle.x) * sinf(_sunAngle.y));
+
+    _sun.lock()->get<PhysicsComponent>()->setPosition(_sunvector);
+    _currentSky.lock()->getNode<Sky>()->setSunProperties(_sunvector,
+        _sun.lock()->getNode<Light>()->getDiffuseColor());
 }
 
 void TenisScene::resetGame() {

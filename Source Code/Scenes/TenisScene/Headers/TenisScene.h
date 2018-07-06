@@ -70,8 +70,6 @@ class TenisScene : public Scene {
         _gamePlaying = false;
     }
 
-    void preRender();
-
     bool load(const stringImpl& name, GUI* const gui);
     bool loadResources(bool continueOnErrors);
     bool initializeAI(bool continueOnErrors);

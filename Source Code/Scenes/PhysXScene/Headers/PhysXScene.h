@@ -44,13 +44,12 @@ class PhysXScene : public Scene {
         _hasGroundPlane = false;
     }
 
-    void preRender();
-
-    bool load(const stringImpl& name, GUI* const gui);
-    bool loadResources(bool continueOnErrors);
-    bool unload();
-    void processInput(const U64 deltaTime);
-    void processGUI(const U64 deltaTime);
+    bool load(const stringImpl& name, GUI* const gui) override;
+    bool loadResources(bool continueOnErrors) override;
+    bool unload() override;
+    void processInput(const U64 deltaTime) override;
+    void processGUI(const U64 deltaTime) override;
+    U16 registerInputActions() override;
 
    private:
     void createStack(const std::atomic_bool& stopRequested, U32 size = 10);

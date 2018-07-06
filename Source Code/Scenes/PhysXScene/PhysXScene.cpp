@@ -17,12 +17,6 @@ namespace {
     std::atomic<PhysXState> s_sceneState;
 };
 
-// begin copy-paste
-void PhysXScene::preRender() {
-    _currentSky.lock()->getNode<Sky>()->setSunProperties(_sunvector, _sun.lock()->getNode<Light>()->getDiffuseColor());
-}
-//<<end copy-paste
-
 void PhysXScene::processGUI(const U64 deltaTime) {
     D64 FpsDisplay = Time::SecondsToMilliseconds(0.3);
     if (_guiTimers[0] >= FpsDisplay) {
@@ -38,7 +32,9 @@ void PhysXScene::processGUI(const U64 deltaTime) {
     Scene::processGUI(deltaTime);
 }
 
-void PhysXScene::processInput(const U64 deltaTime) {}
+void PhysXScene::processInput(const U64 deltaTime) {
+    _currentSky.lock()->getNode<Sky>()->setSunProperties(_sunvector, _sun.lock()->getNode<Light>()->getDiffuseColor());
+}
 
 bool PhysXScene::load(const stringImpl& name, GUI* const gui) {
     s_sceneState = PhysXState::STATE_LOADING;
@@ -53,34 +49,53 @@ bool PhysXScene::load(const stringImpl& name, GUI* const gui) {
     _sun.lock()->get<PhysicsComponent>()->setPosition(_sunvector);
     _currentSky = addSky();
 
-    SceneInput::PressReleaseActions cbks;
-    cbks.second = [this]() {
+    s_sceneState = PhysXState::STATE_IDLE;
+    return loadState;
+}
+
+U16 PhysXScene::registerInputActions() {
+    U16 actionID = Scene::registerInputActions();
+
+    //ToDo: Move these to per-scene XML file
+    PressReleaseActions actions;
+
+    _input->actionList().registerInputAction(actionID, [this]() {
         if (!_hasGroundPlane) {
             assert(false);
             // register ground plane
             _hasGroundPlane = true;
         }
-    };
+    });
+    actions._onReleaseAction = actionID;
+    _input->addKeyMapping(Input::KeyCode::KC_1, actions);
+    actionID++;
 
-    //_input->addKeyMapping(Input::KeyCode::KC_1, cbks);
-    //CREATE BOX
+    _input->actionList().registerInputAction(actionID, [this](){
+        // Create Box
+    });
+    actions._onReleaseAction = actionID;
+    _input->addKeyMapping(Input::KeyCode::KC_2, actions);
+    actionID++;
 
-    _input->addKeyMapping(Input::KeyCode::KC_2, cbks);
-    cbks.second = [this]() {
+
+    _input->actionList().registerInputAction(actionID, [this]() {
         TaskHandle e(CreateTask(getGUID(), DELEGATE_BIND(&PhysXScene::createTower, this, std::placeholders::_1, to_uint(Random(5, 20)))));
         e.startTask();
         registerTask(e);
-    };
-    _input->addKeyMapping(Input::KeyCode::KC_3, cbks);
-    cbks.second = [this]() {
+    });
+    actions._onReleaseAction = actionID;
+    _input->addKeyMapping(Input::KeyCode::KC_3, actions);
+    actionID++;
+
+    _input->actionList().registerInputAction(actionID, [this]() {
         TaskHandle e(CreateTask(getGUID(), DELEGATE_BIND(&PhysXScene::createStack, this, std::placeholders::_1, to_uint(Random(5, 10)))));
         e.startTask();
         registerTask(e);
-    };
-    _input->addKeyMapping(Input::KeyCode::KC_4, cbks);
+    });
+    actions._onReleaseAction = actionID;
+    _input->addKeyMapping(Input::KeyCode::KC_4, actions);
 
-    s_sceneState = PhysXState::STATE_IDLE;
-    return loadState;
+    return actionID++;
 }
 
 bool PhysXScene::loadResources(bool continueOnErrors) {

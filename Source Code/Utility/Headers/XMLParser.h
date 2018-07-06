@@ -41,7 +41,7 @@ namespace Divide {
 class Scene;
 class Texture;
 class Material;
-class SceneManager;
+class Scene;
 
 namespace XML {
 /// Parent Function
@@ -49,7 +49,8 @@ stringImpl loadScripts(const stringImpl& file);
 
 /// Child Functions
 void loadConfig(const stringImpl& file);
-void loadScene(const stringImpl& sceneName, SceneManager& sceneMgr);
+void loadDefaultKeybindings(const stringImpl &file);
+void loadScene(const stringImpl& sceneName, Scene* scene);
 void loadGeometry(const stringImpl& file, Scene* const scene);
 void loadTerrain(const stringImpl& file, Scene* const scene);
 Material* loadMaterial(const stringImpl& file);

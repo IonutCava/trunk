@@ -43,8 +43,6 @@ class NetworkScene : public Scene {
     {
     }
 
-    void preRender();
-
     bool load(const stringImpl& name, GUI* const gui);
     bool loadResources(bool continueOnErrors);
 

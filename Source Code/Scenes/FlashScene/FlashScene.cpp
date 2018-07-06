@@ -5,10 +5,6 @@
 
 namespace Divide {
 
-void FlashScene::render() {}
-
-void FlashScene::preRender() {}
-
 void FlashScene::processInput(const U64 deltaTime) {}
 
 void FlashScene::processGUI(const U64 deltaTime) {

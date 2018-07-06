@@ -50,13 +50,14 @@ class WarScene : public Scene {
     explicit WarScene(const stringImpl& name);
     ~WarScene();
 
-    bool load(const stringImpl& name, GUI* const gui);
-    bool loadResources(bool continueOnErrors);
-    bool initializeAI(bool continueOnErrors);
-    bool deinitializeAI(bool continueOnErrors);
-    void processTasks(const U64 deltaTime);
-    void processGUI(const U64 deltaTime);
+    bool load(const stringImpl& name, GUI* const gui) override;
+    bool loadResources(bool continueOnErrors) override;
+    bool initializeAI(bool continueOnErrors) override;
+    bool deinitializeAI(bool continueOnErrors) override;
+    void processTasks(const U64 deltaTime) override;
+    void processGUI(const U64 deltaTime) override;
     void updateSceneStateInternal(const U64 deltaTime);
+    U16 registerInputActions() override;
 
     void registerPoint(U8 teamID, const stringImpl& unitName);
     void printMessage(U8 eventId, const stringImpl& unitName);

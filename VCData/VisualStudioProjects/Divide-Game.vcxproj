@@ -78,6 +78,7 @@
     <ClCompile Include="..\..\Source Code\Libs\CPPGoap\Planner.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\CPPGoap\WorldState.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\CubeScene\CubeScene.cpp" />
+    <ClCompile Include="..\..\Source Code\Scenes\DefaultScene\DefaultScene.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\FlashScene\FlashScene.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\MainScene\MainScene.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\NetworkScene\NetworkScene.cpp" />
@@ -86,6 +87,7 @@
     <ClCompile Include="..\..\Source Code\Scenes\PingPongScene\PingPongScene.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\Scene.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\SceneInput.cpp" />
+    <ClCompile Include="..\..\Source Code\Scenes\SceneInputActions.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\SceneState.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\TenisScene\TenisScene.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\TenisScene\TenisSceneAIProcessor.cpp" />
@@ -158,9 +160,11 @@
     <ClInclude Include="..\..\Source Code\Libs\CPPGoap\WorldState.h" />
     <ClInclude Include="..\..\Source Code\SceneList.h" />
     <ClInclude Include="..\..\Source Code\Scenes\CubeScene\Headers\CubeScene.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\DefaultScene\Headers\DefaultScene.h" />
     <ClInclude Include="..\..\Source Code\Scenes\FlashScene\Headers\FlashScene.h" />
     <ClInclude Include="..\..\Source Code\Scenes\Headers\Scene.h" />
     <ClInclude Include="..\..\Source Code\Scenes\Headers\SceneInput.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\Headers\SceneInputActions.h" />
     <ClInclude Include="..\..\Source Code\Scenes\Headers\SceneState.h" />
     <ClInclude Include="..\..\Source Code\Scenes\MainScene\Headers\MainScene.h" />
     <ClInclude Include="..\..\Source Code\Scenes\NetworkScene\Headers\NetworkScene.h" />

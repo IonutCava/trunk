@@ -597,21 +597,36 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
         .getActiveCamera()
         .setHorizontalFoV(110);
 
-    SceneInput::PressReleaseActions cbks;
-    cbks.second = DELEGATE_BIND(&WarScene::toggleCamera, this);
-    _input->addKeyMapping(Input::KeyCode::KC_TAB, cbks);
+    _sceneReady = true;
+    return loadState;
+}
 
-    cbks.second = DELEGATE_BIND(&WarScene::registerPoint, this, 0, "");
-    _input->addKeyMapping(Input::KeyCode::KC_1, cbks);
+U16 WarScene::registerInputActions() {
+    U16 actionID = Scene::registerInputActions();
 
-    cbks.second = DELEGATE_BIND(&WarScene::registerPoint, this, 1, "");
-    _input->addKeyMapping(Input::KeyCode::KC_2, cbks);
+    //ToDo: Move these to per-scene XML file
+    PressReleaseActions actions;
+    _input->actionList().registerInputAction(actionID, DELEGATE_BIND(&WarScene::toggleCamera, this));
+    actions._onReleaseAction = actionID;
+    _input->addKeyMapping(Input::KeyCode::KC_TAB, actions);
+    actionID++;
 
-    cbks.second = [](){DIVIDE_ASSERT(false, "Test Assert"); };
-    _input->addKeyMapping(Input::KeyCode::KC_5, cbks);
+    _input->actionList().registerInputAction(actionID, DELEGATE_BIND(&WarScene::registerPoint, this, 0, ""));
+    actions._onReleaseAction = actionID;
+    _input->addKeyMapping(Input::KeyCode::KC_1, actions);
+    actionID++;
 
-   
-    cbks.second = []() {
+    _input->actionList().registerInputAction(actionID, DELEGATE_BIND(&WarScene::registerPoint, this, 1, ""));
+    actions._onReleaseAction = actionID;
+    _input->addKeyMapping(Input::KeyCode::KC_2, actions);
+    actionID++;
+
+    _input->actionList().registerInputAction(actionID, []() {DIVIDE_ASSERT(false, "Test Assert"); });
+    actions._onReleaseAction = actionID;
+    _input->addKeyMapping(Input::KeyCode::KC_5, actions);
+    actionID++;
+
+    _input->actionList().registerInputAction(actionID, []() {
         LightManager& lightMgr = LightManager::instance();
         /// TTT -> TTF -> TFF -> FFT -> FTT -> TFT -> TTT
         bool dir = lightMgr.lightTypeEnabled(LightType::DIRECTIONAL);
@@ -632,11 +647,12 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
         } else {
             lightMgr.toggleLightType(LightType::POINT, true);
         }
-    };
-    _input->addKeyMapping(Input::KeyCode::KC_L, cbks);
+    });
+    actions._onReleaseAction = actionID;
+    _input->addKeyMapping(Input::KeyCode::KC_L, actions);
 
-    _sceneReady = true;
-    return loadState;
+
+    return actionID++;
 }
 
 void WarScene::toggleCamera() {

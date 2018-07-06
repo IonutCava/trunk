@@ -314,7 +314,31 @@ void loadConfig(const stringImpl &file) {
                  pt.get<F32>("rendering.fogColor.<xmlattr>.b", 0.2f));
 }
 
-void loadScene(const stringImpl &sceneName, SceneManager &sceneMgr) {
+void loadDefaultKeybindings(const stringImpl &file) {
+    ParamHandler &par = ParamHandler::instance();
+    pt.clear();
+    Console::printfn(Locale::get(_ID("XML_LOAD_DEFAULT_KEY_BINDINGS")), file.c_str());
+    read_xml(par.getParam<std::string>(_ID("scriptLocation")) + "/" + file.c_str(), pt);
+
+    ptree::iterator itActions;
+    for (itActions = std::begin(pt.get_child("actions"));
+         itActions != std::end(pt.get_child("actions"));
+         ++itActions)
+    {
+        U16 id = pt.get<U16>(std::string(itActions->first.data()) + ".<xmlattr>.id", 0);
+    }
+
+    ptree::iterator itKeys;
+    for (itKeys = std::begin(pt.get_child("keys"));
+        itKeys != std::end(pt.get_child("keys"));
+        ++itKeys)
+    {
+        std::string name = itKeys->second.data();
+        std::string tag = itKeys->first.data();
+    }
+}
+
+void loadScene(const stringImpl &sceneName, Scene* scene) {
     ParamHandler &par = ParamHandler::instance();
     pt.clear();
     Console::printfn(Locale::get(_ID("XML_LOAD_SCENE")), sceneName.c_str());
@@ -331,15 +355,6 @@ void loadScene(const stringImpl &sceneName, SceneManager &sceneMgr) {
         throw error.c_str();
     }
 
-    par.setParam(_ID("currentScene"), sceneName);
-    Scene *scene = sceneMgr.createScene(sceneName);
-
-    if (!scene) {
-        Console::errorfn(Locale::get(_ID("ERROR_XML_LOAD_INVALID_SCENE")));
-        return;
-    }
-
-    sceneMgr.setActiveScene(*scene);
     scene->state().grassVisibility(pt.get("vegetation.grassVisibility", 1000.0f));
     scene->state().treeVisibility(pt.get("vegetation.treeVisibility", 1000.0f));
     scene->state().generalVisibility(pt.get("options.visibility", 1000.0f));
