@@ -10,7 +10,9 @@
 
 namespace Divide {
 
-SceneNode::SceneNode(const SceneNodeType& type) : SceneNode("default", type) {}
+SceneNode::SceneNode(const SceneNodeType& type) : SceneNode("default", type)
+{
+}
 
 SceneNode::SceneNode(const stringImpl& name, const SceneNodeType& type)
     : Resource(name),
@@ -18,7 +20,8 @@ SceneNode::SceneNode(const stringImpl& name, const SceneNodeType& type)
       _hasSGNParent(false),
       _type(type),
       _LODcount(1)  ///<Defaults to 1 LOD level
-{}
+{
+}
 
 SceneNode::~SceneNode() {}
 
@@ -127,5 +130,7 @@ bool SceneNode::unload() {
     return true;
 }
 
-void SceneNode::postDrawBoundingBox(SceneGraphNode& sgn) const {}
+void SceneNode::postDrawBoundingBox(SceneGraphNode& sgn) const {
+}
+
 };

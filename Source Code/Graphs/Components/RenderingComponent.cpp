@@ -455,6 +455,10 @@ void RenderingComponent::inViewCallback() {
     }
 }
 
+void RenderingComponent::boundingBoxUpdatedCallback() {
+    _impostor->mirrorBoundingBox(_parentSGN.getBoundingBoxConst());
+}
+
 void RenderingComponent::setActive(const bool state) {
     if (!state) {
         _boundingBoxPrimitive->paused(true);

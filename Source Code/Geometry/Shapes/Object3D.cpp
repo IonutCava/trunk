@@ -44,7 +44,7 @@ Object3D::~Object3D()
 }
 
 void Object3D::postLoad(SceneGraphNode& sgn) {
-
+    SceneNode::postLoad(sgn);
 }
 
 void Object3D::setGeometryVB(VertexBuffer* const vb) {

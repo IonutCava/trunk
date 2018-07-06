@@ -124,6 +124,8 @@ class RenderingComponent : public SGNComponent {
 
    protected:
     void inViewCallback();
+    void boundingBoxUpdatedCallback();
+
     bool canDraw(const SceneRenderState& sceneRenderState,
                  RenderStage renderStage);
 
@@ -188,6 +190,10 @@ class RenderingCompSceneGraph {
    private:
     static void inViewCallback(RenderingComponent& renderable) {
         renderable.inViewCallback();
+    }
+
+    static void boundingBoxUpdatedCallback(RenderingComponent& renderable) {
+        renderable.boundingBoxUpdatedCallback();
     }
 
     friend class Divide::SceneGraphNode;

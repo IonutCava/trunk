@@ -358,6 +358,10 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
                 parent->getBoundingBox().setComputed(false);
             }
         }
+        RenderingComponent* renderComp = getComponent<RenderingComponent>();
+        if (renderComp) {
+            Attorney::RenderingCompSceneGraph::boundingBoxUpdatedCallback(*renderComp);
+        }
         _boundingBoxDirty = false;
     }
 

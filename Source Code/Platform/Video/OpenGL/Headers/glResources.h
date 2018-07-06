@@ -108,54 +108,50 @@ extern std::array<stringImpl, to_const_uint(ShaderType::COUNT)>
     glShaderStageNameTable;
 
 namespace DSAWrapper {
-    const bool GL_USE_DSA = true;
 #ifdef GL_VERSION_4_5
-    const bool GL_USE_DSA_EXTENSION = false && GL_USE_DSA;
+    const bool GL_USE_DSA_EXTENSION = false;
 #endif
 
     // Textures
-    void dsaCreateTextures(GLenum target, GLsizei count, GLuint* textures);
-    void dsaGenerateTextureMipmap(GLuint texture, GLenum target);
-    void dsaTextureStorage(GLuint texture, GLenum target, GLsizei levels,
-                           GLenum internalformat, GLsizei width,
-                           GLsizei height, GLsizei depth);
-    void dsaTextureStorageMultisample(GLuint texture, GLenum target,
-                                      GLsizei samples,
-                                      GLenum internalformat,
-                                      GLsizei width, GLsizei height,
-                                      GLsizei depth,
-                                      GLboolean fixedsamplelocations);
-    void dsaTextureSubImage(GLuint texture, GLenum target, GLint level,
-                            GLint xoffset, GLint yoffset, GLint zoffset,
-                            GLsizei width, GLsizei height, GLsizei depth,
-                            GLenum format, GLenum type,
-                            const bufferPtr pixels);
+    FORCE_INLINE void dsaCreateTextures(GLenum target, GLsizei count, GLuint* textures);
+    FORCE_INLINE void dsaGenerateTextureMipmap(GLuint texture, GLenum target);
+    FORCE_INLINE void dsaTextureStorage(GLuint texture, GLenum target, GLsizei levels,
+                                        GLenum internalformat, GLsizei width,
+                                        GLsizei height, GLsizei depth);
+    FORCE_INLINE  void dsaTextureStorageMultisample(GLuint texture, GLenum target,
+                                                    GLsizei samples, GLenum internalformat,
+                                                    GLsizei width, GLsizei height,
+                                                    GLsizei depth, GLboolean fixedsamplelocations);
+    FORCE_INLINE void dsaTextureSubImage(GLuint texture, GLenum target, GLint level,
+                                         GLint xoffset, GLint yoffset, GLint zoffset,
+                                         GLsizei width, GLsizei height, GLsizei depth,
+                                         GLenum format, GLenum type, const bufferPtr pixels);
 
-    void dsaTextureParameter(GLuint texture, GLenum target, GLenum pname,
-                                    GLfloat param);
-    void dsaTextureParameter(GLuint texture, GLenum target, GLenum pname,
-                                    GLint param);
+    FORCE_INLINE void dsaTextureParameter(GLuint texture, GLenum target, GLenum pname, GLfloat param);
+    FORCE_INLINE void dsaTextureParameter(GLuint texture, GLenum target, GLenum pname, GLint param);
 
     // Samplers
-    void dsaCreateSamplers(GLsizei count, GLuint* samplers);
+    FORCE_INLINE void dsaCreateSamplers(GLsizei count, GLuint* samplers);
 
     // VAO
-    void dsaCreateVertexArrays(GLuint count, GLuint * arrays);
+    FORCE_INLINE void dsaCreateVertexArrays(GLuint count, GLuint * arrays);
+
     // Buffers
-    void dsaCreateBuffers(GLuint count, GLuint * buffers);
-    GLboolean dsaUnmapNamedBuffer(GLuint buffer);
-    void dsaNamedBufferSubData(GLuint buffer, GLintptr offset, GLsizeiptr size, const bufferPtr data);
-    void dsaNamedBufferData(GLuint buffer, GLsizeiptr size, const bufferPtr data, GLenum usage);
-    void dsaNamedBufferStorage(GLuint buffer, GLsizeiptr size, const bufferPtr data, BufferStorageMask flags);
-    bufferPtr dsaMapNamedBufferRange(GLuint buffer, GLintptr offset, GLsizeiptr length, BufferAccessMask access);
+    FORCE_INLINE void dsaCreateBuffers(GLuint count, GLuint * buffers);
+    FORCE_INLINE GLboolean dsaUnmapNamedBuffer(GLuint buffer);
+    FORCE_INLINE void dsaNamedBufferSubData(GLuint buffer, GLintptr offset, GLsizeiptr size, const bufferPtr data);
+    FORCE_INLINE void dsaNamedBufferData(GLuint buffer, GLsizeiptr size, const bufferPtr data, GLenum usage);
+    FORCE_INLINE void dsaNamedBufferStorage(GLuint buffer, GLsizeiptr size, const bufferPtr data, BufferStorageMask flags);
+    FORCE_INLINE bufferPtr dsaMapNamedBufferRange(GLuint buffer, GLintptr offset, GLsizeiptr length, BufferAccessMask access);
+
     // Framebuffers
-    void dsaCreateFramebuffers(GLuint count, GLuint * framebuffers);
-    void dsaNamedFramebufferTexture(GLuint framebuffer, GLenum attachment, GLuint texture, GLint level);
-    void dsaNamedFramebufferTextureLayer(GLuint framebuffer, GLenum attachment, GLuint texture, GLint level, GLint layer);
-    void dsaNamedFramebufferDrawBuffer(GLuint framebuffer, GLenum buf);
-    void dsaNamedFramebufferDrawBuffers(GLuint framebuffer, GLsizei n, const GLenum * bufs);
-    void dsaNamedFramebufferReadBuffer(GLuint framebuffer, GLenum src);
-    GLenum dsaCheckNamedFramebufferStatus(GLuint framebuffer, GLenum target);
+    FORCE_INLINE void dsaCreateFramebuffers(GLuint count, GLuint * framebuffers);
+    FORCE_INLINE void dsaNamedFramebufferTexture(GLuint framebuffer, GLenum attachment, GLuint texture, GLint level);
+    FORCE_INLINE void dsaNamedFramebufferTextureLayer(GLuint framebuffer, GLenum attachment, GLuint texture, GLint level, GLint layer);
+    FORCE_INLINE void dsaNamedFramebufferDrawBuffer(GLuint framebuffer, GLenum buf);
+    FORCE_INLINE void dsaNamedFramebufferDrawBuffers(GLuint framebuffer, GLsizei n, const GLenum * bufs);
+    FORCE_INLINE void dsaNamedFramebufferReadBuffer(GLuint framebuffer, GLenum src);
+    FORCE_INLINE GLenum dsaCheckNamedFramebufferStatus(GLuint framebuffer, GLenum target);
 
 };  // namespace DSAWrapper
 };  // namespace GLUtil
