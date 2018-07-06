@@ -189,7 +189,6 @@ void SceneManager::updateVisibleNodes(bool flushCache) {
     }
     _renderPassCuller->cullSpecial(nodes, meshCullingFunction);
 
-    
     GFX_DEVICE.buildDrawCommands(nodes._visibleNodes,
                                  _activeScene->renderState(),
                                 refreshNodeData);

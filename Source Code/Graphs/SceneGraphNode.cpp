@@ -285,8 +285,7 @@ bool SceneGraphNode::updateBoundingBoxTransform(const mat4<F32>& transform) {
     return false;
 }
 
-void SceneGraphNode::setInitialBoundingBox(
-    const BoundingBox& initialBoundingBox) {
+void SceneGraphNode::setInitialBoundingBox(const BoundingBox& initialBoundingBox) {
     if (!initialBoundingBox.Compare(getInitialBoundingBox())) {
         _initialBoundingBox = initialBoundingBox;
         _initialBoundingBox.setComputed(true);

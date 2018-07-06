@@ -122,7 +122,6 @@ bool glPixelBuffer::Create(GLushort width, GLushort height, GLushort depth,
             _bufferSize *= _height * _depth;
             break;
     };
-    GLuint size = _bufferSize;
 
     switch (_dataType) {
         case GL_SHORT:

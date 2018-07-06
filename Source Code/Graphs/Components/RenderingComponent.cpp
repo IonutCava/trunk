@@ -179,7 +179,6 @@ void RenderingComponent::renderWireframe(const bool state) {
 
 void RenderingComponent::renderBoundingBox(const bool state) {
     _renderBoundingBox = state;
-    _boundingBoxPrimitive->paused(!state);
     for (SceneGraphNode::NodeChildren::value_type& it : _parentSGN.getChildren()) {
         RenderingComponent* const renderable =
             it.second->getComponent<RenderingComponent>();
@@ -192,7 +191,7 @@ void RenderingComponent::renderBoundingBox(const bool state) {
 void RenderingComponent::renderSkeleton(const bool state) {
     _renderSkeleton = state;
     
-    for (SceneGraphNode::NodeChildren::value_type& it : _parentSGN.getChildren()) {
+    for (SceneGraphNode::NodeChildren::value_type it : _parentSGN.getChildren()) {
         RenderingComponent* const renderable =
             it.second->getComponent<RenderingComponent>();
         if (renderable) {
@@ -269,18 +268,25 @@ void RenderingComponent::postDraw(const SceneRenderState& sceneRenderState,
     // Shadow/PostFX artifacts
     if (renderBoundingBox() || sceneRenderState.drawBoundingBoxes()) {
         const BoundingBox& bb = _parentSGN.getBoundingBoxConst();
-        GFX_DEVICE.drawBox3D(*_boundingBoxPrimitive, bb.getMin(), bb.getMax(),
-                             vec4<U8>(0, 0, 255, 255));
+        if (bb.isComputed()) {
+            GFX_DEVICE.drawBox3D(*_boundingBoxPrimitive, bb.getMin(), bb.getMax(),
+                                 vec4<U8>(0, 0, 255, 255));
+        }
         node->postDrawBoundingBox(_parentSGN);
+    } else {
+        _boundingBoxPrimitive->paused(true);
     }
 
     if (_renderSkeleton || sceneRenderState.drawSkeletons()) {
+        Console::printfn("Skeleton requested for [ %s ]", _parentSGN.getName().c_str());
         // Continue only for skinned submeshes
         if (_isSubMesh && _nodeSkinned) {
             SceneGraphNode_ptr grandParent = _parentSGN.getParent().lock();
             StateTracker<bool>& parentStates = grandParent->getTrackedBools();
-            if (parentStates.getTrackedValue(
-                StateTracker<bool>::State::SKELETON_RENDERED) == false) {
+            bool renderSkeletonFlagInitialized = false;
+            bool renderSkeleton = parentStates.getTrackedValue(StateTracker<bool>::State::SKELETON_RENDERED,
+                                                               renderSkeletonFlagInitialized);
+            if (!renderSkeleton || !renderSkeletonFlagInitialized) {
                 // Get the animation component of any submesh. They should be synced anyway.
                 AnimationComponent* childAnimComp =
                     _parentSGN.getComponent<AnimationComponent>();
@@ -294,6 +300,10 @@ void RenderingComponent::postDraw(const SceneRenderState& sceneRenderState,
                 parentStates.setTrackedValue(
                     StateTracker<bool>::State::SKELETON_RENDERED, true);
             }
+        }
+    } else {
+        if (_skeletonPrimitive) {
+            _skeletonPrimitive->paused(true);
         }
     }
 }

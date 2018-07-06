@@ -164,7 +164,7 @@ void WarScene::updateSceneStateInternal(const U64 deltaTime) {
         resetUnits();
         _resetUnits = false;
     }
-#ifdef _DEBUG
+
     if (!AI::AIManager::getInstance().getNavMesh(
             _army[0][0]->getAgentRadiusCategory())) {
         return;
@@ -187,7 +187,6 @@ void WarScene::updateSceneStateInternal(const U64 deltaTime) {
         }
     }
     GFX_DEVICE.drawLines(*_targetLines, paths, mat4<F32>(), vec4<I32>());
-#endif
 }
 
 bool WarScene::load(const stringImpl& name, GUI* const gui) {

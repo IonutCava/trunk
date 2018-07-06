@@ -38,6 +38,17 @@ namespace Divide {
 
 template <typename T>
 class StateTracker {
+   protected:
+    struct optionalValue {
+        T value;
+        bool initialized;
+
+        optionalValue()
+            : initialized(false)
+        {
+        }
+    };
+
    public:
     enum class State : U32 {
         SKELETON_RENDERED = 0,
@@ -59,7 +70,17 @@ class StateTracker {
         return *this;
     }
 
-    inline T getTrackedValue(State state) {
+    inline bool isTrackedValueInitialized(State state) const {
+        return _trackedValues[to_uint(state)].initialized;
+    }
+
+    inline T getTrackedValue(State state, bool& isInitialized) const {
+        const optionalValue& value = _trackedValues[to_uint(state)];
+        isInitialized = value.initialized;
+        return value.value;
+    }
+
+    inline T getTrackedValue(State state) const {
         return _trackedValues[to_uint(state)].value;
     }
 
@@ -75,17 +96,6 @@ class StateTracker {
             setTrackedValue(state, value);
         }
     }
-
-   protected:
-    struct optionalValue {
-        T value;
-        bool initialized;
-
-        optionalValue()
-            : initialized(false)
-        {
-        }
-    };
 
    protected:
     std::array<optionalValue, to_const_uint(State::COUNT)> _trackedValues;

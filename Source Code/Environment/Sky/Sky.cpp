@@ -18,7 +18,13 @@ Sky::Sky(const stringImpl& name)
     // The sky doesn't cast shadows, doesn't need ambient occlusion and doesn't
     // have real "depth"
     _renderState.addToDrawExclusionMask(RenderStage::SHADOW);
-
+    _farPlane = 2.0f *
+        GET_ACTIVE_SCENE()
+        .state()
+        .renderState()
+        .getCameraConst()
+        .getZPlanes()
+        .y;
     // Generate a render state
     RenderStateBlock skyboxRenderState;
     skyboxRenderState.setCullMode(CullMode::CCW);
@@ -121,4 +127,10 @@ void Sky::setSunProperties(const vec3<F32>& sunVect,
     _skyShader->Uniform("sun_vector", sunVect);
     _skyShader->Uniform("sun_color", sunColor.rgb());
 }
+
+bool Sky::computeBoundingBox(SceneGraphNode& sgn) {
+    sgn.getBoundingBox().set(vec3<F32>(-_farPlane), vec3<F32>(_farPlane));
+    return SceneNode::computeBoundingBox(sgn);
+}
+
 };

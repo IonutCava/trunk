@@ -59,6 +59,7 @@ class Sky : public SceneNode {
     }
 
    protected:
+    bool computeBoundingBox(SceneGraphNode& sgn);
     void postLoad(SceneGraphNode& sgn);
     void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                      SceneState& sceneState);
@@ -74,6 +75,7 @@ class Sky : public SceneNode {
     ShaderProgram* _skyShader;
     Texture* _skybox;
     Sphere3D* _sky;
+    F32    _farPlane;
     size_t _skyboxRenderStateHash;
     size_t _skyboxRenderStateReflectedHash;
 };

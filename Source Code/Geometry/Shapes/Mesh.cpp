@@ -40,8 +40,6 @@ bool Mesh::computeBoundingBox(SceneGraphNode& sgn) {
     for (value_type it : sgn.getChildren()) {
         bb.Add(it.second->getInitialBoundingBox());
     }
-    bb.setComputed(true);
-
     return SceneNode::computeBoundingBox(sgn);
 }
 
