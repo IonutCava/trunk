@@ -122,7 +122,7 @@ void GFXDevice::renderDebugViews() {
         GFX::DrawCommand drawCommand;
         drawCommand._drawCommands.push_back(triangleCmd);
 
-        ScopedCommandBuffer sBuffer = allocateScopedCommandBuffer();
+        GFX::ScopedCommandBuffer sBuffer = GFX::allocateScopedCommandBuffer();
         GFX::CommandBuffer& buffer = sBuffer();
 
         I32 viewIndex = 0;

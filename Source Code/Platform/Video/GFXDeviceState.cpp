@@ -107,8 +107,8 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 
     _shaderComputeQueue = MemoryManager_NEW ShaderComputeQueue(cache);
 
-    _textCmdBuffer = &allocateCommandBuffer();
-    _flushDisplayBuffer = &allocateCommandBuffer();
+    _textCmdBuffer = &GFX::allocateCommandBuffer();
+    _flushDisplayBuffer = &GFX::allocateCommandBuffer();
 
     // Create general purpose render state blocks
     RenderStateBlock::init();

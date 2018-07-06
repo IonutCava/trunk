@@ -12,13 +12,13 @@ RenderPackage::RenderPackage(GFXDevice& context, bool useSecondaryBuffers)
       _isRenderable(false),
       _isOcclusionCullable(true),
       _secondaryCommandPool(useSecondaryBuffers),
-      _commands(_context.allocateCommandBuffer(useSecondaryBuffers))
+      _commands(GFX::allocateCommandBuffer(useSecondaryBuffers))
 {
 }
 
 RenderPackage::~RenderPackage()
 {
-    _context.deallocateCommandBuffer(_commands, _secondaryCommandPool);
+    GFX::deallocateCommandBuffer(_commands, _secondaryCommandPool);
 }
 
 void RenderPackage::clear() {

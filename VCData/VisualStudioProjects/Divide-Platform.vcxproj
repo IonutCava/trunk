@@ -197,6 +197,7 @@
     <ClCompile Include="..\..\Source Code\Platform\Video\Buffers\VertexBuffer\VertexBuffer.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\Buffers\VertexBuffer\VertexDataInterface.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\CommandBuffer.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\CommandBufferPool.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\Direct3D\Buffers\PixelBuffer\d3dPixelBuffer.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\Direct3D\Buffers\RenderTarget\d3dRenderTarget.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\Direct3D\Buffers\ShaderBuffer\d3dConstantBuffer.cpp" />

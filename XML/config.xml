@@ -33,7 +33,7 @@
 <GUI>
   <CEGUI>
     <ExtraStates>false</ExtraStates>
-    <SkipRendering>false</SkipRendering>
+    <SkipRendering>true</SkipRendering>
     <defaultGUIScheme>GWEN</defaultGUIScheme>
   </CEGUI>
   <enableDebugVariableControls>false</enableDebugVariableControls>

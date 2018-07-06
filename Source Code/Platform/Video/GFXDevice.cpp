@@ -79,18 +79,6 @@ namespace TypeUtil {
     }
 };
 
-ScopedCommandBuffer::ScopedCommandBuffer(GFXDevice& context, bool useSecondaryBuffers)
-    : _context(context),
-      _useSecondaryBuffers(useSecondaryBuffers),
-      _buffer(_context.allocateCommandBuffer(useSecondaryBuffers))
-{
-}
-
-ScopedCommandBuffer::~ScopedCommandBuffer()
-{
-    _context.deallocateCommandBuffer(_buffer, _useSecondaryBuffers);
-}
-
 D64 GFXDevice::s_interpolationFactor = 1.0;
 
 GPUVendor GFXDevice::s_GPUVendor = GPUVendor::COUNT;
@@ -755,25 +743,6 @@ ShaderComputeQueue& GFXDevice::shaderComputeQueue() {
 const ShaderComputeQueue& GFXDevice::shaderComputeQueue() const {
     assert(_shaderComputeQueue != nullptr);
     return *_shaderComputeQueue;
-}
-
-ScopedCommandBuffer GFXDevice::allocateScopedCommandBuffer(bool useSecondaryBuffers) {
-    return ScopedCommandBuffer(*this, useSecondaryBuffers);
-}
-
-GFX::CommandBuffer& GFXDevice::allocateCommandBuffer(bool useSecondaryBuffers) {
-    if (useSecondaryBuffers) {
-        return _secondaryCommandBufferPool.allocateBuffer();
-    }
-    return _commandBufferPool.allocateBuffer();
-}
-
-void GFXDevice::deallocateCommandBuffer(GFX::CommandBuffer& buffer, bool useSecondaryBuffers) {
-    if (useSecondaryBuffers) {
-        return _secondaryCommandBufferPool.deallocateBuffer(buffer);
-    }
-
-    _commandBufferPool.deallocateBuffer(buffer);
 }
 
 /// Extract the pixel data from the main render target's first colour attachment and save it as a TGA image

@@ -13,7 +13,7 @@ RenderPackageQueue::RenderPackageQueue(GFXDevice& context, size_t queueSize)
     std::generate(
         std::begin(_packages),
         std::end(_packages),
-        [&context]() { return std::make_shared<RenderPackage>(context, false); }
+        [&context]() { return std::make_shared<RenderPackage>(context, true); }
     );
 }
 

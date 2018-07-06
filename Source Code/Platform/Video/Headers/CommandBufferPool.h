@@ -33,6 +33,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _COMMAND_BUFFER_POOL_H_
 
 #include "CommandBuffer.h"
+#include "config.h"
 
 namespace Divide {
 namespace GFX {
@@ -51,6 +52,31 @@ class CommandBufferPool {
     std::array<bool, N> _bufferPoolSlotState;
     std::array<CommandBuffer, N> _bufferPool;
 };
+
+class ScopedCommandBuffer {
+  public:
+    ScopedCommandBuffer(bool useSecondaryBuffers);
+    ~ScopedCommandBuffer();
+
+    inline CommandBuffer& operator()() {
+        return _buffer;
+    }
+
+    inline const CommandBuffer& operator()() const {
+        return _buffer;
+    }
+
+  private:
+    GFX::CommandBuffer& _buffer;
+    bool _useSecondaryBuffers;
+};
+
+ScopedCommandBuffer allocateScopedCommandBuffer(bool useSecondaryBuffers = false);
+CommandBuffer& allocateCommandBuffer(bool useSecondaryBuffers = false);
+void deallocateCommandBuffer(CommandBuffer& buffer, bool useSecondaryBuffers = false);
+
+static CommandBufferPool<Config::COMMAND_BUFFER_POOL_SIZE> s_commandBufferPool;
+static CommandBufferPool<Config::COMMAND_BUFFER_POOL_SIZE * 2> s_secondaryCommandBufferPool;
 
 }; //namespace GFX
 }; //namespace Divide

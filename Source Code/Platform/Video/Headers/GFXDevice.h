@@ -113,25 +113,6 @@ struct GFXConfig {
     bool _enableDebugMsgGroups = true;
 };
 
-class ScopedCommandBuffer {
-  public:
-    ~ScopedCommandBuffer();
-    inline GFX::CommandBuffer& operator()() {
-        return _buffer;
-    }
-    inline const GFX::CommandBuffer& operator()() const {
-        return _buffer;
-    }
-  protected:
-    friend class GFXDevice;
-    ScopedCommandBuffer(GFXDevice& context, bool useSecondaryBuffers);
-
-  private:
-    GFXDevice& _context;
-    GFX::CommandBuffer& _buffer;
-    bool _useSecondaryBuffers;
-};
-
 /// Rough around the edges Adapter pattern abstracting the actual rendering API
 /// and access to the GPU
 class GFXDevice : public KernelComponent {
@@ -345,10 +326,6 @@ public:  // Accessors and Mutators
 
     void addDebugView(const std::shared_ptr<DebugView>& view);
 
-    ScopedCommandBuffer allocateScopedCommandBuffer(bool useSecondaryBuffers = false);
-    GFX::CommandBuffer& allocateCommandBuffer(bool useSecondaryBuffers = false);
-    void deallocateCommandBuffer(GFX::CommandBuffer& buffer, bool useSecondaryBuffers = false);
-
     static void setFrameInterpolationFactor(const D64 interpolation) { s_interpolationFactor = interpolation; }
     static D64 getFrameInterpolationFactor() { return s_interpolationFactor; }
     static void setGPUVendor(GPUVendor gpuvendor) { s_GPUVendor = gpuvendor; }
@@ -523,9 +500,6 @@ protected:
     GFX::CommandBuffer* _textCmdBuffer;
     GFX::CommandBuffer* _flushDisplayBuffer;
     GenericCommandPool  _commandPool;
-
-    GFX::CommandBufferPool<Config::COMMAND_BUFFER_POOL_SIZE> _commandBufferPool;
-    GFX::CommandBufferPool<Config::COMMAND_BUFFER_POOL_SIZE * 2> _secondaryCommandBufferPool;
 
     Time::ProfileTimer& _commandBuildTimer;
 

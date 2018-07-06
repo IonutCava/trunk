@@ -141,7 +141,7 @@ void PostFX::updateResolution(U16 width, U16 height) {
 }
 
 void PostFX::apply() {
-    ScopedCommandBuffer sBuffer = _gfx->allocateScopedCommandBuffer();
+    GFX::ScopedCommandBuffer sBuffer = GFX::allocateScopedCommandBuffer();
 
     GFX::CommandBuffer& buffer = sBuffer();
 

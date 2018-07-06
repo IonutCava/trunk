@@ -216,7 +216,7 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\STB\;$(SolutionDir)..\Source Code\Libs\nv_dds\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(EngineLibraries)\;$(EngineLibraries)\boost\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\chaiscript\include\;$(EngineLibraries)\cegui-deps\include\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\STB\;$(SolutionDir)..\Source Code\Libs\nv_dds\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(EngineLibraries)\;$(EngineLibraries)\boost\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\DevIL\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\chaiscript\include\</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_SCL_SECURE=0;_NO_DEBUG_HEAP=1;_CRT_SECURE_NO_WARNINGS;_DEBUG</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_RELEASE;_PROFILE;NDEBUG</UndefinePreprocessorDefinitions>
       <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
@@ -266,7 +266,7 @@
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\STB\;$(SolutionDir)..\Source Code\Libs\nv_dds\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(EngineLibraries)\;$(EngineLibraries)\boost\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\chaiscript\include\;$(EngineLibraries)\cegui-deps\include\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\STB\;$(SolutionDir)..\Source Code\Libs\nv_dds\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(EngineLibraries)\;$(EngineLibraries)\boost\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\DevIL\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\chaiscript\include\</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_RELEASE;NDEBUG</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_DEBUG;_PROFILE</UndefinePreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
@@ -309,7 +309,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\STB\;$(SolutionDir)..\Source Code\Libs\nv_dds\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(EngineLibraries)\;$(EngineLibraries)\boost\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\chaiscript\include\;$(EngineLibraries)\cegui-deps\include\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\STB\;$(SolutionDir)..\Source Code\Libs\nv_dds\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(EngineLibraries)\;$(EngineLibraries)\boost\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\DevIL\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\chaiscript\include\</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>_RELEASE;_DEBUG</UndefinePreprocessorDefinitions>
       <PreprocessorDefinitions>_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_PROFILE;NDEBUG</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>

@@ -680,6 +680,9 @@
     <ClCompile Include="..\..\Source Code\Platform\Video\RenderPackageQueue.cpp">
       <Filter>Video</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\Video\CommandBufferPool.cpp">
+      <Filter>Video</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Audio">
