@@ -151,7 +151,9 @@ namespace {
 };
 
 void WarScene::debugDraw(const Camera& activeCamera, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut) {
-    bufferInOut.add(_targetLines->toCommandBuffer());
+    if (renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_DEBUG_TARGET_LINES)) {
+        bufferInOut.add(_targetLines->toCommandBuffer());
+    }
     Scene::debugDraw(activeCamera, stagePass, bufferInOut);
 }
 
@@ -277,8 +279,6 @@ void WarScene::updateSceneStateInternal(const U64 deltaTimeUS) {
         resetUnits();
         _resetUnits = false;
     }
-
-    _targetLines->paused(!renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_DEBUG_TARGET_LINES));
 
     SceneGraphNode* particles = _particleEmitter;
     const F32 radius = 20;

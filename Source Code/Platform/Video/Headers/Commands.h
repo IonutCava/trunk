@@ -124,7 +124,7 @@ struct SetViewportCommand final : Command<SetViewportCommand, CommandType::SET_V
 struct BeginRenderPassCommand final : Command<BeginRenderPassCommand, CommandType::BEGIN_RENDER_PASS> {
     RenderTargetID _target;
     RTDrawDescriptor _descriptor;
-    eastl::fixed_string<char, 128 + 1, true> _name;
+    eastl::fixed_string<char, 128 + 1, true> _name = "";
 
     const char* toString() const override {
         return (stringImpl(_typeName) + _name.c_str()).c_str();

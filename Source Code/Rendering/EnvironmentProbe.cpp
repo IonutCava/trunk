@@ -119,7 +119,6 @@ void EnvironmentProbe::refresh(GFX::CommandBuffer& bufferInOut) {
                                  bufferInOut);
         _currentUpdateCall = 0;
     }
-    _boundingBoxPrimitive->paused(true);
 }
 
 void EnvironmentProbe::setBounds(const vec3<F32>& min, const vec3<F32>& max) {
@@ -149,7 +148,6 @@ U32 EnvironmentProbe::getRTIndex() const {
 }
 
 void EnvironmentProbe::debugDraw(GFX::CommandBuffer& bufferInOut) {
-    _boundingBoxPrimitive->paused(false);
 
     const Texture_ptr& reflectTex = s_reflection._rt->getAttachment(RTAttachmentType::Colour, 0).texture();
 

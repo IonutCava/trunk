@@ -97,7 +97,6 @@ Scene::Scene(PlatformContext& context, ResourceCache& cache, SceneManager& paren
         pipeDesc._shaderProgramHandle = ShaderProgram::defaultShader()->getID();
 
         _linesPrimitive->pipeline(*_context.gfx().newPipeline(pipeDesc));
-        _linesPrimitive->paused(true);
     } else {
         _linesPrimitive = nullptr;
     }
@@ -150,10 +149,6 @@ bool Scene::idle() {  // Called when application is idle
             _sceneGraph->getRoot().get<RigidBodyComponent>()->cookCollisionMesh(_name);
             _cookCollisionMeshesScheduled = false;
         }
-    }
-
-    if (Config::Build::IS_DEBUG_BUILD) {
-        _linesPrimitive->paused(!renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_DEBUG_LINES));
     }
 
     _lightPool->idle();
@@ -1188,12 +1183,10 @@ void Scene::debugDraw(const Camera& activeCamera, RenderStagePass stagePass, GFX
                 }
             }
         }
-
+        if (renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_DEBUG_LINES)) {
+            bufferInOut.add(_linesPrimitive->toCommandBuffer());
+        }
         if (renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_OCTREE_REGIONS)) {
-            for (IMPrimitive* prim : _octreePrimitives) {
-                prim->paused(true);
-            }
-
             _octreeBoundingBoxes.resize(0);
             sceneGraph().getOctree().getAllRegions(_octreeBoundingBoxes);
 

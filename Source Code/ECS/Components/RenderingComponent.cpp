@@ -80,8 +80,8 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
 
     // Prepare it for rendering lines
     RenderStateBlock primitiveStateBlock;
-
     PipelineDescriptor pipelineDescriptor;
+
     pipelineDescriptor._stateHash = primitiveStateBlock.getHash();
     pipelineDescriptor._shaderProgramHandle = ShaderProgram::defaultShader()->getID();
     Pipeline* pipeline = _context.newPipeline(pipelineDescriptor);
@@ -89,24 +89,25 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
     _boundingBoxPrimitive[0] = _context.newIMP();
     _boundingBoxPrimitive[0]->name("BoundingBox_" + parentSGN.name());
     _boundingBoxPrimitive[0]->pipeline(*pipeline);
-    _boundingBoxPrimitive[0]->paused(true);
 
     _boundingBoxPrimitive[1] = _context.newIMP();
     _boundingBoxPrimitive[1]->name("BoundingBox_Parent_" + parentSGN.name());
     _boundingBoxPrimitive[1]->pipeline(*pipeline);
-    _boundingBoxPrimitive[1]->paused(true);
 
     _boundingSpherePrimitive = _context.newIMP();
     _boundingSpherePrimitive->name("BoundingSphere_" + parentSGN.name());
     _boundingSpherePrimitive->pipeline(*pipeline);
-    _boundingSpherePrimitive->paused(true);
 
     if (nodeSkinned) {
+        RenderStateBlock primitiveStateBlockNoZRead;
+        primitiveStateBlockNoZRead.setZRead(false);
+        pipelineDescriptor._stateHash = primitiveStateBlockNoZRead.getHash();
+        Pipeline* pipelineNoZRead = _context.newPipeline(pipelineDescriptor);
+
         primitiveStateBlock.setZRead(false);
         _skeletonPrimitive = _context.newIMP();
         _skeletonPrimitive->name("Skeleton_" + parentSGN.name());
-        _skeletonPrimitive->pipeline(*pipeline);
-        _skeletonPrimitive->paused(true);
+        _skeletonPrimitive->pipeline(*pipelineNoZRead);
     }
     
     if (Config::Build::IS_DEBUG_BUILD) {
@@ -146,8 +147,6 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
         _axisGizmo->end();
         // Finish our object
         _axisGizmo->endBatch();
-
-        _axisGizmo->paused(true);
     } else {
         _axisGizmo = nullptr;
     }
@@ -336,13 +335,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
                         drawDebugAxis();
                         bufferInOut.add(_axisGizmo->toCommandBuffer());
                     } break;
-                    default: {
-                        _axisGizmo->paused(true);
-                    } break;
                 }
-            } break;
-            default: {
-                _axisGizmo->paused(true);
             } break;
         }
     }
@@ -392,10 +385,8 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
     renderSkeleton = renderSkeleton || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_SKELETONS);
 
     if (renderSkeleton) {
-        // Continue only for skinned submeshes
-        Object3D::ObjectType type = _parentSGN.getNode<Object3D>()->getObjectType();
-        bool isSubMesh = type == Object3D::ObjectType::SUBMESH;
-        if (isSubMesh && _parentSGN.getNode<Object3D>()->getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED))
+        // Continue only for skinned 3D objects
+        if (_parentSGN.getNode<Object3D>()->getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED))
         {
             bool renderSkeletonFlagInitialized = false;
             bool renderParentSkeleton = parentStates.getTrackedValue(StateTracker<bool>::State::SKELETON_RENDERED, renderSkeletonFlagInitialized);
@@ -408,12 +399,10 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
                 // Submit the skeleton lines to the GPU for rendering
                 _skeletonPrimitive->fromLines(skeletonLines);
                 parentStates.setTrackedValue(StateTracker<bool>::State::SKELETON_RENDERED, true);
+
+
                 bufferInOut.add(_skeletonPrimitive->toCommandBuffer());
             }
-        }
-    } else {
-        if (_skeletonPrimitive) {
-            _skeletonPrimitive->paused(true);
         }
     }
 }
@@ -768,7 +757,6 @@ void RenderingComponent::drawDebugAxis() {
     } else {
         _axisGizmo->resetWorldMatrix();
     }
-    _axisGizmo->paused(false);
 }
 
 };

@@ -65,17 +65,12 @@ void glIMPrimitive::pipeline(const Pipeline& pipeline) {
 }
 
 void glIMPrimitive::draw(const GenericDrawCommand& cmd) {
-    if (paused()) {
-        return;
-    }
-
     _imInterface->RenderBatchInstanced(cmd._cmd.primCount, 
                                        _forceWireframe || isEnabledOption(cmd, CmdRenderOptions::RENDER_WIREFRAME));
-
 }
 
 GFX::CommandBuffer& glIMPrimitive::toCommandBuffer() const {
-    if (!paused() && _cmdBufferDirty) {
+    if (_cmdBufferDirty) {
         _cmdBuffer->clear();
 
         DIVIDE_ASSERT(_pipeline->shaderProgramHandle() != 0,

@@ -35,9 +35,6 @@ NavMeshDebugDraw::~NavMeshDebugDraw()
 
 void NavMeshDebugDraw::paused(bool state) {
     _paused = state;
-    if (_primitive) {
-        _primitive->paused(_paused);
-    }
 }
 
 void NavMeshDebugDraw::beginBatch() {

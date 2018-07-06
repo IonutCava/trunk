@@ -91,8 +91,6 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
 
     void clear();
 
-    inline void paused(bool state) { _paused = state; }
-    inline bool paused() const { return _paused; }
     inline void forceWireframe(bool state) { _forceWireframe = state; }
     inline bool forceWireframe() const { return _forceWireframe; }
 
@@ -150,9 +148,6 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
     Rect<I32> _viewport;
 
    private:
-    /// If _pause is true, rendering for the current primitive is skipped and
-    /// nothing is modified (e.g. zombie counters)
-    bool _paused;
     /// The transform matrix for this element
     mat4<F32> _worldMatrix;
 };

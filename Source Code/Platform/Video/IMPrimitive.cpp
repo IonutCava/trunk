@@ -11,7 +11,6 @@ IMPrimitive::IMPrimitive(GFXDevice& context)
     : VertexDataInterface(context),
       _viewport(-1),
       _forceWireframe(false),
-      _paused(true),
       _pipeline(nullptr),
       _texture(nullptr),
       _cmdBufferDirty(true)
@@ -35,7 +34,6 @@ void IMPrimitive::clear() {
 }
 
 void IMPrimitive::fromBox(const vec3<F32>& min, const vec3<F32>& max, const UColour& colour) {
-    paused(false);
     // Create the object
     beginBatch(true, 16, 1);
     // Set it's colour
@@ -80,7 +78,6 @@ void IMPrimitive::fromSphere(const vec3<F32>& center,
     F32 t = 1.0f;
     F32 s = 0.0f;
     U32 i, j;  // Looping variables
-    paused(false);
     // Create the object
     beginBatch(true, stacks * ((slices + 1) * 2), 1);
     attribute4f(to_base(AttribLocation::VERTEX_COLOR), Util::ToFloatColour(colour));
@@ -151,7 +148,6 @@ void IMPrimitive::fromLines(const vector<Line>& lines,
     // generated, so this check is required
     if (!lines.empty()) {
         FColour tempFloatColour;
-        paused(false);
         // If we need to render it into a specific viewport, set the pre and post
         // draw functions to set up the
         // needed viewport rendering (e.g. axis lines)
