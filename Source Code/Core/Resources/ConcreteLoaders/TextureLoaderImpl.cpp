@@ -27,10 +27,10 @@ Resource_ptr ImplResourceLoader<Texture>::operator()() {
         }
     }
 
-    Texture_ptr ptr(GFX_DEVICE.newTexture(_descriptor.getName(),
-                                          _descriptor.getResourceLocation(),
-                                          type,
-                                          threadedLoad),
+    Texture_ptr ptr(GFXDevice::instance().newTexture(_descriptor.getName(),
+                                                     _descriptor.getResourceLocation(),
+                                                     type,
+                                                     threadedLoad),
                     DeleteResource());
 
     if (_descriptor.getID() > 0) {

@@ -41,7 +41,7 @@ namespace Divide {
 
 class PostAAPreRenderOperator : public PreRenderOperator {
    public:
-    PostAAPreRenderOperator(RenderTarget* hdrTarget, RenderTarget* ldrTarget);
+    PostAAPreRenderOperator(GFXDevice& context, RenderTarget* hdrTarget, RenderTarget* ldrTarget);
     ~PostAAPreRenderOperator();
 
     void idle() override;

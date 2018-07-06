@@ -8,7 +8,8 @@
 namespace Divide {
 
 RenderPassManager::RenderPassManager()
-    : _renderQueue(MemoryManager_NEW RenderQueue())
+    : _context(GFXDevice::instance()),
+      _renderQueue(MemoryManager_NEW RenderQueue(_context))
 {
 }
 
@@ -48,7 +49,7 @@ RenderPass& RenderPassManager::addRenderPass(const stringImpl& renderPassName,
                                              RenderStage renderStage) {
     assert(!renderPassName.empty());
 
-    _renderPasses.emplace_back(MemoryManager_NEW RenderPass(renderPassName, orderKey, renderStage));
+    _renderPasses.emplace_back(MemoryManager_NEW RenderPass(_context, renderPassName, orderKey, renderStage));
     RenderPass& item = *_renderPasses.back();
 
     std::sort(std::begin(_renderPasses), std::end(_renderPasses),
@@ -132,7 +133,7 @@ void RenderPassManager::doCustomPass(PassParams& params) {
     // step1: cull nodes for current camera and pass
     SceneManager& mgr = SceneManager::instance();
 
-    GFXDevice& GFX = GFX_DEVICE;
+    GFXDevice& GFX = GFXDevice::instance();
 
     // Tell the Rendering API to draw from our desired PoV
     GFX.renderFromCamera(*params.camera);

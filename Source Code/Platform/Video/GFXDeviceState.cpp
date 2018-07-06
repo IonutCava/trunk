@@ -233,7 +233,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 
     par.setParam<bool>(_ID("rendering.previewDepthBuffer"), false);
     // If render targets ready, we initialize our post processing system
-    postFX.init();
+    postFX.init(*this);
     bool enablePostAA = par.getParam<I32>(_ID("rendering.PostAASamples"), 0) > 0;
     bool enableSSR = false;
     bool enableSSAO = par.getParam<bool>(_ID("postProcessing.enableSSAO"), false);
@@ -377,7 +377,7 @@ void GFXDevice::beginFrame() {
 void GFXDevice::endFrame(bool swapBuffers) {
     // Render all 2D debug info and call API specific flush function
     if (Application::instance().mainLoopActive()) {
-        GFX::Scoped2DRendering scoped2D(true);
+        GFX::Scoped2DRendering scoped2D;
         ReadLock r_lock(_2DRenderQueueLock);
         for (std::pair<U32, GUID2DCbk>& callbackFunction : _2dRenderQueue) {
             callbackFunction.second.second();

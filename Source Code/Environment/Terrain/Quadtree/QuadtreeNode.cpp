@@ -189,7 +189,7 @@ bool QuadtreeNode::isInView(U32 options,
 
 void QuadtreeNode::drawBBox(GenericDrawCommands& commandsOut) {
     if (!_bbPrimitive) {
-        _bbPrimitive = GFX_DEVICE.newIMP();
+        _bbPrimitive = GFXDevice::instance().newIMP();
         _bbPrimitive->name("QuadtreeNodeBoundingBox");
         RenderStateBlock primitiveRenderState;
         _bbPrimitive->stateHash(primitiveRenderState.getHash());

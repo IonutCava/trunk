@@ -47,9 +47,9 @@ struct selectionQueueDistanceFrontToBack {
 };
 };
 
-Scene::Scene(const stringImpl& name)
+Scene::Scene(PlatformContext& context, const stringImpl& name)
     : Resource(ResourceType::DEFAULT, name),
-      _GFX(GFX_DEVICE),
+      _context(context),
       _LRSpeedFactor(5.0f),
       _loadComplete(false),
       _cookCollisionMeshesScheduled(false),
@@ -58,17 +58,17 @@ Scene::Scene(const stringImpl& name)
 {
     _sceneTimer = 0UL;
     _sceneState = MemoryManager_NEW SceneState(*this);
-    _input = MemoryManager_NEW SceneInput(*this);
+    _input = MemoryManager_NEW SceneInput(*this, _context._INPUT);
     _sceneGraph = MemoryManager_NEW SceneGraph(*this);
     _aiManager = MemoryManager_NEW AI::AIManager(*this);
-    _lightPool = MemoryManager_NEW LightPool(*this);
+    _lightPool = MemoryManager_NEW LightPool(*this, _context._GFX);
     _envProbePool = MemoryManager_NEW SceneEnvironmentProbePool(*this);
 
     _GUI = MemoryManager_NEW SceneGUIElements(*this);
 
     if (Config::Build::IS_DEBUG_BUILD) {
         RenderStateBlock primitiveDescriptor;
-        _linesPrimitive = GFX_DEVICE.newIMP();
+        _linesPrimitive = _context._GFX.newIMP();
         _linesPrimitive->name("LinesRayPick");
         _linesPrimitive->stateHash(primitiveDescriptor.getHash());
         _linesPrimitive->paused(true);
@@ -126,7 +126,7 @@ bool Scene::idle() {  // Called when application is idle
         ParamHandler::instance().getParam<bool>(_ID("mesh.playAnimations"), true));
 
     if (_cookCollisionMeshesScheduled && checkLoadFlag()) {
-        if (GFX_DEVICE.getFrameCount() > 1) {
+        if (_context._GFX.getFrameCount() > 1) {
             _sceneGraph->getRoot().get<PhysicsComponent>()->cookCollisionMesh(_name);
             _cookCollisionMeshesScheduled = false;
         }
@@ -410,8 +410,8 @@ U16 Scene::registerInputActions() {
             cam.setTurnSpeedFactor(cam.getTurnSpeedFactor() - 1.0f);
         }
     };
-    auto increaseResolution = [](InputParams param) {GFX_DEVICE.increaseResolution();};
-    auto decreaseResolution = [](InputParams param) {GFX_DEVICE.decreaseResolution();};
+    auto increaseResolution = [this](InputParams param) {_context._GFX.increaseResolution();};
+    auto decreaseResolution = [this](InputParams param) {_context._GFX.decreaseResolution();};
     auto moveForward = [this](InputParams param) {state().moveFB(SceneState::MoveDirection::POSITIVE);};
     auto moveBackwards = [this](InputParams param) {state().moveFB(SceneState::MoveDirection::NEGATIVE);};
     auto stopMoveFWDBCK = [this](InputParams param) {state().moveFB(SceneState::MoveDirection::NONE);};
@@ -453,15 +453,15 @@ U16 Scene::registerInputActions() {
     auto toggleGeometryRendering = [this](InputParams param) { renderState().toggleOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY);};
     auto toggleDebugLines = [this](InputParams param) {renderState().toggleOption(SceneRenderState::RenderOptions::RENDER_DEBUG_LINES);};
     auto toggleBoundingBoxRendering = [this](InputParams param) {renderState().toggleOption(SceneRenderState::RenderOptions::RENDER_AABB);};
-    auto toggleShadowMapDepthBufferPreview = [](InputParams param) {
+    auto toggleShadowMapDepthBufferPreview = [this](InputParams param) {
         ParamHandler& par = ParamHandler::instance();
-        LightPool::togglePreviewShadowMaps();
+        LightPool::togglePreviewShadowMaps(_context._GFX);
         par.setParam<bool>(
             _ID("rendering.previewDepthBuffer"),
             !par.getParam<bool>(_ID("rendering.previewDepthBuffer"), false));
     };
-    auto takeScreenshot = [](InputParams param) { GFX_DEVICE.Screenshot("screenshot_"); };
-    auto toggleFullScreen = [](InputParams param) { GFX_DEVICE.toggleFullScreen(); };
+    auto takeScreenshot = [this](InputParams param) { _context._GFX.Screenshot("screenshot_"); };
+    auto toggleFullScreen = [this](InputParams param) { _context._GFX.toggleFullScreen(); };
     auto toggleFlashLight = [this](InputParams param) {toggleFlashlight(); };
     auto toggleOctreeRegionRendering = [this](InputParams param) {renderState().toggleOption(SceneRenderState::RenderOptions::RENDER_OCTREE_REGIONS);};
     auto select = [this](InputParams  param) {findSelection(); };
@@ -496,8 +496,7 @@ U16 Scene::registerInputActions() {
         I32 axis = param._var[2];
         Input::Joystick joystick = static_cast<Input::Joystick>(param._var[3]);
 
-        Input::JoystickInterface* joyInterface
-            = Input::InputInterface::instance().getJoystickInterface();
+        Input::JoystickInterface* joyInterface = _context._INPUT.getJoystickInterface();
         
         const Input::JoystickData& joyData = joyInterface->getJoystickData(joystick);
         I32 deadZone = joyData._deadZone;
@@ -644,7 +643,7 @@ bool Scene::load(const stringImpl& name) {
     Camera::activeCamera()->setMoveSpeedFactor(_paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraSpeed.move").c_str()), 1.0f));
     Camera::activeCamera()->setTurnSpeedFactor(_paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraSpeed.turn").c_str()), 1.0f));
 
-    addSelectionCallback(DELEGATE_BIND(&GUI::selectionChangeCallback, &GUI::instance(), this));
+    addSelectionCallback(DELEGATE_BIND(&GUI::selectionChangeCallback, &_context._GUI, this));
 
     _loadComplete = true;
     return _loadComplete;
@@ -660,7 +659,7 @@ bool Scene::unload() {
     /// Destroy physics (:D)
     _pxScene->release();
     MemoryManager::DELETE(_pxScene);
-    PHYSICS_DEVICE.setPhysicsScene(nullptr);
+    _context._PFX.setPhysicsScene(nullptr);
     clearObjects();
     _loadComplete = false;
     return true;
@@ -692,21 +691,21 @@ void Scene::rebuildShaders() {
 }
 
 void Scene::onSetActive() {
-    PHYSICS_DEVICE.setPhysicsScene(_pxScene);
+    _context._PFX.setPhysicsScene(_pxScene);
     _aiManager->pauseUpdate(false);
 
-    SFX_DEVICE.stopMusic();
-    SFX_DEVICE.dumpPlaylists();
+    _context._SFX.stopMusic();
+    _context._SFX.dumpPlaylists();
 
     for (U32 i = 0; i < to_const_uint(MusicType::COUNT); ++i) {
         const SceneState::MusicPlaylist& playlist = state().music(static_cast<MusicType>(i));
         if (!playlist.empty()) {
             for (const SceneState::MusicPlaylist::value_type& song : playlist) {
-                SFX_DEVICE.addMusic(i, song.second);
+                _context._SFX.addMusic(i, song.second);
             }
         }
     }
-    SFX_DEVICE.playMusic(0);
+    _context._SFX.playMusic(0);
 }
 
 void Scene::onRemoveActive() {
@@ -715,7 +714,7 @@ void Scene::onRemoveActive() {
 
 bool Scene::loadPhysics(bool continueOnErrors) {
     if (_pxScene == nullptr) {
-        _pxScene = PHYSICS_DEVICE.NewSceneInterface(*this);
+        _pxScene = _context._PFX.NewSceneInterface(*this);
         _pxScene->init();
     }
 
@@ -857,9 +856,7 @@ void Scene::processTasks(const U64 deltaTime) {
 }
 
 void Scene::debugDraw(const Camera& activeCamera, RenderStage stage, RenderSubPassCmds& subPassesInOut) {
-    GFXDevice& gfx = GFX_DEVICE;
-
-    if (stage != RenderStage::DISPLAY || gfx.isPrePass()) {
+    if (stage != RenderStage::DISPLAY || _context._GFX.isPrePass()) {
         return;
     }
 
@@ -887,7 +884,7 @@ void Scene::debugDraw(const Camera& activeCamera, RenderStage stage, RenderSubPa
             if (regionCount > primitiveCount) {
                 size_t diff = regionCount - primitiveCount;
                 for (size_t i = 0; i < diff; ++i) {
-                    _octreePrimitives.push_back(gfx.newIMP());
+                    _octreePrimitives.push_back(_context._GFX.newIMP());
                 }
             }
 
@@ -938,7 +935,7 @@ void Scene::findHoverTarget() {
     F32 mouseX = to_float(mousePos.x);
     F32 mouseY = displaySize.height - to_float(mousePos.y) - 1;
 
-    const vec4<I32>& viewport = GFX_DEVICE.getCurrentViewport();
+    const vec4<I32>& viewport = _context._GFX.getCurrentViewport();
     vec3<F32> startRay = crtCamera.unProject(mouseX, mouseY, 0.0f, viewport);
     vec3<F32> endRay = crtCamera.unProject(mouseX, mouseY, 1.0f, viewport);
     // see if we select another one

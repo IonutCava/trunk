@@ -7,7 +7,7 @@ namespace Divide {
 
 class PreRenderBatch {
    public:
-    PreRenderBatch();
+    PreRenderBatch(GFXDevice& context);
     ~PreRenderBatch();
 
     void init(RenderTarget* renderTarget);
@@ -59,6 +59,8 @@ class PreRenderBatch {
   private:
     typedef vectorImpl<PreRenderOperator*> OperatorBatch;
     OperatorBatch _operators[to_const_uint(FilterSpace::COUNT)];
+
+    GFXDevice& _context;
 
     bool _adaptiveExposureControl;
 

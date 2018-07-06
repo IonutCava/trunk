@@ -175,12 +175,13 @@ void WaterPlane::updateRefraction(const SceneGraphNode& sgn,
     if (pointUnderwater(sgn, Camera::activeCamera()->getEye())) {
         return;
     }
+    GFXDevice& gfx = GFXDevice::instance();
     // We need a rendering method to create refractions
     _refractionRendering = true;
     // If we are above water, process the plane's refraction.
     // If we are below, we render the scene normally
-    RenderStage prevRenderStage = GFX_DEVICE.setRenderStage(RenderStage::DISPLAY);
-    GFX_DEVICE.toggleClipPlane(g_refractionClipID, true);
+    RenderStage prevRenderStage = gfx.setRenderStage(RenderStage::DISPLAY);
+    gfx.toggleClipPlane(g_refractionClipID, true);
 
     RenderPassManager& passMgr = RenderPassManager::instance();
     RenderPassManager::PassParams params;
@@ -194,8 +195,8 @@ void WaterPlane::updateRefraction(const SceneGraphNode& sgn,
 
     passMgr.doCustomPass(params);
 
-    GFX_DEVICE.toggleClipPlane(g_refractionClipID, false);
-    GFX_DEVICE.setRenderStage(prevRenderStage);
+    gfx.toggleClipPlane(g_refractionClipID, false);
+    gfx.setRenderStage(prevRenderStage);
 
     _refractionRendering = false;
 }
@@ -208,17 +209,17 @@ void WaterPlane::updateReflection(const SceneGraphNode& sgn,
     // ToDo: this will cause problems later with multiple reflectors.
     // Fix it! -Ionut
     _reflectionRendering = true;
-
+    GFXDevice& gfx = GFXDevice::instance();
     Plane<F32> reflectionPlane, refractionPlane;
     updatePlaneEquation(sgn, reflectionPlane, refractionPlane);
 
 
-    GFX_DEVICE.setClipPlane(ClipPlaneIndex::CLIP_PLANE_0, reflectionPlane);
-    GFX_DEVICE.setClipPlane(ClipPlaneIndex::CLIP_PLANE_1, refractionPlane);
+    gfx.setClipPlane(ClipPlaneIndex::CLIP_PLANE_0, reflectionPlane);
+    gfx.setClipPlane(ClipPlaneIndex::CLIP_PLANE_1, refractionPlane);
 
     bool underwater = pointUnderwater(sgn, Camera::activeCamera()->getEye());
-    RenderStage prevRenderStage = GFX_DEVICE.setRenderStage(underwater ? RenderStage::DISPLAY : RenderStage::REFLECTION);
-    GFX_DEVICE.toggleClipPlane(g_reflectionClipID, true);
+    RenderStage prevRenderStage = gfx.setRenderStage(underwater ? RenderStage::DISPLAY : RenderStage::REFLECTION);
+    gfx.toggleClipPlane(g_reflectionClipID, true);
 
 
     // Reset reflection cam
@@ -239,8 +240,8 @@ void WaterPlane::updateReflection(const SceneGraphNode& sgn,
 
     passMgr.doCustomPass(params);
 
-    GFX_DEVICE.toggleClipPlane(g_reflectionClipID, false);
-    GFX_DEVICE.setRenderStage(prevRenderStage);
+    gfx.toggleClipPlane(g_reflectionClipID, false);
+    gfx.setRenderStage(prevRenderStage);
 
     _reflectionRendering = false;
 }

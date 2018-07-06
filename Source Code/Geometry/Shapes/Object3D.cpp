@@ -33,7 +33,7 @@ Object3D::Object3D(const stringImpl& name, const stringImpl& resourceLocation, O
     _buffer =
         BitCompare(_geometryFlagMask, to_const_uint(ObjectFlag::OBJECT_FLAG_NO_VB))
         ? nullptr
-        : GFX_DEVICE.newVB();
+        : GFXDevice::instance().newVB();
 
     switch (type) {
         case ObjectType::BOX_3D :

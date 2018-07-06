@@ -38,8 +38,8 @@ namespace Divide {
 
 class PhysXScene : public Scene {
    public:
-    explicit PhysXScene(const stringImpl& name)
-        : Scene(name)
+    explicit PhysXScene(PlatformContext& context, const stringImpl& name)
+        : Scene(context, name)
     {
         _hasGroundPlane = false;
     }

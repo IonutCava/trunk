@@ -177,7 +177,7 @@ bool DVDConverter::load(Import::ImportData& target, const stringImpl& file) {
         vertCount += aiScenePointer->mMeshes[n]->mNumVertices;
     }
 
-    target._vertexBuffer = GFX_DEVICE.newVB();
+    target._vertexBuffer = GFXDevice::instance().newVB();
     target._vertexBuffer->useLargeIndices(vertCount + 1 > std::numeric_limits<U16>::max());
     target._vertexBuffer->setVertexCount(vertCount);
 

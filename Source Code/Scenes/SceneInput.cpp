@@ -24,22 +24,23 @@ void PressReleaseActionCbks::from(const PressReleaseActions& actions, const Inpu
     _onRAltReleaseAction = actionList.getInputAction(actions._onRAltReleaseAction)._action;
 }
 
-SceneInput::SceneInput(Scene& parentScene) 
-    : _parentScene(parentScene)
+SceneInput::SceneInput(Scene& parentScene, Input::InputInterface& context) 
+    : _parentScene(parentScene),
+      _context(context)
 {
 }
 
 Input::InputState SceneInput::getKeyState(Input::KeyCode key) const {
-    return Input::InputInterface::instance().getKeyState(key);
+    return _context.getKeyState(key);
 }
 
 Input::InputState SceneInput::getMouseButtonState(Input::MouseButton button) const {
-   return Input::InputInterface::instance().getMouseButtonState(button);
+   return _context.getMouseButtonState(button);
 }
 
 Input::InputState SceneInput::getJoystickButtonState(Input::Joystick device,
                                                      Input::JoystickButton button) const {
-    return Input::InputInterface::instance().getJoystickeButtonState(device, button);
+    return _context.getJoystickeButtonState(device, button);
 }
 
 bool SceneInput::handleCallbacks(const PressReleaseActionCbks& cbks,
@@ -111,7 +112,7 @@ bool SceneInput::onKeyUp(const Input::KeyEvent& arg) {
 bool SceneInput::joystickButtonPressed(const Input::JoystickEvent& arg,
                                        Input::JoystickButton button) {
 
-    Input::Joystick joy = Input::InputInterface::instance().joystick(arg.device->getID());
+    Input::Joystick joy = _context.joystick(arg.device->getID());
     PressReleaseActionCbks cbks;
     if (getJoystickMapping(joy, Input::JoystickElement(Input::JoystickElementType::BUTTON_PRESS, button), cbks)) {
         return handleCallbacks(cbks, InputParams(to_int(button)), true);
@@ -123,7 +124,7 @@ bool SceneInput::joystickButtonPressed(const Input::JoystickEvent& arg,
 bool SceneInput::joystickButtonReleased(const Input::JoystickEvent& arg,
                                         Input::JoystickButton button) {
     
-    Input::Joystick joy = Input::InputInterface::instance().joystick(arg.device->getID());
+    Input::Joystick joy = _context.joystick(arg.device->getID());
 
     PressReleaseActionCbks cbks;
     if (getJoystickMapping(joy, Input::JoystickElement(Input::JoystickElementType::BUTTON_PRESS, button), cbks)) {
@@ -134,7 +135,7 @@ bool SceneInput::joystickButtonReleased(const Input::JoystickEvent& arg,
 }
 
 bool SceneInput::joystickAxisMoved(const Input::JoystickEvent& arg, I8 axis) {
-    Input::Joystick joy = Input::InputInterface::instance().joystick(arg.device->getID());
+    Input::Joystick joy = _context.joystick(arg.device->getID());
 
     PressReleaseActionCbks cbks;
     if (getJoystickMapping(joy, Input::JoystickElement(Input::JoystickElementType::AXIS_MOVE, axis), cbks)) {
@@ -147,7 +148,7 @@ bool SceneInput::joystickAxisMoved(const Input::JoystickEvent& arg, I8 axis) {
 
 bool SceneInput::joystickPovMoved(const Input::JoystickEvent& arg, I8 pov) {
 
-    Input::Joystick joy = Input::InputInterface::instance().joystick(arg.device->getID());
+    Input::Joystick joy = _context.joystick(arg.device->getID());
 
     PressReleaseActionCbks cbks;
     if (getJoystickMapping(joy, Input::JoystickElement(Input::JoystickElementType::POV_MOVE, pov), cbks)) {
@@ -159,7 +160,7 @@ bool SceneInput::joystickPovMoved(const Input::JoystickEvent& arg, I8 pov) {
 }
 
 bool SceneInput::joystickSliderMoved(const Input::JoystickEvent& arg, I8 index) {
-    Input::Joystick joy = Input::InputInterface::instance().joystick(arg.device->getID());
+    Input::Joystick joy = _context.joystick(arg.device->getID());
 
     PressReleaseActionCbks cbks;
     if (getJoystickMapping(joy, Input::JoystickElement(Input::JoystickElementType::SLIDER_MOVE, index), cbks)) {
@@ -171,7 +172,7 @@ bool SceneInput::joystickSliderMoved(const Input::JoystickEvent& arg, I8 index) 
 }
 
 bool SceneInput::joystickVector3DMoved(const Input::JoystickEvent& arg, I8 index) {
-    Input::Joystick joy = Input::InputInterface::instance().joystick(arg.device->getID());
+    Input::Joystick joy = _context.joystick(arg.device->getID());
 
     PressReleaseActionCbks cbks;
     if (getJoystickMapping(joy, Input::JoystickElement(Input::JoystickElementType::VECTOR_MOVE, index), cbks)) {

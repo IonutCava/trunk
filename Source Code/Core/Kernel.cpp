@@ -21,7 +21,22 @@
 #include "Platform/Compute/Headers/OpenCLInterface.h"
 
 namespace Divide {
+PlatformContext::PlatformContext(GFXDevice& gfx,
+                                 SFXDevice& sfx,
+                                 PXDevice&  pfx,
+                                 GUI& gui,
+                                 Input::InputInterface& input)
+    : _GFX(gfx), _SFX(sfx), _PFX(pfx), _GUI(gui), _INPUT(input)
+{
+}
 
+void PlatformContext::idle() {
+    _GFX.idle();
+    //_SFX.idle();
+    _PFX.idle();
+    //_GUI.idle();
+    //_INPUT.idle();
+}
 LoopTimingData::LoopTimingData() : _updateLoops(0),
                                    _previousTime(0ULL),
                                    _currentTime(0ULL),
@@ -37,12 +52,8 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
     : _argc(argc),
       _argv(argv),
       _APP(parentApp),
+      _platformContext(nullptr),
       _taskPool(Config::MAX_POOLED_TASKS),
-      _GFX(GFXDevice::instance()),                // Video
-      _SFX(SFXDevice::instance()),                // Audio
-      _PFX(PXDevice::instance()),                 // Physics
-      _input(Input::InputInterface::instance()),  // Input
-      _GUI(GUI::instance()),                      // Graphical User Interface
       _sceneMgr(SceneManager::instance()),        // Scene Manager
       _appLoopTimer(Time::ADD_TIMER("Main Loop Timer")),
       _frameTimer(Time::ADD_TIMER("Total Frame Timer")),
@@ -60,6 +71,12 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
       _postFxRenderTimer(Time::ADD_TIMER("PostFX Timer")),
       _blitToDisplayTimer(Time::ADD_TIMER("Blit to screen Timer"))
 {
+    _platformContext = MemoryManager_NEW PlatformContext(
+        GFXDevice::instance(),               // Video
+        SFXDevice::instance(),               // Audio
+        PXDevice::instance(),                // Physics
+        GUI::instance(),                     // Graphical User Interface
+        Input::InputInterface::instance());  // Input
 
     _appLoopTimer.addChildTimer(_appIdleTimer);
     _appLoopTimer.addChildTimer(_frameTimer);
@@ -79,24 +96,26 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
     ResourceCache::createInstance();
     FrameListenerManager::createInstance();
     OpenCLInterface::createInstance();
-    // force all lights to update on camera change (to keep them still actually)
-    Camera::addUpdateListener(DELEGATE_BIND(&Attorney::GFXDeviceKernel::onCameraUpdate, std::placeholders::_1));
+    
     Camera::addUpdateListener(DELEGATE_BIND(&Attorney::SceneManagerKernel::onCameraUpdate, std::placeholders::_1));
-    Camera::addUpdateListener(DELEGATE_BIND(&Attorney::GFXDeviceKernel::onCameraChange, std::placeholders::_1));
+    Camera::addUpdateListener([this](const Camera& cam) { Attorney::GFXDeviceKernel::onCameraUpdate(_platformContext->_GFX, cam); });
+    Camera::addChangeListener([this](const Camera& cam) { Attorney::GFXDeviceKernel::onCameraChange(_platformContext->_GFX, cam); });
+
     ParamHandler::instance().setParam<stringImpl>(_ID("language"), Locale::currentLanguage());
 }
 
 Kernel::~Kernel()
 {
     Camera::destroyPool();
+    MemoryManager::SAFE_DELETE(_platformContext);
 }
 
 void Kernel::idle() {
     _taskPool.flushCallbackQueue();
 
-    _GFX.idle();
-    _PFX.idle();
+    _platformContext->idle();
     _sceneMgr.idle();
+
     FrameListenerManager::instance().idle();
 
     ParamHandler& par = ParamHandler::instance();
@@ -148,8 +167,8 @@ void Kernel::onLoop() {
         FrameListenerManager& frameMgr = FrameListenerManager::instance();
 
         // Restore GPU to default state: clear buffers and set default render state
-        _SFX.beginFrame();
-        _GFX.beginFrame();
+        _platformContext->_SFX.beginFrame();
+        _platformContext->_GFX.beginFrame();
         {
             Time::ScopedTimer timer3(_frameTimer);
             // Launch the FRAME_STARTED event
@@ -170,8 +189,8 @@ void Kernel::onLoop() {
 
             _timingData._keepAlive = frameMgr.frameEvent(evt) && _timingData._keepAlive;
         }
-        _GFX.endFrame(_APP.mainLoopActive());
-        _SFX.endFrame();
+        _platformContext->_GFX.endFrame(_APP.mainLoopActive());
+        _platformContext->_SFX.endFrame();
 
         // Launch the FRAME_ENDED event (buffers have been swapped)
         frameMgr.createEvent(_timingData._currentTime, FrameEventType::FRAME_EVENT_ENDED, evt);
@@ -189,7 +208,7 @@ void Kernel::onLoop() {
 
 if (Config::Profile::BENCHMARK_PERFORMANCE || Config::Profile::ENABLE_FUNCTION_PROFILING)
 {
-    U32 frameCount = _GFX.getFrameCount();
+    U32 frameCount = _platformContext->_GFX.getFrameCount();
 
     // Should be approximatelly 2 times a seconds
     bool print = false;
@@ -207,20 +226,21 @@ if (Config::Profile::BENCHMARK_PERFORMANCE || Config::Profile::ENABLE_FUNCTION_P
             profileData.append(Time::ApplicationTimer::instance().benchmarkReport());
             profileData.append("\n");
             profileData.append(Util::StringFormat("GPU: [ %5.5f ] [DrawCalls: %d]",
-                                                  Time::MicrosecondsToSeconds<F32>(_GFX.getFrameDurationGPU()),
-                                                  _GFX.getDrawCallCount()));
+                                                  Time::MicrosecondsToSeconds<F32>(_platformContext->_GFX.getFrameDurationGPU()),
+                                                  _platformContext->_GFX.getDrawCallCount()));
         }
         if (Config::Profile::ENABLE_FUNCTION_PROFILING) {
             profileData.append("\n");
             profileData.append(Time::ProfileTimer::printAll());
         }
 
-        Arena::Statistics stats = _GFX.getObjectAllocStats();
+        Arena::Statistics stats = _platformContext->_GFX.getObjectAllocStats();
         profileData.append("\n");
-        profileData.append(Util::StringFormat("GPU Objects: %5.5f Mb,\n"
+        profileData.append(Util::StringFormat("GPU Objects: %5.5f Kb (%5.5f Mb),\n"
                                               "             %d allocs,\n"
                                               "             %d blocks,\n"
                                               "             %d destructors",
+                                              (to_float(stats.bytes_allocated_) / 1024),
                                               (to_float(stats.bytes_allocated_) / 1024) / 1024,
                                               stats.num_of_allocs_,
                                               stats.num_of_blocks_,
@@ -230,7 +250,7 @@ if (Config::Profile::BENCHMARK_PERFORMANCE || Config::Profile::ENABLE_FUNCTION_P
             Console::printfn(profileData.c_str());
         }
 
-        _GUI.modifyText(_ID("ProfileData"), profileData);
+        _platformContext->_GUI.modifyText(_ID("ProfileData"), profileData);
     }
 
     Util::RecordFloatEvent("kernel.mainLoopApp",
@@ -264,7 +284,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTime) {
     {
         Time::ScopedTimer timer2(_physicsProcessTimer);
         // Process physics
-        _PFX.process(physicsTime);
+        _platformContext->_PFX.process(physicsTime);
     }
 
     {
@@ -314,33 +334,28 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTime) {
         assert(interpolationFactor <= 1.0 && interpolationFactor > 0.0);
     }
 
-    _GFX.setInterpolation(interpolationFactor);
+    _platformContext->_GFX.setInterpolation(interpolationFactor);
     
     // Get input events
     if (_APP.windowManager().getActiveWindow().hasFocus()) {
-        _input.update(_timingData._currentTimeDelta);
+        _platformContext->_INPUT.update(_timingData._currentTimeDelta);
     } else {
         _sceneMgr.onLostFocus();
     }
     {
         Time::ScopedTimer timer3(_physicsUpdateTimer);
         // Update physics
-        _PFX.update(physicsTime);
+        _platformContext->_PFX.update(physicsTime);
     }
 
     // Update the graphical user interface
-    _GUI.update(_timingData._currentTimeDelta);
+    _platformContext->_GUI.update(_timingData._currentTimeDelta);
 
     return presentToScreen(evt, deltaTime);
 }
 
 bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTime) {
     Time::ScopedTimer time(_flushToScreenTimer);
-
-    
-        
-        
-        
 
     FrameListenerManager& frameMgr = FrameListenerManager::instance();
 
@@ -374,7 +389,7 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTime) {
     }
     {
         Time::ScopedTimer time4(_blitToDisplayTimer);
-        Attorney::GFXDeviceKernel::flushDisplay();
+        Attorney::GFXDeviceKernel::flushDisplay(_platformContext->_GFX);
     }
     {
         Time::ScopedTimer time5(_postRenderTimer);
@@ -440,16 +455,16 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     }
 
     Console::bindConsoleOutput(DELEGATE_BIND(&GUIConsole::printText,
-                                             _GUI.getConsole(),
+                                             _platformContext->_GUI.getConsole(),
                                              std::placeholders::_1,
                                              std::placeholders::_2));
 
-    _PFX.setAPI(PXDevice::PhysicsAPI::PhysX);
-    _SFX.setAPI(SFXDevice::AudioAPI::SDL);
+    _platformContext->_PFX.setAPI(PXDevice::PhysicsAPI::PhysX);
+    _platformContext->_SFX.setAPI(SFXDevice::AudioAPI::SDL);
     // Using OpenGL for rendering as default
     if (Config::USE_OPENGL_RENDERING) {
-        _GFX.setAPI(Config::USE_OPENGL_ES ? RenderAPI::OpenGLES
-                                          : RenderAPI::OpenGL);
+        _platformContext->_GFX.setAPI(Config::USE_OPENGL_ES ? RenderAPI::OpenGLES
+                                                            : RenderAPI::OpenGL);
     }
     // Load info from XML files
     stringImpl startupScene(XML::loadScripts(entryPoint));
@@ -469,7 +484,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     bool startFullScreen = par.getParam<bool>(_ID("runtime.startFullScreen"), true);
     WindowManager& winManager = _APP.windowManager();
 
-    ErrorCode initError = winManager.init(_GFX.getAPI(), initRes, startFullScreen, targetDisplay);
+    ErrorCode initError = winManager.init(_platformContext->_GFX.getAPI(), initRes, startFullScreen, targetDisplay);
     if (initError != ErrorCode::NO_ERR) {
         return initError;
     }
@@ -478,7 +493,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     const DisplayWindow& mainWindow  = winManager.getActiveWindow();
     vec2<U16> renderResolution(startFullScreen ? mainWindow.getDimensions(WindowType::FULLSCREEN)
                                                : mainWindow.getDimensions(WindowType::WINDOW));
-    initError = _GFX.initRenderingAPI(_argc, _argv, renderResolution);
+    initError = _platformContext->_GFX.initRenderingAPI(_argc, _argv, renderResolution);
 
     // If we could not initialize the graphics device, exit
     if (initError != ErrorCode::NO_ERR) {
@@ -515,31 +530,31 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     window.type(WindowType::SPLASH);
     winManager.handleWindowEvent(WindowEvent::APP_LOOP, -1, -1, -1);
     // Load and render the splash screen
-    _GFX.beginFrame();
+    _platformContext->_GFX.beginFrame();
     GUISplash("divideLogo.jpg", initRes[to_const_uint(WindowType::SPLASH)]).render();
-    _GFX.endFrame(true);
+    _platformContext->_GFX.endFrame(true);
 
     Console::printfn(Locale::get(_ID("START_SOUND_INTERFACE")));
-    initError = _SFX.initAudioAPI();
+    initError = _platformContext->_SFX.initAudioAPI();
     if (initError != ErrorCode::NO_ERR) {
         return initError;
     }
 
     Console::printfn(Locale::get(_ID("START_PHYSICS_INTERFACE")));
-    initError = _PFX.initPhysicsAPI(Config::TARGET_FRAME_RATE);
+    initError = _platformContext->_PFX.initPhysicsAPI(Config::TARGET_FRAME_RATE);
     if (initError != ErrorCode::NO_ERR) {
         return initError;
     }
 
     // Bind the kernel with the input interface
-    initError = _input.init(*this, renderResolution);
+    initError = _platformContext->_INPUT.init(*this, renderResolution);
     if (initError != ErrorCode::NO_ERR) {
         return initError;
     }
 
     // Initialize GUI with our current resolution
-    _GUI.init(renderResolution);
-    _GUI.addText(_ID("ProfileData"),                   // Unique ID
+    _platformContext->_GUI.init(renderResolution);
+    _platformContext->_GUI.addText(_ID("ProfileData"),                   // Unique ID
         vec2<I32>(renderResolution.width * 0.75, 100), // Position
         Font::DROID_SERIF_BOLD,          // Font
         vec4<U8>(255,  50, 0, 255),      // Colour
@@ -547,8 +562,8 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
         12);                             // Font size
 
 
-    ShadowMap::initShadowMaps();
-    _sceneMgr.init(&_GUI);
+    ShadowMap::initShadowMaps(_platformContext->_GFX);
+    _sceneMgr.init(*_platformContext);
 
     if (!_sceneMgr.switchScene(startupScene, true, false)) {
         Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD")), startupScene.c_str());
@@ -575,15 +590,15 @@ void Kernel::shutdown() {
     SceneManager::destroyInstance();
     GUI::destroyInstance();  /// Deactivate GUI
     Camera::destroyPool();
-    ShadowMap::clearShadowMaps();
+    ShadowMap::clearShadowMaps(_platformContext->_GFX);
     Console::printfn(Locale::get(_ID("STOP_ENGINE_OK")));
     Console::printfn(Locale::get(_ID("STOP_PHYSICS_INTERFACE")));
-    _PFX.closePhysicsAPI();
+    _platformContext->_PFX.closePhysicsAPI();
     PXDevice::destroyInstance();
     Console::printfn(Locale::get(_ID("STOP_HARDWARE")));
     OpenCLInterface::instance().deinit();
-    _SFX.closeAudioAPI();
-    _GFX.closeRenderingAPI();
+    _platformContext->_SFX.closeAudioAPI();
+    _platformContext->_GFX.closeRenderingAPI();
     Input::InputInterface::destroyInstance();
     SFXDevice::destroyInstance();
     GFXDevice::destroyInstance();
@@ -592,20 +607,20 @@ void Kernel::shutdown() {
 }
 
 void Kernel::onChangeWindowSize(U16 w, U16 h) {
-    Attorney::GFXDeviceKernel::onChangeWindowSize(w, h);
+    Attorney::GFXDeviceKernel::onChangeWindowSize(_platformContext->_GFX, w, h);
 
-    if (_input.isInit()) {
-        const OIS::MouseState& ms = _input.getMouse().getMouseState();
+    if (_platformContext->_INPUT.isInit()) {
+        const OIS::MouseState& ms = _platformContext->_INPUT.getMouse().getMouseState();
         ms.width = w;
         ms.height = h;
     }
 
-    _GUI.onChangeResolution(w, h);
+    _platformContext->_GUI.onChangeResolution(w, h);
 }
 
 void Kernel::onChangeRenderResolution(U16 w, U16 h) const {
-    Attorney::GFXDeviceKernel::onChangeRenderResolution(w, h);
-    _GUI.onChangeResolution(w, h);
+    Attorney::GFXDeviceKernel::onChangeRenderResolution(_platformContext->_GFX, w, h);
+    _platformContext->_GUI.onChangeResolution(w, h);
 
 
     Camera* mainCamera = Camera::findCamera(Camera::DefaultCameraHash);
@@ -620,19 +635,19 @@ void Kernel::onChangeRenderResolution(U16 w, U16 h) const {
 
 ///--------------------------Input Management-------------------------------------///
 bool Kernel::setCursorPosition(I32 x, I32 y) const {
-    _GUI.setCursorPosition(x, y);
+    _platformContext->_GUI.setCursorPosition(x, y);
     return true;
 }
 
 bool Kernel::onKeyDown(const Input::KeyEvent& key) {
-    if (_GUI.onKeyDown(key)) {
+    if (_platformContext->_GUI.onKeyDown(key)) {
         return _sceneMgr.onKeyDown(key);
     }
     return true;  //< InputInterface needs to know when this is completed
 }
 
 bool Kernel::onKeyUp(const Input::KeyEvent& key) {
-    if (_GUI.onKeyUp(key)) {
+    if (_platformContext->_GUI.onKeyUp(key)) {
         return _sceneMgr.onKeyUp(key);
     }
     // InputInterface needs to know when this is completed
@@ -641,7 +656,7 @@ bool Kernel::onKeyUp(const Input::KeyEvent& key) {
 
 bool Kernel::mouseMoved(const Input::MouseEvent& arg) {
     Camera::mouseMoved(arg);
-    if (_GUI.mouseMoved(arg)) {
+    if (_platformContext->_GUI.mouseMoved(arg)) {
         return _sceneMgr.mouseMoved(arg);
     }
     // InputInterface needs to know when this is completed
@@ -650,7 +665,7 @@ bool Kernel::mouseMoved(const Input::MouseEvent& arg) {
 
 bool Kernel::mouseButtonPressed(const Input::MouseEvent& arg,
                                 Input::MouseButton button) {
-    if (_GUI.mouseButtonPressed(arg, button)) {
+    if (_platformContext->_GUI.mouseButtonPressed(arg, button)) {
         return _sceneMgr.mouseButtonPressed(arg, button);
     }
     // InputInterface needs to know when this is completed
@@ -659,7 +674,7 @@ bool Kernel::mouseButtonPressed(const Input::MouseEvent& arg,
 
 bool Kernel::mouseButtonReleased(const Input::MouseEvent& arg,
                                  Input::MouseButton button) {
-    if (_GUI.mouseButtonReleased(arg, button)) {
+    if (_platformContext->_GUI.mouseButtonReleased(arg, button)) {
         return _sceneMgr.mouseButtonReleased(arg, button);
     }
     // InputInterface needs to know when this is completed
@@ -667,7 +682,7 @@ bool Kernel::mouseButtonReleased(const Input::MouseEvent& arg,
 }
 
 bool Kernel::joystickAxisMoved(const Input::JoystickEvent& arg, I8 axis) {
-    if (_GUI.joystickAxisMoved(arg, axis)) {
+    if (_platformContext->_GUI.joystickAxisMoved(arg, axis)) {
         return _sceneMgr.joystickAxisMoved(arg, axis);
     }
     // InputInterface needs to know when this is completed
@@ -675,7 +690,7 @@ bool Kernel::joystickAxisMoved(const Input::JoystickEvent& arg, I8 axis) {
 }
 
 bool Kernel::joystickPovMoved(const Input::JoystickEvent& arg, I8 pov) {
-    if (_GUI.joystickPovMoved(arg, pov)) {
+    if (_platformContext->_GUI.joystickPovMoved(arg, pov)) {
         return _sceneMgr.joystickPovMoved(arg, pov);
     }
     // InputInterface needs to know when this is completed
@@ -684,7 +699,7 @@ bool Kernel::joystickPovMoved(const Input::JoystickEvent& arg, I8 pov) {
 
 bool Kernel::joystickButtonPressed(const Input::JoystickEvent& arg,
                                    Input::JoystickButton button) {
-    if (_GUI.joystickButtonPressed(arg, button)) {
+    if (_platformContext->_GUI.joystickButtonPressed(arg, button)) {
         return _sceneMgr.joystickButtonPressed(arg, button);
     }
     // InputInterface needs to know when this is completed
@@ -693,7 +708,7 @@ bool Kernel::joystickButtonPressed(const Input::JoystickEvent& arg,
 
 bool Kernel::joystickButtonReleased(const Input::JoystickEvent& arg,
                                     Input::JoystickButton button) {
-    if (_GUI.joystickButtonReleased(arg, button)) {
+    if (_platformContext->_GUI.joystickButtonReleased(arg, button)) {
         return _sceneMgr.joystickButtonReleased(arg, button);
     }
     // InputInterface needs to know when this is completed
@@ -701,7 +716,7 @@ bool Kernel::joystickButtonReleased(const Input::JoystickEvent& arg,
 }
 
 bool Kernel::joystickSliderMoved(const Input::JoystickEvent& arg, I8 index) {
-    if (_GUI.joystickSliderMoved(arg, index)) {
+    if (_platformContext->_GUI.joystickSliderMoved(arg, index)) {
         return _sceneMgr.joystickSliderMoved(arg, index);
     }
     // InputInterface needs to know when this is completed
@@ -709,7 +724,7 @@ bool Kernel::joystickSliderMoved(const Input::JoystickEvent& arg, I8 index) {
 }
 
 bool Kernel::joystickVector3DMoved(const Input::JoystickEvent& arg, I8 index) {
-    if (_GUI.joystickVector3DMoved(arg, index)) {
+    if (_platformContext->_GUI.joystickVector3DMoved(arg, index)) {
         return _sceneMgr.joystickVector3DMoved(arg, index);
     }
     // InputInterface needs to know when this is completed
@@ -717,7 +732,7 @@ bool Kernel::joystickVector3DMoved(const Input::JoystickEvent& arg, I8 index) {
 }
 
 void Attorney::KernelApplication::syncThreadToGPU(Kernel& kernel, const std::thread::id& threadID, bool beginSync) {
-    kernel._GFX.syncThreadToGPU(threadID, beginSync);
+    Attorney::GFXDeviceKernel::syncThreadToGPU(kernel._platformContext->_GFX, threadID, beginSync);
 }
 
 };

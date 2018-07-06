@@ -8,8 +8,9 @@ vec2<F32> PreRenderOperator::s_mainCamZPlanes;
 mat4<F32> PreRenderOperator::s_mainCamViewMatrixCache;
 mat4<F32> PreRenderOperator::s_mainCamProjectionMatrixCache;
 
-PreRenderOperator::PreRenderOperator(FilterType operatorType, RenderTarget* hdrTarget, RenderTarget* ldrTarget)
-    : _operatorType(operatorType),
+PreRenderOperator::PreRenderOperator(GFXDevice& context, FilterType operatorType, RenderTarget* hdrTarget, RenderTarget* ldrTarget)
+    : _context(context),
+      _operatorType(operatorType),
       _hdrTarget(hdrTarget),
       _ldrTarget(ldrTarget)
 {
@@ -20,7 +21,7 @@ PreRenderOperator::PreRenderOperator(FilterType operatorType, RenderTarget* hdrT
 
 PreRenderOperator::~PreRenderOperator()
 {
-    GFX_DEVICE.deallocateRT(_samplerCopy);
+    _context.deallocateRT(_samplerCopy);
 }
 
 void PreRenderOperator::cacheDisplaySettings(const GFXDevice& context) {

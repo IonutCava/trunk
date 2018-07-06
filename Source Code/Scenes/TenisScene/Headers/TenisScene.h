@@ -46,7 +46,7 @@ class NPC;
 
 class TenisScene : public Scene {
    public:
-    explicit TenisScene(const stringImpl& name);
+    explicit TenisScene(PlatformContext& context, const stringImpl& name);
 
     bool load(const stringImpl& name);
     bool loadResources(bool continueOnErrors);

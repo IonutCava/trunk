@@ -90,6 +90,7 @@ namespace Attorney {
     class GFXDeviceKernel;
     class GFXDeviceRenderer;
     class GFXDeviceGraphicsResource;
+    class KernelApplication;
 };
 
 /// Rough around the edges Adapter pattern abstracting the actual rendering API
@@ -188,9 +189,9 @@ DEFINE_SINGLETON(GFXDevice)
     void beginFrame();
     void endFrame(bool swapBuffers);
 
-    /// Set all of the needed API specific settings for 2D (Ortho) / 3D
-    /// (Perspective) rendering
-    void toggle2D(bool state);
+    /// Set all of the needed API specific settings for 2D (Ortho) / 3D (Perspective) rendering
+    /// Returns true if the state was changed or false if it was already set
+    bool toggle2D(bool state);
 
     void debugDraw(const SceneRenderState& sceneRenderState, const Camera& activeCamera, RenderSubPassCmds& subPassesInOut);
 
@@ -358,13 +359,13 @@ DEFINE_SINGLETON(GFXDevice)
         return _api->getFrameDurationGPU();
     }
 
+  protected:
     inline void syncThreadToGPU(const std::thread::id& threadID, bool beginSync) {
         if (beginSync) {
             _api->syncToThread(threadID);
         }
     }
 
-  protected:
     RenderTarget* newRT(const stringImpl& name) const;
 
     void drawDebugFrustum(RenderSubPassCmds& subPassesInOut);
@@ -381,8 +382,8 @@ DEFINE_SINGLETON(GFXDevice)
   protected:
     friend class Camera;
     void renderFromCamera(Camera& camera);
-    void onCameraUpdate(Camera& camera);
-    void onCameraChange(Camera& camera);
+    void onCameraUpdate(const Camera& camera);
+    void onCameraChange(const Camera& camera);
 
     void flushDisplay();
 
@@ -521,33 +522,34 @@ namespace Attorney {
 
     class GFXDeviceKernel {
     private:
-        static void onCameraUpdate(Camera& camera) {
-            GFXDevice::instance().onCameraUpdate(camera);
+        static void onCameraUpdate(GFXDevice& device, const Camera& camera) {
+            device.onCameraUpdate(camera);
         }
 
-        static void onCameraChange(Camera& camera) {
-            GFXDevice::instance().onCameraChange(camera);
+        static void onCameraChange(GFXDevice& device, const Camera& camera) {
+            device.onCameraChange(camera);
         }
 
-        static void flushDisplay() {
-            GFXDevice::instance().flushDisplay();
+        static void flushDisplay(GFXDevice& device) {
+            device.flushDisplay();
         }
 
-        static void onChangeWindowSize(U16 w, U16 h) {
-            GFXDevice::instance().setBaseViewport(vec4<I32>(0, 0, w, h));
+        static void onChangeWindowSize(GFXDevice& device, U16 w, U16 h) {
+            device.setBaseViewport(vec4<I32>(0, 0, w, h));
         }
 
-        static void onChangeRenderResolution(U16 w, U16 h) {
-            GFXDevice::instance().onChangeResolution(w, h);
+        static void onChangeRenderResolution(GFXDevice& device, U16 w, U16 h) {
+            device.onChangeResolution(w, h);
         }
 
-        static void syncThreadToGPU(const std::thread::id& threadID, bool beginSync) {
+        static void syncThreadToGPU(GFXDevice& device, const std::thread::id& threadID, bool beginSync) {
             if (beginSync) {
-                GFXDevice::instance().syncThreadToGPU(threadID, beginSync);
+                device.syncThreadToGPU(threadID, beginSync);
             }
         }
 
         friend class Divide::Kernel;
+        friend class Divide::Attorney::KernelApplication;
     };
 
     class GFXDeviceRenderer {

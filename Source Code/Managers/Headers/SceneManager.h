@@ -68,7 +68,7 @@ DEFINE_SINGLETON(SceneManager, FrameListener, Input::InputAggregatorInterface)
 
     void setActiveScene(Scene* const scene);
 
-    bool init(GUI* const gui);
+    bool init(PlatformContext& platformContext);
 
     /*Base Scene Operations*/
     Renderer& getRenderer() const;
@@ -155,7 +155,7 @@ DEFINE_SINGLETON(SceneManager, FrameListener, Input::InputAggregatorInterface)
   protected:
     bool frameStarted(const FrameEvent& evt) override;
     bool frameEnded(const FrameEvent& evt) override;
-    void onCameraUpdate(Camera& camera);
+    void onCameraUpdate(const Camera& camera);
     void preRender(const Camera& camera, RenderTarget& target);
     void postRender(const Camera& camera, RenderStage stage, RenderSubPassCmds& subPassesInOut);
     bool generateShadowMaps();
@@ -170,8 +170,8 @@ DEFINE_SINGLETON(SceneManager, FrameListener, Input::InputAggregatorInterface)
   private:
     bool _init;
     bool _processInput;
-    /// Pointer to the GUI interface
-    GUI* _GUI;
+    /// Pointer to the hardware objects
+    PlatformContext* _platformContext;
     /// Pointer to the scene graph culler that's used to determine what nodes are
     /// visible in the current frame
     RenderPassCuller* _renderPassCuller;
@@ -249,7 +249,7 @@ class SceneManagerKernel {
         Divide::SceneManager::instance().initPostLoadState();
     }
 
-    static void onCameraUpdate(Camera& camera) {
+    static void onCameraUpdate(const Camera& camera) {
         Divide::SceneManager::instance().onCameraUpdate(camera);
     }
 

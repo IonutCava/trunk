@@ -98,7 +98,7 @@ class Scene : public Resource {
     static bool onShutdown();
 
    public:
-    explicit Scene(const stringImpl& name);
+    explicit Scene(PlatformContext& context, const stringImpl& name);
     virtual ~Scene();
 
     /**Begin scene logic loop*/
@@ -240,7 +240,7 @@ class Scene : public Resource {
 
    protected:
        /// Global info
-       GFXDevice& _GFX;
+       PlatformContext& _context;
        ParamHandler&  _paramHandler;
        SceneGraph*    _sceneGraph;
        AI::AIManager* _aiManager;

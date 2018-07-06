@@ -49,15 +49,18 @@ void GFXDevice::renderQueueToSubPasses(RenderPassCmd& commandsInOut) {
                             previousCommandIndex = currentCommandIndex;
                         }
                     }
-                    for (GenericDrawCommand& cmd : drawCommands) {
-                        cmd.enableOption(GenericDrawCommand::RenderOptions::RENDER_INDIRECT);
-                    }
+
+                    std::for_each(std::begin(drawCommands),
+                                  std::end(drawCommands),
+                                  [&](GenericDrawCommand& cmd) -> void {
+                                      cmd.enableOption(GenericDrawCommand::RenderOptions::RENDER_INDIRECT);
+                                  });
 
                     for (ShaderBufferList::value_type& it : package._shaderBuffers) {
                         subPassCmd._shaderBuffers.emplace_back(it._buffer, it._slot, it._range);
                     }
 
-                    subPassCmd._textures = package._textureData;
+                    subPassCmd._textures.set(package._textureData);
                     subPassCmd._commands.insert(std::cbegin(subPassCmd._commands),
                                                 std::cbegin(drawCommands),
                                                 std::cend(drawCommands));

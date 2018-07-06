@@ -76,7 +76,8 @@ class glShader : protected GraphicsResource, public TrackedObject {
     /// Return a new shader reference
     static glShader* getShader(const stringImpl& name);
     /// Add or refresh a shader from the cache
-    static glShader* loadShader(const stringImpl& name,
+    static glShader* loadShader(GFXDevice& context,
+                                const stringImpl& name,
                                 const stringImpl& location,
                                 const ShaderType& type,
                                 const bool parseCode);

@@ -20,8 +20,8 @@ namespace {
     std::atomic_bool s_gameStarted;
 };
 
-TenisScene::TenisScene(const stringImpl& name)
-    : Scene(name),
+TenisScene::TenisScene(PlatformContext& context, const stringImpl& name)
+    : Scene(context, name),
     _aiPlayer1(nullptr),
     _aiPlayer2(nullptr),
     _aiPlayer3(nullptr),

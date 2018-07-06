@@ -36,6 +36,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
+struct PlatformContext;
+
 class Scene;
 class ScenePool {
 protected:
@@ -44,7 +46,7 @@ protected:
     ScenePool(SceneManager& parentMgr);
     ~ScenePool();
 
-    Scene* getOrCreateScene(const stringImpl& name, bool& foundInCache);
+    Scene* getOrCreateScene(PlatformContext& context, const stringImpl& name, bool& foundInCache);
     bool   deleteScene(Scene*& scene);
 
     bool   defaultSceneActive() const;

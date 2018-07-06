@@ -53,7 +53,7 @@ namespace Import {
             }
             tempBuffer >> _modelName;
             tempBuffer >> _modelPath;
-            _vertexBuffer = GFX_DEVICE.newVB();
+            _vertexBuffer = GFXDevice::instance().newVB();
             _vertexBuffer->deserialize(tempBuffer);
             U32 subMeshCount = 0;
             tempBuffer >> subMeshCount;

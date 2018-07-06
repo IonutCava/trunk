@@ -42,7 +42,7 @@ ParticleEmitter::ParticleEmitter(const stringImpl& name)
       _needsUpdate(false)
 {
     _updating = false;
-    _particleGPUBuffer = GFX_DEVICE.newGVD(g_particleBufferSizeFactor);
+    _particleGPUBuffer = GFXDevice::instance().newGVD(g_particleBufferSizeFactor);
 }
 
 ParticleEmitter::~ParticleEmitter()
@@ -172,7 +172,7 @@ bool ParticleEmitter::unload() {
 }
 
 void ParticleEmitter::postLoad(SceneGraphNode& sgn) {
-    RenderTarget& depthBuffer = GFX_DEVICE.renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
+    RenderTarget& depthBuffer = GFXDevice::instance().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
     TextureData depthBufferData = depthBuffer.getAttachment(RTAttachment::Type::Depth, 0).asTexture()->getData();
     depthBufferData.setHandleLow(to_const_uint(ShaderProgram::TextureUsage::DEPTH));
     sgn.get<RenderingComponent>()->registerTextureDependency(depthBufferData);
@@ -218,8 +218,8 @@ void ParticleEmitter::updateDrawCommands(SceneGraphNode& sgn,
                                          GenericDrawCommands& drawCommandsInOut) {
     GenericDrawCommand& cmd = drawCommandsInOut.front();
     cmd.cmd().primCount = to_uint(_particles->_renderingPositions.size());
-    cmd.stateHash(GFX_DEVICE.isDepthStage() ? _particleStateBlockHashDepth
-                                            : _particleStateBlockHash);
+    cmd.stateHash(GFXDevice::instance().isDepthStage() ? _particleStateBlockHashDepth
+                                                       : _particleStateBlockHash);
 
     cmd.shaderProgram(renderStage != RenderStage::SHADOW
                                    ? _particleShader

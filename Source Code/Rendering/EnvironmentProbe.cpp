@@ -28,7 +28,7 @@ EnvironmentProbe::EnvironmentProbe(ProbeType type) :
     _currentArrayIndex = allocateSlice();
 
     RenderStateBlock primitiveStateBlock;
-    _boundingBoxPrimitive = GFX_DEVICE.newIMP();
+    _boundingBoxPrimitive = GFXDevice::instance().newIMP();
     _boundingBoxPrimitive->name(Util::StringFormat("EnvironmentProbe_%d", getGUID()));
     _boundingBoxPrimitive->stateHash(primitiveStateBlock.getHash());
 
@@ -64,7 +64,7 @@ void EnvironmentProbe::onStartup() {
     depthDescriptor.setSampler(reflectionSampler);
 
     RenderTargetHandle tempHandle;
-    s_reflection = GFX_DEVICE.allocateRT(RenderTargetUsage::ENVIRONMENT, "EnviromentProbe");
+    s_reflection = GFXDevice::instance().allocateRT(RenderTargetUsage::ENVIRONMENT, "EnviromentProbe");
     s_reflection._rt->addAttachment(environmentDescriptor, RTAttachment::Type::Colour, 0, false);
     s_reflection._rt->addAttachment(depthDescriptor, RTAttachment::Type::Depth, 0, false);
     s_reflection._rt->create(Config::REFLECTION_TARGET_RESOLUTION);
@@ -72,7 +72,7 @@ void EnvironmentProbe::onStartup() {
 }
 
 void EnvironmentProbe::onShutdown() {
-    GFX_DEVICE.deallocateRT(s_reflection);
+    GFXDevice::instance().deallocateRT(s_reflection);
 }
 
 U32 EnvironmentProbe::allocateSlice() {
@@ -89,12 +89,12 @@ U32 EnvironmentProbe::allocateSlice() {
 
 void EnvironmentProbe::refresh() {
     if (++_currentUpdateCall % _updateRate == 0) {
-        GFX_DEVICE.generateCubeMap(*s_reflection._rt,
-                                   _currentArrayIndex,
-                                   _aabb.getCenter(),
-                                   vec2<F32>(0.1f, (_aabb.getMax() - _aabb.getCenter()).length()),
-                                   RenderStage::REFLECTION,
-                                   getRTIndex());
+        GFXDevice::instance().generateCubeMap(*s_reflection._rt,
+                                              _currentArrayIndex,
+                                              _aabb.getCenter(),
+                                              vec2<F32>(0.1f, (_aabb.getMax() - _aabb.getCenter()).length()),
+                                              RenderStage::REFLECTION,
+                                              getRTIndex());
         _currentUpdateCall = 0;
     }
     _boundingBoxPrimitive->paused(true);

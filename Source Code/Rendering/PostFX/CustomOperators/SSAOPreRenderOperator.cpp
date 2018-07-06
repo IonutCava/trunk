@@ -8,11 +8,11 @@
 namespace Divide {
 
 //ref: http://john-chapman-graphics.blogspot.co.uk/2013/01/ssao-tutorial.html
-SSAOPreRenderOperator::SSAOPreRenderOperator(RenderTarget* hdrTarget, RenderTarget* ldrTarget)
-    : PreRenderOperator(FilterType::FILTER_SS_AMBIENT_OCCLUSION, hdrTarget, ldrTarget)
+SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, RenderTarget* hdrTarget, RenderTarget* ldrTarget)
+    : PreRenderOperator(context, FilterType::FILTER_SS_AMBIENT_OCCLUSION, hdrTarget, ldrTarget)
 {
 
-    _samplerCopy = GFX_DEVICE.allocateRT("SSAO");
+    _samplerCopy = _context.allocateRT("SSAO");
     _samplerCopy._rt->addAttachment(_hdrTarget->getDescriptor(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0, false);
 
     U16 ssaoNoiseSize = 4;
@@ -67,7 +67,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(RenderTarget* hdrTarget, RenderTarg
     screenSampler.toggleMipMaps(false);
     screenSampler.setAnisotropy(0);
 
-    _ssaoOutput = GFX_DEVICE.allocateRT("SSAO_Out");
+    _ssaoOutput = _context.allocateRT("SSAO_Out");
     TextureDescriptor outputDescriptor(TextureType::TEXTURE_2D,
                                        GFXImageFormat::RED16,
                                        GFXDataFormat::FLOAT_16);
@@ -76,7 +76,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(RenderTarget* hdrTarget, RenderTarg
     //Colour0 holds the AO texture
     _ssaoOutput._rt->addAttachment(outputDescriptor, RTAttachment::Type::Colour, 0, false);
 
-    _ssaoOutputBlurred = GFX_DEVICE.allocateRT("SSAO_Blurred_Out");
+    _ssaoOutputBlurred = _context.allocateRT("SSAO_Blurred_Out");
     _ssaoOutputBlurred._rt->addAttachment(outputDescriptor, RTAttachment::Type::Colour, 0, false);
 
     ResourceDescriptor ssaoGenerate("SSAOPass.SSAOCalc");
@@ -98,8 +98,8 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(RenderTarget* hdrTarget, RenderTarg
 
 SSAOPreRenderOperator::~SSAOPreRenderOperator() 
 {
-    GFX_DEVICE.deallocateRT(_ssaoOutput);
-    GFX_DEVICE.deallocateRT(_ssaoOutputBlurred);
+    _context.deallocateRT(_ssaoOutput);
+    _context.deallocateRT(_ssaoOutputBlurred);
 }
 
 void SSAOPreRenderOperator::idle() {
@@ -120,7 +120,7 @@ void SSAOPreRenderOperator::execute() {
      GenericDrawCommand triangleCmd;
      triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
      triangleCmd.drawCount(1);
-     triangleCmd.stateHash(GFX_DEVICE.getDefaultStateBlock(true));
+     triangleCmd.stateHash(_context.getDefaultStateBlock(true));
 
     _ssaoGenerateShader->Uniform("projectionMatrix", PreRenderOperator::s_mainCamProjectionMatrixCache);
     _ssaoGenerateShader->Uniform("invProjectionMatrix", PreRenderOperator::s_mainCamProjectionMatrixCache.getInverse());
@@ -131,14 +131,14 @@ void SSAOPreRenderOperator::execute() {
     
     _ssaoOutput._rt->begin(RenderTarget::defaultPolicy());
         triangleCmd.shaderProgram(_ssaoGenerateShader);
-        GFX_DEVICE.draw(triangleCmd);
+        _context.draw(triangleCmd);
     _ssaoOutput._rt->end();
 
 
     _ssaoOutput._rt->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0);  // AO texture
     _ssaoOutputBlurred._rt->begin(RenderTarget::defaultPolicy());
         triangleCmd.shaderProgram(_ssaoBlurShader);
-        GFX_DEVICE.draw(triangleCmd);
+        _context.draw(triangleCmd);
     _ssaoOutputBlurred._rt->end();
     
     _samplerCopy._rt->blitFrom(_hdrTarget);
@@ -147,7 +147,7 @@ void SSAOPreRenderOperator::execute() {
 
     _hdrTarget->begin(_screenOnlyDraw);
         triangleCmd.shaderProgram(_ssaoApplyShader);
-        GFX_DEVICE.draw(triangleCmd);
+        _context.draw(triangleCmd);
     _hdrTarget->end();
     
 }

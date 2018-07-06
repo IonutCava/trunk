@@ -45,10 +45,10 @@ void GUISplash::render() {
     GenericDrawCommand triangleCmd;
     triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
     triangleCmd.drawCount(1);
-    triangleCmd.stateHash(GFX_DEVICE.getDefaultStateBlock(true));
+    triangleCmd.stateHash(GFXDevice::instance().getDefaultStateBlock(true));
     triangleCmd.shaderProgram(_splashShader);
 
-    GFX_DEVICE.draw(triangleCmd);
+    GFXDevice::instance().draw(triangleCmd);
 }
 
 };

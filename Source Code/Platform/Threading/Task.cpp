@@ -14,6 +14,7 @@ namespace {
 
 Task::Task()
   : GUIDWrapper(),
+    _application(Application::instance()),
     _taskFlags(0),
     _tp(nullptr),
     _poolIndex(0),
@@ -140,7 +141,7 @@ void Task::run() {
         beginSyncGPU();
     }
 
-    if (!Application::instance().ShutdownRequested()) {
+    if (!_application.ShutdownRequested()) {
 
         if (_callback) {
             _callback(_stopRequested);
@@ -171,11 +172,11 @@ void Task::run() {
 }
 
 void Task::beginSyncGPU() {
-    Attorney::ApplicationTask::syncThreadToGPU(std::this_thread::get_id(), true);
+    Attorney::ApplicationTask::syncThreadToGPU(_application, std::this_thread::get_id(), true);
 }
 
 void Task::endSyncGPU() {
-    Attorney::ApplicationTask::syncThreadToGPU(std::this_thread::get_id(), false);
+    Attorney::ApplicationTask::syncThreadToGPU(_application, std::this_thread::get_id(), false);
 }
 
 };

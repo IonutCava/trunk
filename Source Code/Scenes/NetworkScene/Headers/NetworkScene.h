@@ -38,8 +38,8 @@ namespace Divide {
 
 class NetworkScene : public Scene {
    public:
-    explicit NetworkScene(const stringImpl& name)
-        : Scene(name)
+    explicit NetworkScene(PlatformContext& context, const stringImpl& name)
+        : Scene(context, name)
     {
     }
 

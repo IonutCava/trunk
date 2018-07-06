@@ -13,7 +13,8 @@
 namespace Divide {
 
 PostFX::PostFX()
-    : _screenBorder(nullptr),
+    : _preRenderBatch(nullptr),
+      _screenBorder(nullptr),
       _noise(nullptr),
       _randomNoiseCoefficient(0.0f),
       _randomFlashCoefficient(0.0f),
@@ -39,13 +40,17 @@ PostFX::PostFX()
 
 PostFX::~PostFX()
 {
-    _preRenderBatch.destroy();
+    if (_preRenderBatch) {
+        _preRenderBatch->destroy();
+        MemoryManager::SAFE_DELETE(_preRenderBatch);
+    }
 }
 
-void PostFX::init() {
+void PostFX::init(GFXDevice& context) {
     Console::printfn(Locale::get(_ID("START_POST_FX")));
+    _gfx = &context;
     ParamHandler& par = ParamHandler::instance();
-    _gfx = &GFX_DEVICE;
+    _preRenderBatch = MemoryManager_NEW PreRenderBatch(context);
 
     ResourceDescriptor postFXShader("postProcessing");
     postFXShader.setThreadedLoading(false);
@@ -99,13 +104,17 @@ void PostFX::init() {
      borderTexture.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
      _screenBorder = CreateResource<Texture>(borderTexture);
 
+     _drawCommand.primitiveType(PrimitiveType::TRIANGLES);
+     _drawCommand.drawCount(1);
+     _drawCommand.shaderProgram(_postProcessingShader);
+
      RenderTarget& screenRT = _gfx->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
 
-     _preRenderBatch.init(&_gfx->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)));
-    PreRenderOperator& SSAOOp = _preRenderBatch.getOperator(FilterType::FILTER_SS_AMBIENT_OCCLUSION);
+     _preRenderBatch->init(&_gfx->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)));
+    PreRenderOperator& SSAOOp = _preRenderBatch->getOperator(FilterType::FILTER_SS_AMBIENT_OCCLUSION);
     SSAOOp.addInputFB(&screenRT);
 
-    PreRenderOperator& DOFOp = _preRenderBatch.getOperator(FilterType::FILTER_DEPTH_OF_FIELD);
+    PreRenderOperator& DOFOp = _preRenderBatch->getOperator(FilterType::FILTER_DEPTH_OF_FIELD);
     DOFOp.addInputFB(&screenRT);
     
     _noiseTimer = 0.0;
@@ -124,7 +133,7 @@ void PostFX::updateResolution(U16 width, U16 height) {
 
     _resolutionCache.set(width, height);
 
-    _preRenderBatch.reshape(width, height);
+    _preRenderBatch->reshape(width, height);
 }
 
 void PostFX::apply() {
@@ -132,12 +141,12 @@ void PostFX::apply() {
     _shaderFunctionSelection[1] = _shaderFunctionList[getFilterState(FilterType::FILTER_NOISE) ? 1 : 4];
     _shaderFunctionSelection[2] = _shaderFunctionList[getFilterState(FilterType::FILTER_UNDERWATER) ? 2 : 3];
 
-    GFX::Scoped2DRendering scoped2D(true);
-    _preRenderBatch.execute(_filterStackCount);
+    GFX::Scoped2DRendering scoped2D;
+    _preRenderBatch->execute(_filterStackCount);
     _postProcessingShader->bind();
     _postProcessingShader->SetSubroutines(ShaderType::FRAGMENT, _shaderFunctionSelection);
 
-    _preRenderBatch.bindOutput(to_const_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN));
+    _preRenderBatch->bindOutput(to_const_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN));
     _underwaterTexture->bind(to_const_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER));
     _noise->bind(to_const_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_NOISE));
     _screenBorder->bind(to_const_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_BORDER));
@@ -145,12 +154,8 @@ void PostFX::apply() {
     RenderTarget& screenRT = _gfx->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
 
     screenRT.begin(_postFXTarget);
-        GenericDrawCommand triangleCmd;
-        triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
-        triangleCmd.drawCount(1);
-        triangleCmd.stateHash(_gfx->getDefaultStateBlock(true));
-        triangleCmd.shaderProgram(_postProcessingShader);
-        _gfx->draw(triangleCmd);
+        _drawCommand.stateHash(_gfx->getDefaultStateBlock(true));
+        _gfx->draw(_drawCommand);
     screenRT.end();
 }
 
@@ -168,7 +173,7 @@ void PostFX::idle() {
         _postProcessingShader->Uniform("randomCoeffFlash", _randomFlashCoefficient);
     }
 
-    _preRenderBatch.idle();
+    _preRenderBatch->idle();
 }
 
 void PostFX::update(const U64 deltaTime) {

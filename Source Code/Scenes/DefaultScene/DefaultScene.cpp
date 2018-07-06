@@ -5,8 +5,8 @@
 #include "Rendering/PostFX/Headers/PostFX.h"
 
 namespace Divide {
-DefaultScene::DefaultScene(const stringImpl& name)
-    : Scene(name)
+DefaultScene::DefaultScene(PlatformContext& context, const stringImpl& name)
+    : Scene(context, name)
 {
 }
 

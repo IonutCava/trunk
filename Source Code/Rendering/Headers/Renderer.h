@@ -47,7 +47,10 @@ class LightPool;
 /// TiledForwardShading, Deferred Shading, etc
 class NOINITVTABLE Renderer {
    public:
-    Renderer(RendererType type) : _flag(0), _debugView(false), _type(type) {}
+    Renderer(GFXDevice& context, RendererType type)
+        : _context(context), _flag(0), _debugView(false), _type(type)
+    {
+    }
 
     virtual ~Renderer() {}
 
@@ -64,7 +67,9 @@ class NOINITVTABLE Renderer {
     inline void toggleDebugView() { _debugView = !_debugView; }
 
     inline U32 getFlag() const { return _flag; }
+
    protected:
+    GFXDevice& _context;
     // General purpose flag
     U32 _flag;
     bool _debugView;

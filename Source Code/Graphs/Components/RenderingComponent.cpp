@@ -57,24 +57,25 @@ RenderingComponent::RenderingComponent(Material_ptr materialInstance,
     // Prepare it for rendering lines
     RenderStateBlock primitiveStateBlock;
 
-    _boundingBoxPrimitive[0] = GFX_DEVICE.newIMP();
+    GFXDevice& gfx = GFXDevice::instance();
+    _boundingBoxPrimitive[0] = gfx.newIMP();
     _boundingBoxPrimitive[0]->name("BoundingBox_" + parentSGN.getName());
     _boundingBoxPrimitive[0]->stateHash(primitiveStateBlock.getHash());
     _boundingBoxPrimitive[0]->paused(true);
 
-    _boundingBoxPrimitive[1] = GFX_DEVICE.newIMP();
+    _boundingBoxPrimitive[1] = gfx.newIMP();
     _boundingBoxPrimitive[1]->name("BoundingBox_Parent_" + parentSGN.getName());
     _boundingBoxPrimitive[1]->stateHash(primitiveStateBlock.getHash());
     _boundingBoxPrimitive[1]->paused(true);
 
-    _boundingSpherePrimitive = GFX_DEVICE.newIMP();
+    _boundingSpherePrimitive = gfx.newIMP();
     _boundingSpherePrimitive->name("BoundingSphere_" + parentSGN.getName());
     _boundingSpherePrimitive->stateHash(primitiveStateBlock.getHash());
     _boundingSpherePrimitive->paused(true);
 
     if (nodeSkinned) {
         primitiveStateBlock.setZRead(false);
-        _skeletonPrimitive = GFX_DEVICE.newIMP();
+        _skeletonPrimitive = gfx.newIMP();
         _skeletonPrimitive->name("Skeleton_" + parentSGN.getName());
         _skeletonPrimitive->stateHash(primitiveStateBlock.getHash());
         _skeletonPrimitive->paused(true);
@@ -90,9 +91,9 @@ RenderingComponent::RenderingComponent(Material_ptr materialInstance,
         // Blue Z-axis
         _axisLines.push_back(
             Line(VECTOR3_ZERO, WORLD_Z_AXIS * 2, vec4<U8>(0, 0, 255, 255), 5.0f));
-        _axisGizmo = GFX_DEVICE.newIMP();
+        _axisGizmo = gfx.newIMP();
         // Prepare it for line rendering
-        size_t noDepthStateBlock = GFX_DEVICE.getDefaultStateBlock(true);
+        size_t noDepthStateBlock = gfx.getDefaultStateBlock(true);
         RenderStateBlock stateBlock(RenderStateBlock::get(noDepthStateBlock));
         _axisGizmo->name("AxisGizmo_" + parentSGN.getName());
         _axisGizmo->stateHash(stateBlock.getHash());
@@ -352,7 +353,7 @@ void RenderingComponent::getRenderingProperties(vec4<F32>& propertiesOut, F32& r
 /// Called after the current node was rendered
 void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, RenderStage renderStage, RenderSubPassCmds& subPassesInOut) {
     
-    if (renderStage != RenderStage::DISPLAY || GFX_DEVICE.isPrePass()) {
+    if (renderStage != RenderStage::DISPLAY || GFXDevice::instance().isPrePass()) {
         return;
     }
 
@@ -455,6 +456,8 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
     }
 
     RenderSubPassCmd& subPassInOut = subPassesInOut.back();
+    subPassInOut._commands.reserve(subPassInOut._commands.size() + 5);
+
     subPassInOut._commands.push_back(_boundingBoxPrimitive[0]->toDrawCommand());
     subPassInOut._commands.push_back(_boundingBoxPrimitive[1]->toDrawCommand());
     subPassInOut._commands.push_back(_boundingSpherePrimitive->toDrawCommand());
@@ -637,12 +640,12 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
     if (_reflectionCallback) {
         _reflectionCallback(_parentSGN, renderState, reflectRTID, reflectionIndex);
     } else {
-        GFX_DEVICE.generateCubeMap(GFX_DEVICE.renderTarget(reflectRTID),
-                                   0,
-                                   camPos,
-                                   vec2<F32>(zPlanes.x, zPlanes.y * 0.25f),
-                                   RenderStage::REFLECTION,
-                                   reflectionIndex);
+        GFXDevice::instance().generateCubeMap(GFXDevice::instance().renderTarget(reflectRTID),
+                                              0,
+                                              camPos,
+                                              vec2<F32>(zPlanes.x, zPlanes.y * 0.25f),
+                                              RenderStage::REFLECTION,
+                                              reflectionIndex);
     }
 
     return true;

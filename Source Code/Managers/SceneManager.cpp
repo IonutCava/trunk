@@ -57,7 +57,7 @@ bool SceneManager::onShutdown() {
 
 SceneManager::SceneManager()
     : FrameListener(),
-      _GUI(nullptr),
+      _platformContext(nullptr),
       _renderer(nullptr),
       _renderPassCuller(nullptr),
       _renderPassManager(nullptr),
@@ -74,7 +74,7 @@ SceneManager::SceneManager()
     ADD_DEBUG_VAR_FILE(&_elapsedTime, CallbackParam::TYPE_LARGE_INTEGER, false);
     AI::Navigation::DivideRecast::createInstance();
 
-    _sceneData = MemoryManager_NEW SceneShaderData();
+    _sceneData = MemoryManager_NEW SceneShaderData(GFXDevice::instance());
     _scenePool = MemoryManager_NEW ScenePool(*this);
 
     _sceneGraphCullTimers[0][to_uint(RenderStage::DISPLAY)] = &Time::ADD_TIMER("SceneGraph cull timer: Display");
@@ -121,7 +121,10 @@ void SceneManager::idle() {
     }
 }
 
-bool SceneManager::init(GUI* const gui) {
+bool SceneManager::init(PlatformContext& platformContext) {
+    assert(_platformContext == nullptr);
+    _platformContext = &platformContext;
+
     REGISTER_FRAME_LISTENER(&(this->instance()), 1);
 
     // Load default material
@@ -132,7 +135,6 @@ bool SceneManager::init(GUI* const gui) {
         false);
     _defaultMaterial->dumpToFile(false);
 
-    _GUI = gui;
     _renderPassCuller = MemoryManager_NEW RenderPassCuller();
     _renderPassManager = &RenderPassManager::instance();
     _shaderComputeQueue = MemoryManager_NEW ShaderComputeQueue();
@@ -144,7 +146,7 @@ bool SceneManager::init(GUI* const gui) {
 
 Scene* SceneManager::load(stringImpl sceneName) {
     bool foundInCache = false;
-    Scene* loadingScene = _scenePool->getOrCreateScene(sceneName, foundInCache);
+    Scene* loadingScene = _scenePool->getOrCreateScene(*_platformContext, sceneName, foundInCache);
 
     if (!loadingScene) {
         Console::errorfn(Locale::get(_ID("ERROR_XML_LOAD_INVALID_SCENE")));
@@ -173,7 +175,7 @@ bool SceneManager::unloadScene(Scene* scene) {
     assert(scene != nullptr);
     
     if (Attorney::SceneManager::deinitializeAI(*scene)) {
-        _GUI->onUnloadScene(scene);
+        _platformContext->_GUI.onUnloadScene(scene);
         return Attorney::SceneManager::unload(*scene);
     }
 
@@ -188,8 +190,8 @@ void SceneManager::setActiveScene(Scene* const scene) {
     }
     Attorney::SceneManager::onSetActive(*scene);
     _scenePool->activeScene(*scene);
-    ShadowMap::resetShadowMaps();
-    _GUI->onChangeScene(scene);
+    ShadowMap::resetShadowMaps(_platformContext->_GFX);
+    _platformContext->_GUI.onChangeScene(scene);
     ParamHandler::instance().setParam(_ID("activeScene"), scene->getName());
 }
 
@@ -215,7 +217,7 @@ bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious, bool
         [this, name, unloadPrevious, &sceneToUnload]()
         {
             bool foundInCache = false;
-            Scene* loadedScene = _scenePool->getOrCreateScene(name, foundInCache);
+            Scene* loadedScene = _scenePool->getOrCreateScene(*_platformContext, name, foundInCache);
             assert(loadedScene != nullptr && foundInCache);
 
             if(loadedScene->getState() == ResourceState::RES_LOADING) {
@@ -271,7 +273,7 @@ bool SceneManager::frameEnded(const FrameEvent& evt) {
     return Attorney::SceneManager::frameEnded(getActiveScene());
 }
 
-void SceneManager::onCameraUpdate(Camera& camera) {
+void SceneManager::onCameraUpdate(const Camera& camera) {
     getActiveScene().sceneGraph().onCameraUpdate(camera);
 }
 
@@ -328,24 +330,25 @@ void SceneManager::updateSceneState(const U64 deltaTime) {
 }
 
 void SceneManager::preRender(const Camera& camera, RenderTarget& target) {
+    const GFXDevice& gfx = GFXDevice::instance();
+
     LightPool* lightPool = Attorney::SceneManager::lightPool(getActiveScene());
-    lightPool->updateAndUploadLightData(camera.getEye(), GFX_DEVICE.getMatrix(MATRIX::VIEW));
+    lightPool->updateAndUploadLightData(camera.getEye(), gfx.getMatrix(MATRIX::VIEW));
     getRenderer().preRender(target, *lightPool);
 
-    if (GFX_DEVICE.getRenderStage() == RenderStage::DISPLAY) {
-        PostFX::instance().cacheDisplaySettings(GFX_DEVICE);
+    if (gfx.getRenderStage() == RenderStage::DISPLAY) {
+        PostFX::instance().cacheDisplaySettings(gfx);
     }
 }
 
 void SceneManager::postRender(const Camera& camera, RenderStage stage, RenderSubPassCmds& subPassesInOut) {
     Scene& activeScene = getActiveScene();
     SceneRenderState& activeSceneRenderState = activeScene.renderState();
-    RenderPassManager& passMgr = RenderPassManager::instance();
 
-    passMgr.getQueue().postRender(activeSceneRenderState, stage, subPassesInOut);
+    _renderPassManager->getQueue().postRender(activeSceneRenderState, stage, subPassesInOut);
     Attorney::SceneManager::debugDraw(activeScene, camera, stage, subPassesInOut);
     // Draw bounding boxes, skeletons, axis gizmo, etc.
-    GFX_DEVICE.debugDraw(activeSceneRenderState, camera, subPassesInOut);
+    GFXDevice::instance().debugDraw(activeSceneRenderState, camera, subPassesInOut);
 }
 
 bool SceneManager::generateShadowMaps() {
@@ -511,18 +514,17 @@ void SceneManager::updateVisibleNodes(RenderStage stage, bool refreshNodeData, b
         }
     );
 
-    RenderPass::BufferData& bufferData = RenderPassManager::instance().getBufferData(stage, pass);
+    RenderPass::BufferData& bufferData = _renderPassManager->getBufferData(stage, pass);
 
-    GFX_DEVICE.buildDrawCommands(visibleNodes, getActiveScene().renderState(), bufferData, refreshNodeData);
+    GFXDevice::instance().buildDrawCommands(visibleNodes, getActiveScene().renderState(), bufferData, refreshNodeData);
 }
 
 bool SceneManager::populateRenderQueue(RenderStage stage, 
                                        bool doCulling,
                                        U32 passIndex) {
 
-    RenderPassManager& passMgr = RenderPassManager::instance();
-    RenderQueue& queue = passMgr.getQueue();
-    bool isPrePass = GFX_DEVICE.isPrePass();
+    RenderQueue& queue = _renderPassManager->getQueue();
+    bool isPrePass = GFXDevice::instance().isPrePass();
 
     if (doCulling) {
         Time::ScopedTimer timer(*_sceneGraphCullTimers[isPrePass ? 0 : 1][to_uint(stage)]);
@@ -551,10 +553,10 @@ void SceneManager::setRenderer(RendererType rendererType) {
 
     switch (rendererType) {
     case RendererType::RENDERER_TILED_FORWARD_SHADING: {
-        MemoryManager::SAFE_UPDATE(_renderer, MemoryManager_NEW TiledForwardShadingRenderer());
+        MemoryManager::SAFE_UPDATE(_renderer, MemoryManager_NEW TiledForwardShadingRenderer(GFXDevice::instance()));
     } break;
     case RendererType::RENDERER_DEFERRED_SHADING: {
-        MemoryManager::SAFE_UPDATE(_renderer, MemoryManager_NEW DeferredShadingRenderer());
+        MemoryManager::SAFE_UPDATE(_renderer, MemoryManager_NEW DeferredShadingRenderer(GFXDevice::instance()));
     } break;
     }
 }

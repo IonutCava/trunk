@@ -9,8 +9,8 @@
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
 
 namespace Divide {
-PingPongScene::PingPongScene(const stringImpl& name)
-    : Scene(name)
+PingPongScene::PingPongScene(PlatformContext& context, const stringImpl& name)
+    : Scene(context, name)
 {
     _sideDrift = 0;
     _directionTowardsAdversary = true;

@@ -29,9 +29,9 @@ void Quadtree::getChunkBufferData(const SceneRenderState& sceneRenderState,
                                   vectorImpl<vec3<U32>>& chunkBufferData) const {
     assert(_root);
     U32 options = to_const_uint(ChunkBit::CHUNK_BIT_TESTCHILDREN);
-    if (GFX_DEVICE.getRenderStage() == RenderStage::REFLECTION) {
+    if (GFXDevice::instance().getRenderStage() == RenderStage::REFLECTION) {
         options |= to_const_uint(ChunkBit::CHUNK_BIT_WATERREFLECTION);
-    } else if (GFX_DEVICE.getRenderStage() == RenderStage::SHADOW) {
+    } else if (GFXDevice::instance().getRenderStage() == RenderStage::SHADOW) {
         options |= to_const_uint(ChunkBit::CHUNK_BIT_SHADOWMAP);
     }
 
@@ -43,7 +43,7 @@ void Quadtree::drawBBox(GenericDrawCommands& commandsOut) {
     _root->drawBBox(commandsOut);
     
     if (!_bbPrimitive) {
-        _bbPrimitive = GFX_DEVICE.newIMP();
+        _bbPrimitive = GFXDevice::instance().newIMP();
         _bbPrimitive->name("QuadtreeBoundingBox");
         RenderStateBlock primitiveRenderState;
         _bbPrimitive->stateHash(primitiveRenderState.getHash());

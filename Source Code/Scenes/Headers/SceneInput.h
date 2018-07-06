@@ -80,7 +80,7 @@ class SceneInput : public Input::InputAggregatorInterface {
     typedef hashMapImpl<Input::JoystickElement, PressReleaseActions, JoystickHasher> JoystickMapEntry;
     typedef hashMapImpl<Input::Joystick, JoystickMapEntry> JoystickMap;
 
-    explicit SceneInput(Scene &parentScene);
+    explicit SceneInput(Scene &parentScene, Input::InputInterface& context);
 
     inline const vec2<I32>& getMousePosition() const {
         return _mousePos;
@@ -145,6 +145,7 @@ class SceneInput : public Input::InputAggregatorInterface {
                             bool onPress);
 
    private:
+    Input::InputInterface& _context;
     Scene &_parentScene;
 
     KeyMap _keyMap;

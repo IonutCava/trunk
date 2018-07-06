@@ -70,7 +70,7 @@ STRUCT_NAME(scene)::STRUCT_NAME(scene)()  {                     \
 
 #define INIT_SCENE_FACTORY \
     namespace { \
-        typedef hashMapImpl<stringImpl, std::function<Scene*(const stringImpl& name)> > SceneFactory; \
+        typedef hashMapImpl<stringImpl, std::function<Scene*(PlatformContext& context, const stringImpl& name)> > SceneFactory; \
         SceneFactory g_sceneFactory; \
     };\
     REGISTER_SCENE(DefaultScene)\

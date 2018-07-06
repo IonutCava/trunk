@@ -91,8 +91,6 @@ DEFINE_SINGLETON_W_SPECIFIER(SFXDevice, AudioAPIWrapper, final)
     std::atomic_bool _playNextInPlaylist;
 END_SINGLETON
 
-#define SFX_DEVICE SFXDevice::instance()
-
 };  // namespace Divide
 
 #endif

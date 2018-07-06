@@ -7,10 +7,10 @@
 
 namespace Divide {
 
-DoFPreRenderOperator::DoFPreRenderOperator(RenderTarget* hdrTarget, RenderTarget* ldrTarget)
-    : PreRenderOperator(FilterType::FILTER_DEPTH_OF_FIELD, hdrTarget, ldrTarget)
+DoFPreRenderOperator::DoFPreRenderOperator(GFXDevice& context, RenderTarget* hdrTarget, RenderTarget* ldrTarget)
+    : PreRenderOperator(context, FilterType::FILTER_DEPTH_OF_FIELD, hdrTarget, ldrTarget)
 {
-    _samplerCopy = GFX_DEVICE.allocateRT("DoF");
+    _samplerCopy = _context.allocateRT("DoF");
     _samplerCopy._rt->addAttachment(_hdrTarget->getDescriptor(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0, false);
 
     ResourceDescriptor dof("DepthOfField");
@@ -40,9 +40,9 @@ void DoFPreRenderOperator::execute() {
         GenericDrawCommand triangleCmd;
         triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
         triangleCmd.drawCount(1);
-        triangleCmd.stateHash(GFX_DEVICE.getDefaultStateBlock(true));
+        triangleCmd.stateHash(_context.getDefaultStateBlock(true));
         triangleCmd.shaderProgram(_dofShader);
-        GFX_DEVICE.draw(triangleCmd);
+        _context.draw(triangleCmd);
     _hdrTarget->end();
     */
 }

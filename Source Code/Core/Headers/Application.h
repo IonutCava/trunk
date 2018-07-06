@@ -163,7 +163,7 @@ namespace Attorney {
     private:
         // threadID = calling thread
         // beginSync = true, called before thread processes data / false, called when thread finished processing data
-        static void syncThreadToGPU(const std::thread::id& threadID, bool beginSync);
+        static void syncThreadToGPU(const Application& app, const std::thread::id& threadID, bool beginSync);
 
         friend class Divide::Task;
     };

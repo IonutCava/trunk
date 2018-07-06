@@ -44,14 +44,37 @@ class GFXDevice;
 class SFXDevice;
 class Application;
 class SceneManager;
-class InputInterface;
 class SceneRenderState;
 class FrameListenerManager;
+namespace Input {
+    class InputInterface;
+};
 
 enum class RenderStage : U32;
 
 struct FrameEvent;
 class GUI;
+
+struct PlatformContext {
+    explicit PlatformContext(GFXDevice& gfx,
+                             SFXDevice& sfx,
+                             PXDevice&  pfx,
+                             GUI& gui,
+                             Input::InputInterface& input);
+
+    void idle();
+
+    /// Access to the GPU
+    GFXDevice& _GFX;
+    /// Access to the audio device
+    SFXDevice& _SFX;
+    /// Access to the physics system
+    PXDevice& _PFX;
+    /// The graphical user interface
+    GUI& _GUI;
+    /// The input interface
+    Input::InputInterface& _INPUT;
+};
 
 struct LoopTimingData {
     LoopTimingData();
@@ -106,9 +129,6 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     /// processing the frame
     /// so this should keep it busy (old-GLUT heritage)
     void idle();
-    GFXDevice& getGFXDevice() const { return _GFX; }
-    SFXDevice& getSFXDevice() const { return _SFX; }
-    PXDevice& getPXDevice() const { return _PFX; }
     
     /// Key pressed
     bool onKeyDown(const Input::KeyEvent& key);
@@ -157,16 +177,9 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
    private:
 
     Application& _APP;
-    /// Access to the GPU
-    GFXDevice& _GFX;
-    /// Access to the audio device
-    SFXDevice& _SFX;
-    /// Access to the physics system
-    PXDevice& _PFX;
-    /// The graphical user interface
-    GUI& _GUI;
-    /// The input interface
-    Input::InputInterface& _input;
+
+    PlatformContext* _platformContext;
+
     /// The SceneManager/ Scene Pool
     SceneManager& _sceneMgr;
 

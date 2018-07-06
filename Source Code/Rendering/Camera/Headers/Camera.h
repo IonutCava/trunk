@@ -257,15 +257,27 @@ class Camera : public Resource {
         return _viewMatrix;
     }
 
-    inline const mat4<F32>& getViewMatrix(bool update = false) {
-        if (update) {
-            updateViewMatrix();
-        }
-
+    inline const mat4<F32>& getViewMatrix() {
         return _viewMatrix;
     }
 
+    inline mat4<F32> getWorldMatrix() {
+        mat4<F32> ret;
+        getWorldMatrix(ret);
+        return ret;
+    }
+
+    inline mat4<F32> getWorldMatrix() const {
+        mat4<F32> ret;
+        getWorldMatrix(ret);
+        return ret;
+    }
+
     inline void getWorldMatrix(mat4<F32>& worldMatOut) {
+        getViewMatrix().getInverse(worldMatOut);
+    }
+
+    inline void getWorldMatrix(mat4<F32>& worldMatOut) const {
         getViewMatrix().getInverse(worldMatOut);
     }
 
@@ -312,7 +324,7 @@ class Camera : public Resource {
     /// Called when the camera becomes active/ is deactivated
     virtual void setActiveInternal(bool state);
 
-    virtual void addUpdateListenerInternal(const DELEGATE_CBK_PARAM<Camera&>& f) {
+    virtual void addUpdateListenerInternal(const DELEGATE_CBK_PARAM<const Camera&>& f) {
         _listeners.push_back(f);
     }
    protected:
@@ -342,7 +354,7 @@ class Camera : public Resource {
     F32 _cameraZoomSpeed;
     CameraType _type;
 
-    vectorImpl<DELEGATE_CBK_PARAM<Camera&> > _listeners;
+    vectorImpl<DELEGATE_CBK_PARAM<const Camera&> > _listeners;
     bool _projectionDirty;
     bool _viewMatrixDirty;
     bool _viewMatrixLocked;
@@ -367,8 +379,8 @@ class Camera : public Resource {
        static Camera* findCamera(U64 nameHash);
 
        static bool mouseMoved(const Input::MouseEvent& arg);
-       static void addChangeListener(const DELEGATE_CBK_PARAM<Camera&>& f);
-       static void addUpdateListener(const DELEGATE_CBK_PARAM<Camera&>& f);
+       static void addChangeListener(const DELEGATE_CBK_PARAM<const Camera& /*new camera*/>& f);
+       static void addUpdateListener(const DELEGATE_CBK_PARAM<const Camera& /*updated camera*/>& f);
 
     public:
       static const char* DefaultCamera;
@@ -380,8 +392,8 @@ class Camera : public Resource {
 
       static Camera* _activeCamera;
       static Camera* _previousCamera;
-      static vectorImpl<DELEGATE_CBK_PARAM<Camera&> > _changeCameralisteners;
-      static vectorImpl<DELEGATE_CBK_PARAM<Camera&> > _updateCameralisteners;
+      static vectorImpl<DELEGATE_CBK_PARAM<const Camera&> > _changeCameralisteners;
+      static vectorImpl<DELEGATE_CBK_PARAM<const Camera&> > _updateCameralisteners;
 
       static CameraPool _cameraPool;
       static SharedLock _cameraPoolLock;

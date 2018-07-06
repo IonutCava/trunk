@@ -78,8 +78,6 @@ DEFINE_SINGLETON_W_SPECIFIER(PXDevice, PhysicsAPIWrapper, final)
 
 END_SINGLETON
 
-#define PHYSICS_DEVICE PXDevice::instance()
-
 };  // namespace Divide
 
 #endif

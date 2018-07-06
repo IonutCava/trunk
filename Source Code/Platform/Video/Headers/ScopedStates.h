@@ -41,11 +41,8 @@ namespace GFX {
 
 class Scoped2DRendering : private NonCopyable {
    public:
-    explicit Scoped2DRendering(bool state);
+    Scoped2DRendering();
     ~Scoped2DRendering();
-
-   private:
-    bool _2dRenderingState;
 };
 
 class ScopedViewport : private NonCopyable {

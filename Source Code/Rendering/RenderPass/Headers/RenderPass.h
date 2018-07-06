@@ -52,7 +52,7 @@ enum class RenderStage : U32;
 class RenderPass : private NonCopyable {
    public:
        struct BufferData {
-           BufferData();
+           BufferData(GFXDevice& context);
            ~BufferData();
 
            ShaderBuffer* _renderData;
@@ -63,7 +63,7 @@ class RenderPass : private NonCopyable {
    protected:
 
     struct BufferDataPool {
-        explicit BufferDataPool(U32 maxBuffers);
+        explicit BufferDataPool(GFXDevice& context, U32 maxBuffers);
         ~BufferDataPool();
 
         BufferData& getBufferData(I32 bufferIndex);
@@ -72,7 +72,7 @@ class RenderPass : private NonCopyable {
 
    public:
     // passStageFlags: the first stage specified will determine the data format used by the additional stages in the list
-    RenderPass(stringImpl name, U8 sortKey, RenderStage passStageFlags);
+    RenderPass(GFXDevice& context, stringImpl name, U8 sortKey, RenderStage passStageFlags);
     ~RenderPass();
 
     void generateDrawCommands();
@@ -90,6 +90,7 @@ class RenderPass : private NonCopyable {
     U32 getBufferCountForStage(RenderStage stages) const;
 
    private:
+    GFXDevice& _context;
     U8 _sortKey;
     stringImpl _name;
     U16 _lastTotalBinSize;

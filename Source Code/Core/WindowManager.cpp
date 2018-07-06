@@ -42,7 +42,7 @@ ErrorCode WindowManager::init(RenderAPI api,
 
     if (err == ErrorCode::NO_ERR) {
         setActiveWindow(0);
-        GPUState& gState = GFX_DEVICE.gpuState();
+        GPUState& gState = GFXDevice::instance().gpuState();
         // Query available display modes (resolution, bit depth per channel and
         // refresh rates)
         I32 numberOfDisplayModes = 0;

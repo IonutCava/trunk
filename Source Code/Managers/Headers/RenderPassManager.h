@@ -82,6 +82,7 @@ DEFINE_SINGLETON(RenderPassManager)
     RenderPass* getPassForStage(RenderStage renderStage) const;
 
   private:
+    GFXDevice& _context;
     // Some vector implementations are not move-awarem so use STL in this case
     vectorImpl<RenderPass*> _renderPasses;
     RenderQueue* _renderQueue;

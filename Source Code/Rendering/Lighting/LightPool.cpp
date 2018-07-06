@@ -25,8 +25,9 @@ Light* LightPool::_currentShadowCastingLight = nullptr;
 bool LightPool::_previewShadowMaps = false;
 bool LightPool::_shadowMapsEnabled = true;
 
-LightPool::LightPool(Scene& parentScene)
+LightPool::LightPool(Scene& parentScene, GFXDevice& context)
     : SceneComponent(parentScene),
+      _context(context),
       _previewShadowMapsCBK(DELEGATE_BIND(&LightPool::previewShadowMaps, this, nullptr)),
       _init(false),
       _lightImpostorShader(nullptr),
@@ -61,20 +62,20 @@ void LightPool::init() {
     if (_init) {
         return;
     }
-    
-    GFX_DEVICE.add2DRenderFunction(_previewShadowMapsCBK, 1);
+
+    _context.add2DRenderFunction(_previewShadowMapsCBK, 1);
     // NORMAL holds general info about the currently active lights: position, colour, etc.
-    _lightShaderBuffer[to_const_uint(ShaderBufferType::NORMAL)] = GFX_DEVICE.newSB(1,
-                                                                                   true,
-                                                                                   false,
-                                                                                   BufferUpdateFrequency::OCASSIONAL);
+    _lightShaderBuffer[to_const_uint(ShaderBufferType::NORMAL)] = _context.newSB(1,
+                                                                                 true,
+                                                                                 false,
+                                                                                 BufferUpdateFrequency::OCASSIONAL);
     // SHADOWS holds info about the currently active shadow casting lights:
     // ViewProjection Matrices, View Space Position, etc
     // Should be SSBO (not UBO) to use std430 alignment. Structures should not be padded
-    _lightShaderBuffer[to_const_uint(ShaderBufferType::SHADOW)] = GFX_DEVICE.newSB(1,
-                                                                                   true,
-                                                                                   false,
-                                                                                   BufferUpdateFrequency::OCASSIONAL);
+    _lightShaderBuffer[to_const_uint(ShaderBufferType::SHADOW)] = _context.newSB(1,
+                                                                                 true,
+                                                                                 false,
+                                                                                 BufferUpdateFrequency::OCASSIONAL);
 
     _lightShaderBuffer[to_const_uint(ShaderBufferType::NORMAL)]
         ->create(Config::Lighting::MAX_POSSIBLE_LIGHTS, sizeof(LightProperties));
@@ -120,7 +121,7 @@ bool LightPool::clear() {
         }
         lightList.clear();
     }
-    GFX_DEVICE.remove2DRenderFunction(_previewShadowMapsCBK);
+    _context.remove2DRenderFunction(_previewShadowMapsCBK);
     _init = false;
     
     return true;
@@ -170,7 +171,7 @@ bool LightPool::generateShadowMaps(SceneRenderState& sceneRenderState) {
     if (!_shadowMapsEnabled) {
         return true;
     }
-    ShadowMap::clearShadowMapBuffers();
+    ShadowMap::clearShadowMapBuffers(_context);
     Time::ScopedTimer timer(_shadowPassTimer);
     // generate shadowmaps for each light
     I32 idx = 0;
@@ -186,10 +187,10 @@ bool LightPool::generateShadowMaps(SceneRenderState& sceneRenderState) {
     return true;
 }
 
-void LightPool::togglePreviewShadowMaps() {
+void LightPool::togglePreviewShadowMaps(GFXDevice& context) {
     _previewShadowMaps = !_previewShadowMaps;
     // Stop if we have shadows disabled
-    if (!_shadowMapsEnabled || GFX_DEVICE.getRenderStage() != RenderStage::DISPLAY) {
+    if (!_shadowMapsEnabled || context.getRenderStage() != RenderStage::DISPLAY) {
         ParamHandler::instance().setParam( _ID("rendering.debug.displayShadowDebugInfo"), false);
     } else {
         ParamHandler::instance().setParam( _ID("rendering.debug.displayShadowDebugInfo"), _previewShadowMaps);
@@ -203,7 +204,7 @@ void LightPool::previewShadowMaps(Light* light) {
 
     // Stop if we have shadows disabled
     if (!_shadowMapsEnabled || !_previewShadowMaps || _lights.empty() ||
-        GFX_DEVICE.getRenderStage() != RenderStage::DISPLAY) {
+        _context.getRenderStage() != RenderStage::DISPLAY) {
         return;
     }
 
@@ -227,14 +228,14 @@ void LightPool::previewShadowMaps(Light* light) {
 }
 
 // If we have computed shadowmaps, bind them before rendering any geometry;
-void LightPool::bindShadowMaps() {
+void LightPool::bindShadowMaps(GFXDevice& context) {
     // Skip applying shadows if we are rendering to depth map, or we have
     // shadows disabled
     if (!_shadowMapsEnabled) {
         return;
     }
 
-    ShadowMap::bindShadowMaps();
+    ShadowMap::bindShadowMaps(context);
 }
 
 bool LightPool::shadowMappingEnabled() {
@@ -356,7 +357,7 @@ void LightPool::drawLightImpostors(RenderSubPassCmds& subPassesInOut) const {
         GenericDrawCommand pointsCmd;
         pointsCmd.primitiveType(PrimitiveType::API_POINTS);
         pointsCmd.drawCount(to_ushort(totalLightCount));
-        pointsCmd.stateHash(GFX_DEVICE.getDefaultStateBlock(true));
+        pointsCmd.stateHash(_context.getDefaultStateBlock(true));
         pointsCmd.shaderProgram(_lightImpostorShader);
 
         RenderSubPassCmd newSubPass;

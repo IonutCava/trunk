@@ -7,12 +7,12 @@
 
 namespace Divide {
 
-PostAAPreRenderOperator::PostAAPreRenderOperator(RenderTarget* hdrTarget, RenderTarget* ldrTarget)
-    : PreRenderOperator(FilterType::FILTER_SS_ANTIALIASING, hdrTarget, ldrTarget),
+PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, RenderTarget* hdrTarget, RenderTarget* ldrTarget)
+    : PreRenderOperator(context, FilterType::FILTER_SS_ANTIALIASING, hdrTarget, ldrTarget),
       _useSMAA(false),
       _postAASamples(0)
 {
-    _samplerCopy = GFX_DEVICE.allocateRT("PostAA");
+    _samplerCopy = _context.allocateRT("PostAA");
     _samplerCopy._rt->addAttachment(_ldrTarget->getDescriptor(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0, false);
 
     ResourceDescriptor fxaa("FXAA");
@@ -52,10 +52,10 @@ void PostAAPreRenderOperator::execute() {
         GenericDrawCommand pointsCmd;
         pointsCmd.primitiveType(PrimitiveType::API_POINTS);
         pointsCmd.drawCount(1);
-        pointsCmd.stateHash(GFX_DEVICE.getDefaultStateBlock(true));
+        pointsCmd.stateHash(_context.getDefaultStateBlock(true));
         pointsCmd.shaderProgram(_useSMAA ? _smaa : _fxaa);
 
-        GFX_DEVICE.draw(pointsCmd);
+        _context.draw(pointsCmd);
     _ldrTarget->end();
 }
 

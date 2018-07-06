@@ -119,6 +119,7 @@ class TextureDataContainer {
       TextureDataContainer();
       ~TextureDataContainer();
 
+      void set(const TextureDataContainer& other);
       bool addTexture(const TextureData& data);
       bool removeTexture(const TextureData& data);
 

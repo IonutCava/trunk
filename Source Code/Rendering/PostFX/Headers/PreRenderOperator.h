@@ -48,7 +48,7 @@ class NOINITVTABLE PreRenderOperator {
     /// doing to set up apropriate states
     /// The target is the full screen quad to which we want to apply our
     /// operation to generate the result
-    PreRenderOperator(FilterType operatorType, RenderTarget* hdrTarget, RenderTarget* ldrTarget);
+    PreRenderOperator(GFXDevice& context, FilterType operatorType, RenderTarget* hdrTarget, RenderTarget* ldrTarget);
     virtual ~PreRenderOperator();
 
     virtual void idle() = 0;
@@ -67,6 +67,8 @@ class NOINITVTABLE PreRenderOperator {
     static void cacheDisplaySettings(const GFXDevice& context);
 
    protected:
+    GFXDevice& _context;
+
     RenderTarget* _hdrTarget;
     RenderTarget* _ldrTarget;
     RenderTargetHandle _samplerCopy;

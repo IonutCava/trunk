@@ -275,7 +275,7 @@ bool Material::canDraw(RenderStage renderStage) {
 void Material::updateReflectionIndex(I32 index) {
     _reflectionIndex = index;
     if (_reflectionIndex > -1) {
-        RenderTarget& reflectionTarget = GFX_DEVICE.renderTarget(RenderTargetID(RenderTargetUsage::REFLECTION, index));
+        RenderTarget& reflectionTarget = GFXDevice::instance().renderTarget(RenderTargetID(RenderTargetUsage::REFLECTION, index));
         const Texture_ptr& refTex = reflectionTarget.getAttachment(RTAttachment::Type::Colour, 0).asTexture();
         setTexture(ShaderProgram::TextureUsage::REFLECTION, refTex);
     } else {
@@ -286,7 +286,7 @@ void Material::updateReflectionIndex(I32 index) {
 void Material::updateRefractionIndex(I32 index) {
     _refractionIndex = index;
     if (_refractionIndex > -1) {
-        RenderTarget& refractionTarget = GFX_DEVICE.renderTarget(RenderTargetID(RenderTargetUsage::REFRACTION, index));
+        RenderTarget& refractionTarget = GFXDevice::instance().renderTarget(RenderTargetID(RenderTargetUsage::REFRACTION, index));
         const Texture_ptr& refTex = refractionTarget.getAttachment(RTAttachment::Type::Colour, 0).asTexture();
         setTexture(ShaderProgram::TextureUsage::REFRACTION, refTex);
     } else {
@@ -494,7 +494,7 @@ void Material::getTextureData(ShaderProgram::TextureUsage slot,
 void Material::getTextureData(TextureDataContainer& textureData) {
     const U32 textureCount = to_const_uint(ShaderProgram::TextureUsage::COUNT);
 
-    if (!GFX_DEVICE.isDepthStage()) {
+    if (!GFXDevice::instance().isDepthStage()) {
         getTextureData(ShaderProgram::TextureUsage::UNIT0, textureData);
         getTextureData(ShaderProgram::TextureUsage::UNIT1, textureData);
         getTextureData(ShaderProgram::TextureUsage::OPACITY, textureData);

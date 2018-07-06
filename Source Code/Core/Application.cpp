@@ -189,8 +189,8 @@ void Application::mainThreadTask(const DELEGATE_CBK<>& task, bool wait) {
     }
 }
 
-void Attorney::ApplicationTask::syncThreadToGPU(const std::thread::id& threadID, bool beginSync) {
-    Attorney::KernelApplication::syncThreadToGPU(*Application::instance()._kernel, threadID, beginSync);
+void Attorney::ApplicationTask::syncThreadToGPU(const Application& app, const std::thread::id& threadID, bool beginSync) {
+    Attorney::KernelApplication::syncThreadToGPU(*app._kernel, threadID, beginSync);
 }
 
 

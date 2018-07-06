@@ -475,7 +475,7 @@ bool glShaderProgram::load() {
                 std::pair<bool, stringImpl> sourceCode = loadSourceCode(type, shaderCompileName, info._header, false);
                 if (!sourceCode.second.empty()){
                     // Load our shader from the final string and save it in the manager in case a new Shader Program needs it
-                    _shaderStage[i] = glShader::loadShader(shaderCompileName, sourceCode.second, type, sourceCode.first);
+                    _shaderStage[i] = glShader::loadShader(_context, shaderCompileName, sourceCode.second, type, sourceCode.first);
                 }
             } else {
                 _shaderStage[i]->AddRef();
@@ -535,7 +535,7 @@ bool glShaderProgram::recompileInternal() {
             std::pair<bool, stringImpl> sourceCode = loadSourceCode(type, shaderCompileName, info._header, true);
             if (!sourceCode.second.empty()) {
                 // Load our shader from the final string and save it in the manager in case a new Shader Program needs it
-                _shaderStage[i] = glShader::loadShader(shaderCompileName, sourceCode.second, type, sourceCode.first);
+                _shaderStage[i] = glShader::loadShader(_context, shaderCompileName, sourceCode.second, type, sourceCode.first);
                 if (!_shaderStage[i]->compile()) {
                     Console::errorfn(Locale::get(_ID("ERROR_GLSL_COMPILE")), _shaderStage[i]->getShaderID(), shaderCompileName.c_str());
                 }

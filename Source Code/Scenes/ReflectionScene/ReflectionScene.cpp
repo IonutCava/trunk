@@ -1,8 +1,8 @@
 #include "Headers/ReflectionScene.h"
 
 namespace Divide {
-ReflectionScene::ReflectionScene(const stringImpl& name)
-    : Scene(name)
+ReflectionScene::ReflectionScene(PlatformContext& context, const stringImpl& name)
+    : Scene(context, name)
 {
 }
 

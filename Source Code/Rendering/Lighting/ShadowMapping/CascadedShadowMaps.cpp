@@ -58,11 +58,11 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera, U8 nu
     blurMapDescriptor.setLayerCount(Config::Lighting::MAX_SPLITS_PER_LIGHT);
     blurMapDescriptor.setSampler(blurMapSampler);
     
-    _blurBuffer = GFX_DEVICE.allocateRT("CSM_Blur");
+    _blurBuffer = GFXDevice::instance().allocateRT("CSM_Blur");
     _blurBuffer._rt->addAttachment(blurMapDescriptor, RTAttachment::Type::Colour, 0, false);
     _blurBuffer._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
 
-    _shadowMatricesBuffer = GFX_DEVICE.newSB(1, false, false, BufferUpdateFrequency::OFTEN);
+    _shadowMatricesBuffer = GFXDevice::instance().newSB(1, false, false, BufferUpdateFrequency::OFTEN);
     _shadowMatricesBuffer->create(Config::Lighting::MAX_SPLITS_PER_LIGHT, sizeof(mat4<F32>));
 
     STUBBED("Migrate to this: http://www.ogldev.org/www/tutorial49/tutorial49.html");
@@ -70,7 +70,7 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera, U8 nu
 
 CascadedShadowMaps::~CascadedShadowMaps()
 {
-    GFX_DEVICE.deallocateRT(_blurBuffer);
+    GFXDevice::instance().deallocateRT(_blurBuffer);
 	_shadowMatricesBuffer->destroy();
 }
 
@@ -213,7 +213,8 @@ void CascadedShadowMaps::applyFrustumSplits() {
 }
 
 void CascadedShadowMaps::postRender() {
-    if (GFX_DEVICE.shadowDetailLevel() == RenderDetailLevel::LOW) {
+    GFXDevice& gfx = GFXDevice::instance();
+    if (GFXDevice::instance().shadowDetailLevel() == RenderDetailLevel::LOW) {
         return;
     }
 
@@ -224,7 +225,7 @@ void CascadedShadowMaps::postRender() {
     GenericDrawCommand pointsCmd;
     pointsCmd.primitiveType(PrimitiveType::API_POINTS);
     pointsCmd.drawCount(1);
-    pointsCmd.stateHash(GFX_DEVICE.getDefaultStateBlock(true));
+    pointsCmd.stateHash(gfx.getDefaultStateBlock(true));
     pointsCmd.shaderProgram(_blurDepthMapShader);
 
     // Blur horizontally
@@ -234,7 +235,7 @@ void CascadedShadowMaps::postRender() {
     _blurDepthMapShader->SetSubroutine(ShaderType::GEOMETRY, _horizBlur);
     _blurBuffer._rt->begin(RenderTarget::defaultPolicy());
     depthMap.bind(0, RTAttachment::Type::Colour, 0, false);
-        GFX_DEVICE.draw(pointsCmd);
+        gfx.draw(pointsCmd);
     depthMap.end();
 
     // Blur vertically
@@ -244,7 +245,7 @@ void CascadedShadowMaps::postRender() {
     _blurDepthMapShader->SetSubroutine(ShaderType::GEOMETRY, _vertBlur);
     depthMap.begin(RenderTarget::defaultPolicy());
     _blurBuffer._rt->bind(0, RTAttachment::Type::Colour, 0);
-        GFX_DEVICE.draw(pointsCmd);
+        gfx.draw(pointsCmd);
     depthMap.end();
 }
 
@@ -258,14 +259,14 @@ void CascadedShadowMaps::previewShadowMaps(U32 rowIndex) {
     GenericDrawCommand triangleCmd;
     triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
     triangleCmd.drawCount(1);
-    triangleCmd.stateHash(GFX_DEVICE.getDefaultStateBlock(true));
+    triangleCmd.stateHash(GFXDevice::instance().getDefaultStateBlock(true));
     triangleCmd.shaderProgram(_previewDepthMapShader);
 
     const vec4<I32> viewport = getViewportForRow(rowIndex);
     for (U32 i = 0; i < _numSplits; ++i) {
         _previewDepthMapShader->Uniform("layer", i + _arrayOffset);
         GFX::ScopedViewport sViewport(viewport.x * i, viewport.y, viewport.z, viewport.w);
-        GFX_DEVICE.draw(triangleCmd);
+        GFXDevice::instance().draw(triangleCmd);
     }
 }
 };

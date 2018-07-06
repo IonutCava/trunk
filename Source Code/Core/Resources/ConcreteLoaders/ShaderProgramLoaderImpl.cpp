@@ -24,10 +24,10 @@ Resource_ptr ImplResourceLoader<ShaderProgram>::operator()() {
         resourceLocation = _descriptor.getResourceLocation();
     }
 
-    ShaderProgram_ptr ptr(GFX_DEVICE.newShaderProgram(_descriptor.getName(),
-                                          resourceLocation,
-                                          USE_THREADED_SHADER_LOAD ? _descriptor.getThreaded()
-                                                                   : false),
+    ShaderProgram_ptr ptr(GFXDevice::instance().newShaderProgram(_descriptor.getName(),
+                                                                 resourceLocation,
+                                                                 USE_THREADED_SHADER_LOAD ? _descriptor.getThreaded()
+                                                                                          : false),
                           DeleteResource());
 
 

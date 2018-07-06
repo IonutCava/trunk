@@ -34,11 +34,8 @@
 
 namespace Divide {
 
-#define GFX_DEVICE GFXDevice::instance()
-#define GFX_RENDER_BIN_SIZE \
-    RenderPassManager::instance().getLastTotalBinSize(RenderStage::DISPLAY)
-#define GFX_HIZ_CULL_COUNT \
-    GFX_DEVICE.getLastCullCount()
+#define GFX_RENDER_BIN_SIZE RenderPassManager::instance().getLastTotalBinSize(RenderStage::DISPLAY)
+#define GFX_HIZ_CULL_COUNT GFXDevice::instance().getLastCullCount()
 
 inline F32 GFXDevice::GPUBlock::GPUData::aspectRatio() const {
     return _cameraPosition.w;

@@ -1,8 +1,8 @@
 #include "Headers/ShadowScene.h"
 
 namespace Divide {
-ShadowScene::ShadowScene(const stringImpl& name)
-    : Scene(name)
+ShadowScene::ShadowScene(PlatformContext& context, const stringImpl& name)
+    : Scene(context, name)
 {
 }
 

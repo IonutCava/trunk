@@ -428,10 +428,10 @@ void GFXDevice::renderFromCamera(Camera& camera) {
 
 /// Enable or disable 2D rendering mode 
 /// (orthographic projection, no depth reads)
-void GFXDevice::toggle2D(bool state) {
+bool GFXDevice::toggle2D(bool state) {
     // Prevent double 2D toggle to the same state (e.g. in a loop)
     if (state == _2DRendering) {
-        return;
+        return false;
     }
 
     _2DRendering = state;
@@ -442,6 +442,8 @@ void GFXDevice::toggle2D(bool state) {
     } else {
         Camera::activeCamera(Camera::previousCamera());
     }
+
+    return true;
 }
 
 /// Update the rendering viewport
@@ -483,11 +485,11 @@ void GFXDevice::setBaseViewport(const vec4<I32>& viewport) {
     _viewportUpdate = false;
 }
 
-void GFXDevice::onCameraUpdate(Camera& camera) {
+void GFXDevice::onCameraUpdate(const Camera& camera) {
     ACKNOWLEDGE_UNUSED(camera);
 }
 
-void GFXDevice::onCameraChange(Camera& camera) {
+void GFXDevice::onCameraChange(const Camera& camera) {
     ACKNOWLEDGE_UNUSED(camera);
 }
 

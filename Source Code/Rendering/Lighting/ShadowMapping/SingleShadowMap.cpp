@@ -64,10 +64,10 @@ void SingleShadowMap::previewShadowMaps(U32 rowIndex) {
     GenericDrawCommand triangleCmd;
     triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
     triangleCmd.drawCount(1);
-    triangleCmd.stateHash(GFX_DEVICE.getDefaultStateBlock(true));
+    triangleCmd.stateHash(GFXDevice::instance().getDefaultStateBlock(true));
     triangleCmd.shaderProgram(_previewDepthMapShader);
 
-    GFX_DEVICE.draw(triangleCmd);
+    GFXDevice::instance().draw(triangleCmd);
 }
 
 };

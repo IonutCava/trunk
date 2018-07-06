@@ -82,7 +82,7 @@ class LightPool : public SceneComponent {
         COUNT
     };
 
-    explicit LightPool(Scene& parentScene);
+    explicit LightPool(Scene& parentScene, GFXDevice& context);
     ~LightPool();
 
     /// Add a new light to the manager
@@ -116,9 +116,9 @@ class LightPool : public SceneComponent {
 
     static void idle();
     /// shadow mapping
-    static void bindShadowMaps();
+    static void bindShadowMaps(GFXDevice& context);
+    static void togglePreviewShadowMaps(GFXDevice& context);
     static bool shadowMappingEnabled();
-    static void togglePreviewShadowMaps();
 
     /// Get the appropriate shadow bind slot for every light's shadow
     static U8 getShadowBindSlotOffset(ShadowType type) {
@@ -157,6 +157,8 @@ class LightPool : public SceneComponent {
       void init();
 
   private:
+    GFXDevice& _context;
+
     std::array<bool, to_const_uint(LightType::COUNT)> _lightTypeState;
     std::array<Light::LightList, to_const_uint(LightType::COUNT)> _lights;
     bool _init;

@@ -11,7 +11,8 @@
 
 namespace Divide {
 
-RenderQueue::RenderQueue()
+RenderQueue::RenderQueue(GFXDevice& context)
+    : _context(context)
 {
     _renderBins.fill(nullptr);
     _activeBins.reserve(to_const_uint(RenderBinType::COUNT));
@@ -67,7 +68,7 @@ RenderBin* RenderQueue::getOrCreateBin(RenderBinType rbType) {
         } break;
     };
 
-    temp = MemoryManager_NEW RenderBin(rbType, sortOrder);
+    temp = MemoryManager_NEW RenderBin(_context, rbType, sortOrder);
     // Bins are sorted by their type
     _renderBins[rbType._to_integral()] = temp;
     

@@ -9,16 +9,16 @@
 
 namespace Divide {
 
-BloomPreRenderOperator::BloomPreRenderOperator(RenderTarget* hdrTarget, RenderTarget* ldrTarget)
-    : PreRenderOperator(FilterType::FILTER_BLOOM, hdrTarget, ldrTarget)
+BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, RenderTarget* hdrTarget, RenderTarget* ldrTarget)
+    : PreRenderOperator(context, FilterType::FILTER_BLOOM, hdrTarget, ldrTarget)
 {
     for (U8 i = 0; i < 2; ++i) {
-        _bloomBlurBuffer[i] = GFX_DEVICE.allocateRT(Util::StringFormat("Bloom_Blur_%d", i));
+        _bloomBlurBuffer[i] = _context.allocateRT(Util::StringFormat("Bloom_Blur_%d", i));
         _bloomBlurBuffer[i]._rt->addAttachment(_hdrTarget->getDescriptor(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0, false);
         _bloomBlurBuffer[i]._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::BLACK());
     }
 
-    _bloomOutput = GFX_DEVICE.allocateRT("Bloom");
+    _bloomOutput = _context.allocateRT("Bloom");
     _bloomOutput._rt->addAttachment(_hdrTarget->getDescriptor(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0, false);
     _bloomOutput._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::BLACK());
 
@@ -40,9 +40,9 @@ BloomPreRenderOperator::BloomPreRenderOperator(RenderTarget* hdrTarget, RenderTa
 }
 
 BloomPreRenderOperator::~BloomPreRenderOperator() {
-    GFX_DEVICE.deallocateRT(_bloomOutput);
-    GFX_DEVICE.deallocateRT(_bloomBlurBuffer[0]);
-    GFX_DEVICE.deallocateRT(_bloomBlurBuffer[1]);
+    _context.deallocateRT(_bloomOutput);
+    _context.deallocateRT(_bloomBlurBuffer[0]);
+    _context.deallocateRT(_bloomBlurBuffer[1]);
 }
 
 void BloomPreRenderOperator::idle() {
@@ -67,14 +67,14 @@ void BloomPreRenderOperator::execute() {
     GenericDrawCommand triangleCmd;
     triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
     triangleCmd.drawCount(1);
-    triangleCmd.stateHash(GFX_DEVICE.getDefaultStateBlock(true));
+    triangleCmd.stateHash(_context.getDefaultStateBlock(true));
 
      // Step 1: generate bloom
     _hdrTarget->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0); //screen
     // render all of the "bright spots"
     _bloomOutput._rt->begin(RenderTarget::defaultPolicy());
         triangleCmd.shaderProgram(_bloomCalc);
-        GFX_DEVICE.draw(triangleCmd);
+        _context.draw(triangleCmd);
     _bloomOutput._rt->end();
 
     // Step 2: blur bloom
@@ -84,7 +84,7 @@ void BloomPreRenderOperator::execute() {
     _bloomOutput._rt->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0);
     _bloomBlurBuffer[0]._rt->begin(RenderTarget::defaultPolicy());
         triangleCmd.shaderProgram(_blur);
-        GFX_DEVICE.draw(triangleCmd);
+        _context.draw(triangleCmd);
     _bloomBlurBuffer[0]._rt->end();
 
     // Blur vertically (recycle the render target. We have a copy)
@@ -92,7 +92,7 @@ void BloomPreRenderOperator::execute() {
     _bloomBlurBuffer[0]._rt->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0);
     _bloomBlurBuffer[1]._rt->begin(RenderTarget::defaultPolicy());
         triangleCmd.shaderProgram(_blur);
-        GFX_DEVICE.draw(triangleCmd);
+        _context.draw(triangleCmd);
     _bloomBlurBuffer[1]._rt->end();
         
     // Step 3: apply bloom
@@ -101,7 +101,7 @@ void BloomPreRenderOperator::execute() {
     _bloomBlurBuffer[1]._rt->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT1), RTAttachment::Type::Colour, 0); //Bloom
     _hdrTarget->begin(_screenOnlyDraw);
         triangleCmd.shaderProgram(_bloomApply);
-        GFX_DEVICE.draw(triangleCmd);
+        _context.draw(triangleCmd);
     _hdrTarget->end();
 }
 

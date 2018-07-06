@@ -49,7 +49,7 @@ class SceneShaderData {
     };
 
   public:
-    SceneShaderData();
+    SceneShaderData(GFXDevice& context);
     ~SceneShaderData();
 
     inline void fogDetails(F32 colourR, F32 colourG, F32 colourB, F32 density) {
@@ -96,6 +96,7 @@ class SceneShaderData {
     void init();
 
   private:
+      GFXDevice& _context;
       SceneShaderBufferData _bufferData;
       /// Generic scene data that doesn't change per shader
       ShaderBuffer* _sceneShaderData;

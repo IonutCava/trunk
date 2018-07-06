@@ -45,6 +45,7 @@
 
 namespace Divide {
 
+class GFXDevice;
 class SceneGraphNode;
 class RenderingComponent;
 enum class RenderStage : U32;
@@ -99,7 +100,8 @@ class RenderBin {
 
     friend class RenderQueue;
 
-    RenderBin(RenderBinType rbType,
+    RenderBin(GFXDevice& context,
+              RenderBinType rbType,
               RenderingOrder::List renderOrder);
 
     ~RenderBin();
@@ -127,6 +129,7 @@ class RenderBin {
     inline bool empty() const { return getBinSize() == 0; }
 
    private:
+    GFXDevice& _context;
     // mutable SharedLock _renderBinGetMutex;
     U32 _binIndex;
     U32 _binPropertyMask;

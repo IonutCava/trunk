@@ -67,7 +67,7 @@ bool AnimEvaluator::initBuffers() {
     DIVIDE_ASSERT(_boneTransformBuffer == nullptr && !_transforms.empty(),
                   "AnimEvaluator error: can't create bone buffer at current stage!");
 
-    _boneTransformBuffer = GFX_DEVICE.newSB(1, true, false, BufferUpdateFrequency::ONCE);
+    _boneTransformBuffer = GFXDevice::instance().newSB(1, true, false, BufferUpdateFrequency::ONCE);
 
     DIVIDE_ASSERT(_transforms.size() <= Config::MAX_BONE_COUNT_PER_NODE,
         "AnimEvaluator error: Too many bones for current node! "
@@ -134,7 +134,7 @@ void AnimEvaluator::evaluate(const D64 dt, Bone* skeleton) {
     aiQuaternion presentRotation(1, 0, 0, 0);
     aiQuaternion presentRotationDefault(1, 0, 0, 0);
     aiVector3D presentScaling(1, 1, 1);
-    bool transposeMat = GFX_DEVICE.getAPI() == RenderAPI::Direct3D;
+    bool transposeMat = GFXDevice::instance().getAPI() == RenderAPI::Direct3D;
     // calculate the transformations for each animation channel
     for (U32 a = 0; a < _channels.size(); a++) {
         

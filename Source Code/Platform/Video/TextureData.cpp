@@ -22,6 +22,15 @@ TextureDataContainer::~TextureDataContainer()
 {
 }
 
+void TextureDataContainer::set(const TextureDataContainer& other) {
+    const vectorImpl<TextureData>& otherTextures = other.textures();
+    _textures.resize(0);
+    _textures.reserve(otherTextures.size());
+    _textures.insert(std::begin(_textures),
+                     std::begin(otherTextures),
+                     std::end(otherTextures));
+}
+
 bool TextureDataContainer::addTexture(const TextureData& data) {
     if (Config::Build::IS_DEBUG_BUILD) {
         vectorImpl<TextureData>::const_iterator it;

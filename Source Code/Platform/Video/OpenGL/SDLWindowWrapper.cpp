@@ -221,8 +221,8 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
         renderer = GPURenderer::UNKNOWN;
     }
 
-    GFX_DEVICE.setGPURenderer(renderer);
-    GFX_DEVICE.setGPUVendor(vendor);
+    _context.setGPURenderer(renderer);
+    _context.setGPUVendor(vendor);
     // Cap max anisotropic level to what the hardware supports
     par.setParam(
         _ID("rendering.anisotropicFilteringLevel"),

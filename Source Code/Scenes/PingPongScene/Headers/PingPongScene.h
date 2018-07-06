@@ -40,7 +40,7 @@ class Sphere3D;
 
 class PingPongScene : public Scene {
    public:
-    explicit PingPongScene(const stringImpl& name);
+    explicit PingPongScene(PlatformContext& context, const stringImpl& name);
 
     ~PingPongScene() {}
 

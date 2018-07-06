@@ -47,7 +47,7 @@ namespace {
 
 GL_API::GL_API()
     : RenderAPIWrapper(),
-      _context(GFX_DEVICE),
+      _context(GFXDevice::instance()),
       _prevSizeNode(0),
       _prevSizeString(0),
       _prevWidthNode(0),

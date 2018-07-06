@@ -45,7 +45,7 @@ void NavMeshDebugDraw::paused(bool state) {
 void NavMeshDebugDraw::beginBatch() {
     if (!_primitive) {
         _dirty = true;
-        _primitive = GFX_DEVICE.newIMP();
+        _primitive = GFXDevice::instance().newIMP();
         _primitive->stateHash(_navMeshStateBlockHash);
     }
 

@@ -254,10 +254,10 @@ void loadConfig(const stringImpl &file) {
 
     I32 shadowDetailLevel = pt.get<I32>("rendering.shadowDetailLevel", 2);
     if (shadowDetailLevel <= 0) {
-        GFX_DEVICE.shadowDetailLevel(RenderDetailLevel::LOW);
+        GFXDevice::instance().shadowDetailLevel(RenderDetailLevel::LOW);
         par.setParam(_ID("rendering.enableShadows"), false);
     } else {
-        GFX_DEVICE.shadowDetailLevel(
+        GFXDevice::instance().shadowDetailLevel(
             static_cast<RenderDetailLevel>(std::min(shadowDetailLevel, 3) - 1));
         par.setParam(_ID("rendering.enableShadows"), true);
     }

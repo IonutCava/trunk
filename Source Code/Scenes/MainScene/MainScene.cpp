@@ -12,8 +12,8 @@
 #include "Environment/Terrain/Headers/TerrainDescriptor.h"
 
 namespace Divide {
-MainScene::MainScene(const stringImpl& name)
-    : Scene(name),
+MainScene::MainScene(PlatformContext& context, const stringImpl& name)
+   : Scene(context, name),
     _water(nullptr),
     _beep(nullptr),
     _freeflyCamera(false),
@@ -176,7 +176,7 @@ U16 MainScene::registerInputActions() {
     //ToDo: Move these to per-scene XML file
     PressReleaseActions actions;
 
-    _input->actionList().registerInputAction(actionID, [this](InputParams param) {SFX_DEVICE.playSound(_beep);});
+    _input->actionList().registerInputAction(actionID, [this](InputParams param) {_context._SFX.playSound(_beep);});
     actions._onReleaseAction = actionID;
     _input->addKeyMapping(Input::KeyCode::KC_X, actions);
     actionID++;
@@ -188,10 +188,10 @@ U16 MainScene::registerInputActions() {
             SceneState::MusicPlaylist::const_iterator it;
             it = state().music(MusicType::TYPE_BACKGROUND).find(_ID("themeSong"));
             if (it != std::cend(state().music(MusicType::TYPE_BACKGROUND))) {
-                SFX_DEVICE.playMusic(it->second);
+                _context._SFX.playMusic(it->second);
             }
         } else {
-            SFX_DEVICE.stopMusic();
+            _context._SFX.stopMusic();
         }
     });
     actions._onReleaseAction = actionID;
@@ -218,8 +218,8 @@ U16 MainScene::registerInputActions() {
 }
 
 bool MainScene::unload() {
-    SFX_DEVICE.stopMusic();
-    SFX_DEVICE.stopAllSounds();
+    _context._SFX.stopMusic();
+    _context._SFX.stopAllSounds();
 
     return Scene::unload();
 }

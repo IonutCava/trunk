@@ -245,7 +245,8 @@ glShader* glShader::getShader(const stringImpl& name) {
 }
 
 /// Load a shader by name, source code and stage
-glShader* glShader::loadShader(const stringImpl& name,
+glShader* glShader::loadShader(GFXDevice& context,
+                               const stringImpl& name,
                                const stringImpl& source,
                                const ShaderType& type,
                                const bool parseCode) {
@@ -256,7 +257,7 @@ glShader* glShader::loadShader(const stringImpl& name,
     // If we do, and don't need a recompile, just return it
     if (shader == nullptr) {
         // If we can't find it, we create a new one
-        shader = MemoryManager_NEW glShader(GFX_DEVICE, name, type, false);
+        shader = MemoryManager_NEW glShader(context, name, type, false);
         newShader = true;
     }
 

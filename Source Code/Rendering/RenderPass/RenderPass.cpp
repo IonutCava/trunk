@@ -61,16 +61,16 @@ namespace {
     
 };
 
-RenderPass::BufferData::BufferData()
+RenderPass::BufferData::BufferData(GFXDevice& context)
   : _lastCommandCount(0),
     _lasNodeCount(0)
 {
     // This do not need to be persistently mapped as, hopefully, they will only be update once per frame
     // Each pass should have its own set of buffers (shadows, reflection, etc)
-    _renderData = GFX_DEVICE.newSB(1, true, false, BufferUpdateFrequency::OCASSIONAL);
+    _renderData = context.newSB(1, true, false, BufferUpdateFrequency::OCASSIONAL);
     _renderData->create(to_uint(Config::MAX_VISIBLE_NODES), sizeof(GFXDevice::NodeData));
 
-    _cmdBuffer = GFX_DEVICE.newSB(1, true, false, BufferUpdateFrequency::OCASSIONAL);
+    _cmdBuffer = context.newSB(1, true, false, BufferUpdateFrequency::OCASSIONAL);
     _cmdBuffer->create(Config::MAX_VISIBLE_NODES, sizeof(IndirectDrawCommand));
     _cmdBuffer->addAtomicCounter(3);
 }
@@ -81,7 +81,7 @@ RenderPass::BufferData::~BufferData()
     _renderData->destroy();
 }
 
-RenderPass::BufferDataPool::BufferDataPool(U32 maxBuffers)
+RenderPass::BufferDataPool::BufferDataPool(GFXDevice& context, U32 maxBuffers)
 {
     // Every visible node will first update this buffer with required data (WorldMatrix, NormalMatrix, Material properties, Bone count, etc)
     // Due to it's potentially huge size, it translates to (as seen by OpenGL) a Shader Storage Buffer that's persistently and coherently mapped
@@ -89,7 +89,7 @@ RenderPass::BufferDataPool::BufferDataPool(U32 maxBuffers)
     // Create a shader buffer to hold all of our indirect draw commands
     // Useful if we need access to the buffer in GLSL/Compute programs
     for (U32 j = 0; j < maxBuffers; ++j) {
-        BufferData* data = MemoryManager_NEW BufferData();
+        BufferData* data = MemoryManager_NEW BufferData(context);
         _buffers.push_back(data);
     }
 }
@@ -107,15 +107,16 @@ RenderPass::BufferData& RenderPass::BufferDataPool::getBufferData(I32 bufferInde
     return *_buffers[bufferIndex];
 }
 
-RenderPass::RenderPass(stringImpl name, U8 sortKey, RenderStage passStageFlag)
-    : _sortKey(sortKey),
+RenderPass::RenderPass(GFXDevice& context, stringImpl name, U8 sortKey, RenderStage passStageFlag)
+    : _context(context),
+      _sortKey(sortKey),
       _name(name),
       _stageFlag(passStageFlag)
 {
     _lastTotalBinSize = 0;
 
     U32 count = getBufferCountForStage(_stageFlag);
-    _passBuffers = MemoryManager_NEW BufferDataPool(count);
+    _passBuffers = MemoryManager_NEW BufferDataPool(_context, count);
 
     _drawCommandsCache.reserve(Config::MAX_VISIBLE_NODES);
 }
@@ -135,12 +136,12 @@ void RenderPass::generateDrawCommands() {
 
 void RenderPass::render(SceneRenderState& renderState) {
     if (_stageFlag != RenderStage::SHADOW) {
-        LightPool::bindShadowMaps();
+        LightPool::bindShadowMaps(_context);
     }
 
     switch(_stageFlag) {
         case RenderStage::DISPLAY: {
-            const RenderTarget& screenRT = GFX_DEVICE.renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
+            const RenderTarget& screenRT = _context.renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
             RenderPassManager& passMgr = RenderPassManager::instance();
             RenderPassManager::PassParams params;
             params.occlusionCull = Config::USE_HIZ_CULLING;

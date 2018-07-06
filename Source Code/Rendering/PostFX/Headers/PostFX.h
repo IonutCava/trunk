@@ -54,13 +54,13 @@ DEFINE_SINGLETON(PostFX)
       };
 
   private:
-    ~PostFX();
     PostFX();
+    ~PostFX();
 
   public:
     void apply();
 
-    void init();
+    void init(GFXDevice& context);
     void idle();
     void update(const U64 deltaTime);
 
@@ -102,7 +102,7 @@ DEFINE_SINGLETON(PostFX)
     }
   private:
 
-    PreRenderBatch _preRenderBatch;
+    PreRenderBatch* _preRenderBatch;
     /// Screen Border
     Texture_ptr _screenBorder;
     /// Noise
@@ -130,6 +130,9 @@ DEFINE_SINGLETON(PostFX)
     DELEGATE_CBK<> _fadeInComplete;
 
     FilterStack _filterStackCount;
+
+
+    GenericDrawCommand _drawCommand;
 END_SINGLETON
 
 };  // namespace Divide

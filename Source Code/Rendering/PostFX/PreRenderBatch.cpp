@@ -12,10 +12,12 @@
 
 namespace Divide {
 
-PreRenderBatch::PreRenderBatch() : _adaptiveExposureControl(true),
-                                   _debugOperator(nullptr),
-                                   _renderTarget(nullptr),
-                                   _toneMap(nullptr)
+PreRenderBatch::PreRenderBatch(GFXDevice& context)
+    : _context(context),
+      _adaptiveExposureControl(true),
+      _debugOperator(nullptr),
+      _renderTarget(nullptr),
+      _toneMap(nullptr)
 {
 }
 
@@ -30,18 +32,18 @@ void PreRenderBatch::destroy() {
         batch.clear();
     }
     
-    GFX_DEVICE.deallocateRT(_previousLuminance);
-    GFX_DEVICE.deallocateRT(_currentLuminance);
-    GFX_DEVICE.deallocateRT(_postFXOutput);
+    _context.deallocateRT(_previousLuminance);
+    _context.deallocateRT(_currentLuminance);
+    _context.deallocateRT(_postFXOutput);
 }
 
 void PreRenderBatch::init(RenderTarget* renderTarget) {
     assert(_postFXOutput._targetID._usage == RenderTargetUsage::COUNT);
     _renderTarget = renderTarget;
 
-    _previousLuminance = GFX_DEVICE.allocateRT("PreviousLuminance");
-    _currentLuminance = GFX_DEVICE.allocateRT("Luminance");
-    _postFXOutput = GFX_DEVICE.allocateRT("PostFXOutput");
+    _previousLuminance = _context.allocateRT("PreviousLuminance");
+    _currentLuminance = _context.allocateRT("Luminance");
+    _postFXOutput = _context.allocateRT("PostFXOutput");
     SamplerDescriptor screenSampler;
     screenSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
     screenSampler.setFilters(TextureFilter::LINEAR);
@@ -74,12 +76,12 @@ void PreRenderBatch::init(RenderTarget* renderTarget) {
 
     // Order is very important!
     OperatorBatch& hdrBatch = _operators[to_const_uint(FilterSpace::FILTER_SPACE_HDR)];
-    hdrBatch.push_back(MemoryManager_NEW SSAOPreRenderOperator(_renderTarget, _postFXOutput._rt));
-    hdrBatch.push_back(MemoryManager_NEW DoFPreRenderOperator(_renderTarget, _postFXOutput._rt));
-    hdrBatch.push_back(MemoryManager_NEW BloomPreRenderOperator(_renderTarget, _postFXOutput._rt));
+    hdrBatch.push_back(MemoryManager_NEW SSAOPreRenderOperator(_context, _renderTarget, _postFXOutput._rt));
+    hdrBatch.push_back(MemoryManager_NEW DoFPreRenderOperator(_context, _renderTarget, _postFXOutput._rt));
+    hdrBatch.push_back(MemoryManager_NEW BloomPreRenderOperator(_context, _renderTarget, _postFXOutput._rt));
 
     OperatorBatch& ldrBatch = _operators[to_const_uint(FilterSpace::FILTER_SPACE_LDR)];
-    ldrBatch.push_back(MemoryManager_NEW PostAAPreRenderOperator(_renderTarget, _postFXOutput._rt));
+    ldrBatch.push_back(MemoryManager_NEW PostAAPreRenderOperator(_context, _renderTarget, _postFXOutput._rt));
 
     ResourceDescriptor toneMap("bloom.ToneMap");
     toneMap.setThreadedLoading(false);
@@ -122,7 +124,7 @@ void PreRenderBatch::execute(const FilterStack& stack) {
     GenericDrawCommand triangleCmd;
     triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
     triangleCmd.drawCount(1);
-    triangleCmd.stateHash(GFX_DEVICE.getDefaultStateBlock(true));
+    triangleCmd.stateHash(_context.getDefaultStateBlock(true));
 
     if (_adaptiveExposureControl) {
         // Compute Luminance
@@ -132,7 +134,7 @@ void PreRenderBatch::execute(const FilterStack& stack) {
 
         _currentLuminance._rt->begin(RenderTarget::defaultPolicy());
             triangleCmd.shaderProgram(_luminanceCalc);
-            GFX_DEVICE.draw(triangleCmd);
+            _context.draw(triangleCmd);
         _currentLuminance._rt->end();
 
         // Use previous luminance to control adaptive exposure
@@ -155,7 +157,7 @@ void PreRenderBatch::execute(const FilterStack& stack) {
 
     _postFXOutput._rt->begin(RenderTarget::defaultPolicy());
         triangleCmd.shaderProgram(_adaptiveExposureControl ? _toneMapAdaptive : _toneMap);
-        GFX_DEVICE.draw(triangleCmd);
+        _context.draw(triangleCmd);
     _postFXOutput._rt->end();
 
     // Execute all LDR based operators

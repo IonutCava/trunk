@@ -21,7 +21,7 @@ PhysicsComponent::PhysicsComponent(SceneGraphNode& parentSGN, PhysicsGroup physi
       _prevInterpValue(0.0)
 {
     if (physicsDriven()) {
-        _transformInterface.reset(PHYSICS_DEVICE.createRigidActor(parentSGN));
+        _transformInterface.reset(PXDevice::instance().createRigidActor(parentSGN));
     } else {
         _transformInterface = std::make_unique<Transform>();
     }

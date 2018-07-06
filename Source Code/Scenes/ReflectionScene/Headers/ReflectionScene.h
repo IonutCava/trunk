@@ -38,7 +38,7 @@ namespace Divide {
 
     class ReflectionScene : public Scene {
     public:
-        ReflectionScene(const stringImpl& name);
+        ReflectionScene(PlatformContext& context, const stringImpl& name);
 
         bool load(const stringImpl& name) override;
         bool loadResources(bool continueOnErrors) override;

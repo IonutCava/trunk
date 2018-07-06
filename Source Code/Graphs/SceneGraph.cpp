@@ -177,8 +177,8 @@ void SceneGraph::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     }
 }
 
-void SceneGraph::onCameraUpdate(Camera& camera) {
-    _root->onCameraUpdate(camera.getGUID(), camera.getEye(), camera.getViewMatrix().getInverse());
+void SceneGraph::onCameraUpdate(const Camera& camera) {
+    _root->onCameraUpdate(camera.getGUID(), camera.getEye(), camera.getWorldMatrix());
 }
 
 void SceneGraph::intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SceneGraphNode_cwptr>& selectionHits) const {

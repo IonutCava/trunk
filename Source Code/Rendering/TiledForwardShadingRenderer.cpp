@@ -12,21 +12,21 @@
 //ref: https://github.com/bioglaze/aether3d
 namespace Divide {
 
-TiledForwardShadingRenderer::TiledForwardShadingRenderer() 
-    : Renderer(RendererType::RENDERER_TILED_FORWARD_SHADING)
+TiledForwardShadingRenderer::TiledForwardShadingRenderer(GFXDevice& context)
+    : Renderer(context, RendererType::RENDERER_TILED_FORWARD_SHADING)
 {
     ResourceDescriptor cullShaderDesc("lightCull");
     cullShaderDesc.setThreadedLoading(false);
     _lightCullComputeShader = CreateResource<ShaderProgram>(cullShaderDesc);
 
-    RenderTarget& screenRT = GFX_DEVICE.renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
+    RenderTarget& screenRT = _context.renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
 
     updateResolution(screenRT.getWidth(), screenRT.getHeight());
 
     const U32 numTiles = getNumTilesX() * getNumTilesY();
     const U32 maxNumLightsPerTile = getMaxNumLightsPerTile();
 
-    _perTileLightIndexBuffer = GFX_DEVICE.newSB(1, true, true, BufferUpdateFrequency::ONCE);
+    _perTileLightIndexBuffer = _context.newSB(1, true, true, BufferUpdateFrequency::ONCE);
     _perTileLightIndexBuffer->create(maxNumLightsPerTile * numTiles, sizeof(U32));
     _perTileLightIndexBuffer->bind(ShaderBufferLocation::LIGHT_INDICES);
 }

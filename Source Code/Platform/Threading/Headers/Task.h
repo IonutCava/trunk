@@ -36,6 +36,7 @@
 
 namespace Divide {
 
+class Application;
 class TaskPool;
 /**
  *@brief Using std::atomic for thread-shared data to avoid locking
@@ -117,6 +118,8 @@ class Task : public GUIDWrapper, private NonCopyable {
     void waitForChildren(bool yeld, I64 timeout);
 
    private:
+    const Application& _application;
+
     mutable std::mutex _taskDoneMutex;
     std::condition_variable _taskDoneCV;
     std::atomic_bool _done;

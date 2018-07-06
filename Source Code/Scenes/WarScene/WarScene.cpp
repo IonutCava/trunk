@@ -36,8 +36,8 @@ namespace {
     U64 elapsedGameTimeUs = 0;
 };
 
-WarScene::WarScene(const stringImpl& name)
-    : Scene(name),
+WarScene::WarScene(PlatformContext& context, const stringImpl& name)
+    : Scene(context, name),
     _infoBox(nullptr),
     _sceneReady(false),
     _lastNavMeshBuildTime(0UL)
@@ -57,7 +57,7 @@ WarScene::WarScene(const stringImpl& name)
         }
     });
 
-    _targetLines = GFX_DEVICE.newIMP();
+    _targetLines = _context._GFX.newIMP();
 
     _runCount = 0;
     _timeLimitMinutes = 5;

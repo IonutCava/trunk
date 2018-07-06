@@ -46,7 +46,7 @@ class RenderQueue {
     typedef std::array<RenderBin*, RenderBinType::COUNT> RenderBinArray;
 
   public:
-    RenderQueue();
+    RenderQueue(GFXDevice& context);
     ~RenderQueue();
 
     void populateRenderQueues(RenderStage renderStage);
@@ -75,6 +75,7 @@ class RenderQueue {
     RenderBin* getOrCreateBin(RenderBinType rbType);
 
   private:
+    GFXDevice& _context;
     RenderBinArray _renderBins;
     vectorImpl<RenderBin*> _activeBins;
 };

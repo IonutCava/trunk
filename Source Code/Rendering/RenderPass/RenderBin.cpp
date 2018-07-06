@@ -64,9 +64,11 @@ struct RenderQueueDistanceFrontToBack {
     }
 };
 
-RenderBin::RenderBin(RenderBinType rbType,
+RenderBin::RenderBin(GFXDevice& context, 
+                     RenderBinType rbType,
                      RenderingOrder::List renderOrder)
-    : _binIndex(0),
+    : _context(context),
+      _binIndex(0),
       _rbType(rbType),
       _binPropertyMask(0),
       _renderOrder(renderOrder)
@@ -89,7 +91,7 @@ void RenderBin::sort(const std::atomic_bool& stopRequested, RenderStage renderSt
     switch (_renderOrder) {
         default:
         case RenderingOrder::List::BY_STATE: {
-            if (GFX_DEVICE.isDepthStage()) {
+            if (_context.isDepthStage()) {
                 std::sort(std::begin(_renderBinStack),
                           std::end(_renderBinStack),
                           RenderQueueDistanceFrontToBack());
@@ -150,15 +152,14 @@ void RenderBin::addNodeToBin(const SceneGraphNode& sgn, RenderStage stage, const
 }
 
 void RenderBin::populateRenderQueue(const std::atomic_bool& stopRequested, RenderStage renderStage) {
-    GFXDevice& gfx = GFX_DEVICE;
-    I32 renderQueueIndex = gfx.reserveRenderQueue();
+    I32 renderQueueIndex = _context.reserveRenderQueue();
     // We need to apply different materials for each stage. As nodes are sorted, this should be very fast
     for (const RenderBinItem& item : _renderBinStack) {
         if (stopRequested) {
             break;
         }
-        gfx.addToRenderQueue(renderQueueIndex,
-                             Attorney::RenderingCompRenderBin::getRenderData(*item._renderable, renderStage));
+        _context.addToRenderQueue(renderQueueIndex,
+                                  Attorney::RenderingCompRenderBin::getRenderData(*item._renderable, renderStage));
     }
 }
 
