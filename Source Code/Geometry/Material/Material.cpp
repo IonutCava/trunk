@@ -75,7 +75,7 @@ Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descri
     RenderStateBlock shadowDescriptor(stateDescriptor);
     shadowDescriptor.setCullMode(CullMode::CCW);
     /// set a polygon offset
-    shadowDescriptor.setZBias(1.0f, 2.0f);
+    shadowDescriptor.setZBias(1.0f, 1.0f);
     /// ignore half of the colours 
     /// Some shadowing techniques require drawing to the a colour buffer
     shadowDescriptor.setColourWrites(true, true, false, false);

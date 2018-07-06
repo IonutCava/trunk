@@ -7,13 +7,13 @@
 
 namespace Divide {
 
-RTDrawDescriptor& RenderTarget::defaultPolicy() {
+const RTDrawDescriptor& RenderTarget::defaultPolicy() {
     static RTDrawDescriptor s_policyDefault;
 
     return s_policyDefault;
 }
 
-RTDrawDescriptor& RenderTarget::defaultPolicyKeepDepth() {
+const RTDrawDescriptor& RenderTarget::defaultPolicyKeepDepth() {
     static RTDrawDescriptor s_policyKeepDepth;
     static bool s_policyInitialised = false;
 
@@ -25,7 +25,7 @@ RTDrawDescriptor& RenderTarget::defaultPolicyKeepDepth() {
     return s_policyKeepDepth;
 }
 
-RTDrawDescriptor& RenderTarget::defaultPolicyKeepColour() {
+const RTDrawDescriptor& RenderTarget::defaultPolicyKeepColour() {
     static RTDrawDescriptor s_policyKeepColour;
     static bool s_policyInitialised = false;
 
@@ -37,7 +37,7 @@ RTDrawDescriptor& RenderTarget::defaultPolicyKeepColour() {
     return s_policyKeepColour;
 }
 
-RTDrawDescriptor& RenderTarget::defaultPolicyDepthOnly() {
+const RTDrawDescriptor& RenderTarget::defaultPolicyDepthOnly() {
     static RTDrawDescriptor s_policyDepthOnly;
     static bool s_policyInitialised = false;
 
@@ -51,7 +51,7 @@ RTDrawDescriptor& RenderTarget::defaultPolicyDepthOnly() {
     return s_policyDepthOnly;
 }
 
-RTDrawDescriptor& RenderTarget::defaultPolicyNoClear() {
+const RTDrawDescriptor& RenderTarget::defaultPolicyNoClear() {
     static RTDrawDescriptor s_policyNoClear;
     static bool s_policyInitialised = false;
 

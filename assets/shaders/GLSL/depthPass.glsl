@@ -54,8 +54,8 @@ void main() {
 
 #if defined(SHADOW_PASS)
     // Adjusting moments (this is sort of bias per pixel) using partial derivative
-    float depth = vert_vertexWVP.z / vert_vertexWVP.w;
-    depth = depth * 0.5 + 0.5;
+    float depth = vert_vertexWVP.z;// gl_FragCoord.z;//vert_vertexWVP.z / vert_vertexWVP.w;
+    //depth = depth * 0.5 + 0.5;
     //_colourOut = computeMoments(exp(DEPTH_EXP_WARP * depth));
     _colourOut = computeMoments(depth);
 #endif

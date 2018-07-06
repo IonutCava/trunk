@@ -113,11 +113,11 @@ class NOINITVTABLE RenderTarget : public GUIDWrapper, public GraphicsResource {
    public:
     virtual ~RenderTarget();
 
-    static RTDrawDescriptor& defaultPolicy();
-    static RTDrawDescriptor& defaultPolicyKeepColour();
-    static RTDrawDescriptor& defaultPolicyKeepDepth();
-    static RTDrawDescriptor& defaultPolicyDepthOnly();
-    static RTDrawDescriptor& defaultPolicyNoClear();
+    static const RTDrawDescriptor& defaultPolicy();
+    static const RTDrawDescriptor& defaultPolicyKeepColour();
+    static const RTDrawDescriptor& defaultPolicyKeepDepth();
+    static const RTDrawDescriptor& defaultPolicyDepthOnly();
+    static const RTDrawDescriptor& defaultPolicyNoClear();
 
     /// Resize all attachments
     virtual bool resize(U16 width, U16 height) = 0;

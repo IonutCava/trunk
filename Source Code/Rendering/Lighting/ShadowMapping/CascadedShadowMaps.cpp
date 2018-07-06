@@ -236,7 +236,7 @@ void CascadedShadowMaps::applyFrustumSplits(const mat4<F32>& invViewMatrix, cons
         testPointRounded.round();
         _shadowMatrices[pass].translate(vec3<F32>(((testPointRounded - testPoint) / halfShadowMapSize).xy(), 0.0f));
 
-        _light->setShadowVPMatrix(pass, _shadowMatrices[pass] * MAT4_BIAS);
+        _light->setShadowVPMatrix(pass, _shadowMatrices[pass]/* * MAT4_BIAS*/);
         _light->setShadowLightPos(pass, currentEye);
     }
 }

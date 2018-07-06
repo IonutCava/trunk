@@ -49,7 +49,7 @@ void CubeShadowMap::render(U32 passIdx, GFX::CommandBuffer& bufferInOut) {
                              _arrayOffset,
                              _light->getPosition(),
                              vec2<F32>(0.1f, _light->getRange()),
-                             RenderStagePass(RenderStage::SHADOW, RenderPassType::DEPTH_PASS),
+                             RenderStagePass(RenderStage::SHADOW, RenderPassType::DEPTH_PASS, to_U8(_light->getLightType())),
                              passIdx,
                              bufferInOut,
                              _shadowCameras[0]);

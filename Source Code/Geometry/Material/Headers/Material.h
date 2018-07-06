@@ -249,7 +249,7 @@ class Material : public CachedResource {
 
     F32 getParallaxFactor() const;
 
-    size_t getRenderStateBlock(RenderStagePass renderStagePass, I32 variant = 0);
+    size_t getRenderStateBlock(RenderStagePass renderStagePass);
 
     std::weak_ptr<Texture> getTexture(ShaderProgram::TextureUsage textureUsage) const;
 
@@ -306,6 +306,7 @@ class Material : public CachedResource {
 
     const ShaderProgramInfo& shaderInfo(RenderStagePass renderStagePass) const;
 
+    size_t& defaultRenderState(RenderStagePass renderStagePass);
     std::array<size_t, 3>& defaultRenderStates(RenderStagePass renderStagePass);
 
    private:

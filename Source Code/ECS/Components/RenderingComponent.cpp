@@ -79,7 +79,7 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
     RenderStateBlock shadowDesc;
     /// Cull back faces for shadow rendering
     shadowDesc.setCullMode(CullMode::CCW);
-    // depthDesc.setZBias(1.0f, 2.0f);
+    // depthDesc.setZBias(1.0f, 1.0f);
     shadowDesc.setColourWrites(true, true, false, false);
     _shadowStateBlockHash = shadowDesc.getHash();
 
@@ -446,17 +446,7 @@ size_t RenderingComponent::getMaterialStateHash(RenderStagePass renderStagePass)
         return 0;
     }
 
-    I32 variant = 0;
-    if (shadowStage && LightPool::currentShadowCastingLight()) {
-        LightType type = LightPool::currentShadowCastingLight()->getLightType();
-        variant = (type == LightType::DIRECTIONAL
-                         ? 0
-                         : type == LightType::POINT 
-                                 ? 1
-                                 : 2);
-    }
-
-    return _materialInstance->getRenderStateBlock(renderStagePass, variant);
+    return _materialInstance->getRenderStateBlock(renderStagePass);
 }
 
 void RenderingComponent::updateLoDLevel(const Camera& camera, RenderStagePass renderStagePass) {
@@ -485,7 +475,9 @@ void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
 
         if (_renderPackagesDirty[to_base(renderStagePass._stage)]) {
             for (U8 i = 0; i < to_U8(RenderPassType::COUNT); ++i) {
-                rebuildDrawCommands(RenderStagePass(renderStagePass._stage, static_cast<RenderPassType>(i)));
+                rebuildDrawCommands(RenderStagePass(renderStagePass._stage,
+                                                    static_cast<RenderPassType>(i),
+                                                    renderStagePass._variant));
             }
 
             _renderPackagesDirty[to_base(renderStagePass._stage)] = false;

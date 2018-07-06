@@ -52,9 +52,10 @@ public:
     struct PassParams {
         Camera* _camera = nullptr;
         RenderTargetID _target;
-        RTDrawDescriptor* _drawPolicy = nullptr;
+        const RTDrawDescriptor* _drawPolicy = nullptr;
         RenderStage _stage = RenderStage::COUNT;
         FrustumClipPlanes _clippingPlanes;
+        U8  _passVariant = 0;
         U32 _passIndex = 0;
         U32 _bufferIndex = 0;
         bool _occlusionCull = false;

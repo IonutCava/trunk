@@ -235,6 +235,7 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
     params._target = cubeMap;
     // We do our own binding
     params._bindTargets = false;
+    params._passVariant = stagePass._variant;
 
     GFX::BeginRenderSubPassCommand beginRenderSubPassCmd;
     GFX::EndRenderSubPassCommand endRenderSubPassCommand;
@@ -308,6 +309,7 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
     params._stage = stagePass._stage;
     params._target = targetBuffer;
     params._bindTargets = false;
+    params._passVariant = stagePass._variant;
     // Enable our render target
 
     GFX::BeginRenderPassCommand beginRenderPassCmd;

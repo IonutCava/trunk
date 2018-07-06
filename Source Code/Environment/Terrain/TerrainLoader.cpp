@@ -267,7 +267,7 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
     // Generate a shadow render state
     RenderStateBlock terrainRenderStateDepth;
     terrainRenderStateDepth.setCullMode(CullMode::CCW);
-    // terrainDescDepth.setZBias(1.0f, 2.0f);
+    // terrainDescDepth.setZBias(1.0f, 1.0f);
     terrainRenderStateDepth.setColourWrites(true, true, false, false);
 
     terrainMaterial->setRenderStateBlock(terrainRenderState.getHash());

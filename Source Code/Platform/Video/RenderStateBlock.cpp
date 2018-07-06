@@ -126,7 +126,7 @@ void RenderStateBlock::setStencil(bool enable,
 
 void RenderStateBlock::setDefaultValues() {
     _zBias = 0.0f;
-    _zUnits = 1.0f;
+    _zUnits = 0.0f;
     _zFunc = ComparisonFunction::LEQUAL;
     _colourWrite.b[0] = _colourWrite.b[1] = _colourWrite.b[2] = _colourWrite.b[3] = 1;
     _zEnable = true;

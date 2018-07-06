@@ -144,8 +144,9 @@ inline void Material::setRenderStateBlock(size_t renderStateBlockHash,
                                           I32 variant) {
     for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
         RenderStagePass renderStagePass(renderStage, static_cast<RenderPassType>(pass));
+        renderStagePass._variant = variant;
 
-        if (variant < 0 || variant >= defaultRenderStates(renderStagePass).size()) {
+        if (variant < 0) {
             for (size_t& state : defaultRenderStates(renderStagePass)) {
                 state = renderStateBlockHash;
             }
@@ -160,13 +161,14 @@ inline void Material::setRenderStateBlock(size_t renderStateBlockHash,
                                           I32 variant) {
     for (U8 stage = 0; stage < to_base(RenderStage::COUNT); ++stage) {
         RenderStagePass renderStagePass(static_cast<RenderStage>(stage), renderPassType);
+        renderStagePass._variant = variant;
 
-        if (variant < 0 || variant >= defaultRenderStates(renderStagePass).size()) {
+        if (variant < 0 ) {
             for (size_t& state : defaultRenderStates(renderStagePass)) {
                 state = renderStateBlockHash;
             }
         } else {
-            defaultRenderStates(renderStagePass)[variant] = renderStateBlockHash;
+            defaultRenderState(renderStagePass) = renderStateBlockHash;
         }
     }
 }
@@ -174,7 +176,9 @@ inline void Material::setRenderStateBlock(size_t renderStateBlockHash,
 inline void Material::setRenderStateBlock(size_t renderStateBlockHash,
                                           RenderStagePass renderStagePass,
                                           I32 variant) {
-    if (variant < 0 || variant >= defaultRenderStates(renderStagePass).size()) {
+    renderStagePass._variant = variant;
+
+    if (variant < 0) {
         for (size_t& state : defaultRenderStates(renderStagePass)) {
             state = renderStateBlockHash;
         }
@@ -183,11 +187,8 @@ inline void Material::setRenderStateBlock(size_t renderStateBlockHash,
     }
 }
 
-inline size_t Material::getRenderStateBlock(RenderStagePass renderStagePass, I32 variant) {
-    const std::array<size_t, 3>& states = defaultRenderStates(renderStagePass);
-
-    assert(variant >= 0 && variant < 3);
-    return states[variant];
+inline size_t Material::getRenderStateBlock(RenderStagePass renderStagePass) {
+    return defaultRenderState(renderStagePass);
 }
 
 inline void Material::setParallaxFactor(F32 factor) {
@@ -329,10 +330,13 @@ inline void Material::setShaderProgram(const ShaderProgram_ptr& shader,
     }
 }
 
+inline size_t& Material::defaultRenderState(RenderStagePass renderStagePass) {
+    return _defaultRenderStates[renderStagePass.index()][renderStagePass._variant];
+}
+
 inline std::array<size_t, 3>& Material::defaultRenderStates(RenderStagePass renderStagePass) {
     return _defaultRenderStates[renderStagePass.index()];
 }
-
 }; //namespace Divide
 
 #endif //_MATERIAL_INL_

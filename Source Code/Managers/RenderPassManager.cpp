@@ -321,7 +321,7 @@ void RenderPassManager::prePass(const PassParams& params, const RenderTarget& ta
         beginDebugScopeCmd._scopeName = " - PrePass";
         GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
-        RenderStagePass stagePass(params._stage, RenderPassType::DEPTH_PASS);
+        RenderStagePass stagePass(params._stage, RenderPassType::DEPTH_PASS, params._passVariant);
         prepareRenderQueues(stagePass, params, true, bufferInOut);
 
         if (params._bindTargets) {
@@ -354,7 +354,8 @@ void RenderPassManager::mainPass(const PassParams& params, RenderTarget& target,
 
     SceneManager& sceneManager = parent().sceneManager();
 
-    RenderStagePass stagePass(params._stage, RenderPassType::COLOUR_PASS);
+    RenderStagePass stagePass(params._stage, RenderPassType::COLOUR_PASS, params._passVariant);
+
     prepareRenderQueues(stagePass, params, !params._doPrePass, bufferInOut);
 
     if (params._target._usage != RenderTargetUsage::COUNT) {
@@ -385,9 +386,9 @@ void RenderPassManager::mainPass(const PassParams& params, RenderTarget& target,
 
         if (params._bindTargets) {
             // We don't need to clear the colour buffers at this stage since ... hopefully, they will be overwritten completely. Right?
-            RTDrawDescriptor& drawPolicy =  params._drawPolicy ? *params._drawPolicy
-                                                                : (!Config::DEBUG_HIZ_CULLING ? RenderTarget::defaultPolicyNoClear()
-                                                                                              : RenderTarget::defaultPolicyKeepColour());
+            RTDrawDescriptor drawPolicy =  params._drawPolicy ? *params._drawPolicy
+                                                               : (!Config::DEBUG_HIZ_CULLING ? RenderTarget::defaultPolicyNoClear()
+                                                                                             : RenderTarget::defaultPolicyKeepColour());
 
             drawPolicy.drawMask().setEnabled(RTAttachmentType::Depth, 0, drawToDepth);
 
@@ -425,7 +426,7 @@ void RenderPassManager::woitPass(const PassParams& params, const RenderTarget& t
     pipelineDescriptor._shaderProgramHandle = _OITCompositionShader->getID();
     Pipeline* pipeline = _context.newPipeline(pipelineDescriptor);
 
-    RenderStagePass stagePass(params._stage, RenderPassType::OIT_PASS);
+    RenderStagePass stagePass(params._stage, RenderPassType::OIT_PASS, params._passVariant);
     prepareRenderQueues(stagePass, params, false, bufferInOut);
 
     // Weighted Blended Order Independent Transparency

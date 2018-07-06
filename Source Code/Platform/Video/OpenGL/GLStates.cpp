@@ -890,7 +890,7 @@ void GL_API::activateStateBlock(const RenderStateBlock& newBlock,
             glDisable(GL_POLYGON_OFFSET_FILL);
         } else {
             glEnable(GL_POLYGON_OFFSET_FILL);
-            if (!COMPARE(oldBlock.zUnits(), newBlock.zUnits())) {
+            if (!COMPARE(oldBlock.zBias(), newBlock.zBias()) || !COMPARE(oldBlock.zUnits(), newBlock.zUnits())) {
                 glPolygonOffset(newBlock.zBias(), newBlock.zUnits());
             }
         }

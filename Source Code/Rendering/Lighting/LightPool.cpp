@@ -24,8 +24,6 @@ std::array<U8, to_base(ShadowType::COUNT)> LightPool::_shadowLocation = { {
     to_U8(ShaderProgram::TextureUsage::SHADOW_CUBE)
 }};
 
-Light* LightPool::_currentShadowCastingLight = nullptr;
-
 bool LightPool::_previewShadowMaps = false;
 
 LightPool::LightPool(Scene& parentScene, GFXDevice& context)
@@ -185,12 +183,14 @@ bool LightPool::generateShadowMaps(SceneRenderState& sceneRenderState, const Cam
     _sortedShadowProperties.clear();
 
     for (Light* light : sortedLights) {
-         _currentShadowCastingLight = light;
+        if (_sortedShadowProperties.size() >= Config::Lighting::MAX_SHADOW_CASTING_LIGHTS) {
+            break;
+        }
+
          light->validateOrCreateShadowMaps(_context, sceneRenderState);
          light->generateShadowMaps(shadowLightCount++ * Config::Lighting::MAX_SPLITS_PER_LIGHT, bufferInOut);
          _sortedShadowProperties.emplace_back(light->getShadowProperties());
     }
-    _currentShadowCastingLight = nullptr;
 
     vec_size lightShadowCount = std::min(_sortedShadowProperties.size(), static_cast<size_t>(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS));
     _shadowBuffer->writeData(0, lightShadowCount, _sortedShadowProperties.data());
@@ -201,8 +201,11 @@ bool LightPool::generateShadowMaps(SceneRenderState& sceneRenderState, const Cam
 void LightPool::shadowCastingLights(const vec3<F32>& eyePos, LightVec& sortedShadowLights) const {
 
     sortedShadowLights.resize(0);
+    sortedShadowLights.reserve(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
 
     LightVec sortedLights;
+    sortedLights.reserve(_lights.size());
+
     for (U8 i = 0; i < to_base(LightType::COUNT); ++i) {
         for (Light* light : _lights[i]) {
             sortedLights.push_back(light);
@@ -210,25 +213,29 @@ void LightPool::shadowCastingLights(const vec3<F32>& eyePos, LightVec& sortedSha
     }
 
     std::sort(std::begin(sortedLights),
-        std::end(sortedLights),
-        [&eyePos](Light* a, Light* b) -> bool
-    {
-        return a->getPosition().distanceSquared(eyePos) <
-            b->getPosition().distanceSquared(eyePos);
-    });
+              std::end(sortedLights),
+              [&eyePos](Light* a, Light* b) -> bool
+              {
+                  return a->getLightType() == LightType::DIRECTIONAL ||
+                          (a->getPosition().distanceSquared(eyePos) <
+                           b->getPosition().distanceSquared(eyePos));
+              });
 
-    U32 shadowLightCount = 0;
     for (Light* light : sortedLights) {
-        LightType type = static_cast<LightType>(light->getLightType());
-        I32 typeIndex = to_I32(type);
-
-        if (!light->getEnabled() || !_lightTypeState[typeIndex]) {
+        if (!light->getEnabled() ||
+            !light->castsShadows() ||
+            !_lightTypeState[to_base(light->getLightType())])
+        {
             continue;
         }
-        if (light->castsShadows() && shadowLightCount < Config::Lighting::MAX_SHADOW_CASTING_LIGHTS) {
-            sortedShadowLights.push_back(light);
+
+        sortedShadowLights.push_back(light);
+
+        if (sortedShadowLights.size() == Config::Lighting::MAX_SHADOW_CASTING_LIGHTS) {
+            break;
         }
     }
+
 }
 
 void LightPool::togglePreviewShadowMaps(GFXDevice& context) {

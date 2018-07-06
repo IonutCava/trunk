@@ -55,6 +55,7 @@ void SingleShadowMap::render(U32 passIdx, GFX::CommandBuffer& bufferInOut) {
     params._target = RenderTargetID(RenderTargetUsage::SHADOW, to_U32(getShadowMapType()));
     params._drawPolicy = &RenderTarget::defaultPolicy();
     params._passIndex = passIdx;
+    params._passVariant = to_U8(_light->getLightType());
 
     passMgr.doCustomPass(params, bufferInOut);
 }

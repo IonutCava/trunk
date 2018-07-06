@@ -88,7 +88,6 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
                 depthMapSampler.setFilters(TextureFilter::LINEAR_MIPMAP_LINEAR);
                 depthMapSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
                 depthMapSampler.setAnisotropy(8);
-                depthMapSampler._useRefCompare = false;
 
                 TextureDescriptor depthMapDescriptor(TextureType::TEXTURE_2D_ARRAY,
                                                      GFXImageFormat::RG32F,
@@ -100,7 +99,6 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
                 SamplerDescriptor depthSampler;
                 depthSampler.setFilters(TextureFilter::NEAREST);
                 depthSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
-                depthSampler._useRefCompare = false;
 
                 TextureDescriptor depthDescriptor(TextureType::TEXTURE_2D_ARRAY,
                                                   GFXImageFormat::DEPTH_COMPONENT,

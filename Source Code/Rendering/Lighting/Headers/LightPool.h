@@ -135,11 +135,7 @@ class LightPool : public SceneComponent {
                 return getShadowBindSlotOffset(ShadowType::LAYERED);
         };
     }
-
-    static Light* currentShadowCastingLight() { 
-        return _currentShadowCastingLight;
-    }
-
+    
   private:
     typedef vectorEASTL<LightProperties> LightPropertiesVec;
     typedef vectorEASTL<Light::ShadowProperties> LightShadowProperties;
@@ -193,7 +189,6 @@ class LightPool : public SceneComponent {
     Time::ProfileTimer& _shadowPassTimer;
 
     static bool _previewShadowMaps;
-    static Light* _currentShadowCastingLight;
     static std::array<U8, to_base(ShadowType::COUNT)> _shadowLocation;
 };
 

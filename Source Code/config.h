@@ -205,7 +205,7 @@ namespace Assert {
 
 namespace Lighting {
 // How many lights (in order as passed to the shader for the node) should cast shadows
-constexpr unsigned int MAX_SHADOW_CASTING_LIGHTS = 16;
+constexpr unsigned int MAX_SHADOW_CASTING_LIGHTS = 4;
 /// Used for CSM or PSSM to determine the maximum number of frustum splits
 /// And cube map shadows as well
 constexpr unsigned int MAX_SPLITS_PER_LIGHT = 6;
