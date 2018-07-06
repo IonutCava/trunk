@@ -1,0 +1,11 @@
+eclipse.preferences.version=1
+environment/project/cdt.managedbuild.config.gnu.exe.debug.1532515237/EngineLibraries/delimiter=\:
+environment/project/cdt.managedbuild.config.gnu.exe.debug.1532515237/EngineLibraries/operation=append
+environment/project/cdt.managedbuild.config.gnu.exe.debug.1532515237/EngineLibraries/value=/home/ionut/Custom/Libraries
+environment/project/cdt.managedbuild.config.gnu.exe.debug.1532515237/append=true
+environment/project/cdt.managedbuild.config.gnu.exe.debug.1532515237/appendContributed=true
+environment/project/cdt.managedbuild.config.gnu.exe.release.1791490606/EngineLibraries/delimiter=\:
+environment/project/cdt.managedbuild.config.gnu.exe.release.1791490606/EngineLibraries/operation=append
+environment/project/cdt.managedbuild.config.gnu.exe.release.1791490606/EngineLibraries/value=/home/ionut/Custom/Libraries
+environment/project/cdt.managedbuild.config.gnu.exe.release.1791490606/append=true
+environment/project/cdt.managedbuild.config.gnu.exe.release.1791490606/appendContributed=true
