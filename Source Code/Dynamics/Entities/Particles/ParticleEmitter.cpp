@@ -118,6 +118,7 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
         mat->setShaderProgram(_particleShader);
         mat->setShaderProgram(_particleDepthShader, RenderStage::SHADOW);
         mat->setRenderStateBlock(_particleStateBlockHash, RenderPassType::COLOUR_PASS);
+        mat->setRenderStateBlock(_particleStateBlockHash, RenderPassType::OIT_PASS);
         mat->setRenderStateBlock(_particleStateBlockHashDepth, RenderPassType::DEPTH_PASS);
         setMaterialTpl(mat);
 

@@ -64,6 +64,9 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
         std::unique_ptr<RenderPackage>& pkg = _renderData[to_base(RenderStagePass::pass(i))][to_base(RenderStagePass::stage(i))];
         pkg = std::make_unique<RenderPackage>(_context, true);
         pkg->isOcclusionCullable(_parentSGN.getNode<Object3D>()->getType() != SceneNodeType::TYPE_SKY);
+
+        STUBBED("ToDo: Use quality requirements for rendering packages! -Ionut");
+        pkg->qualityRequirement(RenderPackage::MinQuality::FULL);
     }
 
     RenderStateBlock depthDesc;
@@ -104,7 +107,6 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
         pipelineDescriptor._stateHash = primitiveStateBlockNoZRead.getHash();
         Pipeline* pipelineNoZRead = _context.newPipeline(pipelineDescriptor);
 
-        primitiveStateBlock.setZRead(false);
         _skeletonPrimitive = _context.newIMP();
         _skeletonPrimitive->name("Skeleton_" + parentSGN.name());
         _skeletonPrimitive->pipeline(*pipelineNoZRead);

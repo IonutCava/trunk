@@ -23,6 +23,17 @@ U32 RenderPackageQueue::size() const {
     return _currentCount;
 }
 
+U32 RenderPackageQueue::size(RenderPackage::MinQuality qualityRequirement) const {
+    U32 count = 0;
+    for (U32 idx = 0; idx < _currentCount; ++idx) {
+        if (_packages[idx]->qualityRequirement() == qualityRequirement) {
+            ++count;
+        }
+    }
+
+    return count;
+}
+
 bool RenderPackageQueue::locked() const {
     return _locked;
 }
@@ -34,6 +45,24 @@ bool RenderPackageQueue::empty() const {
 const GFX::CommandBuffer& RenderPackageQueue::getCommandBuffer(U32 idx) {
     assert(idx < _currentCount);
     RenderPackage& pkg = *_packages[idx];
+    bool cacheMiss = false;
+    return Attorney::RenderPackageRenderPackageQueue::buildAndGetCommandBuffer(pkg, cacheMiss);
+}
+
+const GFX::CommandBuffer& RenderPackageQueue::getCommandBuffer(RenderPackage::MinQuality qualityRequirement, U32 idx) {
+    U32 idxInternal = 0;
+
+    U8 i = 0;
+    for (; i < _currentCount; ++i) {
+        if (_packages[i]->qualityRequirement() == qualityRequirement) {
+            if (idx == idxInternal) {
+                break;
+            }
+            ++idxInternal;
+        }
+    }
+
+    RenderPackage& pkg = *_packages[i];
     bool cacheMiss = false;
     return Attorney::RenderPackageRenderPackageQueue::buildAndGetCommandBuffer(pkg, cacheMiss);
 }

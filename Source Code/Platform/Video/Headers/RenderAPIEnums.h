@@ -52,9 +52,10 @@ enum class RenderTargetUsage : U8 {
     REFRACTION_CUBE = 4,
     ENVIRONMENT = 5,
     SHADOW = 6,
-    OIT = 7,
-    EDITOR = 8,
-    OTHER = 9,
+    OIT_FULL_RES = 7,
+    OIT_QUARTER_RES = 8,
+    EDITOR = 9,
+    OTHER = 10,
     COUNT
 };
 
@@ -118,6 +119,7 @@ enum class RenderStage : U8 {
 enum class RenderPassType : U8 {
     DEPTH_PASS = 0,
     COLOUR_PASS = 1,
+    OIT_PASS = 2,
     COUNT
 };
 

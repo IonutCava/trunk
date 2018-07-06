@@ -34,18 +34,29 @@ void GFXDevice::uploadGPUBlock() {
     }
 }
 
-void GFXDevice::renderQueueToSubPasses(RenderBinType queueType, GFX::CommandBuffer& subPassCmd) {
+void GFXDevice::renderQueueToSubPasses(RenderBinType queueType, GFX::CommandBuffer& commandsInOut) {
     RenderPackageQueue& renderQueue = *_renderQueues[queueType._to_integral()].get();
 
     assert(renderQueue.locked() == false);
     if (!renderQueue.empty()) {
         U32 queueSize = renderQueue.size();
         for (U32 idx = 0; idx < queueSize; ++idx) {
-            subPassCmd.add(renderQueue.getCommandBuffer(idx));
+            commandsInOut.add(renderQueue.getCommandBuffer(idx));
         }
     }
 }
 
+void GFXDevice::renderQueueToSubPasses(RenderBinType queueType, RenderPackage::MinQuality quality, GFX::CommandBuffer& commandsInOut) {
+    RenderPackageQueue& renderQueue = *_renderQueues[queueType._to_integral()].get();
+
+    assert(renderQueue.locked() == false);
+    if (!renderQueue.empty()) {
+        U32 queueSize = renderQueue.size(quality);
+        for (U32 idx = 0; idx < queueSize; ++idx) {
+            commandsInOut.add(renderQueue.getCommandBuffer(quality, idx));
+        }
+    }
+}
 
 void GFXDevice::clearRenderQueue(RenderBinType queueType) {
     _renderQueues[queueType._to_integral()]->clear();
@@ -79,6 +90,13 @@ U32 GFXDevice::renderQueueSize(RenderBinType queueType) {
     assert(_renderQueues[queueIndex]->locked() == false);
 
     return _renderQueues[queueIndex]->size();
+}
+
+U32 GFXDevice::renderQueueSize(RenderBinType queueType, RenderPackage::MinQuality qualityRequirement) {
+    U32 queueIndex = queueType._to_integral();
+    assert(_renderQueues[queueIndex]->locked() == false);
+
+    return _renderQueues[queueIndex]->size(qualityRequirement);
 }
 
 void GFXDevice::addToRenderQueue(RenderBinType queueType, const RenderPackage& package) {

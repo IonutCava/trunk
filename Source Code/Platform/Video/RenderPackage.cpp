@@ -10,6 +10,7 @@ namespace Divide {
 RenderPackage::RenderPackage(GFXDevice& context, bool useSecondaryBuffers)
     : _context(context),
       _isRenderable(false),
+      _qualityRequirement(MinQuality::FULL),
       _isOcclusionCullable(true),
       _secondaryCommandPool(useSecondaryBuffers),
       _commands(nullptr),

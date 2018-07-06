@@ -83,13 +83,7 @@ class Material : public CachedResource {
         OPACITY_MAP,
         COUNT
     };
-
-    enum class TranslucencyType : U8 {
-        FULL_TRANSPARENT = 0,
-        TRANSLUCENT,
-        COUNT
-    };
-
+    
     /// Not used yet but implemented for shading model selection in shaders
     /// This enum matches the ASSIMP one on a 1-to-1 basis
     enum class ShadingMode : U8 {
@@ -269,7 +263,6 @@ class Material : public CachedResource {
     void rebuild();
     void clean();
     void updateTranslucency(bool requestRecomputeShaders = true);
-    bool hasTranslucency() const;
     bool hasTransparency() const;
 
     void dumpToFile(bool state);
@@ -317,7 +310,6 @@ class Material : public CachedResource {
     /// use for special shader tokens, such as "Tree"
     std::array<stringImpl, to_base(RenderStagePass::count())> _shaderModifier;
     TranslucencySource _translucencySource;
-    TranslucencyType _translucencyType;
     /// parallax/relief factor (higher value > more pronounced effect)
     F32 _parallaxFactor;
     bool _dirty;

@@ -226,13 +226,13 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
         accumulationDescriptor.setSampler(accumulationSampler);
 
         TextureDescriptor revealageDescriptor(TextureType::TEXTURE_2D,
-                                              GFXImageFormat::RED8,
-                                              GFXDataFormat::UNSIGNED_BYTE);
+                                              GFXImageFormat::RED16F,
+                                              GFXDataFormat::FLOAT_16);
         revealageDescriptor.setSampler(accumulationSampler);
 
         vector<RTAttachmentDescriptor> attachments = {
-            { accumulationDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::ACCUMULATION), DefaultColours::BLACK },
-            { revealageDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::REVEALAGE), DefaultColours::WHITE }
+            { accumulationDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::ACCUMULATION), FColour(0.0f, 0.0f, 0.0f, 0.0f) },
+            { revealageDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::REVEALAGE), FColour(1.0f, 0.0f, 0.0f, 0.0f) }
         };
 
         const RTAttachment_ptr& screenAttchment = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachmentPtr(RTAttachmentType::Colour, 0);
@@ -244,13 +244,20 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
         };
 
         RenderTargetDescriptor oitDesc = {};
-        oitDesc._name = "OIT";
+        oitDesc._name = "OIT_FULL_RES";
         oitDesc._resolution = renderResolution;
         oitDesc._attachmentCount = to_U8(attachments.size());
         oitDesc._attachments = attachments.data();
         oitDesc._externalAttachmentCount = to_U8(externalAttachments.size());
         oitDesc._externalAttachments = externalAttachments.data();
-        _rtPool->allocateRT(RenderTargetUsage::OIT, oitDesc);
+        _rtPool->allocateRT(RenderTargetUsage::OIT_FULL_RES, oitDesc);
+
+        oitDesc._name = "OIT_QUARTER_RES";
+        oitDesc._resolution = renderResolution / 4;
+        oitDesc._attachments = attachments.data();
+        oitDesc._externalAttachmentCount = to_U8(externalAttachments.size());
+        oitDesc._externalAttachments = externalAttachments.data();
+        _rtPool->allocateRT(RenderTargetUsage::OIT_QUARTER_RES, oitDesc);
     }
     // Reflection Targets
     SamplerDescriptor reflectionSampler;

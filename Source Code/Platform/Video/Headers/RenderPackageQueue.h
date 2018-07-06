@@ -42,10 +42,13 @@ class RenderPackageQueue {
 
     void clear();
     U32 size() const;
+    U32 size(RenderPackage::MinQuality qualityRequirement) const;
+
     bool empty() const;
     bool locked() const;
 
     const GFX::CommandBuffer& getCommandBuffer(U32 idx);
+    const GFX::CommandBuffer& getCommandBuffer(RenderPackage::MinQuality qualityRequirement, U32 idx);
 
     protected:
     friend class GFXDevice;

@@ -225,10 +225,6 @@ inline const Material::BumpMethod&  Material::getBumpMethod()  const {
     return _bumpMethod;
 }
 
-inline bool Material::hasTranslucency() const {
-    return _translucencyType != TranslucencyType::FULL_TRANSPARENT;
-}
-
 inline bool Material::hasTransparency() const {
     return _translucencySource != TranslucencySource::COUNT;
 }

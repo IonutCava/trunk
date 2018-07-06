@@ -38,8 +38,7 @@ Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descri
       _refractionIndex(-1),
       _shadingMode(ShadingMode::COUNT),
       _bumpMethod(BumpMethod::NONE),
-      _translucencySource(TranslucencySource::COUNT),
-      _translucencyType(TranslucencyType::COUNT)
+      _translucencySource(TranslucencySource::COUNT)
 {
     _textures.fill(nullptr);
     _textureExtenalFlag.fill(false);
@@ -52,16 +51,19 @@ Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descri
     defaultReflectionTexture(nullptr, 0);
     defaultRefractionTexture(nullptr, 0);
 
-    setShaderDefines(RenderStage::SHADOW, "SHADOW_PASS");
-    setShaderDefines(RenderPassType::DEPTH_PASS, "DEPTH_PASS");
-
     _operation = TextureOperation::NONE;
 
     /// Normal state for final rendering
     RenderStateBlock stateDescriptor;
     stateDescriptor.setZFunc(ComparisonFunction::LEQUAL);
+
+    RenderStateBlock oitDescriptor(stateDescriptor);
+    oitDescriptor.setZRead(false);
+
     /// the reflection descriptor is the same as the normal descriptor
     RenderStateBlock reflectorDescriptor(stateDescriptor);
+    RenderStateBlock reflectorOitDescriptor(stateDescriptor);
+    reflectorOitDescriptor.setZRead(false);
     /// the z-pre-pass descriptor does not process colours
     RenderStateBlock zPrePassDescriptor(stateDescriptor);
     zPrePassDescriptor.setColourWrites(true, true, true, false);
@@ -86,12 +88,25 @@ Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descri
     setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::COLOUR_PASS), 1);
     setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::COLOUR_PASS), 2);
 
+    setRenderStateBlock(oitDescriptor.getHash(), RenderStagePass(RenderStage::DISPLAY, RenderPassType::OIT_PASS));
+    setRenderStateBlock(oitDescriptor.getHash(), RenderStagePass(RenderStage::REFRACTION, RenderPassType::OIT_PASS));
+    setRenderStateBlock(reflectorOitDescriptor.getHash(), RenderStagePass(RenderStage::REFLECTION, RenderPassType::OIT_PASS));
+
+    setRenderStateBlock(shadowDescriptor.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::OIT_PASS), 0);
+    setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::OIT_PASS), 1);
+    setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::OIT_PASS), 2);
+
     setRenderStateBlock(zPrePassDescriptor.getHash(), RenderStagePass(RenderStage::DISPLAY, RenderPassType::DEPTH_PASS));
     setRenderStateBlock(zPrePassDescriptor.getHash(), RenderStagePass(RenderStage::REFRACTION, RenderPassType::DEPTH_PASS));
     setRenderStateBlock(zPrePassDescriptor.getHash(), RenderStagePass(RenderStage::REFLECTION, RenderPassType::DEPTH_PASS));
+
     setRenderStateBlock(shadowDescriptor.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::DEPTH_PASS), 0);
     setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::DEPTH_PASS), 1);
     setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::DEPTH_PASS), 2);
+
+    setShaderDefines(RenderStage::SHADOW, "SHADOW_PASS");
+    setShaderDefines(RenderPassType::DEPTH_PASS, "DEPTH_PASS");
+    setShaderDefines(RenderPassType::OIT_PASS, "OIT_PASS");
 }
 
 Material::~Material()
@@ -120,7 +135,6 @@ Material_ptr Material::clone(const stringImpl& nameSuffix) {
     cloneMat->_defaultReflection = base._defaultReflection;
     cloneMat->_defaultRefraction = base._defaultRefraction;
     cloneMat->_translucencySource = base._translucencySource;
-    cloneMat->_translucencyType = base._translucencyType;
 
     for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
         cloneMat->_shaderModifier[i] = base._shaderModifier[i];
@@ -219,10 +233,6 @@ void Material::setShaderProgramInternal(const stringImpl& shader,
                                         const bool computeOnAdd) {
     ShaderProgramInfo& info = shaderInfo(renderStagePass);
 
-    if (shader.empty()) {
-        int a;
-        a = 5;
-    }
     ResourceDescriptor shaderDescriptor(shader.empty() ? "NULL" : shader);
 
     if (!info._shaderDefines.empty()) {
@@ -375,7 +385,7 @@ bool Material::computeShader(RenderStagePass renderStagePass, const bool compute
     DIVIDE_ASSERT(_shadingMode != ShadingMode::COUNT,
                   "Material computeShader error: Invalid shading mode specified!");
 
-    info._shaderDefines.clear();
+    //info._shaderDefines.clear();
 
     if (_textures[slot1]) {
         if (!_textures[slot0]) {
@@ -400,8 +410,12 @@ bool Material::computeShader(RenderStagePass renderStagePass, const bool compute
         return false;
     }
 
-    if (depthPassShader && renderStagePass._stage == RenderStage::SHADOW) {
-        shader += ".Shadow";
+    if (depthPassShader) {
+        shader += renderStagePass._stage == RenderStage::SHADOW ? ".Shadow" : ".Depth";
+    }
+
+    if (renderStagePass._passType == RenderPassType::OIT_PASS) {
+        shader += ".OIT";
     }
 
     // What kind of effects do we need?
@@ -449,17 +463,10 @@ bool Material::computeShader(RenderStagePass renderStagePass, const bool compute
         default: break;
     };
 
-    switch (_translucencyType) {
-        case TranslucencyType::FULL_TRANSPARENT: {
-            shader += ".AlphaDiscard";
-            setShaderDefines(renderStagePass, "USE_ALPHA_DISCARD");
-        } break;
-        case TranslucencyType::TRANSLUCENT: {
-            shader += ".OIT";
-            setShaderDefines(renderStagePass, "USE_WB_OIT");
-        } break;
-        default: break;
-    };
+    if (_translucencySource != TranslucencySource::COUNT && renderStagePass._passType != RenderPassType::OIT_PASS) {
+        shader += ".AlphaDiscard";
+        setShaderDefines(renderStagePass, "USE_ALPHA_DISCARD");
+    }
 
     if (_doubleSided) {
         shader += ".DoubleSided";
@@ -598,43 +605,29 @@ void Material::setDoubleSided(const bool state) {
 void Material::updateTranslucency(bool requestRecomputeShaders) {
     if (_translucencyCheck) {
         _translucencySource = TranslucencySource::COUNT;
-        _translucencyType = TranslucencyType::COUNT;
 
         // In order of importance (less to more)!
         // diffuse channel alpha
         if (_colourData._diffuse.a < 0.95f) {
             _translucencySource = TranslucencySource::DIFFUSE;
-            if (_colourData._diffuse.a < 0.05f) {
-                _translucencyType = TranslucencyType::FULL_TRANSPARENT;
-            }
         }
 
         // base texture is translucent
         Texture_ptr albedo = _textures[to_base(ShaderProgram::TextureUsage::UNIT0)];
         if (albedo && albedo->hasTransparency()) {
             _translucencySource = TranslucencySource::DIFFUSE_MAP;
-            if (!albedo->hasTranslucency()) {
-                _translucencyType = TranslucencyType::FULL_TRANSPARENT;
-            }
         }
 
         // opacity map
         Texture_ptr opacity = _textures[to_base(ShaderProgram::TextureUsage::OPACITY)];
         if (opacity && opacity->hasTransparency()) {
             _translucencySource = TranslucencySource::OPACITY_MAP;
-            if (!opacity->hasTranslucency()) {
-                _translucencyType = TranslucencyType::FULL_TRANSPARENT;
-            }
         }
 
         _translucencyCheck = false;
 
         // Disable culling for translucent items
         if (_translucencySource != TranslucencySource::COUNT) {
-            if (_translucencyType != TranslucencyType::FULL_TRANSPARENT) {
-                _translucencyType = TranslucencyType::TRANSLUCENT;
-            }
-
             setDoubleSided(true);
         } else {
             if (requestRecomputeShaders) {

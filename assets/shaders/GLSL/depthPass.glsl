@@ -46,7 +46,7 @@ vec2 computeMoments(in float depth) {
 
 void main() {
 #if defined(HAS_TRANSPARENCY)
-    if (getOpacity() < ALPHA_DISCARD_THRESHOLD) {
+    if (getOpacity() < 1.0 - ALPHA_DISCARD_THRESHOLD) {
         discard;
     }
 #endif

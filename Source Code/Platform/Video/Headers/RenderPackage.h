@@ -49,6 +49,12 @@ class RenderPackage {
     friend class Attorney::RenderPackageRenderPackageQueue;
 
 public:
+    enum class MinQuality : U8 {
+        FULL = 0,
+        LOW,
+        COUNT
+    };
+
 private:
     enum class CommandType : U8 {
         NONE = 0,
@@ -78,6 +84,9 @@ public:
 
     inline void isOcclusionCullable(bool state) { _isOcclusionCullable = state; }
     inline bool isOcclusionCullable() const { return  _isOcclusionCullable; }
+
+    inline void qualityRequirement(MinQuality state) { _qualityRequirement = state; }
+    inline MinQuality qualityRequirement() const { return  _qualityRequirement; }
 
     size_t getSortKeyHash() const;
 
@@ -124,6 +133,7 @@ private:
     bool _isRenderable;
     bool _isOcclusionCullable;
     bool _secondaryCommandPool;
+    MinQuality _qualityRequirement;
 
     vectorEASTL<GFX::DrawCommand> _drawCommands;
     vectorEASTL<GFX::BindPipelineCommand> _pipelines;

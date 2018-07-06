@@ -44,7 +44,7 @@ layout(early_fragment_tests) in;
 
 #include "velocityCalc.frag"
 
-#if defined(USE_WB_OIT)
+#if defined(OIT_PASS)
 layout(location = 0) out vec4  _accum;
 layout(location = 1) out float _revealage;
 layout(location = 2) out vec4  _modulate;
@@ -104,7 +104,7 @@ vec4 getFinalPixelColour() {
 }
 
 
-#if defined(USE_WB_OIT)
+#if defined(OIT_PASS)
 #if USE_COLOURED_WOIT
 // Shameless copy-paste from http://casual-effects.blogspot.co.uk/2015/03/colored-blended-order-independent.html
 void writePixel(vec4 premultipliedReflect, vec3 transmit, float csZ) {
@@ -135,8 +135,8 @@ void writePixel(vec4 premultipliedReflect, vec3 transmit, float csZ) {
 }
 #else
 void writePixel(vec4 premultipliedReflect, float csZ) {
-    vec3 transmit = vec3(0.01);
-    premultipliedReflect.a *= 1.0 - clamp((transmit.r + transmit.g + transmit.b) * (1.0 / 3.0), 0, 1);
+    vec3 transmit = vec3(0.2, 0.1, 0.0);
+    //premultipliedReflect.a *= 1.0 - clamp((transmit.r + transmit.g + transmit.b) * (1.0 / 3.0), 0, 1);
 
     /* You may need to adjust the w function if you have a very large or very small view volume; see the paper and
     presentation slides at http://jcgt.org/published/0002/02/09/ */
@@ -146,10 +146,12 @@ void writePixel(vec4 premultipliedReflect, float csZ) {
     float b = -gl_FragCoord.z * 0.95 + 1.0;
 
     /* If your scene has a lot of content very close to the far plane,
-    then include this line (one rsqrt instruction):
-    b /= sqrt(1e4 * abs(csZ)); */
+    then include this line (one rsqrt instruction):*/
+    b /= sqrt(1e4 * abs(csZ));
+
     float w = clamp(a * a * a * 1e8 * b * b * b, 1e-2, 3e2);
     _accum = premultipliedReflect * w;
+
     _revealage = premultipliedReflect.a;
 }
 #endif
@@ -169,17 +171,20 @@ void main (void){
 #endif
 
     vec2 screenPositionNormalised = getScreenPositionNormalised();
-#if defined(USE_WB_OIT)
+#if defined(OIT_PASS)
     float linearDepth = ToLinearDepth(getDepthValue(screenPositionNormalised));
 
 #if defined(USE_COLOURED_WOIT)
-    writePixel(colourOut, colourOut.rgb - vec3(0.2), linearDepth, _accum, _revealage);
-#else
+    writePixel(colourOut, colourOut.rgb - vec3(0.2), linearDepth);
+#else //USE_COLOURED_WOIT
     writePixel(colourOut, linearDepth);
-#endif
-#else
+#endif //USE_COLOURED_WOIT
+
+#else //OIT_PASS
+
     _colourOut = colourOut;
     _normalOut = packNormal(getProcessedNormal());
     _velocityOut = velocityCalc(dvd_InvProjectionMatrix, screenPositionNormalised);
-#endif
+
+#endif //OIT_PASS
 }

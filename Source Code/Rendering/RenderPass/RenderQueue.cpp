@@ -41,7 +41,6 @@ U16 RenderQueue::getRenderQueueStackSize() const {
 RenderingOrder::List RenderQueue::getSortOrder(RenderStagePass stagePass, RenderBinType rbType) {
     RenderingOrder::List sortOrder = RenderingOrder::List::COUNT;
     switch (rbType) {
-        case RenderBinType::RBT_TRANSPARENT:
         case RenderBinType::RBT_OPAQUE: {
             // Opaque items should be rendered front to back in depth passes for early-Z reasons
             sortOrder = !_context.isDepthStage(stagePass) ? RenderingOrder::List::BY_STATE
@@ -61,8 +60,12 @@ RenderingOrder::List RenderQueue::getSortOrder(RenderStagePass stagePass, Render
             // Translucent items should be rendered by material in depth passes to avoid useless material switches
             // Small cost for bypassing early-Z checks, but translucent items should be in the minority on the screen anyway
             // and the Opaque pass should have finished by now
-            sortOrder = !_context.isDepthStage(stagePass) ? RenderingOrder::List::BACK_TO_FRONT
-                                                          : RenderingOrder::List::BY_STATE;
+            /*sortOrder = !_context.isDepthStage(stagePass) ? RenderingOrder::List::BACK_TO_FRONT
+                                                          : RenderingOrder::List::BY_STATE;*/
+
+
+            // We are using weighted blended OIT. State is fine (and faster)
+            sortOrder = RenderingOrder::List::BY_STATE;
         } break;
         default: {
             Console::errorfn(Locale::get(_ID("ERROR_INVALID_RENDER_BIN_CREATION")));
@@ -93,10 +96,15 @@ RenderBin* RenderQueue::getOrCreateBin(RenderBinType rbType) {
 RenderBin* RenderQueue::getBinForNode(const SceneNode_ptr& node, const Material_ptr& matInstance) {
     assert(node != nullptr);
     switch (node->getType()) {
-        case SceneNodeType::TYPE_LIGHT: return getOrCreateBin(RenderBinType::RBT_IMPOSTOR);
-        case SceneNodeType::TYPE_PARTICLE_EMITTER: return getOrCreateBin(RenderBinType::RBT_TRANSLUCENT);
-        case SceneNodeType::TYPE_VEGETATION_GRASS: return getOrCreateBin(RenderBinType::RBT_TRANSPARENT);
-        case SceneNodeType::TYPE_SKY: return getOrCreateBin(RenderBinType::RBT_SKY);
+        case SceneNodeType::TYPE_LIGHT: 
+            return getOrCreateBin(RenderBinType::RBT_IMPOSTOR);
+
+        case SceneNodeType::TYPE_VEGETATION_GRASS:
+        case SceneNodeType::TYPE_PARTICLE_EMITTER:
+            return getOrCreateBin(RenderBinType::RBT_TRANSLUCENT);
+
+        case SceneNodeType::TYPE_SKY:
+            return getOrCreateBin(RenderBinType::RBT_SKY);
 
         // Water is also opaque as refraction and reflection are separate textures
         case SceneNodeType::TYPE_WATER:
@@ -105,20 +113,19 @@ RenderBin* RenderQueue::getBinForNode(const SceneNode_ptr& node, const Material_
             if (node->getType() == SceneNodeType::TYPE_OBJECT3D) {
                 Object3D::ObjectType type = static_cast<Object3D*>(node.get())->getObjectType();
                 switch (type) {
-                    case Object3D::ObjectType::TERRAIN: return getOrCreateBin(RenderBinType::RBT_TERRAIN);
-                    case Object3D::ObjectType::DECAL: return getOrCreateBin(RenderBinType::RBT_DECAL);
+                    case Object3D::ObjectType::TERRAIN:
+                        return getOrCreateBin(RenderBinType::RBT_TERRAIN);
+
+                    case Object3D::ObjectType::DECAL:
+                        return getOrCreateBin(RenderBinType::RBT_DECAL);
                 }
             }
             // Check if the object has a material with transparency/translucency
-            if (matInstance) {
+            if (matInstance && matInstance->hasTransparency()) {
                 // Add it to the appropriate bin if so ...
-                if (matInstance->hasTransparency()) {
-                    if (matInstance->hasTranslucency()) {
-                        return getOrCreateBin(RenderBinType::RBT_TRANSLUCENT);
-                    }
-                    return getOrCreateBin(RenderBinType::RBT_TRANSPARENT);
-                }
+                return getOrCreateBin(RenderBinType::RBT_TRANSLUCENT);
             }
+
             //... else add it to the general geometry bin
             return getOrCreateBin(RenderBinType::RBT_OPAQUE);
         }

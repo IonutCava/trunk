@@ -49,6 +49,8 @@ namespace TypeUtil {
                 return "DEPTH_PASS";
             case RenderPassType::COLOUR_PASS:
                 return "COLOUR_PASS";
+            case RenderPassType::OIT_PASS:
+                return "OIT_PASS";
         };
 
         return "error";
@@ -73,6 +75,8 @@ namespace TypeUtil {
             return RenderPassType::DEPTH_PASS;
         } else if (strcmp(pass, "COLOUR_PASS") == 0) {
             return RenderPassType::COLOUR_PASS;
+        } else if (strcmp(pass, "OIT_PASS") == 0) {
+            return RenderPassType::OIT_PASS;
         }
 
         return RenderPassType::COUNT;
@@ -399,7 +403,8 @@ void GFXDevice::onSizeChange(const SizeChangeParams& params) {
 
         // Update render targets with the new resolution
         _rtPool->resizeTargets(RenderTargetUsage::SCREEN, w, h);
-        _rtPool->resizeTargets(RenderTargetUsage::OIT, w, h);
+        _rtPool->resizeTargets(RenderTargetUsage::OIT_FULL_RES, w, h);
+        _rtPool->resizeTargets(RenderTargetUsage::OIT_QUARTER_RES, to_U16(std::ceil(w / 4.0f)), to_U16(std::ceil(h / 4.0f)));
         if (Config::Build::ENABLE_EDITOR) {
             _rtPool->resizeTargets(RenderTargetUsage::EDITOR, w, h);
         }

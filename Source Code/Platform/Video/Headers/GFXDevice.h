@@ -205,8 +205,10 @@ public:  // GPU interface
     void lockQueue(RenderBinType type);
     void unlockQueue(RenderBinType type);
     U32  renderQueueSize(RenderBinType queueType);
+    U32  renderQueueSize(RenderBinType queueType, RenderPackage::MinQuality qualityRequirement);
     void addToRenderQueue(RenderBinType queueType, const RenderPackage& package);
     void renderQueueToSubPasses(RenderBinType queueType, GFX::CommandBuffer& commandsInOut);
+    void renderQueueToSubPasses(RenderBinType queueType, RenderPackage::MinQuality quality, GFX::CommandBuffer& commandsInOut);
     void clearRenderQueue(RenderBinType queueType);
 
     void flushCommandBuffer(GFX::CommandBuffer& commandBuffer);
