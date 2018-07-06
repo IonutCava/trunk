@@ -1,0 +1,18 @@
+#include "texture.h"
+
+bool Texture::s_bGenerateMipmaps = true;
+
+bool Texture::LoadFile(U32 target, const std::string& name)
+{
+	_name = name;
+	ImageTools::OpenImage(name,_img);
+	if(!_img.data) {
+		Con::getInstance().errorfn("Texture: Unable to load texture [ %s ]", name.c_str());
+		return false;
+	}
+	_width = _img.w; _height = _img.h; _bitDepth = _img.d;
+	LoadData(target, _img.data, _img.w, _img.h, _img.d);
+	_img.Destroy();
+	return true;
+}
+
