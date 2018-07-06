@@ -29,15 +29,6 @@
 
 namespace Divide {
 
-namespace Networking {
-template <typename T>
-class vector3 {
-   public:
-    explicit vector3(T x, T y, T z) : _x(x), _y(y), _z(z) {}
-    T _x, _y, _z;
-};
-};
-
 class ByteBufferException {
    public:
     ByteBufferException(bool _add, size_t _pos, size_t _esize, size_t _size)
@@ -80,7 +71,7 @@ class ByteBuffer {
 
     template <typename T>
     void put(size_t pos, T value) {
-        EndianConvert(value);
+        //EndianConvert(value);
         put(pos, (U8 *)&value, sizeof(value));
     }
 
@@ -92,6 +83,13 @@ class ByteBuffer {
      
     template <> 
     ByteBuffer &operator<<(const stringImpl &value) {
+        append((U8 const *)value.c_str(), value.length());
+        append((U8)0);
+        return *this;
+    }
+
+    template <>
+    ByteBuffer &operator<<(stringImpl value) {
         append((U8 const *)value.c_str(), value.length());
         append((U8)0);
         return *this;
@@ -119,8 +117,8 @@ class ByteBuffer {
     template<>
     ByteBuffer &operator>>(stringImpl& value) {
         value.clear();
-        while (rpos() <
-               size())  // prevent crash at wrong string format in packet
+        // prevent crash at wrong string format in packet
+        while (rpos() < size())
         {
             char c = read<char>();
             if (c == 0) break;
@@ -174,7 +172,7 @@ class ByteBuffer {
         if (pos + sizeof(T) > size())
             throw ByteBufferException(false, pos, sizeof(T), size());
         T val = *((T const *)&_storage[pos]);
-        EndianConvert(val);
+        //EndianConvert(val);
         return val;
     }
 
@@ -239,7 +237,6 @@ class ByteBuffer {
         }
     }
 
-    // can be used in SMSG_MONSTER_MOVE opcode
     void appendPackXYZ(F32 x, F32 y, F32 z) {
         U32 packed = 0;
         packed |= (to_int(x / 0.25f) & 0x7FF);
@@ -266,16 +263,15 @@ class ByteBuffer {
     }
 
     void put(size_t pos, const U8 *src, size_t cnt) {
-        if (pos + cnt > size())
+        if (pos + cnt > size()) {
             throw ByteBufferException(true, pos, cnt, size());
+        }
         memcpy(&_storage[pos], src, cnt);
     }
 
-    void print_storage() const {}
 
-    void textlike() const {}
-
-    void hexlike() const {}
+    bool dumpToFile(const stringImpl& fileName) const;
+    bool loadFromFile(const stringImpl& fileName);
 
    private:
     /// limited for internal use because can "append" any unexpected type (like
@@ -304,18 +300,50 @@ class ByteBuffer {
 };
 
 template <typename T>
-inline ByteBuffer &operator<<(ByteBuffer &b, Networking::vector3<T> const &v) {
-    b << v._x;
-    b << v._y;
-    b << v._z;
+inline ByteBuffer &operator<<(ByteBuffer &b, vec2<T> const &v) {
+    b << v.x;
+    b << v.y;
     return b;
 }
 
 template <typename T>
-inline ByteBuffer &operator>>(ByteBuffer &b, Networking::vector3<T> &v) {
-    b >> v._x;
-    b >> v._y;
-    b >> v._z;
+inline ByteBuffer &operator>>(ByteBuffer &b, vec2<T> &v) {
+    b >> v.x;
+    b >> v.y;
+    return b;
+}
+
+template <typename T>
+inline ByteBuffer &operator<<(ByteBuffer &b, vec3<T> const &v) {
+    b << v.x;
+    b << v.y;
+    b << v.z;
+    return b;
+}
+
+template <typename T>
+inline ByteBuffer &operator>>(ByteBuffer &b, vec3<T> &v) {
+    b >> v.x;
+    b >> v.y;
+    b >> v.z;
+    return b;
+}
+
+template <typename T>
+inline ByteBuffer &operator<<(ByteBuffer &b, vec4<T> const &v) {
+    b << v.x;
+    b << v.y;
+    b << v.z;
+    b << v.w;
+    return b;
+}
+
+template <typename T>
+inline ByteBuffer &operator>>(ByteBuffer &b, vec4<T> &v) {
+    b >> v.x;
+    b >> v.y;
+    b >> v.z;
+    b >> v.w;
     return b;
 }
 
@@ -333,6 +361,7 @@ inline ByteBuffer &operator>>(ByteBuffer &b, std::vector<T> &v) {
     U32 vsize;
     b >> vsize;
     v.clear();
+    v.reserve(vsize);
     while (vsize--) {
         T t;
         b >> t;
@@ -355,6 +384,7 @@ inline ByteBuffer &operator>>(ByteBuffer &b, std::list<T> &v) {
     U32 vsize;
     b >> vsize;
     v.clear();
+    v.reverse(vsize);
     while (vsize--) {
         T t;
         b >> t;

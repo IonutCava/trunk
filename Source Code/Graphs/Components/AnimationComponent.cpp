@@ -176,7 +176,7 @@ const mat4<F32>& AnimationComponent::getBoneTransform(U32 animationID,
 
     if (node->getObjectType() != Object3D::ObjectType::SUBMESH ||
         (node->getObjectType() == Object3D::ObjectType::SUBMESH &&
-         !node->isSkinned())) {
+         !node->hasFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED))) {
         return _parentSGN.getComponent<PhysicsComponent>()->getWorldMatrix();
     }
 
@@ -195,8 +195,8 @@ Bone* AnimationComponent::getBoneByName(const stringImpl& bname) const {
     return _animator.boneByName(bname);
 }
 
-const AnimEvaluator& AnimationComponent::GetAnimationByIndex(
-    I32 animationID) const {
+std::shared_ptr<AnimEvaluator> 
+AnimationComponent::getAnimationByIndex(I32 animationID) const {
     return _animator.animationByIndex(animationID);
 }
 };

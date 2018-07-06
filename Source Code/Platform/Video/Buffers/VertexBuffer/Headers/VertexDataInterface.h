@@ -34,25 +34,22 @@
 
 #include "Utility/Headers/GUIDWrapper.h"
 #include "Platform/Video/Headers/RenderAPIWrapper.h"
-#include "Managers/Headers/FrameListenerManager.h"
 
 namespace Divide {
 
-class NOINITVTABLE VertexDataInterface : public FrameListener,
-                                         public GUIDWrapper,
+class NOINITVTABLE VertexDataInterface : public GUIDWrapper,
                                          private NonCopyable {
    public:
-    VertexDataInterface() : FrameListener(), GUIDWrapper() {
-        REGISTER_FRAME_LISTENER(this, 4);
-    };
+    VertexDataInterface() : GUIDWrapper() 
+    {
+    }
 
-    virtual ~VertexDataInterface() { UNREGISTER_FRAME_LISTENER(this); }
+    virtual ~VertexDataInterface() 
+    {
+    }
 
     virtual void draw(const GenericDrawCommand& command,
                       bool useCmdBuffer = false) = 0;
-
-    /// Just before we render the frame
-    virtual bool frameStarted(const FrameEvent& evt) { return true; }
 };
 
 };  // namespace Divide

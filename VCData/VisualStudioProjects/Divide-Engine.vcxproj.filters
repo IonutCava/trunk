@@ -530,6 +530,9 @@
     <ClCompile Include="..\..\Source Code\Libs\SimpleINI\src\ConvertUTF.cpp">
       <Filter>Utility\SimpleINI</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Geometry\Importer\MeshImporter.cpp">
+      <Filter>Geometry\Importer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h">
@@ -939,6 +942,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\STLString.h">
       <Filter>Core\TemplateLibraries\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Geometry\Importer\Headers\MeshImporter.h">
+      <Filter>Geometry\Importer\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

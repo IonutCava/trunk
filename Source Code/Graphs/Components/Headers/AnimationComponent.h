@@ -84,7 +84,7 @@ class AnimationComponent : public SGNComponent {
 
     inline I32 animationIndex() const { return _currentAnimIndex; }
 
-    const AnimEvaluator& GetAnimationByIndex(I32 animationID) const;
+    std::shared_ptr<AnimEvaluator> getAnimationByIndex(I32 animationID) const;
 
     void resetTimers();
     void incParentTimeStamp(const U64 timestamp);

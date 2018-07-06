@@ -94,7 +94,7 @@ class Bone {
         return nullptr;
     }
 
-    inline void createBoneList(vectorImpl<const Bone*>& boneList) const {
+    inline void createBoneList(vectorImpl<Bone*>& boneList) {
         boneList.push_back(this);
         for (Bone* child : _children) {
             child->createBoneList(boneList);

@@ -75,6 +75,7 @@ class glVertexArray : public VertexBuffer {
 
    protected:
     friend class GL_API;
+    void reset() override;
     /// If we have a shader, we create a VAO, if not, we use simple VB + IB. If
     /// that fails, use VA
     bool refresh();

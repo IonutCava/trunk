@@ -14,21 +14,11 @@ Mesh::Mesh(ObjectFlag flag)
       _animator(nullptr)
 {
     setState(ResourceState::RES_LOADING);
-
-    if (isSkinned()) {
-        _animator = MemoryManager_NEW SceneAnimator();
-    }
 }
 
 Mesh::~Mesh()
 {
     MemoryManager::DELETE(_animator);
-}
-
-void Mesh::initAnimator(const aiScene* scene) {
-    assert(isSkinned());
-
-    _animator->init(scene);
 }
 
 /// Mesh bounding box is built from all the SubMesh bounding boxes
@@ -81,7 +71,7 @@ void Mesh::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                        SceneState& sceneState) {
     typedef SceneGraphNode::NodeChildren::value_type value_type;
 
-    if (isSkinned()) {
+    if (hasFlag(ObjectFlag::OBJECT_FLAG_SKINNED)) {
         bool playAnimations = sceneState.renderState().playAnimations() && _playAnimations;
         for (value_type it : sgn.getChildren()) {
             AnimationComponent* comp = it.second->getComponent<AnimationComponent>();

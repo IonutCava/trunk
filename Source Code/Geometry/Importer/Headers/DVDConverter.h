@@ -77,25 +77,32 @@ class Importer;
 
 namespace Divide {
 
-class Mesh;
+namespace Import {
+    struct ImportData;
+    struct SubMeshData;
+    struct MaterialData;
+};
+
 class SubMesh;
 DEFINE_SINGLETON(DVDConverter)
   public:
-    Mesh* load(const stringImpl& file);
-    bool init();
+    bool load(Import::ImportData& target, const stringImpl& file);
 
   private:
     DVDConverter();
     ~DVDConverter();
 
-    SubMesh* loadSubMeshGeometry(const aiMesh* source, Mesh* parentMesh,
-                                 U16 count,
-                                 U8& submeshBoneOffsetOut,
-                                 U32& previousVertOffset);
+    void loadSubMeshGeometry(const aiMesh* source, 
+                             VertexBuffer* targetBuffer,
+                             Import::SubMeshData& subMeshData,
+                             U8& submeshBoneOffsetOut,
+                             U32& previousVertOffset);
 
-    Material* loadSubMeshMaterial(bool skinned,
-                                  const aiMaterial* source,
-                                  const stringImpl& materialName);
+    void loadSubMeshMaterial(Import::MaterialData& material,
+                             const aiMaterial* source,
+                             const stringImpl& materialName,
+                             const stringImpl& assetLocation,
+                             bool skinned);
 
   private:
     struct vertexWeight {
@@ -108,8 +115,6 @@ DEFINE_SINGLETON(DVDConverter)
 
     const aiScene* _aiScenePointer;
     U32 _ppsteps;
-    stringImpl _fileLocation;
-    stringImpl _modelName;
 
     hashMapImpl<U32, Material::ShadingMode> aiShadingModeInternalTable;
     hashMapImpl<U32, TextureWrap> aiTextureMapModeTable;

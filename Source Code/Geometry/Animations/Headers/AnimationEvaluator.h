@@ -42,7 +42,7 @@
 struct aiAnimation;
 
 namespace Divide {
-
+class ByteBuffer;
 class AnimationChannel {
    public:
     stringImpl _name;
@@ -63,11 +63,10 @@ class AnimEvaluator {
           _duration(0.0),
           _playAnimationForward(true) {}
 
-    AnimEvaluator(const aiAnimation* pAnim);
+    AnimEvaluator(const aiAnimation* pAnim, U32 idx);
 
     void evaluate(const D32 dt, Bone* skeleton);
-    void save(std::ofstream& file);
-    void load(std::ifstream& file);
+
     I32 frameIndexAt(const D32 elapsedTime) const;
 
     inline U32 frameCount() const {
@@ -137,6 +136,10 @@ class AnimEvaluator {
     inline D32 duration() const {
         return _duration;
     }
+
+
+    static void save(const AnimEvaluator& evaluator, ByteBuffer& dataOut);
+    static void load(AnimEvaluator& evaluator, ByteBuffer& dataIn);
 
    protected:
     stringImpl _name;

@@ -33,6 +33,7 @@
 #define _VERTEX_BUFFER_OBJECT_H
 
 #include "VertexDataInterface.h"
+#include "Platform/Platform/Headers/ByteBuffer.h"
 
 namespace Divide {
 
@@ -72,21 +73,15 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
 
     VertexBuffer()
         : VertexDataInterface(),
-          _LODcount(0),
           _format(GFXDataFormat::UNSIGNED_SHORT),
-          _indexDelimiter(0),
           _primitiveRestartEnabled(false),
-          _created(false),
-          _staticBuffer(false),
-          _currentPartitionIndex(0),
-          _largeIndices(false)
+          _staticBuffer(false)
     {
         reset();
     }
 
     virtual ~VertexBuffer()
     {
-        _LODcount = 1;
         reset();
     }
 
@@ -103,13 +98,10 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
     virtual void draw(const GenericDrawCommand& command,
                       bool useCmdBuffer = false) = 0;
 
-    inline void setLODCount(const U8 LODcount) { _LODcount = LODcount; }
-
     inline void useLargeIndices(bool state = true) {
-        DIVIDE_ASSERT(!_created,
+        DIVIDE_ASSERT(_hardwareIndicesL.empty() && _hardwareIndicesS.empty(),
                       "VertexBuffer error: Index format type specified before "
                       "buffer creation!");
-        _largeIndices = state;
         _format = state ? GFXDataFormat::UNSIGNED_INT
                         : GFXDataFormat::UNSIGNED_SHORT;
     }
@@ -171,7 +163,9 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
 
     virtual bool queueRefresh() = 0;
 
-    inline bool usesLargeIndices() const { return _largeIndices; }
+    inline bool usesLargeIndices() const { 
+        return _format == GFXDataFormat::UNSIGNED_INT;
+    }
 
     inline U32 getIndexCount() const {
         return to_uint(usesLargeIndices() ? _hardwareIndicesL.size()
@@ -217,7 +211,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
         assert(index < _data.size());
 
         DIVIDE_ASSERT(_staticBuffer == false ||
-                      (_staticBuffer == true && _created == false),
+                      (_staticBuffer == true && !_data.empty()),
                       "VertexBuffer error: Modifying static buffers after creation is not allowed!");
 
         _data[index]._position.set(x, y, z);
@@ -232,7 +226,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
         assert(index < _data.size());
 
         DIVIDE_ASSERT(_staticBuffer == false ||
-                      (_staticBuffer == true && _created == false),
+                      (_staticBuffer == true && !_data.empty()),
                       "VertexBuffer error: Modifying static buffers after creation is not allowed!");
 
         _data[index]._color.set(r, g, b, a);
@@ -247,7 +241,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
         assert(index < _data.size());
 
         DIVIDE_ASSERT(_staticBuffer == false ||
-                      (_staticBuffer == true && _created == false),
+                      (_staticBuffer == true && !_data.empty()),
                       "VertexBuffer error: Modifying static buffers after creation is not allowed!");
 
         _data[index]._normal = Util::PACK_VEC3(x, y, z);
@@ -262,7 +256,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
         assert(index < _data.size());
 
         DIVIDE_ASSERT(_staticBuffer == false ||
-                     (_staticBuffer == true && _created == false),
+                     (_staticBuffer == true && !_data.empty()),
                       "VertexBuffer error: Modifying static buffers after creation is not allowed!");
 
         _data[index]._tangent = Util::PACK_VEC3(x, y, z);
@@ -277,7 +271,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
         assert(index < _data.size());
 
         DIVIDE_ASSERT(_staticBuffer == false ||
-                      (_staticBuffer == true && _created == false),
+                      (_staticBuffer == true && !_data.empty()),
                       "VertexBuffer error: Modifying static buffers after creation is not allowed!");
 
         _data[index]._texcoord.set(s, t);
@@ -288,7 +282,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
         assert(index < _data.size());
 
         DIVIDE_ASSERT(_staticBuffer == false ||
-                      (_staticBuffer == true && _created == false),
+                      (_staticBuffer == true && !_data.empty()),
                       "VertexBuffer error: Modifying static buffers after creation is not allowed!");
 
         _data[index]._indices = indices;
@@ -299,7 +293,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
         assert(index < _data.size());
 
         DIVIDE_ASSERT(_staticBuffer == false ||
-                      (_staticBuffer == true && _created == false),
+                      (_staticBuffer == true && !_data.empty()),
                       "VertexBuffer error: Modifying static buffers after creation is not allowed!");
 
         _data[index]._weights = weights;
@@ -312,8 +306,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
                                                      : _partitions.back().second;
 
         _partitions.push_back(std::make_pair(previousIndexCount, currentIndexCount - previousIndexCount));
-        _currentPartitionIndex = to_uint(_partitions.size());
-        return _currentPartitionIndex - 1;
+        return _partitions.size() - 1;
     }
 
     inline U32 getPartitionIndexCount(U16 partitionID) {
@@ -334,8 +327,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
         return _partitions[partitionID].first;
     }
 
-    inline void reset() {
-        _created = false;
+    virtual void reset() {
         _staticBuffer = false;
         _primitiveRestartEnabled = false;
         _partitions.clear();
@@ -345,12 +337,102 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
         _attribDirty.fill(false);
     }
 
-   protected:
-    /// Just before we render the frame
-    virtual bool frameStarted(const FrameEvent& evt) {
-        return VertexDataInterface::frameStarted(evt);
+    void fromBuffer(VertexBuffer& other) {
+        reset();
+        _staticBuffer = other._staticBuffer;
+        _format = other._format;
+        _partitions = other._partitions;
+        _hardwareIndicesL = other._hardwareIndicesL;
+        _hardwareIndicesS = other._hardwareIndicesS;
+        _data = other._data;
+        _primitiveRestartEnabled = other._primitiveRestartEnabled;
+        _attribDirty = other._attribDirty;
     }
 
+    bool deserialize(ByteBuffer& dataIn) {
+        assert(!dataIn.empty());
+        stringImpl idString;
+        dataIn >> idString;
+        if (idString.compare("VB") != 0) {
+            return false;
+        }
+
+        reset();
+        U32 format, data1, data2, count;
+
+        dataIn >> _staticBuffer;
+        dataIn >> format;
+        _format = static_cast<GFXDataFormat>(format);
+
+        dataIn >> count;
+        _partitions.reserve(count);
+        for (U32 i = 0; i < count; ++i) {
+            dataIn >> data1;
+            dataIn >> data2;
+            _partitions.push_back(std::make_pair(data1, data2));
+        }
+        dataIn >> _hardwareIndicesL;
+        dataIn >> _hardwareIndicesS;
+
+        dataIn >> count;
+        _data.resize(count);
+        for (U32 i = 0; i < count; ++i) {
+            Vertex& vert = _data[i];
+            dataIn >> vert._color;
+            dataIn >> vert._indices.i;
+            dataIn >> vert._normal;
+            dataIn >> vert._position;
+            dataIn >> vert._tangent;
+            dataIn >> vert._texcoord;
+            dataIn >> vert._weights;
+        }
+
+        for (bool& state : _attribDirty) {
+            dataIn >> state;
+        }
+
+        dataIn >> _primitiveRestartEnabled;
+
+        return true;
+    }
+
+    bool serialize(ByteBuffer& dataOut) const {
+        if (!_data.empty()) {
+            dataOut << stringImpl("VB");
+            dataOut << _staticBuffer;
+            dataOut << to_uint(_format);
+            dataOut << to_uint(_partitions.size());
+            for (const std::pair<U32, U32>& partition : _partitions) {
+                dataOut << partition.first;
+                dataOut << partition.second;
+            }
+
+            dataOut << _hardwareIndicesL;
+            dataOut << _hardwareIndicesS;
+
+            dataOut << to_uint(_data.size());
+            for (Vertex vert : _data) {
+                dataOut << vert._color;
+                dataOut << vert._indices.i;
+                dataOut << vert._normal;
+                dataOut << vert._position;
+                dataOut << vert._tangent;
+                dataOut << vert._texcoord;
+                dataOut << vert._weights;
+            }
+
+            for (bool state : _attribDirty) {
+                dataOut << state;
+            }
+
+            dataOut << _primitiveRestartEnabled;
+
+            return true;
+        }
+        return false;
+    }
+
+   protected:
     virtual void checkStatus() = 0;
     virtual bool refresh() = 0;
     virtual bool createInternal() = 0;
@@ -358,12 +440,8 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
    protected:
     /// If this flag is true, no further modification are allowed on the buffer (static geometry)
     bool _staticBuffer;
-    /// Number of LOD nodes in this buffer
-    U8 _LODcount;
     /// The format of the buffer data
     GFXDataFormat _format;
-    /// An index value that separates objects (OGL: primitive restart index)
-    U32 _indexDelimiter;
     // first: offset, second: count
     vectorImpl<std::pair<U32, U32> > _partitions;
     /// Used for creating an "IB". If it's empty, then an outside source should
@@ -374,13 +452,6 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
     /// Cache system to update only required data
     std::array<bool, to_const_uint(VertexAttribute::COUNT)> _attribDirty;
     bool _primitiveRestartEnabled;
-    /// Was the data submitted to the GPU?
-    bool _created;
-
-   private:
-    U32 _currentPartitionIndex;
-    /// Use either U32 or U16 indices. Always prefer the later
-    bool _largeIndices;
 };
 
 template<>

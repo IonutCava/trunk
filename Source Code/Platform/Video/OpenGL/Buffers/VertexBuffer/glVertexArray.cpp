@@ -55,6 +55,18 @@ glVertexArray::~glVertexArray()
     destroy();
 }
 
+void glVertexArray::reset() {
+    _usage = GL_STATIC_DRAW;
+    _prevSize = -1;
+    _prevSizeIndices = -1;
+    _bufferEntrySize = -1;
+    _vaoHash = static_cast<size_t>(-1);
+
+    _useAttribute.fill(false);
+    _attributeOffset.fill(0);
+    VertexBuffer::reset();
+}
+
 /// Delete buffer
 void glVertexArray::destroy() {
     GLUtil::freeBuffer(_IBid);
@@ -135,7 +147,11 @@ std::pair<bufferPtr, size_t> glVertexArray::getMinimalData() {
         }
     }
 
-    vectorAlg::shrinkToFit(_data);
+    if (_staticBuffer) {
+        _data.clear();
+    } else {
+        vectorAlg::shrinkToFit(_data);
+    }
 
     return std::make_pair((bufferPtr)_smallData.contents(), _smallData.size());
 }
@@ -242,13 +258,12 @@ bool glVertexArray::refresh() {
 /// Refresh call
 bool glVertexArray::createInternal() {
     // Avoid double create calls
-    DIVIDE_ASSERT(!_created,
+    DIVIDE_ASSERT(_VBid == 0,
                   "glVertexArray error: Attempted to double create a VB");
-    _created = false;
     // Position data is a minim requirement
     if (_data.empty()) {
         Console::errorfn(Locale::get("ERROR_VB_POSITION"));
-        return _created;
+        return false;
     }
 
     _formatInternal = GLUtil::glDataFormat[to_uint(_format)];
@@ -261,8 +276,7 @@ bool glVertexArray::createInternal() {
     // Assert if the IB creation failed
     DIVIDE_ASSERT(_IBid != 0, Locale::get("ERROR_IB_INIT"));
     // Calling refresh updates all stored information and sends it to the GPU
-    _created = queueRefresh();
-    return _created;
+    return queueRefresh();
 }
 
 /// Render the current buffer data using the specified command
@@ -321,7 +335,7 @@ void glVertexArray::draw(const GenericDrawCommand& command,
 bool glVertexArray::setActive() {
     // Make sure we have valid data (buffer creation is deferred to the first
     // activate call)
-    if (!_created) {
+    if (_VBid == 0) {
         if (!createInternal()) {
             return false;
         }

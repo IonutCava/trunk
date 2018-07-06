@@ -66,8 +66,15 @@ class Mesh : public Object3D {
 
     virtual void addSubMesh(SubMesh* const subMesh);
 
-    void initAnimator(const aiScene* scene);
-    inline SceneAnimator* getAnimator() { return _animator; }
+    void setAnimator(SceneAnimator* animator) {
+        assert(hasFlag(ObjectFlag::OBJECT_FLAG_SKINNED));
+        _animator = animator;
+    }
+
+    inline SceneAnimator* getAnimator() { 
+        assert(hasFlag(ObjectFlag::OBJECT_FLAG_SKINNED));
+        return _animator; 
+    }
 
    protected:
     /// Called from SceneGraph "sceneUpdate"

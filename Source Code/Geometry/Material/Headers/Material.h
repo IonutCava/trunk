@@ -190,6 +190,12 @@ class Material : public Resource {
     bool unload();
     void update(const U64 deltaTime);
 
+    inline void setShaderData(const ShaderData& other) {
+        _dirty = true;
+        _shaderData = other;
+        _translucencyCheck = true;
+    }
+
     inline void setDiffuse(const vec4<F32>& value) {
         _dirty = true;
         _shaderData._diffuse = value;

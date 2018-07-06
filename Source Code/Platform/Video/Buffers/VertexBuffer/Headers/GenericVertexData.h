@@ -33,6 +33,7 @@
 #define _GENERIC_VERTEX_DATA_H
 
 #include "VertexDataInterface.h"
+#include "Managers/Headers/FrameListenerManager.h"
 
 /// This class is used to upload generic VB data to the GPU that can be rendered
 /// directly or instanced.
@@ -42,7 +43,8 @@
 
 namespace Divide {
 
-class NOINITVTABLE GenericVertexData : public VertexDataInterface {
+class NOINITVTABLE GenericVertexData : public VertexDataInterface,
+                                       public FrameListener {
    public:
     struct AttributeDescriptor {
         AttributeDescriptor()
@@ -143,9 +145,11 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface {
 
     GenericVertexData(bool persistentMapped)
         : VertexDataInterface(),
+          FrameListener(),
           _persistentMapped(persistentMapped &&
                             !Config::Profile::DISABLE_PERSISTENT_BUFFER)
     {
+        REGISTER_FRAME_LISTENER(this, 4);
         _doubleBufferedQuery = true;
     }
 
@@ -153,6 +157,7 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface {
     {
         _attributeMapDraw.clear();
         _attributeMapFdbk.clear();
+        UNREGISTER_FRAME_LISTENER(this);
     }
 
     virtual void setIndexBuffer(U32 indicesCount, bool dynamic, bool stream) = 0;

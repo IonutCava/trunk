@@ -259,6 +259,7 @@
     <ClCompile Include="..\..\Source Code\Geometry\Animations\SceneAnimatorFileIO.cpp" />
     <ClCompile Include="..\..\Source Code\Geometry\Animations\AnimationEvaluator.cpp" />
     <ClCompile Include="..\..\Source Code\Geometry\Animations\AnimationUtils.cpp" />
+    <ClCompile Include="..\..\Source Code\Geometry\Importer\MeshImporter.cpp" />
     <ClCompile Include="..\..\Source Code\Geometry\Shapes\SkinnedSubMesh.cpp" />
     <ClCompile Include="..\..\Source Code\Graphs\Components\AnimationComponent.cpp" />
     <ClCompile Include="..\..\Source Code\Graphs\Components\NavigationComponent.cpp" />
@@ -379,6 +380,7 @@
     <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\AnimationEvaluator.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\AnimationUtils.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\Bone.h" />
+    <ClInclude Include="..\..\Source Code\Geometry\Importer\Headers\MeshImporter.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Shapes\Headers\SkinnedSubMesh.h" />
     <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\AnimationComponent.h" />
     <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\NavigationComponent.h" />

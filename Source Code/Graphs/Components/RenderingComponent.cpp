@@ -28,7 +28,7 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
 {
      Object3D::ObjectType type = _parentSGN.getNode<Object3D>()->getObjectType();
      _isSubMesh = type == Object3D::ObjectType::SUBMESH;
-    _nodeSkinned = parentSGN.getNode<Object3D>()->isSkinned();
+    _nodeSkinned = parentSGN.getNode<Object3D>()->hasFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED);
 
     for (GFXDevice::RenderPackage& pkg : _renderData) {
         pkg._textureData.reserve(ParamHandler::getInstance().getParam<I32>("rendering.maxTextureSlots", 16));

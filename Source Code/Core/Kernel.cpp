@@ -461,7 +461,13 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     _PFX.setAPI(PXDevice::PhysicsAPI::PhysX);
     _SFX.setAPI(SFXDevice::AudioAPI::SDL);
     // Using OpenGL for rendering as default
-    _GFX.setAPI(GFXDevice::RenderAPI::OpenGL);
+    if (Config::USE_OPENGL_RENDERING) {
+        if (Config::USE_OPENGL_ES) {
+            _GFX.setAPI(GFXDevice::RenderAPI::OpenGLES);
+        } else {
+            _GFX.setAPI(GFXDevice::RenderAPI::OpenGL);
+        }
+    }
     // Load info from XML files
     stringImpl startupScene(XML::loadScripts(entryPoint));
     // Create mem log file

@@ -9,14 +9,16 @@ namespace Divide {
 
 // ------------------------------------------------------------------------------------------------
 // Constructor on a given animation.
-AnimEvaluator::AnimEvaluator(const aiAnimation* pAnim) {
+AnimEvaluator::AnimEvaluator(const aiAnimation* pAnim, U32 idx) {
     _lastTime = 0.0;
     _ticksPerSecond = !IS_ZERO(pAnim->mTicksPerSecond)
                           ? pAnim->mTicksPerSecond
                           : ANIMATION_TICKS_PER_SECOND;
     _duration = pAnim->mDuration;
     _name = pAnim->mName.data;
-
+    if (_name.empty()) {
+        _name = Util::StringFormat("unnamed_anim_%d", idx);
+    }
     Console::d_printfn(Locale::get("CREATE_ANIMATION_BEGIN"), _name.c_str());
 
     _channels.resize(pAnim->mNumChannels);

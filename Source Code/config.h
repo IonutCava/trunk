@@ -43,6 +43,10 @@
 
 namespace Divide {
 namespace Config {
+/// Use OpenGL/OpenGL ES for rendering
+const bool USE_OPENGL_RENDERING = true;
+/// Select between desktop GL and ES GL
+const bool USE_OPENGL_ES = false;
 /// if this is false, a variable timestep will be used for the game loop
 const bool USE_FIXED_TIMESTEP = true;
 /// How many textures to store per material.

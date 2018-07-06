@@ -56,13 +56,13 @@ namespace Divide {
 
 namespace Attorney {
     class SubMeshMesh;
-    class SubMeshDVDConverter;
+    class SubMeshMeshImporter;
 };
 
-class DVDConverter;
+class MeshImporter;
 class SubMesh : public Object3D {
     friend class Attorney::SubMeshMesh;
-    friend class Attorney::SubMeshDVDConverter;
+    friend class Attorney::SubMeshMeshImporter;
 
    public:
     SubMesh(const stringImpl& name,
@@ -109,14 +109,15 @@ class SubMeshMesh {
     friend class Divide::Mesh;
 };
 
-class SubMeshDVDConverter {
+class SubMeshMeshImporter {
    private:
-    static void setGeometryLimits(SubMesh& submesh, const vec3<F32>& min,
+    static void setGeometryLimits(SubMesh& submesh,
+                                  const vec3<F32>& min,
                                   const vec3<F32>& max) {
         submesh._importBB.set(min, max);
     }
 
-    friend class Divide::DVDConverter;
+    friend class Divide::MeshImporter;
 };
 };  // namespace Attorney
 };  // namespace Divide

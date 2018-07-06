@@ -59,10 +59,6 @@ bool SceneManager::load(const stringImpl& sceneName,
                         const vec2<U16>& resolution) {
     assert(_init == true && _GUI != nullptr);
     Console::printfn(Locale::get("SCENE_MANAGER_LOAD_SCENE_DATA"));
-    // Initialize the model importer:
-    if (!DVDConverter::getInstance().init()) {
-        return false;
-    }
     XML::loadScene(sceneName, *this);
     if (!_activeScene) {
         return false;

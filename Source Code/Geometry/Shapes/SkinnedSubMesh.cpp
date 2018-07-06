@@ -68,8 +68,7 @@ void SkinnedSubMesh::buildBoundingBoxesForAnim(
     currentBBComputing = true;
     currentBBStatus = false;
 
-    const AnimEvaluator& currentAnimation =
-        animComp->GetAnimationByIndex(animationIndex);
+    std::shared_ptr<AnimEvaluator> currentAnimation = animComp->getAnimationByIndex(animationIndex);
 
     boundingBoxPerFrame& currentBBs = _boundingBoxes[animationIndex];
     // We might need to recompute BBs so clear any possible old values
@@ -84,7 +83,7 @@ void SkinnedSubMesh::buildBoundingBoxesForAnim(
     for (U32 i = 0; i < frameCount; ++i) {
         BoundingBox& bb = currentBBs[i];
 
-        const vectorImpl<mat4<F32> >& transforms = currentAnimation.transforms(i);
+        const vectorImpl<mat4<F32> >& transforms = currentAnimation->transforms(i);
         // loop through all vertex weights of all bones
         for (U32 j = 0; j < partitionCount; ++j) {
             U32 idx = parentVB->getIndex(j + partitionOffset);

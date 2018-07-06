@@ -50,7 +50,7 @@ ErrorCode GL_API::createWindow() {
 
     // OpenGL ES is not yet supported, but when added, it will need to mirror
     // OpenGL functionality 1-to-1
-    if (GFX_DEVICE.getAPI() == GFXDevice::RenderAPI::OpenGLES) {
+    if (Config::USE_OPENGL_ES) {
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_EGL, 1);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
