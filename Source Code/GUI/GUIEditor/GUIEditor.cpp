@@ -27,8 +27,6 @@ GUIEditor::GUIEditor()
 
     U32 transFieldCount =
         to_uint(TransformFields::COUNT);
-    U32 controlFieldCount =
-        to_uint(ControlFields::COUNT);
 
     _toggleButtons.fill(0);
 

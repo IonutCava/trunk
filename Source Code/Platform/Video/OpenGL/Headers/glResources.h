@@ -64,7 +64,7 @@ GLint getIntegerv(GLenum param);
 /// Check the current operation for errors
 void
 DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
-              GLsizei length, const char* message, const void* userParam);
+              GLsizei length, const GLchar* message, const void* userParam);
 /// Invalid object value. Used to compare handles and determine if they were
 /// properly created
 extern GLuint _invalidObjectID;

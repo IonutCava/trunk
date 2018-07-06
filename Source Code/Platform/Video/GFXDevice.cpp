@@ -302,7 +302,6 @@ void GFXDevice::changeResolution(U16 w, U16 h) {
     }
 
     Application& app = Application::getInstance();
-    WindowType windowType = app.getWindowManager().mainWindowType();
     // Update post-processing render targets and buffers
     PostFX::getInstance().updateResolution(w, h);
     app.getWindowManager().setResolution(vec2<U16>(w, h));

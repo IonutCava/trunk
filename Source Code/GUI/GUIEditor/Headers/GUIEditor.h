@@ -33,6 +33,7 @@
 #define _GUI_EDITOR_H_
 
 #include "Platform/Platform/Headers/PlatformDefines.h"
+#include <assert.h>
 
 namespace CEGUI {
 class Font;

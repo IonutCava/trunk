@@ -51,7 +51,11 @@ struct JoystickData {
                      _max(0)
     {
     }
-
+    JoystickData(I32 deadZone, I32 max) 
+        : _deadZone(deadZone),
+         _max(max)
+    {
+    }
     I32 _deadZone;
     I32 _max;
 };

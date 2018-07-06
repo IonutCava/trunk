@@ -160,16 +160,16 @@ class vec2 {
         this->set(*this / v);
         return *this;
     }
-    vec2 &operator+=(const vec2 &_v) {
-        this->set(*this + _v);
+    vec2 &operator+=(const vec2 &v) {
+        this->set(*this + v);
         return *this;
     }
-    vec2 &operator-=(const vec2 &_v) {
-        this->set(*this - _v);
+    vec2 &operator-=(const vec2 &v) {
+        this->set(*this - v);
         return *this;
     }
-    T operator*(const vec2 &_v) const {
-        return this->x * _v.x + this->y * _v.y;
+    T operator*(const vec2 &v) const {
+        return this->x * v.x + this->y * v.y;
     }
     T &operator[](I32 i) { return this->_v[i]; }
     const T &operator[](I32 i) const { return this->_v[i]; }
@@ -780,7 +780,7 @@ class vec4 {
     /// set the 4 components of the vector using a smaller source vector
     inline void set(const vec3<T> &v) { this->set(v, 1); }
     /// set the 4 components of the vector using a smaller source vector
-    inline void set(const vec3<T> &v, T w) { this->set(v.x, v.y, v.z, w); }
+    inline void set(const vec3<T> &v, T w_) { this->set(v.x, v.y, v.z, w_); }
     /// set the 4 components of the vector using a smaller source vector
     inline void set(const vec2<T> &v) { this->set(v.x, v.y, 0.0, 1.0); }
     /// set the 4 components of the vector using smallers source vectors

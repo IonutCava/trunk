@@ -68,7 +68,6 @@ void* glPixelBuffer::Begin() const {
     glNamedBufferSubData(_pixelBufferHandle, 0, _bufferSize, NULL);
     GL_API::setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, _pixelBufferHandle);
 
-    GLenum textureTypeEnum = static_cast<GLenum>(_textureType);
     switch (_pbtype) {
         case PBType::PB_TEXTURE_1D:
             glTextureSubImage1D(_textureID,

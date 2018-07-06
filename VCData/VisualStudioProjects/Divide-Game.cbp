@@ -1,0 +1,477 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="DivideHardware" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug Win32">
+				<Option output="Divide-Game" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option type="2" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-D_DEBUG" />
+					<Add option="-D_WIN32_WINNT=0x0601" />
+					<Add option="-DCEGUI_STATIC" />
+					<Add directory="$(SolutionDir)../Source Code/" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/includes/" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/src/" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/src/ReCast/" />
+					<Add directory="$(EngineLibraries)/boost/" />
+					<Add directory="$(EngineLibraries)/EASTL/include/" />
+					<Add directory="$(EngineLibraries)/sdl/include/" />
+					<Add directory="$(EngineLibraries)/DevIL/include/" />
+					<Add directory="$(EngineLibraries)/cegui/include/" />
+					<Add directory="$(EngineLibraries)/assimp/include/" />
+					<Add directory="$(EngineLibraries)/SimpleINI/include/" />
+					<Add directory="$(EngineLibraries)/Threadpool/include/" />
+					<Add directory="$(EngineLibraries)/physx/" />
+					<Add directory="$(EngineLibraries)/physx/include/" />
+					<Add directory="$(EngineLibraries)/physx/include/RepX/" />
+					<Add directory="$(EngineLibraries)/physx/include/common/" />
+					<Add directory="$(EngineLibraries)/physx/include/foundation/" />
+					<Add directory="$(EngineLibraries)/physx/include/extensions/" />
+					<Add directory="$(EngineLibraries)/physx/Source/foundation/include/" />
+					<Add directory="$(EngineLibraries)/freetype/include/" />
+					<Add directory="$(EngineLibraries)/glfw/include/" />
+					<Add directory="$(EngineLibraries)/glslopt/include/" />
+					<Add directory="$(EngineLibraries)/GLEW/include/" />
+					<Add directory="$(EngineLibraries)/OIS/include/" />
+					<Add directory="$(EngineLibraries)/ftgl/include/" />
+					<Add directory="$(EngineLibraries)/glm/" />
+				</Compiler>
+			</Target>
+			<Target title="Profile x64">
+				<Option output="Divide-Game" prefix_auto="1" extension_auto="1" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-D_SCL_SECURE=0" />
+					<Add option="-D_CRT_SECURE_NO_WARNINGS" />
+					<Add option="-D_PROFILE" />
+					<Add option="-DNDEBUG" />
+					<Add directory="$(IncludePath)" />
+					<Add directory="$(SolutionDir)../Source Code/" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/includes/" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/src/" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/src/ReCast/" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/src/ReCast/ReCast/Include/" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/src/ReCast/Detour/Include/" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/src/ReCast/DebugUtils/Include/" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/src/ReCast/DetourCrowd/Include/" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/src/ReCast/RecastContrib/Include/" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/src/ReCast/DetourTileCache/Include/" />
+					<Add directory="$(EngineLibraries)/boost/" />
+					<Add directory="$(EngineLibraries)/EASTL/include/" />
+					<Add directory="$(EngineLibraries)/sdl/include/" />
+					<Add directory="$(EngineLibraries)/DevIL/include/" />
+					<Add directory="$(EngineLibraries)/cegui/include/" />
+					<Add directory="$(EngineLibraries)/assimp/include/" />
+					<Add directory="$(EngineLibraries)/SimpleINI/include/" />
+					<Add directory="$(EngineLibraries)/Threadpool/include/" />
+					<Add directory="$(EngineLibraries)/physx/" />
+					<Add directory="$(EngineLibraries)/physx/include/" />
+					<Add directory="$(EngineLibraries)/physx/include/RepX/" />
+					<Add directory="$(EngineLibraries)/physx/include/common/" />
+					<Add directory="$(EngineLibraries)/physx/include/foundation/" />
+					<Add directory="$(EngineLibraries)/physx/include/extensions/" />
+					<Add directory="$(EngineLibraries)/physx/Source/foundation/include/" />
+					<Add directory="$(EngineLibraries)/freetype/include/" />
+					<Add directory="$(EngineLibraries)/glfw/include/" />
+					<Add directory="$(EngineLibraries)/glslopt/include/" />
+					<Add directory="$(EngineLibraries)/glbinding/include/" />
+					<Add directory="$(EngineLibraries)/GLEW/include/" />
+					<Add directory="$(EngineLibraries)/OIS/include/" />
+					<Add directory="$(EngineLibraries)/ftgl/include/" />
+					<Add directory="$(EngineLibraries)/glm/" />
+				</Compiler>
+				<Linker>
+					<Add library="Divide-Platform_p.lib" />
+					<Add library="Divide-Networking_p.lib" />
+					<Add library="Divide-ReCast_p.lib" />
+					<Add library="Divide-Engine_p.lib" />
+					<Add directory="$(VC_LibraryPath_x64)" />
+					<Add directory="$(LibraryPath)" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/lib/" />
+					<Add directory="$(EngineLibraries)/assimp/lib/" />
+					<Add directory="$(EngineLibraries)/boost/lib/" />
+					<Add directory="$(EngineLibraries)/cegui/lib/" />
+					<Add directory="$(EngineLibraries)/cegui-deps/lib/static/" />
+					<Add directory="$(EngineLibraries)/OpenAL/libs/" />
+					<Add directory="$(EngineLibraries)/glbinding/lib/" />
+					<Add directory="$(EngineLibraries)/GLEW/lib/" />
+					<Add directory="$(EngineLibraries)/glfw/lib/" />
+					<Add directory="$(EngineLibraries)/glslopt/lib/" />
+					<Add directory="$(EngineLibraries)/OIS/lib/" />
+					<Add directory="$(EngineLibraries)/physx/Lib/win64/" />
+					<Add directory="$(EngineLibraries)/sdl/lib/" />
+				</Linker>
+			</Target>
+			<Target title="Debug x64">
+				<Option output="Divide-Game" prefix_auto="1" extension_auto="1" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-D_SCL_SECURE=0" />
+					<Add option="-D_CRT_SECURE_NO_WARNINGS" />
+					<Add option="-D_DEBUG" />
+					<Add directory="$(SolutionDir)../Source Code/" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/includes/" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/src/" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/src/ReCast/" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/src/ReCast/ReCast/Include/" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/src/ReCast/Detour/Include/" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/src/ReCast/DebugUtils/Include/" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/src/ReCast/DetourCrowd/Include/" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/src/ReCast/RecastContrib/Include/" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/src/ReCast/DetourTileCache/Include/" />
+					<Add directory="$(EngineLibraries)/boost/" />
+					<Add directory="$(EngineLibraries)/EASTL/include/" />
+					<Add directory="$(EngineLibraries)/sdl/include/" />
+					<Add directory="$(EngineLibraries)/DevIL/include/" />
+					<Add directory="$(EngineLibraries)/cegui/include/" />
+					<Add directory="$(EngineLibraries)/assimp/include/" />
+					<Add directory="$(EngineLibraries)/SimpleINI/include/" />
+					<Add directory="$(EngineLibraries)/Threadpool/include/" />
+					<Add directory="$(EngineLibraries)/physx/" />
+					<Add directory="$(EngineLibraries)/physx/include/" />
+					<Add directory="$(EngineLibraries)/physx/include/RepX/" />
+					<Add directory="$(EngineLibraries)/physx/include/common/" />
+					<Add directory="$(EngineLibraries)/physx/include/foundation/" />
+					<Add directory="$(EngineLibraries)/physx/include/extensions/" />
+					<Add directory="$(EngineLibraries)/physx/Source/foundation/include/" />
+					<Add directory="$(EngineLibraries)/freetype/include/" />
+					<Add directory="$(EngineLibraries)/glfw/include/" />
+					<Add directory="$(EngineLibraries)/glslopt/include/" />
+					<Add directory="$(EngineLibraries)/glbinding/include/" />
+					<Add directory="$(EngineLibraries)/GLEW/include/" />
+					<Add directory="$(EngineLibraries)/OIS/include/" />
+					<Add directory="$(EngineLibraries)/ftgl/include/" />
+					<Add directory="$(EngineLibraries)/glm/" />
+				</Compiler>
+				<Linker>
+					<Add library="Divide-Platform_d.lib" />
+					<Add library="Divide-Networking_d.lib" />
+					<Add library="Divide-ReCast_d.lib" />
+					<Add library="Divide-Engine_d.lib" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/lib/" />
+					<Add directory="$(EngineLibraries)/assimp/lib/" />
+					<Add directory="$(EngineLibraries)/boost/lib/" />
+					<Add directory="$(EngineLibraries)/cegui/lib/" />
+					<Add directory="$(EngineLibraries)/cegui-deps/lib/static/" />
+					<Add directory="$(EngineLibraries)/OpenAL/libs/" />
+					<Add directory="$(EngineLibraries)/glbinding/lib/" />
+					<Add directory="$(EngineLibraries)/GLEW/lib/" />
+					<Add directory="$(EngineLibraries)/glfw/lib/" />
+					<Add directory="$(EngineLibraries)/glslopt/lib/" />
+					<Add directory="$(EngineLibraries)/OIS/lib/" />
+					<Add directory="$(EngineLibraries)/physx/Lib/win64/" />
+					<Add directory="$(EngineLibraries)/sdl/lib/" />
+				</Linker>
+			</Target>
+			<Target title="Release x64">
+				<Option output="Divide-Game" prefix_auto="1" extension_auto="1" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-D_SCL_SECURE=0" />
+					<Add option="-D_CRT_SECURE_NO_WARNINGS" />
+					<Add option="-D_RELEASE" />
+					<Add option="-DNDEBUG" />
+					<Add directory="$(SolutionDir)../Source Code/" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/includes/" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/src/" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/src/ReCast/" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/src/ReCast/ReCast/Include/" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/src/ReCast/Detour/Include/" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/src/ReCast/DebugUtils/Include/" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/src/ReCast/DetourCrowd/Include/" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/src/ReCast/RecastContrib/Include/" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/src/ReCast/DetourTileCache/Include/" />
+					<Add directory="$(EngineLibraries)/boost/" />
+					<Add directory="$(EngineLibraries)/EASTL/include/" />
+					<Add directory="$(EngineLibraries)/sdl/include/" />
+					<Add directory="$(EngineLibraries)/DevIL/include/" />
+					<Add directory="$(EngineLibraries)/cegui/include/" />
+					<Add directory="$(EngineLibraries)/assimp/include/" />
+					<Add directory="$(EngineLibraries)/SimpleINI/include/" />
+					<Add directory="$(EngineLibraries)/Threadpool/include/" />
+					<Add directory="$(EngineLibraries)/physx/" />
+					<Add directory="$(EngineLibraries)/physx/include/" />
+					<Add directory="$(EngineLibraries)/physx/include/RepX/" />
+					<Add directory="$(EngineLibraries)/physx/include/common/" />
+					<Add directory="$(EngineLibraries)/physx/include/foundation/" />
+					<Add directory="$(EngineLibraries)/physx/include/extensions/" />
+					<Add directory="$(EngineLibraries)/physx/Source/foundation/include/" />
+					<Add directory="$(EngineLibraries)/freetype/include/" />
+					<Add directory="$(EngineLibraries)/glfw/include/" />
+					<Add directory="$(EngineLibraries)/glslopt/include/" />
+					<Add directory="$(EngineLibraries)/glbinding/include/" />
+					<Add directory="$(EngineLibraries)/GLEW/include/" />
+					<Add directory="$(EngineLibraries)/OIS/include/" />
+					<Add directory="$(EngineLibraries)/ftgl/include/" />
+					<Add directory="$(EngineLibraries)/glm/" />
+				</Compiler>
+				<Linker>
+					<Add library="Divide-Platform.lib" />
+					<Add library="Divide-Networking.lib" />
+					<Add library="Divide-ReCast.lib" />
+					<Add library="Divide-Engine.lib" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/lib/" />
+					<Add directory="$(EngineLibraries)/assimp/lib/" />
+					<Add directory="$(EngineLibraries)/boost/lib/" />
+					<Add directory="$(EngineLibraries)/cegui/lib/" />
+					<Add directory="$(EngineLibraries)/cegui-deps/lib/static/" />
+					<Add directory="$(EngineLibraries)/OpenAL/libs/" />
+					<Add directory="$(EngineLibraries)/glbinding/lib/" />
+					<Add directory="$(EngineLibraries)/GLEW/lib/" />
+					<Add directory="$(EngineLibraries)/glfw/lib/" />
+					<Add directory="$(EngineLibraries)/glslopt/lib/" />
+					<Add directory="$(EngineLibraries)/OIS/lib/" />
+					<Add directory="$(EngineLibraries)/physx/Lib/win64/" />
+					<Add directory="$(EngineLibraries)/sdl/lib/" />
+				</Linker>
+			</Target>
+			<Target title="Profile Win32">
+				<Option output="Divide-Game" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option type="2" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-DNDEBUG" />
+					<Add option="-D_PROFILE" />
+					<Add option="-D_WIN32_WINNT=0x0601" />
+					<Add option="-D_CRT_SECURE_NO_WARNINGS" />
+					<Add option="-DCEGUI_STATIC" />
+					<Add directory="$(SolutionDir)../Source Code/" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/includes/" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/src/" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/src/ReCast/" />
+					<Add directory="$(EngineLibraries)/boost/" />
+					<Add directory="$(EngineLibraries)/EASTL/include/" />
+					<Add directory="$(EngineLibraries)/sdl/include/" />
+					<Add directory="$(EngineLibraries)/DevIL/include/" />
+					<Add directory="$(EngineLibraries)/cegui/include/" />
+					<Add directory="$(EngineLibraries)/assimp/include/" />
+					<Add directory="$(EngineLibraries)/SimpleINI/include/" />
+					<Add directory="$(EngineLibraries)/Threadpool/include/" />
+					<Add directory="$(EngineLibraries)/physx/" />
+					<Add directory="$(EngineLibraries)/physx/include/" />
+					<Add directory="$(EngineLibraries)/physx/include/RepX/" />
+					<Add directory="$(EngineLibraries)/physx/include/common/" />
+					<Add directory="$(EngineLibraries)/physx/include/foundation/" />
+					<Add directory="$(EngineLibraries)/physx/include/extensions/" />
+					<Add directory="$(EngineLibraries)/physx/Source/foundation/include/" />
+					<Add directory="$(EngineLibraries)/freetype/include/" />
+					<Add directory="$(EngineLibraries)/glfw/include/" />
+					<Add directory="$(EngineLibraries)/glslopt/include/" />
+					<Add directory="$(EngineLibraries)/GLEW/include/" />
+					<Add directory="$(EngineLibraries)/OIS/include/" />
+					<Add directory="$(EngineLibraries)/ftgl/include/" />
+					<Add directory="$(EngineLibraries)/glm/" />
+				</Compiler>
+			</Target>
+			<Target title="Release Win32">
+				<Option output="Divide-Game" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option type="2" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-DNDEBUG" />
+					<Add option="-D_WIN32_WINNT=0x0601" />
+					<Add option="-DCEGUI_STATIC" />
+					<Add directory="$(SolutionDir)../Source Code/" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/includes/" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/src/" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/src/ReCast/" />
+					<Add directory="$(EngineLibraries)/boost/" />
+					<Add directory="$(EngineLibraries)/EASTL/include/" />
+					<Add directory="$(EngineLibraries)/sdl/include/" />
+					<Add directory="$(EngineLibraries)/DevIL/include/" />
+					<Add directory="$(EngineLibraries)/cegui/include/" />
+					<Add directory="$(EngineLibraries)/assimp/include/" />
+					<Add directory="$(EngineLibraries)/SimpleINI/include/" />
+					<Add directory="$(EngineLibraries)/Threadpool/include/" />
+					<Add directory="$(EngineLibraries)/physx/" />
+					<Add directory="$(EngineLibraries)/physx/include/" />
+					<Add directory="$(EngineLibraries)/physx/include/RepX/" />
+					<Add directory="$(EngineLibraries)/physx/include/common/" />
+					<Add directory="$(EngineLibraries)/physx/include/foundation/" />
+					<Add directory="$(EngineLibraries)/physx/include/extensions/" />
+					<Add directory="$(EngineLibraries)/physx/Source/foundation/include/" />
+					<Add directory="$(EngineLibraries)/freetype/include/" />
+					<Add directory="$(EngineLibraries)/glfw/include/" />
+					<Add directory="$(EngineLibraries)/glslopt/include/" />
+					<Add directory="$(EngineLibraries)/GLEW/include/" />
+					<Add directory="$(EngineLibraries)/OIS/include/" />
+					<Add directory="$(EngineLibraries)/ftgl/include/" />
+					<Add directory="$(EngineLibraries)/glm/" />
+				</Compiler>
+			</Target>
+		</Build>
+		<Unit filename="../../Source Code/AI/AIEntity.cpp" />
+		<Unit filename="../../Source Code/AI/ActionInterface/AISceneImpl.cpp" />
+		<Unit filename="../../Source Code/AI/ActionInterface/AITeam.cpp" />
+		<Unit filename="../../Source Code/AI/ActionInterface/GOAPInterface.cpp" />
+		<Unit filename="../../Source Code/AI/ActionInterface/Headers/AISceneImpl.h" />
+		<Unit filename="../../Source Code/AI/ActionInterface/Headers/AITeam.h" />
+		<Unit filename="../../Source Code/AI/ActionInterface/Headers/GOAPInterface.h" />
+		<Unit filename="../../Source Code/AI/Headers/AIEntity.h" />
+		<Unit filename="../../Source Code/AI/PathFinding/DivideCrowd.cpp" />
+		<Unit filename="../../Source Code/AI/PathFinding/DivideRecast.cpp" />
+		<Unit filename="../../Source Code/AI/PathFinding/Headers/DivideCrowd.h" />
+		<Unit filename="../../Source Code/AI/PathFinding/Headers/DivideRecast.h" />
+		<Unit filename="../../Source Code/AI/PathFinding/NavMeshes/DetourTileCache/DivideTileCache.cpp" />
+		<Unit filename="../../Source Code/AI/PathFinding/NavMeshes/DetourTileCache/Headers/DivideTileCache.h" />
+		<Unit filename="../../Source Code/AI/PathFinding/NavMeshes/Headers/NavMesh.h" />
+		<Unit filename="../../Source Code/AI/PathFinding/NavMeshes/Headers/NavMeshConfig.h" />
+		<Unit filename="../../Source Code/AI/PathFinding/NavMeshes/Headers/NavMeshContext.h" />
+		<Unit filename="../../Source Code/AI/PathFinding/NavMeshes/Headers/NavMeshDebugDraw.h" />
+		<Unit filename="../../Source Code/AI/PathFinding/NavMeshes/Headers/NavMeshDefines.h" />
+		<Unit filename="../../Source Code/AI/PathFinding/NavMeshes/Headers/NavMeshLoader.h" />
+		<Unit filename="../../Source Code/AI/PathFinding/NavMeshes/NavMesh.cpp" />
+		<Unit filename="../../Source Code/AI/PathFinding/NavMeshes/NavMeshContext.cpp" />
+		<Unit filename="../../Source Code/AI/PathFinding/NavMeshes/NavMeshDebugDraw.cpp" />
+		<Unit filename="../../Source Code/AI/PathFinding/NavMeshes/NavMeshLoader.cpp" />
+		<Unit filename="../../Source Code/AI/PathFinding/Waypoints/Headers/Waypoint.h" />
+		<Unit filename="../../Source Code/AI/PathFinding/Waypoints/Headers/WaypointGraph.h" />
+		<Unit filename="../../Source Code/AI/PathFinding/Waypoints/Waypoint.cpp" />
+		<Unit filename="../../Source Code/AI/PathFinding/Waypoints/WaypointGraph.cpp" />
+		<Unit filename="../../Source Code/AI/Sensors/AudioSensor.cpp" />
+		<Unit filename="../../Source Code/AI/Sensors/Headers/AudioSensor.h" />
+		<Unit filename="../../Source Code/AI/Sensors/Headers/Sensor.h" />
+		<Unit filename="../../Source Code/AI/Sensors/Headers/VisualSensor.h" />
+		<Unit filename="../../Source Code/AI/Sensors/VisualSensor.cpp" />
+		<Unit filename="../../Source Code/Core/Resources/ConcreteLoaders/ParticleEmitterLoaderImpl.cpp" />
+		<Unit filename="../../Source Code/Core/Resources/ConcreteLoaders/SkyLoaderImpl.cpp" />
+		<Unit filename="../../Source Code/Core/Resources/ConcreteLoaders/TerrainDescriptorLoaderImpl.cpp" />
+		<Unit filename="../../Source Code/Core/Resources/ConcreteLoaders/TerrainLoaderImpl.cpp" />
+		<Unit filename="../../Source Code/Core/Resources/ConcreteLoaders/TriggerLoaderImpl.cpp" />
+		<Unit filename="../../Source Code/Core/Resources/ConcreteLoaders/WaterPlaneLoaderImpl.cpp" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Headers/Impostor.h" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Impostor.cpp" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Particles/ConcreteGenerators/Headers/ParticleBoxGenerator.h" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Particles/ConcreteGenerators/Headers/ParticleColorGenerator.h" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Particles/ConcreteGenerators/Headers/ParticleRoundGenerator.h" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Particles/ConcreteGenerators/Headers/ParticleSphereVelocityGenerator.h" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Particles/ConcreteGenerators/Headers/ParticleTimeGenerator.h" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Particles/ConcreteGenerators/Headers/ParticleVelocityFromPositionGenerator.h" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Particles/ConcreteGenerators/Headers/ParticleVelocityGenerator.h" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Particles/ConcreteGenerators/ParticleBoxGenerator.cpp" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Particles/ConcreteGenerators/ParticleColorGenerator.cpp" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Particles/ConcreteGenerators/ParticleRoundGenerator.cpp" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Particles/ConcreteGenerators/ParticleSphereVelocityGenerator.cpp" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Particles/ConcreteGenerators/ParticleTimeGenerator.cpp" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Particles/ConcreteGenerators/ParticleVelocityFromPositionGenerator.cpp" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Particles/ConcreteGenerators/ParticleVelocityGenerator.cpp" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Particles/ConcreteUpdaters/Headers/ParticleAttractorUpdater.h" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Particles/ConcreteUpdaters/Headers/ParticleBasicColorUpdater.h" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Particles/ConcreteUpdaters/Headers/ParticleBasicTimeUpdater.h" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Particles/ConcreteUpdaters/Headers/ParticleEulerUpdater.h" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Particles/ConcreteUpdaters/Headers/ParticleFloorUpdater.h" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Particles/ConcreteUpdaters/Headers/ParticlePositionColorUpdater.h" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Particles/ConcreteUpdaters/Headers/ParticleVelocityColorUpdater.h" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Particles/ConcreteUpdaters/ParticleAttractorUpdater.cpp" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Particles/ConcreteUpdaters/ParticleBasicColorUpdater.cpp" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Particles/ConcreteUpdaters/ParticleBasicTimeUpdater.cpp" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Particles/ConcreteUpdaters/ParticleEulerUpdater.cpp" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Particles/ConcreteUpdaters/ParticleFloorUpdater.cpp" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Particles/ConcreteUpdaters/ParticlePositionColorUpdater.cpp" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Particles/ConcreteUpdaters/ParticleVelocityColorUpdater.cpp" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Particles/Headers/ParticleData.h" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Particles/Headers/ParticleEmitter.h" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Particles/Headers/ParticleGenerator.h" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Particles/Headers/ParticleSource.h" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Particles/Headers/ParticleUpdater.h" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Particles/ParticleData.cpp" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Particles/ParticleEmitter.cpp" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Particles/ParticleSource.cpp" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Triggers/Headers/Trigger.h" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Triggers/Trigger.cpp" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Units/Character.cpp" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Units/Headers/Character.h" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Units/Headers/NPC.h" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Units/Headers/Player.h" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Units/Headers/Unit.h" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Units/Headers/Vehicle.h" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Units/NPC.cpp" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Units/Player.cpp" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Units/Unit.cpp" />
+		<Unit filename="../../Source Code/Dynamics/Entities/Units/Vehicle.cpp" />
+		<Unit filename="../../Source Code/Dynamics/WeaponSystem/Ammunition/Ammunition.cpp" />
+		<Unit filename="../../Source Code/Dynamics/WeaponSystem/Ammunition/Headers/Ammunition.h" />
+		<Unit filename="../../Source Code/Dynamics/WeaponSystem/Projectile/Headers/Projectile.h" />
+		<Unit filename="../../Source Code/Dynamics/WeaponSystem/Projectile/Projectile.cpp" />
+		<Unit filename="../../Source Code/Dynamics/WeaponSystem/Weapons/Headers/Weapon.h" />
+		<Unit filename="../../Source Code/Dynamics/WeaponSystem/Weapons/Weapon.cpp" />
+		<Unit filename="../../Source Code/Environment/Sky/Headers/Sky.h" />
+		<Unit filename="../../Source Code/Environment/Sky/Sky.cpp" />
+		<Unit filename="../../Source Code/Environment/Terrain/Headers/Terrain.h" />
+		<Unit filename="../../Source Code/Environment/Terrain/Headers/TerrainChunk.h" />
+		<Unit filename="../../Source Code/Environment/Terrain/Headers/TerrainDescriptor.h" />
+		<Unit filename="../../Source Code/Environment/Terrain/Headers/TerrainLoader.h" />
+		<Unit filename="../../Source Code/Environment/Terrain/Quadtree/Headers/Quadtree.h" />
+		<Unit filename="../../Source Code/Environment/Terrain/Quadtree/Headers/QuadtreeNode.h" />
+		<Unit filename="../../Source Code/Environment/Terrain/Quadtree/Quadtree.cpp" />
+		<Unit filename="../../Source Code/Environment/Terrain/Quadtree/QuadtreeNode.cpp" />
+		<Unit filename="../../Source Code/Environment/Terrain/Terrain.cpp" />
+		<Unit filename="../../Source Code/Environment/Terrain/TerrainChunk.cpp" />
+		<Unit filename="../../Source Code/Environment/Terrain/TerrainLoader.cpp" />
+		<Unit filename="../../Source Code/Environment/Vegetation/Headers/Vegetation.h" />
+		<Unit filename="../../Source Code/Environment/Vegetation/Vegetation.cpp" />
+		<Unit filename="../../Source Code/Environment/Water/Headers/Water.h" />
+		<Unit filename="../../Source Code/Environment/Water/Water.cpp" />
+		<Unit filename="../../Source Code/Libs/src/CPPGoap/Action.cpp" />
+		<Unit filename="../../Source Code/Libs/src/CPPGoap/Action.h" />
+		<Unit filename="../../Source Code/Libs/src/CPPGoap/Node.cpp" />
+		<Unit filename="../../Source Code/Libs/src/CPPGoap/Node.h" />
+		<Unit filename="../../Source Code/Libs/src/CPPGoap/Planner.cpp" />
+		<Unit filename="../../Source Code/Libs/src/CPPGoap/Planner.h" />
+		<Unit filename="../../Source Code/Libs/src/CPPGoap/WorldState.cpp" />
+		<Unit filename="../../Source Code/Libs/src/CPPGoap/WorldState.h" />
+		<Unit filename="../../Source Code/SceneList.h" />
+		<Unit filename="../../Source Code/Scenes/CubeScene/CubeScene.cpp" />
+		<Unit filename="../../Source Code/Scenes/CubeScene/Headers/CubeScene.h" />
+		<Unit filename="../../Source Code/Scenes/FlashScene/FlashScene.cpp" />
+		<Unit filename="../../Source Code/Scenes/FlashScene/Headers/FlashScene.h" />
+		<Unit filename="../../Source Code/Scenes/Headers/Scene.h" />
+		<Unit filename="../../Source Code/Scenes/Headers/SceneInput.h" />
+		<Unit filename="../../Source Code/Scenes/Headers/SceneState.h" />
+		<Unit filename="../../Source Code/Scenes/MainScene/Headers/MainScene.h" />
+		<Unit filename="../../Source Code/Scenes/MainScene/MainScene.cpp" />
+		<Unit filename="../../Source Code/Scenes/NetworkScene/Headers/NetworkScene.h" />
+		<Unit filename="../../Source Code/Scenes/NetworkScene/NetworkScene.cpp" />
+		<Unit filename="../../Source Code/Scenes/NetworkScene/Network/ASIOImpl.cpp" />
+		<Unit filename="../../Source Code/Scenes/NetworkScene/Network/Headers/ASIOImpl.h" />
+		<Unit filename="../../Source Code/Scenes/NetworkScene/Network/Headers/OPCodesImpl.h" />
+		<Unit filename="../../Source Code/Scenes/PhysXScene/Headers/PhysXScene.h" />
+		<Unit filename="../../Source Code/Scenes/PhysXScene/PhysXScene.cpp" />
+		<Unit filename="../../Source Code/Scenes/PingPongScene/Headers/PingPongScene.h" />
+		<Unit filename="../../Source Code/Scenes/PingPongScene/PingPongScene.cpp" />
+		<Unit filename="../../Source Code/Scenes/Scene.cpp" />
+		<Unit filename="../../Source Code/Scenes/SceneInput.cpp" />
+		<Unit filename="../../Source Code/Scenes/SceneState.cpp" />
+		<Unit filename="../../Source Code/Scenes/TenisScene/Headers/TenisScene.h" />
+		<Unit filename="../../Source Code/Scenes/TenisScene/Headers/TenisSceneAISceneImpl.h" />
+		<Unit filename="../../Source Code/Scenes/TenisScene/TenisScene.cpp" />
+		<Unit filename="../../Source Code/Scenes/TenisScene/TenisSceneAISceneImpl.cpp" />
+		<Unit filename="../../Source Code/Scenes/WarScene/AESOPActions/Headers/WarSceneActions.h" />
+		<Unit filename="../../Source Code/Scenes/WarScene/AESOPActions/WarSceneActions.cpp" />
+		<Unit filename="../../Source Code/Scenes/WarScene/Headers/WarScene.h" />
+		<Unit filename="../../Source Code/Scenes/WarScene/Headers/WarSceneAISceneImpl.h" />
+		<Unit filename="../../Source Code/Scenes/WarScene/WarScene.cpp" />
+		<Unit filename="../../Source Code/Scenes/WarScene/WarSceneAI.cpp" />
+		<Unit filename="../../Source Code/Scenes/WarScene/WarSceneAISceneImpl.cpp" />
+		<Unit filename="../../Source Code/main.cpp" />
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

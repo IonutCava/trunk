@@ -35,6 +35,8 @@
 #include "Core/Math/Headers/MathMatrices.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
 
+#include <assert.h>
+
 namespace Divide {
 
 class Kernel;

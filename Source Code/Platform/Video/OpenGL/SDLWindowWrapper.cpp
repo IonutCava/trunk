@@ -16,6 +16,7 @@
 #include <chrono>
 #include <thread>
 
+#define HAVE_M_PI
 #include <SDL.h>
 
 namespace Divide {
@@ -56,11 +57,7 @@ ErrorCode GL_API::createWindow() {
     } else {
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-#ifdef GL_VERSION_4_5
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5);
-#else
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 4);
-#endif
     }
 
     U32 windowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN | SDL_WINDOW_ALLOW_HIGHDPI;
@@ -104,7 +101,7 @@ ErrorCode GL_API::createGLContext() {
     GLUtil::_glLoadingContext = SDL_GL_CreateContext(GLUtil::_mainWindow);
 
     if (GLUtil::_glRenderContext == nullptr ||
-        GLUtil::_glRenderContext == nullptr)
+        GLUtil::_glLoadingContext == nullptr)
     {
     	Console::errorfn(Locale::get("ERROR_GFX_DEVICE"),
     					 Locale::get("ERROR_GL_OLD_VERSION"));
@@ -246,6 +243,29 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     SDL_GL_MakeCurrent(GLUtil::_mainWindow, GLUtil::_glRenderContext);
     glbinding::Binding::initialize();
     glbinding::Binding::useCurrentContext();
+    // OpenGL has a nifty error callback system, available in every build
+    // configuration if required
+#if defined(_DEBUG) || defined(_PROFILE) || defined(_GLDEBUG_IN_RELEASE)
+    // GL_DEBUG_OUTPUT_SYNCHRONOUS is essential for debugging gl commands in the IDE
+    glEnable(GL_DEBUG_OUTPUT);
+    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+    // hardwire our debug callback function with OpenGL's implementation
+    glDebugMessageCallback(GLUtil::DebugCallback, nullptr);
+    // nVidia flushes a lot of useful info about buffer allocations and shader
+    // recompiles due to state and what now, but those aren't needed until that's
+    // what's actually causing the bottlenecks
+    U32 nvidiaBufferErrors[] = { 131185, 131218 };
+    // Disable shader compiler errors (shader class handles that)
+    glDebugMessageControl(GL_DEBUG_SOURCE_SHADER_COMPILER, GL_DEBUG_TYPE_ERROR,
+        GL_DONT_CARE, 0, nullptr, GL_FALSE);
+    // Disable nVidia buffer allocation info (an easy enable is to change the
+    // count param to 0)
+    glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_OTHER,
+        GL_DONT_CARE, 2, nvidiaBufferErrors, GL_FALSE);
+    // Shader will be recompiled nVidia error
+    glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_PERFORMANCE,
+        GL_DONT_CARE, 2, nvidiaBufferErrors, GL_FALSE);
+#endif
     // Vsync is toggled on or off via the external config file
     SDL_GL_SetSwapInterval(par.getParam<bool>("runtime.enableVSync", false) ? 1 : 0);
         
@@ -307,9 +327,6 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     // How many uniforms can we send to fragment shaders
     Console::printfn(Locale::get("GL_MAX_UNIFORM"),
                      GLUtil::getIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS));
-    // How many varying floats can we use inside a shader program
-    Console::printfn(Locale::get("GL_MAX_FRAG_VARYING"),
-                     GLUtil::getIntegerv(GL_MAX_VARYING_FLOATS));
     // How many uniforms can we send to vertex shaders
     Console::printfn(Locale::get("GL_MAX_VERT_UNIFORM"),
                      GLUtil::getIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS));
@@ -354,30 +371,6 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     Console::printfn(Locale::get("GL_SUBROUTINE_INFO"),
                      GLUtil::getIntegerv(GL_MAX_SUBROUTINES),
                      GLUtil::getIntegerv(GL_MAX_SUBROUTINE_UNIFORM_LOCATIONS));
-
-    // OpenGL has a nifty error callback system, available in every build
-    // configuration if required
-#if defined(_DEBUG) || defined(_PROFILE) || defined(_GLDEBUG_IN_RELEASE)
-    // GL_DEBUG_OUTPUT_SYNCHRONOUS is essential for debugging gl commands in the IDE
-    glEnable(GL_DEBUG_OUTPUT);
-    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-    // hardwire our debug callback function with OpenGL's implementation
-    glDebugMessageCallback(GLUtil::DebugCallback, nullptr);
-    // nVidia flushes a lot of useful info about buffer allocations and shader
-    // recompiles due to state and what now, but those aren't needed until that's
-    // what's actually causing the bottlenecks
-    U32 nvidiaBufferErrors[] = { 131185, 131218 };
-    // Disable shader compiler errors (shader class handles that)
-    glDebugMessageControl(GL_DEBUG_SOURCE_SHADER_COMPILER, GL_DEBUG_TYPE_ERROR,
-        GL_DONT_CARE, 0, nullptr, GL_FALSE);
-    // Disable nVidia buffer allocation info (an easy enable is to change the
-    // count param to 0)
-    glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_OTHER,
-        GL_DONT_CARE, 2, nvidiaBufferErrors, GL_FALSE);
-    // Shader will be recompiled nVidia error
-    glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_PERFORMANCE,
-        GL_DONT_CARE, 2, nvidiaBufferErrors, GL_FALSE);
-#endif
 
     // Set the clear color to the blue color used since the initial OBJ loader
     // days

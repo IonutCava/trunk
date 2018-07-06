@@ -48,7 +48,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
         }
     }
 
-    const SysInfo& systemInfo = Application::getInstance().getSysInfo();
     WindowManager& winManager = Application::getInstance().getWindowManager();
     // Initialize the shader manager
     ShaderManager::getInstance().init();

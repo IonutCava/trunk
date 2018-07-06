@@ -63,12 +63,22 @@
 #pragma comment(lib, "CEGUICoreWindowRendererSet_Static.lib")
 #pragma comment(lib, "CEGUIExpatParser_Static.lib")
 
-#pragma comment(lib, "PhysXProfileSDKCHECKED.lib")
-#pragma comment(lib, "PhysX3CookingCHECKED_x64.lib")
-#pragma comment(lib, "PhysX3CHECKED_x64.lib")
-#pragma comment(lib, "PhysX3CommonCHECKED_x64.lib")
-#pragma comment(lib, "PhysX3ExtensionsCHECKED.lib")
-#pragma comment(lib, "PhysXVisualDebuggerSDKCHECKED.lib")
+#if defined(_PROFILE)
+    #pragma comment(lib, "PhysXProfileSDKCHECKED.lib")
+    #pragma comment(lib, "PhysX3CookingCHECKED_x64.lib")
+    #pragma comment(lib, "PhysX3CHECKED_x64.lib")
+    #pragma comment(lib, "PhysX3CommonCHECKED_x64.lib")
+    #pragma comment(lib, "PhysX3ExtensionsCHECKED.lib")
+    #pragma comment(lib, "PhysXVisualDebuggerSDKCHECKED.lib")
+#else
+    #pragma comment(lib, "PhysXProfileSDK.lib")
+    #pragma comment(lib, "PhysX3Cooking_x64.lib")
+    #pragma comment(lib, "PhysX3_x64.lib")
+    #pragma comment(lib, "PhysX3Common_x64.lib")
+    #pragma comment(lib, "PhysX3Extensions.lib")
+    #pragma comment(lib, "PhysXVisualDebuggerSDK.lib")
+#endif
+
 #endif  //_DEBUG
 
 #ifdef WIN32_LEAN_AND_MEAN

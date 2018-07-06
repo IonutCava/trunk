@@ -43,7 +43,7 @@ vectorImpl<stringImpl> Split(const stringImpl& input, char delimiter) {
     return elems;
 }
 
-stringImpl StringFormat(const stringImpl& fmt_str, ...) {
+stringImpl StringFormat(const stringImpl fmt_str, ...) {
     // Reserve two times as much as the length of the fmt_str
     I32 final_n, n = to_int(fmt_str.size()) * 2; 
     std::unique_ptr<char[]> formatted;

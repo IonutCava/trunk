@@ -283,8 +283,6 @@ void LightManager::updateAndUploadLightData(const mat4<F32>& viewMatrix) {
         _viewMatrixCache.set(viewMatrix);
     }
 
-    U32 lightCount = std::min(to_uint(_lights.size()),
-                              Config::Lighting::MAX_LIGHTS_PER_SCENE);
     U32 lightShadowCount =
         std::min(to_uint(_lights.size()),
                  Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE);

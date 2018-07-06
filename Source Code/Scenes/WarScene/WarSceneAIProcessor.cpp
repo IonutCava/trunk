@@ -339,11 +339,10 @@ bool WarSceneAIProcessor::preAction(ActionType type,
     U32 enemyTeamID = 1 - ownTeamID;
     _actionState[to_uint(type)] = true;
 
-    bool atHome = atHomeBase();
     switch (type) {
         case ActionType::IDLE: {
             PRINT("Starting idle action");
-            assert(atHome);
+            assert(atHomeBase());
             _entity->stop();
         } break;
         case ActionType::APPROACH_ENEMY_FLAG: {
@@ -412,7 +411,6 @@ bool WarSceneAIProcessor::postAction(ActionType type,
     U32 ownTeamID = currentTeam->getTeamID();
     U32 enemyTeamID = 1 - ownTeamID;
 
-    bool atHome = atHomeBase();
     switch (type) {
         case ActionType::IDLE: {
             PRINT("Idle action over");
@@ -475,7 +473,7 @@ bool WarSceneAIProcessor::postAction(ActionType type,
         case ActionType::RETURN_TO_BASE: {
             PRINT("Return to base action over");
             _entity->stop();
-            assert(atHome);
+            assert(atHomeBase());
         } break;
         case ActionType::ATTACK_ENEMY: {
             PRINT("Attack enemy action over");
@@ -518,8 +516,6 @@ bool WarSceneAIProcessor::checkCurrentActionComplete(const GOAPAction& planStep)
     SceneGraphNode_ptr enemyFlag(_globalWorkingMemory._flags[enemyTeamID].value().lock());
 
     bool state = false;
-    bool atHome = atHomeBase();
-    const BoundingBox& bb1 = currentNode->getBoundingBoxConst();
     switch (type) {
         case ActionType::APPROACH_ENEMY_FLAG:
         case ActionType::CAPTURE_ENEMY_FLAG: {
@@ -535,7 +531,7 @@ bool WarSceneAIProcessor::checkCurrentActionComplete(const GOAPAction& planStep)
                 return false;
             }
 
-            state = atHome &&
+            state = atHomeBase() &&
                 _globalWorkingMemory._flagsAtBase[ownTeamID].value() == true &&
                 _entity->destinationReached();
 
@@ -547,7 +543,7 @@ bool WarSceneAIProcessor::checkCurrentActionComplete(const GOAPAction& planStep)
 
         case ActionType::IDLE:
         case ActionType::RETURN_TO_BASE: {
-            state = atHome;
+            state = atHomeBase();
             if (!state && _entity->destinationReached()) {
                 _entity->updateDestination(_initialFlagPositions[ownTeamID]);
             }

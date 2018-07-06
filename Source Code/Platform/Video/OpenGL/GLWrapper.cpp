@@ -203,11 +203,7 @@ bool GL_API::initShaders() {
 // Add our engine specific defines and various code pieces to every GLSL
 // shader
 // Add version as the first shader statement, followed by copyright notice
-#ifdef GL_VERSION_4_5
     appendToShaderHeader(ShaderType::COUNT, "#version 450 core", lineOffsets);
-#else
-    appendToShaderHeader(ShaderType::COUNT, "#version 440 core", lineOffsets);
-#endif
 
     appendToShaderHeader(ShaderType::COUNT,
                          "/*Copyright 2009-2015 DIVIDE-Studio*/", lineOffsets);

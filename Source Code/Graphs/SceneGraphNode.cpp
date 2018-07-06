@@ -81,7 +81,7 @@ SceneGraphNode::~SceneGraphNode()
     WriteLock w_lock(_childrenLock);
      if (!_children.empty()) {
         for (NodeChildren::value_type& iter : _children) {
-            assert(iter.second.unique());
+            DIVIDE_ASSERT(iter.second.unique(), "SceneGraphNode::~SceneGraphNode error: child still in use!");
         }
         _children.clear();
     }

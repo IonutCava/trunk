@@ -243,7 +243,7 @@ bool AIEntity::setPosition(const vec3<F32> position) {
                                                                           vec3<F32>(5),
                                                                           DESTINATION_RADIUS_F,
                                                                           result);
-    assert(isPointOnNavMesh);
+    DIVIDE_ASSERT(isPointOnNavMesh, "AIEntity::setPosition error: Invalid NavMesh position returned!");
 
     // Remove agent from crowd and re-add at position
     _detourCrowd->removeAgent(_agentID);
@@ -283,7 +283,7 @@ void AIEntity::updatePosition(const U64 deltaTime) {
                                                                       vec3<F32>(5),
                                                                       DESTINATION_RADIUS_F,
                                                                       result);
-                    assert(isPointOnNavMesh);
+                    DIVIDE_ASSERT(isPointOnNavMesh, "AIEntity::updatePosition error: Invalid NavMesh position returned!");
                     _unitRef->moveTo(result);
                 }
                 return;

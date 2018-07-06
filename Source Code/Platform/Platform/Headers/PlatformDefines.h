@@ -129,10 +129,29 @@ template <typename Type, typename std::enable_if<std::is_enum<Type>::value>::typ
 }
 
 template<typename T>
+constexpr U8 to_const_ubyte(const T value) {
+    return static_cast<U8>(value);
+}
+
+template<typename T>
+constexpr U16 to_const_ushort(const T value) {
+    return static_cast<U16>(value);
+}
+
+template<typename T>
 constexpr U32 to_const_uint(const T value) {
     return static_cast<U32>(value);
 }
 
+template<typename T>
+constexpr I8 to_const_byte(const T value) {
+    return static_cast<I8>(value);
+}
+
+template<typename T>
+constexpr I16 to_const_short(const T value) {
+    return static_cast<I16>(value);
+}
 template<typename T>
 constexpr I32 to_const_int(const T value) {
     return static_cast<I32>(value);
@@ -178,14 +197,14 @@ TimeValue getTickDifference(const TimeValue& end, const TimeValue& begin);
 bool CheckMemory(const U32 physicalRAMNeeded, SysInfo& info);
 /// Converts an arbitrary positive integer value to a bitwise value used for masks
 template<typename T>
-constexpr T toBit(T X) {
+constexpr T toBit(const T X) {
     //static_assert(X > 0, "toBit(0) is currently disabled!");
     return 1 << X;
 }
 
 template<typename T>
 T to_bitwise(T X) {
-    assert(X > 0 && "to_bitwise(0) is currently disabled!");
+    DIVIDE_ASSERT(X > 0, "to_bitwise(0) is currently disabled!");
     return 1 << X;
 }
 

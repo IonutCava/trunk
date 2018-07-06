@@ -73,13 +73,10 @@ ErrorCode InputInterface::init(Kernel& kernel) {
         _pJoystickInterface =
             MemoryManager_NEW JoystickInterface(_pInputInterface, _pEventHdlr);
 
-        U32 i = 0;
-        JoystickData data;
-        for (OIS::JoyStick* joystick : _pJoysticks) {
-            data._max = joystick->MAX_AXIS - 4000;
-            data._deadZone = data._max / 10;
-
-            _pJoystickInterface->setJoystickData(static_cast<Joystick>(i++), data);
+        vectorAlg::vecSize joystickCount = _pJoysticks.size();
+        for (vectorAlg::vecSize i = 0; i < joystickCount; ++i) {
+            I32 max = _pJoysticks[i]->MAX_AXIS - 4000;
+            _pJoystickInterface->setJoystickData(static_cast<Joystick>(i), JoystickData(max / 10, max));
         }
         if (!_pJoystickInterface->wasFFDetected()) {
             Console::printfn(Locale::get("WARN_INPUT_NO_FORCE_FEEDBACK"));

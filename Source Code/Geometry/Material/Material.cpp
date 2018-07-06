@@ -473,7 +473,6 @@ void Material::getTextureData(TextureDataContainer& textureData) {
     getTextureData(ShaderProgram::TextureUsage::OPACITY, textureData);
     getTextureData(ShaderProgram::TextureUsage::UNIT0, textureData);
 
-    RenderStage currentStage = GFX_DEVICE.getRenderStage();
     if (!GFX_DEVICE.isDepthStage()) {
         getTextureData(ShaderProgram::TextureUsage::UNIT1, textureData);
         getTextureData(ShaderProgram::TextureUsage::NORMALMAP,

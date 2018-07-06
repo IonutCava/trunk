@@ -231,8 +231,8 @@ class mat3 {
         this->mat[8] = m8;
     }
 
-    inline void set(const T *m) { 
-        memcpy(this->mat, m, sizeof(T) * 9);
+    inline void set(const T *matrix) { 
+        memcpy(this->mat, matrix, sizeof(T) * 9);
     }
 
     inline void set(const mat3<T> &matrix) {
@@ -589,9 +589,9 @@ class mat4 {
         return retValue;
     }
 
-    mat4<T> operator*(const mat4<T> &m) const {
+    mat4<T> operator*(const mat4<T> &matrix) const {
         mat4<T> retValue;
-        Util::Mat4::Multiply(this->mat, m.mat, retValue.mat);
+        Util::Mat4::Multiply(this->mat, matrix.mat, retValue.mat);
         return retValue;
     }
 
@@ -659,8 +659,8 @@ class mat4 {
         this->mat[15] = m15;
     }
 
-    inline void set(T const *m) {
-        std::memcpy(this->mat, m, sizeof(T) * 16);
+    inline void set(T const *matrix) {
+        std::memcpy(this->mat, matrix, sizeof(T) * 16);
     }
 
     inline void set(const mat4 &matrix) { this->set(matrix.mat); }

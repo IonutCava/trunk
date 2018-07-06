@@ -191,7 +191,7 @@ bool Light::computeBoundingBox(SceneGraphNode& sgn) {
     if (_type == LightType::DIRECTIONAL) {
         vec3<F32> directionalLightPosition =
             _properties._position.xyz() *
-            Config::Lighting::DIRECTIONAL_LIGHT_DISTANCE * -1.0f;
+            to_const_float(Config::Lighting::DIRECTIONAL_LIGHT_DISTANCE) * -1.0f;
         sgn.getBoundingBox().set(directionalLightPosition - vec3<F32>(10),
                                  directionalLightPosition + vec3<F32>(10));
     } else {

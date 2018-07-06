@@ -69,7 +69,7 @@ void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState) {
         bool texture = (prim->_texture != nullptr);
         // And bind it to the first diffuse texture slot
         if (texture) {
-            prim->_texture->Bind(to_const_uint(ShaderProgram::TextureUsage::UNIT0));
+            prim->_texture->Bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0));
         }
         // Inform the shader if we have (or don't have) a texture
         _imShader->Uniform("useTexture", texture);

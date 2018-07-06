@@ -44,6 +44,7 @@
 #include <sstream>
 #include <cctype>
 #include <cstring>
+#include <assert.h>
 
 namespace Divide {
 
@@ -257,7 +258,7 @@ stringImpl& Rtrim(stringImpl& s);
 stringImpl& Trim(stringImpl& s);
 //fmt_str is passed by value to conform with the requirements of va_start.
 //http://stackoverflow.com/questions/2342162/stdstring-formatting-like-sprintf
-stringImpl StringFormat(const stringImpl& fmt_str, ...);
+stringImpl StringFormat(const stringImpl fmt_str, ...);
 
 /** Ogre3D
 @brief Normalise the selected rotations to be within the +/-180 degree range.

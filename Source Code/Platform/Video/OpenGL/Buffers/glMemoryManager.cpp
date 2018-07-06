@@ -43,7 +43,7 @@ void freeBuffer(GLuint& bufferId, bufferPtr mappedPtr) {
     if (bufferId > 0) {
         if (mappedPtr != nullptr) {
             GLboolean result = glUnmapNamedBuffer(bufferId);
-            assert(result != GL_FALSE);
+            DIVIDE_ASSERT(result != GL_FALSE, "GLUtil::freeBuffer error: buffer unmaping failed");
             mappedPtr = nullptr;
         }
         glDeleteBuffers(1, &bufferId);

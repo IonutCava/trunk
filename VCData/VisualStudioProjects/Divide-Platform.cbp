@@ -1,0 +1,398 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="DivideHardware" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug Win32">
+				<Option output="Divide-Platform" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option type="2" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-D_DEBUG" />
+					<Add option="-D_WIN32_WINNT=0x0601" />
+					<Add option="-DCEGUI_STATIC" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/src/GLIM" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/includes" />
+					<Add directory="$(EngineLibraries)/physx/include/" />
+					<Add directory="$(EngineLibraries)/physx/include/common" />
+					<Add directory="$(EngineLibraries)/physx/include/foundation" />
+					<Add directory="$(EngineLibraries)/physx/include/extensions" />
+					<Add directory="$(EngineLibraries)/physx/include/Samples/SampleFramework/framework/include" />
+					<Add directory="$(EngineLibraries)/freetype/include" />
+					<Add directory="$(EngineLibraries)/cegui/include" />
+					<Add directory="$(EngineLibraries)/boost/" />
+					<Add directory="$(EngineLibraries)/" />
+					<Add directory="$(EngineLibraries)/glfw/include" />
+					<Add directory="$(EngineLibraries)/Threadpool/include" />
+					<Add directory="$(EngineLibraries)/glslopt/include" />
+					<Add directory="$(EngineLibraries)/GLEW/include" />
+					<Add directory="$(EngineLibraries)/OIS/include" />
+					<Add directory="$(EngineLibraries)/sdl/include" />
+					<Add directory="$(EngineLibraries)/glm" />
+					<Add directory="$(SolutionDir)../Source Code" />
+				</Compiler>
+			</Target>
+			<Target title="Profile x64">
+				<Option output="Divide-Platform" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option type="2" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-D_SCL_SECURE=0" />
+					<Add option="-D_CRT_SECURE_NO_WARNINGS" />
+					<Add option="-D_PROFILE" />
+					<Add option="-DNDEBUG" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/src/GLIM" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/includes" />
+					<Add directory="$(EngineLibraries)/" />
+					<Add directory="$(EngineLibraries)/EASTL/include/" />
+					<Add directory="$(EngineLibraries)/physx/include/" />
+					<Add directory="$(EngineLibraries)/physx/include/common/" />
+					<Add directory="$(EngineLibraries)/physx/include/foundation/" />
+					<Add directory="$(EngineLibraries)/assimp/include/" />
+					<Add directory="$(EngineLibraries)/physx/include/extensions/" />
+					<Add directory="$(EngineLibraries)/cegui-deps/include/" />
+					<Add directory="$(EngineLibraries)/cegui/include/" />
+					<Add directory="$(EngineLibraries)/boost/" />
+					<Add directory="$(EngineLibraries)/glfw/include/" />
+					<Add directory="$(EngineLibraries)/Threadpool/include/" />
+					<Add directory="$(EngineLibraries)/glslopt/include/" />
+					<Add directory="$(EngineLibraries)/glbinding/include/" />
+					<Add directory="$(EngineLibraries)/OIS/include/" />
+					<Add directory="$(EngineLibraries)/OpenAL/include/" />
+					<Add directory="$(EngineLibraries)/sdl/include/" />
+					<Add directory="$(SolutionDir)../Source Code/" />
+				</Compiler>
+			</Target>
+			<Target title="Debug x64">
+				<Option output="Divide-Platform" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option type="2" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-D_SCL_SECURE=0" />
+					<Add option="-D_CRT_SECURE_NO_WARNINGS" />
+					<Add option="-D_DEBUG" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/src/GLIM" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/includes" />
+					<Add directory="$(EngineLibraries)/" />
+					<Add directory="$(EngineLibraries)/EASTL/include/" />
+					<Add directory="$(EngineLibraries)/physx/include/" />
+					<Add directory="$(EngineLibraries)/physx/include/common/" />
+					<Add directory="$(EngineLibraries)/physx/include/foundation/" />
+					<Add directory="$(EngineLibraries)/assimp/include/" />
+					<Add directory="$(EngineLibraries)/physx/include/extensions/" />
+					<Add directory="$(EngineLibraries)/cegui-deps/include/" />
+					<Add directory="$(EngineLibraries)/cegui/include/" />
+					<Add directory="$(EngineLibraries)/boost/" />
+					<Add directory="$(EngineLibraries)/glfw/include/" />
+					<Add directory="$(EngineLibraries)/Threadpool/include/" />
+					<Add directory="$(EngineLibraries)/glslopt/include/" />
+					<Add directory="$(EngineLibraries)/glbinding/include/" />
+					<Add directory="$(EngineLibraries)/OIS/include/" />
+					<Add directory="$(EngineLibraries)/OpenAL/include/" />
+					<Add directory="$(EngineLibraries)/sdl/include/" />
+					<Add directory="$(SolutionDir)../Source Code/" />
+				</Compiler>
+			</Target>
+			<Target title="Release x64">
+				<Option output="Divide-Platform" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option type="2" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-D_SCL_SECURE=0" />
+					<Add option="-D_CRT_SECURE_NO_WARNINGS" />
+					<Add option="-D_RELEASE" />
+					<Add option="-DNDEBUG" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/src/GLIM" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/includes" />
+					<Add directory="$(EngineLibraries)/" />
+					<Add directory="$(EngineLibraries)/EASTL/include/" />
+					<Add directory="$(EngineLibraries)/physx/include/" />
+					<Add directory="$(EngineLibraries)/physx/include/common/" />
+					<Add directory="$(EngineLibraries)/physx/include/foundation/" />
+					<Add directory="$(EngineLibraries)/assimp/include/" />
+					<Add directory="$(EngineLibraries)/physx/include/extensions/" />
+					<Add directory="$(EngineLibraries)/cegui-deps/include/" />
+					<Add directory="$(EngineLibraries)/cegui/include/" />
+					<Add directory="$(EngineLibraries)/boost/" />
+					<Add directory="$(EngineLibraries)/glfw/include/" />
+					<Add directory="$(EngineLibraries)/Threadpool/include/" />
+					<Add directory="$(EngineLibraries)/glslopt/include/" />
+					<Add directory="$(EngineLibraries)/glbinding/include/" />
+					<Add directory="$(EngineLibraries)/OIS/include/" />
+					<Add directory="$(EngineLibraries)/OpenAL/include/" />
+					<Add directory="$(EngineLibraries)/sdl/include/" />
+					<Add directory="$(SolutionDir)../Source Code/" />
+				</Compiler>
+			</Target>
+			<Target title="Profile Win32">
+				<Option output="Divide-Platform" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option type="2" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-DNDEBUG" />
+					<Add option="-D_PROFILE" />
+					<Add option="-D_WIN32_WINNT=0x0601" />
+					<Add option="-D_CRT_SECURE_NO_WARNINGS" />
+					<Add option="-DCEGUI_STATIC" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/src/GLIM" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/includes" />
+					<Add directory="$(EngineLibraries)/physx/include/" />
+					<Add directory="$(EngineLibraries)/physx/include/common" />
+					<Add directory="$(EngineLibraries)/physx/include/foundation" />
+					<Add directory="$(EngineLibraries)/physx/include/extensions" />
+					<Add directory="$(EngineLibraries)/physx/include/Samples/SampleFramework/framework/include" />
+					<Add directory="$(EngineLibraries)/freetype/include" />
+					<Add directory="$(EngineLibraries)/cegui/include" />
+					<Add directory="$(EngineLibraries)/boost/" />
+					<Add directory="$(EngineLibraries)/" />
+					<Add directory="$(EngineLibraries)/glfw/include" />
+					<Add directory="$(EngineLibraries)/Threadpool/include" />
+					<Add directory="$(EngineLibraries)/glslopt/include" />
+					<Add directory="$(EngineLibraries)/GLEW/include" />
+					<Add directory="$(EngineLibraries)/OIS/include" />
+					<Add directory="$(EngineLibraries)/sdl/include" />
+					<Add directory="$(EngineLibraries)/glm" />
+					<Add directory="$(SolutionDir)../Source Code" />
+				</Compiler>
+			</Target>
+			<Target title="Release Win32">
+				<Option output="Divide-Platform" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option type="2" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-DNDEBUG" />
+					<Add option="-D_WIN32_WINNT=0x0601" />
+					<Add option="-DCEGUI_STATIC" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/src/GLIM" />
+					<Add directory="$(SolutionDir)../Source Code/Libs/includes" />
+					<Add directory="$(EngineLibraries)/physx/include/" />
+					<Add directory="$(EngineLibraries)/physx/include/common" />
+					<Add directory="$(EngineLibraries)/physx/include/foundation" />
+					<Add directory="$(EngineLibraries)/physx/include/extensions" />
+					<Add directory="$(EngineLibraries)/physx/include/Samples/SampleFramework/framework/include" />
+					<Add directory="$(EngineLibraries)/freetype/include" />
+					<Add directory="$(EngineLibraries)/cegui/include" />
+					<Add directory="$(EngineLibraries)/boost/" />
+					<Add directory="$(EngineLibraries)/" />
+					<Add directory="$(EngineLibraries)/glfw/include" />
+					<Add directory="$(EngineLibraries)/Threadpool/include" />
+					<Add directory="$(EngineLibraries)/glslopt/include" />
+					<Add directory="$(EngineLibraries)/GLEW/include" />
+					<Add directory="$(EngineLibraries)/OIS/include" />
+					<Add directory="$(EngineLibraries)/sdl/include" />
+					<Add directory="$(EngineLibraries)/glm" />
+					<Add directory="$(SolutionDir)../Source Code" />
+				</Compiler>
+			</Target>
+		</Build>
+		<Unit filename="../../Source Code/Libs/src/GLIM/Declarations.h" />
+		<Unit filename="../../Source Code/Libs/src/GLIM/Stuff.cpp" />
+		<Unit filename="../../Source Code/Libs/src/GLIM/glim.h" />
+		<Unit filename="../../Source Code/Libs/src/GLIM/glimBatch.cpp" />
+		<Unit filename="../../Source Code/Libs/src/GLIM/glimBatch.h" />
+		<Unit filename="../../Source Code/Libs/src/GLIM/glimBatchAttributes.cpp" />
+		<Unit filename="../../Source Code/Libs/src/GLIM/glimBatchData.cpp" />
+		<Unit filename="../../Source Code/Libs/src/GLIM/glimBatchData.h" />
+		<Unit filename="../../Source Code/Libs/src/GLIM/glimD3D11.cpp" />
+		<Unit filename="../../Source Code/Libs/src/GLIM/glimInterface.h" />
+		<Unit filename="../../Source Code/Platform/Audio/Headers/AudioAPIWrapper.h" />
+		<Unit filename="../../Source Code/Platform/Audio/Headers/AudioDescriptor.h" />
+		<Unit filename="../../Source Code/Platform/Audio/Headers/SFXDevice.h" />
+		<Unit filename="../../Source Code/Platform/Audio/SFXDevice.cpp" />
+		<Unit filename="../../Source Code/Platform/Audio/fmod/Headers/FmodWrapper.h" />
+		<Unit filename="../../Source Code/Platform/Audio/openAl/ALWrapper.cpp" />
+		<Unit filename="../../Source Code/Platform/Audio/openAl/Headers/ALWrapper.h" />
+		<Unit filename="../../Source Code/Platform/Audio/sdl_mixer/Headers/SDLWrapper.h" />
+		<Unit filename="../../Source Code/Platform/Audio/sdl_mixer/SDLWrapper.cpp" />
+		<Unit filename="../../Source Code/Platform/Input/AutoKeyRepeat.cpp" />
+		<Unit filename="../../Source Code/Platform/Input/EffectManager.cpp" />
+		<Unit filename="../../Source Code/Platform/Input/EventHandler.cpp" />
+		<Unit filename="../../Source Code/Platform/Input/Headers/AutoKeyRepeat.h" />
+		<Unit filename="../../Source Code/Platform/Input/Headers/EffectManager.h" />
+		<Unit filename="../../Source Code/Platform/Input/Headers/EventHandler.h" />
+		<Unit filename="../../Source Code/Platform/Input/Headers/InputAggregatorInterface.h" />
+		<Unit filename="../../Source Code/Platform/Input/Headers/InputInterface.h" />
+		<Unit filename="../../Source Code/Platform/Input/Headers/InputVariables.h" />
+		<Unit filename="../../Source Code/Platform/Input/Headers/JoystickInterface.h" />
+		<Unit filename="../../Source Code/Platform/Input/InputInterface.cpp" />
+		<Unit filename="../../Source Code/Platform/Platform/Headers/PlatformDefines.h" />
+		<Unit filename="../../Source Code/Platform/Platform/Headers/PlatformDefinesApple.h" />
+		<Unit filename="../../Source Code/Platform/Platform/Headers/PlatformDefinesUnix.h" />
+		<Unit filename="../../Source Code/Platform/Platform/Headers/PlatformDefinesWindows.h" />
+		<Unit filename="../../Source Code/Platform/Platform/PlatformDefines.cpp" />
+		<Unit filename="../../Source Code/Platform/Platform/PlatformDefinesApple.cpp" />
+		<Unit filename="../../Source Code/Platform/Platform/PlatformDefinesUnix.cpp" />
+		<Unit filename="../../Source Code/Platform/Platform/PlatformDefinesWindows.cpp" />
+		<Unit filename="../../Source Code/Platform/Threading/Headers/SharedMutex.h" />
+		<Unit filename="../../Source Code/Platform/Threading/Headers/SimpleMutex.h" />
+		<Unit filename="../../Source Code/Platform/Threading/Headers/Task.h" />
+		<Unit filename="../../Source Code/Platform/Threading/Headers/Thread.h" />
+		<Unit filename="../../Source Code/Platform/Threading/Task.cpp" />
+		<Unit filename="../../Source Code/Platform/Video/Buffers/Framebuffer/Framebuffer.cpp" />
+		<Unit filename="../../Source Code/Platform/Video/Buffers/Framebuffer/Headers/Framebuffer.h" />
+		<Unit filename="../../Source Code/Platform/Video/Buffers/PixelBuffer/Headers/PixelBuffer.h" />
+		<Unit filename="../../Source Code/Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h" />
+		<Unit filename="../../Source Code/Platform/Video/Buffers/ShaderBuffer/ShaderBuffer.cpp" />
+		<Unit filename="../../Source Code/Platform/Video/Buffers/VertexBuffer/Headers/GenericVertexData.h" />
+		<Unit filename="../../Source Code/Platform/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h" />
+		<Unit filename="../../Source Code/Platform/Video/Buffers/VertexBuffer/Headers/VertexDataInterface.h" />
+		<Unit filename="../../Source Code/Platform/Video/Direct3D/Buffers/FrameBuffer/Headers/d3dRenderTarget.h" />
+		<Unit filename="../../Source Code/Platform/Video/Direct3D/Buffers/FrameBuffer/d3dRenderTarget.cpp" />
+		<Unit filename="../../Source Code/Platform/Video/Direct3D/Buffers/PixelBuffer/Headers/d3dPixelBuffer.h" />
+		<Unit filename="../../Source Code/Platform/Video/Direct3D/Buffers/PixelBuffer/d3dPixelBuffer.cpp" />
+		<Unit filename="../../Source Code/Platform/Video/Direct3D/Buffers/ShaderBuffer/Headers/d3dConstantBuffer.h" />
+		<Unit filename="../../Source Code/Platform/Video/Direct3D/Buffers/ShaderBuffer/d3dConstantBuffer.cpp" />
+		<Unit filename="../../Source Code/Platform/Video/Direct3D/Buffers/VertexBuffer/Headers/d3dGenericVertexData.h" />
+		<Unit filename="../../Source Code/Platform/Video/Direct3D/Buffers/VertexBuffer/Headers/d3dVertexBuffer.h" />
+		<Unit filename="../../Source Code/Platform/Video/Direct3D/Buffers/VertexBuffer/d3dVertexBuffer.cpp" />
+		<Unit filename="../../Source Code/Platform/Video/Direct3D/DXWrapper.cpp" />
+		<Unit filename="../../Source Code/Platform/Video/Direct3D/Headers/DXWrapper.h" />
+		<Unit filename="../../Source Code/Platform/Video/Direct3D/Headers/d3dEnumTable.h" />
+		<Unit filename="../../Source Code/Platform/Video/Direct3D/Headers/d3dResources.h" />
+		<Unit filename="../../Source Code/Platform/Video/Direct3D/Shaders/Headers/d3dShader.h" />
+		<Unit filename="../../Source Code/Platform/Video/Direct3D/Shaders/Headers/d3dShaderProgram.h" />
+		<Unit filename="../../Source Code/Platform/Video/Direct3D/Shaders/d3dShader.cpp" />
+		<Unit filename="../../Source Code/Platform/Video/Direct3D/Shaders/d3dShaderProgram.cpp" />
+		<Unit filename="../../Source Code/Platform/Video/Direct3D/Textures/Headers/d3dTexture.h" />
+		<Unit filename="../../Source Code/Platform/Video/Direct3D/Textures/d3dTexture.cpp" />
+		<Unit filename="../../Source Code/Platform/Video/Direct3D/d3dEnumTable.cpp" />
+		<Unit filename="../../Source Code/Platform/Video/GFXDevice.cpp" />
+		<Unit filename="../../Source Code/Platform/Video/GFXDeviceDebug.cpp" />
+		<Unit filename="../../Source Code/Platform/Video/GFXDeviceDraw.cpp" />
+		<Unit filename="../../Source Code/Platform/Video/GFXDeviceState.cpp" />
+		<Unit filename="../../Source Code/Platform/Video/GFXState.cpp" />
+		<Unit filename="../../Source Code/Platform/Video/Headers/GFXDevice.h" />
+		<Unit filename="../../Source Code/Platform/Video/Headers/GFXDevice.inl" />
+		<Unit filename="../../Source Code/Platform/Video/Headers/GFXState.h" />
+		<Unit filename="../../Source Code/Platform/Video/Headers/IMPrimitive.h" />
+		<Unit filename="../../Source Code/Platform/Video/Headers/OcclusionQuery.h" />
+		<Unit filename="../../Source Code/Platform/Video/Headers/RenderAPIEnums.h" />
+		<Unit filename="../../Source Code/Platform/Video/Headers/RenderAPIWrapper.h" />
+		<Unit filename="../../Source Code/Platform/Video/Headers/RenderStateBlock.h" />
+		<Unit filename="../../Source Code/Platform/Video/Headers/ScopedStates.h" />
+		<Unit filename="../../Source Code/Platform/Video/IMPrimitive.cpp" />
+		<Unit filename="../../Source Code/Platform/Video/OpenGL/Buffers/Framebuffer/Headers/glFramebuffer.h" />
+		<Unit filename="../../Source Code/Platform/Video/OpenGL/Buffers/Framebuffer/glFramebuffer.cpp" />
+		<Unit filename="../../Source Code/Platform/Video/OpenGL/Buffers/Headers/glBufferLockManager.h" />
+		<Unit filename="../../Source Code/Platform/Video/OpenGL/Buffers/Headers/glMemoryManager.h" />
+		<Unit filename="../../Source Code/Platform/Video/OpenGL/Buffers/PixelBuffer/Headers/glPixelBuffer.h" />
+		<Unit filename="../../Source Code/Platform/Video/OpenGL/Buffers/PixelBuffer/glPixelBuffer.cpp" />
+		<Unit filename="../../Source Code/Platform/Video/OpenGL/Buffers/ShaderBuffer/Headers/glUniformBuffer.h" />
+		<Unit filename="../../Source Code/Platform/Video/OpenGL/Buffers/ShaderBuffer/glUniformBuffer.cpp" />
+		<Unit filename="../../Source Code/Platform/Video/OpenGL/Buffers/VertexBuffer/Headers/glGenericVertexData.h" />
+		<Unit filename="../../Source Code/Platform/Video/OpenGL/Buffers/VertexBuffer/Headers/glVertexArray.h" />
+		<Unit filename="../../Source Code/Platform/Video/OpenGL/Buffers/VertexBuffer/glGenericVertexData.cpp" />
+		<Unit filename="../../Source Code/Platform/Video/OpenGL/Buffers/VertexBuffer/glVertexArray.cpp" />
+		<Unit filename="../../Source Code/Platform/Video/OpenGL/Buffers/glBufferLockManager.cpp" />
+		<Unit filename="../../Source Code/Platform/Video/OpenGL/Buffers/glMemoryManager.cpp" />
+		<Unit filename="../../Source Code/Platform/Video/OpenGL/GLError.cpp" />
+		<Unit filename="../../Source Code/Platform/Video/OpenGL/GLStates.cpp" />
+		<Unit filename="../../Source Code/Platform/Video/OpenGL/GLWrapper.cpp" />
+		<Unit filename="../../Source Code/Platform/Video/OpenGL/Headers/GLWrapper.h" />
+		<Unit filename="../../Source Code/Platform/Video/OpenGL/Headers/glIMPrimitive.h" />
+		<Unit filename="../../Source Code/Platform/Video/OpenGL/Headers/glLockManager.h" />
+		<Unit filename="../../Source Code/Platform/Video/OpenGL/Headers/glResources.h" />
+		<Unit filename="../../Source Code/Platform/Video/OpenGL/Headers/glResources.inl" />
+		<Unit filename="../../Source Code/Platform/Video/OpenGL/SDLWindowWrapper.cpp" />
+		<Unit filename="../../Source Code/Platform/Video/OpenGL/Shaders/Headers/glShader.h" />
+		<Unit filename="../../Source Code/Platform/Video/OpenGL/Shaders/Headers/glShaderProgram.h" />
+		<Unit filename="../../Source Code/Platform/Video/OpenGL/Shaders/Headers/glShaderProgram.inl" />
+		<Unit filename="../../Source Code/Platform/Video/OpenGL/Shaders/glShader.cpp" />
+		<Unit filename="../../Source Code/Platform/Video/OpenGL/Shaders/glShaderProgram.cpp" />
+		<Unit filename="../../Source Code/Platform/Video/OpenGL/Text/Headers/fontstash.h" />
+		<Unit filename="../../Source Code/Platform/Video/OpenGL/Text/Headers/glfontstash.h" />
+		<Unit filename="../../Source Code/Platform/Video/OpenGL/Text/Headers/stb_truetype.h" />
+		<Unit filename="../../Source Code/Platform/Video/OpenGL/Textures/Headers/glSamplerObject.h" />
+		<Unit filename="../../Source Code/Platform/Video/OpenGL/Textures/Headers/glTexture.h" />
+		<Unit filename="../../Source Code/Platform/Video/OpenGL/Textures/glSamplerOject.cpp" />
+		<Unit filename="../../Source Code/Platform/Video/OpenGL/Textures/glTexture.cpp" />
+		<Unit filename="../../Source Code/Platform/Video/OpenGL/glIMPrimitive.cpp" />
+		<Unit filename="../../Source Code/Platform/Video/OpenGL/glLockManager.cpp" />
+		<Unit filename="../../Source Code/Platform/Video/OpenGL/glResources.cpp" />
+		<Unit filename="../../Source Code/Platform/Video/OpenGL/glsw/Headers/bstrlib.h" />
+		<Unit filename="../../Source Code/Platform/Video/OpenGL/glsw/Headers/glsw.h" />
+		<Unit filename="../../Source Code/Platform/Video/OpenGL/glsw/bstrlib.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../Source Code/Platform/Video/OpenGL/glsw/glsw.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../Source Code/Platform/Video/RenderStateBlock.cpp" />
+		<Unit filename="../../Source Code/Platform/Video/ScopedStates.cpp" />
+		<Unit filename="../../Source Code/Platform/Video/Shaders/Headers/Shader.h" />
+		<Unit filename="../../Source Code/Platform/Video/Shaders/Headers/ShaderManager.h" />
+		<Unit filename="../../Source Code/Platform/Video/Shaders/Headers/ShaderProgram.h" />
+		<Unit filename="../../Source Code/Platform/Video/Shaders/Shader.cpp" />
+		<Unit filename="../../Source Code/Platform/Video/Shaders/ShaderManager.cpp" />
+		<Unit filename="../../Source Code/Platform/Video/Shaders/ShaderProgram.cpp" />
+		<Unit filename="../../Source Code/Platform/Video/Textures/Headers/Texture.h" />
+		<Unit filename="../../Source Code/Platform/Video/Textures/Headers/TextureDescriptor.h" />
+		<Unit filename="../../Source Code/Platform/Video/Textures/Texture.cpp" />
+		<Unit filename="../../assets/shaders/GLSL/DeferredShadingPass1.glsl" />
+		<Unit filename="../../assets/shaders/GLSL/DeferredShadingPass2.glsl" />
+		<Unit filename="../../assets/shaders/GLSL/DepthOfField.glsl" />
+		<Unit filename="../../assets/shaders/GLSL/DepthRangesConstruct.glsl" />
+		<Unit filename="../../assets/shaders/GLSL/FXAA.glsl" />
+		<Unit filename="../../assets/shaders/GLSL/HiZConstruct.glsl" />
+		<Unit filename="../../assets/shaders/GLSL/ImmediateModeEmulation.glsl" />
+		<Unit filename="../../assets/shaders/GLSL/README" />
+		<Unit filename="../../assets/shaders/GLSL/SSAOPass.glsl" />
+		<Unit filename="../../assets/shaders/GLSL/SSAOPass1.glsl" />
+		<Unit filename="../../assets/shaders/GLSL/anaglyph.glsl" />
+		<Unit filename="../../assets/shaders/GLSL/blur.glsl" />
+		<Unit filename="../../assets/shaders/GLSL/bright.glsl" />
+		<Unit filename="../../assets/shaders/GLSL/common/lightInput.cmn" />
+		<Unit filename="../../assets/shaders/GLSL/common/nodeBufferedInput.cmn" />
+		<Unit filename="../../assets/shaders/GLSL/common/nodeDataInput.cmn" />
+		<Unit filename="../../assets/shaders/GLSL/deferredPreview.glsl" />
+		<Unit filename="../../assets/shaders/GLSL/depthPass.glsl" />
+		<Unit filename="../../assets/shaders/GLSL/fbPreview.glsl" />
+		<Unit filename="../../assets/shaders/GLSL/fragmentAtoms/BRDF.frag" />
+		<Unit filename="../../assets/shaders/GLSL/fragmentAtoms/bumpMapping.frag" />
+		<Unit filename="../../assets/shaders/GLSL/fragmentAtoms/lightData.frag" />
+		<Unit filename="../../assets/shaders/GLSL/fragmentAtoms/materialData.frag" />
+		<Unit filename="../../assets/shaders/GLSL/fragmentAtoms/phong_lighting.frag" />
+		<Unit filename="../../assets/shaders/GLSL/fragmentAtoms/shadowMapping.frag" />
+		<Unit filename="../../assets/shaders/GLSL/fragmentAtoms/shadow_directional.frag" />
+		<Unit filename="../../assets/shaders/GLSL/fragmentAtoms/shadow_point.frag" />
+		<Unit filename="../../assets/shaders/GLSL/fragmentAtoms/shadow_spot.frag" />
+		<Unit filename="../../assets/shaders/GLSL/fragmentAtoms/terrainSplatting.frag" />
+		<Unit filename="../../assets/shaders/GLSL/fragmentAtoms/texturing.frag" />
+		<Unit filename="../../assets/shaders/GLSL/fragmentAtoms/utility.frag" />
+		<Unit filename="../../assets/shaders/GLSL/geometryAtoms/inOut.geom" />
+		<Unit filename="../../assets/shaders/GLSL/grass.glsl" />
+		<Unit filename="../../assets/shaders/GLSL/instanceCull.glsl" />
+		<Unit filename="../../assets/shaders/GLSL/lighting.glsl" />
+		<Unit filename="../../assets/shaders/GLSL/particles.glsl" />
+		<Unit filename="../../assets/shaders/GLSL/passThrough.glsl" />
+		<Unit filename="../../assets/shaders/GLSL/postProcessing.glsl" />
+		<Unit filename="../../assets/shaders/GLSL/sky.glsl" />
+		<Unit filename="../../assets/shaders/GLSL/terrain.glsl" />
+		<Unit filename="../../assets/shaders/GLSL/vertexAtoms/boneTransforms.vert" />
+		<Unit filename="../../assets/shaders/GLSL/vertexAtoms/foliage.vert" />
+		<Unit filename="../../assets/shaders/GLSL/vertexAtoms/lightingDefaults.vert" />
+		<Unit filename="../../assets/shaders/GLSL/vertexAtoms/vbInputData.vert" />
+		<Unit filename="../../assets/shaders/GLSL/vertexAtoms/vertexDefault.vert" />
+		<Unit filename="../../assets/shaders/GLSL/water.glsl" />
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

@@ -731,7 +731,7 @@ bool NavigationMesh::save(SceneGraphNode_ptr sgn) {
         return false;
     }
 
-    boost::mutex::scoped_lock(_navigationMeshLock);
+    boost::mutex::scoped_lock lock(_navigationMeshLock);
 
     // Store header.
     NavMeshSetHeader header;
