@@ -133,7 +133,7 @@ class glFramebuffer : public RenderTarget {
     GLuint _framebufferHandle;
     static bool _viewportChanged;
     static bool _bufferBound;
-
+    static bool _zWriteEnabled;
     glFramebuffer* _resolveBuffer;
     RTDrawMask _previousMask;
 };

@@ -38,9 +38,6 @@ void DX_API::beginFrame() {}
 
 void DX_API::endFrame(bool swapBuffers) {}
 
-void DX_API::toggleDepthWrites(bool state) {}
-void DX_API::toggleRasterization(bool state) {}
-
 void DX_API::updateClipPlanes() {}
 
 void DX_API::drawText(const TextLabel& textLabel, const vec2<F32>& position) {}

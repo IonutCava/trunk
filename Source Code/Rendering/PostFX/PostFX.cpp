@@ -35,7 +35,7 @@ PostFX::PostFX()
 
     _postFXTarget._clearDepthBufferOnBind = false;
     _postFXTarget._drawMask.disableAll();
-    _postFXTarget._drawMask.enabled(RTAttachment::Type::Colour, 0);
+    _postFXTarget._drawMask.setEnabled(RTAttachment::Type::Colour, 0, true);
 }
 
 PostFX::~PostFX()

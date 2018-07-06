@@ -49,8 +49,9 @@ class RTDrawMask {
   public:
     RTDrawMask();
 
-    bool enabled(RTAttachment::Type type, U8 index) const;
-    void enabled(RTAttachment::Type type, U8 index, const bool state);
+    bool isEnabled(RTAttachment::Type type, U8 index) const;
+    void setEnabled(RTAttachment::Type type, U8 index, const bool state);
+
     void enableAll();
     void disableAll();
 

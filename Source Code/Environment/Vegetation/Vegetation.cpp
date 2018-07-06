@@ -359,7 +359,6 @@ void Vegetation::gpuCull() {
         _cullShader->Uniform("cullType",
                              /*queryID*/ to_const_uint(CullType::INSTANCE_CLOUD_REDUCTION));
 
-        GFX::ScopedRasterizer scoped2D(false);
         GFX_DEVICE.renderTarget(RenderTargetID::SCREEN).bind(0, RTAttachment::Type::Depth, 0);
         buffer->bindFeedbackBufferRange(to_const_uint(BufferUsage::CulledPositionBuffer),
                                         _instanceCountGrass * queryID,
@@ -372,7 +371,7 @@ void Vegetation::gpuCull() {
                                         _instanceCountGrass);
 
         _cullDrawCommand.cmd().primCount = _instanceCountGrass;
-
+        _cullDrawCommand.setRasterizerState(false);
         _cullDrawCommand.drawToBuffer(to_ubyte(queryID));
         _cullDrawCommand.shaderProgram(_cullShader);
         _cullDrawCommand.sourceBuffer(buffer);

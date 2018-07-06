@@ -5,25 +5,21 @@
 
 #include "Core/Time/Headers/ApplicationTimer.h"
 
-#if defined(_DEBUG)
 #include "Utility/Headers/MemoryTracker.h"
-#endif
 
 #include <thread>
 
 namespace Divide {
 
-#if defined(_DEBUG)
 bool MemoryManager::MemoryTracker::Ready = false;
 bool MemoryManager::MemoryTracker::LogAllAllocations = false;
 MemoryManager::MemoryTracker MemoryManager::AllocTracer;
-#endif
 
 bool Application::initStaticData() {
-#if defined(_DEBUG)
-    MemoryManager::MemoryTracker::Ready = true; //< faster way of disabling memory tracking
-    MemoryManager::MemoryTracker::LogAllAllocations = true;
-#endif
+    if (Config::Build::IS_DEBUG_BUILD) {
+        MemoryManager::MemoryTracker::Ready = true; //< faster way of disabling memory tracking
+        MemoryManager::MemoryTracker::LogAllAllocations = true;
+    }
     
     return Kernel::initStaticData();
 }
@@ -56,21 +52,21 @@ Application::~Application()
     }
     Console::printfn(Locale::get(_ID("STOP_APPLICATION")));
 
-#if defined(_DEBUG)
-    MemoryManager::MemoryTracker::Ready = false;
-    bool leakDetected = false;
-    size_t sizeLeaked = 0;
-    stringImpl allocLog =
-        MemoryManager::AllocTracer.Dump(leakDetected, sizeLeaked);
-    if (leakDetected) {
-        Console::errorfn(Locale::get(_ID("ERROR_MEMORY_NEW_DELETE_MISMATCH")),
-                         to_int(std::ceil(sizeLeaked / 1024.0f)));
+    if (Config::Build::IS_DEBUG_BUILD) {
+        MemoryManager::MemoryTracker::Ready = false;
+        bool leakDetected = false;
+        size_t sizeLeaked = 0;
+        stringImpl allocLog =
+            MemoryManager::AllocTracer.Dump(leakDetected, sizeLeaked);
+        if (leakDetected) {
+            Console::errorfn(Locale::get(_ID("ERROR_MEMORY_NEW_DELETE_MISMATCH")),
+                             to_int(std::ceil(sizeLeaked / 1024.0f)));
+        }
+        std::ofstream memLog;
+        memLog.open(_memLogBuffer.c_str());
+        memLog << allocLog;
+        memLog.close();
     }
-    std::ofstream memLog;
-    memLog.open(_memLogBuffer.c_str());
-    memLog << allocLog;
-    memLog.close();
-#endif
 
     _windowManager.close();
     ParamHandler::destroyInstance();

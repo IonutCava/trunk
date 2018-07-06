@@ -31,7 +31,10 @@ RenderingComponent::RenderingComponent(Material_ptr materialInstance,
       _materialInstance(materialInstance),
       _skeletonPrimitive(nullptr)
 {
-    Object3D::ObjectType type = _parentSGN.getNode<Object3D>()->getObjectType();
+    Object3D_ptr node = parentSGN.getNode<Object3D>();
+    Object3D::ObjectType type = node->getObjectType();
+    SceneNodeType nodeType = node->getType();
+
     bool isSubMesh = type == Object3D::ObjectType::SUBMESH;
     bool nodeSkinned = parentSGN.getNode<Object3D>()->getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED);
 
@@ -45,6 +48,7 @@ RenderingComponent::RenderingComponent(Material_ptr materialInstance,
 
     for (GFXDevice::RenderPackage& pkg : _renderData) {
         pkg._textureData.reserve(ParamHandler::instance().getParam<I32>(_ID("rendering.maxTextureSlots"), 16));
+        pkg.isOcclusionCullable(nodeType != SceneNodeType::TYPE_SKY);
     }
 
     // Prepare it for rendering lines
@@ -73,38 +77,40 @@ RenderingComponent::RenderingComponent(Material_ptr materialInstance,
         _skeletonPrimitive->paused(true);
     }
     
-#ifdef _DEBUG
-    // Red X-axis
-    _axisLines.push_back(
-        Line(VECTOR3_ZERO, WORLD_X_AXIS * 2, vec4<U8>(255, 0, 0, 255), 5.0f));
-    // Green Y-axis
-    _axisLines.push_back(
-        Line(VECTOR3_ZERO, WORLD_Y_AXIS * 2, vec4<U8>(0, 255, 0, 255), 5.0f));
-    // Blue Z-axis
-    _axisLines.push_back(
-        Line(VECTOR3_ZERO, WORLD_Z_AXIS * 2, vec4<U8>(0, 0, 255, 255), 5.0f));
-    _axisGizmo = GFX_DEVICE.getOrCreatePrimitive(false);
-    // Prepare it for line rendering
-    size_t noDepthStateBlock = GFX_DEVICE.getDefaultStateBlock(true);
-    RenderStateBlock stateBlock(GFX_DEVICE.getRenderStateBlock(noDepthStateBlock));
-    _axisGizmo->name("AxisGizmo_" + parentSGN.getName());
-    _axisGizmo->stateHash(stateBlock.getHash());
-    _axisGizmo->paused(true);
-    // Create the object containing all of the lines
-    _axisGizmo->beginBatch(true, to_uint(_axisLines.size()) * 2, 1);
-    _axisGizmo->attribute4f(to_const_uint(AttribLocation::VERTEX_COLOR), Util::ToFloatColour(_axisLines[0]._colourStart));
-    // Set the mode to line rendering
-    _axisGizmo->begin(PrimitiveType::LINES);
-    // Add every line in the list to the batch
-    for (const Line& line : _axisLines) {
-        _axisGizmo->attribute4f(to_const_uint(AttribLocation::VERTEX_COLOR), Util::ToFloatColour(line._colourStart));
-        _axisGizmo->vertex(line._startPoint);
-        _axisGizmo->vertex(line._endPoint);
+    if (Config::Build::IS_DEBUG_BUILD) {
+        // Red X-axis
+        _axisLines.push_back(
+            Line(VECTOR3_ZERO, WORLD_X_AXIS * 2, vec4<U8>(255, 0, 0, 255), 5.0f));
+        // Green Y-axis
+        _axisLines.push_back(
+            Line(VECTOR3_ZERO, WORLD_Y_AXIS * 2, vec4<U8>(0, 255, 0, 255), 5.0f));
+        // Blue Z-axis
+        _axisLines.push_back(
+            Line(VECTOR3_ZERO, WORLD_Z_AXIS * 2, vec4<U8>(0, 0, 255, 255), 5.0f));
+        _axisGizmo = GFX_DEVICE.getOrCreatePrimitive(false);
+        // Prepare it for line rendering
+        size_t noDepthStateBlock = GFX_DEVICE.getDefaultStateBlock(true);
+        RenderStateBlock stateBlock(GFX_DEVICE.getRenderStateBlock(noDepthStateBlock));
+        _axisGizmo->name("AxisGizmo_" + parentSGN.getName());
+        _axisGizmo->stateHash(stateBlock.getHash());
+        _axisGizmo->paused(true);
+        // Create the object containing all of the lines
+        _axisGizmo->beginBatch(true, to_uint(_axisLines.size()) * 2, 1);
+        _axisGizmo->attribute4f(to_const_uint(AttribLocation::VERTEX_COLOR), Util::ToFloatColour(_axisLines[0]._colourStart));
+        // Set the mode to line rendering
+        _axisGizmo->begin(PrimitiveType::LINES);
+        // Add every line in the list to the batch
+        for (const Line& line : _axisLines) {
+            _axisGizmo->attribute4f(to_const_uint(AttribLocation::VERTEX_COLOR), Util::ToFloatColour(line._colourStart));
+            _axisGizmo->vertex(line._startPoint);
+            _axisGizmo->vertex(line._endPoint);
+        }
+        _axisGizmo->end();
+        // Finish our object
+        _axisGizmo->endBatch();
+    } else {
+        _axisGizmo = nullptr;
     }
-    _axisGizmo->end();
-    // Finish our object
-    _axisGizmo->endBatch();
-#endif
 }
 
 RenderingComponent::~RenderingComponent()
@@ -115,9 +121,9 @@ RenderingComponent::~RenderingComponent()
     if (_skeletonPrimitive) {
         _skeletonPrimitive->_canZombify = true;
     }
-#ifdef _DEBUG
-    _axisGizmo->_canZombify = true;
-#endif
+    if (Config::Build::IS_DEBUG_BUILD) {
+        _axisGizmo->_canZombify = true;
+    }
 }
 
 void RenderingComponent::update(const U64 deltaTime) {
@@ -369,30 +375,30 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
 
     const SceneNode_ptr& node = _parentSGN.getNode();
 
-#ifdef _DEBUG
-    switch(sceneRenderState.gizmoState()){
-        case SceneRenderState::GizmoState::ALL_GIZMO: {
-            if (node->getType() == SceneNodeType::TYPE_OBJECT3D) {
-                if (_parentSGN.getNode<Object3D>()->getObjectType() == Object3D::ObjectType::SUBMESH) {
-                    drawDebugAxis();
+    if (Config::Build::IS_DEBUG_BUILD) {
+        switch(sceneRenderState.gizmoState()){
+            case SceneRenderState::GizmoState::ALL_GIZMO: {
+                if (node->getType() == SceneNodeType::TYPE_OBJECT3D) {
+                    if (_parentSGN.getNode<Object3D>()->getObjectType() == Object3D::ObjectType::SUBMESH) {
+                        drawDebugAxis();
+                    }
                 }
-            }
-        } break;
-        case SceneRenderState::GizmoState::SELECTED_GIZMO: {
-            switch (_parentSGN.getSelectionFlag()) {
-                case SceneGraphNode::SelectionFlag::SELECTION_SELECTED : {
-                    drawDebugAxis();
-                } break;
-                default: {
-                    _axisGizmo->paused(true);
-                } break;
-            }
-        } break;
-        default: {
-            _axisGizmo->paused(true);
-        } break;
+            } break;
+            case SceneRenderState::GizmoState::SELECTED_GIZMO: {
+                switch (_parentSGN.getSelectionFlag()) {
+                    case SceneGraphNode::SelectionFlag::SELECTION_SELECTED : {
+                        drawDebugAxis();
+                    } break;
+                    default: {
+                        _axisGizmo->paused(true);
+                    } break;
+                }
+            } break;
+            default: {
+                _axisGizmo->paused(true);
+            } break;
+        }
     }
-#endif
 
     SceneGraphNode_ptr grandParent = _parentSGN.getParent().lock();
     StateTracker<bool>& parentStates = grandParent->getTrackedBools();
@@ -716,12 +722,13 @@ void RenderingComponent::updateEnvProbeList(const EnvironmentProbeList& probes) 
                                   _envProbes.front()->getRTIndex());
 }
 
-#ifdef _DEBUG
 /// Draw the axis arrow gizmo
 void RenderingComponent::drawDebugAxis() {
-   
-    PhysicsComponent* const transform =
-        _parentSGN.get<PhysicsComponent>();
+    if (!Config::Build::IS_DEBUG_BUILD) {
+        return;
+    }
+
+    PhysicsComponent* const transform = _parentSGN.get<PhysicsComponent>();
     if (transform) {
         mat4<F32> tempOffset(GetMatrix(transform->getOrientation()));
         tempOffset.setTranslation(transform->getPosition());
@@ -731,5 +738,5 @@ void RenderingComponent::drawDebugAxis() {
     }
     _axisGizmo->paused(false);
 }
-#endif
+
 };

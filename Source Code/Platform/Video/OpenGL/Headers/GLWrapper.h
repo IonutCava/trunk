@@ -80,15 +80,7 @@ DEFINE_SINGLETON_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     void beginFrame() override;
     /// Finish rendering the current frame
     void endFrame(bool swapBuffers) override;
-  
-    inline void toggleDepthWrites(bool state) override {
-        glDepthMask(state ? GL_TRUE : GL_FALSE);
-    }
 
-    /// Enable or disable rasterization (useful for transform feedback)
-    inline void toggleRasterization(bool state) override {
-        state ? glDisable(GL_RASTERIZER_DISCARD) : glEnable(GL_RASTERIZER_DISCARD);
-    }
     /// Verify if we have a sampler object created and available for the given
     /// descriptor
     static size_t getOrCreateSamplerObject(const SamplerDescriptor& descriptor);
@@ -125,13 +117,10 @@ DEFINE_SINGLETON_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     bool makeTextureResident(const TextureData& textureData) override;
 
   public:
-    /// Enable or disable primitive restart and ensure that the correct index size
-    /// is used
+    /// Enable or disable primitive restart and ensure that the correct index size is used
     static void togglePrimitiveRestart(bool state);
-    /// Set the currently active texture unit
-    static bool setActiveTextureUnit(GLushort unit);
-    /// Set the currently active texture unit
-    static bool setActiveTextureUnit(GLushort unit, GLuint& previousUnit);
+    /// Enable or disable primitive rasterization
+    static void toggleRasterization(bool state);
     /// Switch the currently active vertex array object
     static bool setActiveVAO(GLuint ID);
     /// Switch the currently active vertex array object
@@ -246,7 +235,6 @@ DEFINE_SINGLETON_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     static GLuint _activeFBID[3];
     /// VB, IB, SB, TB, UB, PUB, DIB
     static GLuint _activeBufferID[7];
-    static GLuint _activeTextureUnit;
     static GLuint _activeTransformFeedback;
     static GLint _activePackUnpackAlignments[2];
     static GLint _activePackUnpackRowLength[2];
@@ -256,6 +244,7 @@ DEFINE_SINGLETON_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// Boolean value used to verify if primitive restart index is enabled or
     /// disabled
     static bool _primitiveRestartEnabled;
+    static bool _rasterizationEnabled;
     /// Current state of all available clipping planes
     std::array<bool, Config::MAX_CLIP_PLANES> _activeClipPlanes;
     /// Hardware query objects used for performance measurements

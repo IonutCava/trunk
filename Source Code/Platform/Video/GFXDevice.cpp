@@ -59,8 +59,6 @@ GFXDevice::GFXDevice()
     _2DRendering = false;
     _drawDebugAxis = false;
     _viewportUpdate = false;
-    _rasterizationEnabled = true;
-    _zWriteEnabled = true;
     _isPrePassStage = false;
     // Enumerated Types
     _shadowDetailLevel = RenderDetailLevel::HIGH;
@@ -646,7 +644,7 @@ void GFXDevice::constructHIZ(RenderTarget& depthBuffer) {
         depthOnlyTarget._clearDepthBufferOnBind = false;
         depthOnlyTarget._changeViewport = false;
         depthOnlyTarget._drawMask.disableAll();
-        depthOnlyTarget._drawMask.enabled(RTAttachment::Type::Depth, 0);
+        depthOnlyTarget._drawMask.setEnabled(RTAttachment::Type::Depth, 0, true);
 
         firstRun = false;
     }

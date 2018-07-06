@@ -39,12 +39,14 @@ void main()
         return;
     }
     
-    uint drawCount = dvd_drawCommands[ident].baseInstance;
     uint nodeIndex = dvd_drawCommands[ident].baseInstance;
+    if (dvd_customData(nodeIndex) < 0.5) {
+        return;
+    }
+
     vec4 bSphere = dvd_Matrices[nodeIndex]._normalMatrix[3];
     vec3 center = bSphere.xyz;
     float radius = bSphere.w;
-
     
     // Sphere clips against near plane, just assume visibility.
     if ((dvd_ViewMatrix * vec4(center, 1.0)).z + radius >= -dvd_ZPlanesCombined.z) {

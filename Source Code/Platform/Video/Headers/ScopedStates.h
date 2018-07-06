@@ -39,15 +39,6 @@
 namespace Divide {
 namespace GFX {
 
-class ScopedRasterizer : private NonCopyable {
-   public:
-    explicit ScopedRasterizer(bool state);
-    ~ScopedRasterizer();
-
-   private:
-    bool _rasterizerState;
-};
-
 class Scoped2DRendering : private NonCopyable {
    public:
     explicit Scoped2DRendering(bool state);

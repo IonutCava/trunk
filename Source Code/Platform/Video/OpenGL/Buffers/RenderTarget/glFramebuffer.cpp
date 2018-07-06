@@ -27,6 +27,7 @@ namespace {
 
 bool glFramebuffer::_bufferBound = false;
 bool glFramebuffer::_viewportChanged = false;
+bool glFramebuffer::_zWriteEnabled = true;
 
 IMPLEMENT_CUSTOM_ALLOCATOR(glFramebuffer, 0, 0)
 glFramebuffer::glFramebuffer(GFXDevice& context, bool useResolveBuffer)
@@ -441,7 +442,7 @@ void glFramebuffer::resetMipMaps(const RTDrawDescriptor& drawPolicy) {
     for (U8 i = 0; i < to_const_uint(RTAttachment::Type::COUNT); ++i) {
         RTAttachment::Type type = static_cast<RTAttachment::Type>(i);
         for (U8 j = 0; j < _attachments.attachmentCount(type); ++j)  {
-            if (drawPolicy._drawMask.enabled(type, j) &&
+            if (drawPolicy._drawMask.isEnabled(type, j) &&
                 _attachments.get(type, j)->asTexture())
             {
                 _attachments.get(type, j)->asTexture()->refreshMipMaps();
@@ -477,11 +478,17 @@ void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
         U8 bufferCount = _attachments.attachmentCount(type);
         for (U8 j = 0; j < bufferCount; ++j) {
             glRTAttachment* thisAtt = static_cast<glRTAttachment*>(_attachments.get(type, j).get());
-            thisAtt->enabled(drawPolicy._drawMask.enabled(type, j) && thisAtt->used());
+            thisAtt->enabled(drawPolicy._drawMask.isEnabled(type, j) && thisAtt->used());
             colourBuffers.push_back(thisAtt->enabled() ? thisAtt->getInfo().first : GL_NONE);
         }
         glDrawBuffers(to_uint(bufferCount), colourBuffers.data());
         
+        bool drawToDepth = drawPolicy._drawMask.isEnabled(RTAttachment::Type::Depth, 0);
+        if (drawToDepth != _zWriteEnabled) {
+            _zWriteEnabled = drawToDepth;
+            glDepthMask(_zWriteEnabled ? GL_TRUE : GL_FALSE);
+        }
+
         checkStatus();
         _previousMask = drawPolicy._drawMask;
     }

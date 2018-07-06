@@ -64,22 +64,24 @@ Scene::Scene(const stringImpl& name)
 
     _GUI = MemoryManager_NEW SceneGUIElements(*this);
 
-#ifdef _DEBUG
-
-    RenderStateBlock primitiveDescriptor;
-    _linesPrimitive = GFX_DEVICE.getOrCreatePrimitive(false);
-    _linesPrimitive->name("LinesRayPick");
-    _linesPrimitive->stateHash(primitiveDescriptor.getHash());
-    _linesPrimitive->paused(true);
-#endif
+    if (Config::Build::IS_DEBUG_BUILD) {
+        RenderStateBlock primitiveDescriptor;
+        _linesPrimitive = GFX_DEVICE.getOrCreatePrimitive(false);
+        _linesPrimitive->name("LinesRayPick");
+        _linesPrimitive->stateHash(primitiveDescriptor.getHash());
+        _linesPrimitive->paused(true);
+    } else {
+        _linesPrimitive = nullptr;
+    }
 
 }
 
 Scene::~Scene()
 {
-#ifdef _DEBUG
-    _linesPrimitive->_canZombify = true;
-#endif
+    if (Config::Build::IS_DEBUG_BUILD) {
+        _linesPrimitive->_canZombify = true;
+    }
+
     MemoryManager::DELETE(_sceneState);
     MemoryManager::DELETE(_input);
     MemoryManager::DELETE(_sceneGraph);
@@ -779,9 +781,9 @@ void Scene::updateSceneState(const U64 deltaTime) {
 
 void Scene::onLostFocus() {
     state().resetMovement();
-#ifndef _DEBUG
-    //_paramHandler.setParam(_ID("freezeLoopTime"), true);
-#endif
+    if (!Config::Build::IS_DEBUG_BUILD) {
+        //_paramHandler.setParam(_ID("freezeLoopTime"), true);
+    }
 }
 
 void Scene::registerTask(const TaskHandle& taskItem) { 

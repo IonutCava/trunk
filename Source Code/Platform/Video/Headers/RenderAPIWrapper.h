@@ -124,7 +124,8 @@ struct GenericDrawCommand {
         RENDER_WIREFRAME = toBit(2),
         RENDER_BOUNDS_AABB = toBit(3),
         RENDER_BOUNDS_SPHERE = toBit(4),
-        COUNT = 4
+        RENDER_NO_RASTERIZE = toBit(5),
+        COUNT = 5
     };
 
    private:
@@ -182,6 +183,11 @@ struct GenericDrawCommand {
               : ClearBit(_renderOptions, to_const_uint(RenderOptions::RENDER_BOUNDS_SPHERE));
     }
 
+    inline void setRasterizerState(bool state) {
+        state ? SetBit(_renderOptions, to_const_uint(RenderOptions::RENDER_NO_RASTERIZE))
+              : ClearBit(_renderOptions, to_const_uint(RenderOptions::RENDER_NO_RASTERIZE));
+    }
+
     inline void shaderProgram(const ShaderProgram_ptr& program) {
         _shaderProgram = program.get();
     }
@@ -218,6 +224,10 @@ struct GenericDrawCommand {
 
     inline bool renderBoundsSphere() const {
         return BitCompare(_renderOptions, to_const_uint(RenderOptions::RENDER_BOUNDS_SPHERE));
+    }
+
+    inline bool rasterizerDisabled() const {
+        return BitCompare(_renderOptions, to_const_uint(RenderOptions::RENDER_NO_RASTERIZE));
     }
 
     inline const IndirectDrawCommand& cmd() const {
@@ -376,6 +386,13 @@ class RingBuffer {
             _queueWriteIndex = _queueLength - 1;
         }
 
+        RingBuffer(const RingBuffer& other)
+            : _queueLength(other._queueLength)
+        {
+            _queueReadIndex = other._queueReadIndex;
+            _queueWriteIndex = other._queueWriteIndex;
+        }
+
         virtual ~RingBuffer()
         {
         }
@@ -433,8 +450,6 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
     virtual ErrorCode initRenderingAPI(I32 argc, char** argv) = 0;
     virtual void closeRenderingAPI() = 0;
 
-    virtual void toggleDepthWrites(bool state) = 0;
-    virtual void toggleRasterization(bool state) = 0;
     virtual void drawText(const TextLabel& textLabel,
                           const vec2<F32>& position) = 0;
 

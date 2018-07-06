@@ -7,22 +7,9 @@
 
 namespace Divide {
 
-namespace {
-    RTDrawDescriptor _noDepthClear;
-    RTDrawDescriptor _depthOnly;
-};
-
 RenderPassManager::RenderPassManager()
     : _renderQueue(MemoryManager_NEW RenderQueue())
 {
-    _noDepthClear._clearDepthBufferOnBind = false;
-    _noDepthClear._clearColourBuffersOnBind = true;
-    _noDepthClear._drawMask.enableAll();
-
-    _depthOnly._clearColourBuffersOnBind = true;
-    _depthOnly._clearDepthBufferOnBind = true;
-    _depthOnly._drawMask.disableAll();
-    _depthOnly._drawMask.enabled(RTAttachment::Type::Depth, 0);
 }
 
 RenderPassManager::~RenderPassManager()
@@ -130,7 +117,7 @@ void RenderPassManager::doCustomPass(PassParams& params) {
                                                               true,
                                                               params.pass);
         if (params.target) {
-            params.target->begin(_depthOnly);
+            params.target->begin(RenderTarget::defaultPolicyDepthOnly());
         }
             GFX.flushRenderQueues();
             Attorney::SceneManagerRenderPass::postRender(mgr, params.stage);
@@ -153,21 +140,24 @@ void RenderPassManager::doCustomPass(PassParams& params) {
     // step3: do renderer pass 1: light cull for Forward+ / G-buffer creation for Deferred
     GFX.setRenderStage(params.stage);
 
-    if (params.stage != RenderStage::SHADOW) {
-        Attorney::SceneManagerRenderPass::preRender(mgr, *params.target);
-        if (params.doPrePass && !Config::DEBUG_HIZ_CULLING) {
-            GFX.toggleDepthWrites(false);
-        }
-    }
-
     Attorney::SceneManagerRenderPass::populateRenderQueue(mgr,
                                                           params.stage,
                                                           !params.doPrePass,
                                                           params.pass);
 
     RTDrawDescriptor* drawPolicy = params.drawPolicy ? params.drawPolicy
-                                                     : &(!Config::DEBUG_HIZ_CULLING ? _noDepthClear
+                                                     : &(!Config::DEBUG_HIZ_CULLING ? RenderTarget::defaultPolicyKeepDepth()
                                                                                     : RenderTarget::defaultPolicy());
+    bool drawToDepth = true;
+    if (params.stage != RenderStage::SHADOW) {
+        Attorney::SceneManagerRenderPass::preRender(mgr, *params.target);
+        if (params.doPrePass && !Config::DEBUG_HIZ_CULLING) {
+            drawToDepth = false;
+        }
+    }
+
+    drawPolicy->_drawMask.setEnabled(RTAttachment::Type::Depth, 0, drawToDepth);
+
     if (params.target) {
         params.target->begin(*drawPolicy);
     }
@@ -176,11 +166,6 @@ void RenderPassManager::doCustomPass(PassParams& params) {
 
     if (params.target) {
         params.target->end();
-    }
-    if (params.stage != RenderStage::SHADOW) {
-        if (params.doPrePass && !Config::DEBUG_HIZ_CULLING) {
-            GFX.toggleDepthWrites(true);
-        }
     }
 }
 

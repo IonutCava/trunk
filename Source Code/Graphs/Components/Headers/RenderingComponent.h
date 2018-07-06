@@ -72,6 +72,8 @@ class RenderingComponent : public SGNComponent {
     bool onRender(RenderStage currentStage) override;
     void update(const U64 deltaTime) override;
 
+    void setActive(const bool state) override;
+
     void renderGeometry(const bool state);
     void renderWireframe(const bool state);
     void renderBoundingBox(const bool state);
@@ -137,11 +139,7 @@ class RenderingComponent : public SGNComponent {
     inline void setReflectionCallback(RenderCallback cbk) { _reflectionCallback = cbk; }
     inline void setRefractionCallback(RenderCallback cbk) { _refractionCallback = cbk; }
 
-#ifdef _DEBUG
     void drawDebugAxis();
-#endif
-
-    void setActive(const bool state) override;
 
    protected:
     friend class SceneGraphNode;
@@ -209,10 +207,8 @@ class RenderingComponent : public SGNComponent {
     RenderCallback _refractionCallback;
 
     EnvironmentProbeList _envProbes;
-#ifdef _DEBUG
     vectorImpl<Line> _axisLines;
     IMPrimitive* _axisGizmo;
-#endif
 };
 
 namespace Attorney {

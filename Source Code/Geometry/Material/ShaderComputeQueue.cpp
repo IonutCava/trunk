@@ -4,11 +4,7 @@
 namespace Divide {
 
 namespace {
-#if defined(_DEBUG)
-    const U32 g_MaxShadersComputedPerFrame = 8;
-#else
-    const U32 g_MaxShadersComputedPerFrame = 12;
-#endif
+    const U32 g_MaxShadersComputedPerFrame = Config::Build::IS_DEBUG_BUILD ? 8 : 12;
 };
 
 ShaderComputeQueue::ShaderComputeQueue()

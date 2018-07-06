@@ -144,7 +144,8 @@ DEFINE_SINGLETON(GFXDevice)
    typedef vectorImpl<ShaderBufferBinding> ShaderBufferList;
 
    struct RenderPackage {
-       RenderPackage() : _isRenderable(false)
+       RenderPackage() : _isRenderable(false),
+                         _isOcclusionCullable(true)
        {
        }
 
@@ -157,8 +158,16 @@ DEFINE_SINGLETON(GFXDevice)
            return  _isRenderable;
        }
 
+       inline bool isOcclusionCullable() const {
+           return  _isOcclusionCullable;
+       }
+
        inline void isRenderable(bool state) {
            _isRenderable = state;
+       }
+
+       inline void isOcclusionCullable(bool state) {
+           _isOcclusionCullable = state;
        }
 
        ShaderBufferList _shaderBuffers;
@@ -167,6 +176,7 @@ DEFINE_SINGLETON(GFXDevice)
 
        private:
            bool _isRenderable;
+           bool _isOcclusionCullable;
    };
 
    struct RenderQueue {
@@ -289,12 +299,6 @@ DEFINE_SINGLETON(GFXDevice)
     /// Set all of the needed API specific settings for 2D (Ortho) / 3D
     /// (Perspective) rendering
     void toggle2D(bool state);
-    /// Toggle writes to the depth buffer on or off
-    inline void toggleDepthWrites(bool state);
-    /// Toggle hardware rasterization on or off.
-    inline void toggleRasterization(bool state);
-    /// Query rasterization state
-    inline bool rasterizationState();
 
     /**
      *@brief Returns an immediate mode emulation buffer that can be used to
@@ -391,7 +395,8 @@ DEFINE_SINGLETON(GFXDevice)
 
     inline bool drawDebugAxis() const { return _drawDebugAxis; }
 
-    inline RenderStage getRenderStage() const { return _renderStage; }
+    inline RenderStage getRenderStage() const { return isPrePass() ? RenderStage::Z_PRE_PASS : _renderStage; }
+
     inline RenderStage getPrevRenderStage() const { return _prevRenderStage; }
 
     /// Get the entire list of clipping planes
@@ -595,8 +600,6 @@ DEFINE_SINGLETON(GFXDevice)
     D64 _interpolationFactor;
     PlaneList _clippingPlanes;
     bool _2DRendering;
-    bool _rasterizationEnabled;
-    bool _zWriteEnabled;
     bool _isPrePassStage;
     // number of draw calls (rough estimate)
     I32 FRAME_DRAW_CALLS;

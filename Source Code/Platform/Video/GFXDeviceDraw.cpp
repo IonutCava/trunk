@@ -237,7 +237,7 @@ void GFXDevice::buildDrawCommands(RenderPassCuller::VisibleNodeList& visibleNode
     U32 lastUnit0Handle = 0;
     U32 lastUnit1Handle = 0;
     U32 lastUsedSlot = 0;
-    RenderStage currentStage = isPrePass() ? RenderStage::Z_PRE_PASS : getRenderStage();
+    RenderStage currentStage = getRenderStage();
     if (refreshNodeData) {
         bufferData._lastCommandCount = 0;
         bufferData._lasNodeCount = 0;
@@ -298,6 +298,9 @@ void GFXDevice::buildDrawCommands(RenderPassCuller::VisibleNodeList& visibleNode
                             }
                         }
                     }
+                } else {
+                    //set properties.w to -1 to skip occlusion culling for the node
+                    dataOut._properties.w = pkg.isOcclusionCullable() ? 1.0f : -1.0f;
                 }
 
                 for (GenericDrawCommand& cmd : pkg._drawCommands) {

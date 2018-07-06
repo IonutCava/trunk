@@ -345,9 +345,12 @@ void glTexture::loadDataUncompressed(const TextureLoadInfo& info, bufferPtr data
     updateMipMaps();
 
     if (!Config::USE_GPU_THREADED_LOADING) {
-
-        STUBBED("WHYYYYY do we need to flush texture uploads in single-thread mode???? I should investigate this, but multi-threaded is the default so it's low prio -Ionut");
-        glFlush();
+        if (GFX_DEVICE.getGPUVendor() == GPUVendor::NVIDIA) {
+        } else if (GFX_DEVICE.getGPUVendor() == GPUVendor::AMD) {
+            STUBBED("WHYYYYY do we need to flush texture uploads in single-thread mode???? I should investigate this, but multi-threaded is the default so it's low prio -Ionut");
+            glFlush();
+        } else {
+        }
     }
 }
 

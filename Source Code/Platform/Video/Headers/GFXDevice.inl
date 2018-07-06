@@ -198,23 +198,6 @@ GFXDevice::isDepthStage() const {
     return getRenderStage() == RenderStage::SHADOW || isPrePass();
 }
 
-/// Query rasterization state
-inline bool 
-GFXDevice::rasterizationState() { 
-    return _rasterizationEnabled; 
-}
-
-/// Toggle writes to the depth buffer on or off
-inline void 
-GFXDevice::toggleDepthWrites(bool state) {
-    if(_zWriteEnabled == state) {
-        return;
-    }
-    _zWriteEnabled = state;
-
-    _api->toggleDepthWrites(state);
-}
-
 inline bool 
 GFXDevice::isPrePass() const {
     return _isPrePassStage;
@@ -225,16 +208,6 @@ GFXDevice::setPrePass(const bool state) {
     _isPrePassStage = state;
 }
 
-/// Toggle hardware rasterization on or off.
-inline void 
-GFXDevice::toggleRasterization(bool state) {
-    if (_rasterizationEnabled == state) {
-        return;
-    }
-    _rasterizationEnabled = state;
-
-    _api->toggleRasterization(state);
-}
 /// Register a function to be called in the 2D rendering fase of the GFX Flush
 /// routine. Use callOrder for sorting purposes
 inline void 

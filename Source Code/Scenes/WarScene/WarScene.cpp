@@ -517,11 +517,7 @@ bool WarScene::load(const stringImpl& name) {
         printMessage(eventID, unitName);
     });
     
-#ifdef _DEBUG
-    const U32 particleCount = 4000;
-#else
-    const U32 particleCount = 20000;
-#endif
+    const U32 particleCount = Config::Build::IS_DEBUG_BUILD ? 4000 : 20000;
     const F32 emitRate = particleCount / 4;
 
     std::shared_ptr<ParticleData> particles = 

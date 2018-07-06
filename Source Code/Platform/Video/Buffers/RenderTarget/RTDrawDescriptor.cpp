@@ -9,7 +9,7 @@ RTDrawMask::RTDrawMask()
 {
 }
 
-bool RTDrawMask::enabled(RTAttachment::Type type, U8 index) const {
+bool RTDrawMask::isEnabled(RTAttachment::Type type, U8 index) const {
     switch (type) {
         case RTAttachment::Type::Depth   : return !_disabledDepth;
         case RTAttachment::Type::Stencil : return !_disabledStencil;
@@ -25,7 +25,7 @@ bool RTDrawMask::enabled(RTAttachment::Type type, U8 index) const {
     return true;
 }
 
-void RTDrawMask::enabled(RTAttachment::Type type, U8 index, const bool state) {
+void RTDrawMask::setEnabled(RTAttachment::Type type, U8 index, const bool state) {
     switch (type) {
         case RTAttachment::Type::Depth   : _disabledDepth   = !state; break;
         case RTAttachment::Type::Stencil : _disabledStencil = !state; break;

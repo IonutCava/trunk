@@ -44,7 +44,7 @@ void RenderTarget::setMipLevel(U16 mipMinLevel, U16 mipMaxLevel, U16 writeLevel)
     }
 }
 
-void RenderTarget::setMipLevel(U16 writeLevel, RTAttachment::Type type, U8 index) {
+void RenderTarget::setMipLevel(U16 writeLevel) {
     for (U8 i = 0; i < to_const_ubyte(RTAttachment::Type::COUNT); ++i) {
         RTAttachment::Type type = static_cast<RTAttachment::Type>(i);
         for (U8 j = 0; j < _attachments.attachmentCount(type); ++j) {
@@ -63,8 +63,24 @@ void RenderTarget::resetMipLevel() {
 }
 
 RTDrawDescriptor& RenderTarget::defaultPolicy() {
-    static RTDrawDescriptor _defaultPolicy;
-    return _defaultPolicy;
+    static RTDrawDescriptor default;
+    return default;
+}
+
+RTDrawDescriptor& RenderTarget::defaultPolicyKeepDepth() {
+    static RTDrawDescriptor policyKeepDepth;
+    policyKeepDepth._clearDepthBufferOnBind = false;
+    return policyKeepDepth;
+}
+
+RTDrawDescriptor& RenderTarget::defaultPolicyDepthOnly() {
+    static RTDrawDescriptor depthOnly;
+    depthOnly._clearColourBuffersOnBind = true;
+    depthOnly._clearDepthBufferOnBind = true;
+    depthOnly._drawMask.disableAll();
+    depthOnly._drawMask.setEnabled(RTAttachment::Type::Depth, 0, true);
+
+    return depthOnly;
 }
 
 TextureDescriptor& RenderTarget::getDescriptor(RTAttachment::Type type, U8 index) {

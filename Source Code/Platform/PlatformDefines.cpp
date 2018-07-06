@@ -11,9 +11,7 @@
 #include <Allocator/xallocator.h>
 #endif
 
-#if defined(_DEBUG)
 #include "Utility/Headers/MemoryTracker.h"
-#endif
 
 namespace Divide {
 namespace MemoryManager {

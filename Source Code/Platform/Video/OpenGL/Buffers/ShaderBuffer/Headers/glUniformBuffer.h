@@ -44,6 +44,15 @@ class glBufferLockManager;
 class glUniformBuffer final : public ShaderBuffer {
     USE_CUSTOM_ALLOCATOR
    public:
+       class AtomicCounter : public RingBuffer {
+       public:
+           explicit AtomicCounter(GLuint glHandle, U32 queueLength);
+           AtomicCounter(const AtomicCounter& other);
+           ~AtomicCounter();
+
+           GLuint _handle = 0;
+       };
+   public:
      glUniformBuffer(GFXDevice& context,
                      const U32 ringBufferLength,
                      bool unbound,
@@ -83,13 +92,6 @@ class glUniformBuffer final : public ShaderBuffer {
     void printInfo(const ShaderProgram *shaderProgram, U32 bindIndex);
 
    protected:
-
-    struct AtomicCounter {
-        GLuint _handle;
-        GLuint _sizeFactor;
-        GLuint _writeHead;
-    };
-
     glBufferImpl* _buffer;
     size_t     _allignedBufferSize;
     GLsizeiptr _alignment;

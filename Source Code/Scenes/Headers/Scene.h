@@ -280,11 +280,10 @@ class Scene : public Resource {
        SceneInput* _input;
        PhysicsSceneInterface* _pxScene;
        SceneEnvironmentProbePool* _envProbePool;
-#ifdef _DEBUG
+
        IMPrimitive* _linesPrimitive;
        vectorImpl<IMPrimitive*> _octreePrimitives;
        vectorImpl<BoundingBox> _octreeBoundingBoxes;
-#endif
 };
 
 namespace Attorney {

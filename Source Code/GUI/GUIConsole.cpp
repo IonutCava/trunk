@@ -17,6 +17,11 @@
 
 namespace Divide {
 
+namespace {
+    /// Maximum number of lines to display in the console Window
+    const U32 _CEGUI_MAX_CONSOLE_ENTRIES = Config::Build::IS_DEBUG_BUILD ? 128 : 512;
+};
+
 GUIConsole::GUIConsole()
     : _init(false),
       _closing(false),
@@ -25,12 +30,14 @@ GUIConsole::GUIConsole()
       _inputHistoryIndex(0),
       _outputWindow(nullptr),
       _consoleWindow(nullptr),
-      _outputBuffer(_CEGUI_MAX_CONSOLE_ENTRIES) {
+      _outputBuffer(_CEGUI_MAX_CONSOLE_ENTRIES)
+{
     // we need a default command parser, so just create it here
     _cmdParser = MemoryManager_NEW GUIConsoleCommandParser();
 }
 
-GUIConsole::~GUIConsole() {
+GUIConsole::~GUIConsole()
+{
     _closing = true;
 
     if (_consoleWindow) {

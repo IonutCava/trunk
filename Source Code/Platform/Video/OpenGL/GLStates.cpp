@@ -20,7 +20,6 @@ GLint  GL_API::_activePackUnpackRowLength[] = {0, 0};
 GLint  GL_API::_activePackUnpackSkipPixels[] = {0, 0};
 GLint  GL_API::_activePackUnpackSkipRows[] = {0, 0};
 GLuint GL_API::_activeVAOID = GLUtil::_invalidObjectID;
-GLuint GL_API::_activeTextureUnit = GLUtil::_invalidObjectID;
 GLuint GL_API::_activeTransformFeedback = GLUtil::_invalidObjectID;
 GLuint GL_API::_activeFBID[] = {GLUtil::_invalidObjectID,
                                 GLUtil::_invalidObjectID,
@@ -34,6 +33,7 @@ GLuint GL_API::_activeBufferID[] = {GLUtil::_invalidObjectID,
                                     GLUtil::_invalidObjectID};
 GL_API::VAOBindings GL_API::_vaoBufferData;
 bool GL_API::_primitiveRestartEnabled = false;
+bool GL_API::_rasterizationEnabled = true;
 GL_API::textureBoundMapDef GL_API::_textureBoundMap;
 GL_API::imageBoundMapDef GL_API::_imageBoundMap;
 GL_API::samplerBoundMapDef GL_API::_samplerBoundMap;
@@ -51,8 +51,6 @@ void GL_API::clearStates() {
         }
     }
 
-    setActiveTextureUnit(0);
-    
     setPixelPackUnpackAlignment();
     setActiveVAO(0);
     setActiveFB(RenderTarget::RenderTargetUsage::RT_READ_WRITE, 0);
@@ -150,6 +148,16 @@ void GL_API::togglePrimitiveRestart(bool state) {
     }
 }
 
+/// Enable or disable primitive rasterization
+void GL_API::toggleRasterization(bool state) {
+    // Toggle primitive restart on or off
+    if (_rasterizationEnabled != state) {
+        _rasterizationEnabled = state;
+        state ? glDisable(GL_RASTERIZER_DISCARD)
+              : glEnable(GL_RASTERIZER_DISCARD);
+    }
+}
+
 /// Clipping planes are only enabled/disabled if they differ from the current
 /// state
 void GL_API::updateClipPlanes() {
@@ -169,41 +177,21 @@ void GL_API::updateClipPlanes() {
     }
 }
 
-bool GL_API::setActiveTextureUnit(GLushort unit) {
-    GLuint temp = 0;
-    return setActiveTextureUnit(unit, temp);
-}
-
-/// Set the currently active texture unit
-bool GL_API::setActiveTextureUnit(GLushort unit, GLuint& previousUnit) {
-    previousUnit = _activeTextureUnit;
-    // Prevent double bind
-    if (_activeTextureUnit == unit) {
-        return false;
-    }
-    // Update and remember internal state
-    _activeTextureUnit = unit;
-    glActiveTexture(GLenum((U32)GL_TEXTURE0 + unit));
-
-    return true;
-}
-
 bool GL_API::bindSamplers(GLushort unitOffset,
                           GLuint samplerCount,
                           GLuint* samplerHandles) {
     if (samplerCount > 0 &&
-        unitOffset + samplerCount <
-            static_cast<GLuint>(GL_API::_maxTextureUnits)) {
-        GLushort offset = static_cast<GLushort>(GL_TEXTURE0) + unitOffset;
-        glBindSamplers(offset, samplerCount, samplerHandles);
+        unitOffset + samplerCount < static_cast<GLuint>(GL_API::_maxTextureUnits))
+    {
+        glBindSamplers(unitOffset, samplerCount, samplerHandles);
 
         if (!samplerHandles) {
             for (GLushort i = 0; i < samplerCount; ++i) {
-               _samplerBoundMap[offset + i] = 0;
+               _samplerBoundMap[unitOffset + i] = 0;
             }
         } else {
             for (GLushort i = 0; i < samplerCount; ++i) {
-                _samplerBoundMap[offset + i] = samplerHandles[i];
+                _samplerBoundMap[unitOffset + i] = samplerHandles[i];
             }
         }
 
@@ -216,17 +204,8 @@ bool GL_API::bindSamplers(GLushort unitOffset,
 /// Bind the sampler object described by the hash value to the specified unit
 bool GL_API::bindSampler(GLushort unit, size_t samplerHash) {
 
-    size_t& sampler = _samplerBoundMap[unit];
-
-    if (sampler != samplerHash) {
-        // Get the sampler object defined by the hash value and bind it to the
-        // specified unit (0 is a valid sampler object)
-        glBindSampler(unit, getSamplerHandle(samplerHash));
-        sampler = samplerHash;
-        return true;
-    }
-
-    return false;
+    GLuint samplerHandle = getSamplerHandle(samplerHash);
+    return bindSamplers(unit, 1, &samplerHandle);
 }
 
 bool GL_API::bindTextures(GLushort unitOffset,
@@ -235,20 +214,18 @@ bool GL_API::bindTextures(GLushort unitOffset,
                           GLenum* targets,
                           GLuint* samplerHandles) {
     if (textureCount > 0 &&
-        unitOffset + textureCount <
-            static_cast<GLuint>(GL_API::_maxTextureUnits)) {
-        GLushort offset = static_cast<GLushort>(GL_TEXTURE0) + unitOffset;
+        unitOffset + textureCount < static_cast<GLuint>(GL_API::_maxTextureUnits))
+    {
         GL_API::bindSamplers(unitOffset, textureCount, samplerHandles);
-        glBindTextures(offset, textureCount, textureHandles);
+        glBindTextures(unitOffset, textureCount, textureHandles);
 
         if (!textureHandles) {
             for (GLushort i = 0; i < textureCount; ++i) {
-                _textureBoundMap[offset + i].first = 0;
+                _textureBoundMap[unitOffset + i].first = 0;
             }
         } else {
             for (GLushort i = 0; i < textureCount; ++i) {
-                std::pair<GLuint, GLenum>& currentMapping =
-                    _textureBoundMap[offset + i];
+                std::pair<GLuint, GLenum>& currentMapping = _textureBoundMap[unitOffset + i];
                 currentMapping.first = textureHandles[i];
                 currentMapping.second = targets[i];
             }
@@ -267,26 +244,10 @@ bool GL_API::bindTexture(GLushort unit,
                          size_t samplerHash) {
     // Fail if we specified an invalid unit. Assert instead of returning false
     // because this might be related to a bad algorithm
-    DIVIDE_ASSERT(
-        unit < static_cast<GLuint>(GL_API::_maxTextureUnits),
-        "GLStates error: invalid texture unit specified as a texture binding "
-        "slot!");
-    // Bind the sampler object first, as we may just require a sampler update
-    // instead of a full texture rebind
-    GL_API::bindSampler(unit, samplerHash);
-    // Prevent double bind only for the texture
-    std::pair<GLuint, GLenum>& currentMapping = _textureBoundMap[unit];
-    if (currentMapping.first != handle || currentMapping.second != target) {
-        // Remember the new binding state for future reference
-        currentMapping.first = handle;
-        currentMapping.second = target;
-        // Bind the texture to the current unit
-        GL_API::setActiveTextureUnit(unit);
-        glBindTexture(target, handle); 
-        return true;
-    }
-
-    return false;
+    DIVIDE_ASSERT(unit < static_cast<GLuint>(GL_API::_maxTextureUnits),
+                  "GLStates error: invalid texture unit specified as a texture binding slot!");
+    GLuint samplerHandle = getSamplerHandle(samplerHash);
+    return bindTextures(0, 1, &handle, &target, &samplerHandle);
 }
 
 bool GL_API::bindTextureImage(GLushort unit, GLuint handle, GLint level,

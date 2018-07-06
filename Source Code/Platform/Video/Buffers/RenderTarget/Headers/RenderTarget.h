@@ -53,6 +53,8 @@ class NOINITVTABLE RenderTarget : protected GraphicsResource, public GUIDWrapper
 
    public:
     static RTDrawDescriptor& defaultPolicy();
+    static RTDrawDescriptor& defaultPolicyKeepDepth();
+    static RTDrawDescriptor& defaultPolicyDepthOnly();
 
     // Enable/Disable the presence of a depth renderbuffer
     virtual void useAutoDepthBuffer(const bool state);
