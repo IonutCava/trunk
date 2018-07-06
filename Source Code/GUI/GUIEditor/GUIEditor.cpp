@@ -242,7 +242,7 @@ bool GUIEditor::update(const U64 deltaTime) {
             temp = MemoryManager_NEW AI::Navigation::NavigationMesh();
         }
         // Set it's file name
-        temp->setFileName(GET_ACTIVE_SCENE()->getName());
+        temp->setFileName(GET_ACTIVE_SCENE().getName());
         // Try to load it from file
         bool loaded = temp->load(GET_ACTIVE_SCENEGRAPH().getRoot());
         if (!loaded) {

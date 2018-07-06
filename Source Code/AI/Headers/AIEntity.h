@@ -181,9 +181,9 @@ class AIEntity : public GUIDWrapper {
 
    protected:
     void setTeamPtr(AITeam* const teamPtr);
-    void processInput(const U64 deltaTime);
-    void processData(const U64 deltaTime);
-    void update(const U64 deltaTime);
+    bool processInput(const U64 deltaTime);
+    bool processData(const U64 deltaTime);
+    bool update(const U64 deltaTime);
 
    private:
     stringImpl _name;
@@ -231,14 +231,14 @@ class AIEntityAITeam {
     static void setTeamPtr(AIEntity& entity, AITeam* const teamPtr) {
         entity.setTeamPtr(teamPtr);
     }
-    static void processInput(AIEntity& entity, const U64 deltaTime) {
-        entity.processInput(deltaTime);
+    static bool processInput(AIEntity& entity, const U64 deltaTime) {
+        return entity.processInput(deltaTime);
     }
-    static void processData(AIEntity& entity, const U64 deltaTime) {
-        entity.processData(deltaTime);
+    static bool processData(AIEntity& entity, const U64 deltaTime) {
+        return entity.processData(deltaTime);
     }
-    static void update(AIEntity& entity, const U64 deltaTime) {
-        entity.update(deltaTime);
+    static bool update(AIEntity& entity, const U64 deltaTime) {
+        return entity.update(deltaTime);
     }
     friend class AITeam;
 };

@@ -206,11 +206,11 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     _sun->csmNearClipOffset(25.0f);
     // Add some obstacles
     SceneGraphNode* cylinder[5];
-    cylinder[0] = _sceneGraph.findNode("cylinderC");
-    cylinder[1] = _sceneGraph.findNode("cylinderNW");
-    cylinder[2] = _sceneGraph.findNode("cylinderNE");
-    cylinder[3] = _sceneGraph.findNode("cylinderSW");
-    cylinder[4] = _sceneGraph.findNode("cylinderSE");
+    cylinder[0] = _sceneGraph->findNode("cylinderC");
+    cylinder[1] = _sceneGraph->findNode("cylinderNW");
+    cylinder[2] = _sceneGraph->findNode("cylinderNE");
+    cylinder[3] = _sceneGraph->findNode("cylinderSW");
+    cylinder[4] = _sceneGraph->findNode("cylinderSE");
 
     for (U8 i = 0; i < 5; ++i) {
         RenderingComponent* const renderable =
@@ -260,8 +260,8 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
             currentPos.second = 200 - 40 * (i % 30) - 50;
         }
 
-        SceneGraphNode& crtNode = _sceneGraph.getRoot().addNode(*currentMesh,
-                                                                currentName);
+        SceneGraphNode& crtNode = _sceneGraph->getRoot().addNode(*currentMesh,
+                                                                 currentName);
         crtNode.setSelectable(true);
         crtNode.usageContext(baseNode->usageContext());
         PhysicsComponent* pComp = crtNode.getComponent<PhysicsComponent>();
@@ -280,7 +280,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
             vec3<F32>(currentPos.first, -0.01f, currentPos.second));
     }
     SceneGraphNode* baseFlagNode = cylinder[1];
-    _flag[0] = &_sceneGraph.getRoot().addNode(*cylinderMeshNW, "Team1Flag");
+    _flag[0] = &_sceneGraph->getRoot().addNode(*cylinderMeshNW, "Team1Flag");
     _flag[0]->setSelectable(false);
     _flag[0]->usageContext(baseFlagNode->usageContext());
     PhysicsComponent* flagPComp = _flag[0]->getComponent<PhysicsComponent>();
@@ -294,7 +294,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
         vec3<F32>(0.05f, 2.1f, 0.05f));
     flagPComp->setPosition(vec3<F32>(25.0f, 0.1f, -206.0f));
 
-    _flag[1] = &_sceneGraph.getRoot().addNode(*cylinderMeshNW, "Team2Flag");
+    _flag[1] = &_sceneGraph->getRoot().addNode(*cylinderMeshNW, "Team2Flag");
     _flag[1]->setSelectable(false);
     _flag[1]->usageContext(baseFlagNode->usageContext());
 
@@ -310,6 +310,10 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     flagPComp->setPosition(vec3<F32>(25.0f, 0.1f, 206.0f));
 
     AI::WarSceneAISceneImpl::registerFlags(*_flag[0], *_flag[1]);
+
+    AI::WarSceneAISceneImpl::registerScoreCallback([&](U8 teamID) {
+        registerPoint(teamID);
+    });
 
 #ifdef _DEBUG
     const U32 particleCount = 200;
@@ -370,6 +374,10 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     cbks.second = DELEGATE_BIND(&WarScene::toggleCamera, this);
     _input->addKeyMapping(Input::KeyCode::KC_TAB, cbks);
 
+    cbks.second = DELEGATE_BIND(&WarScene::registerPoint, this, 0);
+    _input->addKeyMapping(Input::KeyCode::KC_1, cbks);
+    cbks.second = DELEGATE_BIND(&WarScene::registerPoint, this, 1);
+    _input->addKeyMapping(Input::KeyCode::KC_2, cbks);
     _sceneReady = true;
     return loadState;
 }

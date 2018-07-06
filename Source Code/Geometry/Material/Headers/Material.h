@@ -227,8 +227,8 @@ class Material : public Resource {
     inline void setShadingMode(const ShadingMode& mode) { _shadingMode = mode; }
 
     void setDoubleSided(const bool state, const bool useAlphaTest = true);
-    void setTexture(ShaderProgram::TextureUsage textureUsageSlot,
-                    Texture* const texture,
+    bool setTexture(ShaderProgram::TextureUsage textureUsageSlot,
+                    Texture* texture,
                     const TextureOperation& op = TextureOperation::REPLACE);
     /// Add a texture <-> bind slot pair to be bound with the default textures
     /// on each "bindTexture" call

@@ -59,7 +59,7 @@ vectorImpl<AIEntity*> AITeam::getEntityList() const {
     return entities;
 }
 
-void AITeam::update(const U64 deltaTime) {
+bool AITeam::update(const U64 deltaTime) {
     // Crowds
     ReadLock r1_lock(_crowdMutex);
     for (AITeamCrowd::value_type& it : _aiTeamCrowd) {
@@ -69,22 +69,34 @@ void AITeam::update(const U64 deltaTime) {
 
     vectorImpl<AIEntity*> entities = AITeam::getEntityList();
     for (AIEntity* entity : entities) {
-        Attorney::AIEntityAITeam::update(*entity, deltaTime);
+        if (!Attorney::AIEntityAITeam::update(*entity, deltaTime)) {
+            return false;
+        }
     }
+
+    return true;
 }
 
-void AITeam::processInput(const U64 deltaTime) {
+bool AITeam::processInput(const U64 deltaTime) {
    vectorImpl<AIEntity*> entities = AITeam::getEntityList();
     for (AIEntity* entity : entities) {
-        Attorney::AIEntityAITeam::processInput(*entity, deltaTime);
+        if (!Attorney::AIEntityAITeam::processInput(*entity, deltaTime)) {
+            return false;
+        }
     }
+
+    return true;
 }
 
-void AITeam::processData(const U64 deltaTime) {
+bool AITeam::processData(const U64 deltaTime) {
     vectorImpl<AIEntity*> entities = AITeam::getEntityList();
     for (AIEntity* entity : entities) {
-        Attorney::AIEntityAITeam::processData(*entity, deltaTime);
+        if (!Attorney::AIEntityAITeam::processData(*entity, deltaTime)) {
+            return false;
+        }
     }
+
+    return true;
 }
 
 void AITeam::resetCrowd() {

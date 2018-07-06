@@ -109,9 +109,9 @@ DEFINE_SINGLETON(AIManager)
     void unregisterTeam(AITeam* const team);
 
   private:
-    void processInput(const U64 deltaTime);    ///< sensors
-    void processData(const U64 deltaTime);     ///< think
-    void updateEntities(const U64 deltaTime);  ///< react
+    bool processInput(const U64 deltaTime);    ///< sensors
+    bool processData(const U64 deltaTime);     ///< think
+    bool updateEntities(const U64 deltaTime);  ///< react
 
   private:
     U64 _deltaTime, _currentTime, _previousTime;

@@ -22,6 +22,7 @@ static const U32 g_enemyTeamContainer = 1;
 static const U32 g_flagContainer = 2;
 vec3<F32> WarSceneAISceneImpl::_initialFlagPositions[2];
 GlobalWorkingMemory WarSceneAISceneImpl::_globalWorkingMemory;
+DELEGATE_CBK_PARAM<U8> WarSceneAISceneImpl::_scoreCallback;
 
 WarSceneAISceneImpl::WarSceneAISceneImpl(AIType type)
     : AISceneImpl(),
@@ -401,7 +402,6 @@ bool WarSceneAISceneImpl::postAction(ActionType type,
         case ActionType::SCORE_FLAG: {
             PRINT("Score flag action over");
             assert(_localWorkingMemory._hasEnemyFlag.value());
-            _globalWorkingMemory._score[ownTeamID].value(_globalWorkingMemory._score[ownTeamID].value() + 1);
             _localWorkingMemory._hasEnemyFlag.value(false);
 
             _globalWorkingMemory._flags[enemyTeamID].value()->setParent(
@@ -415,8 +415,7 @@ bool WarSceneAISceneImpl::postAction(ActionType type,
                 _entity->sendMessage(member.second, AIMsg::HAVE_SCORED, _entity);
             }
 
-            dynamic_cast<WarScene*>(GET_ACTIVE_SCENE())->registerPoint(ownTeamID);
-
+            _scoreCallback(ownTeamID);
         } break;
         case ActionType::CAPTURE_ENEMY_FLAG: {
             PRINT("Capture flag action over");
@@ -600,6 +599,12 @@ void WarSceneAISceneImpl::processMessage(AIEntity* sender, AIMsg msg,
              SceneGraphNode* node = sender->getUnitRef()->getBoundNode();
             _visualSensor->unfollowSceneGraphNode(g_myTeamContainer, node->getGUID());
             _visualSensor->unfollowSceneGraphNode(g_enemyTeamContainer, node->getGUID());
+            _visualSensor->unfollowSceneGraphNode(
+                g_flagContainer,
+                _globalWorkingMemory._flags[0].value()->getGUID());
+            _visualSensor->unfollowSceneGraphNode(
+                g_flagContainer,
+                _globalWorkingMemory._flags[1].value()->getGUID());
             if (_localWorkingMemory._currentTarget.value() != nullptr &&
                 _localWorkingMemory._currentTarget.value()->getGUID() == node->getGUID()) {
                 _localWorkingMemory._currentTarget.value(nullptr);
@@ -692,9 +697,9 @@ void WarSceneAISceneImpl::updatePositions() {
     }
 }
 
-void WarSceneAISceneImpl::processInput(const U64 deltaTime) {
+bool WarSceneAISceneImpl::processInput(const U64 deltaTime) {
     if (!_entity) {
-        return;
+        return true;
     }
 
     _deltaTime += deltaTime;
@@ -703,32 +708,32 @@ void WarSceneAISceneImpl::processInput(const U64 deltaTime) {
         _deltaTime = 0;
     }
 
-    if (_entity->getUnitRef()->getAttribute(to_uint(UnitAttributes::HEALTH_POINTS)) == 0) {
-        DIE();
-    }
-
     #if defined(PRINT_AI_TO_FILE)
         _WarAIOutputStream.flush();
     #endif
+
+    return true;
 }
 
-void WarSceneAISceneImpl::processData(const U64 deltaTime) {
+bool WarSceneAISceneImpl::processData(const U64 deltaTime) {
     if (!_entity) {
-        return;
+        return true;
     }
 
     if (!AIManager::getInstance().getNavMesh(_entity->getAgentRadiusCategory())) {
-        return;
+        return false;
     }
 
-    if (_globalWorkingMemory._teamAliveCount[0].value() == 0) {
-        dynamic_cast<WarScene*>(GET_ACTIVE_SCENE())->registerPoint(0);
-        return;
+    for (U8 i = 0; i < 2; ++i) {
+        if (_globalWorkingMemory._teamAliveCount[i].value() == 0) {
+            _scoreCallback(i);
+            return false;
+        }
     }
 
-    if (_globalWorkingMemory._teamAliveCount[1].value() == 0) {
-        dynamic_cast<WarScene*>(GET_ACTIVE_SCENE())->registerPoint(1);
-        return;
+    if (_entity->getUnitRef()->getAttribute(to_uint(UnitAttributes::HEALTH_POINTS)) == 0) {
+        DIE();
+        return true;
     }
 
     updatePositions();
@@ -765,9 +770,11 @@ void WarSceneAISceneImpl::processData(const U64 deltaTime) {
     } else {
         checkCurrentActionComplete(*getActiveAction());
     }
+
+    return true;
 }
 
-void WarSceneAISceneImpl::update(const U64 deltaTime, NPC* unitRef) {
+bool WarSceneAISceneImpl::update(const U64 deltaTime, NPC* unitRef) {
     U8 visualSensorUpdateFreq = 10;
     _visualSensorUpdateCounter =
         (_visualSensorUpdateCounter + 1) % (visualSensorUpdateFreq + 1);
@@ -778,6 +785,8 @@ void WarSceneAISceneImpl::update(const U64 deltaTime, NPC* unitRef) {
     if (_audioSensor) {
         _audioSensor->update(deltaTime);
     }
+
+    return true;
 }
 
 bool WarSceneAISceneImpl::performAction(const GOAPAction& planStep) {

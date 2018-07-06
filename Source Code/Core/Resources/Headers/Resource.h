@@ -58,7 +58,8 @@ enum class ResourceState : U32 {
                       //data has been loaded
     RES_LOADING = 2,  //<The resource is loading or unloading, creating or
                       //deleting data, parsing scripts, etc
-    RES_LOADED = 3    //<The resource is loaded and available
+    RES_LOADED  = 3,  //<The resource is loaded and available
+    RES_SPECIAL = 4   //<The resource was not loaded via the resource manager (e.g. SceneRoot or SceneTransform)
 };
 
 class NOINITVTABLE Resource : public TrackedObject {

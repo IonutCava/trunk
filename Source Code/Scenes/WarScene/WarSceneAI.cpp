@@ -21,8 +21,9 @@ void WarScene::registerPoint(U8 teamID) {
         WAIT_FOR_CONDITION(!flagPComp->popTransforms());
         _flag[i]->setParent(GET_ACTIVE_SCENEGRAPH().getRoot());
         flagPComp->setPosition(vec3<F32>(25.0f, 0.1f, i == 0 ? -206.0f : 206.0f));
-        AI::WarSceneAISceneImpl::reset();
     }
+    AI::WarSceneAISceneImpl::reset();
+    AI::WarSceneAISceneImpl::incrementScore(teamID);
     AI::WarSceneAISceneImpl::registerFlags(*_flag[0], *_flag[1]);
 }
 
@@ -41,9 +42,9 @@ bool WarScene::initializeAI(bool continueOnErrors) {
         Scene::initializeAI(continueOnErrors);
     }
 
-    SceneGraphNode* lightNode = _sceneGraph.findNode("Soldier1");
-    SceneGraphNode* animalNode = _sceneGraph.findNode("Soldier2");
-    SceneGraphNode* heavyNode = _sceneGraph.findNode("Soldier3");
+    SceneGraphNode* lightNode = _sceneGraph->findNode("Soldier1");
+    SceneGraphNode* animalNode = _sceneGraph->findNode("Soldier2");
+    SceneGraphNode* heavyNode = _sceneGraph->findNode("Soldier3");
     lightNode->setActive(false);
     animalNode->setActive(false);
     heavyNode->setActive(false);
@@ -54,19 +55,13 @@ bool WarScene::initializeAI(bool continueOnErrors) {
 bool WarScene::removeUnits(bool removeNodesOnCall) {
     WAIT_FOR_CONDITION(!AI::AIManager::getInstance().updating());
 
-    for (U8 i = 0; i < 2; ++i) {
-        if (removeNodesOnCall) {
+    if (_sceneGraph) {
+        for (U8 i = 0; i < 2; ++i) {
             for (NPC* npc : _armyNPCs[i]) {
-                SceneGraphNode* node = npc->getBoundNode();
-                _sceneGraph.getRoot().deleteNode(node);
-            }
-        } else {
-            for (NPC* npc : _armyNPCs[i]) {
-                _sceneGraph.addToDeletionQueue(npc->getBoundNode());
+                _sceneGraph->deleteNode(npc->getBoundNode(), removeNodesOnCall);
             }
         }
     }
-
     for (U8 i = 0; i < 2; ++i) {
         for (AI::AIEntity* const entity : _army[i]) {
             AI::AIManager::getInstance().unregisterEntity(entity);
@@ -180,9 +175,9 @@ bool WarScene::addUnits() {
     heavyPackage._goalList.push_back(protectFlagCarrier);
     lightPackage._goalList.push_back(protectFlagCarrier);
 
-    SceneGraphNode* lightNode = _sceneGraph.findNode("Soldier1");
-    SceneGraphNode* animalNode = _sceneGraph.findNode("Soldier2");
-    SceneGraphNode* heavyNode = _sceneGraph.findNode("Soldier3");
+    SceneGraphNode* lightNode = _sceneGraph->findNode("Soldier1");
+    SceneGraphNode* animalNode = _sceneGraph->findNode("Soldier2");
+    SceneGraphNode* heavyNode = _sceneGraph->findNode("Soldier3");
 
     SceneNode* lightNodeMesh = lightNode->getNode();
     SceneNode* animalNodeMesh = animalNode->getNode();
@@ -357,7 +352,7 @@ void WarScene::startSimulation() {
                 _army[0][0]->getAgentRadiusCategory());
         }
         navMesh = MemoryManager_NEW AI::Navigation::NavigationMesh();
-        navMesh->setFileName(GET_ACTIVE_SCENE()->getName());
+        navMesh->setFileName(GET_ACTIVE_SCENE().getName());
 
         if (!navMesh->load(GET_ACTIVE_SCENEGRAPH().getRoot())) {
             loadedFromFile = false;

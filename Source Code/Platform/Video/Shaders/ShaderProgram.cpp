@@ -81,7 +81,7 @@ bool ShaderProgram::update(const U64 deltaTime) {
                           par.getParam<F32>("rendering.sceneState.fogDensity"));
         }
         // Upload wind data
-        const SceneState& activeSceneState = GET_ACTIVE_SCENE()->state();
+        const SceneState& activeSceneState = GET_ACTIVE_SCENE().state();
         this->Uniform("windDirection",
                       vec2<F32>(activeSceneState.windDirX(),
                                 activeSceneState.windDirZ()));

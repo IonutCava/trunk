@@ -5,15 +5,8 @@
 #include "Geometry/Material/Headers/Material.h"
 
 namespace Divide {
-SceneGraph::SceneGraph() : _root(nullptr) { load(); }
-
-SceneGraph::~SceneGraph() { unload(); }
-
-void SceneGraph::load() {
-    if (_root != nullptr) {
-        return;
-    }
-
+SceneGraph::SceneGraph() : _root(nullptr)
+{
     SceneNode* rootNode = MemoryManager_NEW SceneRoot();
     _root.reset(MemoryManager_NEW SceneGraphNode(*rootNode, "ROOT"));
     _root->getComponent<RenderingComponent>()->castsShadows(false);
@@ -27,26 +20,36 @@ void SceneGraph::load() {
         to_uint(SceneNodeType::TYPE_VEGETATION_TREES));
 }
 
-void SceneGraph::unload() {
-    if (_root == nullptr) {
-        return;
-    }
+SceneGraph::~SceneGraph()
+{ 
     Console::d_printfn(Locale::get("DELETE_SCENEGRAPH"));
-    SceneNode* root = _root->getNode<SceneRoot>();
-    // Delete the root scene node
-    MemoryManager::DELETE(root);
-    // Should recursively call unload on the entire scene graph
-    _root->unload();
+    // Should recursively delete the entire scene graph
     _root.reset(nullptr);
 }
 
-void SceneGraph::idle() {
-    for (SceneGraphNode*& it : _pendingDeletionNodes) {
-        it->unload();
-        it->getParent()->removeNode(*it);
+void SceneGraph::idle()
+{
+    if (!_pendingDeletionNodes.empty()) {
+        for (SceneGraphNode* node : _pendingDeletionNodes) {
+            deleteNode(node, true);
+        }
+      
+        _pendingDeletionNodes.clear();
     }
+}
 
-    MemoryManager::DELETE_VECTOR(_pendingDeletionNodes);
+void SceneGraph::deleteNode(SceneGraphNode* node, bool deleteOnAdd) {
+    if (!node) {
+        return;
+    }
+    if (deleteOnAdd) {
+        if (node->getParent()) {
+            node->getParent()->removeNode(node->getName(), false);
+        }
+        MemoryManager::DELETE(node);
+    } else {
+        _pendingDeletionNodes.push_back(node);
+    }
 }
 
 void SceneGraph::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
@@ -63,6 +66,10 @@ void SceneGraph::print() {
     Console::toggleTimeStamps(false);
     printInternal(getRoot());
     Console::toggleTimeStamps(true);
+}
+
+void SceneGraph::onNodeDestroy(SceneGraphNode& oldNode) {
+    Attorney::SceneGraph::onNodeDestroy(GET_ACTIVE_SCENE(), oldNode);
 }
 
 /// Prints out the SceneGraph structure to the Console

@@ -152,8 +152,8 @@ size_t Material::setRenderStateBlock(
 // base = base texture
 // second = second texture used for multitexturing
 // bump = bump map
-void Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
-                          Texture* const texture,
+bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
+                          Texture* texture,
                           const TextureOperation& op) {
     bool computeShaders = false;
     U32 slot = to_uint(textureUsageSlot);
@@ -165,7 +165,9 @@ void Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
     if (texture && textureUsageSlot == ShaderProgram::TextureUsage::OPACITY) {
         Texture* diffuseMap = _textures[to_uint(ShaderProgram::TextureUsage::UNIT0)];
         if (diffuseMap && texture->getGUID() == diffuseMap->getGUID()) {
-            return;
+            /// If the opacity and diffuse map use the same texture, remove one reference
+            RemoveResource(texture);
+            return false;
         }
 
     }
@@ -192,6 +194,8 @@ void Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
         recomputeShaders();
     }
     _dirty = true;
+
+    return true;
 }
 
 // Here we set the shader's name

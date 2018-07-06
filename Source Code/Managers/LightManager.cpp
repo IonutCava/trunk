@@ -120,7 +120,7 @@ bool LightManager::addLight(Light& light) {
 
     vectorAlg::emplace_back(_lights, light.getGUID(), &light);
 
-    GET_ACTIVE_SCENE()->renderState().getCameraMgr().addNewCamera(
+    GET_ACTIVE_SCENE().renderState().getCameraMgr().addNewCamera(
         light.getName(), light.shadowCamera());
 
     return true;
@@ -194,7 +194,7 @@ bool LightManager::framePreRenderEnded(const FrameEvent& evt) {
     RenderStage previousRS = GFX_DEVICE.setRenderStage(RenderStage::SHADOW);
     // generate shadowmaps for each light
     for (Light* light : _lights) {
-        light->generateShadowMaps(GET_ACTIVE_SCENE()->renderState());
+        light->generateShadowMaps(GET_ACTIVE_SCENE().renderState());
     }
 
     // Revert back to the previous stage

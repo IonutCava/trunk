@@ -191,15 +191,20 @@ class WarSceneAISceneImpl : public AISceneImpl {
 
     void registerGOAPPackage(const GOAPPackage& package);
 
-    void processData(const U64 deltaTime);
-    void processInput(const U64 deltaTime);
-    void update(const U64 deltaTime, NPC* unitRef = nullptr);
+    bool processData(const U64 deltaTime);
+    bool processInput(const U64 deltaTime);
+    bool update(const U64 deltaTime, NPC* unitRef = nullptr);
     void processMessage(AIEntity* sender, AIMsg msg,
                         const cdiggins::any& msg_content);
+
     static void registerFlags(SceneGraphNode& flag1,
                               SceneGraphNode& flag2) {
         _globalWorkingMemory._flags[0].value(&flag1);
         _globalWorkingMemory._flags[1].value(&flag2);
+    }
+
+    static void registerScoreCallback(const DELEGATE_CBK_PARAM<U8>& cbk) {
+        _scoreCallback = cbk;
     }
 
     static U8 getScore(U8 teamID) {
@@ -207,6 +212,9 @@ class WarSceneAISceneImpl : public AISceneImpl {
     }
 
     static void reset();
+    static void incrementScore(U8 teamID) {
+        _globalWorkingMemory._score[teamID].value(getScore(teamID) + 1);
+    }
 
    protected:
     bool preAction(ActionType type, const WarSceneAction* warAction);
@@ -251,6 +259,7 @@ class WarSceneAISceneImpl : public AISceneImpl {
     vectorImpl<WarSceneAction> _actionList;
     NodeToUnitMap _nodeToUnitMap[2];
     std::array<bool, to_const_uint(ActionType::COUNT)> _actionState;
+    static DELEGATE_CBK_PARAM<U8> _scoreCallback;
     static GlobalWorkingMemory _globalWorkingMemory;
     static vec3<F32> _initialFlagPositions[2];
 
@@ -273,6 +282,7 @@ class WarAISceneWarAction {
 
     friend class Divide::AI::WarSceneAction;
 };
+
 };  // namespace Attorney
 };  // namespace AI
 };  // namespace Divide

@@ -130,7 +130,7 @@ bool MainScene::load(const stringImpl& name, GUI* const gui) {
         &addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
 
     for (U8 i = 0; i < _terrainInfoArray.size(); i++) {
-        SceneGraphNode* terrainNode = _sceneGraph.findNode(
+        SceneGraphNode* terrainNode = _sceneGraph->findNode(
             _terrainInfoArray[i]->getVariable("terrainName"));
         if (terrainNode) {  // We might have an unloaded terrain in the Array,
                             // and thus, not present in the graph
@@ -149,7 +149,7 @@ bool MainScene::load(const stringImpl& name, GUI* const gui) {
     _water = CreateResource<WaterPlane>(infiniteWater);
     _water->setParams(50.0f, vec2<F32>(10.0f, 10.0f), vec2<F32>(0.1f, 0.1f),
                       0.34f);
-    _waterGraphNode = &_sceneGraph.getRoot().addNode(*_water);
+    _waterGraphNode = &_sceneGraph->getRoot().addNode(*_water);
     _waterGraphNode->useDefaultTransform(false);
     _waterGraphNode->usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
     _waterGraphNode->getComponent<NavigationComponent>()->navigationContext(
@@ -211,7 +211,7 @@ bool MainScene::unload() {
 void MainScene::test(cdiggins::any a, CallbackParam b) {
     static bool switchAB = false;
     vec3<F32> pos;
-    SceneGraphNode* boxNode = _sceneGraph.findNode("box");
+    SceneGraphNode* boxNode = _sceneGraph->findNode("box");
     Object3D* box = nullptr;
     if (boxNode) box = boxNode->getNode<Object3D>();
     if (box) pos = boxNode->getComponent<PhysicsComponent>()->getPosition();

@@ -55,7 +55,7 @@ Scene::Scene()
       _currentSky(nullptr)
 {
     _sceneTimer = 0UL;
-    _sceneGraph.load();
+    _sceneGraph.reset(MemoryManager_NEW SceneGraph());
     _input.reset(MemoryManager_NEW SceneInput(*this));
 #ifdef _DEBUG
     _linesPrimitive[to_uint(DebugLines::DEBUG_LINE_OBJECT_TO_TARGET)] =
@@ -86,11 +86,11 @@ bool Scene::idle() {  // Called when application is idle
         loadXMLAssets(true);
     }
 
-    if (_sceneGraph.getRoot().getChildren().empty()) {
+    if (_sceneGraph->getRoot().getChildren().empty()) {
         return false;
     }
 
-    _sceneGraph.idle();
+    _sceneGraph->idle();
 
     Attorney::SceneRenderStateScene::playAnimations(
         renderState(),
@@ -98,7 +98,7 @@ bool Scene::idle() {  // Called when application is idle
 
     if (_cookCollisionMeshesScheduled && checkLoadFlag()) {
         if (GFX_DEVICE.getFrameCount() > 1) {
-            _sceneGraph.getRoot()
+            _sceneGraph->getRoot()
                 .getComponent<PhysicsComponent>()
                 ->cookCollisionMesh(_name);
             _cookCollisionMeshesScheduled = false;
@@ -109,7 +109,7 @@ bool Scene::idle() {  // Called when application is idle
 }
 
 void Scene::onCameraUpdate(Camera& camera) {
-    _sceneGraph.getRoot().onCameraUpdate(camera);
+    _sceneGraph->getRoot().onCameraUpdate(camera);
 }
 
 void Scene::preRender() {
@@ -170,7 +170,7 @@ bool Scene::loadModel(const FileData& data) {
     }
 
     SceneGraphNode& meshNode =
-        _sceneGraph.getRoot().createNode(*thisObj, data.ItemName);
+        _sceneGraph->getRoot().createNode(*thisObj, data.ItemName);
     meshNode.getComponent<RenderingComponent>()->castsShadows(
         data.castsShadows);
     meshNode.getComponent<RenderingComponent>()->receivesShadows(
@@ -245,7 +245,7 @@ bool Scene::loadGeometry(const FileData& data) {
     }
 
     thisObj->setMaterialTpl(tempMaterial);
-    SceneGraphNode& thisObjSGN = _sceneGraph.getRoot().createNode(*thisObj);
+    SceneGraphNode& thisObjSGN = _sceneGraph->getRoot().createNode(*thisObj);
     thisObjSGN.getComponent<PhysicsComponent>()->setScale(data.scale);
     thisObjSGN.getComponent<PhysicsComponent>()->setRotation(data.orientation);
     thisObjSGN.getComponent<PhysicsComponent>()->setPosition(data.position);
@@ -320,7 +320,7 @@ SceneGraphNode& Scene::addLight(LightType type,
 
 SceneGraphNode& Scene::addSky(Sky* const skyItem) {
     assert(skyItem != nullptr);
-    return _sceneGraph.getRoot().createNode(*skyItem);
+    return _sceneGraph->getRoot().createNode(*skyItem);
 }
 
 bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
@@ -332,7 +332,7 @@ bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
                    _sceneState.fogDescriptor()._fogColor);
 
     loadXMLAssets();
-    SceneGraphNode& root = _sceneGraph.getRoot();
+    SceneGraphNode& root = _sceneGraph->getRoot();
     // Add terrain from XML
     if (!_terrainInfoArray.empty()) {
         for (TerrainDescriptor* terrainInfo : _terrainInfoArray) {
@@ -553,8 +553,8 @@ bool Scene::initializeAI(bool continueOnErrors) {
     return true;
 }
 
-bool Scene::deinitializeAI(
-    bool continueOnErrors) {  /// Shut down AIManager thread
+ /// Shut down AIManager thread
+bool Scene::deinitializeAI(bool continueOnErrors) { 
     if (_aiTask.get()) {
         _aiTask->stopTask();
         _aiTask.reset();
@@ -575,7 +575,7 @@ void Scene::clearObjects() {
     }
     _vegetationDataArray.clear();
 
-    _sceneGraph.unload();
+    _sceneGraph.reset(nullptr);
 }
 
 void Scene::clearLights() { LightManager::getInstance().clear(); }
@@ -618,7 +618,7 @@ void Scene::updateSceneState(const U64 deltaTime) {
     updateSceneStateInternal(deltaTime);
     state().cameraUnderwater(renderState().getCamera().getEye().y <
                              state().waterLevel());
-    _sceneGraph.sceneUpdate(deltaTime, _sceneState);
+    _sceneGraph->sceneUpdate(deltaTime, _sceneState);
 }
 
 void Scene::deleteSelection() {
@@ -704,6 +704,14 @@ void Scene::debugDraw(RenderStage stage) {
     }
 }
 
+void Scene::resetSelection() {
+    if (_currentSelection) {
+        _currentSelection->setSelected(false);
+    }
+
+    _currentSelection = nullptr;
+}
+
 void Scene::findSelection() {
     vec2<I32> mousePos = _input->getMousePosition();
     F32 mouseX = static_cast<F32>(mousePos.x);
@@ -716,20 +724,15 @@ void Scene::findSelection() {
         vec3<F32>(mouseX, mouseY, 1.0f));
     const vec2<F32>& zPlanes = renderState().getCameraConst().getZPlanes();
 
-    // deselect old node
-    if (_currentSelection) {
-        _currentSelection->setSelected(false);
-    }
-
-    _currentSelection = nullptr;
+    resetSelection();
 
     // see if we select another one
     _sceneSelectionCandidates.clear();
     // Cast the picking ray and find items between the nearPlane (with an
     // offset) and limit the range to half of the far plane
-    _sceneGraph.intersect(Ray(startRay, startRay.direction(endRay)),
-                          zPlanes.x + 0.5f, zPlanes.y * 0.5f,
-                          _sceneSelectionCandidates);
+    _sceneGraph->intersect(Ray(startRay, startRay.direction(endRay)),
+                           zPlanes.x + 0.5f, zPlanes.y * 0.5f,
+                           _sceneSelectionCandidates);
 
     if (!_sceneSelectionCandidates.empty()) {
         std::sort(std::begin(_sceneSelectionCandidates),

@@ -302,7 +302,7 @@ void PostFX::idle() {
                  ->getResolution());
     }
 
-    _underwater = GET_ACTIVE_SCENE()->state().cameraUnderwater();
+    _underwater = GET_ACTIVE_SCENE().state().cameraUnderwater();
     _enableDOF = par.getParam<bool>("postProcessing.enableDepthOfField");
     _enableNoise = par.getParam<bool>("postProcessing.enableNoise");
     _enableVignette = par.getParam<bool>("postProcessing.enableVignette");

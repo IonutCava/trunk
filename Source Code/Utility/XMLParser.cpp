@@ -342,7 +342,7 @@ void loadScene(const std::string &sceneName, SceneManager &sceneMgr) {
         return;
     }
 
-    sceneMgr.setActiveScene(scene);
+    sceneMgr.setActiveScene(*scene);
     scene->setName(sceneName.c_str());
     scene->state().grassVisibility(pt.get("vegetation.grassVisibility", 1000.0f));
     scene->state().treeVisibility(pt.get("vegetation.treeVisibility", 1000.0f));

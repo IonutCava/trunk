@@ -92,7 +92,7 @@ void TenisSceneAISceneImpl::updatePositions() {
 }
 
 /// Collect all of the necessary information for this current update step
-void TenisSceneAISceneImpl::processInput(const U64 deltaTime) {
+bool TenisSceneAISceneImpl::processInput(const U64 deltaTime) {
     updatePositions();
     AITeam* currentTeam = _entity->getTeam();
     assert(currentTeam != nullptr);
@@ -105,9 +105,11 @@ void TenisSceneAISceneImpl::processInput(const U64 deltaTime) {
             _entity->sendMessage(member.second, AIMsg::REQUEST_DISTANCE_TO_TARGET, 0);
         }
     }
+
+    return true;
 }
 
-void TenisSceneAISceneImpl::processData(const U64 deltaTime) {
+bool TenisSceneAISceneImpl::processData(const U64 deltaTime) {
     AIEntity* nearestEntity = _entity;
     F32 distance = _entity->getTeam()->getMemberVariable()[_entity];
     typedef hashMapImpl<AIEntity*, F32> memberVariable;
@@ -120,11 +122,14 @@ void TenisSceneAISceneImpl::processData(const U64 deltaTime) {
         }
     }
     _entity->sendMessage(nearestEntity, AIMsg::ATTACK_BALL, distance);
+
+    return true;
 }
 
-void TenisSceneAISceneImpl::update(const U64 deltaTime, NPC* unitRef) {
-    if (!unitRef) return;
-
+bool TenisSceneAISceneImpl::update(const U64 deltaTime, NPC* unitRef) {
+    if (!unitRef) {
+        return true;
+    }
     updatePositions();
 
     if (_attackBall && !_gameStop) {
@@ -141,6 +146,8 @@ void TenisSceneAISceneImpl::update(const U64 deltaTime, NPC* unitRef) {
     if (visualSensor) {
         visualSensor->update(deltaTime);
     }
+
+    return true;
 }
 
 F32 TenisSceneAISceneImpl::distanceToBall(const vec3<F32>& entityPosition,

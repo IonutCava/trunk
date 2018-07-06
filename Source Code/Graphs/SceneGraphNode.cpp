@@ -31,14 +31,12 @@ SceneGraphNode::SceneGraphNode(SceneNode& node, const stringImpl& name)
       _node(&node),
       _elapsedTime(0ULL),
       _parent(nullptr),
-      _loaded(true),
       _wasActive(true),
       _active(true),
       _inView(false),
       _selected(false),
       _isSelectable(false),
       _sorted(false),
-      _silentDispose(false),
       _boundingBoxDirty(true),
       _shouldDelete(false),
       _updateTimer(Time::ElapsedMilliseconds()),
@@ -69,12 +67,40 @@ SceneGraphNode::SceneGraphNode(SceneNode& node, const stringImpl& name)
 }
 
 /// If we are destroying the current graph node
-SceneGraphNode::~SceneGraphNode() {
-    unload();
+SceneGraphNode::~SceneGraphNode()
+{
+    Attorney::SceneGraphSGN::onNodeDestroy(GET_ACTIVE_SCENEGRAPH(), *this);
 
-    Console::printfn(Locale::get("DELETE_SCENEGRAPH_NODE"), getName().c_str());
+    for (hashMapImpl<size_t, DELEGATE_CBK<>>::value_type& it :
+         _deletionCallbacks) {
+        it.second();
+    }
+
+    Console::printfn(Locale::get("REMOVE_SCENEGRAPH_NODE"),
+                     getName().c_str(), _node->getName().c_str());
+
     // delete child nodes recursively
     MemoryManager::DELETE_HASHMAP(_children);
+
+    if (_node->getState() == ResourceState::RES_SPECIAL) {
+        MemoryManager::DELETE(_node);
+    } else {
+        RemoveResource(_node);
+    }
+}
+
+size_t SceneGraphNode::registerDeletionCallback(const DELEGATE_CBK<>& cbk) {
+    static size_t ID = 0;
+    hashAlg::emplace(_deletionCallbacks, ID++, cbk);
+    return ID;
+}
+
+void SceneGraphNode::unregisterDeletionCallback(size_t callbackID) {
+    hashMapImpl<size_t, DELEGATE_CBK<>>::const_iterator it;
+    it = _deletionCallbacks.find(callbackID);
+    if (it != std::end(_deletionCallbacks)) {
+        _deletionCallbacks.erase(it);
+    }
 }
 
 void SceneGraphNode::addBoundingBox(const BoundingBox& bb,
@@ -93,34 +119,6 @@ void SceneGraphNode::getBBoxes(vectorImpl<BoundingBox>& boxes) const {
     }
 
     boxes.push_back(_boundingBox);
-}
-
-/// When unloading the current graph node
-bool SceneGraphNode::unload() {
-    if (!_loaded) {
-        return true;
-    }
-    // Unload every sub node recursively
-    for (NodeChildren::value_type& it : _children) {
-        it.second->unload();
-    }
-    // Some debug output ...
-    if (!_silentDispose && getParent()) {
-        Console::printfn(Locale::get("REMOVE_SCENEGRAPH_NODE"),
-                         _node->getName().c_str(), getName().c_str());
-    }
-
-    // if not root
-    if (getParent()) {
-        RemoveResource(_node);
-    }
-
-    _loaded = false;
-
-    for (DELEGATE_CBK<>& cbk : _deletionCallbacks) {
-        cbk();
-    }
-    return true;
 }
 
 /// Change current SceneGraphNode's parent
@@ -163,6 +161,7 @@ SceneGraphNode& SceneGraphNode::addNode(SceneNode& node,
     if (Attorney::SceneNodeGraph::hasSGNParent(node)) {
         node.AddRef();
     }
+
     return createNode(node, name);
 }
 
@@ -189,19 +188,21 @@ SceneGraphNode& SceneGraphNode::createNode(SceneNode& node,
 }
 
 // Remove a child node from this Node
-void SceneGraphNode::removeNode(SceneGraphNode& node) {
+void SceneGraphNode::removeNode(const stringImpl& nodeName, bool recursive) {
     // find the node in the children map
-    NodeChildren::iterator it = _children.find(node.getName());
+    NodeChildren::iterator it = _children.find(nodeName);
     // If we found the node we are looking for
     if (it != std::end(_children)) {
         // Remove it from the map
         _children.erase(it);
     } else {
-        for (U8 i = 0; i < _children.size(); ++i) {
-            removeNode(node);
+        if (recursive) {
+            for (U8 i = 0; i < _children.size(); ++i) {
+                removeNode(nodeName);
+            }
         }
     }
-    // Beware. Removing a node, does no unload it!
+    // Beware. Removing a node, does no delete it!
     // Call delete on the SceneGraphNode's pointer to do that
 }
 
@@ -330,7 +331,8 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
         }
     }
 
-    assert(_node->getState() == ResourceState::RES_LOADED);
+    assert(_node->getState() == ResourceState::RES_LOADED ||
+           _node->getState() == ResourceState::RES_SPECIAL);
     // Update order is very important! e.g. Mesh BB is composed of SubMesh BB's.
 
     // Compute the BoundingBox if it isn't already
@@ -355,7 +357,7 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     Attorney::SceneNodeGraph::sceneUpdate(*_node, deltaTime, *this, sceneState);
 
     if (_shouldDelete) {
-        GET_ACTIVE_SCENEGRAPH().addToDeletionQueue(this);
+        GET_ACTIVE_SCENEGRAPH().deleteNode(this, false);
     }
 }
 

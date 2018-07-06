@@ -134,20 +134,28 @@ bool AIEntity::addAISceneImpl(AISceneImpl* AISceneImpl) {
     return true;
 }
 
-void AIEntity::processInput(const U64 deltaTime) {
+bool AIEntity::processInput(const U64 deltaTime) {
     if (_AISceneImpl) {
         _AISceneImpl->init();
-        _AISceneImpl->processInput(deltaTime);
+        if (!_AISceneImpl->processInput(deltaTime)) {
+            return false;
+        }
     }
+
+    return true;
 }
 
-void AIEntity::processData(const U64 deltaTime) {
+bool AIEntity::processData(const U64 deltaTime) {
     if (_AISceneImpl) {
-        _AISceneImpl->processData(deltaTime);
+        if (!_AISceneImpl->processData(deltaTime)) {
+            return false;
+        }
     }
+
+    return true;
 }
 
-void AIEntity::update(const U64 deltaTime) {
+bool AIEntity::update(const U64 deltaTime) {
     if (_AISceneImpl) {
         _AISceneImpl->update(deltaTime, _unitRef);
     }
@@ -158,6 +166,8 @@ void AIEntity::update(const U64 deltaTime) {
         }
     }
     updatePosition(deltaTime);
+
+    return true;
 }
 
 I32 AIEntity::getTeamID() const {

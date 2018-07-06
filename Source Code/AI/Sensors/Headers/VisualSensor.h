@@ -78,6 +78,7 @@ class VisualSensor : public Sensor {
    protected:
     NodeContainerMap _nodeContainerMap;
     NodePositionsMap _nodePositionsMap;
+    hashMapImpl<I64, size_t> _deletionCallbackID;
 };
 
 namespace Attorney {

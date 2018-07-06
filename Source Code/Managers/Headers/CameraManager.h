@@ -58,11 +58,11 @@ class CameraManager : private NonCopyable, public FrameListener {
 
     void addNewCamera(const stringImpl& cameraName, Camera* const camera);
 
-    void addCameraChangeListener(const DELEGATE_CBK_PARAM<Camera>& f) {
+    void addCameraChangeListener(const DELEGATE_CBK_PARAM<Camera&>& f) {
         _changeCameralisteners.push_back(f);
     }
 
-    void addCameraUpdateListener(const DELEGATE_CBK_PARAM<Camera>& f) {
+    void addCameraUpdateListener(const DELEGATE_CBK_PARAM<Camera&>& f) {
         _updateCameralisteners.push_back(f);
         _addNewListener = true;
     }
@@ -103,8 +103,8 @@ class CameraManager : private NonCopyable, public FrameListener {
     CameraPool _cameraPool;
     CameraPoolGUID _cameraPoolGUID;
     std::stack<Camera*> _cameraStack;
-    vectorImpl<DELEGATE_CBK_PARAM<Camera> > _changeCameralisteners;
-    vectorImpl<DELEGATE_CBK_PARAM<Camera> > _updateCameralisteners;
+    vectorImpl<DELEGATE_CBK_PARAM<Camera&> > _changeCameralisteners;
+    vectorImpl<DELEGATE_CBK_PARAM<Camera&> > _updateCameralisteners;
 };
 
 };  // namespace Divide

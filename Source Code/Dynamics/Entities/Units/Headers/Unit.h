@@ -128,6 +128,7 @@ class Unit : public FrameListener {
     vec3<F32> _currentTargetPosition;
     /// SceneGraphNode the unit is managing (used for updating positions and
     /// checking collisions
+    size_t _deletionCallbackID;
     SceneGraphNode* _node;
     AttributeMap _attributes;
     mutable SharedLock _unitUpdateMutex;

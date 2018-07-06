@@ -212,9 +212,9 @@ class NOINITVTABLE AISceneImpl : private NonCopyable {
     virtual bool printActionStats(const GOAPAction& planStep) const {
         return true;
     }
-    virtual void processData(const U64 deltaTime) = 0;
-    virtual void processInput(const U64 deltaTime) = 0;
-    virtual void update(const U64 deltaTime, NPC* unitRef = nullptr) = 0;
+    virtual bool processData(const U64 deltaTime) = 0;
+    virtual bool processInput(const U64 deltaTime) = 0;
+    virtual bool update(const U64 deltaTime, NPC* unitRef = nullptr) = 0;
     virtual void processMessage(AIEntity* sender, AIMsg msg,
                                 const cdiggins::any& msg_content) = 0;
     void init() {

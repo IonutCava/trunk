@@ -451,7 +451,7 @@ void Vegetation::generateTrees() {
 void Vegetation::generateGrass() {
     const vec2<F32>& chunkPos = _terrainChunk->getOffsetAndSize().xy();
     const vec2<F32>& chunkSize = _terrainChunk->getOffsetAndSize().zw();
-    const F32 waterLevel = GET_ACTIVE_SCENE()->state().waterLevel() + 1.0f;
+    const F32 waterLevel = GET_ACTIVE_SCENE().state().waterLevel() + 1.0f;
     const I32 currentCount = std::min((I32)_billboardCount, 4);
     const U16 mapWidth = _map.dimensions().width;
     const U16 mapHeight = _map.dimensions().height;

@@ -177,7 +177,7 @@ void GFXDevice::generateCubeMap(Framebuffer& cubeMap, const vec3<F32>& pos,
         // And generated required matrices
         _cubeCamera->renderLookAt();
         // Pass our render function to the renderer
-        getRenderer().render(renderFunction, GET_ACTIVE_SCENE()->renderState());
+        getRenderer().render(renderFunction, GET_ACTIVE_SCENE().renderState());
     }
     // Resolve our render target
     cubeMap.End();

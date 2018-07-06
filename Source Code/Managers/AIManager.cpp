@@ -59,30 +59,41 @@ void AIManager::update() {
         _sceneCallback();
     }
 
-    processInput(_deltaTime);  // sensors
-    processData(_deltaTime);  // think
-    updateEntities(_deltaTime);  // react
+    if (processInput(_deltaTime)) {  // sensors
+        if (processData(_deltaTime)) {  // think
+            updateEntities(_deltaTime);  // react
+        }
+    }
     
     _updating = false;
     return;
 }
 
-void AIManager::processInput(const U64 deltaTime) {  // sensors
+bool AIManager::processInput(const U64 deltaTime) {  // sensors
     for (AITeamMap::value_type& team : _aiTeams) {
-        team.second->processInput(deltaTime);
+        if (!team.second->processInput(deltaTime)) {
+            return false;
+        }
     }
+    return true;
 }
 
-void AIManager::processData(const U64 deltaTime) {  // think
+bool AIManager::processData(const U64 deltaTime) {  // think
     for (AITeamMap::value_type& team : _aiTeams) {
-        team.second->processData(deltaTime);
+        if (!team.second->processData(deltaTime)) {
+            return false;
+        }
     }
+    return true;
 }
 
-void AIManager::updateEntities(const U64 deltaTime) {  // react
+bool AIManager::updateEntities(const U64 deltaTime) {  // react
     for (AITeamMap::value_type& team : _aiTeams) {
-        team.second->update(deltaTime);
+        if (!team.second->update(deltaTime)) {
+            return false;
+        }
     }
+    return true;
 }
 
 bool AIManager::registerEntity(U32 teamID, AIEntity* entity) {

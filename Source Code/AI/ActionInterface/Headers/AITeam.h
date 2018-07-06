@@ -119,9 +119,9 @@ class AITeam : public GUIDWrapper {
     friend class AIManager;
     /// Update the crowding system
     void resetCrowd();
-    void processInput(const U64 deltaTime);
-    void processData(const U64 deltaTime);
-    void update(const U64 deltaTime);
+    bool processInput(const U64 deltaTime);
+    bool processData(const U64 deltaTime);
+    bool update(const U64 deltaTime);
     void addCrowd(AIEntity::PresetAgentRadius radius,
                   Navigation::NavigationMesh* crowd);
     void removeCrowd(AIEntity::PresetAgentRadius radius);

@@ -62,10 +62,10 @@ void CubeScene::preRender() {
 
     g_i >= 180 ? g_j = -1 : g_j = 1;
 
-    SceneGraphNode* cutia1 = _sceneGraph.findNode("Cutia1");
-    SceneGraphNode* hellotext = _sceneGraph.findNode("HelloText");
-    SceneGraphNode* bila = _sceneGraph.findNode("Bila");
-    SceneGraphNode* dwarf = _sceneGraph.findNode("dwarf");
+    SceneGraphNode* cutia1 = _sceneGraph->findNode("Cutia1");
+    SceneGraphNode* hellotext = _sceneGraph->findNode("HelloText");
+    SceneGraphNode* bila = _sceneGraph->findNode("Bila");
+    SceneGraphNode* dwarf = _sceneGraph->findNode("dwarf");
     cutia1->getComponent<PhysicsComponent>()->rotate(
         vec3<F32>(0.3f * g_i, 0.6f * g_i, 0));
     hellotext->getComponent<PhysicsComponent>()->rotate(
@@ -105,8 +105,8 @@ bool CubeScene::loadResources(bool continueOnErrors) {
             light->setDrawImpostor(true);
             light->setRange(30.0f);
             light->setCastShadows(false);  
-            _sceneGraph.getRoot().addNode(*light);
-            addLight(*light, _sceneGraph.getRoot());
+            _sceneGraph->getRoot().addNode(*light);
+            addLight(*light, _sceneGraph->getRoot());
         }
 
     _taskTimers.push_back(0.0);

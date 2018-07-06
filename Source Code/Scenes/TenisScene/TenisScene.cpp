@@ -283,11 +283,11 @@ bool TenisScene::load(const stringImpl& name, GUI* const gui) {
 
     //------------------------ Load up game elements
     //-----------------------------///
-    _net = _sceneGraph.findNode("Net");
+    _net = _sceneGraph->findNode("Net");
     // for(SceneGraphNode::NodeChildren::value_type& it : _net->getChildren()){
     // it.second->setReceivesShadows(false);
     //}
-    _floor = _sceneGraph.findNode("Floor");
+    _floor = _sceneGraph->findNode("Floor");
     _floor->getComponent<RenderingComponent>()->castsShadows(false);
 
     AI::AIManager::getInstance().pauseUpdate(false);
@@ -299,10 +299,10 @@ bool TenisScene::initializeAI(bool continueOnErrors) {
     SceneGraphNode* player[4];
     //----------------------------ARTIFICIAL
     //INTELLIGENCE------------------------------//
-    player[0] = _sceneGraph.findNode("Player1");
-    player[1] = _sceneGraph.findNode("Player2");
-    player[2] = _sceneGraph.findNode("Player3");
-    player[3] = _sceneGraph.findNode("Player4");
+    player[0] = _sceneGraph->findNode("Player1");
+    player[1] = _sceneGraph->findNode("Player2");
+    player[2] = _sceneGraph->findNode("Player3");
+    player[3] = _sceneGraph->findNode("Player4");
     player[0]->setSelectable(true);
     player[1]->setSelectable(true);
     player[2]->setSelectable(true);
@@ -393,7 +393,7 @@ bool TenisScene::loadResources(bool continueOnErrors) {
     _ball->getMaterialTpl()->setSpecular(vec4<F32>(0.7f, 0.7f, 0.7f, 1.0f));
     _ball->setResolution(16);
     _ball->setRadius(0.3f);
-    _ballSGN = &_sceneGraph.addNode(*_ball, "TenisBallSGN");
+    _ballSGN = &_sceneGraph->getRoot().addNode(*_ball, "TenisBallSGN");
     _ballSGN->getComponent<PhysicsComponent>()->translate(
         vec3<F32>(3.0f, 0.2f, 7.0f));
     _ballSGN->setSelectable(true);

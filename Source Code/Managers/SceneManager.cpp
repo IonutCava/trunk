@@ -25,6 +25,8 @@ SceneManager::SceneManager()
 
 SceneManager::~SceneManager()
 {
+    AI::AIManager::destroyInstance();
+
     UNREGISTER_FRAME_LISTENER(&(this->getInstance()));
     Console::printfn(Locale::get("STOP_SCENE_MANAGER"));
     // Console::printfn(Locale::get("SCENE_MANAGER_DELETE"));
@@ -90,18 +92,17 @@ Scene* SceneManager::createScene(const stringImpl& name) {
 bool SceneManager::unloadCurrentScene() {
     AI::AIManager::getInstance().pauseUpdate(true);
     RemoveResource(_defaultMaterial);
-    return Attorney::SceneManager::unload(*_activeScene);
+    bool state = Attorney::SceneManager::unload(*_activeScene);
+    if (state) {
+        state = Attorney::SceneManager::deinitializeAI(*_activeScene);
+        _sceneMap.erase(_sceneMap.find(_activeScene->getName()));
+        _activeScene.reset(nullptr);
+    }
+    return state;
 }
 
 void SceneManager::initPostLoadState() {
     _processInput = true;
-}
-
-bool SceneManager::deinitializeAI(bool continueOnErrors) {
-    bool state =
-        Attorney::SceneManager::deinitializeAI(*_activeScene, continueOnErrors);
-    AI::AIManager::destroyInstance();
-    return state;
 }
 
 bool SceneManager::frameStarted(const FrameEvent& evt) {

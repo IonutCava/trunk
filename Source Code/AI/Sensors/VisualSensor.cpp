@@ -10,10 +10,21 @@ namespace Divide {
 using namespace AI;
 
 VisualSensor::VisualSensor(AIEntity* const parentEntity)
-    : Sensor(parentEntity, SensorType::VISUAL_SENSOR) {}
+    : Sensor(parentEntity, SensorType::VISUAL_SENSOR)
+{
+}
 
-VisualSensor::~VisualSensor() {
+VisualSensor::~VisualSensor()
+{
+
     for (NodeContainerMap::value_type& container : _nodeContainerMap) {
+        for (const NodeContainer::value_type& entry : container.second) {
+            if (entry.second) {
+                hashMapImpl<I64, size_t>::const_iterator itCbk = _deletionCallbackID.find(entry.second->getGUID());
+                assert(itCbk != std::end(_deletionCallbackID));
+                entry.second->unregisterDeletionCallback(itCbk->second);
+            }
+        }
         container.second.clear();
     }
     _nodeContainerMap.clear();
@@ -30,9 +41,13 @@ void VisualSensor::followSceneGraphNode(U32 containerID,
             container->second.find(node.getGUID());
         if (nodeEntry == std::end(container->second)) {
             hashAlg::emplace(container->second, node.getGUID(), &node);
-            node.registerDeletionCallback(
+            size_t deletionCallbackID = node.registerDeletionCallback(
                 DELEGATE_BIND(&VisualSensor::unfollowSceneGraphNode, this,
                               containerID, node.getGUID()));
+            std::pair<hashMapImpl<I64, size_t>::iterator, bool> result =
+            hashAlg::emplace(_deletionCallbackID, node.getGUID(),
+                             deletionCallbackID);
+            assert(result.second);
         } else {
             Console::errorfn(
                 "VisualSensor: Added the same node to follow twice!");
@@ -41,9 +56,13 @@ void VisualSensor::followSceneGraphNode(U32 containerID,
         NodeContainer& newContainer = _nodeContainerMap[containerID];
 
         hashAlg::emplace(newContainer, node.getGUID(), &node);
-        node.registerDeletionCallback(
+        size_t deletionCallbackID = node.registerDeletionCallback(
             DELEGATE_BIND(&VisualSensor::unfollowSceneGraphNode, this,
                           containerID, node.getGUID()));
+        std::pair<hashMapImpl<I64, size_t>::iterator, bool> result =
+            hashAlg::emplace(_deletionCallbackID, node.getGUID(),
+                             deletionCallbackID);
+        assert(result.second);
     }
 
     NodePositions& positions = _nodePositionsMap[containerID];
@@ -59,6 +78,9 @@ void VisualSensor::unfollowSceneGraphNode(U32 containerID, U64 nodeGUID) {
     if (container != std::end(_nodeContainerMap)) {
         NodeContainer::iterator nodeEntry = container->second.find(nodeGUID);
         if (nodeEntry != std::end(container->second)) {
+            hashMapImpl<I64, size_t>::const_iterator itCbk = _deletionCallbackID.find(nodeGUID);
+            assert(itCbk != std::end(_deletionCallbackID));
+            nodeEntry->second->unregisterDeletionCallback(itCbk->second);
             container->second.erase(nodeEntry);
             NodePositions& positions = _nodePositionsMap[containerID];
             NodePositions::const_iterator it = positions.find(nodeGUID);

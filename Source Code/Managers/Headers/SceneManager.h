@@ -51,9 +51,9 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     /// constructed scene bound to that name
     Scene* createScene(const stringImpl& name);
 
-    inline Scene* getActiveScene() { return _activeScene; }
-    inline void setActiveScene(Scene* const scene) {
-        MemoryManager::SAFE_UPDATE(_activeScene, scene);
+    inline Scene& getActiveScene() { return *_activeScene; }
+    inline void setActiveScene(Scene& scene) {
+        _activeScene.reset(&scene);
     }
 
     bool init(GUI* const gui);
@@ -79,11 +79,6 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
         return Attorney::SceneManager::initializeAI(*_activeScene,
                                                   continueOnErrors);
     }
-    /// Destroy all AI entities, teams, NPC's createa in "initializeAI"
-    /// AIEntities are deleted automatically by the AIManager if they are not
-    /// freed
-    /// in "deinitializeAI"
-    bool deinitializeAI(bool continueOnErrors);
     /// Update animations, network data, sounds, triggers etc.
     inline void updateSceneState(const U64 deltaTime) {
         _activeScene->updateSceneState(deltaTime);
@@ -159,7 +154,7 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     bool _init;
     bool _processInput;
     /// Pointer to the currently active scene
-    Scene* _activeScene;
+    std::unique_ptr<Scene> _activeScene;
     /// Pointer to the GUI interface
     GUI* _GUI;
     /// Pointer to the scene graph culler that's used to determine what nodes are
@@ -189,13 +184,13 @@ class SceneManagerKernel {
 };  // namespace Attorney
 
 /// Return a pointer to the currently active scene
-inline Scene* GET_ACTIVE_SCENE() {
+inline Scene& GET_ACTIVE_SCENE() {
     return SceneManager::getInstance().getActiveScene();
 }
 
 /// Return a pointer to the currently active scene's scenegraph
 inline SceneGraph& GET_ACTIVE_SCENEGRAPH() {
-    return GET_ACTIVE_SCENE()->getSceneGraph();
+    return GET_ACTIVE_SCENE().getSceneGraph();
 }
 
 };  // namespace Divide

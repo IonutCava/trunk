@@ -47,9 +47,9 @@ enum class AIMsg : U32 {
 class TenisSceneAISceneImpl : public AISceneImpl {
    public:
     TenisSceneAISceneImpl(SceneGraphNode* target);
-    void processData(const U64 deltaTime);
-    void processInput(const U64 deltaTime);
-    void update(const U64 deltaTime, NPC* unitRef = nullptr);
+    bool processData(const U64 deltaTime);
+    bool processInput(const U64 deltaTime);
+    bool update(const U64 deltaTime, NPC* unitRef = nullptr);
     void addEntityRef(AIEntity* entity);
     void processMessage(AIEntity* sender, AIMsg msg,
                         const cdiggins::any& msg_content);

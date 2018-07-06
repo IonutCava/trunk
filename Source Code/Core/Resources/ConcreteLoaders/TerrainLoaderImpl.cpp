@@ -23,7 +23,7 @@ bool ImplResourceLoader<Terrain>::load(Terrain* const res,
 
     Console::printfn(Locale::get("TERRAIN_LOAD_START"), name.c_str());
 
-    TerrainDescriptor* terrain = GET_ACTIVE_SCENE()->getTerrainInfo(name);
+    TerrainDescriptor* terrain = GET_ACTIVE_SCENE().getTerrainInfo(name);
 
     if (!terrain || !TerrainLoader::loadTerrain(res, terrain)) {
         Console::errorfn(Locale::get("ERROR_TERRAIN_LOAD"), name.c_str());

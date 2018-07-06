@@ -96,10 +96,10 @@ void PingPongScene::test(cdiggins::any a, CallbackParam b) {
         _ballSGN->getComponent<PhysicsComponent>();
     vec3<F32> ballPosition = ballTransform->getPosition();
 
-    SceneGraphNode* table = _sceneGraph.findNode("table");
-    SceneGraphNode* net = _sceneGraph.findNode("net");
-    SceneGraphNode* opponent = _sceneGraph.findNode("opponent");
-    SceneGraphNode* paddle = _sceneGraph.findNode("paddle");
+    SceneGraphNode* table = _sceneGraph->findNode("table");
+    SceneGraphNode* net = _sceneGraph->findNode("net");
+    SceneGraphNode* opponent = _sceneGraph->findNode("opponent");
+    SceneGraphNode* paddle = _sceneGraph->findNode("paddle");
     vec3<F32> paddlePosition =
         paddle->getComponent<PhysicsComponent>()->getPosition();
     vec3<F32> opponentPosition =
@@ -233,7 +233,7 @@ void PingPongScene::processInput(const U64 deltaTime) {
         _paddleCam->rotatePitch(to_int(state().angleUD()));
     }
 
-    SceneGraphNode* paddle = _sceneGraph.findNode("paddle");
+    SceneGraphNode* paddle = _sceneGraph->findNode("paddle");
 
     vec3<F32> pos = paddle->getComponent<PhysicsComponent>()->getPosition();
 
@@ -300,7 +300,7 @@ bool PingPongScene::loadResources(bool continueOnErrors) {
     _ball->getMaterialTpl()->setShininess(36.8f);
     _ball->getMaterialTpl()->setSpecular(
         vec4<F32>(0.774597f, 0.774597f, 0.774597f, 1.0f));
-    _ballSGN = &_sceneGraph.addNode(*_ball, "PingPongBallSGN");
+    _ballSGN = &_sceneGraph->getRoot().addNode(*_ball, "PingPongBallSGN");
     _ballSGN->getComponent<PhysicsComponent>()->translate(vec3<F32>(0, 2, 2));
 
     /*ResourceDescriptor tempLight("Light Omni");

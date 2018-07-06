@@ -192,7 +192,7 @@ void GUIConsoleCommandParser::handleNavMeshCommand(const stringImpl& args) {
         temp = MemoryManager_NEW AI::Navigation::NavigationMesh();
     }
     // Set it's file name
-    temp->setFileName(GET_ACTIVE_SCENE()->getName());
+    temp->setFileName(GET_ACTIVE_SCENE().getName());
     // Try to load it from file
     bool loaded = temp->load(GET_ACTIVE_SCENEGRAPH().getRoot());
     if (!loaded) {
@@ -254,11 +254,11 @@ void GUIConsoleCommandParser::handleAddObject(const stringImpl& args) {
              : assetLocation) +
         args1);
     model.position =
-        GET_ACTIVE_SCENE()->state().renderState().getCamera().getEye();
+        GET_ACTIVE_SCENE().state().renderState().getCamera().getEye();
     model.data = 1.0f;
     model.scale = vec3<F32>(scale);
     model.orientation =
-        GET_ACTIVE_SCENE()->state().renderState().getCamera().getEuler();
+        GET_ACTIVE_SCENE().state().renderState().getCamera().getEuler();
     model.type = (args1.compare("Box3D") == 0 || args1.compare("Sphere3D") == 0)
                      ? GeometryType::PRIMITIVE
                      : GeometryType::GEOMETRY;
@@ -268,7 +268,7 @@ void GUIConsoleCommandParser::handleAddObject(const stringImpl& args) {
     model.useHighDetailNavMesh = true;
     model.physicsUsage = true;
     model.physicsPushable = true;
-    GET_ACTIVE_SCENE()->addModel(model);
+    GET_ACTIVE_SCENE().addModel(model);
 }
 
 void GUIConsoleCommandParser::handleInvalidCommand(const stringImpl& args) {

@@ -266,7 +266,7 @@ void PhysXSceneInterface::addToScene(PhysXActor& actor) {
         if (sceneNode) {
             sceneNode->renderState().setDrawState(true);
             targetNode =
-                &_parentScene->getSceneGraph().addNode(*sceneNode, sgnName);
+                &_parentScene->getSceneGraph().getRoot().addNode(*sceneNode, sgnName);
             targetNode->getComponent<RenderingComponent>()->castsShadows(
                 shadowState);
         }

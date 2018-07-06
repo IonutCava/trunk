@@ -72,6 +72,7 @@ class PhysicsSceneInterface;
 
 namespace Attorney {
     class SceneManager;
+    class SceneGraph;
 };
 
 /// The scene is a resource (to enforce load/unload and setName) and it has a 2
@@ -79,6 +80,8 @@ namespace Attorney {
 /// one for game information and one for rendering information
 class NOINITVTABLE Scene : public Resource {
     friend class Attorney::SceneManager;
+    friend class Attorney::SceneGraph;
+
    protected:
     typedef std::stack<FileData, vectorImpl<FileData> > FileDataStack;
 #ifdef _DEBUG
@@ -117,7 +120,7 @@ class NOINITVTABLE Scene : public Resource {
     inline SceneRenderState& renderState() { return _sceneState.renderState(); }
     inline SceneInput& input() { return *_input; }
 
-    inline SceneGraph& getSceneGraph() { return _sceneGraph; }
+    inline SceneGraph& getSceneGraph() { return *_sceneGraph; }
     void registerTask(Task_ptr taskItem);
     void clearTasks();
     void removeTask(I64 taskGUID);
@@ -177,7 +180,7 @@ class NOINITVTABLE Scene : public Resource {
     GFXDevice& _GFX;
     GUI* _GUI;
     ParamHandler& _paramHandler;
-    SceneGraph _sceneGraph;
+    std::unique_ptr<SceneGraph> _sceneGraph;
 
     U64 _sceneTimer;
     vectorImpl<D32> _taskTimers;
@@ -213,7 +216,10 @@ class NOINITVTABLE Scene : public Resource {
     SceneState _sceneState;
     vectorImpl<DELEGATE_CBK<> > _selectionChangeCallbacks;
     vectorImpl<SceneGraphNode*> _sceneSelectionCandidates;
+
    protected:
+    void resetSelection();
+
     virtual bool frameStarted();
     virtual bool frameEnded();
     /// Description in SceneManager
@@ -230,7 +236,6 @@ class NOINITVTABLE Scene : public Resource {
     virtual bool unload();
     /// Description in SceneManager
     virtual bool initializeAI(bool continueOnErrors);
-    /// Description in SceneManager
     virtual bool deinitializeAI(bool continueOnErrors);
     /// Check if Scene::load() was called
     bool checkLoadFlag() const { return _loadComplete; }
@@ -293,8 +298,8 @@ class SceneManager {
     static bool initializeAI(Scene& scene, bool continueOnErrors) {
         return scene.initializeAI(continueOnErrors);
     }
-    static bool deinitializeAI(Scene& scene, bool continueOnErrors) {
-        return scene.deinitializeAI(continueOnErrors);
+    static bool deinitializeAI(Scene& scene) {
+        return scene.deinitializeAI(true);
     }
     static void onCameraUpdate(Scene& scene, Camera& camera) {
         scene.onCameraUpdate(camera); 
@@ -312,6 +317,17 @@ class SceneManager {
     }
 
     friend class Divide::SceneManager;
+};
+
+class SceneGraph {
+private:
+    static void onNodeDestroy(Scene& scene, SceneGraphNode& node) {
+        SceneGraphNode* currentSelection = scene.getCurrentSelection();
+        if (currentSelection && currentSelection->getGUID() == node.getGUID()) {
+            scene.resetSelection();
+        }
+    }
+    friend class Divide::SceneGraph;
 };
 };  // namespace Attorney
 };  // namespace Divide

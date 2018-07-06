@@ -82,7 +82,7 @@ class Task : public GUIDWrapper, public std::enable_shared_from_this<Task> {
 
     inline bool isFinished() const { return _done; }
 
-    inline void onCompletionCbk(const DELEGATE_CBK_PARAM<const I64>& cbk) {
+    inline void onCompletionCbk(const DELEGATE_CBK_PARAM<I64>& cbk) {
         _onCompletionCbk = cbk;
     }
 
@@ -94,7 +94,7 @@ class Task : public GUIDWrapper, public std::enable_shared_from_this<Task> {
     mutable std::atomic_bool _paused;
     mutable std::atomic_bool _done;
     DELEGATE_CBK<> _callback;
-    DELEGATE_CBK_PARAM<const I64> _onCompletionCbk;
+    DELEGATE_CBK_PARAM<I64> _onCompletionCbk;
     ThreadPool& _tp;
 
    protected:

@@ -36,7 +36,7 @@ WaterPlane::WaterPlane()
     _plane = CreateResource<Quad3D>(waterPlane);
     _farPlane = 2.0f *
                 GET_ACTIVE_SCENE()
-                    ->state()
+                    .state()
                     .renderState()
                     .getCameraConst()
                     .getZPlanes()
@@ -84,8 +84,8 @@ bool WaterPlane::computeBoundingBox(SceneGraphNode& sgn) {
         return true;
     }
     SceneGraphNode* planeSGN = sgn.getChildren()[0];
-    _waterLevel = GET_ACTIVE_SCENE()->state().waterLevel();
-    _waterDepth = GET_ACTIVE_SCENE()->state().waterDepth();
+    _waterLevel = GET_ACTIVE_SCENE().state().waterLevel();
+    _waterDepth = GET_ACTIVE_SCENE().state().waterDepth();
     planeSGN->getComponent<PhysicsComponent>()->setPositionY(_waterLevel);
     bb.set(vec3<F32>(-_farPlane, _waterLevel - _waterDepth, -_farPlane),
            vec3<F32>(_farPlane, _waterLevel, _farPlane));

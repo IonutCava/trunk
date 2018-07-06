@@ -291,7 +291,7 @@ class Camera : public Resource {
     /// Add an event listener called after every RenderLookAt or
     /// RenderLookAtCube
     /// call
-    virtual void addUpdateListener(const DELEGATE_CBK_PARAM<Camera>& f) {
+    virtual void addUpdateListener(const DELEGATE_CBK_PARAM<Camera&>& f) {
         _listeners.push_back(f);
     }
     /// Informs all listeners of a new event
@@ -368,7 +368,7 @@ class Camera : public Resource {
     F32 _camIOD;
     CameraType _type;
 
-    vectorImpl<DELEGATE_CBK_PARAM<Camera> > _listeners;
+    vectorImpl<DELEGATE_CBK_PARAM<Camera&> > _listeners;
     bool _isActive;
     bool _projectionDirty;
     bool _viewMatrixDirty;

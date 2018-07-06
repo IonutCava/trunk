@@ -343,7 +343,7 @@ bool Camera::updateViewMatrix() {
 void Camera::updateListeners() {
     assert(_isActive);
 
-    for (const DELEGATE_CBK_PARAM<Camera>& listener : _listeners) {
+    for (const DELEGATE_CBK_PARAM<Camera&>& listener : _listeners) {
         listener(*this);
     }
 }

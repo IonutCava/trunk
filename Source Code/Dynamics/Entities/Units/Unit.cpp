@@ -18,11 +18,16 @@ Unit::Unit(UnitType type, SceneGraphNode& node)
     DIVIDE_ASSERT(_node != nullptr,
                   "Unit error: Invalid parent node specified!");
     REGISTER_FRAME_LISTENER(this, 5);
-    _node->registerDeletionCallback(DELEGATE_BIND(&Unit::nodeDeleted, this));
+    _deletionCallbackID = _node->registerDeletionCallback(DELEGATE_BIND(&Unit::nodeDeleted, this));
     _currentPosition = _node->getComponent<PhysicsComponent>()->getPosition();
 }
 
-Unit::~Unit() { UNREGISTER_FRAME_LISTENER(this); }
+Unit::~Unit() { 
+    UNREGISTER_FRAME_LISTENER(this);
+    if (_node) {
+        _node->unregisterDeletionCallback(_deletionCallbackID);
+    }
+}
 
 void Unit::nodeDeleted() {
     _node = nullptr;

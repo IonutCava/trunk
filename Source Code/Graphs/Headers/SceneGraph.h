@@ -41,15 +41,19 @@ class Ray;
 class Scene;
 class SceneState;
 
+namespace Attorney {
+    class SceneGraphSGN;
+};
+
 class SceneGraph : private NonCopyable {
+    friend class Attorney::SceneGraphSGN;
    public:
     SceneGraph();
     ~SceneGraph();
 
-    void load();
-    void unload();
-
-    inline SceneGraphNode& getRoot() const { return *_root; }
+    inline SceneGraphNode& getRoot() const {
+        return *_root;
+    }
 
     inline vectorImpl<BoundingBox>& getBBoxes() {
         _boundingBoxes.clear();
@@ -62,10 +66,6 @@ class SceneGraph : private NonCopyable {
         return _root->findNode(name, sceneNodeName);
     }
 
-    inline SceneGraphNode& addNode(SceneNode& node,
-                                   const stringImpl& nodeName) {
-        return _root->addNode(node, nodeName);
-    }
     /// Update all nodes. Called from "updateSceneState" from class Scene
     void sceneUpdate(const U64 deltaTime, SceneState& sceneState);
 
@@ -74,18 +74,29 @@ class SceneGraph : private NonCopyable {
 
     void intersect(const Ray& ray, F32 start, F32 end,
                    vectorImpl<SceneGraphNode*>& selectionHits);
-    inline void addToDeletionQueue(SceneGraphNode* node) {
-        _pendingDeletionNodes.push_back(node);
-    }
+
+    void deleteNode(SceneGraphNode* node, bool deleteOnAdd);
 
    protected:
     void printInternal(SceneGraphNode& sgn);
-
+    void onNodeDestroy(SceneGraphNode& oldNode);
    private:
     std::unique_ptr<SceneGraphNode> _root;
     vectorImpl<BoundingBox> _boundingBoxes;
     vectorImpl<SceneGraphNode*> _pendingDeletionNodes;
 };
+
+namespace Attorney {
+class SceneGraphSGN {
+   private:
+    static void onNodeDestroy(SceneGraph& sceneGraph, SceneGraphNode& oldNode) {
+        sceneGraph.onNodeDestroy(oldNode);
+    }
+
+    friend class Divide::SceneGraphNode;
+};
+
+};  // namespace Attorney
 
 };  // namespace Divide
 #endif

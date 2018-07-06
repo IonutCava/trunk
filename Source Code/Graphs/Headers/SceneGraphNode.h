@@ -52,7 +52,7 @@ class SceneRoot : public SceneNode {
    public:
     SceneRoot() : SceneNode("root", SceneNodeType::TYPE_ROOT) {
         _renderState.useDefaultMaterial(false);
-        setState(ResourceState::RES_LOADED);
+        setState(ResourceState::RES_SPECIAL);
     }
 
     bool onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
@@ -76,7 +76,7 @@ class SceneTransform : public SceneNode {
    public:
     SceneTransform() : SceneNode(SceneNodeType::TYPE_TRANSFORM) {
         _renderState.useDefaultMaterial(false);
-        setState(ResourceState::RES_LOADED);
+        setState(ResourceState::RES_SPECIAL);
     }
 
     bool onDraw(RenderStage currentStage) { return true; }
@@ -97,7 +97,7 @@ class SceneGraphNode : public GUIDWrapper, private NonCopyable {
         NODE_STATIC 
     };
 
-    bool unload();
+    
     /// Update bounding boxes
     void checkBoundingBoxes();
     /// Apply current transform to the node's BB. Return true if the bounding
@@ -128,14 +128,11 @@ class SceneGraphNode : public GUIDWrapper, private NonCopyable {
     /// Add node increments the node's ref counter if the node was already added
     /// to the scene graph
     SceneGraphNode& addNode(SceneNode& node, const stringImpl& name = "");
-    void removeNode(SceneGraphNode& node);
-    inline void deleteNode(SceneGraphNode*& node) {
-        if (node) {
-            removeNode(*node);
-            MemoryManager::DELETE(node);
-        }
-    }
-    /// Find a node in the graph based on the SceneGraphNode's name
+    void removeNode(const stringImpl& nodeName, bool recursive = true);
+    inline void removeNode(SceneGraphNode& node, bool recursive = true) {
+        removeNode(node.getName(), recursive);
+    }    
+     /// Find a node in the graph based on the SceneGraphNode's name
     /// If sceneNodeName = true, find a node in the graph based on the
     /// SceneNode's name
     SceneGraphNode* findNode(const stringImpl& name,
@@ -178,7 +175,6 @@ class SceneGraphNode : public GUIDWrapper, private NonCopyable {
     void getBBoxes(vectorImpl<BoundingBox>& boxes) const;
     /*Bounding Box Management*/
 
-    inline void silentDispose(const bool state) { _silentDispose = state; }
     inline void useDefaultTransform(const bool state) {
         getComponent<PhysicsComponent>()->useDefaultTransform(!state);
     }
@@ -187,6 +183,9 @@ class SceneGraphNode : public GUIDWrapper, private NonCopyable {
     void setActive(const bool state);
     void restoreActive();
     inline void scheduleDeletion() { _shouldDelete = true; }
+    
+    size_t registerDeletionCallback(const DELEGATE_CBK<>& cbk);
+    void unregisterDeletionCallback(size_t callbackID);
 
     inline bool inView() const { return _inView; }
     inline bool isActive() const { return _active; }
@@ -241,10 +240,6 @@ class SceneGraphNode : public GUIDWrapper, private NonCopyable {
 
     inline StateTracker<bool>& getTrackedBools() { return _trackedBools; }
 
-    inline void registerDeletionCallback(const DELEGATE_CBK<>& cbk) {
-        _deletionCallbacks.push_back(cbk);
-    }
-
     bool operator==(const SceneGraphNode& other) const {
         return this->getGUID() == other.getGUID();
     }
@@ -283,7 +278,6 @@ class SceneGraphNode : public GUIDWrapper, private NonCopyable {
     NodeChildren _children;
     SceneGraphNode* _parent;
     std::atomic<bool> _active;
-    std::atomic<bool> _loaded;
     std::atomic<bool> _inView;
     std::atomic<bool> _boundingBoxDirty;
     U32 _bbAddExclusionList;
@@ -291,7 +285,6 @@ class SceneGraphNode : public GUIDWrapper, private NonCopyable {
     bool _isSelectable;
     bool _wasActive;
     bool _sorted;
-    bool _silentDispose;
     bool _shouldDelete;
     ///_initialBoundingBox is a copy of the initialy calculate BB for
     ///transformation
@@ -311,7 +304,7 @@ class SceneGraphNode : public GUIDWrapper, private NonCopyable {
     std::array<std::unique_ptr<SGNComponent>,
                to_const_uint(SGNComponent::ComponentType::COUNT)> _components;
 
-    vectorImpl<DELEGATE_CBK<>> _deletionCallbacks;
+    hashMapImpl<size_t, DELEGATE_CBK<>> _deletionCallbacks;
     StateTracker<bool> _trackedBools;
 };
 };  // namespace Divide
