@@ -22,7 +22,6 @@
 #include "Hardware/Video/Textures/Headers/Texture.h"
 
 class d3dTexture : public Texture {
-
 public:
 	d3dTexture(U32 type, bool flipped = false) : Texture(flipped), _type(type) {}
 	~d3dTexture() {}
@@ -30,7 +29,7 @@ public:
 	bool generateHWResource(const std::string& name){return true;}
 	bool unload() {Destroy(); return true;}
 
-	void Bind(U16 unit, bool fixedPipeline = false){}
+	void Bind(U16 unit){}
 	void Unbind(U16 unit){}
 
 	void LoadData(U32 target, U8* ptr, U16& w, U16& h, U8 d){}

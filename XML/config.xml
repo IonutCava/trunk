@@ -21,8 +21,8 @@
 	<windowedMode>true</windowedMode>
 	<allowWindowResize>false</allowWindowResize>
 	<enableVSync>false</enableVSync>
-	<zNear>0.175</zNear>
-	<zFar>2200.0</zFar>
+	<zNear>0.125</zNear>
+	<zFar>1000.0</zFar>
 	<verticalFOV>60</verticalFOV>
 	<GLminorVer>2</GLminorVer>
 	<useGLCompatProfile>true</useGLCompatProfile>
@@ -31,9 +31,11 @@
 <GUI>
 	<CEGUI>
 		<ExtraStates>false</ExtraStates>
+		<SkipRendering>false</SkipRendering>
 	</CEGUI>
-	<defaultGUIScheme>TaharezLook</defaultGUIScheme>
+	<defaultGUIScheme>GWEN</defaultGUIScheme>
 	<consoleLayoutFile>console.layout</consoleLayoutFile>
+	<editorLayoutFile>editor.layout</editorLayoutFile>
 </GUI>
 
 <rendering>
@@ -45,7 +47,7 @@
 	<detailLevel>2</detailLevel>
 	<!-- AA method: 1 = MSAA, 2 = FXAA, 3 = SMAA, 4 = MSAA+FXAA -->
 	<FSAAmethod>2</FSAAmethod>
-	<FSAAsamples>2</FSAAsamples>
+	<FSAAsamples>4</FSAAsamples>
 	<anisotropicFilteringLevel>8</anisotropicFilteringLevel>
 	<!-- detail level: low = 0, don't care = 1, high = 2 -->
 	<mipMapDetailLevel>2</mipMapDetailLevel>
@@ -55,7 +57,7 @@
 	<enableFog>true</enableFog>
 	<!--- Fog: only initial values. Override in scene -->
 	<fogStartDistance>500</fogStartDistance>
-	<fogEndDistance>4500</fogEndDistance>
+	<fogEndDistance>3500</fogEndDistance>
 	<fogDensity>0.01</fogDensity>
 	<fogColor r="0.2" g="0.2" b="0.275"/>
 	<enablePostFX>true</enablePostFX>
@@ -65,6 +67,7 @@
 	<enableDepthOfField>false</enableDepthOfField>
 	<enableBloom>true</enableBloom>
 	<bloomFactor>0.8</bloomFactor>
+	<enableHDR>true</enableHDR>
 	<enableSSAO>false</enableSSAO>
 </rendering>
     

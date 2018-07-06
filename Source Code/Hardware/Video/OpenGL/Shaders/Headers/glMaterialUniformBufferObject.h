@@ -17,21 +17,14 @@
 
 #ifndef GL_MATERIAL_UNIFORM_BUFFER_OBJECT_H_
 #define GL_MATERIAL_UNIFORM_BUFFER_OBJECT_H_
-#include "glUniformBufferObject.h" 
+#include "glUniformBufferObject.h"
 
 class Material;
 class glMaterialUniformBufferObject : public glUniformBufferObject {
 public:
-    glMaterialUniformBufferObject(Material* const mat) : glUniformBufferObject(),
-                                                         _mat(mat)
-    {
-        assert(mat !=  NULL);
-    }
-    ~glMaterialUniformBufferObject()
-    {
-    }
-
-    void FillData();
+    glMaterialUniformBufferObject();
+    ~glMaterialUniformBufferObject();
+    void ReserveBuffer(GLuint primitiveCount);
 
 private:
     Material* _mat;

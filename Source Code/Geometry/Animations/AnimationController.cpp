@@ -3,9 +3,34 @@
 #include "Headers/AnimationUtils.h"
 using namespace boost;
 
-void SceneAnimator::Release(){// this should clean everything up 
+void SceneAnimator::Release(){// this should clean everything up
 	_currentAnimIndex = -1;
-	_animations.clear();// clear all animations
+    for_each(pointCollection::value_type& it, _pointsA){
+        for_each(pointMap::value_type& it2, it.second){
+            it2.second.clear();
+        }
+    }
+
+    for_each(pointCollection::value_type& it, _pointsB){
+        for_each(pointMap::value_type& it2, it.second){
+            it2.second.clear();
+        }
+     }
+
+    for_each(colorCollection::value_type& it, _colors){
+        for_each(colorMap::value_type& it2, it.second){
+            it2.second.clear();
+        }
+     }
+
+    _pointsA.clear();
+    _pointsB.clear();
+    _colors.clear();
+    _animations.clear();// clear all animations
+    _bonesByName.clear();
+    _bonesToIndex.clear();
+    _animationNameToId.clear();
+    _transforms.clear();
 	// This node will delete all children recursivly
 	SAFE_DELETE(_skeleton);
 }
@@ -13,7 +38,7 @@ void SceneAnimator::Release(){// this should clean everything up
 void SceneAnimator::Init(const aiScene* pScene, U8 meshPointer){// this will build the skeleton based on the scene passed to it and CLEAR EVERYTHING
 	if(!pScene->HasAnimations()) return;
 	Release();
-	
+
 	_skeleton = CreateBoneTree( pScene->mRootNode, NULL);
 	ExtractAnimations(pScene);
 
@@ -37,34 +62,36 @@ void SceneAnimator::Init(const aiScene* pScene, U8 meshPointer){// this will bui
 				_bones.push_back(found->second);
 				_bonesToIndex[found->first] = _bones.size()-1;
 			}
-		} 
+		}
 	}
-	
 
 	_transforms.resize( _bones.size());
 	D32 timestep = 1.0/ANIMATION_TICKS_PER_SECOND;// ANIMATION_TICKS_PER_SECOND
+	mat4<F32> rotationmat;
+	vectorImpl<mat4<F32> > vec;
 	for(size_t i(0); i< _animations.size(); i++){// pre calculate the animations
 		SetAnimIndex(i);
 		D32 dt = 0;
 		for(D32 ticks = 0; ticks < _animations[i]._duration; ticks += _animations[i]._ticksPerSecond/ANIMATION_TICKS_PER_SECOND){
 			dt +=timestep;
 			Calculate(dt);
-			_animations[i]._transforms.push_back(vectorImpl<mat4<F32> >());
+			_animations[i]._transforms.push_back(vec);
 			vectorImpl<mat4<F32> >& trans = _animations[i]._transforms.back();
-			for( size_t a = 0; a < _transforms.size(); ++a){
-				mat4<F32> rotationmat;
-				if(GFX_DEVICE.getApi() == Direct3D){
+			if(GFX_DEVICE.getApi() == Direct3D){
+				for( size_t a = 0; a < _transforms.size(); ++a){
 					AnimUtils::TransformMatrix(rotationmat, _bones[a]->_offsetMatrix * _bones[a]->_globalTransform);
-				}else{
-					AnimUtils::TransformMatrix(rotationmat, _bones[a]->_globalTransform * _bones[a]->_offsetMatrix);
+					trans.push_back(rotationmat);
 				}
-				trans.push_back(rotationmat);
+			}else{
+				for( size_t a = 0; a < _transforms.size(); ++a){
+					AnimUtils::TransformMatrix(rotationmat, _bones[a]->_globalTransform * _bones[a]->_offsetMatrix);
+					trans.push_back(rotationmat);
+				}
 			}
 		}
 	}
 
 	D_PRINT_FN(Locale::get("LOAD_ANIMATIONS_END"), _bones.size());
-
 }
 
 void SceneAnimator::ExtractAnimations(const aiScene* pScene){
@@ -98,13 +125,12 @@ bool SceneAnimator::SetAnimIndex( I32  pAnimIndex){
 }
 
 // ------------------------------------------------------------------------------------------------
-// Calculates the node transformations for the scene. 
+// Calculates the node transformations for the scene.
 void SceneAnimator::Calculate(D32 pTime){
-	if( (_currentAnimIndex < 0) | (_currentAnimIndex >= (I32)_animations.size()) ) return;// invalid animation
+	if( (_currentAnimIndex < 0) || (_currentAnimIndex >= (I32)_animations.size()) ) return;// invalid animation
 	_animations[_currentAnimIndex].Evaluate( pTime, _bonesByName);
 	UpdateTransforms(_skeleton);
 }
-
 
 // ------------------------------------------------------------------------------------------------
 // Recursively creates an internal node structure matching the current scene and animation.
@@ -128,14 +154,6 @@ Bone* SceneAnimator::CreateBoneTree( aiNode* pNode, Bone* parent){
 	return internalNode;
 }
 
-///Only called if the SceneGraph detected a transformation change
-void SceneAnimator::setGlobalMatrix(const mat4<F32>& matrix){
-	_rootTransformRender = matrix;
-	/// Prepare global transform
-	AnimUtils::TransformMatrix(_rootTransform,_rootTransformRender);
-}
-
-
 /// ------------------------------------------------------------------------------------------------
 /// Recursively updates the internal node transformations from the given matrix array
 void SceneAnimator::UpdateTransforms(Bone* pNode) {
@@ -149,16 +167,20 @@ void SceneAnimator::UpdateTransforms(Bone* pNode) {
 /// ------------------------------------------------------------------------------------------------
 /// Calculates the global transformation matrix for the given internal node
 void SceneAnimator::CalculateBoneToWorldTransform(Bone* child){
-
 	child->_globalTransform = child->_localTransform;
 	Bone* parent = child->_parent;
-	while( parent ){// this will climb the nodes up along through the parents concentating all the matrices to get the Object to World transform, or in this case, the Bone To World transform
-		if(GFX_DEVICE.getApi() == Direct3D){
+	// this will climb the nodes up along through the parents concentating all the matrices to get the Object to World transform, or in this case, the Bone To World transform
+	if(GFX_DEVICE.getApi() == Direct3D){
+		while( parent ){
 			child->_globalTransform *= parent->_localTransform;
-		}else{
-			child->_globalTransform = parent->_localTransform * child->_globalTransform;
+			parent  = parent->_parent;// get the parent of the bone we are working on
 		}
-		parent  = parent->_parent;// get the parent of the bone we are working on 
+	}else{
+		while( parent) {
+			child->_globalTransform = parent->_localTransform * child->_globalTransform;
+			parent  = parent->_parent;// get the parent of the bone we are working on
+		}
+		
 	}
 }
 
@@ -166,8 +188,7 @@ void SceneAnimator::CalculateBoneToWorldTransform(Bone* child){
 I32 SceneAnimator::RenderSkeleton(D32 dt){
 	U32 frameIndex = _animations[_currentAnimIndex].GetFrameIndexAt(dt);
 
-	if(_pointsA.find(_currentAnimIndex) == _pointsA.end()){ 
-
+	if(_pointsA.find(_currentAnimIndex) == _pointsA.end()){
 		pointMap pointsA;
 		pointMap pointsB;
 		colorMap colors;
@@ -177,35 +198,36 @@ I32 SceneAnimator::RenderSkeleton(D32 dt){
 	}
 
 	if(_pointsA[_currentAnimIndex][frameIndex].empty()){
-
-		/// create all the needed points
+		// create all the needed points
 		vectorImpl<vec3<F32> >& pA = _pointsA[_currentAnimIndex][frameIndex];
-		pA.reserve(_bones.size());
 		vectorImpl<vec3<F32> >& pB = _pointsB[_currentAnimIndex][frameIndex];
+		vectorImpl<vec4<U8> >& cl = _colors[_currentAnimIndex][frameIndex];
+		pA.reserve(_bones.size());
 		pB.reserve(_bones.size());
-		vectorImpl<vec4<F32> >& cl = _colors[_currentAnimIndex][frameIndex];
 		cl.reserve(_bones.size());
-			/// Construct skeleton
+		// Construct skeleton
 		Calculate(dt);
-		CreateSkeleton(_skeleton, _rootTransform, pA, pB, cl);
-
+		// Prepare global transform
+		aiMatrix4x4 rootTransform;
+		AnimUtils::TransformMatrix(rootTransform,_rootTransformRender);
+		CreateSkeleton(_skeleton, rootTransform, pA, pB, cl);
 	}
-	/// Submit skeleton to gpu
+	// Submit skeleton to gpu
 	return SubmitSkeletonToGPU(frameIndex);
 }
 
 /// Create animation skeleton
-I32 SceneAnimator::CreateSkeleton(Bone* piNode, const aiMatrix4x4& parent, vectorImpl<vec3<F32> >& pointsA, 
-																		   vectorImpl<vec3<F32> >& pointsB, 
-																		   vectorImpl<vec4<F32> >& colors){
+I32 SceneAnimator::CreateSkeleton(Bone* piNode, const aiMatrix4x4& parent, vectorImpl<vec3<F32> >& pointsA,
+																		   vectorImpl<vec3<F32> >& pointsB,
+																		   vectorImpl<vec4<U8> >& colors){
 	aiMatrix4x4 me = piNode->_globalTransform;
 	if(GFX_DEVICE.getApi() == Direct3D){
 		me.Transpose();
 	}
 
 	if (piNode->_parent) {
-		colors.push_back(vec4<F32>(1.0f,0,0,1));
-		pointsA.push_back(vec3<F32>(parent.a4, parent.b4, parent.c4)); 
+		colors.push_back(vec4<U8>(255,0,0,255));
+		pointsA.push_back(vec3<F32>(parent.a4, parent.b4, parent.c4));
 		pointsB.push_back(vec3<F32>(me.a4, me.b4, me.c4));
 	}
 
@@ -218,9 +240,11 @@ I32 SceneAnimator::CreateSkeleton(Bone* piNode, const aiMatrix4x4& parent, vecto
 }
 
 I32 SceneAnimator::SubmitSkeletonToGPU(U32 frameIndex){
-	GFX_DEVICE.drawLines(_pointsA[_currentAnimIndex][frameIndex], 
+	GFX_DEVICE.drawLines(_pointsA[_currentAnimIndex][frameIndex],
 		                 _pointsB[_currentAnimIndex][frameIndex],
 						 _colors[_currentAnimIndex][frameIndex],
-						 _rootTransformRender);
+						 _rootTransformRender,
+						 false,
+						 true);
 	return 1;
 }

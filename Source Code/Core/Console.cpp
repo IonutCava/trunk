@@ -1,3 +1,5 @@
+#include "core.h"
+
 #include "Headers/Console.h"
 #include "Rendering/Headers/Framerate.h"
 #include "config.h"
@@ -5,7 +7,7 @@
 #include <stdarg.h>
 
 //! Do not remove the following license without express permission granted bu DIVIDE-Studio
-void Console::printCopyrightNotice(){
+void Console::printCopyrightNotice() const {
 	std::cout << "------------------------------------------------------------------------------" << std::endl;
 	std::cout << "“Copyright 2009-2013 DIVIDE-Studio”" << std::endl << std::endl;
 	std::cout << "This file is part of DIVIDE Framework." << std::endl;
@@ -23,44 +25,10 @@ void Console::printCopyrightNotice(){
 	std::cout << "E-mail: ionut.cava@divide-studio.com | Website: http://wwww.divide-studio.com" << std::endl;
 	std::cout << "-------------------------------------------------------------------------------" << std::endl;
 	std::cout << std::endl;
-	_timestamps = true;
-}
-void Console::d_printfn(char* format, ...){
-#ifdef _DEBUG
-	va_list args;
-	std::string fmt_text;
-	va_start(args, format);
-	I32 len = _vscprintf(format, args) + 1;
-	char *text = new char[len];
-	vsprintf_s(text, len, format, args);
-	fmt_text.append(text);
-	fmt_text.append("\n");
-	delete[] text;
-	text = NULL;
-	va_end(args);
-	output(fmt_text);
-	fmt_text.empty();
-#endif
 }
 
-void Console::d_printf(char* format, ...){
 #ifdef _DEBUG
-	va_list args;
-	std::string fmt_text;
-	va_start(args, format);
-	I32 len = _vscprintf(format, args) + 1;
-	char *text = new char[len];
-	vsprintf_s(text, len, format, args);
-	fmt_text.append(text);
-	delete[] text;
-	text = NULL;
-	va_end(args);
-	output(fmt_text);
-	fmt_text.empty();
-#endif
-}
-
-void Console::printfn(char* format, ...){
+void Console::d_printfn(const char* format, ...) const {
 	va_list args;
 	std::string fmt_text;
 	va_start(args, format);
@@ -76,7 +44,7 @@ void Console::printfn(char* format, ...){
 	fmt_text.empty();
 }
 
-void Console::printf(char* format, ...){
+void Console::d_printf(const char* format, ...) const {
 	va_list args;
 	std::string fmt_text;
 	va_start(args, format);
@@ -90,44 +58,42 @@ void Console::printf(char* format, ...){
 	output(fmt_text);
 	fmt_text.empty();
 }
-void Console::d_errorfn(char* format, ...){
-#ifdef _DEBUG
+#endif
+
+void Console::printfn(const char* format, ...) const {
 	va_list args;
 	std::string fmt_text;
 	va_start(args, format);
 	I32 len = _vscprintf(format, args) + 1;
 	char *text = new char[len];
 	vsprintf_s(text, len, format, args);
-	fmt_text.append("Error: ");
 	fmt_text.append(text);
 	fmt_text.append("\n");
 	delete[] text;
 	text = NULL;
 	va_end(args);
-	output(fmt_text,true);
+	output(fmt_text);
 	fmt_text.empty();
-#endif
 }
 
-void Console::d_errorf(char* format, ...){
-#ifdef _DEBUG
+void Console::printf(const char* format, ...) const {
 	va_list args;
 	std::string fmt_text;
 	va_start(args, format);
 	I32 len = _vscprintf(format, args) + 1;
 	char *text = new char[len];
 	vsprintf_s(text, len, format, args);
-	fmt_text.append("Error: ");
 	fmt_text.append(text);
 	delete[] text;
 	text = NULL;
 	va_end(args);
-	output(fmt_text,true);
+	output(fmt_text);
 	fmt_text.empty();
-#endif
 }
 
-void Console::errorfn(char* format, ...){
+#ifdef _DEBUG
+
+void Console::d_errorfn(const char* format, ...) const {
 	va_list args;
 	std::string fmt_text;
 	va_start(args, format);
@@ -144,7 +110,41 @@ void Console::errorfn(char* format, ...){
 	fmt_text.empty();
 }
 
-void Console::errorf(char* format, ...){
+void Console::d_errorf(const char* format, ...) const {
+	va_list args;
+	std::string fmt_text;
+	va_start(args, format);
+	I32 len = _vscprintf(format, args) + 1;
+	char *text = new char[len];
+	vsprintf_s(text, len, format, args);
+	fmt_text.append("Error: ");
+	fmt_text.append(text);
+	delete[] text;
+	text = NULL;
+	va_end(args);
+	output(fmt_text,true);
+	fmt_text.empty();
+}
+#endif
+
+void Console::errorfn(const char* format, ...) const {
+	va_list args;
+	std::string fmt_text;
+	va_start(args, format);
+	I32 len = _vscprintf(format, args) + 1;
+	char *text = new char[len];
+	vsprintf_s(text, len, format, args);
+	fmt_text.append("Error: ");
+	fmt_text.append(text);
+	fmt_text.append("\n");
+	delete[] text;
+	text = NULL;
+	va_end(args);
+	output(fmt_text,true);
+	fmt_text.empty();
+}
+
+void Console::errorf(const char* format, ...) const {
 	va_list args;
 	std::string fmt_text;
 	va_start(args, format);
@@ -160,7 +160,7 @@ void Console::errorf(char* format, ...){
 	fmt_text.empty();
 }
 
-void Console::output(const std::string& output,bool error){
+void Console::output(const std::string& output,const bool error) const {
 	boost::mutex::scoped_lock  lock(io_mutex);
 	if(_timestamps){
 		if(error){
@@ -174,7 +174,6 @@ void Console::output(const std::string& output,bool error){
 		}else{
 			std::cout << output << std::flush;
 		}
-		
 	}
 	if(!_guiConsoleCallback.empty()){
 		_guiConsoleCallback(output,error);

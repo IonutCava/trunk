@@ -21,7 +21,6 @@
 class Scene;
 class Transform;
 class PhysicsSceneInterface {
-
 public:
 	PhysicsSceneInterface(Scene* parentScene) :  _parentScene(parentScene){}
 

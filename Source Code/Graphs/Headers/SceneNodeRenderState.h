@@ -1,7 +1,7 @@
 #ifndef _SCENE_NODE_RENDER_STATE_H_
 #define _SCENE_NODE_RENDER_STATE_H_
 
-#include "core.h"
+#define NULL 0
 #include "Hardware/Video/Headers/RenderStateBlock.h"
 
 class SceneNodeRenderState {
@@ -15,15 +15,12 @@ public:
 	{
 	}
 
-	~SceneNodeRenderState()
-	{
-		SAFE_DELETE(_depthStateBlock);
-	}
+	~SceneNodeRenderState();
 
 	inline  void useDefaultMaterial(bool state) {_noDefaultMaterial = !state;}
 	inline  void setDrawState(bool state) {_drawState = state;}
-	     	bool getDrawState()  const {return _drawState;} 
-			bool getDrawState(RenderStage currentStage)  const;
+	     	bool getDrawState()  const {return _drawState;}
+			bool getDrawState(const RenderStage& currentStage)  const;
 			void addToDrawExclusionMask(I32 stageMask);
 			void removeFromDrawExclusionMask(I32 stageMask);
 			RenderStateBlock* getDepthStateBlock();

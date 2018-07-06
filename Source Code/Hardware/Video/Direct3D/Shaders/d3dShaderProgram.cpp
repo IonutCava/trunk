@@ -1,6 +1,6 @@
 #include "Headers/d3dShaderProgram.h"
 
-I32 d3dShaderProgram::getAttributeLocation(const std::string& name) {
+I32 d3dShaderProgram::getAttributeLocation(const std::string& name){
 	return -1;
 }
 

@@ -1,11 +1,15 @@
 #include "Headers/NavigationMesh.h"
+#include "Headers/NavigationMeshDebugDraw.h"
+
+#include "Core/Headers/ParamHandler.h"
 #include "Managers/Headers/SceneManager.h"
 
 #include <DebugUtils/Include/RecastDump.h>
+#include <DebugUtils/Include/DetourDebugDraw.h>
+#include <DebugUtils/Include/RecastDebugDraw.h>
 
 namespace Navigation {
-
-    void rcContextDivide::doLog(const rcLogCategory category, const char* msg, const int len){
+    void rcContextDivide::doLog(const rcLogCategory category, const char* msg, const I32 len){
         switch(category){
             default:
             case RC_LOG_PROGRESS:
@@ -22,14 +26,18 @@ namespace Navigation {
 
 	const U32 NavigationMesh::_maxVertsPerPoly = 3;
 
-	NavigationMesh::NavigationMesh() {
+    NavigationMesh::NavigationMesh() : GUIDWrapper() {
+        ParamHandler& par = ParamHandler::getInstance();
 
-		_fileName = std::string("");
+        _fileName =  par.getParam<std::string>("scriptLocation") + "/" +
+				     par.getParam<std::string>("scenesLocation") + "/" +
+					 par.getParam<std::string>("currentScene") + "/navMeshes/";
 
 		_buildThreaded = true;
-
+        _debugDraw = true;
+        _renderConnections = true;
 		_saveIntermediates = false;
-
+        _renderMode = RENDER_NAVMESH;
 		_cellSize = _cellHeight = 0.3f;
 		_walkableHeight = 2.0f;
 		_walkableClimb = 1.0f;
@@ -55,7 +63,6 @@ namespace Navigation {
 	}
 
 	NavigationMesh::~NavigationMesh(){
-
 		if(mThread)	{
 			mThread->stopTask();
 		}
@@ -77,32 +84,30 @@ namespace Navigation {
 		 rcFreeContourSet(cs);        cs = NULL;
 		 rcFreePolyMesh(pm);          pm = NULL;
 		 rcFreePolyMeshDetail(pmd);  pmd = NULL;
-
 		}
 
 		_navigationMeshLock.unlock();
 	}
 
 	bool NavigationMesh::build(SceneGraphNode* const sgn,bool threaded){
-
 		if(sgn){
 			_sgn = sgn;
 		}else{	/// use root node
 			_sgn = GET_ACTIVE_SCENE()->getSceneGraph()->getRoot();
 		}
 
-		if(_buildThreaded && threaded)
-		 return buildThreaded();
+		if(_buildThreaded && threaded) return buildThreaded();
 
 		boost::mutex::scoped_lock(_buildLock);
         if(_buildThreaded && threaded){
 		    if(!_buildLock.owns_lock()) return false;
-        }
-		return buildProcess();
+        }else{
+			return buildProcess();
+		}
+		return true;
 	}
 
 	bool NavigationMesh::buildThreaded(){
-
 		boost::mutex::scoped_lock(_buildLock);
 		if(!_buildLock.owns_lock()) return false;
 
@@ -110,13 +115,12 @@ namespace Navigation {
 			mThread->stopTask();
 		}
 		Kernel* kernel = Application::getInstance().getKernel();
-		mThread.reset(New Task(kernel->getThreadPool(),3,true,true,boost::bind(&NavigationMesh::launchThreadedBuild,this)));
+		mThread.reset(New Task(kernel->getThreadPool(),3,true,true,DELEGATE_BIND(&NavigationMesh::launchThreadedBuild,this)));
 
 		return true;
 	}
 
 	void NavigationMesh::launchThreadedBuild(void *data){
-
 		NavigationMesh *pThis = (NavigationMesh*)data;
 		pThis->buildProcess();
 	}
@@ -124,8 +128,15 @@ namespace Navigation {
 	bool NavigationMesh::buildProcess(){
 		_building = true;
 		// Create mesh
+        U32 timeStart = GETMSTIME();
 		bool success = generateMesh();
-
+        U32 timeEnd = GETMSTIME();
+        U32 timeDiff = timeEnd - timeStart;
+        if(success){
+            PRINT_FN(Locale::get("NAV_MESH_GENERATION_COMPLETE"),getMsToSec(timeDiff));
+        }else{
+            ERROR_FN(Locale::get("NAV_MESH_GENERATION_INCOMPLETE"),getMsToSec(timeDiff));
+        }
 		_navigationMeshLock.lock();
 		// Copy new NavigationMesh into old.
 		dtNavMesh *old = nm;
@@ -144,17 +155,16 @@ namespace Navigation {
 
 	bool NavigationMesh::generateMesh(){
 		assert(_sgn != NULL);
+        std::string nodeName((_sgn->getNode<SceneNode>()->getType() != TYPE_ROOT) ? "node_[_" + _sgn->getName() + "_]" : "root_node");
 		// Parse objects from level into RC-compatible format
-		NavModelData data = NavigationMeshLoader::parseNode(_sgn);
+        _fileName.append(nodeName);
+        PRINT_FN(Locale::get("NAV_MESH_GENERATION_START"),nodeName.c_str());
+		NavModelData data = NavigationMeshLoader::parseNode(_sgn,nodeName);
 
 		// Check for no geometry
-		if(!data.getVertCount())
-		 return false;
-
+		if(!data.getVertCount()) return false;
 		// Free intermediate and final results
 		freeIntermediates(true);
-
-
 		// Recast initialisation data
 		rcContextDivide ctx(true);
 		rcConfig cfg;
@@ -178,7 +188,6 @@ namespace Navigation {
 		cfg.minRegionArea          = _minRegionArea;
 		cfg.mergeRegionArea        = _mergeRegionArea;
 		cfg.tileSize               = _tileSize;
-
 
         if(!createPolyMesh(cfg, data, &ctx)){
             data.valid = false;
@@ -230,7 +239,7 @@ namespace Navigation {
 		hf = rcAllocHeightfield();
         // Reset build times gathering.
 	    ctx->resetTimers();
-    	// Start the build process.	
+    	// Start the build process.
 	    ctx->startTimer(RC_TIMER_TOTAL);
 		ctx->log(RC_LOG_PROGRESS, "Building navigation:");
 	    ctx->log(RC_LOG_PROGRESS, " - %d x %d cells", cfg.width, cfg.height);
@@ -318,7 +327,7 @@ namespace Navigation {
 	    duLogBuildTimes(*ctx, ctx->getAccumulatedTime(RC_TIMER_TOTAL));
 	    ctx->log(RC_LOG_PROGRESS, ">> Polymesh: %d vertices  %d polygons", pm->nverts, pm->npolys);
 	    F32 totalBuildTimeMs = ctx->getAccumulatedTime(RC_TIMER_TOTAL)/1000.0f;
-	
+
 	    PRINT_FN("[RC_LOG_PROGRESS] Polymesh: %d vertices  %d polygons %5.2f ms\n", pm->nverts, pm->npolys,totalBuildTimeMs);
 		return true;
 	}
@@ -362,12 +371,18 @@ namespace Navigation {
 		return true;
 	}
 
-	bool NavigationMesh::load(){
-
+	bool NavigationMesh::load(SceneGraphNode* const sgn){
 		if(!_fileName.length())
 		 return false;
+        std::string file = _fileName;
+        if(!sgn){
+            file.append("root_node");
+        }else{
+            file.append("node_[_" + sgn->getName() + "_]");
+        }
+		// Parse objects from level into RC-compatible format
 
-		FILE* fp = fopen(_fileName.c_str(), "rb");
+		FILE* fp = fopen(file.c_str(), "rb");
 		if(!fp) return false;
 
 		// Read header.
@@ -425,7 +440,6 @@ namespace Navigation {
 	}
 
 	bool NavigationMesh::save(){
-
 		if(!_fileName.length() || !nm)
 		 return false;
 
@@ -468,4 +482,24 @@ namespace Navigation {
 		return true;
 	}
 
+    void NavigationMesh::render(){
+         NavMeshDebugDraw debugDraw;
+         RenderMode mode = _renderMode;
+         if(_building)
+         {
+            mode = RENDER_NAVMESH;
+            debugDraw.overrideColor(duRGBA(255, 0, 0, 80));
+         }
+         _navigationMeshLock.lock();
+         switch(mode)
+         {
+            case RENDER_NAVMESH:    if(nm) duDebugDrawNavMesh          (&debugDraw, *nm, 0); break;
+            case RENDER_CONTOURS:   if(cs) duDebugDrawContours         (&debugDraw, *cs);    break;
+            case RENDER_POLYMESH:   if(pm) duDebugDrawPolyMesh         (&debugDraw, *pm);    break;
+            case RENDER_DETAILMESH: if(pmd)duDebugDrawPolyMeshDetail   (&debugDraw, *pmd);   break;
+            case RENDER_PORTALS:    if(nm) duDebugDrawNavMeshPortals   (&debugDraw, *nm);    break;
+         }
+         if(cs && _renderConnections && !_building)   duDebugDrawRegionConnections(&debugDraw, *cs);
+         _navigationMeshLock.unlock();
+    }
 };

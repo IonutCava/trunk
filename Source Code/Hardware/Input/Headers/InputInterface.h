@@ -65,10 +65,9 @@ class EffectManager{
 	// Indexes (in _vecEffects) of the variable effects that are playable by the selected joystick.
 	vectorImpl<size_t> _vecPlayableEffectInd;
 
-
   public:
 
-	EffectManager(JoystickInterface* pJoystickInterface, U32 nUpdateFreq) : _pJoystickInterface(pJoystickInterface), 
+	EffectManager(JoystickInterface* pJoystickInterface, U32 nUpdateFreq) : _pJoystickInterface(pJoystickInterface),
 																			_nUpdateFreq(nUpdateFreq),
 																			_nCurrEffectInd(-1)  {
 	  OIS::Effect* pEffect;
@@ -91,10 +90,10 @@ class EffectManager{
 	  pConstForce->envelope.fadeLevel = (unsigned short)pConstForce->level;
 
 	  mapVars.clear();
-	  mapVars["Force"] = 
+	  mapVars["Force"] =
 		new TriangleVariable(0.0, // F0
 							 4*10000/_nUpdateFreq / 20.0, // dF for a 20s-period triangle
-							 -10000.0, // Fmin 
+							 -10000.0, // Fmin
 							 10000.0); // Fmax
 	  mapVars["AttackFactor"] = new Constant(1.0);
 
@@ -119,10 +118,10 @@ class EffectManager{
 	  pConstForce->envelope.fadeLevel = (U16)pConstForce->level; // Idem
 
 	  mapVars.clear();
-	  mapVars["Force"] = 
+	  mapVars["Force"] =
 		new TriangleVariable(0.0, // F0
 							 4*10000/_nUpdateFreq / 20.0, // dF for a 20s-period triangle
-							 -10000.0, // Fmin 
+							 -10000.0, // Fmin
 							 10000.0); // Fmax
 	  mapVars["AttackFactor"] = new Constant(0.1);
 
@@ -150,17 +149,16 @@ class EffectManager{
 	  pPeriodForce->envelope.fadeLevel = (unsigned short)pPeriodForce->magnitude;
 
 	  mapVars.clear();
-	  mapVars["Period"] = 
+	  mapVars["Period"] =
 		new TriangleVariable(1*1000.0, // P0
 							 4*(400-10)*1000.0/_nUpdateFreq / 40.0, // dP for a 40s-period triangle
-							 10*1000.0, // Pmin 
+							 10*1000.0, // Pmin
 							 400*1000.0); // Pmax
 	  _vecEffects.push_back
 		(new VariableEffect
 		       ("Periodic force on 1 axis with 40s-period triangle oscillations "
 				"of its period in [10, 400] ms, and constant amplitude",
 				pEffect, mapVars, periodVariableApplier));
-
 	}
 
     ~EffectManager()
@@ -217,18 +215,17 @@ class EffectManager{
 
     void selectEffect(EWhichEffect eWhich)
     {
-
 	  // Nothing to do if no joystick currently selected
 	  if (!_pJoystickInterface->getCurrentFFDevice())
 	  {
-		  D_PRINT_FN(Locale::get("INPUT_NO_JOYSTICK_SELECTED"));  
+		  D_PRINT_FN(Locale::get("INPUT_NO_JOYSTICK_SELECTED"));
 		return;
 	  }
 
 	  // Nothing to do if joystick cannot play any effect
 	  if (_vecPlayableEffectInd.empty())
 	  {
-		  D_PRINT_FN(Locale::get("INPUT_NO_PLAYABLE_EFFECTS")); 
+		  D_PRINT_FN(Locale::get("INPUT_NO_PLAYABLE_EFFECTS"));
 		return;
 	  }
 
@@ -236,7 +233,7 @@ class EffectManager{
 	  if (eWhich != eNone && _nCurrEffectInd < 0)
 		_nCurrEffectInd = 0;
 
-	  // Otherwise, remove the current one from the device, 
+	  // Otherwise, remove the current one from the device,
 	  // and then select the requested one if any.
 	  else if (_nCurrEffectInd >= 0)
 	  {
@@ -264,20 +261,15 @@ class EffectManager{
 	}
 
     inline void printEffect(size_t nEffInd){
-
 		PRINT_FN(Locale::get("INPUT_PRINT_EFFECT"),nEffInd,_vecEffects[nEffInd]->getDescription());
 	}
 
     inline void printEffects(){
-
 		for (size_t nEffInd = 0; nEffInd < _vecEffects.size(); nEffInd++){
 		  printEffect(nEffInd);
 		}
 	}
-
-   
 };
-
 
 DEFINE_SINGLETON( InputInterface )
 
@@ -304,7 +296,6 @@ DEFINE_SINGLETON( InputInterface )
 	// if we want to be able to calmly study effect changes ...
     static const U8 _nEffectUpdateFreq = 1; // Hz
 
-  
     InputInterface()  {
 	  _pInputInterface = NULL;
 	  _pEventHdlr = NULL;
@@ -330,8 +321,8 @@ public:
 
 	U8 initialize(Kernel* const kernel, const std::string& windowTitle, size_t windowId = 0)
     {
-		if(_bIsInitialized)
-			return NO_ERR;
+		if(_bIsInitialized)	return NO_ERR;
+		PRINT_FN(Locale::get("INPUT_CREATE_START"));
 		OIS::ParamList pl;
 #if defined OIS_WIN32_PLATFORM
 	  // Create OIS input manager
@@ -365,7 +356,6 @@ public:
 		  PRINT_FN(Locale::get("ERROR_INPUT_CREATE_KB"),ex.eText);
 	  }
 
-	 
 		  U32 numJoysticks = _pInputInterface->getNumberOfDevices(OIS::OISJoyStick);
 		  CLAMP<U32>(numJoysticks,0,MAX_ALLOWED_JOYSTICKS);///Limit max joysticks to MAX_ALLOWED_JOYSTICKS
 
@@ -392,9 +382,8 @@ public:
 				_pEventHdlr->initialize(_pJoystickInterface, _pEffectMgr);
 			}
 		}
-	  
+
 	  try{
-	  
 		_pMouse = (OIS::Mouse*)_pInputInterface->createInputObject(OIS::OISMouse,true);
 		_pMouse->setEventCallback( _pEventHdlr );
 		const OIS::MouseState &ms = _pMouse->getMouseState();
@@ -413,12 +402,12 @@ public:
 
 #if defined OIS_LINUX_PLATFORM
 
-    // This is just here to show that you still receive x11 events, 
+    // This is just here to show that you still receive x11 events,
     // as the lib only needs mouse/key events
     void checkX11Events()
     {
 	  XEvent event;
-	  
+
 	  //Poll x11 for events
 	  while( XPending(_pXDisp) > 0 )
 	  {
@@ -460,8 +449,6 @@ public:
 			else
 				nEffectUpdateCnt--;
 		  }
-
-
 	  }
 	  catch( ... )
 	  {
@@ -473,7 +460,6 @@ public:
     inline void stop(){ _bMustStop = true; }
 
     void terminate() {
-
 	  if (_pInputInterface) {
 		_pInputInterface->destroyInputObject( _pKeyboard );
 		_pInputInterface->destroyInputObject( _pMouse );
@@ -485,7 +471,7 @@ public:
             for(vectorImpl<OIS::JoyStick* >::iterator it = _pJoysticks.begin(); it != _pJoysticks.end(); it++){
                 _pInputInterface->destroyInputObject( *it );
             }
- 
+
             _pJoysticks.clear();
         }
 
@@ -494,7 +480,7 @@ public:
 		OIS::InputManager::destroyInputSystem(_pInputInterface);
 		_pInputInterface = NULL;
 	  }
-	 
+
 	  SAFE_DELETE(_pEffectMgr);
 	  SAFE_DELETE(_pEventHdlr);
 
@@ -508,8 +494,6 @@ public:
     inline JoystickInterface* getJoystickInterface(){ return _pJoystickInterface; }
     inline EffectManager* getEffectManager(){ return _pEffectMgr; }
 
-
 END_SINGLETON
-
 
 #endif

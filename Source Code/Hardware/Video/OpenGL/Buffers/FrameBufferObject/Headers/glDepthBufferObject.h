@@ -21,13 +21,10 @@
 #include "glFrameBufferObject.h"
 
 class glDepthBufferObject : public glFrameBufferObject {
-
 public:
 
 	glDepthBufferObject(/*bool cubeMap = false - alas, depth only cubemaps do not exist in GL ...*/);
 	~glDepthBufferObject() {Destroy();}
-
 };
 
 #endif
-

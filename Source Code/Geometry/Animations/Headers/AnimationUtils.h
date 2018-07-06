@@ -18,7 +18,6 @@
 	http://nolimitsdesigns.com/game-design/open-asset-import-library-animation-loader/
 */
 
-
 #ifndef ANIMATION_UTILITIES_H_
 #define ANIMATION_UTILITIES_H_
 
@@ -28,7 +27,6 @@
 #include "core.h"
 #include <assimp/scene.h>
 namespace AnimUtils {
-
 	void TransformMatrix(mat4<F32>& out,const aiMatrix4x4& in);
 	void TransformMatrix(aiMatrix4x4& out,const mat4<F32>& in);
 };

@@ -6,7 +6,6 @@ PreRenderStageBuilder::PreRenderStageBuilder(){
 }
 
 PreRenderStageBuilder::~PreRenderStageBuilder(){
-
 	SAFE_DELETE(_renderStage);
 }
 

@@ -2,16 +2,16 @@
 #include "Utility/Headers/ImageTools.h"
 #include "Core/Headers/ParamHandler.h"
 
-bool Texture::_generateMipmaps = true;
 Unordered_map<U8, U32> Texture::textureBoundMap;
 
-Texture::Texture(bool flipped) : HardwareResource(),
-								_flipped(flipped),
-								_minFilter(TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR),
-								_magFilter(TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR),
-								_handle(0),
-								_bound(false),
-								_hasTransparency(false)
+Texture::Texture(const bool flipped) : HardwareResource(),
+							  		   _flipped(flipped),
+								       _minFilter(TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR),
+								       _magFilter(TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR),
+								       _handle(0),
+								       _bound(false),
+                                       _generateMipmaps(true),
+								       _hasTransparency(false)
 {
 	if(textureBoundMap.empty()){
 		for(U8 i = 0; i < 15; i++){
@@ -26,19 +26,16 @@ Texture::Texture(bool flipped) : HardwareResource(),
 	setAnisotrophyLevel(ParamHandler::getInstance().getParam<U8>("rendering.anisotropicFilteringLevel",1));
 }
 
-
 /// Use DevIL to load a file intro a Texture Object
 bool Texture::LoadFile(U32 target, const std::string& name){
 	setResourceLocation(name);
-	/// Create a new imageData object
+	// Create a new imageData object
 	ImageTools::ImageData img;
-	/// Flip image if needed
-	if(_flipped){
-		img._flip = true;
-	}
-	/// Save file contents in  the "img" object
+	// Flip image if needed
+	img._flip = _flipped;
+	// Save file contents in  the "img" object
 	ImageTools::OpenImage(name,img,_hasTransparency);
-	/// validate data
+	// validate data
 	if(!img.data) {
 		ERROR_FN(Locale::get("ERROR_TEXTURE_LOAD"), name.c_str());
 		///Missing texture fallback
@@ -46,18 +43,17 @@ bool Texture::LoadFile(U32 target, const std::string& name){
 		ImageTools::OpenImage(par.getParam<std::string>("assetsLocation")+"/"+
 			                  par.getParam<std::string>("defaultTextureLocation") +"/"+
 							  "missing_texture.jpg", img,_hasTransparency);
-		//return false;
 	}
 
-	/// Get width
+	// Get width
 	_width = img.w;
-	/// Get height
+	// Get height
 	_height = img.h;
-	/// Get bitdepth
+	// Get bitdepth
 	_bitDepth = img.d;
-	/// Create a new API-dependent texture object
+	// Create a new API-dependent texture object
 	LoadData(target, img.data, _width, _height, _bitDepth);
-	/// Unload file data - ImageData destruction handles this
+	// Unload file data - ImageData destruction handles this
 	//img.Destroy();
 	return true;
 }
@@ -67,23 +63,24 @@ void Texture::resize(U16 width, U16 height){
 }
 
 bool Texture::checkBinding(U16 unit, U32 handle){
-	if(textureBoundMap[unit] != handle){
-		textureBoundMap[unit] = handle;
-		return true;
-	}
-	//return false;
+	//double bind
+	/*if(textureBoundMap[unit] == handle) return false;*/
+	textureBoundMap[unit] = handle;
 	return true;
 }
-
 
 void Texture::Bind() const {
 }
 
-void Texture::Bind(U16 unit, bool fixedPipeline)  {
+void Texture::Bind(U16 unit)  {
+	textureBoundMap[unit] = 0;
+	_bound = true;
 }
 
 void Texture::Unbind() const {
+
 }
 
 void Texture::Unbind(U16 unit) {
+	_bound = false;
 }

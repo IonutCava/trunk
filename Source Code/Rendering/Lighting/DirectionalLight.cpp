@@ -1,16 +1,16 @@
 #include "Headers/DirectionalLight.h"
 #include "Rendering/Headers/Frustum.h"
-#include "Hardware/Video/Headers/GFXDevice.h" 
+#include "Hardware/Video/Headers/GFXDevice.h"
 #include "ShadowMapping/Headers/ShadowMap.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 DirectionalLight::DirectionalLight(U8 slot) : Light(slot,-1,LIGHT_TYPE_DIRECTIONAL)
 {
 	vec2<F32> angle = vec2<F32>(0.0f, RADIANS(45.0f));
-	_position = vec4<F32>(-cosf(angle.x) * sinf(angle.y),-cosf(angle.y),-sinf(angle.x) * sinf(angle.y),	0.0f );
+	_properties._position = vec4<F32>(-cosf(angle.x) * sinf(angle.y),-cosf(angle.y),-sinf(angle.x) * sinf(angle.y),	0.0f );
 	_splitWeight = 0.75f;
 	_splitCount = 3;
 	_lightOrtho[0] = 5.0;
-	_lightOrtho[1] = 10.0; 
+	_lightOrtho[1] = 10.0;
 	_lightOrtho[2] = 50.0;
 };
 
@@ -31,7 +31,6 @@ void DirectionalLight::updateFrustumPoints(frustum &f, vec3<F32> &center, vec3<F
 	vec3<F32> fc = center + viewDir*f.farPlane;
 	vec3<F32> nc = center + viewDir*f.nearPlane;
 
-	
 	right_temp.cross(viewDir);
 	up = right_temp;
 	up.normalize();
@@ -68,31 +67,28 @@ void DirectionalLight::updateSplitDist(frustum f[3], F32 nearPlane, F32 farPlane
 	f[_splitCount-1].farPlane = farPlane;
 }
 
-
 void DirectionalLight::setCameraToLightView(const vec3<F32>& eyePos){
 	_eyePos = eyePos;
 	///Set the virtual light position 500 units above our eye position
 	///This is one example why we have different setup functions for each light type
 	///This isn't valid for omni or spot
-	_lightPos = vec3<F32>(_eyePos.x - 500*_position.x,	
-					      _eyePos.y - 500*_position.y,
-					      _eyePos.z - 500*_position.z);
-	  
+	_lightPos = vec3<F32>(_eyePos.x - 500*_properties._position.x,
+					      _eyePos.y - 500*_properties._position.y,
+					      _eyePos.z - 500*_properties._position.z);
+
 	///Tell our rendering API to move the camera
 	GFX_DEVICE.lookAt(_lightPos,    //the light's virtual position
 					   _eyePos);    //the light's target
 }
 
-void DirectionalLight::renderFromLightView(U8 depthPass){
-
 #pragma message("ToDo: Near and far planes. Should optimize later! -Ionut")
+void DirectionalLight::renderFromLightView(const U8 depthPass,const F32 sceneHalfExtent){
 	_zPlanes = Frustum::getInstance().getZPlanes();
 	///Set the current projection depending on the current depth pass
-	GFX_DEVICE.setOrthoProjection(vec4<F32>(-_lightOrtho[depthPass], 
-											 _lightOrtho[depthPass],
-											-_lightOrtho[depthPass], 
-											 _lightOrtho[depthPass]),
+	GFX_DEVICE.setOrthoProjection(vec4<F32>(-sceneHalfExtent,
+											 sceneHalfExtent,
+											-sceneHalfExtent,
+											 sceneHalfExtent),
 											 _zPlanes);
 	Frustum::getInstance().Extract(_eyePos - _lightPos);
 }
-

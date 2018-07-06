@@ -26,18 +26,18 @@ public:
 	glPixelBufferObject(PBOType type);
 	~glPixelBufferObject() {Destroy();}
 
-	bool Create(GLushort width, GLushort height,GLushort depth = 0, 
+	bool Create(GLushort width, GLushort height,GLushort depth = 0,
 				GFXImageFormat internalFormatEnum = RGBA8,
 				GFXImageFormat formatEnum = RGBA,
 				GFXDataFormat dataTypeEnum = FLOAT_32);
-				
+
 	void Destroy();
 
-	GLvoid* Begin(GLubyte nFace=0) const;	
-	void End(GLubyte nFace=0) const;		
+	GLvoid* Begin(GLubyte nFace=0) const;
+	void End(GLubyte nFace=0) const;
 
-	void Bind(GLubyte unit=0) const;		
-	void Unbind(GLubyte unit=0) const;	
+	void Bind(GLubyte unit=0) const;
+	void Unbind(GLubyte unit=0) const;
 
 	void updatePixels(const GLfloat * const pixels);
 
@@ -48,8 +48,6 @@ private:
 	GLenum _dataType;
 	GLenum _format;
 	GLenum _internalFormat;
-
 };
 
 #endif
-

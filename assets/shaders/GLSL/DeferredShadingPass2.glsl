@@ -1,25 +1,31 @@
 -- Vertex
-#include "vboInputData.vert"
-attribute vec3 cameraPosition;
-varying vec3 _eyePos;
+
+in vec3  inVertexData;
+in vec3 cameraPosition;
+
+uniform mat4 dvd_ModelViewProjectionMatrix;
+
+out vec3 _eyePos;
 
 void main( void ){
-   computeData();
+
    _eyePos = cameraPosition;
-   gl_Position = gl_ModelViewProjectionMatrix * vertexData;
+   gl_Position = dvd_ModelViewProjectionMatrix * vec4(inVertexData,1.0);
    gl_FrontColor = vec4(1.0, 1.0, 1.0, 1.0);
 } 
 
 -- Fragment
 
-uniform sampler2D tImage0;
-uniform sampler2D tImage1;
-uniform sampler2D tImage2;
+uniform sampler2D albedoTexture;
+uniform sampler2D positionTexture;
+uniform sampler2D normalTexture;
+uniform sampler2D blendTexture;
 uniform sampler2D lightTexture;
 uniform int lightCount;
 
-varying vec2 _texCoord;
-varying vec3 _eyePos;
+in vec2 _texCoord;
+in vec3 _eyePos;
+out vec4 _colorOut;
 
 void main( void )
 {
@@ -28,9 +34,10 @@ void main( void )
    vec3 light = vec3(0,0,0);
    vec3 lightDir = vec3(0,0,0);
    vec3 vHalfVector = vec3(0,0,0);
-   vec4 image0 = texture( tImage0, _texCoord );
-   vec4 position = texture( tImage1, _texCoord );
-   vec4 normal = texture( tImage2, _texCoord );
+   vec4 albedo   = texture( albedoTexture, _texCoord );
+   vec4 position = texture( positionTexture, _texCoord );
+   vec4 normal   = texture( normalTexture, _texCoord );
+   vec4 blend    = texture( blendTexture, _texCoord );
    vec3 eyeDir = normalize(_eyePos-position.xyz);
 
    float lightIntensity = 0;
@@ -54,5 +61,5 @@ void main( void )
 
     }
 
-   gl_FragColor = vec4(diffuse,1) * image0 +   selfLighting * (image0);
+   _colorOut = vec4(diffuse,1) * albedo +   selfLighting * (albedo);
 } 

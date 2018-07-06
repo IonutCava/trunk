@@ -31,14 +31,14 @@
 	}
 
 namespace Mat4{
-	inline void Multiply(const float *a, const float *b, float *r){
-		for (int i=0; i<16; i+=4){
-			for (int j=0; j<4; j++){
+	inline void Multiply(const F32 *a, const F32 *b, F32 *r){
+		for (I32 i=0; i<16; i+=4){
+			for (I32 j=0; j<4; j++){
 				r[i+j] = b[i]*a[j] + b[i+1]*a[j+4] + b[i+2]*a[j+8] + b[i+3]*a[j+12];
 			}
 		}
 	}
-	__forceinline F32 det(const float* mat) {
+	__forceinline F32 det(const F32* mat) {
 		return ((mat[0] * mat[5] * mat[10]) +
 				(mat[4] * mat[9] * mat[2])  +
 				(mat[8] * mat[1] * mat[6])  -
@@ -47,7 +47,7 @@ namespace Mat4{
 				(mat[0] * mat[9] * mat[6]));
 	}
 
-	__forceinline void Inverse(const float* in,float* out){
+	__forceinline void Inverse(const F32* in,F32* out){
 		F32 idet = 1.0f / det(in);
 		out[0]  =  (in[5] * in[10] - in[9] * in[6]) * idet;
 		out[1]  = -(in[1] * in[10] - in[9] * in[2]) * idet;
@@ -65,7 +65,6 @@ namespace Mat4{
 		out[13] = -(in[12] * (out)[1] + in[13] * (out)[5] + in[14] * (out)[9]);
 		out[14] = -(in[12] * (out)[2] + in[13] * (out)[6] + in[14] * (out)[10]);
 		out[15] = 1.0;
-
 	}
 }
 #endif

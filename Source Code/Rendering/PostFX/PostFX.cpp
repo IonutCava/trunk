@@ -26,7 +26,6 @@ PostFX::PostFX(): _underwaterTexture(NULL),
 	_currentCamera(NULL),
 	_underwater(false),
 	_FXAAinit(false),
-    _bloomFactor(0.4f),
 	_gfx(GFX_DEVICE){
 	_anaglyphFBO[0] = NULL;
 	_anaglyphFBO[1] = NULL;
@@ -36,7 +35,7 @@ PostFX::~PostFX(){
 	if(_renderQuad){
 		RemoveResource(_renderQuad);
 	}
-	
+
 	if(_enablePostProcessing){
 		if(_underwaterTexture){
 			RemoveResource(_underwaterTexture);
@@ -51,7 +50,7 @@ PostFX::~PostFX(){
 			SAFE_DELETE(_anaglyphFBO[0]);
 			SAFE_DELETE(_anaglyphFBO[1]);
 		}
-		
+
 		if(_enableDOF || _enableBloom){
 			if(_enableBloom){
 				SAFE_DELETE(_bloomFBO);
@@ -82,14 +81,14 @@ void PostFX::init(const vec2<U16>& resolution){
 	_enableDOF = par.getParam<bool>("postProcessing.enableDepthOfField");
 	_enableNoise = par.getParam<bool>("postProcessing.enableNoise");
 	_enableFXAA = par.getParam<bool>("postProcessing.enableFXAA");
-    
+    _enableHDR = par.getParam<bool>("rendering.enableHDR");
+
 	if(_enablePostProcessing){
-        _bloomFactor = par.getParam<F32>("postProcessing.bloomFactor");
 		///Screen FBO should use MSAA if available, else fallback to normal color FBO (no AA or FXAA)
 		_screenFBO = _gfx.newFBO(FBO_2D_COLOR_MS);
 		_depthFBO  = _gfx.newFBO(FBO_2D_DEPTH);
 
-	    TextureDescriptor screenDescriptor(TEXTURE_2D, 
+	    TextureDescriptor screenDescriptor(TEXTURE_2D,
 										   RGBA,
 										   RGBA8,
 										   UNSIGNED_BYTE); ///Default filters, LINEAR is OK for this
@@ -98,9 +97,9 @@ void PostFX::init(const vec2<U16>& resolution){
 		screenDescriptor._generateMipMaps = false; //it's a flat texture on a full screen quad. really?
 
 		_screenFBO->AddAttachment(screenDescriptor,TextureDescriptor::Color0);
-		_screenFBO->toggleDepthWrites(true);//Do we need a depth buffer?
+		_screenFBO->toggleDepthBuffer(true);//Do we need a depth buffer?
 
-	    TextureDescriptor depthDescriptor(TEXTURE_2D, 
+	    TextureDescriptor depthDescriptor(TEXTURE_2D,
 										  DEPTH_COMPONENT,
 										  DEPTH_COMPONENT,
 										  UNSIGNED_BYTE); ///Default filters, LINEAR is OK for this
@@ -116,18 +115,26 @@ void PostFX::init(const vec2<U16>& resolution){
 		_renderQuad = CreateResource<Quad3D>(mrt);
 		assert(_renderQuad);
 		_renderQuad->setDimensions(vec4<F32>(0,0,resolution.width,resolution.height));
+		_renderQuad->renderInstance()->preDraw(true);
+		_renderQuad->renderInstance()->draw2D(true);
+        ResourceDescriptor postFXShader("postProcessing");
+        std::stringstream ss;
+        if(_enableBloom) ss << "POSTFX_ENABLE_BLOOM,";
+		if(_enableSSAO)  ss << "POSTFX_ENABLE_SSAO,";
+        if(_enableHDR)   ss << "POSTFX_ENABLE_HDR,";
+		ss << "DEFINE_PLACEHOLDER";
+		postFXShader.setPropertyList(ss.str());
 
-		_postProcessingShader = CreateResource<ShaderProgram>(ResourceDescriptor("postProcessing"));
+		_postProcessingShader = CreateResource<ShaderProgram>(postFXShader);
+
 		ResourceDescriptor textureWaterCaustics("Underwater Caustics");
 		textureWaterCaustics.setResourceLocation(par.getParam<std::string>("assetsLocation") + "/misc_images/terrain_water_NM.jpg");
 		_underwaterTexture = CreateResource<Texture2D>(textureWaterCaustics);
 
 		createOperators();
-		_postProcessingShader->bind();
-			_postProcessingShader->Uniform("noise_tile", 0.05f);
-			_postProcessingShader->Uniform("noise_factor", 0.02f);
-		_postProcessingShader->unbind();
-
+		
+		_postProcessingShader->Uniform("noise_tile", 0.05f);
+		_postProcessingShader->Uniform("noise_factor", 0.02f);
 	}
 
 	_timer = 0;
@@ -144,7 +151,7 @@ void PostFX::createOperators(){
 	ParamHandler& par = ParamHandler::getInstance();
 
 	if(_enableAnaglyph && !_anaglyphFBO[0]){
-		 TextureDescriptor screenDescriptor(TEXTURE_2D, 
+		 TextureDescriptor screenDescriptor(TEXTURE_2D,
 										   RGBA,
 										   RGBA8,
 										   FLOAT_32); ///Default filters, LINEAR is OK for this
@@ -160,7 +167,7 @@ void PostFX::createOperators(){
 		_anaglyphShader = CreateResource<ShaderProgram>(ResourceDescriptor("anaglyph"));
 		_eyeOffset = par.getParam<F32>("postProcessing.anaglyphOffset");
 	}
-	vec2<U16> resolution(par.getParam<I32>("runtime.resolutionWidth"),par.getParam<I32>("runtime.resolutionHeight"));
+	vec2<U16> resolution(par.getParam<U16>("runtime.resolutionWidth"),par.getParam<U16>("runtime.resolutionHeight"));
 	if(_enableBloom && !_bloomFBO){
 		_bloomFBO = _gfx.newFBO(FBO_2D_COLOR);
 		PreRenderOperator* bloomOp = PreRenderStageBuilder::getInstance().addPreRenderOperator<BloomPreRenderOperator>(_renderQuad,_enableBloom,_bloomFBO,resolution);
@@ -192,7 +199,6 @@ void PostFX::createOperators(){
 }
 
 void PostFX::reshapeFBO(I32 width , I32 height){
-
 	if(!_enablePostProcessing || width == 0 || height == 0) return;
 	if(width == _screenFBO->getWidth() && height == _screenFBO->getHeight()) return;
 	_screenFBO->Create(width, height);
@@ -208,7 +214,6 @@ void PostFX::reshapeFBO(I32 width , I32 height){
 }
 
 void PostFX::displaySceneWithAnaglyph(bool deferred){
-
 	_currentCamera->SaveCamera();
 	F32 _eyePos[2] = {_eyeOffset/2, -_eyeOffset};
 
@@ -219,13 +224,12 @@ void PostFX::displaySceneWithAnaglyph(bool deferred){
 		_anaglyphFBO[i]->Begin();
 
 			SceneManager::getInstance().render(deferred ? DEFERRED_STAGE : FINAL_STAGE);
-		
+
 		_anaglyphFBO[i]->End();
 	}
 
 	_currentCamera->RestoreCamera();
 
-	
 	_anaglyphShader->bind();
 	{
 		_anaglyphFBO[0]->Bind(0);
@@ -234,17 +238,16 @@ void PostFX::displaySceneWithAnaglyph(bool deferred){
 		_anaglyphShader->UniformTexture("texLeftEye", 0);
 		_anaglyphShader->UniformTexture("texRightEye", 1);
 		_gfx.toggle2D(true);
-		_gfx.renderModel(_renderQuad);
+        _renderQuad->setCustomShader(_anaglyphShader);
+		_gfx.renderInstance(_renderQuad->renderInstance());
 		_gfx.toggle2D(false);
 		_anaglyphFBO[1]->Unbind(1);
 		_anaglyphFBO[0]->Unbind(0);
 	}
 	//_anaglyphShader->unbind();
-
 }
 
 void PostFX::displaySceneWithoutAnaglyph(bool deferred){
-
 	_currentCamera->RenderLookAt();
 
 	if(_enableDOF){
@@ -268,18 +271,14 @@ void PostFX::displaySceneWithoutAnaglyph(bool deferred){
 		}
 
 		_postProcessingShader->UniformTexture("texScreen", id++);
-		
 
-		if(_underwater){
-			if(_underwaterTexture){
-				_underwaterTexture->Bind(id);
-				_postProcessingShader->UniformTexture("texWaterNoiseNM", id++);
-			}
-			_postProcessingShader->Uniform("enable_underwater",true);	
-		}else{
-			_postProcessingShader->Uniform("enable_underwater",false);	
+		if(_underwater && _underwaterTexture){
+			_underwaterTexture->Bind(id);
+			_postProcessingShader->UniformTexture("texWaterNoiseNM", id++);
 		}
-			
+
+		_postProcessingShader->Uniform("enable_underwater",_underwater);
+
 		if(_enableBloom){
 			_bloomFBO->Bind(id);
 			_postProcessingShader->UniformTexture("texBloom", id++);
@@ -296,16 +295,21 @@ void PostFX::displaySceneWithoutAnaglyph(bool deferred){
 			_screenBorder->Bind(id);
 			_postProcessingShader->UniformTexture("texVignette", id++);
 		}
+        if(_enableHDR){
+            _postProcessingShader->Uniform("exposure",1.0f);
+        }
+		_postProcessingShader->Uniform("enable_hdr",_enableHDR);
 
 		_gfx.toggle2D(true);
-		_gfx.renderModel(_renderQuad);
+        _renderQuad->setCustomShader(_postProcessingShader);
+		_gfx.renderInstance(_renderQuad->renderInstance());
 		_gfx.toggle2D(false);
 
 		if(_enableNoise){
 			_screenBorder->Unbind(--id);
 			_noise->Unbind(--id);
 		}
-	
+
 		if(_enableSSAO){
 			_SSAO_FBO->Unbind(--id);
 		}
@@ -318,7 +322,6 @@ void PostFX::displaySceneWithoutAnaglyph(bool deferred){
 		}
 
 		if(!_enableDOF  || !_depthOfFieldFBO)	{
-				
 			_screenFBO->Unbind(--id);
 		}else{
 			_depthOfFieldFBO->Unbind(--id);
@@ -342,35 +345,55 @@ void PostFX::idle(){
 	//Update states
 	_enablePostProcessing = par.getParam<bool>("postProcessing.enablePostFX");
 	_underwater = par.getParam<bool>("scene.camera.underwater");
+    _enableDOF = par.getParam<bool>("postProcessing.enableDepthOfField");
+    _enableFXAA = par.getParam<bool>("postProcessing.enableFXAA");
+
+    bool recompileShader = false;
 
 	if(_enablePostProcessing){
 		_enableAnaglyph = par.getParam<bool>("postProcessing.enable3D");
-		_enableBloom = par.getParam<bool>("postProcessing.enableBloom");
-		_enableSSAO  = par.getParam<bool>("postProcessing.enableSSAO");
-		_enableDOF   = par.getParam<bool>("postProcessing.enableDepthOfField");
-		_enableNoise = par.getParam<bool>("postProcessing.enableNoise");
-        _bloomFactor = par.getParam<F32>("postProcessing.bloomFactor");
-		createOperators();
+        _enableNoise = par.getParam<bool>("postProcessing.enableNoise");
 
+        if(_enableBloom != par.getParam<bool>("postProcessing.enableBloom")){
+            _enableBloom = !_enableBloom;
+            if(_enableBloom) _postProcessingShader->addShaderDefine("POSTFX_ENABLE_BLOOM");
+            else _postProcessingShader->removeShaderDefine("POSTFX_ENABLE_BLOOM");
+            recompileShader = true;
+        }
+        if(_enableSSAO != par.getParam<bool>("postProcessing.enableSSAO")){
+            _enableSSAO = !_enableSSAO;
+            if(_enableSSAO)  _postProcessingShader->addShaderDefine("POSTFX_ENABLE_SSAO");
+            else _postProcessingShader->removeShaderDefine("POSTFX_ENABLE_SSAO");
+            recompileShader = true;
+        }
+
+        if(_enableHDR != par.getParam<bool>("rendering.enableHDR")){
+            _enableHDR = !_enableHDR;
+            if(_enableHDR)   _postProcessingShader->addShaderDefine("POSTFX_ENABLE_HDR");
+            else _postProcessingShader->removeShaderDefine("POSTFX_ENABLE_HDR");
+            recompileShader = true;
+        }
+
+        createOperators();
+        if(recompileShader){
+            ///recreate only the fragment shader
+            _postProcessingShader->recompile(false,true);
+        }
 		_postProcessingShader->bind();
-     
-	    _postProcessingShader->Uniform("bloom_factor", _bloomFactor);
-		_postProcessingShader->Uniform("enable_bloom",_enableBloom);
-		_postProcessingShader->Uniform("enable_ssao",_enableSSAO);
+	    if(_enableBloom) _postProcessingShader->Uniform("bloom_factor", par.getParam<F32>("postProcessing.bloomFactor"));
 		_postProcessingShader->Uniform("enable_vignette",_enableNoise);
 		_postProcessingShader->Uniform("enable_noise",_enableNoise);
-		_postProcessingShader->Uniform("enable_pdc",(_enableDOF && _depthOfFieldFBO));
+
 		if(_enableNoise){
-				_timer += GETMSTIME();
-				if(_timer > _tickInterval ){
-					_timer = 0;
-					_randomNoiseCoefficient = (F32)random(1000) * 0.001f;
-					_randomFlashCoefficient = (F32)random(1000) * 0.001f;
-				}
-				
-				_postProcessingShader->Uniform("randomCoeffNoise", _randomNoiseCoefficient);
-				_postProcessingShader->Uniform("randomCoeffFlash", _randomFlashCoefficient);
-				
+		    _timer += GETMSTIME();
+			if(_timer > _tickInterval ){
+				_timer = 0;
+				_randomNoiseCoefficient = (F32)random(1000) * 0.001f;
+				_randomFlashCoefficient = (F32)random(1000) * 0.001f;
+			}
+
+			_postProcessingShader->Uniform("randomCoeffNoise", _randomNoiseCoefficient);
+			_postProcessingShader->Uniform("randomCoeffFlash", _randomFlashCoefficient);
 		}
 		_postProcessingShader->unbind();
 	}

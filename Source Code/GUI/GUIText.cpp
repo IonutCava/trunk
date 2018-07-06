@@ -6,13 +6,10 @@ void GUIText::onResize(const vec2<I32>& newSize){
 }
 
 void GUIText::onMouseMove(const GUIEvent &event){
-
 }
 
 void GUIText::onMouseUp(const GUIEvent &event){
-
 }
 
 void GUIText::onMouseDown(const GUIEvent &event){
-
 }

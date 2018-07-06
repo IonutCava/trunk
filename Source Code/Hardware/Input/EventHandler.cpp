@@ -8,13 +8,12 @@ EventHandler::EventHandler(InputInterface* pApp, Kernel* const kernel) :
 												   _kernel(kernel),
 												   _pApplication(pApp),
 												   _pJoystickInterface(NULL),
-												   _pEffectMgr(NULL) 
+												   _pEffectMgr(NULL)
 {
 	assert(kernel != NULL);
 }
 
 void EventHandler::initialize(JoystickInterface* pJoystickInterface, EffectManager* pEffectMgr){
-
   _pJoystickInterface = pJoystickInterface;
   _pEffectMgr = pEffectMgr;
 }
@@ -36,10 +35,10 @@ bool EventHandler::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID
 // These functions apply the given Variables to the given OIS::Effect
 
 // Variable force "Force" + optional "AttackFactor" constant, on a OIS::ConstantEffect
-void forceVariableApplier(MapVariables& mapVars, OIS::Effect* pEffect)
-{
-  double dForce = mapVars["Force"]->getValue();
-  double dAttackFactor = 1.0;
+void forceVariableApplier(MapVariables& mapVars, OIS::Effect* pEffect){
+
+  D32 dForce = mapVars["Force"]->getValue();
+  D32 dAttackFactor = 1.0;
   if (mapVars.find("AttackFactor") != mapVars.end())
 	dAttackFactor = mapVars["AttackFactor"]->getValue();
 
@@ -50,13 +49,12 @@ void forceVariableApplier(MapVariables& mapVars, OIS::Effect* pEffect)
 }
 
 // Variable "Period" on an OIS::PeriodicEffect
-void periodVariableApplier(MapVariables& mapVars, OIS::Effect* pEffect)
-{
-  double dPeriod = mapVars["Period"]->getValue();
+void periodVariableApplier(MapVariables& mapVars, OIS::Effect* pEffect){
+
+  D32 dPeriod = mapVars["Period"]->getValue();
 
   OIS::PeriodicEffect* pPeriodForce = dynamic_cast<OIS::PeriodicEffect*>(pEffect->getForceEffect());
   pPeriodForce->period = (U32)dPeriod;
 }
-
 
 LRESULT DlgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam ){	return FALSE; }

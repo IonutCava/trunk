@@ -45,11 +45,11 @@ class TerrainDescriptor;
 #include "Dynamics/Physics/Headers/PXDevice.h"
 //GUI
 #include "GUI/Headers/GUI.h"
+#include "GUI/Headers/GUIElement.h"
 
 ///The scene is a resource (to enforce load/unload and setName) and it has a 2 states: one for game information and one for rendering information
 class PhysicsSceneInterface;
 class Scene : public Resource{
-
 public:
 
 	Scene();
@@ -59,15 +59,15 @@ public:
 	bool removeGeometry(SceneNode* node);
 
 	/**Begin scene logic loop*/
-	virtual void processInput() = 0;          ///<Get all input commands from the user
-	virtual void processTasks(U32 time) = 0;  ///<Update the scene based on the inputs
-	virtual void preRender() = 0;             ///<Prepare the scene for rendering after the update
-    virtual void postRender();                ///<Perform any post rendering operations (such as showing texture previews)
-	bool idle();                              ///<Scene is rendering, so add intensive tasks here to save CPU cycles
+	virtual void processInput() = 0;                //<Get all input commands from the user
+	virtual void processTasks(const U32 time) = 0;  //<Update the scene based on the inputs
+	virtual void preRender() = 0;                   //<Prepare the scene for rendering after the update
+    virtual void postRender();                      //<Perform any post rendering operations (such as showing texture previews)
+	bool idle();                                    //<Scene is rendering, so add intensive tasks here to save CPU cycles
 	/**End scene logic loop*/
 
 	/// Update animations, network data, sounds, triggers etc.
-	virtual void updateSceneState(U32 sceneTime);
+	virtual void updateSceneState(const U32 sceneTime);
 	inline SceneGraphNode*                 getSkySGN(I32 index)     {if(_skiesSGN.empty()) {return NULL;} CLAMP<I32>(index,0,_skiesSGN.size() - 1); return _skiesSGN[index];}
 	inline vectorImpl<TerrainDescriptor*>& getTerrainInfoArray()    {return _terrainInfoArray;}
 	inline vectorImpl<FileData>&           getModelDataArray()      {return _modelDataArray;}
@@ -84,7 +84,7 @@ public:
 	inline void addTerrain(TerrainDescriptor* ter)     {_terrainInfoArray.push_back(ter);}
 	       void addPatch(vectorImpl<FileData>& data);
 	       void addLight(Light* const lightItem);
-	
+
 	inline void cacheResolution(const vec2<U16>& newResolution) {_sceneRenderState->_cachedResolution = newResolution;}
 
 	///Object picking
@@ -111,7 +111,8 @@ protected:
 	vectorImpl<FileData>           _vegetationDataArray;
 	vectorImpl<FileData>           _pendingDataArray;
 	vectorImpl<TerrainDescriptor*> _terrainInfoArray;
-	
+	F32                            _FBSpeedFactor;
+	F32                            _LRSpeedFactor;
     ///Current selection
     SceneGraphNode* _currentSelection;
 
@@ -126,7 +127,7 @@ protected:
 	///It is destroyed after each scene's "deinitializeAI" is called
 	std::tr1::shared_ptr<Task>  _aiTask;
 
-private: 
+private:
 	vectorImpl<Task_ptr> _tasks;
 	///saves all the rendering information for the scene (camera position, light info, draw states)
 	SceneRenderState* _sceneRenderState;
@@ -181,7 +182,7 @@ public: //Input
 	virtual void onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button);
 };
 
-///usage: REGISTER_SCENE(A,B) where: - A is the scene's class name 
+///usage: REGISTER_SCENE(A,B) where: - A is the scene's class name
 ///									  -B is the name used to refer to that scene in the XML files
 ///Call this function after each scene declaration
 #define REGISTER_SCENE_W_NAME(scene, sceneName) bool scene ## _registered = SceneManager::getInstance().registerScene<scene>(#sceneName);

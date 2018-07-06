@@ -17,7 +17,7 @@ bool AICoordination::addTeamMember(AIEntity* entity) {
 	}
 	UpgradeToWriteLock uw_lock(ur_lock);
 	_team.insert(std::make_pair(entity->getGUID(),entity));
-	
+
 	return true;
 }
 
@@ -34,7 +34,7 @@ bool AICoordination::removeTeamMember(AIEntity* entity) {
 }
 
 bool AICoordination::addEnemyTeam(teamMap& enemyTeam){
-	WriteLock w_lock(_updateMutex); 
+	WriteLock w_lock(_updateMutex);
 	if(!_enemyTeam.empty()){
 		_enemyTeam.clear();
 	}

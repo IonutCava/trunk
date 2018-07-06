@@ -57,9 +57,3 @@ U16 RenderPassManager::getLastTotalBinSize(U8 renderPassId){
 	}
 	return 0;
 }
-
-void RenderPassManager::updateMaterials(bool state){
-	for_each(RenderPassItem& rpi, _renderPasses){
-		rpi._rp->updateMaterials(state);
-	}
-}

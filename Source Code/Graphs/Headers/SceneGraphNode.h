@@ -18,30 +18,37 @@
 #ifndef _SCENE_GRAPH_NODE_H_
 #define _SCENE_GRAPH_NODE_H_
 
-#define SCENE_GRAPH_PROCESS(pointer) boost::bind(&SceneGraph::process(),pointer)
+#define SCENE_GRAPH_PROCESS(pointer) DELEGATE_BIND(&SceneGraph::process(),pointer)
 
 #include "SceneNode.h"
 #include <boost/atomic.hpp>
 
+class Transform;
 class SceneGraph;
 class SceneRoot : public SceneNode{
 public:
-	SceneRoot() : SceneNode("root",TYPE_ROOT){_renderState.useDefaultMaterial(false);}
-	void render(SceneGraphNode* const sgn) {return;}
+	SceneRoot() : SceneNode("root",TYPE_ROOT)
+	{
+		_renderState.useDefaultMaterial(false);
+	}
 
-	bool load(const std::string& name) {return true;}
-	void postLoad(SceneGraphNode* const sgn) {};	
-	bool unload() {return true;}
-	void onDraw() {};
-	bool computeBoundingBox(SceneGraphNode* const sgn) {return true;}
-	void updateTransform(SceneGraphNode* const sgn) {}
+	void render(SceneGraphNode* const sgn)             {return;}
+	void postLoad(SceneGraphNode* const sgn)           {return;}
+	void onDraw(const RenderStage& currentStage)       {return;}
+	void updateTransform(SceneGraphNode* const sgn)    {return;}
+	bool unload()                                      {return true;}
+	bool load(const std::string& name)                 {return true;}
+    bool computeBoundingBox(SceneGraphNode* const sgn) {return true;}
+
 };
 
 class SceneGraphNode{
 public:
+	typedef Unordered_map<std::string, SceneGraphNode*> NodeChildren;
+
     ///Usage context affects lighting, navigation,etc
 	enum UsageContext {
-		NODE_DYNAMIC = 0, 
+		NODE_DYNAMIC = 0,
 		NODE_STATIC
 	};
 
@@ -50,10 +57,9 @@ public:
         NODE_IGNORE
     };
 
-	typedef Unordered_map<std::string, SceneGraphNode*> NodeChildren;
-	SceneGraphNode(SceneNode* node);
-
+	SceneGraphNode(SceneNode* const node);
 	~SceneGraphNode();
+
 	bool unload();
 	/// Recursivelly print information about this SGN and all it's children
 	void print();
@@ -66,12 +72,12 @@ public:
 	/// Culling and visibility checks
 	void updateVisualInformation();
 	/// Called from SceneGraph "sceneUpdate"
-	void sceneUpdate(U32 sceneTime);
+	void sceneUpdate(const U32 sceneTime);
 	/*Node Management*/
 	template<class T>
 	///Always use the level of redirection needed to reduce virtual function overhead
 	///Use getNode<SceneNode> if you need material properties for ex. or getNode<SubMesh> for animation transforms
-	inline T* getNode() {assert(_node != NULL); return dynamic_cast<T*>(_node);}
+	inline T* getNode() const {assert(_node != NULL); return dynamic_cast<T*>(_node);}
 
     SceneGraphNode* addNode(SceneNode* const node,const std::string& name = "");
 	void			removeNode(SceneGraphNode* node);
@@ -80,61 +86,88 @@ public:
 	SceneGraphNode* findNode(const std::string& name, bool sceneNodeName = false);
 	///Find the graph node whom's bounding box intersects the given ray
 	SceneGraphNode* Intersect(const Ray& ray, F32 start, F32 end);
-const  std::string& getName(){return _name;}
-/*Node Management*/
 
-/*Parent <-> Children*/
-inline       SceneGraphNode*  getParent(){return _parent;}
-inline       SceneGraphNode*  getGrandParent(){return _grandParent;}
-inline       NodeChildren&    getChildren() {return _children;}
-	         void             setParent(SceneGraphNode* parent);
-inline       void             setGrandParent(SceneGraphNode* grandParent) {_grandParent = grandParent;}
-/*Parent <-> Children*/
+	const  std::string& getName() const {return _name;}
+	/*Node Management*/
 
-/*Bounding Box Management*/
-inline   	 void    		  setInitialBoundingBox(BoundingBox& initialBoundingBox){WriteLock w_lock(_queryLock); _initialBoundingBox = initialBoundingBox;}
-inline const BoundingBox&     getInitialBoundingBox()		  {ReadLock r_lock(_queryLock); return _initialBoundingBox;}
-inline       BoundingBox&     getBoundingBox()                {ReadLock r_lock(_queryLock); return _boundingBox;}
-inline       void             updateBoundingBox(const BoundingBox& box) {WriteLock w_lock(_queryLock); _boundingBox = box;}  
+	/*Parent <-> Children*/
+				SceneGraphNode*  getRoot()        const;
+    inline      SceneGraphNode*  getParent()      const {return _parent;}
+	inline      SceneGraphNode*  getGrandParent() const {return _grandParent;}
+	inline      NodeChildren&    getChildren()          {return _children;}
+	inline      void             setGrandParent(SceneGraphNode* const grandParent) {_grandParent = grandParent;}
+				void             setParent(SceneGraphNode* const parent);
+	/*Parent <-> Children*/
 
-vectorImpl<BoundingBox >&     getBBoxes(vectorImpl<BoundingBox >& boxes );
-inline       void             updateBB(bool state) { _updateBB = state;}
-inline       bool             updateBB()           { return _updateBB;}
-inline       BoundingSphere&  getBoundingSphere()  {ReadLock r_lock(_queryLock); return _boundingSphere;}         
-/*Bounding Box Management*/
+	/*Bounding Box Management*/
+	inline void setInitialBoundingBox(const BoundingBox& initialBoundingBox){
+		WriteLock w_lock(_queryLock);
+		_initialBoundingBox = initialBoundingBox;
+	}
 
-/*Transform management*/
-	          void			  setTransform(Transform* const t);
-			 Transform*	const getTransform();
-inline       void             useDefaultTransform(bool state) {_noDefaultTransform = !state;}
-inline       void             silentDispose(bool state) {_silentDispose = state;}
-/*Transform management*/
+	inline void updateBoundingBox(const BoundingBox& box) {
+		WriteLock w_lock(_queryLock);
+		_boundingBox = box;
+	}
 
-/*Node State*/
-inline   	 void             setActive(bool state) {_wasActive = _active; _active = state;}
-inline       bool             isActive() {return _active;}
-inline       void             restoreActive() {_active = _wasActive;}
-inline       void			  scheduleDeletion(){_shouldDelete = true;}
-inline       bool             isReady(){return _isReady;}
-/*Node State*/
+	inline       BoundingBox&     getBoundingBox()         {ReadLock r_lock(_queryLock); return _boundingBox;}
+	inline const BoundingBox&     getInitialBoundingBox()  {ReadLock r_lock(_queryLock); return _initialBoundingBox;}
+	
+	vectorImpl<BoundingBox >& getBBoxes(vectorImpl<BoundingBox >& boxes );
+	inline   void             updateBB(const bool state)        { _updateBB = state;}
+	inline   bool             updateBB()                 const  { return _updateBB;}
+	inline   const BoundingSphere&  getBoundingSphere()  const  {ReadLock r_lock(_queryLock); return _boundingSphere;}
+	/*Bounding Box Management*/
 
-inline       U32              getChildQueue() {return _childQueue;}
-inline       void             incChildQueue() {_childQueue++;}
-inline       void             decChildQueue() {_childQueue--;}
+	/*Transform management*/
+	Transform* const getTransform();
+	           void	 setTransform(Transform* const t);
+	inline     void  silentDispose(const bool state)       {_silentDispose = state;}
+	inline     void  useDefaultTransform(const bool state) {_noDefaultTransform = !state;}
+	/// Animations (if needed)
+	inline     void  animationTransforms(const vectorImpl<mat4<F32> >& animationTransforms) {_animationTransforms = animationTransforms;}
+    vectorImpl<mat4<F32> >& animationTransforms()                                           {return _animationTransforms;}
+	/*Transform management*/
 
-inline  UsageContext              getUsageContext() const {return _usageContext;}
-inline  void                      setUsageContext(UsageContext newContext) {_usageContext = newContext;}
-inline  NavigationContext         getNavigationContext() const {return _navigationContext;}
-inline  void                      setNavigationContext(NavigationContext newContext) {_navigationContext = newContext;}
+	/*Node State*/
+	inline void setActive(bool state) {_wasActive = _active; _active = state;}
+	inline void restoreActive()       {_active = _wasActive;}
+	inline void	scheduleDeletion()    {_shouldDelete = true;}
+
+	inline bool isReady()  const {return _isReady;}
+	inline bool isActive() const {return _active;}
+	/*Node State*/
+
+	inline U32  getChildQueue() const {return _childQueue;}
+	inline void incChildQueue()       {_childQueue++;}
+	inline void decChildQueue()       {_childQueue--;}
+
+	inline const UsageContext&      getUsageContext()      const {return _usageContext;}
+	inline const NavigationContext& getNavigationContext() const {return _navigationContext;}
+
+	inline void  setUsageContext(const UsageContext& newContext)           {_usageContext = newContext;}
+	inline void  setNavigationContext(const NavigationContext& newContext) {_navigationContext = newContext;}
+	
+    void addBoundingBox(const BoundingBox& bb, const SceneNodeType& type);
+    void setBBExclusionMask(U32 bbExclusionMask) {_bbAddExclusionList = bbExclusionMask;}
+
 
 private:
 	inline void setName(const std::string& name){_name = name;}
+
+protected:
+    friend class SceneGraph;
+    void setSceneGraph(SceneGraph* const sg) {_sceneGraph = sg;}
 
 private:
 	SceneNode* _node;
 	NodeChildren _children;
 	SceneGraphNode *_parent, *_grandParent;
+    SceneGraph     *_sceneGraph;
+
     boost::atomic<bool> _active;
+	//Used to skip certain BB's (sky, ligts, etc);
+    U32 _bbAddExclusionList;
     bool _wasActive;
 	bool _noDefaultTransform;
 	bool _inView;
@@ -146,7 +179,7 @@ private:
 	///_initialBoundingBox is a copy of the initialy calculate BB for transformation
 	///it should be copied in every computeBoungingBox call;
 	BoundingBox _initialBoundingBox;
-	BoundingBox _boundingBox; 
+	BoundingBox _boundingBox;
 	BoundingSphere _boundingSphere; ///<For faster visibility culling
 
 	Transform*	_transform;
@@ -156,6 +189,9 @@ private:
 
     UsageContext _usageContext;
     NavigationContext _navigationContext;
+
+	///Animations
+	vectorImpl<mat4<F32> > _animationTransforms;
 };
 
 #endif

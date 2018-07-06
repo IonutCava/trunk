@@ -21,7 +21,6 @@
 #include "Camera.h"
 ///Fixed camera that orbits a certain point
 class OrbitCamera : public Camera {
-
 public:
 	OrbitCamera() : Camera(ORBIT)
 	{

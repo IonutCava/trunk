@@ -21,15 +21,13 @@
 #include "glFrameBufferObject.h"
 
 class glDepthArrayBufferObject : public glFrameBufferObject {
-
 public:
 
 	glDepthArrayBufferObject(/*bool cubeMap = false - alas, depth only cubemaps do not exist in GL ...*/);
 	~glDepthArrayBufferObject() {Destroy();}
 
 	void DrawToLayer(GLubyte face, GLubyte layer);
-	void Bind(GLubyte unit=0, GLubyte texture = 0);		
+	void Bind(GLubyte unit=0, GLubyte texture = 0);
 };
 
 #endif
-

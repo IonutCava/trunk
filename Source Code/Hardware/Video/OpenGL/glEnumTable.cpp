@@ -1,6 +1,6 @@
 #include "Headers/glResources.h"
 #include "Headers/glEnumTable.h"
- 
+
 GLenum glBlendTable[BlendProperty_PLACEHOLDER];
 GLenum glBlendOpTable[BlendOperation_PLACEHOLDER];
 GLenum glCompareFuncTable[ComparisonFunction_PLACEHOLDER];
@@ -16,7 +16,6 @@ GLuint glTextureFilterTable[TextureFilter_PLACEHOLDER];
 
 namespace GL_ENUM_TABLE {
 	void fill(){
-
 	   glBlendTable[BLEND_PROPERTY_ZERO] = GL_ZERO;
 	   glBlendTable[BLEND_PROPERTY_ONE] = GL_ONE;
 	   glBlendTable[BLEND_PROPERTY_SRC_COLOR] = GL_SRC_COLOR;
@@ -43,35 +42,34 @@ namespace GL_ENUM_TABLE {
 	   glCompareFuncTable[CMP_FUNC_NEQUAL] = GL_NOTEQUAL;
 	   glCompareFuncTable[CMP_FUNC_GEQUAL] = GL_GEQUAL;
 	   glCompareFuncTable[CMP_FUNC_ALWAYS] = GL_ALWAYS;
-	   
+
 	   glStencilOpTable[STENCIL_OPERATION_KEEP] = GL_KEEP;
 	   glStencilOpTable[STENCIL_OPERATION_ZERO] = GL_ZERO;
 	   glStencilOpTable[STENCIL_OPERATION_REPLACE] = GL_REPLACE;
 	   glStencilOpTable[STENCIL_OPERATION_INCR] = GL_INCR;
 	   glStencilOpTable[STENCIL_OPERATION_DECR] = GL_DECR;
-	   glStencilOpTable[STENCIL_OPERATION_INV] = GL_INVERT;
+	   glStencilOpTable[STENCIL_OPERATION_INV]  = GL_INVERT;
 	   glStencilOpTable[STENCIL_OPERATION_INCR_WRAP] = GL_INCR_WRAP;
 	   glStencilOpTable[STENCIL_OPERATION_DECR_WRAP] = GL_DECR_WRAP;
 
 	   glCullModeTable[CULL_MODE_NONE] = GL_BACK;
-	   glCullModeTable[CULL_MODE_CW] = GL_BACK;
-	   glCullModeTable[CULL_MODE_CCW] = GL_FRONT;
-	   glCullModeTable[CULL_MODE_ALL] = GL_FRONT_AND_BACK;
+	   glCullModeTable[CULL_MODE_CW]   = GL_BACK;
+	   glCullModeTable[CULL_MODE_CCW]  = GL_FRONT;
+	   glCullModeTable[CULL_MODE_ALL]  = GL_FRONT_AND_BACK;
 
-	   glFillModeTable[FILL_MODE_POINT] = GL_POINT;
+	   glFillModeTable[FILL_MODE_POINT]     = GL_POINT;
 	   glFillModeTable[FILL_MODE_WIREFRAME] = GL_LINE;
-	   glFillModeTable[FILL_MODE_SOLID] = GL_FILL;
+	   glFillModeTable[FILL_MODE_SOLID]     = GL_FILL;
 
-	   glTextureTypeTable[TEXTURE_1D] = GL_TEXTURE_1D;
+ 	   glTextureTypeTable[TEXTURE_1D] = GL_TEXTURE_1D;
 	   glTextureTypeTable[TEXTURE_2D] = GL_TEXTURE_2D;
 	   glTextureTypeTable[TEXTURE_3D] = GL_TEXTURE_3D;
 	   glTextureTypeTable[TEXTURE_CUBE_MAP] = GL_TEXTURE_CUBE_MAP;
-	   glTextureTypeTable[TEXTURE_2D_ARRAY] = GL_TEXTURE_2D_ARRAY;
+	   glTextureTypeTable[TEXTURE_2D_ARRAY] = GL_TEXTURE_2D_ARRAY_EXT;
 	   glTextureTypeTable[TEXTURE_CUBE_ARRAY] = GL_TEXTURE_CUBE_MAP_ARRAY;
 	   glTextureTypeTable[TEXTURE_2D_MS] = GL_TEXTURE_2D_MULTISAMPLE;
 	   glTextureTypeTable[TEXTURE_2D_ARRAY_MS] = GL_TEXTURE_2D_MULTISAMPLE_ARRAY;
 
-	   
 	   glImageFormatTable[LUMINANCE] = GL_LUMINANCE;
 	   glImageFormatTable[LUMINANCE_ALPHA] = GL_LUMINANCE_ALPHA;
 	   glImageFormatTable[RGB] = GL_RGB;
@@ -87,7 +85,9 @@ namespace GL_ENUM_TABLE {
 	   glImageFormatTable[RGBA16F] = GL_RGBA16F;
 	   glImageFormatTable[RGBA32F] = GL_RGBA32F;
 	   glImageFormatTable[DEPTH_COMPONENT] = GL_DEPTH_COMPONENT;
+       glImageFormatTable[DEPTH_COMPONENT16] = GL_DEPTH_COMPONENT16;
 	   glImageFormatTable[DEPTH_COMPONENT24] = GL_DEPTH_COMPONENT24;
+       glImageFormatTable[DEPTH_COMPONENT32] = GL_DEPTH_COMPONENT32;
 
 	   glPrimitiveTypeTable[API_POINTS] = GL_POINTS;
 	   glPrimitiveTypeTable[LINES] = GL_LINES;
@@ -122,4 +122,3 @@ namespace GL_ENUM_TABLE {
 	   glTextureFilterTable[TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR] = GL_LINEAR_MIPMAP_LINEAR;
 	}
 }
-

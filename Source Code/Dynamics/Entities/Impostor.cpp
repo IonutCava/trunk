@@ -1,9 +1,11 @@
 #include "Headers/Impostor.h"
+
 #include "Core/Resources/Headers/ResourceCache.h"
+#include "Hardware/Video/Headers/GFXDevice.h"
 #include "Hardware/Video/Headers/RenderStateBlock.h"
+#include "Geometry/Material/Headers/Material.h"
 
 Impostor::Impostor(const std::string& name, F32 radius) : _visible(false){
-
 	ResourceDescriptor materialDescriptor(name+"_impostor_material");
 	materialDescriptor.setFlag(true); //No shader
 	ResourceDescriptor impostorDesc(name+"_impostor");
@@ -18,15 +20,13 @@ Impostor::Impostor(const std::string& name, F32 radius) : _visible(false){
 	_dummy->getSceneNodeRenderState().setDrawState(false);
 	_dummy->setResolution(8);
 	_dummy->setRadius(radius);
-	RenderStateBlockDescriptor dummyDesc = _dummy->getMaterial()->getRenderState(FINAL_STAGE)->getDescriptor();
-	dummyDesc._fixedLighting = false;
+    _dummyStateBlock = _dummy->getMaterial()->getRenderState(FINAL_STAGE);
+	RenderStateBlockDescriptor& dummyDesc = _dummyStateBlock->getDescriptor();
 	dummyDesc.setFillMode(FILL_MODE_WIREFRAME);
-	///get's deleted by the material
-	_dummyStateBlock = _dummy->getMaterial()->setRenderStateBlock(dummyDesc,FINAL_STAGE);
 }
 
 Impostor::~Impostor(){
-	//Do not delete dummy as it is added to the SceneGraph as the node's child. 
+	//Do not delete dummy as it is added to the SceneGraph as the node's child.
 	//Only the SceneNode (by Uther's might) should delete the dummy
 }
 
@@ -34,15 +34,13 @@ void Impostor::render(SceneGraphNode* const node){
 	GFXDevice& gfx = GFX_DEVICE;
 	if(!gfx.isCurrentRenderStage(DISPLAY_STAGE)) return;
 	SET_STATE_BLOCK(_dummyStateBlock);
-	gfx.setObjectState(node->getTransform());
-	if(!_dummy->getMaterial()->getShaderProgram()) {
-		_dummy->onDraw();
-	}
+	_dummy->renderInstance()->transform(node->getTransform());
+
+    _dummy->onDraw(gfx.getRenderStage());
 	_dummy->getMaterial()->getShaderProgram()->bind();
 	_dummy->getMaterial()->getShaderProgram()->Uniform("material",_dummy->getMaterial()->getMaterialMatrix());
-		_dummy->onDraw();
-		gfx.renderModel(_dummy);
-	gfx.releaseObjectState(node->getTransform());
+
+	gfx.renderInstance(_dummy->renderInstance());
 }
 
 /// Render dummy at target transform
@@ -50,14 +48,11 @@ void Impostor::render(Transform* const transform){
 	GFXDevice& gfx = GFX_DEVICE;
 	if(gfx.isCurrentRenderStage(DISPLAY_STAGE)) return;
 	SET_STATE_BLOCK(_dummyStateBlock);
-	gfx.setObjectState(transform);
-	if(!_dummy->getMaterial()->getShaderProgram()) {
-		_dummy->onDraw();
-	}
+	_dummy->renderInstance()->transform(transform);
+
+    _dummy->onDraw(gfx.getRenderStage());
 	_dummy->getMaterial()->getShaderProgram()->bind();
 	_dummy->getMaterial()->getShaderProgram()->Uniform("material",_dummy->getMaterial()->getMaterialMatrix());
 
-		gfx.renderModel(_dummy);
-
-	gfx.releaseObjectState(transform);
+	gfx.renderInstance(_dummy->renderInstance());
 }

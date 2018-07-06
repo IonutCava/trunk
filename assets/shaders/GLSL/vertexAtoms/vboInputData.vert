@@ -1,42 +1,62 @@
-attribute vec3  inVertexData;
-attribute vec3  inNormalData;
-attribute vec2  inTexCoordData;
-attribute vec3  inTangentData;
-attribute vec3  inBiTangentData;
+struct Light{
+	vec4  _position;
+	vec4  _direction;
+	vec4  _ambient;
+	vec4  _diffuse;
+	vec4  _specular;
+	vec4  _attenuation; //x = constAtt, y = linearAtt, z = quadraticAtt, w = range
+	float _spotExponent;
+	float _spotCutoff;
+	float _brightness;
+	float _padding;
+};
 
-vec4  vertexData;
-vec3  normalData;
-vec3  tangentData;
-vec3  biTangentData;
+vec4  dvd_Vertex;
+vec3  dvd_Normal;
+vec3  dvd_Tangent;
+vec3  dvd_BiTangent;
+vec4  dvd_BoneWeight;
+ivec4 dvd_BoneIndice;
 
-varying vec2 _texCoord;
+out vec2 _texCoord;
 
-uniform mat4 transformMatrix;
-uniform mat4 parentTransformMatrix;
-uniform mat4 projectionMatrix;
-uniform mat4 modelViewInvMatrix;
-uniform mat4 modelViewProjectionMatrix;
+in vec3  inVertexData;
+in vec3  inNormalData;
+in vec2  inTexCoordData;
+in vec3  inTangentData;
+in vec3  inBiTangentData;
+in vec4  inBoneWeightData;
+in ivec4 inBoneIndiceData;
 
+uniform mat4 dvd_ModelMatrix;
+uniform mat3 dvd_NormalMatrix;
+uniform mat4 dvd_ModelViewMatrix;
+uniform mat4 dvd_ModelViewMatrixInverse;
+uniform mat4 dvd_ModelViewProjectionMatrix;
 
+layout(std140) uniform dvd_MatrixBlock
+{
+    mat4 dvd_ProjectionMatrix;
+	mat4 dvd_ViewMatrix;
+};
 
-void computeData(void){
+//layout(std140) uniform dvd_LightBlock
+//{
+//	Light dvd_Light[MAX_LIGHT_COUNT];
+//};
 
-#if defined(USE_VBO_DATA)
+void computeData(){
 
-		vertexData    = vec4(inVertexData,1.0);
-		normalData    = inNormalData;
-		_texCoord     = inTexCoordData;
-		tangentData   = inTangentData;
-		biTangentData = inBiTangentData;
+	dvd_Vertex     = vec4(inVertexData,1.0);
+	dvd_Normal     = inNormalData;
+	_texCoord      = inTexCoordData;
+	dvd_Tangent    = inTangentData;
+	dvd_BiTangent  = inBiTangentData;
+}
 
-#else
-		vertexData     = gl_Vertex;
-		normalData     = gl_Normal;
-		_texCoord      = gl_MultiTexCoord0.xy;
-		tangentData    = gl_MultiTexCoord1.xyz;
-		biTangentData  = gl_MultiTexCoord2.xyz;
-
-#endif
+void computeBoneData(){
+    dvd_BoneWeight = inBoneWeightData;
+    dvd_BoneIndice = inBoneIndiceData;
 }
 
 

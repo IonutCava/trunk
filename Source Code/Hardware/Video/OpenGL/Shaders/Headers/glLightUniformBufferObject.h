@@ -17,7 +17,7 @@
 
 #ifndef GL_LIGHT_UNIFORM_BUFFER_OBJECT_H_
 #define GL_LIGHT_UNIFORM_BUFFER_OBJECT_H_
-#include "glUniformBufferObject.h" 
+#include "glUniformBufferObject.h"
 
 class Light;
 
@@ -26,7 +26,7 @@ public:
     glLightUniformBufferObject();
     ~glLightUniformBufferObject();
 
-    void FillData();
+    void ReserveBuffer(GLuint primitiveCount);
 };
 
 #endif

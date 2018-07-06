@@ -15,7 +15,6 @@
    along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #ifndef _RENDER_PASS_MANAGER_H_
 #define _RENDER_PASS_MANAGER_H_
 #include "core.h"
@@ -43,7 +42,7 @@ public:
 	///Find a renderpass by name and remove it from the manager, optionally not deleting it
 	void removeRenderPass(const std::string& name,bool deleteRP = true);
 	U16 getLastTotalBinSize(U8 renderPassId);
-	void updateMaterials(bool state);
+
 private:
 	~RenderPassManager();
 	vectorImpl<RenderPassItem > _renderPasses;

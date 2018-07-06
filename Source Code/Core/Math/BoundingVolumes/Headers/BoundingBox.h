@@ -19,29 +19,31 @@
 #define BOUNDINGBOX_H_
 
 #include "Core/Math/Headers/Ray.h"
-#include "Utility/Headers/CRC.h"
+#include "Utility/Headers/Vector.h"
+#include "Utility/Headers/GUIDWrapper.h"
+#include "Core/Math/Headers/MathClasses.h"
 
-class BoundingBox {
+class BoundingBox : public GUIDWrapper {
 public:
-	BoundingBox() : _computed(false),
+	BoundingBox() : GUIDWrapper(),
+                    _computed(false),
 				    _visibility(false)
 	{
-        _min.set(100000.0f, 100000.0f, 100000.0f); 
+        _min.set(100000.0f, 100000.0f, 100000.0f);
         _max.set(-100000.0f, -100000.0f, -100000.0f);
 		_points.resize(8, vec3<F32>());
-		_guid = Util::CRC32(this,sizeof(BoundingBox));
 	}
 
-	BoundingBox(const vec3<F32>& min, const vec3<F32>& max) : _computed(false),
+	BoundingBox(const vec3<F32>& min, const vec3<F32>& max) : GUIDWrapper(),
+                                                              _computed(false),
 														      _visibility(false),
 															  _min(min),
 															  _max(max)
 	{
 		_points.resize(8, vec3<F32>());
-		_guid = Util::CRC32(this,sizeof(BoundingBox));
 	}
 
-	BoundingBox(const BoundingBox& b){
+	BoundingBox(const BoundingBox& b) : GUIDWrapper() {
 		//WriteLock w_lock(_lock);
 		this->_computed = b._computed;
 		this->_visibility = b._visibility;
@@ -50,10 +52,9 @@ public:
 		this->_center = b._center;
 		this->_extent = b._extent;
 		this->_oldMatrix = b._oldMatrix;
-		this->_guid = b._guid;
 		this->_points.clear();
-		for_each(vec3<F32> p, b._points){
-			this->_points.push_back(p);
+        for(U8 i = 0; i < 8; i++){
+			this->_points.push_back(b._points[i]);
 		}
 	}
 
@@ -66,10 +67,9 @@ public:
 		this->_center = b._center;
 		this->_extent = b._extent;
 		this->_oldMatrix = b._oldMatrix;
-		this->_guid = b._guid;
 		this->_points.clear();
-		for_each(vec3<F32> p, b._points){
-			this->_points.push_back(p);
+		for(U8 i = 0; i < 8; i++){
+			this->_points.push_back(b._points[i]);
 		}
 	}
 
@@ -79,7 +79,6 @@ public:
 	};
 
 	inline bool  Collision(const BoundingBox& AABB2) {
-
 		//ReadLock r_lock(_lock);
 
 		if(this->_max.x < AABB2._min.x) return false;
@@ -93,7 +92,7 @@ public:
         return true;
 	}
 
-	inline bool Compare(const BoundingBox& bb) const {/*ReadLock r_lock(_lock);*/ return _guid == bb._guid;}
+	inline bool Compare(const BoundingBox& bb) const {/*ReadLock r_lock(_lock);*/ return _GUID == bb._GUID;}
 
     bool operator == (BoundingBox& B){return Compare(B);}
     bool operator != (BoundingBox& B){return !Compare(B);}
@@ -111,7 +110,7 @@ public:
 		ty_min = (bounds[r.sign[1]].y - r.origin.y) * r.inv_direction.y;
 		ty_max = (bounds[1-r.sign[1]].y - r.origin.y) * r.inv_direction.y;
 
-		if ( (t_min > ty_max) || (ty_min > t_max) ) 
+		if ( (t_min > ty_max) || (ty_min > t_max) )
 			return false;
 
 		if (ty_min > t_min)
@@ -120,7 +119,7 @@ public:
 			t_max = ty_max;
 		tz_min = (bounds[r.sign[2]].z - r.origin.z) * r.inv_direction.z;
 		tz_max = (bounds[1-r.sign[2]].z - r.origin.z) * r.inv_direction.z;
-		
+
 		if ( (t_min > tz_max) || (tz_min > t_max) )
 			return false;
 
@@ -131,9 +130,9 @@ public:
 
 		return ( (t_min < t1) && (t_max > t0) );
 	}
-	
+
 	inline void Add(const vec3<F32>& v)	{
-		//WriteLock w_lock(_lock); 
+		//WriteLock w_lock(_lock);
 		if(v.x > _max.x)	_max.x = v.x;
 		if(v.x < _min.x)	_min.x = v.x;
 		if(v.y > _max.y)	_max.y = v.y;
@@ -143,7 +142,7 @@ public:
 	};
 
 	inline void Add(const BoundingBox& bb)	{
-		//WriteLock w_lock(_lock); 
+		//WriteLock w_lock(_lock);
 		if(bb._max.x > _max.x)	_max.x = bb._max.x;
 		if(bb._min.x < _min.x)	_min.x = bb._min.x;
 		if(bb._max.y > _max.y)	_max.y = bb._max.y;
@@ -153,19 +152,19 @@ public:
 	}
 
 	inline void Translate(const vec3<F32>& v) {
-		//WriteLock w_lock(_lock); 
+		//WriteLock w_lock(_lock);
 		_min += v;
 		_max += v;
 	}
 
 	inline void Multiply(F32 factor){
-		//WriteLock w_lock(_lock); 
+		//WriteLock w_lock(_lock);
 		_min *= factor;
 		_max *= factor;
 	}
 
 	inline void Multiply(const vec3<F32>& v){
-		//WriteLock w_lock(_lock); 
+		//WriteLock w_lock(_lock);
 		_min.x *= v.x;
 		_min.y *= v.y;
 		_min.z *= v.z;
@@ -175,21 +174,21 @@ public:
 	}
 
 	inline void MultiplyMax(const vec3<F32>& v){
-		//WriteLock w_lock(_lock); 
+		//WriteLock w_lock(_lock);
 		_max.x *= v.x;
 		_max.y *= v.y;
     	_max.z *= v.z;
 	}
 
 	inline void MultiplyMin(const vec3<F32>& v){
-		//WriteLock w_lock(_lock); 
+		//WriteLock w_lock(_lock);
 		_min.x *= v.x;
 		_min.y *= v.y;
 		_min.z *= v.z;
 	}
 
 	void Transform(const BoundingBox& initialBoundingBox, const mat4<F32>& mat){
-		//UpgradableReadLock ur_lock(_lock); 
+		//UpgradableReadLock ur_lock(_lock);
 		if(_oldMatrix == mat){
 			return;
 		}else{
@@ -199,7 +198,7 @@ public:
 			vec3<F32> old_min = initialBoundingBox.getMin();
 			vec3<F32> old_max = initialBoundingBox.getMax();
 
-			//UpgradeToWriteLock uw_lock(ur_lock);		
+			//UpgradeToWriteLock uw_lock(ur_lock);
 			_min = _max =  vec3<F32>(mat[12],mat[13],mat[14]);
 
 			for (U8 i = 0; i < 3; ++i)		{
@@ -225,7 +224,7 @@ public:
 
 	inline const vec3<F32>&  getMin()	 const {/*ReadLock r_lock(_lock);*/ return _min;}
 	inline const vec3<F32>&  getMax()	 const {/*ReadLock r_lock(_lock);*/ return _max;}
-	
+
     inline vec3<F32>  getCenter()     const {/*ReadLock r_lock(_lock);*/ return (_max+_min)*0.5f;}
 	inline vec3<F32>  getExtent()     const {/*ReadLock r_lock(_lock);*/ return _max -_min;}
 	inline vec3<F32>  getHalfExtent() const {return (_max -_min) * 0.5f;}
@@ -242,14 +241,14 @@ public:
     inline const vectorImpl<vec3<F32> >& getPoints() {ComputePoints(); return _points;}
 
 	inline F32 nearestDistanceFromPoint( const vec3<F32> &pos){
-		const vec3<F32>& center = getCenter() ;
+		const vec3<F32>& center = getCenter();
 		const vec3<F32>& hextent = getHalfExtent();
-		
+
 		vec3<F32> nearestVec;
 		nearestVec.x = Util::max( 0, fabsf( pos.x - center.x ) - hextent.x );
 		nearestVec.y = Util::max( 0, fabsf( pos.y - center.y ) - hextent.y );
 		nearestVec.z = Util::max( 0, fabsf( pos.z - center.z ) - hextent.z );
-		
+
 		return nearestVec.length();
 	}
 
@@ -272,10 +271,7 @@ private:
 	vec3<F32> _center, _extent;
 	mat4<F32> _oldMatrix;
 	vectorImpl<vec3<F32> > _points;
-	U32 _guid;
 	//mutable SharedLock _lock;
 };
 
 #endif
-
-

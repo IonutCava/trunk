@@ -21,7 +21,7 @@
 
 #ifndef _PHYSICS_API_FOUND_
 #error "No physics library implemented!"
-#endif 
+#endif
 
 DEFINE_SINGLETON_EXT1(PXDevice, PhysicsAPIWrapper)
 

@@ -35,8 +35,6 @@ struct ShaderStageDescriptor{
 
 	U8  _var;
 	bool _bypassDetailLevel;
-
-
 };
 
 class Shader;

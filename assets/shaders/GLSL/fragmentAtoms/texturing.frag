@@ -8,13 +8,13 @@ uniform int       texDiffuse0Op;
 uniform sampler2D texDiffuse1;
 uniform int       texDiffuse1Op;
 
-//true -> use opacity map
-uniform bool hasOpacity;
-//true -> use specular map 
-uniform bool hasSpecular;
+#if defined(USE_OPACITY_MAP)
 //Opacity and specular maps
 uniform sampler2D opacityMap;
+#endif
+#if defined(USE_SPECULAR_MAP)
 uniform sampler2D specularMap;
+#endif
 
 const int REPLACE    = 0;
 const int MODULATE   = 1;
@@ -28,41 +28,42 @@ const int SUBSTRACT  = 8;
 const int COMBINE    = 9;
 
 void applyTexture(in sampler2D texUnit, in int type, in int index, in vec2 uv, inout vec4 color){
+
     // Read from the texture
-    vec4 texture = texture(texUnit,uv);
+    vec4 tex = texture(texUnit,uv);
    
     if (type == REPLACE){
-        color = texture;
+        color = tex;
 
     } else if (type == MODULATE){
-        color *= texture;
+        color *= tex;
 
     } else if (type == DECAL){
-        vec3 temp = mix(color.rgb, texture.rgb, texture.a);
+        vec3 temp = mix(color.rgb, tex.rgb, tex.a);
         color = vec4(temp, color.a);
 
     }else if (type == BLEND) {
-        vec3 temp = mix(color.rgb, gl_TextureEnvColor[index].rgb, texture.rgb);
-        color = vec4(temp, color.a * texture.a);
+        vec3 temp = mix(color.rgb, gl_TextureEnvColor[index].rgb, tex.rgb);
+        color = vec4(temp, color.a * tex.a);
 
     }else if (type == ADD){
-        color.rgb += texture.rgb;
-        color.a   *= texture.a;
+        color.rgb += tex.rgb;
+        color.a   *= tex.a;
         color = clamp(color, 0.0, 1.0);
 
 	} else if (type == SMOOTH_ADD) {
-		color = (color + texture) - (color * texture);
+		color = (color + tex) - (color * tex);
 
 	} else if (type == SIGNED_ADD){
-		color += (texture - 0.5f);
+		color += (tex - 0.5);
 
 	}else if (type == DIVIDE){
-		color /= texture;
+		color /= tex;
 
 	}else if (type == SUBSTRACT) {
-		color -= texture;
+		color -= tex;
 
 	}else {
-        color = clamp(texture * color, 0.0, 1.0);
+        color = clamp(tex * color, 0.0, 1.0);
     }
 }

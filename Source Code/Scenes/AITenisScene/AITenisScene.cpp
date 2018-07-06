@@ -5,7 +5,9 @@
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "Dynamics/Entities/Units/Headers/NPC.h"
+#include "Geometry/Material/Headers/Material.h"
 #include "Managers/Headers/SceneManager.h"
+#include "Core/Math/Headers/Transform.h"
 #include "Managers/Headers/AIManager.h"
 #include "Rendering/Headers/Frustum.h"
 #include "GUI/Headers/GUIButton.h"
@@ -23,10 +25,10 @@ void AITenisScene::preRender(){
     getSkySGN(0)->getNode<Sky>()->setSunVector(_sunvector);
 }
 
-void AITenisScene::processTasks(U32 time){
-	MsToSec(time);
-	F32 FpsDisplay = 0.75f; 
-	if (time - _taskTimers[0] >= FpsDisplay){
+void AITenisScene::processTasks(const U32 time){
+	F32 timeSec = getMsToSec(time); ///<convert to seconds
+	F32 FpsDisplay = 0.75f;
+	if (timeSec - _taskTimers[0] >= FpsDisplay){
 		GUI::getInstance().modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", Framerate::getInstance().getFps(), Framerate::getInstance().getFrameTime());
 		GUI::getInstance().modifyText("RenderBinCount", "Number of items in Render Bin: %d", GFX_RENDER_BIN_SIZE);
 		_taskTimers[0] += FpsDisplay;
@@ -55,10 +57,9 @@ void AITenisScene::resetGame(){
 }
 
 void AITenisScene::startGame(){
-
 	resetGame();
 	Kernel* kernel = Application::getInstance().getKernel();
-	Task_ptr newGame(New Task(kernel->getThreadPool(),15,true,false,boost::bind(&AITenisScene::playGame,this,rand() % 5,TYPE_INTEGER)));
+	Task_ptr newGame(New Task(kernel->getThreadPool(),15,true,false,DELEGATE_BIND(&AITenisScene::playGame,this,rand() % 5,TYPE_INTEGER)));
 	addTask(newGame);
     _gameGUID = newGame->getGUID();
 }
@@ -109,7 +110,7 @@ void AITenisScene::playGame(boost::any a, CallbackParam b){
 	_upwardsDirection ? ballPosition.y += 0.066f : ballPosition.y -= 0.066f;
 	///In case of a side drift, update accordingly
 	if(_applySideImpulse) ballPosition.x += _sideImpulseFactor;
-	
+
 	///After we finish our computations, apply the new transform
     //setPosition/getPosition should be thread-safe
 	_ballSGN->getTransform()->setPosition(ballPosition);
@@ -132,7 +133,7 @@ void AITenisScene::playGame(boost::any a, CallbackParam b){
 
 	///Where does the Kinetic  energy of the ball run out?
 	if(ballPosition.y > 3.5) _upwardsDirection = false;
-	
+
 	///Did we hit a player?
 
     bool collisionTeam1 = _collisionPlayer1 || _collisionPlayer2;
@@ -196,12 +197,10 @@ void AITenisScene::playGame(boost::any a, CallbackParam b){
 			}
 			updated = true;
 		}
-      
 	}
-	
+
 	//-----------------DISPLAY RESULTS---------------------//
 	if(updated){
-
 		if(_lostTeam1)	{
 			message = "Team 2 scored!";
 			_scoreTeam2++;
@@ -209,36 +208,34 @@ void AITenisScene::playGame(boost::any a, CallbackParam b){
 			message = "Team 1 scored!";
 			_scoreTeam1++;
 		}
-		
+
 		GUI::getInstance().modifyText("Team1Score","Team 1 Score: %d",_scoreTeam1);
 		GUI::getInstance().modifyText("Team2Score","Team 1 Score: %d",_scoreTeam2);
 		GUI::getInstance().modifyText("Message",(char*)message.c_str());
 		_gamePlaying = false;
 	}
-
 }
 
 void AITenisScene::processInput(){
-	
-	if(state()->_angleLR)	renderState()->getCamera()->RotateX(state()->_angleLR * FRAME_SPEED_FACTOR/5);
-	if(state()->_angleUD)	renderState()->getCamera()->RotateY(state()->_angleUD * FRAME_SPEED_FACTOR/5);
+	if(state()->_angleLR)	renderState()->getCamera()->RotateX(state()->_angleLR / 5);
+	if(state()->_angleUD)	renderState()->getCamera()->RotateY(state()->_angleUD /5);
 	if(state()->_moveFB || state()->_moveLR){
-		if(state()->_moveFB) renderState()->getCamera()->MoveForward(state()->_moveFB * FRAME_SPEED_FACTOR);
-		if(state()->_moveLR) renderState()->getCamera()->MoveStrafe(state()->_moveLR * FRAME_SPEED_FACTOR);
+		if(state()->_moveFB) renderState()->getCamera()->MoveForward(state()->_moveFB);
+		if(state()->_moveLR) renderState()->getCamera()->MoveStrafe(state()->_moveLR);
 	}
 }
 
 bool AITenisScene::load(const std::string& name){
 	///Load scene resources
-	SCENE_LOAD(name,true,true);	
+	SCENE_LOAD(name,true,true);
 
 	//Add a light
 	Light* light = addDefaultLight();
 	light->setLightProperties(LIGHT_PROPERTY_AMBIENT,WHITE());
 	light->setLightProperties(LIGHT_PROPERTY_DIFFUSE,WHITE());
 	light->setLightProperties(LIGHT_PROPERTY_SPECULAR,WHITE());
-	addDefaultSky();												
-	
+	addDefaultSky();
+
 //	ResourceDescriptor tempLight1("Light omni");
 //	tempLight1.setId(0);
 //	tempLight1.setEnumValue(LIGHT_TYPE_POINT);
@@ -249,9 +246,12 @@ bool AITenisScene::load(const std::string& name){
 	renderState()->getCamera()->RotateX(RADIANS(45));
 	renderState()->getCamera()->RotateY(RADIANS(25));
 	renderState()->getCamera()->setEye(vec3<F32>(14,5.5f,11.5f));
-	
+
 	//------------------------ Load up game elements -----------------------------///
 	_net = _sceneGraph->findNode("Net");
+    for_each(SceneGraphNode::NodeChildren::value_type& it, _net->getChildren()){
+        it.second->getNode<SceneNode>()->getMaterial()->setReceivesShadows(false);
+    }
 	_floor = _sceneGraph->findNode("Floor");
 	_floor->getNode<SceneNode>()->getMaterial()->setCastsShadows(false);
 
@@ -339,7 +339,6 @@ bool AITenisScene::deinitializeAI(bool continueOnErrors){
 }
 
 bool AITenisScene::loadResources(bool continueOnErrors){
-
 	///Create our ball
 	ResourceDescriptor ballDescriptor("Tenis Ball");
 	_ball = CreateResource<Sphere3D>(ballDescriptor);
@@ -352,33 +351,33 @@ bool AITenisScene::loadResources(bool continueOnErrors){
 	_ball->getMaterial()->setShininess(0.2f);
 	_ball->getMaterial()->setSpecular(vec4<F32>(0.7f,0.7f,0.7f,1.0f));
 
-	GUIElement* btn = GUI::getInstance().addButton("Serve", "Serve", 
-                                                   vec2<U32>(renderState()->cachedResolution().width-220,60),
+	GUIElement* btn = GUI::getInstance().addButton("Serve", "Serve",
+                                                   vec2<I32>(renderState()->cachedResolution().width-220,60),
 												   vec2<U32>(100,25),
 												   vec3<F32>(0.65f,0.65f,0.65f),
-												   boost::bind(&AITenisScene::startGame,this));
+												   DELEGATE_BIND(&AITenisScene::startGame,this));
     btn->setTooltip("Start a new game!");
 
-	GUI::getInstance().addText("Team1Score",vec2<U32>(renderState()->cachedResolution().width - 250,
+	GUI::getInstance().addText("Team1Score",vec2<I32>(renderState()->cachedResolution().width - 250,
 												      renderState()->cachedResolution().height/1.3f),
 													  Font::DIVIDE_DEFAULT,vec3<F32>(0,0.8f,0.8f), "Team 1 Score: %d",0);
 
-	GUI::getInstance().addText("Team2Score",vec2<U32>(renderState()->cachedResolution().width - 250,
+	GUI::getInstance().addText("Team2Score",vec2<I32>(renderState()->cachedResolution().width - 250,
 													  renderState()->cachedResolution().height/1.5f),
 												      Font::DIVIDE_DEFAULT,vec3<F32>(0.2f,0.8f,0), "Team 2 Score: %d",0);
 
-	GUI::getInstance().addText("Message",vec2<U32>(renderState()->cachedResolution().width - 250,
+	GUI::getInstance().addText("Message",vec2<I32>(renderState()->cachedResolution().width - 250,
 		                                           renderState()->cachedResolution().height/1.7f),
 												   Font::DIVIDE_DEFAULT,vec3<F32>(0,1,0), "");
 
 	GUI::getInstance().addText("fpsDisplay",              //Unique ID
-		                       vec2<U32>(60,60),          //Position
+		                       vec2<I32>(60,60),          //Position
 							   Font::DIVIDE_DEFAULT,      //Font
 							   vec3<F32>(0.0f,0.2f, 1.0f),//Color
 							   "FPS: %s",0);              //Text and arguments
 
 	GUI::getInstance().addText("RenderBinCount",
-								vec2<U32>(60,70),
+								vec2<I32>(60,70),
 								Font::DIVIDE_DEFAULT,
 								vec3<F32>(0.6f,0.2f,0.2f),
 								"Number of items in Render Bin: %d",0);
@@ -423,12 +422,9 @@ void AITenisScene::onKeyUp(const OIS::KeyEvent& key){
 		default:
 			break;
 	}
-
 }
 
-
 void AITenisScene::onJoystickMovePOV(const OIS::JoyStickEvent& key,I8 pov){
-
 	Scene::onJoystickMovePOV(key,pov);
 	if( key.state.mPOV[pov].direction & OIS::Pov::North ) //Going up
 		state()->_moveFB = 0.25f;
@@ -448,7 +444,6 @@ void AITenisScene::onJoystickMovePOV(const OIS::JoyStickEvent& key,I8 pov){
 }
 
 void AITenisScene::onMouseMove(const OIS::MouseEvent& key){
-
 	if(_mousePressed){
 		if(_prevMouse.x - key.state.X.abs > 1 )
 			state()->_angleLR = -0.15f;
@@ -464,14 +459,14 @@ void AITenisScene::onMouseMove(const OIS::MouseEvent& key){
 		else
 			state()->_angleUD = 0;
 	}
-	
+
 	_prevMouse.x = key.state.X.abs;
 	_prevMouse.y = key.state.Y.abs;
 }
 
 void AITenisScene::onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID button){
 	Scene::onMouseClickDown(key,button);
-	if(button == 0) 
+	if(button == 0)
 		_mousePressed = true;
 }
 

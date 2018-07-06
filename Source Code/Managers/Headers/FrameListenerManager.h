@@ -59,7 +59,6 @@ private:
 
 END_SINGLETON
 
-
 inline void REGISTER_FRAME_LISTENER(FrameListener* listener){
 	FrameListenerManager::getInstance().registerFrameListener(listener);
 }

@@ -1,7 +1,7 @@
 #ifndef _PRE_RenderStage_BUILDER_H_
 #define _PRE_RenderStage_BUILDER_H_
 
-#include "core.h" 
+#include "Core/Headers/Singleton.h"
 #include "Rendering/PostFX/CustomOperators/Headers/SSAOPreRenderOperator.h"
 #include "Rendering/PostFX/CustomOperators/Headers/BloomPreRenderOperator.h"
 #include "Rendering/PostFX/CustomOperators/Headers/DoFPreRenderOperator.h"

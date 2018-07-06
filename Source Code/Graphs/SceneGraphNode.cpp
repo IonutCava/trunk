@@ -1,10 +1,14 @@
+#include "Headers/SceneGraph.h"
 #include "Headers/SceneGraphNode.h"
-#include "Environment/Terrain/Headers/Terrain.h"
-#include "Environment/Water/Headers/Water.h"
+
+#include "Core/Math/Headers/Transform.h"
 #include "Geometry/Shapes/Headers/Object3D.h"
+#include "Geometry/Material/Headers/Material.h"
+#include "Environment/Water/Headers/Water.h"
+#include "Environment/Terrain/Headers/Terrain.h"
+#include "Hardware/Video/Shaders/Headers/ShaderProgram.h"
 
-
-SceneGraphNode::SceneGraphNode(SceneNode* node) : _node(node), 
+SceneGraphNode::SceneGraphNode(SceneNode* const node) : _node(node),
 												  _parent(NULL),
 												  _grandParent(NULL),
 												  _transform(NULL),
@@ -19,22 +23,33 @@ SceneGraphNode::SceneGraphNode(SceneNode* node) : _node(node),
                                                   _isReady(false),
 												  _updateTimer(GETMSTIME()),
 												  _childQueue(0),
+                                                  _bbAddExclusionList(0),
                                                   _usageContext(NODE_DYNAMIC),
                                                   _navigationContext(NODE_IGNORE)
 {
+	_animationTransforms.clear();
 }
 
 ///If we are destroyng the current graph node
 SceneGraphNode::~SceneGraphNode(){
 	//delete children nodes recursively
-	for_each(NodeChildren::value_type& it, _children){
+	for_each(NodeChildren::value_type it, _children){
 		SAFE_DELETE(it.second);
 	}
 
 	//and delete the transform bound to this node
 	SAFE_DELETE(_transform);
 	_children.clear();
+}
 
+void SceneGraphNode::addBoundingBox(const BoundingBox& bb, const SceneNodeType& type) {
+    if(!bitCompare(_bbAddExclusionList, type)){
+        _boundingBox.Add(bb);
+    }
+}
+
+SceneGraphNode*  SceneGraphNode::getRoot() const {
+    return _sceneGraph->getRoot();
 }
 
 vectorImpl<BoundingBox >&  SceneGraphNode::getBBoxes(vectorImpl<BoundingBox >& boxes ){
@@ -70,7 +85,7 @@ void SceneGraphNode::print(){
 	//Starting from the current node
 	SceneGraphNode* parent = this;
 	U8 i = 0;
-	//Count how deep in the graph we are 
+	//Count how deep in the graph we are
 	//by counting how many ancestors we have before the "root" node
 	while(parent != NULL){
 		parent = parent->getParent();
@@ -112,7 +127,7 @@ void SceneGraphNode::print(){
 }
 
 ///Change current SceneGraphNode's parent
-void SceneGraphNode::setParent(SceneGraphNode* parent) {
+void SceneGraphNode::setParent(SceneGraphNode* const parent) {
 	if(_parent){
 		//Remove us from the old parent's children map
 		NodeChildren::iterator it = _parent->getChildren().find(getName());
@@ -156,16 +171,16 @@ SceneGraphNode* SceneGraphNode::addNode(SceneNode* const node,const std::string&
 	sceneGraphNode->setGrandParent(parentNode);
 	//Get the new node's transform
 	Transform* nodeTransform = sceneGraphNode->getTransform();
-	//If the current node and the new node have transforms, 
+	//If the current node and the new node have transforms,
 	//Update the relationship between the 2
 	if(nodeTransform && getTransform()){
 		//The child node's parentMatrix is our current transform matrix
 		nodeTransform->setParentMatrix(getTransform()->getMatrix());
 	}
 
-	//Set the current node as the new node's parrent	
+	//Set the current node as the new node's parrent
 	sceneGraphNode->setParent(this);
-
+    sceneGraphNode->setSceneGraph(_sceneGraph);
 	//Do all the post load operations on the SceneNode
 	//Pass a reference to the newly created SceneGraphNode in case we need transforms or bounding boxes
 	node->postLoad(sceneGraphNode);
@@ -182,7 +197,7 @@ void SceneGraphNode::removeNode(SceneGraphNode* node){
 		//Remove it from the map
 		_children.erase(it);
 	}else{
-		for_each(NodeChildren::value_type& it, _children){
+		for_each(NodeChildren::value_type& childIt, _children){
 			removeNode(node);
 		}
 	}
@@ -222,7 +237,7 @@ SceneGraphNode* SceneGraphNode::findNode(const std::string& name, bool sceneNode
 			}
 		}
 	}
-	
+
     // no children's name matches or there are no more children
     // so return NULL, indicating that the node was not found yet
     return NULL;
@@ -231,7 +246,7 @@ SceneGraphNode* SceneGraphNode::findNode(const std::string& name, bool sceneNode
 SceneGraphNode* SceneGraphNode::Intersect(const Ray& ray, F32 start, F32 end){
 	//Null return value as default
 	SceneGraphNode* returnValue = NULL;
-    ReadLock r_lock(_queryLock); 
+    ReadLock r_lock(_queryLock);
 	if(_boundingBox.Intersect(ray,start,end)){
 		return this;
 	}
@@ -251,7 +266,7 @@ SceneGraphNode* SceneGraphNode::Intersect(const Ray& ray, F32 start, F32 end){
 
 //This updates the SceneGraphNode's transform by deleting the old one first
 void SceneGraphNode::setTransform(Transform* const t) {
-	SAFE_UPDATE(_transform,t); 
+	SAFE_UPDATE(_transform,t);
 }
 
 //Get the node's transform

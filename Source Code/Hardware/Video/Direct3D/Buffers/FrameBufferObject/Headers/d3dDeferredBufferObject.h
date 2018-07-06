@@ -21,26 +21,22 @@
 #include "d3dFrameBufferObject.h"
 
 class d3dDeferredBufferObject : public d3dFrameBufferObject {
-
 public:
 
 	d3dDeferredBufferObject();
 	~d3dDeferredBufferObject() {Destroy();}
 
 	bool Create(U16 width, U16 height, U8 imageLayers = 0) {return true;}
-				
+
 	void Destroy() {}
 
 	void Begin(U8 nFace=0) const {}
 	void End(U8 nFace=0) const {}
 
-	void Bind(U8 unit=0, U8 texture = 0) {}	
+	void Bind(U8 unit=0, U8 texture = 0) {}
 	void Unbind(U8 unit=0) {}
 
 private:
-	U32  _normalBufferHandle;
-	U32  _positionBufferHandle;
-	U32  _diffuseBufferHandle;
 	vectorImpl<U32> _textureId;
 };
 

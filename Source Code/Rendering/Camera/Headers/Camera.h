@@ -22,10 +22,9 @@
 #include "Core/Resources/Headers/Resource.h"
 
 class Camera : public Resource {
-
-public:	
+public:
 	enum CameraType {
-		FREE_FLY, 
+		FREE_FLY,
 		FIRST_PERSON,
 		THIRD_PERSON,
 		ORBIT,
@@ -40,10 +39,10 @@ public:
 	void SaveCamera();
 	void RestoreCamera();
 
-	void MoveForward(F32 factor);	
+	void MoveForward(F32 factor);
 	void MoveStrafe(F32 factor);
 	void TranslateForward(F32 factor);
-	void TranslateStrafe(F32 factor);	
+	void TranslateStrafe(F32 factor);
 	void MoveAnaglyph(F32 factor);
 
 	inline CameraType  getType()		 const	{return _type;}
@@ -59,36 +58,28 @@ public:
 	void setAngleX(F32 Angle)			    {_angleX = Angle;  Refresh();}
 	void setAngleY(F32 Angle)			    {_angleY = Angle;  Refresh();}
 	void setAngle(F32 AngleX, F32 AngleY)	{_angleX = AngleX; _angleY = AngleY; Refresh();}
-	void Translate(vec3<F32> vector)	    {_eye += vector;   Refresh();}
-	
+	void Translate(vec3<F32> vector)	    {_eye += vector * _frameSpeedFactor; Refresh();}
+
 	void RotateX(F32 AngleX){
-		_angleX += AngleX;
+		_angleX += AngleX * _frameSpeedFactor;
 		if(_angleX<0.0f) _angleX += M_PI*2;
 		else if(_angleX>M_PI*2)	_angleX -= M_PI*2;
 		Refresh();
 	}
 
 	void RotateY(F32 AngleY){
-		_angleY += AngleY;
+		_angleY += AngleY * _frameSpeedFactor;
 		if(_angleY<0.0f || _angleY>M_PI) _angleY -= AngleY;
 		Refresh();
 	}
 
 	void Rotate(F32 AngleX, F32 AngleY){
-		_angleX += AngleX;
-		_angleY += AngleY;
+		_angleX += AngleX * _frameSpeedFactor;
+		_angleY += AngleY * _frameSpeedFactor;
 		if(_angleX<0.0f) _angleX += M_PI*2;
 		else if(_angleX>M_PI*2)	_angleX -= M_PI*2;
 		if(_angleY<0 || _angleY>M_PI) _angleY -= AngleY;
 		Refresh();
-	}
-
-	inline F32 xfov_to_yfov(F32 xfov, F32 aspect) {
-		return DEGREES(2.0f * atan(tan(RADIANS(xfov) * 0.5f) / aspect));
-	}
-
-	inline F32 yfov_to_xfov(F32 yfov, F32 aspect) {
-		return DEGREES(2.0f * atan(tan(RADIANS(yfov) * 0.5f) * aspect));
 	}
 
 	void RenderLookAt(bool invertx = false, bool inverty=false, F32 planey=0.0f);
@@ -106,14 +97,15 @@ protected:
 	vec3<F32>	_eye;
 	vec3<F32>	_center;
 	vec3<F32>	_view;
-	vec3<F32>	_left;	
+	vec3<F32>	_left;
 	vec3<F32>	_up;
 	vec3<F32>	_savedVectors[5];
 
 	F32 _angleX;
-	F32	_angleY;	
+	F32	_angleY;
 	F32	_savedFloats[2];
-
+	///Used for frame rate independend movement
+	F32 _frameSpeedFactor;
 	bool _saved;
 
 	CameraType	_type;
@@ -121,4 +113,3 @@ protected:
 	vectorImpl<boost::function0<void> > _listeners;
 };
 #endif
-

@@ -32,7 +32,7 @@
 ///Application update rate
 #define TICKS_PER_SECOND 25
 ///Maximum frameskip
-#define  MAX_FRAMESKIP 5
+#define MAX_FRAMESKIP 5
 ///Minimum triangle count for a mesh to apply depth rendering optimisations
 #define DEPTH_VBO_MIN_TRIANGLES 1000
 ///Minimum vbo size in bytes for a mesh to apply depth rendering optimisations (4MB default)
@@ -56,10 +56,6 @@
 #define SCENE_NODE_LOD 3
 #define SCENE_NODE_LOD0 100.0f //< Relative distance for LOD0->LOD1 selection
 #define SCENE_NODE_LOD1 180.0f //< Relative distance for LOD0->LOD2 selection
-
-#ifndef _DEBUG
-	#define NDEBUG
-#endif
 
 ///Current platform
 #ifndef _WIN32
@@ -117,7 +113,7 @@
 
 ///Use SSE functions for math calculations: usefull for release
 #ifndef USE_MATH_SIMD
-#define USE_MATH_SIMD
+//#define USE_MATH_SIMD
 #define ALIGNED_BYTES 16
 #endif //USE_MATH_SIMD
 
@@ -130,7 +126,7 @@
 
 ///Use stlport or stl vector
 ///0 = Boost
-///1 = STL 
+///1 = STL
 /// STL note: Due to a bug in STL, fixed in VC++ 11, SIMD and std::vector's do not go along
 ///           To fix this change line 716 of <vector.h> from
 ///                       "void resize(size_type _Newsize, _Ty _Val)"
@@ -140,17 +136,16 @@
 #define VECTOR_IMP 1
 #endif //VECTOR_IMP
 
-
 ///Use boost or std for_each
 #ifndef FOR_EACH_IMPLEMENTATION
 #define FOR_EACH_IMPLEMENTATION BOOST
-//#define FOR_EACH_IMPLEMENTATION STD 
+//#define FOR_EACH_IMPLEMENTATION STD
 #endif //FOR_EACH_IMPLEMENTATION
 
 ///Disable the use of the PhysXAPI
 #ifndef _USE_PHYSX_API_
 #define _USE_PHYSX_API_
-#endif 
+#endif
 
 ///Maximum number of joysticks to use. Remeber to update the "Joystics" enum from InputInterface.h
 #ifndef MAX_ALLOWED_JOYSTICKS

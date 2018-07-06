@@ -4,16 +4,17 @@
 #include "Geometry/Importer/Headers/DVDConverter.h"
 
 Mesh* ImplResourceLoader<Mesh>::operator()(){
-
 	Mesh* ptr = DVDConverter::getInstance().load(_descriptor.getResourceLocation());
-	
-	if(!ptr) return NULL;
-	if(!load(ptr,_descriptor.getName())) return NULL;
-	if(_descriptor.getFlag()){
-		ptr->getSceneNodeRenderState().useDefaultMaterial(false);
-		ptr->setMaterial(NULL);
-	}
-	ptr->setResourceLocation(_descriptor.getResourceLocation());
+
+    if(!load(ptr,_descriptor.getName()) || !ptr){
+       SAFE_DELETE(ptr);
+    }else{
+    	if(_descriptor.getFlag()){
+	    	ptr->getSceneNodeRenderState().useDefaultMaterial(false);
+		    ptr->setMaterial(NULL);
+	    }
+	    ptr->setResourceLocation(_descriptor.getResourceLocation());
+    }
 
 	return ptr;
 }

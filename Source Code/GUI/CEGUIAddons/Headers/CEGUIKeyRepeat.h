@@ -21,13 +21,12 @@
 
 ///This class defines AutoRepeatKey::repeatKey(...) as CEGUI key inputs
 class GUIInput : public AutoRepeatKey {
-
 public:
   ///Called on key events
   bool injectOISKey(bool pressed,const OIS::KeyEvent& inKey);
- 
+
 protected:
-   void repeatKey(OIS::KeyCode inKey, U32 Char);
+   void repeatKey(I32 inKey, U32 Char);
 };
 
 #endif

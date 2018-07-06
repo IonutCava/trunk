@@ -15,7 +15,6 @@
    along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #ifndef _LIGHT_MANAGER_H_
 #define _LIGHT_MANAGER_H_
 
@@ -34,15 +33,17 @@ public:
 	bool addLight(Light* const light);
 	///remove a light from the manager
 	bool removeLight(U32 lightId);
-	///set ambient light properties
-	void setAmbientLight(const vec4<F32>& light);
+	///Update the ambient light values used in shader programs
+	inline void setAmbientLight(const vec4<F32>& light){_ambientLight = light;}
+    ///Retrieve the current ambient light values
+    inline const vec4<F32>& getAmbientLight() const {return _ambientLight;}
 	///Find all the lights affecting the currend node. Return the number of found lights
 	///Note: the returned value is clamped between 0 and MAX_LIGHTS_PER_SCENE_NODE
 	///Use typeFilter to find only lights of a certain type
 	U8 findLightsForSceneNode(SceneGraphNode* const node, LightType typeFilter = LIGHT_TYPE_PLACEHOLDER );
 	bool clear();
 	U32  generateNewID();
-	void update(bool force = false);
+	void update();
 	void idle();
 	inline LightMap& getLights()      {return _lights;}
 	inline Light*    getLight(U32 id) {return _lights[id];}
@@ -58,10 +59,12 @@ public:
 	void previewShadowMaps(Light* light = NULL);
 	inline void togglePreviewShadowMaps() {_previewShadowMaps = !_previewShadowMaps;}
 	vectorImpl<I32 > getDepthMapResolution();
-	inline const vectorImpl<mat4<F32> >& getLightProjectionMatricesCache() {return _lightProjectionMatricesCache;}
-	inline U16   getLightCountForCurrentNode() {return _currLightsPerNode.size();}
-	inline const vectorImpl<I32>& getLightTypesForCurrentNode() {return _currLightTypes;}
 
+	inline       U16                     getLightCountForCurrentNode()          const {return _currLightsPerNode.size();}
+	inline const vectorImpl<mat4<F32> >& getLightProjectionMatricesCache()      const {return _lightProjectionMatricesCache;}
+	inline const vectorImpl<I32>&        getLightTypesForCurrentNode()          const {return _currLightTypes;}
+    inline const vectorImpl<I32>&        getLightsEnabledForCurrentNode()       const {return _currLightsEnabled;}
+	inline const vectorImpl<I32>&        getShadowCastingLightsForCurrentNode() const {return _currShadowLights;}
 	bool checkId(U32 value);
 	void drawDepthMap(U8 light, U8 index);
 
@@ -70,14 +73,17 @@ private:
 	~LightManager();
 
 private:
-	LightMap _lights;
-	bool     _previewShadowMaps;
-	Light*   _dominantLight;
-	Light*   _currLight;
-	bool     _shadowMapsEnabled;
-	I32      _shadowArrayOffset;
-	I32      _shadowCubeOffset;
+	LightMap  _lights;
+	bool      _previewShadowMaps;
+	Light*    _dominantLight;
+	Light*    _currLight;
+	bool      _shadowMapsEnabled;
+	I32       _shadowArrayOffset;
+	I32       _shadowCubeOffset;
+	vec4<F32> _ambientLight;
 	vectorImpl<I32>         _currLightTypes;
+    vectorImpl<I32>         _currLightsEnabled;
+	vectorImpl<I32>         _currShadowLights;
 	vectorImpl<Light* >     _currLightsPerNode;
 	vectorImpl<mat4<F32 > > _lightProjectionMatricesCache;
 END_SINGLETON

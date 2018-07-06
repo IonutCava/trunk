@@ -39,8 +39,11 @@ public:
 			ImplResourceLoader<T> assetLoader(descriptor);
 			/// and get our resource as the loader creates it
 			ptr = assetLoader();
-			/// validate it's integrity and add it to the cache
-			add(descriptor.getName(),ptr);
+            if(ptr){
+                ptr->setState(RES_LOADED);
+			    /// validate it's integrity and add it to the cache
+			    add(descriptor.getName(),ptr);
+            }
 		}
 		return ptr;
 	}
@@ -65,9 +68,7 @@ protected:
 
 	typedef Unordered_map<std::string, Resource*> ResourceMap;
 	ResourceMap _resDB;
-	boost::threadpool::pool* _loadingPool;
-
-
+	//boost::threadpool::pool* _loadingPool;
 
 END_SINGLETON
 
@@ -88,4 +89,3 @@ inline Resource* const FindResource(const std::string& name){
 }
 
 #endif
-

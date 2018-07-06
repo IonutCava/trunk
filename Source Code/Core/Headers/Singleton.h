@@ -18,48 +18,42 @@
 #ifndef SINGLETON_H_
 #define SINGLETON_H_
 
-#include "Hardware/Platform/Headers/SharedMutex.h"
-
 template <class T>
 class Singleton{
-
 public :
 	inline static T& getInstance() {
-		if (!_instance)   {
-			UpgradableReadLock ur_lock(_singletonMutex);
-			if (!_instance){ //double-checked lock
-				UpgradeToWriteLock uw_lock(ur_lock); 
-				_instance = new T;
-			}
+		if (!_instance){
+			_instance = new T;
 		}
+
 		return *_instance;
 	}
 
 	inline static void DestroyInstance() {
-		WriteLock w_lock(_singletonMutex);
-		SAFE_DELETE(_instance);
+		if(_instance){
+			delete _instance;
+			_instance = 0;
+		}
 	}
-
 
 protected :
 	Singleton() {}
 	virtual ~Singleton() {}
 
 private :
-	/// singleton instance
-	static T* _instance;	
-
+	///C++11 standard assures a static instance should be thread safe:
+	//"if control enters the declaration concurrently while the variable is being initialized,
+	//the concurrent execution shall wait for completion of the initialization."
+	static T* _instance;
 	Singleton(Singleton&);
 	void operator =(Singleton&);
-	static SharedLock _singletonMutex;
 };
 
 template <class T> T* Singleton<T>::_instance = 0;
-template <class T> SharedLock Singleton<T>::_singletonMutex;
 
 #define DEFINE_SINGLETON(class_name) \
 	class class_name : public Singleton<class_name> { \
-		friend class Singleton<class_name>; 
+		friend class Singleton<class_name>;
 
 #define DEFINE_SINGLETON_EXT1(class_name, base_class) \
 	class class_name : public Singleton<class_name> , public base_class{ \
@@ -72,4 +66,3 @@ template <class T> SharedLock Singleton<T>::_singletonMutex;
 #define END_SINGLETON };
 
 #endif // SINGLETON_H
-

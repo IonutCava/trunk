@@ -1,16 +1,18 @@
 #include "Headers/AIEntity.h"
 #include "ActionInterface/Headers/ActionList.h"
+
+#include "Core/Math/Headers/Transform.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "PathFinding/Headers/WaypointGraph.h"  ///< For waypoint movement
 #include "PathFinding/Headers/NavigationMesh.h" ///< For NavMesh movement
 
-AIEntity::AIEntity(const std::string& name) : _name(name),
+AIEntity::AIEntity(const std::string& name)  : GUIDWrapper(),
+                                              _name(name),
 											  _actionProcessor(NULL),
 											  _unitRef(NULL),
 											  _coordination(NULL),
 											  _comInterface(NULL)
 {
-	_GUID = GETMSTIME() * random(55);
 }
 
 void AIEntity::sendMessage(AIEntity* receiver, AIMsg msg,const boost::any& msg_content){
@@ -49,7 +51,6 @@ bool AIEntity::addSensor(SensorType type, Sensor* sensor){
 	return true;
 }
 
-
 bool AIEntity::addActionProcessor(ActionList* actionProcessor){
 	WriteLock w_lock(_updateMutex);
 	SAFE_UPDATE(_actionProcessor, actionProcessor);
@@ -74,7 +75,6 @@ void AIEntity::update(){
 	if(!_actionProcessor) return;
 	_actionProcessor->update(_node, _unitRef);
 }
-
 
 void AIEntity::setTeam(AICoordination* const coordination) {
 	ReadLock r_lock(_updateMutex);

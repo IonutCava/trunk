@@ -37,7 +37,6 @@ private:
 	ShaderProgram* _bright;
 	FrameBufferObject* _outputFBO;
 	FrameBufferObject* _tempBloomFBO;
-
 };
 
 #endif

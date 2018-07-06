@@ -41,7 +41,6 @@ private:
 	FrameBufferObject* _outputFBO;
 	FrameBufferObject* _normalsFBO;
 	Texture2D*		   _colorNoise;
-
 };
 
 #endif

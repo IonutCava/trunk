@@ -23,7 +23,7 @@
 #include "Rendering/Camera/Headers/Camera.h"
 
 /// Multiple camera managers can be created if needed in the future
-/// No need for singletons here 
+/// No need for singletons here
 class CameraManager : private boost::noncopyable {
 typedef Unordered_map<std::string, Camera*> CameraPool;
 

@@ -29,12 +29,12 @@ public:
    vec4<F32> _color[ NUM_PARTICLE_STATES ];
    F32  _size[ NUM_PARTICLE_STATES ];
    F32  _time[ NUM_PARTICLE_STATES ];
-   
+
    /// lifetime , in milliseconds of each particle
-   U32 _lifetime;     
+   U32 _lifetime;
    /// liftime variance (_lifetime + rand(-_lifetimeVariance, _lifetimeVariance))
-   I32 _lifetimeVariance;        
-	
+   I32 _lifetimeVariance;
+
    /// Physics coefficients
    F32   _drag;
    F32   _wind;
@@ -42,7 +42,6 @@ public:
 
    F32   _velocityFactor;
    F32   _cAcceleration;
-
 
    F32 _spinSpeed;
    F32 _spinSpeedMin;
@@ -55,10 +54,9 @@ public:
    ~ParticleDescriptor();
 };
 
-
 /// The structure of each particle
 struct Particle {
-   vec3<F32> _position;  
+   vec3<F32> _position;
    vec3<F32> _velocity;
    vec3<F32> _acceleration;
    vec3<F32> _orientation;
@@ -71,6 +69,5 @@ struct Particle {
 
    bool build(ParticleDescriptor* const descriptor, const vec3<F32>& inheritedVelocity);
 };
-
 
 #endif

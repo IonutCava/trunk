@@ -18,28 +18,31 @@
 	http://nolimitsdesigns.com/game-design/open-asset-import-library-animation-loader/
 */
 
-
 #ifndef ANIMATION_CONTROLLER_H_
 #define ANIMATION_CONTROLLER_H_
 
+#include <fstream>
 #include <boost/cstdint.hpp>
 #include "AnimationEvaluator.h"
 
-struct aiNode; 
+struct aiNode;
 struct aiScene;
 class SceneAnimator{
 public:
 
 	SceneAnimator(): _skeleton(0), _currentAnimIndex(-1){}
 	~SceneAnimator(){ Release(); }
-
-	void Init(const aiScene* pScene, U8 meshPointer);// this must be called to fill the SceneAnimator with valid data
-	void setGlobalMatrix(const mat4<F32>& matrix); // update root matrix for mesh;
-	void Release();// frees all memory and initializes everything to a default state
+	/// this must be called to fill the SceneAnimator with valid data
+	void Init(const aiScene* pScene, U8 meshPointer);
+	///Only called if the SceneGraph detected a transformation change
+	inline void setGlobalMatrix(const mat4<F32>& matrix) {	_rootTransformRender = matrix; } // update root matrix for mesh;
+	/// frees all memory and initializes everything to a default state
+	void Release();
 	void Save(std::ofstream& file);
 	void Load(std::ifstream& file);
-	inline bool HasSkeleton() const { return !_bones.empty(); }// lets the caller know if there is a skeleton present
-	/// the set animation returns whether the animation changed or is still the same. 
+	/// lets the caller know if there is a skeleton present
+	inline bool HasSkeleton() const { return !_bones.empty(); }
+	/// the set animation returns whether the animation changed or is still the same.
 	bool SetAnimIndex(I32 pAnimIndex);// this takes an index to set the current animation to
 	bool SetAnimation(const std::string& name);// this takes a string to set the animation to, i.e. SetAnimation("Idle");
 	/// the next two functions are good if you want to change the direction of the current animation. You could use a forward walking animation and reverse it to get a walking backwards
@@ -64,11 +67,11 @@ public:
 	inline mat4<F32> GetBoneTransform(D32 dt, const std::string& bname) { I32 bindex=GetBoneIndex(bname); if(bindex == -1) return mat4<F32>(); return _animations[_currentAnimIndex].GetTransforms(dt)[bindex]; }
 	/// same as above, except takes the index
 	inline mat4<F32> GetBoneTransform(D32 dt, U32 bindex) {  return _animations[_currentAnimIndex].GetTransforms(dt)[bindex]; }
-	vectorImpl<AnimEvaluator> _animations;// a vector that holds each animation 
-	
+	vectorImpl<AnimEvaluator> _animations;// a vector that holds each animation
+
 	I32 RenderSkeleton(D32 dt);
 
-private:		
+private:
 
 	///I/O operations
 	void SaveSkeleton(std::ofstream& file, Bone* pNode);
@@ -77,14 +80,14 @@ private:
 	void UpdateTransforms(Bone* pNode);
 	void Calculate( D32 pTime);
 	void CalcBoneMatrices();
-	/// Calculates the global transformation matrix for the given internal node 
+	/// Calculates the global transformation matrix for the given internal node
 	void CalculateBoneToWorldTransform(Bone* pInternalNode);
 	void ExtractAnimations(const aiScene* pScene);
 	/// Recursively creates an internal node structure matching the current scene and animation.
 	Bone* CreateBoneTree( aiNode* pNode, Bone* parent);
 
 	I32 SubmitSkeletonToGPU(U32 frameIndex);
-	I32 CreateSkeleton(Bone* piNode, const aiMatrix4x4& parent, vectorImpl<vec3<F32> >& pointsA, vectorImpl<vec3<F32> >& pointsB, vectorImpl<vec4<F32> >& colors);
+	I32 CreateSkeleton(Bone* piNode, const aiMatrix4x4& parent, vectorImpl<vec3<F32> >& pointsA, vectorImpl<vec3<F32> >& pointsB, vectorImpl<vec4<U8> >& colors);
 
 private:
 	I32 _currentAnimIndex;/** Current animation index */
@@ -94,19 +97,18 @@ private:
 	Unordered_map<std::string, U32>   _bonesToIndex;/** Name to node map to quickly find nodes by their name */
 	Unordered_map<std::string, U32>   _animationNameToId;// find animations quickly
 
-	vectorImpl<Bone*> _bones;// DO NOT DELETE THESE when the destructor runs... THEY ARE JUST COPIES!!
+	vectorImpl<Bone*> _bones;// DO NOT DELETE THESE when the destructor runs... THEY ARE JUST REFERENCES!!
 	vectorImpl<aiMatrix4x4 > _transforms;// temp array of transforms
 
 	typedef Unordered_map<U32/*frameIndex*/, vectorImpl<vec3<F32> >> pointMap;
-	typedef Unordered_map<U32/*frameIndex*/, vectorImpl<vec4<F32> >> colorMap;
-		///I wanna use my Unordered_map here :((((( -Ionut
-	Unordered_map<U32 /*animationId*/, pointMap > _pointsA;
-	Unordered_map<U32 /*animationId*/, pointMap > _pointsB;
-	Unordered_map<U32 /*animationId*/, colorMap > _colors;
+    typedef Unordered_map<U32 /*animationId*/, pointMap > pointCollection;
+	typedef Unordered_map<U32/*frameIndex*/, vectorImpl<vec4<U8> >> colorMap;
+    typedef Unordered_map<U32 /*animationId*/, colorMap > colorCollection;
+	pointCollection _pointsA;
+	pointCollection _pointsB;
+	colorCollection _colors;
 
-	aiMatrix4x4 _rootTransform;
 	mat4<F32>  _rootTransformRender;
 };
-
 
 #endif

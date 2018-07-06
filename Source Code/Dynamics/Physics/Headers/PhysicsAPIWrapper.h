@@ -13,7 +13,6 @@ enum PhysicsActorMask{
 };
 
 enum PhysicsAPI {
-
 	PHYSX,
 	ODE,
 	BULLET,
@@ -41,14 +40,13 @@ class SceneGraphNode;
 #include "Hardware/Platform/Headers/PlatformDefines.h"
 class PhysicsSceneInterface;
 class PhysicsAPIWrapper {
-
 protected:
 	friend class PXDevice;
 	PhysicsAPIWrapper() : _apiId(PX_PLACEHOLDER){}
 	inline void setId(PhysicsAPI api) {_apiId = api;}
 	inline PhysicsAPI getId() { return _apiId;}
 
-    virtual I8 initPhysics(U8 targetFrameRate) = 0;  
+    virtual I8 initPhysics(U8 targetFrameRate) = 0;
 	virtual bool exitPhysics() = 0;
 	virtual void updateTimeStep(U8 timeStepFactor)  = 0;
     virtual void update() = 0;
@@ -64,7 +62,6 @@ protected:
 
 private:
 	PhysicsAPI _apiId;
-
 };
 
 #endif

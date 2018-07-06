@@ -1,11 +1,12 @@
 #include "Headers/PhysX.h"
 #include "Headers/PhysXSceneInterface.h"
+#include "Core/Math/Headers/Transform.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 
 using namespace physx;
 
 PhysX::PhysX() : _gPhysicsSDK(NULL),
-				 _foundation(NULL), 
+				 _foundation(NULL),
 				 _pvdConnection(NULL),
                  _targetScene(NULL){}
 
@@ -23,14 +24,16 @@ I8 PhysX::initPhysics(U8 targetFrameRate){
 	   ERROR_FN(Locale::get("ERROR_EXTENSION_PHYSX_API"));
 	   return PHYSX_EXTENSION_ERROR;
    }
-   PRINT_FN(Locale::get("START_PHYSX_API_OK"));
 #ifdef _DEBUG
    _pvdConnection = _gPhysicsSDK->getPvdConnectionManager();
    if(_pvdConnection != NULL){
-	   PxVisualDebuggerExt::createConnection(_pvdConnection,"localhost",5425, 10000);
+	   if(PxVisualDebuggerExt::createConnection(_pvdConnection,"localhost",5425, 10000) != NULL){
+			D_PRINT_FN(Locale::get("CONNECT_PVD_OK"));
+	   }
    }
 #endif
    updateTimeStep(targetFrameRate);
+   PRINT_FN(Locale::get("START_PHYSX_API_OK"));
    return NO_ERR;
 }
 
@@ -49,14 +52,14 @@ bool PhysX::exitPhysics(){
 ///Process results
 void PhysX::process(){
 	if(_targetScene){
-		_targetScene->process(_timeStep); 
+		_targetScene->process(_timeStep);
 	}
 }
 
 ///Update actors
 void PhysX::update(){
 	if(_targetScene){
-		_targetScene->update();   
+		_targetScene->update();
 	}
 }
 

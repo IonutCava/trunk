@@ -2,12 +2,11 @@
 #include "Rendering/PostFX/Headers/PreRenderStageBuilder.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Managers/Headers/SceneManager.h"
-#include "Core/Headers/ParamHandler.h" 
+#include "Core/Headers/ParamHandler.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
-
-SSAOPreRenderOperator::SSAOPreRenderOperator(Quad3D* target, 
+SSAOPreRenderOperator::SSAOPreRenderOperator(Quad3D* target,
 											 FrameBufferObject* result,
 											 const vec2<U16>& resolution) : PreRenderOperator(SSAO_STAGE,target,resolution),
 																		    _outputFBO(result)
@@ -16,14 +15,14 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(Quad3D* target,
 	F32 height = _resolution.height;
 	ParamHandler& par = ParamHandler::getInstance();
 	ResourceDescriptor colorNoiseTexture("noiseTexture");
-	colorNoiseTexture.setResourceLocation(par.getParam<std::string>("assetsLocation") + "/misc_images//noise.png");
+	colorNoiseTexture.setResourceLocation(par.getParam<std::string>("assetsLocation") + "/misc_images/noise.png");
 	_colorNoise = CreateResource<Texture>(colorNoiseTexture);
 
 	TextureDescriptor normalsDescriptor(TEXTURE_2D, RGBA,RGBA8,FLOAT_32);
 	normalsDescriptor.setWrapMode(TEXTURE_CLAMP_TO_EDGE,TEXTURE_CLAMP_TO_EDGE);
 	normalsDescriptor._generateMipMaps = false; //it's a flat texture on a full screen quad. really?
 	_normalsFBO->AddAttachment(normalsDescriptor,TextureDescriptor::Color0);
-	_normalsFBO->toggleDepthWrites(false);
+	_normalsFBO->toggleDepthBuffer(false);
 
 	_normalsFBO = GFX_DEVICE.newFBO(FBO_2D_COLOR);
 	_normalsFBO->Create(width,height);
@@ -35,7 +34,6 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(Quad3D* target,
 	_outputFBO->Create(width, height);
 	_stage1Shader = CreateResource<ShaderProgram>(ResourceDescriptor("SSAOPass1"));
 	_stage2Shader = CreateResource<ShaderProgram>(ResourceDescriptor("SSAOPass2"));
-
 }
 
 SSAOPreRenderOperator::~SSAOPreRenderOperator(){
@@ -65,7 +63,6 @@ void SSAOPreRenderOperator::operation(){
 	_normalsFBO->End();
 
 	_outputFBO->Begin();
-		gfx.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
 		_stage2Shader->bind();
 			_normalsFBO->Bind(0);
 			_colorNoise->Bind(1);
@@ -78,7 +75,8 @@ void SSAOPreRenderOperator::operation(){
 			_stage2Shader->Uniform("rad", 0.006f);
 
 			gfx.toggle2D(true);
-			gfx.renderModel(_renderQuad);
+            _renderQuad->setCustomShader(_stage2Shader);
+			gfx.renderInstance(_renderQuad->renderInstance());
 			gfx.toggle2D(false);
 
 			_colorNoise->Unbind(1);

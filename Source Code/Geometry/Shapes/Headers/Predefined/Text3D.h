@@ -19,6 +19,7 @@
 #define _TEXT_3D_H_
 
 #include "Geometry/Shapes/Headers/Object3D.h"
+#include "Hardware/Video/Buffers/VertexBufferObject/Headers/VertexBufferObject.h"
 ///For now, the name of the Text3D object is the text itself
 class Text3D : public Object3D
 {
@@ -26,15 +27,14 @@ public:
 	Text3D(const std::string& text,const std::string& font) :  Object3D(TEXT_3D),
 															   _text(text),
 															   _font(font),
-															   _height(16)
+															   _height(16),
+                                                               _width(1.0f)
 	{
 		///Dummy
-		_geometry->getHWIndices().push_back(0);
-		_refreshVBO = false;
+		_geometry->useHWIndices(false);
+		_geometry->queueRefresh();
 	}
-	
 
-	inline bool setInitialData(const std::string& text) {_text = text; return Resource::setInitialData(text);}
 	inline std::string&  getText()    {return _text;}
 	inline std::string&	 getFont()    {return _font;}
 	inline F32&			 getWidth()   {return _width;}
@@ -54,6 +54,5 @@ private:
 	F32   _width;
 	U32   _height;
 };
-
 
 #endif

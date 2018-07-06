@@ -21,14 +21,12 @@
 #include "glFrameBufferObject.h"
 
 class glTextureArrayBufferObject : public glFrameBufferObject {
-
 public:
 
 	glTextureArrayBufferObject(bool cubeMap = false, bool depthOnly = false);
 	~glTextureArrayBufferObject() {Destroy();}
-	
+
 	void DrawToLayer(GLubyte face, GLubyte layer);
 };
 
 #endif
-

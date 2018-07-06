@@ -79,7 +79,6 @@ protected:
 	bool _updateSelf;
 	/// Have we initialized our FBO?
 	bool _createdFBO;
-
 };
 
 #endif

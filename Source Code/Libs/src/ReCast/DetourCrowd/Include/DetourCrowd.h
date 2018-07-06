@@ -83,9 +83,9 @@ struct dtCrowdAgentParams
 	/// Flags that impact steering behavior. (See: #UpdateFlags)
 	unsigned char updateFlags;
 
-	/// The index of the avoidance configuration to use for the agent. 
+	/// The index of the avoidance configuration to use for the agent.
 	/// [Limits: 0 <= value <= #DT_CROWD_MAX_OBSTAVOIDANCE_PARAMS]
-	unsigned char obstacleAvoidanceType;	
+	unsigned char obstacleAvoidanceType;
 
 	/// User defined data attached to the agent.
 	void* userData;
@@ -117,16 +117,16 @@ struct dtCrowdAgent
 
 	/// The local boundary data for the agent.
 	dtLocalBoundary boundary;
-	
+
 	/// Time since the agent's path corridor was optimized.
 	float topologyOptTime;
-	
+
 	/// The known neighbors of the agent.
 	dtCrowdNeighbour neis[DT_CROWDAGENT_MAX_NEIGHBOURS];
 
 	/// The number of neighbors.
 	int nneis;
-	
+
 	/// The desired speed.
 	float desiredSpeed;
 
@@ -150,7 +150,7 @@ struct dtCrowdAgent
 
 	/// The number of corners.
 	int ncorners;
-	
+
 	unsigned char targetState;			///< State of the movement request.
 	dtPolyRef targetRef;				///< Target polyref of the movement request.
 	float targetPos[3];					///< Target position of the movement request (or velocity in case of DT_CROWDAGENT_TARGET_VELOCITY).
@@ -186,7 +186,7 @@ struct dtCrowdAgentDebugInfo
 	dtObstacleAvoidanceDebugData* vod;
 };
 
-/// Provides local steering behaviors for a group of agents. 
+/// Provides local steering behaviors for a group of agents.
 /// @ingroup crowd
 class dtCrowd
 {
@@ -194,20 +194,20 @@ class dtCrowd
 	dtCrowdAgent* m_agents;
 	dtCrowdAgent** m_activeAgents;
 	dtCrowdAgentAnimation* m_agentAnims;
-	
+
 	dtPathQueue m_pathq;
 
 	dtObstacleAvoidanceParams m_obstacleQueryParams[DT_CROWD_MAX_OBSTAVOIDANCE_PARAMS];
 	dtObstacleAvoidanceQuery* m_obstacleQuery;
-	
+
 	dtProximityGrid* m_grid;
-	
+
 	dtPolyRef* m_pathResult;
 	int m_maxPathResult;
-	
+
 	float m_ext[3];
 	dtQueryFilter m_filter;
-	
+
 	float m_maxAgentRadius;
 
 	int m_velocitySampleCount;
@@ -223,29 +223,29 @@ class dtCrowd
 	bool requestMoveTargetReplan(const int idx, dtPolyRef ref, const float* pos);
 
 	void purge();
-	
+
 public:
 	dtCrowd();
 	~dtCrowd();
-	
-	/// Initializes the crowd.  
+
+	/// Initializes the crowd.
 	///  @param[in]		maxAgents		The maximum number of agents the crowd can manage. [Limit: >= 1]
 	///  @param[in]		maxAgentRadius	The maximum radius of any agent that will be added to the crowd. [Limit: > 0]
 	///  @param[in]		nav				The navigation mesh to use for planning.
 	/// @return True if the initialization succeeded.
 	bool init(const int maxAgents, const float maxAgentRadius, dtNavMesh* nav);
-	
+
 	/// Sets the shared avoidance configuration for the specified index.
 	///  @param[in]		idx		The index. [Limits: 0 <= value < #DT_CROWD_MAX_OBSTAVOIDANCE_PARAMS]
 	///  @param[in]		params	The new configuration.
 	void setObstacleAvoidanceParams(const int idx, const dtObstacleAvoidanceParams* params);
 
 	/// Gets the shared avoidance configuration for the specified index.
-	///  @param[in]		idx		The index of the configuration to retreive. 
+	///  @param[in]		idx		The index of the configuration to retreive.
 	///							[Limits:  0 <= value < #DT_CROWD_MAX_OBSTAVOIDANCE_PARAMS]
 	/// @return The requested configuration.
 	const dtObstacleAvoidanceParams* getObstacleAvoidanceParams(const int idx) const;
-	
+
 	/// Gets the specified agent from the pool.
 	///	 @param[in]		idx		The agent index. [Limits: 0 <= value < #getAgentCount()]
 	/// @return The requested agent.
@@ -254,7 +254,7 @@ public:
 	/// The maximum number of agents that can be managed by the object.
 	/// @return The maximum number of agents.
 	const int getAgentCount() const;
-	
+
 	/// Adds a new agent to the crowd.
 	///  @param[in]		pos		The requested position of the agent. [(x, y, z)]
 	///  @param[in]		params	The configutation of the agent.
@@ -269,7 +269,7 @@ public:
 	/// Removes the agent from the crowd.
 	///  @param[in]		idx		The agent index. [Limits: 0 <= value < #getAgentCount()]
 	void removeAgent(const int idx);
-	
+
 	/// Submits a new move request for the specified agent.
 	///  @param[in]		idx		The agent index. [Limits: 0 <= value < #getAgentCount()]
 	///  @param[in]		ref		The position's polygon reference.
@@ -298,7 +298,7 @@ public:
 	///  @param[in]		dt		The time, in seconds, to update the simulation. [Limit: > 0]
 	///  @param[out]	debug	A debug object to load with debug information. [Opt]
 	void update(const float dt, dtCrowdAgentDebugInfo* debug);
-	
+
 	/// Gets the filter used by the crowd.
 	/// @return The filter used by the crowd.
 	const dtQueryFilter* getFilter() const { return &m_filter; }
@@ -307,14 +307,14 @@ public:
 	/// @return The filter used by the crowd.
 	dtQueryFilter* getEditableFilter() { return &m_filter; }
 
-	/// Gets the search extents [(x, y, z)] used by the crowd for query operations. 
+	/// Gets the search extents [(x, y, z)] used by the crowd for query operations.
 	/// @return The search extents used by the crowd. [(x, y, z)]
 	const float* getQueryExtents() const { return m_ext; }
-	
+
 	/// Gets the velocity sample count.
 	/// @return The velocity sample count.
 	inline int getVelocitySampleCount() const { return m_velocitySampleCount; }
-	
+
 	/// Gets the crowd's proximity grid.
 	/// @return The crowd's proximity grid.
 	const dtProximityGrid* getGrid() const { return m_grid; }
@@ -337,7 +337,6 @@ dtCrowd* dtAllocCrowd();
 ///  @ingroup crowd
 void dtFreeCrowd(dtCrowd* ptr);
 
-
 #endif // DETOURCROWD_H
 
 ///////////////////////////////////////////////////////////////////////////
@@ -351,48 +350,48 @@ void dtFreeCrowd(dtCrowd* ptr);
 
 Members in this module implement local steering and dynamic avoidance features.
 
-The crowd is the big beast of the navigation features. It not only handles a 
-lot of the path management for you, but also local steering and dynamic 
-avoidance between members of the crowd. I.e. It can keep your agents from 
+The crowd is the big beast of the navigation features. It not only handles a
+lot of the path management for you, but also local steering and dynamic
+avoidance between members of the crowd. I.e. It can keep your agents from
 running into each other.
 
 Main class: #dtCrowd
 
-The #dtNavMeshQuery and #dtPathCorridor classes provide perfectly good, easy 
-to use path planning features. But in the end they only give you points that 
-your navigation client should be moving toward. When it comes to deciding things 
-like agent velocity and steering to avoid other agents, that is up to you to 
+The #dtNavMeshQuery and #dtPathCorridor classes provide perfectly good, easy
+to use path planning features. But in the end they only give you points that
+your navigation client should be moving toward. When it comes to deciding things
+like agent velocity and steering to avoid other agents, that is up to you to
 implement. Unless, of course, you decide to use #dtCrowd.
 
-Basically, you add an agent to the crowd, providing various configuration 
-settings such as maximum speed and acceleration. You also provide a local 
-target to more toward. The crowd manager then provides, with every update, the 
-new agent position and velocity for the frame. The movement will be 
-constrained to the navigation mesh, and steering will be applied to ensure 
+Basically, you add an agent to the crowd, providing various configuration
+settings such as maximum speed and acceleration. You also provide a local
+target to more toward. The crowd manager then provides, with every update, the
+new agent position and velocity for the frame. The movement will be
+constrained to the navigation mesh, and steering will be applied to ensure
 agents managed by the crowd do not collide with each other.
 
 This is very powerful feature set. But it comes with limitations.
 
-The biggest limitation is that you must give control of the agent's position 
-completely over to the crowd manager. You can update things like maximum speed 
-and acceleration. But in order for the crowd manager to do its thing, it can't 
-allow you to constantly be giving it overrides to position and velocity. So 
+The biggest limitation is that you must give control of the agent's position
+completely over to the crowd manager. You can update things like maximum speed
+and acceleration. But in order for the crowd manager to do its thing, it can't
+allow you to constantly be giving it overrides to position and velocity. So
 you give up direct control of the agent's movement. It belongs to the crowd.
 
-The second biggest limitation revolves around the fact that the crowd manager 
-deals with local planning. So the agent's target should never be more than 
-256 polygons aways from its current position. If it is, you risk 
-your agent failing to reach its target. So you may still need to do long 
+The second biggest limitation revolves around the fact that the crowd manager
+deals with local planning. So the agent's target should never be more than
+256 polygons aways from its current position. If it is, you risk
+your agent failing to reach its target. So you may still need to do long
 distance planning and provide the crowd manager with intermediate targets.
 
 Other significant limitations:
 
 - All agents using the crowd manager will use the same #dtQueryFilter.
-- Crowd management is relatively expensive. The maximum agents under crowd 
+- Crowd management is relatively expensive. The maximum agents under crowd
   management at any one time is between 20 and 30.  A good place to start
   is a maximum of 25 agents for 0.5ms per frame.
 
-@note This is a summary list of members.  Use the index or search 
+@note This is a summary list of members.  Use the index or search
 feature to find minor members.
 
 @struct dtCrowdAgentParams
@@ -401,10 +400,10 @@ feature to find minor members.
 @var dtCrowdAgentParams::obstacleAvoidanceType
 @par
 
-#dtCrowd permits agents to use different avoidance configurations.  This value 
+#dtCrowd permits agents to use different avoidance configurations.  This value
 is the index of the #dtObstacleAvoidanceParams within the crowd.
 
-@see dtObstacleAvoidanceParams, dtCrowd::setObstacleAvoidanceParams(), 
+@see dtObstacleAvoidanceParams, dtCrowd::setObstacleAvoidanceParams(),
 	 dtCrowd::getObstacleAvoidanceParams()
 
 @var dtCrowdAgentParams::collisionQueryRange
@@ -426,7 +425,7 @@ This value is often based on the agent radius. E.g. radius * 30
 @var dtCrowdAgentParams::separationWeight
 @par
 
-A higher value will result in agents trying to stay farther away from each other at 
+A higher value will result in agents trying to stay farther away from each other at
 the cost of more difficult steering in tight spaces.
 
 */

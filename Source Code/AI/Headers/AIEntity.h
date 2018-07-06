@@ -22,17 +22,18 @@
 #include "CommunicationInterface.h"
 #include "AI/Sensors/Headers/VisualSensor.h"
 #include "AI/ActionInterface/Headers/Coordination.h"
+#include "Utility/Headers/GUIDWrapper.h"
 
 class ActionList;
 class SceneGraphNode;
 class NPC;
 
-class AIEntity{
+class AIEntity : public GUIDWrapper {
 	friend class AIManager;
 
 public:
 	AIEntity(const std::string& name);
-	
+
 	void processInput();
 	void processData();
 	void update();
@@ -46,7 +47,6 @@ public:
 	CommunicationInterface* getCommunicationInterface() {return _comInterface;}
 	inline AICoordination* getTeam() {return _coordination; }
 	inline U32  getTeamID() const    {if(_coordination != NULL) { return _coordination->getTeamID();} return 0; }
-	inline U32  getGUID()   const    {return _GUID;}
 
 	///Set a team for this Entity. If the enitity belonged to a different team, remove it from that team first
 	void setTeam(AICoordination* const coordination);
@@ -63,7 +63,6 @@ public:
 
 private:
 	std::string     _name;
-	U32             _GUID;
 	SceneGraphNode* _node;
 	AICoordination* _coordination;
 	ActionList*     _actionProcessor;
@@ -73,7 +72,6 @@ private:
 	CommunicationInterface*             _comInterface;
 	Unordered_map<SensorType, Sensor*> _sensorList;
 	NPC* _unitRef;
-	
 };
 
 #endif

@@ -23,13 +23,13 @@
 //    Mikko Mononen http://code.google.com/p/recastnavigation/
 //
 
-
 #ifndef _NAVIGATION_MESH_H_
 #define _NAVIGATION_MESH_H_
 
 #include "core.h"
+#include "Utility/Headers/GUIDWrapper.h"
 #include "Hardware/Platform/Headers/Task.h"
-#include "NavigationMeshLoader.h" 
+#include "NavigationMeshLoader.h"
 #ifndef RECAST_UTIL_PROPERTIES
 #define RECAST_UTIL_PROPERTIES
 #endif
@@ -41,20 +41,28 @@
 class SceneGraphNode;
 
 namespace Navigation {
+	static const I32 NAVMESHSET_MAGIC = 'M'<<24 | 'S'<<16 | 'E'<<8 | 'T'; //'MSET';
+	static const I32 NAVMESHSET_VERSION = 1;
 
-	static const int NAVMESHSET_MAGIC = 'M'<<24 | 'S'<<16 | 'E'<<8 | 'T'; //'MSET';
-	static const int NAVMESHSET_VERSION = 1;
+   /// Convert a Rcast color integer to RGBA components.
+   inline void rcCol(U32 col, U8 &r, U8 &g, U8 &b, U8 &a)
+   {
+      r = col % 256; col /= 256;
+      g = col % 256; col /= 256;
+      b = col % 256; col /= 256;
+      a = col % 256;
+   }
 
 	struct NavMeshSetHeader {
-		int magic;
-		int version;
-		int numTiles;
+		I32 magic;
+		I32 version;
+		I32 numTiles;
 		dtNavMeshParams params;
 	};
 
 	struct NavMeshTileHeader {
 		dtTileRef tileRef;
-		int dataSize;
+		I32 dataSize;
 	};
 
     class rcContextDivide : public rcContext{
@@ -66,23 +74,28 @@ namespace Navigation {
 	    ///  @param[in]		category	The category of the message.
 	    ///  @param[in]		msg			The formatted message.
 	    ///  @param[in]		len			The length of the formatted message.
-	    void doLog(const rcLogCategory /*category*/, const char* /*msg*/, const int /*len*/);
-
+	    void doLog(const rcLogCategory /*category*/, const char* /*msg*/, const I32 /*len*/);
     };
 
 	/// @class NavigationMesh
 	/// Represents a set of bounds within which a Recast navigation mesh is generated.
 
-	class NavigationMesh/* : public SceneObject */{
+	class NavigationMesh : public GUIDWrapper/*,public SceneObject */{
 	      friend class NavigationPath;
-
+    protected:
+         enum RenderMode {
+            RENDER_NAVMESH,
+            RENDER_CONTOURS,
+            RENDER_POLYMESH,
+            RENDER_DETAILMESH,
+            RENDER_PORTALS,
+        };
 	public:
 		/// @name NavigationMesh build
 		/// @{
-
 		/// Do we build in a separate thread?
 		bool _buildThreaded;
-
+        inline void setFileName(const std::string& fileName) {_fileName.append(fileName);}
 		/// Initiates the NavigationMesh build process, which includes notifying the
 		/// clients and posting a task.
 		bool build(SceneGraphNode* const sgn,bool threaded = true);
@@ -90,10 +103,12 @@ namespace Navigation {
 		bool save();
 
 		/// Load a saved NavigationMesh from a file.
-		bool load();
-
-		/// Data file to store this nav mesh in. (From engine executable dir.)
-		std::string _fileName;
+		bool load(SceneGraphNode* const node);
+        void render();
+        inline void debugDraw(bool state) {_debugDraw = state;}
+        inline bool debugDraw() {return _debugDraw;}
+        inline void setRenderMode(RenderMode mode) {_renderMode = mode;}
+        inline void setRenderConnections(bool state) {_renderConnections = state;}
 
 		/// Cell width and height.
 		F32 _cellSize, _cellHeight;
@@ -121,7 +136,6 @@ namespace Navigation {
 
 		NavigationMesh();
 		~NavigationMesh();
-
 
 	protected:
 
@@ -163,11 +177,16 @@ namespace Navigation {
 		/// A mutex for accessing our actual NavigationMesh.
 		boost::mutex _navigationMeshLock;
 		/// A simple flag to say we are building.
-		bool _building;
+        boost::atomic<bool> _building;
 		/// Thread launch function.
 		static void launchThreadedBuild(void *data);
+        /// Data file to store this nav mesh in. (From engine executable dir.)
+		std::string _fileName;
 		///SceneGraphNode from which to build
 		SceneGraphNode* _sgn;
+        boost::atomic<bool> _debugDraw;
+        boost::atomic<bool> _renderConnections;
+        RenderMode _renderMode;
 	};
 };
 

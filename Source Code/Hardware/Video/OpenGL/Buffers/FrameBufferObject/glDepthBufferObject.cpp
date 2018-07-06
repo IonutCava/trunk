@@ -6,6 +6,5 @@
 #include "Hardware/Video/Headers/GFXDevice.h"
 
 glDepthBufferObject::glDepthBufferObject() : glFrameBufferObject(FBO_2D_DEPTH){
-
 	_textureType = GL_TEXTURE_2D;
 }

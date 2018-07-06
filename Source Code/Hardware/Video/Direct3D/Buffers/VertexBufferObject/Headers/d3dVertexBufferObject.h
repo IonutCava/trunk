@@ -21,19 +21,17 @@
 #include "Hardware/Video/Buffers/VertexBufferObject/Headers/VertexBufferObject.h"
 
 class d3dVertexBufferObject : public VertexBufferObject {
-
 public:
 	bool Create(bool staticDraw = true) {return true;}
 
 	void Destroy() {}
-	
-	void Enable() {}
-	void Disable() {}
-	void Draw(U8 LODindex = 0) {}
-    void Draw(GFXDataFormat f, U32 count, const void* first_element){}
+
+	bool SetActive() {return true;}
+	void Draw(const U8 LODindex = 0) {}
+    void DrawRange(){}
 	bool queueRefresh() {return Refresh();}
 
-	d3dVertexBufferObject(PrimitiveType type) : VertexBufferObject(type), _created(false) {}
+	d3dVertexBufferObject(PrimitiveType type) : VertexBufferObject(type) {}
 	~d3dVertexBufferObject() {Destroy();}
 
      void setShaderProgram(ShaderProgram* const shaderProgram);
@@ -43,10 +41,7 @@ private:
 	bool Refresh() {return true;}
 	void checkStatus() {}
     bool computeTriangleList() {return true;}
-private:
-	bool _created; 
 
 };
 
 #endif
-

@@ -22,10 +22,11 @@
 
 class glShader : public Shader{
 public:
-	glShader(const std::string& name, ShaderType type);
+	glShader(const std::string& name,const ShaderType& type,const bool optimise = false);
 	~glShader();
 
 	bool load(const std::string& source);
+	bool compile();
 	void validate();
 
 private:

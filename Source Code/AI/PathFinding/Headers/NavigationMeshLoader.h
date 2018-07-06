@@ -67,11 +67,10 @@ namespace Navigation {
 		SAMPLE_POLYFLAGS_ALL		= 0xffff	// All abilities.
 	};
 
-	///Converting data to ReCast friendly format 
+	///Converting data to ReCast friendly format
 
 	// This struct contains the vertices and triangles in recast coords
 	struct NavModelData {
-
 		NavModelData() {
 			verts = 0;
 			vert_ct = 0;
@@ -131,7 +130,6 @@ namespace Navigation {
 	};
 
 	class NavigationMeshLoader {
-
 	public:
 		NavigationMeshLoader();
 		~NavigationMeshLoader();
@@ -148,6 +146,5 @@ namespace Navigation {
 		static char* parseRow(char* buf, char* bufEnd, char* row, I32 len);
 		static I32 parseFace(char* row, I32* data, I32 n, I32 vcnt);
 	};
-
 };
 #endif

@@ -1,4 +1,6 @@
 #include "Headers/WarSceneAIActionList.h"
+
+#include "Core/Math/Headers/Transform.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "AI/Sensors/Headers/VisualSensor.h"
 #include "Dynamics/Entities/Units/Headers/NPC.h"
@@ -51,14 +53,13 @@ void WarSceneAIActionList::processInput(){
 }
 
 void WarSceneAIActionList::processData(){
-
 }
 
 void WarSceneAIActionList::update(SceneGraphNode* node, NPC* unitRef){
 	if(!_node){
 		_node = node;
 	}
-	
+
 	updatePositions();
 
 	/// Updateaza informatia senzorilor

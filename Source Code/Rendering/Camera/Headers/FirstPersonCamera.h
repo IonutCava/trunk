@@ -15,14 +15,12 @@
    along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #ifndef _FIRST_PERSON_CAMERA_H_
 #define _FIRST_PERSON_CAMERA_H_
 
 #include "Camera.h"
 ///clasic first person camera
 class FirstPersonCamera : public Camera {
-
 public:
 	FirstPersonCamera() : Camera(FIRST_PERSON)
 	{

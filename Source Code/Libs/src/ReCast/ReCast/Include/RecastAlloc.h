@@ -56,7 +56,6 @@ void* rcAlloc(int size, rcAllocHint hint);
 /// @see rcAlloc
 void rcFree(void* ptr);
 
-
 /// A simple dynamic array of integers.
 class rcIntArray
 {

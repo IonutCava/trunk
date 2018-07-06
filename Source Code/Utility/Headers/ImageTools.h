@@ -21,7 +21,6 @@
 #include "core.h"
 
 namespace ImageTools {
-
 	class ImageData {
 	public:
 		U8*	data;
@@ -38,14 +37,15 @@ namespace ImageTools {
 		void Destroy();
 		void resize(U16 width, U16 height);
 	};
+
 	void Flip(ImageData& image);
 	void OpenImage(const std::string& filename, ImageData& img, bool& alpha);
-	U8* OpenImage(const std::string& filename, U16& w, U16& h, U8& d, U32& t,U32& ilTexture, bool& alpha, bool flip=false);
-	U8* OpenImagePPM(const std::string& filename, U16& w, U16& h, U8& d, U32& t,U32& ilTexture,bool flip=false);
-	U8* OpenImageDevIL(const std::string& filename, U16& w, U16& h, U8& d, U32& t,U32& ilTexture,bool& alpha, bool flip=false);
+	U8* OpenImage(const std::string& filename, U16& w, U16& h, U8& d, U32& t,U32& ilTexture, bool& alpha,const bool flip=false);
+	U8* OpenImagePPM(const std::string& filename, U16& w, U16& h, U8& d, U32& t,U32& ilTexture,const bool flip=false);
+	U8* OpenImageDevIL(const std::string& filename, U16& w, U16& h, U8& d, U32& t,U32& ilTexture,bool& alpha,const  bool flip=false);
 	I8 saveToTGA(char *filename, U16 width, U16 height, U8 pixelDepth, U8 *imageData);
 	I8 SaveSeries(char *filename, U16 width,U16 height,U8 pixelDepth,U8 *imageData);
+	static SharedLock _loadingMutex;
 }
 
 #endif
-

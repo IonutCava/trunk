@@ -1,0 +1,530 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<GUILayout version="4" >
+    <Window type="DefaultWindow" name="root" >
+        <Property name="Area" value="{{0,0},{0,0},{1,0},{1,0}}" />
+        <Property name="MaxSize" value="{{1,0},{1,0}}" />
+        <Window type="DefaultWindow" name="WorldEditor" >
+            <Property name="Area" value="{{-0.00308546,0},{-0.00158726,0},{1.00055,2},{1.99841,0}}" />
+            <Property name="Alpha" value="0.85" />
+            <Property name="MaxSize" value="{{1,0},{2,0}}" />
+            <Window type="GWEN/FrameWindow" name="LightEditor" >
+                <Property name="Area" value="{{0.658233,0},{0.0239512,0},{0.842482,0},{0.497326,0}}" />
+                <Property name="Text" value="Light Params" />
+                <Property name="MaxSize" value="{{0.5,0},{1,0}}" />
+                <Property name="TooltipText" value="Edit light information for the current scene" />
+                <Property name="RollUpEnabled" value="False" />
+                <Property name="SizingEnabled" value="False" />
+                <AutoWindow namePath="__auto_titlebar__" >
+                    <Property name="TooltipText" value="Edit light information for the current scene" />
+                </AutoWindow>
+                <AutoWindow namePath="__auto_closebutton__" >
+                    <Property name="TooltipText" value="Edit light information for the current scene" />
+                </AutoWindow>
+                <Window type="GWEN/Listbox" name="LightList" >
+                    <Property name="Area" value="{{0.05,0},{-0.000686735,0},{0.989238,0},{0.323722,0}}" />
+                    <Property name="Text" value="Light List in tree form" />
+                    <Property name="TooltipText" value="Listbox containing the items you have added." />
+                    <Property name="ForceVertScrollbar" value="True" />
+                    <AutoWindow namePath="__auto_hscrollbar__" >
+                        <Property name="TooltipText" value="Listbox containing the items you have added." />
+                        <AutoWindow namePath="__auto_incbtn__" >
+                            <Property name="TooltipText" value="Listbox containing the items you have added." />
+                        </AutoWindow>
+                        <AutoWindow namePath="__auto_decbtn__" >
+                            <Property name="TooltipText" value="Listbox containing the items you have added." />
+                        </AutoWindow>
+                        <AutoWindow namePath="__auto_thumb__" >
+                            <Property name="TooltipText" value="Listbox containing the items you have added." />
+                        </AutoWindow>
+                    </AutoWindow>
+                    <AutoWindow namePath="__auto_vscrollbar__" >
+                        <Property name="TooltipText" value="Listbox containing the items you have added." />
+                        <AutoWindow namePath="__auto_incbtn__" >
+                            <Property name="TooltipText" value="Listbox containing the items you have added." />
+                        </AutoWindow>
+                        <AutoWindow namePath="__auto_decbtn__" >
+                            <Property name="TooltipText" value="Listbox containing the items you have added." />
+                        </AutoWindow>
+                        <AutoWindow namePath="__auto_thumb__" >
+                            <Property name="TooltipText" value="Listbox containing the items you have added." />
+                        </AutoWindow>
+                    </AutoWindow>
+                </Window>
+                <Window type="GWEN/StaticText" name="Controls" >
+                    <Property name="Area" value="{{0.0107624,0},{0.327371,0},{0.998143,0},{0.99578,0}}" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="AlwaysOnTop" value="True" />
+                    <Property name="TextColours" value="tl:FFFFFFFF tr:FFFFFFFF bl:FFFFFFFF br:FFFFFFFF" />
+                    <Property name="TooltipText" value="Change light color" />
+                    <AutoWindow namePath="__auto_hscrollbar__" >
+                        <Property name="TooltipText" value="Change light color" />
+                        <AutoWindow namePath="__auto_incbtn__" >
+                            <Property name="TooltipText" value="Change light color" />
+                        </AutoWindow>
+                        <AutoWindow namePath="__auto_decbtn__" >
+                            <Property name="TooltipText" value="Change light color" />
+                        </AutoWindow>
+                        <AutoWindow namePath="__auto_thumb__" >
+                            <Property name="TooltipText" value="Change light color" />
+                        </AutoWindow>
+                    </AutoWindow>
+                    <AutoWindow namePath="__auto_vscrollbar__" >
+                        <Property name="TooltipText" value="Change light color" />
+                        <AutoWindow namePath="__auto_incbtn__" >
+                            <Property name="TooltipText" value="Change light color" />
+                        </AutoWindow>
+                        <AutoWindow namePath="__auto_decbtn__" >
+                            <Property name="TooltipText" value="Change light color" />
+                        </AutoWindow>
+                        <AutoWindow namePath="__auto_thumb__" >
+                            <Property name="TooltipText" value="Change light color" />
+                        </AutoWindow>
+                    </AutoWindow>
+                    <Window type="GWEN/HorizontalScrollbar" name="Red" >
+                        <Property name="Area" value="{{0.288815,0},{0.00806737,0},{0.989472,0},{0.0456123,0}}" />
+                        <Property name="PageSize" value="0.0625" />
+                        <Property name="StepSize" value="0.00392" />
+                        <Property name="OverlapSize" value="0.00392" />
+                        <Property name="TooltipText" value="Slider to adjust the red colour component." />
+                        <AutoWindow namePath="__auto_incbtn__" >
+                            <Property name="TooltipText" value="Slider to adjust the red colour component." />
+                        </AutoWindow>
+                        <AutoWindow namePath="__auto_decbtn__" >
+                            <Property name="TooltipText" value="Slider to adjust the red colour component." />
+                        </AutoWindow>
+                        <AutoWindow namePath="__auto_thumb__" >
+                            <Property name="TooltipText" value="Slider to adjust the red colour component." />
+                        </AutoWindow>
+                    </Window>
+                    <Window type="GWEN/HorizontalScrollbar" name="Green" >
+                        <Property name="Area" value="{{0.291858,0},{0.0753122,0},{0.992879,0},{0.112857,0}}" />
+                        <Property name="PageSize" value="0.0625" />
+                        <Property name="StepSize" value="0.00392" />
+                        <Property name="OverlapSize" value="0.00392" />
+                        <Property name="TooltipText" value="Slider to adjust the green colour component." />
+                        <AutoWindow namePath="__auto_incbtn__" >
+                            <Property name="TooltipText" value="Slider to adjust the green colour component." />
+                        </AutoWindow>
+                        <AutoWindow namePath="__auto_decbtn__" >
+                            <Property name="TooltipText" value="Slider to adjust the green colour component." />
+                        </AutoWindow>
+                        <AutoWindow namePath="__auto_thumb__" >
+                            <Property name="TooltipText" value="Slider to adjust the green colour component." />
+                        </AutoWindow>
+                    </Window>
+                    <Window type="GWEN/HorizontalScrollbar" name="Blue" >
+                        <Property name="Area" value="{{0.292452,0},{0.142614,0},{0.993109,0},{0.180158,0}}" />
+                        <Property name="PageSize" value="0.0625" />
+                        <Property name="StepSize" value="0.00392" />
+                        <Property name="OverlapSize" value="0.00392" />
+                        <Property name="TooltipText" value="Slider to adjust the blue colour component." />
+                        <AutoWindow namePath="__auto_incbtn__" >
+                            <Property name="TooltipText" value="Slider to adjust the blue colour component." />
+                        </AutoWindow>
+                        <AutoWindow namePath="__auto_decbtn__" >
+                            <Property name="TooltipText" value="Slider to adjust the blue colour component." />
+                        </AutoWindow>
+                        <AutoWindow namePath="__auto_thumb__" >
+                            <Property name="TooltipText" value="Slider to adjust the blue colour component." />
+                        </AutoWindow>
+                    </Window>
+                    <Window type="GWEN/Editbox" name="LightX" >
+                        <Property name="Area" value="{{0.298013,0},{0.195475,0},{0.988436,0},{0.24817,0}}" />
+                        <Property name="TooltipText" value="Enter the text for a new Listbox item here." />
+                    </Window>
+                    <Window type="GWEN/Button" name="Set" >
+                        <Property name="Area" value="{{0.179562,0},{0.929342,0},{0.772216,0},{0.992016,0}}" />
+                        <Property name="Text" >Set
+</Property>
+                        <Property name="TooltipText" value="Set new values" />
+                    </Window>
+                    <Window type="GWEN/StaticText" name="Info" >
+                        <Property name="Area" value="{{0.055863,0},{0.506189,0},{0.955863,0},{0.925418,0}}" />
+                        <Property name="Text" value="Print other light info" />
+                        <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                        <Property name="TextColours" value="tl:FFFFFFFF tr:FFFFFFFF bl:FFFFFFFF br:FFFFFFFF" />
+                        <Property name="TooltipText" value="Information panel." />
+                        <AutoWindow namePath="__auto_hscrollbar__" >
+                            <Property name="TooltipText" value="Information panel." />
+                            <AutoWindow namePath="__auto_incbtn__" >
+                                <Property name="TooltipText" value="Information panel." />
+                            </AutoWindow>
+                            <AutoWindow namePath="__auto_decbtn__" >
+                                <Property name="TooltipText" value="Information panel." />
+                            </AutoWindow>
+                            <AutoWindow namePath="__auto_thumb__" >
+                                <Property name="TooltipText" value="Information panel." />
+                            </AutoWindow>
+                        </AutoWindow>
+                        <AutoWindow namePath="__auto_vscrollbar__" >
+                            <Property name="TooltipText" value="Information panel." />
+                            <AutoWindow namePath="__auto_incbtn__" >
+                                <Property name="TooltipText" value="Information panel." />
+                            </AutoWindow>
+                            <AutoWindow namePath="__auto_decbtn__" >
+                                <Property name="TooltipText" value="Information panel." />
+                            </AutoWindow>
+                            <AutoWindow namePath="__auto_thumb__" >
+                                <Property name="TooltipText" value="Information panel." />
+                            </AutoWindow>
+                        </AutoWindow>
+                    </Window>
+                    <Window type="GWEN/Editbox" name="LightY" >
+                        <Property name="Area" value="{{0.296054,0},{0.260026,0},{0.986356,0},{0.31292,0}}" />
+                        <Property name="TooltipText" value="Change light color" />
+                    </Window>
+                    <Window type="GWEN/Editbox" name="LightZ" >
+                        <Property name="Area" value="{{0.296056,0},{0.325123,0},{0.986913,0},{0.380512,0}}" />
+                        <Property name="TooltipText" value="Change light color" />
+                    </Window>
+                    <Window type="GWEN/Combobox" name="LightType" >
+                        <Property name="Area" value="{{0.039305,0},{0.397731,0},{0.993103,0},{0.475575,0}}" />
+                        <Property name="TooltipText" value="Change light color" />
+                        <AutoWindow namePath="__auto_editbox__" >
+                            <Property name="TooltipText" value="Change light color" />
+                        </AutoWindow>
+                        <AutoWindow namePath="__auto_droplist__" >
+                            <Property name="TooltipText" value="Change light color" />
+                            <AutoWindow namePath="__auto_hscrollbar__" >
+                                <Property name="TooltipText" value="Change light color" />
+                                <AutoWindow namePath="__auto_incbtn__" >
+                                    <Property name="TooltipText" value="Change light color" />
+                                    <Property name="RestoreOldCapture" value="True" />
+                                </AutoWindow>
+                                <AutoWindow namePath="__auto_decbtn__" >
+                                    <Property name="TooltipText" value="Change light color" />
+                                    <Property name="RestoreOldCapture" value="True" />
+                                </AutoWindow>
+                                <AutoWindow namePath="__auto_thumb__" >
+                                    <Property name="TooltipText" value="Change light color" />
+                                    <Property name="RestoreOldCapture" value="True" />
+                                </AutoWindow>
+                            </AutoWindow>
+                            <AutoWindow namePath="__auto_vscrollbar__" >
+                                <Property name="TooltipText" value="Change light color" />
+                                <AutoWindow namePath="__auto_incbtn__" >
+                                    <Property name="TooltipText" value="Change light color" />
+                                    <Property name="RestoreOldCapture" value="True" />
+                                </AutoWindow>
+                                <AutoWindow namePath="__auto_decbtn__" >
+                                    <Property name="TooltipText" value="Change light color" />
+                                    <Property name="RestoreOldCapture" value="True" />
+                                </AutoWindow>
+                                <AutoWindow namePath="__auto_thumb__" >
+                                    <Property name="TooltipText" value="Change light color" />
+                                    <Property name="RestoreOldCapture" value="True" />
+                                </AutoWindow>
+                            </AutoWindow>
+                        </AutoWindow>
+                        <AutoWindow namePath="__auto_button__" >
+                            <Property name="TooltipText" value="Change light color" />
+                        </AutoWindow>
+                    </Window>
+                    <Window type="GWEN/StaticText" name="XLabel" >
+                        <Property name="Area" value="{{0.0309573,0},{0.190715,0},{0.20694,0},{0.256349,0}}" />
+                        <Property name="Text" value="X: " />
+                        <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                        <Property name="TextColours" value="tl:FFFFFFFF tr:FFFFFFFF bl:FFFFFFFF br:FFFFFFFF" />
+                        <Property name="TooltipText" value="Change light color" />
+                        <AutoWindow namePath="__auto_hscrollbar__" >
+                            <Property name="TooltipText" value="Change light color" />
+                            <AutoWindow namePath="__auto_incbtn__" >
+                                <Property name="TooltipText" value="Change light color" />
+                            </AutoWindow>
+                            <AutoWindow namePath="__auto_decbtn__" >
+                                <Property name="TooltipText" value="Change light color" />
+                            </AutoWindow>
+                            <AutoWindow namePath="__auto_thumb__" >
+                                <Property name="TooltipText" value="Change light color" />
+                            </AutoWindow>
+                        </AutoWindow>
+                        <AutoWindow namePath="__auto_vscrollbar__" >
+                            <Property name="TooltipText" value="Change light color" />
+                            <AutoWindow namePath="__auto_incbtn__" >
+                                <Property name="TooltipText" value="Change light color" />
+                            </AutoWindow>
+                            <AutoWindow namePath="__auto_decbtn__" >
+                                <Property name="TooltipText" value="Change light color" />
+                            </AutoWindow>
+                            <AutoWindow namePath="__auto_thumb__" >
+                                <Property name="TooltipText" value="Change light color" />
+                            </AutoWindow>
+                        </AutoWindow>
+                    </Window>
+                    <Window type="GWEN/StaticText" name="YLabel" >
+                        <Property name="Area" value="{{0.0305855,0},{0.25709,0},{0.206511,0},{0.322723,0}}" />
+                        <Property name="Text" value="Y: " />
+                        <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                        <Property name="TextColours" value="tl:FFFFFFFF tr:FFFFFFFF bl:FFFFFFFF br:FFFFFFFF" />
+                        <Property name="TooltipText" value="Change light color" />
+                        <AutoWindow namePath="__auto_hscrollbar__" >
+                            <Property name="TooltipText" value="Change light color" />
+                            <AutoWindow namePath="__auto_incbtn__" >
+                                <Property name="TooltipText" value="Change light color" />
+                            </AutoWindow>
+                            <AutoWindow namePath="__auto_decbtn__" >
+                                <Property name="TooltipText" value="Change light color" />
+                            </AutoWindow>
+                            <AutoWindow namePath="__auto_thumb__" >
+                                <Property name="TooltipText" value="Change light color" />
+                            </AutoWindow>
+                        </AutoWindow>
+                        <AutoWindow namePath="__auto_vscrollbar__" >
+                            <Property name="TooltipText" value="Change light color" />
+                            <AutoWindow namePath="__auto_incbtn__" >
+                                <Property name="TooltipText" value="Change light color" />
+                            </AutoWindow>
+                            <AutoWindow namePath="__auto_decbtn__" >
+                                <Property name="TooltipText" value="Change light color" />
+                            </AutoWindow>
+                            <AutoWindow namePath="__auto_thumb__" >
+                                <Property name="TooltipText" value="Change light color" />
+                            </AutoWindow>
+                        </AutoWindow>
+                    </Window>
+                    <Window type="GWEN/StaticText" name="ZLabel" >
+                        <Property name="Area" value="{{0.0307023,0},{0.322775,0},{0.206492,0},{0.385951,0}}" />
+                        <Property name="Text" value="Z: " />
+                        <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                        <Property name="TextColours" value="tl:FFFFFFFF tr:FFFFFFFF bl:FFFFFFFF br:FFFFFFFF" />
+                        <Property name="TooltipText" value="Change light color" />
+                        <AutoWindow namePath="__auto_hscrollbar__" >
+                            <Property name="TooltipText" value="Change light color" />
+                            <AutoWindow namePath="__auto_incbtn__" >
+                                <Property name="TooltipText" value="Change light color" />
+                            </AutoWindow>
+                            <AutoWindow namePath="__auto_decbtn__" >
+                                <Property name="TooltipText" value="Change light color" />
+                            </AutoWindow>
+                            <AutoWindow namePath="__auto_thumb__" >
+                                <Property name="TooltipText" value="Change light color" />
+                            </AutoWindow>
+                        </AutoWindow>
+                        <AutoWindow namePath="__auto_vscrollbar__" >
+                            <Property name="TooltipText" value="Change light color" />
+                            <AutoWindow namePath="__auto_incbtn__" >
+                                <Property name="TooltipText" value="Change light color" />
+                            </AutoWindow>
+                            <AutoWindow namePath="__auto_decbtn__" >
+                                <Property name="TooltipText" value="Change light color" />
+                            </AutoWindow>
+                            <AutoWindow namePath="__auto_thumb__" >
+                                <Property name="TooltipText" value="Change light color" />
+                            </AutoWindow>
+                        </AutoWindow>
+                    </Window>
+                    <Window type="GWEN/StaticText" name="RLabel" >
+                        <Property name="Area" value="{{0.0241715,0},{-0.000665931,0},{0.206402,0},{0.0624979,0}}" />
+                        <Property name="Text" value="R:" />
+                        <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                        <Property name="TextColours" value="tl:FFFFFFFF tr:FFFFFFFF bl:FFFFFFFF br:FFFFFFFF" />
+                        <Property name="TooltipText" value="Change light color" />
+                        <AutoWindow namePath="__auto_hscrollbar__" >
+                            <Property name="TooltipText" value="Change light color" />
+                            <AutoWindow namePath="__auto_incbtn__" >
+                                <Property name="TooltipText" value="Change light color" />
+                            </AutoWindow>
+                            <AutoWindow namePath="__auto_decbtn__" >
+                                <Property name="TooltipText" value="Change light color" />
+                            </AutoWindow>
+                            <AutoWindow namePath="__auto_thumb__" >
+                                <Property name="TooltipText" value="Change light color" />
+                            </AutoWindow>
+                        </AutoWindow>
+                        <AutoWindow namePath="__auto_vscrollbar__" >
+                            <Property name="TooltipText" value="Change light color" />
+                            <AutoWindow namePath="__auto_incbtn__" >
+                                <Property name="TooltipText" value="Change light color" />
+                            </AutoWindow>
+                            <AutoWindow namePath="__auto_decbtn__" >
+                                <Property name="TooltipText" value="Change light color" />
+                            </AutoWindow>
+                            <AutoWindow namePath="__auto_thumb__" >
+                                <Property name="TooltipText" value="Change light color" />
+                            </AutoWindow>
+                        </AutoWindow>
+                    </Window>
+                    <Window type="GWEN/StaticText" name="GLabel" >
+                        <Property name="Area" value="{{0.0250943,0},{0.0624369,0},{0.207342,0},{0.123155,0}}" />
+                        <Property name="Text" value="G:" />
+                        <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                        <Property name="TextColours" value="tl:FFFFFFFF tr:FFFFFFFF bl:FFFFFFFF br:FFFFFFFF" />
+                        <Property name="TooltipText" value="Change light color" />
+                        <AutoWindow namePath="__auto_hscrollbar__" >
+                            <Property name="TooltipText" value="Change light color" />
+                            <AutoWindow namePath="__auto_incbtn__" >
+                                <Property name="TooltipText" value="Change light color" />
+                            </AutoWindow>
+                            <AutoWindow namePath="__auto_decbtn__" >
+                                <Property name="TooltipText" value="Change light color" />
+                            </AutoWindow>
+                            <AutoWindow namePath="__auto_thumb__" >
+                                <Property name="TooltipText" value="Change light color" />
+                            </AutoWindow>
+                        </AutoWindow>
+                        <AutoWindow namePath="__auto_vscrollbar__" >
+                            <Property name="TooltipText" value="Change light color" />
+                            <AutoWindow namePath="__auto_incbtn__" >
+                                <Property name="TooltipText" value="Change light color" />
+                            </AutoWindow>
+                            <AutoWindow namePath="__auto_decbtn__" >
+                                <Property name="TooltipText" value="Change light color" />
+                            </AutoWindow>
+                            <AutoWindow namePath="__auto_thumb__" >
+                                <Property name="TooltipText" value="Change light color" />
+                            </AutoWindow>
+                        </AutoWindow>
+                    </Window>
+                    <Window type="GWEN/StaticText" name="BLabel" >
+                        <Property name="Area" value="{{0.0247033,0},{0.126454,0},{0.211223,0},{0.18968,0}}" />
+                        <Property name="Text" value="B:" />
+                        <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                        <Property name="TextColours" value="tl:FFFFFFFF tr:FFFFFFFF bl:FFFFFFFF br:FFFFFFFF" />
+                        <Property name="TooltipText" value="Change light color" />
+                        <AutoWindow namePath="__auto_hscrollbar__" >
+                            <Property name="TooltipText" value="Change light color" />
+                            <AutoWindow namePath="__auto_incbtn__" >
+                                <Property name="TooltipText" value="Change light color" />
+                            </AutoWindow>
+                            <AutoWindow namePath="__auto_decbtn__" >
+                                <Property name="TooltipText" value="Change light color" />
+                            </AutoWindow>
+                            <AutoWindow namePath="__auto_thumb__" >
+                                <Property name="TooltipText" value="Change light color" />
+                            </AutoWindow>
+                        </AutoWindow>
+                        <AutoWindow namePath="__auto_vscrollbar__" >
+                            <Property name="TooltipText" value="Change light color" />
+                            <AutoWindow namePath="__auto_incbtn__" >
+                                <Property name="TooltipText" value="Change light color" />
+                            </AutoWindow>
+                            <AutoWindow namePath="__auto_decbtn__" >
+                                <Property name="TooltipText" value="Change light color" />
+                            </AutoWindow>
+                            <AutoWindow namePath="__auto_thumb__" >
+                                <Property name="TooltipText" value="Change light color" />
+                            </AutoWindow>
+                        </AutoWindow>
+                    </Window>
+                </Window>
+            </Window>
+            <Window type="GWEN/FrameWindow" name="EntityEditor" >
+                <Property name="Area" value="{{0.845338,0},{0.0248164,0},{0.996177,0},{0.498965,0}}" />
+                <Property name="Text" value="Entities" />
+                <Property name="MaxSize" value="{{0.5,0},{1,0}}" />
+                <Property name="TooltipText" value="Contains some StaticText information panels" />
+                <Property name="RollUpEnabled" value="False" />
+                <AutoWindow namePath="__auto_titlebar__" >
+                    <Property name="TooltipText" value="Contains some StaticText information panels" />
+                </AutoWindow>
+                <AutoWindow namePath="__auto_closebutton__" >
+                    <Property name="TooltipText" value="Contains some StaticText information panels" />
+                </AutoWindow>
+                <Window type="GWEN/StaticText" name="List" >
+                    <Property name="Area" value="{{0.05,0},{0.00727894,0},{0.95,0},{0.36647,0}}" />
+                    <Property name="Text" value="Entity List in tree form" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="TextColours" value="tl:FFFFFFFF tr:FFFFFFFF bl:FFFFFFFF br:FFFFFFFF" />
+                    <Property name="TooltipText" value="Contains some StaticText information panels" />
+                    <AutoWindow namePath="__auto_hscrollbar__" >
+                        <Property name="TooltipText" value="Contains some StaticText information panels" />
+                        <AutoWindow namePath="__auto_incbtn__" >
+                            <Property name="TooltipText" value="Contains some StaticText information panels" />
+                        </AutoWindow>
+                        <AutoWindow namePath="__auto_decbtn__" >
+                            <Property name="TooltipText" value="Contains some StaticText information panels" />
+                        </AutoWindow>
+                        <AutoWindow namePath="__auto_thumb__" >
+                            <Property name="TooltipText" value="Contains some StaticText information panels" />
+                        </AutoWindow>
+                    </AutoWindow>
+                    <AutoWindow namePath="__auto_vscrollbar__" >
+                        <Property name="TooltipText" value="Contains some StaticText information panels" />
+                        <AutoWindow namePath="__auto_incbtn__" >
+                            <Property name="TooltipText" value="Contains some StaticText information panels" />
+                        </AutoWindow>
+                        <AutoWindow namePath="__auto_decbtn__" >
+                            <Property name="TooltipText" value="Contains some StaticText information panels" />
+                        </AutoWindow>
+                        <AutoWindow namePath="__auto_thumb__" >
+                            <Property name="TooltipText" value="Contains some StaticText information panels" />
+                        </AutoWindow>
+                    </AutoWindow>
+                </Window>
+                <Window type="GWEN/StaticText" name="Params" >
+                    <Property name="Area" value="{{0.05,0},{0.382044,0},{0.95,0},{0.995711,0}}" />
+                    <Property name="Text" value="Entity params" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="TextColours" value="tl:FFFFFFFF tr:FFFFFFFF bl:FFFFFFFF br:FFFFFFFF" />
+                    <Property name="TooltipText" value="Contains some StaticText information panels" />
+                    <AutoWindow namePath="__auto_hscrollbar__" >
+                        <Property name="TooltipText" value="Contains some StaticText information panels" />
+                        <AutoWindow namePath="__auto_incbtn__" >
+                            <Property name="TooltipText" value="Contains some StaticText information panels" />
+                        </AutoWindow>
+                        <AutoWindow namePath="__auto_decbtn__" >
+                            <Property name="TooltipText" value="Contains some StaticText information panels" />
+                        </AutoWindow>
+                        <AutoWindow namePath="__auto_thumb__" >
+                            <Property name="TooltipText" value="Contains some StaticText information panels" />
+                        </AutoWindow>
+                    </AutoWindow>
+                    <AutoWindow namePath="__auto_vscrollbar__" >
+                        <Property name="TooltipText" value="Contains some StaticText information panels" />
+                        <AutoWindow namePath="__auto_incbtn__" >
+                            <Property name="TooltipText" value="Contains some StaticText information panels" />
+                        </AutoWindow>
+                        <AutoWindow namePath="__auto_decbtn__" >
+                            <Property name="TooltipText" value="Contains some StaticText information panels" />
+                        </AutoWindow>
+                        <AutoWindow namePath="__auto_thumb__" >
+                            <Property name="TooltipText" value="Contains some StaticText information panels" />
+                        </AutoWindow>
+                    </AutoWindow>
+                </Window>
+            </Window>
+            <Window type="GWEN/Menubar" name="MenuBar" >
+                <Property name="Area" value="{{0.00439251,0},{0.00154764,0},{0.998902,0},{0.0201233,0}}" />
+                <Property name="AlwaysOnTop" value="True" />
+                <Property name="ClippedByParent" value="False" />
+            </Window>
+            <Window type="GWEN/VerticalScrollbar" name="Zoom" >
+                <Property name="Area" value="{{0.00805283,0},{0.0224456,0},{0.0179358,0},{0.493811,0}}" />
+                <Property name="TooltipText" value="Zoom" />
+                <AutoWindow namePath="__auto_incbtn__" >
+                    <Property name="TooltipText" value="Zoom" />
+                </AutoWindow>
+                <AutoWindow namePath="__auto_decbtn__" >
+                    <Property name="TooltipText" value="Zoom" />
+                </AutoWindow>
+                <AutoWindow namePath="__auto_thumb__" >
+                    <Property name="TooltipText" value="Zoom" />
+                </AutoWindow>
+            </Window>
+            <Window type="GWEN/FrameWindow" name="AIEditor" >
+                <Property name="Area" value="{{0.484951,0},{0.0238095,0},{0.656074,0},{0.496033,0}}" />
+                <Property name="Text" value="A.I. Editor" />
+                <Property name="AlwaysOnTop" value="True" />
+                <Window type="GWEN/Button" name="NavMeshButton" >
+                    <Property name="Area" value="{{0.016873,0},{0.0369757,0},{0.980398,0},{0.0886565,0}}" />
+                    <Property name="Text" value="Create Nav Mesh" />
+                </Window>
+                <Window type="GWEN/StaticText" name="DebugLabel" >
+                    <Property name="Area" value="{{0.0284728,0},{0.130253,0},{0.723511,0},{0.168488,0}}" />
+                    <Property name="Text" value="DebugDraw:" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="TextColours" value="tl:FFFFFFFF tr:FFFFFFFF bl:FFFFFFFF br:FFFFFFFF" />
+                    <Property name="FrameEnabled" value="False" />
+                </Window>
+                <Window type="GWEN/Checkbox" name="DebugDraw" >
+                    <Property name="Area" value="{{0.756297,0},{0.132773,0},{0.863249,0},{0.167647,0}}" />
+                </Window>
+                <Window type="GWEN/Listbox" name="EntityList" >
+                    <Property name="Area" value="{{0.0139049,0},{0.567227,0},{1.00034,0},{0.960084,0}}" />
+                    <Property name="Text" value="AI Entities" />
+                </Window>
+            </Window>
+        </Window>
+    </Window>
+</GUILayout>

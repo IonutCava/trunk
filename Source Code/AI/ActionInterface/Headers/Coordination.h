@@ -23,7 +23,7 @@
 class AIEntity;
 class AICoordination {
 public:
-	typedef Unordered_map<U32, AIEntity*> teamMap;
+	typedef Unordered_map<I64, AIEntity*> teamMap;
 	typedef Unordered_map<AIEntity*, F32 > memberVariable;
 	AICoordination(U32 id);
 

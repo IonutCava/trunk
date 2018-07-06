@@ -21,17 +21,16 @@
 #include "glFrameBufferObject.h"
 //Multisampled version of the glTextureBufferObject
 class glMSTextureBufferObject : public glFrameBufferObject {
-
 public:
 
 	glMSTextureBufferObject();
 	~glMSTextureBufferObject() {Destroy();}
-	
+
 	bool Create(GLushort width, GLushort height, GLubyte imageLayers = 0);
 
 	void Destroy();
 
-	void End(GLubyte nFace=0) const;		
+	void End(GLubyte nFace=0) const;
 
 private:
 	GLuint _colorBufferHandle;
@@ -40,4 +39,3 @@ private:
 };
 
 #endif
-

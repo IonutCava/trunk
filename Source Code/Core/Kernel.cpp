@@ -2,6 +2,7 @@
 
 #include "GUI/Headers/GUI.h"
 #include "GUI/Headers/GUISplash.h"
+#include "GUI/Headers/GUIConsole.h"
 #include "Utility/Headers/XMLParser.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Managers/Headers/AIManager.h"
@@ -29,31 +30,33 @@ bool Kernel::_renderingPaused = false;
 
 boost::function0<void> Kernel::_mainLoopCallback;
 
-Kernel::Kernel(I32 argc, char **argv) :
+Kernel::Kernel(I32 argc, char **argv, Application& parentApp) :
 					_argc(argc),
 					_argv(argv),
-					_GFX(GFX_DEVICE),               ///Video
-				    _SFX(SFXDevice::getInstance()), ///Audio
-					_PFX(PHYSICS_DEVICE),           ///Physics
-					_GUI(GUI::getInstance()),       ///Graphical User Interface
-				    _sceneMgr(SceneManager::getInstance()), ///Scene Manager 
-					_camera(New FreeFlyCamera()),			///Default camera
-					_cameraMgr(New CameraManager()),        ///Camera manager
-					_lightPool(LightManager::getInstance()),///Light pool
-					_inputInterface(InputInterface::getInstance())  ///Input interface
+					_APP(parentApp),
+					_GFX(GFX_DEVICE),               //Video
+				    _SFX(SFXDevice::getInstance()), //Audio
+					_PFX(PHYSICS_DEVICE),           //Physics
+					_GUI(GUI::getInstance()),       //Graphical User Interface
+				    _sceneMgr(SceneManager::getInstance()),  //Scene Manager
+                    _shaderMgr(ShaderManager::getInstance()),//Shader Manager
+					_camera(New FreeFlyCamera()),			 //Default camera
+					_cameraMgr(New CameraManager()),         //Camera manager
+					_frameMgr(FrameListenerManager::getInstance()),
+					_lightPool(LightManager::getInstance()),//Light pool
+					_inputInterface(InputInterface::getInstance())  //Input interface
 {
-
 	 assert(_cameraMgr != NULL);
-	 ///If camera has been updated, set a callback to inform the current scene
-	 _cameraMgr->addCameraChangeListener(boost::bind(&SceneManager::updateCamera, ///update camera
-													 boost::ref(_sceneMgr),
+	 //If camera has been updated, set a callback to inform the current scene
+	 _cameraMgr->addCameraChangeListener(DELEGATE_BIND(&SceneManager::updateCamera, //update camera
+													 DELEGATE_REF(_sceneMgr),
 													 _cameraMgr->getActiveCamera()));
-	 /// force all lights to update
-	 _camera->addUpdateListener(boost::bind(&LightManager::update, boost::ref(_lightPool), true));
-	 ///As soon as a camera is added to the camera manager, the manager is responsible for cleaning it up
+     // force all lights to update on camera change (to keep them still actually)
+	 _camera->addUpdateListener(DELEGATE_BIND(&LightManager::update, DELEGATE_REF(_lightPool)));
+	 //As soon as a camera is added to the camera manager, the manager is responsible for cleaning it up
 	 _cameraMgr->addNewCamera("defaultCamera",_camera);
-	 ///We have an A.I. thread, a networking thread, a PhysX thread, the main update/rendering thread
-	 // so how many threads do we allocate for tasks? That's up to the programmer to decide for each app
+	 //We have an A.I. thread, a networking thread, a PhysX thread, the main update/rendering thread
+	 //so how many threads do we allocate for tasks? That's up to the programmer to decide for each app
 	 //we add the A.I. thread in the same pool as it's a task. ReCast should also use this ...
 	 _mainTaskPool = New boost::threadpool::pool(THREAD_LIMIT + 1 /*A.I.*/);
 }
@@ -62,18 +65,19 @@ Kernel::~Kernel(){
 	SAFE_DELETE(_cameraMgr);
 	_inputInterface.terminate();
 	_inputInterface.DestroyInstance();
-#pragma message("ToDo: stop all Tasks first before deleting the thread pool! -Ionut")
-    _mainTaskPool->wait(); 
+    _mainTaskPool->wait();
 	SAFE_DELETE(_mainTaskPool);
 }
 
 void Kernel::Idle(){
-	SceneManager::getInstance().idle();
-	PostFX::getInstance().idle();
 	GFX_DEVICE.idle();
 	PHYSICS_DEVICE.idle();
+	PostFX::getInstance().idle();
+	SceneManager::getInstance().idle();
 	LightManager::getInstance().idle();
+	ShaderManager::getInstance().idle();
 	FrameListenerManager::getInstance().idle();
+
 	std::string pendingLanguage = ParamHandler::getInstance().getParam<std::string>("language");
 	if(pendingLanguage.compare(Locale::currentLanguage()) != 0){
 		Locale::changeLanguage(pendingLanguage);
@@ -81,51 +85,54 @@ void Kernel::Idle(){
 }
 
 void Kernel::MainLoopApp(){
-	/// Update time at every render loop
-	Kernel::_currentTime     = GETTIME();
+	// Update time at every render loop
 	Kernel::_currentTimeMS   = GETMSTIME();
-	if(!_keepAlive || Application::getInstance().ShutdownRequested()) {
-		///exiting the graphical rendering loop will return us to the current control point
-		///if we return here, the next valid control point is in main() thus shutding down the application neatly
+	Kernel::_currentTime     = getMsToSec(Kernel::_currentTimeMS);
+	FrameListenerManager& frameMgr = FrameListenerManager::getInstance();
+	Application& APP = Application::getInstance();
+
+	if(!_keepAlive || APP.ShutdownRequested()) {
+		//exiting the graphical rendering loop will return us to the current control point
+		//if we return here, the next valid control point is in main() thus shutding down the application neatly
 		GFX_DEVICE.exitRenderLoop(true);
 		return;
 	}
+
 	Kernel::Idle();
-	///Restore CPU to default state: clear buffers and set default state
-	GFX_DEVICE.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER | GFXDevice::STENCIL_BUFFER);
-	SET_DEFAULT_STATE_BLOCK();
-	///Get current frame-to-application speed factor
+	//Restore CPU to default state: clear buffers and set default render state
+	GFX_DEVICE.beginFrame();
+	//Get current frame-to-application speed factor
 	Framerate::getInstance().SetSpeedFactor();
-	///Launch the FRAME_STARTED event
+	//Launch the FRAME_STARTED event
 	FrameEvent evt;
-	FrameListenerManager::getInstance().createEvent(FRAME_EVENT_STARTED,evt);
-	_keepAlive = FrameListenerManager::getInstance().frameStarted(evt);
-	///Process physics
+	frameMgr.createEvent(FRAME_EVENT_STARTED,evt);
+	_keepAlive = frameMgr.frameStarted(evt);
+	//Process physics
 	PHYSICS_DEVICE.process();
-	///Process the current frame
-	_keepAlive = Application::getInstance().getKernel()->MainLoopScene();
-	///Launch the FRAME_PROCESS event (a.k.a. the frame processing has ended event)
-	FrameListenerManager::getInstance().createEvent(FRAME_EVENT_PROCESS,evt);
-	_keepAlive = FrameListenerManager::getInstance().frameRenderingQueued(evt);
-	
-	///Swap GPU buffers
-	GFX_DEVICE.swapBuffers();
-	///Launch the FRAME_ENDED event (buffers have been swapped)
-	FrameListenerManager::getInstance().createEvent(FRAME_EVENT_ENDED,evt);
-	_keepAlive = FrameListenerManager::getInstance().frameEnded(evt);
+	//Process the current frame
+	_keepAlive = APP.getKernel()->MainLoopScene();
+	//Launch the FRAME_PROCESS event (a.k.a. the frame processing has ended event)
+	frameMgr.createEvent(FRAME_EVENT_PROCESS,evt);
+	_keepAlive = frameMgr.frameRenderingQueued(evt);
+
+	GFX_DEVICE.endFrame();
+	//Launch the FRAME_ENDED event (buffers have been swapped)
+	frameMgr.createEvent(FRAME_EVENT_ENDED,evt);
+	_keepAlive = frameMgr.frameEnded(evt);
 }
 
 void Kernel::FirstLoop(){
-	///Skip one frame so all resources can be built while the splash screen is displayed
+	//Skip one frame so all resources can be built while the splash screen is displayed
 	MainLoopApp();
-	Kernel::_applicationReady = true; ///<All is set
-	///Hide splash screen
+	Kernel::_applicationReady = true;
+	Framerate::getInstance().benchmark(true);
+	//Hide splash screen
 	ParamHandler& par = ParamHandler::getInstance();
-	vec2<U16> resolution(par.getParam<I32>("runtime.resolutionWidth"),par.getParam<I32>("runtime.resolutionHeight"));
-	GFX_DEVICE.setWindowSize(resolution.width,resolution.height);
+	GFX_DEVICE.setWindowSize(par.getParam<U16>("runtime.resolutionWidth"),
+							 par.getParam<U16>("runtime.resolutionHeight"));
 	GFX_DEVICE.setWindowPos(10,50);
-	///Bind main render loop
-	_mainLoopCallback = boost::ref(Kernel::MainLoopApp);
+	//Bind main render loop
+	_mainLoopCallback = DELEGATE_REF(Kernel::MainLoopApp);
 }
 
 const I32 SKIP_TICKS = 1000 / TICKS_PER_SECOND;
@@ -134,52 +141,55 @@ bool Kernel::MainLoopScene(){
         Idle();
         return true;
     }
-	///Update camera position
+	//Update camera position
 	_camera->RenderLookAt();
-	///Set the current scene's active camera
+	//Set the current scene's active camera
 	_sceneMgr.updateCamera(_camera);
 	_loops = 0;
 	//while(_currentTimeMS > _nextGameTick && _loops < MAX_FRAMESKIP) {
-		/// Update scene based on input
+		// Update scene based on input
 		_sceneMgr.processInput();
-		/// process all scene events
+		// process all scene events
 		_sceneMgr.processTasks(_currentTimeMS);
 
-		///Update the scene state based on current time
+		//Update the scene state based on current time
 		_sceneMgr.updateSceneState(_currentTimeMS);
-		///Update physics
+		//Update physics
 		_PFX.update();
-	
+
 		_nextGameTick += SKIP_TICKS;
         _loops++;
 	//}
 
 	bool sceneRenderState = presentToScreen();
-	/// Get input events
+	// Get input events
 	_inputInterface.tick();
-    ///unbind all state (shaders, textures, buffers)
-    GFX_DEVICE.clearStates();
-	/// Draw the GUI
-	GUI::getInstance().draw(_currentTimeMS);
+	// Draw the GUI
+	_GUI.draw(_currentTimeMS);
 	return sceneRenderState;
 }
 
 bool Kernel::presentToScreen(){
-    ///Prepare scene for rendering
+    //Prepare scene for rendering
 	_sceneMgr.preRender();
-	
-	/// Inform listeners that we finished pre-rendering
-	FrameEvent evt;
-	FrameListenerManager::getInstance().createEvent(FRAME_PRERENDER_END,evt);
+	//perform time-sensitive shader tasks
+	_shaderMgr.tick(_currentTimeMS);
 
-	if(!FrameListenerManager::getInstance().framePreRenderEnded(evt)){
-		return false;
-	}
-	/// When the entire scene is ready for rendering, generate the shadowmaps
+	// Inform listeners that we finished pre-rendering
+	FrameEvent evt;
+	_frameMgr.createEvent(FRAME_PRERENDER_END,evt);
+
+	if(!_frameMgr.framePreRenderEnded(evt)) return false;
+
+	// When the entire scene is ready for rendering, generate the shadowmaps
 	_lightPool.generateShadowMaps(_sceneMgr.getActiveScene()->renderState());
-	/// Render the scene adding any post-processing effects that we have active
+	// Render the scene adding any post-processing effects that we have active
 	PostFX::getInstance().render(_camera);
-    _sceneMgr.postRender();
+	
+	_sceneMgr.postRender();
+
+	//render debug primitives and cleanup after us
+	_GFX.flush();
     return true;
 }
 
@@ -187,32 +197,32 @@ I8 Kernel::Initialize(const std::string& entryPoint) {
 	I8 windowId = -1;
 	I8 returnCode = 0;
 	ParamHandler& par = ParamHandler::getInstance();
-	Console::getInstance().bindConsoleOutput(boost::bind(&GUIConsole::printText, GUI::getInstance().getConsole(),_1,_2));
-	///Using OpenGL for rendering as default
+	Console::getInstance().bindConsoleOutput(DELEGATE_BIND(&GUIConsole::printText, GUI::getInstance().getConsole(),_1,_2));
+	//Using OpenGL for rendering as default
 	_GFX.setApi(OpenGL);
-	///Target FPS is usually 60. So all movement is capped around that value
+	//Target FPS is usually 60. So all movement is capped around that value
 	Framerate::getInstance().Init(TARGET_FRAME_RATE);
-	///Load info from XML files
+	//Load info from XML files
 	std::string startupScene = XML::loadScripts(entryPoint);
-	///Create mem log file
+	//Create mem log file
 	std::string mem = par.getParam<std::string>("memFile");
 	if(mem.compare("none") == 0) mem = "mem.log";
-	Application::getInstance().setMemoryLogFile(mem);
+	_APP.setMemoryLogFile(mem);
 	PRINT_FN(Locale::get("START_RENDER_INTERFACE"));
-	vec2<U16> resolution(par.getParam<I32>("runtime.resolutionWidth"),par.getParam<I32>("runtime.resolutionHeight"));
+	vec2<U16> resolution(par.getParam<U16>("runtime.resolutionWidth"),
+						 par.getParam<U16>("runtime.resolutionHeight"));
 	windowId = _GFX.initHardware(resolution/2,_argc,_argv);
-	if(windowId < 0){
-		///If we could not initialize the graphics device, exit
-		return windowId;
-	}
+	//If we could not initialize the graphics device, exit
+	if(windowId < 0) return windowId;
+
     _GFX.setRenderStage(FINAL_STAGE);
-	///Load the splash screen 
+	//Load the splash screen
+    _GFX.setWindowSize(resolution.width/2,resolution.height/2);
 	GUISplash splashScreen("divideLogo.jpg",resolution/2);
-	_GFX.setWindowSize(resolution.width/2,resolution.height/2);
-	_GFX.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER | GFXDevice::STENCIL_BUFFER);
+	_GFX.beginFrame();
 	splashScreen.render();
-	_GFX.swapBuffers();
-	///We start of with a forward renderer. Change it to something else on scene load ... or ... whenever
+	_GFX.endFrame();
+	//We start of with a forward renderer. Change it to something else on scene load ... or ... whenever
 	_GFX.setRenderer(New ForwardRenderer());
 	_GFX.registerKernel(this);
 	_lightPool.init();
@@ -227,9 +237,9 @@ I8 Kernel::Initialize(const std::string& entryPoint) {
 		return returnCode;
 	}
 	PostFX::getInstance().init(resolution);
-	///Bind the kernel with the input interface
+	//Bind the kernel with the input interface
 	_inputInterface.initialize(this,par.getParam<std::string>("appTitle"),(size_t)_GFX.getHWND());
-	///Load default material
+	//Load default material
 	PRINT_FN(Locale::get("LOAD_DEFAULT_MATERIAL"));
 	XML::loadMaterialXML(par.getParam<std::string>("scriptLocation")+"/defaultMaterial");
     //Initialize GUI with our current resolution
@@ -254,12 +264,10 @@ I8 Kernel::Initialize(const std::string& entryPoint) {
 
 void Kernel::beginLogicLoop(){
 	PRINT_FN(Locale::get("START_RENDER_LOOP"));
-	///lock the scene
+	//lock the scene
 	GET_ACTIVE_SCENE()->state()->toggleRunningState(true);
-	ParamHandler& par = ParamHandler::getInstance();
-	vec2<U16> resolution(par.getParam<I32>("runtime.resolutionWidth"),par.getParam<I32>("runtime.resolutionHeight"));
-	///The first loop compiles all the textures, so, do not render the first frame
-	_mainLoopCallback = boost::ref(Kernel::FirstLoop);
+	//The first loop compiles all the textures, so, do not render the first frame
+	_mainLoopCallback = DELEGATE_REF(Kernel::FirstLoop);
 	//Target FPS is define in "config.h". So all movement is capped around that value
 	//start rendering
 	GFX_DEVICE.initDevice(TARGET_FRAME_RATE);
@@ -267,11 +275,11 @@ void Kernel::beginLogicLoop(){
 
 void Kernel::Shutdown(){
 	_keepAlive = false;
-	///release the scene
+	//release the scene
 	GET_ACTIVE_SCENE()->state()->toggleRunningState(false);
 	PRINT_FN(Locale::get("STOP_GUI"));
+    Console::getInstance().bindConsoleOutput(boost::function2<void, std::string, bool>());
 	_GUI.DestroyInstance(); ///Deactivate GUI
-	Console::getInstance().bindConsoleOutput(boost::function2<void, std::string, bool>());
 	PRINT_FN(Locale::get("STOP_PHYSICS_INTERFACE"));
 	_PFX.exitPhysics();
 	PRINT_FN(Locale::get("STOP_POST_FX"));
@@ -296,14 +304,15 @@ void Kernel::Shutdown(){
 
 void Kernel::updateResolutionCallback(I32 w, I32 h){
 	if(!_applicationReady) return;
+	Application& app = Application::getInstance();
     //minimized
     if(w == 0 || h == 0){
         _renderingPaused = true;
     }else{
         _renderingPaused = false;
     }
-	Application::getInstance().setResolutionWidth(w);
-	Application::getInstance().setResolutionHeight(h);
+	app.setResolutionWidth(w);
+	app.setResolutionHeight(h);
 	//Update post-processing render targets and buffers
 	PostFX::getInstance().reshapeFBO(w, h);
 	vec2<U16> newResolution(w,h);

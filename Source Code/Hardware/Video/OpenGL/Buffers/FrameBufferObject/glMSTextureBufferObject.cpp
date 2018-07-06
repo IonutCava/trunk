@@ -14,11 +14,10 @@ glMSTextureBufferObject::glMSTextureBufferObject() : glFrameBufferObject(FBO_2D_
 }
 
 bool glMSTextureBufferObject::Create(GLushort width, GLushort height, GLubyte imageLayers){
-
 	if(!_attachementDirty[TextureDescriptor::Color0]){
 		return true;
 	}
-	
+
 	D_PRINT_FN(Locale::get("GL_FBO_GEN_COLOR_MS"),width,height);
 	Destroy();
 	TextureDescriptor texDescriptor = _attachement[TextureDescriptor::Color0];
@@ -31,9 +30,9 @@ bool glMSTextureBufferObject::Create(GLushort width, GLushort height, GLubyte im
 	if(_msaaBufferResolver <= 0){
 		// create a new fbo with multisampled color and depth attachements
 		GLCheck(glGenFramebuffers(1, &_msaaBufferResolver));
-		GLCheck(glBindFramebuffer(GL_FRAMEBUFFER, _msaaBufferResolver));	
+		GLCheck(glBindFramebuffer(GL_FRAMEBUFFER, _msaaBufferResolver));
 	}
-	
+
 	GLenum format = glImageFormatTable[texDescriptor._format];
 	GLenum internalFormat = glImageFormatTable[texDescriptor._internalFormat];
 	GLenum dataType = glDataFormat[texDescriptor._dataType];
@@ -45,7 +44,7 @@ bool glMSTextureBufferObject::Create(GLushort width, GLushort height, GLubyte im
 	GLCheck(glGenTextures(1, &_textureId[0]));
 	GLCheck(glBindTexture(_textureType, _textureId[0]));
 
-	///General texture parameters for either color or depth 
+	///General texture parameters for either color or depth
 	if(texDescriptor._generateMipMaps){
 		///(depth doesn't need mipmaps, but no need for another "if" to complicate things)
 		GLCheck(glTexParameteri(_textureType, GL_TEXTURE_BASE_LEVEL, texDescriptor._mipMinLevel));
@@ -56,7 +55,7 @@ bool glMSTextureBufferObject::Create(GLushort width, GLushort height, GLubyte im
 	GLCheck(glTexParameterf(_textureType, GL_TEXTURE_WRAP_S,     glWrapTable[texDescriptor._wrapU]));
 	GLCheck(glTexParameterf(_textureType, GL_TEXTURE_WRAP_T,     glWrapTable[texDescriptor._wrapV]));
 
-	GLCheck(glTexImage2D(_textureType, 
+	GLCheck(glTexImage2D(_textureType,
 						 0,
 						 internalFormat,
 						_width,
@@ -86,15 +85,18 @@ bool glMSTextureBufferObject::Create(GLushort width, GLushort height, GLubyte im
     GLCheck(glRenderbufferStorageMultisample(GL_RENDERBUFFER, _msaaSamples, internalFormat, _width, _height));
 
     GLCheck(glFramebufferRenderbufferEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, _colorBufferHandle));
-    // Create the multisample depth render buffer image and attach it to the
-    // second FBO.
-    GLCheck(glGenRenderbuffers(1, &_depthBufferHandle));
-    GLCheck(glBindRenderbuffer(GL_RENDERBUFFER, _depthBufferHandle));
-    GLCheck(glRenderbufferStorageMultisample(GL_RENDERBUFFER, _msaaSamples, GL_DEPTH_COMPONENT, _width, _height));
-    GLCheck(glFramebufferRenderbufferEXT(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, _depthBufferHandle));
+
+    if(_useDepthBuffer){
+        // Create the multisample depth render buffer image and attach it to the second FBO.
+        GLCheck(glGenRenderbuffers(1, &_depthBufferHandle));
+        GLCheck(glBindRenderbuffer(GL_RENDERBUFFER, _depthBufferHandle));
+        GLCheck(glRenderbufferStorageMultisample(GL_RENDERBUFFER, _msaaSamples, GL_DEPTH_COMPONENT, _width, _height));
+        GLCheck(glFramebufferRenderbufferEXT(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, _depthBufferHandle));
+        GLCheck(glBindRenderbuffer(GL_RENDERBUFFER,0));
+    }
+
 	checkStatus();
 	GLCheck(glBindFramebuffer(GL_FRAMEBUFFER, 0));
-    GLCheck(glBindRenderbuffer(GL_RENDERBUFFER,0));
 	return true;
 }
 
@@ -113,17 +115,10 @@ void glMSTextureBufferObject::Destroy() {
 
 void glMSTextureBufferObject::End(GLubyte nFace) const {
 	assert(nFace<6);
-	GLCheck(glPopAttrib());//Viewport Bit
 	GLCheck(glBindFramebuffer(GL_READ_FRAMEBUFFER, _frameBufferHandle));
 	GLCheck(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _msaaBufferResolver));
 	GLCheck(glBlitFramebuffer(0, 0, _width, _height,
 				              0, 0, _width, _height,
 						      GL_COLOR_BUFFER_BIT, GL_NEAREST));
 	GLCheck(glBindFramebuffer(GL_FRAMEBUFFER, 0));
-	
 }
-
-
-
-
-

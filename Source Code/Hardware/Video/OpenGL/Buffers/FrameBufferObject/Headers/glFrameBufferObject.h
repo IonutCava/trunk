@@ -21,7 +21,6 @@
 #include "Hardware/Video/Buffers/FrameBufferObject/Headers/FrameBufferObject.h"
 
 class glFrameBufferObject : public FrameBufferObject {
-
 public:
 
 	glFrameBufferObject(FBOType type) : FrameBufferObject(type)
@@ -34,15 +33,15 @@ public:
 		_imageLayers  = 0;
 	}
 	virtual ~glFrameBufferObject() {}
-	
+
 	virtual bool Create(GLushort width, GLushort height, GLubyte imageLayers = 0);
 	virtual void Destroy();
 	virtual void DrawToLayer(GLubyte face, GLubyte layer) {} ///<Use by multilayerd FBO's
 
-	virtual void Begin(GLubyte nFace=0) const;	
+	virtual void Begin(GLubyte nFace=0) const;
 	virtual void End(GLubyte nFace=0) const;
-	virtual void Bind(GLubyte unit=0, GLubyte texture = 0);		
-	virtual void Unbind(GLubyte unit=0);	
+	virtual void Bind(GLubyte unit=0, GLubyte texture = 0);
+	virtual void Unbind(GLubyte unit=0);
 
 	void BlitFrom(FrameBufferObject* inputFBO);
 
@@ -56,4 +55,3 @@ protected:
 };
 
 #endif
-

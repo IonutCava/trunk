@@ -2,11 +2,10 @@
 #include <SimpleIni.h>
 
 namespace Locale {
-
 	char* get(const std::string& key, const std::string& defaultValue) {
 		///When we ask for a string for the given key, we check our language cache first
 		if(_languageTable.find(key) != _languageTable.end()){
-			///Usually, the entire language table is loaded. 
+			///Usually, the entire language table is loaded.
 			return (char*)_languageTable[key].c_str();
 		}
 		///If we did not find our key in the cache, we need to populate the cache table
@@ -34,5 +33,4 @@ namespace Locale {
 		///Return our desired value now
 		return (char*)_languageTable[key].c_str();
 	}
-
 };

@@ -14,7 +14,18 @@
    You should have received a copy of the GNU Lesser General Public License
    along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
  */
-#pragma warning(disable:4103) ///<Boost alignment shouts
+
+#ifndef _XML_PARSER_H_
+#define _XML_PARSER_H_
+
+#if defined(_MSC_VER)
+#	pragma warning( push )
+#		pragma warning(disable:4103) ///<Boost alignment shouts
+#elif defined(__GNUC__)
+#	pragma GCC diagnostic push
+#		//pragma GCC diagnostic ignored "-Wall"
+#endif
+
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 
@@ -40,3 +51,11 @@ namespace XML {
 	Texture*  loadTextureXML(const std::string& textureNode, const std::string& textureName);
 	void      saveTextureXML(const std::string& textureNode, unsigned int operation, Texture* texture);
 }
+
+#if defined(_MSC_VER)
+#	pragma warning( pop )
+#elif defined(__GNUC__)
+#	pragma GCC diagnostic pop
+#endif
+
+#endif

@@ -1,7 +1,8 @@
 #ifndef _PRE_RENDER_OPERATOR_H_
 #define _PRE_RENDER_OPERATOR_H_
 
-#include "core.h"
+#include "Utility/Headers/Vector.h"
+#include "Core/Math/Headers/MathClasses.h"
 
 enum RenderStage;
 class Quad3D;
@@ -20,7 +21,7 @@ public:
 	///Reference to state
 	inline void setEnabled(bool& state) {_enabled = state;}
 	inline bool getEnabled()            {return _enabled; }
-	
+
 	inline void addInputFBO(FrameBufferObject* input) {_inputFBO.push_back(input);}
 
 protected:
@@ -32,7 +33,6 @@ protected:
 
 private:
 	RenderStage _stage;
-
 };
 
 #endif

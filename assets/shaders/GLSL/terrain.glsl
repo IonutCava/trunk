@@ -1,76 +1,72 @@
+-- Vertex.Depth
+uniform mat4 dvd_ModelMatrix;
+uniform mat4 dvd_ModelViewProjectionMatrix;
+in vec3  inVertexData;
+out vec4 _vertexM;
+
+void main(void){
+	vec4 dvd_Vertex     = vec4(inVertexData,1.0);
+	_vertexM = dvd_ModelMatrix * dvd_Vertex;
+    gl_Position = dvd_ModelViewProjectionMatrix * dvd_Vertex;
+}
+
 -- Vertex
 //based on: http://yannick.gerometta.free.fr/base.php?id=glsldemo
 #include "vboInputData.vert"
 
-varying vec3 vPixToLightTBN[MAX_LIGHT_COUNT];
-varying vec3 vPixToEyeTBN[MAX_LIGHT_COUNT];
-varying vec4 shadowCoord[MAX_SHADOW_CASTING_LIGHTS];
-varying vec3 vPixToLightMV[MAX_LIGHT_COUNT];
-
-varying vec3 _normalMV;
-varying vec4 _vertexMV;
-uniform bool enable_shadow_mapping;
-
 uniform vec3 bbox_min;
 uniform vec3 bbox_max;
 
-uniform mat4 lightProjectionMatrices[MAX_SHADOW_CASTING_LIGHTS];
-
-uniform int light_count;
-#include "lightingDefaultsBump.vert"
+#include "lightingDefaults.vert"
 
 void main(void){
 	int i = 0;
 	computeData();
-	
-	// Position du vertex
-	_vertexMV = vertexData;
-	
-	// Position du vertex si le terrain est compris entre 0.0 et 1.0
-	vec3 vPositionNormalized = (vertexData.xyz - bbox_min.xyz) / (bbox_max.xyz - bbox_min.xyz);
-	
+	vec3 vPositionNormalized = (dvd_Vertex.xyz - bbox_min.xyz) / (bbox_max.xyz - bbox_min.xyz);
 	_texCoord = vPositionNormalized.xz;
 
-	vec3 vTangent = tangentData;
-	vec3 n = normalize(gl_NormalMatrix * normalData);
-	vec3 t = normalize(gl_NormalMatrix * tangentData);
-	vec3 b = cross(n, t);
-	//Get the light's position in model's space
-	vec4 vLightPosMV = gl_LightSource[0].position;	
-	//Get the vertex's position in model's space
-	vec3 vertexMV = vec3(gl_ModelViewMatrix * vertexData);	
-	if(length(vTangent) > 0){
-		_normalMV = b;
-	}else{
-		_normalMV = n;
-	}
-
-	computeLightVectorsBump(t,b,n);
-
+	computeLightVectors();
 	
-	if(enable_shadow_mapping) {
+	if(dvd_enableShadowMapping) {
 		// Transformed position 
-		//vec4 pos = gl_ModelViewMatrix * gl_Vertex;
+		//vec4 pos = dvd_ModelViewMatrix * dvd_Vertex;
 		// position multiplied by the inverse of the camera matrix
-		//pos = modelViewInvMatrix * pos;
+		//pos = dvd_ModelViewMatrixInverse * pos;
 		// position multiplied by the light matrix. The vertex's position from the light's perspective
-		shadowCoord[0] = lightProjectionMatrices[i] * vertexData;
+		_shadowCoord[0] = dvd_lightProjectionMatrices[i] * dvd_Vertex;
 	}
 
-	gl_Position = projectionMatrix * gl_ModelViewMatrix * vertexData;
+	gl_Position = dvd_ModelViewProjectionMatrix * dvd_Vertex;
+}
+
+-- Fragment.Depth
+
+in vec4  _vertexM;
+out vec4 _colorOut;
+
+uniform float water_height;
+
+void main (void)
+{
+	// Discard the fragments that are underwater when drawing in reflection
+
+	if(_vertexM.y < water_height){
+		discard;
+	}
+
+	_colorOut = vec4(1.0,1.0,1.0,1.0);
 }
 
 -- Fragment
 
 //based on: http://yannick.gerometta.free.fr/base.php?id=glsldemo
-varying vec3 vPixToLightTBN[MAX_LIGHT_COUNT];
-varying vec3 vPixToEyeTBN[MAX_LIGHT_COUNT];
-varying vec4 shadowCoord[MAX_SHADOW_CASTING_LIGHTS];
-varying vec3 vPixToLightMV[MAX_LIGHT_COUNT];
+in vec3 _lightDirection[MAX_LIGHT_COUNT];
+in vec3 _viewDirection[MAX_LIGHT_COUNT];
 
-varying vec2 _texCoord;
-varying vec3 _normalMV;
-varying vec4 _vertexMV;
+in vec2 _texCoord;
+in vec3 _normalMV;
+in vec4  _vertexM;
+out vec4 _colorOut;
 
 uniform sampler2D texDiffuseMap;
 uniform sampler2D texNormalHeightMap;
@@ -80,22 +76,25 @@ uniform sampler2D texDiffuse2;
 uniform sampler2D texDiffuse3;
 uniform sampler2D texWaterCaustics;
 
-uniform int LOD;
-uniform int lightType[MAX_LIGHT_COUNT];
+uniform int   dvd_lightType[MAX_LIGHT_COUNT];
+uniform bool  dvd_lightEnabled[MAX_LIGHT_COUNT];
+uniform float LODFactor;
 uniform float detail_scale;
 uniform float diffuse_scale;
 uniform float water_height;
 uniform float time;
 uniform bool water_reflection_rendering;
 uniform bool alphaTexture;
+uniform vec2 zPlanes;
 uniform mat4 material;
 uniform vec3 bbox_min;
+uniform vec4 dvd_lightAmbient;
 
 #define LIGHT_DIRECTIONAL		0
 #define LIGHT_OMNIDIRECTIONAL	1
 #define LIGHT_SPOT				2
 
-vec4 NormalMapping(vec2 uv, vec3 vPixToEyeTBN, vec3 vPixToLightTBN, bool underwater);
+vec4 NormalMapping(vec2 uv, vec3 pixelToEyeTBN, vec3 pixelToLightTBN, bool underwater);
 vec4 CausticsColor();
 
 ///Global NDotL, basically
@@ -105,7 +104,7 @@ float iDiffuse;
 #include "shadowMapping.frag"
 
 bool isUnderWater(){
-	return _vertexMV.y < water_height;
+	return _vertexM.y < water_height;
 }
 
 void main (void)
@@ -116,15 +115,15 @@ void main (void)
 		discard;
 	}
 	
-	vec4 color = NormalMapping(_texCoord, vPixToEyeTBN[0], vPixToLightTBN[0], underwater);
+	vec4 color = NormalMapping(_texCoord, _viewDirection[0], _lightDirection[0], underwater);
 	
 	if(underwater) {
-		float alpha = (water_height - _vertexMV.y) / (2*(water_height - bbox_min.y));
+		float alpha = (water_height - _vertexM.y) / (2*(water_height - bbox_min.y));
 		color = (1-alpha) * color + alpha * CausticsColor();
 	}
     applyFog(color);
 
-	gl_FragData[0] = color;
+	_colorOut = color;
 }
 
 vec4 CausticsColor()
@@ -143,18 +142,18 @@ vec4 CausticsColor()
 	return (color0 + color1) /2;	
 }
 
-vec4 NormalMapping(vec2 uv, vec3 vPixToEyeTBN, vec3 vPixToLightTBN, bool underwater)
+vec4 NormalMapping(vec2 uv, vec3 pixelToEyeTBN, vec3 pixelToLightTBN, bool underwater)
 {	
-	vec3 lightVecTBN = normalize(vPixToLightTBN);
-	vec3 viewVecTBN = normalize(vPixToEyeTBN);
-
+	vec3 lightVecTBN = normalize(pixelToLightTBN);
+	vec3 viewVecTBN = normalize(pixelToEyeTBN);
+    //float z = 1.0 - (zDepth) / zPlanes.y;
 	vec2 uv_detail = uv * detail_scale;
-	vec2 uv_diffuse = uv * diffuse_scale/* / LOD*/;
-
+	vec2 uv_diffuse = uv * diffuse_scale;
 	
 	vec3 normalTBN = texture(texNormalHeightMap, uv_detail).rgb * 2.0 - 1.0;
 	normalTBN = normalize(normalTBN);
-	
+	iDiffuse = max(dot(lightVecTBN.xyz, normalTBN), 0.0);	// diffuse intensity. NDotL
+
 	vec4 tBase[4];
 
 	tBase[0] = texture(texDiffuse0, uv_diffuse);
@@ -166,7 +165,7 @@ vec4 NormalMapping(vec2 uv, vec3 vPixToEyeTBN, vec3 vPixToLightTBN, bool underwa
 	
 	vec4 cBase;
 
-	if(_vertexMV.y < water_height)
+	if(_vertexM.y < water_height)
 		cBase = tBase[0];
 	else {
 		if(alphaTexture){
@@ -179,23 +178,33 @@ vec4 NormalMapping(vec2 uv, vec3 vPixToEyeTBN, vec3 vPixToLightTBN, bool underwa
 	// SHADOW MAPS
 	float distance_max = 200.0;
 	float shadow = 1.0;
-	float distance = length(vPixToEyeTBN);
+	float distance = length(pixelToEyeTBN);
+
 	if(distance < distance_max) {
-		applyShadowDirectional(0, shadow);
+		applyShadowDirectional(iDiffuse, 0, shadow);
 		shadow = 1.0 - (1.0-shadow) * (distance_max-distance) / distance_max;
 	}
 
-	iDiffuse = max(dot(lightVecTBN.xyz, normalTBN), 0.0);	// diffuse intensity. NDotL
+	vec4 cAmbient = dvd_lightAmbient * material[0];
+	vec4 cDiffuse = material[1] * iDiffuse * shadow;
 
-	vec4 cAmbient = gl_LightSource[0].ambient * material[0] + gl_LightModel.ambient * material[0];
-	vec4 cDiffuse = gl_LightSource[0].diffuse * material[1] * iDiffuse * shadow;	
-	vec4 cSpecular = 0;
+    if(dvd_lightEnabled[0]){
+        
+	    cAmbient += gl_LightSource[0].ambient * material[0];
+	    cDiffuse *= gl_LightSource[0].diffuse;
+    }
+
+	vec4 cSpecular = material[2];
 	if(underwater){
 		///Add specular intensity
-		cSpecular =  gl_LightSource[0].specular * material[2];
-		cSpecular *= pow(clamp(dot(reflect(-lightVecTBN.xyz, normalTBN), viewVecTBN), 0.0, 1.0), material[3].x )/2.0;
+        
+        if(dvd_lightEnabled[0]){
+            cSpecular =  gl_LightSource[0].specular * material[2];
+			cSpecular *= pow(clamp(dot(reflect(-lightVecTBN.xyz, normalTBN), viewVecTBN), 0.0, 1.0), material[3].x )/2.0;
+        }
 		cSpecular *= shadow;
 	}
 
-	return cAmbient * cBase +  cDiffuse * cBase + cSpecular;
+	//return cAmbient * cBase +  cDiffuse * cBase + cSpecular;
+	return cAmbient * cBase +  cDiffuse * cBase;
 }

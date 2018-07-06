@@ -25,7 +25,6 @@ class AIEntity;
 class NPC;
 
 class WarScene : public Scene {
-
 public:
 	WarScene() : Scene(),
 		_groundPlaceholder(NULL),
@@ -43,7 +42,7 @@ public:
 	bool initializeAI(bool continueOnErrors);
 	bool deinitializeAI(bool continueOnErrors);
 	void processInput();
-	void processTasks(U32 time);
+	void processTasks(const U32 time);
 	void onKeyDown(const OIS::KeyEvent& key);
 	void onKeyUp(const OIS::KeyEvent& key);
 	void onMouseMove(const OIS::MouseEvent& key);

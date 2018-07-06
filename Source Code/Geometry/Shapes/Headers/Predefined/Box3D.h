@@ -19,49 +19,48 @@
 #define _BOX_3D_H_
 
 #include "Geometry/Shapes/Headers/Object3D.h"
+#include "Hardware/Video/Buffers/VertexBufferObject/Headers/VertexBufferObject.h"
 
 class Box3D : public Object3D
 {
 public:
 	Box3D(F32 size) :  Object3D(BOX_3D,TRIANGLE_STRIP), _size(size){
-	
-		vec3<F32> vertices[] = {vec3<F32>(-1.0, -1.0,  1.0), 
-							    vec3<F32>( 1.0, -1.0,  1.0), 
-							    vec3<F32>(-1.0,  1.0,  1.0), 
-							    vec3<F32>( 1.0,  1.0,  1.0), 
-							    vec3<F32>(-1.0, -1.0, -1.0), 
-							    vec3<F32>( 1.0, -1.0, -1.0), 
-							    vec3<F32>(-1.0,  1.0, -1.0), 
+		vec3<F32> vertices[] = {vec3<F32>(-1.0, -1.0,  1.0),
+							    vec3<F32>( 1.0, -1.0,  1.0),
+							    vec3<F32>(-1.0,  1.0,  1.0),
+							    vec3<F32>( 1.0,  1.0,  1.0),
+							    vec3<F32>(-1.0, -1.0, -1.0),
+							    vec3<F32>( 1.0, -1.0, -1.0),
+							    vec3<F32>(-1.0,  1.0, -1.0),
 							    vec3<F32>( 1.0,  1.0, -1.0)};
 
-        vec3<F32> normals[] = {vec3<F32>(-1, -1,  1), 
-							   vec3<F32>( 1, -1,  1), 
-							   vec3<F32>(-1,  1,  1), 
-							   vec3<F32>( 1,  1,  1), 
-							   vec3<F32>(-1, -1, -1), 
-							   vec3<F32>( 1, -1, -1), 
-							   vec3<F32>(-1,  1, -1), 
+        vec3<F32> normals[] = {vec3<F32>(-1, -1,  1),
+							   vec3<F32>( 1, -1,  1),
+							   vec3<F32>(-1,  1,  1),
+							   vec3<F32>( 1,  1,  1),
+							   vec3<F32>(-1, -1, -1),
+							   vec3<F32>( 1, -1, -1),
+							   vec3<F32>(-1,  1, -1),
 							   vec3<F32>( 1,  1, -1)};
 
 		U16 indices[] = {0, 1, 2, 3, 7, 1, 5,
                          4, 7, 6, 2, 4, 0, 1};
 
 		_geometry->reservePositionCount(8);
-		_geometry->getNormal().reserve(8);
-		_geometry->getHWIndices().reserve(14);
-		_geometry->setIndiceLimits(vec2<U16>(0,7));
+		_geometry->reserveNormalCount(8);
+		_geometry->setIndiceLimits(vec2<U32>(0,7));
 		F32 halfExtent = size*0.5f;
 
 		for(U8 i = 0; i < 8; i++){
 			_geometry->addPosition(vertices[i] * halfExtent);
-			_geometry->getNormal().push_back(normals[i]);
+			_geometry->addNormal(normals[i]);
 		}
 
 		for(U8 i = 0; i < 14; i++){
-			_geometry->getHWIndices().push_back(indices[i]);
+			_geometry->addIndex(indices[i]);
 		}
 
-		_refreshVBO = true;
+		_geometry->queueRefresh();
 	}
 
 	inline F32 getSize()    {return _size;}
@@ -76,10 +75,9 @@ public:
 			_geometry->modifyPositionValue(i,_geometry->getPosition()[i] * halfExtent);
 		}
 
-		_refreshVBO = true;
+		_geometry->queueRefresh();
 		_size = size;
 	}
-
 
 	virtual bool computeBoundingBox(SceneGraphNode* const sgn){
 		if(sgn->getBoundingBox().isComputed()) return true;
@@ -90,6 +88,5 @@ public:
 private:
 	F32 _size;
 };
-
 
 #endif

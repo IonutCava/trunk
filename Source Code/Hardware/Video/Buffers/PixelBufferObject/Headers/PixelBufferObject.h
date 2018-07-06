@@ -22,24 +22,23 @@
 #include "Hardware/Video/Headers/RenderAPIEnums.h"
 
 class PixelBufferObject {
-
 public:
 
-	virtual bool Create(U16 width, U16 height,U16 depth = 0, 
-						GFXImageFormat internalFormatEnum = RGBA8, 
+	virtual bool Create(U16 width, U16 height,U16 depth = 0,
+						GFXImageFormat internalFormatEnum = RGBA8,
 						GFXImageFormat formatEnum = RGBA,
 						GFXDataFormat   dataTypeEnum = FLOAT_32) = 0;
 
 	virtual void Destroy() = 0;
 
-	virtual void* Begin(U8 nFace=0) const = 0;	
-	virtual void End(U8 nFace=0) const = 0;		
+	virtual void* Begin(U8 nFace=0) const = 0;
+	virtual void End(U8 nFace=0) const = 0;
 
-	virtual void Bind(U8 unit=0) const = 0;		
-	virtual void Unbind(U8 unit=0) const = 0;	
+	virtual void Bind(U8 unit=0) const = 0;
+	virtual void Unbind(U8 unit=0) const = 0;
 
 	virtual void updatePixels(const F32 * const pixels) = 0;
-	inline U32 getTextureHandle() const	{return _textureId;} 
+	inline U32 getTextureHandle() const	{return _textureId;}
 	inline U16 getWidth() const			{return _width;}
 	inline U16 getHeight() const		{return _height;}
 	inline U16 getDepth() const		    {return _depth;}
@@ -58,9 +57,6 @@ protected:
 	U16		    _width, _height, _depth;
 	U32		    _pixelBufferHandle;
 	U32		    _textureType;
-
 };
 
-
 #endif
-

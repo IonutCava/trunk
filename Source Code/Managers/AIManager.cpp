@@ -1,4 +1,9 @@
 #include "Headers/AIManager.h"
+
+AIManager::AIManager() : _navMeshDraw(false)
+{
+}
+
 #pragma message("ToDo: Maybe create the \"Unit\" class and agregate it with AIEntity? -Ionut")
 U8 AIManager::tick(){
 	///Lock the entities during tick() adding or deleting entities is suspended until this returns
@@ -55,4 +60,36 @@ void AIManager::Destroy(){
 		SAFE_DELETE(entity.second);
 	}
 	_aiEntities.clear();
+    for_each(Navigation::NavigationMesh* navMesh, _navMeshes){
+         SAFE_DELETE(navMesh);
+    }
+    _navMeshes.clear();
+}
+
+bool AIManager::addNavMesh(Navigation::NavigationMesh* const navMesh){
+    WriteLock w_lock(_navMeshMutex);
+    _navMeshes.push_back(navMesh);
+    return true;
+}
+
+void AIManager::destroyNavMesh(Navigation::NavigationMesh* const navMesh){
+    WriteLock w_lock(_navMeshMutex);
+    for(vectorImpl<Navigation::NavigationMesh* >::iterator it =  _navMeshes.begin();
+                                                           it != _navMeshes.end();
+                                                         ++it){
+        if((*it)->getGUID() == navMesh->getGUID()){
+            SAFE_DELETE((*it));
+            _navMeshes.erase(it);
+            return;
+        }
+    }
+}
+
+void AIManager::debugDraw(bool forceAll){
+    ReadLock r_lock(_navMeshMutex);
+    for_each(Navigation::NavigationMesh* navMesh, _navMeshes){
+        if(forceAll || navMesh->debugDraw()){
+            navMesh->render();
+        }
+    }
 }

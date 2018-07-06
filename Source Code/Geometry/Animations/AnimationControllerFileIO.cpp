@@ -2,7 +2,6 @@
 #include "Hardware/Video/Headers/GFXDevice.h"
 using namespace boost;
 
-
 void AnimEvaluator::Save(std::ofstream& file){
 	uint32_t nsize = static_cast<uint32_t>(_name.size());
 	file.write(reinterpret_cast<char*>(&nsize), sizeof(uint32_t));// the size of the animation name
@@ -36,7 +35,6 @@ void AnimEvaluator::Save(std::ofstream& file){
 			file.write(reinterpret_cast<char*>(&_channels[j]._scalingKeys[i].mTime), sizeof(_channels[j]._scalingKeys[i].mTime));// rot key
 			file.write(reinterpret_cast<char*>(&_channels[j]._scalingKeys[i].mValue), sizeof(_channels[j]._scalingKeys[i].mValue));// rot key
 		}
-
 	}
 }
 
@@ -92,7 +90,7 @@ void SceneAnimator::Save(std::ofstream& file){
 		SaveSkeleton(file, _skeleton);
 
 	uint32_t nsize = static_cast<uint32_t>(_animations.size());
-	file.write(reinterpret_cast<char*>(&nsize), sizeof(uint32_t));// the number of animations	
+	file.write(reinterpret_cast<char*>(&nsize), sizeof(uint32_t));// the number of animations
 	for(uint32_t i(0); i< nsize; i++){
 		_animations[i].Save(file);
 	}
@@ -105,7 +103,6 @@ void SceneAnimator::Save(std::ofstream& file){
 		file.write(reinterpret_cast<char*>(&nsize), sizeof(uint32_t));// the size of the bone name
 		file.write(_bones[i]->_name.c_str(), nsize);// the name of the bone
 	}
-
 }
 
 void SceneAnimator::Load(std::ifstream& file){
@@ -126,7 +123,7 @@ void SceneAnimator::Load(std::ifstream& file){
 	file.read(reinterpret_cast<char*>(&nsize), sizeof(uint32_t));// the number of bones
 	_bones.resize(nsize);
 
-	for(uint32_t i(0); i< _bones.size(); i++){	
+	for(uint32_t i(0); i< _bones.size(); i++){
 		file.read(reinterpret_cast<char*>(&nsize), sizeof(uint32_t));// the size of the bone name
 		file.read(bname, nsize);// the size of the bone name
 		bname[nsize]=0;
@@ -135,19 +132,19 @@ void SceneAnimator::Load(std::ifstream& file){
 		_bonesToIndex[found->first] = i;
 		_bones[i]=tep;
 	}
-	
+
 	_transforms.resize( _bones.size());
-	float timestep = 1.0f/(F32)ANIMATION_TICKS_PER_SECOND;// 25.0f per second
+	F32 timestep = 1.0f/(F32)ANIMATION_TICKS_PER_SECOND;// 25.0f per second
 	for(size_t i(0); i< _animations.size(); i++){// pre calculate the animations
 		SetAnimIndex(i);
-		float dt = 0;
-		for(float ticks = 0; ticks < _animations[i]._duration; ticks += _animations[i]._ticksPerSecond/ANIMATION_TICKS_PER_SECOND){
+		F32 dt = 0;
+		mat4<F32> rotationmat;
+		for(F32 ticks = 0; ticks < _animations[i]._duration; ticks += _animations[i]._ticksPerSecond/ANIMATION_TICKS_PER_SECOND){
 			dt +=timestep;
 			Calculate(dt);
 			_animations[i]._transforms.push_back(vectorImpl<mat4<F32> >());
 			vectorImpl<mat4<F32> >& trans = _animations[i]._transforms.back();
 			for( size_t a = 0; a < _transforms.size(); ++a){
-				mat4<F32> rotationmat;
 				AnimUtils::TransformMatrix(rotationmat, aiMatrix4x4(_bones[a]->_globalTransform *  _bones[a]->_offsetMatrix));
 				trans.push_back(rotationmat);
 			}
@@ -165,7 +162,7 @@ void SceneAnimator::SaveSkeleton(std::ofstream& file, Bone* parent){
 	nsize = static_cast<uint32_t>(parent->_children.size());// number of children
 	file.write(reinterpret_cast<char*>(&nsize), sizeof(uint32_t));// the number of children
 	for( vectorImpl<Bone*>::iterator it = parent->_children.begin(); it != parent->_children.end(); ++it)// continue for all children
-		SaveSkeleton(file, *it); 
+		SaveSkeleton(file, *it);
 }
 
 Bone* SceneAnimator::LoadSkeleton(std::ifstream& file, Bone* parent){
@@ -180,7 +177,7 @@ Bone* SceneAnimator::LoadSkeleton(std::ifstream& file, Bone* parent){
 	_bonesByName[internalNode->_name] = internalNode;// use the name as a key
 	file.read(reinterpret_cast<char*>(&internalNode->_offsetMatrix), sizeof(internalNode->_offsetMatrix));// the bone offsets
 	file.read(reinterpret_cast<char*>(&internalNode->_originalLocalTransform), sizeof(internalNode->_originalLocalTransform));// original bind pose
-	
+
 	internalNode->_localTransform = internalNode->_originalLocalTransform;// a copy saved
 	CalculateBoneToWorldTransform(internalNode);
 
@@ -191,5 +188,4 @@ Bone* SceneAnimator::LoadSkeleton(std::ifstream& file, Bone* parent){
 		internalNode->_children.push_back(LoadSkeleton(file, internalNode));
 	}
 	return internalNode;
-
 }

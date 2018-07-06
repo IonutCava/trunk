@@ -1,20 +1,21 @@
 -- Vertex
 
-#include "vboInputData.vert"
+#include "vertexDefault.vert"
 
-void main()
+void main(void)
 {
+
 	computeData();
-	gl_Position = gl_ModelViewProjectionMatrix * vertexData;
 }
 
 -- Fragment
 
-varying vec2 _texCoord;
+in  vec2 _texCoord;
+out vec4 _colorOut;
 
 uniform sampler2D tex;
 
 void main()
 {
-	gl_FragColor = texture(tex, _texCoord);
+	_colorOut = texture(tex, _texCoord);
 }

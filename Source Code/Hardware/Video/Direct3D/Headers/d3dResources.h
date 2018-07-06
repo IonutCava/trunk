@@ -21,12 +21,10 @@
 #if TARGET_D3D_VERSION == D3D10
 #define D3D10_IGNORE_SDK_LAYERS
 //#include <D3D10.h>
-#include <RendererModules/Direct3D10/CEGUIDirect3D10Renderer.h>
+#include <CEGUI/RendererModules/Direct3D10/Renderer.h>
 #else
 //#include <D3D11.h>
-#include <RendererModules/Direct3D11/CEGUIDirect3D11Renderer.h>
+#include <CEGUI/RendererModules/Direct3D11/Renderer.h>
 #endif
-
-
 
 #endif

@@ -20,16 +20,16 @@
 #include "GUIElement.h"
 
 class GUIText : public GUIElement{
-
 friend class GUI;
 public:
 	GUIText(const std::string& id,
 		    const std::string& text,
-			const vec2<U32>& position,
+			const vec2<I32>& position,
 			const std::string& font,
 			const vec3<F32>& color,
             CEGUI::Window* parent,
 			U32 textHeight = 16) : GUIElement(parent,GUI_TEXT,position),
+      _width(1.0f),
 	  _text(text),
 	  _font(font),
 	  _height(textHeight),
@@ -38,7 +38,8 @@ public:
 	std::string _text;
 	std::string _font;
 	U32         _height;
-	vec3<F32>   _color;
+    U32         _width;
+	vec4<F32>   _color;
 
      void onMouseMove(const GUIEvent &event);
      void onMouseUp(const GUIEvent &event);

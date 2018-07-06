@@ -12,5 +12,4 @@ NPC::NPC(AIEntity* const aiEntity) : Character(Character::CHARACTER_TYPE_NPC, ai
 
 NPC::~NPC()
 {
-
 }

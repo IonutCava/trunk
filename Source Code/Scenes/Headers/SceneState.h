@@ -37,9 +37,8 @@ struct FogDescriptor{
 };
 
 class SceneState{
-
 public:
-	SceneState() : 
+	SceneState() :
 	  _moveFB(0.0f),
 	  _moveLR(0.0f),
 	  _angleUD(0.0f),
@@ -94,7 +93,6 @@ protected:
 	F32  _windSpeed;
 	F32  _windDirX;
 	F32  _windDirZ;
-	
 };
 
 class Camera;

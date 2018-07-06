@@ -1,18 +1,12 @@
 -- Vertex
 
-//----------------------------------------------------------------------------------
-// File:   view_vertex.glsl
-// Author: Rouslan Dimitrov
-// Email:  sdkfeedback@nvidia.com
-// Copyright (c) NVIDIA Corporation. All rights reserved.
-//----------------------------------------------------------------------------------
-varying vec2 _texCoord;
+#include "vertexDefault.vert"
 
-void main()
+void main(void)
 {
-	_texCoord = vec4(vec4(0.5)*gl_Vertex + vec4(0.5)).xy;
-	gl_Position = gl_Vertex;
+	computeData();
 }
+
 -- Fragment
 
 //----------------------------------------------------------------------------------
@@ -21,13 +15,14 @@ void main()
 // Email:  sdkfeedback@nvidia.com
 // Copyright (c) NVIDIA Corporation. All rights reserved.
 //----------------------------------------------------------------------------------
-varying vec2 _texCoord;
+in vec2 _texCoord;
+out vec4 _colorOut;
 
 uniform sampler2D tex;
 
 void main()
 {
-	gl_FragColor = texture(tex, _texCoord);
+	_colorOut = texture(tex, _texCoord);
 }
 
 -- Fragment.Layered
@@ -38,7 +33,8 @@ void main()
 // Email:  sdkfeedback@nvidia.com
 // Copyright (c) NVIDIA Corporation. All rights reserved.
 //----------------------------------------------------------------------------------
-varying vec2 _texCoord;
+in vec2 _texCoord;
+out vec4 _colorOut;
 
 uniform sampler2DArray tex;
 uniform int layer;
@@ -46,6 +42,6 @@ uniform int layer;
 void main()
 {
 	float fLayer = layer;
-	vec4 tex_coord = vec4(_texCoord.x, _texCoord.y,fLayer, 1.0);
-	gl_FragColor = texture(tex, tex_coord.xyz);
+	vec3 tex_coord = vec3(_texCoord, fLayer);
+	_colorOut = texture(tex, tex_coord);
 }

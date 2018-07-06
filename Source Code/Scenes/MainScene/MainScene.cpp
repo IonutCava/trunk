@@ -2,8 +2,10 @@
 
 #include "Core/Headers/ParamHandler.h"
 #include "Rendering/Headers/Frustum.h"
+#include "Core/Math/Headers/Transform.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Environment/Water/Headers/Water.h"
+#include "Geometry/Material/Headers/Material.h"
 #include "Environment/Terrain/Headers/Terrain.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "Environment/Terrain/Headers/TerrainDescriptor.h"
@@ -22,7 +24,7 @@ bool MainScene::updateLights(){
 	light->setLightProperties(LIGHT_PROPERTY_SPECULAR,_sunColor);
     getSkySGN(0)->getNode<Sky>()->setSunVector(_sunvector);
     for_each(Terrain* ter, _visibleTerrains){
-        ter->getMaterial()->setAmbient(_sunColor/1.5f);
+        ter->getMaterial()->setAmbient(_sunColor);
 	}
 	return true;
 }
@@ -32,12 +34,13 @@ void MainScene::preRender(){
 }
 
 void MainScene::postRender(){
-    _water->previewReflection();
+	if(GFX_DEVICE.isCurrentRenderStage(FINAL_STAGE)){
+		_water->previewReflection();
+	}
     Scene::postRender();
 }
 
 void MainScene::renderEnvironment(bool waterReflection){
-
 	const vec3<F32>& eyePos = renderState()->getCamera()->getEye();
 
 	bool underwater = _water->isPointUnderWater(eyePos);
@@ -50,10 +53,10 @@ void MainScene::renderEnvironment(bool waterReflection){
 
 	if(waterReflection){
         F32 waterLevel = 2.0f*state()->getWaterLevel();
-		renderState()->getCamera()->RenderLookAt(true,true,waterLevel);
+		renderState()->getCamera()->RenderLookAt(false,true,waterLevel);
         getSkySGN(0)->getNode<Sky>()->setInvertPlane(waterLevel);
     }
-   
+
     getSkySGN(0)->getNode<Sky>()->setInverted(waterReflection);
 
     for_each(Terrain* ter, _visibleTerrains){
@@ -66,38 +69,57 @@ void MainScene::processInput(){
 	bool update = false;
     Camera* cam = renderState()->getCamera();
 	if(state()->_angleLR){
-		cam->RotateX(state()->_angleLR * FRAME_SPEED_FACTOR/5);
+		cam->RotateX((state()->_angleLR)/_LRSpeedFactor);
 		update = true;
 	}
 	if(state()->_angleUD){
-		cam->RotateY(state()->_angleUD * FRAME_SPEED_FACTOR/5);
+		cam->RotateY((state()->_angleUD)/_LRSpeedFactor);
 		update = true;
 	}
 
 	if(state()->_moveFB || state()->_moveLR){
-		if(state()->_moveFB) cam->MoveForward(state()->_moveFB * (FRAME_SPEED_FACTOR));
-		if(state()->_moveLR) cam->MoveStrafe(state()->_moveLR * (FRAME_SPEED_FACTOR));
+		if(state()->_moveFB) cam->MoveForward((state()->_moveFB) / _FBSpeedFactor);
+		if(state()->_moveLR) cam->MoveStrafe((state()->_moveLR) / _FBSpeedFactor);
 		update = true;
 	}
+
 	if(update){
-		GUI::getInstance().modifyText("camPosition","Position [ X: %5.2f | Y: %5.2f | Z: %5.2f ] [Pitch: %5.2f | Yaw: %5.2f]",
-							  cam->getEye().x, 
+        if(!_freeflyCamera){
+            F32 terrainHeight = 0.0f;
+            vec3<F32> eyePosition = cam->getEye();
+            for_each(Terrain* ter, _visibleTerrains){
+                terrainHeight = ter->getPositionFromGlobal(eyePosition.x,eyePosition.z).y;
+                if(!IS_ZERO(terrainHeight)){
+                    eyePosition.y = terrainHeight + 0.45f;
+                    cam->setEye(eyePosition);
+                    break;
+                }
+	        }
+            GUI::getInstance().modifyText("camPosition","[ X: %5.2f | Y: %5.2f | Z: %5.2f ] [Pitch: %5.2f | Yaw: %5.2f] [TerHght: %5.2f ]",
+							  cam->getEye().x,
+							  cam->getEye().y,
+							  cam->getEye().z,
+							  DEGREES(cam->getAngleX()),
+							  DEGREES(cam->getAngleY()),
+                              terrainHeight);
+        }else{
+            GUI::getInstance().modifyText("camPosition","[ X: %5.2f | Y: %5.2f | Z: %5.2f ] [Pitch: %5.2f | Yaw: %5.2f]",
+							  cam->getEye().x,
 							  cam->getEye().y,
 							  cam->getEye().z,
 							  DEGREES(cam->getAngleX()),
 							  DEGREES(cam->getAngleY()));
+        }
 		update = false;
 	}
-
 }
 
-
-void MainScene::processTasks(U32 time){
-	MsToSec(time); ///<convert to seconds
+void MainScene::processTasks(const U32 time){
+	F32 timeSec = getMsToSec(time); ///<convert to seconds
 	F32 SunDisplay = 1.50f;
 	F32 FpsDisplay = 0.5f;
 	F32 TimeDisplay = 1.0f;
-	if (time - _taskTimers[0] >= SunDisplay){
+	if (timeSec - _taskTimers[0] >= SunDisplay){
 		_sunAngle.y += 0.0005f;
 		_sunvector = vec4<F32>(	-cosf(_sunAngle.x) * sinf(_sunAngle.y),
 								-cosf(_sunAngle.y),
@@ -106,27 +128,23 @@ void MainScene::processTasks(U32 time){
 		_taskTimers[0] += SunDisplay;
 	}
 
-	if (time - _taskTimers[1] >= FpsDisplay){
-		GUI::getInstance().modifyText("fpsDisplay", "FPS: %5.2f", Framerate::getInstance().getFps());
-		
+	if (timeSec - _taskTimers[1] >= FpsDisplay){
+		GUI::getInstance().modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", Framerate::getInstance().getFps(), Framerate::getInstance().getFrameTime());
         GUI::getInstance().modifyText("underwater","Underwater [ %s ] | WaterLevel [%f] ]", _paramHandler.getParam<bool>("scene.camera.underwater") ? "true" : "false", state()->getWaterLevel());
 		GUI::getInstance().modifyText("RenderBinCount", "Number of items in Render Bin: %d", GFX_RENDER_BIN_SIZE);
 		_taskTimers[1] += FpsDisplay;
-
 	}
-    
-	
-	if (time - _taskTimers[2] >= TimeDisplay){
-		GUI::getInstance().modifyText("timeDisplay", "Elapsed time: %d", time);
+
+	if (timeSec - _taskTimers[2] >= TimeDisplay){
+		GUI::getInstance().modifyText("timeDisplay", "Elapsed time: %5.0f", timeSec);
 		_taskTimers[2] += TimeDisplay;
 	}
 }
 
 bool MainScene::load(const std::string& name){
-
 	 _mousePressed = false;
 	bool computeWaterHeight = false;
-	
+
 	///Load scene resources
 	SCENE_LOAD(name,true,true);
 
@@ -135,7 +153,7 @@ bool MainScene::load(const std::string& name){
 	light->setLightProperties(LIGHT_PROPERTY_AMBIENT,WHITE());
 	light->setLightProperties(LIGHT_PROPERTY_DIFFUSE,WHITE());
 	light->setLightProperties(LIGHT_PROPERTY_SPECULAR,WHITE());
-	addDefaultSky();								
+	addDefaultSky();
 
 	for(U8 i = 0; i < _terrainInfoArray.size(); i++){
 		SceneGraphNode* terrainNode = _sceneGraph->findNode(_terrainInfoArray[i]->getVariable("terrainName"));
@@ -154,16 +172,16 @@ bool MainScene::load(const std::string& name){
 	}
 	ResourceDescriptor infiniteWater("waterEntity");
 	_water = CreateResource<WaterPlane>(infiniteWater);
-	_water->setParams(50.0f,50,0.2f,0.5f);
+	_water->setParams(40.0f,25,0.4f,0.45f);
 	_waterGraphNode = _sceneGraph->getRoot()->addNode(_water);
 	_waterGraphNode->useDefaultTransform(false);
 	_waterGraphNode->setTransform(NULL);
     _waterGraphNode->setUsageContext(SceneGraphNode::NODE_STATIC);
-    _waterGraphNode->setNavigationContext(SceneGraphNode::NODE_OBSTACLE);
+    _waterGraphNode->setNavigationContext(SceneGraphNode::NODE_IGNORE);
 	///General rendering callback
-	renderCallback(boost::bind(&MainScene::renderEnvironment, this,false));
+	renderCallback(DELEGATE_BIND(&MainScene::renderEnvironment, this,false));
 	///Render the scene for water reflection FBO generation
-	_water->setRenderCallback(boost::bind(&MainScene::renderEnvironment, this, true));
+	_water->setRenderCallback(DELEGATE_BIND(&MainScene::renderEnvironment, this, true));
 	return loadState;
 }
 
@@ -176,7 +194,6 @@ bool MainScene::unload(){
 
 bool _switchAB = false;
 void MainScene::test(boost::any a, CallbackParam b){
-
 	vec3<F32> pos;
 	SceneGraphNode* boxNode = _sceneGraph->findNode("box");
 	Object3D* box = NULL;
@@ -193,7 +210,6 @@ void MainScene::test(boost::any a, CallbackParam b){
 				if(pos.z > -500)   pos.z--;
 				if(pos.z == -500)  _switchAB = true;
 			}
-			
 		}
 	} else {
 		if(pos.x > -300 && pos.z ==  -500)      pos.x--;
@@ -213,30 +229,29 @@ bool MainScene::loadResources(bool continueOnErrors){
 	GUI& gui = GUI::getInstance();
 
 	gui.addText("fpsDisplay",                               //Unique ID
-		                       vec2<U32>(60,60),            //Position
+		                       vec2<I32>(60,60),            //Position
 							    Font::DIVIDE_DEFAULT,       //Font
 							   vec3<F32>(0.0f,0.2f, 1.0f),  //Color
 							   "HELLO! FPS: %s",0);    //Text and arguments
 
 	gui.addText("timeDisplay",
-								vec2<U32>(60,80),
+								vec2<I32>(60,80),
 								Font::DIVIDE_DEFAULT,
 								vec3<F32>(0.6f,0.2f,0.2f),
 								"Elapsed time: %5.0f",GETTIME());
 	gui.addText("underwater",
-								vec2<U32>(60,115),
+								vec2<I32>(60,115),
 								Font::DIVIDE_DEFAULT,
 								vec3<F32>(0.2f,0.8f,0.2f),
 								"Underwater [ %s ] | WaterLevel [%f] ]","false", 0);
 	gui.addText("RenderBinCount",
-								vec2<U32>(60,135),
+								vec2<I32>(60,135),
 								Font::BATANG,
 								vec3<F32>(0.6f,0.2f,0.2f),
 								"Number of items in Render Bin: %d",0);
 	_taskTimers.push_back(0.0f); //Sun
 	_taskTimers.push_back(0.0f); //Fps
 	_taskTimers.push_back(0.0f); //Time
-
 
 	_sunAngle = vec2<F32>(0.0f, RADIANS(45.0f));
 	_sunvector = vec4<F32>(	-cosf(_sunAngle.x) * sinf(_sunAngle.y),
@@ -245,7 +260,7 @@ bool MainScene::loadResources(bool continueOnErrors){
 							0.0f );
 
 	Kernel* kernel = Application::getInstance().getKernel();
-	Task_ptr boxMove(New Task(kernel->getThreadPool(),30,true,false,boost::bind(&MainScene::test,this,std::string("test"),TYPE_STRING)));
+	Task_ptr boxMove(New Task(kernel->getThreadPool(),30,true,false,DELEGATE_BIND(&MainScene::test,this,std::string("test"),TYPE_STRING)));
 	addTask(boxMove);
 	ResourceDescriptor backgroundMusic("background music");
 	backgroundMusic.setResourceLocation(_paramHandler.getParam<std::string>("assetsLocation")+"/music/background_music.ogg");
@@ -257,7 +272,7 @@ bool MainScene::loadResources(bool continueOnErrors){
 	state()->_backgroundMusic["generalTheme"] = CreateResource<AudioDescriptor>(backgroundMusic);
 	_beep = CreateResource<AudioDescriptor>(beepSound);
 
-	gui.addText("camPosition",  vec2<U32>(60,100),
+	gui.addText("camPosition",  vec2<I32>(60,100),
 								Font::DIVIDE_DEFAULT,
 								vec3<F32>(0.2f,0.8f,0.2f),
 								"Position [ X: %5.0f | Y: %5.0f | Z: %5.0f ] [Pitch: %5.2f | Yaw: %5.2f]",
@@ -269,7 +284,6 @@ bool MainScene::loadResources(bool continueOnErrors){
 
 	return true;
 }
-
 
 void MainScene::onKeyDown(const OIS::KeyEvent& key){
 	Scene::onKeyDown(key);
@@ -317,6 +331,11 @@ void MainScene::onKeyUp(const OIS::KeyEvent& key){
         case OIS::KC_R:{
             _water->togglePreviewReflection();
             }break;
+        case OIS::KC_F:{
+            _freeflyCamera = !_freeflyCamera;
+			_FBSpeedFactor = _freeflyCamera ? 1.0f : 20.0f;
+			_LRSpeedFactor = _freeflyCamera ? 2.0f : 5.0f;
+            }break;
 		case OIS::KC_F1:
 			_sceneGraph->print();
 			break;
@@ -328,11 +347,9 @@ void MainScene::onKeyUp(const OIS::KeyEvent& key){
 		default:
 			break;
 	}
-
 }
 
 void MainScene::onMouseMove(const OIS::MouseEvent& key){
-
 	if(_mousePressed){
 		if(_prevMouse.x - key.state.X.abs > 1 )
 			state()->_angleLR = -0.15f;
@@ -348,14 +365,14 @@ void MainScene::onMouseMove(const OIS::MouseEvent& key){
 		else
 			state()->_angleUD = 0;
 	}
-	
+
 	_prevMouse.x = key.state.X.abs;
 	_prevMouse.y = key.state.Y.abs;
 }
 
 void MainScene::onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID button){
 	Scene::onMouseClickDown(key,button);
-	if(button == 0) 
+	if(button == 0)
 		_mousePressed = true;
 }
 

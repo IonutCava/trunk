@@ -5,10 +5,13 @@
 
 SceneGraph::SceneGraph(){
 	_root = New SceneGraphNode(New SceneRoot);
+    _root->setBBExclusionMask(TYPE_SKY | TYPE_LIGHT);
+    _root->setSceneGraph(this);
 	_updateRunning = false;
 }
 
 void SceneGraph::update(){
+    _root->getBoundingBox().reset();//<reset world box
 	_root->checkBoundingBoxes();
 	_root->updateTransforms();
 	_root->updateVisualInformation();
@@ -34,7 +37,7 @@ void SceneGraph::print(){
 void SceneGraph::startUpdateThread(){
 }
 
-void SceneGraph::sceneUpdate(U32 sceneTime){
+void SceneGraph::sceneUpdate(const U32 sceneTime){
 	_root->sceneUpdate(sceneTime);
 }
 

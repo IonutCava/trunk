@@ -5,7 +5,7 @@
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
 
 bool Frustum::ContainsPoint(const vec3<F32>& point) const {
-   for(I8 p = 0; p < 6; p++)	
+   for(I8 p = 0; p < 6; p++)
       if(	_frustumPlanes[p][0] * point.x +
 			_frustumPlanes[p][1] * point.y +
 			_frustumPlanes[p][2] * point.z +
@@ -31,9 +31,7 @@ I8 Frustum::ContainsSphere(const vec3<F32>& center, F32 radius) const {
 	return FRUSTUM_IN;
 }
 
-
-I8 Frustum::ContainsBoundingBox(BoundingBox& bbox) const {
-
+I8 Frustum::ContainsBoundingBox(const BoundingBox& bbox) const {
 	const vec3<F32>& min = bbox.getMin();
 	const vec3<F32>& max = bbox.getMax();
 	vec3<F32> tCorners[8] = {	vec3<F32>(min.x, min.y, min.z),
@@ -62,7 +60,6 @@ I8 Frustum::ContainsBoundingBox(BoundingBox& bbox) const {
 			}
 		}
 
-	
 		if(iInCount == 0)
 			return FRUSTUM_OUT;
 
@@ -73,98 +70,96 @@ I8 Frustum::ContainsBoundingBox(BoundingBox& bbox) const {
 		return FRUSTUM_IN;
 
 	return FRUSTUM_INTERSECT;
-
 }
 
 void Frustum::Extract(const vec3<F32>& eye){
-
 	_eyePos = eye;
-	F32 t;
-	GFX_DEVICE.getMatrix(GFXDevice::MODEL_VIEW_MATRIX,_modelViewMatrix);
-	GFX_DEVICE.getMatrix(GFXDevice::PROJECTION_MATRIX,_projectionMatrix);
 
-	_modelViewMatrix.inverse(_modelViewMatrixInv);						
-	_modelViewProjectionMatrix = _projectionMatrix * _modelViewMatrix;
-	_inverseModelViewProjectionMatrix = _projectionMatrix * _modelViewMatrixInv;
+    mat4<F32> modelViewProjectionMatrix;
 
-	_frustumPlanes[0][0] = _modelViewProjectionMatrix[ 3] - _modelViewProjectionMatrix[ 0];
-	_frustumPlanes[0][1] = _modelViewProjectionMatrix[ 7] - _modelViewProjectionMatrix[ 4];
-	_frustumPlanes[0][2] = _modelViewProjectionMatrix[11] - _modelViewProjectionMatrix[ 8];
-	_frustumPlanes[0][3] = _modelViewProjectionMatrix[15] - _modelViewProjectionMatrix[12];
+	GFX_DEVICE.getMatrix(MVP_MATRIX, modelViewProjectionMatrix);
 
-	
-	t = square_root_tpl<F32>( _frustumPlanes[0][0] * _frustumPlanes[0][0] + _frustumPlanes[0][1] * _frustumPlanes[0][1] + _frustumPlanes[0][2] * _frustumPlanes[0][2] );
+	_frustumPlanes[0][0] = modelViewProjectionMatrix[ 3] - modelViewProjectionMatrix[ 0];
+	_frustumPlanes[0][1] = modelViewProjectionMatrix[ 7] - modelViewProjectionMatrix[ 4];
+	_frustumPlanes[0][2] = modelViewProjectionMatrix[11] - modelViewProjectionMatrix[ 8];
+	_frustumPlanes[0][3] = modelViewProjectionMatrix[15] - modelViewProjectionMatrix[12];
+
+    F32 t = square_root_tpl<F32>( _frustumPlanes[0][0] * _frustumPlanes[0][0] +
+                                  _frustumPlanes[0][1] * _frustumPlanes[0][1] +
+                                  _frustumPlanes[0][2] * _frustumPlanes[0][2] );
+
 	_frustumPlanes[0][0] /= t;
 	_frustumPlanes[0][1] /= t;
 	_frustumPlanes[0][2] /= t;
 	_frustumPlanes[0][3] /= t;
 
-	
-	_frustumPlanes[1][0] = _modelViewProjectionMatrix[ 3] + _modelViewProjectionMatrix[ 0];
-	_frustumPlanes[1][1] = _modelViewProjectionMatrix[ 7] + _modelViewProjectionMatrix[ 4];
-	_frustumPlanes[1][2] = _modelViewProjectionMatrix[11] + _modelViewProjectionMatrix[ 8];
-	_frustumPlanes[1][3] = _modelViewProjectionMatrix[15] + _modelViewProjectionMatrix[12];
+	_frustumPlanes[1][0] = modelViewProjectionMatrix[ 3] + modelViewProjectionMatrix[ 0];
+	_frustumPlanes[1][1] = modelViewProjectionMatrix[ 7] + modelViewProjectionMatrix[ 4];
+	_frustumPlanes[1][2] = modelViewProjectionMatrix[11] + modelViewProjectionMatrix[ 8];
+	_frustumPlanes[1][3] = modelViewProjectionMatrix[15] + modelViewProjectionMatrix[12];
 
-	
-	t = square_root_tpl<F32>( _frustumPlanes[1][0] * _frustumPlanes[1][0] + _frustumPlanes[1][1] * _frustumPlanes[1][1] + _frustumPlanes[1][2] * _frustumPlanes[1][2] );
+	t = square_root_tpl<F32>( _frustumPlanes[1][0] * _frustumPlanes[1][0] +
+                              _frustumPlanes[1][1] * _frustumPlanes[1][1] +
+                              _frustumPlanes[1][2] * _frustumPlanes[1][2] );
+
 	_frustumPlanes[1][0] /= t;
 	_frustumPlanes[1][1] /= t;
 	_frustumPlanes[1][2] /= t;
 	_frustumPlanes[1][3] /= t;
 
+	_frustumPlanes[2][0] = modelViewProjectionMatrix[ 3] + modelViewProjectionMatrix[ 1];
+	_frustumPlanes[2][1] = modelViewProjectionMatrix[ 7] + modelViewProjectionMatrix[ 5];
+	_frustumPlanes[2][2] = modelViewProjectionMatrix[11] + modelViewProjectionMatrix[ 9];
+	_frustumPlanes[2][3] = modelViewProjectionMatrix[15] + modelViewProjectionMatrix[13];
 
-	_frustumPlanes[2][0] = _modelViewProjectionMatrix[ 3] + _modelViewProjectionMatrix[ 1];
-	_frustumPlanes[2][1] = _modelViewProjectionMatrix[ 7] + _modelViewProjectionMatrix[ 5];
-	_frustumPlanes[2][2] = _modelViewProjectionMatrix[11] + _modelViewProjectionMatrix[ 9];
-	_frustumPlanes[2][3] = _modelViewProjectionMatrix[15] + _modelViewProjectionMatrix[13];
+	t = square_root_tpl<F32>( _frustumPlanes[2][0] * _frustumPlanes[2][0] +
+                              _frustumPlanes[2][1] * _frustumPlanes[2][1] +
+                              _frustumPlanes[2][2] * _frustumPlanes[2][2] );
 
-	
-	t = square_root_tpl<F32>( _frustumPlanes[2][0] * _frustumPlanes[2][0] + _frustumPlanes[2][1] * _frustumPlanes[2][1] + _frustumPlanes[2][2] * _frustumPlanes[2][2] );
 	_frustumPlanes[2][0] /= t;
 	_frustumPlanes[2][1] /= t;
 	_frustumPlanes[2][2] /= t;
 	_frustumPlanes[2][3] /= t;
 
-	
-	_frustumPlanes[3][0] = _modelViewProjectionMatrix[ 3] - _modelViewProjectionMatrix[ 1];
-	_frustumPlanes[3][1] = _modelViewProjectionMatrix[ 7] - _modelViewProjectionMatrix[ 5];
-	_frustumPlanes[3][2] = _modelViewProjectionMatrix[11] - _modelViewProjectionMatrix[ 9];
-	_frustumPlanes[3][3] = _modelViewProjectionMatrix[15] - _modelViewProjectionMatrix[13];
+	_frustumPlanes[3][0] = modelViewProjectionMatrix[ 3] - modelViewProjectionMatrix[ 1];
+	_frustumPlanes[3][1] = modelViewProjectionMatrix[ 7] - modelViewProjectionMatrix[ 5];
+	_frustumPlanes[3][2] = modelViewProjectionMatrix[11] - modelViewProjectionMatrix[ 9];
+	_frustumPlanes[3][3] = modelViewProjectionMatrix[15] - modelViewProjectionMatrix[13];
 
-	
-	t = square_root_tpl<F32>( _frustumPlanes[3][0] * _frustumPlanes[3][0] + _frustumPlanes[3][1] * _frustumPlanes[3][1] + _frustumPlanes[3][2] * _frustumPlanes[3][2] );
+	t = square_root_tpl<F32>( _frustumPlanes[3][0] * _frustumPlanes[3][0] +
+                              _frustumPlanes[3][1] * _frustumPlanes[3][1] +
+                              _frustumPlanes[3][2] * _frustumPlanes[3][2] );
+
 	_frustumPlanes[3][0] /= t;
 	_frustumPlanes[3][1] /= t;
 	_frustumPlanes[3][2] /= t;
 	_frustumPlanes[3][3] /= t;
 
-	
-	_frustumPlanes[4][0] = _modelViewProjectionMatrix[ 3] - _modelViewProjectionMatrix[ 2];
-	_frustumPlanes[4][1] = _modelViewProjectionMatrix[ 7] - _modelViewProjectionMatrix[ 6];
-	_frustumPlanes[4][2] = _modelViewProjectionMatrix[11] - _modelViewProjectionMatrix[10];
-	_frustumPlanes[4][3] = _modelViewProjectionMatrix[15] - _modelViewProjectionMatrix[14];
+	_frustumPlanes[4][0] = modelViewProjectionMatrix[ 3] - modelViewProjectionMatrix[ 2];
+	_frustumPlanes[4][1] = modelViewProjectionMatrix[ 7] - modelViewProjectionMatrix[ 6];
+	_frustumPlanes[4][2] = modelViewProjectionMatrix[11] - modelViewProjectionMatrix[10];
+	_frustumPlanes[4][3] = modelViewProjectionMatrix[15] - modelViewProjectionMatrix[14];
 
-	
-	t = square_root_tpl<F32>( _frustumPlanes[4][0] * _frustumPlanes[4][0] + _frustumPlanes[4][1] * _frustumPlanes[4][1] + _frustumPlanes[4][2] * _frustumPlanes[4][2] );
+	t = square_root_tpl<F32>( _frustumPlanes[4][0] * _frustumPlanes[4][0] +
+                              _frustumPlanes[4][1] * _frustumPlanes[4][1] +
+                              _frustumPlanes[4][2] * _frustumPlanes[4][2] );
+
 	_frustumPlanes[4][0] /= t;
 	_frustumPlanes[4][1] /= t;
 	_frustumPlanes[4][2] /= t;
 	_frustumPlanes[4][3] /= t;
 
-	
-	_frustumPlanes[5][0] = _modelViewProjectionMatrix[3]  + _modelViewProjectionMatrix[ 2];
-	_frustumPlanes[5][1] = _modelViewProjectionMatrix[ 7] + _modelViewProjectionMatrix[ 6];
-	_frustumPlanes[5][2] = _modelViewProjectionMatrix[11] + _modelViewProjectionMatrix[10];
-	_frustumPlanes[5][3] = _modelViewProjectionMatrix[15] + _modelViewProjectionMatrix[14];
+	_frustumPlanes[5][0] = modelViewProjectionMatrix[3]  + modelViewProjectionMatrix[ 2];
+	_frustumPlanes[5][1] = modelViewProjectionMatrix[7]  + modelViewProjectionMatrix[ 6];
+	_frustumPlanes[5][2] = modelViewProjectionMatrix[11] + modelViewProjectionMatrix[10];
+	_frustumPlanes[5][3] = modelViewProjectionMatrix[15] + modelViewProjectionMatrix[14];
 
-	
-	t = square_root_tpl<F32>( _frustumPlanes[5][0] * _frustumPlanes[5][0] + _frustumPlanes[5][1] * _frustumPlanes[5][1] + _frustumPlanes[5][2] * _frustumPlanes[5][2] );
+	t = square_root_tpl<F32>( _frustumPlanes[5][0] * _frustumPlanes[5][0] +
+                              _frustumPlanes[5][1] * _frustumPlanes[5][1] +
+                              _frustumPlanes[5][2] * _frustumPlanes[5][2] );
+
 	_frustumPlanes[5][0] /= t;
 	_frustumPlanes[5][1] /= t;
 	_frustumPlanes[5][2] /= t;
 	_frustumPlanes[5][3] /= t;
-
-
 }
-
-

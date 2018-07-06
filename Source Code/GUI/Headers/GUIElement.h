@@ -17,15 +17,8 @@
 
 #ifndef _GUI_ELEMENT_H_
 #define _GUI_ELEMENT_H_
-#include "core.h"
 
-namespace Font {
-
-	const static std::string	DIVIDE_DEFAULT ("Test.ttf");
-	const static std::string	BATANG ("Batang.ttf");
-	const static std::string	DEJA_VU("DejaVuSans.ttf");
-
-};
+#include "Core/Math/Headers/MathClasses.h"
 
 enum GUIType
 {
@@ -36,9 +29,7 @@ enum GUIType
 	GUI_PLACEHOLDER			= 0x0004
 };
 
-
 struct GUIEvent {
-
    U16                  ascii;            ///< ascii character code 'a', 'A', 'b', '*', etc (if device==keyboard) - possibly a uchar or something
    U8                   modifier;         ///< SI_LSHIFT, etc
    U16                  keyCode;          ///< for unprintables, 'tab', 'return', ...
@@ -49,25 +40,26 @@ struct GUIEvent {
 namespace CEGUI{
     class Window;
 };
+
 class RenderStateBlock;
 class GUIElement{
 	friend class GUI;
 
 public:
-	GUIElement(CEGUI::Window* parent, GUIType type,const vec2<U32>& position) ;
+	GUIElement(CEGUI::Window* const parent, const GUIType& type,const vec2<I32>& position) ;
 	virtual ~GUIElement();
 	inline const std::string& getName() const {return _name;}
-	inline const vec2<U32>&   getPosition()  const {return _position;}
-	inline void  setPosition(vec2<U32>& pos)        {_position = pos;}
+	inline const vec2<I32>&   getPosition()  const {return _position;}
+	inline void  setPosition(const vec2<I32>& pos)        {_position = pos;}
 	inline const GUIType getGuiType()   const {return _guiType;}
 
 	inline const bool isActive()  const {return _active;}
 	inline const bool isVisible() const {return _visible;}
 
 	inline void    setName(const std::string& name) {_name = name;}
-	inline void    setVisible(bool visible)		    {_visible = visible;}
-	inline void    setActive(bool active)			{_active = active;}
-    
+	inline void    setVisible(const bool visible)   {_visible = visible;}
+	inline void    setActive(const bool active)	    {_active = active;}
+
 	inline void    addChildElement(GUIElement* child)    {}
 
     virtual void setTooltip(const std::string& tooltipText) {}
@@ -82,10 +74,11 @@ public:
     virtual bool onKeyDown(const GUIEvent &event);
 */
 protected:
-	vec2<U32> _position;
+	vec2<I32> _position;
 	GUIType   _guiType;
 	RenderStateBlock* _guiSB;
     CEGUI::Window*    _parent;
+
 private:
 	std::string _name;
 	bool	    _visible;

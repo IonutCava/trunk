@@ -23,6 +23,7 @@
 
 class Quad3D;
 class Texture;
+class ShaderProgram;
 template<class T>
 class vec2;
 typedef Texture Texture2D;
@@ -33,8 +34,9 @@ public:
 	void render();
 
 private:
-	Quad3D* 	_renderQuad;
-	Texture2D*	_splashImage;
+	Quad3D* 	   _renderQuad;
+	Texture2D*     _splashImage;
+    ShaderProgram* _splashShader;
 };
 
 #endif

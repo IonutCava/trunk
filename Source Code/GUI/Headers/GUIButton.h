@@ -29,14 +29,13 @@ namespace CEGUI{
 };
 
 class GUIButton : public GUIElement {
-
 typedef boost::function0<void> ButtonCallback;
 friend class GUI;
 public:
 	GUIButton(const std::string& id,
 			  const std::string& text,
               const std::string& guiScheme,
-			  const vec2<U32>& position,
+			  const vec2<I32>& position,
 			  const vec2<U32>& dimensions,
 			  const vec3<F32>& color,
               CEGUI::Window* parent,

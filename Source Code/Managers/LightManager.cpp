@@ -19,10 +19,6 @@ LightManager::~LightManager(){
 	clear();
 }
 
-void LightManager::setAmbientLight(const vec4<F32>& light){
-	GFX_DEVICE.setAmbientLight(light);
-}
-
 void LightManager::init(){
 	I32 baseOffset = ParamHandler::getInstance().getParam<I32>("GFX_DEVICE.maxTextureCombinedUnits",16);
 	_shadowArrayOffset = baseOffset - 2;
@@ -87,22 +83,16 @@ void LightManager::idle(){
 	_shadowMapsEnabled = ParamHandler::getInstance().getParam<bool>("rendering.enableShadows");
 }
 
-///Check light properties for every light
-///Update only if needed
+///Check light properties for every light (this is bound to the camera change listener group
+///Update only if needed. Get projection and view matrices if they changed
 ///Also, search for the dominant light if any
-void LightManager::update(bool force){
-	if(!force){
-		for_each(Light* light, _currLightsPerNode){
-			light->updateState(force);
-		}
-	}else{
-		for_each(LightMap::value_type& light, _lights){
-			light.second->updateState(force);
-			if(!_dominantLight){ //if we do not have a dominant light registered, search for one
-				if(light.second->getLightMode() == LIGHT_MODE_DOMINANT){
-					//setting a light as dominant, will automatically inform the lightmanager, but just in case, make sure
-					_dominantLight = light.second;
-				}
+void LightManager::update(){
+	for_each(Light* light, _currLightsPerNode){
+		light->updateState();
+		if(!_dominantLight){ //if we do not have a dominant light registered, search for one
+			if(light->getLightMode() == LIGHT_MODE_DOMINANT){
+				//setting a light as dominant, will automatically inform the lightmanager, but just in case, make sure
+				_dominantLight = light;
 			}
 		}
 	}
@@ -117,8 +107,6 @@ void LightManager::generateShadowMaps(SceneRenderState* renderState){
 	RenderStage prev = GFX_DEVICE.getRenderStage();
 	//set the current render stage to SHADOW_STAGE
 	GFX_DEVICE.setRenderStage(SHADOW_STAGE);
-	//tell the rendering API to render geometry for depth storage
-	GFX_DEVICE.toggleDepthMapRendering(true);
 	// if we have a dominant light, generate only it's shadows
 	if(_dominantLight){
 		_dominantLight->generateShadowMaps(renderState);
@@ -128,8 +116,6 @@ void LightManager::generateShadowMaps(SceneRenderState* renderState){
 			light.second->generateShadowMaps(renderState);
 		}
 	}
-	//Set normal rendering settings
-	GFX_DEVICE.toggleDepthMapRendering(false);
 	//Revert back to the previous stage
 	GFX_DEVICE.setRenderStage(prev);
 }
@@ -145,6 +131,7 @@ void LightManager::previewShadowMaps(Light* light){
 				localLight = _lights[0];
 			}
 		}
+		if(!localLight->castsShadows()) return;
 		localLight->getShadowMapInfo()->getShadowMap()->previewShadowMaps();
 	}
 }
@@ -155,7 +142,9 @@ vectorImpl<I32> LightManager::getDepthMapResolution() {
 	U8 counter = 0;
 	for_each(Light* light, _currLightsPerNode){
 		if(++counter > MAX_SHADOW_CASTING_LIGHTS_PER_NODE) break;
-		shadowMapResolution.push_back(light->getShadowMapInfo()->getShadowMap()->resolution());
+		if(light->castsShadows()){
+			shadowMapResolution.push_back(light->getShadowMapInfo()->getShadowMap()->resolution());
+		}
 	}
 	return shadowMapResolution;
 }
@@ -172,6 +161,8 @@ void LightManager::bindDepthMaps(Light* light, U8 lightIndex, U8 offset, bool ov
 		lightLocal = _dominantLight;
 	}
 
+	if(!lightLocal->castsShadows()) return;
+
 	if(lightLocal->getLightType() == LIGHT_TYPE_DIRECTIONAL){
 		offset = (U8)_shadowArrayOffset;
 	}
@@ -182,7 +173,6 @@ void LightManager::bindDepthMaps(Light* light, U8 lightIndex, U8 offset, bool ov
 	lightLocal->getShadowMapInfo()->getShadowMap()->Bind(offset);
 }
 
-
 void LightManager::unbindDepthMaps(Light* light, U8 offset, bool overrideDominant){
     if(!_shadowMapsEnabled || _lightProjectionMatricesCache.empty()) return;
 
@@ -190,6 +180,9 @@ void LightManager::unbindDepthMaps(Light* light, U8 offset, bool overrideDominan
 	if(_dominantLight && !overrideDominant){
 		lightLocal = _dominantLight;
 	}
+
+	if(!lightLocal->castsShadows()) return;
+
 	if(lightLocal->getLightType() == LIGHT_TYPE_DIRECTIONAL){
 		offset = (U8)_shadowArrayOffset;
 	}
@@ -203,6 +196,7 @@ bool LightManager::shadowMappingEnabled(){
 	if(!_shadowMapsEnabled) return false;
 
 	for_each(LightMap::value_type& light, _lights){
+		if(!light.second->castsShadows()) continue;
 		ShadowMap* sm = light.second->getShadowMapInfo()->getShadowMap();
 		if(!sm) continue; ///<no shadow info;
 		if(sm->getDepthMap()) return true;
@@ -222,6 +216,8 @@ U8 LightManager::findLightsForSceneNode(SceneGraphNode* const node, LightType ty
 	tempLights.reserve(_lights.size());
 	_currLightsPerNode.resize(0);
 	_currLightTypes.resize(0);
+    _currLightsEnabled.resize(0);
+	_currShadowLights.resize(0);
 
 	for_each(LightMap::value_type& lightIt, _lights){
 		Light* light = lightIt.second;
@@ -240,7 +236,7 @@ U8 LightManager::findLightsForSceneNode(SceneGraphNode* const node, LightType ty
 			F32 lenSq = len.lengthSquared();
 	        F32 radiusSq = squared( light->getFProperty(LIGHT_PROPERTY_RANGE) + node->getBoundingSphere().getRadius());
             F32 distSq = radiusSq - lenSq;
-         
+
          if ( distSq > 0.0f )
 			 dist = distSq /( 1000.0f * 1000.0f );
              CLAMP<F32>(dist,0.0f, 1.0f );
@@ -261,6 +257,8 @@ U8 LightManager::findLightsForSceneNode(SceneGraphNode* const node, LightType ty
 	for(U8 i = 0; i < maxLights; i++){
 		_currLightsPerNode.push_back(tempLights[i]);
 		_currLightTypes.push_back(tempLights[i]->getLightType());
+        _currLightsEnabled.push_back(tempLights[i]->getEnabled() ? 1 : 0);
+		_currShadowLights.push_back(tempLights[i]->castsShadows() ? 1 : 0);
 	}
 	return maxLights;
 }

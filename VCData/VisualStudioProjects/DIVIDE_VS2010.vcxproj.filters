@@ -410,9 +410,6 @@
     <Filter Include="Hardware\Input\Headers">
       <UniqueIdentifier>{79e14772-bf5f-475e-bc57-c5a23ca84024}</UniqueIdentifier>
     </Filter>
-    <Filter Include="LIBS">
-      <UniqueIdentifier>{81a846ac-30cb-4a09-8e1e-26ae755f3bf8}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Languages">
       <UniqueIdentifier>{003c25a0-1e62-4590-abe3-fe1bd5b04614}</UniqueIdentifier>
     </Filter>
@@ -545,24 +542,6 @@
     <Filter Include="Hardware\Video\OpenGL\Textures\Headers">
       <UniqueIdentifier>{ff5a3b29-2f4c-4026-8c2a-f47435f3e885}</UniqueIdentifier>
     </Filter>
-    <Filter Include="LIBS\ReCast">
-      <UniqueIdentifier>{4e347357-c80a-4ff3-8682-64c51e5a883a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="LIBS\Detour">
-      <UniqueIdentifier>{b9e8f7d4-ff0c-42f7-b758-ec2ebccfe69f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="LIBS\DetourCrowd">
-      <UniqueIdentifier>{5b007094-ac76-4e8a-9fe7-3e5d8d2d40c8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="LIBS\ReCast\Headers">
-      <UniqueIdentifier>{b112621c-1d30-41f1-b165-8e0c694a04a5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="LIBS\DetourCrowd\Headers">
-      <UniqueIdentifier>{9ed3def3-68ed-4447-ab67-8529c6802cb5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="LIBS\Detour\Headers">
-      <UniqueIdentifier>{c08e44a2-2614-4a07-8811-8592f6fccf25}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Rendering\Lighting\ShadowMapping">
       <UniqueIdentifier>{35bc9492-d1be-44e3-9f54-9491c8ddd917}</UniqueIdentifier>
     </Filter>
@@ -584,17 +563,11 @@
     <Filter Include="GUI\CEGUIAddons\Headers">
       <UniqueIdentifier>{33beb6d6-b315-45b5-95eb-1a5e31998630}</UniqueIdentifier>
     </Filter>
-    <Filter Include="LIBS\DetourTileCache">
-      <UniqueIdentifier>{bf601701-e5bd-4f17-b98d-ec4d5c166463}</UniqueIdentifier>
+    <Filter Include="GUI\GUIEditor">
+      <UniqueIdentifier>{7b6049b8-e12d-4ac7-91a2-059fe09a5160}</UniqueIdentifier>
     </Filter>
-    <Filter Include="LIBS\DetourTileCache\Headers">
-      <UniqueIdentifier>{38aef1b5-583b-4c5e-9f8e-b69855e4fd97}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="LIBS\DebugUtils">
-      <UniqueIdentifier>{f3d53657-cd99-4c8a-9c92-20b336a7ed10}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="LIBS\DebugUtils\Headers">
-      <UniqueIdentifier>{00364f2c-2233-45ad-a7fc-a6302bd417e7}</UniqueIdentifier>
+    <Filter Include="GUI\GUIEditor\Headers">
+      <UniqueIdentifier>{76eb6003-dd36-483c-a501-1782735b82a1}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -678,9 +651,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Hardware\Audio\sdl_mixer\SDLWrapper.cpp">
       <Filter>Hardware\Audio\sdl_mixer</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Network\ASIO.cpp">
-      <Filter>Hardware\Network</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Managers\AIManager.cpp">
       <Filter>Managers</Filter>
@@ -832,9 +802,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\AI\PathFinding\WaypointGraph.cpp">
       <Filter>AI\PathFinding</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Geometry\Shapes\GenericShape.cpp">
-      <Filter>Geometry\Shapes</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Geometry\Animations\AnimationController.cpp">
       <Filter>Geometry\Animations</Filter>
@@ -1148,92 +1115,47 @@
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\glMatrixUniformBufferObject.cpp">
       <Filter>Hardware\Video\OpenGL\Shaders</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\Detour\Source\DetourAlloc.cpp">
-      <Filter>LIBS\Detour</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\Detour\Source\DetourCommon.cpp">
-      <Filter>LIBS\Detour</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\Detour\Source\DetourNavMesh.cpp">
-      <Filter>LIBS\Detour</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\Detour\Source\DetourNavMeshBuilder.cpp">
-      <Filter>LIBS\Detour</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\Detour\Source\DetourNavMeshQuery.cpp">
-      <Filter>LIBS\Detour</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\Detour\Source\DetourNode.cpp">
-      <Filter>LIBS\Detour</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Source\DetourCrowd.cpp">
-      <Filter>LIBS\DetourCrowd</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Source\DetourLocalBoundary.cpp">
-      <Filter>LIBS\DetourCrowd</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Source\DetourObstacleAvoidance.cpp">
-      <Filter>LIBS\DetourCrowd</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Source\DetourPathCorridor.cpp">
-      <Filter>LIBS\DetourCrowd</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Source\DetourPathQueue.cpp">
-      <Filter>LIBS\DetourCrowd</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Source\DetourProximityGrid.cpp">
-      <Filter>LIBS\DetourCrowd</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\ReCast\Source\Recast.cpp">
-      <Filter>LIBS\ReCast</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\ReCast\Source\RecastAlloc.cpp">
-      <Filter>LIBS\ReCast</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\ReCast\Source\RecastArea.cpp">
-      <Filter>LIBS\ReCast</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\ReCast\Source\RecastContour.cpp">
-      <Filter>LIBS\ReCast</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\ReCast\Source\RecastFilter.cpp">
-      <Filter>LIBS\ReCast</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\ReCast\Source\RecastLayers.cpp">
-      <Filter>LIBS\ReCast</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\ReCast\Source\RecastMesh.cpp">
-      <Filter>LIBS\ReCast</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\ReCast\Source\RecastMeshDetail.cpp">
-      <Filter>LIBS\ReCast</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\ReCast\Source\RecastRasterization.cpp">
-      <Filter>LIBS\ReCast</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\ReCast\Source\RecastRegion.cpp">
-      <Filter>LIBS\ReCast</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\DetourTileCache\Source\DetourTileCache.cpp">
-      <Filter>LIBS\DetourTileCache</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\DetourTileCache\Source\DetourTileCacheBuilder.cpp">
-      <Filter>LIBS\DetourTileCache</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\DebugUtils\Source\DebugDraw.cpp">
-      <Filter>LIBS\DebugUtils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\DebugUtils\Source\DetourDebugDraw.cpp">
-      <Filter>LIBS\DebugUtils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\DebugUtils\Source\RecastDebugDraw.cpp">
-      <Filter>LIBS\DebugUtils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\DebugUtils\Source\RecastDump.cpp">
-      <Filter>LIBS\DebugUtils</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Hardware\Platform\Task.cpp">
       <Filter>Hardware\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\NavigationMeshDebugDraw.cpp">
+      <Filter>AI\PathFinding</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Math\Transform.cpp">
+      <Filter>Core\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\ImmediateModeEmulation.cpp">
+      <Filter>Hardware\Video</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glImmediateModeEmulation.cpp">
+      <Filter>Hardware\Video\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Utility\GUIDWrapper.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Textures\glSamplerOject.cpp">
+      <Filter>Hardware\Video\OpenGL\Textures</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\GUI\GUIEditor\GUIEditor.cpp">
+      <Filter>GUI\GUIEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\GUI\GUIEditor\GUIEditorAIInterface.cpp">
+      <Filter>GUI\GUIEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\GUI\GUIEditor\GUIEditorSceneGraphInterface.cpp">
+      <Filter>GUI\GUIEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\GUI\GUIEditor\GUIEditorLightInterface.cpp">
+      <Filter>GUI\GUIEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Network\ASIOImpl.cpp">
+      <Filter>Hardware\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\GLStates.cpp">
+      <Filter>Hardware\Video\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\GLEntities.cpp">
+      <Filter>Hardware\Video\OpenGL</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1507,9 +1429,6 @@
     <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\WaypointGraph.h">
       <Filter>AI\PathFinding\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Geometry\Shapes\Headers\GenericShape.h">
-      <Filter>Geometry\Shapes\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\AnimationController.h">
       <Filter>Geometry\Animations\Headers</Filter>
     </ClInclude>
@@ -1603,9 +1522,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Hardware\Audio\openAl\Headers\ALWrapper.h">
       <Filter>Hardware\Audio\openal\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\includes\networking\OPCodes.h">
-      <Filter>Hardware\Network\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Hardware\Platform\Headers\PlatformDefines.h">
       <Filter>Hardware\Platform\Headers</Filter>
@@ -1874,75 +1790,6 @@
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\Headers\glMatrixUniformBufferObject.h">
       <Filter>Hardware\Video\OpenGL\Shaders\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\Detour\Include\DetourAlloc.h">
-      <Filter>LIBS\Detour\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\Detour\Include\DetourAssert.h">
-      <Filter>LIBS\Detour\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\Detour\Include\DetourCommon.h">
-      <Filter>LIBS\Detour\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\Detour\Include\DetourNavMesh.h">
-      <Filter>LIBS\Detour\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\Detour\Include\DetourNavMeshBuilder.h">
-      <Filter>LIBS\Detour\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\Detour\Include\DetourNavMeshQuery.h">
-      <Filter>LIBS\Detour\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\Detour\Include\DetourNode.h">
-      <Filter>LIBS\Detour\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\Detour\Include\DetourStatus.h">
-      <Filter>LIBS\Detour\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Include\DetourCrowd.h">
-      <Filter>LIBS\DetourCrowd\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Include\DetourLocalBoundary.h">
-      <Filter>LIBS\DetourCrowd\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Include\DetourObstacleAvoidance.h">
-      <Filter>LIBS\DetourCrowd\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Include\DetourPathCorridor.h">
-      <Filter>LIBS\DetourCrowd\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Include\DetourPathQueue.h">
-      <Filter>LIBS\DetourCrowd\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Include\DetourProximityGrid.h">
-      <Filter>LIBS\DetourCrowd\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\ReCast\Include\Recast.h">
-      <Filter>LIBS\ReCast\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\ReCast\Include\RecastAlloc.h">
-      <Filter>LIBS\ReCast\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\ReCast\Include\RecastAssert.h">
-      <Filter>LIBS\ReCast\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\DetourTileCache\Include\DetourTileCacheBuilder.h">
-      <Filter>LIBS\DetourTileCache\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\DetourTileCache\Include\DetourTileCache.h">
-      <Filter>LIBS\DetourTileCache\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\DebugUtils\Include\DebugDraw.h">
-      <Filter>LIBS\DebugUtils\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\DebugUtils\Include\DetourDebugDraw.h">
-      <Filter>LIBS\DebugUtils\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\DebugUtils\Include\RecastDebugDraw.h">
-      <Filter>LIBS\DebugUtils\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\DebugUtils\Include\RecastDump.h">
-      <Filter>LIBS\DebugUtils\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Hardware\Platform\Headers\Task.h">
       <Filter>Hardware\Platform\Headers</Filter>
     </ClInclude>
@@ -1963,6 +1810,42 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Dynamics\Physics\PhysX\Headers\PhysXSceneInterface.h">
       <Filter>Dynamics\Physics\PhysX\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Headers\glImmediateModeEmulation.h">
+      <Filter>Hardware\Video\OpenGL\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\NavigationMeshDebugDraw.h">
+      <Filter>AI\PathFinding\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\ImmediateModeEmulation.h">
+      <Filter>Hardware\Video\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Textures\Headers\glSamplerObject.h">
+      <Filter>Hardware\Video\OpenGL\Textures\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Utility\Headers\GUIDWrapper.h">
+      <Filter>Utility\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\GUI\GUIEditor\Headers\GUIEditor.h">
+      <Filter>GUI\GUIEditor\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\GUI\GUIEditor\Headers\GUIEditorAIInterface.h">
+      <Filter>GUI\GUIEditor\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\GUI\GUIEditor\Headers\GUIEditorLightInterface.h">
+      <Filter>GUI\GUIEditor\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\GUI\GUIEditor\Headers\GUIEditorSceneGraphInterface.h">
+      <Filter>GUI\GUIEditor\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\GUI\GUIEditor\Headers\GUIEditorInterface.h">
+      <Filter>GUI\GUIEditor\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Network\Headers\ASIOImpl.h">
+      <Filter>Hardware\Network\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\RenderInstance.h">
+      <Filter>Hardware\Video\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2071,13 +1954,7 @@
     <None Include="..\..\assets\shaders\GLSL\vertexAtoms\lightingDefaults.vert">
       <Filter>shaders\GLSL\vertexAtoms</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\lightingDefaultsBump.vert">
-      <Filter>shaders\GLSL\vertexAtoms</Filter>
-    </None>
     <None Include="..\..\assets\shaders\GLSL\vertexAtoms\vboInputData.vert">
-      <Filter>shaders\GLSL\vertexAtoms</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\vboInputDataBones.vert">
       <Filter>shaders\GLSL\vertexAtoms</Filter>
     </None>
     <None Include="..\..\assets\shaders\GLSL\deferredPreview.glsl">
@@ -2085,6 +1962,9 @@
     </None>
     <None Include="..\..\assets\shaders\GLSL\fboPreview.glsl">
       <Filter>shaders\GLSL</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\vertexDefault.vert">
+      <Filter>shaders\GLSL\vertexAtoms</Filter>
     </None>
   </ItemGroup>
 </Project>

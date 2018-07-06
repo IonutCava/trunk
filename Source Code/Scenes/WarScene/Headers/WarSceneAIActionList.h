@@ -25,7 +25,6 @@ enum AIMsg{
 };
 
 class WarSceneAIActionList : public ActionList{
-
 public:
 	WarSceneAIActionList();
 	void processData();

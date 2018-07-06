@@ -35,8 +35,10 @@ private:
 	void handleHelpCommand(const std::string& args);
 	void handleEditParamCommand(const std::string& args);
 	void handlePlaySoundCommand(const std::string& args);
-	void handleInvalidCommand(const std::string& args);	
     void handleNavMeshCommand(const std::string& args);
+	void handleShaderRecompileCommand(const std::string& args);
+	void handleFOVCommand(const std::string& args);
+	void handleInvalidCommand(const std::string& args);
 
 private:
 	///Help text for every command

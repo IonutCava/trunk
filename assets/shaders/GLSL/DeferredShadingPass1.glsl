@@ -1,18 +1,18 @@
 -- Vertex
 #include "vboInputData.vert"
-varying vec3 normals;
-varying vec3 position;
-varying mat4 TBN;
+out vec3 normals;
+out vec3 position;
+out mat4 TBN;
 
 void main( void ){
 	computeData();
-	gl_Position =  gl_ModelViewProjectionMatrix * vertexData;
+	gl_Position = dvd_ModelViewProjectionMatrix * dvd_Vertex;
 
-	position = vec3(transpose(gl_ModelViewMatrix) * vertexData);
-	normals = normalize(gl_NormalMatrix * normalData);
+	position = vec3(transpose(dvd_ModelViewMatrix) * dvd_Vertex);
+	normals = normalize(dvd_NormalMatrix * dvd_Normal);
 
-	vec3 t = normalize(gl_NormalMatrix * tangentData);
-	vec3 n = normalize(gl_NormalMatrix * normalData);
+	vec3 t = normalize(dvd_NormalMatrix * dvd_Tangent);
+	vec3 n = normalize(dvd_NormalMatrix * dvd_Normal);
 	vec3 b = cross(n, t);
 
 	
@@ -25,63 +25,124 @@ void main( void ){
 
 -- Fragment
 
-varying vec3 normals;
-varying vec3 position;
+in vec3 normals;
+in vec3 position;
+
+out vec4 diffuseOutput; // layout(location = 0)
+out vec4 posOutput;     // layout(location = 1)
+out vec4 normOutput;    // layout(location = 2)
+out vec4 blendOutput;   // layout(location = 3)
+
 uniform mat4 material;
-varying mat4 TBN;
+in mat4 TBN;
 
 void main( void ){
 
-	gl_FragData[0] = material[1]; //diffuse
-    gl_FragData[1] = vec4(position,1);
-    gl_FragData[2] = vec4(normals,1);
+	vec4 color = material[1]; //diffuse
+    if(color.a < ALPHA_DISCARD_THRESHOLD) discard;
+
+    diffuseOutput = color;
+    posOutput     = vec4(position,1);
+    normOutput    = vec4(normals,1);
+    blendOutput.rgb = color.rgb * color.a; // Pre multiplied alpha
+    blendOutput.a = color.a;
 }
 
 -- Fragment.Texture
 
-varying vec3  normals;
-varying vec3  position;
-varying vec2  _texCoord;
-varying mat4  TBN;
+in vec3  normals;
+in vec3  position;
+in vec2  _texCoord;
+in mat4  TBN;
+
+out vec4 diffuseOutput; // layout(location = 0)
+out vec4 posOutput;     // layout(location = 1)
+out vec4 normOutput;    // layout(location = 2)
+out vec4 blendOutput;   // layout(location = 3)
+
 uniform sampler2D texDiffuse0;
 
 void main( void ){
-  vec4 color = texture(texDiffuse0,_texCoord);
-   if(color.a < 0.2) discard;
-   gl_FragData[0] = color;
-   gl_FragData[0].a = 0;
-   gl_FragData[1] = vec4(position,1);
-   gl_FragData[2] = vec4(normals,1);
+   vec4 color = texture(texDiffuse0,_texCoord);
+   if(color.a < ALPHA_DISCARD_THRESHOLD) discard;
+
+   diffuseOutput = color;
+   posOutput     = vec4(position,1);
+   normOutput    = vec4(normals,1);
+   blendOutput.rgb = color.rgb * color.a; // Pre multiplied alpha
+   blendOutput.a = color.a;
 }
 
 -- Fragment.Bump
 
-varying vec4       position;
-varying vec2       _texCoord;
-varying mat4       TBN;
+in vec3       position;
+in vec2       _texCoord;
+in mat4       TBN;
+
+out vec4 diffuseOutput; // layout(location = 0)
+out vec4 posOutput;     // layout(location = 1)
+out vec4 normOutput;    // layout(location = 2)
+out vec4 blendOutput;   // layout(location = 3)
+
 uniform sampler2D  texDiffuse0;
 uniform sampler2D  texBump;
 
 void main( void ){
 
    vec4 color = texture(texDiffuse0,_texCoord);
-   if(color.a < 0.2) discard;
-   gl_FragData[0] = color;
-   gl_FragData[1] = vec4(position.xyz,1);
-   gl_FragData[2] = (texture(texBump,_texCoord) * 2 -
+   if(color.a < ALPHA_DISCARD_THRESHOLD) discard;
+   
+   diffuseOutput = color;
+   posOutput     = vec4(position,1);
+   normOutput    = (texture(texBump,_texCoord) * 2 -
                      vec4(1,1,1,0)) * TBN;
+   blendOutput.rgb = color.rgb * color.a; // Pre multiplied alpha
+   blendOutput.a = color.a;
+
 }
+
+-- Vertex.Impostor
+
+uniform mat3 dvd_NormalMatrix;
+uniform mat4 dvd_ModelViewMatrix;
+uniform mat4 dvd_ModelViewProjectionMatrix;
+
+in vec3  inVertexData;
+in vec3  inNormalData;
+
+out vec3 normals;
+out vec3 position;
+
+void main( void ){
+	vec4 dvd_Vertex     = vec4(inVertexData,1.0);
+	vec3 dvd_Normal     = inNormalData;
+
+	gl_Position = dvd_ModelViewProjectionMatrix * dvd_Vertex;
+
+	position = vec3(transpose(dvd_ModelViewMatrix) * dvd_Vertex);
+	normals = normalize(dvd_NormalMatrix * dvd_Normal);
+} 
 
 -- Fragment.Impostor
 
-varying vec4		position;
-varying vec4		normals;
-varying mat4		TBN;
-uniform mat4        material;
+in vec3	 position;
+in vec3	 normals;
+
+out vec4 diffuseOutput; // layout(location = 0)
+out vec4 posOutput;     // layout(location = 1)
+out vec4 normOutput;    // layout(location = 2)
+out vec4 blendOutput;   // layout(location = 3)
+
+uniform mat4 material;
 
 void main( void )
 {
-	gl_FragData[0]		= material[1];
-	gl_FragData[1]		= vec4(0,0,0,gl_FragData[0].a);
-	gl_FragData[2]		= vec4(0,0,0,0);
+    vec4 color = material[1]; //diffuse
+    if(color.a < ALPHA_DISCARD_THRESHOLD) discard;
+
+	diffuseOutput	= color;
+	posOutput  		= vec4(position,1);
+	normOutput    	= vec4(normals,1);
+    blendOutput.rgb = color.rgb * color.a; // Pre multiplied alpha
+    blendOutput.a   = color.a;
 }

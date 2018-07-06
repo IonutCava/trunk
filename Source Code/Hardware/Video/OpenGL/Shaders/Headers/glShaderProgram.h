@@ -20,16 +20,19 @@
 
 #include "Hardware/Video/Shaders/Headers/ShaderProgram.h"
 
+enum  UBO_NAME;
+class glUniformBufferObject;
 class glShaderProgram : public ShaderProgram {
-
 public:
-	glShaderProgram();
+	glShaderProgram(const bool optimise = false);
 	~glShaderProgram();
 
 	bool unload(){unbind(); return true;}
 	void bind();
-	void unbind();
-	void attachShader(Shader* shader);
+	void unbind(bool resetActiveProgram = true);
+	U8   tick(const U32 deltaTime);
+	void attachShader(Shader* const shader,const bool refresh = false);
+	void detachShader(Shader* const shader);
 	//Attributes
 	void Attribute(const std::string& ext, GLdouble value);
 	void Attribute(const std::string& ext, GLfloat value);
@@ -53,25 +56,31 @@ public:
 	//Uniform Texture
 	void UniformTexture(const std::string& ext, GLushort slot);
 
-	GLint getAttributeLocation(const std::string& name);
-	GLint getUniformLocation(const std::string& name);
+	inline GLint getAttributeLocation(const std::string& name) { return cachedLoc(name,false); }
+	inline GLint getUniformLocation(const std::string& name)   { return cachedLoc(name,true);  }
+	inline void  flushLocCache()                               { _shaderVars.clear();}
 
 private:
-	GLint  cachedLoc(const std::string& name,bool uniform = true);
-	bool flushLocCache();
+	void threadedLoad(const std::string& name);
+	GLint cachedLoc(const std::string& name, const bool uniform = true);
 	void validateInternal();
-    bool checkBinding();
 
 private:
-	Unordered_map<std::string, GLint > _shaderVars;
-	GLuint _shaderProgramIdInternal;
-	bool _validationQueued;	
-
+	typedef Unordered_map<std::string, GLint > ShaderVarMap;
+	ShaderVarMap _shaderVars;
+	vectorImpl<GLint> _UBOLocation;
+	vectorImpl<glUniformBufferObject* > _uniformBufferObjects;
+	boost::atomic_bool _validationQueued;
+	U32 _shaderProgramIdTemp;
 protected:
 	bool generateHWResource(const std::string& name);
-	void validate();
+	inline void validate() {_validationQueued = true;}
 	void link();
-};
 
+protected:
+	friend class glUniformBufferObject;
+	inline GLuint getUBOLocation(const UBO_NAME& ubo) {assert((GLuint)ubo < _UBOLocation.size()); return _UBOLocation[ubo];}
+	void initUBO();
+};
 
 #endif

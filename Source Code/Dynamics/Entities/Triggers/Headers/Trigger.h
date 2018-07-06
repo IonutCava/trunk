@@ -26,7 +26,6 @@ class Task;
 class Impostor;
 /// When a unit touches the circle described by
 class Trigger  : public SceneNode {
-
 	typedef std::tr1::shared_ptr<Task> Task_ptr;
 
 public:
@@ -51,17 +50,17 @@ public:
 	inline void setParams(Task_ptr triggeredTask) {setParams(triggeredTask,_triggerPosition,_radius);}
 
 	///Dummy function from SceneNode;
-	void onDraw() {};
+	void onDraw(const RenderStage& currentStage) {};
 
 	///SceneNode concrete implementations
 	bool unload();
-	void postLoad(SceneGraphNode* const sgn);	
+	void postLoad(SceneGraphNode* const sgn);
 
 	///When the SceneGraph calls the trigger's render function, we draw the impostor if needed
 	virtual void render(SceneGraphNode* const sgn);
 
 	///SceneNode test
-	bool isInView(bool distanceCheck,BoundingBox& boundingBox,const BoundingSphere& sphere){return _drawImpostor;}
+	bool isInView(const bool distanceCheck,const BoundingBox& boundingBox,const BoundingSphere& sphere){return _drawImpostor;}
 
 private:
 	/// The Task to be launched when triggered

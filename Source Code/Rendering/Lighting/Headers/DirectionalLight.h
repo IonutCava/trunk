@@ -26,7 +26,7 @@ public:
 	DirectionalLight(U8 slot);
 	~DirectionalLight();
 	void setCameraToLightView(const vec3<F32>& eyePos);
-	void renderFromLightView(U8 depthPass);
+	void renderFromLightView(const U8 depthPass,const F32 sceneHalfExtent = 1);
 
 private:
 	void updateFrustumPoints(frustum &f, vec3<F32> &center, vec3<F32> &viewDir);
@@ -36,6 +36,6 @@ private:
 	F32 _splitWeight;
 	I8  _splitCount;
 	D32 _lightOrtho[3];
-}; 
+};
 
 #endif

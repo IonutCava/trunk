@@ -19,7 +19,7 @@
 #define CEGUI_FORMATTED_LIST_BOX_H_
 
 //Code adapted from http://www.cegui.org.uk/phpBB2/viewtopic.php?f=10&t=4322
-#include "CEGUI.h"
+#include <CEGUI/CEGUI.h>
 
 namespace CEGUI {
 ///! A ListboxItem based class that can do horizontal text formatiing.
@@ -47,9 +47,8 @@ public:
     void setFormatting(const HorizontalTextFormatting fmt);
 
     // overriden functions.
-    Size getPixelSize(void) const;
-    void draw(GeometryBuffer& buffer, const Rect& targetRect,
-                float alpha, const Rect* clipper) const;
+    Sizef getPixelSize(void) const;
+    void draw(GeometryBuffer& buffer, const Rectf& targetRect, float alpha, const Rectf* clipper) const;
 
 protected:
     ///! Helper to create a FormattedRenderedString of an appropriate type.
@@ -59,9 +58,8 @@ protected:
     ///! Class that renders RenderedString with some formatting.
     mutable FormattedRenderedString* d_formattedRenderedString;
     ///! Tracks target area for rendering so we can reformat when needed
-    mutable Size d_formattingAreaSize;
+    mutable Sizef d_formattingAreaSize;
 };
-
 }
 
 #endif

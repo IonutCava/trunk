@@ -20,15 +20,14 @@
 #ifndef UTIL_CRC_H_
 #define UTIL_CRC_H_
 
-#include "core.h"
+#include "Hardware/Platform/Headers/PlatformDefines.h"
 
 namespace Util {
-
 	class CRC32	{
 	public:
 		//=========================================
 		//  ctors
-		inline CRC32()                                  { Reset();                  }
+		inline CRC32()                                   { Reset();                  }
 		inline CRC32(const void* buf, size_t siz)        { Reset(); Hash(buf,siz);   }
 
 		//=========================================
@@ -54,7 +53,7 @@ namespace Util {
 		//=========================================
 		// internal support
 		static void         BuildTable();
-		static U32          Reflect(U32 v,int bits);
+		static U32          Reflect(U32 v,I32 bits);
 	};
 };
 

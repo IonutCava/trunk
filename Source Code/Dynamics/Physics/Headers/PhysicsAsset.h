@@ -23,7 +23,7 @@ class PhysicsAsset{
 public:
 	PhysicsAsset() {}
 	~PhysicsAsset(){}
-	
+
 	bool createFromNode(SceneNode* const sn) {return true;}
 };
 #endif

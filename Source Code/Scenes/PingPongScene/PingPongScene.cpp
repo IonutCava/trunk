@@ -1,12 +1,13 @@
 #include "Headers/PingPongScene.h"
 
 #include "Rendering/Headers/Frustum.h"
+#include "Core/Math/Headers/Transform.h"
 #include "Managers/Headers/SceneManager.h"
+#include "Geometry/Material/Headers/Material.h"
 #include "Geometry/Shapes/Headers/Predefined/Box3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 
 REGISTER_SCENE(PingPongScene);
-
 
 //begin copy-paste
 void PingPongScene::preRender(){
@@ -20,11 +21,10 @@ void PingPongScene::preRender(){
 }
 //<<end copy-paste
 
-void PingPongScene::processTasks(U32 time){
-
+void PingPongScene::processTasks(const U32 time){
 	F32 FpsDisplay = 0.3f;
 	if (time - _taskTimers[0] >= FpsDisplay){
-		GUI::getInstance().modifyText("fpsDisplay", "FPS: %5.2f", Framerate::getInstance().getFps());
+		GUI::getInstance().modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", Framerate::getInstance().getFps(), Framerate::getInstance().getFrameTime());
 		_taskTimers[0] += FpsDisplay;
 	}
 }
@@ -46,7 +46,7 @@ void PingPongScene::serveBall(){
 
 	if(getTasks().empty()){///A maximum of 1 Tasks allowed
 		Kernel* kernel = Application::getInstance().getKernel();
-		Task_ptr newGame(New Task(kernel->getThreadPool(),30,true,false,boost::bind(&PingPongScene::test,this,rand() % 5,TYPE_INTEGER)));
+		Task_ptr newGame(New Task(kernel->getThreadPool(),30,true,false,DELEGATE_BIND(&PingPongScene::test,this,rand() % 5,TYPE_INTEGER)));
 		addTask(newGame);
 	}
 }
@@ -58,7 +58,6 @@ void PingPongScene::test(boost::any a, CallbackParam b){
 	Transform* ballTransform = _ballSGN->getTransform();
 	vec3<F32> ballPosition  = ballTransform->getPosition();
 
-	
 	SceneGraphNode* table = _sceneGraph->findNode("table");
 	SceneGraphNode* net = _sceneGraph->findNode("net");
 	SceneGraphNode* opponent = _sceneGraph->findNode("opponent");
@@ -105,12 +104,12 @@ void PingPongScene::test(boost::any a, CallbackParam b){
 	if(ballPosition.y + 0.75f < table->getBoundingBox().getMax().y){
 		///If we hit the ball and it landed on the opponent's table half
 		///Or if the opponent hit the ball and it landed on our table half
-		if((_touchedAdversaryTableHalf && _directionTowardsAdversary) || 
-		   (!_directionTowardsAdversary && !_touchedOwnTableHalf))		
+		if((_touchedAdversaryTableHalf && _directionTowardsAdversary) ||
+		   (!_directionTowardsAdversary && !_touchedOwnTableHalf))
 			_lost = false;
 		else
 			_lost = true;
-		
+
 		updated = true;
 	}
 	///Did we win or lose?
@@ -132,9 +131,8 @@ void PingPongScene::test(boost::any a, CallbackParam b){
 			_lost = false;
 		}
 		updated = true;
-		
     }
-	
+
 	///Did we hit the opponent? Then change ball direction ... BUT ...
 	///Add a small chance that we win
 	if(random(30) != 2)
@@ -158,7 +156,7 @@ void PingPongScene::test(boost::any a, CallbackParam b){
 			message = "You won!";
 			_score++;
 		}
-		
+
 		GUI::getInstance().modifyText("Score","Score: %d",_score);
 		GUI::getInstance().modifyText("Message",(char*)message.c_str());
 		resetGame();
@@ -166,13 +164,12 @@ void PingPongScene::test(boost::any a, CallbackParam b){
 }
 
 void PingPongScene::processInput(){
-
 	///Move FB = Forward/Back = up/down
 	///Move LR = Left/Right
 
 	///Camera controls
-	if(state()->_angleLR) renderState()->getCamera()->RotateX(state()->_angleLR * FRAME_SPEED_FACTOR);
-	if(state()->_angleUD) renderState()->getCamera()->RotateY(state()->_angleUD * FRAME_SPEED_FACTOR);
+	if(state()->_angleLR) renderState()->getCamera()->RotateX(state()->_angleLR);
+	if(state()->_angleUD) renderState()->getCamera()->RotateY(state()->_angleUD);
 
 	SceneGraphNode* paddle = _sceneGraph->findNode("paddle");
 
@@ -181,18 +178,17 @@ void PingPongScene::processInput(){
 	///Paddle movement is limited to the [-3,3] range except for Y-descent
 	if(state()->_moveFB){
 		if((state()->_moveFB > 0 && pos.y >= 3) || (state()->_moveFB < 0 && pos.y <= 0.5f)) return;
-		paddle->getTransform()->translateY((state()->_moveFB * FRAME_SPEED_FACTOR)/6);
+		paddle->getTransform()->translateY(state()->_moveFB / 6);
 	}
 
 	if(state()->_moveLR){
 		///Left/right movement is flipped for proper control
 		if((state()->_moveLR < 0 && pos.x >= 3) || (state()->_moveLR > 0 && pos.x <= -3)) return;
-		paddle->getTransform()->translateX((-state()->_moveLR * FRAME_SPEED_FACTOR)/6);
+		paddle->getTransform()->translateX(-state()->_moveLR / 6);
 	}
 }
 
 bool PingPongScene::load(const std::string& name){
-
 	///Load scene resources
 	SCENE_LOAD(name,true,true);
 	///Add a light
@@ -201,12 +197,11 @@ bool PingPongScene::load(const std::string& name){
 	///Position the camera
 	renderState()->getCamera()->setAngleX(RADIANS(-90));
 	renderState()->getCamera()->setEye(vec3<F32>(0,2.5f,6.5f));
-	
+
 	return loadState;
 }
 
 bool PingPongScene::loadResources(bool continueOnErrors){
-
 	///Create a ball
 	ResourceDescriptor minge("Ping Pong Ball");
 	_ball = CreateResource<Sphere3D>(minge);
@@ -219,21 +214,30 @@ bool PingPongScene::loadResources(bool continueOnErrors){
 	_ball->getMaterial()->setShininess(36.8f);
 	_ball->getMaterial()->setSpecular(vec4<F32>(0.774597f,0.774597f,0.774597f,1.0f));
 
+	ResourceDescriptor tempLight("Light Omni");
+	tempLight.setId(2);
+	tempLight.setEnumValue(LIGHT_TYPE_POINT);
+	Light* light = CreateResource<Light>(tempLight);
+	light->setRange(30);
+	light->setCastShadows(false);
+	light->setPosition(vec3<F32>(0, 6 ,2));
+	_sceneGraph->getRoot()->addNode(light);
+	addLight(light);
 	///Buttons and text labels
-	GUI::getInstance().addButton("Serve", "Serve", vec2<U32>(renderState()->cachedResolution().width-120 ,
+	GUI::getInstance().addButton("Serve", "Serve", vec2<I32>(renderState()->cachedResolution().width-120 ,
 															 renderState()->cachedResolution().height/1.1f),
 													    	 vec2<U32>(100,25),vec3<F32>(0.65f,0.65f,0.65f),
-															 boost::bind(&PingPongScene::serveBall,this));
+															 DELEGATE_BIND(&PingPongScene::serveBall,this));
 
-	GUI::getInstance().addText("Score",vec2<U32>(renderState()->cachedResolution().width - 120, renderState()->cachedResolution().height/1.3f),
+	GUI::getInstance().addText("Score",vec2<I32>(renderState()->cachedResolution().width - 120, renderState()->cachedResolution().height/1.3f),
 							    Font::DIVIDE_DEFAULT,vec3<F32>(1,0,0), "Score: %d",0);
 
-	GUI::getInstance().addText("Message",vec2<U32>(renderState()->cachedResolution().width - 120, renderState()->cachedResolution().height/1.5f),
+	GUI::getInstance().addText("Message",vec2<I32>(renderState()->cachedResolution().width - 120, renderState()->cachedResolution().height/1.5f),
 							    Font::DIVIDE_DEFAULT,vec3<F32>(1,0,0), "");
-	GUI::getInstance().addText("insults",vec2<U32>(renderState()->cachedResolution().width/4, renderState()->cachedResolution().height/3),
+	GUI::getInstance().addText("insults",vec2<I32>(renderState()->cachedResolution().width/4, renderState()->cachedResolution().height/3),
 							    Font::DIVIDE_DEFAULT,vec3<F32>(0,1,0), "");
 	GUI::getInstance().addText("fpsDisplay",           //Unique ID
-		                       vec2<U32>(60,60),          //Position
+		                       vec2<I32>(60,60),          //Position
 							    Font::DIVIDE_DEFAULT,    //Font
 							   vec3<F32>(0.0f,0.2f, 1.0f),  //Color
 							   "FPS: %s",0);    //Text and arguments
@@ -243,17 +247,15 @@ bool PingPongScene::loadResources(bool continueOnErrors){
 	_quotes.push_back("Ooolee, ole ole ole, see the ball? ... It's past your end");
 	_quotes.push_back("You're lucky the room's empty. I'd be so ashamed otherwise if I were you");
 	_quotes.push_back("It's not the hard. Even a monkey can do it.");
-	
+
 	_taskTimers.push_back(0.0f); //Fps
 	_taskTimers.push_back(0.0f); //Light
 	return true;
 }
 
 void PingPongScene::onKeyDown(const OIS::KeyEvent& key){
-
 	Scene::onKeyDown(key);
 	switch(key.key){
-
 		case OIS::KC_W:
 			state()->_moveFB = 0.25f;
 			break;
@@ -272,10 +274,8 @@ void PingPongScene::onKeyDown(const OIS::KeyEvent& key){
 }
 
 void PingPongScene::onKeyUp(const OIS::KeyEvent& key){
-
 	Scene::onKeyUp(key);
 	switch(key.key)	{
-
 		case OIS::KC_W:
 		case OIS::KC_S:
 			state()->_moveFB = 0;
@@ -287,11 +287,9 @@ void PingPongScene::onKeyUp(const OIS::KeyEvent& key){
 		default:
 			break;
 	}
-
 }
 
 void PingPongScene::onJoystickMovePOV(const OIS::JoyStickEvent& key,I8 pov){
-
 	Scene::onJoystickMovePOV(key,pov);
 	if( key.state.mPOV[pov].direction & OIS::Pov::North ) //Going up
 		state()->_moveFB = 0.25f;
@@ -311,11 +309,9 @@ void PingPongScene::onJoystickMovePOV(const OIS::JoyStickEvent& key,I8 pov){
 }
 
 void PingPongScene::onJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis,I32 deadZone){
-
 	Scene::onJoystickMoveAxis(key,axis,deadZone);
 }
 
 void PingPongScene::onJoystickButtonUp(const OIS::JoyStickEvent& key, I8 button){
-
 	if(button == 0 && key.device->getID() != InputInterface::JOY_1)  serveBall();
 }

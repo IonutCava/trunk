@@ -21,19 +21,18 @@
 #include "Scenes/Headers/Scene.h"
 
 class NetworkScene : public Scene {
-
 public:
-	NetworkScene() : Scene() {} 
+	NetworkScene() : Scene() {}
 	void preRender();
 
 	bool preLoad();
 	bool load(const std::string& name);
 	bool loadResources(bool continueOnErrors);
 
-	void processTasks(U32 time);
+	void processTasks(const U32 time);
 	void processInput();
 
-private: 
+private:
 	void test();
 	void connect();
 	void disconnect();

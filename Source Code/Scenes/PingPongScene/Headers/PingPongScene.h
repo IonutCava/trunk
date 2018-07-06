@@ -23,7 +23,6 @@
 class Sphere3D;
 
 class PingPongScene : public Scene {
-
 public:
 	PingPongScene() : Scene() {
 		_sideDrift = 0;
@@ -42,7 +41,7 @@ public:
 	bool load(const std::string& name);
 	bool loadResources(bool continueOnErrors);
 	void processInput();
-	void processTasks(U32 time);
+	void processTasks(const U32 time);
 
 	void onKeyDown(const OIS::KeyEvent& key);
 	void onKeyUp(const OIS::KeyEvent& key);

@@ -29,7 +29,7 @@ namespace Navigation {
 		~Waypoint();
 
 		inline U32 getID() const {return _id;}
-	public: 
+	public:
 
 		vec3<F32>  _position;
 		Quaternion<F32> _orientation;

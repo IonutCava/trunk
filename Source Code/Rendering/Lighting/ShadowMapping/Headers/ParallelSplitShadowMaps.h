@@ -35,11 +35,19 @@ public:
 protected:
 	void renderInternal(SceneRenderState* renderState) const;
 	void createJitterTexture(I32 size, I32 samples_u, I32 samples_v);
-protected:
-	U8 _numSplits;
-	Quad3D* _renderQuad;
-	ShaderProgram* _previewDepthMapShader;
-	PixelBufferObject* _jitterTexture; ///<For blurring
+    //OGRE! I know .... sorry -Ionut
+    void calculateSplitPoints(U8 splitCount, F32 nearDist, F32 farDist, F32 lambda = 0.95);
+    //
+    void setOptimalAdjustFactor(U8 index, F32 value);
 
+protected:
+	U8  _numSplits;
+    U8  _splitPadding; //<Avoid artifacts;
+	Quad3D* _renderQuad;
+	ShaderProgram*  _previewDepthMapShader;
+    vectorImpl<F32> _splitPoints;
+    vectorImpl<F32> _optAdjustFactor;
+    vectorImpl<F32> _orthoPerPass;
+	PixelBufferObject* _jitterTexture; ///<For blurring
 };
 #endif 

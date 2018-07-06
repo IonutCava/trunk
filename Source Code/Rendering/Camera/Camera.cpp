@@ -5,7 +5,6 @@
 #include "Managers/Headers/SceneManager.h"
 
 void Camera::SaveCamera(){
-
 	_savedVectors[0] = _eye;
 	_savedVectors[1] = _center;
 	_savedVectors[2] = _view;
@@ -19,7 +18,6 @@ void Camera::SaveCamera(){
 }
 
 void Camera::RestoreCamera() {
-
 	if(_saved) {
 		_eye    = _savedVectors[0];
 		_center = _savedVectors[1];
@@ -34,7 +32,6 @@ void Camera::RestoreCamera() {
 	_saved = false;
 }
 
-
 Camera::Camera(CameraType type) : Resource(),
 				   _saved(false),
 				   _angleX(3.0f),
@@ -43,13 +40,13 @@ Camera::Camera(CameraType type) : Resource(),
 {
 	_up			= vec3<F32>(0.0f, 1.0f, 0.0f);
 	_eye		= vec3<F32>(0.0f, 0.0f, 0.0f);
+	_frameSpeedFactor = 1.0f;
 	_saved = false;
 	Refresh();
 }
 
-
-void Camera::Refresh() {	
-
+void Camera::Refresh() {
+	_frameSpeedFactor = FRAME_SPEED_FACTOR;
 	switch(_type) {
 	case FREE_FLY:
 		_view.x = cosf(_angleX) * sinf(_angleY);
@@ -69,36 +66,35 @@ void Camera::Refresh() {
 	}
 }
 
-void Camera::MoveForward(F32 factor)	{	
-	_eye += _view * factor;
+void Camera::MoveForward(F32 factor)	{
+	_eye += (_view * factor) * _frameSpeedFactor;
 	Refresh();
 }
 
-void Camera::TranslateForward(F32 factor)	{	
-	_eye += _view * factor;
+void Camera::TranslateForward(F32 factor)	{
+	_eye += (_view * factor) * FRAME_SPEED_FACTOR;
 	Refresh();
 }
 
 void Camera::MoveStrafe(F32 factor)	{
-	_eye += _left * factor;
+	_eye += (_left * factor) * _frameSpeedFactor;
 	Refresh();
 }
 
 void Camera::TranslateStrafe(F32 factor)	{
-	_eye += _left * factor;
+	_eye += (_left * factor) * _frameSpeedFactor;
 	Refresh();
 }
 
-
 void Camera::MoveAnaglyph(F32 factor){
-	_eye += _left * factor;
-	_center += _left * factor;
+	_eye += (_left * factor) * _frameSpeedFactor;
+	_center += (_left * factor) * _frameSpeedFactor;
 }
 
 ///Tell the rendering API to set up our desired PoV
 void Camera::RenderLookAt(bool invertx, bool inverty, F32 planey) {
 	///Tell the Rendering API to draw from our desired PoV
-	if(inverty){							 
+	if(inverty){
 		///If we need to flip the camera upside down (ex: for reflections)
 		GFX_DEVICE.lookAt(vec3<F32>(_eye.x,   planey-_eye.y,   _eye.z),
 						  vec3<F32>(_center.x,planey-_center.y,_center.z),
@@ -114,7 +110,6 @@ void Camera::RenderLookAt(bool invertx, bool inverty, F32 planey) {
 }
 
 void Camera::RenderLookAtToCubeMap(const vec3<F32>& eye, U8 nFace){
-
 	assert(nFace < 6);
 	///Get the center and up vectors for each cube face
 	vec3<F32> TabCenter[6] = {	vec3<F32>(eye.x+1.0f,	eye.y,		eye.z),
@@ -123,7 +118,6 @@ void Camera::RenderLookAtToCubeMap(const vec3<F32>& eye, U8 nFace){
 							    vec3<F32>(eye.x,		eye.y-1.0f,	eye.z),
       							vec3<F32>(eye.x,		eye.y,		eye.z+1.0f),
 							    vec3<F32>(eye.x,		eye.y,		eye.z-1.0f) };
-
 
 	static vec3<F32> TabUp[6] = {	vec3<F32>(0.0f,	-1.0f,	0.0f),
 									vec3<F32>(0.0f,	-1.0f,	0.0f),

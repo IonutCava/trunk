@@ -31,25 +31,17 @@ DEFINE_SINGLETON( Frustum )
 public:
 	void Extract(const vec3<F32>& eye);
 	bool ContainsPoint(const vec3<F32>& point) const;
-	I8  ContainsBoundingBox(BoundingBox& bbox) const;
+	I8  ContainsBoundingBox(const BoundingBox& bbox) const;
 	I8  ContainsSphere(const vec3<F32>& center, F32 radius) const;
 
-    inline void setZPlanes(const vec2<F32>& zPlanes) {_zPlanes = zPlanes;}
-	inline       vec3<F32>& getEyePos()					           {return _eyePos;}
-	inline const mat4<F32>& getModelviewMatrix()		           {return _modelViewMatrix;}
-	inline const mat4<F32>& getModelviewInvMatrix() 		       {return _modelViewMatrixInv;}
-	inline const mat4<F32>& getProjectionMatrix()		 	       {return _projectionMatrix;}
-	inline const mat4<F32>& getModelViewProjectionMatrix()         {return _modelViewProjectionMatrix;}
-	inline const mat4<F32>& getInverseModelViewProjectionMatrix()  {return _inverseModelViewProjectionMatrix;}
-	inline const vec2<F32>& getZPlanes()                           {return _zPlanes;}
+    inline void setZPlanes(const vec2<F32>& zPlanes)       {_zPlanes = zPlanes;}
+	inline const vec3<F32>& getEyePos()				 const {return _eyePos;}
+	inline const vec2<F32>& getZPlanes()             const {return _zPlanes;}
+
 private:
 	vec3<F32> _eyePos;
-	vec2<F32> _zPlanes;                                     
-	vec4<F32> _frustumPlanes[6];	
-	mat4<F32> _modelViewMatrix, _modelViewMatrixInv;	///< Modelview Matrix and it's inverse
-	mat4<F32> _projectionMatrix; 				        ///< Projection Matrix
-	mat4<F32> _modelViewProjectionMatrix;			    ///< Modelview * Projection
-	mat4<F32> _inverseModelViewProjectionMatrix;        ///< Projection * inverse(ModelView)
+	vec2<F32> _zPlanes;
+	vec4<F32> _frustumPlanes[6];
 
 END_SINGLETON
 

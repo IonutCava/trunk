@@ -1,33 +1,42 @@
 -- Vertex
 
-varying vec4 posPos;
+out vec4 _posPos;
+out vec2 _texCoord;
+
+in vec2  inTexCoordData;
+in vec3  inVertexData;
+uniform mat4 dvd_ModelViewProjectionMatrix;
 
 uniform float FXAA_SUBPIX_SHIFT = 1.0/4.0;
 uniform vec2 size;
 
-void main(void)
-{
-  gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
+void main(void){
+
+  _texCoord  = inTexCoordData;
   vec2 rcpFrame = vec2(1.0/size.x, 1.0/size.y);
-  posPos.xy = gl_MultiTexCoord0.xy;
-  posPos.zw = gl_MultiTexCoord0.xy - (rcpFrame * (0.5 + FXAA_SUBPIX_SHIFT));
+  _posPos.xy = _texCoord;
+  _posPos.zw = _texCoord - (rcpFrame * (0.5 + FXAA_SUBPIX_SHIFT));
+
+  gl_Position = dvd_ModelViewProjectionMatrix * vec4(inVertexData,1.0);
 }
 
 -- Fragment
 
-uniform sampler2D texScreen; // 0
-uniform vec2 size;
 #define FXAA_SPAN_MAX 8.0
 #define FXAA_REDUCE_MUL (1.0/8.0)
-varying vec4 posPos;
-
 #define FxaaInt2 ivec2
 #define FxaaFloat2 vec2
 #define FxaaTexLod0(t, p) textureLod(t, p, 0.0)
 #define FxaaTexOff(t, p, o, r) textureLodOffset(t, p, 0.0, o)
 
-void main()
-{
+in  vec4 _posPos;
+out vec4 _colorOut;
+
+uniform sampler2D texScreen;
+uniform vec2 size;
+
+void main(){
+
   vec2 rcpFrame = vec2(1.0/size.x, 1.0/size.y);
   vec4 c = vec4(0.0);
   c.a = 1.0;
@@ -37,11 +46,11 @@ void main()
     //#define FXAA_REDUCE_MUL   (1.0/8.0)
     //#define FXAA_SPAN_MAX     8.0
 /*---------------------------------------------------------*/
-    vec3 rgbNW = FxaaTexLod0(texScreen, posPos.zw).xyz;
-    vec3 rgbNE = FxaaTexOff(texScreen, posPos.zw, FxaaInt2(1,0), rcpFrame.xy).xyz;
-    vec3 rgbSW = FxaaTexOff(texScreen, posPos.zw, FxaaInt2(0,1), rcpFrame.xy).xyz;
-    vec3 rgbSE = FxaaTexOff(texScreen, posPos.zw, FxaaInt2(1,1), rcpFrame.xy).xyz;
-    vec3 rgbM  = FxaaTexLod0(texScreen, posPos.xy).xyz;
+    vec3 rgbNW = FxaaTexLod0(texScreen, _posPos.zw).xyz;
+    vec3 rgbNE = FxaaTexOff(texScreen, _posPos.zw, FxaaInt2(1,0), rcpFrame.xy).xyz;
+    vec3 rgbSW = FxaaTexOff(texScreen, _posPos.zw, FxaaInt2(0,1), rcpFrame.xy).xyz;
+    vec3 rgbSE = FxaaTexOff(texScreen, _posPos.zw, FxaaInt2(1,1), rcpFrame.xy).xyz;
+    vec3 rgbM  = FxaaTexLod0(texScreen, _posPos.xy).xyz;
 /*---------------------------------------------------------*/
     vec3 luma = vec3(0.299, 0.587, 0.114);
     float lumaNW = dot(rgbNW, luma);
@@ -66,14 +75,14 @@ void main()
           dir * rcpDirMin)) * rcpFrame.xy;
 /*--------------------------------------------------------*/
     vec3 rgbA = (1.0/2.0) * (
-        FxaaTexLod0(texScreen, posPos.xy + dir * (1.0/3.0 - 0.5)).xyz +
-        FxaaTexLod0(texScreen, posPos.xy + dir * (2.0/3.0 - 0.5)).xyz);
+        FxaaTexLod0(texScreen, _posPos.xy + dir * (1.0/3.0 - 0.5)).xyz +
+        FxaaTexLod0(texScreen, _posPos.xy + dir * (2.0/3.0 - 0.5)).xyz);
     vec3 rgbB = rgbA * (1.0/2.0) + (1.0/4.0) * (
-        FxaaTexLod0(texScreen, posPos.xy + dir * (0.0/3.0 - 0.5)).xyz +
-        FxaaTexLod0(texScreen, posPos.xy + dir * (3.0/3.0 - 0.5)).xyz);
+        FxaaTexLod0(texScreen, _posPos.xy + dir * (0.0/3.0 - 0.5)).xyz +
+        FxaaTexLod0(texScreen, _posPos.xy + dir * (3.0/3.0 - 0.5)).xyz);
     float lumaB = dot(rgbB, luma);
     if((lumaB < lumaMin) || (lumaB > lumaMax)) c.rgb = rgbA;
     else c.rgb = rgbB; 
 	
-	gl_FragColor = c;
+	_colorOut = c;
 }

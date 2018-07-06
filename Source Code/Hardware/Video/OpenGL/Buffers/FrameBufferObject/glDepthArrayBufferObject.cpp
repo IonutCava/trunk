@@ -13,17 +13,12 @@ glDepthArrayBufferObject::glDepthArrayBufferObject() : glFrameBufferObject(FBO_2
 }
 
 void glDepthArrayBufferObject::DrawToLayer(GLubyte face, GLubyte layer){
-
 	GLCheck(glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _depthId, 0, layer));
-	GLCheck(glClear( GL_DEPTH_BUFFER_BIT ));
+	GLCheck(glClear( GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT ));
 }
-
 
 void glDepthArrayBufferObject::Bind(GLubyte unit, GLubyte texture) {
 	FrameBufferObject::Bind(unit);
-	if(_fixedPipeline){
-		GLCheck(glEnable(_textureType));
-	}
     GL_API::setActiveTextureUnit(unit);
 	GLCheck(glBindTexture(_textureType, _depthId));
 	if(texture > 0){ ///Hack for previewing shadow maps

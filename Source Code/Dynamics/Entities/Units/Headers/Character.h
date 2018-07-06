@@ -45,6 +45,5 @@ public:
 
 private:
 	CharacterType _type;
-
 };
 #endif

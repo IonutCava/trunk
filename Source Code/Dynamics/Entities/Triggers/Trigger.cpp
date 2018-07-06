@@ -1,4 +1,6 @@
 #include "Headers/Trigger.h"
+
+#include "Core/Math/Headers/Transform.h"
 #include "Hardware/Platform/Headers/Task.h"
 #include "Dynamics/Entities/Headers/Impostor.h"
 #include "Dynamics/Entities/Units/Headers/Unit.h"
@@ -10,7 +12,6 @@ Trigger::Trigger() : SceneNode(TYPE_TRIGGER), _drawImpostor(false), _triggerImpo
 
 Trigger::~Trigger()
 {
-
 }
 
 void Trigger::setParams( Task_ptr triggeredTask, const vec3<F32>& triggerPosition, F32 radius){
@@ -45,13 +46,13 @@ bool Trigger::unload(){
 void Trigger::postLoad(SceneGraphNode* const sgn) {
 	//Hold a pointer to the trigger's location in the SceneGraph
 	_triggerSGN = sgn;
-}	
+}
 
 void Trigger::render(SceneGraphNode* const sgn){
 	///The isInView call should stop impostor rendering if needed
 	if(!_triggerImpostor){
 		_triggerImpostor = New Impostor(_name,_radius);
-		_impostorSGN = _triggerSGN->addNode(_triggerImpostor->getDummy()); 
+		_impostorSGN = _triggerSGN->addNode(_triggerImpostor->getDummy());
 	}
 	_triggerImpostor->render(_impostorSGN);
 }

@@ -19,10 +19,20 @@
 #define _RENDER_STATE_BLOCK_H
 
 #include "RenderAPIEnums.h"
-#include "Hardware/Platform/Headers/PlatformDefines.h"
+#include "Utility/Headers/GUIDWrapper.h"
 
-struct RenderStateBlockDescriptor {
-   // Blending   
+class RenderStateBlockDescriptor : public GUIDWrapper {
+protected:
+   friend class glRenderStateBlock;
+   friend class d3dRenderStateBlock;
+   /// Color Writes
+   bool _enableColorWrite;
+   bool _writeRedChannel;
+   bool _writeBlueChannel;
+   bool _writeGreenChannel;
+   bool _writeAlphaChannel;
+
+   // Blending
    bool _blendDefined;
    bool _blendEnable;
    BlendProperty _blendSrc;
@@ -36,20 +46,7 @@ struct RenderStateBlockDescriptor {
    BlendProperty _alphaBlendDest;
    BlendOperation _alphaBlendOp;
 
-   /// Alpha test
-   bool _alphaDefined;
-   bool _alphaTestEnable;   
-   I32  _alphaTestRef;
-   ComparisonFunction _alphaTestFunc;
-
-   /// Color Writes
-   bool _enableColorWrite;
-   bool _writeRedChannel;
-   bool _writeBlueChannel;
-   bool _writeGreenChannel;
-   bool _writeAlphaChannel;
-
-   /// Rasterizer
+    /// Rasterizer
    bool _cullDefined;
    CullMode _cullMode;
 
@@ -57,9 +54,6 @@ struct RenderStateBlockDescriptor {
    bool _zDefined;
    bool _zEnable;
    bool _zWriteEnable;
-   ComparisonFunction _zFunc;
-   F32 _zBias;
-   F32 _zUnits;
 
    /// Stencil
    bool _stencilDefined;
@@ -72,58 +66,51 @@ struct RenderStateBlockDescriptor {
    U32 _stencilMask;
    U32 _stencilWriteMask;
 
-   /// fixed pipeline lighting
-   bool _fixedLighting;
-
    /// Color material?
    bool _vertexColorEnable;
 
-   FillMode _fillMode;
+   FillMode   _fillMode;
 
-   ///Cached hash value;
-   U32 _hash;
+public:
+   ComparisonFunction _zFunc;
+   F32 _zBias;
+   F32 _zUnits;
 
    RenderStateBlockDescriptor();
 
-   U32  getHash() const;
-
    void fromDescriptor( const RenderStateBlockDescriptor& descriptor );
 
-   void setCullMode(CullMode mode ); 
-   inline void setFillMode(FillMode mode) { _fillMode = mode; }
+   inline void setFillMode(FillMode mode)      { _fillMode = mode;  }
 
-   void setZEnable(const bool enable); 
-   void setZReadWrite(bool read, bool write = true); 
+   void setCullMode(CullMode mode );
+   void setZEnable(bool enable);
+   void setZReadWrite(bool read, bool write = true);
 
-   void setAlphaTest(   bool enable, 
-                        ComparisonFunction func = CMP_FUNC_GEQUAL, 
-                        I32 alphaRef = 0 );
 
-   void setBlend( bool enable, 
-                  BlendProperty src = BLEND_PROPERTY_SRC_ALPHA, 
+   void setBlend( bool enable,
+                  BlendProperty src = BLEND_PROPERTY_SRC_ALPHA,
                   BlendProperty dest = BLEND_PROPERTY_INV_SRC_ALPHA,
                   BlendOperation op = BLEND_OPERATION_ADD );
 
-   void setAlphaBlend( bool enable, 
-                        BlendProperty src = BLEND_PROPERTY_ONE, 
+   void setAlphaBlend( bool enable,
+                        BlendProperty src = BLEND_PROPERTY_ONE,
                         BlendProperty dest = BLEND_PROPERTY_ZERO,
                         BlendOperation op = BLEND_OPERATION_ADD );
 
    void setColorWrites( bool red, bool green, bool blue, bool alpha );
-
 };
 
 class RenderStateBlock{
 public:
    virtual ~RenderStateBlock() { }
 
-   virtual U32 getHash() const = 0;
+   virtual I64 getGUID() const = 0;
 
-   virtual const RenderStateBlockDescriptor& getDescriptor() = 0;
+   virtual RenderStateBlockDescriptor& getDescriptor() = 0;
 
+   bool operator == (RenderStateBlock& RSB){return Compare(RSB);}
+   bool operator != (RenderStateBlock& RSB){return !Compare(RSB);}
+   inline bool Compare(const RenderStateBlock& RSB) const {return getGUID() == RSB.getGUID();}
 };
 
-#define SET_STATE_BLOCK(X) GFX_DEVICE.setStateBlock(X)
-#define SET_DEFAULT_STATE_BLOCK() GFX_DEVICE.setDefaultStateBlock()
-#define SET_PREVIOUS_STATE_BLOCK() GFX_DEVICE.setPreviousStateBlock()
 #endif

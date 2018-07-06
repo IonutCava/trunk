@@ -22,8 +22,7 @@
 class AIEntity;
 /// NPC base class. Every character in the game is an NPC by default except the Player
 class NPC : public Character {
-
-public: 
+public:
 	/// NPC's don't need AI by default
 	NPC(SceneGraphNode* const node);
 	NPC(AIEntity* const aiEntity);

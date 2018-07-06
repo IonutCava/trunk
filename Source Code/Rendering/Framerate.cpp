@@ -1,13 +1,16 @@
 #include "Headers/Framerate.h"
 #include "Core/Headers/Console.h"
+#include "Core/Math/Headers/MathHelper.h"
+#include "Utility/Headers/Localization.h"
 
 ///No need for init to be threadsafe
-void Framerate::Init(U8 tfps){
+void Framerate::Init(U8 tfps) {
    assert(!_init);//<prevent double init
 
   _targetFrameRate = static_cast<F32>(tfps);
-   
+
 #if defined( __WIN32__ ) || defined( _WIN32 )
+
   QueryPerformanceCounter(&_startupTicks);
   if(!QueryPerformanceFrequency(&_ticksPerSecond)){
 	  assert("Current system does not support 'QueryPerformanceFrequency calls!");
@@ -23,46 +26,49 @@ void Framerate::Init(U8 tfps){
 }
 
 void Framerate::SetSpeedFactor(){
-	WriteLock w_lock(_speedLockMutex); 
+	LI currentTicks;
+
 #if defined( __WIN32__ ) || defined( _WIN32 )
-	 QueryPerformanceCounter(&_currentTicks);
+	 QueryPerformanceCounter(&currentTicks);
+	 QueryPerformanceFrequency(&_ticksPerSecond);
 #elif defined( __APPLE_CC__ ) // Apple OS X
 	//??
 #else
-	gettimeofday(&_currentTicks,NULL);
+	gettimeofday(&currentTicks,NULL);
 #endif
-  _speedfactor = static_cast<F32>((_currentTicks.QuadPart-_frameDelay.QuadPart)/ (static_cast<F32>(_ticksPerSecond.QuadPart) / _targetFrameRate));
+  _ticksPerMillisecond = static_cast<D32>(_ticksPerSecond.QuadPart) / 1000.0;
+  _speedfactor = static_cast<F32>((currentTicks.QuadPart-_frameDelay.QuadPart)/ (static_cast<F32>(_ticksPerSecond.QuadPart) / _targetFrameRate));
 //  CLAMP<F32>(_speedfactor,getMsToSec(1),1);
   if(_speedfactor <= 0) _speedfactor = 1;
-  _frameDelay = _currentTicks;
-  w_lock.unlock();
-  
-  WriteLock w_fps_lock(_fpsLockMutex);
-  ReadLock r_lock(_speedLockMutex);
+  _frameDelay = currentTicks;
+
   _fps = _targetFrameRate/_speedfactor;
-  r_lock.unlock();
   _frameTime = 1000.0f/ _fps;
-  w_fps_lock.unlock();
-  /*if(false)*/ benchmark();
+  _currentTicks = currentTicks;
+  if(_benchmark) benchmarkInternal();
 }
 
-void Framerate::benchmark(){
-	ReadLock r_fps_lock(_fpsLockMutex);
-	F32 fps = _fps;
-	r_fps_lock.unlock();
+void Framerate::benchmarkInternal(){
 
-	_averageFps += fps;
+	static U32 count = 0;
+	static F32 maxFps = std::numeric_limits<F32>::min();
+	static F32 minFps = std::numeric_limits<F32>::max();
+	static F32 averageFps = 60.0f;
+
+	F32 fps = _fps;
 
 	//Min/Max FPS (after ~50 rendered frames)
-	if(_count > 50){
-		_maxFps = Util::max(_maxFps, fps);
-		_minFps = Util::min(_minFps, fps);
+	if(count > 50){
+		maxFps = Util::max(maxFps, fps);
+		minFps = Util::min(minFps, fps);
 	}
+	
 	//Average FPS
-	if(_count > 500){
-		_averageFps /= _count;
-		PRINT_FN(Locale::get("FRAMERATE_FPS_OUTPUT"), _averageFps,_maxFps,_minFps, 1000.0f / _averageFps); 
-		_count = 0;
+	averageFps += fps;
+	if(count > 500){
+		averageFps /= count;
+		PRINT_FN(Locale::get("FRAMERATE_FPS_OUTPUT"), averageFps,maxFps, minFps, 1000.0f / averageFps);
+		count = 0;
 	}
-	++_count;
+	++count;
 }

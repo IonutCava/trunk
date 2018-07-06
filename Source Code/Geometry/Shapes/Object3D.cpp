@@ -2,94 +2,137 @@
 
 #include "Managers/Headers/SceneManager.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
+#include "Geometry/Material/Headers/Material.h"
 
-	Object3D::Object3D(ObjectType type, PrimitiveType vboType, ObjectFlag flag) : 
-											  SceneNode(TYPE_OBJECT3D),
-											  _update(false),
-											  _geometryType(type),
-											  _geometryFlag(flag),
-											  _geometry(GFX_DEVICE.newVBO(vboType)),
-											  _refreshVBO(true)
+Object3D::Object3D(const ObjectType& type,const PrimitiveType& vboType,const ObjectFlag& flag) :
+										  SceneNode(TYPE_OBJECT3D),
+										  _update(false),
+										  _geometryType(type),
+										  _geometryFlag(flag),
+										  _geometry(GFX_DEVICE.newVBO(vboType))
 
-	{}
+{
+	_renderInstance = New RenderInstance(this);
+}
 
-	Object3D::Object3D(const std::string& name, ObjectType type, PrimitiveType vboType, ObjectFlag flag) : 
-																		SceneNode(name,TYPE_OBJECT3D),
-																	    _update(false),
-																		_geometryType(type),
-																		_geometryFlag(flag),
-																		_geometry(GFX_DEVICE.newVBO(vboType)),
-																		_refreshVBO(true)
-	{}
+Object3D::Object3D(const std::string& name,const ObjectType& type,const PrimitiveType& vboType,const ObjectFlag& flag) :
+																	SceneNode(name,TYPE_OBJECT3D),
+																    _update(false),
+																	_geometryType(type),
+																	_geometryFlag(flag),
+																	_geometry(GFX_DEVICE.newVBO(vboType))
+{
+	_renderInstance = New RenderInstance(this);
+}
+
+Object3D::~Object3D()
+{
+	SAFE_DELETE(_geometry);
+	SAFE_DELETE(_renderInstance);
+}
 
 void Object3D::render(SceneGraphNode* const sgn){
-	GFX_DEVICE.renderModel(sgn->getNode<Object3D>());
-}
-
-VertexBufferObject* const Object3D::getGeometryVBO() {
-	assert(_geometry != NULL);
-	if(_refreshVBO){
-		_geometry->queueRefresh();
-		_refreshVBO = false;
+	if(!GFX_DEVICE.excludeFromStateChange(SceneNode::getType())){
+		_renderInstance->transform(sgn->getTransform());
 	}
-	
-	return _geometry;
+	GFX_DEVICE.renderInstance(_renderInstance);
 }
 
-void Object3D::onDraw(){
+void Object3D::onDraw(const RenderStage& currentStage){
+	SceneNode::onDraw(currentStage);
 
-	SceneNode::onDraw();
+    //check if we need to update vbo shader
+    if(getMaterial()){
+	    ShaderProgram* stageShader = getMaterial()->getShaderProgram(bitCompare(DEPTH_STAGE,currentStage) ? DEPTH_STAGE : FINAL_STAGE);
+	    assert(stageShader != NULL);
+		_geometry->setShaderProgram(stageShader);
+    }
 
-	if(getMaterial()){
-		ShaderProgram* finalStageShader = getMaterial()->getShaderProgram(FINAL_STAGE);
-		if(finalStageShader && getMaterial()->shaderProgramChanged()){
-			_geometry->setShaderProgram(finalStageShader);
+    //custom shaders ALWAYS override material shaders
+    if(_customShader){
+       _geometry->setShaderProgram(_customShader);
+    }
+}
+
+void Object3D::computeNormals() {
+	vec3<F32> v1 , v2, normal;
+	//Code from http://devmaster.net/forums/topic/1065-calculating-normals-of-a-mesh/
+
+	vectorImpl<vec3<F32> >* normal_buffer = new vectorImpl<vec3<F32> >[_geometry->getPosition().size()];
+
+	for( U32 i = 0; i < _geometry->getIndexCount(); i += 3 ) {
+		// get the three vertices that make the faces
+		const vec3<F32>& p1 = _geometry->getPosition(_geometry->getIndex(i+0));
+		const vec3<F32>& p2 = _geometry->getPosition(_geometry->getIndex(i+1));
+		const vec3<F32>& p3 = _geometry->getPosition(_geometry->getIndex(i+2));
+
+		v1.set(p2 - p1);
+		v2.set(p3 - p1);
+		normal.cross(v1, v2);
+		normal.normalize();
+
+		// Store the face's normal for each of the vertices that make up the face.
+		normal_buffer[_geometry->getIndex(i+0)].push_back( normal );
+		normal_buffer[_geometry->getIndex(i+1)].push_back( normal );
+		normal_buffer[_geometry->getIndex(i+2)].push_back( normal );
+	}
+
+	_geometry->resizeNormalCount(_geometry->getPosition().size());
+	// Now loop through each vertex vector, and avarage out all the normals stored.
+	vec3<F32> currentNormal;
+	for(U32 i = 0; i < _geometry->getPosition().size(); ++i ){
+		currentNormal.reset();
+		for(U32 j = 0; j < normal_buffer[i].size(); ++j ){
+			currentNormal += normal_buffer[i][j];
 		}
+		currentNormal /= normal_buffer[i].size();
+
+		_geometry->modifyNormalValue(i, currentNormal);
 	}
-	
+	SAFE_DELETE_ARRAY(normal_buffer);
 }
 
 void Object3D::computeTangents(){
 	//Code from: http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-13-normal-mapping/#header-1
     // inputs
-    vectorImpl<vec2<F32> > & uvs      = _geometry->getTexcoord();
-    //vectorImpl<vec3<F32> > & normals  = _geometry->getNormal();
-    // outputs
-    vectorImpl<vec3<F32> > & tangents = _geometry->getTangent();
-    vectorImpl<vec3<F32> > & bitangents = _geometry->getBiTangent();
+    const vectorImpl<vec2<F32> > & uvs      = _geometry->getTexcoord();
+    //const vectorImpl<vec3<F32> > & normals  = _geometry->getNormal();
+
+	vec3<F32> deltaPos1, deltaPos2;
+	vec2<F32> deltaUV1, deltaUV2;
+	vec3<F32> tangent, bitangent;
 
 	for ( U32 i=0; i< _geometry->getPosition().size(); i+=3){
  		// Shortcuts for vertices
-		vec3<F32>  v0 = _geometry->getPosition(i+0);
-		vec3<F32>  v1 = _geometry->getPosition(i+1);
-		vec3<F32>  v2 = _geometry->getPosition(i+2);
-	 
+		const vec3<F32>&  v0 = _geometry->getPosition(i+0);
+		const vec3<F32>&  v1 = _geometry->getPosition(i+1);
+		const vec3<F32>&  v2 = _geometry->getPosition(i+2);
+
 		// Shortcuts for UVs
-		vec2<F32> & uv0 = uvs[i+0];
-		vec2<F32> & uv1 = uvs[i+1];
-		vec2<F32> & uv2 = uvs[i+2];
-	 
+		const vec2<F32> & uv0 = uvs[i+0];
+		const vec2<F32> & uv1 = uvs[i+1];
+		const vec2<F32> & uv2 = uvs[i+2];
+
 		// Edges of the triangle : postion delta
-		vec3<F32> deltaPos1 = v1-v0;
-		vec3<F32> deltaPos2 = v2-v0;
-	 
+		deltaPos1.set(v1-v0);
+		deltaPos2.set(v2-v0);
+
 		// UV delta
-		vec2<F32> deltaUV1 = uv1-uv0;
-		vec2<F32> deltaUV2 = uv2-uv0;
+		deltaUV1.set(uv1-uv0);
+		deltaUV2.set(uv2-uv0);
 
 		F32 r = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
-		vec3<F32> tangent = (deltaPos1 * deltaUV2.y   - deltaPos2 * deltaUV1.y)*r;
-		vec3<F32> bitangent = (deltaPos2 * deltaUV1.x   - deltaPos1 * deltaUV2.x)*r;
+		tangent.set((deltaPos1 * deltaUV2.y   - deltaPos2 * deltaUV1.y)*r);
+		bitangent.set((deltaPos2 * deltaUV1.x   - deltaPos1 * deltaUV2.x)*r);
 
 		// Set the same tangent for all three vertices of the triangle.
 		// They will be merged later, in vboindexer.cpp
-		tangents.push_back(tangent);
-		tangents.push_back(tangent);
-		tangents.push_back(tangent);
- 
+		_geometry->addTangent(tangent);
+		_geometry->addTangent(tangent);
+		_geometry->addTangent(tangent);
 		// Same thing for binormals
-		bitangents.push_back(bitangent);
-		bitangents.push_back(bitangent);
-		bitangents.push_back(bitangent);
+		_geometry->addBiTangent(bitangent);
+		_geometry->addBiTangent(bitangent);
+		_geometry->addBiTangent(bitangent);
 	}
 }

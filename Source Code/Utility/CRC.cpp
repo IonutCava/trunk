@@ -1,7 +1,6 @@
 #include "Utility/Headers/CRC.h"
 
 namespace Util {
-	
 	//=====================================================
 	U32 CRC32::mTable[0x100] = {
 		0x00000000,0x77073096,0xEE0E612C,0x990951BA,0x076DC419,0x706AF48F,0xE963A535,0x9E6495A3,
@@ -40,7 +39,7 @@ namespace Util {
 
 	//=====================================================
 
-	U32 CRC32::Reflect(U32 v,int bits)
+	U32 CRC32::Reflect(U32 v, I32 bits)
 	{
 		U32 ret = 0;
 		I32 i;

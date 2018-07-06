@@ -2,7 +2,6 @@
 unsigned int d3dTextureTypeTable[TextureType_PLACEHOLDER];
 
 namespace D3D_ENUM_TABLE {
-
 	void fill(){
 		d3dTextureTypeTable[TEXTURE_1D] = 0;
 		d3dTextureTypeTable[TEXTURE_2D] = 1;
@@ -12,6 +11,5 @@ namespace D3D_ENUM_TABLE {
 		d3dTextureTypeTable[TEXTURE_CUBE_ARRAY] = 5;
 		d3dTextureTypeTable[TEXTURE_2D_MS] = 6;
 		d3dTextureTypeTable[TEXTURE_2D_ARRAY_MS] = 7;
-
 	}
 }

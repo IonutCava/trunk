@@ -23,14 +23,14 @@
 class Terrain;
 class WaterPlane;
 
-class MainScene : public Scene{
-
+class MainScene : public Scene {
 public:
-	MainScene() : Scene(), 
+	MainScene() : Scene(),
 				  _waterGraphNode(NULL),
 				  _water(NULL),
 				  _beep(NULL),
-				  _mousePressed(false){}
+				  _mousePressed(false),
+                  _freeflyCamera(false){}
 
 	/*General Scene Requirement*/
 	void preRender();
@@ -39,13 +39,12 @@ public:
 	bool unload();
 	bool loadResources(bool continueOnErrors);
 
-
 private:
 	/*Specific Scene Requirement*/
 	void renderEnvironment(bool waterReflection);
 	bool updateLights();
 	void processInput();
-	void processTasks(U32 time);
+	void processTasks(const U32 time);
 	void test(boost::any a, CallbackParam b);
 	void onKeyDown(const OIS::KeyEvent& key);
 	void onKeyUp(const OIS::KeyEvent& key);
@@ -54,12 +53,13 @@ private:
 	void onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button);
 
 private:
-	
+
 	vec2<F32> _sunAngle;
 	vec4<F32> _sunvector,_sunColor;
 	F32  _sun_cosy;
 	vec2<F32> _prevMouse;
 	bool _mousePressed;
+    bool _freeflyCamera;
 	AudioDescriptor* _beep;
 	vectorImpl<Terrain*> _visibleTerrains;
 	WaterPlane* _water;

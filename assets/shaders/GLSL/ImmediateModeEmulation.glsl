@@ -1,27 +1,47 @@
 -- Vertex
-attribute vec2 inTexCoordData;
-attribute vec4 inColorData;
 
-varying vec2 _texCoord;
-uniform mat4 projectionMatrix;
+in vec2 inTexCoordData;
+in vec4 inColorData;
+in vec3 inVertexData;
+
+out vec2 _texCoord;
+out vec4 _color;
+
+uniform mat4 dvd_ModelViewProjectionMatrix;
 
 void main(){
   _texCoord = inTexCoordData;
-  gl_FrontColor = inColorData;
-  gl_Position = projectionMatrix * gl_ModelViewMatrix * gl_Vertex;
+  _color = inColorData;
+  gl_Position = dvd_ModelViewProjectionMatrix * vec4(inVertexData,1.0);
 } 
-
 
 -- Fragment
 
-uniform sampler2D texture;
+uniform sampler2D tex;
 uniform bool useTexture;
-varying vec2 _texCoord;
+
+in  vec2 _texCoord;
+in  vec4 _color;
+out vec4 _colorOut;
 
 void main(){
 	if(!useTexture){
-		gl_FragColor = gl_Color;
+		_colorOut = _color;
 	}else{
-		gl_FragColor = texture(texture, _texCoord)/* * gl_Color*/;
+		_colorOut = texture(tex, _texCoord);
+		_colorOut.rgb += _color.rgb;
 	}
+}
+
+-- Fragment.GUI
+
+uniform sampler2D tex;
+
+in  vec2 _texCoord;
+in  vec4 _color;
+out vec4 _colorOut;
+
+void main(){
+	_colorOut.rgb = _color.rgb;
+	_colorOut.a = texture(tex, _texCoord).a;
 }

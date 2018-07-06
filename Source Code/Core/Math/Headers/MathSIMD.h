@@ -32,7 +32,7 @@
 		_asm fld qword ptr [esp+4]
 		_asm fsqrt
 		_asm ret 8
-	} 
+	}
 
 	template<class T>
 	inline T square_root_tpl(T n){
@@ -49,7 +49,6 @@
 		__m128 add1 = _mm_add_ps(add0, swp1);
 		return add1;
 	}
-
 
 	namespace Mat4{
 		///multiply
@@ -130,22 +129,22 @@
 		}
 
 		//ToDo: Align memory!!!!
-		inline void	Multiply(const float * a, const float * b, float * r)
+		inline void	Multiply(const F32 * a, const F32 * b, F32 * r)
 		{
-			assert(a != NULL && 
+			assert(a != NULL &&
 				   b != NULL &&
 				   r != NULL);
-			/*assert(IsAligned(a) && 
-				   IsAligned(b) && 
+			/*assert(IsAligned(a) &&
+				   IsAligned(b) &&
 				   IsAligned(r));*/
 
 			__m128 a_line, b_line, r_line;
-			for (int i=0; i<16; i+=4) {
+			for (I32 i=0; i<16; i+=4) {
 				// unroll the first step of the loop to avoid having to initialize r_line to zero
 				a_line = /*_mm_load_ps*/_mm_loadu_ps(a);         // a_line = vec4(column(a, 0))
 				b_line = _mm_set1_ps(b[i]);      // b_line = vec4(b[i][0])
 				r_line = _mm_mul_ps(a_line, b_line); // r_line = a_line * b_line
-				for (int j=1; j<4; j++) {
+				for (I32 j=1; j<4; j++) {
 					a_line = /*_mm_load_ps*/_mm_loadu_ps(&a[j*4]); // a_line = vec4(column(a, j))
 					b_line = _mm_set1_ps(b[i+j]);  // b_line = vec4(b[i][j])
 										 // r_line += a_line * b_line
@@ -164,10 +163,10 @@
 					(mat[0] * mat[9] * mat[6]));
 		}
 
-		__forceinline void Inverse(const float *src,float * dest)
+		__forceinline void Inverse(const F32 *src,F32 * dest)
 		{
 		   __m128 minor0, minor1, minor2, minor3;
-		   __m128 row0, row2, det; 
+		   __m128 row0, row2, det;
 		   __m128 row1 = _mm_setzero_ps();
 		   __m128 row3 = _mm_setzero_ps();
 		   __m128 tmp1 = _mm_setzero_ps();
@@ -255,6 +254,5 @@
 		   _mm_storeh_pi((__m64*)(dest+14), minor3);
 		}
 	}
-
 
 #endif

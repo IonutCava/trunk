@@ -15,7 +15,6 @@
    along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #ifndef D3D_SHADER_H_
 #define D3D_SHADER_H_
 
@@ -23,10 +22,11 @@
 
 class d3dShader : public Shader{
 public:
-	d3dShader(const std::string& name, ShaderType type) : Shader(name,type) {}
+	d3dShader(const std::string& name,const ShaderType& type, const bool optimise = false) : Shader(name,type,optimise) {}
 	~d3dShader(){}
 
 	bool load(const std::string& source){return true;}
+	bool compile() {return true;}
 	void validate(){}
 };
 

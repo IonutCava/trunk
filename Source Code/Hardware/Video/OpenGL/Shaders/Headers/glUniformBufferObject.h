@@ -17,23 +17,41 @@
 
 #ifndef GL_UNIFORM_BUFFER_OBJECT_H_
 #define GL_UNIFORM_BUFFER_OBJECT_H_
+
 #include "Hardware/Video/OpenGL/Headers/glResources.h"
+#include "Utility/Headers/GUIDWrapper.h"
+#include "Utility/Headers/Vector.h"
+
+enum UBO_NAME {
+	Matrices_UBO  = 0,
+	Materials_UBO = 1,
+	Lights_UBO    = 2,
+	UBO_PLACEHOLDER = 3
+};
 
 ///Base class for shader uniform blocks
-class glUniformBufferObject {
+class glUniformBufferObject : public GUIDWrapper {
 public:
 	glUniformBufferObject();
 	~glUniformBufferObject();
     ///Create a new buffer object to hold our uniform shader data
     ///if "dynamic" is false, the buffer will be created using GL_STATIC_DRAW
     ///if "dynamic" is true, the buffer will use eiter GL_STREAM_DRAW or GL_DYNAMIC_DRAW depending on the "stream" param
-    ///default value will be a GL_DYNAMIC_DRAW, as most data will change once every few frames 
+    ///default value will be a GL_DYNAMIC_DRAW, as most data will change once every few frames
     ///(lights might change per frame, so stream will be better in that case)
 	void Create(GLint bufferIndex, bool dynamic = true, bool stream = false);
-	virtual void FillData() = 0;
+	///Reserve primitiveCount * implementation specific primitive size of space in the buffer and fill it with NULL values
+	virtual void ReserveBuffer(GLuint primitiveCount) = 0;
+	virtual void ChangeSubData(GLintptr offset,	GLsizeiptr size, const GLvoid *data);
+	virtual bool bindUniform(GLuint shaderProgramHandle, GLuint uboLocation);
+	virtual bool bindBufferRange(GLintptr offset, GLsizeiptr size);
+	virtual bool bindBufferBase();
+	static GLuint getBindingIndice();
 
 protected:
+	static vectorImpl<GLuint> _bindingIndices;
 	GLuint _UBOid;
     GLenum _usage;
+	GLuint _bindIndex;
 };
 #endif

@@ -1,26 +1,31 @@
 #include "Headers/GUIConsoleCommandParser.h"
 
 #include "Core/Headers/ParamHandler.h"
+#include "Managers/Headers/AIManager.h"
 #include "Managers/Headers/SceneManager.h"
+#include "Managers/Headers/ShaderManager.h"
 #include "AI/PathFinding/Headers/NavigationMesh.h" ///< For NavMesh creation
 
 GUIConsoleCommandParser::GUIConsoleCommandParser() : _sound(NULL)
 {
-	_commandMap.insert(std::make_pair("say",boost::bind(&GUIConsoleCommandParser::handleSayCommand,this,_1)));
-	_commandMap.insert(std::make_pair("quit",boost::bind(&GUIConsoleCommandParser::handleQuitCommand,this,_1)));
-	_commandMap.insert(std::make_pair("help",boost::bind(&GUIConsoleCommandParser::handleHelpCommand,this,_1)));
-	_commandMap.insert(std::make_pair("editparam",boost::bind(&GUIConsoleCommandParser::handleEditParamCommand,this,_1)));
-	_commandMap.insert(std::make_pair("playsound",boost::bind(&GUIConsoleCommandParser::handlePlaySoundCommand,this,_1)));
-    _commandMap.insert(std::make_pair("createnavmesh",boost::bind(&GUIConsoleCommandParser::handleNavMeshCommand,this,_1)));
-	_commandMap.insert(std::make_pair("invalidcommand",boost::bind(&GUIConsoleCommandParser::handleInvalidCommand,this,_1)));
-
-
+	_commandMap.insert(std::make_pair("say",DELEGATE_BIND(&GUIConsoleCommandParser::handleSayCommand,this,_1)));
+	_commandMap.insert(std::make_pair("quit",DELEGATE_BIND(&GUIConsoleCommandParser::handleQuitCommand,this,_1)));
+	_commandMap.insert(std::make_pair("help",DELEGATE_BIND(&GUIConsoleCommandParser::handleHelpCommand,this,_1)));
+	_commandMap.insert(std::make_pair("editparam",DELEGATE_BIND(&GUIConsoleCommandParser::handleEditParamCommand,this,_1)));
+	_commandMap.insert(std::make_pair("playsound",DELEGATE_BIND(&GUIConsoleCommandParser::handlePlaySoundCommand,this,_1)));
+    _commandMap.insert(std::make_pair("createnavmesh",DELEGATE_BIND(&GUIConsoleCommandParser::handleNavMeshCommand,this,_1)));
+	_commandMap.insert(std::make_pair("recompileshader",DELEGATE_BIND(&GUIConsoleCommandParser::handleShaderRecompileCommand,this,_1)));
+	_commandMap.insert(std::make_pair("setfov",DELEGATE_BIND(&GUIConsoleCommandParser::handleFOVCommand,this,_1)));
+	_commandMap.insert(std::make_pair("invalidcommand",DELEGATE_BIND(&GUIConsoleCommandParser::handleInvalidCommand,this,_1)));
+	
 	_commandHelp.insert(std::make_pair("say",Locale::get("CONSOLE_SAY_COMMAND_HELP")));
 	_commandHelp.insert(std::make_pair("quit",Locale::get("CONSOLE_QUIT_COMMAND_HELP")));
 	_commandHelp.insert(std::make_pair("help",Locale::get("CONSOLE_HELP_COMMAND_HELP")));
 	_commandHelp.insert(std::make_pair("editparam",Locale::get("CONSOLE_EDITPARAM_COMMAND_HELP")));
 	_commandHelp.insert(std::make_pair("playsound",Locale::get("CONSOLE_PLAYSOUND_COMMAND_HELP")));
-    _commandHelp.insert(std::make_pair("createNavMesh",Locale::get("CONSOLE_NAVMESH_COMMAND_HELP")));
+    _commandHelp.insert(std::make_pair("createnavmesh",Locale::get("CONSOLE_NAVMESH_COMMAND_HELP")));
+	_commandHelp.insert(std::make_pair("recompileshader",Locale::get("CONSOLE_SHADER_RECOMPILE_COMMAND_HELP")));
+	_commandHelp.insert(std::make_pair("setfov",Locale::get("CONSOLE_CHANGE_FOV_COMMAND_HELP")));
 	_commandHelp.insert(std::make_pair("invalidhelp",Locale::get("CONSOLE_INVALID_HELP_ARGUMENT")));
 }
 
@@ -41,7 +46,7 @@ bool GUIConsoleCommandParser::processCommand(const std::string& commandString){
 			std::string commandArgs = commandString.substr(commandEnd + 1, commandString.length() - (commandEnd + 1));
 			if(commandString.compare(commandArgs) == 0) commandArgs.clear();
 			//convert command to lower case
-			for(std::string::size_type i=0; i < command.length(); i++){		
+			for(std::string::size_type i=0; i < command.length(); i++){
 				command[i] = tolower(command[i]);
 			}
 			if(_commandMap.find(command) != _commandMap.end()){
@@ -54,7 +59,7 @@ bool GUIConsoleCommandParser::processCommand(const std::string& commandString){
 		} else	{
 			PRINT_FN("%s",commandString.c_str()); // no commands, just output what was typed
 		}
-	} 
+	}
 	return true;
 }
 
@@ -89,9 +94,7 @@ void GUIConsoleCommandParser::handleHelpCommand(const std::string& args){
 
 void GUIConsoleCommandParser::handleEditParamCommand(const std::string& args){
 	if(ParamHandler::getInstance().isParam(args)){
-		PRINT_FN(Locale::get("CONSOLE_EDITPARAM_FOUND"), args.c_str(), 
-														 ParamHandler::getInstance().getType(args),
-														 "N/A", "N/A");
+		PRINT_FN(Locale::get("CONSOLE_EDITPARAM_FOUND"), args.c_str(), "N/A", "N/A", "N/A");
 	}else{
 		PRINT_FN(Locale::get("CONSOLE_EDITPARAM_NOT_FOUND"), args.c_str());
 	}
@@ -126,7 +129,6 @@ void GUIConsoleCommandParser::handlePlaySoundCommand(const std::string& args){
 	}else{
 		ERROR_FN(Locale::get("CONSOLE_PLAY_SOUND_INVALID_FILE"),filename.c_str());
 	}
-	
 }
 
 void GUIConsoleCommandParser::handleNavMeshCommand(const std::string& args){
@@ -139,8 +141,26 @@ void GUIConsoleCommandParser::handleNavMeshCommand(const std::string& args){
         }
     }
     Navigation::NavigationMesh* temp = New Navigation::NavigationMesh();
-    temp->build(sgn,false);
-    SAFE_DELETE(temp);
+    temp->setFileName(GET_ACTIVE_SCENE()->getName());
+    if(!temp->load(sgn)){
+        temp->build(sgn,false);
+    }
+    temp->save();
+    AIManager::getInstance().addNavMesh(temp);
+}
+
+void GUIConsoleCommandParser::handleShaderRecompileCommand(const std::string& args){
+	ShaderManager::getInstance().recompileShaderProgram(args);
+}
+
+void GUIConsoleCommandParser::handleFOVCommand(const std::string& args){
+	if(!Util::isNumber(args)){
+		ERROR_FN(Locale::get("CONSOLE_INVALID_NUMBER"));
+		return;
+	}
+	I32 FoV = (atoi(args.c_str()));
+	CLAMP<I32>(FoV,40,140);
+	GFX_DEVICE.setHorizontalFoV(FoV);
 }
 
 void GUIConsoleCommandParser::handleInvalidCommand(const std::string& args){

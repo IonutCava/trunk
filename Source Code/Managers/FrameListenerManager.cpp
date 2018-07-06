@@ -18,7 +18,6 @@ void FrameListenerManager::registerFrameListener(FrameListener* listener){
 	}else{
 		_listeners.insert(std::make_pair(listener->getName(), listener));
 	}
-
 }
 
 ///Remove an existent Frame Listener from our map

@@ -2,6 +2,7 @@
 #include "Headers/SubMesh.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Math/Headers/Transform.h"
 
 void Mesh::updateBBatCurrentFrame(SceneGraphNode* const sgn){
 	if(!ParamHandler::getInstance().getParam<bool>("mesh.playAnimations")) return;
@@ -47,17 +48,15 @@ void Mesh::postLoad(SceneGraphNode* const sgn){
 	Object3D::postLoad(sgn);
 }
 
-void Mesh::onDraw(){
-
-	if(!isLoaded()) return;
-	Object3D::onDraw();
+void Mesh::onDraw(const RenderStage& currentStage){
+	if(getState() != RES_LOADED) return;
+	Object3D::onDraw(currentStage);
 }
-
 
 void Mesh::updateTransform(SceneGraphNode* const sgn){
 }
 
 /// Called from SceneGraph "sceneUpdate"
-void Mesh::sceneUpdate(U32 sceneTime){
+void Mesh::sceneUpdate(const U32 sceneTime,SceneGraphNode* const sgn){
+	Object3D::sceneUpdate(sceneTime,sgn);
 }
-

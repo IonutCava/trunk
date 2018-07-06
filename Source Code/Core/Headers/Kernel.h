@@ -20,7 +20,7 @@
 
 #include "core.h"
 #include <boost/noncopyable.hpp>
-#include "Hardware/Platform/Headers/Thread.h" 
+#include "Hardware/Platform/Headers/Thread.h"
 
 class GUI;
 class Task;
@@ -28,10 +28,12 @@ class Camera;
 class PXDevice;
 class GFXDevice;
 class SFXDevice;
+class Application;
 class LightManager;
 class SceneManager;
 class CameraManager;
-
+class ShaderManager;
+class FrameListenerManager;
 ///Input
 namespace OIS {
 	class KeyEvent;
@@ -49,18 +51,33 @@ class InputInterface;
 class Kernel : private boost::noncopyable {
 
 public:
-	Kernel(I32 argc, char **argv);
+	Kernel(I32 argc, char **argv, Application& parentApp);
 	~Kernel();
 
 	I8 Initialize(const std::string& entryPoint);
 	void Shutdown();
-	void beginLogicLoop();
 
-	static void MainLoopApp();
-	inline static void MainLoopStatic() {Kernel::_mainLoopCallback();}
-	static void Idle();
+	///This sets the _mainLoopCallback and starts the main loop
+	void beginLogicLoop();
+	///Our main loop entry function. The actual callback can be changed at runtime (i.e. pausing rendering in some menus, or pre-rendering a frame offscreen)
+	inline static void MainLoopStatic() {_mainLoopCallback();}
+	///Our main application rendering loop. Call input requests, physics calculations, pre-rendering, rendering,post-rendering etc
+		   static void MainLoopApp();
+	///Called after a swap-buffer call and before a clear-buffer call.
+	///In a GPU-bound application, the CPU will wait on the GPU to finish processing the frame so this should keep it busy (old-GLUT heritage)
+		   static void Idle();
 	///Update all engine components that depend on the current resolution
 	static void updateResolutionCallback(I32 w, I32 h);
+
+public:
+	GFXDevice& getGFXDevice() const {return _GFX;}
+	SFXDevice& getSFXDevice() const {return _SFX;}
+	PXDevice&  getPXDevice()  const {return _PFX;}
+	/// get elapsed time since kernel initialization
+	inline U32 getCurrentTime()   const {return _currentTime;}
+	inline U32 getCurrentTimeMS() const {return _currentTimeMS;}
+	/// get a pointer to the kernel's threadpool to add,remove,pause or stop tasks
+	inline boost::threadpool::pool* const getThreadPool() {assert(_mainTaskPool != NULL); return _mainTaskPool;}
 
 public: ///Input
 	///Key pressed
@@ -84,20 +101,13 @@ public: ///Input
 	///Mouse button released
 	bool onMouseClickUp(const OIS::MouseEvent& arg,OIS::MouseButtonID button);
 
-	GFXDevice& getGFXDevice() const {return _GFX;}
-	SFXDevice& getSFXDevice() const {return _SFX;}
-	PXDevice&  getPXDevice()  const {return _PFX;}
-	/// get elapsed time since kernel initialization
-	inline static U32 getCurrentTime()   {return _currentTime;}
-	inline static U32 getCurrentTimeMS() {return _currentTimeMS;}
-	boost::threadpool::pool* const getThreadPool() {assert(_mainTaskPool != NULL); return _mainTaskPool;}
-
 private:
    static void FirstLoop();
    bool MainLoopScene();
    bool presentToScreen();
 
 private:
+	Application&    _APP;
 	///Access to the GPU
 	GFXDevice&		_GFX;
 	///Access to the audio device
@@ -108,6 +118,10 @@ private:
 	GUI&			_GUI;
 	///The SceneManager/ Scene Pool
 	SceneManager&	_sceneMgr;
+    ///The ShaderMAnager
+    ShaderManager&  _shaderMgr;
+	///The manager class responsible for sending frame update events
+	FrameListenerManager& _frameMgr;
 	///Pointer to the current camera
 	Camera*			_camera;
 	///Access to all of the input devices

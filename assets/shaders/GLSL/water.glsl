@@ -1,28 +1,28 @@
 -- Vertex
 #include "vboInputData.vert"
-varying vec3 vPixToLight;		
-varying vec3 vPixToEye;	
-varying vec4 _vertexMV;
-varying vec4 vVertexFromLightView;
+out vec3 vPixToLight;		
+out vec3 vPixToEye;	
+out vec4 _vertexMV;
+out vec4 vVertexFromLightView;
 
 uniform vec3 water_bb_min;
 uniform vec3 water_bb_max;
-uniform mat4 lightProjectionMatrices[MAX_SHADOW_CASTING_LIGHTS];
+uniform mat4 dvd_lightProjectionMatrices[MAX_SHADOW_CASTING_LIGHTS];
 
 void main(void)
 {
 	computeData();
 	
-	
-	_vertexMV = vertexData;
-	vec3 vPositionNormalized = (vertexData.xyz - water_bb_min.xyz) / (water_bb_max.xyz - water_bb_min.xyz);
+
+	_vertexMV = dvd_Vertex;
+	vec3 vPositionNormalized = (dvd_Vertex.xyz - water_bb_min.xyz) / (water_bb_max.xyz - water_bb_min.xyz);
 	_texCoord = vPositionNormalized.xz;
 	
 	vPixToLight = -(gl_LightSource[0].position.xyz);
-	vPixToEye = -vec3(gl_ModelViewMatrix * vertexData);	
+	vPixToEye = -vec3(dvd_ModelViewMatrix * dvd_Vertex);	
 
-	vVertexFromLightView = lightProjectionMatrices[0] * vertexData;
-	gl_Position = projectionMatrix * gl_ModelViewMatrix * vertexData;
+	vVertexFromLightView = dvd_lightProjectionMatrices[0] * dvd_Vertex;
+	gl_Position = dvd_ModelViewProjectionMatrix * dvd_Vertex;
 	
 }
 
@@ -33,16 +33,18 @@ uniform float noise_tile;
 uniform float noise_factor;
 uniform float time;
 uniform float water_shininess;
+uniform bool  underwater;
 uniform mat4  material;
+uniform mat4  dvd_ModelViewMatrix;
 uniform sampler2D texWaterReflection;
 uniform sampler2D texWaterNoiseNM;
 
-varying vec3 vPixToLight;
-varying vec3 vPixToEye;	
-varying vec4 _vertexMV;
-varying vec4 vVertexFromLightView;
-varying vec2 _texCoord;
-
+in vec3 vPixToLight;
+in vec3 vPixToEye;
+in vec4 _vertexMV;
+in vec4 vVertexFromLightView;
+in vec2 _texCoord;
+out vec4 _colorOut;
 ///Global NDotL, basically
 float iDiffuse;
 
@@ -67,9 +69,12 @@ void main (void)
 	
 	vec2 uvReflection = vec2(gl_FragCoord.x/screenDimension.x, gl_FragCoord.y/screenDimension.y);
 	vec2 uvFinal = uvReflection.xy + noise_factor*normal.xy;
+	if(!underwater){
+		uvFinal.x = 1.0 - uvFinal.x;
+	}
 	vec4 cDiffuse = texture(texWaterReflection, uvFinal);
 	
-	vec3 N = normalize(vec3(gl_ModelViewMatrix * vec4(normal.x, normal.z, normal.y, 0.0)));
+	vec3 N = normalize(vec3(dvd_ModelViewMatrix * vec4(normal.x, normal.z, normal.y, 0.0)));
 	vec3 L = normalize(vPixToLight);
 	vec3 V = normalize(vPixToEye);
 	float iSpecular = pow(clamp(dot(reflect(-L, N), V), 0.0, 1.0), water_shininess);
@@ -82,7 +87,7 @@ void main (void)
 	float shadow = 1.0;
 	float distance = length(vPixToEye);
 	if(distance < distance_max) {
-		applyShadowDirectional(0, shadow);
+		applyShadowDirectional(iDiffuse, 0, shadow);
 	}
 	/////////////////////////
 
@@ -91,7 +96,7 @@ void main (void)
 	color.a	= Fresnel(V, N, 0.5, 2.0);
     applyFog(color);
 
-	gl_FragColor = color;
+	_colorOut = color;
 }
 
 

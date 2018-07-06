@@ -1,34 +1,32 @@
 -- Vertex
-#include "vboInputData.vert"
-varying vec3 vertex;
-varying vec3 vertexMV;
+in vec3  inVertexData;
+uniform mat4 dvd_ModelViewProjectionMatrix;
+out vec3 _vertex;
 
 void main(void){
-	computeData();
-	vertex = normalize(vertexData.xyz);
-	vertexMV = normalize(gl_ModelViewMatrix * vec4(-vertexData.x, vertexData.y, -vertexData.z, 1.0)).xyz;	
-	
-	gl_Position =  projectionMatrix * gl_ModelViewMatrix * vertexData;
-	
+	vec4 dvd_Vertex     = vec4(inVertexData,1.0);
+	_vertex = normalize(dvd_Vertex.xyz);
+	gl_Position = dvd_ModelViewProjectionMatrix * dvd_Vertex;
 }
 
 -- Fragment
 
-varying vec3 vertex;
-varying vec3 vertexMV;
+in vec3 _vertex;
+out vec4 _skyColor;
 
 uniform bool enable_sun;
 uniform vec3 sun_vector;
 
 uniform samplerCube texSky;
 
+
 void main (void){
 
-	vec4 sky_color = texture(texSky, vertex.xyz);
+	vec4 sky_color = texture(texSky, _vertex.xyz);
 	
 	if(enable_sun){
 
-		vec3 vert = normalize(vertex);
+		vec3 vert = normalize(_vertex);
 		vec3 sun = normalize(sun_vector);
 		
 		float day_factor = max(-sun.y, 0.0);
@@ -41,11 +39,11 @@ void main (void){
 		float sun_factor = clamp(pow(dotv, pow_factor), 0.0, 1.0);
 		
 		
-		gl_FragColor = sky_color * day_factor + sun_color * sun_factor;
+		_skyColor = sky_color * day_factor + sun_color * sun_factor;
 	
-	}
-	else
-		gl_FragColor = sky_color;
-		
-	gl_FragColor.a = 0.0;
+    }else{
+		_skyColor = sky_color;
+    }
+
+	_skyColor.a = 1.0;
 }

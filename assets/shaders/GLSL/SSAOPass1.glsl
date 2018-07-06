@@ -1,7 +1,7 @@
 -- Vertex
 #include "vboInputData.vert"
-varying vec3 normals;
-varying float depth;
+out vec3 normals;
+out float depth;
 
 uniform vec2 zPlanes;
 
@@ -9,10 +9,10 @@ float LinearDepth(in float inDepth);
 
 void main(void){
 	computeData();
-	normals = normalize(gl_NormalMatrix * normalData);
-	vec4 vToEye = gl_ModelViewMatrix * vertexData;	
+	normals = normalize(dvd_NormalMatrix * dvd_Normal);
+	vec4 vToEye = dvd_ModelViewMatrix * dvd_Vertex;	
 	depth = LinearDepth(vToEye.z);
-	gl_Position = gl_ModelViewProjectionMatrix * vertexData;
+	gl_Position = dvd_ModelViewProjectionMatrix * dvd_Vertex;
 }
 
 float LinearDepth(in float inDepth){
@@ -26,10 +26,11 @@ float LinearDepth(in float inDepth){
 
 -- Fragment
 
-varying vec3 normals;
-varying float depth;
+in vec3 normals;
+in float depth;
+out vec4 _colorOut;
 
 void main(void){
 
-   gl_FragData[0] = vec4(normalize(normals),depth);
+   _colorOut = vec4(normalize(normals),depth);
 }

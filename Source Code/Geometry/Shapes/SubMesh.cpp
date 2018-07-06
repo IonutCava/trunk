@@ -21,18 +21,17 @@ void SubMesh::postLoad(SceneGraphNode* const sgn){
 	Object3D::postLoad(sgn);
 }
 
-void SubMesh::onDraw(){
-	Object3D::onDraw();
+void SubMesh::onDraw(const RenderStage& currentStage){
+	Object3D::onDraw(currentStage);
 }
 
 /// Called from SceneGraph "sceneUpdate"
-void SubMesh::sceneUpdate(U32 sceneTime){
+void SubMesh::sceneUpdate(const U32 sceneTime,SceneGraphNode* const sgn){
+	Object3D::sceneUpdate(sceneTime, sgn);
 }
+
 void SubMesh::updateTransform(SceneGraphNode* const sgn){
 }
+
 void SubMesh::updateBBatCurrentFrame(SceneGraphNode* const sgn){
 }
-
-
-
-

@@ -26,15 +26,33 @@
 
 #include "Hardware/Platform/Headers/PlatformDefines.h"
 #include <string>
-
+#include <sstream>
+	
 namespace Util {
-
 	template <typename T>
 	class mat4;
 	template <typename T>
 	class vec3;
 	template <typename T>
 	class Quaternion;
+
+    inline void ReplaceStringInPlace(std::string& subject, const std::string& search, const std::string& replace) {
+        size_t pos = 0;
+        while((pos = subject.find(search, pos)) != std::string::npos) {
+             subject.replace(pos, search.length(), replace);
+            pos += replace.length();
+        }
+    }
+
+	inline bool isNumber(const std::string& s){
+		std::stringstream ss;
+		ss << s;
+		F32 number;
+	    ss >> number;
+	    if(ss.good()) return false;
+        else if(number == 0 && s[0] != 0) return false;
+		return true;
+	}
 
 	template<class T>
 	inline std::string toString(const T& data){
@@ -60,7 +78,3 @@ namespace Util {
 }
 
 #endif
-
-
-
-

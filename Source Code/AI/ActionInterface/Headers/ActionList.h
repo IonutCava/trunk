@@ -33,7 +33,6 @@ public:
 	virtual void processMessage(AIEntity* sender, AIMsg msg, const boost::any& msg_content) = 0;
 protected:
 	AIEntity*  _entity;
-
 };
 
 #endif

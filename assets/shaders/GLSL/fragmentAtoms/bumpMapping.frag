@@ -2,9 +2,9 @@
 //Normal or BumpMap
 uniform sampler2D texBump;
 uniform vec2 zPlanes;
-uniform float parallax_factor;
-uniform float relief_factor;
-uniform int bumpMapLightId;
+uniform float parallax_factor = 1.0f;
+uniform float relief_factor = 1.0f;
+uniform int bumpMapLightId = 0;
 
 #define MODE_PHONG      0
 #define MODE_BUMP		1
@@ -61,9 +61,9 @@ vec4 NormalMapping(in vec2 uv){
 	return Phong(uv, normalTBN);
 }
 
-vec4 ParallaxMapping(in vec2 uv, in vec3 pixToEyeTBN, in vec3 pixToLightTBN){
-	vec3 lightVecTBN = normalize(pixToLightTBN);
-	vec3 viewVecTBN = normalize(pixToEyeTBN);
+vec4 ParallaxMapping(in vec2 uv, in vec3 pixelToEyeTBN, in vec3 pixelToLightTBN){
+	vec3 lightVecTBN = normalize(pixelToLightTBN);
+	vec3 viewVecTBN = normalize(pixelToEyeTBN);
 	
 	//Offset, scale and biais
 	float height = texture(texBump, uv).a;
@@ -76,7 +76,7 @@ vec4 ParallaxMapping(in vec2 uv, in vec3 pixToEyeTBN, in vec3 pixToLightTBN){
 }
 
 vec4 ReliefMapping(in int _light, in vec2 uv){
-	vec3 pixToEye = vPixToEyeTBN[bumpMapLightId];
+	vec3 pixToEye = _viewDirection[bumpMapLightId];
 	vec3 viewVecTBN = normalize(pixToEye);
 	//Size and search starting position in texture space
 	vec2 A = uv;

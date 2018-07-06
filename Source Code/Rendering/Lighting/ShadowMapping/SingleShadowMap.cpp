@@ -16,12 +16,15 @@ SingleShadowMap::SingleShadowMap(Light* light) : ShadowMap(light)
 	CLAMP<F32>(_resolutionFactor,0.001f, 1.0f);
 	PRINT_FN(Locale::get("LIGHT_CREATE_SHADOW_FBO"), light->getId(), "Single Shadow Map");
 	std::stringstream ss;
-	_renderQuad = New Quad3D();
 	ss << "Light " << (U32)light->getId() << " viewport " << 0;
-	_renderQuad->setName(ss.str());
-
-
-	TextureDescriptor depthMapDescriptor(TEXTURE_2D, 
+	ResourceDescriptor mrt(ss.str());
+	mrt.setFlag(true); //No default Material;
+	_renderQuad = CreateResource<Quad3D>(mrt);
+	ResourceDescriptor shadowPreviewShader("fboPreview");
+	_previewDepthMapShader = CreateResource<ShaderProgram>(shadowPreviewShader);
+    _renderQuad->setCustomShader(_previewDepthMapShader);
+	_renderQuad->renderInstance()->draw2D(true);
+	TextureDescriptor depthMapDescriptor(TEXTURE_2D,
 										 DEPTH_COMPONENT,
 										 DEPTH_COMPONENT,
 										 UNSIGNED_BYTE); ///Default filters, LINEAR is OK for this
@@ -37,7 +40,8 @@ SingleShadowMap::SingleShadowMap(Light* light) : ShadowMap(light)
 
 SingleShadowMap::~SingleShadowMap()
 {
-	SAFE_DELETE(_renderQuad);
+    RemoveResource(_previewDepthMapShader);
+	RemoveResource(_renderQuad);
 }
 
 void SingleShadowMap::resolution(U16 resolution,SceneRenderState* sceneRenderState){
@@ -49,7 +53,7 @@ void SingleShadowMap::resolution(U16 resolution,SceneRenderState* sceneRenderSta
 		_maxResolution = maxResolutionTemp;
 		///Initialize the FBO's with a variable resolution
 		PRINT_FN(Locale::get("LIGHT_INIT_SHADOW_FBO"), _light->getId());
-		U16 shadowMapDimension = _maxResolution/_resolutionFactor; 
+		U16 shadowMapDimension = _maxResolution/_resolutionFactor;
 		_depthMap->Create(shadowMapDimension,shadowMapDimension);
 	}
 	ShadowMap::resolution(resolution,sceneRenderState);
@@ -69,43 +73,42 @@ void SingleShadowMap::render(SceneRenderState* renderState, boost::function0<voi
 
 void SingleShadowMap::renderInternal(SceneRenderState* renderState) const {
 	GFXDevice& gfx = GFX_DEVICE;
-	///Get our eye view
+	//Get our eye view
 	vec3<F32> eyePos = renderState->getCamera()->getEye();
-	///For every depth map
-	///Lock our projection matrix so no changes will be permanent during the rest of the frame
-	gfx.lockProjection();
-	///Lock our model view matrix so no camera transforms will be saved beyond this light's scope
-	gfx.lockModelView();
-	///Set the camera to the light's view
+	//For every depth map
+	//Lock our projection matrix so no changes will be permanent during the rest of the frame
+    //Lock our model view matrix so no camera transforms will be saved beyond this light's scope
+	gfx.lockMatrices();
+	//Set the camera to the light's view
 	_light->setCameraToLightView(eyePos);
-	///Set the appropriate projection
+	//Set the appropriate projection
 	_light->renderFromLightView(0);
-	///bind the associated depth map
+	//bind the associated depth map
 	_depthMap->Begin();
-	///draw the scene
+	//draw the scene
 	GFX_DEVICE.render(_callback, GET_ACTIVE_SCENE()->renderState());
-	///unbind the associated depth map
+	//unbind the associated depth map
 	_depthMap->End();
-	
-	///get all the required information (light MVP matrix for example) 
-	///and restore to the proper camera view
+
+	//get all the required information (light MVP matrix for example)
+	//and restore to the proper camera view
 	_light->setCameraToSceneView();
-	///Undo all modifications to the Projection Matrix
-	gfx.releaseProjection();
-	///Undo all modifications to the ModelView Matrix
-	gfx.releaseModelView();
+	//Undo all modifications to the Projection Matrix
+	//Undo all modifications to the ModelView Matrix
+	gfx.releaseMatrices();
 	///Restore our view frustum
 	Frustum::getInstance().Extract(eyePos);
 }
 
 void SingleShadowMap::previewShadowMaps(){
-	_depthMap->BindFixed(0);
+	_depthMap->Bind(0);
+    _previewDepthMapShader->bind();
+    _previewDepthMapShader->UniformTexture("tex",0);
 	GFX_DEVICE.toggle2D(true);
-		GFX_DEVICE.renderInViewport(vec4<F32>(0,0,256,256),
-								    boost::bind(&GFXDevice::renderModel,
-									            boost::ref(GFX_DEVICE),
-												_renderQuad));;
+		GFX_DEVICE.renderInViewport(vec4<I32>(0,0,256,256),
+								    boost::bind(&GFXDevice::renderInstance,
+									            DELEGATE_REF(GFX_DEVICE),
+												DELEGATE_REF(_renderQuad->renderInstance())));
 	GFX_DEVICE.toggle2D(false);
 	_depthMap->Unbind(0);
 }
-	

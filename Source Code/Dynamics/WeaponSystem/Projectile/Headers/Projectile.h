@@ -17,7 +17,7 @@
 
 #ifndef _PROJECTILE_H_
 #define _PROJECTILE_H_
-#include "core.h" 
+#include "core.h"
 
 /// Defines a projectile object (usually bullets or rockets)
 class Projectile {
@@ -47,7 +47,7 @@ public:
 	/// Add a specific property to this projectile
 	bool addProperties(U8 propertyMask);
 
-private: 
+private:
 	ProjectileType _type;
 	U8 _properyMask; ///< weapon properties
 };

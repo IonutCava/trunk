@@ -27,18 +27,18 @@ class Variable
 {
   protected:
 
-    double _dInitValue;
-    double _dValue;
+    D32 _dInitValue;
+    D32 _dValue;
 
   public:
 
-    Variable(double dInitValue) : _dInitValue(dInitValue) { reset(); }
+    Variable(D32 dInitValue) : _dInitValue(dInitValue) { reset(); }
 
-    double getValue() const { return _dValue; }
+    D32 getValue() const { return _dValue; }
 
     void reset() { _dValue = _dInitValue; }
 
-    virtual void setValue(double dValue) { _dValue = dValue; }
+    virtual void setValue(D32 dValue) { _dValue = dValue; }
 
     virtual std::string toString() const
     {
@@ -54,27 +54,26 @@ class Constant : public Variable
 {
   public:
 
-    Constant(double dInitValue) : Variable(dInitValue) {}
+    Constant(D32 dInitValue) : Variable(dInitValue) {}
 
-    virtual void setValue(double dValue) { }
-
+    virtual void setValue(D32 dValue) { }
 };
 
 class LimitedVariable : public Variable
 {
   protected:
 
-    double _dMinValue;
-    double _dMaxValue;
+    D32 _dMinValue;
+    D32 _dMaxValue;
 
   public:
 
-    LimitedVariable(double dInitValue, double dMinValue, double dMaxValue) 
+    LimitedVariable(D32 dInitValue, D32 dMinValue, D32 dMaxValue)
 	: _dMinValue(dMinValue), _dMaxValue(dMaxValue), Variable(dInitValue)
     {}
 
-    virtual void setValue(double dValue) 
-    { 
+    virtual void setValue(D32 dValue)
+    {
 	  _dValue = dValue;
 	  if (_dValue > _dMaxValue)
 		_dValue = _dMaxValue;
@@ -85,8 +84,8 @@ class LimitedVariable : public Variable
 /*    virtual string toString() const
     {
 	  ostringstream oss;
-	  oss << setiosflags(ios_base::right) << setw(4) 
-	      << (int)(200.0 * getValue()/(_dMaxValue - _dMinValue)); // [-100%, +100%]
+	  oss << setiosflags(ios_base::right) << setw(4)
+	      << (I32)(200.0 * getValue()/(_dMaxValue - _dMinValue)); // [-100%, +100%]
 	  return oss.str();
 	}*/
 };
@@ -95,16 +94,16 @@ class TriangleVariable : public LimitedVariable
 {
   protected:
 
-    double _dDeltaValue;
+    D32 _dDeltaValue;
 
   public:
 
-    TriangleVariable(double dInitValue, double dDeltaValue, double dMinValue, double dMaxValue) 
+    TriangleVariable(D32 dInitValue, D32 dDeltaValue, D32 dMinValue, D32 dMaxValue)
 	: LimitedVariable(dInitValue, dMinValue, dMaxValue), _dDeltaValue(dDeltaValue) {};
 
     virtual void update()
     {
-	  double dValue = getValue() + _dDeltaValue;
+	  D32 dValue = getValue() + _dDeltaValue;
 	  if (dValue > _dMaxValue)
 	  {
 		dValue = _dMaxValue;
@@ -148,20 +147,18 @@ class VariableEffect
 
   public:
 
-    VariableEffect(const char* pszDesc, OIS::Effect* pEffect, 
+    VariableEffect(const char* pszDesc, OIS::Effect* pEffect,
 				   const MapVariables& mapVars, const EffectVariablesApplier pfApplyVars)
-	: _pszDesc(pszDesc), _pEffect(pEffect), 
+	: _pszDesc(pszDesc), _pEffect(pEffect),
 	  _mapVariables(mapVars), _pfApplyVariables(pfApplyVars), _bActive(false)
     {}
 
     ~VariableEffect()
     {
-
 	  SAFE_DELETE(_pEffect);
 	  MapVariables::iterator iterVars;
 	  for (iterVars = _mapVariables.begin(); iterVars != _mapVariables.end(); ++iterVars)
 		  SAFE_DELETE(iterVars->second);
-	  
 	}
 
     inline void setActive(bool bActive = true) { reset(); _bActive = bActive; }

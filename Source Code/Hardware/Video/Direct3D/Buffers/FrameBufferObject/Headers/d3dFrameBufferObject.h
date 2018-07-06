@@ -25,9 +25,9 @@ public:
 
 	d3dFrameBufferObject(FBOType type) : FrameBufferObject(type) {}
 	virtual ~d3dFrameBufferObject() {}
-	
+
 	virtual bool Create(U16 width, U16 height, U8 imageLayers = 0) = 0;
-				
+
 	virtual void Destroy() = 0;
 
 	virtual void Begin(U8 nFace=0) const = 0;
@@ -38,7 +38,6 @@ public:
 	void BlitFrom(FrameBufferObject* inputFBO);
 protected:
 	bool checkStatus();
-
 };
 
 #endif

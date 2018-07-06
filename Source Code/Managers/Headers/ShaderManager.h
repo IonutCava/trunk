@@ -17,27 +17,70 @@
 
 #ifndef SHADER_MANAGER_H_
 #define SHADER_MANAGER_H_
-#include "core.h"
+
+#include "Core/Headers/Singleton.h"
+#include "Utility/Headers/Vector.h"
+#include "Utility/Headers/UnorderedMap.h"
+#include "Hardware/Platform/Headers/PlatformDefines.h"
+#include <string>
+#include <stack>
 
 class Shader;
 class ShaderProgram;
 enum  ShaderType;
+enum  MATRIX_MODE;
+
 DEFINE_SINGLETON(ShaderManager)
+
+typedef Unordered_map<std::string, Shader* >        ShaderMap;
+typedef Unordered_map<std::string, ShaderProgram* > ShaderProgramMap;
+typedef Unordered_map<std::string, const char* >    AtomMap;
+typedef std::stack<ShaderProgram*, vectorImpl<ShaderProgram* > > ShaderQueue;
+
 public:
-	void removeShader(Shader* s);
-	Shader* findShader(const std::string& name);
-	Shader* loadShader(const std::string& name, const std::string& location, ShaderType type);
+	///Create rendering API specific initialization of shader libraries
+    bool    init();
+	///Called once per frame
+	///deltaTime = elapsed time in milliseconds
+	U8      tick(const U32 deltaTime);
+	///Called once per frame after a swap buffer request
+	U8      idle();
+	///Remove a shader from the cache
+	void    removeShader(Shader* s);
+	///Find a shader in a cache
+	Shader* findShader(const std::string& name, const bool recompile = false );
+	///Add or refresh a shader from the cache
+	Shader* loadShader(const std::string& name, const std::string& location,const ShaderType& type,const bool recompile = false);
+	///Remove a shaderProgram from the program cache
+	void    unregisterShaderProgram(const std::string& name);
+	///Add a shaderProgram to the program cache
+    void    registerShaderProgram(const std::string& name, ShaderProgram* const shaderProgram);
+	///Queue a shaderProgram recompile request
+	bool    recompileShaderProgram(const std::string& name);
+	///Load a shader from file
 	char*   shaderFileRead(const std::string &atomName, const std::string& location);
-	I8      shaderFileWrite(char *atomName, char *s);
+	///Save a shader to file
+	I8      shaderFileWrite(char *atomName, const char *s);
+	///Bind the null shader
 	bool    unbind();
 
 private:
-	Unordered_map<std::string, Shader* > _shaders;
-	Unordered_map<std::string, const char* > _atoms;
-	ShaderProgram* _nullShader;
+	///Shader cache
+	ShaderMap        _shaderNameMap;
+	///Shader program cache
+    ShaderProgramMap _shaderPrograms;
+	///Only 1 shader program per frame should be recompiled to avoid a lot of stuttering
+	ShaderQueue      _recompileQueue;
+	///Shaders loaded from files are kept as atoms
+	AtomMap          _atoms;
+	///Pointer to a shader that we will perform operations on
+	ShaderProgram*   _nullShader;
+	///A simple check to see if the manager is ready to process commands
+    bool             _init;
 
 private:
 	ShaderManager();
+    ~ShaderManager();
 
 END_SINGLETON
 #endif

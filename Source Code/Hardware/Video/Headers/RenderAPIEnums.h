@@ -21,7 +21,24 @@
 /// no need to include the entire resource header for one define
 #ifndef toBit
 #define toBit(X) (1 << (X))
-#endif 
+#endif
+
+///Fixed pipeline functionality should be avoided. Both D3D and OGL should have these matrices
+enum MATRIX_MODE{
+	VIEW_MATRIX = 0,
+	PROJECTION_MATRIX = 1,
+    TEXTURE_MATRIX = 2
+};
+
+///Compund matrices or sub-matrices
+enum EXTENDED_MATRIX{
+    MODEL_MATRIX  = 0, //<Current model matrix. Changed for each render call, mainly
+    MV_MATRIX     = 1, //<ModelView matrix : ViewMatrix * ModelMatrix (as per OpenGL standards: name is backwards)
+    MV_INV_MATRIX = 2, //<ModelViewInverse matrix: (ViewMatrix * ModelMatrix)^-1
+    MVP_MATRIX    = 4, //<ModelViewProjection matrix: ProjectionMatrix * ViewMatrix * ModelMatrix
+    NORMAL_MATRIX = 5, //<Normal matrix - for non-uniform scaled models: top left 3x3 of ((ViewMatrix * ModelMatrix)^-1)^T; for uniform scaled models: top left 3x3 of (ViewMatrix*ModelMatrix)
+    BIAS_MATRIX   = 6  //<Bias matrix - scales and biases coordinates from [-1,1] to [0,1]
+};
 
 ///Using multiple threads for streaming and issuing API specific construction commands to the rendering API will
 ///cause problems with libraries such as ASSIMP or with the scenegraph. Having 2 rendering contexts with a single
@@ -63,14 +80,14 @@ enum PBOType {
 };
 
 enum FBOType {
-	FBO_PLACEHOLDER, 
+	FBO_PLACEHOLDER,
 	FBO_2D_COLOR,
 	FBO_2D_ARRAY_COLOR, ///<FBO that uses texture arrays
 	FBO_2D_COLOR_MS,///<Multisampled FBO with fallback to FBO_2D_COLOR
 	FBO_CUBE_COLOR,
 	FBO_CUBE_COLOR_ARRAY,
 	FBO_CUBE_DEPTH_ARRAY,
-	FBO_2D_DEPTH,  ///< This is the same as 2D_COLOR with color writes disabled. 
+	FBO_2D_DEPTH,  ///< This is the same as 2D_COLOR with color writes disabled.
 	FBO_2D_ARRAY_DEPTH, ///< This is the same as 2D_DEPTH but uses array textures
 	FBO_CUBE_DEPTH,
 	FBO_2D_DEFERRED
@@ -98,7 +115,6 @@ enum RenderAPIVersion{
 };
 
 enum PrimitiveType {
-
 	API_POINTS      = 0x0000,
 	LINES           = 0x0001,
 	LINE_LOOP       = 0x0002,
@@ -110,15 +126,14 @@ enum PrimitiveType {
 	QUAD_STRIP      = 0x0008,
 	POLYGON         = 0x0009,
 	PrimitiveType_PLACEHOLDER = 0x0010
-	
 };
 
 enum RenderDetailLevel{
 	DETAIL_LOW = 0,
 	DETAIL_MEDIUM = 1,
-	DETAIL_HIGH = 2	
+	DETAIL_HIGH = 2
 };
-  
+
 enum FullScreenAntiAliasingMethod{
 	FS_MSAA = 1,
 	FS_FXAA = 2,
@@ -184,7 +199,6 @@ enum ComparisonFunction {
    ComparisonFunction_PLACEHOLDER
 };
 
-
 /// Specifies whether front- or back-facing facets are candidates for culling.
 enum CullMode {
    CULL_MODE_NONE = 0,
@@ -197,8 +211,8 @@ enum CullMode {
     ///Place all properties above this.
    CullMode_PLACEHOLDER
 };
-                        
-/// Valid front and back stencil test actions                   
+
+/// Valid front and back stencil test actions
 enum StencilOperation {
    /// Keeps the current value.
    STENCIL_OPERATION_KEEP = 0,
@@ -224,7 +238,7 @@ enum StencilOperation {
 
 ///Defines all available fill modes for primitives
 enum FillMode {
-   ///Polygon vertices that are marked as the start of a boundary edge are drawn as points. 
+   ///Polygon vertices that are marked as the start of a boundary edge are drawn as points.
    FILL_MODE_POINT = 1,
    ///Boundary edges of the polygon are drawn as line segments.
    FILL_MODE_WIREFRAME,
@@ -283,12 +297,13 @@ enum GFXImageFormat{
 	RGBA16F,
 	RGBA32F,
 	DEPTH_COMPONENT,
+    DEPTH_COMPONENT16,
 	DEPTH_COMPONENT24,
+    DEPTH_COMPONENT32,
 	IMAGE_FORMAT_PLACEHOLDER
 };
 
 enum GFXDataFormat{
-
 	UNSIGNED_BYTE    = 0x0000,
 	UNSIGNED_SHORT   = 0x0001,
 	UNSIGNED_INT     = 0x0002,
@@ -303,6 +318,7 @@ enum GPUVendor {
 	GPU_VENDOR_NVIDIA = 0,
 	GPU_VENDOR_AMD,
 	GPU_VENDOR_INTEL,
+	GPU_VENDOR_OTHER,
 	GPU_VENDOR_PLACEHOLDER
 };
 

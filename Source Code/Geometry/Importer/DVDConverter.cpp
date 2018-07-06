@@ -4,16 +4,15 @@
 #include <assimp/scene.h>
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
-#include "Core/Resources/Headers/ResourceCache.h"
 #include "Utility/Headers/XMLParser.h"
 #include "Core/Headers/ParamHandler.h"
+#include "Hardware/Video/Headers/GFXDevice.h"
+#include "Core/Resources/Headers/ResourceCache.h"
 #include "Geometry/Shapes/Headers/SkinnedMesh.h"
 #include "Geometry/Shapes/Headers/SkinnedSubMesh.h"
 #include "Geometry/Animations/Headers/AnimationUtils.h"
 
-
 DVDConverter::DVDConverter() : _loadcount(0), _init(false){
-
 }
 
 DVDConverter::~DVDConverter(){
@@ -25,8 +24,31 @@ bool DVDConverter::init(){
 		ERROR_FN(Locale::get("ERROR_DOUBLE_IMPORTER_INIT"));
 		return false;
 	}
+
+	aiTextureMapModeTable[aiTextureMapMode_Wrap]   = TEXTURE_REPEAT;
+	aiTextureMapModeTable[aiTextureMapMode_Clamp]  = TEXTURE_CLAMP;
+	aiTextureMapModeTable[aiTextureMapMode_Decal]  = TEXTURE_DECAL;
+	aiTextureMapModeTable[aiTextureMapMode_Mirror] = TEXTURE_REPEAT;
+	aiShadingModeInternalTable[aiShadingMode_Fresnel]      = Material::SHADING_FRESNEL;
+	aiShadingModeInternalTable[aiShadingMode_NoShading]    = Material::SHADING_NONE;
+	aiShadingModeInternalTable[aiShadingMode_CookTorrance] = Material::SHADING_COOK_TORRANCE;
+	aiShadingModeInternalTable[aiShadingMode_Minnaert]     = Material::SHADING_MINNAERT;
+	aiShadingModeInternalTable[aiShadingMode_OrenNayar]    = Material::SHADING_OREN_NAYAR;
+	aiShadingModeInternalTable[aiShadingMode_Toon]         = Material::SHADING_TOON;
+	aiShadingModeInternalTable[aiShadingMode_Blinn]        = Material::SHADING_BLINN;
+	aiShadingModeInternalTable[aiShadingMode_Phong]        = Material::SHADING_PHONG;
+	aiShadingModeInternalTable[aiShadingMode_Gouraud]      = Material::SHADING_GOURAUD;
+	aiShadingModeInternalTable[aiShadingMode_Flat]         = Material::SHADING_FLAT;
+	aiTextureOperationTable[aiTextureOp_Multiply]  = Material::TextureOperation_Multiply;
+	aiTextureOperationTable[aiTextureOp_Add]       = Material::TextureOperation_Add;
+	aiTextureOperationTable[aiTextureOp_Subtract]  = Material::TextureOperation_Subtract;
+	aiTextureOperationTable[aiTextureOp_Divide]    = Material::TextureOperation_Divide;
+	aiTextureOperationTable[aiTextureOp_SmoothAdd] = Material::TextureOperation_SmoothAdd;
+	aiTextureOperationTable[aiTextureOp_SignedAdd] = Material::TextureOperation_SignedAdd;
+	aiTextureOperationTable[aiTextureOp_SignedAdd] = Material::TextureOperation_SignedAdd;
+	aiTextureOperationTable[/*aiTextureOp_Replace*/7] = Material::TextureOperation_Replace;
 	importer = New Assimp::Importer();
-	
+
 	bool removeLinesAndPoints = true;
 	importer->SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE , removeLinesAndPoints ? aiPrimitiveType_LINE | aiPrimitiveType_POINT : 0 );
 	importer->SetPropertyInteger(AI_CONFIG_IMPORT_TER_MAKE_UVS , 1);
@@ -35,46 +57,62 @@ bool DVDConverter::init(){
 			   aiProcess_FindInstances            | // search for instanced meshes and remove them by references to one master
 			   aiProcess_OptimizeMeshes	          | // join small meshes, if possible;
 			   aiProcess_OptimizeGraph            | // Nodes with no animations, bones, lights or cameras assigned are collapsed and joined.
-			   aiProcessPreset_TargetRealtime_Quality |
+			   aiProcess_CalcTangentSpace		  |
+			   aiProcess_GenSmoothNormals         |
+			   aiProcess_JoinIdenticalVertices    |
+			   aiProcess_ImproveCacheLocality     |  
+			   aiProcess_LimitBoneWeights		  |
+			   aiProcess_RemoveRedundantMaterials |
+			   aiProcess_Triangulate			  |
+			   aiProcess_GenUVCoords              |
+		       aiProcess_SortByPType              |
+	           aiProcess_FindDegenerates          |
+	           aiProcess_FindInvalidData          |
 			   0;
 
-	if(GFX_DEVICE.getApi() != OpenGL){
+	if(GFX_DEVICE.getApi() != OpenGL && GFX_DEVICE.getApi() != OpenGLES){
 		_ppsteps |= aiProcess_ConvertToLeftHanded;
 	}
+
 	_init = true;
-	return true;
+	return _init;
 }
 
-Mesh* DVDConverter::load(const std::string& file){	
+#pragma message("ToDo: Fix skipping points and lines on geometry import -Ionut")
+Mesh* DVDConverter::load(const std::string& file){
 	if(!_init){
 		ERROR_FN(Locale::get("ERROR_NO_INIT_IMPORTER_LOAD"));
 		return NULL;
 	}
+
 	_fileLocation = file;
 	_modelName = _fileLocation.substr( _fileLocation.find_last_of( '/' ) + 1 );
-	
+	U32 start = GETMSTIME();
 	_aiScenePointer = importer->ReadFile( file, _ppsteps );
+	U32 elapsed = GETMSTIME() - start;
+
+	D_PRINT_FN(Locale::get("LOAD_MESH_TIME"),_modelName.c_str(),getMsToSec(elapsed));
 
 	if( !_aiScenePointer){
-		ERROR_FN(Locale::get("ERROR_IMORTER_FILE"), file.c_str(), importer->GetErrorString());
-		return false;
+		ERROR_FN(Locale::get("ERROR_IMPORTER_FILE"), file.c_str(), importer->GetErrorString());
+		return NULL;
 	}
+	start = GETMSTIME();
 	Mesh* tempMesh = NULL;
 	for(U16 n = 0; n < _aiScenePointer->mNumMeshes; n++){
-		
 		//Skip points and lines ... for now -Ionut
-#pragma message("ToDo: Fix skipping points and lines on geometry import -Ionut")
-		if(_aiScenePointer->mMeshes[n]->mPrimitiveTypes == aiPrimitiveType_LINE || 
+		if(_aiScenePointer->mMeshes[n]->mPrimitiveTypes == aiPrimitiveType_LINE ||
 			_aiScenePointer->mMeshes[n]->mPrimitiveTypes == aiPrimitiveType_POINT ||
 			_aiScenePointer->mMeshes[n]->mNumVertices == 0)
 				continue;
 
-		
-
 		if(SubMesh* s = loadSubMeshGeometry(_aiScenePointer->mMeshes[n], n)){
-			bool skinnedSubMesh = (s->getFlag() == Object3D::OBJECT_FLAG_SKINNED ? true : false);
+            if(!s) continue;
+			bool skinnedSubMesh = (s->getFlag() == Object3D::OBJECT_FLAG_SKINNED);
+
 			if(!tempMesh){
-				tempMesh  = (skinnedSubMesh ? New SkinnedMesh() : New Mesh());
+				tempMesh = (skinnedSubMesh ? New SkinnedMesh() : New Mesh());
+                tempMesh->setState(RES_LOADING);
 				tempMesh->setName(_modelName);
 				tempMesh->setResourceLocation(_fileLocation);
 			}
@@ -87,10 +125,11 @@ Mesh* DVDConverter::load(const std::string& file){
 			}//else the Resource manager created a copy of the material
 			tempMesh->addSubMesh(s->getName());
 		}
-			
 	}
 	assert(tempMesh != NULL);
 	tempMesh->getSceneNodeRenderState().setDrawState(true);
+	elapsed = GETMSTIME() - start;
+	D_PRINT_FN(Locale::get("PARSE_MESH_TIME"),_modelName.c_str(),getMsToSec(elapsed));
 	_loadcount++; //< increment counter
 	return tempMesh;
 }
@@ -115,7 +154,7 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,U8 count){
 
 	SubMesh* tempSubMesh = NULL;
 	bool skinned = source->HasBones();
-	if(temp.find(".LOD1") != std::string::npos || 
+	if(temp.find(".LOD1") != std::string::npos ||
 		temp.find(".LOD2") != std::string::npos/* ||
 		temp.find(".LODn") != std::string::npos*/){ ///Add as many LOD levels as you please
 		tempSubMesh = dynamic_cast<SubMesh* >(FindResource(_fileLocation.substr(0,_fileLocation.rfind(".LOD"))));
@@ -126,9 +165,9 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,U8 count){
 		ResourceDescriptor submeshdesc(temp);
 		submeshdesc.setFlag(true);
 		submeshdesc.setId(count);
-		if(skinned) 
-			submeshdesc.setEnumValue(Object3D::OBJECT_FLAG_SKINNED); 
+        if(skinned) submeshdesc.setEnumValue(Object3D::OBJECT_FLAG_SKINNED);
 		tempSubMesh = CreateResource<SubMesh>(submeshdesc);
+        if(!tempSubMesh) return NULL;
 		///it may be already loaded
 		if(!tempSubMesh->getGeometryVBO()->getPosition().empty()){
 			return tempSubMesh;
@@ -137,14 +176,12 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,U8 count){
 	}
 
 	tempSubMesh->getGeometryVBO()->reservePositionCount(source->mNumVertices);
-	tempSubMesh->getGeometryVBO()->getNormal().reserve(source->mNumVertices);
-	tempSubMesh->getGeometryVBO()->getTangent().reserve(source->mNumVertices);
-	tempSubMesh->getGeometryVBO()->getBiTangent().reserve(source->mNumVertices);
+	tempSubMesh->getGeometryVBO()->reserveNormalCount(source->mNumVertices);
 	vectorImpl< vectorImpl<vertexWeight> >   weightsPerVertex(source->mNumVertices);
 
 	if(skinned){
 		tempSubMesh->getGeometryVBO()->getBoneIndices().reserve(source->mNumVertices);
-		tempSubMesh->getGeometryVBO()->getBoneWeights().reserve(source->mNumVertices);	
+		tempSubMesh->getGeometryVBO()->getBoneWeights().reserve(source->mNumVertices);
 		assert(source->mNumBones < 256); ///<Fit in U8
 		for(U8 a = 0; a < source->mNumBones; a++){
 			const aiBone* bone = source->mBones[a];
@@ -153,48 +190,51 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,U8 count){
 			}
 		}
 	}
-	  
+
 	bool processTangents = true;
 	if(!source->mTangents){
         processTangents = false;
 		D_PRINT_FN(Locale::get("SUBMESH_NO_TANGENT"), tempSubMesh->getName().c_str());
+	}else{
+		tempSubMesh->getGeometryVBO()->reserveTangentCount(source->mNumVertices);
+		tempSubMesh->getGeometryVBO()->reserveBiTangentCount(source->mNumVertices);
 	}
 
+	vec3<F32> position, normal, tangent, bitangent;
+	vec4<U8>  boneIndices;
+	vec4<F32> boneWeights;
 
 	for(U32 j = 0; j < source->mNumVertices; j++){
-		tempSubMesh->getGeometryVBO()->addPosition(vec3<F32>(source->mVertices[j].x,
-															 source->mVertices[j].y,
-															 source->mVertices[j].z));
-		tempSubMesh->getGeometryVBO()->getNormal().push_back(vec3<F32>(source->mNormals[j].x,
-																      source->mNormals[j].y,
-																      source->mNormals[j].z));
+		position.set(source->mVertices[j].x, source->mVertices[j].y, source->mVertices[j].z);
+		normal.set(source->mNormals[j].x, source->mNormals[j].y, source->mNormals[j].z);
+
+		tempSubMesh->getGeometryVBO()->addPosition(position);
+		tempSubMesh->getGeometryVBO()->addNormal(normal);
+
 		if(processTangents){
-			tempSubMesh->getGeometryVBO()->getTangent().push_back(vec3<F32>(source->mTangents[j].x,
-																	       source->mTangents[j].y,
-																	       source->mTangents[j].z));
-			tempSubMesh->getGeometryVBO()->getBiTangent().push_back(vec3<F32>(source->mBitangents[j].x,
-																	         source->mBitangents[j].y,
-																		     source->mBitangents[j].z));
+			tangent.set(source->mTangents[j].x, source->mTangents[j].y, source->mTangents[j].z);
+		    bitangent.set(source->mBitangents[j].x, source->mBitangents[j].y, source->mBitangents[j].z);
+			tempSubMesh->getGeometryVBO()->addTangent(tangent);
+			tempSubMesh->getGeometryVBO()->addBiTangent(bitangent);
 		}
-		
+
 		if( skinned )	{
-			vec4<U8>  boneIndices( 0, 0, 0, 0 );
-			vec4<F32> boneWeights( 0, 0, 0, 0 );
+			boneIndices.reset();
+			boneWeights.reset();
+
 			assert( weightsPerVertex[j].size() <= 4);
 
 			for( U8 a = 0; a < weightsPerVertex[j].size(); a++){
-
 				boneIndices[a] = weightsPerVertex[j][a]._boneId;
 				boneWeights[a] = weightsPerVertex[j][a]._boneWeight;
-
 			}
+
 			tempSubMesh->getGeometryVBO()->getBoneIndices().push_back(boneIndices);
 			tempSubMesh->getGeometryVBO()->getBoneWeights().push_back(boneWeights);
 		}
 
-
-
 	}//endfor
+
 	if(_aiScenePointer->HasAnimations() && skinned){
 		// create animator from current scene and current submesh pointer in that scene
 		dynamic_cast<SkinnedSubMesh*>(tempSubMesh)->createAnimatorFromScene(_aiScenePointer,count);
@@ -202,42 +242,48 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,U8 count){
 
 	if(source->mTextureCoords[0] != NULL){
 		tempSubMesh->getGeometryVBO()->getTexcoord().reserve(source->mNumVertices);
+		vec2<F32> texCoord;
 		for(U32 j = 0; j < source->mNumVertices; j++){
-			tempSubMesh->getGeometryVBO()->getTexcoord().push_back(vec2<F32>(source->mTextureCoords[0][j].x,
-																		     source->mTextureCoords[0][j].y));
+			texCoord.set(source->mTextureCoords[0][j].x, source->mTextureCoords[0][j].y);
+			tempSubMesh->getGeometryVBO()->getTexcoord().push_back(texCoord);
 		}//endfor
 	}//endif
 
-	U16 currentIndice = 0;
-	U16 lowestInd = 0;
-	U16 highestInd = 0;
+	U32 currentIndice  = 0;
+	U32 lowestInd = 0;
+	U32 highestInd = 0;
+	vec3<U32> triangleTemp;
+
 	for(U32 k = 0; k < source->mNumFaces; k++){
 		U32 indiceCount = source->mFaces[k].mNumIndices;
 		if(indiceCount == 3){
-			vec3<U32> triangleTemp(source->mFaces[k].mIndices[0],source->mFaces[k].mIndices[1],source->mFaces[k].mIndices[2]);
+			triangleTemp.set(source->mFaces[k].mIndices[0],source->mFaces[k].mIndices[1],source->mFaces[k].mIndices[2]);
 			tempSubMesh->getGeometryVBO()->getTriangles().push_back(triangleTemp);
 		}
 
+		bool smallIndice = true;
+		if(indiceCount+1 > std::numeric_limits<U16>::max()){
+			smallIndice = false;
+		}
+		tempSubMesh->getGeometryVBO()->useLargeIndices(!smallIndice);
+
 		for(U32 m = 0; m < indiceCount; m++){
 			currentIndice = source->mFaces[k].mIndices[m];
+			tempSubMesh->getGeometryVBO()->addIndex(currentIndice);
+
 			if(currentIndice < lowestInd)  lowestInd  = currentIndice;
 			if(currentIndice > highestInd) highestInd = currentIndice;
-
-			tempSubMesh->getGeometryVBO()->getHWIndices().push_back(currentIndice);
 		}
-
 	}
-	tempSubMesh->getGeometryVBO()->setIndiceLimits(vec2<U16>(lowestInd,highestInd), tempSubMesh->getLODcount() - 1);
 
-	if(baseMeshLoading)
-		return tempSubMesh;
-	else
-		return NULL;
+	tempSubMesh->getGeometryVBO()->setIndiceLimits(vec2<U32>(lowestInd,highestInd), tempSubMesh->getLODcount() - 1);
+
+	if(baseMeshLoading)	return tempSubMesh;
+	else  		        return NULL;
 }
 
 /// Load the material for the current SubMesh
 Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std::string& materialName) {
-
 	/// See if the material already exists in a cooked state (XML file)
 	Material* tempMaterial = XML::loadMaterial(materialName);
 	if(tempMaterial) return tempMaterial;
@@ -252,48 +298,40 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
 	ParamHandler& par = ParamHandler::getInstance();
 
 	/// Compare load results with the standard succes value
-	aiReturn result = AI_SUCCESS; 
-	
+	aiReturn result = AI_SUCCESS;
+
 	/// default diffuse color
 	vec4<F32> tempColorVec4(0.8f, 0.8f, 0.8f,1.0f);
 
 	/// Load diffuse color
 	aiColor4D diffuse;
 	if(AI_SUCCESS == aiGetMaterialColor(source,AI_MATKEY_COLOR_DIFFUSE, &diffuse)){
-		tempColorVec4.r = diffuse.r;
-		tempColorVec4.g = diffuse.g;
-		tempColorVec4.b = diffuse.b;
-		tempColorVec4.a = diffuse.a;
+		tempColorVec4.set(diffuse.r,diffuse.g,diffuse.b,diffuse.a);
 	}else{
 		D_PRINT_FN(Locale::get("MATERIAL_NO_DIFFUSE"), materialName.c_str());
 	}
+
 	tempMaterial->setDiffuse(tempColorVec4);
-		
+
 	/// default ambient color
 	tempColorVec4.set(0.2f, 0.2f, 0.2f, 1.0f);
 
 	/// Load ambient color
 	aiColor4D ambient;
 	if(AI_SUCCESS == aiGetMaterialColor(source,AI_MATKEY_COLOR_AMBIENT,&ambient)){
-		tempColorVec4.r = ambient.r;
-		tempColorVec4.g = ambient.g;
-		tempColorVec4.b = ambient.b;
-		tempColorVec4.a = ambient.a;
+		tempColorVec4.set(ambient.r,ambient.g,ambient.b,ambient.a);
 	}else{
 		D_PRINT_FN(Locale::get("MATERIAL_NO_AMBIENT"), materialName.c_str());
 	}
 	tempMaterial->setAmbient(tempColorVec4);
-		
+
 	/// default specular color
 	tempColorVec4.set(1.0f,1.0f,1.0f,1.0f);
 
 	// Load specular color
 	aiColor4D specular;
 	if(AI_SUCCESS == aiGetMaterialColor(source,AI_MATKEY_COLOR_SPECULAR,&specular)){
-		tempColorVec4.r = specular.r;
-		tempColorVec4.g = specular.g;
-		tempColorVec4.b = specular.b;
-		tempColorVec4.a = specular.a;
+		tempColorVec4.set(specular.r,specular.g,specular.b,specular.a);
 	}else{
 		D_PRINT_FN(Locale::get("MATERIAL_NO_SPECULAR"), materialName.c_str());
 	}
@@ -305,10 +343,7 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
 	/// Load emissive color
 	aiColor4D emissive;
 	if(AI_SUCCESS == aiGetMaterialColor(source,AI_MATKEY_COLOR_EMISSIVE,&emissive)){
-		tempColorVec4.r = emissive.r;
-		tempColorVec4.g = emissive.g;
-		tempColorVec4.b = emissive.b;
-		tempColorVec4.b = emissive.a;
+		tempColorVec4.set(emissive.r,emissive.g,emissive.b,emissive.a);
 	}
 	tempMaterial->setEmissive(tempColorVec4);
 
@@ -316,17 +351,16 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
 	F32 opacity = 1.0f;
 	/// Load material opacity value
 	aiGetMaterialFloat(source,AI_MATKEY_OPACITY,&opacity);
-	tempMaterial->setOpacityValue(opacity);
-
+	tempMaterial->setOpacity(opacity);
 
 	/// default shading model
 	I32 shadingModel = Material::SHADING_PHONG;
 	/// Load shading model
 	aiGetMaterialInteger(source,AI_MATKEY_SHADING_MODEL,&shadingModel);
-	tempMaterial->setShadingMode(shadingModeInternal(shadingModel));
+	tempMaterial->setShadingMode(aiShadingModeInternalTable[shadingModel]);
 
 	/// Default shininess values
-	F32 shininess = 15,strength = 1;
+	F32 shininess = 15, strength = 1;
 	/// Load shininess
 	aiGetMaterialFloat(source,AI_MATKEY_SHININESS, &shininess);
 	/// Load shininess strength
@@ -340,23 +374,23 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
 	aiGetMaterialInteger(source, AI_MATKEY_TWOSIDED, &two_sided);
 	tempMaterial->setDoubleSided(two_sided != 0);
 
-	aiString tName; 
-	aiTextureMapping mapping; 
+	aiString tName;
+	aiTextureMapping mapping;
 	U32 uvInd;
-	F32 blend; 
-	aiTextureOp op;
-	aiTextureMapMode mode[3];
+	F32 blend;
+	aiTextureOp op = aiTextureOp_Multiply;
+	aiTextureMapMode mode[3] = {aiTextureMapMode_Clamp,aiTextureMapMode_Clamp,aiTextureMapMode_Clamp};
 
 	U8 count = 0;
 	/// While we still have diffuse textures
 	while(result == AI_SUCCESS){
 		/// Load each one
-		result = source->GetTexture(aiTextureType_DIFFUSE, count, 
-									&tName, 
-									&mapping, 
+		result = source->GetTexture(aiTextureType_DIFFUSE, count,
+									&tName,
+									&mapping,
 									&uvInd,
 									&blend,
-									&op, 
+									&op,
 									mode);
 		if(result != AI_SUCCESS) break;
 		/// get full path
@@ -377,16 +411,18 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
 			texture.setResourceLocation(path);
 			texture.setFlag(true);
 			Texture2D* textureRes = CreateResource<Texture2D>(texture);
-			tempMaterial->setTexture(item,textureRes,aiTextureOpToTextureOperation(op));
-			textureRes->setTextureWrap(aiTextureMapModeToInternal(mode[0]),
-									   aiTextureMapModeToInternal(mode[1]),
-									   aiTextureMapModeToInternal(mode[2])); 
+			textureRes->setTextureWrap(aiTextureMapModeTable[mode[0]],
+									   aiTextureMapModeTable[mode[1]],
+									   aiTextureMapModeTable[mode[2]]);
+			assert(tempMaterial != NULL);
+			assert(textureRes != NULL);
+			tempMaterial->setTexture(item,textureRes,aiTextureOperationTable[op]);
 		}//endif
 
 		tName.Clear();
 		count++;
 #pragma message("ToDo: Use more than 2 textures for each material. Fix This! -Ionut")
-		if(count == 2) break; 
+		if(count == 2) break;
 	}//endwhile
 
 	result = source->GetTexture(aiTextureType_NORMALS, 0, &tName, &mapping, &uvInd, &blend, &op, mode);
@@ -397,16 +433,15 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
 
 		std::string pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
 		if(img_name.rfind('.') !=  std::string::npos){
-
 			ResourceDescriptor texture(img_name);
 			texture.setResourceLocation(path);
 			texture.setFlag(true);
 			Texture2D* textureRes = CreateResource<Texture2D>(texture);
-			tempMaterial->setTexture(Material::TEXTURE_NORMALMAP,textureRes,aiTextureOpToTextureOperation(op));
+			tempMaterial->setTexture(Material::TEXTURE_NORMALMAP,textureRes,aiTextureOperationTable[op]);
 			tempMaterial->setBumpMethod(Material::BUMP_NORMAL);
-			textureRes->setTextureWrap(aiTextureMapModeToInternal(mode[0]),
-									   aiTextureMapModeToInternal(mode[1]),
-									   aiTextureMapModeToInternal(mode[2])); 
+			textureRes->setTextureWrap(aiTextureMapModeTable[mode[0]],
+									   aiTextureMapModeTable[mode[1]],
+									   aiTextureMapModeTable[mode[2]]);
 		}//endif
 	}//endif
 	result = source->GetTexture(aiTextureType_HEIGHT, 0, &tName, &mapping, &uvInd, &blend, &op, mode);
@@ -416,16 +451,15 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
 		path = par.getParam<std::string>("assetsLocation")+"/"+par.getParam<std::string>("defaultTextureLocation") +"/"+ path;
 		std::string pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
 		if(img_name.rfind('.') !=  std::string::npos){
-
 			ResourceDescriptor texture(img_name);
 			texture.setResourceLocation(path);
 			texture.setFlag(true);
 			Texture2D* textureRes = CreateResource<Texture2D>(texture);
-			tempMaterial->setTexture(Material::TEXTURE_BUMP,textureRes,aiTextureOpToTextureOperation(op));
+			tempMaterial->setTexture(Material::TEXTURE_BUMP,textureRes,aiTextureOperationTable[op]);
 			tempMaterial->setBumpMethod(Material::BUMP_NORMAL);
-			textureRes->setTextureWrap(aiTextureMapModeToInternal(mode[0]),
-									   aiTextureMapModeToInternal(mode[1]),
-									   aiTextureMapModeToInternal(mode[2])); 
+			textureRes->setTextureWrap(aiTextureMapModeTable[mode[0]],
+									   aiTextureMapModeTable[mode[1]],
+									   aiTextureMapModeTable[mode[2]]);
 		}//endif
 	}//endif
 	result = source->GetTexture(aiTextureType_OPACITY, 0, &tName, &mapping, &uvInd, &blend, &op, mode);
@@ -435,17 +469,17 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
 		std::string pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
 
 		path = par.getParam<std::string>("assetsLocation")+"/"+par.getParam<std::string>("defaultTextureLocation") +"/"+ path;
-		
+
 		if(img_name.rfind('.') !=  std::string::npos){
 			ResourceDescriptor texture(img_name);
 			texture.setResourceLocation(path);
 			texture.setFlag(true);
 			Texture2D* textureRes = CreateResource<Texture2D>(texture);
-			tempMaterial->setTexture(Material::TEXTURE_OPACITY,textureRes,aiTextureOpToTextureOperation(op));
+			tempMaterial->setTexture(Material::TEXTURE_OPACITY,textureRes,aiTextureOperationTable[op]);
 			tempMaterial->setDoubleSided(true);
-			textureRes->setTextureWrap(aiTextureMapModeToInternal(mode[0]),
-									   aiTextureMapModeToInternal(mode[1]),
-									   aiTextureMapModeToInternal(mode[2])); 
+			textureRes->setTextureWrap(aiTextureMapModeTable[mode[0]],
+									   aiTextureMapModeTable[mode[1]],
+									   aiTextureMapModeTable[mode[2]]);
 		}//endif
 	}else{
 		I32 flags = 0;
@@ -454,7 +488,7 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
 		// try to find out whether the diffuse texture has any
 		// non-opaque pixels. If we find a few, use it as opacity texture
 		if (tempMaterial->getTexture(Material::TEXTURE_BASE)){
-			if(!(flags & aiTextureFlags_IgnoreAlpha) && 
+			if(!(flags & aiTextureFlags_IgnoreAlpha) &&
 				tempMaterial->getTexture(Material::TEXTURE_BASE)->hasTransparency()){
 					Texture2D* textureRes = CreateResource<Texture2D>(ResourceDescriptor(tempMaterial->getTexture(Material::TEXTURE_BASE)->getName()));
 					tempMaterial->setTexture(Material::TEXTURE_OPACITY,textureRes);
@@ -475,71 +509,12 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
 			texture.setResourceLocation(path);
 			texture.setFlag(true);
 			Texture2D* textureRes = CreateResource<Texture2D>(texture);
-			tempMaterial->setTexture(Material::TEXTURE_SPECULAR,textureRes,aiTextureOpToTextureOperation(op));
-			textureRes->setTextureWrap(aiTextureMapModeToInternal(mode[0]),
-									   aiTextureMapModeToInternal(mode[1]),
-									   aiTextureMapModeToInternal(mode[2])); 
+			tempMaterial->setTexture(Material::TEXTURE_SPECULAR,textureRes,aiTextureOperationTable[op]);
+			textureRes->setTextureWrap(aiTextureMapModeTable[mode[0]],
+									   aiTextureMapModeTable[mode[1]],
+									   aiTextureMapModeTable[mode[2]]);
 		}//endif
 	}//endif
 
 	return tempMaterial;
-}
-
-Material::TextureOperation DVDConverter::aiTextureOpToTextureOperation(aiTextureOp op){
-	switch(op){
-		case aiTextureOp_Multiply:
-			return Material::TextureOperation_Multiply;
-		case aiTextureOp_Add:
-			return Material::TextureOperation_Add;
-		case aiTextureOp_Subtract:
-			return Material::TextureOperation_Subtract;
-		case aiTextureOp_Divide:
-			return Material::TextureOperation_Divide;
-		case aiTextureOp_SmoothAdd:
-			return Material::TextureOperation_SmoothAdd;
-		case aiTextureOp_SignedAdd:
-			return Material::TextureOperation_SignedAdd;
-		default:
-			return Material::TextureOperation_Replace;
-	};
-}
-
-Material::ShadingMode DVDConverter::shadingModeInternal(I32 mode){
-	switch(mode){
-		case aiShadingMode_Flat:
-			return Material::SHADING_FLAT;
-		case aiShadingMode_Gouraud:
-			return Material::SHADING_GOURAUD;
-		default:
-		case aiShadingMode_Phong:
-			return Material::SHADING_PHONG;
-		case aiShadingMode_Blinn:
-			return Material::SHADING_BLINN;
-		case aiShadingMode_Toon:
-			return Material::SHADING_TOON;
-		case aiShadingMode_OrenNayar:
-			return Material::SHADING_OREN_NAYAR;
-		case aiShadingMode_Minnaert:
-			return Material::SHADING_MINNAERT;
-		case aiShadingMode_CookTorrance:
-			return Material::SHADING_COOK_TORRANCE;
-		case aiShadingMode_NoShading:
-			return Material::SHADING_NONE;
-		case aiShadingMode_Fresnel:
-			return Material::SHADING_FRESNEL;
-	};
-}
-
-TextureWrap DVDConverter::aiTextureMapModeToInternal(aiTextureMapMode mode){
-	switch(mode){
-		case aiTextureMapMode_Wrap:
-			return TEXTURE_REPEAT;
-		case aiTextureMapMode_Clamp:
-			return TEXTURE_CLAMP;
-		case aiTextureMapMode_Decal:
-			return TEXTURE_DECAL;
-		default:
-		case aiTextureMapMode_Mirror:
-			return TEXTURE_REPEAT;
-	};
 }

@@ -21,15 +21,15 @@
 #include "Hardware/Video/Shaders/Headers/ShaderProgram.h"
 
 class d3dShaderProgram : public ShaderProgram {
-
 public:
-	d3dShaderProgram(){};
+    d3dShaderProgram(const bool optimise = false) : ShaderProgram(optimise) {};
 	~d3dShaderProgram(){};
 
 	bool unload(){unbind(); return true;}
 	void bind(){}
-	void unbind(){}
-	void attachShader(Shader* shader){}
+	void unbind(bool resetActiveProgram = true){}
+	void attachShader(Shader* const shader,const bool refresh = false){}
+	void detachShader(Shader* const shader) {}
 	//Attributes
 	void Attribute(const std::string& ext, D32 value){}
 	void Attribute(const std::string& ext, F32 value){}
@@ -61,13 +61,12 @@ private:
 	bool flushLocCache(){return true;}
 
 private:
-	Unordered_map<char*, I32 > _shaderVars;
+    Unordered_map<std::string, I32 > _shaderVars;
 
 protected:
 	inline bool generateHWResource(const std::string& name){return ShaderProgram::generateHWResource(name);}
 	void validate(){}
 	void link(){}
 };
-
 
 #endif

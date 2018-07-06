@@ -21,7 +21,7 @@
 #include "Character.h"
 /// User controlled Unit
 class Player : public Character {
-public: 
+public:
 	Player(SceneGraphNode* const node);
 	~Player();
 

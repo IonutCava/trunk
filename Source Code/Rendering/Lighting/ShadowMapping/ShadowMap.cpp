@@ -22,14 +22,13 @@ ShadowMap::~ShadowMap()
 ShadowMapInfo::ShadowMapInfo(Light* light) : _light(light),
 											 _shadowMap(NULL)
 {
-     _resolution = 2048;
+     _resolution = 1024;
 	 _numSplits = 3;
 }
 
 ShadowMapInfo::~ShadowMapInfo(){
 	SAFE_DELETE(_shadowMap);
 }
-
 
 ShadowMap* ShadowMapInfo::getOrCreateShadowMap(SceneRenderState* sceneRenderState){
 	if(_shadowMap) return _shadowMap;

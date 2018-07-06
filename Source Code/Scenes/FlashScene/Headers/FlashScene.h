@@ -21,7 +21,6 @@
 #include "Scenes/Headers/Scene.h"
 
 class FlashScene : public Scene {
-
 public:
 	FlashScene() : Scene() {}
 	void render();
@@ -29,7 +28,7 @@ public:
 	bool load(const std::string& name);
 	bool loadResources(bool continueOnErrors);
 	void processInput();
-	void processTasks(U32 time);
+	void processTasks(const U32 time);
 
 private:
 	F32 i ;

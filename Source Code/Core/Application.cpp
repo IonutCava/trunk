@@ -14,17 +14,18 @@ Application::~Application(){
 	SAFE_DELETE(_kernel);
 }
 
-I8 Application::Initialize(const std::string& entryPoint,I32 argc, char **argv){   
+I8 Application::Initialize(const std::string& entryPoint,I32 argc, char **argv){
 	assert(!entryPoint.empty());
-	///Read language table
+	//Read language table
 	ParamHandler::getInstance().setDebugOutput(false);
-	///Print a copyright notice in the log file
+	//Print a copyright notice in the log file
 	Console::getInstance().printCopyrightNotice();
+    CONSOLE_TIMESTAMP_ON();
 	PRINT_FN(Locale::get("START_APPLICATION"));
-	///Create a new kernel
-	_kernel = New Kernel(argc,argv);
+	//Create a new kernel
+	_kernel = New Kernel(argc,argv,this->getInstance());
 	assert(_kernel != NULL);
-	///and load it via an XML file config
+	//and load it via an XML file config
 	_mainWindowId = _kernel->Initialize(entryPoint);
 	return _mainWindowId;
 }

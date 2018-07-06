@@ -17,15 +17,19 @@
 
 #ifndef _UNORDERED_MAP_H_
 #define _UNORDERED_MAP_H_
+
 #ifndef _CONFIG_HEADER_
 #include "config.h"
 #endif
+
 #if defined(UNORDERED_MAP_IMP) && UNORDERED_MAP_IMP == 0
 
 #include <boost/Unordered_map.hpp>
-#include <boost/foreach.hpp>
+
 #define Unordered_map    boost::unordered_map
-#define for_each         BOOST_FOREACH
+
+#include <boost/foreach.hpp>
+#define for_each BOOST_FOREACH
 #define reverse_for_each BOOST_REVERSE_FOREACH
 
 #else
@@ -35,10 +39,8 @@
 #define Unordered_map std::tr1::unordered_map
 #pragma message("ToDo: fix std::for_each and lambda expressions -Ionut")
 #include <boost/foreach.hpp>
-#define for_each BOOST_FOREACH 
+#define for_each BOOST_FOREACH
 #define reverse_for_each BOOST_REVERSE_FOREACH
-
-
 #endif
 
 #endif

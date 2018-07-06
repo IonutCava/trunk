@@ -17,20 +17,24 @@
 
 /*The system is similar to the one used in Torque3D (RenderPassMgr / RenderBinManager) as it was used as an inspiration.
   All credit goes to GarageGames for the idea:
-  - http://garagegames.com/ 
+  - http://garagegames.com/
   - https://github.com/GarageGames/Torque3D
   */
 
 #ifndef _RENDER_BIN_H_
 #define _RENDER_BIN_H_
+
+enum  RenderStage;  
 class SceneGraphNode;
-#include "core.h"
+
+#include "Utility/Headers/Vector.h"
+#include "Hardware/Platform/Headers/PlatformDefines.h"
+#include <assert.h>
 
 struct RenderBinItem{
-
 	SceneGraphNode  *_node;
 	P32              _sortKey;
-	U32              _stateHash;
+	I64              _stateHash;
 
 	RenderBinItem() : _node(NULL){}
 	RenderBinItem(P32 sortKey, SceneGraphNode *node );
@@ -47,7 +51,6 @@ struct RenderingOrder{
 };
 
 ///This class contains a list of "RenderBinItem"'s and stores them sorted depending on the desired designation
-
 class RenderBin {
 	typedef vectorImpl< RenderBinItem > RenderBinStack;
 public:
@@ -65,29 +68,39 @@ public:
 		RBT_SHADOWS,
 		RBT_PLACEHOLDER
 	};
+
+	std::string renderBinTypeToNameMap[RBT_PLACEHOLDER+1];
+
 	friend class RenderQueue;
 
-	RenderBin(const RenderBinType& rbType = RBT_PLACEHOLDER, const RenderingOrder::List& renderOrder = RenderingOrder::ORDER_PLACEHOLDER,D32 drawKey = -1);
-	virtual ~RenderBin() {}
+	RenderBin(const RenderBinType& rbType = RBT_PLACEHOLDER, 
+			  const RenderingOrder::List& renderOrder = RenderingOrder::ORDER_PLACEHOLDER,
+		      D32 drawKey = -1);
+
+	virtual ~RenderBin() 
+	{
+	}
 
 	virtual void sort();
-	virtual void render();
+	virtual void preRender();
+	virtual void render(const RenderStage& currentRenderStage);
+	virtual void postRender();
 	virtual void refresh();
+
 	virtual void addNodeToBin(SceneGraphNode* const sgn);
-	const RenderBinItem& getItem(U16 index);
-	std::string rBinTypeToString(const RenderBinType& rbt);
+	inline  const RenderBinItem& getItem(U16 index) const {assert(index < _renderBinStack.size());	return _renderBinStack[index]; }
 
-	inline U16 getBinSize() {return _renderBinStack.size();}
-	inline D32 getSortOrder() {return _drawKey;}
+	inline U16 getBinSize()   const {return _renderBinStack.size();}
+	inline D32 getSortOrder() const {return _drawKey;}
 
-	inline const RenderBinType&  getType() {return _rbType;}
+	inline const RenderBinType&  getType() const {return _rbType;}
+
 private:
-	mutable SharedLock _renderBinGetMutex; 
+	//mutable SharedLock _renderBinGetMutex;
 	D32 _drawKey;
 	RenderBinType _rbType;
 	RenderBinStack _renderBinStack;
 	RenderingOrder::List _renderOrder;
-
 };
 
 #endif

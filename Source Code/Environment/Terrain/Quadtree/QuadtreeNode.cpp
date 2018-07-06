@@ -7,12 +7,7 @@
 #include "Environment/Terrain/Headers/TerrainChunk.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
 
-void QuadtreeNode::Build(U8 depth,		
-						 vec2<U32> pos,					
-						 vec2<U32> HMsize,				
-						 U32 minHMSize,
-                         VertexBufferObject* const groundVBO)	
-{
+void QuadtreeNode::Build(U8 depth,const vec2<U32>& pos, const vec2<U32>& HMsize, U32 minHMSize, VertexBufferObject* const groundVBO){
 	_LOD = 0;
 
 	U32 div = (U32)pow(2.0f, (F32)depth);
@@ -21,10 +16,7 @@ void QuadtreeNode::Build(U8 depth,
 	if(nodesize.y%2==0) nodesize.y++;
 	vec2<U32> newsize = nodesize/2;
 
-
-	
 	if((U32)std::max(newsize.x, newsize.y) < minHMSize)	{
-		
 		_terrainChunk = New TerrainChunk();
 		_terrainChunk->Load(depth, pos, HMsize,groundVBO);
 
@@ -36,7 +28,7 @@ void QuadtreeNode::Build(U8 depth,
 	_children = New QuadtreeNode[4];
 
 	// Compute children bounding boxes
-	vec3<F32> center = _boundingBox.getCenter();
+	const vec3<F32>& center = _boundingBox.getCenter();
 	_children[CHILD_NW].setBoundingBox( BoundingBox(_boundingBox.getMin(), center) );
 	_children[CHILD_NE].setBoundingBox( BoundingBox(vec3<F32>(center.x, 0.0f, _boundingBox.getMin().z), vec3<F32>(_boundingBox.getMax().x, 0.0f, center.z)) );
 	_children[CHILD_SW].setBoundingBox( BoundingBox(vec3<F32>(_boundingBox.getMin().x, 0.0f, center.z), vec3<F32>(center.x, 0.0f, _boundingBox.getMax().z)) );
@@ -49,8 +41,6 @@ void QuadtreeNode::Build(U8 depth,
 	tNewHMpos[CHILD_SW] = pos + vec2<U32>(0, newsize.y);
 	tNewHMpos[CHILD_SE] = pos + vec2<U32>(newsize.x, newsize.y);
 
-
-	
 	for(I8 i=0; i<4; i++){
 		_children[i].setParentShaderProgram(_parentShaderProgram);
 		_children[i].Build(depth+1, tNewHMpos[i], HMsize, minHMSize,groundVBO);
@@ -61,10 +51,10 @@ bool QuadtreeNode::computeBoundingBox(const vectorImpl<vec3<F32> >& vertices){
 	assert(!vertices.empty());
 
 	if(_terrainChunk != NULL) {
-		vectorImpl<U32>& tIndices = _terrainChunk->getIndiceArray(0);
+		const vectorImpl<U32>& tIndices = _terrainChunk->getIndiceArray(0);
 		F32 tempMin = 100000.0f;
 		F32 tempMax = -100000.0f;
-		
+
 		for(U32 i=0; i<tIndices.size(); i++) {
 			F32 y = vertices[ tIndices[i] ].y;
 
@@ -74,110 +64,99 @@ bool QuadtreeNode::computeBoundingBox(const vectorImpl<vec3<F32> >& vertices){
 
 		_boundingBox.setMin(vec3<F32>(_boundingBox.getMin().x, tempMin,_boundingBox.getMin().z));
 		_boundingBox.setMax(vec3<F32>(_boundingBox.getMax().x, tempMax,_boundingBox.getMax().z));
-
 	}
-
 
 	if(_children != NULL) {
 		for(I8 i=0; i<4; i++) {
 			_children[i].computeBoundingBox(vertices);
 
-			if(_boundingBox.getMin().y > _children[i]._boundingBox.getMin().y)	
+			if(_boundingBox.getMin().y > _children[i]._boundingBox.getMin().y){
 				_boundingBox.setMin(vec3<F32>(_boundingBox.getMin().x,_children[i]._boundingBox.getMin().y,_boundingBox.getMin().z));
-			if(_boundingBox.getMax().y < _children[i]._boundingBox.getMax().y)	
+			}
+
+			if(_boundingBox.getMax().y < _children[i]._boundingBox.getMax().y){
 				_boundingBox.setMax(vec3<F32>(_boundingBox.getMax().x,_children[i]._boundingBox.getMax().y,_boundingBox.getMax().z));
+			}
 		}
 	}
 	_boundingBox.setComputed(true);
 	return true;
 }
 
-
 void QuadtreeNode::Destroy(){
 	SAFE_DELETE_ARRAY(_children);
 	SAFE_DELETE(_terrainChunk);
 }
+
 #pragma message("ToDo: Change vegetation rendering and generation system. Stop relying on terrain! -Ionut")
-void QuadtreeNode::DrawGrass(VertexBufferObject* const grassVBO){
+void QuadtreeNode::DrawGrass(U32 geometryIndex, Transform* const parentTransform){
 	if(!_children) {
 		assert(_terrainChunk);
-		if( _LOD>=0 ){
-			_terrainChunk->DrawGrass(_LOD, _camDistance,grassVBO);
-		}else
-			return;
-	}
-	else {
-		if( _LOD>=0 )
-			for(I8 i=0; i<4; i++)
-				_children[i].DrawGrass(grassVBO);
-		return;		
+		if(_LOD>=0 ) _terrainChunk->DrawGrass(_LOD, _camDistance, geometryIndex,parentTransform);
+		else	     return;
+	}else {
+		if(_LOD < 0 ) return;
+
+		for(I8 i=0; i < 4; i++){
+			_children[i].DrawGrass(geometryIndex,parentTransform);
+		}
 	}
 }
 
 void QuadtreeNode::DrawBBox(){
 	if(!_children) {
 		assert(_terrainChunk);
-			GFX_DEVICE.drawBox3D(_boundingBox.getMin(),_boundingBox.getMax(),mat4<F32>());
+		GFX_DEVICE.drawBox3D(_boundingBox.getMin(),_boundingBox.getMax(),mat4<F32>());
 	}else {
-		if( _LOD>=0 )
-			for(I8 i=0; i<4; i++)
-				_children[i].DrawBBox();
+		if( _LOD < 0 ) return;
+		for(I8 i=0; i<4; i++) { _children[i].DrawBBox(); }
 	}
 }
 
-
 void QuadtreeNode::DrawGround(I32 options,VertexBufferObject* const terrainVBO){
-
 	_LOD = -1;
-	Frustum& pFrust = Frustum::getInstance();
-	vec3<F32> center = _boundingBox.getCenter();				
-	F32 radius = (_boundingBox.getMax()-center).length();	
+
+	const Frustum& frust = Frustum::getInstance();
+	const vec3<F32>& center = _boundingBox.getCenter();
+	const vec3<F32>& eyePos = frust.getEyePos();
+	F32 radius = (_boundingBox.getMax()-center).length();
 
 	if(options & CHUNK_BIT_TESTCHILDREN) {
-		if(!_boundingBox.ContainsPoint(pFrust.getEyePos()))
-		{
-			I8 resSphereInFrustum = pFrust.ContainsSphere(center, radius);
-			switch(resSphereInFrustum) {
-				case FRUSTUM_OUT: return;		
+		if(!_boundingBox.ContainsPoint(eyePos))	{
+			switch(frust.ContainsSphere(center, radius)) {
+				case FRUSTUM_OUT:
+					return;
 				case FRUSTUM_IN:
-					options &= ~CHUNK_BIT_TESTCHILDREN;				
-					break;		
-				case FRUSTUM_INTERSECT:								
-				{		
-					I8 resBoxInFrustum = pFrust.ContainsBoundingBox(_boundingBox);
-					switch(resBoxInFrustum) {
+					options &= ~CHUNK_BIT_TESTCHILDREN;
+					break;
+				case FRUSTUM_INTERSECT:	{
+					switch(frust.ContainsBoundingBox(_boundingBox)) {
 						case FRUSTUM_IN: options &= ~CHUNK_BIT_TESTCHILDREN; break;
 						case FRUSTUM_OUT: return;
-					}
-				}
-			}
-		}
-	}
+					};//inner switch
+				};//case FRUSTUM_INTERSECT
+			};//outer case
+		}//if
+	}//CHUNK_BIT_TESTCHILDREN option
 
-	_LOD = 0; 
+	_LOD = 0;
 
 	if(!_children) {
 		assert(_terrainChunk);
 
 		if(options & CHUNK_BIT_WATERREFLECTION) {
 			_terrainChunk->DrawGround(TERRAIN_CHUNKS_LOD-1,_parentShaderProgram,terrainVBO);
+			return;
 		}
-		else {
-			
-			vec3<F32> vEyeToChunk = this->getBoundingBox().getCenter() - pFrust.getEyePos();
-			_camDistance = vEyeToChunk.length();
-			I8 lod = 0;
-			if(_camDistance > TERRAIN_CHUNK_LOD1)		lod = 2;
-			else if(_camDistance > TERRAIN_CHUNK_LOD0)	lod = 1;
-			_LOD = lod;
-			_terrainChunk->DrawGround(lod,_parentShaderProgram,terrainVBO);
-		}
-	}
-	else {
-		for(I8 i=0; i<4; i++)
-			_children[i].DrawGround(options,terrainVBO);
-	}
 
+		vec3<F32> vEyeToChunk = vec3<F32>(center - eyePos);
+		_camDistance = vEyeToChunk.length();
+		I8 lod = 0;
+		if(_camDistance > TERRAIN_CHUNK_LOD1)		lod = 2;
+		else if(_camDistance > TERRAIN_CHUNK_LOD0)	lod = 1;
+		_LOD = lod;
+		_terrainChunk->DrawGround(lod,_parentShaderProgram,terrainVBO);
+	}else {
+		for(I8 i=0; i<4; i++){ _children[i].DrawGround(options,terrainVBO); }
+	}
 }
-
-

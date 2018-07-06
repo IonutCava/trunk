@@ -20,9 +20,48 @@
 
 #include "core.h"
 
-///Use to define a texture/sampler with details such as type, wrap type, image formats, etc
-struct TextureDescriptor {
+struct SamplerDescriptor {
+    SamplerDescriptor()
+    {
+    }
 
+    inline void setWrapMode(TextureWrap wrapU = TEXTURE_CLAMP, TextureWrap wrapV = TEXTURE_CLAMP, TextureWrap wrapW = TEXTURE_CLAMP){
+		_wrapU = wrapU; _wrapV = wrapV; _wrapW = wrapW;
+	}
+
+	inline void setFilters(TextureFilter minFilter = TEXTURE_FILTER_LINEAR, TextureFilter magFilter = TEXTURE_FILTER_LINEAR){
+		_minFilter = minFilter; _magFilter = magFilter;
+	}
+
+	inline void setAlignment(U8 packAlignment = 1, U8 unpackAlignment = 1) {
+		_packAlignment = packAlignment; _unpackAlignment = unpackAlignment;
+	}
+
+	inline void setMipLevels(U16 mipMinLevel = 0, U16 mipMaxLevel = 1000) {
+		_mipMinLevel = mipMinLevel; _mipMaxLevel = mipMaxLevel;
+	}
+
+	inline void toggleMipMaps(bool state) {_generateMipMaps = state;}
+	inline void setAnisotrophy(U8 value) {_anisotrophyLevel = value;}
+
+    TextureFilter  _minFilter;
+	TextureFilter  _magFilter;
+	TextureWrap    _wrapU;
+	TextureWrap    _wrapV;
+	TextureWrap    _wrapW;
+    bool           _generateMipMaps; ///<create automatic MipMaps
+	bool           _useRefCompare;   ///<use red channel as comparison (e.g. for shadows)
+	U8             _anisotrophyLevel;
+	U8             _packAlignment;
+	U8             _unpackAlignment;
+	U16            _mipMinLevel;
+	U16            _mipMaxLevel;
+
+	ComparisonFunction _cmpFunc; ///<Used by RefCompare
+};
+
+///Use to define a texture with details such as type, image formats, etc
+struct TextureDescriptor {
 	enum AttachmentType{
 		Color0 = 0,
 		Color1,
@@ -31,7 +70,7 @@ struct TextureDescriptor {
 		Depth
 	};
 
-	TextureDescriptor() : _type(TextureType_PLACEHOLDER), 
+	TextureDescriptor() : _type(TextureType_PLACEHOLDER),
 						  _format(IMAGE_FORMAT_PLACEHOLDER),
 						  _internalFormat(IMAGE_FORMAT_PLACEHOLDER),
 						  _dataType(GDF_PLACEHOLDER),
@@ -42,10 +81,10 @@ struct TextureDescriptor {
 		setDefaultValues();
 	}
 
-	TextureDescriptor(TextureType type, 
+	TextureDescriptor(TextureType type,
 				      GFXImageFormat format,
 					  GFXImageFormat internalFormat,
-					  GFXDataFormat dataType) : _type(type), 
+					  GFXDataFormat dataType) : _type(type),
 											    _format(format),
 											    _internalFormat(internalFormat),
 												_dataType(dataType),
@@ -103,6 +142,5 @@ struct TextureDescriptor {
 
 	ComparisonFunction _cmpFunc; ///<Used by RefCompare
 };
-
 
 #endif

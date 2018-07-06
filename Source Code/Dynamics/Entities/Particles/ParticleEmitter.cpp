@@ -11,7 +11,7 @@ ParticleEmitterDescriptor::ParticleEmitterDescriptor() {
 }
 
 ParticleEmitter::ParticleEmitter() : SceneNode(TYPE_PARTICLE_EMITTER),
-								    _drawImpostor(false), 
+								    _drawImpostor(false),
 									 _enabled(true),
 									 _impostor(NULL),
 									 _impostorSGN(NULL)
@@ -39,7 +39,7 @@ void ParticleEmitter::render(SceneGraphNode* const sgn){
 	///The isInView call should stop impostor rendering if needed
 	if(!_impostor){
 		_impostor = New Impostor(_name);
-		_impostorSGN = _particleEmitterSGN->addNode(_impostor->getDummy()); 
+		_impostorSGN = _particleEmitterSGN->addNode(_impostor->getDummy());
 	}
 	_impostor->render(_impostorSGN);
 }
@@ -49,7 +49,7 @@ void ParticleEmitter::setDescriptor(const ParticleEmitterDescriptor& descriptor)
 }
 
 ///The onDraw call will emit particles
-void ParticleEmitter::onDraw(){
+void ParticleEmitter::onDraw(const RenderStage& currentStage){
 	if(!_enabled){
 		return;
 	}

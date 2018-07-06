@@ -35,7 +35,7 @@ struct ParticleEmitterDescriptor {
     U32 _lifetimeVariance;          ///< liftime variance (_lifetime + rand(-_lifetimeVariance, _lifetimeVariance))
 
 	ParticleEmitterDescriptor();
-}; 
+};
 
 class Impostor;
 
@@ -55,17 +55,17 @@ public:
 	void tick();
 
     ///Dummy function from SceneNode;
-	void onDraw();
+	void onDraw(const RenderStage& currentStage);
 
 	///SceneNode concrete implementations
 	bool unload();
-	void postLoad(SceneGraphNode* const sgn);	
+	void postLoad(SceneGraphNode* const sgn);
 
 	///When the SceneGraph calls the particle emitter's render function, we draw the impostor if needed
 	virtual void render(SceneGraphNode* const sgn);
 
 	///SceneNode test
-	bool isInView(bool distanceCheck,BoundingBox& boundingBox,const BoundingSphere& sphere){return _drawImpostor;}
+	bool isInView(const bool distanceCheck,const BoundingBox& boundingBox,const BoundingSphere& sphere){return _drawImpostor;}
 
 private:
 	/// create particles

@@ -18,7 +18,8 @@
 #define _SINGLE_SHADOW_MAP_H_
 #include "ShadowMap.h"
 class Quad3D;
-///A single shadow map system. Used, for example, by spot lights. 
+class ShaderProgram;
+///A single shadow map system. Used, for example, by spot lights.
 class SingleShadowMap : public ShadowMap {
 public:
 	SingleShadowMap(Light* light);
@@ -32,8 +33,10 @@ public:
 
 protected:
 	void renderInternal(SceneRenderState* renderState) const;
+
 private:
 	Quad3D* _renderQuad;
+    ShaderProgram* _previewDepthMapShader;
 };
 
 #endif

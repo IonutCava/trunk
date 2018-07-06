@@ -18,7 +18,6 @@
 	http://nolimitsdesigns.com/game-design/open-asset-import-library-animation-loader/
 */
 
-
 #ifndef ANIMATION_EVALUATOR_H_
 #define ANIMATION_EVALUATOR_H_
 
@@ -63,14 +62,14 @@ protected:
 	friend class SceneAnimator;
 	std::string _name;
 
-	/// Array to return transformations results inside. 
+	/// Array to return transformations results inside.
 	vectorImpl<vectorImpl<mat4<F32> >> _transforms;
 	vectorImpl<vectorImpl<mat4<F32> >> _quatTransforms;
 
 	/// play forward == true, play backward == false
 	bool _playAnimationForward;
 	D32 _lastTime;
-	D32 _duration;	
+	D32 _duration;
 	D32 _ticksPerSecond;
 
 private:

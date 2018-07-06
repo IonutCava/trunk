@@ -1,4 +1,6 @@
 #include "Headers/AITenisSceneAIActionList.h"
+
+#include "Core/Math/Headers/Transform.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "AI/Sensors/Headers/VisualSensor.h"
 #include "Dynamics/Entities/Units/Headers/NPC.h"
@@ -56,10 +58,9 @@ void AITenisSceneAIActionList::processMessage(AIEntity* sender, AIMsg msg, const
 				}
 			}
 			break;
-		case DONT_ATTACK_BALL: 
+		case DONT_ATTACK_BALL:
 			_attackBall = false;
 			break;
-
 	};
 }
 
@@ -116,7 +117,7 @@ void AITenisSceneAIActionList::update(SceneGraphNode* node, NPC* unitRef){
 	if(!_node){
 		_node = node;
 	}
-	
+
 	updatePositions();
 
 	if(_attackBall && !_gameStop){
@@ -133,7 +134,6 @@ void AITenisSceneAIActionList::update(SceneGraphNode* node, NPC* unitRef){
 		visualSensor->updatePosition(node->getTransform()->getPosition());
 	}
 }
-
 
 ///Only X axis absolute value is important
 F32 AITenisSceneAIActionList::distanceToBall(const vec3<F32>& entityPosition, const vec3<F32> ballPosition) {

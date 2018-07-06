@@ -26,25 +26,23 @@ public:
 	d3dPixelBufferObject(PBOType type) : PixelBufferObject(type) {}
 	~d3dPixelBufferObject() {Destroy();}
 
-	bool Create(U16 width, U16 height,U16 depth = 0, 
+	bool Create(U16 width, U16 height,U16 depth = 0,
 				GFXImageFormat internalFormatEnum = RGBA8,
 				GFXImageFormat formatEnum = RGBA,
 				GFXDataFormat dataTypeEnum = FLOAT_32) {return true;}
-				
+
 	void Destroy() {};
 
 	void* Begin(U8 nFace=0) const {return 0;};
 	void End(U8 nFace=0) const {}
 
-	void Bind(U8 unit=0) const {}	
-	void Unbind(U8 unit=0) const {}	
+	void Bind(U8 unit=0) const {}
+	void Unbind(U8 unit=0) const {}
 
 	void updatePixels(const F32 * const pixels) {}
 
 private:
 	bool checkStatus() {return true;}
-
 };
 
 #endif
-

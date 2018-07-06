@@ -23,8 +23,7 @@
 class AIEntity;
 class SceneGraphNode;
 class VisualSensor : public Sensor{
-
-public: 
+public:
 	VisualSensor() : Sensor(VISUAL_SENSOR) {}
 
 	U32  getNearbyEntityCount(U32 range)         {}  ///< number of smart units nearby     (only visible ones)
@@ -32,7 +31,7 @@ public:
 	U32  getNearbyFriendlyEntityCount(U32 range) {}  ///< lookup friendly entity count in range (only visible ones)
 
 	U32        getDistanceToEntity(AIEntity* target)   {}
-	vec3<F32>  getPositionOfObject(SceneGraphNode* node);    
+	vec3<F32>  getPositionOfObject(SceneGraphNode* node);
 	AIEntity*  getNearestFriendlyEntity()         {}  ///< get closest visible friendly entity
 	AIEntity*  getNearestHostileEntity()          {}  ///< get closest visible hostile entity
 };

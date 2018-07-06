@@ -25,12 +25,12 @@
 
 class Quad3D;
 class Quadtree;
+class Transform;
 class ShaderProgram;
 class TerrainDescriptor;
 class VertexBufferObject;
 
 class Terrain : public SceneNode {
-
    enum TerrainTextureUsage{
 	  TERRAIN_TEXTURE_DIFFUSE = 0,
 	  TERRAIN_TEXTURE_NORMALMAP = 1,
@@ -49,42 +49,43 @@ public:
 	~Terrain();
 
 	bool unload();
-	
+
 	void drawGround() const;
 	void drawInfinitePlain();
 	void render(SceneGraphNode* const sgn);
-    void onDraw();
-	void postDraw();
+    void onDraw(const RenderStage& currentStage);
+	void postDraw(const RenderStage& currentStage);
 	void prepareMaterial(SceneGraphNode* const sgn);
 	void releaseMaterial();
     void prepareDepthMaterial(SceneGraphNode* const sgn);
 	void releaseDepthMaterial();
-	void sceneUpdate(U32 sceneTime);
+	void sceneUpdate(const U32 sceneTime,SceneGraphNode* const sgn);
 	void drawBoundingBox(SceneGraphNode* const sgn);
 
 	inline void toggleBoundingBoxes(){ _drawBBoxes = !_drawBBoxes; }
-
+    vec3<F32>  getPositionFromGlobal(F32 x, F32 z) const;
 	vec3<F32>  getPosition(F32 x_clampf, F32 z_clampf) const;
 	vec3<F32>  getNormal(F32 x_clampf, F32 z_clampf) const;
 	vec3<F32>  getTangent(F32 x_clampf, F32 z_clampf) const;
+    vec3<F32>  getBiTangent(F32 x_clampf, F32 z_clampf) const;
 	vec2<F32>  getDimensions(){return vec2<F32>((F32)_terrainWidth, (F32)_terrainHeight);}
 
 		   void  terrainSmooth(F32 k);
-		   void  postLoad(SceneGraphNode* const sgn);	
+		   void  postLoad(SceneGraphNode* const sgn);
 		   void  initializeVegetation(TerrainDescriptor* const terrain,SceneGraphNode* const terrainSGN);
-        
+
     inline VertexBufferObject* const getGeometryVBO() {return _groundVBO;}
     inline Quadtree&         getQuadtree()   const {return *_terrainQuadtree;}
 	inline Vegetation* const getVegetation() const {return _veg;}
-	inline void addVegetation(Vegetation* veg, std::string grassShader){_veg = veg; _grassShader = grassShader;} 
+	inline void addVegetation(Vegetation* veg, std::string grassShader){_veg = veg; _grassShader = grassShader;}
 	inline void toggleVegetation(bool state){ _veg->toggleRendering(state); }
     inline void toggleReflection(bool state){ _drawReflected = state;}
 	bool computeBoundingBox(SceneGraphNode* const sgn);
-	inline bool isInView(bool distanceCheck,BoundingBox& boundingBox,const BoundingSphere& sphere) {return true;}
-   
+	inline bool isInView(const bool distanceCheck,const BoundingBox& boundingBox,const BoundingSphere& sphere) {return true;}
+
 	void addTexture(TerrainTextureUsage channel, Texture2D* const texture);
 	inline Texture2D* getTexture(TerrainTextureUsage channel) {return _terrainTextures[channel];}
-    
+
 protected:
 	template<typename T>
 	friend class ImplResourceLoader;
@@ -93,11 +94,13 @@ protected:
 
 private:
 
-	U8                      _lightCount; 
+	U8                      _lightCount;
 	U16						_terrainWidth, _terrainHeight;
 	Quadtree*				_terrainQuadtree;
 	VertexBufferObject*		_groundVBO;
 
+    F32  _diffuseUVScale;
+    F32  _normalMapUVScale;
 	F32  _terrainScaleFactor;
 	F32  _terrainHeightScaleFactor;
 	F32	 _farPlane;
@@ -114,10 +117,15 @@ private:
 	vec3<F32>               _eyePos;
 	Quad3D*					_plane;
 	Transform*				_planeTransform;
+	Transform*              _terrainTransform;
 	SceneGraphNode*         _node;
 	SceneGraphNode*			_planeSGN;
+	///Normal rendering state
 	RenderStateBlock*       _terrainRenderState;
+	///Depth map rendering state
     RenderStateBlock*       _terrainDepthRenderState;
+	///Reflection rendering state
+	RenderStateBlock*       _terrainReflectionRenderState;
 };
 
 #endif

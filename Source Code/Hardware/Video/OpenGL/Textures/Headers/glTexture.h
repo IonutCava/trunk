@@ -22,35 +22,32 @@
 #include "Hardware/Video/Textures/Headers/Texture.h"
 
 class glTexture : public Texture {
-
 public:
 	glTexture(GLuint type, bool flipped = false);
 	~glTexture();
 
 	bool unload() {Destroy(); return true;}
 
-	void Bind(GLushort unit, bool fixedPipeline = false);
+	void Bind(GLushort unit);
 	void Unbind(GLushort unit);
 
 	void LoadData(GLuint target, GLubyte* ptr, GLushort& w, GLushort& h, GLubyte d);
 
 protected:
 	bool generateHWResource(const std::string& name);
-
+	void threadedLoad(const std::string& name);
 private:
 
 	void Bind() const;
 	void Unbind() const;
 	void Destroy();
 	void reserveStorage(GLint w, GLint h);
-
 private:
-	GLint _depth;
-	GLuint _type;
+	GLenum _format;
+	GLenum _internalFormat;
+	GLenum _type;
 	bool  _reservedStorage;   ///<Used glTexStorage2D for this texture
-	bool  _fixedPipeline;     ///<Textures can be bound without shaders
 	GLboolean  _canReserveStorage; ///<Can use glTexStorage2D
-	
 };
 
 #endif

@@ -1,23 +1,27 @@
 -- Vertex
-#include "vboInputData.vert"
+#include "vertexDefault.vert"
 
-void main(){
-  computeData();
-  gl_Position = gl_ModelViewProjectionMatrix * vertexData;
-} 
+void main(void)
+{
+
+	computeData();
+}
 
 -- Fragment
 
-varying vec2 _texCoord;
+in vec2  _texCoord;
+out vec4 _colorOut;
 uniform sampler2D texScreen;
-uniform float threshold;
+
+#define THRESHOLD 0.95
 
 void main(){	
-	vec4 value = texture(texScreen, _texCoord);
-		
-	if( (value.r + value.g + value.b)/3.0 > threshold )
-		gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-	else
-		gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+	vec3 value = texture(texScreen, _texCoord).rgb;
+	float selection = clamp(sign(((value.r + value.g + value.b)/3.0) - THRESHOLD),0.0,1.0);
+
+	_colorOut = mix(vec4(0.0, 0.0, 0.0, 0.0),
+                    vec4(1.0, 1.0, 1.0, 1.0),
+                    selection);
+
 
 }

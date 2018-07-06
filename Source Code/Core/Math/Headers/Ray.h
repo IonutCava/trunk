@@ -28,7 +28,7 @@
 #ifndef _RAY_H_
 #define _RAY_H_
 
-#include "core.h"
+#include "Core/Math/Headers/MathClasses.h"
 
 class Ray {
 	public:

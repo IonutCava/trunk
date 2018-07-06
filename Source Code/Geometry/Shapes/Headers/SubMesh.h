@@ -24,7 +24,7 @@
 DIVIDE-Engine: 21.10.2010 (Ionut Cava)
 
 A SubMesh is a geometry wrapper used to build a mesh. Just like a mesh, it can be rendered locally or across
-the server or disabled from rendering alltogheter. 
+the server or disabled from rendering alltogheter.
 
 Objects created from this class have theyr position in relative space based on the parent mesh position.
 (Same for scale,rotation and so on).
@@ -39,17 +39,14 @@ and a name.
 class Mesh;
 struct aiScene;
 class SubMesh : public Object3D {
-
 public:
-	SubMesh(const std::string& name, ObjectFlag flag = OBJECT_FLAG_NONE) : 
+	SubMesh(const std::string& name, ObjectFlag flag = OBJECT_FLAG_NONE) :
 									   Object3D(name,SUBMESH,TRIANGLES,flag),
 									   _visibleToNetwork(true),
 									   _render(true),
 									   _id(0),
 									   _parentMesh(NULL)
 	{
-		/// 3D objects usually requires the VBO to be recomputed on creation. mesh objects do not.
-		_refreshVBO = false;
 	}
 
 	virtual ~SubMesh();
@@ -66,12 +63,11 @@ public:
 	virtual void postLoad(SceneGraphNode* const sgn);
 	inline Mesh* getParentMesh() {return _parentMesh;}
 
-	virtual void onDraw();
-	virtual void setSpecialShaderConstants(ShaderProgram* const shader){/*nothing yet*/}
+	virtual void onDraw(const RenderStage& currentStage);
 	virtual void preFrameDrawEnd(SceneGraphNode* const sgn) {/*nothing yet*/}
 	virtual void updateBBatCurrentFrame(SceneGraphNode* const sgn);
-	/// Called from SceneGraph "sceneUpdate"	
-	virtual void sceneUpdate(U32 sceneTime);
+	/// Called from SceneGraph "sceneUpdate"
+	virtual void sceneUpdate(const U32 sceneTime,SceneGraphNode* const sgn);
 
 	inline void setSceneMatrix(const mat4<F32>& sceneMatrix){ _sceneRootMatrix = sceneMatrix; }
 
@@ -86,7 +82,6 @@ private:
 	bool _render;
 	U32 _id;
 	Mesh* _parentMesh;
-
 };
 
 #endif

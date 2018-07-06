@@ -2,7 +2,6 @@
 #include "Headers/WaypointGraph.h"
 
 namespace Navigation {
-
    tQueryFilter::tQueryFilter() {
    }
 
@@ -10,11 +9,8 @@ namespace Navigation {
       return Parent::passFilter(ref, tile, poly);
    }
 
-
-
    NavigationPath::NavigationPath() :  _from(0.0f, 0.0f, 0.0f),
 									   _to(0.0f, 0.0f, 0.0f)  {
-
       _mesh = NULL;
       _waypoints = NULL;
 
@@ -62,7 +58,6 @@ namespace Navigation {
    }
 
    void NavigationPath::resize()  {
-     
    }
 
    bool NavigationPath::plan()  {
@@ -83,7 +78,6 @@ namespace Navigation {
    }
 
    bool NavigationPath::visitNext()  {
-
       U32 s = _visitPoints.size();
 
       if(s < 2)
@@ -120,19 +114,16 @@ namespace Navigation {
    }
 
    bool NavigationPath::update()  {
-
       return false;
    }
 
    bool NavigationPath::finalise()  {
-
       resize();
 
       return dtStatusSucceed(_status);
    }
 
    bool NavigationPath::planInstant()  {
-
       if(!init())
          return false;
 
@@ -148,9 +139,7 @@ namespace Navigation {
       return true;
    }
 
-
    vec3<F32> NavigationPath::getNode(I32 idx)  {
-
       if(idx < getCount() && idx >= 0)
          return _points[idx];
 
@@ -164,5 +153,4 @@ namespace Navigation {
    I32 NavigationPath::getObject(I32 idx)  {
       return -1;
    }
-
 };

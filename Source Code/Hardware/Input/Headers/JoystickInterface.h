@@ -23,7 +23,6 @@
 //////////// Joystick manager class ////////////////////////////////////////////////////////
 class EventHandler;
 class JoystickInterface {
-
   protected:
 
     // Input manager.
@@ -40,7 +39,7 @@ class JoystickInterface {
     bool _bFFFound;
 
     // Selected joystick master gain.
-    float _dMasterGain;
+    F32 _dMasterGain;
 
     // Selected joystick auto-center mode.
     bool _bAutoCenter;
@@ -62,7 +61,7 @@ class JoystickInterface {
 		}catch(OIS::Exception &ex){
 		  PRINT_FN(Locale::get("ERROR_INPUT_CREATE_JOYSTICK"),ex.eText);
 		}
-		
+
 		// Check for FF, and if so, keep the joy and dump FF info
 		OIS::ForceFeedback* pFFDev = NULL;
 		if(pJoy){
@@ -78,10 +77,10 @@ class JoystickInterface {
 
 		  // Keep also the associated FF device
 		  _vecFFDev.push_back(pFFDev);
-		  
+
 		  // Dump FF supported effects and other info.
 		  PRINT_FN(Locale::get("INPUT_JOY_NUM_FF_AXES"), pFFDev->getFFAxesNumber());
-		  const OIS::ForceFeedback::SupportedEffectList &lstFFEffects = 
+		  const OIS::ForceFeedback::SupportedEffectList &lstFFEffects =
 			pFFDev->getSupportedEffects();
 		  if (lstFFEffects.size() > 0)
 		  {
@@ -139,7 +138,7 @@ class JoystickInterface {
 
     inline OIS::ForceFeedback* getCurrentFFDevice(){  return (_nCurrJoyInd >= 0) ? _vecFFDev[_nCurrJoyInd] : 0; }
 
-    void changeMasterGain(float dDeltaPercent)
+    void changeMasterGain(F32 dDeltaPercent)
     {
 	  if (_nCurrJoyInd >= 0)
 	  {
@@ -148,7 +147,7 @@ class JoystickInterface {
 		  _dMasterGain = 1.0;
 		else if (_dMasterGain < 0.0)
 		  _dMasterGain = 0.0;
-		
+
 		_vecFFDev[_nCurrJoyInd]->setMasterGain(_dMasterGain);
 	  }
 	}
@@ -171,10 +170,9 @@ class JoystickInterface {
     {
 	  // This fires off buffered events for each joystick we have
 	  for(size_t nJoyInd = 0; nJoyInd < _vecJoys.size(); ++nJoyInd)
-		if( _vecJoys[nJoyInd] )	
+		if( _vecJoys[nJoyInd] )
 		  _vecJoys[nJoyInd]->capture();
 	}
-
 };
 
 #endif

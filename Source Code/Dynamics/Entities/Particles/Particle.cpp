@@ -18,13 +18,12 @@ ParticleDescriptor::ParticleDescriptor(){
    }
 
    _texCoords[0] = vec2<F32>(0.0,0.0);
-   _texCoords[1] = vec2<F32>(0.0,1.0); 
+   _texCoords[1] = vec2<F32>(0.0,1.0);
    _texCoords[2] = vec2<F32>(1.0,1.0);
    _texCoords[3] = vec2<F32>(1.0,0.0);
 }
 
 bool Particle::build(ParticleDescriptor* const descriptor, const vec3<F32>& inheritedVelocity){
-
    _velocity += inheritedVelocity * (descriptor->_velocityFactor);
    _acceleration = _acceleration * (descriptor->_cAcceleration);
    _totalLifetime = descriptor->_lifetime;

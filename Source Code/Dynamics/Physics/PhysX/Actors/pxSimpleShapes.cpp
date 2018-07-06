@@ -30,12 +30,12 @@ bool PhysX::createBox(const vec3<F32>& position, F32 size){
 	PxVec3 dimensions(size);
 	PxBoxGeometry geometry(dimensions);
 	PxRigidDynamic *actor = PxCreateDynamic(*_gPhysicsSDK,
-											 transform, 
+											 transform,
 											 geometry,
                                              *(static_cast<PhysXSceneInterface* >(_targetScene)->getMaterials()[1]),
 											 density);
     actor->setAngularDamping(0.75);
-    actor->setLinearVelocity(PxVec3(0)); 
+    actor->setLinearVelocity(PxVec3(0));
 
 	if (!actor){
 		ERROR_FN(Locale::get("ERROR_PHYSX_CREATE_BOX"));

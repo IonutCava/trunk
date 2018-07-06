@@ -16,15 +16,15 @@ namespace cdiggins
 {
 namespace anyimpl
 {
-    struct bad_any_cast 
+    struct bad_any_cast
     {
     };
 
-    struct empty_any 
+    struct empty_any
     {
     };
 
-    struct base_any_policy 
+    struct base_any_policy
     {
         virtual void static_delete(void** x) = 0;
         virtual void copy_from_value(void const* src, void** dest) = 0;
@@ -37,7 +37,7 @@ namespace anyimpl
     template<typename T>
     struct typed_base_any_policy : base_any_policy
     {
-        virtual size_t get_size() { return sizeof(T); } 
+        virtual size_t get_size() { return sizeof(T); }
     };
 
     template<typename T>
@@ -54,30 +54,30 @@ namespace anyimpl
     template<typename T>
     struct big_any_policy : typed_base_any_policy<T>
     {
-        virtual void static_delete(void** x) { if (*x) 
+        virtual void static_delete(void** x) { if (*x)
             delete(*reinterpret_cast<T**>(x)); *x = NULL; }
-        virtual void copy_from_value(void const* src, void** dest) { 
+        virtual void copy_from_value(void const* src, void** dest) {
            *dest = new T(*reinterpret_cast<T const*>(src)); }
-        virtual void clone(void* const* src, void** dest) { 
+        virtual void clone(void* const* src, void** dest) {
            *dest = new T(**reinterpret_cast<T* const*>(src)); }
-        virtual void move(void* const* src, void** dest) { 
-          (*reinterpret_cast<T**>(dest))->~T(); 
+        virtual void move(void* const* src, void** dest) {
+          (*reinterpret_cast<T**>(dest))->~T();
           **reinterpret_cast<T**>(dest) = **reinterpret_cast<T* const*>(src); }
         virtual void* get_value(void** src) { return *src; }
     };
 
     template<typename T>
-    struct choose_policy 
+    struct choose_policy
     {
         typedef big_any_policy<T> type;
     };
 
-    template<typename T> 
-    struct choose_policy<T*> 
-    { 
-        typedef small_any_policy<T*> type; 
+    template<typename T>
+    struct choose_policy<T*>
+    {
+        typedef small_any_policy<T*> type;
     };
-    
+
     struct any;
 
     /// Choosing the policy for an any type is illegal, but should never happen.
@@ -104,7 +104,7 @@ namespace anyimpl
 
     #undef SMALL_POLICY
 
-    /// This function will return a different policy for each type. 
+    /// This function will return a different policy for each type.
     template<typename T>
     base_any_policy* get_policy()
     {
@@ -123,37 +123,37 @@ private:
 public:
     /// Initializing constructor.
     template <typename T>
-    any(const T& x) 
-        : policy(anyimpl::get_policy<anyimpl::empty_any>()), object(NULL) 
+    any(const T& x)
+        : policy(anyimpl::get_policy<anyimpl::empty_any>()), object(NULL)
     {
         assign(x);
-    }       
+    }
 
-    /// Empty constructor. 
-    any() 
-        : policy(anyimpl::get_policy<anyimpl::empty_any>()), object(NULL) 
+    /// Empty constructor.
+    any()
+        : policy(anyimpl::get_policy<anyimpl::empty_any>()), object(NULL)
     { }
 
-    /// Special initializing constructor for string literals. 
-    any(const char* x) 
-        : policy(anyimpl::get_policy<anyimpl::empty_any>()), object(NULL) 
-    { 
+    /// Special initializing constructor for string literals.
+    any(const char* x)
+        : policy(anyimpl::get_policy<anyimpl::empty_any>()), object(NULL)
+    {
         assign(x);
     }
 
-    /// Copy constructor. 
-    any(const any& x) 
-        : policy(anyimpl::get_policy<anyimpl::empty_any>()), object(NULL)         
-    {            
+    /// Copy constructor.
+    any(const any& x)
+        : policy(anyimpl::get_policy<anyimpl::empty_any>()), object(NULL)
+    {
         assign(x);
     }
 
-    /// Destructor. 
+    /// Destructor.
     ~any() {
         policy->static_delete(&object);
     }
 
-    /// Assignment function from another any. 
+    /// Assignment function from another any.
     any& assign(const any& x) {
         reset();
         policy = x.policy;
@@ -161,7 +161,7 @@ public:
         return *this;
     }
 
-    /// Assignment function. 
+    /// Assignment function.
     template <typename T>
     any& assign(const T& x) {
         reset();
@@ -176,8 +176,8 @@ public:
         return assign(x);
     }
 
-    /// Assignment operator, specialed for literal strings. 
-    /// They have types like const char [6] which don't work as expected. 
+    /// Assignment operator, specialed for literal strings.
+    /// They have types like const char [6] which don't work as expected.
     any& operator=(const char* x) {
         return assign(x);
     }
@@ -192,13 +192,13 @@ public:
     /// Cast operator. You can only cast to the original type.
     template<typename T>
     T& cast() {
-        if (policy != anyimpl::get_policy<T>()) 
+        if (policy != anyimpl::get_policy<T>())
             throw anyimpl::bad_any_cast();
-        T* r = reinterpret_cast<T*>(policy->get_value(&object)); 
+        T* r = reinterpret_cast<T*>(policy->get_value(&object));
         return *r;
     }
 
-    /// Returns true if the any contains no value. 
+    /// Returns true if the any contains no value.
     bool empty() const {
         return policy == anyimpl::get_policy<anyimpl::empty_any>();
     }
@@ -209,7 +209,7 @@ public:
         policy = anyimpl::get_policy<anyimpl::empty_any>();
     }
 
-    /// Returns true if the two types are the same. 
+    /// Returns true if the two types are the same.
     bool compatible(const any& x) const {
         return policy == x.policy;
     }
@@ -219,7 +219,6 @@ public:
       T temp;
       return compatible(temp);
     }
-
 };
 }
 

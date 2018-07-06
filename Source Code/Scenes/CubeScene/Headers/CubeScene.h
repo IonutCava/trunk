@@ -21,7 +21,6 @@
 #include "Scenes/Headers/Scene.h"
 
 class CubeScene : public Scene {
-
 public:
 	CubeScene() : Scene()
 	{
@@ -31,11 +30,10 @@ public:
 	bool load(const std::string& name);
 	bool loadResources(bool continueOnErrors);
 	void processInput();
-	void processTasks(U32 time);
+	void processTasks(const U32 time);
 
 	void onKeyDown(const OIS::KeyEvent& key);
 	void onKeyUp(const OIS::KeyEvent& key);
-
 };
 
 #endif

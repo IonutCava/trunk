@@ -9,12 +9,10 @@
 #include "Environment/Terrain/Headers/TerrainDescriptor.h"
 
 namespace XML {
-
 	using boost::property_tree::ptree;
 	ptree pt;
 
 	std::string loadScripts(const std::string& file){
-
 		ParamHandler &par = ParamHandler::getInstance();
 		PRINT_FN(Locale::get("XML_LOAD_SCRIPTS"));
 		read_xml(file,pt);
@@ -63,8 +61,10 @@ namespace XML {
 		par.setParam("postProcessing.enablePostFX",postProcessing);
 		par.setParam("postProcessing.enableFXAA",((aaMethod == FS_FXAA || aaMethod == FS_MSwFXAA) && aaSamples > 0));
 		par.setParam("GUI.CEGUI.ExtraStates",pt.get("GUI.CEGUI.ExtraStates",false));
-		par.setParam("GUI.defaultScheme",pt.get("GUI.defaultGUIScheme","TaharezLook"));
+        par.setParam("GUI.CEGUI.SkipRendering",pt.get("GUI.CEGUI.SkipRendering",false));
+		par.setParam("GUI.defaultScheme",pt.get("GUI.defaultGUIScheme","GWEN"));
 		par.setParam("GUI.consoleLayout",pt.get("GUI.consoleLayoutFile","console.layout"));
+		par.setParam("GUI.editorLayout",pt.get("GUI.editorLayoutFile","editor.layout"));
 		par.setParam("rendering.FSAAsamples",aaSamples);
 		par.setParam("rendering.FSAAmethod",aaMethod);
 		par.setParam("rendering.detailLevel",pt.get<U8>("rendering.detailLevel",DETAIL_HIGH));
@@ -77,14 +77,14 @@ namespace XML {
 		par.setParam("rendering.shadowResolutionFactor", shadowResolutionFactor);
 		par.setParam("rendering.enableShadows",pt.get("rendering.enableShadows", true));
 		par.setParam("rendering.enableFog", pt.get("rendering.enableFog",true));
-		I32 resWidth = pt.get("runtime.resolutionWidth",1024.0f);
-		I32 resHeight = pt.get("runtime.resolutionHeight",768.0f);
+		U16 resWidth = pt.get("runtime.resolutionWidth",1024);
+		U16 resHeight = pt.get("runtime.resolutionHeight",768);
 		par.setParam("runtime.zNear",(F32)pt.get("runtime.zNear",0.1f));
 		par.setParam("runtime.zFar",(F32)pt.get("runtime.zFar",1200.0f));
 		par.setParam("runtime.verticalFOV",(F32)pt.get("runtime.verticalFOV",60));
 		par.setParam("runtime.GLminorVer",(U8)pt.get("runtime.GLminorVer",2));
 		par.setParam("runtime.useGLCompatProfile",pt.get("runtime.useGLCompatProfile",true));
-		par.setParam("runtime.aspectRatio",1.0f * resWidth / resHeight);
+		par.setParam("runtime.aspectRatio",1.0f * (I32)resWidth / (I32)resHeight);
 		par.setParam("runtime.resolutionWidth",resWidth);
 		par.setParam("runtime.resolutionHeight",resHeight);
 		par.setParam("runtime.windowedMode",pt.get("rendering.windowedMode",true));
@@ -104,6 +104,7 @@ namespace XML {
 			par.setParam("postProcessing.enableBloom",pt.get("rendering.enableBloom",false));
 			par.setParam("postProcessing.enableSSAO",pt.get("rendering.enableSSAO",false));
             par.setParam("postProcessing.bloomFactor",pt.get("rendering.bloomFactor",0.4f));
+            par.setParam("postProcessing.enableHDR",pt.get("rendering.enableHDR",false));
 		}
 		par.setParam("mesh.playAnimations",pt.get("mesh.playAnimations",true));
 
@@ -112,14 +113,14 @@ namespace XML {
         par.setParam("rendering.fogDensity", pt.get("rendering.fogDensity",0.01f));
         par.setParam("rendering.fogColor", vec4<F32>(pt.get<F32>("rendering.fogColor.<xmlattr>.r"),
 													       pt.get<F32>("rendering.fogColor.<xmlattr>.g"),
-													       pt.get<F32>("rendering.fogColor.<xmlattr>.b"),1.0f)); 
+													       pt.get<F32>("rendering.fogColor.<xmlattr>.b"),1.0f));
 	}
 
 	void loadScene(const std::string& sceneName, SceneManager& sceneMgr) {
 		ParamHandler &par = ParamHandler::getInstance();
 		pt.clear();
 		PRINT_FN(Locale::get("XML_LOAD_SCENE"), sceneName.c_str());
-		std::string sceneLocation = par.getParam<std::string>("scriptLocation") + "/" + 
+		std::string sceneLocation = par.getParam<std::string>("scriptLocation") + "/" +
 				                    par.getParam<std::string>("scenesLocation") + "/" + sceneName;
 		try{
 			read_xml(sceneLocation + ".xml", pt);
@@ -168,15 +169,13 @@ namespace XML {
         scene->state()->getFogDesc()._fogColor = par.getParam<vec4<F32> >("rendering.fogColor");
 	}
 
-
-
 	void loadTerrain(const std::string &file, Scene* const scene) {
 		U8 count = 0;
 		pt.clear();
 		PRINT_FN(Locale::get("XML_LOAD_TERRAIN"),file.c_str());
 		read_xml(file,pt);
 		ptree::iterator it;
-		std::string assetLocation = ParamHandler::getInstance().getParam<std::string>("assetsLocation") + "/"; 
+		std::string assetLocation = ParamHandler::getInstance().getParam<std::string>("assetsLocation") + "/";
 		for (it = pt.get_child("terrainList").begin(); it != pt.get_child("terrainList").end(); ++it )	{
 			std::string name = it->second.data(); //The actual terrain name
 			std::string tag = it->first.data();   //The <name> tag for valid terrains or <xmlcomment> for comments
@@ -197,31 +196,28 @@ namespace XML {
 			ter->addVariable("grassBillboard1",assetLocation + pt.get<std::string>(name + ".vegetation.grassBillboard1"));
 			ter->addVariable("grassBillboard2",assetLocation + pt.get<std::string>(name + ".vegetation.grassBillboard2"));
 			ter->addVariable("grassBillboard3",assetLocation + pt.get<std::string>(name + ".vegetation.grassBillboard3"));
-			//ter->addVariable("grassBillboard1",pt.get<std::string>(name + ".vegetation.grassBillboard1"));
 			ter->setGrassDensity(pt.get<U32>(name + ".vegetation.<xmlattr>.grassDensity"));
 			ter->setTreeDensity(pt.get<U16>(name + ".vegetation.<xmlattr>.treeDensity"));
 			ter->setGrassScale(pt.get<F32>(name + ".vegetation.<xmlattr>.grassScale"));
 			ter->setTreeScale(pt.get<F32>(name + ".vegetation.<xmlattr>.treeScale"));
-
+            ter->setDiffuseScale(pt.get<F32>(name+".textures.diffuseUVScale",250.0f));
+            ter->setNormalMapScale(pt.get<F32>(name+".textures.normalUVScale",1000.0f));
 			ter->setPosition(vec3<F32>(pt.get<F32>(name + ".position.<xmlattr>.x"),
 								       pt.get<F32>(name + ".position.<xmlattr>.y"),
 								       pt.get<F32>(name + ".position.<xmlattr>.z")));
 			ter->setScale(vec2<F32>(pt.get<F32>(name + ".scale"), //width / length
 							        pt.get<F32>(name + ".heightFactor"))); //height
-							   
 
 			ter->setActive(pt.get<bool>(name + ".active"));
             ter->setChunkSize(pt.get<U32>(name + ".nodeChunkSize"));
-			
+
 			scene->addTerrain(ter);
 			count++;
-			
 		}
 		PRINT_FN(Locale::get("XML_TERRAIN_COUNT"),count);
 	}
 
 	void loadGeometry(const std::string &file, Scene* const scene) 	{
-
 		pt.clear();
 		PRINT_FN(Locale::get("XML_LOAD_GEOMETRY"),file.c_str());
 		read_xml(file,pt);
@@ -242,9 +238,9 @@ namespace XML {
 			model.orientation.x = pt.get<F32>(name + ".orientation.<xmlattr>.x");
 			model.orientation.y = pt.get<F32>(name + ".orientation.<xmlattr>.y");
 			model.orientation.z = pt.get<F32>(name + ".orientation.<xmlattr>.z");
-			model.scale.x    = pt.get<F32>(name + ".scale.<xmlattr>.x"); 
-			model.scale.y    = pt.get<F32>(name + ".scale.<xmlattr>.y"); 
-			model.scale.z    = pt.get<F32>(name + ".scale.<xmlattr>.z"); 
+			model.scale.x    = pt.get<F32>(name + ".scale.<xmlattr>.x");
+			model.scale.y    = pt.get<F32>(name + ".scale.<xmlattr>.y");
+			model.scale.z    = pt.get<F32>(name + ".scale.<xmlattr>.z");
 			model.type = GEOMETRY;
 			model.version = pt.get<F32>(name + ".version");
             if(boost::optional<ptree &> child = pt.get_child_optional(name + ".staticObject")){
@@ -262,7 +258,6 @@ namespace XML {
 
 		if(boost::optional<ptree &> vegetation = pt.get_child_optional("vegetation"))
 		for (it = pt.get_child("vegetation").begin(); it != pt.get_child("vegetation").end(); ++it ) {
-
 			std::string name = it->second.data();
 			std::string format = it->first.data();
 			if(format.find("<xmlcomment>") != std::string::npos) continue;
@@ -275,9 +270,9 @@ namespace XML {
 			model.orientation.x = pt.get<F32>(name + ".orientation.<xmlattr>.x");
 			model.orientation.y = pt.get<F32>(name + ".orientation.<xmlattr>.y");
 			model.orientation.z = pt.get<F32>(name + ".orientation.<xmlattr>.z");
-			model.scale.x    = pt.get<F32>(name + ".scale.<xmlattr>.x"); 
-			model.scale.y    = pt.get<F32>(name + ".scale.<xmlattr>.y"); 
-			model.scale.z    = pt.get<F32>(name + ".scale.<xmlattr>.z"); 
+			model.scale.x    = pt.get<F32>(name + ".scale.<xmlattr>.x");
+			model.scale.y    = pt.get<F32>(name + ".scale.<xmlattr>.y");
+			model.scale.z    = pt.get<F32>(name + ".scale.<xmlattr>.z");
 			model.type = VEGETATION;
 			model.version = pt.get<F32>(name + ".version");
             if(boost::optional<ptree &> child = pt.get_child_optional(name + ".staticObject")){
@@ -295,7 +290,6 @@ namespace XML {
 
 		if(boost::optional<ptree &> primitives = pt.get_child_optional("primitives"))
 		for (it = pt.get_child("primitives").begin(); it != pt.get_child("primitives").end(); ++it ) {
-
 			std::string name = it->second.data();
 			std::string format = it->first.data();
 			if(format.find("<xmlcomment>") != std::string::npos) continue;
@@ -309,11 +303,11 @@ namespace XML {
 			model.orientation.x = pt.get<F32>(name + ".orientation.<xmlattr>.x");
 			model.orientation.y = pt.get<F32>(name + ".orientation.<xmlattr>.y");
 			model.orientation.z = pt.get<F32>(name + ".orientation.<xmlattr>.z");
-			model.scale.x    = pt.get<F32>(name + ".scale.<xmlattr>.x"); 
-			model.scale.y    = pt.get<F32>(name + ".scale.<xmlattr>.y"); 
-			model.scale.z    = pt.get<F32>(name + ".scale.<xmlattr>.z"); 
-			model.color.r    = pt.get<F32>(name + ".color.<xmlattr>.r"); 
-			model.color.g    = pt.get<F32>(name + ".color.<xmlattr>.g"); 
+			model.scale.x    = pt.get<F32>(name + ".scale.<xmlattr>.x");
+			model.scale.y    = pt.get<F32>(name + ".scale.<xmlattr>.y");
+			model.scale.z    = pt.get<F32>(name + ".scale.<xmlattr>.z");
+			model.color.r    = pt.get<F32>(name + ".color.<xmlattr>.r");
+			model.color.g    = pt.get<F32>(name + ".color.<xmlattr>.g");
 			model.color.b    = pt.get<F32>(name + ".color.<xmlattr>.b");
 			/*The data variable stores a float variable (not void*) that can represent anything you want*/
 			/*For Text3D, it's the line width and for Box3D it's the edge length*/
@@ -326,7 +320,7 @@ namespace XML {
 			else if(model.ModelName.compare("Sphere3D") == 0)
 				model.data = pt.get<F32>(name + ".radius");
 			else model.data = 0;
-			
+
 			model.type = PRIMITIVE;
 			model.version = pt.get<F32>(name + ".version");
             if(boost::optional<ptree &> child = pt.get_child_optional(name + ".staticObject")){
@@ -345,12 +339,11 @@ namespace XML {
 
 	Material* loadMaterial(const std::string &file){
 		ParamHandler &par = ParamHandler::getInstance();
-		std::string location = par.getParam<std::string>("scriptLocation") + "/" + 
+		std::string location = par.getParam<std::string>("scriptLocation") + "/" +
 				                    par.getParam<std::string>("scenesLocation") + "/" +
 									par.getParam<std::string>("currentScene") + "/materials/";
 
 		return loadMaterialXML(location+file);
-		
 	}
 
 	Material* loadMaterialXML(const std::string &matName){
@@ -424,7 +417,6 @@ namespace XML {
 			mat->setReceivesShadows(pt.get<bool>("shadows.receiveShadows", true));
 		}
 		return mat;
-
 	}
 
 	void dumpMaterial(Material* const mat){
@@ -434,10 +426,10 @@ namespace XML {
 		std::string file = mat->getName();
 		file = file.substr(file.rfind("/")+1,file.length());
 
-		std::string location = par.getParam<std::string>("scriptLocation") + "/" + 
+		std::string location = par.getParam<std::string>("scriptLocation") + "/" +
 				                    par.getParam<std::string>("scenesLocation") + "/" +
 									par.getParam<std::string>("currentScene") + "/materials/";
-		
+
 		std::string fileLocation = location +  file + "-" + GFX_DEVICE.getRenderer()->getTypeToString() + ".xml";
 		pt.clear();
 		pt.put("material.name",file);
@@ -482,7 +474,7 @@ namespace XML {
 		if(specularMap){
 			saveTextureXML("specularMap",mat->getTextureOperation(Material::TEXTURE_SPECULAR), specularMap);
 		}
-		
+
 		ShaderProgram* s = mat->getShaderProgram();
 		if(s){
 			pt.put("shaderProgram.effect",s->getName());

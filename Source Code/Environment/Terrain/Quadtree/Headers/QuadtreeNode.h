@@ -37,19 +37,20 @@ enum ChunkBit{
 class Frustum;
 class TerrainChunk;
 class Terrain;
+class Transform;
 class ShaderProgram;
 class VertexBufferObject;
 class QuadtreeNode {
 public:
 	///recursive node building function
-	void Build(U8 depth, vec2<U32> pos, vec2<U32> HMsize, U32 minHMSize,VertexBufferObject* const groundVBO);
+	void Build(const U8 depth,const vec2<U32>& pos,const vec2<U32>& HMsize, U32 minHMSize, VertexBufferObject* const groundVBO);
 	bool computeBoundingBox(const vectorImpl<vec3<F32> >& vertices);
 	void Destroy();
 
 	inline void setParentShaderProgram(ShaderProgram* const shaderProgram) {_parentShaderProgram = shaderProgram;}
 
 	void DrawGround(I32 options,VertexBufferObject* const terrainVBO);
-	void DrawGrass(VertexBufferObject* const grassVBO);
+	void DrawGrass(U32 geometryIndex, Transform* const parentTransform);
 	void DrawBBox();
 
 	inline bool isALeaf() const							{return _children==0;}

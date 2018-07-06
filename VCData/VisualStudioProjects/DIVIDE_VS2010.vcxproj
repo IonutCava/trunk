@@ -5,13 +5,17 @@
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Profile|Win32">
+      <Configuration>Profile</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectName>Divide</ProjectName>
+    <ProjectName>Divide-Client</ProjectName>
     <ProjectGuid>{8FCA6505-8035-4279-9942-F0BBCCF2FDE7}</ProjectGuid>
     <RootNamespace>Grafica</RootNamespace>
   </PropertyGroup>
@@ -22,15 +26,25 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <PlatformToolset>v90</PlatformToolset>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+    <PlatformToolset>v90</PlatformToolset>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
     <PlatformToolset>v90</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
@@ -40,55 +54,73 @@
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)../</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)$(MSBuildToolsVersion)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</IntDir>
     <EmbedManifest Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</EmbedManifest>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)../</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)$(MSBuildToolsVersion)\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">$(SolutionDir)../</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">$(Configuration)\</IntDir>
     <EmbedManifest Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</EmbedManifest>
+    <EmbedManifest Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">true</EmbedManifest>
     <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
     <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'" />
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectName)_VC100_dbg</TargetName>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectName)_VC100</TargetName>
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'" />
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectName)_dbg</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectName)</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">$(ProjectName)_profile</TargetName>
     <RunCodeAnalysis Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</RunCodeAnalysis>
+    <RunCodeAnalysis Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">false</RunCodeAnalysis>
     <RunCodeAnalysis Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</RunCodeAnalysis>
     <EnableManagedIncrementalBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</EnableManagedIncrementalBuild>
+    <EnableManagedIncrementalBuild Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">true</EnableManagedIncrementalBuild>
     <EnableManagedIncrementalBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</EnableManagedIncrementalBuild>
     <CodeAnalysisIgnoreGeneratedCode Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CodeAnalysisIgnoreGeneratedCode>
     <CodeAnalysisIgnoreGeneratedCode Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CodeAnalysisIgnoreGeneratedCode>
+    <CodeAnalysisIgnoreGeneratedCode Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">false</CodeAnalysisIgnoreGeneratedCode>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(OutDir)Source Code;$(OutDir)Source Code/Libs\includes;$(OutDir)Source Code\Libs\src\ReCast;$(EngineLibraries)\glfw\include;$(EngineLibraries)\glim\include;$(EngineLibraries)\GLEW\include;$(EngineLibraries)\SimpleINI\include;$(EngineLibraries)\freetype\include;$(EngineLibraries)\DevIL\include;$(EngineLibraries)\OIS\include;$(EngineLibraries)\sdl\include;$(EngineLibraries)\Threadpool\include;$(EngineLibraries)\ftgl\include;$(EngineLibraries)\cegui\include;$(EngineLibraries)\boost;$(EngineLibraries)\assimp\include;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\foundation;$(EngineLibraries)\physx\include\extensions;$(EngineLibraries)\physx\include\common;$(EngineLibraries)\physx\include\Samples\SampleFramework\framework\include</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_DEBUG;_WIN32_WINNT=0x0601;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;CEGUI_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(OutDir)Source Code/;$(OutDir)Source Code/Libs/includes/;$(OutDir)Source Code/Libs/src/ReCast/;$(EngineLibraries)\glm;$(EngineLibraries)\glslopt\include;$(EngineLibraries)\glfw\include;$(EngineLibraries)\glim\include;$(EngineLibraries)\GLEW\include;$(EngineLibraries)\SimpleINI\include;$(EngineLibraries)\freetype\include;$(EngineLibraries)\DevIL\include;$(EngineLibraries)\OIS\include;$(EngineLibraries)\sdl\include;$(EngineLibraries)\Threadpool\include;$(EngineLibraries)\ftgl\include;$(EngineLibraries)\cegui\include;$(EngineLibraries)\boost;$(EngineLibraries)\assimp\include;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\foundation;$(EngineLibraries)\physx\include\extensions;$(EngineLibraries)\physx\include\common;$(EngineLibraries)\physx\include\Samples\SampleFramework\framework\include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;_WIN32_WINNT=0x0601;_CRT_SECURE_NO_WARNINGS;CEGUI_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
-      <OpenMPSupport>true</OpenMPSupport>
-      <WarningLevel>Level3</WarningLevel>
+      <OpenMPSupport>false</OpenMPSupport>
+      <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <EnablePREfast>false</EnablePREfast>
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
+      <DisableSpecificWarnings>4913;4512;4201;4100;4503</DisableSpecificWarnings>
+      <SmallerTypeCheck>true</SmallerTypeCheck>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <UndefinePreprocessorDefinitions>NDEBUG</UndefinePreprocessorDefinitions>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
     </ClCompile>
     <ProjectReference>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
     <Link>
-      <AdditionalOptions>/Y3 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>glu32.lib;opengl32.lib;DevIL.lib;ILU.lib;ILUT.lib;assimp.lib;DIVIDE-Networking_d.lib;SDL.lib;SDL_mixer.lib;OIS_static_d.lib;freetype_d.lib;expat_d.lib;SILLY.lib;pcre_d.lib;libpng_d.lib;libtiff_d.lib;zlib_d.lib;jpeg_d.lib;ftgl_static_d.lib;glim_d.lib;GLFW_d.lib;glew32s_d.lib;CEGUIBase_Static_d.lib;CEGUIExpatParser_Static_d.lib;CEGUISILLYImageCodec_Static_d.lib;CEGUIOpenGLRenderer_Static_d.lib;CEGUIFalagardWRBase_Static_d.lib;Winmm.lib;vcompd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Divide-Networking_d.lib;Divide-ReCast_d.lib;IL_d.lib;ILU_d.lib;jpeg_d.lib;libpng_d.lib;libmng_d.lib;libtiff_d.lib;SDL_d.lib;SDL_mixer_d.lib;zlib_d.lib;assimp_d.lib;glu32.lib;opengl32.lib;glfw3_d.lib;glsl_optimizer_d.lib;OIS_static_d.lib;pcre_d.lib;expat_d.lib;freetype_d.lib;CEGUIBase_d.lib;CEGUIDevILImageCodec_d.lib;CEGUICoreWindowRendererSet_d.lib;CEGUIExpatParser_d.lib;imagehlp.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ShowProgress>NotSet</ShowProgress>
       <OutputFile>$(TargetPath)</OutputFile>
-      <AdditionalLibraryDirectories>$(EngineLibraries)\openmp\lib;$(EngineLibraries)\glim\lib;$(EngineLibraries)\glfw\lib;$(EngineLibraries)\ftgl\lib;$(EngineLibraries)\SILLY\lib;$(EngineLibraries)\libjpeg\lib;$(EngineLibraries)\zlib\lib;$(EngineLibraries)\libtiff\lib;$(EngineLibraries)\libpng\lib;$(EngineLibraries)\pcre\lib;$(EngineLibraries)\expat\lib;$(EngineLibraries)\freetype\lib;$(EngineLibraries)\OIS\lib;$(EngineLibraries)\GLEW\lib;$(EngineLibraries)\DevIL\lib;$(EngineLibraries)\sdl\lib;$(OutDir)Source Code/Libs\lib;$(EngineLibraries)\cegui\lib;$(EngineLibraries)\boost\lib;$(EngineLibraries)\assimp\lib;$(EngineLibraries)\physx\lib\win32</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(EngineLibraries)\glslopt\lib;$(EngineLibraries)\openmp\lib;$(EngineLibraries)\glim\lib;$(EngineLibraries)\glfw\lib;$(EngineLibraries)\ftgl\lib;$(EngineLibraries)\SILLY\lib;$(EngineLibraries)\libmng\lib;$(EngineLibraries)\libjpeg\lib;$(EngineLibraries)\zlib\lib;$(EngineLibraries)\libtiff\lib;$(EngineLibraries)\libpng\lib;$(EngineLibraries)\pcre\lib;$(EngineLibraries)\expat\lib;$(EngineLibraries)\freetype\lib;$(EngineLibraries)\OIS\lib;$(EngineLibraries)\GLEW\lib;$(EngineLibraries)\DevIL\lib;$(EngineLibraries)\sdl\lib;$(OutDir)Source Code/Libs\lib;$(EngineLibraries)\cegui\lib;$(EngineLibraries)\boost\lib;$(EngineLibraries)\assimp\lib;$(EngineLibraries)\physx\lib\win32</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
-      <IgnoreSpecificDefaultLibraries>LIBCMT.lib;LIBCPMT.lib;LIBCMTD.lib;</IgnoreSpecificDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>libcmtd.lib;libcpmtd.lib</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <TargetMachine>MachineX86</TargetMachine>
-      <Profile>true</Profile>
+      <Profile>false</Profile>
+      <LinkStatus>
+      </LinkStatus>
+      <Version>0.1.2</Version>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -97,42 +129,87 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>$(OutDir)Source Code;$(OutDir)Source Code/Libs\includes;$(OutDir)Source Code\Libs\src\ReCast;$(EngineLibraries)\glfw\include;$(EngineLibraries)\glim\include;$(EngineLibraries)\GLEW\include;$(EngineLibraries)\SimpleINI\include;$(EngineLibraries)\freetype\include;$(EngineLibraries)\DevIL\include;$(EngineLibraries)\OIS\include;$(EngineLibraries)\sdl\include;$(EngineLibraries)\Threadpool\include;$(EngineLibraries)\ftgl\include;$(EngineLibraries)\cegui\include;$(EngineLibraries)\boost;$(EngineLibraries)\assimp\include;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\foundation;$(EngineLibraries)\physx\include\extensions;$(EngineLibraries)\physx\include\common;$(EngineLibraries)\physx\include\Samples\SampleFramework\framework\include</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_WIN32_WINNT=0x0601;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;CEGUI_STATIC</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(OutDir)Source Code;$(OutDir)Source Code/Libs\includes;$(OutDir)Source Code\Libs\src\ReCast;$(EngineLibraries)\glm;$(EngineLibraries)\glslopt\include;$(EngineLibraries)\glfw\include;$(EngineLibraries)\glim\include;$(EngineLibraries)\GLEW\include;$(EngineLibraries)\SimpleINI\include;$(EngineLibraries)\freetype\include;$(EngineLibraries)\DevIL\include;$(EngineLibraries)\OIS\include;$(EngineLibraries)\sdl\include;$(EngineLibraries)\Threadpool\include;$(EngineLibraries)\ftgl\include;$(EngineLibraries)\cegui\include;$(EngineLibraries)\boost;$(EngineLibraries)\assimp\include;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\foundation;$(EngineLibraries)\physx\include\extensions;$(EngineLibraries)\physx\include\common;$(EngineLibraries)\physx\include\Samples\SampleFramework\framework\include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;_WIN32_WINNT=0x0601;_CRT_SECURE_NO_WARNINGS;CEGUI_STATIC</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>true</MinimalRebuild>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
-      <OpenMPSupport>true</OpenMPSupport>
-      <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <OpenMPSupport>false</OpenMPSupport>
+      <WarningLevel>Level4</WarningLevel>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
       <EnablePREfast>false</EnablePREfast>
       <UndefinePreprocessorDefinitions>_DEBUG</UndefinePreprocessorDefinitions>
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
+      <DisableSpecificWarnings>4913;4512;4201;4100;4503</DisableSpecificWarnings>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <OmitFramePointers>true</OmitFramePointers>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>glu32.lib;opengl32.lib;DevIL.lib;ILU.lib;ILUT.lib;assimp.lib;DIVIDE-Networking.lib;SDL.lib;SDL_mixer.lib;OIS_static.lib;freetype.lib;expat.lib;SILLY.lib;pcre.lib;libpng.lib;libtiff.lib;zlib.lib;jpeg.lib;ftgl_static.lib;glim.lib;GLFW.lib;glew32s.lib;CEGUIBase_Static.lib;CEGUIExpatParser_Static.lib;CEGUISILLYImageCodec_Static.lib;CEGUIOpenGLRenderer_Static.lib;CEGUIFalagardWRBase_Static.lib;Winmm.lib;vcomp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Divide-Networking.lib;Divide-ReCast.lib;IL.lib;ILU.lib;jpeg.lib;libpng.lib;libmng.lib;libtiff.lib;SDL.lib;SDL_mixer.lib;zlib.lib;assimp.lib;glu32.lib;opengl32.lib;glfw3.lib;glsl_optimizer.lib;OIS_static.lib;pcre.lib;expat.lib;freetype.lib;CEGUIBase.lib;CEGUIDevILImageCodec.lib;CEGUICoreWindowRendererSet.lib;CEGUIExpatParser.lib;imagehlp.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(TargetPath)</OutputFile>
-      <AdditionalLibraryDirectories>$(EngineLibraries)\openmp\lib;$(EngineLibraries)\glim\lib;$(EngineLibraries)\glfw\lib;$(EngineLibraries)\ftgl\lib;$(EngineLibraries)\SILLY\lib;$(EngineLibraries)\libjpeg\lib;$(EngineLibraries)\zlib\lib;$(EngineLibraries)\libtiff\lib;$(EngineLibraries)\libpng\lib;$(EngineLibraries)\pcre\lib;$(EngineLibraries)\expat\lib;$(EngineLibraries)\freetype\lib;$(EngineLibraries)\OIS\lib;$(EngineLibraries)\GLEW\lib;$(EngineLibraries)\DevIL\lib;$(EngineLibraries)\sdl\lib;$(OutDir)Source Code/Libs\lib;$(EngineLibraries)\cegui\lib;$(EngineLibraries)\boost\lib;$(EngineLibraries)\assimp\lib;$(EngineLibraries)\physx\lib\win32</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(EngineLibraries)\glslopt\lib;$(EngineLibraries)\openmp\lib;$(EngineLibraries)\glim\lib;$(EngineLibraries)\glfw\lib;$(EngineLibraries)\ftgl\lib;$(EngineLibraries)\SILLY\lib;$(EngineLibraries)\libmng\lib;$(EngineLibraries)\libjpeg\lib;$(EngineLibraries)\zlib\lib;$(EngineLibraries)\libtiff\lib;$(EngineLibraries)\libpng\lib;$(EngineLibraries)\pcre\lib;$(EngineLibraries)\expat\lib;$(EngineLibraries)\freetype\lib;$(EngineLibraries)\OIS\lib;$(EngineLibraries)\GLEW\lib;$(EngineLibraries)\DevIL\lib;$(EngineLibraries)\sdl\lib;$(OutDir)Source Code/Libs\lib;$(EngineLibraries)\cegui\lib;$(EngineLibraries)\boost\lib;$(EngineLibraries)\assimp\lib;$(EngineLibraries)\physx\lib\win32</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
-      <IgnoreSpecificDefaultLibraries>LIBCMT.lib;LIBCPMT.lib;LIBCMTD.lib;</IgnoreSpecificDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>LIBCMTD.lib;libcmt.lib;libcpmt.lib</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <TargetMachine>MachineX86</TargetMachine>
       <Profile>false</Profile>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <ProgramDatabaseFile>
+      </ProgramDatabaseFile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">
+    <ClCompile>
+      <Optimization>Full</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <AdditionalIncludeDirectories>$(OutDir)Source Code;$(OutDir)Source Code/Libs\includes;$(OutDir)Source Code\Libs\src\ReCast;$(EngineLibraries)\glm;$(EngineLibraries)\glslopt\include;$(EngineLibraries)\glfw\include;$(EngineLibraries)\glim\include;$(EngineLibraries)\GLEW\include;$(EngineLibraries)\SimpleINI\include;$(EngineLibraries)\freetype\include;$(EngineLibraries)\DevIL\include;$(EngineLibraries)\OIS\include;$(EngineLibraries)\sdl\include;$(EngineLibraries)\Threadpool\include;$(EngineLibraries)\ftgl\include;$(EngineLibraries)\cegui\include;$(EngineLibraries)\boost;$(EngineLibraries)\assimp\include;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\foundation;$(EngineLibraries)\physx\include\extensions;$(EngineLibraries)\physx\include\common;$(EngineLibraries)\physx\include\Samples\SampleFramework\framework\include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;_PROFILE;_WIN32_WINNT=0x0601;_CRT_SECURE_NO_WARNINGS;CEGUI_STATIC</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <MinimalRebuild>true</MinimalRebuild>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <OpenMPSupport>false</OpenMPSupport>
+      <WarningLevel>Level4</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <EnablePREfast>false</EnablePREfast>
+      <UndefinePreprocessorDefinitions>_DEBUG</UndefinePreprocessorDefinitions>
+      <MultiProcessorCompilation>false</MultiProcessorCompilation>
+      <DisableSpecificWarnings>4913;4512;4201;4100;4503</DisableSpecificWarnings>
+      <OmitFramePointers>false</OmitFramePointers>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>Divide-Networking.lib;Divide-ReCast.lib;IL.lib;ILU.lib;jpeg.lib;libpng.lib;libmng.lib;libtiff.lib;SDL.lib;SDL_mixer.lib;zlib.lib;assimp.lib;glu32.lib;opengl32.lib;glfw3.lib;glsl_optimizer.lib;OIS_static.lib;pcre.lib;expat.lib;freetype.lib;CEGUIBase.lib;CEGUIDevILImageCodec.lib;CEGUICoreWindowRendererSet.lib;CEGUIExpatParser.lib;imagehlp.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(TargetPath)</OutputFile>
+      <AdditionalLibraryDirectories>$(EngineLibraries)\glslopt\lib;$(EngineLibraries)\openmp\lib;$(EngineLibraries)\glim\lib;$(EngineLibraries)\glfw\lib;$(EngineLibraries)\ftgl\lib;$(EngineLibraries)\SILLY\lib;$(EngineLibraries)\libmng\lib;$(EngineLibraries)\libjpeg\lib;$(EngineLibraries)\zlib\lib;$(EngineLibraries)\libtiff\lib;$(EngineLibraries)\libpng\lib;$(EngineLibraries)\pcre\lib;$(EngineLibraries)\expat\lib;$(EngineLibraries)\freetype\lib;$(EngineLibraries)\OIS\lib;$(EngineLibraries)\GLEW\lib;$(EngineLibraries)\DevIL\lib;$(EngineLibraries)\sdl\lib;$(OutDir)Source Code/Libs\lib;$(EngineLibraries)\cegui\lib;$(EngineLibraries)\boost\lib;$(EngineLibraries)\assimp\lib;$(EngineLibraries)\physx\lib\win32</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>LIBCMTD.lib;libcmt.lib;libcpmt.lib</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <TargetMachine>MachineX86</TargetMachine>
+      <Profile>true</Profile>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\AI\CommunicationInterface.cpp" />
     <ClCompile Include="..\..\Source Code\AI\PathFinding\NavigationMesh.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\NavigationMeshDebugDraw.cpp" />
     <ClCompile Include="..\..\Source Code\AI\PathFinding\NavigationMeshLoader.cpp" />
     <ClCompile Include="..\..\Source Code\AI\PathFinding\NavigationPath.cpp" />
     <ClCompile Include="..\..\Source Code\AI\PathFinding\Waypoint.cpp" />
     <ClCompile Include="..\..\Source Code\AI\PathFinding\WaypointGraph.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Kernel.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Math\MathHelper.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Math\Transform.cpp" />
     <ClCompile Include="..\..\Source Code\Core\MemoryManagement\TrackedObject.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\AudioDescriptorLoaderImpl.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\Box3DLoaderImpl.cpp" />
@@ -172,7 +249,6 @@
     <ClCompile Include="..\..\Source Code\Geometry\Animations\AnimationControllerFileIO.cpp" />
     <ClCompile Include="..\..\Source Code\Geometry\Animations\AnimationEvaluator.cpp" />
     <ClCompile Include="..\..\Source Code\Geometry\Animations\AnimationUtils.cpp" />
-    <ClCompile Include="..\..\Source Code\Geometry\Shapes\GenericShape.cpp" />
     <ClCompile Include="..\..\Source Code\Geometry\Shapes\SkinnedMesh.cpp" />
     <ClCompile Include="..\..\Source Code\Geometry\Shapes\SkinnedSubMesh.cpp" />
     <ClCompile Include="..\..\Source Code\Graphs\SceneNodeRenderState.cpp" />
@@ -183,6 +259,10 @@
     <ClCompile Include="..\..\Source Code\GUI\GUIButton.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GUIConsole.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GUIConsoleCommandParser.cpp" />
+    <ClCompile Include="..\..\Source Code\GUI\GUIEditor\GUIEditor.cpp" />
+    <ClCompile Include="..\..\Source Code\GUI\GUIEditor\GUIEditorAIInterface.cpp" />
+    <ClCompile Include="..\..\Source Code\GUI\GUIEditor\GUIEditorLightInterface.cpp" />
+    <ClCompile Include="..\..\Source Code\GUI\GUIEditor\GUIEditorSceneGraphInterface.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GUIElement.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GuiFlash.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GUISplash.cpp" />
@@ -203,6 +283,7 @@
     <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\Shaders\d3dShaderProgram.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\Textures\d3dTexture.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\GFXDevice.cpp" />
+    <ClCompile Include="..\..\Source Code\Hardware\Video\ImmediateModeEmulation.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\glDeferredBufferObject.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\glDepthArrayBufferObject.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\glDepthBufferObject.cpp" />
@@ -213,10 +294,13 @@
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\PixelBufferObject\glPixelBufferObject.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBufferObject\glVertexArrayObject.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBufferObject\glVertexArrayObjectInterleaved.cpp" />
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\GLEntities.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glEnumTable.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\GLError.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\GLFWWrapper.cpp" />
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glImmediateModeEmulation.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glRenderStateBlock.cpp" />
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\GLStates.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glsw\bstrlib.c" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glsw\glsw.c" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\gluOverrides.cpp" />
@@ -227,40 +311,13 @@
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\glShader.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\glShaderProgram.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\glUniformBufferObject.cpp" />
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Textures\glSamplerOject.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Textures\glTexture.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\RenderStateBlock.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\Shaders\Shader.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\Shaders\ShaderGenerator.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\Shaders\ShaderProgram.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\Textures\Texture.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\DebugUtils\Source\DebugDraw.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\DebugUtils\Source\DetourDebugDraw.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\DebugUtils\Source\RecastDebugDraw.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\DebugUtils\Source\RecastDump.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Source\DetourCrowd.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Source\DetourLocalBoundary.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Source\DetourObstacleAvoidance.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Source\DetourPathCorridor.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Source\DetourPathQueue.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Source\DetourProximityGrid.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\DetourTileCache\Source\DetourTileCache.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\DetourTileCache\Source\DetourTileCacheBuilder.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\Detour\Source\DetourAlloc.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\Detour\Source\DetourCommon.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\Detour\Source\DetourNavMesh.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\Detour\Source\DetourNavMeshBuilder.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\Detour\Source\DetourNavMeshQuery.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\Detour\Source\DetourNode.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\ReCast\Source\Recast.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\ReCast\Source\RecastAlloc.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\ReCast\Source\RecastArea.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\ReCast\Source\RecastContour.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\ReCast\Source\RecastFilter.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\ReCast\Source\RecastLayers.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\ReCast\Source\RecastMesh.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\ReCast\Source\RecastMeshDetail.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\ReCast\Source\RecastRasterization.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\ReCast\Source\RecastRegion.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\FrameListenerManager.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\LightManager.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\RenderPassManager.cpp" />
@@ -305,6 +362,7 @@
     <ClCompile Include="..\..\Source Code\Scenes\WarScene\WarSceneAIActionList.cpp" />
     <ClCompile Include="..\..\Source Code\Utility\CommandParser.cpp" />
     <ClCompile Include="..\..\Source Code\Utility\CRC.cpp" />
+    <ClCompile Include="..\..\Source Code\Utility\GUIDWrapper.cpp" />
     <ClCompile Include="..\..\Source Code\Utility\ImageTools.cpp" />
     <ClCompile Include="..\..\Source Code\Utility\Localization.cpp" />
     <ClCompile Include="..\..\Source Code\Utility\XMLParser.cpp" />
@@ -322,7 +380,7 @@
     <ClCompile Include="..\..\Source Code\Scenes\PingPongScene\PingPongScene.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Input\EventHandler.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Audio\sdl_mixer\SDLWrapper.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Network\ASIO.cpp" />
+    <ClCompile Include="..\..\Source Code\Hardware\Network\ASIOImpl.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\AIManager.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\CameraManager.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\SceneManager.cpp" />
@@ -342,6 +400,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\AI\Headers\CommunicationInterface.h" />
     <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\NavigationMesh.h" />
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\NavigationMeshDebugDraw.h" />
     <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\NavigationMeshLoader.h" />
     <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\NavigationPath.h" />
     <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\Waypoint.h" />
@@ -382,12 +441,16 @@
     <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\AnimationEvaluator.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\AnimationUtils.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\Bone.h" />
-    <ClInclude Include="..\..\Source Code\Geometry\Shapes\Headers\GenericShape.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Shapes\Headers\SkinnedMesh.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Shapes\Headers\SkinnedSubMesh.h" />
     <ClInclude Include="..\..\Source Code\Graphs\Headers\SceneNodeRenderState.h" />
     <ClInclude Include="..\..\Source Code\GUI\CEGUIAddons\Headers\CEGUIFormattedListBox.h" />
     <ClInclude Include="..\..\Source Code\GUI\CEGUIAddons\Headers\CEGUIKeyRepeat.h" />
+    <ClInclude Include="..\..\Source Code\GUI\GUIEditor\Headers\GUIEditor.h" />
+    <ClInclude Include="..\..\Source Code\GUI\GUIEditor\Headers\GUIEditorAIInterface.h" />
+    <ClInclude Include="..\..\Source Code\GUI\GUIEditor\Headers\GUIEditorInterface.h" />
+    <ClInclude Include="..\..\Source Code\GUI\GUIEditor\Headers\GUIEditorLightInterface.h" />
+    <ClInclude Include="..\..\Source Code\GUI\GUIEditor\Headers\GUIEditorSceneGraphInterface.h" />
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUI.h" />
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUIButton.h" />
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUIConsole.h" />
@@ -407,6 +470,7 @@
     <ClInclude Include="..\..\Source Code\Hardware\Input\Headers\InputInterface.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Input\Headers\InputVariables.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Input\Headers\JoystickInterface.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Network\Headers\ASIOImpl.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Platform\Headers\SharedMutex.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Platform\Headers\PlatformDefines.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Platform\Headers\SimpleMutex.h" />
@@ -429,9 +493,11 @@
     <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Shaders\Headers\d3dShaderProgram.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Textures\Headers\d3dTexture.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\GFXDevice.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\ImmediateModeEmulation.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\OcclusionQuery.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\RenderAPIEnums.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\RenderAPIWrapper.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\RenderInstance.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\RenderStateBlock.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers\glDeferredBufferObject.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers\glDepthArrayBufferObject.h" />
@@ -446,6 +512,7 @@
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\glsw\Headers\bstrlib.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\glsw\Headers\glsw.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Headers\glEnumTable.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Headers\glImmediateModeEmulation.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Headers\glRenderStateBlock.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Headers\glResources.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Headers\GLWrapper.h" />
@@ -455,35 +522,13 @@
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\Headers\glShader.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\Headers\glShaderProgram.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\Headers\glUniformBufferObject.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Textures\Headers\glSamplerObject.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Textures\Headers\glTexture.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Shaders\Headers\Shader.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Shaders\Headers\ShaderGenerator.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Shaders\Headers\ShaderProgram.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Textures\Headers\Texture.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Textures\Headers\TextureDescriptor.h" />
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\DebugUtils\Include\DebugDraw.h" />
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\DebugUtils\Include\DetourDebugDraw.h" />
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\DebugUtils\Include\RecastDebugDraw.h" />
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\DebugUtils\Include\RecastDump.h" />
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Include\DetourCrowd.h" />
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Include\DetourLocalBoundary.h" />
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Include\DetourObstacleAvoidance.h" />
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Include\DetourPathCorridor.h" />
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Include\DetourPathQueue.h" />
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Include\DetourProximityGrid.h" />
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\DetourTileCache\Include\DetourTileCache.h" />
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\DetourTileCache\Include\DetourTileCacheBuilder.h" />
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\Detour\Include\DetourAlloc.h" />
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\Detour\Include\DetourAssert.h" />
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\Detour\Include\DetourCommon.h" />
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\Detour\Include\DetourNavMesh.h" />
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\Detour\Include\DetourNavMeshBuilder.h" />
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\Detour\Include\DetourNavMeshQuery.h" />
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\Detour\Include\DetourNode.h" />
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\Detour\Include\DetourStatus.h" />
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\ReCast\Include\Recast.h" />
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\ReCast\Include\RecastAlloc.h" />
-    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\ReCast\Include\RecastAssert.h" />
     <ClInclude Include="..\..\Source Code\Managers\Headers\FrameListenerManager.h" />
     <ClInclude Include="..\..\Source Code\Managers\Headers\RenderPassManager.h" />
     <ClInclude Include="..\..\Source Code\Managers\Headers\ShaderManager.h" />
@@ -535,6 +580,7 @@
     <ClInclude Include="..\..\Source Code\Scenes\WarScene\Headers\WarSceneAIActionList.h" />
     <ClInclude Include="..\..\Source Code\Utility\Headers\CommandParser.h" />
     <ClInclude Include="..\..\Source Code\Utility\Headers\CRC.h" />
+    <ClInclude Include="..\..\Source Code\Utility\Headers\GUIDWrapper.h" />
     <ClInclude Include="..\..\Source Code\Utility\Headers\ImageTools.h" />
     <ClInclude Include="..\..\Source Code\Utility\Headers\Localization.h" />
     <ClInclude Include="..\..\Source Code\Utility\Headers\UnorderedMap.h" />
@@ -558,7 +604,6 @@
     <ClInclude Include="..\..\Source Code\Scenes\NetworkScene\Headers\NetworkScene.h" />
     <ClInclude Include="..\..\Source Code\Scenes\PingPongScene\Headers\PingPongScene.h" />
     <ClInclude Include="..\..\Source Code\Scenes\Headers\Scene.h" />
-    <ClInclude Include="..\..\Source Code\Libs\includes\networking\OPCodes.h" />
     <ClInclude Include="..\..\Source Code\Managers\Headers\AIManager.h" />
     <ClInclude Include="..\..\Source Code\Managers\Headers\CameraManager.h" />
     <ClInclude Include="..\..\Source Code\Managers\Headers\LightManager.h" />
@@ -622,9 +667,8 @@
     <None Include="..\..\assets\shaders\GLSL\vertexAtoms\boneTransforms.vert" />
     <None Include="..\..\assets\shaders\GLSL\vertexAtoms\foliage.vert" />
     <None Include="..\..\assets\shaders\GLSL\vertexAtoms\lightingDefaults.vert" />
-    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\lightingDefaultsBump.vert" />
     <None Include="..\..\assets\shaders\GLSL\vertexAtoms\vboInputData.vert" />
-    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\vboInputDataBones.vert" />
+    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\vertexDefault.vert" />
     <None Include="..\..\assets\shaders\GLSL\water.glsl" />
     <None Include="..\..\localisation\enGB.ini" />
   </ItemGroup>

@@ -23,11 +23,10 @@
 #ifndef _NAVIGATION_PATH_H_
 #define _NAVIGATION_PATH_H_
 
-#include "core.h" 
+#include "core.h"
 #include "NavigationMesh.h"
 
 namespace Navigation {
-
    static const U32 MaxPathLen = 1024;
 
    class tQueryFilter : public dtQueryFilter {
@@ -38,17 +37,15 @@ namespace Navigation {
       tQueryFilter();
 
       bool passFilter(const dtPolyRef ref, const dtMeshTile* tile, const dtPoly* poly) const;
-
    };
 
-   class WaypointGraph;   
+   class WaypointGraph;
    class NavigationPath/*: public SceneObject */{
       //typedef SceneObject Parent;
    public:
       /// @name NavigationPath
       /// Functions for planning and accessing the path.
       /// @{
-
       NavigationMesh *_mesh;
       WaypointGraph *_waypoints;
 
@@ -82,7 +79,6 @@ namespace Navigation {
 
       /// @}
 
-
       /// Return the number of nodes in this path.
       I32 getCount();
 
@@ -95,7 +91,6 @@ namespace Navigation {
       /// Return the length of this path.
       F32 getLength() { return _length; };
 
- 
       /// @name ProcessObject
       /// @{
       /// void processTick(const Move *move);
@@ -131,7 +126,6 @@ namespace Navigation {
 
       /// Resets our world transform and bounds to fit our point list.
       void resize();
-
    };
 };
 

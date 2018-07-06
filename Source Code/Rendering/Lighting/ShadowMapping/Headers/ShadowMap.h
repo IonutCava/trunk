@@ -20,7 +20,6 @@
 #include "core.h"
 
 enum ShadowType{
-
 	SHADOW_TYPE_NONE = -1,
     SHADOW_TYPE_Single,
     SHADOW_TYPE_PSSM,
@@ -83,7 +82,7 @@ private:
 	ShadowMap* _shadowMap;
 	Light*     _light;
 public:
-	
+
 	U8         _numSplits;
 };
 

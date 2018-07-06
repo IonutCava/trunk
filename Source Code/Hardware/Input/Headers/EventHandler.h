@@ -17,8 +17,10 @@
 
 #ifndef _INPUT_EVENT_HANDLER_H_
 #define _INPUT_EVENT_HANDLER_H_
+//'index' and 'arg' in OISJoyStick.h and 'n' in OISMultiTouch.h are unreferenced
+#include <OIS.h>
 
-#include "OIS.h"
+
 #include "Hardware/Platform/Headers/SharedMutex.h"
 #include "Hardware/Platform/Headers/PlatformDefines.h"
 

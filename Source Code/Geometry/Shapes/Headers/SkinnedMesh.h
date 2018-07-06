@@ -21,8 +21,7 @@
 #include "Mesh.h"
 
 class SkinnedMesh : public Mesh {
-
-public: 
+public:
 	SkinnedMesh() : Mesh(OBJECT_FLAG_SKINNED),
 				   _playAnimations(true)
 	{
@@ -30,10 +29,9 @@ public:
 	~SkinnedMesh()
 	{
 	}
-	void sceneUpdate(U32 sceneTime);
+	void sceneUpdate(const U32 sceneTime,SceneGraphNode* const sgn);
     bool playAnimations();
 	void preFrameDrawEnd() {}
-	void setSpecialShaderConstants(ShaderProgram* const shader){}
 
 private:
 	bool _playAnimations;

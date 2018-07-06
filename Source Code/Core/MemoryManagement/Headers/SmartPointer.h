@@ -20,7 +20,6 @@
 
 template<class T>
 class ResPointer {
-
 public:
    //Constructors - basic
    ResPointer()  {

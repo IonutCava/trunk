@@ -15,24 +15,26 @@
    along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #ifndef _RENDER_PASS_H_
 #define _RENDER_PASS_H_
 
-#include "core.h"
+#include <string>
+#include "Hardware/Platform/Headers/PlatformDefines.h"
+
 class SceneRenderState;
+
 class RenderPass {
 public:
 	RenderPass(const std::string& name);
 	~RenderPass();
+
 	virtual void render(SceneRenderState* const sceneRenderState = NULL);
 	inline U16 getLasTotalBinSize() {return _lastTotalBinSize;}
-	inline void updateMaterials(bool state) {_updateMaterials = state;}
 	inline const std::string& getName() {return _name;}
+
 private:
 	std::string _name;
 	U8 _lastTotalBinSize;
-	bool _updateMaterials;
 };
 
 #endif

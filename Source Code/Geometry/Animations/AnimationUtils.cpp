@@ -2,7 +2,6 @@
 #include "Hardware/Video/Headers/GFXDevice.h"
 
 namespace AnimUtils {
-
 	/// there is some type of alignment issue with my mat4 and the aimatrix4x4 class, so the copy must be done manually
 	void TransformMatrix(mat4<F32>& out,const aiMatrix4x4& in){
 		bool colMaj = (GFX_DEVICE.getApi() != Direct3D);
@@ -25,8 +24,6 @@ namespace AnimUtils {
 		out.element(3,1,colMaj)=in.b4;
 		out.element(3,2,colMaj)=in.c4;
 		out.element(3,3,colMaj)=in.d4;
-		//out.transpose(out);
-
 	}
 
 	void TransformMatrix(aiMatrix4x4& out,const mat4<F32>& in){

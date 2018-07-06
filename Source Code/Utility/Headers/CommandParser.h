@@ -7,7 +7,6 @@
 
 ///A utility class used to process a string input
 class CommandParser {
-
 public:
 	CommandParser();  //< Constructor
 	virtual ~CommandParser(); //< Destructor

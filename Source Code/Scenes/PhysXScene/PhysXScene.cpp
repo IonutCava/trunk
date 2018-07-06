@@ -11,25 +11,23 @@ void PhysXScene::preRender(){
 }
 //<<end copy-paste
 
-void PhysXScene::processTasks(U32 time){
+void PhysXScene::processTasks(const U32 time){
 	F32 FpsDisplay = 0.3f;
 	if (time - _taskTimers[0] >= FpsDisplay){
-		GUI::getInstance().modifyText("fpsDisplay", "FPS: %5.2f", Framerate::getInstance().getFps());
+		GUI::getInstance().modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", Framerate::getInstance().getFps(), Framerate::getInstance().getFrameTime());
 		GUI::getInstance().modifyText("RenderBinCount", "Number of items in Render Bin: %d", GFX_RENDER_BIN_SIZE);
 		_taskTimers[0] += FpsDisplay;
 	}
 }
 
 void PhysXScene::processInput(){
-
-	if(state()->_angleLR) renderState()->getCamera()->RotateX(state()->_angleLR * FRAME_SPEED_FACTOR);
-	if(state()->_angleUD) renderState()->getCamera()->RotateY(state()->_angleUD * FRAME_SPEED_FACTOR);
-	if(state()->_moveFB)  renderState()->getCamera()->MoveForward(state()->_moveFB * (FRAME_SPEED_FACTOR/5));
-	if(state()->_moveLR)  renderState()->getCamera()->MoveStrafe(state()->_moveLR * (FRAME_SPEED_FACTOR/5));
+	if(state()->_angleLR) renderState()->getCamera()->RotateX(state()->_angleLR);
+	if(state()->_angleUD) renderState()->getCamera()->RotateY(state()->_angleUD);
+	if(state()->_moveFB)  renderState()->getCamera()->MoveForward(state()->_moveFB /5);
+	if(state()->_moveLR)  renderState()->getCamera()->MoveStrafe(state()->_moveLR /5);
 }
 
 bool PhysXScene::load(const std::string& name){
-
 	///Load scene resources
 	SCENE_LOAD(name,true,true);
 	///Add a light
@@ -48,17 +46,16 @@ bool PhysXScene::loadResources(bool continueOnErrors){
 	 _mousePressed = false;
 
 	GUI::getInstance().addText("fpsDisplay",           //Unique ID
-		                       vec2<U32>(60,20),          //Position
+		                       vec2<I32>(60,20),          //Position
 							    Font::DIVIDE_DEFAULT,    //Font
 							   vec3<F32>(0.0f,0.2f, 1.0f),  //Color
 							   "FPS: %s",0);    //Text and arguments
 	GUI::getInstance().addText("RenderBinCount",
-								vec2<U32>(60,30),
+								vec2<I32>(60,30),
 								 Font::DIVIDE_DEFAULT,
 								vec3<F32>(0.6f,0.2f,0.2f),
 								"Number of items in Render Bin: %d",0);
 
-	
 	_taskTimers.push_back(0.0f); //Fps
 	renderState()->getCamera()->RotateX(RADIANS(-75));
 	renderState()->getCamera()->RotateY(RADIANS(25));
@@ -144,23 +141,20 @@ void PhysXScene::onKeyUp(const OIS::KeyEvent& key){
 			break;
         case OIS::KC_3:{
             Kernel* kernel = Application::getInstance().getKernel();
-            Task_ptr e(New Task(kernel->getThreadPool(),0,true,true,boost::bind(&PhysXScene::createTower, boost::ref(*this),(U32)random(5,20))));
+            Task_ptr e(New Task(kernel->getThreadPool(),0,true,true,DELEGATE_BIND(&PhysXScene::createTower, DELEGATE_REF(*this),(U32)random(5,20))));
             addTask(e);
             }break;
 		case OIS::KC_4:{
 			Kernel* kernel = Application::getInstance().getKernel();
-			Task_ptr e(New Task(kernel->getThreadPool(),0,true,true,boost::bind(&PhysXScene::createStack, boost::ref(*this),(U32)random(5,10))));
+			Task_ptr e(New Task(kernel->getThreadPool(),0,true,true,DELEGATE_BIND(&PhysXScene::createStack, DELEGATE_REF(*this),(U32)random(5,10))));
 			addTask(e);
 		} break;
 		default:
 			break;
 	}
-
 }
 
-
 void PhysXScene::onMouseMove(const OIS::MouseEvent& key){
-
 	if(_mousePressed){
 		if(_prevMouse.x - key.state.X.abs > 1 )
 			state()->_angleLR = -0.15f;
@@ -176,14 +170,14 @@ void PhysXScene::onMouseMove(const OIS::MouseEvent& key){
 		else
 			state()->_angleUD = 0;
 	}
-	
+
 	_prevMouse.x = key.state.X.abs;
 	_prevMouse.y = key.state.Y.abs;
 }
 
 void PhysXScene::onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID button){
 	Scene::onMouseClickDown(key,button);
-	if(button == 0) 
+	if(button == 0)
 		_mousePressed = true;
 }
 

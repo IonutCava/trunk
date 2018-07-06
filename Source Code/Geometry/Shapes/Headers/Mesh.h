@@ -21,49 +21,47 @@
 /**
 DIVIDE-Engine: 21.10.2010 (Ionut Cava)
 
-Mesh class. This class wraps all of the renderable geometry drawn by the engine. 
+Mesh class. This class wraps all of the renderable geometry drawn by the engine.
 The only exceptions are: Terrain (including TerrainChunk) and Vegetation.
 
 Meshes are composed of at least 1 submesh that contains vertex data, texture info and so on.
-A mesh has a name, position, rotation, scale and a boolean value that enables or disables rendering 
+A mesh has a name, position, rotation, scale and a boolean value that enables or disables rendering
 across the network and one that disables rendering alltogheter;
 
-Note: all transformations applied to the mesh affect every submesh that compose the mesh. 
+Note: all transformations applied to the mesh affect every submesh that compose the mesh.
 */
 
-#include "core.h"
 #include "Object3D.h"
 #include <assimp/anim.h>
 
+class SubMesh;
 class Mesh : public Object3D {
 public:
 
 	Mesh(ObjectFlag flag = OBJECT_FLAG_NONE) : Object3D(MESH,TRIANGLES,flag),
 											  _visibleToNetwork(true)
 	{
-		_refreshVBO = false;
 	}
 
 	virtual ~Mesh() {}
-		
+
 	bool computeBoundingBox(SceneGraphNode* const sgn);
 	virtual void updateTransform(SceneGraphNode* const sgn);
 	virtual void updateBBatCurrentFrame(SceneGraphNode* const sgn);
 
 	/// Called from SceneGraph "sceneUpdate"
-	virtual void sceneUpdate(U32 sceneTime);
+	virtual void sceneUpdate(const U32 sceneTime,SceneGraphNode* const sgn);
 	virtual void postLoad(SceneGraphNode* const sgn);
-	virtual	void onDraw();
+	virtual	void onDraw(const RenderStage& currentStage);
 	inline  void render(SceneGraphNode* const sgn){};
 	virtual void preFrameDrawEnd() {}
-	virtual void setSpecialShaderConstants(ShaderProgram* const shader) {}
 
 	inline vectorImpl<std::string>&   getSubMeshes()   {return _subMeshes;}
 
 	inline void  addSubMesh(const std::string& subMesh){_subMeshes.push_back(subMesh);}
 
 protected:
-	void computeTangents(){}	
+	void computeTangents(){}
 
 protected:
 	typedef Unordered_map<std::string, SceneGraphNode*> childrenNodes;

@@ -15,7 +15,6 @@
    along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #ifndef _SCENE_MANAGER_H
 #define _SCENE_MANAGER_H
 #include "core.h"
@@ -34,31 +33,31 @@ public:
 
 	/*Base Scene Operations*/
 	void render(const RenderStage& stage);
-	inline void idle()                                { _activeScene->idle(); }
-	//inline bool unload()                             { return _activeScene->unload(); }
+	inline void idle()                                 { _activeScene->idle(); }
+	inline bool unloadCurrentScene()                   { return _activeScene->unload(); }
 	bool load(const std::string& name, const vec2<U16>& resolution,  Camera* const camera);
 	///Check if the scene was loaded properly
-	inline bool checkLoadFlag()                       {return _activeScene->checkLoadFlag();}
+	inline bool checkLoadFlag()                        {return _activeScene->checkLoadFlag();}
 	///Create AI entities, teams, NPC's etc
-	inline bool initializeAI(bool continueOnErrors)   { return _activeScene->initializeAI(continueOnErrors); }
+	inline bool initializeAI(bool continueOnErrors)    { return _activeScene->initializeAI(continueOnErrors); }
 	///Destroy all AI entities, teams, NPC's createa in "initializeAI"
 	///AIEntities are deleted automatically by the AIManager if they are not freed in "deinitializeAI"
-	inline bool deinitializeAI(bool continueOnErrors) { return _activeScene->deinitializeAI(continueOnErrors); }
+	inline bool deinitializeAI(bool continueOnErrors)  { return _activeScene->deinitializeAI(continueOnErrors); }
 	/// Update animations, network data, sounds, triggers etc.
-	inline void updateCamera(Camera* const camera)  { _activeScene->renderState()->updateCamera(camera); }
-	inline void updateSceneState(U32 sceneTime)     { _activeScene->updateSceneState(sceneTime); }
-	inline void preRender()                         { _activeScene->preRender(); }
-    inline void postRender()                        { _activeScene->postRender(); }
+	inline void updateCamera(Camera* const camera)        { _activeScene->renderState()->updateCamera(camera); }
+	inline void updateSceneState(const U32 sceneTime)     { _activeScene->updateSceneState(sceneTime); }
+	inline void preRender()       { _activeScene->preRender(); }
+    inline void postRender()      { _activeScene->postRender(); }
 	///Gather input events and process them in the current scene
 	inline void processInput()                      { _activeScene->processInput(); }
-	inline void processTasks(U32 time)              { _activeScene->processTasks(time); }
-	
+	inline void processTasks(const U32 time)        { _activeScene->processTasks(time); }
+
 	inline void cacheResolution(const vec2<U16>& newResolution) {_activeScene->cacheResolution(newResolution);}
 
 	///Insert a new scene factory method for the given name
 	template<class DerivedScene>
 	inline bool registerScene(const std::string& sceneName) {
-		_sceneFactory.insert(std::make_pair(sceneName,boost::factory<DerivedScene*>()));	
+		_sceneFactory.insert(std::make_pair(sceneName,boost::factory<DerivedScene*>()));
 		return true;
 	}
 
@@ -83,4 +82,3 @@ inline Scene* GET_ACTIVE_SCENE() {
 }
 
 #endif
-

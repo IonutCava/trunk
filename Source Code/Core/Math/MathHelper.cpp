@@ -1,6 +1,5 @@
 #include "Headers/MathClasses.h"
-#include "Headers/Quaternion.h" 
-
+#include "Headers/Quaternion.h"
 
 namespace Mat4 {
 			// ----------------------------------------------------------------------------------------

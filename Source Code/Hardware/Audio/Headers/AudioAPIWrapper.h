@@ -36,20 +36,17 @@ enum AudioAPI
 	SDL
 };
 
-
 ///Audio Programming Interface
 class AudioAPIWrapper
 {
-
 protected:
 	AudioAPIWrapper() : _apiId(SDL), _state(AudioState(true,true,true,true)) {}
 
 	friend class SFXDevice;
-	
+
 	inline void setId(AudioAPI api) {_apiId = api;}
 	inline AudioAPI getId() { return _apiId;}
 
-	
 	virtual I8 initHardware() = 0;
 	virtual void closeAudioApi() = 0;
 	virtual void initDevice() = 0;
@@ -61,15 +58,13 @@ protected:
 	virtual void stopMusic() = 0;
 	virtual void stopAllSounds() = 0;
 
-
-
 	virtual void setMusicVolume(I8 value) = 0;
 	virtual void setSoundVolume(I8 value) = 0;
 
 	virtual ~AudioAPIWrapper(){};
 
 public: //RenderAPI global
-	
+
 	inline void setAudioState(AudioState& state){_state = state; }
 	inline AudioState& getActiveAudioState() {return _state;}
 
@@ -78,7 +73,6 @@ private:
 
 protected:
 	AudioState _state;
-
 };
 
 #endif

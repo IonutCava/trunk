@@ -31,13 +31,12 @@ typedef Texture TextureCubemap;
 
 enum RenderStage;
 
-class Sky : public SceneNode { 
-
+class Sky : public SceneNode {
 public:
 	Sky(const std::string& name);
 	~Sky();
 
-    void onDraw();
+    void onDraw(const RenderStage& currentStage);
 	void render(SceneGraphNode* const sgn);
 	void setRenderingOptions(bool drawSun = true, bool drawSky = true) ;
 	void prepareMaterial(SceneGraphNode* const sgn);
@@ -45,14 +44,14 @@ public:
 
     void setInvertPlane(F32 invertPlaneY);
     void setInverted(bool state){_invert = state;}
-    void setSunVector(const vec3<F32>& sunVect) {_sunVect = sunVect;}
+    void setSunVector(const vec3<F32>& sunVect);
 
 	void addToDrawExclusionMask(I32 stageMask);
 	void removeFromDrawExclusionMask(I32 stageMask);
 	///Draw states are used to test if the current object should be drawn depending on the current render pass
-	bool getDrawState(RenderStage currentStage) const;
+	bool getDrawState(const RenderStage& currentStage) const;
 	///Skies are always visible (for now. Interiors will change that. Windows will reuqire a occlusion querry(?))
-	bool isInView(bool distanceCheck,BoundingBox& boundingBox,const BoundingSphere& sphere) {return true;}
+	bool isInView(const bool distanceCheck,const BoundingBox& boundingBox,const BoundingSphere& sphere) {return true;}
 	void postLoad(SceneGraphNode* const sgn);
 
 private:
@@ -71,5 +70,3 @@ private:
 };
 
 #endif
-
-

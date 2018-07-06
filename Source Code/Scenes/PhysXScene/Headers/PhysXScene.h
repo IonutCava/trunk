@@ -21,7 +21,6 @@
 #include "Scenes/Headers/Scene.h"
 
 class PhysXScene : public Scene {
-
 public:
 	PhysXScene() : Scene(),
 				  _mousePressed(false){}
@@ -32,7 +31,7 @@ public:
 	bool loadResources(bool continueOnErrors);
 	bool unload();
 	void processInput();
-	void processTasks(U32 time);
+	void processTasks(const U32 time);
 	void onKeyDown(const OIS::KeyEvent& key);
 	void onKeyUp(const OIS::KeyEvent& key);
 	void onMouseMove(const OIS::MouseEvent& key);

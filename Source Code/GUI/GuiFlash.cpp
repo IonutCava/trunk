@@ -8,4 +8,3 @@ GUIFlash::~GUIFlash(){
 
 void GUIFlash::playMovie(){
 }
-

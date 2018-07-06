@@ -3,7 +3,7 @@
 #include "Hardware/Video/Headers/GFXDevice.h"
 
 // ------------------------------------------------------------------------------------------------
-// Constructor on a given animation. 
+// Constructor on a given animation.
 AnimEvaluator::AnimEvaluator( const aiAnimation* pAnim) {
 	_lastTime = 0.0;
 	_ticksPerSecond = pAnim->mTicksPerSecond != 0.0f ? pAnim->mTicksPerSecond : ANIMATION_TICKS_PER_SECOND;
@@ -13,7 +13,7 @@ AnimEvaluator::AnimEvaluator( const aiAnimation* pAnim) {
 	D_PRINT_FN(Locale::get("CREATE_ANIMATION_BEGIN"),_name.c_str());
 
 	_channels.resize(pAnim->mNumChannels);
-	for( U32 a = 0; a < pAnim->mNumChannels; a++){		
+	for( U32 a = 0; a < pAnim->mNumChannels; a++){
 		_channels[a]._name = pAnim->mChannels[a]->mNodeName.data;
 		for(U32 i(0); i< pAnim->mChannels[a]->mNumPositionKeys; i++) _channels[a]._positionKeys.push_back(pAnim->mChannels[a]->mPositionKeys[i]);
 		for(U32 i(0); i< pAnim->mChannels[a]->mNumRotationKeys; i++) _channels[a]._rotationKeys.push_back(pAnim->mChannels[a]->mRotationKeys[i]);
@@ -31,7 +31,7 @@ AnimEvaluator::AnimEvaluator( const aiAnimation* pAnim) {
 U32 AnimEvaluator::GetFrameIndexAt(D32 ptime){
 	// get a [0.f ... 1.f) value by allowing the percent to wrap around 1
 	ptime *= _ticksPerSecond;
-	
+
 	D32 time = 0.0f;
 	if( _duration > 0.0)
 		time = fmod( ptime, _duration);
@@ -43,22 +43,21 @@ U32 AnimEvaluator::GetFrameIndexAt(D32 ptime){
 }
 
 // ------------------------------------------------------------------------------------------------
-// Evaluates the animation tracks for a given time stamp. 
+// Evaluates the animation tracks for a given time stamp.
 void AnimEvaluator::Evaluate( D32 pTime, Unordered_map<std::string, Bone*>& bones) {
-
 	pTime *= _ticksPerSecond;
-	
+
 	D32 time = 0.0f;
 	if( _duration > 0.0)
 		time = fmod( pTime, _duration);
 	GetFrameIndexAt(pTime);
-
+	Unordered_map<std::string, Bone*>::iterator bonenode;
 	// calculate the transformations for each animation channel
 	for( U32 a = 0; a < _channels.size(); a++){
 		const AnimationChannel* channel = &_channels[a];
-		Unordered_map<std::string, Bone*>::iterator bonenode = bones.find(channel->_name);
+		bonenode = bones.find(channel->_name);
 
-		if(bonenode == bones.end()) { 
+		if(bonenode == bones.end()) {
 			D_ERROR_FN(Locale::get("ERROR_BONE_FIND"),channel->_name.c_str());
 			continue;
 		}
@@ -78,10 +77,10 @@ void AnimEvaluator::Evaluate( D32 pTime, Unordered_map<std::string, Bone*>& bone
 
 			// interpolate between this frame's value and next frame's value
 			U32 nextFrame = (frame + 1) % channel->_positionKeys.size();
-	
+
 			const aiVectorKey& key = channel->_positionKeys[frame];
 			const aiVectorKey& nextKey = channel->_positionKeys[nextFrame];
-			double diffTime = nextKey.mTime - key.mTime;
+			D32 diffTime = nextKey.mTime - key.mTime;
 			if( diffTime < 0.0)
 				diffTime += _duration;
 			if( diffTime > 0) {
@@ -108,7 +107,7 @@ void AnimEvaluator::Evaluate( D32 pTime, Unordered_map<std::string, Bone*>& bone
 
 			const aiQuatKey& key = channel->_rotationKeys[frame];
 			const aiQuatKey& nextKey = channel->_rotationKeys[nextFrame];
-			double diffTime = nextKey.mTime - key.mTime;
+			D32 diffTime = nextKey.mTime - key.mTime;
 			if( diffTime < 0.0) diffTime += _duration;
 			if( diffTime > 0) {
 				F32 factor = F32( (time - key.mTime) / diffTime);
@@ -140,9 +139,8 @@ void AnimEvaluator::Evaluate( D32 pTime, Unordered_map<std::string, Bone*>& bone
 		if(GFX_DEVICE.getApi() == Direct3D){
 			mat.Transpose();
 		}
-		
+
 		bonenode->second->_localTransform = mat;
 	}
 	_lastTime = time;
-
 }

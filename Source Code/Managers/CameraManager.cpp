@@ -12,18 +12,17 @@ CameraManager::~CameraManager() {
 		SAFE_DELETE(it.second);
 	}
 	_cameraPool.clear();
-	
 }
 Camera* const CameraManager::getActiveCamera() {
-	if(!_camera && !_cameraPool.empty()) 
+	if(!_camera && !_cameraPool.empty())
 		_camera = _cameraPool.begin()->second;
 	return _camera;
 }
 
 void CameraManager::setActiveCamera(const std::string& name) {
 	if(!_cameraPool.empty()){
-		if(_cameraPool.find(name) != _cameraPool.end()) 
-			_camera = _cameraPool[name]; 
+		if(_cameraPool.find(name) != _cameraPool.end())
+			_camera = _cameraPool[name];
 		else _camera = _cameraPool.begin()->second;
 	}else{
 		_camera = New FreeFlyCamera();
@@ -34,7 +33,6 @@ void CameraManager::setActiveCamera(const std::string& name) {
 		listener();
 	}
 }
-
 
 void CameraManager::addNewCamera(const std::string& cameraName, Camera* const camera){
 	if(camera == NULL) {

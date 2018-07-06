@@ -22,7 +22,6 @@
 	#pragma comment( linker,"/subsystem:\"windows\" /entry:\"mainCRTStartup\"" )
 #endif
 
-
 #define NEW_PARAM (__FILE__, __LINE__)
 #define PLACEMENTNEW_PARAM ,__FILE__, __LINE__
 #define NEW_DECL , char* zFile, int nLine
@@ -42,35 +41,21 @@ void free_simd(void * pxData);
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
-#include <fstream>
-#include <sstream>
 #include <assert.h>
 #include <memory.h>
-#include <memory.h>
 #include <malloc.h>
-#include <map>
-#include <math.h>
-#include <deque>
-#include <list>
 #include <typeinfo.h>
 #include <time.h>
 
 #include <boost/function.hpp>                          //For callbacks and delegates
 #include "Hardware/Platform/Headers/PlatformDefines.h" //For data types
-#include "Hardware/Platform/Headers/SharedMutex.h"           //For multi-threading
+#include "Hardware/Platform/Headers/SharedMutex.h"     //For multi-threading
 #include "Core/Math/Headers/MathClasses.h"     //For math classes (mat3,mat4,vec2,vec3,vec4 etc)
 #include "Rendering/Headers/Framerate.h"       //For time management
 #include "Core/Headers/Console.h"              //For printing to the standard output
 #include "Utility/Headers/Localization.h"      //For language parsing
-#include "Utility/Headers/UnorderedMap.h"      //For language parsing
+#include "Utility/Headers/UnorderedMap.h"
 #include "Utility/Headers/Vector.h"
-
-#define tuple_get_impl  std::tr1::get
-#define make_tuple_impl std::tr1::make_tuple
-#define tuple_impl      std::tr1::tuple
-//#define tuple_get_impl  std::get
-//#define make_tuple_impl std::make_tuple
-//#define tuple_impl std::tuple
 
 #define PNew(macroparam) new (macroparam PLACEMENTNEW_PARAM)
 
@@ -97,16 +82,16 @@ inline U8 PACK_FLOAT(F32 floatValue){
 //Pack 3 values into 1 float
 inline F32 PACK_FLOAT(U8 x, U8 y, U8 z) {
   U32 packedColor = (x << 16) | (y << 8) | z;
-  F32 packedFloat = (F32) ( ((D32)packedColor) / ((D32) (1 << 24)) );  
+  F32 packedFloat = (F32) ( ((D32)packedColor) / ((D32) (1 << 24)) );
    return packedFloat;
 }
- 
+
 //UnPack 3 values from 1 float
 inline void UNPACK_FLOAT(F32 src, F32& r, F32& g, F32& b){
   r = fract(src);
   g = fract(src * 256.0f);
   b = fract(src * 65536.0f);
- 
+
   //Unpack to the -1..1 range
   r = (r * 2.0f) - 1.0f;
   g = (g * 2.0f) - 1.0f;
@@ -134,13 +119,12 @@ enum ErrorCodes {
 	NO_LANGUAGE_INI = -14
 };
 
-
-
-///Random stuff added for convenience 
+///Random stuff added for convenience
 #define WHITE() vec4<F32>(1.0f,1.0f,1.0f,1.0f)
 #define BLACK() vec4<F32>(0.0f,0.0f,0.0f,1.0f)
 #define RED()   vec4<F32>(1.0f,0.0f,0.0f,1.0f)
 #define GREEN() vec4<F32>(0.0f,1.0f,0.0f,1.0f)
 #define BLUE()  vec4<F32>(0.0f,0.0f,1.0f,1.0f)
+#define DIVIDE_BLUE() vec4<F32>(0.1f,0.1f,0.8f,1.0f)
 
 #endif

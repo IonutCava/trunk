@@ -26,7 +26,6 @@ class Sphere3D;
 class NPC;
 
 class AITenisScene : public Scene {
-
 public:
 	AITenisScene() : Scene(),
 		_aiPlayer1(NULL),
@@ -62,7 +61,7 @@ public:
 	bool initializeAI(bool continueOnErrors);
 	bool deinitializeAI(bool continueOnErrors);
 	void processInput();
-	void processTasks(U32 time);
+	void processTasks(const U32 time);
 	void onKeyDown(const OIS::KeyEvent& key);
 	void onKeyUp(const OIS::KeyEvent& key);
 	void onMouseMove(const OIS::MouseEvent& key);
@@ -88,21 +87,21 @@ private:
 
 private: //Game stuff
 	mutable SharedLock _gameLock;
-    mutable boost::atomic<bool> _collisionPlayer1;
-    mutable boost::atomic<bool> _collisionPlayer2;
-    mutable boost::atomic<bool> _collisionPlayer3;
-    mutable boost::atomic<bool> _collisionPlayer4;
-    mutable boost::atomic<bool> _collisionNet;
-    mutable boost::atomic<bool> _collisionFloor;
-	mutable boost::atomic<bool> _directionTeam1ToTeam2;
-	mutable boost::atomic<bool> _upwardsDirection;
-	mutable boost::atomic<bool> _touchedTerrainTeam1;
-	mutable boost::atomic<bool> _touchedTerrainTeam2;
-	mutable boost::atomic<bool> _lostTeam1;
-    mutable boost::atomic<bool> _applySideImpulse;
-	mutable boost::atomic<bool> _gamePlaying;
-	mutable boost::atomic<I8>   _scoreTeam1;
-	mutable boost::atomic<I8>   _scoreTeam2;
+    mutable boost::atomic_bool _collisionPlayer1;
+    mutable boost::atomic_bool _collisionPlayer2;
+    mutable boost::atomic_bool _collisionPlayer3;
+    mutable boost::atomic_bool _collisionPlayer4;
+    mutable boost::atomic_bool _collisionNet;
+    mutable boost::atomic_bool _collisionFloor;
+	mutable boost::atomic_bool _directionTeam1ToTeam2;
+	mutable boost::atomic_bool _upwardsDirection;
+	mutable boost::atomic_bool _touchedTerrainTeam1;
+	mutable boost::atomic_bool _touchedTerrainTeam2;
+	mutable boost::atomic_bool _lostTeam1;
+    mutable boost::atomic_bool _applySideImpulse;
+	mutable boost::atomic_bool _gamePlaying;
+	mutable boost::atomic_int  _scoreTeam1;
+	mutable boost::atomic_int  _scoreTeam2;
     F32 _sideImpulseFactor;
     U32 _gameGUID;
 	///AIEntities are the "processors" behing the NPC's

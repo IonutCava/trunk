@@ -24,7 +24,6 @@
 enum AIMsg;
 class AIEntity;
 class CommunicationInterface{
-
 public:
 	CommunicationInterface(AIEntity* entity) : _entity(entity) {}
 

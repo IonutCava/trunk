@@ -27,14 +27,14 @@ enum duDebugDrawPrimitives
 	DU_DRAW_POINTS,
 	DU_DRAW_LINES,
 	DU_DRAW_TRIS,
-	DU_DRAW_QUADS,	
+	DU_DRAW_QUADS,
 };
 
 /// Abstract debug draw interface.
 struct duDebugDraw
 {
 	virtual ~duDebugDraw() = 0;
-	
+
 	virtual void depthMask(bool state) = 0;
 
 	virtual void texture(bool state) = 0;
@@ -58,12 +58,12 @@ struct duDebugDraw
 	///  @param pos [in] position of the verts.
 	///  @param color [in] color of the verts.
 	virtual void vertex(const float* pos, unsigned int color, const float* uv) = 0;
-	
+
 	/// Submit a vertex
 	///  @param x,y,z [in] position of the verts.
 	///  @param color [in] color of the verts.
 	virtual void vertex(const float x, const float y, const float z, unsigned int color, const float u, const float v) = 0;
-	
+
 	/// End drawing primitives.
 	virtual void end() = 0;
 };
@@ -109,7 +109,7 @@ inline unsigned int duLerpCol(unsigned int ca, unsigned int cb, unsigned int u)
 	const unsigned int gb = (cb >> 8) & 0xff;
 	const unsigned int bb = (cb >> 16) & 0xff;
 	const unsigned int ab = (cb >> 24) & 0xff;
-	
+
 	unsigned int r = (ra*(255-u) + rb*u)/255;
 	unsigned int g = (ga*(255-u) + gb*u)/255;
 	unsigned int b = (ba*(255-u) + bb*u)/255;
@@ -121,7 +121,6 @@ inline unsigned int duTransCol(unsigned int c, unsigned int a)
 {
 	return (a<<24) | (c & 0x00ffffff);
 }
-
 
 void duCalcBoxColors(unsigned int* colors, unsigned int colTop, unsigned int colSide);
 
@@ -155,7 +154,6 @@ void duDebugDrawGridXZ(struct duDebugDraw* dd, const float ox, const float oy, c
 					   const int w, const int h, const float size,
 					   const unsigned int col, const float lineWidth);
 
-
 // Versions without begin/end, can be used to draw multiple primitives.
 void duAppendCylinderWire(struct duDebugDraw* dd, float minx, float miny, float minz,
 						  float maxx, float maxy, float maxz, unsigned int col);
@@ -186,7 +184,6 @@ void duAppendBox(struct duDebugDraw* dd, float minx, float miny, float minz,
 void duAppendCylinder(struct duDebugDraw* dd, float minx, float miny, float minz,
 					  float maxx, float maxy, float maxz, unsigned int col);
 
-
 class duDisplayList : public duDebugDraw
 {
 	float* m_pos;
@@ -197,9 +194,9 @@ class duDisplayList : public duDebugDraw
 	bool m_depthMask;
 	duDebugDrawPrimitives m_prim;
 	float m_primSize;
-	
+
 	void resize(int cap);
-	
+
 public:
 	duDisplayList(int cap = 512);
 	~duDisplayList();
@@ -211,6 +208,5 @@ public:
 	void clear();
 	void draw(struct duDebugDraw* dd);
 };
-
 
 #endif // DEBUGDRAW_H

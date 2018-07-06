@@ -25,32 +25,34 @@
 #include "Rendering/RenderPass/Headers/Reflector.h"
 
 class ShaderProgram;
-class WaterPlane : public SceneNode, public Reflector{
 
+class Texture;
+typedef Texture Texture2D;
+
+class WaterPlane : public SceneNode, public Reflector{
 public:
 	WaterPlane();
 	~WaterPlane(){}
 
 	/// Resource inherited "unload"
 	bool unload();
-	bool setInitialData(const std::string& name);
 
 	/// General SceneNode stuff
-	void onDraw();
-    void postDraw();
+	void onDraw(const RenderStage& currentStage);
+    void postDraw(const RenderStage& currentStage);
 	void render(SceneGraphNode* const sgn);
 	void postLoad(SceneGraphNode* const sgn);
 	void prepareMaterial(SceneGraphNode* const sgn);
 	void releaseMaterial();
     void prepareDepthMaterial(SceneGraphNode* const sgn){}
     void releaseDepthMaterial(){}
-	bool getDrawState(RenderStage currentStage)  const;
+	bool getDrawState(const RenderStage& currentStage)  const;
 
-	bool isInView(bool distanceCheck,BoundingBox& boundingBox,const BoundingSphere& sphere) {return true;}
+	bool isInView(const bool distanceCheck,const BoundingBox& boundingBox,const BoundingSphere& sphere) {return true;}
 
 	void setParams(F32 shininess, F32 noiseTile, F32 noiseFactor, F32 transparency);
 	inline Quad3D*     getQuad()    {return _plane;}
-	
+
 	/// Reflector overwrite
 	void updateReflection();
 	/// Used for many things, such as culling switches, and underwater effects

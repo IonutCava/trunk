@@ -17,7 +17,7 @@
 
 #ifndef _WEAPON_H_
 #define _WEAPON_H_
-#include "core.h" 
+#include "core.h"
 
 ///Base class for defining a weapon
 class Weapon {
@@ -34,7 +34,7 @@ public:
 
 	enum WeaponProperty {
 		/// this weapon does use ammo (or charges for melee)
-		WEAPON_PROPERTY_WITH_AMMO    = toBit(1), 
+		WEAPON_PROPERTY_WITH_AMMO    = toBit(1),
 		/// this weapon does not us ammo
 		WEAPON_PROPERTY_WITHOUT_AMMO = toBit(2),
 		/// Place all weapon types above this

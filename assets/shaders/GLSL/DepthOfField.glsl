@@ -1,16 +1,17 @@
 -- Vertex
-#include "vboInputData.vert"
+#include "vertexDefault.vert"
 
-void main(void){
-    computeData();
-    gl_Position = gl_ModelViewProjectionMatrix * vertexData;
-} 
+void main(void)
+{
+
+	computeData();
+}
 
 -- Fragment
 
 #define PI  3.14159265
-varying vec2 _texCoord;
-
+in  vec2 _texCoord;
+out vec4 _colorOut;
 uniform sampler2D texDepth;
 uniform sampler2D texScreen;
 
@@ -207,13 +208,12 @@ void main()
 	
 	col /= s;   
 	
-	gl_FragColor.rgb = col;
-	gl_FragColor.a = 1.0;
+	_colorOut = vec4(col, 1.0);
 }
 
 -- Fragment.OLD.BROKEN.DO.NOT.USE
 
-varying vec2 _texCoord;
+in vec2 _texCoord;
 
 uniform sampler2D texDepth;
 uniform sampler2D texScreen;
@@ -298,7 +298,7 @@ void Pdc(inout vec4 color){
 
 	float depth = texture(texDepth, _texCoord).r;
 
-	if(depth > 0.997f){
+	if(depth > 0.997){
 
 		if(bHorizontal)	{		
 			color = convolH11();
@@ -306,14 +306,14 @@ void Pdc(inout vec4 color){
 			color = convolV11();
 		}
 		
-	}else if(depth > 0.995f){
+	}else if(depth > 0.995){
 		if(bHorizontal)	{
 			color = convolH5();
 		}else{
 			color = convolV5();
 		}
 		
-	}else if(depth > 0.994f){
+	}else if(depth > 0.994){
 		if(bHorizontal)	{
 			color = convolH3();
 		}else{
@@ -328,5 +328,5 @@ void Pdc(inout vec4 color){
 
 void main(){
 
-	Pdc(gl_FragColor);
+	Pdc(_colorOut);
 }

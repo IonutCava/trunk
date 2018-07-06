@@ -1,151 +1,145 @@
 #include "Headers/GLWrapper.h"
 
-#ifdef _DEBUG
+
 namespace Divide{
 	namespace GL{
-
+void glfw_error_callback(GLint error, const char* description){
+	ERROR_FN(Locale::get("ERROR_GENERIC_GLFW"), description);
+}
+#ifdef _DEBUG
 void GLFlushErrors() {
-	if(GL_API::_useDebugOutputCallback) return;
-	if(!GL_API::_contextAvailable) return;
+	if(Divide::GL::_useDebugOutputCallback) return;
+	if(!Divide::GL::_contextAvailable) return;
 	GLenum ErrorCode;
 	std::string Error = "unknown error";
     std::string Desc  = "no description";
-	while((ErrorCode  = glGetError()) != GL_NO_ERROR && !GL_API::_applicationClosing){
+	while((ErrorCode  = glGetError()) != GL_NO_ERROR && !Divide::GL::_applicationClosing){
 		// Decode the error code
 		switch (ErrorCode) {
-
 			case GL_INVALID_ENUM : {
-
 				Error = "GL_INVALID_ENUM";
 				Desc  = "an unacceptable value has been specified for an enumerated argument";
 				break;
 			}
 
 			case GL_INVALID_VALUE : {
-
 				Error = "GL_INVALID_VALUE";
 				Desc  = "a numeric argument is out of range";
 				break;
 			}
 
 			case GL_INVALID_OPERATION : {
-
 				Error = "GL_INVALID_OPERATION";
 				Desc  = "the specified operation is not allowed in the current state";
 				break;
 			}
 
 			case GL_STACK_OVERFLOW : {
-
 				Error = "GL_STACK_OVERFLOW";
 				Desc  = "this command would cause a stack overflow";
 				break;
 			}
 
 			case GL_STACK_UNDERFLOW : {
-
 				Error = "GL_STACK_UNDERFLOW";
 				Desc  = "this command would cause a stack underflow";
 				break;
 			}
 
 			case GL_OUT_OF_MEMORY : {
-
 				Error = "GL_OUT_OF_MEMORY";
 				Desc  = "there is not enough memory left to execute the command";
 				break;
 			}
 
 			case GL_INVALID_FRAMEBUFFER_OPERATION : {
-
 				Error = "GL_INVALID_FRAMEBUFFER_OPERATION";
 				Desc  = "the object bound to FRAMEBUFFER_BINDING is not \"framebuffer complete\"";
 				break;
 			}
 		}
 	    std::stringstream ss;
-        ss << Error << ", " 
+        ss << Error << ", "
 		   << Desc;
 		assert(false);
 	}
 }
 
 void GLCheckError(const std::string& File, GLuint Line, char* operation) {
-	if(GL_API::_useDebugOutputCallback) return;
-	if(!GL_API::_contextAvailable) return;
+	if(Divide::GL::_useDebugOutputCallback) return;
+	if(!Divide::GL::_contextAvailable) return;
     // Get the last error
     GLenum ErrorCode  = glGetError();
-	if(ErrorCode == GL_NO_ERROR || GL_API::_applicationClosing) return;
+	if(ErrorCode == GL_NO_ERROR || Divide::GL::_applicationClosing) return;
     std::string Error = "unknown error";
     std::string Desc  = "no description";
-		
+
 	// Decode the error code
     switch (ErrorCode) {
-
         case GL_INVALID_ENUM : {
-
             Error = "GL_INVALID_ENUM";
             Desc  = "an unacceptable value has been specified for an enumerated argument";
             break;
         }
 
         case GL_INVALID_VALUE : {
-
             Error = "GL_INVALID_VALUE";
             Desc  = "a numeric argument is out of range";
             break;
         }
 
         case GL_INVALID_OPERATION : {
-
             Error = "GL_INVALID_OPERATION";
             Desc  = "the specified operation is not allowed in the current state";
             break;
         }
 
         case GL_STACK_OVERFLOW : {
-
             Error = "GL_STACK_OVERFLOW";
             Desc  = "this command would cause a stack overflow";
             break;
         }
 
         case GL_STACK_UNDERFLOW : {
-
             Error = "GL_STACK_UNDERFLOW";
             Desc  = "this command would cause a stack underflow";
             break;
         }
 
         case GL_OUT_OF_MEMORY : {
-
             Error = "GL_OUT_OF_MEMORY";
             Desc  = "there is not enough memory left to execute the command";
             break;
         }
 
         case GL_INVALID_FRAMEBUFFER_OPERATION : {
-
             Error = "GL_INVALID_FRAMEBUFFER_OPERATION";
             Desc  = "the object bound to FRAMEBUFFER_BINDING is not \"framebuffer complete\"";
             break;
         }
     }
-		
+
 	std::stringstream ss;
        ss << File.substr(File.find_last_of("\\/") + 1) << " (" << Line << ") : "
-          << Error << ", " 
+          << Error << ", "
 		  << Desc;
 	ERROR_FN(Locale::get("ERROR_GENERIC_GL"),operation, ss.str().c_str());
 //	assert(false);
 }
 
+
+void CALLBACK DebugCallbackARB(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, GLvoid* userParam){
+	DebugOutputToFile(source, type, id, severity, message);
+}
+
+void CALLBACK DebugCallbackAMD(GLenum source, GLuint id, GLenum severity, GLsizei length, const GLchar* message, GLvoid* userParam){
+	DebugOutputToFileAMD(source, id, severity, message);
+}
 std::string gl_source;
 std::string gl_severity;
 std::string gl_type;
 
 void DebugOutputToFileAMD(GLenum source, GLuint id, GLenum severity, const GLchar* message) {
-
     if(source == GL_DEBUG_CATEGORY_API_ERROR_AMD)
         gl_source = "OpenGL";
     else if(source == GL_DEBUG_CATEGORY_WINDOW_SYSTEM_AMD)
@@ -175,7 +169,7 @@ void DebugOutputToFileAMD(GLenum source, GLuint id, GLenum severity, const GLcha
 
 void DebugOutputToFile(GLenum source, GLenum type, GLuint id, GLenum severity, const GLchar* message) {
 
-    if(source == GL_DEBUG_SOURCE_API_ARB)
+	if(source == GL_DEBUG_SOURCE_API_ARB)
        gl_source = "OpenGL";
     else if(source == GL_DEBUG_SOURCE_WINDOW_SYSTEM_ARB)
        gl_source = "Windows";
@@ -215,7 +209,7 @@ void DebugOutputToFile(GLenum source, GLenum type, GLuint id, GLenum severity, c
 			 gl_severity.c_str(),
 			 message);
 }
+#endif
 	} //namespace GL
 }//namespace Divide
 
-#endif

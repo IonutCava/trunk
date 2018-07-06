@@ -24,7 +24,7 @@ class dtProximityGrid
 	int m_maxItems;
 	float m_cellSize;
 	float m_invCellSize;
-	
+
 	struct Item
 	{
 		unsigned short id;
@@ -34,30 +34,30 @@ class dtProximityGrid
 	Item* m_pool;
 	int m_poolHead;
 	int m_poolSize;
-	
+
 	unsigned short* m_buckets;
 	int m_bucketsSize;
-	
+
 	int m_bounds[4];
-	
+
 public:
 	dtProximityGrid();
 	~dtProximityGrid();
-	
+
 	bool init(const int maxItems, const float cellSize);
-	
+
 	void clear();
-	
+
 	void addItem(const unsigned short id,
 				 const float minx, const float miny,
 				 const float maxx, const float maxy);
-	
+
 	int queryItems(const float minx, const float miny,
 				   const float maxx, const float maxy,
 				   unsigned short* ids, const int maxIds) const;
-	
+
 	int getItemCountAt(const int x, const int y) const;
-	
+
 	inline const int* getBounds() const { return m_bounds; }
 	inline const float getCellSize() const { return m_cellSize; }
 };
@@ -65,6 +65,4 @@ public:
 dtProximityGrid* dtAllocProximityGrid();
 void dtFreeProximityGrid(dtProximityGrid* ptr);
 
-
 #endif // DETOURPROXIMITYGRID_H
-

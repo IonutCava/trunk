@@ -20,30 +20,34 @@
 
 #include "Hardware/Video/Buffers/VertexBufferObject/Headers/VertexBufferObject.h"
 #include "Hardware/Video/OpenGL/Headers/glResources.h"
-///For OpenGL 3.x we use Vertex Array Objects as our VBO implementation. If that fails, we fallback to simple Vertex Arrays
-///One VAO contains: one VBO for data, one IBO for indices and vertex attribs for 
-///- Vertex Data
-///- Normals
-///- TexCoords
-///- Tangents
-///- BiTangents
-///- Bone weights
-///- Bone indices
-class glVertexArrayObject : public VertexBufferObject {
+///Always bind a shader, even a dummy one when rendering geometry. No more fixed matrix API means no more VBOs or VAs
+///One VAO contains: one VBO for data, one IBO for indices and uploads to the shader vertex attribs for:
+///- Vertex Data  bound to location Divide::GL::VERTEX_POSITION_LOCATION
+///- Normals      bound to location Divide::GL::VERTEX_NORMAL_LOCATION
+///- TexCoords    bound to location Divide::GL::VERTEX_TEXCOORD_LOCATION
+///- Tangents     bound to location Divide::GL::VERTEX_TANGENT_LOCATION
+///- BiTangents   bound to location Divide::GL::VERTEX_BITANGENT_LOCATION
+///- Bone weights bound to location Divide::GL::VERTEX_BONE_WEIGHT_LOCATION
+///- Bone indices bound to location Divide::GL::VERTEX_BONE_INDICE_LOCATION
 
+class glVertexArrayObject : public VertexBufferObject {
 public:
+	glVertexArrayObject(const PrimitiveType& type);
+	virtual ~glVertexArrayObject();
+
+    //Shader manipulation to replace the fixed pipeline. Always specify a shader before the draw calls!
+    void setShaderProgram(ShaderProgram* const shaderProgram);
+
 	virtual bool Create(bool staticDraw = true);
 	virtual void Destroy();
-	virtual void Enable();
-	virtual void Disable();
-	virtual void Draw(U8 LODindex = 0);
-    virtual void Draw(GFXDataFormat f, U32 count, const void* first_element);
-	virtual ~glVertexArrayObject() {Destroy();}
 
-    glVertexArrayObject(PrimitiveType type);
+	virtual bool SetActive();
+
+	virtual void Draw(const U8 LODindex = 0);
+    virtual void DrawRange();
+
     ///Never call Refresh() just queue it and the data will update before drawing
-	bool queueRefresh();
-	void setShaderProgram(ShaderProgram* const shaderProgram);
+	inline bool queueRefresh() {_refreshQueued = true; return true;}
 
 protected:
     virtual bool computeTriangleList();
@@ -51,22 +55,9 @@ protected:
 	virtual bool Refresh();
 	/// Internally create the VBO
 	virtual bool CreateInternal();
-	/// Enable Vertex Array Data
-	virtual void Enable_VA();	
-	/// Disable Vertex Array Data
-	virtual void Disable_VA();	
-	/// Enable VBO Data (only vertex and normal pointers)
-	virtual void Enable_VBO();
-	/// Disable VBO Data (only vertex and normal pointers)
-	virtual void Disable_VBO();
-	/// Enable texCoord pointers manually
-	virtual void Enable_VBO_TexPointers();
-	/// Dsiable texCoord pointers manually to set client texture states to defaults
-	virtual void Disable_VBO_TexPointers();
 	/// Enable full VAO based VBO (all pointers are tracked by VAO's)
-	virtual void Enable_Shader_VBO();
-	/// Disable full VAO based VBO
-	virtual void Disable_Shader_VBO();
+	virtual void Upload_VBO_Attributes();
+	virtual void Upload_VBO_Depth_Attributes();
 	/// Integrity checks
 	void checkStatus();
 
@@ -74,17 +65,12 @@ protected:
 
 	GLuint _VAOid;
     GLuint _DepthVAOid;
-
-	bool _useVA;   ///<Fallback to Vertex Arrays if VBO creation fails
-	bool _created; ///< VBO's can be auto-created as GL_STATIC_DRAW if Enable() is called before Create();
-				   ///< This helps with multi-threaded asset loading without creating separate GL contexts for each thread
+	GLuint _usage;
 	bool _animationData;     ///< Used to bind an extra set of vertex attributes for bone indices and bone weights
 	bool _refreshQueued;     ///< A refresh call might be called before "Create()". This should help with that
-    bool _bound;
-	vectorImpl<vec4<GLhalf> >  _normalsSmall;
+ 	vectorImpl<vec4<GLhalf> >  _normalsSmall;
 	vectorImpl<vec4<GLshort> > _tangentSmall;
 	vectorImpl<vec4<GLshort> > _bitangentSmall;
 };
 
 #endif
-

@@ -18,11 +18,10 @@
 #ifndef _OBJECT_3D_H_
 #define _OBJECT_3D_H_
 
-#include "core.h"
 #include "Graphs/Headers/SceneGraphNode.h"
-#include "Hardware/Video/Headers/GFXDevice.h"
 
 class BoundingBox;
+class RenderInstance;
 class VertexBufferObject;
 class Object3D : public SceneNode {
 public:
@@ -33,7 +32,6 @@ public:
 		TEXT_3D,
 		MESH,
 		SUBMESH,
-		GENERIC,
 		OBJECT_3D_FLYWEIGHT,
         OBJECT_3D_PLACEHOLDER
 	};
@@ -42,37 +40,35 @@ public:
 		OBJECT_FLAG_NONE = 0,
 		OBJECT_FLAG_SKINNED,
 		OBJECT_FLAG_PLACEHOLDER
-
 	};
 
-	Object3D(ObjectType type = OBJECT_3D_PLACEHOLDER, PrimitiveType vboType = TRIANGLES, ObjectFlag flag = OBJECT_FLAG_NONE);
-	Object3D(const std::string& name, ObjectType type = OBJECT_3D_PLACEHOLDER, PrimitiveType vboType = TRIANGLES, ObjectFlag flag = OBJECT_FLAG_NONE);
+	Object3D(const ObjectType& type = OBJECT_3D_PLACEHOLDER, const PrimitiveType& vboType = TRIANGLES,const ObjectFlag& flag = OBJECT_FLAG_NONE);
+	Object3D(const std::string& name,const ObjectType& type = OBJECT_3D_PLACEHOLDER,const PrimitiveType& vboType = TRIANGLES,const ObjectFlag& flag = OBJECT_FLAG_NONE);
 
-	virtual ~Object3D(){
-		SAFE_DELETE(_geometry);
-	};
+	virtual ~Object3D();
 
-	        VertexBufferObject* const getGeometryVBO(); ///<Please use IBO's ...
+	inline  VertexBufferObject* const getGeometryVBO()  const {assert(_geometry != NULL); return _geometry;}
 	inline  ObjectType                getType()         const {return _geometryType;}
 	inline  ObjectFlag                getFlag()         const {return _geometryFlag;}
-
+	inline  RenderInstance*   const   renderInstance()  const {return _renderInstance;}
 	/// Called from SceneGraph "sceneUpdate"
-	virtual void  sceneUpdate(U32 sceneTime) {}           ///<To avoid a lot of typing
+	virtual void  sceneUpdate(const U32 sceneTime,SceneGraphNode* const sgn) {SceneNode::sceneUpdate(sceneTime,sgn);}     //<To avoid a lot of typing
 	virtual void  postLoad(SceneGraphNode* const sgn) {} ///<To avoid a lot of typing
 	virtual	void  render(SceneGraphNode* const sgn);
-	virtual void  onDraw();
+	virtual void  onDraw(const RenderStage& currentStage);
     //virtual void  optimizeForDepth(bool state = true,bool force = false) {if(_geometry) _geometry->optimizeForDepth(state,force);}
 
 protected:
-	virtual void computeNormals() {};
+	virtual void computeNormals();
 	virtual void computeTangents();
 
 protected:
 	bool		          _update;
-	bool                  _refreshVBO;
 	ObjectType            _geometryType;
 	ObjectFlag            _geometryFlag;
 	VertexBufferObject*   _geometry;
+	///The actual render instance needed by the rendering API
+	RenderInstance*       _renderInstance;
 };
 
 #endif

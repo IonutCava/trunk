@@ -4,25 +4,25 @@
 #include "Hardware/Video/Headers/GFXDevice.h"
 
 Texture* ImplResourceLoader<Texture>::operator()(){
-
 	Texture* ptr = NULL;
-	std::stringstream ss( _descriptor.getResourceLocation() );
-	std::string it;
-	I8 i = 0;
-	while(std::getline(ss, it, ' ')) i++;
 
-	if(i == 6){
+    if(_descriptor.getEnumValue() == TEXTURE_CUBE_MAP){
 		ptr = GFX_DEVICE.newTextureCubemap(_descriptor.getFlag());
-	}else if (i == 1){
+    }else{
 		ptr = GFX_DEVICE.newTexture2D(_descriptor.getFlag());
-	}else{
-		ERROR_FN(Locale::get("ERROR_TEXTURE_LOADER_CUBMAP_INIT_COUNT"), _descriptor.getName().c_str());
-		return NULL;
 	}
+	ptr->enableThreadedLoading(_descriptor.getThreaded());
+    if(_descriptor.getMask().b.b0 == 1){ //disable mip-maps
+        ptr->enableGenerateMipmaps(false);
+    }else{
+        if(_descriptor.getId() != RAND_MAX){
+            ptr->setAnisotrophyLevel(_descriptor.getId());
+        }
+    }
 
 	if(!load(ptr,_descriptor.getResourceLocation())){
 		ERROR_FN(Locale::get("ERROR_TEXTURE_LOADER_FILE"),_descriptor.getResourceLocation().c_str(), _descriptor.getName().c_str());
-		return NULL;
+        SAFE_DELETE(ptr)
 	}
 
 	return ptr;

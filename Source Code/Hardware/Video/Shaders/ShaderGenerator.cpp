@@ -15,7 +15,7 @@ Shader* ShaderGenerator::generateShader(const vectorImpl<ShaderStageDescriptor> 
 				break;
 			case ShaderStageDescriptor::SHADER_BLIN:
 				break;
-			case ShaderStageDescriptor::SHADER_BUMP:	
+			case ShaderStageDescriptor::SHADER_BUMP:
 				break;
 			case ShaderStageDescriptor::SHADER_PARALLAX:
 				break;

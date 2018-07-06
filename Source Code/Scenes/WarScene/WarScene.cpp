@@ -11,7 +11,6 @@
 
 REGISTER_SCENE(WarScene);
 
-
 void WarScene::preRender(){
 	vec2<F32> _sunAngle = vec2<F32>(0.0f, RADIANS(45.0f));
 	_sunvector = vec3<F32>(	-cosf(_sunAngle.x) * sinf(_sunAngle.y),
@@ -22,10 +21,10 @@ void WarScene::preRender(){
 	getSkySGN(0)->getNode<Sky>()->setSunVector(_sunvector);
 }
 
-void WarScene::processTasks(U32 time){
+void WarScene::processTasks(const U32 time){
 	F32 FpsDisplay = 0.3f;
 	if (time - _taskTimers[0] >= FpsDisplay){
-		GUI::getInstance().modifyText("fpsDisplay", "FPS: %5.2f", Framerate::getInstance().getFps());
+		GUI::getInstance().modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", Framerate::getInstance().getFps(), Framerate::getInstance().getFrameTime());
 		GUI::getInstance().modifyText("RenderBinCount", "Number of items in Render Bin: %d", GFX_RENDER_BIN_SIZE);
 		_taskTimers[0] += FpsDisplay;
 	}
@@ -36,18 +35,16 @@ void WarScene::resetSimulation(){
 }
 
 void WarScene::startSimulation(){
-
 	resetSimulation();
 
 	if(getTasks().empty()){
 		Kernel* kernel = Application::getInstance().getKernel();
-		Task_ptr newSim(New Task(kernel->getThreadPool(),12,true,false,boost::bind(&WarScene::processSimulation,this,rand() % 5,TYPE_INTEGER)));
+		Task_ptr newSim(New Task(kernel->getThreadPool(),12,true,false,DELEGATE_BIND(&WarScene::processSimulation,this,rand() % 5,TYPE_INTEGER)));
 		addTask(newSim);
 	}
 }
 
 void WarScene::processSimulation(boost::any a, CallbackParam b){
-
 	if(getTasks().empty()) return;
 	//SceneGraphNode* Soldier1 = _sceneGraph->findNode("Soldier1");
 	//assert(Soldier1);
@@ -55,11 +52,10 @@ void WarScene::processSimulation(boost::any a, CallbackParam b){
 }
 
 void WarScene::processInput(){
-
-	if(state()->_angleLR) renderState()->getCamera()->RotateX(state()->_angleLR * FRAME_SPEED_FACTOR);
-	if(state()->_angleUD) renderState()->getCamera()->RotateY(state()->_angleUD * FRAME_SPEED_FACTOR);
-	if(state()->_moveFB)  renderState()->getCamera()->MoveForward(state()->_moveFB * (FRAME_SPEED_FACTOR/5));
-	if(state()->_moveLR)  renderState()->getCamera()->MoveStrafe(state()->_moveLR * (FRAME_SPEED_FACTOR/5));
+	if(state()->_angleLR) renderState()->getCamera()->RotateX(state()->_angleLR);
+	if(state()->_angleUD) renderState()->getCamera()->RotateY(state()->_angleUD);
+	if(state()->_moveFB)  renderState()->getCamera()->MoveForward(state()->_moveFB /5);
+	if(state()->_moveLR)  renderState()->getCamera()->MoveStrafe(state()->_moveLR /5);
 }
 
 bool WarScene::load(const std::string& name){
@@ -71,7 +67,7 @@ bool WarScene::load(const std::string& name){
 	light->setLightProperties(LIGHT_PROPERTY_DIFFUSE,WHITE());
 	light->setLightProperties(LIGHT_PROPERTY_SPECULAR,WHITE());
 	//Add a skybox
-	addDefaultSky();								
+	addDefaultSky();
 	//Position camera
 	renderState()->getCamera()->RotateX(RADIANS(45));
 	renderState()->getCamera()->RotateY(RADIANS(25));
@@ -157,24 +153,22 @@ bool WarScene::deinitializeAI(bool continueOnErrors){
 }
 
 bool WarScene::loadResources(bool continueOnErrors){
-	
-	GUI::getInstance().addButton("Simulate", "Simulate", vec2<U32>(renderState()->cachedResolution().width-220 ,
+	GUI::getInstance().addButton("Simulate", "Simulate", vec2<I32>(renderState()->cachedResolution().width-220 ,
 																   renderState()->cachedResolution().height/1.1f),
 													     vec2<U32>(100,25),vec3<F32>(0.65f,0.65f,0.65f),
-														 boost::bind(&WarScene::startSimulation,this));
+														 DELEGATE_BIND(&WarScene::startSimulation,this));
 
 	GUI::getInstance().addText("fpsDisplay",           //Unique ID
-		                       vec2<U32>(60,60),          //Position
+		                       vec2<I32>(60,60),          //Position
 							    Font::DIVIDE_DEFAULT,    //Font
 							   vec3<F32>(0.0f,0.2f, 1.0f),  //Color
 							   "FPS: %s",0);    //Text and arguments
 	GUI::getInstance().addText("RenderBinCount",
-								vec2<U32>(60,70),
+								vec2<I32>(60,70),
 								 Font::DIVIDE_DEFAULT,
 								vec3<F32>(0.6f,0.2f,0.2f),
 								"Number of items in Render Bin: %d",0);
 
-	
 	_taskTimers.push_back(0.0f); //Fps
 	return true;
 }
@@ -216,10 +210,8 @@ void WarScene::onKeyUp(const OIS::KeyEvent& key){
 		default:
 			break;
 	}
-
 }
 void WarScene::onMouseMove(const OIS::MouseEvent& key){
-
 	if(_mousePressed){
 		if(_prevMouse.x - key.state.X.abs > 1 )
 			state()->_angleLR = -0.15f;
@@ -235,14 +227,14 @@ void WarScene::onMouseMove(const OIS::MouseEvent& key){
 		else
 			state()->_angleUD = 0;
 	}
-	
+
 	_prevMouse.x = key.state.X.abs;
 	_prevMouse.y = key.state.Y.abs;
 }
 
 void WarScene::onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID button){
 	Scene::onMouseClickDown(key,button);
-	if(button == 0) 
+	if(button == 0)
 		_mousePressed = true;
 }
 

@@ -21,7 +21,6 @@
 #include "Camera.h"
 
 class FreeFlyCamera : public Camera {
-
 public:
 	FreeFlyCamera() : Camera(FREE_FLY)
 	{

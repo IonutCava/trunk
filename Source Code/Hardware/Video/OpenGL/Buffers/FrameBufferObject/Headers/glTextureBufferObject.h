@@ -21,7 +21,6 @@
 #include "glFrameBufferObject.h"
 
 class glTextureBufferObject : public glFrameBufferObject {
-
 public:
 
 	glTextureBufferObject(bool cubeMap = false, bool depthOnly = false);
@@ -29,4 +28,3 @@ public:
 };
 
 #endif
-

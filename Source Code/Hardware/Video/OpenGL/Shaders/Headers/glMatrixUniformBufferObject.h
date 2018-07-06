@@ -17,7 +17,7 @@
 
 #ifndef GL_MATRIX_UNIFORM_BUFFER_OBJECT_H_
 #define GL_MATRIX_UNIFORM_BUFFER_OBJECT_H_
-#include "glUniformBufferObject.h" 
+#include "glUniformBufferObject.h"
 
 template<class T>
 class mat4;
@@ -27,7 +27,7 @@ public:
     glMatrixUniformBufferObject();
     ~glMatrixUniformBufferObject();
 
-    void FillData();
+    void ReserveBuffer(GLuint primitiveCount);
 };
 
 #endif

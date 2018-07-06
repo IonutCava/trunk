@@ -38,7 +38,6 @@ public:
 	virtual bool begin() = 0;
 	///Called after the geometry is drawn to process the query and prepare the result
 	virtual end() = 0;
-
 };
 
 #endif

@@ -21,7 +21,6 @@
 #include "glFrameBufferObject.h"
 
 class glDeferredBufferObject : public glFrameBufferObject {
-
 public:
 
 	glDeferredBufferObject();
@@ -29,14 +28,7 @@ public:
 
 	bool Create(GLushort width, GLushort height, GLubyte imageLayers = 0);
 
-	void Destroy();
-	void Begin(GLubyte nFace=0) const;	
-
-private:
-	GLuint  _normalBufferHandle;
-	GLuint  _positionBufferHandle;
-	GLuint  _diffuseBufferHandle;
+	void Begin(GLubyte nFace=0) const;
 };
 
 #endif
-

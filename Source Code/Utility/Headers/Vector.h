@@ -17,10 +17,13 @@
 
 #ifndef VECTOR_H_
 #define VECTOR_H_
+
 #ifndef _CONFIG_HEADER_
 #include "config.h"
 #endif
+
 #if defined(VECTOR_IMP) && VECTOR_IMP == 0
+
 #include <boost/container/vector.hpp>
 #define vectorImpl boost::container::vector
 

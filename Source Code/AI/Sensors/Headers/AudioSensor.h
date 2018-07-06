@@ -22,7 +22,7 @@
 
 class AIEntity;
 class AudioSensor : public Sensor{
-public: 
+public:
 	AudioSensor() : Sensor(AUDIO_SENSOR) {}
 
 	U32  getNearbyEntityCount(U32 range)         {}  ///< number of smart units nearby     (only noisy ones)
@@ -31,7 +31,6 @@ public:
 
 	AIEntity* getNearestFriendlyEntity()         {}  ///< get closest noisy friendly entity
 	AIEntity* getNearestHostileEntity()          {}  ///< get closest noisy hostile entity
-
 };
 
 #endif

@@ -37,7 +37,7 @@ public:
 	inline SceneGraphNode* findNode(const std::string& name){
 		return _root->findNode(name);
 	}
-	
+
 	inline void render() {	_root->render(); }
 
 private:

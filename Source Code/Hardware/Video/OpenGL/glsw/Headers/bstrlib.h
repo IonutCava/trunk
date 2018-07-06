@@ -1,7 +1,7 @@
 /*
  * This source file is part of the bstring string library.  This code was
- * written by Paul Hsieh in 2002-2008, and is covered by the BSD open source 
- * license and the GPL. Refer to the accompanying documentation for details 
+ * written by Paul Hsieh in 2002-2008, and is covered by the BSD open source
+ * license and the GPL. Refer to the accompanying documentation for details
  * on usage and license.
  */
 
@@ -161,7 +161,7 @@ typedef size_t (* bNread) (void *buff, size_t elsize, size_t nelem, void *parm);
 
 /* Input functions */
 extern bstring bgets (bNgetc getcPtr, void * parm, char terminator);
-extern bstring bread (bNread readPtr, void * parm);
+extern bstring bread_gl (bNread readPtr, void * parm);
 extern int bgetsa (bstring b, bNgetc getcPtr, void * parm, char terminator);
 extern int bassigngets (bstring b, bNgetc getcPtr, void * parm, char terminator);
 extern int breada (bstring b, bNread readPtr, void * parm);
@@ -178,9 +178,9 @@ extern int bsreadlnsa (bstring r, struct bStream * s, const_bstring term);
 extern int bsreada (bstring b, struct bStream * s, int n);
 extern int bsunread (struct bStream * s, const_bstring b);
 extern int bspeek (bstring r, const struct bStream * s);
-extern int bssplitscb (struct bStream * s, const_bstring splitStr, 
+extern int bssplitscb (struct bStream * s, const_bstring splitStr,
 	int (* cb) (void * parm, int ofs, const_bstring entry), void * parm);
-extern int bssplitstrcb (struct bStream * s, const_bstring splitStr, 
+extern int bssplitstrcb (struct bStream * s, const_bstring splitStr,
 	int (* cb) (void * parm, int ofs, const_bstring entry), void * parm);
 extern int bseof (const struct bStream * s);
 

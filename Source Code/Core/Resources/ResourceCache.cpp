@@ -38,8 +38,9 @@ Resource* ResourceCache::loadResource(const std::string& name){
 
 void ResourceCache::Destroy(){
 	for_each(ResourceMap::value_type& it, _resDB){
-		remove(it.second, true);
-		SAFE_DELETE(it.second);
+		if(remove(it.second, true)){
+			SAFE_DELETE(it.second);
+		}
 	}
 	_resDB.clear();
 }
@@ -53,9 +54,8 @@ Resource* const ResourceCache::find(const std::string& name){
 	return NULL;
 }
 
-
 bool ResourceCache::scheduleDeletion(Resource* const resource,bool force){
-	assert(resource != NULL);
+	if(resource == NULL) return false;
 	ResourceMap::iterator resDBiter = _resDB.find(resource->getName());
 	 /// it's already deleted. Double-deletion should be safe
 	if(resDBiter == _resDB.end()) return true;
@@ -64,11 +64,10 @@ bool ResourceCache::scheduleDeletion(Resource* const resource,bool force){
 		_resDB.erase(resDBiter);
 		return true;
 	}
-	return force; 
+	return force;
 }
 
 bool ResourceCache::remove(Resource* const resource,bool force){
-
 	assert(resource != NULL);
 
 	std::string name(resource->getName());
@@ -86,29 +85,33 @@ bool ResourceCache::remove(Resource* const resource,bool force){
 			return false; //do not delete pointer
 		}else{
 			PRINT_FN(Locale::get("RESOURCE_CACHE_REM_RES"),name.c_str());
+            resource->setState(RES_LOADING);
 			if(resource->unload()){
-				return true;
+                resource->setState(RES_CREATED);
+				return !resource->hasParents(); //<do not delete it if we have parents;
 			}else{
 				ERROR_FN(Locale::get("ERROR_RESOURCE_REM"), name.c_str());
+                resource->setState(RES_UNKNOWN);
 				return force;
 			}
 		}
 	}
-	
+
 	ERROR_FN(Locale::get("ERROR_RESOURCE_REM_NOT_FOUND"),name.c_str());
 	return force;
 }
 
 bool ResourceCache::load(Resource* const res, const std::string& name) {
 	assert(res != NULL);
-	return res->setInitialData(name);
+	res->setName(name);
+	return true;
 }
 
 bool ResourceCache::loadHW(Resource* const res, const std::string& name){
 	if(load(res,name)){
 		HardwareResource* hwRes = dynamic_cast<HardwareResource* >(res);
 		assert(hwRes);
-		return hwRes->generateHWResource(name); 
-	} 
-	return false; 
+		return hwRes->generateHWResource(name);
+	}
+	return false;
 }

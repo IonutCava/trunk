@@ -37,8 +37,8 @@
 
 #ifndef _P_D_TYPES_ONLY_
 
-#define TEST_EPSILON std::numeric_limits<float>::epsilon()
-#define IS_ZERO(X)  (fabs(X) < TEST_EPSILON)
+#define TEST_EPSILON std::numeric_limits<F32>::epsilon()
+#define IS_ZERO(X)  (fabs((F32)X) < TEST_EPSILON)
 #define IS_TOLERANCE(X,TOLERANCE) (fabs(X) < TOLERANCE)
 #define FLOAT_COMPARE(X,Y) (fabs(X - Y) < TEST_EPSILON)
 #define FLOAT_COMPARE_TOLERANCE(X,Y,TOLERANCE) (fabs(X - Y) < TOLERANCE)
@@ -50,6 +50,8 @@
 #define SAFE_DELETE_vector(R)      for(size_t r_iter(0); r_iter< R.size(); r_iter++){ delete R[r_iter]; }
 #define SAFE_UPDATE(OLD,NEW)       if(OLD || NEW){ delete OLD; OLD=NEW;} ///OLD or NEW check is kinda' useless, but it's there for consistency
 
+#define DELEGATE_BIND boost::bind
+#define DELEGATE_REF  boost::ref
 typedef struct packed_int {
 	U8 b0; U8 b1; U8 b2; U8 b3;
 } packed_int;
@@ -61,12 +63,16 @@ typedef union {
 #else
 #undef _P_D_TYPES_ONLY_
 #endif
+#if defined(_MSC_VER)
+#	pragma warning(disable:4103) ///<Boost alignment shouts
+#	pragma warning(disable:4244)
+#	pragma warning(disable:4996) ///< strcpy
+#	pragma warning(disable:4201) ///<nameless struct
+#	pragma warning(disable:4100) ///<unreferenced formal param
+#	pragma warning(disable:4505) ///<unreferenced local function removal
+#	pragma warning(disable:4127) ///<Constant conditional expressions
+#elif defined(__GNUC__)
+//#	pragma GCC diagnostic ignored "-Wall"
+#endif
 
-#pragma warning(disable:4103) ///<Boost alignment shouts
-#pragma warning(disable:4244)
-#pragma warning(disable:4996) ///< strcpy
-#pragma warning(disable:4201) ///<nameless struct
-#pragma warning(disable:4100) ///<unreferenced formal param
-#pragma warning(disable:4505) ///<unreferenced local function removal
-#pragma warning(disable:4127) ///<Constant conditional expressions
 #endif

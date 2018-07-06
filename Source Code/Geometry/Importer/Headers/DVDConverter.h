@@ -26,10 +26,10 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
 INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,SPECIAL, 
-EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS 
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,SPECIAL,
+EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
 OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF 
+STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
@@ -63,9 +63,6 @@ private:
 	~DVDConverter();
 	SubMesh* loadSubMeshGeometry(const aiMesh* source, U8 count);
 	Material* loadSubMeshMaterial(const aiMaterial* source, const std::string& materialName);
-	Material::TextureOperation aiTextureOpToTextureOperation(aiTextureOp op);
-	Material::ShadingMode      shadingModeInternal(I32 mode);
-	TextureWrap                aiTextureMapModeToInternal(aiTextureMapMode mode);
 
 private:
 	struct vertexWeight {
@@ -73,6 +70,7 @@ private:
 		F32 _boneWeight;
 		vertexWeight(U8 id, F32 weight) : _boneId(id), _boneWeight(weight) {}
 	};
+
 	Assimp::Importer* importer;
 	const aiScene* _aiScenePointer;
 	U32   _ppsteps;
@@ -80,6 +78,9 @@ private:
 	std::string _fileLocation;
 	std::string _modelName;
 	bool _init;
+	TextureWrap                aiTextureMapModeTable[4];
+	Material::ShadingMode      aiShadingModeInternalTable[10];
+	Material::TextureOperation aiTextureOperationTable[8];
 END_SINGLETON
 
 #endif

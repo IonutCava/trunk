@@ -7,4 +7,3 @@ RenderBinMesh::RenderBinMesh(const RenderBinType& rbType,const RenderingOrder::L
 RenderBinMesh::~RenderBinMesh()
 {
 }
-

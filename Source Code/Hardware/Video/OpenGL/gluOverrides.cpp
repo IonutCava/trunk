@@ -1,140 +1,194 @@
-#include "Headers/glResources.h" 
-#include "Core/Math/Headers/MathClasses.h"
-#include "Rendering/Headers/Frustum.h"
+#include "Headers/glResources.h"
+#ifndef GLM_MESSAGES
+#undef  GLM_MESSAGES
+#endif
+#include <gtc/matrix_inverse.hpp>
+#include <gtc/matrix_transform.hpp>
+#include <gtc/type_ptr.hpp>
+#include "Hardware/Video/Headers/RenderAPIEnums.h"
+#include "Hardware/Video/OpenGL/Headers/GLWrapper.h"
 
 namespace Divide {
 	namespace GL {
+/*-----------Context Management----*/
+	bool _applicationClosing = false;
+	bool _contextAvailable = false;
+	bool _useDebugOutputCallback = false;
+	GLFWwindow* _mainWindow     = NULL;
+	GLFWwindow* _loaderWindow   = NULL;
 /*----------- GLU overrides ------*/
-static void _makeIdentityd(GLdouble m[16]){
-    m[0+4*0] = 1; m[0+4*1] = 0; m[0+4*2] = 0; m[0+4*3] = 0;
-    m[1+4*0] = 0; m[1+4*1] = 1; m[1+4*2] = 0; m[1+4*3] = 0;
-    m[2+4*0] = 0; m[2+4*1] = 0; m[2+4*2] = 1; m[2+4*3] = 0;
-    m[3+4*0] = 0; m[3+4*1] = 0; m[3+4*2] = 0; m[3+4*3] = 1;
-}
+    ///Matrix management
+	MATRIX_MODE  _currentMatrixMode;
+	matrixStack  _viewMatrix;
+	matrixStack  _projectionMatrix;
+    matrixStack  _textureMatrix;
+    glm::mat4    _MVPCachedMatrix;
+    glm::mat4    _MVCachedMatrix;
+	glm::mat4    _identityMatrix;
+    glm::mat4    _biasMatrix;
+    glm::mat4    _modelMatrix;
+	vector3Stack _currentEyeVector;
+	vector3Stack _currentLookAtVector;
 
-static void _makeIdentityf(GLfloat m[16]){
-    m[0+4*0] = 1; m[0+4*1] = 0; m[0+4*2] = 0; m[0+4*3] = 0;
-    m[1+4*0] = 0; m[1+4*1] = 1; m[1+4*2] = 0; m[1+4*3] = 0;
-    m[2+4*0] = 0; m[2+4*1] = 0; m[2+4*2] = 1; m[2+4*3] = 0;
-    m[3+4*0] = 0; m[3+4*1] = 0; m[3+4*2] = 0; m[3+4*3] = 1;
-}
+    bool _MDirty = true;
+	bool _VDirty = true;
+	bool _PDirty = true;
+    bool _isUniformScaled = true;
+	bool _resetModelMatrixFlag = true;
 
-mat4<GLfloat> _ortho(GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat zNear, GLfloat zFar){
-	glOrtho(left,right,bottom,top,zNear,zFar);	
+	void _matrixMode(const MATRIX_MODE& mode) {
+		_currentMatrixMode = mode;
+	}
 
-	mat4<GLfloat> Matrix;
-	Matrix.element(0,0) = 2 / (right - left);
-	Matrix.element(1,1) = 2 / (top - bottom);
-	Matrix.element(2,2) = - 2 / (zFar - zNear);
-	Matrix.element(3,0) = - (right + left) / (right - left);
-	Matrix.element(3,1) = - (top + bottom) / (top - bottom);
-	Matrix.element(3,2) = - (zFar + zNear) / (zFar - zNear);
-	
-	return Matrix;
-
-}
-
-mat4<GLfloat> _perspective(GLfloat fovy, 
-			  		       GLfloat aspect,
-					       GLfloat zNear,
-					       GLfloat zFar){
-    GLfloat m[4][4];
-    GLdouble sine, cotangent, deltaZ;
-    GLdouble radians = RADIANS(fovy/2);
-
-    deltaZ = zFar - zNear;
-    sine = sin(radians);
-    if ((deltaZ == 0) || (sine == 0) || (aspect == 0)) {
-		return mat4<GLfloat>();
+    void _initStacks(){
+		_currentEyeVector.push(glm::vec3());
+		_currentLookAtVector.push(glm::vec3());
+        _projectionMatrix.push(_identityMatrix);
+        _viewMatrix.push(_identityMatrix);
+        _textureMatrix.push(_identityMatrix);
+        _biasMatrix = glm::mat4(0.5, 0.0, 0.0, 0.0,
+		                        0.0, 0.5, 0.0, 0.0,
+		                        0.0, 0.0, 0.5, 0.0,
+		                        0.5, 0.5, 0.5, 1.0);
     }
 
-    cotangent = cos(radians) / sine;
+    void _LookAt(const glm::vec3& eye,const glm::vec3& lookAt,const glm::vec3& up, bool invertx, bool inverty){
+       _matrixMode(VIEW_MATRIX);
+	   _currentEyeVector.top() = eye;
+	   _currentLookAtVector.top() = lookAt;
+       _viewMatrix.top() = glm::lookAt(_currentEyeVector.top(),_currentLookAtVector.top(),up);
+       if(invertx) glm::scale(_viewMatrix.top(),glm::vec3(-1,1,1));
+	   GL_API::getInstance().updateViewMatrix();
+	   _VDirty = true;
+    }
 
-    _makeIdentityf(&m[0][0]);
+    void _ortho(GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat zNear, GLfloat zFar){
+        _matrixMode(PROJECTION_MATRIX);
+        _projectionMatrix.top() = glm::ortho(left,right,bottom,top,zNear,zFar);
+		GL_API::getInstance().updateProjectionMatrix();
+        _PDirty = true;
+    }
 
-    m[0][0] = cotangent / aspect;
-    m[1][1] = cotangent;
-    m[2][2] = -(zFar + zNear) / deltaZ;
-    m[2][3] = -1;
-    m[3][2] = -2 * zNear * zFar / deltaZ;
-    m[3][3] = 0;
+    void _perspective(GLfloat fovy, GLfloat aspect, GLfloat zNear, GLfloat zFar){
+        _matrixMode(PROJECTION_MATRIX);
+        _projectionMatrix.top() = glm::perspective(fovy,aspect,zNear,zFar);
+		GL_API::getInstance().updateProjectionMatrix();
+        _PDirty = true;
+    }
 
-    glMultMatrixf(&m[0][0]);
-	mat4<GLfloat> Matrix(&m[0][0]);
-	return Matrix;
-}
+	void _resetModelMatrix(bool force){
+		_resetModelMatrixFlag = !force;
 
-void _CrossProd(GLfloat x1, GLfloat y1, GLfloat z1, GLfloat x2, GLfloat y2, GLfloat z2, GLfloat res[3]){
-	res[0] = y1*z2 - y2*z1;
-	res[1] = x2*z1 - x1*z2;
-	res[2] = x1*y2 - x2*y1;
-}
-
-
-///Code by Fadi Chehimi from http://www.khronos.org/message_boards/viewtopic.php?f=4&t=502
-mat4<GLfloat> _LookAt(GLfloat eyeX, 
-				      GLfloat eyeY,
-		 			  GLfloat eyeZ,
-		 			  GLfloat lookAtX,
-					  GLfloat lookAtY,
-					  GLfloat lookAtZ,
-					  GLfloat upX,
-					  GLfloat upY,
-					  GLfloat upZ){
-
-	GLfloat forward[3];
-	GLfloat side[3];
-	GLfloat up[3];
-
-	// calculating the viewing vector
-	forward[0] = lookAtX - eyeX;
-	forward[1] = lookAtY - eyeY;
-	forward[2] = lookAtZ - eyeZ;
-
-	GLfloat forwardMag = square_root_tpl<GLfloat>(forward[0]*forward[0] + forward[1]*forward[1] + forward[2]*forward[2]);
-	GLfloat upMag = square_root_tpl<GLfloat>(upX*upX + upY*upY + upZ*upZ);
-
-	// normalizing the viewing vector
-	if( forwardMag != 0.0){
-		forward[0] /= forwardMag;
-		forward[1] /= forwardMag;
-		forward[2] /= forwardMag;
+		if(force){
+			_modelMatrix = _identityMatrix;
+			_isUniformScaled = _MDirty = true;
+		}
 	}
 
-	// normalising the up vector. no need for this here if you have your
-	// up vector already normalised, which is mostly the case.
-	if( upMag != 0.0 ){
-		upX /= upMag;
-		upY /= upMag;
-		upZ /= upMag;
-	}
+    void _setModelMatrix(const mat4<F32>& matrix,bool uniform){
+        _modelMatrix = glm::make_mat4(matrix.mat);
+        _isUniformScaled = uniform;
+		_resetModelMatrixFlag = false;
+        _MDirty = true;
+    }
 
-	_CrossProd(forward[0], forward[1], forward[2], upX, upY, upZ, side);
-	GLfloat sideMag = square_root_tpl<GLfloat>(side[0]*side[0] + side[1]*side[1] + side[2]*side[2]);
+    void _pushMatrix(){
+        if(_currentMatrixMode == PROJECTION_MATRIX)   _projectionMatrix.push(_projectionMatrix.top());
+        else if(_currentMatrixMode == VIEW_MATRIX){   
+			_viewMatrix.push(_viewMatrix.top());
+			_currentEyeVector.push(_currentEyeVector.top());
+			_currentLookAtVector.push(_currentLookAtVector.top());
+		}
+        else if(_currentMatrixMode == TEXTURE_MATRIX) _textureMatrix.push(_textureMatrix.top());
+        else assert(_currentMatrixMode == -1);
+    }
 
-	if( sideMag != 0.0 ){
-		side[0] /= sideMag;
-		side[1] /= sideMag;
-		side[2] /= sideMag;
-	}
+    void _popMatrix(){
+        if(_currentMatrixMode == PROJECTION_MATRIX){
+            _projectionMatrix.pop();
+			_PDirty = true;
+			GL_API::getInstance().updateProjectionMatrix();
+        }else if(_currentMatrixMode == VIEW_MATRIX){
+            _viewMatrix.pop();
+			_currentEyeVector.pop();
+			_currentLookAtVector.pop();
+			GL_API::getInstance().updateViewMatrix();
+			_VDirty = true;
+        }else if(_currentMatrixMode == TEXTURE_MATRIX){
+            _textureMatrix.pop();
+        }else{
+            assert(_currentMatrixMode == -1);
+        }
+    }
 
-	_CrossProd(side[0], side[1], side[2], forward[0], forward[1], forward[2], up);
-	
-	GLfloat m[] =
-	{
-		side[0], up[0], -forward[0], 0,
-		side[1], up[1], -forward[1], 0,
-		side[2], up[2], -forward[2], 0,
-		0,       0,     0,           1
-	};
+    void _loadIdentity(){
+        if(_currentMatrixMode == PROJECTION_MATRIX){
+            _projectionMatrix.top() = _identityMatrix;
+			_PDirty = true;
+			GL_API::getInstance().updateProjectionMatrix();
+        }else if(_currentMatrixMode == VIEW_MATRIX){
+            _viewMatrix.top() = _identityMatrix;
+			_currentEyeVector.top() = glm::vec3();
+			_currentLookAtVector.top() = glm::vec3();
+			GL_API::getInstance().updateViewMatrix();
+			_VDirty = true;
+        }else if(_currentMatrixMode == TEXTURE_MATRIX){
+            _textureMatrix.top() = _identityMatrix;
+        }else{
+            assert(_currentMatrixMode == -1);
+        }
+    }
 
-	
-	glMultMatrixf(m);
-	glTranslatef (-eyeX, -eyeY, -eyeZ);
-	
-	mat4<GLfloat> Matrix(m);
-	Matrix.translate(-eyeX, -eyeY, -eyeZ);
-	return Matrix;
-}
-	}//namespace GL
+    void _queryMatrix(const MATRIX_MODE& mode, glm::mat4& mat){
+        if(mode == VIEW_MATRIX)            mat = _viewMatrix.top();
+        else if(mode == PROJECTION_MATRIX) mat = _projectionMatrix.top();
+        else if(mode == TEXTURE_MATRIX)    mat = _textureMatrix.top();
+        else assert(mode == -1);
+    }
+
+    void _queryMatrix(const EXTENDED_MATRIX& mode, glm::mat4& mat){
+        assert(mode != NORMAL_MATRIX /*|| mode != ... */);
+
+        switch(mode){
+            case MODEL_MATRIX:{ //check if we need to reset our model matrix
+				if(_resetModelMatrixFlag) _resetModelMatrix(true);
+                mat = _modelMatrix;
+				}break;
+            case MV_MATRIX:{
+				_clean(); //refresh cache
+                mat = _MVCachedMatrix;
+               }break;
+            case MV_INV_MATRIX:{
+				_clean(); //refresh cache
+                mat = glm::inverse(_MVCachedMatrix);
+                }break;
+            case MVP_MATRIX:{
+				_clean(); //refresh cache
+                mat = _MVPCachedMatrix;
+                }break;
+            case BIAS_MATRIX:
+                mat = _biasMatrix;
+                break;
+        };
+    }
+
+    void _queryMatrix(const EXTENDED_MATRIX& mode, glm::mat3& mat){
+        assert(mode == NORMAL_MATRIX /*|| mode == ... */);
+        _clean();
+		// Normal Matrix
+        mat = _isUniformScaled ? glm::mat3(_MVCachedMatrix) : glm::inverseTranspose(glm::mat3(_MVCachedMatrix));
+    }
+
+     void _clean(){
+		if(_resetModelMatrixFlag) _resetModelMatrix(true);
+
+		bool MVDirty = (_MDirty || _VDirty);
+
+		if(MVDirty)	            _MVCachedMatrix = _viewMatrix.top() * _modelMatrix;
+		if(_PDirty || MVDirty)	_MVPCachedMatrix = _projectionMatrix.top() * _MVCachedMatrix;
+		
+
+		_MDirty = _VDirty = _PDirty = false;
+    }
+}//namespace GL
 }// namespace Divide

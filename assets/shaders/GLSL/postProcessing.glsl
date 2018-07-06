@@ -1,73 +1,90 @@
 -- Vertex 
 
-varying vec2 vextexDataTramsformed;
+#include "vertexDefault.vert"
 
-#include "vboInputData.vert"
+void main(void)
+{
 
-void main(void){
 	computeData();
-	vextexDataTramsformed = (vec2( vertexData.x, - vertexData.y ) + vec2( 1.0 ) ) * 0.5;
-	gl_Position = gl_ModelViewProjectionMatrix * vertexData;
-
 }
 
 -- Fragment
 
-varying vec2 _texCoord;
-varying vec2 vextexDataTramsformed;
+in  vec2 _texCoord;
+out vec4 _colorOut;
 
 uniform sampler2D texScreen;
-uniform sampler2D texBloom;
-uniform sampler2D texSSAO;
 uniform sampler2D texVignette;
 uniform sampler2D texWaterNoiseNM;
 
 uniform sampler2D texBruit;
 uniform sampler2D texBruit2;
 
-uniform bool enable_pdc;
 uniform bool enable_underwater;
 
 uniform float noise_tile;
 uniform float noise_factor;
 uniform float time;
 
+#if defined(POSTFX_ENABLE_BLOOM)
+uniform sampler2D texBloom;
 uniform float bloom_factor;
+#if defined(POSTFX_ENABLE_HDR)
+uniform float exposure;
+#endif
+#endif
 
-uniform bool enable_bloom;
+#if defined(POSTFX_ENABLE_SSAO)
+uniform sampler2D texSSAO;
+#endif
+
+#if defined(POSTFX_ENABLE_DOF)
+#endif
+
 uniform bool enable_vignette;
 uniform bool enable_noise;
-uniform bool enable_ssao;
 uniform float randomCoeffNoise;
 uniform float randomCoeffFlash;
 
+const vec3 luminance = vec3 (0.299, 0.587, 0.114);
 
+#if defined(POSTFX_ENABLE_SSAO)
 vec4 SSAO(vec4 color){
-	float ssaoFilter = texture(texSSAO, vextexDataTramsformed).r;
-	//if(ssaoFilter > 0){
+	float ssaoFilter = texture(texSSAO, _texCoord).r;
+	if(ssaoFilter > 0){
 		//color.rgb = color.rgb * ssaoFilter;
-	//}
+	}
 	return color;
 }
+#endif
 
-vec4 Bloom(vec4 color){
+#if defined(POSTFX_ENABLE_BLOOM)
+vec4 Bloom(in vec4 colorIn){
 
-	return color + bloom_factor * texture(texBloom, _texCoord);
+    vec4 blur = bloom_factor * texture(texBloom, _texCoord);
+#if defined(POSTFX_ENABLE_HDR)
+    float l = dot (luminance, colorIn);
+    float scale = l / (1.0 + l);
+    float alpha = colorIn.a;
+    vec4 color = colorIn * scale + 5.0 * blur;
+    color.a = alpha;
+    return color;
+#else
+	return colorIn + blur;
+#endif
 }
+#endif
 
-vec4 LevelOfGrey(vec4 colorIn)
+vec4 LevelOfGrey(in vec4 colorIn)
 {
-	return vec4(colorIn.r * 0.299, colorIn.g * 0.587,colorIn.b * 0.114,colorIn.a);
+	return vec4(colorIn.r * luminance.x, colorIn.g * luminance.y,colorIn.b * luminance.z,colorIn.a);
 }
 
 vec4 NoiseEffect(vec4 colorIn)
 {
-	vec4 colorOut;
-	
+	vec4 colorOut = LevelOfGrey(colorIn);
 	vec4 colorNoise = texture(texBruit, _texCoord + vec2(randomCoeffNoise,randomCoeffNoise));
-	
-	colorOut = mix(colorNoise,vec4(1,1,1,1),randomCoeffFlash)/3.0f + 2.0*colorIn/3.0f;
-	
+	colorOut = mix(colorNoise,vec4(1,1,1,1),randomCoeffFlash)/3.0 + 2.0*colorIn/3.0;
 
 	return colorOut;
 }
@@ -111,26 +128,25 @@ vec4 UnderWater()
 
 void main(void){
 	
+    _colorOut = texture(texScreen, _texCoord);
+
 	if(enable_underwater){
-		gl_FragColor = UnderWater();
-	}else{
-		gl_FragColor = texture(texScreen, _texCoord);
+		_colorOut = UnderWater();
 	}
 
-	if(enable_ssao){
-		gl_FragColor = SSAO(gl_FragColor);
-	}
+#if defined(POSTFX_ENABLE_SSAO)
+	_colorOut = SSAO(_colorOut);
+#endif
 
-	if(enable_bloom){
-		gl_FragColor = Bloom(gl_FragColor);
-	}
+#if defined(POSTFX_ENABLE_BLOOM)
+	_colorOut = Bloom(_colorOut);
+#endif
 
 	if(enable_noise){
-		gl_FragColor = LevelOfGrey(gl_FragColor);
-		gl_FragColor = NoiseEffect(gl_FragColor);
+		_colorOut = NoiseEffect(_colorOut);
 	}
 	
 	if(enable_vignette){
-		gl_FragColor = VignetteEffect(gl_FragColor);
+		_colorOut = VignetteEffect(_colorOut);
 	}
 }

@@ -20,8 +20,7 @@
 #include "Hardware/Video/OpenGL/Headers/glResources.h"
 #include "Hardware/Video/Headers/RenderStateBlock.h"
 
-class glRenderStateBlock : public RenderStateBlock {   
-
+class glRenderStateBlock : public RenderStateBlock {
 public:
 
    glRenderStateBlock(const RenderStateBlockDescriptor& descriptor);
@@ -29,13 +28,12 @@ public:
 
    void activate(glRenderStateBlock* oldState);
 
-   inline GLuint getHash() const {return _hashValue;}
+   inline I64 getGUID() const {return _hashValue;}
 
-   inline const RenderStateBlockDescriptor& getDescriptor() {return _descriptor;}   
-
+   inline RenderStateBlockDescriptor& getDescriptor() {return _descriptor;}
 
 private:
    RenderStateBlockDescriptor _descriptor;
-   GLuint _hashValue;
+   I64 _hashValue;
 };
 #endif

@@ -1,10 +1,6 @@
 #include "Headers/RenderStateBlock.h"
-#include "Utility/Headers/CRC.h"
-U32 RenderStateBlockDescriptor::getHash() const{   
-	return Util::CRC32( this, sizeof(RenderStateBlockDescriptor) );
-}
 
-RenderStateBlockDescriptor::RenderStateBlockDescriptor() : _hash(0),
+RenderStateBlockDescriptor::RenderStateBlockDescriptor() : GUIDWrapper(),
 														   _blendDefined(false),
 														   _blendEnable(false),
 														   _blendSrc(BLEND_PROPERTY_ONE),
@@ -15,11 +11,7 @@ RenderStateBlockDescriptor::RenderStateBlockDescriptor() : _hash(0),
 														   _alphaBlendSrc(BLEND_PROPERTY_ONE),
 														   _alphaBlendDest(BLEND_PROPERTY_ZERO),
 														   _alphaBlendOp(BLEND_OPERATION_ADD),
-														   _alphaDefined(false),
-														   _alphaTestEnable(false),
-														   _alphaTestRef(0),
-														   _alphaTestFunc(CMP_FUNC_GEQUAL),
-														   _enableColorWrite(false),
+														   _enableColorWrite(true),
 														   _writeRedChannel(true),
 														   _writeBlueChannel(true),
 														   _writeGreenChannel(true),
@@ -41,14 +33,12 @@ RenderStateBlockDescriptor::RenderStateBlockDescriptor() : _hash(0),
 														   _stencilRef(0),
 														   _stencilMask(0xFFFFFFFF),
 														   _stencilWriteMask(0xFFFFFFFF),
-														   _fixedLighting(false),
 														   _vertexColorEnable(false),
 														   _fillMode(FILL_MODE_SOLID)
 {
 }
 
 void RenderStateBlockDescriptor::fromDescriptor(const RenderStateBlockDescriptor& descriptor){
-
    if (descriptor._blendDefined)  {
 	  setBlend(descriptor._blendEnable,descriptor._blendSrc,descriptor._blendDest,descriptor._blendOp);
    }
@@ -57,26 +47,22 @@ void RenderStateBlockDescriptor::fromDescriptor(const RenderStateBlockDescriptor
 	  setAlphaBlend(descriptor._alphaBlendEnable,descriptor._alphaBlendSrc,descriptor._alphaBlendDest,descriptor._alphaBlendOp);
    }
 
-   if (descriptor._alphaDefined)  {
-	   setAlphaTest(descriptor._alphaTestEnable,descriptor._alphaTestFunc,descriptor._alphaTestRef);
-   }
-
    if (descriptor._enableColorWrite)     {
 	   setColorWrites(descriptor._writeRedChannel,descriptor._writeGreenChannel,descriptor._writeBlueChannel,descriptor._writeAlphaChannel);
    }
 
-   if (descriptor._cullDefined)  {   
+   if (descriptor._cullDefined)  {
 	   setCullMode(descriptor._cullMode);
    }
 
-   if (descriptor._zDefined)  {   
-	   setZReadWrite(descriptor._zEnable,descriptor._zWriteEnable);
+   if (descriptor._zDefined)  {
+	   setZReadWrite(descriptor._zEnable, descriptor._zWriteEnable);
       _zFunc = descriptor._zFunc;
       _zBias = descriptor._zBias;
       _zUnits = descriptor._zUnits;
    }
 
-   if (descriptor._stencilDefined)  {   
+   if (descriptor._stencilDefined)  {
       _stencilDefined = true;
       _stencilEnable = descriptor._stencilEnable;
       _stencilFailOp = descriptor._stencilFailOp;
@@ -92,9 +78,9 @@ void RenderStateBlockDescriptor::fromDescriptor(const RenderStateBlockDescriptor
    _fillMode = descriptor._fillMode;
 }
 
-void RenderStateBlockDescriptor::setCullMode( CullMode mode ) { 
-   _cullDefined = true; 
-   _cullMode = mode; 
+void RenderStateBlockDescriptor::setCullMode( CullMode mode ) {
+   _cullDefined = true;
+   _cullMode = mode;
 }
 
 void RenderStateBlockDescriptor::setZEnable(const bool enable){
@@ -102,32 +88,25 @@ void RenderStateBlockDescriptor::setZEnable(const bool enable){
 	_zEnable = enable;
 }
 
-void RenderStateBlockDescriptor::setZReadWrite( bool read, bool write ) { 
-   _zDefined = true; 
-   _zEnable = read; 
+void RenderStateBlockDescriptor::setZReadWrite( bool read, bool write ) {
+   _zDefined = true;
+   _zEnable = read;
    _zWriteEnable = write;
 }
 
-void RenderStateBlockDescriptor::setAlphaTest( bool enable, ComparisonFunction function, I32 alphaRef ) { 
-   _alphaDefined = true; 
-   _alphaTestEnable = enable; 
-   _alphaTestFunc = function; 
-   _alphaTestRef = alphaRef; 
-}
-
-void RenderStateBlockDescriptor::setBlend( bool enable, BlendProperty src, BlendProperty dest, BlendOperation op ) { 
-   _blendDefined = true; 
-   _blendEnable = enable; 
-   _blendSrc = src; 
-   _blendDest = dest; 
+void RenderStateBlockDescriptor::setBlend( bool enable, BlendProperty src, BlendProperty dest, BlendOperation op ) {
+   _blendDefined = true;
+   _blendEnable = enable;
+   _blendSrc = src;
+   _blendDest = dest;
    _blendOp = op;
 }
 
-void RenderStateBlockDescriptor::setAlphaBlend( bool enable, BlendProperty src, BlendProperty dest, BlendOperation op ) { 
-   _alphaBlendDefined = true; 
-   _alphaBlendEnable = enable; 
-   _alphaBlendSrc = src; 
-   _alphaBlendDest = dest; 
+void RenderStateBlockDescriptor::setAlphaBlend( bool enable, BlendProperty src, BlendProperty dest, BlendOperation op ) {
+   _alphaBlendDefined = true;
+   _alphaBlendEnable = enable;
+   _alphaBlendSrc = src;
+   _alphaBlendDest = dest;
    _alphaBlendOp = op;
 }
 

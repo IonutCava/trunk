@@ -23,7 +23,6 @@
 class Resource;
 class HardwareResource;
 class ResourceLoader : private boost::noncopyable {
-
 public:
 	ResourceLoader(const ResourceDescriptor& descriptor) : _descriptor(descriptor) {}
 
@@ -35,7 +34,6 @@ protected:
 
 template<typename ResourceType>
 class ImplResourceLoader : public ResourceLoader {
-
 public:
 	ImplResourceLoader(const ResourceDescriptor& descriptor)  : ResourceLoader(descriptor) {}
 	ResourceType* operator()();
@@ -46,11 +44,13 @@ protected:
 
 #define DEFAULT_LOADER_IMPL(X)	template<> \
 								bool ImplResourceLoader<X>::load(X* const res, const std::string& name){ \
+                                    res->setState(RES_LOADING); \
 									return ResourceCache::getInstance().load(res, name);\
 								}
 
 #define DEFAULT_HW_LOADER_IMPL(X) template<> \
 								  bool ImplResourceLoader<X>::load(X* const res, const std::string& name){ \
-									return ResourceCache::getInstance().loadHW(res, name);\
+                                    res->setState(RES_LOADING); \
+  									return ResourceCache::getInstance().loadHW(res, name);\
 								  }
 #endif

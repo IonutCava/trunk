@@ -1,33 +1,27 @@
 #include <stdarg.h>
 #include "Headers/GUI.h"
-
-#include "CEGUI.h"
+#include <CEGUI/CEGUI.h>
 
 #include "Headers/GUIFlash.h"
 #include "Headers/GUIText.h"
 #include "Headers/GUIButton.h"
+#include "Headers/GUIConsole.h"
+#include "GUIEditor/Headers/GUIEditor.h"
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Resources/Headers/ResourceCache.h"
+
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Hardware/Input/Headers/InputInterface.h"
 #include "Hardware/Video/Headers/RenderStateBlock.h"
 
 GUI::GUI() : _prevElapsedTime(0),
 			 _init(false),
+             _enableCEGUIRendering(false),
              _rootSheet(NULL),
 			 _console(New GUIConsole())
 {
     //500ms
     _input.setInitialDelay(0.500f);
-	RenderStateBlockDescriptor CEGUIStateBlock;
-	CEGUIStateBlock.setCullMode(CULL_MODE_NONE);
-	CEGUIStateBlock._fixedLighting = false;
-	//CEGUIStateBlock.setZReadWrite(false,false);
-	CEGUIStateBlock.setFillMode(FILL_MODE_SOLID);
-	CEGUIStateBlock.setZEnable(false);
-	CEGUIStateBlock.setCullMode(CULL_MODE_NONE);
-	_CEGUIStateBlock = GFX_DEVICE.createStateBlock(CEGUIStateBlock);
-
-	
 }
 
 GUI::~GUI()
@@ -37,7 +31,7 @@ GUI::~GUI()
 
 void GUI::onResize(const vec2<U16>& newResolution){
 	//CEGUI handles it's own init checks
-	CEGUI::System::getSingleton().notifyDisplaySizeChanged(CEGUI::Size(newResolution.width,newResolution.height));
+	CEGUI::System::getSingleton().notifyDisplaySizeChanged(CEGUI::Sizef(newResolution.width,newResolution.height));
 
 	if(!_init) return;
 	vec2<I32> difDimensions(_cachedResolution.width - newResolution.width,
@@ -52,32 +46,39 @@ void GUI::onResize(const vec2<U16>& newResolution){
 void GUI::draw(U32 timeElapsed){
 	if(!_init) return;
 	GFXDevice& gfx = GFX_DEVICE;
+
 	gfx.toggle2D(true);
+    _guiShader->bind();
+    _guiShader->uploadModelMatrices();
+
     //------------------------------------------------------------------------
-		for_each(guiMap::value_type& guiStackIterator,_guiStack){
-			GUIElement* guiElement = guiStackIterator.second;
-			if(!guiElement->isVisible()) continue;
-			SET_STATE_BLOCK(guiElement->_guiSB);
-			gfx.renderGUIElement(guiElement);
-			
-		}
+	for_each(guiMap::value_type& guiStackIterator,_guiStack){
+		GUIElement* guiElement = guiStackIterator.second;
+		if(!guiElement->isVisible() || guiElement->getGuiType() == GUI_BUTTON) continue;
+		SET_STATE_BLOCK(guiElement->_guiSB);
+		gfx.renderGUIElement(guiElement,_guiShader);
+	}
 	//------------------------------------------------------------------------
+	_guiShader->unbind();
 	gfx.toggle2D(false);
-	
+
 	if(timeElapsed == 0){
 		timeElapsed = GETMSTIME();
 	}
 	if(_prevElapsedTime == 0){
-		_prevElapsedTime = timeElapsed - 1;//<1 MS difference
+		_prevElapsedTime = timeElapsed - 10;//<10 MS difference
 	}
+
 	U32 timeDiffInMs = timeElapsed - _prevElapsedTime;
 	F32 timeElapsedSec = getMsToSec(timeDiffInMs);
+
 	_input.update(timeElapsedSec);
 	CEGUI::System::getSingleton().injectTimePulse(timeElapsedSec);
-	SET_STATE_BLOCK(_CEGUIStateBlock);
-	GFX_DEVICE.updateStates();
-	CEGUI::System::getSingleton().renderGUI();
-	_prevElapsedTime = timeElapsed;
+    if(_enableCEGUIRendering){
+	    CEGUI::System::getSingleton().renderAllGUIContexts();
+    }
+	GUIEditor::getInstance().tick(timeElapsedSec);
+    _prevElapsedTime = timeElapsed;
 }
 
 bool GUI::init(){
@@ -97,43 +98,51 @@ bool GUI::init(){
  	rp->setResourceGroupDirectory( "layouts",    CEGUIInstallSharePath + "layouts/" ) ;
  	rp->setResourceGroupDirectory( "looknfeels", CEGUIInstallSharePath + "looknfeel/" ) ;
  	rp->setResourceGroupDirectory( "lua_scripts",CEGUIInstallSharePath + "lua_scripts/" ) ;
- 	rp->setResourceGroupDirectory( "schemas",    CEGUIInstallSharePath + "xml_schemas/" ) ;
- 	rp->setResourceGroupDirectory( "animations", CEGUIInstallSharePath + "animations/" ) ;
- 
-	// Sets the default resource groups to be used:
-	CEGUI::Imageset::setDefaultResourceGroup( "imagesets" ) ;
-	CEGUI::Font::setDefaultResourceGroup( "fonts" ) ;
-	CEGUI::Scheme::setDefaultResourceGroup( "schemes" ) ;
-	CEGUI::WidgetLookManager::setDefaultResourceGroup( "looknfeels" ) ;
-	CEGUI::WindowManager::setDefaultResourceGroup( "layouts" ) ;
-	CEGUI::ScriptModule::setDefaultResourceGroup( "lua_scripts" ) ;
-	CEGUI::AnimationManager::setDefaultResourceGroup( "animations" ) ;
- 
-	// Set-up default group for validation schemas:
-	CEGUI::XMLParser * parser = CEGUI::System::getSingleton().getXMLParser() ;
-	if ( parser->isPropertyPresent( "SchemaDefaultResourceGroup" ) ){
-		parser->setProperty( "SchemaDefaultResourceGroup", "schemas" ) ;
+ 	//rp->setResourceGroupDirectory( "schemas",    CEGUIInstallSharePath + "xml_schemas/" ) ;
+ 	//rp->setResourceGroupDirectory( "animations", CEGUIInstallSharePath + "animations/" ) ;
+
+	// set the default resource groups to be used
+	CEGUI::ImageManager::setImagesetDefaultResourceGroup("imagesets");
+	CEGUI::Font::setDefaultResourceGroup("fonts");
+	CEGUI::Scheme::setDefaultResourceGroup("schemes");
+	CEGUI::WidgetLookManager::setDefaultResourceGroup("looknfeels");
+	CEGUI::WindowManager::setDefaultResourceGroup("layouts");
+	CEGUI::ScriptModule::setDefaultResourceGroup("lua_scripts");
+	// setup default group for validation schemas
+	CEGUI::XMLParser* parser = CEGUI::System::getSingleton().getXMLParser();
+	if (parser->isPropertyPresent("SchemaDefaultResourceGroup")){
+		parser->setProperty("SchemaDefaultResourceGroup", "schemas");
 	}
+
 	_defaultGUIScheme = ParamHandler::getInstance().getParam<std::string>("GUI.defaultScheme");
-	CEGUI::SchemeManager::getSingleton().create(  _defaultGUIScheme + ".scheme") ;
+	CEGUI::SchemeManager::getSingleton().createFromFile(  _defaultGUIScheme + ".scheme") ;
 
 	_rootSheet = CEGUI::WindowManager::getSingleton().createWindow( "DefaultWindow","root_window");
-	CEGUI::System::getSingleton().setGUISheet( _rootSheet );
-    CEGUI::System::getSingleton().setDefaultTooltip(_defaultGUIScheme + "/Tooltip" );
+	CEGUI_DEFAULT_CONTEXT.setRootWindow( _rootSheet );
+	CEGUI_DEFAULT_CONTEXT.setDefaultTooltipType( _defaultGUIScheme + "/Tooltip" );
+
 	assert(_console);
 	_console->CreateCEGUIWindow();
+	GUIEditor::getInstance().init();
+
+    P32 shaderMask;
+    shaderMask.i = 0;
+    shaderMask.b.b1 = 1;//<Only fragment shader
+    ResourceDescriptor immediateModeShader("ImmediateModeEmulation.GUI");
+    //immediateModeShader.setBoolMask(shaderMask);
+	_guiShader = CreateResource<ShaderProgram>(immediateModeShader);
+
 	_init = true;
 	return true;
 }
 
 void GUI::close(){
+    SAFE_DELETE(_console);
+    RemoveResource(_guiShader);
 	for_each(guiMap::value_type it, _guiStack) {
 		SAFE_DELETE(it.second);
 	}
 	_guiStack.clear();
-	SAFE_DELETE(_console);
-	CEGUI::System::destroy();
-	SAFE_DELETE(_CEGUIStateBlock);
 }
 
 bool GUI::checkItem(const OIS::MouseEvent& arg ){
@@ -145,8 +154,8 @@ bool GUI::checkItem(const OIS::MouseEvent& arg ){
 	for_each(guiMap::value_type& guiStackIterator,_guiStack) {
 		guiStackIterator.second->onMouseMove(event);
 	}
-	CEGUI::System::getSingleton().injectMousePosition(arg.state.X.abs, arg.state.Y.abs);
-	CEGUI::System::getSingleton().injectMouseWheelChange(arg.state.Z.abs);
+	CEGUI_DEFAULT_CONTEXT.injectMousePosition(arg.state.X.abs, arg.state.Y.abs);
+	CEGUI_DEFAULT_CONTEXT.injectMouseWheelChange(arg.state.Z.abs);
 	return true;
 }
 
@@ -156,9 +165,15 @@ bool GUI::keyCheck(OIS::KeyEvent key, bool pressed) {
 	if(key.key == OIS::KC_GRAVE && !pressed){
 		_console->setVisible(!_console->isVisible());
 	}
+
+#ifdef _DEBUG
+	if(key.key == OIS::KC_F11 && !pressed){
+		GUIEditor::getInstance().setVisible(!GUIEditor::getInstance().isVisible());
+	}
+#endif
 	_input.injectOISKey(pressed,key);
-	
-	return !_console->isVisible();
+
+	return (!_console->isVisible() && !GUIEditor::getInstance().isVisible());
 }
 
 bool GUI::clickCheck(OIS::MouseButtonID button, bool pressed) {
@@ -167,7 +182,7 @@ bool GUI::clickCheck(OIS::MouseButtonID button, bool pressed) {
 	if(pressed){
 		switch (button){
 			case OIS::MB_Left:{
-				CEGUI::System::getSingleton().injectMouseButtonDown(CEGUI::LeftButton);
+				CEGUI_DEFAULT_CONTEXT.injectMouseButtonDown(CEGUI::LeftButton);
 				GUIEvent event;
 				event.mouseClickCount = 0;
 				for_each(guiMap::value_type& guiStackIterator,_guiStack) {
@@ -175,24 +190,24 @@ bool GUI::clickCheck(OIS::MouseButtonID button, bool pressed) {
 				}
 				}break;
 			case OIS::MB_Middle:
-				CEGUI::System::getSingleton().injectMouseButtonDown(CEGUI::MiddleButton);
+				CEGUI_DEFAULT_CONTEXT.injectMouseButtonDown(CEGUI::MiddleButton);
 				break;
 			case OIS::MB_Right:
-				CEGUI::System::getSingleton().injectMouseButtonDown(CEGUI::RightButton);
+				CEGUI_DEFAULT_CONTEXT.injectMouseButtonDown(CEGUI::RightButton);
 				break;
 			case OIS::MB_Button3:
-				CEGUI::System::getSingleton().injectMouseButtonDown(CEGUI::X1Button);
+				CEGUI_DEFAULT_CONTEXT.injectMouseButtonDown(CEGUI::X1Button);
 				break;
 			case OIS::MB_Button4:
-				CEGUI::System::getSingleton().injectMouseButtonDown(CEGUI::X2Button);
+				CEGUI_DEFAULT_CONTEXT.injectMouseButtonDown(CEGUI::X2Button);
 				break;
-			default:	
+			default:
 				break;
  		}
 	}else{
 		switch (button){
 			case OIS::MB_Left:{
-				CEGUI::System::getSingleton().injectMouseButtonUp(CEGUI::LeftButton);
+				CEGUI_DEFAULT_CONTEXT.injectMouseButtonUp(CEGUI::LeftButton);
 				GUIEvent event;
 				event.mouseClickCount = 1;
 				for_each(guiMap::value_type& guiStackIterator,_guiStack) {
@@ -200,40 +215,38 @@ bool GUI::clickCheck(OIS::MouseButtonID button, bool pressed) {
 				}
 				}break;
 			case OIS::MB_Middle:
-				CEGUI::System::getSingleton().injectMouseButtonUp(CEGUI::MiddleButton);
+				CEGUI_DEFAULT_CONTEXT.injectMouseButtonUp(CEGUI::MiddleButton);
 				break;
 			case OIS::MB_Right:
-				CEGUI::System::getSingleton().injectMouseButtonUp(CEGUI::RightButton);
+				CEGUI_DEFAULT_CONTEXT.injectMouseButtonUp(CEGUI::RightButton);
 				break;
 			case OIS::MB_Button3:
-				CEGUI::System::getSingleton().injectMouseButtonUp(CEGUI::X1Button);
+				CEGUI_DEFAULT_CONTEXT.injectMouseButtonUp(CEGUI::X1Button);
 				break;
 			case OIS::MB_Button4:
-				CEGUI::System::getSingleton().injectMouseButtonUp(CEGUI::X2Button);
+				CEGUI_DEFAULT_CONTEXT.injectMouseButtonUp(CEGUI::X2Button);
 				break;
-			default:	
+			default:
 				break;
 		}
 	}
-	return !_console->isVisible();
+	return !_console->isVisible() && !GUIEditor::getInstance().isVisible();
 }
 
 GUIElement* GUI::addButton(const std::string& id, const std::string& text,
-                    const vec2<U32>& position,const vec2<U32>& dimensions,const vec3<F32>& color,
+                    const vec2<I32>& position,const vec2<U32>& dimensions,const vec3<F32>& color,
                     ButtonCallback callback,const std::string& rootSheetId){
-    
     CEGUI::Window* parent = NULL;
     if(!rootSheetId.empty()){
-        parent = CEGUI::WindowManager::getSingletonPtr()->getWindow(rootSheetId);
+		parent = CEGUI_DEFAULT_CONTEXT.getRootWindow()->getChild(rootSheetId);
     }
     if(!parent) parent = _rootSheet;
-    GUIButton* btn = New GUIButton(id,text,_defaultGUIScheme,position,dimensions,color,parent,callback); 
+    GUIButton* btn = New GUIButton(id,text,_defaultGUIScheme,position,dimensions,color,parent,callback);
     _guiStack[id] = btn;
     return btn;
 }
 
-GUIElement* GUI::addText(const std::string& id,const vec2<U32> &position, const std::string& font,const vec3<F32> &color, char* format, ...){
-
+GUIElement* GUI::addText(const std::string& id,const vec2<I32> &position, const std::string& font,const vec3<F32> &color, char* format, ...){
 	va_list args;
 	std::string fmt_text;
 
@@ -254,7 +267,6 @@ GUIElement* GUI::addText(const std::string& id,const vec2<U32> &position, const 
 }
 
 GUIElement* GUI::addFlash(const std::string& id, std::string movie, const vec2<U32>& position, const vec2<U32>& extent){
-
 	GUIFlash *flash = New GUIFlash(_rootSheet);
 	_resultGuiElement = _guiStack.insert(make_pair(id,flash));
 	if(!_resultGuiElement.second) (_resultGuiElement.first)->second = flash;
@@ -265,7 +277,7 @@ GUIElement* GUI::addFlash(const std::string& id, std::string movie, const vec2<U
 GUIElement* GUI::modifyText(const std::string& id, char* format, ...){
     if(_guiStack.find(id) == _guiStack.end()) return NULL;
 
-	va_list args;   
+	va_list args;
 	std::string fmt_text;
 
     va_start(args, format);
@@ -291,5 +303,6 @@ GUIElement* GUI::modifyText(const std::string& id, char* format, ...){
 
 bool GUI::bindRenderer(CEGUI::Renderer& renderer){
 	CEGUI::System::create(renderer);
+    _enableCEGUIRendering =  !(ParamHandler::getInstance().getParam<bool>("GUI.CEGUI.SkipRendering"));
 	return true;
 }

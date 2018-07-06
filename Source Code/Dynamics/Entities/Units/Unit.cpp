@@ -1,8 +1,9 @@
-#include "Headers/Unit.h" 
-#include "Graphs/Headers/SceneGraphNode.h" 
+#include "Headers/Unit.h"
+#include "Graphs/Headers/SceneGraphNode.h"
 #include "Rendering/Headers/Framerate.h"
+#include "Core/Math/Headers/Transform.h"
 
-Unit::Unit(UnitType type, SceneGraphNode* const node) : _type(type), 
+Unit::Unit(UnitType type, SceneGraphNode* const node) : _type(type),
 													    _node(node),
 													    _moveSpeed(1 metre),
 													    _moveTolerance(0.1f),
@@ -11,7 +12,6 @@ Unit::~Unit(){}
 
 /// Pathfinding, collision detection, animation playback should all be controlled from here
 bool Unit::moveTo(const vec3<F32>& targetPosition){
-
 	// We should always have a node
 	assert(_node != NULL);
     WriteLock w_lock(_unitUpdateMutex);
@@ -19,7 +19,7 @@ bool Unit::moveTo(const vec3<F32>& targetPosition){
 	// Start plotting a course from our current position
 	_currentPosition = _node->getTransform()->getPosition();
 	_currentTargetPosition = targetPosition;
-	
+
 	if(_prevTime <= 0) _prevTime = GETMSTIME();
 	/// Get current time in ms
 	U32 currentTime = GETMSTIME();
@@ -37,7 +37,7 @@ bool Unit::moveTo(const vec3<F32>& targetPosition){
     F32 xDelta = _currentTargetPosition.x - _currentPosition.x;
     F32 yDelta = _currentTargetPosition.y - _currentPosition.y;
 	F32 zDelta = _currentTargetPosition.z - _currentPosition.z;
-    
+
     /*if(_prevTime <= 0) _prevTime = 0;
 	// Get current time in ms
 	U32 currentTime = GETMSTIME();

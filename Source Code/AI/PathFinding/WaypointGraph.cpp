@@ -1,6 +1,5 @@
 #include "Headers/WaypointGraph.h"
 namespace Navigation {
-
 	WaypointGraph::WaypointGraph(){
 		_id = 0xFFFFFFFF;
 		_loop = true;
@@ -23,11 +22,9 @@ namespace Navigation {
 		}else{
 			PRINT_FN(Locale::get("WARN_WAYPOINT_NOT_FOUND"),wp->getID(), getID());
 		}
-		
 	}
 
 	void WaypointGraph::updateGraph(){
-
 	   typedef Unordered_map<U32, Waypoint*> wp;
 	   _positions.clear();
 	   _rotations.clear();
@@ -39,5 +36,3 @@ namespace Navigation {
 	   }
 	}
 };
-
-

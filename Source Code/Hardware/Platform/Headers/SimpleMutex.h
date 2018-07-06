@@ -22,5 +22,5 @@
 #include <boost/interprocess/sync/interprocess_semaphore.hpp>
 
 typedef boost::mutex SimpleMutex;
- 
+
 #endif

@@ -2,12 +2,14 @@
 #include "Headers/SkinnedSubMesh.h"
 #include "Core/Headers/ParamHandler.h"
 
-void SkinnedMesh::sceneUpdate(U32 sceneTime){
+void SkinnedMesh::sceneUpdate(const U32 sceneTime,SceneGraphNode* const sgn){
 	///sceneTime is in milliseconds. Convert to seconds
 	D32 timeIndex = getMsToSec(sceneTime);
 	for_each(subMeshRefMap::value_type& subMesh, _subMeshRefMap){
-		dynamic_cast<SkinnedSubMesh*>(subMesh.second)->updateAnimations(timeIndex);
+        assert(subMesh.second);
+		dynamic_cast<SkinnedSubMesh*>(subMesh.second)->updateAnimations(timeIndex,sgn);
 	}
+	Object3D::sceneUpdate(sceneTime,sgn);
 }
 
 bool SkinnedMesh::playAnimations() {

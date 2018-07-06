@@ -63,6 +63,15 @@ static void __glsw__FreeList(glswList* pNode)
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC FUNCTIONS
 
+static int glswClear(glswContext* gc)
+{
+	__glsw__FreeList(gc->ShaderMap);
+	__glsw__FreeList(gc->LoadedEffects);
+	gc->ShaderMap = NULL;
+	gc->LoadedEffects = NULL;
+	return 0;
+}
+
 int glswInit()
 {
     if (__glsw__Context)
@@ -89,11 +98,9 @@ int glswShutdown()
     bdestroy(gc->PathPrefix);
     bdestroy(gc->PathSuffix);
     bdestroy(gc->ErrorMessage);
-
-    __glsw__FreeList(gc->TokenMap);
-    __glsw__FreeList(gc->ShaderMap);
-    __glsw__FreeList(gc->LoadedEffects);
-
+	glswClear(gc);
+	__glsw__FreeList(gc->TokenMap);
+	gc->TokenMap = NULL;
     free(gc);
     __glsw__Context = 0;
 
@@ -115,9 +122,10 @@ int glswSetPath(const char* pathPrefix, const char* pathSuffix)
     return 1;
 }
 
-const char* glswGetShader(const char* pEffectKey, int offset)
+const char* glswGetShader(const char* pEffectKey, int offset, int recompile)
 {
     glswContext* gc = __glsw__Context;
+
     bstring effectKey;
     glswList* closestMatch = 0;
     struct bstrList* tokens;
@@ -129,7 +137,9 @@ const char* glswGetShader(const char* pEffectKey, int offset)
     if (!gc)
     {
         return 0;
-    }
+    }else{
+		if(recompile)	glswClear(gc);
+	}
 
     // Extract the effect name from the effect key
     effectKey = bfromcstr(pEffectKey);
@@ -192,7 +202,7 @@ const char* glswGetShader(const char* pEffectKey, int offset)
             }
 
             // Read in the effect file
-            effectContents = bread((bNread) fread, fp);
+            effectContents = bread_gl((bNread) fread, fp);
             fclose(fp);
             bdestroy(effectFile);
         }

@@ -33,7 +33,7 @@ glPixelBufferObject::glPixelBufferObject(PBOType type) : PixelBufferObject(type)
 	};
 }
 
-void glPixelBufferObject::Destroy() {	
+void glPixelBufferObject::Destroy() {
 	if(_textureId > 0){
 		GLCheck(glDeleteTextures(1, &_textureId));
 		_textureId = 0;
@@ -77,7 +77,7 @@ GLvoid* glPixelBufferObject::Begin(GLubyte nFace) const {
 			GLCheck(glBufferData(GL_PIXEL_UNPACK_BUFFER, (_width*_height*_depth*4) * sizeOf(_dataType), 0, GL_STREAM_DRAW));
 			break;
 	};
-	
+
 	return glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
 }
 
@@ -98,9 +98,7 @@ void glPixelBufferObject::Unbind(GLubyte unit) const {
 	GLCheck(glBindTexture(_textureType, 0 ));
 }
 
-
 bool glPixelBufferObject::Create(GLushort width, GLushort height,GLushort depth, GFXImageFormat internalFormatEnum, GFXImageFormat formatEnum,GFXDataFormat dataTypeEnum) {
-
 	_internalFormat = glImageFormatTable[internalFormatEnum];
 	_format         = glImageFormatTable[formatEnum];
 	_dataType       = glDataFormat[dataTypeEnum];
@@ -119,11 +117,11 @@ bool glPixelBufferObject::Create(GLushort width, GLushort height,GLushort depth,
 	size *= 4/*channels*/;
 
 	GLCheck(glGenTextures(1, &_textureId));
-	GLCheck(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));	
-	GLCheck(glBindTexture(_textureType, _textureId));	
+	GLCheck(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));
+	GLCheck(glBindTexture(_textureType, _textureId));
 	GLCheck(glTexParameteri(_textureType, GL_GENERATE_MIPMAP, GL_FALSE));
 	GLCheck(glTexParameteri(_textureType,GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-	GLCheck(glTexParameteri(_textureType,GL_TEXTURE_MAG_FILTER, GL_NEAREST));	
+	GLCheck(glTexParameteri(_textureType,GL_TEXTURE_MAG_FILTER, GL_NEAREST));
 	GLCheck(glTexParameteri(_textureType, GL_TEXTURE_BASE_LEVEL, 0));
 	GLCheck(glTexParameteri(_textureType, GL_TEXTURE_MAX_LEVEL, 1000));
 	GLCheck(glTexParameteri(_textureType, GL_TEXTURE_WRAP_S, GL_REPEAT));
@@ -164,12 +162,11 @@ bool glPixelBufferObject::Create(GLushort width, GLushort height,GLushort depth,
     GLCheck(glGenBuffers(1, &_pixelBufferHandle));
     GLCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, _pixelBufferHandle));
     GLCheck(glBufferData(GL_PIXEL_UNPACK_BUFFER, size * sizeOf(_dataType), 0, GL_STREAM_DRAW));
-	
-	GLCheck(glBindTexture(_textureType, 0));	
+
+	GLCheck(glBindTexture(_textureType, 0));
 	GLCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0));
 	return true;
 }
-
 
 void glPixelBufferObject::updatePixels(const GLfloat * const pixels) {
 	GLCheck(glBindTexture(_textureType, _textureId));
@@ -187,7 +184,6 @@ void glPixelBufferObject::updatePixels(const GLfloat * const pixels) {
 			break;
 	};
 
-	
 	GLfloat* ptr;
 	GLCheck(ptr = (GLfloat*)glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY));
 	if(ptr)	{

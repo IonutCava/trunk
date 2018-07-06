@@ -27,7 +27,7 @@ void TrackedObject::AddRef() {
 	/// increase our ref count
 	++_refCount;
 	/// if AddRef is called, then deletion should be canceled no matter what
-	cancelDeletion();	
+	cancelDeletion();
 }
 
 bool TrackedObject::SubRef() {
@@ -45,8 +45,8 @@ bool TrackedObject::SubRef() {
 		}
 		++it;
 	}
-	//r_lock.unlock();	
-	///Substract ref count and check if object is still used 
+	//r_lock.unlock();
+	///Substract ref count and check if object is still used
 	if(--_refCount <= 0){
 		/// if not, schedule it's deletion
 		scheduleDeletion();
@@ -57,17 +57,35 @@ bool TrackedObject::SubRef() {
 	return false;
 }
 
-void TrackedObject::addDependency(TrackedObject* obj){
+void TrackedObject::addDependency(TrackedObject* const obj){
 	///Some dependecies may be loaded later, so add null ones as well
 	_dependencyList.push_back(obj);
+	obj->addParent(this);
 }
 
-void TrackedObject::removeDependency(TrackedObject* obj){
+void TrackedObject::removeDependency(TrackedObject* const obj){
 	std::list<TrackedObject *>::iterator it;
 
 	for(it = _dependencyList.begin(); it != _dependencyList.end(); ) {
-		if(*it == obj){ 
+		if(*it == obj){
 			it = _dependencyList.erase(it);
+			obj->removeParent(this);
+		}else{
+			++it;
+		}
+	}
+}
+
+void TrackedObject::addParent(TrackedObject* const obj){
+	_parentList.push_back(obj);
+}
+
+void TrackedObject::removeParent(TrackedObject* const obj){
+	std::list<TrackedObject *>::iterator it;
+
+	for(it = _parentList.begin(); it != _parentList.end(); ) {
+		if(*it == obj){
+			it = _parentList.erase(it);
 		}else{
 			++it;
 		}

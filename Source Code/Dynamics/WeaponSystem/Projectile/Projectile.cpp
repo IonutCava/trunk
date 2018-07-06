@@ -1,4 +1,4 @@
-#include "Headers/Projectile.h" 
+#include "Headers/Projectile.h"
 
 Projectile::Projectile(ProjectileType type) : _type(type)
 {

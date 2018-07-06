@@ -52,7 +52,7 @@ public:
 
 	/// Noise
 	Texture2D*	_noise;
-	
+
 	F32 _randomNoiseCoefficient, _randomFlashCoefficient;
 	F32 _timer, _tickInterval;
 	F32 _eyeOffset;
@@ -79,15 +79,15 @@ private:
 	bool _enableNoise;
 	bool _enableSSAO;
 	bool _enableFXAA;
+    bool _enableHDR;
 	bool _FXAAinit;
 	bool _underwater;
-    F32  _bloomFactor;
 
 public:
 	void init(const vec2<U16>& resolution);
 	void idle();
 	void render(Camera* const camera);
-	void reshapeFBO(int newwidth , int newheight);
+	void reshapeFBO(I32 newwidth , I32 newheight);
 
 END_SINGLETON
 

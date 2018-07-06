@@ -23,6 +23,7 @@
 class QuadtreeNode;
 class BoundingBox;
 class Terrain;
+class Transform;
 class ShaderProgram;
 class VertexBufferObject;
 class Quadtree {
@@ -35,7 +36,7 @@ public:
     inline void setParentVBO(VertexBufferObject* const vbo) {_parentVBO = vbo;}
 
 	void DrawGround(bool drawInReflection);
-	void DrawGrass(VertexBufferObject* const grassVBO);
+	void DrawGrass(U32 geometryIndex, Transform* const parentTransform);
 	void DrawBBox();
 
 	QuadtreeNode*	FindLeaf(const vec2<F32>& pos);
@@ -44,10 +45,9 @@ public:
 	~Quadtree()	{Destroy();}
 
 private:
-	QuadtreeNode*	     _root;	
+	QuadtreeNode*	     _root;
 	ShaderProgram*       _parentShaderProgram; //<Pointer to the terrain shader
     VertexBufferObject*  _parentVBO; //<Pointer to the terrain VBO
 };
 
 #endif
-

@@ -2,20 +2,17 @@
 #include <stdexcept>
 
 I8 SDL_API::initHardware() {
-
 	Mix_Init(MIX_INIT_OGG | MIX_INIT_MP3);
 	_music = NULL;
 	_chunk = NULL;
-        
+
 	if (-1 == Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 4096)){
 		return SDL_AUDIO_INIT_ERROR;
 	}
 	return NO_ERR;
-
 }
 
 void SDL_API::playMusic(AudioDescriptor* musicFile){
-
 	if(!musicFile) return;
 	_music = Mix_LoadMUS(musicFile->getAudioFile().c_str());
 	Mix_VolumeMusic(musicFile->getVolume());
@@ -23,12 +20,9 @@ void SDL_API::playMusic(AudioDescriptor* musicFile){
 		 if (-1 == Mix_PlayMusic(_music, musicFile->isLooping() ? -1 : 0))
             throw std::runtime_error("Can't play file");
     }
-	 
-
 }
 
 void SDL_API::playSound(AudioDescriptor* sound){
-
 	if(sound == NULL) return;
 
 	if(_chunk != NULL) Mix_FreeChunk(_chunk);
@@ -42,5 +36,4 @@ void SDL_API::playSound(AudioDescriptor* sound){
 	if(Mix_PlayChannel( sound->getChannel(), _chunk, sound->isLooping() ? -1 : 0 ) == -1){
 		ERROR_FN(Locale::get("ERROR_SDL_CANT_PLAY") ,sound->getName().c_str(),Mix_GetError());
 	}
-	
 }

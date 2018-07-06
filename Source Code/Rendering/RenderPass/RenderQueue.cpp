@@ -8,6 +8,7 @@
 #include "Rendering/Headers/Frustum.h"
 #include "Hardware/Video/Headers/RenderStateBlock.h"
 #include "Geometry/Shapes/Headers/Object3D.h"
+#include "Geometry/Material/Headers/Material.h"
 
 struct RenderBinCallOrder{
 	bool operator()(RenderBin* a, RenderBin* b) const {
@@ -170,19 +171,8 @@ void RenderQueue::sort(){
 }
 
 void RenderQueue::refresh(){
-	///Finish all GPU commands
-	GFX_DEVICE.flush();
 	for_each(RenderBinMap::value_type& renderBin, _renderBins){
       assert(renderBin.second);
       renderBin.second->refresh();
    }
 }
-
-void RenderQueue::render(){
-	for_each(RenderBin* renderBin, _sortedRenderBins){
-      assert(renderBin);
-      renderBin->render();
-   }
-}
-
- 

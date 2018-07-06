@@ -19,25 +19,24 @@
 #define _QUAD_3D_H_
 
 #include "Geometry/Shapes/Headers/Object3D.h"
+#include "Hardware/Video/Buffers/VertexBufferObject/Headers/VertexBufferObject.h"
 
 class ShaderProgram;
 class Quad3D : public Object3D {
-
 public:
 	Quad3D() :  Object3D(QUAD_3D,TRIANGLE_STRIP){
-
 		vec3<F32> vertices[] = {vec3<F32>(-1.0f,  1.0f, 0.0f),   //TOP LEFT
 						        vec3<F32>( 1.0f,  1.0f, 0.0f),   //TOP RIGHT
 						        vec3<F32>(-1.0f, -1.0f, 0.0f),   //BOTTOM LEFT
 						        vec3<F32>( 1.0f, -1.0f, 0.0f)};  //BOTTOM RIGHT
 
-		vec3<F32> normals[] = {vec3<F32>(0, 0, 1), 
-						       vec3<F32>(0, 0, 1), 
+		vec3<F32> normals[] = {vec3<F32>(0, 0, 1),
+						       vec3<F32>(0, 0, 1),
 						       vec3<F32>(0, 0, 1),
 						       vec3<F32>(0, 0, 1)};
 
-		vec3<F32> tangents[] = {vec3<F32>(0.0f, 1.0f, 0.0f), 
-						        vec3<F32>(0.0f, 1.0f, 0.0f), 
+		vec3<F32> tangents[] = {vec3<F32>(0.0f, 1.0f, 0.0f),
+						        vec3<F32>(0.0f, 1.0f, 0.0f),
 				                vec3<F32>(0.0f, 1.0f, 0.0f),
 				                vec3<F32>(0.0f, 1.0f, 0.0f)};
 
@@ -45,29 +44,31 @@ public:
 							     vec2<F32>(1,1),
 							     vec2<F32>(0,0),
 							     vec2<F32>(1,0)};
+		U16 indices[] = {2, 0, 1, 1, 2, 3};
 
 		_geometry->reservePositionCount(4);
-		_geometry->getNormal().reserve(4);
-		_geometry->getTangent().reserve(4);
+		_geometry->reserveNormalCount(4);
+		_geometry->reserveTangentCount(4);
 		_geometry->getTexcoord().reserve(4);
-		_geometry->getHWIndices().reserve(4);
 
 		for(U8 i = 0;  i < 4; i++){
 			_geometry->addPosition(vertices[i]);
-			_geometry->getNormal().push_back(normals[i]);
-			_geometry->getTangent().push_back(tangents[i]);
+			_geometry->addNormal(normals[i]);
+			_geometry->addTangent(tangents[i]);
 			_geometry->getTexcoord().push_back(texcoords[i]);
 		}
 
-	   //CCW draw order
-	   _geometry->getHWIndices().push_back(2); //  v0----v1
-	   _geometry->getHWIndices().push_back(0); //   |    |
-	   _geometry->getHWIndices().push_back(1); //   |    |
-	   _geometry->getHWIndices().push_back(1); //  v2----v3
-       _geometry->getHWIndices().push_back(2);
-       _geometry->getHWIndices().push_back(3);
-  	   _geometry->setIndiceLimits(vec2<U16>(0,3));
-	   _refreshVBO = true;
+		for(U8 i = 0; i < 6; i++){
+			//CCW draw order
+			_geometry->addIndex(indices[i]);
+			//  v0----v1
+	   		//   |    |
+			//   |    |
+			//  v2----v3
+		}
+
+  	   _geometry->setIndiceLimits(vec2<U32>(0,3));
+	   _geometry->queueRefresh();
 	   //computeTangents();
 	}
 
@@ -79,7 +80,6 @@ public:
 	};
 
 	vec3<F32> getCorner(CornerLocation corner){
-		
 		switch(corner){
 			case TOP_LEFT: return _geometry->getPosition()[0];
 			case TOP_RIGHT: return _geometry->getPosition()[1];
@@ -91,7 +91,6 @@ public:
 	}
 
 	void setCorner(CornerLocation corner, const vec3<F32>& value){
-		
 		switch(corner){
 	     	case TOP_LEFT:     _geometry->modifyPositionValue(0,value); break;
 			case TOP_RIGHT:    _geometry->modifyPositionValue(1,value); break;
@@ -99,7 +98,7 @@ public:
 			case BOTTOM_RIGHT: _geometry->modifyPositionValue(3,value); break;
 			default: break;
 		}
-		_refreshVBO = true;
+		_geometry->queueRefresh();
 		//computeTangents();
 	}
 
@@ -110,15 +109,17 @@ public:
 		_geometry->modifyPositionValue(1,vec3<F32>(rect.z, rect.w, 0));
 		_geometry->modifyPositionValue(2,vec3<F32>(rect.x, rect.y, 0));
 		_geometry->modifyPositionValue(3,vec3<F32>(rect.z, rect.y, 0));
-		_refreshVBO = true;
+		_geometry->queueRefresh();
 	}
 
 	virtual bool computeBoundingBox(SceneGraphNode* const sgn) {
 		if(sgn->getBoundingBox().isComputed()) return true;
-		sgn->getBoundingBox().set(_geometry->getPosition()[2],_geometry->getPosition()[1]);
+        vec3<F32> min = _geometry->getPosition()[2];
+        min.z = +0.0025f;//<add some depth padding for collision and nav meshes
+		sgn->getBoundingBox().setMax(_geometry->getPosition()[1]);
+        sgn->getBoundingBox().setMin(min);
 		return SceneNode::computeBoundingBox(sgn);
 	}
 };
-
 
 #endif

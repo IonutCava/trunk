@@ -1,9 +1,11 @@
 #include "Headers/Scene.h"
 
-#include <networking/ASIO.h>
+#include <Hardware/Network/Headers/ASIOImpl.h>
 #include "GUI/Headers/GUI.h"
 
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Math/Headers/Transform.h"
+
 #include "Utility/Headers/XMLParser.h"
 #include "Rendering/Headers/Frustum.h"
 #include "Managers/Headers/AIManager.h"
@@ -13,6 +15,7 @@
 #include "Environment/Terrain/Headers/TerrainDescriptor.h"
 
 #include "Geometry/Shapes/Headers/Mesh.h"
+#include "Geometry/Material/Headers/Material.h"
 #include "Geometry/Shapes/Headers/Predefined/Box3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
@@ -22,6 +25,8 @@
 
 Scene::Scene() :  Resource(),
 			   _GFX(GFX_DEVICE),
+			   _FBSpeedFactor(1.0f),
+			   _LRSpeedFactor(5.0f),
 			   _loadComplete(false),
 			   _paramHandler(ParamHandler::getInstance()),
 			   _currentSelection(NULL),
@@ -46,12 +51,10 @@ bool Scene::idle(){ //Called when application is idle
 	bool _updated = false;
 	if(!_pendingDataArray.empty())
 	for(vectorImpl<FileData>::iterator iter = _pendingDataArray.begin(); iter != _pendingDataArray.end(); ++iter) {
-
 		if(!loadModel(*iter)){
-
 			WorldPacket p(CMSG_REQUEST_GEOMETRY);
 			p << (*iter).ModelName;
-			ASIO::getInstance().sendPacket(p);
+			ASIOImpl::getInstance().sendPacket(p);
 			while(!loadModel(*iter)){
 				PRINT_FN(Locale::get("AWAITING_FILE"));
 			}
@@ -67,31 +70,24 @@ bool Scene::idle(){ //Called when application is idle
 				}
 			}
 			if(_updated) break;
-			
 		}
 	}
 	return true;
 }
 
 void Scene::postRender(){
-    /// Preview depthmaps if needed
-    LightManager::getInstance().previewShadowMaps();
+	if(GFX_DEVICE.isCurrentRenderStage(FINAL_STAGE) ){
+		// Draw bounding boxes, skeletons, axis gizmo, etc.
+		_GFX.debugDraw();
+		// Preview depthmaps if needed
+		LightManager::getInstance().previewShadowMaps();
+		// Show navmeshes
+		AIManager::getInstance().debugDraw();
+	}
 }
 
 void Scene::addPatch(vectorImpl<FileData>& data){
-	/*for(vectorImpl<FileData>::iterator iter = data.begin(); iter != data.end(); iter++)
-	{
-		for(Unordered_map<string,Object3D*>::iterator iter2 = GeometryArray.begin(); iter2 != GeometryArray.end(); iter2++)
-			if((iter2->second)->getName().compare((*iter).ModelName) == 0)
-			{
-				_pendingDataArray.push_back(*iter);
-				(iter2->second)->scheduleDeletion();
-				GeometryArray.erase(iter2);
-				break;
-			}
-	}*/
 }
-
 
 void Scene::loadXMLAssets(){
 	for(vectorImpl<FileData>::iterator it = _modelDataArray.begin(); it != _modelDataArray.end();){
@@ -103,12 +99,10 @@ void Scene::loadXMLAssets(){
 			loadModel(*it);
 			++it;
 		}
-
 	}
-}	
+}
 
 bool Scene::loadModel(const FileData& data){
-
 	if(data.type == PRIMITIVE)	return loadGeometry(data);
 
 	ResourceDescriptor model(data.ItemName);
@@ -134,18 +128,15 @@ bool Scene::loadModel(const FileData& data){
 }
 
 bool Scene::loadGeometry(const FileData& data){
-
 	Object3D* thisObj;
 	ResourceDescriptor item(data.ItemName);
 	item.setResourceLocation(data.ModelName);
 	if(data.ModelName.compare("Box3D") == 0) {
 			thisObj = CreateResource<Box3D>(item);
 			dynamic_cast<Box3D*>(thisObj)->setSize(data.data);
-
 	} else if(data.ModelName.compare("Sphere3D") == 0) {
 			thisObj = CreateResource<Sphere3D>(item);
 			dynamic_cast<Sphere3D*>(thisObj)->setRadius(data.data);
-
 	} else if(data.ModelName.compare("Quad3D") == 0)	{
 			vec3<F32> scale = data.scale;
 			vec3<F32> position = data.position;
@@ -157,9 +148,9 @@ bool Scene::loadGeometry(const FileData& data){
 	} else if(data.ModelName.compare("Text3D") == 0) {
 			///set font file
 			item.setResourceLocation(data.data3);
+            item.setPropertyList(data.data2);
 			thisObj = CreateResource<Text3D>(item);
 			dynamic_cast<Text3D*>(thisObj)->getWidth() = data.data;
-			dynamic_cast<Text3D*>(thisObj)->getText() = data.data2;
 	}else{
 		ERROR_FN(Locale::get("ERROR_SCENE_UNSUPPORTED_GEOM"),data.ModelName.c_str());
 		return false;
@@ -169,9 +160,8 @@ bool Scene::loadGeometry(const FileData& data){
 		ResourceDescriptor materialDescriptor(data.ItemName+"_material");
 		tempMaterial = CreateResource<Material>(materialDescriptor);
 		tempMaterial->setDiffuse(data.color);
-		tempMaterial->setAmbient(data.color);
 	}
-	
+
 	thisObj->setMaterial(tempMaterial);
 	SceneGraphNode* thisObjSGN = _sceneGraph->getRoot()->addNode(thisObj);
 	thisObjSGN->getTransform()->scale(data.scale);
@@ -192,7 +182,6 @@ void Scene::addLight(Light* const lightItem){
 }
 
 Light* Scene::addDefaultLight(){
-
 	std::stringstream ss; ss << LightManager::getInstance().getLights().size();
 	ResourceDescriptor defaultLight("Default directional light "+ss.str());
 	defaultLight.setId(0); //descriptor ID is not the same as light ID. This is the light's slot!!
@@ -202,7 +191,7 @@ Light* Scene::addDefaultLight(){
 	addLight(l);
 	vec4<F32> ambientColor(0.1f, 0.1f, 0.1f, 1.0f);
 	LightManager::getInstance().setAmbientLight(ambientColor);
-	return l;	
+	return l;
 }
 ///Add skies
 Sky* Scene::addDefaultSky(){
@@ -224,7 +213,6 @@ bool Scene::removeGeometry(SceneNode* node){
 	SceneGraphNode* _graphNode = _sceneGraph->findNode(node->getName());
 
 	SAFE_DELETE_CHECK(_graphNode);
-
 }
 
 bool Scene::preLoad() {
@@ -263,10 +251,10 @@ bool Scene::load(const std::string& name){
 	}else{
 		renderState()->getCamera()->setEye(vec3<F32>(0,50,0));
 	}
-	
+
 	///Create an AI thread, but start it only if needed
 	Kernel* kernel = Application::getInstance().getKernel();
-	_aiTask.reset(New Task(kernel->getThreadPool(),10,false,false,boost::bind(&AIManager::tick, boost::ref(AIManager::getInstance()))));
+	_aiTask.reset(New Task(kernel->getThreadPool(),10,false,false,DELEGATE_BIND(&AIManager::tick, DELEGATE_REF(AIManager::getInstance()))));
 	_loadComplete = true;
 	return _loadComplete;
 }
@@ -344,18 +332,17 @@ void Scene::onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button)
 
 static F32 speedFactor = 0.25f;
 void Scene::onKeyDown(const OIS::KeyEvent& key){
-
 	switch(key.key){
-		case OIS::KC_LEFT : 
+		case OIS::KC_LEFT :
 			state()->_angleLR = -(speedFactor/5);
 			break;
-		case OIS::KC_RIGHT : 
+		case OIS::KC_RIGHT :
 			state()->_angleLR = speedFactor/5;
 			break;
-		case OIS::KC_UP : 
+		case OIS::KC_UP :
 			state()->_angleUD = -(speedFactor/5);
 			break;
-		case OIS::KC_DOWN : 
+		case OIS::KC_DOWN :
 			state()->_angleUD = speedFactor/5;
 			break;
 		case OIS::KC_END:
@@ -374,6 +361,9 @@ void Scene::onKeyDown(const OIS::KeyEvent& key){
 			break;
 		case OIS::KC_SUBTRACT:
 			if (speedFactor > 0.1f)   speedFactor -= 0.1f;
+			break;
+		case OIS::KC_F8:
+			ParamHandler::getInstance().setParam("postProcessing.enablePostFX",!ParamHandler::getInstance().getParam<bool>("postProcessing.enablePostFX"));
 			break;
 		case OIS::KC_F10:
 			LightManager::getInstance().togglePreviewShadowMaps();
@@ -396,9 +386,15 @@ void Scene::onKeyUp(const OIS::KeyEvent& key){
 		case OIS::KC_DOWN:
 			state()->_angleUD = 0.0f;
 			break;
-		case OIS::KC_F:
-			_paramHandler.setParam("postProcessing.enableDepthOfField", !_paramHandler.getParam<bool>("postProcessing.enableDepthOfField")); 
+		case OIS::KC_F3:
+			_paramHandler.setParam("postProcessing.enableDepthOfField", !_paramHandler.getParam<bool>("postProcessing.enableDepthOfField"));
 			break;
+        case OIS::KC_F4:
+            _paramHandler.setParam("postProcessing.enableBloom", !_paramHandler.getParam<bool>("postProcessing.enableBloom"));
+            break;
+        case OIS::KC_F5:
+            GFX_DEVICE.drawDebugAxis(!GFX_DEVICE.drawDebugAxis());
+            break;
 		default:
 			break;
 	}
@@ -413,9 +409,7 @@ void Scene::onJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis,I32 deadZon
 			state()->_angleLR = -(speedFactor/5);
 		else
 			state()->_angleLR = 0;
-
 	}else if(axis == 0){
-
 		if(key.state.mAxes[axis].abs > deadZone)
 			state()->_angleUD = speedFactor/5;
 		else if(key.state.mAxes[axis].abs < -deadZone)
@@ -439,7 +433,7 @@ void Scene::onJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis,I32 deadZon
 	}
 }
 
-void Scene::updateSceneState(U32 sceneTime){
+void Scene::updateSceneState(const U32 sceneTime){
 	_sceneGraph->sceneUpdate(sceneTime);
 }
 
@@ -487,8 +481,8 @@ void Scene::findSelection(const vec3<F32>& camOrigin, U32 x, U32 y){
     //Next we make an openGL call to grab our MODELVIEW_MATRIX -
     //This is the matrix that rasters 3d points to 2d space - which is
     //kinda what we're doing, in reverse
-	mat4<F32> temp = Frustum::getInstance().getModelviewMatrix();
-	
+    mat4<GLfloat> temp;
+    GFX_DEVICE.getMatrix(MV_MATRIX,temp);
     //Some folks would then invert the matrix - I invert the results.
 
     //First, to get the camera_origin, we transform the 12, 13, 14
@@ -526,11 +520,10 @@ void Scene::findSelection(const vec3<F32>& camOrigin, U32 x, U32 y){
 
 	vec3<F32> origin(camOrigin);
 	vec3<F32> dir = origin.direction(final_point);
-	
+
 	Ray r(origin,dir);
 	_currentSelection = _sceneGraph->Intersect(r,Frustum::getInstance().getZPlanes().x,
 												 Frustum::getInstance().getZPlanes().y/2.0f);
-
 }
 
 void Scene::deleteSelection(){

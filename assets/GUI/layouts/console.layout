@@ -1,23 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<GUILayout >
-    <Window Type="TaharezLook/FrameWindow" Name="ConsoleRoot" >
-        <Property Name="Text" Value="Console" />
-        <Property Name="AlwaysOnTop" Value="True" />
-        <Property Name="FrameEnabled" Value="False" />
-        <Property Name="TitlebarFont" Value="DejaVuSans-10" />
-        <Property Name="SizingEnabled" Value="False" />
-        <Property Name="TitlebarEnabled" Value="False" />
-        <Property Name="UnifiedAreaRect" Value="{{0.00211789,0},{0.00938821,0},{0.998013,0},{0.677123,0}}" />
-        <Property Name="CloseButtonEnabled" Value="False" />
-        <Window Type="TaharezLook/Editbox" Name="ConsoleRoot/EditBox" >
-            <Property Name="MaxTextLength" Value="1073741823" />
-            <Property Name="UnifiedAreaRect" Value="{{0.0201637,0},{0.898236,0},{0.982834,0},{0.957693,0}}" />
-            <Property Name="TextParsingEnabled" Value="False" />
-        </Window>
-        <Window Type="TaharezLook/Listbox" Name="ConsoleRoot/ChatBox" >
-            <Property Name="AlwaysOnTop" Value="True" />
-            <Property Name="UnifiedAreaRect" Value="{{0.0118821,0},{0.0181678,0},{0.997684,0},{0.873089,0}}" />
+<GUILayout version="4" >
+    <Window type="GWEN/FrameWindow" name="ConsoleRoot" >
+        <Property name="Area" value="{{-0.000909918,0},{0.003196,0},{0.99909,0},{0.674027,0}}" />
+        <Property name="Text" value="Console" />
+        <Property name="Alpha" value="0.85" />
+        <Property name="AlwaysOnTop" value="True" />
+        <Property name="FrameEnabled" value="False" />
+        <Property name="RollUpEnabled" value="False" />
+        <Property name="SizingEnabled" value="False" />
+        <Property name="TitlebarEnabled" value="False" />
+        <Property name="DragMovingEnabled" value="False" />
+        <Property name="CloseButtonEnabled" value="False" />
+
+        <AutoWindow namePath="__auto_titlebar__" >
+            <Property name="DraggingEnabled" value="False" />
+        </AutoWindow>
+        <Window type="GWEN/Editbox" name="EditBox" >
+            <Property name="Area" value="{{0.00707703,0},{0.928518,0},{0.992077,0},{0.987975,0}}" />
+            <Property name="TooltipText" value="Enter console commands using the forward slash character &quot;/&quot;" />
+         </Window>
+        <Window type="GWEN/Listbox" name="ChatBox" >
+            <Property name="Area" value="{{0.00777294,0},{0.00908647,0},{0.99451,0},{0.926019,0}}" />
+            <Property name="AlwaysOnTop" value="True" />
+            <Property name="ForceVertScrollbar" value="True" />
         </Window>
     </Window>
 </GUILayout>

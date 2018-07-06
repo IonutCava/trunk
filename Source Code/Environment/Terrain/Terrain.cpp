@@ -1,20 +1,23 @@
 #include "Headers/Terrain.h"
 #include "Headers/TerrainChunk.h"
-
-#include "Graphs/Headers/SceneGraphNode.h"
-#include "Managers/Headers/SceneManager.h"
 #include "Quadtree/Headers/Quadtree.h"
 #include "Quadtree/Headers/QuadtreeNode.h"
-#include "Hardware/Video/Buffers/VertexBufferObject/Headers/VertexBufferObject.h"
-#include "Environment/Sky/Headers/Sky.h"
-#include "Hardware/Video/Headers/GFXDevice.h"
-#include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
+
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Math/Headers/Transform.h"
+#include "Graphs/Headers/SceneGraphNode.h"
+#include "Managers/Headers/SceneManager.h"
+
+#include "Geometry/Material/Headers/Material.h"
+#include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
+
+#include "Hardware/Video/Headers/GFXDevice.h"
 #include "Hardware/Video/Headers/RenderStateBlock.h"
+#include "Hardware/Video/Buffers/VertexBufferObject/Headers/VertexBufferObject.h"
 
 #define COORD(x,y,w)	((y)*(w)+(x))
 
-Terrain::Terrain() : SceneNode(TYPE_TERRAIN), 
+Terrain::Terrain() : SceneNode(TYPE_TERRAIN),
 	_alphaTexturePresent(false),
 	_terrainWidth(0),
 	_terrainHeight(0),
@@ -26,14 +29,17 @@ Terrain::Terrain() : SceneNode(TYPE_TERRAIN),
     _drawReflected(false),
 	_veg(NULL),
 	_planeTransform(NULL),
+	_terrainTransform(NULL),
 	_node(NULL),
 	_planeSGN(NULL),
 	_terrainRenderState(NULL),
     _terrainDepthRenderState(NULL),
+	_terrainReflectionRenderState(NULL),
 	_stateRefreshIntervalBuffer(0),
+    _diffuseUVScale(1.0f),
+    _normalMapUVScale(1.0f),
 	_stateRefreshInterval(500) ///<Every half a second
 {
-	
 	_terrainTextures[TERRAIN_TEXTURE_DIFFUSE]   = NULL;
 	_terrainTextures[TERRAIN_TEXTURE_NORMALMAP] = NULL;
 	_terrainTextures[TERRAIN_TEXTURE_CAUSTICS]  = NULL;
@@ -42,11 +48,11 @@ Terrain::Terrain() : SceneNode(TYPE_TERRAIN),
 	_terrainTextures[TERRAIN_TEXTURE_BLUE]      = NULL;
 }
 
-Terrain::~Terrain() 
+Terrain::~Terrain()
 {
 }
 
-void Terrain::sceneUpdate(U32 sceneTime){
+void Terrain::sceneUpdate(const U32 sceneTime,SceneGraphNode* const sgn){
 	///Query shadow state every "_stateRefreshInterval" milliseconds
 
 	if (sceneTime - _stateRefreshIntervalBuffer >= _stateRefreshInterval){
@@ -54,10 +60,17 @@ void Terrain::sceneUpdate(U32 sceneTime){
 
 		_stateRefreshIntervalBuffer += _stateRefreshInterval;
 	}
-	_veg->sceneUpdate(sceneTime);
+	_veg->sceneUpdate(sceneTime,sgn);
+
+	SceneNode::sceneUpdate(sceneTime, sgn);
 }
+
 #pragma message("ToDo: Add multiple local lights for terrain, such as torches, rockets, flashlights etc - Ionut")
 void Terrain::prepareMaterial(SceneGraphNode* const sgn){
+	///Transform the Object (Rot, Trans, Scale)
+	if(!GFX_DEVICE.excludeFromStateChange(getType())){ ///< only if the node is not in the exclusion mask
+		_terrainTransform = sgn->getTransform();
+	}
 
 	///Prepare the main light (directional light only, sun) for now.
 	if(!GFX_DEVICE.isCurrentRenderStage(DEPTH_STAGE)){
@@ -75,10 +88,19 @@ void Terrain::prepareMaterial(SceneGraphNode* const sgn){
 			LightManager::getInstance().bindDepthMaps(l, n, offset);
 		}
 	}
-	
+
 	ShaderProgram* terrainShader = getMaterial()->getShaderProgram();
-	SET_STATE_BLOCK(_terrainRenderState);
+	_groundVBO->setShaderProgram(terrainShader);
+	_plane->setCustomShader(terrainShader);
+	if(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE)){
+		SET_STATE_BLOCK(_terrainReflectionRenderState);
+	}else{
+		SET_STATE_BLOCK(_terrainRenderState);
+	}
 	const vectorImpl<I32>& types = LightManager::getInstance().getLightTypesForCurrentNode();
+    const vectorImpl<I32>& enabled = LightManager::getInstance().getLightsEnabledForCurrentNode();
+	const vectorImpl<I32>& lightShadowCast = LightManager::getInstance().getShadowCastingLightsForCurrentNode();
+
 	_terrainTextures[TERRAIN_TEXTURE_DIFFUSE]->Bind(0);
 	_terrainTextures[TERRAIN_TEXTURE_NORMALMAP]->Bind(1);
 	_terrainTextures[TERRAIN_TEXTURE_CAUSTICS]->Bind(2); //Water Caustics
@@ -89,21 +111,16 @@ void Terrain::prepareMaterial(SceneGraphNode* const sgn){
 	terrainShader->bind();
     terrainShader->Uniform("material",getMaterial()->getMaterialMatrix());
 	terrainShader->Uniform("water_reflection_rendering", GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE));
-	terrainShader->UniformTexture("texDiffuseMap", 0);
-	terrainShader->UniformTexture("texNormalHeightMap", 1);
-	terrainShader->UniformTexture("texWaterCaustics", 2);
-	terrainShader->UniformTexture("texDiffuse0", 3);
-	terrainShader->UniformTexture("texDiffuse1", 4);
-	terrainShader->UniformTexture("texDiffuse2", 5);
-	terrainShader->Uniform("light_count", 1);
-
 	if(_alphaTexturePresent){
 		_terrainTextures[TERRAIN_TEXTURE_ALPHA]->Bind(6); //AlphaMap: Alpha
-		terrainShader->UniformTexture("texDiffuse3",6);
 	}
-	terrainShader->Uniform("enable_shadow_mapping", _shadowMapped);
-	terrainShader->Uniform("lightProjectionMatrices",LightManager::getInstance().getLightProjectionMatricesCache());
-	terrainShader->Uniform("lightType",types);
+
+    terrainShader->Uniform("worldHalfExtent", GET_ACTIVE_SCENE()->getSceneGraph()->getRoot()->getBoundingBox().getWidth() * 0.5f);
+	terrainShader->Uniform("dvd_enableShadowMapping", _shadowMapped);
+	terrainShader->Uniform("dvd_lightProjectionMatrices",LightManager::getInstance().getLightProjectionMatricesCache());
+	terrainShader->Uniform("dvd_lightType",types);
+    terrainShader->Uniform("dvd_lightEnabled",enabled);
+	terrainShader->Uniform("dvd_lightCastsShadows",lightShadowCast);
 }
 
 void Terrain::releaseMaterial(){
@@ -125,15 +142,23 @@ void Terrain::releaseMaterial(){
 }
 
 void Terrain::prepareDepthMaterial(SceneGraphNode* const sgn){
+	if(!GFX_DEVICE.excludeFromStateChange(getType())){
+		_terrainTransform = sgn->getTransform();
+	}
     SET_STATE_BLOCK(_terrainDepthRenderState);
+    ShaderProgram* terrainShader = getMaterial()->getShaderProgram(DEPTH_STAGE);
+	_groundVBO->setShaderProgram(terrainShader);
+	_plane->setCustomShader(terrainShader);
+    terrainShader->bind();
+	terrainShader->Uniform("dvd_enableShadowMapping", false);
 }
 
 void Terrain::releaseDepthMaterial(){
 }
 
 void Terrain::render(SceneGraphNode* const sgn){
-	drawInfinitePlain();
 	drawGround();
+    drawInfinitePlain();
 }
 
 void Terrain::drawBoundingBox(SceneGraphNode* const sgn){
@@ -142,35 +167,44 @@ void Terrain::drawBoundingBox(SceneGraphNode* const sgn){
 	}
 }
 
-void Terrain::onDraw(){
+void Terrain::onDraw(const RenderStage& currentStage){
     _eyePos = GET_ACTIVE_SCENE()->renderState()->getCamera()->getEye();
 }
 
-void Terrain::postDraw(){
-	//_veg->draw();
+void Terrain::postDraw(const RenderStage& currentStage){
+	_veg->draw(currentStage,_terrainTransform);
 }
 
 void Terrain::drawInfinitePlain(){
-	_planeTransform->setPositionX(_eyePos.x);
-	_planeTransform->setPositionZ(_eyePos.z);
+    SET_STATE_BLOCK(_terrainDepthRenderState);
+    _planeTransform->setPosition(vec3<F32>(_eyePos.x,_planeTransform->getPosition().y,_eyePos.z));
 	_planeSGN->getBoundingBox().Transform(_planeSGN->getInitialBoundingBox(),
 										  _planeTransform->getMatrix());
 
 	if(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE)) return;
     if(GFX_DEVICE.isCurrentRenderStage(DEPTH_STAGE)) return;
-	GFX_DEVICE.setObjectState(_planeTransform);
-	GFX_DEVICE.renderModel(_plane);
-	GFX_DEVICE.releaseObjectState(_planeTransform);
 
+	GFX_DEVICE.renderInstance(_plane->renderInstance());
 }
 
 void Terrain::drawGround() const{
 	assert(_groundVBO);
-	_groundVBO->Enable();
-		_terrainQuadtree->DrawGround(_drawReflected);
-	_groundVBO->Disable();
+	_groundVBO->currentShader()->uploadModelMatrices();
+	_terrainQuadtree->DrawGround(_drawReflected);
 }
 
+vec3<F32> Terrain::getPositionFromGlobal(F32 x, F32 z) const {
+    x -= _boundingBox.getCenter().x;
+    z -= _boundingBox.getCenter().z;
+    F32 xClamp = (0.5f * _terrainWidth) + x;
+    F32 zClamp = (0.5f * _terrainHeight) - z;
+    xClamp /= _terrainWidth;
+    zClamp /= _terrainHeight;
+    zClamp = 1 - zClamp;
+    vec3<F32> temp = getPosition(xClamp,zClamp);
+
+    return temp;
+}
 
 vec3<F32> Terrain::getPosition(F32 x_clampf, F32 z_clampf) const{
 	if(x_clampf<.0f || z_clampf<.0f || x_clampf>1.0f || z_clampf>1.0f) return vec3<F32>(0.0f, 0.0f, 0.0f);
@@ -206,6 +240,12 @@ vec3<F32> Terrain::getNormal(F32 x_clampf, F32 z_clampf) const{
 		 + (_groundVBO->getNormal()[ COORD(posI.x+1,posI.y,  _terrainWidth) ])  *       posD.x  * (1.0f-posD.y)
 		 + (_groundVBO->getNormal()[ COORD(posI.x,  posI.y+1,_terrainWidth) ])  * (1.0f-posD.x) *       posD.y
 		 + (_groundVBO->getNormal()[ COORD(posI.x+1,posI.y+1,_terrainWidth) ])  *       posD.x  *       posD.y;
+}
+
+vec3<F32>  Terrain::getBiTangent(F32 x_clampf, F32 z_clampf) const{
+    vec3<F32> N = getNormal(x_clampf, z_clampf);
+	vec3<F32> T = getTangent(x_clampf, z_clampf);
+    return Cross(N, T);
 }
 
 vec3<F32> Terrain::getTangent(F32 x_clampf, F32 z_clampf) const{

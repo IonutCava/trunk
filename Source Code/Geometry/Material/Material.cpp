@@ -5,13 +5,12 @@
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Hardware/Video/Headers/RenderStateBlock.h"
 
-
 Material::Material() : Resource(),
 					   _dirty(false),
 					   _doubleSided(false),
+					   _shaderThreadedLoad(true),
 					   _castsShadows(true),
 					   _receiveShadows(true),
-					   _shaderProgramChanged(false),
 					   _hardwareSkinning(false),
 					   _shadingMode(SHADING_PHONG), /// phong shading by default
 					   _bumpMethod(BUMP_NONE)
@@ -47,15 +46,10 @@ Material::Material() : Resource(),
 
    /// Normal state for final rendering
    RenderStateBlockDescriptor normalStateDescriptor;
-   if(GFX_DEVICE.getDeferredRendering()){
-	   normalStateDescriptor._fixedLighting = false;
-   }
 
    /// A descriptor used for rendering to depth map
    RenderStateBlockDescriptor depthDescriptor;
    depthDescriptor.setCullMode(CULL_MODE_CCW);
-   /// do not used fixed lighting
-   depthDescriptor._fixedLighting = false;
    /// set a polygon offset
    depthDescriptor._zBias = 1.0f;
    /// ignore colors
@@ -75,23 +69,28 @@ Material::Material() : Resource(),
 
 	_shaderRef[FINAL_STAGE] = NULL;
 	_shaderRef[DEPTH_STAGE] = NULL;
+
+    //Create an immediate mode shader (one should exist already)
+    ResourceDescriptor immediateModeShader("ImmediateModeEmulation");
+    _imShader = CreateResource<ShaderProgram>(immediateModeShader);
+	REGISTER_TRACKED_DEPENDENCY(_imShader);
+
 	_computedShader[0] = false;
 	_computedShader[1] = false;
+    _computedShaderTextures = false;
 	_matId[0].i = 0;
     _matId[1].i = 0;
 }
 
-
 Material::~Material(){
-
 	SAFE_DELETE(_defaultRenderStates[FINAL_STAGE]);
 	SAFE_DELETE(_defaultRenderStates[DEPTH_STAGE]);
 	SAFE_DELETE(_defaultRenderStates[REFLECTION_STAGE]);
 	_defaultRenderStates.clear();
 }
 
-RenderStateBlock* Material::setRenderStateBlock(const RenderStateBlockDescriptor& descriptor,RenderStage renderStage){
-	if(descriptor.getHash() == _defaultRenderStates[renderStage]->getDescriptor().getHash()){
+RenderStateBlock* Material::setRenderStateBlock(const RenderStateBlockDescriptor& descriptor,const RenderStage& renderStage){
+    if(descriptor.getGUID() == _defaultRenderStates[renderStage]->getDescriptor().getGUID()){
 		return _defaultRenderStates[renderStage];
 	}
 
@@ -104,10 +103,13 @@ RenderStateBlock* Material::setRenderStateBlock(const RenderStateBlockDescriptor
 //base = base texture
 //second = second texture used for multitexturing
 //bump = bump map
-void Material::setTexture(TextureUsage textureUsage, Texture2D* const texture, TextureOperation op) {
+void Material::setTexture(const TextureUsage& textureUsage, Texture2D* const texture, const TextureOperation& op) {
 	if(_textures[textureUsage]){
 		UNREGISTER_TRACKED_DEPENDENCY(_textures[textureUsage]);
 		RemoveResource(_textures[textureUsage]);
+        if(textureUsage == TEXTURE_OPACITY || textureUsage == TEXTURE_SPECULAR){
+            _computedShaderTextures = false;
+        }
 	}else{
 		//if we add a new type of texture
 		_computedShader[0] = false; //recompute shaders on texture change
@@ -118,6 +120,7 @@ void Material::setTexture(TextureUsage textureUsage, Texture2D* const texture, T
     if(textureUsage == TEXTURE_BASE || textureUsage == TEXTURE_SECOND){
         texture ? _shaderData._textureCount++ : _shaderData._textureCount--;
     }
+
 	_dirty = true;
 }
 
@@ -159,9 +162,8 @@ Material::TextureOperation Material::getTextureOperation(U32 op){
 	return operation;
 }
 
-
 //Here we set the shader's name
-ShaderProgram* Material::setShaderProgram(const std::string& shader,RenderStage renderStage){
+ShaderProgram* Material::setShaderProgram(const std::string& shader, const RenderStage& renderStage){
 	ShaderProgram* shaderReference = _shaderRef[renderStage];
 	U8 id = (renderStage == FINAL_STAGE ? 0 : 1);
 	//if we already had a shader assigned ...
@@ -181,7 +183,6 @@ ShaderProgram* Material::setShaderProgram(const std::string& shader,RenderStage 
 	if(!shaderReference){
 		ResourceDescriptor shaderDescriptor(_shader[id]);
 		std::stringstream ss;
-		ss << "USE_VBO_DATA,";
 		if(!_shaderDefines.empty()){
 			for_each(std::string& shaderDefine, _shaderDefines){
 				ss << shaderDefine;
@@ -190,55 +191,78 @@ ShaderProgram* Material::setShaderProgram(const std::string& shader,RenderStage 
 		}
 		ss << "DEFINE_PLACEHOLDER";
 		shaderDescriptor.setPropertyList(ss.str());
+		shaderDescriptor.setThreadedLoading(_shaderThreadedLoad);
 		shaderReference = CreateResource<ShaderProgram>(shaderDescriptor);
+        if(id == 1){//depth shader
+            shaderReference->setMatrixMask(false,false,true,false);
+        }
 	}
 	_dirty = true;
 	_computedShader[id] = true;
-	if(id == 0) { _shaderProgramChanged = true; }
-	_shaderRef[renderStage] = shaderReference; 
+    _computedShaderTextures = true;
+	_shaderRef[renderStage] = shaderReference;
+	
 	return shaderReference;
+}
+
+void Material::clean() {
+	if(_dirty){ 
+		_matId[0].i = (_shaderRef[FINAL_STAGE] != NULL ?  _shaderRef[FINAL_STAGE]->getId() : 0);
+		_matId[1].i = (_shaderRef[DEPTH_STAGE] != NULL ?  _shaderRef[DEPTH_STAGE]->getId() : 0);
+		dumpToXML(); 
+	   _dirty = false;
+	}
+}
+
+void Material::setReceivesShadows(const bool state) {
+	_receiveShadows = state;
 }
 
 ///If the current material doesn't have a shader associated with it, then add the default ones.
 ///Manually setting a shader, overrides this function by setting _computedShaders to "true"
-void Material::computeShader(bool force, RenderStage renderStage){
+void Material::computeShader(bool force, const RenderStage& renderStage){
 	U8 id = (renderStage == FINAL_STAGE ? 0 : 1);
-	if(_computedShader[id] && !force) return;
-	if(_shader[id].empty()){
-		///the base shader is either for a Forward Renderer ...
-		std::string shader;
-		if(renderStage == DEPTH_STAGE){
-			shader = "depthPass";
-		}else{
-			shader = "lighting";
-		}
-		if(GFX_DEVICE.getDeferredRendering()){
-			///... or a Deferred one
-			shader = "DeferredShadingPass1";
-		}
-		///What kind of effects do we need?
+	if(_computedShader[id] && !force && (id == 0 && _computedShaderTextures)) return;
+	if(_shader[id].empty() || (id == 0 && !_computedShaderTextures)){
+		//the base shader is either for a Deferred Renderer or a Forward  one ...
+		std::string shader = (GFX_DEVICE.getDeferredRendering() ? "DeferredShadingPass1" : 
+							 (renderStage == DEPTH_STAGE ? "depthPass" : "lighting"));
+
+		//What kind of effects do we need?
 		if(_textures[TEXTURE_BASE]){
-			///Bump mapping?
+			//Bump mapping?
 			if(_textures[TEXTURE_BUMP] && _bumpMethod != BUMP_NONE){
+                addShaderDefines("COMPUTE_TBN");
 				shader += ".Bump"; //Normal Mapping
 				if(_bumpMethod == 2){ //Parallax Mapping
 					shader += ".Parallax";
+					addShaderDefines("USE_PARALLAX_MAPPING");
 				}else if(_bumpMethod == 3){ //Relief Mapping
 					shader += ".Relief";
+					addShaderDefines("USE_RELIEF_MAPPING");
 				}
 			}else{
-				/// Or simple texture mapping?
+				// Or simple texture mapping?
 				shader += ".Texture";
 			}
 		}else{
-			/// Or just color mapping? Use the simple fragment
+			// Or just color mapping? Use the simple fragment
 		}
 
-		if(_hardwareSkinning){
-			///Add the GPU skinnig module to the vertex shader?
-			shader += ",WithBones"; ///<"," as opposed to "." sets the primary vertex shader property
+        if(_textures[TEXTURE_OPACITY]){   
+			shader += ".Opacity";
+			addShaderDefines("USE_OPACITY_MAP");
 		}
-		///Add any modifiers you wish
+        if(_textures[TEXTURE_SPECULAR]){
+			shader += ".Specular";
+			addShaderDefines("USE_SPECULAR_MAP");
+		}
+		//Add the GPU skinnig module to the vertex shader?
+		if(_hardwareSkinning){
+			addShaderDefines("USE_GPU_SKINNING");
+			shader += ",Skinned"; //<Use "," instead of "." will add a Vertex only property
+		}
+		//Add any modifiers you wish
 		if(!_shaderModifier.empty()){
 			shader += ".";
 			shader += _shaderModifier;
@@ -248,14 +272,23 @@ void Material::computeShader(bool force, RenderStage renderStage){
 	}
 }
 
+ShaderProgram* const Material::getShaderProgram(RenderStage renderStage) {
+	ShaderProgram* shaderPr = _shaderRef[renderStage];
+
+    if(shaderPr == NULL) shaderPr = _imShader;
+
+    return shaderPr;
+}
+
 void Material::setCastsShadows(bool state) {
-	if(_castsShadows != state){
-		if(!state) _shader[1] = "NULL_SHADER";
-		else _shader[1].clear();
-		_castsShadows = state;
-		_computedShader[1] = false;
-		_dirty = true;
-	}
+	if(_castsShadows == state) return;
+	_castsShadows = state;
+	_dirty = true;
+
+	if(!state) _shader[1] = "NULL_SHADER";
+	else _shader[1].clear();
+	
+	_computedShader[1] = false;
 }
 
 void Material::setBumpMethod(U32 newBumpMethod,bool force){
@@ -274,7 +307,7 @@ void Material::setBumpMethod(U32 newBumpMethod,bool force){
 	}
 }
 
-void Material::setBumpMethod(BumpMethod newBumpMethod,bool force){
+void Material::setBumpMethod(const BumpMethod& newBumpMethod,const bool force){
 	_bumpMethod = newBumpMethod;
 	if(force){
 		_shader[FINAL_STAGE].clear();
@@ -308,6 +341,8 @@ bool Material::unload(){
 		}
 	}
 	_textures.clear();
+	UNREGISTER_TRACKED_DEPENDENCY(_imShader);
+	RemoveResource(_imShader);
 	return true;
 }
 
@@ -318,53 +353,40 @@ void Material::setDoubleSided(bool state) {
 	if(_doubleSided){
 		typedef Unordered_map<RenderStage, RenderStateBlock* >::value_type stateValue;
 		for_each(stateValue& it, _defaultRenderStates){
-			RenderStateBlockDescriptor desc =  it.second->getDescriptor();
-				if(desc._cullMode != CULL_MODE_NONE){
-					desc.setCullMode(CULL_MODE_NONE);
-					setRenderStateBlock(desc,it.first);
-				}
+			RenderStateBlockDescriptor& desc =  it.second->getDescriptor();
+			desc.setCullMode(CULL_MODE_NONE);
 		}
 	}
 
 	_dirty = true;
 }
 
-bool Material::isTranslucent(){
+bool Material::isTranslucent() {
 	bool state = false;
-	/// base texture is translucent
+	// base texture is translucent
 	if(_textures[TEXTURE_BASE]){
 		if(_textures[TEXTURE_BASE]->hasTransparency()) state = true;
 	}
-	/// opacity map
+	// opacity map
 	if(_textures[TEXTURE_OPACITY]) state = true;
-	/// diffuse channel alpha
-	if(getMaterialMatrix().getCol(1).a < 1.0f) state = true;
+	// diffuse channel alpha
+	if(_materialMatrix.getCol(1).a < 1.0f) state = true;
 
-	/// if we have a global opacity value
+	// if we have a global opacity value
 	if(getOpacityValue() < 1.0f){
 		state = true;
 	}
-	/// Disable culling for translucent items
+	// Disable culling for translucent items
 	if(state){
 		typedef Unordered_map<RenderStage, RenderStateBlock* >::value_type stateValue;
-		for_each(stateValue& it, _defaultRenderStates){
-			RenderStateBlockDescriptor desc =  it.second->getDescriptor();
-			if(desc._cullMode != CULL_MODE_NONE){
-				desc.setCullMode(CULL_MODE_NONE);
-				setRenderStateBlock(desc,it.first);
-			}
+		for_each(stateValue it, _defaultRenderStates){
+			RenderStateBlockDescriptor& desc =  it.second->getDescriptor();
+			desc.setCullMode(CULL_MODE_NONE);
 		}
 	}
 	return state;
 }
 
-P32 Material::getMaterialId(RenderStage renderStage){
-	
-	if(_dirty){
-		_matId[0].i = (_shaderRef[FINAL_STAGE] != NULL ?  _shaderRef[FINAL_STAGE]->getId() : 0);
-		_matId[1].i = (_shaderRef[DEPTH_STAGE] != NULL ?  _shaderRef[DEPTH_STAGE]->getId() : 0);
-		dumpToXML();
-		_dirty = false;
-	}
+P32 Material::getMaterialId(const RenderStage& renderStage){
 	return _matId[renderStage == FINAL_STAGE ? 0 : 1];
 }

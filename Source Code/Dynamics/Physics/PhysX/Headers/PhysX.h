@@ -35,17 +35,39 @@
 #define _P_D_TYPES_ONLY_
 #endif
 
+#if defined(_MSC_VER)
+#	pragma warning( push )
+#		pragma warning( disable: 4503 ) //<decorated name length exceeded, name was truncated
+#elif defined(__GNUC__)
+#	pragma GCC diagnostic push
+#		pragma GCC diagnostic ignored "-Wall"
+#endif
+
 #include < PxPhysicsAPI.h >
 #include < PxDefaultErrorCallback.h >
-#include < PxDefaultAllocator.h > 
+#include < PxDefaultAllocator.h >
 #include < PxVisualDebuggerExt.h>
+
+#if defined(_MSC_VER)
+#	pragma warning( pop )
+#elif defined(__GNUC__)
+#	pragma GCC diagnostic pop
+#endif
+
 //PhysX includes //
 #include "core.h"
 //PhysX libraries
+#ifdef _DEBUG
+#pragma comment(lib, "PhysX3DEBUG_x86.lib")
+#pragma comment(lib, "PhysX3CommonDEBUG_x86.lib")
+#pragma comment(lib, "PhysX3ExtensionsDEBUG.lib")
+#pragma comment(lib, "PhysXVisualDebuggerSDKDEBUG.lib")
+#else
 #pragma comment(lib, "PhysX3CHECKED_x86.lib")
 #pragma comment(lib, "PhysX3CommonCHECKED_x86.lib")
 #pragma comment(lib, "PhysX3ExtensionsCHECKED.lib")
 #pragma comment(lib, "PhysXVisualDebuggerSDKCHECKED.lib")
+#endif
 //PhysX libraries //
 
 #include "Dynamics/Physics/Headers/PhysicsAPIWrapper.h"
@@ -57,12 +79,12 @@ class PhysXSceneInterface;
 DEFINE_SINGLETON_EXT1( PhysX,PhysicsAPIWrapper)
 
 private:
-	PhysX(); 
+	PhysX();
 
 public:
-	
-   I8   initPhysics(U8 targetFrameRate);  
-   bool exitPhysics(); 
+
+   I8   initPhysics(U8 targetFrameRate);
+   bool exitPhysics();
    void update();
    void process();
    void idle();

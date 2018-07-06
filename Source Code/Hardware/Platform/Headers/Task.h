@@ -20,10 +20,9 @@
 
 #include <boost/any.hpp>
 #include <boost/atomic.hpp>
-#include <boost/function.hpp>  
-#include <boost/enable_shared_from_this.hpp> 
-#include "Utility/Headers/CRC.h"
-#include "Hardware/Platform/Headers/PlatformDefines.h"
+#include <boost/function.hpp>
+#include <boost/enable_shared_from_this.hpp>
+#include "Utility/Headers/GUIDWrapper.h"
 
 using boost::any_cast;
 
@@ -39,10 +38,9 @@ enum CallbackParam
 	TYPE_FLOAT,
 	TYPE_DOUBLE,
 	TYPE_CHAR
-
 };
 ///Using std::atomic / boost::atomic for thread-shared data to avoid locking
-class Task : public boost::enable_shared_from_this<Task>
+class Task : public GUIDWrapper, public boost::enable_shared_from_this<Task>
 {
 public:
 	/// <summary>
@@ -56,10 +54,10 @@ public:
 	/// <param name="numberOfTicks">The number of times to call the callback function before the Task is deleted</param>
 	/// <param name="*f">The callback function</param>
 	Task(boost::threadpool::pool* tp,
-		  U32 tickInterval, 
+		  U32 tickInterval,
 		  bool startOnCreate,
 		  I32 numberOfTicks,
-		  boost::function0<void> f):
+		  boost::function0<void> f) : GUIDWrapper(),
 	  _tp(tp),
 	  _tickInterval(tickInterval),
 	  _numberOfTicks(numberOfTicks),
@@ -67,7 +65,6 @@ public:
 	  _end(false),
 	  _paused(false),
       _done(false){
-          _guid = Util::CRC32(this,sizeof(Task));
 		  if(startOnCreate) startTask();
 	  }
 
@@ -75,7 +72,7 @@ public:
 		  U32 tickInterval,
 	      bool startOnCreate,
 		  bool runOnce,
-	      boost::function0<void> f):
+	      boost::function0<void> f) : GUIDWrapper(),
 	  _tp(tp),
 	  _tickInterval(tickInterval),
       _numberOfTicks(1),
@@ -86,7 +83,6 @@ public:
 		  ///If runOnce is true, then we only run the Task once (# of ticks is 1)
 		  ///If runOnce is false, then we run the Task until stopTask() is called
 		  runOnce ? _numberOfTicks = 1 : _numberOfTicks = -1;
-          _guid = Util::CRC32(this,sizeof(Task));
 		  if(startOnCreate) startTask();
 	  }
 	~Task();
@@ -95,10 +91,8 @@ public:
 	void startTask();
 	void stopTask();
 	void pauseTask(bool state);
-    inline U32 getGUID() {return _guid;}
 
 private:
-	U32 _guid;
     mutable SharedLock _lock;
     mutable boost::atomic<U32> _tickInterval;
 	mutable boost::atomic<I32> _numberOfTicks;
@@ -110,7 +104,6 @@ private:
 
 protected:
 	void run();
-
 };
 
 typedef std::tr1::shared_ptr<Task> Task_ptr;

@@ -22,7 +22,6 @@
 #include "Core/Resources/Headers/Resource.h"
 
 class AudioDescriptor : public Resource{
-
 public:
 	AudioDescriptor(const std::string& audioFile) :
 						 Resource(), _audioFile(audioFile),

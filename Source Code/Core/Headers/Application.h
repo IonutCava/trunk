@@ -18,7 +18,11 @@
 #ifndef _APPLICATION_H_
 #define _APPLICATION_H_
 
-#include "core.h"
+#include <fstream>
+#include "Core/Headers/Singleton.h"
+#include "Core/Math/Headers/MathClasses.h"
+#include "Hardware/Platform/Headers/Thread.h"
+
 class Kernel;
 ///Lightweight singleton class that manages our application's kernel and window information
 DEFINE_SINGLETON( Application )
@@ -31,19 +35,20 @@ public:
 
 	///Application resolution (either fullscreen resolution or window dimensions)
 	inline const vec2<U16>& getResolution() const {return _resolution;}
-	inline void setResolutionWidth(U16 w){_resolution.x = w;}
-	inline void setResolutionHeight(U16 h){_resolution.y = h;}
-	inline void RequestShutdown()   {_requestShutdown = true;}
-	inline void CancelShutdown()    {_requestShutdown = false;}
-	inline bool ShutdownRequested() {return _requestShutdown;}
+	inline void setResolutionWidth(U16 w)         {_resolution.x = w;}
+	inline void setResolutionHeight(U16 h)        {_resolution.y = h;}
+	inline void RequestShutdown()                 {_requestShutdown = true;}
+	inline void CancelShutdown()                  {_requestShutdown = false;}
+	inline bool ShutdownRequested()         const {return _requestShutdown;}
 	///Application window ID
-	inline I8 const&  getMainWindowId() {return _mainWindowId;}
-	inline Kernel* const getKernel()    {return _kernel;}
+	inline I8            getMainWindowId()  const {return _mainWindowId;}
+	inline Kernel* const getKernel()        const {return _kernel;}
 
-	inline void setMemoryLogFile(const std::string& fileName) {memLogBuffer.open(fileName.c_str());}
-	inline void logMemoryAllocation(const std::stringstream& buffer) {if(memLogBuffer.is_open()){ memLogBuffer << buffer.str();}}
-    inline boost::thread::id&  getMainThreadId() {return _threadId;}
-    inline bool isMainThread() {return (_threadId == boost::this_thread::get_id());}
+	inline const boost::thread::id&  getMainThreadId()               const {return _threadId;}
+	inline bool isMainThread()                                       const {return (_threadId == boost::this_thread::get_id());}
+	inline void setMemoryLogFile(const std::string& fileName)              {memLogBuffer.open(fileName.c_str());}
+	inline void logMemoryAllocation(const std::stringstream& buffer)       {if(memLogBuffer.is_open()){ memLogBuffer << buffer.str();}}
+    
 private:
 	Application();
 	~Application();

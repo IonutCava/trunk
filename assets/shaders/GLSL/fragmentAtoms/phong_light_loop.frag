@@ -1,12 +1,16 @@
+in vec3 _lightDirection[MAX_LIGHT_COUNT];
+in vec3 _viewDirection[MAX_LIGHT_COUNT];
+in float _attenuation[MAX_LIGHT_COUNT];
+
 #define LIGHT_DIRECTIONAL		0
 #define LIGHT_OMNIDIRECTIONAL	1
 #define LIGHT_SPOT				2
 
-uniform int lightType[MAX_LIGHT_COUNT];
-uniform int light_count;
-
-///Global NDotL, basically
-float iDiffuse;
+uniform bool dvd_lightCastsShadows[MAX_LIGHT_COUNT];
+uniform bool dvd_lightEnabled[MAX_LIGHT_COUNT];
+uniform int  dvd_lightType[MAX_LIGHT_COUNT];
+uniform int  dvd_lightCount;
+uniform vec4 dvd_lightAmbient;
 
 #include "phong_point_light.frag"
 #include "phong_spot_light.frag"
@@ -15,72 +19,66 @@ float iDiffuse;
 
 
 
-void applyLight(in int light, in vec3 normal,in vec4 specularIn, inout vec4 diffuse, inout vec4 ambient, inout vec4 specular, inout float shadow){
+void applyLight(in int light, in int lightType, in bool lightCastsShadows, in vec3 N,in vec4 specularIn, inout vec4 diffuse, inout vec4 ambient, inout vec4 specular, inout float shadow){
 	//Normalized Light/Normal/Eye vectors in TBN space
-	vec3 L = normalize(vPixToLightTBN[light]);
-	vec3 V = normalize(vPixToEyeTBN[light]);
-	
-	if(lightType[light] == LIGHT_DIRECTIONAL){
-		phong_directionalLight(light,specularIn,L,normal,V,ambient,diffuse,specular);
-		if(light < MAX_SHADOW_CASTING_LIGHTS){
-			applyShadowDirectional(light, shadow); 
-		}
-		return;
-	}
-	
-	if(lightType[light] == LIGHT_OMNIDIRECTIONAL){
-		phong_pointLight(light,specularIn,L,normal,V,ambient,diffuse,specular);
-		if(light < MAX_SHADOW_CASTING_LIGHTS){
-			applyShadowPoint(light, shadow); 
-		}
-		return;
-	}
+	vec3 L = normalize(_lightDirection[light]);
+	vec3 V = normalize(_viewDirection[light]);
+	vec3 R = normalize(-reflect(L,N));
+	float NdotL = max(dot(L, N), 0.0);
+	//Specular intensity based on material shininess
+	float iSpecular = clamp(pow(max(dot(R, V), 0.0), material[3].x ), 0.0, 1.0);
 
-	if(lightType[light] == LIGHT_SPOT){
-		phong_spotLight(light,specularIn,L,normal,V,ambient,diffuse,specular);
-		if(light < MAX_SHADOW_CASTING_LIGHTS){
-			applyShadowSpot(light, shadow); 
-		}
-		return;
+	if(lightType == LIGHT_DIRECTIONAL){
+		phong_directionalLight(light,specularIn,iSpecular,NdotL,ambient,diffuse,specular);
+		if(light >= MAX_SHADOW_CASTING_LIGHTS) return;
+		if(lightCastsShadows) applyShadowDirectional(NdotL, light, shadow); 
+	}else if(lightType == LIGHT_OMNIDIRECTIONAL){
+		phong_pointLight(light,specularIn,iSpecular,NdotL,ambient,diffuse,specular);
+		if(light >= MAX_SHADOW_CASTING_LIGHTS) return;
+		if(lightCastsShadows) applyShadowPoint(light, shadow); 
+    }else/*if(lightType == LIGHT_SPOT)*/{
+		phong_spotLight(light,specularIn,iSpecular,NdotL,ambient,diffuse,specular);
+		if(light >= MAX_SHADOW_CASTING_LIGHTS) return;
+		if(lightCastsShadows) applyShadowSpot(light, shadow); 
 	}
 }
 
 void phong_loop(in vec3 normal, in vec4 specularIn, inout vec4 diffuse, inout vec4 ambient, inout vec4 specular, inout float shadow){
-	if(light_count == 0) return;
-	applyLight(0, normal,specularIn,diffuse,ambient,specular,shadow);
+	if(dvd_lightCount == 0) return;
+	if(dvd_lightEnabled[0]) applyLight(0, dvd_lightType[0], dvd_lightCastsShadows[0], normal,specularIn,diffuse,ambient,specular,shadow);
 #if MAX_LIGHT_COUNT >= 2
-	if(light_count == 1) return;
-	applyLight(1, normal,specularIn,diffuse,ambient,specular,shadow);
+	if(dvd_lightCount == 1) return;
+	if(dvd_lightEnabled[1]) applyLight(1, dvd_lightType[1], dvd_lightCastsShadows[1], normal,specularIn,diffuse,ambient,specular,shadow);
 #endif
 #if MAX_LIGHT_COUNT >= 3
-	if(light_count == 2) return;
-	applyLight(2, normal,specularIn,diffuse,ambient,specular,shadow);
+	if(dvd_lightCount == 2) return;
+	if(dvd_lightEnabled[2]) applyLight(2, dvd_lightType[2], dvd_lightCastsShadows[2], normal,specularIn,diffuse,ambient,specular,shadow);
 #endif
 #if MAX_LIGHT_COUNT >= 4
-	if(light_count == 3) return;
-	applyLight(3, normal,specularIn,diffuse,ambient,specular,shadow);
+	if(dvd_lightCount == 3) return;
+	if(dvd_lightEnabled[3]) applyLight(3, dvd_lightType[3], dvd_lightCastsShadows[3], normal,specularIn,diffuse,ambient,specular,shadow);
 #endif
 #if MAX_LIGHT_COUNT >= 5
-	if(light_count == 4) return;
-	applyLight(4, normal,specularIn,diffuse,ambient,specular,shadow);
+	if(dvd_lightCount == 4) return;
+	if(dvd_lightEnabled[4]) applyLight(4, dvd_lightType[4], dvd_lightCastsShadows[4], normal,specularIn,diffuse,ambient,specular,shadow);
 #endif
 #if MAX_LIGHT_COUNT >= 6
-	if(light_count == 5) return;
-	applyLight(5, normal,specularIn,diffuse,ambient,specular,shadow);
+	if(dvd_lightCount == 5) return;
+	if(dvd_lightEnabled[5]) applyLight(5, dvd_lightType[5], dvd_lightCastsShadows[5], normal,specularIn,diffuse,ambient,specular,shadow);
 #endif
 #if MAX_LIGHT_COUNT >= 7
-	if(light_count == 6) return;
-	applyLight(6, normal,specularIn,diffuse,ambient,specular,shadow);
+	if(dvd_lightCount == 6) return;
+	if(dvd_lightEnabled[6]) applyLight(6, dvd_lightType[6], dvd_lightCastsShadows[6], normal,specularIn,diffuse,ambient,specular,shadow);
 #endif
 #if MAX_LIGHT_COUNT == 8
-	if(light_count == 7) return;
-	applyLight(7, normal,specularIn,diffuse,ambient,specular,shadow);
+	if(dvd_lightCount == 7) return;
+	if(dvd_lightEnabled[7]) applyLight(7, dvd_lightType[7], dvd_lightCastsShadows[7], normal,specularIn,diffuse,ambient,specular,shadow);
 #endif
 #if MAX_LIGHT_COUNT > 8
 	///Apply the rest of the lights
 	for(int i = 8; i < MAX_LIGHT_COUNT; i++){
-		if(light_count == i) return;
-		applyLight(i, normal,specularIn,diffuse,ambient,specular,shadow);
+		if(dvd_lightCount == i) return;
+		if(dvd_lightEnabled[i]) applyLight(i, dvd_lightType[i], dvd_lightCastsShadows[i], normal,specularIn,diffuse,ambient,specular,shadow);
 	}
 #endif
 }

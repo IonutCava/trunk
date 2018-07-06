@@ -19,19 +19,28 @@
 #define _HW_RESOURCE_H_
 
 #include "Resource.h"
-///Hardware resources are resource elements that need a 
+///Hardware resources are resource elements that need a
 ///singlethreaded hardware initialization (textures, shaders, etc)
 class HardwareResource : public Resource {
 public:
-	HardwareResource() : Resource(), _hardwareInitComplete(false) {}
-	HardwareResource(const std::string& name) : Resource(name), _hardwareInitComplete(false) {}
+	HardwareResource() : Resource(),
+						 _hardwareInitComplete(false)
+	{
+	}
+
+	HardwareResource(const std::string& name) : Resource(name),
+												_hardwareInitComplete(false)
+	{
+	}
+
 	virtual ~HardwareResource(){}
-	inline bool isHWInitComplete() {return _hardwareInitComplete;}
-	///Use this as a callback for multi-threaded loading. 
+
+	inline bool isHWInitComplete() const {return _hardwareInitComplete;}
+	///Use this as a callback for multi-threaded loading.
 	///Generate hardware elements (buffers, textures, shaders etc. after joining main loading thread.
-	virtual bool generateHWResource(const std::string& name) {_hardwareInitComplete = true; return true;}
+	virtual bool generateHWResource(const std::string& name)  {_hardwareInitComplete = true; return true;}
 
 private:
-	bool _hardwareInitComplete;
+	boost::atomic_bool _hardwareInitComplete;
 };
 #endif

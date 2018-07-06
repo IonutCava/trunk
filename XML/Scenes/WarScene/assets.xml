@@ -10,7 +10,7 @@
 
 <Soldier1>
 	<model>models/dwarf.x</model>
-	<scale x="0.03" y="0.03" z="0.03" />
+	<scale x="0.05" y="0.05" z="0.05" />
 	<position x="0" y="0" z="0" />
 	<orientation x="0" y="0" z="0" />
 	<version>1.0</version>
@@ -19,7 +19,7 @@
 
 <Soldier2>
 	<model>models/Testwuson.X</model>
-	<scale x="1" y="1" z="1" />
+	<scale x="2" y="2" z="2" />
 	<position x="-3.5" y="0" z="7.5" />
 	<orientation x="0" y="0" z="0" />
 	<version>1.0</version>
@@ -28,7 +28,7 @@
 <Soldier3>
 	<model>models/Bob.md5mesh</model>
 	<scale x="0.1" y="0.1" z="0.1" />
-	<position x="3.5" y="0" z="2.5" />
+	<position x="4.5" y="0" z="5.5" />
 	<orientation x="0" y="0" z="0" />
 	<version>1.0</version>
 </Soldier3>
@@ -41,4 +41,5 @@
 	<orientation x="0" y="0" z="90" />
 	<color r="0.1" g="0.4" b="0.1"/>
 	<version>1.0</version>
+	<addToNavigation>true</addToNavigation>
 </Ground_placeholder>

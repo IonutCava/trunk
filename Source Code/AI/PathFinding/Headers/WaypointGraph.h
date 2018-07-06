@@ -19,7 +19,7 @@
 #include "Waypoint.h"
 namespace Navigation {
 	class WaypointGraph {
-		typedef Unordered_map<I32, Waypoint*> WaypointMap; 
+		typedef Unordered_map<I32, Waypoint*> WaypointMap;
 		//typedef Unordered_map<I32, WaypointPath> PathMap;
 	public:
 		WaypointGraph();
@@ -46,6 +46,5 @@ namespace Navigation {
 		vectorImpl<U32>                _times;
 	};
 };
-
 
 #endif

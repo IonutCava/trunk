@@ -1,111 +1,85 @@
 -- Vertex
 
-attribute vec3  inVertexData;
-attribute vec2  inTexCoordData;
+in vec3  inVertexData;
+in vec2  inTexCoordData;
+vec4  dvd_Vertex;
 
-vec4  vertexData;
+#if defined(USE_GPU_SKINNING)
+in vec4  inBoneWeightData;
+in ivec4 inBoneIndiceData;
 
-varying vec4 _vertexMV;
-varying vec2 _texCoord;
-
-uniform mat4 projectionMatrix;
-
-void computeData(void){
-
-#if defined(USE_VBO_DATA)
-    	vertexData = vec4(inVertexData,1.0);
-		_texCoord   = inTexCoordData;
-#else
-		vertexData = gl_Vertex;
-		_texCoord   = gl_MultiTexCoord0.xy;
-#endif
-
-}
-
-void main(void){
-
-	computeData();
-	// Transformed position 
-	_vertexMV = gl_ModelViewMatrix * vertexData;
-	//Compute the final vert position
-	gl_Position = projectionMatrix  * _vertexMV;
-}
-
--- Vertex.WithBones
-
-attribute vec3  inVertexData;
-attribute vec2  inTexCoordData;
-attribute vec4  inBoneWeightData;
-attribute ivec4 inBoneIndiceData;
-
-vec4  vertexData;
-vec4  boneWeightData;
-ivec4 boneIndiceData;
-
-varying vec4 _vertexMV;
-varying vec2 _texCoord;
+vec4  dvd_BoneWeight;
+ivec4 dvd_BoneIndice;
 
 uniform bool hasAnimations;
 uniform mat4 boneTransforms[60];
-uniform mat4 projectionMatrix;
+#endif
+
+out vec4 _vertexMV;
+out vec2 _texCoord;
+uniform mat4 dvd_ModelViewMatrix;
+
+layout(std140) uniform dvd_MatrixBlock
+{
+    mat4 dvd_ProjectionMatrix;
+	mat4 dvd_ViewMatrix;
+};
 
 void computeData(void){
 
-#if defined(USE_VBO_DATA)
-		vertexData = vec4(inVertexData,1.0);
-		_texCoord       = inTexCoordData;
-		boneWeightData = inBoneWeightData;
-		boneIndiceData = inBoneIndiceData;
+	dvd_Vertex = vec4(inVertexData,1.0);
+	_texCoord       = inTexCoordData;
 
-#else
-		vertexData     = gl_Vertex;
-		_texCoord       = gl_MultiTexCoord0.xy;
-		boneWeightData = gl_MultiTexCoord3;
-		boneIndiceData = ivec4(gl_MultiTexCoord4);
+#if defined(USE_GPU_SKINNING)
+	dvd_BoneWeight = inBoneWeightData;
+	dvd_BoneIndice = inBoneIndiceData;
 #endif
-
 }
+
+#if defined(USE_GPU_SKINNING)
 void applyBoneTransforms(inout vec4 position){
 	if(hasAnimations) {
 	 // ///w - weight value
-	  boneWeightData.w = 1.0 - dot(boneWeightData.xyz, vec3(1.0, 1.0, 1.0));
+	  dvd_BoneWeight.w = 1.0 - dot(dvd_BoneWeight.xyz, vec3(1.0, 1.0, 1.0));
 
-	   vec4 newPosition  = boneWeightData.x * boneTransforms[boneIndiceData.x] * position;
-		    newPosition += boneWeightData.y * boneTransforms[boneIndiceData.y] * position;
-		    newPosition += boneWeightData.z * boneTransforms[boneIndiceData.z] * position;
-		    newPosition += boneWeightData.w * boneTransforms[boneIndiceData.w] * position;
+	   vec4 newPosition  = dvd_BoneWeight.x * boneTransforms[dvd_BoneIndice.x] * position;
+		    newPosition += dvd_BoneWeight.y * boneTransforms[dvd_BoneIndice.y] * position;
+		    newPosition += dvd_BoneWeight.z * boneTransforms[dvd_BoneIndice.z] * position;
+		    newPosition += dvd_BoneWeight.w * boneTransforms[dvd_BoneIndice.w] * position;
 
 	  position = newPosition;
 	}
 }
+#endif
 
 void main(void){
 
 	computeData();
-	applyBoneTransforms(vertexData);
+#if defined(USE_GPU_SKINNING)
+	applyBoneTransforms(dvd_Vertex);
+#endif
 	// Transformed position 
-	_vertexMV = projectionMatrix  * gl_ModelViewMatrix * vertexData;
+	_vertexMV = dvd_ModelViewMatrix * dvd_Vertex;
 	//Compute the final vert position
-	gl_Position = _vertexMV;
-	gl_FrontColor = gl_Color;
+	gl_Position = dvd_ProjectionMatrix * _vertexMV;
 }
 
 -- Fragment
 
-varying vec2 _texCoord;
-varying vec4 _vertexMV;
-
+in vec2 _texCoord;
+in vec4 _vertexMV;
+out vec4 _colorOut;
 //Opacity and specular maps
 uniform float opacity;
-uniform bool hasOpacity;
 uniform sampler2D opacityMap;
 
 void main(){
-	if(hasOpacity ){
-		if(texture(opacityMap, _texCoord).a < 0.2) discard;
-	}else{
-		if(opacity < 0.2) discard;
-	}
+
+#if defined(USE_OPACITY_MAP)
+	if(texture(opacityMap, _texCoord).a < ALPHA_DISCARD_THRESHOLD) discard;
+#else
+	if(opacity < ALPHA_DISCARD_THRESHOLD) discard;
+#endif
 
 	float depth = _vertexMV.z / _vertexMV.w ;
 	depth = depth * 0.5 + 0.5;
@@ -116,5 +90,5 @@ void main(){
 	float dx = dFdx(depth);
 	float dy = dFdy(depth);
 	moment2 += 0.25*(dx*dx+dy*dy) ;
-	gl_FragData[0] =  vec4( moment1,moment2, 0.0, 0.0 );
+	_colorOut =  vec4( moment1,moment2, 0.0, 0.0 );
 }

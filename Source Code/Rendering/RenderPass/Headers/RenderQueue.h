@@ -19,6 +19,9 @@
 #define _RENDER_QUEUE_H_
 
 #include "RenderBin.h"
+#include "Core/Headers/Singleton.h"
+#include "Utility/Headers/UnorderedMap.h"
+
 class SceneNode;
 
 ///This class manages all of the RenderBins and renders them in the correct order
@@ -30,7 +33,6 @@ public:
 	///
 	void sort();
 	void refresh();
-	void render();
 	void addNodeToQueue(SceneGraphNode* const sgn);
 	U16 getRenderQueueStackSize();
 	inline U16 getRenderQueueBinSize() {return _sortedRenderBins.size();}
@@ -50,6 +52,5 @@ private:
 	vectorImpl<RenderBin* > _sortedRenderBins;
 
 END_SINGLETON
-
 
 #endif

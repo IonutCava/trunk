@@ -25,7 +25,7 @@ public:
 	SpotLight(U8 slot, F32 range = 2);
 
 	void setCameraToLightView(const vec3<F32>& eyePos);
-	void renderFromLightView(U8 depthPass);
+	void renderFromLightView(const U8 depthPass,const F32 sceneHalfExtent = 1);
 };
 
 #endif
