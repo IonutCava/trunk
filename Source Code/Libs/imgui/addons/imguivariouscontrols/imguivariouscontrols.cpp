@@ -3441,7 +3441,7 @@ void TreeView::setTextColorForStateColor(int aStateColorFlag, const ImVec4 &text
         bool TreeView::Save(const char* filename,TreeView** pTreeViews,int numTreeviews)    {
             IM_ASSERT(pTreeViews && numTreeviews>0);
             ImGuiHelper::Serializer s(filename);
-            bool ok = true;
+            bool ok = false;
             for (int i=0;i<numTreeviews;i++)   {
                 IM_ASSERT(pTreeViews[i]);
                 ok|=pTreeViews[i]->save(s);
@@ -3475,7 +3475,7 @@ void TreeView::setTextColorForStateColor(int aStateColorFlag, const ImVec4 &text
                 pTreeViews[i]->clear();
             }
             ImGuiHelper::Deserializer d(filename);
-            const char* amount = 0; bool ok = true;
+            const char* amount = 0; bool ok = false;
             for (int i=0;i<numTreeviews;i++)   {
                 ok|=pTreeViews[i]->load(d,&amount);
             }

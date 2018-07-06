@@ -284,7 +284,7 @@ void GUI::destroy() {
 }
 
 void GUI::onSizeChange(const SizeChangeParams& params) {
-    if ((params.window || params.isFullScreen) && parent().platformContext().config().gui.cegui.enabled) {
+    if ((!params.window || params.isFullScreen) && parent().platformContext().config().gui.cegui.enabled) {
         CEGUI::System::getSingleton().notifyDisplaySizeChanged(CEGUI::Sizef(params.width, params.height));
     }
 

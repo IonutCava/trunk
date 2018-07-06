@@ -294,6 +294,17 @@ T MAP(T input, const T in_min, const T in_max, const T out_min, const T out_max,
     return static_cast<T>(out_min + (slopeOut * (input - in_min)));
 }
 
+template <typename T>
+bool COORDS_IN_RECT(T input_x, T input_y, T rect_x, T rect_y, T rect_z, T rect_w) {
+    return IS_IN_RANGE_INCLUSIVE(input_x, rect_x, rect_z) &&
+           IS_IN_RANGE_INCLUSIVE(input_y, rect_y, rect_w);
+}
+
+template <typename T>
+bool COORDS_IN_RECT(T input_x, T input_y, const vec4<T>& rect) {
+    return COORDS_IN_RECT(input_x, input_y, rect.x, rect.y, rect.z, rect.w);
+}
+
 template<typename Type>
 inline typename std::enable_if<std::is_enum<Type>::value, bool>::type
 BitCompare(const U32 bitMask, const Type bit) {

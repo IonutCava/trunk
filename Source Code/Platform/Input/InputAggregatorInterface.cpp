@@ -24,14 +24,18 @@ OIS::Axis MouseEvent::X(bool warped, bool viewportRelative) const {
     OIS::Axis newX = _event.state.X;
     if (_parentWindow.warp() && warped) {
         const vec4<I32>& rect = _parentWindow.warpRect();
-        newX.abs = MAP(newX.abs, rect.x, rect.z, 0, _event.state.width, slope);
-        newX.rel = static_cast<int>(std::round(newX.rel * slope));
+        if (COORDS_IN_RECT(newX.abs, _event.state.Y.abs, rect)) {
+            newX.abs = MAP(newX.abs, rect.x, rect.z, 0, _event.state.width, slope);
+            newX.rel = static_cast<int>(std::round(newX.rel * slope));
+        }
     }
 
     if (viewportRelative) {
         const vec4<I32>& rect = _parentWindow.renderingViewport();
-        newX.abs = MAP(newX.abs, 0, _event.state.width, rect.x, rect.z, slope);
-        newX.rel = static_cast<int>(std::round(newX.rel * slope));
+        if (COORDS_IN_RECT(newX.abs, _event.state.Y.abs, rect)) {
+            newX.abs = MAP(newX.abs, 0, _event.state.width, rect.x, rect.z, slope);
+            newX.rel = static_cast<int>(std::round(newX.rel * slope));
+        }
     }
 
     return newX;
@@ -43,14 +47,18 @@ OIS::Axis MouseEvent::Y(bool warped, bool viewportRelative) const {
 
     if (_parentWindow.warp() && warped) {
         const vec4<I32>& rect = _parentWindow.warpRect();
-        newY.abs = MAP(newY.abs, rect.y, rect.w, 0, _event.state.height, slope);
-        newY.rel = static_cast<int>(std::round(newY.rel * slope));
+        if (COORDS_IN_RECT(_event.state.X.abs, newY.abs, rect)) {
+            newY.abs = MAP(newY.abs, rect.y, rect.w, 0, _event.state.height, slope);
+            newY.rel = static_cast<int>(std::round(newY.rel * slope));
+        }
     }
 
     if (viewportRelative) {
         const vec4<I32>& rect = _parentWindow.renderingViewport();
-        newY.abs = MAP(newY.abs, 0, _event.state.height, rect.y, rect.w, slope);
-        newY.rel = static_cast<int>(std::round(newY.rel * slope));
+        if (COORDS_IN_RECT(_event.state.X.abs, newY.abs, rect)) {
+            newY.abs = MAP(newY.abs, 0, _event.state.height, rect.y, rect.w, slope);
+            newY.rel = static_cast<int>(std::round(newY.rel * slope));
+        }
     }
 
     return newY;

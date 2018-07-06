@@ -126,6 +126,12 @@ T NORMALIZE(T input, const T range_min, const T range_max) {
     return MAP<T>(input, range_min, range_max, T(0), T(1));
 }
 
+template<typename T>
+bool COORDS_IN_RECT(T input_x, T input_y, T rect_x, T rect_y, T rect_z, T rect_w);
+
+template<typename T>
+bool COORDS_IN_RECT(T input_x, T input_y, const vec4<T>& rect);
+
 U32 nextPOW2(U32 n);
 
 // Calculate the smalles NxN matrix that can hold the specified
