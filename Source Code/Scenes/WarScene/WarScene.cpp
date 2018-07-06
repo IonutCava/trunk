@@ -435,13 +435,13 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
             ResourceDescriptor tempLight(Util::StringFormat("Light_spot_%s", currentName.c_str()));
             tempLight.setEnumValue(to_uint(LightType::SPOT));
             Light* light = CreateResource<Light>(tempLight);
-            light->setDrawImpostor(true);
-            light->setRange(45.0f);
+            light->setDrawImpostor(false);
+            light->setRange(55.0f);
             light->setCastShadows(false);
             light->setDiffuseColor(DefaultColors::RANDOM());
             SceneGraphNode_ptr lightSGN = _sceneGraph.getRoot().addNode(*light);
             lightSGN->getComponent<PhysicsComponent>()->setPosition(position + vec3<F32>(0.0f, 10.0f, 0.0f));
-            //lightSGN->getComponent<PhysicsComponent>()->rotateX(-40);
+            lightSGN->getComponent<PhysicsComponent>()->rotateX(-20);
             _lightNodes3.push_back(lightSGN);
         }
     }

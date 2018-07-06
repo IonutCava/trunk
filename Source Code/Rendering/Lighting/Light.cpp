@@ -148,16 +148,6 @@ bool Light::onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
         _impostor->renderState().setDrawState(true);
         _impostorSGN = _lightSGN->addNode(*_impostor);
         _impostorSGN.lock()->setActive(true);
-
-        ImpostorSphere* impostor2 = CreateResource<ImpostorSphere>(ResourceDescriptor(_name + "_impostor_2"));
-        impostor2->setRadius(_positionAndRange.w / 4);
-        impostor2->renderState().setDrawState(true);
-        SceneGraphNode_ptr impostorSGN = _impostorSGN.lock()->addNode(*impostor2);
-        impostorSGN->setActive(true);
-        Material* const impostorMaterialInst = impostorSGN->getComponent<RenderingComponent>()->getMaterialInstance();
-        impostorMaterialInst->setDiffuse(getDiffuseColor());
-        impostorSGN->getComponent<PhysicsComponent>()->translateZ(-15);
-        impostorSGN->getComponent<PhysicsComponent>()->translateY(10);
     }
 
     Material* const impostorMaterialInst = _impostorSGN.lock()->getComponent<RenderingComponent>()->getMaterialInstance();

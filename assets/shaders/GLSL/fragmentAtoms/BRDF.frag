@@ -39,7 +39,7 @@ vec4 getPixelColor(const in vec2 texCoord, in vec3 normalWV) {
     if (dvd_lodLevel > 2 && (texCoord.x + texCoord.y == 0)) {
         discard;
     }
-    
+
     parseMaterial();
 
 #if defined(HAS_TRANSPARENCY)
@@ -69,7 +69,7 @@ vec4 getPixelColor(const in vec2 texCoord, in vec3 normalWV) {
     uint lightIdx;
     // Directional lights
     for (lightIdx = 0; lightIdx < dvd_lightCountPerType[0]; ++lightIdx) {
-        //getBRDFFactors(int(lightIdx), normalWV, lightColor);
+        getBRDFFactors(int(lightIdx), normalWV, lightColor);
     }
     uint offset = dvd_lightCountPerType[0];
     // Point lights
@@ -80,7 +80,7 @@ vec4 getPixelColor(const in vec2 texCoord, in vec3 normalWV) {
         uint nLightIndex = nNextLightIndex;
         nNextLightIndex = perTileLightIndices[++nIndex];
 
-        //getBRDFFactors(int(nLightIndex - 1 + offset), normalWV, lightColor);
+        getBRDFFactors(int(nLightIndex - 1 + offset), normalWV, lightColor);
     }
 
     offset = dvd_lightCountPerType[1];
