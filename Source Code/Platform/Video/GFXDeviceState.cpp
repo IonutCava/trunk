@@ -414,6 +414,8 @@ void GFXDevice::closeRenderingAPI() {
     _displayShader = nullptr;
     _textRenderShader = nullptr;
 
+    _prevDepthBuffers.clear();
+
     MemoryManager::DELETE(_renderer);
 
     // Close the shader manager

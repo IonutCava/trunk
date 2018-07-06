@@ -345,7 +345,7 @@ void SceneManager::addPlayerInternal(Scene& parentScene, SceneGraphNode* playerN
         playerNode->get<UnitComponent>()->setUnit(player);
 
         _players[i] = player;
-        _platformContext->gfx().resizeHistory(to_U8(_players.size()));
+        _platformContext->gfx().resizeHistory(to_U8(getActivePlayerCount()));
         Attorney::SceneManager::onPlayerAdd(parentScene, player);
     }
 }
@@ -370,7 +370,7 @@ void SceneManager::removePlayerInternal(Scene& parentScene, Player_ptr& player) 
         }
 
         if (found) {
-            _platformContext->gfx().resizeHistory(to_U8(_players.size()));
+            _platformContext->gfx().resizeHistory(to_U8(getActivePlayerCount()));
             parent().setViewportDirty();
             Attorney::SceneManager::onPlayerRemove(parentScene, player);
         }

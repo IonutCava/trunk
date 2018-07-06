@@ -294,7 +294,7 @@ bool ShaderProgram::unregisterShaderProgram(size_t shaderHash) {
     ShaderProgramMap::const_iterator it = std::find_if(std::cbegin(s_shaderPrograms),
         std::cend(s_shaderPrograms),
         [shaderHash](const ShaderProgram_wptr& item) {
-            return !item.expired() && item.lock()->getDescriptorHash() == shaderHash;
+            return item.expired() || item.lock()->getDescriptorHash() == shaderHash;
         });
 
     if (it != std::cend(s_shaderPrograms)) {

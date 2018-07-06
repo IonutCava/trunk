@@ -59,7 +59,7 @@ void ResourceCache::add(CachedResource_wptr res) {
     size_t hash = resource->getDescriptorHash();
     DIVIDE_ASSERT(hash != 0, "ResourceCache add error: Invalid resource hash!");
 
-    Console::printfn(Locale::get(_ID("RESOURCE_CACHE_ADD")), resource->name().c_str(), hash);
+    Console::printfn(Locale::get(_ID("RESOURCE_CACHE_ADD")), resource->name().c_str(), resource->getGUID(), hash);
     WriteLock w_lock(_creationMutex);
     hashAlg::insert(_resDB, hashAlg::make_pair(hash, CachedResource_wptr(resource)));
 }
@@ -92,6 +92,7 @@ void ResourceCache::remove(CachedResource* resource) {
 
     size_t resourceHash = resource->getDescriptorHash();
     const stringImpl& name = resource->name();
+    I64 guid = resource->getGUID();
 
     DIVIDE_ASSERT(resourceHash != 0, Locale::get(_ID("ERROR_RESOURCE_CACHE_INVALID_NAME")));
 
@@ -109,7 +110,7 @@ void ResourceCache::remove(CachedResource* resource) {
     if (resource->unload()) {
         resource->setState(ResourceState::RES_CREATED);
     } else {
-        Console::errorfn(Locale::get(_ID("ERROR_RESOURCE_REM")), name.c_str());
+        Console::errorfn(Locale::get(_ID("ERROR_RESOURCE_REM")), name.c_str(), guid);
         resource->setState(ResourceState::RES_UNKNOWN);
     }
     
