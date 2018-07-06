@@ -289,7 +289,6 @@ bool GL_API::bindTexture(GLushort unit,
         // Bind the texture to the current unit
         GL_API::setActiveTextureUnit(unit);
         glBindTexture(target, handle); 
-        Console::printfn("Binding texture[ %d ] to slot [ %d ]. Depth pass: [ %s ]", handle, unit, GFX_DEVICE.isDepthStage() ? "true" : "false");    
         return true;
     }
 
