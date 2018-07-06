@@ -33,7 +33,7 @@ AnimationComponent::AnimationComponent(SceneAnimator* animator,
         _dataRange += (ShaderBuffer::getTargetDataAlignment() - alignmentOffset) / sizeof(mat4<F32>);
     }
 
-    _boneTransformBuffer = GFX_DEVICE.newSB("dvd_BoneTransforms", true);
+    _boneTransformBuffer = GFX_DEVICE.newSB("dvd_BoneTransforms"/*, true*/);
     _boneTransformBuffer->Create(_dataRange * _bufferSizeFactor, sizeof(mat4<F32>));
 }
 
