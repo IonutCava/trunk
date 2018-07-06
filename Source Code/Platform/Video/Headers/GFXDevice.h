@@ -383,9 +383,11 @@ DEFINE_SINGLETON(GFXDevice)
 
     inline D64 getInterpolation() const { return _interpolationFactor; }
 
-    inline void setGPUVendor(const GPUVendor& gpuvendor) { _GPUVendor = gpuvendor; }
-
+    inline void setGPUVendor(GPUVendor gpuvendor) { _GPUVendor = gpuvendor; }
     inline GPUVendor getGPUVendor() const { return _GPUVendor; }
+
+    inline void setGPURenderer(GPURenderer gpurenderer) { _GPURenderer = gpurenderer; }
+    inline GPURenderer getGPURenderer() const { return _GPURenderer; }
 
     inline void drawDebugAxis(const bool state) { _drawDebugAxis = state; }
 
@@ -569,6 +571,7 @@ DEFINE_SINGLETON(GFXDevice)
   protected:
     RenderAPI _API_ID;
     GPUVendor _GPUVendor;
+    GPURenderer _GPURenderer;
     GPUState _state;
     /* Rendering buffers.*/
     GFXRTPool _rtPool;

@@ -369,7 +369,28 @@ enum class GPUVendor : U32 {
     NVIDIA = 0,
     AMD,
     INTEL,
+    MICROSOFT,
+    IMAGINATION_TECH,
+    ARM,
+    QUALCOMM,
+    VIVANTE,
+    ALPHAMOSAIC,
+    WEBGL, //Khronos?
     OTHER,
+    COUNT
+};
+
+enum class GPURenderer : U32 {
+    UNKNOWN = 0,
+    ADRENO,
+    GEFORCE,
+    INTEL,
+    MALI,
+    POWERVR,
+    RADEON,
+    VIDEOCORE,
+    VIVANTE,
+    WEBGL,
     COUNT
 };
 

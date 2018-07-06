@@ -161,22 +161,63 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     // Maximum number of colour attachments per framebuffer
     par.setParam<I32>(_ID("rendering.maxRenderTargetOutputs"),
                       GLUtil::getIntegerv(GL_MAX_COLOR_ATTACHMENTS));
+
     // Query GPU vendor to enable/disable vendor specific features
-    const char* gpuVendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
-    if (gpuVendor != nullptr) {
-        if (strstr(gpuVendor, "Intel") != nullptr) {
-            GFX_DEVICE.setGPUVendor(GPUVendor::INTEL);
-        } else if (strstr(gpuVendor, "NVIDIA") != nullptr) {
-            GFX_DEVICE.setGPUVendor(GPUVendor::NVIDIA);
-        } else if (strstr(gpuVendor, "ATI") != nullptr ||
-                   strstr(gpuVendor, "AMD") != nullptr) {
-            GFX_DEVICE.setGPUVendor(GPUVendor::AMD);
+    GPUVendor vendor = GPUVendor::COUNT;
+    const char* gpuVendorStr = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
+    if (gpuVendorStr != nullptr) {
+        if (strstr(gpuVendorStr, "Intel") != nullptr) {
+            vendor = GPUVendor::INTEL;
+        } else if (strstr(gpuVendorStr, "NVIDIA") != nullptr) {
+            vendor = GPUVendor::NVIDIA;
+        } else if (strstr(gpuVendorStr, "ATI") != nullptr || strstr(gpuVendorStr, "AMD") != nullptr) {
+            vendor = GPUVendor::AMD;
+        } else if(strstr(gpuVendorStr, "Microsoft") != nullptr) {
+            vendor = GPUVendor::MICROSOFT;
+        } else {
+            vendor = GPUVendor::OTHER;
         }
     } else {
-        gpuVendor = "Unknown GPU Vendor";
-        GFX_DEVICE.setGPUVendor(GPUVendor::OTHER);
+        gpuVendorStr = "Unknown GPU Vendor";
+        vendor = GPUVendor::OTHER;
+    }
+    GPURenderer renderer = GPURenderer::COUNT;
+    const char* gpuRendererStr = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
+    if (gpuRendererStr != nullptr) {
+        if (strstr(gpuRendererStr,"Tegra") || strstr(gpuRendererStr, "GeForce") || strstr(gpuRendererStr, "NV")) {
+            renderer = GPURenderer::GEFORCE;
+        } else if(strstr(gpuRendererStr, "PowerVR") || strstr(gpuRendererStr, "Apple")) {
+            renderer = GPURenderer::POWERVR;
+            vendor = GPUVendor::IMAGINATION_TECH;
+        } else if(strstr(gpuRendererStr, "Mali")) {
+            renderer = GPURenderer::MALI;
+            vendor = GPUVendor::ARM;
+        } else if (strstr(gpuRendererStr, "Adreno")) {
+            renderer = GPURenderer::ADRENO;
+            vendor = GPUVendor::QUALCOMM;
+        } else if(strstr(gpuRendererStr, "AMD") || strstr(gpuRendererStr, "ATI")) {
+            renderer = GPURenderer::RADEON;
+        } else if (strstr(gpuRendererStr, "Intel")) {
+            renderer = GPURenderer::INTEL;
+        } else if(strstr(gpuRendererStr, "Vivante")) {
+            renderer = GPURenderer::VIVANTE;
+            vendor = GPUVendor::VIVANTE;
+        } else if(strstr(gpuRendererStr, "VideoCore")) {
+            renderer = GPURenderer::VIDEOCORE;
+            vendor = GPUVendor::ALPHAMOSAIC;
+        } else if(strstr(gpuRendererStr, "WebKit") || strstr(gpuRendererStr, "Mozilla") || strstr(gpuRendererStr, "ANGLE")) {
+            renderer = GPURenderer::WEBGL;
+            vendor = GPUVendor::WEBGL;
+        } else {
+            renderer = GPURenderer::UNKNOWN;
+        }
+    } else {
+        gpuRendererStr = "Unknown GPU Renderer";
+        renderer = GPURenderer::UNKNOWN;
     }
 
+    GFX_DEVICE.setGPURenderer(renderer);
+    GFX_DEVICE.setGPUVendor(vendor);
     // Cap max anisotropic level to what the hardware supports
     par.setParam(
         _ID("rendering.anisotropicFilteringLevel"),
@@ -218,8 +259,8 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     Console::printfn(Locale::get(_ID("GL_GLSL_SUPPORT")),
                      glGetString(GL_SHADING_LANGUAGE_VERSION));
     // GPU info, including vendor, gpu and driver
-    Console::printfn(Locale::get(_ID("GL_VENDOR_STRING")), gpuVendor,
-                     glGetString(GL_RENDERER), glGetString(GL_VERSION));
+    Console::printfn(Locale::get(_ID("GL_VENDOR_STRING")),
+                     gpuVendorStr, gpuRendererStr, glGetString(GL_VERSION));
     // In order: Maximum number of uniform buffer binding points,
     //           maximum size in basic machine units of a uniform block and
     //           minimum required alignment for uniform buffer sizes and offset
