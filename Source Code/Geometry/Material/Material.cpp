@@ -7,7 +7,6 @@
 #include "Platform/Video/Shaders/Headers/ShaderManager.h"
 
 #include "Core/Headers/Console.h"
-#include "Core/Headers/ParamHandler.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 
 namespace Divide {
@@ -27,9 +26,7 @@ Material::Material()
       _translucencyCheck(false),
       _shadingMode(ShadingMode::COUNT),
       _bumpMethod(BumpMethod::BUMP_NONE) {
-    _textures.resize(
-        to_uint(ShaderProgram::TextureUsage::COUNT),
-        nullptr);
+    _textures.resize(to_uint(ShaderProgram::TextureUsage::COUNT), nullptr);
 
     _operation = TextureOperation::TextureOperation_Replace;
 
@@ -64,10 +61,6 @@ Material::Material()
         _defaultRenderStates,
         hashAlg::makePair(RenderStage::SHADOW_STAGE,
                           GFX_DEVICE.getOrCreateStateBlock(shadowDescriptor)));
-
-    _textureData.reserve(ParamHandler::getInstance().getParam<I32>(
-        "rendering.maxTextureSlots", 16));
-
     _computedShaderTextures = false;
 }
 
@@ -288,8 +281,7 @@ bool Material::computeShader(const RenderStage& renderStage,
     if ((_textures[to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0)] &&
          _textures[to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0)]
                  ->getState() != ResourceState::RES_LOADED) ||
-        (_textures[to_uint(
-             ShaderProgram::TextureUsage::TEXTURE_OPACITY)] &&
+        (_textures[to_uint(ShaderProgram::TextureUsage::TEXTURE_OPACITY)] &&
          _textures[to_uint(ShaderProgram::TextureUsage::TEXTURE_OPACITY)]
                  ->getState() != ResourceState::RES_LOADED)) {
         return false;
@@ -340,8 +332,7 @@ bool Material::computeShader(const RenderStage& renderStage,
         shader += ".NoTexture";
     }
 
-    if (_textures[to_uint(
-            ShaderProgram::TextureUsage::TEXTURE_SPECULAR)]) {
+    if (_textures[to_uint(ShaderProgram::TextureUsage::TEXTURE_SPECULAR)]) {
         shader += ".Specular";
         addShaderDefines(renderStage, "USE_SPECULAR_MAP");
     }
@@ -436,29 +427,32 @@ void Material::computeShaderInternal() {
     _shaderComputeQueue.pop();
 }
 
-void Material::bindTexture(ShaderProgram::TextureUsage slot) {
+void Material::getTextureData(ShaderProgram::TextureUsage slot,
+                              TextureDataContainer& container) {
     U8 slotValue = to_uint(slot);
     Texture* crtTexture = _textures[slotValue];
     if (crtTexture) {
-        crtTexture->Bind(slotValue);
-        _textureData.push_back(std::make_pair(slotValue, crtTexture->getData()));
+        TextureData data = crtTexture->getData();
+        data.setHandleLow(static_cast<U32>(slotValue));
+        container.push_back(data);
     }
 }
 
-void Material::bindTextures() {
-    _textureData.resize(0);
-
-    bindTexture(ShaderProgram::TextureUsage::TEXTURE_OPACITY);
-    bindTexture(ShaderProgram::TextureUsage::TEXTURE_UNIT0);
+void Material::getTextureData(TextureDataContainer& textureData) {
+    getTextureData(ShaderProgram::TextureUsage::TEXTURE_OPACITY, textureData);
+    getTextureData(ShaderProgram::TextureUsage::TEXTURE_UNIT0, textureData);
 
     if (!GFX_DEVICE.isCurrentRenderStage(RenderStage::DEPTH_STAGE)) {
-        bindTexture(ShaderProgram::TextureUsage::TEXTURE_UNIT1);
-        bindTexture(ShaderProgram::TextureUsage::TEXTURE_NORMALMAP);
-        bindTexture(ShaderProgram::TextureUsage::TEXTURE_SPECULAR);
+        getTextureData(ShaderProgram::TextureUsage::TEXTURE_UNIT1, textureData);
+        getTextureData(ShaderProgram::TextureUsage::TEXTURE_NORMALMAP,
+                       textureData);
+        getTextureData(ShaderProgram::TextureUsage::TEXTURE_SPECULAR,
+                       textureData);
 
         for (std::pair<Texture*, U8>& tex : _customTextures) {
-            tex.first->Bind(tex.second);
-            _textureData.push_back(std::make_pair(tex.second, tex.first->getData()));
+            TextureData data = tex.first->getData();
+            data.setHandleLow(static_cast<U32>(tex.second));
+            textureData.push_back(data);
         }
     }
 }
@@ -537,8 +531,7 @@ bool Material::isTranslucent() {
         }
 
         // base texture is translucent
-        if (_textures[to_uint(
-                ShaderProgram::TextureUsage::TEXTURE_UNIT0)] &&
+        if (_textures[to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0)] &&
             _textures[to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0)]
                 ->hasTransparency()) {
             _translucencySource.push_back(
@@ -547,8 +540,7 @@ bool Material::isTranslucent() {
         }
 
         // opacity map
-        if (_textures[to_uint(
-                ShaderProgram::TextureUsage::TEXTURE_OPACITY)]) {
+        if (_textures[to_uint(ShaderProgram::TextureUsage::TEXTURE_OPACITY)]) {
             _translucencySource.push_back(
                 TranslucencySource::TRANSLUCENT_OPACITY_MAP);
             useAlphaTest = false;
@@ -574,8 +566,7 @@ void Material::getSortKeys(I32& shaderKey, I32& textureKey) const {
                     : -std::numeric_limits<I8>::max();
     textureKey =
         _textures[to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0)]
-            ? _textures[to_uint(
-                            ShaderProgram::TextureUsage::TEXTURE_UNIT0)]
+            ? _textures[to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0)]
                   ->getHandle()
             : -std::numeric_limits<I8>::max();
 }

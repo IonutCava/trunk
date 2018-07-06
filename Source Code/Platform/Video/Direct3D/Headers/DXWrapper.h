@@ -58,6 +58,8 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(DX_API, RenderAPIWrapper, final)
     void setCursorPosition(U16 x, U16 y) const override;
     void uploadDrawCommands(
         const vectorImpl<IndirectDrawCommand>& drawCommands) const override;
+    bool makeTexturesResident(const TextureDataContainer& textureData) override;
+    bool makeTextureResident(const TextureData& textureData) override;
     /// Change the window's position
     void setWindowPos(U16 w, U16 h) const override;
     void beginFrame() override;

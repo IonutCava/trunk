@@ -132,8 +132,7 @@ void WaterPlane::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
     }
 }
 
-bool WaterPlane::onDraw(SceneGraphNode& sgn,
-                        const RenderStage& currentStage) {
+bool WaterPlane::onDraw(SceneGraphNode& sgn, const RenderStage& currentStage) {
     const Quaternion<F32>& orientation =
         sgn.getComponent<PhysicsComponent>()->getOrientation();
     if (!_orientation.compare(orientation)) {
@@ -146,9 +145,14 @@ bool WaterPlane::onDraw(SceneGraphNode& sgn,
     }
 
     if (!GFX_DEVICE.isCurrentRenderStage(RenderStage::DEPTH_STAGE)) {
-        _reflectedTexture->Bind(1);
+        TextureDescriptor::AttachmentType att =
+            TextureDescriptor::AttachmentType::Color0;
+        RenderingComponent* renderable = sgn.getComponent<RenderingComponent>();
+        renderable->makeTextureResident(
+            *(_reflectedTexture->GetAttachment(att)), 1);
         if (!_cameraUnderWater) {
-            _refractionTexture->Bind(2);
+            renderable->makeTextureResident(
+                *(_refractionTexture->GetAttachment(att)), 2);
         }
     }
 

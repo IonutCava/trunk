@@ -467,19 +467,19 @@ namespace NS_GLIM
         }
         
         std::vector<Glim4ByteData> bufferData;
-        bufferData.insert(bufferData.end(), m_PositionData.begin(), m_PositionData.end());
+        bufferData.insert(std::end(bufferData), std::begin(m_PositionData), std::end(m_PositionData));
         m_PositionData.clear();
 
         unsigned int uiOffset = uiVertices * sizeof(Glim4ByteData) * 3;
 
         // now upload each attribute array one after another
         std::map<stringImpl, GlimArrayData>::iterator it, itend;
-        it = m_Attributes.begin();
-        itend = m_Attributes.end();
+        it = std::begin(m_Attributes);
+        itend = std::end(m_Attributes);
 
         for (; it != itend; ++it) {
-            bufferData.insert(bufferData.end(), it->second.m_ArrayData.begin(),
-                              it->second.m_ArrayData.end());
+            bufferData.insert(std::end(bufferData), std::begin(it->second.m_ArrayData),
+                              std::end(it->second.m_ArrayData));
             const unsigned int uiAttributeSize =
                 (unsigned int)(it->second.m_ArrayData.size()) *
                 sizeof(Glim4ByteData); // already includes the number of vertices

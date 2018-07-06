@@ -1,5 +1,6 @@
 #include "Headers/RenderingComponent.h"
 
+#include "Core/Headers/ParamHandler.h"
 #include "Scenes/Headers/SceneState.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Managers/Headers/LightManager.h"
@@ -18,7 +19,10 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
       _renderWireframe(false),
       _renderBoundingBox(false),
       _renderSkeleton(false),
-      _materialInstance(materialInstance) {
+      _materialInstance(materialInstance)
+{
+      _textureData.reserve(ParamHandler::getInstance().getParam<I32>(
+        "rendering.maxTextureSlots", 16));
 #ifdef _DEBUG
     // Red X-axis
     _axisLines.push_back(
@@ -68,9 +72,29 @@ void RenderingComponent::update(const U64 deltaTime) {
     }
 }
 
+void RenderingComponent::makeTextureResident(const Texture& texture, U8 slot) {
+
+    TextureDataContainer::iterator it;
+    it = std::find_if(std::begin(_textureData),
+                      std::end(_textureData),
+                      [&slot](const std::pair<U8, TextureData>& data)
+                          -> bool { return data.first == slot; });
+
+    TextureData data = texture.getData();
+    data.setHandleLow(static_cast<U32>(slot));
+
+    if (it == std::end(_textureData)) {
+        _textureData.push_back(data);
+    } else {
+        *it = data;
+    }
+}
+
 bool RenderingComponent::onDraw(RenderStage currentStage) {
     // Call any pre-draw operations on the SceneNode (refresh VB, update
-    // materials, etc)
+    // materials, get list of textures, etc)
+    
+    _textureData.resize(0);
     Material* mat = getMaterialInstance();
     if (mat) {
         if (!mat->computeShader(currentStage, false,
@@ -83,7 +107,10 @@ bool RenderingComponent::onDraw(RenderStage currentStage) {
                 SHADER_STAGE_COMPUTED) {
             return false;
         }
+
+        mat->getTextureData(_textureData);
     }
+
     if (!_parentSGN.getNode()->onDraw(_parentSGN, currentStage)) {
         return false;
     }
@@ -206,10 +233,8 @@ void RenderingComponent::render(const SceneRenderState& sceneRenderState,
         // If the SGN isn't ready for rendering, skip it this frame
         return;
     }
-    if (getMaterialInstance()) {
-        getMaterialInstance()->bindTextures();
-    }
 
+    GFX_DEVICE.makeTexturesResident(_textureData);
     GFX_DEVICE.submitRenderCommand(_drawCommandsCache);
 
     postDraw(sceneRenderState, currentRenderStage);

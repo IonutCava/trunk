@@ -88,6 +88,7 @@ struct GenericDrawCommand {
    private:
     U8 _queryID;
     U8 _lodIndex;
+    U16 _drawCount;
     bool _drawToBuffer;
     bool _renderWireframe;
     size_t _stateHash;
@@ -97,6 +98,7 @@ struct GenericDrawCommand {
     VertexDataInterface* _sourceBuffer;
 
    public:
+    inline void drawCount(U16 count) { _drawCount = count; }
     inline void drawID(U32 ID) { _cmd.baseInstance = ID; }
     inline void LoD(U8 lod) { _lodIndex = lod; }
     inline void queryID(U8 queryID) { _queryID = queryID; }
@@ -116,6 +118,7 @@ struct GenericDrawCommand {
 
     inline U8 LoD() const { return _lodIndex; }
     inline U8 queryID() const { return _queryID; }
+    inline U16 drawCount() const { return _drawCount; }
     inline size_t stateHash() const { return _stateHash; }
     inline bool drawToBuffer() const { return _drawToBuffer; }
     inline bool renderWireframe() const { return _renderWireframe; }
@@ -136,6 +139,7 @@ struct GenericDrawCommand {
           _lodIndex(0),
           _stateHash(0),
           _queryID(0),
+          _drawCount(1),
           _drawToBuffer(false),
           _renderWireframe(false),
           _shaderProgram(nullptr),
@@ -149,6 +153,7 @@ struct GenericDrawCommand {
         _cmd = base._cmd;
         _queryID = base._queryID;
         _lodIndex = base._lodIndex;
+        _drawCount = base._drawCount;
         _drawToBuffer = base._drawToBuffer;
         _renderWireframe = base._renderWireframe;
         _stateHash = base._stateHash;
@@ -158,9 +163,73 @@ struct GenericDrawCommand {
     }
 };
 
+class TextureData {
+    public:
+    TextureData()
+        : _textureType(TextureType::TEXTURE_2D),
+            _textureHandle(0)
+    {
+    }
+
+    TextureData(const TextureData& old)
+    {
+        _textureType = old._textureType;
+        _textureHandle.store(old._textureHandle);
+        _samplerHash = old._samplerHash;
+    }
+
+    void operator=(const TextureData& old) {
+        _textureType = old._textureType;
+        _textureHandle.store(old._textureHandle);
+        _samplerHash = old._samplerHash;
+    }
+
+    inline void setHandleHigh(U32 handle) {
+        _textureHandle.store((U64)handle << 32);
+    }
+
+    inline U32 getHandleHigh() const {
+        return (U32)(_textureHandle >> 32);
+    }
+
+    inline void getHandleHigh(U32& handle) const {
+        handle = getHandleHigh();
+    }
+
+    inline void setHandleLow(U32 handle) {
+        U64 handleCrt = _textureHandle;
+        _textureHandle = handleCrt | handle;
+    }
+
+    inline U32 getHandleLow() const{
+        return (U32)_textureHandle;
+    }
+        
+    inline void getHandleLow(U32& handle) const {
+        handle = getHandleLow();
+    }
+
+    inline void setHandle(U64 handle) {
+        _textureHandle.store(handle);
+    }
+        
+    inline void getHandle(U64& handle) const {
+        handle = _textureHandle;
+    }
+
+    TextureType _textureType;
+    size_t _samplerHash;
+
+private:
+    std::atomic<U64> _textureHandle;
+};
+
+typedef vectorImpl<TextureData> TextureDataContainer;
+
 enum class ShaderType : U32;
 class Shader;
 class Texture;
+class TextureData;
 class IMPrimitive;
 class PixelBuffer;
 class Framebuffer;
@@ -227,6 +296,9 @@ class RenderAPIWrapper {
     virtual void threadedLoadCallback() = 0;
     virtual void uploadDrawCommands(
         const vectorImpl<IndirectDrawCommand>& drawCommands) const = 0;
+
+    virtual bool makeTexturesResident(const TextureDataContainer& textureData) = 0;
+    virtual bool makeTextureResident(const TextureData& textureData) = 0;
 };
 
 };  // namespace Divide

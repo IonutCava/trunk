@@ -34,4 +34,9 @@ bool Framebuffer::AddAttachment(const TextureDescriptor& descriptor,
 
     return true;
 }
+
+Texture* Framebuffer::GetAttachment(TextureDescriptor::AttachmentType slot) {
+    return _attachmentTexture[to_uint(slot)];
+}
+
 };

@@ -30,6 +30,14 @@ void DX_API::changeViewport(const vec4<I32>& newViewport) const {}
 void DX_API::uploadDrawCommands(
     const vectorImpl<IndirectDrawCommand>& drawCommands) const {}
 
+bool DX_API::makeTexturesResident(const TextureDataContainer& textureData) {
+    return true;
+}
+
+bool DX_API::makeTextureResident(const TextureData& textureData) {
+    return true;
+}
+
 void DX_API::setWindowPos(U16 w, U16 h) const {}
 
 void DX_API::setCursorPosition(U16 x, U16 y) const {}

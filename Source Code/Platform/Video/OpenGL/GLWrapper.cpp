@@ -424,6 +424,22 @@ void GL_API::uploadDrawCommands(
                         const_cast<vectorImpl<IndirectDrawCommand>::pointer>(drawCommands.data()));
 }
 
+bool GL_API::makeTexturesResident(const TextureDataContainer& textureData) {
+
+    for (const TextureData& data : textureData) {
+        makeTextureResident(data);
+    }
+
+    return true;
+}
+
+bool GL_API::makeTextureResident(const TextureData& textureData) {
+    return bindTexture(textureData.getHandleLow(), textureData.getHandleHigh(),
+                       GLUtil::GL_ENUM_TABLE::glTextureTypeTable[to_uint(
+                           textureData._textureType)],
+                       textureData._samplerHash);
+}
+
 /// Verify if we have a sampler object created and available for the given
 /// descriptor
 size_t GL_API::getOrCreateSamplerObject(const SamplerDescriptor& descriptor) {

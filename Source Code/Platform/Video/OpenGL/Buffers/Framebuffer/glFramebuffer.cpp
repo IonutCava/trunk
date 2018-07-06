@@ -396,13 +396,17 @@ void glFramebuffer::BlitFrom(Framebuffer* inputFB,
                         Framebuffer::FramebufferUsage::FB_READ_WRITE);
 }
 
-void glFramebuffer::Bind(GLubyte unit, TextureDescriptor::AttachmentType slot) {
+Texture* glFramebuffer::GetAttachment(TextureDescriptor::AttachmentType slot) {
     if (_resolveBuffer) {
         resolve();
-        _resolveBuffer->Bind(unit, slot);
-    } else {
-        _attachmentTexture[to_uint(slot)]->Bind(unit);
+        return _resolveBuffer->GetAttachment(slot);
     }
+
+    return Framebuffer::GetAttachment(slot);
+}
+
+void glFramebuffer::Bind(GLubyte unit, TextureDescriptor::AttachmentType slot) {
+    this->GetAttachment(slot)->Bind(unit);
 }
 
 void glFramebuffer::Begin(const FramebufferTarget& drawPolicy) {

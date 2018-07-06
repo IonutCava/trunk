@@ -344,6 +344,14 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
         _api->uploadDrawCommands(drawCommands);
     }
 
+    inline bool makeTexturesResident(const TextureDataContainer& textureData) override {
+        return _api->makeTexturesResident(textureData);
+    }
+
+    inline bool makeTextureResident(const TextureData& textureData) override {
+        return _api->makeTextureResident(textureData);
+    }
+
     inline void setCursorPosition(U16 x, U16 y) const override {
         _api->setCursorPosition(x, y);
     }
@@ -372,13 +380,15 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     void setAnaglyphFrustum(F32 camIOD, const vec2<F32>& zPlanes, F32 aspectRatio,
                             F32 verticalFoV, bool rightFrustum = false);
 
-  protected:
+   protected:
     friend class RenderPassCuller;
     void processVisibleNodes(const vectorImpl<SceneGraphNode*>& visibleNodes);
     void buildDrawCommands(const vectorImpl<SceneGraphNode*>& visibleNodes,
                            SceneRenderState& sceneRenderState);
+    bool batchCommands(GenericDrawCommand& previousIDC,
+                       GenericDrawCommand& currentIDC) const;
 
-  private:
+   private:
     GFXDevice();
     ~GFXDevice();
 
@@ -470,13 +480,13 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
 
     vectorImpl<NodeData> _matricesData;
     vectorImpl<IndirectDrawCommand> _drawCommandsCache;
+    vectorImpl<GenericDrawCommand> _nonBatchedCommands;
 
     std::unique_ptr<Renderer> _renderer;
     std::unique_ptr<ShaderBuffer> _gfxDataBuffer;
     std::unique_ptr<ShaderBuffer> _nodeBuffer;
 
     GenericDrawCommand _defaultDrawCmd;
-
 END_SINGLETON
 
 };  // namespace Divide

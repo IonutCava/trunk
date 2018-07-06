@@ -65,10 +65,7 @@ class Framebuffer : private NonCopyable, public GUIDWrapper {
         return _defaultPolicy;
     }
 
-    inline Texture* GetAttachment(
-        TextureDescriptor::AttachmentType slot) const {
-        return _attachmentTexture[to_uint(slot)];
-    }
+    virtual Texture* GetAttachment(TextureDescriptor::AttachmentType slot);
 
     virtual bool AddAttachment(const TextureDescriptor& descriptor,
                                TextureDescriptor::AttachmentType slot);

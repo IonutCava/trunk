@@ -99,8 +99,7 @@ void glGenericVertexData::Create(U8 numBuffers, U8 numQueries) {
         "glGenericVertexData error: create called with no buffers specified!");
     // Create two vertex array objects. One for rendering and one for transform
     // feedback
-    glGenVertexArrays(to_uint(GVDUsage::COUNT),
-                      &_vertexArray[0]);
+    glGenVertexArrays(to_uint(GVDUsage::COUNT), &_vertexArray[0]);
     // Transform feedback may not be used, but it simplifies the class interface
     // a lot
     // Create a transform feedback object
@@ -200,7 +199,7 @@ void glGenericVertexData::Draw(const GenericDrawCommand& command,
     // requested
     GL_API::setActiveVAO(
         _vertexArray[to_uint(feedbackActive ? GVDUsage::GVD_USAGE_FDBCK
-                                                 : GVDUsage::GVD_USAGE_DRAW)]);
+                                            : GVDUsage::GVD_USAGE_DRAW)]);
     // Update vertex attributes if needed (e.g. if offsets changed)
     SetAttributes(feedbackActive);
 
@@ -217,21 +216,21 @@ void glGenericVertexData::Draw(const GenericDrawCommand& command,
 
     // Submit the draw command
     if (!Config::Profile::DISABLE_DRAWS) {
-        GLenum type =
-            command.renderWireframe()
-                ? GL_LINE_LOOP
-                : GLUtil::GL_ENUM_TABLE::glPrimitiveTypeTable[to_uint(
-                      command.primitiveType())];
+        GLenum type = command.renderWireframe()
+                          ? GL_LINE_LOOP
+                          : GLUtil::GL_ENUM_TABLE::glPrimitiveTypeTable[to_uint(
+                                command.primitiveType())];
 
         if (_indexBuffer > 0) {
             GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
             glMultiDrawElementsIndirect(
                 type, GL_UNSIGNED_INT,
-                (void*)(cmd.baseInstance * sizeof(IndirectDrawCommand)), 1, 0);
+                (void*)(cmd.baseInstance * sizeof(IndirectDrawCommand)),
+                command.drawCount(), 0);
         } else {
             glMultiDrawArraysIndirect(
                 type, (void*)(cmd.baseInstance * sizeof(IndirectDrawCommand)),
-                1, 0);
+                command.drawCount(), 0);
         }
     }
 
@@ -408,8 +407,7 @@ void glGenericVertexData::SetAttributeInternal(
     // Update the attribute data
     glVertexAttribPointer(
         descriptor.attribIndex(), descriptor.componentsPerElement(),
-        GLUtil::GL_ENUM_TABLE::glDataFormat[to_uint(
-            descriptor.dataType())],
+        GLUtil::GL_ENUM_TABLE::glDataFormat[to_uint(descriptor.dataType())],
         descriptor.normalized() ? GL_TRUE : GL_FALSE,
         (GLsizei)descriptor.stride(),
         (void*)(descriptor.offset() * _elementSize[descriptor.bufferIndex()]));

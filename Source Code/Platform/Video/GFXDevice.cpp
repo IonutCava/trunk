@@ -121,7 +121,7 @@ bool GFXDevice::setBufferData(const GenericDrawCommand& cmd) {
         cmd.cmd().baseInstance < std::max(static_cast<U32>(_matricesData.size()), 1u) &&
             cmd.cmd().baseInstance >= 0,
         "GFXDevice error: Invalid draw ID encountered!");
-    if (cmd.instanceCount() == 0) {
+    if (cmd.instanceCount() == 0 || cmd.drawCount() == 0) {
         return false;
     }
     // We need a valid shader as no fixed function pipeline is available
@@ -655,10 +655,7 @@ void GFXDevice::processVisibleNodes(
     _matricesData.reserve(nodeCount + 1);
     _matricesData.resize(1);
     // Loop over the list of nodes
-    for (vectorAlg::vecSize i = 0; i < nodeCount; ++i) {
-        SceneGraphNode* const crtNode = visibleNodes[i];
-        RenderingComponent* const renderable =
-            crtNode->getComponent<RenderingComponent>();
+    for (SceneGraphNode* const crtNode : visibleNodes) {
         NodeData temp;
         // Extract transform data
         const PhysicsComponent* const transform =
@@ -695,6 +692,9 @@ void GFXDevice::processVisibleNodes(
             crtNode->getComponent<AnimationComponent>()
                 ? crtNode->getComponent<AnimationComponent>()->boneCount()
                 : 0);
+
+        RenderingComponent* const renderable =
+            crtNode->getComponent<RenderingComponent>();
         // Get the color matrix (diffuse, ambient, specular, etc.)
         renderable->getMaterialColorMatrix(temp._matrix[2]);
         // Get the material property matrix (alpha test, texture count,
@@ -716,22 +716,86 @@ void GFXDevice::buildDrawCommands(
     if (visibleNodes.empty()) {
         return;
     }
-    vectorAlg::vecSize nodeCount = visibleNodes.size();
-    _drawCommandsCache.reserve(nodeCount + 1);
-    _drawCommandsCache.resize(1);
-    // Loop over the list of nodes
-    for (vectorAlg::vecSize i = 0; i < nodeCount; ++i) {
-        RenderingComponent* const renderable =
-            visibleNodes[i]->getComponent<RenderingComponent>();
+
+    // Reset previously generated commands
+    _nonBatchedCommands.reserve(visibleNodes.size() + 1);
+    _nonBatchedCommands.resize(0);
+    _nonBatchedCommands.push_back(_defaultDrawCmd);
+    // Loop over the list of nodes to generate a new command list
+    RenderStage currentStage = getRenderStage();
+    for (SceneGraphNode* node : visibleNodes) {
         const vectorImpl<GenericDrawCommand>& nodeDrawCommands =
-            renderable->getDrawCommands(static_cast<U32>(_drawCommandsCache.size()),
-                                        sceneRenderState, getRenderStage());
+            node->getComponent<RenderingComponent>()->getDrawCommands(
+                static_cast<U32>(_nonBatchedCommands.size()), sceneRenderState,
+                currentStage);
+        // ToDo: optimise this? -Ionut
         for (const GenericDrawCommand& cmd : nodeDrawCommands) {
-            _drawCommandsCache.push_back(cmd.cmd());
+            _nonBatchedCommands.push_back(cmd);
         }
     }
 
+    // Loop over the command list and find all batchable commands
+    vectorAlg::vecSize batchedCmdIDX = 0;
+    vectorAlg::vecSize cmdCount = _nonBatchedCommands.size();
+    for (vectorAlg::vecSize i = 1; i < cmdCount; i++) {
+        // Try and append the current command in the latest available batch
+        if (!batchCommands(_nonBatchedCommands[batchedCmdIDX],
+                           _nonBatchedCommands[i])) {
+            // If that fails, move to the index to the next unbatched command
+            batchedCmdIDX = i;
+        }
+    }
+
+    // Batched commands have a zero-draw count. Remove them from the list
+    /*_nonBatchedCommands.erase(
+        std::remove_if(std::begin(_nonBatchedCommands),
+                       std::end(_nonBatchedCommands),
+                       [](GenericDrawCommand& cmd)
+                           -> bool { return cmd.drawCount() == 0; }),
+        std::end(_nonBatchedCommands));*/
+
+    // Extract the specific rendering commands from the draw commands
+    // Rendering commands are stored in GPU memory. Draw commands are not.
+    _drawCommandsCache.reserve(_nonBatchedCommands.size());
+    _drawCommandsCache.resize(0);
+    for (const GenericDrawCommand& cmd : _nonBatchedCommands) {
+        _drawCommandsCache.push_back(cmd.cmd());
+    }
+    // Upload the rendering commands to the GPU memory
     uploadDrawCommands(_drawCommandsCache);
+    
+}
+
+bool GFXDevice::batchCommands(GenericDrawCommand& previousIDC,
+                              GenericDrawCommand& currentIDC) const {
+    if (!previousIDC.sourceBuffer() || !currentIDC.sourceBuffer()) {
+        return false;
+    }
+    if (!previousIDC.shaderProgram() || !currentIDC.shaderProgram()) {
+        return false;
+    }
+    // Batchable commands must share the same buffer
+    if (previousIDC.sourceBuffer()->getGUID() ==
+            currentIDC.sourceBuffer()->getGUID() &&
+        // And the same shader program
+        previousIDC.shaderProgram()->getID() ==
+            currentIDC.shaderProgram()->getID() &&
+        // Different states aren't batchable currently
+        previousIDC.stateHash() == currentIDC.stateHash() &&
+        // We need the same primitive type
+        previousIDC.primitiveType() == currentIDC.primitiveType() &&
+        previousIDC.renderWireframe() == currentIDC.renderWireframe()) 
+    {
+        // If the rendering commands are batchable, increase the draw count for
+        // the previous one
+        previousIDC.drawCount(previousIDC.drawCount() + 1);
+        // And set the current command's draw count to zero so it gets removed
+        // from the list later on
+        currentIDC.drawCount(0);
+        return true;
+    }
+
+    return false;
 }
 
 /// Depending on the context, either immediately call the function, or pass it

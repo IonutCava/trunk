@@ -85,12 +85,15 @@ class RenderingComponent : public SGNComponent {
     inline void getMaterialPropertyMatrix(mat4<F32>& matOut) const {
         return matOut.set(_materialPropertyMatrix);
     }
+
     inline Material* const getMaterialInstance() { return _materialInstance; }
 
     const vectorImpl<GenericDrawCommand>& getDrawCommands(
         U32 commandOffset,
         SceneRenderState& sceneRenderState,
         RenderStage renderStage);
+
+    void makeTextureResident(const Texture& texture, U8 slot);
 
 #ifdef _DEBUG
     void drawDebugAxis();
@@ -112,6 +115,7 @@ class RenderingComponent : public SGNComponent {
     mat4<F32> _materialColorMatrix;
     mat4<F32> _materialPropertyMatrix;
     vectorImpl<GenericDrawCommand> _drawCommandsCache;
+    TextureDataContainer _textureData;
 
 #ifdef _DEBUG
     vectorImpl<Line> _axisLines;

@@ -144,14 +144,11 @@ class Material : public Resource {
         ShaderInfo() {
             _shaderRef = nullptr;
             _shader = "";
-            _shaderCompStage =
-                ShaderCompilationStage::COUNT;
+            _shaderCompStage = ShaderCompilationStage::COUNT;
             _isCustomShader = false;
-            for (U32 i = 0; i < to_uint(ShaderType::COUNT);
-                 ++i) {
+            for (U32 i = 0; i < to_uint(ShaderType::COUNT); ++i) {
                 memset(_shadingFunction[i], 0,
-                       to_uint(BumpMethod::COUNT) *
-                           sizeof(U32));
+                       to_uint(BumpMethod::COUNT) * sizeof(U32));
             }
         }
 
@@ -161,11 +158,8 @@ class Material : public Resource {
             _shader = other._shader;
             _shaderCompStage = other._shaderCompStage;
             _isCustomShader = other._isCustomShader;
-            for (U32 i = 0; i < to_uint(ShaderType::COUNT);
-                 ++i) {
-                for (U32 j = 0;
-                     j < to_uint(BumpMethod::COUNT);
-                     ++j) {
+            for (U32 i = 0; i < to_uint(ShaderType::COUNT); ++i) {
+                for (U32 j = 0; j < to_uint(BumpMethod::COUNT); ++j) {
                     _shadingFunction[i][j] = other._shadingFunction[i][j];
                 }
             }
@@ -173,9 +167,8 @@ class Material : public Resource {
             return *this;
         }
 
-        U32 _shadingFunction
-            [to_const_uint(ShaderType::COUNT)]
-            [to_const_uint(BumpMethod::COUNT)];
+        U32 _shadingFunction[to_const_uint(ShaderType::COUNT)][to_const_uint(
+            BumpMethod::COUNT)];
 
        protected:
         StateTracker<bool> _trackedBools;
@@ -330,7 +323,8 @@ class Material : public Resource {
     inline Texture* const getTexture(ShaderProgram::TextureUsage textureUsage) {
         return _textures[to_uint(textureUsage)];
     }
-    ShaderInfo& getShaderInfo(RenderStage renderStage = RenderStage::FINAL_STAGE);
+    ShaderInfo& getShaderInfo(
+        RenderStage renderStage = RenderStage::FINAL_STAGE);
 
     inline const TextureOperation& getTextureOperation() const {
         return _operation;
@@ -339,7 +333,7 @@ class Material : public Resource {
     inline const ShadingMode& getShadingMode() const { return _shadingMode; }
     inline const BumpMethod& getBumpMethod() const { return _bumpMethod; }
 
-    void bindTextures();
+    void getTextureData(TextureDataContainer& textureData);
 
     void clean();
     bool isTranslucent();
@@ -360,7 +354,9 @@ class Material : public Resource {
     }
 
    private:
-    void bindTexture(ShaderProgram::TextureUsage slot);
+    void getTextureData(ShaderProgram::TextureUsage slot,
+                        TextureDataContainer& container);
+
     void recomputeShaders();
     void computeShaderInternal();
     void setShaderProgramInternal(const stringImpl& shader,
@@ -380,8 +376,6 @@ class Material : public Resource {
     static bool _shaderQueueLocked;
     static bool _serializeShaderLoad;
 
-    vectorImpl<std::pair<U8, Texture::TextureData>> _textureData;
-
     std::queue<std::tuple<RenderStage, ResourceDescriptor, DELEGATE_CBK<>>>
         _shaderComputeQueue;
     ShadingMode _shadingMode;
@@ -389,20 +383,20 @@ class Material : public Resource {
         _shaderModifier;  //<use for special shader tokens, such as "Tree"
     vectorImpl<TranslucencySource> _translucencySource;
     F32 _parallaxFactor;  //< parallax/relief factor (higher value > more
-                          //pronounced effect)
+    // pronounced effect)
     bool _dirty;
     bool _dumpToFile;
     bool _translucencyCheck;
     bool _useAlphaTest;  //< use discard if true / blend if otherwise
     bool _doubleSided;
     bool _hardwareSkinning;  ///< Use shaders that have bone transforms
-                             ///implemented
+    /// implemented
     typedef hashMapImpl<RenderStage, ShaderInfo> shaderInfoMap;
     shaderInfoMap _shaderInfo;
 
     bool _shaderThreadedLoad;
     bool _computedShaderTextures;  //<if we should recompute only fragment
-                                   //shader on texture change
+    // shader on texture change
     /// use this map to add more render states mapped to a specific state
     /// 3 render state's: Normal, reflection and shadow
     typedef hashMapImpl<RenderStage, size_t /*renderStateBlockHash*/>

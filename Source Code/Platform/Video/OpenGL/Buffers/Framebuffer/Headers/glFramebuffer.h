@@ -46,6 +46,9 @@ class glFramebuffer : public Framebuffer {
 
     bool Create(GLushort width, GLushort height);
     void Destroy();
+
+    Texture* GetAttachment(TextureDescriptor::AttachmentType slot);
+
     void DrawToLayer(TextureDescriptor::AttachmentType slot, GLubyte layer,
                      bool includeDepth = true);
     void SetMipLevel(GLushort mipLevel, GLushort mipMaxLevel,

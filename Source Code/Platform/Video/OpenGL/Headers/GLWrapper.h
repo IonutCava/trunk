@@ -179,6 +179,9 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     void uploadDrawCommands(
         const vectorImpl<IndirectDrawCommand>& drawCommands) const override;
 
+    bool makeTexturesResident(const TextureDataContainer& textureData) override;
+    bool makeTextureResident(const TextureData& textureData) override;
+
   public:
     /// Enable or disable primitive restart and ensure that the correct index size
     /// is used

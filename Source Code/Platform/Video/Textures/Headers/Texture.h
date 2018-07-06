@@ -33,6 +33,8 @@
 #define _TEXTURE_H
 
 #include "TextureDescriptor.h"
+
+#include "Platform/Video/Headers/RenderAPIWrapper.h"
 #include "Core/Resources/Headers/HardwareResource.h"
 
 namespace Divide {
@@ -43,34 +45,6 @@ class Texture : public HardwareResource {
     friend class ResourceLoader;
     template <typename T>
     friend class ImplResourceLoader;
-
-  public:
-   class TextureData {
-      public:
-       TextureData()
-           : _textureType(TextureType::TEXTURE_2D),
-             _textureHandle(0)
-       {
-       }
-
-       TextureData(const TextureData& old)
-       {
-           _textureType = old._textureType;
-           _textureHandle.store(old._textureHandle);
-           _samplerHash = old._samplerHash;
-       }
-
-       void operator=(const TextureData& old) {
-           _textureType = old._textureType;
-           _textureHandle.store(old._textureHandle);
-           _samplerHash = old._samplerHash;
-       }
-
-       TextureType _textureType;
-       std::atomic<U32> _textureHandle;
-       size_t _samplerHash;
-   };
-
    public:
     /// Bind the texture to the specified texture unit
     virtual void Bind(U8 slot) = 0;
@@ -102,6 +76,10 @@ class Texture : public HardwareResource {
     inline TextureData& getData() {
         return _textureData;
     }
+
+    inline const TextureData& getData() const {
+        return _textureData;
+    }
     /// Set/Get the number of layers (used by texture arrays)
     inline void setNumLayers(U8 numLayers) { _numLayers = numLayers; }
     inline U8 getNumLayers() const { return _numLayers; }
@@ -113,7 +91,7 @@ class Texture : public HardwareResource {
     inline U16 getHeight() const { return _height; }
     /// A rendering API level handle used to uniquely identify this texture
     /// (e.g. for OpenGL, it's the texture object)
-    inline U32 getHandle() const { return _textureData._textureHandle; }
+    inline U32 getHandle() const { return _textureData.getHandleHigh(); }
     /// Simple flag to check if the texture was flipped vertically
     inline bool isVerticallyFlipped() const { return _flipped; }
     /// If the texture has an alpha channel and at least one pixel is
