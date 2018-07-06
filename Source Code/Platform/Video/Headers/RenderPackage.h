@@ -41,12 +41,10 @@ class RenderingComponent;
 class RenderPassManager;
 
 namespace Attorney {
-    class RenderPackageRenderingComponent;
     class RenderPackageRenderPassManager;
 };
 
 class RenderPackage {
-    friend class Attorney::RenderPackageRenderingComponent;
     friend class Attorney::RenderPackageRenderPassManager;
 
 public:
@@ -91,8 +89,6 @@ public:
 
     size_t getSortKeyHash() const;
 
-    const GFX::CommandBuffer& commands() const;
-
     I32 drawCommandCount() const;
     const GenericDrawCommand& drawCommand(I32 index, I32 cmdIndex) const;
     void drawCommand(I32 index, I32 cmdIndex, const GenericDrawCommand& cmd);
@@ -118,17 +114,12 @@ public:
     void addDescriptorSetsCommand(const GFX::BindDescriptorSetsCommand& descriptorSets);
     void addCommandBuffer(const GFX::CommandBuffer& commandBuffer);
 
-protected:
-    
-    inline GFX::CommandBuffer& buildAndGetCommandBuffer() {
-        bool cacheMiss = false;
-        return buildAndGetCommandBuffer(cacheMiss);
-    }
+    void setDrawOption(CmdRenderOptions option, bool state);
+    void setLoD(U8 LoDIntex);
 
+protected:
     void updateDrawCommands(U32 cmdIndex, vectorEASTL<IndirectDrawCommand>& drawCmdsInOut);
     GFX::CommandBuffer& buildAndGetCommandBuffer(bool cacheMiss);
-    GFX::DrawCommand& drawCommand(I32 cmdIdx);
-    DescriptorSet_ptr& descriptorSet(I32 index);
 
 private:
     bool _isRenderable;
@@ -136,6 +127,7 @@ private:
     bool _secondaryCommandPool;
     MinQuality _qualityRequirement;
 
+    //element 0 in all of these is reserved for the RenderingComponent stuff
     vectorEASTL<GFX::DrawCommand> _drawCommands;
     vectorEASTL<GFX::BindPipelineCommand> _pipelines;
     vectorEASTL<GFX::SetClipPlanesCommand> _clipPlanes;
@@ -151,27 +143,6 @@ protected:
 };
 
 namespace Attorney {
-    class RenderPackageRenderingComponent {
-        private:
-        static GFX::CommandBuffer* commands(const RenderPackage& pkg) {
-            return pkg._commands;
-        }
-
-        static DescriptorSet_ptr& descriptorSet(RenderPackage& pkg, I32 index) {
-            return pkg.descriptorSet(index);
-        }
-
-        static GFX::DrawCommand& drawCommand(RenderPackage& pkg, I32 cmdIdx) {
-            return pkg.drawCommand(cmdIdx);
-        }
-
-        static void setDirty(RenderPackage& pkg, RenderPackage::CommandType dirtyCmd) {
-            SetBit(pkg._dirtyFlags, to_U32(dirtyCmd));
-        }
-
-        friend class Divide::RenderingComponent;
-    };
-
     class RenderPackageRenderPassManager {
         private:
         // Return true if the command buffer was reconstructed

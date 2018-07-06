@@ -32,6 +32,7 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
       _depthStateBlockHash(0),
       _shadowStateBlockHash(0),
       _renderPackagesDirty(true),
+      _descriptorSetCache(_context.newDescriptorSet()),
       _reflectorType(ReflectorType::PLANAR_REFLECTOR),
       _materialInstance(materialInstance),
       _skeletonPrimitive(nullptr)
@@ -59,7 +60,7 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
     }
 
     for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
-        std::unique_ptr<RenderPackage>& pkg = _renderData[to_base(RenderStagePass::pass(i))][to_base(RenderStagePass::stage(i))];
+        std::unique_ptr<RenderPackage>& pkg = _renderPackages[to_base(RenderStagePass::pass(i))][to_base(RenderStagePass::stage(i))];
         pkg = std::make_unique<RenderPackage>(true);
         pkg->isOcclusionCullable(_parentSGN.getNode<Object3D>()->getType() != SceneNodeType::TYPE_SKY);
 
@@ -167,23 +168,10 @@ RenderingComponent::~RenderingComponent()
     }
 }
 
-std::unique_ptr<RenderPackage>& RenderingComponent::renderData(RenderStagePass stagePass) {
-    std::unique_ptr<RenderPackage>& pkg = _renderData[to_base(stagePass._passType)][to_base(stagePass._stage)];
-    DIVIDE_ASSERT(pkg != nullptr, "RenderingComponent::renderData error: Attempt to reference a render package that wasn't created yet!");
-
-    return pkg;
-}
-
-const std::unique_ptr<RenderPackage>& RenderingComponent::renderData(RenderStagePass stagePass) const {
-    const std::unique_ptr<RenderPackage>& pkg = _renderData[to_base(stagePass._passType)][to_base(stagePass._stage)];
-    DIVIDE_ASSERT(pkg != nullptr, "RenderingComponent::renderData error: Attempt to reference a render package that wasn't created yet!");
-
-    return pkg;
-}
 
 void RenderingComponent::rebuildDrawCommands(RenderStagePass stagePass) {
-    std::unique_ptr<RenderPackage>& pkg = renderData(stagePass);
-    pkg->clear();
+    RenderPackage& pkg = getDrawPackage(stagePass);
+    pkg.clear();
 
     // We also have a pipeline
     PipelineDescriptor pipelineDescriptor;
@@ -192,17 +180,17 @@ void RenderingComponent::rebuildDrawCommands(RenderStagePass stagePass) {
 
     GFX::BindPipelineCommand pipelineCommand;
     pipelineCommand._pipeline = _context.newPipeline(pipelineDescriptor);
-    pkg->addPipelineCommand(pipelineCommand);
+    pkg.addPipelineCommand(pipelineCommand);
     
     GFX::SendPushConstantsCommand pushConstantsCommand;
     pushConstantsCommand._constants = _globalPushConstants;
-    pkg->addPushConstantsCommand(pushConstantsCommand);
+    pkg.addPushConstantsCommand(pushConstantsCommand);
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCommand;
     bindDescriptorSetsCommand._set = _context.newDescriptorSet();
-    pkg->addDescriptorSetsCommand(bindDescriptorSetsCommand);
+    pkg.addDescriptorSetsCommand(bindDescriptorSetsCommand);
 
-    _parentSGN.getNode()->buildDrawCommands(_parentSGN, stagePass, *pkg);
+    _parentSGN.getNode()->buildDrawCommands(_parentSGN, stagePass, pkg);
 }
 
 void RenderingComponent::Update(const U64 deltaTimeUS) {
@@ -254,34 +242,26 @@ void RenderingComponent::rebuildMaterial() {
 }
 
 void RenderingComponent::registerTextureDependency(const TextureData& additionalTexture, U8 binding) {
-    _textureDependencies.addTexture(additionalTexture, binding);
+    _descriptorSetCache->_textureData.addTexture(eastl::make_pair(additionalTexture, binding));
 }
 
 void RenderingComponent::removeTextureDependency(U8 binding) {
-    _textureDependencies.removeTexture(binding);
+    _descriptorSetCache->_textureData.removeTexture(binding);
 }
 
 void RenderingComponent::removeTextureDependency(const TextureData& additionalTexture) {
-    _textureDependencies.removeTexture(additionalTexture);
+    _descriptorSetCache->_textureData.removeTexture(additionalTexture);
 }
 
 void RenderingComponent::onRender(RenderStagePass renderStagePass) {
-    std::unique_ptr<RenderPackage>& pkg = renderData(renderStagePass);
-    DescriptorSet_ptr& set = Attorney::RenderPackageRenderingComponent::descriptorSet(*pkg, 0);
-    TextureDataContainer& textures = set->_textureData;
-
-    textures.clear();
-    textures.addTextures(_textureDependencies.textures());
-
     const Material_ptr& mat = getMaterialInstance();
     if (mat) {
-        mat->getTextureData(renderStagePass, textures);
+        mat->getTextureData(renderStagePass, _descriptorSetCache->_textureData);
     }
 
-    if (set->_shaderBuffers != _shaderBuffersCache) {
-        set->_shaderBuffers = _shaderBuffersCache;
+    if (*_descriptorSetCache != *getDrawPackage(renderStagePass).descriptorSet(0)) {
+        getDrawPackage(renderStagePass).descriptorSet(0, _descriptorSetCache);
     }
-    Attorney::RenderPackageRenderingComponent::setDirty(*pkg, RenderPackage::CommandType::DESCRIPTOR_SETS);
 }
 
 void RenderingComponent::getMaterialColourMatrix(mat4<F32>& matOut) const {
@@ -411,24 +391,29 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
 void RenderingComponent::registerShaderBuffer(ShaderBufferLocation slot,
                                               vec2<U32> bindRange,
                                               ShaderBuffer& shaderBuffer) {
-    ShaderBufferList::iterator it = std::find_if(std::begin(_shaderBuffersCache),
-                                                 std::end(_shaderBuffersCache),
+
+    ShaderBufferList& shaderBuffersCache = _descriptorSetCache->_shaderBuffers;
+
+    ShaderBufferList::iterator it = std::find_if(std::begin(shaderBuffersCache),
+                                                 std::end(shaderBuffersCache),
                                                  [slot](const ShaderBufferBinding& binding)
                                                  -> bool { return binding._binding == slot; });
 
-    if (it == std::end(_shaderBuffersCache)) {
-        _shaderBuffersCache.emplace_back(slot, &shaderBuffer, bindRange);
+    if (it == std::end(shaderBuffersCache)) {
+        shaderBuffersCache.emplace_back(slot, &shaderBuffer, bindRange);
     } else {
         it->set(slot, &shaderBuffer, bindRange);
     }
 }
 
 void RenderingComponent::unregisterShaderBuffer(ShaderBufferLocation slot) {
-    _shaderBuffersCache.erase(std::remove_if(std::begin(_shaderBuffersCache),
-                                             std::end(_shaderBuffersCache),
-                                             [&slot](const ShaderBufferBinding& binding)
+    ShaderBufferList& shaderBuffersCache = _descriptorSetCache->_shaderBuffers;
+
+    shaderBuffersCache.erase(std::remove_if(std::begin(shaderBuffersCache),
+                                            std::end(shaderBuffersCache),
+                                            [&slot](const ShaderBufferBinding& binding)
                                                  -> bool { return binding._binding == slot; }),
-                              std::end(_shaderBuffersCache));
+                             std::end(shaderBuffersCache));
 }
 
 ShaderProgram_ptr RenderingComponent::getDrawShader(RenderStagePass renderStagePass) {
@@ -485,8 +470,8 @@ void RenderingComponent::updateLoDLevel(const Camera& camera, RenderStagePass re
 }
 
 void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRenderState& sceneRenderState, RenderStagePass renderStagePass) {
-    std::unique_ptr<RenderPackage>& pkg = renderData(renderStagePass);
-    pkg->isRenderable(false);
+    RenderPackage& pkg = getDrawPackage(renderStagePass);
+    pkg.isRenderable(false);
     if (canDraw(renderStagePass)) {
 
         if (_renderPackagesDirty) {
@@ -504,42 +489,29 @@ void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
 
             bool renderWireframe = renderOptionEnabled(RenderOptions::RENDER_WIREFRAME);
             renderWireframe = renderWireframe || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME);
-
-            for (I32 cmdIdx = 0; cmdIdx < pkg->drawCommandCount(); ++cmdIdx) {
-                GFX::DrawCommand& cmd = Attorney::RenderPackageRenderingComponent::drawCommand(*pkg, cmdIdx);
-                for (GenericDrawCommand& drawCmd : cmd._drawCommands) {
-                    setOption(drawCmd, CmdRenderOptions::RENDER_GEOMETRY, renderGeometry || isEnabledOption(drawCmd, CmdRenderOptions::RENDER_GEOMETRY));
-                    setOption(drawCmd, CmdRenderOptions::RENDER_WIREFRAME, renderWireframe || isEnabledOption(drawCmd, CmdRenderOptions::RENDER_WIREFRAME));
-
-                    drawCmd._lodIndex = _lodLevel;
-                }
-            }
-            Attorney::RenderPackageRenderingComponent::setDirty(*pkg, RenderPackage::CommandType::DRAW);
-            pkg->isRenderable(pkg->drawCommandCount() > 0);
+            pkg.setDrawOption(CmdRenderOptions::RENDER_GEOMETRY, renderGeometry);
+            pkg.setDrawOption(CmdRenderOptions::RENDER_WIREFRAME, renderWireframe);
+            pkg.setLoD(_lodLevel);
+            pkg.isRenderable(pkg.drawCommandCount() > 0);
         }
     }
 }
 
 RenderPackage& RenderingComponent::getDrawPackage(RenderStagePass renderStagePass) {
-    RenderPackage& ret = *renderData(renderStagePass).get();
+    RenderPackage& ret = *_renderPackages[to_base(renderStagePass._passType)][to_base(renderStagePass._stage)].get();
     //ToDo: Some validation? -Ionut
     return ret;
 }
 
 const RenderPackage& RenderingComponent::getDrawPackage(RenderStagePass renderStagePass) const {
-    const RenderPackage& ret = *renderData(renderStagePass).get();
+    const RenderPackage& ret = *_renderPackages[to_base(renderStagePass._passType)][to_base(renderStagePass._stage)].get();
     //ToDo: Some validation? -Ionut
     return ret;
 }
 
 
 size_t RenderingComponent::getSortKeyHash(RenderStagePass renderStagePass) const {
-    const std::unique_ptr<RenderPackage>& pkg = _renderData[to_U32(renderStagePass._passType)][to_U32(renderStagePass._stage)];
-    if (pkg) {
-        pkg->getSortKeyHash();
-    }
-
-    return 0;
+    return getDrawPackage(renderStagePass).getSortKeyHash();
 }
 
 bool RenderingComponent::clearReflection() {

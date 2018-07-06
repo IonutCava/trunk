@@ -98,7 +98,6 @@ private:
     const RenderPass& getPassForStage(RenderStage renderStage) const;
     void prepareRenderQueues(RenderStagePass stagePass, const PassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut);
     void buildDrawCommands(RenderStagePass stagePass, const PassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut);
-    void updateNodeData(RenderStagePass stagePass, const PassParams& params, GFX::CommandBuffer& bufferInOut);
     void refreshNodeData(RenderStagePass stagePass, const PassParams& params, GFX::CommandBuffer& bufferInOut);
     GFXDevice::NodeData processVisibleNode(const VisibleNodeProcessParams& state, const SceneRenderState& sceneRenderState, const mat4<F32>& viewMatrix) const;
 private: //TEMP

@@ -136,16 +136,15 @@ static void glfons__renderUpdate(void* userPtr, int* rect, const unsigned char* 
 static void glfons__renderDraw(void* userPtr, const FONSvert* verts, int nverts)
 {
     GLFONScontext* gl = (GLFONScontext*)userPtr;
-    if (gl->tex == 0 || gl->glfons_vaoID == 0) return;
+    if (gl->tex == 0 || gl->glfons_vaoID == 0)
+        return;
 
-    GLuint bufferID = gl->glfons_vboID;
-    Divide::GL_API::setActiveVAO(gl->glfons_vaoID);
-    Divide::GL_API::setActiveBuffer(GL_ARRAY_BUFFER, gl->glfons_vboID);
     Divide::GL_API::bindTexture(0, gl->tex);
 
-    glNamedBufferData(bufferID, nverts * sizeof(FONSvert), verts, GL_STREAM_DRAW);
+    Divide::GL_API::setActiveVAO(gl->glfons_vaoID);
+    glNamedBufferData(gl->glfons_vboID, nverts * sizeof(FONSvert), verts, GL_STREAM_DRAW);
     glDrawArrays(GL_TRIANGLES, 0, nverts);
-    glInvalidateBufferData(bufferID);
+    glInvalidateBufferData(gl->glfons_vboID);
 }
 
 static void glfons__renderDelete(void* userPtr) {

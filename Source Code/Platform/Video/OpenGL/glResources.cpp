@@ -278,9 +278,9 @@ void submitMultiIndirectCommand(U32 cmdOffset,
                                 U32 drawCount,
                                 GLenum mode,
                                 GLenum internalFormat,
-                                GLuint indexBuffer) {
+                                bool drawIndexed) {
     static const size_t cmdSize = sizeof(IndirectDrawCommand);
-    if (indexBuffer > 0) {
+    if (drawIndexed) {
         glMultiDrawElementsIndirect(mode, internalFormat, (bufferPtr)(cmdOffset * cmdSize), drawCount, cmdSize);
     } else {
         glMultiDrawArraysIndirect(mode, (bufferPtr)(cmdOffset * cmdSize), drawCount, cmdSize);
@@ -290,22 +290,20 @@ void submitMultiIndirectCommand(U32 cmdOffset,
 void submitIndirectCommand(U32 cmdOffset,
                            GLenum mode,
                            GLenum internalFormat,
-                           GLuint indexBuffer) {
-
-    static const size_t cmdSize = sizeof(IndirectDrawCommand);
-    if (indexBuffer > 0) {
-        glDrawElementsIndirect(mode, internalFormat, (bufferPtr)(cmdOffset * cmdSize));
+                           bool drawIndexed) {
+    if (drawIndexed) {
+        glDrawElementsIndirect(mode, internalFormat, (bufferPtr)(cmdOffset * sizeof(IndirectDrawCommand)));
     } else {
-        glDrawArraysIndirect(mode, (bufferPtr)(cmdOffset * cmdSize));
+        glDrawArraysIndirect(mode, (bufferPtr)(cmdOffset * sizeof(IndirectDrawCommand)));
     }
 }
 
 void sumitDirectCommand(const IndirectDrawCommand& cmd,
                         GLenum mode,
                         GLenum internalFormat,
-                        GLuint indexBuffer) {
+                        bool drawIndexed) {
 
-    if (indexBuffer > 0) {
+    if (drawIndexed) {
          glDrawElementsInstanced(mode,
                                  cmd.indexCount,
                                  internalFormat,
@@ -320,10 +318,10 @@ void submitDirectMultiCommand(const IndirectDrawCommand& cmd,
                               U32 drawCount,
                               GLenum mode,
                               GLenum internalFormat,
-                              GLuint indexBuffer) {
+                              bool drawIndexed) {
     //ToDo: This seems really wrong -Ionut
     vector<GLsizei> count(drawCount, cmd.indexCount);
-    if (indexBuffer > 0) {
+    if (drawIndexed) {
         vector<U32> indices(drawCount, cmd.baseInstance);
         glMultiDrawElements(mode, count.data(), internalFormat, (bufferPtr*)(indices.data()), drawCount);
     } else {
@@ -334,9 +332,9 @@ void submitDirectMultiCommand(const IndirectDrawCommand& cmd,
 
 void submitRenderCommand(const GenericDrawCommand& drawCommand,
                          GLenum mode,
+                         bool drawIndexed,
                          bool useIndirectBuffer,
-                         GLenum internalFormat,
-                         GLuint indexBuffer) {
+                         GLenum internalFormat) {
 
     bool queryPrimitives = isEnabledOption(drawCommand, CmdRenderOptions::QUERY_PRIMITIVE_COUNT);
     bool querySampleCount = isEnabledOption(drawCommand, CmdRenderOptions::QUERY_SAMPLE_COUNT);
@@ -362,15 +360,15 @@ void submitRenderCommand(const GenericDrawCommand& drawCommand,
     if (useIndirectBuffer) {
         // Don't trust the driver to optimize the loop. Do it here so we know the cost upfront
         if (drawCommand._drawCount > 1) {
-            submitMultiIndirectCommand(drawCommand._commandOffset, drawCommand._drawCount, mode, internalFormat, indexBuffer);
+            submitMultiIndirectCommand(drawCommand._commandOffset, drawCommand._drawCount, mode, internalFormat, drawIndexed);
         } else if (drawCommand._drawCount == 1) {
-            submitIndirectCommand(drawCommand._commandOffset, mode, internalFormat, indexBuffer);
+            submitIndirectCommand(drawCommand._commandOffset, mode, internalFormat, drawIndexed);
         }
     } else {
         if (drawCommand._drawCount > 1) {
-            submitDirectMultiCommand(drawCommand._cmd, drawCommand._drawCount, mode, internalFormat, indexBuffer);
+            submitDirectMultiCommand(drawCommand._cmd, drawCommand._drawCount, mode, internalFormat, drawIndexed);
         } else if (drawCommand._drawCount == 1) {
-            sumitDirectCommand(drawCommand._cmd, mode, internalFormat, indexBuffer);
+            sumitDirectCommand(drawCommand._cmd, mode, internalFormat, drawIndexed);
         }
     }
 
@@ -400,9 +398,9 @@ void submitRenderCommand(const GenericDrawCommand& drawCommand,
 };
 
 void submitRenderCommand(const GenericDrawCommand& drawCommand,
+                         bool drawIndexed,
                          bool useIndirectBuffer,
-                         GLenum internalFormat,
-                         GLuint indexBuffer) {
+                         GLenum internalFormat) {
     // Process the actual draw command
     if (Config::Profile::DISABLE_DRAWS) {
         return;
@@ -412,13 +410,12 @@ void submitRenderCommand(const GenericDrawCommand& drawCommand,
                   "GLUtil::submitRenderCommand error: Draw command's type is not valid!");
     
     GL_API::toggleRasterization(!isEnabledOption(drawCommand, CmdRenderOptions::RENDER_NO_RASTERIZE));
-    GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
     if (isEnabledOption(drawCommand, CmdRenderOptions::RENDER_GEOMETRY)) {
         GLenum mode = glPrimitiveTypeTable[to_U32(drawCommand._primitiveType)];
-        submitRenderCommand(drawCommand, mode, useIndirectBuffer, internalFormat, indexBuffer);
+        submitRenderCommand(drawCommand, mode, drawIndexed, useIndirectBuffer, internalFormat);
     }
     if (isEnabledOption(drawCommand, CmdRenderOptions::RENDER_WIREFRAME)) {
-        submitRenderCommand(drawCommand, GL_LINE_LOOP, useIndirectBuffer, internalFormat, indexBuffer);
+        submitRenderCommand(drawCommand, GL_LINE_LOOP, drawIndexed, useIndirectBuffer, internalFormat);
     }
 }
 

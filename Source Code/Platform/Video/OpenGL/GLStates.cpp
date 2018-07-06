@@ -41,8 +41,9 @@ GLuint GL_API::s_activeBufferID[] = {GLUtil::_invalidObjectID,
                                      GLUtil::_invalidObjectID,
                                      GLUtil::_invalidObjectID,
                                      GLUtil::_invalidObjectID,
-                                     GLUtil::_invalidObjectID,
                                      GLUtil::_invalidObjectID};
+hashMap<GLuint, GLuint> GL_API::s_activeVAOIB;
+
 VAOBindings GL_API::s_vaoBufferData;
 GLfloat GL_API::s_depthNearVal = 0.0f;
 I64 GL_API::s_activeWindowGUID = -1;
@@ -86,31 +87,29 @@ namespace {
         GLint index = -1;
         // Select the appropriate index in the array based on the buffer target
         switch (target) {
-            case GL_ARRAY_BUFFER: {
+            case GL_TEXTURE_BUFFER: {
                 index = 0;
             }break;
-            case GL_TEXTURE_BUFFER: {
+            case GL_UNIFORM_BUFFER: {
                 index = 1;
             }break;
-            case GL_UNIFORM_BUFFER: {
+            case GL_SHADER_STORAGE_BUFFER: {
                 index = 2;
             }break;
-            case GL_SHADER_STORAGE_BUFFER: {
+            case GL_PIXEL_UNPACK_BUFFER: {
                 index = 3;
             }break;
-            case GL_ELEMENT_ARRAY_BUFFER: {
+            case GL_DRAW_INDIRECT_BUFFER: {
                 index = 4;
             }break;
-            case GL_PIXEL_UNPACK_BUFFER: {
+            case GL_ARRAY_BUFFER: {
                 index = 5;
             }break;
-            case GL_DRAW_INDIRECT_BUFFER: {
-                index = 6;
-            }break;
-            default: {
+            default:
+            case GL_ELEMENT_ARRAY_BUFFER: {
                 // Make sure the target is available. Assert if it isn't as this
                 // means that a non-supported feature is used somewhere
-                DIVIDE_ASSERT(IS_IN_RANGE_INCLUSIVE(index, 0, 6),
+                DIVIDE_ASSERT(IS_IN_RANGE_INCLUSIVE(index, 0, 5),
                               "GLStates error: attempted to bind an invalid buffer target!");
                 return -1;
             }
@@ -125,11 +124,9 @@ void GL_API::clearStates() {
     setPixelPackUnpackAlignment();
     setActiveVAO(0);
     setActiveFB(RenderTarget::RenderTargetUsage::RT_READ_WRITE, 0);
-    setActiveBuffer(GL_ARRAY_BUFFER, 0);
     setActiveBuffer(GL_TEXTURE_BUFFER, 0);
     setActiveBuffer(GL_UNIFORM_BUFFER, 0);
     setActiveBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-    setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
     setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
     setActiveTransformFeedback(0);
@@ -298,8 +295,14 @@ bool GL_API::deleteBuffers(GLuint count, GLuint* buffers) {
         for (GLuint i = 0; i < count; ++i) {
             GLuint crtBuffer = buffers[i];
             for (GLuint& boundBuffer : s_activeBufferID) {
-                if (crtBuffer != 0 && boundBuffer == crtBuffer) {
+                if (boundBuffer == crtBuffer) {
                     boundBuffer = 0;
+                }
+            }
+
+            for (auto boundBuffer : s_activeVAOIB) {
+                if (boundBuffer.second == crtBuffer) {
+                    boundBuffer.second = 0;
                 }
             }
         }
@@ -593,7 +596,7 @@ bool GL_API::setActiveVAO(GLuint ID, GLuint& previousID) {
     if (s_activeVAOID != ID) {
         // Remember the new binding for future reference
         s_activeVAOID = ID;
-        setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        //setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         // Activate the specified VAO
         glBindVertexArray(ID);
         return true;
@@ -624,20 +627,32 @@ bool GL_API::setActiveTransformFeedback(GLuint ID, GLuint& previousID) {
 
 /// Single place to change buffer objects for every target available
 bool GL_API::setActiveBuffer(GLenum target, GLuint ID, GLuint& previousID) {
-    // We map buffer targets from 0 to n in a static array
-    GLint index = getBufferTargetIndex(target);
+    bool changed = false;
+    if (target == GL_ELEMENT_ARRAY_BUFFER) {
+        previousID = s_activeVAOIB[s_activeVAOID];
+        if (previousID != ID) {
+            s_activeVAOIB[s_activeVAOID] = ID;
+            changed = true;
+        }
+    } else {
+        // We map buffer targets from 0 to n in a static array
+        GLint index = getBufferTargetIndex(target);
 
-    // Prevent double bind
-    previousID = s_activeBufferID[index];
-    if (previousID != ID) {
-        // Remember the new binding for future reference
-        s_activeBufferID[index] = ID;
-        // Bind the specified buffer handle to the desired buffer target
-        glBindBuffer(target, ID);
-        return true;
+        // Prevent double bind
+        previousID = s_activeBufferID[index];
+        if (previousID != ID) {
+            // Remember the new binding for future reference
+            s_activeBufferID[index] = ID;
+            // Bind the specified buffer handle to the desired buffer target
+            changed = true;
+        }
     }
 
-    return false;
+    if (changed) {
+        glBindBuffer(target, ID);
+    }
+
+    return changed;
 }
 
 bool GL_API::setActiveBuffer(GLenum target, GLuint ID) {

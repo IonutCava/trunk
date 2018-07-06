@@ -344,7 +344,9 @@ private:
     /// 0 - current framebuffer, 1 - current read only framebuffer, 2 - current write only framebuffer
     static GLuint s_activeFBID[3];
     /// VB, IB, SB, TB, UB, PUB, DIB
-    static GLuint s_activeBufferID[7];
+    static GLuint s_activeBufferID[6];
+    static hashMap<GLuint, GLuint> s_activeVAOIB;
+
     static GLuint s_activeTransformFeedback;
     static GLint  s_activePackUnpackAlignments[2];
     static GLint  s_activePackUnpackRowLength[2];

@@ -150,8 +150,7 @@ GFXDevice::NodeData RenderPassManager::processVisibleNode(const VisibleNodeProce
         // ... get the node's world matrix properly interpolated
         if (Config::USE_FIXED_TIMESTEP) {
             dataOut._worldMatrix.set(transform->getWorldMatrix(_context.getFrameInterpolationFactor()));
-        }
-        else {
+        } else {
             dataOut._worldMatrix.set(transform->getWorldMatrix());
         }
 
@@ -173,8 +172,7 @@ GFXDevice::NodeData RenderPassManager::processVisibleNode(const VisibleNodeProce
     if (sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::PLAY_ANIMATIONS)) {
         AnimationComponent* const animComp = state._node->get<AnimationComponent>();
         dataOut._normalMatrixWV.element(0, 3) = to_F32(animComp && animComp->playAnimations() ? animComp->boneCount() : 0);
-    }
-    else {
+    } else {
         dataOut._normalMatrixWV.element(0, 3) = 0.0f;
     }
     dataOut._normalMatrixWV.setRow(3, state._node->get<BoundsComponent>()->getBoundingSphere().asVec4());
@@ -187,21 +185,6 @@ GFXDevice::NodeData RenderPassManager::processVisibleNode(const VisibleNodeProce
     dataOut._properties.w = state._isOcclusionCullable ? 1.0f : -1.0f;
 
     return dataOut;
-}
-
-void RenderPassManager::updateNodeData(RenderStagePass stagePass, const PassParams& params, GFX::CommandBuffer& bufferInOut) {
-    const SceneRenderState& sceneRenderState = parent().sceneManager().getActiveScene().renderState();
-
-    RenderQueue::SortedQueues sortedQueues = getQueue().getSortedQueues(stagePass._stage);
-    for (const vectorEASTL<SceneGraphNode*>& queue : sortedQueues) {
-        for (SceneGraphNode* node : queue) {
-            Attorney::RenderingCompRenderPass::prepareDrawPackage(
-                *node->get<RenderingComponent>(),
-                *params._camera,
-                sceneRenderState,
-                stagePass);
-        }
-    }
 }
 
 void RenderPassManager::refreshNodeData(RenderStagePass stagePass, const PassParams& params, GFX::CommandBuffer& bufferInOut) {
@@ -221,7 +204,7 @@ void RenderPassManager::refreshNodeData(RenderStagePass stagePass, const PassPar
         for (SceneGraphNode* node : queue) {
             RenderingComponent& renderable = *node->get<RenderingComponent>();
 
-            RenderPackage& pkg = Attorney::RenderingCompRenderPass::getDrawPackage(renderable, stagePass);
+            RenderPackage& pkg = renderable.getDrawPackage(stagePass);
             if (pkg.isRenderable()) {
                 Attorney::RenderPackageRenderPassManager::updateDrawCommands(pkg, nodeCount, drawCommands);
                 VisibleNodeProcessParams processParams;
@@ -264,12 +247,36 @@ void RenderPassManager::refreshNodeData(RenderStagePass stagePass, const PassPar
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 }
 
-void RenderPassManager::buildDrawCommands(RenderStagePass stagePass, const PassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut)
+void RenderPassManager::buildDrawCommands(RenderStagePass stagePass, const PassParams& params, bool refresh, GFX::CommandBuffer& bufferInOut)
 {
-    this->updateNodeData(stagePass, params, bufferInOut);
+    const SceneRenderState& sceneRenderState = parent().sceneManager().getActiveScene().renderState();
 
-    if (refreshNodeData) {
-        this->refreshNodeData(stagePass, params, bufferInOut);
+    U32 nodeCount = 0;
+    vectorEASTL<IndirectDrawCommand> drawCommands;
+    drawCommands.reserve(Config::MAX_VISIBLE_NODES);
+
+    RenderQueue::SortedQueues sortedQueues = getQueue().getSortedQueues(stagePass._stage);
+    for (const vectorEASTL<SceneGraphNode*>& queue : sortedQueues) {
+        for (SceneGraphNode* node : queue) {
+            Attorney::RenderingCompRenderPass::prepareDrawPackage(
+                *node->get<RenderingComponent>(),
+                *params._camera,
+                sceneRenderState,
+                stagePass);
+
+            if (!refresh) {
+                RenderPackage& pkg = node->get<RenderingComponent>()->getDrawPackage(stagePass);
+                if (pkg.isRenderable()) {
+                    Attorney::RenderPackageRenderPassManager::updateDrawCommands(pkg, nodeCount, drawCommands);
+                }
+                ++nodeCount;
+            }
+
+        }
+    }
+
+    if (refresh) {
+        refreshNodeData(stagePass, params, bufferInOut);
     }
 }
 

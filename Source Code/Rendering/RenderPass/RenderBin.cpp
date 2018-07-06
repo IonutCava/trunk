@@ -151,7 +151,7 @@ void RenderBin::addNodeToBin(const SceneGraphNode& sgn, RenderStagePass stagePas
 
 void RenderBin::populateRenderQueue(RenderStagePass stagePass, vectorEASTL<RenderPackage*>& queueInOut) const {
     for (const RenderBinItem& item : _renderBinStack[to_base(stagePass._stage)]) {
-       RenderPackage& pkg = Attorney::RenderingCompRenderBin::getRenderData(*item._renderable, stagePass);
+       RenderPackage& pkg = item._renderable->getDrawPackage(stagePass);
        if (pkg.isRenderable()) {
            queueInOut.push_back(&pkg);
        }

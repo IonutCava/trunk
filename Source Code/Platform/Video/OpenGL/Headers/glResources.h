@@ -142,9 +142,9 @@ extern thread_local SDL_GLContext _glSecondaryContext;
 extern SharedLock _glSecondaryContextMutex;
 
 void submitRenderCommand(const GenericDrawCommand& drawCommand,
+                         bool drawIndexed,
                          bool useIndirectBuffer,
-                         GLenum internalFormat,
-                         GLuint indexBuffer = 0);
+                         GLenum internalFormat);
 
 /// Populate enumeration tables with appropriate API values
 void fillEnumTables();

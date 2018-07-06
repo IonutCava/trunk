@@ -72,6 +72,13 @@ namespace Divide {
     typedef vectorEASTL<ShaderBufferBinding> ShaderBufferList;
 
     struct DescriptorSet {
+        DescriptorSet(const DescriptorSet& other) = default;
+        DescriptorSet& operator=(const DescriptorSet& other) = default;
+        DescriptorSet(DescriptorSet&& other) = default;
+        DescriptorSet& operator=(DescriptorSet&& other) = default;
+
+        ~DescriptorSet();
+
         //This needs a lot more work!
         ShaderBufferList _shaderBuffers;
         TextureDataContainer _textureData;
@@ -81,7 +88,7 @@ namespace Divide {
         bool operator==(const DescriptorSet &other) const;
         bool operator!=(const DescriptorSet &other) const;
 
-        ~DescriptorSet();
+
     private:
         template<typename T, size_t BlockSize>
         friend class MemoryPool;

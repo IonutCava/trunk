@@ -148,7 +148,7 @@ void glGenericVertexData::draw(const GenericDrawCommand& command) {
     }
 
     // Submit the draw command
-    GLUtil::submitRenderCommand(command, useCmdBuffer, _smallIndices ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, _indexBuffer);
+    GLUtil::submitRenderCommand(command, _indexBuffer > 0, useCmdBuffer, _smallIndices ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT);
 
     // Deactivate transform feedback if needed
     if (feedbackActive) {
@@ -190,6 +190,9 @@ void glGenericVertexData::setIndexBuffer(const IndexBuffer& indices, BufferUpdat
     } else {
         GLUtil::freeBuffer(_indexBuffer);
     }
+
+    GL_API::setActiveVAO(_vertexArray[to_base(GVDUsage::DRAW)]);
+    GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
 }
 
 void glGenericVertexData::updateIndexBuffer(const IndexBuffer& indices) {

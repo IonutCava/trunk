@@ -388,24 +388,27 @@ void glVertexArray::draw(const GenericDrawCommand& command) {
         // for primitive restart requests
         GL_API::togglePrimitiveRestart(_primitiveRestartEnabled);
     }
-    // Bind the the vertex buffer and index buffer
-    GL_API::bindActiveBuffer(vao,
-                             0,
-                             _VBHandle._id,
-                             _VBHandle._offset * GLUtil::VBO::MAX_VBO_CHUNK_SIZE_BYTES,
-                             _effectiveEntrySize);
+  
 
     if (isEnabledOption(command, CmdRenderOptions::RENDER_TESSELLATED)) {
         GL_API::setPatchVertexCount(command._patchVertexCount);
     }
 
-    GLUtil::submitRenderCommand(command, useCmdBuffer, _formatInternal, _IBid);
+    GLUtil::submitRenderCommand(command, true, useCmdBuffer, _formatInternal);
 }
 
 /// Activate and set all of the required vertex attributes.
 void glVertexArray::uploadVBAttributes(GLuint VAO) {
     // Bind the current VAO to save our attributes
     GL_API::setActiveVAO(VAO);
+    // Bind the the vertex buffer and index buffer
+    GL_API::bindActiveBuffer(VAO,
+                             0,
+                             _VBHandle._id,
+                             _VBHandle._offset * GLUtil::VBO::MAX_VBO_CHUNK_SIZE_BYTES,
+                             _effectiveEntrySize);
+    GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _IBid);
+
     static const U32 positionLoc = to_base(AttribLocation::VERTEX_POSITION);
     static const U32 colourLoc = to_base(AttribLocation::VERTEX_COLOR);
     static const U32 normalLoc = to_base(AttribLocation::VERTEX_NORMAL);

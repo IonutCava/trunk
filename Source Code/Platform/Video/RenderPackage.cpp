@@ -67,11 +67,6 @@ const GFX::DrawCommand& RenderPackage::drawCommand(I32 index) const {
     return _drawCommands[index];
 }
 
-GFX::DrawCommand& RenderPackage::drawCommand(I32 cmdIdx) {
-    DIVIDE_ASSERT(cmdIdx < to_I32(_drawCommands.size()), "RenderPackage::drawCommand error: Invalid draw command index!");
-    return _drawCommands[cmdIdx];
-}
-
 const GenericDrawCommand& RenderPackage::drawCommand(I32 index, I32 cmdIndex) const {
     DIVIDE_ASSERT(index < to_I32(_drawCommands.size()), "RenderPackage::drawCommand error: Invalid draw command index!");
     DIVIDE_ASSERT(cmdIndex < to_I32(_drawCommands[index]._drawCommands.size()), "RenderPackage::drawCommand error: Invalid draw command sub-index!");
@@ -93,6 +88,24 @@ void RenderPackage::addDrawCommand(const GFX::DrawCommand& cmd) {
 
     _drawCommands.push_back(cmd);
     SetBit(_dirtyFlags, CommandType::DRAW);
+}
+
+void RenderPackage::setDrawOption(CmdRenderOptions option, bool state) {
+    for (I32 cmdIdx = 0; cmdIdx < drawCommandCount(); ++cmdIdx) {
+        GFX::DrawCommand& cmd = _drawCommands[cmdIdx];
+        for (GenericDrawCommand& drawCmd : cmd._drawCommands) {
+            setOption(drawCmd, option, state);
+        }
+    }
+}
+
+void RenderPackage::setLoD(U8 LoDIntex) {
+    for (I32 cmdIdx = 0; cmdIdx < drawCommandCount(); ++cmdIdx) {
+        GFX::DrawCommand& cmd = _drawCommands[cmdIdx];
+        for (GenericDrawCommand& drawCmd : cmd._drawCommands) {
+            drawCmd._lodIndex = LoDIntex;
+        }
+    }
 }
 
 const Pipeline* RenderPackage::pipeline(I32 index) const {
@@ -165,12 +178,6 @@ const DescriptorSet_ptr& RenderPackage::descriptorSet(I32 index) const {
     return _descriptorSets[index]._set;
 }
 
-DescriptorSet_ptr& RenderPackage::descriptorSet(I32 index) {
-    DIVIDE_ASSERT(index < to_I32(_descriptorSets.size()), "RenderPackage::descriptorSet error: Invalid descriptor set index!");
-    assert(_descriptorSets[index]._set != nullptr);
-    return _descriptorSets[index]._set;
-}
-
 void RenderPackage::descriptorSet(I32 index, const DescriptorSet_ptr& descriptorSets) {
     DIVIDE_ASSERT(index < to_I32(_descriptorSets.size()), "RenderPackage::descriptorSet error: Invalid descriptor set index!");
     assert(descriptorSets != nullptr);
@@ -217,17 +224,18 @@ void RenderPackage::addCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
     }
 }
 
+
 void RenderPackage::updateDrawCommands(U32 cmdIndex, vectorEASTL<IndirectDrawCommand>& drawCmdsInOut) {
     bool dirty = false;
     for (I32 cmdIdx = 0; cmdIdx < drawCommandCount(); ++cmdIdx) {
-        GFX::DrawCommand& cmd = drawCommand(cmdIdx);
+        GFX::DrawCommand& cmd = _drawCommands[cmdIdx];
         for (GenericDrawCommand& drawCmd : cmd._drawCommands) {
             U32 newOffset = to_U32(drawCmdsInOut.size());
             if (drawCmd._commandOffset != newOffset) {
                 drawCmd._commandOffset = newOffset;
                 dirty = true;
             }
-            if (drawCmd._cmd.baseInstance == cmdIndex) {
+            if (drawCmd._cmd.baseInstance != cmdIndex) {
                 drawCmd._cmd.baseInstance = cmdIndex;
                 dirty = true;
             }
@@ -244,14 +252,10 @@ void RenderPackage::updateDrawCommands(U32 cmdIndex, vectorEASTL<IndirectDrawCom
     }
 }
 
-const GFX::CommandBuffer& RenderPackage::commands() const {
-    return *_commands;
-}
-
 GFX::CommandBuffer& RenderPackage::buildAndGetCommandBuffer(bool cacheMiss) {
     cacheMiss = false;
     //ToDo: Try to rebuild only the affected bits and pieces. That's why we have multiple dirty flags -Ionut
-    if (true || _commands == nullptr || _dirtyFlags != 0) {
+    if (_commands == nullptr || _dirtyFlags != 0) {
         cacheMiss = true;
 
         if (_commands == nullptr) {

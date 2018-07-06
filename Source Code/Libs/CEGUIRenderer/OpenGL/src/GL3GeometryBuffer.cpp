@@ -150,7 +150,7 @@ void OpenGL3GeometryBuffer::initialiseOpenGLBuffers()
     configureVertexArray();
     glBufferData(GL_ARRAY_BUFFER, 0, 0, GL_DYNAMIC_DRAW);
 
-   // Unbind Vertex Attribute Array (VAO)
+    // Unbind Vertex Attribute Array (VAO)
     Divide::GL_API::setActiveVAO(0);
 
     // Unbind array and element array buffers

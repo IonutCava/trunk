@@ -261,7 +261,7 @@ class Material : public CachedResource {
     const ShadingMode& getShadingMode() const;
     const BumpMethod&  getBumpMethod()  const;
 
-    void getTextureData(RenderStagePass renderStagePass, TextureDataContainer& textureData);
+    bool getTextureData(RenderStagePass renderStagePass, TextureDataContainer& textureData);
 
     void rebuild();
     void clean();
@@ -290,8 +290,7 @@ class Material : public CachedResource {
     U32 defaultRefractionTextureIndex() const;
 
    private:
-    void getTextureData(ShaderProgram::TextureUsage slot,
-                        TextureDataContainer& container);
+    bool getTextureData(ShaderProgram::TextureUsage slot, TextureDataContainer& container);
 
     void recomputeShaders();
     void setShaderProgramInternal(const stringImpl& shader,
@@ -341,7 +340,6 @@ class Material : public CachedResource {
     TextureOperation _operation;
     BumpMethod _bumpMethod;
     ColourData _colourData;
-
     /// used to keep track of what GFXDevice::reflectionTarget we are using for this rendering pass
     I32 _reflectionIndex;
     I32 _refractionIndex;

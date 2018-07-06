@@ -191,18 +191,13 @@ class RenderingComponent : public SGNComponent<RenderingComponent> {
     void updateEnvProbeList(const EnvironmentProbeList& probes);
 
    protected:
-    std::unique_ptr<RenderPackage>& renderData(RenderStagePass stagePass);
-    const std::unique_ptr<RenderPackage>& renderData(RenderStagePass stagePass) const;
-
-   protected:
     GFXDevice& _context;
     Material_ptr _materialInstance;
 
     /// LOD level is updated at every visibility check
     U8  _lodLevel;  ///<Relative to camera distance
     U32 _renderMask;
-    TextureDataContainer _textureDependencies;
-    std::array<std::unique_ptr<RenderPackage>, to_base(RenderStage::COUNT)> _renderData[to_base(RenderPassType::COUNT)];
+    std::array<std::unique_ptr<RenderPackage>, to_base(RenderStage::COUNT)> _renderPackages[to_base(RenderPassType::COUNT)];
     
     bool _renderPackagesDirty;
     PushConstants _globalPushConstants;
@@ -222,7 +217,7 @@ class RenderingComponent : public SGNComponent<RenderingComponent> {
     size_t _shadowStateBlockHash;
 
     ReflectorType _reflectorType;
-    ShaderBufferList _shaderBuffersCache;
+    DescriptorSet_ptr _descriptorSetCache;
 
     ShaderProgram_ptr _previewRenderTargetColour;
     ShaderProgram_ptr _previewRenderTargetDepth;
@@ -274,22 +269,12 @@ class RenderingCompRenderPass {
             renderable.prepareDrawPackage(camera, sceneRenderState, renderStagePass);
         }
 
-
-        static RenderPackage& getDrawPackage(RenderingComponent& renderable,
-                                             RenderStagePass renderStagePass) {
-            return renderable.getDrawPackage(renderStagePass);
-        }
-
     friend class Divide::RenderPass;
     friend class Divide::RenderPassManager;
 };
 
 class RenderingCompRenderBin {
    private:
-    static RenderPackage& getRenderData(RenderingComponent& renderable, RenderStagePass renderStagePass) {
-        return renderable.getDrawPackage(renderStagePass);
-    }
-
     static size_t getSortKeyHash(RenderingComponent& renderable, RenderStagePass renderStagePass) {
         return renderable.getSortKeyHash(renderStagePass);
     }

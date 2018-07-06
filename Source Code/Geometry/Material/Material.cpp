@@ -551,37 +551,42 @@ bool Material::removeCustomTexture(U8 bindslot) {
     return true;
 }
 
-void Material::getTextureData(ShaderProgram::TextureUsage slot,
+bool Material::getTextureData(ShaderProgram::TextureUsage slot,
                               TextureDataContainer& container) {
     U8 slotValue = to_U8(slot);
     Texture_ptr& crtTexture = _textures[slotValue];
     if (crtTexture) {
-        container.addTexture(crtTexture->getData(), slotValue);
+        return container.addTexture(crtTexture->getData(), slotValue);
     }
+
+    return false;
 }
 
-void Material::getTextureData(RenderStagePass renderStagePass, TextureDataContainer& textureData) {
+bool Material::getTextureData(RenderStagePass renderStagePass, TextureDataContainer& textureData) {
     const U32 textureCount = to_base(ShaderProgram::TextureUsage::COUNT);
     const bool depthstage = renderStagePass.isDepthPass();
 
-    getTextureData(ShaderProgram::TextureUsage::UNIT0, textureData);
-    getTextureData(ShaderProgram::TextureUsage::OPACITY, textureData);
-    getTextureData(ShaderProgram::TextureUsage::NORMALMAP, textureData);
+    bool ret = false;
+    ret = ret || getTextureData(ShaderProgram::TextureUsage::UNIT0, textureData);
+    ret = ret || getTextureData(ShaderProgram::TextureUsage::OPACITY, textureData);
+    ret = ret || getTextureData(ShaderProgram::TextureUsage::NORMALMAP, textureData);
 
     if (!depthstage) {
-        getTextureData(ShaderProgram::TextureUsage::UNIT1, textureData);
-        getTextureData(ShaderProgram::TextureUsage::SPECULAR, textureData);
-        getTextureData(ShaderProgram::TextureUsage::REFLECTION_PLANAR, textureData);
-        getTextureData(ShaderProgram::TextureUsage::REFRACTION_PLANAR, textureData);
-        getTextureData(ShaderProgram::TextureUsage::REFLECTION_CUBE, textureData);
-        getTextureData(ShaderProgram::TextureUsage::REFRACTION_CUBE, textureData);
+        ret = ret || getTextureData(ShaderProgram::TextureUsage::UNIT1, textureData);
+        ret = ret || getTextureData(ShaderProgram::TextureUsage::SPECULAR, textureData);
+        ret = ret || getTextureData(ShaderProgram::TextureUsage::REFLECTION_PLANAR, textureData);
+        ret = ret || getTextureData(ShaderProgram::TextureUsage::REFRACTION_PLANAR, textureData);
+        ret = ret || getTextureData(ShaderProgram::TextureUsage::REFLECTION_CUBE, textureData);
+        ret = ret || getTextureData(ShaderProgram::TextureUsage::REFRACTION_CUBE, textureData);
     }
 
     for (const ExternalTexture& tex : _externalTextures) {
         if (!depthstage || (depthstage && tex._activeForDepth)) {
-            textureData.addTexture(tex._texture->getData(), to_U8(tex._bindSlot));
+            ret = ret || textureData.addTexture(tex._texture->getData(), to_U8(tex._bindSlot));
         }
     }
+
+    return ret;
 }
 
 bool Material::unload() {
