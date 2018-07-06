@@ -27,41 +27,46 @@ Vegetation::~Vegetation(){
 
 void Vegetation::initialize(const std::string& grassShader, Terrain* const terrain, SceneGraphNode* const terrainSGN) {
     assert(terrain);
+    assert(_map.data() != NULL);
+
+    U32 size = (U32) _grassDensity * _billboardCount * 12;
     _grassShader  = CreateResource<ShaderProgram>(ResourceDescriptor(grassShader));
     _grassDensity = _grassDensity/_billboardCount;
     _terrain = terrain;
     _terrainSGN = terrainSGN;
-    U32 size = (U32) _grassDensity * _billboardCount * 12;
     _grassVBO = GFX_DEVICE.newVBO(TRIANGLES);
-    _grassVBO->useHWIndices(false);//<Use custom LOD indices;
     _grassVBO->useLargeIndices(true);
     _grassVBO->computeTriangles(false);
     _grassVBO->reservePositionCount( size );
     _grassVBO->reserveNormalCount( size );
     _grassVBO->getTexcoord().reserve( size );
     _grassVBOBillboardIndice.resize(_billboardCount, 0);
-
-    assert(_map.data() != NULL);
-    _success = generateGrass(_billboardCount,size);
-
+    
     _grassShader->Uniform("lod_metric", 100.0f);
     _grassShader->Uniform("dvd_lightCount", 1);
     _grassShader->Uniform("grassScale", _grassScale);
     _grassShader->UniformTexture("texDiffuse", 0);
 
     _grassVBO->setShaderProgram(_grassShader);
-    if(_success) _success = generateTrees();
 
     RenderStateBlockDescriptor transparent;
     transparent.setCullMode(CULL_MODE_CW);
     transparent.setBlend(true, BLEND_PROPERTY_SRC_ALPHA, BLEND_PROPERTY_INV_SRC_ALPHA);
     _grassStateBlock = GFX_DEVICE.createStateBlock( transparent );
 
-    _render = true;
+    Kernel* kernel = Application::getInstance().getKernel();
+    New Task(kernel->getThreadPool(), 0, true, true, DELEGATE_BIND(&Vegetation::generateGrass, this, _billboardCount, size));
 }
 
 void Vegetation::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState){
+
+    if(_threadedLoadComplete && !_success){
+        _success = generateTrees();
+        if(_success) _render = true;
+    }
+      
     if(!_render || !_success) return;
+
     //Query shadow state every "_stateRefreshInterval" microseconds
     if (_stateRefreshIntervalBuffer >= _stateRefreshInterval){
         _windX = sceneState.getWindDirX();
@@ -77,10 +82,12 @@ void Vegetation::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, Sce
         _stateRefreshIntervalBuffer -= _stateRefreshInterval;
     }
     _stateRefreshIntervalBuffer += deltaTime;
+
+  
 }
 
 void Vegetation::render(SceneGraphNode* const sgn){
-    if(!_render || !_success) return;
+    if(!_render || !_success || !_threadedLoadComplete) return;
     if(GFX_DEVICE.isCurrentRenderStage(SHADOW_STAGE)) return;
 
      SET_STATE_BLOCK(_grassStateBlock);
@@ -148,8 +155,10 @@ bool Vegetation::generateGrass(U32 billboardCount, U32 size){
             ChunkGrassData& chunkGrassData = chunk->getGrassData();
 
             if(chunkGrassData.empty()){
-                 chunkGrassData._grassIndice.resize(_billboardCount);
-                 chunkGrassData._grassVBO = _grassVBO;
+                chunkGrassData._grassIndices.resize(_billboardCount);
+                chunkGrassData._grassIndexOffset.resize(_billboardCount);
+                chunkGrassData._grassIndexSize.resize(_billboardCount);
+                chunkGrassData._grassVBO = _grassVBO;
             }
 
             _grassSize = (F32)(map_color+1) / grassScaleFactor;	
@@ -166,21 +175,21 @@ bool Vegetation::generateGrass(U32 billboardCount, U32 size){
             }
 
             _grassVBOBillboardIndice[index] = _grassVBO->getIndexCount();
-            U32 idx = (U32)_grassVBOBillboardIndice[index] + chunkGrassData._grassIndice[index].size();	
+            U32 idx = (U32)_grassVBOBillboardIndice[index] + chunkGrassData._grassIndices[index].size();	
 
-            U32 indexOffset = 0; U32 currentIndex = 0;
+            U32 indexOffset = 0;
             for(U8 j = 0; j < 3; ++j) {
                 indexOffset = idx + (j * 4);
                 for(U8 l = 0; l < 12; ++l) {
-                    currentIndex = indices[l] + indexOffset;
-                    _grassVBO->addIndex(currentIndex);
-                    chunkGrassData._grassIndice[index].push_back(currentIndex);
+                    chunkGrassData._grassIndices[index].push_back(indices[l] + indexOffset);
                 }
             }
         }
     }
-    _grassVBO->Create();
+    _terrain->getQuadtree().GenerateGrassIndexBuffer(_billboardCount);
+    
     PRINT_FN(Locale::get("CREATE_GRASS_END"));
+    _threadedLoadComplete = true;
     return true;
 }
 

@@ -114,12 +114,12 @@ void Terrain::prepareMaterial(SceneGraphNode* const sgn){
     terrainShader->Uniform("dvd_lightIndex", indices);
     terrainShader->Uniform("dvd_lightCastsShadows",lightShadowCast);
 
-	if(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE)){
+    if(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE)){
         SET_STATE_BLOCK(_terrainReflectionRenderState);
-		terrainShader->Uniform("bbox_min", _boundingBox.getMax());
+        terrainShader->Uniform("bbox_min", _boundingBox.getMax());
     }else{
         SET_STATE_BLOCK(_terrainRenderState);
-		terrainShader->Uniform("bbox_min", _boundingBox.getMin());
+        terrainShader->Uniform("bbox_min", _boundingBox.getMin());
     }
 }
 
@@ -189,18 +189,18 @@ void Terrain::drawGround() const{
 }
 
 Vegetation* const Terrain::getVegetation() const {
-	assert(_vegetationGrassNode != NULL);
-	return _vegetationGrassNode->getNode<Vegetation>();
+    assert(_vegetationGrassNode != NULL);
+    return _vegetationGrassNode->getNode<Vegetation>();
 }
 
 void Terrain::addVegetation(SceneGraphNode* const sgn, Vegetation* veg, std::string grassShader){
-	_vegetationGrassNode = sgn->addNode(veg);
-	_grassShader = grassShader;
+    _vegetationGrassNode = sgn->addNode(veg);
+    _grassShader = grassShader;
 }
 
 void Terrain::toggleVegetation(bool state){ 
-	assert(_vegetationGrassNode != NULL);
-	_vegetationGrassNode->getNode<Vegetation>()->toggleRendering(state);
+    assert(_vegetationGrassNode != NULL);
+    _vegetationGrassNode->getNode<Vegetation>()->toggleRendering(state);
 }
 
 vec3<F32> Terrain::getPositionFromGlobal(F32 x, F32 z) const {

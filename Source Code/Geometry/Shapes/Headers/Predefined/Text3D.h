@@ -36,7 +36,6 @@ public:
                                                                _width(1.0f)
     {
         ///Dummy
-        _geometry->useHWIndices(false);
         _geometry->queueRefresh();
     }
 

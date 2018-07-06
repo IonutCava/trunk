@@ -126,7 +126,7 @@ void GLCheckError(const std::string& File, GLuint Line, char* operation) {
 //	assert(false);
 }
 
-void CALLBACK DebugCallbackARB(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, GLvoid* userParam){
+void APIENTRY CALLBACK DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam){
     DebugOutputToFile((GLuint)(userParam), source, type, id, severity, message);
 }
 

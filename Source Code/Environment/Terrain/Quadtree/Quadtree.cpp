@@ -54,6 +54,10 @@ void Quadtree::Build(BoundingBox& terrainBBox,
     GenerateIndexBuffer(HMsize, groundVBO);
 }
 
+void Quadtree::GenerateGrassIndexBuffer(U32 bilboardCount){
+    _root->GenerateGrassIndexBuffer(bilboardCount);
+}
+
 void Quadtree::GenerateIndexBuffer(vec2<U32>& HMsize, VertexBufferObject* const groundVBO){
     const U32 terrainWidth  = HMsize.x;
     const U32 terrainHeight = HMsize.y;

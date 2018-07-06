@@ -43,7 +43,7 @@ public:
     void DrawGround(bool drawInReflection);
     void DrawGrass(U32 geometryIndex, Transform* const parentTransform);
     void DrawBBox();
-
+    void GenerateGrassIndexBuffer(U32 bilboardCount);
     QuadtreeNode*	FindLeaf(const vec2<F32>& pos);
 
     Quadtree()	{_root = NULL; _parentShaderProgram = NULL; _parentVBO = NULL;}

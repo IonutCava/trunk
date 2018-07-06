@@ -61,7 +61,6 @@ bool Terrain::loadThreadedResources(TerrainDescriptor* const terrain){
     _terrainHeightScaleFactor = terrain->getScale().y;
 
     _groundVBO = GFX_DEVICE.newVBO(TRIANGLE_STRIP);
-    _groundVBO->useHWIndices(false);//<Use custom LOD indices;
     _groundVBO->useLargeIndices(true);//<32bit indices
     const vectorImpl<vec3<F32> >& normalData	= _groundVBO->getNormal();
     const vectorImpl<vec3<F32> >& tangentData	= _groundVBO->getTangent();
@@ -239,13 +238,13 @@ void Terrain::initializeVegetation(TerrainDescriptor* const terrain,SceneGraphNo
     grass.push_back(CreateResource<Texture2D>(grassBillboard2));
     grass.push_back(CreateResource<Texture2D>(grassBillboard3));
     //grass.push_back(CreateResource<Texture2D>(grassBillboard4));
-	Vegetation* veg = New Vegetation(3, terrain->getGrassDensity(),
+    Vegetation* veg = New Vegetation(3, terrain->getGrassDensity(),
                                     terrain->getGrassScale(),
                                     terrain->getTreeDensity(),
                                     terrain->getTreeScale(),
                                     terrain->getVariable("grassMap"),
                                     grass);
-	addVegetation(terrainSGN, veg, "grass");
+    addVegetation(terrainSGN, veg, "grass");
     toggleVegetation(true);
     veg->initialize(_grassShader,this,terrainSGN);
 }

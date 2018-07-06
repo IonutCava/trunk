@@ -20,6 +20,8 @@
 #ifndef GLFONTSTASH_H
 #define GLFONTSTASH_H
 
+#include "Hardware/Video/OpenGL/Headers/GLWrapper.h"
+
 struct FONScontext* glfonsCreate(int width, int height, int flags);
 void glfonsDelete(struct FONScontext* ctx);
 #endif
@@ -73,7 +75,7 @@ static void glfons__renderDraw(void* userPtr, const float* verts, const float* t
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, gl->tex);
      
-    glBindVertexArray(gl->glfons_vaoID);
+    GL_API::setActiveVAO(gl->glfons_vaoID);
     GLuint vertDataSize = sizeof(float) * 2 * nverts;
     glBindBuffer(GL_ARRAY_BUFFER, gl->glfons_vboID);
     glBufferData(GL_ARRAY_BUFFER, 2 * vertDataSize + sizeof(unsigned char) * 4 * nverts, NULL, GL_STREAM_DRAW);
@@ -91,7 +93,6 @@ static void glfons__renderDraw(void* userPtr, const float* verts, const float* t
     glDrawArrays(GL_TRIANGLES, 0, nverts);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 

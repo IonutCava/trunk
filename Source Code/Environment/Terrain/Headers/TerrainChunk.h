@@ -34,10 +34,13 @@ class SceneGraphNode;
 class VertexBufferObject;
 
 struct ChunkGrassData{
-    vectorImpl<vectorImpl<U32> > _grassIndice;
-    VertexBufferObject* _grassVBO;
-    F32                 _grassVisibility;
-    inline bool empty(){return _grassIndice.empty();}
+    vectorImpl<vectorImpl<U32 > > _grassIndices;
+    vectorImpl<U32 >              _grassIndexOffset;
+    vectorImpl<U32 >              _grassIndexSize;
+    VertexBufferObject*           _grassVBO;
+    U32                           _grassChunkOffset;
+    F32                           _grassVisibility;
+    inline bool empty() {return _grassIndices.empty();}
 
     ChunkGrassData() : _grassVBO(NULL)
     {
@@ -45,37 +48,42 @@ struct ChunkGrassData{
 
     ~ChunkGrassData()
     {
-        for(U8 i = 0; i < _grassIndice.size(); i++){
-            _grassIndice[i].clear();
-        }
-        _grassIndice.clear();
+        _grassIndexOffset.clear();
+        _grassIndexSize.clear();
     }
 };
 
 class TerrainChunk{
 public:
+    TerrainChunk() {}
+    ~TerrainChunk() {Destroy();}
+    void Load(U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize, VertexBufferObject* const vbo);
     void Destroy();
-    I32 DrawGround(I8 lod,ShaderProgram* const program, VertexBufferObject* const vbo);
-    void DrawGrass(I8 lod, F32 d,U32 geometryIndex, Transform* const parentTransform);
-    void Load(U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize);
 
-    inline vectorImpl<U32>&			getIndiceArray(I8 lod)		   {return _indice[lod];}
-
-    ChunkGrassData& getGrassData() {return _grassData;}
+    I32  DrawGround(I8 lod,ShaderProgram* const program, VertexBufferObject* const vbo);
+    void DrawGrass(I8 lod, F32 distance, U32 index, Transform* const parentTransform);
+    
     void addObject(Mesh* obj);
     void addTree(const vec4<F32>& pos,F32 scale, const FileData& tree,SceneGraphNode* parentNode);
 
-    TerrainChunk() {}
-    ~TerrainChunk() {Destroy();}
+    void GenerateGrassIndexBuffer(U32 bilboardCount);
+
+    inline F32 getMinHeight()              const {return _heightBounds[0];}
+    inline F32 getMaxHeight()              const {return _heightBounds[1];}
+    inline ChunkGrassData&  getGrassData()       {return _grassData;}
 
 private:
-    void ComputeIndicesArray(I8 lod, U8 depth,const vec2<U32>& position,const vec2<U32>& heightMapSize);
+    void ComputeIndicesArray(I8 lod, U8 depth,const vec2<U32>& position,const vec2<U32>& heightMapSize, VertexBufferObject* const vbo);
 
 private:
     vectorImpl<U32> 	_indice[Config::TERRAIN_CHUNKS_LOD];
     U16					_indOffsetW[Config::TERRAIN_CHUNKS_LOD];
     U16  				_indOffsetH[Config::TERRAIN_CHUNKS_LOD];
+    U32                 _lodIndOffset[Config::TERRAIN_CHUNKS_LOD];
+    U32                 _lodIndCount[Config::TERRAIN_CHUNKS_LOD];
+    U32                 _chunkIndOffset;
     ChunkGrassData      _grassData;
+    F32                 _heightBounds[2]; //< 0 = minHeight, 1 = maxHeight
 };
 
 #endif

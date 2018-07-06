@@ -71,10 +71,7 @@ private:
     void      setMousePosition(GLdouble x, GLdouble y) const;
     vec3<GLfloat> unproject(const vec3<GLfloat>& windowCoord) const;
     void lookAt(const vec3<GLfloat>& eye, const vec3<GLfloat>& target, const vec3<GLfloat>& up);
-
-    inline void lookAt(const mat4<GLfloat>& viewMatrix, const vec3<GLfloat>& viewDirection) {
-        Divide::GL::_lookAt(viewMatrix.mat, viewDirection);
-    }
+    void lookAt(const mat4<GLfloat>& viewMatrix, const vec3<GLfloat>& viewDirection);
 
     void beginFrame();
     void endFrame();
@@ -172,7 +169,7 @@ public:
            void updateProjectionMatrix();
            void updateViewMatrix();
 private:
-    GLFWvidmode _modes[20];
+
     void loadInContextInternal();
     boost::lockfree::spsc_queue<boost::function0<GLvoid>, boost::lockfree::capacity<10> > _loadQueue;
     boost::thread *_loaderThread;

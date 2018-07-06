@@ -82,20 +82,20 @@ void GL_API::setLight(Light* const light){
     LightProperties crtLight = light->getProperties();
     
     F32 lightType = crtLight._position.w;
-	
+    
     
     mat4<F32> viewMatrix;
-	getMatrix(VIEW_MATRIX, viewMatrix);
+    getMatrix(VIEW_MATRIX, viewMatrix);
 
     crtLight._position.set(viewMatrix * vec4<F32>(crtLight._position.xyz(), std::min(crtLight._position.w, 1.0f)));
 
     if(lightType < 0.5f){ //directional light
         crtLight._position.normalize();
     }else if(lightType > 1.5f){ //spot light
-		F32 spotExponent = crtLight._direction.w;
-	    crtLight._direction.set(viewMatrix * vec4<F32>(crtLight._direction.xyz(), 0.0f));
+        F32 spotExponent = crtLight._direction.w;
+        crtLight._direction.set(viewMatrix * vec4<F32>(crtLight._direction.xyz(), 0.0f));
         crtLight._direction.normalize();
-		crtLight._direction.w = spotExponent;
+        crtLight._direction.w = spotExponent;
     }
     crtLight._position.w = lightType;
    
@@ -143,6 +143,10 @@ void GL_API::lookAt(const vec3<GLfloat>& eye, const vec3<GLfloat>& target, const
                                                    glm::vec3(target.x, target.y, target.z),
                                                    glm::vec3(up.x, up.y, up.z))),
                         normalize(viewDirection));
+}
+
+void GL_API::lookAt(const mat4<GLfloat>& viewMatrix, const vec3<GLfloat>& viewDirection) {
+    Divide::GL::_lookAt(viewMatrix.mat, viewDirection);
 }
 
 void GL_API::getMatrix(const MATRIX_MODE& mode, mat4<GLfloat>& mat) {
@@ -243,7 +247,7 @@ void GL_API::setActiveTextureUnit(GLuint unit,const bool force){
 void GL_API::setActiveVAO(GLuint id,const bool force){
     if(_activeVAOId == id && !force)
         return; //<prevent double bind
-
+        
     _activeVAOId = id;
     GLCheck(glBindVertexArray(id));
 }
@@ -272,26 +276,26 @@ void GL_API::clearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a, bool force){
 }
 
 void GL_API::restoreViewport(){
-	if(!_viewportUpdateGL)  return;
+    if(!_viewportUpdateGL)  return;
 
-	if(!_viewportForced) Divide::GL::_viewport.pop(); //push / pop only if new viewport (not-forced)
+    if(!_viewportForced) Divide::GL::_viewport.pop(); //push / pop only if new viewport (not-forced)
 
-	const vec4<GLuint>& prevViewport = Divide::GL::_viewport.top();
-	GLCheck(glViewport(prevViewport.x, prevViewport.y, prevViewport.z, prevViewport.w));
-	
+    const vec4<GLuint>& prevViewport = Divide::GL::_viewport.top();
+    GLCheck(glViewport(prevViewport.x, prevViewport.y, prevViewport.z, prevViewport.w));
+    
 }
 
 vec4<GLuint> GL_API::setViewport(const vec4<GLuint>& viewport, bool force){
     _viewportUpdateGL = !viewport.compare(Divide::GL::_viewport.top());
 
-	if(_viewportUpdateGL) {
+    if(_viewportUpdateGL) {
 
-		_viewportForced = force;
-		if(!_viewportForced) Divide::GL::_viewport.push(viewport); //push / pop only if new viewport (not-forced)
-		else                 Divide::GL::_viewport.top() = viewport;
-		
-		GLCheck(glViewport(viewport.x,viewport.y,viewport.z,viewport.w));
-	}
-	
+        _viewportForced = force;
+        if(!_viewportForced) Divide::GL::_viewport.push(viewport); //push / pop only if new viewport (not-forced)
+        else                 Divide::GL::_viewport.top() = viewport;
+        
+        GLCheck(glViewport(viewport.x,viewport.y,viewport.z,viewport.w));
+    }
+    
     return Divide::GL::_viewport.top();
 }

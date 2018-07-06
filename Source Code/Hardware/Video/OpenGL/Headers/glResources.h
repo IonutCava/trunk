@@ -89,7 +89,7 @@ namespace Divide {
         ///from: https://sites.google.com/site/opengltutorialsbyaks/introduction-to-opengl-4-1---tutorial-05
         ///Check the current operation for errors
         void DebugOutputToFile(GLuint contexId, GLenum source, GLenum type, GLuint id, GLenum severity, const GLchar* message);
-        void CALLBACK DebugCallbackARB(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, GLvoid* userParam);
+        void APIENTRY CALLBACK DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
         ///Check the current operation for errors
         void GLCheckError(const std::string& File, GLuint Line, GLchar* operation);
         ///Clear previous error codes
@@ -104,7 +104,7 @@ namespace Divide {
 #    define GLCheck(Func) (Func)
 #endif
 
-#define BUFFER_OFFSET(i) ((char *)NULL + (i))
+#define BUFFER_OFFSET(i) reinterpret_cast<void*>(i)
 
 ///Half float conversion from: http://www.opengl.org/discussion_boards/archive/index.php/t-154530.html [thx gking]
 namespace glDataConversion {

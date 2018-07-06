@@ -44,19 +44,20 @@ public:
                             _largeIndices(false),
                             _format(UNSIGNED_SHORT),
                             _currentShader(NULL),
-                            _firstElementPtr(NULL),
+                            _firstElement(0),
                             _instanceCount(1),
                             _indexDelimiter(0)
     {
         _depthPass = _forceOptimizeForDepth = false;
         _VBOid = _IBOid = _DepthVBOid = _LODcount = _rangeCount = 0;
-        _useHWIndices = _optimizeForDepth = true;
+        _optimizeForDepth = true;
         Reset();
     }
 
     virtual ~VertexBufferObject()
     {
-        _VBOid = _DepthVBOid = _IBOid = _LODcount = 0;
+        _VBOid = _DepthVBOid = _IBOid = 0;
+        _LODcount = 1;
         _currentShader = NULL;
         Reset();
     }
@@ -73,12 +74,11 @@ public:
     virtual void setShaderProgram(ShaderProgram* const shaderProgram) = 0;
     inline ShaderProgram* const currentShader()  {return _currentShader;}
 
+    inline void setLODCount(const U8 LODcount)               {_LODcount = LODcount;}
     inline void setInstanceCount(const U32 instanceCount)    {_instanceCount = instanceCount;}
     inline void setRangeCount(const U32 rangeCount)          {_rangeCount = rangeCount;}
-    inline void setFirstElement(const void* firstElementPtr) {_firstElementPtr = firstElementPtr;}
+    inline void setFirstElement(U32 firstElement)            {_firstElement = firstElement;}
     inline void setDepthPass(bool state = false)             {if(_optimizeForDepth) _depthPass = state;}
-
-    inline void useHWIndices(bool state = true)              {assert(!_created); _useHWIndices = state;}
     inline void useLargeIndices(bool state = true)           {assert(!_created); _largeIndices = state; _format = _largeIndices ? UNSIGNED_INT : UNSIGNED_SHORT;}
     inline void setIndicesDelimiter(U32 delimiterValue)      {_indexDelimiter = delimiterValue;}
     inline void computeTriangles(bool state = true)          {_computeTriangles = state;}
@@ -276,8 +276,6 @@ protected:
     vectorImpl<vec4<F32> > _boneWeights;
     vectorImpl<vec3<U32> > _dataTriangles;	//< 3 indices, pointing to position values, that form a triangle in the mesh.
     vec3<F32> _minPosition,  _maxPosition;
-    ///Some entities use their own indices for rendering (e.g. Terrain LOD system)
-    bool _useHWIndices;
     ///Use ither U32 or U16 indices. Always prefer the later
     bool _largeIndices;
     ///Some objects need triangle data in order for other parts of the engine to take advantage of direct data (physics, navmeshes, etc)
@@ -295,8 +293,8 @@ protected:
     bool _created;
     ///Used for VertexAttribPointer data.
     ShaderProgram* _currentShader;
-    ///Pointer to the first element in the buffer
-    const void *_firstElementPtr;
+    ///Offset to the first element in the buffer
+    U32 _firstElement;
     ///The format the data is in (TRIANGLES, TRIANGLE_STRIP,QUADS,etc)
     PrimitiveType  _type;
 };

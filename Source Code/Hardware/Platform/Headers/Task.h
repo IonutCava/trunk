@@ -88,7 +88,7 @@ public:
       _done(false){
           ///If runOnce is true, then we only run the Task once (# of ticks is 1)
           ///If runOnce is false, then we run the Task until stopTask() is called
-          runOnce ? _numberOfTicks = 1 : _numberOfTicks = -1;
+          runOnce ? _numberOfTicks = 0 : _numberOfTicks = -1;
           if(startOnCreate) startTask();
       }
     ~Task();

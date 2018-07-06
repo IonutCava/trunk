@@ -56,6 +56,7 @@ public:
       _render(false),
       _success(false),
       _shadowMapped(true),
+      _threadedLoadComplete(false),
       _terrain(NULL),
       _terrainSGN(NULL),
       _grassShader(NULL),
@@ -65,13 +66,13 @@ public:
           _map.create(map);
       }
     ~Vegetation();
-	void postLoad(SceneGraphNode* const sgn) {}
+    void postLoad(SceneGraphNode* const sgn) {}
     void initialize(const std::string& grassShader, Terrain* const terrain,SceneGraphNode* const terrainSGN);
     inline void toggleRendering(bool state){_render = state;}
     ///parentTransform: the transform of the parent terrain node
     void render(SceneGraphNode* const sgn);
     void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
-	inline bool isInView(const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck = true) {return true;}
+    inline bool isInView(const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck = true) {return true;}
 
 private:
     bool generateTrees();			   ///< True = Everything OK, False = Error. Check _errorCode
@@ -81,7 +82,8 @@ private:
 private:
     //variables
     bool _render; ///< Toggle vegetation rendering On/Off
-    bool _success ;
+    bool _success;
+    boost::atomic_bool _threadedLoadComplete;
     SceneGraphNode* _terrainSGN;
     Terrain*        _terrain;
     D32 _grassDensity, _treeDensity;

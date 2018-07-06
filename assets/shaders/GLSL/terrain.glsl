@@ -30,9 +30,8 @@ void main(void){
 
     computeData();
 
-    _texCoord = vec3((dvd_Vertex.xyz - bbox_min.xyz) / bbox_diff).sp;
+    _texCoord = vec3((dvd_Vertex.xyz - bbox_min) / bbox_diff).sp;
 
-    _vertexWV = dvd_ViewMatrix * _vertexW;
     computeLightVectors();
     
     if(dvd_enableShadowMapping) {
@@ -44,7 +43,7 @@ void main(void){
         _shadowCoord[0] = dvd_lightProjectionMatrices[0] * dvd_Vertex;
     }
 
-    gl_Position = dvd_ViewProjectionMatrix * _vertexW;
+    gl_Position = dvd_ViewProjectionMatrix * dvd_Vertex;
 }
 
 -- Fragment.Depth
@@ -77,7 +76,6 @@ in vec3 _viewDirection;
 in vec2 _texCoord;
 in vec3 _normalMV;
 in vec4 _vertexW;
-in vec4 _vertexWV;
 
 #include "lightInput.cmn"
 
