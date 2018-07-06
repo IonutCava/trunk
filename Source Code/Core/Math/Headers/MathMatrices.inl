@@ -2163,11 +2163,11 @@ void mat4<T>::ortho(U left, U right, U bottom, U top, U zNear, U zFar) {
 
 template<typename T>
 template<typename U>
-void mat4<T>::perspective(U fovyRad, U aspect, U zNear, U zFar) {
+void mat4<T>::perspective(Angle::DEGREES<U> fovyRad, U aspect, U zNear, U zFar) {
     assert(!IS_ZERO(aspect));
     assert(zFar > zNear);
 
-    F32 tanHalfFovy = std::tan(fovyRad * 0.5f);
+    Angle::DEGREES<F32> tanHalfFovy = std::tan(fovyRad * 0.5f);
 
     zero();
 

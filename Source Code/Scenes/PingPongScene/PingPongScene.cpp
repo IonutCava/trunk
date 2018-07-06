@@ -239,10 +239,10 @@ void PingPongScene::processInput(U8 playerIndex, const U64 deltaTime) {
     static F32 paddleMovementDivisor = 10;
     // Camera controls
     if (state().playerState(playerIndex).angleLR() != MoveDirection::NONE) {
-        _paddleCam->rotateYaw(to_F32(state().playerState(playerIndex).angleLR()));
+        _paddleCam->rotateYaw(Angle::DEGREES<F32>(state().playerState(playerIndex).angleLR()));
     }
     if (state().playerState(playerIndex).angleUD() != MoveDirection::NONE) {
-        _paddleCam->rotatePitch(to_F32(state().playerState(playerIndex).angleUD()));
+        _paddleCam->rotatePitch(Angle::DEGREES<F32>(state().playerState(playerIndex).angleUD()));
     }
 
     SceneGraphNode_ptr paddle(_sceneGraph->findNode("paddle").lock());

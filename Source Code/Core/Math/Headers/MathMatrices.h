@@ -654,7 +654,7 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     template<typename U>
     void ortho(U left, U right, U bottom, U top, U zNear, U zFar);
     template<typename U>
-    void perspective(U fovyRad, U aspect, U zNear, U zFar);
+    void perspective(Angle::DEGREES<U> fovyRad, U aspect, U zNear, U zFar);
     template<typename U>
     void frustum(U left, U right, U bottom, U top, U nearVal, U farVal);
 

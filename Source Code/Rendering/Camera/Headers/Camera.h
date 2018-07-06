@@ -59,7 +59,7 @@ class Camera : public Resource {
     virtual void move(F32 dx, F32 dy, F32 dz);
     /// Global rotations are applied relative to the world axis, not the camera's
     void setGlobalRotation(F32 yaw, F32 pitch, F32 roll = 0.0f);
-    inline void setGlobalRotation(const vec3<F32>& euler) {
+    inline void setGlobalRotation(const vec3<Angle::DEGREES<F32>>& euler) {
         setGlobalRotation(euler.yaw, euler.pitch, euler.roll);
     }
     /// Sets the camera's position, target and up directions
@@ -77,12 +77,12 @@ class Camera : public Resource {
     /// Creates a quaternion based on the specified euler angles and calls
     /// "rotate" to change
     /// the orientation
-    virtual void rotate(F32 yaw, F32 pitch, F32 roll);
+    virtual void rotate(Angle::DEGREES<F32> yaw, Angle::DEGREES<F32> pitch, Angle::DEGREES<F32> roll);
     /// Creates a quaternion based on the specified axis-angle and calls
     /// "rotate"
     /// to change
     /// the orientation
-    inline void rotate(const vec3<F32>& axis, F32 angle) {
+    inline void rotate(const vec3<F32>& axis, Angle::DEGREES<F32> angle) {
         rotate(Quaternion<F32>(axis, angle * _cameraTurnSpeed));
     }
     /// Yaw, Pitch and Roll call "rotate" with a apropriate quaternion for  each
@@ -91,47 +91,47 @@ class Camera : public Resource {
     /// positive Yaw
     /// behind the camera and a negative one in front of the camera
     /// (so we invert the angle - left will turn left when facing -Z)
-    inline void rotateYaw(F32 angle) {
+    inline void rotateYaw(Angle::DEGREES<F32> angle) {
         rotate(Quaternion<F32>(
             _yawFixed ? _fixedYawAxis : _orientation * WORLD_Y_AXIS,
             -angle * _cameraTurnSpeed));
     }
     /// Change camera's roll.
-    inline void rotateRoll(F32 angle) {
+    inline void rotateRoll(Angle::DEGREES<F32> angle) {
         rotate(Quaternion<F32>(_orientation * WORLD_Z_AXIS,
                                -angle * _cameraTurnSpeed));
     }
     /// Change camera's pitch
-    inline void rotatePitch(F32 angle) {
+    inline void rotatePitch(Angle::DEGREES<F32> angle) {
         rotate(Quaternion<F32>(_orientation * WORLD_X_AXIS,
                                -angle * _cameraTurnSpeed));
     }
     /// Sets the camera's Yaw angle.
     /// This creates a new orientation quaternion for the camera and extracts the euler angles
-    inline void setYaw(F32 angle) {
+    inline void setYaw(Angle::DEGREES<F32> angle) {
         setRotation(angle, _euler.pitch, _euler.roll);
     }
     /// Sets the camera's Pitch angle. Yaw and Roll are previous extracted values
-    inline void setPitch(F32 angle) {
+    inline void setPitch(Angle::DEGREES<F32> angle) {
         setRotation(_euler.yaw, angle, _euler.roll);
     }
     /// Sets the camera's Roll angle. Yaw and Pitch are previous extracted values
-    inline void setRoll(F32 angle) {
+    inline void setRoll(Angle::DEGREES<F32> angle) {
         setRotation(_euler.yaw, _euler.pitch, angle);
     }
     /// Sets the camera's Yaw angle.
     /// This creates a new orientation quaternion for the camera and extracts the euler angles
-    inline void setGlobalYaw(F32 angle) {
+    inline void setGlobalYaw(Angle::DEGREES<F32> angle) {
         setGlobalRotation(angle, _euler.pitch, _euler.roll);
     }
     /// Sets the camera's Pitch angle. Yaw and Roll are previous extracted
     /// values
-    inline void setGlobalPitch(F32 angle) {
+    inline void setGlobalPitch(Angle::DEGREES<F32> angle) {
         setGlobalRotation(_euler.yaw, angle, _euler.roll);
     }
     /// Sets the camera's Roll angle. Yaw and Pitch are previous extracted
     /// values
-    inline void setGlobalRoll(F32 angle) {
+    inline void setGlobalRoll(Angle::DEGREES<F32> angle) {
         setGlobalRotation(_euler.yaw, _euler.pitch, angle);
     }
     /// Moves the camera forward or backwards
@@ -162,13 +162,13 @@ class Camera : public Resource {
         _viewMatrixDirty = true;
     }
 
-    inline void setRotation(F32 yaw, F32 pitch, F32 roll = 0.0f) {
+    inline void setRotation(Angle::DEGREES<F32> yaw, Angle::DEGREES<F32> pitch, Angle::DEGREES<F32> roll = 0.0f) {
         setRotation(Quaternion<F32>(-pitch, -yaw, -roll));
     }
 
     void setAspectRatio(F32 ratio);
-    void setVerticalFoV(F32 verticalFoV);
-    void setHorizontalFoV(F32 horizontalFoV);
+    void setVerticalFoV(Angle::DEGREES<F32> verticalFoV);
+    void setHorizontalFoV(Angle::DEGREES<F32> horizontalFoV);
 
     /// Mouse sensitivity: amount of pixels per radian (this should be moved out
     /// of the camera class)
@@ -223,7 +223,7 @@ class Camera : public Resource {
         return vec3<F32>(-viewMat.m[0][2], -viewMat.m[1][2], -viewMat.m[2][2]);
     }
 
-    inline const vec3<F32>& getEuler() const { return _euler; }
+    inline const vec3<Angle::DEGREES<F32>>& getEuler() const { return _euler; }
 
     inline const vec3<F32>& getTarget() const { return _target; }
 
@@ -237,10 +237,10 @@ class Camera : public Resource {
 
     inline bool isOrthoProjected() const { return _isOrthoCamera; }
 
-    inline const F32 getVerticalFoV() const { return _verticalFoV; }
+    inline const Angle::DEGREES<F32> getVerticalFoV() const { return _verticalFoV; }
 
-    inline const F32 getHorizontalFoV() const {
-        F32 halfFoV = Angle::to_RADIANS(_verticalFoV) * 0.5f;
+    inline const Angle::DEGREES<F32> getHorizontalFoV() const {
+        Angle::RADIANS<F32> halfFoV = Angle::to_RADIANS(_verticalFoV) * 0.5f;
         return Angle::to_DEGREES(2.0f *
                                        std::atan(tan(halfFoV) * _aspectRatio));
     }
@@ -325,14 +325,15 @@ class Camera : public Resource {
     mat4<F32> _viewMatrix;
     mat4<F32> _projectionMatrix;
     Quaternion<F32> _orientation;
-    vec3<F32> _eye, _target;
-    vec3<F32> _euler, _fixedYawAxis;
+    vec3<F32> _eye, _target, _fixedYawAxis;
     vec2<F32> _zPlanes;
     vec4<F32> _orthoRect;
 
-    F32 _verticalFoV;
+    vec3<Angle::DEGREES<F32>> _euler;
+    Angle::DEGREES<F32> _verticalFoV;
+    Angle::DEGREES<F32> _accumPitchDegrees;
+
     F32 _aspectRatio;
-    F32 _accumPitchDegrees;
     F32 _turnSpeedFactor;
     F32 _moveSpeedFactor;
     F32 _mouseSensitivity;

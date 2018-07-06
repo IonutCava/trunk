@@ -940,15 +940,15 @@ bool Scene::updateCameraControls(U8 playerIndex) {
         default:
         case Camera::CameraType::FREE_FLY: {
             if (playerState.angleLR() != MoveDirection::NONE) {
-                cam.rotateYaw(to_F32(playerState.angleLR()));
+                cam.rotateYaw(Angle::DEGREES<F32>(playerState.angleLR()));
                 playerState.cameraUpdated(true);
             }
             if (playerState.angleUD() != MoveDirection::NONE) {
-                cam.rotatePitch(to_F32(playerState.angleUD()));
+                cam.rotatePitch(Angle::DEGREES<F32>(playerState.angleUD()));
                 playerState.cameraUpdated(true);
             }
             if (playerState.roll() != MoveDirection::NONE) {
-                cam.rotateRoll(to_F32(playerState.roll()));
+                cam.rotateRoll(Angle::DEGREES<F32>(playerState.roll()));
                 playerState.cameraUpdated(true);
             }
             if (playerState.moveFB() != MoveDirection::NONE) {

@@ -35,24 +35,36 @@
 namespace Divide {
 
 namespace {
-    //ref: http://stackoverflow.com/questions/22215217/why-is-my-straightforward-quaternion-multiplication-faster-than-sse
-    inline static __m128 multiplynew(__m128 a, __m128 b) {
-        __m128 a1123 = _mm_shuffle_ps(a, a, 0xE5);
-        __m128 a2231 = _mm_shuffle_ps(a, a, 0x7A);
-        __m128 b1000 = _mm_shuffle_ps(b, b, 0x01);
-        __m128 b2312 = _mm_shuffle_ps(b, b, 0x9E);
-        __m128 t1 = _mm_mul_ps(a1123, b1000);
-        __m128 t2 = _mm_mul_ps(a2231, b2312);
-        __m128 t12 = _mm_add_ps(t1, t2);
-        const __m128i mask = _mm_set_epi32(0, 0, 0, 0x80000000);
-        __m128 t12m = _mm_xor_ps(t12, _mm_castsi128_ps(mask)); // flip sign bits
-        __m128 a3312 = _mm_shuffle_ps(a, a, 0x9F);
-        __m128 b3231 = _mm_shuffle_ps(b, b, 0x7B);
-        __m128 a0000 = _mm_shuffle_ps(a, a, 0x00);
-        __m128 t3 = _mm_mul_ps(a3312, b3231);
-        __m128 t0 = _mm_mul_ps(a0000, b);
-        __m128 t03 = _mm_sub_ps(t0, t3);
-        return _mm_add_ps(t03, t12m);
+    //ref: http://stackoverflow.com/questions/18542894/how-to-multiply-two-quaternions-with-minimal-instructions?lq=1
+    inline static __m128 multiplynew(__m128 xyzw, __m128 abcd) {
+        /* The product of two quaternions is:                                 */
+        /* (X,Y,Z,W) = (xd+yc-zb+wa, -xc+yd+za+wb, xb-ya+zd+wc, -xa-yb-zc+wd) */
+        __m128 wzyx = _mm_shuffle_ps(xyzw, xyzw, _MM_SHUFFLE(0, 1, 2, 3));
+        __m128 baba = _mm_shuffle_ps(abcd, abcd, _MM_SHUFFLE(0, 1, 0, 1));
+        __m128 dcdc = _mm_shuffle_ps(abcd, abcd, _MM_SHUFFLE(2, 3, 2, 3));
+
+        /* variable names below are for parts of componens of result (X,Y,Z,W) */
+
+        /* nX stands for -X and similarly for the other components             */
+        /* znxwy  = (xb - ya, zb - wa, wd - zc, yd - xc) */
+        __m128 ZnXWY = _mm_hsub_ps(_mm_mul_ps(xyzw, baba), _mm_mul_ps(wzyx, dcdc));
+
+        /* xzynw  = (xd + yc, zd + wc, wb + za, yb + xa) */
+        __m128 XZYnW = _mm_hadd_ps(_mm_mul_ps(xyzw, dcdc), _mm_mul_ps(wzyx, baba));
+
+        /* _mm_shuffle_ps(XZYnW, ZnXWY, _MM_SHUFFLE(3,2,1,0)) */
+        /*      = (xd + yc, zd + wc, wd - zc, yd - xc)        */
+        /* _mm_shuffle_ps(ZnXWY, XZYnW, _MM_SHUFFLE(2,3,0,1)) */
+        /*      = (zb - wa, xb - ya, yb + xa, wb + za)        */
+
+        /* _mm_addsub_ps adds elements 1 and 3 and subtracts elements 0 and 2, so we get: */
+        /* _mm_addsub_ps(*, *) = (xd+yc-zb+wa, xb-ya+zd+wc, wd-zc+yb+xa, yd-xc+wb+za)     */
+
+        __m128 XZWY = _mm_addsub_ps(_mm_shuffle_ps(XZYnW, ZnXWY, _MM_SHUFFLE(3, 2, 1, 0)),
+                                    _mm_shuffle_ps(ZnXWY, XZYnW, _MM_SHUFFLE(2, 3, 0, 1)));
+
+        /* now we only need to shuffle the components in place and return the result      */
+        return _mm_shuffle_ps(XZWY, XZWY, _MM_SHUFFLE(2, 1, 3, 0));
     }
 };
 

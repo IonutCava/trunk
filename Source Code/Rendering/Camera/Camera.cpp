@@ -121,7 +121,7 @@ void Camera::rotate(const Quaternion<F32>& q) {
     _viewMatrixDirty = true;
 }
 
-void Camera::rotate(F32 yaw, F32 pitch, F32 roll) {
+void Camera::rotate(Angle::DEGREES<F32> yaw, Angle::DEGREES<F32> pitch, Angle::DEGREES<F32> roll) {
     if (_rotationLocked) {
         return;
     }

@@ -264,7 +264,7 @@ constexpr vec3<RADIANS<T>> to_RADIANS(const vec3<DEGREES<T>>& angle) {
 
 template <typename T>
 constexpr vec3<DEGREES<T>> to_DEGREES(const vec3<RADIANS<T>>& angle) {
-    return vec3<RADIANS<T>>(angle * M_180DIVPI);
+    return vec3<DEGREES<T>>(angle * M_180DIVPI);
 }
 
 template <typename T>
@@ -274,7 +274,7 @@ constexpr vec4<RADIANS<T>> to_RADIANS(const vec4<DEGREES<T>>& angle) {
 
 template <typename T>
 constexpr vec4<DEGREES<T>> to_DEGREES(const vec4<RADIANS<T>>& angle) {
-    return vec4<RADIANS<T>>(angle * M_180DIVPI);
+    return vec4<DEGREES<T>>(angle * M_180DIVPI);
 }
 
 };  // namespace Angle
