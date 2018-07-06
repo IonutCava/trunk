@@ -392,8 +392,8 @@ private:
     typedef std::array<ImageBindSettings, MAX_ACTIVE_TEXTURE_SLOTS> imageBoundMapDef;
     static imageBoundMapDef s_imageBoundMap;
 
+    static SharedLock s_mipmapQueueSetLock;
     static std::set<GLuint> s_mipmapQueueSet;
-    static moodycamel::ConcurrentQueue<GLuint> s_mipmapQueue;
 
     /// /*texture slot*/ /*sampler handle*/
     typedef std::array<GLuint, MAX_ACTIVE_TEXTURE_SLOTS> samplerBoundMapDef;

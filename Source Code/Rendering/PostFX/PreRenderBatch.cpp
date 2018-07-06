@@ -78,7 +78,7 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
                                      GFXImageFormat::RED16F,
                                      GFXDataFormat::FLOAT_16);
     lumaDescriptor.setSampler(lumaSampler);
-    lumaDescriptor.toggleAutomaticMipMapGeneration(false);
+    lumaDescriptor.automaticMipMapGeneration(false);
     {
         // make the texture square sized and power of two
         U16 lumaRez = to_U16(nextPOW2(to_U32(rt.getWidth() / 3.0f)));

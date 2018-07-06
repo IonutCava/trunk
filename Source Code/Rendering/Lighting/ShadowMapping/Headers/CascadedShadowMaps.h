@@ -57,8 +57,8 @@ class CascadedShadowMaps : public ShadowMap {
     void init(ShadowMapInfo* const smi);
 
    protected:
-    void calculateSplitDepths(const Camera& cam);
-    void applyFrustumSplits();
+    void calculateSplitDepths(const mat4<F32>& projMatrix, const vec2<F32>& nearFarPlanes);
+    void applyFrustumSplits(const mat4<F32>& invViewMatrix, const vec2<F32>& nearFarPlanes);
 
    protected:
     U8 _numSplits;
@@ -67,9 +67,7 @@ class CascadedShadowMaps : public ShadowMap {
     U32 _horizBlur;
     U32 _vertBlur;
     BoundingBox _previousFrustumBB;
-    vec2<F32> _sceneZPlanes;
     vec3<F32> _lightPosition;
-    mat4<F32> _viewInvMatrixCache;
     ShaderProgram_ptr _previewDepthMapShader;
     ShaderProgram_ptr _blurDepthMapShader;
     PushConstants     _blurDepthMapConstants;

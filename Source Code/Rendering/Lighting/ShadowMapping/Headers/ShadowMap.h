@@ -87,7 +87,7 @@ class NOINITVTABLE ShadowMap {
     static U16  findDepthMapLayer(ShadowType shadowType);
     static void commitDepthMapLayer(ShadowType shadowType, U32 layer);
     static bool freeDepthMapLayer(ShadowType shadowType, U32 layer);
-    static void clearShadowMapBuffers(GFXDevice& context);
+    static void clearShadowMapBuffers(GFX::CommandBuffer& bufferInOut);
 
    protected:
      Camera* playerCamera() const;

@@ -363,7 +363,8 @@ namespace Divide {
             ImTextureID texId = NULL;
 
             SamplerDescriptor sampler;
-            sampler.setMinFilter(minFilterNearest ? TextureFilter::NEAREST : TextureFilter::LINEAR);
+            sampler.setMinFilter(minFilterNearest ? (useMipmapsIfPossible ? TextureFilter::NEAREST_MIPMAP_NEAREST : TextureFilter::NEAREST)
+                                                  : (useMipmapsIfPossible ? TextureFilter::LINEAR_MIPMAP_LINEAR : TextureFilter::LINEAR));
             sampler.setMagFilter(magFilterNearest ? TextureFilter::NEAREST : TextureFilter::LINEAR);
             sampler.setWrapModeU(wraps ? TextureWrap::REPEAT : TextureWrap::CLAMP);
             sampler.setWrapModeV(wrapt ? TextureWrap::REPEAT : TextureWrap::CLAMP);
@@ -375,7 +376,7 @@ namespace Divide {
                                                                                       GFXImageFormat::RED,
                                          GFXDataFormat::UNSIGNED_BYTE);
             descriptor.setSampler(sampler);
-            descriptor.toggleAutomaticMipMapGeneration(useMipmapsIfPossible);
+            descriptor.automaticMipMapGeneration(useMipmapsIfPossible);
 
             ResourceDescriptor textureDescriptor(name);
 

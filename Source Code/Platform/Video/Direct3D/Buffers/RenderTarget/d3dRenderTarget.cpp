@@ -31,4 +31,6 @@ void d3dRenderTarget::blitFrom(RenderTarget* inputFB,
 void d3dRenderTarget::blitFrom(RenderTarget* inputFB,
                                U8 index,
                                bool blitColour, bool blitDepth) {}
+
+void d3dRenderTarget::setDefaultState(const RTDrawDescriptor& drawPolicy) {}
 };

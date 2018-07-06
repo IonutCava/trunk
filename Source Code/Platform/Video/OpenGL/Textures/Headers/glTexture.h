@@ -73,9 +73,6 @@ class glTexture final : public Texture,
 
     void setCurrentSampler(const SamplerDescriptor& descriptor) override;
 
-
-    void refreshMipMaps(bool immediate) override;
-
    protected:
     void threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallback) override;
     void reserveStorage();

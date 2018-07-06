@@ -174,16 +174,19 @@ void ShadowMap::bindShadowMaps(GFXDevice& context, GFX::CommandBuffer& bufferInO
                                           : RTAttachmentType::Depth;
 
         U8 bindSlot = LightPool::getShadowBindSlotOffset(static_cast<ShadowType>(i));
-        TextureData data = context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SHADOW, i)).getAttachment(attachment, 0).texture()->getData();
-        descriptorSetCmd._set->_textureData.addTexture(data, bindSlot);
+        RTAttachment& shadowTexture = context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SHADOW, i)).getAttachment(attachment, 0);
+        descriptorSetCmd._set->_textureData.addTexture(shadowTexture.texture()->getData(), bindSlot);
     }
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 }
 
-void ShadowMap::clearShadowMapBuffers(GFXDevice& context) {
-    /*for (U8 i = 0; i < to_base(ShadowType::COUNT); ++i) {
-        context.renderTarget(RenderTargetID(RenderTargetUsage::SHADOW, i)).clear(RenderTarget::defaultPolicy());
-    }*/
+void ShadowMap::clearShadowMapBuffers(GFX::CommandBuffer& bufferInOut) {
+    GFX::ResetRenderTargetCommand resetRenderTargetCommand;
+    for (U8 i = 0; i < to_base(ShadowType::COUNT); ++i) {
+        resetRenderTargetCommand._source = RenderTargetID(RenderTargetUsage::SHADOW, i);
+        resetRenderTargetCommand._descriptor = RenderTarget::defaultPolicy();
+        GFX::EnqueueCommand(bufferInOut, resetRenderTargetCommand);
+    }
 }
 
 U16 ShadowMap::findDepthMapLayer(ShadowType shadowType) {

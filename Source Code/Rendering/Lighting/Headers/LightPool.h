@@ -140,6 +140,11 @@ class LightPool : public SceneComponent {
         return _currentShadowCastingLight;
     }
 
+  private:
+    typedef vectorEASTL<LightProperties> LightPropertiesVec;
+    typedef vectorEASTL<Light::ShadowProperties> LightShadowProperties;
+    typedef vectorFast<Light*> LightVec;
+
   protected:
     friend class SceneManager;
     bool generateShadowMaps(SceneRenderState& sceneRenderState, const Camera& playerCamera, GFX::CommandBuffer& bufferInOut);
@@ -151,10 +156,12 @@ class LightPool : public SceneComponent {
                             });
     }
 
+    void shadowCastingLights(const vec3<F32>& eyePos, LightVec& sortedShadowLights) const;
+
   private:
       void init();
       void waitForTasks(U8 stageIndex);
-      void uploadLightBuffers(U8 stageIndex);
+      void uploadLightBuffers(const vec3<F32>& eyePos, U8 stageIndex);
 
   private:
     typedef vectorEASTL<LightProperties> LightPropertiesVec;

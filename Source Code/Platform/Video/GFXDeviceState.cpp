@@ -145,7 +145,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     hiZSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
 
     hiZDescriptor.setSampler(hiZSampler);
-    hiZDescriptor.toggleAutomaticMipMapGeneration(false);
+    hiZDescriptor.automaticMipMapGeneration(false);
 
     SamplerDescriptor screenSampler;
     screenSampler.setFilters(TextureFilter::NEAREST);
@@ -191,7 +191,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
         TextureDescriptor editorDescriptor(TextureType::TEXTURE_2D,
                                            GFXImageFormat::RGB8,
                                            GFXDataFormat::UNSIGNED_BYTE);
-        editorDescriptor.toggleAutomaticMipMapGeneration(true);
         editorDescriptor.setSampler(editorSampler);
 
         vector<RTAttachmentDescriptor> attachments = {
@@ -210,7 +209,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
         TextureDescriptor accumulationDescriptor(TextureType::TEXTURE_2D,
                                                  GFXImageFormat::RGBA16F,
                                                  GFXDataFormat::FLOAT_16);
-        accumulationDescriptor.toggleAutomaticMipMapGeneration(false);
+        accumulationDescriptor.automaticMipMapGeneration(false);
 
         SamplerDescriptor accumulationSampler;
         accumulationSampler.setFilters(TextureFilter::NEAREST);

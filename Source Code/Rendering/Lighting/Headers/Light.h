@@ -67,6 +67,7 @@ class Light : public SceneNode {
            vec4<F32> _floatValues[Config::Lighting::MAX_SPLITS_PER_LIGHT];
 
            inline void set(const ShadowProperties& other) {
+               _lightDetails = other._lightDetails;
                _arrayOffset.set(other._arrayOffset);
                for (U8 i = 0; i < Config::Lighting::MAX_SPLITS_PER_LIGHT; ++i) {
                    _lightVP[i].set(other._lightVP[i]);

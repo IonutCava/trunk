@@ -246,7 +246,7 @@ class TextureDescriptor : public PropertyDescriptor {
           _dataType(dataType),
           _type(type),
           _compressed(false),
-          _automaticMipMaps(true),
+          _autoMipMaps(true),
           _mipLevels(0u, 1u),
           _msaaSamples(-1)
     {
@@ -270,9 +270,9 @@ class TextureDescriptor : public PropertyDescriptor {
         _baseFormat = baseFromInternalFormat(_internalFormat);
         _dataType = GFXDataFormat::UNSIGNED_BYTE;
         _type = TextureType::TEXTURE_2D;
-        _automaticMipMaps = true;
         _mipLevels.set(0u, 1u);
         _msaaSamples = -1;
+        _autoMipMaps = true;
     }
 
     inline void setLayerCount(U32 layerCount) { 
@@ -323,14 +323,6 @@ class TextureDescriptor : public PropertyDescriptor {
         return _baseFormat;
     }
 
-    inline bool automaticMipMapGeneration() const {
-        return _automaticMipMaps;
-    }
-
-    inline void toggleAutomaticMipMapGeneration(const bool state) {
-        _automaticMipMaps = state;
-    }
-
     inline void type(TextureType type) { _type = type; }
 
     inline TextureType type() const { return _type; }
@@ -339,13 +331,18 @@ class TextureDescriptor : public PropertyDescriptor {
 
     inline void msaaSamples(I16 sampleCount) { _msaaSamples = sampleCount; }
 
+    inline bool automaticMipMapGeneration() const { return _autoMipMaps; }
+
+    inline void automaticMipMapGeneration(const bool state) { _autoMipMaps = state; }
+
+
     inline size_t getHash() const override {
         size_t hash = 0;
         Util::Hash_combine(hash, _layerCount);
         Util::Hash_combine(hash, to_U32(_internalFormat));
         Util::Hash_combine(hash, to_U32(_type));
         Util::Hash_combine(hash, _compressed);
-        Util::Hash_combine(hash, _automaticMipMaps);
+        Util::Hash_combine(hash, _autoMipMaps);
         Util::Hash_combine(hash, _baseFormat); 
         Util::Hash_combine(hash, _dataType);
         Util::Hash_combine(hash, _mipLevels.min);
@@ -360,8 +357,8 @@ class TextureDescriptor : public PropertyDescriptor {
     U32 _layerCount;
     TextureType _type;
     bool _compressed;
-    /// Automatically compute mipmaps
-    bool _automaticMipMaps;
+    /// Automatically compute mip mpas (overwrites any manual mipmap computation)
+    bool _autoMipMaps;
     /// The sampler used to initialize this texture with
     SamplerDescriptor _samplerDescriptor;
     /// Mip levels

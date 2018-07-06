@@ -530,7 +530,7 @@ bool glShaderProgram::recompileInternal() {
     threadedLoad(DELEGATE_CBK<void, Resource_wptr>(), true);
     // Restore bind state
     if (wasBound) {
-        bind();
+        bind(wasBound);
     }
     return getState() == ResourceState::RES_LOADED;
 }
@@ -578,7 +578,7 @@ bool glShaderProgram::unbind() {
 }
 
 /// Bind this shader program
-bool glShaderProgram::bind() {
+bool glShaderProgram::bind(bool& wasBound) {
     // If the shader isn't ready or failed to link, stop here
     if (!isValid()) {
         return false;
@@ -590,7 +590,7 @@ bool glShaderProgram::bind() {
     }
 
     // Set this program as the currently active one
-    GL_API::setActiveProgram(_shaderProgramID);
+    wasBound = GL_API::setActiveProgram(_shaderProgramID);
     // After using the shader at least once, validate the shader if needed
     if (!_validated) {
         _validationQueued = true;

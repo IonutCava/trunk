@@ -62,6 +62,8 @@ class d3dRenderTarget : public RenderTarget {
                   U8 index,
                   bool blitColour = true,
                   bool blitDepth = false) override;
+
+    void setDefaultState(const RTDrawDescriptor& drawPolicy) override;
 };
 
 };  // namespace Divide

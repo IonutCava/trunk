@@ -387,7 +387,7 @@ void RenderPassManager::mainPass(const PassParams& params, RenderTarget& target,
             // We don't need to clear the colour buffers at this stage since ... hopefully, they will be overwritten completely. Right?
             RTDrawDescriptor& drawPolicy =  params._drawPolicy ? *params._drawPolicy
                                                                 : (!Config::DEBUG_HIZ_CULLING ? RenderTarget::defaultPolicyNoClear()
-                                                                                                : RenderTarget::defaultPolicyKeepColour());
+                                                                                              : RenderTarget::defaultPolicyKeepColour());
 
             drawPolicy.drawMask().setEnabled(RTAttachmentType::Depth, 0, drawToDepth);
 

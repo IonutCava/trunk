@@ -7,7 +7,6 @@ layout(binding = SHADOW_LAYERED_MAP_ARRAY) uniform sampler2DArray          texDe
 
 
 #define DEBUG_SHADOWMAPPING
-//#define DEBUG_SHADOWSPLITS
 
 // set this to whatever (current cascade, current depth comparison result, anything)
 int g_shadowTempInt = -2;
@@ -16,9 +15,12 @@ int g_shadowTempInt = -2;
 #include "shadow_point.frag"
 #include "shadow_spot.frag"
 
-float getShadowFactor(in int index, in float fragDepth, in uvec4 lightData) {
-    switch (lightData.x) {
-        case LIGHT_DIRECTIONAL     : return applyShadowDirectional(index, int(lightData.y), fragDepth);
+float getShadowFactor(in int index, in float fragDepth) {
+    Shadow currentShadowSource = dvd_ShadowSource[index];
+    uvec4 lightDetails = currentShadowSource._lightDetails;
+
+    switch (lightDetails.x) {
+        case LIGHT_DIRECTIONAL     : return applyShadowDirectional(currentShadowSource, int(lightDetails.y), fragDepth);
         /*case LIGHT_OMNIDIRECTIONAL : return applyShadowPoint(index);
         case LIGHT_SPOT            : return applyShadowSpot(index);*/
     }
@@ -29,7 +31,7 @@ float getShadowFactor(in int index, in float fragDepth, in uvec4 lightData) {
 float shadow_loop(){
     float shadow = 1.0;
     for (int i = 0; i < TOTAL_SHADOW_LIGHTS; ++i) {
-        shadow *= getShadowFactor(i, gl_FragCoord.z, dvd_ShadowSource[i]._lightDetails);
+        shadow *= getShadowFactor(i, gl_FragCoord.z);
     }
 
     return saturate(shadow);

@@ -221,7 +221,7 @@ void RenderPass::render(const SceneRenderState& renderState, GFX::CommandBuffer&
                 for (RenderPassCuller::VisibleNode& node : nodes) {
                     RenderingComponent* const rComp = node._node->get<RenderingComponent>();
                     if (ReflectionUtil::isInBudget()) {
-                        // Excluse node from rendering itself into the pass
+                        // Exclude node from rendering itself into the pass
                         bool isVisile = rComp->renderOptionEnabled(RenderingComponent::RenderOptions::IS_VISIBLE);
                         rComp->toggleRenderOption(RenderingComponent::RenderOptions::IS_VISIBLE, false);
                         if (Attorney::RenderingCompRenderPass::updateReflection(*rComp,

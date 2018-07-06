@@ -59,7 +59,7 @@
   <anisotropicFilteringLevel>8</anisotropicFilteringLevel>
   <!-- detail level: off = 0, low = 1 (no blurring, 512x512 base resolution), medium = 2 (blurring, 512x512 base resolution) -->
   <!--               high = 3 (blurring, 1024x1024 base resolution), ultra = 4 (blurring, 2048x2048 base resolution) -->
-  <shadowDetailLevel>0</shadowDetailLevel>
+  <shadowDetailLevel>1</shadowDetailLevel>
   <renderDetailLevel>4</renderDetailLevel>
   <enableFog>true</enableFog>
   <fogDensity>3</fogDensity>

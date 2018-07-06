@@ -149,7 +149,7 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     /// This works exactly like SetSubroutines, but for a single index.
     void SetSubroutine(ShaderType type, U32 index) const;
     /// Bind this shader program
-    bool bind();
+    bool bind(bool& wasBound);
     static bool unbind();
     /// Returns true if the shader is currently active
     bool isBound() const;
@@ -184,8 +184,8 @@ namespace Attorney {
         static void addLineOffset(ShaderType stage, U32 offset) {
             glShaderProgram::_lineOffset[to_U32(stage)] += offset;
         }
-        static bool bind(glShaderProgram& program) {
-            return program.bind();
+        static bool bind(glShaderProgram& program, bool& wasBound) {
+            return program.bind(wasBound);
         }
         static bool unbind() {
             return glShaderProgram::unbind();

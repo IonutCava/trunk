@@ -98,8 +98,8 @@ void CascadedShadowMaps::init(ShadowMapInfo* const smi) {
 
     vector<vec2<F32>> blurSizes(_numSplits);
     blurSizes[0].set(1.0f / (depthMap.getWidth() * 1.0f), 1.0f / (depthMap.getHeight() * 1.0f));
-    for (int i = 1; i < _numSplits; ++i) {
-        blurSizes[i].set(blurSizes[i - 1] / 2.0f);
+    for (U8 i = 1; i < _numSplits; ++i) {
+        blurSizes[i].set(blurSizes[i - 1] * 0.5f);
     }
 
     _blurDepthMapConstants.set("blurSizes", GFX::PushConstantType::VEC2, blurSizes);
@@ -112,38 +112,25 @@ void CascadedShadowMaps::render(U32 passIdx, GFX::CommandBuffer& bufferInOut) {
     _lightPosition.set(_light->getPosition());
 
     Camera* camera = playerCamera();
-    _sceneZPlanes.set(camera->getZPlanes());
-    camera->getWorldMatrix(_viewInvMatrixCache);
     camera->getFrustum().getCornersWorldSpace(_frustumCornersWS);
     camera->getFrustum().getCornersViewSpace(_frustumCornersVS);
 
-    calculateSplitDepths(*camera);
-    applyFrustumSplits();
-
-    /*const RenderPassCuller::VisibleNodeList& nodes = 
-        SceneManager::instance().cullSceneGraph(RenderStage::SHADOW);
-
-    _previousFrustumBB.reset();
-    for (RenderPassCuller::VisibleNode node : nodes) {
-        SceneGraphNode* node_ptr = node.second;
-        if (node_ptr) {
-            _previousFrustumBB.add(node_ptr->getBoundingBoxConst());
-        }
-    }
-    _previousFrustumBB.transformHomogeneous(_shadowCamera->getViewMatrix());*/
-
+    const vec2<F32>& nearFarPlanes = camera->getZPlanes();
+    calculateSplitDepths(camera->getProjectionMatrix(), nearFarPlanes);
+    applyFrustumSplits(camera->getWorldMatrix(), nearFarPlanes);
+    
     RenderPassManager::PassParams params;
     params._doPrePass = false;
     params._stage = RenderStage::SHADOW;
-    params._target = RenderTargetID(RenderTargetUsage::SHADOW, to_U32(getShadowMapType()));
+    params._target = getDepthMapID();
     params._bindTargets = false;
 
     GFX::BeginRenderPassCommand beginRenderPassCmd;
     beginRenderPassCmd._target = params._target;
     beginRenderPassCmd._name = "DO_CSM_PASS";
+    beginRenderPassCmd._descriptor = RenderTarget::defaultPolicyNoClear();
     GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
-    GFX::BeginRenderSubPassCommand beginRenderSubPassCmd;
     GFX::EndRenderSubPassCommand endRenderSubPassCommand;
 
     GFX::BeginDebugScopeCommand beginDebugScopeCommand;
@@ -152,14 +139,15 @@ void CascadedShadowMaps::render(U32 passIdx, GFX::CommandBuffer& bufferInOut) {
     RenderTarget::DrawLayerParams drawParams;
     drawParams._type = RTAttachmentType::Colour;
     drawParams._index = 0;
-    
+    drawParams._layer = getArrayOffset();
+
     RenderPassManager& rpm = _context.parent().renderPassManager();
     for (U8 i = 0; i < _numSplits; ++i) {
         beginDebugScopeCommand._scopeName = Util::StringFormat("CSM_PASS_%d", i).c_str();
         GFX::EnqueueCommand(bufferInOut, beginDebugScopeCommand);
 
-        drawParams._layer = to_U16(i + getArrayOffset());
-        beginRenderSubPassCmd._writeLayers.resize(1, drawParams);
+        GFX::BeginRenderSubPassCommand beginRenderSubPassCmd;
+        beginRenderSubPassCmd._writeLayers.push_back(drawParams);
         GFX::EnqueueCommand(bufferInOut, beginRenderSubPassCmd);
 
         params._passIndex = passIdx;
@@ -169,6 +157,8 @@ void CascadedShadowMaps::render(U32 passIdx, GFX::CommandBuffer& bufferInOut) {
 
         GFX::EnqueueCommand(bufferInOut, endRenderSubPassCommand);
         GFX::EnqueueCommand(bufferInOut, endDebugScopeCommand);
+
+        ++drawParams._layer;
     }
     
     GFX::EndRenderPassCommand endRenderPassCmd;
@@ -177,11 +167,9 @@ void CascadedShadowMaps::render(U32 passIdx, GFX::CommandBuffer& bufferInOut) {
     postRender(bufferInOut);
 }
 
-void CascadedShadowMaps::calculateSplitDepths(const Camera& cam) {
-    const mat4<F32>& projMatrixCache = cam.getProjectionMatrix();
-
-    F32 fd = _sceneZPlanes.y;//std::min(_sceneZPlanes.y, _previousFrustumBB.getExtent().z);
-    F32 nd = _sceneZPlanes.x;//std::max(_sceneZPlanes.x, std::fabs(_previousFrustumBB.nearestDistanceFromPoint(cam.getEye())));
+void CascadedShadowMaps::calculateSplitDepths(const mat4<F32>& projMatrix, const vec2<F32>& nearFarPlanes) {
+    F32 fd = nearFarPlanes.y;//std::min(_sceneZPlanes.y, _previousFrustumBB.getExtent().z);
+    F32 nd = nearFarPlanes.x;//std::max(_sceneZPlanes.x, std::fabs(_previousFrustumBB.nearestDistanceFromPoint(cam.getEye())));
 
     F32 i_f = 1.0f, cascadeCount = (F32)_numSplits;
     _splitDepths[0] = nd;
@@ -192,34 +180,31 @@ void CascadedShadowMaps::calculateSplitDepths(const Camera& cam) {
     _splitDepths[_numSplits] = fd;
 
     for (U8 i = 0; i < _numSplits; ++i) {
-        F32 crtSplitDepth = 0.5f * (-_splitDepths[i + 1] * projMatrixCache.mat[10] + projMatrixCache.mat[14]) / _splitDepths[i + 1] + 0.5f;
+        F32 crtSplitDepth = 0.5f * (-_splitDepths[i + 1] * projMatrix.mat[10] + projMatrix.mat[14]) / _splitDepths[i + 1] + 0.5f;
        _light->setShadowFloatValue(i, crtSplitDepth);
     }
 }
 
-void CascadedShadowMaps::applyFrustumSplits() {
+void CascadedShadowMaps::applyFrustumSplits(const mat4<F32>& invViewMatrix, const vec2<F32>& nearFarPlanes) {
     for (U8 pass = 0 ; pass < _numSplits; ++pass) {
         F32 minZ = _splitDepths[pass];
         F32 maxZ = _splitDepths[pass + 1];
 
         for (U8 i = 0; i < 4; ++i) {
-            _splitFrustumCornersVS[i] =
-                _frustumCornersVS[i + 4] * (minZ / _sceneZPlanes.y);
+            _splitFrustumCornersVS[i] = _frustumCornersVS[i + 4] * (minZ / nearFarPlanes.y);
         }
 
         for (U8 i = 4; i < 8; ++i) {
-            _splitFrustumCornersVS[i] =
-                _frustumCornersVS[i] * (maxZ / _sceneZPlanes.y);
+            _splitFrustumCornersVS[i] = _frustumCornersVS[i] * (maxZ / nearFarPlanes.y);
         }
 
         for (U8 i = 0; i < 8; ++i) {
-            _frustumCornersWS[i].set(
-                _viewInvMatrixCache.transformHomogeneous(_splitFrustumCornersVS[i]));
+            _frustumCornersWS[i].set(invViewMatrix.transformHomogeneous(_splitFrustumCornersVS[i]));
         }
 
-        vec3<F32> frustumCentroid(0.0f);
+        vec3<F32> frustumCentroid = _frustumCornersWS[0];
 
-        for (U8 i = 0; i < 8; ++i) {
+        for (U8 i = 1; i < 8; ++i) {
             frustumCentroid += _frustumCornersWS[i];
         }
         // Find the centroid
@@ -227,8 +212,7 @@ void CascadedShadowMaps::applyFrustumSplits() {
 
         // Position the shadow-caster camera so that it's looking at the centroid,
         // and backed up in the direction of the sunlight
-        F32 distFromCentroid = std::max((maxZ - minZ),
-                     _splitFrustumCornersVS[4].distance(_splitFrustumCornersVS[5])) + _nearClipOffset;
+        F32 distFromCentroid = std::max((maxZ - minZ), _splitFrustumCornersVS[4].distance(_splitFrustumCornersVS[5])) + _nearClipOffset;
     
         vec3<F32> currentEye = frustumCentroid - (_lightPosition * distFromCentroid);
 
@@ -256,52 +240,53 @@ void CascadedShadowMaps::applyFrustumSplits() {
 }
 
 void CascadedShadowMaps::postRender(GFX::CommandBuffer& bufferInOut) {
-    if (_context.shadowDetailLevel() == RenderDetailLevel::LOW) {
-        return;
-    }
-
     RenderTarget& depthMap = getDepthMap();
 
     PipelineDescriptor pipelineDescriptor;
     pipelineDescriptor._stateHash = _context.get2DStateBlock();
-    pipelineDescriptor._shaderProgramHandle = _blurDepthMapShader->getID();
     pipelineDescriptor._shaderFunctions[to_base(ShaderType::GEOMETRY)].push_back(_horizBlur);
 
     GenericDrawCommand pointsCmd;
     pointsCmd._primitiveType = PrimitiveType::API_POINTS;
     pointsCmd._drawCount = 1;
-    
+
+    GFX::BeginRenderPassCommand beginRenderPassCmd;
     GFX::BindPipelineCommand pipelineCmd;
+    GFX::SendPushConstantsCommand pushConstantsCommand;
+    GFX::BindDescriptorSetsCommand descriptorSetCmd;
+    GFX::EndRenderPassCommand endRenderPassCmd;
+    GFX::DrawCommand drawCmd;
+    drawCmd._drawCommands.push_back(pointsCmd);
+
+    // Blur horizontally
+    beginRenderPassCmd._target = _blurBuffer._targetID;
+    beginRenderPassCmd._name = "DO_CSM_BLUR_PASS_HORIZONTAL";
+    GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
+
+    pipelineDescriptor._shaderProgramHandle = _blurDepthMapShader->getID();
     pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
     GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
-    // Blur horizontally
     _blurDepthMapConstants.set("layerOffsetRead", GFX::PushConstantType::INT, (I32)getArrayOffset());
     _blurDepthMapConstants.set("layerOffsetWrite", GFX::PushConstantType::INT, (I32)0);
 
-    GFX::SendPushConstantsCommand pushConstantsCommand;
     pushConstantsCommand._constants = _blurDepthMapConstants;
     GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
     TextureData texData = depthMap.getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
-    GFX::BindDescriptorSetsCommand descriptorSetCmd;
     descriptorSetCmd._set = _context.newDescriptorSet(); 
     descriptorSetCmd._set->_textureData.addTexture(texData, to_U8(ShaderProgram::TextureUsage::UNIT0));
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
-    GFX::BeginRenderPassCommand beginRenderPassCmd;
-    beginRenderPassCmd._target = _blurBuffer._targetID;
-    beginRenderPassCmd._name = "DO_CSM_BLUR_PASS";
-    GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
-
-    GFX::DrawCommand drawCmd;
-    drawCmd._drawCommands.push_back(pointsCmd);
     GFX::EnqueueCommand(bufferInOut, drawCmd);
 
-    GFX::EndRenderPassCommand endRenderPassCmd;
     GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
 
     // Blur vertically
+    beginRenderPassCmd._target = getDepthMapID();
+    beginRenderPassCmd._name = "DO_CSM_BLUR_PASS_VERTICAL";
+    GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
+
     pipelineDescriptor._shaderFunctions[to_base(ShaderType::GEOMETRY)].front() = _vertBlur;
     pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
     GFX::EnqueueCommand(bufferInOut, pipelineCmd);
@@ -316,9 +301,6 @@ void CascadedShadowMaps::postRender(GFX::CommandBuffer& bufferInOut) {
     descriptorSetCmd._set = _context.newDescriptorSet();
     descriptorSetCmd._set->_textureData.addTexture(texData, to_U8(ShaderProgram::TextureUsage::UNIT0));
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
-
-    beginRenderPassCmd._target = getDepthMapID();
-    GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
     GFX::EnqueueCommand(bufferInOut, drawCmd);
 

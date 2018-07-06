@@ -858,7 +858,8 @@ bool GL_API::bindPipeline(const Pipeline& pipeline) {
     // We need a valid shader as no fixed function pipeline is available
     
     // Try to bind the shader program. If it failed to load, or isn't loaded yet, cancel the draw request for this frame
-    if (Attorney::GLAPIShaderProgram::bind(*program)) {
+    bool wasBound = false;
+    if (Attorney::GLAPIShaderProgram::bind(*program, wasBound)) {
         const ShaderFunctions& functions = pipeline.shaderFunctions();
         for (U8 type = 0; type < to_U8(ShaderType::COUNT); ++type) {
             Attorney::GLAPIShaderProgram::SetSubroutines(*program, static_cast<ShaderType>(type), functions[type]);
@@ -958,9 +959,11 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             glFramebuffer& rt = static_cast<glFramebuffer&>(_context.renderTargetPool().renderTarget(crtCmd._target));
             Attorney::GLAPIRenderTarget::begin(rt, crtCmd._descriptor);
             GL_API::s_activeRenderTarget = &rt;
+            GL_API::pushDebugMessage(crtCmd._name.c_str(), std::numeric_limits<I32>::max());
         }break;
         case GFX::CommandType::END_RENDER_PASS: {
             assert(GL_API::s_activeRenderTarget != nullptr);
+            GL_API::popDebugMessage();
             Attorney::GLAPIRenderTarget::end(*GL_API::s_activeRenderTarget);
         }break;
         case GFX::CommandType::BEGIN_PIXEL_BUFFER: {
@@ -981,7 +984,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             assert(s_activeRenderTarget != nullptr);
             const GFX::BeginRenderSubPassCommand& crtCmd = commandBuffer.getCommand<GFX::BeginRenderSubPassCommand>(entry);
             for (const RenderTarget::DrawLayerParams& params : crtCmd._writeLayers) {
-                if (params._isCubeFace) {
+                if (!params._isCubeFace) {
                     GL_API::s_activeRenderTarget->drawToLayer(params);
                 } else {
                     GL_API::s_activeRenderTarget->drawToFace(params);

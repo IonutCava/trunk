@@ -124,13 +124,14 @@ class NOINITVTABLE RenderTarget : public GUIDWrapper, public GraphicsResource {
 
     virtual const RTAttachment_ptr& getAttachmentPtr(RTAttachmentType type, U8 index) const;
     virtual const RTAttachment& getAttachment(RTAttachmentType type, U8 index) const;
+    virtual RTAttachment& getAttachment(RTAttachmentType type, U8 index);
 
     /// Use by multilayered FB's
     virtual void drawToLayer(const DrawLayerParams& params) = 0;
     // This call sets the target mip level to write to
     // If an attachment does not support the specified mip level, it will be DISABLED to avoid completeness errors
     virtual void setMipLevel(U16 writeLevel) = 0;
-
+    virtual void setDefaultState(const RTDrawDescriptor& drawPolicy) = 0;
     virtual void readData(const vec4<U16>& rect, GFXImageFormat imageFormat, GFXDataFormat dataType, bufferPtr outData) = 0;
     virtual void blitFrom(RenderTarget* inputFB, bool blitColour = true, bool blitDepth = false) = 0;
     virtual void blitFrom(RenderTarget* inputFB, U8 index, bool blitColour = true, bool blitDepth = false) = 0;

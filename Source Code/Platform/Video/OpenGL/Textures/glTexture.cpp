@@ -112,16 +112,6 @@ void glTexture::resize(const bufferPtr ptr,
     loadData(info, ptr, dimensions);
 }
 
-void glTexture::refreshMipMaps(bool immediate) {
-    if (_descriptor.automaticMipMapGeneration() && _descriptor.getSampler().generateMipMaps()) {
-        if (immediate) {
-            glGenerateTextureMipmap(_textureData.getHandle());
-        } else {
-            GL_API::queueComputeMipMap(_textureData.getHandle());
-        }
-    }
-}
-
 void glTexture::reserveStorage() {
     assert(
         !(_textureData._textureType == TextureType::TEXTURE_CUBE_MAP && _width != _height) &&
@@ -262,7 +252,9 @@ void glTexture::loadData(const TextureLoadInfo& info,
     }
 
     // Loading from file usually involves data that doesn't change, so call this here.
-    refreshMipMaps(true);
+    if (automaticMipMapGeneration() && _descriptor.getSampler().generateMipMaps()) {
+        GL_API::queueComputeMipMap(_textureData.getHandle());
+    }
 
     assert(_width > 0 && _height > 0 && "glTexture error: Invalid texture dimensions!");
 }

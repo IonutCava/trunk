@@ -49,7 +49,7 @@ void main()
     float radius = bSphere.w;
     
     // Sphere clips against near plane, just assume visibility.
-    if ((dvd_ViewMatrix * vec4(center, 1.0)).z + radius >= -dvd_ZPlanesCombined.z) {
+    if ((dvd_ViewMatrix * vec4(center, 1.0)).z + radius >= -dvd_mainCameraZPlanes.x) {
         return;
     }
 

@@ -50,6 +50,8 @@ vec2 dvd_invScreenDimensions() {
     return dvd_ViewPort.zw * 0.5;
 }
 
+#define dvd_zPlanes vec2(dvd_ZPlanesCombined.xy)
+#define dvd_mainCameraZPlanes vec2(dvd_ZPlanesCombined.zw)
 #define dvd_aspectRatio dvd_cameraPosition.w
 #define dvd_fieldOfView dvd_renderProperties.z
 #define dvd_tanHalfFieldOfView dvd_renderProperties.w

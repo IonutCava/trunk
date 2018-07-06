@@ -58,6 +58,7 @@ BETTER_ENUM(CommandType, U8,
     SET_SCISSOR,
     SET_BLEND,
     BLIT_RT,
+    RESET_RT,
     SET_CAMERA,
     SET_CLIP_PLANES,
     BIND_PIPELINE,
@@ -174,6 +175,11 @@ BEGIN_COMMAND(BlitRenderTargetCommand, CommandType::BLIT_RT, 4096);
     bool _blitDepth = false;
     RenderTargetID _source;
     RenderTargetID _destination;
+END_COMMAND();
+
+BEGIN_COMMAND(ResetRenderTargetCommand, CommandType::RESET_RT, 4096);
+    RenderTargetID _source;
+    RTDrawDescriptor _descriptor;
 END_COMMAND();
 
 BEGIN_COMMAND(SetScissorCommand, CommandType::SET_SCISSOR, 4096);

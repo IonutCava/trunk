@@ -108,6 +108,10 @@ const RTAttachment& RenderTarget::getAttachment(RTAttachmentType type, U8 index)
     return *_attachmentPool->get(type, index);
 }
 
+RTAttachment& RenderTarget::getAttachment(RTAttachmentType type, U8 index) {
+    return *_attachmentPool->get(type, index);
+}
+
 /// Used by cubemap FB's
 void RenderTarget::drawToFace(const DrawLayerParams& params) {
     drawToLayer(params);

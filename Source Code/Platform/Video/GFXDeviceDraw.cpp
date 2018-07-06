@@ -58,6 +58,11 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
                 RenderTarget& destination = renderTargetPool().renderTarget(crtCmd._destination);
                 destination.blitFrom(&source, crtCmd._blitColour, crtCmd._blitDepth);
             } break;
+            case GFX::CommandType::RESET_RT: {
+                const GFX::ResetRenderTargetCommand& crtCmd = commandBuffer.getCommand<GFX::ResetRenderTargetCommand>(cmd);
+                RenderTarget& source = renderTargetPool().renderTarget(crtCmd._source);
+                source.setDefaultState(crtCmd._descriptor);
+            }break;
             case GFX::CommandType::READ_ATOMIC_COUNTER: {
                 const GFX::ReadAtomicCounterCommand& crtCmd = commandBuffer.getCommand<GFX::ReadAtomicCounterCommand>(cmd);
                 if (crtCmd._buffer != nullptr && crtCmd._target != nullptr) {

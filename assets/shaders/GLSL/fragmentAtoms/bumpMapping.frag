@@ -92,8 +92,8 @@ vec4 ReliefMapping(in vec2 uv){
     p += v*h*viewVecTBN.z;    
     
     vec2 planes;
-    planes.x = -dvd_ZPlanesCombined.y / (dvd_ZPlanesCombined.y - dvd_ZPlanesCombined.x);
-    planes.y = -dvd_ZPlanesCombined.y * dvd_ZPlanesCombined.x / (dvd_ZPlanesCombined.y - dvd_ZPlanesCombined.x);
+    planes.x = -dvd_zPlanes.y / (dvd_zPlanes.y - dvd_zPlanes.x);
+    planes.y = -dvd_zPlanes.y * dvd_zPlanes.x / (dvd_zPlanes.y - dvd_zPlanes.x);
 
     gl_FragDepth =((planes.x * p.z + planes.y) / -p.z);
     

@@ -81,11 +81,11 @@ vec4 applyFog(in float depth, in vec4 colour) {
 
 float ToLinearDepth(in float depthIn) {
 #if defined(USE_SCENE_ZPLANES)
-    float n = dvd_ZPlanesCombined.z;
-    float f = dvd_ZPlanesCombined.w * 0.5;
+    float n = dvd_mainCameraZPlanes.x;
+    float f = dvd_mainCameraZPlanes.y * 0.5;
 #else
-    float n = dvd_ZPlanesCombined.x;
-    float f = dvd_ZPlanesCombined.y * 0.5;
+    float n = dvd_zPlanes.x;
+    float f = dvd_zPlanes.y * 0.5;
 #endif
 
     return (2 * n) / (f + n - (depthIn) * (f - n));
@@ -97,6 +97,10 @@ float ToLinearDepth(in float depthIn, in mat4 projMatrix) {
 
 bool InRangeExclusive(in float value, in float min, in float max) {
     return value > min && value < max;
+}
+
+float linstep(float low, float high, float v) {
+    return clamp((v - low) / (high - low), 0.0, 1.0);
 }
 
 float luminance(in vec3 rgb) {

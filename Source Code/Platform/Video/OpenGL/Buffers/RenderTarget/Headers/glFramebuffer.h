@@ -123,13 +123,14 @@ class glFramebuffer : public RenderTarget,
     void setAttachmentState(GLenum binding, BindingState state);
     BindingState getAttachmentState(GLenum binding) const;
 
-    void setDefaultState(const RTDrawDescriptor& drawPolicy);
+    void setDefaultState(const RTDrawDescriptor& drawPolicy) override;
 
     void toggleAttachments(const RTDrawDescriptor& drawPolicy);
 
    protected:
     void begin(const RTDrawDescriptor& drawPolicy);
     void end();
+    void queueMipMapRecomputation();
 
    protected:
     bool _resolved;

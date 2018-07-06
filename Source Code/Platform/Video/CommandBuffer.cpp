@@ -20,6 +20,7 @@ DEFINE_POOL(EndPixelBufferCommand, 4096);
 DEFINE_POOL(BeginRenderSubPassCommand, 4096);
 DEFINE_POOL(EndRenderSubPassCommand, 4096);
 DEFINE_POOL(BlitRenderTargetCommand, 4096);
+DEFINE_POOL(ResetRenderTargetCommand, 4096);
 DEFINE_POOL(SetScissorCommand, 4096);
 DEFINE_POOL(SetBlendCommand, 4096);
 DEFINE_POOL(SetCameraCommand, 4096);
@@ -106,9 +107,10 @@ void CommandBuffer::batch() {
             case GFX::CommandType::DRAW_TEXT:
             case GFX::CommandType::DRAW_COMMANDS:
             case GFX::CommandType::DRAW_IMGUI:
-            case GFX::CommandType::BIND_DESCRIPTOR_SETS:
-            case GFX::CommandType::BIND_PIPELINE:
+            //case GFX::CommandType::BIND_DESCRIPTOR_SETS:
+            //case GFX::CommandType::BIND_PIPELINE:
             case GFX::CommandType::BLIT_RT:
+            case GFX::CommandType::RESET_RT:
             case GFX::CommandType::SEND_PUSH_CONSTANTS:
             case GFX::CommandType::BEGIN_PIXEL_BUFFER:
             case GFX::CommandType::SET_CAMERA:
@@ -211,6 +213,7 @@ void CommandBuffer::clean() {
             case GFX::CommandType::READ_ATOMIC_COUNTER:
             case GFX::CommandType::DRAW_IMGUI:
             case GFX::CommandType::BLIT_RT:
+            case GFX::CommandType::RESET_RT:
             case GFX::CommandType::SWITCH_WINDOW: 
             case GFX::CommandType::EXTERNAL: {
             }break;
@@ -308,6 +311,7 @@ bool CommandBuffer::validate() const {
                 case GFX::CommandType::BLIT_RT: {
                     needsDescriptorSets = true;
                 }break;
+                case GFX::CommandType::RESET_RT:
                 case GFX::CommandType::READ_ATOMIC_COUNTER:
                 case GFX::CommandType::SWITCH_WINDOW:
                 case GFX::CommandType::EXTERNAL: {

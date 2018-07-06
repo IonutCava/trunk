@@ -33,14 +33,15 @@ in vec4 vert_vertexWVP;
 #else
 #include "nodeBufferedInput.cmn"
 #endif
+#include "utility.frag"
 
 #if defined(SHADOW_PASS)
 vec2 computeMoments(in float depth) {
-    // Compute partial derivatives of depth.  
+    // Compute partial derivatives of depth.
     float dx = dFdx(depth);
     float dy = dFdy(depth);
-    // Compute second moment over the pixel extents.  
-    return vec2(depth, depth*depth + 0.25*(dx*dx + dy*dy));
+    // Compute second moment over the pixel extents.
+    return vec2(depth, pow(depth, 2.0) + 0.25*(dx*dx + dy*dy));
 }
 #endif
 
@@ -53,6 +54,7 @@ void main() {
 
 #if defined(SHADOW_PASS)
     // Adjusting moments (this is sort of bias per pixel) using partial derivative
+    //float depth = ToLinearDepth(gl_FragCoord.z);
     float depth = vert_vertexWVP.z / vert_vertexWVP.w;
     depth = depth * 0.5 + 0.5;
     //_colourOut = computeMoments(exp(DEPTH_EXP_WARP * depth));

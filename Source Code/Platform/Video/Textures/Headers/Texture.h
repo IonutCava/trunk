@@ -133,7 +133,7 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
 
     static U16 computeMipCount(U16 width, U16 height);
 
-    virtual void refreshMipMaps(bool immediate) = 0;
+    inline bool automaticMipMapGeneration() const { return _descriptor.automaticMipMapGeneration(); }
 
    protected:
     /// Use STB/NV_DDS to load a file into a Texture Object

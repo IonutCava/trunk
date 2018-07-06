@@ -442,11 +442,33 @@ void glFramebuffer::end() {
         _context.setViewport(_prevViewport);
     }
 
+    queueMipMapRecomputation();
+
     resolve();
 
     if (Config::ENABLE_GPU_VALIDATION) {
         glFramebuffer::_bufferBound = false;
         GL_API::popDebugMessage();
+    }
+}
+
+void glFramebuffer::queueMipMapRecomputation() {
+    if (hasColour()) {
+        const vector<RTAttachment_ptr>& colourAttachments = _attachmentPool->get(RTAttachmentType::Colour);
+        for (const RTAttachment_ptr& att : colourAttachments) {
+            const Texture_ptr& texture = att->texture();
+            if (att->used() && texture->automaticMipMapGeneration() && texture->getCurrentSampler().generateMipMaps()) {
+                GL_API::queueComputeMipMap(att->texture()->getHandle());
+            }
+        }
+    }
+
+    if (hasDepth()) {
+        const RTAttachment_ptr& attDepth = _attachmentPool->get(RTAttachmentType::Depth, 0);
+        const Texture_ptr& texture = attDepth->texture();
+        if (attDepth->used() && texture->automaticMipMapGeneration() && texture->getCurrentSampler().generateMipMaps()) {
+            GL_API::queueComputeMipMap(attDepth->texture()->getHandle());
+        }
     }
 }
 
@@ -467,7 +489,6 @@ void glFramebuffer::clear(const RTDrawDescriptor& drawPolicy, const vector<RTAtt
                 } else {
                     glClearNamedFramebufferuiv(_framebufferHandle, GL_COLOR, buffer, Util::ToUIntColour(att->clearColour())._v);
                 }
-                att->texture()->refreshMipMaps(false);
                 _context.registerDrawCall();
             }
         }
@@ -475,7 +496,6 @@ void glFramebuffer::clear(const RTDrawDescriptor& drawPolicy, const vector<RTAtt
 
     if (drawPolicy.isEnabledState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER) && hasDepth()) {
         glClearNamedFramebufferfv(_framebufferHandle, GL_DEPTH, 0, &_descriptor._depthValue);
-        _attachmentPool->get(RTAttachmentType::Depth, 0)->texture()->refreshMipMaps(false);
         _context.registerDrawCall();
     }
 }
