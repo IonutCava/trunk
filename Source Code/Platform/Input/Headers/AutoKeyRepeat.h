@@ -35,7 +35,7 @@
 // Adapted from:
 // http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Auto+Repeat+Key+Input
 #include "Platform/Input/Headers/InputAggregatorInterface.h"
-#include "Platform/Platform/Headers/PlatformDefines.h"
+#include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
 namespace Input {

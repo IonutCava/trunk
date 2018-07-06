@@ -25,7 +25,7 @@ ShaderProgram::ShaderProgram()
     _refreshStage.fill(false);
     // Cache some frequently updated uniform locations
     _sceneDataDirty = true;
-    _constantData = {-2};
+    _constantData = {-1};
 }
 
 ShaderProgram::~ShaderProgram()
@@ -117,6 +117,8 @@ bool ShaderProgram::generateHWResource(const stringImpl& name) {
         return false;
     }
 
+    // Finish threaded loading
+    HardwareResource::threadedLoad(name);
     _constantData._timeLocation = getUniformLocation("dvd_time");
     _constantData._fogStateLocation = getUniformLocation("dvd_enableFog");
     _constantData._fogColorLocation = getUniformLocation("fogColor");
@@ -131,8 +133,6 @@ bool ShaderProgram::generateHWResource(const stringImpl& name) {
     _constantData._shadowMaxDistLocation = getUniformLocation("dvd_shadowMaxDist");
     _constantData._shadowFadeDistLocation = getUniformLocation("dvd_shadowFadeDist");
 
-    // Finish threaded loading
-    HardwareResource::threadedLoad(name);
     // Validate loading state
     DIVIDE_ASSERT(isHWInitComplete(),
                   "ShaderProgram error: hardware initialization failed!");

@@ -32,7 +32,7 @@
 #ifndef _COMMAND_PARSER_H_
 #define _COMMAND_PARSER_H_
 
-#include "Platform/Platform/Headers/PlatformDefines.h"
+#include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
 

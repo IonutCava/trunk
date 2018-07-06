@@ -32,7 +32,7 @@
 #ifndef SHADER_MANAGER_H_
 #define SHADER_MANAGER_H_
 
-#include "Platform/Platform/Headers/PlatformDefines.h"
+#include "Platform/Headers/PlatformDefines.h"
 #include "Platform/Video/Headers/RenderAPIEnums.h"
 #include <stack>
 

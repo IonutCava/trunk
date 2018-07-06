@@ -34,7 +34,7 @@
 
 #include "Platform/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 #include "Platform/Video/OpenGL/Headers/glResources.h"
-#include "Platform/Platform/Headers/ByteBuffer.h"
+#include "Platform/Headers/ByteBuffer.h"
 
 /// Always bind a shader, even a dummy one when rendering geometry. No more
 /// fixed matrix API means no more VBs or VAs

@@ -35,7 +35,7 @@
 #ifndef UTIL_CRC_H_
 #define UTIL_CRC_H_
 
-#include "Platform/Platform/Headers/PlatformDefines.h"
+#include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
 namespace Util {

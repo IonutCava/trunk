@@ -202,18 +202,6 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Headers\glLockManager.h">
       <Filter>Video\OpenGL\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Platform\Platform\Headers\PlatformDefines.h">
-      <Filter>Platform\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Platform\Platform\Headers\PlatformDefinesWindows.h">
-      <Filter>Platform\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Platform\Platform\Headers\PlatformDefinesApple.h">
-      <Filter>Platform\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Platform\Platform\Headers\PlatformDefinesUnix.h">
-      <Filter>Platform\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Libs\GLIM\Declarations.h">
       <Filter>Video\OpenGL\GLIM\Headers</Filter>
     </ClInclude>
@@ -268,14 +256,29 @@
     <ClInclude Include="..\..\Source Code\Libs\Threadpool\include\threadpool\detail\worker_thread.hpp">
       <Filter>Threading\ThreadPool\Headers\threadpool\detail</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Platform\Platform\Headers\ByteBuffer.h">
-      <Filter>Platform\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Platform\Compute\Headers\OpenCLInterface.h">
       <Filter>Compute\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Libs\SimpleCL\include\simpleCL.h">
       <Filter>Compute\SimpleCL\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Headers\ByteBuffer.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Headers\ByteConverter.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Headers\PlatformDefines.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Headers\PlatformDefinesApple.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Headers\PlatformDefinesUnix.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Headers\PlatformDefinesWindows.h">
+      <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -429,18 +432,6 @@
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\glLockManager.cpp">
       <Filter>Video\OpenGL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Platform\Platform\PlatformDefines.cpp">
-      <Filter>Platform</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Platform\Platform\PlatformDefinesApple.cpp">
-      <Filter>Platform</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Platform\Platform\PlatformDefinesUnix.cpp">
-      <Filter>Platform</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Platform\Platform\PlatformDefinesWindows.cpp">
-      <Filter>Platform</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\SDLWindowWrapper.cpp">
       <Filter>Video\OpenGL</Filter>
     </ClCompile>
@@ -459,15 +450,17 @@
     <ClCompile Include="..\..\Source Code\Libs\GLIM\Stuff.cpp">
       <Filter>Video\OpenGL\GLIM</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Platform\Platform\ByteBuffer.cpp">
-      <Filter>Platform</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Platform\Compute\OpenCLInterface.cpp">
       <Filter>Compute</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Libs\SimpleCL\src\simpleCL.c">
       <Filter>Compute\SimpleCL</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\ByteBuffer.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\PlatformDefines.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\PlatformDefinesApple.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\PlatformDefinesUnix.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\PlatformDefinesWindows.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Audio">
@@ -695,12 +688,6 @@
     <Filter Include="Video\OpenGL\GLIM">
       <UniqueIdentifier>{aa487790-99b3-4ca1-b6e9-bfaf77071aa3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Platform">
-      <UniqueIdentifier>{393e21cf-c5ce-4159-99be-941654ca8f07}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Platform\Headers">
-      <UniqueIdentifier>{5b4d06b0-2fe8-43de-831b-24831692845d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Video\OpenGL\GLIM\Headers">
       <UniqueIdentifier>{b9e334c3-13a5-4fce-a825-6abd3bab77c9}</UniqueIdentifier>
     </Filter>
@@ -730,6 +717,9 @@
     </Filter>
     <Filter Include="Compute\SimpleCL\Headers">
       <UniqueIdentifier>{b587b6f7-9fc3-4b2a-9ae1-f2282f555e6a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers">
+      <UniqueIdentifier>{70bee0bb-7a13-4d72-a546-e8738ba8e7d6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

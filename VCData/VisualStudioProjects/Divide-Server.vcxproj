@@ -24,7 +24,7 @@
     <ClInclude Include="..\..\Source Code\Server\Utility\Headers\XMLParser.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Source Code\Platform\Platform\ByteBuffer.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\ByteBuffer.cpp" />
     <ClCompile Include="..\..\Source Code\Server\main.cpp" />
     <ClCompile Include="..\..\Source Code\Server\Scenes\NetworkScene\tcp_session_impl.cpp" />
     <ClCompile Include="..\..\Source Code\Server\Server.cpp" />

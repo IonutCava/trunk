@@ -32,7 +32,7 @@
 #ifndef RESOURCE_DESCRIPTOR_H_
 #define RESOURCE_DESCRIPTOR_H_
 
-#include "Platform/Platform/Headers/PlatformDefines.h"
+#include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
 

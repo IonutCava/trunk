@@ -39,7 +39,7 @@
 #ifndef _CORE_MATH_MATH_HELPER_H_
 #define _CORE_MATH_MATH_HELPER_H_
 
-#include "Platform/Platform/Headers/PlatformDefines.h"
+#include "Platform/Headers/PlatformDefines.h"
 
 #include <sstream>
 #include <cctype>

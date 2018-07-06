@@ -32,7 +32,7 @@
 #ifndef _FRAME_LISTENER_H_
 #define _FRAME_LISTENER_H_
 
-#include "Platform/Platform/Headers/PlatformDefines.h"
+#include "Platform/Headers/PlatformDefines.h"
 
 /// As you might of guessed it, it's the same system used in Ogre3D
 /// (http://www.ogre3d.org/docs/api/html/OgreFrameListener_8h_source.html)

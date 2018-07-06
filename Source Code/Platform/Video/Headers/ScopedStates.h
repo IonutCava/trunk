@@ -34,7 +34,7 @@
 
 #include "Core/Headers/NonCopyable.h"
 #include "Core/Math/Headers/MathVectors.h"
-#include "Platform/Platform/Headers/PlatformDefines.h"
+#include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
 namespace GFX {

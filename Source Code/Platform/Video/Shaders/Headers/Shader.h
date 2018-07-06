@@ -33,7 +33,7 @@
 #define _SHADER_H_
 
 #include "Core/MemoryManagement/Headers/TrackedObject.h"
-#include "Platform/Platform/Headers/PlatformDefines.h"
+#include "Platform/Headers/PlatformDefines.h"
 #include "Platform/Video/Headers/RenderAPIEnums.h"
 
 namespace Divide {

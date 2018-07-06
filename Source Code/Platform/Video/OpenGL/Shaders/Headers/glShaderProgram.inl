@@ -35,7 +35,7 @@ namespace Divide {
 
 template <>
 inline bool glShaderProgram::cachedValueUpdate(I32 location, const U8& value) {
-    if (location == -1) {
+    if (location == -1 || _shaderProgramID == 0) {
         return false;
     }
 
@@ -55,7 +55,7 @@ inline bool glShaderProgram::cachedValueUpdate(I32 location, const U8& value) {
 
 template <>
 inline bool glShaderProgram::cachedValueUpdate(I32 location, const U16& value) {
-    if (location == -1) {
+    if (location == -1 || _shaderProgramID == 0) {
         return false;
     }
 
@@ -75,7 +75,7 @@ inline bool glShaderProgram::cachedValueUpdate(I32 location, const U16& value) {
 
 template <>
 inline bool glShaderProgram::cachedValueUpdate(I32 location, const U32& value) {
-    if (location == -1) {
+    if (location == -1 || _shaderProgramID == 0) {
         return false;
     }
 
@@ -95,7 +95,7 @@ inline bool glShaderProgram::cachedValueUpdate(I32 location, const U32& value) {
 
 template <>
 inline bool glShaderProgram::cachedValueUpdate(I32 location, const I32& value) {
-    if (location == -1) {
+    if (location == -1 || _shaderProgramID == 0) {
         return false;
     }
 
@@ -115,7 +115,7 @@ inline bool glShaderProgram::cachedValueUpdate(I32 location, const I32& value) {
 
 template <>
 inline bool glShaderProgram::cachedValueUpdate(I32 location, const F32& value) {
-    if (location == -1) {
+    if (location == -1 || _shaderProgramID == 0) {
         return false;
     }
 
@@ -135,7 +135,7 @@ inline bool glShaderProgram::cachedValueUpdate(I32 location, const F32& value) {
 
 template <>
 inline bool glShaderProgram::cachedValueUpdate(I32 location, const vec2<F32>& value) {
-    if (location == -1) {
+    if (location == -1 || _shaderProgramID == 0) {
         return false;
     }
 
@@ -155,7 +155,7 @@ inline bool glShaderProgram::cachedValueUpdate(I32 location, const vec2<F32>& va
 
 template <>
 inline bool glShaderProgram::cachedValueUpdate(I32 location, const vec2<I32>& value) {
-    if (location == -1) {
+    if (location == -1 || _shaderProgramID == 0) {
         return false;
     }
 
@@ -175,7 +175,7 @@ inline bool glShaderProgram::cachedValueUpdate(I32 location, const vec2<I32>& va
  
 template <>
 inline bool glShaderProgram::cachedValueUpdate(I32 location, const vec2<U16>& value) {
-    if (location == -1) {
+    if (location == -1 || _shaderProgramID == 0) {
         return false;
     }
 
@@ -195,7 +195,7 @@ inline bool glShaderProgram::cachedValueUpdate(I32 location, const vec2<U16>& va
  
 template <>
 inline bool glShaderProgram::cachedValueUpdate(I32 location, const vec3<F32>& value) {
-    if (location == -1) {
+    if (location == -1 || _shaderProgramID == 0) {
         return false;
     }
 
@@ -215,7 +215,7 @@ inline bool glShaderProgram::cachedValueUpdate(I32 location, const vec3<F32>& va
 
 template <>
 inline bool glShaderProgram::cachedValueUpdate(I32 location, const vec4<F32>& value) {
-    if (location == -1) {
+    if (location == -1 || _shaderProgramID == 0) {
         return false;
     }
 
@@ -235,7 +235,7 @@ inline bool glShaderProgram::cachedValueUpdate(I32 location, const vec4<F32>& va
 
 template <>
 inline bool glShaderProgram::cachedValueUpdate(I32 location, const mat3<F32>& value) {
-    if (location == -1) {
+    if (location == -1 || _shaderProgramID == 0) {
         return false;
     }
 
@@ -255,7 +255,7 @@ inline bool glShaderProgram::cachedValueUpdate(I32 location, const mat3<F32>& va
 
 template <>
 inline bool glShaderProgram::cachedValueUpdate(I32 location, const mat4<F32>& value) {
-    if (location == -1) {
+    if (location == -1 || _shaderProgramID == 0) {
         return false;
     }
 

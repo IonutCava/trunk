@@ -32,7 +32,7 @@
 #ifndef UTIL_STATE_TRACKER_H_
 #define UTIL_STATE_TRACKER_H_
 
-#include "Platform/Platform/Headers/PlatformDefines.h"
+#include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
 

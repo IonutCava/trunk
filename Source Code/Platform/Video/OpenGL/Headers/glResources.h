@@ -34,7 +34,7 @@
 
 #include "config.h"
 
-#include "Platform/Platform/Headers/PlatformDefines.h"
+#include "Platform/Headers/PlatformDefines.h"
 #ifndef GLBINDING_STATIC
 #define GLBINDING_STATIC
 #endif

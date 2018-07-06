@@ -39,7 +39,7 @@
 #include <CEGUI/CEGUI.h>
 #endif //CEGUI_STATIC
 
-#include "Platform/Platform/Headers/PlatformDefines.h"
+#include "Platform/Headers/PlatformDefines.h"
 #include "Platform/Threading/Headers/SharedMutex.h"
 #include <deque>
 #include <boost/circular_buffer.hpp>

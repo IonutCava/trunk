@@ -1,7 +1,7 @@
 #ifndef _PRE_RenderStage_H_
 #define _PRE_RenderStage_H_
 
-#include "Platform/Platform/Headers/PlatformDefines.h"
+#include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
 

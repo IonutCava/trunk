@@ -33,7 +33,7 @@
 #define _VERTEX_BUFFER_OBJECT_H
 
 #include "VertexDataInterface.h"
-#include "Platform/Platform/Headers/ByteBuffer.h"
+#include "Platform/Headers/ByteBuffer.h"
 
 namespace Divide {
 

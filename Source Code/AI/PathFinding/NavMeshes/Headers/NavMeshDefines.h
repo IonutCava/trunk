@@ -32,7 +32,7 @@
 #ifndef _NAVIGATION_MESH_DEFINES_H_
 #define _NAVIGATION_MESH_DEFINES_H_
 
-#include "Platform/Platform/Headers/PlatformDefines.h"
+#include "Platform/Headers/PlatformDefines.h"
 
 #ifndef RECAST_UTIL_PROPERTIES
 #define RECAST_UTIL_PROPERTIES

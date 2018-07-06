@@ -32,7 +32,7 @@
 #ifndef _CORE_PROFILE_TIMER_H_
 #define _CORE_PROFILE_TIMER_H_
 
-#include "Platform/Platform/Headers/PlatformDefines.h"
+#include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
 namespace Time {

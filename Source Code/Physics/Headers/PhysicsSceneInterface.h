@@ -32,7 +32,7 @@
 #ifndef _PHYSICS_SCENE_INTERFACE_H_
 #define _PHYSICS_SCENE_INTERFACE_H_
 
-#include "Platform/Platform/Headers/PlatformDefines.h"
+#include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
 
