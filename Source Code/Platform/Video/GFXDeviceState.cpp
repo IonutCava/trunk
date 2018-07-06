@@ -312,6 +312,9 @@ void GFXDevice::closeRenderingAPI() {
     for (RenderTarget& renderTarget : _reflectionTarget) {
         MemoryManager::DELETE(renderTarget._buffer);
     }
+    for (RenderTarget& renderTarget : _refractionTarget) {
+        MemoryManager::DELETE(renderTarget._buffer);
+    }
     // Close the shader manager
     ShaderManager::instance().destroy();
     // Close the rendering API

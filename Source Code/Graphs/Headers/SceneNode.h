@@ -79,6 +79,25 @@ class NOINITVTABLE SceneNode : public Resource {
         COUNT
       };
 
+   protected:
+    class SGNParentData {
+    public:
+        explicit SGNParentData(I64 sgnGUID) : _GUID(sgnGUID)
+        {
+            _updateFlags.fill(true);
+        }
+
+        inline I64 sgnGUID() const { return _GUID; }
+
+        inline bool getFlag(UpdateFlag flag) const { return _updateFlags[to_uint(flag)]; }
+        inline void clearFlag(UpdateFlag flag) { _updateFlags[to_uint(flag)] = false; }
+        inline void setFlag(UpdateFlag flag) { _updateFlags[to_uint(flag)] = true; }
+
+    private:
+        I64 _GUID;
+        std::array<bool, to_const_uint(UpdateFlag::COUNT)> _updateFlags;
+    };
+
    public:
     explicit SceneNode(const stringImpl& name, const SceneNodeType& type);
     explicit SceneNode(const stringImpl& name, const stringImpl& resourceLocation, const SceneNodeType& type);
@@ -126,15 +145,22 @@ class NOINITVTABLE SceneNode : public Resource {
     virtual void updateBoundsInternal(SceneGraphNode& sgn);
 
     inline void setFlag(UpdateFlag flag) {
-        _updateFlags[to_uint(flag)] = true;
+        for (SGNParentData& data : _sgnParents) {
+            data.setFlag(flag);
+        }
     }
 
-    inline void clearFlag(UpdateFlag flag) {
-        _updateFlags[to_uint(flag)] = false;
+    inline vectorImpl<SceneNode::SGNParentData>::iterator getSGNData(I64 sgnGUID) {
+        vectorImpl<SceneNode::SGNParentData>::iterator it;
+        it = std::find_if(std::begin(_sgnParents), std::end(_sgnParents),
+            [&sgnGUID](SceneNode::SGNParentData sgnIter) {
+                return (sgnIter.sgnGUID() == sgnGUID);
+            });
+        return it;
     }
 
-    inline bool getFlag(UpdateFlag flag) {
-        return _updateFlags[to_uint(flag)];
+    inline vectorImpl<SceneNode::SGNParentData>::const_iterator getSGNData(I64 sgnGUID) const {
+        return getSGNData(sgnGUID);
     }
 
    protected:
@@ -148,20 +174,48 @@ class NOINITVTABLE SceneNode : public Resource {
    private:
     SceneNodeType _type;
     Material* _materialTemplate;
-    vectorImpl<SceneGraphNode_wptr> _sgnParents;
-    std::array<bool, to_const_uint(UpdateFlag::COUNT)> _updateFlags;
+
+    vectorImpl<SGNParentData> _sgnParents;
+    
 };
 
 namespace Attorney {
 class SceneNodeSceneGraph {
    private:
     static void postLoad(SceneNode& node, SceneGraphNode& sgn) {
+        size_t pCount = parentCount(node);
+        if (pCount != node.GetRef()) {
+            node.AddRef();
+            assert(pCount == node.GetRef());
+        }
         node.postLoad(sgn);
     }
     
     static void sceneUpdate(SceneNode& node, const U64 deltaTime,
                             SceneGraphNode& sgn, SceneState& sceneState) {
         node.sceneUpdate(deltaTime, sgn, sceneState);
+    }
+
+    static void registerSGNParent(SceneNode& node, I64 sgnGUID) {
+        // prevent double add
+        vectorImpl<SceneNode::SGNParentData>::const_iterator it;
+        it = node.getSGNData(sgnGUID);
+        assert(it == std::cend(node._sgnParents));
+
+        node._sgnParents.push_back(SceneNode::SGNParentData(sgnGUID));
+    }
+
+    static void unregisterSGNParent(SceneNode& node, I64 sgnGUID) {
+        // prevent double remove
+        vectorImpl<SceneNode::SGNParentData>::const_iterator it;
+        it = node.getSGNData(sgnGUID);
+        assert(it != std::cend(node._sgnParents));
+
+        node._sgnParents.erase(it);
+    }
+
+    static size_t parentCount(const SceneNode& node) {
+        return node._sgnParents.size();
     }
 
     friend class Divide::SceneGraphNode;

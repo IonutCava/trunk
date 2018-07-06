@@ -50,18 +50,18 @@ void SceneNode::sceneUpdate(const U64 deltaTime,
                             SceneGraphNode& sgn,
                             SceneState& sceneState)
 {
-    bool bbUpdated = getFlag(UpdateFlag::BOUNDS_CHANGED);
-    if (bbUpdated) {
+    vectorImpl<SceneNode::SGNParentData>::iterator it;
+    it = getSGNData(sgn.getGUID());
+    assert(it != std::cend(_sgnParents));
+    SGNParentData& parentData = *it;
+
+    if (parentData.getFlag(UpdateFlag::BOUNDS_CHANGED)) {
         updateBoundsInternal(sgn);
-        for (SceneGraphNode_wptr nodeWptr : _sgnParents) {
-            if (!nodeWptr.expired() && bbUpdated) {
-                BoundsComponent* bComp = sgn.get<BoundsComponent>();
-                if (bComp) {
-                    bComp->onBoundsChange(_boundingBox);
-                }
-            }
+        BoundsComponent* bComp = sgn.get<BoundsComponent>();
+        if (bComp) {
+            bComp->onBoundsChange(_boundingBox);
         }
-        clearFlag(UpdateFlag::BOUNDS_CHANGED);
+        parentData.clearFlag(UpdateFlag::BOUNDS_CHANGED);
     }
 }
 
@@ -69,14 +69,7 @@ void SceneNode::updateBoundsInternal(SceneGraphNode& sgn) {
 }
 
 void SceneNode::postLoad(SceneGraphNode& sgn) {
-    if (!_sgnParents.empty()) {
-        AddRef();
-    }
-
-    _sgnParents.push_back(sgn.shared_from_this());
-
     updateBoundsInternal(sgn);
-
     sgn.get<BoundsComponent>()->onBoundsChange(_boundingBox);
     sgn.postLoad();
 }

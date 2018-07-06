@@ -129,8 +129,7 @@ class Scene : public Resource {
 
     // DIRECTIONAL lights have shadow mapping enabled automatically
     SceneGraphNode_ptr addLight(LightType type, SceneGraphNode& parentNode);
-    SceneGraphNode_ptr addSky();
-    SceneGraphNode_ptr addSky(Sky& skyItem);
+    SceneGraphNode_ptr addSky(const stringImpl& nodeName = "");
 
     /// Object picking
     inline SceneGraphNode_wptr getCurrentSelection() const {

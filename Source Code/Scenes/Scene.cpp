@@ -158,10 +158,8 @@ bool Scene::loadModel(const FileData& data) {
                                                                               : PhysicsGroup::GROUP_DYNAMIC
                                                          : PhysicsGroup::GROUP_IGNORE,
                                        data.ItemName);
-    meshNode->get<RenderingComponent>()->castsShadows(
-        data.castsShadows);
-    meshNode->get<RenderingComponent>()->receivesShadows(
-        data.receivesShadows);
+    meshNode->get<RenderingComponent>()->castsShadows(data.castsShadows);
+    meshNode->get<RenderingComponent>()->receivesShadows(data.receivesShadows);
     meshNode->get<PhysicsComponent>()->setScale(data.scale);
     meshNode->get<PhysicsComponent>()->setRotation(data.orientation);
     meshNode->get<PhysicsComponent>()->setPosition(data.position);
@@ -169,13 +167,11 @@ bool Scene::loadModel(const FileData& data) {
         meshNode->usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
     }
     if (data.navigationUsage) {
-        meshNode->get<NavigationComponent>()->navigationContext(
-            NavigationComponent::NavigationContext::NODE_OBSTACLE);
+        meshNode->get<NavigationComponent>()->navigationContext(NavigationComponent::NavigationContext::NODE_OBSTACLE);
     }
 
     if (data.useHighDetailNavMesh) {
-        meshNode->get<NavigationComponent>()->navigationDetailOverride(
-            true);
+        meshNode->get<NavigationComponent>()->navigationDetailOverride(true);
     }
     return true;
 }
@@ -240,21 +236,17 @@ bool Scene::loadGeometry(const FileData& data) {
     thisObjSGN->get<PhysicsComponent>()->setScale(data.scale);
     thisObjSGN->get<PhysicsComponent>()->setRotation(data.orientation);
     thisObjSGN->get<PhysicsComponent>()->setPosition(data.position);
-    thisObjSGN->get<RenderingComponent>()->castsShadows(
-        data.castsShadows);
-    thisObjSGN->get<RenderingComponent>()->receivesShadows(
-        data.receivesShadows);
+    thisObjSGN->get<RenderingComponent>()->castsShadows(data.castsShadows);
+    thisObjSGN->get<RenderingComponent>()->receivesShadows(data.receivesShadows);
     if (data.staticUsage) {
         thisObjSGN->usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
     }
     if (data.navigationUsage) {
-        thisObjSGN->get<NavigationComponent>()->navigationContext(
-            NavigationComponent::NavigationContext::NODE_OBSTACLE);
+        thisObjSGN->get<NavigationComponent>()->navigationContext(NavigationComponent::NavigationContext::NODE_OBSTACLE);
     }
 
     if (data.useHighDetailNavMesh) {
-        thisObjSGN->get<NavigationComponent>()
-            ->navigationDetailOverride(true);
+        thisObjSGN->get<NavigationComponent>()->navigationDetailOverride(true);
     }
     return true;
 }
@@ -334,24 +326,26 @@ void Scene::toggleFlashlight() {
     _flashLight.lock()->getNode<Light>()->setEnabled(!_flashLight.lock()->getNode<Light>()->getEnabled());
 }
 
-SceneGraphNode_ptr Scene::addSky() {
+SceneGraphNode_ptr Scene::addSky(const stringImpl& nodeName) {
     ResourceDescriptor skyDescriptor("Default Sky");
     skyDescriptor.setID(to_uint(std::floor(renderState().getCameraConst().getZPlanes().y * 2)));
 
     Sky* skyItem = CreateResource<Sky>(skyDescriptor);
     DIVIDE_ASSERT(skyItem != nullptr, "Scene::addSky error: Could not create sky resource!");
-    return addSky(*skyItem);
-}
 
-SceneGraphNode_ptr Scene::addSky(Sky& skyItem) {
-    static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
-                                  to_const_uint(SGNComponent::ComponentType::PHYSICS) |
-                                  to_const_uint(SGNComponent::ComponentType::BOUNDS) |
-                                  to_const_uint(SGNComponent::ComponentType::RENDERING);
+    static const U32 normalMask = 
+        to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
+        to_const_uint(SGNComponent::ComponentType::PHYSICS) |
+        to_const_uint(SGNComponent::ComponentType::BOUNDS) |
+        to_const_uint(SGNComponent::ComponentType::RENDERING);
 
-     SceneGraphNode_ptr skyNode = _sceneGraph->getRoot().addNode(skyItem, normalMask, PhysicsGroup::GROUP_IGNORE);
-     skyNode->lockVisibility(true);
-     return skyNode;
+    SceneGraphNode_ptr skyNode = _sceneGraph->getRoot().addNode(*skyItem,
+                                                                normalMask,
+                                                                PhysicsGroup::GROUP_IGNORE,
+                                                                nodeName);
+    skyNode->lockVisibility(true);
+
+    return skyNode;
 }
 
 U16 Scene::registerInputActions() {

@@ -56,8 +56,14 @@ SceneGraph::~SceneGraph()
 void SceneGraph::unload()
 {
     U32 childCount = 0;
+    stringImpl childNameCpy;
     while((childCount = _root->getChildCount()) != 0) {
-        _root->removeNode(_root->getChild(childCount - 1, childCount), true);
+        SceneGraphNode& child = _root->getChild(childCount - 1, childCount);
+        childNameCpy = child.getName();
+
+        if (!_root->removeNode(child)) {
+            Console::errorfn(Locale::get(_ID("ERROR_SCENE_GRAPH_REMOVE_NODE"), childNameCpy.c_str()));
+        }
     }
 }
 
@@ -124,7 +130,7 @@ void SceneGraph::deleteNode(SceneGraphNode_wptr node, bool deleteOnAdd) {
     if (deleteOnAdd) {
         SceneGraphNode_ptr parent = sgn->getParent().lock();
         if (parent) {
-            parent->removeNode(sgn->getName(), false);
+            parent->removeNode(*sgn, false);
         }
 
         assert(sgn.unique());

@@ -171,6 +171,8 @@ bool SceneManager::unloadScene(Scene*& scene) {
         if (!isDefaultScene && scene != nullptr) {
             delete scene;
             scene = nullptr;
+        } else {
+            _defaultScene.reset(nullptr);
         }
     }
     return state;

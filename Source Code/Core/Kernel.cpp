@@ -496,6 +496,8 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
         "PROFILE DATA",                  // Text
         12);                             // Font size
 
+
+    ShadowMap::initShadowMaps();
     _sceneMgr.init(&_GUI);
 
     Scene* loadedScene = _sceneMgr.load(startupScene);

@@ -55,16 +55,12 @@ LightPool::~LightPool()
     MemoryManager::DELETE(_lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)]);
     RemoveResource(_lightImpostorShader);
     RemoveResource(_lightIconsTexture);
-
-    ShadowMap::clearShadowMaps();
 }
 
 void LightPool::init() {
     if (_init) {
         return;
     }
-
-    ShadowMap::initShadowMaps();
 
     GFX_DEVICE.add2DRenderFunction(
         DELEGATE_BIND(&LightPool::previewShadowMaps, this, nullptr), 1);
@@ -122,7 +118,7 @@ bool LightPool::clear() {
         vectorAlg::vecSize lightCount = lightList.size();
         for (vectorAlg::vecSize i = lightCount; i--> 0;) {
             Light* crtLight = lightList[i];
-            sceneGraph.getRoot().removeNode(*crtLight->getSGN(), true);
+            sceneGraph.getRoot().removeNode(*crtLight->getSGN());
 
         }
         lightList.clear();

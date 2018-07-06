@@ -47,11 +47,11 @@ namespace Divide {
 class TrackedObject : private NonCopyable, public GUIDWrapper {
    public:
     /// Increase reference count
-    virtual void AddRef();
+    void AddRef();
     /// Decrease reference count
-    virtual bool SubRef();
+    bool SubRef();
     /// How many references does this object belong to
-    inline const long GetRef() const { return _refCount; }
+    inline const size_t GetRef() const { return _refCount; }
     /// Add object dependency (dependent objects are ref counted with the parent
     /// object)
     void REGISTER_TRACKED_DEPENDENCY(TrackedObject* const obj);
@@ -72,7 +72,7 @@ class TrackedObject : private NonCopyable, public GUIDWrapper {
 
    private:
     // mutable SharedLock _dependencyLock;
-    std::atomic<long> _refCount;
+    std::atomic<size_t> _refCount;
     std::list<TrackedObject*> _dependencyList;
 };
 };  // namespace Divide

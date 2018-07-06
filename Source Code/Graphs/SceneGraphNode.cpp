@@ -76,6 +76,33 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph,
         }
         setComponent(SGNComponent::ComponentType::RENDERING, new RenderingComponent(materialInst, *this));
     }
+
+    Attorney::SceneNodeSceneGraph::registerSGNParent(*_node, getGUID());
+}
+
+/// If we are destroying the current graph node
+SceneGraphNode::~SceneGraphNode()
+{
+    if (getParent().lock()) {
+        Attorney::SceneGraphSGN::onNodeDestroy(_sceneGraph, *this);
+    }
+    Console::printfn(Locale::get(_ID("REMOVE_SCENEGRAPH_NODE")),
+        getName().c_str(), _node->getName().c_str());
+
+#if defined(_DEBUG)
+    for (U32 i = 0; i < getChildCount(); ++i) {
+        DIVIDE_ASSERT(_children[i].unique(), "SceneGraphNode::~SceneGraphNode error: child still in use!");
+    }
+#endif
+    Attorney::SceneNodeSceneGraph::unregisterSGNParent(*_node, getGUID());
+
+    if (isHelperNode(*_node)) {
+        if (Attorney::SceneNodeSceneGraph::parentCount(*_node) == 0) {
+            MemoryManager::DELETE(_node);
+        }
+    } else {
+        RemoveResource(_node);
+    }
 }
 
 void SceneGraphNode::setComponent(SGNComponent::ComponentType type, SGNComponent* component) {
@@ -101,28 +128,6 @@ void SceneGraphNode::usageContext(const UsageContext& newContext) {
     _usageContext = newContext;
 }
 
-/// If we are destroying the current graph node
-SceneGraphNode::~SceneGraphNode()
-{
-    if (getParent().lock()) {
-        Attorney::SceneGraphSGN::onNodeDestroy(_sceneGraph, *this);
-    }
-    Console::printfn(Locale::get(_ID("REMOVE_SCENEGRAPH_NODE")),
-                     getName().c_str(), _node->getName().c_str());
-
-#if defined(_DEBUG)
-    for (U32 i = 0; i < getChildCount(); ++i) {
-        DIVIDE_ASSERT(_children[i].unique(), "SceneGraphNode::~SceneGraphNode error: child still in use!");
-    }
-#endif
-
-    if (_node->getState() == ResourceState::RES_SPECIAL) {
-        MemoryManager::DELETE(_node);
-    } else {
-        RemoveResource(_node);
-    }
-}
-
 /// Change current SceneGraphNode's parent
 void SceneGraphNode::setParent(SceneGraphNode& parent) {
     assert(parent.getGUID() != getGUID());
@@ -132,7 +137,7 @@ void SceneGraphNode::setParent(SceneGraphNode& parent) {
             return;
         }
         // Remove us from the old parent's children map
-        parentPtr->removeNode(getName(), false);
+        parentPtr->removeNode(*this, false);
     }
     // Set the parent pointer to the new parent
     _parent = parent.shared_from_this();
@@ -192,27 +197,29 @@ SceneGraphNode_ptr SceneGraphNode::addNode(SceneNode& node, U32 componentMask, P
     return sceneGraphNode;
 }
 
-// Remove a child node from this Node
-void SceneGraphNode::removeNode(const stringImpl& nodeName, bool recursive) {
+bool SceneGraphNode::removeNode(SceneGraphNode& node, bool recursive) {
     U32 childCount = getChildCount();
     for (U32 i = 0; i < childCount; ++i) {
-        if (getChild(i, childCount).getName().compare(nodeName) == 0) {
+        if (getChild(i, childCount).getGUID() == node.getGUID()) {
             _children[i].reset();
             _childCount = _childCount - 1;
             std::swap(_children[_childCount], _children[i]);
             invalidateRelationshipCache();
-            return;
+            return true;
         }
     }
     
     if (recursive) {
         for (U32 i = 0; i < childCount; ++i) {
-            getChild(i, childCount).removeNode(nodeName);
+            if (getChild(i, childCount).removeNode(node)) {
+                return true;
+            }
         }
     }
 
     // Beware. Removing a node, does no delete it!
     // Call delete on the SceneGraphNode's pointer to do that
+    return false;
 }
 
 void SceneGraphNode::postLoad() {
@@ -400,9 +407,7 @@ void SceneGraphNode::setActive(const bool state) {
 /// Please call in MAIN THREAD! Nothing is thread safe here (for now) -Ionut
 void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     ResourceState nodeState = _node->getState();
-    assert(nodeState == ResourceState::RES_LOADED ||
-           nodeState == ResourceState::RES_LOADING ||
-           nodeState == ResourceState::RES_SPECIAL);
+    assert(nodeState == ResourceState::RES_LOADED || nodeState == ResourceState::RES_LOADING);
 
     // Node is not fully loaded. Skip.
     if (nodeState == ResourceState::RES_LOADING) {

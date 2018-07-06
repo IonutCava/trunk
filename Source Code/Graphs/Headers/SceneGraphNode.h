@@ -47,13 +47,14 @@ namespace Divide {
 class Transform;
 class SceneGraph;
 class SceneState;
+
 // This is the scene root node. All scene node's are added to it as child nodes
 class SceneRoot : public SceneNode {
    public:
     SceneRoot() : SceneNode("root", SceneNodeType::TYPE_ROOT)
     {
         _renderState.useDefaultMaterial(false);
-        setState(ResourceState::RES_SPECIAL);
+        setState(ResourceState::RES_LOADED);
         _boundingBox.set(VECTOR3_UNIT, -VECTOR3_UNIT);
 
     }
@@ -78,7 +79,7 @@ class SceneTransform : public SceneNode {
    public:
     SceneTransform() : SceneNode("TransformNode", SceneNodeType::TYPE_TRANSFORM) {
         _renderState.useDefaultMaterial(false);
-        setState(ResourceState::RES_SPECIAL);
+        setState(ResourceState::RES_LOADED);
     }
 
     bool onRender(RenderStage currentStage) { return true; }
@@ -136,10 +137,8 @@ class SceneGraphNode : public GUIDWrapper,
     /// to the scene graph
     SceneGraphNode_ptr addNode(SceneNode& node, U32 componentMask, PhysicsGroup physicsGroup, const stringImpl& name = "");
     SceneGraphNode_ptr registerNode(SceneGraphNode_ptr node);
-    void removeNode(const stringImpl& nodeName, bool recursive = true);
-    inline void removeNode(const SceneGraphNode& node, bool recursive = true) {
-        removeNode(node.getName(), recursive);
-    }    
+    /// If recursive is true, this stops on the first node match
+    bool removeNode(SceneGraphNode& node, bool recursive = true);
     
     /// Find a node in the graph based on the SceneGraphNode's name
     /// If sceneNodeName = true, find a node in the graph based on the
@@ -321,6 +320,12 @@ class SceneGraphNode : public GUIDWrapper,
         return _relationshipCache;
     }
     void invalidateRelationshipCache();
+
+    inline bool isHelperNode(const SceneNode& node) const {
+        return node.getType() == SceneNodeType::TYPE_ROOT ||
+               node.getType() == SceneNodeType::TYPE_TRANSFORM;
+    }
+
    private:
     // An SGN doesn't exist outside of a scene graph
     SceneGraph& _sceneGraph;
