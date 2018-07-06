@@ -41,8 +41,6 @@ GL_API::GL_API()
       _enableCEGUIRendering(false) {
     // Only updated in Debug builds
     FRAME_DURATION_GPU = 0;
-    // Atomic boolean use to signal the loading thread to stop
-    _closeLoadingThread = false;
     // Initial values for performance queries
     for (U8 i = 0; i < PERFORMANCE_COUNTER_BUFFERS; ++i) {
         for (U8 j = 0; j < PERFORMANCE_COUNTERS; ++j) {
@@ -577,10 +575,9 @@ void GL_API::drawPoints(GLuint numPoints) {
 void GL_API::uploadDrawCommands(const DrawCommandList& drawCommands,
                                 U32 commandCount) const {
     GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, _indirectDrawBuffer);
-
-    glNamedBufferSubData(_indirectDrawBuffer, 0,
-                         commandCount * sizeof(IndirectDrawCommand),
-                         drawCommands.data());
+    GLUtil::DSAWrapper::dsaNamedBufferSubData(
+        _indirectDrawBuffer, 0, commandCount * sizeof(IndirectDrawCommand),
+        (bufferPtr)drawCommands.data());
 }
 
 bool GL_API::makeTexturesResident(const TextureDataContainer& textureData) {

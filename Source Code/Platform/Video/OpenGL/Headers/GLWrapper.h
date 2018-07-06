@@ -286,8 +286,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// A cache of all fonts used
     typedef hashMapImpl<stringImpl, I32> FontCache;
     FontCache _fonts;
-    /// Atomic boolean value used to signal the loading thread to stop
-    std::atomic_bool _closeLoadingThread;
     /// Optimisation context for shaders (used for post-load optimisation)
     glslopt_ctx* _GLSLOptContex;
     /// Current active vertex array object's handle

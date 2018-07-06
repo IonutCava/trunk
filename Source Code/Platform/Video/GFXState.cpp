@@ -8,6 +8,8 @@ GPUState::GPUState() {
     _MSAASamples = 0;
     _FXAASamples = 0;
     _loadingThreadAvailable = false;
+    // Atomic boolean use to signal the loading thread to stop
+    _closeLoadingThread = false;
 }
 
 bool GPUState::startLoaderThread(const DELEGATE_CBK<>& loadingFunction) {
@@ -21,6 +23,10 @@ bool GPUState::stopLoaderThread() {
     DIVIDE_ASSERT(_loaderThread != nullptr,
                   "GPUState::stopLoaderThread error: stop called without "
                   "calling start first!");
+    closeLoadingThread(true);
+    while (loadingThreadAvailable()) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
     _loaderThread->join();
     _loaderThread.reset(nullptr);
     return true;

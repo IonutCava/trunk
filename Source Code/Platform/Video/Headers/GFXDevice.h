@@ -415,7 +415,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
         _api->changeViewport(newViewport);
     }
 
-    inline void threadedLoadCallback() override { _api->threadedLoadCallback(); }
+    void threadedLoadCallback() override;
 
     inline void drawPoints(U32 numPoints) override { 
         uploadGlobalBufferData();
@@ -497,6 +497,9 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     RenderAPI _API_ID;
     GPUVendor _GPUVendor;
     GPUState _state;
+    std::mutex _loadQueueMutex;
+    std::condition_variable _loadQueueCV;
+    bool _loadQueueDataReady;
     /* Rendering buffers*/
     std::array<Framebuffer*, to_const_uint(RenderTarget::COUNT)> _renderTarget;
     /*State management */

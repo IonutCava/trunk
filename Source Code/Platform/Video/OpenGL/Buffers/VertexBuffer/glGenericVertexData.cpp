@@ -101,7 +101,7 @@ void glGenericVertexData::Create(U8 numBuffers, U8 numQueries) {
     glGenTransformFeedbacks(1, &_transformFeedback);
     // Create our buffer objects
     _bufferObjects.resize(numBuffers, 0);
-    glCreateBuffers(numBuffers, &_bufferObjects[0]);
+    GLUtil::DSAWrapper::dsaCreateBuffers(numBuffers, &_bufferObjects[0]);
     // Prepare our generic queries
     _numQueries = numQueries;
     for (U8 i = 0; i < 2; ++i) {
@@ -325,11 +325,11 @@ void glGenericVertexData::SetBuffer(U32 buffer,
                            : GL_STATIC_DRAW);
         // If the buffer is not persistently mapped, allocate storage the
         // classic way
-        glNamedBufferData(currentBuffer, bufferSize * sizeFactor, NULL, flag);
+        GLUtil::DSAWrapper::dsaNamedBufferData(currentBuffer, bufferSize * sizeFactor, NULL, flag);
         // And upload sizeFactor copies of the data
         for (U8 i = 0; i < sizeFactor; ++i) {
-            glNamedBufferSubData(currentBuffer, i * bufferSize, bufferSize,
-                                 data);
+            GLUtil::DSAWrapper::dsaNamedBufferSubData(
+                currentBuffer, i * bufferSize, bufferSize, data);
         }
     }
     _bufferSet[buffer] = true;
@@ -352,9 +352,9 @@ void glGenericVertexData::UpdateBuffer(U32 buffer,
     if (!_bufferPersistent[buffer]) {
         // Update part of the data in the buffer at the specified buffer in the
         // copy that's ready for writing
-        glNamedBufferSubData(_bufferObjects[buffer],
-                             _startDestOffset[buffer] + offset, dataCurrentSize,
-                             data);
+        GLUtil::DSAWrapper::dsaNamedBufferSubData(
+            _bufferObjects[buffer], _startDestOffset[buffer] + offset,
+            dataCurrentSize, data);
     } else {
         // Wait for the target part of the buffer to become available for
         // writing

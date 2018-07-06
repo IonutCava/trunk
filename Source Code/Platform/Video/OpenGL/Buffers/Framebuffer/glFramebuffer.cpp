@@ -141,8 +141,8 @@ void glFramebuffer::InitAttachment(TextureDescriptor::AttachmentType type,
 
     // Attach to frame buffer
     if (type == TextureDescriptor::AttachmentType::Depth) {
-        glNamedFramebufferTexture(_framebufferHandle, GL_DEPTH_ATTACHMENT,
-                                  tex->getHandle(), 0);
+        GLUtil::DSAWrapper::dsaNamedFramebufferTexture(
+            _framebufferHandle, GL_DEPTH_ATTACHMENT, tex->getHandle(), 0);
         _isLayeredDepth = isLayeredTexture;
     } else {
         GLint offset = 0;
@@ -152,23 +152,23 @@ void glFramebuffer::InitAttachment(TextureDescriptor::AttachmentType type,
         if (texDescriptor.isCubeTexture() && !_layeredRendering) {
             for (GLuint i = 0; i < 6; ++i) {
                 GLenum attachPoint = GL_COLOR_ATTACHMENT0 + (i + offset);
-                glNamedFramebufferTexture(_framebufferHandle, attachPoint,
-                                          tex->getHandle(), i);
+                GLUtil::DSAWrapper::dsaNamedFramebufferTexture(
+                    _framebufferHandle, attachPoint, tex->getHandle(), i);
                 _colorBuffers.push_back(attachPoint);
             }
             _attOffset[slot] = _attOffset[slot - 1] + 6;
         } else if (texDescriptor._layerCount > 1 && !_layeredRendering) {
             for (GLuint i = 0; i < texDescriptor._layerCount; ++i) {
                 GLenum attachPoint = GL_COLOR_ATTACHMENT0 + (i + offset);
-                glNamedFramebufferTextureLayer(_framebufferHandle, attachPoint,
-                                               tex->getHandle(), 0, i);
+                GLUtil::DSAWrapper::dsaNamedFramebufferTextureLayer(
+                    _framebufferHandle, attachPoint, tex->getHandle(), 0, i);
                 _colorBuffers.push_back(attachPoint);
             }
             _attOffset[slot] = _attOffset[slot - 1] + texDescriptor._layerCount;
             // If we require layered rendering, or have a non-layered /
             // non-cubemap texture, attach it to a single binding point
         } else {
-            glNamedFramebufferTexture(
+            GLUtil::DSAWrapper::dsaNamedFramebufferTexture(
                 _framebufferHandle,
                 GL_COLOR_ATTACHMENT0 + static_cast<GLuint>(slot),
                 tex->getHandle(), 0);
@@ -243,7 +243,7 @@ bool glFramebuffer::Create(GLushort width, GLushort height) {
     }
 
     if (_framebufferHandle <= 0) {
-        glCreateFramebuffers(1, &_framebufferHandle);
+        GLUtil::DSAWrapper::dsaCreateFramebuffers(1, &_framebufferHandle);
     }
 
     if (Config::Profile::USE_2x2_TEXTURES) {
@@ -264,16 +264,25 @@ bool glFramebuffer::Create(GLushort width, GLushort height) {
     if (_useDepthBuffer && !_hasDepth) {
         AddDepthBuffer();
     }
+
+    DELEGATE_CBK<bool> writeBufferFunc =
+        DELEGATE_BIND(&GL_API::setActiveFB, _framebufferHandle,
+                      FramebufferUsage::FB_WRITE_ONLY);
     // If color writes are disabled, draw only depth info
     if (_disableColorWrites) {
-        glNamedFramebufferDrawBuffer(_framebufferHandle, GL_NONE);
-        glNamedFramebufferReadBuffer(_framebufferHandle, GL_NONE);
+        DELEGATE_CBK<bool> readBufferFunc =
+            DELEGATE_BIND(&GL_API::setActiveFB, _framebufferHandle,
+                          FramebufferUsage::FB_READ_ONLY);
+
+        GLUtil::DSAWrapper::dsaNamedFramebufferDrawBuffer(
+            _framebufferHandle, GL_NONE, writeBufferFunc);
+        GLUtil::DSAWrapper::dsaNamedFramebufferReadBuffer(_framebufferHandle, GL_NONE, readBufferFunc);
         _hasColor = false;
     } else {
         if (!_colorBuffers.empty()) {
-            glNamedFramebufferDrawBuffers(
+            GLUtil::DSAWrapper::dsaNamedFramebufferDrawBuffers(
                 _framebufferHandle, static_cast<GLsizei>(_colorBuffers.size()),
-                _colorBuffers.data());
+                _colorBuffers.data(), writeBufferFunc);
         }
     }
 
@@ -528,10 +537,10 @@ void glFramebuffer::ReadData(const vec4<U16>& rect,
 }
 
 bool glFramebuffer::checkStatus() const {
-// check FB status
-    GLenum status =
-        glCheckNamedFramebufferStatus(_framebufferHandle, GL_FRAMEBUFFER);
-    switch (status) {
+    // check FB status
+    switch (GLUtil::DSAWrapper::dsaCheckNamedFramebufferStatus(
+        _framebufferHandle, GL_FRAMEBUFFER))
+    {
         case GL_FRAMEBUFFER_COMPLETE: {
             return true;
         }
@@ -563,11 +572,11 @@ bool glFramebuffer::checkStatus() const {
             Console::errorfn(Locale::get("ERROR_FB_INCOMPLETE_LAYER_TARGETS"));
             return false;
         }
-        case gl45ext::GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT: {
+        case glext::GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT: {
             Console::errorfn(Locale::get("ERROR_FB_DIMENSIONS"));
             return false;
         }
-        case gl45ext::GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT: {
+        case glext::GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT: {
              Console::errorfn(Locale::get("ERROR_FB_FORMAT"));
              return false;
         }

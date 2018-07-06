@@ -65,6 +65,7 @@ GFXDevice::GFXDevice()
     _drawDebugAxis = false;
     _enableAnaglyph = false;
     _viewportUpdate = false;
+    _loadQueueDataReady = false;
     _rasterizationEnabled = true;
     _enablePostProcessing = false;
     _useIndirectCommands = false;
@@ -530,8 +531,12 @@ bool GFXDevice::loadInContext(const CurrentContext& context,
     // lock-free, single-producer, single-consumer queue
     if (context == CurrentContext::GFX_LOADING_CTX &&
         _state.loadingThreadAvailable()) {
-        while (!_state.getLoadQueue().push(callback))
-            ;
+        _state.addToLoadQueue(callback);
+        {
+            std::unique_lock<std::mutex> lk(_loadQueueMutex);
+            _loadQueueDataReady = true;
+        }
+        _loadQueueCV.notify_one();
     } else {
         callback();
     }
@@ -539,6 +544,32 @@ bool GFXDevice::loadInContext(const CurrentContext& context,
     return true;
 }
 
+void GFXDevice::threadedLoadCallback() {
+    /// Setup per-thread API specifics
+    _api->threadedLoadCallback(); 
+    // This will be our target container for new items pulled from the queue
+    DELEGATE_CBK<> callback;
+    // Use an atomic bool to check if the thread is still active
+    _state.loadingThreadAvailable(true);
+    // Run an infinite loop until we actually request otherwise
+    while (!_state.closeLoadingThread()) {
+        std::unique_lock<std::mutex> lk(_loadQueueMutex);
+        _loadQueueCV.wait(lk, [this]{return _loadQueueDataReady;});
+
+        // Try to pull a new element from the queue
+        while (_state.getFromLoadQueue(callback)) {
+            // If we manage, we run it and force the gpu to process it
+            callback();
+        }
+        _loadQueueDataReady = false;
+        lk.unlock();
+        _loadQueueCV.notify_one();
+    }
+
+    // If we close the loading thread, update our atomic bool to make sure the
+    // application isn't using it anymore
+    _state.loadingThreadAvailable(false);
+}
 /// Transform our depth buffer to a HierarchicalZ buffer (for occlusion queries)
 void GFXDevice::ConstructHIZ() {
     // We don't want to change the viewport or clear the buffer when starting to

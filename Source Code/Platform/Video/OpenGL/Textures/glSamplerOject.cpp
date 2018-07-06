@@ -12,7 +12,7 @@ glSamplerObject::glSamplerObject(const SamplerDescriptor& descriptor) {
     DIVIDE_ASSERT(glfwExtensionSupported("GL_ARB_sampler_objects") == 1,
                   Locale::get("ERROR_NO_SAMPLER_SUPPORT"));
 
-    glCreateSamplers(1, &_samplerID);
+    GLUtil::DSAWrapper::dsaCreateSamplers(1, &_samplerID);
     glSamplerParameterf(_samplerID, GL_TEXTURE_LOD_BIAS, descriptor.biasLOD());
     glSamplerParameterf(_samplerID, GL_TEXTURE_MIN_LOD, descriptor.minLOD());
     glSamplerParameterf(_samplerID, GL_TEXTURE_MAX_LOD, descriptor.maxLOD());

@@ -70,7 +70,11 @@ ErrorCode GL_API::initRenderingAPI(const vec2<GLushort>& resolution, GLint argc,
     } else {
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+#ifdef GL_VERSION_4_5
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+#else
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
+#endif
     }
 
     // Open an OpenGL window; resolution and windowed mode is specified in the
@@ -328,13 +332,14 @@ ErrorCode GL_API::initRenderingAPI(const vec2<GLushort>& resolution, GLint argc,
         to_uint(AttribLocation::VERTEX_POSITION));
 
     // We need a dummy VAO object for point rendering
-    glCreateVertexArrays(1, &_pointDummyVAO);
+    GLUtil::DSAWrapper::dsaCreateVertexArrays(1, &_pointDummyVAO);
     // Allocate a buffer for indirect draw used to store the query results
     // without a round-trip to the CPU
-    glCreateBuffers(1, &_indirectDrawBuffer);
-    glNamedBufferData(_indirectDrawBuffer,
-                      Config::MAX_VISIBLE_NODES * sizeof(IndirectDrawCommand),
-                      NULL, GL_DYNAMIC_DRAW);
+    GLUtil::DSAWrapper::dsaCreateBuffers(1, &_indirectDrawBuffer);
+    GLUtil::DSAWrapper::dsaNamedBufferData(
+        _indirectDrawBuffer,
+        Config::MAX_VISIBLE_NODES * sizeof(IndirectDrawCommand), NULL,
+        GL_DYNAMIC_DRAW);
     // In debug, we also have various performance counters to profile GPU rendering
     // operations
 #ifdef _DEBUG
@@ -379,12 +384,6 @@ ErrorCode GL_API::initRenderingAPI(const vec2<GLushort>& resolution, GLint argc,
 void GL_API::closeRenderingAPI() {
     CEGUI::OpenGL3Renderer::destroy(*_GUIGLrenderer);
     _GUIGLrenderer = nullptr;
-    // Close the loading thread
-    _closeLoadingThread = true;
-    while (GFX_DEVICE.gpuState().loadingThreadAvailable()) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    }
-
     // Destroy sampler objects
     MemoryManager::DELETE_HASHMAP(_samplerMap);
 
@@ -424,8 +423,7 @@ void GL_API::setCursorPosition(GLushort x, GLushort y) const {
 }
 
 /// This functions should be run in a separate, consumer thread.
-/// The main app thread, the producer, adds tasks via a lock-free queue that is
-/// checked every 20 ms
+/// The main app thread, the producer, adds tasks via a lock-free queue
 void GL_API::threadedLoadCallback() {
     // We need a valid OpenGL context to make current in this thread
     assert(GLUtil::_loaderWindow != nullptr);
@@ -440,31 +438,8 @@ void GL_API::threadedLoadCallback() {
     // from the main thread's callbacks
     glDebugMessageCallback(GLUtil::DebugCallback, (void*)(1));
 #endif
-
-    GPUState& gfxState = GFX_DEVICE.gpuState();
-    // This will be our target container for new items pulled from the queue
-    DELEGATE_CBK<> callback;
     // Delay startup of the thread by a 1/4 of a second. No real reason
     std::this_thread::sleep_for(std::chrono::milliseconds(250));
-    // Use an atomic bool to check if the thread is still active (cheap and
-    // easy)
-    gfxState.loadingThreadAvailable(true);
-    // Run an infinite loop until we actually request otherwise
-    while (!_closeLoadingThread) {
-        // Try to pull a new element from the queue
-        if (gfxState.getLoadQueue().pop(callback)) {
-            // If we manage, we run it and force the gpu to process it
-            callback();
-            glFlush();
-        } else {  // If there are no new items to process in the queue, just
-                  // stall
-            // Avoid burning the CPU - Ionut
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        }
-    }
-
-    // If we close the loading thread, update our atomic bool to make sure the
-    // application isn't using it anymore
-    gfxState.loadingThreadAvailable(false);
 }
+
 };

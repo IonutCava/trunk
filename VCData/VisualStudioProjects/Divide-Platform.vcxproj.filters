@@ -766,5 +766,8 @@
     <None Include="..\..\Source Code\Platform\Video\OpenGL\Shaders\Headers\glShaderProgram.inl">
       <Filter>Video\OpenGL\Shaders\Headers</Filter>
     </None>
+    <None Include="..\..\Source Code\Platform\Video\OpenGL\Headers\glResources.inl">
+      <Filter>Video\OpenGL\Headers</Filter>
+    </None>
   </ItemGroup>
 </Project>

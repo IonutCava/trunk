@@ -19,8 +19,10 @@ ErrorCode GFXDevice::initRenderingAPI(const vec2<U16>& resolution, I32 argc,
     ErrorCode hardwareState = createAPIInstance();
     if (hardwareState == ErrorCode::NO_ERR) {
         // Initialize the rendering API
-        _api->initRenderingAPI(resolution, argc, argv);
-    } else {
+        hardwareState = _api->initRenderingAPI(resolution, argc, argv);
+    }
+
+    if (hardwareState != ErrorCode::NO_ERR) {
         // Validate initialization
         return hardwareState;
     }
@@ -220,7 +222,7 @@ void GFXDevice::closeRenderingAPI() {
     ShaderManager::getInstance().destroyInstance();
     // Close the rendering API
     _api->closeRenderingAPI();
-    // Wait for the loading thread to terminate
+    // Close the loading thread and wait for it to terminate
     _state.stopLoaderThread();
     Time::REMOVE_TIMER(_commandBuildTimer);
     switch (_API_ID) {

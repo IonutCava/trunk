@@ -72,7 +72,13 @@ class GPUState : private NonCopyable {
         return _supportedDislpayModes;
     }
 
-    inline LoadQueue& getLoadQueue() { return _loadQueue; }
+    inline void addToLoadQueue(const DELEGATE_CBK<>& callback) {
+        while (!_loadQueue.push(callback));
+    }
+
+    inline bool getFromLoadQueue(DELEGATE_CBK<>& callback) {
+        return _loadQueue.pop(callback);
+    }
 
     inline void initAA(U8 fxaaSamples, U8 msaaSamples) {
         _FXAASamples = fxaaSamples;
@@ -82,7 +88,11 @@ class GPUState : private NonCopyable {
     inline void loadingThreadAvailable(bool state) {
         _loadingThreadAvailable = state;
     }
-
+   
+    inline void closeLoadingThread(bool state) {
+        _closeLoadingThread = state;
+    }
+    
     inline bool MSAAEnabled() const { return _MSAASamples > 0; }
 
     inline U8 MSAASamples() const { return _MSAASamples; }
@@ -94,11 +104,17 @@ class GPUState : private NonCopyable {
     inline bool loadingThreadAvailable() const {
         return _loadingThreadAvailable && _loaderThread;
     }
+     
+    inline bool closeLoadingThread() const {
+        return _closeLoadingThread;
+    }
 
    protected:
     /// Threading system
     LoadQueue _loadQueue;
     std::atomic_bool _loadingThreadAvailable;
+    /// Atomic boolean value used to signal the loading thread to stop
+    std::atomic_bool _closeLoadingThread;
     std::unique_ptr<std::thread> _loaderThread;
     /// AA system
     U8 _MSAASamples;
