@@ -45,7 +45,7 @@ struct BufferRange {
     size_t _startOffset;
     size_t _length;
 
-    bool Overlaps(const BufferRange& _rhs) const {
+    inline bool Overlaps(const BufferRange& _rhs) const {
         return _startOffset < (_rhs._startOffset + _rhs._length) &&
                _rhs._startOffset < (_startOffset + _length);
     }
@@ -72,6 +72,7 @@ class glBufferLockManager : public glLockManager {
    private:
     mutable SharedLock _lock;
     vectorImpl<BufferLock> _bufferLocks;
+    vectorImpl<BufferLock> _swapLocks;
 };
 
 };  // namespace Divide

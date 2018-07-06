@@ -99,7 +99,6 @@ namespace Import {
         dataOut << _colourData._specular;
         dataOut << _colourData._emissive;
         dataOut << _colourData._shininess;
-        dataOut << _colourData._textureCount;
         dataOut << to_uint(_shadingMode);
         dataOut << to_uint(_bumpMethod);
         for (const TextureEntry& texture : _textures) {
@@ -121,7 +120,6 @@ namespace Import {
         dataIn >> _colourData._specular;
         dataIn >> _colourData._emissive;
         dataIn >> _colourData._shininess;
-        dataIn >> _colourData._textureCount;
         dataIn >> temp;
         _shadingMode = static_cast<Material::ShadingMode>(temp);
         dataIn >> temp;

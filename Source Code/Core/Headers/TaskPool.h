@@ -70,6 +70,8 @@ class TaskPool {
     vectorImpl<bool> _taskStates;
     vectorImpl<DELEGATE_CBK<>> _taskCallbacks;
 
+    mutable std::mutex _taskStateLock;
+
     std::atomic<U32> _allocatedJobs;
 
     U32 _workerThreadCount;

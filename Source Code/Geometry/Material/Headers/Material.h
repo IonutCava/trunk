@@ -34,14 +34,14 @@
 
 #include "Utility/Headers/XMLParser.h"
 #include "Utility/Headers/StateTracker.h"
+
 #include "Core/Resources/Headers/Resource.h"
 #include "Core/Resources/Headers/ResourceDescriptor.h"
 
-#include "Managers/Headers/FrameListenerManager.h"
-
 #include "Platform/Video/Headers/RenderAPIEnums.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
-#include "Platform/Video/Shaders/Headers/ShaderProgram.h"
+
+#include "Geometry/Material/Headers/ShaderProgramInfo.h"
 
 namespace Divide {
 
@@ -51,7 +51,7 @@ class RenderStateBlock;
 enum class RenderStage : U32;
 enum class BlendProperty : U32;
 
-class Material : public Resource, public FrameListener {
+class Material : public Resource {
    public:
     enum class BumpMethod : U32 {
         NONE = 0,    //<Use phong
@@ -63,22 +63,22 @@ class Material : public Resource, public FrameListener {
 
     /// How should each texture be added
     enum class TextureOperation : U32 {
-        MULTIPLY = 0,
-        ADD = 1,
-        SUBTRACT = 2,
-        DIVIDE = 3,
-        SMOOTH_ADD = 4,
-        SIGNED_ADD = 5,
-        DECAL = 6,
-        REPLACE = 7,
+        NONE = 0,
+        MULTIPLY = 1,
+        ADD = 2,
+        SUBTRACT = 3,
+        DIVIDE = 4,
+        SMOOTH_ADD = 5,
+        SIGNED_ADD = 6,
+        DECAL = 7,
+        REPLACE = 8,
         COUNT
     };
 
     enum class TranslucencySource : U32 {
         DIFFUSE = 0,
-        OPACITY_MAP,
         DIFFUSE_MAP,
-        NONE,
+        OPACITY_MAP,
         COUNT
     };
     /// Not used yet but implemented for shading model selection in shaders
@@ -101,14 +101,12 @@ class Material : public Resource, public FrameListener {
         vec4<F32> _specular; /* specular component*/
         vec4<F32> _emissive; /* emissive component*/
         F32 _shininess;      /* specular exponent */
-        U8  _textureCount;
 
         ColourData()
             : _diffuse(vec4<F32>(VECTOR3_UNIT / 1.5f, 1)),
               _specular(0.8f, 0.8f, 0.8f, 1.0f),
               _emissive(0.0f, 0.0f, 0.0f, 1.0f),
-              _shininess(5),
-              _textureCount(0)
+              _shininess(5)
         {
         }
 
@@ -116,8 +114,7 @@ class Material : public Resource, public FrameListener {
             : _diffuse(other._diffuse),
               _specular(other._specular),
               _emissive(other._emissive),
-              _shininess(other._shininess),
-              _textureCount(other._textureCount)
+              _shininess(other._shininess)
         {
         }
 
@@ -126,75 +123,8 @@ class Material : public Resource, public FrameListener {
             _specular.set(other._specular);
             _emissive.set(other._emissive);
             _shininess = other._shininess;
-            _textureCount = other._textureCount;
             return *this;
         }
-    };
-
-    /// ShaderInfo stores information about the shader programs used by this
-    /// material
-    struct ShaderInfo {
-        enum class ShaderCompilationStage : U32 {
-            REQUESTED = 0,
-            QUEUED = 1,
-            COMPUTED = 2,
-            UNHANDLED = 3,
-            PENDING = 4,
-            COUNT
-        };
-
-        const ShaderProgram_ptr& getProgram() const;
-
-        inline StateTracker<bool>& getTrackedBools() { return _trackedBools; }
-
-        ShaderInfo()
-        {
-            _customShader = false;
-            _shaderRef = nullptr;
-            _shader.clear();
-            _shaderCompStage = ShaderCompilationStage::UNHANDLED;
-            _stage = RenderStage::COUNT;
-
-            for (U32 i = 0; i < to_const_uint(ShaderType::COUNT); ++i) {
-                _shadingFunction[i].fill(0);
-            }
-        }
-        
-        ShaderInfo(const ShaderInfo& other)
-            : _stage(other._stage),
-              _customShader(other._customShader),
-              _shaderRef(other._shaderRef),
-              _shader(other._shader),
-              _shadingFunction(other._shadingFunction),
-              _trackedBools(other._trackedBools),
-              _shaderDefines(other._shaderDefines)
-        {
-            _shaderCompStage.store(other._shaderCompStage);
-        }
-
-        ShaderInfo& operator=(const ShaderInfo& other) {
-            _stage = other._stage;
-            _customShader = other._customShader;
-            _shaderRef = other._shaderRef;
-            _shader = other._shader;
-            _shaderCompStage.store(other._shaderCompStage);
-            _shadingFunction = other._shadingFunction;
-            _trackedBools = other._trackedBools;
-            _shaderDefines = other._shaderDefines;
-            return *this;
-        }
-
-        bool _customShader;
-        ShaderProgram_ptr _shaderRef;
-        stringImpl _shader;
-        RenderStage _stage;
-        std::atomic<ShaderCompilationStage> _shaderCompStage;
-        vectorImplAligned<stringImpl> _shaderDefines;
-        std::array<std::array<U32, to_const_uint(BumpMethod::COUNT)>,
-                   to_const_uint(ShaderType::COUNT)> _shadingFunction;
-
-       protected:
-        StateTracker<bool> _trackedBools;
     };
 
    public:
@@ -343,13 +273,13 @@ class Material : public Resource, public FrameListener {
     void getMaterialMatrix(mat4<F32>& retMatrix) const;
 
     inline F32 getParallaxFactor() const { return _parallaxFactor; }
-    inline U8  getTextureCount()   const { return _colourData._textureCount; }
 
     size_t getRenderStateBlock(RenderStage currentStage, I32 variant = 0);
     inline std::weak_ptr<Texture> getTexture(ShaderProgram::TextureUsage textureUsage) const {
         return _textures[to_uint(textureUsage)];
     }
-    ShaderInfo& getShaderInfo(RenderStage renderStage = RenderStage::DISPLAY);
+
+    ShaderProgramInfo& getShaderInfo(RenderStage renderStage = RenderStage::DISPLAY);
 
     inline const TextureOperation& getTextureOperation() const { return _operation; }
 
@@ -361,8 +291,8 @@ class Material : public Resource, public FrameListener {
 
     void rebuild();
     void clean();
-    bool isTranslucent();
-    inline bool isTranslucent() const { return !_translucencySource.empty(); }
+    bool updateTranslucency();
+    inline bool isTranslucent() const { return _translucencySource != TranslucencySource::COUNT; }
 
     inline void dumpToFile(bool state) { _dumpToFile = state; }
     inline bool isDirty() const { return _dirty; }
@@ -383,16 +313,11 @@ class Material : public Resource, public FrameListener {
     inline U32 defaultReflectionTextureIndex() const { return _reflectionIndex > -1 ? to_uint(_reflectionIndex) : _defaultReflection.second; }
     inline U32 defaultRefractionTextureIndex() const { return _refractionIndex > -1 ? to_uint(_refractionIndex) : _defaultRefraction.second; }
 
-   protected:
-    bool frameStarted(const FrameEvent& evt) override;
-    bool frameEnded(const FrameEvent& evt) override;
-
    private:
     void getTextureData(ShaderProgram::TextureUsage slot,
                         TextureDataContainer& container);
 
     void recomputeShaders();
-    void computeShaderInternal();
     void setShaderProgramInternal(const stringImpl& shader,
                                   RenderStage renderStage,
                                   const bool computeOnAdd);
@@ -402,12 +327,10 @@ class Material : public Resource, public FrameListener {
     }
 
    private:
-    typedef std::pair<U32, ResourceDescriptor> ShaderQueueElement;
-    std::deque<ShaderQueueElement> _shaderComputeQueue;
     ShadingMode _shadingMode;
     /// use for special shader tokens, such as "Tree"
     std::array<stringImpl, to_const_uint(RenderStage::COUNT)> _shaderModifier;
-    vectorImpl<TranslucencySource> _translucencySource;
+    TranslucencySource _translucencySource;
     /// parallax/relief factor (higher value > more pronounced effect)
     F32 _parallaxFactor;
     bool _dirty;
@@ -418,7 +341,7 @@ class Material : public Resource, public FrameListener {
     bool _doubleSided;
     /// Use shaders that have bone transforms implemented
     bool _hardwareSkinning;
-    std::array<ShaderInfo, to_const_uint(RenderStage::COUNT)> _shaderInfo;
+    std::array<ShaderProgramInfo, to_const_uint(RenderStage::COUNT)> _shaderInfo;
     std::array<std::array<size_t, 3>,  to_const_uint(RenderStage::COUNT)> _defaultRenderStates;
 
     bool _shaderThreadedLoad;
@@ -438,10 +361,6 @@ class Material : public Resource, public FrameListener {
     I32 _refractionIndex;
     std::pair<Texture_ptr, U32> _defaultReflection;
     std::pair<Texture_ptr, U32> _defaultRefraction;
-
-    static bool _shadersComputedThisFrame;
-    static U32  _totalShaderComputeCountThisFrame;
-    static U32 _totalShaderComputeCount;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_CLASS(Material);

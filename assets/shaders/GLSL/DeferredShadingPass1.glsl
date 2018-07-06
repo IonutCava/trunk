@@ -39,51 +39,7 @@ void main( void ){
 
 -- Fragment
 
-in vec3 normals;
-in vec3 position;
-
-out vec4 diffuseOutput; // layout(location = 0)
-out vec4 posOutput;     // layout(location = 1)
-out vec4 normOutput;    // layout(location = 2)
-out vec4 blendOutput;   // layout(location = 3)
-
-in mat4 TBN;
-
-void main( void ){
-
-    vec4 colour = dvd_MatDiffuse; //diffuse
-
-    diffuseOutput = colour;
-    posOutput     = vec4(position,1);
-    normOutput    = vec4(normals,1);
-    blendOutput.rgb = colour.rgb * colour.a; // Pre multiplied alpha
-    blendOutput.a = colour.a;
-}
-
--- Fragment.Texture
-
-in vec3  normals;
-in vec3  position;
-in mat4  TBN;
-
-out vec4 diffuseOutput; // layout(location = 0)
-out vec4 posOutput;     // layout(location = 1)
-out vec4 normOutput;    // layout(location = 2)
-out vec4 blendOutput;   // layout(location = 3)
-
-layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
-
-void main( void ){
-   vec4 colour = texture(texDiffuse0, VAR._texCoord);
-
-   diffuseOutput = colour;
-   posOutput     = vec4(position,1);
-   normOutput    = vec4(normals,1);
-   blendOutput.rgb = colour.rgb * colour.a; // Pre multiplied alpha
-   blendOutput.a = colour.a;
-}
-
--- Fragment.Bump
+#include "materialData.frag"
 
 in vec3       position;
 in mat4       TBN;
@@ -96,36 +52,22 @@ out vec4 blendOutput;   // layout(location = 3)
 layout(binding = TEXTURE_UNIT0)     uniform sampler2D  texDiffuse0;
 layout(binding = TEXTURE_NORMALMAP) uniform sampler2D  texNormalMap;
 
-void main( void ){
-
-   vec4 colour = texture(texDiffuse0, VAR._texCoord);
+void main() {
+   vec4 colour = getAlbedo();
    
    diffuseOutput = colour;
    posOutput     = vec4(position,1);
-   normOutput    = (texture(texNormalMap, VAR._texCoord) * 2 -
-                     vec4(1,1,1,0)) * TBN;
+
+#if defined(COMPUTE_TBN)
+   normOutput = (texture(texNormalMap, VAR._texCoord) * 2 - vec4(1,1,1,0)) * TBN;
+#else
+   normOutput = vec4(normals, 1);
+#endif
+#if defined (USE_DOUBLE_SIDED)
+   normOutput = gl_FrontFacing ? normOutput : -normOutput;
+#endif
+
    blendOutput.rgb = colour.rgb * colour.a; // Pre multiplied alpha
    blendOutput.a = colour.a;
 
-}
-
--- Fragment.Impostor
-
-in vec3     position;
-in vec3     normals;
-
-out vec4 diffuseOutput; // layout(location = 0)
-out vec4 posOutput;     // layout(location = 1)
-out vec4 normOutput;    // layout(location = 2)
-out vec4 blendOutput;   // layout(location = 3)
-
-void main( void )
-{
-    vec4 colour = dvd_MatDiffuse; //diffuse
-
-    diffuseOutput    = colour;
-    posOutput          = vec4(position,1);
-    normOutput        = vec4(normals,1);
-    blendOutput.rgb = colour.rgb * colour.a; // Pre multiplied alpha
-    blendOutput.a   = colour.a;
 }

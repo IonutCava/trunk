@@ -47,6 +47,10 @@ void main()
 }
 
 -- Fragment
+#if defined(USE_OPACITY_DIFFUSE) || defined(USE_OPACITY_MAP) || defined(USE_OPACITY_DIFFUSE_MAP)
+#   define HAS_TRANSPARENCY
+#endif
+
 #if !defined(HAS_TRANSPARENCY)
 layout(early_fragment_tests) in;
 #endif
@@ -57,20 +61,7 @@ in vec4 geom_vertexWVP;
 #endif
 
 #include "nodeBufferedInput.cmn"
-
-#if defined(USE_OPACITY_DIFFUSE) || defined(USE_OPACITY_MAP)
-#define HAS_TRANSPARENCY
-#if defined(USE_OPACITY_DIFFUSE)
-uniform mat4 material;
-#endif
-#if defined(USE_OPACITY_MAP)
-layout(binding = TEXTURE_OPACITY) uniform sampler2D texOpacityMap;
-#endif
-#if defined(USE_OPACITY_DIFFUSE) && !defined(SKIP_TEXTURES)
-layout(binding = TEXTURE_UNIT0)   uniform sampler2D texDiffuse0;
-layout(binding = TEXTURE_UNIT1)   uniform sampler2D texDiffuse1;
-#endif
-#endif
+#include "materialData.frag"
 
 vec2 computeMoments(in float depth) {
     // Compute partial derivatives of depth.  
@@ -81,26 +72,9 @@ vec2 computeMoments(in float depth) {
 }
 
 void main() {
-    float alpha = 1.0;
-#if defined(HAS_TRANSPARENCY)
-#if defined(USE_OPACITY_DIFFUSE)
-#   if defined(SKIP_TEXTURES)
-        alpha *= dvd_MatDiffuse.a;
-#   else 
-    if (dvd_BufferIntegerValues().w == 0) {
-        alpha *= texture(texDiffuse0, VAR._texCoord).a;
-    } else {
-        alpha *= texture(texDiffuse1, VAR._texCoord).a;
+    if (getOpacity() < ALPHA_DISCARD_THRESHOLD) {
+        discard;
     }
-#   endif
-#endif
-
-#if defined(USE_OPACITY_MAP)
-    vec4 opacityMap = texture(texOpacityMap, VAR._texCoord);
-    alpha *= max(min(opacityMap.r, opacityMap.g), min(opacityMap.b, opacityMap.a));
-#endif
-    if (alpha < ALPHA_DISCARD_THRESHOLD) discard;
-#endif
 
 #if defined(SHADOW_PASS)
     // Adjusting moments (this is sort of bias per pixel) using partial derivative

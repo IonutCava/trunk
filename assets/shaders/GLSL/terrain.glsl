@@ -47,13 +47,13 @@ layout(location = 1) out vec3 _normalOut;
 
 //subroutine(TerrainMappingType) 
 vec4 computeLightInfoLOD1Frag() {
-    getColourNormal(dvd_MatDiffuse);
+    getColourNormal(getAlbedo());
     return getPixelColour(VAR._texCoord, VAR._normalWV);
 }
 
 //subroutine(TerrainMappingType)
 vec4 computeLightInfoLOD0Frag() {
-    getColourAndTBNNormal(dvd_MatDiffuse, processedNormal);
+    getColourAndTBNNormal(getAlbedo(), processedNormal);
     return getPixelColour(VAR._texCoord, processedNormal);
 }
 
@@ -63,7 +63,7 @@ vec4 CausticsColour() {
 }
 
 vec4 UnderwaterColour() {
-    getColourAndTBNUnderwater(dvd_MatDiffuse, processedNormal);
+    getColourAndTBNUnderwater(getAlbedo(), processedNormal);
     return getPixelColour(VAR._texCoord, processedNormal);
 }
 

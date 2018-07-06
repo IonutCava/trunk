@@ -224,6 +224,7 @@
     <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\Fxaa3_11.frag" />
     <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\lightData.frag" />
     <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\materialData.frag" />
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\pbr.frag" />
     <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_lighting.frag" />
     <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\shadowMapping.frag" />
     <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\shadow_directional.frag" />

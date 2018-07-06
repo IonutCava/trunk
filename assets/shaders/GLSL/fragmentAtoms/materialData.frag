@@ -1,8 +1,11 @@
 #ifndef _MATERIAL_DATA_FRAG_
 #define _MATERIAL_DATA_FRAG_
 
-#if defined(USE_OPACITY_DIFFUSE) || defined(USE_OPACITY_MAP)
-    #define HAS_TRANSPARENCY
+#include "utility.frag"
+
+//Ref: https://github.com/urho3d/Urho3D/blob/master/bin/CoreData/Shaders/GLSL/PBRLitSolid.glsl
+#if defined(USE_OPACITY_DIFFUSE) || defined(USE_OPACITY_MAP) || defined(USE_OPACITY_DIFFUSE_MAP)
+#   define HAS_TRANSPARENCY
 #endif
 
 #if !defined(SKIP_TEXTURES)
@@ -26,7 +29,11 @@ layout(binding = TEXTURE_OPACITY) uniform sampler2D texOpacityMap;
 layout(binding = TEXTURE_SPECULAR) uniform sampler2D texSpecularMap;
 #endif
 
-
+// Debug toggles
+#if defined(_DEBUG)
+uniform bool dvd_LightingOnly = false;
+uniform bool dvd_NormalsOnly = false;
+#endif
 
 float Gloss(in vec3 bump, in vec2 texCoord)
 {
@@ -48,18 +55,19 @@ float Gloss(in vec3 bump, in vec2 texCoord)
 
 #if !defined(SKIP_TEXTURES)
 vec4 getTextureColour(in vec2 uv) {
-    #define TEX_MODULATE 0
-    #define TEX_ADD  1
-    #define TEX_SUBTRACT  2
-    #define TEX_DIVIDE  3
-    #define TEX_SMOOTH_ADD  4
-    #define TEX_SIGNED_ADD  5
-    #define TEX_DECAL  6
-    #define TEX_REPLACE  7
+    #define TEX_NONE 0
+    #define TEX_MODULATE 1
+    #define TEX_ADD  2
+    #define TEX_SUBTRACT  3
+    #define TEX_DIVIDE  4
+    #define TEX_SMOOTH_ADD  5
+    #define TEX_SIGNED_ADD  6
+    #define TEX_DECAL  7
+    #define TEX_REPLACE  8
 
     vec4 colour = texture(texDiffuse0, uv);
 
-    if (dvd_textureCount == 1) {
+    if (dvd_texOperation == TEX_NONE) {
         return colour;
     }
 
@@ -88,29 +96,96 @@ vec4 getTextureColour(in vec2 uv) {
 }
 #endif
 
-vec4 dvd_MatDiffuse;
-vec3 dvd_MatSpecular;
-vec3 dvd_MatEmissive;
-float dvd_MatShininess;
+vec4 _getDiffuseColour() {
 
-void parseMaterial() {
-    
-    dvd_MatEmissive = dvd_Matrices[VAR.dvd_drawID]._colourMatrix[2].rgb;
-    dvd_MatShininess = dvd_Matrices[VAR.dvd_drawID]._colourMatrix[2].w;
+#   if !defined(USE_CUSTOM_ALBEDO)
+#       if defined(SKIP_TEXTURES)
+            return dvd_Matrices[VAR.dvd_drawID]._colourMatrix[0];
+#       else
+            return getTextureColour(VAR._texCoord);
+#       endif
+#   endif
 
-    #if !defined(USE_CUSTOM_ALBEDO)
-        #if defined(SKIP_TEXTURES)
-            dvd_MatDiffuse = dvd_Matrices[VAR.dvd_drawID]._colourMatrix[0];
-        #else
-            dvd_MatDiffuse = getTextureColour(VAR._texCoord);
-        #endif
-    #endif
+    return vec4(1.0);
+}
 
-    #if defined(USE_SPECULAR_MAP)
-        dvd_MatSpecular = texture(texSpecularMap, VAR._texCoord).rgb;
-    #else
-        dvd_MatSpecular = dvd_Matrices[VAR.dvd_drawID]._colourMatrix[1].rgb;
-    #endif
+
+#if defined(USE_OPACITY_DIFFUSE_MAP)
+float _private_pixel_opacity = -1.0;
+#endif
+
+float getOpacity() { 
+#if defined(HAS_TRANSPARENCY)
+
+#   if defined(USE_OPACITY_DIFFUSE)
+    return dvd_Matrices[VAR.dvd_drawID]._colourMatrix[0].a;
+#   endif
+
+#   if defined(USE_OPACITY_MAP)
+    vec4 opacityMap = texture(texOpacityMap, texCoord);
+    return max(min(opacityMap.r, opacityMap.g), min(opacityMap.b, opacityMap.a));
+#   endif
+
+#   if defined(USE_OPACITY_DIFFUSE_MAP)
+    if (_private_pixel_opacity < 0) {
+        _private_pixel_opacity = _getDiffuseColour().a;
+    }
+
+    return _private_pixel_opacity;
+#   endif
+
+#   endif
+
+    return 1.0;
+}
+
+vec4 getAlbedo() {
+    vec4 albedo = _getDiffuseColour();
+
+#   if defined(USE_OPACITY_DIFFUSE_MAP)
+        _private_pixel_opacity = albedo.a;
+#   endif
+
+#   if defined(_DEBUG)
+        if (dvd_LightingOnly) {
+            albedo = vec4(0.0);
+        }
+#   endif
+
+    albedo.a = getOpacity();
+
+    return albedo;
+}
+
+vec3 getEmissive() {
+    return dvd_Matrices[VAR.dvd_drawID]._colourMatrix[2].rgb;
+}
+
+vec3 getSpecular() {
+#if defined(USE_SPECULAR_MAP)
+    return texture(texSpecularMap, VAR._texCoord).rgb;
+#else
+    return dvd_Matrices[VAR.dvd_drawID]._colourMatrix[1].rgb;
+#endif
+}
+
+float getShininess() {
+    return dvd_Matrices[VAR.dvd_drawID]._colourMatrix[2].w;
+}
+
+float getRoughness() {
+    return 1.0 - saturate(getShininess() / 255.0);
+}
+
+float getReflectivity() {
+#if defined(USE_SHADING_PHONG) || defined (USE_SHADING_BLINN_PHONG)
+    return getShininess();
+#elif defined(USE_SHADING_TOON)
+    // ToDo - will cause compile error
+#else //if defined(USE_SHADING_COOK_TORRANCE) || defined(USE_SHADING_OREN_NAYAR)
+    float roughness = getRoughness();
+    return roughness * roughness;
+#endif
 }
 
 #endif //_MATERIAL_DATA_FRAG_

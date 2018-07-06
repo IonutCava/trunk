@@ -51,6 +51,7 @@ namespace Attorney {
 
 class ScenePool;
 class SceneShaderData;
+class ShaderComputeQueue;
 DEFINE_SINGLETON(SceneManager, FrameListener, Input::InputAggregatorInterface)
     friend class Attorney::SceneManagerKernel;
     friend class Attorney::SceneManagerRenderPass;
@@ -72,6 +73,10 @@ DEFINE_SINGLETON(SceneManager, FrameListener, Input::InputAggregatorInterface)
     /*Base Scene Operations*/
     Renderer& getRenderer() const;
     void setRenderer(RendererType rendererType);
+
+
+    ShaderComputeQueue& shaderComputeQueue();
+    const ShaderComputeQueue& shaderComputeQueue() const;
 
     // generate a list of nodes to render
     void updateVisibleNodes(RenderStage stage, bool refreshNodeData, U32 pass = 0);
@@ -169,6 +174,9 @@ DEFINE_SINGLETON(SceneManager, FrameListener, Input::InputAggregatorInterface)
     RenderPassCuller* _renderPassCuller;
     /// Pointer to the render pass manager
     RenderPassManager* _renderPassManager;
+    /// Pointer to a shader creation queue
+    ShaderComputeQueue* _shaderComputeQueue;
+
     ScenePool* _scenePool;
     SceneShaderData* _sceneData;
     U64 _elapsedTime;

@@ -545,6 +545,12 @@
     <ClCompile Include="..\..\Source Code\Rendering\EnvironmentProbe.cpp">
       <Filter>Rendering\Lighting</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Geometry\Material\ShaderComputeQueue.cpp">
+      <Filter>Geometry\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Geometry\Material\ShaderProgramInfo.cpp">
+      <Filter>Geometry\Material</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h">
@@ -963,6 +969,12 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\Headers\EnvironmentProbe.h">
       <Filter>Rendering\Lighting\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Geometry\Material\Headers\ShaderComputeQueue.h">
+      <Filter>Geometry\Material\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Geometry\Material\Headers\ShaderProgramInfo.h">
+      <Filter>Geometry\Material\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

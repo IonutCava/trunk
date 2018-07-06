@@ -286,6 +286,8 @@
     <ClCompile Include="..\..\Source Code\Geometry\Animations\AnimationEvaluator.cpp" />
     <ClCompile Include="..\..\Source Code\Geometry\Animations\AnimationUtils.cpp" />
     <ClCompile Include="..\..\Source Code\Geometry\Importer\MeshImporter.cpp" />
+    <ClCompile Include="..\..\Source Code\Geometry\Material\ShaderComputeQueue.cpp" />
+    <ClCompile Include="..\..\Source Code\Geometry\Material\ShaderProgramInfo.cpp" />
     <ClCompile Include="..\..\Source Code\Geometry\Shapes\SkinnedSubMesh.cpp" />
     <ClCompile Include="..\..\Source Code\Graphs\Components\AnimationComponent.cpp" />
     <ClCompile Include="..\..\Source Code\Graphs\Components\BoundsComponent.cpp" />
@@ -410,6 +412,8 @@
     <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\AnimationUtils.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\Bone.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Importer\Headers\MeshImporter.h" />
+    <ClInclude Include="..\..\Source Code\Geometry\Material\Headers\ShaderComputeQueue.h" />
+    <ClInclude Include="..\..\Source Code\Geometry\Material\Headers\ShaderProgramInfo.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Shapes\Headers\SkinnedSubMesh.h" />
     <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\AnimationComponent.h" />
     <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\BoundsComponent.h" />

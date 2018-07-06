@@ -130,9 +130,6 @@ void Task::run() {
         if (_callback) {
             _callback(_stopRequested);
         }
-
-        // task finished. Everything else is bookkeeping
-        _tp->taskCompleted(poolIndex(), _priority);
     }
 
     if (_parentTask != nullptr) {
@@ -151,6 +148,9 @@ void Task::run() {
     if (BitCompare(_taskFlags, to_const_uint(TaskFlags::SYNC_WITH_GPU))) {
         endSyncGPU();
     }
+
+    // task finished. Everything else is bookkeeping
+    _tp->taskCompleted(poolIndex(), _priority);
 }
 
 void Task::beginSyncGPU() {

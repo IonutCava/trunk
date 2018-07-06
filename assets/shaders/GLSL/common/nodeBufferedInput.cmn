@@ -58,7 +58,7 @@ ivec4 dvd_BufferExtraIntegerValues() {
 #define dvd_refractionIndex dvd_BufferExtraIntegerValues().y
 
 #if defined(FRAG_SHADER)
-// x - useAlphaTest; y - textureOperation; z - textureCount, w - parallax/relief mapping factor
+// x - useAlphaTest; y - textureOperation; z - parallax/relief mapping factor, w - reserved
 #define buffer_matProperties dvd_Matrices[VAR.dvd_drawID]._colourMatrix[3]
 
 #define dvd_isSelected     (dvd_BufferIntegerValues().x < -0.5)
@@ -66,8 +66,7 @@ ivec4 dvd_BufferExtraIntegerValues() {
 #define dvd_shadowMapping  (dvd_BufferIntegerValues().y > 0.0)
 #define dvd_useAlphaTest   (buffer_matProperties.x > 0.0)
 #define dvd_texOperation   uint(buffer_matProperties.y)
-#define dvd_textureCount   uint(buffer_matProperties.z)
-#define dvd_parallaxFactor buffer_matProperties.w
+#define dvd_parallaxFactor buffer_matProperties.z
 #define dvd_reliefFactor   dvd_parallaxFactor
 
 #endif

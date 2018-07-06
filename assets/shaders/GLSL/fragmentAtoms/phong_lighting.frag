@@ -1,7 +1,7 @@
 #ifndef _PHONG_LIGHTING_FRAG_
 #define _PHONG_LIGHTING_FRAG_
 
-void Phong(in int lightIndex, in vec3 normalWV, inout vec3 colourInOut) {
+void Phong(in int lightIndex, in vec3 normalWV, in vec3 albedo, in vec3 specular, in float reflectivity, inout vec3 colourInOut, inout float reflectionCoeff) {
     // direction is NOT normalized
     vec3 lightDirection = getLightDirection(lightIndex);
     float att = getLightAttenuation(lightIndex, lightDirection);
@@ -9,7 +9,7 @@ void Phong(in int lightIndex, in vec3 normalWV, inout vec3 colourInOut) {
     vec3 lightColour = dvd_LightSource[lightIndex]._colour.rgb;
 
     float NDotL = max(dot(normalize(lightDirection), normalWV), 0.0);
-    colourInOut += clamp(lightColour * dvd_MatDiffuse.rgb * NDotL * att, 0.0, 1.0);
+    colourInOut += clamp(lightColour * albedo * NDotL * att, 0.0, 1.0);
 
     if (NDotL > 0.0) {
         vec3 dvd_ViewDirNorm = normalize(-VAR._vertexWV.xyz);
@@ -20,8 +20,10 @@ void Phong(in int lightIndex, in vec3 normalWV, inout vec3 colourInOut) {
         vec3 reflectDir = reflect(normalize(-lightDirection), normalWV);
         float specAngle = max(dot(reflectDir, dvd_ViewDirNorm), 0.0);
 #endif
-        float shininess = pow(specAngle, dvd_MatShininess) * att;
-        colourInOut += clamp(lightColour * dvd_MatSpecular.rgb * shininess, 0.0, 1.0);
+        float shininess = pow(specAngle, reflectivity) * att;
+        colourInOut += clamp(lightColour * specular * shininess, 0.0, 1.0);
+
+        reflectionCoeff = saturate(reflectionCoeff + shininess);
     }
 }
 

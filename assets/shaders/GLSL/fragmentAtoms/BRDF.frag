@@ -1,65 +1,29 @@
 #ifndef _BRDF_FRAG_
 #define _BRDF_FRAG_
 
-#include "utility.frag"
 #include "lightInput.cmn"
 #include "lightData.frag"
 #include "materialData.frag"
 #include "shadowMapping.frag"
+#include "pbr.frag"
 #include "phong_lighting.frag"
 
 vec3 processedNormal = vec3(0.0, 0.0, 1.0);
 
-//AMAZING RESOURCE: http://www.frostbite.com/wp-content/uploads/2014/11/course_notes_moving_frostbite_to_pbr.pdf
-//TEMP PBR
-/// Smith GGX Visibility
-///     nDotL: dot-prod of surface normal and light direction
-///     nDotV: dot-prod of surface normal and view direction
-///     roughness: surface roughness
-float SmithGGXVisibility(in float nDotL, in float nDotV, in float roughness)
-{
-    float rough2 = roughness * roughness;
-    float gSmithV = nDotV + sqrt(nDotV * (nDotV - nDotV * rough2) + rough2);
-    float gSmithL = nDotL + sqrt(nDotL * (nDotL - nDotL * rough2) + rough2);
-    return 1.0 / (gSmithV * gSmithL);
-}
-
-
-float SchlickG1(in float factor, in float rough2)
-{
-    return 1.0 / (factor * (1.0 - rough2) + rough2);
-}
-
-/// Schlick approximation of Smith GGX
-///     nDotL: dot product of surface normal and light direction
-///     nDotV: dot product of surface normal and view direction
-///     roughness: surface roughness
-float SchlickVisibility(float nDotL, float nDotV, float roughness)
-{
-    const float rough2 = roughness * roughness;
-    return (SchlickG1(nDotL, rough2) * SchlickG1(nDotV, rough2)) * 0.25;
-}
-
-void PBR(in int lightIndex, in vec3 normalWV, inout vec4 colourInOut) {
-    vec3 lightDirection = getLightDirection(lightIndex);
-    vec3 lightDir = normalize(lightDirection);
-    float roughness = dvd_MatShininess;
-
-
-    colourInOut = vec4(1.0);
-}
-
-//TEMP PBR
 void getBRDFFactors(in int lightIndex,
                     in vec3 normalWV,
-                    inout vec3 colourInOut)
+                    in vec3 albedo,
+                    in vec3 specular,
+                    in float reflectivity, //PBR: roughness. Phong: shininess
+                    inout vec3 colourInOut,
+                    inout float reflectionCoeff)
 {
 #if defined(USE_SHADING_PHONG) || defined (USE_SHADING_BLINN_PHONG)
-    Phong(lightIndex, normalWV, colourInOut);
+    Phong(lightIndex, normalWV, albedo, specular, reflectivity, colourInOut, reflectionCoeff);
 #elif defined(USE_SHADING_TOON)
-#elif defined(USE_SHADING_OREN_NAYAR)
-#else //if defined(USE_SHADING_COOK_TORRANCE)
-    PBR(lightIndex, normalWV, colourInOut);
+    // ToDo
+#else //if defined(USE_SHADING_COOK_TORRANCE) || defined(USE_SHADING_OREN_NAYAR)
+    PBR(lightIndex, normalWV, albedo, specular, reflectivity, colourInOut, reflectionCoeff);
 #endif
 }
 
@@ -78,6 +42,10 @@ uint GetNumLightsInThisTile(uint nTileIndex)
     return nNumLightsInThisTile;
 }
 
+bool isReflective(float specularCoeff) {
+    return specularCoeff > 0.75 && dvd_lodLevel < 1;
+}
+
 vec4 getPixelColour(const in vec2 texCoord, in vec3 normalWV) {
     //Occlusion culling visibility debug code
 #if defined(USE_HIZ_CULLING) && defined(DEBUG_HIZ_CULLING)
@@ -86,70 +54,59 @@ vec4 getPixelColour(const in vec2 texCoord, in vec3 normalWV) {
     }
 #endif
 
-    parseMaterial();
+    vec4 albedo = getAlbedo();
 
     processedNormal = normalWV;
-
-#if defined(HAS_TRANSPARENCY)
-#   if defined(USE_OPACITY_DIFFUSE)
-        float alpha = dvd_MatDiffuse.a;
-#   endif
-#   if defined(USE_OPACITY_MAP)
-        vec4 opacityMap = texture(texOpacityMap, texCoord);
-        float alpha = max(min(opacityMap.r, opacityMap.g), min(opacityMap.b, opacityMap.a));
-#   endif
-#   else
-        const float alpha = 1.0;
-#   endif
 
 #   if defined (USE_DOUBLE_SIDED)
         processedNormal = gl_FrontFacing ? processedNormal : -processedNormal;
 #   endif
 
+    float reflectionCoeff = 0.0;
 #   if defined(USE_SHADING_FLAT)
-        vec3 colour = dvd_MatDiffuse.rgb;
+        vec3 colour = albedo.rgb;
 #   else
-    vec3 lightColour = vec3(0.0);
-    // Apply all lighting contributions
-    uint lightIdx;
-    // Directional lights
-    for (lightIdx = 0; lightIdx < dvd_lightCountPerType[0]; ++lightIdx) {
-        getBRDFFactors(int(lightIdx), processedNormal, lightColour);
-    }
+        vec3 specular = getSpecular();
+        float reflectivity = getReflectivity();
+        vec3 lightColour = vec3(0.0);
+        // Apply all lighting contributions
+        uint lightIdx;
+        // Directional lights
+        for (lightIdx = 0; lightIdx < dvd_lightCountPerType[0]; ++lightIdx) {
+            getBRDFFactors(int(lightIdx), processedNormal, albedo.rgb, specular, reflectivity, lightColour, reflectionCoeff);
+        }
 
-    uint offset = dvd_lightCountPerType[0];
-    // Point lights
-    uint nIndex = uint(dvd_otherData.w) * GetTileIndex(gl_FragCoord.xy);
-    uint nNextLightIndex = perTileLightIndices[nIndex];
-    while (nNextLightIndex != LIGHT_INDEX_BUFFER_SENTINEL)
-    {
-        uint nLightIndex = nNextLightIndex;
+        uint offset = dvd_lightCountPerType[0];
+        // Point lights
+        uint nIndex = uint(dvd_otherData.w) * GetTileIndex(gl_FragCoord.xy);
+        uint nNextLightIndex = perTileLightIndices[nIndex];
+        while (nNextLightIndex != LIGHT_INDEX_BUFFER_SENTINEL)
+        {
+            uint nLightIndex = nNextLightIndex;
+            nNextLightIndex = perTileLightIndices[++nIndex];
+            getBRDFFactors(int(nLightIndex - 1 + offset), processedNormal, albedo.rgb, specular, reflectivity, lightColour, reflectionCoeff);
+        }
+
+        offset = dvd_lightCountPerType[1];
+        // Spot lights
+        // Moves past the first sentinel to get to the spot lights.
         nNextLightIndex = perTileLightIndices[++nIndex];
-
-        getBRDFFactors(int(nLightIndex - 1 + offset), processedNormal, lightColour);
-    }
-
-    offset = dvd_lightCountPerType[1];
-    // Spot lights
-    // Moves past the first sentinel to get to the spot lights.
-    nNextLightIndex = perTileLightIndices[++nIndex];
-    while (nNextLightIndex != LIGHT_INDEX_BUFFER_SENTINEL)
-    {
-        uint nLightIndex = nNextLightIndex;
-        nNextLightIndex = perTileLightIndices[++nIndex];
-        getBRDFFactors(int(nLightIndex - 1 + offset), processedNormal, lightColour);
-    }
+        while (nNextLightIndex != LIGHT_INDEX_BUFFER_SENTINEL)
+        {
+            uint nLightIndex = nNextLightIndex;
+            nNextLightIndex = perTileLightIndices[++nIndex];
+            getBRDFFactors(int(nLightIndex - 1 + offset), processedNormal, albedo.rgb, specular, reflectivity, lightColour, reflectionCoeff);
+        }
     
-    vec3 colour = mix(dvd_MatEmissive, lightColour, DIST_TO_ZERO(length(lightColour)));
+        vec3 colour = mix(getEmissive(), lightColour, DIST_TO_ZERO(length(lightColour)));
 #endif
 
-    float reflectance = saturate(dvd_MatShininess / 255.0);
-    if (reflectance > 0.75 && dvd_lodLevel < 1) {
+    if (isReflective(reflectionCoeff)) {
         vec3 reflectDirection = reflect(normalize(VAR._vertexWV.xyz), processedNormal);
         reflectDirection = vec3(inverse(dvd_ViewMatrix) * vec4(reflectDirection, 0.0));
         colour = mix(texture(texEnvironmentCube, vec4(reflectDirection, dvd_reflectionIndex)).rgb,
                     colour,
-                    vec3(reflectance));
+                    vec3(reflectionCoeff));
 
     }
 
@@ -176,7 +133,8 @@ vec4 getPixelColour(const in vec2 texCoord, in vec3 normalWV) {
         };
     }
 #endif
-    return vec4(colour, alpha);
+
+    return vec4(colour, albedo.a);
 }
 
 #endif

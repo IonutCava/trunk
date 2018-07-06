@@ -21,6 +21,11 @@ void main(void){
 }
 
 -- Fragment
+
+#if defined(USE_OPACITY_DIFFUSE) || defined(USE_OPACITY_MAP) || defined(USE_OPACITY_DIFFUSE_MAP)
+#   define HAS_TRANSPARENCY
+#endif
+
 #if !defined(HAS_TRANSPARENCY)
 layout(early_fragment_tests) in;
 #endif
@@ -67,19 +72,30 @@ vec4 mappingParallax(){
 }
 #endif
 
-void main (void){
-    //_colourOut = ToSRGB(applyFog(MappingRoutine()));
+vec4 getFinalPixelColour() {
+
+//return MappingRoutine();
 #if defined(COMPUTE_TBN)
 #    if defined(USE_PARALLAX_MAPPING)
-    _colourOut = ToSRGB(applyFog(ParallaxMapping()));
+    return ParallaxMapping();
 #    elif defined(USE_RELIEF_MAPPING)
-    _colourOut = ToSRGB(applyFog(ReliefMapping()));
+    return ReliefMapping();
 #    else
-    _colourOut = ToSRGB(applyFog(mappingNormal()));
+    return mappingNormal();
 #    endif
 #else
-    _colourOut = ToSRGB(applyFog(mappingFlat()));
+   return mappingFlat();
+#endif
+}
+
+void main (void){
+    _colourOut = ToSRGB(applyFog(getFinalPixelColour()));
+    _normalOut = processedNormal;
+
+#if defined(_DEBUG)
+    if (dvd_NormalsOnly) {
+        _colourOut.rgb = _normalOut;
+    }
 #endif
 
-    _normalOut = processedNormal;
 }   

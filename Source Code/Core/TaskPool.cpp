@@ -46,8 +46,10 @@ void TaskPool::flushCallbackQueue()
         const DELEGATE_CBK<>& cbk = _taskCallbacks[taskIndex];
         if (cbk) {
             cbk();
-            _taskStates[taskIndex] = false;
             _taskCallbacks[taskIndex] = DELEGATE_CBK<>();
+
+            std::unique_lock<std::mutex> lk(_taskStateLock);
+            _taskStates[taskIndex] = false;
         }
     }
 }
@@ -56,6 +58,7 @@ void TaskPool::waitForAllTasks(bool yeld, bool flushCallbacks, bool forceClear) 
     bool finished = false;
     while (!finished) {
         finished = true;
+        std::unique_lock<std::mutex> lk(_taskStateLock);
         for (bool state : _taskStates) {
             if (state) {
                 finished = false;
@@ -85,14 +88,16 @@ void TaskPool::setTaskCallback(const TaskHandle& handle,
 
 void TaskPool::taskCompleted(U32 poolIndex, Task::TaskPriority priority) {
     if (!_taskCallbacks[poolIndex]) {
+        std::unique_lock<std::mutex> lk(_taskStateLock);
         _taskStates[poolIndex] = false;
     } else {
         if (priority != Task::TaskPriority::REALTIME_WITH_CALLBACK) {
             WAIT_FOR_CONDITION(_threadedCallbackBuffer.push(poolIndex));
         } else {
             _taskCallbacks[poolIndex]();
-            _taskStates[poolIndex] = false;
             _taskCallbacks[poolIndex] = DELEGATE_CBK<>();
+            std::unique_lock<std::mutex> lk(_taskStateLock);
+            _taskStates[poolIndex] = false;
         }
     }
     // Signal main thread to execute callback
@@ -114,13 +119,18 @@ Task& TaskPool::getAvailableTask() {
 
     U32 taskIndex = (++_allocatedJobs - 1u) & (poolSize - 1u);
     U32 failCount = 0;
-    while(_taskStates[taskIndex]) {
-        failCount++;
-        taskIndex = (++_allocatedJobs - 1u) & (poolSize - 1u);
-        assert(failCount < poolSize * 2);
+
+    {
+        std::unique_lock<std::mutex> lk(_taskStateLock);
+        while(_taskStates[taskIndex]) {
+            failCount++;
+            taskIndex = (++_allocatedJobs - 1u) & (poolSize - 1u);
+            assert(failCount < poolSize * 2);
+        }
     }
 
     Task& task = _tasksPool[taskIndex];
+    assert(!task.isRunning());
     task.reset();
 
     return task;

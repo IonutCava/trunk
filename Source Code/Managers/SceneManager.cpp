@@ -7,11 +7,13 @@
 #include "Scenes/Headers/SceneShaderData.h"
 #include "Core/Time/Headers/ProfileTimer.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
-#include "Geometry/Importer/Headers/DVDConverter.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "Rendering/Headers/ForwardPlusRenderer.h"
 #include "Rendering/Headers/DeferredShadingRenderer.h"
 #include "AI/PathFinding/Headers/DivideRecast.h"
+
+#include "Geometry/Importer/Headers/DVDConverter.h"
+#include "Geometry/Material/Headers/ShaderComputeQueue.h"
 
 #include "Core/Debugging/Headers/DebugInterface.h"
 namespace Divide {
@@ -58,6 +60,7 @@ SceneManager::SceneManager()
       _renderer(nullptr),
       _renderPassCuller(nullptr),
       _renderPassManager(nullptr),
+      _shaderComputeQueue(nullptr),
       _defaultMaterial(nullptr),
       _processInput(false),
       _scenePool(nullptr),
@@ -85,6 +88,7 @@ SceneManager::~SceneManager()
     MemoryManager::DELETE(_sceneData);
     MemoryManager::DELETE(_renderPassCuller);
     MemoryManager::DELETE(_renderer);
+    MemoryManager::DELETE(_shaderComputeQueue);
     AI::Navigation::DivideRecast::destroyInstance();
 }
 
@@ -121,6 +125,7 @@ bool SceneManager::init(GUI* const gui) {
     _GUI = gui;
     _renderPassCuller = MemoryManager_NEW RenderPassCuller();
     _renderPassManager = &RenderPassManager::instance();
+    _shaderComputeQueue = MemoryManager_NEW ShaderComputeQueue();
     _sceneData->init();
     _scenePool->init();
     _init = true;
@@ -282,6 +287,9 @@ void SceneManager::updateSceneState(const U64 deltaTime) {
     _sceneData->setRendererFlag(getRenderer().getFlag());
 
     _sceneData->toggleShadowMapping(lightPool->shadowMappingEnabled());
+
+
+    _shaderComputeQueue->update(deltaTime);
 
     FogDescriptor& fog = activeScene.state().fogDescriptor();
     bool fogEnabled = par.getParam<bool>(_ID("rendering.enableFog"));
@@ -667,4 +675,13 @@ bool LoadSave::saveScene(const Scene& activeScene) {
     return false;
 }
 
+ShaderComputeQueue& SceneManager::shaderComputeQueue() {
+    assert(_shaderComputeQueue != nullptr);
+    return *_shaderComputeQueue;
+}
+
+const ShaderComputeQueue& SceneManager::shaderComputeQueue() const {
+    assert(_shaderComputeQueue != nullptr);
+    return *_shaderComputeQueue;
+}
 };

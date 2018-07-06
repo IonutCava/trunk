@@ -994,5 +994,8 @@
     <None Include="..\..\assets\shaders\GLSL\material.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\pbr.frag">
+      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
+    </None>
   </ItemGroup>
 </Project>

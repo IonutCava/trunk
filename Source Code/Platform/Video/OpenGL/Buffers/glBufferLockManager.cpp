@@ -8,7 +8,8 @@ namespace Divide {
 glBufferLockManager::glBufferLockManager()
     : glLockManager()
 {
-    _bufferLocks.reserve(128);
+    _swapLock.reserve(32);
+    _bufferLocks.reserve(32);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -27,7 +28,7 @@ void glBufferLockManager::WaitForLockedRange(size_t lockBeginBytes,
                                              bool blockClient) {
     BufferRange testRange = {lockBeginBytes, lockLength};
 
-    vectorImpl<BufferLock> swapLocks;
+    _swapLocks.resize(0);
 
     WriteLock w_lock(_lock);
     for (BufferLock& lock : _bufferLocks) {
@@ -35,11 +36,11 @@ void glBufferLockManager::WaitForLockedRange(size_t lockBeginBytes,
             wait(&lock._syncObj, blockClient);
             cleanup(&lock);
         } else {
-            swapLocks.push_back(lock);
+            _swapLocks.push_back(lock);
         }
     }
 
-    _bufferLocks.swap(swapLocks);
+    _bufferLocks.swap(_swapLocks);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
