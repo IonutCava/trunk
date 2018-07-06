@@ -129,7 +129,7 @@ class WarSceneOrder : public Order {
         COUNT
     };
 
-    WarSceneOrder(WarOrder order) : Order(static_cast<U32>(order))
+    WarSceneOrder(WarOrder order) : Order(to_uint(order))
     {
     }
 

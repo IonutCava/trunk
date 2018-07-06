@@ -47,7 +47,7 @@ void ApplicationTimer::removeTimer(ProfileTimer* const timer) {
 void ApplicationTimer::init(U8 targetFrameRate) {
     assert(!_init);  //<prevent double init
 
-    _targetFrameRate = static_cast<U32>(targetFrameRate);
+    _targetFrameRate = to_uint(targetFrameRate);
 
 #if defined(OS_WINDOWS)
     bool queryAvailable = QueryPerformanceFrequency(&_ticksPerSecond) != 0;

@@ -44,7 +44,7 @@ bool SceneAnimator::init(const aiScene* pScene) {
     release();
 
     _skeleton = createBoneTree(pScene->mRootNode, nullptr);
-    _skeletonDepthCache = static_cast<I32>(_skeleton->hierarchyDepth());
+    _skeletonDepthCache = to_int(_skeleton->hierarchyDepth());
 
     vectorImpl<Bone*> bones;
     bones.reserve(_skeletonDepthCache);
@@ -62,10 +62,10 @@ bool SceneAnimator::init(const aiScene* pScene) {
         }
     }
 
-    if (_skeletonDepthCache != static_cast<I32>(bones.size())) {
+    if (_skeletonDepthCache != to_int(bones.size())) {
         // ToDo: investigate mismatch. 
         // Avoid adding unneeded bones to skeleton - Ionut
-        _skeletonDepthCache = static_cast<I32>(bones.size());
+        _skeletonDepthCache = to_int(bones.size());
     }
 
     extractAnimations(pScene);

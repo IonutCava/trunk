@@ -93,4 +93,77 @@ void Character::lookAt(const vec3<F32>& targetPos) {
                          .direction(targetPos));
     _velocityDirty = true;
 }
+
+
+void Character::playAnimation(I32 index) {
+    SceneGraphNode* node = getBoundNode();
+    if (node) {
+        AnimationComponent* anim = node->getComponent<AnimationComponent>();
+        if (anim) {
+            anim->playAnimation(index);
+        } else {
+            for (SceneGraphNode::NodeChildren::value_type& it :
+                node->getChildren()) {
+                anim = it.second->getComponent<AnimationComponent>();
+                if (anim) {
+                    anim->playAnimation(index);
+                }
+            }
+        }
+    }
+}
+
+void Character::playNextAnimation() {
+    SceneGraphNode* node = getBoundNode();
+    if (node) {
+        AnimationComponent* anim = node->getComponent<AnimationComponent>();
+        if (anim) {
+            anim->playNextAnimation();
+        } else {
+            for (SceneGraphNode::NodeChildren::value_type& it :
+                node->getChildren()) {
+                anim = it.second->getComponent<AnimationComponent>();
+                if (anim) {
+                    anim->playNextAnimation();
+                }
+            }
+        }
+    }
+}
+
+void Character::playPreviousAnimation() {
+    SceneGraphNode* node = getBoundNode();
+    if (node) {
+        AnimationComponent* anim = node->getComponent<AnimationComponent>();
+        if (anim) {
+            anim->playPreviousAnimation();
+        } else {
+            for (SceneGraphNode::NodeChildren::value_type& it :
+                node->getChildren()) {
+                anim = it.second->getComponent<AnimationComponent>();
+                if (anim) {
+                    anim->playPreviousAnimation();
+                }
+            }
+        }
+    }
+}
+
+void Character::pauseAnimation(bool state) {
+    SceneGraphNode* node = getBoundNode();
+    if (node) {
+        AnimationComponent* anim = node->getComponent<AnimationComponent>();
+        if (anim) {
+            anim->playAnimations(state);
+        } else {
+            for (SceneGraphNode::NodeChildren::value_type& it :
+                node->getChildren()) {
+                anim = it.second->getComponent<AnimationComponent>();
+                if (anim) {
+                    anim->playAnimations(state);
+                }
+            }
+        }
+    }
+}
 };

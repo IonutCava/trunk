@@ -218,14 +218,12 @@ class NavigationMeshConfig {
       * base_ setters.
       **/
     inline void eval(void) {
-        _walkableHeight = static_cast<I32>(ceilf(_agentHeight / _cellHeight));
-        _walkableClimb = static_cast<I32>(floorf(_agentMaxClimb / _cellHeight));
-        _walkableRadius = static_cast<I32>(ceilf(_agentRadius / _cellSize));
-        _maxEdgeLen = static_cast<I32>(_edgeMaxLen / _cellSize);
-        _minRegionArea =
-            static_cast<I32>(rcSqr(_regionMinSize));  // Note: area = size*size
-        _mergeRegionArea = static_cast<I32>(
-            rcSqr(_regionMergeSize));  // Note: area = size*size
+        _walkableHeight = to_int(ceilf(_agentHeight / _cellHeight));
+        _walkableClimb = to_int(floorf(_agentMaxClimb / _cellHeight));
+        _walkableRadius = to_int(ceilf(_agentRadius / _cellSize));
+        _maxEdgeLen = to_int(_edgeMaxLen / _cellSize);
+        _minRegionArea = to_int(rcSqr(_regionMinSize));  // Note: area = size*size
+        _mergeRegionArea = to_int(rcSqr(_regionMergeSize));  // Note: area = size*size
         _base_detailSampleDist =
             _detailSampleDist < 0.9f ? 0 : _cellSize * _detailSampleDist;
         _base_detailSampleMaxError = _cellHeight * _detailSampleMaxError;

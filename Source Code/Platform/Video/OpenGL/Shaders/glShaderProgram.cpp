@@ -446,7 +446,7 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
                 // based on the specified stage and properties
                 const char* sourceCodeStr = glswGetShader(
                     shaderCompileName.c_str(),
-                    _lineOffset[i] + static_cast<U32>(_definesList.size()),
+                    _lineOffset[i] + to_uint(_definesList.size()),
                     _refreshStage[i]);
                 stringImpl sourceCode(sourceCodeStr ? sourceCodeStr : "");
                 // GLSW may fail for various reasons (not a valid effect stage,
@@ -789,7 +789,7 @@ void glShaderProgram::Uniform(GLint location,
 
 void glShaderProgram::Uniform(GLint location, U8 slot) {
     if (cachedValueUpdate(location, slot)) {
-        glProgramUniform1i(_shaderProgramID, location, static_cast<I32>(slot));
+        glProgramUniform1i(_shaderProgramID, location, to_int(slot));
     }
 }
 };

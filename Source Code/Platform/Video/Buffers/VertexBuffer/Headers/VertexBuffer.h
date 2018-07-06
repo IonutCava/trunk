@@ -162,8 +162,8 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     inline bool usesLargeIndices() const { return _largeIndices; }
 
     inline U32 getIndexCount() const {
-        return static_cast<U32>(usesLargeIndices() ? _hardwareIndicesL.size()
-                                                   : _hardwareIndicesS.size());
+        return to_uint(usesLargeIndices() ? _hardwareIndicesL.size()
+                                          : _hardwareIndicesS.size());
     }
 
     inline U32 getIndex(U32 index) const {

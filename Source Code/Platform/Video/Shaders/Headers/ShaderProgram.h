@@ -112,7 +112,7 @@ class NOINITVTABLE ShaderProgram : public HardwareResource {
     }
     
     inline void Uniform(const stringImpl& ext, bool value) {
-        Uniform(ext, static_cast<I32>(value ? 1 : 0));
+        Uniform(ext, value ? 1 : 0);
     }
 
     /// Subroutine
@@ -160,7 +160,7 @@ class NOINITVTABLE ShaderProgram : public HardwareResource {
     }
 
     inline void Uniform(I32 location, bool value) {
-        Uniform(location, static_cast<I32>(value ? 1 : 0));
+        Uniform(location, value ? 1 : 0);
     }
 
     inline void SetOutputCount(U8 count) {

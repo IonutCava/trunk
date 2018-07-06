@@ -234,7 +234,7 @@ vec3<F32> Terrain::getPosition(F32 x_clampf, F32 z_clampf) const {
 
     vec2<F32> posF(x_clampf * _terrainDimensions.x,
                    z_clampf * _terrainDimensions.y);
-    vec2<I32> posI(static_cast<I32>(posF.x), static_cast<I32>(posF.y));
+    vec2<I32> posI(to_int(posF.x), to_int(posF.y));
     vec2<F32> posD(posF.x - posI.x, posF.y - posI.y);
 
     if (posI.x >= (I32)_terrainDimensions.x - 1)
@@ -242,8 +242,8 @@ vec3<F32> Terrain::getPosition(F32 x_clampf, F32 z_clampf) const {
     if (posI.y >= (I32)_terrainDimensions.y - 1)
         posI.y = _terrainDimensions.y - 2;
 
-    assert(posI.x >= 0 && posI.x < static_cast<I32>(_terrainDimensions.x) - 1 &&
-           posI.y >= 0 && posI.y < static_cast<I32>(_terrainDimensions.y) - 1);
+    assert(posI.x >= 0 && posI.x < to_int(_terrainDimensions.x) - 1 &&
+           posI.y >= 0 && posI.y < to_int(_terrainDimensions.y) - 1);
 
     vec3<F32> pos(
         _boundingBox.getMin().x +
@@ -255,16 +255,16 @@ vec3<F32> Terrain::getPosition(F32 x_clampf, F32 z_clampf) const {
     const vectorImpl<vec3<F32> >& position = getGeometryVB()->getPosition();
 
     pos.y = (position[TER_COORD(posI.x, posI.y,
-                                static_cast<I32>(_terrainDimensions.x))].y) *
+                                to_int(_terrainDimensions.x))].y) *
                 (1.0f - posD.x) * (1.0f - posD.y) +
             (position[TER_COORD(posI.x + 1, posI.y,
-                                static_cast<I32>(_terrainDimensions.x))].y) *
+                                to_int(_terrainDimensions.x))].y) *
                 posD.x * (1.0f - posD.y) +
             (position[TER_COORD(posI.x, posI.y + 1,
-                                static_cast<I32>(_terrainDimensions.x))].y) *
+                                to_int(_terrainDimensions.x))].y) *
                 (1.0f - posD.x) * posD.y +
             (position[TER_COORD(posI.x + 1, posI.y + 1,
-                                static_cast<I32>(_terrainDimensions.x))].y) *
+                                to_int(_terrainDimensions.x))].y) *
                 posD.x * posD.y;
 
     return pos;
@@ -276,32 +276,32 @@ vec3<F32> Terrain::getNormal(F32 x_clampf, F32 z_clampf) const {
 
     vec2<F32> posF(x_clampf * _terrainDimensions.x,
                    z_clampf * _terrainDimensions.y);
-    vec2<I32> posI(static_cast<I32>(x_clampf * _terrainDimensions.x),
-                   static_cast<I32>(z_clampf * _terrainDimensions.y));
+    vec2<I32> posI(to_int(x_clampf * _terrainDimensions.x),
+                   to_int(z_clampf * _terrainDimensions.y));
     vec2<F32> posD(posF.x - posI.x, posF.y - posI.y);
 
-    if (posI.x >= static_cast<I32>(_terrainDimensions.x) - 1) {
-        posI.x = static_cast<I32>(_terrainDimensions.x) - 2;
+    if (posI.x >= to_int(_terrainDimensions.x) - 1) {
+        posI.x = to_int(_terrainDimensions.x) - 2;
     }
-    if (posI.y >= static_cast<I32>(_terrainDimensions.y) - 1) {
-        posI.y = static_cast<I32>(_terrainDimensions.y) - 2;
+    if (posI.y >= to_int(_terrainDimensions.y) - 1) {
+        posI.y = to_int(_terrainDimensions.y) - 2;
     }
-    assert(posI.x >= 0 && posI.x < static_cast<I32>(_terrainDimensions.x) - 1 &&
-           posI.y >= 0 && posI.y < static_cast<I32>(_terrainDimensions.y) - 1);
+    assert(posI.x >= 0 && posI.x < to_int(_terrainDimensions.x) - 1 &&
+           posI.y >= 0 && posI.y < to_int(_terrainDimensions.y) - 1);
 
     const vectorImpl<vec3<F32> >& normals = getGeometryVB()->getNormal();
 
     return (normals[TER_COORD(posI.x, posI.y,
-                              static_cast<I32>(_terrainDimensions.x))]) *
+                              to_int(_terrainDimensions.x))]) *
                (1.0f - posD.x) * (1.0f - posD.y) +
            (normals[TER_COORD(posI.x + 1, posI.y,
-                              static_cast<I32>(_terrainDimensions.x))]) *
+                              to_int(_terrainDimensions.x))]) *
                posD.x * (1.0f - posD.y) +
            (normals[TER_COORD(posI.x, posI.y + 1,
-                              static_cast<I32>(_terrainDimensions.x))]) *
+                              to_int(_terrainDimensions.x))]) *
                (1.0f - posD.x) * posD.y +
            (normals[TER_COORD(posI.x + 1, posI.y + 1,
-                              static_cast<I32>(_terrainDimensions.x))]) *
+                              to_int(_terrainDimensions.x))]) *
                posD.x * posD.y;
 }
 
@@ -311,32 +311,32 @@ vec3<F32> Terrain::getTangent(F32 x_clampf, F32 z_clampf) const {
 
     vec2<F32> posF(x_clampf * _terrainDimensions.x,
                    z_clampf * _terrainDimensions.y);
-    vec2<I32> posI(static_cast<I32>(x_clampf * _terrainDimensions.x),
-                   static_cast<I32>(z_clampf * _terrainDimensions.y));
+    vec2<I32> posI(to_int(x_clampf * _terrainDimensions.x),
+                   to_int(z_clampf * _terrainDimensions.y));
     vec2<F32> posD(posF.x - posI.x, posF.y - posI.y);
 
-    if (posI.x >= static_cast<I32>(_terrainDimensions.x) - 1) {
-        posI.x = static_cast<I32>(_terrainDimensions.x) - 2;
+    if (posI.x >= to_int(_terrainDimensions.x) - 1) {
+        posI.x = to_int(_terrainDimensions.x) - 2;
     }
-    if (posI.y >= static_cast<I32>(_terrainDimensions.y) - 1) {
-        posI.y = static_cast<I32>(_terrainDimensions.y) - 2;
+    if (posI.y >= to_int(_terrainDimensions.y) - 1) {
+        posI.y = to_int(_terrainDimensions.y) - 2;
     }
-    assert(posI.x >= 0 && posI.x < static_cast<I32>(_terrainDimensions.x) - 1 &&
-           posI.y >= 0 && posI.y < static_cast<I32>(_terrainDimensions.y) - 1);
+    assert(posI.x >= 0 && posI.x < to_int(_terrainDimensions.x) - 1 &&
+           posI.y >= 0 && posI.y < to_int(_terrainDimensions.y) - 1);
 
     const vectorImpl<vec3<F32> >& tangents = getGeometryVB()->getTangent();
 
     return (tangents[TER_COORD(posI.x, posI.y,
-                               static_cast<I32>(_terrainDimensions.x))]) *
+                               to_int(_terrainDimensions.x))]) *
                (1.0f - posD.x) * (1.0f - posD.y) +
            (tangents[TER_COORD(posI.x + 1, posI.y,
-                               static_cast<I32>(_terrainDimensions.x))]) *
+                               to_int(_terrainDimensions.x))]) *
                posD.x * (1.0f - posD.y) +
            (tangents[TER_COORD(posI.x, posI.y + 1,
-                               static_cast<I32>(_terrainDimensions.x))]) *
+                               to_int(_terrainDimensions.x))]) *
                (1.0f - posD.x) * posD.y +
            (tangents[TER_COORD(posI.x + 1, posI.y + 1,
-                               static_cast<I32>(_terrainDimensions.x))]) *
+                               to_int(_terrainDimensions.x))]) *
                posD.x * posD.y;
 }
 

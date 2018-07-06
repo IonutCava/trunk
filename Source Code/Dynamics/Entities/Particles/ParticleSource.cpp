@@ -10,7 +10,7 @@ ParticleSource::~ParticleSource() {}
 
 void ParticleSource::emit(const U64 deltaTime, ParticleData* p) {
     const F32 dt = Time::MicrosecondsToMilliseconds<F32>(deltaTime);
-    const U32 maxNewParticles = static_cast<U32>(dt * _emitRate);
+    const U32 maxNewParticles = to_uint(dt * _emitRate);
     const U32 startID = p->aliveCount();
     const U32 endID = std::min(startID + maxNewParticles, p->totalCount() - 1);
 

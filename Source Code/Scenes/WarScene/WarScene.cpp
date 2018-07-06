@@ -111,14 +111,14 @@ void WarScene::processTasks(const U64 deltaTime) {
 
     if (_taskTimers[1] >= AnimationTimer1) {
         for (NPC* const npc : _armyNPCs[0]) {
-            npc->getBoundNode()->getComponent<AnimationComponent>()->playNextAnimation();
+            npc->playNextAnimation();
         }
         _taskTimers[1] = 0.0;
     }
 
     if (_taskTimers[2] >= AnimationTimer2) {
         for (NPC* const npc : _armyNPCs[1]) {
-            npc->getBoundNode()->getComponent<AnimationComponent>()->playNextAnimation();
+            npc->playNextAnimation();
         }
         _taskTimers[2] = 0.0;
     }

@@ -23,7 +23,7 @@ AnimationComponent::AnimationComponent(SceneAnimator& animator,
                   "AnimationComponent error: Too many bones for current node! "
                   "Increase MAX_BONE_COUNT_PER_NODE in Config!");
 
-    _dataRange = static_cast<I32>(_animator.boneCount());
+    _dataRange = to_int(_animator.boneCount());
 
     I32 alignmentOffset = (_dataRange * sizeof(mat4<F32>)) % ShaderBuffer::getTargetDataAlignment();
 
@@ -87,7 +87,7 @@ void AnimationComponent::resetTimers() {
 /// Select an animation by name
 bool AnimationComponent::playAnimation(const stringImpl& name) {
     U32 animIndex = 0;
-    I32 oldindex = _currentAnimIndex;
+    I32 oldIndex = _currentAnimIndex;
 
     if (_animator.animationID(name, animIndex)) {
         _currentAnimIndex = animIndex;
@@ -96,28 +96,38 @@ bool AnimationComponent::playAnimation(const stringImpl& name) {
         _currentAnimIndex = 0;
     }
     resetTimers();
-    return oldindex != _currentAnimIndex;
+    return oldIndex != _currentAnimIndex;
 }
 
 /// Select an animation by index
 bool AnimationComponent::playAnimation(I32 pAnimIndex) {
-    if (pAnimIndex >= static_cast<I32>(_animator.animations().size())) {
+    if (pAnimIndex >= to_int(_animator.animations().size())) {
         return false;  // no change, or the animations data is out of bounds
     }
-    I32 oldindex = _currentAnimIndex;
+    I32 oldIndex = _currentAnimIndex;
     _currentAnimIndex = pAnimIndex;  // only set this after the checks for good
                                      // data and the object was actually
                                      // inserted
     resetTimers();
-    return oldindex != _currentAnimIndex;
+    return oldIndex != _currentAnimIndex;
 }
 
 /// Select next available animation
 bool AnimationComponent::playNextAnimation() {
-    I32 oldindex = _currentAnimIndex;
+    I32 oldIndex = _currentAnimIndex;
     _currentAnimIndex = ++_currentAnimIndex % _animator.animations().size();
     resetTimers();
-    return oldindex != _currentAnimIndex;
+    return oldIndex != _currentAnimIndex;
+}
+
+bool AnimationComponent::playPreviousAnimation() {
+    I32 oldIndex = _currentAnimIndex;
+    if (_currentAnimIndex == 0) {
+        _currentAnimIndex = to_int(_animator.animations().size());
+    }
+    _currentAnimIndex = --_currentAnimIndex;
+    resetTimers();
+    return oldIndex != _currentAnimIndex;
 }
 
 const vectorImpl<Line>& AnimationComponent::skeletonLines() const {
@@ -153,7 +163,7 @@ I32 AnimationComponent::frameCount(U32 animationID) const {
 }
 
 U32 AnimationComponent::boneCount() const {
-    return static_cast<U32>(_animator.boneCount());
+    return to_uint(_animator.boneCount());
 }
 
 const vectorImpl<mat4<F32>>& AnimationComponent::transformsByIndex(

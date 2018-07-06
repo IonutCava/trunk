@@ -70,12 +70,11 @@ void Mesh::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
 
     if (isSkinned()) {
         bool playAnimations = sceneState.renderState().playAnimations() && _playAnimations;
-
         for (value_type it : sgn.getChildren()) {
             AnimationComponent* comp = it.second->getComponent<AnimationComponent>();
             // Not all submeshes are necessarily animated. (e.g. flag on the back of a character)
             if (comp) {
-                comp->playAnimations(playAnimations);
+                comp->playAnimations(playAnimations && comp->playAnimations());
                 comp->incParentTimeStamp(deltaTime);
             }
         }

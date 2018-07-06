@@ -297,10 +297,10 @@ void LightManager::updateAndUploadLightData(const mat4<F32>& viewMatrix) {
         _viewMatrixCache.set(viewMatrix);
     }
 
-    U32 lightCount = std::min(static_cast<U32>(_lights.size()),
+    U32 lightCount = std::min(to_uint(_lights.size()),
                               Config::Lighting::MAX_LIGHTS_PER_SCENE);
     U32 lightShadowCount =
-        std::min(static_cast<U32>(_lights.size()),
+        std::min(to_uint(_lights.size()),
                  Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE);
 
     vectorImpl<LightProperties> lightProperties;
@@ -331,7 +331,7 @@ void LightManager::updateAndUploadLightData(const mat4<F32>& viewMatrix) {
         if (light->castsShadows() &&
             lightShadowProperties.size() < lightShadowCount) {
 
-            temp._options.z = static_cast<I32>(lightShadowProperties.size());
+            temp._options.z = to_int(lightShadowProperties.size());
             lightShadowProperties.push_back(light->getShadowProperties());
         }
     }

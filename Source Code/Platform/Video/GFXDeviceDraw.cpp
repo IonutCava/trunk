@@ -83,7 +83,7 @@ bool GFXDevice::setBufferData(const GenericDrawCommand& cmd) {
     // properly
     DIVIDE_ASSERT(IS_IN_RANGE_INCLUSIVE(
                       cmd.drawID(), 0u,
-                      std::max(static_cast<U32>(_lastNodeCount - 1), 1u)),
+                      std::max(to_uint(_lastNodeCount - 1), 1u)),
                   "GFXDevice error: Invalid draw ID encountered!");
     DIVIDE_ASSERT(cmd.primCount() > 0 && cmd.drawCount() > 0,
                   "GFXDevice error: Invalid draw command!");
@@ -282,7 +282,7 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
 
         if (!nodeDrawCommands.empty()) {
             for (GenericDrawCommand& cmd : nodeDrawCommands) {
-                cmd.drawID(static_cast<U32>(_lastNodeCount));
+                cmd.drawID(to_uint(_lastNodeCount));
                 cmd.renderWireframe(cmd.renderWireframe() || sceneRenderState.drawWireframe());
                 // Extract the specific rendering commands from the draw commands
                 // Rendering commands are stored in GPU memory. Draw commands are not.

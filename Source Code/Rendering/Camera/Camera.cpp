@@ -26,7 +26,8 @@ Camera::Camera(const CameraType& type, const vec3<F32>& eye)
       _aspectRatio(1.33f),
       _verticalFoV(60.0f),
       _camIOD(0.5f),
-      _type(type) {
+      _type(type)
+{
     _eye.set(eye);
     _reflectedEye.set(eye * vec3<F32>(1.0f, -1.0f, 1.0f));
     _xAxis.set(WORLD_X_AXIS);
@@ -44,7 +45,10 @@ Camera::Camera(const CameraType& type, const vec3<F32>& eye)
     _frustum = MemoryManager_NEW Frustum(*this);
 }
 
-Camera::~Camera() { MemoryManager::DELETE(_frustum); }
+Camera::~Camera()
+{
+    MemoryManager::DELETE(_frustum);
+}
 
 void Camera::fromCamera(const Camera& camera) {
     if (camera._isOrthoCamera) {

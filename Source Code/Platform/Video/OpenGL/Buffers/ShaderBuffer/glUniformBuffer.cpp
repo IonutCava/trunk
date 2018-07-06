@@ -58,7 +58,7 @@ void glUniformBuffer::Create(U32 primitiveCount, U32 sizeFactor, ptrdiff_t primi
 
         I32 remainder = _bufferSize % ShaderBuffer::getTargetDataAlignment(_unbound);
         if (remainder > 0) {
-            _primitiveCount += static_cast<U32>(
+            _primitiveCount += to_uint(
                 (ShaderBuffer::getTargetDataAlignment(_unbound) - remainder) /
                 _primitiveSize);
             _bufferSize = _primitiveCount * _primitiveSize * _sizeFactor;

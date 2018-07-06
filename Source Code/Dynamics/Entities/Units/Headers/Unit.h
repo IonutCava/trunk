@@ -96,7 +96,7 @@ class Unit : public FrameListener {
     /// Just before we render the frame
     virtual bool frameRenderingQueued(const FrameEvent& evt) { return true; }
     /// If the parent node is deleted, this gets called automatically
-    inline void nodeDeleted() { _node = nullptr; }
+    void nodeDeleted();
 
    protected:
     /// Unit type

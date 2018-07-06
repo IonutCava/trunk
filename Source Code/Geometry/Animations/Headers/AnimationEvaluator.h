@@ -72,7 +72,7 @@ class AnimEvaluator {
     I32 frameIndexAt(const D32 elapsedTime) const;
 
     inline U32 frameCount() const {
-        return static_cast<U32>(_transforms.size());
+        return to_uint(_transforms.size());
     }
 
     inline vectorImpl<vectorImpl<mat4<F32>>>& transforms() {
@@ -84,25 +84,25 @@ class AnimEvaluator {
     }
 
     inline vectorImpl<mat4<F32>>& transforms(const U32 frameIndex) {
-        assert(frameIndex < static_cast<U32>(_transforms.size()));
+        assert(frameIndex < to_uint(_transforms.size()));
         return _transforms[frameIndex];
     }
 
     inline const vectorImpl<mat4<F32>>& transforms(const U32 frameIndex) const {
-        assert(frameIndex < static_cast<U32>(_transforms.size()));
+        assert(frameIndex < to_uint(_transforms.size()));
         return _transforms[frameIndex];
     }
 
     inline vectorImpl<mat4<F32>>& transforms(const D32 elapsedTime,
                                              I32& resultingFrameIndex) {
         resultingFrameIndex = frameIndexAt(elapsedTime);
-        return transforms(static_cast<U32>(resultingFrameIndex));
+        return transforms(to_uint(resultingFrameIndex));
     }
 
     inline const vectorImpl<mat4<F32>>& transforms(const D32 elapsedTime, 
                                                    I32& resultingFrameIndex) const {
         resultingFrameIndex = frameIndexAt(elapsedTime);
-        return transforms(static_cast<U32>(resultingFrameIndex));
+        return transforms(to_uint(resultingFrameIndex));
     }
 
     inline void playAnimationForward(bool state) {

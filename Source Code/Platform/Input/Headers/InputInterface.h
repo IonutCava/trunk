@@ -103,7 +103,7 @@ DEFINE_SINGLETON(InputInterface)
     }
 
     inline const KeyEvent& getKey(KeyCode keyCode) const {
-        return _keys[static_cast<U32>(keyCode)];
+        return _keys[to_uint(keyCode)];
     }
 
   protected:

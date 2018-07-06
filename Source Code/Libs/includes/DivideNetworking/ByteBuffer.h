@@ -345,9 +345,9 @@ class ByteBuffer {
     // can be used in SMSG_MONSTER_MOVE opcode
     void appendPackXYZ(F32 x, F32 y, F32 z) {
         U32 packed = 0;
-        packed |= (static_cast<I32>(x / 0.25f) & 0x7FF);
-        packed |= (static_cast<I32>(y / 0.25f) & 0x7FF) << 11;
-        packed |= (static_cast<I32>(z / 0.25f) & 0x3FF) << 22;
+        packed |= (to_int(x / 0.25f) & 0x7FF);
+        packed |= (to_int(y / 0.25f) & 0x7FF) << 11;
+        packed |= (to_int(z / 0.25f) & 0x3FF) << 22;
         *this << packed;
     }
 

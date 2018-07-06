@@ -58,8 +58,8 @@ I32 AnimEvaluator::frameIndexAt(const D32 elapsedTime) const {
         percent = (percent - 1.0f) * -1.0f;
     }
 
-    return std::min(static_cast<I32>(_transforms.size() * percent),
-                    static_cast<I32>(_transforms.size() - 1));
+    return std::min(to_int(_transforms.size() * percent),
+                    to_int(_transforms.size() - 1));
 }
 
 // ------------------------------------------------------------------------------------------------

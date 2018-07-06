@@ -314,9 +314,9 @@ void addTriangle(NavModelData* modelData,
 
     I32* dst = &modelData->_triangles[modelData->getTriCount() * 3];
 
-    *dst++ = static_cast<I32>(triangleIndices.x + triangleIndexOffset);
-    *dst++ = static_cast<I32>(triangleIndices.y + triangleIndexOffset);
-    *dst++ = static_cast<I32>(triangleIndices.z + triangleIndexOffset);
+    *dst++ = to_int(triangleIndices.x + triangleIndexOffset);
+    *dst++ = to_int(triangleIndices.y + triangleIndexOffset);
+    *dst++ = to_int(triangleIndices.z + triangleIndexOffset);
 
     modelData->getAreaTypes().push_back(areaType);
     modelData->_triangleCount++;

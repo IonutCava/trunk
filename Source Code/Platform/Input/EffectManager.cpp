@@ -48,19 +48,19 @@ EffectManager::EffectManager(JoystickInterface* pJoystickInterface,
     pEffect->trigger_button = 0;
     pEffect->trigger_interval = 0;
     pEffect->replay_length =
-        OIS::Effect::OIS_INFINITE;  // static_cast<U32>(1000000.0/_nUpdateFreq);
+        OIS::Effect::OIS_INFINITE;  // to_uint(1000000.0/_nUpdateFreq);
                                     // // Linux: Does not work.
     pEffect->replay_delay = 0;
     pEffect->setNumAxes(1);
     pConstForce = dynamic_cast<OIS::ConstantEffect*>(pEffect->getForceEffect());
     pConstForce->level = 5000;  //-10K to +10k
     pConstForce->envelope.attackLength =
-        static_cast<U32>(1000000.0 / _nUpdateFreq / 2);
+        to_uint(1000000.0 / _nUpdateFreq / 2);
     pConstForce->envelope.attackLevel =
         static_cast<U16>(pConstForce->level * 0.1);
     pConstForce->envelope.fadeLength = 0;  // Never reached, actually.
     pConstForce->envelope.fadeLevel =
-        static_cast<U32>(pConstForce->level);  // Idem
+        static_cast<U16>(pConstForce->level);  // Idem
 
     mapVars.clear();
     mapVars["Force"] = MemoryManager_NEW TriangleVariable(

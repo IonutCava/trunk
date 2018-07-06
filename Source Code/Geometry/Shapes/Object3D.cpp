@@ -71,7 +71,7 @@ void Object3D::getDrawCommands(
     drawCmd.stateHash(renderable->getDrawStateHash(renderStage));
     drawCmd.shaderProgram(renderable->getDrawShader(renderStage));
     drawCmd.sourceBuffer(vb);
-    drawCmd.indexCount(static_cast<U32>(vb->getIndexCount()));
+    drawCmd.indexCount(to_uint(vb->getIndexCount()));
 
     drawCommandsOut.push_back(drawCmd);
 }

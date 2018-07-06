@@ -164,7 +164,7 @@ void SceneAnimator::load(std::ifstream& file) {
             _animations[i].name(), i));
     }
 
-    _skeletonDepthCache = static_cast<I32>(_skeleton->hierarchyDepth());
+    _skeletonDepthCache = to_int(_skeleton->hierarchyDepth());
     _transforms.resize(_skeletonDepthCache);
 
     

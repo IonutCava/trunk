@@ -184,7 +184,7 @@ void SceneManager::renderVisibleNodes(bool flushCache) {
 
     assert(_activeScene->renderCallback());
 
-    _activeScene->renderCallback();
+    _activeScene->renderCallback()();
 }
 
 void SceneManager::renderScene() {

@@ -129,6 +129,11 @@ class Character : public Unit {
         _lookingDirection = direction;
     }
 
+    void playAnimation(I32 index);
+    void playNextAnimation();
+    void playPreviousAnimation();
+    void pauseAnimation(bool state);
+
    private:
     CharacterType _type;
     vec3<F32> _lookingDirection;

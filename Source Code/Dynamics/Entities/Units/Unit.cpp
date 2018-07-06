@@ -12,7 +12,8 @@ Unit::Unit(UnitType type, SceneGraphNode& node)
       _node(&node),
       _moveSpeed(Metric::Base(1)),
       _moveTolerance(0.1f),
-      _prevTime(0) {
+      _prevTime(0)
+{
     DIVIDE_ASSERT(_node != nullptr,
                   "Unit error: Invalid parent node specified!");
     REGISTER_FRAME_LISTENER(this, 5);
@@ -21,6 +22,10 @@ Unit::Unit(UnitType type, SceneGraphNode& node)
 }
 
 Unit::~Unit() { UNREGISTER_FRAME_LISTENER(this); }
+
+void Unit::nodeDeleted() {
+    _node = nullptr;
+}
 
 /// Pathfinding, collision detection, animation playback should all be
 /// controlled from here

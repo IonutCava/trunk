@@ -61,6 +61,8 @@ class AnimationComponent : public SGNComponent {
     bool playAnimation(I32 pAnimIndex);
     /// Select next available animation
     bool playNextAnimation();
+    /// Select previous available animation
+    bool playPreviousAnimation();
 
     inline U64 animationTimeStamp() const { return _currentTimeStamp;  }
     inline I32 frameIndex() const { return frameIndex(_currentAnimIndex); }

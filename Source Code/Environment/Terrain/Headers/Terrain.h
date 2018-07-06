@@ -206,7 +206,7 @@ class TerrainLoader {
         terrain._terrainTextures.push_back(textureLayer);
     }
     static U32 textureLayerCount(Terrain& terrain) {
-        return static_cast<U32>(terrain._terrainTextures.size());
+        return to_uint(terrain._terrainTextures.size());
     }
     static void setRenderStateHashes(Terrain& terrain, size_t normalStateHash,
                                      size_t reflectionStateHash,

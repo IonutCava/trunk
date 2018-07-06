@@ -95,7 +95,7 @@ void RenderingComponent::makeTextureResident(const Texture& texture, U8 slot) {
                           -> bool { return data.getHandleLow() == slot; });
 
     TextureData data = texture.getData();
-    data.setHandleLow(static_cast<U32>(slot));
+    data.setHandleLow(to_uint(slot));
 
     if (it == std::end(_renderData._textureData)) {
         _renderData._textureData.push_back(data);

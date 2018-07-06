@@ -145,7 +145,7 @@ bool WarScene::initializeAI(bool continueOnErrors) {
                     lightNode->getComponent<PhysicsComponent>()->getScale();
                 currentName = Util::stringFormat("Soldier_1_%d_%d", k, i);
                 type = AI::WarSceneAISceneImpl::AIType::LIGHT;
-            } else if (IS_IN_RANGE_INCLUSIVE(i, 5, 10)) {
+            } else if (IS_IN_RANGE_INCLUSIVE(i, 5, 9)) {
                 currentMesh = animalNodeMesh;
                 currentScale =
                     animalNode->getComponent<PhysicsComponent>()->getScale();
@@ -221,9 +221,9 @@ bool WarScene::initializeAI(bool continueOnErrors) {
         Scene::initializeAI(continueOnErrors);
     }
 
-//    _sceneGraph.getRoot().deleteNode(lightNode);
-  //  _sceneGraph.getRoot().deleteNode(animalNode);
-    //_sceneGraph.getRoot().deleteNode(heavyNode);
+    _sceneGraph.getRoot().deleteNode(lightNode);
+    _sceneGraph.getRoot().deleteNode(animalNode);
+    _sceneGraph.getRoot().deleteNode(heavyNode);
 
     return state;
 }

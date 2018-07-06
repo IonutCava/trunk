@@ -44,7 +44,7 @@ Application::~Application() {
         MemoryManager::AllocTracer.Dump(leakDetected, sizeLeaked);
     if (leakDetected) {
         Console::errorfn(Locale::get("ERROR_MEMORY_NEW_DELETE_MISMATCH"),
-                         static_cast<I32>(std::ceil(sizeLeaked / 1024.0f)));
+                         to_int(std::ceil(sizeLeaked / 1024.0f)));
     }
     std::ofstream memLog;
     memLog.open(_memLogBuffer.c_str());

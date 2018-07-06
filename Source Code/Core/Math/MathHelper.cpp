@@ -42,7 +42,7 @@ vectorImpl<stringImpl> split(const stringImpl& input, char delimiter) {
 
 stringImpl stringFormat(const stringImpl fmt_str, ...) {
     // Reserve two times as much as the length of the fmt_str
-    I32 final_n, n = static_cast<I32>(fmt_str.size()) * 2; 
+    I32 final_n, n = to_int(fmt_str.size()) * 2; 
     std::unique_ptr<char[]> formatted;
     va_list ap;
     while(1) {
@@ -74,14 +74,14 @@ vec3<U8> toByteColor(const vec3<F32>& floatColor) {
 
 vec4<U32> toUIntColor(const vec4<F32>& floatColor) {
     return vec4<U32>(toUIntColor(floatColor.rgb()),
-                     static_cast<U32>(floatColor.a * 255));
+                     to_uint(floatColor.a * 255));
 }
 
 vec3<U32> toUIntColor(const vec3<F32>& floatColor) {
     vec3<U8> tempColor(toByteColor(floatColor));
-    return vec3<U32>(static_cast<U32>(tempColor.r),
-                     static_cast<U32>(tempColor.g),
-                     static_cast<U32>(tempColor.b));
+    return vec3<U32>(to_uint(tempColor.r),
+                     to_uint(tempColor.g),
+                     to_uint(tempColor.b));
 }
 
 vec4<F32> toFloatColor(const vec4<U8>& byteColor) {

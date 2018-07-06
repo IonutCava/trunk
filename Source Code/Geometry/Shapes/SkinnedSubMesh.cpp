@@ -80,7 +80,7 @@ void SkinnedSubMesh::buildBoundingBoxesForAnim(
         bb.reset();
 
         const vectorImpl<mat4<F32> >& transforms =
-            currentAnimation.transforms(static_cast<U32>(i));
+            currentAnimation.transforms(to_uint(i));
 
         // loop through all vertex weights of all bones
         for (U32 j = partitionOffset; j < partitionCount; ++j) {

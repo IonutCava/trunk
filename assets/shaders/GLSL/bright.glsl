@@ -44,7 +44,7 @@ uniform int  exposureMipLevel;
 uniform bool toneMap = false;
 uniform bool luminancePass = false;
 
-uniform float whitePoint = 0.9;
+uniform float whitePoint = 0.94;
 
 vec3 Uncharted2Tonemap(vec3 x)
 {

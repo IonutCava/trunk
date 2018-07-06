@@ -95,10 +95,16 @@ constexpr U32 operator"" _u32 ( Enum value )
     return static_cast<U32>(value);
 }*/
 
-template <typename Enum>
-/*constexpr*/ auto to_underlying_type(const Enum value) ->
-    typename std::underlying_type<Enum>::type {
-    return static_cast<typename std::underlying_type<Enum>::type>(value);
+template <typename Type, typename = void>
+/*constexpr*/ auto to_underlying_type(const Type value) ->
+    typename Type {
+    return value;
+}
+
+template <typename Type, typename std::enable_if<std::is_enum<Type>::value>::type>
+/*constexpr*/ auto to_underlying_type(const Type value) ->
+    typename std::underlying_type<Type>::type {
+    return static_cast<typename std::underlying_type<Type>::type>(value);
 }
 
 template<typename T>
@@ -121,8 +127,7 @@ I32 to_int(const T value) {
     return static_cast<I32>(to_underlying_type(value));
 }
 
-/// Converts an arbitrary positive integer value to a bitwise value used for
-/// masks
+/// Converts an arbitrary positive integer value to a bitwise value used for masks
 template<typename T>
 constexpr T toBit(T X) {
     //static_assert(X > 0, "toBit(0) is currently disabled!");
