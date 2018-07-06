@@ -17,10 +17,10 @@
 1
 
 [FLOAT:sizeFactor]
-0.228
+0.250
 
 [FLOAT:hoverModeSizeFactor]
-0.006
+0.200
 
 [ENUM:extraWindowFlags]
 0
@@ -35,7 +35,7 @@
 -1.000
 
 [FLOAT:hoverModeSizeFactor]
-0.002
+0.200
 
 [ENUM:extraWindowFlags]
 0
@@ -50,7 +50,7 @@
 -1.000
 
 [FLOAT:hoverModeSizeFactor]
-0.006
+-1.000
 
 [ENUM:extraWindowFlags]
 0
@@ -62,10 +62,10 @@
 1
 
 [FLOAT:sizeFactor]
-0.005
+-1.000
 
 [FLOAT:hoverModeSizeFactor]
-0.001
+0.200
 
 [ENUM:extraWindowFlags]
 8
@@ -143,7 +143,7 @@
 -1.000
 
 [FLOAT:hoverModeSizeFactor]
-0.002
+-1.000
 
 [ENUM:extraWindowFlags]
 0
@@ -155,10 +155,10 @@
 1
 
 [FLOAT:sizeFactor]
-0.078
+-1.000
 
 [FLOAT:hoverModeSizeFactor]
-0.002
+-1.000
 
 [ENUM:extraWindowFlags]
 0
@@ -170,10 +170,10 @@
 1
 
 [FLOAT:sizeFactor]
-0.210
+0.250
 
 [FLOAT:hoverModeSizeFactor]
-0.002
+0.200
 
 [ENUM:extraWindowFlags]
 0
@@ -185,10 +185,10 @@
 1
 
 [FLOAT:sizeFactor]
-0.221
+-1.000
 
 [FLOAT:hoverModeSizeFactor]
-0.000
+0.200
 
 [ENUM:extraWindowFlags]
 8
@@ -248,7 +248,7 @@
 -1.000
 
 [FLOAT:hoverModeSizeFactor]
-0.089
+0.200
 
 [ENUM:extraWindowFlags]
 0
@@ -263,7 +263,7 @@
 -1.000
 
 [FLOAT:hoverModeSizeFactor]
-0.089
+0.200
 
 [ENUM:extraWindowFlags]
 8
@@ -341,7 +341,7 @@
 -1.000
 
 [FLOAT:hoverModeSizeFactor]
-0.042
+0.200
 
 [ENUM:extraWindowFlags]
 0
@@ -353,25 +353,10 @@
 1
 
 [FLOAT:sizeFactor]
-0.140
+0.250
 
 [FLOAT:hoverModeSizeFactor]
-0.032
-
-[ENUM:extraWindowFlags]
-0
-
-[INT:toggleButtonIsPressed]
-0
-
-[INT:isWindowPresent]
-1
-
-[FLOAT:sizeFactor]
-0.042
-
-[FLOAT:hoverModeSizeFactor]
-0.003
+0.200
 
 [ENUM:extraWindowFlags]
 0
@@ -386,7 +371,22 @@
 -1.000
 
 [FLOAT:hoverModeSizeFactor]
-0.000
+0.200
+
+[ENUM:extraWindowFlags]
+0
+
+[INT:toggleButtonIsPressed]
+0
+
+[INT:isWindowPresent]
+1
+
+[FLOAT:sizeFactor]
+-1.000
+
+[FLOAT:hoverModeSizeFactor]
+0.200
 
 [ENUM:extraWindowFlags]
 8

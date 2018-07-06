@@ -62,8 +62,8 @@ namespace Divide {
 
         bool show_test_window = true;
 
-        static const ImVec2 buttonSize(8, 10);
-        static const ImVec2 buttonSizeSq(10, 10);
+        static const ImVec2 buttonSize(16, 20);
+        static const ImVec2 buttonSizeSq(20, 20);
 
         static const char* ToggleWindowNames[] = { "Toggle Window 1","Toggle Window 2","Toggle Window 3","Toggle Window 4" };
 
@@ -549,7 +549,7 @@ namespace Divide {
         }
     }
 
-    void PanelManager::init() {
+    void PanelManager::init(const vec2<U16>& renderResolution) {
         if (s_globalCache == nullptr) {
             s_globalCache = &context().kernel().resourceCache();
         }
@@ -837,6 +837,8 @@ namespace Divide {
                 tabWindow.addTabLabel("ImGuiStyleChooser", "Edit the look of the GUI", false);
             }
         }
+
+        resize(renderResolution.width, renderResolution.height);
     }
 
     void PanelManager::destroy() {
@@ -858,8 +860,12 @@ namespace Divide {
     }
 
     void  PanelManager::setPanelManagerBoundsToIncludeMainMenuIfPresent(int displayX, int displayY) {
-        if (displayX <= 0) displayX = (int)ImGui::GetIO().DisplaySize.x;
-        if (displayY <= 0) displayY = (int)ImGui::GetIO().DisplaySize.y;
+        if (displayX <= 0) 
+            displayX = (int)ImGui::GetIO().DisplaySize.x;
+
+        if (displayY <= 0) 
+            displayY = (int)ImGui::GetIO().DisplaySize.y;
+
         ImVec4 bounds(0, 0, (float)displayX, (float)displayY);   // (0,0,-1,-1) defaults to (0,0,io.DisplaySize.x,io.DisplaySize.y)
         const float mainMenuHeight = calcMainMenuHeight();
         bounds = ImVec4(0, mainMenuHeight, to_F32(displayX), to_F32(displayY) - mainMenuHeight);
@@ -869,8 +875,9 @@ namespace Divide {
 
     void PanelManager::resize(int w, int h) {
         static ImVec2 initialSize((float)w, (float)h);
-        _manager->setToolbarsScaling((float)w / initialSize.x, (float)h / initialSize.y);  // Scales the PanelManager bounmds based on the initialSize
-        setPanelManagerBoundsToIncludeMainMenuIfPresent(w, h);                  // This line is only necessary if we have a global menu bar
+        _manager->setToolbarsScaling((float)w / initialSize.x,
+                                     (float)h / initialSize.y);  // Scales the PanelManager bounds based on the initialSize
+        setPanelManagerBoundsToIncludeMainMenuIfPresent(w, h);   // This line is only necessary if we have a global menu bar
     }
 
     void PanelManager::drawToggleWindows(ImGui::PanelManagerWindowData& wd) {

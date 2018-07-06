@@ -15,6 +15,28 @@ namespace Divide {
         EditorComponent::registerField("Transform",
                                        &_transformInterface,
                                        EditorComponentFieldType::TRANSFORM);
+
+
+        static mat2<F32> mata;
+        EditorComponent::registerField("TestMat2", &mata, EditorComponentFieldType::PUSH_TYPE, GFX::PushConstantType::MAT2);
+
+        static mat3<F32> matb;
+        EditorComponent::registerField("TestMat3", &matb, EditorComponentFieldType::PUSH_TYPE, GFX::PushConstantType::MAT3);
+
+        static mat4<F32> matc;
+        EditorComponent::registerField("TestMat4", &matc, EditorComponentFieldType::PUSH_TYPE, GFX::PushConstantType::MAT4);
+
+        static mat2<I32> matd;
+        EditorComponent::registerField("TestMat2i", &matd, EditorComponentFieldType::PUSH_TYPE, GFX::PushConstantType::IMAT2);
+
+        static mat3<I32> mate;
+        EditorComponent::registerField("TestMat3i", &mate, EditorComponentFieldType::PUSH_TYPE, GFX::PushConstantType::IMAT3);
+
+        static mat4<I32> matf;
+        EditorComponent::registerField("TestMat4i", &matf, EditorComponentFieldType::PUSH_TYPE, GFX::PushConstantType::IMAT4);
+
+        static mat4<D64> matz;
+        EditorComponent::registerField("TestMat4d", &matz, EditorComponentFieldType::PUSH_TYPE, GFX::PushConstantType::DMAT4);
     }
 
     TransformComponent::~TransformComponent()

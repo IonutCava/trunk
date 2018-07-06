@@ -89,7 +89,11 @@ void Editor::idle() {
     _panelManager->idle();
 }
 
-bool Editor::init() {
+bool Editor::init(const vec2<U16>& renderResolution) {
+    if (_mainWindow != nullptr) {
+        // double init
+        return false;
+    }
     ImGuiIO& io = ImGui::GetIO();
     unsigned char* pPixels;
     int iWidth;
@@ -134,7 +138,6 @@ bool Editor::init() {
     _mainWindow->addEventListener(WindowEvent::RESIZED, [this](const DisplayWindow::WindowEventArgs& args) { OnSize(args.x, args.y);});
     _mainWindow->addEventListener(WindowEvent::TEXT, [this](const DisplayWindow::WindowEventArgs& args) { OnUTF8(args._text);});
     _activeWindowGUID = _mainWindow->getGUID();
-    vec2<I32> size(_mainWindow->getDimensions());
 
     io.KeyMap[ImGuiKey_Tab] = Input::KeyCode::KC_TAB;
     io.KeyMap[ImGuiKey_LeftArrow] = Input::KeyCode::KC_LEFT;
@@ -159,10 +162,9 @@ bool Editor::init() {
     io.GetClipboardTextFn = GetClipboardText;
     io.ClipboardUserData = nullptr;
     io.RenderDrawListsFn = nullptr;
-    io.DisplaySize = ImVec2((float)size.width, (float)size.height);
+    io.DisplaySize = ImVec2((float)renderResolution.width, (float)renderResolution.height);
 
-    _panelManager->init();
-    OnSize(size.w, size.h);
+    _panelManager->init(renderResolution);
 
     ImGui::ResetStyle(imguiThemeMap[to_base(_currentTheme)]);
 
@@ -681,13 +683,22 @@ void Editor::OnFocus(bool bHasFocus) {
     ACKNOWLEDGE_UNUSED(bHasFocus);
 }
 
-void Editor::OnSize(int iWidth, int iHeight) {
-    vec2<U16> display_size = _mainWindow->getDrawableSize();
+void Editor::onSizeChange(const SizeChangeParams& params) {
+    
+}
 
-    ImGuiIO& io = ImGui::GetIO();
-    io.DisplaySize = ImVec2((float)iWidth, (float)iHeight);
-    io.DisplayFramebufferScale = ImVec2(iWidth > 0 ? ((float)display_size.w / iWidth) : 0, iHeight > 0 ? ((float)display_size.h / iHeight) : 0);
-    _panelManager->resize(iWidth, iHeight);
+void Editor::OnSize(int iWidth, int iHeight) {
+    if (_mainWindow != nullptr) {
+        ImGuiIO& io = ImGui::GetIO();
+        io.DisplaySize.x = (float)iWidth;
+        io.DisplaySize.y = (float)iHeight;
+
+        vec2<U16> display_size = _mainWindow->getDrawableSize();
+        io.DisplayFramebufferScale.x = iWidth > 0 ? ((float)display_size.w / iWidth) : 0;
+        io.DisplayFramebufferScale.y = iHeight > 0 ? ((float)display_size.h / iHeight) : 0;
+
+        _panelManager->resize(iWidth, iHeight);
+    }
 }
 
 void Editor::OnUTF8(const char* text) {

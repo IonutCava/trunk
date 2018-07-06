@@ -86,6 +86,7 @@ class GenericVertexData;
 class ShaderComputeQueue;
 
 struct SizeChangeParams;
+struct SizeChangeParams;
 struct ShaderBufferDescriptor;
 
 FWD_DECLARE_MANAGED_CLASS(Texture);

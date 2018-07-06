@@ -739,7 +739,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     }
 
     if (Config::Build::ENABLE_EDITOR) {
-        if (!_platformContext->editor().init()) {
+        if (!_platformContext->editor().init(renderResolution)) {
             return ErrorCode::EDITOR_INIT_ERROR;
         }
     }
@@ -789,6 +789,10 @@ void Kernel::onSizeChange(const SizeChangeParams& params) const {
         }
     } else {
         _sceneManager->onSizeChange(params);
+    }
+
+    if (Config::Build::ENABLE_EDITOR) {
+        _platformContext->editor().onSizeChange(params);
     }
 }
 

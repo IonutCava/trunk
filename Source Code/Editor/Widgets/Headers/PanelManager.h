@@ -79,7 +79,7 @@ namespace Divide {
         bool saveTabsToFile() const;
         bool loadTabsFromFile();
 
-        void init();
+        void init(const vec2<U16>& renderResolution);
         void destroy();
         void idle();
         void draw(const U64 deltaTime);

@@ -54,9 +54,11 @@ class PanelManager;
 class DisplayWindow;
 class PlatformContext;
 class ApplicationOutput;
-class ImwWindowManagerDivide;
+
 FWD_DECLARE_MANAGED_CLASS(Texture);
 FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
+
+struct SizeChangeParams;
 
 class Editor : public PlatformContextComponent,
                public FrameListener,
@@ -89,7 +91,7 @@ class Editor : public PlatformContextComponent,
                     Theme dimmedTheme = Theme::Gray);
     ~Editor();
 
-    bool init();
+    bool init(const vec2<U16>& renderResolution);
     void close();
     void idle();
     void update(const U64 deltaTimeUS);
@@ -100,6 +102,8 @@ class Editor : public PlatformContextComponent,
     bool shouldPauseSimulation() const;
 
     inline const Rect<I32>& getScenePreviewRect() const { return _scenePreviewRect; }
+
+    void onSizeChange(const SizeChangeParams& params);
 
   protected: //frame listener
     bool frameStarted(const FrameEvent& evt);
@@ -187,15 +191,6 @@ class Editor : public PlatformContextComponent,
 }; //Editor
 
 namespace Attorney {
-    class EditorWindowManager {
-      private:
-        static void renderDrawList(Editor& editor, ImDrawData* pDrawData, I64 windowGUID) {
-            editor.renderDrawList(pDrawData, windowGUID);
-        }
-
-        friend class Divide::ImwWindowManagerDivide;
-    };
-
     class EditorOutputWindow {
         private:
         static void drawOutputWindow(Editor& editor) {

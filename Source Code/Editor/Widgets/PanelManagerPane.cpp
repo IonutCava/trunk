@@ -7,8 +7,8 @@ namespace Divide {
 PanelManagerPane::PanelManagerPane(PanelManager& parent, const stringImpl& name, ImGui::PanelManager::Position position)
     : _parent(parent),
       _name(name),
-      _buttonSize(8, 10),
-      _buttonSizeSq(10, 10)
+      _buttonSize(16, 20),
+      _buttonSizeSq(20, 20)
 {
     ImGui::PanelManager& mgr = Attorney::PanelManagerWidgets::internalManager(parent);
     _pane = mgr.addPane(position, name.c_str());
@@ -28,7 +28,7 @@ void PanelManagerPane::addTabWindowIfSupported(const char* tabWindowNames[4]) {
     const I32 index = static_cast<int>(_pane->pos);
 
     if (index < 2) {
-        buttonSizeTemp.x = 8;
+        buttonSizeTemp.x = 16;
     }
 
     const I32 uvIndex = (index == 0) ? 3 : (index == 2) ? 0 : (index == 3) ? 2 : index;
@@ -36,8 +36,16 @@ void PanelManagerPane::addTabWindowIfSupported(const char* tabWindowNames[4]) {
     ImVec2 uv0(0.75f, (float)uvIndex*0.25f), uv1(uv0.x + 0.25f, uv0.y + 0.25f);
 
     ImGui::PanelManager& mgr = Attorney::PanelManagerWidgets::internalManager(_parent);
-    _pane->addButtonAndWindow(ImGui::Toolbutton(tabWindowNames[index], texId, uv0, uv1, buttonSizeTemp),  // the 1st arg of Toolbutton is only used as a text for the tooltip.
-                              ImGui::PanelManagerPaneAssociatedWindow(tabWindowNames[index], -1, &Attorney::PanelManagerWidgets::drawDockedTabWindows, &mgr, ImGuiWindowFlags_NoScrollbar));    //  the 1st arg of PanelManagerPaneAssociatedWindow is the name of the window
+    _pane->addButtonAndWindow(ImGui::Toolbutton(tabWindowNames[index],
+                                                texId,
+                                                uv0,
+                                                uv1,
+                                                buttonSizeTemp),  // the 1st arg of Toolbutton is only used as a text for the tooltip.
+                              ImGui::PanelManagerPaneAssociatedWindow(tabWindowNames[index],
+                                                                      -1,
+                                                                      &Attorney::PanelManagerWidgets::drawDockedTabWindows,
+                                                                      &mgr,
+                                                                      ImGuiWindowFlags_NoScrollbar));    //  the 1st arg of PanelManagerPaneAssociatedWindow is the name of the window
 }
 
 ImGui::PanelManager::Pane& PanelManagerPane::impl() {
