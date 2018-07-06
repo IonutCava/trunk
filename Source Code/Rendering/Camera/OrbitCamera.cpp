@@ -25,12 +25,14 @@ void OrbitCamera::setTarget(SceneGraphNode_wptr sgn, const vec3<F32>& offsetDire
     _offsetDir.normalize();
 }
 
-void OrbitCamera::onActivate() {
-    //_cameraRotation.reset();
-    Camera::onActivate();
+void OrbitCamera::setActiveInternal(bool state) {
+    if (state) {
+        //_cameraRotation.reset();
+    }
+
+    Camera::setActiveInternal(state);
 }
 
-void OrbitCamera::onDeactivate() {}
 
 bool OrbitCamera::updateViewMatrix() {
     setEye(_newEye);
@@ -64,13 +66,13 @@ void OrbitCamera::update(const U64 deltaTime) {
     _viewMatrixDirty = true;
 }
 
-bool OrbitCamera::mouseMoved(const Input::MouseEvent& arg) {
+bool OrbitCamera::mouseMovedInternal(const Input::MouseEvent& arg) {
     I32 zoom = arg.state.Z.rel;
     if (zoom != 0) {
         curRadius(_curRadius += (zoom * _cameraZoomSpeed * -0.01f));
     }
 
-    return Camera::mouseMoved(arg);
+    return Camera::mouseMovedInternal(arg);
 }
 
 void OrbitCamera::move(F32 dx, F32 dy, F32 dz) {}

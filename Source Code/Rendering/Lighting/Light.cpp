@@ -48,11 +48,7 @@ Light::~Light()
 }
 
 bool Light::load() {
-    _shadowCamera =
-        Application::instance()
-        .kernel()
-        .getCameraMgr()
-        .createCamera(getName() + "_shadowCamera", Camera::CameraType::FREE_FLY);
+    _shadowCamera = Camera::createCamera(getName() + "_shadowCamera", Camera::CameraType::FREE_FLY);
 
     _shadowCamera->setMoveSpeedFactor(0.0f);
     _shadowCamera->setTurnSpeedFactor(0.0f);
@@ -67,10 +63,7 @@ bool Light::load() {
 
 bool Light::unload() {
     _parentPool.removeLight(getGUID(), getLightType());
-    Application::instance()
-        .kernel()
-        .getCameraMgr()
-        .destroyCamera(_shadowCamera);
+    Camera::destroyCamera(_shadowCamera);
     removeShadowMapInfo();
 
     return SceneNode::unload();
@@ -191,7 +184,7 @@ void Light::validateOrCreateShadowMaps(SceneRenderState& sceneRenderState) {
     _shadowMapInfo->createShadowMap(sceneRenderState, shadowCamera());
 }
 
-void Light::generateShadowMaps(SceneRenderState& sceneRenderState, U32 passIdx) {
+void Light::generateShadowMaps(U32 passIdx) {
     ShadowMap* sm = _shadowMapInfo->getShadowMap();
 
     DIVIDE_ASSERT(sm != nullptr,
@@ -199,7 +192,7 @@ void Light::generateShadowMaps(SceneRenderState& sceneRenderState, U32 passIdx) 
                   "with no shadow map found!");
 
     _shadowProperties._arrayOffset.set(sm->getArrayOffset());
-    sm->render(sceneRenderState, passIdx);
+    sm->render(passIdx);
 
 }
 

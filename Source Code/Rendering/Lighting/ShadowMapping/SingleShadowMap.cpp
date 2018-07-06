@@ -32,11 +32,9 @@ void SingleShadowMap::init(ShadowMapInfo* const smi) {
 }
 
 
-void SingleShadowMap::render(SceneRenderState& renderState, U32 passIdx) {
+void SingleShadowMap::render(U32 passIdx) {
     _shadowCamera->lookAt(_light->getPosition(), _light->getSpotDirection() + _light->getPosition());
     _shadowCamera->setProjection(1.0f, 90.0f, vec2<F32>(1.0, _light->getRange()));
-
-    renderState.getCameraMgr().pushActiveCamera(_shadowCamera);
 
     RenderPassManager& passMgr = RenderPassManager::instance();
     RenderPassManager::PassParams params;
@@ -49,8 +47,6 @@ void SingleShadowMap::render(SceneRenderState& renderState, U32 passIdx) {
     params.pass = passIdx;
 
     passMgr.doCustomPass(params);
-
-    renderState.getCameraMgr().popActiveCamera();
 }
 
 void SingleShadowMap::previewShadowMaps(U32 rowIndex) {

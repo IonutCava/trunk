@@ -20,11 +20,11 @@
 namespace Divide {
 
 void GFXDevice::uploadGPUBlock() {
-    if (_gpuBlock._updated) {
+    if (_gpuBlock._needsUpload) {
         // We flush the entire buffer on update to inform the GPU that we don't
         // need the previous data. Might avoid some driver sync
         _gfxDataBuffer->setData(&_gpuBlock._data);
-        _gpuBlock._updated = false;
+        _gpuBlock._needsUpload = false;
     }
 }
 
@@ -181,14 +181,14 @@ void GFXDevice::buildDrawCommands(RenderPassCuller::VisibleNodeList& visibleNode
         assert(shadowLight != nullptr);
         if (!COMPARE(_gpuBlock._data._renderProperties.x, shadowLight->getShadowProperties()._arrayOffset.x)) {
             _gpuBlock._data._renderProperties.x = to_float(shadowLight->getShadowProperties()._arrayOffset.x);
-            _gpuBlock._updated = true;
+            _gpuBlock._needsUpload = true;
         }
         U8 shadowPasses = shadowLight->getLightType() == LightType::DIRECTIONAL
                                                        ? shadowLight->getShadowMapInfo()->numLayers()
                                                        : 1;
         if (!COMPARE(_gpuBlock._data._renderProperties.y, to_float(shadowPasses))) {
             _gpuBlock._data._renderProperties.y = to_float(shadowPasses);
-            _gpuBlock._updated = true;
+            _gpuBlock._needsUpload = true;
         }
     }
 

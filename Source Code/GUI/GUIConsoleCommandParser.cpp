@@ -212,11 +212,7 @@ void GUIConsoleCommandParser::handleFOVCommand(const stringImpl& args) {
     I32 FoV = (atoi(args.c_str()));
     CLAMP<I32>(FoV, 40, 140);
 
-    Application::instance()
-        .kernel()
-        .getCameraMgr()
-        .getActiveCamera()
-        .setHorizontalFoV(to_float(FoV));
+    Camera::activeCamera()->setHorizontalFoV(to_float(FoV));
 }
 
 void GUIConsoleCommandParser::handleAddObject(const stringImpl& args) {
@@ -241,10 +237,10 @@ void GUIConsoleCommandParser::handleAddObject(const stringImpl& args) {
              ? ""
              : assetLocation) +
         args1;
-    model.position = GUI::instance().activeScene()->state().renderState().getCamera().getEye();
+    model.position = Camera::activeCamera()->getEye();
     model.data = 1.0f;
     model.scale = vec3<F32>(scale);
-    model.orientation = GUI::instance().activeScene()->state().renderState().getCamera().getEuler();
+    model.orientation = Camera::activeCamera()->getEuler();
     model.type = (args1.compare("Box3D") == 0 || args1.compare("Sphere3D") == 0)
                      ? GeometryType::PRIMITIVE
                      : GeometryType::GEOMETRY;

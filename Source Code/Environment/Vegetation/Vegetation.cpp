@@ -2,7 +2,6 @@
 
 #include "Core/Headers/ParamHandler.h"
 #include "Managers/Headers/SceneManager.h"
-#include "Managers/Headers/CameraManager.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
@@ -281,8 +280,7 @@ void Vegetation::sceneUpdate(const U64 deltaTime,
                              SceneState& sceneState) {
     if (_threadedLoadComplete && !_success) {
         generateTrees(false);
-        sceneState.renderState().getCameraMgr().addCameraUpdateListener(
-            DELEGATE_BIND(&Vegetation::gpuCull, this));
+        Camera::addUpdateListener(DELEGATE_BIND(&Vegetation::gpuCull, this));
         _success = true;
     }
 

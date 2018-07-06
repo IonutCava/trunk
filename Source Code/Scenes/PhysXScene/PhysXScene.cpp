@@ -101,10 +101,10 @@ U16 PhysXScene::registerInputActions() {
 
 bool PhysXScene::loadResources(bool continueOnErrors) {
     _guiTimers.push_back(0.0);  // Fps
-    renderState().getCamera().setFixedYawAxis(false);
-    renderState().getCamera().setRotation(-45 /*yaw*/, 10 /*pitch*/);
-    renderState().getCamera().setEye(vec3<F32>(0, 30, -40));
-    renderState().getCamera().setFixedYawAxis(true);
+    Camera::activeCamera()->setFixedYawAxis(false);
+    Camera::activeCamera()->setRotation(-45 /*yaw*/, 10 /*pitch*/);
+    Camera::activeCamera()->setEye(vec3<F32>(0, 30, -40));
+    Camera::activeCamera()->setFixedYawAxis(true);
     ParamHandler::instance().setParam(_ID("rendering.enableFog"), false);
     ParamHandler::instance().setParam(_ID("postProcessing.bloomFactor"), 0.1f);
     return true;

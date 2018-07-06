@@ -550,7 +550,7 @@ bool SceneGraphNode::cullNode(const Camera& currentCamera,
     }
 
     if (!boundingBox.containsPoint(eye)) {
-        const Frustum& frust = currentCamera.getFrustumConst();
+        const Frustum& frust = currentCamera.getFrustum();
         collisionTypeOut = frust.ContainsSphere(center, radius);
         if (collisionTypeOut == Frustum::FrustCollision::FRUSTUM_INTERSECT) {
             collisionTypeOut = frust.ContainsBoundingBox(boundingBox);

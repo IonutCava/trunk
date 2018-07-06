@@ -123,7 +123,7 @@ DEFINE_SINGLETON(GFXDevice)
    static const U32 MAX_PASSES_PER_STAGE = 6;
 
    struct GPUBlock {
-       GPUBlock() : _updated(true),
+       GPUBlock() : _needsUpload(true),
                     _data(GPUData())
        {
        }
@@ -167,29 +167,10 @@ DEFINE_SINGLETON(GFXDevice)
 
         } _data;
 
-        inline void update(bool viewMatrixUpdate) {
-            mat4<F32>::Multiply(_data._ViewMatrix, _data._ProjectionMatrix, _data._ViewProjectionMatrix);
-            if (viewMatrixUpdate) {
-                _data._ViewMatrix.getInverse(_viewMatrixInv);
-            }
-            if (!viewMatrixUpdate) {
-                _data._ProjectionMatrix.getInverse(_data._InvProjectionMatrix);
-            }
-            _data._ViewProjectionMatrix.getInverse(_viewProjMatrixInv);
-            GFXDevice::computeFrustumPlanes(_viewProjMatrixInv, _data._frustumPlanes);
-            _updated = true;
-        }
+        mat4<F32> _viewMatrixInv;
+        mat4<F32> _viewProjMatrixInv;
 
-        inline mat4<F32>& viewMatrixInv() { return _viewMatrixInv; }
-        inline mat4<F32>& viewProjectionMatrixInv() { return _viewProjMatrixInv; }
-
-        inline const mat4<F32>& viewMatrixInv() const { return _viewMatrixInv; }
-        inline const mat4<F32>& viewProjectionMatrixInv() const { return _viewProjMatrixInv; }
-
-        bool _updated;
-       private:
-           mat4<F32> _viewMatrixInv;
-           mat4<F32> _viewProjMatrixInv;
+        bool _needsUpload = true;
    };
 
   public:  // GPU interface
@@ -309,7 +290,9 @@ DEFINE_SINGLETON(GFXDevice)
 
     /// returns the standard state block
     inline size_t getDefaultStateBlock(bool noDepth) const {
-        return (noDepth ? _defaultStateNoDepthHash : _defaultStateBlockHash);
+        return is2DRendering() ? _state2DRenderingHash
+                               : (noDepth ? _defaultStateNoDepthHash
+                                          : _defaultStateBlockHash);
     }
 
     inline RenderTarget& renderTarget(RenderTargetID target) {

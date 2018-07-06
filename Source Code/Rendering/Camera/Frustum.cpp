@@ -125,28 +125,22 @@ void Frustum::updatePoints() {
     }
 }
 
-// Get the frustum corners in WorldSpace. cornerWS must be a vector with at
-// least 8 allocated slots
+// Get the frustum corners in WorldSpace.
 void Frustum::getCornersWorldSpace(vectorImpl<vec3<F32> >& cornersWS) {
-    assert(cornersWS.size() >= static_cast<size_t>(FrustPoints::COUNT));
-
     updatePoints();
 
-    for (U8 i = 0; i < to_const_ubyte(FrustPoints::COUNT); ++i) {
-        cornersWS[i].set(_frustumPoints[i]);
-    }
+    cornersWS.resize(0);
+    cornersWS.insert(std::begin(cornersWS), std::cbegin(_frustumPoints), std::cend(_frustumPoints));
 }
 
-// Get the frustum corners in ViewSpace. cornerVS must be a vector with at least
-// 8 allocated slots
+// Get the frustum corners in ViewSpace.
 void Frustum::getCornersViewSpace(vectorImpl<vec3<F32> >& cornersVS) {
-    assert(cornersVS.size() >= static_cast<size_t>(FrustPoints::COUNT));
-
-    updatePoints();
+    getCornersWorldSpace(cornersVS);
 
     const mat4<F32>& viewMatrix = _parentCamera.getViewMatrix();
-    for (U8 i = 0; i < to_const_ubyte(FrustPoints::COUNT); ++i) {
-        cornersVS[i].set(viewMatrix.transformHomogeneous(_frustumPoints[i]));
-    }
+    std::transform(std::begin(cornersVS), std::end(cornersVS), std::begin(cornersVS),
+                   [&viewMatrix](vec3<F32>& pt) {
+                       return viewMatrix.transformHomogeneous(pt);
+                   });
 }
 };

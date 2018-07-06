@@ -123,6 +123,10 @@ void glUniformBuffer::updateData(ptrdiff_t offsetElementCount,
     }
 
     ptrdiff_t range = rangeElementCount * _primitiveSize;
+    if (rangeElementCount == _primitiveCount) {
+        range = _allignedBufferSize;
+    }
+
     ptrdiff_t offset = offsetElementCount * _primitiveSize;
 
     DIVIDE_ASSERT(offset + range <= (ptrdiff_t)_allignedBufferSize,

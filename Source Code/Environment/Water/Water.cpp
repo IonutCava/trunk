@@ -22,8 +22,7 @@ WaterPlane::WaterPlane(const stringImpl& name, I32 sideLength)
       _updateSelf(false),
       _paramsDirty(true),
       _excludeSelfReflection(true),
-      _reflectionCam(nullptr),
-      _cameraMgr(Application::instance().kernel().getCameraMgr()) 
+      _reflectionCam(nullptr)
 {
     // Set water plane to be single-sided
     P32 quadMask;
@@ -44,12 +43,12 @@ WaterPlane::WaterPlane(const stringImpl& name, I32 sideLength)
 
     setFlag(UpdateFlag::BOUNDS_CHANGED);
 
-    _reflectionCam = _cameraMgr.createCamera(name + "_reflectionCam", Camera::CameraType::FREE_FLY);
+    _reflectionCam = Camera::createCamera(name + "_reflectionCam", Camera::CameraType::FREE_FLY);
 }
 
 WaterPlane::~WaterPlane()
 {
-    _cameraMgr.destroyCamera(_reflectionCam);
+    Camera::destroyCamera(_reflectionCam);
 }
 
 void WaterPlane::postLoad(SceneGraphNode& sgn) {
@@ -157,7 +156,7 @@ void WaterPlane::updateDrawCommands(SceneGraphNode& sgn,
 
     RenderingComponent* const renderable = sgn.get<RenderingComponent>();
     assert(renderable != nullptr);
-    renderable->getDrawShader(renderStage)->Uniform("underwater", cameraUnderwater(sgn, sceneRenderState.getCameraConst().getEye()));
+    renderable->getDrawShader(renderStage)->Uniform("underwater", cameraUnderwater(sgn, Camera::activeCamera()->getEye()));
 
     SceneNode::updateDrawCommands(sgn, renderStage, sceneRenderState, drawCommandsInOut);
 }
@@ -178,7 +177,7 @@ void WaterPlane::updateRefraction(const SceneGraphNode& sgn,
                                   const SceneRenderState& sceneRenderState,
                                   const RenderTargetID& renderTarget,
                                   U32 passIndex) {
-    if (cameraUnderwater(sgn, sceneRenderState.getCameraConst().getEye())) {
+    if (cameraUnderwater(sgn, Camera::activeCamera()->getEye())) {
         return;
     }
     // We need a rendering method to create refractions
@@ -192,7 +191,7 @@ void WaterPlane::updateRefraction(const SceneGraphNode& sgn,
     RenderPassManager::PassParams params;
     params.doPrePass = true;
     params.occlusionCull = true;
-    params.camera = &_cameraMgr.getActiveCamera();
+    params.camera = Camera::activeCamera();
     params.stage = RenderStage::REFRACTION;
     params.target = renderTarget;
     params.drawPolicy = &RenderTarget::defaultPolicy();
@@ -222,13 +221,13 @@ void WaterPlane::updateReflection(const SceneGraphNode& sgn,
     GFX_DEVICE.setClipPlane(ClipPlaneIndex::CLIP_PLANE_0, reflectionPlane);
     GFX_DEVICE.setClipPlane(ClipPlaneIndex::CLIP_PLANE_1, refractionPlane);
 
-    bool underwater = cameraUnderwater(sgn, sceneRenderState.getCameraConst().getEye());
+    bool underwater = cameraUnderwater(sgn, Camera::activeCamera()->getEye());
     RenderStage prevRenderStage = GFX_DEVICE.setRenderStage(underwater ? RenderStage::DISPLAY : RenderStage::REFLECTION);
     GFX_DEVICE.toggleClipPlane(g_reflectionClipID, true);
 
 
     // Reset reflection cam
-    _reflectionCam->fromCamera(_cameraMgr.getActiveCamera());
+    _reflectionCam->fromCamera(*Camera::activeCamera());
     if (!underwater) {
         _reflectionCam->reflect(reflectionPlane);
     }

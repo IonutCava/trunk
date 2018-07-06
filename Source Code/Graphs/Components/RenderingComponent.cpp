@@ -11,6 +11,7 @@
 #include "Geometry/Shapes/Headers/Mesh.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Dynamics/Entities/Headers/Impostor.h"
+#include "Rendering/Camera/Headers/Camera.h"
 #include "Rendering/Lighting/Headers/LightPool.h"
 
 namespace Divide {
@@ -535,7 +536,7 @@ size_t RenderingComponent::getDrawStateHash(RenderStage renderStage) {
     
 }
 
-void RenderingComponent::updateLoDLevel(const SceneRenderState& sceneRenderState, RenderStage renderStage) {
+void RenderingComponent::updateLoDLevel(const Camera& camera, RenderStage renderStage) {
     static const U32 SCENE_NODE_LOD0_SQ = Config::SCENE_NODE_LOD0 * Config::SCENE_NODE_LOD0;
     static const U32 SCENE_NODE_LOD1_SQ = Config::SCENE_NODE_LOD1 * Config::SCENE_NODE_LOD1;
 
@@ -543,7 +544,7 @@ void RenderingComponent::updateLoDLevel(const SceneRenderState& sceneRenderState
 
     // ToDo: Hack for lower LoD rendering in reflection and refraction passes
     if (renderStage != RenderStage::REFLECTION && renderStage != RenderStage::REFRACTION) {
-        const vec3<F32>& eyePos = sceneRenderState.getCameraConst().getEye();
+        const vec3<F32>& eyePos = camera.getEye();
         const BoundingSphere& bSphere = _parentSGN.get<BoundsComponent>()->getBoundingSphere();
         F32 cameraDistanceSQ = bSphere.getCenter().distanceSquared(eyePos);
 
@@ -569,7 +570,7 @@ RenderingComponent::getDrawPackage(const SceneRenderState& sceneRenderState, Ren
 
         _parentSGN.getNode()->updateDrawCommands(_parentSGN, renderStage, sceneRenderState, pkg._drawCommands);
 
-        updateLoDLevel(sceneRenderState, renderStage);
+        updateLoDLevel(*Camera::activeCamera(), renderStage);
 
         U32 offset = commandOffset();
         bool sceneRenderWireframe = sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME);
@@ -615,6 +616,7 @@ bool RenderingComponent::clearReflection() {
 
 bool RenderingComponent::updateReflection(U32 reflectionIndex,
                                           const vec3<F32>& camPos,
+                                          const vec2<F32>& zPlanes,
                                           const SceneRenderState& renderState)
 {
     // Low lod entities don't need up to date reflections
@@ -634,12 +636,10 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
     if (_reflectionCallback) {
         _reflectionCallback(_parentSGN, renderState, reflectRTID, reflectionIndex);
     } else {
-        const vec2<F32>& camZPlanes = renderState.getCameraConst().getZPlanes();
-
         GFX_DEVICE.generateCubeMap(GFX_DEVICE.renderTarget(reflectRTID),
                                    0,
                                    camPos,
-                                   vec2<F32>(camZPlanes.x, camZPlanes.y * 0.25f),
+                                   vec2<F32>(zPlanes.x, zPlanes.y * 0.25f),
                                    RenderStage::REFLECTION,
                                    reflectionIndex);
     }
@@ -661,6 +661,7 @@ bool RenderingComponent::clearRefraction() {
 
 bool RenderingComponent::updateRefraction(U32 refractionIndex,
                                           const vec3<F32>& camPos,
+                                          const vec2<F32>& zPlanes,
                                           const SceneRenderState& renderState) {
     // no default refraction system!
     if (!_refractionCallback) {

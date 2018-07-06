@@ -7,6 +7,7 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 
+#include "Rendering/Camera/Headers/Camera.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
 #include "Rendering/Headers/EnvironmentProbe.h"
 
@@ -74,11 +75,11 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     _gfxDataBuffer->bind(ShaderBufferLocation::GPU_BLOCK);
 
     // Utility cameras
-    CameraManager& cameraMgr = Application::instance().kernel().getCameraMgr();
-    _2DCamera = cameraMgr.createCamera("2DRenderCamera", Camera::CameraType::FREE_FLY);
+    _2DCamera = Camera::createCamera("2DRenderCamera", Camera::CameraType::FREE_FLY);
+    _cubeCamera = Camera::createCamera("_gfxCubeCamera", Camera::CameraType::FREE_FLY);
+    _dualParaboloidCamera = Camera::createCamera("_gfxParaboloidCamera", Camera::CameraType::FREE_FLY);
+
     _2DCamera->lockView(true);
-    _cubeCamera = cameraMgr.createCamera("_gfxCubeCamera", Camera::CameraType::FREE_FLY);
-    _dualParaboloidCamera = cameraMgr.createCamera("_gfxParaboloidCamera", Camera::CameraType::FREE_FLY);
 
     // Create general purpose render state blocks
     RenderStateBlock::init();
@@ -216,7 +217,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     _gpuBlock._data._ZPlanesCombined.zw(vec2<F32>(
         ParamHandler::instance().getParam<F32>(_ID("rendering.zNear")),
         ParamHandler::instance().getParam<F32>(_ID("rendering.zFar"))));
-    _gpuBlock._updated = true;
+    _gpuBlock._needsUpload = true;
 
     // Register a 2D function used for previewing the depth buffer.
     if (Config::Build::IS_DEBUG_BUILD) {

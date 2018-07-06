@@ -41,7 +41,7 @@ void MainScene::updateLights() {
 
 void MainScene::processInput(const U64 deltaTime) {
     if (state().cameraUpdated()) {
-        Camera& cam = renderState().getCamera();
+        Camera& cam = *Camera::activeCamera();
         const vec3<F32>& eyePos = cam.getEye();
         const vec3<F32>& euler = cam.getEuler();
         if (!_freeflyCamera) {
@@ -122,7 +122,7 @@ void MainScene::processTasks(const U64 deltaTime) {
 bool MainScene::load(const stringImpl& name) {
     // Load scene resources
     bool loadState = SCENE_LOAD(name, true, true);
-    renderState().getCamera().setMoveSpeedFactor(10.0f);
+    Camera::activeCamera()->setMoveSpeedFactor(10.0f);
 
     _sun = addLight(LightType::DIRECTIONAL, _sceneGraph->getRoot());
     _sun.lock()->getNode<DirectionalLight>()->csmSplitCount(3);  // 3 splits
@@ -200,8 +200,7 @@ U16 MainScene::registerInputActions() {
 
     _input->actionList().registerInputAction(actionID, [this](InputParams param) {
         _freeflyCamera = !_freeflyCamera;
-        renderState().getCamera().setMoveSpeedFactor(_freeflyCamera ? 20.0f
-            : 10.0f);
+        Camera::activeCamera()->setMoveSpeedFactor(_freeflyCamera ? 20.0f : 10.0f);
     });
     actions._onReleaseAction = actionID;
     _input->addKeyMapping(Input::KeyCode::KC_L, actions);
@@ -312,8 +311,8 @@ void MainScene::postLoadMainThread() {
         vec4<U8>(164, 64, 64, 255),
         Util::StringFormat("Number of items in Render Bin: %d", 0));
 
-    const vec3<F32>& eyePos = renderState().getCamera().getEye();
-    const vec3<F32>& euler = renderState().getCamera().getEuler();
+    const vec3<F32>& eyePos = Camera::activeCamera()->getEye();
+    const vec3<F32>& euler = Camera::activeCamera()->getEuler();
     _GUI->addText(_ID("camPosition"), vec2<I32>(60, 100), Font::DIVIDE_DEFAULT,
         vec4<U8>(64, 200, 64, 255),
         Util::StringFormat("Position [ X: %5.0f | Y: %5.0f | Z: %5.0f ] [Pitch: %5.2f | Yaw: %5.2f]",

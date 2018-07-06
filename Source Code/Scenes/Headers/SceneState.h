@@ -32,7 +32,6 @@
 #ifndef _SCENE_STATE_H_
 #define _SCENE_STATE_H_
 
-#include "Managers/Headers/CameraManager.h"
 #include "Platform/Audio/Headers/SFXDevice.h"
 #include "Platform/Video/Headers/RenderAPIEnums.h"
 #include "Platform/Audio/Headers/AudioDescriptor.h"
@@ -149,18 +148,6 @@ class SceneRenderState : public SceneComponent {
         return _gizmoState;
     }
 
-    inline CameraManager& getCameraMgr() {
-        return *_cameraMgr;
-    }
-
-    inline Camera& getCamera() {
-        return _cameraMgr->getActiveCamera();
-    }
-
-    inline const Camera& getCameraConst() const {
-        return _cameraMgr->getActiveCamera();
-    }
-
     inline void generalVisibility(F32 distance) { _generalVisibility = distance; }
     inline F32  generalVisibility()       const { return _generalVisibility; }
 
@@ -173,7 +160,6 @@ class SceneRenderState : public SceneComponent {
    protected:
     U32 _stateMask;
     GizmoState _gizmoState;
-    CameraManager* _cameraMgr;
     F32 _grassVisibility;
     F32 _treeVisibility;
     F32 _generalVisibility;

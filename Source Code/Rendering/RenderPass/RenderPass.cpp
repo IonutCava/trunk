@@ -146,7 +146,7 @@ void RenderPass::render(SceneRenderState& renderState) {
             RenderPassManager& passMgr = RenderPassManager::instance();
             RenderPassManager::PassParams params;
             params.occlusionCull = Config::USE_HIZ_CULLING;
-            params.camera = &renderState.getCamera();
+            params.camera = Camera::findCamera(Camera::DefaultCameraHash);
             params.stage = _stageFlag;
             params.target = RenderTargetID(RenderTargetUsage::SCREEN);
             params.pass = 0;

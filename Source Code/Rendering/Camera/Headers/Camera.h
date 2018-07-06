@@ -52,8 +52,6 @@ class Camera : public Resource {
 
     void fromCamera(const Camera& camera);
 
-    virtual void update(const U64 deltaTime);
-
     void updateLookAt();
 
     void reflect(const Plane<F32>& reflectionPlane);
@@ -174,23 +172,9 @@ class Camera : public Resource {
         setRotation(Quaternion<F32>(-pitch, -yaw, -roll));
     }
 
-    inline void setAspectRatio(F32 ratio) {
-        _aspectRatio = ratio;
-        _projectionDirty = true;
-    }
-
-    inline void setVerticalFoV(F32 verticalFoV) {
-        _verticalFoV = verticalFoV;
-        _projectionDirty = true;
-    }
-
-    inline void setHorizontalFoV(F32 horizontalFoV) {
-        _verticalFoV = Angle::RadiansToDegrees(
-            2.0f *
-            std::atan(tan(Angle::DegreesToRadians(horizontalFoV) * 0.5f) /
-                      _aspectRatio));
-        _projectionDirty = true;
-    }
+    void setAspectRatio(F32 ratio);
+    void setVerticalFoV(F32 verticalFoV);
+    void setHorizontalFoV(F32 horizontalFoV);
 
     /// Mouse sensitivity: amount of pixels per radian (this should be moved out
     /// of the camera class)
@@ -287,32 +271,19 @@ class Camera : public Resource {
 
     /// Nothing really to unload
     virtual bool unload() { return true; }
-    /// Add an event listener called after every RenderLookAt or
-    /// RenderLookAtCube
-    /// call
-    virtual void addUpdateListener(const DELEGATE_CBK_PARAM<Camera&>& f) {
-        _listeners.push_back(f);
-    }
+
     /// Informs all listeners of a new event
     virtual void updateListeners();
     /// Clear all listeners from the current camera
     virtual void clearListeners() { _listeners.clear(); }
-    /// Inject mouse events
-    virtual bool mouseMoved(const Input::MouseEvent& arg) { return true; }
-    /// Called when the camera becomes active
-    virtual void onActivate();
-    /// Called when the camera becomes inactive
-    virtual void onDeactivate();
+    const mat4<F32>& setProjection(F32 aspectRatio, F32 verticalFoV, const vec2<F32>& zPlanes);
 
-    void setProjection(F32 aspectRatio, F32 verticalFoV,
-                       const vec2<F32>& zPlanes, bool updateOnSet = false);
+    const mat4<F32>& setProjection(const vec4<F32>& rect, const vec2<F32>& zPlanes);
 
-    void setProjection(const vec4<F32>& rect, const vec2<F32>& zPlanes,
-                       bool updateOnSet = false);
     /// Extract the frustum associated with our current PoV
     virtual bool updateFrustum();
     /// Get the camera's current frustum
-    inline const Frustum& getFrustumConst() const { return *_frustum; }
+    inline const Frustum& getFrustum() const { return *_frustum; }
 
     inline Frustum& getFrustum() { return *_frustum; }
 
@@ -326,28 +297,27 @@ class Camera : public Resource {
 
     /// Get the world space pozition from the specified screen coordinates
     /// (use winCoords.z for depth from 0 to 1)
-    inline vec3<F32> unProject(const vec3<F32>& winCoords) const {
-        return unProject(winCoords.x, winCoords.y, winCoords.z);
-    }
-
-    /// Get the world space pozition from the specified screen coordinates
-    /// (use winCoords.z for depth from 0 to 1)
-    inline vec3<F32> unProject(const vec3<F32>& winCoords,
-                               const vec4<I32>& viewport) const {
+    inline vec3<F32> unProject(const vec3<F32>& winCoords, const vec4<I32>& viewport) const {
         return unProject(winCoords.x, winCoords.y, winCoords.z, viewport);
     }
 
-    vec3<F32> unProject(F32 winCoordsX, F32 winCoordsY, F32 winCoordsZ) const;
     vec3<F32> unProject(F32 winCoordsX, F32 winCoordsY, F32 winCoordsZ, const vec4<I32>& viewport) const;
 
    protected:
     virtual bool updateViewMatrix();
-    virtual void updateProjection();
+    virtual bool updateProjection();
+    /// Inject mouse events
+    virtual bool mouseMovedInternal(const Input::MouseEvent& arg) { return true; }
+    virtual void updateInternal(const U64 deltaTime);
+    /// Called when the camera becomes active/ is deactivated
+    virtual void setActiveInternal(bool state);
 
+    virtual void addUpdateListenerInternal(const DELEGATE_CBK_PARAM<Camera&>& f) {
+        _listeners.push_back(f);
+    }
    protected:
     SET_DELETE_FRIEND
     SET_DELETE_HASHMAP_FRIEND
-    friend class CameraManager;
     explicit Camera(const stringImpl& name, const CameraType& type, const vec3<F32>& eye = VECTOR3_ZERO);
     virtual ~Camera();
 
@@ -383,6 +353,41 @@ class Camera : public Resource {
     bool _isOrthoCamera;
     bool _frustumDirty;
     Frustum* _frustum;
+
+    // Camera pool
+    public:
+       static void update(const U64 deltaTime);
+       static void destroyPool();
+       static Camera* activeCamera();
+       static Camera* previousCamera();
+       static void    activeCamera(Camera* cam);
+       static void    activeCamera(ULL cam);
+       static Camera* createCamera(const stringImpl& cameraName, CameraType type);
+       static bool    destroyCamera(Camera*& camera);
+       static Camera* findCamera(ULL nameHash);
+
+       static bool mouseMoved(const Input::MouseEvent& arg);
+       static void addChangeListener(const DELEGATE_CBK_PARAM<Camera&>& f);
+       static void addUpdateListener(const DELEGATE_CBK_PARAM<Camera&>& f);
+
+    public:
+      static const char* DefaultCamera;
+      static const ULL DefaultCameraHash;
+
+    private:
+      typedef hashMapImpl<ULL, Camera*> CameraPool;
+      typedef hashMapImpl<I64, Camera*> CameraPoolGUID;
+
+      static Camera* _activeCamera;
+      static Camera* _previousCamera;
+      static vectorImpl<DELEGATE_CBK_PARAM<Camera&> > _changeCameralisteners;
+      static vectorImpl<DELEGATE_CBK_PARAM<Camera&> > _updateCameralisteners;
+
+      static CameraPool _cameraPool;
+      static SharedLock _cameraPoolLock;
+      static CameraPoolGUID _cameraPoolGUID;
+
+      static bool _addNewListener;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_CLASS(Camera);

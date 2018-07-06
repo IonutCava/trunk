@@ -151,7 +151,7 @@ class RenderingComponent : public SGNComponent {
 
    protected:
     bool canDraw(RenderStage renderStage);
-    void updateLoDLevel(const SceneRenderState& sceneRenderState, RenderStage renderStage);
+    void updateLoDLevel(const Camera& camera, RenderStage renderStage);
 
     /// Called after the parent node was rendered
     void postRender(const SceneRenderState& sceneRenderState,
@@ -172,9 +172,11 @@ class RenderingComponent : public SGNComponent {
     // and saves it in the appropriate material slot
     bool updateReflection(U32 reflectionIndex, 
                           const vec3<F32>& camPos,
+                          const vec2<F32>& zPlanes,
                           const SceneRenderState& renderState);
     bool updateRefraction(U32 refractionIndex,
                           const vec3<F32>& camPos,
+                          const vec2<F32>& zPlanes,
                           const SceneRenderState& renderState);
     bool clearReflection();
     bool clearRefraction();
@@ -218,17 +220,19 @@ class RenderingCompRenderPass {
         static bool updateReflection(RenderingComponent& renderable,
                                      U32 reflectionIndex,
                                      const vec3<F32>& camPos,
+                                     const vec2<F32>& zPlanes,
                                      const SceneRenderState& renderState)
         {
-            return renderable.updateReflection(reflectionIndex, camPos, renderState);
+            return renderable.updateReflection(reflectionIndex, camPos, zPlanes, renderState);
         }
 
         static bool updateRefraction(RenderingComponent& renderable,
                                      U32 refractionIndex,
                                      const vec3<F32>& camPos,
+                                     const vec2<F32>& zPlanes,
                                      const SceneRenderState& renderState)
         {
-            return renderable.updateRefraction(refractionIndex, camPos, renderState);
+            return renderable.updateRefraction(refractionIndex, camPos, zPlanes, renderState);
         }
 
         static bool clearReflection(RenderingComponent& renderable)

@@ -69,21 +69,16 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
     ResourceCache::createInstance();
     FrameListenerManager::createInstance();
     OpenCLInterface::createInstance();
-    _cameraMgr = MemoryManager_NEW CameraManager(this);  // Camera manager
-    assert(_cameraMgr != nullptr);
     // force all lights to update on camera change (to keep them still actually)
-    _cameraMgr->addCameraUpdateListener(
-        DELEGATE_BIND(&Attorney::GFXDeviceKernel::onCameraUpdate, std::placeholders::_1));
-    _cameraMgr->addCameraUpdateListener(
-        DELEGATE_BIND(&Attorney::SceneManagerKernel::onCameraUpdate, std::placeholders::_1));
-    _cameraMgr->addCameraChangeListener(
-        DELEGATE_BIND(&Attorney::GFXDeviceKernel::onCameraChange, std::placeholders::_1));
+    Camera::addUpdateListener(DELEGATE_BIND(&Attorney::GFXDeviceKernel::onCameraUpdate, std::placeholders::_1));
+    Camera::addUpdateListener(DELEGATE_BIND(&Attorney::SceneManagerKernel::onCameraUpdate, std::placeholders::_1));
+    Camera::addUpdateListener(DELEGATE_BIND(&Attorney::GFXDeviceKernel::onCameraChange, std::placeholders::_1));
     ParamHandler::instance().setParam<stringImpl>(_ID("language"), Locale::currentLanguage());
 }
 
 Kernel::~Kernel()
 {
-    MemoryManager::DELETE(_cameraMgr);
+    Camera::destroyPool();
 }
 
 void Kernel::idle() {
@@ -236,7 +231,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTime) {
     {
         Time::ScopedTimer timer2(_cameraMgrTimer);
         // Update cameras
-        _cameraMgr->update(deltaTime);
+        Camera::update(deltaTime);
     }
 
     if (_APP.windowManager().getActiveWindow().minimized()) {
@@ -462,12 +457,15 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     Console::printfn(Locale::get(_ID("SCENE_ADD_DEFAULT_CAMERA")));
 
     // As soon as a camera is added to the camera manager, the manager is responsible for cleaning it up
-    _cameraMgr->pushActiveCamera(_cameraMgr->createCamera("defaultCamera", Camera::CameraType::FREE_FLY));
-    _cameraMgr->getActiveCamera().setFixedYawAxis(true);
-    _cameraMgr->getActiveCamera().setProjection(to_float(renderResolution.width) / to_float(renderResolution.height),
-                                                par.getParam<F32>(_ID("rendering.verticalFOV")),
-                                                vec2<F32>(par.getParam<F32>(_ID("rendering.zNear")),
-                                                          par.getParam<F32>(_ID("rendering.zFar"))));
+
+    Camera* defaultCam = Camera::createCamera(Camera::DefaultCamera, Camera::CameraType::FREE_FLY);
+    defaultCam->setFixedYawAxis(true);
+    defaultCam->setProjection(to_float(renderResolution.width) / to_float(renderResolution.height),
+                              par.getParam<F32>(_ID("rendering.verticalFOV")),
+                              vec2<F32>(par.getParam<F32>(_ID("rendering.zNear")),
+                                        par.getParam<F32>(_ID("rendering.zFar"))));
+    Camera::activeCamera(defaultCam);
+
     _sceneMgr.onStartup();
     // We start of with a forward plus renderer
     _sceneMgr.setRenderer(RendererType::RENDERER_TILED_FORWARD_SHADING);
@@ -535,7 +533,7 @@ void Kernel::shutdown() {
     Console::bindConsoleOutput(std::function<void(const char*, bool)>());
     SceneManager::destroyInstance();
     GUI::destroyInstance();  /// Deactivate GUI
-    MemoryManager::DELETE(_cameraMgr);
+    Camera::destroyPool();
     ShadowMap::clearShadowMaps();
     Console::printfn(Locale::get(_ID("STOP_ENGINE_OK")));
     Console::printfn(Locale::get(_ID("STOP_PHYSICS_INTERFACE")));
@@ -569,7 +567,7 @@ void Kernel::onChangeRenderResolution(U16 w, U16 h) const {
     _GUI.onChangeResolution(w, h);
 
 
-    Camera* mainCamera = _cameraMgr->findCamera(_ID_RT("defaultCamera"));
+    Camera* mainCamera = Camera::findCamera(Camera::DefaultCameraHash);
     if (mainCamera) {
         const ParamHandler& par = ParamHandler::instance();
         mainCamera->setProjection(to_float(w) / to_float(h),
@@ -601,7 +599,7 @@ bool Kernel::onKeyUp(const Input::KeyEvent& key) {
 }
 
 bool Kernel::mouseMoved(const Input::MouseEvent& arg) {
-    _cameraMgr->mouseMoved(arg);
+    Camera::mouseMoved(arg);
     if (_GUI.mouseMoved(arg)) {
         return _sceneMgr.mouseMoved(arg);
     }

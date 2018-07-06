@@ -40,7 +40,7 @@ namespace Divide {
 /// Similar to the "Free fly" camera, but more restrained in it's movement.
 class FirstPersonCamera : public Camera {
   protected:
-    friend class CameraManager;
+    friend class Camera;
     explicit FirstPersonCamera(const stringImpl& name, const vec3<F32>& eye = VECTOR3_ZERO);
 };
 

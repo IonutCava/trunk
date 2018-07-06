@@ -1,6 +1,7 @@
 #include "Headers/SceneGraph.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Managers/Headers/SceneManager.h"
+#include "Managers/Headers/FrameListenerManager.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "Geometry/Material/Headers/Material.h"
 

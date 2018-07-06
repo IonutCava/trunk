@@ -208,9 +208,6 @@
     <ClCompile Include="..\..\Source Code\Core\Console.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Managers\CameraManager.cpp">
-      <Filter>Managers</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Managers\SceneManager.cpp">
       <Filter>Managers</Filter>
     </ClCompile>
@@ -551,6 +548,9 @@
     <ClCompile Include="..\..\Source Code\Rendering\TiledForwardShadingRenderer.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\Camera\CameraPool.cpp">
+      <Filter>Rendering\Camera</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h">
@@ -600,9 +600,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Core\Math\Headers\Transform.h">
       <Filter>Core\Math\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Managers\Headers\CameraManager.h">
-      <Filter>Managers\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Geometry\Material\Headers\Material.h">
       <Filter>Geometry\Material\Headers</Filter>

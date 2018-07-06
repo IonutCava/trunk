@@ -95,12 +95,12 @@ void CascadedShadowMaps::init(ShadowMapInfo* const smi) {
     _init = true;
 }
 
-void CascadedShadowMaps::render(SceneRenderState& renderState, U32 passIdx) {
+void CascadedShadowMaps::render(U32 passIdx) {
     _splitLogFactor = _dirLight->csmSplitLogFactor();
     _nearClipOffset = _dirLight->csmNearClipOffset();
     _lightPosition.set(_light->getPosition());
 
-    Camera& camera = renderState.getCamera();
+    Camera& camera = *Camera::findCamera(Camera::DefaultCameraHash);
     _sceneZPlanes.set(camera.getZPlanes());
     camera.getWorldMatrix(_viewInvMatrixCache);
     camera.getFrustum().getCornersWorldSpace(_frustumCornersWS);
@@ -132,9 +132,7 @@ void CascadedShadowMaps::render(SceneRenderState& renderState, U32 passIdx) {
     params.target = RenderTargetID(RenderTargetUsage::SHADOW, to_uint(getShadowMapType()));
     params.pass = passIdx;
 
-    renderState.getCameraMgr().pushActiveCamera(_shadowCamera);
     RenderPassManager::instance().doCustomPass(params);
-    renderState.getCameraMgr().popActiveCamera();
 
     postRender();
 }
@@ -202,10 +200,8 @@ void CascadedShadowMaps::applyFrustumSplits() {
 
         F32 frustumSphereRadius = BoundingSphere(_frustumCornersLS).getRadius();
         vec2<F32> clipPlanes(std::max(1.0f, minZ - _nearClipOffset), frustumSphereRadius * 2 + _nearClipOffset * 2);
-        _shadowCamera->setProjection(UNIT_RECT * frustumSphereRadius,
-                                     clipPlanes,
-                                     true);
-        mat4<F32>::Multiply(viewMatrix, _shadowCamera->getProjectionMatrix(), _shadowMatrices[pass]);
+        const mat4<F32>& projMatrix = _shadowCamera->setProjection(UNIT_RECT * frustumSphereRadius, clipPlanes);
+        mat4<F32>::Multiply(viewMatrix, projMatrix, _shadowMatrices[pass]);
 
         // http://www.gamedev.net/topic/591684-xna-40---shimmering-shadow-maps/
         F32 halfShadowMapSize = getDepthMap().getWidth() * 0.5f;

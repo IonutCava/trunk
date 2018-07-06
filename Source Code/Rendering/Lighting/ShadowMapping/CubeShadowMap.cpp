@@ -28,7 +28,7 @@ void CubeShadowMap::init(ShadowMapInfo* const smi) {
     _init = true;
 }
 
-void CubeShadowMap::render(SceneRenderState& renderState, U32 passIdx) {
+void CubeShadowMap::render(U32 passIdx) {
     GFX_DEVICE.generateCubeMap(getDepthMap(),
                                _arrayOffset,
                                _light->getPosition(),

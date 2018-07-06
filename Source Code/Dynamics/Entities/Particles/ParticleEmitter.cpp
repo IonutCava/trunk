@@ -12,6 +12,7 @@
 #include "Core/Time/Headers/ApplicationTimer.h"
 #include "Scenes/Headers/SceneState.h"
 #include "Geometry/Material/Headers/Material.h"
+#include "Rendering/Camera/Headers/Camera.h"
 #include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 #include "Platform/Video/Buffers/VertexBuffer/GenericBuffer/Headers/GenericVertexData.h"
 
@@ -270,7 +271,7 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime,
                 renderState().setDrawState(aliveCount > 0);
 
                 PhysicsComponent* transform = sgn.get<PhysicsComponent>();
-                const vec3<F32>& eyePos = sceneState.renderState().getCameraConst().getEye();
+                const vec3<F32>& eyePos = Camera::activeCamera()->getEye();
 
                 const vec3<F32>& pos = transform->getPosition();
                 const Quaternion<F32>& rot = transform->getOrientation();

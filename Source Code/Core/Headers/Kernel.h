@@ -34,10 +34,7 @@
 
 #include "TaskPool.h"
 #include "Core/Headers/Application.h"
-#include "Managers/Headers/CameraManager.h"
 #include "Platform/Input/Headers/InputAggregatorInterface.h"
-
-
 
 namespace Divide {
 
@@ -80,6 +77,11 @@ namespace Attorney {
 namespace Time {
     class ProfileTimer;
 };
+
+namespace Input {
+    class InputInterface;
+};
+
 /// The kernel is the main interface to our engine components:
 ///-video
 ///-audio
@@ -108,8 +110,6 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     SFXDevice& getSFXDevice() const { return _SFX; }
     PXDevice& getPXDevice() const { return _PFX; }
     
-    CameraManager& getCameraMgr() { return *_cameraMgr; }
-
     /// Key pressed
     bool onKeyDown(const Input::KeyEvent& key);
     /// Key released
@@ -169,8 +169,6 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     Input::InputInterface& _input;
     /// The SceneManager/ Scene Pool
     SceneManager& _sceneMgr;
-    /// Keep track of all active cameras used by the engine
-    CameraManager* _cameraMgr;
 
     LoopTimingData _timingData;
 

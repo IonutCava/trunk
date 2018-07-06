@@ -42,7 +42,7 @@ FWD_DECLARE_MANAGED_CLASS(SceneGraphNode);
 /// It's position / direction can't be changed by user input
 class OrbitCamera : public Camera {
   protected:
-    friend class CameraManager;
+    friend class Camera;
     explicit OrbitCamera(const stringImpl& name, 
                          const CameraType& type = CameraType::ORBIT,
                          const vec3<F32>& eye = VECTOR3_ZERO);
@@ -66,9 +66,8 @@ class OrbitCamera : public Camera {
     virtual void update(const U64 deltaTime);
     virtual void move(F32 dx, F32 dy, F32 dz);
     virtual void rotate(F32 yaw, F32 pitch, F32 roll);
-    virtual bool mouseMoved(const Input::MouseEvent& arg);
-    virtual void onActivate();
-    virtual void onDeactivate();
+    virtual bool mouseMovedInternal(const Input::MouseEvent& arg);
+    virtual void setActiveInternal(bool state) override;
 
    protected:
     virtual bool updateViewMatrix();

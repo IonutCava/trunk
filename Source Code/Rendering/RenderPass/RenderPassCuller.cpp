@@ -5,6 +5,7 @@
 #include "Core/Headers/TaskPool.h"
 #include "Scenes/Headers/SceneState.h"
 #include "Graphs/Headers/SceneGraph.h"
+#include "Rendering/Camera/Headers/Camera.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 
 namespace Divide {
@@ -93,7 +94,7 @@ void RenderPassCuller::frustumCull(SceneGraph& sceneGraph,
         SceneGraphNode& root = sceneGraph.getRoot();
         U32 childCount = root.getChildCount();
         nodeList.resize(childCount);
-        const Camera& camera = renderState.getCameraConst();
+        const Camera& camera = *Camera::activeCamera();
         F32 cullMaxDistance = renderState.generalVisibility();
         parallel_for(DELEGATE_BIND(&RenderPassCuller::frumstumPartitionCuller,
                                    this,

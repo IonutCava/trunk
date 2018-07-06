@@ -157,8 +157,8 @@ DEFINE_SINGLETON(SceneManager, FrameListener, Input::InputAggregatorInterface)
     bool frameStarted(const FrameEvent& evt) override;
     bool frameEnded(const FrameEvent& evt) override;
     void onCameraUpdate(Camera& camera);
-    void preRender(RenderTarget& target);
-    void postRender(RenderStage stage, RenderSubPassCmds& subPassesInOut);
+    void preRender(const Camera& camera, RenderTarget& target);
+    void postRender(const Camera& camera, RenderStage stage, RenderSubPassCmds& subPassesInOut);
     bool generateShadowMaps();
     bool populateRenderQueue(RenderStage stage,
                              bool doCulling,
@@ -266,12 +266,12 @@ class SceneManagerRenderPass {
         return mgr.populateRenderQueue(stage, doCulling, passIndex);
     }
 
-    static void preRender(Divide::SceneManager& mgr, RenderTarget& target) {
-        mgr.preRender(target);
+    static void preRender(Divide::SceneManager& mgr, const Camera& camera, RenderTarget& target) {
+        mgr.preRender(camera, target);
     }
 
-    static void postRender(Divide::SceneManager& mgr, RenderStage stage, RenderSubPassCmds& subPassesInOut) {
-        mgr.postRender(stage, subPassesInOut);
+    static void postRender(Divide::SceneManager& mgr, const Camera& camera, RenderStage stage, RenderSubPassCmds& subPassesInOut) {
+        mgr.postRender(camera, stage, subPassesInOut);
     }
 
     static bool generateShadowMaps(Divide::SceneManager& mgr) {

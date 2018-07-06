@@ -40,7 +40,7 @@ namespace Divide {
 /// one with target information and one with timing info
 class ScriptedCamera : public Camera {
   protected:
-    friend class CameraManager;
+    friend class Camera;
     explicit ScriptedCamera(const stringImpl& name, const vec3<F32>& eye = VECTOR3_ZERO);
 };
 

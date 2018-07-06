@@ -40,12 +40,12 @@ namespace Divide {
 /// It's position / direction can be changed by user input
 class ThirdPersonCamera : public OrbitCamera {
   protected:
-    friend class CameraManager;
+    friend class Camera;
     explicit ThirdPersonCamera(const stringImpl& name, const vec3<F32>& eye = VECTOR3_ZERO);
     
   public:
-    bool mouseMoved(const Input::MouseEvent& arg);
-    void onActivate();
+    bool mouseMovedInternal(const Input::MouseEvent& arg);
+    void setActiveInternal(bool state) override;
 };
 
 };  // namespace Divide

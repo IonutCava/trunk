@@ -25,7 +25,6 @@ SceneRenderState::SceneRenderState(Scene& parentScene)
     enableOption(RenderOptions::RENDER_GEOMETRY);
 
     _gizmoState = GizmoState::NO_GIZMO;
-    _cameraMgr = &Application::instance().kernel().getCameraMgr();
 }
 
 void SceneRenderState::toggleAxisLines() {

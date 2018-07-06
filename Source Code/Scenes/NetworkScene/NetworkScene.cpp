@@ -69,7 +69,7 @@ bool NetworkScene::load(const stringImpl& name) {
     _paramHandler.setParam(_ID("serverResponse"), "waiting");
     addLight(LightType::DIRECTIONAL, _sceneGraph->getRoot());
     _currentSky = addSky();
-    renderState().getCamera().setEye(vec3<F32>(0, 30, -30));
+    Camera::activeCamera()->setEye(vec3<F32>(0, 30, -30));
 
     return loadState;
 }

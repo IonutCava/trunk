@@ -108,7 +108,7 @@ void DefaultScene::processTasks(const U64 deltaTime) {
         if (angle >= 360.0f) {
             angle = 0.0f;
         }
-        renderState().getCamera().setYaw(angle);
+        Camera::activeCamera()->setYaw(angle);
 
         _taskTimers[0] = 0.0;
     }

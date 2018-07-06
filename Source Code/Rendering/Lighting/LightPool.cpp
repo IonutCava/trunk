@@ -178,7 +178,7 @@ bool LightPool::generateShadowMaps(SceneRenderState& sceneRenderState) {
         if(light != nullptr) {
             _currentShadowCastingLight = light;
             light->validateOrCreateShadowMaps(sceneRenderState);
-            light->generateShadowMaps(sceneRenderState, idx++ * 6);
+            light->generateShadowMaps(idx++ * 6);
         }
     }
 

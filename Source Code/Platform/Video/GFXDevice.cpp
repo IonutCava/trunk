@@ -137,11 +137,8 @@ void GFXDevice::generateCubeMap(RenderTarget& cubeMap,
                               vec3<F32>(pos.x, pos.y, pos.z + 1.0f),
                               vec3<F32>(pos.x, pos.y, pos.z - 1.0f)};
 
-    Kernel& kernel = Application::instance().kernel();
     // Set a 90 degree vertical FoV perspective projection
     _cubeCamera->setProjection(1.0f, 90.0f, zPlanes);
-    // Set the cube camera as the currently active one
-    kernel.getCameraMgr().pushActiveCamera(_cubeCamera);
     // Set the desired render stage, remembering the previous one
     RenderStage prevRenderStage = setRenderStage(renderStage);
     // Enable our render target
@@ -172,8 +169,6 @@ void GFXDevice::generateCubeMap(RenderTarget& cubeMap,
     cubeMap.end();
     // Return to our previous rendering stage
     setRenderStage(prevRenderStage);
-    // Restore our previous camera
-    kernel.getCameraMgr().popActiveCamera();
 }
 
 void GFXDevice::generateDualParaboloidMap(RenderTarget& targetBuffer,
@@ -202,11 +197,9 @@ void GFXDevice::generateDualParaboloidMap(RenderTarget& targetBuffer,
         Console::errorfn(Locale::get(_ID("ERROR_GFX_DEVICE_INVALID_FB_DP")));
         return;
     }
-    Kernel& kernel = Application::instance().kernel();
+
     // Set a 90 degree vertical FoV perspective projection
     _dualParaboloidCamera->setProjection(1.0f, 180.0f, zPlanes);
-    // Set the cube camera as the currently active one
-    kernel.getCameraMgr().pushActiveCamera(_dualParaboloidCamera);
     // Set the desired render stage, remembering the previous one
     RenderStage prevRenderStage = setRenderStage(renderStage);
 
@@ -234,8 +227,6 @@ void GFXDevice::generateDualParaboloidMap(RenderTarget& targetBuffer,
     targetBuffer.end();
     // Return to our previous rendering stage
     setRenderStage(prevRenderStage);
-    // Restore our previous camera
-    kernel.getCameraMgr().popActiveCamera();
 }
 
 void GFXDevice::increaseResolution() {
@@ -318,7 +309,7 @@ void GFXDevice::onChangeResolution(U16 w, U16 h) {
     // Update post-processing render targets and buffers
     PostFX::instance().updateResolution(w, h);
     _gpuBlock._data._invScreenDimension.xy(1.0f / w, 1.0f / h);
-    _gpuBlock._updated = true;
+    _gpuBlock._needsUpload = true;
     // Update the 2D camera so it matches our new rendering viewport
     _2DCamera->setProjection(vec4<F32>(0, to_float(w), 0, to_float(h)), vec2<F32>(-1, 1));
 }
@@ -338,11 +329,11 @@ mat4<F32>& GFXDevice::getMatrixInternal(const MATRIX& mode) {
         case MATRIX::PROJECTION:
             return _gpuBlock._data._ProjectionMatrix;
         case MATRIX::VIEW_INV: 
-            return _gpuBlock.viewMatrixInv();
+            return _gpuBlock._viewMatrixInv;
         case MATRIX::PROJECTION_INV:
             return _gpuBlock._data._InvProjectionMatrix;
         case MATRIX::VIEW_PROJECTION_INV:
-            return _gpuBlock.viewProjectionMatrixInv();
+            return _gpuBlock._viewProjMatrixInv;
         case MATRIX::TEXTURE:
             Console::errorfn(Locale::get(_ID("ERROR_TEXTURE_MATRIX_ACCESS")));
             break;
@@ -364,11 +355,11 @@ const mat4<F32>& GFXDevice::getMatrixInternal(const MATRIX& mode) const {
         case MATRIX::PROJECTION:
             return _gpuBlock._data._ProjectionMatrix;
         case MATRIX::VIEW_INV:
-            return _gpuBlock.viewMatrixInv();
+            return _gpuBlock._viewMatrixInv;
         case MATRIX::PROJECTION_INV:
             return _gpuBlock._data._InvProjectionMatrix;
         case MATRIX::VIEW_PROJECTION_INV:
-            return _gpuBlock.viewProjectionMatrixInv();
+            return _gpuBlock._viewProjMatrixInv;
         case MATRIX::TEXTURE:
             Console::errorfn(Locale::get(_ID("ERROR_TEXTURE_MATRIX_ACCESS")));
             break;
@@ -386,7 +377,7 @@ void GFXDevice::updateClipPlanes() {
     for (U8 i = 0; i < Config::MAX_CLIP_PLANES; ++i) {
         data._clipPlanes[i] = _clippingPlanes[i].getEquation();
     }
-    _gpuBlock._updated = true;
+    _gpuBlock._needsUpload = true;
 }
 
 /// Update the internal GPU data buffer with the updated viewport dimensions
@@ -395,7 +386,7 @@ void GFXDevice::updateViewportInternal(const vec4<I32>& viewport) {
     _api->changeViewport(viewport);
     // Update the buffer with the new value
     _gpuBlock._data._ViewPort.set(viewport.x, viewport.y, viewport.z, viewport.w);
-    _gpuBlock._updated = true;
+    _gpuBlock._needsUpload = true;
 }
 
 void GFXDevice::updateViewportInternal(I32 x, I32 y, I32 width, I32 height) {
@@ -403,47 +394,53 @@ void GFXDevice::updateViewportInternal(I32 x, I32 y, I32 width, I32 height) {
 }
 
 void GFXDevice::renderFromCamera(Camera& camera) {
+    Camera::activeCamera(&camera);
+
     camera.updateLookAt();
     // Tell the Rendering API to draw from our desired PoV
     GPUBlock::GPUData& data = _gpuBlock._data;
 
     const mat4<F32>& viewMatrix = camera.getViewMatrix();
-    bool viewMatUpdated = viewMatrix != _gpuBlock._data._ViewMatrix;
+    const mat4<F32>& projMatrix = camera.getProjectionMatrix();
+
+    bool viewMatUpdated = viewMatrix != data._ViewMatrix;
+    bool projMatUpdated = projMatrix != data._ProjectionMatrix;
     if (viewMatUpdated) {
         data._ViewMatrix.set(viewMatrix);
+        data._ViewMatrix.getInverse(_gpuBlock._viewMatrixInv);
     }
-    F32 FoV = camera.getVerticalFoV();
-    data._ProjectionMatrix.set(camera.getProjectionMatrix());
-    data._cameraPosition.set(camera.getEye(), camera.getAspectRatio());
-    data._renderProperties.zw(FoV, std::tan(FoV * 0.5f));
-    data._ZPlanesCombined.xy(camera.getZPlanes());
-    _gpuBlock.update(viewMatUpdated);
+    if (projMatUpdated) {
+        data._ProjectionMatrix.set(projMatrix);
+        data._ProjectionMatrix.getInverse(data._InvProjectionMatrix);
+    }
+
+    if (viewMatUpdated || projMatUpdated) {
+        F32 FoV = camera.getVerticalFoV();
+        data._cameraPosition.set(camera.getEye(), camera.getAspectRatio());
+        data._renderProperties.zw(FoV, std::tan(FoV * 0.5f));
+        data._ZPlanesCombined.xy(camera.getZPlanes());
+        mat4<F32>::Multiply(data._ViewMatrix, data._ProjectionMatrix, data._ViewProjectionMatrix);
+        data._ViewProjectionMatrix.getInverse(_gpuBlock._viewProjMatrixInv);
+        GFXDevice::computeFrustumPlanes(_gpuBlock._viewProjMatrixInv, data._frustumPlanes);
+        _gpuBlock._needsUpload = true;
+    }
 }
 
 /// Enable or disable 2D rendering mode 
 /// (orthographic projection, no depth reads)
 void GFXDevice::toggle2D(bool state) {
-    // Remember the previous state hash
-    static size_t previousStateBlockHash = 0;
     // Prevent double 2D toggle to the same state (e.g. in a loop)
     if (state == _2DRendering) {
         return;
     }
-    Kernel& kernel = Application::instance().kernel();
+
     _2DRendering = state;
     // If we need to enable 2D rendering
     if (state) {
-        // Activate the 2D render state block
-        previousStateBlockHash = _api->setStateBlock(_state2DRenderingHash);
-        // Push the 2D camera
-        kernel.getCameraMgr().pushActiveCamera(_2DCamera);
         // Upload 2D camera matrices to the GPU
         renderFromCamera(*_2DCamera);
     } else {
-        // Reverting to 3D implies popping the 2D camera
-        kernel.getCameraMgr().popActiveCamera();
-        // And restoring the previous state block
-        _api->setStateBlock(previousStateBlockHash);
+        Camera::activeCamera(Camera::previousCamera());
     }
 }
 
@@ -501,19 +498,7 @@ void GFXDevice::onCameraUpdate(Camera& camera) {
 }
 
 void GFXDevice::onCameraChange(Camera& camera) {
-    GPUBlock::GPUData& data = _gpuBlock._data;
-
-    const mat4<F32>& projectionMatrix = camera.getProjectionMatrix();
-    const vec2<F32>& planes = camera.getZPlanes();
-    F32 aspectRatio = camera.getAspectRatio();
-    F32 FoV = camera.getVerticalFoV();
-
-    data._ProjectionMatrix.set(projectionMatrix);
-    data._ZPlanesCombined.xy(planes);
-    data._cameraPosition.w = aspectRatio;
-    data._renderProperties.z = FoV;
-    data._renderProperties.w = std::tan(FoV * 0.5f);
-    _gpuBlock.update(false);
+    ACKNOWLEDGE_UNUSED(camera);
 }
 
 /// Depending on the context, either immediately call the function, or pass it

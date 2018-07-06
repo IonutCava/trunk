@@ -165,7 +165,7 @@ class Light : public SceneNode {
     bool removeShadowMapInfo();
 
     void validateOrCreateShadowMaps(SceneRenderState& sceneRenderState);
-    virtual void generateShadowMaps(SceneRenderState& sceneRenderState, U32 passIdx);
+    virtual void generateShadowMaps(U32 passIdx);
 
     inline const ShadowProperties& getShadowProperties() const {
         return _shadowProperties;

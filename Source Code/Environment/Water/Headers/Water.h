@@ -39,7 +39,6 @@
 namespace Divide {
 
 class Texture;
-class CameraManager;
 class ShaderProgram;
 
 class WaterPlane : public SceneNode {
@@ -112,7 +111,6 @@ class WaterPlane : public SceneNode {
     /// Use this to force current reflector to draw itself in reflection
     bool _excludeSelfReflection;
 
-    CameraManager& _cameraMgr;
     Camera* _reflectionCam;
 };
 

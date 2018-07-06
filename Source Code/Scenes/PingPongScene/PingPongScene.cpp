@@ -275,8 +275,8 @@ bool PingPongScene::load(const stringImpl& name) {
     // Add a light
     _sun = addLight(LightType::DIRECTIONAL, _sceneGraph->getRoot());
     _currentSky = addSky();
-    _freeFlyCam = &renderState().getCamera();
-    _paddleCam = renderState().getCameraMgr().createCamera("paddleCam", Camera::CameraType::FREE_FLY);
+    _freeFlyCam = Camera::findCamera(Camera::DefaultCameraHash);
+    _paddleCam = Camera::createCamera("paddleCam", Camera::CameraType::FREE_FLY);
     _paddleCam->fromCamera(*_freeFlyCam);
     // Position the camera
     // renderState().getCamera().setPitch(-90);
@@ -301,9 +301,9 @@ U16 PingPongScene::registerInputActions() {
     _input->actionList().registerInputAction(actionID, [this](InputParams param) {
         _freeFly = !_freeFly;
         if (!_freeFly)
-            renderState().getCameraMgr().pushActiveCamera(_paddleCam);
+            Camera::activeCamera(_paddleCam);
         else
-            renderState().getCameraMgr().popActiveCamera();
+            Camera::activeCamera(_ID("defaultCamera"));
     });
     actions._onReleaseAction = actionID;
     _input->addKeyMapping(Input::KeyCode::KC_L, actions);

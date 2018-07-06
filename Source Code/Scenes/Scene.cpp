@@ -5,7 +5,6 @@
 
 #include "Utility/Headers/XMLParser.h"
 #include "Managers/Headers/SceneManager.h"
-#include "Managers/Headers/CameraManager.h"
 #include "Rendering/Headers/Renderer.h"
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
 
@@ -363,7 +362,7 @@ void Scene::toggleFlashlight() {
 
 SceneGraphNode_ptr Scene::addSky(const stringImpl& nodeName) {
     ResourceDescriptor skyDescriptor("Default Sky");
-    skyDescriptor.setID(to_uint(std::floor(renderState().getCameraConst().getZPlanes().y * 2)));
+    skyDescriptor.setID(to_uint(std::floor(Camera::activeCamera()->getZPlanes().y * 2)));
 
     std::shared_ptr<Sky> skyItem = CreateResource<Sky>(skyDescriptor);
     DIVIDE_ASSERT(skyItem != nullptr, "Scene::addSky error: Could not create sky resource!");
@@ -389,7 +388,7 @@ U16 Scene::registerInputActions() {
     auto none = [](InputParams param) {};
     auto deleteSelection = [this](InputParams param) { _sceneGraph->deleteNode(_currentSelection, false); };
     auto increaseCameraSpeed = [this](InputParams param){
-        Camera& cam = renderState().getCamera();
+        Camera& cam = *Camera::activeCamera();
         F32 currentCamMoveSpeedFactor = cam.getMoveSpeedFactor();
         if (currentCamMoveSpeedFactor < 50) {
             cam.setMoveSpeedFactor(currentCamMoveSpeedFactor + 1.0f);
@@ -397,7 +396,7 @@ U16 Scene::registerInputActions() {
         }
     };
     auto decreaseCameraSpeed = [this](InputParams param) {
-        Camera& cam = renderState().getCamera();
+        Camera& cam = *Camera::activeCamera();
         F32 currentCamMoveSpeedFactor = cam.getMoveSpeedFactor();
         if (currentCamMoveSpeedFactor > 1.0f) {
             cam.setMoveSpeedFactor(currentCamMoveSpeedFactor - 1.0f);
@@ -616,19 +615,19 @@ bool Scene::load(const stringImpl& name) {
 
     // Camera position is overridden in the scene's XML configuration file
     if (ParamHandler::instance().getParam<bool>(_ID_RT((getName() + "options.cameraStartPositionOverride").c_str()))) {
-        renderState().getCamera().setEye(vec3<F32>(
+        Camera::activeCamera()->setEye(vec3<F32>(
             _paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraStartPosition.x").c_str())),
             _paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraStartPosition.y").c_str())),
             _paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraStartPosition.z").c_str()))));
         vec2<F32> camOrientation(_paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraStartOrientation.xOffsetDegrees").c_str())),
                                  _paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraStartOrientation.yOffsetDegrees").c_str())));
-        renderState().getCamera().setGlobalRotation(camOrientation.y /*yaw*/, camOrientation.x /*pitch*/);
+        Camera::activeCamera()->setGlobalRotation(camOrientation.y /*yaw*/, camOrientation.x /*pitch*/);
     } else {
-        renderState().getCamera().setEye(vec3<F32>(0, 50, 0));
+        Camera::activeCamera()->setEye(vec3<F32>(0, 50, 0));
     }
 
-    renderState().getCamera().setMoveSpeedFactor(_paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraSpeed.move").c_str()), 1.0f));
-    renderState().getCamera().setTurnSpeedFactor(_paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraSpeed.turn").c_str()), 1.0f));
+    Camera::activeCamera()->setMoveSpeedFactor(_paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraSpeed.move").c_str()), 1.0f));
+    Camera::activeCamera()->setTurnSpeedFactor(_paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraSpeed.turn").c_str()), 1.0f));
 
     addSelectionCallback(DELEGATE_BIND(&GUI::selectionChangeCallback, &GUI::instance(), this));
 
@@ -737,7 +736,7 @@ void Scene::clearObjects() {
 }
 
 bool Scene::updateCameraControls() {
-    Camera& cam = renderState().getCamera();
+    Camera& cam = *Camera::activeCamera();
 
     state().cameraUpdated(false);
     switch (cam.getType()) {
@@ -772,13 +771,13 @@ bool Scene::updateCameraControls() {
 void Scene::updateSceneState(const U64 deltaTime) {
     _sceneTimer += deltaTime;
     updateSceneStateInternal(deltaTime);
-    state().cameraUnderwater(renderState().getCamera().getEye().y < state().waterLevel());
+    state().cameraUnderwater(Camera::activeCamera()->getEye().y < state().waterLevel());
     _sceneGraph->sceneUpdate(deltaTime, *_sceneState);
     findHoverTarget();
     SceneGraphNode_ptr flashLight = _flashLight.lock();
 
     if (flashLight) {
-        const Camera& cam = renderState().getCameraConst();
+        const Camera& cam = *Camera::activeCamera();
         flashLight->get<PhysicsComponent>()->setPosition(cam.getEye());
         flashLight->get<PhysicsComponent>()->setRotation(cam.getEuler());
     }
@@ -893,7 +892,7 @@ void Scene::debugDraw(RenderStage stage, RenderSubPassCmds& subPassesInOut) {
 }
 
 void Scene::findHoverTarget() {
-    const Camera& crtCamera = renderState().getCameraConst();
+    const Camera& crtCamera = *Camera::activeCamera();
     const vec2<U16>& displaySize = Application::instance().windowManager().getActiveWindow().getDimensions();
     const vec2<F32>& zPlanes = crtCamera.getZPlanes();
     const vec2<I32>& mousePos = _input->getMousePosition();
@@ -901,8 +900,9 @@ void Scene::findHoverTarget() {
     F32 mouseX = to_float(mousePos.x);
     F32 mouseY = displaySize.height - to_float(mousePos.y) - 1;
 
-    vec3<F32> startRay = crtCamera.unProject(mouseX, mouseY, 0.0f);
-    vec3<F32> endRay = crtCamera.unProject(mouseX, mouseY, 1.0f);
+    const vec4<I32>& viewport = GFX_DEVICE.getCurrentViewport();
+    vec3<F32> startRay = crtCamera.unProject(mouseX, mouseY, 0.0f, viewport);
+    vec3<F32> endRay = crtCamera.unProject(mouseX, mouseY, 1.0f, viewport);
     // see if we select another one
     _sceneSelectionCandidates.clear();
     // get the list of visible nodes (use Z_PRE_PASS because the nodes are sorted by depth, front to back)
@@ -973,7 +973,7 @@ void Scene::findSelection() {
 }
 
 bool Scene::save(ByteBuffer& outputBuffer) const {
-    const Camera& cam = state().renderState().getCameraConst();
+    const Camera& cam = *Camera::activeCamera();
     outputBuffer << cam.getEye() << cam.getEuler();
     return true;
 }
@@ -985,7 +985,7 @@ bool Scene::load(ByteBuffer& inputBuffer) {
 
         inputBuffer >> camPos >> camEuler;
 
-        Camera& cam = state().renderState().getCamera();
+        Camera& cam = *Camera::activeCamera();
         cam.setEye(camPos);
         cam.setGlobalRotation(-camEuler);
     }

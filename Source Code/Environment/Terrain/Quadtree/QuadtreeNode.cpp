@@ -130,11 +130,9 @@ bool QuadtreeNode::computeBoundingBox() {
     return true;
 }
 
-void QuadtreeNode::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
-                               SceneState& sceneState) {
+void QuadtreeNode::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn, SceneState& sceneState) {
     F32 camDistance =
-        _boundingSphere.getCenter().distance(
-            sceneState.renderState().getCameraConst().getEye()) -
+        _boundingSphere.getCenter().distance(Camera::activeCamera()->getEye()) -
         _terLoDOffset;
     F32 sphereRadius = _boundingSphere.getRadius();
     _LOD = camDistance >= sphereRadius
@@ -152,7 +150,7 @@ void QuadtreeNode::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
 bool QuadtreeNode::isInView(U32 options,
                             const SceneRenderState& sceneRenderState) const {
     if (BitCompare(options, to_const_uint(ChunkBit::CHUNK_BIT_TESTCHILDREN))) {
-        const Camera& cam = sceneRenderState.getCameraConst();
+        const Camera& cam = *Camera::activeCamera();
         if (!BitCompare(options, to_const_uint(ChunkBit::CHUNK_BIT_SHADOWMAP))) {
             const vec3<F32>& eye = cam.getEye();
             F32 visibilityDistance = sceneRenderState.generalVisibility() + _boundingSphere.getRadius();
@@ -165,7 +163,7 @@ bool QuadtreeNode::isInView(U32 options,
             }
         }
         if (!_boundingBox.containsPoint(cam.getEye())) {
-            const Frustum& frust = cam.getFrustumConst();
+            const Frustum& frust = cam.getFrustum();
             switch (frust.ContainsSphere(_boundingSphere.getCenter(),
                                          _boundingSphere.getRadius())) {
                 case Frustum::FrustCollision::FRUSTUM_OUT:

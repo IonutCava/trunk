@@ -14,7 +14,6 @@
 #include "Rendering/Camera/Headers/FirstPersonCamera.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "Dynamics/Entities/Units/Headers/NPC.h"
-#include "Managers/Headers/CameraManager.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/RenderPassManager.h"
 #include "Platform/Video/Headers/IMPrimitive.h"
@@ -74,7 +73,7 @@ WarScene::~WarScene()
 void WarScene::processGUI(const U64 deltaTime) {
     D64 FpsDisplay = Time::SecondsToMilliseconds(0.3);
     if (_guiTimers[0] >= FpsDisplay) {
-        const Camera& cam = renderState().getCamera();
+        const Camera& cam = *Camera::activeCamera();
         const vec3<F32>& eyePos = cam.getEye();
         const vec3<F32>& euler = cam.getEuler();
         _GUI->modifyText(_ID("fpsDisplay"),
@@ -331,8 +330,8 @@ bool WarScene::load(const stringImpl& name) {
     // Add a skybox
     _currentSky = addSky();
     // Position camera
-    renderState().getCamera().setEye(vec3<F32>(43.13f, 147.09f, -4.41f));
-    renderState().getCamera().setGlobalRotation(-90.0f /*yaw*/, 59.21f /*pitch*/);
+    Camera::activeCamera()->setEye(vec3<F32>(43.13f, 147.09f, -4.41f));
+    Camera::activeCamera()->setGlobalRotation(-90.0f /*yaw*/, 59.21f /*pitch*/);
 
     _sun.lock()->getNode<DirectionalLight>()->csmSplitCount(3);  // 3 splits
     _sun.lock()->getNode<DirectionalLight>()->csmSplitLogFactor(0.85f);
@@ -506,7 +505,7 @@ bool WarScene::load(const stringImpl& name) {
     firstPersonFlag->onCollisionCbk(DELEGATE_BIND(&WarScene::weaponCollision, this, std::placeholders::_1));
     firstPersonFlag->usageContext(SceneGraphNode::UsageContext::NODE_DYNAMIC);
     flagPComp = firstPersonFlag->get<PhysicsComponent>();
-    flagPComp->ignoreView(true, renderState().getCamera().getGUID());
+    flagPComp->ignoreView(true, Camera::activeCamera()->getGUID());
     flagPComp->setScale(0.0015f);
     flagPComp->setPosition(1.25f, -1.5f, 0.15f);
     flagPComp->rotate(-20.0f, -70.0f, 50.0f);
@@ -597,11 +596,7 @@ bool WarScene::load(const stringImpl& name) {
         }
     }
 
-    Application::instance()
-        .kernel()
-        .getCameraMgr()
-        .getActiveCamera()
-        .setHorizontalFoV(110);
+    Camera::activeCamera()->setHorizontalFoV(110);
 
     _envProbePool->addInfiniteProbe(vec3<F32>(0.0f, 0.0f, 0.0f));
     _envProbePool->addLocalProbe(vec3<F32>(-5.0f), vec3<F32>(-1.0f));
@@ -664,39 +659,34 @@ U16 WarScene::registerInputActions() {
 }
 
 void WarScene::toggleCamera() {
-    static bool fpsCameraActive = false;
     static bool tpsCameraActive = false;
     static bool flyCameraActive = true;
 
     if (!_currentSelection.expired()) {
         if (flyCameraActive) {
-            if (fpsCameraActive) {
-                renderState().getCameraMgr().popActiveCamera();
-            }
-            renderState().getCameraMgr().pushActiveCamera(_ID("tpsCamera"));
-            static_cast<ThirdPersonCamera&>(renderState().getCamera())
-                .setTarget(_currentSelection);
+            Camera::activeCamera(_ID("tpsCamera"));
+            static_cast<ThirdPersonCamera&>(*Camera::activeCamera()).setTarget(_currentSelection);
             flyCameraActive = false;
             tpsCameraActive = true;
             return;
         }
     }
     if (tpsCameraActive) {
-        renderState().getCameraMgr().pushActiveCamera(_ID("defaultCamera"));
+        Camera::activeCamera(_ID("defaultCamera"));
         tpsCameraActive = false;
         flyCameraActive = true;
     }
 }
 
 bool WarScene::loadResources(bool continueOnErrors) {
-    Camera* defaultCam = renderState().getCameraMgr().findCamera(_ID("defaultCamera"));
+    Camera* defaultCam = Camera::findCamera(Camera::DefaultCameraHash);
     // Add a first person camera
-    Camera* cam = renderState().getCameraMgr().createCamera("fpsCamera", Camera::CameraType::FIRST_PERSON);
+    Camera* cam = Camera::createCamera("fpsCamera", Camera::CameraType::FIRST_PERSON);
     cam->fromCamera(*defaultCam);
     cam->setMoveSpeedFactor(10.0f);
     cam->setTurnSpeedFactor(10.0f);
     // Add a third person camera
-    cam = renderState().getCameraMgr().createCamera("tpsCamera", Camera::CameraType::THIRD_PERSON);
+    cam = Camera::createCamera("tpsCamera", Camera::CameraType::THIRD_PERSON);
     cam->fromCamera(*defaultCam);
     cam->setMoveSpeedFactor(0.02f);
     cam->setTurnSpeedFactor(0.01f);
@@ -738,11 +728,11 @@ void WarScene::postLoadMainThread() {
         Font::DIVIDE_DEFAULT,
         vec4<U8>(50, 192, 50, 255),
         Util::StringFormat("Position [ X: %5.0f | Y: %5.0f | Z: %5.0f ] [Pitch: %5.2f | Yaw: %5.2f]",
-            renderState().getCamera().getEye().x,
-            renderState().getCamera().getEye().y,
-            renderState().getCamera().getEye().z,
-            renderState().getCamera().getEuler().pitch,
-            renderState().getCamera().getEuler().yaw));
+            Camera::activeCamera()->getEye().x,
+            Camera::activeCamera()->getEye().y,
+            Camera::activeCamera()->getEye().z,
+            Camera::activeCamera()->getEuler().pitch,
+            Camera::activeCamera()->getEuler().yaw));
 
     _GUI->addText(_ID("scoreDisplay"),
         vec2<I32>(60, 123),  // Position

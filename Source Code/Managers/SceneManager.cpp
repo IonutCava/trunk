@@ -327,10 +327,9 @@ void SceneManager::updateSceneState(const U64 deltaTime) {
     }
 }
 
-void SceneManager::preRender(RenderTarget& target) {
-    Scene& activeScene = getActiveScene();
-    LightPool* lightPool = Attorney::SceneManager::lightPool(activeScene);
-    lightPool->updateAndUploadLightData(activeScene.renderState().getCameraConst().getEye(), GFX_DEVICE.getMatrix(MATRIX::VIEW));
+void SceneManager::preRender(const Camera& camera, RenderTarget& target) {
+    LightPool* lightPool = Attorney::SceneManager::lightPool(getActiveScene());
+    lightPool->updateAndUploadLightData(camera.getEye(), GFX_DEVICE.getMatrix(MATRIX::VIEW));
     getRenderer().preRender(target, *lightPool);
 
     if (GFX_DEVICE.getRenderStage() == RenderStage::DISPLAY) {
@@ -338,7 +337,7 @@ void SceneManager::preRender(RenderTarget& target) {
     }
 }
 
-void SceneManager::postRender(RenderStage stage, RenderSubPassCmds& subPassesInOut) {
+void SceneManager::postRender(const Camera& camera, RenderStage stage, RenderSubPassCmds& subPassesInOut) {
     RenderPassManager& passMgr = RenderPassManager::instance();
     passMgr.getQueue().postRender(getActiveScene().renderState(), stage, subPassesInOut);
     Attorney::SceneManager::debugDraw(getActiveScene(), stage, subPassesInOut);
@@ -353,8 +352,7 @@ bool SceneManager::generateShadowMaps() {
 
 const RenderPassCuller::VisibleNodeList&
 SceneManager::getSortedCulledNodes(const std::function<bool(const RenderPassCuller::VisibleNode&)>& cullingFunction) {
-    const SceneRenderState& renderState = getActiveScene().state().renderState();
-    const vec3<F32>& camPos = renderState.getCameraConst().getEye();
+    const vec3<F32>& camPos = Camera::activeCamera()->getEye();
 
     // Get list of nodes in view from the previous frame
     RenderPassCuller::VisibleNodeList& nodeCache = getVisibleNodesCache(RenderStage::DISPLAY);
@@ -474,15 +472,13 @@ SceneManager::getVisibleNodesCache(RenderStage stage) {
 }
 
 void SceneManager::updateVisibleNodes(RenderStage stage, bool refreshNodeData, bool isPrePass, U32 pass) {
-    Scene& activeScene = getActiveScene();
-
     RenderQueue& queue = _renderPassManager->getQueue();
 
     RenderPassCuller::VisibleNodeList& visibleNodes = _renderPassCuller->getNodeCache(stage);
 
     if (refreshNodeData) {
         queue.refresh();
-        const vec3<F32>& eyePos = activeScene.renderState().getCameraConst().getEye();
+        const vec3<F32>& eyePos = Camera::activeCamera()->getEye();
         for (RenderPassCuller::VisibleNode& node : visibleNodes) {
             queue.addNodeToQueue(*node.second.lock(), isPrePass ? RenderStage::Z_PRE_PASS : stage, eyePos);
         }
@@ -501,10 +497,9 @@ void SceneManager::updateVisibleNodes(RenderStage stage, bool refreshNodeData, b
         }
     );
 
-    SceneRenderState& renderState = activeScene.renderState();
     RenderPass::BufferData& bufferData = RenderPassManager::instance().getBufferData(stage, pass);
 
-    GFX_DEVICE.buildDrawCommands(visibleNodes, renderState, bufferData, refreshNodeData);
+    GFX_DEVICE.buildDrawCommands(visibleNodes, getActiveScene().renderState(), bufferData, refreshNodeData);
 }
 
 bool SceneManager::populateRenderQueue(RenderStage stage, 

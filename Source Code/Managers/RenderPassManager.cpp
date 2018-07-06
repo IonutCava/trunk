@@ -152,7 +152,7 @@ void RenderPassManager::doCustomPass(PassParams& params) {
             cmd._renderTargetDescriptor = RenderTarget::defaultPolicyDepthOnly();
             GFX.renderQueueToSubPasses(cmd);
             RenderSubPassCmds postRenderSubPasses(1);
-            Attorney::SceneManagerRenderPass::postRender(mgr, params.stage, postRenderSubPasses);
+            Attorney::SceneManagerRenderPass::postRender(mgr, *params.camera, params.stage, postRenderSubPasses);
             cmd._subPassCmds.insert(std::cend(cmd._subPassCmds), std::cbegin(postRenderSubPasses), std::cend(postRenderSubPasses));
             commandBuffer.push_back(cmd);
             cleanCommandBuffer(commandBuffer);
@@ -181,7 +181,7 @@ void RenderPassManager::doCustomPass(PassParams& params) {
     if (params.target._usage != RenderTargetUsage::COUNT) {
         bool drawToDepth = true;
         if (params.stage != RenderStage::SHADOW) {
-            Attorney::SceneManagerRenderPass::preRender(mgr, GFX.renderTarget(params.target));
+            Attorney::SceneManagerRenderPass::preRender(mgr, *params.camera, GFX.renderTarget(params.target));
             if (params.doPrePass && !Config::DEBUG_HIZ_CULLING) {
                 drawToDepth = false;
             }
@@ -197,7 +197,7 @@ void RenderPassManager::doCustomPass(PassParams& params) {
         cmd._renderTargetDescriptor = drawPolicy;
         GFX.renderQueueToSubPasses(cmd);
         RenderSubPassCmds postRenderSubPasses(1);
-        Attorney::SceneManagerRenderPass::postRender(mgr, params.stage, postRenderSubPasses);
+        Attorney::SceneManagerRenderPass::postRender(mgr, *params.camera, params.stage, postRenderSubPasses);
         cmd._subPassCmds.insert(std::cend(cmd._subPassCmds), std::cbegin(postRenderSubPasses), std::cend(postRenderSubPasses));
         commandBuffer.push_back(cmd);
         cleanCommandBuffer(commandBuffer);
