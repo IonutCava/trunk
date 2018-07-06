@@ -34,10 +34,10 @@ void QuadtreeNode::Build(U32 depth,
 
 	// Calculam Bounding Box-ul "copiilor"
 	vec3 center = terrain_BBox.getCenter();
-	m_pChildren[CHILD_NW].setBoundingBox( BoundingBox(terrain_BBox.min, center) );
-	m_pChildren[CHILD_NE].setBoundingBox( BoundingBox(vec3(center.x, 0.0f, terrain_BBox.min.z), vec3(terrain_BBox.max.x, 0.0f, center.z)) );
-	m_pChildren[CHILD_SW].setBoundingBox( BoundingBox(vec3(terrain_BBox.min.x, 0.0f, center.z), vec3(center.x, 0.0f, terrain_BBox.max.z)) );
-	m_pChildren[CHILD_SE].setBoundingBox( BoundingBox(center, terrain_BBox.max) );
+	m_pChildren[CHILD_NW].setBoundingBox( BoundingBox(terrain_BBox.getMin(), center) );
+	m_pChildren[CHILD_NE].setBoundingBox( BoundingBox(vec3(center.x, 0.0f, terrain_BBox.getMin().z), vec3(terrain_BBox.getMax().x, 0.0f, center.z)) );
+	m_pChildren[CHILD_SW].setBoundingBox( BoundingBox(vec3(terrain_BBox.getMin().x, 0.0f, center.z), vec3(center.x, 0.0f, terrain_BBox.getMax().z)) );
+	m_pChildren[CHILD_SE].setBoundingBox( BoundingBox(center, terrain_BBox.getMax()) );
 
 	// Calculam pozitia copiilor
 	ivec2 tNewHMpos[4];
@@ -56,8 +56,8 @@ void QuadtreeNode::ComputeBoundingBox(const vec3* vertices)
 {
 	assert(vertices);
 
-	terrain_BBox.min.y = 100000.0f;
-	terrain_BBox.max.y = -100000.0f;
+	terrain_BBox.setMin(vec3(terrain_BBox.getMin().x, 100000.0f,terrain_BBox.getMin().z));
+	terrain_BBox.setMax(vec3(terrain_BBox.getMax().x,-100000.0f,terrain_BBox.getMax().z));
 
 	if(m_pTerrainChunk) {
 		std::vector<U32>& tIndices = m_pTerrainChunk->getIndiceArray(0);
@@ -65,8 +65,10 @@ void QuadtreeNode::ComputeBoundingBox(const vec3* vertices)
 		for(U32 i=0; i<tIndices.size(); i++) {
 			vec3 vertex = vertices[ tIndices[i] ];
 
-			if(vertex.y > terrain_BBox.max.y)	terrain_BBox.max.y = vertex.y;
-			if(vertex.y < terrain_BBox.min.y)	terrain_BBox.min.y = vertex.y;
+			if(vertex.y > terrain_BBox.getMax().y)	
+				terrain_BBox.setMax(vec3(terrain_BBox.getMax().x,vertex.y,terrain_BBox.getMax().z));
+			if(vertex.y < terrain_BBox.getMin().y)
+				terrain_BBox.setMin(vec3(terrain_BBox.getMin().x,vertex.y,terrain_BBox.getMin().z));
 		}
 
 		/*for(U32 i=0; i<m_pTerrainChunk->getTreeArray().size(); i++) {
@@ -80,8 +82,10 @@ void QuadtreeNode::ComputeBoundingBox(const vec3* vertices)
 		for(int i=0; i<4; i++) {
 			m_pChildren[i].ComputeBoundingBox(vertices);
 
-			if(terrain_BBox.min.y > m_pChildren[i].terrain_BBox.min.y)	terrain_BBox.min.y = m_pChildren[i].terrain_BBox.min.y;
-			if(terrain_BBox.max.y < m_pChildren[i].terrain_BBox.max.y)	terrain_BBox.max.y = m_pChildren[i].terrain_BBox.max.y;
+			if(terrain_BBox.getMin().y > m_pChildren[i].terrain_BBox.getMin().y)	
+				terrain_BBox.setMin(vec3(terrain_BBox.getMin().x,m_pChildren[i].terrain_BBox.getMin().y,terrain_BBox.getMin().z));
+			if(terrain_BBox.getMax().y < m_pChildren[i].terrain_BBox.getMax().y)	
+				terrain_BBox.setMax(vec3(terrain_BBox.getMax().x,m_pChildren[i].terrain_BBox.getMax().y,terrain_BBox.getMax().z));
 		}
 	}
 }
@@ -159,7 +163,7 @@ void QuadtreeNode::DrawBBox(bool bTest)
 {
 	if(!m_pChildren) {
 		assert(m_pTerrainChunk);
-			GFXDevice::getInstance().drawBox3D(terrain_BBox.min,terrain_BBox.max);
+			GFXDevice::getInstance().drawBox3D(terrain_BBox.getMin(),terrain_BBox.getMax());
 	}
 	else {
 		if( m_nLOD>=0 )
@@ -175,7 +179,7 @@ int QuadtreeNode::DrawGround(int options)
 	m_nLOD = -1;
 	Frustum& pFrust = Frustum::getInstance();
 	vec3 center = terrain_BBox.getCenter();				
-	F32 radius = (terrain_BBox.max-center).length();	
+	F32 radius = (terrain_BBox.getMax()-center).length();	
 
 	if(options & CHUNK_BIT_TESTCHILDREN) {
 		if(!terrain_BBox.ContainsPoint(pFrust.getEyePos()))

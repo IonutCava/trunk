@@ -67,10 +67,7 @@ void Camera::Refresh()
 		vLeftDir.normalize();
 		break;
 	}
-
-
 }
-
 
 
 void Camera::RenderLookAt(bool inverty, F32 planey) {

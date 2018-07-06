@@ -38,7 +38,6 @@ public:
 	void                setVisibility(bool state) {_render = state;}
 	bool isVisible();
 
-	void				updateBBox();
 protected:
 	bool isInView();
 	void computeBoundingBox();

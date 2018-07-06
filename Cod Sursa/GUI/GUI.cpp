@@ -62,7 +62,7 @@ void GUI::checkItem(int x, int y)
 		Button *b = (*_buttonIterator).second;
 
 	    if( x > b->_position.x   &&  x < b->_position.x+b->_dimensions.x &&	y > b->_position.y   &&  y < b->_position.y+b->_dimensions.y ) 
-			b->_highlight = true;
+			if(b->isActive()) b->_highlight = true;
     	else
 			b->_highlight = false;
 	}

@@ -47,14 +47,16 @@ public:
 
 	void			setSelected(bool state) {_selected = state;	if(_selected) cout << "Selected: " << getName() << endl;}
 	
-	virtual void    computeBoundingBox(){}
+	virtual void    computeBoundingBox(){_originalBB = _bb;}
+	virtual void	updateBBox();
 
 protected:
 	Transform*					 _transform;
 	vec3						 _color;
 	bool						 _selected,_update;
 	string					     _name, _itemName;
-	BoundingBox			         _bb;
+	BoundingBox			         _bb, _originalBB; //_originalBB is a copy of the initialy calculate BB for transformation
+												   //it should be copied in every computeBoungingBox call;
 };
 
 #endif

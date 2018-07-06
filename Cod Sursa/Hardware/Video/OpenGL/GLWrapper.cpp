@@ -230,7 +230,7 @@ void GL_API::drawTextToScreen(Text* text)
 	pushMatrix();
 		glLoadIdentity();
 		glColor3f(text->_color.x,text->_color.y,text->_color.z);
-		glRasterPos2f(text->_position.x,text->_position.y);
+		glRasterPos2f(text->getPosition().x,text->getPosition().y);
 		
 #ifdef USE_FREEGLUT
 		glutBitmapString(text->_font, (U8*)(text->_text.c_str()));
@@ -261,6 +261,7 @@ void GL_API::drawButton(Button* b)
 		 *	We will indicate that the mouse cursor is over the button by changing its
 		 *	colour.
 		 */
+		if(!b->isVisible()) return;
 		if (b->_highlight) 
 			glColor3f(b->_color.r + 0.1f,b->_color.g + 0.1f,b->_color.b + 0.2f);
 		else 
@@ -270,10 +271,10 @@ void GL_API::drawButton(Button* b)
 		 *	draw background for the button.
 		 */
 		glBegin(GL_QUADS);
-			glVertex2f( b->_position.x     , b->_position.y      );
-			glVertex2f( b->_position.x     , b->_position.y+b->_dimensions.y );
-			glVertex2f( b->_position.x+b->_dimensions.x, b->_position.y+b->_dimensions.y );
-			glVertex2f( b->_position.x+b->_dimensions.x, b->_position.y      );
+			glVertex2f( b->getPosition().x     , b->getPosition().y      );
+			glVertex2f( b->getPosition().x     , b->getPosition().y+b->_dimensions.y );
+			glVertex2f( b->getPosition().x+b->_dimensions.x, b->getPosition().y+b->_dimensions.y );
+			glVertex2f( b->getPosition().x+b->_dimensions.x, b->getPosition().y      );
 		glEnd();
 
 		/*
@@ -284,15 +285,15 @@ void GL_API::drawButton(Button* b)
 		/*
 		 *	The colours for the outline are reversed when the button. 
 		 */
-		if (b->_pressed) 
+		if (b->_pressed && b->isActive()) 
 			glColor3f((b->_color.r + 0.1f)/2.0f,(b->_color.g+ 0.1f)/2.0f,(b->_color.b+ 0.1f)/2.0f);
 		else 
 			glColor3f(b->_color.r + 0.1f,b->_color.g+ 0.1f,b->_color.b+ 0.1f);
 
 		glBegin(GL_LINE_STRIP);
-			glVertex2f( b->_position.x+b->_dimensions.x, b->_position.y      );
-			glVertex2f( b->_position.x     , b->_position.y      );
-			glVertex2f( b->_position.x     , b->_position.y+b->_dimensions.y );
+			glVertex2f( b->getPosition().x+b->_dimensions.x, b->getPosition().y      );
+			glVertex2f( b->getPosition().x     , b->getPosition().y      );
+			glVertex2f( b->getPosition().x     , b->getPosition().y+b->_dimensions.y );
 		glEnd();
 
 		if (b->_pressed) 
@@ -301,14 +302,14 @@ void GL_API::drawButton(Button* b)
 			glColor3f(0.4f,0.4f,0.4f);
 
 		glBegin(GL_LINE_STRIP);
-			glVertex2f( b->_position.x     , b->_position.y+b->_dimensions.y );
-			glVertex2f( b->_position.x+b->_dimensions.x, b->_position.y+b->_dimensions.y );
-			glVertex2f( b->_position.x+b->_dimensions.x, b->_position.y      );
+			glVertex2f( b->getPosition().x     , b->getPosition().y+b->_dimensions.y );
+			glVertex2f( b->getPosition().x+b->_dimensions.x, b->getPosition().y+b->_dimensions.y );
+			glVertex2f( b->getPosition().x+b->_dimensions.x, b->getPosition().y      );
 		glEnd();
 
 		glLineWidth(1);
-		fontx = b->_position.x + (b->_dimensions.x - glutBitmapLength(GLUT_BITMAP_HELVETICA_10,(U8*)b->_text.c_str())) / 2 ;
-		fonty = b->_position.y + (b->_dimensions.y+10)/2;
+		fontx = b->getPosition().x + (b->_dimensions.x - glutBitmapLength(GLUT_BITMAP_HELVETICA_10,(U8*)b->_text.c_str())) / 2 ;
+		fonty = b->getPosition().y + (b->_dimensions.y+10)/2;
 
 		/*
 		 *	if the button is pressed, make it look as though the string has been pushed
@@ -395,18 +396,9 @@ void GL_API::drawBox3D(vec3 min, vec3 max)
 void GL_API::drawBox3D(Box3D* const box)
 {
 	//beginRenderStateProcessing();
-	vec3 axis(0,0,0);
-	F32 angle = 0;
-	Quaternion orientation = box->getTransform()->getOrientation();
-	orientation.getAxisAngle(&axis,&angle,true);
-
 	pushMatrix();
-	translate(box->getTransform()->getPosition());	
-	scale(box->getTransform()->getScale());
-	rotate(angle,axis);
-	
 
-	//glMultMatrixf(box->getTransform()->getMatrix().mat);
+	glMultMatrixf(box->getTransform()->getMatrix());
 	setColor(box->getColor());
 	if(box->getTexture()) box->getTexture()->Bind(0);
 	
@@ -428,17 +420,10 @@ void GL_API::drawBox3D(Box3D* const box)
 void GL_API::drawSphere3D(Sphere3D* const sphere)
 {
 	//beginRenderStateProcessing();
-	vec3 axis(0,0,0);
-	F32 angle = 0;
-	Quaternion orientation = sphere->getTransform()->getOrientation();
-	orientation.getAxisAngle(&axis,&angle,true);
-
 	pushMatrix();
-	translate(sphere->getTransform()->getPosition());	
-	scale(sphere->getTransform()->getScale());
-	rotate(angle,axis);
 
-	//glMultMatrixf(sphere->getTransform()->getMatrix().mat);
+	glMultMatrixf(sphere->getTransform()->getMatrix());
+
 	setColor(sphere->getColor());
 	if(sphere->getTexture()) sphere->getTexture()->Bind(0);
 	if(sphere->getShader()) 
@@ -461,18 +446,9 @@ void GL_API::drawQuad3D(Quad3D* const quad)
 {
 	//beginRenderStateProcessing();
 
-	vec3 axis(0,0,0);
-	F32 angle = 0;
-	Quaternion orientation = quad->getTransform()->getOrientation();
-	orientation.getAxisAngle(&axis,&angle,true);
-
 	pushMatrix();
 
-	translate(quad->getTransform()->getPosition());	
-	scale(quad->getTransform()->getScale());
-	rotate(angle,axis);
-
-	//glMultMatrixf(quad->getTransform()->getMatrix().mat);
+	glMultMatrixf(quad->getTransform()->getMatrix());
 	setColor(quad->getColor());
 
 	if(quad->getTexture()) quad->getTexture()->Bind(0);
@@ -502,18 +478,9 @@ void GL_API::drawText3D(Text3D* const text)
 {
 	//beginRenderStateProcessing();
 
-	vec3 axis(0,0,0);
-	F32 angle = 0;
-	Quaternion orientation = text->getTransform()->getOrientation();
-	orientation.getAxisAngle(&axis,&angle,true);
-
 	pushMatrix();
-	translate(text->getTransform()->getPosition());	
-	scale(text->getTransform()->getScale());
-	rotate(angle,axis);
-	
+	glMultMatrixf(text->getTransform()->getMatrix());
 
-	//glMultMatrixf(text->getTransform()->getMatrix().mat);
 	setColor(text->getColor());
 	if(text->getTexture()) text->getTexture()->Bind(0);
 	if(text->getShader()) 
@@ -573,16 +540,8 @@ void GL_API::renderModel(DVDFile* const model)
 	SubMesh *s;
 	vector<SubMesh* >::iterator _subMeshIterator;
 	
-	vec3 axis(0,0,0);
-	F32 angle = 0;
-	Quaternion orientation = model->getTransform()->getOrientation();
-	orientation.getAxisAngle(&axis,&angle,true);
-	
 	pushMatrix();
-	translate(model->getTransform()->getPosition());	
-	scale(model->getTransform()->getScale());
-	rotate(angle,axis);
-	
+	glMultMatrixf(model->getTransform()->getMatrix());
 
 	for(U8 n = 0; n < model->getShaders().size(); n++)
 	{

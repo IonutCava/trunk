@@ -38,6 +38,7 @@ void CubeScene::preRender()
 		if((iter->second)->getName().compare("Bila") == 0)
 			(iter->second)->getTransform()->translateY(j*i);
 	}
+
 	ModelArray["dwarf"]->getTransform()->rotate(vec3(0,1,0),i);
 } 
 

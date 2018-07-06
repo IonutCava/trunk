@@ -6,6 +6,7 @@
 #endif
 
 #pragma warning(disable:4244)
+#pragma warning(disable:4996) //strcpy
  
 #define GETTIME()   GFXDevice::getInstance().getTime()
 #define GETMSTIME() GFXDevice::getInstance().getMSTime()
@@ -15,7 +16,9 @@
 #endif
 
 #ifdef WIN32
+#ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
+#endif
 #endif
 
 #include <stdlib.h>

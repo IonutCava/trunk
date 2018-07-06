@@ -19,3 +19,6 @@
 //Please enter the desired log file name
 #define OUTPUT_LOG_FILE "console.log"
 
+//Reduce Build time on Windows Platform
+#define VC_EXTRALEAN
+#define WIN32_LEAN_AND_MEAN

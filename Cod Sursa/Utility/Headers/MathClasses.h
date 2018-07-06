@@ -660,7 +660,10 @@ public:
 					this->mat[8]  - m[8],  this->mat[9]  - m[9],  this->mat[10] - m[10], this->mat[11] - m[11],
 					this->mat[12] - m[12], this->mat[13] - m[13], this->mat[14] - m[14], this->mat[15] - m[15]);
 	}
-	
+
+	float &element(int i, int j)	{	return this->mat[i+j*4]; }
+	const float element(int i, int j)	const {	return this->mat[i+j*4]; }
+
 	mat4 &operator*=(float f) { return *this = *this * f; }
 	mat4 &operator*=(const mat4 &m) { return *this = *this * m; }
 	mat4 &operator+=(const mat4 &m) { return *this = *this + m; }

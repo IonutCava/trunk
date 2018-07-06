@@ -142,11 +142,11 @@ void TerrainManager::drawInfinitePlane(F32 max_distance,FrameBufferObject& _fbo)
 		_minHeight = 1000;_maxHeight = 1; F32 temp = 0;
 		for(_resDBiter = _resDB.begin(); _resDBiter != _resDB.end(); _resDBiter++)
 		{
-			temp = ((Terrain*)_resDBiter->second)->getBoundingBox().min.y;
+			temp = ((Terrain*)_resDBiter->second)->getBoundingBox().getMin().y;
 			if(temp < _minHeight)
 			{
 				_minHeight = temp;
-				_maxHeight = ((Terrain*)_resDBiter->second)->getBoundingBox().max.y;
+				_maxHeight = ((Terrain*)_resDBiter->second)->getBoundingBox().getMax().y;
 			}
 		}
 		_minHeight -= 75;

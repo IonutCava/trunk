@@ -4,10 +4,12 @@
 #include "Utility/Headers/DataTypes.h"
 #include "Utility/Headers/Singleton.h"
 
+#ifdef _WIN32
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
 #include <windows.h>
+#endif
 
 //Code from http://www.gamedev.net/reference/articles/article1382.asp
 //Copyright: "Frame Rate Independent Movement" by Ben Dilts

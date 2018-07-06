@@ -7,48 +7,65 @@
 //typedef void (*ButtonCallback)();
 typedef boost::function0<void> ButtonCallback;
 
+class GuiControl
+{
+	friend class GUI;
+public:
+	GuiControl(){_name = "defaultGuiControl";}
+	const string& getName()     const {return _name;}
+	const vec2&   getPosition() const {return _position;}
 
-class Text 
+	const bool isActive()  const {return _active;}
+	const bool isVisible() const {return _visible;}
+
+	void    setName(const string& name)    {_name = name;}
+	void    setVisible(bool visible)       {_visible = visible;}
+	void    setActive(bool active)         {_active = active;}
+protected:
+	vec2 _position;
+
+private:
+	string _name;
+	bool   _visible;
+	bool   _active;
+};
+
+class Text : public GuiControl
 {
 friend class GUI;
 public:
-	Text(string& id,string& text,const vec3& position, void* font,const vec3& color) :
+	Text(string& id,string& text,const vec2& position, void* font,const vec3& color) :
 	  _text(text),
-	  _position(position),
 	  _font(font),
-	  _color(color){};
+	  _color(color){_position = position;};
 
 	string _text;
-	vec3 _position;
 	void* _font;
 	vec3 _color;
 };
 
-class Button
+class Button : public GuiControl
 {
 
 friend class GUI;
 public:
 	Button(string& id,string& text,const vec2& position,const vec2& dimensions,const vec3& color/*, Texture2D& image*/,ButtonCallback callback) :
 		_text(text),
-		_position(position),
 		_dimensions(dimensions),
 		_color(color),
 		_callbackFunction(callback)
-		/*_image(image)*/{_pressed = false; _highlight = false;};
+		/*_image(image)*/{_position = position;_pressed = false; _highlight = false;};
 
 	string _text;
-	vec2 _position;
 	vec2 _dimensions;
 	vec3 _color;
 	bool _pressed;
 	bool _highlight;
 	ButtonCallback _callbackFunction;	/* A pointer to a function to call if the button is pressed */
 	//Texture2D image;
-	
 };
 
-class InputText
+class InputText : public GuiControl
 {
 friend class GUI;
 public:
@@ -68,6 +85,7 @@ enum Font
     BITMAP_HELVETICA_18     =   0x0008
 };
 
+
 SINGLETON_BEGIN( GUI )
 
 public:
@@ -82,6 +100,7 @@ public:
 	void checkItem(int x, int y);
 	
 	~GUI();
+
 private:
 	void drawText();
 	void drawButtons();

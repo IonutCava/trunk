@@ -63,8 +63,8 @@ void Terrain::terrainSetParameters(const vec3& pos,const vec2& scale)
 	//    |          |           |         \/      /_______________________________\
 	//    |_________\/___________|
 
-	terrain_BBox.min = vec3(-pos.x-300, pos.y, -pos.z-300);
-	terrain_BBox.max = vec3( pos.x+300, pos.y+40, pos.z+300);
+	terrain_BBox.getMin() = vec3(-pos.x-300, pos.y, -pos.z-300);
+	terrain_BBox.getMax() = vec3( pos.x+300, pos.y+40, pos.z+300);
 
 	terrain_BBox.Multiply(vec3(terrainScaleFactor,1,terrainScaleFactor));
 	terrain_BBox.MultiplyMax(vec3(1,terrainHeightScaleFactor,1));
@@ -99,18 +99,18 @@ bool Terrain::load(const string& heightmap)
 		for(U32 i=0; i < terrainWidth; i++) {
 
 			U32 idxHM = COORD(i,j,terrainWidth);
-			tPosition[idxHM].x = terrain_BBox.min.x + ((F32)i) * 
-				                (terrain_BBox.max.x - terrain_BBox.min.x)/(terrainWidth-1);
-			tPosition[idxHM].z = terrain_BBox.min.z + ((F32)j) * 
-				                (terrain_BBox.max.z - terrain_BBox.min.z)/(terrainHeight-1);
+			tPosition[idxHM].x = terrain_BBox.getMin().x + ((F32)i) * 
+				                (terrain_BBox.getMax().x - terrain_BBox.getMin().x)/(terrainWidth-1);
+			tPosition[idxHM].z = terrain_BBox.getMin().z + ((F32)j) * 
+				                (terrain_BBox.getMax().z - terrain_BBox.getMin().z)/(terrainHeight-1);
 			U32 idxIMG = COORD(	i<nIMGWidth? i : i-1,
 								j<nIMGHeight? j : j-1,
 								nIMGWidth);
 
 			F32 h = (F32)(data[idxIMG*d + 0] + data[idxIMG*d + 1] + data[idxIMG*d + 2])/3;
 
-			tPosition[idxHM].y = (terrain_BBox.min.y + ((F32)h) * 
-				                 (terrain_BBox.max.y - terrain_BBox.min.y)/(255)) * terrainHeightScaleFactor;
+			tPosition[idxHM].y = (terrain_BBox.getMin().y + ((F32)h) * 
+				                 (terrain_BBox.getMax().y - terrain_BBox.getMin().y)/(255)) * terrainHeightScaleFactor;
 
 		}
 	}
@@ -202,7 +202,7 @@ vec3 Terrain::getPosition(F32 x_clampf, F32 z_clampf) const
 	if(posI.y >= (int)terrainHeight-1)	posI.y = terrainHeight-2;
 	assert(posI.x>=0 && posI.x<(int)terrainWidth-1 && posI.y>=0 && posI.y<(int)terrainHeight-1);
 
-	vec3 pos(terrain_BBox.min.x + x_clampf * (terrain_BBox.max.x - terrain_BBox.min.x), 0.0f, terrain_BBox.min.z + z_clampf * (terrain_BBox.max.z - terrain_BBox.min.z));
+	vec3 pos(terrain_BBox.getMin().x + x_clampf * (terrain_BBox.getMax().x - terrain_BBox.getMin().x), 0.0f, terrain_BBox.getMin().z + z_clampf * (terrain_BBox.getMax().z - terrain_BBox.getMin().z));
 	pos.y =   (m_pGroundVBO->getPosition()[ COORD(posI.x,  posI.y,  terrainWidth) ].y)  * (1.0f-posD.x) * (1.0f-posD.y)
 			+ (m_pGroundVBO->getPosition()[ COORD(posI.x+1,posI.y,  terrainWidth) ].y)  *       posD.x  * (1.0f-posD.y)
 			+ (m_pGroundVBO->getPosition()[ COORD(posI.x,  posI.y+1,terrainWidth) ].y)  * (1.0f-posD.x) *       posD.y
@@ -295,8 +295,8 @@ void Terrain::draw() const
 			terrainShader->UniformTexture("texDiffuseMap", 5);
 			terrainShader->UniformTexture("texDepthMapFromLight0", 6);
 			terrainShader->UniformTexture("texDepthMapFromLight1", 7);
-			terrainShader->Uniform("bbox_min", terrain_BBox.min);
-			terrainShader->Uniform("bbox_max", terrain_BBox.max);
+			terrainShader->Uniform("bbox_min", terrain_BBox.getMin());
+			terrainShader->Uniform("bbox_max", terrain_BBox.getMax());
 			terrainShader->Uniform("fog_color", vec3(0.7f, 0.7f, 0.9f));
 			terrainShader->Uniform("depth_map_size", 512);
 			drawGround(_drawInReflexion);

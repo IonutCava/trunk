@@ -2,6 +2,7 @@
 #define _ERROR_STREAM_H
 
 #ifdef _WIN32
+
 #define NOMINMAX
 #include <windows.h>
 #endif
@@ -39,6 +40,7 @@ class ErrorStream : public NxUserOutputStream
 	NxAssertResponse reportAssertViolation(const char* message, const char* file, int line)
 		{
 		printf("access violation : %s (%s line %d)\n", message, file, line);
+
 #ifdef WIN32
 		switch (MessageBox(0, message, "AssertViolation, see console for details.", MB_ABORTRETRYIGNORE))
 			{

@@ -3,8 +3,8 @@
 
 void SubMesh::computeBoundingBox()
 {
-	_boundingBox.min = vec3(100000.0f, 100000.0f, 100000.0f);
-	_boundingBox.max = vec3(-100000.0f, -100000.0f, -100000.0f);
+	_boundingBox.setMin(vec3(100000.0f, 100000.0f, 100000.0f));
+	_boundingBox.setMax(vec3(-100000.0f, -100000.0f, -100000.0f));
 
 	std::vector<vec3>&	tPosition	= _geometry->getPosition();
 

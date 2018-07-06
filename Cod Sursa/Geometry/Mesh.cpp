@@ -30,14 +30,9 @@ void Mesh::DrawBBox()
 {
 	//if(!_render || !_bb.getVisibility()) return;
 	if(!_bb.isComputed()) computeBoundingBox();
+	_bb.Transform(_originalBB,getTransform()->getMatrix());
 
-	GFXDevice::getInstance().drawBox3D(_bb.min,_bb.max);
-}
-
-void Mesh::updateBBox()
-{
-	if(!_bb.isComputed()) computeBoundingBox();
-	_bb.transform(getTransform());
+	GFXDevice::getInstance().drawBox3D(_bb.getMin(),_bb.getMax());
 }
 
 bool Mesh::isInView()
@@ -52,7 +47,7 @@ bool Mesh::isInView()
 	// END BUGGY CODE :P
 
 	vec3 center = getBoundingBox().getCenter();
-	float radius = (getBoundingBox().max-center).length();
+	float radius = (getBoundingBox().getMax()-center).length();
 	if(!getBoundingBox().ContainsPoint(Frustum::getInstance().getEyePos()))
 	{
 		switch(Frustum::getInstance().ContainsSphere(center, radius)) {
@@ -71,8 +66,8 @@ bool Mesh::isInView()
 
 void Mesh::computeBoundingBox()
 {
-	_bb.min = vec3(100000.0f, 100000.0f, 100000.0f);
-	_bb.max = vec3(-100000.0f, -100000.0f, -100000.0f);
+	_bb.setMin(vec3(100000.0f, 100000.0f, 100000.0f));
+	_bb.setMax(vec3(-100000.0f, -100000.0f, -100000.0f));
 
 	for(_subMeshIterator = _subMeshes.begin(); _subMeshIterator != _subMeshes.end(); _subMeshIterator++)
 		for(int i=0; i<(int)(*_subMeshIterator)->getGeometryVBO()->getPosition().size(); i++)
@@ -81,6 +76,7 @@ void Mesh::computeBoundingBox()
 			_bb.Add(position);
 		}
 	_bb.isComputed() = true;
+	_originalBB = _bb;
 }
 
 SubMesh*  Mesh::getSubMesh(const string& name)

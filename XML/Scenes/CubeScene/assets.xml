@@ -5,19 +5,20 @@
 </vegetation>
 
 <geometry>
-	<item>box</item>
+	<!--<item>box</item>-->
 	<item>dwarf</item>
-	<item>rifle</item>
+	<!--<item>rifle</item>
 	<item>copacel</item>
-	<item>copac</item>
+	<item>copac</item>-->
 </geometry>
 
+
 <primitives>
-	<item>Cutia1</item>
+<!--	<item>Cutia1</item>
 	<item>QuadMic</item>
 	<item>QuadMare</item>
 	<item>HelloText</item>
-	<item>Bila</item>
+	<item>Bila</item>-->
 </primitives>
 
 <pin>
@@ -54,7 +55,7 @@
 
 <dwarf>
 	<model>models/dwarf.x</model>
-	<scale x="1" y="1" z="1" />
+	<scale x="2" y="2" z="2" />
 	<position x="-120" y="-50" z="50" />
 	<orientation x="0" y="0" z="0" />
 	<version>1.0</version>

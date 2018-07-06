@@ -101,7 +101,7 @@ void PingPongScene::test(boost::any a, CallbackParam b)
 	vec3 pozitieAdversar = ModelArray["perete"]->getTransform()->getPosition();
 	//Miscare minge si detectie coliziuni
 
-	if(pozitieMinge.y + 0.75f < ModelArray["masa"]->getBoundingBox().max.y)
+	if(pozitieMinge.y + 0.75f < ModelArray["masa"]->getBoundingBox().getMax().y)
 	{
 		//Daca am lovit noi si am atins terenul adversarului
 		//Sau daca a lovit adversarul si nu a atins terenul nostrue

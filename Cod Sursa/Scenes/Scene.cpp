@@ -220,15 +220,4 @@ bool Scene::addDefaultLight()
 
 void Scene::updateTransformations()
 {
-	for(unordered_map<string,DVDFile*>::iterator iter = ModelArray.begin(); iter != ModelArray.end(); iter++)
-	{
-		if((iter->second)->getTransform()->isDirty())
-			(iter->second)->getTransform()->applyTransforms();
-	}
-	for(unordered_map<string,Object3D*>::iterator iter2 = GeometryArray.begin(); iter2 != GeometryArray.end(); iter2++)
-	{
-		if((iter2->second)->getTransform()->isDirty())
-			(iter2->second)->getTransform()->applyTransforms();
-	}
-
 }

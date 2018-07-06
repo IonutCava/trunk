@@ -33,16 +33,18 @@ int Frustum::ContainsSphere(const vec3& center, float radius) const
 }
 
 
-int Frustum::ContainsBoundingBox(const BoundingBox& bbox) const
+int Frustum::ContainsBoundingBox(BoundingBox& bbox) const
 {
-	vec3 tCorners[8] = {	vec3(bbox.min.x, bbox.min.y, bbox.min.z),
-							vec3(bbox.max.x, bbox.min.y, bbox.min.z),
-							vec3(bbox.min.x, bbox.max.y, bbox.min.z),
-							vec3(bbox.min.x, bbox.min.y, bbox.max.z),
-							vec3(bbox.max.x, bbox.max.y, bbox.min.z),
-							vec3(bbox.min.x, bbox.max.y, bbox.max.z),
-							vec3(bbox.max.x, bbox.min.y, bbox.max.z),
-							vec3(bbox.max.x, bbox.max.y, bbox.max.z)	};
+	vec3 min = bbox.getMin();
+	vec3 max = bbox.getMax();
+	vec3 tCorners[8] = {	vec3(min.x, min.y, min.z),
+							vec3(max.x, min.y, min.z),
+							vec3(min.x, max.y, min.z),
+							vec3(min.x, min.y, max.z),
+							vec3(max.x, max.y, min.z),
+							vec3(min.x, max.y, max.z),
+							vec3(max.x, min.y, max.z),
+							vec3(max.x, max.y, max.z)	};
 	int iTotalIn = 0;
 
 	for(int p=0; p<6; p++)

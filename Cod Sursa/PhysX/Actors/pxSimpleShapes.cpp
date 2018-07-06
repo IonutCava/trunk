@@ -45,7 +45,6 @@ void PhysX::CreateCube(NxVec3 position,int size=2)
 	}
 }
 
-
 void PhysX::CreateStack(int size)
 {
 	if(!gScene) return;

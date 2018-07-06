@@ -7,157 +7,192 @@
 class BoundingBox
 {
 public:
-	BoundingBox() {min.reset(); max.reset();_computed = false;_visibility = false;}
-	BoundingBox(const vec3& _min, const vec3& _max) {min=_min; max=_max;_computed = false;_visibility = false;}
+	BoundingBox() 
+	{
+		_min.reset();
+		_max.reset();
+		_computed = false;
+		_visibility = false;
+		points = new vec3[8];
+	}
+
+	BoundingBox(const vec3& __min, const vec3& __max)
+	{
+		_min=__min;
+		_max=__max;
+		_computed = false;
+		_visibility = false;
+		points = new vec3[8];
+	}
+	~BoundingBox(){	delete points; }
 
 	inline bool ContainsPoint(const vec3& point) const	{
-		return (point.x>=min.x && point.y>=min.y && point.z>=min.z && point.x<=max.x && point.y<=max.y && point.z<=max.z);
+		return (point.x>=_min.x && point.y>=_min.y && point.z>=_min.z && point.x<=_max.x && point.y<=_max.y && point.z<=_max.z);
 	};
 
 	bool  Collision(const BoundingBox& AABB2)
 	{
 
-		if(max.x < AABB2.min.x) return false;
-		if(max.y < AABB2.min.y) return false;
-		if(max.z < AABB2.min.z) return false;
+		if(_max.x < AABB2._min.x) return false;
+		if(_max.y < AABB2._min.y) return false;
+		if(_max.z < AABB2._min.z) return false;
 
-		if(min.x > AABB2.max.x) return false;
-   		if(min.y > AABB2.max.y) return false;
-		if(min.z > AABB2.max.z) return false;
+		if(_min.x > AABB2._max.x) return false;
+   		if(_min.y > AABB2._max.y) return false;
+		if(_min.z > AABB2._max.z) return false;
 
         return true;
 	}
 
 	// Optimized method
 	inline bool intersect(const Ray &r, F32 t0, F32 t1) const {
-		F32 tmin, tmax, tymin, tymax, tzmin, tzmax;
+		F32 t_min, t_max, ty_min, ty_max, tz_min, tz_max;
 		vec3 bounds[2];
-		bounds[0] = min; bounds[1] = max;
+		bounds[0] = _min; bounds[1] = _max;
 
-		tmin = (bounds[r.sign[0]].x - r.origin.x) * r.inv_direction.x;
-		tmax = (bounds[1-r.sign[0]].x - r.origin.x) * r.inv_direction.x;
-		tymin = (bounds[r.sign[1]].y - r.origin.y) * r.inv_direction.y;
-		tymax = (bounds[1-r.sign[1]].y - r.origin.y) * r.inv_direction.y;
+		t_min = (bounds[r.sign[0]].x - r.origin.x) * r.inv_direction.x;
+		t_max = (bounds[1-r.sign[0]].x - r.origin.x) * r.inv_direction.x;
+		ty_min = (bounds[r.sign[1]].y - r.origin.y) * r.inv_direction.y;
+		ty_max = (bounds[1-r.sign[1]].y - r.origin.y) * r.inv_direction.y;
 
-		if ( (tmin > tymax) || (tymin > tmax) ) 
+		if ( (t_min > ty_max) || (ty_min > t_max) ) 
 			return false;
 
-		if (tymin > tmin)
-			tmin = tymin;
-		if (tymax < tmax)
-			tmax = tymax;
-		tzmin = (bounds[r.sign[2]].z - r.origin.z) * r.inv_direction.z;
-		tzmax = (bounds[1-r.sign[2]].z - r.origin.z) * r.inv_direction.z;
+		if (ty_min > t_min)
+			t_min = ty_min;
+		if (ty_max < t_max)
+			t_max = ty_max;
+		tz_min = (bounds[r.sign[2]].z - r.origin.z) * r.inv_direction.z;
+		tz_max = (bounds[1-r.sign[2]].z - r.origin.z) * r.inv_direction.z;
 		
-		if ( (tmin > tzmax) || (tzmin > tmax) )
+		if ( (t_min > tz_max) || (tz_min > t_max) )
 			return false;
 
-		if (tzmin > tmin)
-			tmin = tzmin;
-		if (tzmax < tmax)
-			tmax = tzmax;
+		if (tz_min > t_min)
+			t_min = tz_min;
+		if (tz_max < t_max)
+			t_max = tz_max;
 
-		return ( (tmin < t1) && (tmax > t0) );
+		return ( (t_min < t1) && (t_max > t0) );
 }
 	
 	inline void Add(const vec3& v)	{
-		if(v.x > max.x)	max.x = v.x;
-		if(v.x < min.x)	min.x = v.x;
-		if(v.y > max.y)	max.y = v.y;
-		if(v.y < min.y)	min.y = v.y;
-		if(v.z > max.z)	max.z = v.z;
-		if(v.z < min.z)	min.z = v.z;
+		if(v.x > _max.x)	_max.x = v.x;
+		if(v.x < _min.x)	_min.x = v.x;
+		if(v.y > _max.y)	_max.y = v.y;
+		if(v.y < _min.y)	_min.y = v.y;
+		if(v.z > _max.z)	_max.z = v.z;
+		if(v.z < _min.z)	_min.z = v.z;
 	};
 
 	inline void Add(const BoundingBox& bb)	{
-		if(bb.max.x > max.x)	max.x = bb.max.x;
-		if(bb.min.x < min.x)	min.x = bb.min.x;
-		if(bb.max.y > max.y)	max.y = bb.max.y;
-		if(bb.min.y < min.y)	min.y = bb.min.y;
-		if(bb.max.z > max.z)	max.z = bb.max.z;
-		if(bb.min.z < min.z)	min.z = bb.min.z;
+		if(bb._max.x > _max.x)	_max.x = bb._max.x;
+		if(bb._min.x < _min.x)	_min.x = bb._min.x;
+		if(bb._max.y > _max.y)	_max.y = bb._max.y;
+		if(bb._min.y < _min.y)	_min.y = bb._min.y;
+		if(bb._max.z > _max.z)	_max.z = bb._max.z;
+		if(bb._min.z < _min.z)	_min.z = bb._min.z;
 	}
 
 	inline void Translate(const vec3& v) {
-		min += v;
-		max += v;
+		_min += v;
+		_max += v;
 	}
 
 	inline void Multiply(const vec3& v){
-		min.x *= v.x;
-		min.y *= v.y;
-		min.z *= v.z;
-		max.x *= v.x;
-		max.y *= v.y;
-		max.z *= v.z;
+		_min.x *= v.x;
+		_min.y *= v.y;
+		_min.z *= v.z;
+		_max.x *= v.x;
+		_max.y *= v.y;
+		_max.z *= v.z;
 	}
 
 	inline void MultiplyMax(const vec3& v){
-		max.x *= v.x;
-		max.y *= v.y;
-		max.z *= v.z;
+		_max.x *= v.x;
+		_max.y *= v.y;
+		_max.z *= v.z;
 	}
 	inline void MultiplyMin(const vec3& v){
-		min.x *= v.x;
-		min.y *= v.y;
-		min.z *= v.z;
+		_min.x *= v.x;
+		_min.y *= v.y;
+		_min.z *= v.z;
 	}
 
-	void transform(Transform* t)
+	bool ComputePoints()  const
 	{
-		if(!t->isDirty()) return;
-		const mat4& mat = t->getMatrix();
-		F32 av, bv;
-		U32   i, j;
-		F32 m[4][4];
-	    m[0][0] = mat[0];  m[0][1] = mat[4];  m[0][2] = mat[8];  m[0][3] = mat[12];
-		m[1][0] = mat[1];  m[1][1] = mat[5];  m[1][2] = mat[9];  m[1][3] = mat[13];
-		m[2][0] = mat[2];  m[2][1] = mat[6];  m[2][2] = mat[10]; m[2][3] = mat[14];
-		m[3][0] = mat[3];  m[3][1] = mat[7];  m[3][2] = mat[11]; m[3][3] = mat[15];
-		BoundingBox new_box;
-		for (i = 0; i < 3; i++)
-		{
-			new_box.min[i] = new_box.max[i] = 0;
-			for (j = 0; j < 3; j++)
-			{
-				av = m[i][j] * min[j];
-				bv = m[i][j] * max[j];
-				if (av < bv)
-				{
-					new_box.min[i] += av;
-					new_box.max[i] += bv;
-				} else {
+		if(!points)	return false;
 
-					new_box.min[i] += bv;
-					new_box.max[i] += av;
+		points[0] = vec3(_min.x, _min.y, _min.z);
+		points[1] = vec3(_max.x, _min.y, _min.z);
+		points[2] = vec3(_max.x, _max.y, _min.z);
+		points[3] = vec3(_min.x, _max.y, _min.z);
+		points[4] = vec3(_min.x, _min.y, _max.z);
+		points[5] = vec3(_max.x, _min.y, _max.z);
+		points[6] = vec3(_max.x, _max.y, _max.z);
+		points[7] = vec3(_min.x, _max.y, _max.z);
+
+		return true;
+	}
+
+	void Transform(BoundingBox originalBB, const mat4& mat)
+	{
+		if(_oldMatrix == mat) return;
+		else _oldMatrix = mat;
+
+		F32 a, b;
+		vec3 old_min = originalBB.getMin();
+		vec3 old_max = originalBB.getMax();
+		_min = _max =  vec3(mat[12],mat[13],mat[14]);
+
+		for (U32 i = 0; i < 3; ++i)
+		{
+			for (U32 j = 0; j < 3; ++j)
+			{
+				//calculate a new AABB for only 90% of the resulting OBB
+				//Makes for a tighter fit
+				a = mat.element(i,j) * old_min[j] * 0.90f;
+				b = mat.element(i,j) * old_max[j] * 0.90f;
+
+				if (a < b)
+				{
+					_min[i] += a;
+					_max[i] += b;
+				} else {
+					_min[i] += b;
+					_max[i] += a;
 				}
 			}
 		}
-		cout << "OLD BB: "  << min.x  << " , " << min.y  << " , " <<  min.z << " || " << max.x  << " , " <<  max.y   << " , " << max.z << endl;
-		min = new_box.min;
-		max = new_box.max;
-		cout << "NEW BB: "  << min.x  << " , " << min.y  << " , " <<  min.z << " || " << max.x  << " , " <<  max.y   << " , " << max.z << endl;
-
+		
 	}
 
-	
-	inline bool& isComputed() {return _computed;}
-	inline bool  getVisibility() {return _visibility;}
 
-	inline vec3  getCenter()     const	{return (max+min)/2.0f;}
-	inline vec3  getExtent()     const  {return (max-min);}
+	inline bool& isComputed()		    {return _computed;}
+	inline bool  getVisibility()		{return _visibility;}
+
+	inline vec3  getMin()	     const	{return _min;}
+	inline vec3  getMax()		 const	{return _max;}
+	inline vec3  getCenter()     const	{return (_max+_min)/2.0f;}
+	inline vec3  getExtent()     const  {return (_max-_min);}
 	inline vec3  getHalfExtent() const  {return getExtent()/2.0f;}
 
-		   F32   getWidth()  const {return max.x - min.x;}
-		   F32   getHeight() const {return max.y - min.y;}
-		   F32   getDepth()  const {return max.z - min.z;}
+		   vec3* getPoints()     const  {return points;}
+		   F32   getWidth()  const {return _max.x - _min.x;}
+		   F32   getHeight() const {return _max.y - _min.y;}
+		   F32   getDepth()  const {return _max.z - _min.z;}
+	
 
 	void setVisibility(bool visibility) {_visibility = visibility;}
+	void setMin(vec3& min)			    {_min = min;}
+	void setMax(vec3& max)			    {_max = max;}
 
-	vec3 min, max;
 
 private:
 	bool _computed, _visibility;
+	vec3* points;
+	vec3 _min, _max;
+	mat4 _oldMatrix;
 };
 
 #endif

@@ -24,10 +24,10 @@ private:
 	bool mErrorReport;              //Daca este setat pe "true" atunci afisam erorile aruncate de Scene Manager
 	bool bDebugWireframeMode;       //Un flag pentru activarea si dezactivarea randarii actorilor in mode debug
 	bool writeLock;
-	F32 speedMult;                 //cat de rapid sa ruleze simularile
+	F32 speedMult;                  //cat de rapid sa ruleze simularile
 	NxActor *currentActor;          //Un pointer catre actorul curent selectat
 	NxActor *gShape;                //Pointer folosit pentru "gatirea" unui actor
-	NxActor* groundPlane;
+	NxActor *groundPlane;
 	F32    groundPos;
 	DebugRenderer	 gDebugRenderer; //Initializam un Debug Renderer global pentru instanta actuala.
     NxPhysicsSDK*    gPhysicsSDK ;   //Pointer catre SDK-ul PhysX de la Nvidia
@@ -37,7 +37,7 @@ private:
 	                                 //de forma (x.dir * force,y.dir * force,z.dir * force)
 	                                 //Ex: Gravitatie Pamantului: (0,-9.81f,0)
 	NxVec3           defaultPosition;//Putem modifica locatia la care sunt creati actorii daca vrem :)
-    F32 scale;                     //Scara la care lucram. 1.0f = 1 metru
+    F32 scale;                       //Scara la care lucram. 1.0f = 1 metru
 	NxSceneDesc sceneDesc;           //Aici descriem parametrii scenei
 	NxPhysicsSDKDesc desc;           //Iar aici parametrii cu care initializam SDK-ul PhysX
 	NxSDKCreateError errorCode;      //Variable ce va returna codul erorii aruncata de SDK
@@ -57,7 +57,7 @@ private:
 	void DrawBox(NxShape *box);        // -----------||--------- cuburilor
 	void DrawLowPlane(NxShape *plane); // -----------||--------- suprafetelor plane
 	void DrawObjects(NxShape *shape);  // Aceasta functie itereaza prin fiecare obiect importat si il randeaza folosind functiilor interne ale importerului de modele
-	F32 UpdateTime(); //Folosim aceasta metoda pentru a putea afla cu cat sa avansam simularea
+	F32  UpdateTime(); //Folosim aceasta metoda pentru a putea afla cu cat sa avansam simularea
 
 protected:
 	static PhysX *PhysXWorld; //Pointer folosit pentru accesare de tip singleton. Refera instanta actuala a clasei PhysX

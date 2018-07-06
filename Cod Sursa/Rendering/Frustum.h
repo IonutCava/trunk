@@ -14,7 +14,7 @@ public:
 	void Extract(const vec3& eye);
 
 	bool ContainsPoint(const vec3& point) const;
-	int  ContainsBoundingBox(const BoundingBox& bbox) const;
+	int  ContainsBoundingBox(BoundingBox& bbox) const;
 	int  ContainsSphere(const vec3& center, float radius) const;
 
 

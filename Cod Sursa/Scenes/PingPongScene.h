@@ -10,12 +10,8 @@ class Minge : public Sphere3D
 public:
 	Minge(F32 size, U32 resolution) : Sphere3D(size,resolution) {}
 
-	void              computeBoundingBox() {_bb.min.x = getTransform()->getPosition().x - _size; 
-											_bb.min.y = getTransform()->getPosition().y - _size;
-											_bb.min.z = getTransform()->getPosition().z - _size;
-											_bb.max.x = getTransform()->getPosition().x + _size; 
-											_bb.max.y = getTransform()->getPosition().y + _size;
-											_bb.max.z = getTransform()->getPosition().z + _size;}
+	void computeBoundingBox() {_bb.setMin(vec3(getTransform()->getPosition().x - _size,getTransform()->getPosition().y - _size,getTransform()->getPosition().z - _size)); 
+							   _bb.setMax(vec3(getTransform()->getPosition().x + _size,getTransform()->getPosition().y + _size,getTransform()->getPosition().z + _size));} 
 	void setPosition(vec3 position)
 	{
 		getTransform()->translate(position);

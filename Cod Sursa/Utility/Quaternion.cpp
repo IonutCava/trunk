@@ -92,7 +92,6 @@ void Quaternion::FromEuler(float pitch, float yaw, float roll)
 	this->_y = cosr * sinp * cosy + sinr * cosp * siny;
 	this->_z = cosr * cosp * siny - sinr * sinp * cosy;
 	this->_w = cosr * cosp * cosy + sinr * sinp * siny;
- 
 	normalize();
 }
 
@@ -108,10 +107,6 @@ mat4 Quaternion::getMatrix() const
 	float wx = _w * _x;
 	float wy = _w * _y;
 	float wz = _w * _z;
- 
-	// This calculation would be a lot more complicated for non-unit length quaternions
-	// Note: The constructor of Matrix4 expects the Matrix in column-major format like expected by
-	//   OpenGL
 	return mat4( 1.0f - 2.0f * (y2 + z2), 2.0f * (xy - wz), 2.0f * (xz + wy), 0.0f,
 				2.0f * (xy + wz), 1.0f - 2.0f * (x2 + z2), 2.0f * (yz - wx), 0.0f,
 				2.0f * (xz - wy), 2.0f * (yz + wx), 1.0f - 2.0f * (x2 + y2), 0.0f,
