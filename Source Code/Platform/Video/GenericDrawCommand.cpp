@@ -18,6 +18,7 @@ IndirectDrawCommand::IndirectDrawCommand()
       baseVertex(0),
       baseInstance(0)
 {
+    static_assert(sizeof(IndirectDrawCommand) == 20, "Size of IndirectDrawCommand is incorrect!");
 }
 
 void IndirectDrawCommand::set(const IndirectDrawCommand& other) {
@@ -58,9 +59,7 @@ GenericDrawCommand::GenericDrawCommand(PrimitiveType type,
     _cmd.firstIndex = firstIndex;
     _cmd.primCount = primCount;
 
-    static_assert(sizeof(IndirectDrawCommand) == 20, "Size of IndirectDrawCommand is incorrect!");
-    static_assert(sizeof(Pipeline) == 32, "Size of Pipeline is incorrect!");
-    static_assert(sizeof(GenericDrawCommand) == 88, "Size of GenericDrawCommand is incorrect!");
+    static_assert(sizeof(GenericDrawCommand) == 56, "Size of GenericDrawCommand is incorrect!");
 }
 
 void GenericDrawCommand::set(const GenericDrawCommand& base) {
@@ -70,7 +69,6 @@ void GenericDrawCommand::set(const GenericDrawCommand& base) {
     _drawToBuffer = base._drawToBuffer;
     _renderOptions = base._renderOptions;
     _type = base._type;
-    _pipeline = base._pipeline;
     _sourceBuffer = base._sourceBuffer;
     _commandOffset = base._commandOffset;
 }
@@ -84,7 +82,6 @@ bool GenericDrawCommand::compatible(const GenericDrawCommand& other) const {
            _drawToBuffer == other._drawToBuffer &&
            _renderOptions == other._renderOptions &&
            _type == other._type &&
-           _pipeline == other._pipeline &&
            (_sourceBuffer != nullptr) == (other._sourceBuffer != nullptr);
 }
 

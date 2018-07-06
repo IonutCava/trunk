@@ -54,27 +54,12 @@ U32 d3dShaderProgram::GetSubroutineUniformCount(ShaderType type) const {
 }
 
 // Uniforms
-I32  d3dShaderProgram::Binding(const char* name) { return -1; }
-void d3dShaderProgram::Uniform(const stringImplFast& location, U32 value) {}
-void d3dShaderProgram::Uniform(const stringImplFast& location, I32 value) {}
-void d3dShaderProgram::Uniform(const stringImplFast& location, F32 value) {}
-void d3dShaderProgram::Uniform(const stringImplFast& location, const vec2<F32>& value) {}
-void d3dShaderProgram::Uniform(const stringImplFast& location, const vec2<I32>& value) {}
-void d3dShaderProgram::Uniform(const stringImplFast& location, const vec3<F32>& value) {}
-void d3dShaderProgram::Uniform(const stringImplFast& location, const vec3<I32>& value) {}
-void d3dShaderProgram::Uniform(const stringImplFast& location, const vec4<F32>& value) {}
-void d3dShaderProgram::Uniform(const stringImplFast& location, const vec4<I32>& value) {}
-void d3dShaderProgram::Uniform(const stringImplFast& location, const mat3<F32>& value, bool transpose) {}
-void d3dShaderProgram::Uniform(const stringImplFast& location, const mat4<F32>& value, bool transpose) {}
-void d3dShaderProgram::Uniform(const stringImplFast& location, const vectorImpl<I32>& values) {}
-void d3dShaderProgram::Uniform(const stringImplFast& location, const vectorImpl<F32>& values) {}
-void d3dShaderProgram::Uniform(const stringImplFast& location, const vectorImpl<vec2<F32> >& values) {}
-void d3dShaderProgram::Uniform(const stringImplFast& location, const vectorImpl<vec3<F32> >& values) {}
-void d3dShaderProgram::Uniform(const stringImplFast& location, const vectorImplBest<vec4<F32> >& values) {}
-void d3dShaderProgram::Uniform(const stringImplFast& location, const vectorImpl<mat3<F32> >& values, bool transpose) {}
-void d3dShaderProgram::Uniform(const stringImplFast& location, const vectorImplBest<mat4<F32> >& values, bool transpose) {}
+I32 d3dShaderProgram::Binding(const char* name) {
+    return -1;
+}
 
-void d3dShaderProgram::DispatchCompute(U32 xGroups, U32 yGroups, U32 zGroups) {}
+void d3dShaderProgram::DispatchCompute(U32 xGroups, U32 yGroups, U32 zGroups) {
+}
 
 void d3dShaderProgram::SetMemoryBarrier(MemoryBarrierType type) {
 }
@@ -82,4 +67,5 @@ void d3dShaderProgram::SetMemoryBarrier(MemoryBarrierType type) {
 bool d3dShaderProgram::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) {
     return ShaderProgram::load(onLoadCallback);
 }
+
 };

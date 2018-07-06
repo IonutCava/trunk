@@ -53,33 +53,6 @@ class GenericDrawCommand;
 enum class FileUpdateEvent : U8;
 
 FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
-class PushConstants {
-private:
-    struct Data {
-        mat4<F32> _globalMatrix;
-    };
-public:
-    PushConstants(GFXDevice& context);
-
-    inline void globalMatrix(const mat4<F32>& globalMatrix) {
-        _bufferData._globalMatrix.set(globalMatrix);
-        _dirty = true;
-    }
-
-    inline const mat4<F32>& globalMatrix() const {
-        return _bufferData._globalMatrix;
-    }
-
-protected:
-    friend class ShaderProgram;
-    void upload();
-
-private:
-    GFXDevice& _context;
-    bool _dirty;
-    Data _bufferData;
-    ShaderBuffer* _pushConstantsBuffer;
-};
 
 class NOINITVTABLE ShaderProgram : public CachedResource,
                                    public GraphicsResource {
@@ -139,35 +112,8 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     virtual bool load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) override;
     virtual bool unload() override;
 
-    /// Uniforms (update constant buffer for D3D. Use index as location in buffer)
+    // Return the binding address (or other identifier) for the push constant specified by name
     virtual I32 Binding(const char* name) = 0;
-
-    virtual void Uniform(const stringImplFast& location, U32 value) = 0;
-    virtual void Uniform(const stringImplFast& location, I32 value) = 0;
-    virtual void Uniform(const stringImplFast& location, F32 value) = 0;
-    virtual void Uniform(const stringImplFast& location, const vec2<F32>& value) = 0;
-    virtual void Uniform(const stringImplFast& location, const vec2<I32>& value) = 0;
-    virtual void Uniform(const stringImplFast& location, const vec3<F32>& value) = 0;
-    virtual void Uniform(const stringImplFast& location, const vec3<I32>& value) = 0;
-    virtual void Uniform(const stringImplFast& location, const vec4<F32>& value) = 0;
-    virtual void Uniform(const stringImplFast& location, const vec4<I32>& value) = 0;
-    virtual void Uniform(const stringImplFast& location, const mat3<F32>& value, bool rowMajor = false) = 0;
-    virtual void Uniform(const stringImplFast& location, const mat4<F32>& value, bool rowMajor = false) = 0;
-    virtual void Uniform(const stringImplFast& location, const vectorImpl<I32>& values) = 0;
-    virtual void Uniform(const stringImplFast& location, const vectorImpl<F32>& values) = 0;
-    virtual void Uniform(const stringImplFast& location, const vectorImpl<vec2<F32> >& values) = 0;
-    virtual void Uniform(const stringImplFast& location, const vectorImpl<vec3<F32> >& values) = 0;
-    virtual void Uniform(const stringImplFast& location, const vectorImplBest<vec4<F32> >& values) = 0;
-    virtual void Uniform(const stringImplFast& location, const vectorImpl<mat3<F32> >& values, bool rowMajor = false) = 0;
-    virtual void Uniform(const stringImplFast& location, const vectorImplBest<mat4<F32> >& values, bool rowMajor = false) = 0;
-
-    inline void Uniform(const stringImplFast& location, TextureUsage slot) {
-        Uniform(location, to_I32(slot));
-    }
-        
-    inline void Uniform(const stringImplFast& location, bool value) {
-        Uniform(location, value ? 1 : 0);
-    }
 
     /// Subroutine
     virtual void SetSubroutines(ShaderType type, const vectorImpl<U32>& indices) const = 0;
@@ -269,8 +215,6 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
 
     static vectorImpl<stringImpl> getAllAtomLocations();
 
-    static inline PushConstants& pushConstants() { return *_pushConstants; }
-
    protected:
      virtual bool recompileInternal() = 0;
      void registerAtomFile(const stringImpl& atomFile);
@@ -289,8 +233,6 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     static ShaderProgramMap _shaderPrograms;
 
     static SharedLock _programLock;
-
-    static std::unique_ptr<PushConstants> _pushConstants;
 
    protected:
     template <typename T>

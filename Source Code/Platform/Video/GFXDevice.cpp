@@ -629,7 +629,9 @@ void GFXDevice::constructHIZ(RenderTargetID depthBuffer) {
     static RTDrawDescriptor depthOnlyTarget;
     static PipelineDescriptor pipelineDesc;
     static GenericDrawCommand triangleCmd;
-   
+    static Pipeline pipeline;
+    static PushConstants constants;
+
     if (firstRun) {
         // We use a special shader that downsamples the buffer
         // We will use a state block that disables colour writes as we will render only a depth image,
@@ -649,8 +651,13 @@ void GFXDevice::constructHIZ(RenderTargetID depthBuffer) {
 
         triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
         triangleCmd.drawCount(1);
-        triangleCmd.pipeline(newPipeline(pipelineDesc));
+        pipeline = newPipeline(pipelineDesc);
 
+        PushConstant constant;
+        constant._type = PushConstantType::IVEC2;
+        constant._binding = "depthInfo";
+
+        constants._data.push_back(constant);
         firstRun = false;
     }
 
@@ -687,9 +694,9 @@ void GFXDevice::constructHIZ(RenderTargetID depthBuffer) {
             updateViewportInternal(0, 0, twidth, theight);
             // Bind next mip level for rendering but first restrict fetches only to previous level
             screenTarget.setMipLevel(level);
-            _HIZConstructProgram->Uniform("depthInfo", vec2<I32>(level - 1, wasEven ? 1 : 0));
+            constants._data[0]._values[0] = vec2<I32>(level - 1, wasEven ? 1 : 0);
             // Dummy draw command as the full screen quad is generated completely in the vertex shader
-            draw(triangleCmd);
+            draw(triangleCmd, pipeline, constants);
         }
 
         // Calculate next viewport size

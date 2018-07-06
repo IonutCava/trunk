@@ -54,7 +54,9 @@ class d3dShaderProgram final : public ShaderProgram {
 
     bool isBound() const override;
     bool isValid() const override;
-    
+
+    I32 Binding(const char* name) override;
+
     // Subroutines
     void SetSubroutines(ShaderType type, const vectorImpl<U32>& indices) const override;
     void SetSubroutine(ShaderType type, U32 index) const override;
@@ -64,35 +66,6 @@ class d3dShaderProgram final : public ShaderProgram {
     U32 GetSubroutineUniformLocation(ShaderType type, const char* name) const override;
 
     U32 GetSubroutineUniformCount(ShaderType type) const override;
-
-    // Uniforms
-    I32 Binding(const char* name) override;
-    void Uniform(const stringImplFast& location, U32 value) override;
-    void Uniform(const stringImplFast& location, I32 value) override;
-    void Uniform(const stringImplFast& location, F32 value) override;
-    void Uniform(const stringImplFast& location, const vec2<F32>& value) override;
-    void Uniform(const stringImplFast& location, const vec2<I32>& value) override;
-    void Uniform(const stringImplFast& location, const vec3<F32>& value) override;
-    void Uniform(const stringImplFast& location, const vec3<I32>& value) override;
-    void Uniform(const stringImplFast& location, const vec4<F32>& value) override;
-    void Uniform(const stringImplFast& location, const vec4<I32>& value) override;
-    void Uniform(const stringImplFast& location,
-                 const mat3<F32>& value,
-                 bool transpose = false) override;
-    void Uniform(const stringImplFast& location,
-                 const mat4<F32>& value,
-                 bool transpose = false) override;
-    void Uniform(const stringImplFast& location, const vectorImpl<I32>& values) override;
-    void Uniform(const stringImplFast& location, const vectorImpl<F32>& values) override;
-    void Uniform(const stringImplFast& location, const vectorImpl<vec2<F32> >& values) override;
-    void Uniform(const stringImplFast& location, const vectorImpl<vec3<F32> >& values) override;
-    void Uniform(const stringImplFast& location, const vectorImplBest<vec4<F32> >& values) override;
-    void Uniform(const stringImplFast& location,
-                 const vectorImpl<mat3<F32> >& values,
-                 bool transpose = false) override;
-    void Uniform(const stringImplFast& location,
-                 const vectorImplBest<mat4<F32> >& values,
-                 bool transpose = false) override;
 
     void DispatchCompute(U32 xGroups, U32 yGroups, U32 zGroups) override;
 

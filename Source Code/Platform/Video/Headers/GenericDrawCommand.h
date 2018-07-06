@@ -37,7 +37,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-class Pipeline;
 class VertexDataInterface;
 enum class PrimitiveType : U32;
 
@@ -81,7 +80,6 @@ public:
 
 private:
     // state hash is not size_t to avoid any platform specific awkward typedefing
-    Pipeline _pipeline;                 // 80 bytes
     IndirectDrawCommand _cmd;           // 48 bytes
     VertexDataInterface* _sourceBuffer; // 28 bytes
     PrimitiveType _type;                // 20 bytes
@@ -116,7 +114,6 @@ public:
     inline void drawCount(U16 count)                                  { _drawCount = count; }
     inline void drawToBuffer(U8 index)                                { _drawToBuffer = index; }
     inline void commandOffset(U32 offset)                             { _commandOffset = offset; }
-    inline void pipeline(const Pipeline& pipeline)                    { _pipeline = pipeline; }
     inline void patchVertexCount(U32 vertexCount)                     { _patchVertexCount = vertexCount; }
     inline void primitiveType(PrimitiveType type)                     { _type = type; }
     inline void sourceBuffer(VertexDataInterface* sourceBuffer)       { _sourceBuffer = sourceBuffer; }
@@ -125,8 +122,6 @@ public:
     inline U16 drawCount()                     const { return _drawCount; }
     inline U8  drawToBuffer()                  const { return _drawToBuffer; }
     inline U32 commandOffset()                 const { return _commandOffset; }
-    inline Pipeline& pipeline()                      { return _pipeline; }
-    inline const Pipeline& pipeline()          const { return _pipeline; }
     inline U32 patchVertexCount()              const { return _patchVertexCount; }
     inline IndirectDrawCommand& cmd()                { return _cmd; }
     inline PrimitiveType primitiveType()       const { return _type; }

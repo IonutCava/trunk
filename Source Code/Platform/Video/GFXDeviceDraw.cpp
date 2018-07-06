@@ -267,6 +267,11 @@ U32 GFXDevice::getLastCullCount() const {
     return cullCount;
 }
 
+void GFXDevice::drawText(const TextElementBatch& batch) {
+    uploadGPUBlock();
+    _api->drawText(batch, _textRenderPipeline, _textRenderConstants);
+}
+
 bool GFXDevice::batchCommands(GenericDrawCommands& commands) const {
     auto batch = [](GenericDrawCommand& previousIDC,
                     GenericDrawCommand& currentIDC)  -> bool {

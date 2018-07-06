@@ -58,67 +58,17 @@ class glShaderProgram final : public ShaderProgram, public glObject {
   private:
     template<typename T>
     struct UniformCache {
-        typedef hashMapImpl<T, U32> ShaderVarU32Map;
-        typedef hashMapImpl<T, I32> ShaderVarI32Map;
-        typedef hashMapImpl<T, F32> ShaderVarF32Map;
-        typedef hashMapImpl<T, vec2<F32>> ShaderVarVec2F32Map;
-        typedef hashMapImpl<T, vec2<I32>> ShaderVarvec2I32Map;
-        typedef hashMapImpl<T, vec3<F32>> ShaderVarVec3F32Map;
-        typedef hashMapImpl<T, vec3<I32>> ShaderVarVec3I32Map;
-        typedef hashMapImpl<T, vec4<F32>> ShaderVarVec4F32Map;
-        typedef hashMapImpl<T, vec4<I32>> ShaderVarVec4I32Map;
-        typedef hashMapImpl<T, mat3<F32>> ShaderVarMat3Map;
-        typedef hashMapImpl<T, mat4<F32>> ShaderVarMat4Map;
-        typedef hashMapImpl<T, vectorImpl<I32>> ShaderVarVectorI32Map;
-        typedef hashMapImpl<T, vectorImpl<F32>> ShaderVarVectorF32Map;
-        typedef hashMapImpl<T, vectorImpl<vec2<F32>>> ShaderVarVectorVec2F32Map;
-        typedef hashMapImpl<T, vectorImpl<vec3<F32>>> ShaderVarVectorVec3F32Map;
-        typedef hashMapImpl<T, vectorImpl<vec4<F32>>> ShaderVarVectorVec4F32Map;
-        typedef hashMapImpl<T, vectorImpl<mat3<F32>>> ShaderVarVectorMat3Map;
-        typedef hashMapImpl<T, vectorImpl<mat4<F32>>> ShaderVarVectorMat4Map;
-
+        typedef hashMapImpl<T, PushConstant> ShaderVarMap;
+   
         void clear() {
-            _shaderVarsU32.clear();
-            _shaderVarsI32.clear();
-            _shaderVarsF32.clear();
-            _shaderVarsVec2F32.clear();
-            _shaderVarsVec2I32.clear();
-            _shaderVarsVec3F32.clear();
-            _shaderVarsVec4F32.clear();
-            _shaderVarsMat3.clear();
-            _shaderVarsMat4.clear();
-            _shaderVarsVectorI32.clear();
-            _shaderVarsVectorF32.clear();
-            _shaderVarsVectorVec2F32.clear();
-            _shaderVarsVectorVec3F32.clear();
-            _shaderVarsVectorVec4F32.clear();
-            _shaderVarsVectorMat3.clear();
-            _shaderVarsVectorMat4.clear();
+            _shaderVars.clear();
         }
 
-        ShaderVarU32Map _shaderVarsU32;
-        ShaderVarI32Map _shaderVarsI32;
-        ShaderVarF32Map _shaderVarsF32;
-        ShaderVarVec2F32Map _shaderVarsVec2F32;
-        ShaderVarvec2I32Map _shaderVarsVec2I32;
-        ShaderVarVec3F32Map _shaderVarsVec3F32;
-        ShaderVarVec3I32Map _shaderVarsVec3I32;
-        ShaderVarVec4F32Map _shaderVarsVec4F32;
-        ShaderVarVec4I32Map _shaderVarsVec4I32;
-        ShaderVarMat3Map _shaderVarsMat3;
-        ShaderVarMat4Map _shaderVarsMat4;
-        ShaderVarVectorI32Map _shaderVarsVectorI32;
-        ShaderVarVectorF32Map _shaderVarsVectorF32;
-        ShaderVarVectorVec2F32Map _shaderVarsVectorVec2F32;
-        ShaderVarVectorVec3F32Map _shaderVarsVectorVec3F32;
-        ShaderVarVectorVec4F32Map _shaderVarsVectorVec4F32;
-        ShaderVarVectorMat3Map _shaderVarsVectorMat3;
-        ShaderVarVectorMat4Map _shaderVarsVectorMat4;
-
+        ShaderVarMap _shaderVars;
     };
 
     typedef hashMapImpl<U64, I32> ShaderVarMap;
-    typedef UniformCache<stringImplFast> UniformsByName;
+    typedef UniformCache<U64> UniformsByNameHash;
 
    public:
     explicit glShaderProgram(GFXDevice& context,
@@ -159,25 +109,7 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     /// Cache uniform/attribute locations for shader programs
     I32 Binding(const char* name) override;
 
-    /// Set an uniform value
-    void Uniform(const stringImplFast& location, U32 value) override;
-    void Uniform(const stringImplFast& location, I32 value) override;
-    void Uniform(const stringImplFast& location, F32 value) override;
-    void Uniform(const stringImplFast& location, const vec2<F32>& value) override;
-    void Uniform(const stringImplFast& location, const vec2<I32>& value) override;
-    void Uniform(const stringImplFast& location, const vec3<F32>& value) override;
-    void Uniform(const stringImplFast& location, const vec3<I32>& value) override;
-    void Uniform(const stringImplFast& location, const vec4<F32>& value) override;
-    void Uniform(const stringImplFast& location, const vec4<I32>& value) override;
-    void Uniform(const stringImplFast& location, const mat3<F32>& value, bool transpose = false) override;
-    void Uniform(const stringImplFast& location, const mat4<F32>& value, bool transpose = false) override;
-    void Uniform(const stringImplFast& location, const vectorImpl<I32>& values) override;
-    void Uniform(const stringImplFast& location, const vectorImpl<F32>& values) override;
-    void Uniform(const stringImplFast& location, const vectorImpl<vec2<F32>>& values) override;
-    void Uniform(const stringImplFast& location, const vectorImpl<vec3<F32>>& values) override;
-    void Uniform(const stringImplFast& location, const vectorImplBest<vec4<F32>>& values) override;
-    void Uniform(const stringImplFast& location, const vectorImpl<mat3<F32>>& values, bool transpose = false) override;
-    void Uniform(const stringImplFast& location, const vectorImplBest<mat4<F32>>& values, bool transpose = false) override;
+    inline void UploadPushConstant(const PushConstant& constant);
 
     void DispatchCompute(U32 xGroups, U32 yGroups, U32 zGroups) override;
 
@@ -202,14 +134,6 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     /// present, and it's not recommended (yet)
     void threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallback, bool skipRegister);
 
-    struct fake_dependency: public std::false_type {};
-    template <typename T>
-    I32 cachedValueUpdate(const stringImplFast& location, const T& value) {
-        static_assert(
-                fake_dependency::value,
-            "glShaderProgram::cachedValue error: unsupported data type!");
-        return -1;
-    }
     /// Basic OpenGL shader program validation (both in debug and in release)
     bool validateInternal();
     /// Retrieve the program's validation log if we need it
@@ -224,10 +148,16 @@ class glShaderProgram final : public ShaderProgram, public glObject {
 
     void reuploadUniforms();
 
+    I32 cachedValueUpdate(const PushConstant& constant);
+
+    inline void Uniform(I32 binding, PushConstantType type, const vectorImplFast<AnyParam>& values, bool flag) const;
+
+    inline bool comparePushConstants(const PushConstant& lhs, const PushConstant& rhs) const;
+
    private:
 
     ShaderVarMap _shaderVarLocation;
-    UniformsByName _uniformsByName;
+    UniformsByNameHash _uniformsByNameHash;
     
     bool _validationQueued;
     GLenum _binaryFormat;

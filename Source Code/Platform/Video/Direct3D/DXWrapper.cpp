@@ -36,12 +36,21 @@ void DX_API::endFrame() {}
 
 void DX_API::updateClipPlanes() {}
 
-void DX_API::drawText(const TextElementBatch& batch) {
+void DX_API::drawText(const TextElementBatch& batch,
+                      const Pipeline& pipeline,
+                      const PushConstants& pushConstants) {
     ACKNOWLEDGE_UNUSED(batch);
+    ACKNOWLEDGE_UNUSED(pipeline);
+    ACKNOWLEDGE_UNUSED(pushConstants);
 }
 
-bool DX_API::draw(const GenericDrawCommand& cmd) { 
+bool DX_API::draw(const GenericDrawCommand& cmd,
+                  const Pipeline& pipeline,
+                  const PushConstants& pushConstants) {
     ACKNOWLEDGE_UNUSED(cmd);
+    ACKNOWLEDGE_UNUSED(pipeline);
+    ACKNOWLEDGE_UNUSED(pushConstants);
+
     return false;
 }
 

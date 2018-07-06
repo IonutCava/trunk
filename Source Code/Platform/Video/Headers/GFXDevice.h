@@ -169,12 +169,7 @@ public:
         U8 _textureBindSlot;
         Texture_ptr _texture;
         ShaderProgram_ptr _shader;
-
-        struct ShaderData {
-            vectorImpl<std::pair<stringImpl, I32>>  _intValues;
-            vectorImpl<std::pair<stringImpl, F32>>  _floatValues;
-            vectorImpl<std::pair<stringImpl, bool>> _boolValues;
-        } _shaderData;
+        PushConstants _shaderData;
 
         I16 _sortIndex;
         stringImpl _name;
@@ -205,7 +200,9 @@ public:  // GPU interface
 
     void debugDraw(const SceneRenderState& sceneRenderState, const Camera& activeCamera, RenderSubPassCmds& subPassesInOut);
 
-    bool draw(const GenericDrawCommand& cmd);
+    bool draw(const GenericDrawCommand& cmd,
+              const Pipeline& pipeline,
+              const PushConstants& pushConstants);
 
     void lockQueue(RenderBinType type);
     void unlockQueue(RenderBinType type);
@@ -401,11 +398,7 @@ protected:
 
     void setBaseViewport(const vec4<I32>& viewport);
 
-    inline void drawText(const TextElementBatch& batch) {
-        _textRenderShader->bind();
-        uploadGPUBlock();
-        _api->drawText(batch);
-    }
+    void drawText(const TextElementBatch& batch);
 
     void onChangeResolution(U16 w, U16 h);
 
@@ -503,6 +496,8 @@ protected:
     ShaderProgram_ptr _HIZCullProgram;
     ShaderProgram_ptr _displayShader;
     ShaderProgram_ptr _textRenderShader;
+    PushConstants _textRenderConstants;
+    Pipeline _textRenderPipeline;
 
     /// Quality settings
     RenderDetailLevel _shadowDetailLevel;

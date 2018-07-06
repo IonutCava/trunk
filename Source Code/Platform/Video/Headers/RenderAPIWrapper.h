@@ -76,7 +76,7 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
     virtual ErrorCode initRenderingAPI(I32 argc, char** argv, Configuration& config) = 0;
     virtual void closeRenderingAPI() = 0;
 
-    virtual void drawText(const TextElementBatch& batch) = 0;
+    virtual void drawText(const TextElementBatch& batch, const Pipeline& pipeline, const PushConstants& pushConstants) = 0;
 
     // a debug message is a marker that should show up in external profiling tools such as RenderDoc or PerfStudio /NSight
     virtual void pushDebugMessage(const char* message, I32 id) = 0;
@@ -89,7 +89,9 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
     virtual U32 getFrameDurationGPU() = 0;
 
     virtual size_t setStateBlock(size_t stateBlockHash) = 0;
-    virtual bool draw(const GenericDrawCommand& cmd) = 0;
+    virtual bool draw(const GenericDrawCommand& cmd, 
+                      const Pipeline& pipeline,
+                      const PushConstants& pushConstants) = 0;
 
     virtual void flushCommandBuffer(CommandBuffer& commandBuffer) = 0;
 

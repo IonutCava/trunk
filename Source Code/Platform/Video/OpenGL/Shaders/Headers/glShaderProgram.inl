@@ -32,403 +32,125 @@
 #define _PLATFORM_VIDEO_OPENGLS_PROGRAM_INL_
 
 namespace Divide {
+    namespace {
+        bool compare(PushConstantType type, const vectorImplFast<AnyParam>& lhsVec, const vectorImplFast<AnyParam>& rhsVec) {
+            for (vectorAlg::vecSize i = 0; i < lhsVec.size(); ++i) {
+                const AnyParam& lhs = lhsVec[i];
+                const AnyParam& rhs = rhsVec[i];
 
-template <>
-inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, const U32& value) {
-    I32 binding = Binding(location.c_str());
+                switch (type) {
+                    case PushConstantType::BOOL: return lhs.constant_cast<bool>() == rhs.constant_cast<bool>();
+                    case PushConstantType::INT:  return lhs.constant_cast<I32>() == rhs.constant_cast<I32>();
+                    case PushConstantType::UINT: return lhs.constant_cast<U32>() == rhs.constant_cast<U32>();
+                    case PushConstantType::DOUBLE:
+                    case PushConstantType::FLOAT: return lhs.constant_cast<F32>() == rhs.constant_cast<F32>();
+                    case PushConstantType::IVEC2: return lhs.constant_cast<vec2<I32>>() == rhs.constant_cast<vec2<I32>>();
+                    case PushConstantType::IVEC3: return lhs.constant_cast<vec3<I32>>() == rhs.constant_cast<vec3<I32>>();
+                    case PushConstantType::IVEC4: return lhs.constant_cast<vec4<I32>>() == rhs.constant_cast<vec4<I32>>();
+                    case PushConstantType::UVEC2: return lhs.constant_cast<vec2<U32>>() == rhs.constant_cast<vec2<U32>>();
+                    case PushConstantType::UVEC3: return lhs.constant_cast<vec3<U32>>() == rhs.constant_cast<vec3<U32>>();
+                    case PushConstantType::UVEC4: return lhs.constant_cast<vec4<U32>>() == rhs.constant_cast<vec4<U32>>();
+                    case PushConstantType::DVEC2:
+                    case PushConstantType::VEC2: return lhs.constant_cast<vec2<F32>>() == rhs.constant_cast<vec2<F32>>();
+                    case PushConstantType::DVEC3:
+                    case PushConstantType::VEC3: return lhs.constant_cast<vec3<F32>>() == rhs.constant_cast<vec3<F32>>();
+                    case PushConstantType::DVEC4:
+                    case PushConstantType::VEC4: return lhs.constant_cast<vec4<F32>>() == rhs.constant_cast<vec4<F32>>();
+                    case PushConstantType::MAT2: return lhs.constant_cast<mat2<F32>>() == rhs.constant_cast<mat2<F32>>();
+                    case PushConstantType::MAT3: return lhs.constant_cast<mat3<F32>>() == rhs.constant_cast<mat3<F32>>();
+                    case PushConstantType::MAT4: return lhs.constant_cast<mat4<F32>>() == rhs.constant_cast<mat4<F32>>();
+                };
+            }
 
-    if (binding == -1 || _shaderProgramID == 0) {
-        return -1;
-    }
-
-    UniformsByName::ShaderVarU32Map::iterator it = _uniformsByName._shaderVarsU32.find(location);
-    if (it != std::end(_uniformsByName._shaderVarsU32)) {
-        if (it->second == value) {
-            return -1;
-        } else {
-            it->second = value;
+            return false;
         }
-    } else {
-        hashAlg::insert(_uniformsByName._shaderVarsU32, location, value);
-    }
+    };
 
-    return binding;
-}
-
-template <>
-inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, const I32& value) {
-    I32 binding = Binding(location.c_str());
-
-    if (binding == -1 || _shaderProgramID == 0) {
-        return -1;
-    }
-
-    UniformsByName::ShaderVarI32Map::iterator it = _uniformsByName._shaderVarsI32.find(location);
-    if (it != std::end(_uniformsByName._shaderVarsI32)) {
-        if (it->second == value) {
-            return -1;
-        } else {
-            it->second = value;
+    inline bool glShaderProgram::comparePushConstants(const PushConstant& lhs, const PushConstant& rhs) const {
+        if (lhs._type == rhs._type) {
+            if (lhs._binding == rhs._binding) {
+                if (lhs._flag == rhs._flag) {
+                    return compare(lhs._type, lhs._values, rhs._values);
+                }
+            }
         }
-    } else {
-        hashAlg::insert(_uniformsByName._shaderVarsI32, location, value);
+
+        return false;
     }
 
-    return binding;
-}
+    void glShaderProgram::Uniform(I32 binding, PushConstantType type, const vectorImplFast<AnyParam>& values, bool flag) const {
+        GLsizei count = (GLsizei)values.size();
+        switch (type) {
+            case PushConstantType::BOOL: {
+                vectorImplFast<I32> intVector(count);
+                std::transform(std::cbegin(values), std::cend(values), std::begin(intVector), [](const AnyParam& val)
+                {
+                    return val.constant_cast<bool>() ? 1 : 0;
+                });
 
-template <>
-inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, const F32& value) {
-    I32 binding = Binding(location.c_str());
-
-    if (binding == -1 || _shaderProgramID == 0) {
-        return -1;
-    }
-
-    UniformsByName::ShaderVarF32Map::iterator it = _uniformsByName._shaderVarsF32.find(location);
-    if (it != std::end(_uniformsByName._shaderVarsF32)) {
-        if (COMPARE(it->second, value)) {
-            return -1;
-        } else {
-            it->second = value;
+                glProgramUniform1iv(_shaderProgramID, binding, count, intVector.data());
+                } break;
+            case PushConstantType::INT:
+                glProgramUniform1iv(_shaderProgramID, binding, count, (GLint*)values.data());
+                break;
+            case PushConstantType::UINT:
+                glProgramUniform1uiv(_shaderProgramID, binding, count, (GLuint*)values.data());
+                break;
+            case PushConstantType::DOUBLE:            // Warning! Downcasting to float -Ionut
+            case PushConstantType::FLOAT:
+                glProgramUniform1fv(_shaderProgramID, binding, count, (GLfloat*)values.data());
+                break;
+            case PushConstantType::IVEC2:
+                glProgramUniform2iv(_shaderProgramID, binding, count, (GLint*)values.data());
+                break;
+            case PushConstantType::IVEC3:
+                glProgramUniform3iv(_shaderProgramID, binding, count, (GLint*)values.data());
+                break;
+            case PushConstantType::IVEC4:
+                glProgramUniform4iv(_shaderProgramID, binding, count, (GLint*)values.data());
+                break;
+            case PushConstantType::UVEC2:
+                glProgramUniform2uiv(_shaderProgramID, binding, count, (GLuint*)values.data());
+                break;
+            case PushConstantType::UVEC3:
+                glProgramUniform3uiv(_shaderProgramID, binding, count, (GLuint*)values.data());
+                break;
+            case PushConstantType::UVEC4:
+                glProgramUniform4uiv(_shaderProgramID, binding, count, (GLuint*)values.data());
+                break;
+            case PushConstantType::DVEC2:            // Warning! Downcasting to float -Ionut
+            case PushConstantType::VEC2:
+                glProgramUniform2fv(_shaderProgramID, binding, count, (GLfloat*)values.data());
+                break;
+            case PushConstantType::DVEC3:            // Warning! Downcasting to float -Ionut
+            case PushConstantType::VEC3:
+                glProgramUniform3fv(_shaderProgramID, binding, count, (GLfloat*)values.data());
+                break;
+            case PushConstantType::DVEC4:            // Warning! Downcasting to float -Ionut
+            case PushConstantType::VEC4:
+                glProgramUniform4fv(_shaderProgramID, binding, count, (GLfloat*)values.data());
+                break;
+            case PushConstantType::MAT2:
+                glProgramUniformMatrix2fv(_shaderProgramID, binding, count, flag? GL_TRUE : GL_FALSE, (GLfloat*)values.data());
+                break;
+            case PushConstantType::MAT3:
+                glProgramUniformMatrix3fv(_shaderProgramID, binding, count, flag ? GL_TRUE : GL_FALSE, (GLfloat*)values.data());
+                break;
+            case PushConstantType::MAT4:
+                glProgramUniformMatrix4fv(_shaderProgramID, binding, count, flag ? GL_TRUE : GL_FALSE, (GLfloat*)values.data());
+                break;
+            default:
+                DIVIDE_ASSERT(false, "glShaderProgram::Uniform error: Unhandled data type!");
         }
-    } else {
-        hashAlg::insert(_uniformsByName._shaderVarsF32, location, value);
     }
 
-    return binding;
-}
+    inline void glShaderProgram::UploadPushConstant(const PushConstant& constant) {
+        I32 binding = cachedValueUpdate(constant);
 
-template <>
-inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, const vec2<F32>& value) {
-    I32 binding = Binding(location.c_str());
-
-    if (binding == -1 || _shaderProgramID == 0) {
-        return -1;
-    }
-
-    UniformsByName::ShaderVarVec2F32Map::iterator it = _uniformsByName._shaderVarsVec2F32.find(location);
-    if (it != std::end(_uniformsByName._shaderVarsVec2F32)) {
-        if (it->second == value) {
-            return -1;
-        } else {
-            it->second.set(value);
+        if (binding != -1) {
+            Uniform(binding, constant._type, constant._values, constant._flag);
         }
-    } else {
-        hashAlg::insert(_uniformsByName._shaderVarsVec2F32, location, value);
     }
-
-    return binding;
-}
-
-template <>
-inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, const vec2<I32>& value) {
-    I32 binding = Binding(location.c_str());
-
-    if (binding == -1 || _shaderProgramID == 0) {
-        return -1;
-    }
-
-    UniformsByName::ShaderVarvec2I32Map::iterator it = _uniformsByName._shaderVarsVec2I32.find(location);
-    if (it != std::end(_uniformsByName._shaderVarsVec2I32)) {
-        if (it->second == value) {
-            return -1;
-        } else {
-            it->second.set(value);
-        }
-    } else {
-        hashAlg::insert(_uniformsByName._shaderVarsVec2I32, location, value);
-    }
-
-    return binding;
-}
- 
-template <>
-inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, const vec3<F32>& value) {
-    I32 binding = Binding(location.c_str());
-
-    if (binding == -1 || _shaderProgramID == 0) {
-        return -1;
-    }
-
-    UniformsByName::ShaderVarVec3F32Map::iterator it = _uniformsByName._shaderVarsVec3F32.find(location);
-    if (it != std::end(_uniformsByName._shaderVarsVec3F32)) {
-        if (it->second == value) {
-            return -1;
-        } else {
-            it->second.set(value);
-        }
-    } else {
-        hashAlg::insert(_uniformsByName._shaderVarsVec3F32, location, value);
-    }
-
-    return binding;
-}
-
-template <>
-inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, const vec3<I32>& value) {
-    I32 binding = Binding(location.c_str());
-
-    if (binding == -1 || _shaderProgramID == 0) {
-        return -1;
-    }
-
-    UniformsByName::ShaderVarVec3I32Map::iterator it = _uniformsByName._shaderVarsVec3I32.find(location);
-    if (it != std::end(_uniformsByName._shaderVarsVec3I32)) {
-        if (it->second == value) {
-            return -1;
-        } else {
-            it->second.set(value);
-        }
-    } else {
-        hashAlg::insert(_uniformsByName._shaderVarsVec3I32, location, value);
-    }
-
-    return binding;
-}
-
-template <>
-inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, const vec4<F32>& value) {
-    I32 binding = Binding(location.c_str());
-
-    if (binding == -1 || _shaderProgramID == 0) {
-        return -1;
-    }
-
-    UniformsByName::ShaderVarVec4F32Map::iterator it = _uniformsByName._shaderVarsVec4F32.find(location);
-    if (it != std::end(_uniformsByName._shaderVarsVec4F32)) {
-        if (it->second == value) {
-            return -1;
-        } else {
-            it->second.set(value);
-        }
-    } else {
-        hashAlg::insert(_uniformsByName._shaderVarsVec4F32, location, value);
-    }
-
-    return binding;
-}
-
-template <>
-inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, const vec4<I32>& value) {
-    I32 binding = Binding(location.c_str());
-
-    if (binding == -1 || _shaderProgramID == 0) {
-        return -1;
-    }
-
-    UniformsByName::ShaderVarVec4I32Map::iterator it = _uniformsByName._shaderVarsVec4I32.find(location);
-    if (it != std::end(_uniformsByName._shaderVarsVec4I32)) {
-        if (it->second == value) {
-            return -1;
-        } else {
-            it->second.set(value);
-        }
-    } else {
-        hashAlg::insert(_uniformsByName._shaderVarsVec4I32, location, value);
-    }
-
-    return binding;
-}
-
-template <>
-inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, const mat3<F32>& value) {
-    I32 binding = Binding(location.c_str());
-
-    if (binding == -1 || _shaderProgramID == 0) {
-        return -1;
-    }
-
-    UniformsByName::ShaderVarMat3Map::iterator it = _uniformsByName._shaderVarsMat3.find(location);
-    if (it != std::end(_uniformsByName._shaderVarsMat3)) {
-        if (it->second == value) {
-            return -1;
-        } else {
-            it->second.set(value);
-        }
-    } else {
-        hashAlg::insert(_uniformsByName._shaderVarsMat3, location, value);
-    }
-
-    return binding;
-}
-
-template <>
-inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, const mat4<F32>& value) {
-    I32 binding = Binding(location.c_str());
-
-    if (binding == -1 || _shaderProgramID == 0) {
-        return -1;
-    }
-
-    UniformsByName::ShaderVarMat4Map::iterator it = _uniformsByName._shaderVarsMat4.find(location);
-    if (it != std::end(_uniformsByName._shaderVarsMat4)) {
-        if (it->second == value) {
-            return -1;
-        } else {
-            it->second.set(value);
-        }
-    } else {
-        hashAlg::insert(_uniformsByName._shaderVarsMat4, location, value);
-    }
-
-    return binding;
-}
-
-template <>
-inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, const vectorImpl<I32>& values) {
-    I32 binding = Binding(location.c_str());
-
-    if (binding == -1 || _shaderProgramID == 0) {
-        return -1;
-    }
-
-    UniformsByName::ShaderVarVectorI32Map::iterator it = _uniformsByName._shaderVarsVectorI32.find(location);
-    if (it != std::end(_uniformsByName._shaderVarsVectorI32)) {
-        if (it->second == values) {
-            return -1;
-        } else {
-            it->second = values;
-        }
-    } else {
-        hashAlg::insert(_uniformsByName._shaderVarsVectorI32, location, values);
-    }
-
-    return binding;
-}
-
-template <>
-inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, const vectorImpl<F32>& values) {
-    I32 binding = Binding(location.c_str());
-
-    if (binding == -1 || _shaderProgramID == 0) {
-        return -1;
-    }
-
-    UniformsByName::ShaderVarVectorF32Map::iterator it = _uniformsByName._shaderVarsVectorF32.find(location);
-    if (it != std::end(_uniformsByName._shaderVarsVectorF32)) {
-        if (it->second == values) {
-            return -1;
-        } else {
-            it->second = values;
-        }
-    } else {
-        hashAlg::insert(_uniformsByName._shaderVarsVectorF32, location, values);
-    }
-
-    return binding;
-}
-
-template <>
-inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, const vectorImpl<vec2<F32>>& values) {
-    I32 binding = Binding(location.c_str());
-
-    if (binding == -1 || _shaderProgramID == 0) {
-        return -1;
-    }
-
-    UniformsByName::ShaderVarVectorVec2F32Map::iterator it = _uniformsByName._shaderVarsVectorVec2F32.find(location);
-    if (it != std::end(_uniformsByName._shaderVarsVectorVec2F32)) {
-        if (it->second == values) {
-            return -1;
-        } else {
-            it->second = values;
-        }
-    } else {
-        hashAlg::insert(_uniformsByName._shaderVarsVectorVec2F32, location, values);
-    }
-
-    return binding;
-}
-
-template <>
-inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, const vectorImpl<vec3<F32>>& values) {
-    I32 binding = Binding(location.c_str());
-
-    if (binding == -1 || _shaderProgramID == 0) {
-        return -1;
-    }
-
-    UniformsByName::ShaderVarVectorVec3F32Map::iterator it = _uniformsByName._shaderVarsVectorVec3F32.find(location);
-    if (it != std::end(_uniformsByName._shaderVarsVectorVec3F32)) {
-        if (it->second == values) {
-            return -1;
-        } else {
-            it->second = values;
-        }
-    } else {
-        hashAlg::insert(_uniformsByName._shaderVarsVectorVec3F32, location, values);
-    }
-
-    return binding;
-}
-
-template <>
-inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, const vectorImpl<vec4<F32>>& values) {
-    I32 binding = Binding(location.c_str());
-
-    if (binding == -1 || _shaderProgramID == 0) {
-        return -1;
-    }
-
-    UniformsByName::ShaderVarVectorVec4F32Map::iterator it = _uniformsByName._shaderVarsVectorVec4F32.find(location);
-    if (it != std::end(_uniformsByName._shaderVarsVectorVec4F32)) {
-        if (it->second == values) {
-            return -1;
-        } else {
-            it->second = values;
-        }
-    } else {
-        hashAlg::insert(_uniformsByName._shaderVarsVectorVec4F32, location, values);
-    }
-
-    return binding;
-}
-
-
-template <>
-inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, const vectorImpl<mat3<F32>>& values) {
-    I32 binding = Binding(location.c_str());
-
-    if (binding == -1 || _shaderProgramID == 0) {
-        return -1;
-    }
-
-    UniformsByName::ShaderVarVectorMat3Map::iterator it = _uniformsByName._shaderVarsVectorMat3.find(location);
-    if (it != std::end(_uniformsByName._shaderVarsVectorMat3)) {
-        if (it->second == values) {
-            return -1;
-        } else {
-            it->second = values;
-        }
-    } else {
-        hashAlg::insert(_uniformsByName._shaderVarsVectorMat3, location, values);
-    }
-
-    return binding;
-}
-
-template <>
-inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, const vectorImpl<mat4<F32>>& values) {
-    I32 binding = Binding(location.c_str());
-
-    if (binding == -1 || _shaderProgramID == 0) {
-        return -1;
-    }
-
-    UniformsByName::ShaderVarVectorMat4Map::iterator it = _uniformsByName._shaderVarsVectorMat4.find(location);
-    if (it != std::end(_uniformsByName._shaderVarsVectorMat4)) {
-        if (it->second == values) {
-            return -1;
-        } else {
-            it->second = values;
-        }
-    } else {
-        hashAlg::insert(_uniformsByName._shaderVarsVectorMat4, location, values);
-    }
-
-    return binding;
-}
 }; //namespace Divide
 
 #endif //_PLATFORM_VIDEO_OPENGLS_PROGRAM_INL_

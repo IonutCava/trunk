@@ -350,8 +350,17 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     ResourceDescriptor immediateModeShader("ImmediateModeEmulation.GUI");
     immediateModeShader.setThreadedLoading(false);
     _textRenderShader = CreateResource<ShaderProgram>(cache, immediateModeShader);
-    _textRenderShader->Uniform("dvd_WorldMatrix", mat4<F32>());
+    PushConstant textRender;
+    textRender._type = PushConstantType::MAT4;
+    textRender._binding = "dvd_WorldMatrix";
+    textRender._values = { mat4<F32>() };
     assert(_textRenderShader != nullptr);
+    _textRenderConstants._data.push_back(textRender);
+    PipelineDescriptor descriptor;
+    descriptor._shaderProgram = _textRenderShader;
+    descriptor._stateHash = _defaultStateNoDepthHash;
+    _textRenderPipeline = newPipeline(descriptor);
+
 
     // Create initial buffers, cameras etc for this resolution. It should match window size
     WindowManager& winMgr = _parent.platformContext().app().windowManager();

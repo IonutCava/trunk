@@ -44,9 +44,9 @@ enum class PushConstantType : U8 {
     UINT,
     FLOAT,
     DOUBLE,
-    BVEC2,
-    BVEC3,
-    BVEC4,
+    //BVEC2, use vec2<I32>(1/0, 1/0)
+    //BVEC3, use vec3<I32>(1/0, 1/0)
+    //BVEC4, use vec4<I32>(1/0, 1/0)
     IVEC2,
     IVEC3,
     IVEC4,
@@ -61,13 +61,24 @@ enum class PushConstantType : U8 {
     DVEC4,
     MAT2,
     MAT3,
-    //MAT_N_x_M
+    MAT4,
+    //MAT_N_x_M,
+    COUNT
 };
     
 struct PushConstant {
-    I32              _binding;
-    PushConstantType _type;
-    AnyParam         _value;
+    //I32              _binding = -1;
+    stringImplFast   _binding;
+    PushConstantType _type = PushConstantType::COUNT;
+    vectorImplFast<AnyParam> _values;
+    union {
+        bool _flag = false;
+        bool _transpose;
+    };
+};
+
+struct PushConstants {
+    vectorImpl<PushConstant> _data;
 };
 
 class ShaderBuffer;
@@ -145,12 +156,7 @@ struct RenderSubPassCmd {
     TextureDataContainer _textures;
     GenericDrawCommands  _commands;
     vectorImpl<vec4<I32>> _viewports;
-    vectorImpl<PushConstant> _pushConstants;
     vectorImpl<ShaderBufferBindCmd> _shaderBuffers;
-
-    inline void pushConstant(PushConstantType type, I32 binding, const AnyParam& value) {
-        _pushConstants.emplace_back(PushConstant{ binding, type, value });
-    }
 };
 
 typedef vectorImpl<RenderSubPassCmd> RenderSubPassCmds;

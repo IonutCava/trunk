@@ -56,8 +56,12 @@ protected:
     void beginFrame() override;
     void endFrame() override;
 
-    void drawText(const TextElementBatch& batch) override;
-    bool draw(const GenericDrawCommand& cmd);
+    void drawText(const TextElementBatch& batch,
+                  const Pipeline& pipeline,
+                  const PushConstants& pushConstants) override;
+    bool draw(const GenericDrawCommand& cmd,
+              const Pipeline& pipeline,
+              const PushConstants& pushConstants);
 
     void flushCommandBuffer(CommandBuffer& commandBuffer) override;
 

@@ -9,7 +9,7 @@ Pipeline::Pipeline()
     : _stateHash(0)
     , _multiSampleCount(0)
 {
-
+    static_assert(sizeof(Pipeline) == 32, "Size of Pipeline is incorrect!");
 }
 
 Pipeline::Pipeline(const PipelineDescriptor& descriptor)
@@ -17,6 +17,7 @@ Pipeline::Pipeline(const PipelineDescriptor& descriptor)
     , _shaderProgram(descriptor._shaderProgram)
     , _multiSampleCount(descriptor._multiSampleCount)
 {
+    static_assert(sizeof(Pipeline) == 32, "Size of Pipeline is incorrect!");
 }
 
 Pipeline::~Pipeline()

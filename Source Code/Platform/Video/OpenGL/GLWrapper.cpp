@@ -790,7 +790,10 @@ I32 GL_API::getFont(const stringImpl& fontName) {
 
 /// Text rendering is handled exclusively by Mikko Mononen's FontStash library (https://github.com/memononen/fontstash)
 /// with his OpenGL frontend adapted for core context profiles
-void GL_API::drawText(const TextElementBatch& batch) {
+void GL_API::drawText(const TextElementBatch& batch,
+                      const Pipeline& pipeline,
+                      const PushConstants& pushConstants) {
+
     static vec4<U8> textBlendColour(Util::ToByteColour(DefaultColours::DIVIDE_BLUE()));
 
     static BlendingProperties textBlendProperties{
@@ -800,49 +803,53 @@ void GL_API::drawText(const TextElementBatch& batch) {
 
     GFX::ScopedDebugMessage(_context, "OpenGL render text start!", 2);
 
-    GL_API::setBlending(0, true, textBlendProperties, textBlendColour);
+    if (bindPipeline(pipeline)) {
+        sendPushConstants(pipeline, pushConstants);
 
-    I32 height = _context.getCurrentViewport().sizeY;
+        GL_API::setBlending(0, true, textBlendProperties, textBlendColour);
+    
+        I32 height = _context.getCurrentViewport().sizeY;
         
-    vectorAlg::vecSize drawCount = 0;
+        vectorAlg::vecSize drawCount = 0;
 
-    fonsClearState(_fonsContext);
-    for (const TextElement& entry : batch())
-    {
-        const TextLabel& textLabel = *entry._textLabel;
-        // Retrieve the font from the font cache
-        I32 font = getFont(textLabel._font);
-        // The font may be invalid, so skip this text label
-        if (font != FONS_INVALID) {
-            fonsSetFont(_fonsContext, font);
-            fonsSetBlur(_fonsContext, textLabel._blurAmount);
-            fonsSetBlur(_fonsContext, textLabel._spacing);
-            fonsSetAlign(_fonsContext, textLabel._alignFlag);
-            fonsSetSize(_fonsContext, to_F32(textLabel._fontSize));
-            fonsSetColour(_fonsContext,
-                          textLabel._colour.r,
-                          textLabel._colour.g,
-                          textLabel._colour.b,
-                          textLabel._colour.a);
+        fonsClearState(_fonsContext);
+        for (const TextElement& entry : batch())
+        {
+            const TextLabel& textLabel = *entry._textLabel;
+            // Retrieve the font from the font cache
+            I32 font = getFont(textLabel._font);
+            // The font may be invalid, so skip this text label
+            if (font != FONS_INVALID) {
+                fonsSetFont(_fonsContext, font);
+                fonsSetBlur(_fonsContext, textLabel._blurAmount);
+                fonsSetBlur(_fonsContext, textLabel._spacing);
+                fonsSetAlign(_fonsContext, textLabel._alignFlag);
+                fonsSetSize(_fonsContext, to_F32(textLabel._fontSize));
+                fonsSetColour(_fonsContext,
+                              textLabel._colour.r,
+                              textLabel._colour.g,
+                              textLabel._colour.b,
+                              textLabel._colour.a);
 
-            F32 textX = entry._position.x;
-            F32 textY = height - entry._position.y;
-            F32 lh = 0;
-            fonsVertMetrics(_fonsContext, nullptr, nullptr, &lh);
+                F32 textX = entry._position.x;
+                F32 textY = height - entry._position.y;
+                F32 lh = 0;
+                fonsVertMetrics(_fonsContext, nullptr, nullptr, &lh);
 
-            const vectorImpl<stringImpl>& text = textLabel.text();
-            vectorAlg::vecSize lineCount = text.size();
-            for (vectorAlg::vecSize i = 0; i < lineCount; ++i) {
-                fonsDrawText(_fonsContext,
-                             textX,
-                             textY - (lh * i),
-                             text[i].c_str(),
-                             nullptr);
+                const vectorImpl<stringImpl>& text = textLabel.text();
+                vectorAlg::vecSize lineCount = text.size();
+                for (vectorAlg::vecSize i = 0; i < lineCount; ++i) {
+                    fonsDrawText(_fonsContext,
+                                 textX,
+                                 textY - (lh * i),
+                                 text[i].c_str(),
+                                 nullptr);
+                }
+                drawCount += lineCount;
             }
-            drawCount += lineCount;
+            // Register each label rendered as a draw call
+            _context.registerDrawCalls(to_U32(drawCount));
         }
-        // Register each label rendered as a draw call
-        _context.registerDrawCalls(to_U32(drawCount));
     }
 }
 
@@ -855,8 +862,20 @@ bool GL_API::bindPipeline(const Pipeline& pipeline) {
     return pipeline.shaderProgram()->bind();
 }
 
-bool GL_API::draw(const GenericDrawCommand& cmd) {
-    if (bindPipeline(cmd.pipeline())) {
+void GL_API::sendPushConstants(const Pipeline& pipeline, const PushConstants& pushConstants) {
+    glShaderProgram* program = static_cast<glShaderProgram*>(pipeline.shaderProgram());
+    for (const PushConstant& constant : pushConstants._data) {
+        if (!constant._binding.empty() && constant._type != PushConstantType::COUNT) {
+            program->UploadPushConstant(constant);
+        }
+    }
+}
+
+bool GL_API::draw(const GenericDrawCommand& cmd,
+                  const Pipeline& pipeline,
+                  const PushConstants& pushConstants) {
+    if (bindPipeline(pipeline)) {
+        sendPushConstants(pipeline, pushConstants);
         if (cmd.sourceBuffer() == nullptr) {
             GL_API::setActiveVAO(s_dummyVAO);
         

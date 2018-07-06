@@ -30,6 +30,8 @@ void GFXDevice::renderDebugViews() {
 
         // Lazy-load preview shader
         if (!_previewDepthMapShader) {
+            PushConstant shaderData;
+
             // The LinearDepth variant converts the depth values to linear values
             // between the 2 scene z-planes
             ResourceDescriptor fbPreview("fbPreview.LinearDepth.ScenePlanes");
@@ -40,35 +42,58 @@ void GFXDevice::renderDebugViews() {
             DebugView_ptr HiZ = std::make_shared<DebugView>();
             HiZ->_shader = _previewDepthMapShader;
             HiZ->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Depth, 0).texture();
-            HiZ->_shaderData._floatValues.push_back(std::make_pair("lodLevel", to_F32(HiZ->_texture->getMaxMipLevel() - 1)));
             HiZ->_name = "Hierarchical-Z";
+            shaderData._binding = "lodLevel";
+            shaderData._type = PushConstantType::FLOAT;
+            shaderData._values = { to_F32(HiZ->_texture->getMaxMipLevel() - 1) };
+            HiZ->_shaderData._data.push_back(shaderData);
 
             DebugView_ptr DepthPreview = std::make_shared<DebugView>();
             DepthPreview->_shader = _previewDepthMapShader;
             DepthPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Depth, 0).texture();
-            DepthPreview->_shaderData._floatValues.push_back(std::make_pair("lodLevel", 0.0f));
             DepthPreview->_name = "Depth Buffer";
+            shaderData._values = { 0.0f };
+            DepthPreview->_shaderData._data.push_back(shaderData);
 
             DebugView_ptr NormalPreview = std::make_shared<DebugView>();
             NormalPreview->_shader = _renderTargetDraw;
             NormalPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS)).texture();
-            NormalPreview->_shaderData._boolValues.push_back(std::make_pair("linearSpace", false));
-            NormalPreview->_shaderData._boolValues.push_back(std::make_pair("unpack2Channel", true));
             NormalPreview->_name = "Normals";
+
+            shaderData._type = PushConstantType::UINT;
+            shaderData._binding = "linearSpace";
+            shaderData._values = { 0u };
+            NormalPreview->_shaderData._data.push_back(shaderData);
+
+            shaderData._binding = "unpack2Channel";
+            shaderData._values = { 1u };
+            NormalPreview->_shaderData._data.push_back(shaderData);
 
             DebugView_ptr VelocityPreview = std::make_shared<DebugView>();
             VelocityPreview->_shader = _renderTargetDraw;
             VelocityPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::VELOCITY)).texture();
-            VelocityPreview->_shaderData._boolValues.push_back(std::make_pair("linearSpace", false));
-            VelocityPreview->_shaderData._boolValues.push_back(std::make_pair("unpack2Channel", false));
             VelocityPreview->_name = "Velocity Map";
+            
+            shaderData._binding = "linearSpace";
+            shaderData._values = { 0u };
+            VelocityPreview->_shaderData._data.push_back(shaderData);
+
+            shaderData._binding = "unpack2Channel";
+            shaderData._values = { 0u };
+            VelocityPreview->_shaderData._data.push_back(shaderData);
 
             DebugView_ptr AlphaAccumulation = std::make_shared<DebugView>();
             AlphaAccumulation->_shader = _renderTargetDraw;
             AlphaAccumulation->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::OIT)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO)).texture();
-            AlphaAccumulation->_shaderData._boolValues.push_back(std::make_pair("linearSpace", true));
-            AlphaAccumulation->_shaderData._boolValues.push_back(std::make_pair("unpack2Channel", false));
             AlphaAccumulation->_name = "Alpha Accumulation";
+
+            shaderData._binding = "linearSpace";
+            shaderData._values = { 1u };
+            AlphaAccumulation->_shaderData._data.push_back(shaderData);
+
+            shaderData._binding = "unpack2Channel";
+            shaderData._values = { 0u };
+            AlphaAccumulation->_shaderData._data.push_back(shaderData);
 
             addDebugView(HiZ);
             addDebugView(DepthPreview);
@@ -87,7 +112,7 @@ void GFXDevice::renderDebugViews() {
                 LoDLevel = to_I32(std::ceil(Time::ElapsedMilliseconds() / 750.0f)) %
                     (screenRT.getAttachment(RTAttachmentType::Depth, 0).texture()->getMaxMipLevel() - 1);
             }
-            HiZPtr->_shaderData._floatValues[0].second = to_F32(LoDLevel);
+            HiZPtr->_shaderData._data[0]._values[0] = to_F32(LoDLevel);
         }
 
         constexpr I32 maxViewportColumnCount = 10;
@@ -120,22 +145,11 @@ void GFXDevice::renderDebugViews() {
             for (U8 j = 0; j < columnCount; ++j) {
                 DebugView& view = *_debugViews[viewIndex];
                 pipelineDesc._shaderProgram = view._shader;
-                triangleCmd.pipeline(newPipeline(pipelineDesc));
+                Pipeline pipeline = newPipeline(pipelineDesc);
                 view._texture->bind(view._textureBindSlot);
-
-                DebugView::ShaderData& shaderData = view._shaderData;
-                for (const std::pair<stringImpl, I32>& data : shaderData._intValues) {
-                    view._shader->Uniform(data.first.c_str(), data.second);
-                }
-                for (const std::pair<stringImpl, F32>& data : shaderData._floatValues) {
-                    view._shader->Uniform(data.first.c_str(), data.second);
-                }
-                for (const std::pair<stringImpl, bool>& data : shaderData._boolValues) {
-                    view._shader->Uniform(data.first.c_str(), data.second);
-                }
                 {
                     GFX::ScopedViewport sView(*this, viewport);
-                    draw(triangleCmd);
+                    draw(triangleCmd, pipeline, view._shaderData);
                     if (!view._name.empty()) {
                         labelStack.emplace_back(view._name, viewport);
                     }

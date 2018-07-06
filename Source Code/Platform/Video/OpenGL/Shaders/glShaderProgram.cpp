@@ -651,200 +651,28 @@ U32 glShaderProgram::GetSubroutineIndex(ShaderType type, const char* name) const
                                 name);
 }
 
-/// Set an uniform value
-void glShaderProgram::Uniform(const stringImplFast& location, U32 value) {
-    I32 binding = cachedValueUpdate(location, value);
+I32 glShaderProgram::cachedValueUpdate(const PushConstant& constant) {
+    const char* location = constant._binding.c_str();
+    U64 locationHash = _ID_RT(location);
 
-    if (binding != -1) {
-        glProgramUniform1ui(_shaderProgramID, binding, value);
-    }
-}
+    I32 binding = Binding(location);
 
-/// Set an uniform value
-void glShaderProgram::Uniform(const stringImplFast& location, I32 value) {
-    I32 binding = cachedValueUpdate(location, value);
-
-    if (binding != -1) {
-        glProgramUniform1i(_shaderProgramID, binding, value);
-    }
-}
-
-/// Set an uniform value
-void glShaderProgram::Uniform(const stringImplFast& location, F32 value) {
-    I32 binding = cachedValueUpdate(location, value);
-
-    if (binding != -1) {
-        glProgramUniform1f(_shaderProgramID, binding, value);
-    }
-}
-
-/// Set an uniform value
-void glShaderProgram::Uniform(const stringImplFast& location, const vec2<F32>& value) {
-    I32 binding = cachedValueUpdate(location, value);
-
-    if (binding != -1) {
-        glProgramUniform2fv(_shaderProgramID, binding, 1, value);
-    }
-}
-
-/// Set an uniform value
-void glShaderProgram::Uniform(const stringImplFast& location, const vec2<I32>& value) {
-    I32 binding = cachedValueUpdate(location, value);
-
-    if (binding != -1) {
-        glProgramUniform2iv(_shaderProgramID, binding, 1, value);
-    }
-}
-
-/// Set an uniform value
-void glShaderProgram::Uniform(const stringImplFast& location, const vec3<F32>& value) {
-    I32 binding = cachedValueUpdate(location, value);
-
-    if (binding != -1) {
-        glProgramUniform3fv(_shaderProgramID, binding, 1, value);
-    }
-}
-
-void glShaderProgram::Uniform(const stringImplFast& location, const vec3<I32>& value) {
-    I32 binding = cachedValueUpdate(location, value);
-
-    if (binding != -1) {
-        glProgramUniform3iv(_shaderProgramID, binding, 1, value);
-    }
-}
-
-/// Set an uniform value
-void glShaderProgram::Uniform(const stringImplFast& location, const vec4<F32>& value) {
-    I32 binding = cachedValueUpdate(location, value);
-
-    if (binding != -1) {
-        glProgramUniform4fv(_shaderProgramID, binding, 1, value);
-    }
-}
-
-void glShaderProgram::Uniform(const stringImplFast& location, const vec4<I32>& value) {
-    I32 binding = cachedValueUpdate(location, value);
-
-    if (binding != -1) {
-        glProgramUniform4iv(_shaderProgramID, binding, 1, value);
-    }
-}
-
-/// Set an uniform value
-void glShaderProgram::Uniform(const stringImplFast& location, const mat3<F32>& value,
-                              bool transpose) {
-    I32 binding = cachedValueUpdate(location, value);
-
-    if (binding != -1) {
-        glProgramUniformMatrix3fv(_shaderProgramID, binding, 1,
-                                  transpose ? GL_TRUE : GL_FALSE, value.mat);
-    }
-}
-
-/// Set an uniform value
-void glShaderProgram::Uniform(const stringImplFast& location, const mat4<F32>& value,
-                              bool transpose) {
-    I32 binding = cachedValueUpdate(location, value);
-
-    if (binding != -1) {
-        glProgramUniformMatrix4fv(_shaderProgramID, binding, 1,
-                                  transpose ? GL_TRUE : GL_FALSE, value.mat);
-    }
-}
-
-/// Set an uniform value
-void glShaderProgram::Uniform(const stringImplFast& location, const vectorImpl<I32>& values) {
-    I32 binding = cachedValueUpdate(location, values);
-
-    if (values.empty() || binding == -1) {
-        return;
+    if (binding == -1 || _shaderProgramID == 0) {
+        return -1;
     }
 
-    glProgramUniform1iv(_shaderProgramID, binding, (GLsizei)values.size(),
-                        values.data());
-}
-
-/// Set an uniform value
-void glShaderProgram::Uniform(const stringImplFast& location, const vectorImpl<F32>& values) {
-    I32 binding = cachedValueUpdate(location, values);
-
-    if (values.empty() || binding == -1) {
-        return;
+    UniformsByNameHash::ShaderVarMap::iterator it = _uniformsByNameHash._shaderVars.find(locationHash);
+    if (it != std::end(_uniformsByNameHash._shaderVars)) {
+        if (comparePushConstants(it->second, constant)) {
+            return -1;
+        } else {
+            it->second = constant;
+        }
+    } else {
+        hashAlg::emplace(_uniformsByNameHash._shaderVars, locationHash, constant);
     }
 
-    glProgramUniform1fv(_shaderProgramID, binding, (GLsizei)values.size(),
-                        values.data());
-}
-
-/// Set an uniform value
-void glShaderProgram::Uniform(const stringImplFast& location,
-                              const vectorImpl<vec2<F32> >& values) {
-    I32 binding = cachedValueUpdate(location, values);
-
-    if (values.empty() || binding == -1) {
-        return;
-    }
-
-    glProgramUniform2fv(_shaderProgramID, binding, (GLsizei)values.size(),
-                        values.front());
-}
-
-/// Set an uniform value
-void glShaderProgram::Uniform(const stringImplFast& location,
-                              const vectorImpl<vec3<F32> >& values) {
-    I32 binding = cachedValueUpdate(location, values);
-
-    if (values.empty() || binding == -1) {
-        return;
-    }
-
-    glProgramUniform3fv(_shaderProgramID, binding, (GLsizei)values.size(),
-                        values.front());
-}
-
-/// Set an uniform value
-void glShaderProgram::Uniform(const stringImplFast& location,
-                              const vectorImplBest<vec4<F32> >& values) {
-    I32 binding = cachedValueUpdate(location, values);
-
-    if (values.empty() || binding == -1) {
-        return;
-    }
-
-    glProgramUniform4fv(_shaderProgramID, binding, (GLsizei)values.size(),
-                        values.front());
-}
-
-/// Set an uniform value
-void glShaderProgram::Uniform(const stringImplFast& location,
-                              const vectorImpl<mat3<F32> >& values,
-                              bool transpose) {
-    I32 binding = cachedValueUpdate(location, values);
-
-    if (values.empty() || binding == -1) {
-        return;
-    }
-
-    glProgramUniformMatrix3fv(_shaderProgramID,
-                              binding,
-                              (GLsizei)values.size(),
-                              transpose ? GL_TRUE : GL_FALSE, values.front());
-}
-
-/// Set an uniform value
-void glShaderProgram::Uniform(const stringImplFast& location,
-                              const vectorImplBest<mat4<F32> >& values,
-                              bool transpose) {
-    I32 binding = cachedValueUpdate(location, values);
-
-    if (values.empty() || binding == -1) {
-        return;
-    }
-
-    glProgramUniformMatrix4fv(_shaderProgramID,
-                              binding,
-                              (GLsizei)values.size(),
-                              transpose ? GL_TRUE : GL_FALSE, values.front());
+    return binding;
 }
 
 void glShaderProgram::DispatchCompute(U32 xGroups, U32 yGroups, U32 zGroups) {
@@ -883,38 +711,8 @@ void glShaderProgram::SetMemoryBarrier(MemoryBarrierType type) {
 }
 
 void glShaderProgram::reuploadUniforms() {
-    for (UniformsByName::ShaderVarU32Map::value_type it : _uniformsByName._shaderVarsU32) {
-        Uniform(it.first, it.second);
-    }
-    for (UniformsByName::ShaderVarI32Map::value_type it : _uniformsByName._shaderVarsI32) {
-        Uniform(it.first, it.second);
-    }
-    for (UniformsByName::ShaderVarF32Map::value_type it : _uniformsByName._shaderVarsF32) {
-        Uniform(it.first, it.second);
-    }
-    for (UniformsByName::ShaderVarVec2F32Map::value_type it : _uniformsByName._shaderVarsVec2F32) {
-        Uniform(it.first, it.second);
-    }
-    for (UniformsByName::ShaderVarvec2I32Map::value_type it : _uniformsByName._shaderVarsVec2I32) {
-        Uniform(it.first, it.second);
-    }
-    for (UniformsByName::ShaderVarVec3F32Map::value_type it : _uniformsByName._shaderVarsVec3F32) {
-        Uniform(it.first, it.second);
-    }
-    for (UniformsByName::ShaderVarVec3I32Map::value_type it : _uniformsByName._shaderVarsVec3I32) {
-        Uniform(it.first, it.second);
-    }
-    for (UniformsByName::ShaderVarVec4F32Map::value_type it : _uniformsByName._shaderVarsVec4F32) {
-        Uniform(it.first, it.second);
-    }
-    for (UniformsByName::ShaderVarVec4I32Map::value_type it : _uniformsByName._shaderVarsVec4I32) {
-        Uniform(it.first, it.second);
-    }
-    for (UniformsByName::ShaderVarMat3Map::value_type it : _uniformsByName._shaderVarsMat3) {
-        Uniform(it.first, it.second);
-    }
-    for (UniformsByName::ShaderVarMat4Map::value_type it : _uniformsByName._shaderVarsMat4) {
-        Uniform(it.first, it.second);
+    for (UniformsByNameHash::ShaderVarMap::value_type it : _uniformsByNameHash._shaderVars) {
+        UploadPushConstant(it.second);
     }
 }
 
