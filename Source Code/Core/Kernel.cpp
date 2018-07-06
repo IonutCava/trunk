@@ -539,7 +539,6 @@ void Kernel::shutdown() {
     // Destroy the shader manager AFTER the resource cache
     ShaderManager::destroyInstance();
     FrameListenerManager::destroyInstance();
-    Locale::clear();
 }
 
 void Kernel::updateResolutionCallback(I32 w, I32 h){

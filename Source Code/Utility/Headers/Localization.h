@@ -32,22 +32,19 @@ namespace Locale {
     ///Each string key in the map matches a key in the language ini file
     ///each string value in the map matches the value in the ini file for the given key
     ///Basicly, the hashMapImpl is a direct copy of the [language] section of the give ini file
-    static hashMapImpl<stringImpl, stringImpl> _languageTable;
+    static hashMapImpl<stringImpl, stringImpl> g_languageTable;
     ///Default language can be set at compile time
-    static stringImpl _localeFile = DEFAULT_LANG;
+    static stringImpl g_localeFile = DEFAULT_LANG;
+    ///Is everything loaded and ready for use?
+    static bool g_initialized = false;
+    ///Reset everything and load the specified language file.
+    bool init(const stringImpl& newLanguage = DEFAULT_LANG);
     ///clear the language table
-    inline void clear() { 
-        _languageTable.clear(); 
-    }
+    void clear();
     ///Altough the language can be set at compile time, in-game options may support language changes
-    inline void changeLanguage(const stringImpl& newLanguage){
-        ///Set the new language code
-        _localeFile = newLanguage;
-        ///And clear the table for the old language
-        clear();
-    }
+    void changeLanguage(const stringImpl& newLanguage);
     ///Query the current language code to detect changes
-    inline const stringImpl& currentLanguage() { return _localeFile; }
+    inline const stringImpl& currentLanguage() { return g_localeFile; }
     ///usage: Locale::get("A_B_C") or Locale::get("A_B_C","X") where "A_B_C" is the language key we want
     ///and "X" is a default string in case the key does not exist in the INI file
     char* get(const stringImpl& key,const stringImpl& defaultValue = stringImpl("String not found!"));

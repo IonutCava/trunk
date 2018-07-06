@@ -43,7 +43,6 @@ Application::~Application(){
     memLog << allocLog.c_str();
     memLog.close();
 #endif
-    PRINT_FN( Locale::get( "STOP_APPLICATION" ) );
     ParamHandler::destroyInstance();
     Console::destroyInstance();
     Time::ApplicationTimer::destroyInstance();
@@ -52,6 +51,10 @@ Application::~Application(){
 ErrorCode Application::initialize(const stringImpl& entryPoint, I32 argc, char **argv){
     assert(!entryPoint.empty());
     //Read language table
+    if (!Locale::init()) {
+        return errorCode();
+    }
+    //Don't log parameter requests
     ParamHandler::getInstance().setDebugOutput(false);
     //Print a copyright notice in the log file
     Console::getInstance().printCopyrightNotice();
@@ -78,6 +81,8 @@ void Application::deinitialize() {
     for ( DELEGATE_CBK<>& cbk : _shutdownCallback ) {
         cbk();
     }
+    PRINT_FN( Locale::get( "STOP_APPLICATION" ) );
+    Locale::clear();
 }
 
 };
