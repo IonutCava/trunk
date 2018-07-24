@@ -213,7 +213,7 @@ void GL_API::appendToShaderHeader(ShaderType type,
     glswAddDirectiveToken(stage.c_str(), entry.c_str());
 
     // include directives are handles differently
-    if (entry.find("#include") == std::string::npos) {
+    if (entry.find("#include") == stringImpl::npos) {
         inOutOffset[index] += Util::LineCount(entry);
     } else {
         vector<stringImpl> tempAtoms;

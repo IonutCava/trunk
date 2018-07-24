@@ -98,7 +98,7 @@ void Script::bootstrap() {
     const stringImpl& path = systemInfo._pathAndFilename._path;
 
     vector<std::string> scriptpath{ path + Paths::Scripts::g_scriptsLocation,
-                                         path + Paths::Scripts::g_scriptsAtomsLocation };
+                                    path + Paths::Scripts::g_scriptsAtomsLocation };
 
     _script = 
         std::make_unique<chaiscript::ChaiScript>(scriptpath,

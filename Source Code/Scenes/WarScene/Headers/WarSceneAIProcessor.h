@@ -236,7 +236,7 @@ class WarSceneAIProcessor : public AIProcessor {
     void updatePositions();
     bool performAction(const GOAPAction& planStep);
     bool performActionStep(GOAPAction::operationsIterator step);
-    const std::string& printActionStats(const GOAPAction& planStep) const;
+    const stringImpl& printActionStats(const GOAPAction& planStep) const;
     void printWorkingMemory();
     void initInternal();
     void beginPlan(const GOAPGoal& currentGoal);

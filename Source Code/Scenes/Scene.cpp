@@ -185,8 +185,8 @@ void Scene::saveToXML() {
     const boost::property_tree::xml_writer_settings<std::string> settings(' ', 4);
 
     Console::printfn(Locale::get(_ID("XML_SAVE_SCENE")), name().c_str());
-    std::string sceneLocation(scenePath + "/" + name().c_str());
-    std::string sceneDataFile(sceneLocation + ".xml");
+    stringImpl sceneLocation(scenePath + "/" + name().c_str());
+    stringImpl sceneDataFile(sceneLocation + ".xml");
 
     createDirectory((sceneLocation + "/collisionMeshes/").c_str());
     createDirectory((sceneLocation + "/navMeshes/").c_str());
@@ -309,8 +309,8 @@ void Scene::loadAsset(const XML::SceneNode& sceneNode, SceneGraphNode* parent) {
     assert(parent != nullptr);
 
     const stringImpl& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
-    std::string sceneLocation(scenePath + "/" + name().c_str());
-    std::string nodePath = sceneLocation + "/nodes/" + parent->name() + "_" + sceneNode.name + ".xml";
+    stringImpl sceneLocation(scenePath + "/" + name().c_str());
+    stringImpl nodePath = sceneLocation + "/nodes/" + parent->name() + "_" + sceneNode.name + ".xml";
 
     SceneGraphNode* crtNode = parent;
     if (fileExists(nodePath.c_str())) {

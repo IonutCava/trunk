@@ -145,11 +145,11 @@ inline void ParamHandler::setParam(U64 paramID, const stringImpl& value) {
 
 #if defined(USE_CUSTOM_MEMORY_ALLOCATORS)
 template <>
-inline std::string ParamHandler::getParam(U64 paramID, std::string defaultValue) const {
+inline stringImpl ParamHandler::getParam(U64 paramID, stringImpl defaultValue) const {
     return getParam<stringImpl>(paramID, defaultValue.c_str()).c_str();
 }
 template <>
-inline void ParamHandler::setParam(U64 paramID, const std::string& value) {
+inline void ParamHandler::setParam(U64 paramID, const stringImpl& value) {
     setParam<stringImpl>(paramID, value.c_str());
 }
 

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <entities>
     <node name="ROOT" type="ROOT">
-        <node name="DefaultScene_directional_light 0_SGN_481" type="LIGHT"/>
-        <node name="Default Sky_SGN_553" type="SKY">
-            <node name="SkyBox_SGN_607" type="SPHERE_3D"/>
+        <node name="DefaultSky" type="SKY">
+            <node name="DefaultSky_geometry" type="SPHERE_3D"/>
         </node>
+        <node name="DefaultLight" type="LIGHT"/>
     </node>
 </entities>

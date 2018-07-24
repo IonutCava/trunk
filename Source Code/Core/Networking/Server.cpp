@@ -57,7 +57,7 @@ void Server::init(U16 port, const stringImpl& broadcast_endpoint_address, bool d
         }));
 
     } catch (std::exception& e) {
-        ASIO::LOG_PRINT((std::string("SERVER: ") + e.what()).c_str(), true);
+        ASIO::LOG_PRINT((stringImpl("SERVER: ") + e.what()).c_str(), true);
     }
 }
 

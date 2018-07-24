@@ -19,8 +19,8 @@ namespace goap {
         typedef std::unordered_map<int, bool>::const_iterator operationsIterator;
 
     private:
-        std::string name_; // The human-readable action name
-        int cost_;         // The numeric cost of this action
+        stringImpl name_; // The human-readable action name
+        int cost_;        // The numeric cost of this action
 
         // Preconditions are things that must be satisfied before this
         // action can be taken. Only preconditions that "matter" are here.
@@ -31,7 +31,7 @@ namespace goap {
 
     public:
         Action();
-        Action(const std::string& name, int cost);
+        Action(const stringImpl& name, int cost);
 
         /**
          Is this action eligible to operate on the given worldstate?
@@ -70,7 +70,7 @@ namespace goap {
 
         int cost() const { return cost_; }
 
-        const std::string& name() const { return name_; }
+        const stringImpl& name() const { return name_; }
 
         virtual bool checkImplDependentCondition() const {
             return true;

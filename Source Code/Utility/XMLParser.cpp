@@ -60,7 +60,7 @@ void loadDefaultKeybindings(const stringImpl &file, Scene* scene) {
         const ptree & attributes = f.second.get_child("<xmlattr>", empty_ptree());
         scene->input().actionList()
                       .getInputAction(attributes.get<U16>("id", 0))
-                      .displayName(attributes.get<std::string>("name", "").c_str());
+                      .displayName(attributes.get<stringImpl>("name", "").c_str());
     }
 
     PressReleaseActions actions;
@@ -91,7 +91,7 @@ void loadDefaultKeybindings(const stringImpl &file, Scene* scene) {
         scene->input().addMouseMapping(btn, actions);
     }
 
-    const std::string label("joystickButtons.joystick");
+    const stringImpl label("joystickButtons.joystick");
     for (U32 i = 0 ; i < to_base(Input::Joystick::COUNT); ++i) {
         Input::Joystick joystick = static_cast<Input::Joystick>(i);
         
@@ -116,8 +116,8 @@ void loadScene(const stringImpl& scenePath, const stringImpl &sceneName, Scene* 
     
     ptree pt;
     Console::printfn(Locale::get(_ID("XML_LOAD_SCENE")), sceneName.c_str());
-    std::string sceneLocation(scenePath + "/" + sceneName.c_str());
-    std::string sceneDataFile(sceneLocation + ".xml");
+    stringImpl sceneLocation(scenePath + "/" + sceneName.c_str());
+    stringImpl sceneDataFile(sceneLocation + ".xml");
 
     // A scene does not necessarily need external data files
     // Data can be added in code for simple scenes
@@ -205,8 +205,8 @@ void loadMusicPlaylist(const stringImpl& scenePath, const stringImpl& fileName, 
     {
         const ptree & attributes = f.second.get_child("<xmlattr>", empty_ptree());
         scene->addMusic(MusicType::TYPE_BACKGROUND,
-                        attributes.get<std::string>("name", "").c_str(),
-                         Paths::g_assetsLocation + attributes.get<std::string>("src", "").c_str());
+                        attributes.get<stringImpl>("name", "").c_str(),
+                         Paths::g_assetsLocation + attributes.get<stringImpl>("src", "").c_str());
     }
 }
 
@@ -226,9 +226,9 @@ void loadTerrain(const stringImpl& scenePath, const stringImpl& fileName, Scene 
 
     for (itTerrain = std::begin(pt.get_child("terrainList")); itTerrain != std::end(pt.get_child("terrainList")); ++itTerrain) {
         // The actual terrain name
-        std::string name = itTerrain->second.data();
+        stringImpl name = itTerrain->second.data();
         // The <name> tag for valid terrains or <xmlcomment> for comments
-        std::string tag = itTerrain->first.data();
+        stringImpl tag = itTerrain->first.data();
         // Check and skip commented terrain
         if (tag.find("<xmlcomment>") != stringImpl::npos) {
             continue;
@@ -251,8 +251,8 @@ void loadTerrain(const stringImpl& scenePath, const stringImpl& fileName, Scene 
         for (itTexture = std::begin(pt.get_child(name + ".textureLayers"));
              itTexture != std::end(pt.get_child(name + ".textureLayers"));
              ++itTexture, ++i) {
-            std::string layerName(itTexture->second.data());
-            std::string format(itTexture->first.data());
+            stringImpl layerName(itTexture->second.data());
+            stringImpl format(itTexture->first.data());
 
             if (format.find("<xmlcomment>") != stringImpl::npos) {
                 i--;

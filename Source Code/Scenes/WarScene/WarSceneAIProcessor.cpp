@@ -850,7 +850,7 @@ bool WarSceneAIProcessor::performActionStep(
     return true;
 }
 
-const std::string& WarSceneAIProcessor::printActionStats(const GOAPAction& planStep) const {
+const stringImpl& WarSceneAIProcessor::printActionStats(const GOAPAction& planStep) const {
     PRINT("Action [ %s ]", planStep.name().c_str());
     return planStep.name();
 }

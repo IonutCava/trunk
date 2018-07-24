@@ -61,21 +61,21 @@ class GOAPGoal : public goap::WorldState {
     inline F32 relevancy() const { return _relevancy; }
     inline void relevancy(F32 relevancy) { _relevancy = relevancy; }
 
-    const std::string& name() const { return name_; }
+    const stringImpl& name() const { return name_; }
     U32 getID() const { return _ID; }
     virtual bool plan(const GOAPWorldState& worldState,
                       const GOAPActionSet& actionSet);
 
     const GOAPPlan& getCurrentPlan() const;
 
-    std::string getOpenList() const {
-        std::string ret;
+    stringImpl getOpenList() const {
+        stringImpl ret;
         _planner.printOpenList(ret);
         return ret;
     }
 
-    std::string getClosedList() const {
-        std::string ret;
+    stringImpl getClosedList() const {
+        stringImpl ret;
         _planner.printClosedList(ret);
         return ret;
     }

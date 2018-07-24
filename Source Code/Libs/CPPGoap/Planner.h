@@ -68,12 +68,12 @@ namespace goap {
         /**
          Useful when you're debugging a GOAP plan: simply dumps the open list to stdout.
         */
-        void printOpenList(std::string& output) const;
+        void printOpenList(stringImpl& output) const;
 
         /**
          Useful when you're debugging a GOAP plan: simply dumps the closed list to stdout.
         */
-        void printClosedList(std::string& output) const;
+        void printClosedList(stringImpl& output) const;
 
         /**
          Actually attempt to formulate a plan to get from start to goal, given a pool of

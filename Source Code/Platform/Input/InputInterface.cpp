@@ -335,7 +335,7 @@ JoystickElement  InputInterface::joystickElementByName(const stringImpl& element
     assert(buttonElements.size() == 2 && "Invalid joystick element name!");
     assert(Util::CompareIgnoreCase(buttonElements[0], "BUTTON"));
 
-    I32 buttonId = Util::ConvertData<I32, std::string>(buttonElements[1].c_str());
+    I32 buttonId = Util::ConvertData<I32, stringImpl>(buttonElements[1].c_str());
     return JoystickElement(JoystickElementType::BUTTON_PRESS, to_U8(buttonId));
 }
 

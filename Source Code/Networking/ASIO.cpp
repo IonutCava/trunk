@@ -50,7 +50,7 @@ bool ASIO::init(const stringImpl& address, U16 port) {
         _connected = true;
     } catch (std::exception& e) {
         if (_debugOutput) {
-            LOG_PRINT((std::string("ASIO Exception: ") + e.what()).c_str(), true);
+            LOG_PRINT((stringImpl("ASIO Exception: ") + e.what()).c_str(), true);
         }
         _connected = false;
     }
