@@ -114,7 +114,7 @@ void glUniformBuffer::readData(ptrdiff_t offsetElementCount,
             "glUniformBuffer::UpdateData error: was called with an "
             "invalid range (buffer overflow)!");
 
-        offset += queueWriteIndex() * _allignedBufferSize;
+        offset += queueIndex() * _allignedBufferSize;
 
         _buffer->readData(offset, range, result);
     }
@@ -139,7 +139,7 @@ void glUniformBuffer::writeData(ptrdiff_t offsetElementCount,
         "glUniformBuffer::UpdateData error: was called with an "
         "invalid range (buffer overflow)!");
 
-    offset += queueWriteIndex() * _allignedBufferSize;
+    offset += queueIndex() * _allignedBufferSize;
 
     _buffer->writeData(offset, range, data);
 }
@@ -160,7 +160,7 @@ void glUniformBuffer::writeBytes(ptrdiff_t offsetInBytes,
         "glUniformBuffer::UpdateData error: was called with an "
         "invalid range (buffer overflow)!");
 
-    offsetInBytes += queueWriteIndex() * _allignedBufferSize;
+    offsetInBytes += queueIndex() * _allignedBufferSize;
 
     _buffer->writeData(offsetInBytes, rangeInBytes, data);
 }
@@ -172,7 +172,7 @@ bool glUniformBuffer::bindRange(U8 bindIndex, U32 offsetElementCount, U32 rangeE
 
     GLuint range = static_cast<GLuint>(rangeElementCount * _primitiveSize);
     GLuint offset = static_cast<GLuint>(offsetElementCount * _primitiveSize);
-    offset += static_cast<GLuint>(queueReadIndex() * _allignedBufferSize);
+    offset += static_cast<GLuint>(queueIndex() * _allignedBufferSize);
 
 
     assert(range <= _maxSize &&
@@ -197,7 +197,7 @@ U32 glUniformBuffer::getAtomicCounter(U8 offset, U8 counterIndex) {
 
     AtomicCounter* counter = _atomicCounters[counterIndex];
     GLuint result = 0;
-    counter->_buffer->readData(1, offset, counter->queueReadIndex(), &result);
+    counter->_buffer->readData(1, offset, counter->queueIndex(), &result);
     return result;
 }
 
@@ -209,7 +209,7 @@ void glUniformBuffer::bindAtomicCounter(U8 offset, U8 counterIndex, U8 bindIndex
     AtomicCounter* counter = _atomicCounters[counterIndex];
 
     size_t bindOffset = offset * sizeof(GLuint);
-    bindOffset += counter->queueWriteIndex() * (sizeof(GLuint) * counter->_buffer->elementCount());
+    bindOffset += counter->queueIndex() * (sizeof(GLuint) * counter->_buffer->elementCount());
 
     SetIfDifferentBindRange(bindIndex,
                             counter->_buffer->bufferHandle(),
@@ -223,7 +223,7 @@ void glUniformBuffer::resetAtomicCounter(U8 offset, U8 counterIndex) {
     }
     
     AtomicCounter* counter = _atomicCounters[counterIndex];
-    counter->_buffer->zeroMem(offset, counter->queueWriteIndex());
+    counter->_buffer->zeroMem(offset, counter->queueIndex());
 }
 
 void glUniformBuffer::printInfo(const ShaderProgram* shaderProgram, U8 bindIndex) {

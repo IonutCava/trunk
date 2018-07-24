@@ -62,12 +62,22 @@ glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
     if (!usePersistentMapping && !params._forcePersistentMap) {
         GLUtil::createAndAllocBuffer(_alignedSize, _usage, _handle, params._initialData, params._name);
     } else {
-        gl::BufferStorageMask storageMask = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
-        if (_updateFrequency != BufferUpdateFrequency::ONCE) {
-            storageMask |= GL_DYNAMIC_STORAGE_BIT;
-        }
+        gl::BufferStorageMask storageMask = GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
+        gl::BufferAccessMask accessMask = GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
+        switch (_updateFrequency) {
+            case BufferUpdateFrequency::ONCE:
+                //NoP
+            break;
+            case BufferUpdateFrequency::OCASSIONAL:
+            case BufferUpdateFrequency::OFTEN:
+                storageMask |= GL_MAP_WRITE_BIT;
+                accessMask |= GL_MAP_WRITE_BIT;
+            break;
+            case BufferUpdateFrequency::COUNT:
+                DIVIDE_UNEXPECTED_CALL("Unknown buffer update frequency!");
+            break;
+        };
 
-        gl::BufferAccessMask accessMask = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
 
         _mappedBuffer = GLUtil::createAndAllocPersistentBuffer(_alignedSize, storageMask, accessMask, _handle, params._initialData, params._name);
 

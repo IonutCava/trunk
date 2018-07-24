@@ -30,7 +30,7 @@ void glHardwareQuery::destroy() {
 }
 
 glHardwareQueryRing::glHardwareQueryRing(GFXDevice& context, U32 queueLength, U32 id)
-    : RingBuffer(queueLength),
+    : RingBufferSeparateWrite(queueLength),
       _context(context),
       _id(id),
       _needRefresh(true)
@@ -74,7 +74,7 @@ void glHardwareQueryRing::initQueries() {
 }
 
 void glHardwareQueryRing::resize(U32 queueLength) {
-    RingBuffer::resize(queueLength);
+    RingBufferSeparateWrite::resize(queueLength);
     _queries.resize(0);
     _queries.reserve(queueLength);
     for (U32 i = 0; i < queueLength; ++i) {

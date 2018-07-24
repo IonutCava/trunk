@@ -35,13 +35,13 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-class RingBuffer {
+class RingBufferSeparateWrite {
 public:
-    explicit RingBuffer(U32 queueLength);
-    RingBuffer(const RingBuffer& other);
-    virtual ~RingBuffer();
+    explicit RingBufferSeparateWrite(U32 queueLength);
+    RingBufferSeparateWrite(const RingBufferSeparateWrite& other);
+    virtual ~RingBufferSeparateWrite();
 
-    RingBuffer& operator=(const RingBuffer& other);
+    RingBufferSeparateWrite& operator=(const RingBufferSeparateWrite& other);
 
     virtual void resize(U32 queueLength);
 
@@ -75,6 +75,41 @@ private:
     U32 _queueLength;
     std::atomic_uint _queueReadIndex;
     std::atomic_uint _queueWriteIndex;
+};
+
+class RingBuffer {
+public:
+    explicit RingBuffer(U32 queueLength);
+    RingBuffer(const RingBuffer& other);
+    virtual ~RingBuffer();
+
+    RingBuffer& operator=(const RingBuffer& other);
+
+    virtual void resize(U32 queueLength);
+
+    const inline U32 queueLength() const {
+        return _queueLength;
+    }
+
+    const inline U32 queueIndex() const {
+        return _queueIndex;
+    }
+
+    inline void incQueue() {
+        if (queueLength() > 1) {
+            _queueIndex = (_queueIndex + 1) % _queueLength;
+        }
+    }
+
+    inline void decQueue() {
+        if (queueLength() > 1) {
+            _queueIndex = (_queueIndex - 1) % _queueLength;
+        }
+    }
+
+private:
+    U32 _queueLength;
+    std::atomic_uint _queueIndex;
 };
 
 }; //namespace Divide

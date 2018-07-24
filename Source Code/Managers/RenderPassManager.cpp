@@ -100,6 +100,11 @@ void RenderPassManager::render(SceneRenderState& sceneRenderState, Time::Profile
 
     Time::ScopedTimer timeCommands(*_flushCommandBufferTimer);
     _context.flushCommandBuffer(*_mainCommandBuffer);
+
+
+    for (U8 i = 0; i < renderPassCount; ++i) {
+        _renderPasses[i]->postRender();
+    }
 }
 
 RenderPass& RenderPassManager::addRenderPass(const stringImpl& renderPassName,

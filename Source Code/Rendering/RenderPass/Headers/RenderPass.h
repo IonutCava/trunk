@@ -78,6 +78,7 @@ class RenderPass : private NonCopyable {
         const BufferData& getBufferData(I32 bufferIndex, I32 bufferOffset) const;
 
         void initBuffers();
+        void incBuffers();
 
     private:
         GFXDevice& _context;
@@ -91,6 +92,8 @@ class RenderPass : private NonCopyable {
     ~RenderPass();
 
     void render(const SceneRenderState& renderState, GFX::CommandBuffer& bufferInOut);
+    void postRender();
+
     inline U8 sortKey() const { return _sortKey; }
     inline U16 getLastTotalBinSize() const { return _lastTotalBinSize; }
     inline const stringImpl& name() const { return _name; }

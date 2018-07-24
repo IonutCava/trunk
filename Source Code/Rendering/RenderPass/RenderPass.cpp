@@ -55,7 +55,7 @@ RenderPass::BufferData::BufferData(GFXDevice& context, U32 sizeFactor, I32 index
     ShaderBufferDescriptor bufferDescriptor;
     bufferDescriptor._primitiveCount = Config::MAX_VISIBLE_NODES * _sizeFactor;
     bufferDescriptor._primitiveSizeInBytes = sizeof(GFXDevice::NodeData);
-    bufferDescriptor._ringBufferLength = 1;
+    bufferDescriptor._ringBufferLength = 3;
     bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE) | to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
     bufferDescriptor._name = Util::StringFormat("RENDER_DATA_%d", index).c_str();
@@ -107,6 +107,14 @@ void RenderPass::BufferDataPool::initBuffers() {
     I32 i = 0;
     for (std::shared_ptr<BufferData>& buffer : _buffers) {
         buffer = std::make_shared<BufferData>(_context, _bufferSizeFactor, i++);
+    }
+}
+
+void RenderPass::BufferDataPool::incBuffers() {
+    for (const std::shared_ptr<BufferData>& buffer : _buffers) {
+        for (ShaderBuffer* shaderBuffer : buffer->_cmdBuffers) {
+            shaderBuffer->incQueue();
+        }
     }
 }
 
@@ -290,6 +298,10 @@ void RenderPass::render(const SceneRenderState& renderState, GFX::CommandBuffer&
             }
         } break;
     };
+}
+
+void RenderPass::postRender() {
+    _passBuffers->incBuffers();
 }
 
 // This is very hackish but should hold up fine

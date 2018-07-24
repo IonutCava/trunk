@@ -57,7 +57,7 @@ protected:
     U32 _queryID;
 };
 
-class glHardwareQueryRing : public RingBuffer {
+class glHardwareQueryRing : public RingBufferSeparateWrite {
 
 public:
     glHardwareQueryRing(GFXDevice& context, U32 queueLength, U32 id = 0);

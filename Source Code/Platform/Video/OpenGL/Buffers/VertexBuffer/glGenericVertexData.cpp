@@ -161,7 +161,7 @@ void glGenericVertexData::draw(const GenericDrawCommand& command) {
     vec_size bufferCount = _bufferObjects.size();
     for (vec_size i = 0; i < bufferCount; ++i) {
         glGenericBuffer* buffer = _bufferObjects[i];
-        buffer->lockData(buffer->elementCount(), 0, queueReadIndex());
+        buffer->lockData(buffer->elementCount(), 0, queueIndex());
     }
 }
 
@@ -258,7 +258,7 @@ void glGenericVertexData::updateBuffer(U32 buffer,
                                        U32 elementCount,
                                        U32 elementCountOffset,
                                        const bufferPtr data) {
-    _bufferObjects[buffer]->writeData(elementCount, elementCountOffset, queueWriteIndex(), data);
+    _bufferObjects[buffer]->writeData(elementCount, elementCountOffset, queueIndex(), data);
 }
 
 void glGenericVertexData::setBufferBindOffset(U32 buffer, U32 elementCountOffset) {
@@ -272,7 +272,7 @@ void glGenericVertexData::setBufferBindings(GLuint activeVAO) {
             GL_API::bindActiveBuffer(activeVAO,
                                      i,
                                      buffer->bufferHandle(),
-                                     buffer->getBindOffset(queueReadIndex()),
+                                     buffer->getBindOffset(queueIndex()),
                                      static_cast<GLsizei>(buffer->elementSize()));
         }
     }
