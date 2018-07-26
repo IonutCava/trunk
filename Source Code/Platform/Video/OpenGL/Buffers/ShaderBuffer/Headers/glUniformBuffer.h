@@ -64,6 +64,9 @@ class glUniformBuffer final : public ShaderBuffer {
                     ptrdiff_t rangeInBytes,
                     const bufferPtr data) override;
 
+    void lockData(ptrdiff_t offsetElementCount,
+                  ptrdiff_t rangeElementCount) override;
+
     bool bindRange(U8 bindIndex,
                    U32 offsetElementCount,
                    U32 rangeElementCount) override;

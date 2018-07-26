@@ -95,6 +95,9 @@ class NOINITVTABLE ShaderBuffer : public GUIDWrapper,
                            U32 offsetElementCount,
                            U32 rangeElementCount) = 0;
 
+    virtual void lockData(ptrdiff_t offsetElementCount,
+                          ptrdiff_t rangeElementCount) = 0;
+
     /// Bind return false if the buffer was already bound
     virtual bool bind(U8 bindIndex) = 0;
 

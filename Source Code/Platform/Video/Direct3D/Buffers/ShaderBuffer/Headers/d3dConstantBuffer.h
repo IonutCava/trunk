@@ -61,6 +61,9 @@ class d3dConstantBuffer final : public ShaderBuffer {
                    U32 offsetElementCount,
                    U32 rangeElementCount) override;
 
+    void lockData(ptrdiff_t offsetElementCount,
+                  ptrdiff_t rangeElementCount) override;
+
     bool bind(U8 bindIndex) override;
 
     void addAtomicCounter(U32 sizeFactor, U16 ringSizeFactor = 1) override;

@@ -56,6 +56,7 @@ protected:
     void endFrame() override;
 
     void flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) override;
+    void postFlushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) override;
 
     void updateClipPlanes(const FrustumClipPlanes& list) override;
 

@@ -34,6 +34,11 @@ void DX_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
     ACKNOWLEDGE_UNUSED(commandBuffer);
 }
 
+void DX_API::postFlushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) {
+    ACKNOWLEDGE_UNUSED(entry);
+    ACKNOWLEDGE_UNUSED(commandBuffer);
+}
+
 size_t DX_API::setStateBlock(size_t stateBlockHash) {
     ACKNOWLEDGE_UNUSED(stateBlockHash);
     return 0;

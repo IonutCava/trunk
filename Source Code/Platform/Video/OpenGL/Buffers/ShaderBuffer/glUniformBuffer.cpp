@@ -57,7 +57,7 @@ AtomicCounter::AtomicCounter(GFXDevice& context, U32 sizeFactor, U32 ringSizeFac
     params._ringSizeFactor = ringSizeFactor;
     params._data = NULL;
     params._zeroMem = true;
-    params._forcePersistentMap = true;
+    params._forcePersistentMap = false;
 
     _buffer = MemoryManager_NEW glGenericBuffer(context, params);
 }
@@ -163,6 +163,15 @@ void glUniformBuffer::writeBytes(ptrdiff_t offsetInBytes,
     offsetInBytes += queueIndex() * _allignedBufferSize;
 
     _buffer->writeData(offsetInBytes, rangeInBytes, data);
+}
+
+void glUniformBuffer::lockData(ptrdiff_t offsetElementCount,
+                               ptrdiff_t rangeElementCount) {
+    GLuint range = static_cast<GLuint>(rangeElementCount * _primitiveSize);
+    GLuint offset = static_cast<GLuint>(offsetElementCount * _primitiveSize);
+    offset += static_cast<GLuint>(queueIndex() * _allignedBufferSize);
+
+    _buffer->lockRange(offset, range);
 }
 
 bool glUniformBuffer::bindRange(U8 bindIndex, U32 offsetElementCount, U32 rangeElementCount) {

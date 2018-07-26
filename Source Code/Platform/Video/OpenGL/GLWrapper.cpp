@@ -1072,6 +1072,18 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
     };
 }
 
+void GL_API::postFlushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) {
+    switch (entry.type<GFX::CommandType::_enumerated>()) {
+        case GFX::CommandType::BIND_DESCRIPTOR_SETS: {
+            const GFX::BindDescriptorSetsCommand& crtCmd = commandBuffer.getCommand<GFX::BindDescriptorSetsCommand>(entry);
+
+            for (const ShaderBufferBinding& shaderBufCmd : crtCmd._set->_shaderBuffers) {
+                shaderBufCmd._buffer->lockData(shaderBufCmd._range.x, shaderBufCmd._range.y);
+            }
+        }break;
+    }
+}
+
 /// Activate the render state block described by the specified hash value (0 == default state block)
 size_t GL_API::setStateBlock(size_t stateBlockHash) {
     // Passing 0 is a perfectly acceptable way of enabling the default render state block

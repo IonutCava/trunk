@@ -39,7 +39,7 @@ glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
       _alignedSize(params._dataSizeInBytes),
       _updateFrequency(params._frequency),
       _mappedBuffer(nullptr),
-      _lockManager(MemoryManager_NEW glBufferLockManager())
+      _lockManager(nullptr)
 {
     if (_target == GL_ATOMIC_COUNTER_BUFFER) {
         _usage = GL_STATIC_COPY;
@@ -59,11 +59,20 @@ glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
 
     bool usePersistentMapping = !Config::Profile::DISABLE_PERSISTENT_BUFFER &&  // For debugging
                                 _alignedSize > g_persistentMapSizeThreshold;    // Driver might be faster?
+
+    // Why do we need to map it?
+    if (_updateFrequency == BufferUpdateFrequency::ONCE) {
+        usePersistentMapping = false;
+    }
+
     if (!usePersistentMapping && !params._forcePersistentMap) {
         GLUtil::createAndAllocBuffer(_alignedSize, _usage, _handle, params._initialData, params._name);
     } else {
         gl::BufferStorageMask storageMask = GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
         gl::BufferAccessMask accessMask = GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
+
+        assert(_updateFrequency != BufferUpdateFrequency::ONCE);
+
         switch (_updateFrequency) {
             case BufferUpdateFrequency::ONCE:
                 //NoP
@@ -82,6 +91,8 @@ glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
         _mappedBuffer = GLUtil::createAndAllocPersistentBuffer(_alignedSize, storageMask, accessMask, _handle, params._initialData, params._name);
 
         assert(_mappedBuffer != nullptr && "PersistentBuffer::Create error: Can't mapped persistent buffer!");
+
+        _lockManager = MemoryManager_NEW glBufferLockManager();
     }
 
     if (params._zeroMem) {
@@ -101,17 +112,21 @@ glBufferImpl::~glBufferImpl()
     }
 
     UniqueLock lock(_lockManagerMutex);
-    MemoryManager::DELETE(_lockManager);
+    MemoryManager::SAFE_DELETE(_lockManager);
 }
 
 void glBufferImpl::waitRange(size_t offsetInBytes, size_t rangeInBytes, bool blockClient) {
-    UniqueLock lock(_lockManagerMutex);
-    _lockManager->WaitForLockedRange(offsetInBytes, rangeInBytes, blockClient);
+    if (_lockManager != nullptr) {
+        UniqueLock lock(_lockManagerMutex);
+        _lockManager->WaitForLockedRange(offsetInBytes, rangeInBytes, blockClient);
+    }
 }
 
 void glBufferImpl::lockRange(size_t offsetInBytes, size_t rangeInBytes) {
-    UniqueLock lock(_lockManagerMutex);
-    _lockManager->LockRange(offsetInBytes, rangeInBytes);
+    if (_lockManager != nullptr) {
+        UniqueLock lock(_lockManagerMutex);
+        _lockManager->LockRange(offsetInBytes, rangeInBytes);
+    }
 }
 
 GLuint glBufferImpl::bufferID() const {
@@ -126,9 +141,6 @@ bool glBufferImpl::bindRange(GLuint bindIndex, size_t offsetInBytes, size_t rang
     {
         glBindBufferRange(_target, bindIndex, _handle, offsetInBytes, rangeInBytes);
         wasBound = false;
-    }
-    if (_mappedBuffer) {
-        lockRange(offsetInBytes, rangeInBytes);
     }
 
     return !wasBound;

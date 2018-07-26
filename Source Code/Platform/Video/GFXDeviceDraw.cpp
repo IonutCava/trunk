@@ -103,6 +103,10 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
                 break;
         }
     }
+
+    for (const GFX::CommandBuffer::CommandEntry& cmd : commands) {
+        _api->postFlushCommand(cmd, commandBuffer);
+    }
 }
 
 void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
