@@ -164,20 +164,20 @@ stringImpl glShader::preprocessIncludes(const stringImpl& name,
 
             ShaderType typeIndex = ShaderType::COUNT;
             // switch will throw warnings due to promotion to int
-            U64 extHash = _ID_RT(Util::GetTrailingCharacters(include_file, 4));
-            if (extHash == _ID_RT(Paths::Shaders::GLSL::g_fragAtomExt)) {
+            U64 extHash = _ID(Util::GetTrailingCharacters(include_file, 4).c_str());
+            if (extHash == _ID(Paths::Shaders::GLSL::g_fragAtomExt.c_str())) {
                 typeIndex = ShaderType::FRAGMENT;
-            } else if (extHash == _ID_RT(Paths::Shaders::GLSL::g_vertAtomExt)){
+            } else if (extHash == _ID(Paths::Shaders::GLSL::g_vertAtomExt.c_str())){
                 typeIndex = ShaderType::VERTEX;
-            } else if (extHash == _ID_RT(Paths::Shaders::GLSL::g_geomAtomExt)) {
+            } else if (extHash == _ID(Paths::Shaders::GLSL::g_geomAtomExt.c_str())) {
                 typeIndex = ShaderType::GEOMETRY;
-            } else if (extHash == _ID_RT(Paths::Shaders::GLSL::g_tescAtomExt)) {
+            } else if (extHash == _ID(Paths::Shaders::GLSL::g_tescAtomExt.c_str())) {
                 typeIndex = ShaderType::TESSELATION_CTRL;
-            } else if (extHash == _ID_RT(Paths::Shaders::GLSL::g_teseAtomExt)) {
+            } else if (extHash == _ID(Paths::Shaders::GLSL::g_teseAtomExt.c_str())) {
                 typeIndex = ShaderType::TESSELATION_EVAL;
-            } else if (extHash == _ID_RT(Paths::Shaders::GLSL::g_compAtomExt)) {
+            } else if (extHash == _ID(Paths::Shaders::GLSL::g_compAtomExt.c_str())) {
                 typeIndex = ShaderType::COMPUTE;
-            } else if (extHash == _ID_RT(Paths::Shaders::GLSL::g_comnAtomExt)) {
+            } else if (extHash == _ID(Paths::Shaders::GLSL::g_comnAtomExt.c_str())) {
                 typeIndex = ShaderType::COUNT;
             } else {
                 DIVIDE_UNEXPECTED_CALL("Invalid shader include type");
@@ -208,7 +208,7 @@ void glShader::removeShader(glShader* s) {
     // Keep a copy of it's name
     stringImpl name(s->name());
     // Try to find it
-    U64 nameHash = _ID_RT(name);
+    U64 nameHash = _ID(name.c_str());
     UpgradableReadLock ur_lock(_shaderNameLock);
     ShaderMap::iterator it = _shaderNameMap.find(nameHash);
     if (it != std::end(_shaderNameMap)) {
@@ -226,7 +226,7 @@ void glShader::removeShader(glShader* s) {
 glShader* glShader::getShader(const stringImpl& name) {
     // Try to find the shader
     ReadLock r_lock(_shaderNameLock);
-    ShaderMap::iterator it = _shaderNameMap.find(_ID_RT(name));
+    ShaderMap::iterator it = _shaderNameMap.find(_ID(name.c_str()));
     if (it != std::end(_shaderNameMap)) {
         return it->second;
     }
@@ -261,7 +261,7 @@ glShader* glShader::loadShader(GFXDevice& context,
         }
     } else {
         if (newShader) {
-            U64 nameHash = _ID_RT(name);
+            U64 nameHash = _ID(name.c_str());
             // If we loaded the source code successfully,  register it
             WriteLock w_lock(_shaderNameLock);
             hashAlg::insert(_shaderNameMap, nameHash, shader);

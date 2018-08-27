@@ -80,7 +80,7 @@ void DefaultScene::postLoadMainThread() {
 
             buttonPosition.d_x.d_offset = to_F32(localOffsetX);
             buttonPosition.d_y.d_offset = to_F32(localOffsetY);
-            GUIButton* btn = _GUI->addButton(_ID_RT("StartScene" + scene),
+            GUIButton* btn = _GUI->addButton(_ID(("StartScene" + scene).c_str()),
                                              scene,
                                              buttonPosition,
                                              buttonSize);
@@ -104,7 +104,7 @@ void DefaultScene::postLoadMainThread() {
     RelativeScale2D quitScale(RelativeValue(0.0f, to_F32(quitButtonWidth)),
                               RelativeValue(0.0f, to_F32(quitButtonHeight)));
 
-    GUIButton* btn = _GUI->addButton(_ID_RT("Quit"),
+    GUIButton* btn = _GUI->addButton(_ID("Quit"),
                                      "Quit",
                                      quitPosition,
                                      quitScale);
@@ -119,7 +119,7 @@ void DefaultScene::postLoadMainThread() {
 
     RelativeScale2D playerChangeScale = pixelScale(quitButtonWidth, playerButtonHeight);
 
-    btn = _GUI->addButton(_ID_RT("AddPlayer"),
+    btn = _GUI->addButton(_ID("AddPlayer"),
                     "Add Player",
                     playerChangePosition,
                     playerChangeScale);
@@ -131,7 +131,7 @@ void DefaultScene::postLoadMainThread() {
 
     playerChangePosition.d_y.d_offset -= playerButtonHeight * 1.5f;
 
-    btn = _GUI->addButton(_ID_RT("RemovePlayer"),
+    btn = _GUI->addButton(_ID("RemovePlayer"),
                           "Remove Player",
                           playerChangePosition,
                           playerChangeScale);

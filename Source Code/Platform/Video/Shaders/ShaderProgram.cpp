@@ -164,7 +164,7 @@ bool ShaderProgram::recompileShaderProgram(const stringImpl& name) {
 
 /// Open the file found at 'filePath' matching 'atomName' and return it's source code
 const stringImpl& ShaderProgram::shaderFileRead(const stringImpl& filePath, const stringImpl& atomName) {
-    U64 atomNameHash = _ID_RT(atomName);
+    U64 atomNameHash = _ID(atomName.c_str());
     // See if the atom was previously loaded and still in cache
     UpgradableReadLock ur_lock(s_atomLock);
     AtomMap::iterator it = s_atoms.find(atomNameHash);
@@ -359,7 +359,7 @@ void ShaderProgram::onAtomChange(const char* atomName, FileUpdateEvent evt) {
 
     {
         WriteLock w_lock(s_atomLock);
-        AtomMap::iterator it = s_atoms.find(_ID_RT(atomName));
+        AtomMap::iterator it = s_atoms.find(_ID(atomName));
         if (it != std::cend(s_atoms)) {
             it = s_atoms.erase(it);
         }

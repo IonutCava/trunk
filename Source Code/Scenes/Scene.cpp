@@ -173,7 +173,7 @@ void Scene::addMusic(MusicType type, const stringImpl& name, const stringImpl& s
     music.setResourceLocation(musicFilePath);
     music.setFlag(true);
     hashAlg::insert(state().music(type),
-                    _ID_RT(name),
+                    _ID(name.c_str()),
                     CreateResource<AudioDescriptor>(_resCache, music));
 }
 
@@ -213,8 +213,8 @@ void Scene::saveToXML() {
         pt.put("water.waterDepth", state().waterDepth());
 
         pt.put("options.visibility", state().renderState().generalVisibility());
-        pt.put("options.cameraSpeed.<xmlattr>.move", par.getParam<F32>(_ID_RT((name() + ".options.cameraSpeed.move").c_str())));
-        pt.put("options.cameraSpeed.<xmlattr>.turn", par.getParam<F32>(_ID_RT((name() + ".options.cameraSpeed.turn").c_str())));
+        pt.put("options.cameraSpeed.<xmlattr>.move", par.getParam<F32>(_ID((name() + ".options.cameraSpeed.move").c_str())));
+        pt.put("options.cameraSpeed.<xmlattr>.turn", par.getParam<F32>(_ID((name() + ".options.cameraSpeed.turn").c_str())));
         pt.put("options.autoCookPhysicsAssets", true);
 
         pt.put("fog.fogDensity", state().fogDescriptor().density());
@@ -801,24 +801,24 @@ void Scene::loadDefaultCamera() {
     
     
     // Camera position is overridden in the scene's XML configuration file
-    if (!_paramHandler.isParam<bool>(_ID_RT((name() + ".options.cameraStartPositionOverride").c_str()))) {
+    if (!_paramHandler.isParam<bool>(_ID((name() + ".options.cameraStartPositionOverride").c_str()))) {
         return;
     }
 
-    if (_paramHandler.getParam<bool>(_ID_RT((name() + ".options.cameraStartPositionOverride").c_str()))) {
+    if (_paramHandler.getParam<bool>(_ID((name() + ".options.cameraStartPositionOverride").c_str()))) {
         baseCamera->setEye(vec3<F32>(
-            _paramHandler.getParam<F32>(_ID_RT((name() + ".options.cameraStartPosition.x").c_str())),
-            _paramHandler.getParam<F32>(_ID_RT((name() + ".options.cameraStartPosition.y").c_str())),
-            _paramHandler.getParam<F32>(_ID_RT((name() + ".options.cameraStartPosition.z").c_str()))));
-        vec2<F32> camOrientation(_paramHandler.getParam<F32>(_ID_RT((name() + ".options.cameraStartOrientation.xOffsetDegrees").c_str())),
-            _paramHandler.getParam<F32>(_ID_RT((name() + ".options.cameraStartOrientation.yOffsetDegrees").c_str())));
+            _paramHandler.getParam<F32>(_ID((name() + ".options.cameraStartPosition.x").c_str())),
+            _paramHandler.getParam<F32>(_ID((name() + ".options.cameraStartPosition.y").c_str())),
+            _paramHandler.getParam<F32>(_ID((name() + ".options.cameraStartPosition.z").c_str()))));
+        vec2<F32> camOrientation(_paramHandler.getParam<F32>(_ID((name() + ".options.cameraStartOrientation.xOffsetDegrees").c_str())),
+            _paramHandler.getParam<F32>(_ID((name() + ".options.cameraStartOrientation.yOffsetDegrees").c_str())));
         baseCamera->setGlobalRotation(camOrientation.y /*yaw*/, camOrientation.x /*pitch*/);
     } else {
         baseCamera->setEye(vec3<F32>(0, 50, 0));
     }
 
-    baseCamera->setMoveSpeedFactor(_paramHandler.getParam<F32>(_ID_RT((name() + ".options.cameraSpeed.move").c_str()), 1.0f));
-    baseCamera->setTurnSpeedFactor(_paramHandler.getParam<F32>(_ID_RT((name() + ".options.cameraSpeed.turn").c_str()), 1.0f));
+    baseCamera->setMoveSpeedFactor(_paramHandler.getParam<F32>(_ID((name() + ".options.cameraSpeed.move").c_str()), 1.0f));
+    baseCamera->setTurnSpeedFactor(_paramHandler.getParam<F32>(_ID((name() + ".options.cameraSpeed.turn").c_str()), 1.0f));
     baseCamera->setProjection(_context.gfx().renderingData().aspectRatio(),
                               _context.config().runtime.verticalFOV,
                               vec2<F32>(_context.config().runtime.zNear, _context.config().runtime.zFar));

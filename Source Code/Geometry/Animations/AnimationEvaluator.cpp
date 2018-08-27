@@ -41,7 +41,7 @@ AnimEvaluator::AnimEvaluator(const aiAnimation* pAnim, U32 idx) : AnimEvaluator(
         AnimationChannel& dstChannel = _channels[a];
 
         dstChannel._name = srcChannel->mNodeName.data;
-        dstChannel._nameKey = _ID_RT(dstChannel._name);
+        dstChannel._nameKey = _ID(dstChannel._name.c_str());
 
         for (U32 i(0); i < srcChannel->mNumPositionKeys; i++) {
             dstChannel._positionKeys.push_back(srcChannel->mPositionKeys[i]);

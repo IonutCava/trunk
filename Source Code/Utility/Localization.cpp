@@ -107,7 +107,7 @@ ErrorCode init(const char* newLanguage) {
     // And add all pairs to the language table
     CSimpleIni::TKeyVal::const_iterator keyValuePairIt = keyValue->begin();
     for (; keyValuePairIt != keyValue->end(); ++keyValuePairIt) {
-        detail::g_data->add(_ID_RT(keyValuePairIt->first.pItem), keyValuePairIt->second);
+        detail::g_data->add(_ID(keyValuePairIt->first.pItem), keyValuePairIt->second);
     }
 
     return ErrorCode::NO_ERR;

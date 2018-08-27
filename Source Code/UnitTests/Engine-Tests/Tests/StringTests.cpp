@@ -276,16 +276,16 @@ TEST(HashIsConstantExpr)
     constexpr char* str = "TEST test TEST";
 
     constexpr U64 value = test_const<_ID(str)>::value;
-    CHECK_EQUAL(value, _ID_RT(str));
+    CHECK_EQUAL(value, _ID(str));
 }
 
 TEST(TestRuntimeID)
 {
     const char* str = "TEST String garbagegarbagegarbage";
     U64 input1 = _ID(str);
-    CHECK_EQUAL(input1, _ID_RT(str));
-    CHECK_EQUAL(_ID_RT(str), _ID_RT(stringImpl(str)));
-    CHECK_EQUAL(input1, _ID_RT(stringImpl(str)));
+    CHECK_EQUAL(input1, _ID(str));
+    CHECK_EQUAL(_ID(str), _ID(stringImpl(str).c_str()));
+    CHECK_EQUAL(input1, _ID(stringImpl(str).c_str()));
 }
 
 TEST(TestStringAllocator)

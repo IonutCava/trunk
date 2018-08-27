@@ -237,7 +237,7 @@ bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious, bool
                 if (loadedScene->getGUID() != _scenePool->defaultScene().getGUID())
                 {
                     SceneGUIElements* gui = Attorney::SceneManager::gui(*loadedScene);
-                    GUIButton* btn = gui->addButton(_ID_RT("Back"),
+                    GUIButton* btn = gui->addButton(_ID("Back"),
                                                     "Back",
                                                     pixelPosition(15, 15),
                                                     pixelScale(50, 25));

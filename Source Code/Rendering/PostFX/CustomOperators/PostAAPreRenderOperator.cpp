@@ -54,7 +54,7 @@ void PostAAPreRenderOperator::idle(const Configuration& config) {
     }
 
     if (_idleCount == 0) {
-        _useSMAA = _ID_RT(config.rendering.postFX.postAAType) == _ID("SMAA");
+        _useSMAA = _ID(config.rendering.postFX.postAAType.c_str()) == _ID("SMAA");
     }
 
     _idleCount = (++_idleCount % 60);

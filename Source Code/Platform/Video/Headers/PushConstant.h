@@ -85,7 +85,7 @@ namespace GFX {
                      const vectorEASTL<T>& values,
                      bool flag = false)
             : _binding(binding),
-              _bindingHash(_ID_RT(binding.c_str())),
+              _bindingHash(_ID(binding.c_str())),
               _type(type),
               _flag(flag),
               _transpose(false)
@@ -102,7 +102,7 @@ namespace GFX {
                      const vectorEASTL<bool>& values,
                      bool flag)
             : _binding(binding),
-              _bindingHash(_ID_RT(binding.c_str())),
+              _bindingHash(_ID(binding.c_str())),
               _type(type),
               _flag(flag),
               _transpose(false)
@@ -121,7 +121,7 @@ namespace GFX {
                      const std::array<T, N>& values,
                      bool flag = false)
             : _binding(binding),
-              _bindingHash(_ID_RT(binding.c_str())),
+              _bindingHash(_ID(binding.c_str())),
               _type(type),
               _flag(flag),
               _transpose(false)
@@ -138,7 +138,7 @@ namespace GFX {
                      const std::array<bool, N>& values,
                      bool flag)
             : _binding(binding),
-              _bindingHash(_ID_RT(binding.c_str()))
+              _bindingHash(_ID(binding.c_str()))
               _type(type),
               _flag(flag),
               _transpose(false)

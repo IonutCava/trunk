@@ -569,7 +569,7 @@ I32 glShaderProgram::Binding(const char* name) {
     }
 
     // Check the cache for the location
-    U64 nameHash = _ID_RT(name);
+    U64 nameHash = _ID(name);
     ShaderVarMap::const_iterator it = _shaderVarLocation.find(nameHash);
     if (it != std::end(_shaderVarLocation)) {
         return it->second;
@@ -675,7 +675,7 @@ U32 glShaderProgram::GetSubroutineIndex(ShaderType type, const char* name) const
 I32 glShaderProgram::cachedValueUpdate(const GFX::PushConstant& constant) {
 
     const char* location = constant._binding.c_str();
-    U64 locationHash = _ID_RT(location);
+    U64 locationHash = _ID(location);
 
     I32 binding = Binding(location);
 

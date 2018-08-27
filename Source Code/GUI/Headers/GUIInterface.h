@@ -93,7 +93,7 @@ public:
                             const stringImpl& text,
                             U8 fontSize = 16u) {
 
-        return addText(_ID_RT(name.c_str()), name, position, font, colour, text, fontSize);
+        return addText(_ID(name.c_str()), name, position, font, colour, text, fontSize);
     }
 
     virtual GUIText* modifyText(U64 guiID,
@@ -101,7 +101,7 @@ public:
 
     inline GUIText* modifyText(const stringImpl& name,
                                const stringImpl& text) {
-        return modifyText(_ID_RT(name.c_str()), text);
+        return modifyText(_ID(name.c_str()), text);
     }
 
     virtual GUIMessageBox* addMsgBox(U64 guiID,

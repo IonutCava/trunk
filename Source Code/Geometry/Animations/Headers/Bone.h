@@ -58,7 +58,7 @@ class Bone {
     // index in the current animation's channel array.
     Bone(const stringImpl& name)
         : _name(name),
-        _nameKey(_ID_RT(name)),
+        _nameKey(_ID(name.c_str())),
         _parent(0),
         _boneID(-1)
     {
@@ -83,7 +83,7 @@ class Bone {
     }
 
     inline Bone* find(const stringImpl& name) {
-        return find(_ID_RT(name));
+        return find(_ID(name.c_str()));
     }
 
     inline Bone* find(U64 nameKey) {
@@ -114,7 +114,7 @@ class Bone {
 
     inline void name(const stringImpl& name) {
         _name = name;
-        _nameKey = _ID_RT(name);
+        _nameKey = _ID(name.c_str());
     }
 };
 

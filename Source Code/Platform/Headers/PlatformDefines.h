@@ -74,32 +74,23 @@ namespace Divide {
 
 typedef U8 PlayerIndex;
 
-constexpr U64 basis = UINT64_C(14695981039346656037);
-constexpr U64 prime = UINT64_C(1099511628211);
+// FNV1a c++11 constexpr compile time hash functions, 32 and 64 bit
+// str should be a null terminated string literal, value should be left out 
+// e.g hash_32_fnv1a_const("example")
+// code license: public domain or equivalent
+// post: https://notes.underscorediscovery.com/constexpr-fnv1a/
 
-constexpr U64 hash_one(char c, const char* remain, const U64 value)
-{
-    return c == 0 ? value : hash_one(remain[0], remain + 1, (value ^ c) * prime);
+constexpr U32 val_32_const = 0x811c9dc5;
+constexpr U32 prime_32_const = 0x1000193;
+constexpr U64 val_64_const = 0xcbf29ce484222325;
+constexpr U64 prime_64_const = 0x100000001b3;
+
+inline constexpr U32 _ID_32(const char* const str, const U32 value = val_32_const) noexcept {
+    return (str[0] == '\0') ? value : _ID_32(&str[1], (value ^ U32(str[0])) * prime_32_const);
 }
 
-constexpr U64 _ID(const char* str)
-{
-    return hash_one(str[0], str + 1, basis);
-}
-
-FORCE_INLINE U64 _ID_RT(const char* str) noexcept
-{
-    U64 hash = basis;
-    while (*str != 0) {
-        hash ^= str[0];
-        hash *= prime;
-        ++str;
-    }
-    return hash;
-}
-
-FORCE_INLINE U64 _ID_RT(const stringImpl& str) {
-    return _ID_RT(str.c_str());
+inline constexpr U64 _ID(const char* const str, const U64 value = val_64_const) noexcept {
+    return (str[0] == '\0') ? value : _ID(&str[1], (value ^ U64(str[0])) * prime_64_const);
 }
 
 FORCE_INLINE bufferPtr bufferOffset(size_t offset) noexcept {

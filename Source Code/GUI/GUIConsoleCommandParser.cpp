@@ -66,9 +66,9 @@ bool GUIConsoleCommandParser::processCommand(const stringImpl& commandString) {
             for (stringImpl::size_type i = 0; i < command.length(); i++) {
                 command[i] = static_cast<char>(tolower(command[i]));
             }
-            if (_commandMap.find(_ID_RT(command)) != std::end(_commandMap)) {
+            if (_commandMap.find(_ID(command.c_str())) != std::end(_commandMap)) {
                 // we have a valid command
-                _commandMap[_ID_RT(command)](commandArgs);
+                _commandMap[_ID(command.c_str())](commandArgs);
             } else {
                 // invalid command
                 _commandMap[_ID("invalidcommand")](command);
@@ -104,8 +104,8 @@ void GUIConsoleCommandParser::handleHelpCommand(const stringImpl& args) {
             }
         }
     } else {
-        if (_commandHelp.find(_ID_RT(args)) != std::end(_commandHelp)) {
-            Console::printfn("%s", _commandHelp[_ID_RT(args)]);
+        if (_commandHelp.find(_ID(args.c_str())) != std::end(_commandHelp)) {
+            Console::printfn("%s", _commandHelp[_ID(args.c_str())]);
         } else {
             Console::printfn("%s", _commandHelp[_ID("invalidhelp")]);
         }

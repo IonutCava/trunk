@@ -14,7 +14,7 @@ TextLabelStyle::TextLabelStyle(const char* font,
                                const UColour& colour,
                                U8 fontSize)
   : _width(1),
-    _font(_ID_RT(font)),
+    _font(_ID(font)),
     _fontSize(fontSize),
     _colour(colour),
     _blurAmount(0.0f),
@@ -28,12 +28,12 @@ TextLabelStyle::TextLabelStyle(const char* font,
     if (s_defaultCacheValue == 0) {
         s_defaultCacheValue = getHash();
 
-        s_fontNameMap[_ID_RT(Font::DIVIDE_DEFAULT)] = Font::DIVIDE_DEFAULT;
-        s_fontNameMap[_ID_RT(Font::BATANG)] = Font::BATANG;
-        s_fontNameMap[_ID_RT(Font::DEJA_VU)] = Font::DEJA_VU;
-        s_fontNameMap[_ID_RT(Font::DROID_SERIF)] = Font::DROID_SERIF;
-        s_fontNameMap[_ID_RT(Font::DROID_SERIF_ITALIC)] = Font::DROID_SERIF_ITALIC;
-        s_fontNameMap[_ID_RT(Font::DROID_SERIF_BOLD)] = Font::DROID_SERIF_BOLD;
+        s_fontNameMap[_ID(Font::DIVIDE_DEFAULT)] = Font::DIVIDE_DEFAULT;
+        s_fontNameMap[_ID(Font::BATANG)] = Font::BATANG;
+        s_fontNameMap[_ID(Font::DEJA_VU)] = Font::DEJA_VU;
+        s_fontNameMap[_ID(Font::DROID_SERIF)] = Font::DROID_SERIF;
+        s_fontNameMap[_ID(Font::DROID_SERIF_ITALIC)] = Font::DROID_SERIF_ITALIC;
+        s_fontNameMap[_ID(Font::DROID_SERIF_BOLD)] = Font::DROID_SERIF_BOLD;
     }
 }
 

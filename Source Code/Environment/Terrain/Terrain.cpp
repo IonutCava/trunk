@@ -129,7 +129,7 @@ bool Terrain::onRender(SceneGraphNode& sgn,
     const U8 stageIndex = to_U8(renderStagePass._stage);
 
     //ToDo: maybe do a "find" first? -Ionut
-    bool& cameraUpdated = _cameraUpdated[_ID_RT(camera->name().c_str())];
+    bool& cameraUpdated = _cameraUpdated[_ID(camera->name().c_str())];
     TerrainTessellator& tessellator = _terrainTessellator[stageIndex];
 
     if (cameraUpdated) {

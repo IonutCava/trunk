@@ -117,7 +117,7 @@ namespace Divide {
 
     template<typename T>
     I64 SGNComponent<T>::uniqueID() const {
-        return _ID_RT((_parentSGN.name() + "_" + _editorComponent.name().c_str()));
+        return _ID((_parentSGN.name() + "_" + _editorComponent.name().c_str()).c_str());
     }
 
     template<typename T>

@@ -139,7 +139,7 @@ class SceneAnimator {
     }
 
     inline I32 animationID(const stringImpl& animationName) {
-        hashMap<U64, U32>::iterator itr = _animationNameToID.find(_ID_RT(animationName));
+        hashMap<U64, U32>::iterator itr = _animationNameToID.find(_ID(animationName.c_str()));
         if (itr != std::end(_animationNameToID)) {
             return itr->second;
         }
@@ -235,7 +235,7 @@ namespace Attorney {
             animator._animations.reserve(animationCount);
             for (size_t i = 0; i < animationCount; ++i) {
                 animator._animations.push_back(animations[i]);
-                hashAlg::insert(animator._animationNameToID, _ID_RT(animator._animations[i]->name()), to_U32(i));
+                hashAlg::insert(animator._animationNameToID, _ID(animator._animations[i]->name().c_str()), to_U32(i));
             }
         }
 

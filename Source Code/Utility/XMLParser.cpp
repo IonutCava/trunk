@@ -149,30 +149,30 @@ void loadScene(const stringImpl& scenePath, const stringImpl &sceneName, Scene* 
     scene->state().waterDepth(pt.get("water.waterDepth", -75.0f));
 
     if (boost::optional<ptree &> cameraPositionOverride =  pt.get_child_optional("options.cameraStartPosition")) {
-        par.setParam(_ID_RT((sceneName + ".options.cameraStartPosition.x").c_str()), pt.get("options.cameraStartPosition.<xmlattr>.x", 0.0f));
-        par.setParam(_ID_RT((sceneName + ".options.cameraStartPosition.y").c_str()), pt.get("options.cameraStartPosition.<xmlattr>.y", 0.0f));
-        par.setParam(_ID_RT((sceneName + ".options.cameraStartPosition.z").c_str()), pt.get("options.cameraStartPosition.<xmlattr>.z", 0.0f));
-        par.setParam(_ID_RT((sceneName + ".options.cameraStartOrientation.xOffsetDegrees").c_str()),
+        par.setParam(_ID((sceneName + ".options.cameraStartPosition.x").c_str()), pt.get("options.cameraStartPosition.<xmlattr>.x", 0.0f));
+        par.setParam(_ID((sceneName + ".options.cameraStartPosition.y").c_str()), pt.get("options.cameraStartPosition.<xmlattr>.y", 0.0f));
+        par.setParam(_ID((sceneName + ".options.cameraStartPosition.z").c_str()), pt.get("options.cameraStartPosition.<xmlattr>.z", 0.0f));
+        par.setParam(_ID((sceneName + ".options.cameraStartOrientation.xOffsetDegrees").c_str()),
                      pt.get("options.cameraStartPosition.<xmlattr>.xOffsetDegrees", 0.0f));
-        par.setParam(_ID_RT((sceneName + ".options.cameraStartOrientation.yOffsetDegrees").c_str()),
+        par.setParam(_ID((sceneName + ".options.cameraStartOrientation.yOffsetDegrees").c_str()),
                      pt.get("options.cameraStartPosition.<xmlattr>.yOffsetDegrees", 0.0f));
-        par.setParam(_ID_RT((sceneName + ".options.cameraStartPositionOverride").c_str()), true);
+        par.setParam(_ID((sceneName + ".options.cameraStartPositionOverride").c_str()), true);
     } else {
-        par.setParam(_ID_RT((sceneName + ".options.cameraStartPositionOverride").c_str()), false);
+        par.setParam(_ID((sceneName + ".options.cameraStartPositionOverride").c_str()), false);
     }
 
     if (boost::optional<ptree &> physicsCook = pt.get_child_optional("options.autoCookPhysicsAssets")) {
-        par.setParam(_ID_RT((sceneName + ".options.autoCookPhysicsAssets").c_str()), pt.get<bool>("options.autoCookPhysicsAssets", false));
+        par.setParam(_ID((sceneName + ".options.autoCookPhysicsAssets").c_str()), pt.get<bool>("options.autoCookPhysicsAssets", false));
     } else {
-        par.setParam(_ID_RT((sceneName + ".options.autoCookPhysicsAssets").c_str()), false);
+        par.setParam(_ID((sceneName + ".options.autoCookPhysicsAssets").c_str()), false);
     }
 
     if (boost::optional<ptree &> cameraPositionOverride = pt.get_child_optional("options.cameraSpeed")) {
-        par.setParam(_ID_RT((sceneName + ".options.cameraSpeed.move").c_str()), pt.get("options.cameraSpeed.<xmlattr>.move", 35.0f));
-        par.setParam(_ID_RT((sceneName + ".options.cameraSpeed.turn").c_str()), pt.get("options.cameraSpeed.<xmlattr>.turn", 35.0f));
+        par.setParam(_ID((sceneName + ".options.cameraSpeed.move").c_str()), pt.get("options.cameraSpeed.<xmlattr>.move", 35.0f));
+        par.setParam(_ID((sceneName + ".options.cameraSpeed.turn").c_str()), pt.get("options.cameraSpeed.<xmlattr>.turn", 35.0f));
     } else {
-        par.setParam(_ID_RT((sceneName + ".options.cameraSpeed.move").c_str()), 35.0f);
-        par.setParam(_ID_RT((sceneName + ".options.cameraSpeed.turn").c_str()), 35.0f);
+        par.setParam(_ID((sceneName + ".options.cameraSpeed.move").c_str()), 35.0f);
+        par.setParam(_ID((sceneName + ".options.cameraSpeed.turn").c_str()), 35.0f);
     }
 
     vec3<F32> fogColour(config.rendering.fogColour);

@@ -68,11 +68,11 @@ class TerrainDescriptor : public PropertyDescriptor {
     }
 
     void addVariable(const stringImpl& name, const stringImpl& value) {
-        hashAlg::insert(_variables, hashAlg::make_pair(_ID_RT(name), value));
+        hashAlg::insert(_variables, hashAlg::make_pair(_ID(name.c_str()), value));
     }
 
     void addVariable(const stringImpl& name, F32 value) {
-        hashAlg::insert(_variablesf, hashAlg::make_pair(_ID_RT(name), value));
+        hashAlg::insert(_variablesf, hashAlg::make_pair(_ID(name.c_str()), value));
     }
 
     void setTextureLayerCount(U8 count) { _textureLayers = count; }
@@ -103,7 +103,7 @@ class TerrainDescriptor : public PropertyDescriptor {
     const vec2<F32>& getScale() const { return _scale; }
 
     stringImpl getVariable(const stringImpl& name) const {
-        hashMap<U64, stringImpl>::const_iterator it = _variables.find(_ID_RT(name));
+        hashMap<U64, stringImpl>::const_iterator it = _variables.find(_ID(name.c_str()));
         if (it != std::end(_variables)) {
             return it->second;
         }
@@ -111,7 +111,7 @@ class TerrainDescriptor : public PropertyDescriptor {
     }
 
     F32 getVariablef(const stringImpl& name) const {
-        hashMap<U64, F32>::const_iterator it = _variablesf.find(_ID_RT(name));
+        hashMap<U64, F32>::const_iterator it = _variablesf.find(_ID(name.c_str()));
         if (it != std::end(_variablesf)) {
             return it->second;
         }

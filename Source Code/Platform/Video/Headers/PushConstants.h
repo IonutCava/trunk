@@ -65,7 +65,7 @@ class PushConstants {
                     const vectorEASTL<T>& values,
                     bool flag = false) {
 
-        U64 bindingID = _ID_RT(binding.c_str());
+        U64 bindingID = _ID(binding.c_str());
         for (GFX::PushConstant& constant : _data) {
             if (constant._bindingHash == bindingID) {
                 constant = GFX::PushConstant{ binding, type, values, flag };
@@ -82,7 +82,7 @@ class PushConstants {
                     const std::array<T, N>& values,
                     bool flag = false) {
 
-        U64 bindingID = _ID_RT(binding.c_str());
+        U64 bindingID = _ID(binding.c_str());
         for (GFX::PushConstant& constant : _data) {
             if (constant._bindingHash == bindingID) {
                 constant = GFX::PushConstant{ binding, type, values, flag };

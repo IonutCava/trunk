@@ -104,7 +104,7 @@ void Texture::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallbac
 
     for(const stringImpl& file : fileNames) {
         // Attempt to load the current entry
-        if (!loadFile(info, file, dataStorage[_ID_RT(file.c_str())])) {
+        if (!loadFile(info, file, dataStorage[_ID(file.c_str())])) {
             // Invalid texture files are not handled yet, so stop loading
             return;
         }
