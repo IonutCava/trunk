@@ -40,20 +40,55 @@ FONS_DEF unsigned int glfonsRGBA(unsigned char r, unsigned char g, unsigned char
 
 #ifdef GLFONTSTASH_IMPLEMENTATION
 
+
+constexpr GLuint GLFONS_VB_SIZE_FACTOR = 4 * 3; //(8k verts per frame?)
+constexpr GLuint GLFONST_VB_BUFFER_PRIM_COUNT = FONS_VERTEX_COUNT;
+constexpr size_t GLFONS_VB_BUFFER_SIZE = sizeof(FONSvert) * GLFONST_VB_BUFFER_PRIM_COUNT;
 constexpr GLuint GLFONS_VERTEX_ATTRIB = (GLuint)(Divide::AttribLocation::VERTEX_POSITION);
 constexpr GLuint GLFONS_TCOORD_ATTRIB = (GLuint)(Divide::AttribLocation::VERTEX_TEXCOORD);
 constexpr GLuint GLFONS_COLOR_ATTRIB = (GLuint)(Divide::AttribLocation::VERTEX_COLOR);
 
-const GLuint GLFONSBufferCount = 3;
 struct GLFONScontext {
     GLuint tex;
     int width, height;
 	GLuint glfons_vaoID;
-    GLuint glfons_vboID[GLFONSBufferCount];
-    GLuint max_verts[GLFONSBufferCount];
-    GLuint current_vbo;
+    GLuint glfons_vboID;
+    FONSvert* glfons_vboData;
 };
 typedef struct GLFONScontext GLFONScontext;
+
+namespace {
+    struct Range {
+        size_t begin = 0;
+        GLsync sync = 0;
+
+    };
+
+    Range gSyncRanges[GLFONS_VB_SIZE_FACTOR];
+    GLuint gRangeIndex = 0;
+    GLuint gWaitCount = 0;
+
+
+    void LockBuffer(GLsync& syncObj) {
+        if (syncObj) {
+            glDeleteSync(syncObj);
+        }
+
+        syncObj = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, GL_NONE_BIT);
+    }
+
+    void WaitBuffer(GLsync& syncObj) {
+        if (syncObj) {
+            while (true) {
+                GLenum waitReturn = glClientWaitSync(syncObj, GL_SYNC_FLUSH_COMMANDS_BIT, 1);
+                if (waitReturn == GL_ALREADY_SIGNALED || waitReturn == GL_CONDITION_SATISFIED) {
+                    return;
+                }
+                ++gWaitCount;
+            }
+        }
+    }
+};
 
 static int glfons__renderCreate(void* userPtr, int width, int height)
 {
@@ -73,12 +108,22 @@ static int glfons__renderCreate(void* userPtr, int width, int height)
 
     Divide::GL_API::setActiveVAO(gl->glfons_vaoID);
     {
-        if (!gl->glfons_vboID[0]) {
-            glCreateBuffers(GLFONSBufferCount, gl->glfons_vboID);
+        if (!gl->glfons_vboID) {
+            glCreateBuffers(1, &gl->glfons_vboID);
         }
 
-		if (!gl->glfons_vboID[0])
+		if (!gl->glfons_vboID)
             return 0;
+
+        BufferStorageMask storageMask = GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT | GL_MAP_WRITE_BIT;
+        BufferAccessMask accessMask = GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT | GL_MAP_WRITE_BIT;
+
+        glNamedBufferStorage(gl->glfons_vboID, GLFONS_VB_BUFFER_SIZE * GLFONS_VB_SIZE_FACTOR, NULL, storageMask);
+        gl->glfons_vboData = (FONSvert*)glMapNamedBufferRange(gl->glfons_vboID, 0, GLFONS_VB_BUFFER_SIZE * GLFONS_VB_SIZE_FACTOR, accessMask);
+
+        for (int i = 0; i < GLFONS_VB_SIZE_FACTOR; ++i) {
+            gSyncRanges[i].begin = GLFONST_VB_BUFFER_PRIM_COUNT * i;
+        }
 
         Divide::U32 prevOffset = 0;
         glEnableVertexAttribArray(GLFONS_VERTEX_ATTRIB);
@@ -103,15 +148,13 @@ static int glfons__renderCreate(void* userPtr, int width, int height)
                       -1,
                       Divide::Util::StringFormat("DVD_FONT_VAO_%d", gl->glfons_vaoID).c_str());
 
-        for (GLuint i = 0; i < GLFONSBufferCount; ++i) {
-            glObjectLabel(GL_BUFFER,
-                          gl->glfons_vboID[i],
-                          -1,
-                          Divide::Util::StringFormat("DVD_FONT_VB_%d_%d", gl->glfons_vboID, i).c_str());
-        }
+        glObjectLabel(GL_BUFFER,
+                        gl->glfons_vboID,
+                        -1,
+                        Divide::Util::StringFormat("DVD_FONT_VB_%d", gl->glfons_vboID).c_str());
     }
 
-    if (!gl->tex || !gl->glfons_vaoID || !gl->glfons_vboID[0]) {
+    if (!gl->tex || !gl->glfons_vaoID || !gl->glfons_vboID) {
         return 0;
     }
 
@@ -148,22 +191,22 @@ static void glfons__renderDraw(void* userPtr, const FONSvert* verts, int nverts)
     if (gl->tex == 0 || gl->glfons_vaoID == 0)
         return;
 
-    size_t dataSize = nverts * sizeof(FONSvert);
+    { //Wait
+        WaitBuffer(gSyncRanges[gRangeIndex].sync);
+    }
     { //Update
-        if (nverts > gl->max_verts[gl->current_vbo]) {
-            gl->max_verts[gl->current_vbo] = nverts;
-        }
-        glNamedBufferData(gl->glfons_vboID[gl->current_vbo], dataSize, verts, GL_STREAM_DRAW);
+        memcpy(gl->glfons_vboData + gSyncRanges[gRangeIndex].begin, verts, nverts * sizeof(FONSvert));
     }
     { //Draw
         Divide::GL_API::bindTexture(0, gl->tex);
         Divide::GL_API::setActiveVAO(gl->glfons_vaoID);
-        glVertexArrayVertexBuffer(gl->glfons_vaoID, 0, gl->glfons_vboID[gl->current_vbo], 0, sizeof(FONSvert));
+        glVertexArrayVertexBuffer(gl->glfons_vaoID, 0, gl->glfons_vboID, gSyncRanges[gRangeIndex].begin * sizeof(FONSvert), sizeof(FONSvert));
         glDrawArrays(GL_TRIANGLES, 0, nverts);
-        glInvalidateBufferData(gl->glfons_vboID[gl->current_vbo]);
     }
-
-    gl->current_vbo = (gl->current_vbo + 1) % GLFONSBufferCount;
+    { //Lock
+        LockBuffer(gSyncRanges[gRangeIndex].sync);
+        gRangeIndex = ++gRangeIndex % GLFONS_VB_SIZE_FACTOR;
+    }
 }
 
 static void glfons__renderDelete(void* userPtr) {
@@ -174,8 +217,7 @@ static void glfons__renderDelete(void* userPtr) {
         Divide::GL_API::deleteVAOs(1, &gl->glfons_vaoID);
     gl->tex = 0;
     gl->glfons_vaoID = 0;
-    Divide::GL_API::deleteBuffers(GLFONSBufferCount, gl->glfons_vboID);
-    memset(gl->glfons_vboID, 0, GLFONSBufferCount * sizeof(GLuint));
+    Divide::GLUtil::freeBuffer(gl->glfons_vboID, gl->glfons_vboData);
 
     free(gl);
 }
