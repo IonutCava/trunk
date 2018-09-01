@@ -68,8 +68,8 @@ glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
     if (!usePersistentMapping && !params._forcePersistentMap) {
         GLUtil::createAndAllocBuffer(_alignedSize, _usage, _handle, params._initialData, params._name);
     } else {
-        gl::BufferStorageMask storageMask = GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
-        gl::BufferAccessMask accessMask = GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
+        gl::BufferStorageMask storageMask = GL_MAP_PERSISTENT_BIT;
+        gl::BufferAccessMask accessMask = GL_MAP_PERSISTENT_BIT;
 
         assert(_updateFrequency != BufferUpdateFrequency::ONCE);
 
@@ -80,7 +80,7 @@ glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
             case BufferUpdateFrequency::OCASSIONAL:
             case BufferUpdateFrequency::OFTEN:
                 storageMask |= GL_MAP_WRITE_BIT;
-                accessMask |= GL_MAP_WRITE_BIT;
+                accessMask |= GL_MAP_WRITE_BIT | GL_MAP_FLUSH_EXPLICIT_BIT;
             break;
             case BufferUpdateFrequency::COUNT:
                 DIVIDE_UNEXPECTED_CALL("Unknown buffer update frequency!");
@@ -153,6 +153,8 @@ void glBufferImpl::writeData(size_t offsetInBytes, size_t rangeInBytes, const bu
         std::memcpy(((Byte*)_mappedBuffer) + offsetInBytes,
                      data,
                      rangeInBytes);
+        glFlushMappedNamedBufferRange(_handle, offsetInBytes, rangeInBytes);
+
     } else {
         clearData(offsetInBytes, rangeInBytes);
         if (offsetInBytes == 0 && rangeInBytes == _alignedSize) {
@@ -166,6 +168,7 @@ void glBufferImpl::writeData(size_t offsetInBytes, size_t rangeInBytes, const bu
 void glBufferImpl::readData(size_t offsetInBytes, size_t rangeInBytes, const bufferPtr data)
 {
     if (_mappedBuffer) {
+        glMemoryBarrier(MemoryBarrierMask::GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT);
         memcpy(data, ((Byte*)(_mappedBuffer)+offsetInBytes), rangeInBytes);
     } else {
         glGetNamedBufferSubData(_handle, offsetInBytes, rangeInBytes, data);
@@ -176,6 +179,7 @@ void glBufferImpl::clearData(size_t offsetInBytes, size_t rangeInBytes) {
     if (_mappedBuffer) {
         waitRange(offsetInBytes, rangeInBytes, true);
         std::memset(((Byte*)_mappedBuffer) + offsetInBytes, 0, rangeInBytes);
+        glFlushMappedNamedBufferRange(_handle, offsetInBytes, rangeInBytes);
     } else {
         if (offsetInBytes == 0 && rangeInBytes == _alignedSize) {
             glInvalidateBufferData(_handle);

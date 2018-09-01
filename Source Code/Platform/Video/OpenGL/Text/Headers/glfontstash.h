@@ -77,14 +77,23 @@ namespace {
         syncObj = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, GL_NONE_BIT);
     }
 
+    GLuint64 kOneSecondInNanoSeconds = 1000000000;
     void WaitBuffer(GLsync& syncObj) {
         if (syncObj) {
+            SyncObjectMask waitFlags = SyncObjectMask::GL_NONE_BIT;
+            GLuint64 waitDuration = 0;
             while (true) {
-                GLenum waitReturn = glClientWaitSync(syncObj, GL_SYNC_FLUSH_COMMANDS_BIT, 1);
-                if (waitReturn == GL_ALREADY_SIGNALED || waitReturn == GL_CONDITION_SATISFIED) {
+                GLenum waitRet = glClientWaitSync(syncObj, waitFlags, waitDuration);
+                if (waitRet == GL_ALREADY_SIGNALED || waitRet == GL_CONDITION_SATISFIED) {
                     return;
                 }
-                ++gWaitCount;
+                if (waitRet == GL_WAIT_FAILED) {
+                    assert(!"Not sure what to do here. Probably raise an exception or something.");
+                }
+
+                // After the first time, need to start flushing, and wait for a looong time.
+                waitFlags = GL_SYNC_FLUSH_COMMANDS_BIT;
+                waitDuration = kOneSecondInNanoSeconds;
             }
         }
     }
@@ -112,11 +121,12 @@ static int glfons__renderCreate(void* userPtr, int width, int height)
             glCreateBuffers(1, &gl->glfons_vboID);
         }
 
-		if (!gl->glfons_vboID)
+        if (!gl->glfons_vboID) {
             return 0;
+        }
 
-        BufferStorageMask storageMask = GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT | GL_MAP_WRITE_BIT;
-        BufferAccessMask accessMask = GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT | GL_MAP_WRITE_BIT;
+        BufferStorageMask storageMask = GL_MAP_PERSISTENT_BIT | GL_MAP_WRITE_BIT;
+        BufferAccessMask accessMask = GL_MAP_PERSISTENT_BIT | GL_MAP_WRITE_BIT | GL_MAP_FLUSH_EXPLICIT_BIT;
 
         glNamedBufferStorage(gl->glfons_vboID, GLFONS_VB_BUFFER_SIZE * GLFONS_VB_SIZE_FACTOR, NULL, storageMask);
         gl->glfons_vboData = (FONSvert*)glMapNamedBufferRange(gl->glfons_vboID, 0, GLFONS_VB_BUFFER_SIZE * GLFONS_VB_SIZE_FACTOR, accessMask);
@@ -196,6 +206,7 @@ static void glfons__renderDraw(void* userPtr, const FONSvert* verts, int nverts)
     }
     { //Update
         memcpy(gl->glfons_vboData + gSyncRanges[gRangeIndex].begin, verts, nverts * sizeof(FONSvert));
+        glFlushMappedNamedBufferRange(gl->glfons_vboID, gSyncRanges[gRangeIndex].begin * sizeof(FONSvert), nverts * sizeof(FONSvert));
     }
     { //Draw
         Divide::GL_API::bindTexture(0, gl->tex);
