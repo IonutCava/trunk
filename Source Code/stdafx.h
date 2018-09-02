@@ -169,9 +169,7 @@ typedef std::any AnyParam;
 #ifndef YES_IMGUIMINIGAMES
 #define YES_IMGUIMINIGAMES
 #endif
-#ifndef YES_IMGUIIMAGEEDITOR
-#define YES_IMGUIIMAGEEDITOR
-#endif
+#define NO_IMGUICODEEDITOR 
 #include <imgui.h>
 
 //#include <ECS.h>

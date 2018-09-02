@@ -597,7 +597,7 @@ sclHard sclGetGPUHardware( int nDevice, int* found ) {
 	int i, nTotalDevs=0;
 	int nGPUplatforms=0;
 	cl_platform_id *GPUplatforms;
-	sclHard hardware;
+    sclHard hardware = {};
 	cl_int err;
 	cl_uint nPlatforms, nDevices=0;
 	cl_platform_id *platforms;
@@ -714,7 +714,7 @@ sclHard sclGetCPUHardware( int nDevice, int* found ) {
 	int i,nTotalDevs=0;
 	int nCPUplatforms=0;
 	cl_platform_id *CPUplatforms;
-	sclHard hardware;
+    sclHard hardware = {};
 	cl_int err;
 	cl_uint nPlatforms, nDevices=0;
 	cl_platform_id *platforms;

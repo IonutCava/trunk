@@ -504,6 +504,11 @@ int main(int arg, char **argv)
 extern "C" {
 #endif
 
+#ifdef _MSC_VER
+# pragma warning (push)
+# pragma warning (disable: 4505)
+#endif
+
 // private structure
 typedef struct
 {
@@ -4745,6 +4750,10 @@ STBTT_DEF int stbtt_CompareUTF8toUTF16_bigendian(const char *s1, int len1, const
 {
    return stbtt_CompareUTF8toUTF16_bigendian_internal((char *) s1, len1, (char *) s2, len2);
 }
+
+#ifdef _MSC_VER
+# pragma warning (pop)
+#endif
 
 #if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic pop

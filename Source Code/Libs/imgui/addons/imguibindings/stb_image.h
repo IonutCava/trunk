@@ -1,5 +1,5 @@
 /* stb_image - v2.19 - public domain image loader - http://nothings.org/stb
-                                     no warranty implied; use at your own risk
+                                  no warranty implied; use at your own risk
 
    Do this:
       #define STB_IMAGE_IMPLEMENTATION
@@ -426,8 +426,8 @@ STBIDEF int      stbi_is_16_bit_from_memory(stbi_uc const *buffer, int len);
 STBIDEF int      stbi_is_16_bit_from_callbacks(stbi_io_callbacks const *clbk, void *user);
 
 #ifndef STBI_NO_STDIO
-STBIDEF int      stbi_info            (char const *filename,     int *x, int *y, int *comp);
-STBIDEF int      stbi_info_from_file  (FILE *f,                  int *x, int *y, int *comp);
+STBIDEF int      stbi_info               (char const *filename,     int *x, int *y, int *comp);
+STBIDEF int      stbi_info_from_file     (FILE *f,                  int *x, int *y, int *comp);
 STBIDEF int      stbi_is_16_bit          (char const *filename);
 STBIDEF int      stbi_is_16_bit_from_file(FILE *f);
 #endif
@@ -1332,7 +1332,7 @@ STBIDEF int      stbi_is_hdr          (char const *filename)
    return result;
 }
 
-STBIDEF int      stbi_is_hdr_from_file(FILE *f)
+STBIDEF int stbi_is_hdr_from_file(FILE *f)
 {
    #ifndef STBI_NO_HDR
    long pos = ftell(f);
@@ -5215,26 +5215,26 @@ static void *stbi__bmp_load(stbi__context *s, int *x, int *y, int *comp, int req
             stbi__skip(s, pad);
          }
       } else {
-      for (j=0; j < (int) s->img_y; ++j) {
-         for (i=0; i < (int) s->img_x; i += 2) {
-            int v=stbi__get8(s),v2=0;
-            if (info.bpp == 4) {
-               v2 = v & 15;
-               v >>= 4;
+         for (j=0; j < (int) s->img_y; ++j) {
+            for (i=0; i < (int) s->img_x; i += 2) {
+               int v=stbi__get8(s),v2=0;
+               if (info.bpp == 4) {
+                  v2 = v & 15;
+                  v >>= 4;
+               }
+               out[z++] = pal[v][0];
+               out[z++] = pal[v][1];
+               out[z++] = pal[v][2];
+               if (target == 4) out[z++] = 255;
+               if (i+1 == (int) s->img_x) break;
+               v = (info.bpp == 8) ? stbi__get8(s) : v2;
+               out[z++] = pal[v][0];
+               out[z++] = pal[v][1];
+               out[z++] = pal[v][2];
+               if (target == 4) out[z++] = 255;
             }
-            out[z++] = pal[v][0];
-            out[z++] = pal[v][1];
-            out[z++] = pal[v][2];
-            if (target == 4) out[z++] = 255;
-            if (i+1 == (int) s->img_x) break;
-            v = (info.bpp == 8) ? stbi__get8(s) : v2;
-            out[z++] = pal[v][0];
-            out[z++] = pal[v][1];
-            out[z++] = pal[v][2];
-            if (target == 4) out[z++] = 255;
+            stbi__skip(s, pad);
          }
-         stbi__skip(s, pad);
-      }
       }
    } else {
       int rshift=0,gshift=0,bshift=0,ashift=0,rcount=0,gcount=0,bcount=0,acount=0;
@@ -5323,13 +5323,13 @@ static void *stbi__bmp_load(stbi__context *s, int *x, int *y, int *comp, int req
 static int stbi__tga_get_comp(int bits_per_pixel, int is_grey, int* is_rgb16)
 {
    // only RGB or RGBA (incl. 16bit) or grey allowed
-   if(is_rgb16) *is_rgb16 = 0;
+   if (is_rgb16) *is_rgb16 = 0;
    switch(bits_per_pixel) {
       case 8:  return STBI_grey;
       case 16: if(is_grey) return STBI_grey_alpha;
                // fallthrough
       case 15: if(is_rgb16) *is_rgb16 = 1;
-            return STBI_rgb;
+               return STBI_rgb;
       case 24: // fallthrough
       case 32: return bits_per_pixel/8;
       default: return 0;
@@ -6372,8 +6372,8 @@ static stbi_uc *stbi__gif_load_next(stbi__context *s, stbi__gif *g, int *comp, i
          for (pi = 0; pi < pcount; ++pi) {
             if (g->history[pi]) {
                memcpy( &g->out[pi * 4], &two_back[pi * 4], 4 ); 
+            }
          }
-   }
       } else if (dispose == 2) { 
          // restore what was changed last frame to background before that frame; 
          for (pi = 0; pi < pcount; ++pi) {
@@ -6434,8 +6434,8 @@ static stbi_uc *stbi__gif_load_next(stbi__context *s, stbi__gif *g, int *comp, i
             } else if (g->flags & 0x80) {
                g->color_table = (stbi_uc *) g->pal;
             } else
-               return stbi__errpuc("missing color table", "Corrupt GIF");
-
+               return stbi__errpuc("missing color table", "Corrupt GIF");            
+            
             o = stbi__process_gif_raster(s, g);
             if (o == NULL) return NULL;
 
@@ -6469,7 +6469,7 @@ static stbi_uc *stbi__gif_load_next(stbi__context *s, stbi__gif *g, int *comp, i
                      g->pal[g->transparent][3] = 255; 
                   } 
                   if (g->eflags & 0x01) {
-                  g->transparent = stbi__get8(s);
+                     g->transparent = stbi__get8(s);
                      if (g->transparent >= 0) {
                         g->pal[g->transparent][3] = 0; 
                      }
@@ -6482,7 +6482,7 @@ static stbi_uc *stbi__gif_load_next(stbi__context *s, stbi__gif *g, int *comp, i
                   stbi__skip(s, len);
                   break;
                }
-            }
+            } 
             while ((len = stbi__get8(s)) != 0) {
                stbi__skip(s, len);
             }

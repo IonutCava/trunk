@@ -450,14 +450,14 @@ struct DockContext
     static ImRect getDockedRect(const ImRect& rect, ImGuiDockSlot dock_slot)
     {
 	ImVec2 size = rect.GetSize();
-        switch (dock_slot)
-        {
-        default: return rect;
+	switch (dock_slot)
+	{
+	default: return rect;
 	case ImGuiDockSlot_Top: return ImRect(rect.Min, rect.Min + ImVec2(size.x, size.y * 0.5f));
 	case ImGuiDockSlot_Right: return ImRect(rect.Min + ImVec2(size.x * 0.5f, 0), rect.Max);
 	case ImGuiDockSlot_Bottom: return ImRect(rect.Min + ImVec2(0, size.y * 0.5f), rect.Max);
 	case ImGuiDockSlot_Left: return ImRect(rect.Min, rect.Min + ImVec2(size.x * 0.5f, rect.GetSize().y));
-        }
+	}
     }
 
 
@@ -1306,7 +1306,7 @@ void DestroyDockContext(DockContext* dock)
 
 void SetCurrentDockContext(DockContext* dock)
 {
-        g_dock = dock;
+    g_dock = dock;
 }
 
 DockContext* GetCurrentDockContext()

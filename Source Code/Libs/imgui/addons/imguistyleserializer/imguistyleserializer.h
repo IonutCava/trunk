@@ -9,20 +9,25 @@ enum ImGuiStyleEnum {
     ImGuiStyle_DefaultClassic=0,
     ImGuiStyle_DefaultDark,
     ImGuiStyle_DefaultLight,
-    ImGuiStyle_Gray,        // This is the default theme of my main.cpp demo.
-    ImGuiStyle_Light,
-    ImGuiStyle_OSX,         // Posted by @itamago here: https://github.com/ocornut/imgui/pull/511 (hope I can use it)
-    ImGuiStyle_OSXOpaque,   // Posted by @dougbinks here: https://gist.github.com/dougbinks/8089b4bbaccaaf6fa204236978d165a9 (hope I can use it)
-    ImGuiStyle_DarkOpaque,
+
+    ImGuiStyle_Gray,        // (mine) This is the default theme of my main.cpp demo.
+    ImGuiStyle_Light,       // (mine)
+    ImGuiStyle_BlackCodz01, // Posted by @codz01 here: https://github.com/ocornut/imgui/issues/707 (hope I can use it)
+    ImGuiStyle_GrayCodz01,  // Posted by @codz01 here: https://github.com/ocornut/imgui/issues/1607 (hope I can use it)
+    ImGuiStyle_Purple,      // Posted by here: https://github.com/ocornut/imgui/issues/1607  (hope I can use it)
+    ImGuiStyle_DarkOpaque,  // (mine)
     ImGuiStyle_Soft,        // Posted by @olekristensen here: https://github.com/ocornut/imgui/issues/539 (hope I can use it)
     ImGuiStyle_EdinBlack,   // Posted (via image) by edin_p in the screenshot section of Dear ImGui
     ImGuiStyle_EdinWhite,   // Posted (via image) by edin_p in the screenshot section of Dear ImGui
     ImGuiStyle_Maya,        // Posted by @ongamex here https://gist.github.com/ongamex/4ee36fb23d6c527939d0f4ba72144d29
+    ImGuiStyle_LightGreen,  // Posted by @ebachard here: https://github.com/ocornut/imgui/pull/1776 (hope I can use it)
+    ImGuiStyle_Design,      // Posted by @usernameiwantedwasalreadytaken here: https://github.com/ocornut/imgui/issues/707 (hope I can use it)
 
-    ImGuiStyle_DefaultInverse,
-    ImGuiStyle_OSXInverse,
-    ImGuiStyle_OSXOpaqueInverse,
     ImGuiStyle_DarkOpaqueInverse,
+    ImGuiStyle_GrayCodz01Inverse,
+    ImGuiStyle_PurpleInverse,
+    ImGuiStyle_LightGreenInverse,
+    ImGuiStyle_DesignInverse,
 
     ImGuiStyle_Count
 };

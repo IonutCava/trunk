@@ -14,18 +14,6 @@
     <Filter Include="3rdParty/ImGUI\extra_fonts">
       <UniqueIdentifier>{6eed0359-8768-4634-b587-3a08b3bb59d7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="3rdParty/ImGUI\samples">
-      <UniqueIdentifier>{0f53bf94-2246-4b37-a92a-9f7906b8d4fd}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3rdParty/ImGUI\samples\OGL3">
-      <UniqueIdentifier>{ca3bd852-92c7-4545-90e4-02ee234e1400}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3rdParty/ImGUI\samples\SDL_OGL3">
-      <UniqueIdentifier>{20096b5d-f298-413c-b6cd-737698e3732c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3rdParty/ImGUI\samples\Vulkan">
-      <UniqueIdentifier>{325cce71-3ffa-4490-9f7d-7016c508f4f6}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Widgets">
       <UniqueIdentifier>{39b105f0-04b0-47f3-9cb7-e03647203d6f}</UniqueIdentifier>
     </Filter>
@@ -101,6 +89,12 @@
     <Filter Include="Widgets\DockedWindows\Headers">
       <UniqueIdentifier>{74483a26-a31a-4036-bd91-8c76ab823316}</UniqueIdentifier>
     </Filter>
+    <Filter Include="3rdParty/ImGUI\addons\metrics_gui">
+      <UniqueIdentifier>{ff3df4bd-cdd2-4894-a655-0cbd3ad26cae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdParty/ImGUI\addons\metrics_gui\portable">
+      <UniqueIdentifier>{1c558177-c0e4-4688-801d-24011ea5e9d5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\../Source Code/stdafx-editor.cpp" />
@@ -115,24 +109,6 @@
     </ClCompile>
     <ClCompile Include="..\../Source Code/Libs/imgui\imgui_draw.cpp">
       <Filter>3rdParty/ImGUI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\../Source Code/Libs/imgui\examples\vulkan_example\imgui_impl_glfw_vulkan.cpp">
-      <Filter>3rdParty/ImGUI\samples\Vulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="..\../Source Code/Libs/imgui\examples\vulkan_example\main.cpp">
-      <Filter>3rdParty/ImGUI\samples\Vulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="..\../Source Code/Libs/imgui\examples\sdl_opengl3_example\imgui_impl_sdl_gl3.cpp">
-      <Filter>3rdParty/ImGUI\samples\SDL_OGL3</Filter>
-    </ClCompile>
-    <ClCompile Include="..\../Source Code/Libs/imgui\examples\sdl_opengl3_example\main.cpp">
-      <Filter>3rdParty/ImGUI\samples\SDL_OGL3</Filter>
-    </ClCompile>
-    <ClCompile Include="..\../Source Code/Libs/imgui\examples\opengl3_example\imgui_impl_glfw_gl3.cpp">
-      <Filter>3rdParty/ImGUI\samples\OGL3</Filter>
-    </ClCompile>
-    <ClCompile Include="..\../Source Code/Libs/imgui\examples\opengl3_example\main.cpp">
-      <Filter>3rdParty/ImGUI\samples\OGL3</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Editor\Editor.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\minizip\ioapi.c">
@@ -200,6 +176,15 @@
       <Filter>3rdParty/ImGUI\addons\imgui_gizmo</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\UnityBuildEngine.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\imgui\imgui_widgets.cpp">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\metrics_gui\metrics_gui.cpp">
+      <Filter>3rdParty/ImGUI\addons\metrics_gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\metrics_gui\ProggyTiny.cpp">
+      <Filter>3rdParty/ImGUI\addons\metrics_gui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\../Source Code/Libs/imgui\imconfig.h">
@@ -219,15 +204,6 @@
     </ClInclude>
     <ClInclude Include="..\../Source Code/Libs/imgui\stb_truetype.h">
       <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/imgui\examples\vulkan_example\imgui_impl_glfw_vulkan.h">
-      <Filter>3rdParty/ImGUI\samples\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/imgui\examples\sdl_opengl3_example\imgui_impl_sdl_gl3.h">
-      <Filter>3rdParty/ImGUI\samples\SDL_OGL3</Filter>
-    </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/imgui\examples\opengl3_example\imgui_impl_glfw_gl3.h">
-      <Filter>3rdParty/ImGUI\samples\OGL3</Filter>
     </ClInclude>
     <ClInclude Include="..\../Source Code/Editor\Headers\Editor.h">
       <Filter>Headers</Filter>
@@ -415,19 +391,28 @@
     <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguigizmo\ImSequencer.h">
       <Filter>3rdParty/ImGUI\addons\imgui_gizmo</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\imgui_user.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\metrics_gui\metrics_gui.h">
+      <Filter>3rdParty/ImGUI\addons\metrics_gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\metrics_gui\portable\perf_timer.h">
+      <Filter>3rdParty/ImGUI\addons\metrics_gui\portable</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\metrics_gui\portable\snprintf.h">
+      <Filter>3rdParty/ImGUI\addons\metrics_gui\portable</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\metrics_gui\portable\countof.h">
+      <Filter>3rdParty/ImGUI\addons\metrics_gui\portable</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\../Source Code/Libs/imgui\examples\vulkan_example\gen_spv.sh">
-      <Filter>3rdParty/ImGUI\samples\Vulkan</Filter>
-    </None>
-    <None Include="..\../Source Code/Libs/imgui\examples\vulkan_example\glsl_shader.frag">
-      <Filter>3rdParty/ImGUI\samples\Vulkan</Filter>
-    </None>
-    <None Include="..\../Source Code/Libs/imgui\examples\vulkan_example\glsl_shader.vert">
-      <Filter>3rdParty/ImGUI\samples\Vulkan</Filter>
-    </None>
     <None Include="..\..\Source Code\Libs\imgui\addons\imgui_user.inl">
       <Filter>3rdParty/ImGUI\addons</Filter>
+    </None>
+    <None Include="..\..\Source Code\Libs\imgui\imgui_user.inl">
+      <Filter>3rdParty/ImGUI</Filter>
     </None>
   </ItemGroup>
 </Project>

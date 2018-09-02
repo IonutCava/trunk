@@ -43,6 +43,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Platform/Input/Headers/InputAggregatorInterface.h"
 
 #include <imgui/addons/imguigizmo/ImGuizmo.h>
+#include <imgui/addons/imguistyleserializer/imguistyleserializer.h>
 
 struct ImDrawData;
 namespace Divide {
@@ -88,26 +89,11 @@ class Editor : public PlatformContextComponent,
         COUNT
     };
 
-    // Basically, the IMGUI default themes
-    enum class Theme : U8 {
-        IMGUI_Default = 0,
-        IMGUI_Default_Dark,
-        Gray,
-        OSX,
-        Dark_Opaque,
-        OSX_Opaque,
-        Soft,
-        Edin_Black,
-        Edin_White,
-        Maya,
-        COUNT
-    };
-
   public:
     explicit Editor(PlatformContext& context,
-                    Theme theme = Theme::OSX_Opaque,
-                    Theme lostFocusTheme = Theme::OSX,
-                    Theme dimmedTheme = Theme::Gray);
+                    ImGuiStyleEnum theme = ImGuiStyleEnum::ImGuiStyle_GrayCodz01,
+                    ImGuiStyleEnum lostFocusTheme = ImGuiStyleEnum::ImGuiStyle_GrayCodz01Inverse,
+                    ImGuiStyleEnum dimmedTheme = ImGuiStyleEnum::ImGuiStyle_BlackCodz01);
     ~Editor();
 
     bool init(const vec2<U16>& renderResolution);
@@ -194,9 +180,9 @@ class Editor : public PlatformContextComponent,
     const TransformSettings& getTransformSettings() const;
 
   private:
-    Theme _currentTheme;
-    Theme _currentLostFocusTheme;
-    Theme _currentDimmedTheme;
+    ImGuiStyleEnum _currentTheme;
+    ImGuiStyleEnum _currentLostFocusTheme;
+    ImGuiStyleEnum _currentDimmedTheme;
 
     Rect<I32> _scenePreviewRect;
 

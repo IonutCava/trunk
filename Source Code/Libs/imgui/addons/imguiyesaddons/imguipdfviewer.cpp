@@ -937,7 +937,7 @@ bool PdfPagePanel::imageZoomAndPan(const ImVec2& size)
             zoomCenter.x-=io.MouseDelta.x/(zoomedImageSize.x*zoom);
             zoomCenter.y-=io.MouseDelta.y/(zoomedImageSize.y*zoom);
             rv = true;
-            ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
+            ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
         }
     }
     else if (isRMBclickedForContextMenu) {if (!(isHoveredRect=ImGui::IsItemHovered(ImGuiHoveredFlags_RectOnly))) isRMBclickedForContextMenu = false;}
@@ -1142,7 +1142,7 @@ bool PdfPagePanel::imageZoomAndPan(const ImVec2& size)
                 }                
             }
             if (isLinkUnderTheMouseValid) {
-                ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
+                ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
                 if (linkUnderTheMouse!=-1 && !pageChanged)// && !isLMBClicked)
                 {
                     const cairo_rectangle_t& r = linkMapping[linkUnderTheMouse].first;

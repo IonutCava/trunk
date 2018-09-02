@@ -541,7 +541,7 @@ public:
             const char e = '\0';
             if (!text && !allowNullDestText) text=&e;
             if (text)  {
-                const int sz = (int)strlen(text);
+                const int sz = strlen(text);
                 destText = (char*) ImGui::MemAlloc(sz+1);strcpy(destText,text);
             }
         }       

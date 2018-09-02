@@ -19,6 +19,11 @@ static const LPCTSTR win32CursorIds[ImGuiMouseCursor_COUNT+1] = {
     IDC_SIZEWE,       //ImGuiMouseCursor_ResizeEW,              // Unused by ImGui
     IDC_SIZENESW,     //ImGuiMouseCursor_ResizeNESW,
     IDC_SIZENWSE,     //ImGuiMouseCursor_ResizeNWSE,          // Unused by ImGui
+#   ifdef IDC_HAND    // winuser.h defines it if(WINVER >= 0x0500)
+    IDC_HAND,         //ImGuiMouseCursor_Hand // Unused by ImGui
+#   else
+    IDC_ARROW,         //ImGuiMouseCursor_Hand // Unused by ImGui
+#   endif
     IDC_ARROW         //,ImGuiMouseCursor_Arrow
 };
 static HCURSOR win32Cursors[ImGuiMouseCursor_COUNT+1];
@@ -335,7 +340,7 @@ int ImImpl_WinMain(const ImImpl_InitParams* pOptionalInitParams,HINSTANCE hInsta
    }
 #endif //IMGUI_USE_GLEW
 
-    static double time = 0.0f;
+    static double time = 0.0;
     gImGuiInverseFPSClampInsideImGui = pOptionalInitParams ? ((pOptionalInitParams->gFpsClampInsideImGui!=0) ? (1.0f/pOptionalInitParams->gFpsClampInsideImGui) : 1.0f) : -1.0f;
     gImGuiInverseFPSClampOutsideImGui = pOptionalInitParams ? ((pOptionalInitParams->gFpsClampOutsideImGui!=0) ? (1.0f/pOptionalInitParams->gFpsClampOutsideImGui) : 1.0f) : -1.0f;
     gImGuiDynamicFPSInsideImGui = pOptionalInitParams ? pOptionalInitParams->gFpsDynamicInsideImGui : false;
@@ -371,9 +376,9 @@ int ImImpl_WinMain(const ImImpl_InitParams* pOptionalInitParams,HINSTANCE hInsta
 
 
         // Setup timestep
-        const double current_time =  ::GetTickCount();
-        static float deltaTime = (float)(0.001*(double)(current_time - time));
-        deltaTime = (float)(0.001*(double)(current_time - time));
+        const double current_time =  (double) ::GetTickCount();
+        static float deltaTime = (float)(0.001*(current_time - time));
+        deltaTime = (float)(0.001*(current_time - time));
         time = current_time;
         if (deltaTime<=0) deltaTime=1.0f/60.0f;
 

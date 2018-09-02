@@ -1708,6 +1708,11 @@ void ImImpl_NewFramePaused()    {
     IM_ASSERT(g.Initialized);
     g.Time += g.IO.DeltaTime;
 
+    g.FrameScopeActive = true;  // Is this necessary ?
+    //g.FrameCount += 1;  // Not sure this is correct
+    g.TooltipOverrideCount = 0;
+    g.WindowsActiveCount = 0;
+
     // Update keyboard input state
     memcpy(g.IO.KeysDownDurationPrev, g.IO.KeysDownDuration, sizeof(g.IO.KeysDownDuration));
     for (int i = 0; i < IM_ARRAYSIZE(g.IO.KeysDown); i++)
@@ -1768,11 +1773,6 @@ void ImImpl_NewFramePaused()    {
 
     // New
     g.MovingWindow = NULL;
-
-    // New
-    g.TooltipOverrideCount = 0;
-    g.WindowsActiveCount = 0;
-    //g.FrameCount += 1;    // Not sure this should be incremented or not when ImGui is not used...
 
 }
 

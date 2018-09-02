@@ -1389,11 +1389,11 @@ template <typename CharType> bool FileGetContentBase(const char* path,ImVector<C
     fseek(fin,0,SEEK_SET);
     if (openInTextMode) {bufferOut.resize(sz+1);bufferOut[sz]='\0';}
     else bufferOut.resize(sz);
-    if (sz>0)   {
+    if (sz>0)   {        
 	if (bufferOut.size()>=(int)sz) fread(&bufferOut[0],(size_t)sz,1,fin);
         else {
             fprintf(stderr,"Error in: FileGetContent(\"%s\"): file too big.\n",mainPath);
-            bufferOut.clear();
+	    bufferOut.clear();
             fclose(fin);fin=NULL;
             return false;
         }

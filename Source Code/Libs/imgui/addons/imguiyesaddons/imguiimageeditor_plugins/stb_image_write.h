@@ -138,7 +138,7 @@ CREDITS:
       Ivan Tikhonov
       github:ignotion
       Adam Schackart
-      
+
 LICENSE
 
   See end of file for license information.
@@ -151,12 +151,12 @@ LICENSE
 // if STB_IMAGE_WRITE_STATIC causes problems, try defining STBIWDEF to 'inline' or 'static inline'
 #ifndef STBIWDEF
 #ifdef STB_IMAGE_WRITE_STATIC
-#define STBIWDEF static
+#define STBIWDEF  static
 #else
 #ifdef __cplusplus
 #define STBIWDEF  extern "C"
 #else
-#define STBIWDEF extern
+#define STBIWDEF  extern
 #endif
 #endif
 #endif
@@ -476,7 +476,7 @@ static int stbi_write_tga_core(stbi__write_context *s, int x, int y, int comp, v
          jdir = -1;
       }
       for (; j != jend; j += jdir) {
-          unsigned char *row = (unsigned char *) data + j * x * comp;
+         unsigned char *row = (unsigned char *) data + j * x * comp;
          int len;
 
          for (i = 0; i < x; i += len) {
@@ -987,35 +987,35 @@ static unsigned char stbiw__paeth(int a, int b, int c)
 // @OPTIMIZE: provide an option that always forces left-predict or paeth predict
 static void stbiw__encode_png_line(unsigned char *pixels, int stride_bytes, int width, int height, int y, int n, int filter_type, signed char *line_buffer)
 {
-      static int mapping[] = { 0,1,2,3,4 };
-      static int firstmap[] = { 0,1,0,5,6 };
+   static int mapping[] = { 0,1,2,3,4 };
+   static int firstmap[] = { 0,1,0,5,6 };
    int *mymap = (y != 0) ? mapping : firstmap;
    int i;
    int type = mymap[filter_type];
    unsigned char *z = pixels + stride_bytes * (stbi__flip_vertically_on_write ? height-1-y : y);
    int signed_stride = stbi__flip_vertically_on_write ? -stride_bytes : stride_bytes;
    for (i = 0; i < n; ++i) {
-               switch (type) {
-                  case 0: line_buffer[i] = z[i]; break;
-                  case 1: line_buffer[i] = z[i]; break;
+      switch (type) {
+         case 0: line_buffer[i] = z[i]; break;
+         case 1: line_buffer[i] = z[i]; break;
          case 2: line_buffer[i] = z[i] - z[i-signed_stride]; break;
          case 3: line_buffer[i] = z[i] - (z[i-signed_stride]>>1); break;
          case 4: line_buffer[i] = (signed char) (z[i] - stbiw__paeth(0,z[i-signed_stride],0)); break;
-                  case 5: line_buffer[i] = z[i]; break;
-                  case 6: line_buffer[i] = z[i]; break;
-               }
+         case 5: line_buffer[i] = z[i]; break;
+         case 6: line_buffer[i] = z[i]; break;
+      }
    }
    for (i=n; i < width*n; ++i) {
-               switch (type) {
-                  case 0: line_buffer[i] = z[i]; break;
-                  case 1: line_buffer[i] = z[i] - z[i-n]; break;
+      switch (type) {
+         case 0: line_buffer[i] = z[i]; break;
+         case 1: line_buffer[i] = z[i] - z[i-n]; break;
          case 2: line_buffer[i] = z[i] - z[i-signed_stride]; break;
          case 3: line_buffer[i] = z[i] - ((z[i-n] + z[i-signed_stride])>>1); break;
          case 4: line_buffer[i] = z[i] - stbiw__paeth(z[i-n], z[i-signed_stride], z[i-signed_stride-n]); break;
-                  case 5: line_buffer[i] = z[i] - (z[i-n]>>1); break;
-                  case 6: line_buffer[i] = z[i] - stbiw__paeth(z[i-n], 0,0); break;
-               }
-            }
+         case 5: line_buffer[i] = z[i] - (z[i-n]>>1); break;
+         case 6: line_buffer[i] = z[i] - stbiw__paeth(z[i-n], 0,0); break;
+      }
+   }
 }
 
 unsigned char *stbi_write_png_to_mem(unsigned char *pixels, int stride_bytes, int x, int y, int n, int *out_len)
@@ -1054,8 +1054,8 @@ unsigned char *stbi_write_png_to_mem(unsigned char *pixels, int stride_bytes, in
             if (est < best_filter_val) {
                best_filter_val = est;
                best_filter = filter_type;
+            }
          }
-      }
          if (filter_type != best_filter) {  // If the last iteration already got us the best filter, don't redo it
             stbiw__encode_png_line(pixels, stride_bytes, x, y, j, n, best_filter, line_buffer);
             filter_type = best_filter;

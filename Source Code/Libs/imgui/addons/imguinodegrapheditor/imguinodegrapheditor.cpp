@@ -9,7 +9,9 @@
 
 
 #if !defined(alloca)
-#   ifdef _WIN32
+#	if defined(__GLIBC__) || defined(__sun) || defined(__CYGWIN__)
+#		include <alloca.h>     // alloca (glibc uses <alloca.h>. Note that Cygwin may have _WIN32 defined, so the order matters here)
+#	elif defined(_WIN32)
 #       include <malloc.h>     // alloca
 #       if !defined(alloca)
 #           define alloca _alloca  // for clang with MS Codegen
@@ -1127,7 +1129,7 @@ void NodeGraphEditor::render()
                         if (jn->isSelected) jn->Pos = jn->Pos + mouseDeltaPos;
                     }
                     isSomeNodeMoving=true;
-                }
+                }                
 
                 const ImU32& node_bg_color = (node_hovered_in_list == node || node_hovered_in_scene == node) ? style.color_node_hovered :
                                                                                                                (activeNode == node ? style.color_node_active :
@@ -1594,13 +1596,13 @@ void NodeGraphEditor::render()
             // TODO: We can probably adjust the or-group better, using the new flags/methods, in next line
             if (isMouseDraggingForScrolling && (ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem) || ImGui::IsWindowFocused() || IsWindowFocused(ImGuiFocusedFlags_RootWindow))) {
                 scrolling = scrolling - io.MouseDelta;
-                ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
+                ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
                 // This must be fixed somehow: ImGui::GetIO().WantCaptureMouse == false, because g.ActiveID == 0
                 //        fprintf(stderr,"g.ActiveId=%d\n",g.ActiveId);     // This is the inner cause
                 //        ImGui::GetIO().WantCaptureMouse = true; // does nothing
                 //        g.ActiveId = window->MoveId;            // makes WantCaptureMouse and WantCaptureKeyboard toggle like crazy every frame
             }
-            else if (isSomeNodeMoving) ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
+            else if (isSomeNodeMoving) ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
 
             if (!io.FontAllowUserScaling)   {
                 // Reset the font scale (3 lines)

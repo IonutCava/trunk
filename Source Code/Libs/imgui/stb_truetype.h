@@ -46,7 +46,7 @@
 //       Rob Loach                  Cort Stratton
 //       Kenney Phillis Jr.         github:oyvindjam
 //       Brian Costabile            github:vassvik
-//
+//       
 // VERSION HISTORY
 //
 //   1.19 (2018-02-11) GPOS kerning, STBTT_fmod
@@ -3508,7 +3508,7 @@ error:
 
 STBTT_DEF void stbtt_Rasterize(stbtt__bitmap *result, float flatness_in_pixels, stbtt_vertex *vertices, int num_verts, float scale_x, float scale_y, float shift_x, float shift_y, int x_off, int y_off, int invert, void *userdata)
 {
-   float scale = scale_x > scale_y ? scale_y : scale_x;
+   float scale            = scale_x > scale_y ? scale_y : scale_x;
    int winding_count      = 0;
    int *winding_lengths   = NULL;
    stbtt__point *windings = stbtt_FlattenCurves(vertices, num_verts, flatness_in_pixels / scale, &winding_lengths, &winding_count, userdata);

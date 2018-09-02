@@ -21,7 +21,8 @@
         GLFW_VRESIZE_CURSOR,       //ImGuiMouseCursor_ResizeNS,              // Unused by ImGui
         GLFW_HRESIZE_CURSOR,       //ImGuiMouseCursor_ResizeEW,              // Unused by ImGui
         GLFW_CROSSHAIR_CURSOR,     //ImGuiMouseCursor_ResizeNESW,
-        GLFW_CROSSHAIR_CURSOR,     //ImGuiMouseCursor_ResizeNWSE,          // Unused by ImGui
+        GLFW_CROSSHAIR_CURSOR,       //ImGuiMouseCursor_ResizeNWSE,          // Unused by ImGui
+        GLFW_HAND_CURSOR,       //ImGuiMouseCursor_Hand,          // Unused by ImGui
         GLFW_ARROW_CURSOR         //,ImGuiMouseCursor_Arrow
     };
     static GLFWcursor* glfwCursors[ImGuiMouseCursor_COUNT+1];
@@ -39,6 +40,11 @@
         IDC_SIZEWE,       //ImGuiMouseCursor_ResizeEW,              // Unused by ImGui
         IDC_SIZENESW,     //ImGuiMouseCursor_ResizeNESW,
         IDC_SIZENWSE,     //ImGuiMouseCursor_ResizeNWSE,          // Unused by ImGui
+#       ifdef IDC_HAND    // winuser.h defines it if(WINVER >= 0x0500)
+        IDC_HAND,         //ImGuiMouseCursor_Hand // Unused by ImGui
+#       else
+        IDC_ARROW,         //ImGuiMouseCursor_Hand // Unused by ImGui
+#       endif
         IDC_ARROW         //,ImGuiMouseCursor_Arrow
     };
     static HCURSOR win32Cursors[ImGuiMouseCursor_COUNT+1];
@@ -61,6 +67,7 @@
         108,//SDL_SYSTEM_CURSOR_SIZEWE,       //ImGuiMouseCursor_ResizeEW,              // Unused by ImGui
         13,//SDL_SYSTEM_CURSOR_SIZENESW,     //ImGuiMouseCursor_ResizeNESW,
         15,//SDL_SYSTEM_CURSOR_SIZENWSE,     //ImGuiMouseCursor_ResizeNWSE,          // Unused by ImGui
+        58,                                 //ImGuiMouseCursor_Hand
         2//SDL_SYSTEM_CURSOR_ARROW         //,ImGuiMouseCursor_Arrow
     };
     static Cursor x11Cursors[ImGuiMouseCursor_COUNT+1];
@@ -401,7 +408,7 @@ ImImplMainLoopFrameStruct() : done(false) {}
 static void ImImplMainLoopFrame(void* userPtr)	{
     ImImplMainLoopFrameStruct& mainLoopFrameStruct = *((ImImplMainLoopFrameStruct*) userPtr);
 
-    static double time = 0.0f;
+    static double time = 0.0;
     ImGuiIO& io = ImGui::GetIO();
 
     for (size_t i = 0; i < 5; i++) gImGuiBindingMouseDblClicked[i] = false;   // We manually set it (otherwise it won't work with low frame rates)
@@ -600,7 +607,7 @@ static void ImImplMainLoopFrame(void* userPtr)	{
 
     // Start the frame
     {
-        io.DeltaTime = (float) deltaTime;
+        io.DeltaTime = deltaTime;
         for (size_t i = 0; i < 5; i++) {
             io.MouseDown[i]= g_MousePressed[i] || glfwGetMouseButton(window, i); // If a mouse press event came, always pass it as "mouse held this frame", so we don't miss click-release events that are shorter than 1 frame.
             g_MousePressed[i] = false;

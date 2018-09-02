@@ -552,23 +552,23 @@ enum STBVorbisError
 #endif
 
 #ifndef STB_VORBIS_NO_CRT
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>
-#include <math.h>
+   #include <stdlib.h>
+   #include <string.h>
+   #include <assert.h>
+   #include <math.h>
 
    // find definition of alloca if it's not in stdlib.h:
    #if defined(_MSC_VER) || defined(__MINGW32__)
-#include <malloc.h>
+      #include <malloc.h>
    #endif
-#if defined(__linux__) || defined(__linux) || defined(__EMSCRIPTEN__)
-#include <alloca.h>
-#endif
+   #if defined(__linux__) || defined(__linux) || defined(__EMSCRIPTEN__)
+      #include <alloca.h>
+   #endif
 #else // STB_VORBIS_NO_CRT
-#define NULL 0
-#define malloc(s)   0
-#define free(s)     ((void) 0)
-#define realloc(s)  0
+   #define NULL 0
+   #define malloc(s)   0
+   #define free(s)     ((void) 0)
+   #define realloc(s)  0
 #endif // STB_VORBIS_NO_CRT
 
 #include <limits.h>
@@ -990,13 +990,13 @@ static int ilog(int32 n)
 
    // 2 compares if n < 16, 3 compares otherwise (4 if signed or n > 1<<29)
    if (n < (1 << 14))
-        if (n < (1 <<  4))        return     0 + log2_4[n      ];
-        else if (n < (1 <<  9))      return  5 + log2_4[n >>  5];
+        if (n < (1 <<  4))            return  0 + log2_4[n      ];
+        else if (n < (1 <<  9))       return  5 + log2_4[n >>  5];
              else                     return 10 + log2_4[n >> 10];
    else if (n < (1 << 24))
-             if (n < (1 << 19))      return 15 + log2_4[n >> 15];
+             if (n < (1 << 19))       return 15 + log2_4[n >> 15];
              else                     return 20 + log2_4[n >> 20];
-        else if (n < (1 << 29))      return 25 + log2_4[n >> 25];
+        else if (n < (1 << 29))       return 25 + log2_4[n >> 25];
              else                     return 30 + log2_4[n >> 30];
 }
 
@@ -4630,7 +4630,7 @@ static int seek_to_sample_coarse(stb_vorbis *f, uint32 sample_number)
    // starting from the start is handled differently
    if (sample_number <= left.last_decoded_sample) {
       if (stb_vorbis_seek_start(f))
-      return 1;
+         return 1;
       return 0;
    }
 

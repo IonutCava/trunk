@@ -77,7 +77,7 @@ inline bool operator<(const ImString& other) const  {
 inline const ImString& operator=(const char* other) {
     //printf("operator=(const char* other) START: \"%s\" \"%s\"",this->c_str(),other);
     if (!other) return *this;
-    const int len = (int)strlen(other);
+    const int len = strlen(other);
     base::resize(len+1);
     for (int i=0;i<len;i++) operator[](i) = other[i];   // strcpy ?
     operator[](len) = '\0';
@@ -114,7 +114,7 @@ inline const ImString& operator+=(const char* other) {
     if (!other) return *this;
     const int curSize = size();
     if (curSize==0) return operator=(other);
-    const int len = (int)strlen(other);
+    const int len = strlen(other);
     base::resize(curSize + len+1);
     for (int i=curSize;i<curSize+len;i++) operator[](i) = other[i-curSize];
     operator[](curSize+len) = '\0';
@@ -301,12 +301,12 @@ public:
     IMGUI_FORCE_INLINE  void                 push_back(const value_type& v)  {
         if (Size == Capacity) {
             if ((&v >= Data) && (&v < (Data+Size)))  {
-			const value_type v_val = v;	// Now v can point to old Data field
-			reserve(_grow_capacity(Size+1));
-        	IMIMPL_PLACEMENT_NEW(&Data[Size]) T();
-        	Data[Size++] = v_val;
-		}
-		else {
+                const value_type v_val = v;	// Now v can point to old Data field
+                reserve(_grow_capacity(Size+1));
+                IMIMPL_PLACEMENT_NEW(&Data[Size]) T();
+                Data[Size++] = v_val;
+            }
+            else {
                 reserve(_grow_capacity(Size+1));
                 IMIMPL_PLACEMENT_NEW(&Data[Size]) T();
                 Data[Size++] = v;
@@ -613,8 +613,8 @@ struct ImHashMapDestructorFunctionCString {
 };
 struct ImHashMapAssignmentFunctionCString {
     IMGUI_FORCE_INLINE void operator()(char*& k,const char* k2) const {
-        const int sz = k ? (int)strlen(k) : -1;
-        const int sz2 = k2 ? (int)strlen(k2) : -1;
+        const int sz = k ? strlen(k) : -1;
+        const int sz2 = k2 ? strlen(k2) : -1;
         if (sz == sz2) {
             if (sz==-1) return;
             strcpy((char*)k,k2);return;

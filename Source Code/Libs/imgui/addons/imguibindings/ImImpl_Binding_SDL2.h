@@ -15,6 +15,7 @@ static const SDL_SystemCursor sdlCursorIds[ImGuiMouseCursor_COUNT+1] = {
     SDL_SYSTEM_CURSOR_SIZEWE,       //ImGuiMouseCursor_ResizeEW,              // Unused by ImGui
     SDL_SYSTEM_CURSOR_SIZENESW,     //ImGuiMouseCursor_ResizeNESW,
     SDL_SYSTEM_CURSOR_SIZENWSE,     //ImGuiMouseCursor_ResizeNWSE,          // Unused by ImGui
+    SDL_SYSTEM_CURSOR_HAND,
     SDL_SYSTEM_CURSOR_ARROW         //,ImGuiMouseCursor_Arrow
 };
 static SDL_Cursor* sdlCursors[ImGuiMouseCursor_COUNT+1];

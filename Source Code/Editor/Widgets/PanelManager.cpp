@@ -262,7 +262,7 @@ namespace Divide {
                     ImGui::Spacing();
 
 #           ifdef IMGUISTYLESERIALIZER_H_
-                    static int styleEnumNum = 0;
+                    static int styleEnumNum = 1;
                     ImGui::PushItemWidth(ImGui::GetWindowWidth()*0.44f);
                     if (ImGui::Combo("Main Style Chooser", &styleEnumNum, ImGui::GetDefaultStyleNames(), (int)ImGuiStyle_Count, (int)ImGuiStyle_Count)) {
                         ImGui::ResetStyle(styleEnumNum);
@@ -271,15 +271,19 @@ namespace Divide {
                     if (ImGui::IsItemHovered()) {
                         if (styleEnumNum == ImGuiStyle_DefaultClassic)      ImGui::SetTooltip("%s", "\"Default\"\nThis is the default\nclassic ImGui theme");
                         else if (styleEnumNum == ImGuiStyle_DefaultDark)      ImGui::SetTooltip("%s", "\"DefaultDark\"\nThis is the default\ndark ImGui theme");
-                        else if (styleEnumNum == ImGuiStyle_Gray)   ImGui::SetTooltip("%s", "\"Gray\"\nThis is the default theme of first demo");
-                        else if (styleEnumNum == ImGuiStyle_OSX)   ImGui::SetTooltip("%s", "\"OSX\"\nPosted by @itamago here:\nhttps://github.com/ocornut/imgui/pull/511\n(hope I can use it)");
+                        else if (styleEnumNum == ImGuiStyle_DefaultLight)      ImGui::SetTooltip("%s", "\"DefaultLight\"\nThis is the default\nlight ImGui theme");
+                        else if (styleEnumNum == ImGuiStyle_Gray)   ImGui::SetTooltip("%s", "\"Gray\"\nThis is the default\ntheme of this demo");
+                        else if (styleEnumNum == ImGuiStyle_BlackCodz01)   ImGui::SetTooltip("%s", "\"GrayCodz01\"\nPosted by @codz01 here:\nhttps://github.com/ocornut/imgui/issues/707\n(hope I can use it)");
+                        else if (styleEnumNum == ImGuiStyle_GrayCodz01)   ImGui::SetTooltip("%s", "\"GrayCodz01\"\nPosted by @codz01 here:\nhttps://github.com/ocornut/imgui/issues/1607\n(hope I can use it)");
                         else if (styleEnumNum == ImGuiStyle_DarkOpaque)   ImGui::SetTooltip("%s", "\"DarkOpaque\"\nA dark-grayscale style with\nno transparency (by default)");
-                        else if (styleEnumNum == ImGuiStyle_OSXOpaque)   ImGui::SetTooltip("%s", "\"OSXOpaque\"\nPosted by @dougbinks here:\nhttps://gist.github.com/dougbinks/8089b4bbaccaaf6fa204236978d165a9\n(hope I can use it)");
+                        else if (styleEnumNum == ImGuiStyle_Purple)   ImGui::SetTooltip("%s", "\"Purple\"\nPosted by @fallrisk here:\nhttps://github.com/ocornut/imgui/issues/1607\n(hope I can use it)");
                         else if (styleEnumNum == ImGuiStyle_Soft) ImGui::SetTooltip("%s", "\"Soft\"\nPosted by @olekristensen here:\nhttps://github.com/ocornut/imgui/issues/539\n(hope I can use it)");
                         else if (styleEnumNum == ImGuiStyle_EdinBlack || styleEnumNum == ImGuiStyle_EdinWhite) ImGui::SetTooltip("%s", "Based on an image posted by @edin_p\n(hope I can use it)");
                         else if (styleEnumNum == ImGuiStyle_Maya) ImGui::SetTooltip("%s", "\"Maya\"\nPosted by @ongamex here:\nhttps://gist.github.com/ongamex/4ee36fb23d6c527939d0f4ba72144d29\n(hope I can use it)");
+                        else if (styleEnumNum == ImGuiStyle_LightGreen) ImGui::SetTooltip("%s", "\"LightGreen\"\nPosted by @ebachard here:\nhttps://github.com/ocornut/imgui/pull/1776\n(hope I can use it)");
+                        else if (styleEnumNum == ImGuiStyle_Design) ImGui::SetTooltip("%s", "\"Design\"\nPosted by @usernameiwantedwasalreadytaken here:\nhttps://github.com/ocornut/imgui/issues/707\n(hope I can use it)");
                     }
-                    ImGui::Spacing();ImGui::Separator();ImGui::Spacing();
+                    ImGui::Spacing(); ImGui::Separator(); ImGui::Spacing();
 #           endif // IMGUISTYLESERIALIZER_H_
 
                     ImGui::TextDisabled("%s", "These are also present in the \"Preferences\" Panel:");

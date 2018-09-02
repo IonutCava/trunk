@@ -471,11 +471,11 @@ namespace SoLoud
 
         // Get N samples from the stream to the buffer. Report samples written.
         virtual unsigned int getAudio(float *aBuffer, unsigned int aSamplesToRead, unsigned int aBufferSize) = 0;
-		// Has the stream ended?
+        // Has the stream ended?
 		virtual bool hasEnded() = 0;
 		// Seek to certain place in the stream. Base implementation is generic "tape" seek (and slow).
         virtual result seek(time aSeconds, float *mScratch, unsigned int mScratchSize);
-		// Rewind stream. Base implementation returns NOT_IMPLEMENTED, meaning it can't rewind.
+        // Rewind stream. Base implementation returns NOT_IMPLEMENTED, meaning it can't rewind.
 		virtual result rewind();
 		// Get information. Returns 0 by default.
 		virtual float getInfo(unsigned int aInfoKey);
@@ -613,7 +613,7 @@ namespace SoLoud
 
 		BusInstance(Bus *aParent);
         virtual unsigned int getAudio(float *aBuffer, unsigned int aSamplesToRead, unsigned int aBufferSize);
-		virtual bool hasEnded();
+        virtual bool hasEnded();
 		virtual ~BusInstance();
 	};
 
@@ -684,7 +684,7 @@ namespace SoLoud
 		void * mAudioThreadMutex;
         // Flag for when we're inside the mutex, used for debugging.
         bool mInsideAudioThreadMutex;
-		// Called by SoLoud to shut down the back-end. If NULL, not called. Should be set by back-end.
+        // Called by SoLoud to shut down the back-end. If NULL, not called. Should be set by back-end.
 		soloudCallFunction mBackendCleanupFunc;
 
 		// CTor
@@ -806,10 +806,10 @@ namespace SoLoud
 		bool getLooping(handle aVoiceHandle);
         // Get voice loop point value
         time getLoopPoint(handle aVoiceHandle);
-		
+
         // Set voice loop point value
         void setLoopPoint(handle aVoiceHandle, time aLoopPoint);
-		// Set voice's loop state
+        // Set voice's loop state
 		void setLooping(handle aVoiceHandle, bool aLooping);
 		// Set current maximum active voice setting
 		result setMaxActiveVoiceCount(unsigned int aVoiceCount);
@@ -937,7 +937,7 @@ namespace SoLoud
 		void calcActiveVoices();
 		// Perform mixing for a specific bus
         void mixBus(float *aBuffer, unsigned int aSamplesToRead, unsigned int aBufferSize, float *aScratch, unsigned int aBus, float aSamplerate, unsigned int aChannels);
-		// Max. number of active voices. Busses and tickable inaudibles also count against this.
+        // Max. number of active voices. Busses and tickable inaudibles also count against this.
 		unsigned int mMaxActiveVoices;
 		// Highest voice in use so far
 		unsigned int mHighestVoice;
@@ -1382,42 +1382,42 @@ namespace SoLoud
 struct stb_vorbis;
 namespace SoLoud
 {
-	class Wav;
-	class File;
+    class Wav;
+    class File;
     class MemoryFile;
 
-	class WavInstance : public AudioSourceInstance
-	{
-		Wav *mParent;
-		unsigned int mOffset;
-	public:
-		WavInstance(Wav *aParent);
+    class WavInstance : public AudioSourceInstance
+    {
+        Wav *mParent;
+        unsigned int mOffset;
+    public:
+        WavInstance(Wav *aParent);
         virtual unsigned int getAudio(float *aBuffer, unsigned int aSamplesToRead, unsigned int aBufferSize);
-		virtual result rewind();
-		virtual bool hasEnded();
-	};
+        virtual result rewind();
+        virtual bool hasEnded();
+    };
 
-	class Wav : public AudioSource
-	{
+    class Wav : public AudioSource
+    {
         result loadwav(MemoryFile *aReader);
         result loadogg(MemoryFile *aReader);
         result testAndLoadFile(MemoryFile *aReader);
-	public:
-		float *mData;
-		unsigned int mSampleCount;
+    public:
+        float *mData;
+        unsigned int mSampleCount;
 
-		Wav();
-		virtual ~Wav();
-		result load(const char *aFilename);
-		result loadMem(unsigned char *aMem, unsigned int aLength, bool aCopy = false, bool aTakeOwnership = true);
-		result loadFile(File *aFile);
+        Wav();
+        virtual ~Wav();
+        result load(const char *aFilename);
+        result loadMem(unsigned char *aMem, unsigned int aLength, bool aCopy = false, bool aTakeOwnership = true);
+        result loadFile(File *aFile);
         result loadRawWave(unsigned char *aMem, unsigned int aLength, float aSamplerate = 44100.0f, unsigned int aChannels = 1);
         result loadRawWave(short *aMem, unsigned int aLength, float aSamplerate = 44100.0f, unsigned int aChannels = 1);
         result loadRawWave(float *aMem, unsigned int aLength, float aSamplerate = 44100.0f, unsigned int aChannels = 1, bool aCopy = false, bool aTakeOwnership = true);
-		
-		virtual AudioSourceInstance *createInstance();
-		time getLength();
-	};
+
+        virtual AudioSourceInstance *createInstance();
+        time getLength();
+    };
 };
 //----soloud_wavstream.h-----------------------------------------------------------------------------------------------
 #define SOLOUD_WAVSTREAM_H
@@ -1425,52 +1425,52 @@ namespace SoLoud
 struct stb_vorbis;
 namespace SoLoud
 {
-	class WavStream;
-	class File;
+    class WavStream;
+    class File;
 
-	class WavStreamInstance : public AudioSourceInstance
-	{
-		WavStream *mParent;
-		unsigned int mOffset;
-		File *mFile;
-		stb_vorbis *mOgg;
-		unsigned int mOggFrameSize;
-		unsigned int mOggFrameOffset;
-		float **mOggOutputs;
-	public:
-		WavStreamInstance(WavStream *aParent);
+    class WavStreamInstance : public AudioSourceInstance
+    {
+        WavStream *mParent;
+        unsigned int mOffset;
+        File *mFile;
+        stb_vorbis *mOgg;
+        unsigned int mOggFrameSize;
+        unsigned int mOggFrameOffset;
+        float **mOggOutputs;
+    public:
+        WavStreamInstance(WavStream *aParent);
         virtual unsigned int getAudio(float *aBuffer, unsigned int aSamplesToRead, unsigned int aBufferSize);
-		virtual result rewind();
-		virtual bool hasEnded();
-		virtual ~WavStreamInstance();
-	};
+        virtual result rewind();
+        virtual bool hasEnded();
+        virtual ~WavStreamInstance();
+    };
 
-	class WavStream : public AudioSource
-	{
-		result loadwav(File * fp);
-		result loadogg(File * fp);
-	public:
-		int mOgg;
-		char *mFilename;
-		File *mMemFile;
-		File *mStreamFile;
-		unsigned int mDataOffset;
-		unsigned int mBits;
-		unsigned int mSampleCount;
+    class WavStream : public AudioSource
+    {
+        result loadwav(File * fp);
+        result loadogg(File * fp);
+    public:
+        int mOgg;
+        char *mFilename;
+        File *mMemFile;
+        File *mStreamFile;
+        unsigned int mDataOffset;
+        unsigned int mBits;
+        unsigned int mSampleCount;
 
-		WavStream();
-		virtual ~WavStream();
-		result load(const char *aFilename);
-		result loadMem(unsigned char *aData, unsigned int aDataLen, bool aCopy = false, bool aTakeOwnership = true);
-		result loadToMem(const char *aFilename);
-		result loadFile(File *aFile);
-		result loadFileToMem(File *aFile);		
-		virtual AudioSourceInstance *createInstance();
-		time getLength();
+        WavStream();
+        virtual ~WavStream();
+        result load(const char *aFilename);
+        result loadMem(unsigned char *aData, unsigned int aDataLen, bool aCopy = false, bool aTakeOwnership = true);
+        result loadToMem(const char *aFilename);
+        result loadFile(File *aFile);
+        result loadFileToMem(File *aFile);
+        virtual AudioSourceInstance *createInstance();
+        time getLength();
 
-	public:
-		result parse(File *aFile);
-	};
+    public:
+        result parse(File *aFile);
+    };
 };
 #endif //NO_IMGUISOLOUD_WAV
 //----demos/piano/soloud_basicwave.h--------------------------------------------------------------------------------
@@ -1621,47 +1621,47 @@ public:
 class klatt_frame
 {
 public:
-	int mF0FundamentalFreq;          // Voicing fund freq in Hz                       
-	int mVoicingAmpdb;               // Amp of voicing in dB,            0 to   70    
-	int mFormant1Freq;               // First formant freq in Hz,        200 to 1300  
-	int mFormant1Bandwidth;          // First formant bw in Hz,          40 to 1000   
-	int mFormant2Freq;               // Second formant freq in Hz,       550 to 3000  
-	int mFormant2Bandwidth;          // Second formant bw in Hz,         40 to 1000   
-	int mFormant3Freq;               // Third formant freq in Hz,        1200 to 4999 
-	int mFormant3Bandwidth;          // Third formant bw in Hz,          40 to 1000   
-	int mFormant4Freq;               // Fourth formant freq in Hz,       1200 to 4999 
-	int mFormant4Bandwidth;          // Fourth formant bw in Hz,         40 to 1000   
-	int mFormant5Freq;               // Fifth formant freq in Hz,        1200 to 4999 
-	int mFormant5Bandwidth;          // Fifth formant bw in Hz,          40 to 1000   
-	int mFormant6Freq;               // Sixth formant freq in Hz,        1200 to 4999 
-	int mFormant6Bandwidth;          // Sixth formant bw in Hz,          40 to 2000   
-	int mNasalZeroFreq;              // Nasal zero freq in Hz,           248 to  528  
-	int mNasalZeroBandwidth;         // Nasal zero bw in Hz,             40 to 1000   
-	int mNasalPoleFreq;              // Nasal pole freq in Hz,           248 to  528  
-	int mNasalPoleBandwidth;         // Nasal pole bw in Hz,             40 to 1000   
-	int mAspirationAmpdb;            // Amp of aspiration in dB,         0 to   70    
-	int mNoSamplesInOpenPeriod;      // # of samples in open period,     10 to   65   
-	int mVoicingBreathiness;         // Breathiness in voicing,          0 to   80    
-	int mVoicingSpectralTiltdb;      // Voicing spectral tilt in dB,     0 to   24    
-	int mFricationAmpdb;             // Amp of frication in dB,          0 to   80    
-	int mSkewnessOfAlternatePeriods; // Skewness of alternate periods,   0 to   40 in sample#/2
-	int mFormant1Ampdb;              // Amp of par 1st formant in dB,    0 to   80  
-	int mFormant1ParallelBandwidth;  // Par. 1st formant bw in Hz,       40 to 1000 
-	int mFormant2Ampdb;              // Amp of F2 frication in dB,       0 to   80  
-	int mFormant2ParallelBandwidth;  // Par. 2nd formant bw in Hz,       40 to 1000 
-	int mFormant3Ampdb;              // Amp of F3 frication in dB,       0 to   80  
-	int mFormant3ParallelBandwidth;  // Par. 3rd formant bw in Hz,       40 to 1000 
-	int mFormant4Ampdb;              // Amp of F4 frication in dB,       0 to   80  
-	int mFormant4ParallelBandwidth;  // Par. 4th formant bw in Hz,       40 to 1000 
-	int mFormant5Ampdb;              // Amp of F5 frication in dB,       0 to   80  
-	int mFormant5ParallelBandwidth;  // Par. 5th formant bw in Hz,       40 to 1000 
-	int mFormant6Ampdb;              // Amp of F6 (same as r6pa),        0 to   80  
-	int mFormant6ParallelBandwidth;  // Par. 6th formant bw in Hz,       40 to 2000 
-	int mParallelNasalPoleAmpdb;     // Amp of par nasal pole in dB,     0 to   80  
-	int mBypassFricationAmpdb;       // Amp of bypass fric. in dB,       0 to   80  
-	int mPalallelVoicingAmpdb;       // Amp of voicing,  par in dB,      0 to   70  
-	int mOverallGaindb;              // Overall gain, 60 dB is unity,    0 to   60  
-	klatt_frame();
+    int mF0FundamentalFreq;          // Voicing fund freq in Hz
+    int mVoicingAmpdb;               // Amp of voicing in dB,            0 to   70
+    int mFormant1Freq;               // First formant freq in Hz,        200 to 1300
+    int mFormant1Bandwidth;          // First formant bw in Hz,          40 to 1000
+    int mFormant2Freq;               // Second formant freq in Hz,       550 to 3000
+    int mFormant2Bandwidth;          // Second formant bw in Hz,         40 to 1000
+    int mFormant3Freq;               // Third formant freq in Hz,        1200 to 4999
+    int mFormant3Bandwidth;          // Third formant bw in Hz,          40 to 1000
+    int mFormant4Freq;               // Fourth formant freq in Hz,       1200 to 4999
+    int mFormant4Bandwidth;          // Fourth formant bw in Hz,         40 to 1000
+    int mFormant5Freq;               // Fifth formant freq in Hz,        1200 to 4999
+    int mFormant5Bandwidth;          // Fifth formant bw in Hz,          40 to 1000
+    int mFormant6Freq;               // Sixth formant freq in Hz,        1200 to 4999
+    int mFormant6Bandwidth;          // Sixth formant bw in Hz,          40 to 2000
+    int mNasalZeroFreq;              // Nasal zero freq in Hz,           248 to  528
+    int mNasalZeroBandwidth;         // Nasal zero bw in Hz,             40 to 1000
+    int mNasalPoleFreq;              // Nasal pole freq in Hz,           248 to  528
+    int mNasalPoleBandwidth;         // Nasal pole bw in Hz,             40 to 1000
+    int mAspirationAmpdb;            // Amp of aspiration in dB,         0 to   70
+    int mNoSamplesInOpenPeriod;      // # of samples in open period,     10 to   65
+    int mVoicingBreathiness;         // Breathiness in voicing,          0 to   80
+    int mVoicingSpectralTiltdb;      // Voicing spectral tilt in dB,     0 to   24
+    int mFricationAmpdb;             // Amp of frication in dB,          0 to   80
+    int mSkewnessOfAlternatePeriods; // Skewness of alternate periods,   0 to   40 in sample#/2
+    int mFormant1Ampdb;              // Amp of par 1st formant in dB,    0 to   80
+    int mFormant1ParallelBandwidth;  // Par. 1st formant bw in Hz,       40 to 1000
+    int mFormant2Ampdb;              // Amp of F2 frication in dB,       0 to   80
+    int mFormant2ParallelBandwidth;  // Par. 2nd formant bw in Hz,       40 to 1000
+    int mFormant3Ampdb;              // Amp of F3 frication in dB,       0 to   80
+    int mFormant3ParallelBandwidth;  // Par. 3rd formant bw in Hz,       40 to 1000
+    int mFormant4Ampdb;              // Amp of F4 frication in dB,       0 to   80
+    int mFormant4ParallelBandwidth;  // Par. 4th formant bw in Hz,       40 to 1000
+    int mFormant5Ampdb;              // Amp of F5 frication in dB,       0 to   80
+    int mFormant5ParallelBandwidth;  // Par. 5th formant bw in Hz,       40 to 1000
+    int mFormant6Ampdb;              // Amp of F6 (same as r6pa),        0 to   80
+    int mFormant6ParallelBandwidth;  // Par. 6th formant bw in Hz,       40 to 2000
+    int mParallelNasalPoleAmpdb;     // Amp of par nasal pole in dB,     0 to   80
+    int mBypassFricationAmpdb;       // Amp of bypass fric. in dB,       0 to   80
+    int mPalallelVoicingAmpdb;       // Amp of voicing,  par in dB,      0 to   70
+    int mOverallGaindb;              // Overall gain, 60 dB is unity,    0 to   60
+    klatt_frame();
 };
 
 class darray;
@@ -1670,13 +1670,13 @@ class Element;
 class Slope
 {
 public:
-	float mValue;                   /* boundary value */
-	int mTime;                      /* transition time */
-	Slope() 
-	{
-		mValue = 0;
-		mTime = 0;
-	}
+    float mValue;                   /* boundary value */
+    int mTime;                      /* transition time */
+    Slope()
+    {
+        mValue = 0;
+        mTime = 0;
+    }
 };
 
 
@@ -1693,107 +1693,107 @@ enum KLATT_WAVEFORM
 
 class klatt
 {
-	// resonators
-	resonator mParallelFormant1, mParallelFormant2, mParallelFormant3, 
-		      mParallelFormant4, mParallelFormant5, mParallelFormant6,
-		      mParallelResoNasalPole, mNasalPole, mNasalZero, 
-			  mCritDampedGlotLowPassFilter, mDownSampLowPassFilter, mOutputLowPassFilter;
+    // resonators
+    resonator mParallelFormant1, mParallelFormant2, mParallelFormant3,
+              mParallelFormant4, mParallelFormant5, mParallelFormant6,
+              mParallelResoNasalPole, mNasalPole, mNasalZero,
+              mCritDampedGlotLowPassFilter, mDownSampLowPassFilter, mOutputLowPassFilter;
 public:
     int mBaseF0;
     float mBaseSpeed;
     float mBaseDeclination;
     int mBaseWaveform;
 
-	int mF0Flutter;
-	int mSampleRate;
-	int mNspFr;
-	int mF0FundamentalFreq;        // Voicing fund freq in Hz  
-	int mVoicingAmpdb;          // Amp of voicing in dB,    0 to   70  
-	int mSkewnessOfAlternatePeriods;         // Skewness of alternate periods,0 to   40  
-	int mTimeCount;     // used for f0 flutter
-	int mNPer;          // Current loc in voicing period   40000 samp/s
-	int mT0;            // Fundamental period in output samples times 4 
-	int mNOpen;         // Number of samples in open phase of period  
-	int mNMod;          // Position in period to begin noise amp. modul 
+    int mF0Flutter;
+    int mSampleRate;
+    int mNspFr;
+    int mF0FundamentalFreq;        // Voicing fund freq in Hz
+    int mVoicingAmpdb;          // Amp of voicing in dB,    0 to   70
+    int mSkewnessOfAlternatePeriods;         // Skewness of alternate periods,0 to   40
+    int mTimeCount;     // used for f0 flutter
+    int mNPer;          // Current loc in voicing period   40000 samp/s
+    int mT0;            // Fundamental period in output samples times 4
+    int mNOpen;         // Number of samples in open phase of period
+    int mNMod;          // Position in period to begin noise amp. modul
 
-	// Various amplitude variables used in main loop
+    // Various amplitude variables used in main loop
 
-	float mAmpVoice;     // mVoicingAmpdb converted to linear gain  
-	float mAmpBypas;     // mBypassFricationAmpdb converted to linear gain  
-	float mAmpAspir;     // AP converted to linear gain  
-	float mAmpFrica;     // mFricationAmpdb converted to linear gain  
-	float mAmpBreth;     // ATURB converted to linear gain  
+    float mAmpVoice;     // mVoicingAmpdb converted to linear gain
+    float mAmpBypas;     // mBypassFricationAmpdb converted to linear gain
+    float mAmpAspir;     // AP converted to linear gain
+    float mAmpFrica;     // mFricationAmpdb converted to linear gain
+    float mAmpBreth;     // ATURB converted to linear gain
 
-	// State variables of sound sources
+    // State variables of sound sources
 
-	int mSkew;                  // Alternating jitter, in half-period units  
-	float mVLast;               // Previous output of voice  
-	float mNLast;               // Previous output of random number generator  
-	float mGlotLast;            // Previous value of glotout  
-	float mDecay;               // mVoicingSpectralTiltdb converted to exponential time const  
-	float mOneMd;               // in voicing one-pole ELM_FEATURE_LOW-pass filter  
+    int mSkew;                  // Alternating jitter, in half-period units
+    float mVLast;               // Previous output of voice
+    float mNLast;               // Previous output of random number generator
+    float mGlotLast;            // Previous value of glotout
+    float mDecay;               // mVoicingSpectralTiltdb converted to exponential time const
+    float mOneMd;               // in voicing one-pole ELM_FEATURE_LOW-pass filter
 
 
-	float natural_source(int aNper);
+    float natural_source(int aNper);
 
     void frame_init();
     void flutter();
     void pitch_synch_par_reset(int ns);
     void parwave(short int *jwave);
     void init(int aBaseFrequency = 1330, float aBaseSpeed = 10.0f, float aBaseDeclination = 0.5f, int aBaseWaveform = KW_SAW);
-	static int phone_to_elm(char *aPhoneme, int aCount, darray *aElement);
+    static int phone_to_elm(char *aPhoneme, int aCount, darray *aElement);
 
-	int mElementCount;
-	unsigned char *mElement;
-	int mElementIndex;
+    int mElementCount;
+    unsigned char *mElement;
+    int mElementIndex;
     klatt_frame mFrame;
-	Element * mLastElement;
-	int mTStress;
-	int mNTStress;
-	Slope mStressS;
-	Slope mStressE;
-	float mTop;
-	void initsynth(int aElementCount,unsigned char *aElement);
-	int synth(int aSampleCount, short *aSamplePointer);
-	klatt();
+    Element * mLastElement;
+    int mTStress;
+    int mNTStress;
+    Slope mStressS;
+    Slope mStressE;
+    float mTop;
+    void initsynth(int aElementCount,unsigned char *aElement);
+    int synth(int aSampleCount, short *aSamplePointer);
+    klatt();
 };
 //----../src/audiosource/speech/tts.h--------------------------------------------------------------------------------
 extern int xlate_string (const char *string,darray *phone);
 //----soloud_speech.h-[2]--------------------------------------------------------------------------------------------
 namespace SoLoud
 {
-	class Speech;
+    class Speech;
 
-	class Speech : public AudioSource
-	{
-	public:
+    class Speech : public AudioSource
+    {
+    public:
         int mBaseFrequency;
         float mBaseSpeed;
         float mBaseDeclination;
         int mBaseWaveform;
-		int mFrames;
-		darray mElement;
-		Speech();
-		result setText(const char *aText);
+        int mFrames;
+        darray mElement;
+        Speech();
+        result setText(const char *aText);
         result setParams(unsigned int aBaseFrequency = 1330, float aBaseSpeed = 10.0f, float aBaseDeclination = 0.5f, int aBaseWaveform = KW_TRIANGLE);
-		virtual ~Speech();
-		virtual AudioSourceInstance *createInstance();
-	};
+        virtual ~Speech();
+        virtual AudioSourceInstance *createInstance();
+    };
 
-	class SpeechInstance : public AudioSourceInstance
-	{
-		klatt mSynth;
-		Speech *mParent;
-		short *mSample;
-		int mSampleCount;
-		int mOffset;
-	public:
-		SpeechInstance(Speech *aParent);
+    class SpeechInstance : public AudioSourceInstance
+    {
+        klatt mSynth;
+        Speech *mParent;
+        short *mSample;
+        int mSampleCount;
+        int mOffset;
+    public:
+        SpeechInstance(Speech *aParent);
         virtual ~SpeechInstance();
         virtual unsigned int getAudio(float *aBuffer, unsigned int aSamplesToRead, unsigned int aBufferSize);
-		virtual result rewind();
-		virtual bool hasEnded();
-	};
+        virtual result rewind();
+        virtual bool hasEnded();
+    };
 };
 #endif // YES_IMGUISOLOUD_SPEECH
 
@@ -1814,7 +1814,7 @@ namespace SoLoud
 		ModplugInstance(Modplug *aParent);
 		virtual ~ModplugInstance();
         virtual unsigned int getAudio(float *aBuffer, unsigned int aSamplesToRead, unsigned int aBufferSize);
-		virtual bool hasEnded();
+        virtual bool hasEnded();
 	};
 
 	class Modplug : public AudioSource
@@ -1836,228 +1836,228 @@ namespace SoLoud
 #ifdef  YES_IMGUISOLOUD_MONOTONE
 namespace SoLoud
 {
-	class Monotone;
-	class File;
+    class Monotone;
+    class File;
 
-	struct MonotoneSong
-	{
-		char *mTitle;
-		char *mComment;
-		unsigned char mVersion; // must be 1
-		unsigned char mTotalPatterns;
-		unsigned char mTotalTracks;
-		unsigned char mCellSize; // must be 2 for version 1
-		unsigned char mOrder[256];
-		unsigned int *mPatternData; // 64 rows * mTotalPatterns * mTotalTracks
-	};
+    struct MonotoneSong
+    {
+        char *mTitle;
+        char *mComment;
+        unsigned char mVersion; // must be 1
+        unsigned char mTotalPatterns;
+        unsigned char mTotalTracks;
+        unsigned char mCellSize; // must be 2 for version 1
+        unsigned char mOrder[256];
+        unsigned int *mPatternData; // 64 rows * mTotalPatterns * mTotalTracks
+    };
 
-	struct MonotoneChannel
-	{
-		int mEnabled; 
-		int mActive;
-		int mFreq[3];
-		int mPortamento;
-		int mArpCounter;
-		int mArp;
-		int mLastNote;
-		int mPortamentoToNote;
-		int mVibrato;
-		int mVibratoIndex;
-		int mVibratoDepth;
-		int mVibratoSpeed;
-	};
+    struct MonotoneChannel
+    {
+        int mEnabled;
+        int mActive;
+        int mFreq[3];
+        int mPortamento;
+        int mArpCounter;
+        int mArp;
+        int mLastNote;
+        int mPortamentoToNote;
+        int mVibrato;
+        int mVibratoIndex;
+        int mVibratoDepth;
+        int mVibratoSpeed;
+    };
 
-	struct MonotoneHardwareChannel
-	{
-		int mEnabled;
-		float mSamplePos;
-		float mSamplePosInc;
-	};
+    struct MonotoneHardwareChannel
+    {
+        int mEnabled;
+        float mSamplePos;
+        float mSamplePosInc;
+    };
 
-	class MonotoneInstance : public AudioSourceInstance
-	{
-		Monotone *mParent;		
-	public:
-		MonotoneChannel mChannel[12];
-		MonotoneHardwareChannel mOutput[12];
-		int mNextChannel;
-		int mTempo; // ticks / row. Tick = 60hz. Default 4.
-		int mOrder;
-		int mRow;
-		int mSampleCount;
-		int mRowTick;
+    class MonotoneInstance : public AudioSourceInstance
+    {
+        Monotone *mParent;
+    public:
+        MonotoneChannel mChannel[12];
+        MonotoneHardwareChannel mOutput[12];
+        int mNextChannel;
+        int mTempo; // ticks / row. Tick = 60hz. Default 4.
+        int mOrder;
+        int mRow;
+        int mSampleCount;
+        int mRowTick;
 
-		MonotoneInstance(Monotone *aParent);
+        MonotoneInstance(Monotone *aParent);
         virtual unsigned int getAudio(float *aBuffer, unsigned int aSamples, unsigned int aBufferSize);
-		virtual bool hasEnded();
-	};
+        virtual bool hasEnded();
+    };
 
-	class Monotone : public AudioSource
-	{
-	public:
-		enum MONOTONE_WAVEFORMS
-		{
-			SQUARE = 0,
-			SAW    = 1,
-			SIN    = 2,
-			SAWSIN = 3
-		};
-		
-		int mNotesHz[800];
-		int mVibTable[32];
-		int mHardwareChannels;
-		int mWaveform;
-		MonotoneSong mSong;
-		Monotone();
-		~Monotone();
-		result setParams(int aHardwareChannels, int aWaveform = SQUARE);
-		result load(const char *aFilename);
-		result loadMem(unsigned char *aMem, unsigned int aLength, bool aCopy = false, bool aTakeOwnership = true);
-		result loadFile(File *aFile);
-		virtual AudioSourceInstance *createInstance();
-	public:
-		void clear();
-	};
+    class Monotone : public AudioSource
+    {
+    public:
+        enum MONOTONE_WAVEFORMS
+        {
+            SQUARE = 0,
+            SAW    = 1,
+            SIN    = 2,
+            SAWSIN = 3
+        };
+
+        int mNotesHz[800];
+        int mVibTable[32];
+        int mHardwareChannels;
+        int mWaveform;
+        MonotoneSong mSong;
+        Monotone();
+        ~Monotone();
+        result setParams(int aHardwareChannels, int aWaveform = SQUARE);
+        result load(const char *aFilename);
+        result loadMem(unsigned char *aMem, unsigned int aLength, bool aCopy = false, bool aTakeOwnership = true);
+        result loadFile(File *aFile);
+        virtual AudioSourceInstance *createInstance();
+    public:
+        void clear();
+    };
 };
 #endif //YES_IMGUISOLOUD_MONOTONE
 //----soloud_sfxr.h-----------------------------------------------------------------------------------------------
 #ifdef YES_IMGUISOLOUD_SFXR
 namespace SoLoud
 {
-	class File;
+    class File;
 
-	class Prg
-	{
-	public:
-		// random generator
-		Prg();
-		unsigned int state[16];
-		unsigned int index;
-		unsigned int rand();
-		void srand(int aSeed);
-	};
+    class Prg
+    {
+    public:
+        // random generator
+        Prg();
+        unsigned int state[16];
+        unsigned int index;
+        unsigned int rand();
+        void srand(int aSeed);
+    };
 
-	struct SfxrParams
-	{
-		int wave_type;
+    struct SfxrParams
+    {
+        int wave_type;
 
-		float p_base_freq;
-		float p_freq_limit;
-		float p_freq_ramp;
-		float p_freq_dramp;
-		float p_duty;
-		float p_duty_ramp;
+        float p_base_freq;
+        float p_freq_limit;
+        float p_freq_ramp;
+        float p_freq_dramp;
+        float p_duty;
+        float p_duty_ramp;
 
-		float p_vib_strength;
-		float p_vib_speed;
-		float p_vib_delay;
+        float p_vib_strength;
+        float p_vib_speed;
+        float p_vib_delay;
 
-		float p_env_attack;
-		float p_env_sustain;
-		float p_env_decay;
-		float p_env_punch;
+        float p_env_attack;
+        float p_env_sustain;
+        float p_env_decay;
+        float p_env_punch;
 
-		bool filter_on;
-		float p_lpf_resonance;
-		float p_lpf_freq;
-		float p_lpf_ramp;
-		float p_hpf_freq;
-		float p_hpf_ramp;
+        bool filter_on;
+        float p_lpf_resonance;
+        float p_lpf_freq;
+        float p_lpf_ramp;
+        float p_hpf_freq;
+        float p_hpf_ramp;
 
-		float p_pha_offset;
-		float p_pha_ramp;
+        float p_pha_offset;
+        float p_pha_ramp;
 
-		float p_repeat_speed;
+        float p_repeat_speed;
 
-		float p_arp_speed;
-		float p_arp_mod;
+        float p_arp_speed;
+        float p_arp_mod;
 
-		float master_vol;
+        float master_vol;
 
-		float sound_vol;
-	};
+        float sound_vol;
+    };
 
-	class Sfxr;
+    class Sfxr;
 
-	class SfxrInstance : public AudioSourceInstance
-	{
-		Sfxr *mParent;
+    class SfxrInstance : public AudioSourceInstance
+    {
+        Sfxr *mParent;
 
-		Prg mRand;
-		SfxrParams mParams;
+        Prg mRand;
+        SfxrParams mParams;
 
-		bool playing_sample;
-		int phase;
-		double fperiod;
-		double fmaxperiod;
-		double fslide;
-		double fdslide;
-		int period;
-		float square_duty;
-		float square_slide;
-		int env_stage;
-		int env_time;
-		int env_length[3];
-		float env_vol;
-		float fphase;
-		float fdphase;
-		int iphase;
-		float phaser_buffer[1024];
-		int ipp;
-		float noise_buffer[32];
-		float fltp;
-		float fltdp;
-		float fltw;
-		float fltw_d;
-		float fltdmp;
-		float fltphp;
-		float flthp;
-		float flthp_d;
-		float vib_phase;
-		float vib_speed;
-		float vib_amp;
-		int rep_time;
-		int rep_limit;
-		int arp_time;
-		int arp_limit;
-		double arp_mod;
+        bool playing_sample;
+        int phase;
+        double fperiod;
+        double fmaxperiod;
+        double fslide;
+        double fdslide;
+        int period;
+        float square_duty;
+        float square_slide;
+        int env_stage;
+        int env_time;
+        int env_length[3];
+        float env_vol;
+        float fphase;
+        float fdphase;
+        int iphase;
+        float phaser_buffer[1024];
+        int ipp;
+        float noise_buffer[32];
+        float fltp;
+        float fltdp;
+        float fltw;
+        float fltw_d;
+        float fltdmp;
+        float fltphp;
+        float flthp;
+        float flthp_d;
+        float vib_phase;
+        float vib_speed;
+        float vib_amp;
+        int rep_time;
+        int rep_limit;
+        int arp_time;
+        int arp_limit;
+        double arp_mod;
 
-		void resetSample(bool aRestart);
+        void resetSample(bool aRestart);
 
-	public:
-		SfxrInstance(Sfxr *aParent);
+    public:
+        SfxrInstance(Sfxr *aParent);
         virtual unsigned int getAudio(float *aBuffer, unsigned int aSamplesToRead, unsigned int aBufferSize);
-		virtual bool hasEnded();
-	};
+        virtual bool hasEnded();
+    };
 
-	class Sfxr : public AudioSource
-	{
-	public:
-		SfxrParams mParams;
+    class Sfxr : public AudioSource
+    {
+    public:
+        SfxrParams mParams;
 
-		enum SFXR_PRESETS 
-		{
-			COIN,
-			LASER,
-			EXPLOSION,
-			POWERUP,
-			HURT,
-			JUMP,
-			BLIP
-		};
+        enum SFXR_PRESETS
+        {
+            COIN,
+            LASER,
+            EXPLOSION,
+            POWERUP,
+            HURT,
+            JUMP,
+            BLIP
+        };
 
-		Prg mRand;
-		
-		Sfxr();
-		virtual ~Sfxr();
-		void resetParams();
-		result loadParams(const char* aFilename);
-		result loadParamsMem(unsigned char *aMem, unsigned int aLength, bool aCopy = false, bool aTakeOwnership = true);
-		result loadParamsFile(File *aFile);
+        Prg mRand;
 
-		result loadPreset(int aPresetNo, int aRandSeed);
-		virtual AudioSourceInstance *createInstance();
-	};
+        Sfxr();
+        virtual ~Sfxr();
+        void resetParams();
+        result loadParams(const char* aFilename);
+        result loadParamsMem(unsigned char *aMem, unsigned int aLength, bool aCopy = false, bool aTakeOwnership = true);
+        result loadParamsFile(File *aFile);
+
+        result loadPreset(int aPresetNo, int aRandSeed);
+        virtual AudioSourceInstance *createInstance();
+    };
 };
 #endif //YES_IMGUISOLOUD_SFXR
 //----soloud_tedsid.h-----------------------------------------------------------------------------------------------
@@ -2071,43 +2071,43 @@ class TED;
 
 namespace SoLoud
 {
-	class TedSid;
-	class File;
+    class TedSid;
+    class File;
 
-	class TedSidInstance : public AudioSourceInstance
-	{
-		TedSid *mParent;		
-		SIDsound *mSID;
-		TED *mTED;
-		unsigned int mSampleCount;
-		int mNextReg;
-		int mNextVal;
-		int mRegValues[128];
-	public:
+    class TedSidInstance : public AudioSourceInstance
+    {
+        TedSid *mParent;
+        SIDsound *mSID;
+        TED *mTED;
+        unsigned int mSampleCount;
+        int mNextReg;
+        int mNextVal;
+        int mRegValues[128];
+    public:
 
-		TedSidInstance(TedSid *aParent);
-		~TedSidInstance();
+        TedSidInstance(TedSid *aParent);
+        ~TedSidInstance();
         virtual unsigned int getAudio(float *aBuffer, unsigned int aSamplesToRead, unsigned int aBufferSize);
-		virtual void tick();
-		virtual bool hasEnded();
-		virtual float getInfo(unsigned int aInfoKey);
-	};
+        virtual void tick();
+        virtual bool hasEnded();
+        virtual float getInfo(unsigned int aInfoKey);
+    };
 
-	class TedSid : public AudioSource
-	{
-	public:
-		File *mFile;
-		int mModel;
-		bool mFileOwned;
-		TedSid();
-		~TedSid();
-		result load(const char *aFilename);
-		result loadToMem(const char *aFilename);
-		result loadMem(unsigned char *aMem, unsigned int aLength, bool aCopy = false, bool aTakeOwnership = true);
-		result loadFileToMem(File *aFile);
-		result loadFile(File *aFile);
-		virtual AudioSourceInstance *createInstance();
-	};
+    class TedSid : public AudioSource
+    {
+    public:
+        File *mFile;
+        int mModel;
+        bool mFileOwned;
+        TedSid();
+        ~TedSid();
+        result load(const char *aFilename);
+        result loadToMem(const char *aFilename);
+        result loadMem(unsigned char *aMem, unsigned int aLength, bool aCopy = false, bool aTakeOwnership = true);
+        result loadFileToMem(File *aFile);
+        result loadFile(File *aFile);
+        virtual AudioSourceInstance *createInstance();
+    };
 };
 #endif //YES_IMGUISOLOUD_TEDSID
 //----soloud_vic.h-----------------------------------------------------------------------------------------------
@@ -2128,62 +2128,62 @@ with the following params: type = LOWPASS, sample rate = 44100, frequency = 1500
 */
 namespace SoLoud
 {
-	class Vic;
+    class Vic;
 
-	class VicInstance : public AudioSourceInstance
-	{
-	public:
-		VicInstance(Vic *aParent);
-		~VicInstance();
+    class VicInstance : public AudioSourceInstance
+    {
+    public:
+        VicInstance(Vic *aParent);
+        ~VicInstance();
 
         virtual unsigned int getAudio(float *aBuffer, unsigned int aSamplesToRead, unsigned int aBufferSize);
-		virtual bool hasEnded();
+        virtual bool hasEnded();
 
-	private:
-		Vic*			m_parent;
-		unsigned int	m_phase[4];
-		unsigned int	m_noisePos;
-	};
+    private:
+        Vic*			m_parent;
+        unsigned int	m_phase[4];
+        unsigned int	m_noisePos;
+    };
 
-	class Vic : public AudioSource
-	{
-	public:
-		// VIC model
-		enum
-		{
-			PAL	= 0,
-			NTSC,
-		};
+    class Vic : public AudioSource
+    {
+    public:
+        // VIC model
+        enum
+        {
+            PAL	= 0,
+            NTSC,
+        };
 
-		// VIC sound registers
-		enum
-		{
-			BASS = 0,
-			ALTO,
-			SOPRANO,
-			NOISE,
-			MAX_REGS
-		};
+        // VIC sound registers
+        enum
+        {
+            BASS = 0,
+            ALTO,
+            SOPRANO,
+            NOISE,
+            MAX_REGS
+        };
 
-		Vic();
-		virtual ~Vic();
-		
-		void setModel(int model);
-		int getModel() const;
+        Vic();
+        virtual ~Vic();
 
-		void setRegister(int reg, unsigned char value) 		{ m_regs[reg] = value; }
-		unsigned char getRegister(int reg) const			{ return m_regs[reg]; }
+        void setModel(int model);
+        int getModel() const;
 
-		virtual AudioSourceInstance *createInstance();
+        void setRegister(int reg, unsigned char value) 		{ m_regs[reg] = value; }
+        unsigned char getRegister(int reg) const			{ return m_regs[reg]; }
 
-	private:
-		friend class VicInstance;
+        virtual AudioSourceInstance *createInstance();
 
-		int				m_model;
-		float			m_clocks[4];		// base clock frequencies for oscillators, dependent on VIC model
-		unsigned char	m_regs[MAX_REGS];		
-		unsigned char 	m_noise[8192];
-	};
+    private:
+        friend class VicInstance;
+
+        int				m_model;
+        float			m_clocks[4];		// base clock frequencies for oscillators, dependent on VIC model
+        unsigned char	m_regs[MAX_REGS];
+        unsigned char 	m_noise[8192];
+    };
 };
 #endif //YES_IMGUISOLOUD_VIC
 

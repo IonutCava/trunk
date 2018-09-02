@@ -11,7 +11,9 @@
 // TODO: Clean this code, it's a mess!
 
 #if !defined(alloca)
-#   ifdef _WIN32
+#	if defined(__GLIBC__) || defined(__sun) || defined(__CYGWIN__)
+#		include <alloca.h>     // alloca (glibc uses <alloca.h>. Note that Cygwin may have _WIN32 defined, so the order matters here)
+#	elif defined(_WIN32)
 #       include <malloc.h>     // alloca
 #       if !defined(alloca)
 #           define alloca _alloca  // for clang with MS Codegen
@@ -985,13 +987,22 @@ bool ResetTabLabelStyle(int tabLabelStyleEnum,ImGui::TabLabelStyle& style) {
         TabLabelStyleSetCloseButtonColors(style,ImColor(0.651f,0.000f,0.043f,0.608f),ImColor(0.808f,0.157f,0.200f,0.608f),&btc,&bbc);
     }
         break;
+    case ImGuiTabLabelStyle_Fancy:   {
+        style.fillColorGradientDeltaIn0_05 = 0.075f;style.rounding = 6.1f;style.borderWidth = 2.040f;
+        TabLabelStyleSetSelectedTabColors(style,ImColor(0.749f,0.357f,0.000f,1.000f),ImColor(0.875f,1.000f,0.776f,1.000f),ImColor(1.000f,1.000f,0.125f,1.000f));
+        TabLabelStyleSetTabColors(style,ImColor(0.529f,0.325f,0.263f,1.000f),ImColor(0.690f,0.451f,0.345f,0.980f),ImColor(0.745f,0.745f,0.745f,1.000f),ImColor(0.580f,0.533f,0.000f,0.729f));
+        style.closeButtonBorderWidth = 1.f;style.closeButtonTextWidth = 2.5f;ImColor btc(0.000f,0.000f,0.000f,1.000f),bbc(0.988f,1.000f,0.125f,1.000f);
+        TabLabelStyleSetCloseButtonColors(style,ImColor(1.000f,0.000f,0.071f,1.000f),ImColor(1.000f,0.200f,0.255f,1.000f),&btc,&bbc);
+        style.tabWindowLabelShowAreaSeparator=true;style.tabWindowSplitterColor=ImVec4(1.000f,1.000f,0.000f,1.000f);style.tabWindowSplitterSize=6.f;
+    }
+    break;
     default:
         break;
     }
 
     return true;
 }
-static const char* DefaultTabLabelStyleNames[ImGuiTabLabelStyle_Count]={"Default","Dark","Red","Green","Blue","Yellow","Orange","White","Tidy","Foxy","FoxyInverse"};
+static const char* DefaultTabLabelStyleNames[ImGuiTabLabelStyle_Count]={"Default","Dark","Red","Green","Blue","Yellow","Orange","White","Tidy","Foxy","FoxyInverse","Fancy"};
 const char** GetDefaultTabLabelStyleNames() {return &DefaultTabLabelStyleNames[0];}
 
 
@@ -1790,7 +1801,7 @@ struct MyTabWindowHelperStruct {
         isASplitterActive = false;
         tabWindow = _tabWindow;
         allowExchangeTabLabels = !gDragData.draggingTabSrc || (gDragData.draggingTabWindowSrc && gDragData.draggingTabWindowSrc->canExchangeTabLabelsWith(tabWindow));
-    //mustOpenAskForClosingPopup = false;
+        //mustOpenAskForClosingPopup = false;
 
         ImGuiStyle& style = ImGui::GetStyle();
         itemSpacing =   style.ItemSpacing;
@@ -2046,40 +2057,40 @@ void TabWindowNode::render(const ImVec2 &windowSize, MyTabWindowHelperStruct *pt
                     if (isDraggingCorrectly) {
                         if (mhs.isMouseDraggingJustStarted)  {
                             if (!dd.draggingTabSrc) {
-	                            if (mhs.isWindowHovered)    {
-	                                if (!tab.draggable) mhs.LockedDragging = true;
-	                                else    {
-	                                    dd.draggingTabSrc = &tab;
-	                                    dd.draggingTabNodeSrc = this;
-	                                    dd.draggingTabImGuiWindowSrc = g.HoveredWindow;
-	                                    dd.draggingTabWindowSrc = mhs.tabWindow;
-	                                    dd.draggingTabSrcIsSelected = (selectedTab == &tab);
-	
-	                                    dd.draggingTabSrcSize = ImGui::GetItemRectSize();
-	                                    const ImVec2& mp = ImGui::GetIO().MousePos;
-	                                    const ImVec2 draggingTabCursorPos = ImGui::GetCursorPos();
-	                                    dd.draggingTabSrcOffset=ImVec2(
-	                                                mp.x+dd.draggingTabSrcSize.x*0.5f-sumX+ImGui::GetScrollX(),
-	                                                mp.y+dd.draggingTabSrcSize.y*0.5f-draggingTabCursorPos.y+ImGui::GetScrollY()
-	                                                );
-	
-	                                    //fprintf(stderr,"Hovered Start Window:%s\n",g.HoveredWindow ? g.HoveredWindow->Name : "NULL");
-	                                }
-	                            }
-	                        }
-	                        else if (dd.draggingTabSrc && (!tab.draggable || !mhs.allowExchangeTabLabels)) {
-	                            // Prohibition sign-------
-	                            const ImVec2& itemSize = ImGui::GetItemRectSize();
-	                            const ImVec2 itemPos =ImVec2(
-	                                        sumX-itemSize.x*0.5f-ImGui::GetScrollX(),
-	                                        ImGui::GetCursorPos().y-itemSize.y*0.5f-ImGui::GetScrollY()
-	                                        );
-	                            ImDrawList* drawList = ImGui::GetWindowDrawList();  // main problem is that the sign is covered by the dragging tab (even if the latter is semi-transparent...)
-	                            const ImVec2 wp = g.HoveredWindow->Pos;
-	                            dd.drawProhibitionSign(drawList,wp,itemPos,dd.draggingTabSrcSize.y*1.2f);
-	                        }
-	                    }
-					}
+                                if (mhs.isWindowHovered)    {
+                                    if (!tab.draggable) mhs.LockedDragging = true;
+                                    else {
+                                        dd.draggingTabSrc = &tab;
+                                        dd.draggingTabNodeSrc = this;
+                                        dd.draggingTabImGuiWindowSrc = g.HoveredWindow;
+                                        dd.draggingTabWindowSrc = mhs.tabWindow;
+                                        dd.draggingTabSrcIsSelected = (selectedTab == &tab);
+
+                                        dd.draggingTabSrcSize = ImGui::GetItemRectSize();
+                                        const ImVec2& mp = ImGui::GetIO().MousePos;
+                                        const ImVec2 draggingTabCursorPos = ImGui::GetCursorPos();
+                                        dd.draggingTabSrcOffset=ImVec2(
+                                                    mp.x+dd.draggingTabSrcSize.x*0.5f-sumX+ImGui::GetScrollX(),
+                                                    mp.y+dd.draggingTabSrcSize.y*0.5f-draggingTabCursorPos.y+ImGui::GetScrollY()
+                                                    );
+
+                                        //fprintf(stderr,"Hovered Start Window:%s\n",g.HoveredWindow ? g.HoveredWindow->Name : "NULL");
+                                    }
+                                }
+                            }
+                            else if (dd.draggingTabSrc && (!tab.draggable || !mhs.allowExchangeTabLabels)) {
+                                // Prohibition sign-------
+                                const ImVec2& itemSize = ImGui::GetItemRectSize();
+                                const ImVec2 itemPos =ImVec2(
+                                            sumX-itemSize.x*0.5f-ImGui::GetScrollX(),
+                                            ImGui::GetCursorPos().y-itemSize.y*0.5f-ImGui::GetScrollY()
+                                            );
+                                ImDrawList* drawList = ImGui::GetWindowDrawList();  // main problem is that the sign is covered by the dragging tab (even if the latter is semi-transparent...)
+                                const ImVec2 wp = g.HoveredWindow->Pos;
+                                dd.drawProhibitionSign(drawList,wp,itemPos,dd.draggingTabSrcSize.y*1.2f);
+                            }
+                        }
+                    }
                     else if (dd.draggingTabSrc && dd.draggingTabSrc!=&tab && g.HoveredRootWindow && g.CurrentWindow) {
                         // This code should execute only on a drop AFAIK
                         const int len1 = strlen(g.HoveredRootWindow->Name);
@@ -2502,7 +2513,7 @@ void TabWindow::render()
             dd.drawDragButton(drawList,wp,mp);
             lastFrameNoDragTabLabelHasBeenDrawn = false;
             // -------------------------------------------------------------------
-            ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
+            ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
         }
 
         // Drop tab label onto another
@@ -2777,7 +2788,7 @@ bool TabWindow::startCloseAllDialog(ImVector<TabWindow::TabLabel *> *ptabs, bool
 #ifndef NO_IMGUIHELPER_SERIALIZATION_SAVE
 bool TabWindow::save(ImGuiHelper::Serializer &s) const   {
     if (!s.isValid()) return false;
-    mainNode->serialize(s, this);
+    mainNode->serialize(s,this);
     return true;
 }
 bool TabWindow::save(const char* filename) const {
@@ -2787,9 +2798,9 @@ bool TabWindow::save(const char* filename) const {
 bool TabWindow::Save(const char *filename, const TabWindow *pTabWindows, int numTabWindows)   {
     IM_ASSERT(pTabWindows && numTabWindows>0);
     ImGuiHelper::Serializer s(filename);
-    bool ok = s.isValid();
+    bool ok = true;
     for (int i=0;i<numTabWindows;i++)   {
-        ok|=pTabWindows[i].save(s);
+        ok&=pTabWindows[i].save(s);
     }
     return ok;
 }
@@ -2820,9 +2831,9 @@ bool TabWindow::Load(const char *filename, TabWindow *pTabWindows, int numTabWin
         pTabWindows[i].clear(); // Well, shouldn't we ask for modified unclosed tab labels here ?
     }
     ImGuiHelper::Deserializer d(filename);
-    const char* amount = 0; bool ok = d.isValid();
+    const char* amount = 0; bool ok = true;
     for (int i=0;i<numTabWindows;i++)   {
-        ok|=pTabWindows[i].load(d,&amount);
+        ok&=pTabWindows[i].load(d,&amount);
     }
     return ok;
 }
@@ -2970,20 +2981,20 @@ bool TabLabels(int numTabs, const char** tabLabels, int& selectedIndex, const ch
         i = pOptionalItemOrdering ? pOptionalItemOrdering[j] : j;
         if (i==-1) continue;
 
-	if (!wrapMode) {if (!noButtonDrawn) ImGui::SameLine();canUseSizeOptimization=false;}
+        if (!wrapMode) {if (!noButtonDrawn) ImGui::SameLine();canUseSizeOptimization=false;}
         else if (sumX > 0.f) {
             sumX+=style.ItemSpacing.x;   // Maybe we can skip it if we use SameLine(0,0) below
             ImGui::TabButton(tabLabels[i],(i == selectedIndex),allowTabClosing ? &mustCloseTab : NULL,NULL,&tabButtonSz,&tabStyle);
             sumX+=tabButtonSz.x;
             if (sumX>windowWidth) sumX = 0.f;
             else ImGui::SameLine();
-	    canUseSizeOptimization = true;
+            canUseSizeOptimization = true;
         }
-	else canUseSizeOptimization = false;
+        else canUseSizeOptimization = false;
 
         // Draw the button
         ImGui::PushID(i);   // otherwise two tabs with the same name would clash.
-	if (ImGui::TabButton(tabLabels[i],i == selectedIndex,allowTabClosing ? &mustCloseTab : NULL,NULL,NULL,&tabStyle,NULL,NULL,NULL,canUseSizeOptimization))   {
+        if (ImGui::TabButton(tabLabels[i],i == selectedIndex,allowTabClosing ? &mustCloseTab : NULL,NULL,NULL,&tabStyle,NULL,NULL,NULL,canUseSizeOptimization))   {
             selection_changed = (selectedIndex!=i);
             newSelectedIndex = i;
         }
@@ -3006,7 +3017,7 @@ bool TabLabels(int numTabs, const char** tabLabels, int& selectedIndex, const ch
 
             if (pOptionalItemOrdering)  {
                 if (allowTabReorder)  {
-            if (isMouseDragging) {
+                    if (isMouseDragging) {
                         if (draggingTabIndex==-1 && !draggingLocked && isMouseDraggingJustStarted) {
                             draggingTabIndex = j;
                             draggingTabWasSelected = (i == selectedIndex);
@@ -3057,7 +3068,7 @@ bool TabLabels(int numTabs, const char** tabLabels, int& selectedIndex, const ch
             const TabLabelStyle& tabStyle = TabLabelStyleGetMergedWithAlphaForOverlayUsage();
             ImFont* fontOverride = (ImFont*) (draggingTabWasSelected ? TabLabelStyle::ImGuiFonts[tabStyle.fontStyles[TabLabelStyle::TAB_STATE_SELECTED]] : TabLabelStyle::ImGuiFonts[tabStyle.fontStyles[TabLabelStyle::TAB_STATE_NORMAL]]);
             ImGui::TabButton(tabLabels[pOptionalItemOrdering[draggingTabIndex]],draggingTabWasSelected,allowTabClosing ? &mustCloseTab : NULL,NULL,NULL,&tabStyle,fontOverride,&start,drawList,false,true);
-            ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
+            ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
 
             if (TabWindow::DockPanelIconTextureID)	{
                 // Optional: draw prohibition sign when dragging too far (you can remove this if you want)
@@ -3507,7 +3518,7 @@ bool TabLabelsVertical(bool textIsRotatedCCW, int numTabs, const char** tabLabel
             const TabLabelStyle& tabStyle = TabLabelStyleGetMergedWithAlphaForOverlayUsage();
             ImFont* fontOverride = (ImFont*) (draggingTabWasSelected ? TabLabelStyle::ImGuiFonts[tabStyle.fontStyles[TabLabelStyle::TAB_STATE_SELECTED]] : TabLabelStyle::ImGuiFonts[tabStyle.fontStyles[TabLabelStyle::TAB_STATE_NORMAL]]);
             ImGui::TabButtonVertical(textIsRotatedCCW,tabLabels[pOptionalItemOrdering[draggingTabIndex]],draggingTabWasSelected,allowTabClosing ? &mustCloseTab : NULL,NULL,NULL,&tabStyle,fontOverride,&start,drawList,false,true,invertRounding);
-            ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
+            ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
 
             if (TabWindow::DockPanelIconTextureID)	{
                 // Optional: draw prohibition sign when dragging too far (you can remove this if you want)

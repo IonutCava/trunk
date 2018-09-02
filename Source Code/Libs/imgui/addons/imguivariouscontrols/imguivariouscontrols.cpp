@@ -326,7 +326,7 @@ inline static bool ColorChooserInternal(ImVec4 *pColorOut,bool supportsAlpha,boo
         ImRect bb(window->Pos, window->Pos + window->Size);
         bool hovered, held;
         /*bool pressed = */ImGui::ButtonBehavior(bb, id, &hovered, &held, ImGuiButtonFlags_NoKeyModifiers);///*false,*/ false);
-        if (hovered) ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
+        if (hovered) ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
         if (held)   {
             ImVec2 pos = g.IO.MousePos - window->Pos;
             sat = ImSaturate(pos.x / (float)quadSize);
@@ -374,7 +374,7 @@ inline static bool ColorChooserInternal(ImVec4 *pColorOut,bool supportsAlpha,boo
         const ImGuiID id = window->GetID("Tint");
         ImRect bb(window->Pos, window->Pos + window->Size);
         /*bool pressed = */ButtonBehavior(bb, id, &hovered, &held,ImGuiButtonFlags_NoKeyModifiers);// /*false,*/ false);
-        if (hovered) ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
+        if (hovered) ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
         if (held)
         {
 
@@ -854,7 +854,7 @@ struct AnimatedImageInternal {
     bool persistentTexIdIsNotOwned;
     mutable bool isAtLeastOneWidgetInHoverMode;  // internal
 
-    mutable  int lastFrameNum;
+    mutable int lastFrameNum;
     mutable float delay;
     mutable float timer;
     mutable ImTextureID texId;
@@ -965,7 +965,7 @@ struct AnimatedImageInternal {
     bool load(char const *filename,bool useHoverModeIfSupported=false)  {
         ScopedFileContent fc(filename);
         return (fc.gif_buffer && load_from_memory(fc.gif_buffer,fc.gif_buffer_size,useHoverModeIfSupported));
-        }
+    }
 #   endif //ifndef IMGUIVARIOUSCONTROLS_NO_STDIO
     bool load_from_memory(const unsigned char* gif_buffer,int gif_buffer_size,bool useHoverModeIfSupported=false)  {
         clear();hoverModeIfSupported = false;
@@ -980,51 +980,51 @@ struct AnimatedImageInternal {
         for (int i=0;i<frames;i++) {
             delays[i] = ((float) int_delays[i])*0.1f;   // cs, whereas int_delays is ms
             //fprintf(stderr,"int_delays[%d] = %d;\n",i,int_delays[i]);
-                }
+        }
         STBI_FREE(int_delays);int_delays=NULL;
 
-                if (AnimatedImage::MaxPersistentTextureSize.x>0 && AnimatedImage::MaxPersistentTextureSize.y>0)	{
-                    // code path that checks 'MaxPersistentTextureSize' and puts all into a single texture (rearranging the buffer)
-                    ImVec2 textureSize = AnimatedImage::MaxPersistentTextureSize;
+        if (AnimatedImage::MaxPersistentTextureSize.x>0 && AnimatedImage::MaxPersistentTextureSize.y>0)	{
+            // code path that checks 'MaxPersistentTextureSize' and puts all into a single texture (rearranging the buffer)
+            ImVec2 textureSize = AnimatedImage::MaxPersistentTextureSize;
             int maxNumFramesPerRow = (int)textureSize.x/(int) w;
             int maxNumFramesPerCol = (int)textureSize.y/(int) h;
-                    int maxNumFramesInATexture = maxNumFramesPerRow * maxNumFramesPerCol;
-                    int cnt = 0;
-                    ImVec2 lastValidTextureSize(0,0);
+            int maxNumFramesInATexture = maxNumFramesPerRow * maxNumFramesPerCol;
+            int cnt = 0;
+            ImVec2 lastValidTextureSize(0,0);
             while (maxNumFramesInATexture>=frames)	{
-                        // Here we just halve the 'textureSize', so that, if it fits, we save further texture space
-                        lastValidTextureSize = textureSize;
-                        if (cnt%2==0) textureSize.y = textureSize.y/2;
-                        else textureSize.x = textureSize.x/2;
+                // Here we just halve the 'textureSize', so that, if it fits, we save further texture space
+                lastValidTextureSize = textureSize;
+                if (cnt%2==0) textureSize.y = textureSize.y/2;
+                else textureSize.x = textureSize.x/2;
                 maxNumFramesPerRow = (int)textureSize.x/(int)w;
                 maxNumFramesPerCol = (int)textureSize.y/(int)h;
-                        maxNumFramesInATexture = maxNumFramesPerRow * maxNumFramesPerCol;
-                        ++cnt;
-                    }
-                    if (cnt>0)  {
-                        textureSize=lastValidTextureSize;
+                maxNumFramesInATexture = maxNumFramesPerRow * maxNumFramesPerCol;
+                ++cnt;
+            }
+            if (cnt>0)  {
+                textureSize=lastValidTextureSize;
                 maxNumFramesPerRow = (int)textureSize.x/(int)w;
                 maxNumFramesPerCol = (int)textureSize.y/(int)h;
-                        maxNumFramesInATexture = maxNumFramesPerRow * maxNumFramesPerCol;
-                    }
+                maxNumFramesInATexture = maxNumFramesPerRow * maxNumFramesPerCol;
+            }
 
             if (maxNumFramesInATexture>=frames)	{
-                        numFramesPerRowInPersistentTexture = maxNumFramesPerRow;
-                        numFramesPerColInPersistentTexture = maxNumFramesPerCol;
+                numFramesPerRowInPersistentTexture = maxNumFramesPerRow;
+                numFramesPerColInPersistentTexture = maxNumFramesPerCol;
 
-                        rearrangeBufferForPersistentTexture();
+                rearrangeBufferForPersistentTexture();
 
-                        // generate persistentTexture,delete buffer
+                // generate persistentTexture,delete buffer
                 IM_ASSERT(AnimatedImage::GenerateOrUpdateTextureCb!=NULL);	// Please use ImGui::AnimatedImage::SetGenerateOrUpdateTextureCallback(...) before calling this method
                 AnimatedImage::GenerateOrUpdateTextureCb(persistentTexId,w*maxNumFramesPerRow,h*maxNumFramesPerCol,4,buffer,false,false,false);
                 STBI_FREE(buffer);buffer=NULL;
 
-                        hoverModeIfSupported = useHoverModeIfSupported;
-                        //fprintf(stderr,"%d x %d (%d x %d)\n",numFramesPerRowInPersistentTexture,numFramesPerColInPersistentTexture,(int)textureSize.x,(int)textureSize.y);
+                hoverModeIfSupported = useHoverModeIfSupported;
+                //fprintf(stderr,"%d x %d (%d x %d)\n",numFramesPerRowInPersistentTexture,numFramesPerColInPersistentTexture,(int)textureSize.x,(int)textureSize.y);
 
                 if (hoverModeIfSupported) delays[0] = 0.f;  // Otherwise when we start hovering, we usually get an unwanted delay
-                    }
-                }
+            }
+        }
 
         return true;
     }
@@ -1370,7 +1370,7 @@ bool ImageZoomAndPan(ImTextureID user_texture_id, const ImVec2& size,float aspec
             zoomCenter.x-=io.MouseDelta.x/(imageSz.x*zoom);
             zoomCenter.y-=io.MouseDelta.y/(imageSz.y*zoom);
             rv = true;
-            ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
+            ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
         }
     }
 
@@ -3379,7 +3379,7 @@ void TreeView::setTextColorForStateColor(int aStateColorFlag, const ImVec4 &text
             bool ok = true;
             for (int i=0;i<numTreeviews;i++)   {
                 IM_ASSERT(pTreeViews[i]);
-                ok|=pTreeViews[i]->save(s);
+                ok&=pTreeViews[i]->save(s);
             }
             return ok;
         }
@@ -3412,7 +3412,7 @@ void TreeView::setTextColorForStateColor(int aStateColorFlag, const ImVec4 &text
             ImGuiHelper::Deserializer d(filename);
             const char* amount = 0; bool ok = true;
             for (int i=0;i<numTreeviews;i++)   {
-                ok|=pTreeViews[i]->load(d,&amount);
+                ok&=pTreeViews[i]->load(d,&amount);
             }
             return ok;
         }
@@ -3587,7 +3587,7 @@ bool TimelineEvent(const char* str_id, float* values,bool keep_range_constant)
         if (values[0]<0) {values[1]-=values[0];values[0]=0;}
     }
 
-    if (hovered) ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
+    if (hovered) ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
 
     ImGui::NextColumn();
     return changed;
@@ -4051,10 +4051,10 @@ bool CheckboxStyled(const char* label, bool* v,const ImU32* pOptionalEightColors
     if (timeID==id) {
         float elapsedTime = ImGui::GetTime()-timeBegin;
         if (elapsedTime>timeActionLength) {timeBegin=-1;timeID=0;}
-	else {
-	    t = 1.f-elapsedTime/timeActionLength;
-	    animationActive = t>0;
-	}
+        else {
+            t = 1.f-elapsedTime/timeActionLength;
+            animationActive = t>0;
+        }
     }
     if (*v) t = 1.f-t;
     if (t<0) t=0;
@@ -4075,7 +4075,7 @@ bool CheckboxStyled(const char* label, bool* v,const ImU32* pOptionalEightColors
     }
     if (t<1) {
 	ImU32 fillColor1 = pOptionalEightColors ? ((held || hovered) ? pOptionalEightColors[7] : pOptionalEightColors[6]) :
-            (GetColorU32((held || hovered) ? ImGuiCol_FrameBgHovered : ImGuiCol_FrameBg));
+        (GetColorU32((held || hovered) ? ImGuiCol_FrameBgHovered : ImGuiCol_FrameBg));
         window->DrawList->AddRectFilled(innerFrame1.Min, innerFrame1.Max, fillColor1, rounding, t>0 ?  ImDrawCornerFlags_Right : ImDrawCornerFlags_All/*6 : 15*/);
     }
     if (style.FrameBorderSize)   {

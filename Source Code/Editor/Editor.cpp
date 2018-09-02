@@ -30,26 +30,13 @@
 namespace Divide {
 
 namespace {
-    std::array<int, to_base(Editor::Theme::COUNT)> imguiThemeMap = {
-        ImGuiStyle_DefaultClassic,
-        ImGuiStyle_DefaultDark,
-        ImGuiStyle_Gray,
-        ImGuiStyle_OSX,
-        ImGuiStyle_DarkOpaque,
-        ImGuiStyle_OSXOpaque,
-        ImGuiStyle_Soft,
-        ImGuiStyle_EdinBlack,
-        ImGuiStyle_EdinWhite,
-        ImGuiStyle_Maya
-    };
-
     bool show_another_window = false;
     I32 window_opacity = 255;
     I32 previous_window_opacity = 255;
     bool show_test_window = true;
 };
 
-Editor::Editor(PlatformContext& context, Theme theme, Theme lostFocusTheme, Theme dimmedTheme)
+Editor::Editor(PlatformContext& context, ImGuiStyleEnum theme, ImGuiStyleEnum lostFocusTheme, ImGuiStyleEnum dimmedTheme)
     : PlatformContextComponent(context),
       _currentTheme(theme),
       _currentLostFocusTheme(lostFocusTheme),
@@ -190,7 +177,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
     ImGui::SetCurrentContext(_imguiContext[to_base(Context::Editor)]);
     _panelManager->init(_mainWindow->getDrawableSize());
 
-    ImGui::ResetStyle(imguiThemeMap[to_base(_currentTheme)]);
+    ImGui::ResetStyle(_currentTheme);
 
     _consoleCallbackIndex = Console::bindConsoleOutput([this](const Console::OutputEntry& entry) {
         if (_applicationOutput != nullptr) {
@@ -592,9 +579,9 @@ void Editor::renderDrawList(ImDrawData* pDrawData, I64 windowGUID, bool isPostPa
 }
 
 void Editor::dim(bool hovered, bool focused) {
-    ImGui::ResetStyle(imguiThemeMap[focused ? to_base(_currentDimmedTheme)
-                                            : hovered ? to_base(_currentLostFocusTheme)
-                                                      : to_base(_currentTheme)]);
+    ImGui::ResetStyle(focused ? _currentDimmedTheme
+                              : hovered ? _currentLostFocusTheme
+                                        : _currentTheme);
 }
 
 bool Editor::toggleScenePreview(bool state) {
