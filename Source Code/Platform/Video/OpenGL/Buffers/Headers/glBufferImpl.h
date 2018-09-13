@@ -81,8 +81,6 @@ protected:
     GLenum _usage;
     bufferPtr _mappedBuffer;
     BufferUpdateFrequency _updateFrequency;
-
-    mutable std::mutex _lockManagerMutex;
     glBufferLockManager* _lockManager;
 };
 }; //namespace Divide

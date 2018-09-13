@@ -111,20 +111,17 @@ glBufferImpl::~glBufferImpl()
         GLUtil::freeBuffer(_handle, _mappedBuffer);
     }
 
-    UniqueLock lock(_lockManagerMutex);
     MemoryManager::SAFE_DELETE(_lockManager);
 }
 
 void glBufferImpl::waitRange(size_t offsetInBytes, size_t rangeInBytes, bool blockClient) {
     if (_lockManager != nullptr) {
-        UniqueLock lock(_lockManagerMutex);
         _lockManager->WaitForLockedRange(offsetInBytes, rangeInBytes, blockClient);
     }
 }
 
 void glBufferImpl::lockRange(size_t offsetInBytes, size_t rangeInBytes) {
     if (_lockManager != nullptr) {
-        UniqueLock lock(_lockManagerMutex);
         _lockManager->LockRange(offsetInBytes, rangeInBytes);
     }
 }

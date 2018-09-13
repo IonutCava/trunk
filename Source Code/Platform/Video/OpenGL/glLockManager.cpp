@@ -19,7 +19,7 @@ glLockManager::~glLockManager()
 }
 
 void glLockManager::Wait(bool blockClient) {
-    std::unique_lock<std::mutex> lock(_syncMutex);
+    UniqueLock lock(_syncMutex);
     if (_defaultSync != nullptr) {
         wait(&_defaultSync, blockClient);
         glDeleteSync(_defaultSync);
@@ -31,7 +31,7 @@ void glLockManager::Lock() {
     assert(_defaultSync == nullptr);
 
     {
-        std::unique_lock<std::mutex> lock(_syncMutex);
+        UniqueLock lock(_syncMutex);
         _defaultSync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, UnusedMask::GL_UNUSED_BIT);
     }
     // A glFlush call is needed after creating a new fence 
@@ -57,7 +57,7 @@ void glLockManager::wait(GLsync* syncObj, bool blockClient) {
             waitDuration = kOneSecondInNanoSeconds;
 
             if (++retryCount > kMaxWaitRetry) {
-                //DIVIDE_ASSERT(waitDuration == 0 || (waitDuration > 0 && waitRet != GL_TIMEOUT_EXPIRED), "glLockManager::wait error: Lock timeout");
+                DIVIDE_ASSERT(waitRet != GL_TIMEOUT_EXPIRED, "glLockManager::wait error: Lock timeout");
                 return;
             }
         }
