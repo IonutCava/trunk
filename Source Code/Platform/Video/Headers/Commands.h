@@ -116,11 +116,11 @@ struct Command : public CommandBase {
 };
 
 #define DECLARE_POOL(Command, Size) \
-static SharedLock s_PoolMutex; \
+static SharedMutex s_PoolMutex; \
 static MemoryPool<Command, Size> s_Pool;
 
 #define DEFINE_POOL(Command, Size) \
-SharedLock Command::s_PoolMutex; \
+SharedMutex Command::s_PoolMutex; \
 MemoryPool<Command, Size> Command::s_Pool;
 
 

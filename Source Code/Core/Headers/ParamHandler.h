@@ -82,7 +82,7 @@ DEFINE_SINGLETON(ParamHandler)
     ParamBoolMap _paramBool;
     ParamStringMap _paramsStr;
     ParamFloatMap _paramsFloat;
-    mutable SharedLock _mutex;
+    mutable SharedMutex _mutex;
     std::atomic_bool _logState;
 
 END_SINGLETON

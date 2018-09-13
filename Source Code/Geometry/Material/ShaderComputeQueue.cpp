@@ -40,9 +40,8 @@ void ShaderComputeQueue::idle() {
 }
 
 bool ShaderComputeQueue::stepQueue() {
-    UpgradableReadLock r_lock(_queueLock);
+    UniqueLock lock(_queueLock);
     if (!_shaderComputeQueue.empty()) {
-        UpgradeToWriteLock w_lock(r_lock);
         const ShaderQueueElement& currentItem = _shaderComputeQueue.front();
         ShaderProgramInfo& info = *currentItem._shaderData;
         info._shaderRef = CreateResource<ShaderProgram>(_cache, currentItem._shaderDescriptor);
@@ -55,13 +54,13 @@ bool ShaderComputeQueue::stepQueue() {
 }
 
 void ShaderComputeQueue::addToQueueFront(const ShaderQueueElement& element) {
-    WriteLock w_lock(_queueLock);
+    UniqueLock w_lock(_queueLock);
     element._shaderData->computeStage(ShaderProgramInfo::BuildStage::QUEUED);
     _shaderComputeQueue.push_front(element);
 }
 
 void ShaderComputeQueue::addToQueueBack(const ShaderQueueElement& element) {
-    WriteLock w_lock(_queueLock);
+    UniqueLock w_lock(_queueLock);
     element._shaderData->computeStage(ShaderProgramInfo::BuildStage::QUEUED);
     _shaderComputeQueue.push_back(element);
 }

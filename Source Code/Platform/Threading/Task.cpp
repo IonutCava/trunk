@@ -32,7 +32,7 @@ void run(Task* task, const OnFinishCbk& onFinish) {
         Console::d_printfn(Locale::get(_ID("TASK_RUN_IN_THREAD")), task->_id, std::this_thread::get_id());
     }
 
-    //UniqueLock lk(_taskDoneMutex);
+    //Lock lk(_taskDoneMutex);
     //_taskDoneCV.wait(lk, [this]() -> bool { return _unfinishedJobs.load() == 1; });
     while (task->_unfinishedJobs.load() > 1) {
         std::this_thread::yield();
@@ -76,7 +76,7 @@ void Start(Task* task, TaskPool& pool, TaskPriority priority, const DELEGATE_CBK
 }
 
 void Wait(const Task* task) {
-    /*UniqueLock lk(task->_taskDoneMutex);
+    /*Lock lk(task->_taskDoneMutex);
     task->_taskDoneCV.wait(lk, [task]() -> bool {
         return Finished(task);
     });*/

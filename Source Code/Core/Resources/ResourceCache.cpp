@@ -9,11 +9,10 @@
 
 namespace Divide {
 
-SharedLock ResourceLoadLock::_hashLock;
+std::mutex ResourceLoadLock::_hashLock;
 vector<size_t> ResourceLoadLock::_loadingHashes;
 
-void DeleteResource::operator()(CachedResource* res)
-{
+void DeleteResource::operator()(CachedResource* res) {
     WAIT_FOR_CONDITION(res->getState() == ResourceState::RES_LOADED);
 
     _context.remove(res);
@@ -35,7 +34,7 @@ ResourceCache::~ResourceCache()
 }
 
 void ResourceCache::printContents() const {
-    WriteLock w_lock(_creationMutex);
+    UniqueLockShared w_lock(_creationMutex);
     for (ResourceMap::const_iterator it = std::cbegin(_resDB); it != std::cend(_resDB); ++it)
     {
         if (!it->second.expired())
@@ -47,7 +46,7 @@ void ResourceCache::printContents() const {
 }
 
 void ResourceCache::clear() {
-    WriteLock w_lock(_creationMutex);
+    UniqueLockShared w_lock(_creationMutex);
     Console::printfn(Locale::get(_ID("STOP_RESOURCE_CACHE")));
 
     for (ResourceMap::iterator it = std::begin(_resDB); it != std::end(_resDB); ++it)
@@ -76,7 +75,7 @@ void ResourceCache::add(CachedResource_wptr res) {
     DIVIDE_ASSERT(hash != 0, "ResourceCache add error: Invalid resource hash!");
 
     Console::printfn(Locale::get(_ID("RESOURCE_CACHE_ADD")), resource->name().c_str(), resource->getGUID(), hash);
-    WriteLock w_lock(_creationMutex);
+    UniqueLockShared w_lock(_creationMutex);
     hashAlg::insert(_resDB, hashAlg::make_pair(hash, CachedResource_wptr(resource)));
 }
 
@@ -94,7 +93,7 @@ CachedResource_ptr ResourceCache::loadResource(size_t descriptorHash, const stri
 CachedResource_ptr ResourceCache::find(size_t descriptorHash) {
     static CachedResource_ptr emptyResource;
     /// Search in our resource cache
-    ReadLock r_lock(_creationMutex);
+    SharedLock r_lock(_creationMutex);
     ResourceMap::const_iterator it = _resDB.find(descriptorHash);
     if (it != std::end(_resDB)) {
         return it->second.lock();
@@ -114,7 +113,7 @@ void ResourceCache::remove(CachedResource* resource) {
 
     bool resDBEmpty = false;
     {
-        ReadLock r_lock(_creationMutex);
+        SharedLock r_lock(_creationMutex);
         DIVIDE_ASSERT(_resDB.find(resourceHash) != std::end(_resDB),
                       Locale::get(_ID("ERROR_RESOURCE_CACHE_UNKNOWN_RESOURCE")));
         resDBEmpty = _resDB.empty();
@@ -133,7 +132,7 @@ void ResourceCache::remove(CachedResource* resource) {
     if (resDBEmpty) {
         Console::errorfn(Locale::get(_ID("RESOURCE_CACHE_REMOVE_NO_DB")), name.c_str());
     } else {
-        WriteLock w_lock(_creationMutex);
+        UniqueLockShared w_lock(_creationMutex);
         _resDB.erase(_resDB.find(resourceHash));
     }
 }

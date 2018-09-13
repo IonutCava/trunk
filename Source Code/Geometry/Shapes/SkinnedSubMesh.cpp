@@ -55,7 +55,7 @@ void SkinnedSubMesh::buildBoundingBoxesForAnim(const Task& parentTask,
     U32 partitionOffset = parentVB->getPartitionOffset(_geometryPartitionID);
     U32 partitionCount = parentVB->getPartitionIndexCount(_geometryPartitionID);
 
-    WriteLock w_lock(_bbLock);
+    UniqueLock w_lock(_bbLock);
     BoundingBox& currentBB = _boundingBoxes.at(animationIndex);
     currentBB.reset();
     for (const vectorBest<mat4<F32> >& transforms : currentAnimation) {
@@ -82,14 +82,14 @@ void SkinnedSubMesh::buildBoundingBoxesForAnim(const Task& parentTask,
 }
 
 void SkinnedSubMesh::updateBB(I32 animIndex) {
-    ReadLock r_lock(_bbLock);
+    UniqueLock r_lock(_bbLock);
     _boundingBox.set(_boundingBoxes[animIndex]);
     setBoundsChanged();
 }
 
 void SkinnedSubMesh::computeBBForAnimation(SceneGraphNode& sgn, I32 animIndex) {
     // Attempt to get the map of BBs for the current animation
-    WriteLock w_lock(_bbStateLock);
+    UniqueLock w_lock(_bbStateLock);
     BoundingBoxState& state = _boundingBoxesState[animIndex];
 
     if (state != BoundingBoxState::COUNT) {
@@ -106,7 +106,7 @@ void SkinnedSubMesh::computeBBForAnimation(SceneGraphNode& sgn, I32 animIndex) {
     };
 
     auto bbBuildComplete = [this, animComp, animIndex]() {
-        WriteLock w_lock(_bbStateLock);
+        UniqueLock w_lock(_bbStateLock);
         _boundingBoxesState[animIndex] = BoundingBoxState::Computed;
         // We could've changed the animation while waiting for this task to end
         if (animComp->animationIndex() == animIndex) {

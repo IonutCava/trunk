@@ -102,7 +102,7 @@ class LightPool : public SceneComponent {
 
     bool clear();
     inline Light::LightList& getLights(LightType type) { 
-        ReadLock r_lock(_lightLock); 
+        SharedLock r_lock(_lightLock); 
         return _lights[to_U32(type)];
     }
 
@@ -149,7 +149,7 @@ class LightPool : public SceneComponent {
     bool generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffer& bufferInOut);
 
     inline Light::LightList::const_iterator findLight(I64 GUID, LightType type) const {
-        ReadLock r_lock(_lightLock);
+        SharedLock r_lock(_lightLock);
         return findLightLocked(GUID, type);
     }
 
@@ -182,7 +182,7 @@ class LightPool : public SceneComponent {
 
     GFXDevice& _context;
 
-    mutable SharedLock _lightLock;
+    mutable SharedMutex _lightLock;
     std::array<bool, to_base(LightType::COUNT)> _lightTypeState;
     std::array<Light::LightList, to_base(LightType::COUNT)> _lights;
     bool _init;

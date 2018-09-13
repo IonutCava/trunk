@@ -63,7 +63,7 @@ class AudioDescriptor : public CachedResource {
     }
 
     inline stringImpl getAudioFile() const { 
-        return getResourceLocation() + getResourceName();
+        return getResourceLocation() + "/" + getResourceName();
     }
 
     inline void setAudioFile(const stringImpl& filePath) {

@@ -215,7 +215,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
 
    protected:
     /// Shaders loaded from files are kept as atoms
-    static SharedLock s_atomLock;
+    static SharedMutex s_atomLock;
     static AtomMap s_atoms;
     /// Used to render geometry without valid materials.
     /// Should emulate the basic fixed pipeline functions (no lights, just colour and texture)
@@ -227,7 +227,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     /// Shader program cache
     static ShaderProgramMap s_shaderPrograms;
 
-    static SharedLock s_programLock;
+    static SharedMutex s_programLock;
 
    protected:
     template <typename T>

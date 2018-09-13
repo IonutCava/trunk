@@ -13,7 +13,7 @@
 
 namespace Divide {
 
-SharedLock glShader::_shaderNameLock;
+SharedMutex glShader::_shaderNameLock;
 glShader::ShaderMap glShader::_shaderNameMap;
 stringImpl glShader::shaderAtomLocationPrefix[to_base(ShaderType::COUNT) + 1];
 
@@ -209,14 +209,13 @@ void glShader::removeShader(glShader* s) {
     stringImpl name(s->name());
     // Try to find it
     U64 nameHash = _ID(name.c_str());
-    UpgradableReadLock ur_lock(_shaderNameLock);
+    UniqueLockShared w_lock(_shaderNameLock);
     ShaderMap::iterator it = _shaderNameMap.find(nameHash);
     if (it != std::end(_shaderNameMap)) {
         // Subtract one reference from it.
         if (s->SubRef()) {
             // If the new reference count is 0, delete the shader
             MemoryManager::DELETE(it->second);
-            UpgradeToWriteLock w_lock(ur_lock);
             _shaderNameMap.erase(nameHash);
         }
     }
@@ -225,7 +224,7 @@ void glShader::removeShader(glShader* s) {
 /// Return a new shader reference
 glShader* glShader::getShader(const stringImpl& name) {
     // Try to find the shader
-    ReadLock r_lock(_shaderNameLock);
+    SharedLock r_lock(_shaderNameLock);
     ShaderMap::iterator it = _shaderNameMap.find(_ID(name.c_str()));
     if (it != std::end(_shaderNameMap)) {
         return it->second;
@@ -263,7 +262,7 @@ glShader* glShader::loadShader(GFXDevice& context,
         if (newShader) {
             U64 nameHash = _ID(name.c_str());
             // If we loaded the source code successfully,  register it
-            WriteLock w_lock(_shaderNameLock);
+            UniqueLockShared w_lock(_shaderNameLock);
             hashAlg::insert(_shaderNameMap, nameHash, shader);
         }
     }

@@ -137,7 +137,7 @@ class Unit : public FrameListener {
     vec3<F32> _currentTargetPosition;
     SceneGraphNode* _node;
     AttributeMap _attributes;
-    mutable SharedLock _unitUpdateMutex;
+    mutable SharedMutex _unitUpdateMutex;
 };
 namespace Attorney {
     class UnitComponent {

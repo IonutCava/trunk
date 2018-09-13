@@ -44,7 +44,7 @@ class RenderStateBlock : public GUIDWrapper, public Hashable {
       typedef hashMap<size_t, RenderStateBlock> RenderStateMap;
       static RenderStateMap s_stateBlockMap;
    private:
-      static SharedLock s_stateBlockMapMutex;
+      static SharedMutex s_stateBlockMapMutex;
    public:
        static void init();
        static void clear();

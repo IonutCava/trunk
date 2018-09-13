@@ -196,7 +196,7 @@ namespace Divide {
         std::atomic_flag _worldMatrixUpToDate = ATOMIC_FLAG_INIT;
         mat4<F32> _worldMatrix;
         
-        mutable SharedLock _lock;
+        mutable SharedMutex _lock;
     };
 
 

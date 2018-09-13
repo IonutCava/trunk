@@ -187,7 +187,7 @@ bool GUIConsole::isVisible() {
 }
 
 void GUIConsole::printText(const Console::OutputEntry& entry) {
-    WriteLock w_lock(_outputLock);
+    UniqueLockShared w_lock(_outputLock);
     _outputBuffer.push_back(entry);
 }
 
@@ -220,7 +220,7 @@ void GUIConsole::update(const U64 deltaTimeUS) {
     }
 
     {
-        UpgradableReadLock ur_lock(_outputLock);
+        UniqueLockShared r_lock(_outputLock);
         size_t entryCount = _outputBuffer.size();
         if (entryCount > 0) {
             for(size_t i = 0; i < entryCount; ++i) {
@@ -236,7 +236,6 @@ void GUIConsole::update(const U64 deltaTimeUS) {
                 _lastMsg.append(message._text.c_str());
                 _lastMsg.append("\n");
             }
-            UpgradeToWriteLock uw_lock(ur_lock);
             _outputBuffer.clear();
         }
     }

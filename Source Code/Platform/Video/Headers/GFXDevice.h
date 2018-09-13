@@ -275,6 +275,14 @@ public:  // Accessors and Mutators
         return *_rtPool;
     }
     
+    inline PostFX& postFX() {
+        return *_postFX;
+    }
+
+    inline const PostFX& postFX() const {
+        return *_postFX;
+    }
+
     inline U32 getFrameCount() const { return FRAME_COUNT; }
 
     inline I32 getDrawCallCount() const { return FRAME_DRAW_CALLS_PREV; }
@@ -398,7 +406,7 @@ private:
 
 private:
     std::unique_ptr<RenderAPIWrapper> _api;
-
+    std::unique_ptr<PostFX> _postFX;
     Renderer* _renderer;
 
     /// Pointer to a shader creation queue
@@ -451,7 +459,7 @@ protected:
     PushConstants _textRenderConstants;
     Pipeline* _textRenderPipeline = nullptr;
         
-    SharedLock _graphicsResourceMutex;
+    std::mutex _graphicsResourceMutex;
     vector<std::pair<GraphicsResource::Type, I64>> _graphicResources;
 
     /// Current viewport stack
@@ -472,10 +480,10 @@ protected:
 
     MemoryPool<GenericDrawCommand> _commandPool;
 
-    mutable SharedLock _descriptorSetPoolLock;
+    mutable std::mutex _descriptorSetPoolLock;
     mutable DescriptorSetPool _descriptorSetPool;
     
-    mutable SharedLock _pipelineCacheLock;
+    mutable std::mutex _pipelineCacheLock;
     mutable hashMap<size_t, Pipeline> _pipelineCache;
     std::shared_ptr<RenderDocManager> _renderDocManager;
     mutable std::mutex _gpuObjectArenaMutex;
@@ -518,12 +526,12 @@ namespace Attorney {
     class GFXDeviceGraphicsResource {
        private:
        static void onResourceCreate(GFXDevice& device, GraphicsResource::Type type, I64 GUID) {
-           WriteLock w_lock(device._graphicsResourceMutex);
+           UniqueLock w_lock(device._graphicsResourceMutex);
            device._graphicResources.emplace_back(type, GUID);
        }
 
        static void onResourceDestroy(GFXDevice& device, GraphicsResource::Type type, I64 GUID) {
-           WriteLock w_lock(device._graphicsResourceMutex);
+           UniqueLock w_lock(device._graphicsResourceMutex);
            vector<std::pair<GraphicsResource::Type, I64>>::iterator it;
            it = std::find_if(std::begin(device._graphicResources),
                 std::end(device._graphicResources),

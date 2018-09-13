@@ -139,7 +139,7 @@ extern GLuint _lastQueryResult;
 extern SDL_GLContext _glRenderContext;
 extern const DisplayWindow* _glMainRenderWindow;
 extern thread_local SDL_GLContext _glSecondaryContext;
-extern SharedLock _glSecondaryContextMutex;
+extern std::mutex _glSecondaryContextMutex;
 
 void submitRenderCommand(const GenericDrawCommand& drawCommand,
                          bool drawIndexed,

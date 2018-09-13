@@ -225,11 +225,9 @@ Pipeline* GFXDevice::newPipeline(const PipelineDescriptor& descriptor) const {
 
     size_t hash = descriptor.getHash();
 
-    UpgradableReadLock ur_lock(_pipelineCacheLock);
+    UniqueLock lock(_pipelineCacheLock);
     hashMap<size_t, Pipeline>::iterator it = _pipelineCache.find(hash);
-
     if (it == std::cend(_pipelineCache)) {
-        UpgradeToWriteLock w_lock(ur_lock);
         return &hashAlg::insert(_pipelineCache, hash, Pipeline(descriptor)).first->second;
     }
 
@@ -237,7 +235,7 @@ Pipeline* GFXDevice::newPipeline(const PipelineDescriptor& descriptor) const {
 }
 
 DescriptorSet_ptr GFXDevice::newDescriptorSet() const {
-    WriteLock w_lock(_descriptorSetPoolLock);
+    UniqueLock w_lock(_descriptorSetPoolLock);
     return std::shared_ptr<DescriptorSet>(_descriptorSetPool.newElement(),
                                           DeleteDescriptorSet(_descriptorSetPoolLock, _descriptorSetPool));
 }

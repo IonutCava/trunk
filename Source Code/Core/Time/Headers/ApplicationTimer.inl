@@ -65,7 +65,7 @@ inline U64 ApplicationTimer::getElapsedTimeInternal(const TimeValue& currentTick
     return static_cast<U64>(std::chrono::duration_cast<USec>(currentTicks - _startupTicks).count());
 }
 
-inline U64 ApplicationTimer::getElapsedTime(bool forceUpdate) {
+inline U64 ApplicationTimer::getElapsedTime(bool forceUpdate) const {
     if (forceUpdate) {
         return getElapsedTimeInternal(getCurrentTicksInternal());
     }

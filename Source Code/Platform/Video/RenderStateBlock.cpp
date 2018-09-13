@@ -7,7 +7,7 @@
 namespace Divide {
 
 RenderStateBlock::RenderStateMap RenderStateBlock::s_stateBlockMap;
-SharedLock RenderStateBlock::s_stateBlockMapMutex;
+SharedMutex RenderStateBlock::s_stateBlockMapMutex;
 size_t RenderStateBlock::s_defaultCacheValue = 0;
 
 RenderStateBlock::RenderStateBlock() noexcept
@@ -149,7 +149,7 @@ void RenderStateBlock::init() {
 }
 
 void RenderStateBlock::clear() {
-    WriteLock w_lock(s_stateBlockMapMutex);
+    UniqueLockShared w_lock(s_stateBlockMapMutex);
     s_stateBlockMap.clear();
 }
 
@@ -166,7 +166,7 @@ const RenderStateBlock& RenderStateBlock::get(size_t renderStateBlockHash) {
 const RenderStateBlock& RenderStateBlock::get(size_t renderStateBlockHash, bool& blockFound) {
     blockFound = false;
 
-    ReadLock r_lock(s_stateBlockMapMutex);
+    SharedLock r_lock(s_stateBlockMapMutex);
     // Find the render state block associated with the received hash value
     RenderStateMap::const_iterator it = s_stateBlockMap.find(renderStateBlockHash);
     if(it != std::cend(s_stateBlockMap) ) {
@@ -205,7 +205,7 @@ size_t RenderStateBlock::getHash() const {
         Util::Hash_combine(_hash, to_U32(_fillMode));
 
         if (previousCache != _hash) {
-            WriteLock w_lock(s_stateBlockMapMutex);
+            UniqueLockShared w_lock(s_stateBlockMapMutex);
             hashAlg::insert(s_stateBlockMap, _hash, *this);
         }
         _dirty = false;

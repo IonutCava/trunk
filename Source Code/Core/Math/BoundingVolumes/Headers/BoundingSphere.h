@@ -87,7 +87,7 @@ class BoundingSphere {
     bool _visibility, _dirty;
     vec3<F32> _center;
     F32 _radius;
-    //mutable SharedLock _lock;
+    //mutable SharedMutex _lock;
 };
 
 namespace Attorney {

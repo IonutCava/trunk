@@ -86,8 +86,8 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
 
     _resCache = std::make_unique<ResourceCache>(*_platformContext);
 
-    FrameListenerManager::createInstance();
-    //OpenCLInterface::createInstance();
+    FrameListenerManager::instance();
+    //OpenCLInterface::instance();
 }
 
 Kernel::~Kernel()
@@ -323,7 +323,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTimeUS) {
             // Update the scene state based on current time (e.g. animation matrices)
             _sceneManager->updateSceneState(deltaTimeUS);
             // Update visual effect timers as well
-            PostFX::instance().update(deltaTimeUS);
+            _platformContext->gfx().postFX().update(deltaTimeUS);
 
             if (loopCount == 0) {
                 _sceneUpdateLoopTimer.stop();
@@ -737,7 +737,6 @@ void Kernel::shutdown() {
     Camera::destroyPool();
     _platformContext->terminate();
     _resCache->clear();
-    FrameListenerManager::destroyInstance();
 
     Console::printfn(Locale::get(_ID("STOP_ENGINE_OK")));
 }

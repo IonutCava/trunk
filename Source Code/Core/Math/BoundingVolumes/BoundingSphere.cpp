@@ -30,7 +30,7 @@ BoundingSphere::BoundingSphere(const std::array<vec3<F32>, 8>& points) noexcept
 }
 
 BoundingSphere::BoundingSphere(const BoundingSphere& s) noexcept {
-    // WriteLock w_lock(_lock);
+    // Lock w_lock(_lock);
     this->_visibility = s._visibility;
     this->_dirty = s._dirty;
     this->_center = s._center;
@@ -38,7 +38,7 @@ BoundingSphere::BoundingSphere(const BoundingSphere& s) noexcept {
 }
 
 void BoundingSphere::operator=(const BoundingSphere& s) noexcept {
-    // WriteLock w_lock(_lock);
+    // Lock w_lock(_lock);
     this->_visibility = s._visibility;
     this->_dirty = s._dirty;
     this->_center = s._center;

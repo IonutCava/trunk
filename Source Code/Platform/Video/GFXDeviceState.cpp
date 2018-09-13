@@ -86,7 +86,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     // Initialize the shader manager
     ShaderProgram::onStartup(*this, cache);
     EnvironmentProbe::onStartup(*this);
-    PostFX::createInstance();
     // Create a shader buffer to store the GFX rendering info (matrices, options, etc)
     ShaderBufferDescriptor bufferDescriptor;
     bufferDescriptor._primitiveCount = 1;
@@ -350,31 +349,29 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     _HIZCullProgram = CreateResource<ShaderProgram>(cache, ResourceDescriptor("HiZOcclusionCull"));
     _displayShader = CreateResource<ShaderProgram>(cache, ResourceDescriptor("display"));
 
-    PostFX& postFX = PostFX::instance();
-    
     ParamHandler::instance().setParam<bool>(_ID("rendering.previewDebugViews"), false);
     // If render targets ready, we initialize our post processing system
-    postFX.init(*this, cache);
+    _postFX = std::make_unique<PostFX>(*this, cache);
     if (config.rendering.postFX.postAASamples > 0) {
-        postFX.pushFilter(FilterType::FILTER_SS_ANTIALIASING);
+        _postFX->pushFilter(FilterType::FILTER_SS_ANTIALIASING);
     }
     if (false) {
-        postFX.pushFilter(FilterType::FILTER_SS_REFLECTIONS);
+        _postFX->pushFilter(FilterType::FILTER_SS_REFLECTIONS);
     }
     if (config.rendering.postFX.enableSSAO) {
-        postFX.pushFilter(FilterType::FILTER_SS_AMBIENT_OCCLUSION);
+        _postFX->pushFilter(FilterType::FILTER_SS_AMBIENT_OCCLUSION);
     }
     if (config.rendering.postFX.enableDepthOfField) {
-        postFX.pushFilter(FilterType::FILTER_DEPTH_OF_FIELD);
+        _postFX->pushFilter(FilterType::FILTER_DEPTH_OF_FIELD);
     }
     if (false) {
-        postFX.pushFilter(FilterType::FILTER_MOTION_BLUR);
+        _postFX->pushFilter(FilterType::FILTER_MOTION_BLUR);
     }
     if (config.rendering.postFX.enableBloom) {
-        postFX.pushFilter(FilterType::FILTER_BLOOM);
+        _postFX->pushFilter(FilterType::FILTER_BLOOM);
     }
     if (false) {
-        postFX.pushFilter(FilterType::FILTER_LUT_CORECTION);
+        _postFX->pushFilter(FilterType::FILTER_LUT_CORECTION);
     }
 
     PipelineDescriptor pipelineDesc;
@@ -429,7 +426,7 @@ void GFXDevice::closeRenderingAPI() {
 
     // Destroy our post processing system
     Console::printfn(Locale::get(_ID("STOP_POST_FX")));
-    PostFX::destroyInstance();
+    _postFX.reset(nullptr);
     // Delete the renderer implementation
     Console::printfn(Locale::get(_ID("CLOSING_RENDERER")));
     RenderStateBlock::clear();
@@ -455,6 +452,8 @@ void GFXDevice::closeRenderingAPI() {
     // Close the rendering API
     _api->closeRenderingAPI();
     _api.reset();
+
+    UniqueLock lock(_graphicsResourceMutex);
     if (!_graphicResources.empty()) {
         stringImpl list = " [ ";
         for (const std::pair<GraphicsResource::Type, I64>& res : _graphicResources) {
@@ -472,7 +471,7 @@ void GFXDevice::idle() {
     static const Task idleTask;
     _shaderComputeQueue->idle();
     // Pass the idle call to the post processing system
-    PostFX::instance().idle(_parent.platformContext().config());
+    postFX().idle(_parent.platformContext().config());
     // And to the shader manager
     ShaderProgram::idle();
 }

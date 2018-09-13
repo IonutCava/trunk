@@ -38,13 +38,13 @@ BoundingBox::~BoundingBox()
 }
 
 BoundingBox::BoundingBox(const BoundingBox& b) {
-    // WriteLock w_lock(_lock);
+    // Lock w_lock(_lock);
     this->_min.set(b._min);
     this->_max.set(b._max);
 }
 
 void BoundingBox::operator=(const BoundingBox& b) {
-    // WriteLock w_lock(_lock);
+    // Lock w_lock(_lock);
     this->_min.set(b._min);
     this->_max.set(b._max);
 }
@@ -66,7 +66,7 @@ bool BoundingBox::containsSphere(const BoundingSphere& bSphere) const {
 }
 
 bool BoundingBox::collision(const BoundingBox& AABB2) const {
-    // ReadLock r_lock(_lock);
+    // SharedLock r_lock(_lock);
     const vec3<F32>& center = this->getCenter();
     const vec3<F32>& halfWidth = this->getHalfExtent();
     const vec3<F32>& otherCenter = AABB2.getCenter();
@@ -101,7 +101,7 @@ bool BoundingBox::collision(const BoundingSphere& bSphere) const {
 
 /// Optimized method: http://www.cs.utah.edu/~awilliam/box/box.pdf
 AABBRayResult BoundingBox::intersect(const Ray& r, F32 t0, F32 t1) const noexcept {
-    // ReadLock r_lock(_lock);
+    // SharedLock r_lock(_lock);
     const vec3<F32> bounds[] = {_min, _max};
 
     F32 t_min = (bounds[r.sign[0]].x - r.origin.x) * r.inv_direction.x;

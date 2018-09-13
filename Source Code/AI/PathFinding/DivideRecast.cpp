@@ -28,7 +28,7 @@ DivideRecast::DivideRecast()
     }
 }
 
-DivideRecast::~DivideRecast()
+void DivideRecast::destroy()
 {
     MemoryManager::DELETE(_filter);
 }

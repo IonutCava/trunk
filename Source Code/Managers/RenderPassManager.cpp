@@ -84,7 +84,7 @@ void RenderPassManager::render(SceneRenderState& sceneRenderState, Time::Profile
                       Time::ScopedTimer time(*_postFxRenderTimer);
                       GFX::CommandBuffer& buf = *_renderPassCommandBuffer.back();
                       buf.clear();
-                      PostFX::instance().apply(cam, buf);
+                      parent().platformContext().gfx().postFX().apply(cam, buf);
                       buf.batch();
                    }).startTask(priority);
 

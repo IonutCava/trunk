@@ -26,9 +26,6 @@
     <ClInclude Include="..\../Source Code/Networking\Headers\OPCodesTpl.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Networking\Headers\Singleton.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\../Source Code/Networking\Headers\tcp_session_tpl.h">
       <Filter>Headers</Filter>
     </ClInclude>

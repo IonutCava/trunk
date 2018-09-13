@@ -67,7 +67,7 @@ GUI::~GUI()
 
 void GUI::onChangeScene(Scene* newScene) {
     assert(newScene != nullptr);
-    ReadLock r_lock(_guiStackLock);
+    SharedLock r_lock(_guiStackLock);
     if (_activeScene != nullptr && _activeScene->getGUID() != newScene->getGUID()) {
         GUIMapPerScene::const_iterator it = _guiStack.find(_activeScene->getGUID());
         if (it != std::cend(_guiStack)) {
@@ -89,7 +89,7 @@ void GUI::onChangeScene(Scene* newScene) {
 
 void GUI::onUnloadScene(Scene* scene) {
     assert(scene != nullptr);
-    WriteLock w_lock(_guiStackLock);
+    UniqueLockShared w_lock(_guiStackLock);
     GUIMapPerScene::const_iterator it = _guiStack.find(scene->getGUID());
     if (it != std::cend(_guiStack)) {
         _guiStack.erase(it);
@@ -114,7 +114,7 @@ void GUI::draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) {
     }
 
     {
-        ReadLock r_lock(_guiStackLock);
+        SharedLock r_lock(_guiStackLock);
         // scene specific
         GUIMapPerScene::const_iterator it = _guiStack.find(_activeScene->getGUID());
         if (it != std::cend(_guiStack)) {
@@ -243,7 +243,7 @@ void GUI::destroy() {
         MemoryManager::DELETE(_console);
 
         {
-            WriteLock w_lock(_guiStackLock);
+            UniqueLockShared w_lock(_guiStackLock);
             assert(_guiStack.empty());
             for (U8 i = 0; i < to_base(GUIType::COUNT); ++i) {
                 for (GUIMap::value_type& it : _guiElements[i]) {
@@ -286,7 +286,7 @@ void GUI::onSizeChange(const SizeChangeParams& params) {
         }
     }
 
-    ReadLock r_lock(_guiStackLock);
+    SharedLock r_lock(_guiStackLock);
     if (!_guiStack.empty()) {
         // scene specific
         GUIMapPerScene::const_iterator it = _guiStack.find(_activeScene->getGUID());
@@ -351,7 +351,7 @@ bool GUI::mouseMoved(const Input::MouseEvent& arg) {
 
     {
         // scene specific
-        ReadLock r_lock(_guiStackLock);
+        SharedLock r_lock(_guiStackLock);
         GUIMapPerScene::const_iterator it = _guiStack.find(_activeScene->getGUID());
         if (it != std::cend(_guiStack)) {
             if (it->second->mouseMoved(event)) {
@@ -389,7 +389,7 @@ bool GUI::mouseButtonPressed(const Input::MouseEvent& arg,
             }
 
             // scene specific
-            ReadLock r_lock(_guiStackLock);
+            SharedLock r_lock(_guiStackLock);
             GUIMapPerScene::const_iterator it = _guiStack.find(_activeScene->getGUID());
             if (it != std::cend(_guiStack)) {
                 if (it->second->onMouseDown(event)) {
@@ -424,7 +424,7 @@ bool GUI::mouseButtonReleased(const Input::MouseEvent& arg,
             }
 
             // scene specific
-            ReadLock r_lock(_guiStackLock);
+            SharedLock r_lock(_guiStackLock);
             GUIMapPerScene::const_iterator it = _guiStack.find(_activeScene->getGUID());
             if (it != std::cend(_guiStack)) {
                 if (it->second->onMouseUp(event)) {
@@ -495,7 +495,7 @@ bool GUI::joystickvector3Moved(const Input::JoystickEvent& arg, I8 index) {
 
 GUIElement* GUI::getGUIElementImpl(I64 sceneID, U64 elementName, GUIType type) const {
     if (sceneID != 0) {
-        ReadLock r_lock(_guiStackLock);
+        SharedLock r_lock(_guiStackLock);
         GUIMapPerScene::const_iterator it = _guiStack.find(sceneID);
         if (it != std::cend(_guiStack)) {
             return it->second->getGUIElement(elementName);
@@ -509,7 +509,7 @@ GUIElement* GUI::getGUIElementImpl(I64 sceneID, U64 elementName, GUIType type) c
 
 GUIElement* GUI::getGUIElementImpl(I64 sceneID, I64 elementID, GUIType type) const {
     if (sceneID != 0) {
-        ReadLock r_lock(_guiStackLock);
+        SharedLock r_lock(_guiStackLock);
         GUIMapPerScene::const_iterator it = _guiStack.find(sceneID);
         if (it != std::cend(_guiStack)) {
             return it->second->getGUIElement(elementID);

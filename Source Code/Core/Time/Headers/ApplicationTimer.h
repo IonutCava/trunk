@@ -59,11 +59,11 @@ DEFINE_SINGLETON(ApplicationTimer)
     const stringImpl& benchmarkReport() const;
 
     // Returns the elapsed time since app startup in microseconds
-    U64 getElapsedTime(bool forceUpdate = false);
+    U64 getElapsedTime(bool forceUpdate = false) const;
 
   protected:
     ApplicationTimer();
-    ~ApplicationTimer();
+    ~ApplicationTimer() = default;
     
     TimeValue getCurrentTicksInternal() const;
     

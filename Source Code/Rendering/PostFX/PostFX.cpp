@@ -15,7 +15,7 @@
 
 namespace Divide {
 
-PostFX::PostFX()
+PostFX::PostFX(GFXDevice& context, ResourceCache& cache)
     : _preRenderBatch(nullptr),
       _screenBorder(nullptr),
       _noise(nullptr),
@@ -41,17 +41,7 @@ PostFX::PostFX()
     _postFXTarget.drawMask().setEnabled(RTAttachmentType::Colour, 0, true);
 
     _filterStackCount.fill(0);
-}
 
-PostFX::~PostFX()
-{
-    if (_preRenderBatch) {
-        _preRenderBatch->destroy();
-        MemoryManager::SAFE_DELETE(_preRenderBatch);
-    }
-}
-
-void PostFX::init(GFXDevice& context, ResourceCache& cache) {
     Console::printfn(Locale::get(_ID("START_POST_FX")));
     _gfx = &context;
     _preRenderBatch = MemoryManager_NEW PreRenderBatch(context, cache);
@@ -59,20 +49,20 @@ void PostFX::init(GFXDevice& context, ResourceCache& cache) {
     ResourceDescriptor postFXShader("postProcessing");
     postFXShader.setThreadedLoading(false);
     postFXShader.setPropertyList(
-    Util::StringFormat("TEX_BIND_POINT_SCREEN %d, "
-                       "TEX_BIND_POINT_NOISE %d, "
-                       "TEX_BIND_POINT_BORDER %d, "
-                       "TEX_BIND_POINT_UNDERWATER %d",
-                        to_base(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN),
-                        to_base(TexOperatorBindPoint::TEX_BIND_POINT_NOISE),
-                        to_base(TexOperatorBindPoint::TEX_BIND_POINT_BORDER),
-                        to_base(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER)).c_str());
+        Util::StringFormat("TEX_BIND_POINT_SCREEN %d, "
+            "TEX_BIND_POINT_NOISE %d, "
+            "TEX_BIND_POINT_BORDER %d, "
+            "TEX_BIND_POINT_UNDERWATER %d",
+            to_base(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN),
+            to_base(TexOperatorBindPoint::TEX_BIND_POINT_NOISE),
+            to_base(TexOperatorBindPoint::TEX_BIND_POINT_BORDER),
+            to_base(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER)).c_str());
 
     _postProcessingShader = CreateResource<ShaderProgram>(cache, postFXShader);
     _drawConstants.set("_noiseTile", GFX::PushConstantType::FLOAT, 0.05f);
     _drawConstants.set("_noiseFactor", GFX::PushConstantType::FLOAT, 0.02f);
     _drawConstants.set("_fadeActive", GFX::PushConstantType::BOOL, false);
-    
+
     _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(ShaderType::FRAGMENT, "Vignette"));  // 0
     _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(ShaderType::FRAGMENT, "Noise"));  // 1
     _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(ShaderType::FRAGMENT, "screenUnderwater"));  // 2
@@ -83,7 +73,7 @@ void PostFX::init(GFXDevice& context, ResourceCache& cache) {
 
     SamplerDescriptor defaultSampler;
     defaultSampler.setWrapMode(TextureWrap::REPEAT);
-    
+
     TextureDescriptor texDescriptor(TextureType::TEXTURE_2D);
     texDescriptor.setSampler(defaultSampler);
 
@@ -93,32 +83,40 @@ void PostFX::init(GFXDevice& context, ResourceCache& cache) {
     textureWaterCaustics.setPropertyDescriptor(texDescriptor);
     _underwaterTexture = CreateResource<Texture>(cache, textureWaterCaustics);
 
-     ResourceDescriptor noiseTexture("noiseTexture");
-     noiseTexture.setResourceName("bruit_gaussien.jpg");
-     noiseTexture.setResourceLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
-     noiseTexture.setPropertyDescriptor(texDescriptor);
-     _noise = CreateResource<Texture>(cache, noiseTexture);
+    ResourceDescriptor noiseTexture("noiseTexture");
+    noiseTexture.setResourceName("bruit_gaussien.jpg");
+    noiseTexture.setResourceLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
+    noiseTexture.setPropertyDescriptor(texDescriptor);
+    _noise = CreateResource<Texture>(cache, noiseTexture);
 
-     ResourceDescriptor borderTexture("borderTexture");
-     borderTexture.setResourceName("vignette.jpeg");
-     borderTexture.setResourceLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
-     borderTexture.setPropertyDescriptor(texDescriptor);
-     _screenBorder = CreateResource<Texture>(cache, borderTexture);
+    ResourceDescriptor borderTexture("borderTexture");
+    borderTexture.setResourceName("vignette.jpeg");
+    borderTexture.setResourceLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
+    borderTexture.setPropertyDescriptor(texDescriptor);
+    _screenBorder = CreateResource<Texture>(cache, borderTexture);
 
-     PipelineDescriptor pipelineDescriptor;
-     pipelineDescriptor._stateHash = context.get2DStateBlock();
-     pipelineDescriptor._shaderProgramHandle = _postProcessingShader->getID();
+    PipelineDescriptor pipelineDescriptor;
+    pipelineDescriptor._stateHash = context.get2DStateBlock();
+    pipelineDescriptor._shaderProgramHandle = _postProcessingShader->getID();
 
-     _drawCommand._primitiveType = PrimitiveType::TRIANGLES;
-     _drawCommand._drawCount = 1;
-     _drawPipeline = context.newPipeline(pipelineDescriptor);
+    _drawCommand._primitiveType = PrimitiveType::TRIANGLES;
+    _drawCommand._drawCount = 1;
+    _drawPipeline = context.newPipeline(pipelineDescriptor);
 
-     _preRenderBatch->init(RenderTargetID(RenderTargetUsage::SCREEN));
+    _preRenderBatch->init(RenderTargetID(RenderTargetUsage::SCREEN));
 
     _noiseTimer = 0.0;
     _tickInterval = 1.0f / 24.0f;
     _randomNoiseCoefficient = 0;
     _randomFlashCoefficient = 0;
+}
+
+PostFX::~PostFX()
+{
+    if (_preRenderBatch) {
+        _preRenderBatch->destroy();
+        MemoryManager::SAFE_DELETE(_preRenderBatch);
+    }
 }
 
 void PostFX::updateResolution(U16 width, U16 height) {

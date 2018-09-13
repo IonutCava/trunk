@@ -105,8 +105,8 @@ void MainScene::processGUI(const U64 deltaTimeUS) {
     if (_guiTimersMS[0] >= FpsDisplay) {
         _GUI->modifyText(_ID("fpsDisplay"),
                          Util::StringFormat("FPS: %3.0f. FrameTime: %3.1f",
-                                             Time::ApplicationTimer::instance().getFps(),
-                                             Time::ApplicationTimer::instance().getFrameTime()));
+                                            Time::ApplicationTimer::instance().getFps(),
+                                            Time::ApplicationTimer::instance().getFrameTime()));
         _GUI->modifyText(_ID("underwater"),
                          Util::StringFormat("Underwater [ %s ] | WaterLevel [%f] ]",
                                              state().playerState(0).cameraUnderwater() ? "true" : "false",

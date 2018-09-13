@@ -65,7 +65,7 @@ GLuint _lastQueryResult = GL_INVALID_INDEX;
 SDL_GLContext _glRenderContext;
 const DisplayWindow* _glMainRenderWindow;
 thread_local SDL_GLContext _glSecondaryContext = nullptr;
-SharedLock _glSecondaryContextMutex;
+std::mutex _glSecondaryContextMutex;
 
 /// this may not seem very efficient (or useful) but it saves a lot of
 /// single-use code scattered around further down

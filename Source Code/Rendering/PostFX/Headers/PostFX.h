@@ -43,24 +43,22 @@ class GFXDevice;
 class ShaderProgram;
 class Texture;
 
-DEFINE_SINGLETON(PostFX)
-   private:
-      enum class TexOperatorBindPoint : U8 {
-          TEX_BIND_POINT_SCREEN = 0,
-          TEX_BIND_POINT_BORDER = 1,
-          TEX_BIND_POINT_NOISE = 2,
-          TEX_BIND_POINT_UNDERWATER = 3,
-          COUNT
-      };
+class PostFX {
+private:
+    enum class TexOperatorBindPoint : U8 {
+        TEX_BIND_POINT_SCREEN = 0,
+        TEX_BIND_POINT_BORDER = 1,
+        TEX_BIND_POINT_NOISE = 2,
+        TEX_BIND_POINT_UNDERWATER = 3,
+        COUNT
+    };
 
-  private:
-    PostFX();
+public:
+    explicit PostFX(GFXDevice& context, ResourceCache& cache);
     ~PostFX();
 
-  public:
     void apply(const Camera& camera, GFX::CommandBuffer& bufferInOut);
 
-    void init(GFXDevice& context, ResourceCache& cache);
     void idle(const Configuration& config);
     void update(const U64 deltaTimeUS);
 
@@ -99,7 +97,7 @@ DEFINE_SINGLETON(PostFX)
     void setFadeOutIn(const UColour& targetColour, D64 durationMS, D64 waitDurationMS);
     void setFadeOutIn(const UColour& targetColour, D64 durationFadeOutMS, D64 durationFadeInMS, D64 waitDurationMS);
 
-  private:
+private:
 
     PreRenderBatch* _preRenderBatch;
     /// Screen Border
@@ -134,7 +132,7 @@ DEFINE_SINGLETON(PostFX)
     GenericDrawCommand _drawCommand;
     Pipeline* _drawPipeline = nullptr;
     PushConstants _drawConstants;
-END_SINGLETON
+};
 
 };  // namespace Divide
 

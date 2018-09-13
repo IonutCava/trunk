@@ -17,7 +17,7 @@ glBufferLockManager::glBufferLockManager() noexcept
 
 // --------------------------------------------------------------------------------------------------------------------
 glBufferLockManager::~glBufferLockManager() {
-    WriteLock w_lock(_lock);
+    UniqueLock w_lock(_lock);
     for (BufferLock& lock : _bufferLocks) {
         cleanup(&lock);
     }
@@ -33,7 +33,7 @@ void glBufferLockManager::WaitForLockedRange(size_t lockBeginBytes,
 
     _swapLocks.resize(0);
 
-    WriteLock w_lock(_lock);
+    UniqueLock w_lock(_lock);
     for (BufferLock& lock : _bufferLocks) {
         if (testRange.Overlaps(lock._range)) {
             wait(&lock._syncObj, blockClient);

@@ -42,14 +42,14 @@ inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, void>::ty
 CommandBuffer::add(const T& command) {
     T* ptr = nullptr;
     {
-        WriteLock w_lock(T::s_PoolMutex);
+        UniqueLockShared w_lock(T::s_PoolMutex);
         ptr = T::s_Pool.newElement(command);
     }
 
     _commandOrder.emplace_back(_commands.insert(static_cast<vec_size_eastl>(command._type),
                                                 std::shared_ptr<T>(ptr, [](T* cmd)
                                                 {
-                                                    WriteLock w_lock(T::s_PoolMutex);
+                                                    UniqueLockShared w_lock(T::s_PoolMutex);
                                                     T::s_Pool.deleteElement(cmd);
                                                     cmd = nullptr;
                                                 })));

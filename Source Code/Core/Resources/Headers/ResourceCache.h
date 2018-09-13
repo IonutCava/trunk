@@ -46,15 +46,14 @@ public:
     explicit ResourceLoadLock(size_t hash)
         : _loadingHash(hash)
     {
-        UpgradableReadLock ur_lock(_hashLock);
+        UniqueLock u_lock(_hashLock);
         WAIT_FOR_CONDITION(notLoading(_loadingHash));
-        UpgradeToWriteLock w_lock(ur_lock);
         _loadingHashes.push_back(_loadingHash);
     }
 
     ~ResourceLoadLock()
     {
-        WriteLock w_lock(_hashLock);
+        UniqueLock u_lock(_hashLock);
         _loadingHashes.erase(std::find(std::cbegin(_loadingHashes), std::cend(_loadingHashes), _loadingHash));
     }
 
@@ -65,7 +64,7 @@ private:
 
 private:
     size_t _loadingHash;
-    static SharedLock _hashLock;
+    static std::mutex _hashLock;
     static vector<size_t> _loadingHashes;
 };
 /// Resource Cache responsibilities:
@@ -81,7 +80,9 @@ public:
  
     /// Each resource entity should have a 'resource name'Loader implementation.
     template <typename T>
-    typename std::enable_if<std::is_base_of<CachedResource, T>::value, std::shared_ptr<T>>::type loadResource(const ResourceDescriptor& descriptor, bool& wasInCache) {
+    typename std::enable_if<std::is_base_of<CachedResource, T>::value, std::shared_ptr<T>>::type
+    loadResource(const ResourceDescriptor& descriptor, bool& wasInCache)
+    {
         // The loading process may change the resource descriptor so always use the user-specified descriptor hash for lookup!
         size_t loadingHash = descriptor.getHash();
 
@@ -129,9 +130,10 @@ protected:
 
 protected:
     /// multithreaded resource creation
-    mutable SharedLock _creationMutex;
     typedef hashMap<size_t, CachedResource_wptr> ResourceMap;
-    ResourceMap _resDB;
+
+    ResourceMap _resDB; 
+    mutable SharedMutex _creationMutex;
 };
 
 template <typename T>

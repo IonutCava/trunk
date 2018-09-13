@@ -410,7 +410,7 @@ class Camera : public Resource {
       static ListenerMap s_updateCameraListeners;
 
       static CameraPool s_cameraPool;
-      static SharedLock s_cameraPoolLock;
+      static SharedMutex s_cameraPoolLock;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_TYPE(Camera);

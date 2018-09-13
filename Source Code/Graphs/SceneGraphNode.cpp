@@ -143,7 +143,7 @@ void SceneGraphNode::onBoundsUpdated() {
 void SceneGraphNode::setTransformDirty(U32 transformMask) {
     Attorney::SceneGraphSGN::onNodeTransform(_sceneGraph, *this);
 
-    ReadLock r_lock(_childLock);
+    SharedLock r_lock(_childLock);
     U32 childCount = getChildCountLocked();
     for (U32 i = 0; i < childCount; ++i) {
         _children[i]->setParentTransformDirty(transformMask);
@@ -192,7 +192,7 @@ SceneGraphNode* SceneGraphNode::registerNode(SceneGraphNode* node) {
     
     Attorney::SceneGraphSGN::onNodeAdd(_sceneGraph, *node);
     
-    WriteLock w_lock(_childLock);
+    UniqueLockShared w_lock(_childLock);
     _children.push_back(node);
 
     return _children.back();
@@ -242,7 +242,7 @@ bool SceneGraphNode::removeNodesByType(SceneNodeType nodeType) {
         }
     });
 
-    ReadLock r_lock(_childLock);
+    SharedLock r_lock(_childLock);
     for (U32 i = 0; i < getChildCountLocked(); ++i) {
         if (_children[i]->getNode()->type() == nodeType) {
             {
@@ -262,7 +262,7 @@ bool SceneGraphNode::removeNodesByType(SceneNodeType nodeType) {
 bool SceneGraphNode::removeNode(const SceneGraphNode& node) {
 
     I64 targetGUID = node.getGUID();
-    ReadLock r_lock(_childLock);
+    SharedLock r_lock(_childLock);
     U32 childCount = getChildCountLocked();
     for (U32 i = 0; i < childCount; ++i) {
         if (_children[i]->getGUID() == targetGUID) {
@@ -324,7 +324,7 @@ bool SceneGraphNode::isChild(const SceneGraphNode& target, bool recursive) const
 }
 
 SceneGraphNode* SceneGraphNode::findChild(I64 GUID, bool recursive) const {
-    ReadLock r_lock(_childLock);
+    SharedLock r_lock(_childLock);
     for (auto& child : _children) {
         if (child->getGUID() == GUID) {
             return child;
@@ -343,7 +343,7 @@ SceneGraphNode* SceneGraphNode::findChild(I64 GUID, bool recursive) const {
 }
 
 SceneGraphNode* SceneGraphNode::findChild(const stringImpl& name, bool sceneNodeName, bool recursive) const {
-    ReadLock r_lock(_childLock);
+    SharedLock r_lock(_childLock);
     for (auto& child : _children) {
         if (sceneNodeName ? child->getNode()->name().compare(name) == 0
                           : child->name().compare(name) == 0)
@@ -413,7 +413,7 @@ void SceneGraphNode::setActive(const bool state) {
 void SceneGraphNode::getOrderedNodeList(vector<SceneGraphNode*>& nodeList) {
     // Compute from leaf to root to ensure proper calculations
     {
-        ReadLock r_lock(_childLock);
+        SharedLock r_lock(_childLock);
         for (auto& child : _children) {
             child->getOrderedNodeList(nodeList);
         }
@@ -425,7 +425,7 @@ void SceneGraphNode::getOrderedNodeList(vector<SceneGraphNode*>& nodeList) {
 void SceneGraphNode::processDeleteQueue(vector<vec_size>& childList) {
     // See if we have any children to delete
     if (!childList.empty()) {
-        WriteLock w_lock(_childLock);
+        UniqueLockShared w_lock(_childLock);
         for (vec_size childIdx : childList) {
             parentGraph().destroySceneGraphNode(_children[childIdx]);
         }
@@ -594,21 +594,21 @@ ECS::ComponentManager* SceneGraphNode::GetComponentManager() const {
 }
 
 void SceneGraphNode::forEachChild(const DELEGATE_CBK<void, SceneGraphNode&>& callback) {
-    ReadLock r_lock(_childLock);
+    SharedLock r_lock(_childLock);
     for (auto& child : _children) {
         callback(*child);
     }
 }
 
 void SceneGraphNode::forEachChild(const DELEGATE_CBK<void, const SceneGraphNode&>& callback) const {
-    ReadLock r_lock(_childLock);
+    SharedLock r_lock(_childLock);
     for (auto& child : _children) {
         callback(*child);
     }
 }
 
 bool SceneGraphNode::forEachChildInterruptible(const DELEGATE_CBK<bool, SceneGraphNode&>& callback) {
-    ReadLock r_lock(_childLock);
+    SharedLock r_lock(_childLock);
     for (auto& child : _children) {
         if (!callback(*child)) {
             return false;
@@ -619,7 +619,7 @@ bool SceneGraphNode::forEachChildInterruptible(const DELEGATE_CBK<bool, SceneGra
 }
 
 bool SceneGraphNode::forEachChildInterruptible(const DELEGATE_CBK<bool, const SceneGraphNode&>& callback) const {
-    ReadLock r_lock(_childLock);
+    SharedLock r_lock(_childLock);
     for (auto& child : _children) {
         if (!callback(*child)) {
             return false;
@@ -630,7 +630,7 @@ bool SceneGraphNode::forEachChildInterruptible(const DELEGATE_CBK<bool, const Sc
 }
 
 void SceneGraphNode::forEachChild(const DELEGATE_CBK<void, SceneGraphNode&, I32>& callback, U32 start, U32 end) {
-    ReadLock r_lock(_childLock);
+    SharedLock r_lock(_childLock);
     CLAMP<U32>(end, 0, getChildCountLocked());
     assert(start < end);
 
@@ -640,7 +640,7 @@ void SceneGraphNode::forEachChild(const DELEGATE_CBK<void, SceneGraphNode&, I32>
 }
 
 void SceneGraphNode::forEachChild(const DELEGATE_CBK<void, const SceneGraphNode&, I32>& callback, U32 start, U32 end) const {
-    ReadLock r_lock(_childLock);
+    SharedLock r_lock(_childLock);
     CLAMP<U32>(end, 0, getChildCountLocked());
     assert(start < end);
 
@@ -650,7 +650,7 @@ void SceneGraphNode::forEachChild(const DELEGATE_CBK<void, const SceneGraphNode&
 }
 
 bool SceneGraphNode::forEachChildInterruptible(const DELEGATE_CBK<bool, SceneGraphNode&, I32>& callback, U32 start, U32 end) {
-    ReadLock r_lock(_childLock);
+    SharedLock r_lock(_childLock);
     CLAMP<U32>(end, 0, getChildCountLocked());
     assert(start < end);
 
@@ -664,7 +664,7 @@ bool SceneGraphNode::forEachChildInterruptible(const DELEGATE_CBK<bool, SceneGra
 }
 
 bool SceneGraphNode::forEachChildInterruptible(const DELEGATE_CBK<bool, const SceneGraphNode&, I32>& callback, U32 start, U32 end) const {
-    ReadLock r_lock(_childLock);
+    SharedLock r_lock(_childLock);
     CLAMP<U32>(end, 0, getChildCountLocked());
     assert(start < end);
 

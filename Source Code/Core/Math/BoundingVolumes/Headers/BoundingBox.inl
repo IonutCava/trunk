@@ -35,13 +35,13 @@
 namespace Divide {
 
 inline bool BoundingBox::containsPoint(const vec3<F32>& point) const {
-    // const ReadLock r_lock(_lock);
+    // const SharedLock r_lock(_lock);
     return (IS_GEQUAL(point.x, _min.x) && IS_GEQUAL(point.y, _min.y) && IS_GEQUAL(point.z, _min.z) &&
             IS_LEQUAL(point.x, _max.x) && IS_LEQUAL(point.y, _max.y) && IS_LEQUAL(point.z, _max.z));
 }
 
 inline bool BoundingBox::compare(const BoundingBox& bb) const  noexcept {
-    /*ReadLock r_lock(_lock);*/
+    /*SharedLock r_lock(_lock);*/
     return _min == bb._min &&
            _max == bb._max;
 }
@@ -72,7 +72,7 @@ inline void BoundingBox::createFromSphere(const vec3<F32>& center, F32 radius) {
 }
 
 inline void BoundingBox::add(const vec3<F32>& v) noexcept {
-    // WriteLock w_lock(_lock);
+    // Lock w_lock(_lock);
     if (v.x > _max.x) {
         _max.x = v.x;
     }
@@ -94,7 +94,7 @@ inline void BoundingBox::add(const vec3<F32>& v) noexcept {
 };
 
 inline void BoundingBox::add(const BoundingBox& bb) noexcept {
-    // WriteLock w_lock(_lock);
+    // Lock w_lock(_lock);
     _max.set(std::max(bb._max.x, _max.x),
              std::max(bb._max.y, _max.y),
              std::max(bb._max.z, _max.z));
@@ -105,19 +105,19 @@ inline void BoundingBox::add(const BoundingBox& bb) noexcept {
 }
 
 inline void BoundingBox::translate(const vec3<F32>& v) noexcept {
-    // WriteLock w_lock(_lock);
+    // Lock w_lock(_lock);
     _min += v;
     _max += v;
 }
 
 inline void BoundingBox::multiply(F32 factor) noexcept {
-    // WriteLock w_lock(_lock);
+    // Lock w_lock(_lock);
     _min *= factor;
     _max *= factor;
 }
 
 inline void BoundingBox::multiply(const vec3<F32>& v) noexcept {
-    // WriteLock w_lock(_lock);
+    // Lock w_lock(_lock);
     _min.x *= v.x;
     _min.y *= v.y;
     _min.z *= v.z;
@@ -127,56 +127,56 @@ inline void BoundingBox::multiply(const vec3<F32>& v) noexcept {
 }
 
 inline void BoundingBox::multiplyMax(const vec3<F32>& v) noexcept {
-    // WriteLock w_lock(_lock);
+    // Lock w_lock(_lock);
     _max.x *= v.x;
     _max.y *= v.y;
     _max.z *= v.z;
 }
 
 inline void BoundingBox::multiplyMin(const vec3<F32>& v) noexcept {
-    // WriteLock w_lock(_lock);
+    // Lock w_lock(_lock);
     _min.x *= v.x;
     _min.y *= v.y;
     _min.z *= v.z;
 }
 
 inline const vec3<F32>& BoundingBox::getMin() const noexcept {
-    /*ReadLock r_lock(_lock);*/
+    /*SharedLock r_lock(_lock);*/
     return _min;
 }
 
 inline const vec3<F32>& BoundingBox::getMax() const noexcept {
-    /*ReadLock r_lock(_lock);*/
+    /*SharedLock r_lock(_lock);*/
     return _max;
 }
 
 inline vec3<F32> BoundingBox::getCenter() const noexcept {
-    /*ReadLock r_lock(_lock);*/
+    /*SharedLock r_lock(_lock);*/
     return (_max + _min) * 0.5f;
 }
 
 inline vec3<F32> BoundingBox::getExtent() const noexcept {
-    /*ReadLock r_lock(_lock);*/
+    /*SharedLock r_lock(_lock);*/
     return _max - _min;
 }
 
 inline vec3<F32> BoundingBox::getHalfExtent() const noexcept {
-    /*ReadLock r_lock(_lock);*/
+    /*SharedLock r_lock(_lock);*/
     return (_max - _min) * 0.5f;
 }
 
 inline F32 BoundingBox::getWidth() const noexcept {
-    /*ReadLock r_lock(_lock);*/
+    /*SharedLock r_lock(_lock);*/
     return _max.x - _min.x;
 }
 
 inline F32 BoundingBox::getHeight() const noexcept {
-    /*ReadLock r_lock(_lock);*/
+    /*SharedLock r_lock(_lock);*/
     return _max.y - _min.y;
 }
 
 inline F32 BoundingBox::getDepth() const noexcept {
-    /*ReadLock r_lock(_lock);*/
+    /*SharedLock r_lock(_lock);*/
     return _max.z - _min.z;
 }
 
@@ -219,13 +219,13 @@ inline void BoundingBox::setMax(F32 maxX, F32 maxY, F32 maxZ) noexcept {
 }
 
 inline void BoundingBox::set(const vec3<F32>& min, const vec3<F32>& max) noexcept {
-    /*WriteLock w_lock(_lock);*/
+    /*Lock w_lock(_lock);*/
     _min = min;
     _max = max;
 }
 
 inline void BoundingBox::reset() noexcept {
-    /*WriteLock w_lock(_lock);*/
+    /*Lock w_lock(_lock);*/
     _min.set( std::numeric_limits<F32>::max());
     _max.set(-std::numeric_limits<F32>::max());
 }

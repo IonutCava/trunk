@@ -42,8 +42,8 @@ ErrorCode Application::start(const stringImpl& entryPoint, I32 argc, char** argv
 
     _isInitialized = true;
     ErrorCode err = ErrorCode::NO_ERR;
-    ParamHandler::createInstance();
-    Time::ApplicationTimer::createInstance();
+    ParamHandler::instance();
+    Time::ApplicationTimer::instance();
     // Don't log parameter requests
     ParamHandler::instance().setDebugOutput(false);
 
@@ -81,10 +81,8 @@ void Application::stop() {
         }
 
         _windowManager.close();
-        ParamHandler::destroyInstance();
         MemoryManager::DELETE(_kernel);
         Console::printfn(Locale::get(_ID("STOP_APPLICATION")));
-        Time::ApplicationTimer::destroyInstance();
         _isInitialized = false;
 
         if (Config::Build::IS_DEBUG_BUILD) {
@@ -142,10 +140,8 @@ bool Application::onLoop() {
     _windowManager.handleWindowEvent(WindowEvent::APP_LOOP, -1, -1, -1);
 
     {
-        UpgradableReadLock ur_lock(_taskLock);
-        bool isQueueEmpty = _mainThreadCallbacks.empty();
-        if (!isQueueEmpty) {
-            UpgradeToWriteLock w_lock(ur_lock);
+        UniqueLock r_lock(_taskLock);
+        if (!_mainThreadCallbacks.empty()) {
             while(!_mainThreadCallbacks.empty()) {
                 _mainThreadCallbacks.back()();
                 _mainThreadCallbacks.pop_back();
@@ -163,10 +159,10 @@ void Application::onSizeChange(const SizeChangeParams& params) const {
 void Application::mainThreadTask(const DELEGATE_CBK<void>& task, bool wait) {
     std::atomic_bool done = false;
     if (wait) {
-        WriteLock w_lock(_taskLock);
+        UniqueLock w_lock(_taskLock);
         _mainThreadCallbacks.push_back([&done, &task] { task(); done = true; });
     } else {
-        WriteLock w_lock(_taskLock);
+        UniqueLock w_lock(_taskLock);
         _mainThreadCallbacks.push_back(task);
     }
 

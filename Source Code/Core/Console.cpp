@@ -130,7 +130,7 @@ void Console::output(const char* text, const bool newline, const EntryType type)
         }
 
 #if !defined(USE_BLOCKING_QUEUE)
-        UniqueLock lk(condMutex());
+        Lock lk(condMutex());
         entryAdded() = true;
         entryEnqueCV().notify_one();
 #endif
@@ -144,7 +144,7 @@ void Console::outThread() {
 #if defined(USE_BLOCKING_QUEUE)
         if (outBuffer().wait_dequeue_timed(/*ctok, */entry, Time::Milliseconds(16))) {
 #else
-        UniqueLock lk(condMutex());
+        Lock lk(condMutex());
         entryEnqueCV().wait(lk, []() -> bool { return entryAdded(); });
 
         while (outBuffer().try_dequeue(/*ctok, */entry)) {
@@ -183,7 +183,7 @@ void Console::stop() {
         _running = false;
 #if !defined(USE_BLOCKING_QUEUE)
         {
-            UniqueLock lk(condMutex());
+            Lock lk(condMutex());
             entryAdded() = true;
             entryEnqueCV().notify_one();
         }

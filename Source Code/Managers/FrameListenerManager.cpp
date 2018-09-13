@@ -18,9 +18,6 @@ FrameListenerManager::FrameListenerManager()
     }
 }
 
-FrameListenerManager::~FrameListenerManager()
-{
-}
 
 /// Register a new Frame Listener to be processed every frame
 void FrameListenerManager::registerFrameListener(FrameListener* listener,
@@ -34,7 +31,7 @@ void FrameListenerManager::registerFrameListener(FrameListener* listener,
 
     listener->setCallOrder(callOrder);
 
-    WriteLock w_lock(_listenerLock);
+    UniqueLockShared w_lock(_listenerLock);
     insert_sorted(_listeners, listener, std::less<>());
 }
 
@@ -44,7 +41,7 @@ void FrameListenerManager::removeFrameListener(FrameListener* const listener) {
 
     I64 targetGUID = listener->getGUID();
 
-    UpgradableReadLock ur_lock(_listenerLock);
+    UniqueLockShared lock(_listenerLock);
     vector<FrameListener*>::const_iterator it;
     it = std::find_if(std::cbegin(_listeners), std::cend(_listeners),
                       [targetGUID](FrameListener const* fl) -> bool
@@ -53,7 +50,6 @@ void FrameListenerManager::removeFrameListener(FrameListener* const listener) {
                       });
 
     if (it != std::cend(_listeners)) {
-        UpgradeToWriteLock w_lock(ur_lock);
         _listeners.erase(it);
     } else {
         Console::errorfn(Locale::get(_ID("ERROR_FRAME_LISTENER_REMOVE")), listener->getListenerName().c_str());
@@ -90,7 +86,7 @@ bool FrameListenerManager::frameEvent(const FrameEvent& evt) {
 }
 
 bool FrameListenerManager::frameStarted(const FrameEvent& evt) {
-    ReadLock r_lock(_listenerLock);
+    SharedLock r_lock(_listenerLock);
     for (FrameListener* listener : _listeners) {
         if (!listener->frameStarted(evt)) {
             return false;
@@ -100,7 +96,7 @@ bool FrameListenerManager::frameStarted(const FrameEvent& evt) {
 }
 
 bool FrameListenerManager::framePreRenderStarted(const FrameEvent& evt) {
-    ReadLock r_lock(_listenerLock);
+    SharedLock r_lock(_listenerLock);
     for (FrameListener* listener : _listeners) {
         if (!listener->framePreRenderStarted(evt)) {
             return false;
@@ -110,7 +106,7 @@ bool FrameListenerManager::framePreRenderStarted(const FrameEvent& evt) {
 }
 
 bool FrameListenerManager::framePreRenderEnded(const FrameEvent& evt) {
-    ReadLock r_lock(_listenerLock);
+    SharedLock r_lock(_listenerLock);
     for (FrameListener* listener : _listeners) {
         if (!listener->framePreRenderEnded(evt)) {
             return false;
@@ -120,7 +116,7 @@ bool FrameListenerManager::framePreRenderEnded(const FrameEvent& evt) {
 }
 
 bool FrameListenerManager::frameSceneRenderStarted(const FrameEvent& evt) {
-    ReadLock r_lock(_listenerLock);
+    SharedLock r_lock(_listenerLock);
     for (FrameListener* listener : _listeners) {
         if (!listener->frameSceneRenderStarted(evt)) {
             return false;
@@ -130,7 +126,7 @@ bool FrameListenerManager::frameSceneRenderStarted(const FrameEvent& evt) {
 }
 
 bool FrameListenerManager::frameSceneRenderEnded(const FrameEvent& evt) {
-    ReadLock r_lock(_listenerLock);
+    SharedLock r_lock(_listenerLock);
     for (FrameListener* listener : _listeners) {
         if (!listener->frameSceneRenderEnded(evt)) {
             return false;
@@ -140,7 +136,7 @@ bool FrameListenerManager::frameSceneRenderEnded(const FrameEvent& evt) {
 }
 
 bool FrameListenerManager::frameRenderingQueued(const FrameEvent& evt) {
-    ReadLock r_lock(_listenerLock);
+    SharedLock r_lock(_listenerLock);
     for (FrameListener* listener : _listeners) {
         if (!listener->frameRenderingQueued(evt)) {
             return false;
@@ -150,7 +146,7 @@ bool FrameListenerManager::frameRenderingQueued(const FrameEvent& evt) {
 }
 
 bool FrameListenerManager::framePostRenderStarted(const FrameEvent& evt) {
-    ReadLock r_lock(_listenerLock);
+    SharedLock r_lock(_listenerLock);
     for (FrameListener* listener : _listeners) {
         if (!listener->framePostRenderStarted(evt)) {
             return false;
@@ -160,7 +156,7 @@ bool FrameListenerManager::framePostRenderStarted(const FrameEvent& evt) {
 }
 
 bool FrameListenerManager::framePostRenderEnded(const FrameEvent& evt) {
-    ReadLock r_lock(_listenerLock);
+    SharedLock r_lock(_listenerLock);
     for (FrameListener* listener : _listeners) {
         if (!listener->framePostRenderEnded(evt)) {
             return false;
@@ -170,7 +166,7 @@ bool FrameListenerManager::framePostRenderEnded(const FrameEvent& evt) {
 }
 
 bool FrameListenerManager::frameEnded(const FrameEvent& evt) {
-    ReadLock r_lock(_listenerLock);
+    SharedLock r_lock(_listenerLock);
     for (FrameListener* listener : _listeners) {
         if (!listener->frameEnded(evt)) {
             return false;

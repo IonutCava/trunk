@@ -144,19 +144,19 @@ template <typename T>
 struct synchronized {
 public:
     synchronized& operator=(T const& newval) {
-        ReadLock lock(mutex);
+        UniqueLockShared lock(mutex);
         value = newval;
         return *this;
     }
 
     operator T() const {
-        WriteLock lock(mutex);
+        SharedLock lock(mutex);
         return value;
     }
 
 private:
     T value;
-    SharedLock mutex;
+    SharedMutex mutex;
 };
 
 /// Converts an arbitrary positive integer value to a bitwise value used for masks

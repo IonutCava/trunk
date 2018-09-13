@@ -52,7 +52,7 @@ namespace {
 
         bool init(U32 size, const DisplayWindow& window) {
             SDL_Window* raw = window.getRawWindow();
-            WriteLock w_lock(_glContextLock);
+            UniqueLock lock(_glContextLock);
             _contexts.resize(size, std::make_pair(nullptr, false));
             for (std::pair<SDL_GLContext, bool>& ctx : _contexts) {
                 ctx.first = SDL_GL_CreateContext(raw);
@@ -61,7 +61,7 @@ namespace {
         }
 
         bool destroy() {
-            WriteLock w_lock(_glContextLock);
+            UniqueLock lock(_glContextLock);
             for (std::pair<SDL_GLContext, bool>& ctx : _contexts) {
                 SDL_GL_DeleteContext(ctx.first);
             }
@@ -70,10 +70,9 @@ namespace {
         }
 
         bool getAvailableContext(SDL_GLContext& ctx) {
-            UpgradableReadLock ur_lock(_glContextLock);
+            UniqueLock lock(_glContextLock);
             for (std::pair<SDL_GLContext, bool>& ctxIt : _contexts) {
                 if (!ctxIt.second) {
-                    UpgradeToWriteLock w_lock(ur_lock);
                     ctx = ctxIt.first;
                     ctxIt.second = true;
                     return true;
@@ -84,7 +83,7 @@ namespace {
         }
 
     private:
-        SharedLock _glContextLock;
+        std::mutex _glContextLock;
         vector<std::pair<SDL_GLContext, bool /*in use*/>> _contexts;
     } g_ContextPool;
 };
@@ -447,7 +446,7 @@ void GL_API::closeRenderingAPI() {
     }
     // Destroy sampler objects
     {
-        WriteLock w_lock(s_samplerMapLock);
+        UniqueLock w_lock(s_samplerMapLock);
         for (auto sampler : s_samplerMap) {
             glSamplerObject::destruct(sampler.second);
         }
@@ -476,9 +475,8 @@ void GL_API::createOrValidateContextForCurrentThread(GFXDevice& context) {
     }
 
     // Double check so that we don't run into a race condition!
-    UpgradableReadLock r_lock(GLUtil::_glSecondaryContextMutex);
+    UniqueLock lock(GLUtil::_glSecondaryContextMutex);
     if (SDL_GL_GetCurrentContext() == NULL) {
-        UpgradeToWriteLock w_lock(r_lock);
         // This also makes the context current
         assert(GLUtil::_glSecondaryContext == nullptr && "GL_API::syncToThread: double init context for current thread!");
         bool ctxFound = g_ContextPool.getAvailableContext(GLUtil::_glSecondaryContext);
@@ -495,7 +493,6 @@ void GL_API::createOrValidateContextForCurrentThread(GFXDevice& context) {
             glDebugMessageCallback((GLDEBUGPROC)GLUtil::DebugCallback, GLUtil::_glSecondaryContext);
         }
     }
-
     initGLSW();
 }
 

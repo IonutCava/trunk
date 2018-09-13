@@ -20,7 +20,7 @@ void SGNRelationshipCache::invalidate() {
 }
 
 bool SGNRelationshipCache::rebuild() {
-    WriteLock w_lock(_updateMutex);
+    UniqueLockShared w_lock(_updateMutex);
     updateChildren(0, _childrenRecursiveCache);
     updateParents(0, _parentRecursiveCache);
     _isValid = true;
@@ -32,7 +32,7 @@ SGNRelationshipCache::clasifyNode(I64 GUID) const {
     assert(isValid());
 
     if (GUID != _parentNode.getGUID()) {
-        ReadLock r_lock(_updateMutex);
+        SharedLock r_lock(_updateMutex);
         for (const std::pair<I64, U8>& entry : _childrenRecursiveCache) {
             if (entry.first == GUID) {
                 return entry.second > 0 

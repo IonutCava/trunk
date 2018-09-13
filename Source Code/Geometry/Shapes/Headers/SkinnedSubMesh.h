@@ -69,11 +69,11 @@ class SkinnedSubMesh : public SubMesh {
    private:
     std::shared_ptr<SceneAnimator> _parentAnimatorPtr;
     /// Build status of bounding boxes for each animation
-    mutable SharedLock _bbStateLock;
+    mutable std::mutex _bbStateLock;
     BoundingBoxPerAnimationStatus _boundingBoxesState;
 
     /// store a map of bounding boxes for every animation. This should be large enough to fit all frames
-    mutable SharedLock _bbLock;
+    mutable std::mutex _bbLock;
     BoundingBoxPerAnimation _boundingBoxes;
 };
 

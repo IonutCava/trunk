@@ -75,14 +75,13 @@ void SceneGraph::unload()
 
 
 bool SceneGraph::frameStarted(const FrameEvent& evt) {
-    UpgradableReadLock ur_lock(_pendingDeletionLock);
+    UniqueLockShared lock(_pendingDeletionLock);
     if (!_pendingDeletion.empty()) {
         for (auto entry : _pendingDeletion) {
             if (entry.first != nullptr) {
                 entry.first->processDeleteQueue(entry.second);
             }
         }
-        UpgradeToWriteLock w_lock(ur_lock);
         _pendingDeletion.clear();
     }
 
@@ -94,7 +93,7 @@ bool SceneGraph::frameEnded(const FrameEvent& evt) {
 }
 
 void SceneGraph::addToDeleteQueue(SceneGraphNode* node, vec_size childIdx) {
-    WriteLock w_lock(_pendingDeletionLock);
+    UniqueLockShared w_lock(_pendingDeletionLock);
     vector<vec_size>& list = _pendingDeletion[node];
     if (std::find(std::cbegin(list), std::cend(list), childIdx) == std::cend(list))
     {

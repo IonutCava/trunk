@@ -73,7 +73,7 @@ class AITeam : public GUIDWrapper {
     ~AITeam();
 
     inline CrowdPtr const getCrowd(AIEntity::PresetAgentRadius radius) const {
-        ReadLock r_lock(_crowdMutex);
+        SharedLock r_lock(_crowdMutex);
         AITeamCrowd::const_iterator it = _aiTeamCrowd.find(radius);
         if (it != std::end(_aiTeamCrowd)) {
             return it->second;
@@ -99,19 +99,19 @@ class AITeam : public GUIDWrapper {
     inline MemberVariable& getMemberVariable() { return _memberVariable; }
 
     inline void clearOrders() {
-        WriteLock w_lock(_orderMutex);
+        UniqueLockShared w_lock(_orderMutex);
         _orders.clear();
     }
 
     inline void addOrder(const OrderPtr& order) {
-        WriteLock w_lock(_orderMutex);
+        UniqueLockShared w_lock(_orderMutex);
         if (findOrder(order->getID()) == std::end(_orders)) {
             _orders.push_back(order);
         }
     }
 
     inline void removeOrder(const Order& order) {
-        WriteLock w_lock(_orderMutex);
+        UniqueLockShared w_lock(_orderMutex);
         OrderList::iterator it = findOrder(order);
         if (it != std::end(_orders)) {
             _orders.erase(it);
@@ -154,7 +154,7 @@ class AITeam : public GUIDWrapper {
     }
 
    protected:
-    mutable SharedLock _orderMutex;
+    mutable SharedMutex _orderMutex;
 
    private:
     U32 _teamID;
@@ -163,8 +163,8 @@ class AITeam : public GUIDWrapper {
     /// Container with data per team member. For example a map of distances
     MemberVariable _memberVariable;
     AITeamCrowd _aiTeamCrowd;
-    mutable SharedLock _updateMutex;
-    mutable SharedLock _crowdMutex;
+    mutable SharedMutex _updateMutex;
+    mutable SharedMutex _crowdMutex;
     vectorEASTL<U32> _enemyTeams;
     OrderList _orders;
 };

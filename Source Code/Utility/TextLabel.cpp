@@ -5,7 +5,7 @@
 namespace Divide {
 
 TextLabelStyle::TextLabelStyleMap TextLabelStyle::s_textLabelStyleMap;
-SharedLock TextLabelStyle::s_textLableStyleMapMutex;
+SharedMutex TextLabelStyle::s_textLableStyleMapMutex;
 size_t TextLabelStyle::s_defaultCacheValue = 0;
 
 TextLabelStyle::FontNameHashMap TextLabelStyle::s_fontNameMap;
@@ -56,7 +56,7 @@ size_t TextLabelStyle::getHash() const {
         Util::Hash_combine(_hash, _italic);
 
         if (previousCache != _hash) {
-            WriteLock w_lock(s_textLableStyleMapMutex);
+            UniqueLockShared w_lock(s_textLableStyleMapMutex);
             hashAlg::insert(s_textLabelStyleMap, _hash, *this);
         }
         _dirty = false;
@@ -75,7 +75,7 @@ const TextLabelStyle& TextLabelStyle::get(size_t textLabelStyleHash) {
 const TextLabelStyle& TextLabelStyle::get(size_t textLabelStyleHash, bool& styleFound) {
     styleFound = false;
 
-    ReadLock r_lock(s_textLableStyleMapMutex);
+    SharedLock r_lock(s_textLableStyleMapMutex);
     // Find the render state block associated with the received hash value
     TextLabelStyleMap::const_iterator it = s_textLabelStyleMap.find(textLabelStyleHash);
     if (it != std::cend(s_textLabelStyleMap)) {

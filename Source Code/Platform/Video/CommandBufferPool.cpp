@@ -15,13 +15,13 @@ CommandBufferPool::~CommandBufferPool()
 }
 
 CommandBuffer* CommandBufferPool::allocateBuffer() {
-    WriteLock lock(_mutex);
+    UniqueLock lock(_mutex);
     return _pool.newElement();
 }
 
 void CommandBufferPool::deallocateBuffer(CommandBuffer*& buffer) {
     if (buffer != nullptr) {
-        WriteLock lock(_mutex);
+        UniqueLock lock(_mutex);
         _pool.deleteElement(buffer);
         buffer = nullptr;
     }

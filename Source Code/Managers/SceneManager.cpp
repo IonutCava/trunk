@@ -80,12 +80,12 @@ const Scene& SceneManager::getActiveScene() const {
 
 void SceneManager::idle() {
     if (_sceneSwitchTarget.isSet()) {
-        PostFX::instance().setFadeOut(UColour(0), 1000.0, 0.0);
+        _parent.platformContext().gfx().postFX().setFadeOut(UColour(0), 1000.0, 0.0);
         switchScene(_sceneSwitchTarget.targetSceneName(),
                     _sceneSwitchTarget.unloadPreviousScene(),
                     _sceneSwitchTarget.loadInSeparateThread());
         WaitForAllTasks(getActiveScene().context(), true, true, false);
-        PostFX::instance().setFadeIn(2750.0);
+        _parent.platformContext().gfx().postFX().setFadeIn(2750.0);
     } else {
         while (!_playerAddQueue.empty()) {
             std::pair<Scene*, SceneGraphNode*>& playerToAdd = _playerAddQueue.front();
@@ -107,7 +107,7 @@ bool SceneManager::init(PlatformContext& platformContext, ResourceCache& cache) 
         _resourceCache = &cache;
         REGISTER_FRAME_LISTENER(this, 1);
 
-        AI::Navigation::DivideRecast::createInstance();
+        AI::Navigation::DivideRecast::instance();
 
         _scenePool = MemoryManager_NEW ScenePool(*this);
 
@@ -136,7 +136,7 @@ void SceneManager::destroy() {
         Console::printfn(Locale::get(_ID("SCENE_MANAGER_REMOVE_SCENES")));
         MemoryManager::DELETE(_scenePool);
         MemoryManager::DELETE(_renderPassCuller);
-        AI::Navigation::DivideRecast::destroyInstance();
+        AI::Navigation::DivideRecast::instance().destroy();
         _platformContext = nullptr;
         _init = false;
     }

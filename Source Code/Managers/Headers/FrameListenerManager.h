@@ -60,7 +60,7 @@ DEFINE_SINGLETON(FrameListenerManager)
     bool createAndProcessEvent(const U64 currentTimeUS, FrameEventType type, FrameEvent& evt);
   private:
     FrameListenerManager();
-    ~FrameListenerManager();
+    ~FrameListenerManager() = default;
 
     bool frameStarted(const FrameEvent& evt);
     bool framePreRenderStarted(const FrameEvent& evt);
@@ -77,7 +77,7 @@ DEFINE_SINGLETON(FrameListenerManager)
     U64 calculateEventTime(const U64 currentTimeUS, FrameEventType type);
 
    private:
-    mutable SharedLock _listenerLock;
+    mutable SharedMutex _listenerLock;
     vector<FrameListener*> _listeners;
     std::array<EventTimeMap, to_base(FrameEventType::FRAME_EVENT_ENDED) + 1> _eventTimers;
 

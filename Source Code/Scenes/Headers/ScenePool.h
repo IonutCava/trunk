@@ -71,7 +71,7 @@ private:
 
     SceneManager& _parentMgr;
 
-    mutable SharedLock _sceneLock;
+    mutable SharedMutex _sceneLock;
 };
 }; //namespace Divide
 

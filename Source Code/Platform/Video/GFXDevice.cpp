@@ -438,7 +438,7 @@ void GFXDevice::onSizeChange(const SizeChangeParams& params) {
         }
 
         // Update post-processing render targets and buffers
-        PostFX::instance().updateResolution(w, h);
+        postFX().updateResolution(w, h);
 
         // Update the 2D camera so it matches our new rendering viewport
         Camera::utilityCamera(Camera::UtilityCamera::_2D)->setProjection(vec4<F32>(0, to_F32(w), 0, to_F32(h)), vec2<F32>(-1, 1));

@@ -159,7 +159,7 @@ class SceneGraph : private NonCopyable,
 
     std::array<vectorEASTL<SceneGraphNode*>, to_base(SceneNodeType::COUNT)> _nodesByType;
 
-    mutable SharedLock _pendingDeletionLock;
+    mutable SharedMutex _pendingDeletionLock;
     hashMap<SceneGraphNode*, vector<vec_size>> _pendingDeletion;
 
     mutable std::mutex _nodeCreateMutex;

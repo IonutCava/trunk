@@ -78,7 +78,7 @@ public:
     I64 getDebugGroup(const char* name);
 
     inline size_t debugVarCount() const {
-        ReadLock lock(_varMutex);
+        UniqueLock lock(_varMutex);
         return _debugVariables.size();
     }
 
@@ -93,8 +93,8 @@ protected:
 
 protected:
     bool _dirty;
-    mutable SharedLock _varMutex;
-    mutable SharedLock _groupMutex;
+    mutable std::mutex _varMutex;
+    mutable std::mutex _groupMutex;
     hashMap<I64, DebugVar> _debugVariables;
     hashMap<I64, DebugGroup> _debugGroups;
 };

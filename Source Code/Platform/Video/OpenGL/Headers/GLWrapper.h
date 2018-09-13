@@ -393,7 +393,7 @@ private:
     typedef std::array<ImageBindSettings, MAX_ACTIVE_TEXTURE_SLOTS> imageBoundMapDef;
     static imageBoundMapDef s_imageBoundMap;
 
-    static SharedLock s_mipmapQueueSetLock;
+    static SharedMutex s_mipmapQueueSetLock;
     static std::set<GLuint> s_mipmapQueueSet;
 
     /// /*texture slot*/ /*sampler handle*/
@@ -401,7 +401,7 @@ private:
     static samplerBoundMapDef s_samplerBoundMap;
     /// /*sampler hash value*/ /*sampler object*/
     typedef hashMap<size_t, GLuint> samplerObjectMap;
-    static SharedLock s_samplerMapLock;
+    static std::mutex s_samplerMapLock;
     static samplerObjectMap s_samplerMap;
 
     static VAOBindings s_vaoBufferData;

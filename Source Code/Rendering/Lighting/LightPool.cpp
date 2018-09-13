@@ -56,7 +56,7 @@ LightPool::LightPool(Scene& parentScene, GFXDevice& context)
 
 LightPool::~LightPool()
 {
-    ReadLock r_lock(_lightLock);
+    SharedLock r_lock(_lightLock);
     for (Light::LightList& lightList : _lights) {
         if (!lightList.empty()) {
             Console::errorfn(Locale::get(_ID("ERROR_LIGHT_POOL_LIGHT_LEAKED")));
@@ -121,7 +121,7 @@ bool LightPool::clear() {
     }
 
     if (_parentScene.sceneGraph().removeNodesByType(SceneNodeType::TYPE_LIGHT)) {
-        WriteLock w_lock(_lightLock);
+        UniqueLockShared w_lock(_lightLock);
 
         for (Light::LightList& lightList : _lights) {
             lightList.clear();
@@ -137,7 +137,7 @@ bool LightPool::addLight(Light& light) {
     const LightType type = light.getLightType();
     const U32 lightTypeIdx = to_base(type);
 
-    UpgradableReadLock ur_lock(_lightLock);
+    UniqueLockShared r_lock(_lightLock);
     if (findLightLocked(light.getGUID(), type) != std::end(_lights[lightTypeIdx])) {
 
         Console::errorfn(Locale::get(_ID("ERROR_LIGHT_POOL_DUPLICATE")),
@@ -145,7 +145,6 @@ bool LightPool::addLight(Light& light) {
         return false;
     }
 
-    UpgradeToWriteLock w_lock(ur_lock);
     _lights[lightTypeIdx].emplace_back(&light);
 
     if (light.getLightType() == LightType::DIRECTIONAL) {
@@ -157,7 +156,7 @@ bool LightPool::addLight(Light& light) {
 
 // try to remove any leftover lights
 bool LightPool::removeLight(I64 lightGUID, LightType type) {
-    UpgradableReadLock ur_lock(_lightLock);
+    UniqueLockShared lock(_lightLock);
     Light::LightList::const_iterator it = findLightLocked(lightGUID, type);
 
     if (it == std::end(_lights[to_U32(type)])) {
@@ -166,7 +165,6 @@ bool LightPool::removeLight(I64 lightGUID, LightType type) {
         return false;
     }
 
-    UpgradeToWriteLock w_lock(ur_lock);
     _lights[to_U32(type)].erase(it);  // remove it from the map
     return true;
 }
@@ -210,7 +208,7 @@ void LightPool::shadowCastingLights(const vec3<F32>& eyePos, LightVec& sortedSha
 
     LightVec sortedLights;
     {
-        ReadLock r_lock(_lightLock);
+        SharedLock r_lock(_lightLock);
         sortedLights.reserve(_lights.size());
 
         for (U8 i = 0; i < to_base(LightType::COUNT); ++i) {
@@ -269,7 +267,7 @@ void LightPool::bindShadowMaps(GFXDevice& context, GFX::CommandBuffer& bufferInO
 }
 
 Light* LightPool::getLight(I64 lightGUID, LightType type) {
-    ReadLock r_lock(_lightLock);
+    SharedLock r_lock(_lightLock);
 
     Light::LightList::const_iterator it = findLight(lightGUID, type);
     assert(it != eastl::end(_lights[to_U32(type)]));
@@ -291,7 +289,7 @@ void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, con
     _sortedLightProperties[stageIndex].resize(0);
 
     {
-        ReadLock r_lock(_lightLock);
+        SharedLock r_lock(_lightLock);
         for (U8 i = 0; i < to_base(LightType::COUNT); ++i) {
             for (Light* light : _lights[i]) {
                 _sortedLights[stageIndex].push_back(light);

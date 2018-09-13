@@ -70,7 +70,7 @@ protected:
     std::atomic_bool _isValid;
     SceneGraphNode& _parentNode;
 
-    mutable SharedLock _updateMutex;
+    mutable SharedMutex _updateMutex;
 };
 
 }; //namespace Divide

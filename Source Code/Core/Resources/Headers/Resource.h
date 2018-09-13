@@ -139,7 +139,7 @@ protected:
     stringImpl   _resourceLocation;  ///< Physical file location
     stringImpl   _resourceName;      ///< Physical file name
     std::array<DELEGATE_CBK<void, Resource_wptr>, to_base(ResourceState::COUNT)> _loadingCallbacks;
-    mutable SharedLock _callbackLock;
+    mutable std::mutex _callbackLock;
 };
 
 struct TerrainInfo {

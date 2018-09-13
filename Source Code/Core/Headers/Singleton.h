@@ -62,56 +62,23 @@
 #define VFUNC(func, ...) EXPAND(_VFUNC(func, __NARG__(__VA_ARGS__)) (__VA_ARGS__))
 #endif
 
-//#define _DEBUG_SINGLETONS
-#if defined(_DEBUG) && defined(_DEBUG_SINGLETONS)
-#include <assert.h>
-#endif
-
 namespace Divide {
 
 template <typename T>
 class Singleton {
-protected:
    public:
-
-    // Alias for instance() to easily explain intent
-    inline static T& createInstance() {
-        return instance();
-    }
-
     inline static T& instance() { 
-#   if defined(_DEBUG) && defined(_DEBUG_SINGLETONS)
-        assert(!_zombified);
-#    endif
-        static T *instance = new T();
-        return *instance;
-    }
-
-    inline static void destroyInstance() {
-        delete &instance();
-#       if defined(_DEBUG) && defined(_DEBUG_SINGLETONS)
-        _zombified = true;
-#       endif
+        static T instance {};
+        return instance;
     }
 
    protected:
     Singleton() = default;
-    virtual ~Singleton() = default;
 
    private:
     Singleton(Singleton&) = delete;
     void operator=(Singleton&) = delete;
-
-#if defined(_DEBUG) && defined(_DEBUG_SINGLETONS)
-   private:
-    static bool _zombified;
-#endif
 };
-
-#if defined(_DEBUG) && defined(_DEBUG_SINGLETONS)
-template <typename T>
-bool Singleton<T>::_zombified = false;
-#endif
 
 #define DEFINE_SINGLETON_W_SPECIFIER_2(class_name, specifier)   \
     class class_name specifier : public Singleton<class_name> { \

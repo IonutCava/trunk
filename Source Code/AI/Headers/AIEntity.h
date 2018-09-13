@@ -186,8 +186,8 @@ class AIEntity : public GUIDWrapper {
     AITeam* _teamPtr;
     AIProcessor* _processor;
 
-    mutable SharedLock _updateMutex;
-    mutable SharedLock _managerQueryMutex;
+    mutable SharedMutex _updateMutex;
+    mutable SharedMutex _managerQueryMutex;
 
     typedef hashMap<SensorType, Sensor*> SensorMap;
     SensorMap _sensorList;

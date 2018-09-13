@@ -282,7 +282,7 @@ class Scene : public Resource, public PlatformContextComponent {
        bool _cookCollisionMeshesScheduled;
 
    private:
-       SharedLock _tasksMutex;
+       SharedMutex _tasksMutex;
        vector<TaskHandle> _tasks;
        /// Contains all game related info for the scene (wind speed, visibility ranges, etc)
        SceneState* _sceneState;

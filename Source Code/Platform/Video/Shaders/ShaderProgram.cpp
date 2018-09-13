@@ -29,8 +29,8 @@ ShaderProgram::AtomMap ShaderProgram::s_atoms;
 ShaderProgram::ShaderQueue ShaderProgram::s_recompileQueue;
 ShaderProgram::ShaderProgramMap ShaderProgram::s_shaderPrograms;
 
-SharedLock ShaderProgram::s_atomLock;
-SharedLock ShaderProgram::s_programLock;
+SharedMutex ShaderProgram::s_atomLock;
+SharedMutex ShaderProgram::s_programLock;
 
 I64 ShaderProgram::s_shaderFileWatcherID = -1;
 
@@ -139,7 +139,7 @@ void ShaderProgram::idle() {
 /// that matches the name specified
 bool ShaderProgram::recompileShaderProgram(const stringImpl& name) {
     bool state = false;
-    ReadLock r_lock(s_programLock);
+    SharedLock r_lock(s_programLock);
 
     // Find the shader program
     for (const ShaderProgramMapEntry& shader : s_shaderPrograms) {
@@ -166,7 +166,7 @@ bool ShaderProgram::recompileShaderProgram(const stringImpl& name) {
 const stringImpl& ShaderProgram::shaderFileRead(const stringImpl& filePath, const stringImpl& atomName) {
     U64 atomNameHash = _ID(atomName.c_str());
     // See if the atom was previously loaded and still in cache
-    UpgradableReadLock ur_lock(s_atomLock);
+    UniqueLockShared lock(s_atomLock);
     AtomMap::iterator it = s_atoms.find(atomNameHash);
     // If that's the case, return the code from cache
     if (it != std::cend(s_atoms)) {
@@ -180,9 +180,7 @@ const stringImpl& ShaderProgram::shaderFileRead(const stringImpl& filePath, cons
     stringImpl output;
     readFile(filePath, atomName, output, FileType::TEXT);
 
-    UpgradeToWriteLock w_lock(ur_lock);
     auto result = hashAlg::insert(s_atoms, atomNameHash, output);
-
     assert(result.second);
 
     // Return the source code
@@ -252,7 +250,7 @@ void ShaderProgram::onStartup(GFXDevice& context, ResourceCache& parentCache) {
 void ShaderProgram::onShutdown() {
     // Make sure we unload all shaders
     {
-        //WriteLock w_lock(_programLock);
+        //Lock w_lock(_programLock);
         s_shaderPrograms.clear();
     }
     s_nullShader.reset();
@@ -265,7 +263,7 @@ void ShaderProgram::onShutdown() {
 }
 
 bool ShaderProgram::updateAll(const U64 deltaTimeUS) {
-    ReadLock r_lock(s_programLock);
+    SharedLock r_lock(s_programLock);
     // Pass the update call to all registered programs
     for (ShaderProgramMapEntry& shader : s_shaderPrograms) {
         if (!std::get<0>(shader).lock()->update(deltaTimeUS)) {
@@ -281,13 +279,14 @@ void ShaderProgram::registerShaderProgram(const ShaderProgram_ptr& shaderProgram
     size_t shaderHash = shaderProgram->getDescriptorHash();
     unregisterShaderProgram(shaderHash);
 
-    WriteLock w_lock(s_programLock);
+    UniqueLockShared w_lock(s_programLock);
     s_shaderPrograms.push_back({ shaderProgram, shaderProgram->getID(), shaderHash });
 }
 
 /// Unloading/Deleting a program will unregister it from the manager
 bool ShaderProgram::unregisterShaderProgram(size_t shaderHash) {
-    UpgradableReadLock ur_lock(s_programLock);
+
+    UniqueLockShared lock(s_programLock);
     if (s_shaderPrograms.empty()) {
         // application shutdown?
         return true;
@@ -300,16 +299,16 @@ bool ShaderProgram::unregisterShaderProgram(size_t shaderHash) {
         });
 
     if (it != std::cend(s_shaderPrograms)) {
-        UpgradeToWriteLock w_lock(ur_lock);
         s_shaderPrograms.erase(it);
         return true;
     }
 
+    // application shutdown?
     return false;
 }
 
 ShaderProgram_wptr ShaderProgram::findShaderProgram(U32 shaderHandle) {
-    ReadLock r_lock(s_programLock);
+    SharedLock r_lock(s_programLock);
     for (const ShaderProgramMapEntry& shader : s_shaderPrograms) {
         assert(!std::get<0>(shader).expired());
         if (std::get<1>(shader) == shaderHandle) {
@@ -321,7 +320,7 @@ ShaderProgram_wptr ShaderProgram::findShaderProgram(U32 shaderHandle) {
 }
 
 ShaderProgram_wptr ShaderProgram::findShaderProgram(size_t shaderHash) {
-    ReadLock r_lock(s_programLock);
+    SharedLock r_lock(s_programLock);
     for (const ShaderProgramMapEntry& shader : s_shaderPrograms) {
         assert(!std::get<0>(shader).expired());
         if (std::get<2>(shader) == shaderHash) {
@@ -341,7 +340,7 @@ const ShaderProgram_ptr& ShaderProgram::nullShader() {
 }
 
 void ShaderProgram::rebuildAllShaders() {
-    ReadLock r_lock(s_programLock);
+    SharedLock r_lock(s_programLock);
     for (const ShaderProgramMapEntry& shader : s_shaderPrograms) {
         s_recompileQueue.push(std::get<0>(shader).lock());
     }
@@ -358,14 +357,14 @@ void ShaderProgram::onAtomChange(const char* atomName, FileUpdateEvent evt) {
     // Clear the atom from the cache
 
     {
-        WriteLock w_lock(s_atomLock);
+        UniqueLockShared w_lock(s_atomLock);
         AtomMap::iterator it = s_atoms.find(_ID(atomName));
         if (it != std::cend(s_atoms)) {
             it = s_atoms.erase(it);
         }
     }
     //Get list of shader programs that use the atom and rebuild all shaders in list;
-    ReadLock r_lock(s_programLock);
+    SharedLock r_lock(s_programLock);
     for (const ShaderProgramMapEntry& shader : s_shaderPrograms) {
         const ShaderProgram_ptr& shaderProgram = std::get<0>(shader).lock();
         for (const stringImpl& atom : shaderProgram->_usedAtoms) {

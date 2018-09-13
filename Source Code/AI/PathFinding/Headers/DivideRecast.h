@@ -147,9 +147,11 @@ DEFINE_SINGLETON(DivideRecast)
                                   const vec3<F32>& extents, vec3<F32>& resultPt,
                                   dtPolyRef& resultPoly);
 
+    void destroy();
+
   protected:
     DivideRecast();
-    ~DivideRecast();
+    ~DivideRecast() = default;
 
   protected:
     /// Stores all created paths

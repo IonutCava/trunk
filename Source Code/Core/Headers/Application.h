@@ -127,7 +127,7 @@ class Application {
     vector<DELEGATE_CBK<void> > _shutdownCallback;
 
     /// A list of callbacks to execute on the main thread
-    mutable SharedLock _taskLock;
+    mutable std::mutex _taskLock;
     vector<DELEGATE_CBK<void> > _mainThreadCallbacks;
 };
 

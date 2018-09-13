@@ -24,10 +24,6 @@ ApplicationTimer::ApplicationTimer()
     _frameRateHandler.init();
 }
 
-ApplicationTimer::~ApplicationTimer()
-{
-}
-
 void ApplicationTimer::update() {
     TimeValue currentTicks = getCurrentTicksInternal();
     _elapsedTimeUs = getElapsedTimeInternal(currentTicks);

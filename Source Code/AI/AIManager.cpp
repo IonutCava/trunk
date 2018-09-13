@@ -37,14 +37,14 @@ AIManager::~AIManager()
 /// Clear up any remaining AIEntities
 void AIManager::destroy() {
     {
-        WriteLock w_lock(_updateMutex);
+        UniqueLock w_lock(_updateMutex);
         for (AITeamMap::value_type& entity : _aiTeams) {
             MemoryManager::DELETE(entity.second);
         }
         _aiTeams.clear();
     }
     {
-        WriteLock w_lock(_navMeshMutex);
+        UniqueLock w_lock(_navMeshMutex);
         for (NavMeshMap::value_type& it : _navMeshes) {
             MemoryManager::DELETE(it.second);
         }
@@ -63,7 +63,7 @@ void AIManager::update(const U64 deltaTimeUS) {
         {
             /// Lock the entities during update() adding or deleting entities is
             /// suspended until this returns
-            ReadLock r_lock(_updateMutex);
+            UniqueLock r_lock(_updateMutex);
             if (!_aiTeams.empty() && !_pauseUpdate) {
                 _updating = true;
                 if (_sceneCallback) {
@@ -112,7 +112,7 @@ bool AIManager::updateEntities(const U64 deltaTimeUS) {  // react
 }
 
 bool AIManager::registerEntity(U32 teamID, AIEntity* entity) {
-    WriteLock w_lock(_updateMutex);
+    UniqueLock w_lock(_updateMutex);
     AITeamMap::const_iterator it = _aiTeams.find(teamID);
     DIVIDE_ASSERT(it != std::end(_aiTeams),
                   "AIManager error: attempt to register an AI Entity to a "
@@ -128,7 +128,7 @@ void AIManager::unregisterEntity(AIEntity* entity) {
 }
 
 void AIManager::unregisterEntity(U32 teamID, AIEntity* entity) {
-    WriteLock w_lock(_updateMutex);
+    UniqueLock w_lock(_updateMutex);
     AITeamMap::const_iterator it = _aiTeams.find(teamID);
     DIVIDE_ASSERT(it != std::end(_aiTeams),
                   "AIManager error: attempt to remove an AI Entity from a "
@@ -139,7 +139,7 @@ void AIManager::unregisterEntity(U32 teamID, AIEntity* entity) {
 bool AIManager::addNavMesh(AIEntity::PresetAgentRadius radius,
                            Navigation::NavigationMesh* const navMesh) {
     {
-        WriteLock w_lock(_navMeshMutex);
+        UniqueLock w_lock(_navMeshMutex);
         NavMeshMap::iterator it = _navMeshes.find(radius);
         DIVIDE_ASSERT(it == std::end(_navMeshes),
                       "AIManager error: NavMesh for specified dimensions already "
@@ -150,18 +150,18 @@ bool AIManager::addNavMesh(AIEntity::PresetAgentRadius radius,
         navMesh->debugDraw(_navMeshDebugDraw);
         hashAlg::insert(_navMeshes, radius, navMesh);
     }
-
-    WriteLock w_lock2(_updateMutex);
-    for (AITeamMap::value_type& team : _aiTeams) {
-        team.second->addCrowd(radius, navMesh);
+    {
+        UniqueLock w_lock(_updateMutex);
+        for (AITeamMap::value_type& team : _aiTeams) {
+            team.second->addCrowd(radius, navMesh);
+        }
     }
-
     return true;
 }
 
 void AIManager::destroyNavMesh(AIEntity::PresetAgentRadius radius) {
     {
-        WriteLock w_lock(_navMeshMutex);
+        UniqueLock w_lock(_navMeshMutex);
         NavMeshMap::iterator it = _navMeshes.find(radius);
         DIVIDE_ASSERT(it != std::end(_navMeshes),
                       "AIManager error: Can't destroy NavMesh for specified radius "
@@ -170,14 +170,16 @@ void AIManager::destroyNavMesh(AIEntity::PresetAgentRadius radius) {
         _navMeshes.erase(it);
     }
 
-    WriteLock w_lock2(_updateMutex);
-    for (AITeamMap::value_type& team : _aiTeams) {
-        team.second->removeCrowd(radius);
+    {
+        UniqueLock w_lock(_updateMutex);
+        for (AITeamMap::value_type& team : _aiTeams) {
+            team.second->removeCrowd(radius);
+        }
     }
 }
 
 void AIManager::registerTeam(AITeam* const team) {
-    WriteLock w_lock(_updateMutex);
+    UniqueLock w_lock(_updateMutex);
     U32 teamID = team->getTeamID();
     DIVIDE_ASSERT(_aiTeams.find(teamID) == std::end(_aiTeams),
                   "AIManager error: attempt to double register an AI team!");
@@ -186,7 +188,7 @@ void AIManager::registerTeam(AITeam* const team) {
 }
 
 void AIManager::unregisterTeam(AITeam* const team) {
-    WriteLock w_lock(_updateMutex);
+    UniqueLock w_lock(_updateMutex);
     U32 teamID = team->getTeamID();
     AITeamMap::iterator it = _aiTeams.find(teamID);
     DIVIDE_ASSERT(it != std::end(_aiTeams),
@@ -195,7 +197,7 @@ void AIManager::unregisterTeam(AITeam* const team) {
 }
 
 void AIManager::toggleNavMeshDebugDraw(bool state) {
-    WriteLock w_lock(_navMeshMutex);
+    UniqueLock w_lock(_navMeshMutex);
     for (NavMeshMap::value_type& it : _navMeshes) {
         it.second->debugDraw(state);
     }
@@ -204,7 +206,7 @@ void AIManager::toggleNavMeshDebugDraw(bool state) {
 }
 
 void AIManager::debugDraw(GFX::CommandBuffer& bufferInOut, bool forceAll) {
-    WriteLock w_lock(_navMeshMutex);
+    UniqueLock w_lock(_navMeshMutex);
     for (NavMeshMap::value_type& it : _navMeshes) {
         it.second->update(_deltaTimeUS);
         if (forceAll || it.second->debugDraw()) {

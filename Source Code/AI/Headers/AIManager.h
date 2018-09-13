@@ -98,7 +98,7 @@ class AIManager : public SceneComponent
     void destroyNavMesh(AIEntity::PresetAgentRadius radius);
 
     inline void setSceneCallback(const DELEGATE_CBK<void>& callback) {
-        WriteLock w_lock(_updateMutex);
+        UniqueLock w_lock(_updateMutex);
         _sceneCallback = callback;
     }
     inline void pauseUpdate(bool state) { _pauseUpdate = state; }
@@ -145,8 +145,8 @@ class AIManager : public SceneComponent
     std::atomic_bool _running;
     NavMeshMap _navMeshes;
     AITeamMap _aiTeams;
-    mutable SharedLock _updateMutex;
-    mutable SharedLock _navMeshMutex;
+    mutable std::mutex _updateMutex;
+    mutable std::mutex _navMeshMutex;
     DELEGATE_CBK<void> _sceneCallback;
 
 };

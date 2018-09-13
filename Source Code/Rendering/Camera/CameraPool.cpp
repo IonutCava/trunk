@@ -20,11 +20,11 @@ U32 Camera::s_updateCameraId = 0;
 Camera::ListenerMap Camera::s_changeCameraListeners;
 Camera::ListenerMap Camera::s_updateCameraListeners;
 
-SharedLock Camera::s_cameraPoolLock;
+SharedMutex Camera::s_cameraPoolLock;
 Camera::CameraPool Camera::s_cameraPool;
 
 void Camera::update(const U64 deltaTimeUS) {
-    ReadLock r_lock(s_cameraPoolLock);
+    SharedLock r_lock(s_cameraPoolLock);
     for (CameraPool::value_type& it : s_cameraPool) {
         it.second->updateInternal(deltaTimeUS);
     }
@@ -38,7 +38,7 @@ void Camera::onUpdate(const Camera& cam) {
 
 vector<U64> Camera::cameraList() {
     vector<U64> ret;
-    ReadLock r_lock(s_cameraPoolLock);
+    SharedLock r_lock(s_cameraPoolLock);
     for (CameraPool::value_type& it : s_cameraPool) {
         ret.push_back(it.first);
     }
@@ -66,7 +66,7 @@ void Camera::destroyPool() {
     Console::printfn(Locale::get(_ID("CAMERA_MANAGER_DELETE")));
     Console::printfn(Locale::get(_ID("CAMERA_MANAGER_REMOVE_CAMERAS")));
 
-    WriteLock w_lock(s_cameraPoolLock);
+    UniqueLockShared w_lock(s_cameraPoolLock);
     for (CameraPool::value_type& it : s_cameraPool) {
         it.second->unload();
     }
@@ -95,7 +95,7 @@ Camera* Camera::createCamera(const stringImpl& cameraName, CameraType type) {
     }
 
     if (camera != nullptr) {
-        WriteLock w_lock(s_cameraPoolLock);
+        UniqueLockShared w_lock(s_cameraPoolLock);
         hashAlg::insert(s_cameraPool, _ID(camera->name().c_str()), camera);
     }
 
@@ -104,7 +104,7 @@ Camera* Camera::createCamera(const stringImpl& cameraName, CameraType type) {
 
 bool Camera::destroyCamera(Camera*& camera) {
     if (camera != nullptr && camera->unload()) {
-        WriteLock w_lock(s_cameraPoolLock);
+        UniqueLockShared w_lock(s_cameraPoolLock);
         s_cameraPool.erase(_ID(camera->name().c_str()));
         MemoryManager::DELETE(camera);
         return true;
@@ -114,7 +114,7 @@ bool Camera::destroyCamera(Camera*& camera) {
 }
 
 Camera* Camera::findCamera(U64 nameHash) {
-    ReadLock r_lock(s_cameraPoolLock);
+    SharedLock r_lock(s_cameraPoolLock);
     const CameraPool::const_iterator& it = s_cameraPool.find(nameHash);
     if (it != std::end(s_cameraPool)) {
         return it->second;

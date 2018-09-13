@@ -82,7 +82,7 @@ const RenderBinItem& RenderBin::getItem(RenderStage stage, U16 index) const {
 }
 
 void RenderBin::sort(RenderStage stage, RenderingOrder::List renderOrder) {
-    // WriteLock w_lock(_renderBinGetMutex);
+    // Lock w_lock(_renderBinGetMutex);
     U8 stageIndex = to_U8(stage);
 
     switch (renderOrder) {
@@ -127,7 +127,7 @@ void RenderBin::getSortedNodes(RenderStage stage, vectorEASTL<SceneGraphNode*>& 
 }
 
 void RenderBin::refresh(RenderStage stage) {
-    // WriteLock w_lock(_renderBinGetMutex);
+    // Lock w_lock(_renderBinGetMutex);
     _renderBinStack[to_base(stage)].resize(0);
     _renderBinStack[to_base(stage)].reserve(AVERAGE_BIN_SIZE);
 }

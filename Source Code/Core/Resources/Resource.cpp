@@ -109,14 +109,14 @@ void CachedResource::setResourceName(const stringImpl& name) {
 }
 
 void CachedResource::setStateCallback(ResourceState targetState, const DELEGATE_CBK<void, Resource_wptr>& cbk) {
-    WriteLock w_lock(_callbackLock);
+    UniqueLock w_lock(_callbackLock);
     _loadingCallbacks[to_U32(targetState)] = cbk;
 }
 
 void CachedResource::setState(ResourceState currentState) {
     Resource::setState(currentState);
 
-    ReadLock r_lock(_callbackLock);
+    UniqueLock r_lock(_callbackLock);
     const DELEGATE_CBK<void, Resource_wptr>& cbk = _loadingCallbacks[to_U32(currentState)];
     if (cbk) {
         cbk(shared_from_this());

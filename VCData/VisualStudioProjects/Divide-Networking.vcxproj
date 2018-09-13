@@ -40,7 +40,6 @@
     <ClInclude Include="..\../Source Code/Networking\Headers\ByteConverter.h" />
     <ClInclude Include="..\../Source Code/Networking\Headers\Client.h" />
     <ClInclude Include="..\../Source Code/Networking\Headers\OPCodesTpl.h" />
-    <ClInclude Include="..\../Source Code/Networking\Headers\Singleton.h" />
     <ClInclude Include="..\../Source Code/Networking\Headers\tcp_session_tpl.h" />
     <ClInclude Include="..\../Source Code/Networking\Headers\WorldPacket.h" />
   </ItemGroup>

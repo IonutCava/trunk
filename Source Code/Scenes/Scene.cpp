@@ -149,9 +149,8 @@ bool Scene::idle() {  // Called when application is idle
 
     _lightPool->idle();
 
-    UpgradableReadLock ur_lock(_tasksMutex);
+    UniqueLockShared r_lock(_tasksMutex);
     if (!_tasks.empty()) {
-        UpgradeToWriteLock w_lock(ur_lock);
         _tasks.erase(std::remove_if(std::begin(_tasks),
                                     std::end(_tasks),
                                     [](const TaskHandle& handle) -> bool { 
@@ -610,16 +609,16 @@ U16 Scene::registerInputActions() {
         ParamHandler& par = ParamHandler::instance();
         par.setParam(_ID("freezeLoopTime"), !par.getParam(_ID("freezeLoopTime"), false));
     };
-    auto toggleDepthOfField = [](InputParams param) {
-        PostFX& postFX = PostFX::instance();
+    auto toggleDepthOfField = [this](InputParams param) {
+        PostFX& postFX = _context.gfx().postFX();
         if (postFX.getFilterState(FilterType::FILTER_DEPTH_OF_FIELD)) {
             postFX.popFilter(FilterType::FILTER_DEPTH_OF_FIELD);
         } else {
             postFX.pushFilter(FilterType::FILTER_DEPTH_OF_FIELD);
         }
     };
-    auto toggleBloom = [](InputParams param) {
-        PostFX& postFX = PostFX::instance();
+    auto toggleBloom = [this](InputParams param) {
+        PostFX& postFX = _context.gfx().postFX();
         if (postFX.getFilterState(FilterType::FILTER_BLOOM)) {
             postFX.popFilter(FilterType::FILTER_BLOOM);
         } else {
@@ -978,9 +977,9 @@ void Scene::currentPlayerPass(PlayerIndex idx) {
     renderState().playerPass(idx);
 
     if (state().playerState(idx).cameraUnderwater()) {
-        PostFX::instance().pushFilter(FilterType::FILTER_UNDERWATER);
+        _context.gfx().postFX().pushFilter(FilterType::FILTER_UNDERWATER);
     } else {
-        PostFX::instance().popFilter(FilterType::FILTER_UNDERWATER);
+        _context.gfx().postFX().popFilter(FilterType::FILTER_UNDERWATER);
     }
 }
 
@@ -1186,7 +1185,7 @@ void Scene::onLostFocus() {
 }
 
 void Scene::registerTask(const TaskHandle& taskItem, bool start, TaskPriority priority) {
-    WriteLock w_lock(_tasksMutex);
+    UniqueLockShared w_lock(_tasksMutex);
     _tasks.push_back(taskItem);
     if (start) {
         _tasks.back().startTask(priority);
@@ -1196,7 +1195,7 @@ void Scene::registerTask(const TaskHandle& taskItem, bool start, TaskPriority pr
 void Scene::clearTasks() {
     Console::printfn(Locale::get(_ID("STOP_SCENE_TASKS")));
     // Performance shouldn't be an issue here
-    WriteLock w_lock(_tasksMutex);
+    UniqueLockShared w_lock(_tasksMutex);
     for (TaskHandle& task : _tasks) {
         Stop(task._task);
         Wait(task._task);
@@ -1206,7 +1205,7 @@ void Scene::clearTasks() {
 }
 
 void Scene::removeTask(TaskHandle& task) {
-    WriteLock w_lock(_tasksMutex);
+    UniqueLockShared w_lock(_tasksMutex);
     vector<TaskHandle>::iterator it;
     for (it = std::begin(_tasks); it != std::end(_tasks); ++it) {
         if ((*it) == task) {

@@ -244,19 +244,19 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     }
 
     inline SceneGraphNode& getChild(U32 idx) {
-        ReadLock r_lock(_childLock);
+        SharedLock r_lock(_childLock);
         assert(idx <  getChildCountLocked());
         return *_children.at(idx);
     }
 
     inline const SceneGraphNode& getChild(U32 idx) const {
-        ReadLock r_lock(_childLock);
+        SharedLock r_lock(_childLock);
         assert(idx <  getChildCountLocked());
         return *_children.at(idx);
     }
 
     inline U32 getChildCount() const {
-        ReadLock r_lock(_childLock);
+        SharedLock r_lock(_childLock);
         return getChildCountLocked();
     }
 
@@ -391,7 +391,7 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     SceneNode_ptr _node;
     SceneGraphNode* _parent;
     vector<SceneGraphNode*> _children;
-    mutable SharedLock _childLock;
+    mutable SharedMutex _childLock;
     std::atomic_bool _active;
     std::atomic_bool _visibilityLocked;
     std::atomic_uint _updateFlags;

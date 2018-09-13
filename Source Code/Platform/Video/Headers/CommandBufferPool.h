@@ -48,7 +48,7 @@ class CommandBufferPool {
     void deallocateBuffer(CommandBuffer*& buffer);
 
  private:
-    mutable SharedLock _mutex;
+    mutable std::mutex _mutex;
     MemoryPool<CommandBuffer, 4096 * 4> _pool;
 };
 

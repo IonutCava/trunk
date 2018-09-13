@@ -44,7 +44,7 @@ void DebugInterface::idle() {
 I64 DebugInterface::addDebugVar(const DebugVarDescriptor& descriptor) {
     DebugVar temp(descriptor);
 
-    WriteLock lock(_varMutex);
+    UniqueLock lock(_varMutex);
     _debugVariables.insert(hashAlg::make_pair(temp.getGUID(), temp));
 
     _dirty = true;
@@ -56,7 +56,7 @@ I64 DebugInterface::addDebugGroup(const char* name, I64 parentGUID) {
     DebugGroup temp;
     temp._name = name;
 
-    WriteLock lock(_groupMutex);
+    UniqueLock lock(_groupMutex);
     hashMap<I64, DebugGroup>::iterator it = _debugGroups.find(parentGUID);
 
     if (it != std::cend(_debugGroups)) {
@@ -70,7 +70,7 @@ I64 DebugInterface::addDebugGroup(const char* name, I64 parentGUID) {
 }
 
 I64 DebugInterface::getDebugGroup(const char* name) {
-    ReadLock lock (_groupMutex);
+    UniqueLock lock (_groupMutex);
     for (hashMap<I64, DebugGroup>::value_type& group : _debugGroups) {
         if (group.second._name.compare(name) == 0) {
             return group.first;

@@ -71,7 +71,7 @@ class glBufferLockManager : public glLockManager {
     void cleanup(BufferLock* bufferLock);
 
    private:
-    mutable SharedLock _lock;
+    mutable std::mutex _lock;
     vector<BufferLock> _bufferLocks;
     vector<BufferLock> _swapLocks;
 };

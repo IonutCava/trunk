@@ -185,7 +185,7 @@ private:
 
     /// All the GUI elements created per scene
     GUIMapPerScene _guiStack;
-    mutable SharedLock _guiStackLock;
+    mutable SharedMutex _guiStackLock;
 };
 
 };  // namespace Divide

@@ -115,7 +115,7 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
    private:
     /// Shader cache
     static ShaderMap _shaderNameMap;
-    static SharedLock _shaderNameLock;
+    static SharedMutex _shaderNameLock;
 };
 
 };  // namespace Divide

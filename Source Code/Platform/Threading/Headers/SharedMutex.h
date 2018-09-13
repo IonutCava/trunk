@@ -33,21 +33,15 @@
 #ifndef _SHARED_MUTEX_BOOST_H_
 #define _SHARED_MUTEX_BOOST_H_
 
-#include <boost/thread/shared_mutex.hpp>
-#include <boost/thread/locks.hpp>
 #include <shared_mutex>
 
 namespace Divide {
 
 /// Thread safety optimised for multiple-reades, single write
-typedef boost::shared_mutex SharedLock;
-typedef boost::unique_lock<SharedLock> WriteLock;
-typedef boost::shared_lock<SharedLock> ReadLock;
-typedef boost::upgrade_lock<SharedLock> UpgradableReadLock;
-typedef boost::upgrade_to_unique_lock<SharedLock> UpgradeToWriteLock;
-
+typedef std::shared_mutex SharedMutex;
+typedef std::shared_lock<SharedMutex> SharedLock;
+typedef std::unique_lock<SharedMutex> UniqueLockShared;
 typedef std::unique_lock<std::mutex> UniqueLock;
-
 };  // namespace Divide
 
 #endif //_SHARED_MUTEX_BOOST_H_

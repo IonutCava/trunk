@@ -108,7 +108,7 @@ class GUIConsole : public PlatformContextComponent {
     /// Used to cycle through history
     I16 _inputHistoryIndex;
     
-    SharedLock _outputLock;
+    SharedMutex _outputLock;
     boost::circular_buffer<Console::OutputEntry> _outputBuffer;
 
     size_t _consoleCallbackIndex;

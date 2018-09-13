@@ -23,7 +23,7 @@ ScenePool::~ScenePool()
 {
     vector<Scene*> tempScenes;
     {   
-        ReadLock r_lock(_sceneLock);
+        SharedLock r_lock(_sceneLock);
         tempScenes.insert(std::cend(tempScenes),
                           std::cbegin(_createdScenes),
                           std::cend(_createdScenes));
@@ -35,7 +35,7 @@ ScenePool::~ScenePool()
     }
 
     {
-        WriteLock w_lock(_sceneLock);
+        UniqueLockShared w_lock(_sceneLock);
         _createdScenes.clear();
     }
 }
@@ -76,7 +76,7 @@ Scene* ScenePool::getOrCreateScene(PlatformContext& context, ResourceCache& cach
     foundInCache = false;
     Scene* ret = nullptr;
 
-    UpgradableReadLock ur_lock(_sceneLock);
+    UniqueLockShared lock(_sceneLock);
     for (Scene* scene : _createdScenes) {
         if (scene->name().compare(name) == 0) {
             ret = scene;
@@ -94,7 +94,6 @@ Scene* ScenePool::getOrCreateScene(PlatformContext& context, ResourceCache& cach
         }
 
         if (ret != nullptr) {
-            UpgradeToWriteLock w_lock(ur_lock);
             _createdScenes.push_back(ret);
         }
     }
@@ -117,7 +116,7 @@ bool ScenePool::deleteScene(Scene*& scene) {
         }
 
         {
-            WriteLock w_lock(_sceneLock);
+            UniqueLockShared w_lock(_sceneLock);
             _createdScenes.erase(
                 std::find_if(std::cbegin(_createdScenes),
                              std::cend(_createdScenes),

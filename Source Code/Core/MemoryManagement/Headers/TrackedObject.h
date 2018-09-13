@@ -72,7 +72,7 @@ class TrackedObject : private NonCopyable, public GUIDWrapper {
     virtual ~TrackedObject();
 
    private:
-    // mutable SharedLock _dependencyLock;
+    // mutable SharedMutex _dependencyLock;
     std::atomic<size_t> _refCount;
     std::list<TrackedObject*> _dependencyList;
 };
