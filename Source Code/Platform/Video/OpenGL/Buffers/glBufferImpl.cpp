@@ -42,7 +42,7 @@ glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
       _lockManager(nullptr)
 {
     if (_target == GL_ATOMIC_COUNTER_BUFFER) {
-        _usage = GL_STATIC_COPY;
+        _usage = GL_STREAM_READ;
     } else {
         _usage = _target == GL_TRANSFORM_FEEDBACK
                             ? _updateFrequency == BufferUpdateFrequency::ONCE
@@ -71,11 +71,11 @@ glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
         gl::BufferStorageMask storageMask = GL_MAP_PERSISTENT_BIT;
         gl::BufferAccessMask accessMask = GL_MAP_PERSISTENT_BIT;
 
-        assert(_updateFrequency != BufferUpdateFrequency::ONCE);
 
         switch (_updateFrequency) {
             case BufferUpdateFrequency::ONCE:
-                //NoP
+                storageMask |= GL_MAP_READ_BIT;
+                accessMask |= GL_MAP_READ_BIT;
             break;
             case BufferUpdateFrequency::OCASSIONAL:
             case BufferUpdateFrequency::OFTEN:
@@ -164,11 +164,23 @@ void glBufferImpl::writeData(size_t offsetInBytes, size_t rangeInBytes, const bu
 
 void glBufferImpl::readData(size_t offsetInBytes, size_t rangeInBytes, const bufferPtr data)
 {
+
+    glMemoryBarrier(_target == GL_ATOMIC_COUNTER_BUFFER ? MemoryBarrierMask::GL_ATOMIC_COUNTER_BARRIER_BIT
+                                                        : MemoryBarrierMask::GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT);
+
     if (_mappedBuffer) {
-        glMemoryBarrier(MemoryBarrierMask::GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT);
+        /*glMemoryBarrier(_target == GL_ATOMIC_COUNTER_BUFFER ? MemoryBarrierMask::GL_ATOMIC_COUNTER_BARRIER_BIT
+                                                            : MemoryBarrierMask::GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT);*/
+
         memcpy(data, ((Byte*)(_mappedBuffer)+offsetInBytes), rangeInBytes);
     } else {
-        glGetNamedBufferSubData(_handle, offsetInBytes, rangeInBytes, data);
+        //glGetNamedBufferSubData(_handle, offsetInBytes, rangeInBytes, data);
+
+        void* bufferData = glMapNamedBufferRange(_handle, offsetInBytes, rangeInBytes, BufferAccessMask::GL_MAP_READ_BIT);
+        if (bufferData != nullptr) {
+            memcpy(data, ((Byte*)(bufferData)+offsetInBytes), rangeInBytes);
+        }
+        glUnmapNamedBuffer(_handle);
     }
 }
 

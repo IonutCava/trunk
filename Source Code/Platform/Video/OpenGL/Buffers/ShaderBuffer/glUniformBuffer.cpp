@@ -57,7 +57,7 @@ AtomicCounter::AtomicCounter(GFXDevice& context, U32 sizeFactor, U32 ringSizeFac
     params._ringSizeFactor = ringSizeFactor;
     params._data = NULL;
     params._zeroMem = true;
-    params._forcePersistentMap = false;
+    params._forcePersistentMap = true;
 
     _buffer = MemoryManager_NEW glGenericBuffer(context, params);
 }

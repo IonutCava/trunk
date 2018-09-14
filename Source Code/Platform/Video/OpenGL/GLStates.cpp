@@ -776,12 +776,10 @@ void GL_API::setBlending(GLuint drawBufferIdx,const BlendingProperties& blending
     }
 }
 
-/// Change the current viewport area. Redundancy check is performed in GFXDevice
-/// class
+/// Change the current viewport area. Redundancy check is performed in GFXDevice class
 bool GL_API::changeViewport(I32 x, I32 y, I32 width, I32 height) {
     if (width > 0 && height > 0 && Rect<I32>(x, y, width, height) != GL_API::s_activeViewport) {
-        // Debugging and profiling the application may require setting a 1x1
-         // viewport to exclude fill rate bottlenecks
+        // Debugging and profiling the application may require setting a 1x1 viewport to exclude fill rate bottlenecks
         if (Config::Profile::USE_1x1_VIEWPORT) {
             glViewport(x, y, 1, 1);
         } else {
