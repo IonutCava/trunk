@@ -96,7 +96,7 @@ glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
     }
 
     if (params._zeroMem) {
-        zeroMem(0, _alignedSize);
+        zeroMem(0, params._primitiveSizeInBytes, _alignedSize);
     }
 }
 
@@ -143,7 +143,7 @@ bool glBufferImpl::bindRange(GLuint bindIndex, size_t offsetInBytes, size_t rang
     return !wasBound;
 }
 
-void glBufferImpl::writeData(size_t offsetInBytes, size_t rangeInBytes, const bufferPtr data)
+void glBufferImpl::writeData(size_t offsetInBytes, size_t primitiveSize, size_t rangeInBytes, const bufferPtr data)
 {
     if (_mappedBuffer) {
         waitRange(offsetInBytes, rangeInBytes, true);
@@ -153,7 +153,7 @@ void glBufferImpl::writeData(size_t offsetInBytes, size_t rangeInBytes, const bu
         glFlushMappedNamedBufferRange(_handle, offsetInBytes, rangeInBytes);
 
     } else {
-        clearData(offsetInBytes, rangeInBytes);
+        clearData(offsetInBytes, primitiveSize, rangeInBytes);
         if (offsetInBytes == 0 && rangeInBytes == _alignedSize) {
             glNamedBufferData(_handle, _alignedSize, data, _usage);
         } else {
@@ -162,7 +162,7 @@ void glBufferImpl::writeData(size_t offsetInBytes, size_t rangeInBytes, const bu
     }
 }
 
-void glBufferImpl::readData(size_t offsetInBytes, size_t rangeInBytes, const bufferPtr data)
+void glBufferImpl::readData(size_t offsetInBytes, size_t primitiveSize, size_t rangeInBytes, const bufferPtr data)
 {
 
     glMemoryBarrier(_target == GL_ATOMIC_COUNTER_BUFFER ? MemoryBarrierMask::GL_ATOMIC_COUNTER_BARRIER_BIT
@@ -172,19 +172,19 @@ void glBufferImpl::readData(size_t offsetInBytes, size_t rangeInBytes, const buf
         /*glMemoryBarrier(_target == GL_ATOMIC_COUNTER_BUFFER ? MemoryBarrierMask::GL_ATOMIC_COUNTER_BARRIER_BIT
                                                             : MemoryBarrierMask::GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT);*/
 
-        memcpy(data, ((Byte*)(_mappedBuffer)+offsetInBytes), rangeInBytes);
+        std::memcpy(data, ((Byte*)(_mappedBuffer)+offsetInBytes), rangeInBytes);
     } else {
         //glGetNamedBufferSubData(_handle, offsetInBytes, rangeInBytes, data);
 
         void* bufferData = glMapNamedBufferRange(_handle, offsetInBytes, rangeInBytes, BufferAccessMask::GL_MAP_READ_BIT);
         if (bufferData != nullptr) {
-            memcpy(data, ((Byte*)(bufferData)+offsetInBytes), rangeInBytes);
+            std::memcpy(data, ((Byte*)(bufferData)+offsetInBytes), rangeInBytes);
         }
         glUnmapNamedBuffer(_handle);
     }
 }
 
-void glBufferImpl::clearData(size_t offsetInBytes, size_t rangeInBytes) {
+void glBufferImpl::clearData(size_t offsetInBytes, size_t primitiveSize, size_t rangeInBytes) {
     if (_mappedBuffer) {
         waitRange(offsetInBytes, rangeInBytes, true);
         std::memset(((Byte*)_mappedBuffer) + offsetInBytes, 0, rangeInBytes);
@@ -198,9 +198,9 @@ void glBufferImpl::clearData(size_t offsetInBytes, size_t rangeInBytes) {
     }
 }
 
-void glBufferImpl::zeroMem(size_t offsetInBytes, size_t rangeInBytes) {
+void glBufferImpl::zeroMem(size_t offsetInBytes, size_t primitiveSize, size_t rangeInBytes) {
     if (_mappedBuffer) {
-        clearData(offsetInBytes, rangeInBytes);
+        clearData(offsetInBytes, primitiveSize, rangeInBytes);
     } else {
         vector<Byte> newData(rangeInBytes, 0);
         if (offsetInBytes == 0 && rangeInBytes == _alignedSize) {

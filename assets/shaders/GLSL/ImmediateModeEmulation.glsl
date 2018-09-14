@@ -28,6 +28,16 @@ void main(){
     }
 }
 
+--Vertex.GUI
+
+out vec4 _colour;
+
+void main() {
+    VAR._texCoord = inTexCoordData;
+    _colour = inColourData;
+    gl_Position = dvd_ViewProjectionMatrix * vec4(inVertexData, 1.0);
+}
+
 -- Fragment.GUI
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;

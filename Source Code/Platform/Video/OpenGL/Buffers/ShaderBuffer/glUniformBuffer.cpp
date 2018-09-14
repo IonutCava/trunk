@@ -82,6 +82,7 @@ glUniformBuffer::glUniformBuffer(GFXDevice& context,
 
     BufferImplParams implParams;
     implParams._dataSizeInBytes = _allignedBufferSize * queueLength();
+    implParams._primitiveSizeInBytes = _primitiveSize;
     implParams._frequency = _frequency;
     implParams._initialData = descriptor._initialData;
     implParams._target = unbound ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER;
@@ -116,7 +117,7 @@ void glUniformBuffer::readData(ptrdiff_t offsetElementCount,
 
         offset += queueIndex() * _allignedBufferSize;
 
-        _buffer->readData(offset, range, result);
+        _buffer->readData(offset, _primitiveSize, range, result);
     }
 }
 
@@ -141,7 +142,7 @@ void glUniformBuffer::writeData(ptrdiff_t offsetElementCount,
 
     offset += queueIndex() * _allignedBufferSize;
 
-    _buffer->writeData(offset, range, data);
+    _buffer->writeData(offset, _primitiveSize, range, data);
 }
 
 void glUniformBuffer::writeBytes(ptrdiff_t offsetInBytes,
@@ -162,7 +163,7 @@ void glUniformBuffer::writeBytes(ptrdiff_t offsetInBytes,
 
     offsetInBytes += queueIndex() * _allignedBufferSize;
 
-    _buffer->writeData(offsetInBytes, rangeInBytes, data);
+    _buffer->writeData(offsetInBytes, _primitiveSize, rangeInBytes, data);
 }
 
 void glUniformBuffer::lockData(ptrdiff_t offsetElementCount,

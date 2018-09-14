@@ -41,6 +41,7 @@ struct BufferImplParams {
         : _target(GL_NONE),
           _frequency(BufferUpdateFrequency::ONCE),
           _dataSizeInBytes(0),
+          _primitiveSizeInBytes(0),
           _initialData(NULL),
           _zeroMem(false),
           _forcePersistentMap(false),
@@ -51,6 +52,7 @@ struct BufferImplParams {
     GLenum _target;
     BufferUpdateFrequency _frequency;
     size_t _dataSizeInBytes;
+    size_t _primitiveSizeInBytes;
     bufferPtr _initialData;
     bool _zeroMem;
     bool _forcePersistentMap;
@@ -69,10 +71,10 @@ public:
     void lockRange(size_t offsetInBytes, size_t rangeInBytes);
     void waitRange(size_t offsetInBytes, size_t rangeInBytes, bool blockClient);
 
-    void writeData(size_t offsetInBytes, size_t rangeInBytes, bufferPtr data);
-    void readData(size_t offsetInBytes, size_t rangeInBytes, const bufferPtr data);
-    void clearData(size_t offsetInBytes, size_t rangeInBytes);
-    void zeroMem(size_t offsetInBytes, size_t rangeInBytes);
+    void writeData(size_t offsetInBytes, size_t primitiveSize, size_t rangeInBytes, bufferPtr data);
+    void readData(size_t offsetInBytes, size_t primitiveSize, size_t rangeInBytes, const bufferPtr data);
+    void clearData(size_t offsetInBytes, size_t primitiveSize, size_t rangeInBytes);
+    void zeroMem(size_t offsetInBytes, size_t primitiveSize, size_t rangeInBytes);
 
 protected:
     GLenum _target;

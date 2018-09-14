@@ -40,10 +40,10 @@ FONS_DEF unsigned int glfonsRGBA(unsigned char r, unsigned char g, unsigned char
 
 #ifdef GLFONTSTASH_IMPLEMENTATION
 
+constexpr bool USE_EXPLICIT_FLUSH = true;
 
-constexpr GLuint GLFONS_VB_SIZE_FACTOR = 4 * 3; //(8k verts per frame?)
-constexpr GLuint GLFONST_VB_BUFFER_PRIM_COUNT = FONS_VERTEX_COUNT;
-constexpr size_t GLFONS_VB_BUFFER_SIZE = sizeof(FONSvert) * GLFONST_VB_BUFFER_PRIM_COUNT;
+constexpr GLuint GLFONS_VB_SIZE_FACTOR = 3 * 5; //3 ranges (app, driver, gpu) * 5 (flushes per frame)
+constexpr size_t GLFONS_VB_BUFFER_SIZE = sizeof(FONSvert) * FONS_VERTEX_COUNT;
 constexpr GLuint GLFONS_VERTEX_ATTRIB = (GLuint)(Divide::AttribLocation::VERTEX_POSITION);
 constexpr GLuint GLFONS_TCOORD_ATTRIB = (GLuint)(Divide::AttribLocation::VERTEX_TEXCOORD);
 constexpr GLuint GLFONS_COLOR_ATTRIB = (GLuint)(Divide::AttribLocation::VERTEX_COLOR);
@@ -126,13 +126,19 @@ static int glfons__renderCreate(void* userPtr, int width, int height)
         }
 
         BufferStorageMask storageMask = GL_MAP_PERSISTENT_BIT | GL_MAP_WRITE_BIT;
-        BufferAccessMask accessMask = GL_MAP_PERSISTENT_BIT | GL_MAP_WRITE_BIT | GL_MAP_FLUSH_EXPLICIT_BIT;
-
+        BufferAccessMask accessMask = GL_MAP_PERSISTENT_BIT | GL_MAP_WRITE_BIT;
+        
+        if (USE_EXPLICIT_FLUSH) {
+            accessMask |= GL_MAP_FLUSH_EXPLICIT_BIT;
+        } else {
+            storageMask |= GL_MAP_COHERENT_BIT;
+            accessMask |= GL_MAP_COHERENT_BIT;
+        }
         glNamedBufferStorage(gl->glfons_vboID, GLFONS_VB_BUFFER_SIZE * GLFONS_VB_SIZE_FACTOR, NULL, storageMask);
         gl->glfons_vboData = (FONSvert*)glMapNamedBufferRange(gl->glfons_vboID, 0, GLFONS_VB_BUFFER_SIZE * GLFONS_VB_SIZE_FACTOR, accessMask);
 
         for (int i = 0; i < GLFONS_VB_SIZE_FACTOR; ++i) {
-            gSyncRanges[i].begin = GLFONST_VB_BUFFER_PRIM_COUNT * i;
+            gSyncRanges[i].begin = FONS_VERTEX_COUNT * i;
         }
 
         Divide::U32 prevOffset = 0;
@@ -150,6 +156,8 @@ static int glfons__renderCreate(void* userPtr, int width, int height)
         glVertexAttribBinding(GLFONS_VERTEX_ATTRIB, 0);
         glVertexAttribBinding(GLFONS_TCOORD_ATTRIB, 0);
         glVertexAttribBinding(GLFONS_COLOR_ATTRIB, 0);
+
+        glVertexArrayVertexBuffer(gl->glfons_vaoID, 0, gl->glfons_vboID, 0, sizeof(FONSvert));
     }
 
     if (Divide::Config::ENABLE_GPU_VALIDATION) {
@@ -201,18 +209,22 @@ static void glfons__renderDraw(void* userPtr, const FONSvert* verts, int nverts)
     if (gl->tex == 0 || gl->glfons_vaoID == 0)
         return;
 
+    { //Prep
+        Divide::GL_API::bindTexture(0, gl->tex);
+        Divide::GL_API::setActiveVAO(gl->glfons_vaoID);
+    }
     { //Wait
         WaitBuffer(gSyncRanges[gRangeIndex].sync);
     }
     { //Update
         memcpy(gl->glfons_vboData + gSyncRanges[gRangeIndex].begin, verts, nverts * sizeof(FONSvert));
-        glFlushMappedNamedBufferRange(gl->glfons_vboID, gSyncRanges[gRangeIndex].begin * sizeof(FONSvert), nverts * sizeof(FONSvert));
+
+        if (USE_EXPLICIT_FLUSH) {
+            glFlushMappedNamedBufferRange(gl->glfons_vboID, gSyncRanges[gRangeIndex].begin * sizeof(FONSvert), nverts * sizeof(FONSvert));
+        }
     }
     { //Draw
-        Divide::GL_API::bindTexture(0, gl->tex);
-        Divide::GL_API::setActiveVAO(gl->glfons_vaoID);
-        glVertexArrayVertexBuffer(gl->glfons_vaoID, 0, gl->glfons_vboID, gSyncRanges[gRangeIndex].begin * sizeof(FONSvert), sizeof(FONSvert));
-        glDrawArrays(GL_TRIANGLES, 0, nverts);
+        glDrawArrays(GL_TRIANGLES, (GLint)gSyncRanges[gRangeIndex].begin, nverts);
     }
     { //Lock
         LockBuffer(gSyncRanges[gRangeIndex].sync);

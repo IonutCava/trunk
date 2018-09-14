@@ -27,7 +27,7 @@ glGenericBuffer::glGenericBuffer(GFXDevice& context, const BufferParams& params)
     // Create sizeFactor copies of the data and store them in the buffer
     if (params._data != nullptr) {
         for (U8 i = 1; i < _ringSizeFactor; ++i) {
-            _buffer->writeData(i * bufferSizeInBytes, bufferSizeInBytes, params._data);
+            _buffer->writeData(i * bufferSizeInBytes, _elementSize, bufferSizeInBytes, params._data);
         }
     }
 }
@@ -55,7 +55,7 @@ void glGenericBuffer::writeData(GLuint elementCount,
         offsetInBytes += _elementCount * _elementSize * ringWriteOffset;
     }
 
-    _buffer->writeData(offsetInBytes, dataCurrentSizeInBytes, data);
+    _buffer->writeData(offsetInBytes, _elementSize, dataCurrentSizeInBytes, data);
 }
 
 void glGenericBuffer::readData(GLuint elementCount,
@@ -72,7 +72,7 @@ void glGenericBuffer::readData(GLuint elementCount,
         offsetInBytes += _elementCount * _elementSize * ringReadOffset;
     }
 
-    _buffer->readData(offsetInBytes, dataCurrentSizeInBytes, dataOut);
+    _buffer->readData(offsetInBytes, _elementSize, dataCurrentSizeInBytes, dataOut);
 }
 
 void glGenericBuffer::lockData(GLuint elementCount,
@@ -98,7 +98,7 @@ void glGenericBuffer::clearData(GLuint elementOffset, GLuint ringWriteOffset)
         offsetInBytes += rangeInBytes * ringWriteOffset;
     }
 
-    _buffer->clearData(offsetInBytes, rangeInBytes);
+    _buffer->clearData(offsetInBytes, _elementSize, rangeInBytes);
 }
 
 void glGenericBuffer::zeroMem(GLuint elementOffset, GLuint ringWriteOffset) {
@@ -109,7 +109,7 @@ void glGenericBuffer::zeroMem(GLuint elementOffset, GLuint ringWriteOffset) {
         offsetInBytes += rangeInBytes * ringWriteOffset;
     }
 
-    _buffer->zeroMem(offsetInBytes, rangeInBytes);
+    _buffer->zeroMem(offsetInBytes, _elementSize, rangeInBytes);
 }
 
 GLintptr glGenericBuffer::getBindOffset(GLuint ringReadOffset)
