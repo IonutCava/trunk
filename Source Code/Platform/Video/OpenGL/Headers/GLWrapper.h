@@ -393,7 +393,7 @@ private:
     typedef std::array<ImageBindSettings, MAX_ACTIVE_TEXTURE_SLOTS> imageBoundMapDef;
     static imageBoundMapDef s_imageBoundMap;
 
-    static SharedMutex s_mipmapQueueSetLock;
+    static std::mutex s_mipmapQueueSetLock;
     static std::set<GLuint> s_mipmapQueueSet;
 
     /// /*texture slot*/ /*sampler handle*/

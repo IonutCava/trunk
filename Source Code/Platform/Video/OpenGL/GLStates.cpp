@@ -64,7 +64,7 @@ size_t GL_API::s_currentStateBlockHash = 0;
 size_t GL_API::s_previousStateBlockHash = 0;
 GL_API::textureBoundMapDef GL_API::s_textureBoundMap;
 GL_API::imageBoundMapDef GL_API::s_imageBoundMap;
-SharedMutex GL_API::s_mipmapQueueSetLock;
+std::mutex GL_API::s_mipmapQueueSetLock;
 std::set<GLuint> GL_API::s_mipmapQueueSet;
 GL_API::samplerBoundMapDef GL_API::s_samplerBoundMap;
 GL_API::samplerObjectMap GL_API::s_samplerMap;
@@ -442,21 +442,23 @@ bool GL_API::bindTextures(GLushort unitOffset,
                           GLuint textureCount,
                           GLuint* textureHandles,
                           GLuint* samplerHandles) {
-    //Refresh mipmaps
-    if (textureHandles != nullptr) 
-    { 
-        UniqueLockShared w_lock(s_mipmapQueueSetLock);
+
+    {
+        UniqueLock w_lock(s_mipmapQueueSetLock);
         if (!s_mipmapQueueSet.empty()) {
             for (GLuint i = 0; i < textureCount; ++i) {
-                auto it = s_mipmapQueueSet.find(textureHandles[i]);
-                if (it != std::cend(s_mipmapQueueSet)) {
-                    glGenerateTextureMipmap(*it);
-                    s_mipmapQueueSet.erase(it);
+                if (textureHandles[i] > 0) {
+                    auto it = s_mipmapQueueSet.find(textureHandles[i]);
+                    if (it != std::cend(s_mipmapQueueSet)) {
+                        glGenerateTextureMipmap(*it);
+                        s_mipmapQueueSet.erase(it);
+                    }
                 }
             }
         }
     }
 
+    bool bound = false;
     if (textureCount > 0 &&
         unitOffset + textureCount < static_cast<GLuint>(GL_API::s_maxTextureUnits))
     {
@@ -469,7 +471,7 @@ bool GL_API::bindTextures(GLushort unitOffset,
             if (crtHandle != targetHandle) {
                 glBindTextureUnit(unitOffset, targetHandle);
                 crtHandle = targetHandle;
-                return true;
+                bound = true;
             }
         } else {
             glBindTextures(unitOffset, textureCount, textureHandles);
@@ -479,7 +481,7 @@ bool GL_API::bindTextures(GLushort unitOffset,
                 memset(&s_textureBoundMap[unitOffset], 0, sizeof(GLuint) * textureCount);
             }
 
-            return true;
+            bound = true;
         }
     }
 
@@ -487,7 +489,7 @@ bool GL_API::bindTextures(GLushort unitOffset,
 }
 
 void GL_API::queueComputeMipMap(GLuint textureHandle) {
-    UniqueLockShared w_lock(s_mipmapQueueSetLock);
+    UniqueLock w_lock(s_mipmapQueueSetLock);
     s_mipmapQueueSet.insert(textureHandle);
 }
 
