@@ -171,6 +171,7 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     std::array<glShader*, to_base(ShaderType::COUNT)> _shaderStage;
 
     UseProgramStageMask _stageMask;
+    glLockManager* _lockManager;
 };
 
 namespace Attorney {

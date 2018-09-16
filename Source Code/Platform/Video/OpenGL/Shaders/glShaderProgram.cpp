@@ -46,6 +46,7 @@ glShaderProgram::glShaderProgram(GFXDevice& context,
       _loadedFromBinary(false),
       _validated(false),
       _shaderProgramIDTemp(GLUtil::_invalidObjectID),
+      _lockManager(MemoryManager_NEW glLockManager()),
       _binaryFormat(GL_NONE),
       _stageMask(UseProgramStageMask::GL_NONE_BIT)
 {
@@ -58,6 +59,9 @@ glShaderProgram::glShaderProgram(GFXDevice& context,
 
 glShaderProgram::~glShaderProgram()
 {
+    _lockManager->Wait(true);
+    MemoryManager::DELETE(_lockManager);
+
     if (isBound()) {
         unbind();
     }
@@ -127,6 +131,8 @@ bool glShaderProgram::validateInternal() {
 bool glShaderProgram::update(const U64 deltaTimeUS) {
     // If we haven't validated the program but used it at lease once ...
     if (_validationQueued && _shaderProgramID != 0 && _shaderProgramID != GLUtil::_invalidObjectID) {
+        _lockManager->Wait(true);
+
         // Call the internal validation function
         validateInternal();
 
@@ -278,6 +284,8 @@ void glShaderProgram::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoa
 
     // This was once an atomic swap. Might still be in the future
     _shaderProgramID = _shaderProgramIDTemp;
+    _lockManager->Lock();
+
     // Pass the rest of the loading steps to the parent class
     if (!skipRegister) {
         ShaderProgram::load(onLoadCallback);
@@ -507,6 +515,8 @@ bool glShaderProgram::recompileInternal() {
         return true;
     }
 
+    _lockManager->Wait(true);
+
     reloadShaders(true);
     threadedLoad(DELEGATE_CBK<void, Resource_wptr>(), true);
     // Restore bind state
@@ -564,6 +574,8 @@ bool glShaderProgram::bind(bool& wasBound) {
     if (!isValid()) {
         return false;
     }
+    // This should almost always end up as a NOP
+    _lockManager->Wait(true);
 
     // Set this program as the currently active one
     wasBound = GL_API::setActiveProgram(_shaderProgramID);
