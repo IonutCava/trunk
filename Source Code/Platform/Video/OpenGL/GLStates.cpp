@@ -443,7 +443,7 @@ bool GL_API::bindTextures(GLushort unitOffset,
                           GLuint* textureHandles,
                           GLuint* samplerHandles) {
 
-    {
+    if (textureHandles != nullptr) {
         UniqueLock w_lock(s_mipmapQueueSetLock);
         if (!s_mipmapQueueSet.empty()) {
             for (GLuint i = 0; i < textureCount; ++i) {
