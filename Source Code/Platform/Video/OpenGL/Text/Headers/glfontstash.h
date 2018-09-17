@@ -23,6 +23,7 @@
 
 #include "Platform/Video/OpenGL/Headers/GLWrapper.h"
 #include "Platform/Video/OpenGL/Buffers/Headers/glMemoryManager.h"
+#include "Platform/Video/OpenGL/Buffers/Headers/glBufferLockManager.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -42,8 +43,8 @@ FONS_DEF unsigned int glfonsRGBA(unsigned char r, unsigned char g, unsigned char
 
 constexpr bool USE_EXPLICIT_FLUSH = true;
 
-constexpr GLuint GLFONS_VB_SIZE_FACTOR = 3 * 5; //3 ranges (app, driver, gpu) * 5 (flushes per frame)
-constexpr size_t GLFONS_VB_BUFFER_SIZE = sizeof(FONSvert) * FONS_VERTEX_COUNT;
+constexpr GLuint GLFONS_VB_SIZE_FACTOR = 120;
+constexpr size_t GLFONS_VB_BUFFER_SIZE = GLFONS_VB_SIZE_FACTOR * sizeof(FONSvert) * FONS_VERTEX_COUNT;
 constexpr GLuint GLFONS_VERTEX_ATTRIB = (GLuint)(Divide::AttribLocation::VERTEX_POSITION);
 constexpr GLuint GLFONS_TCOORD_ATTRIB = (GLuint)(Divide::AttribLocation::VERTEX_TEXCOORD);
 constexpr GLuint GLFONS_COLOR_ATTRIB = (GLuint)(Divide::AttribLocation::VERTEX_COLOR);
@@ -58,45 +59,7 @@ struct GLFONScontext {
 typedef struct GLFONScontext GLFONScontext;
 
 namespace {
-    struct Range {
-        size_t begin = 0;
-        GLsync sync = 0;
-
-    };
-
-    Range gSyncRanges[GLFONS_VB_SIZE_FACTOR];
-    GLuint gRangeIndex = 0;
-    GLuint gWaitCount = 0;
-
-
-    void LockBuffer(GLsync& syncObj) {
-        if (syncObj) {
-            glDeleteSync(syncObj);
-        }
-
-        syncObj = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, GL_NONE_BIT);
-    }
-
-    GLuint64 kOneSecondInNanoSeconds = 1000000000;
-    void WaitBuffer(GLsync& syncObj) {
-        if (syncObj) {
-            SyncObjectMask waitFlags = SyncObjectMask::GL_NONE_BIT;
-            GLuint64 waitDuration = 0;
-            while (true) {
-                GLenum waitRet = glClientWaitSync(syncObj, waitFlags, waitDuration);
-                if (waitRet == GL_ALREADY_SIGNALED || waitRet == GL_CONDITION_SATISFIED) {
-                    return;
-                }
-                if (waitRet == GL_WAIT_FAILED) {
-                    assert(!"Not sure what to do here. Probably raise an exception or something.");
-                }
-
-                // After the first time, need to start flushing, and wait for a looong time.
-                waitFlags = GL_SYNC_FLUSH_COMMANDS_BIT;
-                waitDuration = kOneSecondInNanoSeconds;
-            }
-        }
-    }
+    Divide::glBufferLockManager g_lockManager;
 };
 
 static int glfons__renderCreate(void* userPtr, int width, int height)
@@ -134,14 +97,10 @@ static int glfons__renderCreate(void* userPtr, int width, int height)
             storageMask |= GL_MAP_COHERENT_BIT;
             accessMask |= GL_MAP_COHERENT_BIT;
         }
-        glNamedBufferStorage(gl->glfons_vboID, GLFONS_VB_BUFFER_SIZE * GLFONS_VB_SIZE_FACTOR, NULL, storageMask);
-        gl->glfons_vboData = (FONSvert*)glMapNamedBufferRange(gl->glfons_vboID, 0, GLFONS_VB_BUFFER_SIZE * GLFONS_VB_SIZE_FACTOR, accessMask);
+        glNamedBufferStorage(gl->glfons_vboID, GLFONS_VB_BUFFER_SIZE, NULL, storageMask);
+        gl->glfons_vboData = (FONSvert*)glMapNamedBufferRange(gl->glfons_vboID, 0, GLFONS_VB_BUFFER_SIZE, accessMask);
 
-        for (int i = 0; i < GLFONS_VB_SIZE_FACTOR; ++i) {
-            gSyncRanges[i].begin = FONS_VERTEX_COUNT * i;
-        }
-
-        Divide::U32 prevOffset = 0;
+         Divide::U32 prevOffset = 0;
         glEnableVertexAttribArray(GLFONS_VERTEX_ATTRIB);
         glVertexAttribFormat(GLFONS_VERTEX_ATTRIB, 2, GL_FLOAT, GL_FALSE, prevOffset);
 
@@ -209,26 +168,29 @@ static void glfons__renderDraw(void* userPtr, const FONSvert* verts, int nverts)
     if (gl->tex == 0 || gl->glfons_vaoID == 0)
         return;
 
+    static size_t writeOffsetBytes = 0;
+
     { //Prep
         Divide::GL_API::bindTexture(0, gl->tex);
         Divide::GL_API::setActiveVAO(gl->glfons_vaoID);
     }
     { //Wait
-        WaitBuffer(gSyncRanges[gRangeIndex].sync);
+        g_lockManager.WaitForLockedRange(writeOffsetBytes, nverts * sizeof(FONSvert), true);
     }
     { //Update
-        memcpy(gl->glfons_vboData + gSyncRanges[gRangeIndex].begin, verts, nverts * sizeof(FONSvert));
+        memcpy((Divide::Byte*)gl->glfons_vboData + writeOffsetBytes, verts, nverts * sizeof(FONSvert));
 
         if (USE_EXPLICIT_FLUSH) {
-            glFlushMappedNamedBufferRange(gl->glfons_vboID, gSyncRanges[gRangeIndex].begin * sizeof(FONSvert), nverts * sizeof(FONSvert));
+            glFlushMappedNamedBufferRange(gl->glfons_vboID, writeOffsetBytes, nverts * sizeof(FONSvert));
         }
     }
     { //Draw
-        glDrawArrays(GL_TRIANGLES, (GLint)gSyncRanges[gRangeIndex].begin, nverts);
+        const GLint startIndex = (GLint)(writeOffsetBytes / sizeof(FONSvert));
+        glDrawArrays(GL_TRIANGLES, startIndex, nverts);
     }
     { //Lock
-        LockBuffer(gSyncRanges[gRangeIndex].sync);
-        gRangeIndex = ++gRangeIndex % GLFONS_VB_SIZE_FACTOR;
+        g_lockManager.LockRange(writeOffsetBytes, nverts * sizeof(FONSvert));
+        writeOffsetBytes = (writeOffsetBytes + (nverts * sizeof(FONSvert))) % GLFONS_VB_BUFFER_SIZE;
     }
 }
 
