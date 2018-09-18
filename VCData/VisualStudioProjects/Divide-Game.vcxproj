@@ -83,7 +83,6 @@
     <ClCompile Include="..\../Source Code/Libs/CPPGoap\WorldState.cpp" />
     <ClCompile Include="..\../Source Code/Scenes\DefaultScene\DefaultScene.cpp" />
     <ClCompile Include="..\../Source Code/Scenes\MainScene\MainScene.cpp" />
-    <ClCompile Include="..\../Source Code/Scenes\PingPongScene\PingPongScene.cpp" />
     <ClCompile Include="..\../Source Code/Scenes\Scene.cpp" />
     <ClCompile Include="..\../Source Code/Scenes\SceneEnvironmentProbePool.cpp" />
     <ClCompile Include="..\../Source Code/Scenes\SceneInput.cpp" />
@@ -91,10 +90,6 @@
     <ClCompile Include="..\../Source Code/Scenes\ScenePool.cpp" />
     <ClCompile Include="..\../Source Code/Scenes\SceneShaderData.cpp" />
     <ClCompile Include="..\../Source Code/Scenes\SceneState.cpp" />
-    <ClCompile Include="..\../Source Code/Scenes\WarScene\AESOPActions\WarSceneActions.cpp" />
-    <ClCompile Include="..\../Source Code/Scenes\WarScene\WarScene.cpp" />
-    <ClCompile Include="..\../Source Code/Scenes\WarScene\WarSceneAI.cpp" />
-    <ClCompile Include="..\../Source Code/Scenes\WarScene\WarSceneAIProcessor.cpp" />
     <ClCompile Include="..\../Source Code/stdafx-game.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">Create</PrecompiledHeader>
@@ -183,10 +178,6 @@
     <ClInclude Include="..\../Source Code/Scenes\Headers\SceneShaderData.h" />
     <ClInclude Include="..\../Source Code/Scenes\Headers\SceneState.h" />
     <ClInclude Include="..\../Source Code/Scenes\MainScene\Headers\MainScene.h" />
-    <ClInclude Include="..\../Source Code/Scenes\PingPongScene\Headers\PingPongScene.h" />
-    <ClInclude Include="..\../Source Code/Scenes\WarScene\AESOPActions\Headers\WarSceneActions.h" />
-    <ClInclude Include="..\../Source Code/Scenes\WarScene\Headers\WarScene.h" />
-    <ClInclude Include="..\../Source Code/Scenes\WarScene\Headers\WarSceneAIProcessor.h" />
   </ItemGroup>
   <ItemGroup>
     <Xml Include="..\..\main.xml">

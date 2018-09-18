@@ -38,8 +38,6 @@
 
 // Factory scenes:
 #include "Scenes/MainScene/Headers/MainScene.h"
-#include "Scenes/PingPongScene/Headers/PingPongScene.h"
-#include "Scenes/WarScene/Headers/WarScene.h"
 
 #define STRUCT_NAME(M) BOOST_PP_CAT(M, RegisterStruct)
 #define VAR_NAME(M) BOOST_PP_CAT(M, RegisterVariable)
@@ -62,9 +60,7 @@ STRUCT_NAME(scene)::STRUCT_NAME(scene)()  {             \
         SceneFactory g_sceneFactory; \
     };\
     REGISTER_SCENE(DefaultScene)\
-    REGISTER_SCENE(MainScene)\
-    REGISTER_SCENE(PingPongScene)\
-    REGISTER_SCENE(WarScene)
+    REGISTER_SCENE(MainScene)
     
 
 #endif

@@ -157,26 +157,8 @@
     <Filter Include="Scenes\MainScene\Headers">
       <UniqueIdentifier>{9c3db2f4-7f6e-413c-87bc-58498c36ff20}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Scenes\PingPongScene">
-      <UniqueIdentifier>{7fc067e3-414e-4807-87f5-ff8c7a3da755}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Scenes\PingPongScene\Headers">
-      <UniqueIdentifier>{abfdbc61-b42c-477b-a811-796e01958dc7}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Scenes\Headers">
       <UniqueIdentifier>{22bc2fc3-17ba-42ef-9d99-ed0a447030dc}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Scenes\WarScene">
-      <UniqueIdentifier>{edef44c7-c326-4f49-b724-3e4c4db012d3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Scenes\WarScene\Headers">
-      <UniqueIdentifier>{92e739c5-c7b8-4351-ab3b-5a9dffa6d471}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Scenes\WarScene\AESOPActions">
-      <UniqueIdentifier>{f646229e-3480-4ec3-bd0d-293856dd689f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Scenes\WarScene\AESOPActions\Headers">
-      <UniqueIdentifier>{9b02077f-22ce-4899-b436-25d2991a620a}</UniqueIdentifier>
     </Filter>
     <Filter Include="Scenes\DefaultScene">
       <UniqueIdentifier>{db3ffd4f-d955-4148-bdcb-75dbe778c509}</UniqueIdentifier>
@@ -405,21 +387,6 @@
     <ClCompile Include="..\../Source Code/Scenes\MainScene\MainScene.cpp">
       <Filter>Scenes\MainScene</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Scenes\PingPongScene\PingPongScene.cpp">
-      <Filter>Scenes\PingPongScene</Filter>
-    </ClCompile>
-    <ClCompile Include="..\../Source Code/Scenes\WarScene\WarScene.cpp">
-      <Filter>Scenes\WarScene</Filter>
-    </ClCompile>
-    <ClCompile Include="..\../Source Code/Scenes\WarScene\WarSceneAI.cpp">
-      <Filter>Scenes\WarScene</Filter>
-    </ClCompile>
-    <ClCompile Include="..\../Source Code/Scenes\WarScene\WarSceneAIProcessor.cpp">
-      <Filter>Scenes\WarScene</Filter>
-    </ClCompile>
-    <ClCompile Include="..\../Source Code/Scenes\WarScene\AESOPActions\WarSceneActions.cpp">
-      <Filter>Scenes\WarScene\AESOPActions</Filter>
-    </ClCompile>
     <ClCompile Include="..\../Source Code/Scenes\DefaultScene\DefaultScene.cpp">
       <Filter>Scenes\DefaultScene</Filter>
     </ClCompile>
@@ -631,9 +598,6 @@
     <ClInclude Include="..\../Source Code/Scenes\MainScene\Headers\MainScene.h">
       <Filter>Scenes\MainScene\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Scenes\PingPongScene\Headers\PingPongScene.h">
-      <Filter>Scenes\PingPongScene\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\../Source Code/Scenes\Headers\Scene.h">
       <Filter>Scenes\Headers</Filter>
     </ClInclude>
@@ -642,15 +606,6 @@
     </ClInclude>
     <ClInclude Include="..\../Source Code/Scenes\Headers\SceneState.h">
       <Filter>Scenes\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\../Source Code/Scenes\WarScene\Headers\WarScene.h">
-      <Filter>Scenes\WarScene\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\../Source Code/Scenes\WarScene\Headers\WarSceneAIProcessor.h">
-      <Filter>Scenes\WarScene\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\../Source Code/Scenes\WarScene\AESOPActions\Headers\WarSceneActions.h">
-      <Filter>Scenes\WarScene\AESOPActions\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\../Source Code/SceneList.h" />
     <ClInclude Include="..\../Source Code/Scenes\DefaultScene\Headers\DefaultScene.h">
