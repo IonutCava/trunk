@@ -80,16 +80,16 @@ glUniformBuffer::glUniformBuffer(GFXDevice& context,
 
     assert(_allignedBufferSize < _maxSize);
 
-    BufferImplParams implParams;
-    implParams._dataSizeInBytes = _allignedBufferSize * queueLength();
-    implParams._primitiveSizeInBytes = _primitiveSize;
+    BufferImplParams implParams = {};
+    implParams._dataSize = _allignedBufferSize * queueLength();
+    implParams._primitiveSize = _primitiveSize;
     implParams._frequency = _frequency;
     implParams._initialData = descriptor._initialData;
     implParams._target = unbound ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER;
     implParams._name = _name.empty() ? nullptr : _name.c_str();
     implParams._zeroMem = descriptor._initialData == nullptr;
     implParams._forcePersistentMap = BitCompare(_flags, ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
-
+    implParams._explicitFlush = !BitCompare(_flags, ShaderBuffer::Flags::AUTO_RANGE_FLUSH);
     _buffer = MemoryManager_NEW glBufferImpl(context, implParams);
 }
 

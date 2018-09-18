@@ -40,23 +40,14 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 struct ShaderBufferDescriptor {
-    ShaderBufferDescriptor()
-        : _ringBufferLength(1),
-          _primitiveCount(0),
-          _primitiveSizeInBytes(0),
-          _flags(0),
-          _initialData(nullptr),
-          _updateFrequency(BufferUpdateFrequency::ONCE)
-    {
-    }
-
-    U32 _flags;
-    U32 _ringBufferLength;
-    U32 _primitiveCount;
-    size_t _primitiveSizeInBytes;
-    BufferUpdateFrequency _updateFrequency;
-    bufferPtr _initialData;
-    stringImpl _name;
+    U32 _flags = 0;
+    U32 _ringBufferLength = 1;
+    U32 _primitiveCount = 0;
+    /// Primitive size in bytes
+    size_t _primitiveSize = 0;
+    BufferUpdateFrequency _updateFrequency = BufferUpdateFrequency::ONCE;
+    bufferPtr _initialData = NULL;
+    stringImpl _name = "";
 };
 
 class ShaderProgram;
@@ -69,6 +60,7 @@ class NOINITVTABLE ShaderBuffer : public GUIDWrapper,
        enum class Flags : U8 {
            UNBOUND_STORAGE = toBit(1),
            ALLOW_THREADED_WRITES = toBit(2),
+           AUTO_RANGE_FLUSH = toBit(3),
            COUNT = 2
        };
 

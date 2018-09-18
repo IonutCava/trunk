@@ -97,15 +97,9 @@ bool AnimEvaluator::initBuffers(GFXDevice& context) {
 
     animationData.shrink_to_fit();
 
-#if DEBUG_SKINNING
-    for (mat4<F32>& trans : animationData) {
-        trans.identity();
-    }
-#endif
-
     ShaderBufferDescriptor bufferDescriptor;
     bufferDescriptor._primitiveCount = frameCount();
-    bufferDescriptor._primitiveSizeInBytes = bufferSize;
+    bufferDescriptor._primitiveSize = bufferSize;
     bufferDescriptor._ringBufferLength = 1;
     bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
     if (useUnboundBuffer) {

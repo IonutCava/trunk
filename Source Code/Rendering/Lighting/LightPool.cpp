@@ -69,12 +69,14 @@ void LightPool::init() {
         return;
     }
 
-    ShaderBufferDescriptor bufferDescriptor;
+    ShaderBufferDescriptor bufferDescriptor = {};
     bufferDescriptor._primitiveCount = 1;
-    bufferDescriptor._primitiveSizeInBytes = sizeof(vec4<I32>) + (Config::Lighting::MAX_POSSIBLE_LIGHTS * sizeof(LightProperties));
+    bufferDescriptor._primitiveSize = sizeof(vec4<I32>) + (Config::Lighting::MAX_POSSIBLE_LIGHTS * sizeof(LightProperties));
     bufferDescriptor._ringBufferLength = 1;
     bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE) | to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
+    STUBBED("This is needed because certain nvidia cards/drivers throw random exceptions when flushing small buffer ranges after write");
+    SetBit(bufferDescriptor._flags, to_U32(ShaderBuffer::Flags::AUTO_RANGE_FLUSH));
 
     // NORMAL holds general info about the currently active lights: position, colour, etc.
     for (U8 i = 0; i < to_U8(RenderStage::COUNT); ++i) {
@@ -87,8 +89,10 @@ void LightPool::init() {
     // ViewProjection Matrices, View Space Position, etc
     // Should be SSBO (not UBO) to use std430 alignment. Structures should not be padded
     bufferDescriptor._primitiveCount = Config::Lighting::MAX_SHADOW_CASTING_LIGHTS;
-    bufferDescriptor._primitiveSizeInBytes = sizeof(Light::ShadowProperties);
+    bufferDescriptor._primitiveSize = sizeof(Light::ShadowProperties);
     bufferDescriptor._name = "LIGHT_SHADOW_BUFFER";
+    ClearBit(bufferDescriptor._flags, to_U32(ShaderBuffer::Flags::AUTO_RANGE_FLUSH));
+
     _shadowBuffer = _context.newSB(bufferDescriptor);
 
     ResourceDescriptor lightImpostorShader("lightImpostorShader");
@@ -374,11 +378,15 @@ void LightPool::uploadLightBuffers(const vec3<F32>& eyePos, U8 stageIndex) {
         LightVec sortedLights;
         shadowCastingLights(eyePos, sortedLights);
 
-        vec4<I32> properties(to_I32(lightPropertyCount),
-                             _activeLightCount[stageIndex][to_base(LightType::DIRECTIONAL)],
-                             _activeLightCount[stageIndex][to_base(LightType::POINT)],
-                             to_I32(sortedLights.size()));
-        _lightShaderBuffer[stageIndex]->writeBytes(0, sizeof(vec4<I32>), properties._v);
+        _lightShaderBuffer[stageIndex]->writeBytes(
+            0, 
+            sizeof(vec4<I32>),
+            vec4<I32>{
+                to_I32(lightPropertyCount),
+                to_I32(_activeLightCount[stageIndex][to_base(LightType::DIRECTIONAL)]),
+                to_I32(_activeLightCount[stageIndex][to_base(LightType::POINT)]),
+                to_I32(sortedLights.size())
+            }._v);
 
         lightPropertyCount = std::min(lightPropertyCount, static_cast<size_t>(Config::Lighting::MAX_POSSIBLE_LIGHTS));
         _lightShaderBuffer[stageIndex]->writeBytes(sizeof(vec4<I32>), lightPropertyCount * sizeof(LightProperties), lightPropertyCount > 0 ? _sortedLightProperties[stageIndex].data() : nullptr);

@@ -14,7 +14,7 @@ glGenericBuffer::glGenericBuffer(GFXDevice& context, const BufferParams& params)
     size_t totalSizeInBytes = bufferSizeInBytes * _ringSizeFactor;
     
     BufferImplParams implParams;
-    implParams._dataSizeInBytes = totalSizeInBytes;
+    implParams._dataSize = totalSizeInBytes;
     implParams._frequency = params._frequency;
     implParams._target = params._usage;
     implParams._name = params._name;

@@ -37,26 +37,18 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 struct BufferImplParams {
-    BufferImplParams() noexcept
-        : _target(GL_NONE),
-          _frequency(BufferUpdateFrequency::ONCE),
-          _dataSizeInBytes(0),
-          _primitiveSizeInBytes(0),
-          _initialData(NULL),
-          _zeroMem(false),
-          _forcePersistentMap(false),
-          _name(nullptr)
-    {
-    }
+    GLenum _target = GL_NONE;
 
-    GLenum _target;
-    BufferUpdateFrequency _frequency;
-    size_t _dataSizeInBytes;
-    size_t _primitiveSizeInBytes;
-    bufferPtr _initialData;
-    bool _zeroMem;
-    bool _forcePersistentMap;
-    const char* _name;
+    /// Desired buffer size in bytes
+    size_t _dataSize = 0;
+    /// Buffer primitive size in bytes
+    size_t _primitiveSize = 0;
+    bool _zeroMem = false;
+    bool _explicitFlush = true;
+    const char* _name = nullptr;
+    bufferPtr _initialData = NULL;
+    bool _forcePersistentMap = false;
+    BufferUpdateFrequency _frequency = BufferUpdateFrequency::ONCE;
 };
 
 class glBufferLockManager;
@@ -77,13 +69,15 @@ public:
     void zeroMem(size_t offsetInBytes, size_t primitiveSize, size_t rangeInBytes);
 
 protected:
-    GLenum _target;
-    GLuint _handle;
-    size_t _alignedSize;
-    GLenum _usage;
-    bufferPtr _mappedBuffer;
-    BufferUpdateFrequency _updateFrequency;
-    glBufferLockManager* _lockManager;
+    GLenum _usage = GL_NONE;
+    GLuint _handle = 0;
+    bufferPtr _mappedBuffer = nullptr;
+    glBufferLockManager* _lockManager = nullptr;
+
+    const size_t _alignedSize;
+    const GLenum _target;
+    const bool _useExplicitFlush;
+    const BufferUpdateFrequency _updateFrequency;
 };
 }; //namespace Divide
 

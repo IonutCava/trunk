@@ -34,12 +34,10 @@ namespace {
 
 glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
     : glObject(glObjectType::TYPE_BUFFER, context),
+      _alignedSize(params._dataSize),
       _target(params._target),
-      _handle(0),
-      _alignedSize(params._dataSizeInBytes),
-      _updateFrequency(params._frequency),
-      _mappedBuffer(nullptr),
-      _lockManager(nullptr)
+      _useExplicitFlush(params._explicitFlush),
+      _updateFrequency(params._frequency)
 {
     if (_target == GL_ATOMIC_COUNTER_BUFFER) {
         _usage = GL_STREAM_READ;
@@ -80,7 +78,11 @@ glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
             case BufferUpdateFrequency::OCASSIONAL:
             case BufferUpdateFrequency::OFTEN:
                 storageMask |= GL_MAP_WRITE_BIT;
-                accessMask |= GL_MAP_WRITE_BIT | GL_MAP_FLUSH_EXPLICIT_BIT;
+                accessMask |= GL_MAP_WRITE_BIT;
+
+                if (_useExplicitFlush) {
+                    accessMask |= GL_MAP_FLUSH_EXPLICIT_BIT;
+                }
             break;
             case BufferUpdateFrequency::COUNT:
                 DIVIDE_UNEXPECTED_CALL("Unknown buffer update frequency!");
@@ -96,7 +98,7 @@ glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
     }
 
     if (params._zeroMem) {
-        zeroMem(0, params._primitiveSizeInBytes, _alignedSize);
+        zeroMem(0, params._primitiveSize, _alignedSize);
     }
 }
 
@@ -150,7 +152,9 @@ void glBufferImpl::writeData(size_t offsetInBytes, size_t primitiveSize, size_t 
         std::memcpy(((Byte*)_mappedBuffer) + offsetInBytes,
                      data,
                      rangeInBytes);
-        glFlushMappedNamedBufferRange(_handle, offsetInBytes, rangeInBytes);
+        if (_useExplicitFlush) {
+            glFlushMappedNamedBufferRange(_handle, offsetInBytes, rangeInBytes);
+        }
 
     } else {
         clearData(offsetInBytes, primitiveSize, rangeInBytes);
@@ -188,7 +192,9 @@ void glBufferImpl::clearData(size_t offsetInBytes, size_t primitiveSize, size_t 
     if (_mappedBuffer) {
         waitRange(offsetInBytes, rangeInBytes, true);
         std::memset(((Byte*)_mappedBuffer) + offsetInBytes, 0, rangeInBytes);
-        glFlushMappedNamedBufferRange(_handle, offsetInBytes, rangeInBytes);
+        if (_useExplicitFlush) {
+            glFlushMappedNamedBufferRange(_handle, offsetInBytes, rangeInBytes);
+        }
     } else {
         if (offsetInBytes == 0 && rangeInBytes == _alignedSize) {
             glInvalidateBufferData(_handle);

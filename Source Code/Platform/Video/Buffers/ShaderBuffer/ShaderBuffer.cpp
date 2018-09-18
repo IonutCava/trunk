@@ -14,7 +14,7 @@ ShaderBuffer::ShaderBuffer(GFXDevice& context,
                            const ShaderBufferDescriptor& descriptor)
       : GraphicsResource(context, GraphicsResource::Type::SHADER_BUFFER, getGUID()),
         RingBuffer(descriptor._ringBufferLength),
-        _primitiveSize(descriptor._primitiveSizeInBytes),
+        _primitiveSize(descriptor._primitiveSize),
         _primitiveCount(descriptor._primitiveCount),
         _frequency(descriptor._updateFrequency),
         _flags(descriptor._flags),

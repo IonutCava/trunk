@@ -54,7 +54,7 @@ RenderPass::BufferData::BufferData(GFXDevice& context, U32 sizeFactor, I32 index
 {
     ShaderBufferDescriptor bufferDescriptor;
     bufferDescriptor._primitiveCount = Config::MAX_VISIBLE_NODES * _sizeFactor;
-    bufferDescriptor._primitiveSizeInBytes = sizeof(GFXDevice::NodeData);
+    bufferDescriptor._primitiveSize = sizeof(GFXDevice::NodeData);
     bufferDescriptor._ringBufferLength = 3;
     bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE) | to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
@@ -64,7 +64,7 @@ RenderPass::BufferData::BufferData(GFXDevice& context, U32 sizeFactor, I32 index
     _renderData = context.newSB(bufferDescriptor);
 
     bufferDescriptor._primitiveCount = Config::MAX_VISIBLE_NODES;
-    bufferDescriptor._primitiveSizeInBytes = sizeof(IndirectDrawCommand);
+    bufferDescriptor._primitiveSize = sizeof(IndirectDrawCommand);
     _cmdBuffers.reserve(_sizeFactor);
 
     for (U32 i = 0; i < _sizeFactor; ++i) {

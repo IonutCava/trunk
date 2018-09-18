@@ -89,7 +89,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     // Create a shader buffer to store the GFX rendering info (matrices, options, etc)
     ShaderBufferDescriptor bufferDescriptor;
     bufferDescriptor._primitiveCount = 1;
-    bufferDescriptor._primitiveSizeInBytes = sizeof(GFXShaderData::GPUData);
+    bufferDescriptor._primitiveSize = sizeof(GFXShaderData::GPUData);
     bufferDescriptor._ringBufferLength = 1;
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
     bufferDescriptor._initialData = &_gpuBlock._data;
