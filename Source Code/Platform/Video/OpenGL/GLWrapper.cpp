@@ -125,6 +125,28 @@ void GL_API::beginFrame() {
 void GL_API::endFrame() {
     // Revert back to the default OpenGL states
     clearStates();
+
+    // Update timers
+    if (Config::ENABLE_GPU_VALIDATION) {
+        // The returned results are 'g_performanceQueryRingLength - 1' frames old!
+        GLuint readQuery = _elapsedTimeQuery->readQuery().getID();
+        GLint available = 0;
+        glGetQueryObjectiv(readQuery, GL_QUERY_RESULT_AVAILABLE, &available);
+        // See how much time the rendering of object i took in nanoseconds.
+        if (!available) {
+            if (g_autoAdjustQueryLength) {
+                U32 newQueryRingLength = std::min(g_performanceQueryRingLength + 1, g_performanceQueryRingLengthMax);
+                if (newQueryRingLength != g_performanceQueryRingLength) {
+                    g_performanceQueryRingLength = newQueryRingLength;
+                    _elapsedTimeQuery->resize(g_performanceQueryRingLength);
+                }
+            }
+        } else {
+            glGetQueryObjectuiv(readQuery, GL_QUERY_RESULT, &FRAME_DURATION_GPU);
+            FRAME_DURATION_GPU = Time::NanosecondsToMilliseconds<U32>(FRAME_DURATION_GPU);
+        }
+    }
+
     // Swap buffers
     {
         Time::ScopedTimer time(_swapBufferTimer);
@@ -144,30 +166,7 @@ void GL_API::endFrame() {
     }
 }
 
-U32 GL_API::getFrameDurationGPU() {
-    if (Config::ENABLE_GPU_VALIDATION) {
-        // The returned results are 'g_performanceQueryRingLength - 1' frames old!
-        GLuint readQuery = _elapsedTimeQuery->readQuery().getID();
-        GLint available = 0;
-        glGetQueryObjectiv(readQuery, GL_QUERY_RESULT_AVAILABLE, &available);
-        // See how much time the rendering of object i took in nanoseconds.
-        if (!available) {
-            if (g_autoAdjustQueryLength) {
-                U32 newQueryRingLength = std::min(g_performanceQueryRingLength + 1,
-                                                  g_performanceQueryRingLengthMax);
-                if (newQueryRingLength != g_performanceQueryRingLength) {
-                    g_performanceQueryRingLength = newQueryRingLength;
-                    _elapsedTimeQuery->resize(g_performanceQueryRingLength);
-                }
-            }
-        } else {
-            glGetQueryObjectuiv(readQuery,
-                                GL_QUERY_RESULT,
-                                &FRAME_DURATION_GPU);
-            FRAME_DURATION_GPU = Time::NanosecondsToMilliseconds<U32>(FRAME_DURATION_GPU);
-        }
-    }
-
+U32 GL_API::getFrameDurationGPU() const {
     return FRAME_DURATION_GPU;
 }
 

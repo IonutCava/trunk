@@ -47,7 +47,7 @@
 <action id="40" name="shutdown"/>
 <action id="41" name="pov navigation"/>
 <action id="42" name="axis navigation"/>
-<action id="43" name="toggle Debug Variable Controls" />
+<action id="43" name="toggle debug interface" />
 <action id="44" name="toggle editor" />
 <action id="45" name="toggle console" />
 </actions>
@@ -88,7 +88,7 @@
 <key actionLAtlUp="32">RETURN</key>
 <key actionUp="33">F</key>
 <key actionUp="34">Y</key>
-<key actionLCtrlUp="43" actionUp="44">F11</key>
+<key actionLCtrlUp="44" actionUp="43">F11</key>
 <key actionUp="45">GRAVE</key><!-- GRAVE == '~' -->
 </keys>
 

@@ -342,7 +342,7 @@ public:
     void drawTextureInViewport(TextureData data, const Rect<I32>& viewport, GFX::CommandBuffer& bufferInOut) const;
 
 public:  // Direct API calls
-    inline U32 getFrameDurationGPU() {
+    inline U32 getFrameDurationGPU() const {
         return _api->getFrameDurationGPU();
     }
 

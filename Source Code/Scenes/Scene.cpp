@@ -8,6 +8,7 @@
 #include "Core/Headers/XMLEntryData.h"
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
+#include "Core/Debugging/Headers/DebugInterface.h"
 
 #include "Utility/Headers/XMLParser.h"
 #include "Managers/Headers/SceneManager.h"
@@ -722,9 +723,8 @@ U16 Scene::registerInputActions() {
         }
     };
 
-    auto toggleDebugVariableControls = [this](InputParams param) {
-        _context.config().gui.enableDebugVariableControls =
-            !_context.config().gui.enableDebugVariableControls;
+    auto toggleDebugInterface = [this](InputParams param) {
+        _context.debug().toggle(!_context.debug().enabled());
     };
 
     auto toggleEditor = [this](InputParams param) {
@@ -784,7 +784,7 @@ U16 Scene::registerInputActions() {
     actions.registerInputAction(actionID++, shutdown);
     actions.registerInputAction(actionID++, povNavigation);
     actions.registerInputAction(actionID++, axisNavigation);
-    actions.registerInputAction(actionID++, toggleDebugVariableControls);
+    actions.registerInputAction(actionID++, toggleDebugInterface);
     actions.registerInputAction(actionID++, toggleEditor);
     actions.registerInputAction(actionID++, toggleConsole);
     

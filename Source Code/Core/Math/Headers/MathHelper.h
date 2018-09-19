@@ -375,38 +375,6 @@ constexpr T SecondsToNanoseconds(const U a) noexcept;
 
 namespace Util {
 
-struct GraphPlot2D;
-struct GraphPlot3D;
-struct GlobalFloatEvent {
-    GlobalFloatEvent() noexcept : GlobalFloatEvent("default", 0.0f, 0)
-    {
-
-    }
-
-    GlobalFloatEvent(const char* name,
-                     const F32 eventValue,
-                     const U64 timeStamp)
-        : _eventName(name),
-          _eventValue(eventValue),
-          _timeStamp(timeStamp)
-    {
-    }
-
-    stringImpl _eventName;
-    F32 _eventValue;
-    U64 _timeStamp;
-};
-
-void FlushFloatEvents();
-
-void RecordFloatEvent(const char* eventName, F32 eventValue, U64 timestamp);
-
-const vectorFast<GlobalFloatEvent>& GetFloatEvents();
-
-void PlotFloatEvents(const stringImpl& eventName,
-                     vectorFast<GlobalFloatEvent> eventsCopy,
-                     GraphPlot2D& targetGraph);
-
 /// a la Boost
 template <typename T>
 void Hash_combine(size_t& seed, const T& v);

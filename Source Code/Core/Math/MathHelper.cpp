@@ -6,8 +6,6 @@
 namespace Divide {
 namespace Util {
 
-static boost::thread_specific_ptr<vectorFast<GlobalFloatEvent>> _globalFloatEvents;
-
 void ToByteColour(const FColour& floatColour, UColour& colourOut) {
     colourOut.set(FLOAT_TO_CHAR(floatColour.r),
                   FLOAT_TO_CHAR(floatColour.g),
@@ -209,48 +207,5 @@ void Normalize(vec3<F32>& inputRotation, bool degrees, bool normYaw, bool normPi
         }
     }
 }
-
-void FlushFloatEvents() {
-    vectorFast<GlobalFloatEvent>* vec = _globalFloatEvents.get();
-    if( !vec ) {
-        vec = new vectorFast<GlobalFloatEvent>();
-        _globalFloatEvents.reset(vec);
-    }
-    vec->resize(0);
-}
-
-void RecordFloatEvent(const char* eventName, F32 eventValue, U64 timestamp) {
-    vectorFast<GlobalFloatEvent>* vec = _globalFloatEvents.get();
-    if( !vec ) {
-        vec = new vectorFast<GlobalFloatEvent>();
-        _globalFloatEvents.reset(vec);
-    }
-    vec->emplace_back(eventName, eventValue, timestamp);
-}
-
-const vectorFast<GlobalFloatEvent>& GetFloatEvents() {
-    vectorFast<GlobalFloatEvent>* vec = _globalFloatEvents.get();
-    if (!vec) {
-        vec = new vectorFast<GlobalFloatEvent>();
-        _globalFloatEvents.reset(vec);
-    }
-
-    return *vec;
-}
-
-void PlotFloatEvents(const char* eventName,
-                     vectorFast<GlobalFloatEvent> eventsCopy,
-                     GraphPlot2D& targetGraph) {
-    targetGraph._plotName = eventName;
-    targetGraph._coords.clear();
-    for (GlobalFloatEvent& crtEvent : eventsCopy) {
-        if (std::strcmp(eventName, crtEvent._eventName.c_str()) == 0) {
-            targetGraph._coords.emplace_back(
-                Time::MicrosecondsToMilliseconds<F32>(crtEvent._timeStamp),
-                crtEvent._eventValue);
-        }
-    }
-}
-
 };  // namespace Util
 };  // namespace Divide
