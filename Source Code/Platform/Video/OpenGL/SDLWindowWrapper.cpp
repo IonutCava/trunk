@@ -367,12 +367,6 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     // We need a dummy VAO object for point rendering
     s_dummyVAO = GL_API::s_vaoPool.allocate();
 
-    // In debug, we also have various performance counters to profile GPU rendering
-    // operations
-    if (Config::ENABLE_GPU_VALIDATION) {
-        _elapsedTimeQuery->initQueries();
-    }
-    
     // Once OpenGL is ready for rendering, init CEGUI
     _GUIGLrenderer = &CEGUI::OpenGL3Renderer::create();
     _GUIGLrenderer->enableExtraStateSettings(config.gui.cegui.extraStates);
@@ -382,6 +376,8 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
                  DefaultColours::DIVIDE_BLUE.g,
                  DefaultColours::DIVIDE_BLUE.b,
                  DefaultColours::DIVIDE_BLUE.a);
+
+    _elapsedTimeQuery = std::make_shared<glHardwareQueryRing>(_context, 6);
 
     // Ring buffer wouldn't work properly with an IMMEDIATE MODE gui
     // We update and draw multiple times in a loop

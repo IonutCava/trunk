@@ -31,9 +31,11 @@ RingBufferSeparateWrite& RingBufferSeparateWrite::operator=(const RingBufferSepa
 }
 
 void RingBufferSeparateWrite::resize(U32 queueLength) {
-    _queueLength = std::max(queueLength, 1U);
-    _queueReadIndex = 0;
-    _queueWriteIndex = _queueLength - 1;
+    if (_queueLength != std::max(queueLength, 1U)) {
+        _queueLength = std::max(queueLength, 1U);
+        _queueReadIndex = 0;
+        _queueWriteIndex = _queueLength - 1;
+    }
 }
 RingBuffer::RingBuffer(U32 queueLength) :
     _queueLength(std::max(queueLength, 1U))

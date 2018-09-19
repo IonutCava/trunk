@@ -43,7 +43,7 @@ void DebugInterface::idle() {
             _output.append("\n");
             _output.append(Time::ApplicationTimer::instance().benchmarkReport());
             _output.append("\n");
-            _output.append(Util::StringFormat("GPU: [ %5.5f ] [DrawCalls: %d]", Time::MicrosecondsToSeconds<F32>(gfx.getFrameDurationGPU()), gfx.getDrawCallCount()));
+            _output.append(Util::StringFormat("GPU: [ %5.5f ms] [DrawCalls: %d]", gfx.getFrameDurationGPU(), gfx.getDrawCallCount()));
         }
         if (Config::Profile::ENABLE_FUNCTION_PROFILING) {
             _output.append("\n");

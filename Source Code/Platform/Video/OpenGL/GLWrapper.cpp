@@ -43,14 +43,7 @@
 namespace Divide {
 
 namespace {
-    /// How many frames of delay do we allow between the current read and write queries
-    /// The longer the delay, the better the performance but the more out of sync the results
-    U32 g_performanceQueryRingLength = 2;
-    U32 g_performanceQueryRingLengthMax = 6;
-
-    // If this is true, every time a query result isn't available, we increase the 
-    // the query buffer ring length by 1 up to a maximum of g_performanceQueryRingLengthMax
-    bool g_autoAdjustQueryLength = true;
+    bool g_frameTimeRequested = false;
 };
 
 GL_API::GL_API(GFXDevice& context)
@@ -67,14 +60,12 @@ GL_API::GL_API(GFXDevice& context)
       _swapBufferTimer(Time::ADD_TIMER("Swap Buffer Timer"))
 {
     // Only updated in Debug builds
-    FRAME_DURATION_GPU = 0u;
+    FRAME_DURATION_GPU = 0.f;
     // All clip planes are disabled at first (default OpenGL state)
     _activeClipPlanes.fill(false);
     _fontCache.second = -1;
     s_samplerBoundMap.fill(0u);
     s_textureBoundMap.fill(0u);
-
-    _elapsedTimeQuery = std::make_shared<glHardwareQueryRing>(context, g_performanceQueryRingLength);
 }
 
 GL_API::~GL_API()
@@ -97,7 +88,7 @@ void GL_API::deleteFonsContext() {
 /// Prepare the GPU for rendering a frame
 void GL_API::beginFrame() {
     // Start a duration query in debug builds
-    if (Config::ENABLE_GPU_VALIDATION) {
+    if (Config::ENABLE_GPU_VALIDATION && g_frameTimeRequested) {
         GLuint writeQuery = _elapsedTimeQuery->writeQuery().getID();
         glBeginQuery(GL_TIME_ELAPSED, writeQuery);
     }
@@ -126,27 +117,6 @@ void GL_API::endFrame() {
     // Revert back to the default OpenGL states
     clearStates();
 
-    // Update timers
-    if (Config::ENABLE_GPU_VALIDATION) {
-        // The returned results are 'g_performanceQueryRingLength - 1' frames old!
-        GLuint readQuery = _elapsedTimeQuery->readQuery().getID();
-        GLint available = 0;
-        glGetQueryObjectiv(readQuery, GL_QUERY_RESULT_AVAILABLE, &available);
-        // See how much time the rendering of object i took in nanoseconds.
-        if (!available) {
-            if (g_autoAdjustQueryLength) {
-                U32 newQueryRingLength = std::min(g_performanceQueryRingLength + 1, g_performanceQueryRingLengthMax);
-                if (newQueryRingLength != g_performanceQueryRingLength) {
-                    g_performanceQueryRingLength = newQueryRingLength;
-                    _elapsedTimeQuery->resize(g_performanceQueryRingLength);
-                }
-            }
-        } else {
-            glGetQueryObjectuiv(readQuery, GL_QUERY_RESULT, &FRAME_DURATION_GPU);
-            FRAME_DURATION_GPU = Time::NanosecondsToMilliseconds<U32>(FRAME_DURATION_GPU);
-        }
-    }
-
     // Swap buffers
     {
         Time::ScopedTimer time(_swapBufferTimer);
@@ -160,13 +130,28 @@ void GL_API::endFrame() {
         }
     }
     // End the timing query started in beginFrame() in debug builds
-    if (Config::ENABLE_GPU_VALIDATION) {
+    if (Config::ENABLE_GPU_VALIDATION && g_frameTimeRequested) {
         glEndQuery(GL_TIME_ELAPSED);
+
+        // The returned results are 'g_performanceQueryRingLength - 1' frames old!
+        GLuint readQuery = _elapsedTimeQuery->readQuery().getID();
+        GLint available = 0;
+        glGetQueryObjectiv(readQuery, GL_QUERY_RESULT_AVAILABLE, &available);
+
+        if (available) {
+            GLuint time = 0;
+            glGetQueryObjectuiv(readQuery, GL_QUERY_RESULT, &time);
+            FRAME_DURATION_GPU = Time::NanosecondsToMilliseconds<F32>(time);
+        }
+
         _elapsedTimeQuery->incQueue();
+
+        g_frameTimeRequested = false;
     }
 }
 
-U32 GL_API::getFrameDurationGPU() const {
+F32 GL_API::getFrameDurationGPU() const {
+    g_frameTimeRequested = true;
     return FRAME_DURATION_GPU;
 }
 

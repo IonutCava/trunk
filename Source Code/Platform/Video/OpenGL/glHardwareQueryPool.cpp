@@ -28,9 +28,7 @@ void glHardwareQueryPool::destroy() {
 }
 
 glHardwareQueryRing& glHardwareQueryPool::allocate() {
-    glHardwareQueryRing* temp = _queryPool[++_index];
-    temp->initQueries();
-    return *temp;
+    return *_queryPool[++_index];
 }
 
 void glHardwareQueryPool::deallocate(glHardwareQueryRing& query) {

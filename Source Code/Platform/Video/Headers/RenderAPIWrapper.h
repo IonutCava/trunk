@@ -90,7 +90,7 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
 
     // Returns the time in milliseconds that it took to render one frame
     // Queries are expensive, so this result MAY BE SEVERAL frames out of date!
-    virtual U32 getFrameDurationGPU() const = 0;
+    virtual F32 getFrameDurationGPU() const = 0;
 
     virtual size_t setStateBlock(size_t stateBlockHash) = 0;
 
