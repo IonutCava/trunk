@@ -62,7 +62,7 @@ protected:
 
     size_t setStateBlock(size_t stateBlockHash) override;
 
-    U32 getFrameDurationGPU() override { return 0u; }
+    U32 getFrameDurationGPU() const override { return 0u; }
 
     vec2<U16> getDrawableSize(const DisplayWindow& window) const override;
 

@@ -128,7 +128,7 @@ protected:
 
     /// Return the time it took to render a single frame (in nanoseconds). Only
     /// works in GPU validation builds
-    U32 getFrameDurationGPU() override;
+    U32 getFrameDurationGPU() const override;
 
     /// Return the size in pixels that we can render to. This differs from the window size on Retina displays
     vec2<U16> getDrawableSize(const DisplayWindow& window) const override;

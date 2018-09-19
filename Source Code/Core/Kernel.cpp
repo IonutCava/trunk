@@ -201,59 +201,13 @@ void Kernel::onLoop() {
     }
 
     U32 frameCount = _platformContext->gfx().getFrameCount();
+    // Should equate to approximately once every 10 seconds
+    if (platformContext().debug().enabled() && frameCount % (Config::TARGET_FRAME_RATE * Time::Seconds(10)) == 0) {
+        Console::printfn(platformContext().debug().output().c_str());
+    }
 
-    if (Config::Profile::BENCHMARK_PERFORMANCE || Config::Profile::ENABLE_FUNCTION_PROFILING)
-    {
-        // Should be approximately 2 times a seconds
-        bool print = false;
-        if (Config::Build::IS_DEBUG_BUILD) {
-            print = frameCount % (Config::TARGET_FRAME_RATE / 4) == 0;
-        } else {
-            print = frameCount % (Config::TARGET_FRAME_RATE / 2) == 0;
-        }
-
-        if (print) {
-            stringImpl profileData(Util::StringFormat("Scene Update Loops: %d", _timingData.updateLoops()));
-
-            if (Config::Profile::BENCHMARK_PERFORMANCE) {
-                profileData.append("\n");
-                profileData.append(Time::ApplicationTimer::instance().benchmarkReport());
-                profileData.append("\n");
-                profileData.append(Util::StringFormat("GPU: [ %5.5f ] [DrawCalls: %d]",
-                                                      Time::MicrosecondsToSeconds<F32>(_platformContext->gfx().getFrameDurationGPU()),
-                                                      _platformContext->gfx().getDrawCallCount()));
-            }
-            if (Config::Profile::ENABLE_FUNCTION_PROFILING) {
-                profileData.append("\n");
-                profileData.append(Time::ProfileTimer::printAll());
-            }
-
-            Arena::Statistics stats = _platformContext->gfx().getObjectAllocStats();
-            F32 gpuAllocatedKB = stats.bytes_allocated_ / 1024.0f;
-
-            profileData.append("\n");
-            profileData.append(Util::StringFormat("GPU Objects: %5.2f Kb (%5.2f Mb),\n"
-                                                  "             %d allocs,\n"
-                                                  "             %d blocks,\n"
-                                                  "             %d destructors",
-                                                  gpuAllocatedKB,
-                                                  gpuAllocatedKB / 1024,
-                                                  stats.num_of_allocs_,
-                                                  stats.num_of_blocks_,
-                                                  stats.num_of_dtros_));
-            // Should equate to approximately once every 10 seconds
-            if (frameCount % (Config::TARGET_FRAME_RATE * Time::Seconds(10)) == 0) {
-                Console::printfn(profileData.c_str());
-            }
-
-            _platformContext->gui().modifyText(_ID("ProfileData"), profileData);
-        }
-
-        Util::RecordFloatEvent("kernel.mainLoopApp", to_F32(_appLoopTimer.get()), _timingData.currentTimeUS());
-
-        if (frameCount % (Config::TARGET_FRAME_RATE * 10) == 0) {
-            Util::FlushFloatEvents();
-        }
+    if (frameCount % (Config::TARGET_FRAME_RATE / 4) == 0) {
+        _platformContext->gui().modifyText(_ID("ProfileData"), platformContext().debug().output());
     }
 
     // Cap FPS

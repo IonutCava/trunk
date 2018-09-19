@@ -38,65 +38,19 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-class Configuration;
 class DebugInterface : public KernelComponent {
-public:
-    struct DebugVarDescriptor {
-        I64 _debugGroup = -1;
-        stringImpl _displayName = "";
-        void* _variable = nullptr;
-        CallbackParam _type = CallbackParam::COUNT;
-        DELEGATE_CBK<void, void*> _cbk;
-        bool _useMinMax = false;
-        std::pair<AnyParam, AnyParam> _minMax;
-    };
-
-    class DebugVar : public GUIDWrapper {
-    public:
-        explicit DebugVar(const DebugVarDescriptor& descriptor);
-        DebugVarDescriptor _descriptor;
-        
-    };
-
-    class DebugGroup : public GUIDWrapper {
-    public:
-        DebugGroup() noexcept;
-        stringImpl _name;
-        I64 _parentGroup;
-        vector<I64> _childGroupsGUID;
-    };
-
 public:
     explicit DebugInterface(Kernel& parent);
     ~DebugInterface();
 
+    const stringImpl& output() const;
+    void toggle(const bool state);
+    bool enabled() const;
     void idle();
 
-    I64 addDebugVar(const DebugVarDescriptor& descriptor);
-
-    I64 addDebugGroup(const char* name, I64 parentGUID);
-    I64 getDebugGroup(const char* name);
-
-    inline size_t debugVarCount() const {
-        UniqueLock lock(_varMutex);
-        return _debugVariables.size();
-    }
-
-protected:
-    inline hashMap<I64, DebugVar>& getDebugVariables() noexcept {
-        return _debugVariables;
-    }
-
-    inline hashMap<I64, DebugGroup>& getDebugGroups() noexcept {
-        return _debugGroups;
-    }
-
-protected:
-    bool _dirty;
-    mutable std::mutex _varMutex;
-    mutable std::mutex _groupMutex;
-    hashMap<I64, DebugVar> _debugVariables;
-    hashMap<I64, DebugGroup> _debugGroups;
+private:
+    bool _enabled;
+    stringImpl _output;
 };
 
 }; //namespace Divide

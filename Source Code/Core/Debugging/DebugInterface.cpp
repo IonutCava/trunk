@@ -5,79 +5,77 @@
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
+#include "Core/Time/Headers/ProfileTimer.h"
+#include "Core/Time/Headers/ApplicationTimer.h"
+
+#include "Platform/Video/Headers/GFXDevice.h"
 
 namespace Divide {
 
 DebugInterface::DebugInterface(Kernel& parent)
     : KernelComponent(parent),
-      _dirty(false)
+      _enabled(false)
 {
-
 }
 
 DebugInterface::~DebugInterface()
 {
-
-}
-
-DebugInterface::DebugVar::DebugVar(const DebugVarDescriptor& descriptor)
-    : GUIDWrapper(),
-     _descriptor(descriptor)
-{
-}
-
-DebugInterface::DebugGroup::DebugGroup() noexcept
-    : GUIDWrapper(),
-    _parentGroup(-1)
-{
 }
 
 void DebugInterface::idle() {
-    if (_parent.platformContext().config().gui.enableDebugVariableControls) {
-        if (_dirty) {
-            //ToDo: Use a IMGUI window to list these. Maybe use the PushConstant / Component view approach used in the Editor? -Ionut
-            _dirty = false;
+    if (!Config::Profile::BENCHMARK_PERFORMANCE && !Config::Profile::ENABLE_FUNCTION_PROFILING) {
+        return;
+    }
+
+    if (!enabled()) {
+        _output.clear();
+        return;
+    }
+
+    const LoopTimingData& timingData = Attorney::KernelDebugInterface::timingData(_parent);
+    const GFXDevice& gfx = _parent.platformContext().gfx();
+
+    if (gfx.getFrameCount() % (Config::TARGET_FRAME_RATE / (Config::Build::IS_DEBUG_BUILD ? 4 : 2)) == 0)
+    {
+        _output = Util::StringFormat("Scene Update Loops: %d", timingData.updateLoops());
+
+        if (Config::Profile::BENCHMARK_PERFORMANCE) {
+            _output.append("\n");
+            _output.append(Time::ApplicationTimer::instance().benchmarkReport());
+            _output.append("\n");
+            _output.append(Util::StringFormat("GPU: [ %5.5f ] [DrawCalls: %d]", Time::MicrosecondsToSeconds<F32>(gfx.getFrameDurationGPU()), gfx.getDrawCallCount()));
         }
-    }
-}
-
-I64 DebugInterface::addDebugVar(const DebugVarDescriptor& descriptor) {
-    DebugVar temp(descriptor);
-
-    UniqueLock lock(_varMutex);
-    _debugVariables.insert(hashAlg::make_pair(temp.getGUID(), temp));
-
-    _dirty = true;
-
-    return temp.getGUID();
-}
-
-I64 DebugInterface::addDebugGroup(const char* name, I64 parentGUID) {
-    DebugGroup temp;
-    temp._name = name;
-
-    UniqueLock lock(_groupMutex);
-    hashMap<I64, DebugGroup>::iterator it = _debugGroups.find(parentGUID);
-
-    if (it != std::cend(_debugGroups)) {
-        temp._parentGroup = parentGUID;
-        it->second._childGroupsGUID.push_back(temp.getGUID());
-    }
-
-    hashAlg::insert(_debugGroups, hashAlg::make_pair(temp.getGUID(), temp));
-
-    return temp.getGUID();
-}
-
-I64 DebugInterface::getDebugGroup(const char* name) {
-    UniqueLock lock (_groupMutex);
-    for (hashMap<I64, DebugGroup>::value_type& group : _debugGroups) {
-        if (group.second._name.compare(name) == 0) {
-            return group.first;
+        if (Config::Profile::ENABLE_FUNCTION_PROFILING) {
+            _output.append("\n");
+            _output.append(Time::ProfileTimer::printAll());
         }
-    }
 
-    return -1;
+        Arena::Statistics stats = gfx.getObjectAllocStats();
+        F32 gpuAllocatedKB = stats.bytes_allocated_ / 1024.0f;
+
+        _output.append("\n");
+        _output.append(Util::StringFormat("GPU Objects: %5.2f Kb (%5.2f Mb),\n"
+            "             %d allocs,\n"
+            "             %d blocks,\n"
+            "             %d destructors",
+            gpuAllocatedKB,
+            gpuAllocatedKB / 1024,
+            stats.num_of_allocs_,
+            stats.num_of_blocks_,
+            stats.num_of_dtros_));
+    }
 }
 
-}; //namsepace Divide
+void DebugInterface::toggle(const bool state) {
+    _enabled = state;
+}
+
+bool DebugInterface::enabled() const {
+    return _enabled;
+}
+
+const stringImpl& DebugInterface::output() const {
+    return _output;
+}
+
+}; //namespace Divide

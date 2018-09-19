@@ -47,6 +47,7 @@ class SFXDevice;
 class Application;
 class SceneManager;
 class ResourceCache;
+class DebugInterface;
 class PlatformContext;
 class SceneRenderState;
 class RenderPassManager;
@@ -147,6 +148,7 @@ class LoopTimingData {
 namespace Attorney {
     class KernelApplication;
     class KernelWindowManager;
+    class KernelDebugInterface;
 };
 
 namespace Time {
@@ -166,6 +168,7 @@ namespace Input {
 class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     friend class Attorney::KernelApplication;
     friend class Attorney::KernelWindowManager;
+    friend class Attorney::KernelDebugInterface;
 
    public:
     Kernel(I32 argc, char** argv, Application& parentApp);
@@ -335,6 +338,15 @@ namespace Attorney {
         }
 
         friend class Divide::WindowManager;
+    };
+
+    class KernelDebugInterface {
+    protected:
+        static const LoopTimingData& timingData(const Kernel& kernel) {
+            return kernel._timingData;
+        }
+
+        friend class Divide::DebugInterface;
     };
 };
 
