@@ -44,8 +44,7 @@ class glLockManager {
     void Wait(bool blockClient);
     void Lock();
 
-   protected:
-    void wait(GLsync* syncObj, bool blockClient);
+    static void wait(GLsync* syncObj, bool blockClient);
 
    protected:
     std::mutex _syncMutex;

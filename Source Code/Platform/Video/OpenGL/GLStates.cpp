@@ -10,6 +10,7 @@
 #include "Rendering/Lighting/Headers/Light.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
+#include "Platform/Video/OpenGL/Headers/glLockManager.h"
 #include "Platform/Video/OpenGL/Buffers/VertexBuffer/Headers/glVertexArray.h"
 #include "Platform/Video/OpenGL/Buffers/ShaderBuffer/Headers/glUniformBuffer.h"
 
@@ -65,7 +66,7 @@ size_t GL_API::s_previousStateBlockHash = 0;
 GL_API::textureBoundMapDef GL_API::s_textureBoundMap;
 GL_API::imageBoundMapDef GL_API::s_imageBoundMap;
 std::mutex GL_API::s_mipmapQueueSetLock;
-std::set<GLuint> GL_API::s_mipmapQueueSet;
+hashMap<GLuint, GLsync> GL_API::s_mipmapQueueSync;
 GL_API::samplerBoundMapDef GL_API::s_samplerBoundMap;
 GL_API::samplerObjectMap GL_API::s_samplerMap;
 std::mutex GL_API::s_samplerMapLock;
@@ -444,16 +445,29 @@ bool GL_API::bindTextures(GLushort unitOffset,
                           GLuint* samplerHandles) {
 
     if (textureHandles != nullptr) {
-        UniqueLock w_lock(s_mipmapQueueSetLock);
-        if (!s_mipmapQueueSet.empty()) {
-            for (GLuint i = 0; i < textureCount; ++i) {
-                if (textureHandles[i] > 0) {
-                    auto it = s_mipmapQueueSet.find(textureHandles[i]);
-                    if (it != std::cend(s_mipmapQueueSet)) {
-                        glGenerateTextureMipmap(*it);
-                        s_mipmapQueueSet.erase(it);
+
+        for (GLuint i = 0; i < textureCount; ++i) {
+            if (textureHandles[i] > 0) {
+                std::pair<GLuint, GLsync> entry;
+
+                retry:
+                {
+                    UniqueLock w_lock(s_mipmapQueueSetLock);
+                    auto it = s_mipmapQueueSync.find(textureHandles[i]);
+                    if (it == std::cend(s_mipmapQueueSync)) {
+                        continue;
+                    }
+                    entry = std::make_pair(it->first, it->second);
+                    if (entry.second != nullptr) {
+                        s_mipmapQueueSync.erase(it);
                     }
                 }
+
+                if (entry.second == nullptr) {
+                    goto retry;
+                }
+                glLockManager::wait(&entry.second, true);
+                glDeleteSync(entry.second);
             }
         }
     }
@@ -486,11 +500,6 @@ bool GL_API::bindTextures(GLushort unitOffset,
     }
 
     return false;
-}
-
-void GL_API::queueComputeMipMap(GLuint textureHandle) {
-    UniqueLock w_lock(s_mipmapQueueSetLock);
-    s_mipmapQueueSet.insert(textureHandle);
 }
 
 /// Bind a texture specified by a GL handle and GL type to the specified unit

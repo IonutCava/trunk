@@ -274,6 +274,8 @@ public:
     static void getActiveViewport(GLint* vp);
 
 private:
+    static void mipMapThread(GFXDevice& context);
+
     /// Prepare our shader loading system
     static bool initShaders();
     /// Revert everything that was set up in "initShaders()"
@@ -394,7 +396,7 @@ private:
     static imageBoundMapDef s_imageBoundMap;
 
     static std::mutex s_mipmapQueueSetLock;
-    static std::set<GLuint> s_mipmapQueueSet;
+    static hashMap<GLuint, GLsync> GL_API::s_mipmapQueueSync;
 
     /// /*texture slot*/ /*sampler handle*/
     typedef std::array<GLuint, MAX_ACTIVE_TEXTURE_SLOTS> samplerBoundMapDef;

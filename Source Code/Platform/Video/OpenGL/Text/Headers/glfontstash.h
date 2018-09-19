@@ -59,13 +59,13 @@ struct GLFONScontext {
 typedef struct GLFONScontext GLFONScontext;
 
 namespace {
-    Divide::glBufferLockManager g_lockManager;
+    Divide::glBufferLockManager* g_lockManager = nullptr;
 };
 
 static int glfons__renderCreate(void* userPtr, int width, int height)
 {
     GLFONScontext* gl = (GLFONScontext*)userPtr;
-
+    g_lockManager = MemoryManager_NEW Divide::glBufferLockManager();
 	// Create may be called multiple times, delete existing texture.
 	if (gl->tex != 0) {
 		glDeleteTextures(1, &gl->tex);
@@ -175,7 +175,7 @@ static void glfons__renderDraw(void* userPtr, const FONSvert* verts, int nverts)
         Divide::GL_API::setActiveVAO(gl->glfons_vaoID);
     }
     { //Wait
-        g_lockManager.WaitForLockedRange(writeOffsetBytes, nverts * sizeof(FONSvert), true);
+        g_lockManager->WaitForLockedRange(writeOffsetBytes, nverts * sizeof(FONSvert), true);
     }
     { //Update
         memcpy((Divide::Byte*)gl->glfons_vboData + writeOffsetBytes, verts, nverts * sizeof(FONSvert));
@@ -189,7 +189,7 @@ static void glfons__renderDraw(void* userPtr, const FONSvert* verts, int nverts)
         glDrawArrays(GL_TRIANGLES, startIndex, nverts);
     }
     { //Lock
-        g_lockManager.LockRange(writeOffsetBytes, nverts * sizeof(FONSvert));
+        g_lockManager->LockRange(writeOffsetBytes, nverts * sizeof(FONSvert));
         writeOffsetBytes = (writeOffsetBytes + (nverts * sizeof(FONSvert))) % GLFONS_VB_BUFFER_SIZE;
     }
 }
@@ -203,7 +203,7 @@ static void glfons__renderDelete(void* userPtr) {
     gl->tex = 0;
     gl->glfons_vaoID = 0;
     Divide::GLUtil::freeBuffer(gl->glfons_vboID, gl->glfons_vboData);
-
+    Divide::MemoryManager::SAFE_DELETE(g_lockManager);
     free(gl);
 }
 
