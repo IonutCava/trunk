@@ -66,15 +66,15 @@ public:
     glHardwareQuery& readQuery();
     glHardwareQuery& writeQuery();
 
-    void initQueries();
-
     void resize(U32 queueLength) override;
 
     inline U32 id() const { return _id; }
 
+    void onBeginFrame();
+    void onEndFrame();
+
 protected:
-    U32 _id;
-    bool _needRefresh;
+    U32 _id = 0;
     GFXDevice& _context;
     vector<std::shared_ptr<glHardwareQuery>> _queries;
 };

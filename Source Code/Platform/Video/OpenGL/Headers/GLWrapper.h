@@ -128,7 +128,7 @@ protected:
 
     /// Return the time it took to render a single frame (in nanoseconds). Only
     /// works in GPU validation builds
-    U32 getFrameDurationGPU() const override;
+    F32 getFrameDurationGPU() const override;
 
     /// Return the size in pixels that we can render to. This differs from the window size on Retina displays
     vec2<U16> getDrawableSize(const DisplayWindow& window) const override;
@@ -274,6 +274,8 @@ public:
     static void getActiveViewport(GLint* vp);
 
 private:
+    static void mipMapThread(GFXDevice& context);
+
     /// Prepare our shader loading system
     static bool initShaders();
     /// Revert everything that was set up in "initShaders()"
@@ -383,7 +385,7 @@ private:
     std::shared_ptr<glHardwareQueryRing> _elapsedTimeQuery;
 
     /// Duration in milliseconds to render a frame
-    GLuint FRAME_DURATION_GPU;
+    F32 FRAME_DURATION_GPU;
     /// FontStash's context
     FONScontext* _fonsContext;
     /// /*texture slot*/ /*texture handle*/
@@ -394,7 +396,7 @@ private:
     static imageBoundMapDef s_imageBoundMap;
 
     static std::mutex s_mipmapQueueSetLock;
-    static std::set<GLuint> s_mipmapQueueSet;
+    static hashMap<GLuint, GLsync> GL_API::s_mipmapQueueSync;
 
     /// /*texture slot*/ /*sampler handle*/
     typedef std::array<GLuint, MAX_ACTIVE_TEXTURE_SLOTS> samplerBoundMapDef;
