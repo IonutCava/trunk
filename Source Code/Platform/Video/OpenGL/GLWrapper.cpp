@@ -116,7 +116,10 @@ void GL_API::beginFrame() {
 void GL_API::endFrame() {
     // Revert back to the default OpenGL states
     clearStates();
-
+    // End the timing query started in beginFrame() in debug builds
+    if (Config::ENABLE_GPU_VALIDATION && g_frameTimeRequested) {
+        glEndQuery(GL_TIME_ELAPSED);
+    }
     // Swap buffers
     {
         Time::ScopedTimer time(_swapBufferTimer);
@@ -129,10 +132,8 @@ void GL_API::endFrame() {
             }
         }
     }
-    // End the timing query started in beginFrame() in debug builds
-    if (Config::ENABLE_GPU_VALIDATION && g_frameTimeRequested) {
-        glEndQuery(GL_TIME_ELAPSED);
 
+    if (Config::ENABLE_GPU_VALIDATION && g_frameTimeRequested) {
         // The returned results are 'g_performanceQueryRingLength - 1' frames old!
         GLuint readQuery = _elapsedTimeQuery->readQuery().getID();
         GLint available = 0;
