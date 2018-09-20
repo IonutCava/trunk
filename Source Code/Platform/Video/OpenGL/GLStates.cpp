@@ -446,29 +446,34 @@ bool GL_API::bindTextures(GLushort unitOffset,
 
     if (textureHandles != nullptr) {
 
+        std::stack<GLuint> textures;
         for (GLuint i = 0; i < textureCount; ++i) {
             if (textureHandles[i] > 0) {
-                std::pair<GLuint, GLsync> entry;
-
-                retry:
-                {
-                    UniqueLock w_lock(s_mipmapQueueSetLock);
-                    auto it = s_mipmapQueueSync.find(textureHandles[i]);
-                    if (it == std::cend(s_mipmapQueueSync)) {
-                        continue;
-                    }
-                    entry = std::make_pair(it->first, it->second);
-                    if (entry.second != nullptr) {
-                        s_mipmapQueueSync.erase(it);
-                    }
-                }
-
-                if (entry.second == nullptr) {
-                    goto retry;
-                }
-                glLockManager::wait(&entry.second, true);
-                glDeleteSync(entry.second);
+                textures.push(textureHandles[i]);
             }
+        }
+
+        while(!textures.empty()) {
+            std::pair<GLuint, GLsync> entry;
+            {
+                UniqueLock w_lock(s_mipmapQueueSetLock);
+                auto it = s_mipmapQueueSync.find(textures.top());
+                if (it == std::cend(s_mipmapQueueSync)) {
+                    textures.pop();
+                    continue;
+                }
+                entry = std::make_pair(it->first, it->second);
+                if (entry.second != nullptr) {
+                    s_mipmapQueueSync.erase(it);
+                }
+            }
+
+            if (entry.second == nullptr) {
+                continue;
+            }
+            glLockManager::wait(&entry.second, true);
+            glDeleteSync(entry.second);
+            textures.pop();
         }
     }
 
