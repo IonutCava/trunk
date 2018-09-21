@@ -68,6 +68,7 @@ static const U32 MAX_ACTIVE_TEXTURE_SLOTS = 64;
 enum class WindowType : U8;
 
 class DisplayWindow;
+class PlatformContext;
 class RenderStateBlock;
 class glHardwareQueryRing;
 class GenericVertexData;
@@ -156,7 +157,7 @@ public:
     static void createOrValidateContextForCurrentThread(GFXDevice& context);
 
     /// Queue a mipmap recalculation
-    static void queueComputeMipMap(GLuint textureHandle);
+    static void queueComputeMipMap(PlatformContext& context, GLuint textureHandle);
     /// Enable or disable primitive restart and ensure that the correct index size is used
     static void togglePrimitiveRestart(bool state);
     /// Enable or disable primitive rasterization
@@ -275,8 +276,6 @@ public:
     static void getActiveViewport(GLint* vp);
 
 private:
-    static void mipMapThread(GFXDevice& context);
-
     /// Prepare our shader loading system
     static bool initShaders();
     /// Revert everything that was set up in "initShaders()"

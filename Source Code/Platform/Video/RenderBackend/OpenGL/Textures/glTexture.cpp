@@ -260,7 +260,7 @@ void glTexture::loadData(const TextureLoadInfo& info,
 
     // Loading from file usually involves data that doesn't change, so call this here.
     if (automaticMipMapGeneration() && _descriptor.getSampler().generateMipMaps()) {
-        GL_API::queueComputeMipMap(_textureData.getHandle());
+        GL_API::queueComputeMipMap(_context.context(), _textureData.getHandle());
     }
 
     assert(_width > 0 && _height > 0 && "glTexture error: Invalid texture dimensions!");

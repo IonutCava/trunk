@@ -37,13 +37,6 @@ namespace Divide {
 namespace {
     constexpr bool g_useAALines = true;
 
-    static std::thread g_mipMapThread;
-    static bool g_running = true;
-    moodycamel::BlockingConcurrentQueue<GLuint>& outBuffer() {
-        static moodycamel::BlockingConcurrentQueue<GLuint> outputBuffer;
-        return outputBuffer;
-    }
-
     const U32 g_maxVAOS = 512u;
     const U32 g_maxQueryRings = 64;
 
@@ -388,10 +381,6 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
 
     _elapsedTimeQuery = std::make_shared<glHardwareQueryRing>(_context, 6);
 
-    g_mipMapThread = std::thread([this]() {
-        GL_API::mipMapThread(_context);
-    });
-
     // Ring buffer wouldn't work properly with an IMMEDIATE MODE gui
     // We update and draw multiple times in a loop
     _IMGUIBuffer = _context.newGVD(1);
@@ -475,9 +464,6 @@ void GL_API::closeRenderingAPI() {
         MemoryManager::DELETE(s_hardwareQueryPool);
     }
 
-    g_running = false;
-    g_mipMapThread.join();
-
     destroyGLContext();
 }
 
@@ -514,23 +500,7 @@ vec2<U16> GL_API::getDrawableSize(const DisplayWindow& window) const {
     return vec2<U16>(w, h);
 }
 
-void GL_API::mipMapThread(GFXDevice& context) {
-    GL_API::createOrValidateContextForCurrentThread(context);
-    while (g_running) {
-        GLuint entry = 0;
-        if (outBuffer().wait_dequeue_timed(entry, Time::Milliseconds(16))) {
-            glGenerateTextureMipmap(entry);
-            GLsync newSync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, UnusedMask::GL_UNUSED_BIT);
-            glFlush();
-            {
-                UniqueLock w_lock(s_mipmapQueueSetLock);
-                GL_API::s_mipmapQueueSync[entry] = newSync;
-            }
-        }
-    }
-}
-
-void GL_API::queueComputeMipMap(GLuint textureHandle) {
+void GL_API::queueComputeMipMap(PlatformContext& context, GLuint textureHandle) {
     {
         UniqueLock w_lock(s_mipmapQueueSetLock);
         if (GL_API::s_mipmapQueueSync.find(textureHandle) != std::cend(GL_API::s_mipmapQueueSync)) {
@@ -540,9 +510,18 @@ void GL_API::queueComputeMipMap(GLuint textureHandle) {
         GL_API::s_mipmapQueueSync[textureHandle] = nullptr;
     }
 
-    while (!outBuffer().enqueue(textureHandle)) {
-        // ToDo: Something happened. Handle it, maybe? -Ionut
-    }
+    CreateTask(context,
+                [textureHandle](const Task& parent)
+                {
+                    glGenerateTextureMipmap(textureHandle);
+                    GLsync newSync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, UnusedMask::GL_UNUSED_BIT);
+                    glFlush();
+                    {
+                        UniqueLock w_lock(s_mipmapQueueSetLock);
+                        GL_API::s_mipmapQueueSync[textureHandle] = newSync;
+                    }
+                }
+    ).startTask(TaskPriority::DONT_CARE);
 }
 
 };

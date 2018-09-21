@@ -633,7 +633,7 @@ void glFramebuffer::queueMipMapRecomputation() {
         for (const RTAttachment_ptr& att : colourAttachments) {
             const Texture_ptr& texture = att->texture();
             if (att->used() && texture->automaticMipMapGeneration() && texture->getCurrentSampler().generateMipMaps()) {
-                GL_API::queueComputeMipMap(att->texture()->getHandle());
+                GL_API::queueComputeMipMap(_context.context(), att->texture()->getHandle());
             }
         }
     }
@@ -642,7 +642,7 @@ void glFramebuffer::queueMipMapRecomputation() {
         const RTAttachment_ptr& attDepth = _attachmentPool->get(RTAttachmentType::Depth, 0);
         const Texture_ptr& texture = attDepth->texture();
         if (attDepth->used() && texture->automaticMipMapGeneration() && texture->getCurrentSampler().generateMipMaps()) {
-            GL_API::queueComputeMipMap(attDepth->texture()->getHandle());
+            GL_API::queueComputeMipMap(_context.context(), attDepth->texture()->getHandle());
         }
     }
 }
