@@ -166,23 +166,27 @@ void glUniformBuffer::writeBytes(ptrdiff_t offsetInBytes,
     _buffer->writeData(offsetInBytes, rangeInBytes, data);
 }
 
-bool glUniformBuffer::bindRange(U8 bindIndex, U32 offsetElementCount, U32 rangeElementCount, size_t& offsetOut, size_t& rangeOut) {
+bool glUniformBuffer::bindRange(U8 bindIndex, U32 offsetElementCount, U32 rangeElementCount) {
     if (rangeElementCount == 0) {
         rangeElementCount = _elementCount;
     }
+    BufferWriteData data = {};
+    data._lockManager = bufferImpl()->lockManager();
 
-    rangeOut = static_cast<size_t>(rangeElementCount * _buffer->elementSize());
-    offsetOut = static_cast<size_t>(offsetElementCount * _buffer->elementSize());
-    offsetOut += static_cast<size_t>(queueIndex() * _allignedBufferSize);
+    data._range = static_cast<size_t>(rangeElementCount * _buffer->elementSize());
+    data._offset = static_cast<size_t>(offsetElementCount * _buffer->elementSize());
+    data._offset += static_cast<size_t>(queueIndex() * _allignedBufferSize);
 
-    assert(rangeOut <= _maxSize &&
+    assert(data._range <= _maxSize &&
            "glUniformBuffer::bindRange: attempted to bind a larger shader block than is allowed on the current platform");
 
-    return _buffer->bindRange(bindIndex, offsetOut, rangeOut);
+    GL_API::registerBufferWrite(data);
+
+    return _buffer->bindRange(bindIndex, data._offset, data._range);
 }
 
-bool glUniformBuffer::bind(U8 bindIndex, size_t& offsetOut, size_t& rangeOut) {
-    return bindRange(bindIndex, 0, _elementCount, offsetOut, rangeOut);
+bool glUniformBuffer::bind(U8 bindIndex) {
+    return bindRange(bindIndex, 0, _elementCount);
 }
 
 void glUniformBuffer::addAtomicCounter(U32 sizeFactor, U16 ringSizeFactor) {

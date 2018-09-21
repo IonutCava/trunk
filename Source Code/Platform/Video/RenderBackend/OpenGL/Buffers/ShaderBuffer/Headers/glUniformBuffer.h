@@ -66,11 +66,9 @@ class glUniformBuffer final : public ShaderBuffer {
 
     bool bindRange(U8 bindIndex,
                    U32 offsetElementCount,
-                   U32 rangeElementCount,
-                   size_t& offsetOut,
-                   size_t& rangeOut) override;
+                   U32 rangeElementCount) override;
 
-    bool bind(U8 bindIndex, size_t& offsetOut, size_t& rangeOut) override;
+    bool bind(U8 bindIndex) override;
 
     GLuint bufferID() const;
 

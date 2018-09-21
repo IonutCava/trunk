@@ -161,7 +161,7 @@ void glGenericVertexData::draw(const GenericDrawCommand& command) {
     vec_size bufferCount = _bufferObjects.size();
     for (vec_size i = 0; i < bufferCount; ++i) {
         glGenericBuffer* buffer = _bufferObjects[i];
-        buffer->lockData(buffer->elementCount(), 0, queueIndex());
+        buffer->lockData(buffer->elementCount(), 0, queueIndex(), false);
     }
 }
 

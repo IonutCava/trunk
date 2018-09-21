@@ -70,8 +70,9 @@ enum class WindowType : U8;
 class DisplayWindow;
 class PlatformContext;
 class RenderStateBlock;
-class glHardwareQueryRing;
 class GenericVertexData;
+class glHardwareQueryRing;
+class glBufferLockManager;
 
 namespace GLUtil {
     class glVAOCache;
@@ -79,6 +80,13 @@ namespace GLUtil {
 
 struct GLConfig {
     bool _glES = false;
+};
+
+struct BufferWriteData {
+    glBufferLockManager* _lockManager = nullptr;
+    size_t _offset = 0;
+    size_t _range = 0;
+    bool _flush = false;
 };
 
 /// OpenGL implementation of the RenderAPIWrapper
@@ -126,7 +134,7 @@ protected:
     size_t setStateBlock(size_t stateBlockHash) override;
 
     void flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) override;
-    void postFlushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) override;
+    void postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer);
 
     /// Return the time it took to render a single frame (in nanoseconds). Only
     /// works in GPU validation builds
@@ -238,6 +246,8 @@ public:
     static bool deleteShaderPrograms(GLuint count, GLuint* programs);
 
     static size_t setStateBlockInternal(size_t stateBlockHash);
+
+    static void registerBufferWrite(const BufferWriteData& data);
 
     /// Bind multiple samplers described by the array of hash values to the
     /// consecutive texture units starting from the specified offset

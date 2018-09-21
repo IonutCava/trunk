@@ -7,7 +7,9 @@
 #include "Platform/Video/RenderBackend/OpenGL/glsw/Headers/glsw.h"
 #include "Platform/Video/RenderBackend/OpenGL/Headers/glLockManager.h"
 
+#include "Platform/Headers/PlatformRuntime.h"
 #include "Platform/File/Headers/FileManagement.h"
+
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/RenderBackend/OpenGL/Headers/GLWrapper.h"
 
@@ -285,7 +287,7 @@ void glShaderProgram::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoa
 
     // This was once an atomic swap. Might still be in the future
     _shaderProgramID = _shaderProgramIDTemp;
-    _lockManager->Lock();
+    _lockManager->Lock(!Runtime::isMainThread());
 
     // Pass the rest of the loading steps to the parent class
     if (!skipRegister) {

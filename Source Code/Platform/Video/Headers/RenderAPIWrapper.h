@@ -96,7 +96,7 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
 
     virtual void flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) = 0;
 
-    virtual void postFlushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) = 0;
+    virtual void postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) = 0;
 
     static GFXConfig& config() { return _config; }
 

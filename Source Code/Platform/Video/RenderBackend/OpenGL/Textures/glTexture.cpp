@@ -74,7 +74,7 @@ void glTexture::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallb
     Texture::threadedLoad(onLoadCallback);
     {
         UniqueLock lock(_lockManagerMutex);
-        _lockManager->Lock();
+        _lockManager->Lock(!Runtime::isMainThread());
     }
     CachedResource::load(onLoadCallback);
 }

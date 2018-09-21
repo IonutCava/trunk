@@ -4,7 +4,9 @@
 #include "Headers/glIMPrimitive.h"
 #include "Headers/glHardwareQuery.h"
 
+#include "Platform/Headers/PlatformRuntime.h"
 #include "Platform/File/Headers/FileManagement.h"
+
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
 #include "Platform/Video/RenderBackend/OpenGL/glsw/Headers/glsw.h"
@@ -44,12 +46,8 @@
 namespace Divide {
 
 namespace {
-    struct BufferWriteData {
-        glBufferImpl* _buffer = nullptr;
-        size_t _offset = 0;
-        size_t _range = 0;
-    };
-
+    bool g_bufferWritesNeedsFlush = false;
+    std::mutex g_bufferWritesLock;
     std::stack<BufferWriteData> g_bufferWrites;
 
     bool g_frameTimeRequested = false;
@@ -997,14 +995,9 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
                     GLuint handle = static_cast<glUniformBuffer*>(shaderBufCmd._buffer)->bufferID();
                     GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, handle);
                 } else {
-                    BufferWriteData data = {};
-                    data._buffer = static_cast<glUniformBuffer*>(shaderBufCmd._buffer)->bufferImpl();
-
                     shaderBufCmd._buffer->bindRange(shaderBufCmd._binding,
                                                     shaderBufCmd._range.x,
-                                                    shaderBufCmd._range.y,
-                                                    data._offset,
-                                                    data._range);
+                                                    shaderBufCmd._range.y);
 
                     if (shaderBufCmd._atomicCounter.first) {
                         shaderBufCmd._buffer->bindAtomicCounter(shaderBufCmd._atomicCounter.second.x,
@@ -1060,15 +1053,8 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
                     }
                 }
             }
+            g_bufferWritesNeedsFlush = true;
 
-            while (!g_bufferWrites.empty()) {
-                const BufferWriteData& data = g_bufferWrites.top();
-                if (data._buffer != nullptr && data._range != 0) {
-                    data._buffer->lockRange(data._offset, data._range);
-                }
-                g_bufferWrites.pop();
-            }
-            
         }break;
         case GFX::CommandType::DISPATCH_COMPUTE: {
             const GFX::DispatchComputeCommand& crtCmd = commandBuffer.getCommand<GFX::DispatchComputeCommand>(entry);
@@ -1077,9 +1063,27 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
 
     };
 }
+void GL_API::postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
+    if (!g_bufferWritesNeedsFlush) {
+        return;
+    }
+    g_bufferWritesNeedsFlush = false;
 
-void GL_API::postFlushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) {
+    UniqueLock lock(g_bufferWritesLock);
+    while (!g_bufferWrites.empty()) {
+        const BufferWriteData& data = g_bufferWrites.top();
+        data._lockManager->LockRange(data._offset, data._range, data._flush);
+        g_bufferWrites.pop();
+    }
+}
 
+void GL_API::registerBufferWrite(const BufferWriteData& data) {
+    if (data._lockManager == nullptr || data._range == 0) {
+        return;
+    }
+
+    UniqueLock lock(g_bufferWritesLock);
+    g_bufferWrites.push({data._lockManager, data._offset, data._range, !Runtime::isMainThread()});
 }
 
 /// Activate the render state block described by the specified hash value (0 == default state block)

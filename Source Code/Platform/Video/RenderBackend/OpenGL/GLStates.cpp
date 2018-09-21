@@ -471,7 +471,7 @@ bool GL_API::bindTextures(GLushort unitOffset,
             if (entry.second == nullptr) {
                 continue;
             }
-            glLockManager::wait(&entry.second, true);
+            glLockManager::wait(&entry.second, false /*this should work, right?*/);
             glDeleteSync(entry.second);
             textures.pop();
         }

@@ -77,7 +77,8 @@ void glGenericBuffer::readData(GLuint elementCount,
 
 void glGenericBuffer::lockData(GLuint elementCount,
                                GLuint elementOffset,
-                               GLuint ringReadOffset)
+                               GLuint ringReadOffset,
+                               bool flush)
 {
     size_t rangeInBytes = elementCount * _buffer->elementSize();
     size_t offsetInBytes = elementOffset * _buffer->elementSize();
@@ -86,7 +87,7 @@ void glGenericBuffer::lockData(GLuint elementCount,
         offsetInBytes += _elementCount * _buffer->elementSize() * ringReadOffset;
     }
 
-    _buffer->lockRange(offsetInBytes, rangeInBytes);
+    _buffer->lockRange(offsetInBytes, rangeInBytes, flush);
 }
 
 void glGenericBuffer::clearData(GLuint elementOffset, GLuint ringWriteOffset)

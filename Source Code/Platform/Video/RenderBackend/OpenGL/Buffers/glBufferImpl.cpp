@@ -123,9 +123,9 @@ void glBufferImpl::waitRange(size_t offsetInBytes, size_t rangeInBytes, bool blo
     }
 }
 
-void glBufferImpl::lockRange(size_t offsetInBytes, size_t rangeInBytes) {
+void glBufferImpl::lockRange(size_t offsetInBytes, size_t rangeInBytes, bool flush) {
     if (_lockManager != nullptr) {
-        _lockManager->LockRange(offsetInBytes, rangeInBytes);
+        _lockManager->LockRange(offsetInBytes, rangeInBytes, flush);
     }
 }
 
@@ -149,14 +149,12 @@ bool glBufferImpl::bindRange(GLuint bindIndex, size_t offsetInBytes, size_t rang
 void glBufferImpl::writeData(size_t offsetInBytes, size_t rangeInBytes, const bufferPtr data)
 {
     if (_mappedBuffer) {
-        waitRange(offsetInBytes, rangeInBytes, true);
         std::memcpy(((Byte*)_mappedBuffer) + offsetInBytes,
-                     data,
-                     rangeInBytes);
+                        data,
+                        rangeInBytes);
         if (_useExplicitFlush) {
             glFlushMappedNamedBufferRange(_handle, offsetInBytes, rangeInBytes);
         }
-
     } else {
         clearData(offsetInBytes, rangeInBytes);
         if (offsetInBytes == 0 && rangeInBytes == _alignedSize) {
@@ -222,4 +220,7 @@ size_t glBufferImpl::elementSize() const {
     return _elementSize;
 }
 
+glBufferLockManager* glBufferImpl::lockManager() const {
+    return _lockManager;
+}
 }; //namespace Divide

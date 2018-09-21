@@ -1051,6 +1051,9 @@
     <None Include="..\..\assets\shaders\GLSL\IMGUI.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
+    <None Include="..\..\Source Code\Platform\Headers\PlatformRuntime.inl">
+      <Filter>Headers</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\..\assets\shaders\GLSL\toneMap.glsl">

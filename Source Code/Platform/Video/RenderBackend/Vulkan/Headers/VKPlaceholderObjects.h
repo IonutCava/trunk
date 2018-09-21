@@ -209,9 +209,9 @@ namespace Divide {
 
         void readData(ptrdiff_t offsetElementCount, ptrdiff_t rangeElementCount, bufferPtr result) const {}
 
-        bool bindRange(U8 bindIndex, U32 offsetElementCount, U32 rangeElementCount, size_t& offsetOut, size_t& rangeOut) { return true; }
+        bool bindRange(U8 bindIndex, U32 offsetElementCount, U32 rangeElementCount) { return true; }
 
-        bool bind(U8 bindIndex, size_t& offsetOut, size_t& rangeOut) { return true;  }
+        bool bind(U8 bindIndex) { return true;  }
 
         void addAtomicCounter(U32 sizeFactor, U16 ringSizeFactor = 1) {}
         U32  getAtomicCounter(U8 offset, U8 counterIndex = 0) { return 0; }

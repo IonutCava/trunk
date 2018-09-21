@@ -42,7 +42,7 @@ class glLockManager {
     virtual ~glLockManager();
 
     void Wait(bool blockClient);
-    void Lock();
+    void Lock(bool flush);
 
     static void wait(GLsync* syncObj, bool blockClient);
 

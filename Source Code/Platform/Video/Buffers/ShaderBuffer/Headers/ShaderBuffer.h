@@ -84,34 +84,21 @@ class NOINITVTABLE ShaderBuffer : public GUIDWrapper,
 
     virtual bool bindRange(U8 bindIndex,
                            U32 offsetElementCount,
-                           U32 rangeElementCount,
-                           size_t& offsetOut,
-                           size_t& rangeOut) = 0;
+                           U32 rangeElementCount) = 0;
 
     /// Bind return false if the buffer was already bound
-    virtual bool bind(U8 bindIndex,
-                      size_t& offsetOut,
-                      size_t& rangeOut) = 0;
+    virtual bool bind(U8 bindIndex) = 0;
+
     inline bool bind(ShaderBufferLocation bindIndex) {
-        size_t offsetOut = 0, rangeOut = 0;
-        return bind(bindIndex, offsetOut, rangeOut);
-    }
-    inline bool bind(ShaderBufferLocation bindIndex,
-                     size_t& offsetOut,
-                     size_t& rangeOut) {
-        return bind(to_U8(bindIndex), offsetOut, rangeOut);
+        return bind(to_U8(bindIndex));
     }
 
     inline bool bindRange(ShaderBufferLocation bindIndex,
                           U32 offsetElementCount,
-                          U32 rangeElementCount,
-                           size_t& offsetOut,
-                           size_t& rangeOut) {
+                          U32 rangeElementCount) {
         return bindRange(to_U8(bindIndex),
                          offsetElementCount,
-                         rangeElementCount,
-                         offsetOut,
-                         rangeOut);
+                         rangeElementCount);
     }
 
     inline U32 getPrimitiveCount() const { return _elementCount; }

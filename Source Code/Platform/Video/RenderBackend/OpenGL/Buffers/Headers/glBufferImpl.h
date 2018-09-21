@@ -61,7 +61,7 @@ public:
     GLuint bufferID() const;
 
     bool bindRange(GLuint bindIndex, size_t offsetInBytes, size_t rangeInBytes);
-    void lockRange(size_t offsetInBytes, size_t rangeInBytes);
+    void lockRange(size_t offsetInBytes, size_t rangeInBytes, bool flush);
     void waitRange(size_t offsetInBytes, size_t rangeInBytes, bool blockClient);
 
     void writeData(size_t offsetInBytes, size_t rangeInBytes, bufferPtr data);
@@ -70,6 +70,8 @@ public:
     void zeroMem(size_t offsetInBytes, size_t rangeInBytes);
 
     size_t elementSize() const;
+
+    glBufferLockManager* lockManager() const;
 
 protected:
     GLenum _usage = GL_NONE;
