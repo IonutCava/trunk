@@ -30,8 +30,8 @@ TiledForwardShadingRenderer::TiledForwardShadingRenderer(PlatformContext& contex
     const U32 maxNumLightsPerTile = getMaxNumLightsPerTile();
 
     ShaderBufferDescriptor bufferDescriptor;
-    bufferDescriptor._primitiveCount = maxNumLightsPerTile * numTiles;
-    bufferDescriptor._primitiveSize = sizeof(U32);
+    bufferDescriptor._elementCount = maxNumLightsPerTile * numTiles;
+    bufferDescriptor._elementSize = sizeof(U32);
     bufferDescriptor._ringBufferLength = 1;
     bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE);
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::ONCE;

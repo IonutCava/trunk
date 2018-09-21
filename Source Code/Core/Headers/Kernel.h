@@ -101,11 +101,11 @@ class LoopTimingData {
         return false;
     }
 
-    inline void endUpdateLoop(const U64 deltaTimeUS) {
+    inline void endUpdateLoop(const U64 deltaTimeUS, const bool fixedTimestep) {
         _nextGameTickUS += deltaTimeUS;
         ++_updateLoops;
 
-        if (Config::USE_FIXED_TIMESTEP) {
+        if (fixedTimestep) {
             if (_updateLoops == Config::MAX_FRAMESKIP && _currentTimeUS > _nextGameTickUS) {
                 _nextGameTickUS = _currentTimeUS;
             }

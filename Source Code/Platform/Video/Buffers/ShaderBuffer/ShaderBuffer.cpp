@@ -14,15 +14,14 @@ ShaderBuffer::ShaderBuffer(GFXDevice& context,
                            const ShaderBufferDescriptor& descriptor)
       : GraphicsResource(context, GraphicsResource::Type::SHADER_BUFFER, getGUID()),
         RingBuffer(descriptor._ringBufferLength),
-        _primitiveSize(descriptor._primitiveSize),
-        _primitiveCount(descriptor._primitiveCount),
+        _elementCount(descriptor._elementCount),
         _frequency(descriptor._updateFrequency),
         _flags(descriptor._flags),
         _name(descriptor._name),
         _bufferSize(0),
         _maxSize(0)
 {
-    _bufferSize = _primitiveSize * _primitiveCount;
+    _bufferSize = descriptor._elementSize * _elementCount;
     assert(_bufferSize > 0 && "ShaderBuffer::Create error: Invalid buffer size!");
 }
 
@@ -31,7 +30,7 @@ ShaderBuffer::~ShaderBuffer()
 }
 
 void ShaderBuffer::writeData(const bufferPtr data) {
-    writeData(0, _primitiveCount, data);
+    writeData(0, _elementCount, data);
 }
 
 size_t ShaderBuffer::alignmentRequirement(bool unbound) {

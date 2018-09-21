@@ -10,7 +10,7 @@
 namespace Divide {
 
 namespace {
-    const bool g_recordInput = true;
+    constexpr bool g_recordInput = true;
 };
 
 void PressReleaseActionCbks::from(const PressReleaseActions& actions, const InputActionList& actionList) {

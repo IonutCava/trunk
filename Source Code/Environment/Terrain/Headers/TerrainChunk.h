@@ -69,8 +69,6 @@ class TerrainChunk {
 
     F32 waterHeight() const;
 
-    U8 getLoD(const vec3<F32>& eyePos) const;
-
    protected:
     Vegetation* const getVegetation() const { return _vegetation; }
 

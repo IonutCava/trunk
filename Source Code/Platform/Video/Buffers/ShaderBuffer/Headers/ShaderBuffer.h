@@ -42,9 +42,8 @@ namespace Divide {
 struct ShaderBufferDescriptor {
     U32 _flags = 0;
     U32 _ringBufferLength = 1;
-    U32 _primitiveCount = 0;
-    /// Primitive size in bytes
-    size_t _primitiveSize = 0;
+    U32 _elementCount = 0;
+    size_t _elementSize = 0; //< Primitive size in bytes
     BufferUpdateFrequency _updateFrequency = BufferUpdateFrequency::ONCE;
     bufferPtr _initialData = NULL;
     stringImpl _name = "";
@@ -85,29 +84,37 @@ class NOINITVTABLE ShaderBuffer : public GUIDWrapper,
 
     virtual bool bindRange(U8 bindIndex,
                            U32 offsetElementCount,
-                           U32 rangeElementCount) = 0;
-
-    virtual void lockData(ptrdiff_t offsetElementCount,
-                          ptrdiff_t rangeElementCount) = 0;
+                           U32 rangeElementCount,
+                           size_t& offsetOut,
+                           size_t& rangeOut) = 0;
 
     /// Bind return false if the buffer was already bound
-    virtual bool bind(U8 bindIndex) = 0;
-
+    virtual bool bind(U8 bindIndex,
+                      size_t& offsetOut,
+                      size_t& rangeOut) = 0;
     inline bool bind(ShaderBufferLocation bindIndex) {
-        return bind(to_U8(bindIndex));
+        size_t offsetOut = 0, rangeOut = 0;
+        return bind(bindIndex, offsetOut, rangeOut);
+    }
+    inline bool bind(ShaderBufferLocation bindIndex,
+                     size_t& offsetOut,
+                     size_t& rangeOut) {
+        return bind(to_U8(bindIndex), offsetOut, rangeOut);
     }
 
     inline bool bindRange(ShaderBufferLocation bindIndex,
                           U32 offsetElementCount,
-                          U32 rangeElementCount) {
+                          U32 rangeElementCount,
+                           size_t& offsetOut,
+                           size_t& rangeOut) {
         return bindRange(to_U8(bindIndex),
                          offsetElementCount,
-                         rangeElementCount);
-
+                         rangeElementCount,
+                         offsetOut,
+                         rangeOut);
     }
 
-    inline size_t getPrimitiveSize() const { return _primitiveSize; }
-    inline U32 getPrimitiveCount() const { return _primitiveCount; }
+    inline U32 getPrimitiveCount() const { return _elementCount; }
 
     virtual void addAtomicCounter(U32 sizeFactor, U16 ringSizeFactor = 1) = 0;
     virtual U32  getAtomicCounter(U8 offset, U8 counterIndex = 0) = 0;
@@ -118,9 +125,8 @@ class NOINITVTABLE ShaderBuffer : public GUIDWrapper,
 
    protected:
     size_t _bufferSize;
-    size_t _primitiveSize;
     size_t _maxSize;
-    U32 _primitiveCount;
+    U32 _elementCount;
 
     static size_t _boundAlignmentRequirement;
     static size_t _unboundAlignmentRequirement;

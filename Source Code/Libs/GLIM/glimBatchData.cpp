@@ -10,8 +10,8 @@
 #include "glimInterface.h"
 
 #include "Core/Headers/StringHelper.h"
-#include "Platform/Video/OpenGL/Headers/GLWrapper.h"
-#include "Platform/Video/OpenGL/Buffers/Headers/glMemoryManager.h"
+#include "Platform/Video/RenderBackend/OpenGL/Headers/GLWrapper.h"
+#include "Platform/Video/RenderBackend/OpenGL/Buffers/Headers/glMemoryManager.h"
 
 #define BUFFER_OFFSET(i) ((char*)NULL + (i))
 

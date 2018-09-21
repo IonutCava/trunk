@@ -17,6 +17,10 @@
 <runtime>
   <!-- 0 = primary display, 1 = secondary display, etc. Value is clamped between [1, LAST_DISPLAY] -->
   <targetDisplay>1</targetDisplay>
+  <!-- 0 = NULL, 1 - OpenGL4, 2 - GLES3, 3 - Vulkan-->
+  <targetRenderingAPI>1</targetRenderingAPI>
+  <!-- Fixed time step on/off as described here: https://gafferongames.com/post/fix_your_timestep/ -->
+  <useFixedTimestep>true</useFixedTimestep>
   <!-- set to true to start the application in windowed mode -->
   <windowedMode>true</windowedMode>
   <windowResizable>true</windowResizable>

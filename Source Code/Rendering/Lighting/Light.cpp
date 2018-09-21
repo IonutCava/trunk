@@ -111,11 +111,8 @@ void Light::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& 
 
 void Light::updateBoundsInternal() {
     if (_type == LightType::DIRECTIONAL) {
-        vec3<F32> directionalLightPosition =
-            _positionAndRange.xyz() * 
-            (to_U32(Config::Lighting::DIRECTIONAL_LIGHT_DISTANCE) * -1.0f);
-        _boundingBox.set(directionalLightPosition - 10.0f,
-                         directionalLightPosition + 10.0f);
+        vec3<F32> directionalLightPosition = _positionAndRange.xyz() * _positionAndRange.w * -1.0f;
+        _boundingBox.set(directionalLightPosition - 10.0f, directionalLightPosition + 10.0f);
     } else {
         _boundingBox.set(vec3<F32>(-getRange()), vec3<F32>(getRange()));
         _boundingBox.multiply(0.5f);

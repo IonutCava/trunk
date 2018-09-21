@@ -66,6 +66,8 @@ public:
     
     struct Runtime {
         U8 targetDisplay;
+        U8 targetRenderingAPI;
+        bool useFixedTimestep;
         bool windowedMode;
         bool windowResizable;
         bool enableVSync;

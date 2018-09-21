@@ -92,8 +92,6 @@ class QuadtreeNode {
 
     inline QuadtreeNode& getChild(ChildPosition pos) const;
     inline QuadtreeNode& getChild(U32 index) const;
-    
-    U8 getLoD(const vec3<F32>& eyePos) const;
 
    protected:
     bool isInView(U32 options, const SceneRenderState& sceneState) const;

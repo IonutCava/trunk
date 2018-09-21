@@ -21,6 +21,9 @@
 namespace Divide {
 
 namespace {
+    constexpr bool g_threadedCommandGeneration = true;
+    static_assert(!Config::Profile::DISABLE_PERSISTENT_BUFFER || !g_threadedCommandGeneration, "Threaded command generation does not work without persistently mapped buffers!");
+
     thread_local vectorEASTL<GFXDevice::NodeData> g_nodeData;
     thread_local vectorEASTL<IndirectDrawCommand> g_drawCommands;
 };
@@ -58,7 +61,7 @@ void RenderPassManager::render(SceneRenderState& sceneRenderState, Time::Profile
 
     const Camera& cam = Attorney::SceneManagerRenderPass::playerCamera(parent().sceneManager());
 
-    TaskPriority priority = (false && Config::USE_THREADED_COMMAND_GENERATION) ? TaskPriority::DONT_CARE : TaskPriority::REALTIME;
+    TaskPriority priority = g_threadedCommandGeneration ? TaskPriority::DONT_CARE : TaskPriority::REALTIME;
 
     TaskPool& pool = parent().platformContext().taskPool();
     TaskHandle renderTask = CreateTask(pool, DELEGATE_CBK<void, const Task&>());
@@ -192,12 +195,7 @@ GFXDevice::NodeData RenderPassManager::processVisibleNode(SceneGraphNode* node, 
     // (Nodes without transforms just use identity matrices)
     if (transform) {
         // ... get the node's world matrix properly interpolated
-        if (Config::USE_FIXED_TIMESTEP) {
-            dataOut._worldMatrix.set(transform->getWorldMatrix(_context.getFrameInterpolationFactor()));
-        } else {
-            dataOut._worldMatrix.set(transform->getWorldMatrix());
-        }
-
+        dataOut._worldMatrix.set(transform->getWorldMatrix(_context.getFrameInterpolationFactor()));
         dataOut._normalMatrixWV.set(dataOut._worldMatrix);
         if (!transform->isUniformScaled()) {
             // Non-uniform scaling requires an inverseTranspose to negate

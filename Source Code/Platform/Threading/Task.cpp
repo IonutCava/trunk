@@ -13,7 +13,7 @@
 namespace Divide {
 
 namespace {
-    const bool g_DebugTaskStartStop = false;
+    constexpr bool g_DebugTaskStartStop = false;
 };
 
 typedef DELEGATE_CBK<void, U32> OnFinishCbk;

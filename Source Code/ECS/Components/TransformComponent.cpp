@@ -455,7 +455,7 @@ namespace Divide {
     }
 
     mat4<F32> TransformComponent::getWorldMatrix(D64 interpolationFactor) const {
-        if (_parentUsageContext == NodeUsageContext::NODE_STATIC || interpolationFactor == 1.0) {
+        if (_parentUsageContext == NodeUsageContext::NODE_STATIC || interpolationFactor > 0.99) {
             return getWorldMatrix();
         }
 

@@ -36,11 +36,10 @@
 namespace Divide {
 
 enum class RenderAPI : U8 {
+    None,      ///< not supported yet
     OpenGL,    ///< 4.x+
     OpenGLES,  ///< 3.x+
-    Direct3D,  ///< 12.x+ (not supported yet)
     Vulkan,    ///< not supported yet
-    None,      ///< not supported yet
     COUNT
 };
 

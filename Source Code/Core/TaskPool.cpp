@@ -7,6 +7,8 @@
 namespace Divide {
 
 namespace {
+    constexpr bool g_forceSingleThreaded = false;
+
     thread_local Task g_taskAllocator[Config::MAX_POOLED_TASKS];
     thread_local U32  g_allocatedTasks = 0u;
 };
@@ -55,7 +57,7 @@ void TaskPool::shutdown() {
 bool TaskPool::enqueue(const PoolTask& task, TaskPriority priority) {
     _runningTaskCount.fetch_add(1);
 
-    if (!Config::USE_SINGLE_THREADED_TASK_POOLS && priority != TaskPriority::REALTIME) {
+    if (!g_forceSingleThreaded && priority != TaskPriority::REALTIME) {
         assert(_mainTaskPool != nullptr);
 #if defined(USE_BOOST_ASIO_THREADPOOL)
         boost::asio::post(*_mainTaskPool, task);
@@ -117,7 +119,7 @@ void TaskPool::taskCompleted(U32 taskIndex) {
 
 void TaskPool::taskCompleted(U32 taskIndex, TaskPriority priority, const DELEGATE_CBK<void>& onCompletionFunction) {
     if (onCompletionFunction) {
-        if (Config::USE_SINGLE_THREADED_TASK_POOLS || priority == TaskPriority::REALTIME) {
+        if (g_forceSingleThreaded || priority == TaskPriority::REALTIME) {
             onCompletionFunction();
         } else {
             _taskCallbacks[taskIndex] = onCompletionFunction;

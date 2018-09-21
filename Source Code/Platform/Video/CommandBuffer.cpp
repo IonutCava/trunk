@@ -236,7 +236,7 @@ void CommandBuffer::clean() {
     erase_indices(_commandOrder, redundantEntries);
 }
 
-//ToDo: This needs to grow to handle every possible scenario - Ionut
+// New use cases that emerge from production work should be checked here.
 bool CommandBuffer::validate() const {
     bool valid = true;
 

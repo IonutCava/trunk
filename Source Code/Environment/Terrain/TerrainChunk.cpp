@@ -123,8 +123,4 @@ F32 TerrainChunk::waterHeight() const {
     return Attorney::TerrainChunk::waterHeight(*_parentTerrain);
 }
 
-U8 TerrainChunk::getLoD(const vec3<F32>& eyePos) const {
-    return _parentNode->getLoD(eyePos);
-}
-
 };
