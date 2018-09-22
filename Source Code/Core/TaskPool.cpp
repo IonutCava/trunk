@@ -3,6 +3,7 @@
 #include "Headers/TaskPool.h"
 #include "Core/Headers/Console.h"
 #include "Core/Headers/StringHelper.h"
+#include "Platform/Headers/PlatformRuntime.h"
 
 namespace Divide {
 
@@ -141,9 +142,9 @@ Task* TaskPool::createTask(Task* parentTask, const DELEGATE_CBK<void, const Task
     Task* task = nullptr;
     while (task == nullptr) {
         const U32 index = g_allocatedTasks++;
-        Task* crtTask = &g_taskAllocator[index & (Config::MAX_POOLED_TASKS - 1u)];
+        Task& crtTask = g_taskAllocator[index & (Config::MAX_POOLED_TASKS - 1u)];
         if (Finished(crtTask)) {
-            task = crtTask;
+            task = &crtTask;
         }
     }
 
@@ -237,7 +238,7 @@ TaskHandle parallel_for(TaskPool& pool,
         }
     }
 
-    updateTask.startTask(priority).wait();
+    updateTask.startTask(Runtime::isMainThread() ? priority : TaskPriority::REALTIME).wait();
 
     return updateTask;
 }

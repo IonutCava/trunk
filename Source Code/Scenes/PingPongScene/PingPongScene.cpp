@@ -96,7 +96,7 @@ void PingPongScene::serveBall(I64 btnGUID) {
 }
 
 void PingPongScene::test(const Task& parentTask, AnyParam a, CallbackParam b) {
-    while (!StopRequested(&parentTask)) {
+    while (!StopRequested(parentTask)) {
         bool updated = false;
         stringImpl message;
         TransformComponent* ballTransform =

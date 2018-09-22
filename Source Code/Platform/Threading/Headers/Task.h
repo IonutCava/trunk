@@ -56,11 +56,11 @@ struct alignas(64) Task {
     DELEGATE_CBK<void, const Task&> _callback;
 };
 
-void Start(Task *task, TaskPool& pool, TaskPriority priority, const DELEGATE_CBK<void>& onCompletionFunction);
-void Stop(Task *task);
-void Wait(const Task *task);
-bool StopRequested(const Task *task);
-bool Finished(const Task *task);
+void Start(Task& task, TaskPool& pool, TaskPriority priority, const DELEGATE_CBK<void>& onCompletionFunction);
+void Stop(Task& task);
+void Wait(const Task& task);
+bool StopRequested(const Task& task);
+bool Finished(const Task& task);
 
 // A task object may be used for multiple jobs
 struct TaskHandle {
@@ -87,7 +87,7 @@ struct TaskHandle {
 
     inline TaskHandle& wait() {
         if (_task != nullptr) {
-            Wait(_task);
+            Wait(*_task);
         }
         return *this;
     }
@@ -97,7 +97,7 @@ struct TaskHandle {
     }
 
     inline bool taskRunning() const {
-        return !Finished(_task);
+        return !Finished(*_task);
     }
 
     inline bool operator()() const{

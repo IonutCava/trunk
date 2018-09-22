@@ -67,8 +67,8 @@ class TaskPool : public GUIDWrapper {
     //ToDo: replace all friend class declarations with attorneys -Ionut;
     friend struct Task;
     friend struct TaskHandle;
-    friend void Start(Task* task, TaskPool& pool, TaskPriority priority, const DELEGATE_CBK<void>& onCompletionFunction);
-    friend bool StopRequested(const Task *task);
+    friend void Start(Task& task, TaskPool& pool, TaskPriority priority, const DELEGATE_CBK<void>& onCompletionFunction);
+    friend bool StopRequested(const Task& task);
 
     void taskCompleted(U32 taskIndex);
     void taskCompleted(U32 taskIndex, TaskPriority priority, const DELEGATE_CBK<void>& onCompletionFunction);

@@ -279,7 +279,7 @@ bool MainScene::unload() {
 }
 
 void MainScene::test(const Task& parentTask, AnyParam a, CallbackParam b) {
-    if(!StopRequested(&parentTask)) {
+    if(!StopRequested(parentTask)) {
         static bool switchAB = false;
         vec3<F32> pos;
         SceneGraphNode* boxNode(_sceneGraph->findNode("box"));
@@ -315,7 +315,7 @@ void MainScene::test(const Task& parentTask, AnyParam a, CallbackParam b) {
 
         std::this_thread::sleep_for(std::chrono::milliseconds(30));
         if (g_boxMoveTaskID()) {
-            if (!StopRequested(&parentTask)) {
+            if (!StopRequested(parentTask)) {
                 g_boxMoveTaskID = CreateTask(context(), 
                                              DELEGATE_BIND(&MainScene::test,
                                                             this,

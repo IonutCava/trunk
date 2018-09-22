@@ -69,6 +69,7 @@ class RenderPassCuller {
         SceneGraph* _sceneGraph = nullptr;
         const Camera* _camera = nullptr;
         SceneState* _sceneState = nullptr;
+        bool _threaded = true;
         RenderStage _stage = RenderStage::COUNT;
         F32 _visibilityDistanceSq = 0.0f;
         CullingFunction _cullFunction;

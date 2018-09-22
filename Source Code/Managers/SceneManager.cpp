@@ -566,6 +566,8 @@ const RenderPassCuller::VisibleNodeList& SceneManager::cullSceneGraph(RenderStag
     cullParams._sceneState = &sceneState;
     cullParams._stage = stage;
     cullParams._camera = &camera;
+    cullParams._threaded = true;
+
     if (stage == RenderStage::SHADOW) {
         cullParams._visibilityDistanceSq = std::numeric_limits<F32>::max();
     } else {
