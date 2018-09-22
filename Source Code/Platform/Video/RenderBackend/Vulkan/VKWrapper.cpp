@@ -22,5 +22,5 @@ namespace Divide {
     void VK_API::postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) {}
     vec2<U16> VK_API::getDrawableSize(const DisplayWindow& window) const { return vec2<U16>(1);  }
     U32 VK_API::getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const { return 0u;  }
-    bool VK_API::changeViewportInternal(const Rect<I32>& newViewport) { return true; }
+    bool VK_API::setViewport(const Rect<I32>& newViewport) { return true; }
 }; //namespace Divide

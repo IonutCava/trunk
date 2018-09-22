@@ -56,7 +56,7 @@ class VK_API final : public RenderAPIWrapper {
       void postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer);
       vec2<U16> getDrawableSize(const DisplayWindow& window) const;
       U32 getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const;
-      bool changeViewportInternal(const Rect<I32>& newViewport);
+      bool setViewport(const Rect<I32>& newViewport);
 };
 
 };  // namespace Divide

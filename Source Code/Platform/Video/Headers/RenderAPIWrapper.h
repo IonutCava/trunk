@@ -106,7 +106,7 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
     /// Convert a CEGUI texture handle to something that our current rendering API can use
     virtual U32 getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const = 0;
 
-    virtual bool changeViewportInternal(const Rect<I32>& newViewport) = 0;
+    virtual bool setViewport(const Rect<I32>& newViewport) = 0;
 
 protected:
 

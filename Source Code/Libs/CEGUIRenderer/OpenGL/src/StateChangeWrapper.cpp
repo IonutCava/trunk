@@ -221,7 +221,7 @@ void OpenGL3StateChangeWrapper::viewport(GLint x, GLint y, GLsizei width, GLsize
 {
     bool callIsRedundant = d_viewPortParams.equal(x, y, width, height);
     if (!callIsRedundant) {
-        Divide::GL_API::changeViewport(x, y, width, height);
+        Divide::GL_API::setViewport(x, y, width, height);
     }
 }
 

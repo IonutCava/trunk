@@ -22,5 +22,5 @@ namespace Divide {
     void NONE_API::postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) {}
     vec2<U16> NONE_API::getDrawableSize(const DisplayWindow& window) const { return vec2<U16>(1);  }
     U32 NONE_API::getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const { return 0u;  }
-    bool NONE_API::changeViewportInternal(const Rect<I32>& newViewport) { return true; }
+    bool NONE_API::setViewport(const Rect<I32>& newViewport) { return true; }
 }; //namespace Divide

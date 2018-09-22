@@ -30,8 +30,6 @@ void GFXDevice::uploadGPUBlock() {
         // need the previous data. Might avoid some driver sync
         _gfxDataBuffer->writeData(&_gpuBlock._data);
         _gfxDataBuffer->bind(ShaderBufferLocation::GPU_BLOCK);
-        _api->updateClipPlanes(_clippingPlanes);
-
         _gpuBlock._needsUpload = false;
     }
 }
@@ -187,10 +185,6 @@ void GFXDevice::drawText(const TextElementBatch& batch) {
 
     drawText(batch, buffer);
     flushCommandBuffer(sBuffer());
-}
-
-void GFXDevice::drawTextureInRenderViewport(TextureData data, GFX::CommandBuffer& bufferInOut) const {
-    drawTextureInViewport(data, _baseViewport, bufferInOut);
 }
 
 void GFXDevice::drawTextureInRenderWindow(TextureData data, GFX::CommandBuffer& bufferInOut) const {

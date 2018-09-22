@@ -495,7 +495,11 @@ void GFXDevice::beginFrame() {
     }
     _api->beginFrame();
     _api->setStateBlock(_defaultStateBlockHash);
-    setViewport(_baseViewport);
+
+
+    const WindowManager& winMgr = _context.app().windowManager();
+    const vec2<U16>& drawableSize = winMgr.getWindow(0u).getDrawableSize();
+    setViewport(Rect<I32>(0, 0, drawableSize.width, drawableSize.height));
 }
 
 void GFXDevice::endFrame() {

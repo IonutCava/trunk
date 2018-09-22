@@ -170,6 +170,7 @@ bool glUniformBuffer::bindRange(U8 bindIndex, U32 offsetElementCount, U32 rangeE
     if (rangeElementCount == 0) {
         rangeElementCount = _elementCount;
     }
+
     BufferWriteData data = {};
     data._lockManager = bufferImpl()->lockManager();
 

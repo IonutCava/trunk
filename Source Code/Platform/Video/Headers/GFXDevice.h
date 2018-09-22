@@ -297,8 +297,6 @@ public:  // Accessors and Mutators
 
     inline const Rect<I32>& getCurrentViewport() const { return _viewport; }
 
-    inline const Rect<I32>& getBaseViewport() const { return _baseViewport; }
-
     DebugView* addDebugView(const std::shared_ptr<DebugView>& view);
     bool removeDebugView(DebugView* view);
 
@@ -336,8 +334,6 @@ public:
 
     // Render the texture over the full window dimensions regardless of the actual active rendering viewport 
     void drawTextureInRenderWindow(TextureData data, GFX::CommandBuffer& bufferInOut) const;
-    // Render the texture using the full rendering viewport
-    void drawTextureInRenderViewport(TextureData data, GFX::CommandBuffer& bufferInOut) const;
     // Render the texture using a custom viewport
     void drawTextureInViewport(TextureData data, const Rect<I32>& viewport, GFX::CommandBuffer& bufferInOut) const;
 
@@ -359,8 +355,6 @@ protected:
     RenderTarget* newRT(const RenderTargetDescriptor& descriptor) const;
 
     void drawDebugFrustum(GFX::CommandBuffer& bufferInOut);
-
-    void setBaseViewport(const Rect<I32>& viewport);
 
     void drawText(const TextElementBatch& batch);
 
@@ -463,10 +457,7 @@ protected:
     std::mutex _graphicsResourceMutex;
     vector<std::pair<GraphicsResource::Type, I64>> _graphicResources;
 
-    /// Current viewport stack
     Rect<I32> _viewport;
-    Rect<I32> _baseViewport;
-
     vec2<U16> _renderingResolution;
 
     GFXShaderData _gpuBlock;

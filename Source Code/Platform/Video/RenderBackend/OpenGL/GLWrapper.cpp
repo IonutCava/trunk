@@ -125,8 +125,11 @@ void GL_API::beginFrame() {
 
 /// Finish rendering the current frame
 void GL_API::endFrame() {
+    const WindowManager& winMgr = _context.parent().platformContext().app().windowManager();
+
     // Revert back to the default OpenGL states
-    clearStates();
+    clearStates(winMgr.getWindow(0u));
+
     // End the timing query started in beginFrame() in debug builds
     if (Config::ENABLE_GPU_VALIDATION && g_frameTimeRequested) {
         glEndQuery(GL_TIME_ELAPSED);
@@ -134,7 +137,6 @@ void GL_API::endFrame() {
     // Swap buffers
     {
         Time::ScopedTimer time(_swapBufferTimer);
-        const WindowManager& winMgr = _context.parent().platformContext().app().windowManager();
         U32 windowCount = winMgr.getWindowCount();
         for (U32 i = 0; i < windowCount; ++i) {
             const DisplayWindow& window = winMgr.getWindow(i);
@@ -1123,8 +1125,8 @@ bool GL_API::makeTextureResident(const TextureData& textureData, U8 binding) {
         textureData._samplerHandle);
 }
 
-bool GL_API::changeViewportInternal(const Rect<I32>& viewport) {
-    return changeViewport(viewport);
+bool GL_API::setViewport(const Rect<I32>& viewport) {
+    return setViewport(viewport.x, viewport.y, viewport.z, viewport.w);
 }
 
 /// Verify if we have a sampler object created and available for the given

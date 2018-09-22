@@ -120,7 +120,7 @@ namespace {
 }; //namespace 
 
 /// Reset as much of the GL default state as possible within the limitations given
-void GL_API::clearStates() {
+void GL_API::clearStates(const DisplayWindow& mainWindow) {
     GL_API::bindTextures(0, GL_API::s_maxTextureUnits, nullptr, nullptr);
     setPixelPackUnpackAlignment();
     setActiveVAO(0);
@@ -137,7 +137,8 @@ void GL_API::clearStates() {
     }
     GL_API::setBlendColour(UColour(0u), true);
 
-    GL_API::setScissor(_context.getBaseViewport());
+    const vec2<U16>& drawableSize = _context.getDrawableSize(mainWindow);
+    GL_API::setScissor(Rect<I32>(0, 0, drawableSize.width, drawableSize.height));
 
     s_activeWindowGUID = -1;
     s_activePipeline = nullptr;
@@ -793,7 +794,7 @@ void GL_API::setBlending(GLuint drawBufferIdx,const BlendingProperties& blending
 }
 
 /// Change the current viewport area. Redundancy check is performed in GFXDevice class
-bool GL_API::changeViewport(I32 x, I32 y, I32 width, I32 height) {
+bool GL_API::setViewport(I32 x, I32 y, I32 width, I32 height) {
     if (width > 0 && height > 0 && Rect<I32>(x, y, width, height) != GL_API::s_activeViewport) {
         // Debugging and profiling the application may require setting a 1x1 viewport to exclude fill rate bottlenecks
         if (Config::Profile::USE_1x1_VIEWPORT) {

@@ -102,7 +102,7 @@ template <typename T>
 void OpenGLRenderTarget<T>::activate()
 {
     Divide::GL_API::getActiveViewport(prevViewport);
-    Divide::GL_API::changeViewport(
+    Divide::GL_API::setViewport(
                static_cast<Divide::I32>(d_area.left()),
                static_cast<Divide::I32>(d_area.top()),
                static_cast<Divide::I32>(d_area.getWidth()),
@@ -120,10 +120,10 @@ void OpenGLRenderTarget<T>::activate()
 template <typename T>
 void OpenGLRenderTarget<T>::deactivate()
 {
-    Divide::GL_API::changeViewport(prevViewport[0],
-                                   prevViewport[1],
-                                   prevViewport[2],
-                                   prevViewport[3]);
+    Divide::GL_API::setViewport(prevViewport[0],
+                                prevViewport[1],
+                                prevViewport[2],
+                                prevViewport[3]);
 }
 
 //----------------------------------------------------------------------------//

@@ -153,12 +153,12 @@ protected:
     I32 getFont(const stringImpl& fontName);
 
     /// Reset as much of the GL default state as possible within the limitations given
-    void clearStates();
+    void clearStates(const DisplayWindow& mainWindow);
 
     bool makeTexturesResident(const TextureDataContainer& textureData);
     bool makeTextureResident(const TextureData& textureData, U8 binding);
 
-    bool changeViewportInternal(const Rect<I32>& viewport) override;
+    bool setViewport(const Rect<I32>& viewport) override;
 
 public:
     /// Makes sure that the calling thread has a valid GL context. If not, a new one is created.
@@ -276,10 +276,7 @@ public:
     }
 
     /// Change the current viewport area. Redundancy check is performed in GFXDevice class
-    static bool changeViewport(I32 x, I32 y, I32 width, I32 height);
-    inline static bool changeViewport(const Rect<I32>& newViewport) {
-        return changeViewport(newViewport.x, newViewport.y, newViewport.z, newViewport.w);
-    }
+    static bool setViewport(I32 x, I32 y, I32 width, I32 height);
 
     static GLuint getBoundTextureHandle(GLuint slot);
 
