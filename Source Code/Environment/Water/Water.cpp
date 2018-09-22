@@ -134,12 +134,11 @@ void WaterPlane::updateRefraction(RenderCbkParams& renderParams, GFX::CommandBuf
     updatePlaneEquation(renderParams._sgn, refractionPlane, underwater);
 
     RenderPassManager::PassParams params;
-    params._doPrePass = true;
     params._occlusionCull = false;
     params._camera = renderParams._camera;
     params._stage = RenderStage::REFRACTION;
     params._target = renderParams._renderTarget;
-    params._drawPolicy = params._doPrePass ? &RenderTarget::defaultPolicyKeepDepth() : &RenderTarget::defaultPolicy();
+    params._drawPolicy = &RenderTarget::defaultPolicyKeepDepth();
     params._passIndex = renderParams._passIndex;
     params._clippingPlanes._planes[to_U32(underwater ? g_reflectionClipID : g_refractionClipID)] = refractionPlane;
     params._clippingPlanes._active[to_U32(g_refractionClipID)] = true;
@@ -162,12 +161,11 @@ void WaterPlane::updateReflection(RenderCbkParams& renderParams, GFX::CommandBuf
     }
 
     RenderPassManager::PassParams params;
-    params._doPrePass = true;
     params._occlusionCull = false;
     params._camera = _reflectionCam;
     params._stage = RenderStage::REFLECTION;
     params._target = renderParams._renderTarget;
-    params._drawPolicy = params._doPrePass ? &RenderTarget::defaultPolicyKeepDepth() : &RenderTarget::defaultPolicy();
+    params._drawPolicy = &RenderTarget::defaultPolicyKeepDepth();
     params._passIndex = renderParams._passIndex;
     params._clippingPlanes._planes[to_U32(underwater ? g_refractionClipID : g_reflectionClipID)] = reflectionPlane;
     params._clippingPlanes._active[to_U32(g_reflectionClipID)] = true;

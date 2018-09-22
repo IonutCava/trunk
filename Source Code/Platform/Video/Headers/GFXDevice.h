@@ -207,7 +207,7 @@ public:  // GPU interface
         const vec3<F32>& pos,
         const vec2<F32>& zPlanes,
         RenderStagePass stagePass,
-        U32 bufferIndex,
+        U32 passIndex,
         GFX::CommandBuffer& commandsInOut,
         Camera* camera = nullptr);
 
@@ -216,7 +216,7 @@ public:  // GPU interface
         const vec3<F32>& pos,
         const vec2<F32>& zPlanes,
         RenderStagePass stagePass,
-        U32 bufferIndex,
+        U32 passIndex,
         GFX::CommandBuffer& commandsInOut,
         Camera* camera = nullptr);
 
@@ -378,7 +378,6 @@ protected:
     friend class RenderPassManager;
 
     void occlusionCull(const RenderPass::BufferData& bufferData,
-                       U32 bufferIndex,
                        const Texture_ptr& depthBuffer,
                        const vec2<F32>& zPlanes,
                        GFX::CommandBuffer& bufferInOut) const;

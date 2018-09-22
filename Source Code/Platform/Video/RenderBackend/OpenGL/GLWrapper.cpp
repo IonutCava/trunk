@@ -46,9 +46,9 @@
 namespace Divide {
 
 namespace {
-    bool g_bufferWritesNeedsFlush = false;
-    std::mutex g_bufferWritesLock;
-    std::stack<BufferWriteData> g_bufferWrites;
+    bool g_bufferBindsNeedsFlush = false;
+    std::mutex g_bufferBindsLock;
+    std::stack<BufferWriteData> g_bufferBinds;
 
     bool g_frameTimeRequested = false;
 };
@@ -1055,7 +1055,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
                     }
                 }
             }
-            g_bufferWritesNeedsFlush = true;
+            g_bufferBindsNeedsFlush = true;
 
         }break;
         case GFX::CommandType::DISPATCH_COMPUTE: {
@@ -1066,26 +1066,29 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
     };
 }
 void GL_API::postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
-    if (!g_bufferWritesNeedsFlush) {
+    if (!g_bufferBindsNeedsFlush) {
         return;
     }
-    g_bufferWritesNeedsFlush = false;
+    g_bufferBindsNeedsFlush = false;
 
-    UniqueLock lock(g_bufferWritesLock);
-    while (!g_bufferWrites.empty()) {
-        const BufferWriteData& data = g_bufferWrites.top();
+    UniqueLock lock(g_bufferBindsLock);
+    while (!g_bufferBinds.empty()) {
+        const BufferWriteData& data = g_bufferBinds.top();
         data._lockManager->LockRange(data._offset, data._range, data._flush);
-        g_bufferWrites.pop();
+        g_bufferBinds.pop();
     }
 }
 
-void GL_API::registerBufferWrite(const BufferWriteData& data) {
+void GL_API::registerBufferBind(const BufferWriteData& data) {
+    assert(Runtime::isMainThread());
+
+
     if (data._lockManager == nullptr || data._range == 0) {
         return;
     }
 
-    UniqueLock lock(g_bufferWritesLock);
-    g_bufferWrites.push({data._lockManager, data._offset, data._range, !Runtime::isMainThread()});
+    UniqueLock lock(g_bufferBindsLock);
+    g_bufferBinds.push(data);
 }
 
 /// Activate the render state block described by the specified hash value (0 == default state block)

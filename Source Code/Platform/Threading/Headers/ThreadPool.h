@@ -46,7 +46,7 @@ public:
     virtual ~ThreadPool();
 
     // Add a new task to the pool's queue
-    virtual void addTask(const PoolTask& job) = 0;
+    virtual bool addTask(const PoolTask& job) = 0;
 
     // Join all of the threads and block until all running tasks have completed.
     void join();
@@ -69,10 +69,10 @@ class BlockingThreadPool final : public ThreadPool
 public:
 
     explicit BlockingThreadPool(const U8 threadCount);
-    ~BlockingThreadPool();
+    ~BlockingThreadPool() = default;
 
     // Add a new task to the pool's queue
-    void addTask(const PoolTask& job) override;
+    bool addTask(const PoolTask& job) override;
 
 private:
     moodycamel::BlockingConcurrentQueue<PoolTask> _queue;
@@ -84,10 +84,10 @@ class LockFreeThreadPool final : public ThreadPool
 public:
 
     explicit LockFreeThreadPool(const U8 threadCount);
-    ~LockFreeThreadPool();
+    ~LockFreeThreadPool() = default;
 
     // Add a new task to the pool's queue
-    void addTask(const PoolTask& job) override;
+    bool addTask(const PoolTask& job) override;
 
 private:
     moodycamel::ConcurrentQueue<PoolTask> _queue;

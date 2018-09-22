@@ -168,7 +168,7 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
                                 const vec3<F32>& pos,
                                 const vec2<F32>& zPlanes,
                                 RenderStagePass stagePass,
-                                U32 bufferIndex,
+                                U32 passIndex,
                                 GFX::CommandBuffer& bufferInOut,
                                 Camera* camera) {
 
@@ -225,12 +225,12 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
 
     RenderPassManager& passMgr = parent().renderPassManager();
     RenderPassManager::PassParams params;
-    params._doPrePass = stagePass._stage != RenderStage::SHADOW;
-    params._occlusionCull = params._doPrePass;
+    params._occlusionCull = true;
     params._camera = camera;
     params._stage = stagePass._stage;
+    params._pass = stagePass._passType;
     params._target = cubeMap;
-    params._bufferIndex = bufferIndex;
+    params._passIndex = passIndex;
     // We do our own binding
     params._bindTargets = false;
     params._passVariant = stagePass._variant;
@@ -266,7 +266,7 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
                                           const vec3<F32>& pos,
                                           const vec2<F32>& zPlanes,
                                           RenderStagePass stagePass,
-                                          U32 bufferIndex,
+                                          U32 passIndex,
                                           GFX::CommandBuffer& bufferInOut,
                                           Camera* camera)
 {
@@ -300,14 +300,14 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
 
     RenderPassManager& passMgr = parent().renderPassManager();
     RenderPassManager::PassParams params;
-    params._doPrePass = stagePass._stage != RenderStage::SHADOW;
-    params._occlusionCull = params._doPrePass;
+    params._occlusionCull = true;
     params._camera = camera;
     params._stage = stagePass._stage;
     params._target = targetBuffer;
     params._bindTargets = false;
     params._passVariant = stagePass._variant;
-    params._bufferIndex = bufferIndex;
+    params._pass = stagePass._passType;
+    params._passIndex = passIndex;
     // Enable our render target
 
     GFX::BeginRenderPassCommand beginRenderPassCmd;
@@ -663,10 +663,10 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::Comm
 }
 
 void GFXDevice::updateCullCount(GFX::CommandBuffer& cmdBufferInOut) {
-    const RenderPass::BufferData& bufferData = parent().renderPassManager().getBufferData(RenderStage::DISPLAY, 0);
+    const RenderPass::BufferData& bufferData = parent().renderPassManager().getBufferData(RenderStage::DISPLAY, RenderPassType::DEPTH_PASS, 0);
 
     GFX::ReadAtomicCounterCommand readAtomicCounter;
-    readAtomicCounter._buffer = bufferData._cmdBuffers[0];
+    readAtomicCounter._buffer = bufferData._cmdBuffer;
     readAtomicCounter._target = &LAST_CULL_COUNT;
     readAtomicCounter._resetCounter = true;
     GFX::EnqueueCommand(cmdBufferInOut, readAtomicCounter);

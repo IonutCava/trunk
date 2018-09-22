@@ -62,7 +62,9 @@ bool TaskPool::enqueue(const PoolTask& task, TaskPriority priority) {
 #if defined(USE_BOOST_ASIO_THREADPOOL)
         boost::asio::post(*_mainTaskPool, task);
 #else
-        _mainTaskPool->addTask(task);
+        if (!_mainTaskPool->addTask(task)) {
+            return false;
+        }
 #endif
     } else {
         task();

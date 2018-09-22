@@ -247,7 +247,7 @@ public:
 
     static size_t setStateBlockInternal(size_t stateBlockHash);
 
-    static void registerBufferWrite(const BufferWriteData& data);
+    static void registerBufferBind(const BufferWriteData& data);
 
     /// Bind multiple samplers described by the array of hash values to the
     /// consecutive texture units starting from the specified offset

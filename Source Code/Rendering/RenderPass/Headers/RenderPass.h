@@ -52,41 +52,13 @@ enum class RenderStage : U8;
 class RenderPass : private NonCopyable {
    public:
        struct BufferData {
-           BufferData(GFXDevice& context, U32 sizeFactor, I32 index);
-           ~BufferData();
-
            U32 _renderDataElementOffset = 0;
-           ShaderBuffer* _renderData;
+           ShaderBuffer* _renderData = nullptr;
 
-           vectorEASTL<ShaderBuffer*> _cmdBuffers;
-
-           I32 _sizeFactor;
-           U32 _lastCommandCount;
+           U32* _lastCommandCount = nullptr;
+           ShaderBuffer* _cmdBuffer = nullptr;
        };
-   protected:
-
-    struct BufferDataPoolParams {
-        U32 _maxBuffers = 0;
-        U32 _maxPassesPerBuffer = 0;
-    };
-
-    struct BufferDataPool {
-        explicit BufferDataPool(GFXDevice& context, const BufferDataPoolParams& maxBuffers);
-        ~BufferDataPool();
-
-        BufferData& getBufferData(I32 bufferIndex, I32 bufferOffset);
-        const BufferData& getBufferData(I32 bufferIndex, I32 bufferOffset) const;
-
-        void initBuffers();
-        void incBuffers();
-
-    private:
-        GFXDevice& _context;
-        U32 _bufferSizeFactor = 0;
-        vector<std::shared_ptr<BufferData>> _buffers;
-    };
-
-   public:
+  public:
     // passStageFlags: the first stage specified will determine the data format used by the additional stages in the list
     explicit RenderPass(RenderPassManager& parent, GFXDevice& context, stringImpl name, U8 sortKey, RenderStage passStageFlags);
     ~RenderPass();
@@ -100,24 +72,22 @@ class RenderPass : private NonCopyable {
 
     inline RenderStage stageFlag() const { return _stageFlag; }
 
-    BufferData& getBufferData(I32 bufferIndex, I32 bufferOffset);
-    const BufferData& getBufferData(I32 bufferIndex, I32 bufferOffset) const;
+    BufferData getBufferData(RenderPassType type, I32 passIndex) const;
 
     void initBufferData();
-
-   protected:
-    
-    BufferDataPoolParams getBufferParamsForStage(RenderStage stages) const;
 
    private:
     GFXDevice & _context;
     RenderPassManager& _parent;
 
-    U8 _sortKey;
-    stringImpl _name;
-    U16 _lastTotalBinSize;
-    RenderStage _stageFlag;
-    BufferDataPool* _passBuffers;
+    U8 _sortKey = 0;;
+    stringImpl _name = "";
+    U16 _lastTotalBinSize = 0;
+    RenderStage _stageFlag = RenderStage::COUNT;
+
+    U32 _dataBufferSize = 0;
+    ShaderBuffer* _renderData = nullptr;
+    mutable vectorEASTL<std::pair<ShaderBuffer*, U32>> _cmdBuffers;
 };
 
 };  // namespace Divide

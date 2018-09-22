@@ -131,11 +131,11 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
     applyFrustumSplits(dirLight, playerCamera.getWorldMatrix(), numSplits, splitDepths, nearFarPlanes, frustumCornersWS, frustumCornersVS);
     
     RenderPassManager::PassParams params = {};
-    params._doPrePass = false;
     params._stage = RenderStage::SHADOW;
     params._target = _drawBuffer._targetID;
     params._bindTargets = false;
-    params._bufferIndex = lightIndex;
+    params._pass = RenderPassType::COUNT;
+    params._passIndex = lightIndex;
 
     GFX::BeginRenderPassCommand beginRenderPassCmd = {};
     beginRenderPassCmd._target = params._target;

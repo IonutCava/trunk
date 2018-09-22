@@ -559,7 +559,7 @@ bool WarScene::load(const stringImpl& name) {
 #endif
     static const bool disableParticles = true;
 
-    if (disableParticles) {
+    if (!disableParticles) {
         const U32 particleCount = Config::Build::IS_DEBUG_BUILD ? 4000 : 20000;
         const F32 emitRate = particleCount / 4;
 
@@ -638,7 +638,7 @@ bool WarScene::load(const stringImpl& name) {
     Camera::utilityCamera(Camera::UtilityCamera::DEFAULT)->setHorizontalFoV(110);
 
     static const bool disableEnvProbes = true;
-    if (disableEnvProbes) {
+    if (!disableEnvProbes) {
         _envProbePool->addInfiniteProbe(vec3<F32>(0.0f, 0.0f, 0.0f));
         _envProbePool->addLocalProbe(vec3<F32>(-5.0f), vec3<F32>(-1.0f));
     }

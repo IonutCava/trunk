@@ -149,6 +149,7 @@ bool glBufferImpl::bindRange(GLuint bindIndex, size_t offsetInBytes, size_t rang
 void glBufferImpl::writeData(size_t offsetInBytes, size_t rangeInBytes, const bufferPtr data)
 {
     if (_mappedBuffer) {
+        waitRange(offsetInBytes, rangeInBytes, true);
         std::memcpy(((Byte*)_mappedBuffer) + offsetInBytes,
                         data,
                         rangeInBytes);
@@ -172,6 +173,7 @@ void glBufferImpl::readData(size_t offsetInBytes, size_t rangeInBytes, const buf
                                                         : MemoryBarrierMask::GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT);
 
     if (_mappedBuffer) {
+        waitRange(offsetInBytes, rangeInBytes, true);
         /*glMemoryBarrier(_target == GL_ATOMIC_COUNTER_BUFFER ? MemoryBarrierMask::GL_ATOMIC_COUNTER_BARRIER_BIT
                                                             : MemoryBarrierMask::GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT);*/
 

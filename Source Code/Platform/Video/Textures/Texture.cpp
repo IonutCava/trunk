@@ -14,7 +14,7 @@
 namespace Divide {
 
 namespace {
-    static const U16 g_partitionSize = 128;
+    static const U16 g_partitionSize = 256;
 };
 
 const char* Texture::s_missingTextureFileName = nullptr;

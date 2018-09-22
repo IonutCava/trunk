@@ -177,11 +177,12 @@ bool glUniformBuffer::bindRange(U8 bindIndex, U32 offsetElementCount, U32 rangeE
     data._range = static_cast<size_t>(rangeElementCount * _buffer->elementSize());
     data._offset = static_cast<size_t>(offsetElementCount * _buffer->elementSize());
     data._offset += static_cast<size_t>(queueIndex() * _allignedBufferSize);
+    data._flush = BitCompare(_flags, ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
 
     assert(data._range <= _maxSize &&
            "glUniformBuffer::bindRange: attempted to bind a larger shader block than is allowed on the current platform");
 
-    GL_API::registerBufferWrite(data);
+    GL_API::registerBufferBind(data);
 
     return _buffer->bindRange(bindIndex, data._offset, data._range);
 }

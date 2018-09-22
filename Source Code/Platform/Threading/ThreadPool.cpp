@@ -64,13 +64,13 @@ namespace Divide {
         }
     }
 
-    BlockingThreadPool::~BlockingThreadPool()
-    {
-    }
+    bool BlockingThreadPool::addTask(const PoolTask& job)  {
+        if (_queue.enqueue(job)) {
+            _tasksLeft.fetch_add(1);
+            return true;
+        }
 
-    void BlockingThreadPool::addTask(const PoolTask& job)  {
-        _queue.enqueue(job);
-        _tasksLeft.fetch_add(1);
+        return false;
     }
 
     LockFreeThreadPool::LockFreeThreadPool(const U8 threadCount)
@@ -92,13 +92,13 @@ namespace Divide {
         }
     }
 
-    LockFreeThreadPool::~LockFreeThreadPool()
-    {
-    }
+    bool LockFreeThreadPool::addTask(const PoolTask& job) {
+        if (_queue.enqueue(job)) {
+            _tasksLeft.fetch_add(1);
+            return true;
+        }
 
-    void LockFreeThreadPool::addTask(const PoolTask& job) {
-        _queue.enqueue(job);
-        _tasksLeft.fetch_add(1);
+        return false;
     }
    
 };

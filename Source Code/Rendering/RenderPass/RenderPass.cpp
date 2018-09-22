@@ -45,78 +45,113 @@ namespace {
 
         inline U32 currentEntry() { return g_refractionBudget; }
     };
-    
-};
 
-RenderPass::BufferData::BufferData(GFXDevice& context, U32 sizeFactor, I32 index)
-  : _sizeFactor(sizeFactor),
-    _lastCommandCount(0)
-{
-    ShaderBufferDescriptor bufferDescriptor;
-    bufferDescriptor._elementCount = Config::MAX_VISIBLE_NODES * _sizeFactor;
-    bufferDescriptor._elementSize = sizeof(GFXDevice::NodeData);
-    bufferDescriptor._ringBufferLength = 3;
-    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE) | to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
-    bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
-    bufferDescriptor._name = Util::StringFormat("RENDER_DATA_%d", index).c_str();
-    // This do not need to be persistently mapped as, hopefully, they will only be update once per frame
-    // Each pass should have its own set of buffers (shadows, reflection, etc)
-    _renderData = context.newSB(bufferDescriptor);
+    // This is very hackish but should hold up fine
+    U32 getDataBufferSize(RenderStage stage) {
+        U32 bufferSizeFactor = 1;
+        //We only care about the first parameter as it will determine the properties for the rest of the stages
+        switch (stage) {
+            case RenderStage::REFLECTION: { //Both planar and cube
+                // Planar reflectors
+                bufferSizeFactor = Config::MAX_REFLECTIVE_NODES_IN_VIEW;
+                // Cube reflectors
+                bufferSizeFactor *= 2;
+                //Add an extra buffer for environment maps
+                bufferSizeFactor += 1;
 
-    bufferDescriptor._elementCount = Config::MAX_VISIBLE_NODES;
-    bufferDescriptor._elementSize = sizeof(IndirectDrawCommand);
-    _cmdBuffers.reserve(_sizeFactor);
+                // We MIGHT need new buffer data for each pass type (prepass, main, oit, etc)
+                bufferSizeFactor *= to_base(RenderPassType::COUNT);
+            }; break;
 
-    for (U32 i = 0; i < _sizeFactor; ++i) {
-        bufferDescriptor._name = Util::StringFormat("CMD_DATA_%d_%d", index, i).c_str();
-        _cmdBuffers.push_back(context.newSB(bufferDescriptor));
-        _cmdBuffers.back()->addAtomicCounter(1, 5);
+            case RenderStage::REFRACTION: { //Both planar and cube
+                // Planar refractions
+                bufferSizeFactor = Config::MAX_REFRACTIVE_NODES_IN_VIEW;
+                // Cube refractions
+                bufferSizeFactor *= 2;
+                //Add an extra buffer for environment maps
+                bufferSizeFactor += 1;
+
+                // We MIGHT need new buffer data for each pass type (prepass, main, oit, etc)
+                bufferSizeFactor *= to_base(RenderPassType::COUNT);
+            } break;
+
+            case RenderStage::SHADOW: {
+                // One buffer per light, but split into multiple pieces
+                bufferSizeFactor = Config::Lighting::MAX_SHADOW_CASTING_LIGHTS;
+                bufferSizeFactor *= Config::MAX_VISIBLE_NODES;
+            }; break;
+
+            case RenderStage::DISPLAY: {
+                // PrePass, MainPass and OitPass should share buffers
+                bufferSizeFactor = Config::MAX_VISIBLE_NODES;
+                // We MIGHT need new buffer data for each pass type (prepass, main, oit, etc)
+                bufferSizeFactor *= to_base(RenderPassType::COUNT);
+            }; break;
+        };
+
+        return bufferSizeFactor;
     }
-}
 
-RenderPass::BufferData::~BufferData()
-{
-}
+    U32 getCmdBufferCount(RenderStage stage) {
+        U32 ret = 0;
 
-RenderPass::BufferDataPool::BufferDataPool(GFXDevice& context, const BufferDataPoolParams& params)
-    : _context(context),
-      _bufferSizeFactor(params._maxPassesPerBuffer)
-{
-    _buffers.resize(params._maxBuffers, nullptr);
-}
+        switch (stage) {
+            case RenderStage::REFLECTION: ret = to_base(RenderPassType::COUNT) * 3; break;
+            case RenderStage::REFRACTION: ret = to_base(RenderPassType::COUNT) * 3; break;
+            case RenderStage::SHADOW: ret = Config::Lighting::MAX_SHADOW_CASTING_LIGHTS;  break;
+            // Display stage should ALWAYS execute a depth prepass, otherwise a lot of stuff stops working
+            case RenderStage::DISPLAY: ret = 1;  break;
+        };
 
-RenderPass::BufferDataPool::~BufferDataPool()
-{
-    _buffers.clear();
-}
-
-RenderPass::BufferData& RenderPass::BufferDataPool::getBufferData(I32 bufferIndex, I32 bufferOffset) {
-    std::shared_ptr<BufferData>& bufferData = _buffers[bufferIndex];
-    bufferData->_renderDataElementOffset = Config::MAX_VISIBLE_NODES * bufferOffset;
-    return *bufferData;
-}
-
-const RenderPass::BufferData& RenderPass::BufferDataPool::getBufferData(I32 bufferIndex, I32 bufferOffset) const {
-    const std::shared_ptr<BufferData>& bufferData = _buffers[bufferIndex];
-    bufferData->_renderDataElementOffset = Config::MAX_VISIBLE_NODES * bufferOffset;
-
-    return *bufferData;
-}
-
-void RenderPass::BufferDataPool::initBuffers() {
-    I32 i = 0;
-    for (std::shared_ptr<BufferData>& buffer : _buffers) {
-        buffer = std::make_shared<BufferData>(_context, _bufferSizeFactor, i++);
+        return ret;
     }
-}
 
-void RenderPass::BufferDataPool::incBuffers() {
-    for (const std::shared_ptr<BufferData>& buffer : _buffers) {
-        for (ShaderBuffer* shaderBuffer : buffer->_cmdBuffers) {
-            shaderBuffer->incQueue();
+    U32 getCmdBufferIndex(RenderStage stage, RenderPassType type, I32 passIndex) {
+        switch(stage){
+            case RenderStage::REFLECTION:
+            case RenderStage::REFRACTION: return to_U32(type);
+            case RenderStage::SHADOW: return passIndex;
+            case RenderStage::DISPLAY: break;
+
         }
+
+        return 0;
     }
-}
+
+    U32 getBufferOffset(RenderStage stage, RenderPassType type, U32 passIndex) {
+        U32 ret = 0;
+
+        switch (stage) {
+            case RenderStage::REFLECTION: {
+                switch (passIndex) {
+                    case 0: break; //planar
+                    case 1: ret = Config::MAX_REFLECTIVE_NODES_IN_VIEW; // cube
+                    case 2: ret = Config::MAX_REFLECTIVE_NODES_IN_VIEW * 2; // environment
+                    default: assert(false && "getBufferOffset error: invalid pass index"); break;
+                };
+                ret *= to_base(type);
+            }break;
+            case RenderStage::REFRACTION: {
+                switch (passIndex) {
+                    case 0: break; //planar
+                    case 1: ret = Config::MAX_REFRACTIVE_NODES_IN_VIEW; // cube
+                    case 2: ret = Config::MAX_REFRACTIVE_NODES_IN_VIEW * 2; // environment
+                    default: assert(false && "getBufferOffset error: invalid pass index"); break;
+                };
+                ret *= to_base(type);
+            }break;
+            case RenderStage::SHADOW: {
+                assert(type == RenderPassType::COUNT && "getBufferOffset error: make sure shadow rendering doesn't specify a pass type!");
+                ret = Config::MAX_VISIBLE_NODES * passIndex;
+            }break;
+            case RenderStage::DISPLAY: {
+                assert(passIndex == 0 && "getBufferOffset error: invalid pass index");
+                ret = Config::MAX_VISIBLE_NODES * to_base(type);
+            }break;
+        }
+        return ret;
+    }
+};
 
 RenderPass::RenderPass(RenderPassManager& parent, GFXDevice& context, stringImpl name, U8 sortKey, RenderStage passStageFlag)
     : _parent(parent),
@@ -126,26 +161,48 @@ RenderPass::RenderPass(RenderPassManager& parent, GFXDevice& context, stringImpl
       _stageFlag(passStageFlag)
 {
     _lastTotalBinSize = 0;
-
-    BufferDataPoolParams params = getBufferParamsForStage(_stageFlag);
-    _passBuffers = MemoryManager_NEW BufferDataPool(_context, params);
+    _dataBufferSize = getDataBufferSize(_stageFlag);
 }
 
 RenderPass::~RenderPass() 
 {
-    MemoryManager::DELETE(_passBuffers);
 }
 
-RenderPass::BufferData&  RenderPass::getBufferData(I32 bufferIndex, I32 bufferOffset) {
-    return _passBuffers->getBufferData(bufferIndex, bufferOffset);
-}
+RenderPass::BufferData RenderPass::getBufferData(RenderPassType type, I32 passIndex) const {
+    BufferData ret = {};
+    ret._renderDataElementOffset = getBufferOffset(_stageFlag, type, passIndex);
+    ret._renderData = _renderData;
+    ret._cmdBuffer = _cmdBuffers[getCmdBufferIndex(_stageFlag, type, passIndex)].first;
+    ret._lastCommandCount = &_cmdBuffers[to_base(type)].second;
 
-const RenderPass::BufferData&  RenderPass::getBufferData(I32 bufferIndex, I32 bufferOffset) const {
-    return _passBuffers->getBufferData(bufferIndex, bufferOffset);
+    return ret;
 }
 
 void RenderPass::initBufferData() {
-    _passBuffers->initBuffers();
+    ShaderBufferDescriptor bufferDescriptor;
+    bufferDescriptor._elementCount = _dataBufferSize;
+    bufferDescriptor._elementSize = sizeof(GFXDevice::NodeData);
+    bufferDescriptor._ringBufferLength = 3;
+    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE) | to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
+    bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
+    bufferDescriptor._name = Util::StringFormat("RENDER_DATA_%s", TypeUtil::renderStageToString(_stageFlag)).c_str();
+    // This do not need to be persistently mapped as, hopefully, they will only be update once per frame
+    // Each pass should have its own set of buffers (shadows, reflection, etc)
+    _renderData = _context.newSB(bufferDescriptor);
+
+    bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
+    bufferDescriptor._elementCount = Config::MAX_VISIBLE_NODES;
+    bufferDescriptor._elementSize = sizeof(IndirectDrawCommand);
+    bufferDescriptor._ringBufferLength = 1;
+
+    U32 cmdCount = getCmdBufferCount(_stageFlag);
+    _cmdBuffers.reserve(cmdCount);
+
+    for (U32 i = 0; i < cmdCount; ++i) {
+        bufferDescriptor._name = Util::StringFormat("CMD_DATA_%s_%d", TypeUtil::renderStageToString(_stageFlag), i).c_str();
+        _cmdBuffers.push_back(std::make_pair(_context.newSB(bufferDescriptor), 0));
+        _cmdBuffers.back().first->addAtomicCounter(1, 5);
+    }
 }
 
 void RenderPass::render(const SceneRenderState& renderState, GFX::CommandBuffer& bufferInOut) {
@@ -160,14 +217,12 @@ void RenderPass::render(const SceneRenderState& renderState, GFX::CommandBuffer&
             beginDebugScopeCmd._scopeName = "Display Render Stage";
             GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
-            const RenderTarget& screenRT = _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
-            RenderPassManager::PassParams params;
+            RenderPassManager::PassParams params = {};
             params._occlusionCull = Config::USE_HIZ_CULLING;
-            params._camera = Attorney::SceneManagerCameraAccessor::playerCamera(_parent.parent().sceneManager());
-
             params._stage = _stageFlag;
             params._target = RenderTargetID(RenderTargetUsage::SCREEN);
-            params._doPrePass = screenRT.getAttachment(RTAttachmentType::Depth, 0).used();
+            params._camera = Attorney::SceneManagerCameraAccessor::playerCamera(_parent.parent().sceneManager());
+
             _parent.doCustomPass(params, bufferInOut);
 
             GFX::EndDebugScopeCommand endDebugScopeCmd;
@@ -301,49 +356,7 @@ void RenderPass::render(const SceneRenderState& renderState, GFX::CommandBuffer&
 }
 
 void RenderPass::postRender() {
-    _passBuffers->incBuffers();
-}
-
-// This is very hackish but should hold up fine
-RenderPass::BufferDataPoolParams RenderPass::getBufferParamsForStage(RenderStage stage) const {
-
-    RenderPass::BufferDataPoolParams ret;
-    ret._maxPassesPerBuffer = 6;
-    //We only care about the first parameter as it will determine the properties for the rest of the stages
-    switch (stage) {
-        case RenderStage::REFLECTION: { //Both planar and cube
-            // Planar reflectors
-            ret._maxBuffers = Config::MAX_REFLECTIVE_NODES_IN_VIEW;
-            // Cube reflectors
-            ret._maxBuffers += Config::MAX_REFLECTIVE_NODES_IN_VIEW;
-            //Add an extra buffer for environment maps
-            ret._maxBuffers += 1;
-        }; break;
-        case RenderStage::REFRACTION: { //Both planar and cube
-            // Planar refractions
-            ret._maxBuffers = Config::MAX_REFRACTIVE_NODES_IN_VIEW;
-            // Cube refractions
-            ret._maxBuffers += Config::MAX_REFRACTIVE_NODES_IN_VIEW;
-            //Add an extra buffer for environment maps
-            ret._maxBuffers += 1;
-        } break;
-        case RenderStage::SHADOW: {
-            // One buffer per light, but split into multiple pieces
-            ret._maxBuffers = Config::Lighting::MAX_SHADOW_CASTING_LIGHTS;
-        }; break;
-        case RenderStage::DISPLAY: {
-            // PrePass, MainPass and OitPass should share buffers
-            ret._maxBuffers = 1;
-            ret._maxPassesPerBuffer = 1;
-        }; break;
-    };
-
-    if (stage != RenderStage::SHADOW) {
-        // We MIGHT need new buffer data for each pass type (prepass, main, oit, etc)
-        ret._maxPassesPerBuffer *= to_base(RenderPassType::COUNT);
-    }
-
-    return ret;
+    _renderData->incQueue();
 }
 
 };
