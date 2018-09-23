@@ -54,8 +54,6 @@ namespace Divide {
         {}
 
         bool resize(U16 width, U16 height) { return true; }
-        void drawToLayer(const DrawLayerParams& params) {}
-        void setMipLevel(U16 writeLevel) {}
         void setDefaultState(const RTDrawDescriptor& drawPolicy) {}
         void readData(const vec4<U16>& rect, GFXImageFormat imageFormat, GFXDataFormat dataType, bufferPtr outData) {}
         void blitFrom(const RTBlitParams& params) {}

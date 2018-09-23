@@ -33,7 +33,6 @@ namespace {
 };
 
 
-bool glFramebuffer::_bufferBound = false;
 bool glFramebuffer::_zWriteEnabled = true;
 
 IMPLEMENT_CUSTOM_ALLOCATOR(glFramebuffer, 0, 0)
@@ -45,6 +44,7 @@ glFramebuffer::glFramebuffer(GFXDevice& context, const RenderTargetDescriptor& d
       _resolved(false),
       _isLayeredDepth(false),
       _activeDepthBuffer(false),
+      _statusCheckQueued(false),
       _hasMultisampledColourAttachments(false),
       _framebufferHandle(0),
       _prevViewport(-1)
@@ -138,7 +138,7 @@ void glFramebuffer::toggleAttachment(const RTAttachment_ptr& attachment, Attachm
         } else {
             glNamedFramebufferTexture(_framebufferHandle, binding, handle, bState._writeLevel);
         }
-
+        queueCheckStatus();
         setAttachmentState(binding, bState);
     }
 }
@@ -506,6 +506,7 @@ void glFramebuffer::prepareBuffers(const RTDrawDescriptor& drawPolicy, const vec
             glNamedFramebufferDrawBuffers(_framebufferHandle,
                                           static_cast<GLsizei>(activeColourBuffers.size()),
                                           activeColourBuffers.data());
+            queueCheckStatus();
         }
 
         const RTAttachment_ptr& depthAtt = _attachmentPool->get(RTAttachmentType::Depth, 0);
@@ -559,9 +560,7 @@ void glFramebuffer::setDefaultState(const RTDrawDescriptor& drawPolicy) {
 void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
     /// Push debug state
     if (Config::ENABLE_GPU_VALIDATION) {
-        assert(!glFramebuffer::_bufferBound && "glFramebuffer error: Begin() called without a call to the previous bound buffer's End()");
         GL_API::pushDebugMessage(("FBO Begin: " + name()).c_str(), _framebufferHandle);
-        glFramebuffer::_bufferBound = true;
     }
 
     /// Activate FBO
@@ -603,10 +602,6 @@ void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
 }
 
 void glFramebuffer::end() {
-    if (Config::ENABLE_GPU_VALIDATION) {
-        assert(glFramebuffer::_bufferBound && "glFramebuffer error: End() called without a previous call to Begin()");
-    }
-
     GL_API::setActiveFB(RenderTarget::RenderTargetUsage::RT_READ_WRITE, 0);
     if (_previousPolicy.isEnabledState(RTDrawDescriptor::State::CHANGE_VIEWPORT)) {
         _context.setViewport(_prevViewport);
@@ -622,7 +617,6 @@ void glFramebuffer::end() {
     }
 
     if (Config::ENABLE_GPU_VALIDATION) {
-        glFramebuffer::_bufferBound = false;
         GL_API::popDebugMessage();
     }
 }
@@ -709,10 +703,14 @@ void glFramebuffer::drawToLayer(const DrawLayerParams& params) {
         }
     }
 
-    checkStatus();
+    if (params._validateLayer) {
+        checkStatus();
+    } else {
+        _statusCheckQueued = false;
+    }
 }
 
-void glFramebuffer::setMipLevel(U16 writeLevel) {
+void glFramebuffer::setMipLevel(U16 writeLevel, bool validate) {
     if (writeLevel == std::numeric_limits<U16>::max()) {
         return;
     }
@@ -737,8 +735,11 @@ void glFramebuffer::setMipLevel(U16 writeLevel) {
             }
         }
     }
-
-    checkStatus();
+    if (validate) {
+        checkStatus();
+    } else {
+        _statusCheckQueued = false;
+    }
 }
 
 void glFramebuffer::readData(const vec4<U16>& rect,
@@ -780,7 +781,17 @@ glFramebuffer::BindingState glFramebuffer::getAttachmentState(GLenum binding) co
     return { AttachmentState::COUNT, -1, -1 };
 }
 
-bool glFramebuffer::checkStatus() const {
+void glFramebuffer::queueCheckStatus() {
+    _statusCheckQueued = true;
+}
+
+bool glFramebuffer::checkStatus() {
+    if (!_statusCheckQueued) {
+        return true;
+    }
+
+    _statusCheckQueued = false;
+
     if (Config::ENABLE_GPU_VALIDATION) {
         // check FB status
         switch (glCheckNamedFramebufferStatus(_framebufferHandle, GL_FRAMEBUFFER))

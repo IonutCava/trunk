@@ -240,7 +240,6 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
     RenderTarget::DrawLayerParams drawParams;
     drawParams._type = hasColour ? RTAttachmentType::Colour : RTAttachmentType::Depth;
     drawParams._index = 0;
-    drawParams._isCubeFace = true;
 
     for (U8 i = 0; i < 6; ++i) {
         // Draw to the current cubemap face
@@ -538,6 +537,8 @@ bool GFXDevice::setViewport(const Rect<I32>& viewport) {
 /// Based on RasterGrid implementation: http://rastergrid.com/blog/2010/10/hierarchical-z-map-based-occlusion-culling/
 /// Modified with nVidia sample code: https://github.com/nvpro-samples/gl_occlusion_culling
 const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmdBufferInOut) const {
+    static bool firstRun = true;
+
     // We use a special shader that downsamples the buffer
     // We will use a state block that disables colour writes as we will render only a depth image,
     // disables depth testing but allows depth writes
@@ -607,6 +608,8 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::Comm
     GFX::BeginRenderSubPassCommand beginRenderSubPassCmd;
     GFX::EndRenderSubPassCommand endRenderSubPassCmd;
 
+    beginRenderSubPassCmd._validateWriteLevel = firstRun;
+
     GenericDrawCommand triangleCmd;
     triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
     triangleCmd._drawCount = 1;
@@ -658,6 +661,8 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::Comm
     
     GFX::EndDebugScopeCommand endDebugScopeCmd;
     GFX::EnqueueCommand(cmdBufferInOut, endDebugScopeCmd);
+
+    firstRun = false;
 
     return depth;
 }

@@ -248,11 +248,11 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
             { revealageDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::REVEALAGE), FColour(1.0f, 0.0f, 0.0f, 0.0f) }
         };
 
-        const RTAttachment_ptr& screenAttchment = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachmentPtr(RTAttachmentType::Colour, 0);
+        const RTAttachment_ptr& screenAttachment = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachmentPtr(RTAttachmentType::Colour, 0);
         const RTAttachment_ptr& screenDepthAttachment = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachmentPtr(RTAttachmentType::Depth, 0);
 
         vector<ExternalRTAttachmentDescriptor> externalAttachments = {
-            { screenAttchment,  RTAttachmentType::Colour, to_U8(ScreenTargets::MODULATE) },
+            { screenAttachment,  RTAttachmentType::Colour, to_U8(ScreenTargets::MODULATE) },
             { screenDepthAttachment,  RTAttachmentType::Depth }
         };
 

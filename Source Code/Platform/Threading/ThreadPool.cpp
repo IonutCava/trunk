@@ -47,6 +47,22 @@ namespace Divide {
         return _threads;
     }
 
+    BoostAsioThreadPool::BoostAsioThreadPool(const U8 threadCount)
+        : ThreadPool(threadCount),
+          _queue(threadCount)
+    {
+    }
+
+    bool BoostAsioThreadPool::addTask(const PoolTask& job) {
+        boost::asio::post(_queue, job);
+        return true;
+    }
+
+    void BoostAsioThreadPool::wait() {
+        _queue.stop();
+        ThreadPool::wait();
+    }
+
     BlockingThreadPool::BlockingThreadPool(const U8 threadCount)
         : ThreadPool(threadCount)
     {

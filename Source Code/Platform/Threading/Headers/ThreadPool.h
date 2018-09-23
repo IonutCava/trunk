@@ -52,7 +52,7 @@ public:
     void join();
 
     // Wait for all running jobs to finish
-    void wait();
+    virtual void wait();
 
     // Get all of the threads for external usage (e.g. setting affinity)
     eastl::vector<std::thread>& threads();
@@ -63,6 +63,20 @@ protected:
     eastl::vector<std::thread> _threads;
 };
 
+class BoostAsioThreadPool final : public ThreadPool
+{
+public:
+
+    explicit BoostAsioThreadPool(const U8 threadCount);
+    ~BoostAsioThreadPool() = default;
+
+    // Add a new task to the pool's queue
+    bool addTask(const PoolTask& job) override;
+    void wait();
+
+private:
+    boost::asio::thread_pool _queue;
+};
 
 class BlockingThreadPool final : public ThreadPool
 {

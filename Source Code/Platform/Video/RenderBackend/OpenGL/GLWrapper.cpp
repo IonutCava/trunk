@@ -975,11 +975,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             assert(s_activeRenderTarget != nullptr);
             const GFX::BeginRenderSubPassCommand& crtCmd = commandBuffer.getCommand<GFX::BeginRenderSubPassCommand>(entry);
             for (const RenderTarget::DrawLayerParams& params : crtCmd._writeLayers) {
-                if (!params._isCubeFace) {
-                    GL_API::s_activeRenderTarget->drawToLayer(params);
-                } else {
-                    GL_API::s_activeRenderTarget->drawToFace(params);
-                }
+                GL_API::s_activeRenderTarget->drawToLayer(params);
             }
 
             GL_API::s_activeRenderTarget->setMipLevel(crtCmd._mipWriteLevel);

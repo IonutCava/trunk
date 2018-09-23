@@ -175,6 +175,7 @@ BEGIN_COMMAND(EndPixelBufferCommand, CommandType::END_PIXEL_BUFFER, 4096);
 END_COMMAND();
 
 BEGIN_COMMAND(BeginRenderSubPassCommand, CommandType::BEGIN_RENDER_SUB_PASS, 4096);
+    bool _validateWriteLevel = false;
     U16 _mipWriteLevel = std::numeric_limits<U16>::max();
     vectorEASTL<RenderTarget::DrawLayerParams> _writeLayers;
 END_COMMAND();

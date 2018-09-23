@@ -539,7 +539,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     U32 hardwareThreads = HARDWARE_THREAD_COUNT();
     if (!_platformContext->taskPool().init(
         static_cast<U8>(std::max(hardwareThreads, 5u) - 1), //at least two worker threads(what if we have a system with >260 threads?)
-        true,
+        TaskPool::TaskPoolType::TYPE_BLOCKING,
         "DIVIDE_WORKER_THREAD_"))
     {
         return ErrorCode::CPU_NOT_SUPPORTED;

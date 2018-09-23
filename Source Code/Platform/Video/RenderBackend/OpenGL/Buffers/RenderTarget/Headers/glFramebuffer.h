@@ -62,9 +62,9 @@ class glFramebuffer : public RenderTarget,
     const RTAttachment_ptr& getAttachmentPtr(RTAttachmentType type, U8 index) const override;
     RTAttachment& getAttachment(RTAttachmentType type, U8 index) override;
 
-    void drawToLayer(const DrawLayerParams& params) override;
+    void drawToLayer(const DrawLayerParams& params);
 
-    void setMipLevel(U16 writeLevel) override;
+    void setMipLevel(U16 writeLevel, bool validate = true);
 
     void readData(const vec4<U16>& rect,
                   GFXImageFormat imageFormat,
@@ -104,8 +104,9 @@ class glFramebuffer : public RenderTarget,
     /// Bake in all settings and attachments to prepare it for rendering
     bool create();
     void resolve(bool colours, bool depth);
-    bool checkStatus() const;
-    
+    void queueCheckStatus();
+    bool checkStatus();
+
     void setBlendState(const RTDrawDescriptor& drawPolicy, const vector<RTAttachment_ptr>& activeAttachments);
     void prepareBuffers(const RTDrawDescriptor& drawPolicy, const vector<RTAttachment_ptr>& activeAttachments);
     void clear(const RTDrawDescriptor& drawPolicy, const vector<RTAttachment_ptr>& activeAttachments) const;
@@ -142,9 +143,9 @@ class glFramebuffer : public RenderTarget,
    protected:
     bool _resolved;
     bool _isLayeredDepth;
+    bool _statusCheckQueued;
     Rect<I32> _prevViewport;
     GLuint _framebufferHandle;
-    static bool _bufferBound;
     static bool _zWriteEnabled;
     glFramebuffer* _resolveBuffer;
     RTDrawDescriptor _previousPolicy;
