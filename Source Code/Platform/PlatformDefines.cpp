@@ -167,14 +167,11 @@ bool createDirectories(const char* path) {
 }
 
 FileWithPath getExecutableLocation(char* argv0) {
-    if (argv0 == nullptr || argv0[0] == 0)
-    {
+    if (argv0 == nullptr || argv0[0] == 0) {
         return FileWithPath();
     }
 
-    boost::system::error_code ec;
-    boost::filesystem::path p(boost::filesystem::canonical(argv0, boost::filesystem::current_path(), ec));
-    return splitPathToNameAndLocation(p.make_preferred().string());
+    return splitPathToNameAndLocation(extractFilePathAndName(argv0));
 }
 
 const char* GetClipboardText(void* user_data)

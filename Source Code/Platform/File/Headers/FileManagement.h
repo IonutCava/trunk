@@ -140,6 +140,8 @@ FileWithPath splitPathToNameAndLocation(const stringImpl& input);
 bool clearCache();
 bool clearCache(CacheType type);
 
+std::string extractFilePathAndName(char* argv0);
+
 }; //namespace Divide
 
 #endif //_PLATFORM_FILE_FILE_MANAGEMENT_H_

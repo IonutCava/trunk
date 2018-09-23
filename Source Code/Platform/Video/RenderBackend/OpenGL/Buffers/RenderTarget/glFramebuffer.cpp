@@ -122,8 +122,8 @@ void glFramebuffer::toggleAttachment(const RTAttachment_ptr& attachment, Attachm
     GLenum binding = static_cast<GLenum>(attachment->binding());
 
     BindingState bState{ state,
-                         static_cast<GLint>(attachment->mipWriteLevel()),
-                         static_cast<GLint>(attachment->writeLayer()),
+                         attachment->mipWriteLevel(),
+                         attachment->writeLayer(),
                          layeredRendering};
 
     BindingState oldState = getAttachmentState(binding);
@@ -222,10 +222,10 @@ void glFramebuffer::resolve(bool colours, bool depth) {
                 const vector<RTAttachment_ptr>& colourAtt = _attachmentPool->get(RTAttachmentType::Colour);
                 for (const RTAttachment_ptr& att : colourAtt) {
                     ColourBlitEntry entry = {};
-                    entry._inputIndex = entry._outputIndex = att->binding() - to_U32(GL_COLOR_ATTACHMENT0);
+                    entry._inputIndex = entry._outputIndex = to_U16(att->binding() - to_U32(GL_COLOR_ATTACHMENT0));
 
-                    const std::set<U32, std::greater<U32>>& layers = _attachmentDirtyLayers[static_cast<GLenum>(att->binding())];
-                    for (U32 layer : layers) {
+                    const std::set<U16, std::greater<U16>>& layers = _attachmentDirtyLayers[static_cast<GLenum>(att->binding())];
+                    for (U16 layer : layers) {
                         entry._inputLayer = entry._outputLayer = layer;
                         params._blitColours.push_back(entry);
                     }
@@ -233,8 +233,8 @@ void glFramebuffer::resolve(bool colours, bool depth) {
             }
 
             if (depth) {
-                const std::set<U32, std::greater<U32>>& layers = _attachmentDirtyLayers[GL_DEPTH_ATTACHMENT];
-                for (U32 layer : layers) {
+                const std::set<U16, std::greater<U16>>& layers = _attachmentDirtyLayers[GL_DEPTH_ATTACHMENT];
+                for (U16 layer : layers) {
                     params._blitDepth.push_back({ layer, layer });
                 }
             }
@@ -580,8 +580,8 @@ void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
     if (hasDepth() && drawPolicy.drawMask().isEnabled(RTAttachmentType::Depth)) {
         _attachmentDirtyLayers[GL_DEPTH_ATTACHMENT].insert(_attachmentState[GL_DEPTH_ATTACHMENT]._writeLayer);
 
-        const std::set<U32>& additionalDirtyLayers = drawPolicy.getDirtyLayers(RTAttachmentType::Depth);
-        for (U32 layer : additionalDirtyLayers) {
+        const std::set<U16>& additionalDirtyLayers = drawPolicy.getDirtyLayers(RTAttachmentType::Depth);
+        for (U16 layer : additionalDirtyLayers) {
             _attachmentDirtyLayers[GL_DEPTH_ATTACHMENT].insert(layer);
         }
     }
@@ -590,8 +590,8 @@ void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
         for (U8 i = 0; i < MAX_RT_COLOUR_ATTACHMENTS; ++i) {
             if (drawPolicy.drawMask().isEnabled(RTAttachmentType::Colour, i)) {
                 _attachmentDirtyLayers[GL_COLOR_ATTACHMENT0 + i].insert(_attachmentState[GL_COLOR_ATTACHMENT0 + i]._writeLayer);
-                const std::set<U32>& additionalDirtyLayers = drawPolicy.getDirtyLayers(RTAttachmentType::Colour, i);
-                for (U32 layer : additionalDirtyLayers) {
+                const std::set<U16>& additionalDirtyLayers = drawPolicy.getDirtyLayers(RTAttachmentType::Colour, i);
+                for (U16 layer : additionalDirtyLayers) {
                     _attachmentDirtyLayers[GL_COLOR_ATTACHMENT0 + i].insert(layer);
                 }
             }
@@ -778,7 +778,7 @@ glFramebuffer::BindingState glFramebuffer::getAttachmentState(GLenum binding) co
         return it->second;
     }
 
-    return { AttachmentState::COUNT, -1, -1 };
+    return { AttachmentState::COUNT, 0, 0 };
 }
 
 void glFramebuffer::queueCheckStatus() {

@@ -63,15 +63,15 @@ struct RenderTargetID {
 
 
 struct ColourBlitEntry {
-    U32 _inputIndex = 0;
-    U32 _inputLayer = 0;
-    U32 _outputIndex = 0;
-    U32 _outputLayer = 0;
+    U16 _inputIndex = 0;
+    U16 _inputLayer = 0;
+    U16 _outputIndex = 0;
+    U16 _outputLayer = 0;
 };
 
 struct DepthBlitEntry {
-    U32 _inputLayer = 0;
-    U32 _outputLayer = 0;
+    U16 _inputLayer = 0;
+    U16 _outputLayer = 0;
 };
 
 class RenderTarget;

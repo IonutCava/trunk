@@ -144,13 +144,16 @@ inline void Material::setRenderStateBlock(size_t renderStateBlockHash,
                                           I32 variant) {
     for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
         RenderStagePass renderStagePass(renderStage, static_cast<RenderPassType>(pass));
-        renderStagePass._variant = variant;
 
         if (variant < 0) {
+            renderStagePass._variant = 0;
             for (size_t& state : defaultRenderStates(renderStagePass)) {
                 state = renderStateBlockHash;
+                ++renderStagePass._variant;
             }
         } else {
+            assert(variant < std::numeric_limits<U8>::max());
+            renderStagePass._variant = to_U8(variant);
             defaultRenderStates(renderStagePass)[variant] = renderStateBlockHash;
         }
     }
@@ -161,13 +164,16 @@ inline void Material::setRenderStateBlock(size_t renderStateBlockHash,
                                           I32 variant) {
     for (U8 stage = 0; stage < to_base(RenderStage::COUNT); ++stage) {
         RenderStagePass renderStagePass(static_cast<RenderStage>(stage), renderPassType);
-        renderStagePass._variant = variant;
 
         if (variant < 0 ) {
+            renderStagePass._variant = 0;
             for (size_t& state : defaultRenderStates(renderStagePass)) {
                 state = renderStateBlockHash;
+                ++renderStagePass._variant;
             }
         } else {
+            assert(variant < std::numeric_limits<U8>::max());
+            renderStagePass._variant = to_U8(variant);
             defaultRenderState(renderStagePass) = renderStateBlockHash;
         }
     }
@@ -176,13 +182,15 @@ inline void Material::setRenderStateBlock(size_t renderStateBlockHash,
 inline void Material::setRenderStateBlock(size_t renderStateBlockHash,
                                           RenderStagePass renderStagePass,
                                           I32 variant) {
-    renderStagePass._variant = variant;
-
     if (variant < 0) {
+        renderStagePass._variant = 0;
         for (size_t& state : defaultRenderStates(renderStagePass)) {
             state = renderStateBlockHash;
+            ++renderStagePass._variant;
         }
     } else {
+        assert(variant < std::numeric_limits<U8>::max());
+        renderStagePass._variant = to_U8(variant);
         defaultRenderStates(renderStagePass)[variant] = renderStateBlockHash;
     }
 }

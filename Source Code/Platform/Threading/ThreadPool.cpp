@@ -1,6 +1,10 @@
 #include "stdafx.h"
 
 #include "Headers/ThreadPool.h"
+#include "Platform/Headers/PlatformDefines.h"
+
+#include <boost/asio.hpp>
+#include <boost/asio/io_service.hpp>
 
 namespace Divide {
 
@@ -49,17 +53,23 @@ namespace Divide {
 
     BoostAsioThreadPool::BoostAsioThreadPool(const U8 threadCount)
         : ThreadPool(threadCount),
-          _queue(threadCount)
+          _queue(nullptr)
     {
+        _queue = MemoryManager_NEW boost::asio::thread_pool(threadCount);
+    }
+
+    BoostAsioThreadPool::~BoostAsioThreadPool()
+    {
+        MemoryManager::SAFE_DELETE(_queue);
     }
 
     bool BoostAsioThreadPool::addTask(const PoolTask& job) {
-        boost::asio::post(_queue, job);
+        boost::asio::post(*_queue, job);
         return true;
     }
 
     void BoostAsioThreadPool::wait() {
-        _queue.stop();
+        _queue->stop();
         ThreadPool::wait();
     }
 

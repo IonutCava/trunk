@@ -34,8 +34,7 @@ GUIConsole::GUIConsole(GUI& parent, PlatformContext& context, ResourceCache& cac
       _inputHistoryIndex(0),
       _consoleCallbackIndex(0),
       _outputWindow(nullptr),
-      _consoleWindow(nullptr),
-      _outputBuffer(_CEGUI_MAX_CONSOLE_ENTRIES)
+      _consoleWindow(nullptr)
 {
     // we need a default command parser, so just create it here
     _cmdParser = MemoryManager_NEW GUIConsoleCommandParser(_context, cache);
@@ -58,8 +57,6 @@ GUIConsole::~GUIConsole()
     }
 
     MemoryManager::DELETE(_cmdParser);
-
-    _outputBuffer.clear();
 }
 
 void GUIConsole::createCEGUIWindow() {
@@ -187,8 +184,7 @@ bool GUIConsole::isVisible() {
 }
 
 void GUIConsole::printText(const Console::OutputEntry& entry) {
-    UniqueLockShared w_lock(_outputLock);
-    _outputBuffer.push_back(entry);
+    _outputBuffer.enqueue(entry);
 }
 
 void GUIConsole::OutputText(const Console::OutputEntry& text) {
@@ -220,23 +216,17 @@ void GUIConsole::update(const U64 deltaTimeUS) {
     }
 
     {
-        UniqueLockShared r_lock(_outputLock);
-        size_t entryCount = _outputBuffer.size();
-        if (entryCount > 0) {
-            for(size_t i = 0; i < entryCount; ++i) {
-                const Console::OutputEntry& message = _outputBuffer[i];
-
-                Console::EntryType type = message._type;
-                if (_lastMsgType != type) {
-                    _lastMsgType = type;
-                    OutputText(message);
-                    _lastMsg.clear();
-                }
-         
-                _lastMsg.append(message._text.c_str());
-                _lastMsg.append("\n");
+        Console::OutputEntry message;
+        while(_outputBuffer.try_dequeue(message)) {
+            Console::EntryType type = message._type;
+            if (_lastMsgType != type) {
+                _lastMsgType = type;
+                OutputText(message);
+                _lastMsg.clear();
             }
-            _outputBuffer.clear();
+         
+            _lastMsg.append(message._text.c_str());
+            _lastMsg.append("\n");
         }
     }
 

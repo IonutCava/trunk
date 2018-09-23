@@ -4,6 +4,9 @@
 #include "Core/Headers/Application.h"
 #include "Core/Headers/StringHelper.h"
 
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/path.hpp>
+
 namespace Divide {
 
 bool writeFile(const stringImpl& filePath, const stringImpl& fileName, const bufferPtr content, size_t length, FileType fileType) {
@@ -149,6 +152,12 @@ bool clearCache(CacheType type) {
     }
 
     return false;
+}
+
+std::string extractFilePathAndName(char* argv0) {
+    boost::system::error_code ec;
+    boost::filesystem::path p(boost::filesystem::canonical(argv0, boost::filesystem::current_path(), ec));
+    return p.make_preferred().string();
 }
 
 }; //namespace Divide

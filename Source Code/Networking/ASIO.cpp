@@ -8,6 +8,8 @@
 #include "Headers/ASIO.h"
 #include "Headers/Client.h"
 
+#include <boost/asio/ip/tcp.hpp>
+
 namespace Divide {
 
 ASIO::LOG_CBK ASIO::_logCBK;
@@ -38,11 +40,11 @@ void ASIO::disconnect() {
 
 bool ASIO::init(const stringImpl& address, U16 port) {
     try {
-        tcp::resolver res(io_service_);
+        boost::asio::ip::tcp::resolver res(io_service_);
         _localClient = new Client(this, io_service_, _debugOutput);
         _work.reset(new boost::asio::io_service::work(io_service_));
         _localClient->start(
-            res.resolve(tcp::resolver::query(address.c_str(), to_stringImpl(port).c_str())));
+            res.resolve(boost::asio::ip::tcp::resolver::query(address.c_str(), to_stringImpl(port).c_str())));
         _thread = new std::thread([&] { io_service_.run(); });
         setThreadName(_thread, "ASIO_THREAD");
 

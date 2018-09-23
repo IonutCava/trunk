@@ -68,14 +68,14 @@ class BoostAsioThreadPool final : public ThreadPool
 public:
 
     explicit BoostAsioThreadPool(const U8 threadCount);
-    ~BoostAsioThreadPool() = default;
+    ~BoostAsioThreadPool();
 
     // Add a new task to the pool's queue
     bool addTask(const PoolTask& job) override;
     void wait();
 
 private:
-    boost::asio::thread_pool _queue;
+    boost::asio::thread_pool* _queue;
 };
 
 class BlockingThreadPool final : public ThreadPool

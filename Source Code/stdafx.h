@@ -108,6 +108,16 @@ typedef cd::any AnyParam;
 typedef std::any AnyParam;
 #endif
 
+namespace boost {
+    namespace asio {
+        class thread_pool;
+    };
+};
+
+#include <boost/intrusive/slist.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/xml_parser.hpp>
+
 #include <simplefilewatcher/includes/FileWatcher.h>
 
 #ifndef BOOST_EXCEPTION_DISABLE
@@ -118,29 +128,6 @@ typedef std::any AnyParam;
 #define BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE
 #endif 
 
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/xml_parser.hpp>
-#include <boost/serialization/base_object.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/asio/deadline_timer.hpp>
-#include <boost/asio/io_service.hpp>
-#include <boost/asio/ip/tcp.hpp>
-#include <boost/asio/read_until.hpp>
-#include <boost/asio/streambuf.hpp>
-#include <boost/asio/write.hpp>
-#include <boost/lockfree/queue.hpp>
-#include <boost/thread/tss.hpp>
-#include <boost/bind.hpp>
-#include <boost/asio.hpp>
-#include <boost/lockfree/spsc_queue.hpp>
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/path.hpp>
-#include <boost/circular_buffer.hpp>
-#include <boost/functional/factory.hpp>
-#include <boost/preprocessor/cat.hpp>
-#include <boost/intrusive/slist.hpp>
-#include <boost/serialization/vector.hpp>
 
 #define HAVE_M_PI
 #define SDL_MAIN_HANDLED

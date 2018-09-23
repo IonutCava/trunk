@@ -82,8 +82,8 @@ class glFramebuffer : public RenderTarget,
 
     struct BindingState {
         AttachmentState _attState = AttachmentState::COUNT;
-        GLint _writeLevel = -1;
-        GLint _writeLayer = -1;
+        U16 _writeLevel = 0;
+        U16 _writeLayer = 0;
         bool _layeredRendering = false;
 
         inline bool operator==(const BindingState& other) const {
@@ -155,7 +155,7 @@ class glFramebuffer : public RenderTarget,
     bool _hasMultisampledColourAttachments;
 
     hashMap<GLenum, BindingState> _attachmentState;
-    hashMap<GLenum, std::set<U32, std::greater<U32>>> _attachmentDirtyLayers;
+    hashMap<GLenum, std::set<U16, std::greater<U16>>> _attachmentDirtyLayers;
 };
 
 namespace Attorney {

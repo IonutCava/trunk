@@ -55,8 +55,8 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
     }
     
     std::array<U16, to_base(ShadowType::COUNT)> resolutions;
-    resolutions.fill(settings.shadowMapResolution);
-    resolutions[to_base(ShadowType::CUBEMAP)] = settings.shadowMapResolution / 2;
+    resolutions.fill(to_U16(settings.shadowMapResolution));
+    resolutions[to_base(ShadowType::CUBEMAP)] = to_U16(settings.shadowMapResolution / 2);
 
     RenderTargetHandle crtTarget;
     for (U32 i = 0; i < to_base(ShadowType::COUNT); ++i) {

@@ -4,6 +4,13 @@
 
 #include "WorldPacket.h"
 
+#include <boost/asio/ip/udp.hpp>
+#include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/strand.hpp>
+#include <boost/asio/streambuf.hpp>
+#include <boost/asio/io_service.hpp>
+#include <boost/asio/deadline_timer.hpp>
+
 namespace Divide {
 //----------------------------------------------------------------------
 
@@ -28,7 +35,9 @@ class channel {
 
     void sendPacket(const WorldPacket& p) {
         std::for_each(std::begin(subscribers_), std::end(subscribers_),
-                      boost::bind(&subscriber::sendPacket, _1, boost::ref(p)));
+                      [&p](auto& subscriber) {
+                        subscriber->sendPacket(p);
+                      });
     }
 
    private:

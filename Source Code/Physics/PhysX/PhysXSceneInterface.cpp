@@ -93,11 +93,8 @@ void PhysXSceneInterface::release() {
 }
 
 void PhysXSceneInterface::idle() {
-    if (_sceneRigidQueue.empty()) {
-        return;
-    }
     PhysXActor* crtActor = nullptr;
-    while (_sceneRigidQueue.pop(crtActor)) {
+    while (_sceneRigidQueue.try_dequeue(crtActor)) {
         assert(crtActor != nullptr);
         _sceneRigidActors.push_back(crtActor);
         addToScene(*crtActor);
@@ -154,9 +151,7 @@ void PhysXSceneInterface::addRigidActor(PhysXActor* const actor,
     assert(actor != nullptr);
 
     if (threaded) {
-        while (!_sceneRigidQueue.push(actor)) {
-            idle();
-        }
+        _sceneRigidQueue.enqueue(actor);
     } else {
         _sceneRigidActors.push_back(actor);
     }

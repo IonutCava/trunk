@@ -48,7 +48,7 @@ void Server::init(U16 port, const stringImpl& broadcast_endpoint_address, bool d
 
         acceptor_->async_accept(
             new_session->getSocket(),
-            boost::bind(&Server::handle_accept, this, new_session, _1));
+            std::bind(&Server::handle_accept, this, new_session, std::placeholders::_1));
         std::auto_ptr<boost::asio::io_service::work> work(
             new boost::asio::io_service::work(io_service_));
         
@@ -72,7 +72,7 @@ void Server::handle_accept(tcp_session_ptr session, const boost::system::error_c
 
         acceptor_->async_accept(
             new_session->getSocket(),
-            boost::bind(&Server::handle_accept, this, new_session, _1));
+            std::bind(&Server::handle_accept, this, new_session, std::placeholders::_1));
     } else {
         std::stringstream ss;
         ss << "ERROR: " << ec;

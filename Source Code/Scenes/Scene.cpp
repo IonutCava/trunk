@@ -39,7 +39,6 @@
 
 #include "Physics/Headers/PhysicsSceneInterface.h"
 
-
 namespace Divide {
 
 namespace {

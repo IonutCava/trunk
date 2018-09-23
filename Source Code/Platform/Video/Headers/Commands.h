@@ -48,7 +48,7 @@ namespace Divide {
 namespace GFX {
 
 BETTER_ENUM(CommandType, U8,
-    BEGIN_RENDER_PASS = 0,
+    BEGIN_RENDER_PASS,
     END_RENDER_PASS,
     BEGIN_PIXEL_BUFFER,
     END_PIXEL_BUFFER,
@@ -244,7 +244,7 @@ END_COMMAND();
 BEGIN_COMMAND(ReadAtomicCounterCommand, CommandType::READ_ATOMIC_COUNTER, 4096);
     ShaderBuffer* _buffer = nullptr;
     U32* _target = nullptr;
-    U32  _offset = 0;
+    U8   _offset = 0;
     bool _resetCounter = false;
 END_COMMAND();
 
