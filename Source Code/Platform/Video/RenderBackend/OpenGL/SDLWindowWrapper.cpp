@@ -510,9 +510,11 @@ void GL_API::queueComputeMipMap(PlatformContext& context, GLuint textureHandle) 
         GL_API::s_mipmapQueueSync[textureHandle] = nullptr;
     }
 
+    GFXDevice& gfx = context.gfx();
     CreateTask(context,
-                [textureHandle](const Task& parent)
+                [&gfx, textureHandle](const Task& parent)
                 {
+                    GL_API::createOrValidateContextForCurrentThread(gfx);
                     glGenerateTextureMipmap(textureHandle);
                     GLsync newSync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, UnusedMask::GL_UNUSED_BIT);
                     glFlush();
