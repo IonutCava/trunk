@@ -25,20 +25,15 @@ vector<Console::ConsolePrintCallback> Console::_guiConsoleCallbacks;
 namespace {
     thread_local char textBuffer[CONSOLE_OUTPUT_BUFFER_SIZE + 1];
 
-    struct MyTraits : public moodycamel::ConcurrentQueueDefaultTraits
-    {
-        static const size_t BLOCK_SIZE = MAX_CONSOLE_ENTRIES;
-    };
-
 #if defined(USE_BLOCKING_QUEUE)
-    moodycamel::BlockingConcurrentQueue<Console::OutputEntry, MyTraits>& outBuffer() {
-        static moodycamel::BlockingConcurrentQueue<Console::OutputEntry, MyTraits> outputBuffer;
-        return outputBuffer;
+    moodycamel::BlockingConcurrentQueue<Console::OutputEntry>& outBuffer() {
+        static moodycamel::BlockingConcurrentQueue<Console::OutputEntry> buf;
+        return buf;
     }
 #else
-    moodycamel::ConcurrentQueue<Console::OutputEntry, MyTraits>& outBuffer() {
-        static moodycamel::ConcurrentQueue<Console::OutputEntry, MyTraits> outputBuffer;
-        return outputBuffer;
+    moodycamel::ConcurrentQueue<Console::OutputEntry>& outBuffer() {
+        static moodycamel::ConcurrentQueue<Console::OutputEntry> buf;
+        return buf;
     }
 
     std::mutex& condMutex() noexcept {

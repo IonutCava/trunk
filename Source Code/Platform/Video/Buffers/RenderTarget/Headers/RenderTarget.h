@@ -63,15 +63,15 @@ struct RenderTargetID {
 
 
 struct ColourBlitEntry {
-    U32 _inputIndex = 0;
-    U32 _inputLayer = 0;
-    U32 _outputIndex = 0;
-    U32 _outputLayer = 0;
+    U16 _inputIndex = 0;
+    U16 _inputLayer = 0;
+    U16 _outputIndex = 0;
+    U16 _outputLayer = 0;
 };
 
 struct DepthBlitEntry {
-    U32 _inputLayer = 0;
-    U32 _outputLayer = 0;
+    U16 _inputLayer = 0;
+    U16 _outputLayer = 0;
 };
 
 class RenderTarget;
@@ -117,7 +117,7 @@ class NOINITVTABLE RenderTarget : public GUIDWrapper, public GraphicsResource {
         U8 _index = 0;
         U16 _layer = 0;
         bool _includeDepth = true;
-        bool _isCubeFace = false;
+        bool _validateLayer = false;
     };
 
     struct RTBlitParams {
@@ -145,17 +145,9 @@ class NOINITVTABLE RenderTarget : public GUIDWrapper, public GraphicsResource {
     virtual const RTAttachment& getAttachment(RTAttachmentType type, U8 index) const;
     virtual RTAttachment& getAttachment(RTAttachmentType type, U8 index);
 
-    /// Use by multilayered FB's
-    virtual void drawToLayer(const DrawLayerParams& params) = 0;
-    // This call sets the target mip level to write to
-    // If an attachment does not support the specified mip level, it will be DISABLED to avoid completeness errors
-    virtual void setMipLevel(U16 writeLevel) = 0;
     virtual void setDefaultState(const RTDrawDescriptor& drawPolicy) = 0;
     virtual void readData(const vec4<U16>& rect, GFXImageFormat imageFormat, GFXDataFormat dataType, bufferPtr outData) = 0;
     virtual void blitFrom(const RTBlitParams& params) = 0;
-
-    /// Used by cubemap FB's
-    void drawToFace(const DrawLayerParams& params);
 
     void readData(GFXImageFormat imageFormat, GFXDataFormat dataType, bufferPtr outData);
 

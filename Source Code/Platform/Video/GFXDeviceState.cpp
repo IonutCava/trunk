@@ -28,8 +28,9 @@
 
 #include "Geometry/Material/Headers/ShaderComputeQueue.h"
 
-#include "Platform/Video/OpenGL/Headers/GLWrapper.h"
-#include "Platform/Video/Direct3D/Headers/DXWrapper.h"
+#include "Platform/Video/RenderBackend/OpenGL/Headers/GLWrapper.h"
+#include "Platform/Video/RenderBackend/Vulkan/Headers/VKWrapper.h"
+#include "Platform/Video/RenderBackend/None/Headers/NoneWrapper.h"
 
 #include "RenderDoc-Manager/RenderDocManager.h"
 
@@ -88,8 +89,8 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     EnvironmentProbe::onStartup(*this);
     // Create a shader buffer to store the GFX rendering info (matrices, options, etc)
     ShaderBufferDescriptor bufferDescriptor;
-    bufferDescriptor._primitiveCount = 1;
-    bufferDescriptor._primitiveSize = sizeof(GFXShaderData::GPUData);
+    bufferDescriptor._elementCount = 1;
+    bufferDescriptor._elementSize = sizeof(GFXShaderData::GPUData);
     bufferDescriptor._ringBufferLength = 1;
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
     bufferDescriptor._initialData = &_gpuBlock._data;
@@ -247,11 +248,11 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
             { revealageDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::REVEALAGE), FColour(1.0f, 0.0f, 0.0f, 0.0f) }
         };
 
-        const RTAttachment_ptr& screenAttchment = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachmentPtr(RTAttachmentType::Colour, 0);
+        const RTAttachment_ptr& screenAttachment = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachmentPtr(RTAttachmentType::Colour, 0);
         const RTAttachment_ptr& screenDepthAttachment = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachmentPtr(RTAttachmentType::Depth, 0);
 
         vector<ExternalRTAttachmentDescriptor> externalAttachments = {
-            { screenAttchment,  RTAttachmentType::Colour, to_U8(ScreenTargets::MODULATE) },
+            { screenAttachment,  RTAttachmentType::Colour, to_U8(ScreenTargets::MODULATE) },
             { screenDepthAttachment,  RTAttachmentType::Depth }
         };
 
@@ -494,7 +495,11 @@ void GFXDevice::beginFrame() {
     }
     _api->beginFrame();
     _api->setStateBlock(_defaultStateBlockHash);
-    setViewport(_baseViewport);
+
+
+    const WindowManager& winMgr = _context.app().windowManager();
+    const vec2<U16>& drawableSize = winMgr.getWindow(0u).getDrawableSize();
+    setViewport(Rect<I32>(0, 0, drawableSize.width, drawableSize.height));
 }
 
 void GFXDevice::endFrame() {
@@ -549,17 +554,17 @@ ErrorCode GFXDevice::createAPIInstance() {
     switch (_API_ID) {
         case RenderAPI::OpenGL:
         case RenderAPI::OpenGLES: {
-            _api = std::make_unique<GL_API>(*this);
+            _api = std::make_unique<GL_API>(*this, _API_ID == RenderAPI::OpenGLES);
         } break;
-        case RenderAPI::Direct3D: {
-            _api = std::make_unique<DX_API>(*this);
-        } break;
-
-        default:
-        case RenderAPI::None:
         case RenderAPI::Vulkan: {
-            err = ErrorCode::GFX_NON_SPECIFIED;
+            _api = std::make_unique<VK_API>(*this);
         } break;
+        case RenderAPI::None: {
+            _api = std::make_unique<NONE_API>(*this);
+        } break;
+        default:
+            err = ErrorCode::GFX_NON_SPECIFIED;
+            break;
     };
 
     DIVIDE_ASSERT(_api != nullptr, Locale::get(_ID("ERROR_GFX_DEVICE_API")));

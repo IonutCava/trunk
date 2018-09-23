@@ -58,12 +58,6 @@ namespace Build {
     constexpr bool ENABLE_EDITOR = !IS_SHIPPING_BUILD;
 };
 
-/// Use OpenGL/OpenGL ES for rendering
-constexpr bool USE_OPENGL_RENDERING = true;
-/// Select between desktop GL and ES GL
-constexpr bool USE_OPENGL_ES = false;
-/// if this is false, a variable timestep will be used for the game loop
-constexpr bool USE_FIXED_TIMESTEP = true;
 /// Application desired framerate for physics and input simulations
 constexpr unsigned int TARGET_FRAME_RATE = 60;
 /// Application update rate divisor (how many many times should we update our state per second)
@@ -77,12 +71,6 @@ constexpr unsigned int MIN_SLEEP_THRESHOLD_MS = 5;
 constexpr unsigned int REQUIRED_RAM_SIZE = 2 * 1024 * 1024; //2Gb
 /// How many tasks should we keep in a pool to avoid using new/delete (must be power of two)
 constexpr unsigned int MAX_POOLED_TASKS = 16384;
-/// Toggle multi-threaded resource loading on or off
-constexpr bool USE_GPU_THREADED_LOADING = true;
-/// Toggle multi-threaded command generation
-constexpr bool USE_THREADED_COMMAND_GENERATION = true;
-/// Run all threaded tasks in a serial fashion. (used to debug multi-threaded related bugs)
-constexpr bool USE_SINGLE_THREADED_TASK_POOLS = false;
 /// Maximum number of bones available per node
 constexpr unsigned int MAX_BONE_COUNT_PER_NODE = 256;
 /// Estimated maximum number of visible objects per render pass (this includes debug primitives)
@@ -115,8 +103,6 @@ constexpr unsigned int PRIMITIVE_RESTART_INDEX_S = 0xFFFF;
 
 /// Maximum number of players we support locally
 constexpr unsigned int MAX_LOCAL_PLAYER_COUNT = 4;
-/// How many grass elements (3 quads p.e.) to add to each terrain element
-constexpr unsigned int MAX_GRASS_BATCHES = 2000000;
 /// SceneNode LOD selection
 /// Distance computation is identical to the of the terrain (using SceneNode's bounding box)
 constexpr unsigned int SCENE_NODE_LOD = 3;
@@ -124,21 +110,6 @@ constexpr unsigned int SCENE_NODE_LOD = 3;
 constexpr unsigned int SCENE_NODE_LOD0 = 100;
 /// Relative distance for LOD1->LOD2 selection
 constexpr unsigned int SCENE_NODE_LOD1 = 180;
-/// Terrain LOD management
-/// Terrain LOD configuration
-/// Camera distance to the terrain chunk is calculated as follows:
-///    vector EyeToChunk = terrainBoundingBoxCenter - EyePos; cameraDistance =
-///    EyeToChunk.length();
-/// Number of LOD levels for the terrain
-constexpr unsigned int TERRAIN_CHUNKS_LOD = 3;
-/// Relative distance for LOD0->LOD1 selection
-constexpr unsigned int TERRAIN_LOD0 = 200;
-/// Relative distance for LOD1->LOD2 selection
-constexpr unsigned int TERRAIN_LOD1 = 400;
-/// Use separate shader objects
-constexpr bool USE_SEPARATE_SHADER_OBJECTS = false;
-/// Use HW AA'ed lines
-constexpr bool USE_HARDWARE_AA_LINES = true;
 /// If true, Hi-Z based occlusion culling is used
 constexpr bool USE_HIZ_CULLING = true;
 /// If true, Hi-Z culling is disabled and potentially culled nodes are drawn in bright red and double in size
@@ -153,11 +124,13 @@ namespace Compute {
 
 /// Profiling options
 namespace Profile {
+/// how many profiling timers are we allowed to use in our applications
+constexpr unsigned int MAX_PROFILE_TIMERS = 1024;
 /// enable function level profiling
 #if defined(_DEBUG) || defined(_PROFILE)
     constexpr bool ENABLE_FUNCTION_PROFILING = true;
 #else
-    constexpr bool ENABLE_FUNCTION_PROFILING = true;
+    constexpr bool ENABLE_FUNCTION_PROFILING = false;
 #endif
 /// run performance profiling code
 #if defined(_DEBUG) || defined(_PROFILE)
@@ -173,15 +146,11 @@ constexpr bool DISABLE_SHADING = false;
 constexpr bool DISABLE_DRAWS = false;
 /// every viewport call is overridden with 1x1 (width x height)
 constexpr bool USE_1x1_VIEWPORT = false;
-/// how many profiling timers are we allowed to use in our applications
-constexpr unsigned int MAX_PROFILE_TIMERS = 1024;
 /// textures are capped at 2x2 when uploaded to the GPU
 constexpr bool USE_2x2_TEXTURES = false;
 /// disable persistently mapped buffers
 constexpr bool DISABLE_PERSISTENT_BUFFER = false;
 };  // namespace Profile
-
-static_assert(!Profile::DISABLE_PERSISTENT_BUFFER || !USE_THREADED_COMMAND_GENERATION, "Threaded command generation does not work without persistently mapped buffers!");
 
 namespace Assert {
 #if defined(_DEBUG)
@@ -206,15 +175,10 @@ namespace Assert {
 namespace Lighting {
 // How many lights (in order as passed to the shader for the node) should cast shadows
 constexpr unsigned int MAX_SHADOW_CASTING_LIGHTS = 4;
-/// Used for CSM or PSSM to determine the maximum number of frustum splits
-/// And cube map shadows as well
+/// Used for cube map shadows and for CSM or PSSM to determine the maximum number of frustum splits
 constexpr unsigned int MAX_SPLITS_PER_LIGHT = 6;
-/// How many "units" away should a directional light source be from the camera's position
-constexpr unsigned int DIRECTIONAL_LIGHT_DISTANCE = 500;
-
 /// Used mainly for caching/memory efficiency reasons
 constexpr unsigned int MAX_POSSIBLE_LIGHTS = 1024;
-
 /// The following parameters control the behaviour of the Forward+ renderer
 constexpr unsigned int FORWARD_PLUS_TILE_RES = 16;
 constexpr unsigned int FORWARD_PLUS_MAX_LIGHTS_PER_TILE = 544;

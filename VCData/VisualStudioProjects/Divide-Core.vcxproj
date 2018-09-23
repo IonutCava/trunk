@@ -188,7 +188,6 @@
     <ClInclude Include="..\../Source Code/Core\Resources\Headers\ResourceCache.h" />
     <ClInclude Include="..\../Source Code/Core\Resources\Headers\ResourceDescriptor.h" />
     <ClInclude Include="..\../Source Code/Core\Resources\Headers\ResourceLoader.h" />
-    <ClInclude Include="..\../Source Code/Core\TemplateLibraries\Headers\BoostVector.h" />
     <ClInclude Include="..\../Source Code/Core\TemplateLibraries\Headers\HashMap.h" />
     <ClInclude Include="..\../Source Code/Core\TemplateLibraries\Headers\STLString.h" />
     <ClInclude Include="..\../Source Code/Core\TemplateLibraries\Headers\String.h" />

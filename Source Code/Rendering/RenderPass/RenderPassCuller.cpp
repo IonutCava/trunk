@@ -97,7 +97,8 @@ RenderPassCuller::VisibleNodeList& RenderPassCuller::frustumCull(const CullParam
         parallel_for(*params._context,
                      cullIterFunction,
                      childCount,
-                     g_nodesPerCullingPartition);
+                     g_nodesPerCullingPartition,
+                     params._threaded ? TaskPriority::DONT_CARE : TaskPriority::REALTIME);
 
         
         for (const VisibleNodeList& nodeListEntry : nodes) {
@@ -144,7 +145,7 @@ void RenderPassCuller::frustumCullNode(const Task& parentTask,
     // Internal node cull (check against camera frustum and all that ...)
     bool isVisible = !currentNode.cullNode(currentCamera, cullMaxDistanceSq, stage, collisionResult, distanceSqToCamera);
 
-    if (isVisible && !StopRequested(&parentTask)) {
+    if (isVisible && !StopRequested(parentTask)) {
         nodes.emplace_back(VisibleNode{ distanceSqToCamera, &currentNode });
         if (collisionResult == Frustum::FrustCollision::FRUSTUM_INTERSECT) {
             // Parent node intersects the view, so check children

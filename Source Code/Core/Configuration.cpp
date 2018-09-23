@@ -17,6 +17,8 @@ Configuration::Configuration() : XML::IXMLSerializable()
     debug.mesh.playAnimations = true;
     language = "enGB";
     runtime.targetDisplay = 0;
+    runtime.targetRenderingAPI = to_U8(RenderAPI::OpenGL);
+    runtime.useFixedTimestep = true;
     runtime.windowedMode = true;
     runtime.windowResizable = false;
     runtime.enableVSync = false;
@@ -76,6 +78,8 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(debug.mesh.playAnimations);
         GET_PARAM(language);
         GET_PARAM(runtime.targetDisplay);
+        GET_PARAM(runtime.targetRenderingAPI);
+        GET_PARAM(runtime.useFixedTimestep);
         GET_PARAM(runtime.windowedMode);
         GET_PARAM(runtime.windowResizable);
         GET_PARAM(runtime.frameRateLimit);
@@ -139,6 +143,8 @@ bool Configuration::toXML(const char* xmlFile) const {
     PUT_PARAM(debug.mesh.playAnimations);
     PUT_PARAM(language);
     PUT_PARAM(runtime.targetDisplay);
+    PUT_PARAM(runtime.targetRenderingAPI);
+    PUT_PARAM(runtime.useFixedTimestep);
     PUT_PARAM(runtime.windowedMode);
     PUT_PARAM(runtime.windowResizable);
     PUT_PARAM(runtime.frameRateLimit);

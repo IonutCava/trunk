@@ -26,18 +26,15 @@ TaskHandle CreateTask(PlatformContext& context,
 }
 
 void WaitForAllTasks(PlatformContext& context, bool yield, bool flushCallbacks, bool foceClear) {
-    TaskPool& pool = context.taskPool();
-    WaitForAllTasks(pool, yield, flushCallbacks, foceClear);
+    WaitForAllTasks(context.taskPool(), yield, flushCallbacks, foceClear);
 }
 
 TaskHandle parallel_for(PlatformContext& context,
                         const DELEGATE_CBK<void, const Task&, U32, U32>& cbk,
                         U32 count,
                         U32 partitionSize,
-                        TaskPriority priority)
-{
-    TaskPool& pool = context.taskPool();
-    return parallel_for(pool, cbk, count, partitionSize, priority);
+                        TaskPriority priority) {
+    return parallel_for(context.taskPool(), cbk, count, partitionSize, priority);
 }
 
 }; //namespace Divide

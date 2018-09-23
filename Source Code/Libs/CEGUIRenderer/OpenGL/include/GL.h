@@ -28,8 +28,8 @@ author:     Paul D Turner
 #define _CEGUIOpenGL_h_
 
 #include "CEGUI/Config.h"
-#include "Platform/Video/OpenGL/Headers/glResources.h"
-#include "Platform/Video/OpenGL/Headers/GLWrapper.h"
+#include "Platform/Video/RenderBackend/OpenGL/Headers/glResources.h"
+#include "Platform/Video/RenderBackend/OpenGL/Headers/GLWrapper.h"
 
 #if (defined( __WIN32__ ) || defined( _WIN32 )) && !defined(CEGUI_STATIC)
 #   if defined(CEGUIOPENGLRENDERER_EXPORTS) || defined(CEGUIOPENGLES2RENDERER_EXPORTS)

@@ -21,6 +21,9 @@
 namespace Divide {
 
 namespace {
+    constexpr bool g_threadedCommandGeneration = true;
+    static_assert(!Config::Profile::DISABLE_PERSISTENT_BUFFER || !g_threadedCommandGeneration, "Threaded command generation does not work without persistently mapped buffers!");
+
     thread_local vectorEASTL<GFXDevice::NodeData> g_nodeData;
     thread_local vectorEASTL<IndirectDrawCommand> g_drawCommands;
 };
@@ -58,7 +61,7 @@ void RenderPassManager::render(SceneRenderState& sceneRenderState, Time::Profile
 
     const Camera& cam = Attorney::SceneManagerRenderPass::playerCamera(parent().sceneManager());
 
-    TaskPriority priority = (false && Config::USE_THREADED_COMMAND_GENERATION) ? TaskPriority::DONT_CARE : TaskPriority::REALTIME;
+    TaskPriority priority = g_threadedCommandGeneration ? TaskPriority::DONT_CARE : TaskPriority::REALTIME;
 
     TaskPool& pool = parent().platformContext().taskPool();
     TaskHandle renderTask = CreateTask(pool, DELEGATE_CBK<void, const Task&>());
@@ -169,14 +172,8 @@ const RenderPass& RenderPassManager::getPassForStage(RenderStage renderStage) co
     return *_renderPasses.front();
 }
 
-const RenderPass::BufferData& 
-RenderPassManager::getBufferData(RenderStage renderStage, I32 bufferIndex, I32 bufferOffset) const {
-    return getPassForStage(renderStage).getBufferData(bufferIndex, bufferOffset);
-}
-
-RenderPass::BufferData&
-RenderPassManager::getBufferData(RenderStage renderStage, I32 bufferIndex, I32 bufferOffset) {
-    return getPassForStage(renderStage).getBufferData(bufferIndex, bufferOffset);
+RenderPass::BufferData RenderPassManager::getBufferData(RenderStage renderStage, RenderPassType type, I32 passIndex) const {
+    return getPassForStage(renderStage).getBufferData(type, passIndex);
 }
 
 /// Prepare the list of visible nodes for rendering
@@ -192,12 +189,7 @@ GFXDevice::NodeData RenderPassManager::processVisibleNode(SceneGraphNode* node, 
     // (Nodes without transforms just use identity matrices)
     if (transform) {
         // ... get the node's world matrix properly interpolated
-        if (Config::USE_FIXED_TIMESTEP) {
-            dataOut._worldMatrix.set(transform->getWorldMatrix(_context.getFrameInterpolationFactor()));
-        } else {
-            dataOut._worldMatrix.set(transform->getWorldMatrix());
-        }
-
+        dataOut._worldMatrix.set(transform->getWorldMatrix(_context.getFrameInterpolationFactor()));
         dataOut._normalMatrixWV.set(dataOut._worldMatrix);
         if (!transform->isUniformScaled()) {
             // Non-uniform scaling requires an inverseTranspose to negate
@@ -224,7 +216,7 @@ GFXDevice::NodeData RenderPassManager::processVisibleNode(SceneGraphNode* node, 
 }
 
 void RenderPassManager::refreshNodeData(RenderStage stage,
-                                        U32 bufferIndex,
+                                        RenderPassType pass,
                                         U32 passIndex,
                                         const SceneRenderState& renderState,
                                         const mat4<F32>& viewMatrix,
@@ -251,14 +243,14 @@ void RenderPassManager::refreshNodeData(RenderStage stage,
         }
     }
 
-    RenderPass::BufferData& bufferData = getBufferData(stage, bufferIndex, passIndex);
-    bufferData._lastCommandCount = to_U32(g_drawCommands.size());
+    RenderPass::BufferData bufferData = getBufferData(stage, pass, passIndex);
+    *bufferData._lastCommandCount = to_U32(g_drawCommands.size());
 
     U32 nodeCount = to_U32(g_nodeData.size());
-    assert(bufferData._lastCommandCount >= nodeCount);
+    assert(*bufferData._lastCommandCount >= nodeCount);
 
-    ShaderBufferBinding shaderBufferCmds(ShaderBufferLocation::CMD_BUFFER, bufferData._cmdBuffers[passIndex]);
-    shaderBufferCmds._buffer->writeData(0, bufferData._lastCommandCount, g_drawCommands.data());
+    ShaderBufferBinding shaderBufferCmds(ShaderBufferLocation::CMD_BUFFER, bufferData._cmdBuffer);
+    shaderBufferCmds._buffer->writeData(0, *bufferData._lastCommandCount, g_drawCommands.data());
 
     ShaderBufferBinding shaderBufferData(ShaderBufferLocation::NODE_INFO, bufferData._renderData);
     shaderBufferData._range = { bufferData._renderDataElementOffset, nodeCount };
@@ -290,7 +282,7 @@ void RenderPassManager::buildDrawCommands(RenderStagePass stagePass, const PassP
 
     if (refresh) {
         const mat4<F32>& viewMatrix = params._camera->getViewMatrix();
-        refreshNodeData(stagePass._stage, params._bufferIndex, params._passIndex, sceneRenderState, viewMatrix, sortedQueues, bufferInOut);
+        refreshNodeData(stagePass._stage, stagePass._passType, params._passIndex, sceneRenderState, viewMatrix, sortedQueues, bufferInOut);
     }
 }
 
@@ -323,11 +315,13 @@ void RenderPassManager::prepareRenderQueues(RenderStagePass stagePass, const Pas
     
 }
 
-void RenderPassManager::prePass(const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
+bool RenderPassManager::prePass(const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
     // PrePass requires a depth buffer
-    bool doPrePass = params._doPrePass && target.getAttachment(RTAttachmentType::Depth, 0).used();
+    bool doPrePass = params._stage != RenderStage::SHADOW &&
+                     params._target._usage != RenderTargetUsage::COUNT &&
+                     target.getAttachment(RTAttachmentType::Depth, 0).used();
 
-    if (doPrePass && params._target._usage != RenderTargetUsage::COUNT) {
+    if (doPrePass) {
 
         GFX::BeginDebugScopeCommand beginDebugScopeCmd;
         beginDebugScopeCmd._scopeID = 0;
@@ -357,9 +351,11 @@ void RenderPassManager::prePass(const PassParams& params, const RenderTarget& ta
         GFX::EndDebugScopeCommand endDebugScopeCmd;
         GFX::EnqueueCommand(bufferInOut, endDebugScopeCmd);
     }
+
+    return doPrePass;
 }
 
-void RenderPassManager::mainPass(const PassParams& params, RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
+void RenderPassManager::mainPass(const PassParams& params, RenderTarget& target, GFX::CommandBuffer& bufferInOut, bool prePassExecuted) {
     GFX::BeginDebugScopeCommand beginDebugScopeCmd;
     beginDebugScopeCmd._scopeID = 1;
     beginDebugScopeCmd._scopeName = " - MainPass";
@@ -369,13 +365,13 @@ void RenderPassManager::mainPass(const PassParams& params, RenderTarget& target,
 
     RenderStagePass stagePass(params._stage, RenderPassType::COLOUR_PASS, params._passVariant);
 
-    prepareRenderQueues(stagePass, params, !params._doPrePass, bufferInOut);
+    prepareRenderQueues(stagePass, params, !prePassExecuted, bufferInOut);
 
     if (params._target._usage != RenderTargetUsage::COUNT) {
         bool drawToDepth = true;
         if (params._stage != RenderStage::SHADOW) {
             Attorney::SceneManagerRenderPass::preRender(sceneManager, stagePass, *params._camera, target, bufferInOut);
-            if (params._doPrePass) {
+            if (prePassExecuted) {
                 drawToDepth = Config::DEBUG_HIZ_CULLING;
             }
         }
@@ -551,12 +547,11 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
     beginDebugScopeCmd._scopeName = Util::StringFormat("Custom pass ( %s )", TypeUtil::renderStageToString(params._stage)).c_str();
     GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
-    prePass(params, target, bufferInOut);
+    bool prePassExecuted = prePass(params, target, bufferInOut);
 
-    if (params._occlusionCull) {
+    if (prePassExecuted && params._occlusionCull) {
         const Texture_ptr& HiZTex = _context.constructHIZ(params._target, bufferInOut);
-        _context.occlusionCull(getBufferData(params._stage, params._passIndex, params._bufferIndex),
-                               params._bufferIndex,
+        _context.occlusionCull(getBufferData(params._stage, RenderPassType::DEPTH_PASS, params._passIndex),
                                HiZTex,
                                params._camera->getZPlanes(),
                                bufferInOut);
@@ -565,7 +560,7 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
         }
     }
 
-    mainPass(params, target, bufferInOut);
+    mainPass(params, target, bufferInOut, prePassExecuted);
 
     if (params._stage != RenderStage::SHADOW) {
         woitPass(params, target, bufferInOut);

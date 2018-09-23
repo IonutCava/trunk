@@ -87,4 +87,21 @@ const vec3<F32>& Box3D::getHalfExtent() const {
     return _halfExtent;
 }
 
+
+void Box3D::saveToXML(boost::property_tree::ptree& pt) const {
+    pt.put("halfExtent.<xmlattr>.x", _halfExtent.x);
+    pt.put("halfExtent.<xmlattr>.y", _halfExtent.y);
+    pt.put("halfExtent.<xmlattr>.z", _halfExtent.z);
+
+    SceneNode::saveToXML(pt);
+}
+
+void Box3D::loadFromXML(const boost::property_tree::ptree& pt) {
+    setHalfExtent(vec3<F32>(pt.get("halfExtent.<xmlattr>.x", 1.0f),
+                            pt.get("halfExtent.<xmlattr>.y", 1.0f),
+                            pt.get("halfExtent.<xmlattr>.z", 1.0f)));
+
+    SceneNode::loadFromXML(pt);
+}
+
 }; //namespace Divide

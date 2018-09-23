@@ -3,17 +3,19 @@
 #include "Headers/TaskPool.h"
 #include "Core/Headers/Console.h"
 #include "Core/Headers/StringHelper.h"
+#include "Platform/Headers/PlatformRuntime.h"
 
 namespace Divide {
 
 namespace {
+    constexpr bool g_forceSingleThreaded = false;
+
     thread_local Task g_taskAllocator[Config::MAX_POOLED_TASKS];
     thread_local U32  g_allocatedTasks = 0u;
 };
 
 TaskPool::TaskPool() noexcept
     : GUIDWrapper(),
-      _threadedCallbackBuffer(Config::MAX_POOLED_TASKS),
       _taskCallbacks(Config::MAX_POOLED_TASKS),
       _runningTaskCount(0u),
       _workerThreadCount(0u),
@@ -26,22 +28,24 @@ TaskPool::~TaskPool()
     shutdown();
 }
 
-bool TaskPool::init(U8 threadCount, bool lockFree, const stringImpl& workerName) {
+bool TaskPool::init(U8 threadCount, TaskPoolType poolType, const stringImpl& workerName) {
     if (threadCount == 0 || _mainTaskPool != nullptr) {
         return false;
     }
 
     _workerThreadCount = threadCount;
-#if defined(USE_BOOST_ASIO_THREADPOOL)
-    _mainTaskPool = std::make_unique<boost::asio::thread_pool>(_workerThreadCount);
-#else
-    if (lockFree) {
-        _mainTaskPool = std::make_unique<LockFreeThreadPool>(_workerThreadCount);
-    } else {
-        _mainTaskPool = std::make_unique<BlockingThreadPool>(_workerThreadCount);
+    switch (poolType) {
+        case TaskPoolType::TYPE_BOOST_ASIO: {
+            _mainTaskPool = std::make_unique<BoostAsioThreadPool>(_workerThreadCount);
+        } break;
+        case TaskPoolType::TYPE_LOCKFREE: {
+            _mainTaskPool = std::make_unique<LockFreeThreadPool>(_workerThreadCount);
+        } break;
+        case TaskPoolType::TYPE_BLOCKING: {
+            _mainTaskPool = std::make_unique<BlockingThreadPool>(_workerThreadCount);
+        }break;
     }
 
-#endif
     _stopRequested.store(false);
     nameThreadpoolWorkers(workerName.c_str());
 
@@ -55,13 +59,11 @@ void TaskPool::shutdown() {
 bool TaskPool::enqueue(const PoolTask& task, TaskPriority priority) {
     _runningTaskCount.fetch_add(1);
 
-    if (!Config::USE_SINGLE_THREADED_TASK_POOLS && priority != TaskPriority::REALTIME) {
+    if (!g_forceSingleThreaded && priority != TaskPriority::REALTIME) {
         assert(_mainTaskPool != nullptr);
-#if defined(USE_BOOST_ASIO_THREADPOOL)
-        boost::asio::post(*_mainTaskPool, task);
-#else
-        _mainTaskPool->addTask(task);
-#endif
+        if (!_mainTaskPool->addTask(task)) {
+            return false;
+        }
     } else {
         task();
     }
@@ -80,7 +82,7 @@ void TaskPool::runCbkAndClearTask(U32 taskIdentifier) {
 
 void TaskPool::flushCallbackQueue() {
     U32 taskIndex = 0;
-    while (_threadedCallbackBuffer.pop(taskIndex)) {
+    while (_threadedCallbackBuffer.try_dequeue(taskIndex)) {
         runCbkAndClearTask(taskIndex);
     }
 }
@@ -102,13 +104,8 @@ void TaskPool::waitForAllTasks(bool yield, bool flushCallbacks, bool forceClear)
     }
 
     _stopRequested.store(false);
-#if defined(USE_BOOST_ASIO_THREADPOOL)
-    _mainTaskPool->stop();
-    _mainTaskPool->join();
-#else
     _mainTaskPool->wait();
     _mainTaskPool->join();
-#endif
 }
 
 void TaskPool::taskCompleted(U32 taskIndex) {
@@ -117,11 +114,11 @@ void TaskPool::taskCompleted(U32 taskIndex) {
 
 void TaskPool::taskCompleted(U32 taskIndex, TaskPriority priority, const DELEGATE_CBK<void>& onCompletionFunction) {
     if (onCompletionFunction) {
-        if (Config::USE_SINGLE_THREADED_TASK_POOLS || priority == TaskPriority::REALTIME) {
+        if (g_forceSingleThreaded || priority == TaskPriority::REALTIME) {
             onCompletionFunction();
         } else {
             _taskCallbacks[taskIndex] = onCompletionFunction;
-            WAIT_FOR_CONDITION(_threadedCallbackBuffer.push(taskIndex));
+            _threadedCallbackBuffer.enqueue(taskIndex);
         }
     }
 
@@ -137,9 +134,9 @@ Task* TaskPool::createTask(Task* parentTask, const DELEGATE_CBK<void, const Task
     Task* task = nullptr;
     while (task == nullptr) {
         const U32 index = g_allocatedTasks++;
-        Task* crtTask = &g_taskAllocator[index & (Config::MAX_POOLED_TASKS - 1u)];
+        Task& crtTask = g_taskAllocator[index & (Config::MAX_POOLED_TASKS - 1u)];
         if (Finished(crtTask)) {
-            task = crtTask;
+            task = &crtTask;
         }
     }
 
@@ -233,7 +230,7 @@ TaskHandle parallel_for(TaskPool& pool,
         }
     }
 
-    updateTask.startTask(priority).wait();
+    updateTask.startTask(Runtime::isMainThread() ? priority : TaskPriority::REALTIME).wait();
 
     return updateTask;
 }

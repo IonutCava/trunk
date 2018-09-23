@@ -30,8 +30,6 @@ void GFXDevice::uploadGPUBlock() {
         // need the previous data. Might avoid some driver sync
         _gfxDataBuffer->writeData(&_gpuBlock._data);
         _gfxDataBuffer->bind(ShaderBufferLocation::GPU_BLOCK);
-        _api->updateClipPlanes(_clippingPlanes);
-
         _gpuBlock._needsUpload = false;
     }
 }
@@ -104,13 +102,10 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
         }
     }
 
-    for (const GFX::CommandBuffer::CommandEntry& cmd : commands) {
-        _api->postFlushCommand(cmd, commandBuffer);
-    }
+    _api->postFlushCommandBuffer(commandBuffer);
 }
 
 void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
-                              U32 bufferIndex,
                               const Texture_ptr& depthBuffer,
                               const vec2<F32>& zPlanes,
                               GFX::CommandBuffer& bufferInOut) const {
@@ -130,8 +125,8 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
 
     ShaderBufferBinding shaderBuffer;
     shaderBuffer._binding = ShaderBufferLocation::GPU_COMMANDS;
-    shaderBuffer._buffer = bufferData._cmdBuffers[bufferIndex];
-    shaderBuffer._range.set(0, to_U16(bufferData._cmdBuffers[bufferIndex]->getPrimitiveCount()));
+    shaderBuffer._buffer = bufferData._cmdBuffer;
+    shaderBuffer._range.set(0, to_U16(bufferData._cmdBuffer->getPrimitiveCount()));
     shaderBuffer._atomicCounter.first = true;
     
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd;
@@ -140,7 +135,7 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
     bindDescriptorSetsCmd._set->_textureData.addTexture(depthBuffer->getData(), to_U8(ShaderProgram::TextureUsage::DEPTH));
     GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
     
-    U32 cmdCount = bufferData._lastCommandCount;
+    U32 cmdCount = *bufferData._lastCommandCount;
 
     GFX::SendPushConstantsCommand sendPushConstantsCmd;
     sendPushConstantsCmd._constants.set("dvd_numEntities", GFX::PushConstantType::UINT, cmdCount);
@@ -189,10 +184,6 @@ void GFXDevice::drawText(const TextElementBatch& batch) {
 
     drawText(batch, buffer);
     flushCommandBuffer(sBuffer());
-}
-
-void GFXDevice::drawTextureInRenderViewport(TextureData data, GFX::CommandBuffer& bufferInOut) const {
-    drawTextureInViewport(data, _baseViewport, bufferInOut);
 }
 
 void GFXDevice::drawTextureInRenderWindow(TextureData data, GFX::CommandBuffer& bufferInOut) const {

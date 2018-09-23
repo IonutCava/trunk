@@ -27,7 +27,7 @@ namespace Divide {
     }
 
     void ApplicationOutput::clearLog() {
-        _log.clear();
+        _log.reset();
         _scrollToBottom = true;
     }
 
@@ -76,7 +76,7 @@ namespace Divide {
 
         if (entryCount > 0) {
             for (size_t i = 0; i < entryCount; ++i) {
-                const Console::OutputEntry& message = _log[i];
+                const Console::OutputEntry& message = _log.get(i);
 
                 if (!filter.PassFilter(message._text.c_str())) {
                     continue;
@@ -121,7 +121,7 @@ namespace Divide {
     }
 
     void ApplicationOutput::printText(const Console::OutputEntry& entry) {
-        _log.push_back(entry);
+        _log.put(entry);
         _scrollToBottom = true;
     }
 

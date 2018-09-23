@@ -44,7 +44,7 @@ class BoundingBox;
 enum class RigidBodyShape : U8;
 
 BETTER_ENUM(ObjectType, U8,
-    SPHERE_3D = 0,
+    SPHERE_3D,
     BOX_3D,
     QUAD_3D,
     PATCH_3D,

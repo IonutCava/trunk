@@ -174,8 +174,9 @@ void Kernel::onLoop() {
 
             U64 deltaTimeUS = 0ULL;
             if (!_timingData.freezeTime()) {
-                deltaTimeUS = Config::USE_FIXED_TIMESTEP ? Time::SecondsToMicroseconds(1) / TICKS_PER_SECOND
-                                                         : _timingData.currentTimeDeltaUS();
+                deltaTimeUS = _platformContext->config().runtime.useFixedTimestep
+                                    ? Time::SecondsToMicroseconds(1) / TICKS_PER_SECOND
+                                    : _timingData.currentTimeDeltaUS();
             }
 
             // Process the current frame
@@ -250,6 +251,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTimeUS) {
         _platformContext->pfx().process(realTime);
     }
 
+    bool fixedTimestep = _platformContext->config().runtime.useFixedTimestep;
     {
         Time::ScopedTimer timer2(_sceneUpdateTimer);
 
@@ -283,7 +285,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTimeUS) {
                 _sceneUpdateLoopTimer.stop();
             }
 
-            _timingData.endUpdateLoop(deltaTimeUS);
+            _timingData.endUpdateLoop(deltaTimeUS, fixedTimestep);
             ++loopCount;
         }  // while
     }
@@ -300,7 +302,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTimeUS) {
     }
 
     D64 interpolationFactor = 1.0;
-    if (Config::USE_FIXED_TIMESTEP && !_timingData.freezeTime()) {
+    if (fixedTimestep && !_timingData.freezeTime()) {
         interpolationFactor = static_cast<D64>(_timingData.currentTimeUS() + deltaTimeUS - _timingData.nextGameTickUS()) / deltaTimeUS;
         CLAMP(interpolationFactor, 0.0, 1.0);
     }
@@ -534,35 +536,33 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
         return ErrorCode::NOT_ENOUGH_RAM;
     }
 
-    // We have an A.I. thread, a networking thread, a PhysX thread, the main
-    // update/rendering thread so how many threads do we allocate for tasks?
-    // That's up to the programmer to decide for each app.
     U32 hardwareThreads = HARDWARE_THREAD_COUNT();
     if (!_platformContext->taskPool().init(
-        static_cast<U8>(std::max(hardwareThreads, 5u) - 3), //at least two worker threads(what if we have a system with >260 threads?)
-        false,
+        static_cast<U8>(std::max(hardwareThreads, 5u) - 1), //at least two worker threads(what if we have a system with >260 threads?)
+        TaskPool::TaskPoolType::TYPE_BLOCKING,
         "DIVIDE_WORKER_THREAD_"))
     {
         return ErrorCode::CPU_NOT_SUPPORTED;
     }
-
-    _platformContext->pfx().setAPI(PXDevice::PhysicsAPI::PhysX);
-    _platformContext->sfx().setAPI(SFXDevice::AudioAPI::SDL);
-    // Using OpenGL for rendering as default
-    if (Config::USE_OPENGL_RENDERING) {
-        _platformContext->gfx().setAPI(Config::USE_OPENGL_ES ? RenderAPI::OpenGLES
-                                                             : RenderAPI::OpenGL);
-    }
-
-    ASIO::SET_LOG_FUNCTION([](const char* msg, bool is_error) {
-        is_error ? Console::errorfn(msg) : Console::printfn(msg);
-    });
 
     // Load info from XML files
     XMLEntryData& entryData = _platformContext->entryData();
     Configuration& config = _platformContext->config();
     XML::loadFromXML(entryData, entryPoint.c_str());
     XML::loadFromXML(config, (entryData.scriptLocation + "/config.xml").c_str());
+
+    if (config.runtime.targetRenderingAPI >= to_U8(RenderAPI::COUNT)) {
+        config.runtime.targetRenderingAPI = to_U8(RenderAPI::OpenGL);
+    }
+
+    _platformContext->pfx().setAPI(PXDevice::PhysicsAPI::PhysX);
+    _platformContext->sfx().setAPI(SFXDevice::AudioAPI::SDL);
+    _platformContext->gfx().setAPI(static_cast<RenderAPI>(config.runtime.targetRenderingAPI));
+    
+
+    ASIO::SET_LOG_FUNCTION([](const char* msg, bool is_error) {
+        is_error ? Console::errorfn(msg) : Console::printfn(msg);
+    });
 
     Server::instance().init(((Divide::U16)443), "127.0.0.1", true);
 

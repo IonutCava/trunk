@@ -70,8 +70,8 @@ void LightPool::init() {
     }
 
     ShaderBufferDescriptor bufferDescriptor = {};
-    bufferDescriptor._primitiveCount = 1;
-    bufferDescriptor._primitiveSize = sizeof(vec4<I32>) + (Config::Lighting::MAX_POSSIBLE_LIGHTS * sizeof(LightProperties));
+    bufferDescriptor._elementCount = 1;
+    bufferDescriptor._elementSize = sizeof(vec4<I32>) + (Config::Lighting::MAX_POSSIBLE_LIGHTS * sizeof(LightProperties));
     bufferDescriptor._ringBufferLength = 1;
     bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE) | to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
@@ -88,8 +88,8 @@ void LightPool::init() {
     // SHADOWS holds info about the currently active shadow casting lights:
     // ViewProjection Matrices, View Space Position, etc
     // Should be SSBO (not UBO) to use std430 alignment. Structures should not be padded
-    bufferDescriptor._primitiveCount = Config::Lighting::MAX_SHADOW_CASTING_LIGHTS;
-    bufferDescriptor._primitiveSize = sizeof(Light::ShadowProperties);
+    bufferDescriptor._elementCount = Config::Lighting::MAX_SHADOW_CASTING_LIGHTS;
+    bufferDescriptor._elementSize = sizeof(Light::ShadowProperties);
     bufferDescriptor._name = "LIGHT_SHADOW_BUFFER";
     ClearBit(bufferDescriptor._flags, to_U32(ShaderBuffer::Flags::AUTO_RANGE_FLUSH));
 

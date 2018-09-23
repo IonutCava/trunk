@@ -1,6 +1,10 @@
 #include "stdafx.h"
 
 #include "Headers/ThreadPool.h"
+#include "Platform/Headers/PlatformDefines.h"
+
+#include <boost/asio.hpp>
+#include <boost/asio/io_service.hpp>
 
 namespace Divide {
 
@@ -47,6 +51,28 @@ namespace Divide {
         return _threads;
     }
 
+    BoostAsioThreadPool::BoostAsioThreadPool(const U8 threadCount)
+        : ThreadPool(threadCount),
+          _queue(nullptr)
+    {
+        _queue = MemoryManager_NEW boost::asio::thread_pool(threadCount);
+    }
+
+    BoostAsioThreadPool::~BoostAsioThreadPool()
+    {
+        MemoryManager::SAFE_DELETE(_queue);
+    }
+
+    bool BoostAsioThreadPool::addTask(const PoolTask& job) {
+        boost::asio::post(*_queue, job);
+        return true;
+    }
+
+    void BoostAsioThreadPool::wait() {
+        _queue->stop();
+        ThreadPool::wait();
+    }
+
     BlockingThreadPool::BlockingThreadPool(const U8 threadCount)
         : ThreadPool(threadCount)
     {
@@ -64,13 +90,13 @@ namespace Divide {
         }
     }
 
-    BlockingThreadPool::~BlockingThreadPool()
-    {
-    }
+    bool BlockingThreadPool::addTask(const PoolTask& job)  {
+        if (_queue.enqueue(job)) {
+            _tasksLeft.fetch_add(1);
+            return true;
+        }
 
-    void BlockingThreadPool::addTask(const PoolTask& job)  {
-        _queue.enqueue(job);
-        _tasksLeft.fetch_add(1);
+        return false;
     }
 
     LockFreeThreadPool::LockFreeThreadPool(const U8 threadCount)
@@ -92,13 +118,13 @@ namespace Divide {
         }
     }
 
-    LockFreeThreadPool::~LockFreeThreadPool()
-    {
-    }
+    bool LockFreeThreadPool::addTask(const PoolTask& job) {
+        if (_queue.enqueue(job)) {
+            _tasksLeft.fetch_add(1);
+            return true;
+        }
 
-    void LockFreeThreadPool::addTask(const PoolTask& job) {
-        _queue.enqueue(job);
-        _tasksLeft.fetch_add(1);
+        return false;
     }
    
 };

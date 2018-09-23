@@ -139,7 +139,7 @@ bool RTDrawDescriptor::operator!=(const RTDrawDescriptor& other) const {
            _blendStates != other._blendStates;
 }
 
-void RTDrawDescriptor::markDirtyLayer(RTAttachmentType type, U8 index, U32 layer) {
+void RTDrawDescriptor::markDirtyLayer(RTAttachmentType type, U8 index, U16 layer) {
     vectorEASTL<DirtyLayersEntry>& entries = _dirtyLayers[type];
     for (DirtyLayersEntry& entry : entries) {
         if (entry.first == index) {
@@ -150,7 +150,7 @@ void RTDrawDescriptor::markDirtyLayer(RTAttachmentType type, U8 index, U32 layer
     entries.push_back(std::make_pair(index, DirtyLayers{ layer }));
 }
 
-std::set<U32> RTDrawDescriptor::getDirtyLayers(RTAttachmentType type, U8 index) const {
+std::set<U16> RTDrawDescriptor::getDirtyLayers(RTAttachmentType type, U8 index) const {
     auto retEntry = _dirtyLayers.find(type);
     if (retEntry != std::end(_dirtyLayers)) {
         for (const DirtyLayersEntry& entry : retEntry->second) {

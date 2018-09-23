@@ -25,7 +25,7 @@
 
 namespace Divide {
     namespace {
-        static const bool g_removeLinesAndPoints = true;
+        constexpr bool g_removeLinesAndPoints = true;
 
         struct vertexWeight {
             U8 _boneID;

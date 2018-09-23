@@ -11,8 +11,8 @@ SceneShaderData::SceneShaderData(GFXDevice& context)
       _dirty(true)
 {
     ShaderBufferDescriptor bufferDescriptor;
-    bufferDescriptor._primitiveCount = 1;
-    bufferDescriptor._primitiveSize = sizeof(SceneShaderBufferData);
+    bufferDescriptor._elementCount = 1;
+    bufferDescriptor._elementSize = sizeof(SceneShaderBufferData);
     bufferDescriptor._ringBufferLength = 1;
     bufferDescriptor._initialData = &_bufferData;
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;

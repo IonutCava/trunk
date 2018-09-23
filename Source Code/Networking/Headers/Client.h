@@ -35,8 +35,10 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "WorldPacket.h"
 
-using boost::asio::deadline_timer;
-using boost::asio::ip::tcp;
+#include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/streambuf.hpp>
+#include <boost/asio/io_service.hpp>
+#include <boost/asio/deadline_timer.hpp>
 
 namespace Divide {
 
@@ -63,10 +65,10 @@ class Client {
     // may be called by the user of the client class, or by the class itself in
     // response to graceful termination or an unrecoverable error.
 
-    void start(tcp::resolver::iterator endpoint_iter);
+    void start(boost::asio::ip::tcp::resolver::iterator endpoint_iter);
     void stop();
 
-    inline tcp::socket& getSocket() { return _socket; }
+    inline boost::asio::ip::tcp::socket& getSocket() { return _socket; }
 
     // Packet I/O
     bool sendPacket(WorldPacket& p);
@@ -76,9 +78,9 @@ class Client {
 
    private:
     // Connection
-    void start_connect(tcp::resolver::iterator endpoint_iter);
+    void start_connect(boost::asio::ip::tcp::resolver::iterator endpoint_iter);
     void handle_connect(const boost::system::error_code& ec,
-                        tcp::resolver::iterator endpoint_iter);
+                        boost::asio::ip::tcp::resolver::iterator endpoint_iter);
 
     // Read
     void start_read();
@@ -102,18 +104,18 @@ class Client {
 
    private:
     bool _stopped, _debugOutput;
-    tcp::socket _socket;
+    boost::asio::ip::tcp::socket _socket;
     size_t _header;
     boost::asio::streambuf _inputBuffer;
-    deadline_timer _deadline;
-    deadline_timer _heartbeatTimer;
+    boost::asio::deadline_timer _deadline;
+    boost::asio::deadline_timer _heartbeatTimer;
     std::deque<WorldPacket> _packetQueue;
 
     // File Data
     std::ofstream _outputFile;
     boost::asio::streambuf _requestBuf;
     size_t _fileSize;
-    boost::array<char, 1024> _buf;
+    std::array<char, 1024> _buf;
     ASIO* _asioPointer;
 };
 

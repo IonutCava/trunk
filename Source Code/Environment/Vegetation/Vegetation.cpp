@@ -342,7 +342,7 @@ void Vegetation::gpuCull(RenderStagePass renderStagePass, const SceneRenderState
     }
     _prevRenderStagePass = renderStagePass;
 
-    _parentLoD = _terrainChunk->getLoD(cam.getEye());
+    _parentLoD = 0;
     if (draw && _threadedLoadComplete && _parentLoD == 0) {
         GenericVertexData* buffer = _grassGPUBuffer[_writeBuffer];
         //_cullShader->SetSubroutine(VERTEX,

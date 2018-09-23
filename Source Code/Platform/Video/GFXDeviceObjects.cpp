@@ -4,28 +4,17 @@
 
 #include "Utility/Headers/Localization.h"
 
-#include "Platform/Video/OpenGL/Buffers/RenderTarget/Headers/glFramebuffer.h"
-#include "Platform/Video/Direct3D/Buffers/RenderTarget/Headers/d3dRenderTarget.h"
+#include "Platform/Video/RenderBackend/Vulkan/Headers/VKWrapper.h"
+#include "Platform/Video/RenderBackend/None/Headers/NoneWrapper.h"
+#include "Platform/Video/RenderBackend/OpenGL/Headers/glIMPrimitive.h"
+#include "Platform/Video/RenderBackend/OpenGL/Textures/Headers/glTexture.h"
+#include "Platform/Video/RenderBackend/OpenGL/Shaders/Headers/glShaderProgram.h"
+#include "Platform/Video/RenderBackend/OpenGL/Buffers/ShaderBuffer/Headers/glUniformBuffer.h"
+#include "Platform/Video/RenderBackend/OpenGL/Buffers/RenderTarget/Headers/glFramebuffer.h"
+#include "Platform/Video/RenderBackend/OpenGL/Buffers/VertexBuffer/Headers/glVertexArray.h"
+#include "Platform/Video/RenderBackend/OpenGL/Buffers/PixelBuffer/Headers/glPixelBuffer.h"
+#include "Platform/Video/RenderBackend/OpenGL/Buffers/VertexBuffer/Headers/glGenericVertexData.h"
 
-#include "Platform/Video/OpenGL/Headers/glIMPrimitive.h"
-
-#include "Platform/Video/OpenGL/Buffers/VertexBuffer/Headers/glVertexArray.h"
-#include "Platform/Video/Direct3D/Buffers/VertexBuffer/Headers/d3dVertexBuffer.h"
-
-#include "Platform/Video/OpenGL/Buffers/PixelBuffer/Headers/glPixelBuffer.h"
-#include "Platform/Video/Direct3D/Buffers/PixelBuffer/Headers/d3dPixelBuffer.h"
-
-#include "Platform/Video/OpenGL/Buffers/VertexBuffer/Headers/glGenericVertexData.h"
-#include "Platform/Video/Direct3D/Buffers/VertexBuffer/Headers/d3dGenericVertexData.h"
-
-#include "Platform/Video/OpenGL/Textures/Headers/glTexture.h"
-#include "Platform/Video/Direct3D/Textures/Headers/d3dTexture.h"
-
-#include "Platform/Video/OpenGL/Shaders/Headers/glShaderProgram.h"
-#include "Platform/Video/Direct3D/Shaders/Headers/d3dShaderProgram.h"
-
-#include "Platform/Video/OpenGL/Buffers/ShaderBuffer/Headers/glUniformBuffer.h"
-#include "Platform/Video/Direct3D/Buffers/ShaderBuffer/Headers/d3dConstantBuffer.h"
 
 namespace Divide {
 
@@ -46,8 +35,11 @@ RenderTarget* GFXDevice::newRT(const RenderTargetDescriptor& descriptor) const {
             /// The callee is responsible for it's deletion!
             temp =  new (_gpuObjectArena) glFramebuffer(refThis(this), descriptor);
         } break;
-        case RenderAPI::Direct3D: {
-            temp = new (_gpuObjectArena) d3dRenderTarget(refThis(this), descriptor);
+        case RenderAPI::Vulkan: {
+            temp = new (_gpuObjectArena) vkRenderTarget(refThis(this), descriptor);
+        } break;
+        case RenderAPI::None: {
+            temp = new (_gpuObjectArena) noRenderTarget(refThis(this), descriptor);
         } break;
         default: {
             DIVIDE_UNEXPECTED_CALL(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
@@ -76,6 +68,12 @@ IMPrimitive* GFXDevice::newIMP() const {
             /// for it's deletion!
             temp = new (_gpuObjectArena) glIMPrimitive(refThis(this));
         } break;
+        case RenderAPI::Vulkan: {
+            temp = new (_gpuObjectArena) vkIMPrimitive(refThis(this));
+        } break;
+        case RenderAPI::None: {
+            temp = new (_gpuObjectArena) noIMPrimitive(refThis(this));
+        } break;
         default: {
             DIVIDE_UNEXPECTED_CALL(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
         } break;
@@ -103,8 +101,11 @@ VertexBuffer* GFXDevice::newVB() const {
             /// The callee is responsible for it's deletion!
             temp = new (_gpuObjectArena) glVertexArray(refThis(this));
         } break;
-        case RenderAPI::Direct3D: {
-            temp = new (_gpuObjectArena) d3dVertexBuffer(refThis(this));
+        case RenderAPI::Vulkan: {
+            temp = new (_gpuObjectArena) vkVertexBuffer(refThis(this));
+        } break;
+        case RenderAPI::None: {
+            temp = new (_gpuObjectArena) noVertexBuffer(refThis(this));
         } break;
         default: {
             DIVIDE_UNEXPECTED_CALL(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
@@ -133,8 +134,11 @@ PixelBuffer* GFXDevice::newPB(PBType type, const char* name) const {
             /// The callee is responsible for it's deletion!
             temp = new (_gpuObjectArena) glPixelBuffer(refThis(this), type, name);
         } break;
-        case RenderAPI::Direct3D: {
-            temp = new (_gpuObjectArena) d3dPixelBuffer(refThis(this), type, name);
+        case RenderAPI::Vulkan: {
+            temp = new (_gpuObjectArena) vkPixelBuffer(refThis(this), type, name);
+        } break;
+        case RenderAPI::None: {
+            temp = new (_gpuObjectArena) noPixelBuffer(refThis(this), type, name);
         } break;
         default: {
             DIVIDE_UNEXPECTED_CALL(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
@@ -163,8 +167,11 @@ GenericVertexData* GFXDevice::newGVD(const U32 ringBufferLength, const char* nam
             /// The callee is responsible for it's deletion!
             temp = new (_gpuObjectArena) glGenericVertexData(refThis(this), ringBufferLength, name);
         } break;
-        case RenderAPI::Direct3D: {
-            temp = new (_gpuObjectArena) d3dGenericVertexData(refThis(this), ringBufferLength, name);
+        case RenderAPI::Vulkan: {
+            temp = new (_gpuObjectArena) vkGenericVertexData(refThis(this), ringBufferLength, name);
+        } break;
+        case RenderAPI::None: {
+            temp = new (_gpuObjectArena) noGenericVertexData(refThis(this), ringBufferLength, name);
         } break;
         default: {
             DIVIDE_UNEXPECTED_CALL(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
@@ -200,8 +207,11 @@ Texture* GFXDevice::newTexture(size_t descriptorHash,
             /// Create and return a new texture. The callee is responsible for it's deletion!
             temp = new (_gpuObjectArena) glTexture(refThis(this), descriptorHash, name, resourceName, resourceLocation, isFlipped, asyncLoad, texDescriptor);
         } break;
-        case RenderAPI::Direct3D: {
-            temp = new (_gpuObjectArena) d3dTexture(refThis(this), descriptorHash, name, resourceName, resourceLocation, isFlipped, asyncLoad, texDescriptor);
+        case RenderAPI::Vulkan: {
+            temp = new (_gpuObjectArena) vkTexture(refThis(this), descriptorHash, name, resourceName, resourceLocation, isFlipped, asyncLoad, texDescriptor);
+        } break;
+        case RenderAPI::None: {
+            temp = new (_gpuObjectArena) noTexture(refThis(this), descriptorHash, name, resourceName, resourceLocation, isFlipped, asyncLoad, texDescriptor);
         } break;
         default: {
             DIVIDE_UNEXPECTED_CALL(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
@@ -256,8 +266,11 @@ ShaderProgram* GFXDevice::newShaderProgram(size_t descriptorHash,
             /// The callee is responsible for it's deletion!
             temp = new (_gpuObjectArena) glShaderProgram(refThis(this), descriptorHash, name, resourceName, resourceLocation, asyncLoad);
         } break;
-        case RenderAPI::Direct3D: {
-            temp = new (_gpuObjectArena) d3dShaderProgram(refThis(this), descriptorHash, name, resourceName, resourceLocation, asyncLoad);
+        case RenderAPI::Vulkan: {
+            temp = new (_gpuObjectArena) vkShaderProgram(refThis(this), descriptorHash, name, resourceName, resourceLocation, asyncLoad);
+        } break;
+        case RenderAPI::None: {
+            temp = new (_gpuObjectArena) noShaderProgram(refThis(this), descriptorHash, name, resourceName, resourceLocation, asyncLoad);
         } break;
         default: {
             DIVIDE_UNEXPECTED_CALL(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
@@ -288,8 +301,11 @@ ShaderBuffer* GFXDevice::newSB(const ShaderBufferDescriptor& descriptor) const {
             /// The shader buffer can also be persistently mapped, if requested
             temp = new (_gpuObjectArena) glUniformBuffer(refThis(this), descriptor);
         } break;
-        case RenderAPI::Direct3D: {
-            temp = new (_gpuObjectArena) d3dConstantBuffer(refThis(this), descriptor);
+        case RenderAPI::Vulkan: {
+            temp = new (_gpuObjectArena) vkUniformBuffer(refThis(this), descriptor);
+        } break;
+        case RenderAPI::None: {
+            temp = new (_gpuObjectArena) noUniformBuffer(refThis(this), descriptor);
         } break;
         default: {
             DIVIDE_UNEXPECTED_CALL(Locale::get(_ID("ERROR_GFX_DEVICE_API")));

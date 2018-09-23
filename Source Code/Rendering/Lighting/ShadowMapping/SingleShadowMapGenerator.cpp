@@ -30,14 +30,13 @@ void SingleShadowMapGenerator::render(const Camera& playerCamera, Light& light, 
 
     RenderPassManager& passMgr = _context.parent().renderPassManager();
     RenderPassManager::PassParams params;
-    params._doPrePass = false;
     params._occlusionCull = false;
     params._camera = shadowCameras[0];
     params._stage = RenderStage::SHADOW;
     params._target = RenderTargetID(RenderTargetUsage::SHADOW, to_base(ShadowType::SINGLE));
     params._drawPolicy = &RenderTarget::defaultPolicy();
-    params._bufferIndex = lightIndex;
-    params._passIndex = 0;
+    params._pass = RenderPassType::COUNT;
+    params._passIndex = lightIndex;
     params._passVariant = to_U8(light.getLightType());
 
     passMgr.doCustomPass(params, bufferInOut);

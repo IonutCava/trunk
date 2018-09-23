@@ -10,10 +10,6 @@ namespace detail {
     std::thread::id g_mainThreadID;
 };
 
-bool isMainThread() {
-    return (detail::g_mainThreadID == std::this_thread::get_id());
-}
-
 const std::thread::id&  mainThreadID() {
     return detail::g_mainThreadID;
 }

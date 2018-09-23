@@ -96,7 +96,7 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
 
     virtual void flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) = 0;
 
-    virtual void postFlushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) = 0;
+    virtual void postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) = 0;
 
     static GFXConfig& config() { return _config; }
 
@@ -106,8 +106,9 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
     /// Convert a CEGUI texture handle to something that our current rendering API can use
     virtual U32 getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const = 0;
 
-   protected:
-    virtual bool changeViewportInternal(const Rect<I32>& newViewport) = 0;
+    virtual bool setViewport(const Rect<I32>& newViewport) = 0;
+
+protected:
 
     static GFXConfig _config;
 };

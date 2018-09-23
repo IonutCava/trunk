@@ -56,18 +56,15 @@ template<typename T_vec, typename T_str>
 typename std::enable_if<std::is_same<T_vec, typename vector<T_str>>::value ||
                         std::is_same<T_vec, typename vectorFast<T_str>>::value, T_vec&>::type
 Split(const char* input, char delimiter, T_vec& elems) {
-#if defined(_USE_BOOST_STRING_SPLIT)
-    boost::split(elems, input, [delimiter](char c) {return c == delimiter;});
-#else
     elems.resize(0);
-    if (!input.empty()) {
+    if (input != nullptr) {
         istringstreamImpl ss(input);
         stringImpl item;
         while (std::getline(ss, item, delimiter)) {
-            vectorAlg::emplace_back(elems, item);
+            elems.push_back(std::move(item));
         }
     }
-#endif
+
     return elems;
 }
 

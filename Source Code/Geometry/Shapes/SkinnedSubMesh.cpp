@@ -59,12 +59,12 @@ void SkinnedSubMesh::buildBoundingBoxesForAnim(const Task& parentTask,
     BoundingBox& currentBB = _boundingBoxes.at(animationIndex);
     currentBB.reset();
     for (const vectorBest<mat4<F32> >& transforms : currentAnimation) {
-        if (StopRequested(&parentTask)) {
+        if (StopRequested(parentTask)) {
             return;
         }
         // loop through all vertex weights of all bones
         for (U32 j = 0; j < partitionCount; ++j) {
-            if (StopRequested(&parentTask)) {
+            if (StopRequested(parentTask)) {
                 return;
             }
 

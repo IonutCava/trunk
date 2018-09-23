@@ -207,7 +207,7 @@ public:  // GPU interface
         const vec3<F32>& pos,
         const vec2<F32>& zPlanes,
         RenderStagePass stagePass,
-        U32 bufferIndex,
+        U32 passIndex,
         GFX::CommandBuffer& commandsInOut,
         Camera* camera = nullptr);
 
@@ -216,7 +216,7 @@ public:  // GPU interface
         const vec3<F32>& pos,
         const vec2<F32>& zPlanes,
         RenderStagePass stagePass,
-        U32 bufferIndex,
+        U32 passIndex,
         GFX::CommandBuffer& commandsInOut,
         Camera* camera = nullptr);
 
@@ -297,8 +297,6 @@ public:  // Accessors and Mutators
 
     inline const Rect<I32>& getCurrentViewport() const { return _viewport; }
 
-    inline const Rect<I32>& getBaseViewport() const { return _baseViewport; }
-
     DebugView* addDebugView(const std::shared_ptr<DebugView>& view);
     bool removeDebugView(DebugView* view);
 
@@ -336,8 +334,6 @@ public:
 
     // Render the texture over the full window dimensions regardless of the actual active rendering viewport 
     void drawTextureInRenderWindow(TextureData data, GFX::CommandBuffer& bufferInOut) const;
-    // Render the texture using the full rendering viewport
-    void drawTextureInRenderViewport(TextureData data, GFX::CommandBuffer& bufferInOut) const;
     // Render the texture using a custom viewport
     void drawTextureInViewport(TextureData data, const Rect<I32>& viewport, GFX::CommandBuffer& bufferInOut) const;
 
@@ -361,8 +357,6 @@ protected:
 
     void drawDebugFrustum(GFX::CommandBuffer& bufferInOut);
 
-    void setBaseViewport(const Rect<I32>& viewport);
-
     void drawText(const TextElementBatch& batch);
 
     void fitViewportInWindow(U16 w, U16 h);
@@ -385,7 +379,6 @@ protected:
     friend class RenderPassManager;
 
     void occlusionCull(const RenderPass::BufferData& bufferData,
-                       U32 bufferIndex,
                        const Texture_ptr& depthBuffer,
                        const vec2<F32>& zPlanes,
                        GFX::CommandBuffer& bufferInOut) const;
@@ -464,10 +457,7 @@ protected:
     std::mutex _graphicsResourceMutex;
     vector<std::pair<GraphicsResource::Type, I64>> _graphicResources;
 
-    /// Current viewport stack
     Rect<I32> _viewport;
-    Rect<I32> _baseViewport;
-
     vec2<U16> _renderingResolution;
 
     GFXShaderData _gpuBlock;

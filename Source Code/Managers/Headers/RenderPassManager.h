@@ -54,12 +54,11 @@ public:
         RenderTargetID _target;
         const RTDrawDescriptor* _drawPolicy = nullptr;
         RenderStage _stage = RenderStage::COUNT;
+        RenderPassType _pass = RenderPassType::COUNT;
         FrustumClipPlanes _clippingPlanes;
         U8  _passVariant = 0;
         U32 _passIndex = 0;
-        U32 _bufferIndex = 0;
         bool _occlusionCull = false;
-        bool _doPrePass = true;
         bool _bindTargets = true;
     };
 
@@ -79,22 +78,21 @@ public:
 
     inline RenderQueue& getQueue() { return _renderQueue; }
 
-    RenderPass::BufferData& getBufferData(RenderStage renderStage, I32 bufferIndex, I32 bufferOffset = 0);
-    const RenderPass::BufferData& getBufferData(RenderStage renderStage, I32 bufferIndex, I32 bufferOffset = 0) const;
+    RenderPass::BufferData getBufferData(RenderStage renderStage, RenderPassType type, I32 passIndex) const;
 
     void doCustomPass(PassParams& params, GFX::CommandBuffer& bufferInOut);
 
 private:
-
-    void prePass(const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut);
-    void mainPass(const PassParams& params, RenderTarget& target, GFX::CommandBuffer& bufferInOut);
+    // Returns false if we skipped the pre-pass step
+    bool prePass(const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut);
+    void mainPass(const PassParams& params, RenderTarget& target, GFX::CommandBuffer& bufferInOut, bool prePassExecuted);
     void woitPass(const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut);
 
     RenderPass& getPassForStage(RenderStage renderStage);
     const RenderPass& getPassForStage(RenderStage renderStage) const;
     void prepareRenderQueues(RenderStagePass stagePass, const PassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut);
     void buildDrawCommands(RenderStagePass stagePass, const PassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut);
-    void refreshNodeData(RenderStage stage, U32 bufferIndex, U32 passIndex, const SceneRenderState& renderState, const mat4<F32>& viewMatrix, const RenderQueue::SortedQueues& sortedQueues, GFX::CommandBuffer& bufferInOut);
+    void refreshNodeData(RenderStage stage, RenderPassType pass, U32 passIndex, const SceneRenderState& renderState, const mat4<F32>& viewMatrix, const RenderQueue::SortedQueues& sortedQueues, GFX::CommandBuffer& bufferInOut);
     GFXDevice::NodeData processVisibleNode(SceneGraphNode* node, bool isOcclusionCullable, bool playAnimations, const mat4<F32>& viewMatrix) const;
 
 private: //TEMP

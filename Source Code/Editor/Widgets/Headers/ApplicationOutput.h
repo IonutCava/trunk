@@ -36,6 +36,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Core/Headers/PlatformContextComponent.h"
 
 #include "Platform/Headers/PlatformDefines.h"
+#include <CircularBuffer/CircularBuffer.h>
 
 namespace Divide {
     class ApplicationOutput : public PlatformContextComponent {
@@ -57,7 +58,7 @@ namespace Divide {
       protected:
         bool _scrollToBottom;
         char _inputBuf[256];
-        boost::circular_buffer<Console::OutputEntry> _log;
+        circular_buffer<Console::OutputEntry> _log;
     };
 }; //namespace Divide
 

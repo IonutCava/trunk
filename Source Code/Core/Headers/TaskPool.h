@@ -38,12 +38,20 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 class TaskPool : public GUIDWrapper {
+public:
+    enum class TaskPoolType : U8 {
+        TYPE_BOOST_ASIO = 0,
+        TYPE_LOCKFREE,
+        TYPE_BLOCKING,
+        COUNT
+    };
+
   public:
 
     explicit TaskPool() noexcept;
     ~TaskPool();
     
-    bool init(U8 threadCount, bool lockFree, const stringImpl& workerName = "DVD_WORKER");
+    bool init(U8 threadCount, TaskPoolType poolType, const stringImpl& workerName = "DVD_WORKER");
     void shutdown();
 
     void flushCallbackQueue();
@@ -67,8 +75,8 @@ class TaskPool : public GUIDWrapper {
     //ToDo: replace all friend class declarations with attorneys -Ionut;
     friend struct Task;
     friend struct TaskHandle;
-    friend void Start(Task* task, TaskPool& pool, TaskPriority priority, const DELEGATE_CBK<void>& onCompletionFunction);
-    friend bool StopRequested(const Task *task);
+    friend void Start(Task& task, TaskPool& pool, TaskPriority priority, const DELEGATE_CBK<void>& onCompletionFunction);
+    friend bool StopRequested(const Task& task);
 
     void taskCompleted(U32 taskIndex);
     void taskCompleted(U32 taskIndex, TaskPriority priority, const DELEGATE_CBK<void>& onCompletionFunction);
@@ -80,12 +88,8 @@ class TaskPool : public GUIDWrapper {
     void runCbkAndClearTask(U32 taskIdentifier);
 
   private:
-#if defined(USE_BOOST_ASIO_THREADPOOL)
-      std::unique_ptr<boost::asio::thread_pool> _mainTaskPool;
-#else
-      std::unique_ptr<ThreadPool> _mainTaskPool;
-#endif
-    boost::lockfree::queue<U32> _threadedCallbackBuffer;
+    std::unique_ptr<ThreadPool> _mainTaskPool;
+    moodycamel::ConcurrentQueue<U32> _threadedCallbackBuffer;
     std::atomic_uint _runningTaskCount;
     std::atomic_bool _stopRequested = false;
     hashMap<U32, DELEGATE_CBK<void>> _taskCallbacks;

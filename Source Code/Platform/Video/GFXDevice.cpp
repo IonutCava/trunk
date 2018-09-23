@@ -128,7 +128,6 @@ GFXDevice::GFXDevice(Kernel& parent)
     _API_ID = RenderAPI::COUNT;
     
     _viewport.set(-1);
-    _baseViewport.set(-1);
 
     _lastCommandCount.fill(0);
     _lastNodeCount.fill(0);
@@ -169,7 +168,7 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
                                 const vec3<F32>& pos,
                                 const vec2<F32>& zPlanes,
                                 RenderStagePass stagePass,
-                                U32 bufferIndex,
+                                U32 passIndex,
                                 GFX::CommandBuffer& bufferInOut,
                                 Camera* camera) {
 
@@ -226,12 +225,12 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
 
     RenderPassManager& passMgr = parent().renderPassManager();
     RenderPassManager::PassParams params;
-    params._doPrePass = stagePass._stage != RenderStage::SHADOW;
-    params._occlusionCull = params._doPrePass;
+    params._occlusionCull = true;
     params._camera = camera;
     params._stage = stagePass._stage;
+    params._pass = stagePass._passType;
     params._target = cubeMap;
-    params._bufferIndex = bufferIndex;
+    params._passIndex = passIndex;
     // We do our own binding
     params._bindTargets = false;
     params._passVariant = stagePass._variant;
@@ -241,7 +240,6 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
     RenderTarget::DrawLayerParams drawParams;
     drawParams._type = hasColour ? RTAttachmentType::Colour : RTAttachmentType::Depth;
     drawParams._index = 0;
-    drawParams._isCubeFace = true;
 
     for (U8 i = 0; i < 6; ++i) {
         // Draw to the current cubemap face
@@ -267,7 +265,7 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
                                           const vec3<F32>& pos,
                                           const vec2<F32>& zPlanes,
                                           RenderStagePass stagePass,
-                                          U32 bufferIndex,
+                                          U32 passIndex,
                                           GFX::CommandBuffer& bufferInOut,
                                           Camera* camera)
 {
@@ -301,14 +299,14 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
 
     RenderPassManager& passMgr = parent().renderPassManager();
     RenderPassManager::PassParams params;
-    params._doPrePass = stagePass._stage != RenderStage::SHADOW;
-    params._occlusionCull = params._doPrePass;
+    params._occlusionCull = true;
     params._camera = camera;
     params._stage = stagePass._stage;
     params._target = targetBuffer;
     params._bindTargets = false;
     params._passVariant = stagePass._variant;
-    params._bufferIndex = bufferIndex;
+    params._pass = stagePass._passType;
+    params._passIndex = passIndex;
     // Enable our render target
 
     GFX::BeginRenderPassCommand beginRenderPassCmd;
@@ -471,7 +469,6 @@ void GFXDevice::fitViewportInWindow(U16 w, U16 h) {
     Rect<I32> renderingViewport(left, bottom, newWidth, newHeight);
     WindowManager& winManager = _parent.platformContext().app().windowManager();
     winManager.getActiveWindow().renderingViewport(renderingViewport);
-    setBaseViewport(renderingViewport);
 }
 
 /// set a new list of clipping planes. The old one is discarded
@@ -482,6 +479,8 @@ void GFXDevice::setClipPlanes(const FrustumClipPlanes& clipPlanes) {
     if (clipPlanes._active != _clippingPlanes._active ||
         clipPlanes._planes != _clippingPlanes._planes)
     {
+        _api->updateClipPlanes(clipPlanes);
+
         _clippingPlanes = clipPlanes;
 
         memcpy(&_gpuBlock._data._clipPlanes[0],
@@ -522,7 +521,7 @@ void GFXDevice::renderFromCamera(const CameraSnapshot& cameraSnapshot) {
 /// Update the rendering viewport
 bool GFXDevice::setViewport(const Rect<I32>& viewport) {
     // Change the viewport on the Rendering API level
-    if (_api->changeViewportInternal(viewport)) {
+    if (_api->setViewport(viewport)) {
     // Update the buffer with the new value
         _gpuBlock._data._ViewPort.set(viewport.x, viewport.y, viewport.z, viewport.w);
         _gpuBlock._needsUpload = true;
@@ -534,17 +533,12 @@ bool GFXDevice::setViewport(const Rect<I32>& viewport) {
     return false;
 }
 
-/// Set a new viewport clearing the previous stack first
-void GFXDevice::setBaseViewport(const Rect<I32>& viewport) {
-    setViewport(viewport);
-    _baseViewport.set(viewport);
-}
-
-
 /// Transform our depth buffer to a HierarchicalZ buffer (for occlusion queries and screen space reflections)
 /// Based on RasterGrid implementation: http://rastergrid.com/blog/2010/10/hierarchical-z-map-based-occlusion-culling/
 /// Modified with nVidia sample code: https://github.com/nvpro-samples/gl_occlusion_culling
 const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmdBufferInOut) const {
+    static bool firstRun = true;
+
     // We use a special shader that downsamples the buffer
     // We will use a state block that disables colour writes as we will render only a depth image,
     // disables depth testing but allows depth writes
@@ -614,6 +608,8 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::Comm
     GFX::BeginRenderSubPassCommand beginRenderSubPassCmd;
     GFX::EndRenderSubPassCommand endRenderSubPassCmd;
 
+    beginRenderSubPassCmd._validateWriteLevel = firstRun;
+
     GenericDrawCommand triangleCmd;
     triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
     triangleCmd._drawCount = 1;
@@ -666,14 +662,16 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::Comm
     GFX::EndDebugScopeCommand endDebugScopeCmd;
     GFX::EnqueueCommand(cmdBufferInOut, endDebugScopeCmd);
 
+    firstRun = false;
+
     return depth;
 }
 
 void GFXDevice::updateCullCount(GFX::CommandBuffer& cmdBufferInOut) {
-    const RenderPass::BufferData& bufferData = parent().renderPassManager().getBufferData(RenderStage::DISPLAY, 0);
+    const RenderPass::BufferData& bufferData = parent().renderPassManager().getBufferData(RenderStage::DISPLAY, RenderPassType::DEPTH_PASS, 0);
 
     GFX::ReadAtomicCounterCommand readAtomicCounter;
-    readAtomicCounter._buffer = bufferData._cmdBuffers[0];
+    readAtomicCounter._buffer = bufferData._cmdBuffer;
     readAtomicCounter._target = &LAST_CULL_COUNT;
     readAtomicCounter._resetCounter = true;
     GFX::EnqueueCommand(cmdBufferInOut, readAtomicCounter);

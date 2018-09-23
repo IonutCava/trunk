@@ -46,13 +46,13 @@ public:
     virtual ~ThreadPool();
 
     // Add a new task to the pool's queue
-    virtual void addTask(const PoolTask& job) = 0;
+    virtual bool addTask(const PoolTask& job) = 0;
 
     // Join all of the threads and block until all running tasks have completed.
     void join();
 
     // Wait for all running jobs to finish
-    void wait();
+    virtual void wait();
 
     // Get all of the threads for external usage (e.g. setting affinity)
     eastl::vector<std::thread>& threads();
@@ -63,16 +63,30 @@ protected:
     eastl::vector<std::thread> _threads;
 };
 
+class BoostAsioThreadPool final : public ThreadPool
+{
+public:
+
+    explicit BoostAsioThreadPool(const U8 threadCount);
+    ~BoostAsioThreadPool();
+
+    // Add a new task to the pool's queue
+    bool addTask(const PoolTask& job) override;
+    void wait();
+
+private:
+    boost::asio::thread_pool* _queue;
+};
 
 class BlockingThreadPool final : public ThreadPool
 {
 public:
 
     explicit BlockingThreadPool(const U8 threadCount);
-    ~BlockingThreadPool();
+    ~BlockingThreadPool() = default;
 
     // Add a new task to the pool's queue
-    void addTask(const PoolTask& job) override;
+    bool addTask(const PoolTask& job) override;
 
 private:
     moodycamel::BlockingConcurrentQueue<PoolTask> _queue;
@@ -84,10 +98,10 @@ class LockFreeThreadPool final : public ThreadPool
 public:
 
     explicit LockFreeThreadPool(const U8 threadCount);
-    ~LockFreeThreadPool();
+    ~LockFreeThreadPool() = default;
 
     // Add a new task to the pool's queue
-    void addTask(const PoolTask& job) override;
+    bool addTask(const PoolTask& job) override;
 
 private:
     moodycamel::ConcurrentQueue<PoolTask> _queue;

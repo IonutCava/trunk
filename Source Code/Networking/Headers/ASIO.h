@@ -35,6 +35,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "WorldPacket.h"
 
+#include <boost/asio/io_service.hpp>
+
 namespace Divide {
 
 #ifndef OPCODE_ENUM
@@ -80,7 +82,7 @@ class ASIO {
 
    protected:
     Client* _localClient;
-    std::auto_ptr<boost::asio::io_service::work> _work;
+    std::unique_ptr<boost::asio::io_service::work> _work;
     std::thread* _thread;
     bool _connected;
     bool _debugOutput;

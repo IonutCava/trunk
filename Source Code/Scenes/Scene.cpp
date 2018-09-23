@@ -39,7 +39,6 @@
 
 #include "Physics/Headers/PhysicsSceneInterface.h"
 
-
 namespace Divide {
 
 namespace {
@@ -871,6 +870,7 @@ bool Scene::load(const stringImpl& name) {
             Console::d_printfn(Locale::get(_ID("SCENE_LOAD_TASKS")), totalLoadingTasks);
         }
         idle();
+        std::this_thread::yield();
     }
 
     // We always add a sky
@@ -1197,8 +1197,8 @@ void Scene::clearTasks() {
     // Performance shouldn't be an issue here
     UniqueLockShared w_lock(_tasksMutex);
     for (TaskHandle& task : _tasks) {
-        Stop(task._task);
-        Wait(task._task);
+        Stop(*task._task);
+        Wait(*task._task);
     }
 
     _tasks.clear();
@@ -1209,7 +1209,7 @@ void Scene::removeTask(TaskHandle& task) {
     vector<TaskHandle>::iterator it;
     for (it = std::begin(_tasks); it != std::end(_tasks); ++it) {
         if ((*it) == task) {
-            Stop((*it)._task);
+            Stop(*(*it)._task);
             _tasks.erase(it);
             (*it).wait();
             return;

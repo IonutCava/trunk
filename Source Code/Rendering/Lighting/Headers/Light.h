@@ -205,7 +205,7 @@ class Light : public SceneNode {
     }
 
     inline void setShadowOffset(U16 offset) {
-        _shadowProperties._lightDetails.z = to_F32(offset);
+        _shadowProperties._lightDetails.z = offset;
     }
 
     inline ShadowCameraPool& shadowCameras() { return _shadowCameras; }

@@ -41,8 +41,7 @@ namespace Divide {
 class Scene;
 
 class PhysXSceneInterface : public PhysicsSceneInterface {
-    typedef boost::lockfree::spsc_queue<
-        PhysXActor*, boost::lockfree::capacity<128> > LoadQueue;
+    typedef moodycamel::ConcurrentQueue<PhysXActor*> LoadQueue;
 
    public:
     PhysXSceneInterface(Scene& parentScene);

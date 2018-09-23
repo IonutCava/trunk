@@ -112,11 +112,6 @@ RTAttachment& RenderTarget::getAttachment(RTAttachmentType type, U8 index) {
     return *_attachmentPool->get(type, index);
 }
 
-/// Used by cubemap FB's
-void RenderTarget::drawToFace(const DrawLayerParams& params) {
-    drawToLayer(params);
-}
-
 void RenderTarget::readData(GFXImageFormat imageFormat, GFXDataFormat dataType, bufferPtr outData) {
     readData(vec4<U16>(0u, 0u, _descriptor._resolution.w, _descriptor._resolution.h), imageFormat, dataType, outData);
 }

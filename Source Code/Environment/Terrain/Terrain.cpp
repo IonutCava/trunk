@@ -59,8 +59,8 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
     // Skip Object3D::load() to avoid triangle list computation (extremely expensive)!!!
 
     ShaderBufferDescriptor bufferDescriptor;
-    bufferDescriptor._primitiveCount = Terrain::MAX_RENDER_NODES * to_base(RenderStage::COUNT);
-    bufferDescriptor._primitiveSize = sizeof(TessellatedNodeData);
+    bufferDescriptor._elementCount = Terrain::MAX_RENDER_NODES * to_base(RenderStage::COUNT);
+    bufferDescriptor._elementSize = sizeof(TessellatedNodeData);
     bufferDescriptor._ringBufferLength = 1;
     bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE) | to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;

@@ -21,6 +21,12 @@
 
 #include "Platform/Headers/ByteConverter.h"
 
+namespace boost {
+    namespace serialization {
+        class access;
+    };
+};
+
 namespace Divide {
 
 class ByteBufferException {
