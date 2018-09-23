@@ -978,7 +978,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
                 GL_API::s_activeRenderTarget->drawToLayer(params);
             }
 
-            GL_API::s_activeRenderTarget->setMipLevel(crtCmd._mipWriteLevel);
+            GL_API::s_activeRenderTarget->setMipLevel(crtCmd._mipWriteLevel, crtCmd._validateWriteLevel);
         }break;
         case GFX::CommandType::END_RENDER_SUB_PASS: {
         }break;
