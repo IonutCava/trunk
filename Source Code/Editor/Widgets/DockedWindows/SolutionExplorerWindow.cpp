@@ -11,6 +11,7 @@
 
 namespace Divide {
     namespace {
+        constexpr U8 g_maxEntryCount = 32;
         std::deque<F32> g_framerateBuffer;
         std::vector<F32> g_framerateBufferCont;
     };
@@ -19,7 +20,7 @@ namespace Divide {
         : DockedWindow(parent, "Solution Explorer"),
           PlatformContextComponent(context)
     {
-        g_framerateBufferCont.reserve(256);
+        g_framerateBufferCont.reserve(g_maxEntryCount);
     }
 
     SolutionExplorerWindow::~SolutionExplorerWindow()
@@ -99,25 +100,34 @@ namespace Divide {
         }
 
         // Calculate and show framerate
-        static F32 ms_per_frame[120] = { 0 };
+        static F32 max_ms_per_frame = 0;
+
+        static F32 ms_per_frame[g_maxEntryCount] = { 0 };
         static I32 ms_per_frame_idx = 0;
         static F32 ms_per_frame_accum = 0.0f;
         ms_per_frame_accum -= ms_per_frame[ms_per_frame_idx];
         ms_per_frame[ms_per_frame_idx] = ImGui::GetIO().DeltaTime * 1000.0f;
         ms_per_frame_accum += ms_per_frame[ms_per_frame_idx];
-        ms_per_frame_idx = (ms_per_frame_idx + 1) % 120;
-        const F32 ms_per_frame_avg = ms_per_frame_accum / 120;
+        ms_per_frame_idx = (ms_per_frame_idx + 1) % g_maxEntryCount;
+        const F32 ms_per_frame_avg = ms_per_frame_accum / g_maxEntryCount;
+        if (ms_per_frame_avg + (Config::TARGET_FRAME_RATE / 1000.0f) > max_ms_per_frame) {
+            max_ms_per_frame = ms_per_frame_avg + (Config::TARGET_FRAME_RATE / 1000.0f);
+        }
         g_framerateBuffer.push_back(ms_per_frame_avg);
-        if (g_framerateBuffer.size() > 256) {
+        if (g_framerateBuffer.size() > g_maxEntryCount) {
             g_framerateBuffer.pop_front();
         }
         g_framerateBufferCont.resize(0);
         g_framerateBufferCont.insert(std::cbegin(g_framerateBufferCont),
                                      std::cbegin(g_framerateBuffer),
                                      std::cend(g_framerateBuffer));
-        ImGui::PlotHistogram("ms/frame", g_framerateBufferCont.data(), to_I32(g_framerateBufferCont.size()), 0, NULL, 0.0f, 1.0f, ImVec2(0, 80));
-
-        ImGui::Text("%.3f ms/frame (%.1f FPS)", ms_per_frame_avg, 1000.0f / ms_per_frame_avg);
-
+        ImGui::PlotHistogram("",
+                             g_framerateBufferCont.data(),
+                             to_I32(g_framerateBufferCont.size()),
+                             0,
+                             Util::StringFormat("%.3f ms/frame (%.1f FPS)", ms_per_frame_avg, 1000.0f / ms_per_frame_avg).c_str(),
+                             0.0f,
+                             max_ms_per_frame,
+                             ImVec2(0, 80));
     }
 };
