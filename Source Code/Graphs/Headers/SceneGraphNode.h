@@ -356,10 +356,10 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
         SGNComponent* comp = static_cast<SGNComponent>(GetComponent<T>());
         if (comp) {
             _editorComponents.erase(
-                std::remove_if(std::begin(_editorComponents), std::end(_editorComponents),
+                eastl::remove_if(eastl::begin(_editorComponents), eastl::end(_editorComponents),
                                [comp](EditorComponent* editorComp)
                                -> bool { return comp->getEditorComponent().getGUID() == editorComp->getGUID(); }),
-                std::end(_editorComponents));
+                eastl::end(_editorComponents));
             RemoveComponent<T>();
         }
     }
@@ -390,7 +390,7 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     stringImpl _name;
     SceneNode_ptr _node;
     SceneGraphNode* _parent;
-    vector<SceneGraphNode*> _children;
+    vectorEASTL<SceneGraphNode*> _children;
     mutable SharedMutex _childLock;
     std::atomic_bool _active;
     std::atomic_bool _visibilityLocked;
@@ -405,17 +405,17 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     SGNRelationshipCache _relationshipCache;
 
     // ToDo: Remove this HORRIBLE hack -Ionut
-    vector<EditorComponent*> _editorComponents;
+    vectorEASTL<EditorComponent*> _editorComponents;
 };
 
 namespace Attorney {
     class SceneGraphNodeEditor {
         private:
-        static vector<EditorComponent*>& editorComponents(SceneGraphNode& node) {
+        static vectorEASTL<EditorComponent*>& editorComponents(SceneGraphNode& node) {
             return node._editorComponents;
         }
 
-        static const vector<EditorComponent*>& editorComponents(const SceneGraphNode& node) {
+        static const vectorEASTL<EditorComponent*>& editorComponents(const SceneGraphNode& node) {
             return node._editorComponents;
         }
 

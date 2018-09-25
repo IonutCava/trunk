@@ -1,0 +1,1079 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Rendering">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Rendering\Camera">
+      <UniqueIdentifier>{7f15e8ff-af2b-40ff-8a7f-b43ccd97fb40}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rendering\Camera\Headers">
+      <UniqueIdentifier>{6ab9b7a5-4a87-4392-a928-28c30f61b59b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rendering\PostFX">
+      <UniqueIdentifier>{8fc51847-aa04-4378-92b4-1b3c1d1ce65d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rendering\PostFX\Headers">
+      <UniqueIdentifier>{e255f463-e31e-41b9-b8fa-541704b987db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rendering\Headers">
+      <UniqueIdentifier>{f0e034d9-4625-44b8-aff3-1947d679ccf3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GUI">
+      <UniqueIdentifier>{48835e6c-5970-4c6e-9ec7-6cfd31e84fe2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GUI\Headers">
+      <UniqueIdentifier>{1d65baba-d46e-479e-8527-be2c0aa3b390}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Managers">
+      <UniqueIdentifier>{50410db4-6ff3-4f30-85e5-99293c2ad55a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Managers\Headers">
+      <UniqueIdentifier>{accddadb-cda3-41ba-b004-59da9d18a911}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Geometry">
+      <UniqueIdentifier>{9f2a1d04-0342-4992-9c20-7e0209f8f1e0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Geometry\Material">
+      <UniqueIdentifier>{b2fcce0a-f4cc-4677-a8f8-e9f7ea9226b4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Geometry\Material\Headers">
+      <UniqueIdentifier>{d7bd9c3f-801b-4275-999b-5a2f4fb184e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Geometry\Animations">
+      <UniqueIdentifier>{7471c1ce-37a6-4bdc-9770-c4c39e2bb2a8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Geometry\Animations\Headers">
+      <UniqueIdentifier>{e94eae95-bd8f-4f14-8309-056b69a57f4a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Geometry\Importer">
+      <UniqueIdentifier>{6ebb7c6b-8e49-4dc9-ae89-15b5cd9a6453}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Geometry\Importer\Headers">
+      <UniqueIdentifier>{5fccedd7-f951-4e94-954a-53efc49bc608}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Geometry\Shapes">
+      <UniqueIdentifier>{e57286c4-02f9-40d3-85d4-20fee267d788}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphs">
+      <UniqueIdentifier>{017cb9d0-2540-4f7a-8d02-9290c1d4d28c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphs\Headers">
+      <UniqueIdentifier>{f5b8abb4-42be-45fa-b0d2-f4e0e0ca3b4e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rendering\Lighting">
+      <UniqueIdentifier>{06ead969-5925-4892-8b91-9839a4c84a5b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rendering\Lighting\Headers">
+      <UniqueIdentifier>{969a9d1f-ed1f-4b47-a4a8-29ea236a5363}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rendering\PostFX\CustomOperators">
+      <UniqueIdentifier>{c6db3ace-ce83-434b-882d-295eb8e9c3a7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rendering\PostFX\CustomOperators\Headers">
+      <UniqueIdentifier>{4fbdb892-cf43-46c2-9b6c-84ae8efd4eb3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rendering\RenderPass">
+      <UniqueIdentifier>{1aee5e88-bfca-4386-a563-03dc6103e32e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rendering\RenderPass\Headers">
+      <UniqueIdentifier>{0d72c71e-914c-485c-a1ab-32c473006216}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Languages">
+      <UniqueIdentifier>{003c25a0-1e62-4590-abe3-fe1bd5b04614}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rendering\Lighting\ShadowMapping">
+      <UniqueIdentifier>{35bc9492-d1be-44e3-9f54-9491c8ddd917}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rendering\Lighting\ShadowMapping\Headers">
+      <UniqueIdentifier>{6c8cc4bb-491f-4049-8f9e-fb56b3ff9fdb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GUI\CEGUIAddons">
+      <UniqueIdentifier>{4be1cd0d-9f4a-4a71-809a-789dee5399f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GUI\CEGUIAddons\Headers">
+      <UniqueIdentifier>{33beb6d6-b315-45b5-95eb-1a5e31998630}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Physics">
+      <UniqueIdentifier>{d0b8ecfb-9e07-4f12-83e2-a01d06b7b9d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Physics\Bullet">
+      <UniqueIdentifier>{06edb53e-42fd-41eb-a47e-62e02ac47120}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Physics\Headers">
+      <UniqueIdentifier>{2f386895-5def-4f7a-a6f8-f11cb24e4a81}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Physics\ODE">
+      <UniqueIdentifier>{fd365b49-84b2-4977-a65d-bffbe406f2bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Physics\PhysX">
+      <UniqueIdentifier>{79101247-5c09-4da1-af59-108d04ad42da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Physics\PhysX\Headers">
+      <UniqueIdentifier>{719e71b7-3874-4e2f-a0f7-0cefea42350d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core">
+      <UniqueIdentifier>{47180c1f-f1e5-4dd9-816a-4efbe4849728}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Headers">
+      <UniqueIdentifier>{9d7c54fa-183d-4a1e-a5ed-c9a1dfbb7d16}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Networking">
+      <UniqueIdentifier>{924a56a3-13e2-4e1e-835f-8a44707b4d97}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Networking\Headers">
+      <UniqueIdentifier>{f799813c-0e81-4aac-8938-798c0726bbc4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scripting">
+      <UniqueIdentifier>{49bdac78-a433-4610-bb5c-33fd418430a8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scripting\Headers">
+      <UniqueIdentifier>{2e4e6571-075f-4b4d-8cb0-002bb59e91f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Geometry\Shapes\Predefined">
+      <UniqueIdentifier>{e77729e5-6b2a-4df3-8df3-65821c80b614}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Geometry\Shapes\Headers">
+      <UniqueIdentifier>{c414fbbd-b6a7-48ba-ab7d-82ce852709bf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Geometry\Shapes\Predefined\Headers">
+      <UniqueIdentifier>{5a4facdb-c967-4818-bd5f-f85630e42b24}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ECS">
+      <UniqueIdentifier>{58243bd4-6ab5-402c-86cb-f18149792c84}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ECS\ECSLib">
+      <UniqueIdentifier>{bfee3fb4-be93-4b76-b692-b5678222eca3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ECS\ECSLib\Headers">
+      <UniqueIdentifier>{1b16ab6a-bd2c-488e-beaa-8088fc8ee2d8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ECS\ECSLib\Headers\Event">
+      <UniqueIdentifier>{75a9b23e-1a38-412b-9823-8e2b7f812838}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ECS\ECSLib\Headers\Log">
+      <UniqueIdentifier>{212d9021-035d-4898-acc9-9bbb45c950a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ECS\ECSLib\Headers\Memory">
+      <UniqueIdentifier>{e22270a6-86ee-4adb-93d1-d6b257738de1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ECS\ECSLib\Headers\util">
+      <UniqueIdentifier>{d9b36836-0f91-48d5-ae04-f948da8dc7bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ECS\ECSLib\Headers\Memory\Allocator">
+      <UniqueIdentifier>{3c4d3bb2-aae8-404b-8cf7-f18a2178fdcf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ECS\ECSLib\Event">
+      <UniqueIdentifier>{760f932d-39b3-4122-966b-f4c4ef5d03ec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ECS\ECSLib\Log">
+      <UniqueIdentifier>{5b8d5cd0-5db7-44d3-8e86-380c1d920ca0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ECS\ECSLib\Memory">
+      <UniqueIdentifier>{b8a45d31-c7a7-4fdc-8240-687e25f37ee6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ECS\ECSLib\util">
+      <UniqueIdentifier>{4b3e39a1-d83e-4d9b-b018-d12f8fc78474}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ECS\ECSLib\Memory\Allocator">
+      <UniqueIdentifier>{9164b23e-4c31-423e-bd55-18c1ae3e9152}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ECS\Components">
+      <UniqueIdentifier>{93dcd584-59f5-48b3-afc2-72a37d3efb53}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ECS\Entities">
+      <UniqueIdentifier>{5c7edd74-2d4c-4326-8c1a-382ec4be7b5f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ECS\Systems">
+      <UniqueIdentifier>{78f4ad57-8502-4ae3-bd82-d7a4b3eb94cd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ECS\Components\Headers">
+      <UniqueIdentifier>{e5034dfb-fe79-4d1d-bd58-b2412820af96}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ECS\Systems\Headers">
+      <UniqueIdentifier>{e878de62-721a-4449-9faf-aeb23092db2d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ECS\Events">
+      <UniqueIdentifier>{645df392-8e68-4717-8d38-b8120c986a7f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ECS\Events\Headers">
+      <UniqueIdentifier>{7d3e677c-8260-4330-b156-805456166f14}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\../Source Code/Rendering\Camera\Camera.cpp">
+      <Filter>Rendering\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Rendering\PostFX\PostFX.cpp">
+      <Filter>Rendering\PostFX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Managers\SceneManager.cpp">
+      <Filter>Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Geometry\Material\Material.cpp">
+      <Filter>Geometry\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Geometry\Importer\DVDConverter.cpp">
+      <Filter>Geometry\Importer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Geometry\Shapes\Mesh.cpp">
+      <Filter>Geometry\Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Geometry\Shapes\Object3D.cpp">
+      <Filter>Geometry\Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Geometry\Shapes\SubMesh.cpp">
+      <Filter>Geometry\Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Graphs\SceneGraph.cpp">
+      <Filter>Graphs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Graphs\SceneGraphNode.cpp">
+      <Filter>Graphs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Graphs\SceneNode.cpp">
+      <Filter>Graphs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Rendering\PostFX\CustomOperators\BloomPreRenderOperator.cpp">
+      <Filter>Rendering\PostFX\CustomOperators</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Rendering\PostFX\CustomOperators\SSAOPreRenderOperator.cpp">
+      <Filter>Rendering\PostFX\CustomOperators</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Managers\FrameListenerManager.cpp">
+      <Filter>Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Rendering\RenderPass\RenderQueue.cpp">
+      <Filter>Rendering\RenderPass</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Geometry\Animations\AnimationEvaluator.cpp">
+      <Filter>Geometry\Animations</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Geometry\Animations\AnimationUtils.cpp">
+      <Filter>Geometry\Animations</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/GUI\GUI.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/GUI\GUIButton.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/GUI\GUIElement.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/GUI\GUIText.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Rendering\PostFX\CustomOperators\DoFPreRenderOperator.cpp">
+      <Filter>Rendering\PostFX\CustomOperators</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Rendering\Lighting\DirectionalLight.cpp">
+      <Filter>Rendering\Lighting</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Rendering\Lighting\Light.cpp">
+      <Filter>Rendering\Lighting</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Rendering\Lighting\PointLight.cpp">
+      <Filter>Rendering\Lighting</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Rendering\Lighting\SpotLight.cpp">
+      <Filter>Rendering\Lighting</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Rendering\Lighting\ShadowMapping\ShadowMap.cpp">
+      <Filter>Rendering\Lighting\ShadowMapping</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Graphs\SceneNodeRenderState.cpp">
+      <Filter>Graphs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Geometry\Shapes\SkinnedSubMesh.cpp">
+      <Filter>Geometry\Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Rendering\DeferredShadingRenderer.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Rendering\RenderPass\RenderBin.cpp">
+      <Filter>Rendering\RenderPass</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Rendering\RenderPass\RenderPass.cpp">
+      <Filter>Rendering\RenderPass</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Managers\RenderPassManager.cpp">
+      <Filter>Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/GUI\GUISplash.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/GUI\GUIConsole.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/GUI\CEGUIAddons\CEGUIFormattedListBox.cpp">
+      <Filter>GUI\CEGUIAddons</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/GUI\GUIConsoleCommandParser.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Rendering\Camera\ThirdPersonCamera.cpp">
+      <Filter>Rendering\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Rendering\Camera\FirstPersonCamera.cpp">
+      <Filter>Rendering\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Rendering\Camera\FreeFlyCamera.cpp">
+      <Filter>Rendering\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Rendering\Camera\ScriptedCamera.cpp">
+      <Filter>Rendering\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Rendering\Camera\OrbitCamera.cpp">
+      <Filter>Rendering\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Rendering\RenderPass\RenderPassCuller.cpp">
+      <Filter>Rendering\RenderPass</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Rendering\Camera\Frustum.cpp">
+      <Filter>Rendering\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/GUI\CEGUIAddons\CEGUIInput.cpp">
+      <Filter>GUI\CEGUIAddons</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/GUI\GUIMessageBox.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/GUI\GUIFlash.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Physics\PhysicsSceneInterface.cpp">
+      <Filter>Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Physics\PhysX\PhysX.cpp">
+      <Filter>Physics\PhysX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Physics\PhysX\PhysXSceneInterface.cpp">
+      <Filter>Physics\PhysX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/engineMain.cpp" />
+    <ClCompile Include="..\../Source Code/stdafx-engine.cpp" />
+    <ClCompile Include="..\../Source Code/Physics\PXDevice.cpp">
+      <Filter>Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Geometry\Animations\SceneAnimator.cpp">
+      <Filter>Geometry\Animations</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Geometry\Animations\SceneAnimatorFileIO.cpp">
+      <Filter>Geometry\Animations</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Geometry\Importer\MeshImporter.cpp">
+      <Filter>Geometry\Importer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Graphs\Octree.cpp">
+      <Filter>Graphs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Rendering\PostFX\PreRenderBatch.cpp">
+      <Filter>Rendering\PostFX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Rendering\PostFX\CustomOperators\PostAAPreRenderOperator.cpp">
+      <Filter>Rendering\PostFX\CustomOperators</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Graphs\IntersectionRecord.cpp">
+      <Filter>Graphs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Graphs\SGNRelationshipCache.cpp">
+      <Filter>Graphs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Physics\PhysX\pxShapeScaling.cpp">
+      <Filter>Physics\PhysX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Physics\PhysicsAsset.cpp">
+      <Filter>Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Physics\PhysX\PhysXActor.cpp">
+      <Filter>Physics\PhysX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Rendering\Lighting\LightPool.cpp">
+      <Filter>Rendering\Lighting</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/GUI\GUIInterface.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Rendering\PostFX\PreRenderOperator.cpp">
+      <Filter>Rendering\PostFX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Geometry\Material\ShaderComputeQueue.cpp">
+      <Filter>Geometry\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Geometry\Material\ShaderProgramInfo.cpp">
+      <Filter>Geometry\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Rendering\TiledForwardShadingRenderer.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Rendering\Camera\CameraPool.cpp">
+      <Filter>Rendering\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Rendering\Renderer.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Core\Kernel.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Core\Application.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Core\XMLEntryData.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Core\PlatformContext.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Core\Configuration.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Core\EngineTaskPool.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Core\Networking\Server.cpp">
+      <Filter>Core\Networking</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Core\Networking\Session.cpp">
+      <Filter>Core\Networking</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Core\Networking\LocalClient.cpp">
+      <Filter>Core\Networking</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Core\Networking\Patch.cpp">
+      <Filter>Core\Networking</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Scripting\Script.cpp">
+      <Filter>Scripting</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Scripting\ScriptBindings.cpp">
+      <Filter>Scripting</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Scripting\GameScript.cpp">
+      <Filter>Scripting</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Geometry\Shapes\Predefined\Box3D.cpp">
+      <Filter>Geometry\Shapes\Predefined</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Geometry\Shapes\Predefined\Patch3D.cpp">
+      <Filter>Geometry\Shapes\Predefined</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Geometry\Shapes\Predefined\Quad3D.cpp">
+      <Filter>Geometry\Shapes\Predefined</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Geometry\Shapes\Predefined\Sphere3D.cpp">
+      <Filter>Geometry\Shapes\Predefined</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\API.cpp">
+      <Filter>ECS\ECSLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\ComponentManager.cpp">
+      <Filter>ECS\ECSLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\Engine.cpp">
+      <Filter>ECS\ECSLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\EntityManager.cpp">
+      <Filter>ECS\ECSLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\IComponent.cpp">
+      <Filter>ECS\ECSLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\IEntity.cpp">
+      <Filter>ECS\ECSLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\ISystem.cpp">
+      <Filter>ECS\ECSLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\SystemManager.cpp">
+      <Filter>ECS\ECSLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\Event\EventHandler.cpp">
+      <Filter>ECS\ECSLib\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\Event\IEvent.cpp">
+      <Filter>ECS\ECSLib\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\Event\IEventListener.cpp">
+      <Filter>ECS\ECSLib\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\Log\LoggerManager.cpp">
+      <Filter>ECS\ECSLib\Log</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\Log\Logger.cpp">
+      <Filter>ECS\ECSLib\Log</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\Memory\ECSMM.cpp">
+      <Filter>ECS\ECSLib\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\Memory\Allocator\LinearAllocator.cpp">
+      <Filter>ECS\ECSLib\Memory\Allocator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\Memory\Allocator\PoolAllocator.cpp">
+      <Filter>ECS\ECSLib\Memory\Allocator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\Memory\Allocator\StackAllocator.cpp">
+      <Filter>ECS\ECSLib\Memory\Allocator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\Memory\Allocator\IAllocator.cpp">
+      <Filter>ECS\ECSLib\Memory\Allocator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\util\FamilyTypeID.cpp">
+      <Filter>ECS\ECSLib\util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\util\Timer.cpp">
+      <Filter>ECS\ECSLib\util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\ECS\Components\TransformComponent.cpp">
+      <Filter>ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\ECS\Components\RigidBodyComponent.cpp">
+      <Filter>ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\ECS\Systems\TransformSystem.cpp">
+      <Filter>ECS\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\ECS\Components\AnimationComponent.cpp">
+      <Filter>ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\ECS\Components\BoundsComponent.cpp">
+      <Filter>ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\ECS\Components\IKComponent.cpp">
+      <Filter>ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\ECS\Components\NavigationComponent.cpp">
+      <Filter>ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\ECS\Components\NetworkingComponent.cpp">
+      <Filter>ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\ECS\Components\RagdollComponent.cpp">
+      <Filter>ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\ECS\Components\RenderingComponent.cpp">
+      <Filter>ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\ECS\Components\RenderingComponentState.cpp">
+      <Filter>ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\ECS\Components\UnitComponent.cpp">
+      <Filter>ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\ECS\Systems\ECSManager.cpp">
+      <Filter>ECS\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\ECS\Systems\UpdateSystem.cpp">
+      <Filter>ECS\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\ECS\Systems\AnimationSystem.cpp">
+      <Filter>ECS\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\ECS\Systems\RenderingSystem.cpp">
+      <Filter>ECS\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\ECS\Systems\BoundsSystem.cpp">
+      <Filter>ECS\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\ECS\Components\EditorComponent.cpp">
+      <Filter>ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\../Source Code/Rendering\EnvironmentProbe.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\UnityBuildEngine.cpp" />
+    <ClCompile Include="..\..\Source Code\Rendering\Camera\CameraSnapshot.cpp">
+      <Filter>Rendering\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\CascadedShadowMapsGenerator.cpp">
+      <Filter>Rendering\Lighting\ShadowMapping</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\CubeShadowMapGenerator.cpp">
+      <Filter>Rendering\Lighting\ShadowMapping</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\SingleShadowMapGenerator.cpp">
+      <Filter>Rendering\Lighting\ShadowMapping</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\ECS\Components\SelectionComponent.cpp">
+      <Filter>ECS\Components</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\../Source Code/Rendering\Camera\Headers\Camera.h">
+      <Filter>Rendering\Camera\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Rendering\Camera\Headers\FirstPersonCamera.h">
+      <Filter>Rendering\Camera\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Rendering\Camera\Headers\FreeFlyCamera.h">
+      <Filter>Rendering\Camera\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Rendering\Camera\Headers\OrbitCamera.h">
+      <Filter>Rendering\Camera\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Rendering\Camera\Headers\ThirdPersonCamera.h">
+      <Filter>Rendering\Camera\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Rendering\PostFX\Headers\PostFX.h">
+      <Filter>Rendering\PostFX\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Geometry\Material\Headers\Material.h">
+      <Filter>Geometry\Material\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Geometry\Importer\Headers\DVDConverter.h">
+      <Filter>Geometry\Importer\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Graphs\Headers\SceneGraph.h">
+      <Filter>Graphs\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Graphs\Headers\SceneGraphNode.h">
+      <Filter>Graphs\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Graphs\Headers\SceneNode.h">
+      <Filter>Graphs\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Rendering\Lighting\Headers\Light.h">
+      <Filter>Rendering\Lighting\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/readme.h" />
+    <ClInclude Include="..\../Source Code/Rendering\PostFX\CustomOperators\Headers\BloomPreRenderOperator.h">
+      <Filter>Rendering\PostFX\CustomOperators\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Rendering\PostFX\CustomOperators\Headers\SSAOPreRenderOperator.h">
+      <Filter>Rendering\PostFX\CustomOperators\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Rendering\PostFX\Headers\PreRenderOperator.h">
+      <Filter>Rendering\PostFX\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Managers\Headers\FrameListenerManager.h">
+      <Filter>Managers\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Rendering\RenderPass\Headers\RenderQueue.h">
+      <Filter>Rendering\RenderPass\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Geometry\Animations\Headers\AnimationEvaluator.h">
+      <Filter>Geometry\Animations\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Geometry\Animations\Headers\AnimationUtils.h">
+      <Filter>Geometry\Animations\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Geometry\Animations\Headers\Bone.h">
+      <Filter>Geometry\Animations\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/GUI\Headers\GUI.h">
+      <Filter>GUI\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/GUI\Headers\GUIButton.h">
+      <Filter>GUI\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/GUI\Headers\GUIElement.h">
+      <Filter>GUI\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/GUI\Headers\GUIFlash.h">
+      <Filter>GUI\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/GUI\Headers\GUIText.h">
+      <Filter>GUI\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Rendering\PostFX\CustomOperators\Headers\DoFPreRenderOperator.h">
+      <Filter>Rendering\PostFX\CustomOperators\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Rendering\Lighting\Headers\DirectionalLight.h">
+      <Filter>Rendering\Lighting\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Rendering\Lighting\Headers\PointLight.h">
+      <Filter>Rendering\Lighting\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Rendering\Lighting\Headers\SpotLight.h">
+      <Filter>Rendering\Lighting\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Rendering\Lighting\ShadowMapping\Headers\ShadowMap.h">
+      <Filter>Rendering\Lighting\ShadowMapping\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Graphs\Headers\SceneNodeRenderState.h">
+      <Filter>Graphs\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Rendering\Headers\DeferredShadingRenderer.h">
+      <Filter>Rendering\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Rendering\Headers\Renderer.h">
+      <Filter>Rendering\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Rendering\RenderPass\Headers\RenderBin.h">
+      <Filter>Rendering\RenderPass\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Rendering\RenderPass\Headers\RenderPass.h">
+      <Filter>Rendering\RenderPass\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Managers\Headers\RenderPassManager.h">
+      <Filter>Managers\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/GUI\Headers\GUISplash.h">
+      <Filter>GUI\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/GUI\Headers\GUIConsole.h">
+      <Filter>GUI\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/GUI\CEGUIAddons\Headers\CEGUIFormattedListBox.h">
+      <Filter>GUI\CEGUIAddons\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/GUI\Headers\GUIConsoleCommandParser.h">
+      <Filter>GUI\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Rendering\Camera\Headers\ScriptedCamera.h">
+      <Filter>Rendering\Camera\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Rendering\RenderPass\Headers\RenderPassCuller.h">
+      <Filter>Rendering\RenderPass\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Rendering\Camera\Headers\Frustum.h">
+      <Filter>Rendering\Camera\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Rendering\Headers\ClipRegion.h">
+      <Filter>Rendering\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/GUI\CEGUIAddons\Headers\CEGUIInput.h">
+      <Filter>GUI\CEGUIAddons\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/GUI\Headers\GUIMessageBox.h">
+      <Filter>GUI\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Rendering\Headers\FrameListener.h">
+      <Filter>Rendering\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Physics\PhysX\Headers\PhysX.h">
+      <Filter>Physics\PhysX\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Physics\PhysX\Headers\PhysXSceneInterface.h">
+      <Filter>Physics\PhysX\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Physics\Headers\PhysicsAPIWrapper.h">
+      <Filter>Physics\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Physics\Headers\PhysicsSceneInterface.h">
+      <Filter>Physics\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Physics\Headers\PXDevice.h">
+      <Filter>Physics\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/engineMain.h" />
+    <ClInclude Include="..\../Source Code/Geometry\Animations\Headers\SceneAnimator.h">
+      <Filter>Geometry\Animations\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Geometry\Importer\Headers\MeshImporter.h">
+      <Filter>Geometry\Importer\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Graphs\Headers\Octree.h">
+      <Filter>Graphs\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Rendering\PostFX\Headers\PreRenderBatch.h">
+      <Filter>Rendering\PostFX\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Rendering\PostFX\CustomOperators\Headers\PostAAPreRenderOperator.h">
+      <Filter>Rendering\PostFX\CustomOperators\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Graphs\Headers\IntersectionRecord.h">
+      <Filter>Graphs\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Managers\Headers\SceneManager.h">
+      <Filter>Managers\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Graphs\Headers\SGNRelationshipCache.h">
+      <Filter>Graphs\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Physics\PhysX\Headers\pxShapeScaling.h">
+      <Filter>Physics\PhysX\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Physics\Headers\PhysicsAsset.h">
+      <Filter>Physics\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Physics\PhysX\Headers\PhysXActor.h">
+      <Filter>Physics\PhysX\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Rendering\Lighting\Headers\LightPool.h">
+      <Filter>Rendering\Lighting\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/GUI\Headers\GUIInterface.h">
+      <Filter>GUI\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Rendering\Headers\EnvironmentProbe.h">
+      <Filter>Rendering\Lighting\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Geometry\Material\Headers\ShaderComputeQueue.h">
+      <Filter>Geometry\Material\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Geometry\Material\Headers\ShaderProgramInfo.h">
+      <Filter>Geometry\Material\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Rendering\Headers\TiledForwardShadingRenderer.h">
+      <Filter>Rendering\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Core\Headers\Kernel.h">
+      <Filter>Core\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Core\Headers\Application.h">
+      <Filter>Core\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Core\Headers\Configuration.h">
+      <Filter>Core\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Core\Headers\KernelComponent.h">
+      <Filter>Core\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Core\Headers\PlatformContext.h">
+      <Filter>Core\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Core\Headers\XMLEntryData.h">
+      <Filter>Core\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Core\Headers\EngineTaskPool.h">
+      <Filter>Core\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Core\Networking\Headers\OPCodesImpl.h">
+      <Filter>Core\Networking\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Core\Networking\Headers\Server.h">
+      <Filter>Core\Networking\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Core\Networking\Headers\Session.h">
+      <Filter>Core\Networking\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Core\Networking\Headers\LocalClient.h">
+      <Filter>Core\Networking\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Core\Networking\Headers\Patch.h">
+      <Filter>Core\Networking\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Scripting\Headers\Script.h">
+      <Filter>Scripting\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Scripting\Headers\ScriptBindings.h">
+      <Filter>Scripting\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Scripting\Headers\GameScript.h">
+      <Filter>Scripting\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Geometry\Shapes\Headers\Mesh.h">
+      <Filter>Geometry\Shapes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Geometry\Shapes\Headers\Object3D.h">
+      <Filter>Geometry\Shapes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Geometry\Shapes\Headers\SkinnedSubMesh.h">
+      <Filter>Geometry\Shapes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Geometry\Shapes\Headers\SubMesh.h">
+      <Filter>Geometry\Shapes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Geometry\Shapes\Predefined\Headers\Box3D.h">
+      <Filter>Geometry\Shapes\Predefined\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Geometry\Shapes\Predefined\Headers\Patch3D.h">
+      <Filter>Geometry\Shapes\Predefined\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Geometry\Shapes\Predefined\Headers\Quad3D.h">
+      <Filter>Geometry\Shapes\Predefined\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\../Source Code/Geometry\Shapes\Predefined\Headers\Sphere3D.h">
+      <Filter>Geometry\Shapes\Predefined\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\Headers\PlatformContextComponent.h">
+      <Filter>Core\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\API.h">
+      <Filter>ECS\ECSLib\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Component.h">
+      <Filter>ECS\ECSLib\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\ComponentManager.h">
+      <Filter>ECS\ECSLib\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\ECS.h">
+      <Filter>ECS\ECSLib\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Engine.h">
+      <Filter>ECS\ECSLib\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Entity.h">
+      <Filter>ECS\ECSLib\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\EntityManager.h">
+      <Filter>ECS\ECSLib\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\IComponent.h">
+      <Filter>ECS\ECSLib\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\IEntity.h">
+      <Filter>ECS\ECSLib\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\ISystem.h">
+      <Filter>ECS\ECSLib\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Platform.h">
+      <Filter>ECS\ECSLib\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\System.h">
+      <Filter>ECS\ECSLib\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\SystemManager.h">
+      <Filter>ECS\ECSLib\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Event\Event.h">
+      <Filter>ECS\ECSLib\Headers\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Event\EventDelegate.h">
+      <Filter>ECS\ECSLib\Headers\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Event\EventDispatcher.h">
+      <Filter>ECS\ECSLib\Headers\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Event\EventHandler.h">
+      <Filter>ECS\ECSLib\Headers\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Event\IEvent.h">
+      <Filter>ECS\ECSLib\Headers\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Event\IEventDispatcher.h">
+      <Filter>ECS\ECSLib\Headers\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Event\IEventListener.h">
+      <Filter>ECS\ECSLib\Headers\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Log\LoggerMacro.h">
+      <Filter>ECS\ECSLib\Headers\Log</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Log\LoggerManager.h">
+      <Filter>ECS\ECSLib\Headers\Log</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Log\Logger.h">
+      <Filter>ECS\ECSLib\Headers\Log</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Memory\ECSMM.h">
+      <Filter>ECS\ECSLib\Headers\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Memory\MemoryChunkAllocator.h">
+      <Filter>ECS\ECSLib\Headers\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Memory\Allocator\IAllocator.h">
+      <Filter>ECS\ECSLib\Headers\Memory\Allocator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Memory\Allocator\LinearAllocator.h">
+      <Filter>ECS\ECSLib\Headers\Memory\Allocator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Memory\Allocator\PoolAllocator.h">
+      <Filter>ECS\ECSLib\Headers\Memory\Allocator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Memory\Allocator\StackAllocator.h">
+      <Filter>ECS\ECSLib\Headers\Memory\Allocator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\util\FamilyTypeID.h">
+      <Filter>ECS\ECSLib\Headers\util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\util\Handle.h">
+      <Filter>ECS\ECSLib\Headers\util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\util\Timer.h">
+      <Filter>ECS\ECSLib\Headers\util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\ECS\Components\Headers\TransformComponent.h">
+      <Filter>ECS\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\ECS\Components\Headers\RigidBodyComponent.h">
+      <Filter>ECS\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\TransformSystem.h">
+      <Filter>ECS\Systems\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\ECS\Events\Headers\TransformEvents.h">
+      <Filter>ECS\Events\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\ECS\Components\Headers\AnimationComponent.h">
+      <Filter>ECS\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\ECS\Components\Headers\BoundsComponent.h">
+      <Filter>ECS\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\ECS\Components\Headers\IKComponent.h">
+      <Filter>ECS\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\ECS\Components\Headers\NavigationComponent.h">
+      <Filter>ECS\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\ECS\Components\Headers\NetworkingComponent.h">
+      <Filter>ECS\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\ECS\Components\Headers\RagdollComponent.h">
+      <Filter>ECS\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\ECS\Components\Headers\RenderingComponent.h">
+      <Filter>ECS\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\ECS\Components\Headers\SGNComponent.h">
+      <Filter>ECS\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\ECS\Components\Headers\UnitComponent.h">
+      <Filter>ECS\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\ECSManager.h">
+      <Filter>ECS\Systems\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\ECS\Events\Headers\EntityEvents.h">
+      <Filter>ECS\Events\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\UpdateSystem.h">
+      <Filter>ECS\Systems\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\AnimationSystem.h">
+      <Filter>ECS\Systems\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\RenderingSystem.h">
+      <Filter>ECS\Systems\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\BoundsSystem.h">
+      <Filter>ECS\Systems\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\ECS\Components\Headers\EditorComponent.h">
+      <Filter>ECS\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\ECSSystem.h">
+      <Filter>ECS\Systems\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\ECS\Events\Headers\BoundsEvents.h">
+      <Filter>ECS\Events\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\CameraSnapshot.h">
+      <Filter>Rendering\Camera\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\Headers\SingleShadowMapGenerator.h">
+      <Filter>Rendering\Lighting\ShadowMapping\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\Headers\CubeShadowMapGenerator.h">
+      <Filter>Rendering\Lighting\ShadowMapping\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\Headers\CascadedShadowMapsGenerator.h">
+      <Filter>Rendering\Lighting\ShadowMapping\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\ECS\Components\Headers\SelectionComponent.h">
+      <Filter>ECS\Components\Headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\localisation\enGB.ini">
+      <Filter>Languages</Filter>
+    </None>
+    <None Include="..\../Source Code/Core\Headers\Application.inl">
+      <Filter>Core\Headers</Filter>
+    </None>
+    <None Include="..\../Source Code/Scripting\Headers\Script.inl">
+      <Filter>Scripting\Headers</Filter>
+    </None>
+    <None Include="..\../Source Code/Geometry\Material\Headers\Material.inl">
+      <Filter>Geometry\Material\Headers</Filter>
+    </None>
+    <None Include="..\..\Source Code\ECS\Components\Headers\SGNComponent.inl">
+      <Filter>ECS\Components\Headers</Filter>
+    </None>
+  </ItemGroup>
+</Project>

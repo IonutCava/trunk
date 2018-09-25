@@ -90,6 +90,12 @@ namespace Divide {
             ImGui::TreePop();
         }
 
+        ImGui::Separator();
+        ImGui::NewLine();
+        ImGui::NewLine();
+        ImGui::Text("All scenes");
+        ImGui::Separator();
+
         const vector<stringImpl>& scenes = sceneManager.sceneNameList();
         for (const stringImpl& scene : scenes) {
             if (scene != activeScene.name()) {
