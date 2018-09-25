@@ -78,7 +78,7 @@ protected:
     GLuint _handle = 0;
     bufferPtr _mappedBuffer = nullptr;
     glBufferLockManager* _lockManager = nullptr;
-
+    GFXDevice& _context;
     const size_t _elementSize;
     const size_t _alignedSize;
     const GLenum _target;

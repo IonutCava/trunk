@@ -4,6 +4,7 @@
 #include "Headers/glMemoryManager.h"
 #include "Headers/glBufferLockManager.h"
 #include "Platform/Headers/PlatformRuntime.h"
+#include "Platform/Video/RenderBackend/OpenGL/Headers/GLWrapper.h"
 
 namespace Divide {
 namespace {
@@ -34,6 +35,7 @@ namespace {
 
 glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
     : glObject(glObjectType::TYPE_BUFFER, context),
+      _context(context),
       _alignedSize(params._dataSize),
       _target(params._target),
       _useExplicitFlush(params._explicitFlush),
@@ -148,6 +150,7 @@ bool glBufferImpl::bindRange(GLuint bindIndex, size_t offsetInBytes, size_t rang
 
 void glBufferImpl::writeData(size_t offsetInBytes, size_t rangeInBytes, const bufferPtr data)
 {
+    GL_API::createOrValidateContextForCurrentThread(_context);
     if (_mappedBuffer) {
         waitRange(offsetInBytes, rangeInBytes, true);
         std::memcpy(((Byte*)_mappedBuffer) + offsetInBytes,

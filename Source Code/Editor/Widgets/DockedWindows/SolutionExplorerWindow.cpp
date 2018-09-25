@@ -113,6 +113,8 @@ namespace Divide {
         if (ms_per_frame_avg + (Config::TARGET_FRAME_RATE / 1000.0f) > max_ms_per_frame) {
             max_ms_per_frame = ms_per_frame_avg + (Config::TARGET_FRAME_RATE / 1000.0f);
         }
+
+        // We need this bit to get a nice "flowing" feel
         g_framerateBuffer.push_back(ms_per_frame_avg);
         if (g_framerateBuffer.size() > g_maxEntryCount) {
             g_framerateBuffer.pop_front();

@@ -468,7 +468,7 @@ void GL_API::closeRenderingAPI() {
 }
 
 void GL_API::createOrValidateContextForCurrentThread(GFXDevice& context) {
-    if (Runtime::isMainThread() || SDL_GL_GetCurrentContext() != NULL) {
+    if (SDL_GL_GetCurrentContext() != NULL) {
         return;
     }
 
