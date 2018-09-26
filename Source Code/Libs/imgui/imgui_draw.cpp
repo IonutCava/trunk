@@ -1,21 +1,25 @@
 #include "stdafx.h"
 
-// dear imgui, v1.64
+// dear imgui, v1.65
+
 // (drawing and font code)
 
 /*
 
 Index of this file:
-- Cruft for stb_truetype/stb_rectpack implementation
-- Style functions (default style)
-- ImDrawList
-- ImDrawData
-- ShadeVertsXXX helpers functions
-- ImFontConfig
-- ImFontAtlas
-- ImFont
-- Internal Render Helpers
-- Default font data
+
+// [SECTION] STB libraries implementation
+// [SECTION] Style functions
+// [SECTION] ImDrawList
+// [SECTION] ImDrawData
+// [SECTION] Helpers ShadeVertsXXX functions
+// [SECTION] ImFontConfig
+// [SECTION] ImFontAtlas
+// [SECTION] ImFontAtlas glyph ranges helpers + GlyphRangesBuilder
+// [SECTION] ImFont
+// [SECTION] Internal Render Helpers
+// [SECTION] Decompression code
+// [SECTION] Default font data (ProggyClean.ttf)
 
 */
 
@@ -74,7 +78,7 @@ Index of this file:
 #endif
 
 //-------------------------------------------------------------------------
-// STB libraries implementation
+// [SECTION] STB libraries implementation
 //-------------------------------------------------------------------------
 
 // Compile time options:
@@ -118,7 +122,7 @@ namespace IMGUI_STB_NAMESPACE
 #ifdef IMGUI_STB_RECT_PACK_FILENAME
 #include IMGUI_STB_RECT_PACK_FILENAME
 #else
-#include "stb_rect_pack.h"
+#include "imstb_rectpack.h"
 #endif
 #endif
 
@@ -141,7 +145,7 @@ namespace IMGUI_STB_NAMESPACE
 #ifdef IMGUI_STB_TRUETYPE_FILENAME
 #include IMGUI_STB_TRUETYPE_FILENAME
 #else
-#include "stb_truetype.h"
+#include "imstb_truetype.h"
 #endif
 #endif
 
@@ -163,7 +167,7 @@ using namespace IMGUI_STB_NAMESPACE;
 #endif
 
 //-----------------------------------------------------------------------------
-// Style functions
+// [SECTION] Style functions
 //-----------------------------------------------------------------------------
 
 void ImGui::StyleColorsDark(ImGuiStyle* dst)
@@ -318,7 +322,7 @@ void ImGui::StyleColorsLight(ImGuiStyle* dst)
 }
 
 //-----------------------------------------------------------------------------
-// ImDrawListData
+// ImDrawList
 //-----------------------------------------------------------------------------
 
 ImDrawListSharedData::ImDrawListSharedData()
@@ -335,10 +339,6 @@ ImDrawListSharedData::ImDrawListSharedData()
         CircleVtx12[i] = ImVec2(ImCos(a), ImSin(a));
     }
 }
-
-//-----------------------------------------------------------------------------
-// ImDrawList
-//-----------------------------------------------------------------------------
 
 void ImDrawList::Clear()
 {
@@ -1229,7 +1229,7 @@ void ImDrawList::AddImageRounded(ImTextureID user_texture_id, const ImVec2& a, c
 }
 
 //-----------------------------------------------------------------------------
-// ImDrawData
+// [SECTION] ImDrawData
 //-----------------------------------------------------------------------------
 
 // For backward compatibility: convert all buffers from indexed to de-indexed, in case you cannot render indexed. Note: this is slow and most likely a waste of resources. Always prefer indexed rendering!
@@ -1266,7 +1266,7 @@ void ImDrawData::ScaleClipRects(const ImVec2& scale)
 }
 
 //-----------------------------------------------------------------------------
-// Shade functions
+// [SECTION] Helpers ShadeVertsXXX functions
 //-----------------------------------------------------------------------------
 
 // Generic linear color gradient, write to RGB fields, leave A untouched.
@@ -1313,7 +1313,7 @@ void ImGui::ShadeVertsLinearUV(ImDrawList* draw_list, int vert_start_idx, int ve
 }
 
 //-----------------------------------------------------------------------------
-// ImFontConfig
+// [SECTION] ImFontConfig
 //-----------------------------------------------------------------------------
 
 ImFontConfig::ImFontConfig()
@@ -1339,7 +1339,7 @@ ImFontConfig::ImFontConfig()
 }
 
 //-----------------------------------------------------------------------------
-// ImFontAtlas
+// [SECTION] ImFontAtlas
 //-----------------------------------------------------------------------------
 
 // A work of art lies ahead! (. = white layer, X = black layer, others are blank)
@@ -2076,6 +2076,10 @@ static void UnpackAccumulativeOffsetsIntoRanges(int base_codepoint, const short*
     out_ranges[0] = 0;
 }
 
+//-------------------------------------------------------------------------
+// [SECTION] ImFontAtlas glyph ranges helpers + GlyphRangesBuilder
+//-------------------------------------------------------------------------
+
 const ImWchar*  ImFontAtlas::GetGlyphRangesChineseSimplifiedCommon()
 {
     // Store 2500 regularly used characters for Simplified Chinese.
@@ -2225,10 +2229,6 @@ const ImWchar*  ImFontAtlas::GetGlyphRangesThai()
     return &ranges[0];
 }
 
-//-----------------------------------------------------------------------------
-// ImFontAtlas::GlyphRangesBuilder
-//-----------------------------------------------------------------------------
-
 void ImFontAtlas::GlyphRangesBuilder::AddText(const char* text, const char* text_end)
 {
     while (text_end ? (text < text_end) : *text)
@@ -2264,7 +2264,7 @@ void ImFontAtlas::GlyphRangesBuilder::BuildRanges(ImVector<ImWchar>* out_ranges)
 }
 
 //-----------------------------------------------------------------------------
-// ImFont
+// [SECTION] ImFont
 //-----------------------------------------------------------------------------
 
 ImFont::ImFont()
@@ -2815,12 +2815,12 @@ void ImFont::RenderText(ImDrawList* draw_list, float size, ImVec2 pos, ImU32 col
 }
 
 //-----------------------------------------------------------------------------
-// Internals Render Helpers
+// [SECTION] Internal Render Helpers
 // (progressively moved from imgui.cpp to here when they are redesigned to stop accessing ImGui global state)
 //-----------------------------------------------------------------------------
-// RenderMouseCursor()
-// RenderArrowPointingAt()
-// RenderRectFilledRangeH()
+// - RenderMouseCursor()
+// - RenderArrowPointingAt()
+// - RenderRectFilledRangeH()
 //-----------------------------------------------------------------------------
 
 void ImGui::RenderMouseCursor(ImDrawList* draw_list, ImVec2 pos, float scale, ImGuiMouseCursor mouse_cursor)
@@ -2930,7 +2930,7 @@ void ImGui::RenderRectFilledRangeH(ImDrawList* draw_list, const ImRect& rect, Im
 }
 
 //-----------------------------------------------------------------------------
-// DEFAULT FONT DATA
+// [SECTION] Decompression code
 //-----------------------------------------------------------------------------
 // Compressed with stb_compress() then converted to a C array and encoded as base85.
 // Use the program in misc/fonts/binary_to_compressed_c.cpp to create the array from a TTF file.
@@ -3049,6 +3049,8 @@ static unsigned int stb_decompress(unsigned char *output, const unsigned char *i
     }
 }
 
+//-----------------------------------------------------------------------------
+// [SECTION] Default font data (ProggyClean.ttf)
 //-----------------------------------------------------------------------------
 // ProggyClean.ttf
 // Copyright (c) 2004, 2005 Tristan Grimmer

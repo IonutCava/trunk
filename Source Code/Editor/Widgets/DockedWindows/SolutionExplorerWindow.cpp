@@ -54,16 +54,17 @@ namespace Divide {
         if (!sgn.hasChildren()) {
             node_flags |= ImGuiTreeNodeFlags_Leaf /*| ImGuiTreeNodeFlags_NoTreePushOnOpen*/; // ImGuiTreeNodeFlags_Bullet
         }
-        bool node_open = ImGui::TreeNodeEx((void*)(intptr_t)sgn.getGUID(), node_flags, sgn.name().c_str());
-        if (ImGui::IsItemClicked()) {
-            sceneManager.resetSelection(0);
-            sceneManager.setSelected(0, sgn);
-            Attorney::PanelManagerDockedWindows::setSelectedCamera(_parent, nullptr);
-        }
-        if (node_open) {
+        if (ImGui::TreeNodeEx((void*)(intptr_t)sgn.getGUID(), node_flags, sgn.name().c_str())) {
+            if (ImGui::IsItemClicked()) {
+                sceneManager.resetSelection(0);
+                sceneManager.setSelected(0, sgn);
+                Attorney::PanelManagerDockedWindows::setSelectedCamera(_parent, nullptr);
+            }
+        
             sgn.forEachChild([this, &sceneManager](SceneGraphNode& child) {
                 printSceneGraphNode(sceneManager, child);
             });
+
             ImGui::TreePop();
         }
         
@@ -71,8 +72,6 @@ namespace Divide {
     }
 
     void SolutionExplorerWindow::draw() {
-        //show_test_window ^= ImGui::Button("Test Window");
-        //show_another_window ^= ImGui::Button("Another Window");
 
         SceneManager& sceneManager = context().kernel().sceneManager();
         Scene& activeScene = sceneManager.getActiveScene();

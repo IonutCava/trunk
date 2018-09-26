@@ -418,6 +418,8 @@ namespace Divide {
 
      void PropertyWindow::drawTransformSettings() {
          ImGui::Separator();
+         ImGui::CollapsingHeader("TEST");
+
          bool enableGizmo = Attorney::PanelManagerDockedWindows::editorEnableGizmo(_parent);
          ImGui::Checkbox("Transform Gizmo", &enableGizmo);
          Attorney::PanelManagerDockedWindows::editorEnableGizmo(_parent, enableGizmo);

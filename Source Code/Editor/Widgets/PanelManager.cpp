@@ -5,13 +5,9 @@
 #include "Headers/TabbedWindow.h"
 #include "Headers/DockedWindow.h"
 
-#include "DockedWindows/Headers/ApplicationOutputWindow.h"
-#include "DockedWindows/Headers/FindWindow.h"
 #include "DockedWindows/Headers/OutputWindow.h"
-#include "DockedWindows/Headers/PreferencesWindow.h"
 #include "DockedWindows/Headers/PropertyWindow.h"
 #include "DockedWindows/Headers/SolutionExplorerWindow.h"
-#include "DockedWindows/Headers/ToolboxWindow.h"
 
 #include "Editor/Headers/Editor.h"
 
@@ -52,18 +48,8 @@ namespace Divide {
             reinterpret_cast<DockedWindow*>(wd.userData)->draw();
         }
 
-        void DrawToggleWindows(ImGui::PanelManagerWindowData& wd) {
-            reinterpret_cast<PanelManager*>(wd.userData)->drawToggleWindows(wd);
-        }
-
-        static const char* tabWindowNames[4] = { "TabWindow Left", "TabWindow Right", "TabWindow Top", "TabWindow Bottom" };
-
-        bool show_test_window = true;
-
         static const ImVec2 buttonSize(PanelManager::ButtonWidth, PanelManager::ButtonHeight);
         static const ImVec2 buttonSizeSq(PanelManager::ButtonHeight, PanelManager::ButtonHeight);
-
-        static const char* ToggleWindowNames[] = { "Toggle Window 1","Toggle Window 2","Toggle Window 3","Toggle Window 4" };
 
         void TabContentProvider(ImGui::TabWindow::TabLabel* tab, ImGui::TabWindow& parent, void* userPtr) {
             ACKNOWLEDGE_UNUSED(parent);
@@ -455,12 +441,8 @@ namespace Divide {
 
         MemoryManager::DELETE_VECTOR(_dockedWindows);
         _dockedWindows.push_back(MemoryManager_NEW SolutionExplorerWindow(*this, context));
-        _dockedWindows.push_back(MemoryManager_NEW ToolboxWindow(*this));
         _dockedWindows.push_back(MemoryManager_NEW PropertyWindow(*this, context));
-        _dockedWindows.push_back(MemoryManager_NEW EditorFindWindow(*this));
         _dockedWindows.push_back(MemoryManager_NEW OutputWindow(*this));
-        _dockedWindows.push_back(MemoryManager_NEW ApplicationOutputWindow(*this));
-        _dockedWindows.push_back(MemoryManager_NEW PreferencesWindow(*this));
     }
 
 
@@ -613,216 +595,58 @@ namespace Divide {
             // LEFT PANE
             {
                 ImGui::PanelManager::Pane& pane = _toolbars[to_base(PanelPositions::LEFT)]->impl();
-                // Here we add the "proper" docked buttons and windows:
-                for (U8 i = 0;i < 3; ++i) {
-                    // Add to left pane the first 3 windows DrawDockedWindows[i], with Toolbuttons with the first 3 images of myImageTextureVoid (8x8 tiles):
-                    tileNumber = i;
-                    uv0 = ImVec2((F32)(tileNumber % 8) / 8.f, (F32)(tileNumber / 8) / 8.f);
-                    uv1 = ImVec2(uv0.x + 1.f / 8.f, uv0.y + 1.f / 8.f);
-
-                    pane.addButtonAndWindow(ImGui::Toolbutton(_dockedWindows[i]->name(),
-                                                              myImageTextureVoid,
-                                                              uv0,
-                                                              uv1,
-                                                              buttonSize),         // the 1st arg of Toolbutton is only used as a text for the tooltip.
-                                            ImGui::PanelManagerPaneAssociatedWindow(_dockedWindows[i]->name(),
-                                                                                    -1,
-                                                                                    &DrawDockedWindows,
-                                                                                    reinterpret_cast<void*>(_dockedWindows[i])));  //  the 1st arg of PanelManagerPaneAssociatedWindow is the name of the window
-                }
-                _toolbars[to_base(PanelPositions::LEFT)]->addTabWindowIfSupported(tabWindowNames);
-                pane.addSeparator(48); // Note that a separator "eats" one toolbutton index as if it was a real button
-
-                // Here we add two "automatic" toggle buttons (i.e. toolbuttons + associated windows): only the last args of Toolbutton change.
                 tileNumber = 0;
-                uv0 = ImVec2((F32)(tileNumber % 3) / 3.f, (F32)(tileNumber / 3) / 3.f);
-                uv1 = ImVec2(uv0.x + 1.f / 3.f, uv0.y + 1.f / 3.f);
-
-                pane.addButtonAndWindow(ImGui::Toolbutton(ToggleWindowNames[0],
-                                                          myImageTextureVoid2,
+                uv0 = ImVec2((F32)(tileNumber % 8) / 8.f, (F32)(tileNumber / 8) / 8.f);
+                uv1 = ImVec2(uv0.x + 1.f / 8.f, uv0.y + 1.f / 8.f);
+                pane.addButtonAndWindow(ImGui::Toolbutton(_dockedWindows[0]->name(),
+                                                          myImageTextureVoid,
                                                           uv0,
                                                           uv1,
-                                                          buttonSizeSq,
-                                                          true,
-                                                          false),        // the 1st arg of Toolbutton is only used as a text for the tooltip.
-                                        ImGui::PanelManagerPaneAssociatedWindow(ToggleWindowNames[0],
-                                                                                -1,
-                                                                                &DrawToggleWindows,
-                                                                                this));              //  the 1st arg of PanelManagerPaneAssociatedWindow is the name of the window
-
-                tileNumber = 1;
-                uv0 = ImVec2((F32)(tileNumber % 3) / 3.f, (F32)(tileNumber / 3) / 3.f);
-                uv1 = ImVec2(uv0.x + 1.f / 3.f, uv0.y + 1.f / 3.f);
-
-                pane.addButtonAndWindow(ImGui::Toolbutton(ToggleWindowNames[1],
-                                                          myImageTextureVoid2,
-                                                          uv0,
-                                                          uv1,
-                                                          buttonSizeSq,
-                                                          true,
-                                                          false),        // the 1st arg of Toolbutton is only used as a text for the tooltip.
-                                        ImGui::PanelManagerPaneAssociatedWindow(ToggleWindowNames[1],
-                                                                                -1,
-                                                                                &DrawToggleWindows,
-                                                                                this));              //  the 1st arg of PanelManagerPaneAssociatedWindow is the name of the window
+                                                          buttonSize),         // the 1st arg of Toolbutton is only used as a text for the tooltip.
+                                         ImGui::PanelManagerPaneAssociatedWindow(_dockedWindows[0]->name(),
+                                                                                 -1,
+                                                                                 &DrawDockedWindows,
+                                                                                 reinterpret_cast<void*>(_dockedWindows[0])));  //  the 1st arg of PanelManagerPaneAssociatedWindow is the name of the window
                 pane.addSeparator(48); // Note that a separator "eats" one toolbutton index as if it was a real button
 
-
-                // Here we add two "manual" toggle buttons (i.e. toolbuttons only):
-                tileNumber = 0;
-                uv0 = ImVec2((F32)(tileNumber % 3) / 3.f, (F32)(tileNumber / 3) / 3.f);
-                uv1 = ImVec2(uv0.x + 1.f / 3.f, uv0.y + 1.f / 3.f);
-                pane.addButtonOnly(ImGui::Toolbutton("Manual toggle button 1", myImageTextureVoid2, uv0, uv1, buttonSizeSq, true, false));
-
-                tileNumber = 1;
-                uv0 = ImVec2((F32)(tileNumber % 3) / 3.f, (F32)(tileNumber / 3) / 3.f);
-                uv1 = ImVec2(uv0.x + 1.f / 3.f, uv0.y + 1.f / 3.f);
-                pane.addButtonOnly(ImGui::Toolbutton("Manual toggle button 2", myImageTextureVoid2, uv0, uv1, buttonSizeSq, true, false));
-
- 
-                // Optional line to manually specify alignment as ImVec2 (by default Y alignment is 0.0f for LEFT and RIGHT panes, and X alignment is 0.5f for TOP and BOTTOM panes)
-                // Be warned that the component that you don't use (X in this case, must be set to 0.f for LEFT or 1.0f for RIGHT, unless you want to do strange things)
-                //pane.setToolbarProperties(true,false,ImVec2(0.f,0.5f));  // place this pane at Y center (instead of Y top)
             }
             // RIGHT PANE
             {
                 ImGui::PanelManager::Pane& pane = _toolbars[to_base(PanelPositions::RIGHT)]->impl();
-                // Here we use (a part of) the left pane to clone windows (handy since we don't support drag and drop):
-                if (_manager->getPaneLeft()) 
-                    pane.addClonedPane(*_manager->getPaneLeft(), false, 0, 2); // note that only the "docked" part of buttons/windows are clonable ("manual" buttons are simply ignored): TO FIX: for now please avoid leaving -1 as the last argument, as this seems to mess up button indices: just explicitely copy NonTogglable-DockButtons yourself.
-                                                                               // To clone single buttons (and not the whole pane) please use: pane.addClonedButtonAndWindow(...);
-                                                                               // IMPORTANT: Toggle Toolbuttons (and associated windows) can't be cloned and are just skipped if present
-                _toolbars[to_base(PanelPositions::RIGHT)]->addTabWindowIfSupported(tabWindowNames);
-
-                // here we could add new docked windows as well in the usual way now... but we don't
-                pane.addSeparator(48);   // Note that a separator "eats" one toolbutton index as if it was a real button
-
-                                            // Here we add two other "manual" toggle buttons:
-                tileNumber = 2;
-                uv0 = ImVec2((F32)(tileNumber % 3) / 3.f, (F32)(tileNumber / 3) / 3.f);
-                uv1 = ImVec2(uv0.x + 1.f / 3.f, uv0.y + 1.f / 3.f);
-                pane.addButtonOnly(ImGui::Toolbutton("Manual toggle button 3", myImageTextureVoid2, uv0, uv1, buttonSize, true, false));
-
-                tileNumber = 3;
-                uv0 = ImVec2((F32)(tileNumber % 3) / 3.f, (F32)(tileNumber / 3) / 3.f);
-                uv1 = ImVec2(uv0.x + 1.f / 3.f, uv0.y + 1.f / 3.f);
-                pane.addButtonOnly(ImGui::Toolbutton("Manual toggle button 4", myImageTextureVoid2, uv0, uv1, buttonSize, true, false));
-
-                // Here we add two "manual" normal buttons (actually "normal" buttons are always "manual"):
-                pane.addSeparator(48);   // Note that a separator "eats" one toolbutton index as if it was a real button
-                tileNumber = 4;
-                uv0 = ImVec2((F32)(tileNumber % 3) / 3.f, (F32)(tileNumber / 3) / 3.f);
-                uv1 = ImVec2(uv0.x + 1.f / 3.f, uv0.y + 1.f / 3.f);
-                pane.addButtonOnly(ImGui::Toolbutton("Manual normal button 1", myImageTextureVoid2, uv0, uv1, buttonSize, false, false));
-
-                tileNumber = 5;
-                uv0 = ImVec2((F32)(tileNumber % 3) / 3.f, (F32)(tileNumber / 3) / 3.f);
-                uv1 = ImVec2(uv0.x + 1.f / 3.f, uv0.y + 1.f / 3.f);
-                pane.addButtonOnly(ImGui::Toolbutton("Manual toggle button 2", myImageTextureVoid2, uv0, uv1, buttonSize, false, false));
-
+                tileNumber = 1;
+                uv0 = ImVec2((F32)(tileNumber % 8) / 8.f, (F32)(tileNumber / 8) / 8.f);
+                uv1 = ImVec2(uv0.x + 1.f / 8.f, uv0.y + 1.f / 8.f);
+                pane.addButtonAndWindow(ImGui::Toolbutton(_dockedWindows[1]->name(),
+                                        myImageTextureVoid,
+                                        uv0,
+                                        uv1,
+                                        buttonSize),         // the 1st arg of Toolbutton is only used as a text for the tooltip.
+                                        ImGui::PanelManagerPaneAssociatedWindow(_dockedWindows[1]->name(),
+                                                                                -1,
+                                                                                &DrawDockedWindows,
+                                                                                reinterpret_cast<void*>(_dockedWindows[1])));
+                pane.addSeparator(48); // Note that a separator "eats" one toolbutton index as if it was a real button
             }
             // BOTTOM PANE
             {
                 ImGui::PanelManager::Pane& pane = _toolbars[to_base(PanelPositions::BOTTOM)]->impl();
-                // Here we add the "proper" docked buttons and windows:
-                for (U8 i = 3; i < 6; ++i) {
-                    // Add to left pane the windows DrawDockedWindows[i] from 3 to 6, with Toolbuttons with the images from 3 to 6 of myImageTextureVoid (8x8 tiles):
-                    tileNumber = i;
-                    uv0 = ImVec2((F32)(tileNumber % 8) / 8.f, (F32)(tileNumber / 8) / 8.f);
-                    uv1 = ImVec2(uv0.x + 1.f / 8.f, uv0.y + 1.f / 8.f);
-                    pane.addButtonAndWindow(ImGui::Toolbutton(_dockedWindows[i]->name(),
-                                                              myImageTextureVoid,
-                                                              uv0,
-                                                              uv1,
-                                                              buttonSizeSq),         // the 1st arg of Toolbutton is only used as a text for the tooltip.
-                                            ImGui::PanelManagerPaneAssociatedWindow(_dockedWindows[i]->name(),
-                                                                                    -1,
-                                                                                    &DrawDockedWindows,
-                                                                                    reinterpret_cast<void*>(_dockedWindows[i])));  //  the 1st arg of PanelManagerPaneAssociatedWindow is the name of the window
-                }
-                _toolbars[to_base(PanelPositions::BOTTOM)]->addTabWindowIfSupported(tabWindowNames);
-                pane.addSeparator(64); // Note that a separator "eats" one toolbutton index as if it was a real button
-
-                // Here we add two "automatic" toggle buttons (i.e. toolbuttons + associated windows): only the last args of Toolbutton change.
+                // Add to left pane the windows DrawDockedWindows[i] from 3 to 6, with Toolbuttons with the images from 3 to 6 of myImageTextureVoid (8x8 tiles):
                 tileNumber = 2;
-                uv0 = ImVec2((F32)(tileNumber % 3) / 3.f, (F32)(tileNumber / 3) / 3.f);
-                uv1 = ImVec2(uv0.x + 1.f / 3.f, uv0.y + 1.f / 3.f);
-                pane.addButtonAndWindow(ImGui::Toolbutton(ToggleWindowNames[2],
-                                                          myImageTextureVoid2,
-                                                          uv0,
-                                                          uv1,
-                                                          buttonSizeSq,
-                                                          true,
-                                                          false),        // the 1st arg of Toolbutton is only used as a text for the tooltip.
-                                        ImGui::PanelManagerPaneAssociatedWindow(ToggleWindowNames[2],
+                uv0 = ImVec2((F32)(tileNumber % 8) / 8.f, (F32)(tileNumber / 8) / 8.f);
+                uv1 = ImVec2(uv0.x + 1.f / 8.f, uv0.y + 1.f / 8.f);
+                pane.addButtonAndWindow(ImGui::Toolbutton(_dockedWindows[2]->name(),
+                                                            myImageTextureVoid,
+                                                            uv0,
+                                                            uv1,
+                                                            buttonSizeSq),         // the 1st arg of Toolbutton is only used as a text for the tooltip.
+                                        ImGui::PanelManagerPaneAssociatedWindow(_dockedWindows[2]->name(),
                                                                                 -1,
-                                                                                &DrawToggleWindows,
-                                                                                this));              //  the 1st arg of PanelManagerPaneAssociatedWindow is the name of the window
-
-                tileNumber = 3;
-                uv0 = ImVec2((F32)(tileNumber % 3) / 3.f, (F32)(tileNumber / 3) / 3.f);
-                uv1 = ImVec2(uv0.x + 1.f / 3.f, uv0.y + 1.f / 3.f);
-                pane.addButtonAndWindow(ImGui::Toolbutton(ToggleWindowNames[3],
-                                                          myImageTextureVoid2,
-                                                          uv0,
-                                                          uv1,
-                                                          buttonSizeSq,
-                                                          true,
-                                                          false),        // the 1st arg of Toolbutton is only used as a text for the tooltip.
-                                        ImGui::PanelManagerPaneAssociatedWindow(ToggleWindowNames[3],
-                                                                                -1,
-                                                                                &DrawToggleWindows,
-                                                                                this));              //  the 1st arg of PanelManagerPaneAssociatedWindow is the name of the window
-                pane.addSeparator(64); // Note that a separator "eats" one toolbutton index as if it was a real button
-
-                // Here we add two "manual" toggle buttons:
-                tileNumber = 4;
-                uv0 = ImVec2((F32)(tileNumber % 3) / 3.f, (F32)(tileNumber / 3) / 3.f);
-                uv1 = ImVec2(uv0.x + 1.f / 3.f, uv0.y + 1.f / 3.f);
-                pane.addButtonOnly(ImGui::Toolbutton("Manual toggle button 4", myImageTextureVoid2, uv0, uv1, buttonSizeSq, true, false));
-                tileNumber = 5;
-                uv0 = ImVec2((F32)(tileNumber % 3) / 3.f, (F32)(tileNumber / 3) / 3.f);
-                uv1 = ImVec2(uv0.x + 1.f / 3.f, uv0.y + 1.f / 3.f);
-                pane.addButtonOnly(ImGui::Toolbutton("Manual toggle button 5", myImageTextureVoid2, uv0, uv1, buttonSizeSq, true, false));
-
+                                                                                &DrawDockedWindows,
+                                                                                reinterpret_cast<void*>(_dockedWindows[2])));  //  the 1st arg of PanelManagerPaneAssociatedWindow is the name of the window
             }
             // TOP PANE
             {
-
                 ImGui::PanelManager::Pane& pane = _toolbars[to_base(PanelPositions::TOP)]->impl();
-                // Here we add the "proper" docked buttons and windows:
-                for (U8 i = 6; i < 7; ++i) {
-                    // Add to left pane the windows DrawDockedWindows[i] from 3 to 6, with Toolbuttons with the images from 3 to 6 of myImageTextureVoid (8x8 tiles):
-                    tileNumber = i;
-                    uv0 = ImVec2((F32)(tileNumber % 8) / 8.f, (F32)(tileNumber / 8) / 8.f);
-                    uv1 = ImVec2(uv0.x + 1.f / 8.f, uv0.y + 1.f / 8.f);
-                    pane.addButtonAndWindow(ImGui::Toolbutton(_dockedWindows[i]->name(),
-                                                              myImageTextureVoid,
-                                                              uv0,
-                                                              uv1,
-                                                              buttonSizeSq),         // the 1st arg of Toolbutton is only used as a text for the tooltip.
-                                            ImGui::PanelManagerPaneAssociatedWindow(_dockedWindows[i]->name(),
-                                                                                    -1,
-                                                                                    &DrawDockedWindows,
-                                                                                    reinterpret_cast<void*>(_dockedWindows[i])));  //  the 1st arg of PanelManagerPaneAssociatedWindow is the name of the window
-                }
-                _toolbars[to_base(PanelPositions::TOP)]->addTabWindowIfSupported(tabWindowNames);
-                pane.addSeparator(64); // Note that a separator "eats" one toolbutton index as if it was a real button
-
-                pane.addButtonOnly(ImGui::Toolbutton("Normal Manual Button 1", myImageTextureVoid2, ImVec2(0, 0), ImVec2(1.f / 3.f, 1.f / 3.f), buttonSizeSq));//,false,false,ImVec4(0,1,0,1)));  // Here we add a free button
-
-                tileNumber = 1;
-                uv0 = ImVec2((F32)(tileNumber % 3) / 3.f, (F32)(tileNumber / 3) / 3.f);
-                uv1 = ImVec2(uv0.x + 1.f / 3.f, uv0.y + 1.f / 3.f);
-                pane.addButtonOnly(ImGui::Toolbutton("Normal Manual Button 2", myImageTextureVoid2, uv0, uv1, buttonSizeSq));  // Here we add a free button
-
-                tileNumber = 2;
-                uv0 = ImVec2((F32)(tileNumber % 3) / 3.f, (F32)(tileNumber / 3) / 3.f);
-                uv1 = ImVec2(uv0.x + 1.f / 3.f, uv0.y + 1.f / 3.f);
-                pane.addButtonOnly(ImGui::Toolbutton("Normal Manual Button 3", myImageTextureVoid2, uv0, uv1, buttonSizeSq));  // Here we add a free button
-                pane.addSeparator(32);  // Note that a separator "eats" one toolbutton index as if it was a real button
-
-                // Here we add two manual toggle buttons, but we'll use them later to show/hide menu and show/hide a central window
                 tileNumber = 5;
                 uv0 = ImVec2((F32)(tileNumber % 8) / 8.f, (F32)(tileNumber / 8) / 8.f);
                 uv1 = ImVec2(uv0.x + 1.f / 8.f, uv0.y + 1.f / 8.f);
@@ -936,32 +760,6 @@ namespace Divide {
                                      (float)h / initialSize.y);  // Scales the PanelManager bounds based on the initialSize
         setPanelManagerBoundsToIncludeMainMenuIfPresent(w, h);   // This line is only necessary if we have a global menu bar
     }
-
-    void PanelManager::drawToggleWindows(ImGui::PanelManagerWindowData& wd) {
-        assert(wd.isToggleWindow);
-        // Here we draw our toggle windows (in our case ToggleWindowNames) in the usual way:
-        // We can use -1.f for alpha here, instead of mgr.getDockedWindowsAlpha(), that can be too low (but choose what you like)
-        if (ImGui::Begin(wd.name, &wd.open, wd.size, -1.f, ImGuiWindowFlags_NoSavedSettings)) {
-            if (strcmp(wd.name, ToggleWindowNames[0]) == 0) {
-                // Draw Toggle Window 1
-                ImGui::SetWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x*0.15f, ImGui::GetIO().DisplaySize.y*0.24f), ImGuiSetCond_FirstUseEver);
-                ImGui::SetWindowSize(ImVec2(ImGui::GetIO().DisplaySize.x*0.25f, ImGui::GetIO().DisplaySize.y*0.24f), ImGuiSetCond_FirstUseEver);
-
-                ImGui::Text("Hello world from toggle window \"%s\"", wd.name);
-            }
-            else
-            {
-                // Draw Toggle Window
-                ImGui::SetWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x*0.25f, ImGui::GetIO().DisplaySize.y*0.34f), ImGuiSetCond_FirstUseEver);
-                ImGui::SetWindowSize(ImVec2(ImGui::GetIO().DisplaySize.x*0.5f, ImGui::GetIO().DisplaySize.y*0.34f), ImGuiSetCond_FirstUseEver);
-                ImGui::Text("Hello world from toggle window \"%s\"", wd.name);
-
-                //ImGui::Checkbox("wd.open",&wd.open);  // This can be used to close the window too
-            }
-        }
-        ImGui::End();
-    }
-
 
     void PanelManager::drawDockedTabWindows(ImGui::PanelManagerWindowData& wd) {
         // See more generic DrawDockedWindows(...) below...

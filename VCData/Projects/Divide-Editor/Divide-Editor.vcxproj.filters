@@ -151,25 +151,13 @@
     <ClCompile Include="../../../Source Code\Editor\Widgets\ApplicationOutput.cpp">
       <Filter>Widgets</Filter>
     </ClCompile>
-    <ClCompile Include="../../../Source Code\Editor\Widgets\DockedWindows\ApplicationOutputWindow.cpp">
-      <Filter>Widgets\DockedWindows</Filter>
-    </ClCompile>
     <ClCompile Include="../../../Source Code\Editor\Widgets\DockedWindows\SolutionExplorerWindow.cpp">
       <Filter>Widgets\DockedWindows</Filter>
     </ClCompile>
     <ClCompile Include="../../../Source Code\Editor\Widgets\DockedWindows\OutputWindow.cpp">
       <Filter>Widgets\DockedWindows</Filter>
     </ClCompile>
-    <ClCompile Include="../../../Source Code\Editor\Widgets\DockedWindows\PreferencesWindow.cpp">
-      <Filter>Widgets\DockedWindows</Filter>
-    </ClCompile>
     <ClCompile Include="../../../Source Code\Editor\Widgets\DockedWindows\PropertyWindow.cpp">
-      <Filter>Widgets\DockedWindows</Filter>
-    </ClCompile>
-    <ClCompile Include="../../../Source Code\Editor\Widgets\DockedWindows\ToolboxWindow.cpp">
-      <Filter>Widgets\DockedWindows</Filter>
-    </ClCompile>
-    <ClCompile Include="../../../Source Code\Editor\Widgets\DockedWindows\FindWindow.cpp">
       <Filter>Widgets\DockedWindows</Filter>
     </ClCompile>
     <ClCompile Include="../../../Source Code\Libs\imgui\addons\imguigizmo\ImSequencer.cpp">
@@ -373,19 +361,7 @@
     <ClInclude Include="../../../Source Code\Editor\Widgets\DockedWindows\Headers\OutputWindow.h">
       <Filter>Widgets\DockedWindows\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="../../../Source Code\Editor\Widgets\DockedWindows\Headers\ApplicationOutputWindow.h">
-      <Filter>Widgets\DockedWindows\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="../../../Source Code\Editor\Widgets\DockedWindows\Headers\SolutionExplorerWindow.h">
-      <Filter>Widgets\DockedWindows\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="../../../Source Code\Editor\Widgets\DockedWindows\Headers\ToolboxWindow.h">
-      <Filter>Widgets\DockedWindows\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="../../../Source Code\Editor\Widgets\DockedWindows\Headers\PreferencesWindow.h">
-      <Filter>Widgets\DockedWindows\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="../../../Source Code\Editor\Widgets\DockedWindows\Headers\FindWindow.h">
       <Filter>Widgets\DockedWindows\Headers</Filter>
     </ClInclude>
     <ClInclude Include="../../../Source Code\Libs\imgui\addons\imguigizmo\ImSequencer.h">

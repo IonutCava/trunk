@@ -94,7 +94,6 @@ namespace Divide {
         void idle();
         void draw(const U64 deltaTime);
         void resize(int w, int h);
-        void drawToggleWindows(ImGui::PanelManagerWindowData& wd);
         void setPanelManagerBoundsToIncludeMainMenuIfPresent(int displayX = -1, int displayY = -1);
 
         inline ImGui::PanelManager& ImGuiPanelManager() { return *_manager; }
