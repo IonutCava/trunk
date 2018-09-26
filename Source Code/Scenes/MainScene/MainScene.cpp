@@ -43,7 +43,7 @@ void MainScene::updateLights() {
         Lerp(FColour(1.0f, 0.5f, 0.0f, 1.0f),
              FColour(1.0f, 1.0f, 0.8f, 1.0f), 0.25f + _sun_cosy * 0.75f);
 
-    _sun->get<TransformComponent>()->setPosition(_sunvector);
+    _sun->get<TransformComponent>()->setRotationEuler(_sunvector);
     _sun->getNode<Light>()->setDiffuseColour(_sunColour);
 
     PushConstants& constants = _currentSky->get<RenderingComponent>()->pushConstants();

@@ -55,7 +55,13 @@ namespace Input {
     class InputInterface;
 };
 
+namespace Attorney {
+    class PlatformContextKernel;
+};
+
 class PlatformContext {
+    friend class Attorney::PlatformContextKernel;
+
 public:
     explicit PlatformContext(Application& app, Kernel& kernel);
     ~PlatformContext();
@@ -104,6 +110,9 @@ public:
     DisplayWindow& activeWindow();
     Input::InputInterface& input();
 
+    protected:
+    void onThreadCreated(const std::thread::id& threadID);
+
     private:
     /// Main application instance
     Application& _app;
@@ -130,6 +139,18 @@ public:
     /// Game editor
     std::unique_ptr<Editor> _editor;
 };
+
+namespace Attorney {
+    class PlatformContextKernel {
+    private:
+        static void onThreadCreated(PlatformContext& context, const std::thread::id& threadID) {
+            context.onThreadCreated(threadID);
+        }
+
+        friend class Divide::Kernel;
+    };
+};  // namespace Attorney
+
 }; //namespace Divide
 
 #endif //_PLATFORM_CONTEXT_H_

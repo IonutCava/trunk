@@ -40,8 +40,7 @@ namespace Divide {
 class TaskPool : public GUIDWrapper {
 public:
     enum class TaskPoolType : U8 {
-        TYPE_BOOST_ASIO = 0,
-        TYPE_LOCKFREE,
+        TYPE_LOCKFREE = 0,
         TYPE_BLOCKING,
         COUNT
     };
@@ -51,7 +50,7 @@ public:
     explicit TaskPool() noexcept;
     ~TaskPool();
     
-    bool init(U8 threadCount, TaskPoolType poolType, const stringImpl& workerName = "DVD_WORKER");
+    bool init(U8 threadCount, TaskPoolType poolType, const DELEGATE_CBK<void, const std::thread::id&>& onThreadCreate = {}, const stringImpl& workerName = "DVD_WORKER");
     void shutdown();
 
     void flushCallbackQueue();
@@ -84,16 +83,20 @@ public:
     bool enqueue(const PoolTask& task, TaskPriority priority);
     bool stopRequested() const;
 
-    void nameThreadpoolWorkers(const char* name);
     void runCbkAndClearTask(U32 taskIdentifier);
 
+    friend class ThreadPool;
+    void onThreadCreate(const std::thread::id& threadID);
+
   private:
-    std::unique_ptr<ThreadPool> _mainTaskPool;
-    moodycamel::ConcurrentQueue<U32> _threadedCallbackBuffer;
-    std::atomic_uint _runningTaskCount;
-    std::atomic_bool _stopRequested = false;
-    hashMap<U32, DELEGATE_CBK<void>> _taskCallbacks;
-    U8 _workerThreadCount;
+     stringImpl _threadNamePrefix;
+     DELEGATE_CBK<void, const std::thread::id&> _threadCreateCbk;
+     std::unique_ptr<ThreadPool> _mainTaskPool;
+     moodycamel::ConcurrentQueue<U32> _threadedCallbackBuffer;
+     std::atomic_uint _runningTaskCount;
+     std::atomic_bool _stopRequested = false;
+     hashMap<U32, DELEGATE_CBK<void>> _taskCallbacks;
+     U8 _workerThreadCount;
 };
 
 TaskHandle CreateTask(TaskPool& pool,

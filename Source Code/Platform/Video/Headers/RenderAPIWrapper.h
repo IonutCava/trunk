@@ -108,6 +108,8 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
 
     virtual bool setViewport(const Rect<I32>& newViewport) = 0;
 
+    virtual void onThreadCreated(const std::thread::id& threadID) = 0;
+
 protected:
 
     static GFXConfig _config;

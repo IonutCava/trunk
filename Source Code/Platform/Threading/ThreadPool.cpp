@@ -1,15 +1,14 @@
 #include "stdafx.h"
 
 #include "Headers/ThreadPool.h"
+#include "Core/Headers/TaskPool.h"
 #include "Platform/Headers/PlatformDefines.h"
-
-#include <boost/asio.hpp>
-#include <boost/asio/io_service.hpp>
 
 namespace Divide {
 
-    ThreadPool::ThreadPool(const U8 threadCount)
-        : _isRunning(true)
+    ThreadPool::ThreadPool(TaskPool& parent, const U8 threadCount)
+        : _parent(parent),
+          _isRunning(true)
     {
         _tasksLeft.store(0);
 
@@ -51,34 +50,18 @@ namespace Divide {
         return _threads;
     }
 
-    BoostAsioThreadPool::BoostAsioThreadPool(const U8 threadCount)
-        : ThreadPool(threadCount),
-          _queue(nullptr)
-    {
-        _queue = MemoryManager_NEW boost::asio::thread_pool(threadCount);
+    void ThreadPool::onThreadCreate(const std::thread::id& threadID) {
+        _parent.onThreadCreate(threadID);
     }
 
-    BoostAsioThreadPool::~BoostAsioThreadPool()
-    {
-        MemoryManager::SAFE_DELETE(_queue);
-    }
-
-    bool BoostAsioThreadPool::addTask(const PoolTask& job) {
-        boost::asio::post(*_queue, job);
-        return true;
-    }
-
-    void BoostAsioThreadPool::wait() {
-        _queue->stop();
-        ThreadPool::wait();
-    }
-
-    BlockingThreadPool::BlockingThreadPool(const U8 threadCount)
-        : ThreadPool(threadCount)
+    BlockingThreadPool::BlockingThreadPool(TaskPool& parent, const U8 threadCount)
+        : ThreadPool(parent, threadCount)
     {
         for (U8 idx = 0; idx < threadCount; ++idx) {
             _threads.push_back(std::thread([&]
             {
+                onThreadCreate(std::this_thread::get_id());
+
                 while (_isRunning) {
                     PoolTask task;
                     _queue.wait_dequeue(task);
@@ -99,12 +82,14 @@ namespace Divide {
         return false;
     }
 
-    LockFreeThreadPool::LockFreeThreadPool(const U8 threadCount)
-        : ThreadPool(threadCount)
+    LockFreeThreadPool::LockFreeThreadPool(TaskPool& parent, const U8 threadCount)
+        : ThreadPool(parent, threadCount)
     {
         for (U8 idx = 0; idx < threadCount; ++idx) {
             _threads.push_back(std::thread([&]
             {
+                onThreadCreate(std::this_thread::get_id());
+
                 while (_isRunning) {
                     PoolTask task;
                     while (!_queue.try_dequeue(task)) {

@@ -18,7 +18,6 @@ namespace Divide {
 glObject::glObject(glObjectType type, GFXDevice& context)
     : _type(type)
 {
-    GL_API::createOrValidateContextForCurrentThread(context);
 }
 
 VAOBindings::VAOBindings() noexcept

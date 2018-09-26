@@ -51,7 +51,6 @@ enum class LightType : U8 {
 
 class Camera;
 class LightPool;
-class ImpostorSphere;
 class SceneRenderState;
 /// A light object placed in the scene at a certain position
 class Light : public SceneNode {
@@ -116,11 +115,11 @@ class Light : public SceneNode {
     inline vec3<F32> getPosition() const { return _positionAndRange.xyz(); }
 
     /// Get direction for spot lights
-    inline vec3<F32> getSpotDirection() const { return _spotProperties.xyz(); }
+    inline vec3<F32> getDirection() const { return _directionAndCone.xyz(); }
 
-    inline F32 getSpotAngle() const { return _spotProperties.w; }
+    inline F32 getConeAngle() const { return _directionAndCone.w; }
 
-    void setSpotAngle(F32 newAngle);
+    void setConeAngle(F32 newAngle);
 
     inline F32 getSpotCosOuterConeAngle() const { return _spotCosOuterConeAngle; }
 
@@ -134,23 +133,11 @@ class Light : public SceneNode {
     /// Does this list cast shadows?
     inline void setCastShadows(const bool state) { _castsShadows = state; }
 
-    /// Draw a sphere at the lights position
-    /// The impostor has the range of the light's effect range and the diffuse
-    /// colour as the light's diffuse property
-    inline void setDrawImpostor(const bool state) { _drawImpostor = state; }
-
     /// Turn the light on/off
     inline void setEnabled(const bool state) { _enabled = state; }
 
     /// Get the light type. (see LightType enum)
     inline const LightType& getLightType() const { return _type; }
-
-    /// Get a pointer to the light's impostor
-    inline ImpostorSphere* const getImpostor() const { return _impostor.get(); }
-
-    bool onRender(SceneGraphNode& sgn,
-                  const SceneRenderState& sceneRenderState,
-                  RenderStagePass renderStagePass) override;
 
     /// SceneNode concrete implementations
     bool unload() override;
@@ -224,16 +211,14 @@ class Light : public SceneNode {
         _type = type;
     }
 
-    void updateImpostor();
-
    protected:
-    bool _spotPropertiesChanged;
+    bool _directionAndConeChanged;
     /// Used to generate spot light penumbra using D3D's dual-cone method
-    F32 _spotCosOuterConeAngle;
+    F32  _spotCosOuterConeAngle;
     /// xyz - position/direction, w - range
     vec4<F32> _positionAndRange;
     /// xyz - direction, w - cone angle
-    vec4<F32> _spotProperties;
+    vec4<F32> _directionAndCone;
     /// rgb - diffuse, a - reserved
     UColour  _colour;
     // does this light casts shadows?
@@ -244,11 +229,6 @@ class Light : public SceneNode {
     LightType _type;
 
    private:
-    bool _rangeChanged;
-    bool _drawImpostor;
-    /// Used for debug rendering
-    std::shared_ptr<ImpostorSphere> _impostor;
-    SceneGraphNode* _impostorSGN;
     ShadowCameraPool _shadowCameras;
     LightPool& _parentPool;
     bool _enabled;

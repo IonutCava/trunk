@@ -12,6 +12,8 @@ namespace {
 
     thread_local Task g_taskAllocator[Config::MAX_POOLED_TASKS];
     thread_local U32  g_allocatedTasks = 0u;
+
+    std::atomic_uint g_threadCount = 0;
 };
 
 TaskPool::TaskPool() noexcept
@@ -28,32 +30,37 @@ TaskPool::~TaskPool()
     shutdown();
 }
 
-bool TaskPool::init(U8 threadCount, TaskPoolType poolType, const stringImpl& workerName) {
+bool TaskPool::init(U8 threadCount, TaskPoolType poolType, const DELEGATE_CBK<void, const std::thread::id&>& onThreadCreate, const stringImpl& workerName) {
     if (threadCount == 0 || _mainTaskPool != nullptr) {
         return false;
     }
+    _threadNamePrefix = workerName;
+    _threadCreateCbk = onThreadCreate;
 
     _workerThreadCount = threadCount;
     switch (poolType) {
-        case TaskPoolType::TYPE_BOOST_ASIO: {
-            _mainTaskPool = std::make_unique<BoostAsioThreadPool>(_workerThreadCount);
-        } break;
         case TaskPoolType::TYPE_LOCKFREE: {
-            _mainTaskPool = std::make_unique<LockFreeThreadPool>(_workerThreadCount);
+            _mainTaskPool = std::make_unique<LockFreeThreadPool>(*this, _workerThreadCount);
         } break;
         case TaskPoolType::TYPE_BLOCKING: {
-            _mainTaskPool = std::make_unique<BlockingThreadPool>(_workerThreadCount);
+            _mainTaskPool = std::make_unique<BlockingThreadPool>(*this, _workerThreadCount);
         }break;
     }
 
     _stopRequested.store(false);
-    nameThreadpoolWorkers(workerName.c_str());
 
     return true;
 }
 
 void TaskPool::shutdown() {
     waitForAllTasks(true, true, true);
+}
+
+void TaskPool::onThreadCreate(const std::thread::id& threadID) {
+    setThreadName((_threadNamePrefix + to_stringImpl(g_threadCount.fetch_add(1))).c_str());
+    if (_threadCreateCbk) {
+        _threadCreateCbk(threadID);
+    }
 }
 
 bool TaskPool::enqueue(const PoolTask& task, TaskPriority priority) {
@@ -151,30 +158,6 @@ Task* TaskPool::createTask(Task* parentTask, const DELEGATE_CBK<void, const Task
     }
 
     return task;
-}
-
-//Ref: https://gist.github.com/shotamatsuda/e11ed41ee2978fa5a2f1/
-void TaskPool::nameThreadpoolWorkers(const char* name) {
-    std::mutex mutex;
-    std::condition_variable condition;
-    bool predicate = false;
-    std::atomic<U8> count = 0;
-    UniqueLock lock(mutex);
-    for (U8 i = 0; i < _workerThreadCount; ++i) {
-        enqueue([i, &name, &mutex, &condition, &predicate, &count]() {
-            UniqueLock lock(mutex);
-            while (!predicate) {
-                condition.wait(lock);
-            }
-            setThreadName(Util::StringFormat("%s_%d", name, i).c_str());
-            ++count;
-        }, TaskPriority::DONT_CARE);
-    }
-    predicate = true;
-    condition.notify_all();
-    lock.unlock();
-    _runningTaskCount.store(0);
-    WAIT_FOR_CONDITION(count.load() == _workerThreadCount);
 }
 
 bool TaskPool::stopRequested() const {

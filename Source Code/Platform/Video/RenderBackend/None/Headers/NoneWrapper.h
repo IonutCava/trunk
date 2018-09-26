@@ -58,6 +58,7 @@ class NONE_API final : public RenderAPIWrapper {
       vec2<U16> getDrawableSize(const DisplayWindow& window) const;
       U32 getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const;
       bool setViewport(const Rect<I32>& newViewport);
+      void onThreadCreated(const std::thread::id& threadID);
 };
 
 };  // namespace Divide

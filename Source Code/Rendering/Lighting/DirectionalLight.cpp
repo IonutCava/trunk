@@ -19,7 +19,9 @@ DirectionalLight::DirectionalLight(ResourceCache& parentCache, size_t descriptor
       _csmNearClipOffset(100.0f)
 {
     // Down the Y and Z axis at DIRECTIONAL_LIGHT_DISTANCE units away;
-    _positionAndRange.set(0, -1, -1, g_defaultLightDistance);
+    _directionAndCone.set(0, -1, -1, _directionAndCone.w);
+    _positionAndRange.set(_positionAndRange.xyz(), g_defaultLightDistance);
+
     _shadowProperties._lightDetails.y = to_U32(_csmSplitCount);
 }
 

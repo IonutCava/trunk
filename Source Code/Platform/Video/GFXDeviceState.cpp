@@ -346,9 +346,15 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 
     // Initialized our HierarchicalZ construction shader (takes a depth
     // attachment and down-samples it for every mip level)
-    _HIZConstructProgram = CreateResource<ShaderProgram>(cache, ResourceDescriptor("HiZConstruct"));
-    _HIZCullProgram = CreateResource<ShaderProgram>(cache, ResourceDescriptor("HiZOcclusionCull"));
-    _displayShader = CreateResource<ShaderProgram>(cache, ResourceDescriptor("display"));
+    ResourceDescriptor descriptor1("HiZConstruct");
+    descriptor1.setThreadedLoading(false);
+    _HIZConstructProgram = CreateResource<ShaderProgram>(cache, descriptor1);
+    ResourceDescriptor descriptor2("HiZOcclusionCull");
+    descriptor2.setThreadedLoading(false);
+    _HIZCullProgram = CreateResource<ShaderProgram>(cache, descriptor2);
+    ResourceDescriptor descriptor3("display");
+    descriptor3.setThreadedLoading(false);
+    _displayShader = CreateResource<ShaderProgram>(cache, descriptor3);
 
     ParamHandler::instance().setParam<bool>(_ID("rendering.previewDebugViews"), false);
     // If render targets ready, we initialize our post processing system

@@ -57,7 +57,7 @@ vec4 ParallaxMapping(in vec2 uv){
     vec3 lightVecTBN = vec3(0.0);
     switch (dvd_private_bump_light._options.x){
         case LIGHT_DIRECTIONAL      : 
-            lightVecTBN = -normalize(dvd_private_bump_light._positionWV.xyz);
+            lightVecTBN = -normalize(dvd_private_bump_light._directionWV.xyz);
             break;
         case LIGHT_OMNIDIRECTIONAL  : 
         case LIGHT_SPOT             : 

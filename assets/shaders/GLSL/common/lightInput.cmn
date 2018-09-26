@@ -15,12 +15,12 @@ struct Light {
     /// rgb = colour
     /// w = cosOuterConeAngle
     vec4   _colour;
-    /// xyz = light positon (or direction for Directional lights)
+    /// xyz = light positon 
     /// w = range
     vec4   _positionWV; 
-    /// xyz = spot direction
+    /// xyz = direction(or direction for Directional lights)
     /// w = spot angle   
-    vec4   _directionWV;
+    vec4   _directionWV; 
     /// x = light type: 0 - directional, 1  - point, 2 - spot
     /// y = casts shadows
     /// z = reserved

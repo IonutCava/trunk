@@ -1167,4 +1167,8 @@ U32 GL_API::getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const {
     return to_U32(static_cast<const CEGUI::OpenGLTexture&>(textureIn).getOpenGLTexture());
 }
 
+void GL_API::onThreadCreated(const std::thread::id& threadID) {
+    createOrValidateContextForCurrentThread(_context);
+}
+
 };

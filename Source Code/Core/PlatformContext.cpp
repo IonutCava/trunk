@@ -104,4 +104,8 @@ Kernel& PlatformContext::kernel() {
     return _kernel;
 }
 
+void PlatformContext::onThreadCreated(const std::thread::id& threadID) {
+    _gfx->onThreadCreated(threadID);
+}
+
 }; //namespace Divide

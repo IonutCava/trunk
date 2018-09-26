@@ -536,15 +536,6 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
         return ErrorCode::NOT_ENOUGH_RAM;
     }
 
-    U32 hardwareThreads = HARDWARE_THREAD_COUNT();
-    if (!_platformContext->taskPool().init(
-        static_cast<U8>(std::max(hardwareThreads, 5u) - 1), //at least two worker threads(what if we have a system with >260 threads?)
-        TaskPool::TaskPoolType::TYPE_BLOCKING,
-        "DIVIDE_WORKER_THREAD_"))
-    {
-        return ErrorCode::CPU_NOT_SUPPORTED;
-    }
-
     // Load info from XML files
     XMLEntryData& entryData = _platformContext->entryData();
     Configuration& config = _platformContext->config();
@@ -594,6 +585,18 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     const DisplayWindow& mainWindow  = winManager.getActiveWindow();
     vec2<U16> renderResolution(mainWindow.getDimensions());
     initError = _platformContext->gfx().initRenderingAPI(_argc, _argv, renderResolution);
+
+    U32 hardwareThreads = HARDWARE_THREAD_COUNT();
+    if (!_platformContext->taskPool().init(
+        static_cast<U8>(std::max(hardwareThreads, 5u) - 1), //at least two worker threads(what if we have a system with >260 threads?)
+        TaskPool::TaskPoolType::TYPE_BLOCKING,
+        [this](const std::thread::id& threadID) {
+        Attorney::PlatformContextKernel::onThreadCreated(platformContext(), threadID);
+    },
+        "DIVIDE_WORKER_THREAD_"))
+    {
+        return ErrorCode::CPU_NOT_SUPPORTED;
+    }
 
     // If we could not initialize the graphics device, exit
     if (initError != ErrorCode::NO_ERR) {

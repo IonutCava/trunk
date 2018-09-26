@@ -442,9 +442,6 @@ bool glShaderProgram::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoad
     // try to link the program in a separate thread
      CreateTask(_context.parent().platformContext(),
                 [this, onLoadCallback](const Task& parent) {
-                    if (!_loadedFromBinary && _asyncLoad) {
-                        GL_API::createOrValidateContextForCurrentThread(_context);
-                    }
                     threadedLoad(std::move(onLoadCallback), false);
                 }).startTask((!_loadedFromBinary && _asyncLoad) ? TaskPriority::DONT_CARE : TaskPriority::REALTIME);
     return true;

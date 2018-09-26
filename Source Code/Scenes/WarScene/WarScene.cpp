@@ -182,7 +182,7 @@ void WarScene::processTasks(const U64 deltaTimeUS) {
                             -cosf(g_sunAngle.y),
                             -sinf(g_sunAngle.x) * sinf(g_sunAngle.y));
 
-        _sun->get<TransformComponent>()->setPosition(sunVector);
+        _sun->get<TransformComponent>()->setRotationEuler(sunVector);
         FColour sunColour = FColour(1.0f, 1.0f, 0.2f, 1.0f);
 
         _sun->getNode<Light>()->setDiffuseColour(sunColour);

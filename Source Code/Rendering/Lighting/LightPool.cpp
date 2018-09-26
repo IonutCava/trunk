@@ -76,7 +76,6 @@ void LightPool::init() {
     bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE) | to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
     STUBBED("This is needed because certain nvidia cards/drivers throw random exceptions when flushing small buffer ranges after write");
-    SetBit(bufferDescriptor._flags, to_U32(ShaderBuffer::Flags::AUTO_RANGE_FLUSH));
 
     // NORMAL holds general info about the currently active lights: position, colour, etc.
     for (U8 i = 0; i < to_U8(RenderStage::COUNT); ++i) {
@@ -91,7 +90,6 @@ void LightPool::init() {
     bufferDescriptor._elementCount = Config::Lighting::MAX_SHADOW_CASTING_LIGHTS;
     bufferDescriptor._elementSize = sizeof(Light::ShadowProperties);
     bufferDescriptor._name = "LIGHT_SHADOW_BUFFER";
-    ClearBit(bufferDescriptor._flags, to_U32(ShaderBuffer::Flags::AUTO_RANGE_FLUSH));
 
     _shadowBuffer = _context.newSB(bufferDescriptor);
 
@@ -334,7 +332,7 @@ void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, con
             // So we need W = 0 for an infinite distance.
             temp._position.set(viewMatrix.transform(light->getPosition(), type != LightType::DIRECTIONAL), light->getRange());
             // spot direction is not considered a point in space, so W = 0
-            temp._direction.set(viewMatrix.transformNonHomogeneous(light->getSpotDirection()), light->getSpotAngle());
+            temp._direction.set(viewMatrix.transformNonHomogeneous(light->getDirection()), light->getConeAngle());
 
             temp._options.x = typeIndex;
             temp._options.y = light->castsShadows();

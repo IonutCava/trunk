@@ -507,7 +507,6 @@ void Scene::toggleFlashlight(PlayerIndex idx) {
         tempLightDesc.setEnumValue(to_base(LightType::SPOT));
         tempLightDesc.setUserPtr(_lightPool);
         std::shared_ptr<Light> tempLight = CreateResource<Light>(_resCache, tempLightDesc);
-        tempLight->setDrawImpostor(false);
         tempLight->setRange(30.0f);
         tempLight->setCastShadows(true);
         tempLight->setDiffuseColour(DefaultColours::WHITE);
@@ -528,7 +527,7 @@ void Scene::toggleFlashlight(PlayerIndex idx) {
                 if (cam.getGUID() == _scenePlayers[getSceneIndexForPlayer(idx)]->getCamera().getGUID()) {
                     TransformComponent* tComp = _flashLight[idx]->get<TransformComponent>();
                     tComp->setPosition(cam.getEye());
-                    tComp->setRotation(cam.getEuler());
+                    tComp->setRotationEuler(cam.getEuler());
                 }
             }
         });

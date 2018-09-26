@@ -351,6 +351,10 @@ public:  // Direct API calls
         return _api->getHandleFromCEGUITexture(textureIn);
     }
 
+    inline void onThreadCreated(const std::thread::id& threadID) {
+        _api->onThreadCreated(threadID);
+    }
+
 protected:
     RenderTarget* newRT(const RenderTargetDescriptor& descriptor) const;
 
@@ -413,6 +417,7 @@ private:
     Frustum         *_debugFrustum;
     IMPrimitive     *_debugFrustumPrimitive;
     CameraSnapshot  _activeCameraSnapshot;
+
 protected:
     RenderAPI _API_ID;
     GPUState _state;

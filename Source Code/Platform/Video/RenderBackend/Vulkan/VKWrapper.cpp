@@ -23,4 +23,5 @@ namespace Divide {
     vec2<U16> VK_API::getDrawableSize(const DisplayWindow& window) const { return vec2<U16>(1);  }
     U32 VK_API::getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const { return 0u;  }
     bool VK_API::setViewport(const Rect<I32>& newViewport) { return true; }
+    void VK_API::onThreadCreated(const std::thread::id& threadID) {}
 }; //namespace Divide

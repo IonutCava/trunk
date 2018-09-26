@@ -18,7 +18,7 @@ void main()
     size = light._positionWV.w * 0.5;
 
     if (lightType == LIGHT_DIRECTIONAL) {
-        gl_Position = vec4(light._positionWV.xyz * light._positionWV.w * -1.0f, 1.0);
+        gl_Position = vec4(light._directionWV.xyz * light._positionWV.w * -1.0f, 1.0);
     } else {
         gl_Position = vec4(light._positionWV.xyz, 1.0);
     }

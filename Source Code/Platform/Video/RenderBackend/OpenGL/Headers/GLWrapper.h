@@ -145,6 +145,8 @@ protected:
 
     U32 getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const override;
 
+    void onThreadCreated(const std::thread::id& threadID) override;
+
     /// Return the OpenGL framebuffer handle bound and assigned for the specified usage
     inline static GLuint getActiveFB(RenderTarget::RenderTargetUsage usage) {
         return s_activeFBID[to_U32(usage)];
@@ -165,7 +167,7 @@ public:
     static void createOrValidateContextForCurrentThread(GFXDevice& context);
 
     /// Queue a mipmap recalculation
-    static void queueComputeMipMap(PlatformContext& context, GLuint textureHandle);
+    static void queueComputeMipMap(PlatformContext& context, GLuint textureHandle, bool threaded);
     /// Enable or disable primitive restart and ensure that the correct index size is used
     static void togglePrimitiveRestart(bool state);
     /// Enable or disable primitive rasterization

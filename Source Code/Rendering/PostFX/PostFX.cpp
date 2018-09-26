@@ -81,18 +81,21 @@ PostFX::PostFX(GFXDevice& context, ResourceCache& cache)
     textureWaterCaustics.setResourceName("terrain_water_NM.jpg");
     textureWaterCaustics.setResourceLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
     textureWaterCaustics.setPropertyDescriptor(texDescriptor);
+    textureWaterCaustics.setThreadedLoading(false);
     _underwaterTexture = CreateResource<Texture>(cache, textureWaterCaustics);
 
     ResourceDescriptor noiseTexture("noiseTexture");
     noiseTexture.setResourceName("bruit_gaussien.jpg");
     noiseTexture.setResourceLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
     noiseTexture.setPropertyDescriptor(texDescriptor);
+    noiseTexture.setThreadedLoading(false);
     _noise = CreateResource<Texture>(cache, noiseTexture);
 
     ResourceDescriptor borderTexture("borderTexture");
     borderTexture.setResourceName("vignette.jpeg");
     borderTexture.setResourceLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
     borderTexture.setPropertyDescriptor(texDescriptor);
+    borderTexture.setThreadedLoading(false);
     _screenBorder = CreateResource<Texture>(cache, borderTexture);
 
     PipelineDescriptor pipelineDescriptor;

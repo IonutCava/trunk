@@ -500,7 +500,7 @@ vec2<U16> GL_API::getDrawableSize(const DisplayWindow& window) const {
     return vec2<U16>(w, h);
 }
 
-void GL_API::queueComputeMipMap(PlatformContext& context, GLuint textureHandle) {
+void GL_API::queueComputeMipMap(PlatformContext& context, GLuint textureHandle, bool threaded) {
     {
         UniqueLock w_lock(s_mipmapQueueSetLock);
         if (GL_API::s_mipmapQueueSync.find(textureHandle) != std::cend(GL_API::s_mipmapQueueSync)) {
@@ -523,7 +523,7 @@ void GL_API::queueComputeMipMap(PlatformContext& context, GLuint textureHandle) 
                         GL_API::s_mipmapQueueSync[textureHandle] = newSync;
                     }
                 }
-    ).startTask(TaskPriority::DONT_CARE);
+    ).startTask(threaded ? TaskPriority::DONT_CARE : TaskPriority::REALTIME);
 }
 
 };

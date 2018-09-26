@@ -130,7 +130,7 @@ public:
         setScale(vec3<F32>(x, y, z));
     }
 
-    inline void setRotation(const vec3<F32>& euler) {
+    inline void setRotationEuler(const vec3<F32>& euler) {
         setRotation(euler.pitch, euler.yaw, euler.roll);
     }
 

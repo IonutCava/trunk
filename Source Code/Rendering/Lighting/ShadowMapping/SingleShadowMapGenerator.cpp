@@ -25,7 +25,7 @@ void SingleShadowMapGenerator::render(const Camera& playerCamera, Light& light, 
     ACKNOWLEDGE_UNUSED(playerCamera);
 
     ShadowCameraPool& shadowCameras = light.shadowCameras();
-    shadowCameras[0]->lookAt(light.getPosition(), light.getSpotDirection());
+    shadowCameras[0]->lookAt(light.getPosition(), light.getDirection());
     shadowCameras[0]->setProjection(1.0f, 90.0f, vec2<F32>(1.0, light.getRange()));
 
     RenderPassManager& passMgr = _context.parent().renderPassManager();

@@ -191,33 +191,6 @@ TEST(TaskSpeedTest)
     }
     {
         TaskPool test;
-        bool init = test.init(to_U8(HARDWARE_THREAD_COUNT()), TaskPool::TaskPoolType::TYPE_BOOST_ASIO);
-        CHECK_TRUE(init);
-
-        Time::ProfileTimer timer;
-
-        timer.start();
-        TaskHandle job = CreateTask(test,
-            [](const Task& parentTask) {
-            // NOP
-        }
-        );
-
-        for (std::size_t i = 0; i < 60 * 1000; ++i)
-        {
-            CreateTask(test, &job,
-                [](const Task& parentTask) {
-                // NOP
-            }
-            ).startTask();
-        }
-
-        job.startTask().wait();
-        F32 durationMS = Time::MicrosecondsToMilliseconds<F32>(timer.stop() - Time::ProfileTimer::overhead());
-        std::cout << "Threading speed test (boost::asio): 60K tasks completed in: " << durationMS << " ms." << std::endl;
-    }
-    {
-        TaskPool test;
         bool init = test.init(to_U8(HARDWARE_THREAD_COUNT()), TaskPool::TaskPoolType::TYPE_BLOCKING);
         CHECK_TRUE(init);
 
@@ -253,26 +226,7 @@ TEST(TaskSpeedTest)
                     partitionSize);
         F32 durationMS = Time::MicrosecondsToMilliseconds<F32>(timer.stop() - Time::ProfileTimer::overhead());
         std::cout << "Threading speed test (parallel_for - lockfree): 8192 + 1 partitions tasks completed in: " << durationMS << " ms." << std::endl;
-    }
-      {
-        TaskPool test;
-        bool init = test.init(to_U8(HARDWARE_THREAD_COUNT()), TaskPool::TaskPoolType::TYPE_BOOST_ASIO);
-        CHECK_TRUE(init);
-
-        const U32 partitionSize = 256;
-        const U32 loopCount = partitionSize * 8192 + 2;
-
-        Time::ProfileTimer timer;
-        timer.start();
-        parallel_for(test,
-                    [](const Task& parentTask, U32 start, U32 end) {
-                        // NOP
-                    },
-                    loopCount,
-                    partitionSize);
-        F32 durationMS = Time::MicrosecondsToMilliseconds<F32>(timer.stop() - Time::ProfileTimer::overhead());
-        std::cout << "Threading speed test (parallel_for - boost::asio): 8192 + 1 partitions tasks completed in: " << durationMS << " ms." << std::endl;
-    }
+    }   
 }
 
 TEST(TaskPriorityTest)

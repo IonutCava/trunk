@@ -40,7 +40,7 @@ namespace std {
 namespace Divide {
 namespace Runtime {
 
-const std::thread::id&  mainThreadID();
+const std::thread::id& mainThreadID();
 // Can only be called once! The first registered thread is the main thread
 void mainThreadID(const std::thread::id& threadID);
 bool resetMainThreadID();

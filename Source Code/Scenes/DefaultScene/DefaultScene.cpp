@@ -29,7 +29,7 @@ bool DefaultScene::load(const stringImpl& name) {
                         -cosf(sunAngle.y),
                         -sinf(sunAngle.x) * sinf(sunAngle.y));
     
-    _sun->get<TransformComponent>()->setPosition(sunvector);
+    _sun->get<TransformComponent>()->setRotationEuler(sunvector);
     PushConstants& constants = _currentSky->get<RenderingComponent>()->pushConstants();
     constants.set("enable_sun", GFX::PushConstantType::BOOL, true);
     constants.set("sun_vector", GFX::PushConstantType::VEC3, sunvector);

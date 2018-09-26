@@ -150,7 +150,6 @@ bool glBufferImpl::bindRange(GLuint bindIndex, size_t offsetInBytes, size_t rang
 
 void glBufferImpl::writeData(size_t offsetInBytes, size_t rangeInBytes, const bufferPtr data)
 {
-    GL_API::createOrValidateContextForCurrentThread(_context);
     if (_mappedBuffer) {
         waitRange(offsetInBytes, rangeInBytes, true);
         std::memcpy(((Byte*)_mappedBuffer) + offsetInBytes,

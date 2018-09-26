@@ -36,13 +36,14 @@
 namespace Divide {
 
 typedef std::function<void()> PoolTask;
+class TaskPool;
 
 // Dead simple ThreadPool class
 class ThreadPool
 {
 public:
 
-    explicit ThreadPool(const U8 threadCount);
+    explicit ThreadPool(TaskPool& parent, const U8 threadCount);
     virtual ~ThreadPool();
 
     // Add a new task to the pool's queue
@@ -58,31 +59,20 @@ public:
     eastl::vector<std::thread>& threads();
 
 protected:
-    bool _isRunning = false;;
+    void onThreadCreate(const std::thread::id& threadID);
+
+protected:
+    TaskPool& _parent;
+    bool _isRunning = false;
     std::atomic_int _tasksLeft;
     eastl::vector<std::thread> _threads;
-};
-
-class BoostAsioThreadPool final : public ThreadPool
-{
-public:
-
-    explicit BoostAsioThreadPool(const U8 threadCount);
-    ~BoostAsioThreadPool();
-
-    // Add a new task to the pool's queue
-    bool addTask(const PoolTask& job) override;
-    void wait();
-
-private:
-    boost::asio::thread_pool* _queue;
 };
 
 class BlockingThreadPool final : public ThreadPool
 {
 public:
 
-    explicit BlockingThreadPool(const U8 threadCount);
+    explicit BlockingThreadPool(TaskPool& parent, const U8 threadCount);
     ~BlockingThreadPool() = default;
 
     // Add a new task to the pool's queue
@@ -92,12 +82,11 @@ private:
     moodycamel::BlockingConcurrentQueue<PoolTask> _queue;
 };
 
-
 class LockFreeThreadPool final : public ThreadPool
 {
 public:
 
-    explicit LockFreeThreadPool(const U8 threadCount);
+    explicit LockFreeThreadPool(TaskPool& parent, const U8 threadCount);
     ~LockFreeThreadPool() = default;
 
     // Add a new task to the pool's queue

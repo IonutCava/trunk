@@ -67,7 +67,7 @@ void main (void)
     vec2 uvFinalRefract = uvReflection.xy;// +_noiseFactor * normal.xy;
 
     vec3 N = normalize(dvd_NormalMatrixWV(VAR.dvd_instanceID) * normal);
-    vec3 L = normalize(-(dvd_private_light._positionWV.xyz));
+    vec3 L = getLightDirection();
     vec3 V = normalize(_pixToEye);
 
     float iSpecular = pow(clamp(dot(normalize(reflect(-L, N)), V), 0.0, 1.0), _waterShininess);

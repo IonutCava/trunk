@@ -15,12 +15,8 @@ Light::Light(ResourceCache& parentCache, size_t descriptorHash, const stringImpl
     : SceneNode(parentCache, descriptorHash, name, SceneNodeType::TYPE_LIGHT),
       _parentPool(parentPool),
       _type(type),
-      _rangeChanged(true),
-      _drawImpostor(false),
-      _impostor(nullptr),
-      _impostorSGN(nullptr),
       _castsShadows(false),
-      _spotPropertiesChanged(false),
+      _directionAndConeChanged(false),
       _spotCosOuterConeAngle(0.0f)
 {
     _shadowCameras.fill(nullptr);
@@ -79,12 +75,11 @@ void Light::setDiffuseColour(const vec3<U8>& newDiffuseColour) {
 
 void Light::setRange(F32 range) {
     _positionAndRange.w = range;
-    _rangeChanged = true;
 }
 
-void Light::setSpotAngle(F32 newAngle) {
-    _spotProperties.w = newAngle;
-    _spotPropertiesChanged = true;
+void Light::setConeAngle(F32 newAngle) {
+    _directionAndCone.w = newAngle;
+    _directionAndConeChanged = true;
 }
 
 void Light::setSpotCosOuterConeAngle(F32 newCosAngle) {
@@ -96,8 +91,8 @@ void Light::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& 
     vec3<F32> dir(tComp->getOrientation() * WORLD_Z_NEG_AXIS);
     dir.normalize();
 
-    if (_spotProperties != dir) {
-        _spotProperties.xyz(dir);
+    if (_directionAndCone.xyz() != dir) {
+        _directionAndCone.xyz(dir);
         setBoundsChanged();
     }
     const vec3<F32>& pos = tComp->getPosition();
@@ -122,57 +117,6 @@ void Light::updateBoundsInternal() {
         _boundingBox.multiply(0.5f);
     }
     SceneNode::updateBoundsInternal();
-}
-
-bool Light::onRender(SceneGraphNode& sgn,
-                     const SceneRenderState& sceneRenderState,
-                     RenderStagePass renderStagePass) {
-    ACKNOWLEDGE_UNUSED(sceneRenderState);
-
-    if (!_drawImpostor) {
-        return true;
-    }
-
-    if (!_impostor) {
-        _impostor = CreateResource<ImpostorSphere>(_parentCache, ResourceDescriptor(_name + "_impostor"));
-        _impostor->setRadius(_positionAndRange.w);
-        _impostor->renderState().setDrawState(true);
-
-
-        SceneGraphNodeDescriptor impostorDescriptor;
-        impostorDescriptor._componentMask = to_base(ComponentType::TRANSFORM) | to_base(ComponentType::BOUNDS) | to_base(ComponentType::RENDERING);
-        impostorDescriptor._node = _impostor;
-        impostorDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
-
-        _impostorSGN = sgn.addNode(impostorDescriptor);
-        _impostorSGN->setActive(true);
-    }
-
-    _impostorSGN->get<RenderingComponent>()->getMaterialInstance()->setDiffuse(getDiffuseColour());
-
-    updateImpostor();
-
-    return true;
-}
-
-void Light::updateImpostor() {
-    if (_type == LightType::DIRECTIONAL) {
-        return;
-    }
-    // Updating impostor range is expensive, so check if we need to
-    if (_rangeChanged) {
-        F32 range = getRange();
-        if (_type == LightType::SPOT) {
-            range *= 0.5f;
-            // Spot light's bounding sphere extends from the middle of the light's range outwards,
-            // touching the light's position on one end and the cone at the other
-            // so we need to offest the impostor's position a bit
-            TransformComponent* tComp = _impostorSGN->get<TransformComponent>();
-            tComp->setPosition(getSpotDirection() * range);
-        }
-        _impostor->setRadius(range);
-        _rangeChanged = false;
-    }
 }
 
 };
