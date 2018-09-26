@@ -1,46 +1,46 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <None Include="..\../Source Code/Core\Headers\Console.inl">
+    <None Include="../../../Source Code/Core\Headers\Console.inl">
       <Filter>Core\Headers</Filter>
     </None>
-    <None Include="..\../Source Code/Core\Headers\ParamHandler.inl">
+    <None Include="../../../Source Code/Core\Headers\ParamHandler.inl">
       <Filter>Core\Headers</Filter>
     </None>
-    <None Include="..\../Source Code/Core\Headers\StringHelper.inl">
+    <None Include="../../../Source Code/Core\Headers\StringHelper.inl">
       <Filter>Core\Headers</Filter>
     </None>
-    <None Include="..\../Source Code/Core\Headers\WindowManager.inl">
+    <None Include="../../../Source Code/Core\Headers\WindowManager.inl">
       <Filter>Core\Headers</Filter>
     </None>
-    <None Include="..\../Source Code/Core\Math\Headers\MathHelper.inl">
+    <None Include="../../../Source Code/Core\Math\Headers\MathHelper.inl">
       <Filter>Core\Math\Headers</Filter>
     </None>
-    <None Include="..\../Source Code/Core\Math\Headers\MathMatrices.inl">
+    <None Include="../../../Source Code/Core\Math\Headers\MathMatrices.inl">
       <Filter>Core\Math\Headers</Filter>
     </None>
-    <None Include="..\../Source Code/Core\Math\Headers\Quaternion.inl">
+    <None Include="../../../Source Code/Core\Math\Headers\Quaternion.inl">
       <Filter>Core\Math\Headers</Filter>
     </None>
-    <None Include="..\../Source Code/Core\Math\Headers\Transform.inl">
+    <None Include="../../../Source Code/Core\Math\Headers\Transform.inl">
       <Filter>Core\Math\Headers</Filter>
     </None>
-    <None Include="..\../Source Code/Core\Math\BoundingVolumes\Headers\BoundingBox.inl">
+    <None Include="../../../Source Code/Core\Math\BoundingVolumes\Headers\BoundingBox.inl">
       <Filter>Core\Math\BoundingVolumes\Headers</Filter>
     </None>
-    <None Include="..\../Source Code/Core\Math\BoundingVolumes\Headers\BoundingSphere.inl">
+    <None Include="../../../Source Code/Core\Math\BoundingVolumes\Headers\BoundingSphere.inl">
       <Filter>Core\Math\BoundingVolumes\Headers</Filter>
     </None>
-    <None Include="..\../Source Code/Core\Time\Headers\ApplicationTimer.inl">
+    <None Include="../../../Source Code/Core\Time\Headers\ApplicationTimer.inl">
       <Filter>Core\Time\Headers</Filter>
     </None>
-    <None Include="..\../Source Code/Core\Time\Headers\FrameRateHandler.inl">
+    <None Include="../../../Source Code/Core\Time\Headers\FrameRateHandler.inl">
       <Filter>Core\Time\Headers</Filter>
     </None>
-    <None Include="..\../Source Code/Core\Time\Headers\ProfileTimer.inl">
+    <None Include="../../../Source Code/Core\Time\Headers\ProfileTimer.inl">
       <Filter>Core\Time\Headers</Filter>
     </None>
-    <None Include="..\../Source Code/Core\Headers\ByteBuffer.inl">
+    <None Include="../../../Source Code/Core\Headers\ByteBuffer.inl">
       <Filter>Core\Headers</Filter>
     </None>
   </ItemGroup>
@@ -113,298 +113,298 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\../Source Code/Core\GUIDWrapper.cpp">
+    <ClCompile Include="../../../Source Code/Core\GUIDWrapper.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Core\StringHelper.cpp">
+    <ClCompile Include="../../../Source Code/Core\StringHelper.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Core\TaskPool.cpp">
+    <ClCompile Include="../../../Source Code/Core\TaskPool.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Core\WindowManager.cpp">
+    <ClCompile Include="../../../Source Code/Core\WindowManager.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Core\Console.cpp">
+    <ClCompile Include="../../../Source Code/Core\Console.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Core\Math\MathClasses.cpp">
+    <ClCompile Include="../../../Source Code/Core\Math\MathClasses.cpp">
       <Filter>Core\Math</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Core\Math\MathHelper.cpp">
+    <ClCompile Include="../../../Source Code/Core\Math\MathHelper.cpp">
       <Filter>Core\Math</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Core\Math\Transform.cpp">
+    <ClCompile Include="../../../Source Code/Core\Math\Transform.cpp">
       <Filter>Core\Math</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Core\Math\BoundingVolumes\BoundingBox.cpp">
+    <ClCompile Include="../../../Source Code/Core\Math\BoundingVolumes\BoundingBox.cpp">
       <Filter>Core\Math\BoundingVolumes</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Core\Math\BoundingVolumes\BoundingSphere.cpp">
+    <ClCompile Include="../../../Source Code/Core\Math\BoundingVolumes\BoundingSphere.cpp">
       <Filter>Core\Math\BoundingVolumes</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Core\Resources\Resource.cpp">
+    <ClCompile Include="../../../Source Code/Core\Resources\Resource.cpp">
       <Filter>Core\Resources</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Core\Resources\ResourceCache.cpp">
+    <ClCompile Include="../../../Source Code/Core\Resources\ResourceCache.cpp">
       <Filter>Core\Resources</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Core\Resources\ResourceDescriptor.cpp">
+    <ClCompile Include="../../../Source Code/Core\Resources\ResourceDescriptor.cpp">
       <Filter>Core\Resources</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Core\Resources\ConcreteLoaders\AudioDescriptorLoaderImpl.cpp">
+    <ClCompile Include="../../../Source Code/Core\Resources\ConcreteLoaders\AudioDescriptorLoaderImpl.cpp">
       <Filter>Core\Resources\ConcreteLoaders</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Core\Resources\ConcreteLoaders\Box3DLoaderImpl.cpp">
+    <ClCompile Include="../../../Source Code/Core\Resources\ConcreteLoaders\Box3DLoaderImpl.cpp">
       <Filter>Core\Resources\ConcreteLoaders</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Core\Resources\ConcreteLoaders\ImpostorLoaderImpl.cpp">
+    <ClCompile Include="../../../Source Code/Core\Resources\ConcreteLoaders\ImpostorLoaderImpl.cpp">
       <Filter>Core\Resources\ConcreteLoaders</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Core\Resources\ConcreteLoaders\LightLoaderImpl.cpp">
+    <ClCompile Include="../../../Source Code/Core\Resources\ConcreteLoaders\LightLoaderImpl.cpp">
       <Filter>Core\Resources\ConcreteLoaders</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Core\Resources\ConcreteLoaders\MaterialLoaderImpl.cpp">
+    <ClCompile Include="../../../Source Code/Core\Resources\ConcreteLoaders\MaterialLoaderImpl.cpp">
       <Filter>Core\Resources\ConcreteLoaders</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Core\Resources\ConcreteLoaders\MeshLoaderImpl.cpp">
+    <ClCompile Include="../../../Source Code/Core\Resources\ConcreteLoaders\MeshLoaderImpl.cpp">
       <Filter>Core\Resources\ConcreteLoaders</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Core\Resources\ConcreteLoaders\Quad3DLoaderImpl.cpp">
+    <ClCompile Include="../../../Source Code/Core\Resources\ConcreteLoaders\Quad3DLoaderImpl.cpp">
       <Filter>Core\Resources\ConcreteLoaders</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Core\Resources\ConcreteLoaders\ShaderProgramLoaderImpl.cpp">
+    <ClCompile Include="../../../Source Code/Core\Resources\ConcreteLoaders\ShaderProgramLoaderImpl.cpp">
       <Filter>Core\Resources\ConcreteLoaders</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Core\Resources\ConcreteLoaders\Sphere3DLoaderImpl.cpp">
+    <ClCompile Include="../../../Source Code/Core\Resources\ConcreteLoaders\Sphere3DLoaderImpl.cpp">
       <Filter>Core\Resources\ConcreteLoaders</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Core\Resources\ConcreteLoaders\SubMeshLoaderImpl.cpp">
+    <ClCompile Include="../../../Source Code/Core\Resources\ConcreteLoaders\SubMeshLoaderImpl.cpp">
       <Filter>Core\Resources\ConcreteLoaders</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Core\Resources\ConcreteLoaders\TextureLoaderImpl.cpp">
+    <ClCompile Include="../../../Source Code/Core\Resources\ConcreteLoaders\TextureLoaderImpl.cpp">
       <Filter>Core\Resources\ConcreteLoaders</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Core\Debugging\DebugInterface.cpp">
+    <ClCompile Include="../../../Source Code/Core\Debugging\DebugInterface.cpp">
       <Filter>Core\Debugging</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Core\Time\ApplicationTimer.cpp">
+    <ClCompile Include="../../../Source Code/Core\Time\ApplicationTimer.cpp">
       <Filter>Core\Time</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Core\Time\FrameRateHandler.cpp">
+    <ClCompile Include="../../../Source Code/Core\Time\FrameRateHandler.cpp">
       <Filter>Core\Time</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Core\Time\ProfileTimer.cpp">
+    <ClCompile Include="../../../Source Code/Core\Time\ProfileTimer.cpp">
       <Filter>Core\Time</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Libs/ArenaAllocator\arena_allocator.cpp">
+    <ClCompile Include="../../../Source Code/Libs/ArenaAllocator\arena_allocator.cpp">
       <Filter>Core\ArenaAllocator</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Utility\CommandParser.cpp">
+    <ClCompile Include="../../../Source Code/Utility\CommandParser.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Utility\CRC.cpp">
+    <ClCompile Include="../../../Source Code/Utility\CRC.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Utility\EASTLImport.cpp">
+    <ClCompile Include="../../../Source Code/Utility\EASTLImport.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Utility\ImageTools.cpp">
+    <ClCompile Include="../../../Source Code/Utility\ImageTools.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Utility\Localization.cpp">
+    <ClCompile Include="../../../Source Code/Utility\Localization.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Utility\XMLParser.cpp">
+    <ClCompile Include="../../../Source Code/Utility\XMLParser.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Libs/SimpleINI\src\ConvertUTF.cpp">
+    <ClCompile Include="../../../Source Code/Libs/SimpleINI\src\ConvertUTF.cpp">
       <Filter>Utility\SimpleINI</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Libs/nv_dds\nv_dds.cpp">
+    <ClCompile Include="../../../Source Code/Libs/nv_dds\nv_dds.cpp">
       <Filter>Utility\NV_DDS</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Core\ByteBuffer.cpp">
+    <ClCompile Include="../../../Source Code/Core\ByteBuffer.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Core\Resources\ConcreteLoaders\Patch3DLoaderImpl.cpp">
+    <ClCompile Include="../../../Source Code/Core\Resources\ConcreteLoaders\Patch3DLoaderImpl.cpp">
       <Filter>Core\Resources\ConcreteLoaders</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/stdafx-core.cpp" />
-    <ClCompile Include="..\../Source Code/Core\RingBuffer.cpp">
+    <ClCompile Include="../../../Source Code/stdafx-core.cpp" />
+    <ClCompile Include="../../../Source Code/Core\RingBuffer.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Utility\TextLabel.cpp">
+    <ClCompile Include="../../../Source Code\Utility\TextLabel.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\UnityBuildEngine.cpp" />
+    <ClCompile Include="../../../Source Code\UnityBuildEngine.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\../Source Code/Core\Headers\cdigginsAny.h">
+    <ClInclude Include="../../../Source Code/Core\Headers\cdigginsAny.h">
       <Filter>Core\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Core\Headers\GUIDWrapper.h">
+    <ClInclude Include="../../../Source Code/Core\Headers\GUIDWrapper.h">
       <Filter>Core\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Core\Headers\NonCopyable.h">
+    <ClInclude Include="../../../Source Code/Core\Headers\NonCopyable.h">
       <Filter>Core\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Core\Headers\NonMovable.h">
+    <ClInclude Include="../../../Source Code/Core\Headers\NonMovable.h">
       <Filter>Core\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Core\Headers\StringHelper.h">
+    <ClInclude Include="../../../Source Code/Core\Headers\StringHelper.h">
       <Filter>Core\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Core\Headers\TaskPool.h">
+    <ClInclude Include="../../../Source Code/Core\Headers\TaskPool.h">
       <Filter>Core\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Core\Headers\WindowManager.h">
+    <ClInclude Include="../../../Source Code/Core\Headers\WindowManager.h">
       <Filter>Core\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Core\Headers\Console.h">
+    <ClInclude Include="../../../Source Code/Core\Headers\Console.h">
       <Filter>Core\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Core\Headers\ParamHandler.h">
+    <ClInclude Include="../../../Source Code/Core\Headers\ParamHandler.h">
       <Filter>Core\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Core\Headers\Singleton.h">
+    <ClInclude Include="../../../Source Code/Core\Headers\Singleton.h">
       <Filter>Core\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Core\Math\Headers\Line.h">
+    <ClInclude Include="../../../Source Code/Core\Math\Headers\Line.h">
       <Filter>Core\Math\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Core\Math\Headers\MathUtil.h">
+    <ClInclude Include="../../../Source Code/Core\Math\Headers\MathUtil.h">
       <Filter>Core\Math\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Core\Math\Headers\MathVectors.inl">
+    <ClInclude Include="../../../Source Code/Core\Math\Headers\MathVectors.inl">
       <Filter>Core\Math\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Core\Math\Headers\MathVectors.h">
+    <ClInclude Include="../../../Source Code/Core\Math\Headers\MathVectors.h">
       <Filter>Core\Math\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Core\Math\Headers\Plane.h">
+    <ClInclude Include="../../../Source Code/Core\Math\Headers\Plane.h">
       <Filter>Core\Math\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Core\Math\Headers\TransformInterface.h">
+    <ClInclude Include="../../../Source Code/Core\Math\Headers\TransformInterface.h">
       <Filter>Core\Math\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Core\Math\Headers\MathMatrices.h">
+    <ClInclude Include="../../../Source Code/Core\Math\Headers\MathMatrices.h">
       <Filter>Core\Math\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Core\Math\Headers\MathHelper.h">
+    <ClInclude Include="../../../Source Code/Core\Math\Headers\MathHelper.h">
       <Filter>Core\Math\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Core\Math\Headers\Quaternion.h">
+    <ClInclude Include="../../../Source Code/Core\Math\Headers\Quaternion.h">
       <Filter>Core\Math\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Core\Math\Headers\Ray.h">
+    <ClInclude Include="../../../Source Code/Core\Math\Headers\Ray.h">
       <Filter>Core\Math\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Core\Math\Headers\Transform.h">
+    <ClInclude Include="../../../Source Code/Core\Math\Headers\Transform.h">
       <Filter>Core\Math\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Core\Math\BoundingVolumes\Headers\BoundingBox.h">
+    <ClInclude Include="../../../Source Code/Core\Math\BoundingVolumes\Headers\BoundingBox.h">
       <Filter>Core\Math\BoundingVolumes\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Core\Math\BoundingVolumes\Headers\BoundingSphere.h">
+    <ClInclude Include="../../../Source Code/Core\Math\BoundingVolumes\Headers\BoundingSphere.h">
       <Filter>Core\Math\BoundingVolumes\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Core\Resources\Headers\Resource.h">
+    <ClInclude Include="../../../Source Code/Core\Resources\Headers\Resource.h">
       <Filter>Core\Resources\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Core\Resources\Headers\ResourceCache.h">
+    <ClInclude Include="../../../Source Code/Core\Resources\Headers\ResourceCache.h">
       <Filter>Core\Resources\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Core\Resources\Headers\ResourceDescriptor.h">
+    <ClInclude Include="../../../Source Code/Core\Resources\Headers\ResourceDescriptor.h">
       <Filter>Core\Resources\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Core\Resources\Headers\ResourceLoader.h">
+    <ClInclude Include="../../../Source Code/Core\Resources\Headers\ResourceLoader.h">
       <Filter>Core\Resources\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Core\TemplateLibraries\Headers\HashMap.h">
+    <ClInclude Include="../../../Source Code/Core\TemplateLibraries\Headers\HashMap.h">
       <Filter>Core\TemplateLibraries\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Core\TemplateLibraries\Headers\STLString.h">
+    <ClInclude Include="../../../Source Code/Core\TemplateLibraries\Headers\STLString.h">
       <Filter>Core\TemplateLibraries\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Core\TemplateLibraries\Headers\String.h">
+    <ClInclude Include="../../../Source Code/Core\TemplateLibraries\Headers\String.h">
       <Filter>Core\TemplateLibraries\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Core\TemplateLibraries\Headers\TemplateAllocator.h">
+    <ClInclude Include="../../../Source Code/Core\TemplateLibraries\Headers\TemplateAllocator.h">
       <Filter>Core\TemplateLibraries\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Core\TemplateLibraries\Headers\Vector.h">
+    <ClInclude Include="../../../Source Code/Core\TemplateLibraries\Headers\Vector.h">
       <Filter>Core\TemplateLibraries\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Core\Debugging\Headers\DebugInterface.h">
+    <ClInclude Include="../../../Source Code/Core\Debugging\Headers\DebugInterface.h">
       <Filter>Core\Debugging\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Core\Time\Headers\ApplicationTimer.h">
+    <ClInclude Include="../../../Source Code/Core\Time\Headers\ApplicationTimer.h">
       <Filter>Core\Time\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Core\Time\Headers\FrameRateHandler.h">
+    <ClInclude Include="../../../Source Code/Core\Time\Headers\FrameRateHandler.h">
       <Filter>Core\Time\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Core\Time\Headers\ProfileTimer.h">
+    <ClInclude Include="../../../Source Code/Core\Time\Headers\ProfileTimer.h">
       <Filter>Core\Time\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/ArenaAllocator\arena_allocator.h">
+    <ClInclude Include="../../../Source Code/Libs/ArenaAllocator\arena_allocator.h">
       <Filter>Core\ArenaAllocator</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Utility\Headers\Colours.h">
+    <ClInclude Include="../../../Source Code/Utility\Headers\Colours.h">
       <Filter>Utility\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Utility\Headers\CommandParser.h">
+    <ClInclude Include="../../../Source Code/Utility\Headers\CommandParser.h">
       <Filter>Utility\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Utility\Headers\CRC.h">
+    <ClInclude Include="../../../Source Code/Utility\Headers\CRC.h">
       <Filter>Utility\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Utility\Headers\ImageTools.h">
+    <ClInclude Include="../../../Source Code/Utility\Headers\ImageTools.h">
       <Filter>Utility\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Utility\Headers\Localization.h">
+    <ClInclude Include="../../../Source Code/Utility\Headers\Localization.h">
       <Filter>Utility\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Utility\Headers\MemoryTracker.h">
+    <ClInclude Include="../../../Source Code/Utility\Headers\MemoryTracker.h">
       <Filter>Utility\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Utility\Headers\StateTracker.h">
+    <ClInclude Include="../../../Source Code/Utility\Headers\StateTracker.h">
       <Filter>Utility\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Utility\Headers\TextLabel.h">
+    <ClInclude Include="../../../Source Code/Utility\Headers\TextLabel.h">
       <Filter>Utility\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Utility\Headers\XMLParser.h">
+    <ClInclude Include="../../../Source Code/Utility\Headers\XMLParser.h">
       <Filter>Utility\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/SimpleINI\include/ConvertUTF.h">
+    <ClInclude Include="../../../Source Code/Libs/SimpleINI\include/ConvertUTF.h">
       <Filter>Utility\SimpleINI\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/SimpleINI\include/SimpleIni.h">
+    <ClInclude Include="../../../Source Code/Libs/SimpleINI\include/SimpleIni.h">
       <Filter>Utility\SimpleINI\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/nv_dds\nv_dds.h">
+    <ClInclude Include="../../../Source Code/Libs/nv_dds\nv_dds.h">
       <Filter>Utility\NV_DDS\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/config.h" />
-    <ClInclude Include="..\../Source Code/Core\Headers\ErrorCodes.h">
+    <ClInclude Include="../../../Source Code/config.h" />
+    <ClInclude Include="../../../Source Code/Core\Headers\ErrorCodes.h">
       <Filter>Core\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Core\Headers\ByteBuffer.h">
+    <ClInclude Include="../../../Source Code/Core\Headers\ByteBuffer.h">
       <Filter>Core\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/stdafx.h" />
-    <ClInclude Include="..\../Source Code/Core\Headers\RingBuffer.h">
+    <ClInclude Include="../../../Source Code/stdafx.h" />
+    <ClInclude Include="../../../Source Code/Core\Headers\RingBuffer.h">
       <Filter>Core\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Core\Headers\Hashable.h">
+    <ClInclude Include="../../../Source Code/Core\Headers\Hashable.h">
       <Filter>Core\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\Math\Headers\Dimension.h">
+    <ClInclude Include="../../../Source Code\Core\Math\Headers\Dimension.h">
       <Filter>Core\Math\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\PolyContainer.h">
+    <ClInclude Include="../../../Source Code\Core\TemplateLibraries\Headers\PolyContainer.h">
       <Filter>Core\TemplateLibraries\Headers</Filter>
     </ClInclude>
   </ItemGroup>

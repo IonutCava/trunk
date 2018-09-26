@@ -23,25 +23,25 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\../Source Code/UnitTests\Headers\Defines.h" />
+    <ClInclude Include="../../../Source Code/UnitTests\Headers\Defines.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\../Source Code/stdafx-test-engine.cpp">
+    <ClCompile Include="../../../Source Code/stdafx-test-engine.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_UnityBuild|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/UnitTests\Engine-Tests\main.cpp" />
-    <ClCompile Include="..\../Source Code/UnitTests\Engine-Tests\Tests\ByteBufferTests.cpp" />
-    <ClCompile Include="..\../Source Code/UnitTests\Engine-Tests\Tests\HashTests.cpp" />
-    <ClCompile Include="..\../Source Code/UnitTests\Engine-Tests\Tests\MathMatrixTests.cpp" />
-    <ClCompile Include="..\../Source Code/UnitTests\Engine-Tests\Tests\MathVectorTests.cpp" />
-    <ClCompile Include="..\../Source Code/UnitTests\Engine-Tests\Tests\ScriptingTests.cpp" />
-    <ClCompile Include="..\../Source Code/UnitTests\Engine-Tests\Tests\StringTests.cpp" />
-    <ClCompile Include="..\../Source Code/UnitTests\Engine-Tests\Tests\ThreadingTests.cpp" />
-    <ClCompile Include="..\../Source Code/UnitTests\Engine-Tests\Tests\ConversionTests.cpp" />
+    <ClCompile Include="../../../Source Code/UnitTests\Engine-Tests\main.cpp" />
+    <ClCompile Include="../../../Source Code/UnitTests\Engine-Tests\Tests\ByteBufferTests.cpp" />
+    <ClCompile Include="../../../Source Code/UnitTests\Engine-Tests\Tests\HashTests.cpp" />
+    <ClCompile Include="../../../Source Code/UnitTests\Engine-Tests\Tests\MathMatrixTests.cpp" />
+    <ClCompile Include="../../../Source Code/UnitTests\Engine-Tests\Tests\MathVectorTests.cpp" />
+    <ClCompile Include="../../../Source Code/UnitTests\Engine-Tests\Tests\ScriptingTests.cpp" />
+    <ClCompile Include="../../../Source Code/UnitTests\Engine-Tests\Tests\StringTests.cpp" />
+    <ClCompile Include="../../../Source Code/UnitTests\Engine-Tests\Tests\ThreadingTests.cpp" />
+    <ClCompile Include="../../../Source Code/UnitTests\Engine-Tests\Tests\ConversionTests.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{EF7E2000-C5F8-4345-8082-9F97341F804D}</ProjectGuid>

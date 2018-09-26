@@ -1,618 +1,618 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClInclude Include="..\../Source Code/Platform\Audio\fmod\Headers\FmodWrapper.h">
+    <ClInclude Include="../../../Source Code/Platform\Audio\fmod\Headers\FmodWrapper.h">
       <Filter>Audio\Fmod\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Audio\openAl\Headers\ALWrapper.h">
+    <ClInclude Include="../../../Source Code/Platform\Audio\openAl\Headers\ALWrapper.h">
       <Filter>Audio\OpenAL\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Audio\sdl_mixer\Headers\SDLWrapper.h">
+    <ClInclude Include="../../../Source Code/Platform\Audio\sdl_mixer\Headers\SDLWrapper.h">
       <Filter>Audio\SDL\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Audio\Headers\SFXDevice.h">
+    <ClInclude Include="../../../Source Code/Platform\Audio\Headers\SFXDevice.h">
       <Filter>Audio\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Audio\Headers\AudioAPIWrapper.h">
+    <ClInclude Include="../../../Source Code/Platform\Audio\Headers\AudioAPIWrapper.h">
       <Filter>Audio\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Audio\Headers\AudioDescriptor.h">
+    <ClInclude Include="../../../Source Code/Platform\Audio\Headers\AudioDescriptor.h">
       <Filter>Audio\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Input\Headers\AutoKeyRepeat.h">
+    <ClInclude Include="../../../Source Code/Platform\Input\Headers\AutoKeyRepeat.h">
       <Filter>Input\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Input\Headers\EffectManager.h">
+    <ClInclude Include="../../../Source Code/Platform\Input\Headers\EffectManager.h">
       <Filter>Input\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Input\Headers\EventHandler.h">
+    <ClInclude Include="../../../Source Code/Platform\Input\Headers\EventHandler.h">
       <Filter>Input\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Input\Headers\InputAggregatorInterface.h">
+    <ClInclude Include="../../../Source Code/Platform\Input\Headers\InputAggregatorInterface.h">
       <Filter>Input\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Input\Headers\InputInterface.h">
+    <ClInclude Include="../../../Source Code/Platform\Input\Headers\InputInterface.h">
       <Filter>Input\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Input\Headers\InputVariables.h">
+    <ClInclude Include="../../../Source Code/Platform\Input\Headers\InputVariables.h">
       <Filter>Input\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Input\Headers\JoystickInterface.h">
+    <ClInclude Include="../../../Source Code/Platform\Input\Headers\JoystickInterface.h">
       <Filter>Input\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Threading\Headers\Task.h">
+    <ClInclude Include="../../../Source Code/Platform\Threading\Headers\Task.h">
       <Filter>Threading\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\Headers\GFXDevice.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\Headers\GFXDevice.h">
       <Filter>Video\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\Headers\IMPrimitive.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\Headers\IMPrimitive.h">
       <Filter>Video\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\Headers\RenderAPIEnums.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\Headers\RenderAPIEnums.h">
       <Filter>Video\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\Headers\RenderAPIWrapper.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\Headers\RenderAPIWrapper.h">
       <Filter>Video\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\Headers\RenderStateBlock.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\Headers\RenderStateBlock.h">
       <Filter>Video\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\Buffers\PixelBuffer\Headers\PixelBuffer.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\Buffers\PixelBuffer\Headers\PixelBuffer.h">
       <Filter>Video\Buffers\PixelBuffer\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\Buffers\ShaderBuffer\Headers\ShaderBuffer.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\Buffers\ShaderBuffer\Headers\ShaderBuffer.h">
       <Filter>Video\Buffers\ShaderBuffer\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\Buffers\VertexBuffer\Headers\VertexDataInterface.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\Buffers\VertexBuffer\Headers\VertexDataInterface.h">
       <Filter>Video\Buffers\VertexBuffer\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\Buffers\VertexBuffer\Headers\VertexBuffer.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\Buffers\VertexBuffer\Headers\VertexBuffer.h">
       <Filter>Video\Buffers\VertexBuffer\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\Headers\glBufferLockManager.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\Headers\glBufferLockManager.h">
       <Filter>Video\RenderBackend\OpenGL\Buffers\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\PixelBuffer\Headers\glPixelBuffer.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\PixelBuffer\Headers\glPixelBuffer.h">
       <Filter>Video\RenderBackend\OpenGL\Buffers\PixelBuffer\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\ShaderBuffer\Headers\glUniformBuffer.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\ShaderBuffer\Headers\glUniformBuffer.h">
       <Filter>Video\RenderBackend\OpenGL\Buffers\ShaderBuffer\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\VertexBuffer\Headers\glGenericVertexData.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\VertexBuffer\Headers\glGenericVertexData.h">
       <Filter>Video\RenderBackend\OpenGL\Buffers\VertexBuffer\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\VertexBuffer\Headers\glVertexArray.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\VertexBuffer\Headers\glVertexArray.h">
       <Filter>Video\RenderBackend\OpenGL\Buffers\VertexBuffer\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\Textures\Headers\glSamplerObject.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Textures\Headers\glSamplerObject.h">
       <Filter>Video\RenderBackend\OpenGL\Textures\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\Textures\Headers\glTexture.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Textures\Headers\glTexture.h">
       <Filter>Video\RenderBackend\OpenGL\Textures\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\Text\Headers\glfontstash.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Text\Headers\glfontstash.h">
       <Filter>Video\RenderBackend\OpenGL\Text\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\Text\Headers\fontstash.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Text\Headers\fontstash.h">
       <Filter>Video\RenderBackend\OpenGL\Text\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\Text\Headers\stb_truetype.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Text\Headers\stb_truetype.h">
       <Filter>Video\RenderBackend\OpenGL\Text\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\Shaders\Headers\glShader.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Shaders\Headers\glShader.h">
       <Filter>Video\RenderBackend\OpenGL\Shaders\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\Shaders\Headers\glShaderProgram.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Shaders\Headers\glShaderProgram.h">
       <Filter>Video\RenderBackend\OpenGL\Shaders\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\Headers\glIMPrimitive.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Headers\glIMPrimitive.h">
       <Filter>Video\RenderBackend\OpenGL\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\Headers\glResources.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Headers\glResources.h">
       <Filter>Video\RenderBackend\OpenGL\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\Headers\GLWrapper.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Headers\GLWrapper.h">
       <Filter>Video\RenderBackend\OpenGL\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\glsw\Headers\bstrlib.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\glsw\Headers\bstrlib.h">
       <Filter>Video\RenderBackend\OpenGL\glsw\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\glsw\Headers\glsw.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\glsw\Headers\glsw.h">
       <Filter>Video\RenderBackend\OpenGL\glsw\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\Textures\Headers\Texture.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\Textures\Headers\Texture.h">
       <Filter>Video\Textures\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\Textures\Headers\TextureDescriptor.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\Textures\Headers\TextureDescriptor.h">
       <Filter>Video\Textures\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\Shaders\Headers\ShaderProgram.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\Shaders\Headers\ShaderProgram.h">
       <Filter>Video\Shaders\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\Headers\GFXState.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\Headers\GFXState.h">
       <Filter>Video\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\Headers\glMemoryManager.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\Headers\glMemoryManager.h">
       <Filter>Video\RenderBackend\OpenGL\Buffers\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\Headers\glLockManager.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Headers\glLockManager.h">
       <Filter>Video\RenderBackend\OpenGL\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/GLIM\Declarations.h">
+    <ClInclude Include="../../../Source Code/Libs/GLIM\Declarations.h">
       <Filter>Video\RenderBackend\OpenGL\GLIM\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/GLIM\glim.h">
+    <ClInclude Include="../../../Source Code/Libs/GLIM\glim.h">
       <Filter>Video\RenderBackend\OpenGL\GLIM\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/GLIM\glimBatch.h">
+    <ClInclude Include="../../../Source Code/Libs/GLIM\glimBatch.h">
       <Filter>Video\RenderBackend\OpenGL\GLIM\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/GLIM\glimBatchData.h">
+    <ClInclude Include="../../../Source Code/Libs/GLIM\glimBatchData.h">
       <Filter>Video\RenderBackend\OpenGL\GLIM\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/GLIM\glimInterface.h">
+    <ClInclude Include="../../../Source Code/Libs/GLIM\glimInterface.h">
       <Filter>Video\RenderBackend\OpenGL\GLIM\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Compute\Headers\OpenCLInterface.h">
+    <ClInclude Include="../../../Source Code/Platform\Compute\Headers\OpenCLInterface.h">
       <Filter>Compute\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/SimpleCL\include/simpleCL.h">
+    <ClInclude Include="../../../Source Code/Libs/SimpleCL\include/simpleCL.h">
       <Filter>Compute\SimpleCL\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Headers\ByteConverter.h">
+    <ClInclude Include="../../../Source Code/Platform\Headers\ByteConverter.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Headers\PlatformDefines.h">
+    <ClInclude Include="../../../Source Code/Platform\Headers\PlatformDefines.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Headers\PlatformDefinesApple.h">
+    <ClInclude Include="../../../Source Code/Platform\Headers\PlatformDefinesApple.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Headers\PlatformDefinesUnix.h">
+    <ClInclude Include="../../../Source Code/Platform\Headers\PlatformDefinesUnix.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Headers\PlatformDefinesWindows.h">
+    <ClInclude Include="../../../Source Code/Platform\Headers\PlatformDefinesWindows.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\Headers\GraphicsResource.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\Headers\GraphicsResource.h">
       <Filter>Video\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Headers\DisplayWindow.h">
+    <ClInclude Include="../../../Source Code/Platform\Headers\DisplayWindow.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Headers\ConditionalWait.h">
+    <ClInclude Include="../../../Source Code/Platform\Headers\ConditionalWait.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Core\MemoryManagement\Headers\TrackedObject.h">
+    <ClInclude Include="../../../Source Code/Core\MemoryManagement\Headers\TrackedObject.h">
       <Filter>Memory\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/Allocator\Allocator.h">
+    <ClInclude Include="../../../Source Code/Libs/Allocator\Allocator.h">
       <Filter>Memory\Allocator</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/Allocator\DataTypes.h">
+    <ClInclude Include="../../../Source Code/Libs/Allocator\DataTypes.h">
       <Filter>Memory\Allocator</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/Allocator\Fault.h">
+    <ClInclude Include="../../../Source Code/Libs/Allocator\Fault.h">
       <Filter>Memory\Allocator</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/Allocator\stl_allocator.h">
+    <ClInclude Include="../../../Source Code/Libs/Allocator\stl_allocator.h">
       <Filter>Memory\Allocator</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/Allocator\xallocator.h">
+    <ClInclude Include="../../../Source Code/Libs/Allocator\xallocator.h">
       <Filter>Memory\Allocator</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\Headers\glBufferImpl.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\Headers\glBufferImpl.h">
       <Filter>Video\RenderBackend\OpenGL\Buffers\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\Buffers\RenderTarget\Headers\RenderTarget.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\Buffers\RenderTarget\Headers\RenderTarget.h">
       <Filter>Video\Buffers\RenderTarget\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\RenderTarget\Headers\glFramebuffer.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\RenderTarget\Headers\glFramebuffer.h">
       <Filter>Video\RenderBackend\OpenGL\Buffers\RenderTarget\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\Buffers\RenderTarget\Headers\RTAttachment.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\Buffers\RenderTarget\Headers\RTAttachment.h">
       <Filter>Video\Buffers\RenderTarget\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\Buffers\RenderTarget\Headers\RTDrawDescriptor.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\Buffers\RenderTarget\Headers\RTDrawDescriptor.h">
       <Filter>Video\Buffers\RenderTarget\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\Buffers\VertexBuffer\GenericBuffer\Headers\GenericVertexData.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\Buffers\VertexBuffer\GenericBuffer\Headers\GenericVertexData.h">
       <Filter>Video\Buffers\VertexBuffer\GenericBuffer\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\Buffers\VertexBuffer\GenericBuffer\Headers\AttributeDescriptor.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\Buffers\VertexBuffer\GenericBuffer\Headers\AttributeDescriptor.h">
       <Filter>Video\Buffers\VertexBuffer\GenericBuffer\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\Headers\GFXRTPool.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\Headers\GFXRTPool.h">
       <Filter>Video\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\Headers\GenericDrawCommand.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\Headers\GenericDrawCommand.h">
       <Filter>Video\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\Headers\TextureData.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\Headers\TextureData.h">
       <Filter>Video\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\Headers\RenderPackage.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\Headers\RenderPackage.h">
       <Filter>Video\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\Headers\glGenericBuffer.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\Headers\glGenericBuffer.h">
       <Filter>Video\RenderBackend\OpenGL\Buffers\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/RenderDoc-Manager\renderdoc_app.h">
+    <ClInclude Include="../../../Source Code/Libs/RenderDoc-Manager\renderdoc_app.h">
       <Filter>Video\RenderDocManager</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/RenderDoc-Manager\RenderDocManager.h">
+    <ClInclude Include="../../../Source Code/Libs/RenderDoc-Manager\RenderDocManager.h">
       <Filter>Video\RenderDocManager</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\Headers\GFXShaderData.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\Headers\GFXShaderData.h">
       <Filter>Video\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\Buffers\RenderTarget\Headers\RTAttachmentPool.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\Buffers\RenderTarget\Headers\RTAttachmentPool.h">
       <Filter>Video\Buffers\RenderTarget\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Headers\PlatformDataTypes.h">
+    <ClInclude Include="../../../Source Code/Platform\Headers\PlatformDataTypes.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Threading\Headers\SharedMutex.h">
+    <ClInclude Include="../../../Source Code/Platform\Threading\Headers\SharedMutex.h">
       <Filter>Threading\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\File\Headers\FileManagement.h">
+    <ClInclude Include="../../../Source Code/Platform\File\Headers\FileManagement.h">
       <Filter>File\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\File\Headers\FileUpdateMonitor.h">
+    <ClInclude Include="../../../Source Code/Platform\File\Headers\FileUpdateMonitor.h">
       <Filter>File\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Threading\Headers\ThreadPool.h">
+    <ClInclude Include="../../../Source Code/Platform\Threading\Headers\ThreadPool.h">
       <Filter>Threading\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\Headers\Pipeline.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\Headers\Pipeline.h">
       <Filter>Video\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\File\Headers\FileWithPath.h">
+    <ClInclude Include="../../../Source Code/Platform\File\Headers\FileWithPath.h">
       <Filter>File\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\VertexBuffer\Headers\glVAOCache.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\VertexBuffer\Headers\glVAOCache.h">
       <Filter>Video\RenderBackend\OpenGL\Buffers\VertexBuffer\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\VertexBuffer\Headers\glVAOPool.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\VertexBuffer\Headers\glVAOPool.h">
       <Filter>Video\RenderBackend\OpenGL\Buffers\VertexBuffer\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Headers\PlatformRuntime.h">
+    <ClInclude Include="../../../Source Code/Platform\Headers\PlatformRuntime.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\Headers\glHardwareQuery.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Headers\glHardwareQuery.h">
       <Filter>Video\RenderBackend\OpenGL\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\Headers\RenderStagePass.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\Headers\RenderStagePass.h">
       <Filter>Video\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\Headers\OcclusionQuery.h" />
-    <ClInclude Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\Headers\glHardwareQueryPool.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\Headers\OcclusionQuery.h" />
+    <ClInclude Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Headers\glHardwareQueryPool.h">
       <Filter>Video\RenderBackend\OpenGL\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\Headers\BlendingProperties.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\Headers\BlendingProperties.h">
       <Filter>Video\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\Headers\CommandBuffer.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\Headers\CommandBuffer.h">
       <Filter>Video\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\Headers\PushConstants.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\Headers\PushConstants.h">
       <Filter>Video\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\Headers\DescriptorSets.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\Headers\DescriptorSets.h">
       <Filter>Video\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\Headers\ClipPlanes.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\Headers\ClipPlanes.h">
       <Filter>Video\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\Headers\CommandBufferPool.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\Headers\CommandBufferPool.h">
       <Filter>Video\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\Headers\Commands.h">
+    <ClInclude Include="../../../Source Code/Platform\Video\Headers\Commands.h">
       <Filter>Video\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Platform\File\Headers\FileWatcherManager.h">
+    <ClInclude Include="../../../Source Code\Platform\File\Headers\FileWatcherManager.h">
       <Filter>File\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Platform\Video\Headers\PushConstant.h">
+    <ClInclude Include="../../../Source Code\Platform\Video\Headers\PushConstant.h">
       <Filter>Video\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Platform\Headers\PlatformDefinesOS.h">
+    <ClInclude Include="../../../Source Code\Platform\Headers\PlatformDefinesOS.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Platform\Video\RenderBackend\None\Headers\NoneWrapper.h">
+    <ClInclude Include="../../../Source Code\Platform\Video\RenderBackend\None\Headers\NoneWrapper.h">
       <Filter>Video\RenderBackend\None\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Platform\Video\RenderBackend\Vulkan\Headers\VKWrapper.h">
+    <ClInclude Include="../../../Source Code\Platform\Video\RenderBackend\Vulkan\Headers\VKWrapper.h">
       <Filter>Video\RenderBackend\Vulkan\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Platform\Video\RenderBackend\Vulkan\Headers\VKPlaceholderObjects.h">
+    <ClInclude Include="../../../Source Code\Platform\Video\RenderBackend\Vulkan\Headers\VKPlaceholderObjects.h">
       <Filter>Video\RenderBackend\Vulkan\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Platform\Video\RenderBackend\None\Headers\NonePlaceholderObjects.h">
+    <ClInclude Include="../../../Source Code\Platform\Video\RenderBackend\None\Headers\NonePlaceholderObjects.h">
       <Filter>Video\RenderBackend\None\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\../Source Code/Platform\Input\AutoKeyRepeat.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Input\AutoKeyRepeat.cpp">
       <Filter>Input</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\GFXDevice.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\GFXDevice.cpp">
       <Filter>Video</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\GFXDeviceDebug.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\GFXDeviceDebug.cpp">
       <Filter>Video</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\GFXDeviceState.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\GFXDeviceState.cpp">
       <Filter>Video</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\IMPrimitive.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\IMPrimitive.cpp">
       <Filter>Video</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Input\EffectManager.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Input\EffectManager.cpp">
       <Filter>Input</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Input\EventHandler.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Input\EventHandler.cpp">
       <Filter>Input</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Input\InputInterface.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Input\InputInterface.cpp">
       <Filter>Input</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\RenderStateBlock.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\RenderStateBlock.cpp">
       <Filter>Video</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Threading\Task.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Threading\Task.cpp">
       <Filter>Threading</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Audio\openAl\ALWrapper.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Audio\openAl\ALWrapper.cpp">
       <Filter>Audio\OpenAL</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Audio\sdl_mixer\SDLWrapper.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Audio\sdl_mixer\SDLWrapper.cpp">
       <Filter>Audio\SDL</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\GLError.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\GLError.cpp">
       <Filter>Video\RenderBackend\OpenGL</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\glIMPrimitive.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\glIMPrimitive.cpp">
       <Filter>Video\RenderBackend\OpenGL</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\glResources.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\glResources.cpp">
       <Filter>Video\RenderBackend\OpenGL</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\GLStates.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\GLStates.cpp">
       <Filter>Video\RenderBackend\OpenGL</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\GLWrapper.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\GLWrapper.cpp">
       <Filter>Video\RenderBackend\OpenGL</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\PixelBuffer\glPixelBuffer.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\PixelBuffer\glPixelBuffer.cpp">
       <Filter>Video\RenderBackend\OpenGL\Buffers\PixelBuffer</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\ShaderBuffer\glUniformBuffer.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\ShaderBuffer\glUniformBuffer.cpp">
       <Filter>Video\RenderBackend\OpenGL\Buffers\ShaderBuffer</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\VertexBuffer\glGenericVertexData.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\VertexBuffer\glGenericVertexData.cpp">
       <Filter>Video\RenderBackend\OpenGL\Buffers\VertexBuffer</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\VertexBuffer\glVertexArray.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\VertexBuffer\glVertexArray.cpp">
       <Filter>Video\RenderBackend\OpenGL\Buffers\VertexBuffer</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\glBufferLockManager.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\glBufferLockManager.cpp">
       <Filter>Video\RenderBackend\OpenGL\Buffers</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\Textures\glSamplerOject.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Textures\glSamplerOject.cpp">
       <Filter>Video\RenderBackend\OpenGL\Textures</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\Textures\glTexture.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Textures\glTexture.cpp">
       <Filter>Video\RenderBackend\OpenGL\Textures</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\Shaders\glShader.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Shaders\glShader.cpp">
       <Filter>Video\RenderBackend\OpenGL\Shaders</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\Shaders\glShaderProgram.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Shaders\glShaderProgram.cpp">
       <Filter>Video\RenderBackend\OpenGL\Shaders</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\glsw\bstrlib.c">
+    <ClCompile Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\glsw\bstrlib.c">
       <Filter>Video\RenderBackend\OpenGL\glsw</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\glsw\glsw.c">
+    <ClCompile Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\glsw\glsw.c">
       <Filter>Video\RenderBackend\OpenGL\glsw</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\Textures\Texture.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\Textures\Texture.cpp">
       <Filter>Video\Textures</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\Shaders\ShaderProgram.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\Shaders\ShaderProgram.cpp">
       <Filter>Video\Shaders</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\GFXState.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\GFXState.cpp">
       <Filter>Video</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Audio\SFXDevice.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Audio\SFXDevice.cpp">
       <Filter>Audio</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\glMemoryManager.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\glMemoryManager.cpp">
       <Filter>Video\RenderBackend\OpenGL\Buffers</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\GFXDeviceDraw.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\GFXDeviceDraw.cpp">
       <Filter>Video</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\Buffers\ShaderBuffer\ShaderBuffer.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\Buffers\ShaderBuffer\ShaderBuffer.cpp">
       <Filter>Video\Buffers\ShaderBuffer</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\glLockManager.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\glLockManager.cpp">
       <Filter>Video\RenderBackend\OpenGL</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\SDLWindowWrapper.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\SDLWindowWrapper.cpp">
       <Filter>Video\RenderBackend\OpenGL</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Libs/GLIM\glimBatch.cpp">
+    <ClCompile Include="../../../Source Code/Libs/GLIM\glimBatch.cpp">
       <Filter>Video\RenderBackend\OpenGL\GLIM</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Libs/GLIM\glimBatchAttributes.cpp">
+    <ClCompile Include="../../../Source Code/Libs/GLIM\glimBatchAttributes.cpp">
       <Filter>Video\RenderBackend\OpenGL\GLIM</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Libs/GLIM\glimBatchData.cpp">
+    <ClCompile Include="../../../Source Code/Libs/GLIM\glimBatchData.cpp">
       <Filter>Video\RenderBackend\OpenGL\GLIM</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Libs/GLIM\glimD3D11.cpp">
+    <ClCompile Include="../../../Source Code/Libs/GLIM\glimD3D11.cpp">
       <Filter>Video\RenderBackend\OpenGL\GLIM</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Libs/GLIM\Stuff.cpp">
+    <ClCompile Include="../../../Source Code/Libs/GLIM\Stuff.cpp">
       <Filter>Video\RenderBackend\OpenGL\GLIM</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Compute\OpenCLInterface.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Compute\OpenCLInterface.cpp">
       <Filter>Compute</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Libs/SimpleCL\src\simpleCL.c">
+    <ClCompile Include="../../../Source Code/Libs/SimpleCL\src\simpleCL.c">
       <Filter>Compute\SimpleCL</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\PlatformDefines.cpp" />
-    <ClCompile Include="..\../Source Code/Platform\PlatformDefinesApple.cpp" />
-    <ClCompile Include="..\../Source Code/Platform\PlatformDefinesUnix.cpp" />
-    <ClCompile Include="..\../Source Code/Platform\PlatformDefinesWindows.cpp" />
-    <ClCompile Include="..\../Source Code/Platform\Video\Buffers\VertexBuffer\VertexBuffer.cpp">
+    <ClCompile Include="../../../Source Code/Platform\PlatformDefines.cpp" />
+    <ClCompile Include="../../../Source Code/Platform\PlatformDefinesApple.cpp" />
+    <ClCompile Include="../../../Source Code/Platform\PlatformDefinesUnix.cpp" />
+    <ClCompile Include="../../../Source Code/Platform\PlatformDefinesWindows.cpp" />
+    <ClCompile Include="../../../Source Code/Platform\Video\Buffers\VertexBuffer\VertexBuffer.cpp">
       <Filter>Video\Buffers\VertexBuffer</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\DisplayWindow.cpp" />
-    <ClCompile Include="..\../Source Code/Core\MemoryManagement\TrackedObject.cpp">
+    <ClCompile Include="../../../Source Code/Platform\DisplayWindow.cpp" />
+    <ClCompile Include="../../../Source Code/Core\MemoryManagement\TrackedObject.cpp">
       <Filter>Memory</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Libs/Allocator\Allocator.cpp">
+    <ClCompile Include="../../../Source Code/Libs/Allocator\Allocator.cpp">
       <Filter>Memory\Allocator</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\Buffers\VertexBuffer\VertexDataInterface.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\Buffers\VertexBuffer\VertexDataInterface.cpp">
       <Filter>Video\Buffers\VertexBuffer</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Libs/Allocator\Fault.cpp">
+    <ClCompile Include="../../../Source Code/Libs/Allocator\Fault.cpp">
       <Filter>Memory\Allocator</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Libs/Allocator\xallocator.cpp">
+    <ClCompile Include="../../../Source Code/Libs/Allocator\xallocator.cpp">
       <Filter>Memory\Allocator</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Input\InputAggregatorInterface.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Input\InputAggregatorInterface.cpp">
       <Filter>Input</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\glBufferImpl.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\glBufferImpl.cpp">
       <Filter>Video\RenderBackend\OpenGL\Buffers</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\Buffers\RenderTarget\RenderTarget.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\Buffers\RenderTarget\RenderTarget.cpp">
       <Filter>Video\Buffers\RenderTarget</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\RenderTarget\glFramebuffer.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\RenderTarget\glFramebuffer.cpp">
       <Filter>Video\RenderBackend\OpenGL\Buffers\RenderTarget</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\Buffers\RenderTarget\RTAttachment.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\Buffers\RenderTarget\RTAttachment.cpp">
       <Filter>Video\Buffers\RenderTarget</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\Buffers\RenderTarget\RTDrawDescriptor.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\Buffers\RenderTarget\RTDrawDescriptor.cpp">
       <Filter>Video\Buffers\RenderTarget</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\Buffers\VertexBuffer\GenericBuffer\GenericVertexData.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\Buffers\VertexBuffer\GenericBuffer\GenericVertexData.cpp">
       <Filter>Video\Buffers\VertexBuffer\GenericBuffer</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\Buffers\VertexBuffer\GenericBuffer\AttributeDescriptor.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\Buffers\VertexBuffer\GenericBuffer\AttributeDescriptor.cpp">
       <Filter>Video\Buffers\VertexBuffer\GenericBuffer</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\GFXRTPool.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\GFXRTPool.cpp">
       <Filter>Video</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\GFXDeviceObjects.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\GFXDeviceObjects.cpp">
       <Filter>Video</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\GenericDrawCommand.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\GenericDrawCommand.cpp">
       <Filter>Video</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\GraphicsResource.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\GraphicsResource.cpp">
       <Filter>Video</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\TextureData.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\TextureData.cpp">
       <Filter>Video</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\RenderPackage.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\RenderPackage.cpp">
       <Filter>Video</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\glGenericBuffer.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\glGenericBuffer.cpp">
       <Filter>Video\RenderBackend\OpenGL\Buffers</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Libs/RenderDoc-Manager\RenderDocManager.cpp">
+    <ClCompile Include="../../../Source Code/Libs/RenderDoc-Manager\RenderDocManager.cpp">
       <Filter>Video\RenderDocManager</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\GFXShaderData.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\GFXShaderData.cpp">
       <Filter>Video</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\Buffers\RenderTarget\RTAttachmentPool.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\Buffers\RenderTarget\RTAttachmentPool.cpp">
       <Filter>Video\Buffers\RenderTarget</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\File\FileManagementPaths.cpp">
+    <ClCompile Include="../../../Source Code/Platform\File\FileManagementPaths.cpp">
       <Filter>File</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\File\FileManagementFunctions.cpp">
+    <ClCompile Include="../../../Source Code/Platform\File\FileManagementFunctions.cpp">
       <Filter>File</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Libs/simplefilewatcher/Source\FileWatcher.cpp">
+    <ClCompile Include="../../../Source Code/Libs/simplefilewatcher/Source\FileWatcher.cpp">
       <Filter>File\FileWatcher</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Libs/simplefilewatcher/Source\FileWatcherLinux.cpp">
+    <ClCompile Include="../../../Source Code/Libs/simplefilewatcher/Source\FileWatcherLinux.cpp">
       <Filter>File\FileWatcher</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Libs/simplefilewatcher/Source\FileWatcherOSX.cpp">
+    <ClCompile Include="../../../Source Code/Libs/simplefilewatcher/Source\FileWatcherOSX.cpp">
       <Filter>File\FileWatcher</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Libs/simplefilewatcher/Source\FileWatcherWin32.cpp">
+    <ClCompile Include="../../../Source Code/Libs/simplefilewatcher/Source\FileWatcherWin32.cpp">
       <Filter>File\FileWatcher</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/stdafx-platform.cpp" />
-    <ClCompile Include="..\../Source Code/Platform\Input\JoystickInterface.cpp">
+    <ClCompile Include="../../../Source Code/stdafx-platform.cpp" />
+    <ClCompile Include="../../../Source Code/Platform\Input\JoystickInterface.cpp">
       <Filter>Input</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\Pipeline.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\Pipeline.cpp">
       <Filter>Video</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\File\FileUpdateMonitor.cpp">
+    <ClCompile Include="../../../Source Code/Platform\File\FileUpdateMonitor.cpp">
       <Filter>File</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\VertexBuffer\glVAOCache.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\VertexBuffer\glVAOCache.cpp">
       <Filter>Video\RenderBackend\OpenGL\Buffers\VertexBuffer</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\VertexBuffer\glVAOPool.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\VertexBuffer\glVAOPool.cpp">
       <Filter>Video\RenderBackend\OpenGL\Buffers\VertexBuffer</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\PlatformRuntime.cpp" />
-    <ClCompile Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\glHardwareQuery.cpp">
+    <ClCompile Include="../../../Source Code/Platform\PlatformRuntime.cpp" />
+    <ClCompile Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\glHardwareQuery.cpp">
       <Filter>Video\RenderBackend\OpenGL</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\glHardwareQueryPool.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\glHardwareQueryPool.cpp">
       <Filter>Video\RenderBackend\OpenGL</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\CommandBuffer.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\CommandBuffer.cpp">
       <Filter>Video</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\CommandBufferPool.cpp">
+    <ClCompile Include="../../../Source Code/Platform\Video\CommandBufferPool.cpp">
       <Filter>Video</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Platform\Video\RenderAPIWrapper.cpp">
+    <ClCompile Include="../../../Source Code\Platform\Video\RenderAPIWrapper.cpp">
       <Filter>Video</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Platform\File\FileWatcherManager.cpp">
+    <ClCompile Include="../../../Source Code\Platform\File\FileWatcherManager.cpp">
       <Filter>File</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Platform\Video\PushConstants.cpp">
+    <ClCompile Include="../../../Source Code\Platform\Video\PushConstants.cpp">
       <Filter>Video</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Platform\Video\PushConstant.cpp">
+    <ClCompile Include="../../../Source Code\Platform\Video\PushConstant.cpp">
       <Filter>Video</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\UnityBuildEngine.cpp" />
-    <ClCompile Include="..\..\Source Code\Platform\Video\DescriptorSets.cpp">
+    <ClCompile Include="../../../Source Code\UnityBuildEngine.cpp" />
+    <ClCompile Include="../../../Source Code\Platform\Video\DescriptorSets.cpp">
       <Filter>Video</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Platform\Threading\ThreadPool.cpp">
+    <ClCompile Include="../../../Source Code\Platform\Threading\ThreadPool.cpp">
       <Filter>Threading</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Platform\Video\RenderBackend\None\NoneWrapper.cpp">
+    <ClCompile Include="../../../Source Code\Platform\Video\RenderBackend\None\NoneWrapper.cpp">
       <Filter>Video\RenderBackend\None</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Platform\Video\RenderBackend\Vulkan\VKWrapper.cpp">
+    <ClCompile Include="../../../Source Code\Platform\Video\RenderBackend\Vulkan\VKWrapper.cpp">
       <Filter>Video\RenderBackend\Vulkan</Filter>
     </ClCompile>
   </ItemGroup>
@@ -847,216 +847,216 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\../Source Code/Platform\Video\Headers\GFXDevice.inl">
+    <None Include="../../../Source Code/Platform\Video\Headers\GFXDevice.inl">
       <Filter>Video\Headers</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\blur.glsl">
+    <None Include="../../../assets\shaders\GLSL\blur.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\deferredPreview.glsl">
+    <None Include="../../../assets\shaders\GLSL\deferredPreview.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\DeferredShadingPass1.glsl">
+    <None Include="../../../assets\shaders\GLSL\DeferredShadingPass1.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\DeferredShadingPass2.glsl">
+    <None Include="../../../assets\shaders\GLSL\DeferredShadingPass2.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\DepthOfField.glsl">
+    <None Include="../../../assets\shaders\GLSL\DepthOfField.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\depthPass.glsl">
+    <None Include="../../../assets\shaders\GLSL\depthPass.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\DepthRangesConstruct.glsl">
+    <None Include="../../../assets\shaders\GLSL\DepthRangesConstruct.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\fbPreview.glsl">
+    <None Include="../../../assets\shaders\GLSL\fbPreview.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\FXAA.glsl">
+    <None Include="../../../assets\shaders\GLSL\FXAA.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\grass.glsl">
+    <None Include="../../../assets\shaders\GLSL\grass.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\HiZConstruct.glsl">
+    <None Include="../../../assets\shaders\GLSL\HiZConstruct.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\ImmediateModeEmulation.glsl">
+    <None Include="../../../assets\shaders\GLSL\ImmediateModeEmulation.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\instanceCull.glsl">
+    <None Include="../../../assets\shaders\GLSL\instanceCull.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\particles.glsl">
+    <None Include="../../../assets\shaders\GLSL\particles.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\passThrough.glsl">
+    <None Include="../../../assets\shaders\GLSL\passThrough.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\postProcessing.glsl">
+    <None Include="../../../assets\shaders\GLSL\postProcessing.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\README">
+    <None Include="../../../assets\shaders\GLSL\README">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\sky.glsl">
+    <None Include="../../../assets\shaders\GLSL\sky.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\SSAOPass.glsl">
+    <None Include="../../../assets\shaders\GLSL\SSAOPass.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\terrain.glsl">
+    <None Include="../../../assets\shaders\GLSL\terrain.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\water.glsl">
+    <None Include="../../../assets\shaders\GLSL\water.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\common\lightInput.cmn">
+    <None Include="../../../assets\shaders\GLSL\common\lightInput.cmn">
       <Filter>Video\ShaderSource\GLSL\common</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\common\nodeBufferedInput.cmn">
+    <None Include="../../../assets\shaders\GLSL\common\nodeBufferedInput.cmn">
       <Filter>Video\ShaderSource\GLSL\common</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\common\nodeDataInput.cmn">
+    <None Include="../../../assets\shaders\GLSL\common\nodeDataInput.cmn">
       <Filter>Video\ShaderSource\GLSL\common</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\BRDF.frag">
+    <None Include="../../../assets\shaders\GLSL\fragmentAtoms\BRDF.frag">
       <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\bumpMapping.frag">
+    <None Include="../../../assets\shaders\GLSL\fragmentAtoms\bumpMapping.frag">
       <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\lightData.frag">
+    <None Include="../../../assets\shaders\GLSL\fragmentAtoms\lightData.frag">
       <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\materialData.frag">
+    <None Include="../../../assets\shaders\GLSL\fragmentAtoms\materialData.frag">
       <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_lighting.frag">
+    <None Include="../../../assets\shaders\GLSL\fragmentAtoms\phong_lighting.frag">
       <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\shadow_directional.frag">
+    <None Include="../../../assets\shaders\GLSL\fragmentAtoms\shadow_directional.frag">
       <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\shadow_point.frag">
+    <None Include="../../../assets\shaders\GLSL\fragmentAtoms\shadow_point.frag">
       <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\shadow_spot.frag">
+    <None Include="../../../assets\shaders\GLSL\fragmentAtoms\shadow_spot.frag">
       <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\shadowMapping.frag">
+    <None Include="../../../assets\shaders\GLSL\fragmentAtoms\shadowMapping.frag">
       <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\terrainSplatting.frag">
+    <None Include="../../../assets\shaders\GLSL\fragmentAtoms\terrainSplatting.frag">
       <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\texturing.frag">
+    <None Include="../../../assets\shaders\GLSL\fragmentAtoms\texturing.frag">
       <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\utility.frag">
+    <None Include="../../../assets\shaders\GLSL\fragmentAtoms\utility.frag">
       <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\geometryAtoms\inOut.geom">
+    <None Include="../../../assets\shaders\GLSL\geometryAtoms\inOut.geom">
       <Filter>Video\ShaderSource\GLSL\geometryAtoms</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\boneTransforms.vert">
+    <None Include="../../../assets\shaders\GLSL\vertexAtoms\boneTransforms.vert">
       <Filter>Video\ShaderSource\GLSL\vertexAtoms</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\foliage.vert">
+    <None Include="../../../assets\shaders\GLSL\vertexAtoms\foliage.vert">
       <Filter>Video\ShaderSource\GLSL\vertexAtoms</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\lightingDefaults.vert">
+    <None Include="../../../assets\shaders\GLSL\vertexAtoms\lightingDefaults.vert">
       <Filter>Video\ShaderSource\GLSL\vertexAtoms</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\vbInputData.vert">
+    <None Include="../../../assets\shaders\GLSL\vertexAtoms\vbInputData.vert">
       <Filter>Video\ShaderSource\GLSL\vertexAtoms</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\vertexDefault.vert">
+    <None Include="../../../assets\shaders\GLSL\vertexAtoms\vertexDefault.vert">
       <Filter>Video\ShaderSource\GLSL\vertexAtoms</Filter>
     </None>
-    <None Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\Shaders\Headers\glShaderProgram.inl">
+    <None Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Shaders\Headers\glShaderProgram.inl">
       <Filter>Video\RenderBackend\OpenGL\Shaders\Headers</Filter>
     </None>
-    <None Include="..\../Source Code/Platform\Video\RenderBackend\OpenGL\Headers\glResources.inl">
+    <None Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Headers\glResources.inl">
       <Filter>Video\RenderBackend\OpenGL\Headers</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\HiZOcclusionCull.glsl">
+    <None Include="../../../assets\shaders\GLSL\HiZOcclusionCull.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\common\HiZCullingAlgorithm.cmn">
+    <None Include="../../../assets\shaders\GLSL\common\HiZCullingAlgorithm.cmn">
       <Filter>Video\ShaderSource\GLSL\common</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\lightCull.glsl">
+    <None Include="../../../assets\shaders\GLSL\lightCull.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\lightImpostorShader.glsl">
+    <None Include="../../../assets\shaders\GLSL\lightImpostorShader.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\luminanceCalc.glsl">
+    <None Include="../../../assets\shaders\GLSL\luminanceCalc.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\bloom.glsl">
+    <None Include="../../../assets\shaders\GLSL\bloom.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\SMAA.glsl">
+    <None Include="../../../assets\shaders\GLSL\SMAA.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\Fxaa3_11.frag">
+    <None Include="../../../assets\shaders\GLSL\fragmentAtoms\Fxaa3_11.frag">
       <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\display.glsl">
+    <None Include="../../../assets\shaders\GLSL\display.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="..\../Source Code/Platform\Headers\DisplayWindow.inl">
+    <None Include="../../../Source Code/Platform\Headers\DisplayWindow.inl">
       <Filter>Headers</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\material.glsl">
+    <None Include="../../../assets\shaders\GLSL\material.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\pbr.frag">
+    <None Include="../../../assets\shaders\GLSL\fragmentAtoms\pbr.frag">
       <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
     </None>
-    <None Include="..\../Source Code/Platform\Video\Headers\GFXShaderData.inl">
+    <None Include="../../../Source Code/Platform\Video\Headers\GFXShaderData.inl">
       <Filter>Video\Headers</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\velocityCalc.frag">
+    <None Include="../../../assets\shaders\GLSL\fragmentAtoms\velocityCalc.frag">
       <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\velocityCalc.frag">
+    <None Include="../../../assets\shaders\GLSL\fragmentAtoms\velocityCalc.frag">
       <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
     </None>
-    <None Include="..\../Source Code/Platform\File\Headers\FileManagement.inl">
+    <None Include="../../../Source Code/Platform\File\Headers\FileManagement.inl">
       <Filter>File\Headers</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\terrainPlane.glsl">
+    <None Include="../../../assets\shaders\GLSL\terrainPlane.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\terrainTess.glsl">
+    <None Include="../../../assets\shaders\GLSL\terrainTess.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\OITComposition.glsl">
+    <None Include="../../../assets\shaders\GLSL\OITComposition.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="..\../Source Code/Platform\Video\Headers\GenericDrawCommand.inl">
+    <None Include="../../../Source Code/Platform\Video\Headers\GenericDrawCommand.inl">
       <Filter>Video\Headers</Filter>
     </None>
-    <None Include="..\../Source Code/Platform\Video\Headers\CommandBuffer.inl">
+    <None Include="../../../Source Code/Platform\Video\Headers\CommandBuffer.inl">
       <Filter>Video\Headers</Filter>
     </None>
-    <None Include="..\../Source Code/Platform\Video\Headers\CommandBufferPool.inl">
+    <None Include="../../../Source Code/Platform\Video\Headers\CommandBufferPool.inl">
       <Filter>Video\Headers</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\IMGUI.glsl">
+    <None Include="../../../assets\shaders\GLSL\IMGUI.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="..\..\Source Code\Platform\Headers\PlatformRuntime.inl">
+    <None Include="../../../Source Code\Platform\Headers\PlatformRuntime.inl">
       <Filter>Headers</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="..\..\assets\shaders\GLSL\toneMap.glsl">
+    <Text Include="../../../assets\shaders\GLSL\toneMap.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </Text>
   </ItemGroup>

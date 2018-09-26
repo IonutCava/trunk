@@ -146,7 +146,7 @@ namespace Divide {
                 if (node != nullptr) {
                     ImGui::Text(node->name().c_str());
 
-                    vector<EditorComponent*>& editorComp = Attorney::SceneGraphNodeEditor::editorComponents(*node);
+                    vectorEASTL<EditorComponent*>& editorComp = Attorney::SceneGraphNodeEditor::editorComponents(*node);
                     for (EditorComponent* comp : editorComp) {
                         if (ImGui::CollapsingHeader(comp->name().c_str()))
                         {

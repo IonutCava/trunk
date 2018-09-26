@@ -23,18 +23,18 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\../Source Code/stdafx-test-platform.cpp">
+    <ClCompile Include="../../../Source Code/stdafx-test-platform.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_UnityBuild|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/UnitTests\Platform-Tests\main.cpp" />
-    <ClCompile Include="..\../Source Code/UnitTests\Platform-Tests\Tests\FileManagement.cpp" />
+    <ClCompile Include="../../../Source Code/UnitTests\Platform-Tests\main.cpp" />
+    <ClCompile Include="../../../Source Code/UnitTests\Platform-Tests\Tests\FileManagement.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\../Source Code/UnitTests\Headers\Defines.h" />
+    <ClInclude Include="../../../Source Code/UnitTests\Headers\Defines.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{0F94F3A5-3023-45A4-A003-F427AC82D869}</ProjectGuid>

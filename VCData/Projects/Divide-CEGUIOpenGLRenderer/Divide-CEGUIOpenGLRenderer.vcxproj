@@ -264,44 +264,44 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/GeometryBufferBase.h" />
-    <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/GL.h" />
-    <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/GL3FBOTextureTarget.h" />
-    <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/GL3GeometryBuffer.h" />
-    <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/GL3Renderer.h" />
-    <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/GlmPimpl.h" />
-    <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/RendererBase.h" />
-    <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/RenderTarget.h" />
-    <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/Shader.h" />
-    <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/ShaderManager.h" />
-    <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/StandardShaderFrag.h" />
-    <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/StandardShaderVert.h" />
-    <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/StateChangeWrapper.h" />
-    <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/Texture.h" />
-    <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/TextureTarget.h" />
-    <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/ViewportTarget.h" />
+    <ClInclude Include="../../../Source Code/Libs/CEGUIRenderer\OpenGL\include/GeometryBufferBase.h" />
+    <ClInclude Include="../../../Source Code/Libs/CEGUIRenderer\OpenGL\include/GL.h" />
+    <ClInclude Include="../../../Source Code/Libs/CEGUIRenderer\OpenGL\include/GL3FBOTextureTarget.h" />
+    <ClInclude Include="../../../Source Code/Libs/CEGUIRenderer\OpenGL\include/GL3GeometryBuffer.h" />
+    <ClInclude Include="../../../Source Code/Libs/CEGUIRenderer\OpenGL\include/GL3Renderer.h" />
+    <ClInclude Include="../../../Source Code/Libs/CEGUIRenderer\OpenGL\include/GlmPimpl.h" />
+    <ClInclude Include="../../../Source Code/Libs/CEGUIRenderer\OpenGL\include/RendererBase.h" />
+    <ClInclude Include="../../../Source Code/Libs/CEGUIRenderer\OpenGL\include/RenderTarget.h" />
+    <ClInclude Include="../../../Source Code/Libs/CEGUIRenderer\OpenGL\include/Shader.h" />
+    <ClInclude Include="../../../Source Code/Libs/CEGUIRenderer\OpenGL\include/ShaderManager.h" />
+    <ClInclude Include="../../../Source Code/Libs/CEGUIRenderer\OpenGL\include/StandardShaderFrag.h" />
+    <ClInclude Include="../../../Source Code/Libs/CEGUIRenderer\OpenGL\include/StandardShaderVert.h" />
+    <ClInclude Include="../../../Source Code/Libs/CEGUIRenderer\OpenGL\include/StateChangeWrapper.h" />
+    <ClInclude Include="../../../Source Code/Libs/CEGUIRenderer\OpenGL\include/Texture.h" />
+    <ClInclude Include="../../../Source Code/Libs/CEGUIRenderer\OpenGL\include/TextureTarget.h" />
+    <ClInclude Include="../../../Source Code/Libs/CEGUIRenderer\OpenGL\include/ViewportTarget.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\src\GeometryBufferBase.cpp" />
-    <ClCompile Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\src\GL.cpp" />
-    <ClCompile Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\src\GL3FBOTextureTarget.cpp" />
-    <ClCompile Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\src\GL3GeometryBuffer.cpp" />
-    <ClCompile Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\src\GL3Renderer.cpp" />
-    <ClCompile Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\src\RendererBase.cpp" />
-    <ClCompile Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\src\Shader.cpp" />
-    <ClCompile Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\src\ShaderManager.cpp" />
-    <ClCompile Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\src\StateChangeWrapper.cpp" />
-    <ClCompile Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\src\stdafx-cegui-renderer-opengl.cpp">
+    <ClCompile Include="../../../Source Code/Libs/CEGUIRenderer\OpenGL\src\GeometryBufferBase.cpp" />
+    <ClCompile Include="../../../Source Code/Libs/CEGUIRenderer\OpenGL\src\GL.cpp" />
+    <ClCompile Include="../../../Source Code/Libs/CEGUIRenderer\OpenGL\src\GL3FBOTextureTarget.cpp" />
+    <ClCompile Include="../../../Source Code/Libs/CEGUIRenderer\OpenGL\src\GL3GeometryBuffer.cpp" />
+    <ClCompile Include="../../../Source Code/Libs/CEGUIRenderer\OpenGL\src\GL3Renderer.cpp" />
+    <ClCompile Include="../../../Source Code/Libs/CEGUIRenderer\OpenGL\src\RendererBase.cpp" />
+    <ClCompile Include="../../../Source Code/Libs/CEGUIRenderer\OpenGL\src\Shader.cpp" />
+    <ClCompile Include="../../../Source Code/Libs/CEGUIRenderer\OpenGL\src\ShaderManager.cpp" />
+    <ClCompile Include="../../../Source Code/Libs/CEGUIRenderer\OpenGL\src\StateChangeWrapper.cpp" />
+    <ClCompile Include="../../../Source Code/Libs/CEGUIRenderer\OpenGL\src\stdafx-cegui-renderer-opengl.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_UnityBuild|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\src\Texture.cpp" />
-    <ClCompile Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\src\TextureTarget.cpp" />
-    <ClCompile Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\src\ViewportTarget.cpp" />
-    <ClCompile Include="..\..\Source Code\UnityBuildEngine.cpp">
+    <ClCompile Include="../../../Source Code/Libs/CEGUIRenderer\OpenGL\src\Texture.cpp" />
+    <ClCompile Include="../../../Source Code/Libs/CEGUIRenderer\OpenGL\src\TextureTarget.cpp" />
+    <ClCompile Include="../../../Source Code/Libs/CEGUIRenderer\OpenGL\src\ViewportTarget.cpp" />
+    <ClCompile Include="../../../Source Code\UnityBuildEngine.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -310,7 +310,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\src\RenderTarget.inl" />
+    <None Include="../../../Source Code/Libs/CEGUIRenderer\OpenGL\src\RenderTarget.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

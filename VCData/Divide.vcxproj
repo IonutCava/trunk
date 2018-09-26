@@ -19,27 +19,27 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\../Source Code/HotReloading\HotReloadingApple.cpp">
+    <ClCompile Include="../Source Code/HotReloading\HotReloadingApple.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/HotReloading\HotReloadingUnix.cpp">
+    <ClCompile Include="../Source Code/HotReloading\HotReloadingUnix.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/HotReloading\HotReloadingWindows.cpp" />
-    <ClCompile Include="..\../Source Code/main.cpp" />
-    <ClCompile Include="..\../Source Code/stdafx-executable.cpp">
+    <ClCompile Include="../Source Code/HotReloading\HotReloadingWindows.cpp" />
+    <ClCompile Include="../Source Code/main.cpp" />
+    <ClCompile Include="../Source Code/stdafx-executable.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\UnityBuildEngine.cpp">
+    <ClCompile Include="../Source Code\UnityBuildEngine.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -47,11 +47,11 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\../Source Code/HotReloading\Headers\HotReloading.h" />
-    <ClInclude Include="..\../Source Code/HotReloading\Headers\HotReloadingApple.h" />
-    <ClInclude Include="..\../Source Code/HotReloading\Headers\HotReloadingUnix.h" />
-    <ClInclude Include="..\../Source Code/HotReloading\Headers\HotReloadingWindows.h" />
-    <ClInclude Include="..\../Source Code/ToDo.h" />
+    <ClInclude Include="../Source Code/HotReloading\Headers\HotReloading.h" />
+    <ClInclude Include="../Source Code/HotReloading\Headers\HotReloadingApple.h" />
+    <ClInclude Include="../Source Code/HotReloading\Headers\HotReloadingUnix.h" />
+    <ClInclude Include="../Source Code/HotReloading\Headers\HotReloadingWindows.h" />
+    <ClInclude Include="../Source Code/ToDo.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{87F22E92-2988-41FA-9E23-00033408A869}</ProjectGuid>
@@ -200,7 +200,7 @@
       <LargeAddressAware>true</LargeAddressAware>
       <SubSystem>NotSet</SubSystem>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
-      <ProgramDatabaseFile>$(OutDir)VCData\Build\$(TargetName).pdb</ProgramDatabaseFile>
+      <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
       <ProfileGuidedDatabase>$(OutDir)VCData\Build\$(TargetName).pgd</ProfileGuidedDatabase>
     </Link>
     <Lib>
@@ -264,7 +264,7 @@
       <LargeAddressAware>true</LargeAddressAware>
       <SubSystem>NotSet</SubSystem>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
-      <ProgramDatabaseFile>$(OutDir)VCData\Build\$(TargetName).pdb</ProgramDatabaseFile>
+      <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
       <ProfileGuidedDatabase>$(OutDir)VCData\Build\$(TargetName).pgd</ProfileGuidedDatabase>
     </Link>
     <Lib>
@@ -322,7 +322,7 @@
       <AdditionalOptions> /ignore:4099 %(AdditionalOptions)</AdditionalOptions>
       <SubSystem>NotSet</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
-      <ProgramDatabaseFile>$(OutDir)VCData\Build\$(TargetName).pdb</ProgramDatabaseFile>
+      <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
       <ProfileGuidedDatabase>$(OutDir)VCData\Build\$(TargetName).pgd</ProfileGuidedDatabase>
     </Link>
     <Lib>
@@ -377,7 +377,7 @@
       <SubSystem>NotSet</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
-      <ProgramDatabaseFile>$(OutDir)VCData\Build\$(TargetName).pdb</ProgramDatabaseFile>
+      <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
       <ProfileGuidedDatabase>$(OutDir)VCData\Build\$(TargetName).pgd</ProfileGuidedDatabase>
     </Link>
     <Lib>

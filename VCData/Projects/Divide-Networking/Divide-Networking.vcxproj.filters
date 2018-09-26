@@ -7,29 +7,29 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\../Source Code/Networking\ASIO.cpp" />
-    <ClCompile Include="..\../Source Code/Networking\Client.cpp" />
-    <ClCompile Include="..\../Source Code/Networking\tcp_session_tpl.cpp" />
-    <ClCompile Include="..\../Source Code/stdafx-networking.cpp" />
-    <ClCompile Include="..\..\Source Code\UnityBuildEngine.cpp" />
+    <ClCompile Include="../../../Source Code/Networking\ASIO.cpp" />
+    <ClCompile Include="../../../Source Code/Networking\Client.cpp" />
+    <ClCompile Include="../../../Source Code/Networking\tcp_session_tpl.cpp" />
+    <ClCompile Include="../../../Source Code/stdafx-networking.cpp" />
+    <ClCompile Include="../../../Source Code\UnityBuildEngine.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\../Source Code/Networking\Headers\ASIO.h">
+    <ClInclude Include="../../../Source Code/Networking\Headers\ASIO.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Networking\Headers\ByteConverter.h">
+    <ClInclude Include="../../../Source Code/Networking\Headers\ByteConverter.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Networking\Headers\Client.h">
+    <ClInclude Include="../../../Source Code/Networking\Headers\Client.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Networking\Headers\OPCodesTpl.h">
+    <ClInclude Include="../../../Source Code/Networking\Headers\OPCodesTpl.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Networking\Headers\tcp_session_tpl.h">
+    <ClInclude Include="../../../Source Code/Networking\Headers\tcp_session_tpl.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Networking\Headers\WorldPacket.h">
+    <ClInclude Include="../../../Source Code/Networking\Headers\WorldPacket.h">
       <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>
