@@ -211,6 +211,7 @@ class Light : public SceneNode {
         _type = type;
     }
 
+    void editorFieldChanged(EditorComponentField& field) override;
    protected:
     bool _directionAndConeChanged;
     /// Used to generate spot light penumbra using D3D's dual-cone method

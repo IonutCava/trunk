@@ -23,8 +23,25 @@ namespace {
         }
         return false;
     }
-
 };
+
+const char* GetSceneNodeTypeName(SceneNodeType type) {
+    switch (type) {
+        case SceneNodeType::TYPE_ROOT: return "ROOT";
+        case SceneNodeType::TYPE_OBJECT3D: return "OBJECT3D";
+        case SceneNodeType::TYPE_TRANSFORM: return "TRANSFORM";
+        case SceneNodeType::TYPE_WATER: return "WATER";
+        case SceneNodeType::TYPE_LIGHT: return "LIGHT";
+        case SceneNodeType::TYPE_TRIGGER: return "TRIGGER";
+        case SceneNodeType::TYPE_PARTICLE_EMITTER: return "PARTICLE_EMITTER";
+        case SceneNodeType::TYPE_SKY: return "SKY";
+        case SceneNodeType::TYPE_VEGETATION_GRASS: return "VEGETATION_GRASS";
+        case SceneNodeType::TYPE_VEGETATION_TREES: return "VEGETATION_TREES";
+    }
+
+    return "";
+}
+
 
 SceneNode::SceneNode(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, const SceneNodeType& type)
     : SceneNode(parentCache, descriptorHash, name, name, "", type)
@@ -36,8 +53,12 @@ SceneNode::SceneNode(ResourceCache& parentCache, size_t descriptorHash, const st
      _parentCache(parentCache),
      _materialTemplate(nullptr),
      _type(type),
-     _LODcount(1)  ///<Defaults to 1 LOD level
+     _LODcount(1),
+     _editorComponent(GetSceneNodeTypeName(type))///<Defaults to 1 LOD level
 {
+    getEditorComponent().onChangedCbk([this](EditorComponentField& field) {
+        editorFieldChanged(field);
+    });
 }
 
 SceneNode::~SceneNode()
@@ -120,6 +141,10 @@ void SceneNode::setMaterialTpl(const Material_ptr& material) {
 bool SceneNode::unload() {
     setMaterialTpl(nullptr);
     return true;
+}
+
+void SceneNode::editorFieldChanged(EditorComponentField& field) {
+    ACKNOWLEDGE_UNUSED(field);
 }
 
 void SceneNode::buildDrawCommands(SceneGraphNode& sgn,

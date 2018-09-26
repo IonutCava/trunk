@@ -211,9 +211,10 @@ SceneGraphNode* SceneGraphNode::addNode(const SceneGraphNodeDescriptor& descript
     sceneGraphNode->setParent(*this);
     if (sceneGraphNode->_node->getState() == ResourceState::RES_LOADED) {
         // Do all the post load operations on the SceneNode
-        // Pass a reference to the newly created SceneGraphNode in case we need
+        // Pass a reference to the newly created SceneGraphNode in case we needWut?
         // transforms or bounding boxes
         Attorney::SceneNodeSceneGraph::postLoad(*sceneGraphNode->_node, *sceneGraphNode);
+        _editorComponents.emplace_back(&Attorney::SceneNodeSceneGraph::getEditorComponent(*sceneGraphNode->_node));
         invalidateRelationshipCache();
     } else if (sceneGraphNode->_node->getState() == ResourceState::RES_LOADING) {
         setUpdateFlag(UpdateFlag::THREADED_LOAD);

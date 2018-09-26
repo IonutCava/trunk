@@ -39,6 +39,7 @@
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingSphere.h"
 #include "Platform/Video/Headers/RenderAPIWrapper.h"
+#include "ECS/Components/Headers/EditorComponent.h"
 
 namespace Divide {
 
@@ -80,6 +81,8 @@ enum class SceneNodeType : U16 {
     TYPE_VEGETATION_TREES,   //< trees node (to do later)
     COUNT
 };
+
+const char* GetSceneNodeTypeName(SceneNodeType type);
 
 class NOINITVTABLE SceneNode : public CachedResource {
     friend class Attorney::SceneNodeSceneGraph;
@@ -145,11 +148,17 @@ class NOINITVTABLE SceneNode : public CachedResource {
 
     virtual void setBoundsChanged();
 
+    EditorComponent& getEditorComponent() { return _editorComponent; }
+    const EditorComponent& getEditorComponent() const { return _editorComponent; }
+
    protected:
+     virtual void editorFieldChanged(EditorComponentField& field);
      virtual void onNetworkSend(SceneGraphNode& sgn, WorldPacket& dataOut) const;
      virtual void onNetworkReceive(SceneGraphNode& sgn, WorldPacket& dataIn) const;
 
    protected:
+    EditorComponent _editorComponent;
+
     ResourceCache& _parentCache;
     /// The various states needed for rendering
     SceneNodeRenderState _renderState;
@@ -193,6 +202,10 @@ class SceneNodeSceneGraph {
                                const vec3<F32>& posOffset,
                                const mat4<F32>& rotationOffset) {
         node.onCameraUpdate(sgn, cameraNameHash, posOffset, rotationOffset);
+    }
+
+    static EditorComponent& getEditorComponent(SceneNode& node) {
+        return node._editorComponent;
     }
 
     friend class Divide::SceneGraph;

@@ -32,6 +32,9 @@ Light::Light(ResourceCache& parentCache, size_t descriptorHash, const stringImpl
 
     _renderState.addToDrawExclusionMask(RenderStage::SHADOW);
 
+    getEditorComponent().registerField("Position and Range", &_positionAndRange, EditorComponentFieldType::PUSH_TYPE, false, GFX::PushConstantType::VEC4);
+    getEditorComponent().registerField("Direction and Cone", &_directionAndCone, EditorComponentFieldType::PUSH_TYPE, false, GFX::PushConstantType::VEC4);
+
     _enabled = true;
 }
 
@@ -117,6 +120,12 @@ void Light::updateBoundsInternal() {
         _boundingBox.multiply(0.5f);
     }
     SceneNode::updateBoundsInternal();
+}
+
+void Light::editorFieldChanged(EditorComponentField& field) {
+    if (field._data == &_directionAndCone) {
+        _directionAndConeChanged = true;
+    }
 }
 
 };

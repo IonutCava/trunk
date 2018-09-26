@@ -280,23 +280,6 @@ bool SceneGraph::load(ByteBuffer& inputBuffer) {
 }
 
 namespace {
-    const char* getSceneNodeTypeName(SceneNodeType type) {
-        switch (type) {
-            case SceneNodeType::TYPE_ROOT: return "ROOT";
-            case SceneNodeType::TYPE_OBJECT3D: return "OBJECT3D";
-            case SceneNodeType::TYPE_TRANSFORM: return "TRANSFORM";
-            case SceneNodeType::TYPE_WATER: return "WATER";
-            case SceneNodeType::TYPE_LIGHT: return "LIGHT";
-            case SceneNodeType::TYPE_TRIGGER: return "TRIGGER";
-            case SceneNodeType::TYPE_PARTICLE_EMITTER: return "PARTICLE_EMITTER";
-            case SceneNodeType::TYPE_SKY: return "SKY";
-            case SceneNodeType::TYPE_VEGETATION_GRASS: return "VEGETATION_GRASS";
-            case SceneNodeType::TYPE_VEGETATION_TREES: return "VEGETATION_TREES";
-        }
-
-        return "";
-    }
-
     boost::property_tree::ptree dumpSGNtoAssets(const SceneGraphNode& node) {
         boost::property_tree::ptree entry;
         entry.put("<xmlattr>.name", node.name());
@@ -305,7 +288,7 @@ namespace {
         if (nodeType == SceneNodeType::TYPE_OBJECT3D) {
             entry.put("<xmlattr>.type", node.getNode<Object3D>()->getObjectType()._to_string());
         } else {
-            entry.put("<xmlattr>.type", getSceneNodeTypeName(nodeType));
+            entry.put("<xmlattr>.type", GetSceneNodeTypeName(nodeType));
         }
 
         node.forEachChild([&entry](const SceneGraphNode& child) {
