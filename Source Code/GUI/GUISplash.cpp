@@ -18,14 +18,16 @@ GUISplash::GUISplash(ResourceCache& cache,
                      const vec2<U16>& dimensions) 
     : _dimensions(dimensions)
 {
-    SamplerDescriptor splashSampler;
-    splashSampler.setMinFilter(TextureFilter::NEAREST);
-    splashSampler.setAnisotropy(0);
-    splashSampler.setWrapMode(TextureWrap::CLAMP);
-    // splash shader doesn't do gamma correction since that's a post processing step
-    // so fake gamma correction by loading an sRGB image as a linear one.
-    splashSampler.toggleSRGBColourSpace(false);
-
+    SamplerDescriptor splashSampler = {};
+    splashSampler._wrapU = TextureWrap::CLAMP;
+    splashSampler._wrapV = TextureWrap::CLAMP;
+    splashSampler._wrapW = TextureWrap::CLAMP;
+    splashSampler._minFilter = TextureFilter::NEAREST;
+    splashSampler._magFilter = TextureFilter::NEAREST;
+    splashSampler._anisotropyLevel = 0;
+    // splash shader doesn't do gamma correction since that's a post processing step so fake gamma correction by loading an sRGB image as a linear one.
+    splashSampler._srgb = false;
+    
     TextureDescriptor splashDescriptor(TextureType::TEXTURE_2D);
     splashDescriptor.setSampler(splashSampler);
 

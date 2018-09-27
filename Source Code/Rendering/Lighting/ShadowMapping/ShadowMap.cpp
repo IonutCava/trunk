@@ -62,9 +62,13 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
     for (U32 i = 0; i < to_base(ShadowType::COUNT); ++i) {
         switch (static_cast<ShadowType>(i)) {
             case ShadowType::SINGLE: {
-                SamplerDescriptor depthMapSampler;
-                depthMapSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
-                depthMapSampler.setFilters(TextureFilter::LINEAR);
+                SamplerDescriptor depthMapSampler = {};
+                depthMapSampler._wrapU = TextureWrap::CLAMP_TO_EDGE;
+                depthMapSampler._wrapV = TextureWrap::CLAMP_TO_EDGE;
+                depthMapSampler._wrapW = TextureWrap::CLAMP_TO_EDGE;
+                depthMapSampler._minFilter = TextureFilter::LINEAR;
+                depthMapSampler._magFilter = TextureFilter::LINEAR;
+                depthMapSampler._anisotropyLevel = 0;
                 depthMapSampler._useRefCompare = true;
                 depthMapSampler._cmpFunc = ComparisonFunction::LEQUAL;
 
@@ -91,10 +95,13 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
             } break;
 
             case ShadowType::LAYERED: {
-                SamplerDescriptor depthMapSampler;
-                depthMapSampler.setFilters(TextureFilter::LINEAR_MIPMAP_LINEAR);
-                depthMapSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
-                depthMapSampler.setAnisotropy(settings.anisotropicFilteringLevel);
+                SamplerDescriptor depthMapSampler = {};
+                depthMapSampler._wrapU = TextureWrap::CLAMP_TO_EDGE;
+                depthMapSampler._wrapV = TextureWrap::CLAMP_TO_EDGE;
+                depthMapSampler._wrapW = TextureWrap::CLAMP_TO_EDGE;
+                depthMapSampler._minFilter = TextureFilter::LINEAR_MIPMAP_LINEAR;
+                depthMapSampler._magFilter = TextureFilter::LINEAR;
+                depthMapSampler._anisotropyLevel = settings.anisotropicFilteringLevel;
 
                 TextureDescriptor depthMapDescriptor(TextureType::TEXTURE_2D_ARRAY,
                                                      GFXImageFormat::RG32F,
@@ -119,9 +126,13 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
 
             case ShadowType::CUBEMAP: {
                 // Default filters, LINEAR is OK for this
-                SamplerDescriptor depthMapSampler;
-                depthMapSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
-                depthMapSampler.setFilters(TextureFilter::LINEAR);
+                SamplerDescriptor depthMapSampler = {};
+                depthMapSampler._wrapU = TextureWrap::CLAMP_TO_EDGE;
+                depthMapSampler._wrapV = TextureWrap::CLAMP_TO_EDGE;
+                depthMapSampler._wrapW = TextureWrap::CLAMP_TO_EDGE;
+                depthMapSampler._minFilter = TextureFilter::LINEAR;
+                depthMapSampler._magFilter = TextureFilter::LINEAR;
+                depthMapSampler._anisotropyLevel = 0;
                 depthMapSampler._useRefCompare = true;  //< Use compare function
                 depthMapSampler._cmpFunc = ComparisonFunction::LEQUAL;  //< Use less or equal
 

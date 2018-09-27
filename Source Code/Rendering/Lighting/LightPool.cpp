@@ -97,11 +97,14 @@ void LightPool::init() {
     lightImpostorShader.setThreadedLoading(false);
     _lightImpostorShader = CreateResource<ShaderProgram>(_parentScene.resourceCache(), lightImpostorShader);
 
-    SamplerDescriptor iconSampler;
-    iconSampler.setMinFilter(TextureFilter::LINEAR);
-    iconSampler.setAnisotropy(0);
-    iconSampler.setWrapMode(TextureWrap::REPEAT);
-    iconSampler.toggleSRGBColourSpace(true);
+    SamplerDescriptor iconSampler = {};
+    iconSampler._wrapU = TextureWrap::REPEAT;
+    iconSampler._wrapV = TextureWrap::REPEAT;
+    iconSampler._wrapW = TextureWrap::REPEAT;
+    iconSampler._minFilter = TextureFilter::LINEAR;
+    iconSampler._magFilter = TextureFilter::LINEAR;
+    iconSampler._srgb = true;
+    iconSampler._anisotropyLevel = 0;
 
     TextureDescriptor iconDescriptor(TextureType::TEXTURE_2D);
     iconDescriptor.setSampler(iconSampler);

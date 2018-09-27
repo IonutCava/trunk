@@ -885,17 +885,15 @@ namespace {
         stringImpl img_name(textureName.substr(textureName.find_last_of('/') + 1));
         stringImpl pathName(textureName.substr(0, textureName.rfind("/")));
 
-        TextureWrap wrapU = getWrapModeByName(pt.get<stringImpl>(textureNode + ".MapU", "REPEAT"));
-        TextureWrap wrapV = getWrapModeByName(pt.get<stringImpl>(textureNode + ".MapV", "REPEAT"));
-        TextureWrap wrapW = getWrapModeByName(pt.get<stringImpl>(textureNode + ".MapW", "REPEAT"));
-        TextureFilter minFilterValue = getFilterByName(pt.get<stringImpl>(textureNode + ".minFilter", "LINEAR"));
-        TextureFilter magFilterValue = getFilterByName(pt.get<stringImpl>(textureNode + ".magFilter", "LINEAR"));
-        U8 anisotropy = to_U8(pt.get(textureNode + ".anisotropy", 0U));
+        SamplerDescriptor sampDesc = {};
 
-        SamplerDescriptor sampDesc;
-        sampDesc.setWrapMode(wrapU, wrapV, wrapW);
-        sampDesc.setFilters(minFilterValue, magFilterValue);
-        sampDesc.setAnisotropy(anisotropy);
+        sampDesc._wrapU = getWrapModeByName(pt.get<stringImpl>(textureNode + ".MapU", "REPEAT"));
+        sampDesc._wrapV = getWrapModeByName(pt.get<stringImpl>(textureNode + ".MapV", "REPEAT"));
+        sampDesc._wrapW = getWrapModeByName(pt.get<stringImpl>(textureNode + ".MapW", "REPEAT"));
+        sampDesc._minFilter = getFilterByName(pt.get<stringImpl>(textureNode + ".minFilter", "LINEAR"));
+        sampDesc._magFilter = getFilterByName(pt.get<stringImpl>(textureNode + ".magFilter", "LINEAR"));
+        sampDesc._anisotropyLevel = to_U8(pt.get(textureNode + ".anisotropy", 0U));
+
 
         TextureDescriptor texDesc(TextureType::TEXTURE_2D);
         texDesc.setSampler(sampDesc);
@@ -951,12 +949,12 @@ void Material::saveToXML(const stringImpl& entryName, boost::property_tree::ptre
             if (usage == ShaderProgram::TextureUsage::UNIT1) {
                 pt.put(textureNode + ".usage", getTextureOperationName(_operation));
             }
-            pt.put(textureNode + ".MapU", getWrapModeName(sampler.wrapU()));
-            pt.put(textureNode + ".MapV", getWrapModeName(sampler.wrapV()));
-            pt.put(textureNode + ".MapW", getWrapModeName(sampler.wrapW()));
-            pt.put(textureNode + ".minFilter", getFilterName(sampler.minFilter()));
-            pt.put(textureNode + ".magFilter", getFilterName(sampler.magFilter()));
-            pt.put(textureNode + ".anisotropy", to_U32(sampler.anisotropyLevel()));
+            pt.put(textureNode + ".MapU", getWrapModeName(sampler._wrapU));
+            pt.put(textureNode + ".MapV", getWrapModeName(sampler._wrapV));
+            pt.put(textureNode + ".MapW", getWrapModeName(sampler._wrapW));
+            pt.put(textureNode + ".minFilter", getFilterName(sampler._minFilter));
+            pt.put(textureNode + ".magFilter", getFilterName(sampler._magFilter));
+            pt.put(textureNode + ".anisotropy", to_U32(sampler._anisotropyLevel));
         }
     }
 }

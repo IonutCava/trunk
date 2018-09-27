@@ -38,113 +38,36 @@
 #include "Utility/Headers/Colours.h"
 
 namespace Divide {
-/// This class is used to define all of the sampler settings needed to use a texture
+/// This struct is used to define all of the sampler settings needed to use a texture
 /// We do not define copy constructors as we must define descriptors only with POD
-class SamplerDescriptor : public Hashable {
-   public:
-    /// The constructor specifies the type so it can be used later for
-    /// down-casting if needed
-    SamplerDescriptor() noexcept
-    {
-        setDefaultValues();
-    }
+struct SamplerDescriptor : public Hashable {
+   
+    SamplerDescriptor() = default;
+    ~SamplerDescriptor() = default;
 
-    virtual ~SamplerDescriptor()
-    {
+    /// Texture filtering mode
+    TextureFilter _minFilter = TextureFilter::LINEAR_MIPMAP_LINEAR;
+    TextureFilter _magFilter = TextureFilter::LINEAR;
+    /// Texture wrap mode (Or S-R-T)
+    TextureWrap _wrapU = TextureWrap::REPEAT;
+    TextureWrap _wrapV = TextureWrap::REPEAT;
+    TextureWrap _wrapW = TextureWrap::REPEAT;
 
-    }
+    /// Use SRGB colour space
+    bool _srgb = false;
+    bool _useRefCompare = false;  ///<use red channel as comparison (e.g. for shadows)
+    ComparisonFunction _cmpFunc = ComparisonFunction::LEQUAL;  ///<Used by RefCompare
+    /// The value must be in the range [0...255] and is automatically clamped by the max HW supported level
+    U8 _anisotropyLevel = 255;
+    /// OpenGL eg: used by TEXTURE_MIN_LOD and TEXTURE_MAX_LOD
+    F32 _minLOD = -1000.f;
+    F32 _maxLOD = 1000.f;
+    /// OpenGL eg: used by TEXTURE_LOD_BIAS
+    F32 _biasLOD = 0.f;
+    /// Used with CLAMP_TO_BORDER as the background colour outside of the texture border
+    FColour _borderColour = DefaultColours::BLACK;
 
-    /// All of these are default values that should be safe for any kind of
-    /// texture usage
-    inline void setDefaultValues() {
-        setWrapMode();
-        setFilters(TextureFilter::LINEAR_MIPMAP_LINEAR, TextureFilter::LINEAR);
-        setAnisotropy(16);
-        setLOD();
-        // Everything we load should be SRGB. Everything we create at runtime shouldn't
-        toggleSRGBColourSpace(false);
-        // The following 2 are mainly used by depthmaps for hardware comparisons
-        _cmpFunc = ComparisonFunction::LEQUAL;
-        _useRefCompare = false;
-        _borderColour.set(DefaultColours::BLACK);
-    }
 
-    SamplerDescriptor* clone() const {
-        return MemoryManager_NEW SamplerDescriptor(*this);
-    }
-
-    /*
-    *  Sampler states (LOD, wrap modes, anisotropy levels, etc
-    */
-    inline void setAnisotropy(U8 value = 0) { _anisotropyLevel = value; }
-
-    inline void setLOD(F32 minLOD = -1000.f, F32 maxLOD = 1000.f,
-                       F32 biasLOD = 0.f) {
-        _minLOD = minLOD;
-        _maxLOD = maxLOD;
-        _biasLOD = biasLOD;
-    }
-
-    inline void setBorderColour(const FColour& colour) {
-        _borderColour.set(colour);
-    }
-
-    inline void setWrapMode(TextureWrap wrapUVW = TextureWrap::REPEAT) {
-        setWrapModeU(wrapUVW);
-        setWrapModeV(wrapUVW);
-        setWrapModeW(wrapUVW);
-    }
-
-    inline void setWrapMode(TextureWrap wrapU, TextureWrap wrapV,
-                            TextureWrap wrapW = TextureWrap::REPEAT) {
-        setWrapModeU(wrapU);
-        setWrapModeV(wrapV);
-        setWrapModeW(wrapW);
-    }
-
-    inline void setWrapMode(I32 wrapU, I32 wrapV, I32 wrapW) {
-        setWrapMode(static_cast<TextureWrap>(wrapU),
-                    static_cast<TextureWrap>(wrapV),
-                    static_cast<TextureWrap>(wrapW));
-    }
-
-    inline void setWrapModeU(TextureWrap wrapU) { _wrapU = wrapU; }
-    inline void setWrapModeV(TextureWrap wrapV) { _wrapV = wrapV; }
-    inline void setWrapModeW(TextureWrap wrapW) { _wrapW = wrapW; }
-
-    inline void setFilters(TextureFilter filters) {
-        setMinFilter(filters);
-        switch (filters) {
-            case TextureFilter::LINEAR_MIPMAP_LINEAR:
-            case TextureFilter::LINEAR_MIPMAP_NEAREST:
-                setMagFilter(TextureFilter::LINEAR);
-                break;
-            case TextureFilter::NEAREST_MIPMAP_LINEAR:
-            case TextureFilter::NEAREST_MIPMAP_NEAREST:
-                setMagFilter(TextureFilter::NEAREST);
-                break;
-            default:
-                setMagFilter(filters);
-                break;
-        }
-    }
-
-    inline void setFilters(TextureFilter minFilter, TextureFilter magFilter) {
-        setMinFilter(minFilter);
-        setMagFilter(magFilter);
-    }
-
-    inline void setMinFilter(TextureFilter minFilter) {
-        _minFilter = minFilter;
-    }
-
-    inline void setMagFilter(TextureFilter magFilter) {
-        assert(magFilter == TextureFilter::LINEAR ||
-               magFilter == TextureFilter::NEAREST);
-        _magFilter = magFilter;
-    }
-
-    inline void toggleSRGBColourSpace(const bool state) { _srgb = state; }
 
     inline size_t getHash() const override {
         _hash = 0;
@@ -166,55 +89,18 @@ class SamplerDescriptor : public Hashable {
         Util::Hash_combine(_hash, _borderColour.a);
         return _hash;
     }
-    /*
-    *  "Internal" data
-    */
 
-    // HW comparison settings
-    ComparisonFunction _cmpFunc;  ///<Used by RefCompare
-    bool _useRefCompare;  ///<use red channel as comparison (e.g. for shadows)
-
-    inline TextureWrap wrapU() const { return _wrapU; }
-    inline TextureWrap wrapV() const { return _wrapV; }
-    inline TextureWrap wrapW() const { return _wrapW; }
-    inline TextureFilter minFilter() const { return _minFilter; }
-    inline TextureFilter magFilter() const { return _magFilter; }
-    inline F32 minLOD() const { return _minLOD; }
-    inline F32 maxLOD() const { return _maxLOD; }
-    inline F32 biasLOD() const { return _biasLOD; }
-    inline bool srgb() const { return _srgb; }
-    inline U8 anisotropyLevel() const { return _anisotropyLevel; }
-    inline bool generateMipMaps() const { 
+    inline bool generateMipMaps() const {
         return _minFilter != TextureFilter::LINEAR &&
                _minFilter != TextureFilter::NEAREST &&
                _minFilter != TextureFilter::COUNT;
     }
-
-    inline const FColour& borderColour() const { return _borderColour; }
-
-   protected:
-    // Sampler states
-    /// Texture filtering mode
-    TextureFilter _minFilter, _magFilter;
-    /// Texture wrap mode (Or S-R-T)
-    TextureWrap _wrapU, _wrapV, _wrapW;
-    /// Use SRGB colour space
-    bool _srgb;
-    /// The value must be in the range [0...255] and is automatically clamped by
-    /// the max HW supported level
-    U8 _anisotropyLevel;
-    /// OpenGL eg: used by TEXTURE_MIN_LOD and TEXTURE_MAX_LOD
-    F32 _minLOD, _maxLOD;
-    /// OpenGL eg: used by TEXTURE_LOD_BIAS
-    F32 _biasLOD;
-    /// Used with CLAMP_TO_BORDER as the background colour outside of the texture border
-    FColour _borderColour;
 };
 
 /// Use to define a texture with details such as type, image formats, etc
 /// We do not define copy constructors as we must define descriptors only with
 /// POD
-class TextureDescriptor : public PropertyDescriptor {
+class TextureDescriptor final : public PropertyDescriptor {
    public:
     TextureDescriptor() noexcept
         : TextureDescriptor(TextureType::COUNT,
@@ -259,20 +145,6 @@ class TextureDescriptor : public PropertyDescriptor {
 
     TextureDescriptor* clone() const {
         return MemoryManager_NEW TextureDescriptor(*this);
-    }
-
-    /// Pixel alignment and miplevels are set to match what the HW sets by
-    /// default
-    inline void setDefaultValues() {
-        setLayerCount(1);
-        setSampler(SamplerDescriptor());
-        _internalFormat = GFXImageFormat::RGBA8;
-        _baseFormat = baseFromInternalFormat(_internalFormat);
-        _dataType = GFXDataFormat::UNSIGNED_BYTE;
-        _type = TextureType::TEXTURE_2D;
-        _mipLevels.set(0u, 1u);
-        _msaaSamples = -1;
-        _autoMipMaps = true;
     }
 
     inline void setLayerCount(U32 layerCount) { 
@@ -356,23 +228,22 @@ class TextureDescriptor : public PropertyDescriptor {
         return hash;
     }
 
-    U32 _layerCount;
-    TextureType _type;
-    bool _compressed;
+    U32 _layerCount = 1;
+    TextureType _type = TextureType::TEXTURE_2D;
+    bool _compressed = false;
     /// Automatically compute mip mpas (overwrites any manual mipmap computation)
-    bool _autoMipMaps;
+    bool _autoMipMaps = true;
     /// The sampler used to initialize this texture with
-    SamplerDescriptor _samplerDescriptor;
+    SamplerDescriptor _samplerDescriptor = {};
     /// Mip levels
-    vec2<U16> _mipLevels;
+    vec2<U16> _mipLevels = {0u, 1u};
     /// How many MSAA samples to use: -1 (default) = max available, 0 = disabled
-    I16 _msaaSamples;
+    I16 _msaaSamples = -1;
 
   private:
-     GFXImageFormat _baseFormat;
-     GFXDataFormat  _dataType;
-     /// Texture data information
-     GFXImageFormat _internalFormat;
+     GFXImageFormat _baseFormat = GFXImageFormat::RGB;
+     GFXDataFormat  _dataType = GFXDataFormat::UNSIGNED_BYTE;
+     GFXImageFormat _internalFormat = GFXImageFormat::RGBA8;
 };
 
 };  // namespace Divide

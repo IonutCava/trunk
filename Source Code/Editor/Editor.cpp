@@ -116,8 +116,9 @@ bool Editor::init(const vec2<U16>& renderResolution) {
             io.Fonts->AddFontDefault();
             io.Fonts->GetTexDataAsRGBA32(&pPixels, &iWidth, &iHeight);
 
-            SamplerDescriptor sampler;
-            sampler.setFilters(TextureFilter::LINEAR);
+            SamplerDescriptor sampler = {};
+            sampler._minFilter = TextureFilter::LINEAR;
+            sampler._magFilter = TextureFilter::LINEAR
 
             TextureDescriptor descriptor(TextureType::TEXTURE_2D,
                                          GFXImageFormat::RGBA8,

@@ -44,11 +44,14 @@ bool Sky::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) {
         return false;
     }
 
-    SamplerDescriptor skyboxSampler;
-    skyboxSampler.setFilters(TextureFilter::LINEAR);
-    skyboxSampler.setAnisotropy(0);
-    skyboxSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
-    skyboxSampler.toggleSRGBColourSpace(true);
+    SamplerDescriptor skyboxSampler = {};
+    skyboxSampler._wrapU = TextureWrap::CLAMP_TO_EDGE;
+    skyboxSampler._wrapV = TextureWrap::CLAMP_TO_EDGE;
+    skyboxSampler._wrapW = TextureWrap::CLAMP_TO_EDGE;
+    skyboxSampler._minFilter = TextureFilter::LINEAR;
+    skyboxSampler._magFilter = TextureFilter::LINEAR;
+    skyboxSampler._anisotropyLevel = 0;
+    skyboxSampler._srgb = true;
 
     TextureDescriptor skyboxTexture(TextureType::TEXTURE_CUBE_MAP);
     skyboxTexture.setSampler(skyboxSampler);

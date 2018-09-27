@@ -47,9 +47,12 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
     const RenderTarget& rt = *inputRT()._rt;
 
     SamplerDescriptor screenSampler = {};
-    screenSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
-    screenSampler.setFilters(TextureFilter::LINEAR);
-    screenSampler.setAnisotropy(0);
+    screenSampler._wrapU = TextureWrap::CLAMP_TO_EDGE;
+    screenSampler._wrapV = TextureWrap::CLAMP_TO_EDGE;
+    screenSampler._wrapW = TextureWrap::CLAMP_TO_EDGE;
+    screenSampler._minFilter = TextureFilter::LINEAR;
+    screenSampler._magFilter = TextureFilter::LINEAR;
+    screenSampler._anisotropyLevel = 0;
 
     TextureDescriptor outputDescriptor(TextureType::TEXTURE_2D,
                                        GFXImageFormat::RGB8,
@@ -72,8 +75,11 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
     }
 
     SamplerDescriptor lumaSampler = {};
-    lumaSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
-    lumaSampler.setMinFilter(TextureFilter::LINEAR_MIPMAP_LINEAR);
+    lumaSampler._wrapU = TextureWrap::CLAMP_TO_EDGE;
+    lumaSampler._wrapV = TextureWrap::CLAMP_TO_EDGE;
+    lumaSampler._wrapW = TextureWrap::CLAMP_TO_EDGE;
+    lumaSampler._minFilter = TextureFilter::LINEAR_MIPMAP_LINEAR;
+    lumaSampler._magFilter = TextureFilter::LINEAR;
 
     TextureDescriptor lumaDescriptor(TextureType::TEXTURE_2D,
                                      GFXImageFormat::RED16F,
@@ -96,7 +102,10 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
 
         _currentLuminance = _context.renderTargetPool().allocateRT(desc);
     }
-    lumaSampler.setFilters(TextureFilter::LINEAR);
+
+    lumaSampler._minFilter = TextureFilter::LINEAR;
+    lumaSampler._anisotropyLevel = 0;
+
     lumaDescriptor.setSampler(lumaSampler);
     {
         vector<RTAttachmentDescriptor> att = {

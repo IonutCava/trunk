@@ -142,24 +142,38 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
         }
     }
 
-    SamplerDescriptor blendMapSampler;
-    blendMapSampler.setWrapMode(TextureWrap::CLAMP);
-    blendMapSampler.setAnisotropy(0);
-    blendMapSampler.setMinFilter(TextureFilter::LINEAR);
+    SamplerDescriptor blendMapSampler = {};
+    blendMapSampler._wrapU = TextureWrap::CLAMP;
+    blendMapSampler._wrapV = TextureWrap::CLAMP;
+    blendMapSampler._wrapW = TextureWrap::CLAMP;
+    blendMapSampler._minFilter = TextureFilter::LINEAR;
+    blendMapSampler._magFilter = TextureFilter::LINEAR;
+    blendMapSampler._anisotropyLevel = 0;
 
-    SamplerDescriptor albedoSampler;
-    albedoSampler.setWrapMode(TextureWrap::REPEAT);
-    albedoSampler.setAnisotropy(8);
-    albedoSampler.toggleSRGBColourSpace(true);
+    SamplerDescriptor albedoSampler = {};
+    albedoSampler._wrapU = TextureWrap::REPEAT;
+    albedoSampler._wrapV = TextureWrap::REPEAT;
+    albedoSampler._wrapW = TextureWrap::REPEAT;
+    albedoSampler._minFilter = TextureFilter::LINEAR;
+    albedoSampler._magFilter = TextureFilter::LINEAR;
+    albedoSampler._anisotropyLevel = 8;
+    albedoSampler._srgb = true;
 
-    SamplerDescriptor normalSampler;
-    normalSampler.setWrapMode(TextureWrap::REPEAT);
-    normalSampler.setAnisotropy(8);
+    SamplerDescriptor normalSampler = {};
+    normalSampler._wrapU = TextureWrap::REPEAT;
+    normalSampler._wrapV = TextureWrap::REPEAT;
+    normalSampler._wrapW = TextureWrap::REPEAT;
+    normalSampler._minFilter = TextureFilter::LINEAR;
+    normalSampler._magFilter = TextureFilter::LINEAR;
+    normalSampler._anisotropyLevel = 8;
 
-    SamplerDescriptor heightMapSampler;
-    heightMapSampler.setWrapMode(TextureWrap::CLAMP);
-    heightMapSampler.setAnisotropy(0);
-    heightMapSampler.setMinFilter(TextureFilter::LINEAR);
+    SamplerDescriptor heightMapSampler = {};
+    heightMapSampler._wrapU = TextureWrap::CLAMP;
+    heightMapSampler._wrapV = TextureWrap::CLAMP;
+    heightMapSampler._wrapW = TextureWrap::CLAMP;
+    heightMapSampler._minFilter = TextureFilter::LINEAR;
+    heightMapSampler._magFilter = TextureFilter::LINEAR;
+    heightMapSampler._anisotropyLevel = 0;
 
     TextureDescriptor heightMapDescriptor(TextureType::TEXTURE_2D);
     heightMapDescriptor.setSampler(heightMapSampler);
@@ -519,10 +533,12 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
         return;
     }
 
-    SamplerDescriptor grassSampler;
-    grassSampler.setAnisotropy(0);
-    grassSampler.setWrapMode(TextureWrap::CLAMP);
-    grassSampler.toggleSRGBColourSpace(true);
+    SamplerDescriptor grassSampler = {};
+    grassSampler._wrapU = TextureWrap::CLAMP;
+    grassSampler._wrapV = TextureWrap::CLAMP;
+    grassSampler._wrapW = TextureWrap::CLAMP;
+    grassSampler._srgb = true;
+    grassSampler._anisotropyLevel = 0;
 
     TextureDescriptor grassTexDescriptor(TextureType::TEXTURE_2D_ARRAY);
     grassTexDescriptor._layerCount = textureCount;

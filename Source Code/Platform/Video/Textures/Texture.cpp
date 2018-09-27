@@ -239,7 +239,7 @@ void Texture::validateDescriptor() {
     }
 
     // Select the proper colour space internal format
-    bool srgb = _descriptor._samplerDescriptor.srgb();
+    bool srgb = _descriptor._samplerDescriptor._srgb;
     // We only support 8 bit per pixel, 1/2/3/4 channel textures
     switch (_descriptor.internalFormat()) {
         case GFXImageFormat::LUMINANCE: {

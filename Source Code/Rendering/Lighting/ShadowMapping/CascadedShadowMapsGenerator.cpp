@@ -56,9 +56,12 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
     _blurDepthMapConstants.set("blurSizes", GFX::PushConstantType::VEC2, blurSizes);
 
     SamplerDescriptor sampler = {};
-    sampler.setFilters(TextureFilter::LINEAR);
-    sampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
-    sampler.setAnisotropy(0);
+    sampler._wrapU = TextureWrap::CLAMP_TO_EDGE;
+    sampler._wrapV = TextureWrap::CLAMP_TO_EDGE;
+    sampler._wrapW = TextureWrap::CLAMP_TO_EDGE;
+    sampler._minFilter = TextureFilter::LINEAR;
+    sampler._magFilter = TextureFilter::LINEAR;
+    sampler._anisotropyLevel = 0;
 
     // Draw FBO
     {

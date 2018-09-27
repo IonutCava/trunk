@@ -55,11 +55,15 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
         k *= Lerp(0.1f, 1.0f, scale * scale);
     }
     
-    SamplerDescriptor noiseSampler;
-    noiseSampler.setAnisotropy(0);
-    noiseSampler.setFilters(TextureFilter::NEAREST);
-    noiseSampler.setWrapMode(TextureWrap::REPEAT);
-    noiseSampler.toggleSRGBColourSpace(true);
+    SamplerDescriptor noiseSampler = {};
+    noiseSampler._wrapU = TextureWrap::REPEAT;
+    noiseSampler._wrapV = TextureWrap::REPEAT;
+    noiseSampler._wrapW = TextureWrap::REPEAT;
+    noiseSampler._minFilter = TextureFilter::NEAREST;
+    noiseSampler._magFilter = TextureFilter::NEAREST;
+    noiseSampler._anisotropyLevel = 0;
+    noiseSampler._srgb = true;
+
     stringImpl attachmentName("SSAOPreRenderOperator_NoiseTexture");
 
     TextureDescriptor noiseDescriptor(TextureType::TEXTURE_2D,
@@ -76,10 +80,13 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
                             noiseData.data(),
                             vec2<U16>(ssaoNoiseSize));
 
-    SamplerDescriptor screenSampler;
-    screenSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
-    screenSampler.setFilters(TextureFilter::LINEAR);
-    screenSampler.setAnisotropy(0);
+    SamplerDescriptor screenSampler = {};
+    screenSampler._wrapU = TextureWrap::CLAMP_TO_EDGE;
+    screenSampler._wrapV = TextureWrap::CLAMP_TO_EDGE;
+    screenSampler._wrapW = TextureWrap::CLAMP_TO_EDGE;
+    screenSampler._minFilter = TextureFilter::LINEAR;
+    screenSampler._magFilter = TextureFilter::LINEAR;
+    screenSampler._anisotropyLevel = 0;
 
     TextureDescriptor outputDescriptor(TextureType::TEXTURE_2D,
                                        GFXImageFormat::RED16,

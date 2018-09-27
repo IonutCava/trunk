@@ -16,9 +16,12 @@ bool ImplResourceLoader<WaterPlane>::load(std::shared_ptr<WaterPlane> res, const
 
     res->setState(ResourceState::RES_LOADING);
 
-    SamplerDescriptor defaultSampler;
-    defaultSampler.setWrapMode(TextureWrap::REPEAT);
-    defaultSampler.setMinFilter(TextureFilter::LINEAR);
+    SamplerDescriptor defaultSampler = {};
+    defaultSampler._wrapU = TextureWrap::REPEAT;
+    defaultSampler._wrapV = TextureWrap::REPEAT;
+    defaultSampler._wrapW = TextureWrap::REPEAT;
+    defaultSampler._minFilter = TextureFilter::LINEAR;
+    defaultSampler._magFilter = TextureFilter::LINEAR;
 
     ResourceDescriptor waterShader("water");
     ResourceDescriptor waterMaterial("waterMaterial_" + name);

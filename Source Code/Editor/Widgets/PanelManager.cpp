@@ -352,12 +352,13 @@ namespace Divide {
 
             ImTextureID texId = NULL;
 
-            SamplerDescriptor sampler;
-            sampler.setMinFilter(minFilterNearest ? (useMipmapsIfPossible ? TextureFilter::NEAREST_MIPMAP_NEAREST : TextureFilter::NEAREST)
-                                                  : (useMipmapsIfPossible ? TextureFilter::LINEAR_MIPMAP_LINEAR : TextureFilter::LINEAR));
-            sampler.setMagFilter(magFilterNearest ? TextureFilter::NEAREST : TextureFilter::LINEAR);
-            sampler.setWrapModeU(wraps ? TextureWrap::REPEAT : TextureWrap::CLAMP);
-            sampler.setWrapModeV(wrapt ? TextureWrap::REPEAT : TextureWrap::CLAMP);
+            SamplerDescriptor sampler = {};
+            sampler._minFilter = minFilterNearest ? (useMipmapsIfPossible ? TextureFilter::NEAREST_MIPMAP_NEAREST : TextureFilter::NEAREST)
+                                                  : (useMipmapsIfPossible ? TextureFilter::LINEAR_MIPMAP_LINEAR : TextureFilter::LINEAR);
+
+            sampler._magFilter = magFilterNearest ? TextureFilter::NEAREST : TextureFilter::LINEAR;
+            sampler._wrapU = wraps ? TextureWrap::REPEAT : TextureWrap::CLAMP;
+            sampler._wrapV = wrapt ? TextureWrap::REPEAT : TextureWrap::CLAMP;
 
             TextureDescriptor descriptor(TextureType::TEXTURE_2D,
                                          channels > 3 ? GFXImageFormat::RGBA8 :
@@ -557,13 +558,14 @@ namespace Divide {
 #   endif
         // Here we setup mgr (our ImGui::PanelManager)
         if (_manager->isEmpty()) {
-            SamplerDescriptor sampler;
-            sampler.setMinFilter(TextureFilter::NEAREST);
-            sampler.setAnisotropy(0);
-            sampler.setWrapMode(TextureWrap::CLAMP);
-            // splash shader doesn't do gamma correction since that's a post processing step
-            // so fake gamma correction by loading an sRGB image as a linear one.
-            sampler.toggleSRGBColourSpace(false);
+            SamplerDescriptor sampler = {};
+            sampler._wrapU = TextureWrap::CLAMP;
+            sampler._wrapV = TextureWrap::CLAMP;
+            sampler._wrapW = TextureWrap::CLAMP;
+            sampler._minFilter = TextureFilter::NEAREST;
+            sampler._magFilter = TextureFilter::NEAREST;
+            sampler._srgb = false;
+            sampler._anisotropyLevel = 0;
 
             TextureDescriptor descriptor(TextureType::TEXTURE_2D);
             descriptor.setSampler(sampler);

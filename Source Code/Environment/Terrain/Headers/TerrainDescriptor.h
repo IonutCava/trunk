@@ -36,12 +36,11 @@
 
 namespace Divide {
 
-class TerrainDescriptor : public PropertyDescriptor {
+class TerrainDescriptor final : public PropertyDescriptor {
    public:
     explicit TerrainDescriptor(const stringImpl& name) noexcept
         : PropertyDescriptor(PropertyDescriptor::DescriptorType::DESCRIPTOR_TERRAIN_INFO)
     {
-        setDefaultValues();
     }
 
     ~TerrainDescriptor()
@@ -51,20 +50,6 @@ class TerrainDescriptor : public PropertyDescriptor {
 
     TerrainDescriptor* clone() const {
         return MemoryManager_NEW TerrainDescriptor(*this);
-    }
-
-    inline void setDefaultValues() {
-        _variables.clear();
-        _variablesf.clear();
-        _grassDensity = _treeDensity = 0.0f;
-        _grassScale = _treeScale = 1.0f;
-        _is16Bit = _active = false;
-        _chunkSize = 0;
-        _textureLayers = 1;
-        _position.reset();
-        _scale.set(1.0f);
-        _altitudeRange.set(0, 1);
-        _dimensions.set(1);
     }
 
     void addVariable(const stringImpl& name, const stringImpl& value) {
@@ -151,24 +136,25 @@ class TerrainDescriptor : public PropertyDescriptor {
     }
 
    private:
-    hashMap<U64, stringImpl> _variables;
-    hashMap<U64, F32> _variablesf;
-    F32 _grassDensity;
-
     /// chunk size defines the dimensions of a quadtree chunk of vertices in the format NxN
     /// e.g.Specifying a 256 chunk size for a 1024x1024 terrain will generate 16 leafs in the quadtree
-    U32 _chunkSize;
-    F32 _treeDensity;
-    F32 _grassScale;
-    F32 _treeScale;
-    bool _is16Bit;
-    bool _active;
-    U8 _textureLayers;
-    vec3<F32> _position;
-    vec2<F32> _scale;
-    vec2<F32> _altitudeRange;
-    vec2<U16> _dimensions;
+    U32 _chunkSize = 0;
+
+    hashMap<U64, stringImpl> _variables;
+    hashMap<U64, F32> _variablesf;
+    F32 _grassDensity = 0.0f;
+    F32 _treeDensity = 0.0f;
+    F32 _grassScale = 1.0f;
+    F32 _treeScale = 1.0f;
+    bool _is16Bit = false;
+    bool _active = false;
+    U8 _textureLayers = 1;
+    vec3<F32> _position = {0.f, 0.f, 0.f};
+    vec2<F32> _scale = {1.f, 1.f};
+    vec2<F32> _altitudeRange = {0.f, 1.f};
+    vec2<U16> _dimensions = {1.f, 1.f};
 };
+
 
 template <typename T>
 inline T TER_COORD(T x, T y, T w) {

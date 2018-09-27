@@ -147,10 +147,12 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
                                       GFXImageFormat::DEPTH_COMPONENT32F,
                                       GFXDataFormat::FLOAT_32);
 
-    SamplerDescriptor defaultSampler;
-    defaultSampler.setFilters(TextureFilter::NEAREST);
-    defaultSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
-
+    SamplerDescriptor defaultSampler = {};
+    defaultSampler._wrapU = TextureWrap::CLAMP_TO_EDGE;
+    defaultSampler._wrapV = TextureWrap::CLAMP_TO_EDGE;
+    defaultSampler._wrapW = TextureWrap::CLAMP_TO_EDGE;
+    defaultSampler._minFilter = TextureFilter::NEAREST;
+    defaultSampler._magFilter = TextureFilter::NEAREST;
 
     screenDescriptor.setSampler(defaultSampler);
     screenDescriptor.msaaSamples(msaaSamples);
@@ -185,9 +187,13 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
         TextureDescriptor hiZDescriptor(TextureType::TEXTURE_2D,
                                         GFXImageFormat::DEPTH_COMPONENT32F,
                                         GFXDataFormat::FLOAT_32);
-        SamplerDescriptor hiZSampler;
-        hiZSampler.setFilters(TextureFilter::NEAREST_MIPMAP_NEAREST);
-        hiZSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
+        SamplerDescriptor hiZSampler = {};
+        hiZSampler._wrapU = TextureWrap::CLAMP_TO_EDGE;
+        hiZSampler._wrapV = TextureWrap::CLAMP_TO_EDGE;
+        hiZSampler._wrapW = TextureWrap::CLAMP_TO_EDGE;
+        hiZSampler._minFilter = TextureFilter::NEAREST_MIPMAP_NEAREST;
+        hiZSampler._magFilter = TextureFilter::NEAREST;
+
         hiZDescriptor.setSampler(hiZSampler);
         hiZDescriptor.automaticMipMapGeneration(false);
 
@@ -205,10 +211,13 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     }
 
     if (Config::Build::ENABLE_EDITOR) {
-        SamplerDescriptor editorSampler;
-        editorSampler.setFilters(TextureFilter::LINEAR_MIPMAP_LINEAR);
-        editorSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
-        editorSampler.setAnisotropy(0);
+        SamplerDescriptor editorSampler = {};
+        editorSampler._minFilter = TextureFilter::LINEAR_MIPMAP_LINEAR;
+        editorSampler._magFilter = TextureFilter::LINEAR;
+        editorSampler._wrapU = TextureWrap::CLAMP_TO_EDGE;
+        editorSampler._wrapV = TextureWrap::CLAMP_TO_EDGE;
+        editorSampler._wrapW = TextureWrap::CLAMP_TO_EDGE;
+        editorSampler._anisotropyLevel = 0;
 
         TextureDescriptor editorDescriptor(TextureType::TEXTURE_2D,
                                            GFXImageFormat::RGB8,
@@ -233,9 +242,13 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
                                                  GFXDataFormat::FLOAT_16);
         accumulationDescriptor.automaticMipMapGeneration(false);
 
-        SamplerDescriptor accumulationSampler;
-        accumulationSampler.setFilters(TextureFilter::NEAREST);
-        accumulationSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
+        SamplerDescriptor accumulationSampler = {};
+        accumulationSampler._wrapU = TextureWrap::CLAMP_TO_EDGE;
+        accumulationSampler._wrapV = TextureWrap::CLAMP_TO_EDGE;
+        accumulationSampler._wrapW = TextureWrap::CLAMP_TO_EDGE;
+        accumulationSampler._minFilter = TextureFilter::NEAREST;
+        accumulationSampler._magFilter = TextureFilter::NEAREST;
+
         accumulationDescriptor.setSampler(accumulationSampler);
 
         TextureDescriptor revealageDescriptor(TextureType::TEXTURE_2D,
@@ -274,9 +287,12 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
         //_rtPool->allocateRT(RenderTargetUsage::OIT_QUARTER_RES, oitDesc);
     }
     // Reflection Targets
-    SamplerDescriptor reflectionSampler;
-    reflectionSampler.setFilters(TextureFilter::NEAREST);
-    reflectionSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
+    SamplerDescriptor reflectionSampler = {};
+    reflectionSampler._wrapU = TextureWrap::CLAMP_TO_EDGE;
+    reflectionSampler._wrapV = TextureWrap::CLAMP_TO_EDGE;
+    reflectionSampler._wrapW = TextureWrap::CLAMP_TO_EDGE;
+    reflectionSampler._minFilter = TextureFilter::NEAREST;
+    reflectionSampler._magFilter = TextureFilter::NEAREST;
 
     TextureDescriptor environmentDescriptorCube(TextureType::TEXTURE_CUBE_ARRAY,
                                                 GFXImageFormat::RGBA8,

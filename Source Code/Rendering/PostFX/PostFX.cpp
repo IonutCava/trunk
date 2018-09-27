@@ -71,8 +71,10 @@ PostFX::PostFX(GFXDevice& context, ResourceCache& cache)
 
     _shaderFunctionSelection.resize(_postProcessingShader->GetSubroutineUniformCount(ShaderType::FRAGMENT), 0);
 
-    SamplerDescriptor defaultSampler;
-    defaultSampler.setWrapMode(TextureWrap::REPEAT);
+    SamplerDescriptor defaultSampler = {};
+    defaultSampler._wrapU = TextureWrap::REPEAT;
+    defaultSampler._wrapV = TextureWrap::REPEAT;
+    defaultSampler._wrapW = TextureWrap::REPEAT;
 
     TextureDescriptor texDescriptor(TextureType::TEXTURE_2D);
     texDescriptor.setSampler(defaultSampler);

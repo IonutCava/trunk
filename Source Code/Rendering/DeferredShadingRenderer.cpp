@@ -36,9 +36,12 @@ DeferredShadingRenderer::DeferredShadingRenderer(PlatformContext& context, Resou
     ResourceDescriptor deferredPreview("deferredPreview");
     deferredPreview.setThreadedLoading(false);
     _previewDeferredShader = CreateResource<ShaderProgram>(cache, deferredPreview);
-    SamplerDescriptor gBufferSampler;
-    gBufferSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
-    gBufferSampler.setFilters(TextureFilter::NEAREST);
+    SamplerDescriptor gBufferSampler = {};
+    gBufferSampler._wrapU = TextureWrap::CLAMP_TO_EDGE;
+    gBufferSampler._wrapV = TextureWrap::CLAMP_TO_EDGE;
+    gBufferSampler._wrapW = TextureWrap::CLAMP_TO_EDGE;
+    gBufferSampler._minFilter = TextureFilter::NEAREST;
+    gBufferSampler._magFilter = TextureFilter::NEAREST;
 
     TextureDescriptor gBuffer[4];  /// 4 Gbuffer elements (mipmaps are ignored
                                    /// for deferredBuffers)
@@ -59,10 +62,7 @@ DeferredShadingRenderer::DeferredShadingRenderer(PlatformContext& context, Resou
                                       GFXImageFormat::DEPTH_COMPONENT,
                                       GFXDataFormat::UNSIGNED_INT);
 
-    SamplerDescriptor depthSampler;
-    depthSampler.setFilters(TextureFilter::NEAREST);
-    depthSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
-    depthDescriptor.setSampler(depthSampler);
+    depthDescriptor.setSampler(gBufferSampler);
 
     vector<RTAttachmentDescriptor> att = {
         { depthDescriptor, RTAttachmentType::Depth },

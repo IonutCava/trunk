@@ -60,9 +60,12 @@ EnvironmentProbe::~EnvironmentProbe()
 void EnvironmentProbe::onStartup(GFXDevice& context) {
     s_availableSlices.resize(g_maxEnvironmentProbes, false);
     // Reflection Targets
-    SamplerDescriptor reflectionSampler;
-    reflectionSampler.setFilters(TextureFilter::NEAREST);
-    reflectionSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
+    SamplerDescriptor reflectionSampler = {};
+    reflectionSampler._wrapU = TextureWrap::CLAMP_TO_EDGE;
+    reflectionSampler._wrapV = TextureWrap::CLAMP_TO_EDGE;
+    reflectionSampler._wrapW = TextureWrap::CLAMP_TO_EDGE;
+    reflectionSampler._minFilter = TextureFilter::NEAREST;
+    reflectionSampler._magFilter = TextureFilter::NEAREST;
 
     TextureDescriptor environmentDescriptor(TextureType::TEXTURE_CUBE_MAP,
                                             GFXImageFormat::RGB8,

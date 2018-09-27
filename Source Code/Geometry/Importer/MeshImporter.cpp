@@ -301,15 +301,17 @@ namespace Import {
         tempMaterial->setBumpMethod(importData._bumpMethod);
         tempMaterial->setDoubleSided(importData._doubleSided);
 
-        SamplerDescriptor textureSampler;
+        SamplerDescriptor textureSampler = {};
 
         TextureDescriptor textureDescriptor(TextureType::TEXTURE_2D);
 
         for (U32 i = 0; i < to_base(ShaderProgram::TextureUsage::COUNT); ++i) {
             const Import::TextureEntry& tex = importData._textures[i];
             if (!tex._textureName.empty()) {
-                textureSampler.toggleSRGBColourSpace(tex._srgbSpace);
-                textureSampler.setWrapMode(tex._wrapU, tex._wrapV, tex._wrapW);
+                textureSampler._srgb = tex._srgbSpace;
+                textureSampler._wrapU = tex._wrapU;
+                textureSampler._wrapV = tex._wrapV;
+                textureSampler._wrapW = tex._wrapW;
 
                 textureDescriptor.setSampler(textureSampler);
 

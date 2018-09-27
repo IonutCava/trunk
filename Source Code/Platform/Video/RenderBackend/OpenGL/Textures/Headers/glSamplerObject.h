@@ -37,7 +37,7 @@
 
 namespace Divide {
 
-class SamplerDescriptor;
+struct SamplerDescriptor;
 
 class glSamplerObject {
    public:

@@ -61,8 +61,6 @@ class NOINITVTABLE PropertyDescriptor : public Hashable {
 
    protected:
     friend class ResourceDescriptor;
-    /// Initialize descriptor values to their safe defaults
-    virtual void setDefaultValues() = 0;
     /// Used to clone the property descriptor pointer
     virtual PropertyDescriptor* clone() const = 0;
 

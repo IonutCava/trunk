@@ -11,7 +11,6 @@ namespace Divide {
 class Quad3D;
 class Texture;
 class ShaderProgram;
-class SamplerDescriptor;
 
 enum class RenderStage : U8;
 
