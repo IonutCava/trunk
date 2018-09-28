@@ -72,8 +72,6 @@ Editor::~Editor()
 }
 
 void Editor::idle() {
-    assert(IS_IN_RANGE_INCLUSIVE(window_opacity, 0, 255));
-
     if (window_opacity != previous_window_opacity) {
         context().activeWindow().opacity(to_U8(window_opacity));
         previous_window_opacity = window_opacity;
@@ -176,7 +174,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
     }
 
     ImGui::SetCurrentContext(_imguiContext[to_base(Context::Editor)]);
-    _panelManager->init(_mainWindow->getDrawableSize());
+    _panelManager->init(renderResolution);
 
     ImGui::ResetStyle(_currentTheme);
 

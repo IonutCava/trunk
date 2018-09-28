@@ -107,6 +107,8 @@ public:
     inline const TaskPool& taskPool() const { return *_taskPool; }
 
     Kernel& kernel();
+    const Kernel& kernel() const;
+
     DisplayWindow& activeWindow();
     Input::InputInterface& input();
 

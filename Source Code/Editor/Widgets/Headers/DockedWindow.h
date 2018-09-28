@@ -44,7 +44,7 @@ class DockedWindow {
 
         virtual void draw() = 0;
 
-        inline const char* name() const { return _name.c_str(); }
+        virtual const char* name() const { return _name.c_str(); }
 
     protected:
         PanelManager & _parent;

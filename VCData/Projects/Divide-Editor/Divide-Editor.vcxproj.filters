@@ -133,12 +133,6 @@
     <ClCompile Include="../../../Source Code\Editor\Widgets\PanelManager.cpp">
       <Filter>Widgets</Filter>
     </ClCompile>
-    <ClCompile Include="../../../Source Code\Editor\Widgets\PanelManagerPane.cpp">
-      <Filter>Widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="../../../Source Code\Editor\Widgets\TabbedWindow.cpp">
-      <Filter>Widgets</Filter>
-    </ClCompile>
     <ClCompile Include="../../../Source Code\Editor\Widgets\MenuBar.cpp">
       <Filter>Widgets</Filter>
     </ClCompile>
@@ -172,6 +166,9 @@
     </ClCompile>
     <ClCompile Include="../../../Source Code\Libs\imgui\addons\metrics_gui\ProggyTiny.cpp">
       <Filter>3rdParty/ImGUI\addons\metrics_gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source Code\Editor\Widgets\DockedWindows\SceneViewWindow.cpp">
+      <Filter>Widgets\DockedWindows</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -337,12 +334,6 @@
     <ClInclude Include="../../../Source Code\Editor\Widgets\Headers\PanelManager.h">
       <Filter>Widgets\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="../../../Source Code\Editor\Widgets\Headers\PanelManagerPane.h">
-      <Filter>Widgets\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="../../../Source Code\Editor\Widgets\Headers\TabbedWindow.h">
-      <Filter>Widgets\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="../../../Source Code\Editor\Widgets\Headers\ApplicationOutput.h">
       <Filter>Widgets\Headers</Filter>
     </ClInclude>
@@ -381,6 +372,9 @@
     </ClInclude>
     <ClInclude Include="../../../Source Code\Libs\imgui\addons\metrics_gui\portable\countof.h">
       <Filter>3rdParty/ImGUI\addons\metrics_gui\portable</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source Code\Editor\Widgets\DockedWindows\Headers\SceneViewWindow.h">
+      <Filter>Widgets\DockedWindows\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

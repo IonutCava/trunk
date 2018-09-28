@@ -90,6 +90,7 @@ glUniformBuffer::glUniformBuffer(GFXDevice& context,
     implParams._zeroMem = descriptor._initialData == nullptr;
     implParams._forcePersistentMap = BitCompare(_flags, ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
     implParams._explicitFlush = !BitCompare(_flags, ShaderBuffer::Flags::AUTO_RANGE_FLUSH);
+
     _buffer = MemoryManager_NEW glBufferImpl(context, implParams);
 }
 

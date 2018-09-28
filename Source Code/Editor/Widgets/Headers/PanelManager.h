@@ -44,7 +44,6 @@ namespace Divide {
     class Camera;
     class DockedWindow;
     class TabbedWindow;
-    class PanelManagerPane;
     class ResourceCache;
     class PropertyWindow;
     class PreferencesWindow;
@@ -96,8 +95,6 @@ namespace Divide {
         void resize(int w, int h);
         void setPanelManagerBoundsToIncludeMainMenuIfPresent(int displayX = -1, int displayY = -1);
 
-        inline ImGui::PanelManager& ImGuiPanelManager() { return *_manager; }
-
         inline bool simulationPauseRequested() const { 
             return _sceneStepCount == 0 && _simulationPaused != nullptr && *_simulationPaused;
         }
@@ -118,16 +115,9 @@ namespace Divide {
         U64 _deltaTime;
         U32 _sceneStepCount;
         stringImpl _saveFile;
-        std::array<Texture_ptr, to_base(TextureUsage::COUNT)> _textures;
-        std::unique_ptr<ImGui::PanelManager> _manager;
-
         Camera* _selectedCamera;
-        vector<ImGui::TabWindow> _tabWindows;
         vector<DockedWindow*> _dockedWindows;
-        std::array<std::unique_ptr<TabbedWindow>, to_base(PanelPositions::COUNT)> _tabbedWindows;
-        // No center toolbar
-        std::array<std::unique_ptr<PanelManagerPane>, to_base(PanelPositions::COUNT) - 1> _toolbars;
-
+        std::array<Texture_ptr, to_base(TextureUsage::COUNT)> _textures;
      public:
 
         static ResourceCache* s_globalCache;
@@ -136,21 +126,6 @@ namespace Divide {
 
 
     namespace Attorney {
-        class PanelManagerWidgets {
-          private:
-            static ImGui::PanelManager& internalManager(Divide::PanelManager& mgr) {
-                return *mgr._manager;
-            }
-
-            static void drawDockedTabWindows(ImGui::PanelManagerWindowData& wd) {
-                Divide::PanelManager* mgr = static_cast<Divide::PanelManager*>(wd.userData);
-                mgr->drawDockedTabWindows(wd);
-            }
-
-            friend class Divide::TabbedWindow;
-            friend class Divide::PanelManagerPane;
-        };
-
         class PanelManagerDockedWindows {
             private:
               static bool* showCentralWindow(Divide::PanelManager& mgr) {

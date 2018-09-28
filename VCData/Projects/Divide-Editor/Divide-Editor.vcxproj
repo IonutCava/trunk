@@ -37,8 +37,6 @@
     <ClCompile Include="../../../Source Code\Editor\Widgets\DockedWindows\SolutionExplorerWindow.cpp" />
     <ClCompile Include="../../../Source Code\Editor\Widgets\MenuBar.cpp" />
     <ClCompile Include="../../../Source Code\Editor\Widgets\PanelManager.cpp" />
-    <ClCompile Include="../../../Source Code\Editor\Widgets\PanelManagerPane.cpp" />
-    <ClCompile Include="../../../Source Code\Editor\Widgets\TabbedWindow.cpp" />
     <ClCompile Include="../../../Source Code\Libs\imgui\addons\imguifilesystem\minizip\ioapi.c">
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CompileAsCpp</CompileAs>
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">CompileAsCpp</CompileAs>
@@ -68,6 +66,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\..\..\Source Code\Editor\Widgets\DockedWindows\SceneViewWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../../Source Code\Editor\Editor.cpp" />
@@ -85,8 +84,6 @@
     <ClInclude Include="../../../Source Code\Editor\Widgets\Headers\DockedWindow.h" />
     <ClInclude Include="../../../Source Code\Editor\Widgets\Headers\MenuBar.h" />
     <ClInclude Include="../../../Source Code\Editor\Widgets\Headers\PanelManager.h" />
-    <ClInclude Include="../../../Source Code\Editor\Widgets\Headers\PanelManagerPane.h" />
-    <ClInclude Include="../../../Source Code\Editor\Widgets\Headers\TabbedWindow.h" />
     <ClInclude Include="../../../Source Code\Libs\imgui\addons\imguibindings\edtaa3func.h" />
     <ClInclude Include="../../../Source Code\Libs\imgui\addons\imguibindings\imguibindings.h" />
     <ClInclude Include="../../../Source Code\Libs\imgui\addons\imguibindings\ImImpl_Binding_Direct3D9.h" />
@@ -145,6 +142,7 @@
     <ClInclude Include="../../../Source Code\Libs\imgui\addons\metrics_gui\portable\perf_timer.h" />
     <ClInclude Include="../../../Source Code\Libs\imgui\addons\metrics_gui\portable\snprintf.h" />
     <ClInclude Include="../../../Source Code\Libs\imgui\imgui_user.h" />
+    <ClInclude Include="..\..\..\Source Code\Editor\Widgets\DockedWindows\Headers\SceneViewWindow.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="../../../Source Code\Libs\imgui\addons\imgui_user.inl" />

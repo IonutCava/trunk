@@ -39,6 +39,8 @@ namespace Divide {
 
 class Material;
 class Transform;
+class SceneGraphNode;
+
 struct EditorComponentField;
 class PropertyWindow : public DockedWindow, public PlatformContextComponent {
     public:
@@ -47,7 +49,12 @@ class PropertyWindow : public DockedWindow, public PlatformContextComponent {
 
         void draw() override;
 
+        const char* name() const override;
     protected:
+
+     const vector<I64>& selections() const;
+     SceneGraphNode* node(I64 guid) const;
+
      //return true if the field has been modified
      bool processField(EditorComponentField& field);
      bool processBasicField(EditorComponentField& field);

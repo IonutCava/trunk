@@ -137,16 +137,13 @@ namespace Divide {
                 processBasicField(projMatrixField);
             }
         } else {
-            SceneManager& sceneManager = context().kernel().sceneManager();
-            Scene& activeScene = sceneManager.getActiveScene();
+            const vector<I64>& crtSelections = selections();
+            for (I64 nodeGUID : crtSelections) {
+                SceneGraphNode* sgnNode = node(nodeGUID);
+                if (sgnNode != nullptr) {
+                    ImGui::Text(sgnNode->name().c_str());
 
-            const vector<I64>& selections = activeScene.getCurrentSelection();
-            for (I64 nodeGUID : selections) {
-                SceneGraphNode* node = activeScene.sceneGraph().findNode(nodeGUID);
-                if (node != nullptr) {
-                    ImGui::Text(node->name().c_str());
-
-                    vectorEASTL<EditorComponent*>& editorComp = Attorney::SceneGraphNodeEditor::editorComponents(*node);
+                    vectorEASTL<EditorComponent*>& editorComp = Attorney::SceneGraphNodeEditor::editorComponents(*sgnNode);
                     for (EditorComponent* comp : editorComp) {
                         if (ImGui::CollapsingHeader(comp->name().c_str()))
                         {
@@ -164,8 +161,22 @@ namespace Divide {
             }
         }
     }
+    
+    const vector<I64>& PropertyWindow::selections() const {
+        const SceneManager& sceneManager = context().kernel().sceneManager();
+        const Scene& activeScene = sceneManager.getActiveScene();
 
-     bool PropertyWindow::processField(EditorComponentField& field) {
+        return activeScene.getCurrentSelection();
+    }
+    
+    SceneGraphNode* PropertyWindow::node(I64 guid) const {
+        const SceneManager& sceneManager = context().kernel().sceneManager();
+        const Scene& activeScene = sceneManager.getActiveScene();
+
+        return activeScene.sceneGraph().findNode(guid);
+    }
+
+    bool PropertyWindow::processField(EditorComponentField& field) {
         bool ret = false;
         switch (field._type) {
             case EditorComponentFieldType::PUSH_TYPE: {
@@ -417,9 +428,6 @@ namespace Divide {
      }
 
      void PropertyWindow::drawTransformSettings() {
-         ImGui::Separator();
-         ImGui::CollapsingHeader("TEST");
-
          bool enableGizmo = Attorney::PanelManagerDockedWindows::editorEnableGizmo(_parent);
          ImGui::Checkbox("Transform Gizmo", &enableGizmo);
          Attorney::PanelManagerDockedWindows::editorEnableGizmo(_parent, enableGizmo);
@@ -482,5 +490,17 @@ namespace Divide {
 
              _parent.setTransformSettings(settings);
          }
+     }
+
+     const char* PropertyWindow::name() const {
+         const vector<I64> nodes = selections();
+         if (nodes.empty()) {
+             return DockedWindow::name();
+         }
+         if (nodes.size() == 1) {
+             return node(nodes.front())->name().c_str();
+         }
+
+         return Util::StringFormat("%s, %s, ...", node(nodes[0])->name().c_str(), node(nodes[1])->name().c_str()).c_str();
      }
 }; //namespace Divide

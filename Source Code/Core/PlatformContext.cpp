@@ -104,6 +104,10 @@ Kernel& PlatformContext::kernel() {
     return _kernel;
 }
 
+const Kernel& PlatformContext::kernel() const {
+    return _kernel;
+}
+
 void PlatformContext::onThreadCreated(const std::thread::id& threadID) {
     _gfx->onThreadCreated(threadID);
 }

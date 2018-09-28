@@ -52,6 +52,7 @@ namespace Attorney {
     class EditorWindowManager;
     class EditorPanelManager;
     class EditorOutputWindow;
+    class EditorSceneViewWindow;
 };
 
 class MenuBar;
@@ -59,6 +60,7 @@ class OutputWindow;
 class PanelManager;
 class DisplayWindow;
 class SceneGraphNode;
+class SceneViewWindow;
 class PlatformContext;
 class ApplicationOutput;
 
@@ -81,6 +83,7 @@ class Editor : public PlatformContextComponent,
     friend class Attorney::EditorWindowManager;
     friend class Attorney::EditorPanelManager;
     friend class Attorney::EditorOutputWindow;
+    friend class Attorney::EditorSceneViewWindow;
 
   public:
     enum class Context : U8 {
@@ -224,13 +227,19 @@ namespace Attorney {
         friend class Divide::OutputWindow;
     };
 
-    class EditorPanelManager {
-        //private:
-        public: //ToDo: fix this -Ionut
+    class EditorSceneViewWindow {
+    private:
         static void setScenePreviewRect(Editor& editor, const Rect<I32>& rect) {
             editor.setScenePreviewRect(rect);
         }
 
+
+        friend class Divide::SceneViewWindow;
+    };
+
+    class EditorPanelManager {
+        //private:
+        public: //ToDo: fix this -Ionut
         static void setTransformSettings(Editor& editor, const TransformSettings& settings) {
             editor.setTransformSettings(settings);
         }

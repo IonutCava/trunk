@@ -1428,7 +1428,7 @@ bool ImGui::PanelManager::render(Pane** pPanePressedOut, int *pPaneToolbuttonPre
                     if (pi==paneIndex) continue;    // this pane
                     const Pane& pn = panes[pi];
                     const int si = pn.getSelectedIndex();
-                    if (si>=0)  {
+                    if (si>=0 && pn.windows.size() > si)  {
                         const char* cmpName = pn.windows[si].windowName;
                         if (cmpName && strcmp(windowName,cmpName)==0)   pn.bar.setSelectedButtonIndex(-1);
                     }
@@ -1547,7 +1547,7 @@ void ImGui::PanelManager::updateSizes() const  {
         const Pane& pane = *paneTop;
         const int selectedButtonIndex = pane.bar.getSelectedButtonIndex();
         //
-        if (selectedButtonIndex>=0) {
+        if (selectedButtonIndex>=0 && pane.windows.size() > selectedButtonIndex) {
             const Pane::AssociatedWindow& win = pane.windows[selectedButtonIndex];
             if (win.isValid())  {
                 //
@@ -1570,7 +1570,7 @@ void ImGui::PanelManager::updateSizes() const  {
         const Pane& pane = *paneLeft;
         const int selectedButtonIndex = pane.bar.getSelectedButtonIndex();
         //
-        if (selectedButtonIndex>=0) {
+        if (selectedButtonIndex>=0 && pane.windows.size() > selectedButtonIndex) {
             const Pane::AssociatedWindow& win = pane.windows[selectedButtonIndex];
             if (win.isValid())  {
                 //
@@ -1594,7 +1594,7 @@ void ImGui::PanelManager::updateSizes() const  {
         const Pane& pane = *paneRight;
         const int selectedButtonIndex = pane.bar.getSelectedButtonIndex();
         //
-        if (selectedButtonIndex>=0) {
+        if (selectedButtonIndex>=0 && pane.windows.size() > selectedButtonIndex) {
             const Pane::AssociatedWindow& win = pane.windows[selectedButtonIndex];
             if (win.isValid())  {
                 //
@@ -1616,7 +1616,7 @@ void ImGui::PanelManager::updateSizes() const  {
         const Pane& pane = *paneBottom;
         const int selectedButtonIndex = pane.bar.getSelectedButtonIndex();
         //
-        if (selectedButtonIndex>=0) {
+        if (selectedButtonIndex>=0 && pane.windows.size() > selectedButtonIndex) {
             const Pane::AssociatedWindow& win = pane.windows[selectedButtonIndex];
             if (win.isValid())  {
                 //

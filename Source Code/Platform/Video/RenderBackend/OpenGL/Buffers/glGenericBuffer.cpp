@@ -21,7 +21,7 @@ glGenericBuffer::glGenericBuffer(GFXDevice& context, const BufferParams& params)
     implParams._initialData = params._data;
     implParams._zeroMem = params._zeroMem;
     implParams._forcePersistentMap = params._forcePersistentMap;
-
+    
     _buffer = MemoryManager_NEW glBufferImpl(context, implParams);
 
     // Create sizeFactor copies of the data and store them in the buffer
