@@ -118,7 +118,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
 
             SamplerDescriptor sampler = {};
             sampler._minFilter = TextureFilter::LINEAR;
-            sampler._magFilter = TextureFilter::LINEAR
+            sampler._magFilter = TextureFilter::LINEAR;
 
             TextureDescriptor descriptor(TextureType::TEXTURE_2D,
                                          GFXImageFormat::RGBA8,

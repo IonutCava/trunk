@@ -159,18 +159,18 @@ class ResourceDescriptor : public Hashable {
     stringImpl _resourceName;
     /// Comma separated list of properties
     stringImpl _properties;
-    bool _flag;
-    bool _threaded;
-    U32 _ID;
+    bool _flag = false;
+    bool _threaded = true;
+    U32 _ID = 0;
     /// 4 bool values representing  ... anything ...
     P32 _mask;
-    U32 _enumValue;
+    U32 _enumValue = 0;
     /// Use for extra resource properties: textures, samplers, terrain etc.
     std::shared_ptr<PropertyDescriptor> _propertyDescriptor;
     /// Callback to use when the resource finished loading (includes threaded loading)
     DELEGATE_CBK<void, CachedResource_wptr> _onLoadCallback;
     /// General Data
-    void *_userPtr;
+    void *_userPtr = nullptr;
 };
 
 };  // namespace Divide

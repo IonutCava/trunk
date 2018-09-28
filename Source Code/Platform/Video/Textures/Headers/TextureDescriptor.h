@@ -67,8 +67,6 @@ struct SamplerDescriptor : public Hashable {
     /// Used with CLAMP_TO_BORDER as the background colour outside of the texture border
     FColour _borderColour = DefaultColours::BLACK;
 
-
-
     inline size_t getHash() const override {
         _hash = 0;
         Util::Hash_combine(_hash, to_U32(_cmpFunc));
@@ -210,7 +208,7 @@ class TextureDescriptor final : public PropertyDescriptor {
     inline void automaticMipMapGeneration(const bool state) { _autoMipMaps = state; }
 
 
-    inline size_t getHash() const override {
+    /*inline size_t getHash() const override {
         size_t hash = 0;
         Util::Hash_combine(hash, _layerCount);
         Util::Hash_combine(hash, to_U32(_internalFormat));
@@ -226,7 +224,7 @@ class TextureDescriptor final : public PropertyDescriptor {
         Util::Hash_combine(hash, PropertyDescriptor::getHash());
 
         return hash;
-    }
+    }*/
 
     U32 _layerCount = 1;
     TextureType _type = TextureType::TEXTURE_2D;

@@ -155,12 +155,6 @@ class TerrainDescriptor final : public PropertyDescriptor {
     vec2<U16> _dimensions = {1.f, 1.f};
 };
 
-
-template <typename T>
-inline T TER_COORD(T x, T y, T w) {
-    return ((y) * (w) + (x));
-}
-
 };  // namespace Divide
 
 #endif
