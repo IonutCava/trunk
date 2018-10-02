@@ -36,6 +36,7 @@
 #	define NO_IMGUI_ADDONS
 #endif //NO_IMGUIADDONS
 
+
 #ifdef NO_IMGUI_ADDONS  // This definition turns all "normal" addons into "yes_addons"
 #   if (!defined(YES_IMGUISTYLESERIALIZER) && !defined(NO_IMGUISTYLESERIALIZER))
 #       define NO_IMGUISTYLESERIALIZER
@@ -55,12 +56,6 @@
 #   if (!defined(YES_IMGUIPANELMANAGER) && !defined(NO_IMGUIPANELMANAGER))
 #       define NO_IMGUIPANELMANAGER
 #   endif //YES_IMGUIPANELMANAGER
-#   if (!defined(YES_IMGUITABWINDOW) && !defined(NO_IMGUITABWINDOW))
-#       define NO_IMGUITABWINDOW
-#   endif //YES_IMGUITABWINDOW
-#   if (!defined(YES_IMGUIDOCK) && !defined(NO_IMGUIDOCK))
-#       define NO_IMGUIDOCK
-#   endif //YES_IMGUIDOCK
 #   if (!defined(YES_IMGUINODEGRAPHEDITOR) && !defined(NO_IMGUINODEGRAPHEDITOR))
 #       define NO_IMGUINODEGRAPHEDITOR
 #   endif //YES_IMGUINODEGRAPHEDITOR
@@ -130,9 +125,6 @@ inline void operator delete(void*, ImImplPlacementNewDummy, void*) {}
 #ifndef NO_IMGUIHELPER
 #include "./imguihelper/imguihelper.h"
 #endif //NO_IMGUIHELPER
-#ifndef NO_IMGUITABWINDOW
-#include "./imguitabwindow/imguitabwindow.h"
-#endif //NO_IMGUITABWINDOW
 
 #ifdef YES_IMGUISOLOUD_ALL
 #   undef YES_IMGUISOLOUD
@@ -184,9 +176,6 @@ inline void operator delete(void*, ImImplPlacementNewDummy, void*) {}
 #ifndef NO_IMGUITOOLBAR
 #include "./imguitoolbar/imguitoolbar.h"
 #endif //NO_IMGUITOOLBAR
-#ifndef NO_IMGUIPANELMANAGER
-#include "./imguipanelmanager/imguipanelmanager.h"
-#endif //NO_IMGUIPANELMANAGER
 #ifndef NO_IMGUIVARIOUSCONTROLS
 #include "./imguivariouscontrols/imguivariouscontrols.h"
 #endif //NO_IMGUIVARIOUSCONTROLS
@@ -202,9 +191,6 @@ inline void operator delete(void*, ImImplPlacementNewDummy, void*) {}
 #ifndef NO_IMGUINODEGRAPHEDITOR
 #include "./imguinodegrapheditor/imguinodegrapheditor.h"
 #endif //NO_IMGUINODEGRAPHEDITOR
-#ifndef NO_IMGUIDOCK
-#include "./imguidock/imguidock.h"
-#endif //NO_IMGUIDOCK
 
 #ifdef YES_IMGUIADDONS_ALL
 #	ifndef NO_IMGUIPDFVIEWER

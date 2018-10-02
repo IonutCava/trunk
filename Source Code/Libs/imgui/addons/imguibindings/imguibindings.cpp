@@ -594,19 +594,6 @@ void InitImGuiFontTexture(const ImImpl_InitParams* pOptionalInitParams) {
 #   endif //IMGUIBINDINGS_DONT_CLEAR_INPUT_DATA_SOON
 
     //fprintf(stderr,"Loaded font texture\n");
-
-// We overuse this method to load textures from other imgui addons
-#   ifndef NO_IMGUITABWINDOW
-    if (!ImGui::TabWindow::DockPanelIconTextureID)  {
-        ImVector<unsigned char> rgba_buffer;int w=0,h=0;
-        ImGui::TabWindow::GetDockPanelIconImageRGBA(rgba_buffer,&w,&h);
-        ImImpl_GenerateOrUpdateTexture(ImGui::TabWindow::DockPanelIconTextureID,w,h,4,&rgba_buffer[0]);
-    }
-#   endif //NO_IMGUITABWINDOW
-#   ifndef NO_IMGUIDOCK
-    if (!gDockContent) gDockContent = ImGui::CreateDockContext();
-    ImGui::SetCurrentDockContext(gDockContent);
-#   endif //NO_IMGUIDOCK
 }
 
 void DestroyImGuiFontTexture()	{
@@ -625,15 +612,6 @@ void DestroyImGuiFontTexture()	{
 #   ifdef YES_IMGUIIMAGEEDITOR
     ImGui::ImageEditor::Destroy();
 #   endif //YES_IMGUIIMAGEEDITOR
-#   ifndef NO_IMGUITABWINDOW
-    if (ImGui::TabWindow::DockPanelIconTextureID) {
-        ImImpl_FreeTexture(ImGui::TabWindow::DockPanelIconTextureID);
-        ImGui::TabWindow::DockPanelIconTextureID = NULL;
-    }
-#   endif //NO_IMGUITABWINDOW
-#   ifndef NO_IMGUIDOCK
-    if (gDockContent) {ImGui::DestroyDockContext(gDockContent);gDockContent=NULL;}
-#   endif //NO_IMGUIDOCK
 }
 
 #ifndef _WIN32

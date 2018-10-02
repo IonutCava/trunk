@@ -38,9 +38,6 @@
     <Filter Include="3rdParty/ImGUI\addons\imguidatechooser">
       <UniqueIdentifier>{1f7b44a6-23e1-4043-9591-26aac1776cd8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="3rdParty/ImGUI\addons\imguidock">
-      <UniqueIdentifier>{ffbaf51d-2b0d-4ddb-ba38-dc85697dc9cd}</UniqueIdentifier>
-    </Filter>
     <Filter Include="3rdParty/ImGUI\addons\imguifilesystem">
       <UniqueIdentifier>{46b80529-a517-4822-bb2c-379b689b27e7}</UniqueIdentifier>
     </Filter>
@@ -53,17 +50,11 @@
     <Filter Include="3rdParty/ImGUI\addons\imguinodegrapheditor">
       <UniqueIdentifier>{c519a381-4f71-4c84-8804-a016e988e4b9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="3rdParty/ImGUI\addons\imguipanelmanager">
-      <UniqueIdentifier>{043dbaf5-e702-4dfd-a19f-aac495adfb9c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="3rdParty/ImGUI\addons\imguistring">
       <UniqueIdentifier>{15390a71-95f0-4af3-8531-2cbb2c2128d0}</UniqueIdentifier>
     </Filter>
     <Filter Include="3rdParty/ImGUI\addons\imguistyleserializer">
       <UniqueIdentifier>{91075a97-cb6d-4d13-b1f3-43d302a84969}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3rdParty/ImGUI\addons\imguitabwindow">
-      <UniqueIdentifier>{ba129140-a309-43d7-8ac1-99f496121ce8}</UniqueIdentifier>
     </Filter>
     <Filter Include="3rdParty/ImGUI\addons\imguitoolbar">
       <UniqueIdentifier>{ad7a9b23-3ff0-4c9e-8fac-2af5d9b47f76}</UniqueIdentifier>
@@ -235,9 +226,6 @@
     <ClInclude Include="../../../Source Code\Libs\imgui\addons\imguidatechooser\imguidatechooser.h">
       <Filter>3rdParty/ImGUI\addons\imguidatechooser</Filter>
     </ClInclude>
-    <ClInclude Include="../../../Source Code\Libs\imgui\addons\imguidock\imguidock.h">
-      <Filter>3rdParty/ImGUI\addons\imguidock</Filter>
-    </ClInclude>
     <ClInclude Include="../../../Source Code\Libs\imgui\addons\imguifilesystem\dirent_portable.h">
       <Filter>3rdParty/ImGUI\addons\imguifilesystem</Filter>
     </ClInclude>
@@ -265,17 +253,11 @@
     <ClInclude Include="../../../Source Code\Libs\imgui\addons\imguinodegrapheditor\imguinodegrapheditor.h">
       <Filter>3rdParty/ImGUI\addons\imguinodegrapheditor</Filter>
     </ClInclude>
-    <ClInclude Include="../../../Source Code\Libs\imgui\addons\imguipanelmanager\imguipanelmanager.h">
-      <Filter>3rdParty/ImGUI\addons\imguipanelmanager</Filter>
-    </ClInclude>
     <ClInclude Include="../../../Source Code\Libs\imgui\addons\imguistring\imguistring.h">
       <Filter>3rdParty/ImGUI\addons\imguistring</Filter>
     </ClInclude>
     <ClInclude Include="../../../Source Code\Libs\imgui\addons\imguistyleserializer\imguistyleserializer.h">
       <Filter>3rdParty/ImGUI\addons\imguistyleserializer</Filter>
-    </ClInclude>
-    <ClInclude Include="../../../Source Code\Libs\imgui\addons\imguitabwindow\imguitabwindow.h">
-      <Filter>3rdParty/ImGUI\addons\imguitabwindow</Filter>
     </ClInclude>
     <ClInclude Include="../../../Source Code\Libs\imgui\addons\imguitoolbar\imguitoolbar.h">
       <Filter>3rdParty/ImGUI\addons\imguitoolbar</Filter>

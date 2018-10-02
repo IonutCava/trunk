@@ -60,11 +60,21 @@ DisplayWindow::DisplayWindow(WindowManager& parent, PlatformContext& context)
     _windowPosition.set(0);
     _prevDimensions.set(1);
     _windowDimensions.set(1);
+
+    for (U8 i = 0; i < to_U8(CursorStyle::COUNT); ++i) {
+        CursorStyle style = static_cast<CursorStyle>(i);
+        _cursors[style] = SDL_CreateSystemCursor(CursorToSDL(style));
+    }
 }
 
 DisplayWindow::~DisplayWindow() 
 {
-   destroyWindow();
+    for (auto it : _cursors) {
+        SDL_FreeCursor(it.second);
+    }
+    _cursors.clear();
+
+    destroyWindow();
 }
 
 ErrorCode DisplayWindow::destroyWindow() {
@@ -307,7 +317,7 @@ void DisplayWindow::setCursorPosition(I32 x, I32 y) {
 }
 
 void DisplayWindow::setCursorStyle(CursorStyle style) {
-    SDL_SetCursor(SDL_CreateSystemCursor(CursorToSDL(style)));
+    SDL_SetCursor(_cursors[style]);
 }
 
 vec2<I32> DisplayWindow::getCursorPosition() const {

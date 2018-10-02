@@ -95,7 +95,6 @@
     <ClInclude Include="../../../Source Code\Libs\imgui\addons\imguicodeeditor\imguicodeeditor.h" />
     <ClInclude Include="../../../Source Code\Libs\imgui\addons\imguicodeeditor\utf8helper.h" />
     <ClInclude Include="../../../Source Code\Libs\imgui\addons\imguidatechooser\imguidatechooser.h" />
-    <ClInclude Include="../../../Source Code\Libs\imgui\addons\imguidock\imguidock.h" />
     <ClInclude Include="../../../Source Code\Libs\imgui\addons\imguifilesystem\dirent_portable.h" />
     <ClInclude Include="../../../Source Code\Libs\imgui\addons\imguifilesystem\imguifilesystem.h" />
     <ClInclude Include="../../../Source Code\Libs\imgui\addons\imguifilesystem\minizip\crypt.h" />
@@ -107,10 +106,8 @@
     <ClInclude Include="../../../Source Code\Libs\imgui\addons\imguihelper\imguihelper.h" />
     <ClInclude Include="../../../Source Code\Libs\imgui\addons\imguilistview\imguilistview.h" />
     <ClInclude Include="../../../Source Code\Libs\imgui\addons\imguinodegrapheditor\imguinodegrapheditor.h" />
-    <ClInclude Include="../../../Source Code\Libs\imgui\addons\imguipanelmanager\imguipanelmanager.h" />
     <ClInclude Include="../../../Source Code\Libs\imgui\addons\imguistring\imguistring.h" />
     <ClInclude Include="../../../Source Code\Libs\imgui\addons\imguistyleserializer\imguistyleserializer.h" />
-    <ClInclude Include="../../../Source Code\Libs\imgui\addons\imguitabwindow\imguitabwindow.h" />
     <ClInclude Include="../../../Source Code\Libs\imgui\addons\imguitoolbar\imguitoolbar.h" />
     <ClInclude Include="../../../Source Code\Libs\imgui\addons\imguivariouscontrols\imguivariouscontrols.h" />
     <ClInclude Include="../../../Source Code\Libs\imgui\addons\imguiyesaddons\imguibz2.h" />

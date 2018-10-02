@@ -13,9 +13,6 @@
 #ifndef NO_IMGUIHELPER
 #include "./imguihelper/imguihelper.cpp"
 #endif //NO_IMGUIHELPER
-#ifndef NO_IMGUITABWINDOW
-#include "./imguitabwindow/imguitabwindow.cpp"
-#endif //NO_IMGUITABWINDOW
 
 #ifdef IMGUI_USE_AUTO_BINDING	// defined in imgui_user.h
 #	ifdef __EMSCRIPTEN__
@@ -63,9 +60,6 @@
 #ifndef NO_IMGUITOOLBAR
 #include "./imguitoolbar/imguitoolbar.cpp"
 #endif //NO_IMGUITOOLBAR
-#ifndef NO_IMGUIPANELMANAGER
-#include "./imguipanelmanager/imguipanelmanager.cpp"
-#endif //NO_IMGUIPANELMANAGER
 #ifndef NO_IMGUIVARIOUSCONTROLS
 #include "./imguivariouscontrols/imguivariouscontrols.cpp"
 #endif //NO_IMGUIVARIOUSCONTROLS
@@ -84,9 +78,6 @@
 #ifndef NO_IMGUINODEGRAPHEDITOR
 #include "./imguinodegrapheditor/imguinodegrapheditor.cpp"
 #endif //NO_IMGUINODEGRAPHEDITOR
-#ifndef NO_IMGUIDOCK
-#include "./imguidock/imguidock.cpp"
-#endif //NO_IMGUIDOCK
 
 #ifdef YES_IMGUIBZ2
 #include "./imguiyesaddons/imguibz2.cpp"

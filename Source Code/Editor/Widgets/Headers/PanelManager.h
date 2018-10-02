@@ -104,7 +104,6 @@ namespace Divide {
 
       protected:
         F32 calcMainMenuHeight();
-        void drawDockedTabWindows(ImGui::PanelManagerWindowData& wd);
         void setSelectedCamera(Camera* camera);
         Camera* getSelectedCamera() const;
 

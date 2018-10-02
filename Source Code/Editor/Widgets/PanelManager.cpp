@@ -232,18 +232,6 @@ namespace Divide {
 
         s_globalCache = &context().kernel().resourceCache();
 
-        if (!ImGui::TabWindow::DockPanelIconTextureID) {
-            ImVector<unsigned char> rgba_buffer;int w, h;
-            ImGui::TabWindow::GetDockPanelIconImageRGBA(rgba_buffer, &w, &h);
-            ImGui::TabWindow::DockPanelIconTextureID = 
-                LoadTextureFromMemory(_textures[to_base(TextureUsage::Dock)],
-                                      "Docking Texture",
-                                      w,
-                                      h,
-                                      4,
-                                      &rgba_buffer[0]);
-        }
-
 #   ifdef YES_IMGUIIMAGEEDITOR
         ImGui::ImageEditor::SetGenerateOrUpdateTextureCallback(&GenerateOrUpdateTexture);   // This will be called only with channels=3 or channels=4
         ImGui::ImageEditor::SetFreeTextureCallback(&FreeTextureDelegate);
@@ -317,9 +305,6 @@ namespace Divide {
     void PanelManager::resize(int w, int h) {
         static ImVec2 initialSize((float)w, (float)h);
         setPanelManagerBoundsToIncludeMainMenuIfPresent(w, h);   // This line is only necessary if we have a global menu bar
-    }
-
-    void PanelManager::drawDockedTabWindows(ImGui::PanelManagerWindowData& wd) {
     }
 
     void PanelManager::setSelectedCamera(Camera* camera) {

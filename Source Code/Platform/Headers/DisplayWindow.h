@@ -271,6 +271,8 @@ private:
 
     DELEGATE_CBK<void> _destroyCbk;
 
+    hashMap<CursorStyle, SDL_Cursor*> _cursors;
+
     // Varies from OS to OS
     WindowHandle _handle;
 
