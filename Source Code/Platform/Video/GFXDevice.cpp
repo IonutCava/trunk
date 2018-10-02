@@ -465,10 +465,8 @@ void GFXDevice::fitViewportInWindow(U16 w, U16 h) {
         newHeight = tempHeight;
         bottom = to_I32((h - newHeight) * 0.5f);
     }
-
-    Rect<I32> renderingViewport(left, bottom, newWidth, newHeight);
-    WindowManager& winManager = _parent.platformContext().app().windowManager();
-    winManager.getActiveWindow().renderingViewport(renderingViewport);
+    
+    context().activeWindow().renderingViewport(Rect<I32>(left, bottom, newWidth, newHeight));
 }
 
 /// set a new list of clipping planes. The old one is discarded

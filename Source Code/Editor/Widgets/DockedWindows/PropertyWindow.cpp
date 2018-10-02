@@ -7,7 +7,6 @@
 
 #include "Editor/Headers/Editor.h"
 #include "Managers/Headers/SceneManager.h"
-#include "Widgets/Headers/PanelManager.h"
 #include "Rendering/Camera/Headers/Camera.h"
 #include "Geometry/Material/Headers/Material.h"
 
@@ -60,7 +59,7 @@ namespace ImGui {
 };
 
 namespace Divide {
-    PropertyWindow::PropertyWindow(PanelManager& parent, PlatformContext& context)
+    PropertyWindow::PropertyWindow(Editor& parent, PlatformContext& context)
         : DockedWindow(parent, "Properties"),
           PlatformContextComponent(context)
     {
@@ -75,7 +74,7 @@ namespace Divide {
     void PropertyWindow::draw() {
         drawTransformSettings();
 
-        Camera* selectedCamera = Attorney::PanelManagerDockedWindows::getSelectedCamera(_parent);
+        Camera* selectedCamera = Attorney::EditorPropertyWindow::getSelectedCamera(_parent);
         if (selectedCamera != nullptr) {
             if (ImGui::CollapsingHeader(selectedCamera->name().c_str())) {
                 vec3<F32> eye = selectedCamera->getEye();
@@ -162,7 +161,7 @@ namespace Divide {
         }
     }
     
-    const vector<I64>& PropertyWindow::selections() const {
+    vector<I64> PropertyWindow::selections() const {
         const SceneManager& sceneManager = context().kernel().sceneManager();
         const Scene& activeScene = sceneManager.getActiveScene();
 
@@ -428,9 +427,9 @@ namespace Divide {
      }
 
      void PropertyWindow::drawTransformSettings() {
-         bool enableGizmo = Attorney::PanelManagerDockedWindows::editorEnableGizmo(_parent);
+         bool enableGizmo = Attorney::EditorPropertyWindow::editorEnableGizmo(_parent);
          ImGui::Checkbox("Transform Gizmo", &enableGizmo);
-         Attorney::PanelManagerDockedWindows::editorEnableGizmo(_parent, enableGizmo);
+         Attorney::EditorPropertyWindow::editorEnableGizmo(_parent, enableGizmo);
 
          if (enableGizmo) {
              TransformSettings settings = _parent.getTransformSettings();

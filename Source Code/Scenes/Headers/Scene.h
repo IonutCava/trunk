@@ -147,7 +147,7 @@ class Scene : public Resource, public PlatformContextComponent {
     SceneGraphNode* addSky(SceneGraphNode& parentNode, const stringImpl& nodeName = "");
 
     /// Object picking
-    inline const vector<I64>& getCurrentSelection(PlayerIndex index = 0) const {
+    inline vector<I64> getCurrentSelection(PlayerIndex index = 0) const {
         auto it = _currentSelection.find(index);
         if (it != eastl::cend(_currentSelection)) {
             return it->second;

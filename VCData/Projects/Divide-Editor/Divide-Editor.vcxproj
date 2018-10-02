@@ -36,7 +36,6 @@
     <ClCompile Include="../../../Source Code\Editor\Widgets\DockedWindows\PropertyWindow.cpp" />
     <ClCompile Include="../../../Source Code\Editor\Widgets\DockedWindows\SolutionExplorerWindow.cpp" />
     <ClCompile Include="../../../Source Code\Editor\Widgets\MenuBar.cpp" />
-    <ClCompile Include="../../../Source Code\Editor\Widgets\PanelManager.cpp" />
     <ClCompile Include="../../../Source Code\Libs\imgui\addons\imguifilesystem\minizip\ioapi.c">
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CompileAsCpp</CompileAs>
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">CompileAsCpp</CompileAs>
@@ -83,7 +82,6 @@
     <ClInclude Include="../../../Source Code\Editor\Widgets\Headers\ApplicationOutput.h" />
     <ClInclude Include="../../../Source Code\Editor\Widgets\Headers\DockedWindow.h" />
     <ClInclude Include="../../../Source Code\Editor\Widgets\Headers\MenuBar.h" />
-    <ClInclude Include="../../../Source Code\Editor\Widgets\Headers\PanelManager.h" />
     <ClInclude Include="../../../Source Code\Libs\imgui\addons\imguibindings\edtaa3func.h" />
     <ClInclude Include="../../../Source Code\Libs\imgui\addons\imguibindings\imguibindings.h" />
     <ClInclude Include="../../../Source Code\Libs\imgui\addons\imguibindings\ImImpl_Binding_Direct3D9.h" />

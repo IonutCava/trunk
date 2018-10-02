@@ -2,11 +2,10 @@
 
 #include "Headers/OutputWindow.h"
 #include "Editor/Headers/Editor.h"
-#include "Widgets/Headers/PanelManager.h"
 #include "Core/Headers/PlatformContext.h"
 
 namespace Divide {
-    OutputWindow::OutputWindow(PanelManager& parent)
+    OutputWindow::OutputWindow(Editor& parent)
         : DockedWindow(parent, "Output")
     {
 

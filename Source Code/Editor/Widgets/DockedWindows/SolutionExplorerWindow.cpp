@@ -2,12 +2,13 @@
 
 #include "Headers/SolutionExplorerWindow.h"
 
+#include "Editor/Headers/Editor.h"
+
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Rendering/Camera/Headers/Camera.h"
 #include "Dynamics/Entities/Units/Headers/Player.h"
-#include "Widgets/Headers/PanelManager.h"
 
 namespace Divide {
     namespace {
@@ -16,7 +17,7 @@ namespace Divide {
         std::vector<F32> g_framerateBufferCont;
     };
 
-    SolutionExplorerWindow::SolutionExplorerWindow(PanelManager& parent, PlatformContext& context)
+    SolutionExplorerWindow::SolutionExplorerWindow(Editor& parent, PlatformContext& context)
         : DockedWindow(parent, "Solution Explorer"),
           PlatformContextComponent(context)
     {
@@ -37,7 +38,7 @@ namespace Divide {
         if (ImGui::TreeNodeEx((void*)(intptr_t)camera->getGUID(), node_flags, camera->name().c_str())) {
             if (ImGui::IsItemClicked()) {
                 sceneManager.resetSelection(0);
-                Attorney::PanelManagerDockedWindows::setSelectedCamera(_parent, camera);
+                Attorney::EditorSolutionExplorerWindow::setSelectedCamera(_parent, camera);
             }
 
             ImGui::TreePop();
@@ -58,7 +59,7 @@ namespace Divide {
             if (ImGui::IsItemClicked()) {
                 sceneManager.resetSelection(0);
                 sceneManager.setSelected(0, sgn);
-                Attorney::PanelManagerDockedWindows::setSelectedCamera(_parent, nullptr);
+                Attorney::EditorSolutionExplorerWindow::setSelectedCamera(_parent, nullptr);
             }
         
             sgn.forEachChild([this, &sceneManager](SceneGraphNode& child) {

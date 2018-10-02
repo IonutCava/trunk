@@ -49,20 +49,26 @@ struct ImDrawData;
 namespace Divide {
 
 namespace Attorney {
-    class EditorWindowManager;
     class EditorPanelManager;
     class EditorOutputWindow;
+    class EditorWindowManager;
+    class EditorPropertyWindow;
     class EditorSceneViewWindow;
+    class EditorSolutionExplorerWindow;
 };
 
+class Camera;
 class MenuBar;
+class DockedWindow;
 class OutputWindow;
 class PanelManager;
 class DisplayWindow;
+class PropertyWindow;
 class SceneGraphNode;
 class SceneViewWindow;
 class PlatformContext;
 class ApplicationOutput;
+class SolutionExplorerWindow;
 
 FWD_DECLARE_MANAGED_CLASS(Texture);
 FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
@@ -80,15 +86,25 @@ class Editor : public PlatformContextComponent,
                public FrameListener,
                public Input::InputAggregatorInterface {
 
-    friend class Attorney::EditorWindowManager;
     friend class Attorney::EditorPanelManager;
     friend class Attorney::EditorOutputWindow;
+    friend class Attorney::EditorWindowManager;
+    friend class Attorney::EditorPropertyWindow;
     friend class Attorney::EditorSceneViewWindow;
+    friend class Attorney::EditorSolutionExplorerWindow;
 
   public:
     enum class Context : U8 {
         Editor = 0,
         Gizmo,
+        COUNT
+    };
+
+    enum class WindowType : U8 {
+        SolutionExplorer = 0,
+        Properties,
+        Output,
+        SceneView,
         COUNT
     };
 
@@ -110,10 +126,13 @@ class Editor : public PlatformContextComponent,
 
     bool shouldPauseSimulation() const;
 
-    inline const Rect<I32>& getScenePreviewRect() const { return _scenePreviewRect; }
-
     void onSizeChange(const SizeChangeParams& params);
     void selectionChangeCallback(PlayerIndex idx, SceneGraphNode* node);
+
+    bool simulationPauseRequested() const;
+
+    void setTransformSettings(const TransformSettings& settings);
+    const TransformSettings& getTransformSettings() const;
 
   protected: //frame listener
     bool frameStarted(const FrameEvent& evt);
@@ -152,18 +171,17 @@ class Editor : public PlatformContextComponent,
     bool hasSceneFocus();
     bool hasSceneFocus(bool& gizmoFocus);
     bool hasGizmoFocus();
-    void checkPreviewRectState();
-    void checkPreviewRectState(bool gizmoFocus);
     ImGuiIO& GetIO(U8 idx);
+    F32 calcMainMenuHeight();
+    void setPanelManagerBoundsToIncludeMainMenuIfPresent(int displayX = -1, int displayY = -1);
+
+    void updateStyle();
 
   protected: // window events
     bool OnClose();
     void OnFocus(bool bHasFocus);
     void OnSize(int iWidth, int iHeight);
     void OnUTF8(const char* text);
-    void dim(bool hovered, bool focused);
-    bool toggleScenePreview(bool state);
-    void setScenePreviewRect(const Rect<I32>& rect);
 
   protected: // attorney
     void renderDrawList(ImDrawData* pDrawData, I64 windowGUID, bool isPostPass);
@@ -179,31 +197,27 @@ class Editor : public PlatformContextComponent,
     bool showDebugWindow() const;
     bool showSampleWindow() const;
     bool enableGizmo() const;
-    void setTransformSettings(const TransformSettings& settings);
-    const TransformSettings& getTransformSettings() const;
+    void setSelectedCamera(Camera* camera);
+    Camera* getSelectedCamera() const;
 
   private:
     ImGuiStyleEnum _currentTheme;
     ImGuiStyleEnum _currentLostFocusTheme;
     ImGuiStyleEnum _currentDimmedTheme;
 
-    Rect<I32> _scenePreviewRect;
-
     TransformSettings _transformSettings;
     I64 _activeWindowGUID = -1;
     std::unique_ptr<MenuBar> _menuBar;
-    std::unique_ptr<PanelManager> _panelManager;
     std::unique_ptr<ApplicationOutput> _applicationOutput;
 
     bool              _running;
     bool              _sceneHovered;
     bool              _gizmosVisible;
-    bool              _sceneWasHovered;
     bool              _scenePreviewFocused;
-    bool              _scenePreviewWasFocused;
     bool              _showDebugWindow;
     bool              _showSampleWindow;
     bool              _enableGizmo;
+    Camera*           _selectedCamera;
     DisplayWindow*    _mainWindow;
     Texture_ptr       _fontTexture;
     ShaderProgram_ptr _imguiProgram;
@@ -213,8 +227,10 @@ class Editor : public PlatformContextComponent,
     std::array<ImGuiContext*, to_base(Context::COUNT)>     _imguiContext;
     std::array<vector<I64>, to_base(WindowEvent::COUNT)> _windowListeners;
     vector<SceneGraphNode*> _selectedNodes;
-
     size_t _consoleCallbackIndex;
+    bool* _simulationPaused;
+    U32 _sceneStepCount;
+    std::array<DockedWindow*, to_base(WindowType::COUNT)> _dockedWindows;
 }; //Editor
 
 namespace Attorney {
@@ -229,12 +245,42 @@ namespace Attorney {
 
     class EditorSceneViewWindow {
     private:
-        static void setScenePreviewRect(Editor& editor, const Rect<I32>& rect) {
-            editor.setScenePreviewRect(rect);
-        }
-
 
         friend class Divide::SceneViewWindow;
+    };
+
+    class EditorSolutionExplorerWindow {
+    private :
+        static void setSelectedCamera(Editor& editor, Camera* camera) {
+            editor.setSelectedCamera(camera);
+        }
+
+        static Camera* getSelectedCamera(Editor& editor) {
+            return editor.getSelectedCamera();
+        }
+
+        friend class Divide::SolutionExplorerWindow;
+    };
+
+    class EditorPropertyWindow {
+    private :
+        static bool editorEnableGizmo(Editor& editor) {
+            return editor.enableGizmo();
+        }
+
+        static void editorEnableGizmo(Editor& editor, bool state) {
+            editor.enableGizmo(state);
+        }
+
+        static void setSelectedCamera(Editor& editor, Camera* camera) {
+            editor.setSelectedCamera(camera);
+        }
+
+        static Camera* getSelectedCamera(Editor& editor) {
+            return editor.getSelectedCamera();
+        }
+
+        friend class Divide::PropertyWindow;
     };
 
     class EditorPanelManager {

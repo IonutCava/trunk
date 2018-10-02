@@ -86,9 +86,9 @@ struct MouseEvent : public InputEvent {
     OIS::Axis Z(bool warped = true, bool viewportRelative = false) const;
 
 
-    vec3<I32> relativePos(bool warped = true, bool viewportRelative = false) const;
-    vec3<I32> absolutePos(bool warped = true, bool viewportRelative = false) const;
-    MouseState state(bool warped = true, bool viewportRelative = false) const;
+    vec3<I32> relativePos(bool warped, bool viewportRelative) const;
+    vec3<I32> absolutePos(bool warped, bool viewportRelative) const;
+    MouseState state(bool warped, bool viewportRelative) const;
 
  private:
 

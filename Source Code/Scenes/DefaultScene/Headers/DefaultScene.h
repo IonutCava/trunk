@@ -49,7 +49,6 @@ public:
     void onSetActive() override;
 private:
     void loadScene(I64 btnGUID);
-    bool mouseMoved(const Input::MouseEvent& arg) override;
 
 private:
     hashMap<U8, Angle::DEGREES<F32>> _camAngle;

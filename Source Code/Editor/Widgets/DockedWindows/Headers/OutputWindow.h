@@ -37,7 +37,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 class OutputWindow : public DockedWindow {
     public:
-        OutputWindow(PanelManager& parent);
+        OutputWindow(Editor& parent);
         ~OutputWindow();
 
         void draw() override;

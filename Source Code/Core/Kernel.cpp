@@ -461,7 +461,7 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
 
     U8 playerCount = _sceneManager->getActivePlayerCount();
 
-    const Rect<I32>& mainViewport = _platformContext->gfx().getCurrentViewport();
+    const Rect<I32>& mainViewport = _platformContext->activeWindow().renderingViewport();
     if (_prevViewport != mainViewport || _prevPlayerCount != playerCount) {
         computeViewports(mainViewport, _targetViewports, playerCount);
         _prevViewport.set(mainViewport);

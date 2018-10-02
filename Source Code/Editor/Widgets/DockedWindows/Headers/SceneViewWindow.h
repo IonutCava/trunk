@@ -33,14 +33,20 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _SCENE_VIEW_WINDOW_H_
 
 #include "Editor/Widgets/Headers/DockedWindow.h"
+#include "Core/Math/Headers/MathVectors.h"
 
 namespace Divide {
     class SceneViewWindow : public DockedWindow {
     public:
-        SceneViewWindow(PanelManager& parent);
+        SceneViewWindow(Editor& parent);
         ~SceneViewWindow();
 
         void draw() override;
+
+        inline const Rect<I32>& sceneRect() const { return _sceneRect; };
+
+    protected:
+        Rect<I32> _sceneRect;
     };
 }; //namespace Divide
 

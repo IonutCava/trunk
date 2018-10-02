@@ -3,8 +3,12 @@
 #include "Headers/Editor.h"
 #include "Headers/Sample.h"
 #include "Editor/Widgets/Headers/MenuBar.h"
-#include "Editor/Widgets/Headers/PanelManager.h"
 #include "Editor/Widgets/Headers/ApplicationOutput.h"
+
+#include "Editor/Widgets/DockedWindows/Headers/OutputWindow.h"
+#include "Editor/Widgets/DockedWindows/Headers/PropertyWindow.h"
+#include "Editor/Widgets/DockedWindows/Headers/SceneViewWindow.h"
+#include "Editor/Widgets/DockedWindows/Headers/SolutionExplorerWindow.h"
 
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/Console.h"
@@ -28,15 +32,6 @@
 #include <imgui_internal.h>
 
 #include <SDL/include/SDL_syswm.h>
-
-#define SDL_HAS_WARP_MOUSE_GLOBAL           SDL_VERSION_ATLEAST(2,0,4)
-#define SDL_HAS_CAPTURE_MOUSE               SDL_VERSION_ATLEAST(2,0,4)
-#define SDL_HAS_WINDOW_OPACITY              SDL_VERSION_ATLEAST(2,0,5)
-#define SDL_HAS_ALWAYS_ON_TOP               SDL_VERSION_ATLEAST(2,0,5)
-#define SDL_HAS_USABLE_DISPLAY_BOUNDS       SDL_VERSION_ATLEAST(2,0,5)
-#define SDL_HAS_PER_MONITOR_DPI             SDL_VERSION_ATLEAST(2,0,4)
-#define SDL_HAS_VULKAN                      SDL_VERSION_ATLEAST(2,0,6)
-#define SDL_HAS_MOUSE_FOCUS_CLICKTHROUGH    SDL_VERSION_ATLEAST(2,0,5)
 
 namespace Divide {
 
@@ -80,9 +75,10 @@ Editor::Editor(PlatformContext& context, ImGuiStyleEnum theme, ImGuiStyleEnum lo
       _mainWindow(nullptr),
       _running(false),
       _sceneHovered(false),
-      _sceneWasHovered(false),
       _scenePreviewFocused(false),
-      _scenePreviewWasFocused(false),
+      _simulationPaused(nullptr),
+      _selectedCamera(nullptr),
+      _sceneStepCount(0),
       _showDebugWindow(false),
       _showSampleWindow(false),
       _gizmosVisible(false),
@@ -94,26 +90,38 @@ Editor::Editor(PlatformContext& context, ImGuiStyleEnum theme, ImGuiStyleEnum lo
 {
     _imguiContext.fill(nullptr);
 
-    _panelManager = std::make_unique<PanelManager>(context);
     _menuBar = std::make_unique<MenuBar>(context, true);
     _applicationOutput = std::make_unique<ApplicationOutput>(context, to_U16(512));
+
+
+    _dockedWindows[to_base(WindowType::SolutionExplorer)] = MemoryManager_NEW SolutionExplorerWindow(*this, context);
+    _dockedWindows[to_base(WindowType::Properties)] = MemoryManager_NEW PropertyWindow(*this, context);
+    _dockedWindows[to_base(WindowType::Output)] = MemoryManager_NEW OutputWindow(*this);
+    _dockedWindows[to_base(WindowType::SceneView)] = MemoryManager_NEW SceneViewWindow(*this);
 
     REGISTER_FRAME_LISTENER(this, 99999);
 }
 
 Editor::~Editor()
 {
-    UNREGISTER_FRAME_LISTENER(this);
     close();
+    for (DockedWindow* window : _dockedWindows) {
+        MemoryManager::SAFE_DELETE(window);
+    }
+    _dockedWindows.fill(nullptr);
+
+    UNREGISTER_FRAME_LISTENER(this);
 }
 
 void Editor::idle() {
+    if (_sceneStepCount > 0) {
+        _sceneStepCount--;
+    }
+
     if (window_opacity != previous_window_opacity) {
         context().activeWindow().opacity(to_U8(window_opacity));
         previous_window_opacity = window_opacity;
     }
-
-    _panelManager->idle();
 }
 
 bool Editor::init(const vec2<U16>& renderResolution) {
@@ -249,8 +257,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
     main_viewport->PlatformUserData = data;
     main_viewport->PlatformHandle = data->Window;
 
-    _panelManager->init(renderResolution);
-
+    setPanelManagerBoundsToIncludeMainMenuIfPresent(renderResolution.w, renderResolution.h);
     ImGui::ResetStyle(_currentTheme);
 
     _consoleCallbackIndex = Console::bindConsoleOutput([this](const Console::OutputEntry& entry) {
@@ -276,7 +283,6 @@ void Editor::close() {
     }
     _fontTexture.reset();
     _imguiProgram.reset();
-    _panelManager->destroy();
     for (U8 i = 0; i < to_base(Context::COUNT); ++i) {
         if (_imguiContext[i] != nullptr) {
             ImGui::SetCurrentContext(_imguiContext[i]);
@@ -289,7 +295,8 @@ void Editor::close() {
 void Editor::toggle(const bool state) {
     _running = state;
     if (!state) {
-        toggleScenePreview(false);
+        _scenePreviewFocused = _sceneHovered = false;
+        updateStyle();
     } else {
         _enableGizmo = true;
     }
@@ -300,7 +307,7 @@ bool Editor::running() const {
 }
 
 bool Editor::shouldPauseSimulation() const {
-    return _panelManager && _panelManager->simulationPauseRequested();
+    return simulationPauseRequested();
 }
 
 void Editor::update(const U64 deltaTimeUS) {
@@ -433,7 +440,41 @@ bool Editor::renderMinimal(const U64 deltaTime) {
 
 bool Editor::renderFull(const U64 deltaTime) {
     drawMenuBar();
-    _panelManager->draw(deltaTime);
+    ImGuiWindowFlags window_flags = 0;
+    //window_flags |= ImGuiWindowFlags_NoTitleBar;
+    //window_flags |= ImGuiWindowFlags_NoScrollbar;
+    //window_flags |= ImGuiWindowFlags_MenuBar;
+    //window_flags |= ImGuiWindowFlags_NoMove;
+    //window_flags |= ImGuiWindowFlags_NoResize;
+    //window_flags |= ImGuiWindowFlags_NoCollapse;
+    //window_flags |= ImGuiWindowFlags_NoNav;
+
+    const float menuBarOffset = 20;
+
+    ImVec2 sizes[] = {
+        ImVec2(300, 550),
+        ImVec2(300, 550),
+        ImVec2(ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y - 550 - menuBarOffset - 3),
+        ImVec2(640, 480)
+    };
+
+    ImVec2 positions[] = {
+        ImVec2(0, menuBarOffset),
+        ImVec2(ImGui::GetIO().DisplaySize.x - sizes[1].x, menuBarOffset),
+        ImVec2(0, std::max(sizes[0].y, sizes[1].y) + menuBarOffset + 3),
+        ImVec2(150, 150)
+    };
+
+    U32 i = 0;
+    for (DockedWindow* window : _dockedWindows) {
+        ImGui::SetNextWindowPos(positions[i], ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize(sizes[i++], ImGuiCond_FirstUseEver);
+
+        if (ImGui::Begin(window->name(), NULL, window_flags)) {
+            window->draw();
+        }
+        ImGui::End();
+    }
     renderMinimal(deltaTime);
     return true;
 }
@@ -531,26 +572,15 @@ const TransformSettings& Editor::getTransformSettings() const {
 }
 
 void Editor::savePanelLayout() const {
-    if (_panelManager) {
-        _panelManager->saveToFile();
-    }
 }
+
 void Editor::loadPanelLayout() {
-    if (_panelManager) {
-        _panelManager->loadFromFile();
-    }
 }
 
 void Editor::saveTabLayout() const {
-    if (_panelManager) {
-        _panelManager->saveTabsToFile();
-    }
 }
 
 void Editor::loadTabLayout() {
-    if (_panelManager) {
-        _panelManager->loadTabsFromFile();
-    }
 }
 
 // Needs to be rendered immediately. *IM*GUI. IMGUI::NewFrame invalidates this data
@@ -656,40 +686,10 @@ void Editor::renderDrawList(ImDrawData* pDrawData, I64 windowGUID, bool isPostPa
     _context.gfx().flushCommandBuffer(buffer);
 }
 
-void Editor::dim(bool hovered, bool focused) {
-    ImGui::ResetStyle(focused ? _currentDimmedTheme
-                              : hovered ? _currentLostFocusTheme
-                                        : _currentTheme);
-}
-
-bool Editor::toggleScenePreview(bool state) {
-    if (_scenePreviewFocused != state) {
-        _scenePreviewWasFocused = _scenePreviewFocused;
-        _scenePreviewFocused = state;
-        _mainWindow->warp(_scenePreviewFocused, _scenePreviewRect);
-        dim(_sceneHovered, _scenePreviewFocused);
-    }
-
-    return _scenePreviewFocused;
-}
-
-void Editor::checkPreviewRectState() {
-    checkPreviewRectState(hasGizmoFocus());
-}
-
-void Editor::checkPreviewRectState(bool gizmoFocus) {
-    bool hovered = gizmoFocus ||
-                   _scenePreviewRect.contains(ImGui::GetIO().MousePos.x,
-                                              ImGui::GetIO().MousePos.y);
-
-    if (_sceneWasHovered != hovered) {
-        _sceneWasHovered = _sceneHovered;
-        _sceneHovered = hovered;
-    }
-}
-
-void Editor::setScenePreviewRect(const Rect<I32>& rect) {
-    _scenePreviewRect.set(rect);
+void Editor::updateStyle() {
+    ImGui::ResetStyle(_scenePreviewFocused ? _currentDimmedTheme
+                                           : _sceneHovered ? _currentLostFocusTheme
+                                                           : _currentTheme);
 }
 
 void Editor::selectionChangeCallback(PlayerIndex idx, SceneGraphNode* node) {
@@ -759,11 +759,14 @@ bool Editor::mouseMoved(const Input::MouseEvent& arg) {
         io.MouseWheel += (float)arg.Z(i == 1).rel / 60.0f;
     }
 
-    bool gizmoFocus = false;
-    bool sceneFocus = hasSceneFocus(gizmoFocus);
-    checkPreviewRectState(gizmoFocus);
+    // Check if we are hovering over the scene
 
-    return sceneFocus ? gizmoFocus : GetIO(to_base(Context::Editor)).WantCaptureMouse;
+    ImGuiIO& io = GetIO(to_base(Context::Editor));
+    const Rect<I32>& previewRect = static_cast<SceneViewWindow*>(_dockedWindows[to_base(WindowType::SceneView)])->sceneRect();
+    _sceneHovered = previewRect.contains(io.MousePos.x, io.MousePos.y);
+    updateStyle();
+
+    return !_scenePreviewFocused ? io.WantCaptureMouse : hasGizmoFocus();
 }
 
 /// Mouse button pressed: return true if input was consumed
@@ -778,16 +781,13 @@ bool Editor::mouseButtonPressed(const Input::MouseEvent& arg, Input::MouseButton
     ImGuiIO& io = ImGui::GetIO();
 
     io.MouseDown[button == OIS::MB_Left ? 0 : button == OIS::MB_Right ? 1 : 2] = true;
+
     return io.WantCaptureMouse || ImGuizmo::IsOver();
 }
 
 /// Mouse button released: return true if input was consumed
 bool Editor::mouseButtonReleased(const Input::MouseEvent& arg, Input::MouseButton button) {
     ACKNOWLEDGE_UNUSED(arg);
-
-    if (button == OIS::MB_Left) {
-        toggleScenePreview(_sceneHovered && _running);
-    }
 
     if (!needInput()) {
         return false;
@@ -797,6 +797,13 @@ bool Editor::mouseButtonReleased(const Input::MouseEvent& arg, Input::MouseButto
     ImGuiIO& io = ImGui::GetIO();
 
     io.MouseDown[button == OIS::MB_Left ? 0 : button == OIS::MB_Right ? 1 : 2] = false;
+
+    if (_scenePreviewFocused != _sceneHovered) {
+        _scenePreviewFocused = _sceneHovered;
+        updateStyle();
+        const Rect<I32>& previewRect = static_cast<SceneViewWindow*>(_dockedWindows[to_base(WindowType::SceneView)])->sceneRect();
+        _mainWindow->warp(_scenePreviewFocused, previewRect);
+    }
 
     return io.WantCaptureMouse || ImGuizmo::IsOver();
 }
@@ -857,7 +864,7 @@ void Editor::onSizeChange(const SizeChangeParams& params) {
             ImGuiIO& io = GetIO(i);
 
             if (params.isWindowResize && i == 0) {
-                _panelManager->resize(params.width, params.height);
+                setPanelManagerBoundsToIncludeMainMenuIfPresent(params.width, params.height);
             } else {
                 io.DisplaySize.x = (float)params.width;
                 io.DisplaySize.y = (float)params.height;
@@ -882,6 +889,14 @@ void Editor::OnUTF8(const char* text) {
     }
 
     GetIO(hasSceneFocus() ? to_base(Context::Gizmo) : to_base(Context::Editor)).AddInputCharactersUTF8(text);
+}
+
+void Editor::setSelectedCamera(Camera* camera) {
+    _selectedCamera = camera;
+}
+
+Camera* Editor::getSelectedCamera() const {
+    return _selectedCamera;
 }
 
 void Editor::drawIMGUIDebug(const U64 deltaTime) {
@@ -935,6 +950,34 @@ ImGuiIO& Editor::GetIO(U8 idx) {
     return _imguiContext[idx]->IO;
 }
 
+bool Editor::simulationPauseRequested() const {
+    return _sceneStepCount == 0 && _simulationPaused != nullptr && *_simulationPaused;
+}
+
+// Here are two static methods useful to handle the change of size of the togglable mainMenu we will use
+// Returns the height of the main menu based on the current font (from: ImGui::CalcMainMenuHeight() in imguihelper.h)
+float Editor::calcMainMenuHeight() {
+    ImGuiIO& io = ImGui::GetIO();
+    ImGuiStyle& style = ImGui::GetStyle();
+    ImFont* font = ImGui::GetFont();
+    if (!font) {
+        if (io.Fonts->Fonts.size() > 0) font = io.Fonts->Fonts[0];
+        else return (14) + style.FramePadding.y * 2.0f;
+    }
+    return (io.FontGlobalScale * font->Scale * font->FontSize) + style.FramePadding.y * 2.0f;
+}
+
+void Editor::setPanelManagerBoundsToIncludeMainMenuIfPresent(int displayX, int displayY) {
+    if (displayX <= 0)
+        displayX = (int)ImGui::GetIO().DisplaySize.x;
+
+    if (displayY <= 0)
+        displayY = (int)ImGui::GetIO().DisplaySize.y;
+
+    ImVec4 bounds(0, 0, (float)displayX, (float)displayY);   // (0,0,-1,-1) defaults to (0,0,io.DisplaySize.x,io.DisplaySize.y)
+    const float mainMenuHeight = calcMainMenuHeight();
+    bounds = ImVec4(0, mainMenuHeight, to_F32(displayX), to_F32(displayY) - mainMenuHeight);
+}
 
 //--------------------------------------------------------------------------------------------------------
 // MULTI-VIEWPORT / PLATFORM INTERFACE SUPPORT
@@ -1118,4 +1161,5 @@ static void ImGui_ImplSDL2_UpdateMonitors()
         platform_io.Monitors.push_back(monitor);
     }
 }
+
 }; //namespace Divide

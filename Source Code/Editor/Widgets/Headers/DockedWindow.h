@@ -36,10 +36,10 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-class PanelManager;
+class Editor;
 class DockedWindow {
     public:
-        explicit DockedWindow(PanelManager& parent, const stringImpl& name);
+        explicit DockedWindow(Editor& parent, const stringImpl& name);
         virtual ~DockedWindow();
 
         virtual void draw() = 0;
@@ -47,7 +47,7 @@ class DockedWindow {
         virtual const char* name() const { return _name.c_str(); }
 
     protected:
-        PanelManager & _parent;
+        Editor & _parent;
         stringImpl _name;
 };
 }; //namespace Divide

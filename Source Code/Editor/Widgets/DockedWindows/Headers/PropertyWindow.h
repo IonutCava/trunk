@@ -44,7 +44,7 @@ class SceneGraphNode;
 struct EditorComponentField;
 class PropertyWindow : public DockedWindow, public PlatformContextComponent {
     public:
-        PropertyWindow(PanelManager& parent, PlatformContext& context);
+        PropertyWindow(Editor& parent, PlatformContext& context);
         ~PropertyWindow();
 
         void draw() override;
@@ -52,7 +52,7 @@ class PropertyWindow : public DockedWindow, public PlatformContextComponent {
         const char* name() const override;
     protected:
 
-     const vector<I64>& selections() const;
+     vector<I64> selections() const;
      SceneGraphNode* node(I64 guid) const;
 
      //return true if the field has been modified

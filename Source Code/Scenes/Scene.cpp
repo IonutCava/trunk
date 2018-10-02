@@ -1111,7 +1111,7 @@ bool Scene::mouseMoved(const Input::MouseEvent& arg) {
     _hoverUpdateQueue.insert(idx);
 
     Camera& cam = _scenePlayers[idx]->getCamera();
-    if (cam.moveRelative(arg.relativePos()))
+    if (cam.moveRelative(arg.relativePos(true, true)))
     {
         if (cam.type() == Camera::CameraType::THIRD_PERSON) {
             _context.app().windowManager().snapCursorToCenter();

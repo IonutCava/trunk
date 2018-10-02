@@ -42,7 +42,7 @@ class SceneManager;
 class SceneGraphNode;
 class SolutionExplorerWindow : public DockedWindow, public PlatformContextComponent {
     public:
-        SolutionExplorerWindow(PanelManager& parent, PlatformContext& context);
+        SolutionExplorerWindow(Editor& parent, PlatformContext& context);
         ~SolutionExplorerWindow();
 
         void draw() override;

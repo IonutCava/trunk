@@ -1,7 +1,6 @@
 #include "stdafx.h"
 
 #include "Headers/SceneViewWindow.h"
-#include "Widgets/Headers/PanelManager.h"
 
 #include "Editor/Headers/Editor.h"
 #include "Core/Headers/PlatformContext.h"
@@ -12,7 +11,7 @@
 
 namespace Divide {
 
-    SceneViewWindow::SceneViewWindow(PanelManager& parent)
+    SceneViewWindow::SceneViewWindow(Editor& parent)
         : DockedWindow(parent, "SceneView")
     {
 
@@ -97,7 +96,7 @@ namespace Divide {
 
                 window->DrawList->AddImage((void *)(intptr_t)gameView->getHandle(), startPos, endPos, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
 
-                Attorney::EditorSceneViewWindow::setScenePreviewRect(_parent.context().editor(), Rect<I32>(startPos.x, startPos.y, endPos.x, endPos.y));
+                _sceneRect.set(startPos.x, startPos.y, endPos.x, endPos.y);
 
                 ImGui::PopID();
             }
