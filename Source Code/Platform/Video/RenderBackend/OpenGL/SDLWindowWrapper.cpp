@@ -90,42 +90,15 @@ namespace {
     } g_ContextPool;
 };
 
-ErrorCode GL_API::createGLContext(const DisplayWindow& window) {
-    g_ContextPool.init(HARDWARE_THREAD_COUNT() * 2, window);
-    GLUtil::_glRenderContext = SDL_GL_CreateContext(window.getRawWindow());
-    if (GLUtil::_glRenderContext == nullptr)
-    {
-        GLUtil::_glMainRenderWindow = &window;
-        Console::errorfn(Locale::get(_ID("ERROR_GFX_DEVICE")), SDL_GetError());
-        Console::printfn(Locale::get(_ID("WARN_SWITCH_API")));
-        Console::printfn(Locale::get(_ID("WARN_APPLICATION_CLOSE")));
-        return ErrorCode::OGL_OLD_HARDWARE;
-    }
-
-    return ErrorCode::NO_ERR;
-}
-
-ErrorCode GL_API::destroyGLContext() {
-    if (GLUtil::_glRenderContext != nullptr) {
-        SDL_GL_DeleteContext(GLUtil::_glRenderContext);
-    }
-
-    g_ContextPool.destroy();
-    return ErrorCode::NO_ERR;
-}
-
 /// Try and create a valid OpenGL context taking in account the specified resolution and command line arguments
 ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& config) {
     // Fill our (abstract API <-> openGL) enum translation tables with proper values
     GLUtil::fillEnumTables();
 
     const DisplayWindow& window = _context.parent().platformContext().app().windowManager().getActiveWindow();
-    ErrorCode errorState = createGLContext(window);
-    if (errorState != ErrorCode::NO_ERR) {
-        return errorState;
-    }
+    g_ContextPool.init((size_t)HARDWARE_THREAD_COUNT() * 2, window);
 
-    SDL_GL_MakeCurrent(window.getRawWindow(), GLUtil::_glRenderContext);
+    SDL_GL_MakeCurrent(window.getRawWindow(), (SDL_GLContext)window.userData());
     GLUtil::_glMainRenderWindow = &window;
 
     glbinding::Binding::initialize([](const char *proc) { return (glbinding::ProcAddress)SDL_GL_GetProcAddress(proc); }, true);
@@ -225,18 +198,6 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
         }
     }
 
-    // Vsync is toggled on or off via the external config file
-    bool vsyncSet = false;
-    // Late swap may fail
-    if (config.runtime.enableVSync && config.runtime.adaptiveSync) {
-        vsyncSet = SDL_GL_SetSwapInterval(-1) != -1;
-    }
-    
-    if (!vsyncSet) {
-        vsyncSet = SDL_GL_SetSwapInterval(config.runtime.enableVSync ? 1 : 0) != -1;
-    }
-    assert(vsyncSet);
-    
     // If we got here, let's figure out what capabilities we have available
     // Maximum addressable texture image units in the fragment shader
     s_maxTextureUnits = std::max(GLUtil::getIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS), 8);
@@ -464,7 +425,7 @@ void GL_API::closeRenderingAPI() {
         MemoryManager::DELETE(s_hardwareQueryPool);
     }
 
-    destroyGLContext();
+    g_ContextPool.destroy();
 }
 
 void GL_API::createOrValidateContextForCurrentThread(GFXDevice& context) {

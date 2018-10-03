@@ -46,12 +46,15 @@ struct WindowDescriptor {
         DECORATED = toBit(2),
         RESIZEABLE = toBit(3),
         HIDDEN = toBit(4),
-        ALLOW_HIGH_DPI = toBit(5)
+        ALLOW_HIGH_DPI = toBit(5),
+        ALWAYS_ON_TOP = toBit(6)
     };
 
     U32 targetDisplay = 0;
-    stringImpl title;
+    stringImpl title = "";
+    vec2<I16> position;
     vec2<U16> dimensions;
+    bool vsync = false;
     FColour clearColour = DefaultColours::DIVIDE_BLUE;
     U32 flags = to_base(Flags::DECORATED) | to_base(Flags::RESIZEABLE) | to_base(Flags::ALLOW_HIGH_DPI);
 };
@@ -63,7 +66,7 @@ public:
     ~WindowManager();
 
     ErrorCode init(PlatformContext& context,
-                   RenderAPI api,
+                   const vec2<I16>& initialPosition,
                    const vec2<U16>& initialResolution,
                    bool startFullScreen,
                    I32 targetDisplayIndex);
@@ -98,12 +101,17 @@ public:
 
     vec2<U16> getFullscreenResolution() const;
 
+    void prepareWindowForRender(const DisplayWindow& window) const;
+    void swapWindow(const DisplayWindow& window) const;
+
 protected:
     friend class DisplayWindow;
     void pollSDLEvents();
 
 protected:
     U32 createAPIFlags(RenderAPI api);
+    ErrorCode configureAPISettings(DisplayWindow* window);
+    void destroyAPISettings(DisplayWindow* window);
 
 protected:
     U32 _apiFlags;

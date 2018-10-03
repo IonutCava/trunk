@@ -1,7 +1,6 @@
 #include "stdafx.h"
 
 #include "Headers/MenuBar.h"
-#include "Headers/PanelManager.h"
 
 #include "Editor/Headers/Editor.h"
 #include "Core/Headers/Application.h"

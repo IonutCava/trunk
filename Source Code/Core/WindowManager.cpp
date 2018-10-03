@@ -63,7 +63,7 @@ vec2<U16> WindowManager::getFullscreenResolution() const {
 }
 
 ErrorCode WindowManager::init(PlatformContext& context,
-                              RenderAPI api,
+                              const vec2<I16>& initialPosition,
                               const vec2<U16>& initialResolution,
                               bool startFullScreen,
                               I32 targetDisplayIndex)
@@ -73,6 +73,8 @@ ErrorCode WindowManager::init(PlatformContext& context,
     }
     
     _context = &context;
+    RenderAPI api = _context->gfx().getAPI();
+
     targetDisplay(std::max(std::min(targetDisplayIndex, SDL_GetNumVideoDisplays() - 1), 0));
 
     SysInfo& systemInfo = sysInfo();
@@ -84,9 +86,11 @@ ErrorCode WindowManager::init(PlatformContext& context,
     _apiFlags = createAPIFlags(api);
 
     WindowDescriptor descriptor;
+    descriptor.position = initialPosition;
     descriptor.dimensions = initialResolution;
     descriptor.targetDisplay = targetDisplayIndex;
     descriptor.title = _context->config().title;
+    descriptor.vsync = _context->config().runtime.enableVSync;
 
     SetBit(descriptor.flags, WindowDescriptor::Flags::HIDDEN);
 
@@ -161,18 +165,25 @@ U32 WindowManager::createWindow(const WindowDescriptor& descriptor, ErrorCode& e
         if (!BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::DECORATED))) {
             mainWindowFlags |= SDL_WINDOW_BORDERLESS;
         }
+        if (BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::ALWAYS_ON_TOP))) {
+            mainWindowFlags |= SDL_WINDOW_ALWAYS_ON_TOP;
+        }
         bool fullscreen = BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::FULLSCREEN));
 
         err = _windows[ret]->init(mainWindowFlags,
                                   fullscreen ? WindowType::FULLSCREEN : WindowType::WINDOW,
-                                  descriptor.dimensions,
-                                  descriptor.title.c_str());
+                                  descriptor);
+
+        _windows[ret]->clearColour(descriptor.clearColour, true);
+
+        if (err == ErrorCode::NO_ERR) {
+            err = configureAPISettings(_windows[ret]);
+        }
 
         if (err != ErrorCode::NO_ERR) {
             _windows.pop_back();
             MemoryManager::SAFE_DELETE(window);
         }
-        _windows[ret]->clearColour(descriptor.clearColour, true);
     }
 
     return ret;
@@ -271,82 +282,153 @@ U32 WindowManager::createAPIFlags(RenderAPI api) {
             OpenGLFlags |= SDL_GL_CONTEXT_ROBUST_ACCESS_FLAG
                       /*|  SDL_GL_CONTEXT_DEBUG_FLAG*/;
         }
-
-        auto validate = [](I32 errCode) -> bool {
-            if (errCode != 0) {
-                Console::errorfn(Locale::get(_ID("SDL_ERROR")), SDL_GetError());
-                return false;
-            }
-
-            return true;
-        };
-
-        auto validateAssert = [&validate](I32 errCode) -> bool {
-            if (!validate(errCode)) {
-                assert(errCode == 0);
-                return false;
-            }
-
-            return true;
-        };
-
-        validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, OpenGLFlags));
-        validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_RELEASE_BEHAVIOR, SDL_GL_CONTEXT_RELEASE_BEHAVIOR_NONE));
-
-        validateAssert(SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1));
-        // 32Bit RGBA (R8G8B8A8), 24bit Depth, 8bit Stencil
-        validateAssert(SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8));
-        validateAssert(SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8));
-        validateAssert(SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8));
-        validateAssert(SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8));
-        validateAssert(SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8));
-        validateAssert(SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24));
-        validateAssert(SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1));
-        if (!Config::ENABLE_GPU_VALIDATION) {
-            //validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_NO_ERROR, 1));
-        }
-
-        // Toggle multi-sampling if requested.
-        // This options requires a client-restart, sadly.
-        I32 msaaSamples = to_I32(_context->config().rendering.msaaSamples);
-        if (msaaSamples > 0) {
-            if (validate(SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1))) {
-                while (!validate(SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, msaaSamples))) {
-                    msaaSamples = msaaSamples / 2;
-                    if (msaaSamples == 0) {
-                        validate(SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0));
-                        break;
-                    }
-                }
-            } else {
-                msaaSamples = 0;
-            }
-        }
-        _context->config().rendering.msaaSamples = to_U8(msaaSamples);
-
-        if (msaaSamples == 0 && _context->config().rendering.shadowMapping.msaaSamples > 0) {
-            validate(SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1));
-        }
-
-        // OpenGL ES is not yet supported, but when added, it will need to mirror
-        // OpenGL functionality 1-to-1
-        if (api == RenderAPI::OpenGLES) {
-            validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_EGL, 1));
-            validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES));
-            validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3));
-            validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1));
-        }  else {
-            validate(SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE));
-            validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4));
-            //if (SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6) != 0) {
-                validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5));
-            //}
-        }
-
         windowFlags |= SDL_WINDOW_OPENGL;
     } 
 
     return windowFlags;
+}
+
+void WindowManager::destroyAPISettings(DisplayWindow* window) {
+    if (!window || !BitCompare(SDL_GetWindowFlags(window->getRawWindow()), to_U32(SDL_WINDOW_OPENGL))) {
+        return;
+    }
+
+    SDL_GL_DeleteContext((SDL_GLContext)window->_userData);
+}
+
+ErrorCode WindowManager::configureAPISettings(DisplayWindow* window) {
+    if (!window || !BitCompare(SDL_GetWindowFlags(window->getRawWindow()), to_U32(SDL_WINDOW_OPENGL))) {
+        return ErrorCode::GFX_NOT_SUPPORTED;
+    }
+
+    auto validate = [](I32 errCode) -> bool {
+        if (errCode != 0) {
+            Console::errorfn(Locale::get(_ID("SDL_ERROR")), SDL_GetError());
+            return false;
+        }
+
+        return true;
+    };
+
+    auto validateAssert = [&validate](I32 errCode) -> bool {
+        if (!validate(errCode)) {
+            assert(errCode == 0);
+            return false;
+        }
+
+        return true;
+    };
+
+    Uint32 OpenGLFlags = SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG |
+        SDL_GL_CONTEXT_RESET_ISOLATION_FLAG;
+
+    if (Config::ENABLE_GPU_VALIDATION) {
+        // OpenGL error handling is available in any build configuration
+        // if the proper defines are in place.
+        OpenGLFlags |= SDL_GL_CONTEXT_ROBUST_ACCESS_FLAG
+            /*|  SDL_GL_CONTEXT_DEBUG_FLAG*/;
+    }
+
+    validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, OpenGLFlags));
+    validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_RELEASE_BEHAVIOR, SDL_GL_CONTEXT_RELEASE_BEHAVIOR_NONE));
+
+    validateAssert(SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1));
+    // 32Bit RGBA (R8G8B8A8), 24bit Depth, 8bit Stencil
+    validateAssert(SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8));
+    validateAssert(SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8));
+    validateAssert(SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8));
+    validateAssert(SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8));
+    validateAssert(SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8));
+    validateAssert(SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24));
+    validateAssert(SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1));
+    if (!Config::ENABLE_GPU_VALIDATION) {
+        //validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_NO_ERROR, 1));
+    }
+
+    // Toggle multi-sampling if requested.
+    // This options requires a client-restart, sadly.
+    I32 msaaSamples = to_I32(_context->config().rendering.msaaSamples);
+    if (msaaSamples > 0) {
+        if (validate(SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1))) {
+            while (!validate(SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, msaaSamples))) {
+                msaaSamples = msaaSamples / 2;
+                if (msaaSamples == 0) {
+                    validate(SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0));
+                    break;
+                }
+            }
+        }
+        else {
+            msaaSamples = 0;
+        }
+    }
+    _context->config().rendering.msaaSamples = to_U8(msaaSamples);
+
+    if (msaaSamples == 0 && _context->config().rendering.shadowMapping.msaaSamples > 0) {
+        validate(SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1));
+    }
+
+    // OpenGL ES is not yet supported, but when added, it will need to mirror
+    // OpenGL functionality 1-to-1
+    if (_context->gfx().getAPI() == RenderAPI::OpenGLES) {
+        validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_EGL, 1));
+        validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES));
+        validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3));
+        validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1));
+    } else {
+        validate(SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE));
+        validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4));
+        if (true || SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6) != 0) {
+            validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5));
+        }
+    }
+
+    window->_userData = SDL_GL_CreateContext(window->getRawWindow());
+
+    if (window->_userData == nullptr)
+    {
+        Console::errorfn(Locale::get(_ID("ERROR_GFX_DEVICE")), SDL_GetError());
+        Console::printfn(Locale::get(_ID("WARN_SWITCH_API")));
+        Console::printfn(Locale::get(_ID("WARN_APPLICATION_CLOSE")));
+        return ErrorCode::OGL_OLD_HARDWARE;
+    }
+
+    SDL_GL_MakeCurrent(window->getRawWindow(), (SDL_GLContext)window->userData());
+    if (window->_vsync) {
+        // Vsync is toggled on or off via the external config file
+        bool vsyncSet = false;
+        // Late swap may fail
+        if (_context->config().runtime.adaptiveSync) {
+            vsyncSet = SDL_GL_SetSwapInterval(-1) != -1;
+        }
+
+        if (!vsyncSet) {
+            vsyncSet = SDL_GL_SetSwapInterval(1) != -1;
+        }
+        assert(vsyncSet);
+    } else {
+        SDL_GL_SetSwapInterval(0);
+    }
+
+    return ErrorCode::NO_ERR;
+}
+
+void WindowManager::prepareWindowForRender(const DisplayWindow& window) const {
+    if (!BitCompare(SDL_GetWindowFlags(window.getRawWindow()), to_U32(SDL_WINDOW_OPENGL))) {
+        return;
+    }
+    if (window.userData() != nullptr) {
+        SDL_GL_MakeCurrent(window.getRawWindow(), (SDL_GLContext)window.userData());
+    }
+}
+
+void WindowManager::swapWindow(const DisplayWindow& window) const {
+    if (!BitCompare(SDL_GetWindowFlags(window.getRawWindow()), to_U32(SDL_WINDOW_OPENGL))) {
+        return;
+    }
+    prepareWindowForRender(window);
+
+    SDL_GL_SwapWindow(window.getRawWindow());
 }
 
 void WindowManager::setCursorPosition(I32 x, I32 y) {

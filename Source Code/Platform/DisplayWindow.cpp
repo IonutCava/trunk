@@ -45,12 +45,14 @@ DisplayWindow::DisplayWindow(WindowManager& parent, PlatformContext& context)
    _maximized(false),
    _hidden(true),
    _warp(false),
+   _vsync(false),
    _warpRect(-1),
    _opacity(255),
    _type(WindowType::COUNT),
    _previousType(WindowType::COUNT),
    _queuedType(WindowType::COUNT),
    _sdlWindow(nullptr),
+   _userData(nullptr),
    _internalMoveEvent(false),
    _externalResizeEvent(false),
    _clearColour(DefaultColours::DIVIDE_BLUE),
@@ -85,6 +87,7 @@ ErrorCode DisplayWindow::destroyWindow() {
         }
 
         _inputHandler->terminate();
+        _parent.destroyAPISettings(this);
         SDL_DestroyWindow(_sdlWindow);
         _sdlWindow = nullptr;
     }
@@ -94,16 +97,17 @@ ErrorCode DisplayWindow::destroyWindow() {
 
 ErrorCode DisplayWindow::init(U32 windowFlags,
                               WindowType initialType,
-                              const vec2<U16>& dimensions,
-                              const char* windowTitle)
+                              const WindowDescriptor& descriptor)
 {
+    _vsync = descriptor.vsync;
     _type = initialType;
-    _title = windowTitle;
-    _windowDimensions = dimensions;
+    _title = descriptor.title;
+    _windowDimensions = descriptor.dimensions;
+    const vec2<I16>& position = descriptor.position;
 
-    _sdlWindow = SDL_CreateWindow(windowTitle,
-                                  SDL_WINDOWPOS_CENTERED_DISPLAY(_parent.targetDisplay()),
-                                  SDL_WINDOWPOS_CENTERED_DISPLAY(_parent.targetDisplay()),
+    _sdlWindow = SDL_CreateWindow(_title.c_str(),
+                                  position.x == -1 ? SDL_WINDOWPOS_CENTERED_DISPLAY(_parent.targetDisplay()) : position.x,
+                                  position.y == -1 ? SDL_WINDOWPOS_CENTERED_DISPLAY(_parent.targetDisplay()) : position.y,
                                   1,
                                   1,
                                   windowFlags);
@@ -125,7 +129,7 @@ ErrorCode DisplayWindow::init(U32 windowFlags,
         return ErrorCode::SDL_WINDOW_INIT_ERROR;
     }
 
-    return _inputHandler->init(dimensions);
+    return _inputHandler->init(_windowDimensions);
 }
 
 void DisplayWindow::update(const U64 deltaTimeUS) {
@@ -301,6 +305,13 @@ void DisplayWindow::opacity(U8 opacity) {
 void DisplayWindow::setPositionInternal(I32 w, I32 h) {
     _internalMoveEvent = true;
     SDL_SetWindowPosition(_sdlWindow, w, h);
+}
+
+void DisplayWindow::hasFocus(const bool state) {
+    _hasFocus = state;
+    if (state) {
+        SDL_RaiseWindow(_sdlWindow);
+    }
 }
 
 /// Centering is also easier via SDL

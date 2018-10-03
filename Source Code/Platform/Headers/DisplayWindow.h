@@ -88,6 +88,9 @@ namespace Input {
 
 class WindowManager;
 class PlatformContext;
+
+struct WindowDescriptor;
+
 enum class ErrorCode : I8;
 // Platform specific window
 class DisplayWindow : public GUIDWrapper,
@@ -118,8 +121,7 @@ public:
 
     ErrorCode init(U32 windowFlags,
                    WindowType initialType,
-                   const vec2<U16>& dimensions,
-                   const char* windowTitle);
+                   const WindowDescriptor& descriptor);
     void update(const U64 deltaTimeUS);
 
     ErrorCode destroyWindow();
@@ -130,7 +132,7 @@ public:
     inline void swapBuffers(const bool state);
 
     inline bool hasFocus() const;
-    inline void hasFocus(const bool state);
+           void hasFocus(const bool state);
 
     inline bool minimized() const;
            void minimized(const bool state);
@@ -198,6 +200,8 @@ public:
     inline const Rect<I32>& renderingViewport() const;
     void renderingViewport(const Rect<I32>& viewport);
 
+    inline void* userData() const;
+
 private:
     void restore();
     /// Internally change window size
@@ -246,6 +250,7 @@ private:
     bool _minimized;
     bool _maximized;
     bool _hidden;
+    bool _vsync;
     stringImpl _title;
     /// Did we generate the window move event?
     bool _internalMoveEvent;
@@ -272,7 +277,7 @@ private:
     DELEGATE_CBK<void> _destroyCbk;
 
     hashMap<CursorStyle, SDL_Cursor*> _cursors;
-
+    void *_userData = nullptr;
     // Varies from OS to OS
     WindowHandle _handle;
 

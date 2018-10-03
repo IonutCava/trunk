@@ -141,7 +141,7 @@ void GL_API::endFrame() {
         for (U32 i = 0; i < windowCount; ++i) {
             const DisplayWindow& window = winMgr.getWindow(i);
             if (window.swapBuffers() && !window.minimized() && !window.hidden()) {
-                SDL_GL_SwapWindow(window.getRawWindow());
+                winMgr.swapWindow(window);
             }
         }
     }
@@ -823,7 +823,7 @@ void GL_API::drawIMGUI(ImDrawData* data) {
 bool GL_API::switchWindow(I64 windowGUID) {
     if (windowGUID != -1 && windowGUID != s_activeWindowGUID) {
         const DisplayWindow& window = _context.parent().platformContext().app().windowManager().getWindow(windowGUID);
-        SDL_GL_MakeCurrent(window.getRawWindow(), GLUtil::_glRenderContext);
+        SDL_GL_MakeCurrent(window.getRawWindow(), (SDL_GLContext)window.userData());
         GLUtil::_glMainRenderWindow = &window;
         s_activeWindowGUID = windowGUID;
         return true;

@@ -575,7 +575,12 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     bool startFullScreen = !config.runtime.windowedMode;
     WindowManager& winManager = _platformContext->app().windowManager();
 
-    ErrorCode initError = winManager.init(*_platformContext, _platformContext->gfx().getAPI(), config.runtime.resolution, startFullScreen, config.runtime.targetDisplay);
+    ErrorCode initError = winManager.init(*_platformContext,
+                                           vec2<I16>(-1),
+                                           config.runtime.resolution,
+                                           startFullScreen,
+                                           config.runtime.targetDisplay);
+
     if (initError != ErrorCode::NO_ERR) {
         return initError;
     }

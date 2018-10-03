@@ -69,10 +69,6 @@ namespace Divide {
         return _hasFocus;
     }
 
-    inline void DisplayWindow::hasFocus(const bool state) {
-        _hasFocus = state;
-    }
-
     inline U8 DisplayWindow::opacity() const {
         return _opacity;
     }
@@ -171,6 +167,10 @@ namespace Divide {
 
     inline const Rect<I32>& DisplayWindow::renderingViewport() const {
         return _renderingViewport;
+    }
+
+    inline void* DisplayWindow::userData() const {
+        return _userData;
     }
 }; //namespace Divide
 
