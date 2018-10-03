@@ -184,7 +184,7 @@ class Editor : public PlatformContextComponent,
     void OnUTF8(const char* text);
 
   protected: // attorney
-    void renderDrawList(ImDrawData* pDrawData, I64 windowGUID, bool isPostPass);
+    void renderDrawList(ImDrawData* pDrawData, bool isPostPass);
     void savePanelLayout() const;
     void loadPanelLayout();
     void saveTabLayout() const;
@@ -206,7 +206,6 @@ class Editor : public PlatformContextComponent,
     ImGuiStyleEnum _currentDimmedTheme;
 
     TransformSettings _transformSettings;
-    I64 _activeWindowGUID = -1;
     std::unique_ptr<MenuBar> _menuBar;
     std::unique_ptr<ApplicationOutput> _applicationOutput;
 

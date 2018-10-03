@@ -431,13 +431,31 @@ void WindowManager::swapWindow(const DisplayWindow& window) const {
     SDL_GL_SwapWindow(window.getRawWindow());
 }
 
-void WindowManager::setCursorPosition(I32 x, I32 y) {
-    getActiveWindow().setCursorPosition(x, y);
+void WindowManager::captureMouse(bool state) {
+    SDL_CaptureMouse(state ? SDL_TRUE : SDL_FALSE);
+}
+
+void WindowManager::setCursorPosition(I32 x, I32 y, bool global) {
+    if (!global) {
+        getActiveWindow().setCursorPosition(x, y);
+    } else {
+        SDL_WarpMouseGlobal(x, y);
+    }
     Attorney::KernelWindowManager::setCursorPosition(_context->app().kernel(), x, y);
 }
 
-vec2<I32> WindowManager::getCursorPosition() const {
-    return getActiveWindow().getCursorPosition();
+vec2<I32> WindowManager::getCursorPosition(bool global) const {
+    vec2<I32> ret(-1);
+    getMouseState(ret, global);
+    return ret;
+}
+
+Uint32 WindowManager::getMouseState(vec2<I32>& pos, bool global) const {
+    if (global) {
+        return SDL_GetGlobalMouseState(&pos.x, &pos.y);
+    }
+    
+    return SDL_GetMouseState(&pos.x, &pos.y);
 }
 
 void WindowManager::snapCursorToCenter() {

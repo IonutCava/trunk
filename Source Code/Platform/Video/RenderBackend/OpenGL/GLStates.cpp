@@ -47,7 +47,6 @@ hashMap<GLuint, GLuint> GL_API::s_activeVAOIB;
 
 VAOBindings GL_API::s_vaoBufferData;
 GLfloat GL_API::s_depthNearVal = 0.0f;
-I64 GL_API::s_activeWindowGUID = -1;
 Pipeline const* GL_API::s_activePipeline = nullptr;
 glFramebuffer* GL_API::s_activeRenderTarget = nullptr;
 glPixelBuffer* GL_API::s_activePixelBuffer = nullptr;
@@ -140,7 +139,6 @@ void GL_API::clearStates(const DisplayWindow& mainWindow) {
     const vec2<U16>& drawableSize = _context.getDrawableSize(mainWindow);
     GL_API::setScissor(Rect<I32>(0, 0, drawableSize.width, drawableSize.height));
 
-    s_activeWindowGUID = -1;
     s_activePipeline = nullptr;
     s_activeRenderTarget = nullptr;
     s_activePixelBuffer = nullptr;

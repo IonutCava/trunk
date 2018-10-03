@@ -293,7 +293,6 @@ private:
     static bool initGLSW();
     static bool deInitGLSW();
 
-    bool switchWindow(I64 windowGUID);
     bool bindPipeline(const Pipeline& pipeline);
     void sendPushConstants(const PushConstants& pushConstants);
     void dispatchCompute(const ComputeParams& computeParams);
@@ -345,7 +344,6 @@ private:
     typedef hashMap<U64, I32> FontCache;
     FontCache _fonts;
     hashAlg::pair<stringImpl, I32> _fontCache;
-    static I64 s_activeWindowGUID;
     static Pipeline const* s_activePipeline;
     static glFramebuffer* s_activeRenderTarget;
     static glPixelBuffer* s_activePixelBuffer;

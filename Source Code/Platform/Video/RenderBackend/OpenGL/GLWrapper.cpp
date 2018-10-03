@@ -820,17 +820,6 @@ void GL_API::drawIMGUI(ImDrawData* data) {
     }
 }
 
-bool GL_API::switchWindow(I64 windowGUID) {
-    if (windowGUID != -1 && windowGUID != s_activeWindowGUID) {
-        const DisplayWindow& window = _context.parent().platformContext().app().windowManager().getWindow(windowGUID);
-        SDL_GL_MakeCurrent(window.getRawWindow(), (SDL_GLContext)window.userData());
-        GLUtil::_glMainRenderWindow = &window;
-        s_activeWindowGUID = windowGUID;
-        return true;
-    }
-    return false;
-}
-
 bool GL_API::bindPipeline(const Pipeline& pipeline) {
     if (s_activePipeline && *s_activePipeline == pipeline) {
         return true;
@@ -1029,10 +1018,6 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
         case GFX::CommandType::DRAW_TEXT: {
             const GFX::DrawTextCommand& crtCmd = commandBuffer.getCommand<GFX::DrawTextCommand>(entry);
             drawText(crtCmd._batch);
-        }break;
-        case GFX::CommandType::SWITCH_WINDOW: {
-            const GFX::SwitchWindowCommand& crtCmd = commandBuffer.getCommand<GFX::SwitchWindowCommand>(entry);
-            switchWindow(crtCmd.windowGUID);
         }break;
         case GFX::CommandType::DRAW_IMGUI: {
             const GFX::DrawIMGUICommand& crtCmd = commandBuffer.getCommand<GFX::DrawIMGUICommand>(entry);

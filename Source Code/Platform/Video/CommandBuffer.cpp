@@ -32,7 +32,6 @@ DEFINE_POOL(DrawTextCommand, 4096);
 DEFINE_POOL(DrawIMGUICommand, 4096);
 DEFINE_POOL(DispatchComputeCommand, 4096);
 DEFINE_POOL(ReadAtomicCounterCommand, 4096);
-DEFINE_POOL(SwitchWindowCommand, 4096);
 DEFINE_POOL(ExternalCommand, 4096);
 
 CommandBuffer::CommandBuffer()

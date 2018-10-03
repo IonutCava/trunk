@@ -50,13 +50,13 @@ struct WindowDescriptor {
         ALWAYS_ON_TOP = toBit(6)
     };
 
-    U32 targetDisplay = 0;
+    U32 targetDisplay = 0u;
     stringImpl title = "";
     vec2<I16> position;
     vec2<U16> dimensions;
     bool vsync = false;
     FColour clearColour = DefaultColours::DIVIDE_BLUE;
-    U32 flags = to_base(Flags::DECORATED) | to_base(Flags::RESIZEABLE) | to_base(Flags::ALLOW_HIGH_DPI);
+    U32 flags = to_U32(to_base(Flags::DECORATED) | to_base(Flags::RESIZEABLE) | to_base(Flags::ALLOW_HIGH_DPI));
 };
 
 class PlatformContext;
@@ -84,8 +84,9 @@ public:
     inline I32 targetDisplay() const;
     inline void targetDisplay(I32 displayIndex);
 
-    void setCursorPosition(I32 x, I32 y);
-    vec2<I32> getCursorPosition() const;
+    void setCursorPosition(I32 x, I32 y, bool global = false);
+    vec2<I32> getCursorPosition(bool global) const;
+    Uint32 getMouseState(vec2<I32>& pos, bool global) const;
     void snapCursorToCenter();
 
     inline DisplayWindow& getActiveWindow();
@@ -101,6 +102,7 @@ public:
 
     vec2<U16> getFullscreenResolution() const;
 
+    void captureMouse(bool state);
     void prepareWindowForRender(const DisplayWindow& window) const;
     void swapWindow(const DisplayWindow& window) const;
 
@@ -119,6 +121,7 @@ protected:
     I64 _activeWindowGUID;
     I64 _mainWindowGUID;
     I64 _focusedWindowGUID;
+
     PlatformContext* _context;
     vector<DisplayWindow*> _windows;
 };

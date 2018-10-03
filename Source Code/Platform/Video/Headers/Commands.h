@@ -248,10 +248,6 @@ BEGIN_COMMAND(ReadAtomicCounterCommand, CommandType::READ_ATOMIC_COUNTER, 4096);
     bool _resetCounter = false;
 END_COMMAND();
 
-BEGIN_COMMAND(SwitchWindowCommand, CommandType::SWITCH_WINDOW, 4096);
-    I64 windowGUID = -1;
-END_COMMAND();
-
 BEGIN_COMMAND(ExternalCommand, CommandType::EXTERNAL, 4096);
     std::function<void()> _cbk;
 END_COMMAND();
