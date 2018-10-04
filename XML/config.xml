@@ -49,6 +49,9 @@
     <defaultGUIScheme>GWEN</defaultGUIScheme>
     <showDebugCursor>false</showDebugCursor>
   </CEGUI>
+  <IMGUI>
+    <multiViewportEnabled>true</multiViewportEnabled>
+  </IMGUI>
   <consoleLayoutFile>console.layout</consoleLayoutFile>
   <editorLayoutFile>editor.layout</editorLayoutFile>
 </GUI>

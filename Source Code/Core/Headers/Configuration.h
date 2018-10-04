@@ -89,6 +89,9 @@ public:
             bool showDebugCursor;
             stringImpl defaultGUIScheme;
         } cegui;
+        struct IMGUI {
+            bool multiViewportEnabled;
+        } imgui;
         stringImpl consoleLayoutFile;
         stringImpl editorLayoutFile;
     } gui;
