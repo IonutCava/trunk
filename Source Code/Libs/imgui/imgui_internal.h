@@ -767,7 +767,7 @@ struct ImGuiDockNode
     bool                    InitFromFirstWindowViewport :1;
     bool                    IsVisible           :1; // Set to false when the node is hidden (usually disabled as it has no active window)
     bool                    IsDockSpace         :1; // Root node was created by a DockSpace() call.
-    bool                    IsDocumentRoot      :1;
+    bool                    IsCentralNode       :1;
     bool                    HasCloseButton      :1;
     bool                    HasCollapseButton   :1;
     bool                    WantCloseAll        :1; // Set when closing all tabs at once.
@@ -778,6 +778,7 @@ struct ImGuiDockNode
     ~ImGuiDockNode();
     bool                    IsRootNode() const  { return ParentNode == NULL; }
     bool                    IsSplitNode() const { return ChildNodes[0] != NULL; }
+    bool                    IsLeafNode() const  { return ChildNodes[0] == NULL; }
     bool                    IsEmpty() const     { return ChildNodes[0] == NULL && Windows.Size == 0; }
     ImRect                  Rect() const        { return ImRect(Pos.x, Pos.y, Pos.x + Size.x, Pos.y + Size.y); }
 };
@@ -1217,6 +1218,7 @@ struct IMGUI_API ImGuiWindow
     ImRect                  ClipRect;                           // Current clipping rectangle. = DrawList->clip_rect_stack.back(). Scissoring / clipping rectangle. x1, y1, x2, y2.
     ImRect                  OuterRectClipped;                   // = WindowRect just after setup in Begin(). == window->Rect() for root window.
     ImRect                  InnerMainRect, InnerClipRect;
+    ImVec2ih                HitTestHoleSize, HitTestHoleOffset;
     ImRect                  ContentsRegionRect;                 // FIXME: This is currently confusing/misleading. Maximum visible content position ~~ Pos + (SizeContentsExplicit ? SizeContentsExplicit : Size - ScrollbarSizes) - CursorStartPos, per axis
     int                     LastFrameActive;                    // Last frame number the window was Active.
     float                   ItemWidthDefault;

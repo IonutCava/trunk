@@ -518,7 +518,7 @@ namespace ImGui
     // Note: Tabs are automatically created by the docking system. Use this to create tab bars/tabs yourself without docking being involved.
     IMGUI_API bool          BeginTabBar(const char* str_id, ImGuiTabBarFlags flags = 0);        // create and append into a TabBar
     IMGUI_API void          EndTabBar();
-    IMGUI_API bool          BeginTabItem(const char* label, bool* p_open = NULL, ImGuiTabItemFlags = 0);// create a Tab. Returns true if the Tab is selected.
+    IMGUI_API bool          BeginTabItem(const char* label, bool* p_open = NULL, ImGuiTabItemFlags flags = 0);// create a Tab. Returns true if the Tab is selected.
     IMGUI_API void          EndTabItem();                                                       // only call EndTabItem() if BeginTabItem() returns true!
     IMGUI_API void          SetTabItemClosed(const char* tab_or_docked_window_label);           // notify TabBar or Docking system of a closed tab/window ahead (useful to reduce visual flicker on reorderable tab bars). For tab-bar: call after BeginTabBar() and before Tab submissions. Otherwise call with a window name.
 
@@ -546,9 +546,10 @@ namespace ImGui
     IMGUI_API bool          BeginDragDropSource(ImGuiDragDropFlags flags = 0);                                      // call when the current item is active. If this return true, you can call SetDragDropPayload() + EndDragDropSource()
     IMGUI_API bool          SetDragDropPayload(const char* type, const void* data, size_t size, ImGuiCond cond = 0);// type is a user defined string of maximum 32 characters. Strings starting with '_' are reserved for dear imgui internal types. Data is copied and held by imgui.
     IMGUI_API void          EndDragDropSource();                                                                    // only call EndDragDropSource() if BeginDragDropSource() returns true!
-    IMGUI_API bool          BeginDragDropTarget();                                                                  // call after submitting an item that may receive an item. If this returns true, you can call AcceptDragDropPayload() + EndDragDropTarget()
+    IMGUI_API bool                  BeginDragDropTarget();                                                          // call after submitting an item that may receive a payload. If this returns true, you can call AcceptDragDropPayload() + EndDragDropTarget()
     IMGUI_API const ImGuiPayload* AcceptDragDropPayload(const char* type, ImGuiDragDropFlags flags = 0);            // accept contents of a given type. If ImGuiDragDropFlags_AcceptBeforeDelivery is set you can peek into the payload before the mouse button is released.
     IMGUI_API void          EndDragDropTarget();                                                                    // only call EndDragDropTarget() if BeginDragDropTarget() returns true!
+    IMGUI_API const ImGuiPayload*   GetDragDropPayload();                                                           // peek directly into the current payload from anywhere. may return NULL. use ImGuiPayload::IsDataType() to test for the payload type.
 
     // Clipping
     IMGUI_API void          PushClipRect(const ImVec2& clip_rect_min, const ImVec2& clip_rect_max, bool intersect_with_current_clip_rect);
@@ -796,7 +797,13 @@ enum ImGuiDockNodeFlags_
 {
     ImGuiDockNodeFlags_None                         = 0,
     ImGuiDockNodeFlags_KeepAliveOnly                = 1 << 0,   // Don't display the dockspace node but keep it alive. Windows docked into this dockspace node won't be undocked.
-    ImGuiDockNodeFlags_NoSplit                      = 1 << 1    // Disable splitting the node into smaller nodes. Useful e.g. when embedding dockspaces into a main root one (the root one may have splitting disableed to reduce confusion)
+    ImGuiDockNodeFlags_NoSplit                      = 1 << 1,   // Disable splitting the node into smaller nodes. Useful e.g. when embedding dockspaces into a main root one (the root one may have splitting disabled to reduce confusion)
+    //ImGuiDockNodeFlags_NoCentralNode              = 1 << 2,   // Disable Central Node (the node which can stay empty)
+    //ImGuiDockNodeFlags_NoOuterBorder              = 1 << 3,   // Disable outer border on a DockSpace() node.
+    ImGuiDockNodeFlags_NoDockingInCentralNode       = 1 << 4,   // Disable docking inside the Central Node, which will be always kept empty.
+    ImGuiDockNodeFlags_PassthruInEmptyNodes         = 1 << 5,   // When Central Node is empty: let inputs pass-through + won't display a DockingEmptyBg background.
+    ImGuiDockNodeFlags_RenderWindowBg               = 1 << 6,   // DockSpace() will render a ImGuiCol_WindowBg background covering everything excepted the Central Node (when empty). Meaning the host window should properly use SetNextWindowBgAlpha(0.0f) + ImGuiDockNodeFlags_NoOuterBorder prior to Begin() when using this.
+    ImGuiDockNodeFlags_PassthruDockspace            = ImGuiDockNodeFlags_NoDockingInCentralNode | ImGuiDockNodeFlags_RenderWindowBg | ImGuiDockNodeFlags_PassthruInEmptyNodes
 };
 
 // Flags for ImGui::IsWindowFocused()
@@ -1014,7 +1021,7 @@ enum ImGuiCol_
     ImGuiCol_TabUnfocused,
     ImGuiCol_TabUnfocusedActive,
     ImGuiCol_DockingPreview,
-    ImGuiCol_DockingBg,             // Empty node
+    ImGuiCol_DockingEmptyBg,        // Background color for empty node (e.g. CentralNode with no window docked into it)
     ImGuiCol_PlotLines,
     ImGuiCol_PlotLinesHovered,
     ImGuiCol_PlotHistogram,
@@ -1555,7 +1562,7 @@ struct ImGuiInputTextCallbackData
 
     // Helper functions for text manipulation.
     // Use those function to benefit from the CallbackResize behaviors. Calling those function reset the selection.
-    ImGuiInputTextCallbackData();
+    IMGUI_API ImGuiInputTextCallbackData();
     IMGUI_API void      DeleteChars(int pos, int bytes_count);
     IMGUI_API void      InsertChars(int pos, const char* text, const char* text_end = NULL);
     bool                HasSelection() const { return SelectionStart != SelectionEnd; }
