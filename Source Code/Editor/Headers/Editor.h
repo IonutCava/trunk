@@ -173,22 +173,16 @@ class Editor : public PlatformContextComponent,
     bool hasGizmoFocus();
     ImGuiIO& GetIO(U8 idx);
     F32 calcMainMenuHeight();
-    void setPanelManagerBoundsToIncludeMainMenuIfPresent(int displayX = -1, int displayY = -1);
-
     void updateStyle();
 
   protected: // window events
     bool OnClose();
     void OnFocus(bool bHasFocus);
-    void OnSize(int iWidth, int iHeight);
+    void OnSize(I32 iWidth, I32 iHeight);
     void OnUTF8(const char* text);
 
   protected: // attorney
     void renderDrawList(ImDrawData* pDrawData, bool isPostPass);
-    void savePanelLayout() const;
-    void loadPanelLayout();
-    void saveTabLayout() const;
-    void loadTabLayout();
     void drawOutputWindow();
     void drawMenuBar();
     void showDebugWindow(bool state);
@@ -291,19 +285,6 @@ namespace Attorney {
 
         static const TransformSettings& getTransformSettings(const Editor& editor) {
             return editor.getTransformSettings();
-        }
-
-        static void savePanelLayout(const Editor& editor) {
-            editor.savePanelLayout();
-        }
-        static void loadPanelLayout(Editor& editor) {
-            editor.loadPanelLayout();
-        }
-        static void saveTabLayout(const Editor& editor) {
-            editor.saveTabLayout();
-        }
-        static void loadTabLayout(Editor& editor) {
-            editor.loadTabLayout();
         }
         static void showDebugWindow(Editor& editor, bool state) {
             editor.showDebugWindow(state);

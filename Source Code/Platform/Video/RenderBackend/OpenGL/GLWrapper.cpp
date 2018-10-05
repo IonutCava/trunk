@@ -781,9 +781,13 @@ void GL_API::drawText(const TextElementBatch& batch) {
 
 void GL_API::drawIMGUI(ImDrawData* data) {
     if (data != nullptr && data->Valid) {
+
         GenericVertexData::IndexBuffer idxBuffer;
         GenericDrawCommand cmd(PrimitiveType::TRIANGLES, 0, 0);
-        for (int n = 0; n < data->CmdListsCount; n++) {
+
+        ImVec2 pos = data->DisplayPos;
+        for (int n = 0; n < data->CmdListsCount; n++)
+        {
             const ImDrawList* cmd_list = data->CmdLists[n];
             U32 vertCount = to_U32(cmd_list->VtxBuffer.size());
             assert(vertCount < MAX_IMGUI_VERTS);
@@ -797,23 +801,27 @@ void GL_API::drawIMGUI(ImDrawData* data) {
             _IMGUIBuffer->updateBuffer(0u, vertCount, 0u, cmd_list->VtxBuffer.Data);
             _IMGUIBuffer->updateIndexBuffer(idxBuffer);
 
-            for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.size(); cmd_i++) {
-
+            for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.size(); cmd_i++)
+            {
                 const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[cmd_i];
 
                 if (pcmd->UserCallback) {
+                    // User callback (registered via ImDrawList::AddCallback)
                     pcmd->UserCallback(cmd_list, pcmd);
                 } else {
-                    GL_API::bindTexture(0, (GLuint)((intptr_t)pcmd->TextureId));
-                    GL_API::setScissor((I32)pcmd->ClipRect.x,
-                                       (I32)(s_activeViewport.w - pcmd->ClipRect.w),
-                                       (I32)(pcmd->ClipRect.z - pcmd->ClipRect.x),
-                                       (I32)(pcmd->ClipRect.w - pcmd->ClipRect.y));
+                    ImVec4 clip_rect = ImVec4(pcmd->ClipRect.x - pos.x, pcmd->ClipRect.y - pos.y, pcmd->ClipRect.z - pos.x, pcmd->ClipRect.w - pos.y);
+                    if (clip_rect.x < s_activeViewport.z && clip_rect.y < s_activeViewport.w && clip_rect.z >= 0.0f && clip_rect.w >= 0.0f) {
+                        GL_API::setScissor((I32)pcmd->ClipRect.x,
+                                           (I32)(s_activeViewport.w - pcmd->ClipRect.w),
+                                           (I32)(pcmd->ClipRect.z - pcmd->ClipRect.x),
+                                           (I32)(pcmd->ClipRect.w - pcmd->ClipRect.y));
 
-                    cmd._cmd.indexCount = to_U32(pcmd->ElemCount);
-                    _IMGUIBuffer->draw(cmd);
+                        cmd._cmd.indexCount = to_U32(pcmd->ElemCount);
+
+                        GL_API::bindTexture(0, (GLuint)((intptr_t)pcmd->TextureId));
+                        _IMGUIBuffer->draw(cmd);
+                    }
                 }
-
                 cmd._cmd.firstIndex += pcmd->ElemCount;
             }
         }

@@ -21,7 +21,7 @@ MenuBar::~MenuBar()
 }
 
 void MenuBar::draw() {
-    if ((_isMainMenu ? ImGui::BeginMainMenuBar() : ImGui::BeginMenuBar()))
+    if ((ImGui::BeginMenuBar()))
     {
         drawFileMenu();
         drawEditMenu();
@@ -31,7 +31,7 @@ void MenuBar::draw() {
         drawWindowsMenu();
         drawHelpMenu();
 
-        _isMainMenu ? ImGui::EndMainMenuBar() : ImGui::EndMenuBar();
+        ImGui::EndMenuBar();
     }
 }
 
@@ -136,26 +136,6 @@ void MenuBar::drawToolsMenu() {
 void MenuBar::drawWindowsMenu() {
     if (ImGui::BeginMenu("Window"))
     {
-        if (ImGui::MenuItem("Save Panel Layout", "CTRL+P+S")) {
-            Attorney::EditorPanelManager::savePanelLayout(_context.editor());
-        }
-        if (ImGui::MenuItem("Load Panel Layout", "CTRL+P+S")) {
-            Attorney::EditorPanelManager::loadPanelLayout(_context.editor());
-        }
-        if (ImGui::MenuItem("Save Tabs Layout", "CTRL+T+S")) {
-            Attorney::EditorPanelManager::saveTabLayout(_context.editor());
-        }
-        if (ImGui::MenuItem("Load Tabs Layout", "CTRL+T+S")) {
-            Attorney::EditorPanelManager::loadTabLayout(_context.editor());
-        }
-        if (ImGui::MenuItem("Save all layouts", "CTRL+A+S")) {
-            Attorney::EditorPanelManager::savePanelLayout(_context.editor());
-            Attorney::EditorPanelManager::saveTabLayout(_context.editor());
-        }
-        if (ImGui::MenuItem("Load all layouts", "CTRL+A+S")) {
-            Attorney::EditorPanelManager::loadPanelLayout(_context.editor());
-            Attorney::EditorPanelManager::loadTabLayout(_context.editor());
-        }
         bool showDebugWindow = Attorney::EditorPanelManager::showDebugWindow(_context.editor());
         if (ImGui::MenuItem("Debug Window", NULL, &showDebugWindow)) {
             Attorney::EditorPanelManager::showDebugWindow(_context.editor(), showDebugWindow);

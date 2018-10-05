@@ -58,21 +58,21 @@ namespace {
     {
         ImGuiPlatformIO& platform_io = ImGui::GetPlatformIO();
         platform_io.Monitors.resize(0);
-        int display_count = SDL_GetNumVideoDisplays();
-        for (int n = 0; n < display_count; n++)
+        I32 display_count = SDL_GetNumVideoDisplays();
+        for (I32 n = 0; n < display_count; n++)
         {
             // Warning: the validity of monitor DPI information on Windows depends on the application DPI awareness settings, which generally needs to be set in the manifest or at runtime.
             ImGuiPlatformMonitor monitor;
             SDL_Rect r;
             SDL_GetDisplayBounds(n, &r);
-            monitor.MainPos = monitor.WorkPos = ImVec2((float)r.x, (float)r.y);
-            monitor.MainSize = monitor.WorkSize = ImVec2((float)r.w, (float)r.h);
+            monitor.MainPos = monitor.WorkPos = ImVec2((F32)r.x, (F32)r.y);
+            monitor.MainSize = monitor.WorkSize = ImVec2((F32)r.w, (F32)r.h);
 
             SDL_GetDisplayUsableBounds(n, &r);
-            monitor.WorkPos = ImVec2((float)r.x, (float)r.y);
-            monitor.WorkSize = ImVec2((float)r.w, (float)r.h);
+            monitor.WorkPos = ImVec2((F32)r.x, (F32)r.y);
+            monitor.WorkSize = ImVec2((F32)r.w, (F32)r.h);
 
-            float dpi = 0.0f;
+            F32 dpi = 0.0f;
             if (SDL_GetDisplayDPI(n, &dpi, NULL, NULL))
                 monitor.DpiScale = dpi / 96.0f;
 
@@ -143,6 +143,7 @@ void Editor::idle() {
 }
 
 bool Editor::init(const vec2<U16>& renderResolution) {
+    ACKNOWLEDGE_UNUSED(renderResolution);
 
     if (_mainWindow != nullptr) {
         // double init
@@ -169,9 +170,9 @@ bool Editor::init(const vec2<U16>& renderResolution) {
 
         ImGuiIO& io = _imguiContext[i]->IO;
         if (i == 0) {
-            unsigned char* pPixels;
-            int iWidth;
-            int iHeight;
+            U8* pPixels;
+            I32 iWidth;
+            I32 iHeight;
             io.Fonts->AddFontDefault();
             io.Fonts->GetTexDataAsRGBA32(&pPixels, &iWidth, &iHeight);
 
@@ -243,8 +244,11 @@ bool Editor::init(const vec2<U16>& renderResolution) {
         io.SetClipboardTextFn = SetClipboardText;
         io.GetClipboardTextFn = GetClipboardText;
         io.ClipboardUserData = nullptr;
-        io.DisplaySize = ImVec2((float)renderResolution.width, (float)renderResolution.height);
-        io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
+
+        vec2<U16> display_size = _mainWindow->getDrawableSize();
+        io.DisplaySize = ImVec2((F32)_mainWindow->getDimensions().width, (F32)_mainWindow->getDimensions().height);
+        io.DisplayFramebufferScale = ImVec2(io.DisplaySize.x > 0 ? ((F32)display_size.width / io.DisplaySize.x) : 0.f,
+                                            io.DisplaySize.y > 0 ? ((F32)display_size.height / io.DisplaySize.y) : 0.f);
 
         ImGuiPlatformIO& platform_io = _imguiContext[i]->PlatformIO;
         platform_io.Platform_CreateWindow = [](ImGuiViewport* viewport)
@@ -305,7 +309,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
         platform_io.Platform_GetWindowPos = [](ImGuiViewport* viewport) -> ImVec2 {
             ImGuiViewportData* data = (ImGuiViewportData*)viewport->PlatformUserData;
             const vec2<I32>& pos = data->_window->getPosition();
-            return ImVec2((float)pos.x, (float)pos.y);
+            return ImVec2((F32)pos.x, (F32)pos.y);
         };
 
         platform_io.Platform_SetWindowSize = [](ImGuiViewport* viewport, ImVec2 size) {
@@ -318,7 +322,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
         platform_io.Platform_GetWindowSize = [](ImGuiViewport* viewport) -> ImVec2 {
             ImGuiViewportData* data = (ImGuiViewportData*)viewport->PlatformUserData;
             const vec2<U16>& dim = data->_window->getDimensions();
-            return ImVec2((float)dim.w, (float)dim.h);
+            return ImVec2((F32)dim.w, (F32)dim.h);
         };
 
         platform_io.Platform_SetWindowFocus = [](ImGuiViewport* viewport) {
@@ -368,7 +372,6 @@ bool Editor::init(const vec2<U16>& renderResolution) {
     main_viewport->PlatformUserData = data;
     main_viewport->PlatformHandle = data->_window;
 
-    setPanelManagerBoundsToIncludeMainMenuIfPresent(renderResolution.w, renderResolution.h);
     ImGui::ResetStyle(_currentTheme);
 
     _consoleCallbackIndex = Console::bindConsoleOutput([this](const Console::OutputEntry& entry) {
@@ -426,7 +429,7 @@ void Editor::update(const U64 deltaTimeUS) {
 
     for (U8 i = 0; i < to_U8(Context::COUNT); ++i) {
         ImGuiIO& io = GetIO(i);
-        io.DeltaTime = Time::MicrosecondsToSeconds<float>(deltaTimeUS);
+        io.DeltaTime = Time::MicrosecondsToSeconds<F32>(deltaTimeUS);
 
         if (!needInput()) {
             continue;
@@ -583,19 +586,17 @@ bool Editor::renderFull(const U64 deltaTime) {
     //window_flags |= ImGuiWindowFlags_NoCollapse;
     //window_flags |= ImGuiWindowFlags_NoNav;
 
-    const float menuBarOffset = 20;
-
     ImVec2 sizes[] = {
         ImVec2(300, 550),
         ImVec2(300, 550),
-        ImVec2(ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y - 550 - menuBarOffset - 3),
+        ImVec2(ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y - 550 - 3),
         ImVec2(640, 480)
     };
 
     ImVec2 positions[] = {
-        ImVec2(0, menuBarOffset),
-        ImVec2(ImGui::GetIO().DisplaySize.x - sizes[1].x, menuBarOffset),
-        ImVec2(0, std::max(sizes[0].y, sizes[1].y) + menuBarOffset + 3),
+        ImVec2(0, 0),
+        ImVec2(ImGui::GetIO().DisplaySize.x - sizes[1].x, 0),
+        ImVec2(0, std::max(sizes[0].y, sizes[1].y) + 3),
         ImVec2(150, 150)
     };
 
@@ -644,12 +645,16 @@ bool Editor::framePostRenderStarted(const FrameEvent& evt) {
     }
   
     ImGui::Render();
+
+    g_windowManager->prepareWindowForRender(*_mainWindow);
     renderDrawList(ImGui::GetDrawData(), true);
     if (GetIO(0).ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
     {
         ImGui::UpdatePlatformWindows();
         ImGui::RenderPlatformWindowsDefault();
     }
+    g_windowManager->prepareWindowForRender(*_mainWindow);
+
     return true;
 }
 
@@ -708,25 +713,13 @@ const TransformSettings& Editor::getTransformSettings() const {
     return _transformSettings;
 }
 
-void Editor::savePanelLayout() const {
-}
-
-void Editor::loadPanelLayout() {
-}
-
-void Editor::saveTabLayout() const {
-}
-
-void Editor::loadTabLayout() {
-}
-
 // Needs to be rendered immediately. *IM*GUI. IMGUI::NewFrame invalidates this data
 void Editor::renderDrawList(ImDrawData* pDrawData, bool isPostPass)
 {
     // Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates != framebuffer coordinates)
     ImGuiIO& io = ImGui::GetIO();
-    int fb_width = (int)(io.DisplaySize.x * io.DisplayFramebufferScale.x);
-    int fb_height = (int)(io.DisplaySize.y * io.DisplayFramebufferScale.y);
+    I32 fb_width = (I32)(io.DisplaySize.x * io.DisplayFramebufferScale.x);
+    I32 fb_height = (I32)(io.DisplaySize.y * io.DisplayFramebufferScale.y);
     if (fb_width == 0 || fb_height == 0) {
         return;
     }
@@ -793,8 +786,7 @@ void Editor::renderDrawList(ImDrawData* pDrawData, bool isPostPass)
     drawIMGUI._data = pDrawData;
     GFX::EnqueueCommand(buffer, drawIMGUI);
 
-    if (isPostPass) {
-    } else {
+    if (!isPostPass) {
         GFX::EndRenderPassCommand endRenderPassCmd;
         GFX::EnqueueCommand(buffer, endRenderPassCmd);
     }
@@ -877,11 +869,11 @@ bool Editor::mouseMoved(const Input::MouseEvent& arg) {
         ImGuiIO& io = GetIO(i);
         io.MouseHoveredViewport = 0;
         if (io.WantSetMousePos) {
-            winMgr.setCursorPosition((int)io.MousePos.x, (int)io.MousePos.y, io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable);
+            winMgr.setCursorPosition((I32)io.MousePos.x, (I32)io.MousePos.y, io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable);
         } else {
-            io.MousePos.x = (float)arg.X(i == 1).abs;
-            io.MousePos.y = (float)arg.Y(i == 1).abs;
-            io.MouseWheel += (float)arg.Z(i == 1).rel / 60.0f;
+            io.MousePos.x = (F32)arg.X(i == 1).abs;
+            io.MousePos.y = (F32)arg.Y(i == 1).abs;
+            io.MouseWheel += (F32)arg.Z(i == 1).rel / 60.0f;
         }
     }
     // Check if we are hovering over the scene
@@ -986,26 +978,21 @@ void Editor::OnFocus(bool bHasFocus) {
 }
 
 void Editor::onSizeChange(const SizeChangeParams& params) {
-    if (_mainWindow != nullptr) {
-        for (U8 i = 0; i < to_U8(Context::COUNT); ++i) {
-            ImGuiIO& io = GetIO(i);
+    if (!params.isWindowResize || _mainWindow == nullptr) {
+        return;
+    }
 
-            if (params.isWindowResize && i == 0) {
-                setPanelManagerBoundsToIncludeMainMenuIfPresent(params.width, params.height);
-            } else {
-                io.DisplaySize.x = (float)params.width;
-                io.DisplaySize.y = (float)params.height;
-            }
+    vec2<U16> display_size = _mainWindow->getDrawableSize();
 
-            vec2<U16> renderResolution = context().gfx().renderingResolution();
-            vec2<U16> display_size = _mainWindow->getDrawableSize();
-            io.DisplayFramebufferScale.x = params.width > 0 ? ((float)display_size.w / renderResolution.width) : 0;
-            io.DisplayFramebufferScale.y = params.height > 0 ? ((float)display_size.h / renderResolution.height) : 0;
-        }
+    for (U8 i = 0; i < to_U8(Context::COUNT); ++i) {
+        ImGuiIO& io = GetIO(i);
+        io.DisplaySize = ImVec2((F32)params.width, (F32)params.height);
+        io.DisplayFramebufferScale = ImVec2(params.width > 0 ? ((F32)display_size.width / params.width) : 0.f,
+                                            params.height > 0 ? ((F32)display_size.height / params.height) : 0.f);
     }
 }
 
-void Editor::OnSize(int iWidth, int iHeight) {
+void Editor::OnSize(I32 iWidth, I32 iHeight) {
     ACKNOWLEDGE_UNUSED(iWidth);
     ACKNOWLEDGE_UNUSED(iHeight);
 }
@@ -1029,7 +1016,7 @@ Camera* Editor::getSelectedCamera() const {
 void Editor::drawIMGUIDebug(const U64 deltaTime) {
     DisplayWindow& window = context().activeWindow();
 
-    static float f = 0.0f;
+    static F32 f = 0.0f;
     ImGui::Text("Hello, world!");
     ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
     ImGui::SliderInt("Opacity", &window_opacity, 0, 255);
@@ -1037,7 +1024,7 @@ void Editor::drawIMGUIDebug(const U64 deltaTime) {
     if (ImGui::Button("Test Window")) show_test_window ^= 1;
     if (ImGui::Button("Another Window")) show_another_window ^= 1;
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-    ImGui::Text("Time since last frame %.3f ms", Time::MicrosecondsToMilliseconds<float>(deltaTime));
+    ImGui::Text("Time since last frame %.3f ms", Time::MicrosecondsToMilliseconds<F32>(deltaTime));
     if (ImGui::Button("Toggle cursor")) {
         ImGuiIO& io = ImGui::GetIO();
         io.MouseDrawCursor = !io.MouseDrawCursor;
@@ -1083,7 +1070,7 @@ bool Editor::simulationPauseRequested() const {
 
 // Here are two static methods useful to handle the change of size of the togglable mainMenu we will use
 // Returns the height of the main menu based on the current font (from: ImGui::CalcMainMenuHeight() in imguihelper.h)
-float Editor::calcMainMenuHeight() {
+F32 Editor::calcMainMenuHeight() {
     ImGuiIO& io = ImGui::GetIO();
     ImGuiStyle& style = ImGui::GetStyle();
     ImFont* font = ImGui::GetFont();
@@ -1092,18 +1079,6 @@ float Editor::calcMainMenuHeight() {
         else return (14) + style.FramePadding.y * 2.0f;
     }
     return (io.FontGlobalScale * font->Scale * font->FontSize) + style.FramePadding.y * 2.0f;
-}
-
-void Editor::setPanelManagerBoundsToIncludeMainMenuIfPresent(int displayX, int displayY) {
-    if (displayX <= 0)
-        displayX = (int)ImGui::GetIO().DisplaySize.x;
-
-    if (displayY <= 0)
-        displayY = (int)ImGui::GetIO().DisplaySize.y;
-
-    ImVec4 bounds(0, 0, (float)displayX, (float)displayY);   // (0,0,-1,-1) defaults to (0,0,io.DisplaySize.x,io.DisplaySize.y)
-    const float mainMenuHeight = calcMainMenuHeight();
-    bounds = ImVec4(0, mainMenuHeight, to_F32(displayX), to_F32(displayY) - mainMenuHeight);
 }
 
 }; //namespace Divide
