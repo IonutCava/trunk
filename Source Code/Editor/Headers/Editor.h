@@ -111,8 +111,7 @@ class Editor : public PlatformContextComponent,
   public:
     explicit Editor(PlatformContext& context,
                     ImGuiStyleEnum theme = ImGuiStyleEnum::ImGuiStyle_GrayCodz01,
-                    ImGuiStyleEnum lostFocusTheme = ImGuiStyleEnum::ImGuiStyle_GrayCodz01Inverse,
-                    ImGuiStyleEnum dimmedTheme = ImGuiStyleEnum::ImGuiStyle_BlackCodz01);
+                    ImGuiStyleEnum dimmedTheme = ImGuiStyleEnum::ImGuiStyle_GrayCodz01Inverse);
     ~Editor();
 
     bool init(const vec2<U16>& renderResolution);
@@ -172,8 +171,6 @@ class Editor : public PlatformContextComponent,
     bool hasSceneFocus(bool& gizmoFocus);
     bool hasGizmoFocus();
     ImGuiIO& GetIO(U8 idx);
-    F32 calcMainMenuHeight();
-    void updateStyle();
 
   protected: // window events
     bool OnClose();
@@ -182,7 +179,7 @@ class Editor : public PlatformContextComponent,
     void OnUTF8(const char* text);
 
   protected: // attorney
-    void renderDrawList(ImDrawData* pDrawData, bool isPostPass);
+    void renderDrawList(ImDrawData* pDrawData, bool gizmo);
     void drawOutputWindow();
     void drawMenuBar();
     void showDebugWindow(bool state);
@@ -196,7 +193,6 @@ class Editor : public PlatformContextComponent,
 
   private:
     ImGuiStyleEnum _currentTheme;
-    ImGuiStyleEnum _currentLostFocusTheme;
     ImGuiStyleEnum _currentDimmedTheme;
 
     TransformSettings _transformSettings;

@@ -128,6 +128,8 @@ public:
 
     inline SDL_Window* getRawWindow() const;
 
+    I32 currentDisplayIndex() const;
+
     inline bool swapBuffers() const;
     inline void swapBuffers(const bool state);
 
@@ -152,11 +154,11 @@ public:
            void opacity(U8 opacity);
     inline U8   opacity() const;
 
-    inline void clearColour(const FColour& colour, bool force = false);
-    inline FColour& clearColour();
+    inline void clearColour(const FColour& colour);
+    inline void clearColour(const FColour& colour, bool clearColour, bool clearDepth);
+
     inline const FColour& clearColour() const;
-    inline FColour& originalClearColour();
-    inline const FColour& originalClearColour() const;
+    inline const FColour& clearColour(bool &clearColour, bool &clearDepth) const;
 
     /// dimensionX and dimensionY get adjusted to the closest supported value
     bool setDimensions(U16& dimensionX, U16& dimensionY);
@@ -166,11 +168,10 @@ public:
     vec2<U16> getPreviousDimensions() const;
 
     vec2<U16> getDrawableSize() const;
+    vec2<I32> getPosition(bool global = false) const;
 
-    inline void setPosition(I32 positionX, I32 positionY);
-    inline void setPosition(const vec2<I32>& position);
-
-    inline const vec2<I32>& getPosition() const;
+           void setPosition(I32 positionX, I32 positionY, bool global = false);
+    inline void setPosition(const vec2<I32>& position, bool global = false);
 
     inline const stringImpl& title() const;
                         void title(const stringImpl& title);
@@ -191,7 +192,6 @@ public:
 
     inline void destroyCbk(const DELEGATE_CBK<void>& destroyCbk);
 
-
     inline bool warp() const;
     inline const Rect<I32>& warpRect() const;
     void warp(bool state, const Rect<I32>& rect = Rect<I32>(-1));
@@ -205,8 +205,6 @@ private:
     void restore();
     /// Internally change window size
     bool setDimensionsInternal(U16& w, U16& h);
-    /// Window positioning is handled by SDL
-    void setPositionInternal(I32 w, I32 h);
     /// Centering is also easier via SDL
     void centerWindowPosition();
     /// Changing from one window type to another
@@ -261,12 +259,11 @@ private:
     Rect<I32> _renderingViewport;
 
     U8 _opacity;
-    vec2<I32> _windowPosition;
     vec2<U16> _prevDimensions;
     vec2<U16> _windowDimensions;
-    vec2<U16> _windowDrawableArea;
     FColour   _clearColour;
-    FColour   _clearColourOriginal;
+    bool      _shouldClearColour;
+    bool      _shouldClearDepth;
     typedef vector<std::shared_ptr<GUID_DELEGATE_CBK<void, WindowEventArgs>>> EventListeners;
     std::array<EventListeners, to_base(WindowEvent::COUNT)> _eventListeners;
 

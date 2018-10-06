@@ -110,8 +110,21 @@ void GL_API::beginFrame() {
     for (U32 i = 0; i < windowCount; ++i) {
         const DisplayWindow& window = winMgr.getWindow(i);
         if (window.swapBuffers() && !window.minimized() && !window.hidden()) {
-            GL_API::setClearColour(window.clearColour());
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT /* | GL_STENCIL_BUFFER_BIT*/);
+            bool shouldClearColour, shouldClearDepth;
+
+            GL_API::setClearColour(window.clearColour(shouldClearColour, shouldClearDepth));
+            ClearBufferMask mask = GL_NONE_BIT;
+            if (shouldClearColour) {
+                mask |= GL_COLOR_BUFFER_BIT;
+            }
+            if (shouldClearDepth) {
+                mask |= GL_DEPTH_BUFFER_BIT;
+            }
+            if (false) {
+                mask |= GL_STENCIL_BUFFER_BIT;
+            }
+
+            glClear(mask);
         }
     }
     

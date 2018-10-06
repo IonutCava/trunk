@@ -59,7 +59,6 @@ DisplayWindow::DisplayWindow(WindowManager& parent, PlatformContext& context)
    _windowID(std::numeric_limits<Uint32>::max()),
    _inputHandler(std::make_unique<Input::InputInterface>(*this))
 {
-    _windowPosition.set(0);
     _prevDimensions.set(1);
     _windowDimensions.set(1);
 
@@ -106,8 +105,8 @@ ErrorCode DisplayWindow::init(U32 windowFlags,
     const vec2<I16>& position = descriptor.position;
 
     _sdlWindow = SDL_CreateWindow(_title.c_str(),
-                                  position.x == -1 ? SDL_WINDOWPOS_CENTERED_DISPLAY(_parent.targetDisplay()) : position.x,
-                                  position.y == -1 ? SDL_WINDOWPOS_CENTERED_DISPLAY(_parent.targetDisplay()) : position.y,
+                                  position.x == -1 ? SDL_WINDOWPOS_CENTERED_DISPLAY(descriptor.targetDisplay) : position.x,
+                                  position.y == -1 ? SDL_WINDOWPOS_CENTERED_DISPLAY(descriptor.targetDisplay) : position.y,
                                   1,
                                   1,
                                   windowFlags);
@@ -272,10 +271,10 @@ bool DisplayWindow::setDimensionsInternal(U16& w, U16& h) {
     if (_type == WindowType::FULLSCREEN) {
         // Find a decent resolution close to our dragged dimensions
         SDL_DisplayMode mode, closestMode;
-        SDL_GetCurrentDisplayMode(_parent.targetDisplay(), &mode);
+        SDL_GetCurrentDisplayMode(currentDisplayIndex(), &mode);
         mode.w = w;
         mode.h = h;
-        SDL_GetClosestDisplayMode(_parent.targetDisplay(), &mode, &closestMode);
+        SDL_GetClosestDisplayMode(currentDisplayIndex(), &mode, &closestMode);
         w = to_U16(closestMode.w);
         h = to_U16(closestMode.h);
         SDL_SetWindowDisplayMode(_sdlWindow, &closestMode);
@@ -291,6 +290,12 @@ bool DisplayWindow::setDimensionsInternal(U16& w, U16& h) {
     return newW == w && newH == h;
 }
 
+I32 DisplayWindow::currentDisplayIndex() const {
+    I32 displayIndex = SDL_GetWindowDisplayIndex(_sdlWindow);
+    assert(displayIndex != -1);
+    return displayIndex;
+}
+
 vec2<U16> DisplayWindow::getDrawableSize() const {
     return context().gfx().getDrawableSize(*this);
 }
@@ -302,9 +307,34 @@ void DisplayWindow::opacity(U8 opacity) {
 }
 
 /// Window positioning is handled by SDL
-void DisplayWindow::setPositionInternal(I32 w, I32 h) {
+void DisplayWindow::setPosition(I32 w, I32 h, bool global) {
     _internalMoveEvent = true;
-    SDL_SetWindowPosition(_sdlWindow, w, h);
+    I32 displayIndex = currentDisplayIndex();
+
+    if (!global) {
+
+        if (w != -1) {
+            w += _parent.monitorData()[displayIndex].viewport.x;
+        }
+        if (h != -1) {
+            h += _parent.monitorData()[displayIndex].viewport.y;
+        }
+    }
+
+    SDL_SetWindowPosition(_sdlWindow, 
+                          w = -1 ? SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex) : w,
+                          h = -1 ? SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex) : h);
+}
+
+vec2<I32> DisplayWindow::getPosition(bool global) const {
+    vec2<I32> ret;
+    SDL_GetWindowPosition(_sdlWindow, &ret.x, &ret.y);
+
+    if (!global) {
+        ret -= vec2<I32>(_parent.monitorData()[currentDisplayIndex()].drawableArea.xy());
+    }
+
+    return ret;
 }
 
 void DisplayWindow::hasFocus(const bool state) {
@@ -318,8 +348,7 @@ void DisplayWindow::hasFocus(const bool state) {
 void DisplayWindow::centerWindowPosition() {
     _internalMoveEvent = true;
 
-    setPosition(SDL_WINDOWPOS_CENTERED_DISPLAY(_parent.targetDisplay()),
-                SDL_WINDOWPOS_CENTERED_DISPLAY(_parent.targetDisplay()));
+    setPosition(-1, -1);
 }
 
 /// Mouse positioning is handled by SDL

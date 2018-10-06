@@ -50,7 +50,7 @@
     <showDebugCursor>false</showDebugCursor>
   </CEGUI>
   <IMGUI>
-    <multiViewportEnabled>true</multiViewportEnabled>
+    <multiViewportEnabled>false</multiViewportEnabled>
   </IMGUI>
   <consoleLayoutFile>console.layout</consoleLayoutFile>
   <editorLayoutFile>editor.layout</editorLayoutFile>

@@ -41,8 +41,7 @@ namespace {
 
 
 WindowManager::WindowManager()  noexcept 
-   : _displayIndex(0),
-     _apiFlags(0),
+   : _apiFlags(0),
      _activeWindowGUID(-1),
      _mainWindowGUID(-1),
      _focusedWindowGUID(-1),
@@ -75,11 +74,30 @@ ErrorCode WindowManager::init(PlatformContext& context,
     _context = &context;
     RenderAPI api = _context->gfx().getAPI();
 
-    targetDisplay(std::max(std::min(targetDisplayIndex, SDL_GetNumVideoDisplays() - 1), 0));
+    _monitors.resize(0);
+    I32 displayCount = SDL_GetNumVideoDisplays();
+    for (I32 i = 0; i < displayCount; ++i) {
+        MonitorData data = {};
+
+        SDL_Rect r;
+        SDL_GetDisplayBounds(i, &r);
+        data.viewport.xy(to_U16(r.x), to_U16(r.y));
+        data.viewport.zw(to_U16(r.w), to_U16(r.h));
+
+        SDL_GetDisplayUsableBounds(i, &r);
+        data.drawableArea.xy(to_U16(r.x), to_U16(r.y));
+        data.drawableArea.zw(to_U16(r.w), to_U16(r.h));
+
+        SDL_GetDisplayDPI(i, &data.dpi, nullptr, nullptr);
+
+        _monitors.push_back(data);
+    }
+
+    I32 displayIndex = std::max(std::min(targetDisplayIndex, displayCount - 1), 0);
 
     SysInfo& systemInfo = sysInfo();
     SDL_DisplayMode displayMode;
-    SDL_GetCurrentDisplayMode(targetDisplay(), &displayMode);
+    SDL_GetCurrentDisplayMode(displayIndex, &displayMode);
     systemInfo._systemResolutionWidth = displayMode.w;
     systemInfo._systemResolutionHeight = displayMode.h;
 
@@ -88,7 +106,7 @@ ErrorCode WindowManager::init(PlatformContext& context,
     WindowDescriptor descriptor;
     descriptor.position = initialPosition;
     descriptor.dimensions = initialResolution;
-    descriptor.targetDisplay = targetDisplayIndex;
+    descriptor.targetDisplay = displayIndex;
     descriptor.title = _context->config().title;
     descriptor.vsync = _context->config().runtime.enableVSync;
 
@@ -174,7 +192,9 @@ U32 WindowManager::createWindow(const WindowDescriptor& descriptor, ErrorCode& e
                                   fullscreen ? WindowType::FULLSCREEN : WindowType::WINDOW,
                                   descriptor);
 
-        _windows[ret]->clearColour(descriptor.clearColour, true);
+        _windows[ret]->clearColour(descriptor.clearColour);
+        _windows[ret]->_shouldClearColour = descriptor.shouldClearColour;
+        _windows[ret]->_shouldClearDepth = descriptor.shouldClearDepth;
 
         if (err == ErrorCode::NO_ERR) {
             err = configureAPISettings(_windows[ret]);

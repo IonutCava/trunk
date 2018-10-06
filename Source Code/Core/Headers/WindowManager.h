@@ -55,12 +55,21 @@ struct WindowDescriptor {
     vec2<I16> position;
     vec2<U16> dimensions;
     bool vsync = false;
+    bool shouldClearColour = true;
+    bool shouldClearDepth = true;
     FColour clearColour = DefaultColours::DIVIDE_BLUE;
     U32 flags = to_U32(to_base(Flags::DECORATED) | to_base(Flags::RESIZEABLE) | to_base(Flags::ALLOW_HIGH_DPI));
 };
 
 class PlatformContext;
 class WindowManager {
+public:
+    struct MonitorData {
+        Rect<U16> viewport;
+        Rect<U16> drawableArea;
+        float dpi = 0.f;
+    };
+
 public:
     WindowManager() noexcept;
     ~WindowManager();
@@ -98,6 +107,8 @@ public:
 
     inline U32 getWindowCount() const;
 
+    inline const vector<MonitorData>& monitorData() const;
+
     void handleWindowEvent(WindowEvent event, I64 winGUID, I32 data1, I32 data2, bool flag = false);
 
     vec2<U16> getFullscreenResolution() const;
@@ -117,11 +128,11 @@ protected:
 
 protected:
     U32 _apiFlags;
-    I32 _displayIndex;
     I64 _activeWindowGUID;
     I64 _mainWindowGUID;
     I64 _focusedWindowGUID;
 
+    vector<MonitorData> _monitors;
     PlatformContext* _context;
     vector<DisplayWindow*> _windows;
 };

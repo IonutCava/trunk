@@ -34,14 +34,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-inline I32 WindowManager::targetDisplay() const {
-    return _displayIndex;
-}
-
-inline void WindowManager::targetDisplay(I32 displayIndex) {
-    _displayIndex = displayIndex;
-}
-
 inline U32 WindowManager::getWindowCount() const {
     return to_U32(_windows.size());
 }
@@ -82,6 +74,10 @@ inline DisplayWindow& WindowManager::getWindow(U32 index) {
 inline const DisplayWindow& WindowManager::getWindow(U32 index) const {
     assert(index < to_U32(_windows.size()));
     return *_windows[index];
+}
+
+inline const vector<WindowManager::MonitorData>& WindowManager::monitorData() const {
+    return _monitors;
 }
 
 }; //namespace Divide

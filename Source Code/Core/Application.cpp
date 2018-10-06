@@ -121,6 +121,7 @@ void Application::warmup(const Configuration& config) {
     Attorney::KernelApplication::stopSplashScreen(*_kernel);
     window.changeToPreviousType();
     while (!window.setDimensions(previousDimensions)) {}
+    window.setPosition(vec2<I32>(-1));
 }
 
 void Application::idle() {

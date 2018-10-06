@@ -44,17 +44,8 @@ namespace Divide {
                type() == WindowType::FULLSCREEN_WINDOWED;
     }
 
-    inline void DisplayWindow::setPosition(I32 positionX, I32 positionY) {
-        _windowPosition.set(positionX, positionY);
-        setPositionInternal(positionX, positionY);
-    }
-
-    inline void DisplayWindow::setPosition(const vec2<I32>& position) {
-        setPosition(position.x, position.y);
-    }
-
-    inline const vec2<I32>& DisplayWindow::getPosition() const {
-        return _windowPosition;
+    inline void DisplayWindow::setPosition(const vec2<I32>& position, bool global) {
+        setPosition(position.x, position.y, global);
     }
 
     inline bool DisplayWindow::swapBuffers() const {
@@ -73,27 +64,25 @@ namespace Divide {
         return _opacity;
     }
 
-    inline void DisplayWindow::clearColour(const FColour& colour, bool force) {
-        _clearColour.set(colour);
-        if (force) {
-            _clearColourOriginal.set(colour);
-        }
+    inline void DisplayWindow::clearColour(const FColour& colour) {
+        clearColour(colour, _shouldClearColour, _shouldClearDepth);
     }
 
-    inline FColour& DisplayWindow::clearColour() {
-        return _clearColour;
+    void DisplayWindow::clearColour(const FColour& colour, bool clearColour, bool clearDepth) {
+        _clearColour.set(colour);
+        _shouldClearColour = clearColour;
+        _shouldClearDepth = clearDepth;
     }
 
     inline const FColour& DisplayWindow::clearColour() const {
+        bool shouldClearColour, shouldClearDepth;
+        return clearColour(shouldClearColour, shouldClearDepth);
+    }
+
+    inline const FColour& DisplayWindow::clearColour(bool &clearColour, bool &clearDepth) const {
+        clearColour = _shouldClearColour;
+        clearDepth = _shouldClearDepth;
         return _clearColour;
-    }
-
-    inline FColour& DisplayWindow::originalClearColour() {
-        return _clearColourOriginal;
-    }
-
-    inline const FColour& DisplayWindow::originalClearColour() const {
-        return _clearColourOriginal;
     }
 
     inline bool DisplayWindow::minimized() const {

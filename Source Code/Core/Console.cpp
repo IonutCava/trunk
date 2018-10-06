@@ -145,6 +145,9 @@ void Console::outThread() {
         while (outBuffer().try_dequeue(/*ctok, */entry)) {
 #endif
             ((entry._type == EntryType::Error && _errorStreamEnabled) ? std::cerr : std::cout) << entry._text.c_str();
+            if (!_running) {
+                break;
+            }
 
             for (const Console::ConsolePrintCallback& cbk : _guiConsoleCallbacks) {
                 if (!_running) {
