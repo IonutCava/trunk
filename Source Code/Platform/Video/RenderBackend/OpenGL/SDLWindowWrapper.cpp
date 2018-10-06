@@ -342,43 +342,6 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
 
     _elapsedTimeQuery = std::make_shared<glHardwareQueryRing>(_context, 6);
 
-    // Ring buffer wouldn't work properly with an IMMEDIATE MODE gui
-    // We update and draw multiple times in a loop
-    _IMGUIBuffer = _context.newGVD(1);
-
-    GenericVertexData::IndexBuffer idxBuff;
-    idxBuff.smallIndices = sizeof(ImDrawIdx) == 2;
-    idxBuff.count = MAX_IMGUI_VERTS * 3;
-    
-    _IMGUIBuffer->create(1);
-    _IMGUIBuffer->setBuffer(0, MAX_IMGUI_VERTS, sizeof(ImDrawVert), true, NULL, BufferUpdateFrequency::OFTEN); //Pos, UV and Colour
-    _IMGUIBuffer->setIndexBuffer(idxBuff, BufferUpdateFrequency::OFTEN);
-
-#define OFFSETOF(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
-    AttributeDescriptor& descPos = _IMGUIBuffer->attribDescriptor(to_base(AttribLocation::VERTEX_GENERIC));
-    AttributeDescriptor& descUV = _IMGUIBuffer->attribDescriptor(to_base(AttribLocation::VERTEX_TEXCOORD));
-    AttributeDescriptor& descColour = _IMGUIBuffer->attribDescriptor(to_base(AttribLocation::VERTEX_COLOR));
-
-    descPos.set(0,
-                2,
-                GFXDataFormat::FLOAT_32,
-                false,
-                to_U32(OFFSETOF(ImDrawVert, pos)));
-
-    descUV.set(0,
-               2,
-               GFXDataFormat::FLOAT_32,
-               false,
-               to_U32(OFFSETOF(ImDrawVert, uv)));
-
-    descColour.set(0,
-                   4,
-                   GFXDataFormat::UNSIGNED_BYTE,
-                   true,
-                   to_U32(OFFSETOF(ImDrawVert, col)));
-
-#undef OFFSETOF
-
     // Prepare shader headers and various shader related states
     if (initShaders() && initGLSW()) {
         // That's it. Everything should be ready for draw calls

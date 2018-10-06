@@ -64,7 +64,6 @@ GL_API::GL_API(GFXDevice& context, const bool glES)
       _prevWidthString(0),
       _fonsContext(nullptr),
       _GUIGLrenderer(nullptr),
-      _IMGUIBuffer(nullptr),
       _glswState(-1),
       _swapBufferTimer(Time::ADD_TIMER("Swap Buffer Timer"))
 {
@@ -792,7 +791,7 @@ void GL_API::drawText(const TextElementBatch& batch) {
     popDebugMessage();
 }
 
-void GL_API::drawIMGUI(ImDrawData* data) {
+void GL_API::drawIMGUI(ImDrawData* data, I64 windowGUID) {
     if (data != nullptr && data->Valid) {
 
         GenericVertexData::IndexBuffer idxBuffer;
@@ -811,8 +810,11 @@ void GL_API::drawIMGUI(ImDrawData* data) {
             idxBuffer.count = to_U32(cmd_list->IdxBuffer.Size);
             idxBuffer.data = (bufferPtr)cmd_list->IdxBuffer.Data;
 
-            _IMGUIBuffer->updateBuffer(0u, vertCount, 0u, cmd_list->VtxBuffer.Data);
-            _IMGUIBuffer->updateIndexBuffer(idxBuffer);
+            GenericVertexData* buffer = getOrCreateIMGUIBuffer(windowGUID);
+            assert(buffer != nullptr);
+
+            buffer->updateBuffer(0u, vertCount, 0u, cmd_list->VtxBuffer.Data);
+            buffer->updateIndexBuffer(idxBuffer);
 
             for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.size(); cmd_i++)
             {
@@ -832,7 +834,7 @@ void GL_API::drawIMGUI(ImDrawData* data) {
                         cmd._cmd.indexCount = to_U32(pcmd->ElemCount);
 
                         GL_API::bindTexture(0, (GLuint)((intptr_t)pcmd->TextureId));
-                        _IMGUIBuffer->draw(cmd);
+                        buffer->draw(cmd);
                     }
                 }
                 cmd._cmd.firstIndex += pcmd->ElemCount;
@@ -1042,7 +1044,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
         }break;
         case GFX::CommandType::DRAW_IMGUI: {
             const GFX::DrawIMGUICommand& crtCmd = commandBuffer.getCommand<GFX::DrawIMGUICommand>(entry);
-            drawIMGUI(crtCmd._data);
+            drawIMGUI(crtCmd._data, crtCmd._windowGUID);
         }break;
         case GFX::CommandType::DRAW_COMMANDS : {
             const vectorEASTL<GenericDrawCommand>& drawCommands = commandBuffer.getCommand<GFX::DrawCommand>(entry)._drawCommands;
@@ -1079,6 +1081,55 @@ void GL_API::postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
         data._lockManager->LockRange(data._offset, data._range, data._flush);
         g_bufferBinds.pop();
     }
+}
+
+GenericVertexData* GL_API::getOrCreateIMGUIBuffer(I64 windowGUID) {
+    GenericVertexData* ret = nullptr;
+
+    auto it = _IMGUIBuffers.find(windowGUID);
+    if (it == eastl::cend(_IMGUIBuffers)) {
+        // Ring buffer wouldn't work properly with an IMMEDIATE MODE gui
+        // We update and draw multiple times in a loop
+        ret = _context.newGVD(1);
+
+        GenericVertexData::IndexBuffer idxBuff;
+        idxBuff.smallIndices = sizeof(ImDrawIdx) == 2;
+        idxBuff.count = MAX_IMGUI_VERTS * 3;
+
+        ret->create(1);
+        ret->setBuffer(0, MAX_IMGUI_VERTS, sizeof(ImDrawVert), true, NULL, BufferUpdateFrequency::OFTEN); //Pos, UV and Colour
+        ret->setIndexBuffer(idxBuff, BufferUpdateFrequency::OFTEN);
+
+#define OFFSETOF(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
+        AttributeDescriptor& descPos = ret->attribDescriptor(to_base(AttribLocation::VERTEX_GENERIC));
+        AttributeDescriptor& descUV = ret->attribDescriptor(to_base(AttribLocation::VERTEX_TEXCOORD));
+        AttributeDescriptor& descColour = ret->attribDescriptor(to_base(AttribLocation::VERTEX_COLOR));
+
+        descPos.set(0,
+                    2,
+                    GFXDataFormat::FLOAT_32,
+                    false,
+                    to_U32(OFFSETOF(ImDrawVert, pos)));
+
+        descUV.set(0,
+                   2,
+                   GFXDataFormat::FLOAT_32,
+                   false,
+                   to_U32(OFFSETOF(ImDrawVert, uv)));
+
+        descColour.set(0,
+                       4,
+                       GFXDataFormat::UNSIGNED_BYTE,
+                       true,
+                       to_U32(OFFSETOF(ImDrawVert, col)));
+
+#undef OFFSETOF
+        _IMGUIBuffers[windowGUID] = ret;
+    } else {
+        ret = it->second;
+    }
+
+    return ret;
 }
 
 void GL_API::registerBufferBind(const BufferWriteData& data) {

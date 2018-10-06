@@ -353,7 +353,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
                     return;
                 }
                 
-                g_editor->renderDrawList(viewport->DrawData, false);
+                g_editor->renderDrawList(viewport->DrawData, false, ((DisplayWindow*)viewport->PlatformHandle)->getGUID());
             };
 
             platform_io.Platform_SwapBuffers = [](ImGuiViewport* viewport, void*) {
@@ -540,7 +540,7 @@ bool Editor::renderGizmos(const U64 deltaTime) {
                 transform->setTransform(values);
 
                 ImGui::Render();
-                renderDrawList(ImGui::GetDrawData(), true);
+                renderDrawList(ImGui::GetDrawData(), true, _mainWindow->getGUID());
 
                 return true;
             }
@@ -662,7 +662,7 @@ bool Editor::framePostRenderStarted(const FrameEvent& evt) {
     ImGui::Render();
 
     g_windowManager->prepareWindowForRender(*_mainWindow);
-    renderDrawList(ImGui::GetDrawData(), false);
+    renderDrawList(ImGui::GetDrawData(), false, _mainWindow->getGUID());
     if (GetIO(0).ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
     {
         ImGui::UpdatePlatformWindows();
@@ -729,7 +729,7 @@ const TransformSettings& Editor::getTransformSettings() const {
 }
 
 // Needs to be rendered immediately. *IM*GUI. IMGUI::NewFrame invalidates this data
-void Editor::renderDrawList(ImDrawData* pDrawData, bool gizmo)
+void Editor::renderDrawList(ImDrawData* pDrawData, bool gizmo, I64 windowGUID)
 {
     ImGui::SetCurrentContext(_imguiContext[to_base(gizmo ? Context::Gizmo : Context::Editor)]);
 
@@ -801,10 +801,10 @@ void Editor::renderDrawList(ImDrawData* pDrawData, bool gizmo)
     float B = pDrawData->DisplayPos.y + pDrawData->DisplaySize.y;
     const F32 ortho_projection[4][4] =
     {
-        { 2.0f / (R - L),   0.0f,         0.0f,   0.0f },
-        { 0.0f,         2.0f / (T - B),   0.0f,   0.0f },
-        { 0.0f,         0.0f,        -1.0f,   0.0f },
-        { (R + L) / (L - R),  (T + B) / (B - T),  0.0f,   1.0f },
+        { 2.0f / (R - L),    0.0f,               0.0f,   0.0f },
+        { 0.0f,              2.0f / (T - B),     0.0f,   0.0f },
+        { 0.0f,              0.0f,              -1.0f,   0.0f },
+        { (R + L) / (L - R), (T + B) / (B - T),  0.0f,   1.0f },
     };
 
     GFX::SetCameraCommand cameraCmd;
@@ -814,6 +814,7 @@ void Editor::renderDrawList(ImDrawData* pDrawData, bool gizmo)
 
     GFX::DrawIMGUICommand drawIMGUI;
     drawIMGUI._data = pDrawData;
+    drawIMGUI._windowGUID = windowGUID;
     GFX::EnqueueCommand(buffer, drawIMGUI);
 
     if (gizmo) {

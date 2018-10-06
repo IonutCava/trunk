@@ -235,6 +235,7 @@ END_COMMAND();
 
 BEGIN_COMMAND(DrawIMGUICommand, CommandType::DRAW_IMGUI, 4096);
     ImDrawData* _data = nullptr;
+    I64 _windowGUID = 0;
 END_COMMAND();
 
 BEGIN_COMMAND(DispatchComputeCommand, CommandType::DISPATCH_COMPUTE, 4096);

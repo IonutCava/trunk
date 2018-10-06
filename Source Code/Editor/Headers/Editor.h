@@ -179,7 +179,7 @@ class Editor : public PlatformContextComponent,
     void OnUTF8(const char* text);
 
   protected: // attorney
-    void renderDrawList(ImDrawData* pDrawData, bool gizmo);
+    void renderDrawList(ImDrawData* pDrawData, bool gizmo, I64 windowGUID);
     void drawOutputWindow();
     void drawMenuBar();
     void showDebugWindow(bool state);

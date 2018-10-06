@@ -126,7 +126,7 @@ protected:
     /// (https://github.com/memononen/fontstash)
     /// with his OpenGL frontend adapted for core context profiles
     void drawText(const TextElementBatch& batch);
-    void drawIMGUI(ImDrawData* data);
+    void drawIMGUI(ImDrawData* data, I64 windowGUID);
 
     bool draw(const GenericDrawCommand& cmd);
 
@@ -307,6 +307,9 @@ private:
     /// all stages
     typedef std::array<GLint, to_base(ShaderType::COUNT) + 1> ShaderOffsetArray;
     static void appendToShaderHeader(ShaderType type, const stringImpl& entry, ShaderOffsetArray& inOutOffset);
+
+    GenericVertexData* getOrCreateIMGUIBuffer(I64 windowGUID);
+
 protected:
     /// Number of available texture units
     static GLint s_maxTextureUnits;
@@ -418,7 +421,7 @@ private:
 
     I32 _glswState;
     CEGUI::OpenGL3Renderer* _GUIGLrenderer;
-    GenericVertexData* _IMGUIBuffer;
+    hashMap<I64, GenericVertexData*> _IMGUIBuffers;
     Time::ProfileTimer& _swapBufferTimer;
 };
 
