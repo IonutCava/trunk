@@ -607,6 +607,13 @@ bool Editor::renderFull(const U64 deltaTime) {
         ImVec2(640, 480)
     };
 
+    ImVec2 minSizes[] = {
+        ImVec2(300, 300),
+        ImVec2(300, 300),
+        ImVec2(300, 300),
+        ImVec2(300, 100)
+    };
+
     ImVec2 positions[] = {
         ImVec2(0, 0),
         ImVec2(ImGui::GetIO().DisplaySize.x - sizes[1].x, 0),
@@ -617,12 +624,13 @@ bool Editor::renderFull(const U64 deltaTime) {
     U32 i = 0;
     for (DockedWindow* window : _dockedWindows) {
         ImGui::SetNextWindowPos(positions[i], ImGuiCond_FirstUseEver);
-        ImGui::SetNextWindowSize(sizes[i++], ImGuiCond_FirstUseEver);
-
+        ImGui::SetNextWindowSize(sizes[i], ImGuiCond_FirstUseEver);
+        //ImGui::SetNextWindowSizeConstraints(minSizes[i++], ImVec2(FLT_MAX, FLT_MAX));
         if (ImGui::Begin(window->name(), NULL, window_flags)) {
             window->draw();
         }
         ImGui::End();
+        ++i;
     }
     renderMinimal(deltaTime);
 
@@ -904,8 +912,8 @@ bool Editor::mouseMoved(const Input::MouseEvent& arg) {
     // Check if we are hovering over the scene
 
     ImGuiIO& io = GetIO(to_base(Context::Editor));
-    const Rect<I32>& previewRect = static_cast<SceneViewWindow*>(_dockedWindows[to_base(WindowType::SceneView)])->sceneRect();
-    _sceneHovered = previewRect.contains(io.MousePos.x, io.MousePos.y);
+    SceneViewWindow* sceneView = static_cast<SceneViewWindow*>(_dockedWindows[to_base(WindowType::SceneView)]);
+    _sceneHovered = sceneView->isHovered() && sceneView->sceneRect().contains(io.MousePos.x, io.MousePos.y);
 
     return !_scenePreviewFocused ? io.WantCaptureMouse : hasGizmoFocus();
 }
@@ -935,18 +943,23 @@ bool Editor::mouseButtonReleased(const Input::MouseEvent& arg, Input::MouseButto
         return false;
     }
 
+    if (_scenePreviewFocused != _sceneHovered) {
+        ImGui::SetCurrentContext(_imguiContext[to_U8(Context::Editor)]);
+        _scenePreviewFocused = _sceneHovered;
+        ImGuiStyle& style = ImGui::GetStyle();
+        ImGui::ResetStyle(_scenePreviewFocused ? _currentDimmedTheme : _currentTheme, style);
+
+        const Rect<I32>& previewRect = static_cast<SceneViewWindow*>(_dockedWindows[to_base(WindowType::SceneView)])->sceneRect();
+        _mainWindow->warp(_scenePreviewFocused, previewRect);
+    }
+
     ImGui::SetCurrentContext(_imguiContext[hasSceneFocus() ? to_U8(Context::Gizmo) : to_U8(Context::Editor)]);
     ImGuiIO& io = ImGui::GetIO();
 
     io.MouseDown[button == OIS::MB_Left ? 0 : button == OIS::MB_Right ? 1 : 2] = false;
     //context().app().windowManager().captureMouse(false);
 
-    if (_scenePreviewFocused != _sceneHovered) {
-        _scenePreviewFocused = _sceneHovered;
-        ImGui::ResetStyle(_scenePreviewFocused ? _currentDimmedTheme : _currentTheme);
-        const Rect<I32>& previewRect = static_cast<SceneViewWindow*>(_dockedWindows[to_base(WindowType::SceneView)])->sceneRect();
-        _mainWindow->warp(_scenePreviewFocused, previewRect);
-    }
+
 
     return io.WantCaptureMouse || ImGuizmo::IsOver();
 }

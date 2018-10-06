@@ -72,7 +72,7 @@ namespace Divide {
     }
 
     void PropertyWindow::draw() {
-        drawTransformSettings();
+        DockedWindow::draw();
 
         Camera* selectedCamera = Attorney::EditorPropertyWindow::getSelectedCamera(_parent);
         if (selectedCamera != nullptr) {
@@ -425,72 +425,6 @@ namespace Divide {
 
          return ret;
      }
-
-     void PropertyWindow::drawTransformSettings() {
-         bool enableGizmo = Attorney::EditorPropertyWindow::editorEnableGizmo(_parent);
-         ImGui::Checkbox("Transform Gizmo", &enableGizmo);
-         Attorney::EditorPropertyWindow::editorEnableGizmo(_parent, enableGizmo);
-
-         if (enableGizmo) {
-             TransformSettings settings = _parent.getTransformSettings();
-
-             if (ImGui::IsKeyPressed(Input::KeyCode::KC_T)) {
-                 settings.currentGizmoOperation = ImGuizmo::TRANSLATE;
-             }
-
-             if (ImGui::IsKeyPressed(Input::KeyCode::KC_R)) {
-                 settings.currentGizmoOperation = ImGuizmo::ROTATE;
-             }
-
-             if (ImGui::IsKeyPressed(Input::KeyCode::KC_S)) {
-                 settings.currentGizmoOperation = ImGuizmo::SCALE;
-             }
-
-             if (ImGui::RadioButton("Translate", settings.currentGizmoOperation == ImGuizmo::TRANSLATE)) {
-                 settings.currentGizmoOperation = ImGuizmo::TRANSLATE;
-             }
-
-             ImGui::SameLine();
-             if (ImGui::RadioButton("Rotate", settings.currentGizmoOperation == ImGuizmo::ROTATE)) {
-                 settings.currentGizmoOperation = ImGuizmo::ROTATE;
-             }
-
-             ImGui::SameLine();
-             if (ImGui::RadioButton("Scale", settings.currentGizmoOperation == ImGuizmo::SCALE)) {
-                 settings.currentGizmoOperation = ImGuizmo::SCALE;
-             }
-
-             if (settings.currentGizmoOperation != ImGuizmo::SCALE) {
-                 if (ImGui::RadioButton("Local", settings.currentGizmoMode == ImGuizmo::LOCAL)) {
-                     settings.currentGizmoMode = ImGuizmo::LOCAL;
-                 }
-                 ImGui::SameLine();
-                 if (ImGui::RadioButton("World", settings.currentGizmoMode == ImGuizmo::WORLD)) {
-                     settings.currentGizmoMode = ImGuizmo::WORLD;
-                 }
-             }
-
-             ImGui::Checkbox("", &settings.useSnap);
-             ImGui::SameLine();
-
-             switch (settings.currentGizmoOperation)
-             {
-                 case ImGuizmo::TRANSLATE:
-                     ImGui::InputFloat3("Position Snap", &settings.snap[0]);
-                     break;
-                 case ImGuizmo::ROTATE:
-                     ImGui::InputFloat("Angle Snap", &settings.snap[0]);
-                     break;
-                 case ImGuizmo::SCALE:
-                     ImGui::InputFloat("Scale Snap", &settings.snap[0]);
-                     break;
-             }
-             ImGui::Separator();
-
-             _parent.setTransformSettings(settings);
-         }
-     }
-
      const char* PropertyWindow::name() const {
          const vector<I64> nodes = selections();
          if (nodes.empty()) {

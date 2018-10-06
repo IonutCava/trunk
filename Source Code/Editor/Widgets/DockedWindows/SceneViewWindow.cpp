@@ -23,6 +23,8 @@ namespace Divide {
     }
 
     void SceneViewWindow::draw() {
+        DockedWindow::draw();
+
         ImVec2 size(0.0f, 0.0f);
         ImGuiWindow* window = ImGui::GetCurrentWindow();
 

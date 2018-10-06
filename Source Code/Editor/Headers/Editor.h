@@ -111,7 +111,7 @@ class Editor : public PlatformContextComponent,
   public:
     explicit Editor(PlatformContext& context,
                     ImGuiStyleEnum theme = ImGuiStyleEnum::ImGuiStyle_GrayCodz01,
-                    ImGuiStyleEnum dimmedTheme = ImGuiStyleEnum::ImGuiStyle_GrayCodz01Inverse);
+                    ImGuiStyleEnum dimmedTheme = ImGuiStyleEnum::ImGuiStyle_EdinBlack);
     ~Editor();
 
     bool init(const vec2<U16>& renderResolution);
@@ -248,11 +248,6 @@ namespace Attorney {
             return editor.getSelectedCamera();
         }
 
-        friend class Divide::SolutionExplorerWindow;
-    };
-
-    class EditorPropertyWindow {
-    private :
         static bool editorEnableGizmo(Editor& editor) {
             return editor.enableGizmo();
         }
@@ -260,6 +255,12 @@ namespace Attorney {
         static void editorEnableGizmo(Editor& editor, bool state) {
             editor.enableGizmo(state);
         }
+
+        friend class Divide::SolutionExplorerWindow;
+    };
+
+    class EditorPropertyWindow {
+    private :
 
         static void setSelectedCamera(Editor& editor, Camera* camera) {
             editor.setSelectedCamera(camera);

@@ -47,6 +47,7 @@ class SolutionExplorerWindow : public DockedWindow, public PlatformContextCompon
 
         void draw() override;
   protected:
+      void drawTransformSettings();
       void printCameraNode(SceneManager& sceneManager, Camera* camera);
       void printSceneGraphNode(SceneManager& sceneManager, SceneGraphNode& sgn);
 };

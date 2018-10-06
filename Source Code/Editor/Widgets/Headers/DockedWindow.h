@@ -42,12 +42,17 @@ class DockedWindow {
         explicit DockedWindow(Editor& parent, const stringImpl& name);
         virtual ~DockedWindow();
 
-        virtual void draw() = 0;
+        virtual void draw();
 
         virtual const char* name() const { return _name.c_str(); }
 
+        virtual bool hasFocus() const { return _focused; }
+        virtual bool isHovered() const { return _isHovered; }
     protected:
         Editor & _parent;
+
+        bool _focused;
+        bool _isHovered;
         stringImpl _name;
 };
 }; //namespace Divide

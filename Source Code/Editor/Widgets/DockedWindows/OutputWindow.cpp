@@ -17,6 +17,8 @@ namespace Divide {
     }
 
     void OutputWindow::draw() {
+        DockedWindow::draw();
+
         // Draw Output Window
         Attorney::EditorOutputWindow::drawOutputWindow(_parent.context().editor());
     }
