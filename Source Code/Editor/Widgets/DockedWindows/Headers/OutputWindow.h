@@ -32,15 +32,33 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _EDITOR_OUTPUT_WINDOW_H_
 #define _EDITOR_OUTPUT_WINDOW_H_
 
+#include "Core/Headers/Console.h"
 #include "Editor/Widgets/Headers/DockedWindow.h"
+#include <CircularBuffer/CircularBuffer.h>
 
 namespace Divide {
+
+class ApplicationOutput;
 class OutputWindow : public DockedWindow {
     public:
         OutputWindow(Editor& parent, const Descriptor& descriptor);
         ~OutputWindow();
 
         void drawInternal() override;
+        void printText(const Console::OutputEntry& entry);
+        I32 textEditCallback(ImGuiTextEditCallbackData* data);
+
+    protected:
+        void clearLog();
+        void executeCommand(const char* command_line);
+
+    protected:
+        size_t _consoleCallbackIndex;
+
+        bool _scrollToBottom;
+        char _inputBuf[256];
+        ImGuiTextFilter _filter;
+        circular_buffer<Console::OutputEntry> _log;
 };
 }; //namespace Divide
 

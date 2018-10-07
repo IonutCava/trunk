@@ -180,7 +180,6 @@ class Editor : public PlatformContextComponent,
 
   protected: // attorney
     void renderDrawList(ImDrawData* pDrawData, bool gizmo, I64 windowGUID);
-    void drawOutputWindow();
     void drawMenuBar();
     void showDebugWindow(bool state);
     void showSampleWindow(bool state);
@@ -197,7 +196,6 @@ class Editor : public PlatformContextComponent,
 
     TransformSettings _transformSettings;
     std::unique_ptr<MenuBar> _menuBar;
-    std::unique_ptr<ApplicationOutput> _applicationOutput;
 
     bool              _running;
     bool              _sceneHovered;
@@ -216,20 +214,10 @@ class Editor : public PlatformContextComponent,
     std::array<ImGuiContext*, to_base(Context::COUNT)>     _imguiContext;
     std::array<vector<I64>, to_base(WindowEvent::COUNT)> _windowListeners;
     vector<SceneGraphNode*> _selectedNodes;
-    size_t _consoleCallbackIndex;
     std::array<DockedWindow*, to_base(WindowType::COUNT)> _dockedWindows;
 }; //Editor
 
 namespace Attorney {
-    class EditorOutputWindow {
-        private:
-        static void drawOutputWindow(Editor& editor) {
-            editor.drawOutputWindow();
-        }
-
-        friend class Divide::OutputWindow;
-    };
-
     class EditorSceneViewWindow {
     private:
         static bool editorEnableGizmo(Editor& editor) {

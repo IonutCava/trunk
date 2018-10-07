@@ -130,9 +130,6 @@
     <ClCompile Include="../../../Source Code\Editor\Widgets\DockedWindow.cpp">
       <Filter>Widgets</Filter>
     </ClCompile>
-    <ClCompile Include="../../../Source Code\Editor\Widgets\ApplicationOutput.cpp">
-      <Filter>Widgets</Filter>
-    </ClCompile>
     <ClCompile Include="../../../Source Code\Editor\Widgets\DockedWindows\SolutionExplorerWindow.cpp">
       <Filter>Widgets\DockedWindows</Filter>
     </ClCompile>
@@ -312,9 +309,6 @@
     </ClInclude>
     <ClInclude Include="../../../Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\lodepng.h">
       <Filter>3rdParty/ImGUI\addons\imguiyesaddons\imguiimageeditor_plugins</Filter>
-    </ClInclude>
-    <ClInclude Include="../../../Source Code\Editor\Widgets\Headers\ApplicationOutput.h">
-      <Filter>Widgets\Headers</Filter>
     </ClInclude>
     <ClInclude Include="../../../Source Code\Editor\Widgets\Headers\MenuBar.h">
       <Filter>Widgets\Headers</Filter>

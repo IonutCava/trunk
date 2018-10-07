@@ -3,7 +3,6 @@
 #include "Headers/Editor.h"
 #include "Headers/Sample.h"
 #include "Editor/Widgets/Headers/MenuBar.h"
-#include "Editor/Widgets/Headers/ApplicationOutput.h"
 
 #include "Editor/Widgets/DockedWindows/Headers/OutputWindow.h"
 #include "Editor/Widgets/DockedWindows/Headers/PropertyWindow.h"
@@ -89,14 +88,12 @@ Editor::Editor(PlatformContext& context, ImGuiStyleEnum theme, ImGuiStyleEnum di
       _showSampleWindow(false),
       _gizmosVisible(false),
       _enableGizmo(false),
-      _consoleCallbackIndex(0),
       _editorUpdateTimer(Time::ADD_TIMER("Editor Update Timer")),
       _editorRenderTimer(Time::ADD_TIMER("Editor Render Timer"))
 {
     _imguiContext.fill(nullptr);
 
     _menuBar = std::make_unique<MenuBar>(context, true);
-    _applicationOutput = std::make_unique<ApplicationOutput>(context, to_U16(512));
 
     _dockedWindows.fill(nullptr);
     g_windowManager = &context.app().windowManager();
@@ -375,11 +372,6 @@ bool Editor::init(const vec2<U16>& renderResolution) {
     ImGui::SetCurrentContext(_imguiContext[to_base(Context::Editor)]);
 
     SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
-    _consoleCallbackIndex = Console::bindConsoleOutput([this](const Console::OutputEntry& entry) {
-        if (_applicationOutput != nullptr) {
-            _applicationOutput->printText(entry);
-        }
-    });
 
     DockedWindow::Descriptor descriptor = {};
     descriptor.position = ImVec2(0, 0);
@@ -408,8 +400,6 @@ bool Editor::init(const vec2<U16>& renderResolution) {
 }
 
 void Editor::close() {
-    Console::unbindConsoleOutput(_consoleCallbackIndex);
-
     if (_mainWindow != nullptr) {
         for (U8 i = 0; i < to_base(WindowEvent::COUNT); ++i) {
             vector<I64>& guids = _windowListeners[i];
@@ -667,12 +657,6 @@ bool Editor::frameEnded(const FrameEvent& evt) {
     return true;
 }
 
-void Editor::drawOutputWindow() {
-    if (_applicationOutput) {
-        _applicationOutput->draw();
-    }
-}
-
 void Editor::drawMenuBar() {
     if (_menuBar) {
         _menuBar->draw();
@@ -812,13 +796,14 @@ void Editor::renderDrawList(ImDrawData* pDrawData, bool gizmo, I64 windowGUID)
 }
 
 void Editor::selectionChangeCallback(PlayerIndex idx, SceneGraphNode* node) {
-    if (idx == 0) {
-        if (node == nullptr) {
-            _selectedNodes.resize(0);
-        }
-        else {
-            _selectedNodes.push_back(node);
-        }
+    if (idx != 0) {
+        return;
+    }
+
+    if (node == nullptr) {
+        _selectedNodes.resize(0);
+    } else {
+        _selectedNodes.push_back(node);
     }
 }
 
