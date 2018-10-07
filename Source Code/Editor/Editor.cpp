@@ -99,6 +99,13 @@ Editor::Editor(PlatformContext& context, ImGuiStyleEnum theme, ImGuiStyleEnum di
     g_windowManager = &context.app().windowManager();
     g_editor = this;
     REGISTER_FRAME_LISTENER(this, 99999);
+
+    //Test stuff
+    _unsavedElements.push_back(1);
+    _unsavedElements.push_back(2);
+    _unsavedElements.push_back(3);
+    _unsavedElements.push_back(4);
+    _unsavedElements.push_back(5);
 }
 
 Editor::~Editor()
@@ -1069,4 +1076,22 @@ bool Editor::simulationPauseRequested() const {
     return !sceneView->step();
 }
 
+bool Editor::hasUnsavedElements() const {
+    return !_unsavedElements.empty();
+}
+
+void Editor::saveElement(I64 elementGUID) {
+    if (elementGUID == -1) {
+        _unsavedElements.clear();
+        return;
+    }
+
+    auto it = std::find(std::cbegin(_unsavedElements),
+                        std::cend(_unsavedElements),
+                        elementGUID);
+
+    if (it != std::cend(_unsavedElements)) {
+        _unsavedElements.erase(it);
+    }
+}
 }; //namespace Divide

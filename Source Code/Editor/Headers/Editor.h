@@ -189,6 +189,8 @@ class Editor : public PlatformContextComponent,
     bool enableGizmo() const;
     void setSelectedCamera(Camera* camera);
     Camera* getSelectedCamera() const;
+    bool hasUnsavedElements() const;
+    void saveElement(I64 elementGUID);
 
   private:
     ImGuiStyleEnum _currentTheme;
@@ -215,6 +217,8 @@ class Editor : public PlatformContextComponent,
     std::array<vector<I64>, to_base(WindowEvent::COUNT)> _windowListeners;
     vector<SceneGraphNode*> _selectedNodes;
     std::array<DockedWindow*, to_base(WindowType::COUNT)> _dockedWindows;
+
+    std::vector<I64> _unsavedElements;
 }; //Editor
 
 namespace Attorney {
@@ -285,16 +289,22 @@ namespace Attorney {
         static void enableGizmo(Editor& editor, bool state) {
             return editor.enableGizmo(state);
         }
-        static bool showDebugWindow(Editor& editor) {
+        static bool showDebugWindow(const Editor& editor) {
             return editor.showDebugWindow();
         }
-        static bool showSampleWindow(Editor& editor) {
+        static bool showSampleWindow(const Editor& editor) {
             return editor.showSampleWindow();
         }
-        static bool enableGizmo(Editor& editor) {
+        static bool enableGizmo(const Editor& editor) {
             return editor.enableGizmo();
         }
-        
+        static bool hasUnsavedElements(const Editor& editor) {
+            return editor.hasUnsavedElements();
+        }
+        static void saveElement(Editor& editor, I64 elementGUID = -1) {
+            editor.saveElement(elementGUID);
+        }
+
         friend class Divide::MenuBar;
         friend class Divide::PanelManager;
     };
