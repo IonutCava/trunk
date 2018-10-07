@@ -59,8 +59,8 @@ namespace ImGui {
 };
 
 namespace Divide {
-    PropertyWindow::PropertyWindow(Editor& parent, PlatformContext& context)
-        : DockedWindow(parent, "Properties"),
+    PropertyWindow::PropertyWindow(Editor& parent, PlatformContext& context, const Descriptor& descriptor)
+        : DockedWindow(parent, descriptor),
           PlatformContextComponent(context)
     {
 
@@ -71,9 +71,7 @@ namespace Divide {
 
     }
 
-    void PropertyWindow::draw() {
-        DockedWindow::draw();
-
+    void PropertyWindow::drawInternal() {
         Camera* selectedCamera = Attorney::EditorPropertyWindow::getSelectedCamera(_parent);
         if (selectedCamera != nullptr) {
             if (ImGui::CollapsingHeader(selectedCamera->name().c_str())) {

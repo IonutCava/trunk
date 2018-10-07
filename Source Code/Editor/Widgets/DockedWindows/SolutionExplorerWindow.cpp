@@ -17,8 +17,8 @@ namespace Divide {
         std::vector<F32> g_framerateBufferCont;
     };
 
-    SolutionExplorerWindow::SolutionExplorerWindow(Editor& parent, PlatformContext& context)
-        : DockedWindow(parent, "Solution Explorer"),
+    SolutionExplorerWindow::SolutionExplorerWindow(Editor& parent, PlatformContext& context, const Descriptor& descriptor)
+        : DockedWindow(parent, descriptor),
           PlatformContextComponent(context)
     {
         g_framerateBufferCont.reserve(g_maxEntryCount);
@@ -72,9 +72,7 @@ namespace Divide {
         
     }
 
-    void SolutionExplorerWindow::draw() {
-        DockedWindow::draw();
-
+    void SolutionExplorerWindow::drawInternal() {
         SceneManager& sceneManager = context().kernel().sceneManager();
         Scene& activeScene = sceneManager.getActiveScene();
         SceneGraphNode& root = activeScene.sceneGraph().getRoot();
@@ -143,7 +141,7 @@ namespace Divide {
                              g_framerateBufferCont.data(),
                              to_I32(g_framerateBufferCont.size()),
                              0,
-                             Util::StringFormat("%.3f ms/frame (%.1f FPS)", ms_per_frame_avg, 1000.0f / ms_per_frame_avg).c_str(),
+                             Util::StringFormat("%.3f ms/frame (%.1f FPS)", ms_per_frame_avg, ms_per_frame_avg > 0.01f ? 1000.0f / ms_per_frame_avg : 0.0f).c_str(),
                              0.0f,
                              max_ms_per_frame,
                              ImVec2(0, 50));
@@ -153,66 +151,5 @@ namespace Divide {
          bool enableGizmo = Attorney::EditorSolutionExplorerWindow::editorEnableGizmo(_parent);
          ImGui::Checkbox("Transform Gizmo", &enableGizmo);
          Attorney::EditorSolutionExplorerWindow::editorEnableGizmo(_parent, enableGizmo);
-
-         if (enableGizmo) {
-             TransformSettings settings = _parent.getTransformSettings();
-
-             if (ImGui::IsKeyPressed(Input::KeyCode::KC_T)) {
-                 settings.currentGizmoOperation = ImGuizmo::TRANSLATE;
-             }
-
-             if (ImGui::IsKeyPressed(Input::KeyCode::KC_R)) {
-                 settings.currentGizmoOperation = ImGuizmo::ROTATE;
-             }
-
-             if (ImGui::IsKeyPressed(Input::KeyCode::KC_S)) {
-                 settings.currentGizmoOperation = ImGuizmo::SCALE;
-             }
-
-             if (ImGui::RadioButton("Translate", settings.currentGizmoOperation == ImGuizmo::TRANSLATE)) {
-                 settings.currentGizmoOperation = ImGuizmo::TRANSLATE;
-             }
-
-             ImGui::SameLine();
-             if (ImGui::RadioButton("Rotate", settings.currentGizmoOperation == ImGuizmo::ROTATE)) {
-                 settings.currentGizmoOperation = ImGuizmo::ROTATE;
-             }
-
-             ImGui::SameLine();
-             if (ImGui::RadioButton("Scale", settings.currentGizmoOperation == ImGuizmo::SCALE)) {
-                 settings.currentGizmoOperation = ImGuizmo::SCALE;
-             }
-
-             if (settings.currentGizmoOperation != ImGuizmo::SCALE) {
-                 if (ImGui::RadioButton("Local", settings.currentGizmoMode == ImGuizmo::LOCAL)) {
-                     settings.currentGizmoMode = ImGuizmo::LOCAL;
-                 }
-                 ImGui::SameLine();
-                 if (ImGui::RadioButton("World", settings.currentGizmoMode == ImGuizmo::WORLD)) {
-                     settings.currentGizmoMode = ImGuizmo::WORLD;
-                 }
-             }
-
-             ImGui::Checkbox("Snap", &settings.useSnap);
-             if (settings.useSnap) {
-                 ImGui::Text("Step:");
-                 ImGui::SameLine();
-                 switch (settings.currentGizmoOperation)
-                 {
-                     case ImGuizmo::TRANSLATE:
-                         ImGui::InputFloat3("Pos", &settings.snap[0]);
-                         break;
-                     case ImGuizmo::ROTATE:
-                         ImGui::InputFloat("Angle", &settings.snap[0]);
-                         break;
-                     case ImGuizmo::SCALE:
-                         ImGui::InputFloat("Scale", &settings.snap[0]);
-                         break;
-                 }
-             }
-             ImGui::Separator();
-
-             _parent.setTransformSettings(settings);
-         }
      }
 };

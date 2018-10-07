@@ -5,8 +5,8 @@
 #include "Core/Headers/PlatformContext.h"
 
 namespace Divide {
-    OutputWindow::OutputWindow(Editor& parent)
-        : DockedWindow(parent, "Output")
+    OutputWindow::OutputWindow(Editor& parent, const Descriptor& descriptor)
+        : DockedWindow(parent, descriptor)
     {
 
     }
@@ -16,9 +16,7 @@ namespace Divide {
 
     }
 
-    void OutputWindow::draw() {
-        DockedWindow::draw();
-
+    void OutputWindow::drawInternal() {
         // Draw Output Window
         Attorney::EditorOutputWindow::drawOutputWindow(_parent.context().editor());
     }

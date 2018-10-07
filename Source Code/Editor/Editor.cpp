@@ -84,9 +84,7 @@ Editor::Editor(PlatformContext& context, ImGuiStyleEnum theme, ImGuiStyleEnum di
       _running(false),
       _sceneHovered(false),
       _scenePreviewFocused(false),
-      _simulationPaused(nullptr),
       _selectedCamera(nullptr),
-      _sceneStepCount(0),
       _showDebugWindow(false),
       _showSampleWindow(false),
       _gizmosVisible(false),
@@ -100,12 +98,7 @@ Editor::Editor(PlatformContext& context, ImGuiStyleEnum theme, ImGuiStyleEnum di
     _menuBar = std::make_unique<MenuBar>(context, true);
     _applicationOutput = std::make_unique<ApplicationOutput>(context, to_U16(512));
 
-
-    _dockedWindows[to_base(WindowType::SolutionExplorer)] = MemoryManager_NEW SolutionExplorerWindow(*this, context);
-    _dockedWindows[to_base(WindowType::Properties)] = MemoryManager_NEW PropertyWindow(*this, context);
-    _dockedWindows[to_base(WindowType::Output)] = MemoryManager_NEW OutputWindow(*this);
-    _dockedWindows[to_base(WindowType::SceneView)] = MemoryManager_NEW SceneViewWindow(*this);
-
+    _dockedWindows.fill(nullptr);
     g_windowManager = &context.app().windowManager();
     g_editor = this;
     REGISTER_FRAME_LISTENER(this, 99999);
@@ -127,10 +120,6 @@ Editor::~Editor()
 }
 
 void Editor::idle() {
-    if (_sceneStepCount > 0) {
-        _sceneStepCount--;
-    }
-
     if (window_opacity != previous_window_opacity) {
         context().activeWindow().opacity(to_U8(window_opacity));
         previous_window_opacity = window_opacity;
@@ -392,6 +381,29 @@ bool Editor::init(const vec2<U16>& renderResolution) {
         }
     });
 
+    DockedWindow::Descriptor descriptor = {};
+    descriptor.position = ImVec2(0, 0);
+    descriptor.size = ImVec2(300, 550);
+    descriptor.name = "Solution Explorer";
+    _dockedWindows[to_base(WindowType::SolutionExplorer)] = MemoryManager_NEW SolutionExplorerWindow(*this, _context, descriptor);
+
+    descriptor.position = ImVec2(to_F32(renderResolution.width) - 300, 0);
+    descriptor.name = "Property Explorer";
+    _dockedWindows[to_base(WindowType::Properties)] = MemoryManager_NEW PropertyWindow(*this, _context, descriptor);
+
+    descriptor.position = ImVec2(0, 550);
+    descriptor.size = ImVec2(to_F32(renderResolution.width), to_F32(renderResolution.height) - 550 - 3);
+    descriptor.name = "Application Output";
+    descriptor.flags |= ImGuiWindowFlags_NoTitleBar;
+    _dockedWindows[to_base(WindowType::Output)] = MemoryManager_NEW OutputWindow(*this, descriptor);
+
+    descriptor.position = ImVec2(150, 150);
+    descriptor.size = ImVec2(640, 480);
+    descriptor.name = "Scene View";
+    descriptor.minSize = ImVec2(100, 100);
+    descriptor.flags = 0;
+    _dockedWindows[to_base(WindowType::SceneView)] = MemoryManager_NEW SceneViewWindow(*this, descriptor);
+
     return true;
 }
 
@@ -591,47 +603,10 @@ bool Editor::renderFull(const U64 deltaTime) {
 
     drawMenuBar();
 
-    ImGuiWindowFlags window_flags = 0;
-    //window_flags |= ImGuiWindowFlags_NoTitleBar;
-    //window_flags |= ImGuiWindowFlags_NoScrollbar;
-    //window_flags |= ImGuiWindowFlags_MenuBar;
-    //window_flags |= ImGuiWindowFlags_NoMove;
-    //window_flags |= ImGuiWindowFlags_NoResize;
-    //window_flags |= ImGuiWindowFlags_NoCollapse;
-    //window_flags |= ImGuiWindowFlags_NoNav;
-
-    ImVec2 sizes[] = {
-        ImVec2(300, 550),
-        ImVec2(300, 550),
-        ImVec2(ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y - 550 - 3),
-        ImVec2(640, 480)
-    };
-
-    ImVec2 minSizes[] = {
-        ImVec2(300, 300),
-        ImVec2(300, 300),
-        ImVec2(300, 300),
-        ImVec2(300, 100)
-    };
-
-    ImVec2 positions[] = {
-        ImVec2(0, 0),
-        ImVec2(ImGui::GetIO().DisplaySize.x - sizes[1].x, 0),
-        ImVec2(0, std::max(sizes[0].y, sizes[1].y) + 3),
-        ImVec2(150, 150)
-    };
-
-    U32 i = 0;
     for (DockedWindow* window : _dockedWindows) {
-        ImGui::SetNextWindowPos(positions[i], ImGuiCond_FirstUseEver);
-        ImGui::SetNextWindowSize(sizes[i], ImGuiCond_FirstUseEver);
-        //ImGui::SetNextWindowSizeConstraints(minSizes[i++], ImVec2(FLT_MAX, FLT_MAX));
-        if (ImGui::Begin(window->name(), NULL, window_flags)) {
-            window->draw();
-        }
-        ImGui::End();
-        ++i;
+        window->draw();
     }
+
     renderMinimal(deltaTime);
 
     ImGui::End();
@@ -849,27 +824,21 @@ void Editor::selectionChangeCallback(PlayerIndex idx, SceneGraphNode* node) {
 
 /// Key pressed: return true if input was consumed
 bool Editor::onKeyDown(const Input::KeyEvent& key) {
-    if (!needInput()) {
-        return false;
-    }
-
     ImGuiIO& io = GetIO(hasSceneFocus() ? to_U8(Context::Gizmo) : to_U8(Context::Editor));
     io.KeysDown[key._key] = true;
-
+    if (key._text > 0) {
+        io.AddInputCharacter(to_U16(key._text));
+    }
     io.KeyCtrl = key._key == Input::KeyCode::KC_LCONTROL || key._key == Input::KeyCode::KC_RCONTROL;
     io.KeyShift = key._key == Input::KeyCode::KC_LSHIFT || key._key == Input::KeyCode::KC_RSHIFT;
     io.KeyAlt = key._key == Input::KeyCode::KC_LMENU || key._key == Input::KeyCode::KC_RMENU;
     io.KeySuper = false;
 
-    return io.WantCaptureKeyboard;
+    return needInput() ? io.WantCaptureKeyboard : false;
 }
 
 /// Key released: return true if input was consumed
 bool Editor::onKeyUp(const Input::KeyEvent& key) {
-    if (!needInput()) {
-        return false;
-    }
-
     ImGuiIO& io = GetIO(hasSceneFocus() ? to_U8(Context::Gizmo) : to_U8(Context::Editor));
     io.KeysDown[key._key] = false;
 
@@ -887,7 +856,7 @@ bool Editor::onKeyUp(const Input::KeyEvent& key) {
 
     io.KeySuper = false;
 
-    return io.WantCaptureKeyboard;
+    return needInput() ? io.WantCaptureKeyboard : false;
 }
 
 /// Mouse moved: return true if input was consumed
@@ -929,7 +898,9 @@ bool Editor::mouseButtonPressed(const Input::MouseEvent& arg, Input::MouseButton
     ImGui::SetCurrentContext(_imguiContext[hasSceneFocus() ? to_U8(Context::Gizmo) : to_U8(Context::Editor)]);
     ImGuiIO& io = ImGui::GetIO();
 
-    io.MouseDown[button == OIS::MB_Left ? 0 : button == OIS::MB_Right ? 1 : 2] = true;
+    if (button < 5) {
+        io.MouseDown[button] = true;
+    }
     //context().app().windowManager().captureMouse(true);
 
     return io.WantCaptureMouse || ImGuizmo::IsOver();
@@ -956,7 +927,9 @@ bool Editor::mouseButtonReleased(const Input::MouseEvent& arg, Input::MouseButto
     ImGui::SetCurrentContext(_imguiContext[hasSceneFocus() ? to_U8(Context::Gizmo) : to_U8(Context::Editor)]);
     ImGuiIO& io = ImGui::GetIO();
 
-    io.MouseDown[button == OIS::MB_Left ? 0 : button == OIS::MB_Right ? 1 : 2] = false;
+    if (button < 5) {
+        io.MouseDown[button] = false;
+    }
     //context().app().windowManager().captureMouse(false);
 
 
@@ -1107,7 +1080,8 @@ ImGuiIO& Editor::GetIO(U8 idx) {
 }
 
 bool Editor::simulationPauseRequested() const {
-    return _sceneStepCount == 0 && _simulationPaused != nullptr && *_simulationPaused;
+    SceneViewWindow* sceneView = static_cast<SceneViewWindow*>(_dockedWindows[to_base(WindowType::SceneView)]);
+    return !sceneView->step();
 }
 
 }; //namespace Divide

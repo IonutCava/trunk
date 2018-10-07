@@ -42,10 +42,10 @@ class SceneManager;
 class SceneGraphNode;
 class SolutionExplorerWindow : public DockedWindow, public PlatformContextComponent {
     public:
-        SolutionExplorerWindow(Editor& parent, PlatformContext& context);
+        SolutionExplorerWindow(Editor& parent, PlatformContext& context, const Descriptor& descriptor);
         ~SolutionExplorerWindow();
 
-        void draw() override;
+        void drawInternal() override;
   protected:
       void drawTransformSettings();
       void printCameraNode(SceneManager& sceneManager, Camera* camera);

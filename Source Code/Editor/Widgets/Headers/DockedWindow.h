@@ -39,21 +39,37 @@ namespace Divide {
 class Editor;
 class DockedWindow {
     public:
-        explicit DockedWindow(Editor& parent, const stringImpl& name);
+        struct Descriptor {
+            ImVec2 size;
+            ImVec2 position;
+            ImVec2 minSize = ImVec2(0, 0);
+            ImVec2 maxSize = ImVec2(FLT_MAX, FLT_MAX);
+            stringImpl name;
+            ImGuiWindowFlags flags = 0;
+        };
+
+    public:
+        explicit DockedWindow(Editor& parent, const Descriptor& descriptor);
         virtual ~DockedWindow();
 
-        virtual void draw();
+        void draw();
 
-        virtual const char* name() const { return _name.c_str(); }
-
+        virtual const char* name() const { return _descriptor.name.c_str(); }
+        
         virtual bool hasFocus() const { return _focused; }
         virtual bool isHovered() const { return _isHovered; }
+
+        inline const Descriptor& descriptor() const { return _descriptor; }
+
+    protected:
+        virtual void drawInternal() = 0;
+
     protected:
         Editor & _parent;
 
         bool _focused;
         bool _isHovered;
-        stringImpl _name;
+        Descriptor _descriptor;
 };
 }; //namespace Divide
 

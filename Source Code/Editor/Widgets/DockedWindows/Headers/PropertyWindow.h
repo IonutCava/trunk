@@ -44,10 +44,10 @@ class SceneGraphNode;
 struct EditorComponentField;
 class PropertyWindow : public DockedWindow, public PlatformContextComponent {
     public:
-        PropertyWindow(Editor& parent, PlatformContext& context);
+        PropertyWindow(Editor& parent, PlatformContext& context, const Descriptor& descriptor);
         ~PropertyWindow();
 
-        void draw() override;
+        void drawInternal() override;
 
         const char* name() const override;
     protected:

@@ -217,8 +217,6 @@ class Editor : public PlatformContextComponent,
     std::array<vector<I64>, to_base(WindowEvent::COUNT)> _windowListeners;
     vector<SceneGraphNode*> _selectedNodes;
     size_t _consoleCallbackIndex;
-    bool* _simulationPaused;
-    U32 _sceneStepCount;
     std::array<DockedWindow*, to_base(WindowType::COUNT)> _dockedWindows;
 }; //Editor
 
@@ -234,6 +232,13 @@ namespace Attorney {
 
     class EditorSceneViewWindow {
     private:
+        static bool editorEnableGizmo(Editor& editor) {
+            return editor.enableGizmo();
+        }
+
+        static void editorEnableGizmo(Editor& editor, bool state) {
+            editor.enableGizmo(state);
+        }
 
         friend class Divide::SceneViewWindow;
     };

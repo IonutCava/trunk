@@ -37,10 +37,10 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 class OutputWindow : public DockedWindow {
     public:
-        OutputWindow(Editor& parent);
+        OutputWindow(Editor& parent, const Descriptor& descriptor);
         ~OutputWindow();
 
-        void draw() override;
+        void drawInternal() override;
 };
 }; //namespace Divide
 

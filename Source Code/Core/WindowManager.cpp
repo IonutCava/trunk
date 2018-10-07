@@ -12,34 +12,6 @@
 
 namespace Divide {
 
-namespace {
-    Input::KeyCode SDLToOIS(SDL_Keycode code) {
-        switch (code) {
-            case SDLK_TAB: return Input::KeyCode::KC_TAB;
-            case SDLK_LEFT: return Input::KeyCode::KC_LEFT;
-            case SDLK_RIGHT: return Input::KeyCode::KC_RIGHT;
-            case SDLK_UP: return Input::KeyCode::KC_UP;
-            case SDLK_DOWN: return Input::KeyCode::KC_DOWN;
-            case SDLK_PAGEUP: return Input::KeyCode::KC_PGUP;
-            case SDLK_PAGEDOWN: return Input::KeyCode::KC_PGDOWN;
-            case SDLK_HOME: return Input::KeyCode::KC_HOME;
-            case SDLK_END: return Input::KeyCode::KC_END;
-            case SDLK_DELETE: return Input::KeyCode::KC_DELETE;
-            case SDLK_BACKSPACE: return Input::KeyCode::KC_BACK;
-            case SDLK_RETURN: return Input::KeyCode::KC_RETURN;
-            case SDLK_ESCAPE: return Input::KeyCode::KC_ESCAPE;
-            case SDLK_a: return Input::KeyCode::KC_A;
-            case SDLK_c: return Input::KeyCode::KC_C;
-            case SDLK_v: return Input::KeyCode::KC_V;
-            case SDLK_x: return Input::KeyCode::KC_X;
-            case SDLK_y: return Input::KeyCode::KC_Y;
-            case SDLK_z: return Input::KeyCode::KC_Z;
-        };
-        return Input::KeyCode::KC_YEN;
-    }
-}
-
-
 WindowManager::WindowManager()  noexcept 
    : _apiFlags(0),
      _activeWindowGUID(-1),

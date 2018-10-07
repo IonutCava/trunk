@@ -46,8 +46,7 @@ namespace Divide {
         }
 
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
-        static ImGuiTextFilter filter;
-        filter.Draw("Filter (\"incl,-excl\") (\"error\")", 180);
+        _filter.Draw("Filter (\"incl,-excl\") (\"error\")", 180);
         ImGui::PopStyleVar();
         ImGui::Separator();
 
@@ -78,7 +77,7 @@ namespace Divide {
             for (size_t i = 0; i < entryCount; ++i) {
                 const Console::OutputEntry& message = _log.get(i);
 
-                if (!filter.PassFilter(message._text.c_str())) {
+                if (!_filter.PassFilter(message._text.c_str())) {
                     continue;
                 }
 

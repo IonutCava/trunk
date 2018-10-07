@@ -66,6 +66,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\..\Source Code\Editor\Widgets\DockedWindows\SceneViewWindow.cpp" />
+    <ClCompile Include="..\..\..\Source Code\Editor\Widgets\ImGuiExtensions.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../../Source Code\Editor\Editor.cpp" />
@@ -138,6 +139,7 @@
     <ClInclude Include="../../../Source Code\Libs\imgui\addons\metrics_gui\portable\snprintf.h" />
     <ClInclude Include="../../../Source Code\Libs\imgui\imgui_user.h" />
     <ClInclude Include="..\..\..\Source Code\Editor\Widgets\DockedWindows\Headers\SceneViewWindow.h" />
+    <ClInclude Include="..\..\..\Source Code\Editor\Widgets\Headers\ImGuiExtensions.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="../../../Source Code\Libs\imgui\addons\imgui_user.inl" />

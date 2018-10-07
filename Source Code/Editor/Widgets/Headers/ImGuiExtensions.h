@@ -29,31 +29,13 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
-#ifndef _SCENE_VIEW_WINDOW_H_
-#define _SCENE_VIEW_WINDOW_H_
+#ifndef _EDITOR_IMGUI_EXTENSIONS_H_
+#define _EDITOR_IMGUI_EXTENSIONS_H_
 
-#include "Editor/Widgets/Headers/DockedWindow.h"
-#include "Core/Math/Headers/MathVectors.h"
+namespace ImGui {
 
-namespace Divide {
-    class SceneViewWindow : public DockedWindow {
-    public:
-        SceneViewWindow(Editor& parent, const Descriptor& descriptor);
-        ~SceneViewWindow();
+    void ToggleButton(const char* str_id, bool* v);
 
-        void drawInternal() override;
+}; //namespace ImGui
 
-        inline const Rect<I32>& sceneRect() const { return _sceneRect; };
-
-        inline bool scenePlaying() const { return _scenePlaying; }
-
-        bool step();
-
-    protected:
-        U32  _stepQueue = 0;
-        bool _scenePlaying = true;
-        Rect<I32> _sceneRect;
-    };
-}; //namespace Divide
-
-#endif //_SCENE_VIEW_WINDOW_H_
+#endif //_EDITOR_IMGUI_EXTENSIONS_H_
