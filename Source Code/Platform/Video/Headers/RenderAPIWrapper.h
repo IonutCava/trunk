@@ -79,9 +79,9 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
     friend class GFXDevice;
     /*Application display frame*/
     /// Clear buffers, set default states, etc
-    virtual void beginFrame() = 0;
+    virtual void beginFrame(DisplayWindow& window, bool global = false) = 0;
     /// Clear shaders, restore active texture units, etc
-    virtual void endFrame() = 0;
+    virtual void endFrame(DisplayWindow& window, bool global = false) = 0;
 
     virtual ErrorCode initRenderingAPI(I32 argc, char** argv, Configuration& config) = 0;
     virtual void closeRenderingAPI() = 0;

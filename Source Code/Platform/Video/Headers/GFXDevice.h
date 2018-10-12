@@ -191,8 +191,8 @@ public:  // GPU interface
     inline RenderAPI getAPI() const { return _API_ID; }
 
     void idle();
-    void beginFrame();
-    void endFrame();
+    void beginFrame(DisplayWindow& window, bool global);
+    void endFrame(DisplayWindow& window, bool global);
 
     void debugDraw(const SceneRenderState& sceneRenderState, const Camera& activeCamera, GFX::CommandBuffer& bufferInOut);
 

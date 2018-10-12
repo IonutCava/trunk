@@ -49,15 +49,15 @@ namespace Divide {
     }
 
     inline bool DisplayWindow::swapBuffers() const {
-        return _swapBuffers;
+        return BitCompare(_flags, WindowFlags::SWAP_BUFFER);
     }
 
     inline void DisplayWindow::swapBuffers(const bool state) {
-        _swapBuffers = state;
+        ToggleBit(_flags, WindowFlags::SWAP_BUFFER, state);
     }
 
     inline bool DisplayWindow::hasFocus() const {
-        return _hasFocus;
+        return BitCompare(_flags, WindowFlags::HAS_FOCUS);
     }
 
     inline U8 DisplayWindow::opacity() const {
@@ -65,13 +65,15 @@ namespace Divide {
     }
 
     inline void DisplayWindow::clearColour(const FColour& colour) {
-        clearColour(colour, _shouldClearColour, _shouldClearDepth);
+        clearColour(colour,
+                    BitCompare(_flags, WindowFlags::CLEAR_COLOUR),
+                    BitCompare(_flags, WindowFlags::CLEAR_DEPTH));
     }
 
     void DisplayWindow::clearColour(const FColour& colour, bool clearColour, bool clearDepth) {
         _clearColour.set(colour);
-        _shouldClearColour = clearColour;
-        _shouldClearDepth = clearDepth;
+        ToggleBit(_flags, WindowFlags::CLEAR_COLOUR, clearColour);
+        ToggleBit(_flags, WindowFlags::CLEAR_DEPTH, clearDepth);
     }
 
     inline const FColour& DisplayWindow::clearColour() const {
@@ -80,22 +82,22 @@ namespace Divide {
     }
 
     inline const FColour& DisplayWindow::clearColour(bool &clearColour, bool &clearDepth) const {
-        clearColour = _shouldClearColour;
-        clearDepth = _shouldClearDepth;
+        clearColour = BitCompare(_flags, WindowFlags::CLEAR_COLOUR);
+        clearDepth = BitCompare(_flags, WindowFlags::CLEAR_DEPTH);
         return _clearColour;
     }
 
     inline bool DisplayWindow::minimized() const {
-        return _minimized;
+        return BitCompare(_flags, WindowFlags::MINIMIZED);
     }
 
     inline bool DisplayWindow::maximized() const {
-        return _maximized;
+        return BitCompare(_flags, WindowFlags::MAXIMIZED);
     }
 
 
     inline bool DisplayWindow::hidden() const {
-        return _hidden;
+        return BitCompare(_flags, WindowFlags::HIDDEN);
     }
 
     inline WindowType DisplayWindow::type() const {
@@ -147,7 +149,7 @@ namespace Divide {
     }
 
     inline bool DisplayWindow::warp() const {
-        return _warp;
+        return BitCompare(_flags, WindowFlags::WARP);
     }
 
     inline const Rect<I32>& DisplayWindow::warpRect() const {

@@ -112,9 +112,9 @@ protected:
     /// Clear everything that was setup in initRenderingAPI()
     void closeRenderingAPI() override;
     /// Prepare the GPU for rendering a frame
-    void beginFrame() override;
+    void beginFrame(DisplayWindow& window, bool global = false) override;
     /// Finish rendering the current frame
-    void endFrame() override;
+    void endFrame(DisplayWindow& window, bool global = false) override;
 
     /// Verify if we have a sampler object created and available for the given
     /// descriptor
@@ -155,7 +155,7 @@ protected:
     I32 getFont(const stringImpl& fontName);
 
     /// Reset as much of the GL default state as possible within the limitations given
-    void clearStates(const DisplayWindow& mainWindow);
+    void clearStates(const DisplayWindow& window, bool global);
 
     bool makeTexturesResident(const TextureDataContainer& textureData);
     bool makeTextureResident(const TextureData& textureData, U8 binding);

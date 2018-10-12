@@ -22,13 +22,6 @@ DisplayWindow::DisplayWindow(WindowManager& parent, PlatformContext& context)
  : GUIDWrapper(),
    PlatformContextComponent(context),
    _parent(parent),
-   _swapBuffers(true),
-   _hasFocus(true),
-   _minimized(false),
-   _maximized(false),
-   _hidden(true),
-   _warp(false),
-   _vsync(false),
    _warpRect(-1),
    _opacity(255),
    _type(WindowType::COUNT),
@@ -42,6 +35,9 @@ DisplayWindow::DisplayWindow(WindowManager& parent, PlatformContext& context)
    _windowID(std::numeric_limits<Uint32>::max()),
    _inputHandler(std::make_unique<Input::InputInterface>(*this))
 {
+    SetBit(_flags, WindowFlags::SWAP_BUFFER);
+    SetBit(_flags, WindowFlags::HIDDEN);
+
     _prevDimensions.set(1);
     _windowDimensions.set(1);
 }
@@ -71,7 +67,9 @@ ErrorCode DisplayWindow::init(U32 windowFlags,
                               WindowType initialType,
                               const WindowDescriptor& descriptor)
 {
-    _vsync = BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::VSYNC));
+    bool vsync = BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::VSYNC));
+    ToggleBit(_flags, WindowFlags::VSYNC, vsync);
+
     _type = initialType;
     _title = descriptor.title;
     _windowDimensions = descriptor.dimensions;
@@ -312,7 +310,8 @@ vec2<I32> DisplayWindow::getPosition(bool global) const {
 }
 
 void DisplayWindow::hasFocus(const bool state) {
-    _hasFocus = state;
+    ToggleBit(_flags, WindowFlags::HAS_FOCUS, state);
+
     if (state) {
         SDL_RaiseWindow(_sdlWindow);
     }
@@ -331,20 +330,21 @@ void DisplayWindow::setCursorPosition(I32 x, I32 y) {
 }
 
 void DisplayWindow::hidden(const bool state) {
-    if (BitCompare(SDL_GetWindowFlags(_sdlWindow), to_U32(SDL_WINDOW_SHOWN)) == state)
-    {
+    if (BitCompare(SDL_GetWindowFlags(_sdlWindow), to_U32(SDL_WINDOW_SHOWN)) == state) {
         if (state) {
             SDL_HideWindow(_sdlWindow);
         } else {
             SDL_ShowWindow(_sdlWindow);
         }
-        _hidden = state;
+        ToggleBit(_flags, WindowFlags::HIDDEN, state);
     }
 }
 
 void DisplayWindow::restore() {
     SDL_RestoreWindow(_sdlWindow);
-    _maximized = _minimized = false;
+
+    ClearBit(_flags, WindowFlags::MAXIMIZED);
+    ClearBit(_flags, WindowFlags::MINIMIZED);
 }
 
 void DisplayWindow::minimized(const bool state) {
@@ -355,8 +355,7 @@ void DisplayWindow::minimized(const bool state) {
         } else {
             restore();
         }
-
-        _minimized = state;
+        ToggleBit(_flags, WindowFlags::MINIMIZED, state);
     }
 }
 
@@ -368,7 +367,7 @@ void DisplayWindow::maximized(const bool state) {
         } else {
             restore();
         }
-        _maximized = state;
+        ToggleBit(_flags, WindowFlags::MAXIMIZED, state);
     }
 }
 
@@ -546,10 +545,8 @@ bool DisplayWindow::mouseButtonReleased(const Input::MouseEvent& arg, Input::Mou
 }
 
 void DisplayWindow::warp(bool state, const Rect<I32>& rect) {
-    _warp = state;
-    if (_warp) {
-        _warpRect.set(rect);
-    }
+    ToggleBit(_flags, WindowFlags::WARP, state);
+    _warpRect.set(rect);
 }
 
 void DisplayWindow::renderingViewport(const Rect<I32>& viewport) {

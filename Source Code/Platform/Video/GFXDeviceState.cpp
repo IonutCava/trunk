@@ -499,13 +499,14 @@ void GFXDevice::idle() {
     ShaderProgram::idle();
 }
 
-void GFXDevice::beginFrame() {
-    if (Config::ENABLE_GPU_VALIDATION) {
+void GFXDevice::beginFrame(DisplayWindow& window, bool global) {
+    if (global && Config::ENABLE_GPU_VALIDATION) {
         if (_renderDocManager) {
             _renderDocManager->StartFrameCapture();
         }
     }
-    if (_resolutionChangeQueued.second) {
+
+    if (global && _resolutionChangeQueued.second) {
         WindowManager& winManager = _parent.platformContext().app().windowManager();
 
         SizeChangeParams params;
@@ -518,25 +519,27 @@ void GFXDevice::beginFrame() {
         context().app().onSizeChange(params);
         _resolutionChangeQueued.second = false;
     }
-    _api->beginFrame();
+
+    _api->beginFrame(window, global);
     _api->setStateBlock(_defaultStateBlockHash);
 
-
-    const WindowManager& winMgr = _context.app().windowManager();
-    const vec2<U16>& drawableSize = winMgr.getWindow(0u).getDrawableSize();
-    setViewport(Rect<I32>(0, 0, drawableSize.width, drawableSize.height));
+    if (global) {
+        const vec2<U16>& drawableSize = window.getDrawableSize();
+        setViewport(Rect<I32>(0, 0, drawableSize.width, drawableSize.height));
+    }
 }
 
-void GFXDevice::endFrame() {
-    FRAME_COUNT++;
-    FRAME_DRAW_CALLS_PREV = FRAME_DRAW_CALLS;
-    FRAME_DRAW_CALLS = 0;
-    
-    // Activate the default render states
-    _api->setStateBlock(_defaultStateBlockHash);
-    _api->endFrame();
+void GFXDevice::endFrame(DisplayWindow& window, bool global) {
+    if (global) {
+        FRAME_COUNT++;
+        FRAME_DRAW_CALLS_PREV = FRAME_DRAW_CALLS;
+        FRAME_DRAW_CALLS = 0;
+    }
 
-    if (Config::ENABLE_GPU_VALIDATION) {
+    // Activate the default render states
+    _api->endFrame(window, global);
+
+    if (global && Config::ENABLE_GPU_VALIDATION) {
         if (_renderDocManager) {
             _renderDocManager->EndFrameCapture();
         }

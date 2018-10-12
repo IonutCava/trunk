@@ -334,6 +334,18 @@ ClearBit(U32& bitMask, const Type bit) {
     ClearBit(bitMask, to_base(bit));
 }
 
+template<typename Type>
+inline typename std::enable_if<std::is_enum<Type>::value, void>::type
+ToggleBit(U32& bitMask, const Type bit) {
+    ToggleBit(bitMask, to_base(bit));
+}
+
+template<typename Type>
+inline typename std::enable_if<std::is_enum<Type>::value, void>::type
+ToggleBit(U32& bitMask, const Type bit, bool state) {
+    ToggleBit(bitMask, to_base(bit), state);
+}
+
 constexpr bool AnyCompare(const U32 bitMask, const U32 checkMask) noexcept {
     return ((bitMask & checkMask) != 0);
 }
@@ -349,8 +361,17 @@ constexpr void SetBit(U32& bitMask, const U32 bit) noexcept {
 constexpr void ClearBit(U32& bitMask, const U32 bit) noexcept {
     bitMask &= ~(bit);
 }
+
 constexpr void ToggleBit(U32& bitMask, const U32 bit) noexcept {
     bitMask ^= 1 << bit;
+}
+
+constexpr void ToggleBit(U32& bitMask, const U32 bit, bool state) noexcept {
+    if (state) {
+        SetBit(bitMask, bit);
+    } else {
+        ClearBit(bitMask, bit);
+    }
 }
 
 template<typename Type>

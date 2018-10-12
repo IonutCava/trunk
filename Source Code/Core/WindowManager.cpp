@@ -194,9 +194,9 @@ U32 WindowManager::createWindow(const WindowDescriptor& descriptor, ErrorCode& e
                                   fullscreen ? WindowType::FULLSCREEN : WindowType::WINDOW,
                                   descriptor);
 
-        _windows[ret]->clearColour(descriptor.clearColour);
-        _windows[ret]->_shouldClearColour = BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::CLEAR_COLOUR));
-        _windows[ret]->_shouldClearDepth = BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::CLEAR_DEPTH));
+        _windows[ret]->clearColour(descriptor.clearColour,
+                                   BitCompare(descriptor.flags, WindowDescriptor::Flags::CLEAR_COLOUR),
+                                   BitCompare(descriptor.flags, WindowDescriptor::Flags::CLEAR_DEPTH));
 
         if (err == ErrorCode::NO_ERR) {
             err = configureAPISettings(_windows[ret], descriptor.flags);
@@ -421,7 +421,7 @@ ErrorCode WindowManager::configureAPISettings(DisplayWindow* window, U32 descrip
         return ErrorCode::OGL_OLD_HARDWARE;
     }
 
-    if (window->_vsync) {
+    if (BitCompare(window->_flags, WindowFlags::VSYNC)) {
         // Vsync is toggled on or off via the external config file
         bool vsyncSet = false;
         // Late swap may fail
@@ -444,24 +444,6 @@ ErrorCode WindowManager::configureAPISettings(DisplayWindow* window, U32 descrip
     return ErrorCode::NO_ERR;
 }
 
-void WindowManager::prepareWindowForRender(const DisplayWindow& window) const {
-    if (!BitCompare(SDL_GetWindowFlags(window.getRawWindow()), to_U32(SDL_WINDOW_OPENGL))) {
-        return;
-    }
-    if (window.userData() != nullptr) {
-        SDL_GL_MakeCurrent(window.getRawWindow(), (SDL_GLContext)window.userData());
-    }
-}
-
-void WindowManager::swapWindow(const DisplayWindow& window) const {
-    if (!BitCompare(SDL_GetWindowFlags(window.getRawWindow()), to_U32(SDL_WINDOW_OPENGL))) {
-        return;
-    }
-    prepareWindowForRender(window);
-
-    SDL_GL_SwapWindow(window.getRawWindow());
-}
-
 void WindowManager::captureMouse(bool state) {
     SDL_CaptureMouse(state ? SDL_TRUE : SDL_FALSE);
 }
@@ -479,18 +461,22 @@ void WindowManager::setCursorStyle(CursorStyle style) {
     SDL_SetCursor(s_cursors[style]);
 }
 
-vec2<I32> WindowManager::getCursorPosition(bool global) const {
+vec2<I32> WindowManager::getCursorPosition(bool global) {
     vec2<I32> ret(-1);
     getMouseState(ret, global);
     return ret;
 }
 
-Uint32 WindowManager::getMouseState(vec2<I32>& pos, bool global) const {
+U32 WindowManager::getMouseState(vec2<I32>& pos, bool global) {
     if (global) {
-        return SDL_GetGlobalMouseState(&pos.x, &pos.y);
+        return (U32)SDL_GetGlobalMouseState(&pos.x, &pos.y);
     }
     
-    return SDL_GetMouseState(&pos.x, &pos.y);
+    return (U32)SDL_GetMouseState(&pos.x, &pos.y);
+}
+
+void WindowManager::setCaptureMouse(bool state) {
+    SDL_CaptureMouse(state ? SDL_TRUE : SDL_FALSE);
 }
 
 void WindowManager::snapCursorToCenter() {

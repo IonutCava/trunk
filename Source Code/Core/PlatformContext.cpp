@@ -69,7 +69,7 @@ void PlatformContext::terminate() {
 }
 
 void PlatformContext::beginFrame() {
-    _gfx->beginFrame();
+    _gfx->beginFrame(app().windowManager().getMainWindow(), true);
     _sfx->beginFrame();
 }
 
@@ -88,7 +88,7 @@ void PlatformContext::idle() {
 }
 
 void PlatformContext::endFrame() {
-    _gfx->endFrame();
+    _gfx->endFrame(app().windowManager().getMainWindow(), true);
     _sfx->endFrame();
 }
 

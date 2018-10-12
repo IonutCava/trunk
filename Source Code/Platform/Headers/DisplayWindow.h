@@ -82,6 +82,19 @@ enum class WindowEvent : U8 {
     COUNT
 };
 
+enum class WindowFlags : U16 {
+    VSYNC = toBit(1),
+    CLEAR_COLOUR = toBit(2),
+    CLEAR_DEPTH = toBit(3),
+    SWAP_BUFFER = toBit(4),
+    HAS_FOCUS = toBit(5),
+    MINIMIZED = toBit(6),
+    MAXIMIZED = toBit(7),
+    HIDDEN = toBit(8),
+    WARP = toBit(9),
+
+};
+
 namespace Input {
     class InputInterface;
 };
@@ -240,20 +253,15 @@ private:
     WindowType _type;
     WindowType _previousType;
     WindowType _queuedType;
-    bool _swapBuffers;
-    /// this is false if the window/application lost focus (e.g. clicked another window, alt + tab, etc)
-    bool _hasFocus;
-    bool _minimized;
-    bool _maximized;
-    bool _hidden;
-    bool _vsync;
+
+    U32 _flags = 0;
+
     stringImpl _title;
     /// Did we generate the window move event?
     bool _internalMoveEvent;
     /// Did we resize the window via an OS call?
     bool _externalResizeEvent;
 
-    bool _warp;
     Rect<I32> _warpRect;
     Rect<I32> _renderingViewport;
 
@@ -261,8 +269,6 @@ private:
     vec2<U16> _prevDimensions;
     vec2<U16> _windowDimensions;
     FColour   _clearColour;
-    bool      _shouldClearColour;
-    bool      _shouldClearDepth;
     typedef vector<std::shared_ptr<GUID_DELEGATE_CBK<void, WindowEventArgs>>> EventListeners;
     std::array<EventListeners, to_base(WindowEvent::COUNT)> _eventListeners;
 

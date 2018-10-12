@@ -255,7 +255,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
                 descriptor.title = "No Title Yet";
                 descriptor.targetDisplay = g_windowManager->getWindow(0u).currentDisplayIndex();
                 descriptor.clearColour.set(0.0f, 0.0f, 0.0f, 1.0f);
-                descriptor.flags = to_U32(WindowDescriptor::Flags::HIDDEN) | to_U32(WindowDescriptor::Flags::CLEAR_COLOUR) | to_U32(WindowDescriptor::Flags::CLEAR_DEPTH);
+                descriptor.flags = /*to_U32(WindowDescriptor::Flags::HIDDEN) | */to_U32(WindowDescriptor::Flags::CLEAR_COLOUR) | to_U32(WindowDescriptor::Flags::CLEAR_DEPTH);
                 // We don't enable SDL_WINDOW_RESIZABLE because it enforce windows decorations
                 descriptor.flags |= (viewport->Flags & ImGuiViewportFlags_NoDecoration) ? 0 : to_U32(WindowDescriptor::Flags::DECORATED);
                 descriptor.flags |= (viewport->Flags & ImGuiViewportFlags_NoDecoration) ? 0 : to_U32(WindowDescriptor::Flags::RESIZEABLE);
@@ -309,7 +309,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
                 ImGuiViewportData* data = (ImGuiViewportData*)viewport->PlatformUserData;
                 U16 w = to_U16(size.x);
                 U16 h = to_U16(size.y);
-                data->_window->setDimensions(w, h);
+                WAIT_FOR_CONDITION(data->_window->setDimensions(w, h));
             };
 
             platform_io.Platform_GetWindowSize = [](ImGuiViewport* viewport) -> ImVec2 {
@@ -333,30 +333,27 @@ bool Editor::init(const vec2<U16>& renderResolution) {
                 data->_window->title(title);
             };
 
-            platform_io.Platform_RenderWindow = [](ImGuiViewport* viewport, void* /*render_arg*/) {
-                if (!g_windowManager) {
-                    return;
-                }
-
-                ImGuiViewportData* data = (ImGuiViewportData*)viewport->PlatformUserData;
-                g_windowManager->prepareWindowForRender(*data->_window);
+            platform_io.Platform_RenderWindow = [](ImGuiViewport* viewport, void* platformContext) {
+                PlatformContext* context = (PlatformContext*)platformContext;
+                context->gfx().beginFrame(*(DisplayWindow*)viewport->PlatformHandle, false);
             };
 
-            platform_io.Renderer_RenderWindow = [](ImGuiViewport* viewport, void* /*render_arg*/) {
+            platform_io.Renderer_RenderWindow = [](ImGuiViewport* viewport, void* platformContext) {
+                ACKNOWLEDGE_UNUSED(platformContext);
+
                 if (!g_editor) {
                     return;
                 }
-                
+
                 g_editor->renderDrawList(viewport->DrawData, false, ((DisplayWindow*)viewport->PlatformHandle)->getGUID());
             };
 
-            platform_io.Platform_SwapBuffers = [](ImGuiViewport* viewport, void*) {
+            platform_io.Platform_SwapBuffers = [](ImGuiViewport* viewport, void* platformContext) {
                 if (!g_windowManager) {
                     return;
                 }
-
-                ImGuiViewportData* data = (ImGuiViewportData*)viewport->PlatformUserData;
-                g_windowManager->swapWindow(*data->_window);
+                PlatformContext* context = (PlatformContext*)platformContext;
+                context->gfx().endFrame(*(DisplayWindow*)viewport->PlatformHandle, false);
             };
 
             ImGui_UpdateMonitors();
@@ -634,14 +631,12 @@ bool Editor::framePostRenderStarted(const FrameEvent& evt) {
   
     ImGui::Render();
 
-    g_windowManager->prepareWindowForRender(*_mainWindow);
     renderDrawList(ImGui::GetDrawData(), false, _mainWindow->getGUID());
-    if (GetIO(0).ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-    {
+
+    if (GetIO(0).ConfigFlags & ImGuiConfigFlags_ViewportsEnable){
         ImGui::UpdatePlatformWindows();
-        ImGui::RenderPlatformWindowsDefault();
+        ImGui::RenderPlatformWindowsDefault(&context());
     }
-    g_windowManager->prepareWindowForRender(*_mainWindow);
 
     return true;
 }
@@ -869,27 +864,33 @@ bool Editor::mouseMoved(const Input::MouseEvent& arg) {
         if (io.WantSetMousePos) {
             winMgr.setCursorPosition((I32)io.MousePos.x, (I32)io.MousePos.y, io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable);
         } else {
+            bool mouseDown = false;
+
             if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
                 io.MousePos = ImVec2(-FLT_MAX, -FLT_MAX);
                 io.MouseWheel += (F32)arg.Z(i == 1).rel / 60.0f;
 
-                I32 mx = -1, my = -1;
+                vec2<I32> mPos(-1);
                 SDL_Window* focusedWindow = SDL_GetKeyboardFocus();
                 if (focusedWindow) {
                     I32 wx = -1, wy = -1;
                     SDL_GetWindowPosition(focusedWindow, &wx, &wy);
-                    SDL_GetGlobalMouseState(&mx, &my);
-                    mx -= wx;
-                    my -= wy;
+                    U32 state = WindowManager::getMouseState(mPos, true);
+                    mPos.x -= wx;
+                    mPos.y -= wy;
+
+                    mouseDown = mouseDown || (state & SDL_BUTTON(SDL_BUTTON_LEFT)) != 0;
+                    mouseDown = mouseDown || (state & SDL_BUTTON(SDL_BUTTON_RIGHT)) != 0;
+                    mouseDown = mouseDown || (state & SDL_BUTTON(SDL_BUTTON_MIDDLE)) != 0;
                 }
                 if (ImGuiViewport* viewport = FindViewportByPlatformHandle((SDL_Window*)focusedWindow)) {
-                    io.MousePos = ImVec2(viewport->Pos.x + (F32)mx, viewport->Pos.y + (F32)my);
+                    io.MousePos = ImVec2(viewport->Pos.x + (F32)mPos.x, viewport->Pos.y + (F32)mPos.y);
                 }
             } else {
                 io.MousePos.x = (F32)arg.X(i == 1).abs;
                 io.MousePos.y = (F32)arg.Y(i == 1).abs;
             }
-            SDL_CaptureMouse(ImGui::IsAnyMouseDown() ? SDL_TRUE : SDL_FALSE);
+            WindowManager::setCaptureMouse(mouseDown);
         }
     }
     // Check if we are hovering over the scene

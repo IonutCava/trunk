@@ -99,9 +99,11 @@ public:
     inline void targetDisplay(I32 displayIndex);
 
     void setCursorPosition(I32 x, I32 y, bool global = false);
-    vec2<I32> getCursorPosition(bool global) const;
-    Uint32 getMouseState(vec2<I32>& pos, bool global) const;
     void snapCursorToCenter();
+
+    static vec2<I32> getCursorPosition(bool global);
+    static U32 getMouseState(vec2<I32>& pos, bool global);
+    static void setCaptureMouse(bool state);
 
     inline DisplayWindow& getMainWindow();
     inline const DisplayWindow& getMainWindow() const;
@@ -124,8 +126,6 @@ public:
     vec2<U16> getFullscreenResolution() const;
 
     void captureMouse(bool state);
-    void prepareWindowForRender(const DisplayWindow& window) const;
-    void swapWindow(const DisplayWindow& window) const;
 
     static void setCursorStyle(CursorStyle style);
 

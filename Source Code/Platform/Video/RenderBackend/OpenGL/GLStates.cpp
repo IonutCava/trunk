@@ -119,32 +119,35 @@ namespace {
 }; //namespace 
 
 /// Reset as much of the GL default state as possible within the limitations given
-void GL_API::clearStates(const DisplayWindow& mainWindow) {
-    GL_API::bindTextures(0, GL_API::s_maxTextureUnits, nullptr, nullptr);
-    setPixelPackUnpackAlignment();
+void GL_API::clearStates(const DisplayWindow& window, bool global) {
+    if (global) {
+        GL_API::bindTextures(0, GL_API::s_maxTextureUnits, nullptr, nullptr);
+        setPixelPackUnpackAlignment();
+        setActiveBuffer(GL_TEXTURE_BUFFER, 0);
+        setActiveBuffer(GL_UNIFORM_BUFFER, 0);
+        setActiveBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+        setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+        setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
+        s_activePixelBuffer = nullptr;
+        s_activeViewport.set(-1);
+        s_activeClearColour.set(DefaultColours::DIVIDE_BLUE);
+    } else {
+
+    }
+
     setActiveVAO(0);
     setActiveFB(RenderTarget::RenderTargetUsage::RT_READ_WRITE, 0);
-    setActiveBuffer(GL_TEXTURE_BUFFER, 0);
-    setActiveBuffer(GL_UNIFORM_BUFFER, 0);
-    setActiveBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-    setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-    setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
     setActiveTransformFeedback(0);
-
     for (vec_size i = 0; i < GL_API::s_blendEnabled.size(); ++i) {
         setBlending((GLuint)i, BlendingProperties(), true);
     }
     GL_API::setBlendColour(UColour(0u), true);
 
-    const vec2<U16>& drawableSize = _context.getDrawableSize(mainWindow);
+    const vec2<U16>& drawableSize = _context.getDrawableSize(window);
     GL_API::setScissor(Rect<I32>(0, 0, drawableSize.width, drawableSize.height));
 
     s_activePipeline = nullptr;
     s_activeRenderTarget = nullptr;
-    s_activePixelBuffer = nullptr;
-    s_activeViewport.set(-1);
-    s_activeClearColour.set(DefaultColours::DIVIDE_BLUE);
-
     Attorney::GLAPIShaderProgram::unbind();
 }
 

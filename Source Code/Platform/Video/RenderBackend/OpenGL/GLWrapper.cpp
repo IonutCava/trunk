@@ -96,69 +96,70 @@ void GL_API::deleteFonsContext() {
 }
 
 /// Prepare the GPU for rendering a frame
-void GL_API::beginFrame() {
+void GL_API::beginFrame(DisplayWindow& window, bool global) {
     // Start a duration query in debug builds
-    if (Config::ENABLE_GPU_VALIDATION && g_frameTimeRequested) {
+    if (global && Config::ENABLE_GPU_VALIDATION && g_frameTimeRequested) {
         GLuint writeQuery = _elapsedTimeQuery->writeQuery().getID();
         glBeginQuery(GL_TIME_ELAPSED, writeQuery);
     }
 
     // Clear our buffers
-    const WindowManager& winMgr = _context.parent().platformContext().app().windowManager();
-    U32 windowCount = winMgr.getWindowCount();
-    for (U32 i = 0; i < windowCount; ++i) {
-        const DisplayWindow& window = winMgr.getWindow(i);
-        if (window.swapBuffers() && !window.minimized() && !window.hidden()) {
-            bool shouldClearColour, shouldClearDepth;
+    if (window.swapBuffers() && !window.minimized() && !window.hidden()) {
+        SDL_GL_MakeCurrent(window.getRawWindow(), (SDL_GLContext)window.userData());
 
-            GL_API::setClearColour(window.clearColour(shouldClearColour, shouldClearDepth));
-            ClearBufferMask mask = GL_NONE_BIT;
-            if (shouldClearColour) {
-                mask |= GL_COLOR_BUFFER_BIT;
-            }
-            if (shouldClearDepth) {
-                mask |= GL_DEPTH_BUFFER_BIT;
-            }
-            if (false) {
-                mask |= GL_STENCIL_BUFFER_BIT;
-            }
-
-            glClear(mask);
+        bool shouldClearColour, shouldClearDepth;
+        GL_API::setClearColour(window.clearColour(shouldClearColour, shouldClearDepth));
+        ClearBufferMask mask = GL_NONE_BIT;
+        if (shouldClearColour) {
+            mask |= GL_COLOR_BUFFER_BIT;
         }
+        if (shouldClearDepth) {
+            mask |= GL_DEPTH_BUFFER_BIT;
+        }
+        if (false) {
+            mask |= GL_STENCIL_BUFFER_BIT;
+        }
+
+        glClear(mask);
     }
-    
-    
     // Clears are registered as draw calls by most software, so we do the same
     // to stay in sync with third party software
     _context.registerDrawCall();
-    GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
+
+    if (global) {
+        GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
+    }
+
     s_previousStateBlockHash = 0;
+    s_currentStateBlockHash = 0;
 }
 
 /// Finish rendering the current frame
-void GL_API::endFrame() {
-    const WindowManager& winMgr = _context.parent().platformContext().app().windowManager();
-
+void GL_API::endFrame(DisplayWindow& window, bool global) {
     // Revert back to the default OpenGL states
-    clearStates(winMgr.getWindow(0u));
+    clearStates(window, global);
 
     // End the timing query started in beginFrame() in debug builds
-    if (Config::ENABLE_GPU_VALIDATION && g_frameTimeRequested) {
+    if (global && Config::ENABLE_GPU_VALIDATION && g_frameTimeRequested) {
         glEndQuery(GL_TIME_ELAPSED);
     }
     // Swap buffers
     {
-        Time::ScopedTimer time(_swapBufferTimer);
-        U32 windowCount = winMgr.getWindowCount();
-        for (U32 i = 0; i < windowCount; ++i) {
-            const DisplayWindow& window = winMgr.getWindow(i);
-            if (window.swapBuffers() && !window.minimized() && !window.hidden()) {
-                winMgr.swapWindow(window);
-            }
+        if (global) {
+            _swapBufferTimer.start();
+        }
+
+        if (window.swapBuffers() && !window.minimized() && !window.hidden()) {
+            SDL_GL_MakeCurrent(window.getRawWindow(), (SDL_GLContext)window.userData());
+            SDL_GL_SwapWindow(window.getRawWindow());
+        }
+
+        if (global) {
+            _swapBufferTimer.stop();
         }
     }
 
-    if (Config::ENABLE_GPU_VALIDATION && g_frameTimeRequested) {
+    if (global && Config::ENABLE_GPU_VALIDATION && g_frameTimeRequested) {
         // The returned results are 'g_performanceQueryRingLength - 1' frames old!
         GLuint readQuery = _elapsedTimeQuery->readQuery().getID();
         GLint available = 0;
