@@ -403,6 +403,10 @@ void GFXDevice::toggleFullScreen() {
 
 /// The main entry point for any resolution change request
 void GFXDevice::onSizeChange(const SizeChangeParams& params) {
+    if (params.winGUID != context().app().windowManager().getMainWindow().getGUID()) {
+        return;
+    }
+
     U16 w = params.width;
     U16 h = params.height;
 

@@ -41,24 +41,29 @@ namespace Divide {
 enum class RenderAPI : U8;
 
 struct WindowDescriptor {
-    enum class Flags : U8 {
+    enum class Flags : U16 {
         FULLSCREEN = toBit(1),
         DECORATED = toBit(2),
         RESIZEABLE = toBit(3),
         HIDDEN = toBit(4),
         ALLOW_HIGH_DPI = toBit(5),
-        ALWAYS_ON_TOP = toBit(6)
+        ALWAYS_ON_TOP = toBit(6),
+        CLEAR_DEPTH = toBit(7),
+        CLEAR_COLOUR = toBit(8),
+        VSYNC = toBit(9),
+        SHARE_CONTEXT = toBit(10)
     };
 
     U32 targetDisplay = 0u;
     stringImpl title = "";
     vec2<I16> position;
     vec2<U16> dimensions;
-    bool vsync = false;
-    bool shouldClearColour = true;
-    bool shouldClearDepth = true;
     FColour clearColour = DefaultColours::DIVIDE_BLUE;
-    U32 flags = to_U32(to_base(Flags::DECORATED) | to_base(Flags::RESIZEABLE) | to_base(Flags::ALLOW_HIGH_DPI));
+    U32 flags = to_U32(to_base(Flags::DECORATED) |
+                to_base(Flags::RESIZEABLE) |
+                to_base(Flags::ALLOW_HIGH_DPI) |
+                to_base(Flags::CLEAR_DEPTH) | 
+                to_base(Flags::CLEAR_COLOUR));
 };
 
 class PlatformContext;
@@ -98,10 +103,15 @@ public:
     Uint32 getMouseState(vec2<I32>& pos, bool global) const;
     void snapCursorToCenter();
 
+    inline DisplayWindow& getMainWindow();
+    inline const DisplayWindow& getMainWindow() const;
+
     inline DisplayWindow& getActiveWindow();
     inline const DisplayWindow& getActiveWindow() const;
+
     inline DisplayWindow& getWindow(I64 guid);
     inline const DisplayWindow& getWindow(I64 guid) const;
+
     inline DisplayWindow& getWindow(U32 index);
     inline const DisplayWindow& getWindow(U32 index) const;
 
@@ -123,7 +133,7 @@ protected:
 
 protected:
     U32 createAPIFlags(RenderAPI api);
-    ErrorCode configureAPISettings(DisplayWindow* window);
+    ErrorCode configureAPISettings(DisplayWindow* window, U32 descriptorFlags);
     void destroyAPISettings(DisplayWindow* window);
 
 protected:

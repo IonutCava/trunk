@@ -54,6 +54,8 @@ struct SizeChangeParams {
     bool isWindowResize = false;
     /// Is the window that fired the event fullscreen?
     bool isFullScreen = false;
+    /// Window GUID
+    I64 winGUID = -1;
 };
 
 /// Lightweight singleton class that manages our application's kernel and window

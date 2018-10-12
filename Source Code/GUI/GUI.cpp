@@ -275,6 +275,10 @@ void GUI::destroy() {
 }
 
 void GUI::onSizeChange(const SizeChangeParams& params) {
+    if (params.winGUID != _context->parent().platformContext().app().windowManager().getMainWindow().getGUID()) {
+        return;
+    }
+
     if (parent().platformContext().config().gui.cegui.enabled) {
         // Changing the window size 
         if ((params.isWindowResize || params.isFullScreen)) {

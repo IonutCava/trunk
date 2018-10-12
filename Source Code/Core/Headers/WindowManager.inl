@@ -66,6 +66,14 @@ inline const DisplayWindow& WindowManager::getActiveWindow() const {
     return getWindow(_activeWindowGUID);
 }
 
+inline DisplayWindow& WindowManager::getMainWindow() {
+    return getWindow(0u);
+}
+
+inline const DisplayWindow& WindowManager::getMainWindow() const {
+    return getWindow(0u);
+}
+
 inline DisplayWindow& WindowManager::getWindow(U32 index) {
     assert(index < to_U32(_windows.size()));
     return *_windows[index];

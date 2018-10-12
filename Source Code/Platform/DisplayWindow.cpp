@@ -98,7 +98,7 @@ ErrorCode DisplayWindow::init(U32 windowFlags,
                               WindowType initialType,
                               const WindowDescriptor& descriptor)
 {
-    _vsync = descriptor.vsync;
+    _vsync = BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::VSYNC));
     _type = initialType;
     _title = descriptor.title;
     _windowDimensions = descriptor.dimensions;
@@ -331,7 +331,8 @@ vec2<I32> DisplayWindow::getPosition(bool global) const {
     SDL_GetWindowPosition(_sdlWindow, &ret.x, &ret.y);
 
     if (!global) {
-        ret -= vec2<I32>(_parent.monitorData()[currentDisplayIndex()].drawableArea.xy());
+        vec2<I32> offset = _parent.monitorData()[currentDisplayIndex()].viewport.xy();
+        ret -= offset;
     }
 
     return ret;

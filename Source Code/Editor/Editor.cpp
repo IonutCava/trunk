@@ -152,6 +152,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
         _windowListeners[to_base(WindowEvent::TEXT)].push_back(guid);
     }
 
+    IMGUI_CHECKVERSION();
     for (U8 i = 0; i < to_U8(Context::COUNT); ++i) {
         _imguiContext[i] = i == 0 ? ImGui::CreateContext() : ImGui::CreateContext(GetIO(0).Fonts);
         ImGui::SetCurrentContext(_imguiContext[i]);
@@ -198,7 +199,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
 
         if (_context.config().gui.imgui.multiViewportEnabled) {
             io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
-            io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoTaskBarIcons;
+            //io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoTaskBarIcons;
             //io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoTaskBarIcons;
             //io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoMerge;
 
@@ -252,14 +253,14 @@ bool Editor::init(const vec2<U16>& renderResolution) {
 
                 WindowDescriptor descriptor = {};
                 descriptor.title = "No Title Yet";
-                descriptor.vsync = false;
                 descriptor.targetDisplay = g_windowManager->getWindow(0u).currentDisplayIndex();
                 descriptor.clearColour.set(0.0f, 0.0f, 0.0f, 1.0f);
-                descriptor.flags = to_U32(WindowDescriptor::Flags::HIDDEN);
+                descriptor.flags = to_U32(WindowDescriptor::Flags::HIDDEN) | to_U32(WindowDescriptor::Flags::CLEAR_COLOUR) | to_U32(WindowDescriptor::Flags::CLEAR_DEPTH);
                 // We don't enable SDL_WINDOW_RESIZABLE because it enforce windows decorations
                 descriptor.flags |= (viewport->Flags & ImGuiViewportFlags_NoDecoration) ? 0 : to_U32(WindowDescriptor::Flags::DECORATED);
                 descriptor.flags |= (viewport->Flags & ImGuiViewportFlags_NoDecoration) ? 0 : to_U32(WindowDescriptor::Flags::RESIZEABLE);
                 descriptor.flags |= (viewport->Flags & ImGuiViewportFlags_TopMost) ? to_U32(WindowDescriptor::Flags::ALWAYS_ON_TOP) : 0;
+                descriptor.flags |= to_U32(WindowDescriptor::Flags::SHARE_CONTEXT);
 
                 descriptor.dimensions.set(viewport->Size.x, viewport->Size.y);
                 descriptor.position.set(viewport->Pos.x, viewport->Pos.y);
@@ -586,8 +587,7 @@ bool Editor::renderFull(const U64 deltaTime) {
     windowFlags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
     windowFlags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 
-    // When using ImGuiDockNodeFlags_RenderWindowBg or ImGuiDockNodeFlags_InvisibleDockspace, DockSpace() will render our background and handle the pass-thru hole, so we ask Begin() to not render a background.
-    if (opt_flags & ImGuiDockNodeFlags_RenderWindowBg)
+    if (opt_flags & ImGuiDockNodeFlags_PassthruDockspace)
         ImGui::SetNextWindowBgAlpha(0.0f);
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
@@ -980,7 +980,7 @@ void Editor::OnFocus(bool bHasFocus) {
 }
 
 void Editor::onSizeChange(const SizeChangeParams& params) {
-    if (!params.isWindowResize || _mainWindow == nullptr) {
+    if (!params.isWindowResize || _mainWindow == nullptr || params.winGUID != _mainWindow->getGUID()) {
         return;
     }
 

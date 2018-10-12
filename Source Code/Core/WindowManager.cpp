@@ -80,7 +80,9 @@ ErrorCode WindowManager::init(PlatformContext& context,
     descriptor.dimensions = initialResolution;
     descriptor.targetDisplay = displayIndex;
     descriptor.title = _context->config().title;
-    descriptor.vsync = _context->config().runtime.enableVSync;
+    if (_context->config().runtime.enableVSync) {
+        SetBit(descriptor.flags, WindowDescriptor::Flags::VSYNC);
+    }
 
     SetBit(descriptor.flags, WindowDescriptor::Flags::HIDDEN);
 
@@ -165,11 +167,11 @@ U32 WindowManager::createWindow(const WindowDescriptor& descriptor, ErrorCode& e
                                   descriptor);
 
         _windows[ret]->clearColour(descriptor.clearColour);
-        _windows[ret]->_shouldClearColour = descriptor.shouldClearColour;
-        _windows[ret]->_shouldClearDepth = descriptor.shouldClearDepth;
+        _windows[ret]->_shouldClearColour = BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::CLEAR_COLOUR));
+        _windows[ret]->_shouldClearDepth = BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::CLEAR_DEPTH));
 
         if (err == ErrorCode::NO_ERR) {
-            err = configureAPISettings(_windows[ret]);
+            err = configureAPISettings(_windows[ret], descriptor.flags);
         }
 
         if (err != ErrorCode::NO_ERR) {
@@ -288,7 +290,7 @@ void WindowManager::destroyAPISettings(DisplayWindow* window) {
     SDL_GL_DeleteContext((SDL_GLContext)window->_userData);
 }
 
-ErrorCode WindowManager::configureAPISettings(DisplayWindow* window) {
+ErrorCode WindowManager::configureAPISettings(DisplayWindow* window, U32 descriptorFlags) {
     if (!window || !BitCompare(SDL_GetWindowFlags(window->getRawWindow()), to_U32(SDL_WINDOW_OPENGL))) {
         return ErrorCode::GFX_NOT_SUPPORTED;
     }
@@ -311,14 +313,11 @@ ErrorCode WindowManager::configureAPISettings(DisplayWindow* window) {
         return true;
     };
 
-    Uint32 OpenGLFlags = SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG |
-        SDL_GL_CONTEXT_RESET_ISOLATION_FLAG;
+    Uint32 OpenGLFlags = SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG | SDL_GL_CONTEXT_RESET_ISOLATION_FLAG;
 
     if (Config::ENABLE_GPU_VALIDATION) {
-        // OpenGL error handling is available in any build configuration
-        // if the proper defines are in place.
-        OpenGLFlags |= SDL_GL_CONTEXT_ROBUST_ACCESS_FLAG
-            /*|  SDL_GL_CONTEXT_DEBUG_FLAG*/;
+        // OpenGL error handling is available in any build configuration if the proper defines are in place.
+        OpenGLFlags |= SDL_GL_CONTEXT_ROBUST_ACCESS_FLAG /*|  SDL_GL_CONTEXT_DEBUG_FLAG*/;
     }
 
     validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, OpenGLFlags));
@@ -332,7 +331,9 @@ ErrorCode WindowManager::configureAPISettings(DisplayWindow* window) {
     validateAssert(SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8));
     validateAssert(SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8));
     validateAssert(SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24));
-    validateAssert(SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1));
+
+    bool shareGLContext = BitCompare(descriptorFlags, to_base(WindowDescriptor::Flags::SHARE_CONTEXT));
+
     if (!Config::ENABLE_GPU_VALIDATION) {
         //validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_NO_ERROR, 1));
     }
@@ -349,8 +350,7 @@ ErrorCode WindowManager::configureAPISettings(DisplayWindow* window) {
                     break;
                 }
             }
-        }
-        else {
+        } else {
             msaaSamples = 0;
         }
     }
@@ -375,6 +375,14 @@ ErrorCode WindowManager::configureAPISettings(DisplayWindow* window) {
         }
     }
 
+    validateAssert(SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1));
+
+    if (shareGLContext) {
+
+        validate(SDL_GL_MakeCurrent(getMainWindow().getRawWindow(), (SDL_GLContext)getMainWindow().userData()));
+    }
+
+    // Create a context and make it current
     window->_userData = SDL_GL_CreateContext(window->getRawWindow());
 
     if (window->_userData == nullptr)
@@ -385,7 +393,6 @@ ErrorCode WindowManager::configureAPISettings(DisplayWindow* window) {
         return ErrorCode::OGL_OLD_HARDWARE;
     }
 
-    SDL_GL_MakeCurrent(window->getRawWindow(), (SDL_GLContext)window->userData());
     if (window->_vsync) {
         // Vsync is toggled on or off via the external config file
         bool vsyncSet = false;
@@ -400,6 +407,10 @@ ErrorCode WindowManager::configureAPISettings(DisplayWindow* window) {
         assert(vsyncSet);
     } else {
         SDL_GL_SetSwapInterval(0);
+    }
+
+    if (shareGLContext) {
+        validate(SDL_GL_MakeCurrent(getMainWindow().getRawWindow(), (SDL_GLContext)getMainWindow().userData()));
     }
 
     return ErrorCode::NO_ERR;
@@ -497,6 +508,8 @@ void WindowManager::handleWindowEvent(WindowEvent event, I64 winGUID, I32 data1,
                 params.height = height;
                 params.isWindowResize = true;
                 params.isFullScreen = getWindow(winGUID).fullscreen();
+                params.winGUID = winGUID;
+
                 // Only if rendering window
                 _context->app().onSizeChange(params);
             }
