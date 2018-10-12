@@ -333,7 +333,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
                 data->_window->title(title);
             };
 
-            platform_io.Platform_RenderWindow = [](ImGuiViewport* viewport, void*) {
+            platform_io.Platform_RenderWindow = [](ImGuiViewport* viewport, void* /*render_arg*/) {
                 if (!g_windowManager) {
                     return;
                 }
@@ -342,7 +342,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
                 g_windowManager->prepareWindowForRender(*data->_window);
             };
 
-            platform_io.Renderer_RenderWindow = [](ImGuiViewport* viewport, void*) {
+            platform_io.Renderer_RenderWindow = [](ImGuiViewport* viewport, void* /*render_arg*/) {
                 if (!g_editor) {
                     return;
                 }
@@ -460,34 +460,31 @@ void Editor::update(const U64 deltaTimeUS) {
         }
 
         ToggleCursor(!io.MouseDrawCursor);
-        if (io.MouseDrawCursor || ImGui::GetMouseCursor() == ImGuiMouseCursor_None)
-        {
-            _mainWindow->setCursorStyle(CursorStyle::NONE);
-        }
-        else if (io.MousePos.x != -1.f && io.MousePos.y != -1.f)
-        {
+        if (io.MouseDrawCursor || ImGui::GetMouseCursor() == ImGuiMouseCursor_None) {
+            WindowManager::setCursorStyle(CursorStyle::NONE);
+        } else if (io.MousePos.x != -1.f && io.MousePos.y != -1.f) {
             switch (ImGui::GetCurrentContext()->MouseCursor)
             {
                 case ImGuiMouseCursor_Arrow:
-                    _mainWindow->setCursorStyle(CursorStyle::ARROW);
+                    WindowManager::setCursorStyle(CursorStyle::ARROW);
                     break;
                 case ImGuiMouseCursor_TextInput:         // When hovering over InputText, etc.
-                    _mainWindow->setCursorStyle(CursorStyle::TEXT_INPUT);
+                    WindowManager::setCursorStyle(CursorStyle::TEXT_INPUT);
                     break;
                 case ImGuiMouseCursor_ResizeAll:         // Unused
-                    _mainWindow->setCursorStyle(CursorStyle::HAND);
+                    WindowManager::setCursorStyle(CursorStyle::HAND);
                     break;
                 case ImGuiMouseCursor_ResizeNS:          // Unused
-                    _mainWindow->setCursorStyle(CursorStyle::RESIZE_NS);
+                    WindowManager::setCursorStyle(CursorStyle::RESIZE_NS);
                     break;
                 case ImGuiMouseCursor_ResizeEW:          // When hovering over a column
-                    _mainWindow->setCursorStyle(CursorStyle::RESIZE_EW);
+                    WindowManager::setCursorStyle(CursorStyle::RESIZE_EW);
                     break;
                 case ImGuiMouseCursor_ResizeNESW:        // Unused
-                    _mainWindow->setCursorStyle(CursorStyle::RESIZE_NESW);
+                    WindowManager::setCursorStyle(CursorStyle::RESIZE_NESW);
                     break;
                 case ImGuiMouseCursor_ResizeNWSE:        // When hovering over the bottom-right corner of a window
-                    _mainWindow->setCursorStyle(CursorStyle::RESIZE_NWSE);
+                    WindowManager::setCursorStyle(CursorStyle::RESIZE_NWSE);
                     break;
             }
         }
@@ -587,8 +584,9 @@ bool Editor::renderFull(const U64 deltaTime) {
     windowFlags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
     windowFlags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 
-    if (opt_flags & ImGuiDockNodeFlags_PassthruDockspace)
+    if (opt_flags & ImGuiDockNodeFlags_PassthruDockspace) {
         ImGui::SetNextWindowBgAlpha(0.0f);
+    }
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
     ImGui::Begin("", NULL, windowFlags);
@@ -612,11 +610,6 @@ bool Editor::renderFull(const U64 deltaTime) {
 }
 
 bool Editor::frameSceneRenderEnded(const FrameEvent& evt) {
-
-    //if (!_running) {
-    //  return true;
-    //}
-
     _gizmosVisible = renderGizmos(evt._timeSinceLastFrameUS);
     return true;
 }
@@ -709,8 +702,8 @@ void Editor::renderDrawList(ImDrawData* pDrawData, bool gizmo, I64 windowGUID)
 
     // Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates != framebuffer coordinates)
     ImGuiIO& io = ImGui::GetIO();
-    I32 fb_width = (I32)(io.DisplaySize.x * io.DisplayFramebufferScale.x);
-    I32 fb_height = (I32)(io.DisplaySize.y * io.DisplayFramebufferScale.y);
+    I32 fb_width = (I32)(pDrawData->DisplaySize.x * io.DisplayFramebufferScale.x);
+    I32 fb_height = (I32)(pDrawData->DisplaySize.y * io.DisplayFramebufferScale.y);
     if (fb_width <= 0 || fb_height <= 0) {
         return;
     }
@@ -851,6 +844,17 @@ bool Editor::onKeyUp(const Input::KeyEvent& key) {
     return needInput() ? io.WantCaptureKeyboard : false;
 }
 
+namespace {
+    ImGuiViewport* FindViewportByPlatformHandle(SDL_Window* platform_handle)
+    {
+        ImGuiContext& g = *GImGui;
+        for (int i = 0; i != g.Viewports.Size; i++)
+            if (((DisplayWindow*)g.Viewports[i]->PlatformHandle)->getRawWindow() == platform_handle)
+                return g.Viewports[i];
+        return NULL;
+    }
+
+}
 /// Mouse moved: return true if input was consumed
 bool Editor::mouseMoved(const Input::MouseEvent& arg) {
     if (!needInput()) {
@@ -865,9 +869,27 @@ bool Editor::mouseMoved(const Input::MouseEvent& arg) {
         if (io.WantSetMousePos) {
             winMgr.setCursorPosition((I32)io.MousePos.x, (I32)io.MousePos.y, io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable);
         } else {
-            io.MousePos.x = (F32)arg.X(i == 1).abs;
-            io.MousePos.y = (F32)arg.Y(i == 1).abs;
-            io.MouseWheel += (F32)arg.Z(i == 1).rel / 60.0f;
+            if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+                io.MousePos = ImVec2(-FLT_MAX, -FLT_MAX);
+                io.MouseWheel += (F32)arg.Z(i == 1).rel / 60.0f;
+
+                I32 mx = -1, my = -1;
+                SDL_Window* focusedWindow = SDL_GetKeyboardFocus();
+                if (focusedWindow) {
+                    I32 wx = -1, wy = -1;
+                    SDL_GetWindowPosition(focusedWindow, &wx, &wy);
+                    SDL_GetGlobalMouseState(&mx, &my);
+                    mx -= wx;
+                    my -= wy;
+                }
+                if (ImGuiViewport* viewport = FindViewportByPlatformHandle((SDL_Window*)focusedWindow)) {
+                    io.MousePos = ImVec2(viewport->Pos.x + (F32)mx, viewport->Pos.y + (F32)my);
+                }
+            } else {
+                io.MousePos.x = (F32)arg.X(i == 1).abs;
+                io.MousePos.y = (F32)arg.Y(i == 1).abs;
+            }
+            SDL_CaptureMouse(ImGui::IsAnyMouseDown() ? SDL_TRUE : SDL_FALSE);
         }
     }
     // Check if we are hovering over the scene

@@ -127,6 +127,8 @@ public:
     void prepareWindowForRender(const DisplayWindow& window) const;
     void swapWindow(const DisplayWindow& window) const;
 
+    static void setCursorStyle(CursorStyle style);
+
 protected:
     friend class DisplayWindow;
     void pollSDLEvents();
@@ -145,6 +147,8 @@ protected:
     vector<MonitorData> _monitors;
     PlatformContext* _context;
     vector<DisplayWindow*> _windows;
+
+    static hashMap<CursorStyle, SDL_Cursor*> s_cursors;
 };
 }; //namespace Divide
 #endif //_CORE_WINDOW_MANAGER_H_

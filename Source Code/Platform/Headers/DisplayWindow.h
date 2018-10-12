@@ -179,8 +179,7 @@ public:
     inline const WindowHandle& handle() const;
 
     /// Mouse positioning is handled by SDL
-    void setCursorPosition(I32 x, I32 y);
-    void setCursorStyle(CursorStyle style);
+           void setCursorPosition(I32 x, I32 y);
 
     inline I64 addEventListener(WindowEvent windowEvent, const EventListener& listener);
     inline void removeEventlistener(WindowEvent windowEvent, I64 listenerGUID);
@@ -272,7 +271,7 @@ private:
 
     DELEGATE_CBK<void> _destroyCbk;
 
-    hashMap<CursorStyle, SDL_Cursor*> _cursors;
+    static I64 s_cursorWindowGUID;
     void *_userData = nullptr;
     // Varies from OS to OS
     WindowHandle _handle;

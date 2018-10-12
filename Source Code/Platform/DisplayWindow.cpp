@@ -18,23 +18,6 @@
 
 namespace Divide {
 
-namespace {
-    SDL_SystemCursor CursorToSDL(CursorStyle style) {
-        switch (style) {
-            case CursorStyle::ARROW: return SDL_SYSTEM_CURSOR_ARROW;
-            case CursorStyle::HAND: return SDL_SYSTEM_CURSOR_HAND;
-            case CursorStyle::NONE: return SDL_SYSTEM_CURSOR_NO;
-            case CursorStyle::RESIZE_EW: return SDL_SYSTEM_CURSOR_SIZEWE;
-            case CursorStyle::RESIZE_NS: return SDL_SYSTEM_CURSOR_SIZENS;
-            case CursorStyle::RESIZE_NESW: return SDL_SYSTEM_CURSOR_SIZENESW;
-            case CursorStyle::RESIZE_NWSE: return SDL_SYSTEM_CURSOR_SIZENWSE;
-            case CursorStyle::TEXT_INPUT: return SDL_SYSTEM_CURSOR_IBEAM;
-        };
-
-        return SDL_SYSTEM_CURSOR_NO;
-    }
-}; // namespace 
-
 DisplayWindow::DisplayWindow(WindowManager& parent, PlatformContext& context)
  : GUIDWrapper(),
    PlatformContextComponent(context),
@@ -61,20 +44,10 @@ DisplayWindow::DisplayWindow(WindowManager& parent, PlatformContext& context)
 {
     _prevDimensions.set(1);
     _windowDimensions.set(1);
-
-    for (U8 i = 0; i < to_U8(CursorStyle::COUNT); ++i) {
-        CursorStyle style = static_cast<CursorStyle>(i);
-        _cursors[style] = SDL_CreateSystemCursor(CursorToSDL(style));
-    }
 }
 
 DisplayWindow::~DisplayWindow() 
 {
-    for (auto it : _cursors) {
-        SDL_FreeCursor(it.second);
-    }
-    _cursors.clear();
-
     destroyWindow();
 }
 
@@ -355,10 +328,6 @@ void DisplayWindow::centerWindowPosition() {
 /// Mouse positioning is handled by SDL
 void DisplayWindow::setCursorPosition(I32 x, I32 y) {
     SDL_WarpMouseInWindow(_sdlWindow, x, y);
-}
-
-void DisplayWindow::setCursorStyle(CursorStyle style) {
-    SDL_SetCursor(_cursors[style]);
 }
 
 void DisplayWindow::hidden(const bool state) {

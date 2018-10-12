@@ -12,6 +12,25 @@
 
 namespace Divide {
 
+namespace {
+    SDL_SystemCursor CursorToSDL(CursorStyle style) {
+        switch (style) {
+        case CursorStyle::ARROW: return SDL_SYSTEM_CURSOR_ARROW;
+        case CursorStyle::HAND: return SDL_SYSTEM_CURSOR_HAND;
+        case CursorStyle::NONE: return SDL_SYSTEM_CURSOR_NO;
+        case CursorStyle::RESIZE_EW: return SDL_SYSTEM_CURSOR_SIZEWE;
+        case CursorStyle::RESIZE_NS: return SDL_SYSTEM_CURSOR_SIZENS;
+        case CursorStyle::RESIZE_NESW: return SDL_SYSTEM_CURSOR_SIZENESW;
+        case CursorStyle::RESIZE_NWSE: return SDL_SYSTEM_CURSOR_SIZENWSE;
+        case CursorStyle::TEXT_INPUT: return SDL_SYSTEM_CURSOR_IBEAM;
+        };
+
+        return SDL_SYSTEM_CURSOR_NO;
+    }
+}; // namespace 
+
+hashMap<CursorStyle, SDL_Cursor*> WindowManager::s_cursors;
+
 WindowManager::WindowManager()  noexcept 
    : _apiFlags(0),
      _activeWindowGUID(-1),
@@ -125,6 +144,11 @@ ErrorCode WindowManager::init(PlatformContext& context,
         }
     }
 
+    for (U8 i = 0; i < to_U8(CursorStyle::COUNT); ++i) {
+        CursorStyle style = static_cast<CursorStyle>(i);
+        s_cursors[style] = SDL_CreateSystemCursor(CursorToSDL(style));
+    }
+
     return err;
 }
 
@@ -133,6 +157,10 @@ void WindowManager::close() {
         window->destroyWindow();
     }
     _windows.clear();
+    for (auto it : s_cursors) {
+        SDL_FreeCursor(it.second);
+    }
+    s_cursors.clear();
     SDL_QuitSubSystem(SDL_INIT_VIDEO);
 }
 
@@ -445,6 +473,10 @@ void WindowManager::setCursorPosition(I32 x, I32 y, bool global) {
         SDL_WarpMouseGlobal(x, y);
     }
     Attorney::KernelWindowManager::setCursorPosition(_context->app().kernel(), x, y);
+}
+
+void WindowManager::setCursorStyle(CursorStyle style) {
+    SDL_SetCursor(s_cursors[style]);
 }
 
 vec2<I32> WindowManager::getCursorPosition(bool global) const {
