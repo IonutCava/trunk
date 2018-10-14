@@ -57,7 +57,8 @@ namespace Divide {
     }
 
     inline bool DisplayWindow::hasFocus() const {
-        return BitCompare(_flags, WindowFlags::HAS_FOCUS);
+        //return BitCompare(_flags, WindowFlags::HAS_FOCUS);
+        return (SDL_GetWindowFlags(_sdlWindow) & SDL_WINDOW_INPUT_FOCUS) != 0;
     }
 
     inline U8 DisplayWindow::opacity() const {
@@ -125,7 +126,7 @@ namespace Divide {
 
     inline I64 DisplayWindow::addEventListener(WindowEvent windowEvent, const EventListener& listener) {
         EventListeners& listeners = _eventListeners[to_base(windowEvent)];
-        listeners.emplace_back(std::make_shared<GUID_DELEGATE_CBK<void, WindowEventArgs>>(listener));
+        listeners.emplace_back(std::make_shared<GUID_DELEGATE_CBK<bool, WindowEventArgs>>(listener));
         return listeners.back()->getGUID();
     }
 
@@ -133,7 +134,7 @@ namespace Divide {
         EventListeners& listeners = _eventListeners[to_base(windowEvent)];
         listeners.erase(
             std::find_if(std::begin(listeners), std::end(listeners),
-                           [&listenerGUID](const std::shared_ptr<GUID_DELEGATE_CBK<void, WindowEventArgs>>& it)
+                           [&listenerGUID](const std::shared_ptr<GUID_DELEGATE_CBK<bool, WindowEventArgs>>& it)
                            -> bool { 
                                 return it->getGUID() == listenerGUID;
                             }),

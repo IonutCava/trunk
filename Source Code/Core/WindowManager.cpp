@@ -97,6 +97,7 @@ ErrorCode WindowManager::init(PlatformContext& context,
     descriptor.dimensions = initialResolution;
     descriptor.targetDisplay = displayIndex;
     descriptor.title = _context->config().title;
+    descriptor.externalClose = false;
     if (_context->config().runtime.enableVSync) {
         SetBit(descriptor.flags, WindowDescriptor::Flags::VSYNC);
     }
@@ -111,23 +112,25 @@ ErrorCode WindowManager::init(PlatformContext& context,
     }
 
     ErrorCode err = ErrorCode::NO_ERR;
-
-    U32 idx = createWindow(descriptor, err);
+    DisplayWindow* window = createWindow(descriptor, err);
 
     if (err == ErrorCode::NO_ERR) {
-        _mainWindowGUID = _windows[idx]->getGUID();
+        _mainWindowGUID = window->getGUID();
 
-        _windows[idx]->addEventListener(WindowEvent::MINIMIZED, [this](const DisplayWindow::WindowEventArgs& args) {
+        window->addEventListener(WindowEvent::MINIMIZED, [this](const DisplayWindow::WindowEventArgs& args) {
             ACKNOWLEDGE_UNUSED(args);
             _context->app().mainLoopPaused(true);
+            return true;
         });
-        _windows[idx]->addEventListener(WindowEvent::MAXIMIZED, [this](const DisplayWindow::WindowEventArgs& args) {
+        window->addEventListener(WindowEvent::MAXIMIZED, [this](const DisplayWindow::WindowEventArgs& args) {
             ACKNOWLEDGE_UNUSED(args);
             _context->app().mainLoopPaused(false);
+            return true;
         });
-        _windows[idx]->addEventListener(WindowEvent::RESTORED, [this](const DisplayWindow::WindowEventArgs& args) {
+        window->addEventListener(WindowEvent::RESTORED, [this](const DisplayWindow::WindowEventArgs& args) {
             ACKNOWLEDGE_UNUSED(args);
             _context->app().mainLoopPaused(false);
+            return true;
         });
 
         GPUState& gState = _context->gfx().gpuState();
@@ -174,62 +177,65 @@ void WindowManager::close() {
     SDL_QuitSubSystem(SDL_INIT_VIDEO);
 }
 
-U32 WindowManager::createWindow(const WindowDescriptor& descriptor, ErrorCode& err) {
-    U32 ret = std::numeric_limits<U32>::max();
+DisplayWindow* WindowManager::createWindow(const WindowDescriptor& descriptor, ErrorCode& err, U32& windowIndex ) {
+    windowIndex = std::numeric_limits<U32>::max();
 
     DisplayWindow* window = MemoryManager_NEW DisplayWindow(*this, *_context);
-    if (window != nullptr) {
-        ret = to_U32(_windows.size());
-        _windows.emplace_back(window);
+    assert(window != nullptr);
 
-        U32 mainWindowFlags = _apiFlags;
-        if (BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::RESIZEABLE))) {
-            mainWindowFlags |= SDL_WINDOW_RESIZABLE;
-        }
-        if (BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::ALLOW_HIGH_DPI))) {
-            mainWindowFlags |= SDL_WINDOW_ALLOW_HIGHDPI;
-        }
-        if (BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::HIDDEN))) {
-            mainWindowFlags |= SDL_WINDOW_HIDDEN;
-        }
-        if (!BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::DECORATED))) {
-            mainWindowFlags |= SDL_WINDOW_BORDERLESS;
-        }
-        if (BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::ALWAYS_ON_TOP))) {
-            mainWindowFlags |= SDL_WINDOW_ALWAYS_ON_TOP;
-        }
-        bool fullscreen = BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::FULLSCREEN));
+    windowIndex = to_U32(_windows.size());
+    _windows.emplace_back(window);
 
-        err = _windows[ret]->init(mainWindowFlags,
-                                  fullscreen ? WindowType::FULLSCREEN : WindowType::WINDOW,
-                                  descriptor);
+    U32 mainWindowFlags = _apiFlags;
+    if (BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::RESIZEABLE))) {
+        mainWindowFlags |= SDL_WINDOW_RESIZABLE;
+    }
+    if (BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::ALLOW_HIGH_DPI))) {
+        mainWindowFlags |= SDL_WINDOW_ALLOW_HIGHDPI;
+    }
+    if (BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::HIDDEN))) {
+        mainWindowFlags |= SDL_WINDOW_HIDDEN;
+    }
+    if (!BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::DECORATED))) {
+        mainWindowFlags |= SDL_WINDOW_BORDERLESS;
+    }
+    if (BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::ALWAYS_ON_TOP))) {
+        mainWindowFlags |= SDL_WINDOW_ALWAYS_ON_TOP;
+    }
+    bool fullscreen = BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::FULLSCREEN));
 
-        _windows[ret]->clearColour(descriptor.clearColour,
-                                   BitCompare(descriptor.flags, WindowDescriptor::Flags::CLEAR_COLOUR),
-                                   BitCompare(descriptor.flags, WindowDescriptor::Flags::CLEAR_DEPTH));
+    err = window->init(mainWindowFlags,
+                       fullscreen ? WindowType::FULLSCREEN : WindowType::WINDOW,
+                       descriptor);
 
-        if (err == ErrorCode::NO_ERR) {
-            err = configureAPISettings(_windows[ret], descriptor.flags);
-        }
+    window->clearColour(descriptor.clearColour,
+                        BitCompare(descriptor.flags, WindowDescriptor::Flags::CLEAR_COLOUR),
+                        BitCompare(descriptor.flags, WindowDescriptor::Flags::CLEAR_DEPTH));
 
-        if (err != ErrorCode::NO_ERR) {
-            _windows.pop_back();
-            MemoryManager::SAFE_DELETE(window);
-        }
+    if (err == ErrorCode::NO_ERR) {
+        err = configureAPISettings(window, descriptor.flags);
+    }
 
-        _windows[ret]->addEventListener(WindowEvent::RESIZED, [this](const DisplayWindow::WindowEventArgs& args) {
-            SizeChangeParams params;
-            params.width = to_U16(args.x);
-            params.height = to_U16(args.y);
-            params.isWindowResize = true;
-            params.isFullScreen = args._flag;
-            params.winGUID = args._windowGUID;
+    if (err != ErrorCode::NO_ERR) {
+        _windows.pop_back();
+        MemoryManager::SAFE_DELETE(window);
+    }
 
-            // Only if rendering window
-            _context->app().onSizeChange(params);
-        });
+    window->addEventListener(WindowEvent::SIZE_CHANGED, [this](const DisplayWindow::WindowEventArgs& args) {
+        SizeChangeParams params;
+        params.width = to_U16(args.x);
+        params.height = to_U16(args.y);
+        params.isWindowResize = true;
+        params.isFullScreen = args._flag;
+        params.winGUID = args._windowGUID;
 
-        _windows[ret]->addEventListener(WindowEvent::CLOSE_REQUESTED, [this](const DisplayWindow::WindowEventArgs& args) {
+        // Only if rendering window
+        _context->app().onSizeChange(params);
+        return true;
+    });
+
+    if (!descriptor.externalClose) {
+        window->addEventListener(WindowEvent::CLOSE_REQUESTED, [this](const DisplayWindow::WindowEventArgs& args) {
             Console::d_printfn(Locale::get(_ID("WINDOW_CLOSE_EVENT")), args._windowGUID);
 
             if (_mainWindowGUID == args._windowGUID) {
@@ -244,11 +250,12 @@ U32 WindowManager::createWindow(const WindowDescriptor& descriptor, ErrorCode& e
                         break;
                     }
                 }
+                return false;
             }
+            return true;
         });
     }
-
-    return ret;
+    return window;
 }
 
 bool WindowManager::destroyWindow(DisplayWindow*& window) {

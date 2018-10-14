@@ -54,6 +54,7 @@ struct WindowDescriptor {
         SHARE_CONTEXT = toBit(10)
     };
 
+    bool externalClose = false;
     U32 targetDisplay = 0u;
     stringImpl title = "";
     vec2<I16> position;
@@ -92,7 +93,10 @@ public:
 
     bool anyWindowFocus() const;
 
-    U32 createWindow(const WindowDescriptor& descriptor, ErrorCode& err);
+    inline DisplayWindow* createWindow(const WindowDescriptor& descriptor);
+    inline DisplayWindow* createWindow(const WindowDescriptor& descriptor, ErrorCode& err);
+
+    DisplayWindow* createWindow(const WindowDescriptor& descriptor, ErrorCode& err, U32& windowIndex);
     bool destroyWindow(DisplayWindow*& window);
 
     void setCursorPosition(I32 x, I32 y, bool global = false);
@@ -134,11 +138,11 @@ protected:
     void destroyAPISettings(DisplayWindow* window);
 
 protected:
-    U32 _apiFlags;
-    I64 _mainWindowGUID;
+    U32 _apiFlags = 0;
+    I64 _mainWindowGUID = -1;
 
+    PlatformContext* _context = nullptr;
     vector<MonitorData> _monitors;
-    PlatformContext* _context;
     vector<DisplayWindow*> _windows;
 
     static hashMap<CursorStyle, SDL_Cursor*> s_cursors;

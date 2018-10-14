@@ -142,11 +142,6 @@ void MenuBar::drawToolsMenu() {
 void MenuBar::drawWindowsMenu() {
     if (ImGui::BeginMenu("Window"))
     {
-        bool showDebugWindow = Attorney::EditorPanelManager::showDebugWindow(_context.editor());
-        if (ImGui::MenuItem("Debug Window", NULL, &showDebugWindow)) {
-            Attorney::EditorPanelManager::showDebugWindow(_context.editor(), showDebugWindow);
-        }
-
         bool showSampleWindow = Attorney::EditorPanelManager::showSampleWindow(_context.editor());
         if (ImGui::MenuItem("Sample Window", NULL, &showSampleWindow)) {
             Attorney::EditorPanelManager::showSampleWindow(_context.editor(), showSampleWindow);

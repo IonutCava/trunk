@@ -120,7 +120,9 @@ void DisplayWindow::update(const U64 deltaTimeUS) {
 
 void DisplayWindow::notifyListeners(WindowEvent event, const WindowEventArgs& args) {
     for (auto listener : _eventListeners[to_base(event)]) {
-        listener->_callback(args);
+        if (!listener->_callback(args)) {
+            return;
+        }
     }
 }
 
@@ -160,11 +162,14 @@ void DisplayWindow::handleEvent(SDL_Event event) {
                 U16 height = to_U16(event.window.data2);
                 setDimensions(width, height);
             }
+            args._flag = fullscreen();
+            notifyListeners(WindowEvent::RESIZED, args);
+
             _internalResizeEvent = false;
         }break;
         case SDL_WINDOWEVENT_SIZE_CHANGED: {
             args._flag = fullscreen();
-            notifyListeners(WindowEvent::RESIZED, args);
+            notifyListeners(WindowEvent::SIZE_CHANGED, args);
         } break;
         case SDL_WINDOWEVENT_MOVED: {
             notifyListeners(WindowEvent::MOVED, args);

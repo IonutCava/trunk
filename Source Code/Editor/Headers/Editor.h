@@ -163,7 +163,6 @@ class Editor : public PlatformContextComponent,
     bool joystickvector3Moved(const Input::JoystickEvent &arg, I8 index) override;
 
   protected:
-    void drawIMGUIDebug(const U64 deltaTime);
     bool renderGizmos(const U64 deltaTime);
     bool renderMinimal(const U64 deltaTime);
     bool renderFull(const U64 deltaTime);
@@ -173,18 +172,13 @@ class Editor : public PlatformContextComponent,
     ImGuiIO& GetIO(U8 idx);
 
   protected: // window events
-    bool OnClose();
-    void OnFocus(bool bHasFocus);
-    void OnSize(I32 iWidth, I32 iHeight);
     void OnUTF8(const char* text);
 
   protected: // attorney
     void renderDrawList(ImDrawData* pDrawData, bool gizmo, I64 windowGUID);
     void drawMenuBar();
-    void showDebugWindow(bool state);
     void showSampleWindow(bool state);
     void enableGizmo(bool state);
-    bool showDebugWindow() const;
     bool showSampleWindow() const;
     bool enableGizmo() const;
     void setSelectedCamera(Camera* camera);
@@ -203,7 +197,6 @@ class Editor : public PlatformContextComponent,
     bool              _sceneHovered;
     bool              _gizmosVisible;
     bool              _scenePreviewFocused;
-    bool              _showDebugWindow;
     bool              _showSampleWindow;
     bool              _enableGizmo;
     Camera*           _selectedCamera;
@@ -280,17 +273,11 @@ namespace Attorney {
         static const TransformSettings& getTransformSettings(const Editor& editor) {
             return editor.getTransformSettings();
         }
-        static void showDebugWindow(Editor& editor, bool state) {
-            editor.showDebugWindow(state);
-        }
         static void showSampleWindow(Editor& editor, bool state) {
             editor.showSampleWindow(state);
         }
         static void enableGizmo(Editor& editor, bool state) {
             return editor.enableGizmo(state);
-        }
-        static bool showDebugWindow(const Editor& editor) {
-            return editor.showDebugWindow();
         }
         static bool showSampleWindow(const Editor& editor) {
             return editor.showSampleWindow();

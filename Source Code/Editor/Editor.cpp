@@ -84,7 +84,6 @@ Editor::Editor(PlatformContext& context, ImGuiStyleEnum theme, ImGuiStyleEnum di
       _sceneHovered(false),
       _scenePreviewFocused(false),
       _selectedCamera(nullptr),
-      _showDebugWindow(false),
       _showSampleWindow(false),
       _gizmosVisible(false),
       _enableGizmo(false),
@@ -142,13 +141,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
     _mainWindow = &g_windowManager->getWindow(0u);
     if (_windowListeners.empty()) {
         // Only add these once
-        I64 guid = _mainWindow->addEventListener(WindowEvent::CLOSE_REQUESTED, [this](const DisplayWindow::WindowEventArgs& args) { ACKNOWLEDGE_UNUSED(args); OnClose();});
-        _windowListeners[to_base(WindowEvent::CLOSE_REQUESTED)].push_back(guid);
-        guid = _mainWindow->addEventListener(WindowEvent::GAINED_FOCUS, [this](const DisplayWindow::WindowEventArgs& args) { OnFocus(args._flag);});
-        _windowListeners[to_base(WindowEvent::GAINED_FOCUS)].push_back(guid);
-        guid = _mainWindow->addEventListener(WindowEvent::RESIZED, [this](const DisplayWindow::WindowEventArgs& args) { OnSize(args.x, args.y);});
-        _windowListeners[to_base(WindowEvent::RESIZED)].push_back(guid);
-        guid = _mainWindow->addEventListener(WindowEvent::TEXT, [this](const DisplayWindow::WindowEventArgs& args) { OnUTF8(args._text);});
+        I64 guid = _mainWindow->addEventListener(WindowEvent::TEXT, [this](const DisplayWindow::WindowEventArgs& args) { OnUTF8(args._text); return true; });
         _windowListeners[to_base(WindowEvent::TEXT)].push_back(guid);
     }
 
@@ -199,10 +192,11 @@ bool Editor::init(const vec2<U16>& renderResolution) {
 
         if (_context.config().gui.imgui.multiViewportEnabled) {
             io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
-            //io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoTaskBarIcons;
+            //io.ConfigFlags |= ImGuiConfigFlags_ViewportsDecoration;
+            io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoTaskBarIcon;
             //io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoMerge;
 
-            //io.BackendFlags |= ImGuiBackendFlags_HasMouseHoveredViewport;
+            io.BackendFlags |= ImGuiBackendFlags_HasMouseHoveredViewport;
             io.BackendFlags |= ImGuiBackendFlags_RendererHasViewports;
         }
 
@@ -254,7 +248,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
                 descriptor.title = "No Title Yet";
                 descriptor.targetDisplay = g_windowManager->getWindow(0u).currentDisplayIndex();
                 descriptor.clearColour.set(0.0f, 0.0f, 0.0f, 1.0f);
-                descriptor.flags = /*to_U32(WindowDescriptor::Flags::HIDDEN) | */to_U32(WindowDescriptor::Flags::CLEAR_COLOUR) | to_U32(WindowDescriptor::Flags::CLEAR_DEPTH);
+                descriptor.flags = to_U32(WindowDescriptor::Flags::HIDDEN) | to_U32(WindowDescriptor::Flags::CLEAR_COLOUR) | to_U32(WindowDescriptor::Flags::CLEAR_DEPTH);
                 // We don't enable SDL_WINDOW_RESIZABLE because it enforce windows decorations
                 descriptor.flags |= (viewport->Flags & ImGuiViewportFlags_NoDecoration) ? 0 : to_U32(WindowDescriptor::Flags::DECORATED) | to_U32(WindowDescriptor::Flags::RESIZEABLE);
                 descriptor.flags |= (viewport->Flags & ImGuiViewportFlags_TopMost) ? to_U32(WindowDescriptor::Flags::ALWAYS_ON_TOP) : 0;
@@ -262,14 +256,18 @@ bool Editor::init(const vec2<U16>& renderResolution) {
 
                 descriptor.dimensions.set(viewport->Size.x, viewport->Size.y);
                 descriptor.position.set(viewport->Pos.x, viewport->Pos.y);
+                descriptor.externalClose = true;
 
-                ErrorCode err = ErrorCode::NO_ERR;
-                U32 windowIndex = g_windowManager->createWindow(descriptor, err);
-                data->_window = &g_windowManager->getWindow(windowIndex);
-                data->_windowOwned = true;
-                viewport->PlatformHandle = (void*)data->_window;
+                data->_window = g_windowManager->createWindow(descriptor);
                 data->_window->hidden(false);
                 data->_window->bringToFront();
+                data->_window->addEventListener(WindowEvent::CLOSE_REQUESTED, [viewport](const DisplayWindow::WindowEventArgs& args) { ACKNOWLEDGE_UNUSED(args); viewport->PlatformRequestClose = true; return true; });
+                data->_window->addEventListener(WindowEvent::MOVED, [viewport](const DisplayWindow::WindowEventArgs& args) { ACKNOWLEDGE_UNUSED(args); viewport->PlatformRequestMove = true; return true; });
+                data->_window->addEventListener(WindowEvent::RESIZED, [viewport](const DisplayWindow::WindowEventArgs& args) { ACKNOWLEDGE_UNUSED(args);  viewport->PlatformRequestResize = true;  return true; });
+
+                data->_windowOwned = true;
+
+                viewport->PlatformHandle = (void*)data->_window;
             };
 
             platform_io.Platform_DestroyWindow = [](ImGuiViewport* viewport)
@@ -555,9 +553,8 @@ bool Editor::renderGizmos(const U64 deltaTime) {
 }
 
 bool Editor::renderMinimal(const U64 deltaTime) {
-    if (showDebugWindow()) {
-        drawIMGUIDebug(deltaTime);
-    }
+    ACKNOWLEDGE_UNUSED(deltaTime);
+
     if (showSampleWindow()) {
         ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiCond_FirstUseEver);
         ImGui::ShowDemoWindow(&show_test_window);
@@ -658,20 +655,12 @@ void Editor::drawMenuBar() {
     }
 }
 
-void Editor::showDebugWindow(bool state) {
-    _showDebugWindow = state;
-}
-
 void Editor::showSampleWindow(bool state) {
     _showSampleWindow = state;
 }
 
 void Editor::enableGizmo(bool state) {
     _enableGizmo = state;
-}
-
-bool Editor::showDebugWindow() const {
-    return _showDebugWindow;
 }
 
 bool Editor::showSampleWindow() const {
@@ -840,13 +829,14 @@ bool Editor::onKeyUp(const Input::KeyEvent& key) {
 }
 
 namespace {
-    ImGuiViewport* FindViewportByPlatformHandle(SDL_Window* platform_handle)
-    {
+    ImGuiViewport* FindViewportByPlatformHandle(SDL_Window* platformHandle) {
         ImGuiContext& g = *GImGui;
-        for (int i = 0; i != g.Viewports.Size; i++)
-            if (((DisplayWindow*)g.Viewports[i]->PlatformHandle)->getRawWindow() == platform_handle)
+        for (I32 i = 0; i != g.Viewports.Size; i++) {
+            if (g.Viewports[i]->PlatformHandle && ((DisplayWindow*)g.Viewports[i]->PlatformHandle)->getRawWindow() == platformHandle) {
                 return g.Viewports[i];
-        return NULL;
+            }
+        }
+        return nullptr;
     }
 
 }
@@ -994,14 +984,6 @@ bool Editor::joystickvector3Moved(const Input::JoystickEvent &arg, I8 index) {
     return false;
 }
 
-bool Editor::OnClose() {
-    return needInput();
-}
-
-void Editor::OnFocus(bool bHasFocus) {
-    ACKNOWLEDGE_UNUSED(bHasFocus);
-}
-
 void Editor::onSizeChange(const SizeChangeParams& params) {
     if (!params.isWindowResize || _mainWindow == nullptr || params.winGUID != _mainWindow->getGUID()) {
         return;
@@ -1015,11 +997,6 @@ void Editor::onSizeChange(const SizeChangeParams& params) {
         io.DisplayFramebufferScale = ImVec2(params.width > 0 ? ((F32)display_size.width / params.width) : 0.f,
                                             params.height > 0 ? ((F32)display_size.height / params.height) : 0.f);
     }
-}
-
-void Editor::OnSize(I32 iWidth, I32 iHeight) {
-    ACKNOWLEDGE_UNUSED(iWidth);
-    ACKNOWLEDGE_UNUSED(iHeight);
 }
 
 void Editor::OnUTF8(const char* text) {
@@ -1038,38 +1015,8 @@ Camera* Editor::getSelectedCamera() const {
     return _selectedCamera;
 }
 
-void Editor::drawIMGUIDebug(const U64 deltaTime) {
-    DisplayWindow& window = context().activeWindow();
-
-    static F32 f = 0.0f;
-    ImGui::Text("Hello, world!");
-    ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
-    ImGui::SliderInt("Opacity", &window_opacity, 0, 255);
-
-    FColour colour;
-    if (ImGui::ColorEdit4("clear color", colour._v)) {
-        window.clearColour(colour);
-    }
-
-    if (ImGui::Button("Test Window")) show_test_window ^= 1;
-    if (ImGui::Button("Another Window")) show_another_window ^= 1;
-    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-    ImGui::Text("Time since last frame %.3f ms", Time::MicrosecondsToMilliseconds<F32>(deltaTime));
-    if (ImGui::Button("Toggle cursor")) {
-        ImGuiIO& io = ImGui::GetIO();
-        io.MouseDrawCursor = !io.MouseDrawCursor;
-    }
-    // 2. Show another simple window. In most cases you will use an explicit Begin/End pair to name the window.
-    if (show_another_window)
-    {
-        ImGui::Begin("Another Window", &show_another_window);
-        ImGui::Text("Hello from another window!");
-        ImGui::End();
-    }
-}
-
 bool Editor::needInput() const {
-    return _running || _gizmosVisible || showDebugWindow() || showSampleWindow();
+    return _running || _gizmosVisible || showSampleWindow();
 }
 
 bool Editor::hasGizmoFocus() {

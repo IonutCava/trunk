@@ -72,14 +72,15 @@ enum class WindowEvent : U8 {
     MOUSE_HOVER_ENTER = 7,
     MOUSE_HOVER_LEAVE = 8,
     RESIZED = 9,
-    MOVED = 10,
-    APP_LOOP = 11,
-    CLOSE_REQUESTED = 12,
-    KEY_PRESS = 13,
-    MOUSE_MOVE = 14,
-    MOUSE_BUTTON = 15,
-    MOUSE_WHEEL = 16,
-    TEXT = 17,
+    SIZE_CHANGED = 10,
+    MOVED = 11,
+    APP_LOOP = 12,
+    CLOSE_REQUESTED = 13,
+    KEY_PRESS = 14,
+    MOUSE_MOVE = 15,
+    MOUSE_BUTTON = 16,
+    MOUSE_WHEEL = 17,
+    TEXT = 18,
     COUNT
 };
 
@@ -122,7 +123,7 @@ public:
         I32 id = -1;
     };
 
-    typedef DELEGATE_CBK<void, const WindowEventArgs&> EventListener;
+    typedef DELEGATE_CBK<bool, const WindowEventArgs&> EventListener;
 
 protected:
     SET_SAFE_DELETE_FRIEND
@@ -269,7 +270,7 @@ private:
     vec2<U16> _prevDimensions;
     vec2<U16> _windowDimensions;
     FColour   _clearColour;
-    typedef vector<std::shared_ptr<GUID_DELEGATE_CBK<void, WindowEventArgs>>> EventListeners;
+    typedef vector<std::shared_ptr<GUID_DELEGATE_CBK<bool, WindowEventArgs>>> EventListeners;
     std::array<EventListeners, to_base(WindowEvent::COUNT)> _eventListeners;
 
     std::unique_ptr<Input::InputInterface> _inputHandler;
