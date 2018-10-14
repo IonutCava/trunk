@@ -507,14 +507,12 @@ void GFXDevice::beginFrame(DisplayWindow& window, bool global) {
     }
 
     if (global && _resolutionChangeQueued.second) {
-        WindowManager& winManager = _parent.platformContext().app().windowManager();
-
         SizeChangeParams params;
         params.isWindowResize = false;
-        params.isFullScreen = winManager.getActiveWindow().fullscreen();
+        params.isFullScreen = window.fullscreen();
         params.width = _resolutionChangeQueued.first.width;
         params.height = _resolutionChangeQueued.first.height;
-        params.winGUID = context().app().windowManager().getMainWindow().getGUID();
+        params.winGUID = context().activeWindow().getGUID();
 
         context().app().onSizeChange(params);
         _resolutionChangeQueued.second = false;
@@ -523,10 +521,8 @@ void GFXDevice::beginFrame(DisplayWindow& window, bool global) {
     _api->beginFrame(window, global);
     _api->setStateBlock(_defaultStateBlockHash);
 
-    if (global) {
-        const vec2<U16>& drawableSize = window.getDrawableSize();
-        setViewport(Rect<I32>(0, 0, drawableSize.width, drawableSize.height));
-    }
+    const vec2<U16>& drawableSize = window.getDrawableSize();
+    setViewport(Rect<I32>(0, 0, drawableSize.width, drawableSize.height));
 }
 
 void GFXDevice::endFrame(DisplayWindow& window, bool global) {

@@ -131,7 +131,6 @@ void GL_API::beginFrame(DisplayWindow& window, bool global) {
     }
 
     s_previousStateBlockHash = 0;
-    s_currentStateBlockHash = 0;
 }
 
 /// Finish rendering the current frame

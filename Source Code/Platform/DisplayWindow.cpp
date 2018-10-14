@@ -30,13 +30,12 @@ DisplayWindow::DisplayWindow(WindowManager& parent, PlatformContext& context)
    _sdlWindow(nullptr),
    _userData(nullptr),
    _internalMoveEvent(false),
-   _externalResizeEvent(false),
+   _internalResizeEvent(false),
    _clearColour(DefaultColours::DIVIDE_BLUE),
    _windowID(std::numeric_limits<Uint32>::max()),
    _inputHandler(std::make_unique<Input::InputInterface>(*this))
 {
     SetBit(_flags, WindowFlags::SWAP_BUFFER);
-    SetBit(_flags, WindowFlags::HIDDEN);
 
     _prevDimensions.set(1);
     _windowDimensions.set(1);
@@ -73,21 +72,28 @@ ErrorCode DisplayWindow::init(U32 windowFlags,
     _type = initialType;
     _title = descriptor.title;
     _windowDimensions = descriptor.dimensions;
-    const vec2<I16>& position = descriptor.position;
+
+    vec2<I32> position(descriptor.position);
+
+    if (position.x == -1) {
+        position.x = SDL_WINDOWPOS_CENTERED_DISPLAY(descriptor.targetDisplay);
+    } else {
+        position.x += _parent.monitorData()[descriptor.targetDisplay].viewport.x;
+    }
+    if (position.y == -1) {
+        position.y = SDL_WINDOWPOS_CENTERED_DISPLAY(descriptor.targetDisplay);
+    } else {
+        position.y += _parent.monitorData()[descriptor.targetDisplay].viewport.x;
+    }
 
     _sdlWindow = SDL_CreateWindow(_title.c_str(),
-                                  position.x == -1 ? SDL_WINDOWPOS_CENTERED_DISPLAY(descriptor.targetDisplay) : position.x,
-                                  position.y == -1 ? SDL_WINDOWPOS_CENTERED_DISPLAY(descriptor.targetDisplay) : position.y,
-                                  1,
-                                  1,
+                                  position.x,
+                                  position.y,
+                                  _windowDimensions.width,
+                                  _windowDimensions.height,
                                   windowFlags);
 
     _windowID = SDL_GetWindowID(_sdlWindow);
-    
-    I32 positionX, positionY;
-    SDL_GetWindowPosition(_sdlWindow, &positionX, &positionY);
-    setPosition(positionX, positionY);
-
     getWindowHandle(_sdlWindow, _handle);
 
     // Check if we have a valid window
@@ -119,68 +125,49 @@ void DisplayWindow::notifyListeners(WindowEvent event, const WindowEventArgs& ar
 }
 
 void DisplayWindow::handleEvent(SDL_Event event) {
-    if (event.type != SDL_WINDOWEVENT) {
-        return;
-    }
-    if (event.window.windowID != _windowID) {
-        return;
-    }
+    assert(event.type == SDL_WINDOWEVENT);
 
-    WindowEventArgs args;
+    WindowEventArgs args = {};
     args._windowGUID = getGUID();
+    args.x = event.window.data1;
+    args.y = event.window.data2;
 
     switch (event.window.event) {
         case SDL_WINDOWEVENT_CLOSE: {
+            args.x = event.quit.type;
+            args.y = event.quit.timestamp;
             notifyListeners(WindowEvent::CLOSE_REQUESTED, args);
-            _parent.handleWindowEvent(WindowEvent::CLOSE_REQUESTED,
-                                        getGUID(),
-                                        event.quit.type,
-                                        event.quit.timestamp);
         } break;
-        case SDL_WINDOWEVENT_ENTER:
+        case SDL_WINDOWEVENT_ENTER: {
+            ToggleBit(_flags, WindowFlags::IS_HOVERED, true);
+            notifyListeners(WindowEvent::MOUSE_HOVER_ENTER, args);
+        } break;
+        case SDL_WINDOWEVENT_LEAVE: {
+            ToggleBit(_flags, WindowFlags::IS_HOVERED, false);
+            notifyListeners(WindowEvent::MOUSE_HOVER_LEAVE, args);
+        } break;
         case SDL_WINDOWEVENT_FOCUS_GAINED: {
-            args._flag = true;
+            ToggleBit(_flags, WindowFlags::HAS_FOCUS, true);
             notifyListeners(WindowEvent::GAINED_FOCUS, args);
-            _parent.handleWindowEvent(WindowEvent::GAINED_FOCUS,
-                                      getGUID(),
-                                      event.window.data1,
-                                      event.window.data2);
         } break;
-        case SDL_WINDOWEVENT_LEAVE:
         case SDL_WINDOWEVENT_FOCUS_LOST: {
-            args._flag = false;
+            ToggleBit(_flags, WindowFlags::HAS_FOCUS, false);
             notifyListeners(WindowEvent::LOST_FOCUS, args);
-
-            _parent.handleWindowEvent(WindowEvent::LOST_FOCUS,
-                getGUID(),
-                event.window.data1,
-                event.window.data2);
         } break;
-        case SDL_WINDOWEVENT_SIZE_CHANGED:
         case SDL_WINDOWEVENT_RESIZED: {
-            _externalResizeEvent = event.window.event == SDL_WINDOWEVENT_RESIZED;
-            args.x = event.window.data1;
-            args.y = event.window.data2;
-            args._flag = _externalResizeEvent;
+            if (!_internalResizeEvent) {
+                U16 width = to_U16(event.window.data1);
+                U16 height = to_U16(event.window.data2);
+                setDimensions(width, height);
+            }
+            _internalResizeEvent = false;
+        }break;
+        case SDL_WINDOWEVENT_SIZE_CHANGED: {
+            args._flag = fullscreen();
             notifyListeners(WindowEvent::RESIZED, args);
-
-            _parent.handleWindowEvent(WindowEvent::RESIZED,
-                                        getGUID(),
-                                        event.window.data1,
-                                        event.window.data2,
-                                        _externalResizeEvent);
-            _externalResizeEvent = false;
         } break;
         case SDL_WINDOWEVENT_MOVED: {
-            args.x = event.window.data1;
-            args.y = event.window.data2;
             notifyListeners(WindowEvent::MOVED, args);
-
-            _parent.handleWindowEvent(WindowEvent::MOVED,
-                getGUID(),
-                event.window.data1,
-                event.window.data2);
-
             if (!_internalMoveEvent) {
                 setPosition(event.window.data1,
                             event.window.data2);
@@ -189,76 +176,25 @@ void DisplayWindow::handleEvent(SDL_Event event) {
         } break;
         case SDL_WINDOWEVENT_SHOWN: {
             notifyListeners(WindowEvent::SHOWN, args);
-                        
-            _parent.handleWindowEvent(WindowEvent::SHOWN,
-                getGUID(),
-                event.window.data1,
-                event.window.data2);
+            ToggleBit(_flags, WindowFlags::HIDDEN, false);
         } break;
         case SDL_WINDOWEVENT_HIDDEN: {
             notifyListeners(WindowEvent::HIDDEN, args);
-
-            _parent.handleWindowEvent(WindowEvent::HIDDEN,
-                getGUID(),
-                event.window.data1,
-                event.window.data2);
+            ToggleBit(_flags, WindowFlags::HIDDEN, true);
         } break;
         case SDL_WINDOWEVENT_MINIMIZED: {
             notifyListeners(WindowEvent::MINIMIZED, args);
-
-            _parent.handleWindowEvent(WindowEvent::MINIMIZED,
-                getGUID(),
-                event.window.data1,
-                event.window.data2);
+            minimized(true);
         } break;
         case SDL_WINDOWEVENT_MAXIMIZED: {
             notifyListeners(WindowEvent::MAXIMIZED, args);
-
-            _parent.handleWindowEvent(WindowEvent::MAXIMIZED,
-                getGUID(),
-                event.window.data1,
-                event.window.data2);
+            minimized(false);
         } break;
         case SDL_WINDOWEVENT_RESTORED: {
             notifyListeners(WindowEvent::RESTORED, args);
-
-            _parent.handleWindowEvent(WindowEvent::RESTORED,
-                getGUID(),
-                event.window.data1,
-                event.window.data2);
+            minimized(false);
         } break;
     };
-}
-
-bool DisplayWindow::setDimensionsInternal(U16& w, U16& h) {
-    if (_externalResizeEvent && 
-        (_type != WindowType::WINDOW &&
-         _type != WindowType::SPLASH))
-    {
-        return false;
-    }
-
-    I32 newW = to_I32(w); I32 newH = to_I32(h);
-    if (_type == WindowType::FULLSCREEN) {
-        // Find a decent resolution close to our dragged dimensions
-        SDL_DisplayMode mode, closestMode;
-        SDL_GetCurrentDisplayMode(currentDisplayIndex(), &mode);
-        mode.w = w;
-        mode.h = h;
-        SDL_GetClosestDisplayMode(currentDisplayIndex(), &mode, &closestMode);
-        w = to_U16(closestMode.w);
-        h = to_U16(closestMode.h);
-        SDL_SetWindowDisplayMode(_sdlWindow, &closestMode);
-    } else {
-        SDL_SetWindowSize(_sdlWindow, to_I32(w), to_I32(h));
-        SDL_GetWindowSize(_sdlWindow, &newW, &newH);
-    }
-
-    if (_inputHandler->isInit()) {
-        _inputHandler->onChangeWindowSize(w, h);
-    }
-
-    return newW == w && newH == h;
 }
 
 I32 DisplayWindow::currentDisplayIndex() const {
@@ -278,23 +214,22 @@ void DisplayWindow::opacity(U8 opacity) {
 }
 
 /// Window positioning is handled by SDL
-void DisplayWindow::setPosition(I32 w, I32 h, bool global) {
+void DisplayWindow::setPosition(I32 x, I32 y, bool global) {
     _internalMoveEvent = true;
+
     I32 displayIndex = currentDisplayIndex();
-
-    if (!global) {
-
-        if (w != -1) {
-            w += _parent.monitorData()[displayIndex].viewport.x;
-        }
-        if (h != -1) {
-            h += _parent.monitorData()[displayIndex].viewport.y;
-        }
+    if (x == -1) {
+        x = SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex);
+    } else if (!global) {
+        x += _parent.monitorData()[displayIndex].viewport.x;
+    }
+    if (y == -1) {
+        y = SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex);
+    } else if (!global) {
+        y += _parent.monitorData()[displayIndex].viewport.y;
     }
 
-    SDL_SetWindowPosition(_sdlWindow, 
-                          w = -1 ? SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex) : w,
-                          h = -1 ? SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex) : h);
+    SDL_SetWindowPosition(_sdlWindow, x, y);
 }
 
 vec2<I32> DisplayWindow::getPosition(bool global) const {
@@ -309,18 +244,12 @@ vec2<I32> DisplayWindow::getPosition(bool global) const {
     return ret;
 }
 
-void DisplayWindow::hasFocus(const bool state) {
-    ToggleBit(_flags, WindowFlags::HAS_FOCUS, state);
-
-    if (state) {
-        SDL_RaiseWindow(_sdlWindow);
-    }
+void DisplayWindow::bringToFront() const {
+    SDL_RaiseWindow(_sdlWindow);
 }
 
 /// Centering is also easier via SDL
 void DisplayWindow::centerWindowPosition() {
-    _internalMoveEvent = true;
-
     setPosition(-1, -1);
 }
 
@@ -336,8 +265,9 @@ void DisplayWindow::hidden(const bool state) {
         } else {
             SDL_ShowWindow(_sdlWindow);
         }
-        ToggleBit(_flags, WindowFlags::HIDDEN, state);
     }
+
+    ToggleBit(_flags, WindowFlags::HIDDEN, state);
 }
 
 void DisplayWindow::restore() {
@@ -348,27 +278,27 @@ void DisplayWindow::restore() {
 }
 
 void DisplayWindow::minimized(const bool state) {
-    if (BitCompare(SDL_GetWindowFlags(_sdlWindow), to_U32(SDL_WINDOW_MINIMIZED)) != state)
-    {
+    if (BitCompare(SDL_GetWindowFlags(_sdlWindow), to_U32(SDL_WINDOW_MINIMIZED)) != state) {
         if (state) {
             SDL_MinimizeWindow(_sdlWindow);
         } else {
             restore();
         }
-        ToggleBit(_flags, WindowFlags::MINIMIZED, state);
     }
+
+    ToggleBit(_flags, WindowFlags::MINIMIZED, state);
 }
 
 void DisplayWindow::maximized(const bool state) {
-    if (BitCompare(SDL_GetWindowFlags(_sdlWindow), to_U32(SDL_WINDOW_MAXIMIZED)) != state)
-    {
+    if (BitCompare(SDL_GetWindowFlags(_sdlWindow), to_U32(SDL_WINDOW_MAXIMIZED)) != state) {
         if (state) {
             SDL_MaximizeWindow(_sdlWindow);
         } else {
             restore();
         }
-        ToggleBit(_flags, WindowFlags::MAXIMIZED, state);
     }
+
+    ToggleBit(_flags, WindowFlags::MAXIMIZED, state);
 }
 
 void DisplayWindow::title(const stringImpl& title) {
@@ -425,20 +355,37 @@ vec2<U16> DisplayWindow::getPreviousDimensions() const {
     return _prevDimensions;
 }
 
-bool DisplayWindow::setDimensions(U16& dimensionX, U16& dimensionY) {
-    if (fullscreen()) {
+bool DisplayWindow::setDimensions(U16& width, U16& height) {
+    if (fullscreen() || _windowDimensions == vec2<U16>(width, height)) {
         return true;
     }
 
-    vec2<U16> newDimensions(dimensionX, dimensionY);
-    if (_windowDimensions == newDimensions) {
-        return true;
+    _internalResizeEvent = true;
+
+    I32 newW = to_I32(width);
+    I32 newH = to_I32(height);
+    if (_type == WindowType::FULLSCREEN) {
+        // Find a decent resolution close to our dragged dimensions
+        SDL_DisplayMode mode, closestMode;
+        SDL_GetCurrentDisplayMode(currentDisplayIndex(), &mode);
+        mode.w = width;
+        mode.h = height;
+        SDL_GetClosestDisplayMode(currentDisplayIndex(), &mode, &closestMode);
+        width = to_U16(closestMode.w);
+        height = to_U16(closestMode.h);
+        SDL_SetWindowDisplayMode(_sdlWindow, &closestMode);
+    } else {
+        SDL_SetWindowSize(_sdlWindow, newW, newH);
+        SDL_GetWindowSize(_sdlWindow, &newW, &newH);
     }
 
-    if (setDimensionsInternal(dimensionX, dimensionY)) {
+    if (newW == width && newH == height) {
+        if (_inputHandler->isInit()) {
+            _inputHandler->onChangeWindowSize(width, height);
+        }
 
         _prevDimensions.set(_windowDimensions);
-        _windowDimensions.set(dimensionX, dimensionY);
+        _windowDimensions.set(width, height);
         _parent.pollSDLEvents();
         return true;
     }
@@ -451,10 +398,6 @@ bool DisplayWindow::setDimensions(vec2<U16>& dimensions) {
 }
 
 vec2<U16> DisplayWindow::getDimensions() const {
-    if (fullscreen()) {
-        return _parent.getFullscreenResolution();
-    }
-
     return _windowDimensions;
 }
 

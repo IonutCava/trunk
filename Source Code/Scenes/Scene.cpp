@@ -1003,8 +1003,8 @@ void Scene::onSetActive() {
     assert(_parent.getActivePlayerCount() == 0);
     addPlayerInternal(false);
 
-    static stringImpl originalTitle = _context.app().windowManager().getActiveWindow().title();
-    _context.app().windowManager().getActiveWindow().title(originalTitle + " - " + name());
+    static stringImpl originalTitle = _context.activeWindow().title();
+    _context.activeWindow().title(originalTitle + " - " + name());
 }
 
 void Scene::onRemoveActive() {
@@ -1301,7 +1301,7 @@ bool Scene::checkCameraUnderwater(PlayerIndex idx) const {
 void Scene::findHoverTarget(PlayerIndex idx, bool force) {
     const Camera& crtCamera = getPlayerForIndex(idx)->getCamera();
 
-    const vec2<U16>& displaySize = _context.app().windowManager().getActiveWindow().getDimensions();
+    const vec2<U16>& displaySize = _context.activeWindow().getDimensions();
     const vec2<F32>& zPlanes = crtCamera.getZPlanes();
     const vec2<I32>& aimPos = state().playerState(idx).aimPos();
 

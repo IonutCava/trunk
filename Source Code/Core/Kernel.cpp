@@ -240,7 +240,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTimeUS) {
         Camera::update(deltaTimeUS);
     }
 
-    if (_platformContext->app().windowManager().getActiveWindow().minimized()) {
+    if (_platformContext->activeWindow().minimized()) {
         idle();
         return true;
     }
@@ -587,17 +587,17 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
     Camera::initPool();
     // Match initial rendering resolution to window/screen size
-    const DisplayWindow& mainWindow  = winManager.getActiveWindow();
+    const DisplayWindow& mainWindow  = winManager.getMainWindow();
     vec2<U16> renderResolution(mainWindow.getDimensions());
     initError = _platformContext->gfx().initRenderingAPI(_argc, _argv, renderResolution);
 
     U32 hardwareThreads = HARDWARE_THREAD_COUNT();
     if (!_platformContext->taskPool().init(
-        static_cast<U8>(std::max(hardwareThreads, 5u) - 1), //at least two worker threads(what if we have a system with >260 threads?)
+        static_cast<U8>(std::max(hardwareThreads, 5u) - 1),
         TaskPool::TaskPoolType::TYPE_BLOCKING,
         [this](const std::thread::id& threadID) {
-        Attorney::PlatformContextKernel::onThreadCreated(platformContext(), threadID);
-    },
+            Attorney::PlatformContextKernel::onThreadCreated(platformContext(), threadID);
+        },
         "DIVIDE_WORKER_THREAD_"))
     {
         return ErrorCode::CPU_NOT_SUPPORTED;
@@ -628,10 +628,9 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     Attorney::ShaderProgramKernel::useShaderTextCache(config.debug.useShaderTextCache);
     Attorney::ShaderProgramKernel::useShaderBinaryCache(config.debug.useShaderBinaryCache);
 
-    DisplayWindow& window = winManager.getActiveWindow();
+    DisplayWindow& window = winManager.getMainWindow();
     window.setDimensions(config.runtime.splashScreen);
     window.changeType(WindowType::SPLASH);
-    winManager.handleWindowEvent(WindowEvent::APP_LOOP, -1, -1, -1);
 
     Console::printfn(Locale::get(_ID("START_SOUND_INTERFACE")));
     initError = _platformContext->sfx().initAudioAPI(*_platformContext);

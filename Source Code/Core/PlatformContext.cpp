@@ -97,7 +97,7 @@ Input::InputInterface& PlatformContext::input() {
 }
 
 DisplayWindow& PlatformContext::activeWindow() {
-    return app().windowManager().getActiveWindow();
+    return app().windowManager().getMainWindow();
 }
 
 Kernel& PlatformContext::kernel() {

@@ -200,7 +200,6 @@ bool Editor::init(const vec2<U16>& renderResolution) {
         if (_context.config().gui.imgui.multiViewportEnabled) {
             io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
             //io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoTaskBarIcons;
-            //io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoTaskBarIcons;
             //io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoMerge;
 
             //io.BackendFlags |= ImGuiBackendFlags_HasMouseHoveredViewport;
@@ -257,8 +256,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
                 descriptor.clearColour.set(0.0f, 0.0f, 0.0f, 1.0f);
                 descriptor.flags = /*to_U32(WindowDescriptor::Flags::HIDDEN) | */to_U32(WindowDescriptor::Flags::CLEAR_COLOUR) | to_U32(WindowDescriptor::Flags::CLEAR_DEPTH);
                 // We don't enable SDL_WINDOW_RESIZABLE because it enforce windows decorations
-                descriptor.flags |= (viewport->Flags & ImGuiViewportFlags_NoDecoration) ? 0 : to_U32(WindowDescriptor::Flags::DECORATED);
-                descriptor.flags |= (viewport->Flags & ImGuiViewportFlags_NoDecoration) ? 0 : to_U32(WindowDescriptor::Flags::RESIZEABLE);
+                descriptor.flags |= (viewport->Flags & ImGuiViewportFlags_NoDecoration) ? 0 : to_U32(WindowDescriptor::Flags::DECORATED) | to_U32(WindowDescriptor::Flags::RESIZEABLE);
                 descriptor.flags |= (viewport->Flags & ImGuiViewportFlags_TopMost) ? to_U32(WindowDescriptor::Flags::ALWAYS_ON_TOP) : 0;
                 descriptor.flags |= to_U32(WindowDescriptor::Flags::SHARE_CONTEXT);
 
@@ -270,6 +268,8 @@ bool Editor::init(const vec2<U16>& renderResolution) {
                 data->_window = &g_windowManager->getWindow(windowIndex);
                 data->_windowOwned = true;
                 viewport->PlatformHandle = (void*)data->_window;
+                data->_window->hidden(false);
+                data->_window->bringToFront();
             };
 
             platform_io.Platform_DestroyWindow = [](ImGuiViewport* viewport)
@@ -320,7 +320,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
 
             platform_io.Platform_SetWindowFocus = [](ImGuiViewport* viewport) {
                 ImGuiViewportData* data = (ImGuiViewportData*)viewport->PlatformUserData;
-                data->_window->hasFocus(true);
+                data->_window->bringToFront();
             };
 
             platform_io.Platform_GetWindowFocus = [](ImGuiViewport* viewport) -> bool {

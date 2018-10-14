@@ -50,7 +50,6 @@ SysInfo::SysInfo() : _availableRam(0),
                      _systemResolutionWidth(0),
                      _systemResolutionHeight(0)
 {
-    _focusedWindowHandle = std::make_unique<WindowHandle>();
 }
 
 SysInfo& sysInfo() {

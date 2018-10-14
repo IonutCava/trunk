@@ -74,7 +74,7 @@ DeferredShadingRenderer::DeferredShadingRenderer(PlatformContext& context, Resou
 
     RenderTargetDescriptor desc = {};
     desc._name = "Deferred";
-    desc._resolution = winManager.getActiveWindow().getDimensions();
+    desc._resolution = winManager.getMainWindow().getDimensions();
     desc._attachmentCount = to_U8(att.size());
     desc._attachments = att.data();
 

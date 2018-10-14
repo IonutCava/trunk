@@ -33,9 +33,7 @@ hashMap<CursorStyle, SDL_Cursor*> WindowManager::s_cursors;
 
 WindowManager::WindowManager()  noexcept 
    : _apiFlags(0),
-     _activeWindowGUID(-1),
      _mainWindowGUID(-1),
-     _focusedWindowGUID(-1),
      _context(nullptr)
 {
     SDL_Init(SDL_INIT_VIDEO);
@@ -94,7 +92,7 @@ ErrorCode WindowManager::init(PlatformContext& context,
 
     _apiFlags = createAPIFlags(api);
 
-    WindowDescriptor descriptor;
+    WindowDescriptor descriptor = {};
     descriptor.position = initialPosition;
     descriptor.dimensions = initialResolution;
     descriptor.targetDisplay = displayIndex;
@@ -117,9 +115,21 @@ ErrorCode WindowManager::init(PlatformContext& context,
     U32 idx = createWindow(descriptor, err);
 
     if (err == ErrorCode::NO_ERR) {
-        setActiveWindow(idx);
         _mainWindowGUID = _windows[idx]->getGUID();
-        _focusedWindowGUID = _mainWindowGUID;
+
+        _windows[idx]->addEventListener(WindowEvent::MINIMIZED, [this](const DisplayWindow::WindowEventArgs& args) {
+            ACKNOWLEDGE_UNUSED(args);
+            _context->app().mainLoopPaused(true);
+        });
+        _windows[idx]->addEventListener(WindowEvent::MAXIMIZED, [this](const DisplayWindow::WindowEventArgs& args) {
+            ACKNOWLEDGE_UNUSED(args);
+            _context->app().mainLoopPaused(false);
+        });
+        _windows[idx]->addEventListener(WindowEvent::RESTORED, [this](const DisplayWindow::WindowEventArgs& args) {
+            ACKNOWLEDGE_UNUSED(args);
+            _context->app().mainLoopPaused(false);
+        });
+
         GPUState& gState = _context->gfx().gpuState();
         // Query available display modes (resolution, bit depth per channel and
         // refresh rates)
@@ -206,6 +216,36 @@ U32 WindowManager::createWindow(const WindowDescriptor& descriptor, ErrorCode& e
             _windows.pop_back();
             MemoryManager::SAFE_DELETE(window);
         }
+
+        _windows[ret]->addEventListener(WindowEvent::RESIZED, [this](const DisplayWindow::WindowEventArgs& args) {
+            SizeChangeParams params;
+            params.width = to_U16(args.x);
+            params.height = to_U16(args.y);
+            params.isWindowResize = true;
+            params.isFullScreen = args._flag;
+            params.winGUID = args._windowGUID;
+
+            // Only if rendering window
+            _context->app().onSizeChange(params);
+        });
+
+        _windows[ret]->addEventListener(WindowEvent::CLOSE_REQUESTED, [this](const DisplayWindow::WindowEventArgs& args) {
+            Console::d_printfn(Locale::get(_ID("WINDOW_CLOSE_EVENT")), args._windowGUID);
+
+            if (_mainWindowGUID == args._windowGUID) {
+                _context->app().RequestShutdown();
+            } else {
+                for (DisplayWindow*& win : _windows) {
+                    if (win->getGUID() == args._windowGUID) {
+                        if (!destroyWindow(win)) {
+                            Console::errorfn(Locale::get(_ID("WINDOW_CLOSE_EVENT_ERROR")), args._windowGUID);
+                            win->hidden(true);
+                        }
+                        break;
+                    }
+                }
+            }
+        });
     }
 
     return ret;
@@ -238,30 +278,28 @@ void WindowManager::update(const U64 deltaTimeUS) {
 }
 
 void WindowManager::pollSDLEvents() {
-    static int s_KeyMod = 0;
-
     SDL_Event event;
-    while (SDL_PollEvent(&event))
-    {
+    while (SDL_PollEvent(&event)) {
+
         if (event.type == SDL_WINDOWEVENT) {
+            // Pass the window event to the proper window
             for (DisplayWindow* win : _windows) {
-                win->handleEvent(event);
+                if (win->_windowID == event.window.windowID) {
+                    win->handleEvent(event);
+                    break;
+                }
             }
             continue;
         }
 
-        DisplayWindow& focusedWindow = getWindow(_focusedWindowGUID);
-        DisplayWindow::WindowEventArgs args;
-        args._windowGUID = _focusedWindowGUID;
-
         switch(event.type) {
             case SDL_QUIT: {
-                handleWindowEvent(WindowEvent::APP_QUIT,
-                                  -1,
-                                  event.quit.type,
-                                  event.quit.timestamp);
+                _context->app().RequestShutdown();
             } break;
             case SDL_TEXTINPUT: {
+                DisplayWindow& focusedWindow = getFocusedWindow();
+                DisplayWindow::WindowEventArgs args = {};
+                args._windowGUID = focusedWindow.getGUID();
                 args._text = event.text.text;
                 focusedWindow.notifyListeners(WindowEvent::TEXT, args);
             } break;
@@ -278,17 +316,7 @@ void WindowManager::pollSDLEvents() {
 }
 
 bool WindowManager::anyWindowFocus() const {
-    for (DisplayWindow* win : _windows) {
-        if (win->hasFocus()) {
-            return true;
-        }
-    }
-    return false;
-}
-void WindowManager::setActiveWindow(U32 index) {
-    index = std::min(index, to_U32(_windows.size() -1));
-    _activeWindowGUID = _windows[index]->getGUID();
-    *sysInfo()._focusedWindowHandle = _windows[index]->handle();
+    return getFocusedWindow().hasFocus();
 }
 
 U32 WindowManager::createAPIFlags(RenderAPI api) {
@@ -450,7 +478,7 @@ void WindowManager::captureMouse(bool state) {
 
 void WindowManager::setCursorPosition(I32 x, I32 y, bool global) {
     if (!global) {
-        getActiveWindow().setCursorPosition(x, y);
+        getFocusedWindow().setCursorPosition(x, y);
     } else {
         SDL_WarpMouseGlobal(x, y);
     }
@@ -480,86 +508,14 @@ void WindowManager::setCaptureMouse(bool state) {
 }
 
 void WindowManager::snapCursorToCenter() {
-    const vec2<U16>& center = getActiveWindow().getDimensions();
+    const vec2<U16>& center = getFocusedWindow().getDimensions();
     setCursorPosition(to_I32(center.x * 0.5f), to_I32(center.y * 0.5f));
 }
 
-void WindowManager::handleWindowEvent(WindowEvent event, I64 winGUID, I32 data1, I32 data2, bool flag) {
-    switch (event) {
-        case WindowEvent::HIDDEN: {
-        } break;
-        case WindowEvent::SHOWN: {
-        } break;
-        case WindowEvent::MINIMIZED: {
-            if (_mainWindowGUID == winGUID) {
-                _context->app().mainLoopPaused(true);
-            }
-            getWindow(winGUID).minimized(true);
-        } break;
-        case WindowEvent::MAXIMIZED: {
-            getWindow(winGUID).minimized(false);
-        } break;
-        case WindowEvent::RESTORED: {
-            if (_mainWindowGUID == winGUID) {
-                _context->app().mainLoopPaused(false);
-            }
-
-            getWindow(winGUID).minimized(false);
-        } break;
-        case WindowEvent::LOST_FOCUS: {
-            getWindow(winGUID).hasFocus(false);
-        } break;
-        case WindowEvent::GAINED_FOCUS: {
-            getWindow(winGUID).hasFocus(true);
-            _focusedWindowGUID = winGUID;
-        } break;
-        case WindowEvent::RESIZED: {
-            U16 width = to_U16(data1);
-            U16 height = to_U16(data2);
-            if (flag) {
-                getWindow(winGUID).setDimensions(width, height);
-            }
-
-            if (_mainWindowGUID == winGUID) {
-                SizeChangeParams params;
-                params.width = width;
-                params.height = height;
-                params.isWindowResize = true;
-                params.isFullScreen = getWindow(winGUID).fullscreen();
-                params.winGUID = winGUID;
-
-                // Only if rendering window
-                _context->app().onSizeChange(params);
-            }
-            
-        } break;
-        case WindowEvent::APP_LOOP: {
-            //Nothing ... already handled
-        } break;
-        case WindowEvent::CLOSE_REQUESTED: {
-            Console::d_printfn(Locale::get(_ID("WINDOW_CLOSE_EVENT")), winGUID);
-
-            if (_mainWindowGUID == winGUID) {
-                handleWindowEvent(WindowEvent::APP_QUIT, -1, -1, -1);
-            } else {
-                
-                for (DisplayWindow*& win : _windows) {
-                    if (win->getGUID() == winGUID) {
-                        if (!destroyWindow(win)) {
-                            Console::errorfn(Locale::get(_ID("WINDOW_CLOSE_EVENT_ERROR")), winGUID);
-                            win->hidden(true);
-                        }
-                        break;
-                    }
-                }
-            }
-        } break;
-        case WindowEvent::APP_QUIT: {
-            for (DisplayWindow* win : _windows) {
-                win->hidden(true);
-            }
-            _context->app().RequestShutdown();
-        }break;
-    };
+void WindowManager::hideAll() {
+    for (DisplayWindow* win : _windows) {
+        win->hidden(true);
+    }
 }
+
 }; //namespace Divide

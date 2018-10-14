@@ -104,7 +104,7 @@ void Application::stop() {
 }
 
 void Application::warmup(const Configuration& config) {
-    DisplayWindow& window = _windowManager.getActiveWindow();
+    DisplayWindow& window = _windowManager.getMainWindow();
 
     vec2<U16> previousDimensions = window.getPreviousDimensions();
     Console::printfn(Locale::get(_ID("START_MAIN_LOOP")));
@@ -133,22 +133,20 @@ bool Application::step() {
         Attorney::KernelApplication::onLoop(*_kernel);
         return true;
     }
+    windowManager().hideAll();
 
     return false;
 }
 
 bool Application::onLoop() {
-    _windowManager.handleWindowEvent(WindowEvent::APP_LOOP, -1, -1, -1);
-
-    {
-        UniqueLock r_lock(_taskLock);
-        if (!_mainThreadCallbacks.empty()) {
-            while(!_mainThreadCallbacks.empty()) {
-                _mainThreadCallbacks.back()();
-                _mainThreadCallbacks.pop_back();
-            }
+    UniqueLock r_lock(_taskLock);
+    if (!_mainThreadCallbacks.empty()) {
+        while(!_mainThreadCallbacks.empty()) {
+            _mainThreadCallbacks.back()();
+            _mainThreadCallbacks.pop_back();
         }
     }
+
 
     return mainLoopActive();
 }

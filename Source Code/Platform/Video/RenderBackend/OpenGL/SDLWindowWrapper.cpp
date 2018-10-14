@@ -95,7 +95,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     // Fill our (abstract API <-> openGL) enum translation tables with proper values
     GLUtil::fillEnumTables();
 
-    const DisplayWindow& window = _context.parent().platformContext().app().windowManager().getActiveWindow();
+    const DisplayWindow& window = _context.context().app().windowManager().getMainWindow();
     g_ContextPool.init((size_t)HARDWARE_THREAD_COUNT() * 2, window);
 
     SDL_GL_MakeCurrent(window.getRawWindow(), (SDL_GLContext)window.userData());

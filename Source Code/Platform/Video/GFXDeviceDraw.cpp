@@ -187,7 +187,7 @@ void GFXDevice::drawText(const TextElementBatch& batch) {
 }
 
 void GFXDevice::drawTextureInRenderWindow(TextureData data, GFX::CommandBuffer& bufferInOut) const {
-    const vec2<U16>& dim = context().app().windowManager().getActiveWindow().getDimensions();
+    const vec2<U16>& dim = context().app().windowManager().getMainWindow().getDimensions();
     drawTextureInViewport(data, Rect<I32>(0, 0, dim.width, dim.height), bufferInOut);
 }
 

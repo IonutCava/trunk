@@ -354,7 +354,7 @@ void GFXDevice::stepResolution(bool increment) {
     WindowManager& winManager = _parent.platformContext().app().windowManager();
 
     vector<GPUState::GPUVideoMode>::const_iterator it;
-    const vector<GPUState::GPUVideoMode>& displayModes = _state.getDisplayModes(winManager.getActiveWindow().currentDisplayIndex());
+    const vector<GPUState::GPUVideoMode>& displayModes = _state.getDisplayModes(winManager.getMainWindow().currentDisplayIndex());
 
     bool found = false;
     vec2<U16> foundRes;
@@ -387,16 +387,16 @@ void GFXDevice::stepResolution(bool increment) {
 void GFXDevice::toggleFullScreen() {
     WindowManager& winManager = _parent.platformContext().app().windowManager();
 
-    switch (winManager.getActiveWindow().type()) {
+    switch (winManager.getMainWindow().type()) {
         case WindowType::WINDOW:
         case WindowType::SPLASH:
-            winManager.getActiveWindow().changeType(WindowType::FULLSCREEN_WINDOWED);
+            winManager.getMainWindow().changeType(WindowType::FULLSCREEN_WINDOWED);
             break;
         case WindowType::FULLSCREEN_WINDOWED:
-            winManager.getActiveWindow().changeType(WindowType::FULLSCREEN);
+            winManager.getMainWindow().changeType(WindowType::FULLSCREEN);
             break;
         case WindowType::FULLSCREEN:
-            winManager.getActiveWindow().changeType(WindowType::WINDOW);
+            winManager.getMainWindow().changeType(WindowType::WINDOW);
             break;
     };
 }

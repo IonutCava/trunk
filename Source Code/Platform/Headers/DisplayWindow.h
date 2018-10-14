@@ -69,16 +69,17 @@ enum class WindowEvent : U8 {
     RESTORED = 4,
     LOST_FOCUS = 5,
     GAINED_FOCUS = 6,
-    RESIZED = 7,
-    MOVED = 8,
-    APP_LOOP = 9,
-    CLOSE_REQUESTED = 10,
-    KEY_PRESS = 11,
-    MOUSE_MOVE = 12,
-    MOUSE_BUTTON = 13,
-    MOUSE_WHEEL = 14,
-    TEXT = 15,
-    APP_QUIT = 16,
+    MOUSE_HOVER_ENTER = 7,
+    MOUSE_HOVER_LEAVE = 8,
+    RESIZED = 9,
+    MOVED = 10,
+    APP_LOOP = 11,
+    CLOSE_REQUESTED = 12,
+    KEY_PRESS = 13,
+    MOUSE_MOVE = 14,
+    MOUSE_BUTTON = 15,
+    MOUSE_WHEEL = 16,
+    TEXT = 17,
     COUNT
 };
 
@@ -88,11 +89,12 @@ enum class WindowFlags : U16 {
     CLEAR_DEPTH = toBit(3),
     SWAP_BUFFER = toBit(4),
     HAS_FOCUS = toBit(5),
-    MINIMIZED = toBit(6),
-    MAXIMIZED = toBit(7),
-    HIDDEN = toBit(8),
-    WARP = toBit(9),
-
+    IS_HOVERED = toBit(6),
+    MINIMIZED = toBit(7),
+    MAXIMIZED = toBit(8),
+    HIDDEN = toBit(9),
+    WARP = toBit(10),
+    COUNT
 };
 
 namespace Input {
@@ -147,7 +149,6 @@ public:
     inline void swapBuffers(const bool state);
 
     inline bool hasFocus() const;
-           void hasFocus(const bool state);
 
     inline bool minimized() const;
            void minimized(const bool state);
@@ -173,9 +174,11 @@ public:
     inline const FColour& clearColour() const;
     inline const FColour& clearColour(bool &clearColour, bool &clearDepth) const;
 
-    /// dimensionX and dimensionY get adjusted to the closest supported value
-    bool setDimensions(U16& dimensionX, U16& dimensionY);
+    /// width and height get adjusted to the closest supported value
+    bool setDimensions(U16& width, U16& height);
     bool setDimensions(vec2<U16>& dimensions);
+
+    void bringToFront() const;
 
     vec2<U16> getDimensions() const;
     vec2<U16> getPreviousDimensions() const;
@@ -183,7 +186,7 @@ public:
     vec2<U16> getDrawableSize() const;
     vec2<I32> getPosition(bool global = false) const;
 
-           void setPosition(I32 positionX, I32 positionY, bool global = false);
+           void setPosition(I32 x, I32 y, bool global = false);
     inline void setPosition(const vec2<I32>& position, bool global = false);
 
     inline const stringImpl& title() const;
@@ -192,7 +195,7 @@ public:
     inline const WindowHandle& handle() const;
 
     /// Mouse positioning is handled by SDL
-           void setCursorPosition(I32 x, I32 y);
+    void setCursorPosition(I32 x, I32 y);
 
     inline I64 addEventListener(WindowEvent windowEvent, const EventListener& listener);
     inline void removeEventlistener(WindowEvent windowEvent, I64 listenerGUID);
@@ -215,8 +218,6 @@ public:
 
 private:
     void restore();
-    /// Internally change window size
-    bool setDimensionsInternal(U16& w, U16& h);
     /// Centering is also easier via SDL
     void centerWindowPosition();
     /// Changing from one window type to another
@@ -259,8 +260,7 @@ private:
     stringImpl _title;
     /// Did we generate the window move event?
     bool _internalMoveEvent;
-    /// Did we resize the window via an OS call?
-    bool _externalResizeEvent;
+    bool _internalResizeEvent;
 
     Rect<I32> _warpRect;
     Rect<I32> _renderingViewport;

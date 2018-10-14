@@ -106,7 +106,6 @@ struct SysInfo {
     int _systemResolutionWidth;
     int _systemResolutionHeight;
     FileWithPath _pathAndFilename;
-    std::unique_ptr<WindowHandle> _focusedWindowHandle;
 };
 
 SysInfo& sysInfo();

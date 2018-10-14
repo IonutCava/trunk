@@ -59,11 +59,11 @@ struct WindowDescriptor {
     vec2<I16> position;
     vec2<U16> dimensions;
     FColour clearColour = DefaultColours::DIVIDE_BLUE;
-    U32 flags = to_U32(to_base(Flags::DECORATED) |
-                to_base(Flags::RESIZEABLE) |
-                to_base(Flags::ALLOW_HIGH_DPI) |
-                to_base(Flags::CLEAR_DEPTH) | 
-                to_base(Flags::CLEAR_COLOUR));
+    U32 flags = to_U32(Flags::DECORATED) |
+                to_U32(Flags::RESIZEABLE) |
+                to_U32(Flags::ALLOW_HIGH_DPI) |
+                to_U32(Flags::CLEAR_DEPTH) |
+                to_U32(Flags::CLEAR_COLOUR);
 };
 
 class PlatformContext;
@@ -86,17 +86,14 @@ public:
                    I32 targetDisplayIndex);
 
     void close();
+    void hideAll();
 
     void update(const U64 deltaTimeUS);
 
     bool anyWindowFocus() const;
 
-    void setActiveWindow(U32 index);
     U32 createWindow(const WindowDescriptor& descriptor, ErrorCode& err);
     bool destroyWindow(DisplayWindow*& window);
-
-    inline I32 targetDisplay() const;
-    inline void targetDisplay(I32 displayIndex);
 
     void setCursorPosition(I32 x, I32 y, bool global = false);
     void snapCursorToCenter();
@@ -108,8 +105,8 @@ public:
     inline DisplayWindow& getMainWindow();
     inline const DisplayWindow& getMainWindow() const;
 
-    inline DisplayWindow& getActiveWindow();
-    inline const DisplayWindow& getActiveWindow() const;
+    inline DisplayWindow& getFocusedWindow();
+    inline const DisplayWindow& getFocusedWindow() const;
 
     inline DisplayWindow& getWindow(I64 guid);
     inline const DisplayWindow& getWindow(I64 guid) const;
@@ -120,8 +117,6 @@ public:
     inline U32 getWindowCount() const;
 
     inline const vector<MonitorData>& monitorData() const;
-
-    void handleWindowEvent(WindowEvent event, I64 winGUID, I32 data1, I32 data2, bool flag = false);
 
     vec2<U16> getFullscreenResolution() const;
 
@@ -140,9 +135,7 @@ protected:
 
 protected:
     U32 _apiFlags;
-    I64 _activeWindowGUID;
     I64 _mainWindowGUID;
-    I64 _focusedWindowGUID;
 
     vector<MonitorData> _monitors;
     PlatformContext* _context;
