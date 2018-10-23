@@ -134,7 +134,8 @@ protected:
 
 protected:
     U32 createAPIFlags(RenderAPI api);
-    ErrorCode configureAPISettings(DisplayWindow* window, U32 descriptorFlags);
+    ErrorCode configureAPISettings(U32 descriptorFlags);
+    ErrorCode applyAPISettings(DisplayWindow* window, U32 descriptorFlags);
     void destroyAPISettings(DisplayWindow* window);
 
 protected:

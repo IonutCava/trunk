@@ -1954,7 +1954,10 @@ const char* ChooseFileMainMethod(Dialog& ist,const char* directory,const bool _i
             ImVec4& c = ColorSet[i];
             const ImVec4& r = style.Colors[i<sz ? ((int)ImGuiCol_Button + i) : ImGuiCol_Text];
             Internal::ColorCombine(c,r,zdf);
-            if (c.x>1.f) c.x=1.f;if (c.y>1.f) c.y=1.f;if (c.z>1.f) c.z=1.f;if (c.w>1.f) c.w=1.f;
+            if (c.x>1.f) c.x=1.f;
+            if (c.y>1.f) c.y=1.f;
+            if (c.z>1.f) c.z=1.f;
+            if (c.w>1.f) c.w=1.f;
             if (i<sz) c.w *= zdf.w;
         }
         if (dummyButtonColor.w>0)   {
@@ -2737,7 +2740,7 @@ const char* ChooseFileMainMethod(Dialog& ist,const char* directory,const bool _i
         }
 
         bool mustCancel = false;
-        if (ImGui::Button("Cancel")) mustCancel = true;ImGui::SameLine();   // Optional line
+        if (ImGui::Button("Cancel")) {mustCancel = true;} ImGui::SameLine();   // Optional line
 
         if (isSelectFolderDialog)  selectionButtonPressed = ImGui::Button("Select");
         else selectionButtonPressed = ImGui::Button("Save");

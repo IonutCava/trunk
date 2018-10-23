@@ -85,11 +85,15 @@ inline static void GetVerticalGradientTopAndBottomColors(ImU32 c,float fillColor
     const int A = (unsigned char) (c>>IM_COL32_A_SHIFT);
 
     int r = R+fcgi, g = G+fcgi, b = B+fcgi;
-    if (r>255) r=255;if (g>255) g=255;if (b>255) b=255;
+    if (r>255) r=255;
+    if (g>255) g=255;
+    if (b>255) b=255;
     if (negative) bc = IM_COL32(r,g,b,A); else tc = IM_COL32(r,g,b,A);
 
     r = R-fcgi; g = G-fcgi; b = B-fcgi;
-    if (r<0) r=0;if (g<0) g=0;if (b<0) b=0;
+    if (r<0) r=0;
+    if (g<0) g=0;
+    if (b<0) b=0;
     if (negative) tc = IM_COL32(r,g,b,A); else bc = IM_COL32(r,g,b,A);
 
     // Old legacy code (to remove)... [However here we lerp alpha too...]
@@ -2406,6 +2410,7 @@ bool FieldInfo::render(int nodeWidth)   {
         float* pColor = (float*) f.pdata;
         if (f.numArrayElements==3) changed|=ImGui::ColorEdit3(label,pColor);//,ImGuiColorEditFlags_NoAlpha);
         else changed|=ImGui::ColorEdit4(label,pColor);//,ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreview);
+        break;
     }
     case FT_CUSTOM: {
         if (f.renderFieldDelegate) changed = f.renderFieldDelegate(f);

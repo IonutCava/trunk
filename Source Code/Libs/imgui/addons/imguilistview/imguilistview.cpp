@@ -149,7 +149,7 @@ bool ListViewBase::render(float listViewHeight, const ImVector<int> *pOptionalCo
                 isThisRowSelected = (selectedRow == row);
                 mustDisplayEditor = isThisRowSelected && hdEditable && selectedColumn==col && hd->type.headerType!=HT_CUSTOM  && hd->type.headerType!=HT_ICON && editorAllowed;
 
-                if (colID==0 && row==scrollToRow) ImGui::SetScrollHere();
+                if (colID==0 && row==scrollToRow) ImGui::SetScrollHereY();
 
                 cd.reset();
                 getCellData((size_t)row,col,cd);
@@ -561,7 +561,8 @@ void TestListView() {
     }
 
     // 2 lines just to have some feedback
-    if (ImGui::Button("Scroll to selected row")) lv.scrollToSelectedRow();ImGui::SameLine();
+    if (ImGui::Button("Scroll to selected row")) lv.scrollToSelectedRow();
+    ImGui::SameLine();
     ImGui::Text("selectedRow:%d selectedColumn:%d isInEditingMode:%s",lv.getSelectedRow(),lv.getSelectedColumn(),lv.isInEditingMode() ? "true" : "false");
 
     /*

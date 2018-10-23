@@ -169,7 +169,7 @@ namespace Divide {
     }
 
     void getWindowHandle(void* window, WindowHandle& handleOut) {
-        SDL_SysWMinfo wmInfo;
+        SDL_SysWMinfo wmInfo = {};
         SDL_VERSION(&wmInfo.version);
         SDL_GetWindowWMInfo(static_cast<SDL_Window*>(window), &wmInfo);
         handleOut._handle = wmInfo.info.win.window;

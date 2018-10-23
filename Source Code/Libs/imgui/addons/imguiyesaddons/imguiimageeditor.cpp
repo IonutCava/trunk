@@ -232,7 +232,7 @@ static unsigned char* ZlibCompressFromMemoryStbWrite(const unsigned char* memory
 #ifndef LODEPNG_H
 #if (!defined(IMGUIIMAGEEDITOR_NO_LODEPNG_IMPLEMENTATION) && !defined(IMGUIIMAGEEDITOR_NO_LODE_PNG_IMPLEMENTATION))
 #include "imguiimageeditor_plugins/lodepng.cpp"
-#else ////IMGUIIMAGEEDITOR_NO_LODEPNG_IMPLEMENTATION
+#else //IMGUIIMAGEEDITOR_NO_LODEPNG_IMPLEMENTATION
 #include "imguiimageeditor_plugins/loadpng.h"
 #endif //IMGUIIMAGEEDITOR_NO_LODEPNG_IMPLEMENTATION
 #endif //LODEPNG_H
@@ -299,6 +299,22 @@ static unsigned char* ZlibCompressFromMemoryStbWrite(const unsigned char* memory
 #include "imguiimageeditor_plugins/tiny_ico.h"
 #endif //TINY_ICO_H
 #endif //IMGUIIMAGEEDITOR_NO_TINY_ICO_PLUGIN
+
+#ifndef IMGUIIMAGEEDITOR_NO_NANOSVG_PLUGIN
+#ifndef NANOSVGRAST_H
+#ifndef IMGUIIMAGEEDITOR_NO_NANOSVG_IMPLEMENTATION
+#define NANOSVG_ALL_COLOR_KEYWORDS
+#define NANOSVG_IMPLEMENTATION
+#define NANOSVGRAST_IMPLEMENTATION
+#endif //IMGUIIMAGEEDITOR_NO_NANOSVG_PLUGIN
+//extern "C"  {
+#include "imguiimageeditor_plugins/nanosvg.h"
+#include "imguiimageeditor_plugins/nanosvgrast.h"
+//}
+#define _SVG_
+#endif //NANOSVGRAST_H
+#endif //IMGUIIMAGEEDITOR_NO_NANOSVG_PLUGIN
+
 
 #ifdef IMGUI_USE_LIBTIFF    // This needs libtiff
 extern "C" {
@@ -543,6 +559,40 @@ static unsigned char* webp_load_from_memory(const char* buffer,int size,int& w,i
 }
 #endif //_WEBP_
 
+#ifdef _SVG_
+static unsigned char* svg_load_from_memory(const char* buffer,int size,int& w,int& h,int &c) {
+    if (!buffer || size<=0) return NULL;
+    w=h=0;c=4;
+
+    NSVGrasterizer *rast = nsvgCreateRasterizer();
+    if (!rast) return NULL;
+    char* cbuffer = (char*) buffer; // nsvgParse changes the string and needs a zero-terminated string...
+    //IM_ASSERT(cbuffer[size-1]=='\0'); // .svg files are XML based, but our loading generic method is binary... so this will always assert!
+    cbuffer[size-1]='\0';   // bad stuff but prevents worse things from happening
+    NSVGimage *image = nsvgParse(cbuffer,"px",96);
+    if (!image) {
+        nsvgDeleteRasterizer(rast);
+        nsvgDelete(image);
+        return NULL;
+    }
+    w = (int)image->width;
+    h = (int)image->height;
+
+    unsigned char* data = (unsigned char*)STBI_MALLOC(w*h*c);
+    if (!data) {
+        nsvgDeleteRasterizer(rast);
+        nsvgDelete(image);
+        return NULL;
+    }
+    nsvgRasterize(rast, image, 0,0,1, data, w, h, w*c);
+
+    nsvgDeleteRasterizer(rast);
+    nsvgDelete(image);
+
+    return data;
+}
+#endif //_SVG_
+
 // Some old compilers don't have round
 static float round(float x) {return x >= 0.0f ? floor(x + 0.5f) : ceil(x - 0.5f);}
 
@@ -618,7 +668,7 @@ bool ImageZoomAndPan(ImTextureID user_texture_id, const ImVec2& size,float aspec
     // Here we use the whole size (although it can be partially empty)
     ImRect bb(window->DC.CursorPos, ImVec2(window->DC.CursorPos.x + wndSz.x,window->DC.CursorPos.y + wndSz.y));
     ImGui::ItemSize(bb);
-    if (!ImGui::ItemAdd(bb, NULL)) return rv;
+    if (!ImGui::ItemAdd(bb, 0, NULL)) return rv;
 
     ImVec2 imageSz = wndSz;
     ImVec2 remainingWndSize(0,0);
@@ -931,6 +981,9 @@ static void InitSupportedFileExtensions() {
 #       endif
 #       ifdef _WEBP_
         strcat(p,".webp;");
+#       endif
+#       ifdef _SVG_
+        strcat(p,".svg;");
 #       endif
 #       ifndef STBI_NO_BMP
         strcat(p,".bmp;");
@@ -1568,7 +1621,9 @@ static bool ApplyLightEffect(unsigned char* im,int w,int h, int c,int lightStren
                 Dx = (double)x / wf;
                 total = (int) ImGuiIE::round (extension * (0.5 - sqrt (Dx * Dy)));  //should be a number between -extension/2 and extension/2
                 R = (int)pim[0] + total;G = (int)pim[1] + total;B = (int)pim[2] + total;if (hasAlpha) A = (int)pim[3];
-                if (R < 0) R = 0;if (G < 0) G = 0;if (B < 0) B = 0;
+                if (R < 0) R = 0;
+                if (G < 0) G = 0;
+                if (B < 0) B = 0;
                 if (!clampColorComponentsAtAlpha) {if (R>255) R=255;if (G>255) G=255;if (B>255) B=255;}
                 else {if (B > A) B = A;if (G > A) G = A;if (R > A) R = A;}
                 *pim++ = (unsigned char)R;*pim++ = (unsigned char)G;*pim++ = (unsigned char)B;if (hasAlpha) pim++;
@@ -1591,7 +1646,9 @@ static bool ApplyLightEffect(unsigned char* im,int w,int h, int c,int lightStren
                 sqrtValue = (double) sqrt (Dx*Dx+Dy*Dy)/(float)hwf;
                 total = (int) ImGuiIE::round (extension * (0.5-sqrtValue));  //should be a number between -extension/2 and extension/2
                 R = (int)pim[0] + total;G = (int)pim[1] + total;B = (int)pim[2] + total;if (hasAlpha) A = (int)pim[3];
-                if (R < 0) R = 0;if (G < 0) G = 0;if (B < 0) B = 0;
+                if (R < 0) R = 0;
+                if (G < 0) G = 0;
+                if (B < 0) B = 0;
                 if (!clampColorComponentsAtAlpha) {if (R>255) R=255;if (G>255) G=255;if (B>255) B=255;}
                 else {if (B > A) B = A;if (G > A) G = A;if (R > A) R = A;}
                 *pim++ = (unsigned char)R;*pim++ = (unsigned char)G;*pim++ = (unsigned char)B;if (hasAlpha) pim++;
@@ -1610,7 +1667,9 @@ static bool ApplyLightEffect(unsigned char* im,int w,int h, int c,int lightStren
                 dist = 0.5 * (1.0 - (Dx + Dy)); //-0.5<dist<0.5
                 total = (int) ImGuiIE::round (dist * extension); //should be a number between -extension/2 and extension/2
                 R = (int)pim[0] + total;G = (int)pim[1] + total;B = (int)pim[2] + total;if (hasAlpha) A = (int)pim[3];
-                if (R < 0) R = 0;if (G < 0) G = 0;if (B < 0) B = 0;
+                if (R < 0) R = 0;
+                if (G < 0) G = 0;
+                if (B < 0) B = 0;
                 if (!clampColorComponentsAtAlpha) {if (R>255) R=255;if (G>255) G=255;if (B>255) B=255;}
                 else {if (B > A) B = A;if (G > A) G = A;if (R > A) R = A;}
                 *pim++ = (unsigned char)R;*pim++ = (unsigned char)G;*pim++ = (unsigned char)B;if (hasAlpha) pim++;
@@ -4664,8 +4723,10 @@ struct StbImage {
                         const int W = finalSelection.Max.x - finalSelection.Min.x;
                         const int H = finalSelection.Max.y - finalSelection.Min.y;
                         int X = finalSelection.Min.x+offset,Y = finalSelection.Min.y;if (wrapMode) X%=w;
-                        if (X+W>w) X = w-W;if (Y+H>h) Y = h-H;
-                        if (X<0) X=0;if (Y<0) Y=0;
+                        if (X+W>w) X = w-W;
+                        if (Y+H>h) Y = h-H;
+                        if (X<0) X=0;
+                        if (Y<0) Y=0;
                         finalSelection.Min.x=X;finalSelection.Min.y=Y;
                         finalSelection.Max.x=X+W;finalSelection.Max.y=Y+H;
                     }
@@ -4715,7 +4776,8 @@ struct StbImage {
                         const int W = finalSelection.Max.x - finalSelection.Min.x;
                         const int H = finalSelection.Max.y - finalSelection.Min.y;
                         int X = finalSelection.Min.x,Y = finalSelection.Min.y;
-                        if (X+W>w) X = w-W;if (Y+H>h) Y = h-H;
+                        if (X+W>w) X = w-W;
+                        if (Y+H>h) Y = h-H;
                         finalSelection.Min.x=X;finalSelection.Min.y=Y;
                         finalSelection.Max.x=X+W;finalSelection.Max.y=Y+H;
                     }
@@ -4744,8 +4806,10 @@ struct StbImage {
                         const int W = finalSelection.Max.x - finalSelection.Min.x;
                         const int H = finalSelection.Max.y - finalSelection.Min.y;
                         int X = finalSelection.Min.x,Y = finalSelection.Min.y+offset;if (wrapMode) Y%=h;
-                        if (X+W>w) X = w-W;if (Y+H>h) Y = h-H;
-                        if (X<0) X=0;if (Y<0) Y=0;
+                        if (X+W>w) X = w-W;
+                        if (Y+H>h) Y = h-H;
+                        if (X<0) X=0;
+                        if (Y<0) Y=0;
                         finalSelection.Min.x=X;finalSelection.Min.y=Y;
                         finalSelection.Max.x=X+W;finalSelection.Max.y=Y+H;
                     }
@@ -4989,10 +5053,15 @@ struct StbImage {
             image = ImGuiIE::tiff_load_from_memory((const char*) buffer,size,w,h,c);
 #           endif //_TIFF_
         }
-        else if (ext && ((strcmp(ext,".webp")==0) || (strcmp(ext,".webp")==0)))   {
+        else if (ext && (strcmp(ext,".webp")==0))   {
 #           ifdef _WEBP_
             image = ImGuiIE::webp_load_from_memory((const char*) buffer,size,w,h,c);
 #           endif //_WEBP_
+        }
+        else if (ext && (strcmp(ext,".svg")==0))   {
+#           ifdef _SVG_
+            image = ImGuiIE::svg_load_from_memory((const char*) buffer,size,w,h,c);
+#           endif //_SVG_
         }
         else if (!image) image = stbi_load_from_memory(buffer,size,&w,&h,&c,0);
         if (!image) return false;
@@ -6479,7 +6548,7 @@ struct StbImage {
         // Here we use the whole size (although it can be partially empty)
         ImRect bb(window->DC.CursorPos, ImVec2(window->DC.CursorPos.x + wndSz.x,window->DC.CursorPos.y + wndSz.y));
         ImGui::ItemSize(bb);
-        if (!ImGui::ItemAdd(bb, NULL)) {ImGui::PopID();return rv;}
+        if (!ImGui::ItemAdd(bb, 0, NULL)) {ImGui::PopID();return rv;}
 
         imageSz = wndSz;
         ImVec2 remainingWndSize(0,0);

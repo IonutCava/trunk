@@ -76,7 +76,7 @@ NOTES:
 /*
  * IMGUIIMAGEEDITOR_STBIMAGE_PATH           - (default:"./addons/imguibindings/stb_image.h")
  *
- * IMGUIIMAGEEDITOR_ENABLE_NON_STB_PLUGINS  - Enables support for saving .gif and for loading/saving .ico files
+ * IMGUIIMAGEEDITOR_ENABLE_NON_STB_PLUGINS  - Enables support for saving .gif, for loading/saving .ico files and for loading .svg files.
  *                                          - Overrides the .png and .jpg encoders from <stb_image_write.h> to
  *                                            lodePng.h and tiny_jpeg.h (Each can be reverted by defining
  *                                            IMGUIIMAGEEDITOR_NO_LODEPNG_PLUGIN and/or
@@ -90,6 +90,7 @@ NOTES:
  *                                            IMGUIIMAGEEDITOR_NO_TINY_JPEG_PLUGIN      // <stb_image_write.h> fallback
  *                                            IMGUIIMAGEEDITOR_NO_JO_GIF_PLUGIN
  *                                            IMGUIIMAGEEDITOR_NO_TINY_ICO_PLUGIN
+ *                                            IMGUIIMAGEEDITOR_NO_NANOSVG_PLUGIN
  *                                            When not used, these plugins can be safely deleted from the plugin folder.
  *
  *                                            [Experimental]: when IMGUIIMAGEEDITOR_ENABLE_NON_STB_PLUGINS is defined,
@@ -128,6 +129,16 @@ NOTES:
 */
 
 /* CHANGELOG:
+ IMGUIIMAGEEDITOR_VERSION 0.33
+ * Added .svg support (loading only): nanosvg.h and nanosvgrast.h added to the plugin folder.
+ * TOFIX (if possible): I've just discovered that on gcc version 7.3.0, the lodepng plugin is broken:
+ *                      when I compile with these defs: YES_IMGUIIMAGEEDITOR IMGUIIMAGEEDITOR_ENABLE_NON_STB_PLUGINS
+ *                      I get:
+ *                      /usr/include/c++/7/cstdlib:75: error: stdlib.h: No such file or directory
+ *                      #include_next <stdlib.h>
+ *                                     ^~~~~~~~~~
+ *                      Hard to debug... luckily I can just disable it by compiling with: YES_IMGUIIMAGEEDITOR IMGUIIMAGEEDITOR_ENABLE_NON_STB_PLUGINS IMGUIIMAGEEDITOR_NO_LODEPNG_PLUGIN
+
  IMGUIIMAGEEDITOR_VERSION 0.32
  * Updated stb_image_write.h
  * Now if stb_image_write.h is used to save .png files
@@ -194,7 +205,7 @@ NOTES:
  * Added an optional callback SetImageEditorEventCallback(...)
 */
 
-#define IMGUIIMAGEEDITOR_VERSION 0.31
+#define IMGUIIMAGEEDITOR_VERSION 0.33
 
 namespace ImGui {
 

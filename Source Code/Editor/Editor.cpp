@@ -47,7 +47,6 @@ namespace {
     {
         DisplayWindow*  _window = nullptr;
         bool            _windowOwned = false;
-        Uint32          _windowID = 0;
 
         ~ImGuiViewportData() { IM_ASSERT(_window == nullptr); }
     };
@@ -247,7 +246,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
                 WindowDescriptor descriptor = {};
                 descriptor.title = "No Title Yet";
                 descriptor.targetDisplay = g_windowManager->getWindow(0u).currentDisplayIndex();
-                descriptor.clearColour.set(0.0f, 0.0f, 0.0f, 1.0f);
+                descriptor.clearColour.set(1.0f, 0.0f, 0.0f, 1.0f);
                 descriptor.flags = to_U32(WindowDescriptor::Flags::HIDDEN) | to_U32(WindowDescriptor::Flags::CLEAR_COLOUR) | to_U32(WindowDescriptor::Flags::CLEAR_DEPTH);
                 // We don't enable SDL_WINDOW_RESIZABLE because it enforce windows decorations
                 descriptor.flags |= (viewport->Flags & ImGuiViewportFlags_NoDecoration) ? 0 : to_U32(WindowDescriptor::Flags::DECORATED) | to_U32(WindowDescriptor::Flags::RESIZEABLE);
@@ -354,16 +353,16 @@ bool Editor::init(const vec2<U16>& renderResolution) {
                 context->gfx().endFrame(*(DisplayWindow*)viewport->PlatformHandle, false);
             };
 
+            ImGuiViewport* main_viewport = ImGui::GetMainViewport();
+            main_viewport->PlatformHandle = _mainWindow;
+
             ImGui_UpdateMonitors();
 
             ImGuiViewportData* data = IM_NEW(ImGuiViewportData)();
             data->_window = _mainWindow;
-            data->_windowID = SDL_GetWindowID(_mainWindow->getRawWindow());
             data->_windowOwned = false;
 
-            ImGuiViewport* main_viewport = ImGui::GetMainViewport();
             main_viewport->PlatformUserData = data;
-            main_viewport->PlatformHandle = _mainWindow;
         } else {
             ImGuiViewport* main_viewport = ImGui::GetMainViewport();
             main_viewport->PlatformHandle = _mainWindow;

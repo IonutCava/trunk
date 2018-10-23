@@ -47,13 +47,23 @@ inline int size() const {
     if (base::size()<1) return 0;
     return base::size()-1;
 }
+inline int capacity() const {
+    if (base::capacity()<1) return 0;
+    return base::capacity()-1;	
+}
 inline int length() const {
     return size();
 }
 inline bool empty() const {
     return size()==0;
 }
-
+inline void resize(int newSize,char ch=' ') {
+    if (newSize<0) newSize=0;
+    const int oldSize = size();
+	base::resize(newSize+1);
+    for (int i=oldSize;i<newSize;i++) operator[](i)=ch;
+	operator[](newSize)='\0';
+}	
 inline const char* c_str() const {
     return (internalSize()>0 ? &operator[](0) : NULL);
 }
@@ -123,7 +133,7 @@ inline const ImString& operator+=(const char* other) {
 inline const ImString& operator+=(const char c) {
     const int curSize = internalSize();
     if (curSize==0) {
-        resize(2);
+        base::resize(2);
         operator[](0) = c;
         operator[](1) = '\0';
     }
@@ -186,7 +196,7 @@ inline const ImString substr(int beg,int cnt=-1) const {
     const int sz = size();
     if (beg>=sz) return ImString("");
     if (cnt==-1) cnt = sz - beg;
-    ImString rv;rv.resize(cnt+1);
+    ImString rv;rv.resize(cnt);
     for (int i=0;i<cnt;i++) {
         rv.operator [](i) = this->operator [](beg+i);
     }
@@ -204,7 +214,6 @@ inline int internalSize() const {
 inline void reserve(int i) {
     return base::reserve(i);
 }
-inline void resize(int i) {base::resize(i);}
 inline void clear() {base::clear();}
 inline int findLinearSearch(const char c) {
     for (int i=0,sz=size();i<sz;i++)    {

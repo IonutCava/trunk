@@ -280,6 +280,7 @@ private:
 
     static I64 s_cursorWindowGUID;
     void *_userData = nullptr;
+
     // Varies from OS to OS
     WindowHandle _handle;
 

@@ -1284,7 +1284,8 @@ namespace ImGuiMiniGames {
 
                 // draw cells:
                 int state=0;unsigned char userNumber=0,solutionNumber=0,annotationNumber=0;
-                float annotGlyphWidth=0;ImVec2 annotOffset(0,0);
+                //float annotGlyphWidth=0;
+                ImVec2 annotOffset(0,0);
                 const float annotCellSize = (GRID_SZ-grid_Line_width)*0.3334f;
                 static char charNum[2] = "0";
                 const ImVec2 baseStart = win_pos+gridOffset+ImVec2(0.f/*grid_Line_width*/,grid_Line_width);
@@ -1317,7 +1318,7 @@ namespace ImGuiMiniGames {
                             if (userNumber==0)    {
                                 if (state&CS_ANNOTATION_PRESENT)	{
                                     // Draw all annotations
-                                    annotationNumber = 0;annotGlyphWidth=0;
+                                    annotationNumber = 0;//annotGlyphWidth=0;
                                     if (state&CS_ANNOTATION_1) {
                                         annotationNumber=1;annotOffset.x=0.f;annotOffset.y=0.f;
                                         DrawAnnotation(style, annotOffset, charNum, start, draw_list, textLineHeight, annotationNumber, glyphWidths);

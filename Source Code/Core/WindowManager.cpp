@@ -27,6 +27,24 @@ namespace {
 
         return SDL_SYSTEM_CURSOR_NO;
     }
+
+    bool validate(I32 errCode) {
+        if (errCode != 0) {
+            Console::errorfn(Locale::get(_ID("SDL_ERROR")), SDL_GetError());
+            return false;
+        }
+
+        return true;
+    };
+
+    bool validateAssert(I32 errCode) {
+        if (!validate(errCode)) {
+            assert(errCode == 0);
+            return false;
+        }
+
+        return true;
+    };
 }; // namespace 
 
 hashMap<CursorStyle, SDL_Cursor*> WindowManager::s_cursors;
@@ -91,6 +109,34 @@ ErrorCode WindowManager::init(PlatformContext& context,
     systemInfo._systemResolutionHeight = displayMode.h;
 
     _apiFlags = createAPIFlags(api);
+
+    // Toggle multi-sampling if requested.
+    I32 msaaSamples = to_I32(_context->config().rendering.msaaSamples);
+    I32 shadowSamples = to_I32(_context->config().rendering.shadowMapping.msaaSamples);
+
+    I32 maxSamples = 0;
+    if (msaaSamples > 0 || shadowSamples > 0) {
+        maxSamples = std::max(msaaSamples, shadowSamples);
+        if (validate(SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1))) {
+            while (!validate(SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, maxSamples))) {
+                maxSamples = maxSamples / 2;
+                if (maxSamples == 0) {
+                    validate(SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0));
+                    break;
+                }
+            }
+        } else {
+            maxSamples = 0;
+        }
+    }
+
+    if (maxSamples < msaaSamples) {
+        _context->config().rendering.msaaSamples = to_U8(maxSamples);
+    }
+    if (maxSamples < shadowSamples) {
+        _context->config().rendering.shadowMapping.msaaSamples = to_U8(maxSamples);
+    }
+
 
     WindowDescriptor descriptor = {};
     descriptor.position = initialPosition;
@@ -204,6 +250,10 @@ DisplayWindow* WindowManager::createWindow(const WindowDescriptor& descriptor, E
     }
     bool fullscreen = BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::FULLSCREEN));
 
+    if (err == ErrorCode::NO_ERR) {
+        err = configureAPISettings(descriptor.flags);
+    }
+
     err = window->init(mainWindowFlags,
                        fullscreen ? WindowType::FULLSCREEN : WindowType::WINDOW,
                        descriptor);
@@ -213,7 +263,7 @@ DisplayWindow* WindowManager::createWindow(const WindowDescriptor& descriptor, E
                         BitCompare(descriptor.flags, WindowDescriptor::Flags::CLEAR_DEPTH));
 
     if (err == ErrorCode::NO_ERR) {
-        err = configureAPISettings(window, descriptor.flags);
+        err = applyAPISettings(window, descriptor.flags);
     }
 
     if (err != ErrorCode::NO_ERR) {
@@ -353,29 +403,7 @@ void WindowManager::destroyAPISettings(DisplayWindow* window) {
     SDL_GL_DeleteContext((SDL_GLContext)window->_userData);
 }
 
-ErrorCode WindowManager::configureAPISettings(DisplayWindow* window, U32 descriptorFlags) {
-    if (!window || !BitCompare(SDL_GetWindowFlags(window->getRawWindow()), to_U32(SDL_WINDOW_OPENGL))) {
-        return ErrorCode::GFX_NOT_SUPPORTED;
-    }
-
-    auto validate = [](I32 errCode) -> bool {
-        if (errCode != 0) {
-            Console::errorfn(Locale::get(_ID("SDL_ERROR")), SDL_GetError());
-            return false;
-        }
-
-        return true;
-    };
-
-    auto validateAssert = [&validate](I32 errCode) -> bool {
-        if (!validate(errCode)) {
-            assert(errCode == 0);
-            return false;
-        }
-
-        return true;
-    };
-
+ErrorCode WindowManager::configureAPISettings(U32 descriptorFlags) {
     Uint32 OpenGLFlags = SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG | SDL_GL_CONTEXT_RESET_ISOLATION_FLAG;
 
     if (Config::ENABLE_GPU_VALIDATION) {
@@ -401,28 +429,6 @@ ErrorCode WindowManager::configureAPISettings(DisplayWindow* window, U32 descrip
         //validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_NO_ERROR, 1));
     }
 
-    // Toggle multi-sampling if requested.
-    // This options requires a client-restart, sadly.
-    I32 msaaSamples = to_I32(_context->config().rendering.msaaSamples);
-    if (msaaSamples > 0) {
-        if (validate(SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1))) {
-            while (!validate(SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, msaaSamples))) {
-                msaaSamples = msaaSamples / 2;
-                if (msaaSamples == 0) {
-                    validate(SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0));
-                    break;
-                }
-            }
-        } else {
-            msaaSamples = 0;
-        }
-    }
-    _context->config().rendering.msaaSamples = to_U8(msaaSamples);
-
-    if (msaaSamples == 0 && _context->config().rendering.shadowMapping.msaaSamples > 0) {
-        validate(SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1));
-    }
-
     // OpenGL ES is not yet supported, but when added, it will need to mirror
     // OpenGL functionality 1-to-1
     if (_context->gfx().getAPI() == RenderAPI::OpenGLES) {
@@ -439,12 +445,14 @@ ErrorCode WindowManager::configureAPISettings(DisplayWindow* window, U32 descrip
     }
 
     validateAssert(SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1));
-
     if (shareGLContext) {
-
         validate(SDL_GL_MakeCurrent(getMainWindow().getRawWindow(), (SDL_GLContext)getMainWindow().userData()));
     }
 
+    return ErrorCode::NO_ERR;
+}
+
+ErrorCode WindowManager::applyAPISettings(DisplayWindow* window, U32 descriptorFlags) {
     // Create a context and make it current
     window->_userData = SDL_GL_CreateContext(window->getRawWindow());
 
@@ -472,7 +480,7 @@ ErrorCode WindowManager::configureAPISettings(DisplayWindow* window, U32 descrip
         SDL_GL_SetSwapInterval(0);
     }
 
-    if (shareGLContext) {
+    if (BitCompare(descriptorFlags, to_base(WindowDescriptor::Flags::SHARE_CONTEXT))) {
         validate(SDL_GL_MakeCurrent(getMainWindow().getRawWindow(), (SDL_GLContext)getMainWindow().userData()));
     }
 

@@ -36,7 +36,6 @@
 #	define NO_IMGUI_ADDONS
 #endif //NO_IMGUIADDONS
 
-
 #ifdef NO_IMGUI_ADDONS  // This definition turns all "normal" addons into "yes_addons"
 #   if (!defined(YES_IMGUISTYLESERIALIZER) && !defined(NO_IMGUISTYLESERIALIZER))
 #       define NO_IMGUISTYLESERIALIZER

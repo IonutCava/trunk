@@ -587,7 +587,7 @@ public:
         return false;
     }
     cairo_surface_t* pageToCairo(cairo_format_t format = CAIRO_FORMAT_ARGB32,int pageNum=-1,const cairo_rectangle_t* rect=NULL,const double scale=1.0)	{
-        cairo_surface_t* imPage;
+        cairo_surface_t* imPage=NULL;
         if (!document) return imPage;
         if (pageNum<0 || pageNum>=poppler_document_get_n_pages(document)) return imPage;
         PopplerPage* newPage = poppler_document_get_page(document,pageNum);
@@ -785,7 +785,7 @@ bool PdfPagePanel::setPage(int pageIndex, bool addNewPageToStack,float initialZo
 
         PdfViewer::GenerateOrUpdateTextureCb(texid,TWidth,THeight,4,cairo_image_surface_get_data(pageSurface),true,false,false);
 
-        if (pageSurface) cairo_surface_destroy(pageSurface);pageSurface=NULL;
+        if (pageSurface) {cairo_surface_destroy(pageSurface);pageSurface=NULL;}
 
 
         IM_ASSERT(texid);
