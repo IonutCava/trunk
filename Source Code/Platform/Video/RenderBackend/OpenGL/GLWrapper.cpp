@@ -46,14 +46,14 @@
 namespace Divide {
 
 namespace {
-    bool g_bufferBindsNeedsFlush = false;
-    std::mutex g_bufferBindsLock;
-    std::stack<BufferWriteData> g_bufferBinds;
-
     bool g_frameTimeRequested = false;
 };
 
 GLConfig GL_API::s_glConfig;
+GLStateTracker* GL_API::s_activeStateTracker = nullptr;
+GL_API::stateTrackerMap GL_API::s_stateTrackers;
+bool GL_API::s_bufferBindsNeedsFlush = false;
+moodycamel::ConcurrentQueue<BufferWriteData> GL_API::s_bufferBinds;
 
 GL_API::GL_API(GFXDevice& context, const bool glES)
     : RenderAPIWrapper(),
@@ -64,6 +64,7 @@ GL_API::GL_API(GFXDevice& context, const bool glES)
       _prevWidthString(0),
       _fonsContext(nullptr),
       _GUIGLrenderer(nullptr),
+      _currentContext(nullptr),
       _glswState(-1),
       _swapBufferTimer(Time::ADD_TIMER("Swap Buffer Timer"))
 {
@@ -72,8 +73,6 @@ GL_API::GL_API(GFXDevice& context, const bool glES)
     // All clip planes are disabled at first (default OpenGL state)
     _activeClipPlanes.fill(false);
     _fontCache.second = -1;
-    s_samplerBoundMap.fill(0u);
-    s_textureBoundMap.fill(0u);
 
     s_glConfig._glES = glES;
 }
@@ -105,10 +104,14 @@ void GL_API::beginFrame(DisplayWindow& window, bool global) {
 
     // Clear our buffers
     if (window.swapBuffers() && !window.minimized() && !window.hidden()) {
-        SDL_GL_MakeCurrent(window.getRawWindow(), (SDL_GLContext)window.userData());
+        SDL_GLContext targetContext = (SDL_GLContext)window.context().app().windowManager().getMainWindow().userData();//window.userData()
+        if (_currentContext != targetContext) {
+            SDL_GL_MakeCurrent(window.getRawWindow(), targetContext);
+            _currentContext = targetContext;
+        }
 
         bool shouldClearColour, shouldClearDepth;
-        GL_API::setClearColour(window.clearColour(shouldClearColour, shouldClearDepth));
+        getStateTracker().setClearColour(window.clearColour(shouldClearColour, shouldClearDepth));
         ClearBufferMask mask = GL_NONE_BIT;
         if (shouldClearColour) {
             mask |= GL_COLOR_BUFFER_BIT;
@@ -127,16 +130,20 @@ void GL_API::beginFrame(DisplayWindow& window, bool global) {
     _context.registerDrawCall();
 
     if (global) {
-        GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
+        getStateTracker().setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
     }
 
-    s_previousStateBlockHash = 0;
+    GLStateTracker& targetTracker = s_stateTrackers[window.getGUID()];
+    targetTracker.init(s_activeStateTracker);
+    //s_activeStateTracker = &targetTracker;
+
+    clearStates(window, *s_activeStateTracker, global);
 }
 
 /// Finish rendering the current frame
 void GL_API::endFrame(DisplayWindow& window, bool global) {
     // Revert back to the default OpenGL states
-    clearStates(window, global);
+    //clearStates(window, global);
 
     // End the timing query started in beginFrame() in debug builds
     if (global && Config::ENABLE_GPU_VALIDATION && g_frameTimeRequested) {
@@ -149,7 +156,12 @@ void GL_API::endFrame(DisplayWindow& window, bool global) {
         }
 
         if (window.swapBuffers() && !window.minimized() && !window.hidden()) {
-            SDL_GL_MakeCurrent(window.getRawWindow(), (SDL_GLContext)window.userData());
+            SDL_GLContext targetContext = (SDL_GLContext)window.context().app().windowManager().getMainWindow().userData();//window.userData()
+            if (_currentContext != targetContext) {
+                SDL_GL_MakeCurrent(window.getRawWindow(), targetContext);
+                _currentContext = targetContext;
+            }
+
             SDL_GL_SwapWindow(window.getRawWindow());
         }
 
@@ -728,14 +740,14 @@ void GL_API::drawText(const TextElementBatch& batch) {
 
     pushDebugMessage("OpenGL render text start!", 2);
 
-    GL_API::setBlending(0,
+    getStateTracker().setBlending(0,
                         BlendingProperties {
                             BlendProperty::SRC_ALPHA,
                             BlendProperty::INV_SRC_ALPHA,
                             BlendOperation::ADD
                         });
 
-    GL_API::setBlendColour(DefaultColours::DIVIDE_BLUE_U8);
+    getStateTracker().setBlendColour(DefaultColours::DIVIDE_BLUE_U8);
     I32 width = _context.renderingResolution().w;
     I32 height = _context.renderingResolution().h;
         
@@ -825,15 +837,15 @@ void GL_API::drawIMGUI(ImDrawData* data, I64 windowGUID) {
                     pcmd->UserCallback(cmd_list, pcmd);
                 } else {
                     ImVec4 clip_rect = ImVec4(pcmd->ClipRect.x - pos.x, pcmd->ClipRect.y - pos.y, pcmd->ClipRect.z - pos.x, pcmd->ClipRect.w - pos.y);
-                    if (clip_rect.x < s_activeViewport.z && clip_rect.y < s_activeViewport.w && clip_rect.z >= 0.0f && clip_rect.w >= 0.0f) {
-                        GL_API::setScissor((I32)clip_rect.x,
-                                           (I32)(s_activeViewport.w - clip_rect.w),
+                    if (clip_rect.x < s_activeStateTracker->_activeViewport.z && clip_rect.y < s_activeStateTracker->_activeViewport.w && clip_rect.z >= 0.0f && clip_rect.w >= 0.0f) {
+                        getStateTracker().setScissor((I32)clip_rect.x,
+                                           (I32)(s_activeStateTracker->_activeViewport.w - clip_rect.w),
                                            (I32)(clip_rect.z - clip_rect.x),
                                            (I32)(clip_rect.w - clip_rect.y));
 
                         cmd._cmd.indexCount = to_U32(pcmd->ElemCount);
 
-                        GL_API::bindTexture(0, (GLuint)((intptr_t)pcmd->TextureId));
+                        getStateTracker().bindTexture(0, (GLuint)((intptr_t)pcmd->TextureId));
                         buffer->draw(cmd);
                     }
                 }
@@ -844,10 +856,11 @@ void GL_API::drawIMGUI(ImDrawData* data, I64 windowGUID) {
 }
 
 bool GL_API::bindPipeline(const Pipeline& pipeline) {
-    if (s_activePipeline && *s_activePipeline == pipeline) {
+    if (s_activeStateTracker->_activePipeline && *s_activeStateTracker->_activePipeline == pipeline) {
         return true;
     }
-    s_activePipeline = &pipeline;
+
+    s_activeStateTracker->_activePipeline = &pipeline;
 
     // Set the proper render states
     setStateBlock(pipeline.stateHash());
@@ -875,8 +888,8 @@ bool GL_API::bindPipeline(const Pipeline& pipeline) {
 }
 
 void GL_API::sendPushConstants(const PushConstants& pushConstants) {
-    assert(s_activePipeline != nullptr);
-    ShaderProgram_wptr wSP = ShaderProgram::findShaderProgram(s_activePipeline->shaderProgramHandle());
+    assert(s_activeStateTracker->_activePipeline != nullptr);
+    ShaderProgram_wptr wSP = ShaderProgram::findShaderProgram(s_activeStateTracker->_activePipeline->shaderProgramHandle());
     if (wSP.expired()) {
         //DIVIDE_ASSERT(program != nullptr, "GFXDevice error: Draw shader state is not valid for the current draw operation!");
         wSP = ShaderProgram::defaultShader();
@@ -886,7 +899,7 @@ void GL_API::sendPushConstants(const PushConstants& pushConstants) {
 }
 
 void GL_API::dispatchCompute(const ComputeParams& computeParams) {
-    assert(s_activePipeline != nullptr);
+    assert(s_activeStateTracker->_activePipeline != nullptr);
 
     glDispatchCompute(computeParams._groupSize.x,
                       computeParams._groupSize.y,
@@ -926,7 +939,7 @@ void GL_API::dispatchCompute(const ComputeParams& computeParams) {
 
 bool GL_API::draw(const GenericDrawCommand& cmd) {
     if (cmd._sourceBuffer == nullptr) {
-        GL_API::setActiveVAO(s_dummyVAO);
+        getStateTracker().setActiveVAO(s_dummyVAO);
 
         U32 indexCount = 0;
         switch (cmd._primitiveType) {
@@ -961,13 +974,13 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             const GFX::BeginRenderPassCommand& crtCmd = commandBuffer.getCommand<GFX::BeginRenderPassCommand>(entry);
             glFramebuffer& rt = static_cast<glFramebuffer&>(_context.renderTargetPool().renderTarget(crtCmd._target));
             Attorney::GLAPIRenderTarget::begin(rt, crtCmd._descriptor);
-            GL_API::s_activeRenderTarget = &rt;
+            s_activeStateTracker->_activeRenderTarget = &rt;
             GL_API::pushDebugMessage(crtCmd._name.c_str(), std::numeric_limits<I32>::max());
         }break;
         case GFX::CommandType::END_RENDER_PASS: {
-            assert(GL_API::s_activeRenderTarget != nullptr);
+            assert(s_activeStateTracker->_activeRenderTarget != nullptr);
             GL_API::popDebugMessage();
-            Attorney::GLAPIRenderTarget::end(*GL_API::s_activeRenderTarget);
+            Attorney::GLAPIRenderTarget::end(*s_activeStateTracker->_activeRenderTarget);
         }break;
         case GFX::CommandType::BEGIN_PIXEL_BUFFER: {
             const GFX::BeginPixelBufferCommand& crtCmd = commandBuffer.getCommand<GFX::BeginPixelBufferCommand>(entry);
@@ -977,20 +990,20 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             if (crtCmd._command) {
                 crtCmd._command(data);
             }
-            GL_API::s_activePixelBuffer = buffer;
+            s_activeStateTracker->_activePixelBuffer = buffer;
         }break;
         case GFX::CommandType::END_PIXEL_BUFFER: {
-            assert(GL_API::s_activePixelBuffer != nullptr);
-            Attorney::GLAPIPixelBuffer::end(*GL_API::s_activePixelBuffer);
+            assert(s_activeStateTracker->_activePixelBuffer != nullptr);
+            Attorney::GLAPIPixelBuffer::end(*s_activeStateTracker->_activePixelBuffer);
         }break;
         case GFX::CommandType::BEGIN_RENDER_SUB_PASS: {
-            assert(s_activeRenderTarget != nullptr);
+            assert(s_activeStateTracker->_activeRenderTarget != nullptr);
             const GFX::BeginRenderSubPassCommand& crtCmd = commandBuffer.getCommand<GFX::BeginRenderSubPassCommand>(entry);
             for (const RenderTarget::DrawLayerParams& params : crtCmd._writeLayers) {
-                GL_API::s_activeRenderTarget->drawToLayer(params);
+                s_activeStateTracker->_activeRenderTarget->drawToLayer(params);
             }
 
-            GL_API::s_activeRenderTarget->setMipLevel(crtCmd._mipWriteLevel, crtCmd._validateWriteLevel);
+            s_activeStateTracker->_activeRenderTarget->setMipLevel(crtCmd._mipWriteLevel, crtCmd._validateWriteLevel);
         }break;
         case GFX::CommandType::END_RENDER_SUB_PASS: {
         }break;
@@ -1003,7 +1016,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             for (const ShaderBufferBinding& shaderBufCmd : set->_shaderBuffers) {
                 if (shaderBufCmd._binding == ShaderBufferLocation::CMD_BUFFER) {
                     GLuint handle = static_cast<glUniformBuffer*>(shaderBufCmd._buffer)->bufferID();
-                    GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, handle);
+                    getStateTracker().setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, handle);
                 } else {
                     shaderBufCmd._buffer->bindRange(shaderBufCmd._binding,
                                                     shaderBufCmd._range.x,
@@ -1025,11 +1038,11 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             sendPushConstants(commandBuffer.getCommand<GFX::SendPushConstantsCommand>(entry)._constants);
         } break;
         case GFX::CommandType::SET_SCISSOR: {
-            setScissor(commandBuffer.getCommand<GFX::SetScissorCommand>(entry)._rect);
+            getStateTracker().setScissor(commandBuffer.getCommand<GFX::SetScissorCommand>(entry)._rect);
         }break;
         case GFX::CommandType::SET_BLEND: {
             const GFX::SetBlendCommand& blendCmd = commandBuffer.getCommand<GFX::SetBlendCommand>(entry);
-            setBlending(blendCmd._blendProperties);
+            getStateTracker().setBlending(blendCmd._blendProperties);
         }break;
         case GFX::CommandType::BEGIN_DEBUG_SCOPE: {
              const GFX::BeginDebugScopeCommand& crtCmd = commandBuffer.getCommand<GFX::BeginDebugScopeCommand>(entry);
@@ -1059,7 +1072,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
                     }
                 }
             }
-            g_bufferBindsNeedsFlush = true;
+            s_bufferBindsNeedsFlush = true;
 
         }break;
         case GFX::CommandType::DISPATCH_COMPUTE: {
@@ -1070,17 +1083,26 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
     };
 }
 void GL_API::postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
-    if (!g_bufferBindsNeedsFlush) {
+    if (!s_bufferBindsNeedsFlush) {
         return;
     }
-    g_bufferBindsNeedsFlush = false;
 
-    UniqueLock lock(g_bufferBindsLock);
-    while (!g_bufferBinds.empty()) {
-        const BufferWriteData& data = g_bufferBinds.top();
+    BufferWriteData data;
+    while (s_bufferBinds.try_dequeue(data)) {
         data._lockManager->LockRange(data._offset, data._range, data._flush);
-        g_bufferBinds.pop();
     }
+
+    s_bufferBindsNeedsFlush = false;
+}
+
+void GL_API::registerBufferBind(const BufferWriteData& data) {
+    assert(Runtime::isMainThread());
+
+    if (data._lockManager == nullptr || data._range == 0) {
+        return;
+    }
+
+    s_bufferBinds.enqueue(data);
 }
 
 GenericVertexData* GL_API::getOrCreateIMGUIBuffer(I64 windowGUID) {
@@ -1132,18 +1154,6 @@ GenericVertexData* GL_API::getOrCreateIMGUIBuffer(I64 windowGUID) {
     return ret;
 }
 
-void GL_API::registerBufferBind(const BufferWriteData& data) {
-    assert(Runtime::isMainThread());
-
-
-    if (data._lockManager == nullptr || data._range == 0) {
-        return;
-    }
-
-    UniqueLock lock(g_bufferBindsLock);
-    g_bufferBinds.push(data);
-}
-
 /// Activate the render state block described by the specified hash value (0 == default state block)
 size_t GL_API::setStateBlock(size_t stateBlockHash) {
     // Passing 0 is a perfectly acceptable way of enabling the default render state block
@@ -1151,7 +1161,7 @@ size_t GL_API::setStateBlock(size_t stateBlockHash) {
         stateBlockHash = _context.getDefaultStateBlock(false);
     }
 
-    return setStateBlockInternal(stateBlockHash);
+    return getStateTracker().setStateBlock(stateBlockHash);
 }
 
 bool GL_API::makeTexturesResident(const TextureDataContainer& textureData) {
@@ -1164,7 +1174,7 @@ bool GL_API::makeTexturesResident(const TextureDataContainer& textureData) {
             vector<GLuint> samplers;
             ///etc
 
-            GL_API::bindTextures(offset, (GLuint)handles.size(), handles.data(), samplers.data());
+            getStateTracker().bindTextures(offset, (GLuint)handles.size(), handles.data(), samplers.data());
         }
     }
     for (auto data : textureData.textures()) {
@@ -1175,14 +1185,14 @@ bool GL_API::makeTexturesResident(const TextureDataContainer& textureData) {
 }
 
 bool GL_API::makeTextureResident(const TextureData& textureData, U8 binding) {
-    return bindTexture(
+    return getStateTracker().bindTexture(
         static_cast<GLushort>(binding),
         textureData.getHandle(),
         textureData._samplerHandle);
 }
 
 bool GL_API::setViewport(const Rect<I32>& viewport) {
-    return setViewport(viewport.x, viewport.y, viewport.z, viewport.w);
+    return getStateTracker().setViewport(viewport.x, viewport.y, viewport.z, viewport.w);
 }
 
 /// Verify if we have a sampler object created and available for the given

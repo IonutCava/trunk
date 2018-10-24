@@ -172,8 +172,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
         s_hardwareQueryPool = MemoryManager_NEW glHardwareQueryPool(_context);
     }
 
-    // OpenGL has a nifty error callback system, available in every build
-    // configuration if required
+    // OpenGL has a nifty error callback system, available in every build configuration if required
     if (Config::ENABLE_GPU_VALIDATION) {
         // GL_DEBUG_OUTPUT_SYNCHRONOUS is essential for debugging gl commands in the IDE
         glEnable(GL_DEBUG_OUTPUT);
@@ -198,12 +197,11 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
         }
     }
 
+
     // If we got here, let's figure out what capabilities we have available
     // Maximum addressable texture image units in the fragment shader
     s_maxTextureUnits = std::max(GLUtil::getIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS), 8);
     s_maxAttribBindings = GLUtil::getIntegerv(GL_MAX_VERTEX_ATTRIB_BINDINGS);
-    s_vaoBufferData.init(s_maxAttribBindings);
-    s_opengl46Supported = GLUtil::getIntegerv(GL_MINOR_VERSION) == 6;
 
     if (to_base(ShaderProgram::TextureUsage::COUNT) >= to_U32(s_maxTextureUnits)) {
         Console::errorfn(Locale::get(_ID("ERROR_INSUFFICIENT_TEXTURE_UNITS")));
@@ -219,22 +217,23 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
 
     // Maximum number of colour attachments per framebuffer
     s_maxFBOAttachments = GLUtil::getIntegerv(GL_MAX_COLOR_ATTACHMENTS);
-    GL_API::s_blendProperties.resize(s_maxFBOAttachments, {BlendProperty::ONE, BlendProperty::ONE, BlendOperation::ADD});
-    GL_API::s_blendEnabled.resize(s_maxFBOAttachments, GL_FALSE);
+
+    s_activeStateTracker = &s_stateTrackers[window.getGUID()];
+    *s_activeStateTracker = {};
+    s_activeStateTracker->init(nullptr);
 
     // Cap max anisotropic level to what the hardware supports
     CLAMP(config.rendering.anisotropicFilteringLevel,
           to_U8(0),
-          to_U8(GL_API::s_opengl46Supported ? GLUtil::getIntegerv(gl::GL_MAX_TEXTURE_MAX_ANISOTROPY)
-                                            : GLUtil::getIntegerv(gl::GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT)));
+          to_U8(s_activeStateTracker->_opengl46Supported ? GLUtil::getIntegerv(gl::GL_MAX_TEXTURE_MAX_ANISOTROPY)
+                                                        : GLUtil::getIntegerv(gl::GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT)));
     GL_API::s_anisoLevel = config.rendering.anisotropicFilteringLevel;
 
     Console::printfn(Locale::get(_ID("GL_MAX_VERSION")),
                      GLUtil::getIntegerv(GL_MAJOR_VERSION),
                      GLUtil::getIntegerv(GL_MINOR_VERSION));
 
-    // Number of sample buffers associated with the framebuffer & MSAA sample
-    // count
+    // Number of sample buffers associated with the framebuffer & MSAA sample count
     GLint samplerBuffers = GLUtil::getIntegerv(GL_SAMPLES);
     GLint sampleCount = GLUtil::getIntegerv(GL_SAMPLE_BUFFERS);
     Console::printfn(Locale::get(_ID("GL_MULTI_SAMPLE_INFO")), sampleCount, samplerBuffers);

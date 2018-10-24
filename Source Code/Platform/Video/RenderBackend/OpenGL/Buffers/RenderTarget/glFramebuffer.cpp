@@ -484,8 +484,8 @@ void glFramebuffer::setBlendState(const RTDrawDescriptor& drawPolicy, const vect
             const RTBlendState& blend = drawPolicy.blendState(i);
 
             // Set blending per attachment if specified. Overrides general blend state
-            GL_API::setBlending(static_cast<GLuint>(colourAtt->binding() - to_U32(GL_COLOR_ATTACHMENT0)), blend._blendProperties);
-            GL_API::setBlendColour(blend._blendColour);
+            GL_API::getStateTracker().setBlending(static_cast<GLuint>(colourAtt->binding() - to_U32(GL_COLOR_ATTACHMENT0)), blend._blendProperties);
+            GL_API::getStateTracker().setBlendColour(blend._blendColour);
         }
     }
 }
@@ -545,7 +545,7 @@ void glFramebuffer::setDefaultState(const RTDrawDescriptor& drawPolicy) {
     prepareBuffers(drawPolicy, colourAttachments);
 
     /// Set the depth range
-    GL_API::setDepthRange(_descriptor._depthRange.min, _descriptor._depthRange.max);
+    GL_API::getStateTracker().setDepthRange(_descriptor._depthRange.min, _descriptor._depthRange.max);
 
     /// Set the blend states
     setBlendState(drawPolicy, colourAttachments);
@@ -564,7 +564,7 @@ void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
     }
 
     /// Activate FBO
-    GL_API::setActiveFB(RenderTarget::RenderTargetUsage::RT_READ_WRITE, _framebufferHandle);
+    GL_API::getStateTracker().setActiveFB(RenderTarget::RenderTargetUsage::RT_READ_WRITE, _framebufferHandle);
 
     /// Set the viewport
     if (drawPolicy.isEnabledState(RTDrawDescriptor::State::CHANGE_VIEWPORT)) {
@@ -602,7 +602,7 @@ void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
 }
 
 void glFramebuffer::end() {
-    GL_API::setActiveFB(RenderTarget::RenderTargetUsage::RT_READ_WRITE, 0);
+    GL_API::getStateTracker().setActiveFB(RenderTarget::RenderTargetUsage::RT_READ_WRITE, 0);
     if (_previousPolicy.isEnabledState(RTDrawDescriptor::State::CHANGE_VIEWPORT)) {
         _context.setViewport(_prevViewport);
     }
@@ -750,8 +750,8 @@ void glFramebuffer::readData(const vec4<U16>& rect,
         resolve(true, false);
         _resolveBuffer->readData(rect, imageFormat, dataType, outData);
     } else {
-        GL_API::setPixelPackUnpackAlignment();
-        GL_API::setActiveFB(RenderTarget::RenderTargetUsage::RT_READ_ONLY, _framebufferHandle);
+        GL_API::getStateTracker().setPixelPackUnpackAlignment();
+        GL_API::getStateTracker().setActiveFB(RenderTarget::RenderTargetUsage::RT_READ_ONLY, _framebufferHandle);
         glReadPixels(
             rect.x, rect.y, rect.z, rect.w,
             GLUtil::glImageFormatTable[to_U32(imageFormat)],

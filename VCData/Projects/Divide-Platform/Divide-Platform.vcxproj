@@ -130,6 +130,7 @@
     <ClInclude Include="../../../Source Code\Platform\Video\RenderBackend\None\Headers\NoneWrapper.h" />
     <ClInclude Include="../../../Source Code\Platform\Video\RenderBackend\Vulkan\Headers\VKPlaceholderObjects.h" />
     <ClInclude Include="../../../Source Code\Platform\Video\RenderBackend\Vulkan\Headers\VKWrapper.h" />
+    <ClInclude Include="..\..\..\Source Code\Platform\Video\RenderBackend\OpenGL\Headers\GLStateTracker.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../../Source Code/Core\MemoryManagement\TrackedObject.cpp" />
@@ -260,6 +261,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\..\..\Source Code\Platform\Video\RenderBackend\OpenGL\GLStateTracker.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="../../../assets\shaders\GLSL\display.glsl" />

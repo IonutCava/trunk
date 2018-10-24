@@ -78,7 +78,7 @@ static int glfons__renderCreate(void* userPtr, int width, int height)
     if (!gl->glfons_vaoID) glCreateVertexArrays(1, &gl->glfons_vaoID);
 	if (!gl->glfons_vaoID) return 0;
 
-    Divide::GL_API::setActiveVAO(gl->glfons_vaoID);
+    Divide::GL_API::getStateTracker().setActiveVAO(gl->glfons_vaoID);
     {
         if (!gl->glfons_vboID) {
             glCreateBuffers(1, &gl->glfons_vboID);
@@ -157,7 +157,7 @@ static void glfons__renderUpdate(void* userPtr, int* rect, const unsigned char* 
     if (gl->tex != 0) {
         int w = rect[2] - rect[0];
         int h = rect[3] - rect[1];
-        Divide::GL_API::setPixelUnpackAlignment(1, gl->width, rect[1], rect[0]);
+        Divide::GL_API::getStateTracker().setPixelUnpackAlignment(1, gl->width, rect[1], rect[0]);
         glTextureSubImage2D(gl->tex, 0, rect[0], rect[1], w, h, GL_RED, GL_UNSIGNED_BYTE, (Divide::bufferPtr)data);
     }
 }
@@ -177,8 +177,8 @@ static void glfons__renderDraw(void* userPtr, const FONSvert* verts, int nverts)
     }
 
     { //Prep
-        Divide::GL_API::bindTexture(0, gl->tex);
-        Divide::GL_API::setActiveVAO(gl->glfons_vaoID);
+        Divide::GL_API::getStateTracker().bindTexture(0, gl->tex);
+        Divide::GL_API::getStateTracker().setActiveVAO(gl->glfons_vaoID);
     }
     { //Wait
         g_lockManager->WaitForLockedRange(writeOffsetBytes, dataSize, true);

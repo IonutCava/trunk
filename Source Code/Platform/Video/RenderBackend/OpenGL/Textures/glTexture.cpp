@@ -268,7 +268,7 @@ void glTexture::loadDataCompressed(const TextureLoadInfo& info,
     GLenum glFormat = GLUtil::glImageFormatTable[to_U32(_descriptor.baseFormat())];
     GLint numMips = static_cast<GLint>(imageLayers.size());
 
-    GL_API::setPixelPackUnpackAlignment();
+    GL_API::getStateTracker().setPixelPackUnpackAlignment();
     for (GLint i = 0; i < numMips; ++i) {
         const ImageTools::ImageLayer& layer = imageLayers[i];
         switch (_textureData._textureType) {
@@ -328,7 +328,7 @@ void glTexture::loadDataUncompressed(const TextureLoadInfo& info, bufferPtr data
         GLenum type = GLUtil::glDataFormat[to_U32(_descriptor.dataType())];
         GLuint handle = _textureData.getHandle();
 
-        GL_API::setPixelPackUnpackAlignment();
+        GL_API::getStateTracker().setPixelPackUnpackAlignment();
         switch (_textureData._textureType) {
             case TextureType::TEXTURE_1D: {
                 glTextureSubImage1D(handle, 0, 0, _width, format, type, data);
@@ -410,8 +410,8 @@ bool glTexture::resourceLoadComplete() {
 void glTexture::bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write) {
     GLenum access = read ? (write ? GL_READ_WRITE : GL_READ_ONLY)
                             : (write ? GL_WRITE_ONLY : GL_NONE);
-    GL_API::bindTextureImage(slot, _textureData.getHandle(), level, layered, layer, access, 
-                                GLUtil::glImageFormatTable[to_U32(_descriptor.internalFormat())]);
+    GL_API::getStateTracker().bindTextureImage(slot, _textureData.getHandle(), level, layered, layer, access,
+                                               GLUtil::glImageFormatTable[to_U32(_descriptor.internalFormat())]);
 }
 
 };

@@ -78,7 +78,7 @@ void OpenGL3FBOTextureTarget::activate()
     // remember previously bound FBO to make sure we set it back
     // when deactivating
     // switch to rendering to the texture
-    Divide::GL_API::setActiveFB(Divide::RenderTarget::RenderTargetUsage::RT_READ_WRITE, d_frameBuffer, d_previousFrameBuffer);
+    Divide::GL_API::getStateTracker().setActiveFB(Divide::RenderTarget::RenderTargetUsage::RT_READ_WRITE, d_frameBuffer, d_previousFrameBuffer);
 
     OpenGLTextureTarget::activate();
 }
@@ -89,7 +89,7 @@ void OpenGL3FBOTextureTarget::deactivate()
     OpenGLTextureTarget::deactivate();
 
     // switch back to rendering to the previously bound framebuffer
-    Divide::GL_API::setActiveFB(Divide::RenderTarget::RenderTargetUsage::RT_READ_WRITE, d_previousFrameBuffer);
+    Divide::GL_API::getStateTracker().setActiveFB(Divide::RenderTarget::RenderTargetUsage::RT_READ_WRITE, d_previousFrameBuffer);
 }
 
 //----------------------------------------------------------------------------//
@@ -118,8 +118,8 @@ void OpenGL3FBOTextureTarget::initialiseRenderTexture()
     glTextureParameteri(d_texture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTextureParameteri(d_texture, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    GLuint old_tex = Divide::GL_API::getBoundTextureHandle(0);
-    Divide::GL_API::bindTexture(0, d_texture, 0);
+    GLuint old_tex = Divide::GL_API::getStateTracker().getBoundTextureHandle(0);
+    Divide::GL_API::getStateTracker().bindTexture(0, d_texture, 0);
     glTexImage2D(GL_TEXTURE_2D,
                  0,
                  OpenGLInfo::getSingleton().isSizedInternalFormatSupported() ?
@@ -137,14 +137,14 @@ void OpenGL3FBOTextureTarget::initialiseRenderTexture()
     d_CEGUITexture->setOpenGLTexture(d_texture, d_area.getSize());
 
     // restore previous texture binding.
-    Divide::GL_API::bindTexture(0, old_tex);
+    Divide::GL_API::getStateTracker().bindTexture(0, old_tex);
 }
 
 //----------------------------------------------------------------------------//
 void OpenGL3FBOTextureTarget::resizeRenderTexture()
 {
     // save old texture binding
-    GLuint old_tex = Divide::GL_API::getBoundTextureHandle(0);
+    GLuint old_tex = Divide::GL_API::getStateTracker().getBoundTextureHandle(0);
 
     // Some drivers (hint: Intel) segfault when glTexImage2D is called with
     // any of the dimensions being 0. The downside of this workaround is very
@@ -158,7 +158,7 @@ void OpenGL3FBOTextureTarget::resizeRenderTexture()
     }
 
     // set the texture to the required size
-    Divide::GL_API::bindTexture(0, d_texture, 0);
+    Divide::GL_API::getStateTracker().bindTexture(0, d_texture, 0);
 
     glTexImage2D(GL_TEXTURE_2D, 0,
                  OpenGLInfo::getSingleton().isSizedInternalFormatSupported() ?
@@ -172,7 +172,7 @@ void OpenGL3FBOTextureTarget::resizeRenderTexture()
     d_CEGUITexture->setOpenGLTexture(d_texture, sz);
 
     // restore previous texture binding.
-    Divide::GL_API::bindTexture(0, old_tex);
+    Divide::GL_API::getStateTracker().bindTexture(0, old_tex);
 }
 
 //----------------------------------------------------------------------------//

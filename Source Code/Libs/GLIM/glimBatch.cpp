@@ -121,7 +121,7 @@ namespace NS_GLIM
             {
                 cmd._primitiveType = Divide::PrimitiveType::TRIANGLES;
                 cmd._cmd.indexCount = m_Data.m_uiTriangleElements;
-                Divide::GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Triangles);
+                Divide::GL_API::getStateTracker().setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Triangles);
                 Divide::GLUtil::submitRenderCommand(cmd, m_Data.m_uiElementBufferID_Triangles > 0, false, GL_UNSIGNED_INT);
             }
         }
@@ -132,7 +132,7 @@ namespace NS_GLIM
             {
                 cmd._primitiveType = Divide::PrimitiveType::LINES;
                 cmd._cmd.indexCount = m_Data.m_uiWireframeElements;
-                Divide::GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Wireframe);
+                Divide::GL_API::getStateTracker().setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Wireframe);
                 Divide::GLUtil::submitRenderCommand(cmd, m_Data.m_uiElementBufferID_Wireframe > 0, false, GL_UNSIGNED_INT);
             }
         }
@@ -142,7 +142,7 @@ namespace NS_GLIM
         {
             cmd._primitiveType = Divide::PrimitiveType::LINES;
             cmd._cmd.indexCount = m_Data.m_uiLineElements;
-            Divide::GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Lines);
+            Divide::GL_API::getStateTracker().setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Lines);
             Divide::GLUtil::submitRenderCommand(cmd, m_Data.m_uiElementBufferID_Lines > 0, false, GL_UNSIGNED_INT);
         }
 
@@ -151,7 +151,7 @@ namespace NS_GLIM
         {
             cmd._primitiveType = Divide::PrimitiveType::API_POINTS;
             cmd._cmd.indexCount = m_Data.m_uiPointElements;
-            Divide::GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Points);
+            Divide::GL_API::getStateTracker().setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Points);
             Divide::GLUtil::submitRenderCommand(cmd, m_Data.m_uiElementBufferID_Points > 0, false, GL_UNSIGNED_INT);
         }
 

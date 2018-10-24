@@ -534,7 +534,7 @@ bool glShaderProgram::isValid() const {
 }
 
 bool glShaderProgram::isBound() const {
-    return GL_API::s_activeShaderProgram == _shaderProgramID;
+    return GL_API::s_activeStateTracker->_activeShaderProgram == _shaderProgramID;
 }
 
 /// Cache uniform/attribute locations for shader programs
@@ -565,7 +565,7 @@ I32 glShaderProgram::Binding(const char* name) {
 
 /// Bind the NULL shader which should have the same effect as using no shaders at all
 bool glShaderProgram::unbind() {
-    return GL_API::setActiveProgram(0u);
+    return GL_API::getStateTracker().setActiveProgram(0u);
 }
 
 /// Bind this shader program
@@ -578,7 +578,7 @@ bool glShaderProgram::bind(bool& wasBound) {
     _lockManager->Wait(true);
 
     // Set this program as the currently active one
-    wasBound = GL_API::setActiveProgram(_shaderProgramID);
+    wasBound = GL_API::getStateTracker().setActiveProgram(_shaderProgramID);
     // After using the shader at least once, validate the shader if needed
     if (!_validated) {
         _validationQueued = true;

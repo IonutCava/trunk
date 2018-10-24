@@ -37,7 +37,7 @@ glGenericVertexData::~glGenericVertexData()
     }
 
     // Make sure we don't have any of our VAOs bound
-    GL_API::setActiveVAO(0);
+    GL_API::getStateTracker().setActiveVAO(0);
     // Delete the rendering VAO
     if (_vertexArray[to_base(GVDUsage::DRAW)] > 0) {
         GL_API::s_vaoPool.deallocate(_vertexArray[to_base(GVDUsage::DRAW)]);
@@ -48,7 +48,7 @@ glGenericVertexData::~glGenericVertexData()
     }
     // Make sure we don't have the indirect draw buffer bound
     // Make sure we don't have our transform feedback object bound
-    GL_API::setActiveTransformFeedback(0);
+    GL_API::getStateTracker().setActiveTransformFeedback(0);
     // If we have a transform feedback object, delete it
     if (_transformFeedback > 0) {
         glDeleteTransformFeedbacks(1, &_transformFeedback);
@@ -113,7 +113,7 @@ void glGenericVertexData::bindFeedbackBufferRange(U32 buffer,
     // Only feedback buffers can be used with this method
     assert(isFeedbackBuffer(buffer) && "glGenericVertexData error: called bind buffer range for non-feedback buffer!");
 
-    GL_API::setActiveTransformFeedback(_transformFeedback);
+    GL_API::getStateTracker().setActiveTransformFeedback(_transformFeedback);
 
     glGenericBuffer* buff = _bufferObjects[buffer];
     glBindBufferRange(GL_TRANSFORM_FEEDBACK_BUFFER,
@@ -138,10 +138,10 @@ void glGenericVertexData::draw(const GenericDrawCommand& command) {
     setAttributes(activeVAO, feedbackActive);
 
     // Delay this for as long as possible
-    GL_API::setActiveVAO(activeVAO);
+    GL_API::getStateTracker().setActiveVAO(activeVAO);
     // Activate transform feedback if needed
     if (feedbackActive) {
-        GL_API::setActiveTransformFeedback(_transformFeedback);
+        GL_API::getStateTracker().setActiveTransformFeedback(_transformFeedback);
         glBeginTransformFeedback(GLUtil::glPrimitiveTypeTable[to_U32(command._primitiveType)]);
         // Count the number of primitives written to the buffer
         glBeginQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN, _feedbackQueries[_currentWriteQuery][drawBufferID]);
@@ -189,8 +189,8 @@ void glGenericVertexData::setIndexBuffer(const IndexBuffer& indices, BufferUpdat
             _name.empty() ? nullptr : (_name + "_index").c_str());
     }
 
-    GL_API::setActiveVAO(_vertexArray[to_base(GVDUsage::DRAW)]);
-    GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
+    GL_API::getStateTracker().setActiveVAO(_vertexArray[to_base(GVDUsage::DRAW)]);
+    GL_API::getStateTracker().setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
 }
 
 void glGenericVertexData::updateIndexBuffer(const IndexBuffer& indices) {
@@ -218,6 +218,9 @@ void glGenericVertexData::updateIndexBuffer(const IndexBuffer& indices) {
                              indices.count * elementSize,
                              indices.data);
     }
+
+    GL_API::getStateTracker().setActiveVAO(_vertexArray[to_base(GVDUsage::DRAW)]);
+    GL_API::getStateTracker().setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
 }
 
 /// Specify the structure and data of the given buffer
@@ -247,7 +250,7 @@ void glGenericVertexData::setBuffer(U32 buffer,
 
     // if "setFeedbackBuffer" was called before "create"
     if (isFeedbackBuffer(buffer)) {
-        GL_API::setActiveTransformFeedback(_transformFeedback);
+        GL_API::getStateTracker().setActiveTransformFeedback(_transformFeedback);
         glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, feedbackBindPoint(buffer), tempBuffer->bufferHandle());
     }
 }
@@ -269,11 +272,11 @@ void glGenericVertexData::setBufferBindings(GLuint activeVAO) {
     if (!_bufferObjects.empty()) {
         for (U32 i = 0; i < _bufferObjects.size(); ++i) {
             glGenericBuffer* buffer = _bufferObjects[i];
-            GL_API::bindActiveBuffer(activeVAO,
-                                     i,
-                                     buffer->bufferHandle(),
-                                     buffer->getBindOffset(queueIndex()),
-                                     static_cast<GLsizei>(buffer->bufferImpl()->elementSize()));
+            GL_API::getStateTracker().bindActiveBuffer(activeVAO,
+                                                       i,
+                                                       buffer->bufferHandle(),
+                                                       buffer->getBindOffset(queueIndex()),
+                                                       static_cast<GLsizei>(buffer->bufferImpl()->elementSize()));
         }
     }
 
@@ -363,7 +366,7 @@ void glGenericVertexData::setFeedbackBuffer(U32 buffer, U32 bindPoint) {
 
     // if "setFeedbackBuffer" was called after "create"
     if (_bufferObjects[buffer] != nullptr) {
-        GL_API::setActiveTransformFeedback(_transformFeedback);
+        GL_API::getStateTracker().setActiveTransformFeedback(_transformFeedback);
         glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, bindPoint, _bufferObjects[buffer]->bufferHandle());
     }
 }

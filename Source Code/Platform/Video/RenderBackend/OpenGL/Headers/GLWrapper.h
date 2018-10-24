@@ -35,7 +35,7 @@
 
 #include "config.h"
 
-#include "glResources.h"
+#include "GLStateTracker.h"
 #include "glHardwareQueryPool.h"
 #include "Rendering/Camera/Headers/Frustum.h"
 #include "Platform/Video/Headers/IMPrimitive.h"
@@ -63,8 +63,6 @@ namespace Time {
     class ProfileTimer;
 };
 
-static const U32 MAX_ACTIVE_TEXTURE_SLOTS = 64;
-
 enum class WindowType : U8;
 
 class DisplayWindow;
@@ -82,12 +80,6 @@ struct GLConfig {
     bool _glES = false;
 };
 
-struct BufferWriteData {
-    glBufferLockManager* _lockManager = nullptr;
-    size_t _offset = 0;
-    size_t _range = 0;
-    bool _flush = false;
-};
 
 /// OpenGL implementation of the RenderAPIWrapper
 class GL_API final : public RenderAPIWrapper {
@@ -101,6 +93,7 @@ class GL_API final : public RenderAPIWrapper {
     friend class glSamplerObject;
     friend class glGenericVertexData;
 
+    friend struct GLStateTracker;
 public:
     GL_API(GFXDevice& context, const bool glES);
     ~GL_API();
@@ -119,6 +112,9 @@ protected:
     /// Verify if we have a sampler object created and available for the given
     /// descriptor
     static U32 getOrCreateSamplerObject(const SamplerDescriptor& descriptor);
+
+    /// Return the OpenGL sampler object's handle for the given hash value
+    static GLuint getSamplerHandle(size_t samplerHash);
     /// Clipping planes are only enabled/disabled if they differ from the current
     /// state
     void updateClipPlanes(const FrustumClipPlanes& list) override;
@@ -147,15 +143,11 @@ protected:
 
     void onThreadCreated(const std::thread::id& threadID) override;
 
-    /// Return the OpenGL framebuffer handle bound and assigned for the specified usage
-    inline static GLuint getActiveFB(RenderTarget::RenderTargetUsage usage) {
-        return s_activeFBID[to_U32(usage)];
-    }
     /// Try to find the requested font in the font cache. Load on cache miss.
     I32 getFont(const stringImpl& fontName);
 
     /// Reset as much of the GL default state as possible within the limitations given
-    void clearStates(const DisplayWindow& window, bool global);
+    void clearStates(const DisplayWindow& window, GLStateTracker& stateTracker, bool global);
 
     bool makeTexturesResident(const TextureDataContainer& textureData);
     bool makeTextureResident(const TextureData& textureData, U8 binding);
@@ -163,126 +155,25 @@ protected:
     bool setViewport(const Rect<I32>& viewport) override;
 
 public:
+    static GLStateTracker& getStateTracker();
+
     /// Makes sure that the calling thread has a valid GL context. If not, a new one is created.
     static void createOrValidateContextForCurrentThread(GFXDevice& context);
 
     /// Queue a mipmap recalculation
     static void queueComputeMipMap(PlatformContext& context, GLuint textureHandle, bool threaded);
-    /// Enable or disable primitive restart and ensure that the correct index size is used
-    static void togglePrimitiveRestart(bool state);
-    /// Enable or disable primitive rasterization
-    static void toggleRasterization(bool state);
-    /// Set the number of vertices per patch used in tessellation
-    static void setPatchVertexCount(U32 count);
-    /// Switch the currently active vertex array object
-    static bool setActiveVAO(GLuint ID);
-    /// Switch the currently active vertex array object
-    static bool setActiveVAO(GLuint ID, GLuint& previousID);
-    /// Single place to change buffer objects for every target available
-    static bool setActiveBuffer(GLenum target, GLuint ID);
-    /// Single place to change buffer objects for every target available
-    static bool setActiveBuffer(GLenum target, GLuint ID, GLuint& previousID);
-    /// Switch the current framebuffer by binding it as either a R/W buffer, read
-    /// buffer or write buffer
-    static bool setActiveFB(RenderTarget::RenderTargetUsage usage, GLuint ID);
-    /// Set a new depth range. Default is 0 - 1 with 0 mapping to the near plane and 1 to the far plane
-    static void setDepthRange(F32 nearVal, F32 farVal);
-    static void setBlending(const BlendingProperties& blendingProperties, bool force = false);
-    inline static void setBlending(bool force = false) {
-        setBlending(s_blendPropertiesGlobal, force);
-    }
-    /// Set the blending properties for the specified draw buffer
-    static void setBlending(GLuint drawBufferIdx, const BlendingProperties& blendingProperties, bool force = false);
-
-    inline static void setBlending(GLuint drawBufferIdx, bool force = false) {
-        setBlending(drawBufferIdx, s_blendProperties[drawBufferIdx], force);
-    }
-
-    static void setBlendColour(const UColour& blendColour, bool force = false);
-    /// Switch the current framebuffer by binding it as either a R/W buffer, read
-    /// buffer or write buffer
-    static bool setActiveFB(RenderTarget::RenderTargetUsage usage, GLuint ID, GLuint& previousID);
-    /// Bind the specified transform feedback object
-    static bool setActiveTransformFeedback(GLuint ID);
-    /// Bind the specified transform feedback object
-    static bool setActiveTransformFeedback(GLuint ID, GLuint& previousID);
-    /// Change the currently active shader program.
-    static bool setActiveProgram(GLuint programHandle);
-    /// A state block should contain all rendering state changes needed for the next draw call.
-    /// Some may be redundant, so we check each one individually
-    static void activateStateBlock(const RenderStateBlock& newBlock,
-                                   const RenderStateBlock& oldBlock);
-    static void activateStateBlock(const RenderStateBlock& newBlock);
-    /// Pixel pack and unpack alignment is usually changed by textures, PBOs, etc
-    static bool setPixelPackUnpackAlignment(GLint packAlignment = 4,
-                                            GLint unpackAlignment = 4) {
-        return (setPixelPackAlignment(packAlignment) &&
-                setPixelUnpackAlignment(unpackAlignment));
-    }
-    /// Pixel pack alignment is usually changed by textures, PBOs, etc
-    static bool setPixelPackAlignment(GLint packAlignment = 4, GLint rowLength = 0,
-                                      GLint skipRows = 0, GLint skipPixels = 0);
-    /// Pixel unpack alignment is usually changed by textures, PBOs, etc
-    static bool setPixelUnpackAlignment(GLint unpackAlignment = 4, GLint rowLength = 0,
-                                        GLint skipRows = 0, GLint skipPixels = 0);
-    /// Bind a texture specified by a GL handle and GL type to the specified unit
-    /// using the sampler object defined by handle value
-    static bool bindTexture(GLushort unit, GLuint handle, GLuint samplerHandle = 0u);
-    static bool bindTextureImage(GLushort unit, GLuint handle, GLint level,
-        bool layered, GLint layer, GLenum access,
-        GLenum format);
-    /// Bind multiple textures specified by an array of handles and an offset
-    /// unit
-    static bool bindTextures(GLushort unitOffset, GLuint textureCount, GLuint* textureHandles, GLuint* samplerHandles);
-
-    static bool deleteTextures(GLuint count, GLuint* textures);
-
-    static bool deleteSamplers(GLuint count, GLuint* samplers);
-
-    static bool deleteBuffers(GLuint count, GLuint* buffers);
-
-    static bool deleteVAOs(GLuint count, GLuint* vaos);
-
-    static bool deleteFramebuffers(GLuint count, GLuint* framebuffers);
-
-    static bool deleteShaderPrograms(GLuint count, GLuint* programs);
-
-    static size_t setStateBlockInternal(size_t stateBlockHash);
-
-    static void registerBufferBind(const BufferWriteData& data);
-
-    /// Bind multiple samplers described by the array of hash values to the
-    /// consecutive texture units starting from the specified offset
-    static bool bindSamplers(GLushort unitOffset, GLuint samplerCount,
-        GLuint* samplerHandles);
-    /// Return the OpenGL sampler object's handle for the given hash value
-    static GLuint getSamplerHandle(size_t samplerHash);
-    /// Modify buffer bindings for a specific vao
-    static bool bindActiveBuffer(GLuint vaoID,
-        GLuint location,
-        GLuint bufferID,
-        GLintptr offset,
-        GLsizei stride);
 
     static void pushDebugMessage(const char* message, I32 id);
     static void popDebugMessage();
 
-    static bool setScissor(I32 x, I32 y, I32 width, I32 height);
-    inline static bool setScissor(const Rect<I32>& newScissorRect) {
-        return setScissor(newScissorRect.x, newScissorRect.y, newScissorRect.z, newScissorRect.w);
-    }
+    static bool deleteTextures(GLuint count, GLuint* textures);
+    static bool deleteSamplers(GLuint count, GLuint* samplers);
+    static bool deleteBuffers(GLuint count, GLuint* buffers);
+    static bool deleteVAOs(GLuint count, GLuint* vaos);
+    static bool deleteFramebuffers(GLuint count, GLuint* framebuffers);
+    static bool deleteShaderPrograms(GLuint count, GLuint* programs);
 
-    static bool setClearColour(const FColour& colour);
-    inline static bool setClearColour(const UColour& colour) {
-        return setClearColour(Util::ToFloatColour(colour));
-    }
-
-    /// Change the current viewport area. Redundancy check is performed in GFXDevice class
-    static bool setViewport(I32 x, I32 y, I32 width, I32 height);
-
-    static GLuint getBoundTextureHandle(GLuint slot);
-
-    static void getActiveViewport(GLint* vp);
+    static void registerBufferBind(const BufferWriteData& data);
 
 private:
     /// Prepare our shader loading system
@@ -347,47 +238,6 @@ private:
     typedef hashMap<U64, I32> FontCache;
     FontCache _fonts;
     hashAlg::pair<stringImpl, I32> _fontCache;
-    static Pipeline const* s_activePipeline;
-    static glFramebuffer* s_activeRenderTarget;
-    static glPixelBuffer* s_activePixelBuffer;
-    /// Current active vertex array object's handle
-    static GLuint s_activeVAOID;
-    /// 0 - current framebuffer, 1 - current read only framebuffer, 2 - current write only framebuffer
-    static GLuint s_activeFBID[3];
-    /// VB, IB, SB, TB, UB, PUB, DIB
-    static GLuint s_activeBufferID[6];
-    static hashMap<GLuint, GLuint> s_activeVAOIB;
-
-    static GLuint s_activeTransformFeedback;
-    static GLint  s_activePackUnpackAlignments[2];
-    static GLint  s_activePackUnpackRowLength[2];
-    static GLint  s_activePackUnpackSkipPixels[2];
-    static GLint  s_activePackUnpackSkipRows[2];
-    static GLuint s_activeShaderProgram;
-    static GLfloat s_depthNearVal;
-    static GLfloat s_depthFarVal;
-    static BlendingProperties s_blendPropertiesGlobal;
-	static GLboolean s_blendEnabledGlobal;
-
-    static vector<BlendingProperties> s_blendProperties;
-    static vector<GLboolean> s_blendEnabled;
-
-    static UColour   s_blendColour;
-    static Rect<I32> s_activeViewport;
-    static Rect<I32> s_activeScissor;
-    static FColour   s_activeClearColour;
-
-    /// The main VAO pool. We use a pool to avoid multithreading issues with VAO states
-    static GLUtil::glVAOPool s_vaoPool;
-
-    /// Boolean value used to verify if primitive restart index is enabled or
-    /// disabled
-    static bool s_primitiveRestartEnabled;
-    static bool s_rasterizationEnabled;
-    static U32  s_patchVertexCount;
-
-    static size_t s_currentStateBlockHash;
-    static size_t s_previousStateBlockHash;
 
     /// Current state of all available clipping planes
     std::array<bool, to_base(Frustum::FrustPlane::COUNT)> _activeClipPlanes;
@@ -398,31 +248,31 @@ private:
     F32 FRAME_DURATION_GPU;
     /// FontStash's context
     FONScontext* _fonsContext;
-    /// /*texture slot*/ /*texture handle*/
-    typedef std::array<GLuint, MAX_ACTIVE_TEXTURE_SLOTS> textureBoundMapDef;
-    static textureBoundMapDef s_textureBoundMap;
-
-    typedef std::array<ImageBindSettings, MAX_ACTIVE_TEXTURE_SLOTS> imageBoundMapDef;
-    static imageBoundMapDef s_imageBoundMap;
 
     static std::mutex s_mipmapQueueSetLock;
     static hashMap<GLuint, GLsync> GL_API::s_mipmapQueueSync;
+    /// The main VAO pool. We use a pool to avoid multithreading issues with VAO states
+    static GLUtil::glVAOPool s_vaoPool;
 
-    /// /*texture slot*/ /*sampler handle*/
-    typedef std::array<GLuint, MAX_ACTIVE_TEXTURE_SLOTS> samplerBoundMapDef;
-    static samplerBoundMapDef s_samplerBoundMap;
     /// /*sampler hash value*/ /*sampler object*/
     typedef hashMap<size_t, GLuint> samplerObjectMap;
     static std::mutex s_samplerMapLock;
     static samplerObjectMap s_samplerMap;
 
-    static VAOBindings s_vaoBufferData;
-    static bool s_opengl46Supported;
-
     I32 _glswState;
     CEGUI::OpenGL3Renderer* _GUIGLrenderer;
     hashMap<I64, GenericVertexData*> _IMGUIBuffers;
     Time::ProfileTimer& _swapBufferTimer;
+
+    static bool s_bufferBindsNeedsFlush;
+    static moodycamel::ConcurrentQueue<BufferWriteData> s_bufferBinds;
+
+    typedef std::unordered_map<I64, GLStateTracker> stateTrackerMap;
+    static stateTrackerMap s_stateTrackers;
+    static GLStateTracker* s_activeStateTracker;
+
+
+    SDL_GLContext _currentContext = nullptr;
 };
 
 };  // namespace Divide

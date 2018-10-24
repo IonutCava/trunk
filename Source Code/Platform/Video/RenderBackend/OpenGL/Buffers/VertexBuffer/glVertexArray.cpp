@@ -384,15 +384,15 @@ void glVertexArray::draw(const GenericDrawCommand& command) {
 
     // Bind the vertex array object that in turn activates all of the bindings and pointers set on creation
     GLuint vao = _vaoCaches[command._bufferIndex];
-    if (GL_API::setActiveVAO(vao)) {
+    if (GL_API::getStateTracker().setActiveVAO(vao)) {
         // If this is the first time the VAO is bound in the current loop, check
         // for primitive restart requests
-        GL_API::togglePrimitiveRestart(_primitiveRestartEnabled);
+        GL_API::getStateTracker().togglePrimitiveRestart(_primitiveRestartEnabled);
     }
   
     // VAOs store vertex formats and are reused by multiple 3d objects, so the Index Buffer and Vertex Buffers need to be double checked
-    GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _IBid);
-    GL_API::bindActiveBuffer(vao, 0, _VBHandle._id, _VBHandle._offset * GLUtil::VBO::MAX_VBO_CHUNK_SIZE_BYTES, _effectiveEntrySize);
+    GL_API::getStateTracker().setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _IBid);
+    GL_API::getStateTracker().bindActiveBuffer(vao, 0, _VBHandle._id, _VBHandle._offset * GLUtil::VBO::MAX_VBO_CHUNK_SIZE_BYTES, _effectiveEntrySize);
 
     GLUtil::submitRenderCommand(command, true, useCmdBuffer, _formatInternal);
 }
@@ -400,13 +400,13 @@ void glVertexArray::draw(const GenericDrawCommand& command) {
 /// Activate and set all of the required vertex attributes.
 void glVertexArray::uploadVBAttributes(GLuint VAO) {
     // Bind the current VAO to save our attributes
-    GL_API::setActiveVAO(VAO);
+    GL_API::getStateTracker().setActiveVAO(VAO);
     // Bind the vertex buffer and index buffer
-    GL_API::bindActiveBuffer(VAO,
-                             0,
-                             _VBHandle._id,
-                             _VBHandle._offset * GLUtil::VBO::MAX_VBO_CHUNK_SIZE_BYTES,
-                             _effectiveEntrySize);
+    GL_API::getStateTracker().bindActiveBuffer(VAO,
+                                               0,
+                                               _VBHandle._id,
+                                               _VBHandle._offset * GLUtil::VBO::MAX_VBO_CHUNK_SIZE_BYTES,
+                                               _effectiveEntrySize);
 
     static const U32 positionLoc = to_base(AttribLocation::VERTEX_POSITION);
     static const U32 colourLoc = to_base(AttribLocation::VERTEX_COLOR);

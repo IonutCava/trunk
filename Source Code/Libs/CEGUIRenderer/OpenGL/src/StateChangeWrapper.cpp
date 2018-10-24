@@ -184,7 +184,7 @@ void OpenGL3StateChangeWrapper::bindVertexArray(GLuint vertexArray)
 {
     if(vertexArray != d_vertexArrayObject)
     {
-        Divide::GL_API::setActiveVAO(vertexArray);
+        Divide::GL_API::getStateTracker().setActiveVAO(vertexArray);
         d_vertexArrayObject = vertexArray;
     }
 }
@@ -194,11 +194,11 @@ void OpenGL3StateChangeWrapper::blendFunc(GLenum sfactor, GLenum dfactor)
     bool callIsRedundant = d_blendFuncParams.equal(sfactor, dfactor);
     if(!callIsRedundant)
     {
-        Divide::GL_API::setBlending(Divide::BlendingProperties{
-                                        Divide::getProperty(sfactor),
-                                        Divide::getProperty(dfactor),
-                                        Divide::BlendOperation::ADD
-                                    });
+        Divide::GL_API::getStateTracker().setBlending(Divide::BlendingProperties{
+                                                            Divide::getProperty(sfactor),
+                                                            Divide::getProperty(dfactor),
+                                                            Divide::BlendOperation::ADD
+                                                        });
     }
 }
 
@@ -206,14 +206,14 @@ void OpenGL3StateChangeWrapper::blendFuncSeparate(GLenum sfactorRGB, GLenum dfac
 {
     bool callIsRedundant = d_blendFuncSeperateParams.equal(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha);
     if (!callIsRedundant) {
-        Divide::GL_API::setBlending(Divide::BlendingProperties{
-                                        Divide::getProperty(sfactorRGB),
-                                        Divide::getProperty(dfactorRGB),
-                                        Divide::BlendOperation::ADD,
-                                        Divide::getProperty(sfactorAlpha),
-                                        Divide::getProperty(dfactorAlpha),
-                                        Divide::BlendOperation::ADD
-                                    });
+        Divide::GL_API::getStateTracker().setBlending(Divide::BlendingProperties{
+                                                        Divide::getProperty(sfactorRGB),
+                                                        Divide::getProperty(dfactorRGB),
+                                                        Divide::BlendOperation::ADD,
+                                                        Divide::getProperty(sfactorAlpha),
+                                                        Divide::getProperty(dfactorAlpha),
+                                                        Divide::BlendOperation::ADD
+                                                    });
     }
 }
 
@@ -221,7 +221,7 @@ void OpenGL3StateChangeWrapper::viewport(GLint x, GLint y, GLsizei width, GLsize
 {
     bool callIsRedundant = d_viewPortParams.equal(x, y, width, height);
     if (!callIsRedundant) {
-        Divide::GL_API::setViewport(x, y, width, height);
+        Divide::GL_API::getStateTracker().setViewport(x, y, width, height);
     }
 }
 
@@ -229,20 +229,20 @@ void OpenGL3StateChangeWrapper::scissor(GLint x, GLint y, GLsizei width, GLsizei
 {
     bool callIsRedundant = d_scissorParams.equal(x, y, width, height);
     if (!callIsRedundant) {
-        Divide::GL_API::setScissor(x, y, width, height);
+        Divide::GL_API::getStateTracker().setScissor(x, y, width, height);
     }
 }
 void OpenGL3StateChangeWrapper::bindBuffer(GLenum target, GLuint buffer)
 {
     bool callIsRedundant = d_bindBufferParams.equal(target, buffer);
     if (!callIsRedundant) {
-        Divide::GL_API::setActiveBuffer(target, buffer);
+        Divide::GL_API::getStateTracker().setActiveBuffer(target, buffer);
     }
 }
 
 void OpenGL3StateChangeWrapper::bindDefaultState(bool scissor)
 {
-    Divide::GL_API::setStateBlockInternal(scissor ? d_defaultStateHashScissor : d_defaultStateHashNoScissor);
+    Divide::GL_API::getStateTracker().setStateBlock(scissor ? d_defaultStateHashScissor : d_defaultStateHashNoScissor);
 }
 
 }

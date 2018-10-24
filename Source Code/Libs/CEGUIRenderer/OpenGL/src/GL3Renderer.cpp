@@ -233,7 +233,7 @@ void OpenGL3Renderer::endRendering()
     if (d_initExtraStates)
         setupExtraStates();
 
-    Divide::GL_API::setBlending(Divide::BlendingProperties());
+    Divide::GL_API::getStateTracker().setBlending(Divide::BlendingProperties());
 
     Divide::GL_API::popDebugMessage();
 }
@@ -241,8 +241,8 @@ void OpenGL3Renderer::endRendering()
 //----------------------------------------------------------------------------//
 void OpenGL3Renderer::setupExtraStates()
 {
-    Divide::GL_API::bindTexture(0, 0);
-    Divide::GL_API::setActiveProgram(0);
+    Divide::GL_API::getStateTracker().bindTexture(0, 0);
+    Divide::GL_API::getStateTracker().setActiveProgram(0);
 
     d_openGLStateChanger->blendFunc(GL_ONE, GL_ZERO);
     d_openGLStateChanger->bindVertexArray(0);
@@ -270,22 +270,22 @@ void OpenGL3Renderer::setupRenderingBlendMode(const BlendMode mode,
 
     if (d_activeBlendMode == BM_RTT_PREMULTIPLIED)
     {
-        Divide::GL_API::setBlending(Divide::BlendingProperties{
-                                        Divide::BlendProperty::ONE,
-                                        Divide::BlendProperty::INV_SRC_ALPHA,
-                                        Divide::BlendOperation::ADD
-                                    });
+        Divide::GL_API::getStateTracker().setBlending(Divide::BlendingProperties{
+                                                      Divide::BlendProperty::ONE,
+                                                      Divide::BlendProperty::INV_SRC_ALPHA,
+                                                      Divide::BlendOperation::ADD
+                                                  });
     }
     else
     {
-        Divide::GL_API::setBlending(Divide::BlendingProperties{
-                                        Divide::BlendProperty::SRC_ALPHA,
-                                        Divide::BlendProperty::INV_SRC_ALPHA,
-                                        Divide::BlendOperation::ADD,
-                                        Divide::BlendProperty::INV_DEST_ALPHA,
-                                        Divide::BlendProperty::ONE,
-                                        Divide::BlendOperation::ADD
-                                    });
+        Divide::GL_API::getStateTracker().setBlending(Divide::BlendingProperties{
+                                                      Divide::BlendProperty::SRC_ALPHA,
+                                                      Divide::BlendProperty::INV_SRC_ALPHA,
+                                                      Divide::BlendOperation::ADD,
+                                                      Divide::BlendProperty::INV_DEST_ALPHA,
+                                                      Divide::BlendProperty::ONE,
+                                                      Divide::BlendOperation::ADD
+                                                  });
     }
 }
 
