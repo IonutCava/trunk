@@ -209,6 +209,8 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     bool mouseButtonReleased(const Input::MouseEvent& arg,
                              Input::MouseButton button);
 
+    bool onSDLInputEvent(SDL_Event event) override;
+
     ResourceCache& resourceCache() {
         assert(_resCache != nullptr);
         return *_resCache;

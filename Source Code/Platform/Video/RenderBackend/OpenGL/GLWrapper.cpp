@@ -104,8 +104,8 @@ void GL_API::beginFrame(DisplayWindow& window, bool global) {
 
     // Clear our buffers
     if (window.swapBuffers() && !window.minimized() && !window.hidden()) {
-        SDL_GLContext targetContext = (SDL_GLContext)window.context().app().windowManager().getMainWindow().userData();//window.userData()
-        if (_currentContext != targetContext) {
+        SDL_GLContext targetContext = (SDL_GLContext)window.userData();
+        if (targetContext != nullptr && _currentContext != targetContext) {
             SDL_GL_MakeCurrent(window.getRawWindow(), targetContext);
             _currentContext = targetContext;
         }
@@ -156,8 +156,8 @@ void GL_API::endFrame(DisplayWindow& window, bool global) {
         }
 
         if (window.swapBuffers() && !window.minimized() && !window.hidden()) {
-            SDL_GLContext targetContext = (SDL_GLContext)window.context().app().windowManager().getMainWindow().userData();//window.userData()
-            if (_currentContext != targetContext) {
+            SDL_GLContext targetContext = (SDL_GLContext)window.userData();
+            if (targetContext != nullptr && _currentContext != targetContext) {
                 SDL_GL_MakeCurrent(window.getRawWindow(), targetContext);
                 _currentContext = targetContext;
             }

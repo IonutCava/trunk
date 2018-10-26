@@ -105,6 +105,7 @@ class EventHandler : public OIS::KeyListener,
     bool mouseButtonReleased(const MouseEvent& arg, MouseButton button);
     /// Mouse button released - OIS
     bool mouseReleased(const OIS::MouseEvent& arg, OIS::MouseButtonID id) override;
+    bool onSDLInputEvent(SDL_Event event) override;
 };
 };  // namespace Input
 };  // namespace Divide;

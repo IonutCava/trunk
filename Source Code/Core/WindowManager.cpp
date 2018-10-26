@@ -359,17 +359,40 @@ void WindowManager::pollSDLEvents() {
                 args._windowGUID = focusedWindow.getGUID();
                 args._text = event.text.text;
                 focusedWindow.notifyListeners(WindowEvent::TEXT, args);
+            };
+            case SDL_TEXTEDITING:
+            case SDL_KEYUP:
+            case SDL_KEYDOWN:
+            case SDL_MOUSEBUTTONDOWN: 
+            case SDL_MOUSEBUTTONUP:
+            case SDL_MOUSEMOTION:
+            case SDL_MOUSEWHEEL:
+            case SDL_JOYAXISMOTION:
+            case SDL_JOYBALLMOTION:
+            case SDL_JOYHATMOTION:
+            case SDL_JOYBUTTONDOWN:
+            case SDL_JOYBUTTONUP:
+            case SDL_JOYDEVICEADDED:
+            case SDL_JOYDEVICEREMOVED:
+            case SDL_CONTROLLERAXISMOTION:
+            case SDL_CONTROLLERBUTTONDOWN:
+            case SDL_CONTROLLERBUTTONUP:
+            case SDL_CONTROLLERDEVICEADDED:
+            case SDL_CONTROLLERDEVICEREMOVED:
+            case SDL_CONTROLLERDEVICEREMAPPED: {
+                // Send to kernel and dispatch where appropriate from there (including back in the WindowManager if needed)
+                _context->kernel().onSDLInputEvent(event);
             } break;
-             case SDL_KEYUP:
-             case SDL_KEYDOWN:
-             case SDL_MOUSEBUTTONDOWN: 
-             case SDL_MOUSEBUTTONUP:
-             case SDL_MOUSEMOTION:
-             case SDL_MOUSEWHEEL:{
-                 // OIS handles this
-             } break;
         }
     };
+}
+
+void WindowManager::onSDLInputEvent(SDL_Event event) {
+    for (DisplayWindow* win : _windows) {
+        if (win->onSDLInputEvent(event)) {
+            break;
+        }
+    }
 }
 
 bool WindowManager::anyWindowFocus() const {
@@ -400,7 +423,10 @@ void WindowManager::destroyAPISettings(DisplayWindow* window) {
         return;
     }
 
-    SDL_GL_DeleteContext((SDL_GLContext)window->_userData);
+    if (BitCompare(window->_flags, WindowFlags::OWNS_RENDER_CONTEXT)) {
+        SDL_GL_DeleteContext((SDL_GLContext)window->_userData);
+        window->_userData = nullptr;
+    }
 }
 
 ErrorCode WindowManager::configureAPISettings(U32 descriptorFlags) {
@@ -423,8 +449,6 @@ ErrorCode WindowManager::configureAPISettings(U32 descriptorFlags) {
     validateAssert(SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8));
     validateAssert(SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24));
 
-    bool shareGLContext = BitCompare(descriptorFlags, to_base(WindowDescriptor::Flags::SHARE_CONTEXT));
-
     if (!Config::ENABLE_GPU_VALIDATION) {
         //validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_NO_ERROR, 1));
     }
@@ -445,7 +469,7 @@ ErrorCode WindowManager::configureAPISettings(U32 descriptorFlags) {
     }
 
     validateAssert(SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1));
-    if (shareGLContext) {
+    if (BitCompare(descriptorFlags, to_base(WindowDescriptor::Flags::SHARE_CONTEXT))) {
         validate(SDL_GL_MakeCurrent(getMainWindow().getRawWindow(), (SDL_GLContext)getMainWindow().userData()));
     }
 
@@ -454,14 +478,15 @@ ErrorCode WindowManager::configureAPISettings(U32 descriptorFlags) {
 
 ErrorCode WindowManager::applyAPISettings(DisplayWindow* window, U32 descriptorFlags) {
     // Create a context and make it current
-    window->_userData = SDL_GL_CreateContext(window->getRawWindow());
+    if (BitCompare(window->_flags, WindowFlags::OWNS_RENDER_CONTEXT)) {
+        window->_userData = SDL_GL_CreateContext(window->getRawWindow());
 
-    if (window->_userData == nullptr)
-    {
-        Console::errorfn(Locale::get(_ID("ERROR_GFX_DEVICE")), SDL_GetError());
-        Console::printfn(Locale::get(_ID("WARN_SWITCH_API")));
-        Console::printfn(Locale::get(_ID("WARN_APPLICATION_CLOSE")));
-        return ErrorCode::OGL_OLD_HARDWARE;
+        if (window->_userData == nullptr) {
+            Console::errorfn(Locale::get(_ID("ERROR_GFX_DEVICE")), SDL_GetError());
+            Console::printfn(Locale::get(_ID("WARN_SWITCH_API")));
+            Console::printfn(Locale::get(_ID("WARN_APPLICATION_CLOSE")));
+            return ErrorCode::OGL_OLD_HARDWARE;
+        }
     }
 
     if (BitCompare(window->_flags, WindowFlags::VSYNC)) {
@@ -480,7 +505,8 @@ ErrorCode WindowManager::applyAPISettings(DisplayWindow* window, U32 descriptorF
         SDL_GL_SetSwapInterval(0);
     }
 
-    if (BitCompare(descriptorFlags, to_base(WindowDescriptor::Flags::SHARE_CONTEXT))) {
+    // Switch back to the main render context
+    if (BitCompare(window->_flags, WindowFlags::OWNS_RENDER_CONTEXT)) {
         validate(SDL_GL_MakeCurrent(getMainWindow().getRawWindow(), (SDL_GLContext)getMainWindow().userData()));
     }
 

@@ -68,6 +68,7 @@ ErrorCode DisplayWindow::init(U32 windowFlags,
 {
     bool vsync = BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::VSYNC));
     ToggleBit(_flags, WindowFlags::VSYNC, vsync);
+    ToggleBit(_flags, WindowFlags::OWNS_RENDER_CONTEXT, !BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::SHARE_CONTEXT)));
 
     _type = initialType;
     _title = descriptor.title;
@@ -452,6 +453,10 @@ bool DisplayWindow::joystickSliderMoved(const Input::JoystickEvent& arg, I8 inde
 
 bool DisplayWindow::joystickvector3Moved(const Input::JoystickEvent& arg, I8 index) {
     return _context.app().kernel().joystickvector3Moved(arg, index);
+}
+
+bool DisplayWindow::onSDLInputEvent(SDL_Event event) {
+    return false;
 }
 /// Mouse moved: return true if input was consumed
 bool DisplayWindow::mouseMoved(const Input::MouseEvent& arg) {

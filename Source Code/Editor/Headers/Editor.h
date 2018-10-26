@@ -39,16 +39,18 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "Rendering/Headers/FrameListener.h"
 
+#include "Editor/Widgets/Headers/Gizmo.h"
+
 #include "Platform/Headers/DisplayWindow.h"
 #include "Platform/Input/Headers/InputAggregatorInterface.h"
 
-#include <imgui/addons/imguigizmo/ImGuizmo.h>
 #include <imgui/addons/imguistyleserializer/imguistyleserializer.h>
 
 struct ImDrawData;
 namespace Divide {
 
 namespace Attorney {
+    class EditorGizmo;
     class EditorPanelManager;
     class EditorOutputWindow;
     class EditorWindowManager;
@@ -57,6 +59,7 @@ namespace Attorney {
     class EditorSolutionExplorerWindow;
 };
 
+class Gizmo;
 class Camera;
 class MenuBar;
 class DockedWindow;
@@ -74,18 +77,13 @@ FWD_DECLARE_MANAGED_CLASS(Texture);
 FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
 
 struct SizeChangeParams;
-
-struct TransformSettings {
-    ImGuizmo::OPERATION currentGizmoOperation = ImGuizmo::ROTATE;
-    ImGuizmo::MODE currentGizmoMode = ImGuizmo::WORLD;
-    bool useSnap = false;
-    F32 snap[3] = { 1.f, 1.f, 1.f };
-};
+struct TransformSettings;
 
 class Editor : public PlatformContextComponent,
                public FrameListener,
                public Input::InputAggregatorInterface {
 
+    friend class Attorney::EditorGizmo;
     friend class Attorney::EditorPanelManager;
     friend class Attorney::EditorOutputWindow;
     friend class Attorney::EditorWindowManager;
@@ -94,12 +92,6 @@ class Editor : public PlatformContextComponent,
     friend class Attorney::EditorSolutionExplorerWindow;
 
   public:
-    enum class Context : U8 {
-        Editor = 0,
-        Gizmo,
-        COUNT
-    };
-
     enum class WindowType : U8 {
         SolutionExplorer = 0,
         Properties,
@@ -161,26 +153,18 @@ class Editor : public PlatformContextComponent,
     bool joystickPovMoved(const Input::JoystickEvent &arg, I8 pov) override;
     bool joystickSliderMoved(const Input::JoystickEvent &arg, I8 index) override;
     bool joystickvector3Moved(const Input::JoystickEvent &arg, I8 index) override;
-
+    bool onSDLInputEvent(SDL_Event event) override;
+        
   protected:
-    bool renderGizmos(const U64 deltaTime);
     bool renderMinimal(const U64 deltaTime);
     bool renderFull(const U64 deltaTime);
-    bool hasSceneFocus();
-    bool hasSceneFocus(bool& gizmoFocus);
-    bool hasGizmoFocus();
-    ImGuiIO& GetIO(U8 idx);
-
-  protected: // window events
-    void OnUTF8(const char* text);
+    void updateMousePosAndButtons();
 
   protected: // attorney
-    void renderDrawList(ImDrawData* pDrawData, bool gizmo, I64 windowGUID);
+    void renderDrawList(ImDrawData* pDrawData, bool overlayOnScene, I64 windowGUID);
     void drawMenuBar();
     void showSampleWindow(bool state);
-    void enableGizmo(bool state);
     bool showSampleWindow() const;
-    bool enableGizmo() const;
     void setSelectedCamera(Camera* camera);
     Camera* getSelectedCamera() const;
     bool hasUnsavedElements() const;
@@ -190,39 +174,42 @@ class Editor : public PlatformContextComponent,
     ImGuiStyleEnum _currentTheme;
     ImGuiStyleEnum _currentDimmedTheme;
 
-    TransformSettings _transformSettings;
     std::unique_ptr<MenuBar> _menuBar;
+    std::unique_ptr<Gizmo> _gizmo;
 
     bool              _running;
     bool              _sceneHovered;
-    bool              _gizmosVisible;
     bool              _scenePreviewFocused;
     bool              _showSampleWindow;
-    bool              _enableGizmo;
     Camera*           _selectedCamera;
     DisplayWindow*    _mainWindow;
+    ImGuiContext*     _imguiContext;
     Texture_ptr       _fontTexture;
     ShaderProgram_ptr _imguiProgram;
     Time::ProfileTimer& _editorUpdateTimer;
     Time::ProfileTimer& _editorRenderTimer;
 
-    std::array<ImGuiContext*, to_base(Context::COUNT)>     _imguiContext;
-    std::array<vector<I64>, to_base(WindowEvent::COUNT)> _windowListeners;
-    vector<SceneGraphNode*> _selectedNodes;
-    std::array<DockedWindow*, to_base(WindowType::COUNT)> _dockedWindows;
-
     std::vector<I64> _unsavedElements;
+    std::array<DockedWindow*, to_base(WindowType::COUNT)> _dockedWindows;
 }; //Editor
 
 namespace Attorney {
+    class EditorGizmo {
+    private:
+        static void renderDrawList(Editor& editor, ImDrawData* pDrawData, bool overlayOnScene, I64 windowGUID) {
+            editor.renderDrawList(pDrawData, overlayOnScene, windowGUID);
+        }
+        friend class Divide::Gizmo;
+    };
+
     class EditorSceneViewWindow {
     private:
-        static bool editorEnableGizmo(Editor& editor) {
-            return editor.enableGizmo();
+        static bool editorEnabledGizmo(Editor& editor) {
+            return editor._gizmo->enabled();
         }
 
         static void editorEnableGizmo(Editor& editor, bool state) {
-            editor.enableGizmo(state);
+            editor._gizmo->enable(state);
         }
 
         friend class Divide::SceneViewWindow;
@@ -239,11 +226,11 @@ namespace Attorney {
         }
 
         static bool editorEnableGizmo(Editor& editor) {
-            return editor.enableGizmo();
+            return editor._gizmo->enabled();
         }
 
         static void editorEnableGizmo(Editor& editor, bool state) {
-            editor.enableGizmo(state);
+            editor._gizmo->enable(state);
         }
 
         friend class Divide::SolutionExplorerWindow;
@@ -277,13 +264,13 @@ namespace Attorney {
             editor.showSampleWindow(state);
         }
         static void enableGizmo(Editor& editor, bool state) {
-            return editor.enableGizmo(state);
+            return editor._gizmo->enable(state);
         }
         static bool showSampleWindow(const Editor& editor) {
             return editor.showSampleWindow();
         }
         static bool enableGizmo(const Editor& editor) {
-            return editor.enableGizmo();
+            return editor._gizmo->enabled();
         }
         static bool hasUnsavedElements(const Editor& editor) {
             return editor.hasUnsavedElements();

@@ -129,6 +129,10 @@ bool EventHandler::keyReleased(const OIS::KeyEvent &arg) {
     return onKeyUp(key);
 }
 
+bool EventHandler::onSDLInputEvent(SDL_Event event) {
+    return false;
+}
+
 //////////// Effect variables applier functions
 ////////////////////////////////////////////////
 // These functions apply the given Variables to the given OIS::Effect

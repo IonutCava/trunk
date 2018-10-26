@@ -133,6 +133,10 @@ protected:
     void pollSDLEvents();
 
 protected:
+    friend class Kernel;
+    void onSDLInputEvent(SDL_Event event);
+
+protected:
     U32 createAPIFlags(RenderAPI api);
     ErrorCode configureAPISettings(U32 descriptorFlags);
     ErrorCode applyAPISettings(DisplayWindow* window, U32 descriptorFlags);

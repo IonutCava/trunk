@@ -86,24 +86,20 @@ class SceneInput : public Input::InputAggregatorInterface {
     explicit SceneInput(Scene &parentScene, PlatformContext& context);
 
     //Keyboard: return true if input was consumed
-    bool onKeyDown(const Input::KeyEvent &arg);
-    bool onKeyUp(const Input::KeyEvent &arg);
+    bool onKeyDown(const Input::KeyEvent &arg) override;
+    bool onKeyUp(const Input::KeyEvent &arg) override;
     /// Joystick or Gamepad: return true if input was consumed
-    bool joystickButtonPressed(const Input::JoystickEvent &arg,
-                               Input::JoystickButton button);
-    bool joystickButtonReleased(const Input::JoystickEvent &arg,
-                                Input::JoystickButton button);
-    bool joystickAxisMoved(const Input::JoystickEvent &arg, I8 axis);
-    bool joystickPovMoved(const Input::JoystickEvent &arg, I8 pov);
-    bool joystickSliderMoved(const Input::JoystickEvent &arg, I8 index);
-    bool joystickvector3Moved(const Input::JoystickEvent &arg, I8 index);
+    bool joystickButtonPressed(const Input::JoystickEvent &arg, Input::JoystickButton button) override;
+    bool joystickButtonReleased(const Input::JoystickEvent &arg, Input::JoystickButton button) override;
+    bool joystickAxisMoved(const Input::JoystickEvent &arg, I8 axis) override;
+    bool joystickPovMoved(const Input::JoystickEvent &arg, I8 pov) override;
+    bool joystickSliderMoved(const Input::JoystickEvent &arg, I8 index) override;
+    bool joystickvector3Moved(const Input::JoystickEvent &arg, I8 index) override;
     /// Mouse: return true if input was consumed
-    bool mouseMoved(const Input::MouseEvent &arg);
-    bool mouseButtonPressed(const Input::MouseEvent &arg,
-                            Input::MouseButton id);
-    bool mouseButtonReleased(const Input::MouseEvent &arg,
-                             Input::MouseButton id);
-
+    bool mouseMoved(const Input::MouseEvent &arg) override;
+    bool mouseButtonPressed(const Input::MouseEvent &arg, Input::MouseButton id) override;
+    bool mouseButtonReleased(const Input::MouseEvent &arg, Input::MouseButton id) override;
+    bool onSDLInputEvent(SDL_Event event) override;
     /// Returns false if the key is already assigned and couldn't be merged
     /// Call removeKeyMapping for the specified key first
     bool addKeyMapping(Input::KeyCode key, PressReleaseActions keyCbks);

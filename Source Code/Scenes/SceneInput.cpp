@@ -327,6 +327,10 @@ bool SceneInput::mouseButtonReleased(const Input::MouseEvent& arg,
     return false;
 }
 
+bool SceneInput::onSDLInputEvent(SDL_Event event) {
+    return false;
+}
+
 bool SceneInput::addKeyMapping(Input::KeyCode key, PressReleaseActions keyCbks) {
     auto result = hashAlg::insert(_keyMap, key, keyCbks);
     if (!result.second) {

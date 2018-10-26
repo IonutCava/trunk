@@ -156,6 +156,8 @@ class InputAggregatorInterface {
     virtual bool joystickPovMoved(const JoystickEvent &arg, I8 pov) = 0;
     virtual bool joystickSliderMoved(const JoystickEvent &arg, I8 index) = 0;
     virtual bool joystickvector3Moved(const JoystickEvent &arg, I8 index) = 0;
+
+    virtual bool onSDLInputEvent(SDL_Event event) = 0;
 };
 
 };  // namespace Input

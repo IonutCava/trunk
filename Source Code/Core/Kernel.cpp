@@ -853,4 +853,20 @@ bool Kernel::joystickvector3Moved(const Input::JoystickEvent& arg, I8 index) {
     return false;
 }
 
+bool Kernel::onSDLInputEvent(SDL_Event event) {
+    _platformContext->app().windowManager().onSDLInputEvent(event);
+
+    if (Config::Build::ENABLE_EDITOR) {
+        if (_platformContext->editor().onSDLInputEvent(event)) {
+            return true;
+        }
+    }
+    
+    if (!_platformContext->gui().onSDLInputEvent(event)) {
+        return _sceneManager->onSDLInputEvent(event);
+    }
+
+    return false;
+}
 };
+

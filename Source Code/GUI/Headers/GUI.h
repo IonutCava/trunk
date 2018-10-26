@@ -142,6 +142,8 @@ public:
     /// Mouse button released: return true if input was consumed
     bool mouseButtonReleased(const Input::MouseEvent& arg, Input::MouseButton button);
 
+    bool onSDLInputEvent(SDL_Event event) override;
+
     Scene* activeScene() {
         return _activeScene;
     }

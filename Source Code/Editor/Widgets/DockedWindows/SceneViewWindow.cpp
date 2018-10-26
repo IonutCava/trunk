@@ -79,7 +79,7 @@ namespace Divide {
 
         ImGuiWindow* window = ImGui::GetCurrentWindow();
 
-        bool enableGizmo = Attorney::EditorSceneViewWindow::editorEnableGizmo(_parent);
+        bool enableGizmo = Attorney::EditorSceneViewWindow::editorEnabledGizmo(_parent);
         TransformSettings settings = _parent.getTransformSettings();
 
         const F32 ItemSpacing = ImGui::GetStyle().ItemSpacing.x;

@@ -505,6 +505,10 @@ bool GUI::joystickvector3Moved(const Input::JoystickEvent& arg, I8 index) {
     return false;
 }
 
+bool GUI::onSDLInputEvent(SDL_Event event) {
+    return false;
+}
+
 GUIElement* GUI::getGUIElementImpl(I64 sceneID, U64 elementName, GUIType type) const {
     if (sceneID != 0) {
         SharedLock r_lock(_guiStackLock);

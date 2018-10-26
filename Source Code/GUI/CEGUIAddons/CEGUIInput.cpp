@@ -160,4 +160,8 @@ bool CEGUIInput::joystickvector3Moved(const Input::JoystickEvent& arg,
 
     return consumed;
 }
+
+bool CEGUIInput::onSDLInputEvent(SDL_Event event) {
+    return false;
+}
 };

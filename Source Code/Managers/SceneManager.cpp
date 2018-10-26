@@ -711,6 +711,10 @@ bool SceneManager::joystickvector3Moved(const Input::JoystickEvent& arg,
     return getActiveScene().input().joystickvector3Moved(arg, index);
 }
 
+bool SceneManager::onSDLInputEvent(SDL_Event event) {
+    return false;
+}
+
 bool LoadSave::loadScene(Scene& activeScene) {
     if (activeScene.state().saveLoadDisabled()) {
         return true;

@@ -95,6 +95,7 @@ enum class WindowFlags : U16 {
     MAXIMIZED = toBit(8),
     HIDDEN = toBit(9),
     WARP = toBit(10),
+    OWNS_RENDER_CONTEXT = toBit(11), //BAD
     COUNT
 };
 
@@ -227,25 +228,26 @@ private:
 
 protected: //Input
     /// Key pressed: return true if input was consumed
-    bool onKeyDown(const Input::KeyEvent& key);
+    bool onKeyDown(const Input::KeyEvent& key) override;
     /// Key released: return true if input was consumed
-    bool onKeyUp(const Input::KeyEvent& key);
+    bool onKeyUp(const Input::KeyEvent& key) override;
     /// Joystick axis change: return true if input was consumed
-    bool joystickAxisMoved(const Input::JoystickEvent& arg, I8 axis);
+    bool joystickAxisMoved(const Input::JoystickEvent& arg, I8 axis) override;
     /// Joystick direction change: return true if input was consumed
-    bool joystickPovMoved(const Input::JoystickEvent& arg, I8 pov);
+    bool joystickPovMoved(const Input::JoystickEvent& arg, I8 pov) override;
     /// Joystick button pressed: return true if input was consumed
-    bool joystickButtonPressed(const Input::JoystickEvent& arg, Input::JoystickButton button);
+    bool joystickButtonPressed(const Input::JoystickEvent& arg, Input::JoystickButton button) override;
     /// Joystick button released: return true if input was consumed
-    bool joystickButtonReleased(const Input::JoystickEvent& arg, Input::JoystickButton button);
-    bool joystickSliderMoved(const Input::JoystickEvent& arg, I8 index);
-    bool joystickvector3Moved(const Input::JoystickEvent& arg, I8 index);
+    bool joystickButtonReleased(const Input::JoystickEvent& arg, Input::JoystickButton button) override;
+    bool joystickSliderMoved(const Input::JoystickEvent& arg, I8 index) override;
+    bool joystickvector3Moved(const Input::JoystickEvent& arg, I8 index) override;
+    bool onSDLInputEvent(SDL_Event event) override;
     /// Mouse moved: return true if input was consumed
-    bool mouseMoved(const Input::MouseEvent& arg);
+    bool mouseMoved(const Input::MouseEvent& arg) override;
     /// Mouse button pressed: return true if input was consumed
-    bool mouseButtonPressed(const Input::MouseEvent& arg, Input::MouseButton button);
+    bool mouseButtonPressed(const Input::MouseEvent& arg, Input::MouseButton button) override;
     /// Mouse button released: return true if input was consumed
-    bool mouseButtonReleased(const Input::MouseEvent& arg, Input::MouseButton button);
+    bool mouseButtonReleased(const Input::MouseEvent& arg, Input::MouseButton button) override;
 
 private:
     WindowManager& _parent;

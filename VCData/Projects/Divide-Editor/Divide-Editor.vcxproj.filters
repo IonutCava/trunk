@@ -158,6 +158,9 @@
     <ClCompile Include="..\..\..\Source Code\Editor\Widgets\ImGuiExtensions.cpp">
       <Filter>Widgets</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Source Code\Editor\Widgets\Gizmo.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../../Source Code/Libs/imgui\imconfig.h">
@@ -350,6 +353,9 @@
       <Filter>Widgets\DockedWindows\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\Source Code\Editor\Widgets\Headers\ImGuiExtensions.h">
+      <Filter>Widgets\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source Code\Editor\Widgets\Headers\Gizmo.h">
       <Filter>Widgets\Headers</Filter>
     </ClInclude>
   </ItemGroup>
