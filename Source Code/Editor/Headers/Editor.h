@@ -190,6 +190,7 @@ class Editor : public PlatformContextComponent,
     Time::ProfileTimer& _editorRenderTimer;
 
     std::vector<I64> _unsavedElements;
+    std::array<bool, 5> _mouseButtonPressed;
     std::array<DockedWindow*, to_base(WindowType::COUNT)> _dockedWindows;
 }; //Editor
 

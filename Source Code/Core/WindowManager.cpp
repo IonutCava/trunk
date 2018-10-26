@@ -354,11 +354,13 @@ void WindowManager::pollSDLEvents() {
                 _context->app().RequestShutdown();
             } break;
             case SDL_TEXTINPUT: {
-                DisplayWindow& focusedWindow = getFocusedWindow();
-                DisplayWindow::WindowEventArgs args = {};
-                args._windowGUID = focusedWindow.getGUID();
-                args._text = event.text.text;
-                focusedWindow.notifyListeners(WindowEvent::TEXT, args);
+                DisplayWindow* focusedWindow = getFocusedWindow();
+                if (focusedWindow != nullptr) {
+                    DisplayWindow::WindowEventArgs args = {};
+                    args._windowGUID = focusedWindow->getGUID();
+                    args._text = event.text.text;
+                    focusedWindow->notifyListeners(WindowEvent::TEXT, args);
+                }
             };
             case SDL_TEXTEDITING:
             case SDL_KEYUP:
@@ -396,7 +398,7 @@ void WindowManager::onSDLInputEvent(SDL_Event event) {
 }
 
 bool WindowManager::anyWindowFocus() const {
-    return getFocusedWindow().hasFocus();
+    return getFocusedWindow() != nullptr;
 }
 
 U32 WindowManager::createAPIFlags(RenderAPI api) {
@@ -480,13 +482,15 @@ ErrorCode WindowManager::applyAPISettings(DisplayWindow* window, U32 descriptorF
     // Create a context and make it current
     if (BitCompare(window->_flags, WindowFlags::OWNS_RENDER_CONTEXT)) {
         window->_userData = SDL_GL_CreateContext(window->getRawWindow());
+    } else {
+        window->_userData = getMainWindow().userData();
+    }
 
-        if (window->_userData == nullptr) {
-            Console::errorfn(Locale::get(_ID("ERROR_GFX_DEVICE")), SDL_GetError());
-            Console::printfn(Locale::get(_ID("WARN_SWITCH_API")));
-            Console::printfn(Locale::get(_ID("WARN_APPLICATION_CLOSE")));
-            return ErrorCode::OGL_OLD_HARDWARE;
-        }
+    if (window->_userData == nullptr) {
+        Console::errorfn(Locale::get(_ID("ERROR_GFX_DEVICE")), SDL_GetError());
+        Console::printfn(Locale::get(_ID("WARN_SWITCH_API")));
+        Console::printfn(Locale::get(_ID("WARN_APPLICATION_CLOSE")));
+        return ErrorCode::OGL_OLD_HARDWARE;
     }
 
     if (BitCompare(window->_flags, WindowFlags::VSYNC)) {
@@ -519,10 +523,30 @@ void WindowManager::captureMouse(bool state) {
 
 void WindowManager::setCursorPosition(I32 x, I32 y, bool global) {
     if (!global) {
-        getFocusedWindow().setCursorPosition(x, y);
+        DisplayWindow* focusedWindow = getFocusedWindow();
+        if (focusedWindow != nullptr) {
+            if (x == -1) {
+                x = SDL_WINDOWPOS_CENTERED_DISPLAY(focusedWindow->currentDisplayIndex());
+            }
+            if (y == -1) {
+                y = SDL_WINDOWPOS_CENTERED_DISPLAY(focusedWindow->currentDisplayIndex());
+            }
+
+            focusedWindow->setCursorPosition(x, y);
+        } else {
+            setCursorPosition(x, y, true);
+        }
     } else {
+        if (x == -1) {
+            x = SDL_WINDOWPOS_CENTERED_DISPLAY(getMainWindow().currentDisplayIndex());
+        }
+        if (y == -1) {
+            y = SDL_WINDOWPOS_CENTERED_DISPLAY(getMainWindow().currentDisplayIndex());
+        }
+
         SDL_WarpMouseGlobal(x, y);
     }
+
     Attorney::KernelWindowManager::setCursorPosition(_context->app().kernel(), x, y);
 }
 
@@ -549,8 +573,13 @@ void WindowManager::setCaptureMouse(bool state) {
 }
 
 void WindowManager::snapCursorToCenter() {
-    const vec2<U16>& center = getFocusedWindow().getDimensions();
-    setCursorPosition(to_I32(center.x * 0.5f), to_I32(center.y * 0.5f));
+    DisplayWindow* focusedWindow = getFocusedWindow();
+    if (focusedWindow != nullptr) {
+        const vec2<U16>& center = focusedWindow->getDimensions();
+        setCursorPosition(to_I32(center.x * 0.5f), to_I32(center.y * 0.5f));
+    } else {
+        setCursorPosition(-1, -1, true);
+    }
 }
 
 void WindowManager::hideAll() {

@@ -109,8 +109,9 @@ public:
     inline DisplayWindow& getMainWindow();
     inline const DisplayWindow& getMainWindow() const;
 
-    inline DisplayWindow& getFocusedWindow();
-    inline const DisplayWindow& getFocusedWindow() const;
+    //Returns null if no window is currently focused
+    inline DisplayWindow* getFocusedWindow();
+    inline const DisplayWindow* getFocusedWindow() const;
 
     inline DisplayWindow& getWindow(I64 guid);
     inline const DisplayWindow& getWindow(I64 guid) const;

@@ -64,7 +64,6 @@ GL_API::GL_API(GFXDevice& context, const bool glES)
       _prevWidthString(0),
       _fonsContext(nullptr),
       _GUIGLrenderer(nullptr),
-      _currentContext(nullptr),
       _glswState(-1),
       _swapBufferTimer(Time::ADD_TIMER("Swap Buffer Timer"))
 {
@@ -104,9 +103,9 @@ void GL_API::beginFrame(DisplayWindow& window, bool global) {
 
     // Clear our buffers
     if (window.swapBuffers() && !window.minimized() && !window.hidden()) {
-        SDL_GLContext targetContext = (SDL_GLContext)window.userData();
-        if (targetContext != nullptr && _currentContext != targetContext) {
-            SDL_GL_MakeCurrent(window.getRawWindow(), targetContext);
+        std::pair<I64, SDL_GLContext> targetContext = std::make_pair(window.getGUID(), (SDL_GLContext)window.userData());
+        if (targetContext.second != nullptr && targetContext != _currentContext) {
+            SDL_GL_MakeCurrent(window.getRawWindow(), targetContext.second);
             _currentContext = targetContext;
         }
 
@@ -156,9 +155,9 @@ void GL_API::endFrame(DisplayWindow& window, bool global) {
         }
 
         if (window.swapBuffers() && !window.minimized() && !window.hidden()) {
-            SDL_GLContext targetContext = (SDL_GLContext)window.userData();
-            if (targetContext != nullptr && _currentContext != targetContext) {
-                SDL_GL_MakeCurrent(window.getRawWindow(), targetContext);
+            std::pair<I64, SDL_GLContext> targetContext = std::make_pair(window.getGUID(), (SDL_GLContext)window.userData());
+            if (targetContext.second != nullptr && targetContext != _currentContext) {
+                SDL_GL_MakeCurrent(window.getRawWindow(), targetContext.second);
                 _currentContext = targetContext;
             }
 

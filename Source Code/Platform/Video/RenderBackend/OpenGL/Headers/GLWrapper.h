@@ -272,7 +272,7 @@ private:
     static GLStateTracker* s_activeStateTracker;
 
 
-    SDL_GLContext _currentContext = nullptr;
+    std::pair<I64, SDL_GLContext> _currentContext;
 };
 
 };  // namespace Divide

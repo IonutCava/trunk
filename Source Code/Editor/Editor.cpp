@@ -34,8 +34,6 @@
 namespace Divide {
 
 namespace {
-    bool g_MousePressed[3] = { false, false, false };
-
     bool show_another_window = false;
     I32 window_opacity = 255;
     I32 previous_window_opacity = 255;
@@ -43,6 +41,14 @@ namespace {
 
     WindowManager* g_windowManager = nullptr;
     Editor* g_editor = nullptr;
+
+    static std::array<U32, 5> g_sdlButtons = {
+        (U32)SDL_BUTTON_LEFT,
+        (U32)SDL_BUTTON_RIGHT,
+        (U32)SDL_BUTTON_MIDDLE,
+        (U32)SDL_BUTTON_X1,
+        (U32)SDL_BUTTON_X2
+    };
 
     struct ImGuiViewportData
     {
@@ -92,6 +98,7 @@ Editor::Editor(PlatformContext& context, ImGuiStyleEnum theme, ImGuiStyleEnum di
 {
     _menuBar = std::make_unique<MenuBar>(context, true);
 
+    _mouseButtonPressed.fill(false);
     _dockedWindows.fill(nullptr);
     g_windowManager = &context.app().windowManager();
     g_editor = this;
@@ -437,8 +444,6 @@ void Editor::update(const U64 deltaTimeUS) {
         return;
     }
         
-    updateMousePosAndButtons();
-
     ToggleCursor(!io.MouseDrawCursor);
     if (io.MouseDrawCursor || ImGui::GetMouseCursor() == ImGuiMouseCursor_None) {
         WindowManager::setCursorStyle(CursorStyle::NONE);
@@ -554,6 +559,7 @@ bool Editor::framePostRenderStarted(const FrameEvent& evt) {
     {
         ImGui::SetCurrentContext(_imguiContext);
         IM_ASSERT(_imguiContext->IO.Fonts->IsBuilt());
+        updateMousePosAndButtons();
         ImGui::NewFrame();
     }
     
@@ -732,13 +738,17 @@ bool Editor::onKeyUp(const Input::KeyEvent& key) {
 }
 
 namespace {
-    ImGuiViewport* FindViewportByPlatformHandle(SDL_Window* platformHandle) {
-        ImGuiContext& g = *GImGui;
-        for (I32 i = 0; i != g.Viewports.Size; i++) {
-            if (g.Viewports[i]->PlatformHandle && ((DisplayWindow*)g.Viewports[i]->PlatformHandle)->getRawWindow() == platformHandle) {
-                return g.Viewports[i];
+    ImGuiViewport* FindViewportByPlatformHandle(ImGuiContext* context, DisplayWindow* window) {
+        if (window != nullptr) {
+            for (I32 i = 0; i != context->Viewports.Size; i++) {
+                DisplayWindow* it = (DisplayWindow*)context->Viewports[i]->PlatformHandle;
+
+                if (it != nullptr && it->getGUID() == window->getGUID()) {
+                    return context->Viewports[i];
+                }
             }
         }
+
         return nullptr;
     }
 
@@ -820,33 +830,37 @@ void Editor::updateMousePosAndButtons() {
 
     if (!io.WantSetMousePos) {
         io.MousePos = ImVec2(-FLT_MAX, -FLT_MAX);
-    } else if ((io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) == 0) {
-        SDL_WarpMouseInWindow(_mainWindow->getRawWindow(), (I32)io.MousePos.x, (I32)io.MousePos.y);
     } else {
-        SDL_WarpMouseGlobal((I32)io.MousePos.x, (I32)io.MousePos.y);
+        g_windowManager->setCursorPosition((I32)io.MousePos.x,
+                                           (I32)io.MousePos.y,
+                                           (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) != 0);
     }
 
     vec2<I32> mPos(-1);
-    U32 state = WindowManager::getMouseState(mPos, true);
-    io.MouseDown[0] = g_MousePressed[0] || (state & SDL_BUTTON(SDL_BUTTON_LEFT)) != 0;  // If a mouse press event came, always pass it as "mouse held this frame", so we don't miss click-release events that are shorter than 1 frame.
-    io.MouseDown[1] = g_MousePressed[1] || (state & SDL_BUTTON(SDL_BUTTON_RIGHT)) != 0;
-    io.MouseDown[2] = g_MousePressed[2] || (state & SDL_BUTTON(SDL_BUTTON_MIDDLE)) != 0;
-    g_MousePressed[0] = g_MousePressed[1] = g_MousePressed[2] = false;
+    U32 state = WindowManager::getMouseState(mPos, false);
 
-    SDL_Window* focusedWindow = SDL_GetKeyboardFocus();
-    if (focusedWindow) {
-        I32 wx = -1, wy = -1;
-        SDL_GetWindowPosition(focusedWindow, &wx, &wy);
-               
-        mPos.x -= wx;
-        mPos.y -= wy;
-
-    }
-    if (ImGuiViewport* viewport = FindViewportByPlatformHandle((SDL_Window*)focusedWindow)) {
-        io.MousePos = ImVec2(viewport->Pos.x + (F32)mPos.x, viewport->Pos.y + (F32)mPos.y);
+    bool anyDown = false;
+    DisplayWindow* focusedWindow = g_windowManager->getFocusedWindow();
+    if (focusedWindow != nullptr) {
+        vec2<I32> wPos = focusedWindow->getPosition();
+        //mPos -= wPos;
+        if (ImGuiViewport* viewport = FindViewportByPlatformHandle(_imguiContext, focusedWindow)) {
+            io.MousePos = ImVec2(viewport->Pos.x + (F32)mPos.x, viewport->Pos.y + (F32)mPos.y);
+            /*static bool print = false;
+            if (print) {
+                Console::printfn("X = %5.2f, Y = %5.2f, CAPTURE: %s", io.MousePos.x, io.MousePos.y, anyDown ? "true" : "false");
+            }
+            print = !print;*/
+        }
     }
 
-    WindowManager::setCaptureMouse(io.MouseDown[0] || io.MouseDown[1] || io.MouseDown[2]);
+    for (size_t i = 0; i < g_sdlButtons.size(); ++i) {
+        // If a mouse press event came, always pass it as "mouse held this frame", so we don't miss click-release events that are shorter than 1 frame.
+        io.MouseDown[i] = _mouseButtonPressed[i] || (state & SDL_BUTTON(g_sdlButtons[i])) != 0;
+        anyDown = anyDown || io.MouseDown[i];
+    }
+    _mouseButtonPressed.fill(false);
+    WindowManager::setCaptureMouse(anyDown);
 }
 
 bool Editor::onSDLInputEvent(SDL_Event event) {
@@ -879,15 +893,12 @@ bool Editor::onSDLInputEvent(SDL_Event event) {
         };
         case SDL_MOUSEBUTTONDOWN:
         {
-            if (event.button.button == SDL_BUTTON_LEFT) {
-                g_MousePressed[0] = true;
+            for (size_t i = 0; i < g_sdlButtons.size(); ++i) {
+                if (event.button.button == g_sdlButtons[i]) {
+                    _mouseButtonPressed[i] = true;
+                }
             }
-            if (event.button.button == SDL_BUTTON_RIGHT) {
-                g_MousePressed[1] = true;
-            }
-            if (event.button.button == SDL_BUTTON_MIDDLE) {
-                g_MousePressed[2] = true;
-            }
+
             return true;
         };
         case SDL_KEYDOWN:

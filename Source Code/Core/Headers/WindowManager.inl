@@ -67,24 +67,24 @@ inline const DisplayWindow& WindowManager::getWindow(I64 guid) const {
     return *_windows.front();
 }
 
-inline DisplayWindow& WindowManager::getFocusedWindow() {
+inline DisplayWindow* WindowManager::getFocusedWindow() {
     for (DisplayWindow* win : _windows) {
         if (win->hasFocus()) {
-            return *win;
+            return win;
         }
     }
 
-    return *_windows.front();
+    return nullptr;
 }
 
-inline const DisplayWindow& WindowManager::getFocusedWindow() const {
+inline const DisplayWindow* WindowManager::getFocusedWindow() const {
     for (const DisplayWindow* win : _windows) {
         if (win->hasFocus()) {
-            return *win;
+            return win;
         }
     }
 
-    return *_windows.front();
+    return nullptr;
 }
 
 inline DisplayWindow& WindowManager::getMainWindow() {

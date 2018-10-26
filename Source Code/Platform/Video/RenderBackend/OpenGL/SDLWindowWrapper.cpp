@@ -100,6 +100,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
 
     SDL_GL_MakeCurrent(window.getRawWindow(), (SDL_GLContext)window.userData());
     GLUtil::_glMainRenderWindow = &window;
+    _currentContext = std::make_pair(window.getGUID(), window.userData());
 
     glbinding::Binding::initialize([](const char *proc) { return (glbinding::ProcAddress)SDL_GL_GetProcAddress(proc); }, true);
 

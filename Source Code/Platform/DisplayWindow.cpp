@@ -261,6 +261,7 @@ void DisplayWindow::centerWindowPosition() {
 
 /// Mouse positioning is handled by SDL
 void DisplayWindow::setCursorPosition(I32 x, I32 y) {
+
     SDL_WarpMouseInWindow(_sdlWindow, x, y);
 }
 
