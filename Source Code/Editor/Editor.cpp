@@ -867,16 +867,6 @@ void Editor::updateMousePosAndButtons() {
     }
     _mouseButtonPressed.fill(false);
     WindowManager::setCaptureMouse(anyDown);
-
-    stringImpl title = Util::StringFormat("Mouse [%5.2f - %5.2f - %s]", io.MousePos.x, io.MousePos.y, anyDown ? "true" : "false");
-    title.append(viewportData);
-
-    if (focusedWindow != nullptr) {
-        title.append(focusedWindow->getGUID() == g_windowManager->getMainWindow().getGUID() ? " - Main Window" : " - Floating Window");
-        title.append(Util::StringFormat(" - Pos [ %d - %d ]", focusedWindow->getPosition().x, focusedWindow->getPosition().y));
-    }
-
-    g_windowManager->getMainWindow().title(title);
 }
 
 bool Editor::onSDLInputEvent(SDL_Event event) {
