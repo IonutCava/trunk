@@ -3,22 +3,25 @@
 // dear imgui, v1.66 WIP
 // (demo code)
 
-// Message to the person tempted to delete this file when integrating ImGui into their code base:
-// Don't do it! Do NOT remove this file from your project! It is useful reference code that you and other users will want to refer to.
+// Message to the person tempted to delete this file when integrating Dear ImGui into their code base:
+// Do NOT remove this file from your project! Think again! It is the most useful reference code that you and other coders
+// will want to refer to and call. Have the ImGui::ShowDemoWindow() function wired in an always-available debug menu of 
+// your game/app! Removing this file from your project is hindering access to documentation for everyone in your team, 
+// likely leading you to poorer usage of the library.
 // Everything in this file will be stripped out by the linker if you don't call ImGui::ShowDemoWindow().
-// During development, you can call ImGui::ShowDemoWindow() in your code to learn about various features of ImGui. Have it wired in a debug menu!
-// Removing this file from your project is hindering access to documentation for everyone in your team, likely leading you to poorer usage of the library.
-// Note that you can #define IMGUI_DISABLE_DEMO_WINDOWS in imconfig.h for the same effect.
-// If you want to link core ImGui in your final builds but not those demo windows, #define IMGUI_DISABLE_DEMO_WINDOWS in imconfig.h and those functions will be empty.
-// In other situation, when you have ImGui available you probably want this to be available for reference and execution.
+// If you want to link core Dear ImGui in your shipped builds but want an easy guarantee that the demo will not be linked, 
+// you can setup your imconfig.h with #define IMGUI_DISABLE_DEMO_WINDOWS and those functions will be empty.
+// In other situation, whenever you have Dear ImGui available you probably want this to be available for reference.
 // Thank you,
 // -Your beloved friend, imgui_demo.cpp (that you won't delete)
 
-// Message to beginner C/C++ programmers about the meaning of the 'static' keyword: in this demo code, we frequently we use 'static' variables inside functions.
-// A static variable persist across calls, so it is essentially like a global variable but declared inside the scope of the function.
-// We do this as a way to gather code and data in the same place, just to make the demo code faster to read, faster to write, and use less code.
-// It also happens to be a convenient way of storing simple UI related information as long as your function doesn't need to be reentrant or used in threads.
-// This might be a pattern you occasionally want to use in your code, but most of the real data you would be editing is likely to be stored outside your functions.
+// Message to beginner C/C++ programmers about the meaning of the 'static' keyword: 
+// In this demo code, we frequently we use 'static' variables inside functions. A static variable persist across calls, so it is 
+// essentially like a global variable but declared inside the scope of the function. We do this as a way to gather code and data 
+// in the same place, to make the demo source code faster to read, faster to write, and smaller in size.
+// It also happens to be a convenient way of storing simple UI related information as long as your function doesn't need to be reentrant
+// or used in threads. This might be a pattern you will want to use in your code, but most of the real data you would be editing is 
+// likely going to be stored outside your functions.
 
 /*
 
@@ -167,6 +170,13 @@ void ImGui::ShowUserGuide()
 //-----------------------------------------------------------------------------
 // [SECTION] Demo Window / ShowDemoWindow()
 //-----------------------------------------------------------------------------
+
+// We split the contents of the big ShowDemoWindow() function into smaller functions (because the link time of very large functions grow non-linearly)
+static void ShowDemoWindowWidgets();
+static void ShowDemoWindowLayout();
+static void ShowDemoWindowPopups();
+static void ShowDemoWindowColumns();
+static void ShowDemoWindowMisc();
 
 // Demonstrate most Dear ImGui features (this is big function!)
 // You may execute this function to experiment with the UI and understand what it does. You may then search for keywords in the code when you are interested by a specific feature.
@@ -412,8 +422,22 @@ void ImGui::ShowDemoWindow(bool* p_open)
         ImGui::Checkbox("No docking", &no_docking);
     }
 
-    if (ImGui::CollapsingHeader("Widgets"))
+    // All demo contents
+    ShowDemoWindowWidgets();
+    ShowDemoWindowLayout();
+    ShowDemoWindowPopups();
+    ShowDemoWindowColumns();
+    ShowDemoWindowMisc();
+
+    // End of ShowDemoWindow()
+    ImGui::End();
+}
+
+static void ShowDemoWindowWidgets()
     {
+    if (!ImGui::CollapsingHeader("Widgets"))
+        return;
+
         if (ImGui::TreeNode("Basic"))
         {
             static int clicked = 0;
@@ -642,13 +666,13 @@ void ImGui::ShowDemoWindow(bool* p_open)
             ImGui::Checkbox("Enable extra group", &closable_group);
             if (ImGui::CollapsingHeader("Header"))
             {
-                ImGui::Text("IsItemHovered: %d", IsItemHovered());
+            ImGui::Text("IsItemHovered: %d", ImGui::IsItemHovered());
                 for (int i = 0; i < 5; i++)
                     ImGui::Text("Some content %d", i);
             }
             if (ImGui::CollapsingHeader("Header with a close button", &closable_group))
             {
-                ImGui::Text("IsItemHovered: %d", IsItemHovered());
+            ImGui::Text("IsItemHovered: %d", ImGui::IsItemHovered());
                 for (int i = 0; i < 5; i++)
                     ImGui::Text("More content %d", i);
             }
@@ -1090,11 +1114,11 @@ void ImGui::ShowDemoWindow(bool* p_open)
 
                     if (ImGui::BeginDragDropTarget())
                     {
-                        if (const ImGuiPayload* payload = AcceptDragDropPayload(IMGUI_PAYLOAD_TYPE_COLOR_3F))
+                    if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(IMGUI_PAYLOAD_TYPE_COLOR_3F))
                             memcpy((float*)&saved_palette[n], payload->Data, sizeof(float) * 3);
-                        if (const ImGuiPayload* payload = AcceptDragDropPayload(IMGUI_PAYLOAD_TYPE_COLOR_4F))
+                    if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(IMGUI_PAYLOAD_TYPE_COLOR_4F))
                             memcpy((float*)&saved_palette[n], payload->Data, sizeof(float) * 4);
-                        EndDragDropTarget();
+                    ImGui::EndDragDropTarget();
                     }
 
                     ImGui::PopID();
@@ -1510,7 +1534,7 @@ void ImGui::ShowDemoWindow(bool* p_open)
             ImGui::Text("This is another child window for testing with the _ChildWindows flag.");
             ImGui::EndChild();
             if (embed_all_inside_a_child_window)
-                EndChild();
+            ImGui::EndChild();
 
             // Calling IsItemHovered() after begin returns the hovered status of the title bar. 
             // This is useful in particular if you want to create a context menu (with BeginPopupContextItem) associated to the title bar of a window.
@@ -1537,8 +1561,11 @@ void ImGui::ShowDemoWindow(bool* p_open)
         }
     }
 
-    if (ImGui::CollapsingHeader("Layout"))
+static void ShowDemoWindowLayout()
     {
+    if (!ImGui::CollapsingHeader("Layout"))
+        return;
+
         if (ImGui::TreeNode("Child regions"))
         {
             static bool disable_mouse_wheel = false;
@@ -1915,7 +1942,7 @@ void ImGui::ShowDemoWindow(bool* p_open)
                 {
                     if (track && line == track_line)
                     {
-                        ImGui::TextColored(ImColor(255,255,0), "Line %d", line);
+                    ImGui::TextColored(ImVec4(1,1,0,1), "Line %d", line);
                         ImGui::SetScrollHereY(i * 0.25f); // 0.0f:top, 0.5f:center, 1.0f:bottom
                     }
                     else
@@ -1994,8 +2021,11 @@ void ImGui::ShowDemoWindow(bool* p_open)
         }
     }
 
-    if (ImGui::CollapsingHeader("Popups & Modal windows"))
+static void ShowDemoWindowPopups()
     {
+    if (!ImGui::CollapsingHeader("Popups & Modal windows"))
+        return;
+
         // Popups are windows with a few special properties:
         // - They block normal mouse hovering detection outside them. (*)
         // - Unless modal, they can be closed by clicking anywhere outside them, or by pressing ESCAPE.
@@ -2198,8 +2228,11 @@ void ImGui::ShowDemoWindow(bool* p_open)
         }
     }
 
-    if (ImGui::CollapsingHeader("Columns"))
+static void ShowDemoWindowColumns()
     {
+    if (!ImGui::CollapsingHeader("Columns"))
+        return;
+
         ImGui::PushID("Columns");
 
         // Basic columns
@@ -2378,6 +2411,8 @@ void ImGui::ShowDemoWindow(bool* p_open)
         ImGui::PopID();
     }
 
+static void ShowDemoWindowMisc()
+{
     if (ImGui::CollapsingHeader("Filtering"))
     {
         static ImGuiTextFilter filter;
@@ -2535,9 +2570,6 @@ void ImGui::ShowDemoWindow(bool* p_open)
             ImGui::TreePop();
         }
     }
-
-    // End of ShowDemoWindow()
-    ImGui::End();
 }
 
 //-----------------------------------------------------------------------------
@@ -3770,7 +3802,7 @@ void ShowExampleAppDockSpace(bool* p_open)
 
     // When using ImGuiDockNodeFlags_PassthruDockspace, DockSpace() will render our background and handle the pass-thru hole, so we ask Begin() to not render a background.
     if (opt_flags & ImGuiDockNodeFlags_PassthruDockspace)
-        ImGui::SetNextWindowBgAlpha(0.0f);
+        window_flags |= ImGuiWindowFlags_NoBackground;
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
     ImGui::Begin("DockSpace Demo", p_open, window_flags);

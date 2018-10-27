@@ -91,6 +91,8 @@ public:
         } cegui;
         struct IMGUI {
             bool multiViewportEnabled;
+            bool windowDecorationsEnabled;
+            bool dontMergeFloatingWindows;
         } imgui;
         stringImpl consoleLayoutFile;
         stringImpl editorLayoutFile;

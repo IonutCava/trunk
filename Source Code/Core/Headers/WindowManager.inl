@@ -87,6 +87,26 @@ inline const DisplayWindow* WindowManager::getFocusedWindow() const {
     return nullptr;
 }
 
+inline DisplayWindow* WindowManager::getHoveredWindow() {
+    for (DisplayWindow* win : _windows) {
+        if (win->isHovered()) {
+            return win;
+        }
+    }
+
+    return nullptr;
+}
+
+inline const DisplayWindow* WindowManager::getHoveredWindow() const {
+    for (const DisplayWindow* win : _windows) {
+        if (win->isHovered()) {
+            return win;
+        }
+    }
+
+    return nullptr;
+}
+
 inline DisplayWindow& WindowManager::getMainWindow() {
     return getWindow(0u);
 }

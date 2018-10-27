@@ -113,6 +113,10 @@ public:
     inline DisplayWindow* getFocusedWindow();
     inline const DisplayWindow* getFocusedWindow() const;
 
+    //Returns null if no window is currently hovered
+    inline DisplayWindow* getHoveredWindow();
+    inline const DisplayWindow* getHoveredWindow() const;
+
     inline DisplayWindow& getWindow(I64 guid);
     inline const DisplayWindow& getWindow(I64 guid) const;
 

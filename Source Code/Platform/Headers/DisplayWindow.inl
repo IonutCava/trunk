@@ -56,9 +56,13 @@ namespace Divide {
         ToggleBit(_flags, WindowFlags::SWAP_BUFFER, state);
     }
 
+    inline bool DisplayWindow::isHovered() const {
+        return BitCompare(_flags, WindowFlags::IS_HOVERED);
+    }
+
     inline bool DisplayWindow::hasFocus() const {
-        //return BitCompare(_flags, WindowFlags::HAS_FOCUS);
-        return (SDL_GetWindowFlags(_sdlWindow) & SDL_WINDOW_INPUT_FOCUS) != 0;
+        return BitCompare(_flags, WindowFlags::HAS_FOCUS);
+        //return (SDL_GetWindowFlags(_sdlWindow) & SDL_WINDOW_INPUT_FOCUS) != 0;
     }
 
     inline U8 DisplayWindow::opacity() const {

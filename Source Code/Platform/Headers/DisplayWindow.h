@@ -150,6 +150,7 @@ public:
     inline bool swapBuffers() const;
     inline void swapBuffers(const bool state);
 
+    inline bool isHovered() const;
     inline bool hasFocus() const;
 
     inline bool minimized() const;

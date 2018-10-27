@@ -71,7 +71,7 @@ protected:
     bool resetScrollingWhenRestart;
 public:
     PopupMenuSimpleParams(bool _resetScrollingWhenRestart=true)
-    : open(false),selectedEntry(-1),hoveredEntry(-1),endIndex(-1),startIndex(-1),scrollTimer(ImGui::GetTime()),resetScrollingWhenRestart(_resetScrollingWhenRestart)
+    : open(false),selectedEntry(-1),hoveredEntry(-1),endIndex(-1),startIndex(-1),scrollTimer((float)ImGui::GetTime()),resetScrollingWhenRestart(_resetScrollingWhenRestart)
     {}
 friend int PopupMenuSimple(PopupMenuSimpleParams& params,const char** pTotalEntries,int numTotalEntries,int numAllowedEntries,bool reverseItems,const char* optionalTitle,const char* scrollUpEntryText,const char* scrollDownEntryText);
 };
@@ -541,7 +541,7 @@ public:
             const char e = '\0';
             if (!text && !allowNullDestText) text=&e;
             if (text)  {
-                const int sz = strlen(text);
+                const int sz = (int)strlen(text);
                 destText = (char*) ImGui::MemAlloc(sz+1);strcpy(destText,text);
             }
         }       

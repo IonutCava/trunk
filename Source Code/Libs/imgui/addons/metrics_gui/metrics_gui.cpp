@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 #include "../../imgui/imgui.h"
-#define IMGUI_DEFINE_MATH_OPERATORS
+//#define IMGUI_DEFINE_MATH_OPERATORS
 #include "../../imgui/imgui_internal.h"
 #include "metrics_gui.h"
 #include "portable/countof.h"

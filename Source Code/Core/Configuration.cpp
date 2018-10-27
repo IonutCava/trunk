@@ -40,6 +40,8 @@ Configuration::Configuration() : XML::IXMLSerializable()
     gui.editorLayoutFile = "editor.layout";
 
     gui.imgui.multiViewportEnabled = false;
+    gui.imgui.windowDecorationsEnabled = false;
+    gui.imgui.dontMergeFloatingWindows = false;
 
     rendering.msaaSamples = 0;
     rendering.anisotropicFilteringLevel = 1;
@@ -101,6 +103,8 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(gui.cegui.showDebugCursor);
         GET_PARAM(gui.cegui.defaultGUIScheme);
         GET_PARAM(gui.imgui.multiViewportEnabled);
+        GET_PARAM(gui.imgui.windowDecorationsEnabled);
+        GET_PARAM(gui.imgui.dontMergeFloatingWindows);
         GET_PARAM(gui.consoleLayoutFile);
         GET_PARAM(gui.editorLayoutFile);
         GET_PARAM(rendering.msaaSamples);
@@ -167,6 +171,8 @@ bool Configuration::toXML(const char* xmlFile) const {
     PUT_PARAM(gui.cegui.showDebugCursor);
     PUT_PARAM(gui.cegui.defaultGUIScheme);
     PUT_PARAM(gui.imgui.multiViewportEnabled);
+    PUT_PARAM(gui.imgui.windowDecorationsEnabled);
+    PUT_PARAM(gui.imgui.dontMergeFloatingWindows);
     PUT_PARAM(gui.consoleLayoutFile);
     PUT_PARAM(gui.editorLayoutFile);
     PUT_PARAM(rendering.msaaSamples);

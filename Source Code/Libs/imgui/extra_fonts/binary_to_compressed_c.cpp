@@ -55,7 +55,7 @@ int main(int argc, char** argv)
 char Encode85Byte(unsigned int x) 
 {
     x = (x % 85) + 35;
-    return (x>='\\') ? x+1 : x;
+    return (char)((x>='\\') ? x+1 : x);
 }
 
 bool binary_to_compressed_c(const char* filename, const char* symbol, bool use_base85_encoding, bool use_compression)

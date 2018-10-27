@@ -37,7 +37,6 @@ namespace {
     bool show_another_window = false;
     I32 window_opacity = 255;
     I32 previous_window_opacity = 255;
-    bool show_test_window = true;
 
     WindowManager* g_windowManager = nullptr;
     Editor* g_editor = nullptr;
@@ -57,28 +56,6 @@ namespace {
 
         ~ImGuiViewportData() { IM_ASSERT(_window == nullptr); }
     };
-
-    // FIXME-PLATFORM: SDL doesn't have an event to notify the application of display/monitor changes
-    // ToDo: Remove this?
-    void ImGui_UpdateMonitors() {
-        const vector<WindowManager::MonitorData>& monitors = g_windowManager->monitorData();
-
-        ImGuiPlatformIO& platform_io = ImGui::GetPlatformIO();
-        platform_io.Monitors.resize(0);
-        platform_io.Monitors.reserve(to_I32(monitors.size()));
-
-        for (const WindowManager::MonitorData& monitor : monitors) {
-            // Warning: the validity of monitor DPI information on Windows depends on the application DPI awareness settings, which generally needs to be set in the manifest or at runtime.
-            ImGuiPlatformMonitor imguiMonitor;
-            
-            imguiMonitor.MainPos = ImVec2((F32)monitor.viewport.x, (F32)monitor.viewport.y);
-            imguiMonitor.MainSize = ImVec2((F32)monitor.viewport.z, (F32)monitor.viewport.w);
-            imguiMonitor.WorkPos = ImVec2((F32)monitor.drawableArea.x, (F32)monitor.drawableArea.y);
-            imguiMonitor.WorkSize = ImVec2((F32)monitor.drawableArea.z, (F32)monitor.drawableArea.w);
-            imguiMonitor.DpiScale = monitor.dpi / 96.0f;
-            platform_io.Monitors.push_back(imguiMonitor);
-        }
-    }
 };
 
 Editor::Editor(PlatformContext& context, ImGuiStyleEnum theme, ImGuiStyleEnum dimmedTheme)
@@ -189,9 +166,15 @@ bool Editor::init(const vec2<U16>& renderResolution) {
 
     if (_context.config().gui.imgui.multiViewportEnabled) {
         io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
-        //io.ConfigFlags |= ImGuiConfigFlags_ViewportsDecoration;
+        if (_context.config().gui.imgui.windowDecorationsEnabled) {
+            io.ConfigFlags |= ImGuiConfigFlags_ViewportsDecoration;
+        }
+
         io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoTaskBarIcon;
-        //io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoMerge;
+
+        if (_context.config().gui.imgui.dontMergeFloatingWindows) {
+            io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoMerge;
+        }
 
         io.BackendFlags |= ImGuiBackendFlags_HasMouseHoveredViewport;
         io.BackendFlags |= ImGuiBackendFlags_RendererHasViewports;
@@ -357,7 +340,22 @@ bool Editor::init(const vec2<U16>& renderResolution) {
         ImGuiViewport* main_viewport = ImGui::GetMainViewport();
         main_viewport->PlatformHandle = _mainWindow;
 
-        ImGui_UpdateMonitors();
+        const vector<WindowManager::MonitorData>& monitors = g_windowManager->monitorData();
+        I32 monitorCount = to_I32(monitors.size());
+
+        platform_io.Monitors.resize(to_I32(monitors.size()));
+
+        for (I32 i = 0; i < monitors.size(); ++i) {
+            const WindowManager::MonitorData& monitor = monitors[i];
+            ImGuiPlatformMonitor& imguiMonitor = platform_io.Monitors[i];
+
+            // Warning: the validity of monitor DPI information on Windows depends on the application DPI awareness settings, which generally needs to be set in the manifest or at runtime.
+            imguiMonitor.MainPos = ImVec2((F32)monitor.viewport.x, (F32)monitor.viewport.y);
+            imguiMonitor.MainSize = ImVec2((F32)monitor.viewport.z, (F32)monitor.viewport.w);
+            imguiMonitor.WorkPos = ImVec2((F32)monitor.drawableArea.x, (F32)monitor.drawableArea.y);
+            imguiMonitor.WorkSize = ImVec2((F32)monitor.drawableArea.z, (F32)monitor.drawableArea.w);
+            imguiMonitor.DpiScale = monitor.dpi / 96.0f;
+        }
 
         ImGuiViewportData* data = IM_NEW(ImGuiViewportData)();
         data->_window = _mainWindow;
@@ -500,7 +498,7 @@ bool Editor::renderMinimal(const U64 deltaTime) {
 
     if (showSampleWindow()) {
         ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiCond_FirstUseEver);
-        ImGui::ShowDemoWindow(&show_test_window);
+        ImGui::ShowDemoWindow(&_showSampleWindow);
     }
 
     return true;
@@ -841,16 +839,24 @@ void Editor::updateMousePosAndButtons() {
 
     bool anyDown = false;
     DisplayWindow* focusedWindow = g_windowManager->getFocusedWindow();
+
+    stringImpl viewportData = "";
     if (focusedWindow != nullptr) {
         vec2<I32> wPos = focusedWindow->getPosition();
         //mPos -= wPos;
         if (ImGuiViewport* viewport = FindViewportByPlatformHandle(_imguiContext, focusedWindow)) {
             io.MousePos = ImVec2(viewport->Pos.x + (F32)mPos.x, viewport->Pos.y + (F32)mPos.y);
-            /*static bool print = false;
-            if (print) {
-                Console::printfn("X = %5.2f, Y = %5.2f, CAPTURE: %s", io.MousePos.x, io.MousePos.y, anyDown ? "true" : "false");
+            viewportData = Util::StringFormat(", Viewport [%5.2f - %5.2f]", viewport->Pos.x, viewport->Pos.y);
+        }
+    }
+    ImGuiPlatformIO& platform_io = ImGui::GetPlatformIO();
+    for (int n = 0; n < platform_io.Viewports.Size; n++) {
+        ImGuiViewport* viewport = platform_io.Viewports[n];
+        DisplayWindow* window = (DisplayWindow*)viewport->PlatformHandle;
+        if (window != nullptr) {
+            if (window->isHovered() && !(viewport->Flags & ImGuiViewportFlags_NoInputs)) {
+                io.MouseHoveredViewport = viewport->ID;
             }
-            print = !print;*/
         }
     }
 
@@ -861,6 +867,16 @@ void Editor::updateMousePosAndButtons() {
     }
     _mouseButtonPressed.fill(false);
     WindowManager::setCaptureMouse(anyDown);
+
+    stringImpl title = Util::StringFormat("Mouse [%5.2f - %5.2f - %s]", io.MousePos.x, io.MousePos.y, anyDown ? "true" : "false");
+    title.append(viewportData);
+
+    if (focusedWindow != nullptr) {
+        title.append(focusedWindow->getGUID() == g_windowManager->getMainWindow().getGUID() ? " - Main Window" : " - Floating Window");
+        title.append(Util::StringFormat(" - Pos [ %d - %d ]", focusedWindow->getPosition().x, focusedWindow->getPosition().y));
+    }
+
+    g_windowManager->getMainWindow().title(title);
 }
 
 bool Editor::onSDLInputEvent(SDL_Event event) {

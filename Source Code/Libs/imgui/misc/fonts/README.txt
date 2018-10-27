@@ -45,7 +45,8 @@ If you have other loading/merging/adding fonts, you can post on the Dear ImGui "
  USING ICONS
 ---------------------------------------
 
- Using an icon font (such as FontAwesome: http://fontawesome.io) is an easy and practical way to use icons in your ImGui application.
+Using an icon font (such as FontAwesome: http://fontawesome.io or OpenFontIcons. https://github.com/traverseda/OpenFontIcons) 
+is an easy and practical way to use icons in your Dear ImGui application.
  A common pattern is to merge the icon font within your main font, so you can embed icons directly from your strings without 
  having to change fonts back and forth.
 
@@ -57,7 +58,7 @@ If you have other loading/merging/adding fonts, you can post on the Dear ImGui "
  The pre-C++11 version has the values directly encoded as utf-8:
    #define ICON_FA_SEARCH  "\xEF\x80\x82"
 
- Example:
+Example Setup:
 
     // Merge icons into default tool font
    #include "IconsFontAwesome.h"
@@ -70,14 +71,14 @@ If you have other loading/merging/adding fonts, you can post on the Dear ImGui "
    static const ImWchar icon_ranges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
    io.Fonts->AddFontFromFileTTF("fonts/fontawesome-webfont.ttf", 13.0f, &config, icon_ranges);
 
+Example Usage:
+
    // Usage, e.g.
+  ImGui::Text("%s among %d items", ICON_FA_SEARCH, count);
    ImGui::Button(ICON_FA_SEARCH " Search");
    // C string _literals_ can be concatenated at compilation time, e.g. "hello" " world"
    // ICON_FA_SEARCH is defined as a string literal so this is the same as "A" "B" becoming "AB" 
 
-   // Usage, e.g.
-   ImGui::Text("%s among %d items", ICON_FA_SEARCH, count);
-   
  See Links below for other icons fonts and related tools.
 
 
@@ -243,48 +244,64 @@ If you have other loading/merging/adding fonts, you can post on the Dear ImGui "
 
 
 ---------------------------------------
- LINKS, OTHER FONTS
+ FONTS LINKS
 ---------------------------------------
 
- (Icons) Icon fonts
-   https://fortawesome.github.io/Font-Awesome/
-   https://github.com/SamBrishes/kenney-icon-font
-   https://design.google.com/icons/
-   You can use https://github.com/juliettef/IconFontCppHeaders for C/C++ header files with name #define to access icon codepoint in source code.
+ICON FONTS
 
- (Icons) IcoMoon - Custom Icon font builder
+  C/C++ header for icon fonts (#define with code points to use in source code string literals)
+  https://github.com/juliettef/IconFontCppHeaders
+
+  FontAwesome
+  https://fortawesome.github.io/Font-Awesome
+
+  OpenFontIcons
+  https://github.com/traverseda/OpenFontIcons
+
+  Google Icon Fonts
+   https://design.google.com/icons/
+
+  Kenney Icon Font (Game Controller Icons)
+  https://github.com/nicodinh/kenney-icon-font
+ 
+  IcoMoon - Custom Icon font builder
    https://icomoon.io/app
 
- (Pixel perfect) Sweet16, Sweet16 Mono, by Martin Sedlak (Latin + Supplemental + Extended A)
-   https://github.com/kmar/Sweet16Font
-   Also include .inl file to use directly in dear imgui.
+REGULAR FONTS
 
- (Regular) Open Sans Fonts
+  Google Noto Fonts (worldwide languages)
+  https://www.google.com/get/noto/
+
+  Open Sans Fonts
    https://fonts.google.com/specimen/Open+Sans
 
- (Regular) Google Noto Fonts (worldwide languages)
-   https://www.google.com/get/noto/
+  (Japanese) M+ fonts by Coji Morishita are free
+  http://mplus-fonts.sourceforge.jp/mplus-outline-fonts/index-en.html
+
+MONOSPACE FONTS
+
+  (Pixel Perfect) Proggy Fonts, by Tristan Grimmer
+  http://www.proggyfonts.net or http://upperbounds.net
+
+  (Pixel Perfect) Sweet16, Sweet16 Mono, by Martin Sedlak (Latin + Supplemental + Extended A)
+  https://github.com/kmar/Sweet16Font
+  Also include .inl file to use directly in dear imgui.
  
- (Monospace) Typefaces for source code beautification
+  Typefaces for source code beautification
    https://github.com/chrissimpkins/codeface
 
- (Monospace) Programmation fonts
+  Programmation fonts
    http://s9w.github.io/font_compare/
 
- (Monospace) Proggy Programming Fonts
-   http://upperbounds.net
-   
- (Monospace) Inconsolata
+  Inconsolata
    http://www.levien.com/type/myfonts/inconsolata.html
 
- (Monospace) Adobe Source Code Pro: Monospaced font family for user interface and coding environments
+  Adobe Source Code Pro: Monospaced font family for user interface and coding environments
    https://github.com/adobe-fonts/source-code-pro
 
- (Monospace) Monospace/Fixed Width Programmer's Fonts
+  Monospace/Fixed Width Programmer's Fonts
    http://www.lowing.org/fonts/
 
- (Japanese) M+ fonts by Coji Morishita are free and include most useful Kanjis you would need.
-   http://mplus-fonts.sourceforge.jp/mplus-outline-fonts/index-en.html
 
  Or use Arial Unicode or other Unicode fonts provided with Windows for full characters coverage (not sure of their licensing).
 
