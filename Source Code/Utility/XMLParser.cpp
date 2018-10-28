@@ -73,7 +73,7 @@ void loadDefaultKeybindings(const stringImpl &file, Scene* scene) {
         const ptree & attributes = f.second.get_child("<xmlattr>", empty_ptree());
         populatePressRelease(actions, attributes);
 
-        Input::KeyCode key = Input::InputInterface::keyCodeByName(f.second.data().c_str());
+        Input::KeyCode key = Input::keyCodeByName(Util::Trim(f.second.data().c_str()).c_str());
         scene->input().addKeyMapping(key, actions);
     }
 
@@ -86,7 +86,7 @@ void loadDefaultKeybindings(const stringImpl &file, Scene* scene) {
         const ptree & attributes = f.second.get_child("<xmlattr>", empty_ptree());
         populatePressRelease(actions, attributes);
 
-        Input::MouseButton btn = Input::InputInterface::mouseButtonByName(f.second.data().c_str());
+        Input::MouseButton btn = Input::mouseButtonByName(Util::Trim(f.second.data().c_str()).c_str());
 
         scene->input().addMouseMapping(btn, actions);
     }
@@ -104,9 +104,9 @@ void loadDefaultKeybindings(const stringImpl &file, Scene* scene) {
             const ptree & attributes = f.second.get_child("<xmlattr>", empty_ptree());
             populatePressRelease(actions, attributes);
 
-            Input::JoystickElement element = Input::InputInterface::joystickElementByName(f.second.data().c_str());
+            Input::JoystickElement element = Input::joystickElementByName(Util::Trim(f.second.data().c_str()).c_str());
 
-            scene->input().addJoystickMapping(joystick, element, actions);
+            scene->input().addJoystickMapping(joystick, element._type, element._elementIndex, actions);
         }
     }
 }

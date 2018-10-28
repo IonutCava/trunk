@@ -18,26 +18,26 @@ namespace Divide {
         ImGuiIO& io = _imguiContext->IO;
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
         io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
-        io.KeyMap[ImGuiKey_Tab] = Input::KeyCode::KC_TAB;
-        io.KeyMap[ImGuiKey_LeftArrow] = Input::KeyCode::KC_LEFT;
-        io.KeyMap[ImGuiKey_RightArrow] = Input::KeyCode::KC_RIGHT;
-        io.KeyMap[ImGuiKey_UpArrow] = Input::KeyCode::KC_UP;
-        io.KeyMap[ImGuiKey_DownArrow] = Input::KeyCode::KC_DOWN;
-        io.KeyMap[ImGuiKey_PageUp] = Input::KeyCode::KC_PGUP;
-        io.KeyMap[ImGuiKey_PageDown] = Input::KeyCode::KC_PGDOWN;
-        io.KeyMap[ImGuiKey_Home] = Input::KeyCode::KC_HOME;
-        io.KeyMap[ImGuiKey_End] = Input::KeyCode::KC_END;
-        io.KeyMap[ImGuiKey_Delete] = Input::KeyCode::KC_DELETE;
-        io.KeyMap[ImGuiKey_Backspace] = Input::KeyCode::KC_BACK;
-        io.KeyMap[ImGuiKey_Enter] = Input::KeyCode::KC_RETURN;
-        io.KeyMap[ImGuiKey_Escape] = Input::KeyCode::KC_ESCAPE;
-        io.KeyMap[ImGuiKey_Space] = Input::KeyCode::KC_SPACE;
-        io.KeyMap[ImGuiKey_A] = Input::KeyCode::KC_A;
-        io.KeyMap[ImGuiKey_C] = Input::KeyCode::KC_C;
-        io.KeyMap[ImGuiKey_V] = Input::KeyCode::KC_V;
-        io.KeyMap[ImGuiKey_X] = Input::KeyCode::KC_X;
-        io.KeyMap[ImGuiKey_Y] = Input::KeyCode::KC_Y;
-        io.KeyMap[ImGuiKey_Z] = Input::KeyCode::KC_Z;
+        io.KeyMap[ImGuiKey_Tab] = to_I32(Input::KeyCode::KC_TAB);
+        io.KeyMap[ImGuiKey_LeftArrow] = to_I32(Input::KeyCode::KC_LEFT);
+        io.KeyMap[ImGuiKey_RightArrow] = to_I32(Input::KeyCode::KC_RIGHT);
+        io.KeyMap[ImGuiKey_UpArrow] = to_I32(Input::KeyCode::KC_UP);
+        io.KeyMap[ImGuiKey_DownArrow] = to_I32(Input::KeyCode::KC_DOWN);
+        io.KeyMap[ImGuiKey_PageUp] = to_I32(Input::KeyCode::KC_PGUP);
+        io.KeyMap[ImGuiKey_PageDown] = to_I32(Input::KeyCode::KC_PGDOWN);
+        io.KeyMap[ImGuiKey_Home] = to_I32(Input::KeyCode::KC_HOME);
+        io.KeyMap[ImGuiKey_End] = to_I32(Input::KeyCode::KC_END);
+        io.KeyMap[ImGuiKey_Delete] = to_I32(Input::KeyCode::KC_DELETE);
+        io.KeyMap[ImGuiKey_Backspace] = to_I32(Input::KeyCode::KC_BACK);
+        io.KeyMap[ImGuiKey_Enter] = to_I32(Input::KeyCode::KC_RETURN);
+        io.KeyMap[ImGuiKey_Escape] = to_I32(Input::KeyCode::KC_ESCAPE);
+        io.KeyMap[ImGuiKey_Space] = to_I32(Input::KeyCode::KC_SPACE);
+        io.KeyMap[ImGuiKey_A] = to_I32(Input::KeyCode::KC_A);
+        io.KeyMap[ImGuiKey_C] = to_I32(Input::KeyCode::KC_C);
+        io.KeyMap[ImGuiKey_V] = to_I32(Input::KeyCode::KC_V);
+        io.KeyMap[ImGuiKey_X] = to_I32(Input::KeyCode::KC_X);
+        io.KeyMap[ImGuiKey_Y] = to_I32(Input::KeyCode::KC_Y);
+        io.KeyMap[ImGuiKey_Z] = to_I32(Input::KeyCode::KC_Z);
 
         io.SetClipboardTextFn = SetClipboardText;
         io.GetClipboardTextFn = GetClipboardText;
@@ -72,13 +72,17 @@ namespace Divide {
         return _enabled;
     }
 
+    bool Gizmo::active() const {
+        return enabled() && !_selectedNodes.empty();
+    }
+
     void Gizmo::update(const U64 deltaTimeUS) {
         ImGuiIO& io = _imguiContext->IO;
         io.DeltaTime = Time::MicrosecondsToSeconds<F32>(deltaTimeUS);
     }
 
     void Gizmo::render(const Camera& camera) {
-        if (!_enabled || _selectedNodes.empty()) {
+        if (!active()) {
             return;
         }
 
@@ -140,24 +144,32 @@ namespace Divide {
     }
     /// Key pressed: return true if input was consumed
     bool Gizmo::onKeyDown(const Input::KeyEvent& key) {
+        if (!active()) {
+            return false;
+        }
+
         ImGuiIO& io = _imguiContext->IO;
 
-        io.KeysDown[key._key] = true;
-        if (key._text > 0) {
-            io.AddInputCharacter(to_U16(key._text));
+        io.KeysDown[to_I32(key._key)] = true;
+        if (key._text != nullptr) {
+            io.AddInputCharactersUTF8(key._text);
         }
         io.KeyCtrl = key._key == Input::KeyCode::KC_LCONTROL || key._key == Input::KeyCode::KC_RCONTROL;
         io.KeyShift = key._key == Input::KeyCode::KC_LSHIFT || key._key == Input::KeyCode::KC_RSHIFT;
         io.KeyAlt = key._key == Input::KeyCode::KC_LMENU || key._key == Input::KeyCode::KC_RMENU;
-        io.KeySuper = false;
+        io.KeySuper = key._key == Input::KeyCode::KC_LWIN || key._key == Input::KeyCode::KC_RWIN;
 
         return io.WantCaptureKeyboard;
     }
 
     /// Key released: return true if input was consumed
     bool Gizmo::onKeyUp(const Input::KeyEvent& key) {
+        if (!active()) {
+            return false;
+        }
+
         ImGuiIO& io = _imguiContext->IO;
-        io.KeysDown[key._key] = false;
+        io.KeysDown[to_I32(key._key)] = false;
 
         if (key._key == Input::KeyCode::KC_LCONTROL || key._key == Input::KeyCode::KC_RCONTROL) {
             io.KeyCtrl = false;
@@ -171,90 +183,114 @@ namespace Divide {
             io.KeyAlt = false;
         }
 
-        io.KeySuper = false;
+        if (key._key == Input::KeyCode::KC_LWIN || key._key == Input::KeyCode::KC_RWIN) {
+            io.KeySuper = false;
+        }
 
         return io.WantCaptureKeyboard;
     }
 
     /// Mouse moved: return true if input was consumed
-    bool Gizmo::mouseMoved(const Input::MouseEvent& arg) {
+    bool Gizmo::mouseMoved(const Input::MouseMoveEvent& arg) {
+        if (!active()) {
+            return false;
+        }
+
         ImGuiIO& io = _imguiContext->IO;
 
         io.MousePos.x = (F32)arg.X(true).abs;
         io.MousePos.y = (F32)arg.Y(true).abs;
-        io.MouseWheel += (F32)arg.Z(true).rel / 60.0f;
-
+        if (arg.WheelH() > 0) {
+            io.MouseWheelH += 1;
+        }
+        if (arg.WheelH() < 0) {
+            io.MouseWheelH -= 1;
+        }
+        if (arg.WheelV() > 0) {
+            io.MouseWheel += 1;
+        }
+        if (arg.WheelV() < 0) {
+            io.MouseWheel -= 1;
+        }
         return io.WantCaptureMouse || isUsing();
     }
 
     /// Mouse button pressed: return true if input was consumed
-    bool Gizmo::mouseButtonPressed(const Input::MouseEvent& arg, Input::MouseButton button) {
+    bool Gizmo::mouseButtonPressed(const Input::MouseButtonEvent& arg) {
         ACKNOWLEDGE_UNUSED(arg);
 
+        if (!active()) {
+            return false;
+        }
+
         ImGuiIO& io = _imguiContext->IO;
-        if (button < 5) {
-            io.MouseDown[button] = true;
+        if (to_base(arg.button) < 5) {
+            io.MouseDown[to_base(arg.button)] = true;
         }
 
         return io.WantCaptureMouse || isOver();
     }
 
     /// Mouse button released: return true if input was consumed
-    bool Gizmo::mouseButtonReleased(const Input::MouseEvent& arg, Input::MouseButton button) {
+    bool Gizmo::mouseButtonReleased(const Input::MouseButtonEvent& arg) {
+        if (!active()) {
+            return false;
+        }
+
         ACKNOWLEDGE_UNUSED(arg);
 
         ImGuiIO& io = _imguiContext->IO;
-        if (button < 5) {
-            io.MouseDown[button] = false;
+        if (to_base(arg.button) < 5) {
+            io.MouseDown[to_base(arg.button)] = false;
         }
 
         return io.WantCaptureMouse  || isOver();
     }
 
-    bool Gizmo::joystickButtonPressed(const Input::JoystickEvent &arg, Input::JoystickButton button) {
+    bool Gizmo::joystickButtonPressed(const Input::JoystickEvent &arg) {
         ACKNOWLEDGE_UNUSED(arg);
-        ACKNOWLEDGE_UNUSED(button);
 
         return false;
     }
 
-    bool Gizmo::joystickButtonReleased(const Input::JoystickEvent &arg, Input::JoystickButton button) {
+    bool Gizmo::joystickButtonReleased(const Input::JoystickEvent &arg) {
         ACKNOWLEDGE_UNUSED(arg);
-        ACKNOWLEDGE_UNUSED(button);
 
         return false;
     }
 
-    bool Gizmo::joystickAxisMoved(const Input::JoystickEvent &arg, I8 axis) {
+    bool Gizmo::joystickAxisMoved(const Input::JoystickEvent &arg) {
         ACKNOWLEDGE_UNUSED(arg);
-        ACKNOWLEDGE_UNUSED(axis);
 
         return false;
     }
 
-    bool Gizmo::joystickPovMoved(const Input::JoystickEvent &arg, I8 pov) {
+    bool Gizmo::joystickPovMoved(const Input::JoystickEvent &arg) {
         ACKNOWLEDGE_UNUSED(arg);
-        ACKNOWLEDGE_UNUSED(pov);
 
         return false;
     }
 
-    bool Gizmo::joystickSliderMoved(const Input::JoystickEvent &arg, I8 index) {
+    bool Gizmo::joystickBallMoved(const Input::JoystickEvent &arg) {
         ACKNOWLEDGE_UNUSED(arg);
-        ACKNOWLEDGE_UNUSED(index);
 
         return false;
     }
 
-    bool Gizmo::joystickvector3Moved(const Input::JoystickEvent &arg, I8 index) {
+    bool Gizmo::joystickAddRemove(const Input::JoystickEvent &arg) {
         ACKNOWLEDGE_UNUSED(arg);
-        ACKNOWLEDGE_UNUSED(index);
 
         return false;
     }
 
-    bool Gizmo::onSDLInputEvent(SDL_Event event) {
-        ACKNOWLEDGE_UNUSED(event);
+    bool Gizmo::joystickRemap(const Input::JoystickEvent &arg) {
+        ACKNOWLEDGE_UNUSED(arg);
+
+        return false;
+    }
+
+    bool Gizmo::onUTF8(const Input::UTF8Event& arg) {
+        ACKNOWLEDGE_UNUSED(arg);
 
         return false;
     }

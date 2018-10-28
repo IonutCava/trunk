@@ -633,7 +633,7 @@ bool SceneManager::onKeyUp(const Input::KeyEvent& key) {
     return getActiveScene().input().onKeyUp(key);
 }
 
-bool SceneManager::mouseMoved(const Input::MouseEvent& arg) {
+bool SceneManager::mouseMoved(const Input::MouseMoveEvent& arg) {
     if (!_processInput) {
         return false;
     }
@@ -641,77 +641,81 @@ bool SceneManager::mouseMoved(const Input::MouseEvent& arg) {
     return getActiveScene().input().mouseMoved(arg);
 }
 
-bool SceneManager::mouseButtonPressed(const Input::MouseEvent& arg,
-                                      Input::MouseButton button) {
+bool SceneManager::mouseButtonPressed(const Input::MouseButtonEvent& arg) {
     if (!_processInput) {
         return false;
     }
 
-    return getActiveScene().input().mouseButtonPressed(arg, button);
+    return getActiveScene().input().mouseButtonPressed(arg);
 }
 
-bool SceneManager::mouseButtonReleased(const Input::MouseEvent& arg,
-                                       Input::MouseButton button) {
+bool SceneManager::mouseButtonReleased(const Input::MouseButtonEvent& arg) {
     if (!_processInput) {
         return false;
     }
 
-    return getActiveScene().input().mouseButtonReleased(arg, button);
+    return getActiveScene().input().mouseButtonReleased(arg);
 }
 
-bool SceneManager::joystickAxisMoved(const Input::JoystickEvent& arg, I8 axis) {
+bool SceneManager::joystickAxisMoved(const Input::JoystickEvent& arg) {
     if (!_processInput) {
         return false;
     }
 
-    return getActiveScene().input().joystickAxisMoved(arg, axis);
+    return getActiveScene().input().joystickAxisMoved(arg);
 }
 
-bool SceneManager::joystickPovMoved(const Input::JoystickEvent& arg, I8 pov) {
+bool SceneManager::joystickPovMoved(const Input::JoystickEvent& arg) {
     if (!_processInput) {
         return false;
     }
 
-    return getActiveScene().input().joystickPovMoved(arg, pov);
+    return getActiveScene().input().joystickPovMoved(arg);
 }
 
-bool SceneManager::joystickButtonPressed(const Input::JoystickEvent& arg,
-                                         Input::JoystickButton button) {
+bool SceneManager::joystickButtonPressed(const Input::JoystickEvent& arg) {
     if (!_processInput) {
         return false;
     }
 
-    return getActiveScene().input().joystickButtonPressed(arg, button);
+    return getActiveScene().input().joystickButtonPressed(arg);
 }
 
-bool SceneManager::joystickButtonReleased(const Input::JoystickEvent& arg,
-                                          Input::JoystickButton button) {
+bool SceneManager::joystickButtonReleased(const Input::JoystickEvent& arg) {
     if (!_processInput) {
         return false;
     }
 
-    return getActiveScene().input().joystickButtonReleased(arg, button);
+    return getActiveScene().input().joystickButtonReleased(arg);
 }
 
-bool SceneManager::joystickSliderMoved(const Input::JoystickEvent& arg,
-                                       I8 index) {
+bool SceneManager::joystickBallMoved(const Input::JoystickEvent& arg) {
     if (!_processInput) {
         return false;
     }
 
-    return getActiveScene().input().joystickSliderMoved(arg, index);
+    return getActiveScene().input().joystickBallMoved(arg);
 }
 
-bool SceneManager::joystickvector3Moved(const Input::JoystickEvent& arg,
-                                         I8 index) {
+bool SceneManager::joystickAddRemove(const Input::JoystickEvent& arg) {
     if (!_processInput) {
         return false;
     }
 
-    return getActiveScene().input().joystickvector3Moved(arg, index);
+    return getActiveScene().input().joystickAddRemove(arg);
 }
 
-bool SceneManager::onSDLInputEvent(SDL_Event event) {
+bool SceneManager::joystickRemap(const Input::JoystickEvent &arg) {
+    if (!_processInput) {
+        return false;
+    }
+
+    return getActiveScene().input().joystickRemap(arg);
+}
+
+bool SceneManager::onUTF8(const Input::UTF8Event& arg) {
+    ACKNOWLEDGE_UNUSED(arg);
+
     return false;
 }
 

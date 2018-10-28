@@ -3,116 +3,147 @@
 #include "Headers/InputAggregatorInterface.h"
 #include "Core/Math/Headers/MathVectors.h"
 #include "Platform/Headers/DisplayWindow.h"
+#include "Core/Headers/StringHelper.h"
 
 namespace Divide {
 namespace Input {
 
-InputEvent::InputEvent(U8 deviceIndex)
-    : _deviceIndex(deviceIndex)
+MouseButton mouseButtonByName(const stringImpl& buttonName) {
+    if (Util::CompareIgnoreCase("MB_" + buttonName, "MB_Left")) {
+        return MouseButton::MB_Left;
+    } else if (Util::CompareIgnoreCase("MB_" + buttonName, "MB_Right")) {
+        return MouseButton::MB_Right;
+    } else if (Util::CompareIgnoreCase("MB_" + buttonName, "MB_Middle")) {
+        return MouseButton::MB_Middle;
+    } else if (Util::CompareIgnoreCase("MB_" + buttonName, "MB_Button3")) {
+        return MouseButton::MB_Button3;
+    } else if (Util::CompareIgnoreCase("MB_" + buttonName, "MB_Button4")) {
+        return MouseButton::MB_Button4;
+    } else if (Util::CompareIgnoreCase("MB_" + buttonName, "MB_Button5")) {
+        return MouseButton::MB_Button5;
+    } else if (Util::CompareIgnoreCase("MB_" + buttonName, "MB_Button6")) {
+        return MouseButton::MB_Button6;
+    }
+
+    return MouseButton::MB_Button7;
+}
+
+JoystickElement joystickElementByName(const stringImpl& elementName) {
+    JoystickElement ret = {};
+
+    if (Util::CompareIgnoreCase(elementName, "POV")) {
+        ret._type = JoystickElementType::POV_MOVE;
+    } else if (Util::CompareIgnoreCase(elementName, "AXIS")) {
+        ret._type = JoystickElementType::AXIS_MOVE;
+    } else if (Util::CompareIgnoreCase(elementName, "BALL")) {
+        ret._type = JoystickElementType::BALL_MOVE;
+    }
+    
+    if (ret._type != JoystickElementType::COUNT) {
+        return ret;
+    }
+
+    // Else, we have a button
+    ret._type = JoystickElementType::BUTTON_PRESS;
+
+    vector<stringImpl> buttonElements = Util::Split<vector<stringImpl>, stringImpl>(elementName.c_str(), '_');
+    assert(buttonElements.size() == 2 && "Invalid joystick element name!");
+    assert(Util::CompareIgnoreCase(buttonElements[0], "BUTTON"));
+    ret._elementIndex = Util::ConvertData<U32, stringImpl>(buttonElements[1].c_str());
+
+    return ret;
+}
+
+InputEvent::InputEvent(DisplayWindow* sourceWindow, U8 deviceIndex)
+    : _deviceIndex(deviceIndex),
+      _sourceWindow(sourceWindow)
 {
 }
 
-MouseEvent::MouseEvent(U8 deviceIndex, const OIS::MouseEvent& arg, const DisplayWindow& parentWindow)
-    : InputEvent(deviceIndex),
-      _event(arg),
-      _parentWindow(parentWindow)
+MouseButtonEvent::MouseButtonEvent(DisplayWindow* sourceWindow, U8 deviceIndex)
+    : InputEvent(sourceWindow, deviceIndex)
+{
+
+}
+
+MouseMoveEvent::MouseMoveEvent(DisplayWindow* sourceWindow, U8 deviceIndex, MouseState stateIn)
+    : InputEvent(sourceWindow, deviceIndex),
+      _stateIn(stateIn)
 {
 }
 
-MouseState MouseEvent::state(bool warped, bool viewportRelative) const {
-    auto adjust = [](OIS::Axis& inOut, I32 x, I32 y, I32 z, I32 w) -> void {
+MouseState MouseMoveEvent::state(bool warped, bool viewportRelative) const {
+    auto adjust = [](MouseAxis& inOut, I32 x, I32 y, I32 z, I32 w) -> void {
         D64 slope = 0.0;
         inOut.abs = MAP(inOut.abs, x, y, z, w, slope);
         inOut.rel = static_cast<int>(std::round(inOut.rel * slope));
     };
 
-    const OIS::MouseState& stateIn = _event.state;
+    MouseState ret = _stateIn;
 
-    MouseState ret{ stateIn.X, stateIn.Y, stateIn.Z };
-    ret.Z.rel /= 120; //Magic MS/OIS number
-
-    if (_parentWindow.warp() && warped) {
-        const Rect<I32>& rect = _parentWindow.warpRect();
-        if (rect.contains(stateIn.X.abs, stateIn.Y.abs)) {
-            adjust(ret.X, rect.x, rect.z, 0, _event.state.width);
-            adjust(ret.Y, rect.y, rect.w, 0, _event.state.height);
+    if (_sourceWindow->warp() && warped) {
+        const Rect<I32>& rect = _sourceWindow->warpRect();
+        if (rect.contains(_stateIn.X.abs, _stateIn.Y.abs)) {
+            adjust(ret.X, rect.x, rect.z, 0, _sourceWindow->getDimensions().width);
+            adjust(ret.Y, rect.y, rect.w, 0, _sourceWindow->getDimensions().height);
         }
     }
     
     if (viewportRelative) {
-        const Rect<I32>& rect = _parentWindow.renderingViewport();
-        adjust(ret.X, 0, _event.state.width, rect.x, rect.z);
-        adjust(ret.Y, 0, _event.state.height, rect.y, rect.w);
+        const Rect<I32>& rect = _sourceWindow->renderingViewport();
+        adjust(ret.X, 0, _sourceWindow->getDimensions().width, rect.x, rect.z);
+        adjust(ret.Y, 0, _sourceWindow->getDimensions().height, rect.y, rect.w);
     }
 
     return ret;
 }
 
-OIS::Axis MouseEvent::X(bool warped, bool viewportRelative) const {
+MouseAxis MouseMoveEvent::X(bool warped, bool viewportRelative) const {
     return state(warped, viewportRelative).X;
 }
 
-OIS::Axis MouseEvent::Y(bool warped, bool viewportRelative) const {
+MouseAxis MouseMoveEvent::Y(bool warped, bool viewportRelative) const {
     return state(warped, viewportRelative).Y;
 }
 
-OIS::Axis MouseEvent::Z(bool warped, bool viewportRelative) const {
-    return state(warped, viewportRelative).Z;
+I32 MouseMoveEvent::WheelH() const {
+    return _stateIn.HWheel;
 }
 
-vec3<I32> MouseEvent::relativePos(bool warped, bool viewportRelative) const {
+I32 MouseMoveEvent::WheelV() const {
+    return _stateIn.VWheel;
+}
+
+vec4<I32> MouseMoveEvent::relativePos(bool warped, bool viewportRelative) const {
     MouseState crtState = state(warped, viewportRelative);
 
-    return vec3<I32>(crtState.X.rel, crtState.Y.rel, crtState.Z.rel);
+    return vec4<I32>(crtState.X.rel, crtState.Y.rel, crtState.VWheel, crtState.HWheel);
 }
 
-vec3<I32> MouseEvent::absolutePos(bool warped, bool viewportRelative) const {
+vec4<I32> MouseMoveEvent::absolutePos(bool warped, bool viewportRelative) const {
     MouseState crtState = state(warped, viewportRelative);
 
-    return vec3<I32>(crtState.X.abs, crtState.Y.abs, crtState.Z.abs);
+    return vec4<I32>(crtState.X.abs, crtState.Y.abs, crtState.VWheel, crtState.HWheel);
 }
 
-JoystickData::JoystickData() 
-    : _deadZone(0),
-      _max(0)
+JoystickEvent::JoystickEvent(DisplayWindow* sourceWindow, U8 deviceIndex)
+    : InputEvent(sourceWindow, deviceIndex)
 {
 }
 
-JoystickData::JoystickData(I32 deadZone, I32 max)
-        : _deadZone(deadZone),
-          _max(max)
-{
-}
-
-JoystickEvent::JoystickEvent(U8 deviceIndex, const OIS::JoyStickEvent& arg)
-    : InputEvent(deviceIndex),
-      _event(arg)
-{
-}
-
-KeyEvent::KeyEvent(U8 deviceIndex)
-    : InputEvent(deviceIndex),
+KeyEvent::KeyEvent(DisplayWindow* sourceWindow, U8 deviceIndex)
+    : InputEvent(sourceWindow, deviceIndex),
       _key(static_cast<KeyCode>(0)),
       _pressed(false),
       _text(0)
 {
 }
 
-JoystickElement::JoystickElement(JoystickElementType elementType)
-    : JoystickElement(elementType, -1)
+UTF8Event::UTF8Event(DisplayWindow* sourceWindow, U8 deviceIndex, const char* text)
+    : InputEvent(sourceWindow, deviceIndex),
+      _text(text)
 {
-}
 
-JoystickElement::JoystickElement(JoystickElementType elementType, JoystickButton data)
-    : _type(elementType),
-      _data(data)
-{
 }
-
-bool JoystickElement::operator==(const JoystickElement &other) const
-{
-    return (_type == other._type && _data == other._data);
-}
-
 }; //namespace Input
 }; //namespace Divide

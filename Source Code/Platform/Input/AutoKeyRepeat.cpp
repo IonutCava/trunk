@@ -1,7 +1,6 @@
 #include "stdafx.h"
 
 #include "Headers/AutoKeyRepeat.h"
-#include "Platform/Input/Headers/InputInterface.h"
 
 namespace Divide {
 namespace Input {
@@ -11,7 +10,7 @@ AutoRepeatKey::AutoRepeatKey(D64 repeatDelay, D64 initialDelay)
       _initialDelay(initialDelay),
       _elapsed(0.0),
       _delay(initialDelay),
-      _key(0)
+      _key(nullptr, 0)
 {
 }
 
@@ -34,6 +33,7 @@ void AutoRepeatKey::update(const U64 deltaTimeUS) {
     if (_key._key == KeyCode::KC_UNASSIGNED) {
         return;
     }
+
     _elapsed += Time::MicrosecondsToSeconds(deltaTimeUS);
     if (_elapsed < _delay) return;
 
@@ -41,7 +41,7 @@ void AutoRepeatKey::update(const U64 deltaTimeUS) {
     _delay = _repeatDelay;
 
     do {
-        repeatKey(_key._key, _key._text);
+        repeatKey(to_I32(_key._key), _key._text[0]);
 
         _elapsed -= _repeatDelay;
     } while (_elapsed >= _repeatDelay);

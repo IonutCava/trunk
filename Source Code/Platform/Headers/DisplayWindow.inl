@@ -144,11 +144,7 @@ namespace Divide {
                             }),
             std::end(listeners));
     }
-
-    inline Input::InputInterface& DisplayWindow::inputHandler() {
-        return *_inputHandler;
-    }
-
+    
     inline void DisplayWindow::destroyCbk(const DELEGATE_CBK<void>& destroyCbk) {
         _destroyCbk = destroyCbk;
     }

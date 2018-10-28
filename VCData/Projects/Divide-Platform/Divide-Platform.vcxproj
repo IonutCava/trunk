@@ -53,12 +53,9 @@
     <ClInclude Include="../../../Source Code/Platform\Headers\PlatformDefinesWindows.h" />
     <ClInclude Include="../../../Source Code/Platform\Headers\PlatformRuntime.h" />
     <ClInclude Include="../../../Source Code/Platform\Input\Headers\AutoKeyRepeat.h" />
-    <ClInclude Include="../../../Source Code/Platform\Input\Headers\EffectManager.h" />
     <ClInclude Include="../../../Source Code/Platform\Input\Headers\EventHandler.h" />
     <ClInclude Include="../../../Source Code/Platform\Input\Headers\InputAggregatorInterface.h" />
-    <ClInclude Include="../../../Source Code/Platform\Input\Headers\InputInterface.h" />
     <ClInclude Include="../../../Source Code/Platform\Input\Headers\InputVariables.h" />
-    <ClInclude Include="../../../Source Code/Platform\Input\Headers\JoystickInterface.h" />
     <ClInclude Include="../../../Source Code/Platform\Threading\Headers\SharedMutex.h" />
     <ClInclude Include="../../../Source Code/Platform\Threading\Headers\Task.h" />
     <ClInclude Include="../../../Source Code/Platform\Threading\Headers\ThreadPool.h" />
@@ -130,6 +127,7 @@
     <ClInclude Include="../../../Source Code\Platform\Video\RenderBackend\None\Headers\NoneWrapper.h" />
     <ClInclude Include="../../../Source Code\Platform\Video\RenderBackend\Vulkan\Headers\VKPlaceholderObjects.h" />
     <ClInclude Include="../../../Source Code\Platform\Video\RenderBackend\Vulkan\Headers\VKWrapper.h" />
+    <ClInclude Include="..\..\..\Source Code\Platform\Input\Headers\Input.h" />
     <ClInclude Include="..\..\..\Source Code\Platform\Video\RenderBackend\OpenGL\Headers\GLStateTracker.h" />
   </ItemGroup>
   <ItemGroup>
@@ -162,11 +160,8 @@
     <ClCompile Include="../../../Source Code/Platform\File\FileManagementPaths.cpp" />
     <ClCompile Include="../../../Source Code/Platform\File\FileUpdateMonitor.cpp" />
     <ClCompile Include="../../../Source Code/Platform\Input\AutoKeyRepeat.cpp" />
-    <ClCompile Include="../../../Source Code/Platform\Input\EffectManager.cpp" />
     <ClCompile Include="../../../Source Code/Platform\Input\EventHandler.cpp" />
     <ClCompile Include="../../../Source Code/Platform\Input\InputAggregatorInterface.cpp" />
-    <ClCompile Include="../../../Source Code/Platform\Input\InputInterface.cpp" />
-    <ClCompile Include="../../../Source Code/Platform\Input\JoystickInterface.cpp" />
     <ClCompile Include="../../../Source Code/Platform\PlatformDefines.cpp" />
     <ClCompile Include="../../../Source Code/Platform\PlatformDefinesApple.cpp" />
     <ClCompile Include="../../../Source Code/Platform\PlatformDefinesUnix.cpp" />
@@ -261,6 +256,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\..\..\Source Code\Platform\Input\Input.cpp" />
     <ClCompile Include="..\..\..\Source Code\Platform\Video\RenderBackend\OpenGL\GLStateTracker.cpp" />
   </ItemGroup>
   <ItemGroup>

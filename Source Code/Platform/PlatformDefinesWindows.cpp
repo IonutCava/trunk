@@ -29,7 +29,6 @@
 #pragma comment(lib, "DbgHelp.lib")
 #pragma comment(lib, "glbindingd.lib")
 #pragma comment(lib, "glbinding-auxd.lib")
-#pragma comment(lib, "OISd.lib")
 #pragma comment(lib, "assimp_d.lib")
 #pragma comment(lib, "IL_d.lib")
 #pragma comment(lib, "libpng_d.lib")
@@ -70,7 +69,6 @@
 #pragma comment(lib, "FreeImage.lib")
 
 #if defined(_PROFILE)
-    #pragma comment(lib, "OISp.lib")
     #pragma comment(lib, "glbindingp.lib")
     #pragma comment(lib, "glbinding-auxp.lib")
     #pragma comment(lib, "assimp_p.lib")
@@ -88,7 +86,6 @@
     #pragma comment(lib, "CEGUILuaScriptModule-0_Static_p.lib")
     #pragma comment(lib, "CEGUITinyXMLParser_Static_p.lib")
 #else
-    #pragma comment(lib, "OIS.lib")
     #pragma comment(lib, "glbinding.lib")
     #pragma comment(lib, "glbinding-aux.lib")
     #pragma comment(lib, "assimp.lib")

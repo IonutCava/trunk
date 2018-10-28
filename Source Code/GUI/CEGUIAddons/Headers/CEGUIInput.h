@@ -49,28 +49,29 @@ class CEGUIInput : public Input::InputAggregatorInterface,
     /// Key released: return true if input was consumed
     bool onKeyUp(const Input::KeyEvent& key) override;
     /// Joystick axis change: return true if input was consumed
-    bool joystickAxisMoved(const Input::JoystickEvent& arg, I8 axis) override;
+    bool joystickAxisMoved(const Input::JoystickEvent& arg) override;
     /// Joystick direction change: return true if input was consumed
-    bool joystickPovMoved(const Input::JoystickEvent& arg, I8 pov) override;
+    bool joystickPovMoved(const Input::JoystickEvent& arg) override;
     /// Joystick button pressed: return true if input was consumed
-    bool joystickButtonPressed(const Input::JoystickEvent& arg, Input::JoystickButton button) override;
+    bool joystickButtonPressed(const Input::JoystickEvent& arg) override;
     /// Joystick button released: return true if input was consumed
-    bool joystickButtonReleased(const Input::JoystickEvent& arg, Input::JoystickButton button) override;
-    bool joystickSliderMoved(const Input::JoystickEvent& arg, I8 index) override;
-    bool joystickvector3Moved(const Input::JoystickEvent& arg, I8 index) override;
+    bool joystickButtonReleased(const Input::JoystickEvent& arg) override;
+    bool joystickBallMoved(const Input::JoystickEvent& arg) override;
+    bool joystickAddRemove(const Input::JoystickEvent& arg) override;
+    bool joystickRemap(const Input::JoystickEvent &arg) override;
     /// Mouse moved: return true if input was consumed
-    bool mouseMoved(const Input::MouseEvent& arg) override;
+    bool mouseMoved(const Input::MouseMoveEvent& arg) override;
     /// Mouse button pressed: return true if input was consumed
-    bool mouseButtonPressed(const Input::MouseEvent& arg, Input::MouseButton button) override;
+    bool mouseButtonPressed(const Input::MouseButtonEvent& arg) override;
     /// Mouse button released: return true if input was consumed
-    bool mouseButtonReleased(const Input::MouseEvent& arg, Input::MouseButton button) override;
+    bool mouseButtonReleased(const Input::MouseButtonEvent& arg) override;
 
-    bool onSDLInputEvent(SDL_Event event) override;
+    bool onUTF8(const Input::UTF8Event& arg) override;
 
    protected:
     GUI& _parent;
     /// Called on key events: return true if the input was consumed
-    bool injectOISKey(bool pressed, const Input::KeyEvent& inKey);
+    bool injectKey(bool pressed, const Input::KeyEvent& inKey);
     void repeatKey(I32 inKey, U32 Char);
 };
 

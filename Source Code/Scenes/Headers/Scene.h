@@ -49,7 +49,6 @@
 #include "Rendering/Lighting/Headers/LightPool.h"
 // Hardware
 #include "Platform/Video/Headers/GFXDevice.h"
-#include "Platform/Input/Headers/InputInterface.h"
 // Scene Elements
 #include "SceneEnvironmentProbePool.h"
 #include "AI/Headers/AIManager.h"
@@ -219,7 +218,7 @@ class Scene : public Resource, public PlatformContextComponent {
     virtual void debugDraw(const Camera& activeCamera, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut);
 
     //Return true if input was consumed
-    virtual bool mouseMoved(const Input::MouseEvent& arg);
+    virtual bool mouseMoved(const Input::MouseMoveEvent& arg);
     
     U8 getSceneIndexForPlayer(PlayerIndex idx) const;
     const Player_ptr& getPlayerForIndex(PlayerIndex idx) const;
@@ -438,7 +437,7 @@ private:
 
 class SceneInput {
 private:
-    static bool mouseMoved(Scene& scene, const Input::MouseEvent& arg) {
+    static bool mouseMoved(Scene& scene, const Input::MouseMoveEvent& arg) {
         return scene.mouseMoved(arg);
     }
 

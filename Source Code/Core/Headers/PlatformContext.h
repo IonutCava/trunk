@@ -51,10 +51,6 @@ class Configuration;
 class DisplayWindow;
 class DebugInterface;
 
-namespace Input {
-    class InputInterface;
-};
-
 namespace Attorney {
     class PlatformContextKernel;
 };
@@ -110,7 +106,6 @@ public:
     const Kernel& kernel() const;
 
     DisplayWindow& activeWindow();
-    Input::InputInterface& input();
 
     protected:
     void onThreadCreated(const std::thread::id& threadID);

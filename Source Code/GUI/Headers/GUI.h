@@ -126,23 +126,24 @@ public:
     /// Key released: return true if input was consumed
     bool onKeyUp(const Input::KeyEvent& key);
     /// Joystick axis change: return true if input was consumed
-    bool joystickAxisMoved(const Input::JoystickEvent& arg, I8 axis);
+    bool joystickAxisMoved(const Input::JoystickEvent& arg);
     /// Joystick direction change: return true if input was consumed
-    bool joystickPovMoved(const Input::JoystickEvent& arg, I8 pov);
+    bool joystickPovMoved(const Input::JoystickEvent& arg);
     /// Joystick button pressed: return true if input was consumed
-    bool joystickButtonPressed(const Input::JoystickEvent& arg, Input::JoystickButton button);
+    bool joystickButtonPressed(const Input::JoystickEvent& arg);
     /// Joystick button released: return true if input was consumed
-    bool joystickButtonReleased(const Input::JoystickEvent& arg, Input::JoystickButton button);
-    bool joystickSliderMoved(const Input::JoystickEvent& arg, I8 index);
-    bool joystickvector3Moved(const Input::JoystickEvent& arg, I8 index);
+    bool joystickButtonReleased(const Input::JoystickEvent& arg);
+    bool joystickBallMoved(const Input::JoystickEvent& arg);
+    bool joystickAddRemove(const Input::JoystickEvent& arg);
+    bool joystickRemap(const Input::JoystickEvent &arg) override;
     /// Mouse moved: return true if input was consumed
-    bool mouseMoved(const Input::MouseEvent& arg);
+    bool mouseMoved(const Input::MouseMoveEvent& arg);
     /// Mouse button pressed: return true if input was consumed
-    bool mouseButtonPressed(const Input::MouseEvent& arg, Input::MouseButton button);
+    bool mouseButtonPressed(const Input::MouseButtonEvent& arg);
     /// Mouse button released: return true if input was consumed
-    bool mouseButtonReleased(const Input::MouseEvent& arg, Input::MouseButton button);
+    bool mouseButtonReleased(const Input::MouseButtonEvent& arg);
 
-    bool onSDLInputEvent(SDL_Event event) override;
+    bool onUTF8(const Input::UTF8Event& arg) override;
 
     Scene* activeScene() {
         return _activeScene;

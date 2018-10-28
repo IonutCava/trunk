@@ -33,10 +33,19 @@
 #define _SCENE_INPUT_H_
 
 #include "SceneInputActions.h"
-#include "Platform/Input/Headers/InputInterface.h"
+#include "Platform/Input/Headers/EventHandler.h"
 
 namespace Divide {
+    struct pair_hash {
+        template <class T1, class T2>
+        std::size_t operator () (const std::pair<T1, T2> &p) const {
+            size_t hash = 0;
+            Util::Hash_combine(hash, p.first);
+            Util::Hash_combine(hash, p.second);
 
+            return hash;
+        }
+    };
 // This is the callback equivalent of PressReleaseAction with IDs resolved
 struct PressReleaseActionCbks {
     // key only
@@ -56,29 +65,19 @@ struct PressReleaseActionCbks {
     void from(const PressReleaseActions& actions, const InputActionList& actionList);
 };
 
-class JoystickHasher
-{
-public:
-    size_t operator()(const Input::JoystickElement& k) const
-    {
-        size_t hash = 0;
-        Util::Hash_combine(hash, to_U32(k._type));
-        Util::Hash_combine(hash, k._data);
-        return hash;
-    }
-};
-
 class SceneInput : public Input::InputAggregatorInterface {
    public:
-    typedef hashMap<Input::KeyCode, PressReleaseActionCbks, std::hash<I32>> KeyMapCache;
-    typedef hashMap<Input::MouseButton, PressReleaseActionCbks, std::hash<I32>> MouseMapCache;
-    typedef hashMap<Input::JoystickElement, PressReleaseActionCbks, JoystickHasher> JoystickMapCacheEntry;
-    typedef hashMap<Input::Joystick, JoystickMapCacheEntry> JoystickMapCache;
+    typedef std::pair<std::underlying_type<Input::JoystickElementType>::type, U32> JoystickMapKey;
 
-    typedef hashMap<Input::KeyCode, PressReleaseActions, std::hash<I32>> KeyMap;
-    typedef hashMap<Input::MouseButton, PressReleaseActions, std::hash<I32>> MouseMap;
-    typedef hashMap<Input::JoystickElement, PressReleaseActions, JoystickHasher> JoystickMapEntry;
-    typedef hashMap<Input::Joystick, JoystickMapEntry> JoystickMap;
+    typedef hashMap<Input::KeyCode, PressReleaseActionCbks> KeyMapCache;
+    typedef hashMap<Input::MouseButton, PressReleaseActionCbks> MouseMapCache;
+    typedef std::unordered_map<JoystickMapKey, PressReleaseActionCbks, pair_hash> JoystickMapCacheEntry;
+    typedef std::unordered_map<std::underlying_type<Input::Joystick>::type, JoystickMapCacheEntry> JoystickMapCache;
+
+    typedef hashMap<Input::KeyCode, PressReleaseActions> KeyMap;
+    typedef hashMap<Input::MouseButton, PressReleaseActions> MouseMap;
+    typedef std::unordered_map<JoystickMapKey, PressReleaseActions, pair_hash> JoystickMapEntry;
+    typedef std::unordered_map<std::underlying_type<Input::Joystick>::type, JoystickMapEntry> JoystickMap;
 
     typedef vector<std::pair<Input::KeyCode, Input::InputState>> KeyLog;
     typedef vector<std::tuple<Input::MouseButton, Input::InputState, vec2<I32>>> MouseBtnLog;
@@ -89,17 +88,18 @@ class SceneInput : public Input::InputAggregatorInterface {
     bool onKeyDown(const Input::KeyEvent &arg) override;
     bool onKeyUp(const Input::KeyEvent &arg) override;
     /// Joystick or Gamepad: return true if input was consumed
-    bool joystickButtonPressed(const Input::JoystickEvent &arg, Input::JoystickButton button) override;
-    bool joystickButtonReleased(const Input::JoystickEvent &arg, Input::JoystickButton button) override;
-    bool joystickAxisMoved(const Input::JoystickEvent &arg, I8 axis) override;
-    bool joystickPovMoved(const Input::JoystickEvent &arg, I8 pov) override;
-    bool joystickSliderMoved(const Input::JoystickEvent &arg, I8 index) override;
-    bool joystickvector3Moved(const Input::JoystickEvent &arg, I8 index) override;
+    bool joystickButtonPressed(const Input::JoystickEvent &arg) override;
+    bool joystickButtonReleased(const Input::JoystickEvent &arg) override;
+    bool joystickAxisMoved(const Input::JoystickEvent &arg) override;
+    bool joystickPovMoved(const Input::JoystickEvent &arg) override;
+    bool joystickBallMoved(const Input::JoystickEvent &arg) override;
+    bool joystickAddRemove(const Input::JoystickEvent &arg) override;
+    bool joystickRemap(const Input::JoystickEvent &arg) override;
     /// Mouse: return true if input was consumed
-    bool mouseMoved(const Input::MouseEvent &arg) override;
-    bool mouseButtonPressed(const Input::MouseEvent &arg, Input::MouseButton id) override;
-    bool mouseButtonReleased(const Input::MouseEvent &arg, Input::MouseButton id) override;
-    bool onSDLInputEvent(SDL_Event event) override;
+    bool mouseMoved(const Input::MouseMoveEvent &arg) override;
+    bool mouseButtonPressed(const Input::MouseButtonEvent &arg) override;
+    bool mouseButtonReleased(const Input::MouseButtonEvent &arg) override;
+    bool onUTF8(const Input::UTF8Event& arg) override;
     /// Returns false if the key is already assigned and couldn't be merged
     /// Call removeKeyMapping for the specified key first
     bool addKeyMapping(Input::KeyCode key, PressReleaseActions keyCbks);
@@ -120,16 +120,12 @@ class SceneInput : public Input::InputAggregatorInterface {
 
     /// Returns false if the button is already assigned.
     /// Call removeJoystickMapping for the specified key first
-    bool addJoystickMapping(Input::Joystick device, Input::JoystickElement element, PressReleaseActions btnCbks);
+    bool addJoystickMapping(Input::Joystick device, Input::JoystickElementType elementType, U32 id, PressReleaseActions btnCbks);
     /// Returns false if the button wasn't previously assigned
-    bool removeJoystickMapping(Input::Joystick device, Input::JoystickElement element);
+    bool removeJoystickMapping(Input::Joystick device, Input::JoystickElementType elementType, U32 id);
     /// Returns true if the button has a valid mapping and sets the callback
     /// output to the mapping's function
-    bool getJoystickMapping(Input::Joystick device, Input::JoystickElement element, PressReleaseActionCbks& btnCbksOut);
-
-    Input::InputState getKeyState(U8 deviceIndex, Input::KeyCode key) const;
-    Input::InputState getMouseButtonState(U8 deviceIndex, Input::MouseButton button) const;
-    Input::InputState getJoystickButtonState(Input::Joystick deviceIndex, Input::JoystickButton button) const;
+    bool getJoystickMapping(Input::Joystick device, Input::JoystickElementType elementType, U32 id, PressReleaseActionCbks& btnCbksOut);
 
     InputActionList& actionList();
 
@@ -148,15 +144,7 @@ class SceneInput : public Input::InputAggregatorInterface {
                             const InputParams& params,
                             bool onPress);
 
-       bool isDeviceInUse(I32 deviceID);
-
    private:
-    // Up to 2 devices per player: KB + Mouse or Nintendo Switch type controllers
-    // If one current player only uses one device, leave pair.second to -1
-    hashMap<U8 /*player index*/, std::pair<I32, I32>> _playerControlDevices;
-
-    vector<I32> _usedInputDevices;
-
     PlatformContext& _context;
     Scene &_parentScene;
 
@@ -177,3 +165,4 @@ class SceneInput : public Input::InputAggregatorInterface {
 
 };  // namespace Divide
 #endif  //_SCENE_INPUT_H_
+

@@ -67,6 +67,10 @@ struct WindowDescriptor {
                 to_U32(Flags::CLEAR_COLOUR);
 };
 
+namespace Input {
+    class EventHandler;
+};
+
 class PlatformContext;
 class WindowManager {
 public:
@@ -136,9 +140,6 @@ public:
 protected:
     friend class DisplayWindow;
     void pollSDLEvents();
-
-protected:
-    friend class Kernel;
     void onSDLInputEvent(SDL_Event event);
 
 protected:
@@ -155,6 +156,7 @@ protected:
     vector<MonitorData> _monitors;
     vector<DisplayWindow*> _windows;
 
+    std::unique_ptr<Input::EventHandler> _eventHandler;
     static hashMap<CursorStyle, SDL_Cursor*> s_cursors;
 };
 }; //namespace Divide

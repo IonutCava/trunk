@@ -72,6 +72,7 @@ namespace Divide {
         bool isUsing() const;
         void enable(bool state);
         bool enabled() const;
+        bool active() const;
 
     public: //Input
         /// Key pressed: return true if input was consumed
@@ -79,19 +80,20 @@ namespace Divide {
         /// Key released: return true if input was consumed
         bool onKeyUp(const Input::KeyEvent& key) override;
         /// Mouse moved: return true if input was consumed
-        bool mouseMoved(const Input::MouseEvent& arg) override;
+        bool mouseMoved(const Input::MouseMoveEvent& arg) override;
         /// Mouse button pressed: return true if input was consumed
-        bool mouseButtonPressed(const Input::MouseEvent& arg, Input::MouseButton button) override;
+        bool mouseButtonPressed(const Input::MouseButtonEvent& arg) override;
         /// Mouse button released: return true if input was consumed
-        bool mouseButtonReleased(const Input::MouseEvent& arg, Input::MouseButton button) override;
+        bool mouseButtonReleased(const Input::MouseButtonEvent& arg) override;
 
-        bool joystickButtonPressed(const Input::JoystickEvent &arg, Input::JoystickButton button) override;
-        bool joystickButtonReleased(const Input::JoystickEvent &arg, Input::JoystickButton button) override;
-        bool joystickAxisMoved(const Input::JoystickEvent &arg, I8 axis) override;
-        bool joystickPovMoved(const Input::JoystickEvent &arg, I8 pov) override;
-        bool joystickSliderMoved(const Input::JoystickEvent &arg, I8 index) override;
-        bool joystickvector3Moved(const Input::JoystickEvent &arg, I8 index) override;
-        bool onSDLInputEvent(SDL_Event event) override;
+        bool joystickButtonPressed(const Input::JoystickEvent &arg) override;
+        bool joystickButtonReleased(const Input::JoystickEvent &arg) override;
+        bool joystickAxisMoved(const Input::JoystickEvent &arg) override;
+        bool joystickPovMoved(const Input::JoystickEvent &arg) override;
+        bool joystickBallMoved(const Input::JoystickEvent &arg) override;
+        bool joystickAddRemove(const Input::JoystickEvent &arg) override;
+        bool joystickRemap(const Input::JoystickEvent &arg) override;
+        bool onUTF8(const Input::UTF8Event& arg) override;
 
     protected:
         void update(const U64 deltaTimeUS);

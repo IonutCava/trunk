@@ -33,110 +33,67 @@
 #ifndef _INPUT_AGGREGATOR_INIT_H_
 #define _INPUT_AGGREGATOR_INIT_H_
 
-#include "Core/Math/Headers/MathVectors.h"
-#include <OIS.h>
+#include "Input.h"
 
 namespace Divide {
 
 class DisplayWindow;
 namespace Input {
-/// Points to the position of said joystick in the vector
-enum class Joystick : U8 {
-    JOYSTICK_1  = 0,
-    JOYSTICK_2  = 1,
-    JOYSTICK_3  = 2,
-    JOYSTICK_4  = 3,
-    JOYSTICK_5  = 4,
-    JOYSTICK_6  = 5,
-    JOYSTICK_7  = 6,
-    JOYSTICK_8  = 7,
-    JOYSTICK_9  = 8,
-    JOYSTICK_10 = 9,
-    COUNT
-};
-
-struct MouseState {
-    OIS::Axis X, Y, Z;
-};
-
-struct JoystickData {
-    JoystickData();
-    JoystickData(I32 deadZone, I32 max);
-
-    I32 _deadZone;
-    I32 _max;
-};
-
-typedef OIS::KeyCode KeyCode;
-typedef OIS::Keyboard::Modifier KeyModifier;
-
-typedef OIS::MouseButtonID MouseButton;
 
 struct InputEvent {
-    explicit InputEvent(U8 deviceIndex);
+    explicit InputEvent(DisplayWindow* sourceWindow, U8 deviceIndex);
 
-    U8 _deviceIndex;
+    U8 _deviceIndex = 0;
+    DisplayWindow* _sourceWindow = nullptr;
 };
 
-struct MouseEvent : public InputEvent {
-    explicit MouseEvent(U8 deviceIndex, const OIS::MouseEvent& arg, const DisplayWindow& parentWindow);
+struct MouseButtonEvent : public InputEvent {
+    explicit MouseButtonEvent(DisplayWindow* sourceWindow, U8 deviceIndex);
 
-    OIS::Axis X(bool warped = true, bool viewportRelative = false) const;
-    OIS::Axis Y(bool warped = true, bool viewportRelative = false) const;
-    OIS::Axis Z(bool warped = true, bool viewportRelative = false) const;
+    bool pressed = false;
+    MouseButton button = MouseButton::MB_Left;
+    U8 numCliks = 0;
+    vec2<I32> relPosition = vec2<I32>(-1);
+};
 
+struct MouseMoveEvent : public InputEvent {
+    explicit MouseMoveEvent(DisplayWindow* sourceWindow, U8 deviceIndex, MouseState stateIn);
 
-    vec3<I32> relativePos(bool warped, bool viewportRelative) const;
-    vec3<I32> absolutePos(bool warped, bool viewportRelative) const;
+    MouseAxis X(bool warped = true, bool viewportRelative = false) const;
+    MouseAxis Y(bool warped = true, bool viewportRelative = false) const;
+
+    I32 WheelV() const;
+    I32 WheelH() const;
+
+    vec4<I32> relativePos(bool warped, bool viewportRelative) const;
+    vec4<I32> absolutePos(bool warped, bool viewportRelative) const;
     MouseState state(bool warped, bool viewportRelative) const;
 
  private:
-
-    const OIS::MouseEvent& _event;
-    const DisplayWindow& _parentWindow;
+    MouseState _stateIn;
 };
 
 struct JoystickEvent : public InputEvent {
-    explicit JoystickEvent(U8 deviceIndex, const OIS::JoyStickEvent& arg);
+    explicit JoystickEvent(DisplayWindow* sourceWindow, U8 deviceIndex);
 
-    const OIS::JoyStickEvent& _event;
+    JoystickElement _element;
 };
 
-typedef int JoystickButton;
+struct UTF8Event : public InputEvent {
+    explicit UTF8Event(DisplayWindow* sourceWindow, U8 deviceIndex, const char* text);
 
-static const U32 KeyCode_PLACEHOLDER = 0xEE;
+    const char* _text = nullptr;
+};
 
 struct KeyEvent : public InputEvent {
-    explicit KeyEvent(U8 deviceIndex);
 
-    KeyCode _key;
-    bool _pressed;
-    U32 _text;
-};
+    explicit KeyEvent(DisplayWindow* sourceWindow, U8 deviceIndex);
 
-enum class JoystickElementType : U8 {
-    POV_MOVE = 0,
-    AXIS_MOVE,
-    SLIDER_MOVE,
-    VECTOR_MOVE,
-    BUTTON_PRESS,
-    COUNT
-};
-
-struct JoystickElement {
-    JoystickElement(JoystickElementType elementType);
-    JoystickElement(JoystickElementType elementType, JoystickButton data);
-
-    bool operator==(const JoystickElement &other) const;
-
-    JoystickElementType _type;
-    JoystickButton _data; //< e.g. button index
-};
-
-enum class InputState : U8 {
-    PRESSED = 0,
-    RELEASED,
-    COUNT
+    KeyCode _key = KeyCode::KC_UNASSIGNED;
+    bool _pressed = false;
+    bool _isRepeat = false;
+    const char* _text = nullptr;
+    U16 _modMask = 0;
 };
 
 class InputAggregatorInterface {
@@ -145,19 +102,20 @@ class InputAggregatorInterface {
     virtual bool onKeyDown(const KeyEvent &arg) = 0;
     virtual bool onKeyUp(const KeyEvent &arg) = 0;
     /// Mouse: return true if input was consumed
-    virtual bool mouseMoved(const MouseEvent &arg) = 0;
-    virtual bool mouseButtonPressed(const MouseEvent &arg, MouseButton id) = 0;
-    virtual bool mouseButtonReleased(const MouseEvent &arg, MouseButton id) = 0;
+    virtual bool mouseMoved(const MouseMoveEvent &arg) = 0;
+    virtual bool mouseButtonPressed(const MouseButtonEvent& arg) = 0;
+    virtual bool mouseButtonReleased(const MouseButtonEvent& arg) = 0;
 
     /// Joystick or Gamepad: return true if input was consumed
-    virtual bool joystickButtonPressed(const JoystickEvent &arg, JoystickButton button) = 0;
-    virtual bool joystickButtonReleased(const JoystickEvent &arg, JoystickButton button) = 0;
-    virtual bool joystickAxisMoved(const JoystickEvent &arg, I8 axis) = 0;
-    virtual bool joystickPovMoved(const JoystickEvent &arg, I8 pov) = 0;
-    virtual bool joystickSliderMoved(const JoystickEvent &arg, I8 index) = 0;
-    virtual bool joystickvector3Moved(const JoystickEvent &arg, I8 index) = 0;
+    virtual bool joystickButtonPressed(const JoystickEvent &arg) = 0;
+    virtual bool joystickButtonReleased(const JoystickEvent &arg) = 0;
+    virtual bool joystickAxisMoved(const JoystickEvent &arg) = 0;
+    virtual bool joystickPovMoved(const JoystickEvent &arg) = 0;
+    virtual bool joystickBallMoved(const JoystickEvent &arg) = 0;
+    virtual bool joystickAddRemove(const JoystickEvent &arg) = 0;
+    virtual bool joystickRemap(const JoystickEvent &arg) = 0;
 
-    virtual bool onSDLInputEvent(SDL_Event event) = 0;
+    virtual bool onUTF8(const UTF8Event& arg) = 0;
 };
 
 };  // namespace Input

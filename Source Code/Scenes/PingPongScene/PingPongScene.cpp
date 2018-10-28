@@ -336,7 +336,8 @@ U16 PingPongScene::registerInputActions() {
 
     _input->actionList().registerInputAction(actionID, [this](InputParams param) {serveBall(-1);});
     actions.actionID(PressReleaseActions::Action::RELEASE, actionID);
-    _input->addJoystickMapping(Input::Joystick::JOYSTICK_1, Input::JoystickElement(Input::JoystickElementType::BUTTON_PRESS, 0), actions);
+
+    _input->addJoystickMapping(Input::Joystick::JOYSTICK_1, Input::JoystickElementType::BUTTON_PRESS, 0, actions);
     actionID++;
 
     _input->actionList().registerInputAction(actionID, [this](InputParams param) {

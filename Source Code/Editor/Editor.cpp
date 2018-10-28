@@ -22,7 +22,6 @@
 #include "Managers/Headers/FrameListenerManager.h"
 
 #include "Platform/File/Headers/FileManagement.h"
-#include "Platform/Input/Headers/InputInterface.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
@@ -41,12 +40,12 @@ namespace {
     WindowManager* g_windowManager = nullptr;
     Editor* g_editor = nullptr;
 
-    static std::array<U32, 5> g_sdlButtons = {
-        (U32)SDL_BUTTON_LEFT,
-        (U32)SDL_BUTTON_RIGHT,
-        (U32)SDL_BUTTON_MIDDLE,
-        (U32)SDL_BUTTON_X1,
-        (U32)SDL_BUTTON_X2
+    static std::array<Input::MouseButton, 5> g_oisButtons = {
+        Input::MouseButton::MB_Left,
+        Input::MouseButton::MB_Right,
+        Input::MouseButton::MB_Middle,
+        Input::MouseButton::MB_Button3,
+        Input::MouseButton::MB_Button4,
     };
 
     struct ImGuiViewportData
@@ -75,7 +74,6 @@ Editor::Editor(PlatformContext& context, ImGuiStyleEnum theme, ImGuiStyleEnum di
 {
     _menuBar = std::make_unique<MenuBar>(context, true);
 
-    _mouseButtonPressed.fill(false);
     _dockedWindows.fill(nullptr);
     g_windowManager = &context.app().windowManager();
     g_editor = this;
@@ -184,27 +182,26 @@ bool Editor::init(const vec2<U16>& renderResolution) {
     io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;        // We can honor io.WantSetMousePos requests (optional, rarely used)
     io.BackendFlags |= ImGuiBackendFlags_PlatformHasViewports;  // We can create multi-viewports on the Platform side (optional)
         
-    io.KeyMap[ImGuiKey_Tab] = SDL_SCANCODE_TAB;
-    io.KeyMap[ImGuiKey_LeftArrow] = SDL_SCANCODE_LEFT;
-    io.KeyMap[ImGuiKey_RightArrow] = SDL_SCANCODE_RIGHT;
-    io.KeyMap[ImGuiKey_UpArrow] = SDL_SCANCODE_UP;
-    io.KeyMap[ImGuiKey_DownArrow] = SDL_SCANCODE_DOWN;
-    io.KeyMap[ImGuiKey_PageUp] = SDL_SCANCODE_PAGEUP;
-    io.KeyMap[ImGuiKey_PageDown] = SDL_SCANCODE_PAGEDOWN;
-    io.KeyMap[ImGuiKey_Home] = SDL_SCANCODE_HOME;
-    io.KeyMap[ImGuiKey_End] = SDL_SCANCODE_END;
-    io.KeyMap[ImGuiKey_Insert] = SDL_SCANCODE_INSERT;
-    io.KeyMap[ImGuiKey_Delete] = SDL_SCANCODE_DELETE;
-    io.KeyMap[ImGuiKey_Backspace] = SDL_SCANCODE_BACKSPACE;
-    io.KeyMap[ImGuiKey_Space] = SDL_SCANCODE_SPACE;
-    io.KeyMap[ImGuiKey_Enter] = SDL_SCANCODE_RETURN;
-    io.KeyMap[ImGuiKey_Escape] = SDL_SCANCODE_ESCAPE;
-    io.KeyMap[ImGuiKey_A] = SDL_SCANCODE_A;
-    io.KeyMap[ImGuiKey_C] = SDL_SCANCODE_C;
-    io.KeyMap[ImGuiKey_V] = SDL_SCANCODE_V;
-    io.KeyMap[ImGuiKey_X] = SDL_SCANCODE_X;
-    io.KeyMap[ImGuiKey_Y] = SDL_SCANCODE_Y;
-    io.KeyMap[ImGuiKey_Z] = SDL_SCANCODE_Z;
+    io.KeyMap[ImGuiKey_Tab] = to_I32(Input::KeyCode::KC_TAB);
+    io.KeyMap[ImGuiKey_LeftArrow] = to_I32(Input::KeyCode::KC_LEFT);
+    io.KeyMap[ImGuiKey_RightArrow] = to_I32(Input::KeyCode::KC_RIGHT);
+    io.KeyMap[ImGuiKey_UpArrow] = to_I32(Input::KeyCode::KC_UP);
+    io.KeyMap[ImGuiKey_DownArrow] = to_I32(Input::KeyCode::KC_DOWN);
+    io.KeyMap[ImGuiKey_PageUp] = to_I32(Input::KeyCode::KC_PGUP);
+    io.KeyMap[ImGuiKey_PageDown] = to_I32(Input::KeyCode::KC_PGDOWN);
+    io.KeyMap[ImGuiKey_Home] = to_I32(Input::KeyCode::KC_HOME);
+    io.KeyMap[ImGuiKey_End] = to_I32(Input::KeyCode::KC_END);
+    io.KeyMap[ImGuiKey_Delete] = to_I32(Input::KeyCode::KC_DELETE);
+    io.KeyMap[ImGuiKey_Backspace] = to_I32(Input::KeyCode::KC_BACK);
+    io.KeyMap[ImGuiKey_Enter] = to_I32(Input::KeyCode::KC_RETURN);
+    io.KeyMap[ImGuiKey_Escape] = to_I32(Input::KeyCode::KC_ESCAPE);
+    io.KeyMap[ImGuiKey_Space] = to_I32(Input::KeyCode::KC_SPACE);
+    io.KeyMap[ImGuiKey_A] = to_I32(Input::KeyCode::KC_A);
+    io.KeyMap[ImGuiKey_C] = to_I32(Input::KeyCode::KC_C);
+    io.KeyMap[ImGuiKey_V] = to_I32(Input::KeyCode::KC_V);
+    io.KeyMap[ImGuiKey_X] = to_I32(Input::KeyCode::KC_X);
+    io.KeyMap[ImGuiKey_Y] = to_I32(Input::KeyCode::KC_Y);
+    io.KeyMap[ImGuiKey_Z] = to_I32(Input::KeyCode::KC_Z);
 
     io.SetClipboardTextFn = SetClipboardText;
     io.GetClipboardTextFn = GetClipboardText;
@@ -343,9 +340,9 @@ bool Editor::init(const vec2<U16>& renderResolution) {
         const vector<WindowManager::MonitorData>& monitors = g_windowManager->monitorData();
         I32 monitorCount = to_I32(monitors.size());
 
-        platform_io.Monitors.resize(to_I32(monitors.size()));
+        platform_io.Monitors.resize(monitorCount);
 
-        for (I32 i = 0; i < monitors.size(); ++i) {
+        for (I32 i = 0; i < monitorCount; ++i) {
             const WindowManager::MonitorData& monitor = monitors[i];
             ImGuiPlatformMonitor& imguiMonitor = platform_io.Monitors[i];
 
@@ -727,12 +724,48 @@ void Editor::selectionChangeCallback(PlayerIndex idx, SceneGraphNode* node) {
 
 /// Key pressed: return true if input was consumed
 bool Editor::onKeyDown(const Input::KeyEvent& key) {
-    return _gizmo->onKeyDown(key);;
+    if (!_gizmo->onKeyDown(key)) {
+        ImGuiIO& io = _imguiContext->IO;
+        io.KeysDown[to_I32(key._key)] = true;
+        if (key._text != nullptr) {
+            io.AddInputCharactersUTF8(key._text);
+        }
+        io.KeyCtrl = key._key == Input::KeyCode::KC_LCONTROL || key._key == Input::KeyCode::KC_RCONTROL;
+        io.KeyShift = key._key == Input::KeyCode::KC_LSHIFT || key._key == Input::KeyCode::KC_RSHIFT;
+        io.KeyAlt = key._key == Input::KeyCode::KC_LMENU || key._key == Input::KeyCode::KC_RMENU;
+        io.KeySuper = key._key == Input::KeyCode::KC_LWIN || key._key == Input::KeyCode::KC_RWIN;
+
+        return io.WantCaptureKeyboard;
+    }
+
+    return true;
 }
 
 /// Key released: return true if input was consumed
 bool Editor::onKeyUp(const Input::KeyEvent& key) {
-    return _gizmo->onKeyUp(key);
+    if (!_gizmo->onKeyUp(key)) {
+        ImGuiIO& io = _imguiContext->IO;
+        io.KeysDown[to_I32(key._key)] = false;
+
+        if (key._key == Input::KeyCode::KC_LCONTROL || key._key == Input::KeyCode::KC_RCONTROL) {
+            io.KeyCtrl = false;
+        }
+
+        if (key._key == Input::KeyCode::KC_LSHIFT || key._key == Input::KeyCode::KC_RSHIFT) {
+            io.KeyShift = false;
+        }
+
+        if (key._key == Input::KeyCode::KC_LMENU || key._key == Input::KeyCode::KC_RMENU) {
+            io.KeyAlt = false;
+        }
+
+        if (key._key == Input::KeyCode::KC_LWIN || key._key == Input::KeyCode::KC_RWIN) {
+            io.KeySuper = false;
+        }
+        return io.WantCaptureKeyboard;
+    }
+
+    return true;
 }
 
 namespace {
@@ -752,21 +785,49 @@ namespace {
 
 }
 /// Mouse moved: return true if input was consumed
-bool Editor::mouseMoved(const Input::MouseEvent& arg) {
-    ImGuiIO& io = _imguiContext->IO;
-    SceneViewWindow* sceneView = static_cast<SceneViewWindow*>(_dockedWindows[to_base(WindowType::SceneView)]);
-    _sceneHovered = sceneView->isHovered() && sceneView->sceneRect().contains(io.MousePos.x, io.MousePos.y);
-    
-    return !_scenePreviewFocused ? io.WantCaptureMouse : _gizmo->mouseMoved(arg);
+bool Editor::mouseMoved(const Input::MouseMoveEvent& arg) {
+    if (!_gizmo->mouseMoved(arg)) {
+        ImGuiIO& io = _imguiContext->IO;
+        SceneViewWindow* sceneView = static_cast<SceneViewWindow*>(_dockedWindows[to_base(WindowType::SceneView)]);
+        _sceneHovered = sceneView->isHovered() && sceneView->sceneRect().contains(io.MousePos.x, io.MousePos.y);
+
+        if (arg.WheelH() > 0) {
+            io.MouseWheelH += 1;
+        }
+        if (arg.WheelH() < 0) {
+            io.MouseWheelH -= 1;
+        }
+        if (arg.WheelV() > 0) {
+            io.MouseWheel += 1;
+        }
+        if (arg.WheelV() < 0) {
+            io.MouseWheel -= 1;
+        }
+
+        return io.WantCaptureMouse;
+    }
+
+    return true;
 }
 
 /// Mouse button pressed: return true if input was consumed
-bool Editor::mouseButtonPressed(const Input::MouseEvent& arg, Input::MouseButton button) {
-    return _gizmo->mouseButtonPressed(arg, button);
+bool Editor::mouseButtonPressed(const Input::MouseButtonEvent& arg) {
+    if (!_gizmo->mouseButtonPressed(arg)) {
+        ImGuiIO& io = _imguiContext->IO;
+        for (U8 i = 0; i < 5; ++i) {
+            if (arg.button == g_oisButtons[i]) {
+                io.MouseDown[i] = true;
+                break;
+            }
+        }
+        return io.WantCaptureMouse;
+    }
+
+    return true;
 }
 
 /// Mouse button released: return true if input was consumed
-bool Editor::mouseButtonReleased(const Input::MouseEvent& arg, Input::MouseButton button) {
+bool Editor::mouseButtonReleased(const Input::MouseButtonEvent& arg) {
     if (_scenePreviewFocused != _sceneHovered) {
         ImGui::SetCurrentContext(_imguiContext);
         _scenePreviewFocused = _sceneHovered;
@@ -777,47 +838,58 @@ bool Editor::mouseButtonReleased(const Input::MouseEvent& arg, Input::MouseButto
         _mainWindow->warp(_scenePreviewFocused, previewRect);
     }
 
-    return _gizmo->mouseButtonReleased(arg, button);
+    if (!_gizmo->mouseButtonReleased(arg)) {
+        ImGuiIO& io = _imguiContext->IO;
+        for (U8 i = 0; i < 5; ++i) {
+            if (arg.button == g_oisButtons[i]) {
+                io.MouseDown[i] = false;
+                break;
+            }
+        }
+        return io.WantCaptureMouse;
+    }
+
+    return true;
 }
 
-bool Editor::joystickButtonPressed(const Input::JoystickEvent &arg, Input::JoystickButton button) {
+bool Editor::joystickButtonPressed(const Input::JoystickEvent &arg) {
     ACKNOWLEDGE_UNUSED(arg);
-    ACKNOWLEDGE_UNUSED(button);
 
     return false;
 }
 
-bool Editor::joystickButtonReleased(const Input::JoystickEvent &arg, Input::JoystickButton button) {
+bool Editor::joystickButtonReleased(const Input::JoystickEvent &arg) {
     ACKNOWLEDGE_UNUSED(arg);
-    ACKNOWLEDGE_UNUSED(button);
 
     return false;
 }
 
-bool Editor::joystickAxisMoved(const Input::JoystickEvent &arg, I8 axis) {
+bool Editor::joystickAxisMoved(const Input::JoystickEvent &arg) {
     ACKNOWLEDGE_UNUSED(arg);
-    ACKNOWLEDGE_UNUSED(axis);
 
     return false;
 }
 
-bool Editor::joystickPovMoved(const Input::JoystickEvent &arg, I8 pov) {
+bool Editor::joystickPovMoved(const Input::JoystickEvent &arg) {
     ACKNOWLEDGE_UNUSED(arg);
-    ACKNOWLEDGE_UNUSED(pov);
 
     return false;
 }
 
-bool Editor::joystickSliderMoved(const Input::JoystickEvent &arg, I8 index) {
+bool Editor::joystickBallMoved(const Input::JoystickEvent &arg) {
     ACKNOWLEDGE_UNUSED(arg);
-    ACKNOWLEDGE_UNUSED(index);
 
     return false;
 }
 
-bool Editor::joystickvector3Moved(const Input::JoystickEvent &arg, I8 index) {
+bool Editor::joystickAddRemove(const Input::JoystickEvent &arg) {
     ACKNOWLEDGE_UNUSED(arg);
-    ACKNOWLEDGE_UNUSED(index);
+
+    return false;
+}
+
+bool Editor::joystickRemap(const Input::JoystickEvent &arg) {
+    ACKNOWLEDGE_UNUSED(arg);
 
     return false;
 }
@@ -835,7 +907,7 @@ void Editor::updateMousePosAndButtons() {
     }
 
     vec2<I32> mPos(-1);
-    U32 state = WindowManager::getMouseState(mPos, false);
+    WindowManager::getMouseState(mPos, false);
 
     bool anyDown = false;
     DisplayWindow* focusedWindow = g_windowManager->getFocusedWindow();
@@ -860,67 +932,25 @@ void Editor::updateMousePosAndButtons() {
         }
     }
 
-    for (size_t i = 0; i < g_sdlButtons.size(); ++i) {
-        // If a mouse press event came, always pass it as "mouse held this frame", so we don't miss click-release events that are shorter than 1 frame.
-        io.MouseDown[i] = _mouseButtonPressed[i] || (state & SDL_BUTTON(g_sdlButtons[i])) != 0;
-        anyDown = anyDown || io.MouseDown[i];
+    for (size_t i = 0; i < 5; ++i) {
+        if (io.MouseDown[i]) {
+            anyDown = true;
+            break;
+        }
     }
-    _mouseButtonPressed.fill(false);
+
     WindowManager::setCaptureMouse(anyDown);
 }
 
-bool Editor::onSDLInputEvent(SDL_Event event) {
+bool Editor::onUTF8(const Input::UTF8Event& arg) {
     if (!needInput()) {
         return false;
     }
 
     ImGuiIO& io = _imguiContext->IO;
-    switch (event.type) {
-        case SDL_TEXTINPUT:
-        {
-            io.AddInputCharactersUTF8(event.text.text);
-            return true;
-        }break;
-        case SDL_MOUSEWHEEL:
-        {
-            if (event.wheel.x > 0) {
-                io.MouseWheelH += 1;
-            }
-            if (event.wheel.x < 0) {
-                io.MouseWheelH -= 1;
-            }
-            if (event.wheel.y > 0) {
-                io.MouseWheel += 1;
-            }
-            if (event.wheel.y < 0) {
-                io.MouseWheel -= 1;
-            }
-            return true;
-        };
-        case SDL_MOUSEBUTTONDOWN:
-        {
-            for (size_t i = 0; i < g_sdlButtons.size(); ++i) {
-                if (event.button.button == g_sdlButtons[i]) {
-                    _mouseButtonPressed[i] = true;
-                }
-            }
+    io.AddInputCharactersUTF8(arg._text);
 
-            return true;
-        };
-        case SDL_KEYDOWN:
-        case SDL_KEYUP:
-        {
-            I32 key = event.key.keysym.scancode;
-            IM_ASSERT(key >= 0 && key < IM_ARRAYSIZE(io.KeysDown));
-            io.KeysDown[key] = (event.type == SDL_KEYDOWN);
-            io.KeyShift = ((SDL_GetModState() & KMOD_SHIFT) != 0);
-            io.KeyCtrl = ((SDL_GetModState() & KMOD_CTRL) != 0);
-            io.KeyAlt = ((SDL_GetModState() & KMOD_ALT) != 0);
-            io.KeySuper = ((SDL_GetModState() & KMOD_GUI) != 0);
-            return true;
-        };
-    };
-    return false;
+    return io.WantCaptureKeyboard;
 }
 
 void Editor::onSizeChange(const SizeChangeParams& params) {

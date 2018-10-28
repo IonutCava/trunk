@@ -76,11 +76,6 @@ enum class WindowEvent : U8 {
     MOVED = 11,
     APP_LOOP = 12,
     CLOSE_REQUESTED = 13,
-    KEY_PRESS = 14,
-    MOUSE_MOVE = 15,
-    MOUSE_BUTTON = 16,
-    MOUSE_WHEEL = 17,
-    TEXT = 18,
     COUNT
 };
 
@@ -99,10 +94,6 @@ enum class WindowFlags : U16 {
     COUNT
 };
 
-namespace Input {
-    class InputInterface;
-};
-
 class WindowManager;
 class PlatformContext;
 
@@ -111,13 +102,12 @@ struct WindowDescriptor;
 enum class ErrorCode : I8;
 // Platform specific window
 class DisplayWindow : public GUIDWrapper,
-                      public PlatformContextComponent,
-                      public Input::InputAggregatorInterface {
+                      public PlatformContextComponent {
 public:
     struct WindowEventArgs {
         I64 _windowGUID = -1;
         bool _flag = false;
-        Input::KeyCode _key = Input::KeyCode::KC_0;
+        Input::KeyCode _key = Input::KeyCode::KC_UNASSIGNED;
         const char* _text = nullptr;
         I32 _mod = 0;
         I32 x = -1, y = -1;
@@ -203,8 +193,6 @@ public:
     inline I64 addEventListener(WindowEvent windowEvent, const EventListener& listener);
     inline void removeEventlistener(WindowEvent windowEvent, I64 listenerGUID);
 
-    inline Input::InputInterface& inputHandler();
-
     void handleEvent(SDL_Event event);
     void notifyListeners(WindowEvent event, const WindowEventArgs& args);
 
@@ -226,29 +214,6 @@ private:
     /// Changing from one window type to another
     /// should also change display dimensions and position
     void handleChangeWindowType(WindowType newWindowType);
-
-protected: //Input
-    /// Key pressed: return true if input was consumed
-    bool onKeyDown(const Input::KeyEvent& key) override;
-    /// Key released: return true if input was consumed
-    bool onKeyUp(const Input::KeyEvent& key) override;
-    /// Joystick axis change: return true if input was consumed
-    bool joystickAxisMoved(const Input::JoystickEvent& arg, I8 axis) override;
-    /// Joystick direction change: return true if input was consumed
-    bool joystickPovMoved(const Input::JoystickEvent& arg, I8 pov) override;
-    /// Joystick button pressed: return true if input was consumed
-    bool joystickButtonPressed(const Input::JoystickEvent& arg, Input::JoystickButton button) override;
-    /// Joystick button released: return true if input was consumed
-    bool joystickButtonReleased(const Input::JoystickEvent& arg, Input::JoystickButton button) override;
-    bool joystickSliderMoved(const Input::JoystickEvent& arg, I8 index) override;
-    bool joystickvector3Moved(const Input::JoystickEvent& arg, I8 index) override;
-    bool onSDLInputEvent(SDL_Event event) override;
-    /// Mouse moved: return true if input was consumed
-    bool mouseMoved(const Input::MouseEvent& arg) override;
-    /// Mouse button pressed: return true if input was consumed
-    bool mouseButtonPressed(const Input::MouseEvent& arg, Input::MouseButton button) override;
-    /// Mouse button released: return true if input was consumed
-    bool mouseButtonReleased(const Input::MouseEvent& arg, Input::MouseButton button) override;
 
 private:
     WindowManager& _parent;
@@ -276,7 +241,6 @@ private:
     typedef vector<std::shared_ptr<GUID_DELEGATE_CBK<bool, WindowEventArgs>>> EventListeners;
     std::array<EventListeners, to_base(WindowEvent::COUNT)> _eventListeners;
 
-    std::unique_ptr<Input::InputInterface> _inputHandler;
     Uint32 _windowID;
 
     DELEGATE_CBK<void> _destroyCbk;
@@ -294,3 +258,4 @@ private:
 #include "DisplayWindow.inl"
 
 #endif //_DISPLAY_WINDOW_H_
+

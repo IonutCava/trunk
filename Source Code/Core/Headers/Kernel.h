@@ -155,10 +155,6 @@ namespace Time {
     class ProfileTimer;
 };
 
-namespace Input {
-    class InputInterface;
-};
-
 /// The kernel is the main interface to our engine components:
 ///-video
 ///-audio
@@ -189,27 +185,24 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     /// Key released
     bool onKeyUp(const Input::KeyEvent& key);
     /// Joystick axis change
-    bool joystickAxisMoved(const Input::JoystickEvent& arg, I8 axis);
+    bool joystickAxisMoved(const Input::JoystickEvent& arg);
     /// Joystick direction change
-    bool joystickPovMoved(const Input::JoystickEvent& arg, I8 pov);
+    bool joystickPovMoved(const Input::JoystickEvent& arg);
     /// Joystick button pressed
-    bool joystickButtonPressed(const Input::JoystickEvent& arg,
-                               Input::JoystickButton button);
+    bool joystickButtonPressed(const Input::JoystickEvent& arg);
     /// Joystick button released
-    bool joystickButtonReleased(const Input::JoystickEvent& arg,
-                                Input::JoystickButton button);
-    bool joystickSliderMoved(const Input::JoystickEvent& arg, I8 index);
-    bool joystickvector3Moved(const Input::JoystickEvent& arg, I8 index);
+    bool joystickButtonReleased(const Input::JoystickEvent& arg);
+    bool joystickBallMoved(const Input::JoystickEvent& arg);
+    bool joystickAddRemove(const Input::JoystickEvent& arg);
+    bool joystickRemap(const Input::JoystickEvent &arg) override;
     /// Mouse moved
-    bool mouseMoved(const Input::MouseEvent& arg);
+    bool mouseMoved(const Input::MouseMoveEvent& arg);
     /// Mouse button pressed
-    bool mouseButtonPressed(const Input::MouseEvent& arg,
-                            Input::MouseButton button);
+    bool mouseButtonPressed(const Input::MouseButtonEvent& arg);
     /// Mouse button released
-    bool mouseButtonReleased(const Input::MouseEvent& arg,
-                             Input::MouseButton button);
+    bool mouseButtonReleased(const Input::MouseButtonEvent& arg);
 
-    bool onSDLInputEvent(SDL_Event event) override;
+    bool onUTF8(const Input::UTF8Event& arg) override;
 
     ResourceCache& resourceCache() {
         assert(_resCache != nullptr);

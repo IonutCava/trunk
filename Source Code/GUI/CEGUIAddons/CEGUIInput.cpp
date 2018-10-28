@@ -19,12 +19,12 @@ CEGUIInput::CEGUIInput(GUI& parent)
 }
 
 // return true if the input was consumed
-bool CEGUIInput::injectOISKey(bool pressed, const Input::KeyEvent& inKey) {
+bool CEGUIInput::injectKey(bool pressed, const Input::KeyEvent& inKey) {
     
     bool consumed = false;
     if (pressed) {
         if (_parent.getCEGUIContext().injectKeyDown((CEGUI::Key::Scan)inKey._key)) {
-            _parent.getCEGUIContext().injectChar((CEGUI::Key::Scan)inKey._text);
+            _parent.getCEGUIContext().injectChar((CEGUI::Key::Scan)inKey._text[0]);
             begin(inKey);
             consumed = true;
         }
@@ -47,27 +47,26 @@ void CEGUIInput::repeatKey(I32 inKey, U32 Char) {
 
 // Return true if input was consumed
 bool CEGUIInput::onKeyDown(const Input::KeyEvent& key) {
-    return injectOISKey(true, key);
+    return injectKey(true, key);
 }
 
 // Return true if input was consumed
 bool CEGUIInput::onKeyUp(const Input::KeyEvent& key) {
-    return injectOISKey(false, key);
+    return injectKey(false, key);
 }
 
 // Return true if input was consumed
-bool CEGUIInput::mouseMoved(const Input::MouseEvent& arg) {
-    bool wheel = _parent.getCEGUIContext().injectMouseWheelChange(to_F32(arg.Z().rel));
+bool CEGUIInput::mouseMoved(const Input::MouseMoveEvent& arg) {
+    bool wheel = _parent.getCEGUIContext().injectMouseWheelChange(to_F32(arg.WheelV()));
     bool move = _parent.getCEGUIContext().injectMousePosition(to_F32(arg.X().abs),
                                                               to_F32(arg.Y().abs));
     return wheel || move;
 }
 
 // Return true if input was consumed
-bool CEGUIInput::mouseButtonPressed(const Input::MouseEvent& arg,
-                                    Input::MouseButton button) {
+bool CEGUIInput::mouseButtonPressed(const Input::MouseButtonEvent& arg) {
     bool consumed = false;
-    switch (button) {
+    switch (arg.button) {
         case Input::MouseButton::MB_Left: {
             consumed = _parent.getCEGUIContext().injectMouseButtonDown(CEGUI::LeftButton);
         } break;
@@ -90,10 +89,9 @@ bool CEGUIInput::mouseButtonPressed(const Input::MouseEvent& arg,
 }
 
 // Return true if input was consumed
-bool CEGUIInput::mouseButtonReleased(const Input::MouseEvent& arg,
-                                     Input::MouseButton button) {
+bool CEGUIInput::mouseButtonReleased(const Input::MouseButtonEvent& arg) {
     bool consumed = false;
-    switch (button) {
+    switch (arg.button) {
         case Input::MouseButton::MB_Left: {
             consumed = _parent.getCEGUIContext().injectMouseButtonUp(CEGUI::LeftButton);
         } break;
@@ -116,52 +114,56 @@ bool CEGUIInput::mouseButtonReleased(const Input::MouseEvent& arg,
 }
 
 // Return true if input was consumed
-bool CEGUIInput::joystickAxisMoved(const Input::JoystickEvent& arg, I8 axis) {
+bool CEGUIInput::joystickAxisMoved(const Input::JoystickEvent& arg) {
     bool consumed = false;
 
     return consumed;
 }
 
 // Return true if input was consumed
-bool CEGUIInput::joystickPovMoved(const Input::JoystickEvent& arg, I8 pov) {
+bool CEGUIInput::joystickPovMoved(const Input::JoystickEvent& arg) {
     bool consumed = false;
 
     return consumed;
 }
 
 // Return true if input was consumed
-bool CEGUIInput::joystickButtonPressed(const Input::JoystickEvent& arg,
-                                       Input::JoystickButton button) {
+bool CEGUIInput::joystickButtonPressed(const Input::JoystickEvent& arg) {
     bool consumed = false;
 
     return consumed;
 }
 
 // Return true if input was consumed
-bool CEGUIInput::joystickButtonReleased(const Input::JoystickEvent& arg,
-                                        Input::JoystickButton button) {
+bool CEGUIInput::joystickButtonReleased(const Input::JoystickEvent& arg) {
     bool consumed = false;
 
     return consumed;
 }
 
 // Return true if input was consumed
-bool CEGUIInput::joystickSliderMoved(const Input::JoystickEvent& arg,
-                                     I8 index) {
+bool CEGUIInput::joystickBallMoved(const Input::JoystickEvent& arg) {
     bool consumed = false;
 
     return consumed;
 }
 
 // Return true if input was consumed
-bool CEGUIInput::joystickvector3Moved(const Input::JoystickEvent& arg,
-                                       I8 index) {
+bool CEGUIInput::joystickAddRemove(const Input::JoystickEvent& arg) {
     bool consumed = false;
 
     return consumed;
 }
 
-bool CEGUIInput::onSDLInputEvent(SDL_Event event) {
+bool CEGUIInput::joystickRemap(const Input::JoystickEvent &arg) {
+    bool consumed = false;
+
+    return consumed;
+}
+
+bool CEGUIInput::onUTF8(const Input::UTF8Event& arg) {
+    ACKNOWLEDGE_UNUSED(arg);
+
     return false;
 }
 };

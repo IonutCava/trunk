@@ -652,33 +652,31 @@ U16 Scene::registerInputActions() {
     auto rendererDebugView = [this](InputParams param) {_context.gfx().getRenderer().toggleDebugView();};
     auto shutdown = [this](InputParams param) { _context.app().RequestShutdown();};
     auto povNavigation = [this](InputParams param) {
-        if (param._var[0] & OIS::Pov::North) {  // Going up
+        U32 povMask = param._var[0];
+
+        if (povMask & to_base(Input::JoystickPovDirection::UP)) {  // Going up
             state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveFB(MoveDirection::POSITIVE);
         }
-        if (param._var[0] & OIS::Pov::South) {  // Going down
+        if (povMask & to_base(Input::JoystickPovDirection::DOWN)) {  // Going down
             state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveFB(MoveDirection::NEGATIVE);
         }
-        if (param._var[0] & OIS::Pov::East) {  // Going right
+        if (povMask & to_base(Input::JoystickPovDirection::RIGHT)) {  // Going right
             state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveLR(MoveDirection::POSITIVE);
         }
-        if (param._var[0] & OIS::Pov::West) {  // Going left
+        if (povMask & to_base(Input::JoystickPovDirection::LEFT)) {  // Going left
             state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveLR(MoveDirection::NEGATIVE);
         }
-        if (param._var[0] == OIS::Pov::Centered) {  // stopped/centered out
+        if (povMask == to_base(Input::JoystickPovDirection::CENTERED)) {  // stopped/centered out
             state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveLR(MoveDirection::NONE);
             state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveFB(MoveDirection::NONE);
         }
     };
 
     auto axisNavigation = [this](InputParams param) {
-        I32 axis = param._var[2];
-        Input::Joystick joystick = static_cast<Input::Joystick>(param._var[3]);
-
-        Input::JoystickInterface* joyInterface = _context.input().getJoystickInterface();
-        
-        const Input::JoystickData& joyData = joyInterface->getJoystickData(joystick);
-        I32 deadZone = joyData._deadZone;
-        I32 axisABS = std::min(param._var[0], joyData._max);
+        I32 axisABS = param._var[0];
+        I32 axis = param._var[1];
+        //bool isGamepad = param._var[2] == 1;
+        I32 deadZone = param._var[3];
 
         switch (axis) {
             case 0: {
@@ -1105,7 +1103,7 @@ void Scene::clearObjects() {
     _sceneGraph->unload();
 }
 
-bool Scene::mouseMoved(const Input::MouseEvent& arg) {
+bool Scene::mouseMoved(const Input::MouseMoveEvent& arg) {
     // ToDo: Use mapping between device ID an player index -Ionut
     PlayerIndex idx = getPlayerIndexForDevice(arg._deviceIndex);
     _hoverUpdateQueue.insert(idx);

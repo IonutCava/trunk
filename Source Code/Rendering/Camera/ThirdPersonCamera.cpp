@@ -2,7 +2,6 @@
 
 #include "Headers/ThirdPersonCamera.h"
 #include "Graphs/Headers/SceneGraphNode.h"
-#include "Platform/Input/Headers/InputInterface.h"
 
 namespace Divide {
 

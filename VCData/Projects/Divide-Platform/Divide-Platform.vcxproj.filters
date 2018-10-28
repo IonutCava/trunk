@@ -22,22 +22,13 @@
     <ClInclude Include="../../../Source Code/Platform\Input\Headers\AutoKeyRepeat.h">
       <Filter>Input\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="../../../Source Code/Platform\Input\Headers\EffectManager.h">
-      <Filter>Input\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="../../../Source Code/Platform\Input\Headers\EventHandler.h">
       <Filter>Input\Headers</Filter>
     </ClInclude>
     <ClInclude Include="../../../Source Code/Platform\Input\Headers\InputAggregatorInterface.h">
       <Filter>Input\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="../../../Source Code/Platform\Input\Headers\InputInterface.h">
-      <Filter>Input\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="../../../Source Code/Platform\Input\Headers\InputVariables.h">
-      <Filter>Input\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="../../../Source Code/Platform\Input\Headers\JoystickInterface.h">
       <Filter>Input\Headers</Filter>
     </ClInclude>
     <ClInclude Include="../../../Source Code/Platform\Threading\Headers\Task.h">
@@ -335,6 +326,9 @@
     <ClInclude Include="..\..\..\Source Code\Platform\Video\RenderBackend\OpenGL\Headers\GLStateTracker.h">
       <Filter>Video\RenderBackend\OpenGL\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\Source Code\Platform\Input\Headers\Input.h">
+      <Filter>Input\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../../Source Code/Platform\Input\AutoKeyRepeat.cpp">
@@ -352,13 +346,7 @@
     <ClCompile Include="../../../Source Code/Platform\Video\IMPrimitive.cpp">
       <Filter>Video</Filter>
     </ClCompile>
-    <ClCompile Include="../../../Source Code/Platform\Input\EffectManager.cpp">
-      <Filter>Input</Filter>
-    </ClCompile>
     <ClCompile Include="../../../Source Code/Platform\Input\EventHandler.cpp">
-      <Filter>Input</Filter>
-    </ClCompile>
-    <ClCompile Include="../../../Source Code/Platform\Input\InputInterface.cpp">
       <Filter>Input</Filter>
     </ClCompile>
     <ClCompile Include="../../../Source Code/Platform\Video\RenderStateBlock.cpp">
@@ -565,9 +553,6 @@
       <Filter>File\FileWatcher</Filter>
     </ClCompile>
     <ClCompile Include="../../../Source Code/stdafx-platform.cpp" />
-    <ClCompile Include="../../../Source Code/Platform\Input\JoystickInterface.cpp">
-      <Filter>Input</Filter>
-    </ClCompile>
     <ClCompile Include="../../../Source Code/Platform\Video\Pipeline.cpp">
       <Filter>Video</Filter>
     </ClCompile>
@@ -620,6 +605,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\Source Code\Platform\Video\RenderBackend\OpenGL\GLStateTracker.cpp">
       <Filter>Video\RenderBackend\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source Code\Platform\Input\Input.cpp">
+      <Filter>Input</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

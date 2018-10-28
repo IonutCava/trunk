@@ -15,7 +15,6 @@
 #include "Core/Debugging/Headers/DebugInterface.h"
 #include "Platform/Audio/Headers/SFXDevice.h"
 #include "Platform/Video/Headers/GFXDevice.h"
-#include "Platform/Input/Headers/InputInterface.h"
 
 namespace Divide {
 
@@ -90,10 +89,6 @@ void PlatformContext::idle() {
 void PlatformContext::endFrame() {
     _gfx->endFrame(app().windowManager().getMainWindow(), true);
     _sfx->endFrame();
-}
-
-Input::InputInterface& PlatformContext::input() {
-    return activeWindow().inputHandler();
 }
 
 DisplayWindow& PlatformContext::activeWindow() {

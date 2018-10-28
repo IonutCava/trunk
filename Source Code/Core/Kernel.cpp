@@ -29,7 +29,6 @@
 #include "Dynamics/Entities/Units/Headers/Player.h"
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
 #include "Managers/Headers/FrameListenerManager.h"
-#include "Platform/Input/Headers/InputInterface.h"
 #include "Platform/File/Headers/FileWatcherManager.h"
 #include "Platform/Compute/Headers/OpenCLInterface.h"
 
@@ -748,7 +747,7 @@ bool Kernel::onKeyUp(const Input::KeyEvent& key) {
     return false;
 }
 
-bool Kernel::mouseMoved(const Input::MouseEvent& arg) {
+bool Kernel::mouseMoved(const Input::MouseMoveEvent& arg) {
     if (Config::Build::ENABLE_EDITOR) {
         if (_platformContext->editor().mouseMoved(arg)) {
             return true;
@@ -763,107 +762,110 @@ bool Kernel::mouseMoved(const Input::MouseEvent& arg) {
     return false;
 }
 
-bool Kernel::mouseButtonPressed(const Input::MouseEvent& arg,
-                                Input::MouseButton button) {
+bool Kernel::mouseButtonPressed(const Input::MouseButtonEvent& arg) {
     
     if (Config::Build::ENABLE_EDITOR) {
-        if (_platformContext->editor().mouseButtonPressed(arg, button)) {
+        if (_platformContext->editor().mouseButtonPressed(arg)) {
             return true;
         }
     }
 
-    if (!_platformContext->gui().mouseButtonPressed(arg, button)) {
-        return _sceneManager->mouseButtonPressed(arg, button);
+    if (!_platformContext->gui().mouseButtonPressed(arg)) {
+        return _sceneManager->mouseButtonPressed(arg);
     }
     
     // InputInterface needs to know when this is completed
     return false;
 }
 
-bool Kernel::mouseButtonReleased(const Input::MouseEvent& arg,
-                                 Input::MouseButton button) {
+bool Kernel::mouseButtonReleased(const Input::MouseButtonEvent& arg) {
     
     if (Config::Build::ENABLE_EDITOR) {
-        if (_platformContext->editor().mouseButtonReleased(arg, button)) {
+        if (_platformContext->editor().mouseButtonReleased(arg)) {
             return true;
         }
     }
 
-    if (!_platformContext->gui().mouseButtonReleased(arg, button)) {
-        return _sceneManager->mouseButtonReleased(arg, button);
+    if (!_platformContext->gui().mouseButtonReleased(arg)) {
+        return _sceneManager->mouseButtonReleased(arg);
     }
 
     // InputInterface needs to know when this is completed
     return false;
 }
 
-bool Kernel::joystickAxisMoved(const Input::JoystickEvent& arg, I8 axis) {
-    if (!_platformContext->gui().joystickAxisMoved(arg, axis)) {
-        return _sceneManager->joystickAxisMoved(arg, axis);
+bool Kernel::joystickAxisMoved(const Input::JoystickEvent& arg) {
+    if (!_platformContext->gui().joystickAxisMoved(arg)) {
+        return _sceneManager->joystickAxisMoved(arg);
     }
 
     // InputInterface needs to know when this is completed
     return false;
 }
 
-bool Kernel::joystickPovMoved(const Input::JoystickEvent& arg, I8 pov) {
-    if (!_platformContext->gui().joystickPovMoved(arg, pov)) {
-        return _sceneManager->joystickPovMoved(arg, pov);
+bool Kernel::joystickPovMoved(const Input::JoystickEvent& arg) {
+    if (!_platformContext->gui().joystickPovMoved(arg)) {
+        return _sceneManager->joystickPovMoved(arg);
     }
 
     // InputInterface needs to know when this is completed
     return false;
 }
 
-bool Kernel::joystickButtonPressed(const Input::JoystickEvent& arg,
-                                   Input::JoystickButton button) {
-    if (!_platformContext->gui().joystickButtonPressed(arg, button)) {
-        return _sceneManager->joystickButtonPressed(arg, button);
+bool Kernel::joystickButtonPressed(const Input::JoystickEvent& arg) {
+    if (!_platformContext->gui().joystickButtonPressed(arg)) {
+        return _sceneManager->joystickButtonPressed(arg);
     }
 
     // InputInterface needs to know when this is completed
     return false;
 }
 
-bool Kernel::joystickButtonReleased(const Input::JoystickEvent& arg,
-                                    Input::JoystickButton button) {
-    if (!_platformContext->gui().joystickButtonReleased(arg, button)) {
-        return _sceneManager->joystickButtonReleased(arg, button);
+bool Kernel::joystickButtonReleased(const Input::JoystickEvent& arg) {
+    if (!_platformContext->gui().joystickButtonReleased(arg)) {
+        return _sceneManager->joystickButtonReleased(arg);
     }
 
     // InputInterface needs to know when this is completed
     return false;
 }
 
-bool Kernel::joystickSliderMoved(const Input::JoystickEvent& arg, I8 index) {
-    if (!_platformContext->gui().joystickSliderMoved(arg, index)) {
-        return _sceneManager->joystickSliderMoved(arg, index);
+bool Kernel::joystickBallMoved(const Input::JoystickEvent& arg) {
+    if (!_platformContext->gui().joystickBallMoved(arg)) {
+        return _sceneManager->joystickBallMoved(arg);
     }
 
     // InputInterface needs to know when this is completed
     return false;
 }
 
-bool Kernel::joystickvector3Moved(const Input::JoystickEvent& arg, I8 index) {
-    if (!_platformContext->gui().joystickvector3Moved(arg, index)) {
-        return _sceneManager->joystickvector3Moved(arg, index);
+bool Kernel::joystickAddRemove(const Input::JoystickEvent& arg) {
+    if (!_platformContext->gui().joystickAddRemove(arg)) {
+        return _sceneManager->joystickAddRemove(arg);
     }
 
     // InputInterface needs to know when this is completed
     return false;
 }
 
-bool Kernel::onSDLInputEvent(SDL_Event event) {
-    _platformContext->app().windowManager().onSDLInputEvent(event);
+bool Kernel::joystickRemap(const Input::JoystickEvent &arg) {
+    if (!_platformContext->gui().joystickRemap(arg)) {
+        return _sceneManager->joystickRemap(arg);
+    }
 
+    // InputInterface needs to know when this is completed
+    return false;
+}
+
+bool Kernel::onUTF8(const Input::UTF8Event& arg) {
     if (Config::Build::ENABLE_EDITOR) {
-        if (_platformContext->editor().onSDLInputEvent(event)) {
+        if (_platformContext->editor().onUTF8(arg)) {
             return true;
         }
     }
     
-    if (!_platformContext->gui().onSDLInputEvent(event)) {
-        return _sceneManager->onSDLInputEvent(event);
+    if (!_platformContext->gui().onUTF8(arg)) {
+        return _sceneManager->onUTF8(arg);
     }
 
     return false;

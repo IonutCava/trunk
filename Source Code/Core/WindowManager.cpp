@@ -9,20 +9,23 @@
 #include "Core/Headers/PlatformContext.h"
 #include "Utility/Headers/Localization.h"
 #include "Platform/Video/Headers/GFXDevice.h"
+#include "Platform/Input/Headers/EventHandler.h"
 
 namespace Divide {
+ 
 
 namespace {
+    
     SDL_SystemCursor CursorToSDL(CursorStyle style) {
         switch (style) {
-        case CursorStyle::ARROW: return SDL_SYSTEM_CURSOR_ARROW;
-        case CursorStyle::HAND: return SDL_SYSTEM_CURSOR_HAND;
-        case CursorStyle::NONE: return SDL_SYSTEM_CURSOR_NO;
-        case CursorStyle::RESIZE_EW: return SDL_SYSTEM_CURSOR_SIZEWE;
-        case CursorStyle::RESIZE_NS: return SDL_SYSTEM_CURSOR_SIZENS;
-        case CursorStyle::RESIZE_NESW: return SDL_SYSTEM_CURSOR_SIZENESW;
-        case CursorStyle::RESIZE_NWSE: return SDL_SYSTEM_CURSOR_SIZENWSE;
-        case CursorStyle::TEXT_INPUT: return SDL_SYSTEM_CURSOR_IBEAM;
+            case CursorStyle::ARROW: return SDL_SYSTEM_CURSOR_ARROW;
+            case CursorStyle::HAND: return SDL_SYSTEM_CURSOR_HAND;
+            case CursorStyle::NONE: return SDL_SYSTEM_CURSOR_NO;
+            case CursorStyle::RESIZE_EW: return SDL_SYSTEM_CURSOR_SIZEWE;
+            case CursorStyle::RESIZE_NS: return SDL_SYSTEM_CURSOR_SIZENS;
+            case CursorStyle::RESIZE_NESW: return SDL_SYSTEM_CURSOR_SIZENESW;
+            case CursorStyle::RESIZE_NWSE: return SDL_SYSTEM_CURSOR_SIZENWSE;
+            case CursorStyle::TEXT_INPUT: return SDL_SYSTEM_CURSOR_IBEAM;
         };
 
         return SDL_SYSTEM_CURSOR_NO;
@@ -52,7 +55,8 @@ hashMap<CursorStyle, SDL_Cursor*> WindowManager::s_cursors;
 WindowManager::WindowManager()  noexcept 
    : _apiFlags(0),
      _mainWindowGUID(-1),
-     _context(nullptr)
+     _context(nullptr),
+     _eventHandler(nullptr)
 {
     SDL_Init(SDL_INIT_VIDEO);
 }
@@ -74,11 +78,18 @@ ErrorCode WindowManager::init(PlatformContext& context,
                               bool startFullScreen,
                               I32 targetDisplayIndex)
 {
+    if (_eventHandler != nullptr) {
+        // Double init
+        return ErrorCode::WINDOW_INIT_ERROR;
+    }
+
     if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0) {
         return ErrorCode::WINDOW_INIT_ERROR;
     }
     
     _context = &context;
+    _eventHandler = std::make_unique<Input::EventHandler>(_context->kernel());
+
     RenderAPI api = _context->gfx().getAPI();
 
     _monitors.resize(0);
@@ -349,51 +360,281 @@ void WindowManager::pollSDLEvents() {
             continue;
         }
 
-        switch(event.type) {
-            case SDL_QUIT: {
-                _context->app().RequestShutdown();
-            } break;
-            case SDL_TEXTINPUT: {
-                DisplayWindow* focusedWindow = getFocusedWindow();
-                if (focusedWindow != nullptr) {
-                    DisplayWindow::WindowEventArgs args = {};
-                    args._windowGUID = focusedWindow->getGUID();
-                    args._text = event.text.text;
-                    focusedWindow->notifyListeners(WindowEvent::TEXT, args);
-                }
-            };
-            case SDL_TEXTEDITING:
-            case SDL_KEYUP:
-            case SDL_KEYDOWN:
-            case SDL_MOUSEBUTTONDOWN: 
-            case SDL_MOUSEBUTTONUP:
-            case SDL_MOUSEMOTION:
-            case SDL_MOUSEWHEEL:
-            case SDL_JOYAXISMOTION:
-            case SDL_JOYBALLMOTION:
-            case SDL_JOYHATMOTION:
-            case SDL_JOYBUTTONDOWN:
-            case SDL_JOYBUTTONUP:
-            case SDL_JOYDEVICEADDED:
-            case SDL_JOYDEVICEREMOVED:
-            case SDL_CONTROLLERAXISMOTION:
-            case SDL_CONTROLLERBUTTONDOWN:
-            case SDL_CONTROLLERBUTTONUP:
-            case SDL_CONTROLLERDEVICEADDED:
-            case SDL_CONTROLLERDEVICEREMOVED:
-            case SDL_CONTROLLERDEVICEREMAPPED: {
-                // Send to kernel and dispatch where appropriate from there (including back in the WindowManager if needed)
-                _context->kernel().onSDLInputEvent(event);
-            } break;
+        if(event.type == SDL_QUIT) {
+            _context->app().RequestShutdown();
+        } else {
+            onSDLInputEvent(event);
         }
     };
 }
 
 void WindowManager::onSDLInputEvent(SDL_Event event) {
+    // Find the window that sent the event
+    DisplayWindow* eventWindow = nullptr;
     for (DisplayWindow* win : _windows) {
-        if (win->onSDLInputEvent(event)) {
+        if (win->_windowID == event.window.windowID) {
+            eventWindow = win;
             break;
         }
+    }
+
+    if (eventWindow == nullptr) {
+        return;
+    }
+
+    switch (event.type) {
+        //case SDL_TEXTEDITING:
+        case SDL_TEXTINPUT: {
+            Input::UTF8Event arg(eventWindow, 0, event.text.text);
+            _eventHandler->onUTF8(arg);
+        } break;
+
+        case SDL_KEYUP:
+        case SDL_KEYDOWN: {
+            Input::KeyEvent arg(eventWindow, 0);
+            arg._key = Input::KeyCodeFromSDLKey(event.key.keysym.sym);
+            arg._pressed = event.type == SDL_KEYDOWN;
+            arg._text = nullptr;// SDL_GetKeyName(event.key.keysym.sym);
+            arg._isRepeat = event.key.repeat;
+
+            if ((event.key.keysym.mod & KMOD_LSHIFT) != 0) {
+                arg._modMask |= to_base(Input::KeyModifier::LSHIFT);
+            }
+            if ((event.key.keysym.mod & KMOD_RSHIFT) != 0) {
+                arg._modMask |= to_base(Input::KeyModifier::RSHIFT);
+            }
+            if ((event.key.keysym.mod & KMOD_LCTRL) != 0) {
+                arg._modMask |= to_base(Input::KeyModifier::LCTRL);
+            }
+            if ((event.key.keysym.mod & KMOD_RCTRL) != 0) {
+                arg._modMask |= to_base(Input::KeyModifier::RCTRL);
+            }
+            if ((event.key.keysym.mod & KMOD_LALT) != 0) {
+                arg._modMask |= to_base(Input::KeyModifier::LALT);
+            }
+            if ((event.key.keysym.mod & KMOD_RALT) != 0) {
+                arg._modMask |= to_base(Input::KeyModifier::RALT);
+            }
+            if ((event.key.keysym.mod & KMOD_LGUI) != 0) {
+                arg._modMask |= to_base(Input::KeyModifier::LGUI);
+            }
+            if ((event.key.keysym.mod & KMOD_RGUI) != 0) {
+                arg._modMask |= to_base(Input::KeyModifier::RGUI);
+            }
+            if ((event.key.keysym.mod & KMOD_NUM) != 0) {
+                arg._modMask |= to_base(Input::KeyModifier::NUM);
+            }
+            if ((event.key.keysym.mod & KMOD_CAPS) != 0) {
+                arg._modMask |= to_base(Input::KeyModifier::CAPS);
+            }
+            if ((event.key.keysym.mod & KMOD_MODE) != 0) {
+                arg._modMask |= to_base(Input::KeyModifier::MODE);
+            }
+            if (arg._pressed) {
+                _eventHandler->onKeyDown(arg);
+            } else {
+                _eventHandler->onKeyUp(arg);
+            }
+        } break;
+        case SDL_MOUSEBUTTONDOWN:
+        case SDL_MOUSEBUTTONUP:
+        {
+            Input::MouseButtonEvent arg(eventWindow, to_U8(event.button.which));
+            arg.pressed = event.type == SDL_MOUSEBUTTONDOWN;
+            switch (event.button.button) {
+                case SDL_BUTTON_LEFT:
+                    arg.button = Input::MouseButton::MB_Left;
+                    break;
+                case SDL_BUTTON_RIGHT:
+                    arg.button = Input::MouseButton::MB_Right;
+                    break;
+                case SDL_BUTTON_MIDDLE:
+                    arg.button = Input::MouseButton::MB_Middle;
+                    break;
+                case SDL_BUTTON_X1:
+                    arg.button = Input::MouseButton::MB_Button3;
+                    break;
+                case SDL_BUTTON_X2:
+                    arg.button = Input::MouseButton::MB_Button4;
+                    break;
+                case 6:
+                    arg.button = Input::MouseButton::MB_Button5;
+                    break;
+                case 7:
+                    arg.button = Input::MouseButton::MB_Button6;
+                    break;
+                case 8:
+                    arg.button = Input::MouseButton::MB_Button7;
+                    break;
+            };
+            arg.numCliks = to_U8(event.button.clicks);
+            arg.relPosition.set(event.button.x, event.button.y);
+
+            if (arg.pressed) {
+                _eventHandler->mouseButtonPressed(arg);
+            } else {
+                _eventHandler->mouseButtonReleased(arg);
+            }
+        }break;
+        case SDL_MOUSEWHEEL:
+        case SDL_MOUSEMOTION:
+        {
+            Input::MouseState state = {};
+            state.X.abs = event.motion.x;
+            state.X.rel = event.motion.xrel;
+            state.Y.abs = event.motion.y;
+            state.Y.rel = event.motion.yrel;
+            if (event.type == SDL_MOUSEWHEEL) {
+                state.HWheel = event.wheel.x;
+                state.VWheel = event.wheel.y;
+            } else {
+                state.HWheel = state.VWheel = 0;
+            }
+
+            Input::MouseMoveEvent arg(eventWindow, to_U8(event.motion.which), state);
+            _eventHandler->mouseMoved(arg);
+        }break;
+        case SDL_CONTROLLERAXISMOTION:
+        case SDL_JOYAXISMOTION:
+        {
+            Input::JoystickData jData = {};
+            jData._gamePad = event.type == SDL_CONTROLLERAXISMOTION;
+            jData._data = jData._gamePad ? event.caxis.value : event.jaxis.value;
+            
+            Input::JoystickElement element = {};
+            element._type = Input::JoystickElementType::AXIS_MOVE;
+            element._data = jData;
+            element._elementIndex = jData._gamePad ? event.caxis.axis : event.jaxis.axis;
+
+            Input::JoystickEvent arg(eventWindow, to_U8(jData._gamePad ? event.caxis.which : event.jaxis.which));
+            arg._element = element;
+
+            _eventHandler->joystickAxisMoved(arg);
+
+        }break;
+        case SDL_JOYBALLMOTION:
+        {
+            Input::JoystickData jData = {};
+            jData._smallData[0] = event.jball.xrel;
+            jData._smallData[1] = event.jball.yrel;
+            
+            Input::JoystickElement element = {};
+            element._type = Input::JoystickElementType::BALL_MOVE;
+            element._data = jData;
+            element._elementIndex = event.jball.ball;
+
+            Input::JoystickEvent arg(eventWindow, to_U8(event.jball.which));
+            arg._element = element;
+
+            _eventHandler->joystickBallMoved(arg);
+        }break;
+        case SDL_JOYHATMOTION:
+        {
+            // POV
+            U32 PovMask = 0;
+            switch (event.jhat.value) {
+                case SDL_HAT_CENTERED:
+                    PovMask = to_base(Input::JoystickPovDirection::CENTERED);
+                    break;
+                case SDL_HAT_UP:
+                    PovMask = to_base(Input::JoystickPovDirection::UP);
+                    break;
+                case SDL_HAT_RIGHT:
+                    PovMask = to_base(Input::JoystickPovDirection::RIGHT);
+                    break;
+                case SDL_HAT_DOWN:
+                    PovMask = to_base(Input::JoystickPovDirection::DOWN);
+                    break;
+                case SDL_HAT_LEFT:
+                    PovMask = to_base(Input::JoystickPovDirection::LEFT);
+                    break;
+                case SDL_HAT_RIGHTUP:
+                    PovMask = to_base(Input::JoystickPovDirection::RIGHT) |
+                              to_base(Input::JoystickPovDirection::UP);
+                    break;
+                case SDL_HAT_RIGHTDOWN:
+                    PovMask = to_base(Input::JoystickPovDirection::RIGHT) |
+                              to_base(Input::JoystickPovDirection::DOWN);
+                    break;
+                case SDL_HAT_LEFTUP:
+                    PovMask = to_base(Input::JoystickPovDirection::LEFT) |
+                              to_base(Input::JoystickPovDirection::UP);
+                    break;
+                case SDL_HAT_LEFTDOWN:
+                    PovMask = to_base(Input::JoystickPovDirection::LEFT) |
+                              to_base(Input::JoystickPovDirection::DOWN);
+                    break;
+            };
+
+            Input::JoystickData jData = {};
+            jData._data = PovMask;
+
+            Input::JoystickElement element = {};
+            element._type = Input::JoystickElementType::POV_MOVE;
+            element._data = jData;
+            element._elementIndex = event.jhat.hat;
+
+            Input::JoystickEvent arg(eventWindow, to_U8(event.jhat.which));
+            arg._element = element;
+
+            _eventHandler->joystickPovMoved(arg);
+        }break;
+        case SDL_CONTROLLERBUTTONDOWN:
+        case SDL_CONTROLLERBUTTONUP:
+        case SDL_JOYBUTTONDOWN:
+        case SDL_JOYBUTTONUP:
+        {
+            Input::JoystickData jData = {};
+            jData._gamePad = event.type == SDL_CONTROLLERBUTTONDOWN || event.type == SDL_CONTROLLERBUTTONUP;
+
+            Uint8 state = jData._gamePad ? event.cbutton.state : event.jbutton.state;
+            jData._data = state == SDL_PRESSED ? to_U32(Input::InputState::PRESSED) : to_U32(Input::InputState::RELEASED);
+            
+            Input::JoystickElement element = {};
+            element._type = Input::JoystickElementType::BUTTON_PRESS;
+            element._data = jData;
+            element._elementIndex = jData._gamePad ? event.cbutton.button : event.jbutton.button;
+            
+            Input::JoystickEvent arg(eventWindow, to_U8(jData._gamePad  ? event.cbutton.which : event.jbutton.which));
+            arg._element = element;
+
+            if (event.type == SDL_JOYBUTTONDOWN || event.type == SDL_CONTROLLERBUTTONDOWN) {
+                _eventHandler->joystickButtonPressed(arg);
+            } else {
+                _eventHandler->joystickButtonReleased(arg);
+            }
+        }break;
+        case SDL_CONTROLLERDEVICEADDED:
+        case SDL_CONTROLLERDEVICEREMOVED:
+        case SDL_JOYDEVICEADDED:
+        case SDL_JOYDEVICEREMOVED:
+        {
+            Input::JoystickData jData = {};
+            jData._gamePad = event.type == SDL_CONTROLLERDEVICEADDED || event.type == SDL_CONTROLLERDEVICEREMOVED;
+            jData._data = (jData._gamePad ? event.type == SDL_CONTROLLERDEVICEADDED : event.type == SDL_JOYDEVICEADDED) ? 1 : 0;
+
+            Input::JoystickElement element = {};
+            element._type = Input::JoystickElementType::JOY_ADD_REMOVE;
+            element._data = jData;
+
+            Input::JoystickEvent arg(eventWindow, to_U8(jData._gamePad ? event.cdevice.which : event.jdevice.which));
+            arg._element = element;
+
+            _eventHandler->joystickAddRemove(arg);
+        }break;
+        
+       
+        case SDL_CONTROLLERDEVICEREMAPPED:
+        {
+            
+            Input::JoystickElement element = {};
+            element._type = Input::JoystickElementType::JOY_REMAP;
+
+            Input::JoystickEvent arg(eventWindow, to_U8(event.jdevice.which));
+            arg._element = element;
+
+            _eventHandler->joystickRemap(arg);
+        }break;
     }
 }
 

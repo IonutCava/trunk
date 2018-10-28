@@ -61,8 +61,8 @@
 -->
 <keys>
 <key actionUp="1">END</key>
-<key actionDown="2" actionLCtrlUp="4">ADD</key>
-<key actionDown="3" actionLCtrlUp="5">SUBTRACT</key>
+<key actionDown="2" actionLCtrlUp="4">+</key>
+<key actionDown="3" actionLCtrlUp="5">-</key>
 <key actionDown="6" actionUp="8">W</key>
 <key actionDown="7" actionUp="8">S</key>
 <key actionDown="9" actionUp="11">A</key>
@@ -84,25 +84,25 @@
 <key actionUp="39">F9</key>
 <key actionUp="30">F10</key>
 <key actionUp="29">B</key>
-<key actionUp="31">SYSRQ</key>
+<key actionUp="31">SYSREQ</key>
 <key actionLAtlUp="32">RETURN</key>
 <key actionUp="33">F</key>
 <key actionUp="34">Y</key>
 <key actionLCtrlUp="44" actionUp="43">F11</key>
-<key actionUp="45">GRAVE</key><!-- GRAVE == '~' -->
+<key actionUp="45">`</key>
 </keys>
 
 <!-- Only a single mouse is supported (and a maximum of 8 buttons)! -->
 <mouseButtons>
-<!-- Allowed mouse button names: LEFT, RIGHT, MIDDLE, 3, 4, 5, 6, 7 -->
+<!-- Allowed mouse button names: LEFT, RIGHT, MIDDLE, Button3, Button4, Button5, Button6, Button7 -->
 <button actionUp="35" actionLCtrlUp = "36" actionRCtrlUp =" 36">LEFT</button>
 <button actionDown="37" actionUp="38">RIGHT</button>
 </mouseButtons>
 
 <!-- A maximum of 4 devices -->
 <joystickButtons>
-<!-- Allowed joystick elements: POV, AXIS, SLIDER, VECTOR, BUTTON_n (where n is any value from 0 to 125, eg. BUTTON_46) -->
-<!-- For POV, AXIS, VECTOR and SLIDER, actionDown and actionUp will be set to the same action in this order:
+<!-- Allowed joystick elements: POV, AXIS, BALL, BUTTON_n (where n is any value from 0 to 125, eg. BUTTON_46) -->
+<!-- For POV, AXIS and BALL, actionDown and actionUp will be set to the same action in this order:
  action(Mod)Up = action(Mod)Down 
     iff actionModDown exists else
  action(Mod)Down = action(Mod)Up-->
