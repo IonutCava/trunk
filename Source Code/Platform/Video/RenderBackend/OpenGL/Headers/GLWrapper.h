@@ -249,7 +249,7 @@ private:
     /// FontStash's context
     FONScontext* _fonsContext;
 
-    static std::mutex s_mipmapQueueSetLock;
+    static SharedMutex s_mipmapQueueSetLock;
     static hashMap<GLuint, GLsync> GL_API::s_mipmapQueueSync;
     /// The main VAO pool. We use a pool to avoid multithreading issues with VAO states
     static GLUtil::glVAOPool s_vaoPool;

@@ -1011,7 +1011,9 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             const GFX::BindDescriptorSetsCommand& crtCmd = commandBuffer.getCommand<GFX::BindDescriptorSetsCommand>(entry);
             const DescriptorSet_ptr& set = crtCmd._set;
 
-            makeTexturesResident(set->_textureData);
+            if (makeTexturesResident(set->_textureData)) {
+                
+            }
             for (const ShaderBufferBinding& shaderBufCmd : set->_shaderBuffers) {
                 if (shaderBufCmd._binding == ShaderBufferLocation::CMD_BUFFER) {
                     GLuint handle = static_cast<glUniformBuffer*>(shaderBufCmd._buffer)->bufferID();
@@ -1176,18 +1178,19 @@ bool GL_API::makeTexturesResident(const TextureDataContainer& textureData) {
             getStateTracker().bindTextures(offset, (GLuint)handles.size(), handles.data(), samplers.data());
         }
     }
+
+    bool bound = false;
     for (auto data : textureData.textures()) {
-        makeTextureResident(data.first, data.second);
+        bound = bound || makeTextureResident(data.first, data.second);
     }
 
-    return true;
+    return bound;
 }
 
 bool GL_API::makeTextureResident(const TextureData& textureData, U8 binding) {
-    return getStateTracker().bindTexture(
-        static_cast<GLushort>(binding),
-        textureData.getHandle(),
-        textureData._samplerHandle);
+    return getStateTracker().bindTexture(static_cast<GLushort>(binding),
+                                         textureData.getHandle(),
+                                         textureData._samplerHandle);
 }
 
 bool GL_API::setViewport(const Rect<I32>& viewport) {

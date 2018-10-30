@@ -426,7 +426,7 @@ vec2<U16> GL_API::getDrawableSize(const DisplayWindow& window) const {
 
 void GL_API::queueComputeMipMap(PlatformContext& context, GLuint textureHandle, bool threaded) {
     {
-        UniqueLock w_lock(s_mipmapQueueSetLock);
+        UniqueLockShared w_lock(s_mipmapQueueSetLock);
         if (GL_API::s_mipmapQueueSync.find(textureHandle) != std::cend(GL_API::s_mipmapQueueSync)) {
             return;
         }
@@ -436,18 +436,16 @@ void GL_API::queueComputeMipMap(PlatformContext& context, GLuint textureHandle, 
 
     GFXDevice& gfx = context.gfx();
     CreateTask(context,
-                [&gfx, textureHandle](const Task& parent)
-                {
-                    GL_API::createOrValidateContextForCurrentThread(gfx);
-                    glGenerateTextureMipmap(textureHandle);
-                    GLsync newSync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, UnusedMask::GL_UNUSED_BIT);
-                    glFlush();
-                    {
-                        UniqueLock w_lock(s_mipmapQueueSetLock);
-                        GL_API::s_mipmapQueueSync[textureHandle] = newSync;
-                    }
-                }
-    ).startTask(threaded ? TaskPriority::DONT_CARE : TaskPriority::REALTIME);
+              [&gfx, textureHandle](const Task& parent)
+              {
+                  GL_API::createOrValidateContextForCurrentThread(gfx);
+                  glGenerateTextureMipmap(textureHandle);
+                  GLsync newSync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, UnusedMask::GL_UNUSED_BIT);
+                  glFlush();
+                  {
+                    UniqueLockShared w_lock(s_mipmapQueueSetLock);
+                    GL_API::s_mipmapQueueSync[textureHandle] = newSync;
+                  }
+              }).startTask(threaded ? TaskPriority::DONT_CARE : TaskPriority::REALTIME);
 }
-
 };

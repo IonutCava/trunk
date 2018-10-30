@@ -2,6 +2,7 @@
 
 #include "Headers/Vegetation.h"
 
+#include "Core/Headers/Kernel.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Platform/Video/Headers/GFXDevice.h"

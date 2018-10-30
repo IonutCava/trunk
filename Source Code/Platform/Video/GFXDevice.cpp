@@ -4,6 +4,7 @@
 
 #include "Headers/GFXDevice.h"
 
+#include "Core/Headers/Kernel.h"
 #include "Core/Headers/TaskPool.h"
 #include "Core/Time/Headers/ProfileTimer.h"
 #include "Core/Headers/PlatformContext.h"

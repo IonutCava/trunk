@@ -13,6 +13,7 @@
 #include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/RenderPassManager.h"
 
+#include "Core/Headers/Kernel.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Time/Headers/ProfileTimer.h"
 

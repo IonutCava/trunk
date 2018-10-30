@@ -221,47 +221,47 @@ bool GLStateTracker::bindSamplers(GLushort unitOffset,
 }
 
 bool GLStateTracker::bindTextures(GLushort unitOffset,
-                          GLuint textureCount,
-                          GLuint* textureHandles,
-                          GLuint* samplerHandles) {
-
-    if (textureHandles != nullptr) {
-
-        std::stack<GLuint> textures;
-        for (GLuint i = 0; i < textureCount; ++i) {
-            if (textureHandles[i] > 0) {
-                textures.push(textureHandles[i]);
-            }
-        }
-
-        while(!textures.empty()) {
-            std::pair<GLuint, GLsync> entry;
-            {
-                UniqueLock w_lock(GL_API::s_mipmapQueueSetLock);
-                auto it = GL_API::s_mipmapQueueSync.find(textures.top());
-                if (it == std::cend(GL_API::s_mipmapQueueSync)) {
-                    textures.pop();
-                    continue;
-                }
-                entry = std::make_pair(it->first, it->second);
-                if (entry.second != nullptr) {
-                    GL_API::s_mipmapQueueSync.erase(it);
-                }
-            }
-
-            if (entry.second == nullptr) {
-                continue;
-            }
-            glLockManager::wait(&entry.second, false /*this should work, right?*/);
-            glDeleteSync(entry.second);
-            textures.pop();
-        }
-    }
+                                  GLuint textureCount,
+                                  GLuint* textureHandles,
+                                  GLuint* samplerHandles) {
 
     bool bound = false;
     if (textureCount > 0 &&
         unitOffset + textureCount < static_cast<GLuint>(GL_API::s_maxTextureUnits))
     {
+        if (textureHandles != nullptr) {
+
+            bool mipMapsQueued = false;
+            {
+                SharedLock r_lock(GL_API::s_mipmapQueueSetLock);
+                mipMapsQueued = !GL_API::s_mipmapQueueSync.empty();
+            }
+
+            if (mipMapsQueued) {
+                for (GLuint i = 0; i < textureCount; ++i) {
+                    GLuint crtHandle = textureHandles[i];
+                    if (crtHandle > 0) {
+                        GLsync entry = nullptr;
+                        {
+                            UniqueLockShared w_lock(GL_API::s_mipmapQueueSetLock);
+                            auto it = GL_API::s_mipmapQueueSync.find(crtHandle);
+                            if (it == std::cend(GL_API::s_mipmapQueueSync) || it->second == nullptr) {
+                                continue;
+                            }
+                            entry = it->second;
+                            GL_API::s_mipmapQueueSync.erase(it);
+                        }
+
+                        // entry shouldn't be null by this point;
+                        assert(entry != nullptr);
+                        // do this here so that we don't hold the mutex lock for too long
+                        glLockManager::wait(&entry, false /*this should work, right?*/);
+                        glDeleteSync(entry);
+                    }
+                }
+            }
+        }
+
         bindSamplers(unitOffset, textureCount, samplerHandles);
 
         if (textureCount == 1) {
@@ -285,14 +285,14 @@ bool GLStateTracker::bindTextures(GLushort unitOffset,
         }
     }
 
-    return false;
+    return bound;
 }
 
 /// Bind a texture specified by a GL handle and GL type to the specified unit
 /// using the sampler object defined by hash value
 bool GLStateTracker::bindTexture(GLushort unit,
-                         GLuint handle,
-                         GLuint samplerHandle) {
+                                 GLuint handle,
+                                 GLuint samplerHandle) {
     // Fail if we specified an invalid unit. Assert instead of returning false
     // because this might be related to a bad algorithm
     DIVIDE_ASSERT(unit < static_cast<GLuint>(GL_API::s_maxTextureUnits),
