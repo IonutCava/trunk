@@ -5,6 +5,7 @@
 
 #include "Managers/Headers/SceneManager.h"
 
+#include "Core/Headers/Kernel.h"
 #include "Geometry/Animations/Headers/SceneAnimator.h"
 #include "ECS/Components/Headers/AnimationComponent.h"
 

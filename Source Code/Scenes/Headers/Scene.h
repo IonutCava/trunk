@@ -42,8 +42,6 @@
   forward declare the "Scene" class instead
 */
 // Core files
-#include "Core/Headers/Kernel.h"
-#include "Core/Headers/Application.h"
 #include "Graphs/Headers/SceneGraph.h"
 #include "Rendering/Camera/Headers/Camera.h"
 #include "Rendering/Lighting/Headers/LightPool.h"

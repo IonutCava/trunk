@@ -2,6 +2,7 @@
 
 #include "Headers/LightPool.h"
 
+#include "Core/Headers/Kernel.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Headers/StringHelper.h"
 #include "Core/Headers/Configuration.h"

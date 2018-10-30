@@ -6,6 +6,7 @@
 #include "GUI/Headers/GUIButton.h"
 #include "GUI/Headers/GUIMessageBox.h"
 #include "Geometry/Material/Headers/Material.h"
+#include "Core/Headers/Kernel.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
 #include "Geometry/Material/Headers/Material.h"

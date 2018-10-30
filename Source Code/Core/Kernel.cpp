@@ -25,6 +25,7 @@
 #include "Core/Debugging/Headers/DebugInterface.h"
 #include "Rendering/Headers/Renderer.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
+#include "Platform/Headers/SDLEventManager.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Dynamics/Entities/Units/Headers/Player.h"
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
@@ -309,6 +310,8 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTimeUS) {
     GFXDevice::setFrameInterpolationFactor(interpolationFactor);
     
     // Update windows and get input events
+    SDLEventManager::pollEvents();
+
     WindowManager& winManager = _platformContext->app().windowManager();
     winManager.update(realTime);
     if (!winManager.anyWindowFocus()) {

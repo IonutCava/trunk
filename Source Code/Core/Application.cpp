@@ -151,6 +151,16 @@ bool Application::onLoop() {
     return mainLoopActive();
 }
 
+
+bool Application::onSDLEvent(SDL_Event event) {
+    if (event.type == SDL_QUIT) {
+        RequestShutdown();
+        return true;
+    }
+
+    return false;
+}
+
 void Application::onSizeChange(const SizeChangeParams& params) const {
     Attorney::KernelApplication::onSizeChange(*_kernel, params);
 }

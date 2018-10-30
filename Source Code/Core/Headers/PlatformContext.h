@@ -55,6 +55,10 @@ namespace Attorney {
     class PlatformContextKernel;
 };
 
+namespace Input {
+    class InputHandler;
+};
+
 class PlatformContext {
     friend class Attorney::PlatformContextKernel;
 
@@ -102,6 +106,9 @@ public:
     inline TaskPool& taskPool() {return *_taskPool; }
     inline const TaskPool& taskPool() const { return *_taskPool; }
 
+    inline Input::InputHandler& input() { return *_inputHandler; }
+    inline const Input::InputHandler& input() const { return *_inputHandler; }
+
     Kernel& kernel();
     const Kernel& kernel() const;
 
@@ -135,6 +142,8 @@ public:
     std::unique_ptr<DebugInterface> _debug;
     /// Game editor
     std::unique_ptr<Editor> _editor;
+    /// Input handler
+    std::unique_ptr<Input::InputHandler> _inputHandler;
 };
 
 namespace Attorney {

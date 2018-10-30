@@ -60,7 +60,7 @@ struct SizeChangeParams {
 
 /// Lightweight singleton class that manages our application's kernel and window
 /// information
-class Application {
+class Application : public SDLEventListener {
     friend class Attorney::ApplicationTask;
   public:
      Application();
@@ -109,6 +109,7 @@ class Application {
 
     //ToDo: Remove this hack - Ionut
     void warmup(const Configuration& config);
+    bool onSDLEvent(SDL_Event event) override;
 
   private:
     WindowManager _windowManager;

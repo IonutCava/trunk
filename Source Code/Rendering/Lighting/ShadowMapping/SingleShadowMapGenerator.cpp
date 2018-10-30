@@ -2,6 +2,7 @@
 
 #include "Headers/SingleShadowMapGenerator.h"
 
+#include "Core/Headers/Kernel.h"
 #include "Core/Headers/StringHelper.h"
 #include "Scenes/Headers/SceneState.h"
 #include "Managers/Headers/SceneManager.h"

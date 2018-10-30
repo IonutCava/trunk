@@ -125,6 +125,26 @@ inline const DisplayWindow& WindowManager::getWindow(U32 index) const {
     return *_windows[index];
 }
 
+DisplayWindow* WindowManager::getWindowByID(U32 ID) {
+    for (DisplayWindow* win : _windows) {
+        if (win->_windowID == ID) {
+            return win;
+        }
+    }
+
+    return nullptr;
+}
+
+const DisplayWindow* WindowManager::getWindowByID(U32 ID) const {
+    for (const DisplayWindow* win : _windows) {
+        if (win->_windowID == ID) {
+            return win;
+        }
+    }
+
+    return nullptr;
+}
+
 inline const vector<WindowManager::MonitorData>& WindowManager::monitorData() const {
     return _monitors;
 }

@@ -4,6 +4,7 @@
 #include "Headers/XMLEntryData.h"
 #include "Headers/Configuration.h"
 
+#include "Core/Headers/Kernel.h"
 #include "Core/Headers/TaskPool.h"
 #include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
@@ -15,6 +16,7 @@
 #include "Core/Debugging/Headers/DebugInterface.h"
 #include "Platform/Audio/Headers/SFXDevice.h"
 #include "Platform/Video/Headers/GFXDevice.h"
+#include "Platform/Input/Headers/InputHandler.h"
 
 namespace Divide {
 
@@ -38,6 +40,8 @@ void PlatformContext::init() {
     _config = std::make_unique<Configuration>();        // XML based configuration
     _client = std::make_unique<LocalClient>(_kernel);   // Network client
     _debug = std::make_unique<DebugInterface>(_kernel); // Debug Interface
+    _inputHandler = std::make_unique<Input::InputHandler>(_kernel, _app);
+
     if (Config::Build::ENABLE_EDITOR) {
         _editor = std::make_unique<Editor>(*this);
     }
@@ -47,11 +51,11 @@ void PlatformContext::terminate() {
     _taskPool->shutdown();
     _taskPool.reset();
     _editor.reset();
+    _inputHandler.reset();
     _entryData.reset();
     _config.reset();
     _client.reset();
     _debug.reset();
-
     _gui->destroy(); 
     _gui.reset();
 

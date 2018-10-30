@@ -4,6 +4,7 @@
 
 #include "Headers/RenderPass.h"
 
+#include "Core/Headers/Kernel.h"
 #include "Graphs/Headers/SceneGraph.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/RenderPassManager.h"

@@ -3,6 +3,8 @@
 #include "Headers/GUIConsoleCommandParser.h"
 
 #include "Headers/GUI.h"
+
+#include "Core/Headers/Kernel.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Headers/XMLEntryData.h"
 #include "Core/Headers/StringHelper.h"

@@ -38,7 +38,6 @@
 
 #include "Core/Math/Headers/Quaternion.h"
 #include "Core/Resources/Headers/Resource.h"
-#include "Platform/Input/Headers/EventHandler.h"
 
 namespace Divide {
 

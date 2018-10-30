@@ -55,6 +55,7 @@ namespace Attorney {
     class SceneManagerCameraAccessor;
 };
 
+class Editor;
 class ScenePool;
 class SceneShaderData;
 class ShaderComputeQueue;

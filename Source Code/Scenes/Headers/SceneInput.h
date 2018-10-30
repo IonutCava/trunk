@@ -33,7 +33,6 @@
 #define _SCENE_INPUT_H_
 
 #include "SceneInputActions.h"
-#include "Platform/Input/Headers/EventHandler.h"
 
 namespace Divide {
     struct pair_hash {

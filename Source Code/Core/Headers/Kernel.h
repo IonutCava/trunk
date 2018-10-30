@@ -155,13 +155,10 @@ namespace Time {
     class ProfileTimer;
 };
 
-/// The kernel is the main interface to our engine components:
-///-video
-///-audio
-///-physx
-///-scene manager
-///-etc
-class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
+/// The kernel is the main system that connects all of our various systems: windows, gfx, sfx, input, physics, timing, etc
+class Kernel : public Input::InputAggregatorInterface,
+               private NonCopyable
+{
     friend class Attorney::KernelApplication;
     friend class Attorney::KernelWindowManager;
     friend class Attorney::KernelDebugInterface;

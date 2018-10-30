@@ -4,6 +4,7 @@
 #include "Headers/RenderPassManager.h"
 #include "Headers/FrameListenerManager.h"
 
+#include "Core/Headers/Kernel.h"
 #include "GUI/Headers/GUI.h"
 #include "GUI/Headers/GUIButton.h"
 #include "Core/Headers/ParamHandler.h"

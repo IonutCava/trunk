@@ -67,12 +67,8 @@ struct WindowDescriptor {
                 to_U32(Flags::CLEAR_COLOUR);
 };
 
-namespace Input {
-    class EventHandler;
-};
-
 class PlatformContext;
-class WindowManager {
+class WindowManager : public SDLEventListener {
 public:
     struct MonitorData {
         Rect<U16> viewport;
@@ -127,6 +123,9 @@ public:
     inline DisplayWindow& getWindow(U32 index);
     inline const DisplayWindow& getWindow(U32 index) const;
 
+    inline DisplayWindow* getWindowByID(U32 ID);
+    inline const DisplayWindow* getWindowByID(U32 ID) const;
+
     inline U32 getWindowCount() const;
 
     inline const vector<MonitorData>& monitorData() const;
@@ -138,11 +137,10 @@ public:
     static void setCursorStyle(CursorStyle style);
 
 protected:
-    friend class DisplayWindow;
-    void pollSDLEvents();
-    void onSDLInputEvent(SDL_Event event);
+    bool onSDLEvent(SDL_Event event) override;
 
 protected:
+    friend class DisplayWindow;
     U32 createAPIFlags(RenderAPI api);
     ErrorCode configureAPISettings(U32 descriptorFlags);
     ErrorCode applyAPISettings(DisplayWindow* window, U32 descriptorFlags);
@@ -156,7 +154,6 @@ protected:
     vector<MonitorData> _monitors;
     vector<DisplayWindow*> _windows;
 
-    std::unique_ptr<Input::EventHandler> _eventHandler;
     static hashMap<CursorStyle, SDL_Cursor*> s_cursors;
 };
 }; //namespace Divide

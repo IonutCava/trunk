@@ -10,6 +10,8 @@
 #include "Headers/GUIMessageBox.h"
 
 #include "Scenes/Headers/Scene.h"
+
+#include "Core/Headers/Kernel.h"
 #include "Core/Headers/XMLEntryData.h"
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"

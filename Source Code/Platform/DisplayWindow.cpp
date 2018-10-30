@@ -8,12 +8,13 @@
 #include "Core/Headers/PlatformContext.h"
 #include "Utility/Headers/Localization.h"
 #include "Platform/Video/Headers/GFXDevice.h"
+#include "Platform/Headers/SDLEventManager.h"
 
 #ifndef HAVE_M_PI
 #define HAVE_M_PI
 #endif //HAVE_M_PI
 
-#include <SDL.h>
+//#include <SDL.h>
 
 namespace Divide {
 
@@ -121,8 +122,14 @@ void DisplayWindow::notifyListeners(WindowEvent event, const WindowEventArgs& ar
     }
 }
 
-void DisplayWindow::handleEvent(SDL_Event event) {
-    assert(event.type == SDL_WINDOWEVENT);
+bool DisplayWindow::onSDLEvent(SDL_Event event) {
+    if (event.type != SDL_WINDOWEVENT) {
+        return false;
+    }
+
+    if (_windowID != event.window.windowID) {
+        return false;
+    }
 
     WindowEventArgs args = {};
     args._windowGUID = getGUID();
@@ -134,23 +141,28 @@ void DisplayWindow::handleEvent(SDL_Event event) {
             args.x = event.quit.type;
             args.y = event.quit.timestamp;
             notifyListeners(WindowEvent::CLOSE_REQUESTED, args);
-        } break;
+            return true;
+        };
         case SDL_WINDOWEVENT_ENTER: {
             ToggleBit(_flags, WindowFlags::IS_HOVERED, true);
             notifyListeners(WindowEvent::MOUSE_HOVER_ENTER, args);
-        } break;
+            return true;
+        };
         case SDL_WINDOWEVENT_LEAVE: {
             ToggleBit(_flags, WindowFlags::IS_HOVERED, false);
             notifyListeners(WindowEvent::MOUSE_HOVER_LEAVE, args);
-        } break;
+            return true;
+        };
         case SDL_WINDOWEVENT_FOCUS_GAINED: {
             ToggleBit(_flags, WindowFlags::HAS_FOCUS, true);
             notifyListeners(WindowEvent::GAINED_FOCUS, args);
-        } break;
+            return true;
+        };
         case SDL_WINDOWEVENT_FOCUS_LOST: {
             ToggleBit(_flags, WindowFlags::HAS_FOCUS, false);
             notifyListeners(WindowEvent::LOST_FOCUS, args);
-        } break;
+            return true;
+        };
         case SDL_WINDOWEVENT_RESIZED: {
             if (!_internalResizeEvent) {
                 U16 width = to_U16(event.window.data1);
@@ -161,11 +173,13 @@ void DisplayWindow::handleEvent(SDL_Event event) {
             notifyListeners(WindowEvent::RESIZED, args);
 
             _internalResizeEvent = false;
-        }break;
+            return true;
+        };
         case SDL_WINDOWEVENT_SIZE_CHANGED: {
             args._flag = fullscreen();
             notifyListeners(WindowEvent::SIZE_CHANGED, args);
-        } break;
+            return true;
+        };
         case SDL_WINDOWEVENT_MOVED: {
             notifyListeners(WindowEvent::MOVED, args);
             if (!_internalMoveEvent) {
@@ -173,28 +187,36 @@ void DisplayWindow::handleEvent(SDL_Event event) {
                             event.window.data2);
                 _internalMoveEvent = false;
             }
-        } break;
+            return true;
+        };
         case SDL_WINDOWEVENT_SHOWN: {
             notifyListeners(WindowEvent::SHOWN, args);
             ToggleBit(_flags, WindowFlags::HIDDEN, false);
-        } break;
+            return true;
+        };
         case SDL_WINDOWEVENT_HIDDEN: {
             notifyListeners(WindowEvent::HIDDEN, args);
             ToggleBit(_flags, WindowFlags::HIDDEN, true);
-        } break;
+            return true;
+        };
         case SDL_WINDOWEVENT_MINIMIZED: {
             notifyListeners(WindowEvent::MINIMIZED, args);
             minimized(true);
-        } break;
+            return true;
+        };
         case SDL_WINDOWEVENT_MAXIMIZED: {
             notifyListeners(WindowEvent::MAXIMIZED, args);
             minimized(false);
-        } break;
+            return true;
+        };
         case SDL_WINDOWEVENT_RESTORED: {
             notifyListeners(WindowEvent::RESTORED, args);
             minimized(false);
-        } break;
+            return true;
+        };
     };
+
+    return false;
 }
 
 I32 DisplayWindow::currentDisplayIndex() const {
@@ -346,7 +368,7 @@ void DisplayWindow::handleChangeWindowType(WindowType newWindowType) {
 
     centerWindowPosition();
 
-    _parent.pollSDLEvents();
+    SDLEventManager::pollEvents();
 }
 
 vec2<U16> DisplayWindow::getPreviousDimensions() const {
@@ -383,7 +405,7 @@ bool DisplayWindow::setDimensions(U16& width, U16& height) {
     if (newW == width && newH == height) {
         _prevDimensions.set(_windowDimensions);
         _windowDimensions.set(width, height);
-        _parent.pollSDLEvents();
+        SDLEventManager::pollEvents();
         return true;
     }
 

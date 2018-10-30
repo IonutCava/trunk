@@ -35,6 +35,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "Core/Headers/PlatformContextComponent.h"
 #include "Core/Math/Headers/MathMatrices.h"
+
+#include "Platform/Headers/SDLEventListener.h"
 #include "Platform/Input/Headers/InputAggregatorInterface.h"
 
 typedef struct SDL_Window SDL_Window;
@@ -102,7 +104,8 @@ struct WindowDescriptor;
 enum class ErrorCode : I8;
 // Platform specific window
 class DisplayWindow : public GUIDWrapper,
-                      public PlatformContextComponent {
+                      public PlatformContextComponent,
+                      public SDLEventListener {
 public:
     struct WindowEventArgs {
         I64 _windowGUID = -1;
@@ -193,7 +196,6 @@ public:
     inline I64 addEventListener(WindowEvent windowEvent, const EventListener& listener);
     inline void removeEventlistener(WindowEvent windowEvent, I64 listenerGUID);
 
-    void handleEvent(SDL_Event event);
     void notifyListeners(WindowEvent event, const WindowEventArgs& args);
 
     inline void destroyCbk(const DELEGATE_CBK<void>& destroyCbk);
@@ -206,6 +208,9 @@ public:
     void renderingViewport(const Rect<I32>& viewport);
 
     inline void* userData() const;
+
+
+    bool onSDLEvent(SDL_Event event) override;
 
 private:
     void restore();
