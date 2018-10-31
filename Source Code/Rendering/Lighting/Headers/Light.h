@@ -29,12 +29,12 @@
 
  */
 
-#ifndef DIVIDE_LIGHT_H_
-#define DIVIDE_LIGHT_H_
+#ifndef _DIVIDE_LIGHT_COMPONENT_H_
+#define _DIVIDE_LIGHT_COMPONENT_H_
 
 #include "config.h"
 
-#include "Graphs/Headers/SceneNode.h"
+#include "ECS/Components/Headers/SGNComponent.h"
 #include "Rendering/Lighting/ShadowMapping/Headers/ShadowMap.h"
 
 namespace Divide {
@@ -51,9 +51,15 @@ enum class LightType : U8 {
 
 class Camera;
 class LightPool;
+class SceneGraphNode;
+class EditorComponent;
 class SceneRenderState;
 /// A light object placed in the scene at a certain position
-class Light : public SceneNode {
+
+template<typename T>
+class Light : public GUIDWrapper,
+              public SGNComponent<T>
+{
    public:
        struct ShadowProperties {
            // x = light type,  y = csm split count, z = arrayOffset
@@ -78,15 +84,13 @@ class Light : public SceneNode {
     /// Create a new light assigned to the specified slot with the specified range
     /// @param slot = the slot the light is assigned to (as in OpenGL slot for example)
     /// @param range = the light influence range (for spot/point lights)
-    explicit Light(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, const F32 range, const LightType& type, LightPool& parentPool);
+    explicit Light(SceneGraphNode& sgn, const F32 range, const LightType& type, LightPool& parentPool);
     virtual ~Light();
 
     /// Is the light a shadow caster?
     inline bool castsShadows() const { return _castsShadows; }
-
-    inline F32 getRange() const { return _positionAndRange.w; }
-
-    void setRange(F32 range);
+    /// Does this light cast shadows?
+    inline void castsShadows(const bool state) { _castsShadows = state; }
 
     /// Get light diffuse colour
     inline void getDiffuseColour(vec3<F32>& colourOut) const {
@@ -111,42 +115,24 @@ class Light : public SceneNode {
         setDiffuseColour(Util::ToByteColour(newDiffuseColour));
     }
 
-    /// Get light position for omni and spot or direction for a directional light
-    inline vec3<F32> getPosition() const { return _positionAndRange.xyz(); }
+    inline F32 getRange() const { return _rangeAndCones.x; }
+    inline F32 getConeAngle() const { return _rangeAndCones.y; }
+    inline F32 getSpotCosOuterConeAngle() const { return _rangeAndCones.z; }
 
-    /// Get direction for spot lights
-    inline vec3<F32> getDirection() const { return _directionAndCone.xyz(); }
-
-    inline F32 getConeAngle() const { return _directionAndCone.w; }
-
-    void setConeAngle(F32 newAngle);
-
-    inline F32 getSpotCosOuterConeAngle() const { return _spotCosOuterConeAngle; }
-
-    void setSpotCosOuterConeAngle(F32 newCosAngle);
+    inline void setRange(F32 range) { _rangeAndCones.x = range;  }
+    inline void setConeAngle(F32 newAngle) { _rangeAndCones.y = newAngle; }
+    inline void setSpotCosOuterConeAngle(F32 newCosAngle) { _rangeAndCones.z = newCosAngle; }
 
     /// Light state (on/off)
     inline void toggleEnabled() { setEnabled(!getEnabled()); }
 
     inline bool getEnabled() const { return _enabled; }
 
-    /// Does this list cast shadows?
-    inline void setCastShadows(const bool state) { _castsShadows = state; }
-
     /// Turn the light on/off
     inline void setEnabled(const bool state) { _enabled = state; }
 
     /// Get the light type. (see LightType enum)
     inline const LightType& getLightType() const { return _type; }
-
-    /// SceneNode concrete implementations
-    bool unload() override;
-
-    void updateBoundsInternal();
-
-    void sceneUpdate(const U64 deltaTimeUS,
-                     SceneGraphNode& sgn,
-                     SceneState& sceneState) override;
 
     /*----------- Shadow Mapping-------------------*/
      inline const ShadowProperties& getShadowProperties() const {
@@ -198,28 +184,15 @@ class Light : public SceneNode {
     inline ShadowCameraPool& shadowCameras() { return _shadowCameras; }
     inline const ShadowCameraPool& shadowCameras() const { return _shadowCameras; }
 
-   protected:
-    friend class LightPool;
-    template <typename T>
-    friend class ImplResourceLoader;
-    bool load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) override;
-    void postLoad(SceneGraphNode& sgn) override;
-
     /// Set light type
     /// @param type Directional/Spot/Omni (see LightType enum)
     inline void setLightType(LightType type) {
         _type = type;
     }
 
-    void editorFieldChanged(EditorComponentField& field) override;
    protected:
-    bool _directionAndConeChanged;
-    /// Used to generate spot light penumbra using D3D's dual-cone method
-    F32  _spotCosOuterConeAngle;
-    /// xyz - position/direction, w - range
-    vec4<F32> _positionAndRange;
-    /// xyz - direction, w - cone angle
-    vec4<F32> _directionAndCone;
+    /// x - range, y = iner cone, z - cos outer cone
+    vec3<F32> _rangeAndCones;
     /// rgb - diffuse, a - reserved
     UColour  _colour;
     // does this light casts shadows?
@@ -235,8 +208,6 @@ class Light : public SceneNode {
     bool _enabled;
 };
 
-TYPEDEF_SMART_POINTERS_FOR_TYPE(Light);
-
 };  // namespace Divide
 
-#endif
+#endif //_DIVIDE_LIGHT_COMPONENT_H_

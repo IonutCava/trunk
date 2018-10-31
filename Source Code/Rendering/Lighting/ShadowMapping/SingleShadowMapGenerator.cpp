@@ -9,7 +9,6 @@
 #include "Managers/Headers/RenderPassManager.h"
 #include "Rendering/Headers/Renderer.h"
 #include "Rendering/Camera/Headers/Camera.h"
-#include "Rendering/Lighting/Headers/Light.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
@@ -26,7 +25,7 @@ void SingleShadowMapGenerator::render(const Camera& playerCamera, Light& light, 
     ACKNOWLEDGE_UNUSED(playerCamera);
 
     ShadowCameraPool& shadowCameras = light.shadowCameras();
-    shadowCameras[0]->lookAt(light.getPosition(), light.getDirection());
+    shadowCameras[0]->lookAt(light.getSGN().get<TransformComponent>()->getPosition(), light.getSGN().get<TransformComponent>()->getOrientation() * WORLD_Z_NEG_AXIS);
     shadowCameras[0]->setProjection(1.0f, 90.0f, vec2<F32>(1.0, light.getRange()));
 
     RenderPassManager& passMgr = _context.parent().renderPassManager();

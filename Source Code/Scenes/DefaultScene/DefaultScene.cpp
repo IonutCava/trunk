@@ -9,6 +9,7 @@
 #include "Rendering/PostFX/Headers/PostFX.h"
 
 #include "Dynamics/Entities/Units/Headers/Player.h"
+#include "ECS/Components/Headers/DirectionalLightComponent.h"
 
 #if !defined(CEGUI_STATIC)
 #define CEGUI_STATIC
@@ -33,7 +34,7 @@ bool DefaultScene::load(const stringImpl& name) {
     PushConstants& constants = _currentSky->get<RenderingComponent>()->pushConstants();
     constants.set("enable_sun", GFX::PushConstantType::BOOL, true);
     constants.set("sun_vector", GFX::PushConstantType::VEC3, sunvector);
-    constants.set("sun_colour", GFX::PushConstantType::VEC3, _sun->getNode<Light>()->getDiffuseColour());
+    constants.set("sun_colour", GFX::PushConstantType::VEC3, _sun->get<DirectionalLightComponent>()->getDiffuseColour());
 
     state().saveLoadDisabled(true);
 

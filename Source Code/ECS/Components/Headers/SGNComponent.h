@@ -56,7 +56,10 @@ enum class ComponentType : U32 {
     UNIT = toBit(9),
     RIGID_BODY = toBit(10),
     SELECTION = toBit(11),
-    COUNT = 12
+    DIRECTIONAL_LIGHT = toBit(12),
+    POINT_LIGHT = toBit(13),
+    SPOT_LIGHT = toBit(14),
+    COUNT = 15
 };
 
 inline const char* getComponentTypeName(ComponentType type);
@@ -72,7 +75,7 @@ class SGNComponent : private NonCopyable,
 {
    public:
 
-    SGNComponent(SceneGraphNode& parentSGN, ComponentType type);
+    explicit SGNComponent(SceneGraphNode& parentSGN, ComponentType type);
     virtual ~SGNComponent();
 
     virtual void PreUpdate(const U64 deltaTime);
@@ -81,7 +84,8 @@ class SGNComponent : private NonCopyable,
     virtual void OnUpdateLoop();
 
     inline SceneGraphNode& getSGN() const { return _parentSGN; }
-    
+    inline ComponentType type() const { return _type; }
+
     EditorComponent& getEditorComponent() { return _editorComponent; }
     const EditorComponent& getEditorComponent() const { return _editorComponent; }
 
@@ -97,6 +101,7 @@ class SGNComponent : private NonCopyable,
     void RegisterEventCallbacks();
 
    protected:
+    ComponentType _type;
     std::atomic_bool _enabled;
     mutable std::atomic_bool _hasChanged;
     /// Pointer to the SGN owning this instance of AnimationComponent

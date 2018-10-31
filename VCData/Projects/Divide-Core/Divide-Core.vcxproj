@@ -55,9 +55,6 @@
     <ClCompile Include="../../../Source Code/Core\Resources\ConcreteLoaders\ImpostorLoaderImpl.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="../../../Source Code/Core\Resources\ConcreteLoaders\LightLoaderImpl.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="../../../Source Code/Core\Resources\ConcreteLoaders\MaterialLoaderImpl.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
     </ClCompile>

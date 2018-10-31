@@ -12,12 +12,12 @@
 #include "Scenes/Headers/SceneState.h"
 
 #include "Managers/Headers/SceneManager.h"
-#include "Rendering/Lighting/Headers/Light.h"
-#include "Rendering/Lighting/Headers/DirectionalLight.h"
 #include "Rendering/Lighting/Headers/LightPool.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
 #include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
+
+#include "ECS/Components/Headers/DirectionalLightComponent.h"
 
 namespace Divide {
 
@@ -304,7 +304,7 @@ void ShadowMap::enableShadowDebugViewForLight(GFXDevice& context, Light& light) 
                 shadowPreviewShader.setThreadedLoading(false);
                 ShaderProgram_ptr previewDepthMapShader = CreateResource<ShaderProgram>(context.parent().resourceCache(), shadowPreviewShader);
 
-                U8 splitCount = static_cast<DirectionalLight&>(light).csmSplitCount();
+                U8 splitCount = static_cast<DirectionalLightComponent&>(light).csmSplitCount();
                 for (U8 i = 0; i < splitCount; ++i) {
                     DebugView_ptr shadow = std::make_shared<DebugView>(to_I16((std::numeric_limits<I16>::max() - 1) - splitCount + i));
                     shadow->_texture = ShadowMap::getDepthMap(LightType::DIRECTIONAL)._rt->getAttachment(RTAttachmentType::Colour, 0).texture();

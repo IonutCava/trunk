@@ -69,11 +69,11 @@ enum class NodeUsageContext : U8 {
 };
 
 enum class SceneNodeType : U16 {
-    TYPE_ROOT = 0,           //< root node
+    TYPE_ROOT = 0,
+    TYPE_EMPTY,              //< empty node
     TYPE_OBJECT3D,           //< 3d objects in the scene
     TYPE_TRANSFORM,          //< dummy node to stack multiple transforms
     TYPE_WATER,              //< water node
-    TYPE_LIGHT,              //< a scene light
     TYPE_TRIGGER,            //< a scene trigger (perform action on contact)
     TYPE_PARTICLE_EMITTER,   //< a particle emitter
     TYPE_SKY,                //< sky node
@@ -84,12 +84,12 @@ enum class SceneNodeType : U16 {
 
 const char* GetSceneNodeTypeName(SceneNodeType type);
 
-class NOINITVTABLE SceneNode : public CachedResource {
+class SceneNode : public CachedResource {
     friend class Attorney::SceneNodeSceneGraph;
     friend class Attorney::SceneNodeNetworkComponent;
 
   public:
-    explicit SceneNode(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, const SceneNodeType& type);
+    explicit SceneNode(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, const SceneNodeType& type = SceneNodeType::TYPE_EMPTY);
     explicit SceneNode(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, const stringImpl& resourceName, const stringImpl& resourceLocation, const SceneNodeType& type);
     virtual ~SceneNode();
 

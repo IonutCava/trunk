@@ -17,6 +17,8 @@
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "Environment/Terrain/Headers/TerrainDescriptor.h"
 
+#include "ECS/Components/Headers/DirectionalLightComponent.h"
+
 namespace Divide {
 
 namespace {
@@ -45,7 +47,7 @@ void MainScene::updateLights() {
              FColour(1.0f, 1.0f, 0.8f, 1.0f), 0.25f + _sun_cosy * 0.75f);
 
     _sun->get<TransformComponent>()->setRotationEuler(_sunvector);
-    _sun->getNode<Light>()->setDiffuseColour(_sunColour);
+    _sun->get<DirectionalLightComponent>()->setDiffuseColour(_sunColour);
 
     PushConstants& constants = _currentSky->get<RenderingComponent>()->pushConstants();
     constants.set("enable_sun", GFX::PushConstantType::BOOL, true);
@@ -156,9 +158,9 @@ bool MainScene::load(const stringImpl& name) {
     Camera* baseCamera = Camera::utilityCamera(Camera::UtilityCamera::DEFAULT);
     baseCamera->setMoveSpeedFactor(10.0f);
 
-    _sun->getNode<DirectionalLight>()->csmSplitCount(3);  // 3 splits
-    _sun->getNode<DirectionalLight>()->csmSplitLogFactor(0.965f);
-    _sun->getNode<DirectionalLight>()->csmNearClipOffset(25.0f);
+    _sun->get<DirectionalLightComponent>()->csmSplitCount(3);  // 3 splits
+    _sun->get<DirectionalLightComponent>()->csmSplitLogFactor(0.965f);
+    _sun->get<DirectionalLightComponent>()->csmNearClipOffset(25.0f);
 
     static const U32 normalMask = to_base(ComponentType::NAVIGATION) |
                                   to_base(ComponentType::TRANSFORM) |
@@ -201,12 +203,10 @@ bool MainScene::load(const stringImpl& name) {
                 -sinf(_sunAngle.x) * sinf(_sunAngle.y), 0.0f);
 
         removeTask(g_boxMoveTaskID);
-        g_boxMoveTaskID = CreateTask(context(),
-            DELEGATE_BIND(&MainScene::test,
-                this,
-                std::placeholders::_1,
-                stringImpl("test"),
-                CallbackParam::TYPE_STRING));
+        g_boxMoveTaskID = CreateTask(context(), [this](const Task& parent) {
+            test(parent, stringImpl("test"), CallbackParam::TYPE_STRING);
+        });
+
         registerTask(g_boxMoveTaskID);
 
         ResourceDescriptor beepSound("beep sound");
@@ -317,12 +317,9 @@ void MainScene::test(const Task& parentTask, AnyParam a, CallbackParam b) {
         std::this_thread::sleep_for(std::chrono::milliseconds(30));
         if (g_boxMoveTaskID()) {
             if (!StopRequested(parentTask)) {
-                g_boxMoveTaskID = CreateTask(context(), 
-                                             DELEGATE_BIND(&MainScene::test,
-                                                            this,
-                                                            std::placeholders::_1,
-                                                            stringImpl("test"),
-                                                            CallbackParam::TYPE_STRING));
+                g_boxMoveTaskID = CreateTask(context(), [this](const Task& parent) {
+                    test(parent, stringImpl("test"), CallbackParam::TYPE_STRING);
+                });
 
                 registerTask(g_boxMoveTaskID);
             }

@@ -30,6 +30,7 @@ namespace Divide {
         io.KeyMap[ImGuiKey_Delete] = to_I32(Input::KeyCode::KC_DELETE);
         io.KeyMap[ImGuiKey_Backspace] = to_I32(Input::KeyCode::KC_BACK);
         io.KeyMap[ImGuiKey_Enter] = to_I32(Input::KeyCode::KC_RETURN);
+        io.KeyMap[ImGuiKey_NumericEnter] = to_I32(Input::KeyCode::KC_NUMPADENTER);
         io.KeyMap[ImGuiKey_Escape] = to_I32(Input::KeyCode::KC_ESCAPE);
         io.KeyMap[ImGuiKey_Space] = to_I32(Input::KeyCode::KC_SPACE);
         io.KeyMap[ImGuiKey_A] = to_I32(Input::KeyCode::KC_A);

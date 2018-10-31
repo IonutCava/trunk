@@ -30,6 +30,10 @@
 #include "GUI/Headers/GUI.h"
 #include "GUI/Headers/GUIConsole.h"
 
+#include "ECS/Components/Headers/SpotLightComponent.h"
+#include "ECS/Components/Headers/PointLightComponent.h"
+#include "ECS/Components/Headers/DirectionalLightComponent.h"
+
 #include "Dynamics/Entities/Units/Headers/Player.h"
 
 #include "Platform/Headers/PlatformRuntime.h"
@@ -81,7 +85,7 @@ Scene::Scene(PlatformContext& context, ResourceCache& cache, SceneManager& paren
     _input = MemoryManager_NEW SceneInput(*this, _context);
     _sceneGraph = MemoryManager_NEW SceneGraph(*this);
     _aiManager = MemoryManager_NEW AI::AIManager(*this, _context.taskPool());
-    _lightPool = MemoryManager_NEW LightPool(*this, _context.gfx());
+    _lightPool = MemoryManager_NEW LightPool(*this, _context);
     _envProbePool = MemoryManager_NEW SceneEnvironmentProbePool(*this);
 
     _GUI = MemoryManager_NEW SceneGUIElements(*this, _context.gui());
@@ -469,56 +473,60 @@ SceneGraphNode* Scene::addLight(LightType type, SceneGraphNode& parentNode, stri
     if (nodeName.empty()) {
         switch (type) {
             case LightType::DIRECTIONAL:
-                nodeName = "_directional_light_";
+                nodeName = "directional_light_";
                 break;
             case LightType::POINT:
-                nodeName = "_point_light_";
+                nodeName = "point_light_";
                 break;
             case LightType::SPOT:
-                nodeName = "_spot_light_";
+                nodeName = "spot_light_";
                 break;
         }
         nodeName = name() + nodeName + to_stringImpl(_lightPool->getLights(type).size());
     } 
 
-    ResourceDescriptor defaultLight(nodeName);
-    defaultLight.setEnumValue(to_U32(type));
-    defaultLight.setUserPtr(_lightPool);
-    std::shared_ptr<Light> light = CreateResource<Light>(_resCache, defaultLight);
-    if (type == LightType::DIRECTIONAL) {
-        light->setCastShadows(true);
-    }
-
     SceneGraphNodeDescriptor lightNodeDescriptor;
     lightNodeDescriptor._name = nodeName;
-    lightNodeDescriptor._node = light;
     lightNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
     lightNodeDescriptor._componentMask = to_base(ComponentType::TRANSFORM) |
                                          to_base(ComponentType::BOUNDS) |
                                          to_base(ComponentType::RENDERING) |
                                          to_base(ComponentType::NETWORKING);
-    return parentNode.addNode(lightNodeDescriptor);
+
+    SceneGraphNode* ret = parentNode.addNode(lightNodeDescriptor);
+
+    switch (type) {
+        case LightType::DIRECTIONAL:
+            ret->AddSGNComponent<DirectionalLightComponent>(*ret, *_lightPool)->castsShadows(true);
+        {
+        }break;
+        case LightType::POINT:
+        {
+            ret->AddSGNComponent<PointLightComponent>(*ret, 25.0f, *_lightPool)->castsShadows(true);
+        }break;
+        case LightType::SPOT:
+        {
+            ret->AddSGNComponent<SpotLightComponent>(*ret, 30.0f, *_lightPool)->castsShadows(true);
+        }break;
+    }
+    
+    return ret;
 }
 
 void Scene::toggleFlashlight(PlayerIndex idx) {
     SceneGraphNode*& flashLight = _flashLight[idx];
     if (!flashLight) {
-        ResourceDescriptor tempLightDesc(Util::StringFormat("Flashlight_%d", idx));
-        tempLightDesc.setEnumValue(to_base(LightType::SPOT));
-        tempLightDesc.setUserPtr(_lightPool);
-        std::shared_ptr<Light> tempLight = CreateResource<Light>(_resCache, tempLightDesc);
-        tempLight->setRange(30.0f);
-        tempLight->setCastShadows(true);
-        tempLight->setDiffuseColour(DefaultColours::WHITE);
-
         SceneGraphNodeDescriptor lightNodeDescriptor;
-        lightNodeDescriptor._node = tempLight;
+        lightNodeDescriptor._name = Util::StringFormat("Flashlight_%d", idx);
         lightNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
         lightNodeDescriptor._componentMask = to_base(ComponentType::TRANSFORM) |
                                              to_base(ComponentType::BOUNDS) |
                                              to_base(ComponentType::RENDERING) |
                                              to_base(ComponentType::NETWORKING);
         flashLight = _sceneGraph->getRoot().addNode(lightNodeDescriptor);
+        SpotLightComponent* spotLight = flashLight->AddSGNComponent<SpotLightComponent>(*flashLight, 30.0f, *_lightPool);
+        spotLight->castsShadows(true);
+        spotLight->setDiffuseColour(DefaultColours::WHITE);
 
         hashAlg::insert(_flashLight, idx, flashLight);
 
@@ -534,7 +542,7 @@ void Scene::toggleFlashlight(PlayerIndex idx) {
                      
     }
 
-    flashLight->getNode<Light>()->toggleEnabled();
+    flashLight->get<SpotLightComponent>()->toggleEnabled();
 }
 
 SceneGraphNode* Scene::addSky(SceneGraphNode& parentNode, const stringImpl& nodeName) {
@@ -878,13 +886,8 @@ bool Scene::load(const stringImpl& name) {
         _currentSky = skies[0];
     }
 
-    // We always add at least one light
-    auto lights = sceneGraph().getNodesByType(SceneNodeType::TYPE_LIGHT);
-    if (lights.empty()) {
-        _sun = addLight(LightType::DIRECTIONAL, _sceneGraph->getRoot(), "DefaultLight");
-    } else {
-        _sun = lights[0];
-    }
+    // We always add at least one light (we can delete / disable it as needed)
+    _sun = addLight(LightType::DIRECTIONAL, _sceneGraph->getRoot(), "DefaultLight");
     _loadComplete = true;
 
     return _loadComplete;
@@ -1028,7 +1031,7 @@ void Scene::addPlayerInternal(bool queue) {
         SceneGraphNode& root = _sceneGraph->getRoot();
 
         SceneGraphNodeDescriptor playerNodeDescriptor;
-        playerNodeDescriptor._node = SceneNode_ptr(MemoryManager_NEW SceneTransform(_resCache, static_cast<size_t>(GUIDWrapper::generateGUID() + _parent.getActivePlayerCount()), g_PlayerExtents));
+        playerNodeDescriptor._node = std::make_shared<SceneNode>(_resCache, static_cast<size_t>(GUIDWrapper::generateGUID() + _parent.getActivePlayerCount()), playerName);
         playerNodeDescriptor._name = playerName;
         playerNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
         playerNodeDescriptor._componentMask = to_base(ComponentType::UNIT) |

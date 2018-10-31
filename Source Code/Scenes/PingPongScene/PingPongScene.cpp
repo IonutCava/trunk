@@ -12,6 +12,8 @@
 #include "Geometry/Shapes/Predefined/Headers/Sphere3D.h"
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
 
+#include "ECS/Components/Headers/DirectionalLightComponent.h"
+
 namespace Divide {
 
 namespace {
@@ -69,7 +71,7 @@ void PingPongScene::processTasks(const U64 deltaTimeUS) {
     PushConstants& constants = _currentSky->get<RenderingComponent>()->pushConstants();
     constants.set("enable_sun", GFX::PushConstantType::BOOL, true);
     constants.set("sun_vector", GFX::PushConstantType::VEC3, _sunvector);
-    constants.set("sun_colour", GFX::PushConstantType::VEC3, _sun->getNode<Light>()->getDiffuseColour());
+    constants.set("sun_colour", GFX::PushConstantType::VEC3, _sun->get<DirectionalLightComponent>()->getDiffuseColour());
 
     Scene::processTasks(deltaTimeUS);
 }
@@ -91,7 +93,10 @@ void PingPongScene::serveBall(I64 btnGUID) {
 
     removeTask(g_gameTaskID);
 
-    g_gameTaskID = CreateTask(context(), DELEGATE_BIND(&PingPongScene::test, this, std::placeholders::_1, Random(4), CallbackParam::TYPE_INTEGER));
+    g_gameTaskID = CreateTask(context(), [this](const Task& parent) {
+        test(parent, Random(4), CallbackParam::TYPE_INTEGER);
+    });
+
     registerTask(g_gameTaskID);
 }
 
@@ -363,8 +368,9 @@ void PingPongScene::postLoadMainThread() {
                                                    to_I32(resolution.height / 1.1f)),
                                      pixelScale(100, 25));
 
-    btn->setEventCallback(GUIButton::Event::MouseClick,
-                          DELEGATE_BIND(&PingPongScene::serveBall, this, std::placeholders::_1));
+    btn->setEventCallback(GUIButton::Event::MouseClick, [this](I64 btnGUID) {
+        serveBall(btnGUID);
+    });
 
     _GUI->addText("Score",
                   pixelPosition(to_I32(resolution.width - 120),

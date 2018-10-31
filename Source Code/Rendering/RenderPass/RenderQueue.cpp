@@ -94,12 +94,24 @@ RenderBin* RenderQueue::getOrCreateBin(RenderBinType rbType) {
     return temp;
 }
 
-RenderBin* RenderQueue::getBinForNode(const SceneNode_ptr& node, const Material_ptr& matInstance) {
+RenderBin* RenderQueue::getBinForNode(const SceneGraphNode& node, const Material_ptr& matInstance) {
     assert(node != nullptr);
-    switch (node->type()) {
-        case SceneNodeType::TYPE_LIGHT: 
-            return getOrCreateBin(RenderBinType::RBT_IMPOSTOR);
-
+    switch (node.getNode()->type()) {
+        case SceneNodeType::TYPE_EMPTY:
+        {
+            if (BitCompare(node.componentMask(), ComponentType::SPOT_LIGHT) ||
+                BitCompare(node.componentMask(), ComponentType::POINT_LIGHT) ||
+                BitCompare(node.componentMask(), ComponentType::DIRECTIONAL_LIGHT))
+            {
+                return getOrCreateBin(RenderBinType::RBT_IMPOSTOR);
+            }
+            /*if (BitCompare(node.componentMask(), ComponentType::PARTICLE_EMITTER_COMPONENT) ||
+                BitCompare(node.componentMask(), ComponentType::GRASS_COMPONENT))
+            {
+                return getOrCreateBin(RenderBinType::RBT_TRANSLUCENT);
+            }*/
+            return nullptr;
+        }
         case SceneNodeType::TYPE_VEGETATION_GRASS:
         case SceneNodeType::TYPE_PARTICLE_EMITTER:
             return getOrCreateBin(RenderBinType::RBT_TRANSLUCENT);
@@ -108,11 +120,12 @@ RenderBin* RenderQueue::getBinForNode(const SceneNode_ptr& node, const Material_
             return getOrCreateBin(RenderBinType::RBT_SKY);
 
         // Water is also opaque as refraction and reflection are separate textures
+        // We may want to break this stuff up into mesh rendering components and not care about specifics anymore (i.e. just material checks)
         case SceneNodeType::TYPE_WATER:
         case SceneNodeType::TYPE_OBJECT3D: {
         case SceneNodeType::TYPE_VEGETATION_TREES:
-            if (node->type() == SceneNodeType::TYPE_OBJECT3D) {
-                ObjectType type = static_cast<Object3D*>(node.get())->getObjectType();
+            if (node.getNode()->type() == SceneNodeType::TYPE_OBJECT3D) {
+                ObjectType type = static_cast<Object3D*>(node.getNode().get())->getObjectType();
                 switch (type) {
                     case ObjectType::TERRAIN:
                         return getOrCreateBin(RenderBinType::RBT_TERRAIN);
@@ -136,7 +149,7 @@ RenderBin* RenderQueue::getBinForNode(const SceneNode_ptr& node, const Material_
 
 void RenderQueue::addNodeToQueue(const SceneGraphNode& sgn, RenderStagePass stage, const vec3<F32>& eyePos) {
     RenderingComponent* const renderingCmp = sgn.get<RenderingComponent>();
-    RenderBin* rb = getBinForNode(sgn.getNode(), renderingCmp ? renderingCmp->getMaterialInstance() : nullptr);
+    RenderBin* rb = getBinForNode(sgn, renderingCmp ? renderingCmp->getMaterialInstance() : nullptr);
     if (rb) {
         rb->addNodeToBin(sgn, stage, eyePos);
     }

@@ -28,9 +28,9 @@ std::array<U8, to_base(ShadowType::COUNT)> LightPool::_shadowLocation = { {
 
 bool LightPool::_previewShadowMaps = false;
 
-LightPool::LightPool(Scene& parentScene, GFXDevice& context)
+LightPool::LightPool(Scene& parentScene, PlatformContext& context)
     : SceneComponent(parentScene),
-      _context(context),
+      PlatformContextComponent(context),
       _init(false),
       _lightImpostorShader(nullptr),
       _lightIconsTexture(nullptr),
@@ -82,7 +82,7 @@ void LightPool::init() {
     for (U8 i = 0; i < to_U8(RenderStage::COUNT); ++i) {
         bufferDescriptor._name = Util::StringFormat("LIGHT_BUFFER_%s", 
                                                     TypeUtil::renderStageToString(static_cast<RenderStage>(i))).c_str();
-        _lightShaderBuffer[i] = _context.newSB(bufferDescriptor);
+        _lightShaderBuffer[i] = _context.gfx().newSB(bufferDescriptor);
     }
 
     // SHADOWS holds info about the currently active shadow casting lights:
@@ -92,7 +92,7 @@ void LightPool::init() {
     bufferDescriptor._elementSize = sizeof(Light::ShadowProperties);
     bufferDescriptor._name = "LIGHT_SHADOW_BUFFER";
 
-    _shadowBuffer = _context.newSB(bufferDescriptor);
+    _shadowBuffer = _context.gfx().newSB(bufferDescriptor);
 
     ResourceDescriptor lightImpostorShader("lightImpostorShader");
     lightImpostorShader.setThreadedLoading(false);
@@ -125,18 +125,7 @@ bool LightPool::clear() {
     if (!_init) {
         return true;
     }
-
-    if (_parentScene.sceneGraph().removeNodesByType(SceneNodeType::TYPE_LIGHT)) {
-        UniqueLockShared w_lock(_lightLock);
-
-        for (Light::LightList& lightList : _lights) {
-            lightList.clear();
-        }
-
-        return true;
-    }
-
-    return false;
+    return _lights.empty();
 }
 
 bool LightPool::addLight(Light& light) {
@@ -153,25 +142,21 @@ bool LightPool::addLight(Light& light) {
 
     _lights[lightTypeIdx].emplace_back(&light);
 
-    if (light.getLightType() == LightType::DIRECTIONAL) {
-        static_cast<DirectionalLight&>(light).csmSplitCount(_context.context().config().rendering.shadowMapping.defaultCSMSplitCount);
-    }
-
     return true;
 }
 
 // try to remove any leftover lights
-bool LightPool::removeLight(I64 lightGUID, LightType type) {
+bool LightPool::removeLight(Light& light) {
     UniqueLockShared lock(_lightLock);
-    Light::LightList::const_iterator it = findLightLocked(lightGUID, type);
+    Light::LightList::const_iterator it = findLightLocked(light.getGUID(), light.getLightType());
 
-    if (it == std::end(_lights[to_U32(type)])) {
+    if (it == std::end(_lights[to_U32(light.getLightType())])) {
         Console::errorfn(Locale::get(_ID("ERROR_LIGHT_POOL_REMOVE_LIGHT")),
-                         lightGUID);
+                         light.getGUID());
         return false;
     }
 
-    _lights[to_U32(type)].erase(it);  // remove it from the map
+    _lights[to_U32(light.getLightType())].erase(it);  // remove it from the map
     return true;
 }
 
@@ -227,9 +212,13 @@ void LightPool::shadowCastingLights(const vec3<F32>& eyePos, LightVec& sortedSha
               std::end(sortedLights),
               [&eyePos](Light* a, Light* b) -> bool
               {
+                 TransformComponent* lightTransformA = a->getSGN().get<TransformComponent>();
+                 TransformComponent* lightTransformB = b->getSGN().get<TransformComponent>();
+                 assert(lightTransformA != nullptr && lightTransformB != nullptr);
+
                   return a->getLightType() == LightType::DIRECTIONAL ||
-                          (a->getPosition().distanceSquared(eyePos) <
-                           b->getPosition().distanceSquared(eyePos));
+                          (lightTransformA->getPosition().distanceSquared(eyePos) <
+                           lightTransformB->getPosition().distanceSquared(eyePos));
               });
 
     for (Light* light : sortedLights) {
@@ -309,8 +298,12 @@ void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, con
                   std::end(_sortedLights[stageIndex]),
                   [&eyePos](Light* a, Light* b) -> bool
                   {
-                       return a->getPosition().distanceSquared(eyePos) <
-                              b->getPosition().distanceSquared(eyePos);
+                      TransformComponent* lightTransformA = a->getSGN().get<TransformComponent>();
+                      TransformComponent* lightTransformB = b->getSGN().get<TransformComponent>();
+                      assert(lightTransformA != nullptr && lightTransformB != nullptr);
+
+                       return lightTransformA->getPosition().distanceSquared(eyePos) <
+                              lightTransformB->getPosition().distanceSquared(eyePos);
                   });
 
         U32 totalLightCount = 0;
@@ -326,6 +319,9 @@ void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, con
                 break;
             }
 
+            TransformComponent* lightTransform = light->getSGN().get<TransformComponent>();
+            assert(lightTransform != nullptr);
+
             _sortedLightProperties[stageIndex].emplace_back();
             LightProperties& temp = _sortedLightProperties[stageIndex].back();
             light->getDiffuseColour(tempColour);
@@ -334,9 +330,9 @@ void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, con
             // So we need W = 1 for a valid positional transform
             // Directional lights use position for the light direction. 
             // So we need W = 0 for an infinite distance.
-            temp._position.set(viewMatrix.transform(light->getPosition(), type != LightType::DIRECTIONAL), light->getRange());
+            temp._position.set(viewMatrix.transform(lightTransform->getPosition(), type != LightType::DIRECTIONAL), light->getRange());
             // spot direction is not considered a point in space, so W = 0
-            temp._direction.set(viewMatrix.transformNonHomogeneous(light->getDirection()), light->getConeAngle());
+            temp._direction.set(viewMatrix.transformNonHomogeneous(lightTransform->getOrientation() * WORLD_Z_NEG_AXIS), light->getConeAngle());
 
             temp._options.x = typeIndex;
             temp._options.y = light->castsShadows();
@@ -349,7 +345,7 @@ void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, con
     };
 
     // Sort all lights (Sort in parallel by type)
-    _lightUpdateTask[stageIndex] = CreateTask(_context.context().taskPool(), lightUpdate);
+    _lightUpdateTask[stageIndex] = CreateTask(_context.taskPool(), lightUpdate);
     _lightUpdateTask[stageIndex].startTask();
 }
 
@@ -365,7 +361,7 @@ void LightPool::uploadLightData(RenderStage stage,
     GFX::EnqueueCommand(bufferInOut, externalCmd);
 
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
-    descriptorSetCmd._set = _context.newDescriptorSet();
+    descriptorSetCmd._set = _context.gfx().newDescriptorSet();
     descriptorSetCmd._set->_shaderBuffers.emplace_back(lightDataLocation, _lightShaderBuffer[to_base(stage)]);
     descriptorSetCmd._set->_shaderBuffers.emplace_back(shadowDataLocation, _shadowBuffer);
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
@@ -411,7 +407,7 @@ void LightPool::drawLightImpostors(RenderStage stage, GFX::CommandBuffer& buffer
     const U32 totalLightCount = directionalLightCount + pointLightCount + spotLightCount;
     if (totalLightCount > 0) {
         PipelineDescriptor pipelineDescriptor;
-        pipelineDescriptor._stateHash = _context.getDefaultStateBlock(true);
+        pipelineDescriptor._stateHash = _context.gfx().getDefaultStateBlock(true);
         pipelineDescriptor._shaderProgramHandle = _lightImpostorShader->getID();
 
         GenericDrawCommand pointsCmd;
@@ -419,11 +415,11 @@ void LightPool::drawLightImpostors(RenderStage stage, GFX::CommandBuffer& buffer
         pointsCmd._drawCount = to_U16(totalLightCount);
 
         GFX::BindPipelineCommand bindPipeline;
-        bindPipeline._pipeline = _context.newPipeline(pipelineDescriptor);
+        bindPipeline._pipeline = _context.gfx().newPipeline(pipelineDescriptor);
         GFX::EnqueueCommand(bufferInOut, bindPipeline);
         
         GFX::BindDescriptorSetsCommand descriptorSetCmd;
-        descriptorSetCmd._set = _context.newDescriptorSet();
+        descriptorSetCmd._set = _context.gfx().newDescriptorSet();
         descriptorSetCmd._set->_textureData.addTexture(TextureData(_lightIconsTexture->getTextureType(), _lightIconsTexture->getHandle()),
                                                        to_U8(ShaderProgram::TextureUsage::UNIT0));
         GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);

@@ -32,9 +32,14 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _SCENE_SHADER_DATA_H_
 #define _SCENE_SHADER_DATA_H_
 
-#include "Rendering/Lighting/Headers/Light.h"
+#include "Core/Math/Headers/MathVectors.h"
+#include "Platform/Video/Headers/RenderAPIEnums.h"
 
 namespace Divide {
+
+class GFXDevice;
+class ShaderBuffer;
+
 class SceneShaderData {
   private:
     struct SceneShaderBufferData {

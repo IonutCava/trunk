@@ -13,7 +13,6 @@
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Managers/Headers/RenderPassManager.h"
 #include "Rendering/Camera/Headers/Camera.h"
-#include "Rendering/Lighting/Headers/Light.h"
 #include "Rendering/Lighting/Headers/LightPool.h"
 #include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
 #include "Managers/Headers/RenderPassManager.h"
@@ -165,9 +164,10 @@ void DeferredShadingRenderer::preRender(RenderStagePass stagePass,
             for (U8 col = 0; col < lights.size() / 3; col++) {
                 U8 i = row * 10 + col;
                 // Light Position
-                pixels[index + 0] = lights[i]->getPosition().x;
-                pixels[index + 1] = lights[i]->getPosition().y;
-                pixels[index + 2] = lights[i]->getPosition().z;
+                const vec3<F32>& pos = lights[i]->getSGN().get<TransformComponent>()->getPosition();
+                pixels[index + 0] = pos.x;
+                pixels[index + 1] = pos.y;
+                pixels[index + 2] = pos.z;
                 // Light Colour
                 pixels[index + 3] = lights[i]->getDiffuseColour().r;
                 pixels[index + 4] = lights[i]->getDiffuseColour().g;

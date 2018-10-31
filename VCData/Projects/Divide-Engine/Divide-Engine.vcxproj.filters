@@ -268,18 +268,6 @@
     <ClCompile Include="../../../Source Code/Rendering\PostFX\CustomOperators\DoFPreRenderOperator.cpp">
       <Filter>Rendering\PostFX\CustomOperators</Filter>
     </ClCompile>
-    <ClCompile Include="../../../Source Code/Rendering\Lighting\DirectionalLight.cpp">
-      <Filter>Rendering\Lighting</Filter>
-    </ClCompile>
-    <ClCompile Include="../../../Source Code/Rendering\Lighting\Light.cpp">
-      <Filter>Rendering\Lighting</Filter>
-    </ClCompile>
-    <ClCompile Include="../../../Source Code/Rendering\Lighting\PointLight.cpp">
-      <Filter>Rendering\Lighting</Filter>
-    </ClCompile>
-    <ClCompile Include="../../../Source Code/Rendering\Lighting\SpotLight.cpp">
-      <Filter>Rendering\Lighting</Filter>
-    </ClCompile>
     <ClCompile Include="../../../Source Code/Rendering\Lighting\ShadowMapping\ShadowMap.cpp">
       <Filter>Rendering\Lighting\ShadowMapping</Filter>
     </ClCompile>
@@ -598,6 +586,18 @@
     <ClCompile Include="../../../Source Code\ECS\Components\SelectionComponent.cpp">
       <Filter>ECS\Components</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Source Code\ECS\Components\DirectionalLightComponent.cpp">
+      <Filter>ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source Code\ECS\Components\PointLightComponent.cpp">
+      <Filter>ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source Code\ECS\Components\SpotLightComponent.cpp">
+      <Filter>ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source Code\Rendering\Lighting\Light.cpp">
+      <Filter>Rendering\Lighting</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../../Source Code/Rendering\Camera\Headers\Camera.h">
@@ -632,9 +632,6 @@
     </ClInclude>
     <ClInclude Include="../../../Source Code/Graphs\Headers\SceneNode.h">
       <Filter>Graphs\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="../../../Source Code/Rendering\Lighting\Headers\Light.h">
-      <Filter>Rendering\Lighting\Headers</Filter>
     </ClInclude>
     <ClInclude Include="../../../Source Code/readme.h" />
     <ClInclude Include="../../../Source Code/Rendering\PostFX\CustomOperators\Headers\BloomPreRenderOperator.h">
@@ -678,15 +675,6 @@
     </ClInclude>
     <ClInclude Include="../../../Source Code/Rendering\PostFX\CustomOperators\Headers\DoFPreRenderOperator.h">
       <Filter>Rendering\PostFX\CustomOperators\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="../../../Source Code/Rendering\Lighting\Headers\DirectionalLight.h">
-      <Filter>Rendering\Lighting\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="../../../Source Code/Rendering\Lighting\Headers\PointLight.h">
-      <Filter>Rendering\Lighting\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="../../../Source Code/Rendering\Lighting\Headers\SpotLight.h">
-      <Filter>Rendering\Lighting\Headers</Filter>
     </ClInclude>
     <ClInclude Include="../../../Source Code/Rendering\Lighting\ShadowMapping\Headers\ShadowMap.h">
       <Filter>Rendering\Lighting\ShadowMapping\Headers</Filter>
@@ -1057,6 +1045,18 @@
     </ClInclude>
     <ClInclude Include="../../../Source Code\ECS\Components\Headers\SelectionComponent.h">
       <Filter>ECS\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source Code\ECS\Components\Headers\DirectionalLightComponent.h">
+      <Filter>ECS\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source Code\ECS\Components\Headers\SpotLightComponent.h">
+      <Filter>ECS\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source Code\ECS\Components\Headers\PointLightComponent.h">
+      <Filter>ECS\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source Code\Rendering\Lighting\Headers\Light.h">
+      <Filter>Rendering\Lighting\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

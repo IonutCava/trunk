@@ -85,9 +85,6 @@
     <ClInclude Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Text\Headers\fontstash.h">
       <Filter>Video\RenderBackend\OpenGL\Text\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Text\Headers\stb_truetype.h">
-      <Filter>Video\RenderBackend\OpenGL\Text\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Shaders\Headers\glShader.h">
       <Filter>Video\RenderBackend\OpenGL\Shaders\Headers</Filter>
     </ClInclude>

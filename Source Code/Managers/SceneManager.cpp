@@ -532,7 +532,6 @@ namespace {
         STUBBED("ToDo: Use some additional flag type for these! -Ionut");
         return nodeType != SceneNodeType::TYPE_ROOT &&
                nodeType != SceneNodeType::TYPE_TRANSFORM &&
-               nodeType != SceneNodeType::TYPE_LIGHT &&
                nodeType != SceneNodeType::TYPE_TRIGGER;
     }
 

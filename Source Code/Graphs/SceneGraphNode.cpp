@@ -41,6 +41,14 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescr
       _lockToCamera(0),
       _relationshipCache(*this)
 {
+    if (_node == nullptr) {
+        _node = std::make_shared<SceneNode>(sceneGraph.parentScene().resourceCache(), GUIDWrapper::generateGUID(), "");
+    }
+
+    if (_node->type() == SceneNodeType::TYPE_EMPTY || _node->type() == SceneNodeType::TYPE_ROOT) {
+        _node->load(DELEGATE_CBK<void, CachedResource_wptr>());
+    }
+
     assert(_node != nullptr);
     _children.reserve(INITIAL_CHILD_COUNT);
     RegisterEventCallbacks();
@@ -200,7 +208,6 @@ SceneGraphNode* SceneGraphNode::registerNode(SceneGraphNode* node) {
 
 /// Add a new SceneGraphNode to the current node's child list based on a SceneNode
 SceneGraphNode* SceneGraphNode::addNode(const SceneGraphNodeDescriptor& descriptor) {
-    assert(descriptor._node);
     // Create a new SceneGraphNode with the SceneNode's info
     // We need to name the new SceneGraphNode
     // If we did not supply a custom name use the SceneNode's name

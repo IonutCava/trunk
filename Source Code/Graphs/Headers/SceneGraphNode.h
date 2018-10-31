@@ -68,41 +68,6 @@ struct SceneGraphNodeDescriptor {
     NodeUsageContext _usageContext = NodeUsageContext::NODE_STATIC;
 };
 
-// This is the scene root node. All scene node's are added to it as child nodes
-class SceneRoot : public SceneNode {
-   public:
-    SceneRoot(ResourceCache& parentCache, size_t descriptorHash)
-        : SceneNode(parentCache, descriptorHash, "root", SceneNodeType::TYPE_ROOT)
-    {
-        setState(ResourceState::RES_LOADED);
-        _boundingBox.set(VECTOR3_UNIT, -VECTOR3_UNIT);
-
-    }
-};
-
-TYPEDEF_SMART_POINTERS_FOR_TYPE(SceneRoot);
-// Add as many SceneTransform nodes are needed as parent nodes for any scenenode
-// to create complex transforms in the scene
-class SceneTransform : public SceneNode {
-   public:
-    SceneTransform(ResourceCache& parentCache, size_t descriptorHash, vec3<F32> extents)
-        : SceneNode(parentCache, descriptorHash, "TransformNode", SceneNodeType::TYPE_TRANSFORM),
-          _extents(extents)
-    {
-        setState(ResourceState::RES_LOADED);
-    }
-
-    inline void updateBoundsInternal() override {
-        _boundingBox.setMin(-_extents * 0.5f);
-        _boundingBox.setMax( _extents * 0.5f);
-    }
-
-  protected:
-    vec3<F32> _extents;
-};
-
-TYPEDEF_SMART_POINTERS_FOR_TYPE(SceneTransform);
-
 namespace Attorney {
     class SceneGraphNodeEditor;
     class SceneGraphNodeComponent;
@@ -344,11 +309,14 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     void RegisterEventCallbacks();
 
 
+   public:
     template<class T, class ...P>
-    SGNComponent<T>* AddSGNComponent(P&&... param) {
+    T* AddSGNComponent(P&&... param) {
         SGNComponent<T>* comp = static_cast<SGNComponent<T>*>(AddComponent<T>(std::forward<P>(param)...));
         _editorComponents.emplace_back(&comp->getEditorComponent());
-        return comp;
+        SetBit(_componentMask, comp->type());
+
+        return static_cast<T*>(comp);
     }
 
     template<class T>
@@ -360,6 +328,7 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
                                [comp](EditorComponent* editorComp)
                                -> bool { return comp->getEditorComponent().getGUID() == editorComp->getGUID(); }),
                 eastl::end(_editorComponents));
+            ClearBit(_componentMask, comp->type());
             RemoveComponent<T>();
         }
     }
@@ -367,8 +336,8 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     void RemoveAllSGNComponents() {
         GetComponentManager()->RemoveAllComponents(GetEntityID());
         _editorComponents.clear();
+        _componentMask = 0;
     }
-
 
     void AddMissingComponents(U32 componentMask);
 

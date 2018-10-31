@@ -14,7 +14,6 @@ namespace Divide {
 
 namespace {
     U32 ignoredNodeType = to_base(SceneNodeType::TYPE_ROOT) |
-                          to_base(SceneNodeType::TYPE_LIGHT) |
                           to_base(SceneNodeType::TYPE_PARTICLE_EMITTER) |
                           to_base(SceneNodeType::TYPE_TRIGGER) |
                           to_base(SceneNodeType::TYPE_SKY) |
@@ -26,28 +25,27 @@ SceneGraph::SceneGraph(Scene& parentScene)
       SceneComponent(parentScene),
      _loadComplete(false),
      _octreeChanged(false),
-     _ecsEngine(new ECS::ECSEngine()),
-     _rootNode(new SceneRoot(parentScene.resourceCache(), GUIDWrapper::generateGUID()))
+     _ecsEngine(new ECS::ECSEngine())
 {
     _ecsManager = std::make_unique<ECSManager>(parentScene.context(), GetECSEngine());
 
     REGISTER_FRAME_LISTENER(this, 1);
 
     SceneGraphNodeDescriptor rootDescriptor;
-    rootDescriptor._node = _rootNode;
     rootDescriptor._name = "ROOT";
+    rootDescriptor._node = std::make_shared<SceneNode>(parentScene.resourceCache(), GUIDWrapper::generateGUID(), "ROOT", SceneNodeType::TYPE_ROOT);
     rootDescriptor._componentMask = to_base(ComponentType::TRANSFORM) | to_base(ComponentType::BOUNDS);
     rootDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
 
     _root = createSceneGraphNode(*this, rootDescriptor);
 
     _root->get<BoundsComponent>()->ignoreTransform(true);
+    _root->postLoad();
 
-    Attorney::SceneNodeSceneGraph::postLoad(*_rootNode, *_root);
+    //Attorney::SceneNodeSceneGraph::postLoad(*rootSGN.getNode(), rootSGN);
     onNodeAdd(*_root);
 
     U32 octreeNodeMask = to_base(SceneNodeType::TYPE_ROOT) |
-                         to_base(SceneNodeType::TYPE_LIGHT) |
                          to_base(SceneNodeType::TYPE_SKY) |
                          to_base(SceneNodeType::TYPE_VEGETATION_GRASS);
 

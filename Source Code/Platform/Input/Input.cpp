@@ -97,6 +97,7 @@ namespace Input {
         {SDLK_KP_PERIOD, KeyCode::KC_DECIMAL},
         {SDLK_PLUS, KeyCode::KC_ADD},
         {SDLK_MINUS, KeyCode::KC_MINUS},
+        {SDLK_KP_ENTER, KeyCode::KC_NUMPADENTER},
         {SDLK_F11, KeyCode::KC_F11},
         {SDLK_F12, KeyCode::KC_F12},
         {SDLK_F13, KeyCode::KC_F13},

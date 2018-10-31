@@ -34,10 +34,12 @@
 
 #include "config.h"
 
+#include "Light.h"
+
 #include "Scenes/Headers/SceneComponent.h"
-#include "Rendering/Lighting/Headers/Light.h"
 #include "Platform/Threading/Headers/Task.h"
 #include "Platform/Video/Headers/RenderStagePass.h"
+#include "Core/Headers/PlatformContextComponent.h"
 
 namespace Divide {
 
@@ -49,7 +51,8 @@ class ShaderBuffer;
 class SceneGraphNode;
 class SceneRenderState;
 
-class LightPool : public SceneComponent {
+class LightPool : public SceneComponent,
+                  public PlatformContextComponent {
   protected:
       struct LightProperties {
           /// rgb = diffuse
@@ -75,16 +78,14 @@ class LightPool : public SceneComponent {
           }
       };
 
-
-
   public:
-    explicit LightPool(Scene& parentScene, GFXDevice& context);
+    explicit LightPool(Scene& parentScene, PlatformContext& context);
     ~LightPool();
 
     /// Add a new light to the manager
     bool addLight(Light& light);
     /// remove a light from the manager
-    bool removeLight(I64 lightGUID, LightType type);
+    bool removeLight(Light& light);
     /// disable or enable a specific light type
     inline void toggleLightType(LightType type) {
         toggleLightType(type, !lightTypeEnabled(type));
@@ -180,17 +181,13 @@ class LightPool : public SceneComponent {
 
     LightShadowProperties _sortedShadowProperties;
 
-    GFXDevice& _context;
-
     mutable SharedMutex _lightLock;
     std::array<bool, to_base(LightType::COUNT)> _lightTypeState;
     std::array<Light::LightList, to_base(LightType::COUNT)> _lights;
     bool _init;
     Texture_ptr _lightIconsTexture;
     ShaderProgram_ptr _lightImpostorShader;
-    
 
-   
     Time::ProfileTimer& _shadowPassTimer;
 
     static bool _previewShadowMaps;

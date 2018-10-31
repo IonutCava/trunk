@@ -23,6 +23,8 @@
 #include "Managers/Headers/RenderPassManager.h"
 #include "Platform/Video/Headers/IMPrimitive.h"
 
+#include "ECS/Components/Headers/DirectionalLightComponent.h"
+
 #include "Dynamics/Entities/Particles/ConcreteUpdaters/Headers/ParticleBasicTimeUpdater.h"
 #include "Dynamics/Entities/Particles/ConcreteUpdaters/Headers/ParticleBasicColourUpdater.h"
 #include "Dynamics/Entities/Particles/ConcreteUpdaters/Headers/ParticleEulerUpdater.h"
@@ -186,12 +188,12 @@ void WarScene::processTasks(const U64 deltaTimeUS) {
         _sun->get<TransformComponent>()->setRotationEuler(sunVector);
         FColour sunColour = FColour(1.0f, 1.0f, 0.2f, 1.0f);
 
-        _sun->getNode<Light>()->setDiffuseColour(sunColour);
+        _sun->get<DirectionalLightComponent>()->setDiffuseColour(sunColour);
 
         PushConstants& constants = _currentSky->get<RenderingComponent>()->pushConstants();
         constants.set("enable_sun", GFX::PushConstantType::BOOL, true);
         constants.set("sun_vector", GFX::PushConstantType::VEC3, sunVector);
-        constants.set("sun_colour", GFX::PushConstantType::VEC3, _sun->getNode<Light>()->getDiffuseColour());
+        constants.set("sun_colour", GFX::PushConstantType::VEC3, _sun->get<DirectionalLightComponent>()->getDiffuseColour());
 
         _taskTimers[0] = 0.0;
     }
@@ -352,9 +354,9 @@ bool WarScene::load(const stringImpl& name) {
     Camera::utilityCamera(Camera::UtilityCamera::DEFAULT)->setEye(vec3<F32>(43.13f, 147.09f, -4.41f));
     Camera::utilityCamera(Camera::UtilityCamera::DEFAULT)->setGlobalRotation(-90.0f /*yaw*/, 59.21f /*pitch*/);
 
-    //_sun->getNode<DirectionalLight>()->csmSplitCount(3);  // 3 splits
-    _sun->getNode<DirectionalLight>()->csmSplitLogFactor(0.85f);
-    _sun->getNode<DirectionalLight>()->csmNearClipOffset(25.0f);
+    //_sun->get<DirectionalLightComponent>()->csmSplitCount(3);  // 3 splits
+    _sun->get<DirectionalLightComponent>()->csmSplitLogFactor(0.85f);
+    _sun->get<DirectionalLightComponent>()->csmNearClipOffset(25.0f);
     // Add some obstacles
 
     SceneGraphNode* cylinder[5];
@@ -662,17 +664,17 @@ U16 WarScene::registerInputActions() {
 
     //ToDo: Move these to per-scene XML file
     PressReleaseActions actions;
-    _input->actionList().registerInputAction(actionID, DELEGATE_BIND(&WarScene::toggleCamera, this, std::placeholders::_1));
+    _input->actionList().registerInputAction(actionID, [this](const InputParams& param) {toggleCamera(param); });
     actions.actionID(PressReleaseActions::Action::RELEASE, actionID);
     _input->addKeyMapping(Input::KeyCode::KC_TAB, actions);
     actionID++;
 
-    _input->actionList().registerInputAction(actionID, DELEGATE_BIND(&WarScene::registerPoint, this, to_U16(0), ""));
+    _input->actionList().registerInputAction(actionID, [this](const InputParams& param) {registerPoint(0u, ""); });
     actions.actionID(PressReleaseActions::Action::RELEASE, actionID);
     _input->addKeyMapping(Input::KeyCode::KC_1, actions);
     actionID++;
 
-    _input->actionList().registerInputAction(actionID, DELEGATE_BIND(&WarScene::registerPoint, this, to_U16(1), ""));
+    _input->actionList().registerInputAction(actionID, [this](const InputParams& param) {registerPoint(1u, ""); });
     actions.actionID(PressReleaseActions::Action::RELEASE, actionID);
     _input->addKeyMapping(Input::KeyCode::KC_2, actions);
     actionID++;
@@ -749,9 +751,8 @@ void WarScene::postLoadMainThread() {
                                      "Simulate",
                                      pixelPosition(resolution.width - 220, 60),
                                      pixelScale(100, 25));
-    btn->setEventCallback(GUIButton::Event::MouseClick,
-                          DELEGATE_BIND(&WarScene::startSimulation, this, std::placeholders::_1));
-
+    btn->setEventCallback(GUIButton::Event::MouseClick, [this](I64 btnGUID) { startSimulation(btnGUID); });
+                            
     btn = _GUI->addButton(_ID("ShaderReload"),
                           "Shader Reload",
                           pixelPosition(resolution.width - 220, 30),

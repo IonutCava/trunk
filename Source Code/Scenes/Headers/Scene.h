@@ -41,24 +41,18 @@
   to make them available in every scene source file. To reduce compile times,
   forward declare the "Scene" class instead
 */
-// Core files
+
+#include "GUI/Headers/GUI.h"
+#include "GUI/Headers/SceneGUIElements.h"
 #include "Graphs/Headers/SceneGraph.h"
 #include "Rendering/Camera/Headers/Camera.h"
 #include "Rendering/Lighting/Headers/LightPool.h"
-// Hardware
-#include "Platform/Video/Headers/GFXDevice.h"
-// Scene Elements
-#include "SceneEnvironmentProbePool.h"
 #include "AI/Headers/AIManager.h"
-#include "Environment/Sky/Headers/Sky.h"
-#include "Rendering/Lighting/Headers/Light.h"
-#include "Rendering/Lighting/Headers/DirectionalLight.h"
 #include "Physics/Headers/PXDevice.h"
+#include "SceneEnvironmentProbePool.h"
+#include "Platform/Video/Headers/GFXDevice.h"
+#include "Environment/Sky/Headers/Sky.h"
 #include "Dynamics/Entities/Particles/Headers/ParticleEmitter.h"
-// GUI
-#include "GUI/Headers/GUI.h"
-#include "GUI/Headers/SceneGUIElements.h"
-
 #include "Utility/Headers/XMLParser.h"
 
 #include <ArenaAllocator/arena_allocator.h>

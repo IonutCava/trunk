@@ -320,7 +320,6 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode& sgn) {
 
         SceneNodeType nodeType = sn->type();
         U32 ignoredNodeType = to_base(SceneNodeType::TYPE_ROOT) |
-                              to_base(SceneNodeType::TYPE_LIGHT) |
                               to_base(SceneNodeType::TYPE_PARTICLE_EMITTER) |
                               to_base(SceneNodeType::TYPE_TRIGGER) |
                               to_base(SceneNodeType::TYPE_SKY) |

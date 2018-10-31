@@ -617,28 +617,6 @@ FORCE_INLINE void DIVIDE_ASSERT(const bool expression) noexcept {
     ACKNOWLEDGE_UNUSED(expression);
 }
 
-template <typename... Args>
-[[deprecated("Please use lambda expressions instead!")]]
-auto DELEGATE_BIND(Args&&... args)
-    -> decltype(std::bind(std::forward<Args>(args)...)) {
-    return std::bind(std::forward<Args>(args)...);
-}
-
-template <typename... Args>
-[[deprecated("Please use lambda expressions instead!")]]
-auto DELEGATE_REF(Args&&... args)
-    -> decltype(std::ref(std::forward<Args>(args)...)) {
-    return std::ref(std::forward<Args>(args)...);
-}
-
-template <typename... Args>
-[[deprecated("Please use lambda expressions instead!")]]
-auto DELEGATE_CREF(Args&&... args)
-    -> decltype(std::cref(std::forward<Args>(args)...)) {
-    return std::cref(std::forward<Args>(args)...);
-}
-
-
 template <typename Ret, typename... Args >
 using DELEGATE_CBK = std::function< Ret(Args...) >;
 

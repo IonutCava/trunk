@@ -116,7 +116,6 @@
     <ClInclude Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Textures\Headers\glTexture.h" />
     <ClInclude Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Text\Headers\fontstash.h" />
     <ClInclude Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Text\Headers\glfontstash.h" />
-    <ClInclude Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Text\Headers\stb_truetype.h" />
     <ClInclude Include="../../../Source Code/Platform\Video\Shaders\Headers\ShaderProgram.h" />
     <ClInclude Include="../../../Source Code/Platform\Video\Textures\Headers\Texture.h" />
     <ClInclude Include="../../../Source Code/Platform\Video\Textures\Headers\TextureDescriptor.h" />

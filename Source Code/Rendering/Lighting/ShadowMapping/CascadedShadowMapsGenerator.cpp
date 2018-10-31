@@ -4,7 +4,7 @@
 
 #include "Rendering/Headers/Renderer.h"
 #include "Rendering/Camera/Headers/Camera.h"
-#include "Rendering/Lighting/Headers/Light.h"
+#include "ECS/Components/Headers/DirectionalLightComponent.h"
 
 #include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/RenderPassManager.h"
@@ -123,7 +123,7 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
     std::array<vec3<F32>, 8> frustumCornersVS;
     std::array<vec3<F32>, 8> frustumCornersWS;
 
-    DirectionalLight& dirLight = static_cast<DirectionalLight&>(light);
+    DirectionalLightComponent& dirLight = static_cast<DirectionalLightComponent&>(light);
 
     U8 numSplits = dirLight.csmSplitCount();
     playerCamera.getFrustum().getCornersWorldSpace(frustumCornersWS);
@@ -188,7 +188,7 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
     postRender(dirLight, bufferInOut);
 }
 
-CascadedShadowMapsGenerator::SplitDepths CascadedShadowMapsGenerator::calculateSplitDepths(const mat4<F32>& projMatrix, DirectionalLight& light, const vec2<F32>& nearFarPlanes) {
+CascadedShadowMapsGenerator::SplitDepths CascadedShadowMapsGenerator::calculateSplitDepths(const mat4<F32>& projMatrix, DirectionalLightComponent& light, const vec2<F32>& nearFarPlanes) {
     SplitDepths depths;
 
     F32 fd = nearFarPlanes.y;//std::min(_sceneZPlanes.y, _previousFrustumBB.getExtent().z);
@@ -214,7 +214,7 @@ CascadedShadowMapsGenerator::SplitDepths CascadedShadowMapsGenerator::calculateS
     return depths;
 }
 
-void CascadedShadowMapsGenerator::applyFrustumSplits(DirectionalLight& light,
+void CascadedShadowMapsGenerator::applyFrustumSplits(DirectionalLightComponent& light,
                                                      const mat4<F32>& invViewMatrix,
                                                      U8 numSplits,
                                                      const SplitDepths& splitDepths,
@@ -255,7 +255,7 @@ void CascadedShadowMapsGenerator::applyFrustumSplits(DirectionalLight& light,
         // and backed up in the direction of the sunlight
         F32 distFromCentroid = std::max((maxZ - minZ), splitFrustumCornersVS[4].distance(splitFrustumCornersVS[5])) + nearClipOffset;
     
-        const vec3<F32>& lightPosition = light.getPosition();
+        const vec3<F32>& lightPosition = light.getSGN().get<TransformComponent>()->getPosition();
         vec3<F32> currentEye = frustumCentroid - (lightPosition * distFromCentroid);
 
         const mat4<F32>& viewMatrix = light.shadowCameras()[pass]->lookAt(currentEye, Normalize(frustumCentroid - currentEye));
@@ -284,7 +284,7 @@ void CascadedShadowMapsGenerator::applyFrustumSplits(DirectionalLight& light,
     }
 }
 
-void CascadedShadowMapsGenerator::postRender(const DirectionalLight& light, GFX::CommandBuffer& bufferInOut) {
+void CascadedShadowMapsGenerator::postRender(const DirectionalLightComponent& light, GFX::CommandBuffer& bufferInOut) {
     RenderTargetID depthMapID(RenderTargetUsage::SHADOW, to_base(ShadowType::LAYERED));
 
     if (g_shadowSettings.enableBlurring) {

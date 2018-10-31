@@ -161,9 +161,6 @@
     <ClCompile Include="../../../Source Code/Core\Resources\ConcreteLoaders\ImpostorLoaderImpl.cpp">
       <Filter>Core\Resources\ConcreteLoaders</Filter>
     </ClCompile>
-    <ClCompile Include="../../../Source Code/Core\Resources\ConcreteLoaders\LightLoaderImpl.cpp">
-      <Filter>Core\Resources\ConcreteLoaders</Filter>
-    </ClCompile>
     <ClCompile Include="../../../Source Code/Core\Resources\ConcreteLoaders\MaterialLoaderImpl.cpp">
       <Filter>Core\Resources\ConcreteLoaders</Filter>
     </ClCompile>

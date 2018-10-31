@@ -31,7 +31,6 @@ const char* GetSceneNodeTypeName(SceneNodeType type) {
         case SceneNodeType::TYPE_OBJECT3D: return "OBJECT3D";
         case SceneNodeType::TYPE_TRANSFORM: return "TRANSFORM";
         case SceneNodeType::TYPE_WATER: return "WATER";
-        case SceneNodeType::TYPE_LIGHT: return "LIGHT";
         case SceneNodeType::TYPE_TRIGGER: return "TRIGGER";
         case SceneNodeType::TYPE_PARTICLE_EMITTER: return "PARTICLE_EMITTER";
         case SceneNodeType::TYPE_SKY: return "SKY";

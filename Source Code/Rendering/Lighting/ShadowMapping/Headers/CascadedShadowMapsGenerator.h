@@ -42,7 +42,7 @@ class Quad3D;
 class Camera;
 class GFXDevice;
 class ShaderBuffer;
-class DirectionalLight;
+class DirectionalLightComponent;
 
 struct DebugView;
 
@@ -60,11 +60,11 @@ class CascadedShadowMapsGenerator : public ShadowMapGenerator {
    protected:
     typedef std::array<F32, Config::Lighting::MAX_SPLITS_PER_LIGHT> SplitDepths;
 
-    void postRender(const DirectionalLight& light, GFX::CommandBuffer& bufferInOut);
+    void postRender(const DirectionalLightComponent& light, GFX::CommandBuffer& bufferInOut);
     SplitDepths calculateSplitDepths(const mat4<F32>& projMatrix,
-                                     DirectionalLight& light,
+                                     DirectionalLightComponent& light,
                                      const vec2<F32>& nearFarPlanes);
-    void applyFrustumSplits(DirectionalLight& light,
+    void applyFrustumSplits(DirectionalLightComponent& light,
                             const mat4<F32>& invViewMatrix,
                             U8 numSplits,
                             const SplitDepths& splitDepths,
