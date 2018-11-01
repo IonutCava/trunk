@@ -725,7 +725,7 @@ void Editor::selectionChangeCallback(PlayerIndex idx, SceneGraphNode* node) {
 
 /// Key pressed: return true if input was consumed
 bool Editor::onKeyDown(const Input::KeyEvent& key) {
-    if (!_gizmo->onKeyDown(key)) {
+    if (!_scenePreviewFocused || !_gizmo->onKeyDown(key)) {
         ImGuiIO& io = _imguiContext->IO;
         io.KeysDown[to_I32(key._key)] = true;
         if (key._text != nullptr) {
@@ -744,7 +744,7 @@ bool Editor::onKeyDown(const Input::KeyEvent& key) {
 
 /// Key released: return true if input was consumed
 bool Editor::onKeyUp(const Input::KeyEvent& key) {
-    if (!_gizmo->onKeyUp(key)) {
+    if (!_scenePreviewFocused || !_gizmo->onKeyUp(key)) {
         ImGuiIO& io = _imguiContext->IO;
         io.KeysDown[to_I32(key._key)] = false;
 
@@ -787,7 +787,7 @@ namespace {
 }
 /// Mouse moved: return true if input was consumed
 bool Editor::mouseMoved(const Input::MouseMoveEvent& arg) {
-    if (!_gizmo->mouseMoved(arg)) {
+    if (!_scenePreviewFocused || !_gizmo->mouseMoved(arg)) {
         ImGuiIO& io = _imguiContext->IO;
         SceneViewWindow* sceneView = static_cast<SceneViewWindow*>(_dockedWindows[to_base(WindowType::SceneView)]);
         _sceneHovered = sceneView->isHovered() && sceneView->sceneRect().contains(io.MousePos.x, io.MousePos.y);
@@ -813,7 +813,7 @@ bool Editor::mouseMoved(const Input::MouseMoveEvent& arg) {
 
 /// Mouse button pressed: return true if input was consumed
 bool Editor::mouseButtonPressed(const Input::MouseButtonEvent& arg) {
-    if (!_gizmo->mouseButtonPressed(arg)) {
+    if (!_scenePreviewFocused || !_scenePreviewFocused || !_gizmo->mouseButtonPressed(arg)) {
         ImGuiIO& io = _imguiContext->IO;
         for (U8 i = 0; i < 5; ++i) {
             if (arg.button == g_oisButtons[i]) {
@@ -839,7 +839,7 @@ bool Editor::mouseButtonReleased(const Input::MouseButtonEvent& arg) {
         _mainWindow->warp(_scenePreviewFocused, previewRect);
     }
 
-    if (!_gizmo->mouseButtonReleased(arg)) {
+    if (!_scenePreviewFocused || !_gizmo->mouseButtonReleased(arg)) {
         ImGuiIO& io = _imguiContext->IO;
         for (U8 i = 0; i < 5; ++i) {
             if (arg.button == g_oisButtons[i]) {
