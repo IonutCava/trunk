@@ -312,7 +312,7 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
    public:
     template<class T, class ...P>
     T* AddSGNComponent(P&&... param) {
-        SGNComponent<T>* comp = static_cast<SGNComponent<T>*>(AddComponent<T>(std::forward<P>(param)...));
+        SGNComponent<T>* comp = static_cast<SGNComponent<T>*>(AddComponent<T>(*this, std::forward<P>(param)...));
         _editorComponents.emplace_back(&comp->getEditorComponent());
         SetBit(_componentMask, comp->type());
 

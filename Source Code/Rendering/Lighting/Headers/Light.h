@@ -55,10 +55,7 @@ class SceneGraphNode;
 class EditorComponent;
 class SceneRenderState;
 /// A light object placed in the scene at a certain position
-
-template<typename T>
-class Light : public GUIDWrapper,
-              public SGNComponent<T>
+class Light : public GUIDWrapper
 {
    public:
        struct ShadowProperties {
@@ -79,12 +76,8 @@ class Light : public GUIDWrapper,
            }
        };
 
-    typedef vector<Light*> LightList;
-
     /// Create a new light assigned to the specified slot with the specified range
-    /// @param slot = the slot the light is assigned to (as in OpenGL slot for example)
-    /// @param range = the light influence range (for spot/point lights)
-    explicit Light(SceneGraphNode& sgn, const F32 range, const LightType& type, LightPool& parentPool);
+    explicit Light(SceneGraphNode& sgn, const F32 range, LightType type, LightPool& parentPool);
     virtual ~Light();
 
     /// Is the light a shadow caster?
@@ -184,13 +177,10 @@ class Light : public GUIDWrapper,
     inline ShadowCameraPool& shadowCameras() { return _shadowCameras; }
     inline const ShadowCameraPool& shadowCameras() const { return _shadowCameras; }
 
-    /// Set light type
-    /// @param type Directional/Spot/Omni (see LightType enum)
-    inline void setLightType(LightType type) {
-        _type = type;
-    }
+    inline const SceneGraphNode& getSGN() const { return _sgn; }
 
    protected:
+    SceneGraphNode& _sgn;
     /// x - range, y = iner cone, z - cos outer cone
     vec3<F32> _rangeAndCones;
     /// rgb - diffuse, a - reserved

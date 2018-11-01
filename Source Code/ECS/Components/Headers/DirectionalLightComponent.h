@@ -36,8 +36,12 @@
 
 namespace Divide {
 
-class DirectionalLightComponent : public Light<DirectionalLightComponent>
+class DirectionalLightComponent : public SGNComponent<DirectionalLightComponent>,
+                                  public Light
 {
+   public:
+    using Light::getSGN;
+
    public:
 
     explicit DirectionalLightComponent(SceneGraphNode& sgn, LightPool& parentPool);

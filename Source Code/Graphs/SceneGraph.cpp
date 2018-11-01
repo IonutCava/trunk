@@ -102,6 +102,10 @@ void SceneGraph::addToDeleteQueue(SceneGraphNode* node, vec_size childIdx) {
 void SceneGraph::onNodeDestroy(SceneGraphNode& oldNode) {
     I64 guid = oldNode.getGUID();
 
+    if (guid == _root->getGUID()) {
+        return;
+    }
+
     vectorEASTL<SceneGraphNode*>& nodesByType = _nodesByType[to_base(oldNode.getNode()->type())];
 
     nodesByType.erase(eastl::remove_if(eastl::begin(nodesByType), eastl::end(nodesByType), 
@@ -241,8 +245,7 @@ void SceneGraph::destroySceneGraphNode(SceneGraphNode*& node, bool inPlace) {
     if (node) {
         if (inPlace) {
             GetEntityManager()->DestroyAndRemoveEntity(node->GetEntityID());
-        }
-        else {
+        } else {
             GetEntityManager()->DestroyEntity(node->GetEntityID());
         }
         node = nullptr;

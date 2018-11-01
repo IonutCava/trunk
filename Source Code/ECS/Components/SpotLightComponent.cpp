@@ -8,7 +8,8 @@
 namespace Divide {
 
 SpotLightComponent::SpotLightComponent(SceneGraphNode& sgn, F32 range, LightPool& parentPool)
-     : Light(sgn, range, LightType::SPOT, parentPool)
+     : Light(sgn, range, LightType::SPOT, parentPool),
+       SGNComponent<SpotLightComponent>(sgn, ComponentType::SPOT_LIGHT)
 {
     setRange(2.0f);
     setConeAngle(35.0f);

@@ -148,7 +148,7 @@ void DeferredShadingRenderer::preRender(RenderStagePass stagePass,
                                         GFX::CommandBuffer& bufferInOut) {
     Renderer::preRender(stagePass, target, lightPool, bufferInOut);
 
-    Light::LightList& lights = lightPool.getLights(LightType::POINT);
+    LightPool::LightList& lights = lightPool.getLights(LightType::POINT);
 
     if (lights.size() != _cachedLightCount) {
         _cachedLightCount = (U16)lights.size();

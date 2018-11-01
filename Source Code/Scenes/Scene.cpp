@@ -420,9 +420,9 @@ void Scene::loadAsset(const XML::SceneNode& sceneNode, SceneGraphNode* parent) {
             nodeDescriptor._componentMask = normalMask;
             
             for (U8 i = 0; i < to_U8(ComponentType::COUNT); ++i) {
-                ComponentType type = static_cast<ComponentType>(1 << i);
-                if (nodeTree.count(getComponentTypeName(type)) != 0) {
-                    nodeDescriptor._componentMask |= to_base(type);
+                ComponentType type = ComponentType::_from_integral(1 << i);
+                if (nodeTree.count(type._to_string()) != 0) {
+                    nodeDescriptor._componentMask |= 1 << i;
                 }
             }
 
@@ -490,23 +490,22 @@ SceneGraphNode* Scene::addLight(LightType type, SceneGraphNode& parentNode, stri
     lightNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
     lightNodeDescriptor._componentMask = to_base(ComponentType::TRANSFORM) |
                                          to_base(ComponentType::BOUNDS) |
-                                         to_base(ComponentType::RENDERING) |
                                          to_base(ComponentType::NETWORKING);
 
     SceneGraphNode* ret = parentNode.addNode(lightNodeDescriptor);
 
     switch (type) {
         case LightType::DIRECTIONAL:
-            ret->AddSGNComponent<DirectionalLightComponent>(*ret, *_lightPool)->castsShadows(true);
+            ret->AddSGNComponent<DirectionalLightComponent>(*_lightPool)->castsShadows(true);
         {
         }break;
         case LightType::POINT:
         {
-            ret->AddSGNComponent<PointLightComponent>(*ret, 25.0f, *_lightPool)->castsShadows(true);
+            ret->AddSGNComponent<PointLightComponent>(25.0f, *_lightPool)->castsShadows(true);
         }break;
         case LightType::SPOT:
         {
-            ret->AddSGNComponent<SpotLightComponent>(*ret, 30.0f, *_lightPool)->castsShadows(true);
+            ret->AddSGNComponent<SpotLightComponent>(30.0f, *_lightPool)->castsShadows(true);
         }break;
     }
     
@@ -521,10 +520,9 @@ void Scene::toggleFlashlight(PlayerIndex idx) {
         lightNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
         lightNodeDescriptor._componentMask = to_base(ComponentType::TRANSFORM) |
                                              to_base(ComponentType::BOUNDS) |
-                                             to_base(ComponentType::RENDERING) |
                                              to_base(ComponentType::NETWORKING);
         flashLight = _sceneGraph->getRoot().addNode(lightNodeDescriptor);
-        SpotLightComponent* spotLight = flashLight->AddSGNComponent<SpotLightComponent>(*flashLight, 30.0f, *_lightPool);
+        SpotLightComponent* spotLight = flashLight->AddSGNComponent<SpotLightComponent>(30.0f, *_lightPool);
         spotLight->castsShadows(true);
         spotLight->setDiffuseColour(DefaultColours::WHITE);
 

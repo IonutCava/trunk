@@ -11,22 +11,8 @@
 
 namespace Divide {
 
-namespace {
-    ComponentType CTypeFromLType(LightType lightType) {
-        if (lightType == LightType::DIRECTIONAL)
-            return ComponentType::DIRECTIONAL_LIGHT;
-
-        if (lightType == LightType::POINT)
-            return ComponentType::POINT_LIGHT;
-
-        return ComponentType::SPOT_LIGHT;
-    }
-};
-
-template<typename T>
-Light<T>::Light<T>(SceneGraphNode& sgn, const F32 range, const LightType& type, LightPool& parentPool)
-    : SGNComponent<T>(sgn, CTypeFromLType(type)),
-      _parentPool(parentPool),
+Light::Light(SceneGraphNode& sgn, const F32 range, LightType type, LightPool& parentPool)
+    : _parentPool(parentPool),
       _sgn(sgn),
       _type(type),
       _castsShadows(false)
@@ -57,8 +43,7 @@ Light<T>::Light<T>(SceneGraphNode& sgn, const F32 range, const LightType& type, 
     _enabled = true;
 }
 
-template<typename T>
-Light<T>::~Light<T>()
+Light::~Light()
 {
     for (U32 i = 0; i < Config::Lighting::MAX_SPLITS_PER_LIGHT; ++i) {
         Camera::destroyCamera(_shadowCameras[i]);
@@ -66,8 +51,7 @@ Light<T>::~Light<T>()
     _parentPool.removeLight(*this);
 }
 
-template<typename T>
-void Light<T>::setDiffuseColour(const vec3<U8>& newDiffuseColour) {
+void Light::setDiffuseColour(const vec3<U8>& newDiffuseColour) {
     _colour.rgb(newDiffuseColour);
 }
 

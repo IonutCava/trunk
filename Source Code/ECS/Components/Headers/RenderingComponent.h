@@ -115,9 +115,9 @@ class RenderingComponent : public SGNComponent<RenderingComponent> {
        };
 
    public:
-    explicit RenderingComponent(GFXDevice& context,
-                                Material_ptr materialInstance,
-                                SceneGraphNode& parentSGN);
+    explicit RenderingComponent(SceneGraphNode& parentSGN,
+                                GFXDevice& context,
+                                Material_ptr materialInstance);
     ~RenderingComponent();
 
     void onRender(RenderStagePass renderStagePass);

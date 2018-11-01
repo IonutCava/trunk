@@ -95,7 +95,8 @@ RenderBin* RenderQueue::getOrCreateBin(RenderBinType rbType) {
 }
 
 RenderBin* RenderQueue::getBinForNode(const SceneGraphNode& node, const Material_ptr& matInstance) {
-    assert(node != nullptr);
+    assert(node.getNode() != nullptr);
+
     switch (node.getNode()->type()) {
         case SceneNodeType::TYPE_EMPTY:
         {

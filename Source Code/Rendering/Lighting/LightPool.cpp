@@ -58,7 +58,7 @@ LightPool::LightPool(Scene& parentScene, PlatformContext& context)
 LightPool::~LightPool()
 {
     SharedLock r_lock(_lightLock);
-    for (Light::LightList& lightList : _lights) {
+    for (LightList& lightList : _lights) {
         if (!lightList.empty()) {
             Console::errorfn(Locale::get(_ID("ERROR_LIGHT_POOL_LIGHT_LEAKED")));
         }
@@ -148,7 +148,7 @@ bool LightPool::addLight(Light& light) {
 // try to remove any leftover lights
 bool LightPool::removeLight(Light& light) {
     UniqueLockShared lock(_lightLock);
-    Light::LightList::const_iterator it = findLightLocked(light.getGUID(), light.getLightType());
+    LightList::const_iterator it = findLightLocked(light.getGUID(), light.getLightType());
 
     if (it == std::end(_lights[to_U32(light.getLightType())])) {
         Console::errorfn(Locale::get(_ID("ERROR_LIGHT_POOL_REMOVE_LIGHT")),
@@ -264,7 +264,7 @@ void LightPool::bindShadowMaps(GFXDevice& context, GFX::CommandBuffer& bufferInO
 Light* LightPool::getLight(I64 lightGUID, LightType type) {
     SharedLock r_lock(_lightLock);
 
-    Light::LightList::const_iterator it = findLight(lightGUID, type);
+    LightList::const_iterator it = findLight(lightGUID, type);
     assert(it != eastl::end(_lights[to_U32(type)]));
 
     return *it;

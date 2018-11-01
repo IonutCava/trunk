@@ -8,7 +8,8 @@
 namespace Divide {
 
 PointLightComponent::PointLightComponent(SceneGraphNode& sgn, F32 range, LightPool& parentPool)
-     : Light(sgn, range, LightType::POINT, parentPool)
+     : Light(sgn, range, LightType::POINT, parentPool),
+       SGNComponent<PointLightComponent>(sgn, ComponentType::POINT_LIGHT)
 {
     // +x
     _direction[0].set(WORLD_X_AXIS);

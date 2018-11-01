@@ -36,7 +36,8 @@
 
 namespace Divide {
 
-class SpotLightComponent : public Light<SpotLightComponent>
+class SpotLightComponent : public SGNComponent<SpotLightComponent>,
+                           public Light
 {
    public:
     explicit SpotLightComponent(SceneGraphNode& sgn, F32 range, LightPool& parentPool);

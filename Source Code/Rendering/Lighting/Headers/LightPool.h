@@ -79,6 +79,8 @@ class LightPool : public SceneComponent,
       };
 
   public:
+    typedef vector<Light*> LightList;
+
     explicit LightPool(Scene& parentScene, PlatformContext& context);
     ~LightPool();
 
@@ -102,7 +104,7 @@ class LightPool : public SceneComponent,
     }
 
     bool clear();
-    inline Light::LightList& getLights(LightType type) { 
+    inline LightList& getLights(LightType type) { 
         SharedLock r_lock(_lightLock); 
         return _lights[to_U32(type)];
     }
@@ -149,13 +151,13 @@ class LightPool : public SceneComponent,
     friend class SceneManager;
     bool generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffer& bufferInOut);
 
-    inline Light::LightList::const_iterator findLight(I64 GUID, LightType type) const {
+    inline LightList::const_iterator findLight(I64 GUID, LightType type) const {
         SharedLock r_lock(_lightLock);
         return findLightLocked(GUID, type);
     }
 
-    inline Light::LightList::const_iterator findLightLocked(I64 GUID, LightType type) const {
-        return std::find_if(std::begin(_lights[to_U32(type)]), std::end(_lights[to_U32(type)]),
+    inline LightList::const_iterator findLightLocked(I64 GUID, LightType type) const {
+        return std::find_if(std::cbegin(_lights[to_U32(type)]), std::cend(_lights[to_U32(type)]),
                             [&GUID](Light* const light) {
                                 return (light && light->getGUID() == GUID);
                             });
@@ -183,7 +185,7 @@ class LightPool : public SceneComponent,
 
     mutable SharedMutex _lightLock;
     std::array<bool, to_base(LightType::COUNT)> _lightTypeState;
-    std::array<Light::LightList, to_base(LightType::COUNT)> _lights;
+    std::array<LightList, to_base(LightType::COUNT)> _lights;
     bool _init;
     Texture_ptr _lightIconsTexture;
     ShaderProgram_ptr _lightImpostorShader;

@@ -63,6 +63,8 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescr
 /// If we are destroying the current graph node
 SceneGraphNode::~SceneGraphNode()
 {
+    Console::printfn(Locale::get(_ID("REMOVE_SCENEGRAPH_NODE")), name().c_str(), _node->name().c_str());
+
     // Bottom up
     for (U32 i = 0; i < getChildCount(); ++i) {
         parentGraph().destroySceneGraphNode(_children[i]);
@@ -70,15 +72,9 @@ SceneGraphNode::~SceneGraphNode()
     _children.clear();
 
     UnregisterAllEventCallbacks();
-
-    if (getParent()) {
-        Attorney::SceneGraphSGN::onNodeDestroy(_sceneGraph, *this);
-    }
-
-    Console::printfn(Locale::get(_ID("REMOVE_SCENEGRAPH_NODE")), name().c_str(), _node->name().c_str());
-
     RemoveAllSGNComponents();
 
+    Attorney::SceneGraphSGN::onNodeDestroy(_sceneGraph, *this);
     Attorney::SceneNodeSceneGraph::unregisterSGNParent(*_node, this);
 
     if (Attorney::SceneNodeSceneGraph::parentCount(*_node) == 0) {
@@ -95,25 +91,41 @@ void SceneGraphNode::AddMissingComponents(U32 componentMask) {
         if (BitCompare(componentMask, componentBit) && !BitCompare(_componentMask, componentBit)) {
             _componentMask |= componentBit;
 
-            switch (static_cast<ComponentType>(componentBit)) {
+            switch (ComponentType::_from_integral(componentBit)) {
                 default: break;
-                case ComponentType::ANIMATION: AddSGNComponent<AnimationComponent>(*this); break;
-                case ComponentType::INVERSE_KINEMATICS: AddSGNComponent<IKComponent>(*this); break;
-                case ComponentType::RAGDOLL: AddSGNComponent<RagdollComponent>(*this); break;
-                case ComponentType::NAVIGATION: AddSGNComponent<NavigationComponent>(*this); break;
-                case ComponentType::TRANSFORM: AddSGNComponent<TransformComponent>(*this); break;
-                case ComponentType::BOUNDS: AddSGNComponent<BoundsComponent>(*this); break;
-                case ComponentType::UNIT: AddSGNComponent<UnitComponent>(*this); break;
-                case ComponentType::SELECTION: AddSGNComponent<SelectionComponent>(*this); break;
+                case ComponentType::ANIMATION:
+                    AddSGNComponent<AnimationComponent>();
+                    break;
+                case ComponentType::INVERSE_KINEMATICS:
+                    AddSGNComponent<IKComponent>();
+                    break;
+                case ComponentType::RAGDOLL:
+                    AddSGNComponent<RagdollComponent>();
+                    break;
+                case ComponentType::NAVIGATION:
+                    AddSGNComponent<NavigationComponent>();
+                    break;
+                case ComponentType::TRANSFORM:
+                    AddSGNComponent<TransformComponent>();
+                    break;
+                case ComponentType::BOUNDS:
+                    AddSGNComponent<BoundsComponent>();
+                    break;
+                case ComponentType::UNIT:
+                    AddSGNComponent<UnitComponent>();
+                    break;
+                case ComponentType::SELECTION:
+                    AddSGNComponent<SelectionComponent>();
+                    break;
                 case ComponentType::NETWORKING: {
                     LocalClient& client = _sceneGraph.parentScene().context().client();
-                    AddSGNComponent<NetworkingComponent>(*this, client);
+                    AddSGNComponent<NetworkingComponent>(client);
                 } break;
                 case ComponentType::RIGID_BODY: {
                     PXDevice& pxContext = _sceneGraph.parentScene().context().pfx();
 
                     STUBBED("Rigid body physics disabled for now - Ionut");
-                    AddSGNComponent<RigidBodyComponent>(*this, pxContext);
+                    AddSGNComponent<RigidBodyComponent>(pxContext);
                 } break;
 
                 case ComponentType::RENDERING: {
@@ -127,9 +139,7 @@ void SceneGraphNode::AddMissingComponents(U32 componentMask) {
                         _node->setMaterialTpl(materialTemplate);
                     }
 
-                    AddSGNComponent<RenderingComponent>(gfxContext,
-                        materialTpl->clone("_instance_" + name()),
-                        *this);
+                    AddSGNComponent<RenderingComponent>(gfxContext, materialTpl->clone("_instance_" + name()));
                 } break;
             }
         }
@@ -741,9 +751,9 @@ void SceneGraphNode::loadFromXML(const boost::property_tree::ptree& pt) {
 
     U32 componentsToLoad = 0;
     for (U8 i = 0; i < to_U8(ComponentType::COUNT); ++i) {
-        ComponentType type = static_cast<ComponentType>(1 << i);
-        if (pt.count(getComponentTypeName(type)) != 0) {
-            componentsToLoad |= to_base(type);
+        ComponentType type = ComponentType::_from_integral(1 << i);
+        if (pt.count(type._to_string()) != 0) {
+            componentsToLoad |= type._to_integral();
         }
     }
 

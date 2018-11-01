@@ -26,9 +26,9 @@ namespace Divide {
 
 hashMap<U32, DebugView*> RenderingComponent::s_debugViews[2];
 
-RenderingComponent::RenderingComponent(GFXDevice& context,
-                                       Material_ptr materialInstance,
-                                       SceneGraphNode& parentSGN)
+RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
+                                       GFXDevice& context,
+                                       Material_ptr materialInstance)
     : SGNComponent(parentSGN, ComponentType::RENDERING),
       _context(context),
       _lodLevel(0),

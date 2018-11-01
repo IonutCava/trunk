@@ -35,6 +35,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "EditorComponent.h"
 
 #include <ECS.h>
+#include <BetterEnums/include/enum.h>
 
 namespace Divide {
 
@@ -44,7 +45,7 @@ class SceneGraphNode;
 class SceneRenderState;
 struct RenderStagePass;
 
-enum class ComponentType : U32 {
+BETTER_ENUM(ComponentType, U32,
     ANIMATION = toBit(1),
     INVERSE_KINEMATICS = toBit(2),
     RAGDOLL = toBit(3),
@@ -60,10 +61,7 @@ enum class ComponentType : U32 {
     POINT_LIGHT = toBit(13),
     SPOT_LIGHT = toBit(14),
     COUNT = 15
-};
-
-inline const char* getComponentTypeName(ComponentType type);
-inline ComponentType getComponentTypeByName(const char* name);
+);
 
 struct EntityOnUpdate;
 struct EntityActiveStateChange;
