@@ -40,7 +40,7 @@ void MenuBar::drawFileMenu() {
     bool showFileOpenDialog = false;
     bool showFileSaveDialog = false;
 
-    bool hasUnsavedElements = Attorney::EditorPanelManager::hasUnsavedElements(_context.editor());
+    bool hasUnsavedElements = Attorney::EditorGeneralWidget::hasUnsavedElements(_context.editor());
 
     if (ImGui::BeginMenu("File"))
     {
@@ -61,7 +61,7 @@ void MenuBar::drawFileMenu() {
         showFileSaveDialog = ImGui::MenuItem(hasUnsavedElements ? "Save*" : "Save", "Ctrl+S");
         
         if (ImGui::MenuItem(hasUnsavedElements ? "Save All*" : "Save All")) {
-            Attorney::EditorPanelManager::saveElement(_context.editor(), -1);
+            Attorney::EditorGeneralWidget::saveElement(_context.editor(), -1);
         }
 
         ImGui::Separator();
@@ -102,7 +102,7 @@ void MenuBar::drawFileMenu() {
 
     if (strlen(s_fileSaveDialog.getChosenPath()) > 0) {
         ImGui::Text("Chosen file: \"%s\"", s_fileSaveDialog.getChosenPath());
-        Attorney::EditorPanelManager::saveElement(_context.editor(), -1);
+        Attorney::EditorGeneralWidget::saveElement(_context.editor(), -1);
     }
 }
 
@@ -122,12 +122,14 @@ void MenuBar::drawEditMenu() {
 void MenuBar::drawProjectMenu() {
     if (ImGui::BeginMenu("Project"))
     {
+        if(ImGui::MenuItem("Configuration")) {}
         ImGui::EndMenu();
     }
 }
 void MenuBar::drawObjectMenu() {
     if (ImGui::BeginMenu("Object"))
     {
+        if(ImGui::MenuItem("New Node")) {}
         ImGui::EndMenu();
     }
 
@@ -135,6 +137,10 @@ void MenuBar::drawObjectMenu() {
 void MenuBar::drawToolsMenu() {
     if (ImGui::BeginMenu("Tools"))
     {
+        bool memEditorEnabled = Attorney::EditorMenuBar::memoryEditorEnabled(_context.editor());
+        if (ImGui::MenuItem("Memory Editor", NULL, memEditorEnabled)) {
+            Attorney::EditorMenuBar::toggleMemoryEditor(_context.editor(), !memEditorEnabled);
+        }
         ImGui::EndMenu();
     }
 
@@ -142,11 +148,10 @@ void MenuBar::drawToolsMenu() {
 void MenuBar::drawWindowsMenu() {
     if (ImGui::BeginMenu("Window"))
     {
-        bool showSampleWindow = Attorney::EditorPanelManager::showSampleWindow(_context.editor());
-        if (ImGui::MenuItem("Sample Window", NULL, &showSampleWindow)) {
-            Attorney::EditorPanelManager::showSampleWindow(_context.editor(), showSampleWindow);
-        }
+        bool& sampleWindowEnabled = Attorney::EditorMenuBar::sampleWindowEnabled(_context.editor());
+        if (ImGui::MenuItem("Sample Window", NULL, &sampleWindowEnabled)) {
 
+        }
         ImGui::EndMenu();
     }
 

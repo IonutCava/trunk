@@ -51,8 +51,9 @@ namespace Divide {
 
 namespace Attorney {
     class EditorGizmo;
-    class EditorPanelManager;
+    class EditorMenuBar;
     class EditorOutputWindow;
+    class EditorGeneralWidget;
     class EditorWindowManager;
     class EditorPropertyWindow;
     class EditorSceneViewWindow;
@@ -84,8 +85,9 @@ class Editor : public PlatformContextComponent,
                public Input::InputAggregatorInterface {
 
     friend class Attorney::EditorGizmo;
-    friend class Attorney::EditorPanelManager;
+    friend class Attorney::EditorMenuBar;
     friend class Attorney::EditorOutputWindow;
+    friend class Attorney::EditorGeneralWidget;
     friend class Attorney::EditorWindowManager;
     friend class Attorney::EditorPropertyWindow;
     friend class Attorney::EditorSceneViewWindow;
@@ -164,12 +166,12 @@ class Editor : public PlatformContextComponent,
   protected: // attorney
     void renderDrawList(ImDrawData* pDrawData, bool overlayOnScene, I64 windowGUID);
     void drawMenuBar();
-    void showSampleWindow(bool state);
-    bool showSampleWindow() const;
     void setSelectedCamera(Camera* camera);
     Camera* getSelectedCamera() const;
     bool hasUnsavedElements() const;
     void saveElement(I64 elementGUID);
+    void toggleMemoryEditor(bool state);
+    void toggleSampleWindow(bool state);
 
   private:
     ImGuiStyleEnum _currentTheme;
@@ -178,10 +180,11 @@ class Editor : public PlatformContextComponent,
     std::unique_ptr<MenuBar> _menuBar;
     std::unique_ptr<Gizmo> _gizmo;
 
+    bool              _showSampleWindow;
+    bool              _showMemoryEditor;
     bool              _running;
     bool              _sceneHovered;
     bool              _scenePreviewFocused;
-    bool              _showSampleWindow;
     Camera*           _selectedCamera;
     DisplayWindow*    _mainWindow;
     ImGuiContext*     _imguiContext;
@@ -189,6 +192,8 @@ class Editor : public PlatformContextComponent,
     ShaderProgram_ptr _imguiProgram;
     Time::ProfileTimer& _editorUpdateTimer;
     Time::ProfileTimer& _editorRenderTimer;
+
+    std::pair<bufferPtr, size_t> _memoryEditorData;
 
     std::vector<I64> _unsavedElements;
     std::array<DockedWindow*, to_base(WindowType::COUNT)> _dockedWindows;
@@ -251,25 +256,35 @@ namespace Attorney {
         friend class Divide::PropertyWindow;
     };
 
-    class EditorPanelManager {
-        //private:
-        public: //ToDo: fix this -Ionut
+    class EditorMenuBar {
+    private:
+        static void toggleMemoryEditor(Editor& editor, bool state) {
+            editor.toggleMemoryEditor(state);
+        }
+
+        static bool memoryEditorEnabled(const Editor& editor) {
+            return editor._showMemoryEditor;
+        }
+
+        static bool& sampleWindowEnabled(Editor& editor) {
+            return editor._showSampleWindow;
+        }
+
+        friend class Divide::MenuBar;
+    };
+
+    class EditorGeneralWidget {
+      private:
         static void setTransformSettings(Editor& editor, const TransformSettings& settings) {
             editor.setTransformSettings(settings);
         }
-
         static const TransformSettings& getTransformSettings(const Editor& editor) {
             return editor.getTransformSettings();
-        }
-        static void showSampleWindow(Editor& editor, bool state) {
-            editor.showSampleWindow(state);
         }
         static void enableGizmo(Editor& editor, bool state) {
             return editor._gizmo->enable(state);
         }
-        static bool showSampleWindow(const Editor& editor) {
-            return editor.showSampleWindow();
-        }
+      
         static bool enableGizmo(const Editor& editor) {
             return editor._gizmo->enabled();
         }
@@ -281,7 +296,6 @@ namespace Attorney {
         }
 
         friend class Divide::MenuBar;
-        friend class Divide::PanelManager;
     };
 };
 

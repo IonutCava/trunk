@@ -29,6 +29,7 @@
 #include "Rendering/Camera/Headers/Camera.h"
 
 #include <imgui_internal.h>
+#include <imgui/addons/imgui_memory_editor/imgui_memory_editor.h>
 
 namespace Divide {
 
@@ -63,12 +64,13 @@ Editor::Editor(PlatformContext& context, ImGuiStyleEnum theme, ImGuiStyleEnum di
       _currentDimmedTheme(dimmedTheme),
       _mainWindow(nullptr),
       _running(false),
+      _showSampleWindow(false),
+      _showMemoryEditor(false),
       _sceneHovered(false),
       _scenePreviewFocused(false),
       _selectedCamera(nullptr),
       _gizmo(nullptr),
       _imguiContext(nullptr),
-      _showSampleWindow(false),
       _editorUpdateTimer(Time::ADD_TIMER("Editor Update Timer")),
       _editorRenderTimer(Time::ADD_TIMER("Editor Render Timer"))
 {
@@ -78,6 +80,8 @@ Editor::Editor(PlatformContext& context, ImGuiStyleEnum theme, ImGuiStyleEnum di
     g_windowManager = &context.app().windowManager();
     g_editor = this;
     REGISTER_FRAME_LISTENER(this, 99999);
+
+    _memoryEditorData = std::make_pair(nullptr, 0);
 
     //Test stuff
     _unsavedElements.push_back(1);
@@ -494,7 +498,7 @@ bool Editor::frameRenderingQueued(const FrameEvent& evt) {
 bool Editor::renderMinimal(const U64 deltaTime) {
     ACKNOWLEDGE_UNUSED(deltaTime);
 
-    if (showSampleWindow()) {
+    if (_showSampleWindow) {
         ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiCond_FirstUseEver);
         ImGui::ShowDemoWindow(&_showSampleWindow);
     }
@@ -537,6 +541,13 @@ bool Editor::renderFull(const U64 deltaTime) {
 
     renderMinimal(deltaTime);
 
+    if (_showMemoryEditor) {
+        if (_memoryEditorData.first != nullptr && _memoryEditorData.second > 0) {
+            static MemoryEditor memEditor;
+            memEditor.DrawWindow("Memory Editor", _memoryEditorData.first, _memoryEditorData.second);
+        }
+    }
+
     ImGui::End();
 
     return true;
@@ -544,6 +555,9 @@ bool Editor::renderFull(const U64 deltaTime) {
 
 bool Editor::frameSceneRenderEnded(const FrameEvent& evt) {
     ACKNOWLEDGE_UNUSED(evt);
+
+    _memoryEditorData.first = (bufferPtr)(&evt);
+    _memoryEditorData.second = sizeof(FrameEvent);
 
     Attorney::GizmoEditor::render(*_gizmo, 
                                   *Attorney::SceneManagerCameraAccessor::playerCamera(_context.kernel().sceneManager()));
@@ -595,14 +609,6 @@ void Editor::drawMenuBar() {
     if (_menuBar) {
         _menuBar->draw();
     }
-}
-
-void Editor::showSampleWindow(bool state) {
-    _showSampleWindow = state;
-}
-
-bool Editor::showSampleWindow() const {
-    return _showSampleWindow;
 }
 
 void Editor::setTransformSettings(const TransformSettings& settings) {
@@ -978,7 +984,7 @@ Camera* Editor::getSelectedCamera() const {
 }
 
 bool Editor::needInput() const {
-    return _running || showSampleWindow();
+    return _running;
 }
 
 bool Editor::simulationPauseRequested() const {
@@ -1004,4 +1010,10 @@ void Editor::saveElement(I64 elementGUID) {
         _unsavedElements.erase(it);
     }
 }
+
+void Editor::toggleMemoryEditor(bool state) {
+    _showMemoryEditor = state;
+}
+
+
 }; //namespace Divide

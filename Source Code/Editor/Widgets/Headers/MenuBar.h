@@ -52,6 +52,7 @@ namespace Divide {
           void drawToolsMenu();
           void drawWindowsMenu();
           void drawHelpMenu();
+
       protected:
         bool _isMainMenu;
     };
