@@ -72,6 +72,8 @@ namespace Divide {
     }
 
     void PropertyWindow::drawInternal() {
+        bool hasSelections = !selections().empty();
+
         Camera* selectedCamera = Attorney::EditorPropertyWindow::getSelectedCamera(_parent);
         if (selectedCamera != nullptr) {
             if (ImGui::CollapsingHeader(selectedCamera->name().c_str())) {
@@ -133,7 +135,9 @@ namespace Divide {
                 };
                 processBasicField(projMatrixField);
             }
-        } else {
+        } else if (hasSelections) {
+            const F32 smallButtonWidth = 60.0f;
+            F32 xOffset = ImGui::GetWindowSize().x * 0.5f - smallButtonWidth;
             const vector<I64>& crtSelections = selections();
             for (I64 nodeGUID : crtSelections) {
                 SceneGraphNode* sgnNode = node(nodeGUID);
@@ -142,8 +146,18 @@ namespace Divide {
 
                     vectorEASTL<EditorComponent*>& editorComp = Attorney::SceneGraphNodeEditor::editorComponents(*sgnNode);
                     for (EditorComponent* comp : editorComp) {
-                        if (ImGui::CollapsingHeader(comp->name().c_str()))
-                        {
+                        if (ImGui::CollapsingHeader(comp->name().c_str())) {
+                            ImGui::NewLine();
+                            ImGui::SameLine(xOffset);
+                            if (ImGui::Button("INSPECT", ImVec2(smallButtonWidth, 20))) {
+                                Attorney::EditorGeneralWidget::inspectMemory(_context.editor(), std::make_pair(comp, sizeof(EditorComponent)));
+                            }
+                            ImGui::SameLine();
+                            if (ImGui::Button("REMOVE", ImVec2(smallButtonWidth, 20))) {
+                                Attorney::EditorGeneralWidget::inspectMemory(_context.editor(), std::make_pair(nullptr, 0));
+                            }
+                            ImGui::Separator();
+
                             vector<EditorComponentField>& fields = Attorney::EditorComponentEditor::fields(*comp);
                             for (EditorComponentField& field : fields) {
                                 ImGui::Text(field._name.c_str());
@@ -155,6 +169,18 @@ namespace Divide {
                         }
                     }
                 }
+            }
+        }
+
+        if (hasSelections) {
+            const F32 buttonWidth = 80.0f;
+            F32 xOffset = ImGui::GetWindowSize().x - buttonWidth;
+            ImGui::NewLine();
+            ImGui::Separator();
+            ImGui::NewLine();
+            ImGui::SameLine(xOffset);
+            if (ImGui::Button("ADD NEW", ImVec2(buttonWidth, 15))) {
+
             }
         }
     }

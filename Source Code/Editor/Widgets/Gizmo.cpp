@@ -15,34 +15,11 @@ namespace Divide {
     {
         _imguiContext = ImGui::CreateContext(mainContext->IO.Fonts);
 
+        
         ImGuiIO& io = _imguiContext->IO;
-        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-        io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
-        io.KeyMap[ImGuiKey_Tab] = to_I32(Input::KeyCode::KC_TAB);
-        io.KeyMap[ImGuiKey_LeftArrow] = to_I32(Input::KeyCode::KC_LEFT);
-        io.KeyMap[ImGuiKey_RightArrow] = to_I32(Input::KeyCode::KC_RIGHT);
-        io.KeyMap[ImGuiKey_UpArrow] = to_I32(Input::KeyCode::KC_UP);
-        io.KeyMap[ImGuiKey_DownArrow] = to_I32(Input::KeyCode::KC_DOWN);
-        io.KeyMap[ImGuiKey_PageUp] = to_I32(Input::KeyCode::KC_PGUP);
-        io.KeyMap[ImGuiKey_PageDown] = to_I32(Input::KeyCode::KC_PGDOWN);
-        io.KeyMap[ImGuiKey_Home] = to_I32(Input::KeyCode::KC_HOME);
-        io.KeyMap[ImGuiKey_End] = to_I32(Input::KeyCode::KC_END);
-        io.KeyMap[ImGuiKey_Delete] = to_I32(Input::KeyCode::KC_DELETE);
-        io.KeyMap[ImGuiKey_Backspace] = to_I32(Input::KeyCode::KC_BACK);
-        io.KeyMap[ImGuiKey_Enter] = to_I32(Input::KeyCode::KC_RETURN);
-        io.KeyMap[ImGuiKey_NumericEnter] = to_I32(Input::KeyCode::KC_NUMPADENTER);
-        io.KeyMap[ImGuiKey_Escape] = to_I32(Input::KeyCode::KC_ESCAPE);
-        io.KeyMap[ImGuiKey_Space] = to_I32(Input::KeyCode::KC_SPACE);
-        io.KeyMap[ImGuiKey_A] = to_I32(Input::KeyCode::KC_A);
-        io.KeyMap[ImGuiKey_C] = to_I32(Input::KeyCode::KC_C);
-        io.KeyMap[ImGuiKey_V] = to_I32(Input::KeyCode::KC_V);
-        io.KeyMap[ImGuiKey_X] = to_I32(Input::KeyCode::KC_X);
-        io.KeyMap[ImGuiKey_Y] = to_I32(Input::KeyCode::KC_Y);
-        io.KeyMap[ImGuiKey_Z] = to_I32(Input::KeyCode::KC_Z);
 
-        io.SetClipboardTextFn = SetClipboardText;
-        io.GetClipboardTextFn = GetClipboardText;
-        io.ClipboardUserData = nullptr;
+        InitBasicImGUIState(io);
+
         ImGuiViewport* main_viewport = ImGui::GetMainViewport();
         main_viewport->PlatformHandle = mainWindow;
     }

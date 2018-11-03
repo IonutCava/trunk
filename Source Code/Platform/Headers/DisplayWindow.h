@@ -56,6 +56,7 @@ enum class CursorStyle : U8 {
     ARROW,
     TEXT_INPUT,
     HAND,
+    RESIZE_ALL,
     RESIZE_NS,
     RESIZE_EW,
     RESIZE_NESW,

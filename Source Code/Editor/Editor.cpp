@@ -37,6 +37,7 @@ namespace {
     bool show_another_window = false;
     I32 window_opacity = 255;
     I32 previous_window_opacity = 255;
+    const char* g_editorSaveFile = "Editor.xml";
 
     WindowManager* g_windowManager = nullptr;
     Editor* g_editor = nullptr;
@@ -57,6 +58,36 @@ namespace {
         ~ImGuiViewportData() { IM_ASSERT(_window == nullptr); }
     };
 };
+
+void InitBasicImGUIState(ImGuiIO& io) {
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
+    io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
+    io.KeyMap[ImGuiKey_Tab] = to_I32(Input::KeyCode::KC_TAB);
+    io.KeyMap[ImGuiKey_LeftArrow] = to_I32(Input::KeyCode::KC_LEFT);
+    io.KeyMap[ImGuiKey_RightArrow] = to_I32(Input::KeyCode::KC_RIGHT);
+    io.KeyMap[ImGuiKey_UpArrow] = to_I32(Input::KeyCode::KC_UP);
+    io.KeyMap[ImGuiKey_DownArrow] = to_I32(Input::KeyCode::KC_DOWN);
+    io.KeyMap[ImGuiKey_PageUp] = to_I32(Input::KeyCode::KC_PGUP);
+    io.KeyMap[ImGuiKey_PageDown] = to_I32(Input::KeyCode::KC_PGDOWN);
+    io.KeyMap[ImGuiKey_Home] = to_I32(Input::KeyCode::KC_HOME);
+    io.KeyMap[ImGuiKey_End] = to_I32(Input::KeyCode::KC_END);
+    io.KeyMap[ImGuiKey_Delete] = to_I32(Input::KeyCode::KC_DELETE);
+    io.KeyMap[ImGuiKey_Backspace] = to_I32(Input::KeyCode::KC_BACK);
+    io.KeyMap[ImGuiKey_Enter] = to_I32(Input::KeyCode::KC_RETURN);
+    io.KeyMap[ImGuiKey_NumericEnter] = to_I32(Input::KeyCode::KC_NUMPADENTER);
+    io.KeyMap[ImGuiKey_Escape] = to_I32(Input::KeyCode::KC_ESCAPE);
+    io.KeyMap[ImGuiKey_Space] = to_I32(Input::KeyCode::KC_SPACE);
+    io.KeyMap[ImGuiKey_A] = to_I32(Input::KeyCode::KC_A);
+    io.KeyMap[ImGuiKey_C] = to_I32(Input::KeyCode::KC_C);
+    io.KeyMap[ImGuiKey_V] = to_I32(Input::KeyCode::KC_V);
+    io.KeyMap[ImGuiKey_X] = to_I32(Input::KeyCode::KC_X);
+    io.KeyMap[ImGuiKey_Y] = to_I32(Input::KeyCode::KC_Y);
+    io.KeyMap[ImGuiKey_Z] = to_I32(Input::KeyCode::KC_Z);
+
+    io.SetClipboardTextFn = SetClipboardText;
+    io.GetClipboardTextFn = GetClipboardText;
+    io.ClipboardUserData = nullptr;
+}
 
 Editor::Editor(PlatformContext& context, ImGuiStyleEnum theme, ImGuiStyleEnum dimmedTheme)
     : PlatformContextComponent(context),
@@ -163,7 +194,6 @@ bool Editor::init(const vec2<U16>& renderResolution) {
     io.Fonts->TexID = (void *)(intptr_t)_fontTexture->getHandle();
 
 
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
 
     if (_context.config().gui.imgui.multiViewportEnabled) {
@@ -182,35 +212,10 @@ bool Editor::init(const vec2<U16>& renderResolution) {
         io.BackendFlags |= ImGuiBackendFlags_RendererHasViewports;
     }
 
-    io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
     io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;        // We can honor io.WantSetMousePos requests (optional, rarely used)
     io.BackendFlags |= ImGuiBackendFlags_PlatformHasViewports;  // We can create multi-viewports on the Platform side (optional)
         
-    io.KeyMap[ImGuiKey_Tab] = to_I32(Input::KeyCode::KC_TAB);
-    io.KeyMap[ImGuiKey_LeftArrow] = to_I32(Input::KeyCode::KC_LEFT);
-    io.KeyMap[ImGuiKey_RightArrow] = to_I32(Input::KeyCode::KC_RIGHT);
-    io.KeyMap[ImGuiKey_UpArrow] = to_I32(Input::KeyCode::KC_UP);
-    io.KeyMap[ImGuiKey_DownArrow] = to_I32(Input::KeyCode::KC_DOWN);
-    io.KeyMap[ImGuiKey_PageUp] = to_I32(Input::KeyCode::KC_PGUP);
-    io.KeyMap[ImGuiKey_PageDown] = to_I32(Input::KeyCode::KC_PGDOWN);
-    io.KeyMap[ImGuiKey_Home] = to_I32(Input::KeyCode::KC_HOME);
-    io.KeyMap[ImGuiKey_End] = to_I32(Input::KeyCode::KC_END);
-    io.KeyMap[ImGuiKey_Delete] = to_I32(Input::KeyCode::KC_DELETE);
-    io.KeyMap[ImGuiKey_Backspace] = to_I32(Input::KeyCode::KC_BACK);
-    io.KeyMap[ImGuiKey_Enter] = to_I32(Input::KeyCode::KC_RETURN);
-    io.KeyMap[ImGuiKey_NumericEnter] = to_I32(Input::KeyCode::KC_NUMPADENTER);
-    io.KeyMap[ImGuiKey_Escape] = to_I32(Input::KeyCode::KC_ESCAPE);
-    io.KeyMap[ImGuiKey_Space] = to_I32(Input::KeyCode::KC_SPACE);
-    io.KeyMap[ImGuiKey_A] = to_I32(Input::KeyCode::KC_A);
-    io.KeyMap[ImGuiKey_C] = to_I32(Input::KeyCode::KC_C);
-    io.KeyMap[ImGuiKey_V] = to_I32(Input::KeyCode::KC_V);
-    io.KeyMap[ImGuiKey_X] = to_I32(Input::KeyCode::KC_X);
-    io.KeyMap[ImGuiKey_Y] = to_I32(Input::KeyCode::KC_Y);
-    io.KeyMap[ImGuiKey_Z] = to_I32(Input::KeyCode::KC_Z);
-
-    io.SetClipboardTextFn = SetClipboardText;
-    io.GetClipboardTextFn = GetClipboardText;
-    io.ClipboardUserData = nullptr;
+    InitBasicImGUIState(io);
 
     vec2<U16> display_size = _mainWindow->getDrawableSize();
     io.DisplaySize = ImVec2((F32)_mainWindow->getDimensions().width, (F32)_mainWindow->getDimensions().height);
@@ -399,6 +404,8 @@ bool Editor::init(const vec2<U16>& renderResolution) {
 
     _gizmo = std::make_unique<Gizmo>(*this, _imguiContext, _mainWindow);
 
+    loadFromXML();
+
     return true;
 }
 
@@ -457,7 +464,7 @@ void Editor::update(const U64 deltaTimeUS) {
                 WindowManager::setCursorStyle(CursorStyle::TEXT_INPUT);
                 break;
             case ImGuiMouseCursor_ResizeAll:         // Unused
-                WindowManager::setCursorStyle(CursorStyle::HAND);
+                WindowManager::setCursorStyle(CursorStyle::RESIZE_ALL);
                 break;
             case ImGuiMouseCursor_ResizeNS:          // Unused
                 WindowManager::setCursorStyle(CursorStyle::RESIZE_NS);
@@ -470,6 +477,9 @@ void Editor::update(const U64 deltaTimeUS) {
                 break;
             case ImGuiMouseCursor_ResizeNWSE:        // When hovering over the bottom-right corner of a window
                 WindowManager::setCursorStyle(CursorStyle::RESIZE_NWSE);
+                break;
+            case ImGuiMouseCursor_Hand:
+                WindowManager::setCursorStyle(CursorStyle::HAND);
                 break;
         }
     }
@@ -555,10 +565,6 @@ bool Editor::renderFull(const U64 deltaTime) {
 
 bool Editor::frameSceneRenderEnded(const FrameEvent& evt) {
     ACKNOWLEDGE_UNUSED(evt);
-
-    _memoryEditorData.first = (bufferPtr)(&evt);
-    _memoryEditorData.second = sizeof(FrameEvent);
-
     Attorney::GizmoEditor::render(*_gizmo, 
                                   *Attorney::SceneManagerCameraAccessor::playerCamera(_context.kernel().sceneManager()));
     return true;
@@ -1015,5 +1021,31 @@ void Editor::toggleMemoryEditor(bool state) {
     _showMemoryEditor = state;
 }
 
+void Editor::saveToXML() const {
+    boost::property_tree::ptree pt;
+    const stringImpl& editorPath = Paths::g_xmlDataLocation + Paths::Editor::g_saveLocation;
+    const boost::property_tree::xml_writer_settings<std::string> settings(' ', 4);
 
+    pt.put("showMemEditor", _showMemoryEditor);
+    pt.put("showSampleWindow", _showSampleWindow);
+    createDirectory(editorPath.c_str());
+    copyFile(editorPath, g_editorSaveFile, editorPath, g_editorSaveFile + stringImpl(".bak"), true);
+    boost::property_tree::write_xml(editorPath + g_editorSaveFile, pt, std::locale(), settings);
+}
+
+void Editor::loadFromXML() {
+    boost::property_tree::ptree pt;
+    const stringImpl& editorPath = Paths::g_xmlDataLocation + Paths::Editor::g_saveLocation;
+    if (!fileExists((editorPath + g_editorSaveFile).c_str())) {
+        if (fileExists((editorPath + g_editorSaveFile + ".bak").c_str())) {
+            copyFile(editorPath, g_editorSaveFile + stringImpl(".bak"), editorPath, g_editorSaveFile, true);
+        }
+    }
+
+    if (fileExists((editorPath + g_editorSaveFile).c_str())) {
+        boost::property_tree::read_xml(editorPath + g_editorSaveFile, pt);
+        _showMemoryEditor = pt.get("showMemEditor", false);
+        _showSampleWindow = pt.get("showSampleWindow", false);
+    }
+}
 }; //namespace Divide

@@ -20,6 +20,7 @@ namespace {
             case CursorStyle::ARROW: return SDL_SYSTEM_CURSOR_ARROW;
             case CursorStyle::HAND: return SDL_SYSTEM_CURSOR_HAND;
             case CursorStyle::NONE: return SDL_SYSTEM_CURSOR_NO;
+            case CursorStyle::RESIZE_ALL: return SDL_SYSTEM_CURSOR_SIZEALL;
             case CursorStyle::RESIZE_EW: return SDL_SYSTEM_CURSOR_SIZEWE;
             case CursorStyle::RESIZE_NS: return SDL_SYSTEM_CURSOR_SIZENS;
             case CursorStyle::RESIZE_NESW: return SDL_SYSTEM_CURSOR_SIZENESW;

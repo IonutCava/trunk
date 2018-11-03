@@ -80,6 +80,8 @@ FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
 struct SizeChangeParams;
 struct TransformSettings;
 
+void InitBasicImGUIState(ImGuiIO& io);
+
 class Editor : public PlatformContextComponent,
                public FrameListener,
                public Input::InputAggregatorInterface {
@@ -158,6 +160,9 @@ class Editor : public PlatformContextComponent,
     bool joystickRemap(const Input::JoystickEvent &arg) override;
     bool onUTF8(const Input::UTF8Event& arg) override;
         
+    void saveToXML() const;
+    void loadFromXML();
+
   protected:
     bool renderMinimal(const U64 deltaTime);
     bool renderFull(const U64 deltaTime);
@@ -295,7 +300,12 @@ namespace Attorney {
             editor.saveElement(elementGUID);
         }
 
+        static void inspectMemory(Editor& editor, std::pair<bufferPtr, size_t> data) {
+            editor._memoryEditorData = data;
+        }
+
         friend class Divide::MenuBar;
+        friend class Divide::PropertyWindow;
     };
 };
 

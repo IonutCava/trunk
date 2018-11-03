@@ -140,6 +140,7 @@ void MenuBar::drawToolsMenu() {
         bool memEditorEnabled = Attorney::EditorMenuBar::memoryEditorEnabled(_context.editor());
         if (ImGui::MenuItem("Memory Editor", NULL, memEditorEnabled)) {
             Attorney::EditorMenuBar::toggleMemoryEditor(_context.editor(), !memEditorEnabled);
+            _context.editor().saveToXML();
         }
         ImGui::EndMenu();
     }
@@ -150,7 +151,7 @@ void MenuBar::drawWindowsMenu() {
     {
         bool& sampleWindowEnabled = Attorney::EditorMenuBar::sampleWindowEnabled(_context.editor());
         if (ImGui::MenuItem("Sample Window", NULL, &sampleWindowEnabled)) {
-
+            _context.editor().saveToXML();
         }
         ImGui::EndMenu();
     }
