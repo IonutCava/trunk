@@ -45,8 +45,8 @@ namespace Divide {
         }
     }
 
-    void SolutionExplorerWindow::printSceneGraphNode(SceneManager& sceneManager, SceneGraphNode& sgn) {
-        ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
+    void SolutionExplorerWindow::printSceneGraphNode(SceneManager& sceneManager, SceneGraphNode& sgn, bool open) {
+        ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | (open ? ImGuiTreeNodeFlags_DefaultOpen : 0);
 
         if (sgn.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTION_SELECTED) {
             node_flags |= ImGuiTreeNodeFlags_Selected;
@@ -63,7 +63,7 @@ namespace Divide {
             }
         
             sgn.forEachChild([this, &sceneManager](SceneGraphNode& child) {
-                printSceneGraphNode(sceneManager, child);
+                printSceneGraphNode(sceneManager, child, false);
             });
 
             ImGui::TreePop();
@@ -79,13 +79,13 @@ namespace Divide {
 
         ImGui::PushItemWidth(200);
         ImGui::BeginChild("SceneGraph", ImVec2(ImGui::GetWindowContentRegionWidth(), ImGui::GetWindowHeight() * .5f), true, 0);
-        if (ImGui::TreeNode(activeScene.name().c_str()))
+        if (ImGui::TreeNodeEx(activeScene.name().c_str(), ImGuiTreeNodeFlags_DefaultOpen))
         {
             ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, ImGui::GetFontSize() * 3); // Increase spacing to differentiate leaves from expanded contents.
             for (PlayerIndex i = 0; i < static_cast<PlayerIndex>(Config::MAX_LOCAL_PLAYER_COUNT); ++i) {
                 printCameraNode(sceneManager, Attorney::SceneManagerCameraAccessor::playerCamera(sceneManager, i));
             }
-            printSceneGraphNode(sceneManager, root);
+            printSceneGraphNode(sceneManager, root, true);
             ImGui::PopStyleVar();
             ImGui::TreePop();
         }

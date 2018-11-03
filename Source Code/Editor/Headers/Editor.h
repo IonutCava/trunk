@@ -72,6 +72,7 @@ class SceneGraphNode;
 class SceneViewWindow;
 class PlatformContext;
 class ApplicationOutput;
+class ContentExplorerWindow;
 class SolutionExplorerWindow;
 
 FWD_DECLARE_MANAGED_CLASS(Texture);
@@ -99,6 +100,7 @@ class Editor : public PlatformContextComponent,
     enum class WindowType : U8 {
         SolutionExplorer = 0,
         Properties,
+        ContentExplorer,
         Output,
         SceneView,
         COUNT

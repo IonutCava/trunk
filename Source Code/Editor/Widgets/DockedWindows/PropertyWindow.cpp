@@ -180,8 +180,45 @@ namespace Divide {
             ImGui::NewLine();
             ImGui::SameLine(xOffset);
             if (ImGui::Button("ADD NEW", ImVec2(buttonWidth, 15))) {
-
+                ImGui::OpenPopup("COMP_SELECTION_GROUP");
             }
+
+            static ComponentType selectedType = ComponentType::COUNT;
+
+            if (ImGui::BeginPopup("COMP_SELECTION_GROUP")) {
+                for (ComponentType type : ComponentType::_values()) {
+                    if (type._to_integral() == ComponentType::COUNT) {
+                        continue;
+                    }
+
+                    if (ImGui::Selectable(type._to_string())) {
+                        selectedType = type;
+                    }
+                }
+                ImGui::EndPopup();
+            }
+            if (selectedType._to_integral() != ComponentType::COUNT) {
+                ImGui::OpenPopup("Add new component");
+            }
+
+            if (ImGui::BeginPopupModal("Add new component", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+                ImGui::Text(Util::StringFormat("Add new %s component?", selectedType._to_string()).c_str());
+                ImGui::Separator();
+
+                if (ImGui::Button("OK", ImVec2(120, 0))) {
+                    selectedType = ComponentType::COUNT;
+                    ImGui::CloseCurrentPopup();
+                }
+
+                ImGui::SetItemDefaultFocus();
+                ImGui::SameLine();
+                if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+                    selectedType = ComponentType::COUNT;
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::EndPopup();
+            }
+            
         }
     }
     

@@ -8,6 +8,7 @@
 #include "Editor/Widgets/DockedWindows/Headers/OutputWindow.h"
 #include "Editor/Widgets/DockedWindows/Headers/PropertyWindow.h"
 #include "Editor/Widgets/DockedWindows/Headers/SceneViewWindow.h"
+#include "Editor/Widgets/DockedWindows/Headers/ContentExplorerWindow.h"
 #include "Editor/Widgets/DockedWindows/Headers/SolutionExplorerWindow.h"
 
 #include "Core/Headers/Kernel.h"
@@ -388,10 +389,15 @@ bool Editor::init(const vec2<U16>& renderResolution) {
     descriptor.name = "Property Explorer";
     _dockedWindows[to_base(WindowType::Properties)] = MemoryManager_NEW PropertyWindow(*this, _context, descriptor);
 
-    descriptor.position = ImVec2(0, 550);
-    descriptor.size = ImVec2(to_F32(renderResolution.width), to_F32(renderResolution.height) - 550 - 3);
-    descriptor.name = "Application Output";
+    descriptor.position = ImVec2(0, 550.0f);
+    descriptor.size = ImVec2(to_F32(renderResolution.width * 0.5f), to_F32(renderResolution.height) - 550 - 3);
+    descriptor.name = "Content Explorer";
     descriptor.flags |= ImGuiWindowFlags_NoTitleBar;
+    _dockedWindows[to_base(WindowType::ContentExplorer)] = MemoryManager_NEW ContentExplorerWindow(*this, descriptor);
+
+    descriptor.position = ImVec2(to_F32(renderResolution.width * 0.5f), 550);
+    descriptor.size = ImVec2(to_F32(renderResolution.width * 0.5f), to_F32(renderResolution.height) - 550 - 3);
+    descriptor.name = "Application Output";
     _dockedWindows[to_base(WindowType::Output)] = MemoryManager_NEW OutputWindow(*this, descriptor);
 
     descriptor.position = ImVec2(150, 150);
@@ -428,6 +434,7 @@ void Editor::toggle(const bool state) {
         ImGui::ResetStyle(_scenePreviewFocused ? _currentDimmedTheme : _currentTheme);
     } else {
         _gizmo->enable(true);
+        static_cast<ContentExplorerWindow*>(_dockedWindows[to_base(WindowType::ContentExplorer)])->update();
     }
 }
 

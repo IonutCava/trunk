@@ -49,7 +49,7 @@ class SolutionExplorerWindow : public DockedWindow, public PlatformContextCompon
   protected:
       void drawTransformSettings();
       void printCameraNode(SceneManager& sceneManager, Camera* camera);
-      void printSceneGraphNode(SceneManager& sceneManager, SceneGraphNode& sgn);
+      void printSceneGraphNode(SceneManager& sceneManager, SceneGraphNode& sgn, bool open);
 };
 }; //namespace Divide
 
