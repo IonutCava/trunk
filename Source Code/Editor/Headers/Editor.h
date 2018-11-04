@@ -178,7 +178,9 @@ class Editor : public PlatformContextComponent,
     bool hasUnsavedElements() const;
     void saveElement(I64 elementGUID);
     void toggleMemoryEditor(bool state);
-    void toggleSampleWindow(bool state);
+
+    // Returns true if the modal window was closed
+    bool modalTextureView(const char* modalName, const Texture_ptr& tex, const vec2<F32>& dimensions, bool preserveAspect);
 
   private:
     ImGuiStyleEnum _currentTheme;
@@ -306,8 +308,12 @@ namespace Attorney {
             editor._memoryEditorData = data;
         }
 
+        static bool modalTextureView(Editor& editor, const char* modalName, const Texture_ptr& tex, const vec2<F32>& dimensions, bool preserveAspect) {
+            return editor.modalTextureView(modalName, tex, dimensions, preserveAspect);
+        }
         friend class Divide::MenuBar;
         friend class Divide::PropertyWindow;
+        friend class Divide::ContentExplorerWindow;
     };
 };
 

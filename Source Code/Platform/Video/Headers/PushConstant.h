@@ -91,7 +91,7 @@ namespace GFX {
               _transpose(false)
         {
             _buffer.resize(values.size() * (sizeof(T)));
-            if (!_buffer.empty()) {
+            if (!values.empty()) {
                 std::memcpy(_buffer.data(), values.data(), _buffer.size());
             }
         }
@@ -108,10 +108,10 @@ namespace GFX {
               _transpose(false)
         {
             _buffer.reserve(values.size());
-            if (!_buffer.empty()) {
-                eastl::transform(eastl::cbegin(values), eastl::cend(values),
-                                 eastl::back_inserter(_buffer),
-                                 [](bool e) {return to_byte(e ? 1 : 0);});
+            if (!values.empty()) {
+                std::transform(std::cbegin(values), std::cend(values),
+                               std::back_inserter(_buffer),
+                               [](bool e) {return to_byte(e ? 1 : 0);});
             }
         }
 
@@ -127,7 +127,7 @@ namespace GFX {
               _transpose(false)
         {
             _buffer.resize(values.size() * (sizeof(T)));
-            if (!_buffer.empty()) {
+            if (!values.empty()) {
                 std::memcpy(_buffer.data(), values.data(), _buffer.size());
             }
         }
@@ -138,16 +138,16 @@ namespace GFX {
                      const std::array<bool, N>& values,
                      bool flag)
             : _binding(binding),
-              _bindingHash(_ID(binding.c_str()))
+              _bindingHash(_ID(binding.c_str())),
               _type(type),
               _flag(flag),
               _transpose(false)
         {
             _buffer.reserve(N);
-            if (!_buffer.empty()) {
-                eastl::transform(std::cbegin(values), std::cend(values),
-                                 eastl::back_inserter(_buffer),
-                                 [](bool e) {return to_byte(e ? 1 : 0);});
+            if (!values.empty()) {
+                std::transform(std::cbegin(values), std::cend(values),
+                               std::back_inserter(_buffer),
+                               [](bool e) {return to_byte(e ? 1 : 0);});
             }
         }
 

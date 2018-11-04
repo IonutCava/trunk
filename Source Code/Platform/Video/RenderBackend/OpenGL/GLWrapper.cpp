@@ -838,9 +838,9 @@ void GL_API::drawIMGUI(ImDrawData* data, I64 windowGUID) {
                     ImVec4 clip_rect = ImVec4(pcmd->ClipRect.x - pos.x, pcmd->ClipRect.y - pos.y, pcmd->ClipRect.z - pos.x, pcmd->ClipRect.w - pos.y);
                     if (clip_rect.x < s_activeStateTracker->_activeViewport.z && clip_rect.y < s_activeStateTracker->_activeViewport.w && clip_rect.z >= 0.0f && clip_rect.w >= 0.0f) {
                         getStateTracker().setScissor((I32)clip_rect.x,
-                                           (I32)(s_activeStateTracker->_activeViewport.w - clip_rect.w),
-                                           (I32)(clip_rect.z - clip_rect.x),
-                                           (I32)(clip_rect.w - clip_rect.y));
+                            (I32)(s_activeStateTracker->_activeViewport.w - clip_rect.w),
+                            (I32)(clip_rect.z - clip_rect.x),
+                            (I32)(clip_rect.w - clip_rect.y));
 
                         cmd._cmd.indexCount = to_U32(pcmd->ElemCount);
 

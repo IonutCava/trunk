@@ -205,6 +205,29 @@ class TextureDescriptor final : public PropertyDescriptor {
 
     inline void automaticMipMapGeneration(const bool state) { _autoMipMaps = state; }
 
+    inline U8 numChannels() const {
+        switch (baseFormat()) {
+            case GFXImageFormat::ALPHA:
+                case GFXImageFormat::RED:
+                case GFXImageFormat::BLUE:
+                case GFXImageFormat::GREEN:
+                case GFXImageFormat::DEPTH_COMPONENT:
+                case GFXImageFormat::INTENSITY:
+                case GFXImageFormat::LUMINANCE:
+                    return 1;
+                case GFXImageFormat::RG:
+                case GFXImageFormat::LUMINANCE_ALPHA:
+                    return 2;
+                case GFXImageFormat::BGR:
+                case GFXImageFormat::RGB:
+                    return 3;
+                case GFXImageFormat::BGRA:
+                case GFXImageFormat::RGBA:
+                    return 4;
+        }
+
+        return 0;
+    }
 
     /*inline size_t getHash() const override {
         size_t hash = 0;

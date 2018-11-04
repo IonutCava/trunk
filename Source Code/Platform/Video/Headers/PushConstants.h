@@ -104,7 +104,7 @@ class PushConstants {
     bool merge(const PushConstants& other);
 
   protected:
-    vectorEASTL<GFX::PushConstant> _data;
+      vectorEASTL<GFX::PushConstant> _data;
 };
 
 bool Merge(PushConstants& lhs, const PushConstants& rhs);

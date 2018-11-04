@@ -36,6 +36,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
+    FWD_DECLARE_MANAGED_CLASS(Texture);
+
     class MenuBar : public PlatformContextComponent {
       public:
 
@@ -54,7 +56,8 @@ namespace Divide {
           void drawHelpMenu();
 
       protected:
-        bool _isMainMenu;
+        bool _isMainMenu = true;
+        Texture_ptr _previewTexture = nullptr;
     };
 }; //namespace Divide
 

@@ -12,13 +12,28 @@ void main()
 
 -- Fragment
 
+#include "utility.frag"
+
 layout(binding = TEXTURE_UNIT0) uniform sampler2D Texture;
 
 in vec2 Frag_UV;
 in vec4 Frag_Color;
 out vec4 Out_Color;
 
+uniform int depthTexture;
+uniform vec2 depthRange;
+uniform ivec4 toggleChannel;
+
 void main()
 {
-	Out_Color = Frag_Color * texture( Texture, Frag_UV.st);
+    Out_Color = Frag_Color;
+
+    vec4 texColor = texture( Texture, Frag_UV.st);
+    if (depthTexture == 1) {
+        texColor = vec4(ToLinearDepth(texColor.r, dvd_zPlanes * depthRange) * toggleChannel[0]);
+    } else {
+        Out_Color *= toggleChannel;
+    }
+    
+    Out_Color *= texColor;
 };

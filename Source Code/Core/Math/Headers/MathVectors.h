@@ -152,8 +152,8 @@ class simd_vector<T, std::enable_if_t<!std::is_same<T, F32>::value>> {
  ***********************************************************************/
 template <typename T>
 class vec2 {
-    static_assert(std::is_arithmetic<T>::value &&
-                  !std::is_same<T, bool>::value,
+    static_assert(std::is_arithmetic<T>::value ||
+                  std::is_same<T, bool>::value,
                   "non-arithmetic vector type");
    public:
     vec2() noexcept : vec2((T)0)
@@ -459,8 +459,8 @@ inline vec2<T> operator*(T fl, const vec2<T> &v);
  ***********************************************************************/
 template <typename T>
 class vec3 {
-    static_assert(std::is_arithmetic<T>::value &&
-                  !std::is_same<T, bool>::value,
+    static_assert(std::is_arithmetic<T>::value ||
+                  std::is_same<T, bool>::value,
                   "non-arithmetic vector type");
    public:
     vec3() noexcept : vec3((T)0)
@@ -827,8 +827,8 @@ inline void OrthoNormalize(vec3<T> &v1, vec3<T> &v2);
 //__declspec(align(alignment))
 template <typename T>
 class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<16>, non_aligned_base>::type {
-    static_assert(std::is_arithmetic<T>::value &&
-                  !std::is_same<T, bool>::value,
+    static_assert(std::is_arithmetic<T>::value ||
+                  std::is_same<T, bool>::value,
                   "non-arithmetic vector type");
    public:
     vec4() noexcept : x(0), y(0), z(0), w(1)

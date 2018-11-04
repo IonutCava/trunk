@@ -80,7 +80,11 @@ public:
     inline vector<RenderTarget*>& renderTargets(RenderTargetUsage target) {
         return _renderTargets[to_U32(target)];
     }
-    
+
+    inline const vector<RenderTarget*>& renderTargets(RenderTargetUsage target) const {
+        return _renderTargets[to_U32(target)];
+    }
+
     inline RenderTargetHandle allocateRT(const RenderTargetDescriptor& descriptor) {
         return allocateRT(RenderTargetUsage::OTHER, descriptor);
     }

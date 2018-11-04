@@ -11,6 +11,8 @@
 #include "Editor/Widgets/DockedWindows/Headers/ContentExplorerWindow.h"
 #include "Editor/Widgets/DockedWindows/Headers/SolutionExplorerWindow.h"
 
+#include "Editor/Widgets/Headers/ImGuiExtensions.h"
+
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/Console.h"
 #include "Core/Headers/StringHelper.h"
@@ -125,7 +127,6 @@ Editor::Editor(PlatformContext& context, ImGuiStyleEnum theme, ImGuiStyleEnum di
 
 Editor::~Editor()
 {
-
     close();
     for (DockedWindow* window : _dockedWindows) {
         MemoryManager::SAFE_DELETE(window);
@@ -658,36 +659,36 @@ void Editor::renderDrawList(ImDrawData* pDrawData, bool overlayOnScene, I64 wind
     GFX::ScopedCommandBuffer sBuffer = GFX::allocateScopedCommandBuffer();
     GFX::CommandBuffer& buffer = sBuffer();
 
-    RenderStateBlock state;
+    RenderStateBlock state = {};
     state.setCullMode(CullMode::CCW);
     state.setZRead(false);
     state.setScissorTest(true);
 
-    PipelineDescriptor pipelineDesc;
+    PipelineDescriptor pipelineDesc = {};
     pipelineDesc._stateHash = state.getHash();
     pipelineDesc._shaderProgramHandle = _imguiProgram->getID();
 
-    GFX::BeginDebugScopeCommand beginDebugScopeCmd;
+    GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
     beginDebugScopeCmd._scopeID = std::numeric_limits<U16>::max();
     beginDebugScopeCmd._scopeName = overlayOnScene ? "Render IMGUI [Overlay]" : "Render IMGUI [Full]";
     GFX::EnqueueCommand(buffer, beginDebugScopeCmd);
 
     if (overlayOnScene) {
         // Draw the gizmos and overlayed graphics to the main render target but don't clear anything
-        RTDrawDescriptor screenTarget;
+        RTDrawDescriptor screenTarget = {};
         screenTarget.disableState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER);
         screenTarget.disableState(RTDrawDescriptor::State::CLEAR_COLOUR_BUFFERS);
         screenTarget.drawMask().disableAll();
         screenTarget.drawMask().setEnabled(RTAttachmentType::Colour, 0, true);
 
-        GFX::BeginRenderPassCommand beginRenderPassCmd;
+        GFX::BeginRenderPassCommand beginRenderPassCmd = {};
         beginRenderPassCmd._target = RenderTargetID(RenderTargetUsage::SCREEN);
         beginRenderPassCmd._descriptor = screenTarget;
         beginRenderPassCmd._name = "DO_IMGUI_PRE_PASS";
         GFX::EnqueueCommand(buffer, beginRenderPassCmd);
     }
 
-    GFX::SetBlendCommand blendCmd;
+    GFX::SetBlendCommand blendCmd = {};
     blendCmd._blendProperties = BlendingProperties{
         BlendProperty::SRC_ALPHA,
         BlendProperty::INV_SRC_ALPHA,
@@ -695,11 +696,20 @@ void Editor::renderDrawList(ImDrawData* pDrawData, bool overlayOnScene, I64 wind
     };
     GFX::EnqueueCommand(buffer, blendCmd);
 
-    GFX::BindPipelineCommand pipelineCmd;
+    GFX::BindPipelineCommand pipelineCmd = {};
     pipelineCmd._pipeline = _context.gfx().newPipeline(pipelineDesc);
     GFX::EnqueueCommand(buffer, pipelineCmd);
 
-    GFX::SetViewportCommand viewportCmd;
+    PushConstants pushConstants = {};
+    pushConstants.set("toggleChannel", GFX::PushConstantType::IVEC4, vec4<I32>(1, 1, 1, 1));
+    pushConstants.set("depthTexture", GFX::PushConstantType::INT, 0);
+    pushConstants.set("depthRange", GFX::PushConstantType::VEC2, vec2<F32>(0.0f, 1.0f));
+
+    GFX::SendPushConstantsCommand pushConstantsCommand = {};
+    pushConstantsCommand._constants = pushConstants;
+    GFX::EnqueueCommand(buffer, pushConstantsCommand);
+
+    GFX::SetViewportCommand viewportCmd = {};
     viewportCmd._viewport.set(0, 0, fb_width, fb_height);
     GFX::EnqueueCommand(buffer, viewportCmd);
 
@@ -715,22 +725,22 @@ void Editor::renderDrawList(ImDrawData* pDrawData, bool overlayOnScene, I64 wind
         { (R + L) / (L - R), (T + B) / (B - T),  0.0f,   1.0f },
     };
 
-    GFX::SetCameraCommand cameraCmd;
+    GFX::SetCameraCommand cameraCmd = {};
     cameraCmd._cameraSnapshot = Camera::utilityCamera(Camera::UtilityCamera::_2D_FLIP_Y)->snapshot();
     memcpy(cameraCmd._cameraSnapshot._projectionMatrix.m, ortho_projection, sizeof(F32) * 16);
     GFX::EnqueueCommand(buffer, cameraCmd);
 
-    GFX::DrawIMGUICommand drawIMGUI;
+    GFX::DrawIMGUICommand drawIMGUI = {};
     drawIMGUI._data = pDrawData;
     drawIMGUI._windowGUID = windowGUID;
     GFX::EnqueueCommand(buffer, drawIMGUI);
 
     if (overlayOnScene) {
-        GFX::EndRenderPassCommand endRenderPassCmd;
+        GFX::EndRenderPassCommand endRenderPassCmd = {};
         GFX::EnqueueCommand(buffer, endRenderPassCmd);
     }
 
-    GFX::EndDebugScopeCommand endDebugScope;
+    GFX::EndDebugScopeCommand endDebugScope = {};
     GFX::EnqueueCommand(buffer, endDebugScope);
 
     _context.gfx().flushCommandBuffer(buffer);
@@ -1028,6 +1038,112 @@ void Editor::saveElement(I64 elementGUID) {
 
 void Editor::toggleMemoryEditor(bool state) {
     _showMemoryEditor = state;
+}
+
+struct TextureCallbackData {
+    vec4<I32> _colourData = {1, 1, 1, 1};
+    GFXDevice* _gfxDevice = nullptr;
+    bool _isDepthTexture = false;
+    vec2<F32> _depthRange = { 0.0f, 1.0f };
+};
+
+bool Editor::modalTextureView(const char* modalName, const Texture_ptr& tex, const vec2<F32>& dimensions, bool preserveAspect) {
+    
+    ImDrawCallback toggleColours { [](const ImDrawList* parent_list, const ImDrawCmd* cmd) -> void {
+        ACKNOWLEDGE_UNUSED(parent_list);
+
+        TextureCallbackData  data = *static_cast<TextureCallbackData*>(cmd->UserCallbackData);
+
+        GFX::ScopedCommandBuffer sBuffer = GFX::allocateScopedCommandBuffer();
+        GFX::CommandBuffer& buffer = sBuffer();
+
+        PushConstants pushConstants = {};
+        pushConstants.set("toggleChannel", GFX::PushConstantType::IVEC4, data._colourData);
+        pushConstants.set("depthTexture", GFX::PushConstantType::INT, data._isDepthTexture ? 1 : 0);
+        pushConstants.set("depthRange", GFX::PushConstantType::VEC2, data._depthRange);
+
+        GFX::SendPushConstantsCommand pushConstantsCommand = {};
+        pushConstantsCommand._constants = pushConstants;
+        GFX::EnqueueCommand(buffer, pushConstantsCommand);
+        data._gfxDevice->flushCommandBuffer(buffer);
+    } };
+
+    bool closed = false;
+    if (ImGui::BeginPopupModal(modalName, NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+        assert(tex != nullptr);
+
+
+        assert(modalName != nullptr);
+        static TextureCallbackData data = {};
+        data._gfxDevice = &_context.gfx();
+
+        static TextureCallbackData defaultData = {};
+        defaultData._gfxDevice = &_context.gfx();
+        defaultData._isDepthTexture = false;
+
+        static std::array<bool, 4> state = { true, true, true, true };
+
+        data._isDepthTexture = tex->getDescriptor().baseFormat() == GFXImageFormat::DEPTH_COMPONENT;
+
+        U8 numChannels = tex->getDescriptor().numChannels();
+        bool isAlphaType = tex->getDescriptor().baseFormat() == GFXImageFormat::LUMINANCE_ALPHA ||
+                           tex->getDescriptor().baseFormat() == GFXImageFormat::ALPHA;
+
+        if (numChannels > 0) {
+            if (data._isDepthTexture) {
+                ImGui::Text("Depth: ");  ImGui::SameLine(); ImGui::ToggleButton("Depth", &state[0]);
+                ImGui::SameLine();
+                ImGui::Text("Range: "); ImGui::SameLine();
+                ImGui::DragFloatRange2("", &data._depthRange[0], &data._depthRange[1], 0.05f, 0.0f, 1.0f);
+            } else if (!isAlphaType) {
+                ImGui::Text("R: ");  ImGui::SameLine(); ImGui::ToggleButton("R", &state[0]);
+            }
+
+            if (numChannels > 1) {
+                ImGui::SameLine();
+                ImGui::Text("G: ");  ImGui::SameLine(); ImGui::ToggleButton("G", &state[1]);
+
+                if (numChannels > 2) {
+                    ImGui::SameLine();
+                    ImGui::Text("B: ");  ImGui::SameLine(); ImGui::ToggleButton("B", &state[2]);
+                }
+
+                if (numChannels > 3 || isAlphaType)
+                {
+                    ImGui::SameLine();
+                    ImGui::Text("A: ");  ImGui::SameLine(); ImGui::ToggleButton("A", &state[3]);
+                }
+            }
+        }
+        bool nonDefaultColours = data._isDepthTexture || !state[0] || !state[1] || !state[2] || !state[3];
+        data._colourData.set(state[0] ? 1 : 0, state[1] ? 1 : 0, state[2] ? 1 : 0, state[3] ? 1 : 0);
+
+        if (nonDefaultColours) {
+            ImGui::GetWindowDrawList()->AddCallback(toggleColours, &data);
+        }
+
+        F32 aspect = 1.0f;
+        if (preserveAspect) {
+            U16 w = tex->getWidth();
+            U16 h = tex->getHeight();
+            aspect = w / to_F32(h);
+        }
+
+        ImGui::Image((void *)(intptr_t)tex->getData().getHandle(), ImVec2(dimensions.w, dimensions.h / aspect));
+
+        if (nonDefaultColours) {
+            ImGui::GetWindowDrawList()->AddCallback(toggleColours, &defaultData);
+        }
+
+        if (ImGui::Button("Close")) {
+            ImGui::CloseCurrentPopup();
+            closed = true;
+        }
+
+        ImGui::EndPopup();
+    }
+
+    return closed;
 }
 
 void Editor::saveToXML() const {

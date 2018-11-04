@@ -171,23 +171,12 @@ namespace Divide {
                             }
                         }
                     }
+                    ImGui::NextColumn();
                 }
-
-                if (ImGui::BeginPopupModal("Image Preview", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-                    assert(previewTexture != nullptr);
-
-                    U16 w = previewTexture->getWidth();
-                    U16 h = previewTexture->getHeight();
-                    F32 aspect = w / to_F32(h);
-
-                    ImGui::Image((void *)(intptr_t)previewTexture->getData().getHandle(), ImVec2(512, 512 / aspect));
-                    if (ImGui::Button("Close")) {
-                        previewTexture = nullptr;
-                        ImGui::CloseCurrentPopup();
-                    }
-                    ImGui::EndPopup();
+                if (Attorney::EditorGeneralWidget::modalTextureView(_parent, "Image Preview", previewTexture, vec2<F32>(512, 512), true)) {
+                    previewTexture = nullptr;
                 }
-                ImGui::NextColumn();
+                
             }
             ImGui::EndChild();
         }
