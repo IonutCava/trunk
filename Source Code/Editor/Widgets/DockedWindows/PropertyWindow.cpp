@@ -139,6 +139,8 @@ namespace Divide {
             const F32 smallButtonWidth = 60.0f;
             F32 xOffset = ImGui::GetWindowSize().x * 0.5f - smallButtonWidth;
             const vector<I64>& crtSelections = selections();
+
+            static bool closed = false;
             for (I64 nodeGUID : crtSelections) {
                 SceneGraphNode* sgnNode = node(nodeGUID);
                 if (sgnNode != nullptr) {
@@ -147,6 +149,7 @@ namespace Divide {
                     vectorEASTL<EditorComponent*>& editorComp = Attorney::SceneGraphNodeEditor::editorComponents(*sgnNode);
                     for (EditorComponent* comp : editorComp) {
                         if (ImGui::CollapsingHeader(comp->name().c_str())) {
+                            //const I32 RV = ImGui::AppendTreeNodeHeaderButtons(comp->name().c_str(), ImGui::GetCursorPosX(), 1, &closed, "Remove", NULL, 0);
                             ImGui::NewLine();
                             ImGui::SameLine(xOffset);
                             if (ImGui::Button("INSPECT", ImVec2(smallButtonWidth, 20))) {

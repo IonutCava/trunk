@@ -1094,7 +1094,7 @@ bool Editor::modalTextureView(const char* modalName, const Texture_ptr& tex, con
                 ImGui::Text("Depth: ");  ImGui::SameLine(); ImGui::ToggleButton("Depth", &state[0]);
                 ImGui::SameLine();
                 ImGui::Text("Range: "); ImGui::SameLine();
-                ImGui::DragFloatRange2("", &data._depthRange[0], &data._depthRange[1], 0.05f, 0.0f, 1.0f);
+                ImGui::DragFloatRange2("", &data._depthRange[0], &data._depthRange[1], 0.005f, 0.0f, 1.0f);
             } else if (!isAlphaType) {
                 ImGui::Text("R: ");  ImGui::SameLine(); ImGui::ToggleButton("R", &state[0]);
             }
@@ -1129,17 +1129,24 @@ bool Editor::modalTextureView(const char* modalName, const Texture_ptr& tex, con
             aspect = w / to_F32(h);
         }
 
-        ImGui::Image((void *)(intptr_t)tex->getData().getHandle(), ImVec2(dimensions.w, dimensions.h / aspect));
+        static float zoom = 1.0f;
+        static ImVec2 zoomCenter(0.5f, 0.5f);
+        ImGui::ImageZoomAndPan((void *)(intptr_t)tex->getData().getHandle(), ImVec2(dimensions.w, dimensions.h / aspect), aspect, zoom, zoomCenter, 2, 3);
 
         if (nonDefaultColours) {
             ImGui::GetWindowDrawList()->AddCallback(toggleColours, &defaultData);
         }
 
+        ImGui::Text("Mouse: Wheel = scroll | CTRL + Wheel = zoom | Hold Wheel Button = pan");
+
         if (ImGui::Button("Close")) {
+            zoom = 1.0f;
+            zoomCenter = ImVec2(0.5f, 0.5f);
             ImGui::CloseCurrentPopup();
             closed = true;
         }
-
+        
+        
         ImGui::EndPopup();
     }
 

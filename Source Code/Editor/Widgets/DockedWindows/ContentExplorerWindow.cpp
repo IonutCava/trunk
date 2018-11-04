@@ -164,6 +164,10 @@ namespace Divide {
                             previewTexture = tex;
                             ImGui::OpenPopup("Image Preview");
                         }
+                        if (ImGui::IsItemHovered()) {
+                            ImGui::SetTooltip(file.second.c_str());
+                        }
+                        ImGui::Text(file.second.c_str());
                     } else {
                         if (ImGui::Button(file.second.c_str())) {
                             if (ImGui::IsItemHovered()) {
