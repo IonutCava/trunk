@@ -434,7 +434,7 @@ void Editor::toggle(const bool state) {
         ImGui::ResetStyle(_scenePreviewFocused ? _currentDimmedTheme : _currentTheme);
     } else {
         _gizmo->enable(true);
-        static_cast<ContentExplorerWindow*>(_dockedWindows[to_base(WindowType::ContentExplorer)])->update();
+        static_cast<ContentExplorerWindow*>(_dockedWindows[to_base(WindowType::ContentExplorer)])->init();
     }
 }
 
@@ -490,6 +490,8 @@ void Editor::update(const U64 deltaTimeUS) {
                 break;
         }
     }
+
+    static_cast<ContentExplorerWindow*>(_dockedWindows[to_base(WindowType::ContentExplorer)])->update(deltaTimeUS);
 }
 
 bool Editor::frameStarted(const FrameEvent& evt) {

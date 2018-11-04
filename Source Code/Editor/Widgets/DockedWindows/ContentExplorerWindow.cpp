@@ -1,7 +1,13 @@
 #include "stdafx.h"
 
 #include "Headers/ContentExplorerWindow.h"
+
+#include "Editor/Headers/Editor.h"
+#include "Core/Headers/Kernel.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Platform/File/Headers/FileManagement.h"
+#include "Core/Resources/Headers/ResourceCache.h"
+#include "Platform/Video/Textures/Headers/Texture.h"
 
 #include <imgui/addons/imguifilesystem/imguifilesystem.h>
 
@@ -11,6 +17,8 @@ using namespace boost::filesystem;
 
 namespace Divide {
     namespace {
+        constexpr size_t MAX_TEXTURE_LOADS_PER_FRAME = 1;
+
         char* g_extensions[] = {
             "glsl", "cmn", "frag", "vert", "cmp", "geom", "tesc", "tese",  //Shaders
             "ogg", "wav", //Sounds
@@ -20,6 +28,10 @@ namespace Divide {
             "layout", "looknfeel", "scheme", "xsd", "imageset", "xcf", "txt", "anims",  //CEGUI
             "ttf", "font", //Fonts
             "xml" //General
+        };
+
+        char* g_imageExtensions[] = {
+            "png", "jpg", "jpeg", "tga", "raw", "dds"
         };
     };
 
@@ -31,16 +43,27 @@ namespace Divide {
 
     ContentExplorerWindow::~ContentExplorerWindow()
     {
+        _loadedTextures.clear();
     }
 
-    void ContentExplorerWindow::update() {
+    void ContentExplorerWindow::init() {
         _currentDirectories.resize(2);
-        
+
         getDirectoryStructureForPath(Paths::g_assetsLocation, _currentDirectories[0]);
         _currentDirectories[0]._path = "Assets";
 
         getDirectoryStructureForPath(Paths::g_xmlDataLocation, _currentDirectories[1]);
         _currentDirectories[1]._path = "XML";
+    }
+
+    void ContentExplorerWindow::update(const U64 deltaTimeUS) {
+        ACKNOWLEDGE_UNUSED(deltaTimeUS);
+
+        if (!_textureLoadQueue.empty()) {
+            auto file = _textureLoadQueue.top();
+            _textureLoadQueue.pop();
+            _loadedTextures[_ID((file.first + "/" + file.second).c_str())] = getTextureForPath(file.first, file.second);
+        }
     }
     
     void ContentExplorerWindow::getDirectoryStructureForPath(const stringImpl& directoryPath, Directory& directoryOut) {
@@ -51,7 +74,7 @@ namespace Divide {
                 if (is_regular_file(x.path())) {
                     for (char* extension : g_extensions) {
                         if (hasExtension(x.path().generic_string(), extension)) {
-                            directoryOut._files.push_back(x.path().filename().generic_string());
+                            directoryOut._files.push_back({directoryOut._path, x.path().filename().generic_string()});
                             break;
                         }
                     }
@@ -86,6 +109,8 @@ namespace Divide {
     }
 
     void ContentExplorerWindow::drawInternal() {
+        static Texture_ptr previewTexture = nullptr;
+
         ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5.0f);
 
         {
@@ -114,12 +139,55 @@ namespace Divide {
             }
             ImGui::Columns(4);
             if (_selectedDir != nullptr) {
-                for (const std::string& file : _selectedDir->_files) {
-                    if (ImGui::Button(file.c_str())) {
-
+                for (auto file : _selectedDir->_files) {
+                    Texture_ptr tex = nullptr;
+                    for (char* extension : g_imageExtensions) {
+                        if (hasExtension(file.second, extension)) {
+                            auto it = _loadedTextures.find(_ID((file.first + "/" + file.second).c_str()));
+                            if (it == std::cend(_loadedTextures) || it->second == nullptr) {
+                                if (_textureLoadQueue.empty()) {
+                                    _textureLoadQueue.push(file);
+                                }
+                            } else if (it->second->getState() == ResourceState::RES_LOADED) {
+                                tex = it->second;
+                            }
+                            break;
+                        }
                     }
-                    ImGui::NextColumn();
+
+                    if (tex != nullptr) {
+                        U16 w = tex->getWidth();
+                        U16 h = tex->getHeight();
+                        F32 aspect = w / to_F32(h);
+
+                        if (ImGui::ImageButton((void *)(intptr_t)tex->getData().getHandle(), ImVec2(64, 64 / aspect))) {
+                            previewTexture = tex;
+                            ImGui::OpenPopup("Image Preview");
+                        }
+                    } else {
+                        if (ImGui::Button(file.second.c_str())) {
+                            if (ImGui::IsItemHovered()) {
+                                ImGui::SetTooltip("Image still loading!");
+                            }
+                        }
+                    }
                 }
+
+                if (ImGui::BeginPopupModal("Image Preview", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+                    assert(previewTexture != nullptr);
+
+                    U16 w = previewTexture->getWidth();
+                    U16 h = previewTexture->getHeight();
+                    F32 aspect = w / to_F32(h);
+
+                    ImGui::Image((void *)(intptr_t)previewTexture->getData().getHandle(), ImVec2(512, 512 / aspect));
+                    if (ImGui::Button("Close")) {
+                        previewTexture = nullptr;
+                        ImGui::CloseCurrentPopup();
+                    }
+                    ImGui::EndPopup();
+                }
+                ImGui::NextColumn();
             }
             ImGui::EndChild();
         }
@@ -127,4 +195,27 @@ namespace Divide {
         ImGui::PopStyleVar();
     }
 
+    Texture_ptr ContentExplorerWindow::getTextureForPath(const stringImpl& texturePath, const stringImpl& textureName) {
+        SamplerDescriptor texturePreviewSampler = {};
+        texturePreviewSampler._wrapU = TextureWrap::CLAMP;
+        texturePreviewSampler._wrapV = TextureWrap::CLAMP;
+        texturePreviewSampler._wrapW = TextureWrap::CLAMP;
+        texturePreviewSampler._minFilter = TextureFilter::NEAREST;
+        texturePreviewSampler._magFilter = TextureFilter::NEAREST;
+        texturePreviewSampler._anisotropyLevel = 0;
+        texturePreviewSampler._srgb = false;
+
+        TextureDescriptor texturePreviewDescriptor(TextureType::TEXTURE_2D);
+        texturePreviewDescriptor.setSampler(texturePreviewSampler);
+        
+
+        ResourceDescriptor textureResource(textureName);
+        textureResource.setThreadedLoading(true);
+        textureResource.setFlag(true);
+        textureResource.setResourceName(textureName);
+        textureResource.setResourceLocation(Paths::g_assetsLocation + "/" + texturePath);
+        textureResource.setPropertyDescriptor(texturePreviewDescriptor);
+
+        return CreateResource<Texture>(_parent.context().kernel().resourceCache(), textureResource);
+    }
 }; //namespace Divide

@@ -34,10 +34,14 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "Editor/Widgets/Headers/DockedWindow.h"
 
+#include <stack>
+
 namespace Divide {
+    FWD_DECLARE_MANAGED_CLASS(Texture);
+
     struct Directory {
         stringImpl _path;
-        vectorFast<std::string> _files;
+        vectorFast<std::pair<std::string, std::string>> _files;
         vectorFast<std::shared_ptr<Directory>> _children;
     };
 
@@ -47,15 +51,21 @@ namespace Divide {
         ~ContentExplorerWindow();
 
         void drawInternal() override;
-        void update();
+        void init();
+        void update(const U64 deltaTimeUS);
 
     private:
         void getDirectoryStructureForPath(const stringImpl& directoryPath, Directory& directoryOut);
         void printDirectoryStructure(const Directory& dir, bool open) const;
 
+        Texture_ptr getTextureForPath(const stringImpl& texturePath, const stringImpl& textureName);
     private:
         mutable const Directory* _selectedDir = nullptr;
         vectorFast<Directory> _currentDirectories;
+
+        hashMap<size_t, Texture_ptr> _loadedTextures;
+
+        std::stack<std::pair<std::string, std::string>> _textureLoadQueue;
     };
 }; //namespace Divide
 
