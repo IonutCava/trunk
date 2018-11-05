@@ -4,8 +4,8 @@
 
 namespace Divide {
 
-    SelectionComponent::SelectionComponent(SceneGraphNode& parentSGN)
-        : SGNComponent(parentSGN, ComponentType::SELECTION)
+    SelectionComponent::SelectionComponent(SceneGraphNode& parentSGN, PlatformContext& context)
+        : BaseComponentType<SelectionComponent, ComponentType::SELECTION>(parentSGN, context)
     {
     }
 

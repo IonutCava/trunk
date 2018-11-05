@@ -42,6 +42,6 @@
         <node name="DefaultSky" type="SKY">
             <node name="DefaultSky_geometry" type="SPHERE_3D"/>
         </node>
-        <node name="DefaultLight" type="LIGHT"/>
+        <node name="DefaultLight" type=""/>
     </node>
 </entities>

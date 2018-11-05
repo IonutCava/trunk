@@ -134,7 +134,7 @@ void RenderPassCuller::frustumCullNode(const Task& parentTask,
     if (!currentNode.isActive()) {
         return;
     }
-    // If it fails thhe culling test, stop
+    // If it fails the culling test, stop
     if (_cullingFunction[to_U32(stage)](currentNode)) {
         return;
     }

@@ -38,9 +38,9 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 FWD_DECLARE_MANAGED_CLASS(Unit);
-class UnitComponent : public SGNComponent<UnitComponent> {
+class UnitComponent : public BaseComponentType<UnitComponent, ComponentType::UNIT> {
 public:
-    UnitComponent(SceneGraphNode& parentSGN);
+    UnitComponent(SceneGraphNode& parentSGN, PlatformContext& context);
     ~UnitComponent();
 
     // This call will take ownership of the specified pointer!
@@ -56,6 +56,7 @@ public:
 private:
     Unit_ptr _unit;
 };
+
 };
 
 #endif //_UNIT_COMPONENT_H_

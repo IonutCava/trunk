@@ -39,9 +39,9 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
     struct TransformUpdated;
-    class BoundsComponent : public SGNComponent<BoundsComponent>{
+    class BoundsComponent : public BaseComponentType<BoundsComponent, ComponentType::BOUNDS>{
     public:
-        BoundsComponent(SceneGraphNode& sgn);
+        BoundsComponent(SceneGraphNode& sgn, PlatformContext& context);
         ~BoundsComponent();
 
         inline const BoundingBox& getBoundingBox() const { return _boundingBox; }

@@ -166,6 +166,9 @@ class Scene : public Resource, public PlatformContextComponent {
     Camera* playerCamera() const;
     Camera* playerCamera(U8 index) const;
 
+    inline LightPool& lightPool() { return *_lightPool; }
+    inline const LightPool& lightPool() const { return *_lightPool; }
+
    protected:
     virtual void rebuildShaders();
     virtual void onSetActive();
@@ -304,10 +307,6 @@ class Scene : public Resource, public PlatformContextComponent {
 namespace Attorney {
 class SceneManager {
    private:
-    static LightPool* lightPool(Scene& scene) {
-        return scene._lightPool;
-    }
-
     static bool updateCameraControls(Scene& scene, PlayerIndex idx) {
         return scene.updateCameraControls(idx);
     }
@@ -415,6 +414,7 @@ private:
     static void onNodeDestroy(Scene& scene, SceneGraphNode& node) {
         scene.onNodeDestroy(node);
     }
+
     friend class Divide::SceneGraph;
 };
 

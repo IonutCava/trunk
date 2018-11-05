@@ -5,8 +5,8 @@
 #include "ECS/Events/Headers/TransformEvents.h"
 
 namespace Divide {
-    TransformComponent::TransformComponent(SceneGraphNode& parentSGN)
-      : SGNComponent(parentSGN, ComponentType::TRANSFORM),
+    TransformComponent::TransformComponent(SceneGraphNode& parentSGN, PlatformContext& context)
+      : BaseComponentType<TransformComponent, ComponentType::TRANSFORM>(parentSGN, context),
         _uniformScaled(false),
         _parentUsageContext(parentSGN.usageContext())
     {
@@ -70,7 +70,7 @@ namespace Divide {
             Attorney::SceneGraphNodeComponent::setTransformDirty(_parentSGN, _transformUpdatedMask);
         }
 
-        SGNComponent<TransformComponent>::PreUpdate(deltaTimeUS);
+        BaseComponentType<TransformComponent, ComponentType::TRANSFORM>::PreUpdate(deltaTimeUS);
     }
 
     void TransformComponent::Update(const U64 deltaTimeUS) {
@@ -80,12 +80,12 @@ namespace Divide {
             _worldMatrixUpToDate.clear();
         }
 
-        SGNComponent<TransformComponent>::Update(deltaTimeUS);
+        BaseComponentType<TransformComponent, ComponentType::TRANSFORM>::Update(deltaTimeUS);
     }
 
     void TransformComponent::PostUpdate(const U64 deltaTimeUS) {
         updateWorldMatrix();
-        SGNComponent<TransformComponent>::PostUpdate(deltaTimeUS);
+        BaseComponentType<TransformComponent, ComponentType::TRANSFORM>::PostUpdate(deltaTimeUS);
     }
 
     void TransformComponent::OnUpdateLoop() {
@@ -600,7 +600,7 @@ namespace Divide {
             _hasChanged = false;
         }
 
-        return SGNComponent<TransformComponent>::save(outputBuffer);
+        return BaseComponentType<TransformComponent, ComponentType::TRANSFORM>::save(outputBuffer);
     }
 
     bool TransformComponent::load(ByteBuffer& inputBuffer) {
@@ -630,6 +630,6 @@ namespace Divide {
             setRotation(Quaternion<F32>(localRotation));
         }
 
-        return SGNComponent<TransformComponent>::save(inputBuffer);
+        return BaseComponentType<TransformComponent, ComponentType::TRANSFORM>::save(inputBuffer);
     }
 }; //namespace

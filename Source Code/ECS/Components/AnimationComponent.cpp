@@ -7,8 +7,8 @@
 
 namespace Divide {
 
-AnimationComponent::AnimationComponent(SceneGraphNode& parentSGN)
-    : SGNComponent(parentSGN, ComponentType::ANIMATION),
+AnimationComponent::AnimationComponent(SceneGraphNode& parentSGN, PlatformContext& context)
+    : BaseComponentType<AnimationComponent, ComponentType::ANIMATION>(parentSGN, context),
       _playAnimations(true),
       _currentTimeStamp(0UL),
       _parentTimeStamp(0UL),
@@ -56,8 +56,8 @@ void AnimationComponent::Update(const U64 deltaTimeUS) {
         /// Use PhysX actor from RigidBodyComponent to feed new bone positions/orientation
         /// And read back ragdoll results to update transforms accordingly
     //}
-
-    SGNComponent<AnimationComponent>::Update(deltaTimeUS);
+    
+    BaseComponentType<AnimationComponent, ComponentType::ANIMATION>::Update(deltaTimeUS);
 }
 
 void AnimationComponent::resetTimers() {

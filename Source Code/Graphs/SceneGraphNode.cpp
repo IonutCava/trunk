@@ -21,12 +21,35 @@
 #include "ECS/Events/Headers/BoundsEvents.h"
 #include "ECS/Events/Headers/TransformEvents.h"
 #include "ECS/Systems/Headers/ECSManager.h"
+#include "ECS/Components/Headers/SpotLightComponent.h"
+#include "ECS/Components/Headers/PointLightComponent.h"
+#include "ECS/Components/Headers/DirectionalLightComponent.h"
+
 
 namespace Divide {
+
+namespace {
+    template<std::size_t N>
+    struct num { static const constexpr auto value = N; };
+
+    template <class F, std::size_t... Is>
+    constexpr void for_(F func, std::index_sequence<Is...>) {
+        using expander = int[];
+        (void)expander {
+            0, ((void)func(num<Is>{}), 0)...
+        };
+    }
+
+    template <std::size_t N, typename F>
+    constexpr void for_(F func) {
+        for_(func, std::make_index_sequence<N>());
+    }
+};
 
 SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescriptor& descriptor)
     : GUIDWrapper(),
       ECS::Event::IEventListener(&sceneGraph.GetECSEngine()),
+      PlatformContextComponent(sceneGraph.parentScene().context()),
       _sceneGraph(sceneGraph),
       _node(descriptor._node),
       _componentMask(0),
@@ -84,66 +107,18 @@ SceneGraphNode::~SceneGraphNode()
 
 void SceneGraphNode::AddMissingComponents(U32 componentMask) {
 
-    for (U8 i = 0; i < to_U8(ComponentType::COUNT); ++i) {
-        U32 componentBit = 1 << i;
+    for (ComponentType::_integral i = 0; i < ComponentType::COUNT; ++i) {
+        if (i > 0) {
+            const ComponentType::_integral componentBit = 1 << i;
 
-        // Only add new components;
-        if (BitCompare(componentMask, componentBit) && !BitCompare(_componentMask, componentBit)) {
-            _componentMask |= componentBit;
-
-            switch (ComponentType::_from_integral(componentBit)) {
-                default: break;
-                case ComponentType::ANIMATION:
-                    AddSGNComponent<AnimationComponent>();
-                    break;
-                case ComponentType::INVERSE_KINEMATICS:
-                    AddSGNComponent<IKComponent>();
-                    break;
-                case ComponentType::RAGDOLL:
-                    AddSGNComponent<RagdollComponent>();
-                    break;
-                case ComponentType::NAVIGATION:
-                    AddSGNComponent<NavigationComponent>();
-                    break;
-                case ComponentType::TRANSFORM:
-                    AddSGNComponent<TransformComponent>();
-                    break;
-                case ComponentType::BOUNDS:
-                    AddSGNComponent<BoundsComponent>();
-                    break;
-                case ComponentType::UNIT:
-                    AddSGNComponent<UnitComponent>();
-                    break;
-                case ComponentType::SELECTION:
-                    AddSGNComponent<SelectionComponent>();
-                    break;
-                case ComponentType::NETWORKING: {
-                    LocalClient& client = _sceneGraph.parentScene().context().client();
-                    AddSGNComponent<NetworkingComponent>(client);
-                } break;
-                case ComponentType::RIGID_BODY: {
-                    PXDevice& pxContext = _sceneGraph.parentScene().context().pfx();
-
-                    STUBBED("Rigid body physics disabled for now - Ionut");
-                    AddSGNComponent<RigidBodyComponent>(pxContext);
-                } break;
-
-                case ComponentType::RENDERING: {
-                    GFXDevice& gfxContext = _sceneGraph.parentScene().context().gfx();
-
-                    const Material_ptr& materialTpl = _node->getMaterialTpl();
-                    if (!materialTpl) {
-                        Console::printfn(Locale::get(_ID("LOAD_DEFAULT_MATERIAL")));
-                        Material_ptr materialTemplate = CreateResource<Material>(parentGraph().parentScene().resourceCache(), ResourceDescriptor("defaultMaterial_" + name()));
-                        materialTemplate->setShadingMode(Material::ShadingMode::BLINN_PHONG);
-                        _node->setMaterialTpl(materialTemplate);
-                    }
-
-                    AddSGNComponent<RenderingComponent>(gfxContext, materialTpl->clone("_instance_" + name()));
-                } break;
+            // Only add new components;
+            if (BitCompare(componentMask, componentBit) && !BitCompare(_componentMask, componentBit)) {
+                _componentMask |= componentBit;
+                SGNComponent::make(ComponentType::_from_integral(componentBit), *this);
             }
         }
-    }
+    };
+
 }
 
 void SceneGraphNode::RegisterEventCallbacks()
@@ -227,9 +202,6 @@ SceneGraphNode* SceneGraphNode::addNode(const SceneGraphNodeDescriptor& descript
     // Set the current node as the new node's parent
     sceneGraphNode->setParent(*this);
     if (sceneGraphNode->_node->getState() == ResourceState::RES_LOADED) {
-        // Do all the post load operations on the SceneNode
-        // Pass a reference to the newly created SceneGraphNode in case we needWut?
-        // transforms or bounding boxes
         Attorney::SceneNodeSceneGraph::postLoad(*sceneGraphNode->_node, *sceneGraphNode);
         _editorComponents.emplace_back(&Attorney::SceneNodeSceneGraph::getEditorComponent(*sceneGraphNode->_node));
         invalidateRelationshipCache();
@@ -750,9 +722,9 @@ void SceneGraphNode::loadFromXML(const boost::property_tree::ptree& pt) {
     usageContext(pt.get("static", false) ? NodeUsageContext::NODE_STATIC : NodeUsageContext::NODE_DYNAMIC);
 
     U32 componentsToLoad = 0;
-    for (U8 i = 0; i < to_U8(ComponentType::COUNT); ++i) {
+    for (U8 i = 1; i < to_U8(ComponentType::COUNT); ++i) {
         ComponentType type = ComponentType::_from_integral(1 << i);
-        if (pt.count(type._to_string()) != 0) {
+        if (pt.count(type._to_string()) > 0) {
             componentsToLoad |= type._to_integral();
         }
     }

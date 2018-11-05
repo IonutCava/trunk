@@ -7,8 +7,8 @@
 
 namespace Divide {
 
-BoundsComponent::BoundsComponent(SceneGraphNode& sgn)
-    : SGNComponent(sgn, ComponentType::BOUNDS),
+BoundsComponent::BoundsComponent(SceneGraphNode& sgn, PlatformContext& context)
+    : BaseComponentType<BoundsComponent, ComponentType::BOUNDS>(sgn, context),
      _ignoreTransform(false)
 {
     _boundingBoxNotDirty.clear();
@@ -72,7 +72,7 @@ const BoundingBox& BoundsComponent::updateAndGetBoundingBox() {
 void BoundsComponent::Update(const U64 deltaTimeUS) {
     updateAndGetBoundingBox();
 
-    SGNComponent<BoundsComponent>::Update(deltaTimeUS);
+    BaseComponentType<BoundsComponent, ComponentType::BOUNDS>::Update(deltaTimeUS);
 }
 
 };

@@ -78,7 +78,7 @@ typedef std::tuple<I64, F32/*min*/, F32/*max*/> SGNRayResult;
 class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
                        protected ECS::Event::IEventListener,
                        public GUIDWrapper,
-                       private NonCopyable
+                       public PlatformContextComponent
 {
     static const size_t INITIAL_CHILD_COUNT = 128;
 
@@ -312,7 +312,7 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
    public:
     template<class T, class ...P>
     T* AddSGNComponent(P&&... param) {
-        SGNComponent<T>* comp = static_cast<SGNComponent<T>*>(AddComponent<T>(*this, std::forward<P>(param)...));
+        SGNComponent* comp = static_cast<SGNComponent*>(AddComponent<T>(*this, this->context(), std::forward<P>(param)...));
         _editorComponents.emplace_back(&comp->getEditorComponent());
         SetBit(_componentMask, comp->type());
 
@@ -376,6 +376,11 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     // ToDo: Remove this HORRIBLE hack -Ionut
     vectorEASTL<EditorComponent*> _editorComponents;
 };
+
+template<typename T, class ... Args>
+void AddSGNComponent(SceneGraphNode& parentSGN, Args&&... args) {
+    parentSGN.AddSGNComponent<T>(std::forward<Args>(args)...);
+}
 
 namespace Attorney {
     class SceneGraphNodeEditor {

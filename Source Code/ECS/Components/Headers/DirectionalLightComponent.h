@@ -36,7 +36,7 @@
 
 namespace Divide {
 
-class DirectionalLightComponent : public SGNComponent<DirectionalLightComponent>,
+class DirectionalLightComponent : public BaseComponentType<DirectionalLightComponent, ComponentType::DIRECTIONAL_LIGHT>,
                                   public Light
 {
    public:
@@ -44,7 +44,7 @@ class DirectionalLightComponent : public SGNComponent<DirectionalLightComponent>
 
    public:
 
-    explicit DirectionalLightComponent(SceneGraphNode& sgn, LightPool& parentPool);
+    explicit DirectionalLightComponent(SceneGraphNode& sgn, PlatformContext& context);
     ~DirectionalLightComponent();
 
     inline U8 csmSplitCount() const { return _csmSplitCount; }

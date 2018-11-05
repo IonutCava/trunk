@@ -4,12 +4,13 @@
 #include "Rendering/Camera/Headers/Camera.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Core/Resources/Headers/ResourceCache.h"
+#include "Managers/Headers/SceneManager.h"
 
 namespace Divide {
 
-PointLightComponent::PointLightComponent(SceneGraphNode& sgn, F32 range, LightPool& parentPool)
-     : Light(sgn, range, LightType::POINT, parentPool),
-       SGNComponent<PointLightComponent>(sgn, ComponentType::POINT_LIGHT)
+PointLightComponent::PointLightComponent(SceneGraphNode& sgn, PlatformContext& context)
+     : Light(sgn, 20.0f, LightType::POINT, sgn.parentGraph().parentScene().lightPool()),
+       BaseComponentType<PointLightComponent, ComponentType::POINT_LIGHT>(sgn, context)
 {
     // +x
     _direction[0].set(WORLD_X_AXIS);

@@ -503,6 +503,7 @@
     </ClCompile>
     <ClCompile Include="..\..\..\Source Code\ECS\Components\DirectionalLightComponent.cpp" />
     <ClCompile Include="..\..\..\Source Code\ECS\Components\PointLightComponent.cpp" />
+    <ClCompile Include="..\..\..\Source Code\ECS\Components\SGNComponent.cpp" />
     <ClCompile Include="..\..\..\Source Code\ECS\Components\SpotLightComponent.cpp" />
     <ClCompile Include="..\..\..\Source Code\Rendering\Lighting\Light.cpp" />
   </ItemGroup>

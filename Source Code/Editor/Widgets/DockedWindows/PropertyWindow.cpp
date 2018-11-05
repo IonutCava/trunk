@@ -144,7 +144,11 @@ namespace Divide {
             for (I64 nodeGUID : crtSelections) {
                 SceneGraphNode* sgnNode = node(nodeGUID);
                 if (sgnNode != nullptr) {
-                    ImGui::Text(sgnNode->name().c_str());
+                    bool enabled = sgnNode->isActive();
+                    if (ImGui::Checkbox(sgnNode->name().c_str(), &enabled)) {
+                        sgnNode->setActive(enabled);
+                    }
+                    ImGui::Separator();
 
                     vectorEASTL<EditorComponent*>& editorComp = Attorney::SceneGraphNodeEditor::editorComponents(*sgnNode);
                     for (EditorComponent* comp : editorComp) {

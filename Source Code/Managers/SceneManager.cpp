@@ -430,10 +430,7 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
 }
 
 void SceneManager::preRender(RenderStagePass stagePass, const Camera& camera, RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
-    const GFXDevice& gfx = _platformContext->gfx();
-
-    LightPool* lightPool = Attorney::SceneManager::lightPool(getActiveScene());
-    gfx.getRenderer().preRender(stagePass, target, *lightPool, bufferInOut);
+    _platformContext->gfx().getRenderer().preRender(stagePass, target, getActiveScene().lightPool(), bufferInOut);
 }
 
 void SceneManager::postRender(RenderStagePass stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut) {
@@ -452,9 +449,7 @@ void SceneManager::debugDraw(RenderStagePass stagePass, const Camera& camera, GF
 
 bool SceneManager::generateShadowMaps(GFX::CommandBuffer& bufferInOut) {
     if (_platformContext->config().rendering.shadowMapping.enabled) {
-        LightPool* lightPool = Attorney::SceneManager::lightPool(getActiveScene());
-        assert(lightPool != nullptr);
-        return lightPool->generateShadowMaps(*playerCamera(), bufferInOut);
+        return getActiveScene().lightPool().generateShadowMaps(*playerCamera(), bufferInOut);
     }
 
     return true;
@@ -592,8 +587,7 @@ RenderPassCuller::VisibleNodeList& SceneManager::getVisibleNodesCache(RenderStag
 
 void SceneManager::prepareLightData(RenderStage stage, const Camera& camera) {
     if (stage != RenderStage::SHADOW) {
-        LightPool* lightPool = Attorney::SceneManager::lightPool(getActiveScene());
-        lightPool->prepareLightData(stage, camera.getEye(), camera.getViewMatrix());
+        getActiveScene().lightPool().prepareLightData(stage, camera.getEye(), camera.getViewMatrix());
     }
 }
 

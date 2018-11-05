@@ -49,11 +49,9 @@ namespace Divide {
         GROUP_COUNT
     };
 
-    class PXDevice;
-    
-    class RigidBodyComponent : public SGNComponent<RigidBodyComponent> {
+    class RigidBodyComponent : public BaseComponentType<RigidBodyComponent, ComponentType::RIGID_BODY> {
       public:
-        RigidBodyComponent(SceneGraphNode& parentSGN, PXDevice& context);
+        RigidBodyComponent(SceneGraphNode& parentSGN, PlatformContext& context);
         ~RigidBodyComponent();
 
 

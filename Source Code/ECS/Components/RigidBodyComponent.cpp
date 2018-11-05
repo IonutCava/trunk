@@ -1,15 +1,17 @@
 #include "stdafx.h"
 
+#include "Core/Headers/PlatformContext.h"
+
 #include "Physics/Headers/PXDevice.h"
 #include "Headers/RigidBodyComponent.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 
 namespace Divide {
-    RigidBodyComponent::RigidBodyComponent(SceneGraphNode& parentSGN, PXDevice& context)
-        : SGNComponent(parentSGN, ComponentType::RIGID_BODY),
+    RigidBodyComponent::RigidBodyComponent(SceneGraphNode& parentSGN, PlatformContext& context)
+        : BaseComponentType<RigidBodyComponent, ComponentType::RIGID_BODY>(parentSGN, context),
           _physicsCollisionGroup(PhysicsGroup::GROUP_STATIC)
     {
-        _rigidBody.reset(context.createRigidActor(parentSGN, *this));
+        _rigidBody.reset(context.pfx().createRigidActor(parentSGN, *this));
     }
 
     RigidBodyComponent::~RigidBodyComponent()

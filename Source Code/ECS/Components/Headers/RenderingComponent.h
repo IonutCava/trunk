@@ -96,7 +96,7 @@ enum class ReflectorType : U8 {
 
 typedef DELEGATE_CBK<void, RenderCbkParams&, GFX::CommandBuffer&> RenderCallback;
 
-class RenderingComponent : public SGNComponent<RenderingComponent> {
+class RenderingComponent : public BaseComponentType<RenderingComponent, ComponentType::RENDERING> {
     friend class Attorney::RenderingCompRenderPass;
     friend class Attorney::RenderingCompGFXDevice;
     friend class Attorney::RenderingCompRenderBin;
@@ -116,8 +116,7 @@ class RenderingComponent : public SGNComponent<RenderingComponent> {
 
    public:
     explicit RenderingComponent(SceneGraphNode& parentSGN,
-                                GFXDevice& context,
-                                Material_ptr materialInstance);
+                                PlatformContext& context);
     ~RenderingComponent();
 
     void onRender(RenderStagePass renderStagePass);

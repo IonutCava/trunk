@@ -39,14 +39,14 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 class SceneGraphNode;
-class NavigationComponent : public SGNComponent<NavigationComponent>{
+class NavigationComponent : public BaseComponentType<NavigationComponent, ComponentType::NAVIGATION>{
    public:
     enum class NavigationContext :U32 {
         NODE_OBSTACLE = 0,
         NODE_IGNORE
     };
 
-    NavigationComponent(SceneGraphNode& sgn);
+    NavigationComponent(SceneGraphNode& sgn, PlatformContext& context);
     ~NavigationComponent();
 
     inline const NavigationContext& navigationContext() const {

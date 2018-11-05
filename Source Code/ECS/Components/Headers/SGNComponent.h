@@ -33,6 +33,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _SGN_COMPONENT_H_
 
 #include "EditorComponent.h"
+#include "Core/Headers/PlatformContextComponent.h"
 
 #include <ECS.h>
 #include <BetterEnums/include/enum.h>
@@ -63,17 +64,63 @@ BETTER_ENUM(ComponentType, U32,
     COUNT = 15
 );
 
+//ref: http://www.nirfriedman.com/2018/04/29/unforgettable-factory/
+template <class Base, class... Args>
+class Factory {
+public:
+    template <class ... T>
+    static void make(ComponentType type, SceneGraphNode& node, T&&... args) {
+        data().at(type)(node, std::forward<T>(args)...);
+    }
+
+    template <class T, ComponentType::_enumerated C>
+    struct Registrar : Base,
+                       public ECS::Component<T>
+    {
+        friend T;
+
+        static bool registerT() {
+            Factory::data()[C] = [](SceneGraphNode& node, Args... args) -> void {
+                 AddSGNComponent<T>(node, std::forward<Args>(args)...);
+            };
+            return true;
+        }
+        static bool registered;
+
+        template<class ...P>
+        Registrar(P&&... param) : Base(Key{}, C, std::forward<P>(param)...) { (void)registered; }
+    };
+
+    friend Base;
+
+private:
+    class Key {
+        Key() {};
+        template <class T, ComponentType::_enumerated C> friend struct Registrar;
+    };
+
+    Factory() = default;
+
+    static auto &data() {
+        static std::unordered_map<ComponentType::_integral, DELEGATE_CBK<void, SceneGraphNode&, Args...>> s;
+        return s;
+    }
+};
+
+template <class Base, class... Args>
+template <class T, ComponentType::_enumerated C>
+bool Factory<Base, Args...>::Registrar<T, C>::registered = Factory<Base, Args...>::Registrar<T, C>::registerT();
+
 struct EntityOnUpdate;
 struct EntityActiveStateChange;
 
-template <typename T>
-class SGNComponent : private NonCopyable,
-                     public ECS::Component<T>,
+class SGNComponent : private PlatformContextComponent,
+                     public Factory<SGNComponent>,
                      protected ECS::Event::IEventListener
 {
    public:
 
-    explicit SGNComponent(SceneGraphNode& parentSGN, ComponentType type);
+    explicit SGNComponent(Key key, ComponentType type, SceneGraphNode& parentSGN, PlatformContext& context);
     virtual ~SGNComponent();
 
     virtual void PreUpdate(const U64 deltaTime);
@@ -94,7 +141,7 @@ class SGNComponent : private NonCopyable,
 
     virtual bool enabled() const;
     virtual void enabled(const bool state);
-    
+
    protected:
     void RegisterEventCallbacks();
 
@@ -106,6 +153,9 @@ class SGNComponent : private NonCopyable,
     SceneGraphNode& _parentSGN;
     EditorComponent _editorComponent;
 };
+
+template<typename T, ComponentType::_enumerated C>
+using BaseComponentType = SGNComponent::Registrar<T, C>;
 
 };  // namespace Divide
 #endif //_SGN_COMPONENT_H_

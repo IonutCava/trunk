@@ -10,6 +10,8 @@
 
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/StringHelper.h"
+#include "Core/Headers/PlatformContext.h"
+
 #include "Scenes/Headers/SceneState.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Platform/Video/Headers/GFXDevice.h"
@@ -27,17 +29,26 @@ namespace Divide {
 hashMap<U32, DebugView*> RenderingComponent::s_debugViews[2];
 
 RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
-                                       GFXDevice& context,
-                                       Material_ptr materialInstance)
-    : SGNComponent(parentSGN, ComponentType::RENDERING),
-      _context(context),
+                                       PlatformContext& context)
+    : BaseComponentType<RenderingComponent, ComponentType::RENDERING>(parentSGN, context),
+      _context(context.gfx()),
       _lodLevel(0),
       _renderMask(0),
       _descriptorSetCache(_context.newDescriptorSet()),
       _reflectorType(ReflectorType::PLANAR_REFLECTOR),
-      _materialInstance(materialInstance),
+      _materialInstance(nullptr),
       _skeletonPrimitive(nullptr)
 {
+    const Material_ptr& materialTpl = parentSGN.getNode()->getMaterialTpl();
+    if (!materialTpl) {
+        Console::printfn(Locale::get(_ID("LOAD_DEFAULT_MATERIAL")));
+        Material_ptr materialTemplate = CreateResource<Material>(context.kernel().resourceCache(), ResourceDescriptor("defaultMaterial_" + parentSGN.name()));
+        materialTemplate->setShadingMode(Material::ShadingMode::BLINN_PHONG);
+        _materialInstance = materialTemplate->clone("_instance_" + parentSGN.name());
+    } else {
+        _materialInstance = materialTpl->clone("_instance_" + parentSGN.name());
+    }
+
     _renderPackagesDirty.fill(true);
 
     toggleRenderOption(RenderOptions::RENDER_GEOMETRY, true);
@@ -110,10 +121,10 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
     if (Config::Build::IS_DEBUG_BUILD) {
         ResourceDescriptor previewReflectionRefractionColour("fbPreview");
         previewReflectionRefractionColour.setThreadedLoading(true);
-        _previewRenderTargetColour = CreateResource<ShaderProgram>(context.parent().resourceCache(), previewReflectionRefractionColour);
+        _previewRenderTargetColour = CreateResource<ShaderProgram>(context.kernel().resourceCache(), previewReflectionRefractionColour);
 
         ResourceDescriptor previewReflectionRefractionDepth("fbPreview.LinearDepth.ScenePlanes");
-        _previewRenderTargetDepth = CreateResource<ShaderProgram>(context.parent().resourceCache(), previewReflectionRefractionDepth);
+        _previewRenderTargetDepth = CreateResource<ShaderProgram>(context.kernel().resourceCache(), previewReflectionRefractionDepth);
 
         // Red X-axis
         _axisLines.push_back(Line(VECTOR3_ZERO, WORLD_X_AXIS * 2, UColour(255, 0, 0, 255), 5.0f));
@@ -205,7 +216,7 @@ void RenderingComponent::Update(const U64 deltaTimeUS) {
         }
     }
 
-    SGNComponent<RenderingComponent>::Update(deltaTimeUS);
+    BaseComponentType<RenderingComponent, ComponentType::RENDERING>::Update(deltaTimeUS);
 }
 
 bool RenderingComponent::canDraw(RenderStagePass renderStagePass) {

@@ -6,8 +6,8 @@
 #include "Dynamics/Entities/Units/Headers/Unit.h"
 
 namespace Divide {
-UnitComponent::UnitComponent(SceneGraphNode& parentSGN)
-    : SGNComponent(parentSGN, ComponentType::UNIT)
+UnitComponent::UnitComponent(SceneGraphNode& parentSGN, PlatformContext& context)
+    : BaseComponentType<UnitComponent, ComponentType::UNIT>(parentSGN, context)
 {
 }
 

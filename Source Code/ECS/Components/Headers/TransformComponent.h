@@ -50,13 +50,13 @@ namespace Divide {
         COUNT = 4
     };
 
-    class TransformComponent : public SGNComponent<TransformComponent>,
+    class TransformComponent : public BaseComponentType<TransformComponent, ComponentType::TRANSFORM>,
                                public ITransform
     {
         friend class Attorney::TransformComponentSGN;
 
         public:
-         TransformComponent(SceneGraphNode& parentSGN);
+         TransformComponent(SceneGraphNode& parentSGN, PlatformContext& context);
          ~TransformComponent();
 
          void reset();
@@ -198,7 +198,6 @@ namespace Divide {
         
         mutable SharedMutex _lock;
     };
-
 
     namespace Attorney {
         class TransformComponentSGN {

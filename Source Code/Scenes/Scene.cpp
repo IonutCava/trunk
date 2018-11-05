@@ -414,13 +414,13 @@ void Scene::loadAsset(const XML::SceneNode& sceneNode, SceneGraphNode* parent) {
         } else {
             ret->loadFromXML(nodeTree);
 
-            SceneGraphNodeDescriptor nodeDescriptor;
+            SceneGraphNodeDescriptor nodeDescriptor = {};
             nodeDescriptor._node = ret;
             nodeDescriptor._name = sceneNode.name;
             nodeDescriptor._componentMask = normalMask;
             
-            for (U8 i = 0; i < to_U8(ComponentType::COUNT); ++i) {
-                ComponentType type = ComponentType::_from_integral(1 << i);
+            for (U8 i = 1; i < to_U8(ComponentType::COUNT); ++i) {
+                ComponentType type = ComponentType::_from_integral(1u << i);
                 if (nodeTree.count(type._to_string()) != 0) {
                     nodeDescriptor._componentMask |= 1 << i;
                 }
@@ -470,46 +470,36 @@ SceneGraphNode* Scene::addParticleEmitter(const stringImpl& name,
 
 SceneGraphNode* Scene::addLight(LightType type, SceneGraphNode& parentNode, stringImpl nodeName) {
 
-    if (nodeName.empty()) {
-        switch (type) {
-            case LightType::DIRECTIONAL:
-                nodeName = "directional_light_";
-                break;
-            case LightType::POINT:
-                nodeName = "point_light_";
-                break;
-            case LightType::SPOT:
-                nodeName = "spot_light_";
-                break;
-        }
-        nodeName = name() + nodeName + to_stringImpl(_lightPool->getLights(type).size());
-    } 
-
-    SceneGraphNodeDescriptor lightNodeDescriptor;
-    lightNodeDescriptor._name = nodeName;
+    SceneGraphNodeDescriptor lightNodeDescriptor = {};
     lightNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
     lightNodeDescriptor._componentMask = to_base(ComponentType::TRANSFORM) |
-                                         to_base(ComponentType::BOUNDS) |
-                                         to_base(ComponentType::NETWORKING);
-
-    SceneGraphNode* ret = parentNode.addNode(lightNodeDescriptor);
+        to_base(ComponentType::BOUNDS) |
+        to_base(ComponentType::NETWORKING);
 
     switch (type) {
-        case LightType::DIRECTIONAL:
-            ret->AddSGNComponent<DirectionalLightComponent>(*_lightPool)->castsShadows(true);
-        {
-        }break;
-        case LightType::POINT:
-        {
-            ret->AddSGNComponent<PointLightComponent>(25.0f, *_lightPool)->castsShadows(true);
-        }break;
-        case LightType::SPOT:
-        {
-            ret->AddSGNComponent<SpotLightComponent>(30.0f, *_lightPool)->castsShadows(true);
-        }break;
+    case LightType::DIRECTIONAL: {
+        if (nodeName.empty()) {
+            nodeName = name() + "directional_light_" + to_stringImpl(_lightPool->getLights(type).size());
+        }
+        lightNodeDescriptor._componentMask |= to_base(ComponentType::DIRECTIONAL_LIGHT);
+        } break;
+    case LightType::POINT: {
+        if (nodeName.empty()) {
+            nodeName = name() + "point_light_" + to_stringImpl(_lightPool->getLights(type).size());
+        }
+        lightNodeDescriptor._componentMask |= to_base(ComponentType::POINT_LIGHT);
+        } break;
+    case LightType::SPOT: {
+        if (nodeName.empty()) {
+            nodeName = name() + "spot_light_" + to_stringImpl(_lightPool->getLights(type).size());
+        }
+        lightNodeDescriptor._componentMask |= to_base(ComponentType::SPOT_LIGHT);
+        } break;
     }
-    
-    return ret;
+
+    lightNodeDescriptor._name = nodeName;
+
+    return parentNode.addNode(lightNodeDescriptor);    
 }
 
 void Scene::toggleFlashlight(PlayerIndex idx) {
@@ -520,9 +510,10 @@ void Scene::toggleFlashlight(PlayerIndex idx) {
         lightNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
         lightNodeDescriptor._componentMask = to_base(ComponentType::TRANSFORM) |
                                              to_base(ComponentType::BOUNDS) |
-                                             to_base(ComponentType::NETWORKING);
+                                             to_base(ComponentType::NETWORKING) |
+                                             to_base(ComponentType::SPOT_LIGHT);
         flashLight = _sceneGraph->getRoot().addNode(lightNodeDescriptor);
-        SpotLightComponent* spotLight = flashLight->AddSGNComponent<SpotLightComponent>(30.0f, *_lightPool);
+        SpotLightComponent* spotLight = flashLight->get<SpotLightComponent>();
         spotLight->castsShadows(true);
         spotLight->setDiffuseColour(DefaultColours::WHITE);
 
@@ -886,6 +877,7 @@ bool Scene::load(const stringImpl& name) {
 
     // We always add at least one light (we can delete / disable it as needed)
     _sun = addLight(LightType::DIRECTIONAL, _sceneGraph->getRoot(), "DefaultLight");
+    _sun->get<DirectionalLightComponent>()->castsShadows(true);
     _loadComplete = true;
 
     return _loadComplete;

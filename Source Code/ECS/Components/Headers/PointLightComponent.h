@@ -36,11 +36,11 @@
 
 namespace Divide {
 
-class PointLightComponent : public SGNComponent<PointLightComponent>,
+class PointLightComponent : public BaseComponentType<PointLightComponent, ComponentType::POINT_LIGHT>,
                             public Light
 {
    public:
-    explicit PointLightComponent(SceneGraphNode& sgn, F32 range, LightPool& parentPool);
+    explicit PointLightComponent(SceneGraphNode& sgn, PlatformContext& context);
    private:
     vec3<F32> _direction[6];
 };

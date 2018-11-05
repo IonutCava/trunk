@@ -45,9 +45,10 @@ class ShaderBuffer;
 class AnimEvaluator;
 class SceneAnimator;
 class SceneGraphNode;
-class AnimationComponent : public SGNComponent<AnimationComponent>{
+
+class AnimationComponent : public BaseComponentType<AnimationComponent, ComponentType::ANIMATION> {
    public:
-    AnimationComponent(SceneGraphNode& parentSGN);
+    AnimationComponent(SceneGraphNode& parentSGN, PlatformContext& context);
     ~AnimationComponent();
 
     inline void updateAnimator(const std::shared_ptr<SceneAnimator>& animator) {

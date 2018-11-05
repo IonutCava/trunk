@@ -1,17 +1,17 @@
 #include "stdafx.h"
 
 #include "Headers/NetworkingComponent.h"
-
 #include "Core/Networking/Headers/LocalClient.h"
 #include "Graphs/Headers/SceneGraphNode.h"
+#include "Core/Headers/PlatformContext.h"
 
 namespace Divide {
 
 hashMap<I64, NetworkingComponent*> NetworkingComponent::s_NetComponents;
 
-NetworkingComponent::NetworkingComponent(SceneGraphNode& parentSGN, LocalClient& parentClient)
-    : SGNComponent(parentSGN, ComponentType::NETWORKING),
-     _parentClient(parentClient),
+NetworkingComponent::NetworkingComponent(SceneGraphNode& parentSGN, PlatformContext& context)
+    : BaseComponentType<NetworkingComponent, ComponentType::NETWORKING>(parentSGN, context),
+     _parentClient(context.client()),
      _resendRequired(true)
 {
     // Register a receive callback with parent:

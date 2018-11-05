@@ -35,74 +35,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Graphs/Headers/SceneGraphNode.h"
 
 namespace Divide {
-    template<typename T>
-    SGNComponent<T>::SGNComponent(SceneGraphNode& parentSGN, ComponentType type)
-        : ECS::Event::IEventListener(&parentSGN.GetECSEngine()),
-         _type(type),
-         _parentSGN(parentSGN),
-         _editorComponent(type._to_string()),
-         _enabled(true),
-         _hasChanged(false)
-    {
-        RegisterEventCallbacks();
-    }
-
-    template<typename T>
-    SGNComponent<T>::~SGNComponent()
-    {
-        UnregisterAllEventCallbacks();
-    }
-
-    template<typename T>
-    void SGNComponent<T>::RegisterEventCallbacks() {
-    }
-
-    template<typename T>
-    bool SGNComponent<T>::save(ByteBuffer& outputBuffer) const {
-        ACKNOWLEDGE_UNUSED(outputBuffer);
-        return true;
-    }
-
-    template<typename T>
-    bool SGNComponent<T>::load(ByteBuffer& inputBuffer) {
-        ACKNOWLEDGE_UNUSED(inputBuffer);
-        return true;
-    }
-
-    template<typename T>
-    I64 SGNComponent<T>::uniqueID() const {
-        return _ID((_parentSGN.name() + "_" + _editorComponent.name().c_str()).c_str());
-    }
-
-    template<typename T>
-    void SGNComponent<T>::PreUpdate(const U64 deltaTime) {
-        ACKNOWLEDGE_UNUSED(deltaTime);
-    }
-
-    template<typename T>
-    bool SGNComponent<T>::enabled() const {
-        return _enabled;
-    }
-
-    template<typename T>
-    void SGNComponent<T>::enabled(const bool state) {
-        _enabled = state;
-    }
-
-    template<typename T>
-    void SGNComponent<T>::Update(const U64 deltaTime) {
-        ACKNOWLEDGE_UNUSED(deltaTime);
-    }
-
-    template<typename T>
-    void SGNComponent<T>::PostUpdate(const U64 deltaTime) {
-        ACKNOWLEDGE_UNUSED(deltaTime);
-    }
-
-    template<typename T>
-    void SGNComponent<T>::OnUpdateLoop() {
-
-    }
+  
 };//namespace Divide
 
 #endif

@@ -598,6 +598,9 @@
     <ClCompile Include="..\..\..\Source Code\Rendering\Lighting\Light.cpp">
       <Filter>Rendering\Lighting</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Source Code\ECS\Components\SGNComponent.cpp">
+      <Filter>ECS\Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../../Source Code/Rendering\Camera\Headers\Camera.h">
