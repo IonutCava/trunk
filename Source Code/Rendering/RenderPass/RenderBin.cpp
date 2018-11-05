@@ -9,6 +9,8 @@
 #include "Geometry/Material/Headers/Material.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Managers/Headers/RenderPassManager.h"
+#include "ECS/Components/Headers/BoundsComponent.h"
+#include "ECS/Components/Headers/RenderingComponent.h"
 
 namespace Divide {
 

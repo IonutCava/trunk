@@ -30,6 +30,13 @@
 #include "GUI/Headers/GUI.h"
 #include "GUI/Headers/GUIConsole.h"
 
+
+#include "ECS/Components/Headers/UnitComponent.h"
+#include "ECS/Components/Headers/BoundsComponent.h"
+#include "ECS/Components/Headers/SelectionComponent.h"
+#include "ECS/Components/Headers/TransformComponent.h"
+#include "ECS/Components/Headers/RigidBodyComponent.h"
+#include "ECS/Components/Headers/NavigationComponent.h"
 #include "ECS/Components/Headers/SpotLightComponent.h"
 #include "ECS/Components/Headers/PointLightComponent.h"
 #include "ECS/Components/Headers/DirectionalLightComponent.h"
@@ -425,9 +432,10 @@ void Scene::loadAsset(const XML::SceneNode& sceneNode, SceneGraphNode* parent) {
                     nodeDescriptor._componentMask |= 1 << i;
                 }
             }
-
+            nodeDescriptor._postLoadCallback = [nodeTree](SceneGraphNode& node, bool threaded) {
+                node.loadFromXML(nodeTree);
+            };
             crtNode = parent->addNode(nodeDescriptor);
-            crtNode->loadFromXML(nodeTree);
         }
 
     }

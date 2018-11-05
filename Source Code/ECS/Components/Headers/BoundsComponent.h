@@ -73,6 +73,8 @@ namespace Divide {
         BoundingBox _refBoundingBox;
         BoundingSphere _boundingSphere;
     };
-};
+
+    INIT_COMPONENT(BoundsComponent);
+}; //namespace Divide
 
 #endif //_BOUNDS_COMPONENT_H_

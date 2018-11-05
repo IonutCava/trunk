@@ -9,6 +9,7 @@
 #include "Platform/Video/Headers/RenderPackage.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
 #include "Geometry/Shapes/Predefined/Headers/Sphere3D.h"
+#include "ECS/Components/Headers/RenderingComponent.h"
 
 namespace Divide {
 

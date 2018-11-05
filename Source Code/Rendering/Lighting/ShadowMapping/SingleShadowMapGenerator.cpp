@@ -13,6 +13,8 @@
 #include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 
+#include "ECS/Components/Headers/TransformComponent.h"
+
 namespace Divide {
 
 SingleShadowMapGenerator::SingleShadowMapGenerator(GFXDevice& context)

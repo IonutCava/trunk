@@ -41,6 +41,8 @@ namespace Divide {
         public:
             RagdollComponent(SceneGraphNode& parentSGN, PlatformContext& context);
     };
-};
+
+    INIT_COMPONENT(RagdollComponent);
+}; //namespace Divide
 
 #endif //_RAGDOLL_COMPONENT_H_

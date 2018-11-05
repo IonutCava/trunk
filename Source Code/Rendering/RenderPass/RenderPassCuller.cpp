@@ -10,6 +10,8 @@
 #include "Rendering/Camera/Headers/Camera.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Geometry/Shapes/Headers/Mesh.h"
+#include "ECS/Components/Headers/BoundsComponent.h"
+#include "ECS/Components/Headers/RenderingComponent.h"
 
 namespace Divide {
 

@@ -121,5 +121,7 @@ class AnimationComponent : public BaseComponentType<AnimationComponent, Componen
     bool _playAnimations;
 };
 
+INIT_COMPONENT(AnimationComponent);
+
 };  // namespace Divide
 #endif

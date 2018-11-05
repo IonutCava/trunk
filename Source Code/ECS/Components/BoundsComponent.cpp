@@ -1,6 +1,8 @@
 #include "stdafx.h"
 
 #include "Headers/BoundsComponent.h"
+#include "Headers/TransformComponent.h"
+
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "ECS/Events/Headers/BoundsEvents.h"
 #include "ECS/Events/Headers/TransformEvents.h"

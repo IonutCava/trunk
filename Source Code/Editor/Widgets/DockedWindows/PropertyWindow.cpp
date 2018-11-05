@@ -10,6 +10,8 @@
 #include "Rendering/Camera/Headers/Camera.h"
 #include "Geometry/Material/Headers/Material.h"
 
+#include "ECS/Components/Headers/TransformComponent.h"
+
 #undef IMGUI_DEFINE_MATH_OPERATORS
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui_internal.h>

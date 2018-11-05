@@ -14,6 +14,11 @@
 #include "Platform/Video/Textures/Headers/Texture.h"
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 
+#include "ECS/Components/Headers/BoundsComponent.h"
+#include "ECS/Components/Headers/RenderingComponent.h"
+#include "ECS/Components/Headers/TransformComponent.h"
+#include "ECS/Components/Headers/AnimationComponent.h"
+
 #ifndef USE_COLOUR_WOIT
 //#define USE_COLOUR_WOIT
 #endif

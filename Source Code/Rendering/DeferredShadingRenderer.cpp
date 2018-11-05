@@ -16,6 +16,7 @@
 #include "Rendering/Lighting/Headers/LightPool.h"
 #include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
 #include "Managers/Headers/RenderPassManager.h"
+#include "ECS/Components/Headers/TransformComponent.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 #include "Platform/Video/Buffers/PixelBuffer/Headers/PixelBuffer.h"
 

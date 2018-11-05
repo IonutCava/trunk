@@ -16,6 +16,9 @@
 #include "Scenes/Headers/SceneState.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Rendering/Camera/Headers/Camera.h"
+#include "ECS/Components/Headers/RenderingComponent.h"
+#include "ECS/Components/Headers/BoundsComponent.h"
+#include "ECS/Components/Headers/TransformComponent.h"
 #include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 #include "Platform/Video/Buffers/VertexBuffer/GenericBuffer/Headers/GenericVertexData.h"
 

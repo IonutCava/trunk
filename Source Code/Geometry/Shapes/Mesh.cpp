@@ -6,6 +6,9 @@
 #include "Managers/Headers/SceneManager.h"
 #include "Core/Headers/StringHelper.h"
 #include "Geometry/Animations/Headers/SceneAnimator.h"
+#include "ECS/Components/Headers/RigidBodyComponent.h"
+#include "ECS/Components/Headers/BoundsComponent.h"
+#include "ECS/Components/Headers/AnimationComponent.h"
 
 namespace Divide {
 

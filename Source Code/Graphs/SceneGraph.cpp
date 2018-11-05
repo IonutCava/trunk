@@ -8,7 +8,9 @@
 #include "Managers/Headers/FrameListenerManager.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "Geometry/Material/Headers/Material.h"
+
 #include "ECS/Systems/Headers/ECSManager.h"
+#include "ECS/Components/Headers/BoundsComponent.h"
 
 namespace Divide {
 

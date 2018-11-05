@@ -11,6 +11,8 @@
 
 #include "Platform/File/Headers/FileManagement.h"
 
+#include "ECS/Components/Headers/BoundsComponent.h"
+
 #include <ReCast/DebugUtils/Include/RecastDump.h>
 #include <ReCast/DebugUtils/Include/DetourDebugDraw.h>
 #include <ReCast/DebugUtils/Include/RecastDebugDraw.h>

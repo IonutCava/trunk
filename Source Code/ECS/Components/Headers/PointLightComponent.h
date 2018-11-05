@@ -45,6 +45,8 @@ class PointLightComponent : public BaseComponentType<PointLightComponent, Compon
     vec3<F32> _direction[6];
 };
 
+INIT_COMPONENT(PointLightComponent);
+
 };  // namespace Divide
 
 #endif //_POINT_LIGHT_COMPONENT_H_

@@ -18,6 +18,8 @@
 #include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 
+#include "ECS/Components/Headers/TransformComponent.h"
+
 namespace Divide {
 
 std::array<U8, to_base(ShadowType::COUNT)> LightPool::_shadowLocation = { {

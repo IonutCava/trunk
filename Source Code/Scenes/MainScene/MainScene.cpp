@@ -17,6 +17,8 @@
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "Environment/Terrain/Headers/TerrainDescriptor.h"
 
+#include "ECS/Components/Headers/TransformComponent.h"
+#include "ECS/Components/Headers/NavigationComponent.h"
 #include "ECS/Components/Headers/DirectionalLightComponent.h"
 
 namespace Divide {

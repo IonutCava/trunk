@@ -3,6 +3,9 @@
 #include "config.h"
 
 #include "Headers/RenderingComponent.h"
+#include "Headers/BoundsComponent.h"
+#include "Headers/AnimationComponent.h"
+#include "Headers/TransformComponent.h"
 
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/Configuration.h"

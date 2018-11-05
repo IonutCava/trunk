@@ -4,6 +4,7 @@
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
 #include "Managers/Headers/FrameListenerManager.h"
+#include "ECS/Components/Headers/TransformComponent.h"
 
 namespace Divide {
 

@@ -9,6 +9,9 @@
 #include "Rendering/PostFX/Headers/PostFX.h"
 
 #include "Dynamics/Entities/Units/Headers/Player.h"
+
+#include "ECS/Components/Headers/TransformComponent.h"
+#include "ECS/Components/Headers/RenderingComponent.h"
 #include "ECS/Components/Headers/DirectionalLightComponent.h"
 
 #if !defined(CEGUI_STATIC)

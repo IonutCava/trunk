@@ -224,6 +224,8 @@ class RenderingComponent : public BaseComponentType<RenderingComponent, Componen
     static hashMap<U32, DebugView*> s_debugViews[2];
 };
 
+INIT_COMPONENT(RenderingComponent);
+
 namespace Attorney {
 class RenderingCompRenderPass {
     private:

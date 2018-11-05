@@ -22,10 +22,11 @@
 
 #include "Environment/Water/Headers/Water.h"
 #include "Geometry/Importer/Headers/DVDConverter.h"
-
 #include "Dynamics/Entities/Units/Headers/Player.h"
-
 #include "Core/Debugging/Headers/DebugInterface.h"
+
+#include "ECS/Components/Headers/UnitComponent.h"
+#include "ECS/Components/Headers/TransformComponent.h"
 
 namespace Divide {
 

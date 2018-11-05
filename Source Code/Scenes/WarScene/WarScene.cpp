@@ -23,6 +23,10 @@
 #include "Managers/Headers/RenderPassManager.h"
 #include "Platform/Video/Headers/IMPrimitive.h"
 
+#include "ECS/Components/Headers/UnitComponent.h"
+#include "ECS/Components/Headers/RigidBodyComponent.h"
+#include "ECS/Components/Headers/RenderingComponent.h"
+#include "ECS/Components/Headers/TransformComponent.h"
 #include "ECS/Components/Headers/DirectionalLightComponent.h"
 
 #include "Dynamics/Entities/Particles/ConcreteUpdaters/Headers/ParticleBasicTimeUpdater.h"

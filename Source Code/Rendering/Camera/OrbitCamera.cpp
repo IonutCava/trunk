@@ -3,6 +3,7 @@
 #include "Headers/OrbitCamera.h"
 
 #include "Graphs/Headers/SceneGraphNode.h"
+#include "ECS/Components//Headers/TransformComponent.h"
 
 namespace Divide {
 

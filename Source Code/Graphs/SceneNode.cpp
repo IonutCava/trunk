@@ -8,6 +8,8 @@
 #include "Geometry/Shapes/Headers/SubMesh.h"
 #include "Geometry/Material/Headers/Material.h"
 
+#include "ECS/Components/Headers/BoundsComponent.h"
+
 namespace Divide {
 
 namespace {

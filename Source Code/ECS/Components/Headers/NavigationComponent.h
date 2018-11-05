@@ -64,5 +64,7 @@ class NavigationComponent : public BaseComponentType<NavigationComponent, Compon
     bool _overrideNavMeshDetail;
 };
 
+INIT_COMPONENT(NavigationComponent);
+
 };  // namespace Divide
 #endif

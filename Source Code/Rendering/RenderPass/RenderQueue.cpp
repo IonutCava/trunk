@@ -12,6 +12,7 @@
 #include "Geometry/Shapes/Headers/Object3D.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Managers/Headers/RenderPassManager.h"
+#include "ECS/Components/Headers/RenderingComponent.h"
 
 namespace Divide {
 

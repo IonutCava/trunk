@@ -12,6 +12,10 @@
 #include "Geometry/Shapes/Predefined/Headers/Sphere3D.h"
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
 
+#include "ECS/Components/Headers/BoundsComponent.h"
+#include "ECS/Components/Headers/RenderingComponent.h"
+#include "ECS/Components/Headers/TransformComponent.h"
+#include "ECS/Components/Headers/RigidBodyComponent.h"
 #include "ECS/Components/Headers/DirectionalLightComponent.h"
 
 namespace Divide {

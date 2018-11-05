@@ -11,6 +11,10 @@
 #include "Managers/Headers/SceneManager.h"
 #include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
 
+#include "ECS/Components/Headers/TransformComponent.h"
+#include "ECS/Components/Headers/RigidBodyComponent.h"
+#include "ECS/Components/Headers/RenderingComponent.h"
+
 #include "Geometry/Material/Headers/Material.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Headers/RenderPackage.h"

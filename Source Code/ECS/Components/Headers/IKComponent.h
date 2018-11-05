@@ -41,6 +41,8 @@ namespace Divide {
         public:
             IKComponent(SceneGraphNode& parentSGN, PlatformContext& context);
     };
-};
+
+    INIT_COMPONENT(IKComponent);
+}; //namespace Divide
 
 #endif //_IK_COMPONENT_H_

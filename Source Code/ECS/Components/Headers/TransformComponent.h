@@ -199,6 +199,8 @@ namespace Divide {
         mutable SharedMutex _lock;
     };
 
+    INIT_COMPONENT(TransformComponent);
+
     namespace Attorney {
         class TransformComponentSGN {
             static void onParentTransformDirty(TransformComponent& comp, U32 transformMask) {
@@ -213,6 +215,6 @@ namespace Divide {
 
     }; //namespace Attorney
 
-};
+}; //namespace Divide
 
 #endif //_TRANSFORM_COMPONENT_H_

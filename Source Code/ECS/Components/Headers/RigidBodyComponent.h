@@ -81,6 +81,9 @@ namespace Divide {
         DELEGATE_CBK<void, const RigidBodyComponent&> _collisionCbk;
         
     };
-};
+
+    INIT_COMPONENT(RigidBodyComponent);
+
+}; //namespace Divide
 
 #endif //_RIGID_BODY_COMPONENT_H_

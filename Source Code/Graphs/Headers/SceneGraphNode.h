@@ -38,18 +38,7 @@
 #include "Utility/Headers/StateTracker.h"
 
 #include "ECS/Components/Headers/EditorComponent.h"
-
-#include "ECS/Components/Headers/IKComponent.h"
-#include "ECS/Components/Headers/UnitComponent.h"
-#include "ECS/Components/Headers/BoundsComponent.h"
-#include "ECS/Components/Headers/RagdollComponent.h"
-#include "ECS/Components/Headers/RenderingComponent.h"
-#include "ECS/Components/Headers/AnimationComponent.h"
-#include "ECS/Components/Headers/TransformComponent.h"
-#include "ECS/Components/Headers/RigidBodyComponent.h"
-#include "ECS/Components/Headers/SelectionComponent.h"
-#include "ECS/Components/Headers/NavigationComponent.h"
-#include "ECS/Components/Headers/NetworkingComponent.h"
+#include "ECS/Components/Headers/SGNComponent.h"
 
 namespace Divide {
 
@@ -66,6 +55,7 @@ struct SceneGraphNodeDescriptor {
     stringImpl       _name = "";
     U32              _componentMask = 0;
     NodeUsageContext _usageContext = NodeUsageContext::NODE_STATIC;
+    DELEGATE_CBK<void, SceneGraphNode& /*node*/, bool /*threaded*/> _postLoadCallback;
 };
 
 namespace Attorney {

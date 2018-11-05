@@ -8,6 +8,8 @@
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
 #include "Dynamics/Entities/Units/Headers/NPC.h"
+#include "ECS/Components/Headers/UnitComponent.h"
+#include "ECS/Components/Headers/TransformComponent.h"
 
 #include "AI/PathFinding/NavMeshes/Headers/NavMesh.h"
 

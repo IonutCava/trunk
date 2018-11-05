@@ -4,7 +4,9 @@
 
 #include "Rendering/Headers/Renderer.h"
 #include "Rendering/Camera/Headers/Camera.h"
+
 #include "ECS/Components/Headers/DirectionalLightComponent.h"
+#include "ECS/Components/Headers/TransformComponent.h"
 
 #include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/RenderPassManager.h"

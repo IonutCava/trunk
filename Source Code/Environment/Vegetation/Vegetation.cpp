@@ -16,6 +16,8 @@
 #include "Platform/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 #include "Platform/Video/Buffers/VertexBuffer/GenericBuffer/Headers/GenericVertexData.h"
 
+#include "ECS/Components/Headers/RenderingComponent.h"
+
 namespace Divide {
 
 bool Vegetation::_staticDataUpdated = false;

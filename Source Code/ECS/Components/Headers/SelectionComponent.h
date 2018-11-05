@@ -41,6 +41,9 @@ namespace Divide {
     public:
         SelectionComponent(SceneGraphNode& parentSGN, PlatformContext& context);
     };
-};
+
+    INIT_COMPONENT(SelectionComponent);
+
+}; //namespace Divide
 
 #endif //_SELECTION_COMPONENT_H_

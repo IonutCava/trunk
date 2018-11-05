@@ -1,6 +1,8 @@
 #include "stdafx.h"
 
 #include "Headers/TransformComponent.h"
+
+#include "Core/Headers/ByteBuffer.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "ECS/Events/Headers/TransformEvents.h"
 

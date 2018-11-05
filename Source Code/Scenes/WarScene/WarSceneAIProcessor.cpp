@@ -12,6 +12,8 @@
 #include "Core/Headers/StringHelper.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Dynamics/Entities/Units/Headers/NPC.h"
+#include "ECS/Components/Headers/BoundsComponent.h"
+#include "ECS/Components/Headers/TransformComponent.h"
 
 namespace Divide {
 namespace AI {

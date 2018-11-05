@@ -14,6 +14,8 @@
 #include "Scenes/Headers/Scene.h"
 #include "Geometry/Material/Headers/Material.h"
 
+#include "ECS/Components/Headers/RenderingComponent.h"
+
 #include "Rendering/Headers/Renderer.h"
 #include "Rendering/Lighting/Headers/LightPool.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"

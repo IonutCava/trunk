@@ -56,6 +56,7 @@ namespace Divide {
 
 FWD_DECLARE_MANAGED_CLASS(SubMesh);
 
+class SceneAnimator;
 class Mesh : public Object3D {
    public:
     explicit Mesh(GFXDevice& context,

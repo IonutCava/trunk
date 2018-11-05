@@ -65,6 +65,8 @@ class DirectionalLightComponent : public BaseComponentType<DirectionalLightCompo
     F32 _csmNearClipOffset;
 };
 
+INIT_COMPONENT(DirectionalLightComponent);
+
 };  // namespace Divide
 
 #endif //_DIRECTIONAL_LIGHT_COMPONENT_H_

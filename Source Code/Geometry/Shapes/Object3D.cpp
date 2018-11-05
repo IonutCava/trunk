@@ -9,6 +9,8 @@
 #include "Physics/Headers/PXDevice.h"
 #include "Platform/Video/Headers/RenderPackage.h"
 
+#include "ECS/Components/Headers/AnimationComponent.h"
+
 namespace Divide {
 
 Object3D::Object3D(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, ObjectType type, ObjectFlag flag)

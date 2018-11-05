@@ -5,6 +5,8 @@
 #include "Managers/Headers/SceneManager.h"
 #include "Geometry/Animations/Headers/SceneAnimator.h"
 
+#include "ECS/Components/Headers/TransformComponent.h"
+
 namespace Divide {
 
 AnimationComponent::AnimationComponent(SceneGraphNode& parentSGN, PlatformContext& context)

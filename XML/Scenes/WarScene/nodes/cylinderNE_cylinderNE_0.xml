@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<static>true</static>
+<model>defaultobject</model>
+<NAVIGATION/>
+<TRANSFORM>
+    <Transform>
+        <position x="0" y="0" z="0"/>
+        <orientation x="0" y="0" z="0"/>
+        <scale x="1" y="1" z="1"/>
+    </Transform>
+    <WorldMat 00="1" 01="0" 02="0" 03="0" 10="0" 11="1" 12="0" 13="0" 20="0" 21="0" 22="1" 23="0" 30="0" 31="0" 32="0" 33="1"/>
+</TRANSFORM>
+<BOUNDS/>
+<RENDERING>
+    <Material>
+        <colour r="0.639999986" g="0.639999986" b="0.639999986" a="1"/>
+        <emissive r="0" g="0" b="0" a="1"/>
+        <specular r="0.5" g="0.5" b="0.5" a="1"/>
+        <shininess>96.0784302</shininess>
+        <doubleSided>true</doubleSided>
+        <bumpMethod>NORMAL</bumpMethod>
+        <shadingMode>PHONG</shadingMode>
+        <parallaxFactor>0.00999999978</parallaxFactor>
+        <texture>
+            <UNIT0>
+                <name>diffuse.dds</name>
+                <path>assets/textures</path>
+                <MapU>REPEAT</MapU>
+                <MapV>REPEAT</MapV>
+                <MapW>REPEAT</MapW>
+                <minFilter>LINEAR_MIPMAP_LINEAR</minFilter>
+                <magFilter>LINEAR</magFilter>
+                <anisotropy>16</anisotropy>
+            </UNIT0>
+            <NORMALMAP>
+                <name>normal.tga</name>
+                <path>assets/textures</path>
+                <MapU>REPEAT</MapU>
+                <MapV>REPEAT</MapV>
+                <MapW>REPEAT</MapW>
+                <minFilter>LINEAR_MIPMAP_LINEAR</minFilter>
+                <magFilter>LINEAR</magFilter>
+                <anisotropy>16</anisotropy>
+            </NORMALMAP>
+        </texture>
+    </Material>
+</RENDERING>

@@ -7,6 +7,10 @@
 #include "Environment/Terrain/Headers/Terrain.h"
 #include "Environment/Water/Headers/Water.h"
 
+#include "ECS/Components/Headers/BoundsComponent.h"
+#include "ECS/Components/Headers/NavigationComponent.h"
+#include "ECS/Components/Headers/TransformComponent.h"
+
 namespace Divide {
 namespace AI {
 namespace Navigation {

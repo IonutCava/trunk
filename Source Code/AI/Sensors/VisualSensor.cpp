@@ -6,6 +6,7 @@
 #include "Core/Headers/Console.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Dynamics/Entities/Units/Headers/NPC.h"
+#include "ECS/Components/Headers/TransformComponent.h"
 
 namespace Divide {
 using namespace AI;

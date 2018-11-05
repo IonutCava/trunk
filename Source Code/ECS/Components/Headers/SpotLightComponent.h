@@ -43,6 +43,8 @@ class SpotLightComponent : public BaseComponentType<SpotLightComponent, Componen
     explicit SpotLightComponent(SceneGraphNode& sgn, PlatformContext& context);
 };
 
+INIT_COMPONENT(SpotLightComponent);
+
 };  // namespace Divide
 
 #endif //_SPOT_LIGHT_COMPONENT_H_

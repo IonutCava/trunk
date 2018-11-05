@@ -36,6 +36,8 @@
 #include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
 #include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 
+#include "ECS/Components/Headers/RenderingComponent.h"
+
 namespace Divide {
 
 class Texture;

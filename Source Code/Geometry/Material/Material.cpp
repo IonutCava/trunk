@@ -16,6 +16,8 @@
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
 
+#include "ECS/Components/Headers/RenderingComponent.h"
+
 namespace Divide {
 
 namespace {

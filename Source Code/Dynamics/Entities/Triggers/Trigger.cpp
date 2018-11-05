@@ -6,6 +6,7 @@
 #include "Platform/Threading/Headers/Task.h"
 #include "Dynamics/Entities/Headers/Impostor.h"
 #include "Dynamics/Entities/Units/Headers/Unit.h"
+#include "ECS/Components/Headers/TransformComponent.h"
 
 namespace Divide {
 

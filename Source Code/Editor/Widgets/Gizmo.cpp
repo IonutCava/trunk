@@ -4,6 +4,7 @@
 #include "Editor/Headers/Editor.h"
 
 #include "Managers/Headers/SceneManager.h"
+#include "ECS/Components/Headers/TransformComponent.h"
 
 #include <imgui_internal.h>
 

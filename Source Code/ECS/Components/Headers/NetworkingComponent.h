@@ -71,6 +71,8 @@ private:
     static hashMap<I64, NetworkingComponent*> s_NetComponents;
 };
 
+INIT_COMPONENT(NetworkingComponent);
+
 }; //namespace Divide
 
 #endif //_NETWORKING_COMPONENT_H_

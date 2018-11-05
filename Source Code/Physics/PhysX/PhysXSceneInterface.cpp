@@ -9,6 +9,7 @@
 #include "Geometry/Material/Headers/Material.h"
 #include "Geometry/Shapes/Predefined/Headers/Box3D.h"
 #include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
+#include "ECS/Components/Headers/TransformComponent.h"
 
 using namespace physx;
 

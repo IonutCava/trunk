@@ -74,28 +74,38 @@ public:
     }
 
     template <class T, ComponentType::_enumerated C>
-    struct Registrar : Base,
-                       public ECS::Component<T>
+    struct Registrar : public ECS::Component<T>,
+                       Base
+                       
     {
         friend T;
 
-        static bool registerT() {
+        static bool registerComponentType() {
             Factory::data()[C] = [](SceneGraphNode& node, Args... args) -> void {
                  AddSGNComponent<T>(node, std::forward<Args>(args)...);
             };
             return true;
         }
-        static bool registered;
+
+        static bool s_registered;
 
         template<class ...P>
-        Registrar(P&&... param) : Base(Key{}, C, std::forward<P>(param)...) { (void)registered; }
+        Registrar(P&&... param) : Base(Key{s_registered}, C, std::forward<P>(param)...) { 
+            (void)s_registered;
+        }
     };
 
     friend Base;
 
 private:
     class Key {
-        Key() {};
+        Key(bool registered)
+            : _registered(registered)
+        {
+        };
+
+    private:
+        bool _registered = false;
         template <class T, ComponentType::_enumerated C> friend struct Registrar;
     };
 
@@ -109,7 +119,7 @@ private:
 
 template <class Base, class... Args>
 template <class T, ComponentType::_enumerated C>
-bool Factory<Base, Args...>::Registrar<T, C>::registered = Factory<Base, Args...>::Registrar<T, C>::registerT();
+bool Factory<Base, Args...>::Registrar<T, C>::s_registered = Factory<Base, Args...>::Registrar<T, C>::registerComponentType();
 
 struct EntityOnUpdate;
 struct EntityActiveStateChange;
@@ -157,6 +167,7 @@ class SGNComponent : private PlatformContextComponent,
 template<typename T, ComponentType::_enumerated C>
 using BaseComponentType = SGNComponent::Registrar<T, C>;
 
+#define INIT_COMPONENT(X) static bool X##_registered = X::s_registered
 };  // namespace Divide
 #endif //_SGN_COMPONENT_H_
 

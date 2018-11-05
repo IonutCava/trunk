@@ -57,6 +57,7 @@ private:
     Unit_ptr _unit;
 };
 
-};
+INIT_COMPONENT(UnitComponent);
+}; //namespace Divide
 
 #endif //_UNIT_COMPONENT_H_

@@ -9,6 +9,8 @@
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 
+#include "ECS/Components/Headers/TransformComponent.h"
+
 namespace Divide {
 
 CubeShadowMapGenerator::CubeShadowMapGenerator(GFXDevice& context)
