@@ -485,6 +485,11 @@ void RenderPassManager::woitPass(const PassParams& params, const RenderTarget& t
 
             // Step2: Composition pass
             // Don't clear depth & colours and do not write to the depth buffer
+
+            GFX::SetCameraCommand setCameraCommand;
+            setCameraCommand._cameraSnapshot = Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot();
+            GFX::EnqueueCommand(bufferInOut, setCameraCommand);
+
             GFX::BeginRenderPassCommand beginRenderPassCompCmd;
             beginRenderPassCompCmd._name = Util::StringFormat("DO_OIT_PASS_2_%s", (i == 0 ? "HIGH" : "LOW")).c_str();
             beginRenderPassCompCmd._target = RenderTargetID(RenderTargetUsage::SCREEN);
@@ -517,10 +522,11 @@ void RenderPassManager::woitPass(const PassParams& params, const RenderTarget& t
             descriptorSetCmd._set->_textureData.addTexture(revealage, to_base(ShaderProgram::TextureUsage::UNIT1));
             GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
-            GFX::DrawCommand drawCmd;
             GenericDrawCommand drawCommand;
             drawCommand._primitiveType = PrimitiveType::TRIANGLES;
             drawCommand._drawCount = 1;
+
+            GFX::DrawCommand drawCmd;
             drawCmd._drawCommands.push_back(drawCommand);
             GFX::EnqueueCommand(bufferInOut, drawCmd);
 

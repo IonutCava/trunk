@@ -30,7 +30,7 @@
                 <MapW>REPEAT</MapW>
                 <minFilter>LINEAR_MIPMAP_LINEAR</minFilter>
                 <magFilter>LINEAR</magFilter>
-                <anisotropy>16</anisotropy>
+                <anisotropy>255</anisotropy>
             </UNIT0>
             <NORMALMAP>
                 <name>normal.tga</name>
@@ -40,7 +40,7 @@
                 <MapW>REPEAT</MapW>
                 <minFilter>LINEAR_MIPMAP_LINEAR</minFilter>
                 <magFilter>LINEAR</magFilter>
-                <anisotropy>16</anisotropy>
+                <anisotropy>255</anisotropy>
             </NORMALMAP>
         </texture>
     </Material>

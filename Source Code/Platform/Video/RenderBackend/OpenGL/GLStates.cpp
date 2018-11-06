@@ -49,7 +49,7 @@ void GL_API::clearStates(const DisplayWindow& window, GLStateTracker& stateTrack
         stateTracker.setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
         stateTracker.setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
         stateTracker._activePixelBuffer = nullptr;
-        stateTracker._activeViewport.set(-1);
+        //stateTracker._activeViewport.set(-1);
     }
     stateTracker._previousStateBlockHash = 0;
 
