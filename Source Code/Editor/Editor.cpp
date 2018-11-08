@@ -63,7 +63,7 @@ namespace {
 };
 
 void InitBasicImGUIState(ImGuiIO& io) {
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavNoCaptureKeyboard; // Enable Keyboard Controls
     io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
     io.KeyMap[ImGuiKey_Tab] = to_I32(Input::KeyCode::KC_TAB);
     io.KeyMap[ImGuiKey_LeftArrow] = to_I32(Input::KeyCode::KC_LEFT);
@@ -713,10 +713,10 @@ void Editor::renderDrawList(ImDrawData* pDrawData, bool overlayOnScene, I64 wind
     viewportCmd._viewport.set(0, 0, fb_width, fb_height);
     GFX::EnqueueCommand(buffer, viewportCmd);
 
-    float L = pDrawData->DisplayPos.x;
-    float R = pDrawData->DisplayPos.x + pDrawData->DisplaySize.x;
-    float T = pDrawData->DisplayPos.y;
-    float B = pDrawData->DisplayPos.y + pDrawData->DisplaySize.y;
+    F32 L = pDrawData->DisplayPos.x;
+    F32 R = pDrawData->DisplayPos.x + pDrawData->DisplaySize.x;
+    F32 T = pDrawData->DisplayPos.y;
+    F32 B = pDrawData->DisplayPos.y + pDrawData->DisplaySize.y;
     const F32 ortho_projection[4][4] =
     {
         { 2.0f / (R - L),    0.0f,               0.0f,   0.0f },
@@ -954,7 +954,7 @@ void Editor::updateMousePosAndButtons() {
         }
     }
     ImGuiPlatformIO& platform_io = ImGui::GetPlatformIO();
-    for (int n = 0; n < platform_io.Viewports.Size; n++) {
+    for (I32 n = 0; n < platform_io.Viewports.Size; n++) {
         ImGuiViewport* viewport = platform_io.Viewports[n];
         DisplayWindow* window = (DisplayWindow*)viewport->PlatformHandle;
         if (window != nullptr) {
@@ -1129,7 +1129,7 @@ bool Editor::modalTextureView(const char* modalName, const Texture_ptr& tex, con
             aspect = w / to_F32(h);
         }
 
-        static float zoom = 1.0f;
+        static F32 zoom = 1.0f;
         static ImVec2 zoomCenter(0.5f, 0.5f);
         ImGui::ImageZoomAndPan((void *)(intptr_t)tex->getData().getHandle(), ImVec2(dimensions.w, dimensions.h / aspect), aspect, zoom, zoomCenter, 2, 3);
 

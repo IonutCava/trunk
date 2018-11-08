@@ -152,7 +152,7 @@ namespace Divide {
                     }
                     ImGui::Separator();
 
-                    vectorEASTL<EditorComponent*>& editorComp = Attorney::SceneGraphNodeEditor::editorComponents(*sgnNode);
+                    vectorFast<EditorComponent*>& editorComp = Attorney::SceneGraphNodeEditor::editorComponents(*sgnNode);
                     for (EditorComponent* comp : editorComp) {
                         if (ImGui::CollapsingHeader(comp->name().c_str())) {
                             //const I32 RV = ImGui::AppendTreeNodeHeaderButtons(comp->name().c_str(), ImGui::GetCursorPosX(), 1, &closed, "Remove", NULL, 0);

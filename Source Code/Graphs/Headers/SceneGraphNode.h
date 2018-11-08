@@ -55,7 +55,6 @@ struct SceneGraphNodeDescriptor {
     stringImpl       _name = "";
     U32              _componentMask = 0;
     NodeUsageContext _usageContext = NodeUsageContext::NODE_STATIC;
-    DELEGATE_CBK<void, SceneGraphNode& /*node*/, bool /*threaded*/> _postLoadCallback;
 };
 
 namespace Attorney {
@@ -314,10 +313,10 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
         SGNComponent* comp = static_cast<SGNComponent>(GetComponent<T>());
         if (comp) {
             _editorComponents.erase(
-                eastl::remove_if(eastl::begin(_editorComponents), eastl::end(_editorComponents),
+                std::remove_if(std::begin(_editorComponents), std::end(_editorComponents),
                                [comp](EditorComponent* editorComp)
                                -> bool { return comp->getEditorComponent().getGUID() == editorComp->getGUID(); }),
-                eastl::end(_editorComponents));
+                std::end(_editorComponents));
             ClearBit(_componentMask, comp->type());
             RemoveComponent<T>();
         }
@@ -364,7 +363,7 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     SGNRelationshipCache _relationshipCache;
 
     // ToDo: Remove this HORRIBLE hack -Ionut
-    vectorEASTL<EditorComponent*> _editorComponents;
+    vectorFast<EditorComponent*> _editorComponents;
 };
 
 template<typename T, class ... Args>
@@ -375,11 +374,11 @@ void AddSGNComponent(SceneGraphNode& parentSGN, Args&&... args) {
 namespace Attorney {
     class SceneGraphNodeEditor {
         private:
-        static vectorEASTL<EditorComponent*>& editorComponents(SceneGraphNode& node) {
+        static vectorFast<EditorComponent*>& editorComponents(SceneGraphNode& node) {
             return node._editorComponents;
         }
 
-        static const vectorEASTL<EditorComponent*>& editorComponents(const SceneGraphNode& node) {
+        static const vectorFast<EditorComponent*>& editorComponents(const SceneGraphNode& node) {
             return node._editorComponents;
         }
 
