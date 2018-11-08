@@ -57,6 +57,8 @@ namespace Divide {
 
       protected:
         bool _isMainMenu = true;
+        bool _quitPopup = false;
+        bool _closePopup = false;
         Texture_ptr _previewTexture = nullptr;
     };
 }; //namespace Divide
