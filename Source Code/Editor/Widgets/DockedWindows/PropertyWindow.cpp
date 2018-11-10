@@ -154,7 +154,7 @@ namespace Divide {
 
                     vectorEASTL<EditorComponent*>& editorComp = Attorney::SceneGraphNodeEditor::editorComponents(*sgnNode);
                     for (EditorComponent* comp : editorComp) {
-                        if (ImGui::CollapsingHeader(comp->name().c_str())) {
+                        if (ImGui::CollapsingHeader(comp->name().c_str(), ImGuiTreeNodeFlags_OpenOnArrow) {
                             //const I32 RV = ImGui::AppendTreeNodeHeaderButtons(comp->name().c_str(), ImGui::GetCursorPosX(), 1, &closed, "Remove", NULL, 0);
                             ImGui::NewLine();
                             ImGui::SameLine(xOffset);
@@ -183,7 +183,7 @@ namespace Divide {
 
         if (hasSelections) {
             const F32 buttonWidth = 80.0f;
-            F32 xOffset = ImGui::GetWindowSize().x - buttonWidth;
+            F32 xOffset = ImGui::GetWindowSize().x - buttonWidth - 20.0f;
             ImGui::NewLine();
             ImGui::Separator();
             ImGui::NewLine();
