@@ -208,26 +208,17 @@ SceneGraphNode* SceneGraphNode::addNode(const SceneGraphNodeDescriptor& descript
 
     // Set the current node as the new node's parent
     sceneGraphNode->setParent(*this);
+    invalidateRelationshipCache();
+    _editorComponents.emplace_back(&Attorney::SceneNodeSceneGraph::getEditorComponent(*sceneGraphNode->_node));
+
     if (sceneGraphNode->_node->getState() == ResourceState::RES_LOADED) {
         Attorney::SceneNodeSceneGraph::postLoad(*sceneGraphNode->_node, *sceneGraphNode);
-        _editorComponents.emplace_back(&Attorney::SceneNodeSceneGraph::getEditorComponent(*sceneGraphNode->_node));
-        invalidateRelationshipCache();
-        if (descriptor._postLoadCallback) {
-            descriptor._postLoadCallback(*this, false);
-        }
     } else if (sceneGraphNode->_node->getState() == ResourceState::RES_LOADING) {
         setUpdateFlag(UpdateFlag::THREADED_LOAD);
-
-        SceneGraphNode* callbackPtr = sceneGraphNode;
-
         sceneGraphNode->_node->setStateCallback(ResourceState::RES_LOADED,
-            [this, descriptor, callbackPtr](Resource_wptr res) {
-                Attorney::SceneNodeSceneGraph::postLoad(*(std::dynamic_pointer_cast<SceneNode>(res.lock())), *(callbackPtr));
-                invalidateRelationshipCache();
+            [this, sceneGraphNode](Resource_wptr res) {
+                Attorney::SceneNodeSceneGraph::postLoad(*(std::dynamic_pointer_cast<SceneNode>(res.lock())), *(sceneGraphNode));
                 clearUpdateFlag(UpdateFlag::THREADED_LOAD);
-                if (descriptor._postLoadCallback) {
-                    descriptor._postLoadCallback(*this, false);
-                }
             }
         );
     }

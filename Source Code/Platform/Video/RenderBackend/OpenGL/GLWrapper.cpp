@@ -1181,7 +1181,7 @@ bool GL_API::makeTexturesResident(const TextureDataContainer& textureData) {
 
     bool bound = false;
     for (auto data : textureData.textures()) {
-        bound = bound || makeTextureResident(data.first, data.second);
+        bound = makeTextureResident(data.first, data.second) || bound;
     }
 
     return bound;

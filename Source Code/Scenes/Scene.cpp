@@ -432,10 +432,9 @@ void Scene::loadAsset(const XML::SceneNode& sceneNode, SceneGraphNode* parent) {
                     nodeDescriptor._componentMask |= 1 << i;
                 }
             }
-            nodeDescriptor._postLoadCallback = [nodeTree](SceneGraphNode& node, bool threaded) {
-                node.loadFromXML(nodeTree);
-            };
+
             crtNode = parent->addNode(nodeDescriptor);
+            crtNode->loadFromXML(nodeTree);
         }
 
     }

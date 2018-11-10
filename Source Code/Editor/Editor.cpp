@@ -431,8 +431,9 @@ void Editor::toggle(const bool state) {
     _running = state;
 
     if (!state) {
-        _scenePreviewFocused = _sceneHovered = false;
-        ImGui::ResetStyle(_scenePreviewFocused ? _currentDimmedTheme : _currentTheme);
+        _sceneHovered = false;
+        scenePreviewFocused(false);
+        ImGui::ResetStyle(scenePreviewFocused() ? _currentDimmedTheme : _currentTheme);
     } else {
         _gizmo->enable(true);
         static_cast<ContentExplorerWindow*>(_dockedWindows[to_base(WindowType::ContentExplorer)])->init();
@@ -713,10 +714,10 @@ void Editor::renderDrawList(ImDrawData* pDrawData, bool overlayOnScene, I64 wind
     viewportCmd._viewport.set(0, 0, fb_width, fb_height);
     GFX::EnqueueCommand(buffer, viewportCmd);
 
-    float L = pDrawData->DisplayPos.x;
-    float R = pDrawData->DisplayPos.x + pDrawData->DisplaySize.x;
-    float T = pDrawData->DisplayPos.y;
-    float B = pDrawData->DisplayPos.y + pDrawData->DisplaySize.y;
+    F32 L = pDrawData->DisplayPos.x;
+    F32 R = pDrawData->DisplayPos.x + pDrawData->DisplaySize.x;
+    F32 T = pDrawData->DisplayPos.y;
+    F32 B = pDrawData->DisplayPos.y + pDrawData->DisplaySize.y;
     const F32 ortho_projection[4][4] =
     {
         { 2.0f / (R - L),    0.0f,               0.0f,   0.0f },
@@ -756,7 +757,7 @@ void Editor::selectionChangeCallback(PlayerIndex idx, SceneGraphNode* node) {
 
 /// Key pressed: return true if input was consumed
 bool Editor::onKeyDown(const Input::KeyEvent& key) {
-    if (!_scenePreviewFocused || !_gizmo->onKeyDown(key)) {
+    if (!scenePreviewFocused() || !_gizmo->onKeyDown(key)) {
         ImGuiIO& io = _imguiContext->IO;
         io.KeysDown[to_I32(key._key)] = true;
         if (key._text != nullptr) {
@@ -775,7 +776,7 @@ bool Editor::onKeyDown(const Input::KeyEvent& key) {
 
 /// Key released: return true if input was consumed
 bool Editor::onKeyUp(const Input::KeyEvent& key) {
-    if (!_scenePreviewFocused || !_gizmo->onKeyUp(key)) {
+    if (!scenePreviewFocused() || !_gizmo->onKeyUp(key)) {
         ImGuiIO& io = _imguiContext->IO;
         io.KeysDown[to_I32(key._key)] = false;
 
@@ -818,7 +819,7 @@ namespace {
 }
 /// Mouse moved: return true if input was consumed
 bool Editor::mouseMoved(const Input::MouseMoveEvent& arg) {
-    if (!_scenePreviewFocused || !_gizmo->mouseMoved(arg)) {
+    if (!scenePreviewFocused() || !_gizmo->mouseMoved(arg)) {
         ImGuiIO& io = _imguiContext->IO;
         SceneViewWindow* sceneView = static_cast<SceneViewWindow*>(_dockedWindows[to_base(WindowType::SceneView)]);
         _sceneHovered = sceneView->isHovered() && sceneView->sceneRect().contains(io.MousePos.x, io.MousePos.y);
@@ -844,7 +845,7 @@ bool Editor::mouseMoved(const Input::MouseMoveEvent& arg) {
 
 /// Mouse button pressed: return true if input was consumed
 bool Editor::mouseButtonPressed(const Input::MouseButtonEvent& arg) {
-    if (!_scenePreviewFocused || !_scenePreviewFocused || !_gizmo->mouseButtonPressed(arg)) {
+    if (!scenePreviewFocused() || !_gizmo->mouseButtonPressed(arg)) {
         ImGuiIO& io = _imguiContext->IO;
         for (U8 i = 0; i < 5; ++i) {
             if (arg.button == g_oisButtons[i]) {
@@ -860,17 +861,17 @@ bool Editor::mouseButtonPressed(const Input::MouseButtonEvent& arg) {
 
 /// Mouse button released: return true if input was consumed
 bool Editor::mouseButtonReleased(const Input::MouseButtonEvent& arg) {
-    if (_scenePreviewFocused != _sceneHovered) {
+    if (scenePreviewFocused() != _sceneHovered) {
         ImGui::SetCurrentContext(_imguiContext);
-        _scenePreviewFocused = _sceneHovered;
+        scenePreviewFocused(_sceneHovered);
         ImGuiStyle& style = ImGui::GetStyle();
-        ImGui::ResetStyle(_scenePreviewFocused ? _currentDimmedTheme : _currentTheme, style);
+        ImGui::ResetStyle(scenePreviewFocused() ? _currentDimmedTheme : _currentTheme, style);
 
         const Rect<I32>& previewRect = static_cast<SceneViewWindow*>(_dockedWindows[to_base(WindowType::SceneView)])->sceneRect();
-        _mainWindow->warp(_scenePreviewFocused, previewRect);
+        _mainWindow->warp(scenePreviewFocused(), previewRect);
     }
 
-    if (!_scenePreviewFocused || !_gizmo->mouseButtonReleased(arg)) {
+    if (!scenePreviewFocused() || !_gizmo->mouseButtonReleased(arg)) {
         ImGuiIO& io = _imguiContext->IO;
         for (U8 i = 0; i < 5; ++i) {
             if (arg.button == g_oisButtons[i]) {
@@ -954,7 +955,7 @@ void Editor::updateMousePosAndButtons() {
         }
     }
     ImGuiPlatformIO& platform_io = ImGui::GetPlatformIO();
-    for (int n = 0; n < platform_io.Viewports.Size; n++) {
+    for (I32 n = 0; n < platform_io.Viewports.Size; n++) {
         ImGuiViewport* viewport = platform_io.Viewports[n];
         DisplayWindow* window = (DisplayWindow*)viewport->PlatformHandle;
         if (window != nullptr) {
@@ -1129,7 +1130,7 @@ bool Editor::modalTextureView(const char* modalName, const Texture_ptr& tex, con
             aspect = w / to_F32(h);
         }
 
-        static float zoom = 1.0f;
+        static F32 zoom = 1.0f;
         static ImVec2 zoomCenter(0.5f, 0.5f);
         ImGui::ImageZoomAndPan((void *)(intptr_t)tex->getData().getHandle(), ImVec2(dimensions.w, dimensions.h / aspect), aspect, zoom, zoomCenter, 2, 3);
 
@@ -1151,6 +1152,21 @@ bool Editor::modalTextureView(const char* modalName, const Texture_ptr& tex, con
     }
 
     return closed;
+}
+
+void Editor::scenePreviewFocused(bool state) {
+    _scenePreviewFocused = state;
+
+    ImGuiIO& io = ImGui::GetIO();
+    if (state) {
+        io.ConfigFlags |= ImGuiConfigFlags_NavNoCaptureKeyboard;
+    } else {
+        io.ConfigFlags &= ~ImGuiConfigFlags_NavNoCaptureKeyboard;
+    }
+}
+
+bool Editor::scenePreviewFocused() const {
+    return _scenePreviewFocused;
 }
 
 void Editor::saveToXML() const {

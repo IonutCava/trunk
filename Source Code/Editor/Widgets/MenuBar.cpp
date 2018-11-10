@@ -36,7 +36,9 @@ namespace {
 MenuBar::MenuBar(PlatformContext& context, bool mainMenu)
     : PlatformContextComponent(context),
       _isMainMenu(mainMenu),
-      _previewTexture(nullptr)
+      _previewTexture(nullptr),
+      _quitPopup(false),
+      _closePopup(false)
 {
 
 }
@@ -63,6 +65,49 @@ void MenuBar::draw() {
             ImGui::OpenPopup("Image Preview");
             if (Attorney::EditorGeneralWidget::modalTextureView(_context.editor(), "Image Preview", _previewTexture, vec2<F32>(512, 512), true)) {
                 _previewTexture = nullptr;
+            }
+        }
+
+        if (_closePopup) {
+            _closePopup = false;
+
+            ImGui::OpenPopup("Confirm Close");
+
+            if (ImGui::BeginPopupModal("Confirm Close", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+                ImGui::Text("Are you sure you want to close the editor? You have unsaved items!");
+                ImGui::Separator();
+
+                if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::SetItemDefaultFocus();
+                ImGui::SameLine();
+                if (ImGui::Button("Yes", ImVec2(120, 0))) {
+                    ImGui::CloseCurrentPopup();
+                    _context.editor().toggle(false);
+                }
+                ImGui::EndPopup();
+            }
+        }
+
+        if (_quitPopup) {
+            _quitPopup = false;
+
+            ImGui::OpenPopup("Confirm Quit");
+            if (ImGui::BeginPopupModal("Confirm Quit", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+                ImGui::Text("Are you sure you want to quit?");
+                ImGui::Separator();
+
+                if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::SetItemDefaultFocus();
+                ImGui::SameLine();
+                if (ImGui::Button("Yes", ImVec2(120, 0))) {
+                    ImGui::CloseCurrentPopup();
+                    context().app().RequestShutdown();
+                }
+                ImGui::EndPopup();
             }
         }
     }
@@ -116,8 +161,15 @@ void MenuBar::drawFileMenu() {
                 ImGui::MenuItem(ImGui::GetStyleColorName((ImGuiCol)i));
             ImGui::EndMenu();
         }
-        if (ImGui::MenuItem("Quit", "Alt+F4")) {
-            context().app().RequestShutdown();
+
+        if (ImGui::MenuItem("Close Editor"))
+        {
+            _closePopup = hasUnsavedElements;
+        }
+
+        if (ImGui::MenuItem("Quit", "Alt+F4"))
+        {
+            _quitPopup = true;
         }
 
         ImGui::EndMenu();

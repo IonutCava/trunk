@@ -170,6 +170,9 @@ class Editor : public PlatformContextComponent,
     bool renderFull(const U64 deltaTime);
     void updateMousePosAndButtons();
 
+    void scenePreviewFocused(bool state);
+    bool scenePreviewFocused() const;
+
   protected: // attorney
     void renderDrawList(ImDrawData* pDrawData, bool overlayOnScene, I64 windowGUID);
     void drawMenuBar();
