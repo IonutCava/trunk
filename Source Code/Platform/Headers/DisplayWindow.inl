@@ -149,14 +149,6 @@ namespace Divide {
         _destroyCbk = destroyCbk;
     }
 
-    inline bool DisplayWindow::warp() const {
-        return BitCompare(_flags, WindowFlags::WARP);
-    }
-
-    inline const Rect<I32>& DisplayWindow::warpRect() const {
-        return _warpRect;
-    }
-
     inline const Rect<I32>& DisplayWindow::renderingViewport() const {
         return _renderingViewport;
     }

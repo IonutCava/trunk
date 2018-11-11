@@ -72,38 +72,16 @@ MouseMoveEvent::MouseMoveEvent(DisplayWindow* sourceWindow, U8 deviceIndex, Mous
 {
 }
 
-MouseState MouseMoveEvent::state(bool warped, bool viewportRelative) const {
-    auto adjust = [](MouseAxis& inOut, I32 x, I32 y, I32 z, I32 w) -> void {
-        D64 slope = 0.0;
-        inOut.abs = MAP(inOut.abs, x, y, z, w, slope);
-        inOut.rel = static_cast<int>(std::round(inOut.rel * slope));
-    };
-
-    MouseState ret = _stateIn;
-
-    if (_sourceWindow->warp() && warped) {
-        const Rect<I32>& rect = _sourceWindow->warpRect();
-        if (rect.contains(_stateIn.X.abs, _stateIn.Y.abs)) {
-            adjust(ret.X, rect.x, rect.z, 0, _sourceWindow->getDimensions().width);
-            adjust(ret.Y, rect.y, rect.w, 0, _sourceWindow->getDimensions().height);
-        }
-    }
-    
-    if (viewportRelative) {
-        const Rect<I32>& rect = _sourceWindow->renderingViewport();
-        adjust(ret.X, 0, _sourceWindow->getDimensions().width, rect.x, rect.z);
-        adjust(ret.Y, 0, _sourceWindow->getDimensions().height, rect.y, rect.w);
-    }
-
-    return ret;
+const MouseState& MouseMoveEvent::state() const {
+    return _stateIn;
 }
 
-MouseAxis MouseMoveEvent::X(bool warped, bool viewportRelative) const {
-    return state(warped, viewportRelative).X;
+MouseAxis MouseMoveEvent::X() const {
+    return state().X;
 }
 
-MouseAxis MouseMoveEvent::Y(bool warped, bool viewportRelative) const {
-    return state(warped, viewportRelative).Y;
+MouseAxis MouseMoveEvent::Y() const {
+    return state().Y;
 }
 
 I32 MouseMoveEvent::WheelH() const {
@@ -114,16 +92,12 @@ I32 MouseMoveEvent::WheelV() const {
     return _stateIn.VWheel;
 }
 
-vec4<I32> MouseMoveEvent::relativePos(bool warped, bool viewportRelative) const {
-    MouseState crtState = state(warped, viewportRelative);
-
-    return vec4<I32>(crtState.X.rel, crtState.Y.rel, crtState.VWheel, crtState.HWheel);
+vec4<I32> MouseMoveEvent::relativePos() const {
+    return vec4<I32>(state().X.rel, state().Y.rel, state().VWheel, state().HWheel);
 }
 
-vec4<I32> MouseMoveEvent::absolutePos(bool warped, bool viewportRelative) const {
-    MouseState crtState = state(warped, viewportRelative);
-
-    return vec4<I32>(crtState.X.abs, crtState.Y.abs, crtState.VWheel, crtState.HWheel);
+vec4<I32> MouseMoveEvent::absolutePos() const {
+    return vec4<I32>(state().X.abs, state().Y.abs, state().VWheel, state().HWheel);
 }
 
 JoystickEvent::JoystickEvent(DisplayWindow* sourceWindow, U8 deviceIndex)

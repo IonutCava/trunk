@@ -205,7 +205,7 @@ bool SceneInput::mouseMoved(const Input::MouseMoveEvent& arg) {
     constexpr I32 moveTolerance = 2;
 
     SceneStatePerPlayer& state = _parentScene.state().playerState(arg._deviceIndex);
-    state.aimPos(vec2<I32>(arg.X().abs, arg.Y().abs));
+    state.aimPos(arg.absolutePos().xy());
 
     if (state.cameraLockedToMouse()) {
         if (state.aimDelta().x < -moveTolerance) {

@@ -135,75 +135,61 @@ namespace Divide {
         I32 w = (I32)gameView->getWidth();
         I32 h = (I32)gameView->getHeight();
 
-        if (window && !window->SkipItems && h > 0) {
+        ImVec2 curPos = ImGui::GetCursorPos();
+        const ImVec2 wndSz(ImGui::GetWindowSize().x - curPos.x - 30.0f, ImGui::GetWindowSize().y - curPos.y - 30.0f);
 
-            F32 zoom = 1.f;
-            ImVec2 curPos = ImGui::GetCursorPos();
-            const ImVec2 wndSz(ImGui::GetWindowSize().x - curPos.x - 30.0f, ImGui::GetWindowSize().y - curPos.y - 30.0f);
-            IM_ASSERT(wndSz.x != 0 && wndSz.y != 0 && zoom != 0);
+        ImRect bb(window->DC.CursorPos, ImVec2(window->DC.CursorPos.x + wndSz.x, window->DC.CursorPos.y + wndSz.y));
+        ImGui::ItemSize(bb);
+        if (ImGui::ItemAdd(bb, NULL)) {
 
-            ImRect bb(window->DC.CursorPos, ImVec2(window->DC.CursorPos.x + wndSz.x, window->DC.CursorPos.y + wndSz.y));
-            ImGui::ItemSize(bb);
-            if (ImGui::ItemAdd(bb, NULL)) {
+            ImVec2 imageSz = wndSz - ImVec2(0.2f, 0.2f);
+            ImVec2 remainingWndSize(0, 0);
+            const F32 aspectRatio = (F32)w / (F32)h;
 
-                ImVec2 imageSz = wndSz - ImVec2(0.2f, 0.2f);
-                ImVec2 remainingWndSize(0, 0);
-                const F32 aspectRatio = (F32)w / (F32)h;
-
-                if (aspectRatio != 0) {
-                    const F32 wndAspectRatio = wndSz.x / wndSz.y;
-                    if (aspectRatio >= wndAspectRatio) {
-                        imageSz.y = imageSz.x / aspectRatio;
-                        remainingWndSize.y = wndSz.y - imageSz.y;
-                    }
-                    else {
-                        imageSz.x = imageSz.y*aspectRatio;
-                        remainingWndSize.x = wndSz.x - imageSz.x;
-                    }
-                }
-
-                const F32 zoomFactor = .5f / zoom;
-                ImVec2 uvExtension = ImVec2(2.f*zoomFactor, 2.f*zoomFactor);
-                if (remainingWndSize.x > 0) {
-                    const F32 remainingSizeInUVSpace = 2.f*zoomFactor*(remainingWndSize.x / imageSz.x);
-                    const F32 deltaUV = uvExtension.x;
-                    const F32 remainingUV = 1.f - deltaUV;
-                    if (deltaUV < 1) {
-                        F32 adder = (remainingUV < remainingSizeInUVSpace ? remainingUV : remainingSizeInUVSpace);
-                        uvExtension.x += adder;
-                        remainingWndSize.x -= adder * zoom * imageSz.x;
-                        imageSz.x += adder * zoom * imageSz.x;
-                    }
-                }
-                if (remainingWndSize.y > 0) {
-                    const F32 remainingSizeInUVSpace = 2.f*zoomFactor*(remainingWndSize.y / imageSz.y);
-                    const F32 deltaUV = uvExtension.y;
-                    const F32 remainingUV = 1.f - deltaUV;
-                    if (deltaUV < 1) {
-                        F32 adder = (remainingUV < remainingSizeInUVSpace ? remainingUV : remainingSizeInUVSpace);
-                        uvExtension.y += adder;
-                        remainingWndSize.y -= adder * zoom * imageSz.y;
-                        imageSz.y += adder * zoom * imageSz.y;
-                    }
-                }
-
-
-                ImVec2 startPos = bb.Min, endPos = bb.Max;
-                startPos.x += remainingWndSize.x*.5f;
-                startPos.y += remainingWndSize.y*.5f;
-                endPos.x = startPos.x + imageSz.x;
-                endPos.y = startPos.y + imageSz.y;
-
-                const ImGuiID id = (ImGuiID)((U64)&_parent) + 1;
-                ImGui::PushID(id);
-
-                window->DrawList->AddImage((void *)(intptr_t)gameView->getHandle(), startPos, endPos, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
-
-                _sceneRect.set(startPos.x, startPos.y, endPos.x, endPos.y);
-
-                ImGui::PopID();
+            const F32 wndAspectRatio = wndSz.x / wndSz.y;
+            if (aspectRatio >= wndAspectRatio) {
+                imageSz.y = imageSz.x / aspectRatio;
+                remainingWndSize.y = wndSz.y - imageSz.y;
+            } else {
+                imageSz.x = imageSz.y*aspectRatio;
+                remainingWndSize.x = wndSz.x - imageSz.x;
             }
+
+            ImVec2 uvExtension = ImVec2(1.f, 1.f);
+            if (remainingWndSize.x > 0) {
+                const F32 remainingSizeInUVSpace = remainingWndSize.x / imageSz.x;
+                const F32 deltaUV = uvExtension.x;
+                const F32 remainingUV = 1.f - deltaUV;
+                if (deltaUV < 1) {
+                    F32 adder = (remainingUV < remainingSizeInUVSpace ? remainingUV : remainingSizeInUVSpace);
+                    uvExtension.x += adder;
+                    remainingWndSize.x -= adder * imageSz.x;
+                    imageSz.x += adder * imageSz.x;
+                }
+            }
+            if (remainingWndSize.y > 0) {
+                const F32 remainingSizeInUVSpace = remainingWndSize.y / imageSz.y;
+                const F32 deltaUV = uvExtension.y;
+                const F32 remainingUV = 1.f - deltaUV;
+                if (deltaUV < 1) {
+                    F32 adder = (remainingUV < remainingSizeInUVSpace ? remainingUV : remainingSizeInUVSpace);
+                    uvExtension.y += adder;
+                    remainingWndSize.y -= adder * imageSz.y;
+                    imageSz.y += adder * imageSz.y;
+                }
+            }
+
+
+            ImVec2 startPos = bb.Min, endPos = bb.Max;
+            startPos.x += remainingWndSize.x*.5f;
+            startPos.y += remainingWndSize.y*.5f;
+            endPos.x = startPos.x + imageSz.x;
+            endPos.y = startPos.y + imageSz.y;
+            window->DrawList->AddImage((void *)(intptr_t)gameView->getHandle(), startPos, endPos, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+
+            _sceneRect.set(startPos.x, startPos.y, endPos.x, endPos.y);
         }
+        
 
         if (ImGui::RadioButton("Local", settings.currentGizmoMode == ImGuizmo::LOCAL)) {
             settings.currentGizmoMode = ImGuizmo::LOCAL;

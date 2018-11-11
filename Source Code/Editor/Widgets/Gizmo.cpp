@@ -2,7 +2,7 @@
 
 #include "Headers/Gizmo.h"
 #include "Editor/Headers/Editor.h"
-
+#include "Core/Headers/PlatformContext.h"
 #include "Managers/Headers/SceneManager.h"
 #include "ECS/Components/Headers/TransformComponent.h"
 
@@ -16,11 +16,8 @@ namespace Divide {
     {
         _imguiContext = ImGui::CreateContext(mainContext->IO.Fonts);
 
-        
-        ImGuiIO& io = _imguiContext->IO;
-
-        InitBasicImGUIState(io);
-
+        InitBasicImGUIState(_imguiContext->IO);
+        ImGui::SetCurrentContext(_imguiContext);
         ImGuiViewport* main_viewport = ImGui::GetMainViewport();
         main_viewport->PlatformHandle = mainWindow;
     }
@@ -56,8 +53,14 @@ namespace Divide {
     }
 
     void Gizmo::update(const U64 deltaTimeUS) {
+        ImGui::SetCurrentContext(_imguiContext);
+
         ImGuiIO& io = _imguiContext->IO;
         io.DeltaTime = Time::MicrosecondsToSeconds<F32>(deltaTimeUS);
+        if (io.WantSetMousePos) {
+            WindowManager& winMgr = _parent.context().app().windowManager();
+            winMgr.setCursorPosition((I32)io.MousePos.x, (I32)io.MousePos.y, (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) != 0);
+        }
     }
 
     void Gizmo::render(const Camera& camera) {
@@ -78,14 +81,17 @@ namespace Divide {
         const mat4<F32>& cameraView = camera.getViewMatrix();
         const mat4<F32>& cameraProjection = camera.getProjectionMatrix();
 
-        mat4<F32> matrix(transform->getLocalMatrix());
-
         ImGui::SetCurrentContext(_imguiContext);
         ImGui::NewFrame();
         ImGuizmo::BeginFrame();
-        const ImGuiIO& io = _imguiContext->IO;
-        ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
 
+        ImGuiViewport* main_viewport = ImGui::GetMainViewport();
+
+        DisplayWindow* mainWindow = static_cast<DisplayWindow*>(main_viewport->PlatformHandle);
+        vec2<U16> size = mainWindow->getDrawableSize();
+        ImGuizmo::SetRect(0.0f, 0.0f, size.width, size.height);
+
+        mat4<F32> matrix(transform->getLocalMatrix());
         ImGuizmo::Manipulate(cameraView,
                              cameraProjection,
                              _transformSettings.currentGizmoOperation,
@@ -176,9 +182,20 @@ namespace Divide {
         }
 
         ImGuiIO& io = _imguiContext->IO;
+        ImGuiContext& parentContext = Attorney::EditorGeneralWidget::imguiContext(_parent);
+        WindowManager& winMgr = _parent.context().app().windowManager();
+        if (ImGuiViewport* viewport = Attorney::EditorGizmo::findViewportByPlatformHandle(_parent, &parentContext, winMgr.getFocusedWindow())) {
+            io.MousePos = ImVec2(viewport->Pos.x + (F32)arg.X().abs, viewport->Pos.y + (F32)arg.Y().abs);
+            if (_parent.scenePreviewFocused()) {
+                const Rect<I32>& sceneRect = _parent.scenePreviewRect();
+                if (sceneRect.contains(vec2<I32>(io.MousePos.x, io.MousePos.y))) {
+                    io.MousePos.x = MAP(io.MousePos.x, to_F32(sceneRect.x), to_F32(sceneRect.z), 0.f, viewport->Size.x);
+                    io.MousePos.y = MAP(io.MousePos.y, to_F32(sceneRect.y), to_F32(sceneRect.w), 0.f, viewport->Size.y);
+                }
 
-        io.MousePos.x = (F32)arg.X(true).abs;
-        io.MousePos.y = (F32)arg.Y(true).abs;
+            }
+        }
+
         if (arg.WheelH() > 0) {
             io.MouseWheelH += 1;
         }

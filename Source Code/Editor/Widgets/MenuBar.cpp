@@ -69,8 +69,6 @@ void MenuBar::draw() {
         }
 
         if (_closePopup) {
-            _closePopup = false;
-
             ImGui::OpenPopup("Confirm Close");
 
             if (ImGui::BeginPopupModal("Confirm Close", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
@@ -79,11 +77,14 @@ void MenuBar::draw() {
 
                 if (ImGui::Button("Cancel", ImVec2(120, 0))) {
                     ImGui::CloseCurrentPopup();
+                    _closePopup = false;
                 }
                 ImGui::SetItemDefaultFocus();
                 ImGui::SameLine();
                 if (ImGui::Button("Yes", ImVec2(120, 0))) {
+
                     ImGui::CloseCurrentPopup();
+                    _closePopup = false;
                     _context.editor().toggle(false);
                 }
                 ImGui::EndPopup();
@@ -91,8 +92,6 @@ void MenuBar::draw() {
         }
 
         if (_quitPopup) {
-            _quitPopup = false;
-
             ImGui::OpenPopup("Confirm Quit");
             if (ImGui::BeginPopupModal("Confirm Quit", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
                 ImGui::Text("Are you sure you want to quit?");
@@ -100,11 +99,13 @@ void MenuBar::draw() {
 
                 if (ImGui::Button("Cancel", ImVec2(120, 0))) {
                     ImGui::CloseCurrentPopup();
+                    _quitPopup = false;
                 }
                 ImGui::SetItemDefaultFocus();
                 ImGui::SameLine();
                 if (ImGui::Button("Yes", ImVec2(120, 0))) {
                     ImGui::CloseCurrentPopup();
+                    _quitPopup = false;
                     context().app().RequestShutdown();
                 }
                 ImGui::EndPopup();
@@ -164,7 +165,11 @@ void MenuBar::drawFileMenu() {
 
         if (ImGui::MenuItem("Close Editor"))
         {
-            _closePopup = hasUnsavedElements;
+            if (hasUnsavedElements) {
+                _closePopup = true;
+            } else {
+                _context.editor().toggle(false);
+            }
         }
 
         if (ImGui::MenuItem("Quit", "Alt+F4"))

@@ -92,8 +92,7 @@ enum class WindowFlags : U16 {
     MINIMIZED = toBit(7),
     MAXIMIZED = toBit(8),
     HIDDEN = toBit(9),
-    WARP = toBit(10),
-    OWNS_RENDER_CONTEXT = toBit(11), //BAD
+    OWNS_RENDER_CONTEXT = toBit(10), //BAD
     COUNT
 };
 
@@ -201,10 +200,6 @@ public:
 
     inline void destroyCbk(const DELEGATE_CBK<void>& destroyCbk);
 
-    inline bool warp() const;
-    inline const Rect<I32>& warpRect() const;
-    void warp(bool state, const Rect<I32>& rect = Rect<I32>(-1));
-
     inline const Rect<I32>& renderingViewport() const;
     void renderingViewport(const Rect<I32>& viewport);
 
@@ -237,7 +232,6 @@ private:
     bool _internalMoveEvent;
     bool _internalResizeEvent;
 
-    Rect<I32> _warpRect;
     Rect<I32> _renderingViewport;
 
     U8 _opacity;

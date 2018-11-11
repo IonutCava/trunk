@@ -59,15 +59,15 @@ struct MouseButtonEvent : public InputEvent {
 struct MouseMoveEvent : public InputEvent {
     explicit MouseMoveEvent(DisplayWindow* sourceWindow, U8 deviceIndex, MouseState stateIn);
 
-    MouseAxis X(bool warped = true, bool viewportRelative = false) const;
-    MouseAxis Y(bool warped = true, bool viewportRelative = false) const;
+    MouseAxis X() const;
+    MouseAxis Y() const;
 
     I32 WheelV() const;
     I32 WheelH() const;
 
-    vec4<I32> relativePos(bool warped, bool viewportRelative) const;
-    vec4<I32> absolutePos(bool warped, bool viewportRelative) const;
-    MouseState state(bool warped, bool viewportRelative) const;
+    vec4<I32> relativePos() const;
+    vec4<I32> absolutePos() const;
+    const MouseState& state() const;
 
  private:
     MouseState _stateIn;

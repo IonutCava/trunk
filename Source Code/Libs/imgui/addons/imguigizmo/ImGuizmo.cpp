@@ -724,7 +724,7 @@ namespace ImGuizmo
        gContext.mHeight = height;
        gContext.mXMax = gContext.mX + gContext.mWidth;
        gContext.mYMax = gContext.mY + gContext.mXMax;
-      gContext.mDisplayRatio = width / height;
+       gContext.mDisplayRatio = width / height;
    }
 
    IMGUI_API void SetOrthographic(bool isOrthographic)

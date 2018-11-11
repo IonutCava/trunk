@@ -430,12 +430,13 @@ void Editor::close() {
 void Editor::toggle(const bool state) {
     _running = state;
 
+    _gizmo->enable(state);
+
     if (!state) {
         _sceneHovered = false;
         scenePreviewFocused(false);
         ImGui::ResetStyle(scenePreviewFocused() ? _currentDimmedTheme : _currentTheme);
     } else {
-        _gizmo->enable(true);
         static_cast<ContentExplorerWindow*>(_dockedWindows[to_base(WindowType::ContentExplorer)])->init();
     }
 }
@@ -516,18 +517,7 @@ bool Editor::frameRenderingQueued(const FrameEvent& evt) {
     return true;
 }
 
-bool Editor::renderMinimal(const U64 deltaTime) {
-    ACKNOWLEDGE_UNUSED(deltaTime);
-
-    if (_showSampleWindow) {
-        ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiCond_FirstUseEver);
-        ImGui::ShowDemoWindow(&_showSampleWindow);
-    }
-
-    return true;
-}
-
-bool Editor::renderFull(const U64 deltaTime) {
+bool Editor::render(const U64 deltaTime) {
     static ImGuiDockNodeFlags opt_flags = ImGuiDockNodeFlags_None;
     // We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
     // because it would be confusing to have two docking targets within each others.
@@ -560,13 +550,16 @@ bool Editor::renderFull(const U64 deltaTime) {
         window->draw();
     }
 
-    renderMinimal(deltaTime);
-
     if (_showMemoryEditor) {
         if (_memoryEditorData.first != nullptr && _memoryEditorData.second > 0) {
             static MemoryEditor memEditor;
             memEditor.DrawWindow("Memory Editor", _memoryEditorData.first, _memoryEditorData.second);
         }
+    }
+
+    if (_showSampleWindow) {
+        ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiCond_FirstUseEver);
+        ImGui::ShowDemoWindow(&_showSampleWindow);
     }
 
     ImGui::End();
@@ -582,6 +575,10 @@ bool Editor::frameSceneRenderEnded(const FrameEvent& evt) {
 }
 
 bool Editor::framePostRenderStarted(const FrameEvent& evt) {
+    if (!_running) {
+        return true;
+    }
+
     Time::ScopedTimer timer(_editorRenderTimer);
     {
         ImGui::SetCurrentContext(_imguiContext);
@@ -589,26 +586,21 @@ bool Editor::framePostRenderStarted(const FrameEvent& evt) {
         updateMousePosAndButtons();
         ImGui::NewFrame();
     }
-    
-    if (!_running) {
-        if (!renderMinimal(evt._timeSinceLastFrameUS)) {
-            return false;
-        }
-    } else {
-        if (!renderFull(evt._timeSinceLastFrameUS)) {
-            return false;
-        }
-    }
-  
-    ImGui::Render();
-    renderDrawList(ImGui::GetDrawData(), false, _mainWindow->getGUID());
 
-    if (_imguiContext->IO.ConfigFlags & ImGuiConfigFlags_ViewportsEnable){
-        ImGui::UpdatePlatformWindows();
-        ImGui::RenderPlatformWindowsDefault(&context());
+    if (render(evt._timeSinceLastFrameUS)) {
+
+        ImGui::Render();
+        renderDrawList(ImGui::GetDrawData(), false, _mainWindow->getGUID());
+
+        if (_imguiContext->IO.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+            ImGui::UpdatePlatformWindows();
+            ImGui::RenderPlatformWindowsDefault(&context());
+        }
+
+        return true;
     }
 
-    return true;
+    return false;
 }
 
 bool Editor::framePostRenderEnded(const FrameEvent& evt) {
@@ -636,6 +628,10 @@ const TransformSettings& Editor::getTransformSettings() const {
     return Attorney::GizmoEditor::getTransformSettings(*_gizmo);
 }
 
+const Rect<I32>& Editor::scenePreviewRect() const {
+    SceneViewWindow* sceneView = static_cast<SceneViewWindow*>(_dockedWindows[to_base(WindowType::SceneView)]);
+    return sceneView->sceneRect();
+}
 // Needs to be rendered immediately. *IM*GUI. IMGUI::NewFrame invalidates this data
 void Editor::renderDrawList(ImDrawData* pDrawData, bool overlayOnScene, I64 windowGUID)
 {
@@ -801,22 +797,20 @@ bool Editor::onKeyUp(const Input::KeyEvent& key) {
     return true;
 }
 
-namespace {
-    ImGuiViewport* FindViewportByPlatformHandle(ImGuiContext* context, DisplayWindow* window) {
-        if (window != nullptr) {
-            for (I32 i = 0; i != context->Viewports.Size; i++) {
-                DisplayWindow* it = (DisplayWindow*)context->Viewports[i]->PlatformHandle;
+ImGuiViewport* Editor::findViewportByPlatformHandle(ImGuiContext* context, DisplayWindow* window) {
+    if (window != nullptr) {
+        for (I32 i = 0; i != context->Viewports.Size; i++) {
+            DisplayWindow* it = (DisplayWindow*)context->Viewports[i]->PlatformHandle;
 
-                if (it != nullptr && it->getGUID() == window->getGUID()) {
-                    return context->Viewports[i];
-                }
+            if (it != nullptr && it->getGUID() == window->getGUID()) {
+                return context->Viewports[i];
             }
         }
-
-        return nullptr;
     }
 
+    return nullptr;
 }
+
 /// Mouse moved: return true if input was consumed
 bool Editor::mouseMoved(const Input::MouseMoveEvent& arg) {
     if (!scenePreviewFocused() || !_gizmo->mouseMoved(arg)) {
@@ -866,9 +860,6 @@ bool Editor::mouseButtonReleased(const Input::MouseButtonEvent& arg) {
         scenePreviewFocused(_sceneHovered);
         ImGuiStyle& style = ImGui::GetStyle();
         ImGui::ResetStyle(scenePreviewFocused() ? _currentDimmedTheme : _currentTheme, style);
-
-        const Rect<I32>& previewRect = static_cast<SceneViewWindow*>(_dockedWindows[to_base(WindowType::SceneView)])->sceneRect();
-        _mainWindow->warp(scenePreviewFocused(), previewRect);
     }
 
     if (!scenePreviewFocused() || !_gizmo->mouseButtonReleased(arg)) {
@@ -942,18 +933,10 @@ void Editor::updateMousePosAndButtons() {
     vec2<I32> mPos(-1);
     WindowManager::getMouseState(mPos, false);
 
-    bool anyDown = false;
-    DisplayWindow* focusedWindow = g_windowManager->getFocusedWindow();
-
-    stringImpl viewportData = "";
-    if (focusedWindow != nullptr) {
-        vec2<I32> wPos = focusedWindow->getPosition();
-        //mPos -= wPos;
-        if (ImGuiViewport* viewport = FindViewportByPlatformHandle(_imguiContext, focusedWindow)) {
-            io.MousePos = ImVec2(viewport->Pos.x + (F32)mPos.x, viewport->Pos.y + (F32)mPos.y);
-            viewportData = Util::StringFormat(", Viewport [%5.2f - %5.2f]", viewport->Pos.x, viewport->Pos.y);
-        }
+    if (ImGuiViewport* viewport = findViewportByPlatformHandle(_imguiContext, g_windowManager->getFocusedWindow())) {
+        io.MousePos = ImVec2(viewport->Pos.x + (F32)mPos.x, viewport->Pos.y + (F32)mPos.y);
     }
+
     ImGuiPlatformIO& platform_io = ImGui::GetPlatformIO();
     for (I32 n = 0; n < platform_io.Viewports.Size; n++) {
         ImGuiViewport* viewport = platform_io.Viewports[n];
@@ -965,6 +948,7 @@ void Editor::updateMousePosAndButtons() {
         }
     }
 
+    bool anyDown = false;
     for (size_t i = 0; i < 5; ++i) {
         if (io.MouseDown[i]) {
             anyDown = true;
@@ -1163,6 +1147,13 @@ void Editor::scenePreviewFocused(bool state) {
     } else {
         io.ConfigFlags &= ~ImGuiConfigFlags_NavNoCaptureKeyboard;
     }
+}
+ImGuiContext& Editor::imguiContext() {
+    return *_imguiContext;
+}
+
+ImGuiContext& Editor::imguizmoContext() {
+    return _gizmo->getContext();
 }
 
 bool Editor::scenePreviewFocused() const {

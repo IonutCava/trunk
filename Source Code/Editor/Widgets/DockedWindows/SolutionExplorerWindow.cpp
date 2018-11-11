@@ -10,6 +10,8 @@
 #include "Rendering/Camera/Headers/Camera.h"
 #include "Dynamics/Entities/Units/Headers/Player.h"
 
+#include <imgui/imgui_internal.h>
+
 namespace Divide {
     namespace {
         constexpr U8 g_maxEntryCount = 32;
@@ -145,6 +147,8 @@ namespace Divide {
                              0.0f,
                              max_ms_per_frame,
                              ImVec2(0, 50));
+
+        ImGui::Separator();
     }
 
     void SolutionExplorerWindow::drawTransformSettings() {

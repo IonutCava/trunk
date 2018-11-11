@@ -22,7 +22,6 @@ DisplayWindow::DisplayWindow(WindowManager& parent, PlatformContext& context)
  : GUIDWrapper(),
    PlatformContextComponent(context),
    _parent(parent),
-   _warpRect(-1),
    _opacity(255),
    _type(WindowType::COUNT),
    _previousType(WindowType::COUNT),
@@ -418,11 +417,6 @@ bool DisplayWindow::setDimensions(vec2<U16>& dimensions) {
 
 vec2<U16> DisplayWindow::getDimensions() const {
     return _windowDimensions;
-}
-
-void DisplayWindow::warp(bool state, const Rect<I32>& rect) {
-    ToggleBit(_flags, WindowFlags::WARP, state);
-    _warpRect.set(rect);
 }
 
 void DisplayWindow::renderingViewport(const Rect<I32>& viewport) {

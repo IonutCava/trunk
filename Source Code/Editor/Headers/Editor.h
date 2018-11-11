@@ -131,6 +131,9 @@ class Editor : public PlatformContextComponent,
     void setTransformSettings(const TransformSettings& settings);
     const TransformSettings& getTransformSettings() const;
 
+    const Rect<I32>& scenePreviewRect() const;
+    bool scenePreviewFocused() const;
+
   protected: //frame listener
     bool frameStarted(const FrameEvent& evt);
     bool framePreRenderStarted(const FrameEvent& evt);
@@ -166,12 +169,13 @@ class Editor : public PlatformContextComponent,
     void loadFromXML();
 
   protected:
-    bool renderMinimal(const U64 deltaTime);
-    bool renderFull(const U64 deltaTime);
+    bool render(const U64 deltaTime);
     void updateMousePosAndButtons();
 
     void scenePreviewFocused(bool state);
-    bool scenePreviewFocused() const;
+    ImGuiViewport* findViewportByPlatformHandle(ImGuiContext* context, DisplayWindow* window);
+    ImGuiContext& imguiContext();
+    ImGuiContext& imguizmoContext();
 
   protected: // attorney
     void renderDrawList(ImDrawData* pDrawData, bool overlayOnScene, I64 windowGUID);
@@ -217,6 +221,11 @@ namespace Attorney {
         static void renderDrawList(Editor& editor, ImDrawData* pDrawData, bool overlayOnScene, I64 windowGUID) {
             editor.renderDrawList(pDrawData, overlayOnScene, windowGUID);
         }
+
+        static ImGuiViewport* findViewportByPlatformHandle(Editor& editor, ImGuiContext* context, DisplayWindow* window) {
+            return editor.findViewportByPlatformHandle(context, window);
+        }
+
         friend class Divide::Gizmo;
     };
 
@@ -314,9 +323,20 @@ namespace Attorney {
         static bool modalTextureView(Editor& editor, const char* modalName, const Texture_ptr& tex, const vec2<F32>& dimensions, bool preserveAspect) {
             return editor.modalTextureView(modalName, tex, dimensions, preserveAspect);
         }
+
+        static ImGuiContext& imguiContext(Editor& editor) {
+            return editor.imguiContext();
+        }
+
+        static ImGuiContext& imguizmoContext(Editor& editor) {
+            return editor.imguizmoContext();
+        }
+
+        friend class Divide::Gizmo;
         friend class Divide::MenuBar;
         friend class Divide::PropertyWindow;
         friend class Divide::ContentExplorerWindow;
+        friend class Divide::SolutionExplorerWindow;
     };
 };
 
