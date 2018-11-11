@@ -40,9 +40,11 @@ namespace Divide {
     }
 
     void ThreadPool::wait() {
-        // Busy wait
-        while (_tasksLeft.load() > 0) {
-            std::this_thread::yield();
+        if (_isRunning) {
+            // Busy wait
+            while (_tasksLeft.load() > 0) {
+                std::this_thread::yield();
+            }
         }
     }
 

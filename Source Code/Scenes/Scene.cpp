@@ -846,7 +846,7 @@ bool Scene::loadFromCache(const stringImpl& name) {
         // Load camera
         loadDefaultCamera();
         if (_sceneGraph->load(saveBuffer)) {
-            //return true;
+            return true;
         }
     }
 
@@ -891,11 +891,6 @@ bool Scene::load(const stringImpl& name) {
 }
 
 bool Scene::unload() {
-    // prevent double unload calls
-    if (!checkLoadFlag()) {
-        return false;
-    }
-
     _aiManager->stop();
     WAIT_FOR_CONDITION(!_aiManager->running());
 
@@ -910,9 +905,12 @@ bool Scene::unload() {
     }
 
     clearTasks();
-    /// Destroy physics (:D)
-    _pxScene->release();
-    MemoryManager::DELETE(_pxScene);
+    if (_pxScene != nullptr) {
+        /// Destroy physics (:D)
+        _pxScene->release();
+        MemoryManager::DELETE(_pxScene);
+    }
+
     _context.pfx().setPhysicsScene(nullptr);
     clearObjects();
     _loadComplete = false;

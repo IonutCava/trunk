@@ -123,6 +123,6 @@ namespace Divide {
             return false;
         }
            
-        return ECSSystem<TransformSystem>::save(sgn, inputBuffer);
+        return ECSSystem<TransformSystem>::load(sgn, inputBuffer);
     }
 }; //namespace Divide

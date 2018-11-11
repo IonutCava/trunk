@@ -153,8 +153,9 @@ Scene* SceneManager::load(stringImpl sceneName) {
         state = Attorney::SceneManager::loadFromCache(*loadingScene, sceneName);
         if (!state) {
             XML::loadScene(Paths::g_xmlDataLocation + Paths::g_scenesLocation, sceneName, loadingScene, _platformContext->config());
-            state = Attorney::SceneManager::load(*loadingScene, sceneName);
         }
+
+        state = Attorney::SceneManager::load(*loadingScene, sceneName);
         
         if (state) {
             Attorney::SceneManager::postLoad(*loadingScene);

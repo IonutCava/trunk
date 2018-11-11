@@ -421,13 +421,19 @@ void Editor::close() {
     _imguiProgram.reset();
     _gizmo.reset();
 
-    ImGui::SetCurrentContext(_imguiContext);
-    ImGui::DestroyPlatformWindows();
-    ImGui::DestroyContext(_imguiContext);
-    _imguiContext = nullptr;
+    if (_imguiContext != nullptr) {
+        ImGui::SetCurrentContext(_imguiContext);
+        ImGui::DestroyPlatformWindows();
+        ImGui::DestroyContext(_imguiContext);
+        _imguiContext = nullptr;
+    }
 }
 
 void Editor::toggle(const bool state) {
+    if (_running == state) {
+        return;
+    }
+
     _running = state;
 
     _gizmo->enable(state);
@@ -518,6 +524,8 @@ bool Editor::frameRenderingQueued(const FrameEvent& evt) {
 }
 
 bool Editor::render(const U64 deltaTime) {
+    ACKNOWLEDGE_UNUSED(deltaTime);
+
     static ImGuiDockNodeFlags opt_flags = ImGuiDockNodeFlags_None;
     // We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
     // because it would be confusing to have two docking targets within each others.
