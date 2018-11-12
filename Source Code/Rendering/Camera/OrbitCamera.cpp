@@ -72,8 +72,8 @@ void OrbitCamera::update(const U64 deltaTimeUS) {
         _rotationDirty = false;
     }
 
-    _orientation.fromEuler(Angle::to_DEGREES(newTargetOrientation));
-    _newEye = trans->getPosition() + _orientation * (_offsetDir * _curRadius);
+    _data._orientation.fromEuler(Angle::to_DEGREES(newTargetOrientation));
+    _newEye = trans->getPosition() + _data._orientation * (_offsetDir * _curRadius);
     _viewMatrixDirty = true;
 }
 

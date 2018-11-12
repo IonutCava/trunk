@@ -49,21 +49,21 @@ namespace Divide {
         }
     }
 
-    bool AnimationSystem::save(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) {
+    bool AnimationSystem::saveCache(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) {
         AnimationComponent* aComp = sgn.GetComponent<AnimationComponent>();
-        if (aComp != nullptr && !aComp->save(outputBuffer)) {
+        if (aComp != nullptr && !aComp->saveCache(outputBuffer)) {
             return false;
         }
 
-        return ECSSystem<AnimationSystem>::save(sgn, outputBuffer);
+        return ECSSystem<AnimationSystem>::saveCache(sgn, outputBuffer);
     }
 
-    bool AnimationSystem::load(SceneGraphNode& sgn, ByteBuffer& inputBuffer) {
+    bool AnimationSystem::loadCache(SceneGraphNode& sgn, ByteBuffer& inputBuffer) {
         AnimationComponent* aComp = sgn.GetComponent<AnimationComponent>();
-        if (aComp != nullptr && !aComp->load(inputBuffer)) {
+        if (aComp != nullptr && !aComp->loadCache(inputBuffer)) {
             return false;
         }
 
-        return ECSSystem<AnimationSystem>::load(sgn, inputBuffer);
+        return ECSSystem<AnimationSystem>::loadCache(sgn, inputBuffer);
     }
 };//namespace Divide

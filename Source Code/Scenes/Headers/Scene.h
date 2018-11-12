@@ -188,15 +188,15 @@ class Scene : public Resource, public PlatformContextComponent {
     virtual bool frameStarted();
     virtual bool frameEnded();
 
-    virtual void loadFromXML();
-    virtual void saveToXML();
 
     virtual void loadDefaultCamera();
 
-    virtual bool loadFromCache(const stringImpl& name);
-    virtual bool saveToCache(const stringImpl& name);
+
+    virtual bool loadXML(const stringImpl& name);
+    virtual void saveXML();
 
     virtual bool load(const stringImpl& name);
+    virtual void loadXMLData();
     void loadAsset(const XML::SceneNode& sceneNode, SceneGraphNode* parent);
     virtual bool unload();
     virtual void postLoad();
@@ -335,11 +335,9 @@ class SceneManager {
     static bool frameStarted(Scene& scene) { return scene.frameStarted(); }
     static bool frameEnded(Scene& scene) { return scene.frameEnded(); }
 
-        
-    static bool loadFromCache(Scene& scene, const stringImpl& name) {
-        return scene.loadFromCache(name);
+    static bool loadXML(Scene& scene, const stringImpl& name) {
+        return scene.loadXML(name);
     }
-
     static bool load(Scene& scene, const stringImpl& name) {
         return scene.load(name);
     }

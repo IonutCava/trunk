@@ -26,44 +26,44 @@ ECSManager::~ECSManager()
 
 }
 
-bool ECSManager::save(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) const {
+bool ECSManager::saveCache(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) const {
     TransformSystem* tSys = _ecsEngine.GetSystemManager()->GetSystem<TransformSystem>();
     if (tSys != nullptr) {
-        if (!tSys->save(sgn, outputBuffer)) {
+        if (!tSys->saveCache(sgn, outputBuffer)) {
             return false;
         }
     }
     AnimationSystem* aSys = _ecsEngine.GetSystemManager()->GetSystem<AnimationSystem>();
     if (aSys != nullptr) {
-        if (!aSys->save(sgn, outputBuffer)) {
+        if (!aSys->saveCache(sgn, outputBuffer)) {
             return false;
         }
     }
     RenderingSystem* rSys = _ecsEngine.GetSystemManager()->GetSystem<RenderingSystem>();
     if (rSys != nullptr) {
-        if (!rSys->save(sgn, outputBuffer)) {
+        if (!rSys->saveCache(sgn, outputBuffer)) {
             return false;
         }
     }
     return true;
 }
 
-bool ECSManager::load(SceneGraphNode& sgn, ByteBuffer& inputBuffer) {
+bool ECSManager::loadCache(SceneGraphNode& sgn, ByteBuffer& inputBuffer) {
     TransformSystem* tSys = _ecsEngine.GetSystemManager()->GetSystem<TransformSystem>();
     if (tSys != nullptr) {
-        if (!tSys->load(sgn, inputBuffer)) {
+        if (!tSys->loadCache(sgn, inputBuffer)) {
             return false;
         }
     }
     AnimationSystem* aSys = _ecsEngine.GetSystemManager()->GetSystem<AnimationSystem>();
     if (aSys != nullptr) {
-        if (!aSys->load(sgn, inputBuffer)) {
+        if (!aSys->loadCache(sgn, inputBuffer)) {
             return false;
         }
     }
     RenderingSystem* rSys = _ecsEngine.GetSystemManager()->GetSystem<RenderingSystem>();
     if (rSys != nullptr) {
-        if (!rSys->load(sgn, inputBuffer)) {
+        if (!rSys->loadCache(sgn, inputBuffer)) {
             return false;
         }
     }

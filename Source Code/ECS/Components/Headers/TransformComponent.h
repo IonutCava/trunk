@@ -147,8 +147,8 @@ namespace Divide {
 
          void setOffset(bool state, const mat4<F32>& offset = mat4<F32>());
 
-         bool save(ByteBuffer& outputBuffer) const override;
-         bool load(ByteBuffer& inputBuffer) override;
+         bool saveCache(ByteBuffer& outputBuffer) const override;
+         bool loadCache(ByteBuffer& inputBuffer) override;
 
       protected:
          friend class TransformSystem;

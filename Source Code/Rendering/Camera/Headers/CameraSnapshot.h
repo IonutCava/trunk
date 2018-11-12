@@ -34,6 +34,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _CAMERA_SNAPSHOT_H_
 
 #include "Core/Math/Headers/MathMatrices.h"
+#include "Core/Math/Headers/Quaternion.h"
 
 namespace Divide {
     struct CameraSnapshot {
@@ -44,6 +45,7 @@ namespace Divide {
         vec2<F32> _zPlanes;
         F32 _aspectRatio = 0.0f;
         F32 _padding_ = 0.0f;
+        Quaternion<F32> _orientation;
     };
 
     bool operator==(const CameraSnapshot& lhs, const CameraSnapshot& rhs);

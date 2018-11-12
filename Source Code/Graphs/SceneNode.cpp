@@ -176,9 +176,21 @@ void SceneNode::onNetworkReceive(SceneGraphNode& sgn, WorldPacket& dataIn) const
     ACKNOWLEDGE_UNUSED(dataIn);
 }
 
-void SceneNode::saveToXML(boost::property_tree::ptree& pt) const {
-    ACKNOWLEDGE_UNUSED(pt);
+void SceneNode::saveCache(ByteBuffer& outputBuffer) const {
+    if (type() == SceneNodeType::TYPE_OBJECT3D) {
+        if (static_cast<const Object3D*>(this)->isPrimitive()) {
+            outputBuffer << static_cast<const Object3D*>(this)->getObjectType()._to_string();
+        } else {
+            outputBuffer << name();
+        }
+    }
+}
 
+void SceneNode::loadCache(ByteBuffer& inputBuffer) {
+    ACKNOWLEDGE_UNUSED(inputBuffer);
+}
+
+void SceneNode::saveToXML(boost::property_tree::ptree& pt) const {
     // Only 3D objects for now
     if (type() == SceneNodeType::TYPE_OBJECT3D) {
         if (static_cast<const Object3D*>(this)->isPrimitive()) {

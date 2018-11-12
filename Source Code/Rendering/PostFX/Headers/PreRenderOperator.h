@@ -6,6 +6,8 @@
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 #include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 
+#include <BetterEnums/include/enum.h>
+
 namespace Divide {
 
 class Quad3D;
@@ -16,27 +18,25 @@ enum class RenderStage : U8;
 
 
 // ALL FILTERS MUST MODIFY THE INPUT RENDERTARGET ONLY!
-enum class FilterType : U8 {
-    FILTER_SS_ANTIALIASING = 0,
-    FILTER_SS_REFLECTIONS,
-    FILTER_SS_AMBIENT_OCCLUSION,
-    FILTER_DEPTH_OF_FIELD,
-    FILTER_MOTION_BLUR,
-    FILTER_BLOOM,
-    FILTER_LUT_CORECTION,
-    FILTER_UNDERWATER,
-    FILTER_NOISE,
-    FILTER_VIGNETTE,
-    FILTER_COUNT
-};
+BETTER_ENUM(FilterType, U16,
+    FILTER_SS_ANTIALIASING = toBit(1),
+    FILTER_SS_REFLECTIONS = toBit(2),
+    FILTER_SS_AMBIENT_OCCLUSION = toBit(3),
+    FILTER_DEPTH_OF_FIELD = toBit(4),
+    FILTER_MOTION_BLUR = toBit(5),
+    FILTER_BLOOM = toBit(6),
+    FILTER_LUT_CORECTION = toBit(7),
+    FILTER_UNDERWATER = toBit(8),
+    FILTER_NOISE = toBit(9),
+    FILTER_VIGNETTE = toBit(10),
+    FILTER_COUNT = 11
+);
 
 enum class FilterSpace : U8 {
     FILTER_SPACE_HDR = 0,
     FILTER_SPACE_LDR = 1,
     COUNT
 };
-
-typedef std::array<U8 /*request count*/, to_base(FilterType::FILTER_COUNT)> FilterStack;
 
 class PreRenderBatch;
 /// It's called a prerender operator because it operates on the buffer before

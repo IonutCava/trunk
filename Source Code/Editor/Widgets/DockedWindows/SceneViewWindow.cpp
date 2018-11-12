@@ -74,7 +74,11 @@ namespace Divide {
         {
             _stepQueue = Config::TARGET_FRAME_RATE;
         }
-
+        ImGui::SameLine();
+        
+        if (ImGui::Button("Save Camera")) {
+            Attorney::EditorSceneViewWindow::updateCameraSnapshot(_parent);
+        }
         ImGui::SameLine();
 
         ImGuiWindow* window = ImGui::GetCurrentWindow();

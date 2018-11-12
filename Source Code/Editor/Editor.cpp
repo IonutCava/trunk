@@ -429,6 +429,13 @@ void Editor::close() {
     }
 }
 
+void Editor::updateCameraSnapshot() {
+    Camera* playerCam = Attorney::SceneManagerCameraAccessor::playerCamera(_context.kernel().sceneManager());
+    if (playerCam != nullptr) {
+        _cameraSnapshots[playerCam->getGUID()] = playerCam->snapshot();
+    }
+}
+
 void Editor::toggle(const bool state) {
     if (_running == state) {
         return;
@@ -442,7 +449,18 @@ void Editor::toggle(const bool state) {
         _sceneHovered = false;
         scenePreviewFocused(false);
         ImGui::ResetStyle(scenePreviewFocused() ? _currentDimmedTheme : _currentTheme);
+
+        Camera* playerCam = Attorney::SceneManagerCameraAccessor::playerCamera(_context.kernel().sceneManager());
+        if (playerCam != nullptr) {
+            auto it = _cameraSnapshots.find(playerCam->getGUID());
+            if (it != std::end(_cameraSnapshots)) {
+                playerCam->fromSnapshot(it->second);
+            }
+        }
+
     } else {
+        _context.kernel().sceneManager().saveActiveScene();
+        updateCameraSnapshot();
         static_cast<ContentExplorerWindow*>(_dockedWindows[to_base(WindowType::ContentExplorer)])->init();
     }
 }

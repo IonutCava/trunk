@@ -3,10 +3,17 @@
 #include "Headers/MenuBar.h"
 
 #include "Editor/Headers/Editor.h"
+#include "Core/Headers/Kernel.h"
 #include "Core/Headers/Application.h"
 #include "Core/Headers/PlatformContext.h"
+
+#include "Managers/Headers/SceneManager.h"
+
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
+
+#include "Rendering/PostFX/Headers/PostFX.h"
+#include "Rendering/PostFX/Headers/PreRenderOperator.h"
 
 #include <imgui/addons/imguifilesystem/imguifilesystem.h>
 
@@ -57,6 +64,7 @@ void MenuBar::draw() {
         drawObjectMenu();
         drawToolsMenu();
         drawWindowsMenu();
+        drawPostFXMenu();
         drawHelpMenu();
 
         ImGui::EndMenuBar();
@@ -140,6 +148,7 @@ void MenuBar::drawFileMenu() {
         
         if (ImGui::MenuItem(hasUnsavedElements ? "Save All*" : "Save All")) {
             Attorney::EditorGeneralWidget::saveElement(_context.editor(), -1);
+            _context.kernel().sceneManager().saveActiveScene();
         }
 
         ImGui::Separator();
@@ -278,6 +287,27 @@ void MenuBar::drawWindowsMenu() {
     }
 
 }
+
+void MenuBar::drawPostFXMenu() {
+    if (ImGui::BeginMenu("PostFX"))
+    {
+        for (FilterType f : FilterType::_values()) {
+            bool filterEnabled = _context.gfx().postFX().getFilterState(f);
+            if (f._value == FilterType::FILTER_COUNT) {
+                continue;
+            }
+            if (ImGui::MenuItem(f._to_string(), NULL, &filterEnabled)) {
+                if (filterEnabled) {
+                    _context.gfx().postFX().pushFilter(f);
+                } else {
+                    _context.gfx().postFX().popFilter(f);
+                }
+            }
+        }
+        ImGui::EndMenu();
+    }
+}
+
 void MenuBar::drawHelpMenu() {
     if (ImGui::BeginMenu("Help"))
     {

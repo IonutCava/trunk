@@ -144,8 +144,8 @@ class SGNComponent : private PlatformContextComponent,
     EditorComponent& getEditorComponent() { return _editorComponent; }
     const EditorComponent& getEditorComponent() const { return _editorComponent; }
 
-    virtual bool save(ByteBuffer& outputBuffer) const;
-    virtual bool load(ByteBuffer& inputBuffer);
+    virtual bool saveCache(ByteBuffer& outputBuffer) const;
+    virtual bool loadCache(ByteBuffer& inputBuffer);
 
     I64 uniqueID() const;
 

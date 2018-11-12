@@ -144,6 +144,8 @@ public:
         return factory.register_creator(id, new_ptr<T>());
     }
 
+    bool saveActiveScene();
+
 public:  /// Input
   /// Key pressed: return true if input was consumed
     bool onKeyDown(const Input::KeyEvent& key) override;

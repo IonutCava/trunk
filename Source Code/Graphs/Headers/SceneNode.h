@@ -128,6 +128,9 @@ class SceneNode : public CachedResource {
 
     inline const BoundingBox& getBoundsInternal() const { return _boundingBox; }
 
+    virtual void saveCache(ByteBuffer& outputBuffer) const;
+    virtual void loadCache(ByteBuffer& inputBuffer);
+
     virtual void saveToXML(boost::property_tree::ptree& pt) const;
     virtual void loadFromXML(const boost::property_tree::ptree& pt);
 

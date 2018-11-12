@@ -38,6 +38,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Core/Headers/PlatformContextComponent.h"
 
 #include "Rendering/Headers/FrameListener.h"
+#include "Rendering/Camera/Headers/CameraSnapshot.h"
 
 #include "Editor/Widgets/Headers/Gizmo.h"
 
@@ -47,6 +48,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <imgui/addons/imguistyleserializer/imguistyleserializer.h>
 
 struct ImDrawData;
+
 namespace Divide {
 
 namespace Attorney {
@@ -185,7 +187,7 @@ class Editor : public PlatformContextComponent,
     bool hasUnsavedElements() const;
     void saveElement(I64 elementGUID);
     void toggleMemoryEditor(bool state);
-
+    void updateCameraSnapshot();
     // Returns true if the modal window was closed
     bool modalTextureView(const char* modalName, const Texture_ptr& tex, const vec2<F32>& dimensions, bool preserveAspect);
 
@@ -213,6 +215,9 @@ class Editor : public PlatformContextComponent,
 
     std::vector<I64> _unsavedElements;
     std::array<DockedWindow*, to_base(WindowType::COUNT)> _dockedWindows;
+
+    hashMap<I64, CameraSnapshot> _cameraSnapshots;
+
 }; //Editor
 
 namespace Attorney {
@@ -237,6 +242,10 @@ namespace Attorney {
 
         static void editorEnableGizmo(Editor& editor, bool state) {
             editor._gizmo->enable(state);
+        }
+
+        static void updateCameraSnapshot(Editor& editor) {
+            editor.updateCameraSnapshot();
         }
 
         friend class Divide::SceneViewWindow;

@@ -28,6 +28,7 @@ PostFX::PostFX(GFXDevice& context, ResourceCache& cache)
       _gfx(nullptr),
       _drawPipeline(nullptr),
       _filtersDirty(true),
+      _filterStack(0),
       _currentFadeTimeMS(0.0),
       _targetFadeTimeMS(0.0),
       _fadeWaitDurationMS(0.0),
@@ -40,7 +41,6 @@ PostFX::PostFX(GFXDevice& context, ResourceCache& cache)
     _postFXTarget.drawMask().disableAll();
     _postFXTarget.drawMask().setEnabled(RTAttachmentType::Colour, 0, true);
 
-    _filterStackCount.fill(0);
 
     Console::printfn(Locale::get(_ID("START_POST_FX")));
     _gfx = &context;
@@ -153,7 +153,7 @@ void PostFX::apply(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
     setCameraCommand._cameraSnapshot = Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot();
     GFX::EnqueueCommand(bufferInOut, setCameraCommand);
 
-    _preRenderBatch->execute(camera, _filterStackCount, bufferInOut);
+    _preRenderBatch->execute(camera, _filterStack, bufferInOut);
 
     TextureData output = _preRenderBatch->getOutput();
     TextureData data0 = _underwaterTexture->getData();

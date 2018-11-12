@@ -64,6 +64,7 @@ class Camera : public Resource {
    public:
 
     virtual void fromCamera(Camera& camera);
+    virtual void fromSnapshot(const CameraSnapshot& snapshot);
 
     const CameraSnapshot& snapshot();
 
@@ -173,7 +174,7 @@ class Camera : public Resource {
     }
 
     inline void setRotation(const Quaternion<F32>& q) {
-        _orientation = q;
+        _data._orientation = q;
         _viewMatrixDirty = true;
     }
 
@@ -343,7 +344,6 @@ class Camera : public Resource {
 
    protected:
     CameraSnapshot _data;
-    Quaternion<F32> _orientation;
     vec3<F32> _fixedYawAxis;
     vec4<F32> _orthoRect;
 

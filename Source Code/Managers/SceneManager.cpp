@@ -146,25 +146,23 @@ Scene* SceneManager::load(stringImpl sceneName) {
 
     ParamHandler::instance().setParam(_ID("currentScene"), sceneName);
 
-    bool state = false;
     bool sceneNotLoaded = loadingScene->getState() != ResourceState::RES_LOADED;
 
     if (sceneNotLoaded) {
-        state = Attorney::SceneManager::loadFromCache(*loadingScene, sceneName);
-        if (!state) {
-            XML::loadScene(Paths::g_xmlDataLocation + Paths::g_scenesLocation, sceneName, loadingScene, _platformContext->config());
+        
+        // Load the main scene from XML
+        if (!Attorney::SceneManager::loadXML(*loadingScene, sceneName)) {
+            return nullptr;
         }
 
-        state = Attorney::SceneManager::load(*loadingScene, sceneName);
-        
-        if (state) {
+        if (Attorney::SceneManager::load(*loadingScene, sceneName)) {
             Attorney::SceneManager::postLoad(*loadingScene);
+        } else {
+            return nullptr;
         }
-    } else {
-        state = true;
     }
 
-    return state ? loadingScene : nullptr;
+    return loadingScene;
 }
 
 bool SceneManager::unloadScene(Scene* scene) {
@@ -420,13 +418,7 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
     _saveTimer += deltaTimeUS;
 
     if (_saveTimer >= Time::SecondsToMicroseconds(5)) {
-        _saveTask.wait();
-        _saveTask = CreateTask(*_platformContext,
-            [&activeScene](const Task& parentTask) {
-                LoadSave::saveScene(activeScene);
-            }
-        );
-        _saveTask.startTask();
+        saveActiveScene();
         _saveTimer = 0ULL;
     }
 }
@@ -770,6 +762,20 @@ bool LoadSave::saveScene(const Scene& activeScene) {
     }
 
     return false;
+}
+
+bool SceneManager::saveActiveScene() {
+    _saveTask.wait();
+    Scene& activeScene = getActiveScene();
+    _saveTask = CreateTask(*_platformContext,
+            [&activeScene](const Task& parentTask)
+            {
+                LoadSave::saveScene(activeScene);
+            }
+    );
+    _saveTask.startTask();
+
+    return true;
 }
 
 bool SceneManager::networkUpdate(U32 frameCount) {

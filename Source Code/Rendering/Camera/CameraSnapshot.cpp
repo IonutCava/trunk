@@ -10,7 +10,8 @@ bool operator==(const CameraSnapshot& lhs, const CameraSnapshot& rhs) {
            lhs._zPlanes == rhs._zPlanes &&
            lhs._eye == rhs._eye &&
            lhs._viewMatrix == rhs._viewMatrix &&
-           lhs._projectionMatrix == rhs._projectionMatrix;
+           lhs._projectionMatrix == rhs._projectionMatrix &&
+           lhs._orientation == rhs._orientation;
 }
 
 bool operator!=(const CameraSnapshot& lhs, const CameraSnapshot& rhs) {
@@ -19,6 +20,7 @@ bool operator!=(const CameraSnapshot& lhs, const CameraSnapshot& rhs) {
            lhs._zPlanes != rhs._zPlanes ||
            lhs._eye != rhs._eye ||
            lhs._viewMatrix != rhs._viewMatrix ||
-           lhs._projectionMatrix != rhs._projectionMatrix;
+           lhs._projectionMatrix != rhs._projectionMatrix ||
+           lhs._orientation != rhs._orientation;
 }
 }; //namespace Divide

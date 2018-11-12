@@ -24,12 +24,12 @@ namespace Divide {
     void SGNComponent::RegisterEventCallbacks() {
     }
 
-    bool SGNComponent::save(ByteBuffer& outputBuffer) const {
+    bool SGNComponent::saveCache(ByteBuffer& outputBuffer) const {
         ACKNOWLEDGE_UNUSED(outputBuffer);
         return true;
     }
 
-    bool SGNComponent::load(ByteBuffer& inputBuffer) {
+    bool SGNComponent::loadCache(ByteBuffer& inputBuffer) {
         ACKNOWLEDGE_UNUSED(inputBuffer);
         return true;
     }

@@ -39,12 +39,12 @@ namespace Divide {
 
 
     // May be wrong endpoint
-    bool EditorComponent::save(ByteBuffer& outputBuffer) const {
+    bool EditorComponent::saveCache(ByteBuffer& outputBuffer) const {
         return true;
     }
 
     // May be wrong endpoint
-    bool EditorComponent::load(ByteBuffer& inputBuffer) {
+    bool EditorComponent::loadCache(ByteBuffer& inputBuffer) {
         return true;
     }
 

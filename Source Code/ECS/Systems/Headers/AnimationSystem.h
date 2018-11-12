@@ -47,8 +47,8 @@ namespace Divide {
         virtual void Update(F32 dt) override;
         virtual void PostUpdate(F32 dt) override;
 
-        bool save(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) override;
-        bool load(SceneGraphNode& sgn, ByteBuffer& inputBuffer) override;
+        bool saveCache(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) override;
+        bool loadCache(SceneGraphNode& sgn, ByteBuffer& inputBuffer) override;
     };
 };
 

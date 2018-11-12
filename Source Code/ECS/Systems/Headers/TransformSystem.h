@@ -50,8 +50,8 @@ namespace Divide {
         virtual void PostUpdate(F32 dt) override;
         virtual void OnUpdateLoop() override;
 
-        bool save(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) override;
-        bool load(SceneGraphNode& sgn, ByteBuffer& inputBuffer) override;
+        bool saveCache(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) override;
+        bool loadCache(SceneGraphNode& sgn, ByteBuffer& inputBuffer) override;
 
     protected:
         TaskHandle _preUpdateTask;

@@ -108,21 +108,21 @@ namespace Divide {
         }
     }
 
-    bool TransformSystem::save(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) {
+    bool TransformSystem::saveCache(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) {
         TransformComponent* tComp = sgn.GetComponent<TransformComponent>();
-        if (tComp != nullptr && !tComp->save(outputBuffer)) {
+        if (tComp != nullptr && !tComp->saveCache(outputBuffer)) {
             return false;
         }
          
-        return ECSSystem<TransformSystem>::save(sgn, outputBuffer);
+        return ECSSystem<TransformSystem>::saveCache(sgn, outputBuffer);
     }
 
-    bool TransformSystem::load(SceneGraphNode& sgn, ByteBuffer& inputBuffer) {
+    bool TransformSystem::loadCache(SceneGraphNode& sgn, ByteBuffer& inputBuffer) {
         TransformComponent* tComp = sgn.GetComponent<TransformComponent>();
-        if (tComp != nullptr && !tComp->load(inputBuffer)) {
+        if (tComp != nullptr && !tComp->loadCache(inputBuffer)) {
             return false;
         }
            
-        return ECSSystem<TransformSystem>::load(sgn, inputBuffer);
+        return ECSSystem<TransformSystem>::loadCache(sgn, inputBuffer);
     }
 }; //namespace Divide

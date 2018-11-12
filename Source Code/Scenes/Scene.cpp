@@ -188,7 +188,7 @@ void Scene::addMusic(MusicType type, const stringImpl& name, const stringImpl& s
 }
 
 
-void Scene::saveToXML() {
+void Scene::saveXML() {
     using boost::property_tree::ptree;
 
     const stringImpl& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
@@ -252,7 +252,7 @@ void Scene::saveToXML() {
     }
 }
 
-void Scene::loadFromXML() {
+void Scene::loadXMLData() {
     constexpr bool terrainThreadedLoading = true;
 
     while (!_xmlSceneGraph.empty()) {
@@ -824,33 +824,9 @@ void Scene::loadDefaultCamera() {
 
 }
 
-bool Scene::saveToCache(const stringImpl& name) {
-    const stringImpl cachePath(Paths::g_xmlDataLocation + Paths::g_scenesLocation);
-
-    ByteBuffer saveBuffer;
-    if (_sceneGraph->save(saveBuffer)) {
-        return saveBuffer.dumpToFile(cachePath, name + ".parsed");
-    }
-
-    return false;
-}
-
-bool Scene::loadFromCache(const stringImpl& name) {
-    setState(ResourceState::RES_LOADING);
-
-    const stringImpl cachePath(Paths::g_xmlDataLocation + Paths::g_scenesLocation);
-
-    _name = name;
-    ByteBuffer saveBuffer;
-    if (saveBuffer.loadFromFile(cachePath, name + ".parsed")) {
-        // Load camera
-        loadDefaultCamera();
-        if (_sceneGraph->load(saveBuffer)) {
-            return true;
-        }
-    }
-
-    return false;
+bool Scene::loadXML(const stringImpl& name) {
+    XML::loadScene(Paths::g_xmlDataLocation + Paths::g_scenesLocation, name, this, _context.config());
+    return true;
 }
 
 bool Scene::load(const stringImpl& name) {
@@ -859,7 +835,7 @@ bool Scene::load(const stringImpl& name) {
     _name = name;
 
     loadDefaultCamera();
-    loadFromXML();
+    loadXMLData();
 
     U32 totalLoadingTasks = _loadingTasks.load();
     Console::d_printfn(Locale::get(_ID("SCENE_LOAD_TASKS")), totalLoadingTasks);
@@ -935,14 +911,12 @@ void Scene::postLoad() {
     if (_paramHandler.getParam<bool>(_ID((name() + ".options.autoCookPhysicsAssets").c_str()), true)) {
         _cookCollisionMeshesScheduled = true;
     }
-
-    saveToCache(name());
 }
 
 void Scene::postLoadMainThread() {
     assert(Runtime::isMainThread());
 
-    saveToXML();
+    saveXML();
 
     setState(ResourceState::RES_LOADED);
 }
@@ -1431,10 +1405,11 @@ bool Scene::save(ByteBuffer& outputBuffer) const {
         outputBuffer << _scenePlayers[i]->index() << cam.getEye() << cam.getEuler();
     }
 
-    return _sceneGraph->save(outputBuffer);
+    return _sceneGraph->saveCache(outputBuffer);
 }
 
 bool Scene::load(ByteBuffer& inputBuffer) {
+
     if (!inputBuffer.empty()) {
         vec3<F32> camPos;
         vec3<F32> camEuler;
@@ -1453,7 +1428,7 @@ bool Scene::load(ByteBuffer& inputBuffer) {
         }
     }
 
-    return _sceneGraph->load(inputBuffer);
+    return _sceneGraph->loadCache(inputBuffer);
 }
 
 Camera* Scene::playerCamera() const {

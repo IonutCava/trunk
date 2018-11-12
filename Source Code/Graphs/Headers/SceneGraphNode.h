@@ -280,8 +280,8 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
 
     void processDeleteQueue(vector<vec_size>& childList);
 
-    bool save(ByteBuffer& outputBuffer) const;
-    bool load(ByteBuffer& inputBuffer);
+    bool saveCache(ByteBuffer& outputBuffer) const;
+    bool loadCache(ByteBuffer& inputBuffer);
 
    protected:
     void setTransformDirty(U32 transformMask);

@@ -95,8 +95,8 @@ namespace Divide {
             _onChangedCbk = cbk;
         }
 
-        bool save(ByteBuffer& outputBuffer) const;
-        bool load(ByteBuffer& inputBuffer);
+        bool saveCache(ByteBuffer& outputBuffer) const;
+        bool loadCache(ByteBuffer& inputBuffer);
 
       protected:
         void onChanged(EditorComponentField& field);
@@ -131,13 +131,20 @@ namespace Divide {
 
         class EditorComponentSceneGraphNode {
            private:
+            static bool saveCache(EditorComponent& comp, ByteBuffer& outputBuffer) {
+                return comp.saveCache(outputBuffer);
+            }
+            static bool loadCache(EditorComponent& comp, ByteBuffer& inputBuffer) {
+                return comp.loadCache(inputBuffer);
+            }
+
             static void saveToXML(EditorComponent& comp, boost::property_tree::ptree& pt) {
                 comp.saveToXML(pt);
             }
+
             static void loadFromXML(EditorComponent& comp, const boost::property_tree::ptree& pt) {
                 comp.loadFromXML(pt);
             }
-
             friend class Divide::SceneGraphNode;
         };
     };  // namespace Attorney

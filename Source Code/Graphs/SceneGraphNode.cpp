@@ -670,35 +670,39 @@ bool SceneGraphNode::forEachChildInterruptible(const DELEGATE_CBK<bool, const Sc
     return true;
 }
 
-bool SceneGraphNode::save(ByteBuffer& outputBuffer) const {
+bool SceneGraphNode::saveCache(ByteBuffer& outputBuffer) const {
+    getNode()->saveCache(outputBuffer);
+
     for (EditorComponent* editorComponent : _editorComponents) {
-        if (!editorComponent->save(outputBuffer)) {
+        if (!Attorney::EditorComponentSceneGraphNode::saveCache(*editorComponent, outputBuffer)) {
             return false;
         }
     }
 
-    if (!parentGraph().GetECSManager().save(*this, outputBuffer)) {
+    if (!parentGraph().GetECSManager().saveCache(*this, outputBuffer)) {
         return false;
     }
 
     return forEachChildInterruptible([&outputBuffer](const SceneGraphNode& child) {
-        return child.save(outputBuffer);
+        return child.saveCache(outputBuffer);
     });
 }
 
-bool SceneGraphNode::load(ByteBuffer& inputBuffer) {
+bool SceneGraphNode::loadCache(ByteBuffer& inputBuffer) {
+    getNode()->loadCache(inputBuffer);
+
     for (EditorComponent* editorComponent : _editorComponents) {
-        if (!editorComponent->load(inputBuffer)) {
+        if (!Attorney::EditorComponentSceneGraphNode::loadCache(*editorComponent, inputBuffer)) {
             return false;
         }
     }
 
-    if (!parentGraph().GetECSManager().load(*this, inputBuffer)) {
+    if (!parentGraph().GetECSManager().loadCache(*this, inputBuffer)) {
         return false;
     }
 
     return forEachChildInterruptible([&inputBuffer](SceneGraphNode& child) {
-        return child.load(inputBuffer);
+        return child.loadCache(inputBuffer);
     });
 }
 

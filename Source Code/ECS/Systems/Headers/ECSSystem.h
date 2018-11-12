@@ -51,13 +51,13 @@ namespace Divide {
         {
         }
 
-        virtual bool save(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) {
+        virtual bool saveCache(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) {
             ACKNOWLEDGE_UNUSED(sgn);
             ACKNOWLEDGE_UNUSED(outputBuffer);
             return true;
         }
 
-        virtual bool load(SceneGraphNode& sgn, ByteBuffer& inputBuffer) {
+        virtual bool loadCache(SceneGraphNode& sgn, ByteBuffer& inputBuffer) {
             ACKNOWLEDGE_UNUSED(sgn);
             ACKNOWLEDGE_UNUSED(inputBuffer);
             return true;

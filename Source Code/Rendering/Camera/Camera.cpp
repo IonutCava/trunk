@@ -25,7 +25,6 @@ Camera::Camera(const stringImpl& name, const CameraType& type, const vec3<F32>& 
 {
     _yawFixed = false;
     _fixedYawAxis.set(WORLD_Y_AXIS);
-    _orientation.identity();
     _accumPitchDegrees = 0.0f;
     _data._eye.set(eye);
     _data._FoV = 60.0f;
@@ -33,6 +32,7 @@ Camera::Camera(const stringImpl& name, const CameraType& type, const vec3<F32>& 
     _data._viewMatrix.identity();
     _data._projectionMatrix.identity();
     _data._zPlanes.set(0.1f, 1.0f);
+    _data._orientation.identity();
     _frustum = MemoryManager_NEW Frustum(*this);
 }
 
@@ -81,7 +81,19 @@ void Camera::fromCamera(Camera& camera) {
     }
 
     setEye(camera.getEye());
-    setRotation(camera._orientation);
+    setRotation(camera._data._orientation);
+    updateLookAt();
+}
+
+void Camera::fromSnapshot(const CameraSnapshot& snapshot) {
+    setEye(snapshot._eye);
+    setRotation(snapshot._orientation);
+    setAspectRatio(snapshot._aspectRatio);
+    if (_isOrthoCamera) {
+        setProjection(_orthoRect, snapshot._zPlanes);
+    } else {
+        setProjection(snapshot._aspectRatio, snapshot._FoV, snapshot._zPlanes);
+    }
     updateLookAt();
 }
 
@@ -118,8 +130,8 @@ void Camera::rotate(const Quaternion<F32>& q) {
         euler = Angle::to_DEGREES(euler);
         rotate(euler.yaw, euler.pitch, euler.roll);
     } else {
-        _orientation = q * _orientation;
-        _orientation.normalize();
+        _data._orientation = q * _data._orientation;
+        _data._orientation.normalize();
     }
 
     _viewMatrixDirty = true;
@@ -152,33 +164,33 @@ void Camera::rotate(Angle::DEGREES<F32> yaw, Angle::DEGREES<F32> pitch, Angle::D
         // Note the order the quaternions are multiplied. That is important!
         if (!IS_ZERO(yaw)) {
             tempOrientation.fromAxisAngle(WORLD_Y_AXIS, yaw);
-            _orientation = tempOrientation * _orientation;
+            _data._orientation = tempOrientation * _data._orientation;
         }
 
         // Rotate camera about its local x axis.
         // Note the order the quaternions are multiplied. That is important!
         if (!IS_ZERO(pitch)) {
             tempOrientation.fromAxisAngle(WORLD_X_AXIS, pitch);
-            _orientation = _orientation * tempOrientation;
+            _data._orientation = _data._orientation * tempOrientation;
         }
     } else {
         tempOrientation.fromEuler(pitch, yaw, roll);
-        _orientation *= tempOrientation;
+        _data._orientation *= tempOrientation;
     }
 
     _viewMatrixDirty = true;
 }
 
 void Camera::rotateYaw(Angle::DEGREES<F32> angle) {
-    rotate(Quaternion<F32>(_yawFixed ? _fixedYawAxis : _orientation * WORLD_Y_AXIS, -angle * _cameraTurnSpeed));
+    rotate(Quaternion<F32>(_yawFixed ? _fixedYawAxis : _data._orientation * WORLD_Y_AXIS, -angle * _cameraTurnSpeed));
 }
 
 void Camera::rotateRoll(Angle::DEGREES<F32> angle) {
-    rotate(Quaternion<F32>(_orientation * WORLD_Z_AXIS, -angle * _cameraTurnSpeed));
+    rotate(Quaternion<F32>(_data._orientation * WORLD_Z_AXIS, -angle * _cameraTurnSpeed));
 }
 
 void Camera::rotatePitch(Angle::DEGREES<F32> angle) {
-    rotate(Quaternion<F32>(_orientation * WORLD_X_AXIS, -angle * _cameraTurnSpeed));
+    rotate(Quaternion<F32>(_data._orientation * WORLD_X_AXIS, -angle * _cameraTurnSpeed));
 }
 
 void Camera::move(F32 dx, F32 dy, F32 dz) {
@@ -242,7 +254,7 @@ vec3<F32> ExtractCameraPos2(const mat4<F32>& a_modelView)
 }
 const mat4<F32>& Camera::lookAt(const mat4<F32>& viewMatrix) {
     _data._eye.set(ExtractCameraPos2(viewMatrix));
-    _orientation.fromMatrix(viewMatrix);
+    _data._orientation.fromMatrix(viewMatrix);
     _viewMatrixDirty = true;
     _frustumDirty = true;
     updateViewMatrix();
@@ -254,7 +266,7 @@ const mat4<F32>& Camera::lookAt(const vec3<F32>& eye,
                                 const vec3<F32>& direction,
                                 const vec3<F32>& up) {
     _data._eye.set(eye);
-    _orientation.fromMatrix(mat4<F32>(eye, direction, up));
+    _data._orientation.fromMatrix(mat4<F32>(eye, direction, up));
     _viewMatrixDirty = true;
     _frustumDirty = true;
 
@@ -353,18 +365,18 @@ bool Camera::updateViewMatrix() {
         return false;
     }
 
-    _orientation.normalize();
+    _data._orientation.normalize();
 
     // Reconstruct the view matrix.
-    vec3<F32> xAxis = _orientation.xAxis();
-    vec3<F32> yAxis = _orientation.yAxis();
-    vec3<F32> zAxis = _orientation.zAxis();
+    vec3<F32> xAxis = _data._orientation.xAxis();
+    vec3<F32> yAxis = _data._orientation.yAxis();
+    vec3<F32> zAxis = _data._orientation.zAxis();
 
     vec3<F32> target = -zAxis + _data._eye;
 
-    _data._viewMatrix.set(GetMatrix(_orientation));
+    _data._viewMatrix.set(GetMatrix(_data._orientation));
     _data._viewMatrix.setRow(3, -xAxis.dot(_data._eye), -yAxis.dot(_data._eye), -zAxis.dot(_data._eye), 1.0f);
-    _orientation.getEuler(_euler);
+    _data._orientation.getEuler(_euler);
     _euler = Angle::to_DEGREES(_euler);
     // Extract the pitch angle from the view matrix.
     _accumPitchDegrees = Angle::to_DEGREES(std::asinf(getForwardDir().y));

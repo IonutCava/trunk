@@ -582,7 +582,7 @@ namespace Divide {
         return _uniformScaled;
     }
 
-    bool TransformComponent::save(ByteBuffer& outputBuffer) const {
+    bool TransformComponent::saveCache(ByteBuffer& outputBuffer) const {
         outputBuffer << uniqueID();
         outputBuffer << _hasChanged;
 
@@ -602,10 +602,10 @@ namespace Divide {
             _hasChanged = false;
         }
 
-        return BaseComponentType<TransformComponent, ComponentType::TRANSFORM>::save(outputBuffer);
+        return BaseComponentType<TransformComponent, ComponentType::TRANSFORM>::saveCache(outputBuffer);
     }
 
-    bool TransformComponent::load(ByteBuffer& inputBuffer) {
+    bool TransformComponent::loadCache(ByteBuffer& inputBuffer) {
         I64 tempID = -1;
         inputBuffer >> tempID;
         if (tempID != uniqueID()) {
@@ -632,6 +632,6 @@ namespace Divide {
             setRotation(Quaternion<F32>(localRotation));
         }
 
-        return BaseComponentType<TransformComponent, ComponentType::TRANSFORM>::save(inputBuffer);
+        return BaseComponentType<TransformComponent, ComponentType::TRANSFORM>::saveCache(inputBuffer);
     }
 }; //namespace

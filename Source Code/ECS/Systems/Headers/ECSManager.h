@@ -48,8 +48,8 @@ namespace Divide {
             ECSManager(PlatformContext& context, ECS::ECSEngine& engine);
             ~ECSManager();
 
-            bool save(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) const;
-            bool load(SceneGraphNode& sgn, ByteBuffer& inputBuffer);
+            bool saveCache(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) const;
+            bool loadCache(SceneGraphNode& sgn, ByteBuffer& inputBuffer);
 
         protected:
             ECS::ECSEngine& _ecsEngine;
