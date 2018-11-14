@@ -302,7 +302,7 @@ namespace {
     }
 };
 
-void SceneGraph::saveToXML() {
+void SceneGraph::saveToXML() const {
     const stringImpl& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
     const boost::property_tree::xml_writer_settings<std::string> settings(' ', 4);
 

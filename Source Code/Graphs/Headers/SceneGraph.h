@@ -120,7 +120,7 @@ class SceneGraph : private NonCopyable,
 
     void postLoad();
 
-    void saveToXML();
+    void saveToXML() const;
     void loadFromXML();
 
     ECSManager& GetECSManager() { return *_ecsManager; }

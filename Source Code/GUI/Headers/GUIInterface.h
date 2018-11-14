@@ -149,13 +149,6 @@ public:
     virtual CEGUI::Window* loadWindowFromLayoutFile(const char* layoutFileName);
     virtual bool unloadWindow(CEGUI::Window*& window);
 
-    // Return true if input was consumed
-    virtual bool mouseMoved(const GUIEvent& event);
-    // Return true if input was consumed
-    virtual bool onMouseUp(const GUIEvent& event);
-    // Return true if input was consumed
-    virtual bool onMouseDown(const GUIEvent& event);
-
 protected:
     void addElement(U64 id, GUIElement* element);
     virtual GUIElement* getGUIElementImpl(U64 elementName, GUIType type) const;

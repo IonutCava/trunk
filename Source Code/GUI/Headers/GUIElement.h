@@ -56,19 +56,6 @@ enum class GUIType : U8 {
     COUNT
 };
 
-struct GUIEvent {
-    /// ascii character code 'a', 'A', 'b', '*', etc (if device==keyboard) -
-    /// possibly a uchar or something
-    U16 ascii;
-    /// SI_LSHIFT, etc
-    U8 modifier;
-    /// for unprintables, 'tab', 'return', ...
-    U16 keyCode;
-    /// for mouse events
-    vec2<F32> mousePoint;
-    U8 mouseClickCount;
-};
-
 template<typename T = GUIElement>
 GUIType getTypeEnum() {
     static_assert(std::is_base_of<GUIElement, T>::value,
@@ -117,23 +104,6 @@ class GUIElement : public GUIDWrapper {
 
     virtual void setTooltip(const stringImpl& tooltipText) {
         ACKNOWLEDGE_UNUSED(tooltipText);
-    }
-
-    // Return true if input was consumed
-    virtual bool mouseMoved(const GUIEvent& event) {
-        ACKNOWLEDGE_UNUSED(event);
-        return false;
-    }
-    // Return true if input was consumed
-    virtual bool onMouseUp(const GUIEvent& event) {
-        ACKNOWLEDGE_UNUSED(event);
-        return false;
-    }
-
-    // Return true if input was consumed
-    virtual bool onMouseDown(const GUIEvent& event) {
-        ACKNOWLEDGE_UNUSED(event);
-        return false;
     }
 
     virtual void onSizeChange(const SizeChangeParams& params) {

@@ -21,13 +21,4 @@ GUIText::GUIText(U64 guiID,
 const RelativePosition2D& GUIText::getPosition() const {
     return _position;
 }
-
-// Return true if input was consumed
-bool GUIText::mouseMoved(const GUIEvent &event) { return false; }
-
-// Return true if input was consumed
-bool GUIText::onMouseUp(const GUIEvent &event) { return false; }
-
-// Return true if input was consumed
-bool GUIText::onMouseDown(const GUIEvent &event) { return false; }
 };

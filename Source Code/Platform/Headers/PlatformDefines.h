@@ -139,6 +139,8 @@ void SetClipboardText(void* user_data, const char* text);
 
 void ToggleCursor(bool state);
 
+bool CursorState();
+
 template <typename T>
 struct synchronized {
 public:

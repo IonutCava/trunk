@@ -459,7 +459,6 @@ void Editor::toggle(const bool state) {
         }
 
     } else {
-        _context.kernel().sceneManager().saveActiveScene();
         updateCameraSnapshot();
         static_cast<ContentExplorerWindow*>(_dockedWindows[to_base(WindowType::ContentExplorer)])->init();
     }
@@ -487,33 +486,33 @@ void Editor::update(const U64 deltaTimeUS) {
         
     ToggleCursor(!io.MouseDrawCursor);
     if (io.MouseDrawCursor || ImGui::GetMouseCursor() == ImGuiMouseCursor_None) {
-        WindowManager::setCursorStyle(CursorStyle::NONE);
+        WindowManager::SetCursorStyle(CursorStyle::NONE);
     } else if (io.MousePos.x != -1.f && io.MousePos.y != -1.f) {
         switch (ImGui::GetCurrentContext()->MouseCursor)
         {
             case ImGuiMouseCursor_Arrow:
-                WindowManager::setCursorStyle(CursorStyle::ARROW);
+                WindowManager::SetCursorStyle(CursorStyle::ARROW);
                 break;
             case ImGuiMouseCursor_TextInput:         // When hovering over InputText, etc.
-                WindowManager::setCursorStyle(CursorStyle::TEXT_INPUT);
+                WindowManager::SetCursorStyle(CursorStyle::TEXT_INPUT);
                 break;
             case ImGuiMouseCursor_ResizeAll:         // Unused
-                WindowManager::setCursorStyle(CursorStyle::RESIZE_ALL);
+                WindowManager::SetCursorStyle(CursorStyle::RESIZE_ALL);
                 break;
             case ImGuiMouseCursor_ResizeNS:          // Unused
-                WindowManager::setCursorStyle(CursorStyle::RESIZE_NS);
+                WindowManager::SetCursorStyle(CursorStyle::RESIZE_NS);
                 break;
             case ImGuiMouseCursor_ResizeEW:          // When hovering over a column
-                WindowManager::setCursorStyle(CursorStyle::RESIZE_EW);
+                WindowManager::SetCursorStyle(CursorStyle::RESIZE_EW);
                 break;
             case ImGuiMouseCursor_ResizeNESW:        // Unused
-                WindowManager::setCursorStyle(CursorStyle::RESIZE_NESW);
+                WindowManager::SetCursorStyle(CursorStyle::RESIZE_NESW);
                 break;
             case ImGuiMouseCursor_ResizeNWSE:        // When hovering over the bottom-right corner of a window
-                WindowManager::setCursorStyle(CursorStyle::RESIZE_NWSE);
+                WindowManager::SetCursorStyle(CursorStyle::RESIZE_NWSE);
                 break;
             case ImGuiMouseCursor_Hand:
-                WindowManager::setCursorStyle(CursorStyle::HAND);
+                WindowManager::SetCursorStyle(CursorStyle::HAND);
                 break;
         }
     }
@@ -841,22 +840,24 @@ ImGuiViewport* Editor::findViewportByPlatformHandle(ImGuiContext* context, Displ
 bool Editor::mouseMoved(const Input::MouseMoveEvent& arg) {
     if (!scenePreviewFocused() || !_gizmo->mouseMoved(arg)) {
         ImGuiIO& io = _imguiContext->IO;
-        SceneViewWindow* sceneView = static_cast<SceneViewWindow*>(_dockedWindows[to_base(WindowType::SceneView)]);
-        _sceneHovered = sceneView->isHovered() && sceneView->sceneRect().contains(io.MousePos.x, io.MousePos.y);
 
-        if (arg.WheelH() > 0) {
-            io.MouseWheelH += 1;
+        if (!arg.wheelEvent()) {
+            SceneViewWindow* sceneView = static_cast<SceneViewWindow*>(_dockedWindows[to_base(WindowType::SceneView)]);
+            _sceneHovered = sceneView->isHovered() && sceneView->sceneRect().contains(io.MousePos.x, io.MousePos.y);
+        } else {
+            if (arg.WheelH() > 0) {
+                io.MouseWheelH += 1;
+            }
+            if (arg.WheelH() < 0) {
+                io.MouseWheelH -= 1;
+            }
+            if (arg.WheelV() > 0) {
+                io.MouseWheel += 1;
+            }
+            if (arg.WheelV() < 0) {
+                io.MouseWheel -= 1;
+            }
         }
-        if (arg.WheelH() < 0) {
-            io.MouseWheelH -= 1;
-        }
-        if (arg.WheelV() > 0) {
-            io.MouseWheel += 1;
-        }
-        if (arg.WheelV() < 0) {
-            io.MouseWheel -= 1;
-        }
-
         return io.WantCaptureMouse;
     }
 

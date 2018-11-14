@@ -57,7 +57,7 @@ struct MouseButtonEvent : public InputEvent {
 };
 
 struct MouseMoveEvent : public InputEvent {
-    explicit MouseMoveEvent(DisplayWindow* sourceWindow, U8 deviceIndex, MouseState stateIn);
+    explicit MouseMoveEvent(DisplayWindow* sourceWindow, U8 deviceIndex, MouseState stateIn, bool wheelEvent);
 
     MouseAxis X() const;
     MouseAxis Y() const;
@@ -68,9 +68,11 @@ struct MouseMoveEvent : public InputEvent {
     vec4<I32> relativePos() const;
     vec4<I32> absolutePos() const;
     const MouseState& state() const;
-
+    
+    bool wheelEvent() const;
  private:
     MouseState _stateIn;
+    const bool _wheelEvent = false;
 };
 
 struct JoystickEvent : public InputEvent {

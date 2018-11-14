@@ -148,7 +148,8 @@ void MenuBar::drawFileMenu() {
         
         if (ImGui::MenuItem(hasUnsavedElements ? "Save All*" : "Save All")) {
             Attorney::EditorGeneralWidget::saveElement(_context.editor(), -1);
-            _context.kernel().sceneManager().saveActiveScene();
+            _context.kernel().sceneManager().saveActiveScene(false);
+            _context.editor().saveToXML();
         }
 
         ImGui::Separator();
@@ -281,7 +282,7 @@ void MenuBar::drawWindowsMenu() {
     {
         bool& sampleWindowEnabled = Attorney::EditorMenuBar::sampleWindowEnabled(_context.editor());
         if (ImGui::MenuItem("Sample Window", NULL, &sampleWindowEnabled)) {
-            _context.editor().saveToXML();
+            
         }
         ImGui::EndMenu();
     }

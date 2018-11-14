@@ -169,6 +169,9 @@ class Scene : public Resource, public PlatformContextComponent {
     inline LightPool& lightPool() { return *_lightPool; }
     inline const LightPool& lightPool() const { return *_lightPool; }
 
+    // can save at any time, I guess?
+    virtual bool saveXML() const;
+
    protected:
     virtual void rebuildShaders();
     virtual void onSetActive();
@@ -193,7 +196,6 @@ class Scene : public Resource, public PlatformContextComponent {
 
 
     virtual bool loadXML(const stringImpl& name);
-    virtual void saveXML();
 
     virtual bool load(const stringImpl& name);
     virtual void loadXMLData();

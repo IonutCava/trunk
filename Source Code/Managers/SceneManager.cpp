@@ -418,7 +418,7 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
     _saveTimer += deltaTimeUS;
 
     if (_saveTimer >= Time::SecondsToMicroseconds(5)) {
-        saveActiveScene();
+        saveActiveScene(true);
         _saveTimer = 0ULL;
     }
 }
@@ -742,7 +742,11 @@ bool LoadSave::loadScene(Scene& activeScene) {
     return false;
 }
 
-bool LoadSave::saveScene(const Scene& activeScene) {
+bool LoadSave::saveScene(const Scene& activeScene, bool toCache) {
+    if (!toCache) {
+        return activeScene.saveXML();
+    }
+
     if (activeScene.state().saveLoadDisabled()) {
         return true;
     }
@@ -764,13 +768,13 @@ bool LoadSave::saveScene(const Scene& activeScene) {
     return false;
 }
 
-bool SceneManager::saveActiveScene() {
+bool SceneManager::saveActiveScene(bool toCache) {
     _saveTask.wait();
     Scene& activeScene = getActiveScene();
     _saveTask = CreateTask(*_platformContext,
-            [&activeScene](const Task& parentTask)
+            [&activeScene, toCache](const Task& parentTask)
             {
-                LoadSave::saveScene(activeScene);
+                LoadSave::saveScene(activeScene, toCache);
             }
     );
     _saveTask.startTask();

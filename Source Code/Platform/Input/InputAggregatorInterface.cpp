@@ -66,9 +66,10 @@ MouseButtonEvent::MouseButtonEvent(DisplayWindow* sourceWindow, U8 deviceIndex)
 
 }
 
-MouseMoveEvent::MouseMoveEvent(DisplayWindow* sourceWindow, U8 deviceIndex, MouseState stateIn)
+MouseMoveEvent::MouseMoveEvent(DisplayWindow* sourceWindow, U8 deviceIndex, MouseState stateIn, bool wheelEvent)
     : InputEvent(sourceWindow, deviceIndex),
-      _stateIn(stateIn)
+      _stateIn(stateIn),
+      _wheelEvent(wheelEvent)
 {
 }
 
@@ -98,6 +99,10 @@ vec4<I32> MouseMoveEvent::relativePos() const {
 
 vec4<I32> MouseMoveEvent::absolutePos() const {
     return vec4<I32>(state().X.abs, state().Y.abs, state().VWheel, state().HWheel);
+}
+
+bool MouseMoveEvent::wheelEvent() const {
+    return _wheelEvent;
 }
 
 JoystickEvent::JoystickEvent(DisplayWindow* sourceWindow, U8 deviceIndex)

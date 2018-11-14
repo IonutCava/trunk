@@ -500,8 +500,13 @@ void WindowManager::setCursorPosition(I32 x, I32 y, bool global) {
     Attorney::KernelWindowManager::setCursorPosition(_context->app().kernel(), x, y);
 }
 
-void WindowManager::setCursorStyle(CursorStyle style) {
+void WindowManager::SetCursorStyle(CursorStyle style) {
     SDL_SetCursor(s_cursors[style]);
+}
+
+void WindowManager::ToggleRelativeMouseMode(bool state, bool hideCursor) {
+    SDL_SetRelativeMouseMode(state ? SDL_TRUE : SDL_FALSE);
+    ToggleCursor(hideCursor);
 }
 
 vec2<I32> WindowManager::getCursorPosition(bool global) {

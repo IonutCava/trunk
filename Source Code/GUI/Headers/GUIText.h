@@ -51,13 +51,6 @@ class GUIText : public GUIElement, public TextElement {
             CEGUI::Window* parent,
             U8 fontSize = 16u);
 
-    // Return true if input was consumed
-    bool mouseMoved(const GUIEvent& event) override;
-    // Return true if input was consumed
-    bool onMouseUp(const GUIEvent& event) override;
-    // Return true if input was consumed
-    bool onMouseDown(const GUIEvent& event) override;
-
     const RelativePosition2D& getPosition() const;
 };
 

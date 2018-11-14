@@ -134,8 +134,9 @@ public:
 
     void captureMouse(bool state);
 
-    static void setCursorStyle(CursorStyle style);
+    static void SetCursorStyle(CursorStyle style);
 
+    static void ToggleRelativeMouseMode(bool state, bool hideCursor);
 protected:
     bool onSDLEvent(SDL_Event event) override;
 

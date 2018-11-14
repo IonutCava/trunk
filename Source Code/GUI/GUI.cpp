@@ -351,29 +351,7 @@ bool GUI::onKeyUp(const Input::KeyEvent& key) {
 
 // Return true if input was consumed
 bool GUI::mouseMoved(const Input::MouseMoveEvent& arg) {
-    if (!_init) {
-        return false;
-    }
-
-    GUIEvent event;
-    event.mousePoint.set(arg.X().abs, arg.Y().abs);
-
-    if (GUIInterface::mouseMoved(event)) {
-        return true;
-    }
-
-    {
-        // scene specific
-        SharedLock r_lock(_guiStackLock);
-        GUIMapPerScene::const_iterator it = _guiStack.find(_activeScene->getGUID());
-        if (it != std::cend(_guiStack)) {
-            if (it->second->mouseMoved(event)) {
-                return true;
-            }
-        }
-    }
-
-    if (parent().platformContext().config().gui.cegui.enabled) {
+    if (_init && parent().platformContext().config().gui.cegui.enabled) {
         return _ceguiInput.mouseMoved(arg);
     }
 
@@ -382,70 +360,20 @@ bool GUI::mouseMoved(const Input::MouseMoveEvent& arg) {
 
 // Return true if input was consumed
 bool GUI::mouseButtonPressed(const Input::MouseButtonEvent& arg) {
-    if (!_init) {
-        return false;
+    if (_init && parent().platformContext().config().gui.cegui.enabled) {
+        return _ceguiInput.mouseButtonPressed(arg);
     }
 
-    bool consumed = false;
-    if (parent().platformContext().config().gui.cegui.enabled) {
-        consumed = _ceguiInput.mouseButtonPressed(arg);
-    }
-
-    if (!consumed) {
-        if (arg.button == Input::MouseButton::MB_Left) {
-            GUIEvent event;
-            event.mouseClickCount = 0;
-
-            if (GUIInterface::onMouseDown(event)) {
-                return true;
-            }
-
-            // scene specific
-            SharedLock r_lock(_guiStackLock);
-            GUIMapPerScene::const_iterator it = _guiStack.find(_activeScene->getGUID());
-            if (it != std::cend(_guiStack)) {
-                if (it->second->onMouseDown(event)) {
-                    return true;
-                }
-            }
-        }
-    }
-
-    return consumed;
+    return false;
 }
 
 // Return true if input was consumed
 bool GUI::mouseButtonReleased(const Input::MouseButtonEvent& arg) {
-    if (!_init) {
-        return false;
+    if (_init && parent().platformContext().config().gui.cegui.enabled) {
+        return _ceguiInput.mouseButtonReleased(arg);
     }
 
-    bool consumed = false;
-    if (parent().platformContext().config().gui.cegui.enabled) {
-        consumed = _ceguiInput.mouseButtonReleased(arg);
-    }
-
-    if (!consumed) {
-        if (arg.button == Input::MouseButton::MB_Left) {
-            GUIEvent event;
-            event.mouseClickCount = 1;
-
-            if (GUIInterface::onMouseUp(event)) {
-                return true;
-            }
-
-            // scene specific
-            SharedLock r_lock(_guiStackLock);
-            GUIMapPerScene::const_iterator it = _guiStack.find(_activeScene->getGUID());
-            if (it != std::cend(_guiStack)) {
-                if (it->second->onMouseUp(event)) {
-                    return true;
-                }
-            }
-        }
-    }
-
-    return consumed;
+    return false;
 }
 
 // Return true if input was consumed

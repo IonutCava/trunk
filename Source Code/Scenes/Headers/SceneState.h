@@ -187,8 +187,6 @@ class SceneStatePerPlayer {
     inline void resetMovement() {
         _moveFB = _moveLR = _angleUD = _angleLR = _roll = MoveDirection::NONE;
         _aimPos.reset();
-        _aimDelta.reset();
-
     }
 
     inline void resetAll() {
@@ -223,17 +221,14 @@ class SceneStatePerPlayer {
     inline void cameraLockedToMouse(bool state) { _cameraLockedToMouse = state; }
     inline bool cameraLockedToMouse()     const { return _cameraLockedToMouse; }
 
-    inline void aimPos(const vec2<I32>& position) { _aimDelta.set(_aimPos - position); _aimPos.set(position); }
+    inline void aimPos(const vec2<I32>& position) { _aimPos.set(position); }
     inline const vec2<I32>&  aimPos()       const { return _aimPos; }
-
-    inline const vec2<I32>&  aimDelta()     const { return _aimDelta; }
 
     inline void    overrideCamera(Camera* camera) { _overrideCamera = camera; }
     inline Camera* overrideCamera()         const { return _overrideCamera; }
 
 private:
     vec2<I32> _aimPos;
-    vec2<I32> _aimDelta;
 
     bool _cameraLockedToMouse;
     MoveDirection _moveFB;   ///< forward-back move change detected

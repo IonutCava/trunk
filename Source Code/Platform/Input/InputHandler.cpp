@@ -130,14 +130,10 @@ bool InputHandler::onSDLEvent(SDL_Event event) {
             state.X.rel = event.motion.xrel;
             state.Y.abs = event.motion.y;
             state.Y.rel = event.motion.yrel;
-            if (event.type == SDL_MOUSEWHEEL) {
-                state.HWheel = event.wheel.x;
-                state.VWheel = event.wheel.y;
-            } else {
-                state.HWheel = state.VWheel = 0;
-            }
+            state.HWheel = event.wheel.x;
+            state.VWheel = event.wheel.y;
 
-            Input::MouseMoveEvent arg(eventWindow, to_U8(event.motion.which), state);
+            Input::MouseMoveEvent arg(eventWindow, to_U8(event.motion.which), state, event.type == SDL_MOUSEWHEEL);
             _eventListener.mouseMoved(arg);
             return true;
         };

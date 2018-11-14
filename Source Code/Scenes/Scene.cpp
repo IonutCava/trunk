@@ -188,7 +188,7 @@ void Scene::addMusic(MusicType type, const stringImpl& name, const stringImpl& s
 }
 
 
-void Scene::saveXML() {
+bool Scene::saveXML() const {
     using boost::property_tree::ptree;
 
     const stringImpl& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
@@ -250,6 +250,8 @@ void Scene::saveXML() {
         copyFile(sceneLocation + "/", "musicPlaylist.xml", sceneLocation + "/", "musicPlaylist.xml.bak", true);
         write_xml((sceneLocation + "/" + "musicPlaylist.xml.dev").c_str(), pt, std::locale(), settings);
     }
+
+    return true;
 }
 
 void Scene::loadXMLData() {
@@ -647,11 +649,22 @@ U16 Scene::registerInputActions() {
     auto toggleOctreeRegionRendering = [this](InputParams param) {renderState().toggleOption(SceneRenderState::RenderOptions::RENDER_OCTREE_REGIONS);};
     auto select = [this](InputParams  param) {findSelection(getPlayerIndexForDevice(param._deviceIndex), true); };
     auto multiselect = [this](InputParams  param) {findSelection(getPlayerIndexForDevice(param._deviceIndex), false); };
-    auto lockCameraToMouse = [this](InputParams  param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).cameraLockedToMouse(true); };
+    auto lockCameraToMouse = [this](InputParams  param) {
+        SceneStatePerPlayer& playerState = state().playerState(getPlayerIndexForDevice(param._deviceIndex));
+
+        playerState.angleLR(MoveDirection::NONE);
+        playerState.angleUD(MoveDirection::NONE);
+        playerState.cameraLockedToMouse(true);
+        WindowManager::ToggleRelativeMouseMode(true, true);
+    };
     auto releaseCameraFromMouse = [this](InputParams  param) {
-        state().playerState(getPlayerIndexForDevice(param._deviceIndex)).cameraLockedToMouse(false);
-        state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleLR(MoveDirection::NONE);
-        state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleUD(MoveDirection::NONE);
+        SceneStatePerPlayer& playerState = state().playerState(getPlayerIndexForDevice(param._deviceIndex));
+
+        playerState.cameraLockedToMouse(false);
+        playerState.angleLR(MoveDirection::NONE);
+        playerState.angleUD(MoveDirection::NONE);
+        WindowManager::ToggleRelativeMouseMode(false, true);
+        _context.app().windowManager().snapCursorToCenter();
     };
     auto rendererDebugView = [this](InputParams param) {_context.gfx().getRenderer().toggleDebugView();};
     auto shutdown = [this](InputParams param) { _context.app().RequestShutdown();};
@@ -916,7 +929,9 @@ void Scene::postLoad() {
 void Scene::postLoadMainThread() {
     assert(Runtime::isMainThread());
 
-    saveXML();
+    if (!saveXML()) {
+        //ToDo: Handle this?
+    }
 
     setState(ResourceState::RES_LOADED);
 }
@@ -1080,13 +1095,14 @@ bool Scene::mouseMoved(const Input::MouseMoveEvent& arg) {
     PlayerIndex idx = getPlayerIndexForDevice(arg._deviceIndex);
     _hoverUpdateQueue.insert(idx);
 
-    Camera& cam = _scenePlayers[idx]->getCamera();
-    if (cam.moveRelative(arg.relativePos()))
-    {
-        if (cam.type() == Camera::CameraType::THIRD_PERSON) {
-            _context.app().windowManager().snapCursorToCenter();
+    if (!arg.wheelEvent()) {
+        Camera& cam = _scenePlayers[idx]->getCamera();
+        if (cam.moveRelative(arg.relativePos())) {
+            if (cam.type() == Camera::CameraType::THIRD_PERSON) {
+                _context.app().windowManager().snapCursorToCenter();
+            }
+            return true;
         }
-        return true;
     }
 
     return false;

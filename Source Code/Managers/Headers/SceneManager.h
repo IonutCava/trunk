@@ -43,7 +43,7 @@ namespace Divide {
 class LoadSave {
 public:
     static bool loadScene(Scene& activeScene);
-    static bool saveScene(const Scene& activeScene);
+    static bool saveScene(const Scene& activeScene, bool toCache);
 };
 
 enum class RenderStage : U8;
@@ -144,7 +144,7 @@ public:
         return factory.register_creator(id, new_ptr<T>());
     }
 
-    bool saveActiveScene();
+    bool saveActiveScene(bool toCache);
 
 public:  /// Input
   /// Key pressed: return true if input was consumed

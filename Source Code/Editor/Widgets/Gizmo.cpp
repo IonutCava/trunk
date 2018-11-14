@@ -127,6 +127,7 @@ namespace Divide {
     const TransformSettings& Gizmo::getTransformSettings() const {
         return _transformSettings;
     }
+
     /// Key pressed: return true if input was consumed
     bool Gizmo::onKeyDown(const Input::KeyEvent& key) {
         if (!active()) {
@@ -182,32 +183,36 @@ namespace Divide {
         }
 
         ImGuiIO& io = _imguiContext->IO;
-        ImGuiContext& parentContext = Attorney::EditorGeneralWidget::imguiContext(_parent);
-        WindowManager& winMgr = _parent.context().app().windowManager();
-        if (ImGuiViewport* viewport = Attorney::EditorGizmo::findViewportByPlatformHandle(_parent, &parentContext, winMgr.getFocusedWindow())) {
-            io.MousePos = ImVec2(viewport->Pos.x + (F32)arg.X().abs, viewport->Pos.y + (F32)arg.Y().abs);
-            if (_parent.scenePreviewFocused()) {
-                const Rect<I32>& sceneRect = _parent.scenePreviewRect();
-                if (sceneRect.contains(vec2<I32>(io.MousePos.x, io.MousePos.y))) {
-                    io.MousePos.x = MAP(io.MousePos.x, to_F32(sceneRect.x), to_F32(sceneRect.z), 0.f, viewport->Size.x);
-                    io.MousePos.y = MAP(io.MousePos.y, to_F32(sceneRect.y), to_F32(sceneRect.w), 0.f, viewport->Size.y);
-                }
 
+        if (!arg.wheelEvent()) {
+            ImGuiContext& parentContext = Attorney::EditorGeneralWidget::imguiContext(_parent);
+            WindowManager& winMgr = _parent.context().app().windowManager();
+            if (ImGuiViewport* viewport = Attorney::EditorGizmo::findViewportByPlatformHandle(_parent, &parentContext, winMgr.getFocusedWindow())) {
+                io.MousePos = ImVec2(viewport->Pos.x + (F32)arg.X().abs, viewport->Pos.y + (F32)arg.Y().abs);
+                if (_parent.scenePreviewFocused()) {
+                    const Rect<I32>& sceneRect = _parent.scenePreviewRect();
+                    if (sceneRect.contains(vec2<I32>(io.MousePos.x, io.MousePos.y))) {
+                        io.MousePos.x = MAP(io.MousePos.x, to_F32(sceneRect.x), to_F32(sceneRect.z), 0.f, viewport->Size.x);
+                        io.MousePos.y = MAP(io.MousePos.y, to_F32(sceneRect.y), to_F32(sceneRect.w), 0.f, viewport->Size.y);
+                    }
+
+                }
+            }
+        } else {
+            if (arg.WheelH() > 0) {
+                io.MouseWheelH += 1;
+            }
+            if (arg.WheelH() < 0) {
+                io.MouseWheelH -= 1;
+            }
+            if (arg.WheelV() > 0) {
+                io.MouseWheel += 1;
+            }
+            if (arg.WheelV() < 0) {
+                io.MouseWheel -= 1;
             }
         }
 
-        if (arg.WheelH() > 0) {
-            io.MouseWheelH += 1;
-        }
-        if (arg.WheelH() < 0) {
-            io.MouseWheelH -= 1;
-        }
-        if (arg.WheelV() > 0) {
-            io.MouseWheel += 1;
-        }
-        if (arg.WheelV() < 0) {
-            io.MouseWheel -= 1;
-        }
         return io.WantCaptureMouse || isUsing();
     }
 
