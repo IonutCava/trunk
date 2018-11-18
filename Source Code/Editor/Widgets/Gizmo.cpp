@@ -195,11 +195,11 @@ namespace Divide {
                 io.MousePos = ImVec2(viewport->Pos.x + (F32)arg.X().abs, viewport->Pos.y + (F32)arg.Y().abs);
                 if (_parent.scenePreviewFocused()) {
                     const Rect<I32>& sceneRect = _parent.scenePreviewRect(true);
-                    if (sceneRect.contains(vec2<I32>(io.MousePos.x, io.MousePos.y))) {
-                        io.MousePos.x = MAP(io.MousePos.x, to_F32(sceneRect.x), to_F32(sceneRect.z), 0.f, viewport->Size.x);
-                        io.MousePos.y = MAP(io.MousePos.y, to_F32(sceneRect.y), to_F32(sceneRect.w), 0.f, viewport->Size.y);
+                    vec2<I32> mousePos(io.MousePos.x, io.MousePos.y);
+                    if (sceneRect.contains(mousePos)) {
+                        mousePos = COORD_REMAP(mousePos, sceneRect, Rect<I32>(0, 0, to_I32(viewport->Size.x), to_I32(viewport->Size.y)));
+                        io.MousePos = ImVec2(to_F32(mousePos.x), to_F32(mousePos.y));
                     }
-
                 }
             }
         } else {

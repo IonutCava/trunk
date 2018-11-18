@@ -566,6 +566,9 @@ SceneGraphNode* Scene::addSky(SceneGraphNode& parentNode, const stringImpl& node
 }
 
 U16 Scene::registerInputActions() {
+    static bool hadWindowGrab = false;
+    static vec2<I32> lastMousePosition;
+
     _input->flushCache();
 
     auto none = [](InputParams param) {};
@@ -651,18 +654,23 @@ U16 Scene::registerInputActions() {
     auto multiselect = [this](InputParams  param) {findSelection(getPlayerIndexForDevice(param._deviceIndex), false); };
     auto lockCameraToMouse = [this](InputParams  param) {
         SceneStatePerPlayer& playerState = state().playerState(getPlayerIndexForDevice(param._deviceIndex));
-
-        playerState.resetMovement();
         playerState.cameraLockedToMouse(true);
-        WindowManager::ToggleRelativeMouseMode(true, true);
+        DisplayWindow* window = _context.app().windowManager().getFocusedWindow();
+        hadWindowGrab = window->grabState();
+
+        lastMousePosition = WindowManager::GetCursorPosition(true);
+        WindowManager::ToggleRelativeMouseMode(true);
     };
     auto releaseCameraFromMouse = [this](InputParams  param) {
         SceneStatePerPlayer& playerState = state().playerState(getPlayerIndexForDevice(param._deviceIndex));
 
         playerState.cameraLockedToMouse(false);
         playerState.resetMovement();
-        WindowManager::ToggleRelativeMouseMode(false, false);
-        _context.app().windowManager().snapCursorToCenter();
+
+        WindowManager::ToggleRelativeMouseMode(false);
+        DisplayWindow* window = _context.app().windowManager().getFocusedWindow();
+        window->grabState(hadWindowGrab);
+        _context.app().windowManager().setCursorPosition(lastMousePosition.x, lastMousePosition.y, true);
     };
     auto rendererDebugView = [this](InputParams param) {_context.gfx().getRenderer().toggleDebugView();};
     auto shutdown = [this](InputParams param) { _context.app().RequestShutdown();};
@@ -1091,7 +1099,9 @@ void Scene::clearObjects() {
 bool Scene::mouseMoved(const Input::MouseMoveEvent& arg) {
     if (!arg.wheelEvent()) {
         PlayerIndex idx = getPlayerIndexForDevice(arg._deviceIndex);
-        findHoverTarget(idx, arg.absolutePos());
+        if (!state().playerState(idx).cameraLockedToMouse()) {
+            findHoverTarget(idx, arg.absolutePos());
+        }
     }
     return false;
 }
@@ -1261,8 +1271,7 @@ void Scene::findHoverTarget(PlayerIndex idx, const vec2<I32>& aimPosIn) {
         if (_context.editor().running() && _context.editor().scenePreviewFocused()) {
             const Rect<I32>& sceneRect = _context.editor().scenePreviewRect(false);
             if (sceneRect.contains(aimPos)) {
-                aimPos.x = MAP(aimPos.x, sceneRect.x, sceneRect.z, viewport.x, viewport.z);
-                aimPos.y = MAP(aimPos.y, sceneRect.y, sceneRect.w, viewport.y, viewport.w);
+                aimPos = COORD_REMAP(aimPos, sceneRect, viewport);
             }
         }
     }

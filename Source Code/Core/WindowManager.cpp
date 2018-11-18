@@ -504,18 +504,18 @@ void WindowManager::SetCursorStyle(CursorStyle style) {
     SDL_SetCursor(s_cursors[style]);
 }
 
-void WindowManager::ToggleRelativeMouseMode(bool state, bool hideCursor) {
-    SDL_SetRelativeMouseMode(state ? SDL_TRUE : SDL_FALSE);
-    ToggleCursor(hideCursor);
+void WindowManager::ToggleRelativeMouseMode(bool state) {
+    I32 result = SDL_SetRelativeMouseMode(state ? SDL_TRUE : SDL_FALSE);
+    assert(result != -1);
 }
 
-vec2<I32> WindowManager::getCursorPosition(bool global) {
+vec2<I32> WindowManager::GetCursorPosition(bool global) {
     vec2<I32> ret(-1);
-    getMouseState(ret, global);
+    GetMouseState(ret, global);
     return ret;
 }
 
-U32 WindowManager::getMouseState(vec2<I32>& pos, bool global) {
+U32 WindowManager::GetMouseState(vec2<I32>& pos, bool global) {
     if (global) {
         return (U32)SDL_GetGlobalMouseState(&pos.x, &pos.y);
     }
@@ -523,7 +523,7 @@ U32 WindowManager::getMouseState(vec2<I32>& pos, bool global) {
     return (U32)SDL_GetMouseState(&pos.x, &pos.y);
 }
 
-void WindowManager::setCaptureMouse(bool state) {
+void WindowManager::SetCaptureMouse(bool state) {
     SDL_CaptureMouse(state ? SDL_TRUE : SDL_FALSE);
 }
 

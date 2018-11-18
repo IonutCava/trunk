@@ -102,9 +102,9 @@ public:
     void setCursorPosition(I32 x, I32 y, bool global = false);
     void snapCursorToCenter();
 
-    static vec2<I32> getCursorPosition(bool global);
-    static U32 getMouseState(vec2<I32>& pos, bool global);
-    static void setCaptureMouse(bool state);
+    static vec2<I32> GetCursorPosition(bool global);
+    static U32 GetMouseState(vec2<I32>& pos, bool global);
+    static void SetCaptureMouse(bool state);
 
     inline DisplayWindow& getMainWindow();
     inline const DisplayWindow& getMainWindow() const;
@@ -136,7 +136,7 @@ public:
 
     static void SetCursorStyle(CursorStyle style);
 
-    static void ToggleRelativeMouseMode(bool state, bool hideCursor);
+    static void ToggleRelativeMouseMode(bool state);
 protected:
     bool onSDLEvent(SDL_Event event) override;
 

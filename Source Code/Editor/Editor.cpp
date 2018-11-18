@@ -976,7 +976,7 @@ void Editor::updateMousePosAndButtons() {
     }
 
     vec2<I32> mPos(-1);
-    WindowManager::getMouseState(mPos, false);
+    WindowManager::GetMouseState(mPos, false);
 
     if (ImGuiViewport* viewport = findViewportByPlatformHandle(_imguiContext, g_windowManager->getFocusedWindow())) {
         io.MousePos = ImVec2(viewport->Pos.x + (F32)mPos.x, viewport->Pos.y + (F32)mPos.y);
@@ -1001,7 +1001,7 @@ void Editor::updateMousePosAndButtons() {
         }
     }
 
-    WindowManager::setCaptureMouse(anyDown);
+    WindowManager::SetCaptureMouse(anyDown);
 }
 
 bool Editor::onUTF8(const Input::UTF8Event& arg) {

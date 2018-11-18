@@ -205,6 +205,8 @@ public:
 
     inline void* userData() const;
 
+    bool grabState() const;
+    void grabState(bool state);
 
     bool onSDLEvent(SDL_Event event) override;
 

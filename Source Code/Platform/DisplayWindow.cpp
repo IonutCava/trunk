@@ -329,39 +329,46 @@ void DisplayWindow::title(const stringImpl& title) {
         _title = title;
     }
 }
+bool DisplayWindow::grabState() const {
+    return SDL_GetWindowGrab(_sdlWindow) == SDL_TRUE;
+}
+
+void DisplayWindow::grabState(bool state) {
+    SDL_SetWindowGrab(_sdlWindow, state ? SDL_TRUE : SDL_FALSE);
+}
 
 void DisplayWindow::handleChangeWindowType(WindowType newWindowType) {
     _previousType = _type;
     _type = newWindowType;
     I32 switchState = 0;
+
+    grabState(false);
     switch (newWindowType) {
         case WindowType::SPLASH: {
             switchState = SDL_SetWindowFullscreen(_sdlWindow, 0);
             assert(switchState >= 0);
 
             SDL_SetWindowBordered(_sdlWindow, SDL_FALSE);
-            SDL_SetWindowGrab(_sdlWindow, SDL_FALSE);
+            
         } break;
         case WindowType::WINDOW: {
             switchState = SDL_SetWindowFullscreen(_sdlWindow, 0);
             assert(switchState >= 0);
 
             SDL_SetWindowBordered(_sdlWindow, SDL_TRUE);
-            SDL_SetWindowGrab(_sdlWindow, SDL_FALSE);
         } break;
         case WindowType::FULLSCREEN_WINDOWED: {
             switchState = SDL_SetWindowFullscreen(_sdlWindow, SDL_WINDOW_FULLSCREEN_DESKTOP);
             assert(switchState >= 0);
 
             SDL_SetWindowBordered(_sdlWindow, SDL_FALSE);
-            SDL_SetWindowGrab(_sdlWindow, SDL_FALSE);
         } break;
         case WindowType::FULLSCREEN: {
             switchState = SDL_SetWindowFullscreen(_sdlWindow, SDL_WINDOW_FULLSCREEN);
             assert(switchState >= 0);
 
             SDL_SetWindowBordered(_sdlWindow, SDL_FALSE);
-            SDL_SetWindowGrab(_sdlWindow, SDL_TRUE);
+            grabState(true);
         } break;
     };
 
