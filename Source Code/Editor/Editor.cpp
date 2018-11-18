@@ -653,9 +653,9 @@ const TransformSettings& Editor::getTransformSettings() const {
     return Attorney::GizmoEditor::getTransformSettings(*_gizmo);
 }
 
-const Rect<I32>& Editor::scenePreviewRect() const {
+const Rect<I32>& Editor::scenePreviewRect(bool globalCoords) const {
     SceneViewWindow* sceneView = static_cast<SceneViewWindow*>(_dockedWindows[to_base(WindowType::SceneView)]);
-    return sceneView->sceneRect();
+    return sceneView->sceneRect(globalCoords);
 }
 // Needs to be rendered immediately. *IM*GUI. IMGUI::NewFrame invalidates this data
 void Editor::renderDrawList(ImDrawData* pDrawData, bool overlayOnScene, I64 windowGUID)
@@ -841,7 +841,7 @@ bool Editor::mouseMoved(const Input::MouseMoveEvent& arg) {
     if (!arg.wheelEvent()) {
         SceneViewWindow* sceneView = static_cast<SceneViewWindow*>(_dockedWindows[to_base(WindowType::SceneView)]);
         ImVec2 mousePos = _imguiContext->IO.MousePos;
-        _sceneHovered = sceneView->isHovered() && sceneView->sceneRect().contains(mousePos.x, mousePos.y);
+        _sceneHovered = sceneView->isHovered() && sceneView->sceneRect(true).contains(mousePos.x, mousePos.y);
     }
 
     if (scenePreviewFocused()) {

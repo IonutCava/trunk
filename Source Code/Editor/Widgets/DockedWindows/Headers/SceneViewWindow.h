@@ -35,7 +35,10 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Editor/Widgets/Headers/DockedWindow.h"
 #include "Core/Math/Headers/MathVectors.h"
 
+struct ImGuiWindow;
+
 namespace Divide {
+
     class SceneViewWindow : public DockedWindow {
     public:
         SceneViewWindow(Editor& parent, const Descriptor& descriptor);
@@ -43,7 +46,7 @@ namespace Divide {
 
         void drawInternal() override;
 
-        inline const Rect<I32>& sceneRect() const { return _sceneRect; };
+        const Rect<I32>& sceneRect(bool globalCoords) const;
 
         inline bool scenePlaying() const { return _scenePlaying; }
 
@@ -53,6 +56,7 @@ namespace Divide {
         U32  _stepQueue = 0;
         bool _scenePlaying = true;
         Rect<I32> _sceneRect;
+        Rect<I32> _sceneRectLocal;
     };
 }; //namespace Divide
 

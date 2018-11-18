@@ -206,8 +206,6 @@ bool SceneInput::mouseMoved(const Input::MouseMoveEvent& arg) {
         PlayerIndex idx = getPlayerIndexForDevice(arg._deviceIndex);
 
         SceneStatePerPlayer& state = _parentScene.state().playerState(idx);
-        state.aimPos(arg.absolutePos());
-
         if (state.cameraLockedToMouse()) {
             if (arg.wheelEvent()) {
                 I32 wheel = arg.WheelV();

@@ -194,7 +194,7 @@ namespace Divide {
             if (ImGuiViewport* viewport = Attorney::EditorGizmo::findViewportByPlatformHandle(_parent, &parentContext, winMgr.getFocusedWindow())) {
                 io.MousePos = ImVec2(viewport->Pos.x + (F32)arg.X().abs, viewport->Pos.y + (F32)arg.Y().abs);
                 if (_parent.scenePreviewFocused()) {
-                    const Rect<I32>& sceneRect = _parent.scenePreviewRect();
+                    const Rect<I32>& sceneRect = _parent.scenePreviewRect(true);
                     if (sceneRect.contains(vec2<I32>(io.MousePos.x, io.MousePos.y))) {
                         io.MousePos.x = MAP(io.MousePos.x, to_F32(sceneRect.x), to_F32(sceneRect.z), 0.f, viewport->Size.x);
                         io.MousePos.y = MAP(io.MousePos.y, to_F32(sceneRect.y), to_F32(sceneRect.w), 0.f, viewport->Size.y);

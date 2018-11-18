@@ -661,7 +661,7 @@ U16 Scene::registerInputActions() {
 
         playerState.cameraLockedToMouse(false);
         playerState.resetMovement();
-        WindowManager::ToggleRelativeMouseMode(false, true);
+        WindowManager::ToggleRelativeMouseMode(false, false);
         _context.app().windowManager().snapCursorToCenter();
     };
     auto rendererDebugView = [this](InputParams param) {_context.gfx().getRenderer().toggleDebugView();};
@@ -1089,6 +1089,10 @@ void Scene::clearObjects() {
 }
 
 bool Scene::mouseMoved(const Input::MouseMoveEvent& arg) {
+    if (!arg.wheelEvent()) {
+        PlayerIndex idx = getPlayerIndexForDevice(arg._deviceIndex);
+        findHoverTarget(idx, arg.absolutePos());
+    }
     return false;
 }
 
@@ -1247,17 +1251,26 @@ bool Scene::checkCameraUnderwater(PlayerIndex idx) const {
     return false;
 }
 
-void Scene::findHoverTarget(PlayerIndex idx, bool force) {
+void Scene::findHoverTarget(PlayerIndex idx, const vec2<I32>& aimPosIn) {
     const Camera& crtCamera = getPlayerForIndex(idx)->getCamera();
 
+    vec2<I32> aimPos(aimPosIn);
+    const Rect<I32>& viewport = _context.gfx().getCurrentViewport();
     const vec2<U16>& displaySize = _context.activeWindow().getDimensions();
+    if (Config::Build::ENABLE_EDITOR) {
+        if (_context.editor().running() && _context.editor().scenePreviewFocused()) {
+            const Rect<I32>& sceneRect = _context.editor().scenePreviewRect(false);
+            if (sceneRect.contains(aimPos)) {
+                aimPos.x = MAP(aimPos.x, sceneRect.x, sceneRect.z, viewport.x, viewport.z);
+                aimPos.y = MAP(aimPos.y, sceneRect.y, sceneRect.w, viewport.y, viewport.w);
+            }
+        }
+    }
     const vec2<F32>& zPlanes = crtCamera.getZPlanes();
-    const vec2<I32>& aimPos = state().playerState(idx).aimPos();
 
     F32 aimX = to_F32(aimPos.x);
     F32 aimY = displaySize.height - to_F32(aimPos.y) - 1;
 
-    const Rect<I32>& viewport = _context.gfx().getCurrentViewport();
     vec3<F32> startRay = crtCamera.unProject(aimX, aimY, 0.0f, viewport);
     vec3<F32> endRay = crtCamera.unProject(aimX, aimY, 1.0f, viewport);
     // see if we select another one
@@ -1277,17 +1290,13 @@ void Scene::findHoverTarget(PlayerIndex idx, bool force) {
                   });
 
         SceneGraphNode* target = nullptr;
-        if (!force) {
-            for (const SGNRayResult& result : _sceneSelectionCandidates) {
-                I64 crtCandidate = std::get<0>(result);
-                SceneGraphNode* crtNode = _sceneGraph->findNode(crtCandidate);
-                if (crtNode && crtNode->get<SelectionComponent>() && crtNode->get<SelectionComponent>()->enabled()) {
-                    target = crtNode;
-                    break;
-                }
+        for (const SGNRayResult& result : _sceneSelectionCandidates) {
+            I64 crtCandidate = std::get<0>(result);
+            SceneGraphNode* crtNode = _sceneGraph->findNode(crtCandidate);
+            if (crtNode && crtNode->get<SelectionComponent>() && crtNode->get<SelectionComponent>()->enabled()) {
+                target = crtNode;
+                break;
             }
-        } else {
-            target = _sceneGraph->findNode(std::get<0>(_sceneSelectionCandidates.front()));
         }
 
         // Well ... this happened somehow ...

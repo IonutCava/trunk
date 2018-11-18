@@ -16,7 +16,7 @@
     <waterDepth>0</waterDepth>
 </water>
 <options>
-    <visibility>256000</visibility>
+    <visibility>8192000</visibility>
     <cameraSpeed move="20.2000008" turn="20.75"/>
     <autoCookPhysicsAssets>true</autoCookPhysicsAssets>
 </options>

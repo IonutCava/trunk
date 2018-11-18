@@ -133,7 +133,7 @@ class Editor : public PlatformContextComponent,
     void setTransformSettings(const TransformSettings& settings);
     const TransformSettings& getTransformSettings() const;
 
-    const Rect<I32>& scenePreviewRect() const;
+    const Rect<I32>& scenePreviewRect(bool globalCoords) const;
     bool scenePreviewFocused() const;
 
   protected: //frame listener

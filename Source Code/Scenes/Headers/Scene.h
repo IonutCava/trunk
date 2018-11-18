@@ -181,7 +181,7 @@ class Scene : public Resource, public PlatformContextComponent {
     virtual void loadKeyBindings();
 
     void onNodeDestroy(SceneGraphNode& node);
-    void findHoverTarget(PlayerIndex idx, bool force);
+    void findHoverTarget(PlayerIndex idx, const vec2<I32>& aimPos);
     bool checkCameraUnderwater(PlayerIndex idx) const;
     void toggleFlashlight(PlayerIndex idx);
 

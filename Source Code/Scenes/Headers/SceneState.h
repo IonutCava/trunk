@@ -188,7 +188,6 @@ class SceneStatePerPlayer {
         _moveFB = _moveLR = _moveUD =
         _angleUD = _angleLR = 
          _roll = _zoom = MoveDirection::NONE;
-        _aimPos.reset();
     }
 
     inline void resetAll() {
@@ -229,15 +228,10 @@ class SceneStatePerPlayer {
     inline void cameraLockedToMouse(bool state) { _cameraLockedToMouse = state; }
     inline bool cameraLockedToMouse()     const { return _cameraLockedToMouse; }
 
-    inline void aimPos(const vec2<I32>& position) { _aimPos.set(position); }
-    inline const vec2<I32>&  aimPos()       const { return _aimPos; }
-
     inline void    overrideCamera(Camera* camera) { _overrideCamera = camera; }
     inline Camera* overrideCamera()         const { return _overrideCamera; }
 
 private:
-    vec2<I32> _aimPos;
-
     bool _cameraLockedToMouse;
     MoveDirection _moveFB;   ///< forward-back move change detected
     MoveDirection _moveLR;   ///< left-right move change detected
