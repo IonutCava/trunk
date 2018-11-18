@@ -623,7 +623,7 @@ bool WarScene::load(const stringImpl& name) {
         */
     }
 
-    state().renderState().generalVisibility(state().renderState().generalVisibility() * 2);
+    //state().renderState().generalVisibility(state().renderState().generalVisibility() * 2);
 
     /*
     for (U8 row = 0; row < 4; row++) {
