@@ -77,13 +77,12 @@ void OrbitCamera::update(const U64 deltaTimeUS) {
     _viewMatrixDirty = true;
 }
 
-bool OrbitCamera::moveRelative(const vec3<I32>& relMovement) {
-    I32 zoom = relMovement.z;
-    if (zoom != 0) {
-        curRadius(_curRadius += (zoom * _cameraZoomSpeed * -0.01f));
+bool OrbitCamera::zoom(I32 zoomFactor) {
+    if (zoomFactor != 0) {
+        curRadius(_curRadius += (zoomFactor * _cameraZoomSpeed * -0.01f));
     }
 
-    return Camera::moveRelative(relMovement);
+    return Camera::zoom(zoomFactor);
 }
 
 void OrbitCamera::move(F32 dx, F32 dy, F32 dz) {}

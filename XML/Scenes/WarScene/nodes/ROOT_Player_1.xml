@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<static>true</static>
-<model>models/cylinder.obj</model>
+<static>false</static>
+<NAVIGATION/>
 <TRANSFORM>
     <Transform>
-        <position x="0" y="0" z="-9.63035393"/>
+        <position x="0" y="0" z="0"/>
         <orientation x="0" y="0" z="0"/>
-        <scale x="1" y="0.996165991" z="0.996165991"/>
+        <scale x="1" y="1" z="1"/>
     </Transform>
-    <WorldMat 00="1" 01="0" 02="0" 03="0" 10="0" 11="0.996165991" 12="0" 13="0" 20="0" 21="0" 22="0.996165991" 23="0" 30="0" 31="0" 32="-9.63035393" 33="1"/>
+    <WorldMat 00="1" 01="0" 02="0" 03="0" 10="0" 11="1" 12="0" 13="0" 20="0" 21="0" 22="1" 23="0" 30="0" 31="0" 32="0" 33="1"/>
 </TRANSFORM>
 <BOUNDS/>
 <RENDERING>
@@ -19,9 +19,8 @@
         <doubleSided>false</doubleSided>
         <bumpMethod>NONE</bumpMethod>
         <shadingMode>BLINN_PHONG</shadingMode>
-        <parallaxFactor>0.00999999978</parallaxFactor>
+        <parallaxFactor>1</parallaxFactor>
     </Material>
 </RENDERING>
 <NETWORKING/>
-<SELECTION/>
-<OBJECT3D/>
+<UNIT/>

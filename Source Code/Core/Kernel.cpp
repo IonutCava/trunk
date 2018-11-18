@@ -725,7 +725,9 @@ bool Kernel::setCursorPosition(I32 x, I32 y) {
 
 bool Kernel::onKeyDown(const Input::KeyEvent& key) {
     if (Config::Build::ENABLE_EDITOR) {
-        if (_platformContext->editor().onKeyDown(key)) {
+
+        Editor& editor = _platformContext->editor();
+        if (editor.running() && editor.onKeyDown(key)) {
             return true;
         }
     }
@@ -738,7 +740,8 @@ bool Kernel::onKeyDown(const Input::KeyEvent& key) {
 
 bool Kernel::onKeyUp(const Input::KeyEvent& key) {
     if (Config::Build::ENABLE_EDITOR) {
-        if (_platformContext->editor().onKeyUp(key)) {
+        Editor& editor = _platformContext->editor();
+        if (editor.running() && editor.onKeyUp(key)) {
             return true;
         }
     }
@@ -752,7 +755,8 @@ bool Kernel::onKeyUp(const Input::KeyEvent& key) {
 
 bool Kernel::mouseMoved(const Input::MouseMoveEvent& arg) {
     if (Config::Build::ENABLE_EDITOR) {
-        if (_platformContext->editor().mouseMoved(arg)) {
+        Editor& editor = _platformContext->editor();
+        if (editor.running() && editor.mouseMoved(arg)) {
             return true;
         }
     }
@@ -768,7 +772,8 @@ bool Kernel::mouseMoved(const Input::MouseMoveEvent& arg) {
 bool Kernel::mouseButtonPressed(const Input::MouseButtonEvent& arg) {
     
     if (Config::Build::ENABLE_EDITOR) {
-        if (_platformContext->editor().mouseButtonPressed(arg)) {
+        Editor& editor = _platformContext->editor();
+        if (editor.running() && editor.mouseButtonPressed(arg)) {
             return true;
         }
     }
@@ -784,7 +789,8 @@ bool Kernel::mouseButtonPressed(const Input::MouseButtonEvent& arg) {
 bool Kernel::mouseButtonReleased(const Input::MouseButtonEvent& arg) {
     
     if (Config::Build::ENABLE_EDITOR) {
-        if (_platformContext->editor().mouseButtonReleased(arg)) {
+        Editor& editor = _platformContext->editor();
+        if (editor.running() && editor.mouseButtonReleased(arg)) {
             return true;
         }
     }
@@ -862,7 +868,8 @@ bool Kernel::joystickRemap(const Input::JoystickEvent &arg) {
 
 bool Kernel::onUTF8(const Input::UTF8Event& arg) {
     if (Config::Build::ENABLE_EDITOR) {
-        if (_platformContext->editor().onUTF8(arg)) {
+        Editor& editor = _platformContext->editor();
+        if (editor.running() && editor.onUTF8(arg)) {
             return true;
         }
     }

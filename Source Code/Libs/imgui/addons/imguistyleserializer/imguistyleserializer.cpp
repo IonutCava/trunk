@@ -37,6 +37,8 @@ To edit and save a style, you can use the default ImGui example and append to th
 #include <imgui.h>
 #endif //IMGUI_API
 
+#include "imguistyleserializer.h"
+
 // From <imgui.cpp>:--------------------------------------------------------
 #ifndef IM_ARRAYSIZE
 #include <stdio.h>      // vsnprintf
@@ -386,6 +388,15 @@ static inline void ChangeStyleColorsHue(ImGuiStyle& style,float shiftHue=0.f)  {
 static inline ImVec4 ConvertTitleBgColFromPrevVersion(const ImVec4& win_bg_col, const ImVec4& title_bg_col)	{
     float new_a = 1.0f - ((1.0f - win_bg_col.w) * (1.0f - title_bg_col.w)), k = title_bg_col.w / new_a;
     return ImVec4((win_bg_col.x * win_bg_col.w + title_bg_col.x) * k, (win_bg_col.y * win_bg_col.w + title_bg_col.y) * k, (win_bg_col.z * win_bg_col.w + title_bg_col.z) * k, new_a);
+}
+
+bool SelectStyleCombo(const char* label, int* selectedIndex, int maxNumItemsToDisplay, ImGuiStyle* styleToChange)   {
+    bool changed = false;
+    if (!styleToChange) styleToChange=&ImGui::GetStyle();
+    if ((changed=ImGui::Combo(label,selectedIndex,GetDefaultStyleNames(),ImGuiStyle_Count,maxNumItemsToDisplay))) {
+        ResetStyle(*selectedIndex,*styleToChange);
+    }
+    return changed;
 }
 
 bool ResetStyle(int styleEnum,ImGuiStyle& style) {

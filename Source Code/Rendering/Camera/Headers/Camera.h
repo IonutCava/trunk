@@ -328,7 +328,9 @@ class Camera : public Resource {
 
     vec3<F32> unProject(F32 winCoordsX, F32 winCoordsY, F32 winCoordsZ, const Rect<I32>& viewport) const;
 
-    virtual bool moveRelative(const vec3<I32>& relMovement) { ACKNOWLEDGE_UNUSED(relMovement); return true; }
+    virtual bool moveRelative(const vec3<I32>& relMovement);
+    virtual bool rotateRelative(const vec3<I32>& relRotation);
+    virtual bool zoom(I32 zoomFactor);
 
    protected:
     virtual bool updateViewMatrix();

@@ -100,12 +100,14 @@ namespace Divide {
                              NULL,
                              _transformSettings.useSnap ? &_transformSettings.snap[0] : NULL);
 
-        //ToDo: This seems slow as hell, but it works. Should I bother? -Ionut
-        TransformValues values;  vec3<F32> euler;
-        ImGuizmo::DecomposeMatrixToComponents(matrix, values._translation, euler._v, values._scale);
-        matrix.orthoNormalize();
-        values._orientation.fromMatrix(mat3<F32>(matrix));
-        transform->setTransform(values);
+        if (ImGuizmo::IsUsing()) {
+            //ToDo: This seems slow as hell, but it works. Should I bother? -Ionut
+            TransformValues values;  vec3<F32> euler;
+            ImGuizmo::DecomposeMatrixToComponents(matrix, values._translation, euler._v, values._scale);
+            matrix.orthoNormalize();
+            values._orientation.fromMatrix(mat3<F32>(matrix));
+            transform->setTransform(values);
+        }
 
         ImGui::Render();
         Attorney::EditorGizmo::renderDrawList(_parent, ImGui::GetDrawData(), true, -1);
@@ -116,7 +118,9 @@ namespace Divide {
         if (node == nullptr) {
             _selectedNodes.resize(0);
         } else {
-            _selectedNodes.push_back(node);
+            if (node->get<TransformComponent>() != nullptr) {
+                _selectedNodes.push_back(node);
+            }
         }
     }
 

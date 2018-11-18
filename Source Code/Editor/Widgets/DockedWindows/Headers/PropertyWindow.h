@@ -38,8 +38,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 class Material;
-class Transform;
 class SceneGraphNode;
+class TransformComponent;
 
 struct EditorComponentField;
 class PropertyWindow : public DockedWindow, public PlatformContextComponent {
@@ -58,7 +58,7 @@ class PropertyWindow : public DockedWindow, public PlatformContextComponent {
      //return true if the field has been modified
      bool processField(EditorComponentField& field);
      bool processBasicField(EditorComponentField& field);
-     bool processTransform(Transform* transform, bool readOnly);
+     bool processTransform(TransformComponent* transform, bool readOnly);
      bool processMaterial(Material* material, bool readOnly);
 };
 }; //namespace Divide

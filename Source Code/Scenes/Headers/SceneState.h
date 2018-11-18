@@ -185,7 +185,9 @@ class SceneStatePerPlayer {
     }
 
     inline void resetMovement() {
-        _moveFB = _moveLR = _angleUD = _angleLR = _roll = MoveDirection::NONE;
+        _moveFB = _moveLR = _moveUD =
+        _angleUD = _angleLR = 
+         _roll = _zoom = MoveDirection::NONE;
         _aimPos.reset();
     }
 
@@ -209,6 +211,9 @@ class SceneStatePerPlayer {
     inline void moveLR(MoveDirection factor) { _moveLR = factor; }
     inline MoveDirection  moveLR()     const { return _moveLR; }
 
+    inline void moveUD(MoveDirection factor) { _moveUD = factor; }
+    inline MoveDirection  moveUD()     const { return _moveUD; }
+
     inline void angleUD(MoveDirection factor) { _angleUD = factor; }
     inline MoveDirection  angleUD()     const { return _angleUD; }
 
@@ -217,6 +222,9 @@ class SceneStatePerPlayer {
 
     inline void roll(MoveDirection factor) { _roll = factor; }
     inline MoveDirection  roll()     const { return _roll; }
+
+    inline void zoom(MoveDirection factor) { _zoom = factor; }
+    inline MoveDirection  zoom()     const { return _zoom; }
 
     inline void cameraLockedToMouse(bool state) { _cameraLockedToMouse = state; }
     inline bool cameraLockedToMouse()     const { return _cameraLockedToMouse; }
@@ -233,9 +241,11 @@ private:
     bool _cameraLockedToMouse;
     MoveDirection _moveFB;   ///< forward-back move change detected
     MoveDirection _moveLR;   ///< left-right move change detected
+    MoveDirection _moveUD;   ///< up-down move change detected
     MoveDirection _angleUD;  ///< up-down angle change detected
     MoveDirection _angleLR;  ///< left-right angle change detected
     MoveDirection _roll;     ///< roll left or right change detected
+    MoveDirection _zoom;     ///< zoom in or out detected
     bool _cameraUnderwater;
     // was the camera moved or rotated this frame
     bool _cameraUpdated;

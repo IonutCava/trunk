@@ -93,12 +93,12 @@ I32 MouseMoveEvent::WheelV() const {
     return _stateIn.VWheel;
 }
 
-vec4<I32> MouseMoveEvent::relativePos() const {
-    return vec4<I32>(state().X.rel, state().Y.rel, state().VWheel, state().HWheel);
+vec2<I32> MouseMoveEvent::relativePos() const {
+    return vec2<I32>(state().X.rel, state().Y.rel);
 }
 
-vec4<I32> MouseMoveEvent::absolutePos() const {
-    return vec4<I32>(state().X.abs, state().Y.abs, state().VWheel, state().HWheel);
+vec2<I32> MouseMoveEvent::absolutePos() const {
+    return vec2<I32>(state().X.abs, state().Y.abs);
 }
 
 bool MouseMoveEvent::wheelEvent() const {

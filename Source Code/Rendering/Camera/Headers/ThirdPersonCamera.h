@@ -45,7 +45,7 @@ class ThirdPersonCamera : public OrbitCamera {
     explicit ThirdPersonCamera(const stringImpl& name, const vec3<F32>& eye = VECTOR3_ZERO);
 
   public:
-    bool moveRelative(const vec3<I32>& relMovement) override;
+    bool rotateRelative(const vec3<I32>& relRotation) override;
 };
 
 };  // namespace Divide

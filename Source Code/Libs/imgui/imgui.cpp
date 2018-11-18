@@ -994,7 +994,7 @@ extern void             ImGuiTestEngineHook_ItemAdd(const ImRect& bb, ImGuiID id
 // [SECTION] CONTEXT AND MEMORY ALLOCATORS
 //-----------------------------------------------------------------------------
 
-// Current context pointer. Implicitly used by all ImGui functions. Always assumed to be != NULL.
+// Current context pointer. Implicitly used by all Dear ImGui functions. Always assumed to be != NULL.
 // CreateContext() will automatically set this pointer if it is NULL. Change to a different context by calling ImGui::SetCurrentContext().
 // If you use DLL hotreloading you might need to call SetCurrentContext() after reloading code from this file.
 // ImGui functions are not thread-safe because of this pointer. If you want thread-safety to allow N threads to access N different contexts, you can:
@@ -3029,6 +3029,7 @@ void ImGui::UpdateMouseMovingWindow()
         {
             // Try to merge the window back into the main viewport. 
             // This works because MouseViewport should be != MovingWindow->Viewport on release (as per code in UpdateViewports)
+            if (g.IO.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
             UpdateTryMergeWindowIntoHostViewport(moving_window, g.MouseViewport);
 
             // Restore the mouse viewport so that we don't hover the viewport _under_ the moved window during the frame we released the mouse button.
@@ -3087,7 +3088,7 @@ static void ImGui::UpdateMouseInputs()
 
     // Round mouse position to avoid spreading non-rounded position (e.g. UpdateManualResize doesn't support them well)
     if (IsMousePosValid(&g.IO.MousePos))
-        g.IO.MousePos = ImFloor(g.IO.MousePos);
+        g.IO.MousePos = g.LastValidMousePos = ImFloor(g.IO.MousePos);
 
     // If mouse just appeared or disappeared (usually denoted by -FLT_MAX components) we cancel out movement in MouseDelta
     if (IsMousePosValid(&g.IO.MousePos) && IsMousePosValid(&g.IO.MousePosPrev))
@@ -3411,7 +3412,7 @@ void ImGui::NewFrame()
     DockContextNewFrameUpdateUndocking(&g);
 
     // Find hovered window
-    // (needs to be before UpdateMovingWindow so we fill HoveredWindowUnderMovingWindow on the mouse release frame)
+    // (needs to be before UpdateMouseMovingWindow() so we fill g.HoveredWindowUnderMovingWindow on the mouse release frame)
     UpdateHoveredWindowAndCaptureFlags();
 
     // Handle user moving window with mouse (at the beginning of the frame to avoid input lag or sheering)
@@ -5222,7 +5223,6 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
             window->Pos = FindBestWindowPosForPopup(window);
 
         if (window->ViewportAllowPlatformMonitorExtend >= 0 && !window->ViewportOwned)
-        {
             if (!window->Viewport->GetRect().Contains(window->Rect()))
             {
                 // Late create viewport, based on the assumption that with our calculations, the DPI will be known ahead (same as the DPI of the selection done in UpdateSelectWindowViewport)
@@ -5238,7 +5238,6 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
                 window->FontDpiScale = (g.IO.ConfigFlags & ImGuiConfigFlags_DpiEnableScaleFonts) ? window->Viewport->DpiScale : 1.0f;
                 SetCurrentWindow(window);
             }
-        }
 
         // Synchronize viewport --> window in case the platform window has been moved or resized from the OS/WM
         if (window->ViewportOwned)
@@ -6185,11 +6184,11 @@ bool ImGui::IsWindowHovered(ImGuiHoveredFlags flags)
 bool ImGui::IsWindowFocused(ImGuiFocusedFlags flags)
 {
     ImGuiContext& g = *GImGui;
-    IM_ASSERT(g.CurrentWindow);     // Not inside a Begin()/End()
 
     if (flags & ImGuiFocusedFlags_AnyWindow)
         return g.NavWindow != NULL;
 
+    IM_ASSERT(g.CurrentWindow);     // Not inside a Begin()/End()
     switch (flags & (ImGuiFocusedFlags_RootWindow | ImGuiFocusedFlags_ChildWindows))
     {
     case ImGuiFocusedFlags_RootWindow | ImGuiFocusedFlags_ChildWindows:
@@ -7021,8 +7020,8 @@ void ImGui::OpenPopupEx(ImGuiID id)
     popup_ref.ParentWindow = parent_window;
     popup_ref.OpenFrameCount = g.FrameCount;
     popup_ref.OpenParentId = parent_window->IDStack.back();
-    popup_ref.OpenMousePos = g.IO.MousePos;
     popup_ref.OpenPopupPos = NavCalcPreferredRefPos();
+    popup_ref.OpenMousePos = IsMousePosValid(&g.IO.MousePos) ? g.IO.MousePos : popup_ref.OpenPopupPos;
 
     //printf("[%05d] OpenPopupEx(0x%08X)\n", g.FrameCount, id);
     if (g.OpenPopupStack.Size < current_stack_size + 1)
@@ -7425,8 +7424,6 @@ static bool ImGui::GetWindowAlwaysWantOwnViewport(ImGuiWindow* window)
 static bool ImGui::UpdateTryMergeWindowIntoHostViewport(ImGuiWindow* window, ImGuiViewportP* viewport)
 {
     ImGuiContext& g = *GImGui;
-    if (!(g.IO.ConfigFlags & ImGuiConfigFlags_ViewportsEnable))
-        return false;
     if (!(viewport->Flags & ImGuiViewportFlags_CanHostOtherWindows) || window->Viewport == viewport)
         return false;
     if (!viewport->GetRect().Contains(window->Rect()))
@@ -7724,7 +7721,7 @@ static void ImGui::UpdateSelectWindowViewport(ImGuiWindow* window)
     }
     else if (g.MovingWindow && g.MovingWindow->RootWindow == window && IsMousePosValid())
     {
-        // Transition to our own viewport when leaving our host boundaries + set the NoInputs flag (which will be cleared in UpdateMovingWindow when releasing the mouse)
+        // Transition to our own viewport when leaving our host boundaries + set the NoInputs flag (will be cleared in UpdateMouseMovingWindow() when releasing mouse)
         // If we are already in our own viewport, if need to set the NoInputs flag.
         // If we have no viewport (which happens when detaching a docked node) immediately create one.
         // We test for 'window->Viewport->Window == window' instead of 'window->ViewportOwned' because ViewportOwned is not valid during this function.
@@ -7742,10 +7739,10 @@ static void ImGui::UpdateSelectWindowViewport(ImGuiWindow* window)
 
     // Mark window as allowed to protrude outside of its viewport and into the current monitor
     // We need to take account of the possibility that mouse may become invalid.
-    const bool use_mouse_ref = (g.NavDisableHighlight || !g.NavDisableMouseHover || !g.NavWindow);
     if (flags & (ImGuiWindowFlags_Tooltip | ImGuiWindowFlags_Popup))
     {
         ImVec2 mouse_ref = (flags & ImGuiWindowFlags_Tooltip) ? g.IO.MousePos : g.CurrentPopupStack.back().OpenMousePos;
+        bool use_mouse_ref = (g.NavDisableHighlight || !g.NavDisableMouseHover || !g.NavWindow);
         bool mouse_valid = IsMousePosValid(&mouse_ref);
         if ((window->Appearing || (flags & ImGuiWindowFlags_Tooltip)) && (!use_mouse_ref || mouse_valid))
             window->ViewportAllowPlatformMonitorExtend = FindPlatformMonitorForPos((use_mouse_ref && mouse_valid) ? mouse_ref : NavCalcPreferredRefPos());
@@ -8370,15 +8367,19 @@ static ImVec2 ImGui::NavCalcPreferredRefPos()
     ImGuiContext& g = *GImGui;
     if (g.NavDisableHighlight || !g.NavDisableMouseHover || !g.NavWindow)
     {
-        IM_ASSERT(ImGui::IsMousePosValid()); // This will probably trigger at some point, please share your repro!
-        return ImFloor(g.IO.MousePos);
+        // Mouse (we need a fallback in case the mouse becomes invalid after being used)
+        if (IsMousePosValid(&g.IO.MousePos))
+            return g.IO.MousePos;
+        return g.LastValidMousePos;
     }
-
-    // When navigation is active and mouse is disabled, decide on an arbitrary position around the bottom left of the currently navigated item
+    else
+    {
+        // When navigation is active and mouse is disabled, decide on an arbitrary position around the bottom left of the currently navigated item.
     const ImRect& rect_rel = g.NavWindow->NavRectRel[g.NavLayer];
     ImVec2 pos = g.NavWindow->Pos + ImVec2(rect_rel.Min.x + ImMin(g.Style.FramePadding.x*4, rect_rel.GetWidth()), rect_rel.Max.y - ImMin(g.Style.FramePadding.y, rect_rel.GetHeight()));
     ImRect visible_rect = g.NavWindow->Viewport->GetRect();
     return ImFloor(ImClamp(pos, visible_rect.Min, visible_rect.Max));   // ImFloor() is important because non-integer mouse position application in back-end might be lossy and result in undesirable non-zero delta.
+}
 }
 
 float ImGui::GetNavInputAmount(ImGuiNavInput n, ImGuiInputReadMode mode)
@@ -11020,10 +11021,6 @@ static void ImGui::DockNodeUpdateTabBar(ImGuiDockNode* node, ImGuiWindow* host_w
         }
     }
 
-    // When clicked on a tab we requested focus to the docked child
-    if (tab_bar->WantFocusTabId)
-        focus_tab_id = tab_bar->WantFocusTabId;
-
     // When clicking on the title bar outside of tabs, we still focus the selected tab for that node
     if (g.HoveredWindow == host_window && g.HoveredId == 0 && IsMouseHoveringRect(title_bar_rect.Min, title_bar_rect.Max))
     {
@@ -11038,6 +11035,11 @@ static void ImGui::DockNodeUpdateTabBar(ImGuiDockNode* node, ImGuiWindow* host_w
     // Forward focus from host node to selected window
     if (is_focused && g.NavWindow == host_window && !g.NavWindowingTarget)
         focus_tab_id = tab_bar->SelectedTabId;
+
+    // When clicked on a tab we requested focus to the docked child
+    // This overrides the value set by "forward focus from host node to selected window".
+    if (tab_bar->WantFocusTabId)
+        focus_tab_id = tab_bar->WantFocusTabId;
 
     // Apply navigation focus
     if (focus_tab_id != 0)

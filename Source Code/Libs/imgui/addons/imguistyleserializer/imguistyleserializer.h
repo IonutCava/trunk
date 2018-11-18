@@ -52,6 +52,10 @@ IMGUI_API const char** GetDefaultStyleNames();   // ImGuiStyle_Count names re re
 // satThresholdForInvertingLuminance: in [0,1] if == 0.f luminance is not inverted at all
 // shiftHue: in [0,1] if == 0.f hue is not changed at all
 IMGUI_API void ChangeStyleColors(ImGuiStyle& style,float satThresholdForInvertingLuminance=.1f,float shiftHue=0.f);
+
+// Handy wrapper to a combo to select the style:
+IMGUI_API bool SelectStyleCombo(const char* label,int* selectedIndex,int maxNumItemsToDisplay=ImGuiStyle_Count,ImGuiStyle* styleToChange=NULL);
+
 } // namespace ImGui
 
 #endif //IMGUISTYLESERIALIZER_H_

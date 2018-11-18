@@ -2294,12 +2294,15 @@ vec3<U> mat4<T>::getTranslation() const {
 
 template<typename T>
 mat4<T> mat4<T>::getRotation() const {
+
     const T zero = static_cast<T>(0);
     const T one = static_cast<T>(1);
-    return mat4(mat[0],  mat[1], mat[2],  zero,
+    mat4 ret ({ mat[0],  mat[1], mat[2],  zero,
                 mat[4],  mat[5], mat[6],  zero,
                 mat[8],  mat[9], mat[10], zero,
-                zero,    zero,   zero,    one);
+                zero,    zero,   zero,    one });
+    ret.orthoNormalize();
+    return ret;
 }
 
 template<typename T>

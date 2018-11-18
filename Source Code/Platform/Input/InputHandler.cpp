@@ -18,9 +18,37 @@ InputHandler::InputHandler(InputAggregatorInterface& eventListener, Application&
     //it along to the scene? Does the editor consume the input or does it pass if along to the gizmo? Should both editor and gizmo consume an input? etc
 }
 
+namespace {
+    Uint32 GetEventWindowID(SDL_Event event) {
+        switch (event.type) {
+            case SDL_KEYDOWN :
+            case SDL_KEYUP   :
+                return event.key.windowID;
+
+            case SDL_MOUSEBUTTONDOWN :
+            case SDL_MOUSEBUTTONUP   :
+                return event.button.windowID;
+
+            case SDL_MOUSEMOTION :
+                return event.motion.windowID;
+
+            case SDL_MOUSEWHEEL :
+                return event.wheel.windowID;
+
+            case SDL_WINDOWEVENT :
+                return event.window.windowID;
+
+            case SDL_TEXTINPUT :
+                return event.text.windowID;
+        }
+
+        return 0;
+    }
+};
+
 bool InputHandler::onSDLEvent(SDL_Event event) {
     // Find the window that sent the event
-    DisplayWindow* eventWindow = _app.windowManager().getWindowByID(event.window.windowID);
+    DisplayWindow* eventWindow = _app.windowManager().getWindowByID(GetEventWindowID(event));
     if (eventWindow == nullptr) {
         return false;
     }

@@ -203,22 +203,27 @@ bool SceneInput::joystickRemap(const Input::JoystickEvent &arg) {
 
 bool SceneInput::mouseMoved(const Input::MouseMoveEvent& arg) {
     if (!arg.wheelEvent()) {
-        SceneStatePerPlayer& state = _parentScene.state().playerState(arg._deviceIndex);
-        state.aimPos(arg.absolutePos().xy());
+        PlayerIndex idx = getPlayerIndexForDevice(arg._deviceIndex);
+
+        SceneStatePerPlayer& state = _parentScene.state().playerState(idx);
+        state.aimPos(arg.absolutePos());
 
         if (state.cameraLockedToMouse()) {
-            I32 xRel = arg.relativePos().x;
-            I32 yRel = arg.relativePos().y;
+            if (arg.wheelEvent()) {
+                I32 wheel = arg.WheelV();
+                state.zoom(wheel > 0 ? MoveDirection::POSITIVE
+                                     : wheel < 0 ? MoveDirection::NEGATIVE
+                                                 : MoveDirection::NONE);
+            } else {
+                I32 xRel = arg.relativePos().x;
+                I32 yRel = arg.relativePos().y;
+                state.angleLR(xRel > 1 ? MoveDirection::POSITIVE
+                                       : xRel < 1 ? MoveDirection::NEGATIVE
+                                                  : MoveDirection::NONE);
 
-            if (xRel > 1) {
-                state.angleLR(MoveDirection::POSITIVE);
-            } else if (xRel < 1) {
-                state.angleLR(MoveDirection::NEGATIVE);
-            }
-            if (yRel > 1) {
-                state.angleUD(MoveDirection::POSITIVE);
-            } else if (yRel < 1) {
-                state.angleUD(MoveDirection::NEGATIVE);
+                state.angleUD(yRel > 1 ? MoveDirection::POSITIVE
+                                       : yRel < 1 ? MoveDirection::NEGATIVE
+                                                  : MoveDirection::NONE);
             }
         }
     }

@@ -65,8 +65,8 @@ struct MouseMoveEvent : public InputEvent {
     I32 WheelV() const;
     I32 WheelH() const;
 
-    vec4<I32> relativePos() const;
-    vec4<I32> absolutePos() const;
+    vec2<I32> relativePos() const;
+    vec2<I32> absolutePos() const;
     const MouseState& state() const;
     
     bool wheelEvent() const;

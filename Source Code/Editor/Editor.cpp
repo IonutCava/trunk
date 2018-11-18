@@ -778,48 +778,48 @@ void Editor::selectionChangeCallback(PlayerIndex idx, SceneGraphNode* node) {
 
 /// Key pressed: return true if input was consumed
 bool Editor::onKeyDown(const Input::KeyEvent& key) {
-    if (!scenePreviewFocused() || !_gizmo->onKeyDown(key)) {
-        ImGuiIO& io = _imguiContext->IO;
-        io.KeysDown[to_I32(key._key)] = true;
-        if (key._text != nullptr) {
-            io.AddInputCharactersUTF8(key._text);
-        }
-        io.KeyCtrl = key._key == Input::KeyCode::KC_LCONTROL || key._key == Input::KeyCode::KC_RCONTROL;
-        io.KeyShift = key._key == Input::KeyCode::KC_LSHIFT || key._key == Input::KeyCode::KC_RSHIFT;
-        io.KeyAlt = key._key == Input::KeyCode::KC_LMENU || key._key == Input::KeyCode::KC_RMENU;
-        io.KeySuper = key._key == Input::KeyCode::KC_LWIN || key._key == Input::KeyCode::KC_RWIN;
-
-        return io.WantCaptureKeyboard;
+    if (scenePreviewFocused()) {
+        return _gizmo->onKeyDown(key);
     }
 
-    return true;
+    ImGuiIO& io = _imguiContext->IO;
+    io.KeysDown[to_I32(key._key)] = true;
+    if (key._text != nullptr) {
+        io.AddInputCharactersUTF8(key._text);
+    }
+    io.KeyCtrl = key._key == Input::KeyCode::KC_LCONTROL || key._key == Input::KeyCode::KC_RCONTROL;
+    io.KeyShift = key._key == Input::KeyCode::KC_LSHIFT || key._key == Input::KeyCode::KC_RSHIFT;
+    io.KeyAlt = key._key == Input::KeyCode::KC_LMENU || key._key == Input::KeyCode::KC_RMENU;
+    io.KeySuper = key._key == Input::KeyCode::KC_LWIN || key._key == Input::KeyCode::KC_RWIN;
+
+    return io.WantCaptureKeyboard;
 }
 
 /// Key released: return true if input was consumed
 bool Editor::onKeyUp(const Input::KeyEvent& key) {
-    if (!scenePreviewFocused() || !_gizmo->onKeyUp(key)) {
-        ImGuiIO& io = _imguiContext->IO;
-        io.KeysDown[to_I32(key._key)] = false;
-
-        if (key._key == Input::KeyCode::KC_LCONTROL || key._key == Input::KeyCode::KC_RCONTROL) {
-            io.KeyCtrl = false;
-        }
-
-        if (key._key == Input::KeyCode::KC_LSHIFT || key._key == Input::KeyCode::KC_RSHIFT) {
-            io.KeyShift = false;
-        }
-
-        if (key._key == Input::KeyCode::KC_LMENU || key._key == Input::KeyCode::KC_RMENU) {
-            io.KeyAlt = false;
-        }
-
-        if (key._key == Input::KeyCode::KC_LWIN || key._key == Input::KeyCode::KC_RWIN) {
-            io.KeySuper = false;
-        }
-        return io.WantCaptureKeyboard;
+    if (scenePreviewFocused()) {
+        return _gizmo->onKeyUp(key);
     }
 
-    return true;
+    ImGuiIO& io = _imguiContext->IO;
+    io.KeysDown[to_I32(key._key)] = false;
+
+    if (key._key == Input::KeyCode::KC_LCONTROL || key._key == Input::KeyCode::KC_RCONTROL) {
+        io.KeyCtrl = false;
+    }
+
+    if (key._key == Input::KeyCode::KC_LSHIFT || key._key == Input::KeyCode::KC_RSHIFT) {
+        io.KeyShift = false;
+    }
+
+    if (key._key == Input::KeyCode::KC_LMENU || key._key == Input::KeyCode::KC_RMENU) {
+        io.KeyAlt = false;
+    }
+
+    if (key._key == Input::KeyCode::KC_LWIN || key._key == Input::KeyCode::KC_RWIN) {
+        io.KeySuper = false;
+    }
+    return io.WantCaptureKeyboard;
 }
 
 ImGuiViewport* Editor::findViewportByPlatformHandle(ImGuiContext* context, DisplayWindow* window) {
@@ -838,46 +838,50 @@ ImGuiViewport* Editor::findViewportByPlatformHandle(ImGuiContext* context, Displ
 
 /// Mouse moved: return true if input was consumed
 bool Editor::mouseMoved(const Input::MouseMoveEvent& arg) {
-    if (!scenePreviewFocused() || !_gizmo->mouseMoved(arg)) {
-        ImGuiIO& io = _imguiContext->IO;
-
-        if (!arg.wheelEvent()) {
-            SceneViewWindow* sceneView = static_cast<SceneViewWindow*>(_dockedWindows[to_base(WindowType::SceneView)]);
-            _sceneHovered = sceneView->isHovered() && sceneView->sceneRect().contains(io.MousePos.x, io.MousePos.y);
-        } else {
-            if (arg.WheelH() > 0) {
-                io.MouseWheelH += 1;
-            }
-            if (arg.WheelH() < 0) {
-                io.MouseWheelH -= 1;
-            }
-            if (arg.WheelV() > 0) {
-                io.MouseWheel += 1;
-            }
-            if (arg.WheelV() < 0) {
-                io.MouseWheel -= 1;
-            }
-        }
-        return io.WantCaptureMouse;
+    if (!arg.wheelEvent()) {
+        SceneViewWindow* sceneView = static_cast<SceneViewWindow*>(_dockedWindows[to_base(WindowType::SceneView)]);
+        ImVec2 mousePos = _imguiContext->IO.MousePos;
+        _sceneHovered = sceneView->isHovered() && sceneView->sceneRect().contains(mousePos.x, mousePos.y);
     }
 
-    return true;
+    if (scenePreviewFocused()) {
+        return _gizmo->mouseMoved(arg);
+    }
+
+    ImGuiIO& io = _imguiContext->IO;
+
+    if (arg.wheelEvent()) {
+        if (arg.WheelH() > 0) {
+            io.MouseWheelH += 1;
+        }
+        if (arg.WheelH() < 0) {
+            io.MouseWheelH -= 1;
+        }
+        if (arg.WheelV() > 0) {
+            io.MouseWheel += 1;
+        }
+        if (arg.WheelV() < 0) {
+            io.MouseWheel -= 1;
+        }
+    }
+
+    return io.WantCaptureMouse;
 }
 
 /// Mouse button pressed: return true if input was consumed
 bool Editor::mouseButtonPressed(const Input::MouseButtonEvent& arg) {
-    if (!scenePreviewFocused() || !_gizmo->mouseButtonPressed(arg)) {
-        ImGuiIO& io = _imguiContext->IO;
-        for (U8 i = 0; i < 5; ++i) {
-            if (arg.button == g_oisButtons[i]) {
-                io.MouseDown[i] = true;
-                break;
-            }
-        }
-        return io.WantCaptureMouse;
+    if (scenePreviewFocused()) {
+        return _gizmo->mouseButtonPressed(arg);
     }
 
-    return true;
+    ImGuiIO& io = _imguiContext->IO;
+    for (U8 i = 0; i < 5; ++i) {
+        if (arg.button == g_oisButtons[i]) {
+            io.MouseDown[i] = true;
+            break;
+        }
+    }
+    return io.WantCaptureMouse;
 }
 
 /// Mouse button released: return true if input was consumed
@@ -889,58 +893,72 @@ bool Editor::mouseButtonReleased(const Input::MouseButtonEvent& arg) {
         ImGui::ResetStyle(scenePreviewFocused() ? _currentDimmedTheme : _currentTheme, style);
     }
 
-    if (!scenePreviewFocused() || !_gizmo->mouseButtonReleased(arg)) {
-        ImGuiIO& io = _imguiContext->IO;
-        for (U8 i = 0; i < 5; ++i) {
-            if (arg.button == g_oisButtons[i]) {
-                io.MouseDown[i] = false;
-                break;
-            }
-        }
-        return io.WantCaptureMouse;
+    if (scenePreviewFocused()) {
+        return _gizmo->mouseButtonReleased(arg);
     }
 
-    return true;
+    ImGuiIO& io = _imguiContext->IO;
+    for (U8 i = 0; i < 5; ++i) {
+        if (arg.button == g_oisButtons[i]) {
+            io.MouseDown[i] = false;
+            break;
+        }
+    }
+    return io.WantCaptureMouse;
 }
 
 bool Editor::joystickButtonPressed(const Input::JoystickEvent &arg) {
-    ACKNOWLEDGE_UNUSED(arg);
+    if (scenePreviewFocused()) {
+        return _gizmo->joystickButtonPressed(arg);
+    }
 
     return false;
 }
 
 bool Editor::joystickButtonReleased(const Input::JoystickEvent &arg) {
-    ACKNOWLEDGE_UNUSED(arg);
+    if (scenePreviewFocused()) {
+        return _gizmo->joystickButtonReleased(arg);
+    }
 
     return false;
 }
 
 bool Editor::joystickAxisMoved(const Input::JoystickEvent &arg) {
-    ACKNOWLEDGE_UNUSED(arg);
+    if (scenePreviewFocused()) {
+        return _gizmo->joystickAxisMoved(arg);
+    }
 
     return false;
 }
 
 bool Editor::joystickPovMoved(const Input::JoystickEvent &arg) {
-    ACKNOWLEDGE_UNUSED(arg);
+    if (scenePreviewFocused()) {
+        return _gizmo->joystickPovMoved(arg);
+    }
 
     return false;
 }
 
 bool Editor::joystickBallMoved(const Input::JoystickEvent &arg) {
-    ACKNOWLEDGE_UNUSED(arg);
+    if (scenePreviewFocused()) {
+        return _gizmo->joystickBallMoved(arg);
+    }
 
     return false;
 }
 
 bool Editor::joystickAddRemove(const Input::JoystickEvent &arg) {
-    ACKNOWLEDGE_UNUSED(arg);
+    if (scenePreviewFocused()) {
+        return _gizmo->joystickAddRemove(arg);
+    }
 
     return false;
 }
 
 bool Editor::joystickRemap(const Input::JoystickEvent &arg) {
-    ACKNOWLEDGE_UNUSED(arg);
+    if (scenePreviewFocused()) {
+        return _gizmo->joystickRemap(arg);
+    }
 
     return false;
 }

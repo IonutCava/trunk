@@ -839,12 +839,23 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
         : x(_x), y(_y), z(_z), w(_w)
     {
     }
+    vec4(T _x, T _y, T _z) noexcept
+        : x(_x), y(_y), z(_z), w(static_cast<T>(1))
+    {
+    }
+
     template<typename U>
     vec4(U _x, U _y, U _z, U _w) noexcept 
         : x(static_cast<T>(_x)),
           y(static_cast<T>(_y)),
           z(static_cast<T>(_z)),
           w(static_cast<T>(_w))
+    {
+    }
+
+    template<typename U>
+    vec4(U _x, U _y, U _z) noexcept
+        : vec4(_x, _y, _z, static_cast<T>(1))
     {
     }
 

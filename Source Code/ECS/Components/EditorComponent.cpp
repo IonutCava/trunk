@@ -5,6 +5,7 @@
 #include "Core/Math/Headers/Quaternion.h"
 #include "Core/Math/Headers/Transform.h"
 #include "Geometry/Material/Headers/Material.h"
+#include "ECS/Components/Headers/TransformComponent.h"
 
 namespace Divide {
     EditorComponent::EditorComponent(const stringImpl& name)
@@ -62,25 +63,23 @@ namespace Divide {
                     saveFieldToXML(field, pt);
                 } break;
                 case EditorComponentFieldType::TRANSFORM: {
-                    Transform* transform = static_cast<Transform*>(field._data);
+                    TransformComponent* transform = static_cast<TransformComponent*>(field._data);
 
-                    vec3<F32> scale;
-                    vec3<F32> position;
-                    vec3<Angle::RADIANS<F32>> orientationEuler;
-                    Quaternion<F32> orientation;
+                    vec3<F32> scale = transform->getLocalScale();
+                    vec3<F32> position = transform->getLocalPosition();
 
-                    transform->getScale(scale);
-                    transform->getPosition(position);
-                    transform->getOrientation(orientation);
+                    vec3<Angle::DEGREES<F32>> orientationEuler;
+                    Quaternion<F32> orientation = transform->getLocalOrientation();
                     orientation.getEuler(orientationEuler);
+                    orientationEuler = Angle::to_DEGREES(orientationEuler);
 
                     pt.put(entryName + ".position.<xmlattr>.x", position.x);
                     pt.put(entryName + ".position.<xmlattr>.y", position.y);
                     pt.put(entryName + ".position.<xmlattr>.z", position.z);
 
-                    pt.put(entryName + ".orientation.<xmlattr>.x", Angle::to_DEGREES(orientationEuler.z)); // <- these are swapped
-                    pt.put(entryName + ".orientation.<xmlattr>.y", Angle::to_DEGREES(orientationEuler.y));
-                    pt.put(entryName + ".orientation.<xmlattr>.z", Angle::to_DEGREES(orientationEuler.x)); // <- these are swapped
+                    pt.put(entryName + ".orientation.<xmlattr>.x", orientationEuler.pitch);
+                    pt.put(entryName + ".orientation.<xmlattr>.y", orientationEuler.yaw);
+                    pt.put(entryName + ".orientation.<xmlattr>.z", orientationEuler.roll);
 
                     pt.put(entryName + ".scale.<xmlattr>.x", scale.x);
                     pt.put(entryName + ".scale.<xmlattr>.y", scale.y);
@@ -112,19 +111,19 @@ namespace Divide {
                         loadFieldFromXML(field, pt);
                     } break;
                     case EditorComponentFieldType::TRANSFORM: {
-                        Transform* transform = static_cast<Transform*>(field._data);
+                        TransformComponent* transform = static_cast<TransformComponent*>(field._data);
 
                         vec3<F32> scale;
                         vec3<F32> position;
-                        vec3<Angle::RADIANS<F32>> orientationEuler;
+                        vec3<Angle::DEGREES<F32>> orientationEuler;
 
                         position.set(pt.get<F32>(entryName + ".position.<xmlattr>.x", 0.0f),
                                      pt.get<F32>(entryName + ".position.<xmlattr>.y", 0.0f),
                                      pt.get<F32>(entryName + ".position.<xmlattr>.z", 0.0f));
 
-                        orientationEuler.set(pt.get<F32>(entryName + ".orientation.<xmlattr>.x", 0.0f),
-                                             pt.get<F32>(entryName + ".orientation.<xmlattr>.y", 0.0f),
-                                             pt.get<F32>(entryName + ".orientation.<xmlattr>.z", 0.0f));
+                        orientationEuler.pitch = pt.get<F32>(entryName + ".orientation.<xmlattr>.x", 0.0f);
+                        orientationEuler.yaw   = pt.get<F32>(entryName + ".orientation.<xmlattr>.y", 0.0f);
+                        orientationEuler.roll  = pt.get<F32>(entryName + ".orientation.<xmlattr>.z", 0.0f);
 
                         scale.set(pt.get<F32>(entryName + ".scale.<xmlattr>.x", 1.0f),
                                   pt.get<F32>(entryName + ".scale.<xmlattr>.y", 1.0f),

@@ -69,7 +69,7 @@ class OrbitCamera : public Camera {
     virtual void update(const U64 deltaTimeUS);
     virtual void move(F32 dx, F32 dy, F32 dz);
     virtual void rotate(F32 yaw, F32 pitch, F32 roll);
-    virtual bool moveRelative(const vec3<I32>& relMovement) override;
+    virtual bool zoom(I32 zoomFactor) override;
 
    protected:
     virtual bool updateViewMatrix();

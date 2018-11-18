@@ -194,9 +194,10 @@ void Camera::rotatePitch(Angle::DEGREES<F32> angle) {
 }
 
 void Camera::move(F32 dx, F32 dy, F32 dz) {
-    if (_movementLocked) {
+    if (_movementLocked || IS_ZERO(dx + dy + dz)) {
         return;
     }
+    
     dx *= _cameraMoveSpeed;
     dy *= _cameraMoveSpeed;
     dz *= _cameraMoveSpeed;
@@ -217,6 +218,26 @@ void Camera::move(F32 dx, F32 dy, F32 dz) {
     }
 
     _viewMatrixDirty = true;
+}
+
+bool Camera::moveRelative(const vec3<I32>& relMovement) {
+    moveForward(to_F32(relMovement.x));
+    moveStrafe(to_F32(relMovement.y));
+    moveUp(to_F32(relMovement.z));
+
+    return relMovement.lengthSquared() > 0;
+}
+
+bool Camera::rotateRelative(const vec3<I32>& relRotation) {
+    rotateYaw(to_F32(relRotation.yaw));
+    rotatePitch(to_F32(relRotation.pitch));
+    rotateRoll(to_F32(relRotation.roll));
+
+    return relRotation.lengthSquared() > 0;
+}
+
+bool Camera::zoom(I32 zoomFactor) {
+    return zoomFactor != 0;
 }
 
 vec3<F32> ExtractCameraPos2(const mat4<F32>& a_modelView)

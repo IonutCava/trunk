@@ -652,8 +652,7 @@ U16 Scene::registerInputActions() {
     auto lockCameraToMouse = [this](InputParams  param) {
         SceneStatePerPlayer& playerState = state().playerState(getPlayerIndexForDevice(param._deviceIndex));
 
-        playerState.angleLR(MoveDirection::NONE);
-        playerState.angleUD(MoveDirection::NONE);
+        playerState.resetMovement();
         playerState.cameraLockedToMouse(true);
         WindowManager::ToggleRelativeMouseMode(true, true);
     };
@@ -661,8 +660,7 @@ U16 Scene::registerInputActions() {
         SceneStatePerPlayer& playerState = state().playerState(getPlayerIndexForDevice(param._deviceIndex));
 
         playerState.cameraLockedToMouse(false);
-        playerState.angleLR(MoveDirection::NONE);
-        playerState.angleUD(MoveDirection::NONE);
+        playerState.resetMovement();
         WindowManager::ToggleRelativeMouseMode(false, true);
         _context.app().windowManager().snapCursorToCenter();
     };
@@ -1091,20 +1089,6 @@ void Scene::clearObjects() {
 }
 
 bool Scene::mouseMoved(const Input::MouseMoveEvent& arg) {
-    // ToDo: Use mapping between device ID an player index -Ionut
-    PlayerIndex idx = getPlayerIndexForDevice(arg._deviceIndex);
-    _hoverUpdateQueue.insert(idx);
-
-    if (!arg.wheelEvent()) {
-        Camera& cam = _scenePlayers[idx]->getCamera();
-        if (cam.moveRelative(arg.relativePos())) {
-            if (cam.type() == Camera::CameraType::THIRD_PERSON) {
-                _context.app().windowManager().snapCursorToCenter();
-            }
-            return true;
-        }
-    }
-
     return false;
 }
 
@@ -1113,33 +1097,17 @@ bool Scene::updateCameraControls(PlayerIndex idx) {
     
     SceneStatePerPlayer& playerState = state().playerState(idx);
 
-    playerState.cameraUpdated(false);
-    switch (cam.type()) {
-        default:
-        case Camera::CameraType::FREE_FLY: {
-            if (playerState.angleLR() != MoveDirection::NONE) {
-                cam.rotateYaw(Angle::DEGREES<F32>(playerState.angleLR()));
-                playerState.cameraUpdated(true);
-            }
-            if (playerState.angleUD() != MoveDirection::NONE) {
-                cam.rotatePitch(Angle::DEGREES<F32>(playerState.angleUD()));
-                playerState.cameraUpdated(true);
-            }
-            if (playerState.roll() != MoveDirection::NONE) {
-                cam.rotateRoll(Angle::DEGREES<F32>(playerState.roll()));
-                playerState.cameraUpdated(true);
-            }
-            if (playerState.moveFB() != MoveDirection::NONE) {
-                cam.moveForward(to_F32(playerState.moveFB()));
-                playerState.cameraUpdated(true);
-            }
-            if (playerState.moveLR() != MoveDirection::NONE) {
-                cam.moveStrafe(to_F32(playerState.moveLR()));
-                playerState.cameraUpdated(true);
-            }
-        } break;
-    }
+    bool updated = false;
+    updated = cam.moveRelative(vec3<I32>(to_I32(playerState.moveFB()),
+                                         to_I32(playerState.moveLR()),
+                                         to_I32(playerState.moveUD()))) || updated;
 
+    updated = cam.rotateRelative(vec3<I32>(to_I32(playerState.angleUD()), //pitch
+                                           to_I32(playerState.angleLR()), //yaw
+                                           to_I32(playerState.roll()))) || updated; //roll
+    updated = cam.zoom(to_I32(playerState.zoom())) || updated;
+
+    playerState.cameraUpdated(updated);
     playerState.cameraUnderwater(checkCameraUnderwater(idx));
 
     return playerState.cameraUpdated();
@@ -1150,11 +1118,6 @@ void Scene::updateSceneState(const U64 deltaTimeUS) {
     updateSceneStateInternal(deltaTimeUS);
     _sceneGraph->sceneUpdate(deltaTimeUS, *_sceneState);
     _aiManager->update(deltaTimeUS);
-
-    for(PlayerIndex idx : _hoverUpdateQueue) {
-        findHoverTarget(idx, editorVisible());
-    }
-    _hoverUpdateQueue.clear();
 }
 
 void Scene::onStartUpdateLoop(const U8 loopNumber) {

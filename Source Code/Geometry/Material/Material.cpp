@@ -918,12 +918,10 @@ void Material::saveToXML(const stringImpl& entryName, boost::property_tree::ptre
     pt.put(entryName + ".emissive.<xmlattr>.r", getColourData()._emissive.r);
     pt.put(entryName + ".emissive.<xmlattr>.g", getColourData()._emissive.g);
     pt.put(entryName + ".emissive.<xmlattr>.b", getColourData()._emissive.b);
-    pt.put(entryName + ".emissive.<xmlattr>.a", getColourData()._emissive.a);
 
     pt.put(entryName + ".specular.<xmlattr>.r", getColourData()._specular.r);
     pt.put(entryName + ".specular.<xmlattr>.g", getColourData()._specular.g);
     pt.put(entryName + ".specular.<xmlattr>.b", getColourData()._specular.b);
-    pt.put(entryName + ".specular.<xmlattr>.a", getColourData()._specular.a);
 
     pt.put(entryName + ".shininess", getColourData()._shininess);
 
@@ -969,13 +967,11 @@ void Material::loadFromXML(const stringImpl& entryName, const boost::property_tr
 
     setEmissive(FColour(pt.get<F32>(entryName + ".emissive.<xmlattr>.r", 0.f),
                         pt.get<F32>(entryName + ".emissive.<xmlattr>.g", 0.f),
-                        pt.get<F32>(entryName + ".emissive.<xmlattr>.b", 0.f),
-                        pt.get<F32>(entryName + ".emissive.<xmlattr>.a", 0.f)));
+                        pt.get<F32>(entryName + ".emissive.<xmlattr>.b", 0.f)));
 
     setSpecular(FColour(pt.get<F32>(entryName + ".specular.<xmlattr>.r", 1.f),
                         pt.get<F32>(entryName + ".specular.<xmlattr>.g", 1.f),
-                        pt.get<F32>(entryName + ".specular.<xmlattr>.b", 1.f),
-                        pt.get<F32>(entryName + ".specular.<xmlattr>.a", 1.f)));
+                        pt.get<F32>(entryName + ".specular.<xmlattr>.b", 1.f)));
 
     setShininess(pt.get<F32>(entryName + ".shininess", 0.0f));
 

@@ -17,7 +17,7 @@ namespace Divide {
         _transformUpdatedMask.store(to_base(TransformType::ALL));
 
         _editorComponent.registerField("Transform",
-                                       &_transformInterface,
+                                       this,
                                        EditorComponentFieldType::TRANSFORM,
                                        false);
         _editorComponent.registerField("WorldMat", &_worldMatrix, EditorComponentFieldType::PUSH_TYPE, true, GFX::PushConstantType::MAT4);

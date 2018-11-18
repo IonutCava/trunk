@@ -332,7 +332,6 @@ void Quaternion<T>::fromEuler(Angle::DEGREES<T> pitch, Angle::DEGREES<T> yaw, An
     X(static_cast<T>(c1c2 * s3 + s1s2 * c3));
     Y(static_cast<T>(s1 * c2 * c3 + c1 * s2 * s3));
     Z(static_cast<T>(c1 * s2 * c3 - s1 * c2 * s3));
-
     // normalize(); this method does produce a normalized quaternion
 }
 
@@ -440,8 +439,8 @@ void Quaternion<T>::getAxisAngle(vec3<T>* axis, Angle::DEGREES<T>* angle) const 
 template <typename T>
 void Quaternion<T>::getEuler(vec3<Angle::RADIANS<T>>& euler) const {
     T& heading = euler.yaw;
-    T& attitude = euler.roll;
-    T& bank = euler.pitch;
+    T& attitude = euler.pitch;
+    T& bank = euler.roll;
 
     const T& x = X();
     const T& y = Y();

@@ -290,8 +290,6 @@ class Scene : public Resource, public PlatformContextComponent {
        vector<DELEGATE_CBK<void, U8 /*player index*/, SceneGraphNode* /*node*/> > _selectionChangeCallbacks;
        vector<SGNRayResult> _sceneSelectionCandidates;
 
-       std::unordered_set<PlayerIndex> _hoverUpdateQueue;
-
    protected:
        LightPool* _lightPool;
        SceneInput* _input;
