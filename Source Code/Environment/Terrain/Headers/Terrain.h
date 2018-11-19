@@ -47,8 +47,8 @@ class TerrainLoader;
 constexpr U8 MAX_TEXTURE_LAYERS = 128 / 4;
 
 template <typename T>
-inline T TER_COORD(T x, T y, T w) {
-    return ((y) * (w)+(x));
+inline T TER_COORD(T x, T y, T width) {
+    return x + (width * y);
 }
 
 struct TerrainTextureLayer {

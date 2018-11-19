@@ -341,10 +341,12 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
                 return false;
             }
 
-            U32 positionCount = to_U32(data.size());
+            size_t positionCount = data.size() / sizeof(Byte);
+            assert(positionCount % 2 == 0);
+
             heightValues.reserve(positionCount / 2);
-            for (U32 i = 0; i < positionCount + 1; i += 2) {
-                heightValues.push_back((data[i + 1] << 8) | data[i]);
+            for (size_t i = 0; i < positionCount; i += 2) {
+                heightValues.push_back((data[i] & 0xff) + (static_cast<U32>(data[i + 1]) << 8));
             }
 
         } else {
@@ -381,25 +383,25 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
         F32 bZRange = bMax.z - bMin.z;
 
         #pragma omp parallel for
-        for (I32 j = 0; j < terrainHeight; j++) {
-            for (I32 i = 0; i < terrainWidth; i++) {
-                U32 idxIMG = TER_COORD<U32>(i < to_I32(terrainDimensions.x) ? i : i - 1,
-                                            j < to_I32(terrainDimensions.y) ? j : j - 1,
-                                            terrainDimensions.x);
+        for (I32 height = 0; height < terrainHeight ; height++) {
+            for (I32 width = 0; width < terrainWidth; width++) {
+                U32 idxIMG = TER_COORD<U32>(width < terrainWidth - 1 ? width : width - 1,
+                                            height < terrainHeight - 1 ? height : height - 1,
+                                            terrainWidth);
 
-                F32 heightValue = ((heightValues[idxIMG * 3 + 0] +
-                                    heightValues[idxIMG * 3 + 1] +
-                                    heightValues[idxIMG * 3 + 2]) / 3.0f);
+                F32 heightValue = ((heightValues[idxIMG + 0] +
+                                    heightValues[idxIMG + 1] +
+                                    heightValues[idxIMG + 2]) / 3.0f);
 
-                vec3<F32> vertexData(bMin.x + (to_F32(i)) * bXRange / (terrainWidth - 1),          //X
+                vec3<F32> vertexData(bMin.x + (to_F32(width)) * bXRange / (terrainWidth - 1),          //X
                                      terrainDescriptor->is16Bit() ? highDetailHeight(heightValue)
                                                                   : lowDetailHeight(heightValue),  //Y
-                                     bMin.z + (to_F32(j)) * (bZRange) / (terrainHeight - 1));      //Z
+                                     bMin.z + (to_F32(height)) * (bZRange) / (terrainHeight - 1));      //Z
 
                 //#pragma omp critical
                 //Surely the id is unique and memory has also been allocated beforehand
                 {
-                    terrain->_physicsVerts[TER_COORD(i, j, terrainWidth)]._position.set(vertexData);
+                    terrain->_physicsVerts[TER_COORD(width, height, terrainWidth)]._position.set(vertexData);
                 }
             }
         }

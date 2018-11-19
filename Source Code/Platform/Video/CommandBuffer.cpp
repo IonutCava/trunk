@@ -36,7 +36,7 @@ DEFINE_POOL(ExternalCommand, 4096);
 
 CommandBuffer::CommandBuffer()
 {
-    _commands.reserve(4);
+    //_commands.reserve(4);
 }
 
 void CommandBuffer::add(const CommandBuffer& other) {
