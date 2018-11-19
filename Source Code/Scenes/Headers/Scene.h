@@ -130,12 +130,12 @@ class Scene : public Resource, public PlatformContextComponent {
     void removeTask(TaskHandle& task);
 
     inline void addSceneGraph(const XML::SceneNode& sceneGraph) { _xmlSceneGraph.push(sceneGraph); }
-    inline void addTerrain(const std::shared_ptr<TerrainDescriptor>& ter) { _terrainInfoArray.push_back(ter); }
     void addMusic(MusicType type, const stringImpl& name, const stringImpl& srcFile);
 
     // DIRECTIONAL lights have shadow mapping enabled automatically
-    SceneGraphNode* addLight(LightType type, SceneGraphNode& parentNode, stringImpl nodeName = "");
+    SceneGraphNode* addLight(LightType type, SceneGraphNode& parentNode, const stringImpl& nodeName = "");
     SceneGraphNode* addSky(SceneGraphNode& parentNode, const stringImpl& nodeName = "");
+    void addTerrain(SceneGraphNode& parentNopde, boost::property_tree::ptree pt, const stringImpl& nodeName = "");
 
     /// Object picking
     inline vector<I64> getCurrentSelection(PlayerIndex index = 0) const {
@@ -198,7 +198,6 @@ class Scene : public Resource, public PlatformContextComponent {
     virtual bool loadXML(const stringImpl& name);
 
     virtual bool load(const stringImpl& name);
-    virtual void loadXMLData();
     void loadAsset(const XML::SceneNode& sceneNode, SceneGraphNode* parent);
     virtual bool unload();
     virtual void postLoad();
@@ -267,7 +266,6 @@ class Scene : public Resource, public PlatformContextComponent {
        std::atomic_uint _loadingTasks;
        std::stack<XML::SceneNode> _xmlSceneGraph;
 
-       vector<std::shared_ptr<TerrainDescriptor>> _terrainInfoArray;
        F32 _LRSpeedFactor;
        /// Current selection
        hashMap<PlayerIndex, vector<I64>> _currentSelection;

@@ -101,8 +101,7 @@ struct SceneNode {
 
 void loadScene(const stringImpl& scenePath, const stringImpl& sceneName, Scene* scene, const Configuration& config);
 
-void loadGeometry(const stringImpl& scenePath, const stringImpl& fileName, Scene* const scene);
-void loadTerrain(const stringImpl& scenePath, const stringImpl& fileName, Scene* const scene);
+void loadSceneGraph(const stringImpl& scenePath, const stringImpl& fileName, Scene* const scene);
 void loadMusicPlaylist(const stringImpl& scenePath, const stringImpl& fileName, Scene* const scene, const Configuration& config);
 
 };  // namespace XML

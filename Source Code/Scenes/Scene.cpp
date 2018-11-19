@@ -209,7 +209,6 @@ bool Scene::saveXML() const {
 
         ptree pt;
         pt.put("assets", "assets.xml");
-        pt.put("terrain", "terrain.xml");
         pt.put("musicPlaylist", "musicPlaylist.xml");
 
         pt.put("vegetation.grassVisibility", state().renderState().grassVisibility());
@@ -235,13 +234,6 @@ bool Scene::saveXML() const {
         copyFile(scenePath, name() + ".xml", scenePath, name() + ".xml.bak", true);
         write_xml(sceneDataFile.c_str(), pt, std::locale(), settings);
     }
-    //save terrain
-    {
-        ptree pt;
-        copyFile(sceneLocation + "/", "terrain.xml", sceneLocation + "/", "terrain.xml.bak", true);
-        write_xml((sceneLocation + "/" + "terrain.xml.dev").c_str(), pt, std::locale(), settings);
-    }
-
     sceneGraph().saveToXML();
 
     //save music
@@ -252,50 +244,6 @@ bool Scene::saveXML() const {
     }
 
     return true;
-}
-
-void Scene::loadXMLData() {
-    constexpr bool terrainThreadedLoading = true;
-
-    while (!_xmlSceneGraph.empty()) {
-        loadAsset(_xmlSceneGraph.top(), &_sceneGraph->getRoot());
-        _xmlSceneGraph.pop();
-    }
-
-    auto registerTerrain = [this](Resource_wptr res) {
-        SceneGraphNode& root = _sceneGraph->getRoot();
-
-        SceneGraphNodeDescriptor terrainNodeDescriptor;
-        terrainNodeDescriptor._node = std::dynamic_pointer_cast<Terrain>(res.lock());
-        terrainNodeDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
-        terrainNodeDescriptor._componentMask = to_base(ComponentType::NAVIGATION) |
-                                               to_base(ComponentType::TRANSFORM) |
-                                               to_base(ComponentType::RIGID_BODY) |
-                                               to_base(ComponentType::BOUNDS) |
-                                               to_base(ComponentType::RENDERING) |
-                                               to_base(ComponentType::NETWORKING);
-        SceneGraphNode* terrainTemp = root.addNode(terrainNodeDescriptor);
-
-        NavigationComponent* nComp = terrainTemp->get<NavigationComponent>();
-        nComp->navigationContext(NavigationComponent::NavigationContext::NODE_OBSTACLE);
-
-        terrainTemp->get<RigidBodyComponent>()->physicsGroup(PhysicsGroup::GROUP_STATIC);
-
-        --_loadingTasks;
-    };
-
-    // Add terrain from XML
-    while(!_terrainInfoArray.empty()) {
-        const std::shared_ptr<TerrainDescriptor>& terrainInfo = _terrainInfoArray.back();
-        ResourceDescriptor terrain(terrainInfo->getVariable("terrainName"));
-        terrain.setPropertyDescriptor(*terrainInfo);
-        terrain.setThreadedLoading(terrainThreadedLoading);
-        terrain.setOnLoadCallback(registerTerrain);
-        terrain.setFlag(terrainInfo->getActive());
-        CreateResource<Terrain>(_resCache, terrain);
-        ++_loadingTasks;
-        _terrainInfoArray.pop_back();
-    }
 }
 
 namespace {
@@ -348,9 +296,7 @@ void Scene::loadAsset(const XML::SceneNode& sceneNode, SceneGraphNode* parent) {
         bool skipAdd = true;
         if (sceneNode.type == "ROOT") {
             // Nothing to do with the root. It's good that it exists
-        }
-        // Primitive types (only top level)
-        else if (isPrimitive(sceneNode.type)) {
+        } else if (isPrimitive(sceneNode.type)) {// Primitive types (only top level)
             if (!modelName.empty()) {
                 ++_loadingTasks;
                 ResourceDescriptor item(sceneNode.name);
@@ -381,6 +327,10 @@ void Scene::loadAsset(const XML::SceneNode& sceneNode, SceneGraphNode* parent) {
                 ret->setMaterialTpl(tempMaterial);
             }
             skipAdd = false;
+        }
+        // Terrain types
+        else if (sceneNode.type == "TERRAIN") {
+            addTerrain(*parent, nodeTree, sceneNode.name);
         }
         // Mesh types
         else if (Util::CompareIgnoreCase(sceneNode.type, "MESH")) {
@@ -477,7 +427,7 @@ SceneGraphNode* Scene::addParticleEmitter(const stringImpl& name,
 }
 
 
-SceneGraphNode* Scene::addLight(LightType type, SceneGraphNode& parentNode, stringImpl nodeName) {
+SceneGraphNode* Scene::addLight(LightType type, SceneGraphNode& parentNode, const stringImpl& nodeName) {
 
     SceneGraphNodeDescriptor lightNodeDescriptor = {};
     lightNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
@@ -485,30 +435,163 @@ SceneGraphNode* Scene::addLight(LightType type, SceneGraphNode& parentNode, stri
         to_base(ComponentType::BOUNDS) |
         to_base(ComponentType::NETWORKING);
 
+    stringImpl internalName = nodeName;
     switch (type) {
-    case LightType::DIRECTIONAL: {
-        if (nodeName.empty()) {
-            nodeName = name() + "directional_light_" + to_stringImpl(_lightPool->getLights(type).size());
-        }
-        lightNodeDescriptor._componentMask |= to_base(ComponentType::DIRECTIONAL_LIGHT);
+        case LightType::DIRECTIONAL: {
+            if (nodeName.empty()) {
+                internalName = name() + "directional_light_" + to_stringImpl(_lightPool->getLights(type).size());
+            }
+            lightNodeDescriptor._componentMask |= to_base(ComponentType::DIRECTIONAL_LIGHT);
         } break;
-    case LightType::POINT: {
-        if (nodeName.empty()) {
-            nodeName = name() + "point_light_" + to_stringImpl(_lightPool->getLights(type).size());
-        }
-        lightNodeDescriptor._componentMask |= to_base(ComponentType::POINT_LIGHT);
+        case LightType::POINT: {
+            if (nodeName.empty()) {
+                internalName = name() + "point_light_" + to_stringImpl(_lightPool->getLights(type).size());
+            }
+            lightNodeDescriptor._componentMask |= to_base(ComponentType::POINT_LIGHT);
         } break;
-    case LightType::SPOT: {
-        if (nodeName.empty()) {
-            nodeName = name() + "spot_light_" + to_stringImpl(_lightPool->getLights(type).size());
-        }
-        lightNodeDescriptor._componentMask |= to_base(ComponentType::SPOT_LIGHT);
+        case LightType::SPOT: {
+            if (nodeName.empty()) {
+                internalName = name() + "spot_light_" + to_stringImpl(_lightPool->getLights(type).size());
+            }
+            lightNodeDescriptor._componentMask |= to_base(ComponentType::SPOT_LIGHT);
         } break;
     }
 
-    lightNodeDescriptor._name = nodeName;
+    lightNodeDescriptor._name = internalName;
 
     return parentNode.addNode(lightNodeDescriptor);    
+}
+
+void Scene::addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const stringImpl& name) {
+    Console::printfn(Locale::get(_ID("XML_LOAD_TERRAIN")), name.c_str());
+
+    // Load the rest of the terrain
+    std::shared_ptr<TerrainDescriptor> ter = std::make_shared<TerrainDescriptor>((name + "_descriptor").c_str());
+    ter->addVariable("terrainName", name.c_str());
+    ter->addVariable("heightmapLocation", Paths::g_assetsLocation + pt.get<stringImpl>(name + ".heightmapLocation", Paths::g_heightmapLocation) + "/");
+    ter->addVariable("textureLocation", Paths::g_assetsLocation + pt.get<stringImpl>(name + ".textureLocation", Paths::g_imagesLocation) + "/");
+    ter->addVariable("heightmap", pt.get<stringImpl>(name + ".heightmap"));
+    ter->addVariable("waterCaustics", pt.get<stringImpl>(name + ".waterCaustics"));
+    ter->addVariable("underwaterAlbedoTexture", pt.get<stringImpl>(name + ".underwaterAlbedoTexture"));
+    ter->addVariable("underwaterDetailTexture", pt.get<stringImpl>(name + ".underwaterDetailTexture"));
+    ter->addVariable("underwaterDiffuseScale", pt.get<F32>(name + ".underwaterDiffuseScale"));
+
+    I32 i = 0;
+    stringImpl temp;
+    stringImpl layerOffsetStr;
+    for (boost::property_tree::ptree::iterator itTexture = std::begin(pt.get_child(name + ".textureLayers"));
+        itTexture != std::end(pt.get_child(name + ".textureLayers"));
+        ++itTexture, ++i) {
+        stringImpl layerName(itTexture->second.data());
+        stringImpl format(itTexture->first.data());
+
+        if (format.find("<xmlcomment>") != stringImpl::npos) {
+            i--;
+            continue;
+        }
+
+        layerName = name + ".textureLayers." + format;
+
+        layerOffsetStr = to_stringImpl(i);
+        temp = pt.get<stringImpl>(layerName + ".blendMap", "");
+        DIVIDE_ASSERT(!temp.empty(), "Blend Map for terrain missing!");
+        ter->addVariable("blendMap" + layerOffsetStr, temp);
+
+        temp = pt.get<stringImpl>(layerName + ".redAlbedo", "");
+        if (!temp.empty()) {
+            ter->addVariable("redAlbedo" + layerOffsetStr, temp);
+        }
+        temp = pt.get<stringImpl>(layerName + ".redDetail", "");
+        if (!temp.empty()) {
+            ter->addVariable("redDetail" + layerOffsetStr, temp);
+        }
+        temp = pt.get<stringImpl>(layerName + ".greenAlbedo", "");
+        if (!temp.empty()) {
+            ter->addVariable("greenAlbedo" + layerOffsetStr, temp);
+        }
+        temp = pt.get<stringImpl>(layerName + ".greenDetail", "");
+        if (!temp.empty()) {
+            ter->addVariable("greenDetail" + layerOffsetStr, temp);
+        }
+        temp = pt.get<stringImpl>(layerName + ".blueAlbedo", "");
+        if (!temp.empty()) {
+            ter->addVariable("blueAlbedo" + layerOffsetStr, temp);
+        }
+        temp = pt.get<stringImpl>(layerName + ".blueDetail", "");
+        if (!temp.empty()) {
+            ter->addVariable("blueDetail" + layerOffsetStr, temp);
+        }
+        temp = pt.get<stringImpl>(layerName + ".alphaAlbedo", "");
+        if (!temp.empty()) {
+            ter->addVariable("alphaAlbedo" + layerOffsetStr, temp);
+        }
+        temp = pt.get<stringImpl>(layerName + ".alphaDetail", "");
+        if (!temp.empty()) {
+            ter->addVariable("alphaDetail" + layerOffsetStr, temp);
+        }
+
+        ter->addVariable("diffuseScaleR" + layerOffsetStr, pt.get<F32>(layerName + ".redDiffuseScale", 0.0f));
+        ter->addVariable("detailScaleR" + layerOffsetStr, pt.get<F32>(layerName + ".redDetailScale", 0.0f));
+        ter->addVariable("diffuseScaleG" + layerOffsetStr, pt.get<F32>(layerName + ".greenDiffuseScale", 0.0f));
+        ter->addVariable("detailScaleG" + layerOffsetStr, pt.get<F32>(layerName + ".greenDetailScale", 0.0f));
+        ter->addVariable("diffuseScaleB" + layerOffsetStr, pt.get<F32>(layerName + ".blueDiffuseScale", 0.0f));
+        ter->addVariable("detailScaleB" + layerOffsetStr, pt.get<F32>(layerName + ".blueDetailScale", 0.0f));
+        ter->addVariable("diffuseScaleA" + layerOffsetStr, pt.get<F32>(layerName + ".alphaDiffuseScale", 0.0f));
+        ter->addVariable("detailScaleA" + layerOffsetStr, pt.get<F32>(layerName + ".alphaDetailScale", 0.0f));
+    }
+
+    ter->setTextureLayerCount(to_U8(i));
+    ter->addVariable("grassMapLocation", Paths::g_assetsLocation + pt.get<stringImpl>(name + ".vegetation.vegetationTextureLocation", Paths::g_imagesLocation) + "/");
+    ter->addVariable("grassMap", pt.get<stringImpl>(name + ".vegetation.map"));
+    ter->addVariable("grassBillboard1", pt.get<stringImpl>(name + ".vegetation.grassBillboard1", ""));
+    ter->addVariable("grassBillboard2", pt.get<stringImpl>(name + ".vegetation.grassBillboard2", ""));
+    ter->addVariable("grassBillboard3", pt.get<stringImpl>(name + ".vegetation.grassBillboard3", ""));
+    ter->addVariable("grassBillboard4", pt.get<stringImpl>(name + ".vegetation.grassBillboard4", ""));
+    ter->setGrassDensity(pt.get<F32>(name + ".vegetation.<xmlattr>.grassDensity"));
+    ter->setTreeDensity(pt.get<F32>(name + ".vegetation.<xmlattr>.treeDensity"));
+    ter->setGrassScale(pt.get<F32>(name + ".vegetation.<xmlattr>.grassScale"));
+    ter->setTreeScale(pt.get<F32>(name + ".vegetation.<xmlattr>.treeScale"));
+    ter->set16Bit(pt.get<bool>(name + ".is16Bit", false));
+    ter->setPosition(vec3<F32>(pt.get<F32>(name + ".position.<xmlattr>.x", 0.0f),
+                               pt.get<F32>(name + ".position.<xmlattr>.y", 0.0f),
+                               pt.get<F32>(name + ".position.<xmlattr>.z", 0.0f)));
+    ter->setScale(vec2<F32>(pt.get<F32>(name + ".scale", 1.0f),
+        pt.get<F32>(name + ".heightFactor", 1.0f)));
+    ter->setDimensions(vec2<U16>(pt.get<U16>(name + ".terrainWidth", 0),
+        pt.get<U16>(name + ".terrainHeight", 0)));
+    ter->setAltitudeRange(vec2<F32>(pt.get<F32>(name + ".altitudeRange.<xmlattr>.min", 0.0f),
+        pt.get<F32>(name + ".altitudeRange.<xmlattr>.max", 255.0f)));
+    ter->setActive(pt.get<bool>(name + ".active", true));
+    ter->setChunkSize(pt.get<U32>(name + ".targetChunkSize", 256));
+
+
+    auto registerTerrain = [this, &parentNode](Resource_wptr res) {
+        SceneGraphNodeDescriptor terrainNodeDescriptor;
+        terrainNodeDescriptor._node = std::dynamic_pointer_cast<Terrain>(res.lock());
+        terrainNodeDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
+        terrainNodeDescriptor._componentMask = to_base(ComponentType::NAVIGATION) |
+                                               to_base(ComponentType::TRANSFORM) |
+                                               to_base(ComponentType::RIGID_BODY) |
+                                               to_base(ComponentType::BOUNDS) |
+                                               to_base(ComponentType::RENDERING) |
+                                               to_base(ComponentType::NETWORKING);
+        SceneGraphNode* terrainTemp = parentNode.addNode(terrainNodeDescriptor);
+
+        NavigationComponent* nComp = terrainTemp->get<NavigationComponent>();
+        nComp->navigationContext(NavigationComponent::NavigationContext::NODE_OBSTACLE);
+
+        terrainTemp->get<RigidBodyComponent>()->physicsGroup(PhysicsGroup::GROUP_STATIC);
+
+        --_loadingTasks;
+    };
+
+    ResourceDescriptor terrain(ter->getVariable("terrainName"));
+    terrain.setPropertyDescriptor(*ter);
+    terrain.setThreadedLoading(true);
+    terrain.setOnLoadCallback(registerTerrain);
+    terrain.setFlag(ter->getActive());
+    CreateResource<Terrain>(_resCache, terrain);
+    ++_loadingTasks;
 }
 
 void Scene::toggleFlashlight(PlayerIndex idx) {
@@ -854,7 +937,10 @@ bool Scene::load(const stringImpl& name) {
     _name = name;
 
     loadDefaultCamera();
-    loadXMLData();
+    while (!_xmlSceneGraph.empty()) {
+        loadAsset(_xmlSceneGraph.top(), &_sceneGraph->getRoot());
+        _xmlSceneGraph.pop();
+    }
 
     U32 totalLoadingTasks = _loadingTasks.load();
     Console::d_printfn(Locale::get(_ID("SCENE_LOAD_TASKS")), totalLoadingTasks);

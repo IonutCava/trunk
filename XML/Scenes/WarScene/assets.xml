@@ -2,6 +2,8 @@
 <entities>
     <node name="ROOT" type="ROOT">
         <node name="Ground_placeholder" type="QUAD_3D"/>
+		<node name="Terrain" type="TERRAIN"/>
+		
         <node name="flag" type="MESH">
             <node name="flag_0" type="SUBMESH"/>
             <node name="flag_1" type="SUBMESH"/>

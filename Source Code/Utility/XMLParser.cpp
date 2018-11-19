@@ -122,8 +122,7 @@ void loadScene(const stringImpl& scenePath, const stringImpl &sceneName, Scene* 
     // A scene does not necessarily need external data files
     // Data can be added in code for simple scenes
     if (!fileExists(sceneDataFile.c_str())) {
-        loadTerrain(sceneLocation, "terrain.xml", scene);
-        loadGeometry(sceneLocation, "assets.xml", scene);
+        loadSceneGraph(sceneLocation, "assets.xml", scene);
         loadMusicPlaylist(sceneLocation, "musicPlaylist.xml", scene, config);
         return;
     }
@@ -186,8 +185,7 @@ void loadScene(const stringImpl& scenePath, const stringImpl &sceneName, Scene* 
     }
     scene->state().fogDescriptor().set(fogColour, fogDensity);
 
-    loadTerrain(sceneLocation, pt.get("terrain", ""), scene);
-    loadGeometry(sceneLocation, pt.get("assets", ""), scene);
+    loadSceneGraph(sceneLocation, pt.get("assets", ""), scene);
     loadMusicPlaylist(sceneLocation, pt.get("musicPlaylist", ""), scene, config);
 }
 
@@ -210,137 +208,7 @@ void loadMusicPlaylist(const stringImpl& scenePath, const stringImpl& fileName, 
     }
 }
 
-void loadTerrain(const stringImpl& scenePath, const stringImpl& fileName, Scene *const scene) {
-    stringImpl file = scenePath + "/" + fileName;
-
-    if (!fileExists(file.c_str())) {
-        return;
-    }
-
-    U8 count = 0;
-    ptree pt;
-    Console::printfn(Locale::get(_ID("XML_LOAD_TERRAIN")), file.c_str());
-    read_xml(file.c_str(), pt);
-    ptree::iterator itTerrain;
-    ptree::iterator itTexture;
-
-    for (itTerrain = std::begin(pt.get_child("terrainList")); itTerrain != std::end(pt.get_child("terrainList")); ++itTerrain) {
-        // The actual terrain name
-        stringImpl name = itTerrain->second.data();
-        // The <name> tag for valid terrains or <xmlcomment> for comments
-        stringImpl tag = itTerrain->first.data();
-        // Check and skip commented terrain
-        if (tag.find("<xmlcomment>") != stringImpl::npos) {
-            continue;
-        }
-        // Load the rest of the terrain
-        std::shared_ptr<TerrainDescriptor> ter = std::make_shared<TerrainDescriptor>((name + "_descriptor").c_str());
-
-        ter->addVariable("terrainName", name.c_str());
-        ter->addVariable("heightmapLocation", Paths::g_assetsLocation + pt.get<stringImpl>(name + ".heightmapLocation", Paths::g_heightmapLocation) + "/");
-        ter->addVariable("textureLocation", Paths::g_assetsLocation + pt.get<stringImpl>(name + ".textureLocation", Paths::g_imagesLocation) + "/");
-        ter->addVariable("heightmap", pt.get<stringImpl>(name + ".heightmap"));
-        ter->addVariable("waterCaustics", pt.get<stringImpl>(name + ".waterCaustics"));
-        ter->addVariable("underwaterAlbedoTexture", pt.get<stringImpl>(name + ".underwaterAlbedoTexture"));
-        ter->addVariable("underwaterDetailTexture", pt.get<stringImpl>(name + ".underwaterDetailTexture"));
-        ter->addVariable("underwaterDiffuseScale", pt.get<F32>(name + ".underwaterDiffuseScale"));
-
-        I32 i = 0;
-        stringImpl temp;
-        stringImpl layerOffsetStr;
-        for (itTexture = std::begin(pt.get_child(name + ".textureLayers"));
-             itTexture != std::end(pt.get_child(name + ".textureLayers"));
-             ++itTexture, ++i) {
-            stringImpl layerName(itTexture->second.data());
-            stringImpl format(itTexture->first.data());
-
-            if (format.find("<xmlcomment>") != stringImpl::npos) {
-                i--;
-                continue;
-            }
-
-            layerName = name + ".textureLayers." + format;
-
-            layerOffsetStr = to_stringImpl(i);
-            temp = pt.get<stringImpl>(layerName + ".blendMap", "");
-            DIVIDE_ASSERT(!temp.empty(), "Blend Map for terrain missing!");
-            ter->addVariable("blendMap" + layerOffsetStr, temp);
-
-            temp = pt.get<stringImpl>(layerName + ".redAlbedo", "");
-            if (!temp.empty()) {
-                ter->addVariable("redAlbedo" + layerOffsetStr, temp);
-            }
-            temp = pt.get<stringImpl>(layerName + ".redDetail", "");
-            if (!temp.empty()) {
-                ter->addVariable("redDetail" + layerOffsetStr, temp);
-            }
-            temp = pt.get<stringImpl>(layerName + ".greenAlbedo", "");
-            if (!temp.empty()) {
-                ter->addVariable("greenAlbedo" + layerOffsetStr, temp);
-            }
-            temp = pt.get<stringImpl>(layerName + ".greenDetail", "");
-            if (!temp.empty()) {
-                ter->addVariable("greenDetail" + layerOffsetStr, temp);
-            }
-            temp = pt.get<stringImpl>(layerName + ".blueAlbedo", "");
-            if (!temp.empty()) {
-                ter->addVariable("blueAlbedo" + layerOffsetStr, temp);
-            }
-            temp = pt.get<stringImpl>(layerName + ".blueDetail", "");
-            if (!temp.empty()) {
-                ter->addVariable("blueDetail" + layerOffsetStr, temp);
-            }
-            temp = pt.get<stringImpl>(layerName + ".alphaAlbedo", "");
-            if (!temp.empty()) {
-                ter->addVariable("alphaAlbedo" + layerOffsetStr, temp);
-            }
-            temp = pt.get<stringImpl>(layerName + ".alphaDetail", "");
-            if (!temp.empty()) {
-                ter->addVariable("alphaDetail" + layerOffsetStr, temp);
-            }
-
-            ter->addVariable("diffuseScaleR" + layerOffsetStr, pt.get<F32>(layerName + ".redDiffuseScale", 0.0f));
-            ter->addVariable("detailScaleR" + layerOffsetStr, pt.get<F32>(layerName + ".redDetailScale", 0.0f));
-            ter->addVariable("diffuseScaleG" + layerOffsetStr, pt.get<F32>(layerName + ".greenDiffuseScale", 0.0f));
-            ter->addVariable("detailScaleG" + layerOffsetStr, pt.get<F32>(layerName + ".greenDetailScale", 0.0f));
-            ter->addVariable( "diffuseScaleB" + layerOffsetStr, pt.get<F32>(layerName + ".blueDiffuseScale", 0.0f));
-            ter->addVariable("detailScaleB" + layerOffsetStr, pt.get<F32>(layerName + ".blueDetailScale", 0.0f));
-            ter->addVariable("diffuseScaleA" + layerOffsetStr, pt.get<F32>(layerName + ".alphaDiffuseScale", 0.0f));
-            ter->addVariable("detailScaleA" + layerOffsetStr, pt.get<F32>(layerName + ".alphaDetailScale", 0.0f));
-        }
-
-        ter->setTextureLayerCount(to_U8(i));
-        ter->addVariable("grassMapLocation", Paths::g_assetsLocation + pt.get<stringImpl>(name + ".vegetation.vegetationTextureLocation", Paths::g_imagesLocation) + "/");
-        ter->addVariable("grassMap", pt.get<stringImpl>(name + ".vegetation.map"));
-        ter->addVariable("grassBillboard1", pt.get<stringImpl>(name + ".vegetation.grassBillboard1", ""));
-        ter->addVariable("grassBillboard2", pt.get<stringImpl>(name + ".vegetation.grassBillboard2", ""));
-        ter->addVariable("grassBillboard3", pt.get<stringImpl>(name + ".vegetation.grassBillboard3", ""));
-        ter->addVariable("grassBillboard4", pt.get<stringImpl>(name + ".vegetation.grassBillboard4", ""));
-        ter->setGrassDensity(pt.get<F32>(name + ".vegetation.<xmlattr>.grassDensity"));
-        ter->setTreeDensity(pt.get<F32>(name + ".vegetation.<xmlattr>.treeDensity"));
-        ter->setGrassScale(pt.get<F32>(name + ".vegetation.<xmlattr>.grassScale"));
-        ter->setTreeScale(pt.get<F32>(name + ".vegetation.<xmlattr>.treeScale"));
-        ter->set16Bit(pt.get<bool>(name + ".is16Bit", false));
-        ter->setPosition(vec3<F32>(pt.get<F32>(name + ".position.<xmlattr>.x", 0.0f),
-                                   pt.get<F32>(name + ".position.<xmlattr>.y", 0.0f),
-                                   pt.get<F32>(name + ".position.<xmlattr>.z", 0.0f)));
-        ter->setScale(vec2<F32>(pt.get<F32>(name + ".scale", 1.0f),
-                                pt.get<F32>(name + ".heightFactor", 1.0f)));
-        ter->setDimensions(vec2<U16>(pt.get<U16>(name + ".terrainWidth", 0),
-                                     pt.get<U16>(name + ".terrainHeight", 0)));
-        ter->setAltitudeRange(vec2<F32>(pt.get<F32>(name + ".altitudeRange.<xmlattr>.min", 0.0f),
-                                        pt.get<F32>(name + ".altitudeRange.<xmlattr>.max", 255.0f)));
-        ter->setActive(pt.get<bool>(name + ".active", true));
-        ter->setChunkSize(pt.get<U32>(name + ".targetChunkSize", 256));
-
-        scene->addTerrain(ter);
-        count++;
-    }
-
-    Console::printfn(Locale::get(_ID("XML_TERRAIN_COUNT")), count);
-}
-
-void loadGeometry(const stringImpl& scenePath, const stringImpl& fileName, Scene *const scene) {
+void loadSceneGraph(const stringImpl& scenePath, const stringImpl& fileName, Scene *const scene) {
     stringImpl file = scenePath + "/" + fileName;
     if (!fileExists(file.c_str())) {
         return;
@@ -383,7 +251,9 @@ void loadGeometry(const stringImpl& scenePath, const stringImpl& fileName, Scene
         assert(Util::CompareIgnoreCase(rootNode.type, "ROOT"));
         scene->addSceneGraph(rootNode);
     }
+    //loadTerrain(sceneLocation, pt.get("terrain", ""), scene);
 }
+
 
 };  // namespace XML
 };  // namespace Divide

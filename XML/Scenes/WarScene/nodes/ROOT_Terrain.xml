@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<static>true</static>
+<heightmapLocation>terrain</heightmapLocation>
+<heightmap>warTerrain.raw</heightmap>
+<is16Bit>true</is16Bit>
+<terrainWidth>2048</terrainWidth>
+<terrainHeight>2048</terrainHeight>
+<altitudeRange min = "-33.6" max = "68.8" />
+<scale>1</scale>
+<heightFactor>1</heightFactor>
+<position x="0" y="0" z="0" />
+<active>true</active>
+<components>Rigidbody</addToPhysics>
+<!-- chunk size defines the dimensions of a quadtree chunk of vertices in the format NxN
+e.g. Specifying a 256 chunk size for a 1024x1024 terrain will generate 16 leafs in the quadtree-->
+<targetChunkSize>256</targetChunkSize>
+<textureLocation>misc_images</textureLocation>
+<waterCaustics>terrain_water_caustics.jpg</waterCaustics>
+<underwaterAlbedoTexture>sandfloor009a.jpg</underwaterAlbedoTexture>
+<underwaterDetailTexture>terrain_detail_NM.png</underwaterDetailTexture>
+<underwaterDiffuseScale>100</underwaterDiffuseScale>
+<!-- density is measured as vegetation units per terrain unit -->
+<vegetation grassDensity="1.25" treeDensity="0" grassScale="0.175" treeScale="0.7">
+<vegetationTextureLocation>misc_images</vegetationTextureLocation>  
+	<map>warTerrainAlpha_Alpha1.tga</map>
+	<grassBillboard1>billboardgrass0001.png</grassBillboard1>
+	<grassBillboard2>grass_billboards1.png</grassBillboard2>
+	<grassBillboard3>grass_billboards2.png</grassBillboard3>
+	<grassBillboard4>grass_billboards3.png</grassBillboard4>
+</vegetation>
+<textureLayers>
+	<layer0>
+		<blendMap>warTerrainAlpha_Alpha1.tga</blendMap>
+		<redAlbedo>riverdalegrass.jpg</redAlbedo>
+		<redDetail>riverdalegrass_bump.jpg</redDetail>
+		<greenAlbedo>riverdalegrassdead.jpg</greenAlbedo>
+		<greenDetail>riverdalegrass_bump.jpg</greenDetail>
+		<blueAlbedo>redsand1a.jpg</blueAlbedo>
+		<blueDetail>redsand1a_bump.jpg</blueDetail>
+		<alphaAlbedo>rock3.jpg</alphaAlbedo>
+		<alphaDetail>rock3_bump.jpg</alphaDetail>
+		<redDiffuseScale>250.0</redDiffuseScale>
+		<redDetailScale>650.0</redDetailScale>
+		<greenDiffuseScale>250.0</greenDiffuseScale>
+		<greenDetailScale>650.0</greenDetailScale>
+		<blueDiffuseScale>250.0</blueDiffuseScale>
+		<blueDetailScale>650.0</blueDetailScale>
+		<alphaDiffuseScale>250.0</alphaDiffuseScale>
+		<alphaDetailScale>650.0</alphaDetailScale>
+	</layer0>
+	<layer1>
+		<blendMap>warTerrainAlpha_Alpha2.tga</blendMap>
+		<redAlbedo>yellowsand1.jpg</redAlbedo>
+		<redDetail>terrain_detail_NM.png</redDetail>
+		<greenAlbedo>grass1-dry.jpg</greenAlbedo>
+		<greenDetail>hillside_bump.jpg</greenDetail>
+		<blueAlbedo>rocks1-grey.jpg</blueAlbedo>
+		<blueDetail>rocks1_bump.jpg</blueDetail>
+		<alphaAlbedo>murcim049.jpg</alphaAlbedo>
+		<alphaDetail>terrain_detail_NM.png</alphaDetail>
+		<redDiffuseScale>250.0</redDiffuseScale>
+		<redDetailScale>1000.0</redDetailScale>
+		<greenDiffuseScale>250.0</greenDiffuseScale>
+		<greenDetailScale>250.0</greenDetailScale>
+		<blueDiffuseScale>250.0</blueDiffuseScale>
+		<blueDetailScale>250.0</blueDetailScale>
+		<alphaDiffuseScale>250.0</alphaDiffuseScale>
+		<alphaDetailScale>1000.0</alphaDetailScale>
+	</layer1>
+</textureLayers>
+<TRANSFORM>
+    <Transform>
+        <position x="-50" y="0" z="-50"/>
+        <orientation x="0" y="0" z="-90"/>
+        <scale x="100" y="100" z="100"/>
+    </Transform>
+    <WorldMat 00="100" 01="0" 02="0" 03="0" 10="0" 11="5.96046448e-06" 12="99.9999924" 13="0" 20="0" 21="-99.9999924" 22="5.96046448e-06" 23="0" 30="-50" 31="0" 32="-50" 33="1"/>
+</TRANSFORM>
+<BOUNDS/>
+<RENDERING>
+    <Material>
+        <colour r="0" g="1" b="0" a="1"/>
+        <emissive r="0" g="0.100000001" b="0"/>
+        <specular r="0.800000012" g="0.800000012" b="0.800000012"/>
+        <shininess>50</shininess>
+        <doubleSided>false</doubleSided>
+        <bumpMethod>NONE</bumpMethod>
+        <shadingMode>BLINN_PHONG</shadingMode>
+        <parallaxFactor>0.00999999978</parallaxFactor>
+    </Material>
+</RENDERING>
+<NETWORKING/>
