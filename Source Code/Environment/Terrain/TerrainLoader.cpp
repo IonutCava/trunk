@@ -203,8 +203,8 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
     textureNormalMaps.setPropertyDescriptor(normalDescriptor);
 
     textureLayer->setBlendMaps(CreateResource<Texture>(terrain->parentResourceCache(), textureBlendMap));
-    textureLayer->setTileMaps(CreateResource<Texture>(terrain->parentResourceCache(), textureTileMaps));
-    textureLayer->setNormalMaps(CreateResource<Texture>(terrain->parentResourceCache(), textureNormalMaps));
+    textureLayer->setTileMaps(CreateResource<Texture>(terrain->parentResourceCache(), textureTileMaps), albedoCount);
+    textureLayer->setNormalMaps(CreateResource<Texture>(terrain->parentResourceCache(), textureNormalMaps), normalCount);
     Attorney::TerrainLoader::setTextureLayer(*terrain, textureLayer);
 
     ResourceDescriptor terrainMaterialDescriptor("terrainMaterial_" + name);
@@ -231,18 +231,18 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
     layerCountData += "};";
 
     //terrainMaterial->setShaderLoadThreaded(false);
-    //terrainMaterial->setShaderDefines("TOGGLE_WIREFRAME");
-    terrainMaterial->setShaderDefines("COMPUTE_TBN");
-    terrainMaterial->setShaderDefines("SKIP_TEXTURES");
-    terrainMaterial->setShaderDefines("USE_SHADING_PHONG");
-    terrainMaterial->setShaderDefines("MAX_TEXTURE_LAYERS " + to_stringImpl(Attorney::TerrainLoader::textureLayerCount(*terrain)));
+    //terrainMaterial->addShaderDefine("TOGGLE_WIREFRAME");
+    terrainMaterial->addShaderDefine("COMPUTE_TBN");
+    terrainMaterial->addShaderDefine("SKIP_TEXTURES");
+    terrainMaterial->addShaderDefine("USE_SHADING_PHONG");
+    terrainMaterial->addShaderDefine("MAX_TEXTURE_LAYERS " + to_stringImpl(Attorney::TerrainLoader::textureLayerCount(*terrain)));
     
-    
-    terrainMaterial->setShaderDefines("TERRAIN_WIDTH " + to_stringImpl(terrainDimensions.width));
-    terrainMaterial->setShaderDefines("TERRAIN_LENGTH " + to_stringImpl(terrainDimensions.height));
-    terrainMaterial->setShaderDefines("TERRAIN_MIN_HEIGHT " + to_stringImpl(altitudeRange.x));
-    terrainMaterial->setShaderDefines("TERRAIN_HEIGHT_RANGE " + to_stringImpl(altitudeRange.y - altitudeRange.x));
-    terrainMaterial->setShaderDefines("UNDERWATER_DIFFUSE_SCALE " + to_stringImpl(underwaterDiffuseScale));
+    terrainMaterial->addShaderDefine(layerCountData, false);
+    terrainMaterial->addShaderDefine("TERRAIN_WIDTH " + to_stringImpl(terrainDimensions.width));
+    terrainMaterial->addShaderDefine("TERRAIN_LENGTH " + to_stringImpl(terrainDimensions.height));
+    terrainMaterial->addShaderDefine("TERRAIN_MIN_HEIGHT " + to_stringImpl(altitudeRange.x));
+    terrainMaterial->addShaderDefine("TERRAIN_HEIGHT_RANGE " + to_stringImpl(altitudeRange.y - altitudeRange.x));
+    terrainMaterial->addShaderDefine("UNDERWATER_DIFFUSE_SCALE " + to_stringImpl(underwaterDiffuseScale));
     terrainMaterial->setShaderProgram("terrainTess." + name, true);
     terrainMaterial->setShaderProgram("terrainTess.PrePass." + name, RenderPassType::DEPTH_PASS, true);
     terrainMaterial->setShaderProgram("terrainTess.Shadow." + name, RenderStage::SHADOW, true);
@@ -271,7 +271,7 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
 
     ResourceDescriptor heightMapTexture("Terrain Heightmap_" + name);
     heightMapTexture.setResourceLocation(Paths::g_assetsLocation + terrainDescriptor->getVariable("heightmapLocation"));
-    heightMapTexture.setResourceName(terrainDescriptor->getVariable("heightmap"));
+    heightMapTexture.setResourceName(terrainDescriptor->getVariable("heightTexture"));
     heightMapTexture.setPropertyDescriptor(heightMapDescriptor);
     heightMapTexture.setFlag(true);
 
@@ -478,7 +478,11 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
     F32 underwaterDiffuseScale = terrainDescriptor->getVariablef("underwaterDiffuseScale");
 
     ResourceDescriptor planeShaderDesc("terrainPlane.Colour");
-    planeShaderDesc.setPropertyList("UNDERWATER_DIFFUSE_SCALE " + to_stringImpl(underwaterDiffuseScale));
+
+    ShaderProgramDescriptor planeShaderDescDescriptor;
+    planeShaderDescDescriptor._defines.push_back(std::make_pair("UNDERWATER_DIFFUSE_SCALE " + to_stringImpl(underwaterDiffuseScale), true));
+    planeShaderDesc.setPropertyDescriptor(planeShaderDescDescriptor);
+
     ShaderProgram_ptr planeShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), planeShaderDesc);
     planeShaderDesc.setResourceName("terrainPlane.Depth");
     ShaderProgram_ptr planeDepthShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), planeShaderDesc);
@@ -551,7 +555,7 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     grassTexDescriptor.setSampler(grassSampler);
 
     ResourceDescriptor textureDetailMaps("Vegetation Billboards");
-    textureDetailMaps.setResourceLocation(terrainDescriptor->getVariable("grassMapLocation"));
+    textureDetailMaps.setResourceLocation(Paths::g_assetsLocation + terrainDescriptor->getVariable("grassMapLocation"));
     textureDetailMaps.setResourceName(textureName);
     textureDetailMaps.setPropertyDescriptor(grassTexDescriptor);
     Texture_ptr grassBillboardArray = CreateResource<Texture>(terrain->parentResourceCache(), textureDetailMaps);

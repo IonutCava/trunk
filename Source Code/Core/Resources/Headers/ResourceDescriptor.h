@@ -44,8 +44,9 @@ class NOINITVTABLE PropertyDescriptor : public Hashable {
    public:
     enum class DescriptorType : U8 {
         DESCRIPTOR_TEXTURE = 0,
-        DESCRIPTOR_PARTICLE = 1,
-        DESCRIPTOR_TERRAIN_INFO = 2,
+        DESCRIPTOR_PARTICLE,
+        DESCRIPTOR_TERRAIN_INFO,
+        DESCRIPTOR_SHADER,
         DESCRIPTOR_COUNT
     };
 
@@ -82,9 +83,6 @@ class ResourceDescriptor : public Hashable {
     ResourceDescriptor& operator=(ResourceDescriptor const& old);
     ResourceDescriptor(ResourceDescriptor&& old) noexcept;
 
-    inline const stringImpl& getPropertyListString() const {
-        return _properties;
-    }
     inline const stringImpl& getResourceName() const {
         return _resourceName;
     }
@@ -111,10 +109,6 @@ class ResourceDescriptor : public Hashable {
 
     const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback() const {
         return _onLoadCallback;
-    }
-
-    inline void setPropertyList(const stringImpl& propertyListString) {
-        _properties = propertyListString;
     }
 
     inline void setResourceLocation(const stringImpl& resourceLocation) {
@@ -157,8 +151,6 @@ class ResourceDescriptor : public Hashable {
     stringImpl _resourceLocation;
     /// Physical file name
     stringImpl _resourceName;
-    /// Comma separated list of properties
-    stringImpl _properties;
     bool _flag = false;
     bool _threaded = true;
     U32 _ID = 0;

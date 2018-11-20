@@ -107,11 +107,13 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
     _particleStateBlockHashDepth = particleRenderState.getHash();
 
     bool useTexture = _particleTexture != nullptr;
-    ResourceDescriptor particleShaderDescriptor(useTexture ? "particles.WithTexture" : "particles.NoTexture");
+    ResourceDescriptor particleShader(useTexture ? "particles.WithTexture" : "particles.NoTexture");
     if (useTexture){
-        particleShaderDescriptor.setPropertyList("HAS_TEXTURE");
+        ShaderProgramDescriptor particleShaderDescriptor;
+        particleShaderDescriptor._defines.push_back(std::make_pair("HAS_TEXTURE", true));
+        particleShader.setPropertyDescriptor(particleShaderDescriptor);
     }
-    _particleShader = CreateResource<ShaderProgram>(_parentCache, particleShaderDescriptor);
+    _particleShader = CreateResource<ShaderProgram>(_parentCache, particleShader);
 
     ResourceDescriptor particleDepthShaderDescriptor("particles.Depth");
     _particleDepthShader = CreateResource<ShaderProgram>(_parentCache, particleDepthShaderDescriptor);

@@ -112,12 +112,18 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     }
     ResourceDescriptor ssaoGenerate("SSAOPass.SSAOCalc");
     ssaoGenerate.setThreadedLoading(false);
-    ssaoGenerate.setPropertyList(Util::StringFormat("KERNEL_SIZE %d", kernelSize));
+
+    ShaderProgramDescriptor ssaoGenerateDescriptor;
+    ssaoGenerateDescriptor._defines.push_back(std::make_pair(Util::StringFormat("KERNEL_SIZE %d", kernelSize), true));
+    ssaoGenerate.setPropertyDescriptor(ssaoGenerateDescriptor);
     _ssaoGenerateShader = CreateResource<ShaderProgram>(cache, ssaoGenerate);
 
     ResourceDescriptor ssaoBlur("SSAOPass.SSAOBlur");
     ssaoBlur.setThreadedLoading(false);
-    ssaoBlur.setPropertyList(Util::StringFormat("BLUR_SIZE %d", ssaoNoiseSize));
+    ShaderProgramDescriptor ssaoBlurDescriptor;
+    ssaoBlurDescriptor._defines.push_back(std::make_pair(Util::StringFormat("BLUR_SIZE %d", ssaoNoiseSize), true));
+    ssaoBlur.setPropertyDescriptor(ssaoBlurDescriptor);
+
     _ssaoBlurShader = CreateResource<ShaderProgram>(cache, ssaoBlur);
     
     ResourceDescriptor ssaoApply("SSAOPass.SSAOApply");

@@ -70,7 +70,7 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
     if (!isSubMesh) {
         for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
             _materialInstance->addShaderModifier(RenderStagePass(RenderStage::SHADOW, static_cast<RenderPassType>(pass)), "TriangleStrip");
-            _materialInstance->setShaderDefines(RenderStagePass(RenderStage::SHADOW, static_cast<RenderPassType>(pass)), "USE_TRIANGLE_STRIP");
+            _materialInstance->addShaderDefine(RenderStagePass(RenderStage::SHADOW, static_cast<RenderPassType>(pass)), "USE_TRIANGLE_STRIP");
         }
     }
 

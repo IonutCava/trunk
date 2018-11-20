@@ -36,6 +36,7 @@
 #include "config.h"
 
 #include "Core/Resources/Headers/Resource.h"
+#include "Core/Resources/Headers/ResourceDescriptor.h"
 #include "Platform/Video/Headers/GraphicsResource.h"
 #include "Platform/Video/Headers/RenderAPIEnums.h"
 
@@ -124,7 +125,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     bool recompile();
     /// Add a define to the shader. The defined must not have been added
     /// previously
-    void addShaderDefine(const stringImpl& define);
+    void addShaderDefine(const stringImpl& define, bool appendPrefix);
     /// Remove a define from the shader. The defined must have been added
     /// previously
     void removeShaderDefine(const stringImpl& define);
@@ -237,8 +238,8 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     std::atomic_bool _linked;
     U32 _shaderProgramID;  //<not thread-safe. Make sure assignment is protected
     // with a mutex or something
-    /// A list of preprocessor defines
-    vector<stringImpl> _definesList;
+    /// A list of preprocessor defines (if the bool in the pair is true, #define is automatically added
+    vector<std::pair<stringImpl, bool>> _definesList;
     /// A list of atoms used by this program. (All stages are added toghether)
     vector<stringImpl> _usedAtoms;
 
@@ -266,6 +267,21 @@ namespace Attorney {
         friend class Divide::Kernel;
     };
 }
+
+class ShaderProgramDescriptor final : public PropertyDescriptor {
+public:
+    ShaderProgramDescriptor()
+        : PropertyDescriptor(DescriptorType::DESCRIPTOR_SHADER) {
+
+    }
+
+    ShaderProgramDescriptor* clone() const {
+        return MemoryManager_NEW ShaderProgramDescriptor(*this);
+    }
+
+    vector<std::pair<stringImpl, bool>> _defines;
+    
+};
 
 };  // namespace Divide
 #endif //_SHADER_PROGRAM_H_

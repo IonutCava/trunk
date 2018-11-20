@@ -385,11 +385,11 @@ glShaderProgram::glShaderProgramLoadInfo glShaderProgram::buildLoadInfo() {
     }
 
     // Get all of the preprocessor defines and add them to the general shader header for this program
-    for (const stringImpl& define : _definesList) {
+    for (auto define : _definesList) {
         // Placeholders are ignored
-        if (define.compare("DEFINE_PLACEHOLDER") != 0) {
-            // We manually add define dressing
-            loadInfo._header.append("#define " + define + "\n");
+        if (define.first.compare("DEFINE_PLACEHOLDER") != 0) {
+            // We manually add define dressing if needed
+            loadInfo._header.append((define.second ? "#define " : "") + define.first + "\n");
         }
     }
 

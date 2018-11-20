@@ -71,35 +71,33 @@ bool ShaderProgram::update(const U64 deltaTimeUS) {
 }
 
 /// Add a define to the shader. The defined must not have been added previously
-void ShaderProgram::addShaderDefine(const stringImpl& define) {
+void ShaderProgram::addShaderDefine(const stringImpl& define, bool appendPrefix) {
     // Find the string in the list of program defines
-    vector<stringImpl>::iterator it =
-        std::find(std::begin(_definesList), std::end(_definesList), define);
+    auto it = std::find(std::begin(_definesList), std::end(_definesList), std::make_pair(define, appendPrefix));
     // If we can't find it, we add it
     if (it == std::end(_definesList)) {
-        _definesList.push_back(define);
+        _definesList.push_back(std::make_pair(define, appendPrefix));
         _shouldRecompile = getState() == ResourceState::RES_LOADED;
     } else {
-        // If we did find it, we'll show an error message in debug builds about
-        // double add
-        Console::d_errorfn(Locale::get(_ID("ERROR_INVALID_DEFINE_ADD")),
-                           define.c_str(), name().c_str());
+        // If we did find it, we'll show an error message in debug builds about double add
+        Console::d_errorfn(Locale::get(_ID("ERROR_INVALID_DEFINE_ADD")), define.c_str(), name().c_str());
     }
 }
 
 /// Remove a define from the shader. The defined must have been added previously
 void ShaderProgram::removeShaderDefine(const stringImpl& define) {
     // Find the string in the list of program defines
-    vector<stringImpl>::iterator it =
-        std::find(std::begin(_definesList), std::end(_definesList), define);
+    auto it = std::find(std::begin(_definesList), std::end(_definesList), std::make_pair(define, true));
+        if (it == std::end(_definesList)) {
+            it = std::find(std::begin(_definesList), std::end(_definesList), std::make_pair(define, false));
+        }
     // If we find it, we remove it
     if (it != std::end(_definesList)) {
         _definesList.erase(it);
         _shouldRecompile = getState() == ResourceState::RES_LOADED;
     } else {
         // If we did not find it, we'll show an error message in debug builds
-        Console::d_errorfn(Locale::get(_ID("ERROR_INVALID_DEFINE_DELETE")),
-                           define.c_str(), name().c_str());
+        Console::d_errorfn(Locale::get(_ID("ERROR_INVALID_DEFINE_DELETE")), define.c_str(), name().c_str());
     }
 }
 

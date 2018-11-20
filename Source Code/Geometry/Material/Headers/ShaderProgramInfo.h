@@ -61,11 +61,12 @@ public:
 
     bool _customShader;
     ShaderProgram_ptr _shaderRef;
-    vector<stringImpl> _shaderDefines;
+    vector<std::pair<stringImpl, bool>> _shaderDefines;
 
 private:
     std::atomic<BuildStage> _shaderCompStage;
 };
+
 }; //namespace Divide
 
 #endif //_SHADER_PROGRAM_INFO_H_

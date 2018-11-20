@@ -37,7 +37,10 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
     g_shadowSettings = context.parent().platformContext().config().rendering.shadowMapping;
     ResourceDescriptor blurDepthMapShader(Util::StringFormat("blur.GaussBlur_%d_invocations", Config::Lighting::MAX_SPLITS_PER_LIGHT));
     blurDepthMapShader.setThreadedLoading(false);
-    blurDepthMapShader.setPropertyList(Util::StringFormat("GS_MAX_INVOCATIONS %d", Config::Lighting::MAX_SPLITS_PER_LIGHT));
+
+    ShaderProgramDescriptor shaderPropertyDescriptor;
+    shaderPropertyDescriptor._defines.push_back(std::make_pair(Util::StringFormat("GS_MAX_INVOCATIONS %d", Config::Lighting::MAX_SPLITS_PER_LIGHT), true));
+    blurDepthMapShader.setPropertyDescriptor(shaderPropertyDescriptor);
 
     _blurDepthMapShader = CreateResource<ShaderProgram>(context.parent().resourceCache(), blurDepthMapShader);
     _blurDepthMapConstants.set("layerCount", GFX::PushConstantType::INT, Config::Lighting::MAX_SPLITS_PER_LIGHT);

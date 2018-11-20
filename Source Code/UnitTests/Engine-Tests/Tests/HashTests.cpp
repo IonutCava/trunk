@@ -24,11 +24,9 @@ TEST(HashCombineResourceDescriptors)
 {
     ResourceDescriptor inputA("testDescriptor");
     inputA.setFlag(true);
-    inputA.setPropertyList("test,test");
 
     ResourceDescriptor inputB("testDescriptor");
     inputB.setFlag(true);
-    inputB.setPropertyList("test,test");
 
     size_t result1 = inputA.getHash();
     size_t result2 = inputB.getHash();

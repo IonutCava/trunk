@@ -181,18 +181,17 @@ class Material : public CachedResource {
 
     void addShaderModifier(const stringImpl& shaderModifier);
 
-    /// Shader defines, separated by commas, are added to the generated shader
-    /// The shader generator appends "#define " to the start of each define
-    /// For example, to define max light count and max shadow casters add this string:
-    ///"MAX_LIGHT_COUNT 4, MAX_SHADOW_CASTERS 2"
+    /// Shader defines, are added to the generated shader
+    /// addPrefix = true: The shader generator appends "#define " to the start of each define
+    /// For example, to define max light count and max shadow casters add these strings:
+    ///"MAX_LIGHT_COUNT 4" & "MAX_SHADOW_CASTERS 2"
     /// The above strings becomes, in the shader:
     ///#define MAX_LIGHT_COUNT 4
     ///#define MAX_SHADOW_CASTERS 2
-    void setShaderDefines(RenderPassType passType, const stringImpl& shaderDefines);
-    void setShaderDefines(RenderStage renderStage, const stringImpl& shaderDefines);
-    void setShaderDefines(RenderStagePass renderStagePass, const stringImpl& shaderDefines);
-
-    void setShaderDefines(const stringImpl& shaderDefines);
+    void addShaderDefine(RenderPassType passType, const stringImpl& shaderDefines, bool addPrefix = true);
+    void addShaderDefine(RenderStage renderStage, const stringImpl& shaderDefines, bool addPrefix = true);
+    void addShaderDefine(RenderStagePass renderStagePass, const stringImpl& shaderDefines, bool addPrefix = true);
+    void addShaderDefine(const stringImpl& shaderDefines, bool addPrefix = true);
 
     /// toggle multi-threaded shader loading on or off for this material
     void setShaderLoadThreaded(const bool state);

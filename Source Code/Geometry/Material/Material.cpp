@@ -111,9 +111,9 @@ Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descri
     setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::DEPTH_PASS), 1);
     setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::DEPTH_PASS), 2);
 
-    setShaderDefines(RenderStage::SHADOW, "SHADOW_PASS");
-    setShaderDefines(RenderPassType::DEPTH_PASS, "DEPTH_PASS");
-    setShaderDefines(RenderPassType::OIT_PASS, "OIT_PASS");
+    addShaderDefine(RenderStage::SHADOW, "SHADOW_PASS", true);
+    addShaderDefine(RenderPassType::DEPTH_PASS, "DEPTH_PASS", true);
+    addShaderDefine(RenderPassType::OIT_PASS, "OIT_PASS", true);
 }
 
 Material::~Material()
@@ -249,16 +249,10 @@ void Material::setShaderProgramInternal(const stringImpl& shader,
 
     ResourceDescriptor shaderDescriptor(shader.empty() ? "NULL" : shader);
 
-    if (!info._shaderDefines.empty()) {
-        stringstreamImpl ss;
-        for (stringImpl& shaderDefine : info._shaderDefines) {
-            ss << shaderDefine;
-            ss << ",";
-        }
-        ss << "DEFINE_PLACEHOLDER";
-        shaderDescriptor.setPropertyList(ss.str());
-    }
-
+    ShaderProgramDescriptor shaderPropertyDescriptor;
+    shaderPropertyDescriptor._defines = info._shaderDefines;
+    shaderPropertyDescriptor._defines.push_back(std::make_pair("DEFINE_PLACEHOLDER", false));
+    shaderDescriptor.setPropertyDescriptor(shaderPropertyDescriptor);
     shaderDescriptor.setThreadedLoading(_shaderThreadedLoad);
 
     // if we already have a different shader assigned ...
@@ -438,27 +432,27 @@ bool Material::computeShader(RenderStagePass renderStagePass, const bool compute
     if (_textures[slot0]) {
         // Bump mapping?
         if (_textures[to_base(ShaderProgram::TextureUsage::NORMALMAP)] &&  _bumpMethod != BumpMethod::NONE) {
-            setShaderDefines(renderStagePass, "COMPUTE_TBN");
+            addShaderDefine(renderStagePass, "COMPUTE_TBN");
             shader += ".Bump";  // Normal Mapping
             if (_bumpMethod == BumpMethod::PARALLAX) {
                 shader += ".Parallax";
-                setShaderDefines(renderStagePass, "USE_PARALLAX_MAPPING");
+                addShaderDefine(renderStagePass, "USE_PARALLAX_MAPPING");
             } else if (_bumpMethod == BumpMethod::RELIEF) {
                 shader += ".Relief";
-                setShaderDefines(renderStagePass, "USE_RELIEF_MAPPING");
+                addShaderDefine(renderStagePass, "USE_RELIEF_MAPPING");
             }
         } else {
             // Or simple texture mapping?
             shader += ".Texture";
         }
     } else {
-        setShaderDefines(renderStagePass, "SKIP_TEXTURES");
+        addShaderDefine(renderStagePass, "SKIP_TEXTURES");
         shader += ".NoTexture";
     }
 
     if (_textures[to_base(ShaderProgram::TextureUsage::SPECULAR)]) {
         shader += ".Specular";
-        setShaderDefines(renderStagePass, "USE_SPECULAR_MAP");
+        addShaderDefine(renderStagePass, "USE_SPECULAR_MAP");
     }
 
     updateTranslucency(false);
@@ -466,74 +460,74 @@ bool Material::computeShader(RenderStagePass renderStagePass, const bool compute
     switch (_translucencySource) {
         case TranslucencySource::OPACITY_MAP: {
             shader += ".OpacityMap";
-            setShaderDefines(renderStagePass, "USE_OPACITY_MAP");
+            addShaderDefine(renderStagePass, "USE_OPACITY_MAP");
         } break;
         case TranslucencySource::DIFFUSE: {
             shader += ".DiffuseAlpha";
-            setShaderDefines(renderStagePass, "USE_OPACITY_DIFFUSE");
+            addShaderDefine(renderStagePass, "USE_OPACITY_DIFFUSE");
         } break;
         case TranslucencySource::DIFFUSE_MAP: {
             shader += ".DiffuseMapAlpha";
-            setShaderDefines(renderStagePass, "USE_OPACITY_DIFFUSE_MAP");
+            addShaderDefine(renderStagePass, "USE_OPACITY_DIFFUSE_MAP");
         } break;
         default: break;
     };
 
     if (_translucencySource != TranslucencySource::COUNT && renderStagePass._passType != RenderPassType::OIT_PASS) {
         shader += ".AlphaDiscard";
-        setShaderDefines(renderStagePass, "USE_ALPHA_DISCARD");
+        addShaderDefine(renderStagePass, "USE_ALPHA_DISCARD");
     }
 
     if (isDoubleSided()) {
         shader += ".DoubleSided";
-        setShaderDefines(renderStagePass, "USE_DOUBLE_SIDED");
+        addShaderDefine(renderStagePass, "USE_DOUBLE_SIDED");
     }
 
     if (isRefractive()) {
         shader += ".Refractive";
-        setShaderDefines(renderStagePass, "IS_REFRACTIVE");
+        addShaderDefine(renderStagePass, "IS_REFRACTIVE");
     }
 
     if (isReflective()) {
         shader += ".Reflective";
-        setShaderDefines(renderStagePass, "IS_REFLECTIVE");
+        addShaderDefine(renderStagePass, "IS_REFLECTIVE");
     }
 
     if (!_context.parent().platformContext().config().rendering.shadowMapping.enabled) {
         shader += ".NoShadows";
-        setShaderDefines(renderStagePass, "DISABLE_SHADOW_MAPPING");
+        addShaderDefine(renderStagePass, "DISABLE_SHADOW_MAPPING");
     }
 
     // Add the GPU skinning module to the vertex shader?
     if (_hardwareSkinning) {
-        setShaderDefines(renderStagePass, "USE_GPU_SKINNING");
+        addShaderDefine(renderStagePass, "USE_GPU_SKINNING");
         shader += ",Skinned";  //<Use "," instead of "." will add a Vertex only property
     }
 
     switch (_shadingMode) {
         default:
         case ShadingMode::FLAT: {
-            setShaderDefines(renderStagePass, "USE_SHADING_FLAT");
+            addShaderDefine(renderStagePass, "USE_SHADING_FLAT");
             shader += ".Flat";
         } break;
         case ShadingMode::PHONG: {
-            setShaderDefines(renderStagePass, "USE_SHADING_PHONG");
+            addShaderDefine(renderStagePass, "USE_SHADING_PHONG");
             shader += ".Phong";
         } break;
         case ShadingMode::BLINN_PHONG: {
-            setShaderDefines(renderStagePass, "USE_SHADING_BLINN_PHONG");
+            addShaderDefine(renderStagePass, "USE_SHADING_BLINN_PHONG");
             shader += ".BlinnPhong";
         } break;
         case ShadingMode::TOON: {
-            setShaderDefines(renderStagePass, "USE_SHADING_TOON");
+            addShaderDefine(renderStagePass, "USE_SHADING_TOON");
             shader += ".Toon";
         } break;
         case ShadingMode::OREN_NAYAR: {
-            setShaderDefines(renderStagePass, "USE_SHADING_OREN_NAYAR");
+            addShaderDefine(renderStagePass, "USE_SHADING_OREN_NAYAR");
             shader += ".OrenNayar";
         } break;
         case ShadingMode::COOK_TORRANCE: {
-            setShaderDefines(renderStagePass, "USE_SHADING_COOK_TORRANCE");
+            addShaderDefine(renderStagePass, "USE_SHADING_COOK_TORRANCE");
             shader += ".CookTorrance";
         } break;
     }

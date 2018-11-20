@@ -48,16 +48,13 @@ PostFX::PostFX(GFXDevice& context, ResourceCache& cache)
 
     ResourceDescriptor postFXShader("postProcessing");
     postFXShader.setThreadedLoading(false);
-    postFXShader.setPropertyList(
-        Util::StringFormat("TEX_BIND_POINT_SCREEN %d, "
-            "TEX_BIND_POINT_NOISE %d, "
-            "TEX_BIND_POINT_BORDER %d, "
-            "TEX_BIND_POINT_UNDERWATER %d",
-            to_base(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN),
-            to_base(TexOperatorBindPoint::TEX_BIND_POINT_NOISE),
-            to_base(TexOperatorBindPoint::TEX_BIND_POINT_BORDER),
-            to_base(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER)).c_str());
 
+    ShaderProgramDescriptor postFXShaderDescriptor;
+    postFXShaderDescriptor._defines.push_back(std::make_pair(Util::StringFormat("TEX_BIND_POINT_SCREEN %d", to_base(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN)), true));
+    postFXShaderDescriptor._defines.push_back(std::make_pair(Util::StringFormat("TEX_BIND_POINT_NOISE %d", to_base(TexOperatorBindPoint::TEX_BIND_POINT_NOISE)), true));
+    postFXShaderDescriptor._defines.push_back(std::make_pair(Util::StringFormat("TEX_BIND_POINT_BORDER %d", to_base(TexOperatorBindPoint::TEX_BIND_POINT_BORDER)), true));
+    postFXShaderDescriptor._defines.push_back(std::make_pair(Util::StringFormat("TEX_BIND_POINT_UNDERWATER %d", to_base(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER)), true));
+    postFXShader.setPropertyDescriptor(postFXShaderDescriptor);
     _postProcessingShader = CreateResource<ShaderProgram>(cache, postFXShader);
     _drawConstants.set("_noiseTile", GFX::PushConstantType::FLOAT, 0.05f);
     _drawConstants.set("_noiseFactor", GFX::PushConstantType::FLOAT, 0.02f);

@@ -468,9 +468,10 @@ void Scene::addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree p
     // Load the rest of the terrain
     std::shared_ptr<TerrainDescriptor> ter = std::make_shared<TerrainDescriptor>((name + "_descriptor").c_str());
     ter->addVariable("terrainName", name.c_str());
-    ter->addVariable("heightmapLocation", pt.get<stringImpl>("heightmapLocation", Paths::g_heightmapLocation));
-    ter->addVariable("textureLocation", pt.get<stringImpl>("textureLocation", Paths::g_imagesLocation));
     ter->addVariable("heightmap", pt.get<stringImpl>("heightmap"));
+    ter->addVariable("heightmapLocation", pt.get<stringImpl>("heightmapLocation", Paths::g_heightmapLocation));
+    ter->addVariable("heightTexture", pt.get<stringImpl>("heightTexture", ter->getVariable("heightmap")));
+    ter->addVariable("textureLocation", pt.get<stringImpl>("textureLocation", Paths::g_imagesLocation));
     ter->addVariable("waterCaustics", pt.get<stringImpl>("waterCaustics"));
     ter->addVariable("underwaterAlbedoTexture", pt.get<stringImpl>("underwaterAlbedoTexture"));
     ter->addVariable("underwaterDetailTexture", pt.get<stringImpl>("underwaterDetailTexture"));

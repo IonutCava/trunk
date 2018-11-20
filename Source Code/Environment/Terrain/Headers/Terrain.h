@@ -72,8 +72,15 @@ struct TerrainTextureLayer {
     };
 
     inline void setBlendMaps(const Texture_ptr& texture)  { _blendMaps = texture; }
-    inline void setTileMaps(const Texture_ptr& texture)   { _tileMaps = texture; }
-    inline void setNormalMaps(const Texture_ptr& texture) { _normalMaps = texture; }
+    inline void setTileMaps(const Texture_ptr& texture, const vector<U8>& countPerLayer)   {
+        _tileMaps = texture;
+        _albedoCountPerLayer = countPerLayer;
+    }
+
+    inline void setNormalMaps(const Texture_ptr& texture, const vector<U8>& countPerLayer) {
+        _normalMaps = texture;
+        _detailCountPerLayer = countPerLayer;
+    }
 
     inline void setDiffuseScale(TerrainTextureChannel textureChannel, U8 layer, F32 scale) {
         _diffuseUVScale[layer][to_U32(textureChannel)]= scale;
@@ -94,9 +101,14 @@ struct TerrainTextureLayer {
     const Texture_ptr& normalMaps() const { return _normalMaps; }
 
     inline U8 layerCount() const { return _layerCount; }
+    inline U8 albedoCountPerLayer(U8 layer) const { assert(layer < _layerCount); return _albedoCountPerLayer[layer]; }
+    inline U8 detailCountPerLayer(U8 layer) const { assert(layer < _layerCount); return _detailCountPerLayer[layer]; }
 
    private:
     U8 _layerCount;
+    std::vector<U8> _albedoCountPerLayer;
+    std::vector<U8> _detailCountPerLayer;
+
     std::array<vec4<F32>, MAX_TEXTURE_LAYERS> _diffuseUVScale;
     std::array<vec4<F32>, MAX_TEXTURE_LAYERS> _detailUVScale;
     Texture_ptr _blendMaps;

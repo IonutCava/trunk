@@ -89,28 +89,28 @@ inline void Material::addShaderModifier(const stringImpl& shaderModifier) {
     }
 }
 
-inline void Material::setShaderDefines(RenderPassType passType, const stringImpl& shaderDefines) {
+inline void Material::addShaderDefine(RenderPassType passType, const stringImpl& shaderDefines, bool addPrefix) {
     for (U8 i = 0; i < to_U8(RenderStage::COUNT); ++i) {
-        setShaderDefines(RenderStagePass(static_cast<RenderStage>(i), passType), shaderDefines);
+        addShaderDefine(RenderStagePass(static_cast<RenderStage>(i), passType), shaderDefines, addPrefix);
     }
 }
 
-inline void Material::setShaderDefines(RenderStage renderStage, const stringImpl& shaderDefines) {
+inline void Material::addShaderDefine(RenderStage renderStage, const stringImpl& shaderDefines, bool addPrefix) {
     for (U8 i = 0; i < to_U8(RenderPassType::COUNT); ++i) {
-        setShaderDefines(RenderStagePass(renderStage, static_cast<RenderPassType>(i)), shaderDefines);
+        addShaderDefine(RenderStagePass(renderStage, static_cast<RenderPassType>(i)), shaderDefines, addPrefix);
     }
 }
 
-inline void Material::setShaderDefines(RenderStagePass renderStagePass, const stringImpl& shaderDefines) {
-    vector<stringImpl>& defines = shaderInfo(renderStagePass)._shaderDefines;
-    if (std::find(std::cbegin(defines), std::cend(defines), shaderDefines) == std::cend(defines)) {
-        defines.push_back(shaderDefines);
+inline void Material::addShaderDefine(RenderStagePass renderStagePass, const stringImpl& shaderDefines, bool addPrefix) {
+    auto& defines = shaderInfo(renderStagePass)._shaderDefines;
+    if (std::find(std::cbegin(defines), std::cend(defines), std::make_pair(shaderDefines, addPrefix)) == std::cend(defines)) {
+        defines.push_back(std::make_pair(shaderDefines, addPrefix));
     }
 }
 
-inline void Material::setShaderDefines(const stringImpl& shaderDefines) {
+inline void Material::addShaderDefine(const stringImpl& shaderDefines, bool addPrefix) {
     for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
-        setShaderDefines(RenderStagePass::stagePass(i), shaderDefines);
+        addShaderDefine(RenderStagePass::stagePass(i), shaderDefines, addPrefix);
     }
 }
 

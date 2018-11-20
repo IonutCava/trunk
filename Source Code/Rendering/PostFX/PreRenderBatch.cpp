@@ -150,7 +150,11 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
 
     ResourceDescriptor toneMapAdaptive("toneMap.Adaptive");
     toneMapAdaptive.setThreadedLoading(false);
-    toneMapAdaptive.setPropertyList("USE_ADAPTIVE_LUMINANCE");
+
+    ShaderProgramDescriptor toneMapAdaptiveDescriptor;
+    toneMapAdaptiveDescriptor._defines.push_back(std::make_pair("USE_ADAPTIVE_LUMINANCE", true));
+    toneMapAdaptive.setPropertyDescriptor(toneMapAdaptiveDescriptor);
+
     _toneMapAdaptive = CreateResource<ShaderProgram>(_resCache, toneMapAdaptive);
 
     ResourceDescriptor luminanceCalc("luminanceCalc");

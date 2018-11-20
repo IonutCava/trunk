@@ -9,11 +9,9 @@ namespace Divide {
 
 template <>
 CachedResource_ptr ImplResourceLoader<Box3D>::operator()() {
-    D64 size = 1.0;
-    if (!_descriptor.getPropertyListString().empty()) {
-        size = atof(_descriptor.getPropertyListString().c_str());  //<should work
-    }
-
+    U32 sizeTemp = _descriptor.getID();
+    D64 size = sizeTemp == 0 ? 1.0 : to_D64(sizeTemp);
+   
     std::shared_ptr<Box3D> ptr(MemoryManager_NEW Box3D(_context.gfx(),
                                                        _cache,
                                                        _loadingDescriptorHash,

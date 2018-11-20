@@ -3,90 +3,133 @@
 <heightmapLocation>terrain</heightmapLocation>
 <heightmap>warTerrain.raw</heightmap>
 <is16Bit>true</is16Bit>
+<heightTexture>warTerrain_preview.png</heightTexture>
 <terrainWidth>2048</terrainWidth>
 <terrainHeight>2048</terrainHeight>
-<altitudeRange min = "-33.6" max = "68.8" />
+<altitudeRange min="-33.5999985" max="68.8000031"/>
 <scale>1</scale>
 <heightFactor>1</heightFactor>
-<position x="0" y="0" z="0" />
-<active>true</active>
-<components>Rigidbody</addToPhysics>
-<!-- chunk size defines the dimensions of a quadtree chunk of vertices in the format NxN
-e.g. Specifying a 256 chunk size for a 1024x1024 terrain will generate 16 leafs in the quadtree-->
+<position x="0" y="0" z="0"/>
 <targetChunkSize>256</targetChunkSize>
 <textureLocation>misc_images</textureLocation>
 <waterCaustics>terrain_water_caustics.jpg</waterCaustics>
 <underwaterAlbedoTexture>sandfloor009a.jpg</underwaterAlbedoTexture>
 <underwaterDetailTexture>terrain_detail_NM.png</underwaterDetailTexture>
 <underwaterDiffuseScale>100</underwaterDiffuseScale>
-<!-- density is measured as vegetation units per terrain unit -->
-<vegetation grassDensity="1.25" treeDensity="0" grassScale="0.175" treeScale="0.7">
-<vegetationTextureLocation>misc_images</vegetationTextureLocation>  
-	<map>warTerrainAlpha_Alpha1.tga</map>
-	<grassBillboard1>billboardgrass0001.png</grassBillboard1>
-	<grassBillboard2>grass_billboards1.png</grassBillboard2>
-	<grassBillboard3>grass_billboards2.png</grassBillboard3>
-	<grassBillboard4>grass_billboards3.png</grassBillboard4>
+<vegetation grassDensity="1.25" treeDensity="0" grassScale="0.174999997" treeScale="0.699999988">
+    <vegetationTextureLocation>misc_images</vegetationTextureLocation>
+    <map>warTerrainAlpha_Alpha1.tga</map>
+    <grassBillboard1>billboardgrass0001.png</grassBillboard1>
+    <grassBillboard2>grass_billboards1.png</grassBillboard2>
+    <grassBillboard3>grass_billboards2.png</grassBillboard3>
+    <grassBillboard4>grass_billboards3.png</grassBillboard4>
 </vegetation>
 <textureLayers>
-	<layer0>
-		<blendMap>warTerrainAlpha_Alpha1.tga</blendMap>
-		<redAlbedo>riverdalegrass.jpg</redAlbedo>
-		<redDetail>riverdalegrass_bump.jpg</redDetail>
-		<greenAlbedo>riverdalegrassdead.jpg</greenAlbedo>
-		<greenDetail>riverdalegrass_bump.jpg</greenDetail>
-		<blueAlbedo>redsand1a.jpg</blueAlbedo>
-		<blueDetail>redsand1a_bump.jpg</blueDetail>
-		<alphaAlbedo>rock3.jpg</alphaAlbedo>
-		<alphaDetail>rock3_bump.jpg</alphaDetail>
-		<redDiffuseScale>250.0</redDiffuseScale>
-		<redDetailScale>650.0</redDetailScale>
-		<greenDiffuseScale>250.0</greenDiffuseScale>
-		<greenDetailScale>650.0</greenDetailScale>
-		<blueDiffuseScale>250.0</blueDiffuseScale>
-		<blueDetailScale>650.0</blueDetailScale>
-		<alphaDiffuseScale>250.0</alphaDiffuseScale>
-		<alphaDetailScale>650.0</alphaDetailScale>
-	</layer0>
-	<layer1>
-		<blendMap>warTerrainAlpha_Alpha2.tga</blendMap>
-		<redAlbedo>yellowsand1.jpg</redAlbedo>
-		<redDetail>terrain_detail_NM.png</redDetail>
-		<greenAlbedo>grass1-dry.jpg</greenAlbedo>
-		<greenDetail>hillside_bump.jpg</greenDetail>
-		<blueAlbedo>rocks1-grey.jpg</blueAlbedo>
-		<blueDetail>rocks1_bump.jpg</blueDetail>
-		<alphaAlbedo>murcim049.jpg</alphaAlbedo>
-		<alphaDetail>terrain_detail_NM.png</alphaDetail>
-		<redDiffuseScale>250.0</redDiffuseScale>
-		<redDetailScale>1000.0</redDetailScale>
-		<greenDiffuseScale>250.0</greenDiffuseScale>
-		<greenDetailScale>250.0</greenDetailScale>
-		<blueDiffuseScale>250.0</blueDiffuseScale>
-		<blueDetailScale>250.0</blueDetailScale>
-		<alphaDiffuseScale>250.0</alphaDiffuseScale>
-		<alphaDetailScale>1000.0</alphaDetailScale>
-	</layer1>
+    <layer0>
+        <blendMap>warTerrainAlpha_Alpha1.tga</blendMap>
+        <redAlbedo>riverdalegrass.jpg</redAlbedo>
+        <redDiffuseScale>250</redDiffuseScale>
+        <greenAlbedo>riverdalegrassdead.jpg</greenAlbedo>
+        <greenDiffuseScale>250</greenDiffuseScale>
+        <blueAlbedo>redsand1a.jpg</blueAlbedo>
+        <blueDiffuseScale>250</blueDiffuseScale>
+        <alphaAlbedo>rock3.jpg</alphaAlbedo>
+        <alphaDiffuseScale>250</alphaDiffuseScale>
+        <redDetail>riverdalegrass_bump.jpg</redDetail>
+        <redDetailScale>650</redDetailScale>
+        <greenDetail>riverdalegrass_bump.jpg</greenDetail>
+        <greenDetailScale>650</greenDetailScale>
+        <blueDetail>redsand1a_bump.jpg</blueDetail>
+        <blueDetailScale>650</blueDetailScale>
+        <alphaDetail>rock3_bump.jpg</alphaDetail>
+        <alphaDetailScale>650</alphaDetailScale>
+    </layer0>
+    <layer1>
+        <blendMap>warTerrainAlpha_Alpha2.tga</blendMap>
+        <redAlbedo>yellowsand1.jpg</redAlbedo>
+        <redDiffuseScale>250</redDiffuseScale>
+        <greenAlbedo>grass1-dry.jpg</greenAlbedo>
+        <greenDiffuseScale>250</greenDiffuseScale>
+        <blueAlbedo>rocks1-grey.jpg</blueAlbedo>
+        <blueDiffuseScale>250</blueDiffuseScale>
+        <alphaAlbedo>murcim049.jpg</alphaAlbedo>
+        <alphaDiffuseScale>250</alphaDiffuseScale>
+        <redDetail>terrain_detail_NM.png</redDetail>
+        <redDetailScale>1000</redDetailScale>
+        <greenDetail>hillside_bump.jpg</greenDetail>
+        <greenDetailScale>250</greenDetailScale>
+        <blueDetail>rocks1_bump.jpg</blueDetail>
+        <blueDetailScale>250</blueDetailScale>
+        <alphaDetail>terrain_detail_NM.png</alphaDetail>
+        <alphaDetailScale>1000</alphaDetailScale>
+    </layer1>
 </textureLayers>
+<model>Terrain</model>
+<NAVIGATION/>
 <TRANSFORM>
     <Transform>
-        <position x="-50" y="0" z="-50"/>
-        <orientation x="0" y="0" z="-90"/>
-        <scale x="100" y="100" z="100"/>
+        <position x="0" y="0" z="0"/>
+        <orientation x="0" y="0" z="0"/>
+        <scale x="1" y="1" z="1"/>
     </Transform>
-    <WorldMat 00="100" 01="0" 02="0" 03="0" 10="0" 11="5.96046448e-06" 12="99.9999924" 13="0" 20="0" 21="-99.9999924" 22="5.96046448e-06" 23="0" 30="-50" 31="0" 32="-50" 33="1"/>
+    <WorldMat 00="1" 01="0" 02="0" 03="0" 10="0" 11="1" 12="0" 13="0" 20="0" 21="0" 22="1" 23="0" 30="0" 31="0" 32="0" 33="1"/>
 </TRANSFORM>
 <BOUNDS/>
 <RENDERING>
     <Material>
-        <colour r="0" g="1" b="0" a="1"/>
-        <emissive r="0" g="0.100000001" b="0"/>
-        <specular r="0.800000012" g="0.800000012" b="0.800000012"/>
-        <shininess>50</shininess>
+        <colour r="0.5" g="0.5" b="0.5" a="1"/>
+        <emissive r="0" g="0" b="0"/>
+        <specular r="0.100000001" g="0.100000001" b="0.100000001"/>
+        <shininess>20</shininess>
         <doubleSided>false</doubleSided>
         <bumpMethod>NONE</bumpMethod>
         <shadingMode>BLINN_PHONG</shadingMode>
-        <parallaxFactor>0.00999999978</parallaxFactor>
+        <parallaxFactor>1</parallaxFactor>
+        <texture>
+            <UNIT0>
+                <name>terrain_water_caustics.jpg</name>
+                <path>assets/misc_images</path>
+                <MapU>REPEAT</MapU>
+                <MapV>REPEAT</MapV>
+                <MapW>REPEAT</MapW>
+                <minFilter>LINEAR</minFilter>
+                <magFilter>LINEAR</magFilter>
+                <anisotropy>8</anisotropy>
+            </UNIT0>
+            <UNIT1>
+                <name>sandfloor009a.jpg</name>
+                <path>assets/misc_images</path>
+                <usage>TEX_OP_REPLACE</usage>
+                <MapU>REPEAT</MapU>
+                <MapV>REPEAT</MapV>
+                <MapW>REPEAT</MapW>
+                <minFilter>LINEAR</minFilter>
+                <magFilter>LINEAR</magFilter>
+                <anisotropy>8</anisotropy>
+            </UNIT1>
+            <NORMALMAP>
+                <name>terrain_detail_NM.png</name>
+                <path>assets/misc_images</path>
+                <MapU>REPEAT</MapU>
+                <MapV>REPEAT</MapV>
+                <MapW>REPEAT</MapW>
+                <minFilter>LINEAR</minFilter>
+                <magFilter>LINEAR</magFilter>
+                <anisotropy>8</anisotropy>
+            </NORMALMAP>
+            <OPACITY>
+                <name>warTerrain_preview.png</name>
+                <path>assets/terrain</path>
+                <MapU>CLAMP</MapU>
+                <MapV>CLAMP</MapV>
+                <MapW>CLAMP</MapW>
+                <minFilter>LINEAR</minFilter>
+                <magFilter>LINEAR</magFilter>
+                <anisotropy>0</anisotropy>
+            </OPACITY>
+        </texture>
     </Material>
 </RENDERING>
 <NETWORKING/>
+<RIGID_BODY/>
+<OBJECT3D/>
