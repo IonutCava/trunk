@@ -28,9 +28,7 @@ Terrain::Terrain(GFXDevice& context, ResourceCache& parentCache, size_t descript
       _plane(nullptr),
       _shaderData(nullptr),
       _drawBBoxes(false),
-      _chunkSize(1),
-      _waterHeight(0.0f),
-      _altitudeRange(0.0f, 1.0f)
+      _waterHeight(0.0f)
 {
 }
 
@@ -74,18 +72,18 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
                                                         vec2<U32>(0, Terrain::MAX_RENDER_NODES),
                                                         *_shaderData);
 
-    sgn.get<TransformComponent>()->setPosition(_offsetPosition);
+    sgn.get<TransformComponent>()->setPosition(_descriptor->getPosition());
     sgn.get<RigidBodyComponent>()->physicsGroup(PhysicsGroup::GROUP_STATIC);
 
     SceneNode::postLoad(sgn);
 }
 
 void Terrain::buildQuadtree() {
-    reserveTriangleCount((_terrainDimensions.x - 1) * (_terrainDimensions.y - 1) * 2);
+    reserveTriangleCount((_descriptor->getDimensions().x - 1) * (_descriptor->getDimensions().y - 1) * 2);
     _terrainQuadtree.Build(_context,
                            _boundingBox,
-                           vec2<U32>(_terrainDimensions.x, _terrainDimensions.y),
-                           _chunkSize,
+                           vec2<U32>(_descriptor->getDimensions().x, _descriptor->getDimensions().y),
+                           _descriptor->getChunkSize(),
                            this);
 
     // The terrain's final bounding box is the QuadTree's root bounding box
@@ -141,7 +139,7 @@ bool Terrain::onRender(SceneGraphNode& sgn,
         if (tessellator.getEye() != newEye) {
             tessellator.createTree(newEye,
                                    vec3<F32>(0),
-                                   _terrainDimensions);
+                                   _descriptor->getDimensions());
             tessellator.updateRenderData();
         }
 
@@ -264,10 +262,10 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
 vec3<F32> Terrain::getPositionFromGlobal(F32 x, F32 z) const {
     x -= _boundingBox.getCenter().x;
     z -= _boundingBox.getCenter().z;
-    F32 xClamp = (0.5f * _terrainDimensions.x) + x;
-    F32 zClamp = (0.5f * _terrainDimensions.y) - z;
-    xClamp /= _terrainDimensions.x;
-    zClamp /= _terrainDimensions.y;
+    F32 xClamp = (0.5f * _descriptor->getDimensions().x) + x;
+    F32 zClamp = (0.5f * _descriptor->getDimensions().y) - z;
+    xClamp /= _descriptor->getDimensions().x;
+    zClamp /= _descriptor->getDimensions().y;
     zClamp = 1 - zClamp;
     vec3<F32> temp = getPosition(xClamp, zClamp);
 
@@ -277,18 +275,18 @@ vec3<F32> Terrain::getPositionFromGlobal(F32 x, F32 z) const {
 vec3<F32> Terrain::getPosition(F32 x_clampf, F32 z_clampf) const {
     assert(!(x_clampf < .0f || z_clampf < .0f || x_clampf > 1.0f || z_clampf > 1.0f));
 
-    vec2<F32> posF(x_clampf * _terrainDimensions.x,
-                   z_clampf * _terrainDimensions.y);
+    vec2<F32> posF(x_clampf * _descriptor->getDimensions().x,
+                   z_clampf * _descriptor->getDimensions().y);
     vec2<I32> posI(to_I32(posF.x), to_I32(posF.y));
     vec2<F32> posD(posF.x - posI.x, posF.y - posI.y);
 
-    if (posI.x >= (I32)_terrainDimensions.x - 1)
-        posI.x = _terrainDimensions.x - 2;
-    if (posI.y >= (I32)_terrainDimensions.y - 1)
-        posI.y = _terrainDimensions.y - 2;
+    if (posI.x >= (I32)_descriptor->getDimensions().x - 1)
+        posI.x = _descriptor->getDimensions().x - 2;
+    if (posI.y >= (I32)_descriptor->getDimensions().y - 1)
+        posI.y = _descriptor->getDimensions().y - 2;
 
-    assert(posI.x >= 0 && posI.x < to_I32(_terrainDimensions.x) - 1 &&
-           posI.y >= 0 && posI.y < to_I32(_terrainDimensions.y) - 1);
+    assert(posI.x >= 0 && posI.x < to_I32(_descriptor->getDimensions().x) - 1 &&
+           posI.y >= 0 && posI.y < to_I32(_descriptor->getDimensions().y) - 1);
 
     vec3<F32> pos(
         _boundingBox.getMin().x +
@@ -301,13 +299,13 @@ vec3<F32> Terrain::getPosition(F32 x_clampf, F32 z_clampf) const {
         return _physicsVerts[index]._position.y;
     };
 
-    pos.y = height(TER_COORD(posI.x, posI.y, to_I32(_terrainDimensions.x))) *
+    pos.y = height(TER_COORD(posI.x, posI.y, to_I32(_descriptor->getDimensions().x))) *
             (1.0f - posD.x) * (1.0f - posD.y) + 
-            height(TER_COORD(posI.x + 1, posI.y, to_I32(_terrainDimensions.x))) *
+            height(TER_COORD(posI.x + 1, posI.y, to_I32(_descriptor->getDimensions().x))) *
             posD.x * (1.0f - posD.y) +
-            height(TER_COORD(posI.x, posI.y + 1, to_I32(_terrainDimensions.x))) *
+            height(TER_COORD(posI.x, posI.y + 1, to_I32(_descriptor->getDimensions().x))) *
             (1.0f - posD.x) * posD.y +
-            height(TER_COORD(posI.x + 1, posI.y + 1,to_I32(_terrainDimensions.x))) *
+            height(TER_COORD(posI.x + 1, posI.y + 1,to_I32(_descriptor->getDimensions().x))) *
             posD.x * posD.y;
 
     return pos;
@@ -316,27 +314,27 @@ vec3<F32> Terrain::getPosition(F32 x_clampf, F32 z_clampf) const {
 vec3<F32> Terrain::getNormal(F32 x_clampf, F32 z_clampf) const {
     assert(!(x_clampf < .0f || z_clampf < .0f || x_clampf > 1.0f || z_clampf > 1.0f));
 
-    vec2<F32> posF(x_clampf * _terrainDimensions.x, z_clampf * _terrainDimensions.y);
+    vec2<F32> posF(x_clampf * _descriptor->getDimensions().x, z_clampf * _descriptor->getDimensions().y);
 
-    vec2<I32> posI(to_I32(x_clampf * _terrainDimensions.x), to_I32(z_clampf * _terrainDimensions.y));
+    vec2<I32> posI(to_I32(x_clampf * _descriptor->getDimensions().x), to_I32(z_clampf * _descriptor->getDimensions().y));
 
     vec2<F32> posD(posF.x - posI.x, posF.y - posI.y);
 
-    if (posI.x >= to_I32(_terrainDimensions.x) - 1) {
-        posI.x = to_I32(_terrainDimensions.x) - 2;
+    if (posI.x >= to_I32(_descriptor->getDimensions().x) - 1) {
+        posI.x = to_I32(_descriptor->getDimensions().x) - 2;
     }
-    if (posI.y >= to_I32(_terrainDimensions.y) - 1) {
-        posI.y = to_I32(_terrainDimensions.y) - 2;
+    if (posI.y >= to_I32(_descriptor->getDimensions().y) - 1) {
+        posI.y = to_I32(_descriptor->getDimensions().y) - 2;
     }
-    assert(posI.x >= 0 && posI.x < to_I32(_terrainDimensions.x) - 1 &&
-           posI.y >= 0 && posI.y < to_I32(_terrainDimensions.y) - 1);
+    assert(posI.x >= 0 && posI.x < to_I32(_descriptor->getDimensions().x) - 1 &&
+           posI.y >= 0 && posI.y < to_I32(_descriptor->getDimensions().y) - 1);
 
     vec3<F32> normals[4];
 
-    Util::UNPACK_VEC3(_physicsVerts[TER_COORD(posI.x, posI.y, to_I32(_terrainDimensions.x))]._normal, normals[0]);
-    Util::UNPACK_VEC3(_physicsVerts[TER_COORD(posI.x + 1, posI.y, to_I32(_terrainDimensions.x))]._normal, normals[1]);
-    Util::UNPACK_VEC3(_physicsVerts[TER_COORD(posI.x, posI.y + 1, to_I32(_terrainDimensions.x))]._normal, normals[2]);
-    Util::UNPACK_VEC3(_physicsVerts[TER_COORD(posI.x + 1, posI.y + 1, to_I32(_terrainDimensions.x))]._normal, normals[3]);
+    Util::UNPACK_VEC3(_physicsVerts[TER_COORD(posI.x, posI.y, to_I32(_descriptor->getDimensions().x))]._normal, normals[0]);
+    Util::UNPACK_VEC3(_physicsVerts[TER_COORD(posI.x + 1, posI.y, to_I32(_descriptor->getDimensions().x))]._normal, normals[1]);
+    Util::UNPACK_VEC3(_physicsVerts[TER_COORD(posI.x, posI.y + 1, to_I32(_descriptor->getDimensions().x))]._normal, normals[2]);
+    Util::UNPACK_VEC3(_physicsVerts[TER_COORD(posI.x + 1, posI.y + 1, to_I32(_descriptor->getDimensions().x))]._normal, normals[3]);
 
     return normals[0] * (1.0f - posD.x) * (1.0f - posD.y) +
            normals[1] * posD.x * (1.0f - posD.y) +
@@ -347,33 +345,115 @@ vec3<F32> Terrain::getNormal(F32 x_clampf, F32 z_clampf) const {
 vec3<F32> Terrain::getTangent(F32 x_clampf, F32 z_clampf) const {
     assert(!(x_clampf < .0f || z_clampf < .0f || x_clampf > 1.0f || z_clampf > 1.0f));
 
-    vec2<F32> posF(x_clampf * _terrainDimensions.x, z_clampf * _terrainDimensions.y);
-    vec2<I32> posI(to_I32(x_clampf * _terrainDimensions.x), to_I32(z_clampf * _terrainDimensions.y));
+    vec2<F32> posF(x_clampf * _descriptor->getDimensions().x, z_clampf * _descriptor->getDimensions().y);
+    vec2<I32> posI(to_I32(x_clampf * _descriptor->getDimensions().x), to_I32(z_clampf * _descriptor->getDimensions().y));
     vec2<F32> posD(posF.x - posI.x, posF.y - posI.y);
 
-    if (posI.x >= to_I32(_terrainDimensions.x) - 1) {
-        posI.x = to_I32(_terrainDimensions.x) - 2;
+    if (posI.x >= to_I32(_descriptor->getDimensions().x) - 1) {
+        posI.x = to_I32(_descriptor->getDimensions().x) - 2;
     }
 
-    if (posI.y >= to_I32(_terrainDimensions.y) - 1) {
-        posI.y = to_I32(_terrainDimensions.y) - 2;
+    if (posI.y >= to_I32(_descriptor->getDimensions().y) - 1) {
+        posI.y = to_I32(_descriptor->getDimensions().y) - 2;
     }
 
-    assert(posI.x >= 0 && posI.x < to_I32(_terrainDimensions.x) - 1 &&
-           posI.y >= 0 && posI.y < to_I32(_terrainDimensions.y) - 1);
+    assert(posI.x >= 0 && posI.x < to_I32(_descriptor->getDimensions().x) - 1 &&
+           posI.y >= 0 && posI.y < to_I32(_descriptor->getDimensions().y) - 1);
 
     vec3<F32> tangents[4];
 
-    Util::UNPACK_VEC3(_physicsVerts[TER_COORD(posI.x, posI.y, to_I32(_terrainDimensions.x))]._tangent, tangents[0]);
-    Util::UNPACK_VEC3(_physicsVerts[TER_COORD(posI.x + 1, posI.y, to_I32(_terrainDimensions.x))]._tangent, tangents[1]);
-    Util::UNPACK_VEC3(_physicsVerts[TER_COORD(posI.x, posI.y + 1, to_I32(_terrainDimensions.x))]._tangent, tangents[2]);
-    Util::UNPACK_VEC3(_physicsVerts[TER_COORD(posI.x + 1, posI.y + 1, to_I32(_terrainDimensions.x))]._tangent, tangents[3]);
+    Util::UNPACK_VEC3(_physicsVerts[TER_COORD(posI.x, posI.y, to_I32(_descriptor->getDimensions().x))]._tangent, tangents[0]);
+    Util::UNPACK_VEC3(_physicsVerts[TER_COORD(posI.x + 1, posI.y, to_I32(_descriptor->getDimensions().x))]._tangent, tangents[1]);
+    Util::UNPACK_VEC3(_physicsVerts[TER_COORD(posI.x, posI.y + 1, to_I32(_descriptor->getDimensions().x))]._tangent, tangents[2]);
+    Util::UNPACK_VEC3(_physicsVerts[TER_COORD(posI.x + 1, posI.y + 1, to_I32(_descriptor->getDimensions().x))]._tangent, tangents[3]);
 
     return tangents[0] * (1.0f - posD.x) * (1.0f - posD.y) +
            tangents[1] * posD.x * (1.0f - posD.y) +
            tangents[2] * (1.0f - posD.x) * posD.y +
            tangents[3] * posD.x * posD.y;
 }
+
+vec2<U16> Terrain::getDimensions() const {
+    return _descriptor->getDimensions();
+}
+
+void Terrain::saveToXML(boost::property_tree::ptree& pt) const {
+
+    pt.put("heightmapLocation", _descriptor->getVariable("heightmapLocation"));
+    pt.put("heightmap", _descriptor->getVariable("heightmap"));
+    pt.put("is16Bit", _descriptor->is16Bit());
+    pt.put("terrainWidth", _descriptor->getDimensions().width);
+    pt.put("terrainHeight", _descriptor->getDimensions().height);
+    pt.put("altitudeRange.<xmlattr>.min", _descriptor->getAltitudeRange().min);
+    pt.put("altitudeRange.<xmlattr>.max", _descriptor->getAltitudeRange().max);
+    pt.put("scale", _descriptor->getScale().x);
+    pt.put("heightFactor", _descriptor->getScale().y);
+    pt.put("position.<xmlattr>.x", _descriptor->getPosition().x);
+    pt.put("position.<xmlattr>.y", _descriptor->getPosition().y);
+    pt.put("position.<xmlattr>.z", _descriptor->getPosition().z);
+    pt.put("targetChunkSize", _descriptor->getChunkSize());
+    pt.put("textureLocation", _descriptor->getVariable("textureLocation"));
+    pt.put("waterCaustics", _descriptor->getVariable("waterCaustics"));
+    pt.put("underwaterAlbedoTexture", _descriptor->getVariable("underwaterAlbedoTexture"));
+    pt.put("underwaterDetailTexture", _descriptor->getVariable("underwaterDetailTexture"));
+    pt.put("underwaterDiffuseScale", _descriptor->getVariablef("underwaterDiffuseScale"));
+    pt.put("vegetation.<xmlattr>.grassDensity", _descriptor->getGrassDensity());
+    pt.put("vegetation.<xmlattr>.treeDensity", _descriptor->getTreeDensity());
+    pt.put("vegetation.<xmlattr>.grassScale", _descriptor->getGrassScale());
+    pt.put("vegetation.<xmlattr>.treeScale", _descriptor->getTreeScale());
+    pt.put("vegetation.vegetationTextureLocation", _descriptor->getVariable("grassMapLocation"));
+    pt.put("vegetation.map", _descriptor->getVariable("grassMap"));
+    if (!_descriptor->getVariable("grassBillboard1").empty()) {
+        pt.put("vegetation.grassBillboard1", _descriptor->getVariable("grassBillboard1"));
+    }
+    if (!_descriptor->getVariable("grassBillboard2").empty()) {
+        pt.put("vegetation.grassBillboard2", _descriptor->getVariable("grassBillboard2"));
+    }
+    if (!_descriptor->getVariable("grassBillboard3").empty()) {
+        pt.put("vegetation.grassBillboard3", _descriptor->getVariable("grassBillboard3"));
+    }
+    if (!_descriptor->getVariable("grassBillboard4").empty()) {
+        pt.put("vegetation.grassBillboard4", _descriptor->getVariable("grassBillboard4"));
+    }
+    
+    const stringImpl layerPrefix = "textureLayers.layer";
+    for (U8 layer = 0; layer < _terrainTextures->layerCount(); ++layer) {
+        stringImpl crtLayerPrefix = layerPrefix + to_stringImpl(layer);
+        pt.put(crtLayerPrefix + ".blendMap", _terrainTextures->blendMaps()->getDescriptor().sourceFileList()[layer]);
+
+        //R
+        pt.put(crtLayerPrefix + ".redAlbedo", _terrainTextures->tileMaps()->getDescriptor().sourceFileList()[layer + 0]);
+        pt.put(crtLayerPrefix + ".redDetail", _terrainTextures->normalMaps()->getDescriptor().sourceFileList()[layer + 0]);
+        pt.put(crtLayerPrefix + ".redDiffuseScale", _terrainTextures->getDiffuseScales()[layer].r);
+        pt.put(crtLayerPrefix + ".redDetailScale", _terrainTextures->getDetailScales()[layer].r);
+
+        //G
+        pt.put(crtLayerPrefix + ".greenAlbedo", _terrainTextures->tileMaps()->getDescriptor().sourceFileList()[layer + 1]);
+        pt.put(crtLayerPrefix + ".greenDetail", _terrainTextures->normalMaps()->getDescriptor().sourceFileList()[layer + 1]);
+        pt.put(crtLayerPrefix + ".greenDiffuseScale", _terrainTextures->getDiffuseScales()[layer].g);
+        pt.put(crtLayerPrefix + ".greenDetailScale", _terrainTextures->getDetailScales()[layer].g);
+
+        //B
+        pt.put(crtLayerPrefix + ".blueAlbedo", _terrainTextures->tileMaps()->getDescriptor().sourceFileList()[layer + 2]);
+        pt.put(crtLayerPrefix + ".blueDetail", _terrainTextures->normalMaps()->getDescriptor().sourceFileList()[layer + 2]);
+        pt.put(crtLayerPrefix + ".blueDiffuseScale", _terrainTextures->getDiffuseScales()[layer].b);
+        pt.put(crtLayerPrefix + ".blueDetailScale", _terrainTextures->getDetailScales()[layer].b);
+
+        //A
+        pt.put(crtLayerPrefix + ".alphaAlbedo", _terrainTextures->tileMaps()->getDescriptor().sourceFileList()[layer + 3]);
+        pt.put(crtLayerPrefix + ".alphaDetail", _terrainTextures->normalMaps()->getDescriptor().sourceFileList()[layer + 3]);
+        pt.put(crtLayerPrefix + ".alphaDiffuseScale", _terrainTextures->getDiffuseScales()[layer].a);
+        pt.put(crtLayerPrefix + ".alphaDetailScale", _terrainTextures->getDetailScales()[layer].a);
+    }
+
+    Object3D::saveToXML(pt);
+}
+
+void Terrain::loadFromXML(const boost::property_tree::ptree& pt) {
+ 
+    Object3D::loadFromXML(pt);
+}
+
 
 TerrainTextureLayer::~TerrainTextureLayer()
 {

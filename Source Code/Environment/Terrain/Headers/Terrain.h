@@ -135,12 +135,13 @@ class Terrain : public Object3D {
     vec3<F32> getPosition(F32 x_clampf, F32 z_clampf) const;
     vec3<F32> getNormal(F32 x_clampf, F32 z_clampf) const;
     vec3<F32> getTangent(F32 x_clampf, F32 z_clampf) const;
-    const vec2<F32> getDimensions() {
-        return vec2<F32>(_terrainDimensions.x, _terrainDimensions.y);
-    }
+    vec2<U16> getDimensions() const;
 
     inline const Quadtree& getQuadtree() const { return _terrainQuadtree; }
     
+    void saveToXML(boost::property_tree::ptree& pt) const override;
+    void loadFromXML(const boost::property_tree::ptree& pt)  override;
+
    protected:
     void buildDrawCommands(SceneGraphNode& sgn,
                                 RenderStagePass renderStagePass,
@@ -174,25 +175,20 @@ class Terrain : public Object3D {
     typedef std::array<TerrainTessellator, to_base(RenderStage::COUNT)> TessellatorArray;
     typedef hashMap<U64, bool> CameraUpdateFlagArray;
 
-    U32 _chunkSize;
-    vec3<F32> _offsetPosition;
-    vec2<F32> _altitudeRange;
-    vec2<U16> _terrainDimensions;
     Quadtree _terrainQuadtree;
 
     CameraUpdateFlagArray _cameraUpdated;
     TessellatorArray _terrainTessellator;
-
 
     F32 _waterHeight;
     bool _drawBBoxes;
     Quad3D_ptr _plane;
     ShaderProgram_ptr _planeShader;
     ShaderProgram_ptr _planeDepthShader;
-    vec2<F32> _terrainScaleFactor;
     SceneGraphNode* _vegetationGrassNode;
     vector<TerrainChunk*> _terrainChunks;
     TerrainTextureLayer* _terrainTextures;
+    std::shared_ptr<TerrainDescriptor> _descriptor;
 };
 
 namespace Attorney {
@@ -241,23 +237,9 @@ class TerrainLoader {
         terrain._planeDepthShader = depthShader;
     }
 
-    static vec2<U16>& dimensions(Terrain& terrain) {
-        return terrain._terrainDimensions;
+    static void descriptor(Terrain& terrain, const std::shared_ptr<TerrainDescriptor>& descriptor) {
+        terrain._descriptor = descriptor;
     }
-
-    static vec3<F32>& offsetPosition(Terrain& terrain) {
-        return terrain._offsetPosition;
-    }
-
-    static vec2<F32>& altitudeRange(Terrain& terrain) {
-        return terrain._altitudeRange;
-    }
-
-    static vec2<F32>& scaleFactor(Terrain& terrain) {
-        return terrain._terrainScaleFactor;
-    }
-
-    static U32& chunkSize(Terrain& terrain) { return terrain._chunkSize; }
 
     friend class Divide::TerrainLoader;
 };

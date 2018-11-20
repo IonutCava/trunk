@@ -93,7 +93,7 @@ void Box3D::saveToXML(boost::property_tree::ptree& pt) const {
     pt.put("halfExtent.<xmlattr>.y", _halfExtent.y);
     pt.put("halfExtent.<xmlattr>.z", _halfExtent.z);
 
-    SceneNode::saveToXML(pt);
+    Object3D::saveToXML(pt);
 }
 
 void Box3D::loadFromXML(const boost::property_tree::ptree& pt) {
@@ -101,7 +101,7 @@ void Box3D::loadFromXML(const boost::property_tree::ptree& pt) {
                             pt.get("halfExtent.<xmlattr>.y", 1.0f),
                             pt.get("halfExtent.<xmlattr>.z", 1.0f)));
 
-    SceneNode::loadFromXML(pt);
+    Object3D::loadFromXML(pt);
 }
 
 }; //namespace Divide

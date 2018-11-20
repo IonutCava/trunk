@@ -191,14 +191,7 @@ void SceneNode::loadCache(ByteBuffer& inputBuffer) {
 }
 
 void SceneNode::saveToXML(boost::property_tree::ptree& pt) const {
-    // Only 3D objects for now
-    if (type() == SceneNodeType::TYPE_OBJECT3D) {
-        if (static_cast<const Object3D*>(this)->isPrimitive()) {
-            pt.put("model", static_cast<const Object3D*>(this)->getObjectType()._to_string());
-        } else {
-            pt.put("model", name());
-        }
-    }
+    ACKNOWLEDGE_UNUSED(pt);
 }
 
 void SceneNode::loadFromXML(const boost::property_tree::ptree& pt) {

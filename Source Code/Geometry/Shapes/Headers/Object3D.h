@@ -141,6 +141,9 @@ class Object3D : public SceneNode {
 
     bool isPrimitive() const;
 
+    void saveToXML(boost::property_tree::ptree& pt) const override;
+    void loadFromXML(const boost::property_tree::ptree& pt)  override;
+
    protected:
     void rebuild();
     virtual void rebuildVB();

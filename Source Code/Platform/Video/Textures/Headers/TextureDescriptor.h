@@ -259,10 +259,16 @@ class TextureDescriptor final : public PropertyDescriptor {
     /// How many MSAA samples to use: -1 (default) = max available, 0 = disabled
     I16 _msaaSamples = -1;
 
+    const vector<stringImpl>& sourceFileList() const { return _sourceFileList; }
+
   private:
      GFXImageFormat _baseFormat = GFXImageFormat::RGB;
      GFXDataFormat  _dataType = GFXDataFormat::UNSIGNED_BYTE;
      GFXImageFormat _internalFormat = GFXImageFormat::RGBA8;
+
+   private:
+     friend class Texture;
+     vector<stringImpl> _sourceFileList;
 };
 
 };  // namespace Divide

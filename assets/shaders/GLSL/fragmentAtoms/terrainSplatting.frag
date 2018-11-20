@@ -66,16 +66,17 @@ vec4 getTerrainAlbedo(){
     for (uint i = 0; i < MAX_TEXTURE_LAYERS; i++) {
         blendMap = texture(texBlendMaps, vec3(VAR._texCoord, i));
 
-#if (CURRENT_TEXTURE_COUNT % 4) == 1
-        colour += getFinalColour1(blendMap, i, diffuseScale[i]);
-#elif (CURRENT_TEXTURE_COUNT % 4) == 2
-        colour += getFinalColour2(blendMap, i, diffuseScale[i]);
-#elif (CURRENT_TEXTURE_COUNT % 4) == 3
-        colour += getFinalColour3(blendMap, i, diffuseScale[i]);
-#else//(CURRENT_TEXTURE_COUNT % 4) == 0
-        colour += getFinalColour4(blendMap, i, diffuseScale[i]);
-#endif
+        uint currentCount = CURRENT_LAYER_COUNT[i];
 
+        if (currentCount == 1) {
+            colour += getFinalColour1(blendMap, i * 1, diffuseScale[i * 1]);
+        } else if (currentCount == 2) {
+            colour += getFinalColour2(blendMap, i * 2, diffuseScale[i * 2]);
+        } else if (currentCount == 3) {
+            colour += getFinalColour3(blendMap, i * 3, diffuseScale[i * 3]);
+        } else {
+            colour += getFinalColour4(blendMap, i * 4, diffuseScale[i * 4]);
+        }
     }
 
     return colour;
@@ -89,15 +90,18 @@ vec3 getTerrainNormal() {
     vec3 tbnTemp;
     for (uint i = 0; i < MAX_TEXTURE_LAYERS; i++) {
         vec4 blendMap = texture(texBlendMaps, vec3(VAR._texCoord, i));
-#if (CURRENT_TEXTURE_COUNT % 4) == 1
-        tbnTemp = getFinalTBN1(blendMap, 0, detailScale[i]);
-#elif (CURRENT_TEXTURE_COUNT % 4) == 2
-        tbnTemp = getFinalTBN2(blendMap, 0, detailScale[i]);
-#elif (CURRENT_TEXTURE_COUNT % 4) == 3
-        tbnTemp = getFinalTBN3(blendMap, 0, detailScale[i]);
-#else//(CURRENT_TEXTURE_COUNT % 4) == 0
-        tbnTemp = getFinalTBN4(blendMap, 0, detailScale[i]);
-#endif
+
+        uint currentCount = CURRENT_LAYER_COUNT[i];
+        if (currentCount == 1) {
+            tbnTemp = getFinalTBN1(blendMap, i * 1, detailScale[i * 1]);
+        } else if (currentCount == 2) {
+            tbnTemp = getFinalTBN2(blendMap, i * 2, detailScale[i * 2]);
+        } else if (currentCount == 3) {
+            tbnTemp = getFinalTBN3(blendMap, i * 3, detailScale[i * 3]);
+        } else {
+            tbnTemp = getFinalTBN4(blendMap, i * 4, detailScale[i * 4]);
+        }
+
         tbnTemp = perturb_normal(tbnTemp, VAR._normalWV, V, VAR._texCoord);
         tbn = normalUDNBlend(tbnTemp, tbn);
     }

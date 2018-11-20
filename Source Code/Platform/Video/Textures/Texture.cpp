@@ -95,6 +95,8 @@ void Texture::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallbac
                                                 : currentTextureLocation) +
                 "/" +
                 currentTextureFile);
+
+            _descriptor._sourceFileList.push_back(currentTextureFile);
         }
     }
 

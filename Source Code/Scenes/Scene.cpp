@@ -468,8 +468,8 @@ void Scene::addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree p
     // Load the rest of the terrain
     std::shared_ptr<TerrainDescriptor> ter = std::make_shared<TerrainDescriptor>((name + "_descriptor").c_str());
     ter->addVariable("terrainName", name.c_str());
-    ter->addVariable("heightmapLocation", Paths::g_assetsLocation + pt.get<stringImpl>("heightmapLocation", Paths::g_heightmapLocation) + "/");
-    ter->addVariable("textureLocation", Paths::g_assetsLocation + pt.get<stringImpl>("textureLocation", Paths::g_imagesLocation) + "/");
+    ter->addVariable("heightmapLocation", pt.get<stringImpl>("heightmapLocation", Paths::g_heightmapLocation));
+    ter->addVariable("textureLocation", pt.get<stringImpl>("textureLocation", Paths::g_imagesLocation));
     ter->addVariable("heightmap", pt.get<stringImpl>("heightmap"));
     ter->addVariable("waterCaustics", pt.get<stringImpl>("waterCaustics"));
     ter->addVariable("underwaterAlbedoTexture", pt.get<stringImpl>("underwaterAlbedoTexture"));
@@ -539,14 +539,15 @@ void Scene::addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree p
         ter->addVariable("diffuseScaleA" + layerOffsetStr, pt.get<F32>(layerName + ".alphaDiffuseScale", 0.0f));
         ter->addVariable("detailScaleA" + layerOffsetStr, pt.get<F32>(layerName + ".alphaDetailScale", 0.0f));
     }
-
+    
     ter->setTextureLayerCount(to_U8(i));
-    ter->addVariable("grassMapLocation", Paths::g_assetsLocation + pt.get<stringImpl>("vegetation.vegetationTextureLocation", Paths::g_imagesLocation) + "/");
+    ter->addVariable("grassMapLocation", pt.get<stringImpl>("vegetation.vegetationTextureLocation", Paths::g_imagesLocation));
     ter->addVariable("grassMap", pt.get<stringImpl>("vegetation.map"));
     ter->addVariable("grassBillboard1", pt.get<stringImpl>("vegetation.grassBillboard1", ""));
     ter->addVariable("grassBillboard2", pt.get<stringImpl>("vegetation.grassBillboard2", ""));
     ter->addVariable("grassBillboard3", pt.get<stringImpl>("vegetation.grassBillboard3", ""));
     ter->addVariable("grassBillboard4", pt.get<stringImpl>("vegetation.grassBillboard4", ""));
+
     ter->setGrassDensity(pt.get<F32>("vegetation.<xmlattr>.grassDensity"));
     ter->setTreeDensity(pt.get<F32>("vegetation.<xmlattr>.treeDensity"));
     ter->setGrassScale(pt.get<F32>("vegetation.<xmlattr>.grassScale"));
@@ -561,7 +562,6 @@ void Scene::addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree p
         pt.get<U16>("terrainHeight", 0)));
     ter->setAltitudeRange(vec2<F32>(pt.get<F32>("altitudeRange.<xmlattr>.min", 0.0f),
         pt.get<F32>("altitudeRange.<xmlattr>.max", 255.0f)));
-    ter->setActive(pt.get<bool>("active", true));
     ter->setChunkSize(pt.get<U32>("targetChunkSize", 256));
 
 

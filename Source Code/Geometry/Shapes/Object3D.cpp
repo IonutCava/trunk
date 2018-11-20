@@ -269,5 +269,18 @@ void Object3D::playAnimations(const SceneGraphNode& sgn, const bool state) {
         });
     }
 }
+void Object3D::saveToXML(boost::property_tree::ptree& pt) const {
+    if (static_cast<const Object3D*>(this)->isPrimitive()) {
+        pt.put("model", static_cast<const Object3D*>(this)->getObjectType()._to_string());
+    } else {
+        pt.put("model", name());
+    }
+
+    SceneNode::saveToXML(pt);
+}
+
+void Object3D::loadFromXML(const boost::property_tree::ptree& pt) {
+    SceneNode::loadFromXML(pt);
+}
 
 };
