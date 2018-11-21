@@ -72,7 +72,6 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
                                                         vec2<U32>(0, Terrain::MAX_RENDER_NODES),
                                                         *_shaderData);
 
-    sgn.get<TransformComponent>()->setPosition(_descriptor->getPosition());
     sgn.get<RigidBodyComponent>()->physicsGroup(PhysicsGroup::GROUP_STATIC);
 
     SceneNode::postLoad(sgn);
@@ -387,11 +386,6 @@ void Terrain::saveToXML(boost::property_tree::ptree& pt) const {
     pt.put("terrainHeight", _descriptor->getDimensions().height);
     pt.put("altitudeRange.<xmlattr>.min", _descriptor->getAltitudeRange().min);
     pt.put("altitudeRange.<xmlattr>.max", _descriptor->getAltitudeRange().max);
-    pt.put("scale", _descriptor->getScale().x);
-    pt.put("heightFactor", _descriptor->getScale().y);
-    pt.put("position.<xmlattr>.x", _descriptor->getPosition().x);
-    pt.put("position.<xmlattr>.y", _descriptor->getPosition().y);
-    pt.put("position.<xmlattr>.z", _descriptor->getPosition().z);
     pt.put("targetChunkSize", _descriptor->getChunkSize());
     pt.put("textureLocation", _descriptor->getVariable("textureLocation"));
     pt.put("waterCaustics", _descriptor->getVariable("waterCaustics"));

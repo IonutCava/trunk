@@ -6,9 +6,9 @@
     <Transform>
         <position x="0" y="0" z="0"/>
         <orientation x="0" y="0" z="0"/>
-        <scale x="1" y="0.991217375" z="0.991217375"/>
+        <scale x="1" y="1" z="1"/>
     </Transform>
-    <WorldMat 00="1" 01="0" 02="0" 03="0" 10="0" 11="0.991217375" 12="0" 13="0" 20="0" 21="0" 22="0.991217375" 23="0" 30="0" 31="0" 32="0" 33="1"/>
+    <WorldMat 00="1" 01="0" 02="0" 03="0" 10="0" 11="1" 12="0" 13="0" 20="0" 21="0" 22="1" 23="0" 30="0" 31="0" 32="0" 33="1"/>
 </TRANSFORM>
 <BOUNDS/>
 <RENDERING>
@@ -20,7 +20,7 @@
         <doubleSided>true</doubleSided>
         <bumpMethod>NORMAL</bumpMethod>
         <shadingMode>PHONG</shadingMode>
-        <parallaxFactor>0.00999999978</parallaxFactor>
+        <parallaxFactor>1</parallaxFactor>
         <texture>
             <UNIT0>
                 <name>diffuse.dds</name>

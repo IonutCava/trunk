@@ -1,24 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <static>true</static>
-<heightmapLocation>terrain</heightmapLocation>
-<heightmap>warTerrain.raw</heightmap>
-<is16Bit>true</is16Bit>
-<heightTexture>warTerrain_preview.png</heightTexture>
-<terrainWidth>2048</terrainWidth>
-<terrainHeight>2048</terrainHeight>
-<altitudeRange min="-33.5999985" max="68.8000031"/>
-<scale>1</scale>
-<heightFactor>1</heightFactor>
-<position x="0" y="0" z="0"/>
-<targetChunkSize>256</targetChunkSize>
-<textureLocation>misc_images</textureLocation>
+<heightmapLocation>terrain/</heightmapLocation>
+<heightmap>loveyou_HM.jpg</heightmap>
+<is16Bit>false</is16Bit>
+<heightTexture>loveyou_HM.jpg</heightTexture>
+<terrainWidth>1024</terrainWidth>
+<terrainHeight>1024</terrainHeight>
+<altitudeRange min="0" max="100"/>
+<targetChunkSize>64</targetChunkSize>
+<textureLocation>misc_images/</textureLocation>
 <waterCaustics>terrain_water_caustics.jpg</waterCaustics>
 <underwaterAlbedoTexture>sandfloor009a.jpg</underwaterAlbedoTexture>
 <underwaterDetailTexture>terrain_detail_NM.png</underwaterDetailTexture>
 <underwaterDiffuseScale>100</underwaterDiffuseScale>
-<vegetation grassDensity="1.25" treeDensity="0" grassScale="0.174999997" treeScale="0.699999988">
-    <vegetationTextureLocation>misc_images</vegetationTextureLocation>
-    <map>warTerrainAlpha_Alpha1.tga</map>
+<vegetation grassDensity="333" treeDensity="0" grassScale="0.300000012" treeScale="0.699999988">
+    <vegetationTextureLocation>misc_images/</vegetationTextureLocation>
+    <map>test_heightmap_diffusemap.jpg</map>
     <grassBillboard1>billboardgrass0001.png</grassBillboard1>
     <grassBillboard2>grass_billboards1.png</grassBillboard2>
     <grassBillboard3>grass_billboards2.png</grassBillboard3>
@@ -26,49 +23,26 @@
 </vegetation>
 <textureLayers>
     <layer0>
-        <blendMap>warTerrainAlpha_Alpha1.tga</blendMap>
-        <redAlbedo>riverdalegrass.jpg</redAlbedo>
+        <blendMap>loveyou_Alpha_1.png</blendMap>
+        <redAlbedo>terrain_rocky_map_1024.png</redAlbedo>
         <redDiffuseScale>250</redDiffuseScale>
-        <greenAlbedo>riverdalegrassdead.jpg</greenAlbedo>
+        <greenAlbedo>sandfloor009a.jpg</greenAlbedo>
         <greenDiffuseScale>250</greenDiffuseScale>
-        <blueAlbedo>redsand1a.jpg</blueAlbedo>
+        <blueAlbedo>terrain_grass_map_1024.png</blueAlbedo>
         <blueDiffuseScale>250</blueDiffuseScale>
-        <alphaAlbedo>rock3.jpg</alphaAlbedo>
-        <alphaDiffuseScale>250</alphaDiffuseScale>
-        <redDetail>riverdalegrass_bump.jpg</redDetail>
-        <redDetailScale>650</redDetailScale>
-        <greenDetail>riverdalegrass_bump.jpg</greenDetail>
-        <greenDetailScale>650</greenDetailScale>
-        <blueDetail>redsand1a_bump.jpg</blueDetail>
-        <blueDetailScale>650</blueDetailScale>
-        <alphaDetail>rock3_bump.jpg</alphaDetail>
-        <alphaDetailScale>650</alphaDetailScale>
-    </layer0>
-    <layer1>
-        <blendMap>warTerrainAlpha_Alpha2.tga</blendMap>
-        <redAlbedo>yellowsand1.jpg</redAlbedo>
-        <redDiffuseScale>250</redDiffuseScale>
-        <greenAlbedo>grass1-dry.jpg</greenAlbedo>
-        <greenDiffuseScale>250</greenDiffuseScale>
-        <blueAlbedo>rocks1-grey.jpg</blueAlbedo>
-        <blueDiffuseScale>250</blueDiffuseScale>
-        <alphaAlbedo>murcim049.jpg</alphaAlbedo>
-        <alphaDiffuseScale>250</alphaDiffuseScale>
-        <redDetail>terrain_detail_NM.png</redDetail>
+        <redDetail>loveyou_TN.png</redDetail>
         <redDetailScale>1000</redDetailScale>
-        <greenDetail>hillside_bump.jpg</greenDetail>
-        <greenDetailScale>250</greenDetailScale>
-        <blueDetail>rocks1_bump.jpg</blueDetail>
-        <blueDetailScale>250</blueDetailScale>
-        <alphaDetail>terrain_detail_NM.png</alphaDetail>
-        <alphaDetailScale>1000</alphaDetailScale>
-    </layer1>
+        <greenDetail>loveyou_TN.png</greenDetail>
+        <greenDetailScale>1000</greenDetailScale>
+        <blueDetail>loveyou_TN.png</blueDetail>
+        <blueDetailScale>1000</blueDetailScale>
+    </layer0>
 </textureLayers>
 <model>Terrain</model>
 <NAVIGATION/>
 <TRANSFORM>
     <Transform>
-        <position x="0" y="0" z="0"/>
+        <position x="0" y="-10" z="0"/>
         <orientation x="0" y="0" z="0"/>
         <scale x="1" y="1" z="1"/>
     </Transform>
@@ -118,7 +92,7 @@
                 <anisotropy>8</anisotropy>
             </NORMALMAP>
             <OPACITY>
-                <name>warTerrain_preview.png</name>
+                <name>loveyou_HM.jpg</name>
                 <path>assets/terrain</path>
                 <MapU>CLAMP</MapU>
                 <MapV>CLAMP</MapV>

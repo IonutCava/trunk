@@ -63,8 +63,6 @@ class TerrainDescriptor final : public PropertyDescriptor {
     void setTextureLayerCount(U8 count) { _textureLayers = count; }
     void setDimensions(const vec2<U16>& dim) { _dimensions = dim; }
     void setAltitudeRange(const vec2<F32>& dim) { _altitudeRange = dim; }
-    void setPosition(const vec3<F32>& position) { _position = position; }
-    void setScale(const vec2<F32>& scale) { _scale = scale; }
     void setGrassDensity(F32 grassDensity) { _grassDensity = grassDensity; }
     void setTreeDensity(F32 treeDensity) { _treeDensity = treeDensity; }
     void setGrassScale(F32 grassScale) { _grassScale = grassScale; }
@@ -84,8 +82,6 @@ class TerrainDescriptor final : public PropertyDescriptor {
 
     const vec2<F32>& getAltitudeRange() const { return _altitudeRange; }
     const vec2<U16>& getDimensions() const { return _dimensions; }
-    const vec3<F32>& getPosition() const { return _position; }
-    const vec2<F32>& getScale() const { return _scale; }
 
     stringImpl getVariable(const stringImpl& name) const {
         hashMap<U64, stringImpl>::const_iterator it = _variables.find(_ID(name.c_str()));
@@ -121,11 +117,6 @@ class TerrainDescriptor final : public PropertyDescriptor {
         Util::Hash_combine(hash, _is16Bit);
         Util::Hash_combine(hash, _active);
         Util::Hash_combine(hash, _textureLayers);
-        Util::Hash_combine(hash, _position.x);
-        Util::Hash_combine(hash, _position.y);
-        Util::Hash_combine(hash, _position.z);
-        Util::Hash_combine(hash, _scale.x);
-        Util::Hash_combine(hash, _scale.y);
         Util::Hash_combine(hash, _altitudeRange.x);
         Util::Hash_combine(hash, _altitudeRange.y);
         Util::Hash_combine(hash, _dimensions.x);
@@ -149,8 +140,6 @@ class TerrainDescriptor final : public PropertyDescriptor {
     bool _is16Bit = false;
     bool _active = false;
     U8 _textureLayers = 1;
-    vec3<F32> _position = {0.f, 0.f, 0.f};
-    vec2<F32> _scale = {1.f, 1.f};
     vec2<F32> _altitudeRange = {0.f, 1.f};
     vec2<U16> _dimensions = {1.f, 1.f};
 };

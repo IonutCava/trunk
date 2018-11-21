@@ -554,15 +554,9 @@ void Scene::addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree p
     ter->setGrassScale(pt.get<F32>("vegetation.<xmlattr>.grassScale"));
     ter->setTreeScale(pt.get<F32>("vegetation.<xmlattr>.treeScale"));
     ter->set16Bit(pt.get<bool>("is16Bit", false));
-    ter->setPosition(vec3<F32>(pt.get<F32>("position.<xmlattr>.x", 0.0f),
-                               pt.get<F32>("position.<xmlattr>.y", 0.0f),
-                               pt.get<F32>("position.<xmlattr>.z", 0.0f)));
-    ter->setScale(vec2<F32>(pt.get<F32>("scale", 1.0f),
-        pt.get<F32>("heightFactor", 1.0f)));
-    ter->setDimensions(vec2<U16>(pt.get<U16>("terrainWidth", 0),
-        pt.get<U16>("terrainHeight", 0)));
+    ter->setDimensions(vec2<U16>(pt.get<U16>("terrainWidth", 0), pt.get<U16>("terrainHeight", 0)));
     ter->setAltitudeRange(vec2<F32>(pt.get<F32>("altitudeRange.<xmlattr>.min", 0.0f),
-        pt.get<F32>("altitudeRange.<xmlattr>.max", 255.0f)));
+                                   pt.get<F32>("altitudeRange.<xmlattr>.max", 255.0f)));
     ter->setChunkSize(pt.get<U32>("targetChunkSize", 256));
 
 
