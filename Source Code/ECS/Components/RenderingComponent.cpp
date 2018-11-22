@@ -468,6 +468,7 @@ void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
             _renderPackagesDirty[to_base(renderStagePass._stage)] = false;
         }
 
+        pkg.setDrawOption(CmdRenderOptions::RENDER_INDIRECT, true);
         if (_parentSGN.prepareRender(sceneRenderState, renderStagePass)) {
             updateLoDLevel(camera, renderStagePass);
 
@@ -478,7 +479,6 @@ void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
             renderWireframe = renderWireframe || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME);
             pkg.setDrawOption(CmdRenderOptions::RENDER_GEOMETRY, renderGeometry);
             pkg.setDrawOption(CmdRenderOptions::RENDER_WIREFRAME, renderWireframe);
-            pkg.setDrawOption(CmdRenderOptions::RENDER_INDIRECT, true);
             pkg.setLoD(_lodLevel);
         }
     }

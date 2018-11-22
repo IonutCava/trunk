@@ -337,7 +337,7 @@ void submitRenderCommand(const GenericDrawCommand& drawCommand,
     bool queryPrimitives = isEnabledOption(drawCommand, CmdRenderOptions::QUERY_PRIMITIVE_COUNT);
     bool querySampleCount = isEnabledOption(drawCommand, CmdRenderOptions::QUERY_SAMPLE_COUNT);
     bool querySamplePassed = isEnabledOption(drawCommand, CmdRenderOptions::QUERY_ANY_SAMPLE_RENDERED);
-
+    
     glHardwareQueryRing* primitiveQuery = nullptr;
     glHardwareQueryRing* sampleCountQuery = nullptr;
     glHardwareQueryRing* anySamplesQuery = nullptr;

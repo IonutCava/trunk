@@ -262,23 +262,21 @@ void Material::setShaderProgramInternal(const stringImpl& shader,
         WAIT_FOR_CONDITION(info._shaderRef->getState() == ResourceState::RES_LOADED);
         Console::printfn(Locale::get(_ID("REPLACE_SHADER")), info._shaderRef->name().c_str(), shader.c_str());
     }
+
+    ShaderComputeQueue::ShaderQueueElement queueElement(shaderDescriptor);
+    queueElement._shaderData = &shaderInfo(renderStagePass);
+    
+    ShaderComputeQueue& shaderQueue = _context.shaderComputeQueue();
+    if (computeOnAdd)
+    {
+        shaderQueue.addToQueueFront(queueElement);
+        shaderQueue.stepQueue();
+    }
     else
     {
-
-        ShaderComputeQueue::ShaderQueueElement queueElement(shaderDescriptor);
-        queueElement._shaderData = &shaderInfo(renderStagePass);
-    
-        ShaderComputeQueue& shaderQueue = _context.shaderComputeQueue();
-        if (computeOnAdd)
-        {
-            shaderQueue.addToQueueFront(queueElement);
-            shaderQueue.stepQueue();
-        }
-        else
-        {
-            shaderQueue.addToQueueBack(queueElement);
-        }
+        shaderQueue.addToQueueBack(queueElement);
     }
+    
 }
 
 void Material::clean() {

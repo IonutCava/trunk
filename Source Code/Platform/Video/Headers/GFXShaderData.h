@@ -69,6 +69,7 @@ class GFXShaderData {
 
     bool _needsUpload = true;
 };
+//RenderDoc: mat4 projection; mat4 invprojection; mat4 view; mat4 viewproj; vec4 cam; vec4 renderProp; vec4 frustum[6]; vec4 clip[6];
 }; //namespace Divide
 
 #endif //_HARDWARE_VIDEO_GFX_SHADER_DATA_H_

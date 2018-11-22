@@ -34,6 +34,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "Core/Math/Headers/MathVectors.h"
 
+//reference: https://victorbush.com/2015/01/tessellated-terrain/
 namespace Divide {
 
 class VertexBuffer;
