@@ -78,7 +78,7 @@ struct GenericDrawCommand {
     VertexDataInterface* _sourceBuffer = nullptr;                    // 25 bytes
     U32 _commandOffset = 0;                                          // 17 bytes
     U32 _renderOptions = to_base(CmdRenderOptions::RENDER_GEOMETRY); // 13 bytes
-    U32 _patchVertexCount = 4;                                       // 9  bytes
+    U32 _patchVertexCount = 3;                                       // 9  bytes
     U16 _drawCount = 1;                                              // 5  bytes
     U8  _bufferIndex = 0;                                            // 3  bytes
     U8  _lodIndex = 0;                                               // 2  bytes

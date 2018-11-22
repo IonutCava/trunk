@@ -25,7 +25,7 @@ GenericDrawCommand::GenericDrawCommand(PrimitiveType type,
     _bufferIndex(0),
     _primitiveType(type),
     _commandOffset(0),
-    _patchVertexCount(4),
+    _patchVertexCount(3),
     _sourceBuffer(nullptr),
     _renderOptions(to_base(CmdRenderOptions::RENDER_GEOMETRY))
 {

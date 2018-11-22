@@ -62,6 +62,7 @@ void GLStateTracker::init(GLStateTracker* base) {
         *this = *base;
     }
 
+    _patchVertexCount = GLUtil::getIntegerv(GL_PATCH_VERTICES);
     _init = true;
 }
 
@@ -179,6 +180,7 @@ void GLStateTracker::setPatchVertexCount(U32 count) {
     if (_patchVertexCount != count) {
         _patchVertexCount = count;
         glPatchParameteri(GL_PATCH_VERTICES, _patchVertexCount);
+        
     }
 }
 

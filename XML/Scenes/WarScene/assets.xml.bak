@@ -42,9 +42,7 @@
         <node name="DefaultSky" type="SKY">
             <node name="DefaultSky_geometry" type="SPHERE_3D"/>
         </node>
-        <node name="Terrain" type="TERRAIN">
-            <node name="infinitePlane_SGN" type="QUAD_3D"/>
-        </node>
+        <node name="Terrain" type="TERRAIN"/>
         <node name="DefaultLight" type=""/>
     </node>
 </entities>

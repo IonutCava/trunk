@@ -42,7 +42,7 @@ bool Terrain::unload() {
 }
 
 void Terrain::postLoad(SceneGraphNode& sgn) {
-    SceneGraphNodeDescriptor terrainNodeDescriptor;
+    /*SceneGraphNodeDescriptor terrainNodeDescriptor;
     terrainNodeDescriptor._node = _plane;
     terrainNodeDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
     terrainNodeDescriptor._componentMask = to_base(ComponentType::NAVIGATION) |
@@ -53,7 +53,7 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
                                            to_base(ComponentType::NETWORKING);
 
     SceneGraphNode* planeSGN = sgn.addNode(terrainNodeDescriptor);
-    planeSGN->setActive(false);
+    planeSGN->setActive(false);*/
     //for (TerrainChunk* chunk : _terrainChunks) {
         //SceneGraphNode* vegetation = sgn.addNode(Attorney::TerrainChunkTerrain::getVegetation(*chunk), normalMask);
         //vegetation->lockVisibility(true);
@@ -119,11 +119,11 @@ bool Terrain::onRender(SceneGraphNode& sgn,
     RenderingComponent* renderComp = sgn.get<RenderingComponent>();
     RenderPackage& pkg = renderComp->getDrawPackage(renderStagePass);
 
-    FrustumClipPlanes clipPlanes = pkg.clipPlanes(0);
+    /*FrustumClipPlanes clipPlanes = pkg.clipPlanes(0);
     clipPlanes.set(to_U32(ClipPlaneIndex::CLIP_PLANE_0),
                    Plane<F32>(WORLD_Y_AXIS, _waterHeight),
                    true);
-    pkg.clipPlanes(0, clipPlanes);
+    pkg.clipPlanes(0, clipPlanes);*/
 
     Camera* camera = sceneRenderState.parentScene().playerCamera();
 
@@ -133,11 +133,12 @@ bool Terrain::onRender(SceneGraphNode& sgn,
     bool& cameraUpdated = _cameraUpdated[_ID(camera->name().c_str())];
     TerrainTessellator& tessellator = _terrainTessellator[stageIndex];
 
-    if (cameraUpdated) {
+    //if (cameraUpdated)
+    {
         const vec3<F32>& newEye = camera->getEye();
         if (tessellator.getEye() != newEye) {
             tessellator.createTree(newEye,
-                                   vec3<F32>(0),
+                                   sgn.get<TransformComponent>()->getPosition(),
                                    _descriptor->getDimensions());
             tessellator.updateRenderData();
         }
@@ -158,7 +159,7 @@ bool Terrain::onRender(SceneGraphNode& sgn,
                                                         vec2<U32>(offset, Terrain::MAX_RENDER_NODES),
                                                         *_shaderData);
 
-    if (renderStagePass._stage == RenderStage::DISPLAY) {
+    /*if (renderStagePass._stage == RenderStage::DISPLAY) {
         // draw infinite plane
         assert(pkg.drawCommand(1, 0)._drawCount == 1u);
 
@@ -177,7 +178,7 @@ bool Terrain::onRender(SceneGraphNode& sgn,
             cmd._drawCount = state;
             pkg.drawCommand(i, 0, cmd);
         }
-    }
+    }*/
 
     return Object3D::onRender(sgn, sceneRenderState, renderStagePass);
 }
@@ -197,11 +198,11 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
     constants.set("detailScale",  GFX::PushConstantType::VEC4, textureLayer->getDetailScales());
     pkgInOut.pushConstants(0, constants);
 
-    GFX::SetClipPlanesCommand clipPlanesCommand;
+    /*GFX::SetClipPlanesCommand clipPlanesCommand;
     clipPlanesCommand._clippingPlanes.set(to_U32(ClipPlaneIndex::CLIP_PLANE_0),
                                           Plane<F32>(WORLD_Y_AXIS, _waterHeight),
                                           false);
-    pkgInOut.addClipPlanesCommand(clipPlanesCommand);
+    pkgInOut.addClipPlanesCommand(clipPlanesCommand);*/
 
     GenericDrawCommand cmd;
     cmd._primitiveType = PrimitiveType::PATCH;
@@ -215,7 +216,7 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
         drawCommand._drawCommands.push_back(cmd);
         pkgInOut.addDrawCommand(drawCommand);
     }
-    if (renderStagePass._stage == RenderStage::DISPLAY) {
+    /*if (renderStagePass._stage == RenderStage::DISPLAY) {
 
         PipelineDescriptor pipelineDescriptor;
         pipelineDescriptor._shaderProgramHandle = 
@@ -251,7 +252,7 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
 
         //BoundingBoxes
         _terrainQuadtree.drawBBox(_context, pkgInOut);
-    }
+    }*/
 
     Object3D::buildDrawCommands(sgn, renderStagePass, pkgInOut);
 

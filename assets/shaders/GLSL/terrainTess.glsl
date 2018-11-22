@@ -589,7 +589,7 @@ void main(void)
 
     setProcessedNormal(getTerrainNormal());
 
-    _colourOut = mix(TerrainMappingRoutine(), UnderwaterMappingRoutine(), _waterDetails.x);
+    _colourOut = vec4(0.5, 0.5, 0.5, 1.0);//mix(TerrainMappingRoutine(), UnderwaterMappingRoutine(), _waterDetails.x);
 #if defined(TOGGLE_WIREFRAME)
     const float LineWidth = 0.75;
     float d = min(min(gs_edgeDist.x, gs_edgeDist.y), gs_edgeDist.z);

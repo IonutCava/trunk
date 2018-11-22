@@ -87,16 +87,17 @@ void Quadtree::Build(GFXDevice& context,
     const U32 terrainWidth = HMsize.x;
     const U32 terrainHeight = HMsize.y;
     vector<vec3<U32>>& triangles = terrain->getTriangles();
-    triangles.reserve(terrainHeight * terrainWidth * 2);
+    triangles.resize(terrainHeight * terrainWidth * 2);
 
-    I32 vertexIndex = -1;
-    for (U32 j = 0; j < (terrainHeight - 1); ++j) {
-        for (U32 i = 0; i < (terrainWidth - 1); ++i) {
-            vertexIndex = (j * terrainWidth) + i;
+    // ToDo: Use parallel_for for this
+    I32 vectorIndex = 0;
+    for (U32 height = 0; height < (terrainHeight - 1); ++height) {
+        for (U32 width = 0; width < (terrainWidth - 1); ++width) {
+            I32 vertexIndex = TER_COORD(width, height, terrainWidth);
             // Top triangle (T0)
-            triangles.emplace_back(vertexIndex, vertexIndex + terrainWidth + 1, vertexIndex + 1);
+            triangles[vectorIndex++].set(vertexIndex, vertexIndex + terrainWidth + 1, vertexIndex + 1);
             // Bottom triangle (T1)
-            triangles.emplace_back(vertexIndex, vertexIndex + terrainWidth, vertexIndex + terrainWidth + 1);
+            triangles[vectorIndex++].set(vertexIndex, vertexIndex + terrainWidth, vertexIndex + terrainWidth + 1);
         }
     }
 }

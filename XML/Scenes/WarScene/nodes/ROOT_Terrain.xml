@@ -42,7 +42,7 @@
 <NAVIGATION/>
 <TRANSFORM>
     <Transform>
-        <position x="0" y="-10" z="0"/>
+        <position x="0" y="0" z="0"/>
         <orientation x="0" y="0" z="0"/>
         <scale x="1" y="1" z="1"/>
     </Transform>
@@ -106,4 +106,3 @@
 </RENDERING>
 <NETWORKING/>
 <RIGID_BODY/>
-<OBJECT3D/>
