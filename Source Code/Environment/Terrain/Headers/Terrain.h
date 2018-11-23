@@ -165,12 +165,6 @@ class Terrain : public Object3D {
     bool onRender(SceneGraphNode& sgn,
                   const SceneRenderState& sceneRenderState,
                   RenderStagePass renderStagePass) override;
-
-    void onCameraUpdate(SceneGraphNode& sgn,
-                        const U64 cameraNameHash,
-                        const vec3<F32>& posOffset,
-                        const mat4<F32>& rotationOffset) override;
-
     void buildQuadtree();
 
     void postLoad(SceneGraphNode& sgn);
@@ -185,11 +179,10 @@ class Terrain : public Object3D {
     VegetationDetails _vegDetails;
 
     typedef std::array<TerrainTessellator, to_base(RenderStage::COUNT)> TessellatorArray;
-    typedef hashMap<U64, bool> CameraUpdateFlagArray;
+    typedef hashMap<I64, bool> CameraUpdateFlagArray;
 
     Quadtree _terrainQuadtree;
 
-    CameraUpdateFlagArray _cameraUpdated;
     TessellatorArray _terrainTessellator;
 
     F32 _waterHeight;

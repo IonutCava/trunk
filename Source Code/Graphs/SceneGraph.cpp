@@ -210,7 +210,7 @@ void SceneGraph::onStartUpdateLoop(const U8 loopNumber) {
 }
 
 void SceneGraph::onCameraUpdate(const Camera& camera) {
-    _root->onCameraUpdate(_ID(camera.name().c_str()), camera.getEye(), camera.getViewMatrix());
+    _root->onCameraUpdate(camera.getGUID(), camera.getEye(), camera.getViewMatrix());
 }
 
 void SceneGraph::onNetworkSend(U32 frameCount) {

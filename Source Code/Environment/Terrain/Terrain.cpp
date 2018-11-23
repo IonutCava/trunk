@@ -102,22 +102,10 @@ void Terrain::sceneUpdate(const U64 deltaTimeUS,
     Object3D::sceneUpdate(deltaTimeUS, sgn, sceneState);
 }
 
-void Terrain::onCameraUpdate(SceneGraphNode& sgn,
-                             const U64 cameraNameHash,
-                             const vec3<F32>& posOffset,
-                             const mat4<F32>& rotationOffset) {
-    ACKNOWLEDGE_UNUSED(sgn);
-    ACKNOWLEDGE_UNUSED(posOffset);
-    ACKNOWLEDGE_UNUSED(rotationOffset);
-
-    _cameraUpdated[cameraNameHash] = true;
-}
-
 bool Terrain::onRender(SceneGraphNode& sgn,
                        const SceneRenderState& sceneRenderState,
                        RenderStagePass renderStagePass) {
-    RenderingComponent* renderComp = sgn.get<RenderingComponent>();
-    RenderPackage& pkg = renderComp->getDrawPackage(renderStagePass);
+    RenderPackage& pkg = sgn.get<RenderingComponent>()->getDrawPackage(renderStagePass);
 
     FrustumClipPlanes clipPlanes = pkg.clipPlanes(0);
     clipPlanes.set(to_U32(ClipPlaneIndex::CLIP_PLANE_0),
@@ -129,21 +117,17 @@ bool Terrain::onRender(SceneGraphNode& sgn,
 
     const U8 stageIndex = to_U8(renderStagePass._stage);
 
-    //ToDo: maybe do a "find" first? -Ionut
-    bool& cameraUpdated = _cameraUpdated[_ID(camera->name().c_str())];
     TerrainTessellator& tessellator = _terrainTessellator[stageIndex];
 
-    if (cameraUpdated)
-    {
-        const vec3<F32>& newEye = camera->getEye();
-        if (tessellator.getEye() != newEye) {
-            tessellator.createTree(newEye,
-                                   sgn.get<TransformComponent>()->getPosition(),
-                                   _descriptor->getDimensions());
-            tessellator.updateRenderData();
-        }
+    U32 offset = to_U32(stageIndex * Terrain::MAX_RENDER_NODES);
+    const vec3<F32>& newEye = camera->getEye();
+    const vec3<F32>& crtPos = sgn.get<TransformComponent>()->getPosition();
+    if (tessellator.getEye() != newEye || tessellator.getOrigin() != crtPos ) {
+        tessellator.createTree(newEye, crtPos, _descriptor->getDimensions());
+        tessellator.updateRenderData();
 
-        cameraUpdated = false;
+        STUBBED("This may cause stalls. Profile! -Ionut");
+        _shaderData->writeData(offset, tessellator.renderDepth(), (bufferPtr)tessellator.renderData().data());
     }
     {
         GenericDrawCommand cmd = pkg.drawCommand(0, 0);
@@ -151,10 +135,7 @@ bool Terrain::onRender(SceneGraphNode& sgn,
         disableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
         pkg.drawCommand(0, 0, cmd);
     }
-    U32 offset = to_U32(stageIndex * Terrain::MAX_RENDER_NODES);
 
-    STUBBED("This may cause stalls. Profile! -Ionut");
-    _shaderData->writeData(offset, tessellator.renderDepth(), (bufferPtr)tessellator.renderData().data());
 
     sgn.get<RenderingComponent>()->registerShaderBuffer(ShaderBufferLocation::TERRAIN_DATA,
                                                         vec2<U32>(offset, Terrain::MAX_RENDER_NODES),
@@ -188,24 +169,20 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
                                 RenderStagePass renderStagePass,
                                 RenderPackage& pkgInOut) {
 
-    const vec3<F32>& bbMin = _boundingBox.getMin();
-    const vec3<F32>& bbExtent = _boundingBox.getExtent();
-    TerrainTextureLayer* textureLayer = _terrainTextures;
-
     PushConstants constants = pkgInOut.pushConstants(0);
-    constants.set("bbox_min",     GFX::PushConstantType::VEC3, bbMin);
-    constants.set("bbox_extent",  GFX::PushConstantType::VEC3, bbExtent);
-    constants.set("diffuseScale", GFX::PushConstantType::VEC4, textureLayer->getDiffuseScales());
-    constants.set("detailScale",  GFX::PushConstantType::VEC4, textureLayer->getDetailScales());
+    constants.set("bbox_min",     GFX::PushConstantType::VEC3, _boundingBox.getMin());
+    constants.set("bbox_extent",  GFX::PushConstantType::VEC3, _boundingBox.getExtent());
+    constants.set("diffuseScale", GFX::PushConstantType::VEC4, _terrainTextures->getDiffuseScales());
+    constants.set("detailScale",  GFX::PushConstantType::VEC4, _terrainTextures->getDetailScales());
     pkgInOut.pushConstants(0, constants);
 
-    GFX::SetClipPlanesCommand clipPlanesCommand;
+    GFX::SetClipPlanesCommand clipPlanesCommand = {};
     clipPlanesCommand._clippingPlanes.set(to_U32(ClipPlaneIndex::CLIP_PLANE_0),
                                           Plane<F32>(WORLD_Y_AXIS, _waterHeight),
                                           false);
     pkgInOut.addClipPlanesCommand(clipPlanesCommand);
 
-    GenericDrawCommand cmd;
+    GenericDrawCommand cmd = {};
     cmd._primitiveType = PrimitiveType::PATCH;
     cmd._sourceBuffer = getGeometryVB();
     cmd._bufferIndex = renderStagePass.index();
@@ -213,14 +190,14 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
     cmd._cmd.indexCount = getGeometryVB()->getIndexCount();
     enableOption(cmd, CmdRenderOptions::RENDER_TESSELLATED);
     disableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
-    {
-        GFX::DrawCommand drawCommand;
-        drawCommand._drawCommands.push_back(cmd);
-        pkgInOut.addDrawCommand(drawCommand);
-    }
+    
+    GFX::DrawCommand drawCommand = {};
+    drawCommand._drawCommands.push_back(cmd);
+    pkgInOut.addDrawCommand(drawCommand);
+    
     /*if (renderStagePass._stage == RenderStage::DISPLAY) {
 
-        PipelineDescriptor pipelineDescriptor;
+        PipelineDescriptor pipelineDescriptor = {};
         pipelineDescriptor._shaderProgramHandle = 
             (renderStagePass._passType == RenderPassType::DEPTH_PASS
                                         ? _planeDepthShader
@@ -231,7 +208,7 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
             pkgInOut.addPipelineCommand(pipelineCommand);
         }
         //infinite plane
-        GenericDrawCommand planeCmd;
+        GenericDrawCommand planeCmd = {};
         planeCmd._primitiveType = PrimitiveType::TRIANGLE_STRIP;
         planeCmd._cmd.firstIndex = 0;
         planeCmd._cmd.indexCount = _plane->getGeometryVB()->getIndexCount();
@@ -240,14 +217,14 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
         planeCmd._bufferIndex = renderStagePass.index();
 
         {
-            GFX::DrawCommand drawCommand;
+            GFX::DrawCommand drawCommand = {};
             drawCommand._drawCommands.push_back(planeCmd);
             pkgInOut.addDrawCommand(drawCommand);
         }
 
         pipelineDescriptor._shaderProgramHandle = ShaderProgram::defaultShader()->getID();
         {
-            GFX::BindPipelineCommand pipelineCommand;
+            GFX::BindPipelineCommand pipelineCommand = {};
             pipelineCommand._pipeline = _context.newPipeline(pipelineDescriptor);
             pkgInOut.addPipelineCommand(pipelineCommand);
         }
@@ -257,8 +234,6 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
     }*/
 
     Object3D::buildDrawCommands(sgn, renderStagePass, pkgInOut);
-
-    _cameraUpdated[to_base(renderStagePass._stage)] = true;
 }
 
 vec3<F32> Terrain::getPositionFromGlobal(F32 x, F32 z) const {

@@ -266,7 +266,7 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
 
    protected:
     friend class SceneGraph;
-    void onCameraUpdate(const U64 cameraNameHash,
+    void onCameraUpdate(const I64 cameraGUID,
                         const vec3<F32>& cameraEye,
                         const mat4<F32>& cameraView);
 

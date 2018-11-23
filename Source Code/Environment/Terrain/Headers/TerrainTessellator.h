@@ -148,7 +148,7 @@ public:
     const RenderDataVector& renderData() const;
 
     const vec3<F32>& getEye() const;
-
+    const vec3<F32>& getOrigin() const;
 protected:
     // Resets the terrain quadtree.
     void clearTree();
@@ -180,6 +180,7 @@ private:
     U16 _renderDepth;
     const U16 _maxRenderDepth;
     vec3<F32> _cameraEyeCache;
+    vec3<F32> _originiCache;
     TreeVector _tree;
     RenderDataVector _renderData;
 

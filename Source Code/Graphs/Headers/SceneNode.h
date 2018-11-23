@@ -145,7 +145,7 @@ class SceneNode : public CachedResource {
     virtual void updateBoundsInternal();
 
     virtual void onCameraUpdate(SceneGraphNode& sgn,
-                                const U64 cameraNameHash,
+                                I64 cameraGUID,
                                 const vec3<F32>& posOffset,
                                 const mat4<F32>& rotationOffset);
 
@@ -201,10 +201,10 @@ class SceneNodeSceneGraph {
 
     static void onCameraUpdate(SceneGraphNode& sgn,
                                SceneNode& node,
-                               const U64 cameraNameHash,
+                               I64 cameraGUID,
                                const vec3<F32>& posOffset,
                                const mat4<F32>& rotationOffset) {
-        node.onCameraUpdate(sgn, cameraNameHash, posOffset, rotationOffset);
+        node.onCameraUpdate(sgn, cameraGUID, posOffset, rotationOffset);
     }
 
     static EditorComponent& getEditorComponent(SceneNode& node) {

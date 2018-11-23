@@ -25,17 +25,17 @@
     <layer0>
         <blendMap>loveyou_Alpha_1.png</blendMap>
         <redAlbedo>terrain_rocky_map_1024.png</redAlbedo>
-        <redDiffuseScale>250</redDiffuseScale>
+        <redDiffuseScale>25</redDiffuseScale>
         <greenAlbedo>sandfloor009a.jpg</greenAlbedo>
-        <greenDiffuseScale>250</greenDiffuseScale>
+        <greenDiffuseScale>25</greenDiffuseScale>
         <blueAlbedo>terrain_grass_map_1024.png</blueAlbedo>
-        <blueDiffuseScale>250</blueDiffuseScale>
+        <blueDiffuseScale>25</blueDiffuseScale>
         <redDetail>loveyou_TN.png</redDetail>
-        <redDetailScale>1000</redDetailScale>
+        <redDetailScale>100</redDetailScale>
         <greenDetail>loveyou_TN.png</greenDetail>
-        <greenDetailScale>1000</greenDetailScale>
+        <greenDetailScale>100</greenDetailScale>
         <blueDetail>loveyou_TN.png</blueDetail>
-        <blueDetailScale>1000</blueDetailScale>
+        <blueDetailScale>100</blueDetailScale>
     </layer0>
 </textureLayers>
 <model>Terrain</model>

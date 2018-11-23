@@ -157,11 +157,11 @@ void SceneNode::buildDrawCommands(SceneGraphNode& sgn,
 }
 
 void SceneNode::onCameraUpdate(SceneGraphNode& sgn,
-                               const U64 cameraNameHash,
+                               I64 cameraGUID,
                                const vec3<F32>& posOffset,
                                const mat4<F32>& rotationOffset) {
     ACKNOWLEDGE_UNUSED(sgn);
-    ACKNOWLEDGE_UNUSED(cameraNameHash);
+    ACKNOWLEDGE_UNUSED(cameraGUID);
     ACKNOWLEDGE_UNUSED(posOffset);
     ACKNOWLEDGE_UNUSED(rotationOffset);
 }

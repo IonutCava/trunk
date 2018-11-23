@@ -35,6 +35,10 @@ const vec3<F32>& TerrainTessellator::getEye() const {
     return _cameraEyeCache;
 }
 
+const vec3<F32>& TerrainTessellator::getOrigin() const {
+    return _originiCache;
+}
+
 void TerrainTessellator::updateRenderData() {
     _renderDepth = 0;
     renderRecursive(_tree.front());
@@ -151,6 +155,7 @@ void TerrainTessellator::createTree(const vec3<F32>& camPos, const vec3<F32>& or
     divideNode(camPos, root);
 
     _cameraEyeCache.set(camPos);
+    _originiCache.set(origin);
 }
 
 TessellatedTerrainNode* TerrainTessellator::createNode(TessellatedTerrainNode &parent, U8 type, F32 x, F32 y, F32 z, F32 width, F32 height) {
@@ -181,7 +186,7 @@ void TerrainTessellator::renderNode(TessellatedTerrainNode& node) {
     calcTessScale(node);
 
     _renderData[_renderDepth].set(node.origin,
-                                  0.5f * node.dimensions.width,
+                                  node.dimensions.width * 0.5f,
                                   node.tscale_negx,
                                   node.tscale_negz,
                                   node.tscale_posx,

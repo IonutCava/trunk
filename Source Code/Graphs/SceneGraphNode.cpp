@@ -474,15 +474,15 @@ bool SceneGraphNode::prepareRender(const SceneRenderState& sceneRenderState,
     return _node->onRender(*this, sceneRenderState, renderStagePass);
 }
 
-void SceneGraphNode::onCameraUpdate(const U64 cameraNameHash,
+void SceneGraphNode::onCameraUpdate(I64 cameraGUID,
                                     const vec3<F32>& cameraEye,
                                     const mat4<F32>& cameraView) {
 
-    forEachChild([cameraNameHash, &cameraEye, &cameraView](SceneGraphNode& child) {
-        child.onCameraUpdate(cameraNameHash, cameraEye, cameraView);
+    forEachChild([cameraGUID, &cameraEye, &cameraView](SceneGraphNode& child) {
+        child.onCameraUpdate(cameraGUID, cameraEye, cameraView);
     });
     
-    Attorney::SceneNodeSceneGraph::onCameraUpdate(*this, *_node, cameraNameHash, cameraEye, cameraView);
+    Attorney::SceneNodeSceneGraph::onCameraUpdate(*this, *_node, cameraGUID, cameraEye, cameraView);
 }
 
 void SceneGraphNode::onNetworkSend(U32 frameCount) {
