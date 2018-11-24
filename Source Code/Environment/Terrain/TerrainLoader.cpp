@@ -170,16 +170,8 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
     normalSampler._magFilter = TextureFilter::LINEAR;
     normalSampler._anisotropyLevel = 8;
 
-    SamplerDescriptor heightMapSampler = {};
-    heightMapSampler._wrapU = TextureWrap::CLAMP;
-    heightMapSampler._wrapV = TextureWrap::CLAMP;
-    heightMapSampler._wrapW = TextureWrap::CLAMP;
-    heightMapSampler._minFilter = TextureFilter::LINEAR;
-    heightMapSampler._magFilter = TextureFilter::LINEAR;
-    heightMapSampler._anisotropyLevel = 0;
-
     TextureDescriptor heightMapDescriptor(TextureType::TEXTURE_2D);
-    heightMapDescriptor.setSampler(heightMapSampler);
+    heightMapDescriptor.setSampler(blendMapSampler);
 
     TextureDescriptor blendMapDescriptor(TextureType::TEXTURE_2D_ARRAY);
     blendMapDescriptor.setSampler(blendMapSampler);
@@ -238,6 +230,7 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
     terrainMaterial->addShaderDefine("MAX_TEXTURE_LAYERS " + to_stringImpl(Attorney::TerrainLoader::textureLayerCount(*terrain)));
     
     terrainMaterial->addShaderDefine(layerCountData, false);
+    terrainMaterial->addShaderDefine("MAX_RENDER_NODES " + to_stringImpl(Terrain::MAX_RENDER_NODES));
     terrainMaterial->addShaderDefine("TERRAIN_WIDTH " + to_stringImpl(terrainDimensions.width));
     terrainMaterial->addShaderDefine("TERRAIN_LENGTH " + to_stringImpl(terrainDimensions.height));
     terrainMaterial->addShaderDefine("TERRAIN_MIN_HEIGHT " + to_stringImpl(altitudeRange.x));
@@ -282,7 +275,7 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
 
     // Generate a render state
     RenderStateBlock terrainRenderState;
-    terrainRenderState.setCullMode(CullMode::CCW);
+    terrainRenderState.setCullMode(CullMode::CW);
     // Generate a render state for drawing reflections
     RenderStateBlock terrainRenderStateReflection;
     terrainRenderStateReflection.setCullMode(CullMode::CCW);

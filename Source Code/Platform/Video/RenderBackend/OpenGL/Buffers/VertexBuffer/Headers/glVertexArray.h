@@ -88,6 +88,9 @@ class glVertexArray final : public VertexBuffer {
     std::pair<bufferPtr, size_t> getMinimalData();
 
     static void cleanup();
+
+    void rebuildCountAndIndexData(U32 drawCount, U32 indexCount, U32 firstIndex);
+
    protected:
     GLenum _formatInternal;
     GLuint _IBid;
@@ -109,6 +112,10 @@ class glVertexArray final : public VertexBuffer {
     std::array<GLuint, to_base(RenderStagePass::count())> _vaoCaches;
     
     static GLUtil::glVAOCache _VAOMap;
+
+    bool _drawIndexed;
+    vector<GLsizei> _countData;
+    vector<GLuint> _indexOffsetData;
 };
 
 };  // namespace Divide

@@ -109,6 +109,7 @@ void glVertexArray::cleanup() {
 glVertexArray::glVertexArray(GFXDevice& context)
     : VertexBuffer(context),
       _refreshQueued(false),
+      _drawIndexed(true),
       _formatInternal(GL_NONE)
 {
     // We assume everything is static draw
@@ -394,7 +395,40 @@ void glVertexArray::draw(const GenericDrawCommand& command) {
     GL_API::getStateTracker().setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _IBid);
     GL_API::getStateTracker().bindActiveBuffer(vao, 0, _VBHandle._id, _VBHandle._offset * GLUtil::VBO::MAX_VBO_CHUNK_SIZE_BYTES, _effectiveEntrySize);
 
-    GLUtil::submitRenderCommand(command, true, useCmdBuffer, _formatInternal);
+    rebuildCountAndIndexData(command._drawCount, command._cmd.indexCount, command._cmd.firstIndex);
+
+    GLUtil::submitRenderCommand(
+        command,
+        _drawIndexed,
+        useCmdBuffer,
+        _formatInternal,
+        _countData.data(),
+        (bufferPtr)_indexOffsetData.data());
+}
+
+
+void glVertexArray::rebuildCountAndIndexData(U32 drawCount, U32 indexCount, U32 firstIndex) {
+    STUBBED("ToDo: Move all of this somewhere outside of glVertexArray so that we can gather proper data from all of the batched commands -Ionut");
+
+    static U32 lastDrawCount = 0;
+    static U32 lastIndexCount = 0;
+    static U32 lastFirstIndex= 0;
+
+    if (lastDrawCount == drawCount &&
+        lastIndexCount == indexCount &&
+        lastFirstIndex == firstIndex)
+    {
+        return;
+    }
+    lastDrawCount = drawCount;
+    lastIndexCount = indexCount;
+    lastFirstIndex = firstIndex;
+
+    std::fill(std::begin(_countData), std::end(_countData), indexCount);
+    _countData.resize(drawCount, indexCount);
+
+    std::fill(std::begin(_indexOffsetData), std::end(_indexOffsetData), firstIndex);
+    _indexOffsetData.resize(drawCount * getIndexCount(), firstIndex);
 }
 
 /// Activate and set all of the required vertex attributes.

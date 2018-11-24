@@ -39,12 +39,15 @@ const vec3<F32>& TerrainTessellator::getOrigin() const {
     return _originiCache;
 }
 
-void TerrainTessellator::updateRenderData() {
-    _renderDepth = 0;
-    renderRecursive(_tree.front());
+U16 TerrainTessellator::getRenderDepth() const {
+    return _renderDepth;
 }
 
-U16 TerrainTessellator::renderDepth() const {
+U16 TerrainTessellator::updateRenderData() {
+    U16 renderDepth = 0;
+    renderRecursive(_tree.front(), renderDepth);
+
+    _renderDepth = renderDepth;
     return _renderDepth;
 }
 
@@ -53,25 +56,22 @@ const TerrainTessellator::RenderDataVector& TerrainTessellator::renderData() con
 }
 
 void TerrainTessellator::clearTree() {
-    for (TessellatedTerrainNode& node : _tree) {
-        node.reset();
-    }
-
+    memset(_tree.data(), 0, sizeof(TessellatedTerrainNode) * _tree.size());
     _numNodes = 0;
 }
 
-bool TerrainTessellator::checkDivide(const vec3<F32>& camPos, TessellatedTerrainNode &node) {
+bool TerrainTessellator::checkDivide(TessellatedTerrainNode &node) {
     // Distance from current origin to camera
-    F32 d = camPos.xz().distanceSquared(node.origin.xz());
+    F32 d = std::abs(_cameraEyeCache.xz().distance(vec2<F32>{node.origin[0], node.origin[2]}));
 
     // Check base case:
     // Distance to camera is greater than twice the length of the diagonal
     // from current origin to corner of current square.
     // OR
     // Max recursion level has been hit
-    if (d > 2.5f * (std::pow(0.5f * node.dimensions.width, 2.0f) +
-                    std::pow(0.5f * node.dimensions.height, 2.0f)) ||
-        node.dimensions.width < TERRAIN_CUTOFF_DISTANCE)
+    if (d > 2.5f * Sqrt((std::pow(0.5f * node.width, 2.0f) +
+                         std::pow(0.5f * node.height, 2.0f))) ||
+        node.width < TERRAIN_CUTOFF_DISTANCE)
     {
         return false;
     }
@@ -79,16 +79,16 @@ bool TerrainTessellator::checkDivide(const vec3<F32>& camPos, TessellatedTerrain
     return true;
 }
 
-bool TerrainTessellator::divideNode(const vec3<F32>& camPos, TessellatedTerrainNode &node) {
+bool TerrainTessellator::divideNode(TessellatedTerrainNode &node) {
     // Subdivide
-    F32 w_new = 0.5f * node.dimensions.width;
-    F32 h_new = 0.5f * node.dimensions.height;
+    F32 w_new = 0.5f * node.width;
+    F32 h_new = 0.5f * node.height;
 
     // Create the child nodes
-    node.c1 = createNode(node, 1u, node.origin.x - 0.5f * w_new, node.origin.y, node.origin.z - 0.5f * h_new, w_new, h_new);
-    node.c2 = createNode(node, 2u, node.origin.x + 0.5f * w_new, node.origin.y, node.origin.z - 0.5f * h_new, w_new, h_new);
-    node.c3 = createNode(node, 3u, node.origin.x + 0.5f * w_new, node.origin.y, node.origin.z + 0.5f * h_new, w_new, h_new);
-    node.c4 = createNode(node, 4u, node.origin.x - 0.5f * w_new, node.origin.y, node.origin.z + 0.5f * h_new, w_new, h_new);
+    node.c1 = createNode(node, 1u, node.origin[0] - 0.5f * w_new, node.origin[1], node.origin[2] - 0.5f * h_new, w_new, h_new);
+    node.c2 = createNode(node, 2u, node.origin[0] + 0.5f * w_new, node.origin[1], node.origin[2] - 0.5f * h_new, w_new, h_new);
+    node.c3 = createNode(node, 3u, node.origin[0] + 0.5f * w_new, node.origin[1], node.origin[2] + 0.5f * h_new, w_new, h_new);
+    node.c4 = createNode(node, 4u, node.origin[0] - 0.5f * w_new, node.origin[1], node.origin[2] + 0.5f * h_new, w_new, h_new);
 
     // Assign neighbors
     switch (node.type) {
@@ -113,34 +113,40 @@ bool TerrainTessellator::divideNode(const vec3<F32>& camPos, TessellatedTerrainN
     };
 
     // Check if each of these four child nodes will be subdivided.
-    bool div1 = checkDivide(camPos, *node.c1);
-    bool div2 = checkDivide(camPos, *node.c2);
-    bool div3 = checkDivide(camPos, *node.c3);
-    bool div4 = checkDivide(camPos, *node.c4);
+    bool div1 = checkDivide(*node.c1);
+    bool div2 = checkDivide(*node.c2);
+    bool div3 = checkDivide(*node.c3);
+    bool div4 = checkDivide(*node.c4);
 
     if (div1) {
-        divideNode(camPos, *node.c1);
+        divideNode(*node.c1);
     }
     if (div2) {
-        divideNode(camPos, *node.c2);
+        divideNode(*node.c2);
     }
     if (div3) {
-        divideNode(camPos, *node.c3);
+        divideNode(*node.c3);
     }
     if (div4) {
-        divideNode(camPos, *node.c4);
+        divideNode(*node.c4);
     }
 
     return div1 || div2 || div3 || div4;
 }
 
 void TerrainTessellator::createTree(const vec3<F32>& camPos, const vec3<F32>& origin, const vec2<U16>& terrainDimensions) {
+    _cameraEyeCache.set(camPos);
+    _originiCache.set(origin);
+
     clearTree();
 
     TessellatedTerrainNode& root = _tree[_numNodes];
     root.type = 0u; // Root node
-    root.origin.set(origin);
-    root.dimensions.set(terrainDimensions.width, terrainDimensions.height);
+    root.origin[0] = origin[0];
+    root.origin[1] = origin[1];
+    root.origin[2] = origin[2];
+    root.width = terrainDimensions.width;
+    root.height = terrainDimensions.height;
     root.tscale_negx = 1.0;
     root.tscale_negz = 1.0;
     root.tscale_posx = 1.0;
@@ -152,10 +158,7 @@ void TerrainTessellator::createTree(const vec3<F32>& camPos, const vec3<F32>& or
     root.w = nullptr;
 
     // Recursively subdivide the terrain
-    divideNode(camPos, root);
-
-    _cameraEyeCache.set(camPos);
-    _originiCache.set(origin);
+    divideNode(root);
 }
 
 TessellatedTerrainNode* TerrainTessellator::createNode(TessellatedTerrainNode &parent, U8 type, F32 x, F32 y, F32 z, F32 width, F32 height) {
@@ -167,8 +170,11 @@ TessellatedTerrainNode* TerrainTessellator::createNode(TessellatedTerrainNode &p
 
     TessellatedTerrainNode& node = _tree[_numNodes];
     node.type = type;
-    node.origin.set(x, y, z);
-    node.dimensions.set(width, height);
+    node.origin[0] = x;
+    node.origin[1] = y;
+    node.origin[2] = z;
+    node.width = width;
+    node.height = height;
     node.tscale_negx = 1.0;
     node.tscale_negz = 1.0;
     node.tscale_posx = 1.0;
@@ -181,72 +187,82 @@ TessellatedTerrainNode* TerrainTessellator::createNode(TessellatedTerrainNode &p
     return &node;
 }
 
-void TerrainTessellator::renderNode(TessellatedTerrainNode& node) {
+void TerrainTessellator::renderNode(TessellatedTerrainNode& node, U16 renderDepth) {
     // Calculate the tess scale factor
     calcTessScale(node);
 
-    _renderData[_renderDepth].set(node.origin,
-                                  node.dimensions.width * 0.5f,
-                                  node.tscale_negx,
-                                  node.tscale_negz,
-                                  node.tscale_posx,
-                                  node.tscale_posz);
+    _renderData[renderDepth].set({
+                                    node.origin[0],
+                                    node.origin[1],
+                                    node.origin[2]
+                                 },
+                                 node.width * 0.5f,
+                                 node.tscale_negx,
+                                 node.tscale_negz,
+                                 node.tscale_posx,
+                                 node.tscale_posz);
 }
 
-void TerrainTessellator::renderRecursive(TessellatedTerrainNode& node) {
-    if (_renderDepth >= _maxRenderDepth) {
+void TerrainTessellator::renderRecursive(TessellatedTerrainNode& node, U16& renderDepth) {
+    if (renderDepth >= _maxRenderDepth) {
         return;
     }
 
     // If all children are null, render this node
     if (!node.c1 && !node.c2 && !node.c3 && !node.c4)
     {
-        renderNode(node);
-        _renderDepth++;
+        renderNode(node, renderDepth);
+        renderDepth++;
         return;
     }
 
     // Otherwise, recurse to the children.
     if (node.c1) {
-        renderRecursive(*node.c1);
-        renderRecursive(*node.c2);
-        renderRecursive(*node.c3);
-        renderRecursive(*node.c4);
+        renderRecursive(*node.c1, renderDepth);
+    }
+    if (node.c2) {
+        renderRecursive(*node.c2, renderDepth);
+    }
+    if (node.c3) {
+        renderRecursive(*node.c3, renderDepth);
+    }
+    if (node.c4) {
+        renderRecursive(*node.c4, renderDepth);
     }
 }
 
 void TerrainTessellator::calcTessScale(TessellatedTerrainNode& node) {
-    TessellatedTerrainNode* t;
+    TessellatedTerrainNode* t = nullptr;
 
     TessellatedTerrainNode& root = _tree[0];
 
     // Positive Z (north)
-    t = find(root, node.origin.x, node.origin.z + 1 + node.dimensions.width * 0.5f);
-    if (t->dimensions.width > node.dimensions.width) {
+    t = find(root, node.origin[0], node.origin[2] + 1 + node.width * 0.5f);
+    if (t->width > node.width) {
         node.tscale_posz = 2.0;
     }
 
     // Positive X (east)
-    t = find(root, node.origin.x + 1 + node.dimensions.width * 0.5f, node.origin.z);
-    if (t->dimensions.width > node.dimensions.width) {
+    t = find(root, node.origin[0] + 1 + node.width * 0.5f, node.origin[2]);
+    if (t->width > node.width) {
         node.tscale_posx = 2.0;
     }
 
     // Negative Z (south)
-    t = find(root, node.origin.x, node.origin.z - 1 - node.dimensions.width * 0.5f);
-    if (t->dimensions.width > node.dimensions.width) {
+    t = find(root, node.origin[0], node.origin[2] - 1 - node.width * 0.5f);
+    if (t->width > node.width) {
         node.tscale_negz = 2.0;
     }
 
     // Negative X (west)
-    t = find(root, node.origin.x - 1 - node.dimensions.width * 0.5f, node.origin.z);
-    if (t->dimensions.width > node.dimensions.width) {
+    t = find(root, node.origin[0] - 1 - node.width * 0.5f, node.origin[2]);
+    if (t->width > node.width) {
         node.tscale_negx = 2.0;
     }
 }
 
 TessellatedTerrainNode* TerrainTessellator::find(TessellatedTerrainNode& n, F32 x, F32 z) {
-    if (COMPARE(n.origin.x, x) && COMPARE(n.origin.z, z)) {
+    if (COMPARE(n.origin[0], x) && COMPARE(n.origin[2], z)) {
         return &n;
     }
 
@@ -254,13 +270,13 @@ TessellatedTerrainNode* TerrainTessellator::find(TessellatedTerrainNode& n, F32 
         return &n;
     }
 
-    if (IS_GEQUAL(n.origin.x, x) && IS_GEQUAL(n.origin.z, z) && n.c1) {
+    if (IS_GEQUAL(n.origin[0], x) && IS_GEQUAL(n.origin[2], z) && n.c1) {
         return find(*n.c1, x, z);
-    } else if (IS_LEQUAL(n.origin.x, x) && IS_GEQUAL(n.origin.z, z) && n.c2) {
+    } else if (IS_LEQUAL(n.origin[0], x) && IS_GEQUAL(n.origin[2], z) && n.c2) {
         return find(*n.c2, x, z);
-    } else if (IS_LEQUAL(n.origin.x, x) && IS_LEQUAL(n.origin.z, z) && n.c3) {
+    } else if (IS_LEQUAL(n.origin[0], x) && IS_LEQUAL(n.origin[2], z) && n.c3) {
         return find(*n.c3, x, z);
-    } else if (IS_GEQUAL(n.origin.x, x) && IS_LEQUAL(n.origin.z, z) && n.c4) {
+    } else if (IS_GEQUAL(n.origin[0], x) && IS_LEQUAL(n.origin[2], z) && n.c4) {
         return find(*n.c4, x, z);
     }
 

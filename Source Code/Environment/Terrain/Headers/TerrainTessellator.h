@@ -45,62 +45,27 @@ namespace Attorney {
 };
 
 struct TessellatedTerrainNode {
-
-    TessellatedTerrainNode() noexcept
-        : type(0),
-          tscale_negx(1.0f),
-          tscale_posx(1.0f),
-          tscale_negz(1.0f),
-          tscale_posz(1.0f),
-          p(nullptr),
-          c1(nullptr),
-          c2(nullptr),
-          c3(nullptr),
-          c4(nullptr),
-          n(nullptr),
-          s(nullptr),
-          e(nullptr),
-          w(nullptr)
-    {
-    }
-
-    vec3<F32> origin;
-    vec2<F32> dimensions;
-    U8 type; // 1, 2, 3, 4 -- the child # relative to its parent. (0 == root)
+    F32 origin[3] = { 0, 0, 0 };
+    F32 width = 0.0f;
+    F32 height = 0.0f;
+    U8 type = 0; // 1, 2, 3, 4 -- the child # relative to its parent. (0 == root)
 
     // Tessellation scale
-    F32 tscale_negx; // negative x edge
-    F32 tscale_posx; // Positive x edge
-    F32 tscale_negz; // Negative z edge
-    F32 tscale_posz; // Positive z edge
+    F32 tscale_negx = 0.0f; // negative x edge
+    F32 tscale_posx = 0.0f; // Positive x edge
+    F32 tscale_negz = 0.0f; // Negative z edge
+    F32 tscale_posz = 0.0f; // Positive z edge
 
-    TessellatedTerrainNode *p;  // Parent
-    TessellatedTerrainNode *c1; // Children
-    TessellatedTerrainNode *c2;
-    TessellatedTerrainNode *c3;
-    TessellatedTerrainNode *c4;
+    TessellatedTerrainNode *p  = nullptr;  // Parent
+    TessellatedTerrainNode *c1 = nullptr; // Children
+    TessellatedTerrainNode *c2 = nullptr;
+    TessellatedTerrainNode *c3 = nullptr;
+    TessellatedTerrainNode *c4 = nullptr;
 
-    TessellatedTerrainNode *n; // Neighbor to north
-    TessellatedTerrainNode *s; // Neighbor to south
-    TessellatedTerrainNode *e; // Neighbor to east
-    TessellatedTerrainNode *w; // Neighbor to west
-
-    inline void reset() {
-        type = 0;
-        tscale_negx = 1.0f;
-        tscale_posx = 1.0f;
-        tscale_negz = 1.0f;
-        tscale_posz = 1.0f;
-        p = nullptr;
-        c1 = nullptr;
-        c2 = nullptr;
-        c3 = nullptr;
-        c4 = nullptr;
-        n = nullptr;
-        s = nullptr;
-        e = nullptr;
-        w = nullptr;
-    }
+    TessellatedTerrainNode *n = nullptr; // Neighbor to north
+    TessellatedTerrainNode *s = nullptr; // Neighbor to south
+    TessellatedTerrainNode *e = nullptr; // Neighbor to east
+    TessellatedTerrainNode *w = nullptr; // Neighbor to west
 }; //struct TessellatedTerrainNode
 
 struct TessellatedNodeData {
@@ -134,11 +99,8 @@ public:
     // Builds a terrain quadtree based on specified parameters and current camera position.
     void createTree(const vec3<F32>& camPos, const vec3<F32>& origin, const vec2<U16>& terrainDimensions);
 
-    // Prepare data to draw the terrain.
-    void updateRenderData();
-
-    // Returns the final render depth
-    U16 renderDepth() const;
+    // Prepare data to draw the terrain. Returns the final render depth
+    U16 updateRenderData();
 
     // Search for a node in the tree.
     // x, z == the point we are searching for (trying to find the node with an origin closest to that point)
@@ -149,16 +111,18 @@ public:
 
     const vec3<F32>& getEye() const;
     const vec3<F32>& getOrigin() const;
+    U16 getRenderDepth() const;
+
 protected:
     // Resets the terrain quadtree.
     void clearTree();
     
     // Determines whether a node should be subdivided based on its distance to the camera.
     // Returns true if the node should be subdivided.
-    bool checkDivide(const vec3<F32>& camPos, TessellatedTerrainNode& node);
+    bool checkDivide(TessellatedTerrainNode& node);
 
     // Returns true if node is sub-divided. False otherwise.
-    bool divideNode(const vec3<F32>& camPos, TessellatedTerrainNode& node);
+    bool divideNode(TessellatedTerrainNode& node);
 
     //Allocates a new node in the terrain quadtree with the specified parameters.
     TessellatedTerrainNode* createNode(TessellatedTerrainNode& parent, U8 type, F32 x, F32 y, F32 z, F32 width, F32 height);
@@ -167,10 +131,10 @@ protected:
     void calcTessScale(TessellatedTerrainNode& node);
 
     // Pushes a node (patch) to the GPU to be drawn.
-    void renderNode(TessellatedTerrainNode& node);
+    void renderNode(TessellatedTerrainNode& node, U16 crtDepth);
 
     // Traverses the terrain quadtree to draw nodes with no children.
-    void renderRecursive(TessellatedTerrainNode& node);
+    void renderRecursive(TessellatedTerrainNode& node, U16& renderDepth);
 
 protected:
     static void initTessellationPatch(VertexBuffer* vb);

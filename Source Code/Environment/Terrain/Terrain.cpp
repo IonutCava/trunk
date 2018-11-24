@@ -64,7 +64,9 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
     bufferDescriptor._elementCount = Terrain::MAX_RENDER_NODES * to_base(RenderStage::COUNT);
     bufferDescriptor._elementSize = sizeof(TessellatedNodeData);
     bufferDescriptor._ringBufferLength = 1;
-    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE) | to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
+    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE)
+                              | to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
+                              // | to_U32(ShaderBuffer::Flags::AUTO_RANGE_FLUSH);
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
     bufferDescriptor._name = "TERRAIN_RENDER_NODES";
     _shaderData = _context.newSB(bufferDescriptor);
@@ -107,11 +109,11 @@ bool Terrain::onRender(SceneGraphNode& sgn,
                        RenderStagePass renderStagePass) {
     RenderPackage& pkg = sgn.get<RenderingComponent>()->getDrawPackage(renderStagePass);
 
-    FrustumClipPlanes clipPlanes = pkg.clipPlanes(0);
+    /*FrustumClipPlanes clipPlanes = pkg.clipPlanes(0);
     clipPlanes.set(to_U32(ClipPlaneIndex::CLIP_PLANE_0),
                    Plane<F32>(WORLD_Y_AXIS, _waterHeight),
                    true);
-    pkg.clipPlanes(0, clipPlanes);
+    pkg.clipPlanes(0, clipPlanes);*/
 
     Camera* camera = sceneRenderState.parentScene().playerCamera();
 
@@ -119,28 +121,27 @@ bool Terrain::onRender(SceneGraphNode& sgn,
 
     TerrainTessellator& tessellator = _terrainTessellator[stageIndex];
 
-    U32 offset = to_U32(stageIndex * Terrain::MAX_RENDER_NODES);
     const vec3<F32>& newEye = camera->getEye();
     const vec3<F32>& crtPos = sgn.get<TransformComponent>()->getPosition();
-    if (tessellator.getEye() != newEye || tessellator.getOrigin() != crtPos ) {
-        tessellator.createTree(newEye, crtPos, _descriptor->getDimensions());
-        tessellator.updateRenderData();
 
-        STUBBED("This may cause stalls. Profile! -Ionut");
-        _shaderData->writeData(offset, tessellator.renderDepth(), (bufferPtr)tessellator.renderData().data());
-    }
+    GenericDrawCommand cmd = pkg.drawCommand(0, 0);
+    if (tessellator.getEye() != newEye || tessellator.getOrigin() != crtPos )
     {
-        GenericDrawCommand cmd = pkg.drawCommand(0, 0);
-        cmd._drawCount = tessellator.renderDepth();
-        disableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
-        pkg.drawCommand(0, 0, cmd);
+        tessellator.createTree(newEye, crtPos, _descriptor->getDimensions());
+        U16 depth = tessellator.updateRenderData();
+
+        U32 offset = to_U32(stageIndex * Terrain::MAX_RENDER_NODES);
+        STUBBED("This may cause stalls. Profile! -Ionut");
+        _shaderData->writeData(offset, depth, (bufferPtr)tessellator.renderData().data());
+    
+        sgn.get<RenderingComponent>()->registerShaderBuffer(ShaderBufferLocation::TERRAIN_DATA,
+                                                            vec2<U32>(offset, Terrain::MAX_RENDER_NODES),
+                                                            *_shaderData);
     }
 
-
-    sgn.get<RenderingComponent>()->registerShaderBuffer(ShaderBufferLocation::TERRAIN_DATA,
-                                                        vec2<U32>(offset, Terrain::MAX_RENDER_NODES),
-                                                        *_shaderData);
-
+    disableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
+    cmd._drawCount = tessellator.getRenderDepth();
+    pkg.drawCommand(0, 0, cmd);
     /*if (renderStagePass._stage == RenderStage::DISPLAY) {
         // draw infinite plane
         assert(pkg.drawCommand(1, 0)._drawCount == 1u);
@@ -176,11 +177,11 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
     constants.set("detailScale",  GFX::PushConstantType::VEC4, _terrainTextures->getDetailScales());
     pkgInOut.pushConstants(0, constants);
 
-    GFX::SetClipPlanesCommand clipPlanesCommand = {};
+    /*GFX::SetClipPlanesCommand clipPlanesCommand = {};
     clipPlanesCommand._clippingPlanes.set(to_U32(ClipPlaneIndex::CLIP_PLANE_0),
                                           Plane<F32>(WORLD_Y_AXIS, _waterHeight),
                                           false);
-    pkgInOut.addClipPlanesCommand(clipPlanesCommand);
+    pkgInOut.addClipPlanesCommand(clipPlanesCommand);*/
 
     GenericDrawCommand cmd = {};
     cmd._primitiveType = PrimitiveType::PATCH;

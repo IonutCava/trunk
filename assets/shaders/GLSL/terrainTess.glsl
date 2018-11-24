@@ -9,7 +9,7 @@ struct TerrainNodeData {
 
 layout(binding = BUFFER_TERRAIN_DATA, std430) coherent readonly buffer dvd_TerrainBlock
 {
-    TerrainNodeData dvd_TerrainData[];
+    TerrainNodeData dvd_TerrainData[MAX_RENDER_NODES];
 };
 
 vec2 calcTerrainTexCoord(in vec4 pos)
@@ -48,9 +48,10 @@ struct TerrainNodeData {
     vec4 _tScale;
 };
 
+
 layout(binding = BUFFER_TERRAIN_DATA, std430) coherent readonly buffer dvd_TerrainBlock
 {
-    TerrainNodeData dvd_TerrainData[];
+    TerrainNodeData dvd_TerrainData[MAX_RENDER_NODES];
 };
 
 //
@@ -73,12 +74,11 @@ float dlodCameraDistance(mat4 mvMatrix, vec4 p0, vec4 p1, vec2 t0, vec2 t1)
     sampleHeight = texture(TexTerrainHeight, t1).r;
     p1.y = TERRAIN_MIN_HEIGHT + TERRAIN_HEIGHT_RANGE * sampleHeight;
 
-    vec3 offset = dvd_TerrainData[VAR.dvd_drawID]._positionAndTileScale.xyz;
-    vec4 view0 = mvMatrix * vec4(p0.xyz + offset, p0.w);
-    vec4 view1 = mvMatrix * vec4(p1.xyz + offset, p1.w);
+    vec4 view0 = mvMatrix * p0;
+    vec4 view1 = mvMatrix * p1;
 
-    float MinDepth = 5.0;
-    float MaxDepth = 150.0;
+    float MinDepth = 10.0;
+    float MaxDepth = 100000.0;
 
     float d0 = clamp((abs(p0.z) - MinDepth) / (MaxDepth - MinDepth), 0.0, 1.0);
     float d1 = clamp((abs(p1.z) - MinDepth) / (MaxDepth - MinDepth), 0.0, 1.0);
@@ -122,10 +122,8 @@ float dlodSphere(mat4 mvMatrix, vec4 p0, vec4 p1, vec2 t0, vec2 t1)
     sampleHeight = texture(TexTerrainHeight, t1).r;
     p1.y = TERRAIN_MIN_HEIGHT + TERRAIN_HEIGHT_RANGE * sampleHeight;
 
-    vec3 offset = dvd_TerrainData[VAR.dvd_drawID]._positionAndTileScale.xyz;
-
     vec4 center = 0.5 * (p0 + p1);
-    vec4 view0 = mvMatrix * vec4(center.xyz + offset, center.w);
+    vec4 view0 = mvMatrix * center;
     vec4 view1 = view0;
     view1.x += distance(p0, p1);
 
@@ -231,9 +229,10 @@ struct TerrainNodeData {
     vec4 _tScale;
 };
 
+
 layout(binding = BUFFER_TERRAIN_DATA, std430) coherent readonly buffer dvd_TerrainBlock
 {
-    TerrainNodeData dvd_TerrainData[];
+    TerrainNodeData dvd_TerrainData[MAX_RENDER_NODES];
 };
 
 layout(quads, fractional_even_spacing) in;
@@ -593,7 +592,7 @@ void main(void)
 #if defined(TOGGLE_WIREFRAME)
     const float LineWidth = 0.75;
     float d = min(min(gs_edgeDist.x, gs_edgeDist.y), gs_edgeDist.z);
-    _colourOut = mix(gs_wireColor, _colourOut, smoothstep(LineWidth - 1, LineWidth + 1, d));
+    _colourOut = gs_wireColor;// mix(gs_wireColor, _colourOut, smoothstep(LineWidth - 1, LineWidth + 1, d));
 #endif
 
     _normalOut = packNormal(getProcessedNormal());

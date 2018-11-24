@@ -143,7 +143,9 @@ extern std::mutex _glSecondaryContextMutex;
 void submitRenderCommand(const GenericDrawCommand& drawCommand,
                          bool drawIndexed,
                          bool useIndirectBuffer,
-                         GLenum internalFormat);
+                         GLenum internalFormat,
+                         GLsizei* countData = nullptr,
+                         bufferPtr indexData = nullptr);
 
 /// Populate enumeration tables with appropriate API values
 void fillEnumTables();
