@@ -220,8 +220,8 @@ class Material : public CachedResource {
     void setShaderProgram(const ShaderProgram_ptr& shader,
                           RenderPassType passType);
 
-    void setShaderProgram(const stringImpl& shader,
-                          const bool computeOnAdd);
+    /*void setShaderProgram(const stringImpl& shader,
+                          const bool computeOnAdd);*/
 
     void setShaderProgram(const ShaderProgram_ptr& shader);
 

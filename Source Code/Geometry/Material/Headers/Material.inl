@@ -119,12 +119,12 @@ inline void Material::setShaderLoadThreaded(const bool state) {
     _shaderThreadedLoad = state;
 }
 
-inline void Material::setShaderProgram(const stringImpl& shader,
+/*inline void Material::setShaderProgram(const stringImpl& shader,
                                        const bool computeOnAdd) {
     for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
         setShaderProgram(shader, RenderStagePass::stagePass(i), computeOnAdd);
     }
-}
+}*/
 
 inline void Material::setShaderProgram(const ShaderProgram_ptr& shader) {
     for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {

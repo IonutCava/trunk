@@ -242,12 +242,28 @@ void Material::setShaderProgramInternal(const ShaderProgram_ptr& shader,
     }
 }
 
+namespace {
+    stringImpl getDefinesHash(const vector<std::pair<stringImpl, bool>>& defines) {
+        size_t hash = 17;
+        for (auto entry : defines) {
+            Util::Hash_combine(hash, _ID(entry.first.c_str()));
+            Util::Hash_combine(hash, entry.second);
+        }
+        return to_stringImpl(hash);
+    }
+};
+
 void Material::setShaderProgramInternal(const stringImpl& shader,
                                         RenderStagePass renderStagePass,
                                         const bool computeOnAdd) {
     ShaderProgramInfo& info = shaderInfo(renderStagePass);
 
-    ResourceDescriptor shaderDescriptor(shader.empty() ? "NULL" : shader);
+    stringImpl shaderName = shader.empty() ? "NULL" : shader;
+    if (!info._shaderDefines.empty()) {
+        shaderName.append("_" + getDefinesHash(info._shaderDefines));
+    }
+
+    ResourceDescriptor shaderDescriptor(shaderName);
 
     ShaderProgramDescriptor shaderPropertyDescriptor;
     shaderPropertyDescriptor._defines = info._shaderDefines;

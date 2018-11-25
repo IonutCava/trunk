@@ -236,7 +236,10 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
     terrainMaterial->addShaderDefine("TERRAIN_MIN_HEIGHT " + to_stringImpl(altitudeRange.x));
     terrainMaterial->addShaderDefine("TERRAIN_HEIGHT_RANGE " + to_stringImpl(altitudeRange.y - altitudeRange.x));
     terrainMaterial->addShaderDefine("UNDERWATER_DIFFUSE_SCALE " + to_stringImpl(underwaterDiffuseScale));
-    terrainMaterial->setShaderProgram("terrainTess." + name, true);
+    //terrainMaterial->setShaderProgram("terrainTess." + name, false);
+    terrainMaterial->setShaderProgram("terrainTess." + name, RenderStage::DISPLAY, true);
+    terrainMaterial->setShaderProgram("terrainTess." + name, RenderStage::REFLECTION, true);
+    terrainMaterial->setShaderProgram("terrainTess." + name, RenderStage::REFRACTION, true);
     terrainMaterial->setShaderProgram("terrainTess.PrePass." + name, RenderPassType::DEPTH_PASS, true);
     terrainMaterial->setShaderProgram("terrainTess.Shadow." + name, RenderStage::SHADOW, true);
 

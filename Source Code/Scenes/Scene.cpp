@@ -1481,7 +1481,7 @@ bool Scene::save(ByteBuffer& outputBuffer) const {
     outputBuffer << playerCount;
     for (U8 i = 0; i < playerCount; ++i) {
         const Camera& cam = _scenePlayers[i]->getCamera();
-        outputBuffer << _scenePlayers[i]->index() << cam.getEye() << cam.getEuler();
+        outputBuffer << _scenePlayers[i]->index() << cam.getEye() << cam.getOrientation();
     }
 
     return _sceneGraph->saveCache(outputBuffer);
@@ -1491,18 +1491,19 @@ bool Scene::load(ByteBuffer& inputBuffer) {
 
     if (!inputBuffer.empty()) {
         vec3<F32> camPos;
-        vec3<F32> camEuler;
+        Quaternion<F32> camOrientation;
+
         U8 currentPlayerIndex = 0;
         U8 currentPlayerCount = to_U8(_scenePlayers.size());
 
         U8 previousPlayerCount = 0;
         inputBuffer >> previousPlayerCount;
         for (U8 i = 0; i < previousPlayerCount; ++i) {
-            inputBuffer >> currentPlayerIndex >> camPos >> camEuler;
+            inputBuffer >> currentPlayerIndex >> camPos >> camOrientation;
             if (currentPlayerIndex < currentPlayerCount) {
                 Camera& cam = _scenePlayers[currentPlayerIndex]->getCamera();
                 cam.setEye(camPos);
-                cam.setGlobalRotation(-camEuler);
+                cam.setRotation(camOrientation);
             }
         }
     }

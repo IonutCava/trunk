@@ -98,7 +98,7 @@ vec4 UnderwaterMappingRoutine(){
 }
 
 vec4 TerrainMappingRoutine(){ // -- HACK - Ionut
-    setAlbedo(getTerrainAlbedo());
+    setAlbedo(getTerrainAlbedo(highDetail == 1));
 
     if (dvd_lodLevel(VAR.dvd_instanceID) == 0 && dvd_renderDetailLevel > DETAIL_LOW) {
         setProcessedNormal(getTerrainNormal());

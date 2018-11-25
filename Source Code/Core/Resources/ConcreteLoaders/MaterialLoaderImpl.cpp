@@ -17,7 +17,9 @@ CachedResource_ptr ImplResourceLoader<Material>::operator()() {
         ptr.reset();
     } else {
         if (_descriptor.getFlag()) {
-            ptr->setShaderProgram("", true);
+            for (U8 i = 0; i < to_U8(RenderStage::COUNT); ++i) {
+                ptr->setShaderProgram("", static_cast<RenderStage>(i), true);
+            }
         }
 
         ptr->setHardwareSkinning(_descriptor.getEnumValue() == 

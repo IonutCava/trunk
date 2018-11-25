@@ -37,7 +37,7 @@ void main(void)
 
 --TessellationC
 
-const bool USE_CAMERA_DISTANCE = false;
+const bool USE_CAMERA_DISTANCE = true;
 
 #include "nodeBufferedInput.cmn"
 
@@ -77,8 +77,8 @@ float dlodCameraDistance(mat4 mvMatrix, vec4 p0, vec4 p1, vec2 t0, vec2 t1)
     vec4 view0 = mvMatrix * p0;
     vec4 view1 = mvMatrix * p1;
 
-    float MinDepth = 10.0;
-    float MaxDepth = 100000.0;
+    float MinDepth = dvd_zPlanes.x;
+    float MaxDepth = dvd_zPlanes.y / 3;
 
     float d0 = clamp((abs(p0.z) - MinDepth) / (MaxDepth - MinDepth), 0.0, 1.0);
     float d1 = clamp((abs(p1.z) - MinDepth) / (MaxDepth - MinDepth), 0.0, 1.0);
@@ -189,21 +189,21 @@ void main(void)
         gl_TessLevelOuter[3] = dlodSphere(mvMatrix, gl_in[2].gl_Position, gl_in[3].gl_Position, _in[2]._texCoord, _in[3]._texCoord);
     }
     
-    TerrainNodeData data = dvd_TerrainData[VAR.dvd_drawID];
+    vec4 tScale = dvd_TerrainData[VAR.dvd_drawID]._tScale;
 
-    if (data._tScale.x == 2.0) {
+    if (tScale.x == 2.0) {
         gl_TessLevelOuter[0] = max(2.0, gl_TessLevelOuter[0] * 0.5);
     }
 
-    if (data._tScale.y == 2.0) {
+    if (tScale.y == 2.0) {
         gl_TessLevelOuter[1] = max(2.0, gl_TessLevelOuter[1] * 0.5);
     }
 
-    if (data._tScale.z == 2.0) {
+    if (tScale.z == 2.0) {
         gl_TessLevelOuter[2] = max(2.0, gl_TessLevelOuter[2] * 0.5);
     }
 
-    if (data._tScale.w == 2.0) {
+    if (tScale.w == 2.0) {
         gl_TessLevelOuter[3] = max(2.0, gl_TessLevelOuter[3] * 0.5);
     }
 
@@ -311,7 +311,6 @@ void main()
     // Terrain heightmap coords
     vec2 terrainTexCoord = interpolate2(VAR[0]._texCoord, VAR[1]._texCoord, VAR[2]._texCoord, VAR[3]._texCoord);
 
-
     vec4 heightOffsets = getHeightOffsets(terrainTexCoord);
 
     // Sample the heightmap and offset y position of vertex
@@ -353,6 +352,7 @@ out vec4 _scrollingUV;
 // x = distance, y = depth
 smooth out vec2 _waterDetails;
 
+out int highDetail;
 #if defined(_DEBUG)
 out vec4 gs_wireColor;
 noperspective out vec3 gs_edgeDist;
@@ -421,6 +421,7 @@ vec4 getWVPPositon(int index) {
 
 void PerVertex(in int i, in vec3 edge_dist, in vec4 wireColor, in float minHeight) {
     PassData(i);
+    highDetail = tes_tessLevel[0] == 64.0 ? 1 : 0;
 #if defined(SHADOW_PASS)
     geom_vertexWVP = gl_in[i].gl_Position;
 #endif //SHADOW_PASS
@@ -533,9 +534,11 @@ void main()
 #include "velocityCalc.frag"
 
 in vec4 _scrollingUV;
+
 // x = distance, y = depth
 smooth in vec2 _waterDetails;
 
+in flat int highDetail;
 #if defined(_DEBUG)
 in vec4 gs_wireColor;
 noperspective in vec3 gs_edgeDist;
@@ -577,22 +580,22 @@ vec4 UnderwaterMappingRoutine() {
 }
 
 vec4 TerrainMappingRoutine() {
-    setAlbedo(getTerrainAlbedo());
+    setAlbedo(getTerrainAlbedo(highDetail == 1));
 
-    return getAlbedo();//getPixelColour(VAR._texCoord);
+    return getPixelColour(VAR._texCoord);
 }
 
 void main(void)
 {
     bumpInit();
 
-    setProcessedNormal(getTerrainNormal());
+    setProcessedNormal(highDetail == 1 ? getTerrainNormal() : VAR._normalWV);
+    _colourOut = mix(TerrainMappingRoutine(), UnderwaterMappingRoutine(), _waterDetails.x);
 
-    _colourOut = TerrainMappingRoutine();//mix(TerrainMappingRoutine(), UnderwaterMappingRoutine(), _waterDetails.x);
 #if defined(TOGGLE_WIREFRAME)
     const float LineWidth = 0.75;
     float d = min(min(gs_edgeDist.x, gs_edgeDist.y), gs_edgeDist.z);
-    _colourOut = gs_wireColor;// mix(gs_wireColor, _colourOut, smoothstep(LineWidth - 1, LineWidth + 1, d));
+    _colourOut = mix(gs_wireColor, _colourOut, smoothstep(LineWidth - 1, LineWidth + 1, d));
 #endif
 
     _normalOut = packNormal(getProcessedNormal());

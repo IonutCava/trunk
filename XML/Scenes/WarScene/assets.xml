@@ -44,5 +44,6 @@
         </node>
         <node name="Terrain" type="TERRAIN"/>
         <node name="DefaultLight" type=""/>
+        <node name="Player_1" type=""/>
     </node>
 </entities>

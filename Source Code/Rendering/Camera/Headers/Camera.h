@@ -223,6 +223,10 @@ class Camera : public Resource {
         return _data._eye;
     }
 
+    inline const Quaternion<F32>& getOrientation() const {
+        return _data._orientation;
+    }
+
     inline vec3<F32> getUpDir() const {
         const mat4<F32>& viewMat = getViewMatrix();
         return vec3<F32>(viewMat.m[0][1], viewMat.m[1][1], viewMat.m[2][1]);
