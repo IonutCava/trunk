@@ -7,6 +7,7 @@
 <terrainWidth>1024</terrainWidth>
 <terrainHeight>1024</terrainHeight>
 <altitudeRange min="0" max="100"/>
+<tessellationRange min="10" max="150"/>
 <targetChunkSize>64</targetChunkSize>
 <textureLocation>misc_images/</textureLocation>
 <waterCaustics>terrain_water_caustics.jpg</waterCaustics>

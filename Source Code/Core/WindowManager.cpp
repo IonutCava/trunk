@@ -507,6 +507,7 @@ void WindowManager::SetCursorStyle(CursorStyle style) {
 void WindowManager::ToggleRelativeMouseMode(bool state) {
     I32 result = SDL_SetRelativeMouseMode(state ? SDL_TRUE : SDL_FALSE);
     assert(result != -1);
+    ACKNOWLEDGE_UNUSED(result);
 }
 
 vec2<I32> WindowManager::GetCursorPosition(bool global) {

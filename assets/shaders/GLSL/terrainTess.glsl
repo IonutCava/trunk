@@ -7,7 +7,12 @@ struct TerrainNodeData {
     vec4 _tScale;
 };
 
-layout(binding = BUFFER_TERRAIN_DATA, std430) coherent readonly buffer dvd_TerrainBlock
+#if defined(USE_SSBO_DATA_BUFFER)
+layout(binding = BUFFER_TERRAIN_DATA, std430) coherent readonly buffer 
+#else
+layout(binding = BUFFER_TERRAIN_DATA, std140) uniform
+#endif
+dvd_TerrainBlock
 {
     TerrainNodeData dvd_TerrainData[MAX_RENDER_NODES];
 };
@@ -49,10 +54,17 @@ struct TerrainNodeData {
 };
 
 
-layout(binding = BUFFER_TERRAIN_DATA, std430) coherent readonly buffer dvd_TerrainBlock
+#if defined(USE_SSBO_DATA_BUFFER)
+layout(binding = BUFFER_TERRAIN_DATA, std430) coherent readonly buffer
+#else
+layout(binding = BUFFER_TERRAIN_DATA, std140) uniform
+#endif
+dvd_TerrainBlock
 {
     TerrainNodeData dvd_TerrainData[MAX_RENDER_NODES];
 };
+
+uniform vec2 tessellationRange;
 
 //
 // Outputs
@@ -77,11 +89,10 @@ float dlodCameraDistance(mat4 mvMatrix, vec4 p0, vec4 p1, vec2 t0, vec2 t1)
     vec4 view0 = mvMatrix * p0;
     vec4 view1 = mvMatrix * p1;
 
-    float MinDepth = dvd_zPlanes.x;
-    float MaxDepth = dvd_zPlanes.y / 3;
-
-    float d0 = clamp((abs(p0.z) - MinDepth) / (MaxDepth - MinDepth), 0.0, 1.0);
-    float d1 = clamp((abs(p1.z) - MinDepth) / (MaxDepth - MinDepth), 0.0, 1.0);
+    float minTessDistance = tessellationRange.x;
+    float maxTessDistance = tessellationRange.y;
+    float d0 = clamp((abs(p0.z) - minTessDistance) / (maxTessDistance - minTessDistance), 0.0, 1.0);
+    float d1 = clamp((abs(p1.z) - maxTessDistance) / (maxTessDistance - minTessDistance), 0.0, 1.0);
 
     float t = mix(64, 2, (d0 + d1) * 0.5);
 
@@ -230,7 +241,12 @@ struct TerrainNodeData {
 };
 
 
-layout(binding = BUFFER_TERRAIN_DATA, std430) coherent readonly buffer dvd_TerrainBlock
+#if defined(USE_SSBO_DATA_BUFFER)
+layout(binding = BUFFER_TERRAIN_DATA, std430) coherent readonly buffer
+#else
+layout(binding = BUFFER_TERRAIN_DATA, std140) uniform
+#endif
+dvd_TerrainBlock
 {
     TerrainNodeData dvd_TerrainData[MAX_RENDER_NODES];
 };
@@ -352,7 +368,7 @@ out vec4 _scrollingUV;
 // x = distance, y = depth
 smooth out vec2 _waterDetails;
 
-out int highDetail;
+out int detailLevel;
 #if defined(_DEBUG)
 out vec4 gs_wireColor;
 noperspective out vec3 gs_edgeDist;
@@ -421,7 +437,13 @@ vec4 getWVPPositon(int index) {
 
 void PerVertex(in int i, in vec3 edge_dist, in vec4 wireColor, in float minHeight) {
     PassData(i);
-    highDetail = tes_tessLevel[0] == 64.0 ? 1 : 0;
+    detailLevel = 0;
+    if (tes_tessLevel[0] == 64.0) {
+        detailLevel = 2;
+    } else if (tes_tessLevel[0] == 32.0) {
+        detailLevel = 1;
+    }
+
 #if defined(SHADOW_PASS)
     geom_vertexWVP = gl_in[i].gl_Position;
 #endif //SHADOW_PASS
@@ -538,7 +560,8 @@ in vec4 _scrollingUV;
 // x = distance, y = depth
 smooth in vec2 _waterDetails;
 
-in flat int highDetail;
+//2 = high, 1 = medium, 0 = low
+in flat int detailLevel;
 #if defined(_DEBUG)
 in vec4 gs_wireColor;
 noperspective in vec3 gs_edgeDist;
@@ -578,7 +601,7 @@ vec4 UnderwaterMappingRoutine() {
 }
 
 vec4 TerrainMappingRoutine() {
-    setAlbedo(getTerrainAlbedo(highDetail == 1));
+    setAlbedo(getTerrainAlbedo(detailLevel));
 
     return getPixelColour(VAR._texCoord);
 }
@@ -587,7 +610,7 @@ void main(void)
 {
     bumpInit();
 
-    setProcessedNormal(highDetail == 1 ? getTerrainNormal() : VAR._normalWV);
+    setProcessedNormal(getTerrainNormal(detailLevel));
     _colourOut = mix(TerrainMappingRoutine(), UnderwaterMappingRoutine(), _waterDetails.x);
 
 #if defined(TOGGLE_WIREFRAME)

@@ -42,10 +42,13 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
     bufferDescriptor._elementCount = Terrain::MAX_RENDER_NODES * to_base(RenderStage::COUNT);
     bufferDescriptor._elementSize = sizeof(TessellatedNodeData);
     bufferDescriptor._ringBufferLength = 1;
-    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE)
-                              | to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
-                              // | to_U32(ShaderBuffer::Flags::AUTO_RANGE_FLUSH);
-    bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
+    bufferDescriptor._flags = USE_TERRAIN_UBO ? 0 : (to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE)
+                           // | to_U32(ShaderBuffer::Flags::AUTO_RANGE_FLUSH)
+                              | to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES));
+                              
+    //Should be once per frame
+    bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
+
     bufferDescriptor._name = "TERRAIN_RENDER_NODES";
     _shaderData = _context.newSB(bufferDescriptor);
     sgn.get<RenderingComponent>()->registerShaderBuffer(ShaderBufferLocation::TERRAIN_DATA,
@@ -150,6 +153,7 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
                                 RenderPackage& pkgInOut) {
 
     PushConstants constants = pkgInOut.pushConstants(0);
+    constants.set("tessellationRange", GFX::PushConstantType::VEC2, _descriptor->getTessellationRange());
     constants.set("diffuseScale", GFX::PushConstantType::VEC4, _terrainTextures->getDiffuseScales());
     constants.set("detailScale",  GFX::PushConstantType::VEC4, _terrainTextures->getDetailScales());
     pkgInOut.pushConstants(0, constants);
@@ -336,6 +340,8 @@ void Terrain::saveToXML(boost::property_tree::ptree& pt) const {
     pt.put("terrainHeight", _descriptor->getDimensions().height);
     pt.put("altitudeRange.<xmlattr>.min", _descriptor->getAltitudeRange().min);
     pt.put("altitudeRange.<xmlattr>.max", _descriptor->getAltitudeRange().max);
+    pt.put("tessellationRange.<xmlattr>.min", _descriptor->getTessellationRange().min);
+    pt.put("tessellationRange.<xmlattr>.max", _descriptor->getTessellationRange().max);
     pt.put("targetChunkSize", _descriptor->getChunkSize());
     pt.put("textureLocation", _descriptor->getVariable("textureLocation"));
     pt.put("waterCaustics", _descriptor->getVariable("waterCaustics"));

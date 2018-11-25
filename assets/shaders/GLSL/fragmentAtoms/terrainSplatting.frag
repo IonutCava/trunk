@@ -59,7 +59,7 @@ vec3 getFinalTBN4(const in vec4 blendMap, const in uint index, const in vec4 nor
                blendMap.a);
 }
 
-vec4 getTerrainAlbedo(bool isHighDetail){
+vec4 getTerrainAlbedo(int detailLevel){
     vec4 blendMap;
     vec4 colour = vec4(0.0);
     
@@ -77,12 +77,19 @@ vec4 getTerrainAlbedo(bool isHighDetail){
         } else {
             colour += getFinalColour4(blendMap, i * 4, diffuseScale[i * 4]);
         }
+
+        if (detailLevel == 1) {
+            break;
+        }
     }
 
     return colour;
 }
 
-vec3 getTerrainNormal() {
+vec3 getTerrainNormal(int detailLevel) {
+    if (detailLevel == 0) {
+        return VAR._normalWV;
+    }
 
     vec3 V = VAR._vertexW.xyz - dvd_cameraPosition.xyz;
 
@@ -105,6 +112,10 @@ vec3 getTerrainNormal() {
         }
         tbnTemp = perturb_normal(tbnTemp, VAR._normalWV, V, VAR._texCoord);
         tbn = normalUDNBlend(tbnTemp, tbn);
+
+        if (detailLevel == 1) {
+            break;
+        }
     }
 
     return tbn;

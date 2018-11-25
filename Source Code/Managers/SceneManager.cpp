@@ -529,10 +529,10 @@ RenderPassCuller::VisibleNodeList SceneManager::getSortedRefractiveNodes(const C
 namespace {
     // Return true if the node type is capable of generating draw commands
     bool generatesDrawCommands(SceneNodeType nodeType) {
-        STUBBED("ToDo: Use some additional flag type for these! -Ionut");
         return nodeType != SceneNodeType::TYPE_ROOT &&
                nodeType != SceneNodeType::TYPE_TRANSFORM &&
-               nodeType != SceneNodeType::TYPE_TRIGGER;
+               nodeType != SceneNodeType::TYPE_TRIGGER &&
+               nodeType != SceneNodeType::TYPE_EMPTY;
     }
 
     // Return true if this node should be removed from a shadow pass
@@ -583,7 +583,7 @@ const RenderPassCuller::VisibleNodeList& SceneManager::cullSceneGraph(RenderStag
         return true;
     };
 
-    return  _renderPassCuller->frustumCull(cullParams);
+    return _renderPassCuller->frustumCull(cullParams);
 }
 
 RenderPassCuller::VisibleNodeList& SceneManager::getVisibleNodesCache(RenderStage stage) {
