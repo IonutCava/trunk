@@ -1,10 +1,7 @@
 #include "stdafx.h"
 
 #include "Headers/Terrain.h"
-#include "Headers/TerrainChunk.h"
 #include "Headers/TerrainDescriptor.h"
-
-#include "Quadtree/Headers/QuadtreeNode.h"
 
 #include "Core/Headers/PlatformContext.h"
 #include "Graphs/Headers/SceneGraphNode.h"
@@ -42,24 +39,6 @@ bool Terrain::unload() {
 }
 
 void Terrain::postLoad(SceneGraphNode& sgn) {
-    /*SceneGraphNodeDescriptor terrainNodeDescriptor;
-    terrainNodeDescriptor._node = _plane;
-    terrainNodeDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
-    terrainNodeDescriptor._componentMask = to_base(ComponentType::NAVIGATION) |
-                                           to_base(ComponentType::TRANSFORM) |
-                                           to_base(ComponentType::RIGID_BODY) |
-                                           to_base(ComponentType::BOUNDS) |
-                                           to_base(ComponentType::RENDERING) |
-                                           to_base(ComponentType::NETWORKING);
-
-    SceneGraphNode* planeSGN = sgn.addNode(terrainNodeDescriptor);
-    planeSGN->setActive(false);*/
-    //for (TerrainChunk* chunk : _terrainChunks) {
-        //SceneGraphNode* vegetation = sgn.addNode(Attorney::TerrainChunkTerrain::getVegetation(*chunk), normalMask);
-        //vegetation->lockVisibility(true);
-    //}
-    // Skip Object3D::load() to avoid triangle list computation (extremely expensive)!!!
-
     ShaderBufferDescriptor bufferDescriptor;
     bufferDescriptor._elementCount = Terrain::MAX_RENDER_NODES * to_base(RenderStage::COUNT);
     bufferDescriptor._elementSize = sizeof(TessellatedNodeData);
@@ -79,16 +58,31 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
     SceneNode::postLoad(sgn);
 }
 
-void Terrain::buildQuadtree() {
-    reserveTriangleCount((_descriptor->getDimensions().x - 1) * (_descriptor->getDimensions().y - 1) * 2);
-    _terrainQuadtree.Build(_context,
-                           _boundingBox,
-                           vec2<U32>(_descriptor->getDimensions().x, _descriptor->getDimensions().y),
-                           _descriptor->getChunkSize(),
-                           this);
+void Terrain::postBuild() {
+    const U32 terrainWidth = _descriptor->getDimensions().width;
+    const U32 terrainHeight = _descriptor->getDimensions().height;
 
-    // The terrain's final bounding box is the QuadTree's root bounding box
-    _boundingBox.set(_terrainQuadtree.computeBoundingBox());
+    reserveTriangleCount((terrainWidth - 1) * (terrainHeight - 1) * 2);
+
+    F32 halfWidth = terrainWidth * 0.5f;
+    _boundingBox.setMin(-halfWidth, _descriptor->getAltitudeRange().min, -halfWidth);
+    _boundingBox.setMax(halfWidth, _descriptor->getAltitudeRange().max, halfWidth);
+
+    // Generate index buffer
+    vector<vec3<U32>>& triangles = getTriangles();
+    triangles.resize(terrainHeight * terrainWidth * 2);
+
+    // ToDo: Use parallel_for for this
+    I32 vectorIndex = 0;
+    for (U32 height = 0; height < (terrainHeight - 1); ++height) {
+        for (U32 width = 0; width < (terrainWidth - 1); ++width) {
+            I32 vertexIndex = TER_COORD(width, height, terrainWidth);
+            // Top triangle (T0)
+            triangles[vectorIndex++].set(vertexIndex, vertexIndex + terrainWidth + 1, vertexIndex + 1);
+            // Bottom triangle (T1)
+            triangles[vectorIndex++].set(vertexIndex, vertexIndex + terrainWidth, vertexIndex + terrainWidth + 1);
+        }
+    }
 
     TerrainTextureLayer* textureLayer = _terrainTextures;
     getMaterialTpl()->addExternalTexture(textureLayer->blendMaps(),  to_U8(ShaderProgram::TextureUsage::COUNT) + 0);
@@ -100,7 +94,6 @@ void Terrain::sceneUpdate(const U64 deltaTimeUS,
                           SceneGraphNode& sgn,
                           SceneState& sceneState) {
     _waterHeight = sceneState.waterLevel();
-    _terrainQuadtree.sceneUpdate(deltaTimeUS, sgn, sceneState);
     Object3D::sceneUpdate(deltaTimeUS, sgn, sceneState);
 }
 
@@ -171,8 +164,6 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
                                 RenderPackage& pkgInOut) {
 
     PushConstants constants = pkgInOut.pushConstants(0);
-    constants.set("bbox_min",     GFX::PushConstantType::VEC3, _boundingBox.getMin());
-    constants.set("bbox_extent",  GFX::PushConstantType::VEC3, _boundingBox.getExtent());
     constants.set("diffuseScale", GFX::PushConstantType::VEC4, _terrainTextures->getDiffuseScales());
     constants.set("detailScale",  GFX::PushConstantType::VEC4, _terrainTextures->getDetailScales());
     pkgInOut.pushConstants(0, constants);

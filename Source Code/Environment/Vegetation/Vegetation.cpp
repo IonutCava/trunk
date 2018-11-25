@@ -10,9 +10,6 @@
 #include "Platform/Video/Headers/RenderStateBlock.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Environment/Terrain/Headers/Terrain.h"
-#include "Environment/Terrain/Headers/TerrainChunk.h"
-#include "Environment/Terrain/Quadtree/Headers/Quadtree.h"
-#include "Environment/Terrain/Quadtree/Headers/QuadtreeNode.h"
 #include "Platform/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 #include "Platform/Video/Buffers/VertexBuffer/GenericBuffer/Headers/GenericVertexData.h"
 
@@ -36,7 +33,6 @@ Vegetation::Vegetation(GFXDevice& context, ResourceCache& parentCache, size_t de
       _success(false),
       _culledFinal(false),
       _shadowMapped(true),
-      _terrainChunk(nullptr),
       _instanceCountGrass(0),
       _instanceCountTrees(0),
       _grassStateBlockHash(0),
@@ -91,11 +87,8 @@ Vegetation::~Vegetation()
     Console::printfn(Locale::get(_ID("UNLOAD_VEGETATION_END")));
 }
 
-void Vegetation::initialize(TerrainChunk* const terrainChunk) {
-    assert(terrainChunk);
+void Vegetation::initialize() {
     assert(_map->data() != nullptr);
-
-    _terrainChunk = terrainChunk;
 
     RenderStateBlock transparentRenderState;
     transparentRenderState.setCullMode(CullMode::CW);
@@ -462,8 +455,8 @@ void Vegetation::generateTrees(const Task& parentTask) {
 void Vegetation::generateGrass(const Task& parentTask) {
     
     //const vec2<F32>& chunkPos = _terrainChunk->getOffsetAndSize().xy();
-    const vec2<F32>& chunkSize = _terrainChunk->getOffsetAndSize().zw();
-    const F32 waterLevel = _terrainChunk->waterHeight(); //< ToDo: make this dynamic! (cull underwater points later on?)
+    const vec2<F32>& chunkSize = vec2<F32>(32, 32);// _terrainChunk->getOffsetAndSize().zw();
+    const F32 waterLevel = 0.0f;// _terrainChunk->waterHeight(); //< ToDo: make this dynamic! (cull underwater points later on?)
     const I32 currentCount = std::min((I32)_billboardCount, 4);
     const U16 mapWidth = _map->dimensions().width;
     const U16 mapHeight = _map->dimensions().height;

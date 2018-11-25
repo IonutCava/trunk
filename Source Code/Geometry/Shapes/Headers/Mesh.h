@@ -37,7 +37,6 @@
 DIVIDE-Engine: 21.10.2010 (Ionut Cava)
 
 Mesh class. This class wraps all of the renderable geometry drawn by the engine.
-The only exceptions are: Terrain (including TerrainChunk) and Vegetation.
 
 Meshes are composed of at least 1 submesh that contains vertex data, texture
 info and so on.

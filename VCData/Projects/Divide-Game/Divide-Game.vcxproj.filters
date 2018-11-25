@@ -112,12 +112,6 @@
     <Filter Include="Environment\Terrain">
       <UniqueIdentifier>{265e26c2-3978-45dc-8f36-e036cde71fee}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Environment\Terrain\Quadtree">
-      <UniqueIdentifier>{e65e39a2-7a20-48bc-babd-a3a5085d352a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Environment\Terrain\Quadtree\Headers">
-      <UniqueIdentifier>{9e2b0ba2-e2a7-4ce9-85f5-2e44f4394250}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Environment\Terrain\Headers">
       <UniqueIdentifier>{a3d10181-50da-4144-a4fc-e9bad34ab164}</UniqueIdentifier>
     </Filter>
@@ -357,17 +351,8 @@
     <ClCompile Include="../../../Source Code/Environment\Terrain\Terrain.cpp">
       <Filter>Environment\Terrain</Filter>
     </ClCompile>
-    <ClCompile Include="../../../Source Code/Environment\Terrain\TerrainChunk.cpp">
-      <Filter>Environment\Terrain</Filter>
-    </ClCompile>
     <ClCompile Include="../../../Source Code/Environment\Terrain\TerrainLoader.cpp">
       <Filter>Environment\Terrain</Filter>
-    </ClCompile>
-    <ClCompile Include="../../../Source Code/Environment\Terrain\Quadtree\Quadtree.cpp">
-      <Filter>Environment\Terrain\Quadtree</Filter>
-    </ClCompile>
-    <ClCompile Include="../../../Source Code/Environment\Terrain\Quadtree\QuadtreeNode.cpp">
-      <Filter>Environment\Terrain\Quadtree</Filter>
     </ClCompile>
     <ClCompile Include="../../../Source Code/Environment\Sky\Sky.cpp">
       <Filter>Environment\Sky</Filter>
@@ -601,16 +586,7 @@
     <ClInclude Include="../../../Source Code/Dynamics\WeaponSystem\Weapons\Headers\Weapon.h">
       <Filter>Dynamics\WeaponSystem\Weapons\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="../../../Source Code/Environment\Terrain\Quadtree\Headers\Quadtree.h">
-      <Filter>Environment\Terrain\Quadtree\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="../../../Source Code/Environment\Terrain\Quadtree\Headers\QuadtreeNode.h">
-      <Filter>Environment\Terrain\Quadtree\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="../../../Source Code/Environment\Terrain\Headers\Terrain.h">
-      <Filter>Environment\Terrain\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="../../../Source Code/Environment\Terrain\Headers\TerrainChunk.h">
       <Filter>Environment\Terrain\Headers</Filter>
     </ClInclude>
     <ClInclude Include="../../../Source Code/Environment\Terrain\Headers\TerrainDescriptor.h">

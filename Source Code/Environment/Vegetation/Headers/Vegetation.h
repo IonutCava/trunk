@@ -43,7 +43,6 @@ namespace Divide {
 class SceneState;
 class RenderTarget;
 class ShaderBuffer;
-class TerrainChunk;
 class SceneGraphNode;
 class RenderStateBlock;
 class GenericVertexData;
@@ -74,7 +73,7 @@ class Vegetation : public SceneNode {
     Vegetation(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, U32 chunkID, const VegetationDetails& details);
     ~Vegetation();
 
-    void initialize(TerrainChunk* const terrainChunk);
+    void initialize();
 
     inline void toggleRendering(bool state) { _render = state; }
 
@@ -114,7 +113,6 @@ class Vegetation : public SceneNode {
     std::atomic_bool _threadedLoadComplete;
     std::atomic_bool _stopLoadingRequest;
     std::weak_ptr<Terrain> _terrain;
-    TerrainChunk* _terrainChunk;
     F32 _grassDensity, _treeDensity;
     U16 _billboardCount;  ///< Vegetation cumulated density
     F32 _grassSize, _grassScale, _treeScale;

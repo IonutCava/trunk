@@ -499,7 +499,7 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
     vb->create(true);
 
     initializeVegetation(terrain, terrainDescriptor);
-    Attorney::TerrainLoader::buildQuadtree(*terrain);
+    Attorney::TerrainLoader::postBuild(*terrain);
     Attorney::TerrainLoader::plane(*terrain, plane, planeShader, planeDepthShader);
 
     Console::printfn(Locale::get(_ID("TERRAIN_LOAD_END")), terrain->name().c_str());

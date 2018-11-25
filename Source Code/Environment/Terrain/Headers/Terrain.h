@@ -37,7 +37,6 @@
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
 #include "Environment/Vegetation/Headers/Vegetation.h"
-#include "Environment/Terrain/Quadtree/Headers/Quadtree.h"
 #include "Platform/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 
 namespace Divide {
@@ -116,7 +115,6 @@ struct TerrainTextureLayer {
     Texture_ptr _normalMaps;
 };
 
-class Quadtree;
 class VertexBuffer;
 class TerrainDescriptor;
 
@@ -125,12 +123,10 @@ FWD_DECLARE_MANAGED_CLASS(Patch3D);
 FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
 
 namespace Attorney {
-    class TerrainChunk;
     class TerrainLoader;
 };
 
 class Terrain : public Object3D {
-    friend class Attorney::TerrainChunk;
     friend class Attorney::TerrainLoader;
    public:
      static constexpr U32 MAX_RENDER_NODES = 500;
@@ -149,12 +145,13 @@ class Terrain : public Object3D {
     vec3<F32> getTangent(F32 x_clampf, F32 z_clampf) const;
     vec2<U16> getDimensions() const;
 
-    inline const Quadtree& getQuadtree() const { return _terrainQuadtree; }
-    
+   
     void saveToXML(boost::property_tree::ptree& pt) const override;
     void loadFromXML(const boost::property_tree::ptree& pt)  override;
 
    protected:
+    void postBuild();
+
     void buildDrawCommands(SceneGraphNode& sgn,
                                 RenderStagePass renderStagePass,
                                 RenderPackage& pkgInOut) override;
@@ -165,12 +162,10 @@ class Terrain : public Object3D {
     bool onRender(SceneGraphNode& sgn,
                   const SceneRenderState& sceneRenderState,
                   RenderStagePass renderStagePass) override;
-    void buildQuadtree();
 
     void postLoad(SceneGraphNode& sgn);
 
    public:
-    //indices per chunk
     hashMap<U32, vector<U32>> _physicsIndices;
     vector<VertexBuffer::Vertex> _physicsVerts;
 
@@ -181,7 +176,6 @@ class Terrain : public Object3D {
     typedef std::array<TerrainTessellator, to_base(RenderStage::COUNT)> TessellatorArray;
     typedef hashMap<I64, bool> CameraUpdateFlagArray;
 
-    Quadtree _terrainQuadtree;
 
     TessellatorArray _terrainTessellator;
 
@@ -191,28 +185,11 @@ class Terrain : public Object3D {
     ShaderProgram_ptr _planeShader;
     ShaderProgram_ptr _planeDepthShader;
     SceneGraphNode* _vegetationGrassNode;
-    vector<TerrainChunk*> _terrainChunks;
     TerrainTextureLayer* _terrainTextures;
     std::shared_ptr<TerrainDescriptor> _descriptor;
 };
 
 namespace Attorney {
-class TerrainChunk {
-   private:
-    static VegetationDetails& vegetationDetails(Terrain& terrain) {
-        return terrain._vegDetails;
-    }
-    static void registerTerrainChunk(Terrain& terrain,
-                                     Divide::TerrainChunk* const chunk) {
-        terrain._terrainChunks.push_back(chunk);
-    }
-
-    static F32 waterHeight(Terrain& terrain) {
-        return terrain._waterHeight; 
-    }
-
-    friend class Divide::TerrainChunk;
-};
 
 class TerrainLoader {
    private:
@@ -228,12 +205,12 @@ class TerrainLoader {
         return terrain._vegDetails;
     }
 
-    static void buildQuadtree(Terrain& terrain) {
-        terrain.buildQuadtree();
-    }
-
     static BoundingBox& boundingBox(Terrain& terrain) {
         return terrain._boundingBox;
+    }
+
+    static void postBuild(Terrain& terrain) {
+        return terrain.postBuild();
     }
 
     static void plane(Terrain& terrain, Quad3D_ptr plane, const ShaderProgram_ptr& shader, const ShaderProgram_ptr& depthShader) {

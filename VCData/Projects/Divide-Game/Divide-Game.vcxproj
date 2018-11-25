@@ -68,10 +68,7 @@
     <ClCompile Include="../../../Source Code/Dynamics\WeaponSystem\Projectile\Projectile.cpp" />
     <ClCompile Include="../../../Source Code/Dynamics\WeaponSystem\Weapons\Weapon.cpp" />
     <ClCompile Include="../../../Source Code/Environment\Sky\Sky.cpp" />
-    <ClCompile Include="../../../Source Code/Environment\Terrain\Quadtree\Quadtree.cpp" />
-    <ClCompile Include="../../../Source Code/Environment\Terrain\Quadtree\QuadtreeNode.cpp" />
     <ClCompile Include="../../../Source Code/Environment\Terrain\Terrain.cpp" />
-    <ClCompile Include="../../../Source Code/Environment\Terrain\TerrainChunk.cpp" />
     <ClCompile Include="../../../Source Code/Environment\Terrain\TerrainLoader.cpp" />
     <ClCompile Include="../../../Source Code/Environment\Terrain\TerrainTessellator.cpp" />
     <ClCompile Include="../../../Source Code/Environment\Vegetation\Vegetation.cpp" />
@@ -159,12 +156,9 @@
     <ClInclude Include="../../../Source Code/Dynamics\WeaponSystem\Weapons\Headers\Weapon.h" />
     <ClInclude Include="../../../Source Code/Environment\Sky\Headers\Sky.h" />
     <ClInclude Include="../../../Source Code/Environment\Terrain\Headers\Terrain.h" />
-    <ClInclude Include="../../../Source Code/Environment\Terrain\Headers\TerrainChunk.h" />
     <ClInclude Include="../../../Source Code/Environment\Terrain\Headers\TerrainDescriptor.h" />
     <ClInclude Include="../../../Source Code/Environment\Terrain\Headers\TerrainLoader.h" />
     <ClInclude Include="../../../Source Code/Environment\Terrain\Headers\TerrainTessellator.h" />
-    <ClInclude Include="../../../Source Code/Environment\Terrain\Quadtree\Headers\Quadtree.h" />
-    <ClInclude Include="../../../Source Code/Environment\Terrain\Quadtree\Headers\QuadtreeNode.h" />
     <ClInclude Include="../../../Source Code/Environment\Vegetation\Headers\Vegetation.h" />
     <ClInclude Include="../../../Source Code/Environment\Water\Headers\Water.h" />
     <ClInclude Include="../../../Source Code/GUI\Headers\SceneGUIElements.h" />
