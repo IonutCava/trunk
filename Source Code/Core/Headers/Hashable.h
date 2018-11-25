@@ -42,7 +42,7 @@ class Hashable {
         return _hash;
     }
   protected:
-    mutable size_t _hash = 0;
+    mutable size_t _hash = 17;
 };
 
 };  // namespace Divide

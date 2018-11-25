@@ -41,7 +41,7 @@ size_t TextLabelStyle::getHash() const {
     if (_dirty) {
         size_t previousCache = Hashable::getHash();
 
-        _hash = 0;
+        _hash = 17;
         Util::Hash_combine(_hash, _font);
         Util::Hash_combine(_hash, _fontSize);
         Util::Hash_combine(_hash, _width);

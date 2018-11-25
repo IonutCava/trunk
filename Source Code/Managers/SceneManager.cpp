@@ -399,17 +399,28 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
                             activeSceneState.windDirZ(),
                             activeSceneState.windSpeed());
 
-    const vectorEASTL<SceneGraphNode*>& waterBodies = activeScene.sceneGraph().getNodesByType(SceneNodeType::TYPE_WATER);
+    // ToDo: unify this with the cliping stuff
+    const vectorEASTL<SceneGraphNode*>& waterNodes = activeScene.sceneGraph().getNodesByType(SceneNodeType::TYPE_WATER);
     U8 index = 0;
-    for (SceneGraphNode* body : waterBodies) {
+    for (SceneGraphNode* body : waterNodes) {
         const SceneGraphNode* water(body);
             
         _sceneData->waterDetails(index,
-                                    water->get<TransformComponent>()->getPosition(),
-                                    water->getNode<WaterPlane>()->getDimensions());
+                                 water->get<TransformComponent>()->getPosition(),
+                                 water->getNode<WaterPlane>()->getDimensions());
         ++index;
         if (index == 1) {//<- temp
             break;
+        }
+    }
+
+    vector<WaterDetails>& waterBodies = activeScene.state().globalWaterBodies();
+    SceneRenderState& renderState = activeScene.renderState();
+    index = to_U8(ClipPlaneIndex::CLIP_PLANE_0);
+    renderState.clippingPlanes().resetAll();
+    for (auto body : waterBodies) {
+        if (index < to_U32(ClipPlaneIndex::COUNT)) {
+            renderState.clippingPlanes().set(index, Plane<F32>(body._normal, body._heightOffset), true);
         }
     }
 

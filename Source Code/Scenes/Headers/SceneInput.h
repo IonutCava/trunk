@@ -38,7 +38,7 @@ namespace Divide {
     struct pair_hash {
         template <class T1, class T2>
         std::size_t operator () (const std::pair<T1, T2> &p) const {
-            size_t hash = 0;
+            size_t hash = 17;
             Util::Hash_combine(hash, p.first);
             Util::Hash_combine(hash, p.second);
 

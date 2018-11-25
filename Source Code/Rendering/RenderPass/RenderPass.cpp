@@ -226,6 +226,10 @@ void RenderPass::render(const SceneRenderState& renderState, GFX::CommandBuffer&
             params._target = RenderTargetID(RenderTargetUsage::SCREEN);
             params._camera = Attorney::SceneManagerCameraAccessor::playerCamera(_parent.parent().sceneManager());
 
+            GFX::SetClipPlanesCommand setClipPlanesCommand;
+            setClipPlanesCommand._clippingPlanes = renderState.clippingPlanes();
+            GFX::EnqueueCommand(bufferInOut, setClipPlanesCommand);
+
             _parent.doCustomPass(params, bufferInOut);
 
             GFX::EndDebugScopeCommand endDebugScopeCmd;
@@ -240,6 +244,10 @@ void RenderPass::render(const SceneRenderState& renderState, GFX::CommandBuffer&
             beginDebugScopeCmd._scopeName = "Shadow Render Stage";
             GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
+            GFX::SetClipPlanesCommand setClipPlanesCommand;
+            setClipPlanesCommand._clippingPlanes = renderState.clippingPlanes();
+            GFX::EnqueueCommand(bufferInOut, setClipPlanesCommand);
+
             Attorney::SceneManagerRenderPass::generateShadowMaps(_parent.parent().sceneManager(), bufferInOut);
 
             GFX::EndDebugScopeCommand endDebugScopeCmd;
@@ -250,7 +258,12 @@ void RenderPass::render(const SceneRenderState& renderState, GFX::CommandBuffer&
             SceneManager& mgr = _parent.parent().sceneManager();
             RenderPassManager::PassParams params;
             params._camera = Attorney::SceneManagerCameraAccessor::playerCamera(_parent.parent().sceneManager());
-            
+
+            // copy and invert
+            params._clippingPlanes = renderState.clippingPlanes();
+            for (Plane<F32>& clipPlane : params._clippingPlanes._planes) {
+                clipPlane.set(-clipPlane.getNormal(), clipPlane.getDistance());
+            }
             {
                 GFX::BeginDebugScopeCommand beginDebugScopeCmd;
                 beginDebugScopeCmd._scopeID = 30;
@@ -313,7 +326,9 @@ void RenderPass::render(const SceneRenderState& renderState, GFX::CommandBuffer&
             SceneManager& mgr = _parent.parent().sceneManager();
             RenderPassManager::PassParams params;
             params._camera = Attorney::SceneManagerCameraAccessor::playerCamera(_parent.parent().sceneManager());
-
+            GFX::SetClipPlanesCommand setClipPlanesCommand;
+            setClipPlanesCommand._clippingPlanes = renderState.clippingPlanes();
+            GFX::EnqueueCommand(bufferInOut, setClipPlanesCommand);
             {
                 GFX::BeginDebugScopeCommand beginDebugScopeCmd;
                 beginDebugScopeCmd._scopeID = 50;

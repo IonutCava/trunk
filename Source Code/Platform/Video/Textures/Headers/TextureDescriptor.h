@@ -68,7 +68,7 @@ struct SamplerDescriptor : public Hashable {
     FColour _borderColour = DefaultColours::BLACK;
 
     inline size_t getHash() const override {
-        _hash = 0;
+        _hash = 17;
         Util::Hash_combine(_hash, to_U32(_cmpFunc));
         Util::Hash_combine(_hash, _useRefCompare);
         Util::Hash_combine(_hash, _srgb);
@@ -228,24 +228,6 @@ class TextureDescriptor final : public PropertyDescriptor {
 
         return 0;
     }
-
-    /*inline size_t getHash() const override {
-        size_t hash = 0;
-        Util::Hash_combine(hash, _layerCount);
-        Util::Hash_combine(hash, to_U32(_internalFormat));
-        Util::Hash_combine(hash, to_U32(_type));
-        Util::Hash_combine(hash, _compressed);
-        Util::Hash_combine(hash, _autoMipMaps);
-        Util::Hash_combine(hash, _baseFormat); 
-        Util::Hash_combine(hash, _dataType);
-        Util::Hash_combine(hash, _mipLevels.min);
-        Util::Hash_combine(hash, _mipLevels.max);
-        Util::Hash_combine(hash, _msaaSamples);
-        Util::Hash_combine(hash, _samplerDescriptor.getHash());
-        Util::Hash_combine(hash, PropertyDescriptor::getHash());
-
-        return hash;
-    }*/
 
     U32 _layerCount = 1;
     TextureType _type = TextureType::TEXTURE_2D;

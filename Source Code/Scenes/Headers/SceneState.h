@@ -35,6 +35,7 @@
 #include "Platform/Audio/Headers/SFXDevice.h"
 #include "Platform/Video/Headers/RenderAPIEnums.h"
 #include "Platform/Audio/Headers/AudioDescriptor.h"
+#include "Platform/Video/Headers/ClipPlanes.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Core/Headers/Console.h"
 #include "Scenes/Headers/SceneComponent.h"
@@ -160,6 +161,9 @@ class SceneRenderState : public SceneComponent {
     inline void playerPass(U8 pass) { _playerPass = pass; }
     inline U8   playerPass()  const { return _playerPass; }
 
+    inline FrustumClipPlanes& clippingPlanes() { return _clippingPlanes; }
+    inline const FrustumClipPlanes& clippingPlanes() const { return _clippingPlanes; }
+
    protected:
     U8  _playerPass;
     U32 _stateMask;
@@ -167,6 +171,7 @@ class SceneRenderState : public SceneComponent {
     F32 _grassVisibility;
     F32 _treeVisibility;
     F32 _generalVisibility;
+    FrustumClipPlanes _clippingPlanes;
 };
 
 class Camera;
@@ -246,6 +251,12 @@ private:
     Camera* _overrideCamera;
 };
 
+struct WaterDetails {
+    F32 _heightOffset = 0.0f;
+    F32 _depth = 0.0f;
+    vec3<F32> _normal = WORLD_Y_AXIS;
+};
+
 class SceneState : public SceneComponent {
    public:
     /// Background music map : trackName - track
@@ -255,8 +266,6 @@ class SceneState : public SceneComponent {
         : SceneComponent(parentScene),
           _renderState(parentScene),
           _saveLoadDisabled(false),
-          _waterHeight(0.0f),
-          _waterDepth(0.0f),
           _windSpeed(1.0f),
           _windDirX(0.0f),
           _windDirZ(1.0f)
@@ -305,11 +314,8 @@ class SceneState : public SceneComponent {
     inline void windDirZ(F32 factor) { _windDirZ = factor; }
     inline F32  windDirZ()     const { return _windDirZ; }
 
-    inline void waterLevel(F32 level) { _waterHeight = level; }
-    inline F32  waterLevel()    const { return _waterHeight; }
-
-    inline void waterDepth(F32 depth) { _waterDepth = depth; }
-    inline F32  waterDepth()    const { return _waterDepth; }
+    inline vector<WaterDetails>& globalWaterBodies() { return _globalWaterBodies; }
+    inline const vector<WaterDetails>& globalWaterBodies() const { return _globalWaterBodies; }
 
     inline void saveLoadDisabled(const bool state) { _saveLoadDisabled = state; }
     inline bool saveLoadDisabled()           const { return _saveLoadDisabled; }
@@ -321,8 +327,7 @@ protected:
 
     bool _saveLoadDisabled;
 
-    F32 _waterHeight;
-    F32 _waterDepth;
+    vector<WaterDetails> _globalWaterBodies;
 
     FogDescriptor _fog;
     /// saves all the rendering information for the scene

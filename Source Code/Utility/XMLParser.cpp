@@ -144,8 +144,12 @@ void loadScene(const stringImpl& scenePath, const stringImpl &sceneName, Scene* 
     scene->state().windDirZ(pt.get("wind.windDirZ", 1.0f));
     scene->state().windSpeed(pt.get("wind.windSpeed", 1.0f));
 
-    scene->state().waterLevel(pt.get("water.waterLevel", 0.0f));
-    scene->state().waterDepth(pt.get("water.waterDepth", -75.0f));
+    if (boost::optional<ptree &> waterOverride = pt.get_child_optional("water")) {
+        WaterDetails waterDetails = {};
+        waterDetails._heightOffset = pt.get("water.waterLevel", 0.0f);
+        waterDetails._depth = pt.get("water.waterDepth", -75.0f);
+        scene->state().globalWaterBodies().push_back(waterDetails);
+    }
 
     if (boost::optional<ptree &> cameraPositionOverride =  pt.get_child_optional("options.cameraStartPosition")) {
         par.setParam(_ID((sceneName + ".options.cameraStartPosition.x").c_str()), pt.get("options.cameraStartPosition.<xmlattr>.x", 0.0f));

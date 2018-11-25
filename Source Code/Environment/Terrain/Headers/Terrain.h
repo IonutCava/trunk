@@ -156,9 +156,6 @@ class Terrain : public Object3D {
                                 RenderStagePass renderStagePass,
                                 RenderPackage& pkgInOut) override;
 
-    void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn,
-                     SceneState& sceneState) override;
-
     bool onRender(SceneGraphNode& sgn,
                   const SceneRenderState& sceneRenderState,
                   RenderStagePass renderStagePass) override;
@@ -179,7 +176,6 @@ class Terrain : public Object3D {
 
     TessellatorArray _terrainTessellator;
 
-    F32 _waterHeight;
     bool _drawBBoxes;
     Quad3D_ptr _plane;
     ShaderProgram_ptr _planeShader;

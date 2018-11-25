@@ -58,6 +58,11 @@ namespace Divide {
             _active.fill(false);
         }
 
+        void resetAll() {
+            _planes.fill(Plane<F32>(0.0f, 0.0f, 0.0f, 0.0f));
+            _active.fill(false);
+        }
+
         void set(U32 index, const Plane<F32>& plane, bool active) {
             assert(index < N);
 

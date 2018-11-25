@@ -115,7 +115,7 @@ void MainScene::processGUI(const U64 deltaTimeUS) {
         _GUI->modifyText(_ID("underwater"),
                          Util::StringFormat("Underwater [ %s ] | WaterLevel [%f] ]",
                                              state().playerState(0).cameraUnderwater() ? "true" : "false",
-                                             state().waterLevel()));
+                                             state().globalWaterBodies()[0]._heightOffset));
         _GUI->modifyText(_ID("RenderBinCount"),
                          Util::StringFormat("Number of items in Render Bin: %d. Number of HiZ culled items: %d",
                                             _context.gfx().parent().renderPassManager().getLastTotalBinSize(RenderStage::DISPLAY),
@@ -187,7 +187,7 @@ bool MainScene::load(const stringImpl& name) {
     SceneGraphNode* waterGraphNode = _sceneGraph->getRoot().addNode(waterNodeDescriptor);
     
     waterGraphNode->get<NavigationComponent>()->navigationContext(NavigationComponent::NavigationContext::NODE_IGNORE);
-    waterGraphNode->get<TransformComponent>()->setPositionY(state().waterLevel());
+    waterGraphNode->get<TransformComponent>()->setPositionY(state().globalWaterBodies()[0]._heightOffset);
     PushConstants& constants = waterGraphNode->get<RenderingComponent>()->pushConstants();
     constants.set("_waterShininess", GFX::PushConstantType::FLOAT, 50.0f);
     constants.set("_noiseFactor", GFX::PushConstantType::VEC2, vec2<F32>(10.0f, 10.0f));

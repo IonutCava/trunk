@@ -24,8 +24,7 @@ Terrain::Terrain(GFXDevice& context, ResourceCache& parentCache, size_t descript
     : Object3D(context, parentCache, descriptorHash, name, ObjectType::TERRAIN),
       _plane(nullptr),
       _shaderData(nullptr),
-      _drawBBoxes(false),
-      _waterHeight(0.0f)
+      _drawBBoxes(false)
 {
 }
 
@@ -90,23 +89,10 @@ void Terrain::postBuild() {
     getMaterialTpl()->addExternalTexture(textureLayer->normalMaps(), to_U8(ShaderProgram::TextureUsage::COUNT) + 2);
 }
 
-void Terrain::sceneUpdate(const U64 deltaTimeUS,
-                          SceneGraphNode& sgn,
-                          SceneState& sceneState) {
-    _waterHeight = sceneState.waterLevel();
-    Object3D::sceneUpdate(deltaTimeUS, sgn, sceneState);
-}
-
 bool Terrain::onRender(SceneGraphNode& sgn,
                        const SceneRenderState& sceneRenderState,
                        RenderStagePass renderStagePass) {
     RenderPackage& pkg = sgn.get<RenderingComponent>()->getDrawPackage(renderStagePass);
-
-    /*FrustumClipPlanes clipPlanes = pkg.clipPlanes(0);
-    clipPlanes.set(to_U32(ClipPlaneIndex::CLIP_PLANE_0),
-                   Plane<F32>(WORLD_Y_AXIS, _waterHeight),
-                   true);
-    pkg.clipPlanes(0, clipPlanes);*/
 
     Camera* camera = sceneRenderState.parentScene().playerCamera();
 
@@ -167,12 +153,6 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
     constants.set("diffuseScale", GFX::PushConstantType::VEC4, _terrainTextures->getDiffuseScales());
     constants.set("detailScale",  GFX::PushConstantType::VEC4, _terrainTextures->getDetailScales());
     pkgInOut.pushConstants(0, constants);
-
-    /*GFX::SetClipPlanesCommand clipPlanesCommand = {};
-    clipPlanesCommand._clippingPlanes.set(to_U32(ClipPlaneIndex::CLIP_PLANE_0),
-                                          Plane<F32>(WORLD_Y_AXIS, _waterHeight),
-                                          false);
-    pkgInOut.addClipPlanesCommand(clipPlanesCommand);*/
 
     GenericDrawCommand cmd = {};
     cmd._primitiveType = PrimitiveType::PATCH;

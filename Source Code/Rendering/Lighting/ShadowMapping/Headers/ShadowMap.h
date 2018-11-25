@@ -60,6 +60,7 @@ namespace GFX {
     class CommandBuffer;
 };
 
+class SceneState;
 class ShadowMapGenerator {
 protected:
     SET_DELETE_FRIEND

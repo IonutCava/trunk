@@ -100,7 +100,7 @@ class TerrainDescriptor final : public PropertyDescriptor {
     }
 
     inline size_t getHash() const override {
-        size_t hash = 0;
+        size_t hash = 17;
         for (hashMap<U64, stringImpl>::value_type it : _variables) {
             Util::Hash_combine(hash, it.first);
             Util::Hash_combine(hash, it.second);

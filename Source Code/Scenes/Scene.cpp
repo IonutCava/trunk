@@ -218,8 +218,10 @@ bool Scene::saveXML() const {
         pt.put("wind.windDirZ", state().windDirZ());
         pt.put("wind.windSpeed", state().windSpeed());
 
-        pt.put("water.waterLevel", state().waterLevel());
-        pt.put("water.waterDepth", state().waterDepth());
+        if (!state().globalWaterBodies().empty()) {
+            pt.put("water.waterLevel", state().globalWaterBodies()[0]._heightOffset);
+            pt.put("water.waterDepth", state().globalWaterBodies()[0]._depth);
+        }
 
         pt.put("options.visibility", state().renderState().generalVisibility());
         pt.put("options.cameraSpeed.<xmlattr>.move", par.getParam<F32>(_ID((name() + ".options.cameraSpeed.move").c_str())));

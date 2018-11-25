@@ -558,10 +558,8 @@ vec4 getAlbedo() {
 }
 
 vec4 CausticsColour() {
-    setAlbedo((texture(texWaterCaustics, _scrollingUV.st) +
-               texture(texWaterCaustics, _scrollingUV.pq)) * 0.5);
-
-    return getAlbedo();//getPixelColour(VAR._texCoord);
+    return texture(texWaterCaustics, _scrollingUV.st) +
+           texture(texWaterCaustics, _scrollingUV.pq) * 0.5;
 }
 
 vec4 UnderwaterColour() {
@@ -572,7 +570,7 @@ vec4 UnderwaterColour() {
     vec3 tbn = normalize(2.0 * texture(texUnderwaterDetail, coords).rgb - 1.0);
     setProcessedNormal(getTBNMatrix() * tbn);
 
-    return getAlbedo();//getPixelColour(VAR._texCoord);
+    return getPixelColour(VAR._texCoord);
 }
 
 vec4 UnderwaterMappingRoutine() {

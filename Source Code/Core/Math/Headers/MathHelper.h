@@ -474,7 +474,7 @@ namespace std {
 
         result_type operator()(const argument_type& a) const
         {
-            result_type h = 0;
+            result_type h = 17;
             for (const T& elem : a)
             {
                 Divide::Util::Hash_combine(h, elem);

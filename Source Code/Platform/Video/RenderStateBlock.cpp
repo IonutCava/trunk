@@ -185,7 +185,7 @@ size_t RenderStateBlock::getHash() const {
         U32 zBias = to_U32(std::floor((_zBias * 1000.0f) + 0.5f));
         U32 zUnits = to_U32(std::floor((_zUnits * 1000.0f) + 0.5f));
 
-        _hash = 0;
+        _hash = 17;
         Util::Hash_combine(_hash, _colourWrite.i);
         Util::Hash_combine(_hash, to_U32(_cullMode));
         Util::Hash_combine(_hash, _cullEnabled);

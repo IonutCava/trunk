@@ -101,6 +101,7 @@ void RenderPassManager::render(SceneRenderState& sceneRenderState, Time::Profile
     {
         Time::ScopedTimer timeCommands(*_buildCommandBufferTimer);
         _mainCommandBuffer->clear();
+
         for (GFX::CommandBuffer* buffer : _renderPassCommandBuffer) {
             _mainCommandBuffer->add(*buffer);
         }
