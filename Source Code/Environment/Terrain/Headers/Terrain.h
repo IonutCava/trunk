@@ -129,7 +129,7 @@ namespace Attorney {
 class Terrain : public Object3D {
     friend class Attorney::TerrainLoader;
    public:
-     static constexpr U32 MAX_RENDER_NODES = 256;
+     static constexpr U32 MAX_RENDER_NODES = 384;
      static constexpr size_t NODE_DATA_SIZE = sizeof(TessellatedNodeData) * Terrain::MAX_RENDER_NODES * to_base(RenderStage::COUNT);
      static constexpr bool USE_TERRAIN_UBO = NODE_DATA_SIZE < (64 * 1024);
 

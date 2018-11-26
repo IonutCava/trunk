@@ -105,21 +105,21 @@ bool Terrain::onRender(SceneGraphNode& sgn,
 
     const vec3<F32>& newEye = camera->getEye();
     const vec3<F32>& crtPos = sgn.get<TransformComponent>()->getPosition();
+    U32 offset = to_U32(stageIndex * Terrain::MAX_RENDER_NODES);
 
     GenericDrawCommand cmd = pkg.drawCommand(0, 0);
-    if (tessellator.getEye() != newEye || tessellator.getOrigin() != crtPos )
-    {
+    if (tessellator.getEye() != newEye || tessellator.getOrigin() != crtPos) {
         tessellator.createTree(newEye, crtPos, _descriptor->getDimensions());
         U16 depth = tessellator.updateRenderData();
 
-        U32 offset = to_U32(stageIndex * Terrain::MAX_RENDER_NODES);
         STUBBED("This may cause stalls. Profile! -Ionut");
         _shaderData->writeData(offset, depth, (bufferPtr)tessellator.renderData().data());
-    
-        sgn.get<RenderingComponent>()->registerShaderBuffer(ShaderBufferLocation::TERRAIN_DATA,
-                                                            vec2<U32>(offset, Terrain::MAX_RENDER_NODES),
-                                                            *_shaderData);
     }
+
+    sgn.get<RenderingComponent>()->registerShaderBuffer(ShaderBufferLocation::TERRAIN_DATA,
+                                                        vec2<U32>(offset, Terrain::MAX_RENDER_NODES),
+                                                        *_shaderData);
+    
 
     disableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
     cmd._drawCount = tessellator.getRenderDepth();

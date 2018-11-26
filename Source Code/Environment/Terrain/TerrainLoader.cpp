@@ -145,6 +145,15 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
         }
     }
 
+    SamplerDescriptor heightMapSampler = {};
+    heightMapSampler._wrapU = TextureWrap::CLAMP;
+    heightMapSampler._wrapV = TextureWrap::CLAMP;
+    heightMapSampler._wrapW = TextureWrap::CLAMP;
+    heightMapSampler._minFilter = TextureFilter::LINEAR_MIPMAP_LINEAR;
+    heightMapSampler._magFilter = TextureFilter::LINEAR;
+    heightMapSampler._anisotropyLevel = 16;
+    heightMapSampler._srgb = false;
+
     SamplerDescriptor blendMapSampler = {};
     blendMapSampler._wrapU = TextureWrap::CLAMP;
     blendMapSampler._wrapV = TextureWrap::CLAMP;
@@ -152,7 +161,7 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
     blendMapSampler._minFilter = TextureFilter::LINEAR;
     blendMapSampler._magFilter = TextureFilter::LINEAR;
     blendMapSampler._anisotropyLevel = 0;
-
+    
     SamplerDescriptor albedoSampler = {};
     albedoSampler._wrapU = TextureWrap::REPEAT;
     albedoSampler._wrapV = TextureWrap::REPEAT;
@@ -171,7 +180,7 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
     normalSampler._anisotropyLevel = 8;
 
     TextureDescriptor heightMapDescriptor(TextureType::TEXTURE_2D);
-    heightMapDescriptor.setSampler(blendMapSampler);
+    heightMapDescriptor.setSampler(heightMapSampler);
 
     TextureDescriptor blendMapDescriptor(TextureType::TEXTURE_2D_ARRAY);
     blendMapDescriptor.setSampler(blendMapSampler);
@@ -226,7 +235,7 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
         terrainMaterial->addShaderDefine("USE_SSBO_DATA_BUFFER");
     }
     //terrainMaterial->setShaderLoadThreaded(false);
-    //terrainMaterial->addShaderDefine("TOGGLE_WIREFRAME");
+    terrainMaterial->addShaderDefine("TOGGLE_WIREFRAME");
     terrainMaterial->addShaderDefine("COMPUTE_TBN");
     terrainMaterial->addShaderDefine("SKIP_TEXTURES");
     terrainMaterial->addShaderDefine("USE_SHADING_PHONG");

@@ -98,9 +98,9 @@
                 <MapU>CLAMP</MapU>
                 <MapV>CLAMP</MapV>
                 <MapW>CLAMP</MapW>
-                <minFilter>LINEAR</minFilter>
+                <minFilter>LINEAR_MIPMAP_LINEAR</minFilter>
                 <magFilter>LINEAR</magFilter>
-                <anisotropy>0</anisotropy>
+                <anisotropy>16</anisotropy>
             </OPACITY>
         </texture>
     </Material>

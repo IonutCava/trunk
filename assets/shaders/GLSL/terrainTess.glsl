@@ -64,6 +64,11 @@ dvd_TerrainBlock
     TerrainNodeData dvd_TerrainData[MAX_RENDER_NODES];
 };
 
+#define tscale_negx tScale.x
+#define tscale_negz tScale.y
+#define tscale_posx tScale.z
+#define tscale_posz tScale.w
+
 uniform vec2 tessellationRange;
 
 //
@@ -92,7 +97,7 @@ float dlodCameraDistance(mat4 mvMatrix, vec4 p0, vec4 p1, vec2 t0, vec2 t1)
     float minTessDistance = tessellationRange.x;
     float maxTessDistance = tessellationRange.y;
     float d0 = clamp((abs(p0.z) - minTessDistance) / (maxTessDistance - minTessDistance), 0.0, 1.0);
-    float d1 = clamp((abs(p1.z) - maxTessDistance) / (maxTessDistance - minTessDistance), 0.0, 1.0);
+    float d1 = clamp((abs(p1.z) - minTessDistance) / (maxTessDistance - minTessDistance), 0.0, 1.0);
 
     float t = mix(64, 2, (d0 + d1) * 0.5);
 
@@ -202,19 +207,19 @@ void main(void)
     
     vec4 tScale = dvd_TerrainData[VAR.dvd_drawID]._tScale;
 
-    if (tScale.x == 2.0) {
+    if (tscale_negx == 2.0) {
         gl_TessLevelOuter[0] = max(2.0, gl_TessLevelOuter[0] * 0.5);
     }
 
-    if (tScale.y == 2.0) {
+    if (tscale_negz == 2.0) {
         gl_TessLevelOuter[1] = max(2.0, gl_TessLevelOuter[1] * 0.5);
     }
 
-    if (tScale.z == 2.0) {
+    if (tscale_posx == 2.0) {
         gl_TessLevelOuter[2] = max(2.0, gl_TessLevelOuter[2] * 0.5);
     }
 
-    if (tScale.w == 2.0) {
+    if (tscale_posz == 2.0) {
         gl_TessLevelOuter[3] = max(2.0, gl_TessLevelOuter[3] * 0.5);
     }
 

@@ -44,11 +44,18 @@ namespace Attorney {
     class TerrainTessellatorLoader;
 };
 
+enum class TessellatedTerrainNodeType : U8 {
+    ROOT = 0,
+    CHILD_1,
+    CHILD_2,
+    CHILD_3,
+    CHILD_4
+};
+
 struct TessellatedTerrainNode {
-    F32 origin[3] = { 0, 0, 0 };
-    F32 width = 0.0f;
-    F32 height = 0.0f;
-    U8 type = 0; // 1, 2, 3, 4 -- the child # relative to its parent. (0 == root)
+    vec3<F32> origin = { 0.0f, 0.0f, 0.0f };
+    vec2<F32> dim = { 0.0f, 0.0f };
+    TessellatedTerrainNodeType type = TessellatedTerrainNodeType::ROOT;
 
     // Tessellation scale
     F32 tscale_negx = 0.0f; // negative x edge
@@ -125,7 +132,7 @@ protected:
     bool divideNode(TessellatedTerrainNode& node);
 
     //Allocates a new node in the terrain quadtree with the specified parameters.
-    TessellatedTerrainNode* createNode(TessellatedTerrainNode& parent, U8 type, F32 x, F32 y, F32 z, F32 width, F32 height);
+    TessellatedTerrainNode* createNode(TessellatedTerrainNode& parent, TessellatedTerrainNodeType type, F32 x, F32 y, F32 z, F32 width, F32 height);
 
     // Calculate the tessellation scale factor for a node depending on the neighboring patches.
     void calcTessScale(TessellatedTerrainNode& node);
