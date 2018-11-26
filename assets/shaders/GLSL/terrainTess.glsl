@@ -593,7 +593,7 @@ vec4 UnderwaterColour() {
     vec3 tbn = normalize(2.0 * texture(texUnderwaterDetail, coords).rgb - 1.0);
     setProcessedNormal(getTBNMatrix() * tbn);
 
-    return getPixelColour(VAR._texCoord);
+    return getPixelColour();
 }
 
 vec4 UnderwaterMappingRoutine() {
@@ -603,7 +603,7 @@ vec4 UnderwaterMappingRoutine() {
 vec4 TerrainMappingRoutine() {
     setAlbedo(getTerrainAlbedo(detailLevel));
 
-    return getPixelColour(VAR._texCoord);
+    return getPixelColour();
 }
 
 void main(void)
@@ -620,5 +620,6 @@ void main(void)
 #endif
 
     _normalOut = packNormal(getProcessedNormal());
-    _velocityOut = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
+    // Why would terrain have a velocity?
+    _velocityOut = vec2(0.0); //velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
 }

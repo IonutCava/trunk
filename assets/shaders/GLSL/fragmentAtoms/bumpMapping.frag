@@ -74,7 +74,8 @@ vec4 ParallaxMapping(in vec2 uv){
                      (vec2(viewVecTBN.x, -viewVecTBN.y) / 
                      viewVecTBN.z));
 
-    return getPixelColour(vTexCoord, getTBNMatrix() * getBump(vTexCoord));
+    setProcessedNormal(getTBNMatrix() * getBump(vTexCoord));
+    return getPixelColour();
 }
 
 vec4 ReliefMapping(in vec2 uv){
@@ -97,7 +98,8 @@ vec4 ReliefMapping(in vec2 uv){
 
     gl_FragDepth =((planes.x * p.z + planes.y) / -p.z);
     
-    return getPixelColour(uv + uv_offset, getTBNMatrix() * getBump(uv + uv_offset));
+    setProcessedNormal(getTBNMatrix() * getBump(uv + uv_offset));
+    return getPixelColour();
 }
 
 // http://www.thetenthplanet.de/archives/1180

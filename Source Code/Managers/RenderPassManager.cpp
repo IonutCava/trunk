@@ -374,12 +374,8 @@ void RenderPassManager::mainPass(const PassParams& params, RenderTarget& target,
     prepareRenderQueues(stagePass, params, !prePassExecuted, bufferInOut);
 
     if (params._target._usage != RenderTargetUsage::COUNT) {
-        bool drawToDepth = true;
         if (params._stage != RenderStage::SHADOW) {
             Attorney::SceneManagerRenderPass::preRender(sceneManager, stagePass, *params._camera, target, bufferInOut);
-            if (prePassExecuted) {
-                drawToDepth = Config::DEBUG_HIZ_CULLING;
-            }
         }
 
         if (params._stage == RenderStage::DISPLAY) {
@@ -402,10 +398,9 @@ void RenderPassManager::mainPass(const PassParams& params, RenderTarget& target,
         if (params._bindTargets) {
             // We don't need to clear the colour buffers at this stage since ... hopefully, they will be overwritten completely. Right?
             RTDrawDescriptor drawPolicy =  params._drawPolicy ? *params._drawPolicy
-                                                               : (!Config::DEBUG_HIZ_CULLING ? RenderTarget::defaultPolicyNoClear()
-                                                                                             : RenderTarget::defaultPolicyKeepColour());
+                                                               : RenderTarget::defaultPolicyNoClear();
 
-            drawPolicy.drawMask().setEnabled(RTAttachmentType::Depth, 0, drawToDepth);
+            drawPolicy.drawMask().setEnabled(RTAttachmentType::Depth, 0, false);
 
             
             GFX::BeginRenderPassCommand beginRenderPassCommand;

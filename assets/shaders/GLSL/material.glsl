@@ -60,14 +60,15 @@ layout(location = 2) out vec2 _velocityOut;
 
 //subroutine(MappingRoutineType)
 vec4 mappingFlat(){
-    return getPixelColour(VAR._texCoord, VAR._normalWV);
+    setProcessedNormal(VAR._normalWV);
+    return getPixelColour();
 }
 
 #if defined(COMPUTE_TBN)
 //subroutine(MappingRoutineType)
 vec4 mappingNormal(){
-    vec3 bump = getBump(VAR._texCoord);
-    return mix(getPixelColour(VAR._texCoord, getTBNMatrix() * bump),
+    setProcessedNormal(getTBNMatrix() * getBump(VAR._texCoord));
+    return mix(getPixelColour(),
                mappingFlat(),
                vec4(dvd_lodLevel > 1));
 }

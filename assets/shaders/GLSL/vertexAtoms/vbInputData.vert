@@ -20,12 +20,6 @@ void computeData() {
     VAR.dvd_instanceID = gl_BaseInstanceARB;
     VAR.dvd_drawID = gl_DrawIDARB;
     dvd_Vertex  = vec4(inVertexData, 1.0);
-    //Occlusion culling visibility debug code
-#if defined(DEBUG_HIZ_CULLING)
-    if (dvd_customData > 2.0) {
-        dvd_Vertex.xyz *= 5;
-    }
-#endif
     dvd_Normal  = UNPACK_FLOAT(inNormalData);
     dvd_Colour   = inColourData;
     dvd_Tangent = UNPACK_FLOAT(inTangentData); 

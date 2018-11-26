@@ -112,10 +112,6 @@ constexpr unsigned int SCENE_NODE_LOD0 = 100;
 constexpr unsigned int SCENE_NODE_LOD1 = 180;
 /// If true, Hi-Z based occlusion culling is used
 constexpr bool USE_HIZ_CULLING = true;
-/// If true, Hi-Z culling is disabled and potentially culled nodes are drawn in bright red and double in size
-constexpr bool DEBUG_HIZ_CULLING = false;
-
-static_assert(!DEBUG_HIZ_CULLING || USE_HIZ_CULLING, "Debugging HiZ-Culling requires HiZ-Culling to be enabled!");
 
 /// Compute related options
 namespace Compute {

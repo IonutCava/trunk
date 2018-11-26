@@ -96,8 +96,8 @@ vec4 getTextureColour(in vec2 uv) {
         case TEX_MODULATE   : colour *= colour2;       break;
         case TEX_REPLACE    : colour  = colour2;       break;
         case TEX_SIGNED_ADD : colour += colour2 - 0.5; break;
-        case TEX_DIVIDE     : colour /= colour2;          break;
-        case TEX_SUBTRACT   : colour -= colour2;          break;
+        case TEX_DIVIDE     : colour /= colour2;       break;
+        case TEX_SUBTRACT   : colour -= colour2;       break;
         case TEX_DECAL      : colour = vec4(mix(colour.rgb, colour2.rgb, colour2.a), colour.a); break;
         case TEX_ADD        : {
             colour.rgb += colour2.rgb;
@@ -179,7 +179,7 @@ vec4 private_getDiffuseColour() {
         return dvd_Matrices[VAR.dvd_instanceID]._colourMatrix[0];
 #   else
         return getTextureColour(VAR._texCoord);
-#       endif
+#   endif
 
     return vec4(1.0);
 }

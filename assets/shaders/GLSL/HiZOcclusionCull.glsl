@@ -25,11 +25,8 @@ layout(local_size_x = 64) in;
 
 
 void cullNode(const in uint idx) {
-#if !defined(DEBUG_HIZ_CULLING)
     atomicCounterIncrement(culledCount);
     dvd_drawCommands[idx].instanceCount = 0;
-#endif
-
     dvd_customData(idx) = 3.0;
 }
 

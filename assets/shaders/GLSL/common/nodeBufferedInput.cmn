@@ -59,13 +59,13 @@ NodeData dvd_private_node_data = dvd_Matrices[VAR.dvd_instanceID];
 #define buffer_matProperties dvd_private_node_data._colourMatrix[3]
 #define buffer_integers dvd_private_node_data._properties
 
-#define dvd_isSelected     (buffer_integers.x < -0.5)
-#define dvd_isHighlighted  (buffer_integers.x >  0.5)
-#define dvd_shadowMapping  (buffer_integers.y > 0.0)
-#define dvd_useAlphaTest   (buffer_matProperties.x > 0.0)
-#define dvd_texOperation   uint(buffer_matProperties.y)
-#define dvd_parallaxFactor buffer_matProperties.z
-#define dvd_reliefFactor   dvd_parallaxFactor
+#define dvd_isSelected      (buffer_integers.x < -0.5)
+#define dvd_isHighlighted   (buffer_integers.x >  0.5)
+#define dvd_receivesShadows (buffer_integers.y > 0.0)
+#define dvd_useAlphaTest    (buffer_matProperties.x > 0.0)
+#define dvd_texOperation    uint(buffer_matProperties.y)
+#define dvd_parallaxFactor  buffer_matProperties.z
+#define dvd_reliefFactor    dvd_parallaxFactor
 #define dvd_reflectionIndex uint(dvd_private_node_data._normalMatrixWV[1][3])
 #define dvd_refractionIndex uint(dvd_private_node_data._normalMatrixWV[2][3])
 

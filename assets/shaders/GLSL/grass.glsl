@@ -62,7 +62,6 @@ void main (void){
         discard;
     }
 
-    //colour = getPixelColour(VAR._texCoord, VAR._normalWV);
     _colourOut = colour;
     _normalOut = packNormal(normalize(VAR._normalWV));
     _velocityOut = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
