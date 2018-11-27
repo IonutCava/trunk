@@ -97,12 +97,12 @@ bool Terrain::onRender(SceneGraphNode& sgn,
                        RenderStagePass renderStagePass) {
     RenderPackage& pkg = sgn.get<RenderingComponent>()->getDrawPackage(renderStagePass);
 
-    Camera* camera = sceneRenderState.parentScene().playerCamera();
 
     const U8 stageIndex = to_U8(renderStagePass._stage);
 
     TerrainTessellator& tessellator = _terrainTessellator[stageIndex];
 
+    Camera* camera = sceneRenderState.parentScene().playerCamera();
     const vec3<F32>& newEye = camera->getEye();
     const vec3<F32>& crtPos = sgn.get<TransformComponent>()->getPosition();
     U32 offset = to_U32(stageIndex * Terrain::MAX_RENDER_NODES);

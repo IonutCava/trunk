@@ -43,6 +43,7 @@ void main(void)
 --TessellationC
 
 const bool USE_CAMERA_DISTANCE = true;
+#define id gl_InvocationID
 
 #include "nodeBufferedInput.cmn"
 
@@ -81,44 +82,48 @@ patch out float gl_TessLevelInner[2];
 
 out float tcs_tessLevel[];
 
+float AdaptiveTessellation(mat4 matMVP, mat4 matView, vec3 p0, vec3 p1) {
+    vec3 center = (p0 + p1)*0.5f;
+    vec4 clip2 = matView * vec4(center, 1.0);
+    vec4 clip4 = matView * vec4(0, 0, 0, 1.0);
+    float cameraDist = length(clip2.xyz);
+    float cameraDistFromCenter = length(clip4.xyz);
+
+    vec4 clip0 = matMVP * vec4(p0, 1.0);
+    vec4 clip1 = matMVP * vec4(p1, 1.0);
+    const float d = distance(clip0, clip1);
+    float terrTessTriSize = 12.0f;
+    return (1 + clamp((cameraDistFromCenter * 2 / cameraDist)*(d / terrTessTriSize), 1, 61));
+
+}
+
 /**
 * Dynamic level of detail using camera distance algorithm.
 */
-float dlodCameraDistance(mat4 mvMatrix, vec4 p0, vec4 p1, vec2 t0, vec2 t1)
+float dlodCameraDistance(vec4 p0, vec4 p1, vec2 t0, vec2 t1)
 {
-    float sampleHeight = texture(TexTerrainHeight, t0).r;
-    p0.y = TERRAIN_MIN_HEIGHT + TERRAIN_HEIGHT_RANGE * sampleHeight;
-    sampleHeight = texture(TexTerrainHeight, t1).r;
-    p1.y = TERRAIN_MIN_HEIGHT + TERRAIN_HEIGHT_RANGE * sampleHeight;
-
-    vec4 view0 = mvMatrix * p0;
-    vec4 view1 = mvMatrix * p1;
-
-    float minTessDistance = tessellationRange.x;
-    float maxTessDistance = tessellationRange.y;
-    float d0 = clamp((abs(p0.z) - minTessDistance) / (maxTessDistance - minTessDistance), 0.0, 1.0);
-    float d1 = clamp((abs(p1.z) - minTessDistance) / (maxTessDistance - minTessDistance), 0.0, 1.0);
+    float d0 = clamp((abs(p0.z) - tessellationRange.x) / (tessellationRange.y - tessellationRange.x), 0.0, 1.0);
+    float d1 = clamp((abs(p1.z) - tessellationRange.x) / (tessellationRange.y - tessellationRange.x), 0.0, 1.0);
 
     float t = mix(64, 2, (d0 + d1) * 0.5);
 
-    if (t <= 2.0)
-    {
+    if (t <= 2.0) {
         return 2.0;
     }
-    if (t <= 4.0)
-    {
+
+    if (t <= 4.0) {
         return 4.0;
     }
-    if (t <= 8.0)
-    {
+
+    if (t <= 8.0) {
         return 8.0;
     }
-    if (t <= 16.0)
-    {
+
+    if (t <= 16.0) {
         return 16.0;
     }
-    if (t <= 32.0)
-    {
+
+    if (t <= 32.0){
         return 32.0;
     }
 
@@ -133,10 +138,8 @@ float dlodSphere(mat4 mvMatrix, vec4 p0, vec4 p1, vec2 t0, vec2 t1)
 {
     const float g_tessellatedTriWidth = 10.0;
 
-    float sampleHeight = texture(TexTerrainHeight, t0).r;
-    p0.y = TERRAIN_MIN_HEIGHT + TERRAIN_HEIGHT_RANGE * sampleHeight;
-    sampleHeight = texture(TexTerrainHeight, t1).r;
-    p1.y = TERRAIN_MIN_HEIGHT + TERRAIN_HEIGHT_RANGE * sampleHeight;
+    p0.y = (TERRAIN_HEIGHT_RANGE * texture(TexTerrainHeight, t0).r) + TERRAIN_MIN_HEIGHT;
+    p1.y = (TERRAIN_HEIGHT_RANGE * texture(TexTerrainHeight, t1).r) + TERRAIN_MIN_HEIGHT;
 
     vec4 center = 0.5 * (p0 + p1);
     vec4 view0 = mvMatrix * center;
@@ -148,9 +151,6 @@ float dlodSphere(mat4 mvMatrix, vec4 p0, vec4 p1, vec2 t0, vec2 t1)
 
     clip0 /= clip0.w;
     clip1 /= clip1.w;
-
-    //clip0.xy *= dvd_ViewPort.zw;
-    //clip1.xy *= dvd_ViewPort.zw;
 
     vec2 screen0 = ((clip0.xy + 1.0) / 2.0) * dvd_ViewPort.zw;
     vec2 screen1 = ((clip1.xy + 1.0) / 2.0) * dvd_ViewPort.zw;
@@ -185,26 +185,41 @@ float dlodSphere(mat4 mvMatrix, vec4 p0, vec4 p1, vec2 t0, vec2 t1)
 
 void main(void)
 {
-    PassData(gl_InvocationID);
+    PassData(id);
 
 
-    mat4 mvMatrix = dvd_WorldViewMatrix(VAR.dvd_instanceID);
     // Outer tessellation level
     if (USE_CAMERA_DISTANCE)
     {
-        gl_TessLevelOuter[0] = dlodCameraDistance(mvMatrix, gl_in[3].gl_Position, gl_in[0].gl_Position, _in[3]._texCoord, _in[0]._texCoord);
-        gl_TessLevelOuter[1] = dlodCameraDistance(mvMatrix, gl_in[0].gl_Position, gl_in[1].gl_Position, _in[0]._texCoord, _in[1]._texCoord);
-        gl_TessLevelOuter[2] = dlodCameraDistance(mvMatrix, gl_in[1].gl_Position, gl_in[2].gl_Position, _in[1]._texCoord, _in[2]._texCoord);
-        gl_TessLevelOuter[3] = dlodCameraDistance(mvMatrix, gl_in[2].gl_Position, gl_in[3].gl_Position, _in[2]._texCoord, _in[3]._texCoord);
+        gl_TessLevelOuter[0] = dlodCameraDistance(gl_in[3].gl_Position, gl_in[0].gl_Position, _in[3]._texCoord, _in[0]._texCoord);
+        gl_TessLevelOuter[1] = dlodCameraDistance(gl_in[0].gl_Position, gl_in[1].gl_Position, _in[0]._texCoord, _in[1]._texCoord);
+        gl_TessLevelOuter[2] = dlodCameraDistance(gl_in[1].gl_Position, gl_in[2].gl_Position, _in[1]._texCoord, _in[2]._texCoord);
+        gl_TessLevelOuter[3] = dlodCameraDistance(gl_in[2].gl_Position, gl_in[3].gl_Position, _in[2]._texCoord, _in[3]._texCoord);
     } 
     else
     {
+        mat4 mvMatrix = dvd_WorldViewMatrix(VAR.dvd_instanceID);
         gl_TessLevelOuter[0] = dlodSphere(mvMatrix, gl_in[3].gl_Position, gl_in[0].gl_Position, _in[3]._texCoord, _in[0]._texCoord);
         gl_TessLevelOuter[1] = dlodSphere(mvMatrix, gl_in[0].gl_Position, gl_in[1].gl_Position, _in[0]._texCoord, _in[1]._texCoord);
         gl_TessLevelOuter[2] = dlodSphere(mvMatrix, gl_in[1].gl_Position, gl_in[2].gl_Position, _in[1]._texCoord, _in[2]._texCoord);
         gl_TessLevelOuter[3] = dlodSphere(mvMatrix, gl_in[2].gl_Position, gl_in[3].gl_Position, _in[2]._texCoord, _in[3]._texCoord);
     }
-    
+
+#if 0
+    mat4 matMVP = dvd_ProjectionMatrix * mvMatrix;
+    /* The first component provides the tesselation factor for the u==0 edge of the patch. T
+    he second component provides the tesselation factor for the v==0 edge of the patch.
+    The third component provides the tesselation factor for the u==1 edge of the patch.
+    The fourth component provides the tesselation factor for the v==1 edge of the patch.
+    The ordering of the edges is clockwise, starting from the u==0 edge, which is the left side of the patch,
+    and from the v==0 edge, which is the top of the patch.*/
+    gl_TessLevelOuter[0] = AdaptiveTessellation(matMVP, dvd_ViewMatrix, gl_in[0].gl_Position.xyz, gl_in[3].gl_Position.xyz);
+    gl_TessLevelOuter[1] = AdaptiveTessellation(matMVP, dvd_ViewMatrix, gl_in[0].gl_Position.xyz, gl_in[1].gl_Position.xyz);
+    gl_TessLevelOuter[2] = AdaptiveTessellation(matMVP, dvd_ViewMatrix, gl_in[1].gl_Position.xyz, gl_in[2].gl_Position.xyz);
+    gl_TessLevelOuter[3] = AdaptiveTessellation(matMVP, dvd_ViewMatrix, gl_in[3].gl_Position.xyz, gl_in[2].gl_Position.xyz);
+    gl_TessLevelInner[0] = gl_TessLevelInner[1] = (gl_TessLevelOuter[0] + gl_TessLevelOuter[1] + gl_TessLevelOuter[2] + gl_TessLevelOuter[3])*0.25f;
+#endif
+
     vec4 tScale = dvd_TerrainData[VAR.dvd_drawID]._tScale;
 
     if (tscale_negx == 2.0) {
@@ -228,10 +243,10 @@ void main(void)
     gl_TessLevelInner[1] = 0.5 * (gl_TessLevelOuter[2] + gl_TessLevelOuter[1]);
 
     // Pass the patch verts along
-    gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
+    gl_out[id].gl_Position = gl_in[id].gl_Position;
 
     // Output tessellation level (used for wireframe coloring)
-    tcs_tessLevel[gl_InvocationID] = gl_TessLevelOuter[0];
+    tcs_tessLevel[id] = gl_TessLevelOuter[0];
 }
 
 --TessellationE
@@ -336,7 +351,7 @@ void main()
 
     // Sample the heightmap and offset y position of vertex
     float sampleHeight = getHeight(heightOffsets);
-    gl_Position.y = TERRAIN_MIN_HEIGHT + TERRAIN_HEIGHT_RANGE * sampleHeight;
+    gl_Position.y = (TERRAIN_HEIGHT_RANGE * sampleHeight) + TERRAIN_MIN_HEIGHT;
 
     // Project the vertex to clip space and send it along
     vec3 offset = dvd_TerrainData[VAR[0].dvd_drawID]._positionAndTileScale.xyz;
@@ -426,13 +441,13 @@ vec4 wireframeColor()
     if (tes_tessLevel[0] == 64.0) {
         return vec4(0.0, 0.0, 1.0, 1.0);
     } else if (tes_tessLevel[0] >= 32.0) {
-        return vec4(0.0, 1.0, 1.0, 1.0);
+        return vec4(0.0, 1.0, 0.0, 1.0);
     } else if (tes_tessLevel[0] >= 16.0) {
-        return vec4(1.0, 1.0, 0.0, 1.0);
-    } else if (tes_tessLevel[0] >= 8.0) {
-        return vec4(1.0, 1.0, 1.0, 1.0);
-    } else {
         return vec4(1.0, 0.0, 0.0, 1.0);
+    } else if (tes_tessLevel[0] >= 8.0) {
+        return vec4(0.5, 0.5, 0.5, 1.0);
+    } else {
+        return vec4(1.0, 1.0, 1.0, 1.0);
     }
 }
 

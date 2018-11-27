@@ -58,16 +58,11 @@ struct TessellatedTerrainNode {
     TessellatedTerrainNodeType type = TessellatedTerrainNodeType::ROOT;
 
     // Tessellation scale
-    F32 tscale_negx = 0.0f; // negative x edge
-    F32 tscale_posx = 0.0f; // Positive x edge
-    F32 tscale_negz = 0.0f; // Negative z edge
-    F32 tscale_posz = 0.0f; // Positive z edge
+    // negative x edge (0), positive x edge (1), negative z edge (2), positive z edge (3)
+    vec4<F32> tscale = { 0.0f, 0.0f, 0.0f , 0.0f }; 
 
     TessellatedTerrainNode *p  = nullptr;  // Parent
-    TessellatedTerrainNode *c1 = nullptr; // Children
-    TessellatedTerrainNode *c2 = nullptr;
-    TessellatedTerrainNode *c3 = nullptr;
-    TessellatedTerrainNode *c4 = nullptr;
+    TessellatedTerrainNode* c[4] = { nullptr, nullptr, nullptr, nullptr }; // Children
 
     TessellatedTerrainNode *n = nullptr; // Neighbor to north
     TessellatedTerrainNode *s = nullptr; // Neighbor to south
@@ -76,19 +71,8 @@ struct TessellatedTerrainNode {
 }; //struct TessellatedTerrainNode
 
 struct TessellatedNodeData {
-    inline void set(const vec3<F32>& nodeOrigin,
-                    F32 tileScale,
-                    F32 tileScaleNegX,
-                    F32 tileScaleNegZ,
-                    F32 tileScalePosX,
-                    F32 tileScalePosZ)
-    {
-        _positionAndTileScale.set(nodeOrigin, tileScale);
-        _tScale.set(tileScaleNegX, tileScaleNegZ, tileScalePosX, tileScalePosZ);
-    }
-
-    vec4<F32> _positionAndTileScale;
-    vec4<F32> _tScale;
+    vec4<F32> _positionAndTileScale = { 0.0f, 0.0f, 0.0f, 0.0f };
+    vec4<F32> _tScale = {0.0f, 0.0f, 0.0f, 0.0f};
 };
 
 class TerrainTessellator {
@@ -149,7 +133,6 @@ protected:
 private:
     I32 _numNodes;
     U16 _renderDepth;
-    const U16 _maxRenderDepth;
     vec3<F32> _cameraEyeCache;
     vec3<F32> _originiCache;
     TreeVector _tree;
