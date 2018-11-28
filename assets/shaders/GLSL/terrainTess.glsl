@@ -82,24 +82,7 @@ patch out float gl_TessLevelInner[2];
 
 out float tcs_tessLevel[];
 
-float AdaptiveTessellation(mat4 matMVP, mat4 matView, vec3 p0, vec3 p1) {
-    vec3 center = (p0 + p1)*0.5f;
-    vec4 clip2 = matView * vec4(center, 1.0);
-    vec4 clip4 = matView * vec4(0, 0, 0, 1.0);
-    float cameraDist = length(clip2.xyz);
-    float cameraDistFromCenter = length(clip4.xyz);
-
-    vec4 clip0 = matMVP * vec4(p0, 1.0);
-    vec4 clip1 = matMVP * vec4(p1, 1.0);
-    const float d = distance(clip0, clip1);
-    float terrTessTriSize = 12.0f;
-    return (1 + clamp((cameraDistFromCenter * 2 / cameraDist)*(d / terrTessTriSize), 1, 61));
-
-}
-
-/**
-* Dynamic level of detail using camera distance algorithm.
-*/
+// Dynamic level of detail using camera distance algorithm.
 float dlodCameraDistance(vec4 p0, vec4 p1, vec2 t0, vec2 t1)
 {
     float d0 = clamp((abs(p0.z) - tessellationRange.x) / (tessellationRange.y - tessellationRange.x), 0.0, 1.0);
@@ -130,10 +113,8 @@ float dlodCameraDistance(vec4 p0, vec4 p1, vec2 t0, vec2 t1)
     return 64.0;
 }
 
-/**
-* Dynamic level of detail using sphere algorithm.
-* Source adapated from the DirectX 11 Terrain Tessellation example.
-*/
+// Dynamic level of detail using sphere algorithm.
+// Source adapted from the DirectX 11 Terrain Tessellation example.
 float dlodSphere(mat4 mvMatrix, vec4 p0, vec4 p1, vec2 t0, vec2 t1)
 {
     const float g_tessellatedTriWidth = 10.0;
@@ -204,21 +185,6 @@ void main(void)
         gl_TessLevelOuter[2] = dlodSphere(mvMatrix, gl_in[1].gl_Position, gl_in[2].gl_Position, _in[1]._texCoord, _in[2]._texCoord);
         gl_TessLevelOuter[3] = dlodSphere(mvMatrix, gl_in[2].gl_Position, gl_in[3].gl_Position, _in[2]._texCoord, _in[3]._texCoord);
     }
-
-#if 0
-    mat4 matMVP = dvd_ProjectionMatrix * mvMatrix;
-    /* The first component provides the tesselation factor for the u==0 edge of the patch. T
-    he second component provides the tesselation factor for the v==0 edge of the patch.
-    The third component provides the tesselation factor for the u==1 edge of the patch.
-    The fourth component provides the tesselation factor for the v==1 edge of the patch.
-    The ordering of the edges is clockwise, starting from the u==0 edge, which is the left side of the patch,
-    and from the v==0 edge, which is the top of the patch.*/
-    gl_TessLevelOuter[0] = AdaptiveTessellation(matMVP, dvd_ViewMatrix, gl_in[0].gl_Position.xyz, gl_in[3].gl_Position.xyz);
-    gl_TessLevelOuter[1] = AdaptiveTessellation(matMVP, dvd_ViewMatrix, gl_in[0].gl_Position.xyz, gl_in[1].gl_Position.xyz);
-    gl_TessLevelOuter[2] = AdaptiveTessellation(matMVP, dvd_ViewMatrix, gl_in[1].gl_Position.xyz, gl_in[2].gl_Position.xyz);
-    gl_TessLevelOuter[3] = AdaptiveTessellation(matMVP, dvd_ViewMatrix, gl_in[3].gl_Position.xyz, gl_in[2].gl_Position.xyz);
-    gl_TessLevelInner[0] = gl_TessLevelInner[1] = (gl_TessLevelOuter[0] + gl_TessLevelOuter[1] + gl_TessLevelOuter[2] + gl_TessLevelOuter[3])*0.25f;
-#endif
 
     vec4 tScale = dvd_TerrainData[VAR.dvd_drawID]._tScale;
 
@@ -350,7 +316,7 @@ void main()
     vec4 heightOffsets = getHeightOffsets(terrainTexCoord);
 
     // Sample the heightmap and offset y position of vertex
-    float sampleHeight = getHeight(heightOffsets);
+    float sampleHeight = 0.0f;// getHeight(heightOffsets);
     gl_Position.y = (TERRAIN_HEIGHT_RANGE * sampleHeight) + TERRAIN_MIN_HEIGHT;
 
     // Project the vertex to clip space and send it along
@@ -389,8 +355,8 @@ out vec4 _scrollingUV;
 smooth out vec2 _waterDetails;
 
 out int detailLevel;
-#if defined(_DEBUG)
-out vec4 gs_wireColor;
+#if defined(TOGGLE_WIREFRAME)
+out vec3 gs_wireColor;
 noperspective out vec3 gs_edgeDist;
 #endif
 
@@ -436,32 +402,37 @@ void scrollingUV(int index) {
     _scrollingUV.s -= time2;
 }
 
-vec4 wireframeColor()
-{
-    if (tes_tessLevel[0] == 64.0) {
-        return vec4(0.0, 0.0, 1.0, 1.0);
-    } else if (tes_tessLevel[0] >= 32.0) {
-        return vec4(0.0, 1.0, 0.0, 1.0);
-    } else if (tes_tessLevel[0] >= 16.0) {
-        return vec4(1.0, 0.0, 0.0, 1.0);
-    } else if (tes_tessLevel[0] >= 8.0) {
-        return vec4(0.5, 0.5, 0.5, 1.0);
-    } else {
-        return vec4(1.0, 1.0, 1.0, 1.0);
-    }
-}
-
 vec4 getWVPPositon(int index) {
     return dvd_ViewProjectionMatrix * gl_in[index].gl_Position;
 }
 
-void PerVertex(in int i, in vec3 edge_dist, in vec4 wireColor, in float minHeight) {
+void PerVertex(in int i, in vec3 edge_dist, in float minHeight) {
     PassData(i);
-    detailLevel = 0;
-    if (tes_tessLevel[0] == 64.0) {
+    if (tes_tessLevel[0] >= 64.0) {
+        detailLevel = 4;
+#if defined(TOGGLE_WIREFRAME)
+        gs_wireColor = vec3(0.0, 0.0, 1.0);
+#endif
+    } else if (tes_tessLevel[0] >= 32.0) {
+        detailLevel = 3;
+#if defined(TOGGLE_WIREFRAME)
+        gs_wireColor = vec3(0.0, 1.0, 0.0);
+#endif
+    } else if (tes_tessLevel[0] >= 16.0) {
         detailLevel = 2;
-    } else if (tes_tessLevel[0] == 32.0) {
+#if defined(TOGGLE_WIREFRAME)
+        gs_wireColor = vec3(1.0, 0.0, 0.0);
+#endif
+    } else if (tes_tessLevel[0] >= 8.0) {
         detailLevel = 1;
+#if defined(TOGGLE_WIREFRAME)
+        gs_wireColor = vec3(0.25, 0.50, 0.75);
+#endif
+    } else {
+        detailLevel = 0; 
+#if defined(TOGGLE_WIREFRAME)
+        gs_wireColor = vec3(1.0, 1.0, 1.0);
+#endif
     }
 
 #if defined(SHADOW_PASS)
@@ -478,8 +449,6 @@ void PerVertex(in int i, in vec3 edge_dist, in vec4 wireColor, in float minHeigh
     scrollingUV(i);
 
 #   if defined(_DEBUG)
-    gs_wireColor = wireColor;
-
     if (i == 0) {
         gs_edgeDist = vec3(edge_dist.x, 0, 0);
     } else if (i == 1) {
@@ -493,8 +462,6 @@ void PerVertex(in int i, in vec3 edge_dist, in vec4 wireColor, in float minHeigh
 
 void main(void)
 {
-    vec4 wireColor = wireframeColor();
-
     // Calculate edge distances for wireframe
     vec3 edge_dist = vec3(0.0);
 
@@ -522,14 +489,13 @@ void main(void)
     float minHeight = (dvd_WorldMatrix(VAR[0].dvd_instanceID) * vec4(0.0, TERRAIN_MIN_HEIGHT, 0.0, 1.0)).y;
 
     // Output verts
-    for (int i = 0; i < gl_in.length(); ++i)
-    {
-        PerVertex(i, edge_dist, wireColor, minHeight);
+    for (int i = 0; i < gl_in.length(); ++i) {
+        PerVertex(i, edge_dist, minHeight);
         EmitVertex();
     }
 
     // This closes the triangle
-    PerVertex(0, edge_dist, wireColor, minHeight);
+    PerVertex(0, edge_dist, minHeight);
     EmitVertex();
 
     EndPrimitive();
@@ -580,10 +546,10 @@ in vec4 _scrollingUV;
 // x = distance, y = depth
 smooth in vec2 _waterDetails;
 
-//2 = high, 1 = medium, 0 = low
+//4 = high .... 0 = very low
 in flat int detailLevel;
 #if defined(_DEBUG)
-in vec4 gs_wireColor;
+in vec3 gs_wireColor;
 noperspective in vec3 gs_edgeDist;
 #endif
 
@@ -623,7 +589,7 @@ vec4 UnderwaterMappingRoutine() {
 vec4 TerrainMappingRoutine() {
     setAlbedo(getTerrainAlbedo(detailLevel));
 
-    return getPixelColour();
+    return vec4(0.2, 0.2, 0.2, 1.0);// getPixelColour();
 }
 
 void main(void)
@@ -636,7 +602,7 @@ void main(void)
 #if defined(TOGGLE_WIREFRAME)
     const float LineWidth = 0.75;
     float d = min(min(gs_edgeDist.x, gs_edgeDist.y), gs_edgeDist.z);
-    _colourOut = mix(gs_wireColor, _colourOut, smoothstep(LineWidth - 1, LineWidth + 1, d));
+    _colourOut = mix(vec4(gs_wireColor, 1.0), _colourOut, smoothstep(LineWidth - 1, LineWidth + 1, d));
 #endif
 
     _normalOut = packNormal(getProcessedNormal());

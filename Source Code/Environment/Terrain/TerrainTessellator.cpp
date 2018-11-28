@@ -77,8 +77,8 @@ bool TerrainTessellator::checkDivide(TessellatedTerrainNode &node) {
     // from current origin to corner of current square.
     // OR
     // Max recursion level has been hit
-    if (d > 2.5f * (std::pow(0.5f * node.dim.width, 2.0f) + std::pow(0.5f * node.dim.height, 2.0f)) ||
-        node.dim.width < TERRAIN_CUTOFF_DISTANCE)
+    if (/*d > 2.5f * (std::pow(0.5f * node.dim.width, 2.0f) + std::pow(0.5f * node.dim.height, 2.0f)) ||
+        */node.dim.width < TERRAIN_CUTOFF_DISTANCE)
     {
         return false;
     }

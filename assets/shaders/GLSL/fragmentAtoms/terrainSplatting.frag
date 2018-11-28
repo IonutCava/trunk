@@ -78,7 +78,7 @@ vec4 getTerrainAlbedo(int detailLevel){
             colour += getFinalColour4(blendMap, i * 4, diffuseScale[i * 4]);
         }
 
-        if (detailLevel == 1) {
+        if (detailLevel < 3) {
             break;
         }
     }
@@ -113,7 +113,7 @@ vec3 getTerrainNormal(int detailLevel) {
         tbnTemp = perturb_normal(tbnTemp, VAR._normalWV, V, VAR._texCoord);
         tbn = normalUDNBlend(tbnTemp, tbn);
 
-        if (detailLevel == 1) {
+        if (detailLevel < 3) {
             break;
         }
     }
