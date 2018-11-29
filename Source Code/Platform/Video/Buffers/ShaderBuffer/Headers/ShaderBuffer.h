@@ -57,6 +57,7 @@ class NOINITVTABLE ShaderBuffer : public GUIDWrapper,
     USE_CUSTOM_ALLOCATOR
    public:
        enum class Flags : U8 {
+           NONE = 0,
            UNBOUND_STORAGE = toBit(1),
            ALLOW_THREADED_WRITES = toBit(2),
            AUTO_RANGE_FLUSH = toBit(3),

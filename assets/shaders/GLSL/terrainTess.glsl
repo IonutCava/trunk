@@ -607,5 +607,5 @@ void main(void)
 
     _normalOut = packNormal(getProcessedNormal());
     // Why would terrain have a velocity?
-    _velocityOut = vec2(0.0); //velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
+    _velocityOut = vec2(1.0); //velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
 }

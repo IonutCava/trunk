@@ -152,6 +152,8 @@ class Terrain : public Object3D {
     void loadFromXML(const boost::property_tree::ptree& pt)  override;
 
    protected:
+    void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState) override;
+
     void postBuild();
 
     void buildDrawCommands(SceneGraphNode& sgn,
@@ -167,16 +169,19 @@ class Terrain : public Object3D {
    public:
     hashMap<U32, vector<U32>> _physicsIndices;
     vector<VertexBuffer::Vertex> _physicsVerts;
+    stringImpl getDumpData();
 
    protected:
     ShaderBuffer* _shaderData;
     VegetationDetails _vegDetails;
 
+    typedef std::array<bool, to_base(RenderStage::COUNT)> TessellatorArrayFlags;
     typedef std::array<TerrainTessellator, to_base(RenderStage::COUNT)> TessellatorArray;
     typedef hashMap<I64, bool> CameraUpdateFlagArray;
 
 
     TessellatorArray _terrainTessellator;
+    hashMap<I64, TessellatorArrayFlags> _terrainTessellatorFlags;
 
     bool _drawBBoxes;
     Quad3D_ptr _plane;

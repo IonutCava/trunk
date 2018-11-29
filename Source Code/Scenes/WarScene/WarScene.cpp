@@ -29,6 +29,8 @@
 #include "ECS/Components/Headers/TransformComponent.h"
 #include "ECS/Components/Headers/DirectionalLightComponent.h"
 
+#include "Environment/Terrain/Headers/Terrain.h"
+
 #include "Dynamics/Entities/Particles/ConcreteUpdaters/Headers/ParticleBasicTimeUpdater.h"
 #include "Dynamics/Entities/Particles/ConcreteUpdaters/Headers/ParticleBasicColourUpdater.h"
 #include "Dynamics/Entities/Particles/ConcreteUpdaters/Headers/ParticleEulerUpdater.h"
@@ -42,9 +44,19 @@
 namespace Divide {
 
 namespace {
+    std::shared_ptr<Terrain> g_terrain = nullptr;
     vec2<F32> g_sunAngle(0.0f, Angle::to_RADIANS(45.0f));
     bool g_direction = false;
     U64 elapsedGameTimeUs = 0;
+
+
+    stringImpl GetTerrainDumpData() {
+        if (g_terrain != nullptr) {
+            return g_terrain->getDumpData();
+        }
+
+        return "";
+    }
 };
 
 WarScene::WarScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name)
@@ -100,6 +112,10 @@ void WarScene::processGUI(const U64 deltaTimeUS) {
         _GUI->modifyText(_ID("camPosition"),
                          Util::StringFormat("Position [ X: %5.2f | Y: %5.2f | Z: %5.2f ] [Pitch: %5.2f | Yaw: %5.2f]",
                                             eyePos.x, eyePos.y, eyePos.z, euler.pitch, euler.yaw));
+
+
+
+        _GUI->modifyText(_ID("TerrainDumpData"), GetTerrainDumpData());
 
         _guiTimersMS[0] = 0.0;
     }
@@ -276,11 +292,18 @@ namespace {
 };
 
 void WarScene::updateSceneStateInternal(const U64 deltaTimeUS) {
-    return;
-
     if (!_sceneReady) {
         return;
     }
+
+    if (g_terrain == nullptr) {
+        auto nodes = Object3D::filterByType(sceneGraph().getNodesByType(SceneNodeType::TYPE_OBJECT3D), ObjectType::TERRAIN);
+        if (!nodes.empty()) {
+            g_terrain = nodes[0]->getNode<Terrain>();
+        }
+    }
+
+    return;
 
     if (_resetUnits) {
         resetUnits();
@@ -308,6 +331,8 @@ void WarScene::updateSceneStateInternal(const U64 deltaTimeUS) {
         tComp->rotateY(phi);*/
     }
     
+
+
     if (!_aiManager->getNavMesh(_armyNPCs[0][0]->get<UnitComponent>()->getUnit<NPC>()->getAIEntity()->getAgentRadiusCategory())) {
         return;
     }
@@ -780,6 +805,7 @@ void WarScene::postLoadMainThread() {
         Util::StringFormat("Position [ X: %5.0f | Y: %5.0f | Z: %5.0f ] [Pitch: %5.2f | Yaw: %5.2f]",
             0.0f, 0.0f, 0.0f, 0.0f, 0.0f));
 
+
     _GUI->addText("scoreDisplay",
                   pixelPosition(60, 123),  // Position
         Font::DIVIDE_DEFAULT,  // Font
@@ -791,6 +817,12 @@ void WarScene::postLoadMainThread() {
                   Font::DIVIDE_DEFAULT,
                   UColour(0, 0, 0, 255),
                   "");
+
+    _GUI->addText("TerrainDumpData", pixelPosition(60, 183),
+        Font::DIVIDE_DEFAULT,
+        UColour(0, 0, 0, 255),
+        "",
+        12);
 
     _infoBox = _GUI->addMsgBox(_ID("infoBox"), "Info", "Blabla");
 

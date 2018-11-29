@@ -91,12 +91,12 @@ public:
     void createTree(const vec3<F32>& camPos, const vec3<F32>& origin, const vec2<U16>& terrainDimensions);
 
     // Prepare data to draw the terrain. Returns the final render depth
-    U16 updateRenderData();
+    bufferPtr updateAndGetRenderData(U16& renderDepth);
 
     // Search for a node in the tree.
     // x, z == the point we are searching for (trying to find the node with an origin closest to that point)
     // n = the current node we are testing
-    TessellatedTerrainNode* find(TessellatedTerrainNode& n, F32 x, F32 z);
+    TessellatedTerrainNode* find(TessellatedTerrainNode* n, F32 x, F32 z);
 
     const RenderDataVector& renderData() const;
 
@@ -110,22 +110,22 @@ protected:
     
     // Determines whether a node should be subdivided based on its distance to the camera.
     // Returns true if the node should be subdivided.
-    bool checkDivide(TessellatedTerrainNode& node);
+    bool checkDivide(TessellatedTerrainNode* node);
 
     // Returns true if node is sub-divided. False otherwise.
-    bool divideNode(TessellatedTerrainNode& node);
+    bool divideNode(TessellatedTerrainNode* node);
 
     //Allocates a new node in the terrain quadtree with the specified parameters.
-    TessellatedTerrainNode* createNode(TessellatedTerrainNode& parent, TessellatedTerrainNodeType type, F32 x, F32 y, F32 z, F32 width, F32 height);
+    TessellatedTerrainNode* createNode(TessellatedTerrainNode* parent, TessellatedTerrainNodeType type, F32 x, F32 y, F32 z, F32 width, F32 height);
 
     // Calculate the tessellation scale factor for a node depending on the neighboring patches.
-    void calcTessScale(TessellatedTerrainNode& node);
+    void calcTessScale(TessellatedTerrainNode* node);
 
     // Pushes a node (patch) to the GPU to be drawn.
-    void renderNode(TessellatedTerrainNode& node, U16 crtDepth);
+    void renderNode(TessellatedTerrainNode* node, U16 crtDepth);
 
     // Traverses the terrain quadtree to draw nodes with no children.
-    void renderRecursive(TessellatedTerrainNode& node, U16& renderDepth);
+    void renderRecursive(TessellatedTerrainNode* node, U16& renderDepth);
 
 protected:
     static void initTessellationPatch(VertexBuffer* vb);
