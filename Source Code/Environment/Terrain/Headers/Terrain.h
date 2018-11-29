@@ -131,7 +131,7 @@ class Terrain : public Object3D {
    public:
      static constexpr U32 MAX_RENDER_NODES = 384;
      static constexpr size_t NODE_DATA_SIZE = sizeof(TessellatedNodeData) * Terrain::MAX_RENDER_NODES * to_base(RenderStage::COUNT);
-     static constexpr bool USE_TERRAIN_UBO = NODE_DATA_SIZE < (64 * 1024);
+     static constexpr bool USE_TERRAIN_UBO = false;//NODE_DATA_SIZE < (64 * 1024);
 
    public:
     explicit Terrain(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name);
@@ -169,7 +169,6 @@ class Terrain : public Object3D {
    public:
     hashMap<U32, vector<U32>> _physicsIndices;
     vector<VertexBuffer::Vertex> _physicsVerts;
-    stringImpl getDumpData();
 
    protected:
     ShaderBuffer* _shaderData;

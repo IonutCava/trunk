@@ -43,9 +43,9 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
     bufferDescriptor._elementSize = sizeof(TessellatedNodeData);
     bufferDescriptor._ringBufferLength = 1;
     bufferDescriptor._flags = USE_TERRAIN_UBO ? to_U32(ShaderBuffer::Flags::NONE) 
-                                             : (to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE) |
-                                              //to_U32(ShaderBuffer::Flags::AUTO_RANGE_FLUSH) |
-                                                to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES));
+                                              : (to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE) |
+                                                 to_U32(ShaderBuffer::Flags::AUTO_RANGE_FLUSH) |
+                                                 to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES));
                               
     //Should be once per frame
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
@@ -93,27 +93,6 @@ void Terrain::postBuild() {
     getMaterialTpl()->addExternalTexture(textureLayer->normalMaps(), to_U8(ShaderProgram::TextureUsage::COUNT) + 2);
 }
 
-stringImpl Terrain::getDumpData() {
-    stringImpl ret = "";
-    for (U8 i = 0; i < to_U8(RenderStage::COUNT); ++i) {
-        U16 count = 0;
-        const TessellatedNodeData* data = (const TessellatedNodeData*)_terrainTessellator[i].updateAndGetRenderData(count);
-        ret.append(Util::StringFormat("Node Count [%s]: %d \n", TypeUtil::renderStageToString(static_cast<RenderStage>(i)), count));
-        for (U8 j = 0; j < count; ++j){
-            ret.append(Util::StringFormat("    -- Origin: [%2.2f][%2.2f][%2.2f] Scale [%2.2f] TScale [%2.2f][%2.2f][%2.2f][%2.2f]\n",
-                data[j]._positionAndTileScale.x,
-                data[j]._positionAndTileScale.y,
-                data[j]._positionAndTileScale.z,
-                data[j]._positionAndTileScale.w,
-                data[j]._tScale.x,
-                data[j]._tScale.y,
-                data[j]._tScale.z,
-                data[j]._tScale.w));
-        }
-    }
-    return ret;
-}
-
 void Terrain::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState) {
     _terrainTessellatorFlags[sgn.getGUID()].fill(false);
     Object3D::sceneUpdate(deltaTimeUS, sgn, sceneState);
@@ -133,12 +112,12 @@ bool Terrain::onRender(SceneGraphNode& sgn,
 
     U32 offset = to_U32(stageIndex * Terrain::MAX_RENDER_NODES);
 
-    //if (!wasUpdated) 
+    if (!wasUpdated) 
     {
         const vec3<F32>& newEye = sceneRenderState.parentScene().playerCamera()->getEye();
         const vec3<F32>& crtPos = sgn.get<TransformComponent>()->getPosition();
 
-        //if (tessellator.getEye() != newEye || tessellator.getOrigin() != crtPos)
+        if (tessellator.getEye() != newEye || tessellator.getOrigin() != crtPos)
         {
             tessellator.createTree(newEye, crtPos, _descriptor->getDimensions());
             U16 depth = 0;
@@ -146,12 +125,12 @@ bool Terrain::onRender(SceneGraphNode& sgn,
 
             STUBBED("This may cause stalls. Profile! -Ionut");
             _shaderData->writeData(offset, depth, data);
+            sgn.get<RenderingComponent>()->registerShaderBuffer(ShaderBufferLocation::TERRAIN_DATA, vec2<U32>(offset, Terrain::MAX_RENDER_NODES), *_shaderData);
         }
 
         wasUpdated = true;
     }
 
-    sgn.get<RenderingComponent>()->registerShaderBuffer(ShaderBufferLocation::TERRAIN_DATA, vec2<U32>(offset, Terrain::MAX_RENDER_NODES), *_shaderData);
     disableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
     cmd._drawCount = tessellator.getRenderDepth();
     pkg.drawCommand(0, 0, cmd);

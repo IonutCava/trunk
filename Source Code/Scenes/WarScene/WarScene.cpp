@@ -48,15 +48,6 @@ namespace {
     vec2<F32> g_sunAngle(0.0f, Angle::to_RADIANS(45.0f));
     bool g_direction = false;
     U64 elapsedGameTimeUs = 0;
-
-
-    stringImpl GetTerrainDumpData() {
-        if (g_terrain != nullptr) {
-            return g_terrain->getDumpData();
-        }
-
-        return "";
-    }
 };
 
 WarScene::WarScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name)
@@ -112,10 +103,6 @@ void WarScene::processGUI(const U64 deltaTimeUS) {
         _GUI->modifyText(_ID("camPosition"),
                          Util::StringFormat("Position [ X: %5.2f | Y: %5.2f | Z: %5.2f ] [Pitch: %5.2f | Yaw: %5.2f]",
                                             eyePos.x, eyePos.y, eyePos.z, euler.pitch, euler.yaw));
-
-
-
-        _GUI->modifyText(_ID("TerrainDumpData"), GetTerrainDumpData());
 
         _guiTimersMS[0] = 0.0;
     }
@@ -817,12 +804,6 @@ void WarScene::postLoadMainThread() {
                   Font::DIVIDE_DEFAULT,
                   UColour(0, 0, 0, 255),
                   "");
-
-    _GUI->addText("TerrainDumpData", pixelPosition(60, 183),
-        Font::DIVIDE_DEFAULT,
-        UColour(0, 0, 0, 255),
-        "",
-        12);
 
     _infoBox = _GUI->addMsgBox(_ID("infoBox"), "Info", "Blabla");
 

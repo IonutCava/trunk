@@ -42,12 +42,9 @@ void main(void)
 
 --TessellationC
 
-const bool USE_CAMERA_DISTANCE = true;
 #define id gl_InvocationID
 
 #include "nodeBufferedInput.cmn"
-
-layout(binding = TEXTURE_OPACITY)   uniform sampler2D TexTerrainHeight;
 
 struct TerrainNodeData {
     vec4 _positionAndTileScale;
@@ -82,6 +79,25 @@ patch out float gl_TessLevelInner[2];
 
 out float tcs_tessLevel[];
 
+bool offscreen(vec4 vertex) {
+    if (vertex.z < -0.5) {
+        return true;
+    }
+
+    return any(lessThan(vertex.xy, vec2(-1.7))) ||
+           any(greaterThan(vertex.xy, vec2(1.7)));
+}
+
+vec4 project(mat4 mvp, vec4 vertex) {
+    vec4 result = mvp * vertex;
+    result /= result.w;
+    return result;
+}
+
+vec2 screen_space(vec4 vertex) {
+    return (clamp(vertex.xy, -1.3, 1.3) + 1) * (dvd_ViewPort.zw*0.5);
+}
+
 // Dynamic level of detail using camera distance algorithm.
 float dlodCameraDistance(vec4 p0, vec4 p1, vec2 t0, vec2 t1)
 {
@@ -113,100 +129,54 @@ float dlodCameraDistance(vec4 p0, vec4 p1, vec2 t0, vec2 t1)
     return 64.0;
 }
 
-// Dynamic level of detail using sphere algorithm.
-// Source adapted from the DirectX 11 Terrain Tessellation example.
-float dlodSphere(mat4 mvMatrix, vec4 p0, vec4 p1, vec2 t0, vec2 t1)
-{
-    const float g_tessellatedTriWidth = 10.0;
-
-    p0.y = (TERRAIN_HEIGHT_RANGE * texture(TexTerrainHeight, t0).r) + TERRAIN_MIN_HEIGHT;
-    p1.y = (TERRAIN_HEIGHT_RANGE * texture(TexTerrainHeight, t1).r) + TERRAIN_MIN_HEIGHT;
-
-    vec4 center = 0.5 * (p0 + p1);
-    vec4 view0 = mvMatrix * center;
-    vec4 view1 = view0;
-    view1.x += distance(p0, p1);
-
-    vec4 clip0 = dvd_ProjectionMatrix * view0;
-    vec4 clip1 = dvd_ProjectionMatrix * view1;
-
-    clip0 /= clip0.w;
-    clip1 /= clip1.w;
-
-    vec2 screen0 = ((clip0.xy + 1.0) / 2.0) * dvd_ViewPort.zw;
-    vec2 screen1 = ((clip1.xy + 1.0) / 2.0) * dvd_ViewPort.zw;
-    float d = distance(screen0, screen1);
-
-    // g_tessellatedTriWidth is desired pixels per tri edge
-    float t = clamp(d / g_tessellatedTriWidth, 0, 64);
-
-    if (t <= 2.0)
-    {
-        return 2.0;
-    }
-    if (t <= 4.0)
-    {
-        return 4.0;
-    }
-    if (t <= 8.0)
-    {
-        return 8.0;
-    }
-    if (t <= 16.0)
-    {
-        return 16.0;
-    }
-    if (t <= 32.0)
-    {
-        return 32.0;
-    }
-
-    return 64.0;
-}
-
 void main(void)
 {
     PassData(id);
 
+    mat4 mvMatrix = dvd_WorldViewMatrix(VAR.dvd_instanceID);
 
-    // Outer tessellation level
-    if (USE_CAMERA_DISTANCE)
-    {
+    mat4 mvp = dvd_ProjectionMatrix * mvMatrix;
+    vec4 v0 = project(mvp, gl_in[0].gl_Position);
+    vec4 v1 = project(mvp, gl_in[1].gl_Position);
+    vec4 v2 = project(mvp, gl_in[2].gl_Position);
+    vec4 v3 = project(mvp, gl_in[3].gl_Position);
+
+    if (gl_InvocationID == 0 && all(bvec4(offscreen(v0), offscreen(v1), offscreen(v2), offscreen(v3)))) {
+        gl_TessLevelInner[0] = 0;
+        gl_TessLevelInner[1] = 0;
+        gl_TessLevelOuter[0] = 0;
+        gl_TessLevelOuter[1] = 0;
+        gl_TessLevelOuter[2] = 0;
+        gl_TessLevelOuter[3] = 0;
+    } else {
+        // Outer tessellation level
         gl_TessLevelOuter[0] = dlodCameraDistance(gl_in[3].gl_Position, gl_in[0].gl_Position, _in[3]._texCoord, _in[0]._texCoord);
         gl_TessLevelOuter[1] = dlodCameraDistance(gl_in[0].gl_Position, gl_in[1].gl_Position, _in[0]._texCoord, _in[1]._texCoord);
         gl_TessLevelOuter[2] = dlodCameraDistance(gl_in[1].gl_Position, gl_in[2].gl_Position, _in[1]._texCoord, _in[2]._texCoord);
         gl_TessLevelOuter[3] = dlodCameraDistance(gl_in[2].gl_Position, gl_in[3].gl_Position, _in[2]._texCoord, _in[3]._texCoord);
-    } 
-    else
-    {
-        mat4 mvMatrix = dvd_WorldViewMatrix(VAR.dvd_instanceID);
-        gl_TessLevelOuter[0] = dlodSphere(mvMatrix, gl_in[3].gl_Position, gl_in[0].gl_Position, _in[3]._texCoord, _in[0]._texCoord);
-        gl_TessLevelOuter[1] = dlodSphere(mvMatrix, gl_in[0].gl_Position, gl_in[1].gl_Position, _in[0]._texCoord, _in[1]._texCoord);
-        gl_TessLevelOuter[2] = dlodSphere(mvMatrix, gl_in[1].gl_Position, gl_in[2].gl_Position, _in[1]._texCoord, _in[2]._texCoord);
-        gl_TessLevelOuter[3] = dlodSphere(mvMatrix, gl_in[2].gl_Position, gl_in[3].gl_Position, _in[2]._texCoord, _in[3]._texCoord);
+
+        vec4 tScale = dvd_TerrainData[VAR.dvd_drawID]._tScale;
+
+        if (tscale_negx == 2.0) {
+            gl_TessLevelOuter[0] = max(2.0, gl_TessLevelOuter[0] * 0.5);
+        }
+
+        if (tscale_negz == 2.0) {
+            gl_TessLevelOuter[1] = max(2.0, gl_TessLevelOuter[1] * 0.5);
+        }
+
+        if (tscale_posx == 2.0) {
+            gl_TessLevelOuter[2] = max(2.0, gl_TessLevelOuter[2] * 0.5);
+        }
+
+        if (tscale_posz == 2.0) {
+            gl_TessLevelOuter[3] = max(2.0, gl_TessLevelOuter[3] * 0.5);
+        }
+
+        // Inner tessellation level
+        gl_TessLevelInner[0] = 0.5 * (gl_TessLevelOuter[0] + gl_TessLevelOuter[3]);
+        gl_TessLevelInner[1] = 0.5 * (gl_TessLevelOuter[2] + gl_TessLevelOuter[1]);
     }
-
-    vec4 tScale = dvd_TerrainData[VAR.dvd_drawID]._tScale;
-
-    if (tscale_negx == 2.0) {
-        gl_TessLevelOuter[0] = max(2.0, gl_TessLevelOuter[0] * 0.5);
-    }
-
-    if (tscale_negz == 2.0) {
-        gl_TessLevelOuter[1] = max(2.0, gl_TessLevelOuter[1] * 0.5);
-    }
-
-    if (tscale_posx == 2.0) {
-        gl_TessLevelOuter[2] = max(2.0, gl_TessLevelOuter[2] * 0.5);
-    }
-
-    if (tscale_posz == 2.0) {
-        gl_TessLevelOuter[3] = max(2.0, gl_TessLevelOuter[3] * 0.5);
-    }
-
-    // Inner tessellation level
-    gl_TessLevelInner[0] = 0.5 * (gl_TessLevelOuter[0] + gl_TessLevelOuter[3]);
-    gl_TessLevelInner[1] = 0.5 * (gl_TessLevelOuter[2] + gl_TessLevelOuter[1]);
 
     // Pass the patch verts along
     gl_out[id].gl_Position = gl_in[id].gl_Position;
@@ -316,7 +286,7 @@ void main()
     vec4 heightOffsets = getHeightOffsets(terrainTexCoord);
 
     // Sample the heightmap and offset y position of vertex
-    float sampleHeight = 0.0f;// getHeight(heightOffsets);
+    float sampleHeight = getHeight(heightOffsets);
     gl_Position.y = (TERRAIN_HEIGHT_RANGE * sampleHeight) + TERRAIN_MIN_HEIGHT;
 
     // Project the vertex to clip space and send it along
@@ -354,7 +324,7 @@ out vec4 _scrollingUV;
 // x = distance, y = depth
 smooth out vec2 _waterDetails;
 
-out int detailLevel;
+out flat int detailLevel;
 #if defined(TOGGLE_WIREFRAME)
 out vec3 gs_wireColor;
 noperspective out vec3 gs_edgeDist;
@@ -448,7 +418,7 @@ void PerVertex(in int i, in vec3 edge_dist, in float minHeight) {
     waterDetails(i, minHeight);
     scrollingUV(i);
 
-#   if defined(_DEBUG)
+#   if defined(TOGGLE_WIREFRAME)
     if (i == 0) {
         gs_edgeDist = vec3(edge_dist.x, 0, 0);
     } else if (i == 1) {
@@ -548,7 +518,7 @@ smooth in vec2 _waterDetails;
 
 //4 = high .... 0 = very low
 in flat int detailLevel;
-#if defined(_DEBUG)
+#if defined(TOGGLE_WIREFRAME)
 in vec3 gs_wireColor;
 noperspective in vec3 gs_edgeDist;
 #endif
@@ -589,7 +559,7 @@ vec4 UnderwaterMappingRoutine() {
 vec4 TerrainMappingRoutine() {
     setAlbedo(getTerrainAlbedo(detailLevel));
 
-    return vec4(0.2, 0.2, 0.2, 1.0);// getPixelColour();
+    return getPixelColour();
 }
 
 void main(void)

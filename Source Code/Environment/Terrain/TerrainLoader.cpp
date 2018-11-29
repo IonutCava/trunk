@@ -235,7 +235,7 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
         terrainMaterial->addShaderDefine("USE_SSBO_DATA_BUFFER");
     }
     //terrainMaterial->setShaderLoadThreaded(false);
-    terrainMaterial->addShaderDefine("TOGGLE_WIREFRAME");
+    //terrainMaterial->addShaderDefine("TOGGLE_WIREFRAME");
     terrainMaterial->addShaderDefine("COMPUTE_TBN");
     terrainMaterial->addShaderDefine("SKIP_TEXTURES");
     terrainMaterial->addShaderDefine("USE_SHADING_PHONG");
