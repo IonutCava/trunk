@@ -211,22 +211,26 @@ Example Usage:
 ---------------------------------------
 
  Roboto-Medium.ttf
+
    Apache License 2.0
    by Christian Robertson
    https://fonts.google.com/specimen/Roboto
 
  Cousine-Regular.ttf
+
    by Steve Matteson
    Digitized data copyright (c) 2010 Google Corporation.
    Licensed under the SIL Open Font License, Version 1.1
    https://fonts.google.com/specimen/Cousine 
 
  DroidSans.ttf
+
    Copyright (c) Steve Matteson
    Apache License, version 2.0
    https://www.fontsquirrel.com/fonts/droid-sans
 
  ProggyClean.ttf
+
    Copyright (c) 2004, 2005 Tristan Grimmer
    MIT License
    recommended loading setting in ImGui: Size = 13.0, DisplayOffset.Y = +1
@@ -304,4 +308,3 @@ MONOSPACE FONTS
 
 
  Or use Arial Unicode or other Unicode fonts provided with Windows for full characters coverage (not sure of their licensing).
-

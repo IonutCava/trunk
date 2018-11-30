@@ -64,42 +64,30 @@
             <UNIT0>
                 <name>terrain_water_caustics.jpg</name>
                 <path>assets/misc_images</path>
-                <MapU>REPEAT</MapU>
-                <MapV>REPEAT</MapV>
-                <MapW>REPEAT</MapW>
-                <minFilter>LINEAR</minFilter>
-                <magFilter>LINEAR</magFilter>
+                <Map U="REPEAT" V="REPEAT" W="REPEAT"/>
+                <Filter min="LINEAR" mag="LINEAR"/>
                 <anisotropy>8</anisotropy>
             </UNIT0>
             <UNIT1>
                 <name>sandfloor009a.jpg</name>
                 <path>assets/misc_images</path>
                 <usage>TEX_OP_REPLACE</usage>
-                <MapU>REPEAT</MapU>
-                <MapV>REPEAT</MapV>
-                <MapW>REPEAT</MapW>
-                <minFilter>LINEAR</minFilter>
-                <magFilter>LINEAR</magFilter>
+                <Map U="REPEAT" V="REPEAT" W="REPEAT"/>
+                <Filter min="LINEAR" mag="LINEAR"/>
                 <anisotropy>8</anisotropy>
             </UNIT1>
             <NORMALMAP>
                 <name>terrain_detail_NM.png</name>
                 <path>assets/misc_images</path>
-                <MapU>REPEAT</MapU>
-                <MapV>REPEAT</MapV>
-                <MapW>REPEAT</MapW>
-                <minFilter>LINEAR</minFilter>
-                <magFilter>LINEAR</magFilter>
+                <Map U="REPEAT" V="REPEAT" W="REPEAT"/>
+                <Filter min="LINEAR" mag="LINEAR"/>
                 <anisotropy>8</anisotropy>
             </NORMALMAP>
             <OPACITY>
                 <name>loveyou_HM.jpg</name>
                 <path>assets/terrain</path>
-                <MapU>CLAMP</MapU>
-                <MapV>CLAMP</MapV>
-                <MapW>CLAMP</MapW>
-                <minFilter>LINEAR_MIPMAP_LINEAR</minFilter>
-                <magFilter>LINEAR</magFilter>
+                <Map U="CLAMP" V="CLAMP" W="CLAMP"/>
+                <Filter min="LINEAR_MIPMAP_LINEAR" mag="LINEAR"/>
                 <anisotropy>16</anisotropy>
             </OPACITY>
         </texture>
@@ -107,3 +95,6 @@
 </RENDERING>
 <NETWORKING/>
 <RIGID_BODY/>
+<TERRAIN>
+    <Tessellation__Range x="5" y="500"/>
+</TERRAIN>

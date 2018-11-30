@@ -88,6 +88,7 @@ class glUniformBuffer final : public ShaderBuffer {
     void printInfo(const ShaderProgram *shaderProgram, U8 bindIndex);
 
    protected:
+    const bool _unbound;
     glBufferImpl* _buffer;
     size_t _allignedBufferSize;
     vector<AtomicCounter*> _atomicCounters;

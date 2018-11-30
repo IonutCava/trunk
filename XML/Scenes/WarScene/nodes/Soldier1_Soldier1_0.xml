@@ -28,13 +28,11 @@
             <UNIT0>
                 <name>axe.jpg</name>
                 <path>assets/textures</path>
-                <MapU>REPEAT</MapU>
-                <MapV>REPEAT</MapV>
-                <MapW>REPEAT</MapW>
-                <minFilter>LINEAR_MIPMAP_LINEAR</minFilter>
-                <magFilter>LINEAR</magFilter>
+                <Map U="REPEAT" V="REPEAT" W="REPEAT"/>
+                <Filter min="LINEAR_MIPMAP_LINEAR" mag="LINEAR"/>
                 <anisotropy>255</anisotropy>
             </UNIT0>
         </texture>
     </Material>
 </RENDERING>
+<SUBMESH/>

@@ -209,21 +209,25 @@ SceneGraphNode* SceneGraphNode::addNode(const SceneGraphNodeDescriptor& descript
     // Set the current node as the new node's parent
     sceneGraphNode->setParent(*this);
     invalidateRelationshipCache();
-    _editorComponents.emplace_back(&Attorney::SceneNodeSceneGraph::getEditorComponent(*sceneGraphNode->_node));
 
     if (sceneGraphNode->_node->getState() == ResourceState::RES_LOADED) {
-        Attorney::SceneNodeSceneGraph::postLoad(*sceneGraphNode->_node, *sceneGraphNode);
+        postLoad(*sceneGraphNode->_node, *sceneGraphNode);
     } else if (sceneGraphNode->_node->getState() == ResourceState::RES_LOADING) {
         setUpdateFlag(UpdateFlag::THREADED_LOAD);
         sceneGraphNode->_node->setStateCallback(ResourceState::RES_LOADED,
             [this, sceneGraphNode](Resource_wptr res) {
-                Attorney::SceneNodeSceneGraph::postLoad(*(std::dynamic_pointer_cast<SceneNode>(res.lock())), *(sceneGraphNode));
+                postLoad(*(std::dynamic_pointer_cast<SceneNode>(res.lock())), *(sceneGraphNode));
                 clearUpdateFlag(UpdateFlag::THREADED_LOAD);
             }
         );
     }
     // return the newly created node
     return sceneGraphNode;
+}
+
+void SceneGraphNode::postLoad(SceneNode& sceneNode, SceneGraphNode& sgn) {
+    Attorney::SceneNodeSceneGraph::postLoad(sceneNode, sgn);
+    sgn._editorComponents.emplace_back(&Attorney::SceneNodeSceneGraph::getEditorComponent(sceneNode));
 }
 
 bool SceneGraphNode::removeNodesByType(SceneNodeType nodeType) {

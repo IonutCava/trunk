@@ -63,6 +63,26 @@ namespace Divide {
         bool _readOnly = false;
         stringImpl _name;
         void* _data = nullptr;
+        std::function<void*()> _dataGetter;
+        std::function<void(void*)> _dataSetter;
+
+
+        FORCE_INLINE void* data() const {
+            if (_dataGetter) {
+                return _dataGetter();
+            }
+
+            return _data;
+        }
+
+        template<typename T>
+        FORCE_INLINE void data(T& dataIn) {
+            if (_dataSetter) {
+                _dataSetter(&dataIn);
+            } else {
+                *static_cast<T*>(_data) = dataIn;
+            }
+        }
     };
 
     class EditorComponent : public GUIDWrapper
@@ -75,6 +95,7 @@ namespace Divide {
         EditorComponent(const stringImpl& name);
         virtual ~EditorComponent();
 
+        inline void name(const stringImpl& nameStr) { _name = nameStr; }
         inline const stringImpl& name() const { return _name; }
 
         inline void addHeader(const stringImpl& name) {
@@ -87,6 +108,13 @@ namespace Divide {
                            bool readOnly,
                            GFX::PushConstantType basicType = GFX::PushConstantType::COUNT);
 
+
+        void registerField(const stringImpl& name,
+                           std::function<void*()> dataGetter,
+                           std::function<void(void*)> dataSetter,
+                           EditorComponentFieldType type,
+                           bool readOnly,
+                           GFX::PushConstantType basicType = GFX::PushConstantType::COUNT);
 
         inline vector<EditorComponentField>& fields() { return _fields; }
         inline const vector<EditorComponentField>& fields() const { return _fields; }
@@ -104,10 +132,10 @@ namespace Divide {
         virtual void loadFromXML(const boost::property_tree::ptree& pt);
 
         void saveFieldToXML(const EditorComponentField& field, boost::property_tree::ptree& pt) const;
-        void loadFieldFromXML(const EditorComponentField& field, const boost::property_tree::ptree& pt);
+        void loadFieldFromXML(EditorComponentField& field, const boost::property_tree::ptree& pt);
 
       protected:
-        const stringImpl _name;
+        stringImpl _name;
         DELEGATE_CBK<void, EditorComponentField&> _onChangedCbk;
         vector<EditorComponentField> _fields;
     };
@@ -145,6 +173,7 @@ namespace Divide {
             static void loadFromXML(EditorComponent& comp, const boost::property_tree::ptree& pt) {
                 comp.loadFromXML(pt);
             }
+
             friend class Divide::SceneGraphNode;
         };
     };  // namespace Attorney

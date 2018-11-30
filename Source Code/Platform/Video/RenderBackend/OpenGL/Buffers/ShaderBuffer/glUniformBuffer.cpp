@@ -70,13 +70,12 @@ AtomicCounter::~AtomicCounter()
 IMPLEMENT_CUSTOM_ALLOCATOR(glUniformBuffer, 0, 0)
 glUniformBuffer::glUniformBuffer(GFXDevice& context,
                                  const ShaderBufferDescriptor& descriptor)
-    : ShaderBuffer(context, descriptor)
+    : ShaderBuffer(context, descriptor),
+      _unbound(BitCompare(_flags, ShaderBuffer::Flags::UNBOUND_STORAGE))
 {
-    bool unbound = BitCompare(_flags, ShaderBuffer::Flags::UNBOUND_STORAGE);
+    _maxSize = _unbound ? GL_API::s_SSBMaxSize : GL_API::s_UBMaxSize;
 
-    _maxSize = unbound ? GL_API::s_SSBMaxSize : GL_API::s_UBMaxSize;
-
-    _allignedBufferSize = realign_offset(_bufferSize, alignmentRequirement(unbound));
+    _allignedBufferSize = realign_offset(_bufferSize, alignmentRequirement(_unbound));
 
     assert(_allignedBufferSize < _maxSize);
 
@@ -85,7 +84,7 @@ glUniformBuffer::glUniformBuffer(GFXDevice& context,
     implParams._elementSize = descriptor._elementSize;
     implParams._frequency = _frequency;
     implParams._initialData = descriptor._initialData;
-    implParams._target = unbound ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER;
+    implParams._target = _unbound ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER;
     implParams._name = _name.empty() ? nullptr : _name.c_str();
     implParams._zeroMem = descriptor._initialData == nullptr;
     implParams._forcePersistentMap = BitCompare(_flags, ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
@@ -185,6 +184,7 @@ bool glUniformBuffer::bindRange(U8 bindIndex, U32 offsetElementCount, U32 rangeE
 
     GL_API::registerBufferBind(data);
 
+    assert(data._offset % alignmentRequirement(_unbound) == 0);
     return _buffer->bindRange(bindIndex, data._offset, data._range);
 }
 

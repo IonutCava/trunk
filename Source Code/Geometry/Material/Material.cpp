@@ -897,11 +897,11 @@ namespace {
 
         SamplerDescriptor sampDesc = {};
 
-        sampDesc._wrapU = getWrapModeByName(pt.get<stringImpl>(textureNode + ".MapU", "REPEAT"));
-        sampDesc._wrapV = getWrapModeByName(pt.get<stringImpl>(textureNode + ".MapV", "REPEAT"));
-        sampDesc._wrapW = getWrapModeByName(pt.get<stringImpl>(textureNode + ".MapW", "REPEAT"));
-        sampDesc._minFilter = getFilterByName(pt.get<stringImpl>(textureNode + ".minFilter", "LINEAR"));
-        sampDesc._magFilter = getFilterByName(pt.get<stringImpl>(textureNode + ".magFilter", "LINEAR"));
+        sampDesc._wrapU = getWrapModeByName(pt.get<stringImpl>(textureNode + ".Map.<xmlattr>.U", "REPEAT"));
+        sampDesc._wrapV = getWrapModeByName(pt.get<stringImpl>(textureNode + ".Map.<xmlattr>.V", "REPEAT"));
+        sampDesc._wrapW = getWrapModeByName(pt.get<stringImpl>(textureNode + ".Map.<xmlattr>.W", "REPEAT"));
+        sampDesc._minFilter = getFilterByName(pt.get<stringImpl>(textureNode + ".Filter.<xmlattr>.min", "LINEAR"));
+        sampDesc._magFilter = getFilterByName(pt.get<stringImpl>(textureNode + ".Filter.<xmlattr>.mag", "LINEAR"));
         sampDesc._anisotropyLevel = to_U8(pt.get(textureNode + ".anisotropy", 0U));
 
 
@@ -957,11 +957,11 @@ void Material::saveToXML(const stringImpl& entryName, boost::property_tree::ptre
             if (usage == ShaderProgram::TextureUsage::UNIT1) {
                 pt.put(textureNode + ".usage", getTextureOperationName(_operation));
             }
-            pt.put(textureNode + ".MapU", getWrapModeName(sampler._wrapU));
-            pt.put(textureNode + ".MapV", getWrapModeName(sampler._wrapV));
-            pt.put(textureNode + ".MapW", getWrapModeName(sampler._wrapW));
-            pt.put(textureNode + ".minFilter", getFilterName(sampler._minFilter));
-            pt.put(textureNode + ".magFilter", getFilterName(sampler._magFilter));
+            pt.put(textureNode + ".Map.<xmlattr>.U", getWrapModeName(sampler._wrapU));
+            pt.put(textureNode + ".Map.<xmlattr>.V", getWrapModeName(sampler._wrapV));
+            pt.put(textureNode + ".Map.<xmlattr>.W", getWrapModeName(sampler._wrapW));
+            pt.put(textureNode + ".Filter.<xmlattr>.min", getFilterName(sampler._minFilter));
+            pt.put(textureNode + ".Filter.<xmlattr>.mag", getFilterName(sampler._magFilter));
             pt.put(textureNode + ".anisotropy", to_U32(sampler._anisotropyLevel));
         }
     }

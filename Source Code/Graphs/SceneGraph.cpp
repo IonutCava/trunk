@@ -286,13 +286,7 @@ namespace {
     boost::property_tree::ptree dumpSGNtoAssets(const SceneGraphNode& node) {
         boost::property_tree::ptree entry;
         entry.put("<xmlattr>.name", node.name());
-
-        SceneNodeType nodeType = node.getNode()->type();
-        if (nodeType == SceneNodeType::TYPE_OBJECT3D) {
-            entry.put("<xmlattr>.type", node.getNode<Object3D>()->getObjectType()._to_string());
-        } else {
-            entry.put("<xmlattr>.type", GetSceneNodeTypeName(nodeType));
-        }
+        entry.put("<xmlattr>.type", node.getNode()->getTypeName());
 
         node.forEachChild([&entry](const SceneGraphNode& child) {
             entry.add_child("node", dumpSGNtoAssets(child));

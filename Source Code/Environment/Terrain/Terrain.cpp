@@ -24,7 +24,8 @@ Terrain::Terrain(GFXDevice& context, ResourceCache& parentCache, size_t descript
     : Object3D(context, parentCache, descriptorHash, name, ObjectType::TERRAIN),
       _plane(nullptr),
       _shaderData(nullptr),
-      _drawBBoxes(false)
+      _drawBBoxes(false),
+      _editorDataDirty(true)
 {
 }
 
@@ -58,7 +59,21 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
 
     sgn.get<RigidBodyComponent>()->physicsGroup(PhysicsGroup::GROUP_STATIC);
 
+    _editorComponent.onChangedCbk([this](EditorComponentField& field) {onEditorChange(field); });
+
+    _editorComponent.registerField(
+        "Tessellation Range",
+        [this]() { return _descriptor->getTessellationRange(); },
+        [this](void* data) {_descriptor->setTessellationRange(*(vec2<F32>*)data); },
+        EditorComponentFieldType::PUSH_TYPE,
+        false,
+        GFX::PushConstantType::VEC2);
+
     SceneNode::postLoad(sgn);
+}
+
+void Terrain::onEditorChange(EditorComponentField& field) {
+    _editorDataDirty = true;
 }
 
 void Terrain::postBuild() {
@@ -95,6 +110,7 @@ void Terrain::postBuild() {
 
 void Terrain::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState) {
     _terrainTessellatorFlags[sgn.getGUID()].fill(false);
+    _editorDataDirty = false; //Clear in update to make sure that ALL of the nodes picked up the new data
     Object3D::sceneUpdate(deltaTimeUS, sgn, sceneState);
 }
 
@@ -111,6 +127,12 @@ bool Terrain::onRender(SceneGraphNode& sgn,
     bool& wasUpdated = _terrainTessellatorFlags[sgn.getGUID()][stageIndex];
 
     U32 offset = to_U32(stageIndex * Terrain::MAX_RENDER_NODES);
+
+    if (_editorDataDirty) {
+        PushConstants constants = pkg.pushConstants(0);
+        constants.set("tessellationRange", GFX::PushConstantType::VEC2, _descriptor->getTessellationRange());
+        pkg.pushConstants(0, constants);
+    }
 
     if (!wasUpdated) 
     {

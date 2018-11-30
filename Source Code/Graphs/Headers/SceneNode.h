@@ -82,8 +82,6 @@ enum class SceneNodeType : U16 {
     COUNT
 };
 
-const char* GetSceneNodeTypeName(SceneNodeType type);
-
 class SceneNode : public CachedResource {
     friend class Attorney::SceneNodeSceneGraph;
     friend class Attorney::SceneNodeNetworkComponent;
@@ -121,6 +119,8 @@ class SceneNode : public CachedResource {
     inline void incLODcount() { _LODcount++; }
     inline void decLODcount() { _LODcount--; }
     inline U8   getLODcount() const { return _LODcount; }
+
+    virtual const char* getTypeName() const;
 
     ResourceCache& parentResourceCache() { return _parentCache; }
     const ResourceCache& parentResourceCache() const { return _parentCache; }

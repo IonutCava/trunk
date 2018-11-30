@@ -56,24 +56,43 @@ Object3D::Object3D(GFXDevice& context, ResourceCache& parentCache, size_t descri
             break;
         case ObjectType::MESH: {
             STUBBED("ToDo: Add capsule and convex mesh support for 3D Objects! -Ionut");
-            //if (true) { // general meshes? Maybe have a concave flag?
+            if (true) { // general meshes? Maybe have a concave flag?
                 _rigidBodyShape = RigidBodyShape::SHAPE_TRIANGLEMESH;
-            /*} else { 
+            } else { 
                 if (true) { // skinned characters?
                     _rigidBodyShape = RigidBodyShape::SHAPE_CAPSULE;
                 } else { // have a convex flag for imported meshes?
                     _rigidBodyShape = RigidBodyShape::SHAPE_CONVEXMESH;
                 }
-            }*/
+            }
             } break;
         default:
             _rigidBodyShape = RigidBodyShape::SHAPE_COUNT;
             break;
     };
+
+    _editorComponent.name(getTypeName());
 }
 
 Object3D::~Object3D()
 {
+}
+
+
+const char* Object3D::getTypeName() const {
+    switch (_geometryType) {
+        case ObjectType::SPHERE_3D: return "SPHERE_3D";
+        case ObjectType::BOX_3D: return "BOX_3D";
+        case ObjectType::QUAD_3D: return "QUAD_3D";
+        case ObjectType::PATCH_3D: return "PATCH_3D";
+        case ObjectType::MESH: return "MESH";
+        case ObjectType::SUBMESH: return "SUBMESH";
+        case ObjectType::TERRAIN: return "TERRAIN";
+        case ObjectType::DECAL: return "DECAL";
+
+    };
+
+    return SceneNode::getTypeName();
 }
 
 bool Object3D::isPrimitive() const {

@@ -27,8 +27,32 @@ namespace {
     }
 };
 
-const char* GetSceneNodeTypeName(SceneNodeType type) {
-    switch (type) {
+SceneNode::SceneNode(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, const SceneNodeType& type)
+    : SceneNode(parentCache, descriptorHash, name, name, "", type)
+{
+}
+
+SceneNode::SceneNode(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, const stringImpl& resourceName, const stringImpl& resourceLocation, const SceneNodeType& type)
+    : CachedResource(ResourceType::DEFAULT, descriptorHash, name, resourceName, resourceLocation),
+     _parentCache(parentCache),
+     _materialTemplate(nullptr),
+     _type(type),
+     _LODcount(1),
+     _editorComponent("")
+{
+    getEditorComponent().name(getTypeName());
+    getEditorComponent().onChangedCbk([this](EditorComponentField& field) {
+        editorFieldChanged(field);
+    });
+
+}
+
+SceneNode::~SceneNode()
+{
+}
+
+const char* SceneNode::getTypeName() const {
+    switch (_type) {
         case SceneNodeType::TYPE_ROOT: return "ROOT";
         case SceneNodeType::TYPE_OBJECT3D: return "OBJECT3D";
         case SceneNodeType::TYPE_TRANSFORM: return "TRANSFORM";
@@ -41,29 +65,6 @@ const char* GetSceneNodeTypeName(SceneNodeType type) {
     }
 
     return "";
-}
-
-
-SceneNode::SceneNode(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, const SceneNodeType& type)
-    : SceneNode(parentCache, descriptorHash, name, name, "", type)
-{
-}
-
-SceneNode::SceneNode(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, const stringImpl& resourceName, const stringImpl& resourceLocation, const SceneNodeType& type)
-    : CachedResource(ResourceType::DEFAULT, descriptorHash, name, resourceName, resourceLocation),
-     _parentCache(parentCache),
-     _materialTemplate(nullptr),
-     _type(type),
-     _LODcount(1),
-     _editorComponent(GetSceneNodeTypeName(type))///<Defaults to 1 LOD level
-{
-    getEditorComponent().onChangedCbk([this](EditorComponentField& field) {
-        editorFieldChanged(field);
-    });
-}
-
-SceneNode::~SceneNode()
-{
 }
 
 void SceneNode::sceneUpdate(const U64 deltaTimeUS,

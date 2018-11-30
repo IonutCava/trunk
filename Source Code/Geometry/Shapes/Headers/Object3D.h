@@ -139,6 +139,8 @@ class Object3D : public SceneNode {
     static vector<SceneGraphNode*> filterByType(const vector<SceneGraphNode*>& nodes, ObjectType filter);
     static vectorEASTL<SceneGraphNode*> filterByType(const vectorEASTL<SceneGraphNode*>& nodes, ObjectType filter);
 
+    virtual const char* getTypeName() const override;
+
     bool isPrimitive() const;
 
     void saveToXML(boost::property_tree::ptree& pt) const override;
@@ -155,6 +157,7 @@ class Object3D : public SceneNode {
     virtual void buildDrawCommands(SceneGraphNode& sgn,
                                    RenderStagePass renderStagePass,
                                    RenderPackage& pkgInOut) override;
+
    protected:
     GFXDevice& _context;
     U32 _geometryFlagMask;

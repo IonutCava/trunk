@@ -287,6 +287,7 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     void setTransformDirty(U32 transformMask);
     void setParentTransformDirty(U32 transformMask);
     void onBoundsUpdated();
+    void postLoad(SceneNode& sceneNode, SceneGraphNode& sgn);
 
    private:
     void addToDeleteQueue(U32 idx);

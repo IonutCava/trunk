@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-// dear imgui, v1.66 WIP
+// dear imgui, v1.67 WIP
 // (demo code)
 
 // Message to the person tempted to delete this file when integrating Dear ImGui into their code base:
@@ -349,9 +349,10 @@ void ImGui::ShowDemoWindow(bool* p_open)
 
             ImGui::CheckboxFlags("io.ConfigFlags: DockingEnable", (unsigned int *)&io.ConfigFlags, ImGuiConfigFlags_DockingEnable);
             ImGui::SameLine(); ShowHelpMarker("Use SHIFT to dock window into another (or without SHIFT if io.ConfigDockingWithShift == false)");
+            ImGui::CheckboxFlags("io.ConfigFlags: DockingNoSplit", (unsigned int *)&io.ConfigFlags, ImGuiConfigFlags_DockingNoSplit);
+            ImGui::SameLine(); ShowHelpMarker("Simplified docking mode: disable window splitting, so docking is limited to merging multiple windows together into tab-bars.");
 
             ImGui::CheckboxFlags("io.ConfigFlags: ViewportsEnable", (unsigned int *)&io.ConfigFlags, ImGuiConfigFlags_ViewportsEnable);
-            ImGui::SameLine(); ShowHelpMarker("Toggling this at runtime is normally unsupported (it will offset your windows).");
             ImGui::CheckboxFlags("io.ConfigFlags: ViewportsNoTaskBarIcon", (unsigned int *)&io.ConfigFlags, ImGuiConfigFlags_ViewportsNoTaskBarIcon);
             ImGui::SameLine(); ShowHelpMarker("Toggling this at runtime is normally unsupported (most platform back-ends won't refresh the task bar icon state right away).");
             ImGui::CheckboxFlags("io.ConfigFlags: ViewportsDecoration", (unsigned int *)&io.ConfigFlags, ImGuiConfigFlags_ViewportsDecoration);
@@ -3833,6 +3834,7 @@ void ShowExampleAppDockSpace(bool* p_open)
 
             if (ImGui::MenuItem("Flag: NoSplit",                "", (opt_flags & ImGuiDockNodeFlags_NoSplit) != 0))                opt_flags ^= ImGuiDockNodeFlags_NoSplit;
             if (ImGui::MenuItem("Flag: NoDockingInCentralNode", "", (opt_flags & ImGuiDockNodeFlags_NoDockingInCentralNode) != 0)) opt_flags ^= ImGuiDockNodeFlags_NoDockingInCentralNode;
+            if (ImGui::MenuItem("Flag: NoResize",               "", (opt_flags & ImGuiDockNodeFlags_NoResize) != 0))                opt_flags ^= ImGuiDockNodeFlags_NoResize;
             if (ImGui::MenuItem("Flag: PassthruDockspace",      "", (opt_flags & ImGuiDockNodeFlags_PassthruDockspace) != 0))      opt_flags ^= ImGuiDockNodeFlags_PassthruDockspace;
             ImGui::Separator();
             if (ImGui::MenuItem("Close DockSpace", NULL, false, p_open != NULL))

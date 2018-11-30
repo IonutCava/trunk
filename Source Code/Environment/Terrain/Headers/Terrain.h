@@ -166,6 +166,8 @@ class Terrain : public Object3D {
 
     void postLoad(SceneGraphNode& sgn);
 
+    void onEditorChange(EditorComponentField& field);
+
    public:
     hashMap<U32, vector<U32>> _physicsIndices;
     vector<VertexBuffer::Vertex> _physicsVerts;
@@ -182,6 +184,7 @@ class Terrain : public Object3D {
     TessellatorArray _terrainTessellator;
     hashMap<I64, TessellatorArrayFlags> _terrainTessellatorFlags;
 
+    bool _editorDataDirty;
     bool _drawBBoxes;
     Quad3D_ptr _plane;
     ShaderProgram_ptr _planeShader;
