@@ -135,7 +135,7 @@ class Terrain : public Object3D {
 
    public:
     explicit Terrain(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name);
-    ~Terrain();
+    virtual ~Terrain();
 
     bool unload() override;
 
@@ -152,6 +152,8 @@ class Terrain : public Object3D {
     void loadFromXML(const boost::property_tree::ptree& pt)  override;
 
    protected:
+    void frameStarted(SceneGraphNode& sgn) override;
+
     void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState) override;
 
     void postBuild();
@@ -173,6 +175,12 @@ class Terrain : public Object3D {
     vector<VertexBuffer::Vertex> _physicsVerts;
 
    protected:
+    enum class EditorDataState : U8 {
+        CHANGED = 0,
+        QUEUED,
+        IDLE
+    };
+
     ShaderBuffer* _shaderData;
     VegetationDetails _vegDetails;
 
@@ -184,11 +192,8 @@ class Terrain : public Object3D {
     TessellatorArray _terrainTessellator;
     hashMap<I64, TessellatorArrayFlags> _terrainTessellatorFlags;
 
-    bool _editorDataDirty;
+    EditorDataState _editorDataDirtyState;
     bool _drawBBoxes;
-    Quad3D_ptr _plane;
-    ShaderProgram_ptr _planeShader;
-    ShaderProgram_ptr _planeDepthShader;
     SceneGraphNode* _vegetationGrassNode;
     TerrainTextureLayer* _terrainTextures;
     std::shared_ptr<TerrainDescriptor> _descriptor;
@@ -216,12 +221,6 @@ class TerrainLoader {
 
     static void postBuild(Terrain& terrain) {
         return terrain.postBuild();
-    }
-
-    static void plane(Terrain& terrain, Quad3D_ptr plane, const ShaderProgram_ptr& shader, const ShaderProgram_ptr& depthShader) {
-        terrain._plane = plane;
-        terrain._planeShader = shader;
-        terrain._planeDepthShader = depthShader;
     }
 
     static void descriptor(Terrain& terrain, const std::shared_ptr<TerrainDescriptor>& descriptor) {

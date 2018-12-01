@@ -31,6 +31,7 @@ Mesh::~Mesh()
 void Mesh::addSubMesh(SubMesh_ptr subMesh) {
     // Hold a reference to the submesh by ID (used for animations)
     _subMeshList.push_back(subMesh);
+
     Attorney::SubMeshMesh::setParentMesh(*subMesh.get(), this);
     setBoundsChanged();
 }

@@ -61,6 +61,7 @@ WarSceneAIProcessor::~WarSceneAIProcessor()
                 flag1->getGUID());
         }
     }
+
 #if defined(PRINT_AI_TO_FILE)
     _WarAIOutputStream.close();
 #endif

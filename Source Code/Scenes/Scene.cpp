@@ -564,10 +564,10 @@ void Scene::addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree p
     ter->setChunkSize(pt.get<U32>("targetChunkSize", 256));
 
 
-    auto registerTerrain = [this, &parentNode, name](Resource_wptr res) {
+    auto registerTerrain = [this, name, &parentNode](CachedResource_wptr res) {
         SceneGraphNodeDescriptor terrainNodeDescriptor;
         terrainNodeDescriptor._name = name;
-        terrainNodeDescriptor._node = std::dynamic_pointer_cast<Terrain>(res.lock());
+        terrainNodeDescriptor._node = std::static_pointer_cast<Terrain>(res.lock());
         terrainNodeDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
         terrainNodeDescriptor._componentMask = to_base(ComponentType::NAVIGATION) |
                                                to_base(ComponentType::TRANSFORM) |
@@ -575,23 +575,24 @@ void Scene::addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree p
                                                to_base(ComponentType::BOUNDS) |
                                                to_base(ComponentType::RENDERING) |
                                                to_base(ComponentType::NETWORKING);
+
         SceneGraphNode* terrainTemp = parentNode.addNode(terrainNodeDescriptor);
+
 
         NavigationComponent* nComp = terrainTemp->get<NavigationComponent>();
         nComp->navigationContext(NavigationComponent::NavigationContext::NODE_OBSTACLE);
 
         terrainTemp->get<RigidBodyComponent>()->physicsGroup(PhysicsGroup::GROUP_STATIC);
-
-        --_loadingTasks;
+        _loadingTasks.fetch_sub(1);
     };
 
-    ResourceDescriptor terrain(ter->getVariable("terrainName"));
-    terrain.setPropertyDescriptor(*ter);
-    terrain.setThreadedLoading(true);
-    terrain.setOnLoadCallback(registerTerrain);
-    terrain.setFlag(ter->getActive());
-    CreateResource<Terrain>(_resCache, terrain);
-    ++_loadingTasks;
+    ResourceDescriptor terrainDescriptor(ter->getVariable("terrainName"));
+    terrainDescriptor.setPropertyDescriptor(*ter);
+    terrainDescriptor.setThreadedLoading(true);
+    terrainDescriptor.setOnLoadCallback(registerTerrain);
+    terrainDescriptor.setFlag(ter->getActive());
+    CreateResource<Terrain>(_resCache, terrainDescriptor);
+    _loadingTasks.fetch_add(1);
 }
 
 void Scene::toggleFlashlight(PlayerIndex idx) {

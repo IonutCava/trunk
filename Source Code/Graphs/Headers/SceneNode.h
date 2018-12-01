@@ -136,9 +136,11 @@ class SceneNode : public CachedResource {
 
    protected:
     friend class BoundsSystem;
+
+    virtual void frameStarted(SceneGraphNode& sgn);
+    virtual void frameEnded(SceneGraphNode& sgn);
     /// Called from SceneGraph "sceneUpdate"
-    virtual void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn,
-                             SceneState& sceneState);
+    virtual void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState);
 
     // Post insertion calls (Use this to setup child objects during creation)
     virtual void postLoad(SceneGraphNode& sgn);
@@ -153,6 +155,8 @@ class SceneNode : public CachedResource {
 
     EditorComponent& getEditorComponent() { return _editorComponent; }
     const EditorComponent& getEditorComponent() const { return _editorComponent; }
+
+    virtual size_t maxReferenceCount() const { return 1; }
 
    protected:
      virtual void editorFieldChanged(EditorComponentField& field);
@@ -185,7 +189,14 @@ class SceneNodeSceneGraph {
     static void postLoad(SceneNode& node, SceneGraphNode& sgn) {
         node.postLoad(sgn);
     }
-    
+    static void frameStarted(SceneNode& node, SceneGraphNode& sgn) {
+        node.frameStarted(sgn);
+    }
+
+    static void frameEnded(SceneNode& node, SceneGraphNode& sgn) {
+        node.frameEnded(sgn);
+    }
+
     static void sceneUpdate(SceneNode& node, const U64 deltaTimeUS,
                             SceneGraphNode& sgn, SceneState& sceneState) {
         node.sceneUpdate(deltaTimeUS, sgn, sceneState);
@@ -197,6 +208,10 @@ class SceneNodeSceneGraph {
 
     static size_t parentCount(const SceneNode& node) {
         return node._sgnParents.size();
+    }
+
+    static size_t maxReferenceCount(const SceneNode& node) {
+        return node.maxReferenceCount();
     }
 
     static void onCameraUpdate(SceneGraphNode& sgn,

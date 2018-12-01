@@ -95,6 +95,12 @@ SceneGraphNode::~SceneGraphNode()
 {
     Console::printfn(Locale::get(_ID("REMOVE_SCENEGRAPH_NODE")), name().c_str(), _node->name().c_str());
 
+    if (Attorney::SceneNodeSceneGraph::parentCount(*_node) == 0) {
+        assert(_node.use_count() == Attorney::SceneNodeSceneGraph::maxReferenceCount(*_node));
+
+        _node.reset();
+    }
+
     // Bottom up
     for (U32 i = 0; i < getChildCount(); ++i) {
         parentGraph().destroySceneGraphNode(_children[i]);
@@ -106,10 +112,6 @@ SceneGraphNode::~SceneGraphNode()
 
     Attorney::SceneGraphSGN::onNodeDestroy(_sceneGraph, *this);
     Attorney::SceneNodeSceneGraph::unregisterSGNParent(*_node, this);
-
-    if (Attorney::SceneNodeSceneGraph::parentCount(*_node) == 0) {
-        _node.reset();
-    }
 }
 
 void SceneGraphNode::AddMissingComponents(U32 componentMask) {
@@ -432,6 +434,16 @@ void SceneGraphNode::processDeleteQueue(vector<vec_size>& childList) {
 
 void SceneGraphNode::addToDeleteQueue(U32 idx) {
     parentGraph().addToDeleteQueue(this, idx);
+}
+
+void SceneGraphNode::frameStarted() {
+    assert(_node->getState() == ResourceState::RES_LOADED);
+    Attorney::SceneNodeSceneGraph::frameStarted(*_node, *this);
+}
+
+void SceneGraphNode::frameEnded() {
+    assert(_node->getState() == ResourceState::RES_LOADED);
+    Attorney::SceneNodeSceneGraph::frameEnded(*_node, *this);
 }
 
 /// Please call in MAIN THREAD! Nothing is thread safe here (for now) -Ionut

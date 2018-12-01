@@ -90,6 +90,8 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
 
     /// Called from SceneGraph "sceneUpdate"
     void sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState);
+    void frameStarted();
+    void frameEnded();
     /*Node Management*/
     /// Always use the level of redirection needed to reduce virtual function overhead
     /// Use getNode<SceneNode> if you need material properties for ex. or getNode<SubMesh> for animation transforms

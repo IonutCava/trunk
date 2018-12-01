@@ -34,11 +34,11 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-class Terrain;
 class TerrainDescriptor;
+FWD_DECLARE_MANAGED_CLASS(Terrain);
 class TerrainLoader : private NonCopyable {
    public:
-    static bool loadTerrain(std::shared_ptr<Terrain> terrain,
+    static bool loadTerrain(Terrain_ptr terrain,
                             const std::shared_ptr<TerrainDescriptor>& terrainDescriptor,
                             PlatformContext& context,
                             bool threadedLoading,
@@ -52,10 +52,10 @@ class TerrainLoader : private NonCopyable {
     TerrainLoader() noexcept {}
     ~TerrainLoader() {}
 
-    static bool loadThreadedResources(std::shared_ptr<Terrain> terrain,
+    static bool loadThreadedResources(Terrain_ptr terrain,
                                       const std::shared_ptr<TerrainDescriptor> terrainDescriptor,
                                       DELEGATE_CBK<void, CachedResource_wptr> onLoadCallback);
-    static void initializeVegetation(std::shared_ptr<Terrain> terrain,
+    static void initializeVegetation(Terrain_ptr terrain,
                                      const std::shared_ptr<TerrainDescriptor> terrainDescriptor);
 };
 

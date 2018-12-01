@@ -73,25 +73,6 @@ void SceneGraph::unload()
     assert(_root == nullptr);
 }
 
-
-bool SceneGraph::frameStarted(const FrameEvent& evt) {
-    UniqueLockShared lock(_pendingDeletionLock);
-    if (!_pendingDeletion.empty()) {
-        for (auto entry : _pendingDeletion) {
-            if (entry.first != nullptr) {
-                entry.first->processDeleteQueue(entry.second);
-            }
-        }
-        _pendingDeletion.clear();
-    }
-
-    return true;
-}
-
-bool SceneGraph::frameEnded(const FrameEvent& evt) {
-    return true;
-}
-
 void SceneGraph::addToDeleteQueue(SceneGraphNode* node, vec_size childIdx) {
     UniqueLockShared w_lock(_pendingDeletionLock);
     vector<vec_size>& list = _pendingDeletion[node];
@@ -172,6 +153,36 @@ bool SceneGraph::removeNode(SceneGraphNode* node) {
     return false;
 }
 
+bool SceneGraph::frameStarted(const FrameEvent& evt) {
+    UniqueLockShared lock(_pendingDeletionLock);
+    if (!_pendingDeletion.empty()) {
+        for (auto entry : _pendingDeletion) {
+            if (entry.first != nullptr) {
+                entry.first->processDeleteQueue(entry.second);
+            }
+        }
+        _pendingDeletion.clear();
+    }
+
+    // Gather all nodes in order
+    _orderedNodeList.resize(0);
+    _root->getOrderedNodeList(_orderedNodeList);
+
+    for (SceneGraphNode* node : _orderedNodeList) {
+        node->frameStarted();
+    }
+
+    return true;
+}
+
+bool SceneGraph::frameEnded(const FrameEvent& evt) {
+    for (SceneGraphNode* node : _orderedNodeList) {
+        node->frameEnded();
+    }
+
+    return true;
+}
+
 void SceneGraph::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) {
 
     F32 msTime = Time::MicrosecondsToMilliseconds<F32>(deltaTimeUS);
@@ -179,9 +190,7 @@ void SceneGraph::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) {
     GetECSEngine().Update(msTime);
     GetECSEngine().PostUpdate(msTime);
 
-    // Gather all nodes in order
-    _orderedNodeList.resize(0);
-    _root->getOrderedNodeList(_orderedNodeList);
+
     for (SceneGraphNode* node : _orderedNodeList) {
         node->sceneUpdate(deltaTimeUS, sceneState);
     }

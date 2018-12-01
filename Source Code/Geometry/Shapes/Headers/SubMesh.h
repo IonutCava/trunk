@@ -74,8 +74,6 @@ class SubMesh : public Object3D {
 
     virtual ~SubMesh();
 
-    bool unload() override { return SceneNode::unload(); }
-
     inline U32 getID() { return _ID; }
     /// When loading a submesh, the ID is the node index from the imported scene
     /// scene->mMeshes[n] == (SubMesh with _ID == n)
@@ -88,6 +86,9 @@ class SubMesh : public Object3D {
     void buildDrawCommands(SceneGraphNode& sgn,
                                 RenderStagePass renderStagePass,
                                 RenderPackage& pkgInOut) override;
+
+    // SGN node + parent mesh
+    size_t maxReferenceCount() const override { return 2; }
    protected:
     bool _visibleToNetwork;
     bool _render;

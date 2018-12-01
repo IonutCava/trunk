@@ -22,10 +22,9 @@ namespace Divide {
 
 Terrain::Terrain(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name)
     : Object3D(context, parentCache, descriptorHash, name, ObjectType::TERRAIN),
-      _plane(nullptr),
       _shaderData(nullptr),
       _drawBBoxes(false),
-      _editorDataDirty(true)
+      _editorDataDirtyState(EditorDataState::IDLE)
 {
 }
 
@@ -73,7 +72,7 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
 }
 
 void Terrain::onEditorChange(EditorComponentField& field) {
-    _editorDataDirty = true;
+    _editorDataDirtyState = EditorDataState::QUEUED;
 }
 
 void Terrain::postBuild() {
@@ -108,9 +107,16 @@ void Terrain::postBuild() {
     getMaterialTpl()->addExternalTexture(textureLayer->normalMaps(), to_U8(ShaderProgram::TextureUsage::COUNT) + 2);
 }
 
+void Terrain::frameStarted(SceneGraphNode& sgn) {
+    if (_editorDataDirtyState == EditorDataState::QUEUED) {
+        _editorDataDirtyState = EditorDataState::CHANGED;
+    } else if (_editorDataDirtyState == EditorDataState::CHANGED) {
+        _editorDataDirtyState = EditorDataState::IDLE;
+    }
+}
+
 void Terrain::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState) {
     _terrainTessellatorFlags[sgn.getGUID()].fill(false);
-    _editorDataDirty = false; //Clear in update to make sure that ALL of the nodes picked up the new data
     Object3D::sceneUpdate(deltaTimeUS, sgn, sceneState);
 }
 
@@ -128,7 +134,7 @@ bool Terrain::onRender(SceneGraphNode& sgn,
 
     U32 offset = to_U32(stageIndex * Terrain::MAX_RENDER_NODES);
 
-    if (_editorDataDirty) {
+    if (_editorDataDirtyState == EditorDataState::CHANGED) {
         PushConstants constants = pkg.pushConstants(0);
         constants.set("tessellationRange", GFX::PushConstantType::VEC2, _descriptor->getTessellationRange());
         pkg.pushConstants(0, constants);
@@ -156,26 +162,6 @@ bool Terrain::onRender(SceneGraphNode& sgn,
     disableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
     cmd._drawCount = tessellator.getRenderDepth();
     pkg.drawCommand(0, 0, cmd);
-    /*if (renderStagePass._stage == RenderStage::DISPLAY) {
-        // draw infinite plane
-        assert(pkg.drawCommand(1, 0)._drawCount == 1u);
-
-        const Pipeline* pipeline = pkg.pipeline(1);
-        PipelineDescriptor descriptor = pipeline->descriptor();
-        descriptor._shaderProgramHandle = (renderStagePass._passType == RenderPassType::DEPTH_PASS
-                                                                      ? _planeDepthShader
-                                                                      : _planeShader)->getID();
-
-        pkg.pipeline(1, *_context.newPipeline(descriptor));
-
-        // draw bounding boxes;
-        U16 state = _drawBBoxes ? 1 : 0;
-        for (I32 i = 2; i < pkg.drawCommandCount(); ++i) {
-            GenericDrawCommand cmd = pkg.drawCommand(i, 0);
-            cmd._drawCount = state;
-            pkg.drawCommand(i, 0, cmd);
-        }
-    }*/
 
     return Object3D::onRender(sgn, sceneRenderState, renderStagePass);
 }
@@ -202,45 +188,7 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
     GFX::DrawCommand drawCommand = {};
     drawCommand._drawCommands.push_back(cmd);
     pkgInOut.addDrawCommand(drawCommand);
-    
-    /*if (renderStagePass._stage == RenderStage::DISPLAY) {
-
-        PipelineDescriptor pipelineDescriptor = {};
-        pipelineDescriptor._shaderProgramHandle = 
-            (renderStagePass._passType == RenderPassType::DEPTH_PASS
-                                        ? _planeDepthShader
-                                        : _planeShader)->getID();
-        {
-            GFX::BindPipelineCommand pipelineCommand;
-            pipelineCommand._pipeline = _context.newPipeline(pipelineDescriptor);
-            pkgInOut.addPipelineCommand(pipelineCommand);
-        }
-        //infinite plane
-        GenericDrawCommand planeCmd = {};
-        planeCmd._primitiveType = PrimitiveType::TRIANGLE_STRIP;
-        planeCmd._cmd.firstIndex = 0;
-        planeCmd._cmd.indexCount = _plane->getGeometryVB()->getIndexCount();
-        planeCmd._lodIndex = 0;
-        planeCmd._sourceBuffer = _plane->getGeometryVB();
-        planeCmd._bufferIndex = renderStagePass.index();
-
-        {
-            GFX::DrawCommand drawCommand = {};
-            drawCommand._drawCommands.push_back(planeCmd);
-            pkgInOut.addDrawCommand(drawCommand);
-        }
-
-        pipelineDescriptor._shaderProgramHandle = ShaderProgram::defaultShader()->getID();
-        {
-            GFX::BindPipelineCommand pipelineCommand = {};
-            pipelineCommand._pipeline = _context.newPipeline(pipelineDescriptor);
-            pkgInOut.addPipelineCommand(pipelineCommand);
-        }
-
-        //BoundingBoxes
-        _terrainQuadtree.drawBBox(_context, pkgInOut);
-    }*/
-
+ 
     Object3D::buildDrawCommands(sgn, renderStagePass, pkgInOut);
 }
 

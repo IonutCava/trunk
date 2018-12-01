@@ -44,7 +44,6 @@
 namespace Divide {
 
 namespace {
-    std::shared_ptr<Terrain> g_terrain = nullptr;
     vec2<F32> g_sunAngle(0.0f, Angle::to_RADIANS(45.0f));
     bool g_direction = false;
     U64 elapsedGameTimeUs = 0;
@@ -281,13 +280,6 @@ namespace {
 void WarScene::updateSceneStateInternal(const U64 deltaTimeUS) {
     if (!_sceneReady) {
         return;
-    }
-
-    if (g_terrain == nullptr) {
-        auto nodes = Object3D::filterByType(sceneGraph().getNodesByType(SceneNodeType::TYPE_OBJECT3D), ObjectType::TERRAIN);
-        if (!nodes.empty()) {
-            g_terrain = nodes[0]->getNode<Terrain>();
-        }
     }
 
     return;

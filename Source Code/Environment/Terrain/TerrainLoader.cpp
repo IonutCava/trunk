@@ -17,7 +17,7 @@
 
 namespace Divide {
 
-bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
+bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
                                 const std::shared_ptr<TerrainDescriptor>& terrainDescriptor,
                                 PlatformContext& context,
                                 bool threadedLoading,
@@ -310,7 +310,7 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
     return true;
 }
 
-bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
+bool TerrainLoader::loadThreadedResources(Terrain_ptr terrain,
                                           const std::shared_ptr<TerrainDescriptor> terrainDescriptor,
                                           DELEGATE_CBK<void, CachedResource_wptr> onLoadCallback) {
 
@@ -494,7 +494,7 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
     planeShaderDesc.setResourceName("terrainPlane.Depth");
     ShaderProgram_ptr planeDepthShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), planeShaderDesc);
 
-    Quad3D_ptr plane = CreateResource<Quad3D>(terrain->parentResourceCache(), infinitePlane);
+    /*Quad3D_ptr plane = CreateResource<Quad3D>(terrain->parentResourceCache(), infinitePlane);
     // our bottom plane is placed at the bottom of our water entity
     F32 height = bMin.y;
     F32 farPlane = 2.0f * terrainBB.getWidth();
@@ -502,7 +502,7 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
     plane->setCorner(Quad3D::CornerLocation::TOP_LEFT, vec3<F32>(-farPlane * 1.5f, height, -farPlane * 1.5f));
     plane->setCorner(Quad3D::CornerLocation::TOP_RIGHT, vec3<F32>(farPlane * 1.5f, height, -farPlane * 1.5f));
     plane->setCorner(Quad3D::CornerLocation::BOTTOM_LEFT, vec3<F32>(-farPlane * 1.5f, height, farPlane * 1.5f));
-    plane->setCorner(Quad3D::CornerLocation::BOTTOM_RIGHT, vec3<F32>(farPlane * 1.5f, height, farPlane * 1.5f));
+    plane->setCorner(Quad3D::CornerLocation::BOTTOM_RIGHT, vec3<F32>(farPlane * 1.5f, height, farPlane * 1.5f));*/
 
     VertexBuffer* vb = terrain->getGeometryVB();
     Attorney::TerrainTessellatorLoader::initTessellationPatch(vb);
@@ -511,7 +511,6 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
 
     initializeVegetation(terrain, terrainDescriptor);
     Attorney::TerrainLoader::postBuild(*terrain);
-    Attorney::TerrainLoader::plane(*terrain, plane, planeShader, planeDepthShader);
 
     Console::printfn(Locale::get(_ID("TERRAIN_LOAD_END")), terrain->name().c_str());
     return terrain->load(onLoadCallback);

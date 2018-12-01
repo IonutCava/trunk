@@ -246,6 +246,9 @@ namespace Divide {
     }
 
     bool PropertyWindow::processField(EditorComponentField& field) {
+        ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsNoBlank;
+        flags |= field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0;
+
         bool ret = false;
         switch (field._type) {
             case EditorComponentFieldType::PUSH_TYPE: {
@@ -255,8 +258,8 @@ namespace Divide {
                 BoundingBox bb = *static_cast<BoundingBox*>(field.data());
                 F32* bbMin = Attorney::BoundingBoxEditor::min(bb);
                 F32* bbMax = Attorney::BoundingBoxEditor::max(bb);
-                ret = ImGui::InputFloat3("- Min ", bbMin, "%.3f", field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0) ||
-                      ImGui::InputFloat3("- Max ", bbMax, "%.3f", field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0);
+                ret = ImGui::InputFloat3("- Min ", bbMin, "%.3f", flags) ||
+                      ImGui::InputFloat3("- Max ", bbMax, "%.3f", flags);
                 if (ret) {
                     field.data(bb);
                 }
@@ -265,8 +268,8 @@ namespace Divide {
                 BoundingSphere bs = *static_cast<BoundingSphere*>(field.data());
                 F32* center = Attorney::BoundingSphereEditor::center(bs);
                 F32& radius = Attorney::BoundingSphereEditor::radius(bs);
-                ret = ImGui::InputFloat3("- Center ", center, "%.3f", field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0) ||
-                      ImGui::InputFloat("- Radius ", &radius, 0.0f, 0.0f, -1, field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0);
+                ret = ImGui::InputFloat3("- Center ", center, "%.3f", flags) ||
+                      ImGui::InputFloat("- Radius ", &radius, 0.0f, 0.0f, -1, flags);
                 if (ret) {
                     field.data(bs);
                 }
@@ -335,26 +338,29 @@ namespace Divide {
      }
 
      bool PropertyWindow::processMaterial(Material* material, bool readOnly) {
+         ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsNoBlank;
+         flags |= readOnly ? ImGuiInputTextFlags_ReadOnly : 0;
+
          bool ret = false;
          if (material) {
              FColour diffuse = material->getColourData()._diffuse;
-             if (ImGui::InputFloat4(" - Diffuse", diffuse._v, "%.3f", readOnly ? ImGuiInputTextFlags_ReadOnly : 0)) {
+             if (ImGui::InputFloat4(" - Diffuse", diffuse._v, "%.3f", flags)) {
                  material->setDiffuse(diffuse);
              }
 
              FColour emissive = material->getColourData()._emissive;
-             if (ImGui::InputFloat4(" - Emissive", emissive._v, "%.3f", readOnly ? ImGuiInputTextFlags_ReadOnly : 0)) {
+             if (ImGui::InputFloat4(" - Emissive", emissive._v, "%.3f", flags)) {
                  material->setEmissive(emissive);
              }
 
 
              FColour specular = material->getColourData()._specular;
-             if (ImGui::InputFloat4(" - Specular", specular._v, "%.3f", readOnly ? ImGuiInputTextFlags_ReadOnly : 0)) {
+             if (ImGui::InputFloat4(" - Specular", specular._v, "%.3f", flags)) {
                  material->setSpecular(specular);
              }
 
              F32 shininess = material->getColourData()._shininess;
-             if (ImGui::InputFloat(" - Shininess", &shininess, 0.0f, 0.0f, "%.3f", readOnly ? ImGuiInputTextFlags_ReadOnly : 0)) {
+             if (ImGui::InputFloat(" - Shininess", &shininess, 0.0f, 0.0f, "%.3f", flags)) {
                  material->setShininess(shininess);
              }
 
@@ -372,6 +378,9 @@ namespace Divide {
      }
 
      bool PropertyWindow::processBasicField(EditorComponentField& field) {
+         ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsNoBlank;
+         flags |= field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0;
+
          bool ret = false;
          switch (field._basicType) {
              case GFX::PushConstantType::BOOL: {
@@ -386,7 +395,7 @@ namespace Divide {
                  I32 val = *(I32*)(field.data());
                  ImGui::SameLine();
 
-                 ret = ImGui::InputInt("", &val, 1, 100, field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0);
+                 ret = ImGui::InputInt("", &val, 1, 100, flags);
                  if (ret && !field._readOnly) {
                      field.data(val);
                  }
@@ -398,7 +407,7 @@ namespace Divide {
              case GFX::PushConstantType::DOUBLE: {
                  D64 val = *(D64*)(field.data());
                  ImGui::SameLine();
-                 ret = ImGui::InputDouble("", &val, 0.0, 0.0, "%.6f", field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0);
+                 ret = ImGui::InputDouble("", &val, 0.0, 0.0, "%.6f", flags);
                  if (ret && !field._readOnly) {
                      field.data(val);
                  }
@@ -406,7 +415,7 @@ namespace Divide {
              case GFX::PushConstantType::FLOAT: {
                  F32 val = *(F32*)(field.data());
                  ImGui::SameLine();
-                 ret = ImGui::InputFloat("", &val, 0.0f, 0.0f, -1, field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0);
+                 ret = ImGui::InputFloat("", &val, 0.0f, 0.0f, -1, flags);
                  if (ret && !field._readOnly) {
                      field.data(val);
                  }
@@ -414,7 +423,7 @@ namespace Divide {
              case GFX::PushConstantType::IVEC2: {
                  vec2<I32> val = *(vec2<I32>*)(field.data());
                  ImGui::SameLine();
-                 ret = ImGui::InputInt2("", val._v, field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0);
+                 ret = ImGui::InputInt2("", val._v, flags);
                  if (ret && !field._readOnly) {
                      field.data(val);
                  }
@@ -422,7 +431,7 @@ namespace Divide {
              case GFX::PushConstantType::IVEC3: {
                  vec3<I32> val = *(vec3<I32>*)(field.data());
                  ImGui::SameLine();
-                 ret = ImGui::InputInt3("", val._v, field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0);
+                 ret = ImGui::InputInt3("", val._v, flags);
                  if (ret && !field._readOnly) {
                      field.data(val);
                  }
@@ -430,7 +439,7 @@ namespace Divide {
              case GFX::PushConstantType::IVEC4: {
                  vec4<I32> val = *(vec4<I32>*)(field.data());
                  ImGui::SameLine();
-                 ret = ImGui::InputInt4("", val._v, field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0);
+                 ret = ImGui::InputInt4("", val._v, flags);
                  if (ret && !field._readOnly) {
                      field.data(val);
                  }
@@ -450,7 +459,7 @@ namespace Divide {
              case GFX::PushConstantType::VEC2: {
                  vec2<F32> val = *(vec2<F32>*)(field.data());
                  ImGui::SameLine();
-                 ret = ImGui::InputFloat2("", val._v, "%.3f", field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0);
+                 ret = ImGui::InputFloat2("", val._v, "%.3f", flags);
                  if (ret && !field._readOnly) {
                      field.data(val);
                  }
@@ -458,7 +467,7 @@ namespace Divide {
              case GFX::PushConstantType::VEC3: {
                  vec3<F32> val = *(vec3<F32>*)(field.data());
                  ImGui::SameLine();
-                 ret = ImGui::InputFloat3("", val._v, "%.3f", field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0);
+                 ret = ImGui::InputFloat3("", val._v, "%.3f", flags);
                  if (ret && !field._readOnly) {
                      field.data(val);
                  }
@@ -466,7 +475,7 @@ namespace Divide {
              case GFX::PushConstantType::VEC4: {
                  vec4<F32> val = *(vec4<F32>*)(field.data());
                  ImGui::SameLine();
-                 ret = ImGui::InputFloat4("", val._v, "%.3f", field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0);
+                 ret = ImGui::InputFloat4("", val._v, "%.3f", flags);
                  if (ret && !field._readOnly) {
                      field.data(val);
                  }
@@ -474,7 +483,7 @@ namespace Divide {
              case GFX::PushConstantType::DVEC2: {
                  vec2<D64> val = *(vec2<D64>*)(field.data());
                  ImGui::SameLine();
-                 ret = ImGui::InputDouble2("", val._v, "%.6f", field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0);
+                 ret = ImGui::InputDouble2("", val._v, "%.6f", flags);
                  if (ret && !field._readOnly) {
                      field.data(val);
                  }
@@ -482,7 +491,7 @@ namespace Divide {
              case GFX::PushConstantType::DVEC3: {
                  vec3<D64> val = *(vec3<D64>*)(field.data());
                  ImGui::SameLine();
-                 ret = ImGui::InputDouble3("", val._v, "%.6f", field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0);
+                 ret = ImGui::InputDouble3("", val._v, "%.6f", flags);
                  if (ret && !field._readOnly) {
                      field.data(val);
                  }
@@ -490,34 +499,34 @@ namespace Divide {
              case GFX::PushConstantType::DVEC4: {
                  vec4<D64> val = *(vec4<D64>*)(field.data());
                  ImGui::SameLine();
-                 ret = ImGui::InputDouble4("", val._v, "%.6f", field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0);
+                 ret = ImGui::InputDouble4("", val._v, "%.6f", flags);
                  if (ret && !field._readOnly) {
                      field.data(val);
                  }
              }break;
              case GFX::PushConstantType::IMAT2: {
                  mat2<I32> mat = *(mat2<I32>*)(field.data());
-                 ret = ImGui::InputInt2("", mat._vec[0], field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0) ||
-                       ImGui::InputInt2("", mat._vec[1], field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0);
+                 ret = ImGui::InputInt2("", mat._vec[0], flags) ||
+                       ImGui::InputInt2("", mat._vec[1], flags);
                  if (ret && !field._readOnly) {
                      field.data(mat);
                  }
              }break;
              case GFX::PushConstantType::IMAT3: {
                  mat3<I32> mat = *(mat3<I32>*)(field.data());
-                 ret = ImGui::InputInt3("", mat._vec[0], field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0) ||
-                       ImGui::InputInt3("", mat._vec[1], field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0) ||
-                       ImGui::InputInt3("", mat._vec[2], field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0);
+                 ret = ImGui::InputInt3("", mat._vec[0], flags) ||
+                       ImGui::InputInt3("", mat._vec[1], flags) ||
+                       ImGui::InputInt3("", mat._vec[2], flags);
                  if (ret && !field._readOnly) {
                      field.data(mat);
                  }
              }break;
              case GFX::PushConstantType::IMAT4: {
                  mat4<I32> mat = *(mat4<I32>*)(field.data());
-                 ret = ImGui::InputInt4("", mat._vec[0], field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0) ||
-                       ImGui::InputInt4("", mat._vec[1], field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0) ||
-                       ImGui::InputInt4("", mat._vec[2], field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0) ||
-                       ImGui::InputInt4("", mat._vec[3], field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0);
+                 ret = ImGui::InputInt4("", mat._vec[0], flags) ||
+                       ImGui::InputInt4("", mat._vec[1], flags) ||
+                       ImGui::InputInt4("", mat._vec[2], flags) ||
+                       ImGui::InputInt4("", mat._vec[3], flags);
                  if (ret && !field._readOnly) {
                      field.data(mat);
                  }
@@ -536,54 +545,54 @@ namespace Divide {
              }break;
              case GFX::PushConstantType::MAT2: {
                  mat2<F32> mat = *(mat2<F32>*)(field.data());
-                 ret = ImGui::InputFloat2("", mat._vec[0], "%.3f", field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0) ||
-                       ImGui::InputFloat2("", mat._vec[1], "%.3f", field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0);
+                 ret = ImGui::InputFloat2("", mat._vec[0], "%.3f", flags) ||
+                       ImGui::InputFloat2("", mat._vec[1], "%.3f", flags);
                  if (ret && !field._readOnly) {
                      field.data(mat);
                  }
              }break;
              case GFX::PushConstantType::MAT3: {
                  mat3<F32> mat = *(mat3<F32>*)(field.data());
-                 ret = ImGui::InputFloat3("", mat._vec[0], "%.3f", field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0) ||
-                       ImGui::InputFloat3("", mat._vec[1], "%.3f", field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0) ||
-                       ImGui::InputFloat3("", mat._vec[2], "%.3f", field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0);
+                 ret = ImGui::InputFloat3("", mat._vec[0], "%.3f", flags) ||
+                       ImGui::InputFloat3("", mat._vec[1], "%.3f", flags) ||
+                       ImGui::InputFloat3("", mat._vec[2], "%.3f", flags);
                  if (ret && !field._readOnly) {
                      field.data(mat);
                  }
              }break;
              case GFX::PushConstantType::MAT4: {
                  mat4<F32> mat = *(mat4<F32>*)(field.data());
-                 ret = ImGui::InputFloat4("", mat._vec[0], "%.3f", field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0) ||
-                       ImGui::InputFloat4("", mat._vec[1], "%.3f", field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0) ||
-                       ImGui::InputFloat4("", mat._vec[2], "%.3f", field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0) ||
-                       ImGui::InputFloat4("", mat._vec[3], "%.3f", field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0);
+                 ret = ImGui::InputFloat4("", mat._vec[0], "%.3f", flags) ||
+                       ImGui::InputFloat4("", mat._vec[1], "%.3f", flags) ||
+                       ImGui::InputFloat4("", mat._vec[2], "%.3f", flags) ||
+                       ImGui::InputFloat4("", mat._vec[3], "%.3f", flags);
                  if (ret && !field._readOnly) {
                      field.data(mat);
                  }
              }break;
              case GFX::PushConstantType::DMAT2: {
                  mat2<D64> mat = *(mat2<D64>*)(field.data());
-                 ret = ImGui::InputDouble2("", mat._vec[0], "%.6f", field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0) ||
-                       ImGui::InputDouble2("", mat._vec[1], "%.6f", field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0);
+                 ret = ImGui::InputDouble2("", mat._vec[0], "%.6f", flags) ||
+                       ImGui::InputDouble2("", mat._vec[1], "%.6f", flags);
                  if (ret && !field._readOnly) {
                      field.data(mat);
                  }
              }break;
              case GFX::PushConstantType::DMAT3: {
                  mat3<D64> mat = *(mat3<D64>*)(field.data());
-                 ret = ImGui::InputDouble3("", mat._vec[0], "%.6f", field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0) ||
-                       ImGui::InputDouble3("", mat._vec[1], "%.6f", field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0) ||
-                       ImGui::InputDouble3("", mat._vec[2], "%.6f", field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0);
+                 ret = ImGui::InputDouble3("", mat._vec[0], "%.6f", flags) ||
+                       ImGui::InputDouble3("", mat._vec[1], "%.6f", flags) ||
+                       ImGui::InputDouble3("", mat._vec[2], "%.6f", flags);
                  if (ret && !field._readOnly) {
                      field.data(mat);
                  }
              }break;
              case GFX::PushConstantType::DMAT4: {
                  mat4<D64> mat = *(mat4<D64>*)(field.data());
-                 ret = ImGui::InputDouble4("", mat._vec[0], "%.6f", field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0) ||
-                       ImGui::InputDouble4("", mat._vec[1], "%.6f", field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0) ||
-                       ImGui::InputDouble4("", mat._vec[2], "%.6f", field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0) ||
-                       ImGui::InputDouble4("", mat._vec[3], "%.6f", field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0);
+                 ret = ImGui::InputDouble4("", mat._vec[0], "%.6f", flags) ||
+                       ImGui::InputDouble4("", mat._vec[1], "%.6f", flags) ||
+                       ImGui::InputDouble4("", mat._vec[2], "%.6f", flags) ||
+                       ImGui::InputDouble4("", mat._vec[3], "%.6f", flags);
                  if (ret && !field._readOnly) {
                      field.data(mat);
                  }
