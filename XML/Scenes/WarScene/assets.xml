@@ -43,7 +43,8 @@
             <node name="DefaultSky_geometry" type="SPHERE_3D"/>
         </node>
         <node name="InfPlane" type="INFINITE_PLANE"/>
-        <node name="Terrain" type="TERRAIN"/>
         <node name="DefaultLight" type=""/>
+        <node name="Terrain" type="TERRAIN"/>
+        <node name="Player_1" type=""/>
     </node>
 </entities>

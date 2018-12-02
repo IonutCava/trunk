@@ -114,7 +114,7 @@ void InfinitePlane::buildDrawCommands(SceneGraphNode& sgn,
                                       RenderPackage& pkgInOut) {
    
      //infinite plane
-    GenericDrawCommand planeCmd;
+    GenericDrawCommand planeCmd = {};
     planeCmd._primitiveType = PrimitiveType::TRIANGLE_STRIP;
     planeCmd._cmd.firstIndex = 0;
     planeCmd._cmd.indexCount = _plane->getGeometryVB()->getIndexCount();

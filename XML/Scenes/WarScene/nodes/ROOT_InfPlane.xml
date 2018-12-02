@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<static>true</static>
+<TRANSFORM>
+    <Transform>
+        <position x="-1.21849632" y="-50" z="68.1365738"/>
+        <orientation x="0" y="0" z="0"/>
+        <scale x="1" y="1" z="1"/>
+    </Transform>
+    <WorldMat 00="1" 01="0" 02="0" 03="0" 10="0" 11="1" 12="0" 13="0" 20="0" 21="0" 22="1" 23="0" 30="-1.21849632" 31="-50" 32="68.1365738" 33="1"/>
+</TRANSFORM>
+<BOUNDS/>
+<RENDERING>
+    <Material>
+        <colour r="0.5" g="0.5" b="0.5" a="1"/>
+        <emissive r="0" g="0" b="0"/>
+        <specular r="0.100000001" g="0.100000001" b="0.100000001"/>
+        <shininess>20</shininess>
+        <doubleSided>false</doubleSided>
+        <bumpMethod>NONE</bumpMethod>
+        <shadingMode>BLINN_PHONG</shadingMode>
+        <parallaxFactor>0.00999999978</parallaxFactor>
+        <texture>
+            <UNIT0>
+                <name>terrain_water_caustics.jpg</name>
+                <path>assets/misc_images</path>
+                <Map U="REPEAT" V="REPEAT" W="REPEAT"/>
+                <Filter min="LINEAR" mag="LINEAR"/>
+                <anisotropy>8</anisotropy>
+            </UNIT0>
+        </texture>
+    </Material>
+</RENDERING>
+<INFINITE_PLANE/>

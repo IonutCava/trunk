@@ -132,10 +132,8 @@ class Scene : public Resource, public PlatformContextComponent {
     inline void addSceneGraph(const XML::SceneNode& sceneGraph) { _xmlSceneGraph.push(sceneGraph); }
     void addMusic(MusicType type, const stringImpl& name, const stringImpl& srcFile);
 
-    // DIRECTIONAL lights have shadow mapping enabled automatically
-    SceneGraphNode* addLight(LightType type, SceneGraphNode& parentNode, const stringImpl& nodeName = "");
-    SceneGraphNode* addSky(SceneGraphNode& parentNode, const stringImpl& nodeName = "");
-    SceneGraphNode* addInfPlane(SceneGraphNode& parentNode, const stringImpl& nodeName = "");
+    SceneGraphNode* addSky(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const stringImpl& nodeName = "");
+    SceneGraphNode* addInfPlane(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const stringImpl& nodeName = "");
     void addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const stringImpl& nodeName = "");
 
     /// Object picking

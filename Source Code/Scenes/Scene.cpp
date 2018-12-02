@@ -336,7 +336,7 @@ void Scene::loadAsset(const XML::SceneNode& sceneNode, SceneGraphNode* parent) {
             addTerrain(*parent, nodeTree, sceneNode.name);
         }
         else if (sceneNode.type == "INFINITE_PLANE") {
-            addInfPlane(*parent, sceneNode.name);
+            addInfPlane(*parent, nodeTree, sceneNode.name);
         }
         // Mesh types
         else if (Util::CompareIgnoreCase(sceneNode.type, "MESH")) {
@@ -360,30 +360,26 @@ void Scene::loadAsset(const XML::SceneNode& sceneNode, SceneGraphNode* parent) {
                 subMesh->loadFromXML(nodeTree);
             }
         }
-        // Lights
-        else if (Util::CompareIgnoreCase(sceneNode.type, "LIGHT")) {
-            addLight(LightType::DIRECTIONAL, *parent , sceneNode.name);
-        }
         // Sky
         else if (Util::CompareIgnoreCase(sceneNode.type, "SKY")) {
             //ToDo: Change this - Currently, just load the default sky.
-            addSky(*parent, sceneNode.name);
+            addSky(*parent, nodeTree, sceneNode.name);
+        }
+        // Everything else
+        else if (Util::CompareIgnoreCase(sceneNode.type, "")) {
+            skipAdd = false;
         }
 
-        if (!ret) {
-            if (!skipAdd) {
-                Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD_MODEL")), sceneNode.name.c_str());
-            } else {
-                // Loaded something else
-            }
-        } else {
-            ret->loadFromXML(nodeTree);
-
+        if (!skipAdd) {
             SceneGraphNodeDescriptor nodeDescriptor = {};
-            nodeDescriptor._node = ret;
             nodeDescriptor._name = sceneNode.name;
             nodeDescriptor._componentMask = normalMask;
-            
+
+            if (ret != nullptr) {
+                ret->loadFromXML(nodeTree);
+                nodeDescriptor._node = ret;
+            }
+
             for (U8 i = 1; i < to_U8(ComponentType::COUNT); ++i) {
                 ComponentType type = ComponentType::_from_integral(1u << i);
                 if (nodeTree.count(type._to_string()) != 0) {
@@ -394,7 +390,6 @@ void Scene::loadAsset(const XML::SceneNode& sceneNode, SceneGraphNode* parent) {
             crtNode = parent->addNode(nodeDescriptor);
             crtNode->loadFromXML(nodeTree);
         }
-
     }
 
     for (const XML::SceneNode& node : sceneNode.children) {
@@ -403,8 +398,8 @@ void Scene::loadAsset(const XML::SceneNode& sceneNode, SceneGraphNode* parent) {
 }
 
 SceneGraphNode* Scene::addParticleEmitter(const stringImpl& name,
-                                             std::shared_ptr<ParticleData> data,
-                                             SceneGraphNode& parentNode) {
+                                          std::shared_ptr<ParticleData> data,
+                                          SceneGraphNode& parentNode) {
     DIVIDE_ASSERT(!name.empty(),
                   "Scene::addParticleEmitter error: invalid name specified!");
 
@@ -430,42 +425,6 @@ SceneGraphNode* Scene::addParticleEmitter(const stringImpl& name,
                                             to_base(ComponentType::SELECTION);
 
     return parentNode.addNode(particleNodeDescriptor);
-}
-
-
-SceneGraphNode* Scene::addLight(LightType type, SceneGraphNode& parentNode, const stringImpl& nodeName) {
-
-    SceneGraphNodeDescriptor lightNodeDescriptor = {};
-    lightNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
-    lightNodeDescriptor._componentMask = to_base(ComponentType::TRANSFORM) |
-        to_base(ComponentType::BOUNDS) |
-        to_base(ComponentType::NETWORKING);
-
-    stringImpl internalName = nodeName;
-    switch (type) {
-        case LightType::DIRECTIONAL: {
-            if (nodeName.empty()) {
-                internalName = name() + "directional_light_" + to_stringImpl(_lightPool->getLights(type).size());
-            }
-            lightNodeDescriptor._componentMask |= to_base(ComponentType::DIRECTIONAL_LIGHT);
-        } break;
-        case LightType::POINT: {
-            if (nodeName.empty()) {
-                internalName = name() + "point_light_" + to_stringImpl(_lightPool->getLights(type).size());
-            }
-            lightNodeDescriptor._componentMask |= to_base(ComponentType::POINT_LIGHT);
-        } break;
-        case LightType::SPOT: {
-            if (nodeName.empty()) {
-                internalName = name() + "spot_light_" + to_stringImpl(_lightPool->getLights(type).size());
-            }
-            lightNodeDescriptor._componentMask |= to_base(ComponentType::SPOT_LIGHT);
-        } break;
-    }
-
-    lightNodeDescriptor._name = internalName;
-
-    return parentNode.addNode(lightNodeDescriptor);    
 }
 
 void Scene::addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const stringImpl& name) {
@@ -568,7 +527,7 @@ void Scene::addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree p
     ter->setChunkSize(pt.get<U32>("targetChunkSize", 256));
 
 
-    auto registerTerrain = [this, name, &parentNode](CachedResource_wptr res) {
+    auto registerTerrain = [this, name, &parentNode, pt](CachedResource_wptr res) {
         SceneGraphNodeDescriptor terrainNodeDescriptor;
         terrainNodeDescriptor._name = name;
         terrainNodeDescriptor._node = std::static_pointer_cast<Terrain>(res.lock());
@@ -580,6 +539,8 @@ void Scene::addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree p
                                                to_base(ComponentType::RENDERING) |
                                                to_base(ComponentType::NETWORKING);
 
+        terrainNodeDescriptor._node->loadFromXML(pt);
+
         SceneGraphNode* terrainTemp = parentNode.addNode(terrainNodeDescriptor);
 
 
@@ -587,6 +548,7 @@ void Scene::addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree p
         nComp->navigationContext(NavigationComponent::NavigationContext::NODE_OBSTACLE);
 
         terrainTemp->get<RigidBodyComponent>()->physicsGroup(PhysicsGroup::GROUP_STATIC);
+        terrainTemp->loadFromXML(pt);
         _loadingTasks.fetch_sub(1);
     };
 
@@ -631,12 +593,13 @@ void Scene::toggleFlashlight(PlayerIndex idx) {
     flashLight->get<SpotLightComponent>()->toggleEnabled();
 }
 
-SceneGraphNode* Scene::addSky(SceneGraphNode& parentNode, const stringImpl& nodeName) {
+SceneGraphNode* Scene::addSky(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const stringImpl& nodeName) {
     ResourceDescriptor skyDescriptor("DefaultSky_"+ nodeName);
     skyDescriptor.setID(to_U32(std::floor(Camera::utilityCamera(Camera::UtilityCamera::DEFAULT)->getZPlanes().y * 2)));
 
     std::shared_ptr<Sky> skyItem = CreateResource<Sky>(_resCache, skyDescriptor);
     DIVIDE_ASSERT(skyItem != nullptr, "Scene::addSky error: Could not create sky resource!");
+    skyItem->loadFromXML(pt);
 
     SceneGraphNodeDescriptor skyNodeDescriptor;
     skyNodeDescriptor._node = skyItem;
@@ -649,15 +612,20 @@ SceneGraphNode* Scene::addSky(SceneGraphNode& parentNode, const stringImpl& node
 
     SceneGraphNode* skyNode = parentNode.addNode(skyNodeDescriptor);
     skyNode->lockVisibility(true);
+    skyNode->loadFromXML(pt);
 
     return skyNode;
 }
 
-SceneGraphNode* Scene::addInfPlane(SceneGraphNode& parentNode, const stringImpl& nodeName) {
+SceneGraphNode* Scene::addInfPlane(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const stringImpl& nodeName) {
     ResourceDescriptor planeDescriptor("InfPlane_" + nodeName);
-    planeDescriptor.setID(to_U32(context().gfx().renderingData().cameraZPlanes().max));
+
+    Camera* baseCamera = Camera::utilityCamera(Camera::UtilityCamera::DEFAULT);
+
+    planeDescriptor.setID(to_U32(baseCamera->getZPlanes().max));
     std::shared_ptr<InfinitePlane> planeItem = CreateResource<InfinitePlane>(_resCache, planeDescriptor);
     DIVIDE_ASSERT(planeItem != nullptr, "Scene::addInfPlane error: Could not create infinite plane resource!");
+    planeItem->loadFromXML(pt);
 
     SceneGraphNodeDescriptor planeNodeDescriptor;
     planeNodeDescriptor._node = planeItem;
@@ -667,7 +635,9 @@ SceneGraphNode* Scene::addInfPlane(SceneGraphNode& parentNode, const stringImpl&
                                          to_base(ComponentType::BOUNDS) |
                                          to_base(ComponentType::RENDERING);
 
-    return parentNode.addNode(planeNodeDescriptor);
+    auto ret = parentNode.addNode(planeNodeDescriptor);
+    ret->loadFromXML(pt);
+    return ret;
 }
 
 U16 Scene::registerInputActions() {
@@ -979,14 +949,17 @@ bool Scene::load(const stringImpl& name) {
 
     // We always add a sky
     auto skies = sceneGraph().getNodesByType(SceneNodeType::TYPE_SKY);
-    if (skies.empty()) {
-        _currentSky = addSky(_sceneGraph->getRoot(), "DefaultSky");
-    } else {
-        _currentSky = skies[0];
+    assert(!skies.empty());
+    _currentSky = skies[0];
+
+    if (_sun == nullptr) {
+        auto dirLights = _lightPool->getLights(LightType::DIRECTIONAL);
+        if (!dirLights.empty()) {
+            _sun = &dirLights.front()->getSGN();
+        }
     }
 
-    // We always add at least one light (we can delete / disable it as needed)
-    _sun = addLight(LightType::DIRECTIONAL, _sceneGraph->getRoot(), "DefaultLight");
+    // We always add at least one light
     _sun->get<DirectionalLightComponent>()->castsShadows(true);
     _loadComplete = true;
 
@@ -1355,14 +1328,20 @@ void Scene::debugDraw(const Camera& activeCamera, RenderStagePass stagePass, GFX
 bool Scene::checkCameraUnderwater(PlayerIndex idx) const {
     const vectorEASTL<SceneGraphNode*>& waterBodies = _sceneGraph->getNodesByType(SceneNodeType::TYPE_WATER);
 
-    if (!waterBodies.empty()) {
-        const Camera& crtCamera = getPlayerForIndex(idx)->getCamera();
-        const vec3<F32>& eyePos = crtCamera.getEye();
+    const Camera& crtCamera = getPlayerForIndex(idx)->getCamera();
+    const vec3<F32>& eyePos = crtCamera.getEye();
 
+    if (!waterBodies.empty()) {
         for (SceneGraphNode* node : waterBodies) {
             if (node->getNode<WaterPlane>()->pointUnderwater(*node, eyePos)) {
                 return true;
             }
+        }
+    }
+
+    for (const WaterDetails& water : state().globalWaterBodies()) {
+        if (eyePos.y < water._heightOffset) {
+            return true;
         }
     }
 

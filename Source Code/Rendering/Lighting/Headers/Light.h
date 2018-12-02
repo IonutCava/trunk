@@ -177,6 +177,7 @@ class Light : public GUIDWrapper
     inline ShadowCameraPool& shadowCameras() { return _shadowCameras; }
     inline const ShadowCameraPool& shadowCameras() const { return _shadowCameras; }
 
+    inline       SceneGraphNode& getSGN()       { return _sgn; }
     inline const SceneGraphNode& getSGN() const { return _sgn; }
 
    protected:
