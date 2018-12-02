@@ -492,7 +492,12 @@ void RenderingComponent::updateDrawCommands(RenderStage stage, vectorEASTL<Indir
 
     std::unique_ptr<RenderPackage>& pkg = packagesPerPass.front();
     for (I32 i = 0; i < pkg->drawCommandCount(); ++i) {
-        drawCmdsInOut.push_back(pkg->drawCommand(i, 0)._cmd);
+        const GenericDrawCommand& cmd = pkg->drawCommand(i, 0);
+        if (cmd._drawCount > 1 && isEnabledOption(cmd, CmdRenderOptions::CONVERT_TO_INDIRECT)) {
+            std::fill_n(std::back_inserter(drawCmdsInOut), cmd._drawCount, cmd._cmd);
+        } else {
+            drawCmdsInOut.push_back(cmd._cmd);
+        }
     }
 }
 

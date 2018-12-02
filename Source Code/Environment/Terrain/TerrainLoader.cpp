@@ -314,9 +314,6 @@ bool TerrainLoader::loadThreadedResources(Terrain_ptr terrain,
                                           const std::shared_ptr<TerrainDescriptor> terrainDescriptor,
                                           DELEGATE_CBK<void, CachedResource_wptr> onLoadCallback) {
 
-    ResourceDescriptor infinitePlane("infinitePlane");
-    infinitePlane.setFlag(true);  // No default material
-
     const stringImpl& terrainMapLocation = Paths::g_assetsLocation + terrainDescriptor->getVariable("heightmapLocation");
     stringImpl terrainRawFile(terrainDescriptor->getVariable("heightmap"));
 
@@ -482,28 +479,6 @@ bool TerrainLoader::loadThreadedResources(Terrain_ptr terrain,
         terrainCache.dumpToFile(Paths::g_cacheLocation + Paths::g_terrainCacheLocation, terrainRawFile + ".cache");
     }
     
-    F32 underwaterDiffuseScale = terrainDescriptor->getVariablef("underwaterDiffuseScale");
-
-    ResourceDescriptor planeShaderDesc("terrainPlane.Colour");
-
-    ShaderProgramDescriptor planeShaderDescDescriptor;
-    planeShaderDescDescriptor._defines.push_back(std::make_pair("UNDERWATER_DIFFUSE_SCALE " + to_stringImpl(underwaterDiffuseScale), true));
-    planeShaderDesc.setPropertyDescriptor(planeShaderDescDescriptor);
-
-    ShaderProgram_ptr planeShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), planeShaderDesc);
-    planeShaderDesc.setResourceName("terrainPlane.Depth");
-    ShaderProgram_ptr planeDepthShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), planeShaderDesc);
-
-    /*Quad3D_ptr plane = CreateResource<Quad3D>(terrain->parentResourceCache(), infinitePlane);
-    // our bottom plane is placed at the bottom of our water entity
-    F32 height = bMin.y;
-    F32 farPlane = 2.0f * terrainBB.getWidth();
-
-    plane->setCorner(Quad3D::CornerLocation::TOP_LEFT, vec3<F32>(-farPlane * 1.5f, height, -farPlane * 1.5f));
-    plane->setCorner(Quad3D::CornerLocation::TOP_RIGHT, vec3<F32>(farPlane * 1.5f, height, -farPlane * 1.5f));
-    plane->setCorner(Quad3D::CornerLocation::BOTTOM_LEFT, vec3<F32>(-farPlane * 1.5f, height, farPlane * 1.5f));
-    plane->setCorner(Quad3D::CornerLocation::BOTTOM_RIGHT, vec3<F32>(farPlane * 1.5f, height, farPlane * 1.5f));*/
-
     VertexBuffer* vb = terrain->getGeometryVB();
     Attorney::TerrainTessellatorLoader::initTessellationPatch(vb);
     vb->keepData(false);

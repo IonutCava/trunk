@@ -65,10 +65,11 @@ enum class CmdRenderOptions : U16 {
     RENDER_NO_RASTERIZE = toBit(3),
     RENDER_INDIRECT = toBit(4),
     RENDER_TESSELLATED = toBit(5),
-    QUERY_PRIMITIVE_COUNT = toBit(6),
-    QUERY_SAMPLE_COUNT = toBit(7),
-    QUERY_ANY_SAMPLE_RENDERED = toBit(8),
-    COUNT = 8
+    CONVERT_TO_INDIRECT = toBit(6),
+    QUERY_PRIMITIVE_COUNT = toBit(7),
+    QUERY_SAMPLE_COUNT = toBit(8),
+    QUERY_ANY_SAMPLE_RENDERED = toBit(9),
+    COUNT = 9
 };
 
 struct GenericDrawCommand {

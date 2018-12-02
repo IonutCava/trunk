@@ -19,6 +19,7 @@
 #include "Environment/Sky/Headers/Sky.h"
 #include "Environment/Water/Headers/Water.h"
 #include "Environment/Terrain/Headers/Terrain.h"
+#include "Environment/Terrain/Headers/InfinitePlane.h"
 #include "Environment/Terrain/Headers/TerrainDescriptor.h"
 
 #include "Geometry/Shapes/Headers/Mesh.h"
@@ -334,6 +335,9 @@ void Scene::loadAsset(const XML::SceneNode& sceneNode, SceneGraphNode* parent) {
         else if (sceneNode.type == "TERRAIN") {
             addTerrain(*parent, nodeTree, sceneNode.name);
         }
+        else if (sceneNode.type == "INFINITE_PLANE") {
+            addInfPlane(*parent, sceneNode.name);
+        }
         // Mesh types
         else if (Util::CompareIgnoreCase(sceneNode.type, "MESH")) {
             if (!modelName.empty()) {
@@ -628,7 +632,7 @@ void Scene::toggleFlashlight(PlayerIndex idx) {
 }
 
 SceneGraphNode* Scene::addSky(SceneGraphNode& parentNode, const stringImpl& nodeName) {
-    ResourceDescriptor skyDescriptor("DefaultSky");
+    ResourceDescriptor skyDescriptor("DefaultSky_"+ nodeName);
     skyDescriptor.setID(to_U32(std::floor(Camera::utilityCamera(Camera::UtilityCamera::DEFAULT)->getZPlanes().y * 2)));
 
     std::shared_ptr<Sky> skyItem = CreateResource<Sky>(_resCache, skyDescriptor);
@@ -647,6 +651,23 @@ SceneGraphNode* Scene::addSky(SceneGraphNode& parentNode, const stringImpl& node
     skyNode->lockVisibility(true);
 
     return skyNode;
+}
+
+SceneGraphNode* Scene::addInfPlane(SceneGraphNode& parentNode, const stringImpl& nodeName) {
+    ResourceDescriptor planeDescriptor("InfPlane_" + nodeName);
+    planeDescriptor.setID(to_U32(context().gfx().renderingData().cameraZPlanes().max));
+    std::shared_ptr<InfinitePlane> planeItem = CreateResource<InfinitePlane>(_resCache, planeDescriptor);
+    DIVIDE_ASSERT(planeItem != nullptr, "Scene::addInfPlane error: Could not create infinite plane resource!");
+
+    SceneGraphNodeDescriptor planeNodeDescriptor;
+    planeNodeDescriptor._node = planeItem;
+    planeNodeDescriptor._name = nodeName;
+    planeNodeDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
+    planeNodeDescriptor._componentMask = to_base(ComponentType::TRANSFORM) |
+                                         to_base(ComponentType::BOUNDS) |
+                                         to_base(ComponentType::RENDERING);
+
+    return parentNode.addNode(planeNodeDescriptor);
 }
 
 U16 Scene::registerInputActions() {

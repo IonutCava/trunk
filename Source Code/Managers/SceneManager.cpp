@@ -539,7 +539,7 @@ namespace {
     bool doesNotCastShadows(RenderStage stage, const SceneGraphNode& node) {
         if (stage == RenderStage::SHADOW) {
             SceneNodeType type = node.getNode()->type();
-            if (type == SceneNodeType::TYPE_SKY) {
+            if (type == SceneNodeType::TYPE_SKY || type == SceneNodeType::TYPE_INFINITEPLANE) {
                 return true;
             }
             if (type == SceneNodeType::TYPE_OBJECT3D && node.getNode<Object3D>()->getObjectType()._value == ObjectType::DECAL) {

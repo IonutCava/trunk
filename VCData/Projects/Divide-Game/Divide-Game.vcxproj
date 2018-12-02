@@ -104,6 +104,8 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\..\..\Source Code\Core\Resources\ConcreteLoaders\InfinitePlaneLoaderImpl.cpp" />
+    <ClCompile Include="..\..\..\Source Code\Environment\Terrain\InfinitePlane.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../../Source Code/AI\ActionInterface\Headers\AIProcessor.h" />
@@ -181,6 +183,7 @@
     <ClInclude Include="../../../Source Code/Scenes\WarScene\AESOPActions\Headers\WarSceneActions.h" />
     <ClInclude Include="../../../Source Code/Scenes\WarScene\Headers\WarScene.h" />
     <ClInclude Include="../../../Source Code/Scenes\WarScene\Headers\WarSceneAIProcessor.h" />
+    <ClInclude Include="..\..\..\Source Code\Environment\Terrain\Headers\InfinitePlane.h" />
   </ItemGroup>
   <ItemGroup>
     <Xml Include="../../../main.xml">

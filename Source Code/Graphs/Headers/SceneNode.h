@@ -77,6 +77,7 @@ enum class SceneNodeType : U16 {
     TYPE_TRIGGER,            //< a scene trigger (perform action on contact)
     TYPE_PARTICLE_EMITTER,   //< a particle emitter
     TYPE_SKY,                //< sky node
+    TYPE_INFINITEPLANE,      //< the infinite plane that sits beneath everything in the world
     TYPE_VEGETATION_GRASS,   //< grass node
     TYPE_VEGETATION_TREES,   //< trees node (to do later)
     COUNT

@@ -443,6 +443,12 @@
     </ClCompile>
     <ClCompile Include="../../../Source Code/stdafx-game.cpp" />
     <ClCompile Include="../../../Source Code\UnityBuildEngine.cpp" />
+    <ClCompile Include="..\..\..\Source Code\Environment\Terrain\InfinitePlane.cpp">
+      <Filter>Environment\Terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source Code\Core\Resources\ConcreteLoaders\InfinitePlaneLoaderImpl.cpp">
+      <Filter>Resources\ConcreteLoaders</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../../Source Code/AI\Sensors\Headers\AudioSensor.h">
@@ -666,6 +672,9 @@
       <Filter>Scenes\Headers</Filter>
     </ClInclude>
     <ClInclude Include="../../../Source Code/Environment\Terrain\Headers\TerrainTessellator.h">
+      <Filter>Environment\Terrain\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source Code\Environment\Terrain\Headers\InfinitePlane.h">
       <Filter>Environment\Terrain\Headers</Filter>
     </ClInclude>
   </ItemGroup>

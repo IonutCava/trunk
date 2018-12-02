@@ -121,6 +121,9 @@ RenderBin* RenderQueue::getBinForNode(const SceneGraphNode& node, const Material
         case SceneNodeType::TYPE_SKY:
             return getOrCreateBin(RenderBinType::RBT_SKY);
 
+        case SceneNodeType::TYPE_INFINITEPLANE:
+            return getOrCreateBin(RenderBinType::RBT_TERRAIN);
+
         // Water is also opaque as refraction and reflection are separate textures
         // We may want to break this stuff up into mesh rendering components and not care about specifics anymore (i.e. just material checks)
         case SceneNodeType::TYPE_WATER:

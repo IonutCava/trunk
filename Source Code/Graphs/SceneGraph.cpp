@@ -49,6 +49,7 @@ SceneGraph::SceneGraph(Scene& parentScene)
 
     U32 octreeNodeMask = to_base(SceneNodeType::TYPE_ROOT) |
                          to_base(SceneNodeType::TYPE_SKY) |
+                         to_base(SceneNodeType::TYPE_INFINITEPLANE) |
                          to_base(SceneNodeType::TYPE_VEGETATION_GRASS);
 
     _octree.reset(new Octree(octreeNodeMask));

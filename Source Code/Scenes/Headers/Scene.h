@@ -135,7 +135,8 @@ class Scene : public Resource, public PlatformContextComponent {
     // DIRECTIONAL lights have shadow mapping enabled automatically
     SceneGraphNode* addLight(LightType type, SceneGraphNode& parentNode, const stringImpl& nodeName = "");
     SceneGraphNode* addSky(SceneGraphNode& parentNode, const stringImpl& nodeName = "");
-    void addTerrain(SceneGraphNode& parentNopde, boost::property_tree::ptree pt, const stringImpl& nodeName = "");
+    SceneGraphNode* addInfPlane(SceneGraphNode& parentNode, const stringImpl& nodeName = "");
+    void addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const stringImpl& nodeName = "");
 
     /// Object picking
     inline vector<I64> getCurrentSelection(PlayerIndex index = 0) const {
