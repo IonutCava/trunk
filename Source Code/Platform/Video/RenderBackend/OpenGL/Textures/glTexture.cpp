@@ -251,7 +251,15 @@ void glTexture::loadData(const TextureLoadInfo& info,
     if (_descriptor._compressed) {
         loadDataCompressed(info, imageLayers);
     } else {
-        loadDataUncompressed(info, (bufferPtr)imageLayers[0]._data.data());
+        bufferPtr texData = nullptr;
+        if (!imageLayers[0]._dataf.empty()) {
+            texData = (bufferPtr)imageLayers[0]._dataf.data();
+        } else if (!imageLayers[0]._data16.empty()) {
+            texData = (bufferPtr)imageLayers[0]._data16.data();
+        } else {
+            texData = (bufferPtr)imageLayers[0]._data.data();
+        }
+        loadDataUncompressed(info, texData);
     }
 
     // Loading from file usually involves data that doesn't change, so call this here.

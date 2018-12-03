@@ -238,6 +238,14 @@ vec4 getHeightOffsets(in vec2 tex_coord) {
     float s10 = textureOffset(TexTerrainHeight, tex_coord, off.yx).r;
     float s12 = textureOffset(TexTerrainHeight, tex_coord, off.yz).r;
 
+#if defined(NORMALIZE_HEIGHT_DATA)
+    const int divide_factor = 65536;
+    s01 /= divide_factor;
+    s21 /= divide_factor;
+    s10 /= divide_factor;
+    s12 /= divide_factor;
+#endif
+
     return vec4(s01, s21, s10, s12);
 }
 

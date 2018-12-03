@@ -53,12 +53,17 @@ class ImageLayer {
         _data.assign(data, data + len);
     }
 
+    inline void writeData(U16* data, U32 len) {
+        _data16.assign(data, data + len);
+    }
+
     inline void writeData(F32* data, U32 len) {
         _dataf.assign(data, data + len);
     }
     /// the image data as it was read from the file / memory.
     size_t _size;
     vector<U8> _data;
+    vector<U16> _data16;
     vector<F32> _dataf;
     /// with and height
     vec3<U16> _dimensions;
@@ -72,12 +77,36 @@ class ImageData : private NonCopyable {
     /// image origin information
     inline void flip(bool state) { _flip = state; }
     inline bool flip() const { return _flip; }
+
+    inline void set16Bit(bool state) { _16Bit = state; }
+    inline bool is16Bit() const { return _16Bit; }
+
+    inline bool isHDR() const { return _isHDR; }
     /// set and get the image's actual data 
     inline const bufferPtr data(U32 mipLevel = 0) const { 
         bufferPtr data = nullptr;
         if (mipLevel < mipCount()) {
             // triple data-ception
             data = (bufferPtr)_data[mipLevel]._data.data();
+        }
+
+        return data;
+    }
+    inline const bufferPtr data16(U32 mipLevel = 0) const {
+        bufferPtr data = nullptr;
+        if (mipLevel < mipCount()) {
+            // triple data-ception
+            data = (bufferPtr)_data[mipLevel]._data16.data();
+        }
+
+        return data;
+    }
+
+    inline const bufferPtr dataf(U32 mipLevel = 0) const {
+        bufferPtr data = nullptr;
+        if (mipLevel < mipCount()) {
+            // triple data-ception
+            data = (bufferPtr)_data[mipLevel]._dataf.data();
         }
 
         return data;
@@ -131,6 +160,10 @@ class ImageData : private NonCopyable {
     bool _compressed;
     /// should we flip the image's origin on load?
     bool _flip;
+    /// 16bit data
+    bool _16Bit;
+    /// HDR data
+    bool _isHDR;
     /// does the image have transparency?
     bool _alpha;
     /// the image format

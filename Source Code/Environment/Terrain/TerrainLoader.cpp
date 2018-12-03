@@ -183,9 +183,6 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     normalSampler._magFilter = TextureFilter::LINEAR;
     normalSampler._anisotropyLevel = 8;
 
-    TextureDescriptor heightMapDescriptor(TextureType::TEXTURE_2D);
-    heightMapDescriptor.setSampler(heightMapSampler);
-
     TextureDescriptor blendMapDescriptor(TextureType::TEXTURE_2D_ARRAY);
     blendMapDescriptor.setSampler(blendMapSampler);
     blendMapDescriptor._layerCount = layerCount;
@@ -248,6 +245,9 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     
     terrainMaterial->addShaderDefine(layerCountData, false);
     terrainMaterial->addShaderDefine("MAX_RENDER_NODES " + to_stringImpl(Terrain::MAX_RENDER_NODES));
+    if (terrainDescriptor->is16Bit()) {
+        terrainMaterial->addShaderDefine("NORMALIZE_HEIGHT_DATA");
+    }
     terrainMaterial->addShaderDefine("TERRAIN_WIDTH " + to_stringImpl(terrainDimensions.width));
     terrainMaterial->addShaderDefine("TERRAIN_LENGTH " + to_stringImpl(terrainDimensions.height));
     terrainMaterial->addShaderDefine("TERRAIN_MIN_HEIGHT " + to_stringImpl(altitudeRange.x));
@@ -279,7 +279,15 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     ResourceDescriptor heightMapTexture("Terrain Heightmap_" + name);
     heightMapTexture.setResourceLocation(Paths::g_assetsLocation + terrainDescriptor->getVariable("heightmapLocation"));
     heightMapTexture.setResourceName(terrainDescriptor->getVariable("heightTexture"));
+
+
+    TextureDescriptor heightMapDescriptor(TextureType::TEXTURE_2D,
+        terrainDescriptor->is16Bit() ? GFXImageFormat::RGB16F : GFXImageFormat::RGB8,
+        terrainDescriptor->is16Bit() ? GFXDataFormat::FLOAT_16 : GFXDataFormat::UNSIGNED_BYTE);
+    heightMapDescriptor.setSampler(heightMapSampler);
     heightMapTexture.setPropertyDescriptor(heightMapDescriptor);
+
+    
     heightMapTexture.setFlag(true);
 
     terrainMaterial->setTexture(ShaderProgram::TextureUsage::OPACITY, CreateResource<Texture>(terrain->parentResourceCache(), heightMapTexture));

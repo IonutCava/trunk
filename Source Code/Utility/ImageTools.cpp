@@ -23,6 +23,8 @@ std::mutex ImageDataInterface::_loadingMutex;
 
 ImageData::ImageData() : _compressed(false),
                          _flip(false),
+                         _16Bit(false),
+                         _isHDR(false),
                          _alpha(false),
                          _bpp(0)
 
@@ -47,15 +49,21 @@ bool ImageData::create(const stringImpl& filename) {
 
     I32 width = 0, height = 0, comp = 0;
     U8* data = nullptr;
+    U16* data16 = nullptr;
     F32* dataf = nullptr;
-    bool isHDR = stbi_is_hdr(_name.c_str()) == TRUE;
-    if (isHDR) {
+    _isHDR = stbi_is_hdr(_name.c_str()) == TRUE;
+    if (_isHDR) {
+        set16Bit(false);
         dataf = stbi_loadf(_name.c_str(), &width, &height, &comp, 0);
     } else {
-        data = stbi_load(_name.c_str(), &width, &height, &comp, 0);
+        if (is16Bit()) {
+            data16 = stbi_load_16(_name.c_str(), &width, &height, &comp, 0);
+        } else {
+            data = stbi_load(_name.c_str(), &width, &height, &comp, 0);
+        }
     }
 
-    if ((isHDR && dataf == NULL) || (!isHDR && data == NULL)) {
+    if ((_isHDR && dataf == NULL) || (!_isHDR && data == NULL && data16 == NULL)) {
         Console::errorfn(Locale::get(_ID("ERROR_IMAGETOOLS_INVALID_IMAGE_FILE")), _name.c_str());
         return false;
     }
@@ -65,19 +73,19 @@ bool ImageData::create(const stringImpl& filename) {
 
     switch (comp) {
         case 1 : {
-            _format = GFXImageFormat::LUMINANCE;
+            _format = is16Bit() ? GFXImageFormat::RED16F : isHDR() ? GFXImageFormat::RED32F : GFXImageFormat::RED8;
             _bpp = 8;
         } break;
         case 2: {
-            _format = GFXImageFormat::LUMINANCE_ALPHA;
+            _format = is16Bit() ? GFXImageFormat::LUMINANCE_ALPHA16F : isHDR() ? GFXImageFormat::LUMINANCE_ALPHA32F : GFXImageFormat::LUMINANCE_ALPHA;
             _bpp = 16;
         } break;
         case 3: {
-            _format = GFXImageFormat::RGB;
+            _format = is16Bit() ? GFXImageFormat::RGB16F : isHDR() ? GFXImageFormat::RGB32F : GFXImageFormat::RGB8;
             _bpp = 24;
         } break;
         case 4: {
-            _format = GFXImageFormat::RGBA;
+            _format = is16Bit() ? GFXImageFormat::RGBA16F : isHDR() ? GFXImageFormat::RGBA32F : GFXImageFormat::RGBA8;
             _bpp = 32;
         } break;
         default:
@@ -85,8 +93,10 @@ bool ImageData::create(const stringImpl& filename) {
             break;
     };
 
-    if (isHDR) {
+    if (_isHDR) {
         _bpp *= 4;
+    } else if (is16Bit()) {
+        _bpp *= 2;
     }
 
     image._dimensions.set(width, height, 1);
@@ -95,9 +105,12 @@ bool ImageData::create(const stringImpl& filename) {
     _compressed = false;
     image._size = width * height * _bpp / 8;
 
-    if (isHDR) {
+    if (_isHDR) {
         image.writeData(dataf, to_U32(image._size / 4));
         stbi_image_free(dataf);
+    } else if (is16Bit()) {
+        image.writeData(data16, to_U32(image._size / 2));
+        stbi_image_free(data16);
     } else {
         image.writeData(data, to_U32(image._size));
         stbi_image_free(data);

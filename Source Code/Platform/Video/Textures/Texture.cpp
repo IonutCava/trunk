@@ -156,11 +156,17 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name, Imag
     if (!fileData.data()) {
         // Flip image if needed
         fileData.flip(_flipped);
+        fileData.set16Bit(_descriptor.dataType() == GFXDataFormat::FLOAT_16 ||
+                          _descriptor.dataType() == GFXDataFormat::SIGNED_SHORT ||
+                          _descriptor.dataType() == GFXDataFormat::UNSIGNED_SHORT);
+        
         // Save file contents in  the "img" object
         ImageTools::ImageDataInterface::CreateImageData(name, fileData);
 
+        
+        bufferPtr data = fileData.is16Bit() ? fileData.data16() : fileData.isHDR() ? fileData.dataf() : fileData.data();
         // Validate data
-        if (!fileData.data()) {
+        if (data == nullptr) {
             if (info._layerIndex > 0) {
                 Console::errorfn(Locale::get(_ID("ERROR_TEXTURE_LAYER_LOAD")), name.c_str());
                 return false;
@@ -178,6 +184,7 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name, Imag
         U16 height = fileData.dimensions().height;
         // If we have an alpha channel, we must check for translucency/transparency
 
+        STUBBED("ToDo: Add support for 16bit and HDR image alpha! -Ionut");
         if (fileData.alpha()) {
             auto findAlpha = [this, &fileData, height](const Task& parent, U32 start, U32 end) {
                 U8 tempA;
