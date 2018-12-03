@@ -345,6 +345,14 @@ inline size_t& Material::defaultRenderState(RenderStagePass renderStagePass) {
 inline std::array<size_t, 3>& Material::defaultRenderStates(RenderStagePass renderStagePass) {
     return _defaultRenderStates[renderStagePass.index()];
 }
+
+inline void Material::ignoreXMLData(const bool state) {
+    _ignoreXMLData = state;
+}
+
+inline bool Material::ignoreXMLData() const {
+    return _ignoreXMLData;
+}
 }; //namespace Divide
 
 #endif //_MATERIAL_INL_

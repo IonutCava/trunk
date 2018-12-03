@@ -1113,10 +1113,10 @@ void Scene::addPlayerInternal(bool queue) {
                                               to_base(ComponentType::NETWORKING);
 
         playerSGN = root.addNode(playerNodeDescriptor);
-        Attorney::SceneManagerScene::addPlayer(_parent, *this, playerSGN, queue);
-    } else {
-        assert(playerSGN->get<UnitComponent>()->getUnit() != nullptr);
     }
+
+    Attorney::SceneManagerScene::addPlayer(_parent, *this, playerSGN, queue);
+    assert(playerSGN->get<UnitComponent>()->getUnit() != nullptr);
 }
 
 void Scene::removePlayerInternal(PlayerIndex idx) {

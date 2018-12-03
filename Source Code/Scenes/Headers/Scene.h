@@ -172,6 +172,7 @@ class Scene : public Resource, public PlatformContextComponent {
     virtual bool saveXML() const;
 
    protected:
+
     virtual void rebuildShaders();
     virtual void onSetActive();
     virtual void onRemoveActive();

@@ -210,6 +210,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     ResourceDescriptor terrainMaterialDescriptor("terrainMaterial_" + name);
     Material_ptr terrainMaterial = CreateResource<Material>(terrain->parentResourceCache(), terrainMaterialDescriptor);
+    terrainMaterial->ignoreXMLData(true);
 
     const vec2<U16>& terrainDimensions = terrainDescriptor->getDimensions();
     const vec2<F32>& altitudeRange = terrainDescriptor->getAltitudeRange();
@@ -248,11 +249,6 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     terrainMaterial->addShaderDefine("TERRAIN_MIN_HEIGHT " + to_stringImpl(altitudeRange.x));
     terrainMaterial->addShaderDefine("TERRAIN_HEIGHT_RANGE " + to_stringImpl(altitudeRange.y - altitudeRange.x));
     terrainMaterial->addShaderDefine("UNDERWATER_DIFFUSE_SCALE " + to_stringImpl(underwaterDiffuseScale));
-    terrainMaterial->setShaderProgram("terrainTess." + name, RenderStage::DISPLAY, true);
-    terrainMaterial->setShaderProgram("terrainTess." + name, RenderStage::REFLECTION, true);
-    terrainMaterial->setShaderProgram("terrainTess." + name, RenderStage::REFRACTION, true);
-    terrainMaterial->setShaderProgram("terrainTess.PrePass." + name, RenderPassType::DEPTH_PASS, true);
-    terrainMaterial->setShaderProgram("terrainTess.Shadow." + name, RenderStage::SHADOW, true);
 
     TextureDescriptor miscTexDescriptor(TextureType::TEXTURE_2D);
     miscTexDescriptor.setSampler(albedoSampler);
@@ -283,6 +279,12 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     heightMapTexture.setFlag(true);
 
     terrainMaterial->setTexture(ShaderProgram::TextureUsage::OPACITY, CreateResource<Texture>(terrain->parentResourceCache(), heightMapTexture));
+
+    terrainMaterial->setShaderProgram("terrainTess." + name, RenderStage::DISPLAY, true);
+    terrainMaterial->setShaderProgram("terrainTess." + name, RenderStage::REFLECTION, true);
+    terrainMaterial->setShaderProgram("terrainTess." + name, RenderStage::REFRACTION, true);
+    terrainMaterial->setShaderProgram("terrainTess.PrePass." + name, RenderPassType::DEPTH_PASS, true);
+    terrainMaterial->setShaderProgram("terrainTess.Shadow." + name, RenderStage::SHADOW, true);
 
     terrainMaterial->dumpToFile(false);
     terrain->setMaterialTpl(terrainMaterial);
@@ -359,7 +361,7 @@ bool TerrainLoader::loadThreadedResources(Terrain_ptr terrain,
 
         } else {
             ImageTools::ImageData img;
-            //img.flip(true);
+            img.flip(true);
             ImageTools::ImageDataInterface::CreateImageData(terrainMapLocation + "/" + terrainRawFile, img);
             assert(terrainDimensions == img.dimensions());
 

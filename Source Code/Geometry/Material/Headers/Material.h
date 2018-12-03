@@ -289,6 +289,9 @@ class Material : public CachedResource {
     U32 defaultRefractionTextureIndex() const;
 
 
+    void ignoreXMLData(const bool state);
+    bool ignoreXMLData() const;
+
     void saveToXML(const stringImpl& entryName, boost::property_tree::ptree& pt) const;
     void loadFromXML(const stringImpl& entryName, const boost::property_tree::ptree& pt);
 
@@ -327,6 +330,7 @@ class Material : public CachedResource {
     bool _doubleSided;
     bool _isReflective;
     bool _isRefractive;
+    bool _ignoreXMLData;
     /// Use shaders that have bone transforms implemented
     bool _hardwareSkinning;
     std::array<ShaderProgramInfo, to_base(RenderStagePass::count())> _shaderInfo;

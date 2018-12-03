@@ -39,6 +39,7 @@ Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descri
       _shaderThreadedLoad(true),
       _hardwareSkinning(false),
       _dumpToFile(true),
+      _ignoreXMLData(false),
       _translucencyCheck(true),
       _highPriority(false),
       _reflectionIndex(-1),
@@ -138,6 +139,7 @@ Material_ptr Material::clone(const stringImpl& nameSuffix) {
     cloneMat->_shaderThreadedLoad = base._shaderThreadedLoad;
     cloneMat->_operation = base._operation;
     cloneMat->_bumpMethod = base._bumpMethod;
+    cloneMat->_ignoreXMLData = base._ignoreXMLData;
     cloneMat->_parallaxFactor = base._parallaxFactor;
     cloneMat->_reflectionIndex = base._reflectionIndex;
     cloneMat->_refractionIndex = base._refractionIndex;
@@ -904,7 +906,6 @@ namespace {
         sampDesc._magFilter = getFilterByName(pt.get<stringImpl>(textureNode + ".Filter.<xmlattr>.mag", "LINEAR"));
         sampDesc._anisotropyLevel = to_U8(pt.get(textureNode + ".anisotropy", 0U));
 
-
         TextureDescriptor texDesc(TextureType::TEXTURE_2D);
         texDesc.setSampler(sampDesc);
 
@@ -912,6 +913,7 @@ namespace {
         texture.setResourceName(img_name);
         texture.setResourceLocation(pathName);
         texture.setPropertyDescriptor(texDesc);
+        texture.setFlag(!pt.get(textureNode + ".flipped", false));
 
         return CreateResource<Texture>(targetCache, texture);
     }
@@ -945,14 +947,16 @@ void Material::saveToXML(const stringImpl& entryName, boost::property_tree::ptre
         ShaderProgram::TextureUsage usage = static_cast<ShaderProgram::TextureUsage>(i);
         Texture_wptr tex = getTexture(usage);
         if (!tex.expired()) {
-            const SamplerDescriptor &sampler = tex.lock()->getCurrentSampler();
+            Texture_ptr texture = tex.lock();
+
+            const SamplerDescriptor &sampler = texture->getCurrentSampler();
 
             stringImpl textureNode = entryName + ".texture.";
             textureNode += getTexUsageName(usage);
 
-            pt.put(textureNode + ".name", tex.lock()->getResourceName());
-
-            pt.put(textureNode + ".path", tex.lock()->getResourceLocation());
+            pt.put(textureNode + ".name", texture->getResourceName());
+            pt.put(textureNode + ".path", texture->getResourceLocation());
+            pt.put(textureNode + ".flipped", texture->flipped());
 
             if (usage == ShaderProgram::TextureUsage::UNIT1) {
                 pt.put(textureNode + ".usage", getTextureOperationName(_operation));
@@ -968,6 +972,10 @@ void Material::saveToXML(const stringImpl& entryName, boost::property_tree::ptre
 }
 
 void Material::loadFromXML(const stringImpl& entryName, const boost::property_tree::ptree& pt) {
+    if (ignoreXMLData()) {
+        return;
+    }
+
     setDiffuse(FColour(pt.get<F32>(entryName + ".colour.<xmlattr>.r", 0.6f),
                        pt.get<F32>(entryName + ".colour.<xmlattr>.g", 0.6f),
                        pt.get<F32>(entryName + ".colour.<xmlattr>.b", 0.6f),

@@ -44,6 +44,7 @@
         </node>
         <node name="InfPlane" type="INFINITE_PLANE"/>
         <node name="DefaultLight" type=""/>
+        <node name="Player_1" type=""/>
         <node name="Terrain" type="TERRAIN"/>
     </node>
 </entities>

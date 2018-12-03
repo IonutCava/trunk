@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<static>false</static>
+<static>true</static>
 <NAVIGATION/>
 <TRANSFORM>
     <Transform>
@@ -19,7 +19,7 @@
         <doubleSided>false</doubleSided>
         <bumpMethod>NONE</bumpMethod>
         <shadingMode>BLINN_PHONG</shadingMode>
-        <parallaxFactor>1</parallaxFactor>
+        <parallaxFactor>0.00999999978</parallaxFactor>
     </Material>
 </RENDERING>
 <NETWORKING/>

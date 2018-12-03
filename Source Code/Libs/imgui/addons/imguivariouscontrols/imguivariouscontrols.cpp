@@ -12,7 +12,7 @@
 #ifndef STBI_INCLUDE_STB_IMAGE_H
 #define STB_IMAGE_STATIC
 #define STB_IMAGE_IMPLEMENTATION
-#include "../imguibindings/stb_image.h"
+#include "Libs/STB/stb_image.h"
 #endif //STBI_INCLUDE_STB_IMAGE_H
 #endif //IMGUI_USE_AUTO_BINDING
 //#define DEBUG_OUT_TEXTURE

@@ -75,6 +75,8 @@ class WarScene : public Scene {
     bool initializeAI(bool continueOnErrors);
     bool deinitializeAI(bool continueOnErrors);
 
+    void toggleTerrainMode();
+
    private:
     GUIMessageBox* _infoBox;
     vector<SceneGraphNode*> _lightNodes;
@@ -88,6 +90,7 @@ class WarScene : public Scene {
     U64  _elapsedGameTime;
     bool _sceneReady;
     bool _resetUnits;
+    bool _terrainMode;
     U64 _lastNavMeshBuildTime;
     /// NPC's are the actual game entities
     vector<SceneGraphNode*> _armyNPCs[2];

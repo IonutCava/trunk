@@ -53,6 +53,7 @@ WarScene::WarScene(PlatformContext& context, ResourceCache& cache, SceneManager&
    : Scene(context, cache, parent, name),
     _infoBox(nullptr),
     _sceneReady(false),
+    _terrainMode(false),
     _lastNavMeshBuildTime(0UL),
     _firstPersonWeapon(nullptr)
 {
@@ -158,6 +159,10 @@ namespace {
                          std::sin(angle) * (point.x - center.x) + std::cos(angle) * (point.y - center.y) + center.y);
     }
 };
+
+void WarScene::toggleTerrainMode() {
+    _terrainMode = !_terrainMode;
+}
 
 void WarScene::debugDraw(const Camera& activeCamera, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut) {
     if (renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_DEBUG_TARGET_LINES)) {
@@ -277,9 +282,63 @@ namespace {
     bool initPosSet = false;
 };
 
+namespace{
+    SceneGraphNode* g_terrain = nullptr;
+};
+
 void WarScene::updateSceneStateInternal(const U64 deltaTimeUS) {
     if (!_sceneReady) {
         return;
+    }
+
+
+    if (_terrainMode) {
+        if (g_terrain == nullptr) {
+            auto objects = sceneGraph().getNodesByType(SceneNodeType::TYPE_OBJECT3D);
+            for (SceneGraphNode* object : objects) {
+                if (object->getNode<Object3D>()->getObjectType()._value == ObjectType::TERRAIN) {
+                    g_terrain = object;
+                    break;
+                }
+            }
+            const Terrain_ptr& ter = g_terrain->getNode<Terrain>();
+            vec2<U16> dim = ter->getDimensions();
+
+            ResourceDescriptor minge("Ping Pong Ball");
+            Sphere3D_ptr _ball = CreateResource<Sphere3D>(_resCache, minge);
+            _ball->setResolution(16);
+            _ball->setRadius(10.0f);
+            _ball->getMaterialTpl()->setDiffuse(FColour(1.0f, 1.0f, 1.0f, 1.0f));
+            _ball->getMaterialTpl()->setShininess(36.8f);
+            _ball->getMaterialTpl()->setSpecular(FColour(0.774597f, 0.0f, 0.0f, 1.0f));
+            SceneGraphNode& root = _sceneGraph->getRoot();
+            SceneGraphNodeDescriptor ballNodeDescriptor = {};
+            ballNodeDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
+            ballNodeDescriptor._componentMask = to_base(ComponentType::TRANSFORM) |
+                                                to_base(ComponentType::BOUNDS) |
+                                                to_base(ComponentType::RENDERING);
+            for (U16 i = 0; i < dim.width; i += 128) {
+                for (U16 j = 0; j < dim.height; j += 128) {
+                    ballNodeDescriptor._node = _ball;
+                    ballNodeDescriptor._name = Util::StringFormat("PingPongBallSGN_%d_%d", i, j);
+                    SceneGraphNode* _ballSGN = root.addNode(ballNodeDescriptor);
+                    _ballSGN->get<TransformComponent>()->setPosition(vec3<F32>(i - dim.width * 0.5f, ter->getPosition(i / to_F32(dim.width), j / to_F32(dim.height)).y, j - dim.height * 0.5f));
+                }
+            }
+        } else {
+            const Terrain_ptr& ter = g_terrain->getNode<Terrain>();
+
+            vec3<F32> camPos = playerCamera()->getEye();
+            //vec2<U16> dim = ter->getDimensions();
+            vec3<F32> pos = g_terrain->get<TransformComponent>()->getPosition();
+            //dim += pos.xz();
+
+            //CLAMP(camPos.x, -dim.width * 0.5f + 1, dim.width * 0.5f - 1);
+            //CLAMP(camPos.z, -dim.height * 0.5f + 1, dim.height * 0.5f - 1);
+
+            camPos.y = ter->getPositionFromGlobal(camPos.x, camPos.z).y + 0.05f + pos.y;
+            playerCamera()->setEye(camPos);
+        }
     }
 
     return;
@@ -767,6 +826,14 @@ void WarScene::postLoadMainThread() {
                           pixelScale(100, 25));
     btn->setEventCallback(GUIButton::Event::MouseClick,
                          [this](I64 btnID) { rebuildShaders(); });
+
+    btn = _GUI->addButton(_ID("TerrainMode"),
+                               "Terrain Mode Toggle",
+                               pixelPosition(resolution.width - 240, 90),
+                               pixelScale(120, 25));
+    btn->setEventCallback(GUIButton::Event::MouseClick,
+        [this](I64 btnID) { toggleTerrainMode(); });
+
 
     _GUI->addText("fpsDisplay",  // Unique ID
                   pixelPosition(60, 63),  // Position

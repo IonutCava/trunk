@@ -23,6 +23,7 @@
             <UNIT0>
                 <name>terrain_water_caustics.jpg</name>
                 <path>assets/misc_images</path>
+                <flipped>false</flipped>
                 <Map U="REPEAT" V="REPEAT" W="REPEAT"/>
                 <Filter min="LINEAR" mag="LINEAR"/>
                 <anisotropy>8</anisotropy>

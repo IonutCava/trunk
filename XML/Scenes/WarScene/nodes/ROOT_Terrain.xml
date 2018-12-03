@@ -59,11 +59,12 @@
         <doubleSided>false</doubleSided>
         <bumpMethod>NONE</bumpMethod>
         <shadingMode>BLINN_PHONG</shadingMode>
-        <parallaxFactor>0.00999999978</parallaxFactor>
+        <parallaxFactor>1</parallaxFactor>
         <texture>
             <UNIT0>
                 <name>terrain_water_caustics.jpg</name>
                 <path>assets/misc_images</path>
+                <flipped>true</flipped>
                 <Map U="REPEAT" V="REPEAT" W="REPEAT"/>
                 <Filter min="LINEAR" mag="LINEAR"/>
                 <anisotropy>8</anisotropy>
@@ -71,6 +72,7 @@
             <UNIT1>
                 <name>sandfloor009a.jpg</name>
                 <path>assets/misc_images</path>
+                <flipped>true</flipped>
                 <usage>TEX_OP_REPLACE</usage>
                 <Map U="REPEAT" V="REPEAT" W="REPEAT"/>
                 <Filter min="LINEAR" mag="LINEAR"/>
@@ -79,6 +81,7 @@
             <NORMALMAP>
                 <name>terrain_detail_NM.png</name>
                 <path>assets/misc_images</path>
+                <flipped>true</flipped>
                 <Map U="REPEAT" V="REPEAT" W="REPEAT"/>
                 <Filter min="LINEAR" mag="LINEAR"/>
                 <anisotropy>8</anisotropy>
@@ -86,6 +89,7 @@
             <OPACITY>
                 <name>loveyou_HM.jpg</name>
                 <path>assets/terrain</path>
+                <flipped>false</flipped>
                 <Map U="CLAMP" V="CLAMP" W="CLAMP"/>
                 <Filter min="LINEAR_MIPMAP_LINEAR" mag="LINEAR"/>
                 <anisotropy>16</anisotropy>
