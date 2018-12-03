@@ -23,6 +23,7 @@
 #include "Managers/Headers/RenderPassManager.h"
 #include "Platform/Video/Headers/IMPrimitive.h"
 
+#include "ECS/Components/Headers/BoundsComponent.h"
 #include "ECS/Components/Headers/UnitComponent.h"
 #include "ECS/Components/Headers/RigidBodyComponent.h"
 #include "ECS/Components/Headers/RenderingComponent.h"
@@ -301,43 +302,16 @@ void WarScene::updateSceneStateInternal(const U64 deltaTimeUS) {
                     break;
                 }
             }
-            const Terrain_ptr& ter = g_terrain->getNode<Terrain>();
-            vec2<U16> dim = ter->getDimensions();
-
-            ResourceDescriptor minge("Ping Pong Ball");
-            Sphere3D_ptr _ball = CreateResource<Sphere3D>(_resCache, minge);
-            _ball->setResolution(16);
-            _ball->setRadius(10.0f);
-            _ball->getMaterialTpl()->setDiffuse(FColour(1.0f, 1.0f, 1.0f, 1.0f));
-            _ball->getMaterialTpl()->setShininess(36.8f);
-            _ball->getMaterialTpl()->setSpecular(FColour(0.774597f, 0.0f, 0.0f, 1.0f));
-            SceneGraphNode& root = _sceneGraph->getRoot();
-            SceneGraphNodeDescriptor ballNodeDescriptor = {};
-            ballNodeDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
-            ballNodeDescriptor._componentMask = to_base(ComponentType::TRANSFORM) |
-                                                to_base(ComponentType::BOUNDS) |
-                                                to_base(ComponentType::RENDERING);
-            for (U16 i = 0; i < dim.width; i += 128) {
-                for (U16 j = 0; j < dim.height; j += 128) {
-                    ballNodeDescriptor._node = _ball;
-                    ballNodeDescriptor._name = Util::StringFormat("PingPongBallSGN_%d_%d", i, j);
-                    SceneGraphNode* _ballSGN = root.addNode(ballNodeDescriptor);
-                    _ballSGN->get<TransformComponent>()->setPosition(vec3<F32>(i - dim.width * 0.5f, ter->getPosition(i / to_F32(dim.width), j / to_F32(dim.height)).y, j - dim.height * 0.5f));
-                }
-            }
         } else {
-            const Terrain_ptr& ter = g_terrain->getNode<Terrain>();
-
             vec3<F32> camPos = playerCamera()->getEye();
-            //vec2<U16> dim = ter->getDimensions();
-            vec3<F32> pos = g_terrain->get<TransformComponent>()->getPosition();
-            //dim += pos.xz();
+            if (g_terrain->get<BoundsComponent>()->getBoundingBox().containsPoint(camPos)) {   
+                const Terrain_ptr& ter = g_terrain->getNode<Terrain>();
 
-            //CLAMP(camPos.x, -dim.width * 0.5f + 1, dim.width * 0.5f - 1);
-            //CLAMP(camPos.z, -dim.height * 0.5f + 1, dim.height * 0.5f - 1);
-
-            camPos.y = ter->getPositionFromGlobal(camPos.x, camPos.z).y + 0.05f + pos.y;
-            playerCamera()->setEye(camPos);
+                vec3<F32> pos = g_terrain->get<TransformComponent>()->getPosition();
+                camPos -= pos;
+                camPos.y = ter->getPositionFromGlobal(camPos.x, camPos.z).y + 0.05f + pos.y;
+                playerCamera()->setEye(camPos);
+            }
         }
     }
 

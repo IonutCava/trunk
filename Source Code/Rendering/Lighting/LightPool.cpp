@@ -75,7 +75,7 @@ void LightPool::init() {
     ShaderBufferDescriptor bufferDescriptor = {};
     bufferDescriptor._elementCount = 1;
     bufferDescriptor._elementSize = sizeof(vec4<I32>) + (Config::Lighting::MAX_POSSIBLE_LIGHTS * sizeof(LightProperties));
-    bufferDescriptor._ringBufferLength = 1;
+    bufferDescriptor._ringBufferLength = 3;
     bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE) | to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
     STUBBED("This is needed because certain nvidia cards/drivers throw random exceptions when flushing small buffer ranges after write");
@@ -279,6 +279,8 @@ void LightPool::waitForTasks(U8 stageIndex) {
 void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, const mat4<F32>& viewMatrix) {
     U8 stageIndex = to_U8(stage);
     waitForTasks(stageIndex);
+
+    _lightShaderBuffer[stageIndex]->incQueue();
 
     // Create and upload light data for current pass
     _activeLightCount[stageIndex].fill(0);

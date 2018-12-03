@@ -1012,8 +1012,8 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             }
             for (const ShaderBufferBinding& shaderBufCmd : set->_shaderBuffers) {
                 if (shaderBufCmd._binding == ShaderBufferLocation::CMD_BUFFER) {
-                    GLuint handle = static_cast<glUniformBuffer*>(shaderBufCmd._buffer)->bufferID();
-                    getStateTracker().setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, handle);
+                    const glUniformBuffer* cmdBuffer = static_cast<glUniformBuffer*>(shaderBufCmd._buffer);
+                    getStateTracker().setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, cmdBuffer->bufferID());
                 } else {
                     shaderBufCmd._buffer->bindRange(shaderBufCmd._binding,
                                                     shaderBufCmd._range.x,

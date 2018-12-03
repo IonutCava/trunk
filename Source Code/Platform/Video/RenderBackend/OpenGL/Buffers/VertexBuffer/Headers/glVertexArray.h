@@ -114,8 +114,12 @@ class glVertexArray final : public VertexBuffer {
     static GLUtil::glVAOCache _VAOMap;
 
     bool _drawIndexed;
-    vector<GLsizei> _countData;
-    vector<GLuint> _indexOffsetData;
+    U32 _lastDrawCount = 0;
+    U32 _lastIndexCount = 0;
+    U32 _lastFirstIndex = 0;
+
+    vectorEASTL<GLsizei> _countData;
+    vectorEASTL<GLuint> _indexOffsetData;
 };
 
 };  // namespace Divide

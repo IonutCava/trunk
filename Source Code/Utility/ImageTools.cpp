@@ -39,6 +39,7 @@ bool ImageData::create(const stringImpl& filename) {
     _name = filename;
 
     if (Util::CompareIgnoreCase(_name.substr(_name.find_last_of('.') + 1), "DDS")) {
+        std::lock_guard<std::mutex> lock(ImageDataInterface::_loadingMutex);
         return loadDDS_IL(filename);
     }
 
@@ -353,7 +354,7 @@ void ImageData::getColour(I32 x, I32 y, U8& r, U8& g, U8& b, U8& a, U32 mipLevel
 
 void ImageDataInterface::CreateImageData(const stringImpl& filename, ImageData& imgOut) {
     if (fileExists(filename.c_str())) {
-        std::lock_guard<std::mutex> lock(_loadingMutex);
+        //std::lock_guard<std::mutex> lock(_loadingMutex);
         imgOut.create(filename);
     }
 }

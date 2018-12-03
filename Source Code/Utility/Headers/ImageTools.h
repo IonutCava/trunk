@@ -146,7 +146,8 @@ class ImageData : private NonCopyable {
 class ImageDataInterface {
 public:
     static void CreateImageData(const stringImpl& filename, ImageData& imgOut);
-private:
+protected:
+    friend class ImageData;
     /// used to lock image loader in a sequential operating mode in a multithreaded environment
     static std::mutex _loadingMutex;
 };

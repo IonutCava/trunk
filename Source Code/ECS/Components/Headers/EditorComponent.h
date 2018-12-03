@@ -63,11 +63,11 @@ namespace Divide {
         bool _readOnly = false;
         stringImpl _name;
         void* _data = nullptr;
-        std::function<void*()> _dataGetter;
-        std::function<void(void*)> _dataSetter;
+        std::function<void*()> _dataGetter = {};
+        std::function<void(void*)> _dataSetter = {};
 
 
-        FORCE_INLINE void* data() const {
+        /*FORCE_INLINE */void* data() const {
             if (_dataGetter) {
                 return _dataGetter();
             }
@@ -76,7 +76,7 @@ namespace Divide {
         }
 
         template<typename T>
-        FORCE_INLINE void data(T& dataIn) {
+        /*FORCE_INLINE */void data(T& dataIn) {
             if (_dataSetter) {
                 _dataSetter(&dataIn);
             } else {

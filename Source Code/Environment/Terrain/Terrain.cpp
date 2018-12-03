@@ -207,40 +207,37 @@ vec3<F32> Terrain::getPositionFromGlobal(F32 x, F32 z) const {
 vec3<F32> Terrain::getPosition(F32 x_clampf, F32 z_clampf) const {
     assert(!(x_clampf < .0f || z_clampf < .0f || x_clampf > 1.0f || z_clampf > 1.0f));
 
-    vec2<F32> posF(x_clampf * _descriptor->getDimensions().x,
-                   z_clampf * _descriptor->getDimensions().y);
+    const vec2<U16>& dim = _descriptor->getDimensions();
+    const vec3<F32>& bbMin = _boundingBox.getMin();
+    const vec3<F32>& bbMax = _boundingBox.getMax();
+
+    vec2<F32> posF(x_clampf * dim.x, z_clampf * dim.y);
     vec2<I32> posI(to_I32(posF.x), to_I32(posF.y));
     vec2<F32> posD(posF.x - posI.x, posF.y - posI.y);
 
-    if (posI.x >= (I32)_descriptor->getDimensions().x - 1)
-        posI.x = _descriptor->getDimensions().x - 2;
-    if (posI.y >= (I32)_descriptor->getDimensions().y - 1)
-        posI.y = _descriptor->getDimensions().y - 2;
+    if (posI.x >= (I32)dim.x - 1) {
+        posI.x = dim.x - 2;
+    }
 
-    assert(posI.x >= 0 && posI.x < to_I32(_descriptor->getDimensions().x) - 1 &&
-           posI.y >= 0 && posI.y < to_I32(_descriptor->getDimensions().y) - 1);
+    if (posI.y >= (I32)dim.y - 1) {
+        posI.y = dim.y - 2;
+    }
 
-    vec3<F32> pos(
-        _boundingBox.getMin().x +
-            x_clampf * (_boundingBox.getMax().x - _boundingBox.getMin().x),
-        0.0f,
-        _boundingBox.getMin().z +
-            z_clampf * (_boundingBox.getMax().z - _boundingBox.getMin().z));
+    assert(posI.x >= 0 && posI.x < to_I32(dim.x) - 1 &&  posI.y >= 0 && posI.y < to_I32(dim.y) - 1);
 
-    auto height = [&](U32 index) -> F32 {
-        return _physicsVerts[index]._position.y;
-    };
+    return vec3<F32>(
+        // X
+        bbMin.x + x_clampf * (bbMax.x - bbMin.x),
 
-    pos.y = height(TER_COORD(posI.x, posI.y, to_I32(_descriptor->getDimensions().x))) *
-            (1.0f - posD.x) * (1.0f - posD.y) + 
-            height(TER_COORD(posI.x + 1, posI.y, to_I32(_descriptor->getDimensions().x))) *
-            posD.x * (1.0f - posD.y) +
-            height(TER_COORD(posI.x, posI.y + 1, to_I32(_descriptor->getDimensions().x))) *
-            (1.0f - posD.x) * posD.y +
-            height(TER_COORD(posI.x + 1, posI.y + 1,to_I32(_descriptor->getDimensions().x))) *
-            posD.x * posD.y;
+        //Y
+        _physicsVerts[TER_COORD(posI.x, posI.y, to_I32(dim.x))]._position.y,
+        /*_physicsVerts[TER_COORD(posI.x, posI.y, to_I32(dim.x))]._position.y *  (1.0f - posD.x) * (1.0f - posD.y) +
+        _physicsVerts[TER_COORD(posI.x + 1, posI.y, to_I32(dim.x))]._position.y * posD.x * (1.0f - posD.y) +
+        _physicsVerts[TER_COORD(posI.x, posI.y + 1, to_I32(dim.x))]._position.y * (1.0f - posD.x) * posD.y +
+        _physicsVerts[TER_COORD(posI.x + 1, posI.y + 1,to_I32(dim.x))]._position.y * posD.x * posD.y,*/
 
-    return pos;
+        //Z
+        bbMin.z + z_clampf * (bbMax.z - bbMin.z));
 }
 
 vec3<F32> Terrain::getNormal(F32 x_clampf, F32 z_clampf) const {

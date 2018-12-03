@@ -118,7 +118,9 @@ glVertexArray::glVertexArray(GFXDevice& context)
     _prevSizeIndices = -1;
     _effectiveEntrySize = -1;
     _IBid = 0;
-
+    _lastDrawCount = 0;
+    _lastIndexCount = 0;
+    _lastFirstIndex = 0;
     _vaoCaches.fill(0);
 
     _useAttribute.fill(false);
@@ -331,9 +333,9 @@ bool glVertexArray::refresh() {
 
     // Possibly clear client-side buffer for all non-required attributes?
     // foreach attribute if !required then delete else skip ?
-    _refreshQueued = false;
+_refreshQueued = false;
 
-    return true;
+return true;
 }
 
 /// This method creates the initial VAO and VB OpenGL objects and queues a
@@ -353,9 +355,9 @@ bool glVertexArray::createInternal() {
     glCreateBuffers(1, &_IBid);
     if (Config::ENABLE_GPU_VALIDATION) {
         glObjectLabel(GL_BUFFER,
-                      _IBid,
-                      -1,
-                      Util::StringFormat("DVD_VAO_INDEX_BUFFER_%d", _IBid).c_str());
+            _IBid,
+            -1,
+            Util::StringFormat("DVD_VAO_INDEX_BUFFER_%d", _IBid).c_str());
     }
     // Validate buffer creation
     // Assert if the IB creation failed
@@ -390,7 +392,7 @@ void glVertexArray::draw(const GenericDrawCommand& command) {
         // for primitive restart requests
         GL_API::getStateTracker().togglePrimitiveRestart(_primitiveRestartEnabled);
     }
-  
+
     // VAOs store vertex formats and are reused by multiple 3d objects, so the Index Buffer and Vertex Buffers need to be double checked
     GL_API::getStateTracker().setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _IBid);
     GL_API::getStateTracker().bindActiveBuffer(vao, 0, _VBHandle._id, _VBHandle._offset * GLUtil::VBO::MAX_VBO_CHUNK_SIZE_BYTES, _effectiveEntrySize);
@@ -410,25 +412,28 @@ void glVertexArray::draw(const GenericDrawCommand& command) {
 void glVertexArray::rebuildCountAndIndexData(U32 drawCount, U32 indexCount, U32 firstIndex) {
     STUBBED("ToDo: Move all of this somewhere outside of glVertexArray so that we can gather proper data from all of the batched commands -Ionut");
 
-    static U32 lastDrawCount = 0;
-    static U32 lastIndexCount = 0;
-    static U32 lastFirstIndex= 0;
-
-    if (lastDrawCount == drawCount &&
-        lastIndexCount == indexCount &&
-        lastFirstIndex == firstIndex)
-    {
+    if (_lastDrawCount == drawCount && _lastIndexCount == indexCount && _lastFirstIndex == firstIndex) {
         return;
     }
-    lastDrawCount = drawCount;
-    lastIndexCount = indexCount;
-    lastFirstIndex = firstIndex;
 
-    std::fill(std::begin(_countData), std::end(_countData), indexCount);
-    _countData.resize(drawCount, indexCount);
+    if (_lastDrawCount != drawCount || _lastIndexCount != indexCount) {
+        if (_countData.size() < drawCount) {
+            _countData.resize(drawCount);
+        }
+        eastl::fill(eastl::begin(_countData), eastl::end(_countData), indexCount);
+    }
 
-    std::fill(std::begin(_indexOffsetData), std::end(_indexOffsetData), firstIndex);
-    _indexOffsetData.resize(drawCount * getIndexCount(), firstIndex);
+    if (_lastDrawCount != drawCount || _lastFirstIndex != firstIndex) {
+        U32 idxCount = drawCount * getIndexCount();
+        if (_indexOffsetData.size() < idxCount) {
+            _indexOffsetData.resize(idxCount);
+        }
+        eastl::fill(eastl::begin(_indexOffsetData), eastl::end(_indexOffsetData), firstIndex);
+    }
+
+    _lastDrawCount = drawCount;
+    _lastIndexCount = indexCount;
+    _lastFirstIndex = firstIndex;
 }
 
 /// Activate and set all of the required vertex attributes.

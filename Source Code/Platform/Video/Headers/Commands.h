@@ -94,7 +94,9 @@ struct CommandBase
 
     virtual void addToBuffer(CommandBuffer& buffer) const = 0;
 
-    virtual stringImpl toString() const {
+    virtual stringImpl toString(U16 indent) const {
+        ACKNOWLEDGE_UNUSED(indent);
+
         return stringImpl(_type._to_string());
     }
 
@@ -142,14 +144,27 @@ END_COMMAND();
 
 BEGIN_COMMAND(DrawCommand, CommandType::DRAW_COMMANDS, 4096);
     vectorEASTL<GenericDrawCommand> _drawCommands;
+    stringImpl toString(U16 indent) const override {
+        stringImpl ret = CommandBase::toString(indent);
+        ret.append("\n");
+        size_t i = 0;
+        for (const GenericDrawCommand& cmd : _drawCommands) {
+            for (U16 j = 0; j < indent; ++j) {
+                ret.append(" ");
+            }
+            ret.append(Util::StringFormat("%d: Count: %d Base: %d\n", i++, cmd._drawCount, cmd._cmd.baseInstance));
+        }
+
+        return ret;
+    }
 END_COMMAND();
 
 
 BEGIN_COMMAND(SetViewportCommand, CommandType::SET_VIEWPORT, 4096);
     Rect<I32> _viewport;
 
-    stringImpl toString() const override {
-        return CommandBase::toString() + Util::StringFormat(" [%d, %d, %d, %d]", _viewport.x, _viewport.y, _viewport.z, _viewport.w);
+    stringImpl toString(U16 indent) const override {
+        return CommandBase::toString(indent) + Util::StringFormat(" [%d, %d, %d, %d]", _viewport.x, _viewport.y, _viewport.z, _viewport.w);
     }
 END_COMMAND();
 
@@ -158,8 +173,8 @@ BEGIN_COMMAND(BeginRenderPassCommand, CommandType::BEGIN_RENDER_PASS, 4096);
     RTDrawDescriptor _descriptor;
     eastl::fixed_string<char, 128 + 1, true> _name = "";
 
-    stringImpl toString() const override {
-        return CommandBase::toString() + ": " + stringImpl(_name.c_str());
+    stringImpl toString(U16 indent) const override {
+        return CommandBase::toString(indent) + ": " + stringImpl(_name.c_str());
     }
  END_COMMAND();
 
@@ -221,8 +236,8 @@ BEGIN_COMMAND(BeginDebugScopeCommand, CommandType::BEGIN_DEBUG_SCOPE, 4096);
     eastl::fixed_string<char, 128 + 1, true> _scopeName;
     I32 _scopeID = -1;
 
-    stringImpl toString() const override {
-        return CommandBase::toString() + ": " + stringImpl(_scopeName.c_str());
+    stringImpl toString(U16 indent) const override {
+        return CommandBase::toString(indent) + ": " + stringImpl(_scopeName.c_str());
     }
 END_COMMAND();
 

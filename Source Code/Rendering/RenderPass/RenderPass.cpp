@@ -24,6 +24,9 @@
 namespace Divide {
 
 namespace {
+    // How many cmd buffers should we create (as a factor) so that we can swap them between frames
+    constexpr U32 g_cmdBufferFrameCount = 3;
+
     // We need a proper, time-based system, to check reflection budget
     namespace ReflectionUtil {
         U32 g_reflectionBudget = 0;
@@ -109,16 +112,17 @@ namespace {
         return ret;
     }
 
-    U32 getCmdBufferIndex(RenderStage stage, RenderPassType type, I32 passIndex) {
+    U32 getCmdBufferIndex(RenderStage stage, RenderPassType type, I32 passIndex, U32 frameCount) {
+        U32 ret = 0;
         switch(stage){
             case RenderStage::REFLECTION:
-            case RenderStage::REFRACTION: return to_U32(type);
-            case RenderStage::SHADOW: return passIndex;
+            case RenderStage::REFRACTION: ret = to_U32(type); break;
+            case RenderStage::SHADOW:     ret = passIndex; break;
             case RenderStage::DISPLAY: break;
-
         }
 
-        return 0;
+        ret += frameCount % g_cmdBufferFrameCount;
+        return ret;
     }
 
     U32 getBufferOffset(RenderStage stage, RenderPassType type, U32 passIndex) {
@@ -172,11 +176,13 @@ RenderPass::~RenderPass()
 }
 
 RenderPass::BufferData RenderPass::getBufferData(RenderPassType type, I32 passIndex) const {
+    U32 idx = getCmdBufferIndex(_stageFlag, type, passIndex, _context.FRAME_COUNT);
+
     BufferData ret = {};
     ret._renderDataElementOffset = getBufferOffset(_stageFlag, type, passIndex);
     ret._renderData = _renderData;
-    ret._cmdBuffer = _cmdBuffers[getCmdBufferIndex(_stageFlag, type, passIndex)].first;
-    ret._lastCommandCount = &_cmdBuffers[to_base(type)].second;
+    ret._cmdBuffer = _cmdBuffers[idx].first;
+    ret._lastCommandCount = &_cmdBuffers[idx].second;
 
     return ret;
 }
@@ -185,7 +191,7 @@ void RenderPass::initBufferData() {
     ShaderBufferDescriptor bufferDescriptor;
     bufferDescriptor._elementCount = _dataBufferSize;
     bufferDescriptor._elementSize = sizeof(GFXDevice::NodeData);
-    bufferDescriptor._ringBufferLength = 3;
+    bufferDescriptor._ringBufferLength = g_cmdBufferFrameCount;
     bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE) | to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
     bufferDescriptor._name = Util::StringFormat("RENDER_DATA_%s", TypeUtil::renderStageToString(_stageFlag)).c_str();
@@ -198,7 +204,7 @@ void RenderPass::initBufferData() {
     bufferDescriptor._elementSize = sizeof(IndirectDrawCommand);
     bufferDescriptor._ringBufferLength = 1;
 
-    U32 cmdCount = getCmdBufferCount(_stageFlag);
+    U32 cmdCount = getCmdBufferCount(_stageFlag) * g_cmdBufferFrameCount /*RAM, Driver, VRAM*/;
     _cmdBuffers.reserve(cmdCount);
 
     for (U32 i = 0; i < cmdCount; ++i) {

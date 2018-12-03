@@ -25,7 +25,7 @@
             <UNIT0>
                 <name>diffuse.dds</name>
                 <path>assets/textures</path>
-                <flipped>false</flipped>
+                <flipped>true</flipped>
                 <Map U="REPEAT" V="REPEAT" W="REPEAT"/>
                 <Filter min="LINEAR_MIPMAP_LINEAR" mag="LINEAR"/>
                 <anisotropy>255</anisotropy>
@@ -33,7 +33,7 @@
             <NORMALMAP>
                 <name>normal.tga</name>
                 <path>assets/textures</path>
-                <flipped>false</flipped>
+                <flipped>true</flipped>
                 <Map U="REPEAT" V="REPEAT" W="REPEAT"/>
                 <Filter min="LINEAR_MIPMAP_LINEAR" mag="LINEAR"/>
                 <anisotropy>255</anisotropy>

@@ -66,7 +66,7 @@ void CommandBuffer::batch() {
             }
 
             CommandBase* crtCommand = getCommandInternal<CommandBase>(cmd);
-            CommandBase* prevCommand = prevCommands[to_U16(cmd.type<GFX::CommandType::_enumerated>())];
+            CommandBase*& prevCommand = prevCommands[to_U16(cmd.type<GFX::CommandType::_enumerated>())];
             
             if (prevCommand != nullptr && prevCommand->_type._value == cmd.type<GFX::CommandType::_enumerated>()) {
                 if (tryMergeCommands(prevCommand, crtCommand)) {
@@ -346,7 +346,7 @@ void CommandBuffer::toString(const GFX::CommandBase& cmd, I32& crtIndent, string
         case GFX::CommandType::BEGIN_PIXEL_BUFFER:
         case GFX::CommandType::BEGIN_RENDER_SUB_PASS: 
         case GFX::CommandType::BEGIN_DEBUG_SCOPE : {
-            append(out, cmd.toString(), crtIndent);
+            append(out, cmd.toString(to_U16(crtIndent)), crtIndent);
             ++crtIndent;
         }break;
         case GFX::CommandType::END_RENDER_PASS:
@@ -354,10 +354,10 @@ void CommandBuffer::toString(const GFX::CommandBase& cmd, I32& crtIndent, string
         case GFX::CommandType::END_RENDER_SUB_PASS:
         case GFX::CommandType::END_DEBUG_SCOPE: {
             --crtIndent;
-            append(out, cmd.toString(), crtIndent);
+            append(out, cmd.toString(to_U16(crtIndent)), crtIndent);
         }break;
         default: {
-            append(out, cmd.toString(), crtIndent);
+            append(out, cmd.toString(to_U16(crtIndent)), crtIndent);
         }break;
     }
 }

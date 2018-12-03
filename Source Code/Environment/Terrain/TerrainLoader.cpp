@@ -17,6 +17,10 @@
 
 namespace Divide {
 
+namespace {
+    constexpr bool g_disableLoadFromCache = false;
+};
+
 bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
                                 const std::shared_ptr<TerrainDescriptor>& terrainDescriptor,
                                 PlatformContext& context,
@@ -331,13 +335,12 @@ bool TerrainLoader::loadThreadedResources(Terrain_ptr terrain,
     const vec3<F32>& bMax = terrainBB.getMax();
 
     ByteBuffer terrainCache;
-    if (terrainCache.loadFromFile(Paths::g_cacheLocation + Paths::g_terrainCacheLocation, terrainRawFile + ".cache")) {
+    if (!g_disableLoadFromCache && terrainCache.loadFromFile(Paths::g_cacheLocation + Paths::g_terrainCacheLocation, terrainRawFile + ".cache")) {
         terrainCache >> terrain->_physicsVerts;
     }
 
     if (terrain->_physicsVerts.empty()) {
-        F32 altitudeRange = maxAltitude - minAltitude;
-
+        U8 componentCount = 1;
         vector<U16> heightValues;
         if (terrainDescriptor->is16Bit()) {
             assert(terrainDimensions.x != 0 && terrainDimensions.y != 0);
@@ -361,14 +364,43 @@ bool TerrainLoader::loadThreadedResources(Terrain_ptr terrain,
 
         } else {
             ImageTools::ImageData img;
-            img.flip(true);
+            //img.flip(true);
             ImageTools::ImageDataInterface::CreateImageData(terrainMapLocation + "/" + terrainRawFile, img);
             assert(terrainDimensions == img.dimensions());
+            componentCount = img.bpp() / 8;
 
             // data will be destroyed when img gets out of scope
             const U8* data = (const U8*)img.data();
             assert(data);
-            heightValues.insert(std::end(heightValues), &data[0], &data[img.imageLayers().front()._data.size()]);
+            size_t positionCount = (size_t)(terrainDimensions.x * terrainDimensions.y);
+            heightValues.resize(positionCount);
+            assert(componentCount > 0);
+
+            switch (componentCount) {
+                case 1: {
+                    for (size_t i = 0; i < positionCount; ++i) {
+                        heightValues[i] = to_U16(data[i]);
+                    }
+                } break;
+                case 2:
+                {
+                    for (size_t i = 0; i < positionCount; ++i) {
+                        heightValues[i] = to_U16((data[i * 2 + 0] + data[i * 2 + 1] ) / 2.0f);
+                    }
+                } break;
+                case 3:
+                {
+                    for (size_t i = 0; i < positionCount; ++i) {
+                        heightValues[i] = to_U16((data[i * 3 + 0] + data[i * 3 + 1] + data[i * 3 + 2]) / 3.0f);
+                    }
+                } break;
+                case 4:
+                {
+                    for (size_t i = 0; i < positionCount; ++i) {
+                        heightValues[i] = to_U16((data[i * 4 + 0] + data[i * 4 + 1] + data[i * 4 + 2] + data[i * 4 + 3]) / 4.0f);
+                    }
+                } break;
+            }
         }
 
 
@@ -377,45 +409,35 @@ bool TerrainLoader::loadThreadedResources(Terrain_ptr terrain,
 
         terrain->_physicsVerts.resize(terrainWidth * terrainHeight);
 
+
         // scale and translate all heights by half to convert from 0-255 (0-65335) to -127 - 128 (-32767 - 32768)
-
-        auto highDetailHeight = [minAltitude, altitudeRange](F32 height) -> F32 {
-            constexpr F32 fMax = std::numeric_limits<U16>::max() + 1.0f;
-            return minAltitude + altitudeRange * (height / fMax);
-        };
-
-        auto lowDetailHeight = [minAltitude, altitudeRange](F32 height) -> F32 {
-            constexpr F32 byteMax = std::numeric_limits<U8>::max() + 1.0f;
-            return minAltitude + altitudeRange * (height / byteMax);
-        };
+        F32 altitudeRange = maxAltitude - minAltitude;
         
         F32 bXRange = bMax.x - bMin.x;
         F32 bZRange = bMax.z - bMin.z;
 
+        constexpr F32 byteMax = std::numeric_limits<U8>::max() + 1.0f;
+        constexpr F32 fMax = std::numeric_limits<U16>::max() + 1.0f;
+
+        const bool highDetail = terrainDescriptor->is16Bit();
+
         #pragma omp parallel for
         for (I32 height = 0; height < terrainHeight ; height++) {
             for (I32 width = 0; width < terrainWidth; width++) {
-                U32 idxIMG = TER_COORD<U32>(width < terrainWidth - 1 ? width : width - 1,
-                                            height < terrainHeight - 1 ? height : height - 1,
-                                            terrainWidth);
+                I32 idxIMG = TER_COORD(width < terrainWidth - 1 ? width : width - 1,
+                                       height < terrainHeight - 1 ? height : height - 1,
+                                       terrainWidth);
 
-                F32 heightValue = ((heightValues[idxIMG + 0] +
-                                    heightValues[idxIMG + 1] +
-                                    heightValues[idxIMG + 2]) / 3.0f);
-
-                vec3<F32> vertexData(bMin.x + (to_F32(width)) * bXRange / (terrainWidth - 1),          //X
-                                     terrainDescriptor->is16Bit() ? highDetailHeight(heightValue)
-                                                                  : lowDetailHeight(heightValue),  //Y
-                                     bMin.z + (to_F32(height)) * (bZRange) / (terrainHeight - 1));      //Z
+                vec3<F32>& vertexData = terrain->_physicsVerts[TER_COORD(width, height, terrainWidth)]._position;
 
                 //#pragma omp critical
                 //Surely the id is unique and memory has also been allocated beforehand
-                {
-                    terrain->_physicsVerts[TER_COORD(width, height, terrainWidth)]._position.set(vertexData);
-                }
+                vertexData.set(bMin.x + (to_F32(width)) * bXRange / (terrainWidth - 1),      //X
+                                (altitudeRange * (heightValues[idxIMG] / (highDetail ? fMax : byteMax))) + minAltitude,         //Y
+                                bMin.z + (to_F32(height)) * (bZRange) / (terrainHeight - 1)); //Z
+
             }
         }
-
         heightValues.clear();
 
         I32 offset = 2;
