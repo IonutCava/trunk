@@ -1045,9 +1045,11 @@ stringImpl Scene::getPlayerSGNName(PlayerIndex idx) {
 }
 
 void Scene::currentPlayerPass(PlayerIndex idx) {
-    renderState().playerPass(idx);
+    //ToDo: These don't necessarily need to match -Ionut
+    renderState().renderPass(idx);
+    state().playerPass(idx);
 
-    if (state().playerState(idx).cameraUnderwater()) {
+    if (state().playerState().cameraUnderwater()) {
         _context.gfx().postFX().pushFilter(FilterType::FILTER_UNDERWATER);
     } else {
         _context.gfx().postFX().popFilter(FilterType::FILTER_UNDERWATER);

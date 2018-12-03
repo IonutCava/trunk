@@ -158,14 +158,15 @@ class SceneRenderState : public SceneComponent {
     inline void treeVisibility(F32 distance) { _treeVisibility = distance; }
     inline F32  treeVisibility()       const { return _treeVisibility; }
 
-    inline void playerPass(U8 pass) { _playerPass = pass; }
-    inline U8   playerPass()  const { return _playerPass; }
-
     inline FrustumClipPlanes& clippingPlanes() { return _clippingPlanes; }
     inline const FrustumClipPlanes& clippingPlanes() const { return _clippingPlanes; }
 
+
+    inline void renderPass(U8 renderPass) { _renderPass = renderPass; }
+    inline U8   renderPass()      const { return _renderPass; }
+
    protected:
-    U8  _playerPass;
+    U8 _renderPass;
     U32 _stateMask;
     GizmoState _gizmoState;
     F32 _grassVisibility;
@@ -185,14 +186,13 @@ enum class MoveDirection : I8 {
 class SceneStatePerPlayer {
   public:
     SceneStatePerPlayer() noexcept
+      : _headHeight(1.82f)
     {
         resetAll();
     }
 
     inline void resetMovement() {
-        _moveFB = _moveLR = _moveUD =
-        _angleUD = _angleLR = 
-         _roll = _zoom = MoveDirection::NONE;
+        _moveFB = _moveLR = _moveUD = _angleUD = _angleLR = _roll = _zoom = MoveDirection::NONE;
     }
 
     inline void resetAll() {
@@ -236,7 +236,10 @@ class SceneStatePerPlayer {
     inline void    overrideCamera(Camera* camera) { _overrideCamera = camera; }
     inline Camera* overrideCamera()         const { return _overrideCamera; }
 
+    inline F32 headHeight() const { return _headHeight; }
+
 private:
+    const F32 _headHeight = 0.5f;
     bool _cameraLockedToMouse;
     MoveDirection _moveFB;   ///< forward-back move change detected
     MoveDirection _moveLR;   ///< left-right move change detected
@@ -266,6 +269,7 @@ class SceneState : public SceneComponent {
         : SceneComponent(parentScene),
           _renderState(parentScene),
           _saveLoadDisabled(false),
+          _playerPass(0),
           _windSpeed(1.0f),
           _windDirX(0.0f),
           _windDirZ(1.0f)
@@ -287,6 +291,14 @@ class SceneState : public SceneComponent {
 
     inline void onPlayerRemove(U8 index) {
         _playerState[index].resetAll();
+    }
+
+    inline SceneStatePerPlayer& playerState() {
+        return _playerState[playerPass()];
+    }
+
+    inline const SceneStatePerPlayer& playerState() const {
+        return _playerState[playerPass()];
     }
 
     inline SceneStatePerPlayer& playerState(U8 index) {
@@ -320,6 +332,9 @@ class SceneState : public SceneComponent {
     inline void saveLoadDisabled(const bool state) { _saveLoadDisabled = state; }
     inline bool saveLoadDisabled()           const { return _saveLoadDisabled; }
 
+    inline void playerPass(U8 pass) { _playerPass = pass; }
+    inline U8   playerPass()  const { return _playerPass; }
+
 protected:
 
     std::array<MusicPlaylist, to_base(MusicType::COUNT)> _music;
@@ -336,6 +351,7 @@ protected:
     F32 _windSpeed;
     F32 _windDirX;
     F32 _windDirZ;
+    U8  _playerPass;
 };
 
 namespace Attorney {

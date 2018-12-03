@@ -277,7 +277,7 @@ bool ParticleEmitter::onRender(SceneGraphNode& sgn,
         _bufferUpdate.wait();
 
         if (renderStagePass._passType != RenderPassType::DEPTH_PASS && _buffersDirty[to_U32(renderStagePass._stage)]) {
-            GenericVertexData& buffer = getDataBuffer(renderStagePass._stage, sceneRenderState.playerPass());
+            GenericVertexData& buffer = getDataBuffer(renderStagePass._stage, sceneRenderState.renderPass());
             buffer.updateBuffer(g_particlePositionBuffer, to_U32(_particles->_renderingPositions.size()), 0, _particles->_renderingPositions.data());
             buffer.updateBuffer(g_particleColourBuffer, to_U32(_particles->_renderingColours.size()), 0, _particles->_renderingColours.data());
             buffer.incQueue();
@@ -289,7 +289,7 @@ bool ParticleEmitter::onRender(SceneGraphNode& sgn,
 
         GenericDrawCommand cmd = pkg.drawCommand(0, 0);
         cmd._cmd.primCount = to_U32(_particles->_renderingPositions.size());
-        cmd._sourceBuffer = &getDataBuffer(renderStagePass._stage, sceneRenderState.playerPass());
+        cmd._sourceBuffer = &getDataBuffer(renderStagePass._stage, sceneRenderState.renderPass());
         cmd._bufferIndex = renderStagePass.index();
         pkg.drawCommand(0, 0, cmd);
 
