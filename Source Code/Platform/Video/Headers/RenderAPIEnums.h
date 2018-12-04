@@ -311,13 +311,7 @@ enum class TextureWrap : U8 {
 };
 
 enum class GFXImageFormat : U8 {
-    LUMINANCE = 0,
-    LUMINANCE_ALPHA,
-    LUMINANCE_ALPHA16F,
-    LUMINANCE_ALPHA32F,
-    INTENSITY,
-    ALPHA,
-    RED,
+    RED = 0,
     RED8,
     RED16,
     RED16F,
@@ -345,6 +339,7 @@ enum class GFXImageFormat : U8 {
     RGBA8,
     SRGB_ALPHA8,
     RGBA8I,
+    RGBA16,
     RGBA16F,
     RGBA32F,
     DEPTH_COMPONENT,
@@ -422,11 +417,6 @@ enum class QueryType : U8 {
 
 inline GFXImageFormat baseFromInternalFormat(GFXImageFormat internalFormat) {
     switch (internalFormat) {
-        case GFXImageFormat::LUMINANCE_ALPHA:
-        case GFXImageFormat::LUMINANCE_ALPHA16F:
-        case GFXImageFormat::LUMINANCE_ALPHA32F:
-            return GFXImageFormat::LUMINANCE;
-
         case GFXImageFormat::RED8:
         case GFXImageFormat::RED16:
         case GFXImageFormat::RED16F:
@@ -473,7 +463,6 @@ inline GFXImageFormat baseFromInternalFormat(GFXImageFormat internalFormat) {
 inline GFXDataFormat dataTypeForInternalFormat(GFXImageFormat format) {
     switch (format) {
         case GFXImageFormat::DEPTH_COMPONENT32F:
-        case GFXImageFormat::LUMINANCE_ALPHA32F:
         case GFXImageFormat::RED32F:
         case GFXImageFormat::RG32F:
         case GFXImageFormat::RGB32F:
@@ -484,10 +473,13 @@ inline GFXDataFormat dataTypeForInternalFormat(GFXImageFormat format) {
         case GFXImageFormat::DEPTH_COMPONENT32:
             return GFXDataFormat::UNSIGNED_INT;
 
+        case GFXImageFormat::RED16:
+        case GFXImageFormat::RG16:
+        case GFXImageFormat::RGB16:
+        case GFXImageFormat::RGBA16:
         case GFXImageFormat::DEPTH_COMPONENT16:
             return GFXDataFormat::UNSIGNED_SHORT;
 
-        case GFXImageFormat::LUMINANCE_ALPHA16F:
         case GFXImageFormat::RED16F:
         case GFXImageFormat::RG16F:
         case GFXImageFormat::RGB16F:

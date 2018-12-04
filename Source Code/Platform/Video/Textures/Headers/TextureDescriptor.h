@@ -207,16 +207,12 @@ class TextureDescriptor final : public PropertyDescriptor {
 
     inline U8 numChannels() const {
         switch (baseFormat()) {
-            case GFXImageFormat::ALPHA:
                 case GFXImageFormat::RED:
                 case GFXImageFormat::BLUE:
                 case GFXImageFormat::GREEN:
                 case GFXImageFormat::DEPTH_COMPONENT:
-                case GFXImageFormat::INTENSITY:
-                case GFXImageFormat::LUMINANCE:
                     return 1;
                 case GFXImageFormat::RG:
-                case GFXImageFormat::LUMINANCE_ALPHA:
                     return 2;
                 case GFXImageFormat::BGR:
                 case GFXImageFormat::RGB:

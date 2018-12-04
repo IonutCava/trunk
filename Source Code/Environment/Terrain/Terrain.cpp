@@ -318,7 +318,6 @@ void Terrain::saveToXML(boost::property_tree::ptree& pt) const {
     pt.put("altitudeRange.<xmlattr>.max", _descriptor->getAltitudeRange().max);
     pt.put("tessellationRange.<xmlattr>.min", _descriptor->getTessellationRange().min);
     pt.put("tessellationRange.<xmlattr>.max", _descriptor->getTessellationRange().max);
-    pt.put("targetChunkSize", _descriptor->getChunkSize());
     pt.put("textureLocation", _descriptor->getVariable("textureLocation"));
     pt.put("waterCaustics", _descriptor->getVariable("waterCaustics"));
     pt.put("underwaterAlbedoTexture", _descriptor->getVariable("underwaterAlbedoTexture"));

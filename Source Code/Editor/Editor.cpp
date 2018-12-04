@@ -1116,8 +1116,6 @@ bool Editor::modalTextureView(const char* modalName, const Texture_ptr& tex, con
         data._isDepthTexture = tex->getDescriptor().baseFormat() == GFXImageFormat::DEPTH_COMPONENT;
 
         U8 numChannels = tex->getDescriptor().numChannels();
-        bool isAlphaType = tex->getDescriptor().baseFormat() == GFXImageFormat::LUMINANCE_ALPHA ||
-                           tex->getDescriptor().baseFormat() == GFXImageFormat::ALPHA;
 
         if (numChannels > 0) {
             if (data._isDepthTexture) {
@@ -1125,7 +1123,7 @@ bool Editor::modalTextureView(const char* modalName, const Texture_ptr& tex, con
                 ImGui::SameLine();
                 ImGui::Text("Range: "); ImGui::SameLine();
                 ImGui::DragFloatRange2("", &data._depthRange[0], &data._depthRange[1], 0.005f, 0.0f, 1.0f);
-            } else if (!isAlphaType) {
+            } else {
                 ImGui::Text("R: ");  ImGui::SameLine(); ImGui::ToggleButton("R", &state[0]);
             }
 
@@ -1138,7 +1136,7 @@ bool Editor::modalTextureView(const char* modalName, const Texture_ptr& tex, con
                     ImGui::Text("B: ");  ImGui::SameLine(); ImGui::ToggleButton("B", &state[2]);
                 }
 
-                if (numChannels > 3 || isAlphaType)
+                if (numChannels > 3)
                 {
                     ImGui::SameLine();
                     ImGui::Text("A: ");  ImGui::SameLine(); ImGui::ToggleButton("A", &state[3]);

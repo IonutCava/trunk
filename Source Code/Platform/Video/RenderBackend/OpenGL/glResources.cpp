@@ -147,13 +147,6 @@ void fillEnumTables() {
     glTextureTypeTable[to_base(TextureType::TEXTURE_CUBE_ARRAY)] = GL_TEXTURE_CUBE_MAP_ARRAY;
     glTextureTypeTable[to_base(TextureType::TEXTURE_2D_MS)] = GL_TEXTURE_2D_MULTISAMPLE;
     glTextureTypeTable[to_base(TextureType::TEXTURE_2D_ARRAY_MS)] = GL_TEXTURE_2D_MULTISAMPLE_ARRAY;
-
-    glImageFormatTable[to_base(GFXImageFormat::LUMINANCE)] = GL_LUMINANCE;
-    glImageFormatTable[to_base(GFXImageFormat::LUMINANCE_ALPHA)] = GL_LUMINANCE_ALPHA;
-    glImageFormatTable[to_base(GFXImageFormat::LUMINANCE_ALPHA16F)] = gl::GL_LUMINANCE_ALPHA16F_ARB;
-    glImageFormatTable[to_base(GFXImageFormat::LUMINANCE_ALPHA32F)] = gl::GL_LUMINANCE_ALPHA32F_ARB;
-    glImageFormatTable[to_base(GFXImageFormat::INTENSITY)] = GL_INTENSITY;
-    glImageFormatTable[to_base(GFXImageFormat::ALPHA)] = GL_ALPHA;
     glImageFormatTable[to_base(GFXImageFormat::RED)] = GL_RED;
     glImageFormatTable[to_base(GFXImageFormat::RED8)] = GL_R8;
     glImageFormatTable[to_base(GFXImageFormat::RED16)] = GL_R16;
@@ -180,6 +173,7 @@ void fillEnumTables() {
     glImageFormatTable[to_base(GFXImageFormat::RGBA)] = GL_RGBA;
     glImageFormatTable[to_base(GFXImageFormat::RGBA4)] = GL_RGBA4;
     glImageFormatTable[to_base(GFXImageFormat::RGBA8)] = GL_RGBA8;
+    glImageFormatTable[to_base(GFXImageFormat::RGBA16)] = GL_RGBA16;
     glImageFormatTable[to_base(GFXImageFormat::SRGB_ALPHA8)] = GL_SRGB8_ALPHA8;
     glImageFormatTable[to_base(GFXImageFormat::RGBA8I)] = GL_RGBA8I;
     glImageFormatTable[to_base(GFXImageFormat::RGBA16F)] = GL_RGBA16F;

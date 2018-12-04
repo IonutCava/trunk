@@ -73,19 +73,19 @@ bool ImageData::create(const stringImpl& filename) {
 
     switch (comp) {
         case 1 : {
-            _format = is16Bit() ? GFXImageFormat::RED16F : isHDR() ? GFXImageFormat::RED32F : GFXImageFormat::RED8;
+            _format = is16Bit() ? GFXImageFormat::RED16 : isHDR() ? GFXImageFormat::RED32F : GFXImageFormat::RED8;
             _bpp = 8;
         } break;
         case 2: {
-            _format = is16Bit() ? GFXImageFormat::LUMINANCE_ALPHA16F : isHDR() ? GFXImageFormat::LUMINANCE_ALPHA32F : GFXImageFormat::LUMINANCE_ALPHA;
+            _format = is16Bit() ? GFXImageFormat::RG16 : isHDR() ? GFXImageFormat::RG32F : GFXImageFormat::RG;
             _bpp = 16;
         } break;
         case 3: {
-            _format = is16Bit() ? GFXImageFormat::RGB16F : isHDR() ? GFXImageFormat::RGB32F : GFXImageFormat::RGB8;
+            _format = is16Bit() ? GFXImageFormat::RGB16 : isHDR() ? GFXImageFormat::RGB32F : GFXImageFormat::RGB8;
             _bpp = 24;
         } break;
         case 4: {
-            _format = is16Bit() ? GFXImageFormat::RGBA16F : isHDR() ? GFXImageFormat::RGBA32F : GFXImageFormat::RGBA8;
+            _format = is16Bit() ? GFXImageFormat::RGBA16 : isHDR() ? GFXImageFormat::RGBA32F : GFXImageFormat::RGBA8;
             _bpp = 32;
         } break;
         default:
@@ -194,10 +194,7 @@ bool ImageData::loadDDS_IL(const stringImpl& filename) {
                 _format = GFXImageFormat::RGBA;
             } break;
             case IL_LUMINANCE: {
-                _format = GFXImageFormat::LUMINANCE;
-            } break;
-            case IL_LUMINANCE_ALPHA: {
-                _format = GFXImageFormat::LUMINANCE_ALPHA;
+                assert(false && "LUMINANCE image format is no longer supported!");
             } break;
             default: {
                 DIVIDE_UNEXPECTED_CALL("Unsupported image format!");
@@ -297,8 +294,7 @@ bool ImageData::loadDDS_NV(const stringImpl& filename) {
                 _bpp = 32;
             } break;
             case nv_dds::Format::LUMINANCE: {
-                _format = GFXImageFormat::LUMINANCE;
-                _bpp = 8;
+                assert(false && "LUMINANCE image format is no longer supported!");
             } break;
             default:
                 DIVIDE_UNEXPECTED_CALL("Unsupported image format!");

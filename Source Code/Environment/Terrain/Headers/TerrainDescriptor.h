@@ -69,7 +69,6 @@ class TerrainDescriptor final : public PropertyDescriptor {
     void setGrassScale(F32 grassScale) { _grassScale = grassScale; }
     void setTreeScale(F32 treeScale) { _treeScale = treeScale; }
     void setActive(bool active) { _active = active; }
-    void setChunkSize(U32 size) { _chunkSize = size; }
     void set16Bit(bool state) { _is16Bit = state; }
 
     U8 getTextureLayerCount() const { return _textureLayers; }
@@ -78,7 +77,6 @@ class TerrainDescriptor final : public PropertyDescriptor {
     F32 getGrassScale() const { return _grassScale; }
     F32 getTreeScale() const { return _treeScale; }
     bool getActive() const { return _active; }
-    U32 getChunkSize() const { return _chunkSize; }
     bool is16Bit() const { return _is16Bit; }
 
     const vec2<F32>& getAltitudeRange() const { return _altitudeRange; }
@@ -112,7 +110,6 @@ class TerrainDescriptor final : public PropertyDescriptor {
             Util::Hash_combine(hash, it.second);
         }
         Util::Hash_combine(hash, _grassDensity);
-        Util::Hash_combine(hash, _chunkSize);
         Util::Hash_combine(hash, _treeDensity);
         Util::Hash_combine(hash, _grassScale);
         Util::Hash_combine(hash, _treeScale);
@@ -131,10 +128,6 @@ class TerrainDescriptor final : public PropertyDescriptor {
     }
 
    private:
-    /// chunk size defines the dimensions of a quadtree chunk of vertices in the format NxN
-    /// e.g.Specifying a 256 chunk size for a 1024x1024 terrain will generate 16 leafs in the quadtree
-    U32 _chunkSize = 0;
-
     hashMap<U64, stringImpl> _variables;
     hashMap<U64, F32> _variablesf;
     F32 _grassDensity = 0.0f;
