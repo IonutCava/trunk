@@ -49,10 +49,10 @@ bool InfinitePlane::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCa
     albedoSampler._minFilter = TextureFilter::LINEAR;
     albedoSampler._magFilter = TextureFilter::LINEAR;
     albedoSampler._anisotropyLevel = 8;
-    albedoSampler._srgb = true;
 
     TextureDescriptor miscTexDescriptor(TextureType::TEXTURE_2D);
     miscTexDescriptor.setSampler(albedoSampler);
+    miscTexDescriptor._srgb = true;
 
     ResourceDescriptor textureWaterCaustics("Plane Water Caustics");
     textureWaterCaustics.setResourceLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);

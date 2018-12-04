@@ -25,8 +25,6 @@ GUISplash::GUISplash(ResourceCache& cache,
     splashSampler._minFilter = TextureFilter::NEAREST;
     splashSampler._magFilter = TextureFilter::NEAREST;
     splashSampler._anisotropyLevel = 0;
-    // splash shader doesn't do gamma correction since that's a post processing step so fake gamma correction by loading an sRGB image as a linear one.
-    splashSampler._srgb = false;
     
     TextureDescriptor splashDescriptor(TextureType::TEXTURE_2D);
     splashDescriptor.setSampler(splashSampler);

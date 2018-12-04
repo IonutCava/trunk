@@ -309,12 +309,12 @@ namespace Import {
         for (U32 i = 0; i < to_base(ShaderProgram::TextureUsage::COUNT); ++i) {
             const Import::TextureEntry& tex = importData._textures[i];
             if (!tex._textureName.empty()) {
-                textureSampler._srgb = tex._srgbSpace;
                 textureSampler._wrapU = tex._wrapU;
                 textureSampler._wrapV = tex._wrapV;
                 textureSampler._wrapW = tex._wrapW;
 
                 textureDescriptor.setSampler(textureSampler);
+                textureDescriptor._srgb = tex._srgbSpace;
 
                 ResourceDescriptor texture(tex._textureName);
                 texture.setResourceName(tex._textureName);

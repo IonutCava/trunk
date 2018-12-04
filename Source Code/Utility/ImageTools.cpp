@@ -26,6 +26,7 @@ ImageData::ImageData() : _compressed(false),
                          _16Bit(false),
                          _isHDR(false),
                          _alpha(false),
+                         _bgra(false),
                          _bpp(0)
 
 {
@@ -152,13 +153,13 @@ bool ImageData::loadDDS_IL(const stringImpl& filename) {
                                      : TextureType::TEXTURE_2D;
     }
 
-    bool compressed = ((dxtc == IL_DXT1) || 
-                       (dxtc == IL_DXT2) ||
-                       (dxtc == IL_DXT3) ||
-                       (dxtc == IL_DXT4) ||
-                       (dxtc == IL_DXT5));
+    _compressed = ((dxtc == IL_DXT1) ||
+                   (dxtc == IL_DXT2) ||
+                   (dxtc == IL_DXT3) ||
+                   (dxtc == IL_DXT4) ||
+                   (dxtc == IL_DXT5));
 
-    if (compressed) {
+    if (_compressed) {
         switch (dxtc) {
             case IL_DXT1: {
                 _format = 
@@ -180,18 +181,17 @@ bool ImageData::loadDDS_IL(const stringImpl& filename) {
             }
         };
     } else {
-        switch (ilGetInteger(IL_IMAGE_FORMAT)) {
-            case IL_BGR: {
-                _format = GFXImageFormat::BGR;
-            } break;
+        I32 format = ilGetInteger(IL_IMAGE_FORMAT);
+        switch (format) {
+            case IL_BGR:
             case IL_RGB: {
-                _format = GFXImageFormat::RGB;
+                _bgra = format = IL_BGR;
+                _format = GFXImageFormat::RGB8;
             } break;
-            case IL_BGRA: {
-                _format = GFXImageFormat::BGRA;
-            } break;
+            case IL_BGRA:
             case IL_RGBA: {
-                _format = GFXImageFormat::RGBA;
+                _bgra = format = IL_BGRA;
+                _format = GFXImageFormat::RGBA8;
             } break;
             case IL_LUMINANCE: {
                 assert(false && "LUMINANCE image format is no longer supported!");
@@ -216,8 +216,8 @@ bool ImageData::loadDDS_IL(const stringImpl& filename) {
         ImageLayer& layer = _data[i];
         layer._dimensions.set(width, height, depth);
 
-        I32 size = compressed ? ilGetDXTCData(NULL, 0, dxtc)
-                              : width * height * depth * _bpp;
+        I32 size = _compressed ? ilGetDXTCData(NULL, 0, dxtc)
+                               : width * height * depth * _bpp;
 
         I32 numImagePasses = _compressedTextureType == TextureType::TEXTURE_CUBE_MAP ? 6 : 1;
         layer._size = size * numImagePasses;
@@ -229,7 +229,7 @@ bool ImageData::loadDDS_IL(const stringImpl& filename) {
                 ilActiveImage(j);
                 ilActiveMipmap(i);
             }
-            if (compressed) {
+            if (_compressed) {
                 ilGetDXTCData(&layer._data[0] + offset, size, dxtc);
             } else {
                 memcpy(&layer._data[0] + offset, ilGetData(), size);
@@ -277,20 +277,17 @@ bool ImageData::loadDDS_NV(const stringImpl& filename) {
         };
     } else {
         switch(image.get_format()) {
-            case nv_dds::Format::BGR: {
-                _bpp = 24;   
-                _format = GFXImageFormat::BGR;
-            } break;
+            case nv_dds::Format::BGR:
+                _bgra = true;
             case nv_dds::Format::RGB: {
                 _bpp = 24;
-                _format = GFXImageFormat::RGB;
+                
+                _format = GFXImageFormat::RGB8;
             } break;
-            case nv_dds::Format::BGRA: {
-                _bpp = 32;
-                _format = GFXImageFormat::BGRA;
-            } break;
+            case nv_dds::Format::BGRA:
+                _bgra = true;
             case nv_dds::Format::RGBA: {
-                _format = GFXImageFormat::RGBA;
+                _format = GFXImageFormat::RGBA8;
                 _bpp = 32;
             } break;
             case nv_dds::Format::LUMINANCE: {

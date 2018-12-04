@@ -53,8 +53,6 @@ struct SamplerDescriptor : public Hashable {
     TextureWrap _wrapV = TextureWrap::REPEAT;
     TextureWrap _wrapW = TextureWrap::REPEAT;
 
-    /// Use SRGB colour space
-    bool _srgb = false;
     bool _useRefCompare = false;  ///<use red channel as comparison (e.g. for shadows)
     ComparisonFunction _cmpFunc = ComparisonFunction::LEQUAL;  ///<Used by RefCompare
     /// The value must be in the range [0...255] and is automatically clamped by the max HW supported level
@@ -71,7 +69,6 @@ struct SamplerDescriptor : public Hashable {
         _hash = 17;
         Util::Hash_combine(_hash, to_U32(_cmpFunc));
         Util::Hash_combine(_hash, _useRefCompare);
-        Util::Hash_combine(_hash, _srgb);
         Util::Hash_combine(_hash, to_U32(_wrapU));
         Util::Hash_combine(_hash, to_U32(_wrapV));
         Util::Hash_combine(_hash, to_U32(_wrapW));
@@ -102,8 +99,7 @@ class TextureDescriptor final : public PropertyDescriptor {
    public:
     TextureDescriptor() noexcept
         : TextureDescriptor(TextureType::COUNT,
-                            GFXImageFormat::COUNT,
-                            GFXDataFormat::COUNT)
+                            GFXImageFormat::COUNT)
     {
     }
 
@@ -114,27 +110,19 @@ class TextureDescriptor final : public PropertyDescriptor {
     }
 
     TextureDescriptor(TextureType type,
-                      GFXImageFormat internalFormat) noexcept
-        : TextureDescriptor(type,
-                            internalFormat,
-                            GFXDataFormat::COUNT)
-    {
-    }
-
-    TextureDescriptor(TextureType type,
-                      GFXImageFormat internalFmt,
-                      GFXDataFormat dataType) noexcept
+                      GFXImageFormat internalFmt) noexcept
         : PropertyDescriptor(DescriptorType::DESCRIPTOR_TEXTURE),
           _layerCount(1),
-          _baseFormat(GFXImageFormat::COUNT),
-          _dataType(dataType),
           _type(type),
           _compressed(false),
           _autoMipMaps(true),
           _mipLevels(0u, 1u),
           _msaaSamples(-1)
     {
-        internalFormat(internalFmt);
+        // If we don't have a valid format yet, that means that the texture loading process determines the type on load
+        if (internalFmt != GFXImageFormat::COUNT) {
+            internalFormat(internalFmt, false);
+        }
     }
 
     virtual ~TextureDescriptor()
@@ -172,10 +160,11 @@ class TextureDescriptor final : public PropertyDescriptor {
         return _internalFormat;
     }
 
-    inline void internalFormat(GFXImageFormat internalFormat) {
+    inline void internalFormat(GFXImageFormat internalFormat, bool bgra) {
         _internalFormat = internalFormat;
-        _baseFormat = baseFromInternalFormat(internalFormat);
-        _dataType = dataTypeForInternalFormat(internalFormat);
+        _baseFormat = baseFromInternalFormat(internalFormat, bgra);
+        // Use dummy data for compressed formats since it doesn't really matter
+        _dataType = dataTypeForInternalFormat(_compressed ? GFXImageFormat::RED8 : internalFormat);
     }
 
     inline const SamplerDescriptor& getSampler() const {
@@ -225,6 +214,8 @@ class TextureDescriptor final : public PropertyDescriptor {
         return 0;
     }
 
+    /// Use SRGB colour space
+    bool _srgb = false;
     U32 _layerCount = 1;
     TextureType _type = TextureType::TEXTURE_2D;
     bool _compressed = false;

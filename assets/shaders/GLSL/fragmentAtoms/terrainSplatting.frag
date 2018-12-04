@@ -83,7 +83,7 @@ vec4 getTerrainAlbedo(int detailLevel){
         }
     }
 
-    return colour;
+    return colour / MAX_TEXTURE_LAYERS;
 }
 
 vec3 getTerrainNormal(int detailLevel) {

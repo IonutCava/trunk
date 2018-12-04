@@ -153,10 +153,9 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     heightMapSampler._wrapU = TextureWrap::CLAMP;
     heightMapSampler._wrapV = TextureWrap::CLAMP;
     heightMapSampler._wrapW = TextureWrap::CLAMP;
-    heightMapSampler._minFilter = TextureFilter::LINEAR_MIPMAP_LINEAR;
+    heightMapSampler._minFilter = TextureFilter::LINEAR;
     heightMapSampler._magFilter = TextureFilter::LINEAR;
-    heightMapSampler._anisotropyLevel = 16;
-    heightMapSampler._srgb = false;
+    heightMapSampler._anisotropyLevel = 0;
 
     SamplerDescriptor blendMapSampler = {};
     blendMapSampler._wrapU = TextureWrap::CLAMP;
@@ -173,7 +172,6 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     albedoSampler._minFilter = TextureFilter::LINEAR;
     albedoSampler._magFilter = TextureFilter::LINEAR;
     albedoSampler._anisotropyLevel = 8;
-    albedoSampler._srgb = true;
 
     SamplerDescriptor normalSampler = {};
     normalSampler._wrapU = TextureWrap::REPEAT;
@@ -190,6 +188,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     TextureDescriptor albedoDescriptor(TextureType::TEXTURE_2D_ARRAY);
     albedoDescriptor.setSampler(albedoSampler);
     albedoDescriptor._layerCount = std::accumulate(std::cbegin(albedoCount), std::cend(albedoCount), 0u);
+    albedoDescriptor._srgb = true;
 
     TextureDescriptor normalDescriptor(TextureType::TEXTURE_2D_ARRAY);
     normalDescriptor.setSampler(normalSampler);
@@ -278,9 +277,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     heightMapTexture.setResourceName(terrainDescriptor->getVariable("heightTexture"));
 
 
-    TextureDescriptor heightMapDescriptor(TextureType::TEXTURE_2D,
-        terrainDescriptor->is16Bit() ? GFXImageFormat::RGB16 : GFXImageFormat::RGB8,
-        terrainDescriptor->is16Bit() ? GFXDataFormat::UNSIGNED_SHORT : GFXDataFormat::UNSIGNED_BYTE);
+    TextureDescriptor heightMapDescriptor(TextureType::TEXTURE_2D, terrainDescriptor->is16Bit() ? GFXImageFormat::RGB16 : GFXImageFormat::RGB8);
     heightMapDescriptor.setSampler(heightMapSampler);
     heightMapTexture.setPropertyDescriptor(heightMapDescriptor);
 
@@ -556,12 +553,12 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     grassSampler._wrapU = TextureWrap::CLAMP;
     grassSampler._wrapV = TextureWrap::CLAMP;
     grassSampler._wrapW = TextureWrap::CLAMP;
-    grassSampler._srgb = true;
     grassSampler._anisotropyLevel = 0;
 
     TextureDescriptor grassTexDescriptor(TextureType::TEXTURE_2D_ARRAY);
     grassTexDescriptor._layerCount = textureCount;
     grassTexDescriptor.setSampler(grassSampler);
+    grassTexDescriptor._srgb = true;
 
     ResourceDescriptor textureDetailMaps("Vegetation Billboards");
     textureDetailMaps.setResourceLocation(Paths::g_assetsLocation + terrainDescriptor->getVariable("grassMapLocation"));

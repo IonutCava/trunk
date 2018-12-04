@@ -52,10 +52,10 @@ bool Sky::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) {
     skyboxSampler._minFilter = TextureFilter::LINEAR;
     skyboxSampler._magFilter = TextureFilter::LINEAR;
     skyboxSampler._anisotropyLevel = 0;
-    skyboxSampler._srgb = true;
 
     TextureDescriptor skyboxTexture(TextureType::TEXTURE_CUBE_MAP);
     skyboxTexture.setSampler(skyboxSampler);
+    skyboxTexture._srgb = true;
 
     ResourceDescriptor skyboxTextures("SkyboxTextures");
     skyboxTextures.setResourceName("skybox_1.jpg, skybox_2.jpg, skybox_3.jpg, skybox_4.jpg, skybox_5.jpg, skybox_6.jpg");

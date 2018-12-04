@@ -106,11 +106,11 @@ void LightPool::init() {
     iconSampler._wrapW = TextureWrap::REPEAT;
     iconSampler._minFilter = TextureFilter::LINEAR;
     iconSampler._magFilter = TextureFilter::LINEAR;
-    iconSampler._srgb = true;
     iconSampler._anisotropyLevel = 0;
 
     TextureDescriptor iconDescriptor(TextureType::TEXTURE_2D);
     iconDescriptor.setSampler(iconSampler);
+    iconDescriptor._srgb = true;
 
     ResourceDescriptor iconImage("LightIconTexture");
     iconImage.setThreadedLoading(false);

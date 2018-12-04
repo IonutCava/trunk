@@ -129,6 +129,7 @@ class ImageData : private NonCopyable {
     inline bool alpha() const { return _alpha; }
     /// image depth information
     inline U8 bpp() const { return _bpp; }
+    inline bool bgra() const { return _bgra;  }
     /// the filename from which the image is created
     inline const stringImpl& name() const { return _name; }
     /// the image format as given by STB/NV_DDS
@@ -174,6 +175,7 @@ class ImageData : private NonCopyable {
     stringImpl _name;
     /// image's bits per pixel
     U8 _bpp;
+    bool _bgra;
 };
 
 class ImageDataInterface {

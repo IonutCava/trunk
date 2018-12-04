@@ -180,10 +180,10 @@ bool ParticleEmitter::updateData(const std::shared_ptr<ParticleData>& particleDa
 
     if (!_particles->_textureFileName.empty()) {
         SamplerDescriptor textureSampler = {};
-        textureSampler._srgb = true;
 
         TextureDescriptor textureDescriptor(TextureType::TEXTURE_2D);
         textureDescriptor.setSampler(textureSampler);
+        textureDescriptor._srgb = true;
 
         ResourceDescriptor texture(_particles->_textureFileName);
         texture.setPropertyDescriptor(textureDescriptor);

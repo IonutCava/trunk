@@ -196,11 +196,9 @@ namespace Divide {
         texturePreviewSampler._minFilter = TextureFilter::NEAREST;
         texturePreviewSampler._magFilter = TextureFilter::NEAREST;
         texturePreviewSampler._anisotropyLevel = 0;
-        texturePreviewSampler._srgb = false;
 
         TextureDescriptor texturePreviewDescriptor(TextureType::TEXTURE_2D);
         texturePreviewDescriptor.setSampler(texturePreviewSampler);
-        
 
         ResourceDescriptor textureResource(textureName);
         textureResource.setThreadedLoading(true);

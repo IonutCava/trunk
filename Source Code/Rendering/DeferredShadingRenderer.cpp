@@ -46,21 +46,19 @@ DeferredShadingRenderer::DeferredShadingRenderer(PlatformContext& context, Resou
     TextureDescriptor gBuffer[4];  /// 4 Gbuffer elements (mipmaps are ignored
                                    /// for deferredBuffers)
     // Albedo R8G8B8A8, 32bit format for diffuse
-    gBuffer[0] = TextureDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGBA8, GFXDataFormat::UNSIGNED_BYTE);
+    gBuffer[0] = TextureDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGBA8);
     // Position R32G32B32A32, HDR 128bit format for position data
-    gBuffer[1] = TextureDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGBA32F, GFXDataFormat::FLOAT_32);
+    gBuffer[1] = TextureDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGBA32F);
     // Normals R16G16B16A16, 64bit format for normals
-    gBuffer[2] = TextureDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGBA16F, GFXDataFormat::FLOAT_32);
+    gBuffer[2] = TextureDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGBA16F);
     // Blend (for transparent objects - unused for now) R8G8B8A8, 32bit format for blend
-    gBuffer[3] = TextureDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGBA8,  GFXDataFormat::UNSIGNED_BYTE);
+    gBuffer[3] = TextureDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGBA8);
 
     for (U8 i = 0; i < 4; i++) {
         gBuffer[i].setSampler(gBufferSampler);
     }
 
-    TextureDescriptor depthDescriptor(TextureType::TEXTURE_2D,
-                                      GFXImageFormat::DEPTH_COMPONENT,
-                                      GFXDataFormat::UNSIGNED_INT);
+    TextureDescriptor depthDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::DEPTH_COMPONENT32);
 
     depthDescriptor.setSampler(gBufferSampler);
 

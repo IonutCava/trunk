@@ -313,35 +313,47 @@ enum class TextureWrap : U8 {
 enum class GFXImageFormat : U8 {
     RED = 0,
     RED8,
+    RED8I,
     RED16,
     RED16F,
+    RED16I,
     RED32,
     RED32F,
+    RED32I,
     BLUE,
     GREEN,
     RG,
     RG8,
+    RG8I,
     RG16,
     RG16F,
+    RG16I,
     RG32,
     RG32F,
+    RG32I,
     BGR,
     RGB,
     RGB8,
     SRGB8,
     RGB8I,
     RGB16,
+    RGB16I,
     RGB16F,
+    RGB32,
     RGB32F,
+    RGB32I,
     BGRA,
     RGBA,
     RGBA4,
     RGBA8,
     SRGB_ALPHA8,
     RGBA8I,
+    RGBA32,
     RGBA16,
+    RGBA16I,
     RGBA16F,
     RGBA32F,
+    RGBA32I,
     DEPTH_COMPONENT,
     DEPTH_COMPONENT16,
     DEPTH_COMPONENT24,
@@ -415,43 +427,59 @@ enum class QueryType : U8 {
     COUNT
 };
 
-inline GFXImageFormat baseFromInternalFormat(GFXImageFormat internalFormat) {
+inline GFXImageFormat baseFromInternalFormat(GFXImageFormat internalFormat, bool bgra) {
     switch (internalFormat) {
         case GFXImageFormat::RED8:
+        case GFXImageFormat::RED8I:
         case GFXImageFormat::RED16:
         case GFXImageFormat::RED16F:
+        case GFXImageFormat::RED16I:
         case GFXImageFormat::RED32:
-        case GFXImageFormat::RED32F:
+        case GFXImageFormat::RED32I:
+        case GFXImageFormat::RED32F: {
+            assert(!bgra);
             return GFXImageFormat::RED;
-
+        }
         case GFXImageFormat::RG8:
+        case GFXImageFormat::RG8I:
         case GFXImageFormat::RG16:
         case GFXImageFormat::RG16F:
+        case GFXImageFormat::RG16I:
         case GFXImageFormat::RG32:
-        case GFXImageFormat::RG32F:
+        case GFXImageFormat::RG32I:
+        case GFXImageFormat::RG32F: {
+            assert(!bgra);
             return GFXImageFormat::RG;
-
+        }
         case GFXImageFormat::RGB8:
         case GFXImageFormat::SRGB8:
         case GFXImageFormat::RGB8I:
         case GFXImageFormat::RGB16:
+        case GFXImageFormat::RGB32:
         case GFXImageFormat::RGB16F:
+        case GFXImageFormat::RGB16I:
         case GFXImageFormat::RGB32F:
-            return GFXImageFormat::RGB;
+        case GFXImageFormat::RGB32I:
+            return bgra ? GFXImageFormat::BGR : GFXImageFormat::RGB;
 
         case GFXImageFormat::RGBA4:
         case GFXImageFormat::RGBA8:
         case GFXImageFormat::SRGB_ALPHA8:
         case GFXImageFormat::RGBA8I:
+        case GFXImageFormat::RGBA32:
         case GFXImageFormat::RGBA16F:
+        case GFXImageFormat::RGBA16I:
         case GFXImageFormat::RGBA32F:
-            return GFXImageFormat::RGBA;
+        case GFXImageFormat::RGBA32I:
+            return bgra ? GFXImageFormat::BGRA : GFXImageFormat::RGBA;
 
         case GFXImageFormat::DEPTH_COMPONENT16:
         case GFXImageFormat::DEPTH_COMPONENT24:
         case GFXImageFormat::DEPTH_COMPONENT32:
-        case GFXImageFormat::DEPTH_COMPONENT32F:
+        case GFXImageFormat::DEPTH_COMPONENT32F: {
+            assert(!bgra);
             return GFXImageFormat::DEPTH_COMPONENT;
+        }
 
         default:
             break;
@@ -462,16 +490,26 @@ inline GFXImageFormat baseFromInternalFormat(GFXImageFormat internalFormat) {
 
 inline GFXDataFormat dataTypeForInternalFormat(GFXImageFormat format) {
     switch (format) {
-        case GFXImageFormat::DEPTH_COMPONENT32F:
+        case GFXImageFormat::RED16F:
+        case GFXImageFormat::RG16F:
+        case GFXImageFormat::RGB16F:
+        case GFXImageFormat::RGBA16F:
+            return GFXDataFormat::FLOAT_16;
+
         case GFXImageFormat::RED32F:
         case GFXImageFormat::RG32F:
         case GFXImageFormat::RGB32F:
         case GFXImageFormat::RGBA32F:
+        case GFXImageFormat::DEPTH_COMPONENT32F:
             return GFXDataFormat::FLOAT_32;
 
-        case GFXImageFormat::DEPTH_COMPONENT24:
-        case GFXImageFormat::DEPTH_COMPONENT32:
-            return GFXDataFormat::UNSIGNED_INT;
+        case GFXImageFormat::RED8:
+        case GFXImageFormat::RG8:
+        case GFXImageFormat::RGB8:
+        case GFXImageFormat::SRGB8:
+        case GFXImageFormat::RGBA8:
+        case GFXImageFormat::SRGB_ALPHA8:
+            return GFXDataFormat::UNSIGNED_BYTE;
 
         case GFXImageFormat::RED16:
         case GFXImageFormat::RG16:
@@ -480,16 +518,33 @@ inline GFXDataFormat dataTypeForInternalFormat(GFXImageFormat format) {
         case GFXImageFormat::DEPTH_COMPONENT16:
             return GFXDataFormat::UNSIGNED_SHORT;
 
-        case GFXImageFormat::RED16F:
-        case GFXImageFormat::RG16F:
-        case GFXImageFormat::RGB16F:
-        case GFXImageFormat::RGBA16F:
-            return GFXDataFormat::FLOAT_16;
+        case GFXImageFormat::RED32:
+        case GFXImageFormat::RG32:
+        case GFXImageFormat::RGB32:
+        case GFXImageFormat::RGBA32:
+        case GFXImageFormat::DEPTH_COMPONENT24:
+        case GFXImageFormat::DEPTH_COMPONENT32:
+            return GFXDataFormat::UNSIGNED_INT;
 
+        case GFXImageFormat::RED8I:
+        case GFXImageFormat::RG8I:
         case GFXImageFormat::RGB8I:
         case GFXImageFormat::RGBA8I:
             return GFXDataFormat::SIGNED_BYTE;
+
+        case GFXImageFormat::RED16I:
+        case GFXImageFormat::RG16I:
+        case GFXImageFormat::RGB16I:
+        case GFXImageFormat::RGBA16I:
+            return GFXDataFormat::SIGNED_SHORT;
+
+        case GFXImageFormat::RED32I:
+        case GFXImageFormat::RG32I:
+        case GFXImageFormat::RGB32I:
+        case GFXImageFormat::RGBA32I:
+            return GFXDataFormat::SIGNED_INT;
     };
+    assert(false && "Unsupported format!");
 
     return GFXDataFormat::UNSIGNED_BYTE;
 }

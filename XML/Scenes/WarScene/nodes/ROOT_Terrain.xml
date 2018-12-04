@@ -113,8 +113,8 @@
                 <path>assets/terrain</path>
                 <flipped>false</flipped>
                 <Map U="CLAMP" V="CLAMP" W="CLAMP"/>
-                <Filter min="LINEAR_MIPMAP_LINEAR" mag="LINEAR"/>
-                <anisotropy>16</anisotropy>
+                <Filter min="LINEAR" mag="LINEAR"/>
+                <anisotropy>0</anisotropy>
             </OPACITY>
         </texture>
     </Material>

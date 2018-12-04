@@ -460,12 +460,9 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
         Import::TextureEntry& texture = material._textures[to_base(ShaderProgram::TextureUsage::NORMALMAP)];
 
         if (img_name.rfind('.') != stringImpl::npos) {
-            if (IS_IN_RANGE_INCLUSIVE(mode[0], aiTextureMapMode_Wrap,
-                                      aiTextureMapMode_Decal) &&
-                IS_IN_RANGE_INCLUSIVE(mode[1], aiTextureMapMode_Wrap,
-                                      aiTextureMapMode_Decal) &&
-                IS_IN_RANGE_INCLUSIVE(mode[2], aiTextureMapMode_Wrap,
-                                      aiTextureMapMode_Decal)) {
+            if (IS_IN_RANGE_INCLUSIVE(mode[0], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
+                IS_IN_RANGE_INCLUSIVE(mode[1], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
+                IS_IN_RANGE_INCLUSIVE(mode[2], aiTextureMapMode_Wrap, aiTextureMapMode_Decal)) {
                 texture._wrapU = aiTextureMapModeTable[mode[0]];
                 texture._wrapV = aiTextureMapModeTable[mode[1]];
                 texture._wrapW = aiTextureMapModeTable[mode[2]];
