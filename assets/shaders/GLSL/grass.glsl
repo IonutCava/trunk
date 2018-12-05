@@ -3,12 +3,17 @@
 #include "vbInputData.vert"
 #include "lightingDefaults.vert"
 
-layout(location = 10) in vec4 instanceData;
-layout(location = 11) in float instanceScale;
 layout(location = 12) in int  instanceID;
-/*layout(std430, binding = 10) coherent readonly buffer dvd_transformBlock{
-    mat4 transform[];
-};*/
+
+struct GrassData {
+    mat4 transform;
+    vec4 positionAndIndex;
+    vec4 render;
+};
+
+layout(std430, binding = BUFFER_GRASS_DATA) coherent readonly buffer dvd_transformBlock{
+    GrassData grassData[];
+};
 
 uniform vec3 positionOffsets[36];
 uniform vec2 texCoordOffsets[36];
@@ -20,15 +25,13 @@ flat out int _arrayLayer;
 void main()
 {
     VAR.dvd_instanceID = gl_BaseInstanceARB;
+    GrassData data = grassData[gl_InstanceID];
+
     vec3 posOffset = positionOffsets[gl_VertexID];
-    _arrayLayer = int(instanceData.w);
+    _arrayLayer = int(data.positionAndIndex.w);
+
     VAR._texCoord = texCoordOffsets[gl_VertexID];
-    VAR._vertexW = /* transform[gl_InstanceID]* */
-               vec4(rotationMatrices[instanceID % 18] * 
-                    positionOffsets[gl_VertexID] * 
-                    instanceScale + 
-                    instanceData.xyz, 
-                    1.0);
+    VAR._vertexW = data.transform[gl_InstanceID]* vec4(rotationMatrices[instanceID % 18] * posOffset, 1.0);
 
     dvd_Normal = vec3(1.0, 1.0, 1.0);
     VAR._normalWV = dvd_NormalMatrixWV(VAR.dvd_instanceID) * dvd_Normal;

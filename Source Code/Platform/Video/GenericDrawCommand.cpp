@@ -20,8 +20,7 @@ GenericDrawCommand::GenericDrawCommand(PrimitiveType type,
                                        U32 firstIndex,
                                        U32 indexCount,
                                        U32 primCount)
-  : _lodIndex(0),
-    _drawCount(1),
+  : _drawCount(1),
     _bufferIndex(0),
     _primitiveType(type),
     _commandOffset(0),
@@ -36,7 +35,6 @@ GenericDrawCommand::GenericDrawCommand(PrimitiveType type,
 
 bool compatible(const GenericDrawCommand& lhs, const GenericDrawCommand& rhs) {
     return
-        lhs._lodIndex == rhs._lodIndex &&
         lhs._bufferIndex == rhs._bufferIndex &&
         lhs._renderOptions == rhs._renderOptions &&
         lhs._primitiveType == rhs._primitiveType &&

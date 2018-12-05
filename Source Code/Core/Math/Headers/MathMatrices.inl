@@ -2280,7 +2280,7 @@ void mat4<T>::scale(U x, U y, U z) {
     mat[9]  *= static_cast<T>(z);
     mat[2]  *= static_cast<T>(x);
     mat[6]  *= static_cast<T>(y);
-    nat[10] *= static_cast<T>(z);
+    mat[10] *= static_cast<T>(z);
     mat[3]  *= static_cast<T>(x);
     mat[7]  *= static_cast<T>(y);
     mat[11] *= static_cast<T>(z);

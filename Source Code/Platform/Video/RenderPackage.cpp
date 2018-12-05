@@ -94,14 +94,6 @@ void RenderPackage::setDrawOption(CmdRenderOptions option, bool state) {
     }
 }
 
-void RenderPackage::setLoD(U8 LoDIntex) {
-    for (GFX::DrawCommand& cmd : _drawCommands) {
-        for (GenericDrawCommand& drawCmd : cmd._drawCommands) {
-            drawCmd._lodIndex = LoDIntex;
-        }
-    }
-}
-
 const Pipeline* RenderPackage::pipeline(I32 index) const {
     DIVIDE_ASSERT(index < to_I32(_pipelines.size()), "RenderPackage::pipeline error: Invalid pipeline index!");
     return _pipelines[index]._pipeline;

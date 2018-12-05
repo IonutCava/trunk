@@ -60,12 +60,15 @@ class TerrainChunk {
 
     void load(U8 depth, const vec2<U32>& pos, U32 targetChunkDimension, const vec2<U32>& HMsize);
 
+    inline U32 ID() const { return _ID; }
     inline F32 getMinHeight() const { return _heightBounds.x; }
     inline F32 getMaxHeight() const { return _heightBounds.y; }
 
     inline vec4<F32> getOffsetAndSize() const {
         return vec4<F32>(_xOffset, _yOffset, _sizeX, _sizeY);
     }
+
+    inline const Terrain& parent() const { return *_terrain; }
 
    protected:
     Vegetation* const getVegetation() const { return _vegetation.get(); }

@@ -75,14 +75,13 @@ enum class CmdRenderOptions : U16 {
 struct GenericDrawCommand {
   public: //Data
     // state hash is not size_t to avoid any platform specific awkward typedefing
-    IndirectDrawCommand _cmd;                                        // 45 bytes
-    VertexDataInterface* _sourceBuffer = nullptr;                    // 25 bytes
-    U32 _commandOffset = 0;                                          // 17 bytes
-    U32 _renderOptions = to_base(CmdRenderOptions::RENDER_GEOMETRY); // 13 bytes
-    U32 _patchVertexCount = 3;                                       // 9  bytes
-    U16 _drawCount = 1;                                              // 5  bytes
-    U8  _bufferIndex = 0;                                            // 3  bytes
-    U8  _lodIndex = 0;                                               // 2  bytes
+    IndirectDrawCommand _cmd;                                        // 44 bytes
+    VertexDataInterface* _sourceBuffer = nullptr;                    // 24 bytes
+    U32 _commandOffset = 0;                                          // 16 bytes
+    U32 _renderOptions = to_base(CmdRenderOptions::RENDER_GEOMETRY); // 12 bytes
+    U32 _patchVertexCount = 3;                                       // 8  bytes
+    U16 _drawCount = 1;                                              // 4  bytes
+    U8  _bufferIndex = 0;                                            // 2  bytes
     PrimitiveType _primitiveType = PrimitiveType::COUNT;             // 1  bytes
 
   public: //Rule of five

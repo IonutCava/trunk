@@ -66,6 +66,12 @@ struct VegetationDetails {
     Texture_ptr grassBillboards;
 };
 
+struct GrassData {
+    mat4<F32> _transform;
+    vec4<F32> _positionAndIndex;
+    vec4<F32> _render = { 1.0f };
+};
+
 /// Generates grass and trees on the terrain.
 /// Grass VB's + all resources are stored locally in the class.
 /// Trees are added to the SceneGraph and handled by the scene.
@@ -127,20 +133,15 @@ class Vegetation : public SceneNode {
     stringImpl _grassShaderName;
     bool _shadowMapped;
     size_t  _grassStateBlockHash;
-    bool _culledFinal;
-    U32 _readBuffer;
-    U32 _writeBuffer;
     U32 _instanceCountGrass;
     U32 _instanceCountTrees;
     std::array<U32, to_base(CullType::COUNT)> _instanceRoutineIdx;
-    vector<F32> _grassScales;
     vector<mat3<F32> > _rotationMatrices;
     vector<vec3<F32> > _grassBlades;
     vector<vec2<F32> > _texCoord;
-    vectorBest<vec4<F32> > _grassPositions;
-    GenericVertexData* _grassGPUBuffer[2];
-    GenericVertexData* _treeGPUBuffer[2];
-    ShaderBuffer* _grassMatrices;
+    GenericVertexData* _grassGPUBuffer;
+    GenericVertexData* _treeGPUBuffer;
+    ShaderBuffer* _grassData;
     static bool _staticDataUpdated;
     GenericDrawCommand _cullDrawCommand;
     RenderStagePass _prevRenderStagePass;

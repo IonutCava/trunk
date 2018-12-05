@@ -479,7 +479,6 @@ void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
             renderWireframe = renderWireframe || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME);
             pkg.setDrawOption(CmdRenderOptions::RENDER_GEOMETRY, renderGeometry);
             pkg.setDrawOption(CmdRenderOptions::RENDER_WIREFRAME, renderWireframe);
-            pkg.setLoD(_lodLevel);
         }
     }
 }

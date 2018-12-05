@@ -95,6 +95,8 @@ enum class ShaderBufferLocation : U8 {
     SCENE_DATA = 7,
     TERRAIN_DATA = 8,
     CMD_BUFFER = 9,
+    GRASS_DATA = 10,
+    TREE_DATA = 11,
     COUNT
 };
 

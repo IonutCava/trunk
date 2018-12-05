@@ -105,7 +105,6 @@ public:
     void addCommandBuffer(const GFX::CommandBuffer& commandBuffer);
 
     void setDrawOption(CmdRenderOptions option, bool state);
-    void setLoD(U8 LoDIntex);
 
 protected:
     void setDataIndex(U32 dataIndex);

@@ -415,6 +415,17 @@ bool GL_API::initGLSW() {
 
     appendToShaderHeader(
         ShaderType::COUNT,
+        "#define BUFFER_GRASS_DATA " +
+        to_stringImpl(to_base(ShaderBufferLocation::GRASS_DATA)),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::COUNT,
+        "#define BUFFER_TREE_DATA " +
+        to_stringImpl(to_base(ShaderBufferLocation::TREE_DATA)),
+        lineOffsets);
+    appendToShaderHeader(
+        ShaderType::COUNT,
         "#define FORWARD_PLUS_TILE_RES " + to_stringImpl(Config::Lighting::FORWARD_PLUS_TILE_RES),
         lineOffsets);
 
