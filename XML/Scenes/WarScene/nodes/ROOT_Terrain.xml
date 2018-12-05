@@ -7,7 +7,7 @@
 <terrainWidth>2048</terrainWidth>
 <terrainHeight>2048</terrainHeight>
 <altitudeRange min="-33.5999985" max="68.8000031"/>
-<tessellationRange min="5" max="500"/>
+<tessellationRange min="5" max="500" chunkSize="64"/>
 <textureLocation>misc_images</textureLocation>
 <waterCaustics>terrain_water_caustics.jpg</waterCaustics>
 <underwaterAlbedoTexture>sandfloor009a.jpg</underwaterAlbedoTexture>

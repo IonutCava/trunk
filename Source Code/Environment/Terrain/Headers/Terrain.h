@@ -37,6 +37,7 @@
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
 #include "Environment/Vegetation/Headers/Vegetation.h"
+#include "Environment/Terrain/Quadtree/Headers/Quadtree.h"
 #include "Platform/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 
 namespace Divide {
@@ -116,6 +117,7 @@ struct TerrainTextureLayer {
 };
 
 class VertexBuffer;
+class TerrainChunk;
 class TerrainDescriptor;
 
 FWD_DECLARE_MANAGED_CLASS(Quad3D);
@@ -123,10 +125,12 @@ FWD_DECLARE_MANAGED_CLASS(Patch3D);
 FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
 
 namespace Attorney {
+    class TerrainChunk;
     class TerrainLoader;
 };
 
 class Terrain : public Object3D {
+    friend class Attorney::TerrainChunk;
     friend class Attorney::TerrainLoader;
    public:
      static constexpr U32 MAX_RENDER_NODES = 384;
@@ -147,7 +151,8 @@ class Terrain : public Object3D {
     vec3<F32> getTangent(F32 x_clampf, F32 z_clampf) const;
     vec2<U16> getDimensions() const;
 
-   
+    inline const Quadtree& getQuadtree() const { return _terrainQuadtree; }
+
     void saveToXML(boost::property_tree::ptree& pt) const override;
     void loadFromXML(const boost::property_tree::ptree& pt)  override;
 
@@ -170,6 +175,8 @@ class Terrain : public Object3D {
 
     void onEditorChange(EditorComponentField& field);
 
+    void buildQuadtree();
+
    public:
     hashMap<U32, vector<U32>> _physicsIndices;
     vector<VertexBuffer::Vertex> _physicsVerts;
@@ -188,6 +195,8 @@ class Terrain : public Object3D {
     typedef std::array<TerrainTessellator, to_base(RenderStage::COUNT)> TessellatorArray;
     typedef hashMap<I64, bool> CameraUpdateFlagArray;
 
+    Quadtree _terrainQuadtree;
+    vector<TerrainChunk*> _terrainChunks;
 
     TessellatorArray _terrainTessellator;
     hashMap<I64, TessellatorArrayFlags> _terrainTessellatorFlags;
@@ -200,6 +209,19 @@ class Terrain : public Object3D {
 };
 
 namespace Attorney {
+class TerrainChunk {
+private:
+    static VegetationDetails& vegetationDetails(Terrain& terrain) {
+        return terrain._vegDetails;
+    }
+
+    static void registerTerrainChunk(Terrain& terrain,
+        Divide::TerrainChunk* const chunk) {
+        terrain._terrainChunks.push_back(chunk);
+    }
+
+    friend class Divide::TerrainChunk;
+};
 
 class TerrainLoader {
    private:

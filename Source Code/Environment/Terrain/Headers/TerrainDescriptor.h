@@ -63,7 +63,7 @@ class TerrainDescriptor final : public PropertyDescriptor {
     void setTextureLayerCount(U8 count) { _textureLayers = count; }
     void setDimensions(const vec2<U16>& dim) { _dimensions = dim; }
     void setAltitudeRange(const vec2<F32>& dim) { _altitudeRange = dim; }
-    void setTessellationRange(const vec2<F32>& range) { _tessellationRange = range; }
+    void setTessellationRange(const vec3<F32>& rangeAndChunk) { _tessellationRange = rangeAndChunk; }
     void setGrassDensity(F32 grassDensity) { _grassDensity = grassDensity; }
     void setTreeDensity(F32 treeDensity) { _treeDensity = treeDensity; }
     void setGrassScale(F32 grassScale) { _grassScale = grassScale; }
@@ -80,7 +80,7 @@ class TerrainDescriptor final : public PropertyDescriptor {
     bool is16Bit() const { return _is16Bit; }
 
     const vec2<F32>& getAltitudeRange() const { return _altitudeRange; }
-    const vec2<F32>& getTessellationRange() const { return _tessellationRange; }
+    const vec3<F32>& getTessellationRange() const { return _tessellationRange; }
     const vec2<U16>& getDimensions() const { return _dimensions; }
 
     stringImpl getVariable(const stringImpl& name) const {
@@ -118,8 +118,9 @@ class TerrainDescriptor final : public PropertyDescriptor {
         Util::Hash_combine(hash, _textureLayers);
         Util::Hash_combine(hash, _altitudeRange.x);
         Util::Hash_combine(hash, _altitudeRange.y);
-        Util::Hash_combine(hash, _tessellationRange.min);
-        Util::Hash_combine(hash, _tessellationRange.max);
+        Util::Hash_combine(hash, _tessellationRange.x);
+        Util::Hash_combine(hash, _tessellationRange.y);
+        Util::Hash_combine(hash, _tessellationRange.z);
         Util::Hash_combine(hash, _dimensions.x);
         Util::Hash_combine(hash, _dimensions.y);
         Util::Hash_combine(hash, PropertyDescriptor::getHash());
@@ -137,7 +138,7 @@ class TerrainDescriptor final : public PropertyDescriptor {
     bool _is16Bit = false;
     bool _active = false;
     U8 _textureLayers = 1;
-    vec2<F32> _tessellationRange = { 10.0f, 150.0f };
+    vec3<F32> _tessellationRange = { 10.0f, 150.0f, 32.0f };
     vec2<F32> _altitudeRange = {0.f, 1.f};
     vec2<U16> _dimensions = {1.f, 1.f};
 };

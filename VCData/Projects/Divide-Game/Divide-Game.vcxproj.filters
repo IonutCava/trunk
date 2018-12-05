@@ -220,6 +220,12 @@
     <Filter Include="XML\Scenes\defaultScene">
       <UniqueIdentifier>{22f56340-4c62-4735-99a3-9a457f55668a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Environment\Terrain\Quadtree">
+      <UniqueIdentifier>{05f3c0c2-552f-41c7-8a9f-e9bdc1b2e267}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Environment\Terrain\Quadtree\Headers">
+      <UniqueIdentifier>{6c4aad94-05c0-4d70-83f2-21c71a2dab7b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../../Source Code/AI\AIEntity.cpp">
@@ -449,6 +455,15 @@
     <ClCompile Include="..\..\..\Source Code\Core\Resources\ConcreteLoaders\InfinitePlaneLoaderImpl.cpp">
       <Filter>Resources\ConcreteLoaders</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Source Code\Environment\Terrain\Quadtree\Quadtree.cpp">
+      <Filter>Environment\Terrain\Quadtree</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source Code\Environment\Terrain\Quadtree\QuadtreeNode.cpp">
+      <Filter>Environment\Terrain\Quadtree</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source Code\Environment\Terrain\TerrainChunk.cpp">
+      <Filter>Environment\Terrain</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../../Source Code/AI\Sensors\Headers\AudioSensor.h">
@@ -676,6 +691,15 @@
     </ClInclude>
     <ClInclude Include="..\..\..\Source Code\Environment\Terrain\Headers\InfinitePlane.h">
       <Filter>Environment\Terrain\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source Code\Environment\Terrain\Headers\TerrainChunk.h">
+      <Filter>Environment\Terrain\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source Code\Environment\Terrain\Quadtree\Headers\Quadtree.h">
+      <Filter>Environment\Terrain\Quadtree\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source Code\Environment\Terrain\Quadtree\Headers\QuadtreeNode.h">
+      <Filter>Environment\Terrain\Quadtree\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

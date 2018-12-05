@@ -522,8 +522,9 @@ void Scene::addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree p
     ter->setDimensions(vec2<U16>(pt.get<U16>("terrainWidth", 0), pt.get<U16>("terrainHeight", 0)));
     ter->setAltitudeRange(vec2<F32>(pt.get<F32>("altitudeRange.<xmlattr>.min", 0.0f),
                                     pt.get<F32>("altitudeRange.<xmlattr>.max", 255.0f)));
-    ter->setTessellationRange(vec2<F32>(pt.get<F32>("tessellationRange.<xmlattr>.min", 10.0f),
-                                        pt.get<F32>("tessellationRange.<xmlattr>.max", 150.0f)));
+    ter->setTessellationRange(vec3<F32>(pt.get<F32>("tessellationRange.<xmlattr>.min", 10.0f),
+                                        pt.get<F32>("tessellationRange.<xmlattr>.max", 150.0f),
+                                        pt.get<F32>("tessellationRange.<xmlattr>.chunkSize", 32.0f)));
 
 
     auto registerTerrain = [this, name, &parentNode, pt](CachedResource_wptr res) {

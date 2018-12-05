@@ -63,10 +63,10 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
     _editorComponent.registerField(
         "Tessellation Range",
         [this]() { return _descriptor->getTessellationRange(); },
-        [this](void* data) {_descriptor->setTessellationRange(*(vec2<F32>*)data); },
+        [this](void* data) {_descriptor->setTessellationRange(*(vec3<F32>*)data); },
         EditorComponentFieldType::PUSH_TYPE,
         false,
-        GFX::PushConstantType::VEC2);
+        GFX::PushConstantType::VEC3);
 
     SceneNode::postLoad(sgn);
 }
@@ -80,10 +80,6 @@ void Terrain::postBuild() {
     const U32 terrainHeight = _descriptor->getDimensions().height;
 
     reserveTriangleCount((terrainWidth - 1) * (terrainHeight - 1) * 2);
-
-    F32 halfWidth = terrainWidth * 0.5f;
-    _boundingBox.setMin(-halfWidth, _descriptor->getAltitudeRange().min, -halfWidth);
-    _boundingBox.setMax(halfWidth, _descriptor->getAltitudeRange().max, halfWidth);
 
     // Generate index buffer
     vector<vec3<U32>>& triangles = getTriangles();
@@ -105,6 +101,20 @@ void Terrain::postBuild() {
     getMaterialTpl()->addExternalTexture(textureLayer->blendMaps(),  to_U8(ShaderProgram::TextureUsage::COUNT) + 0);
     getMaterialTpl()->addExternalTexture(textureLayer->tileMaps(),   to_U8(ShaderProgram::TextureUsage::COUNT) + 1);
     getMaterialTpl()->addExternalTexture(textureLayer->normalMaps(), to_U8(ShaderProgram::TextureUsage::COUNT) + 2);
+
+    // Approximate bounding box
+    F32 halfWidth = terrainWidth * 0.5f;
+    _boundingBox.setMin(-halfWidth, _descriptor->getAltitudeRange().min, -halfWidth);
+    _boundingBox.setMax(halfWidth, _descriptor->getAltitudeRange().max, halfWidth);
+
+    _terrainQuadtree.build(_context,
+        _boundingBox,
+        _descriptor->getDimensions(),
+        to_U32(_descriptor->getTessellationRange().z),
+        this);
+
+    // The terrain's final bounding box is the QuadTree's root bounding box
+    _boundingBox.set(_terrainQuadtree.computeBoundingBox());
 }
 
 void Terrain::frameStarted(SceneGraphNode& sgn) {
@@ -136,7 +146,7 @@ bool Terrain::onRender(SceneGraphNode& sgn,
 
     if (_editorDataDirtyState == EditorDataState::CHANGED) {
         PushConstants constants = pkg.pushConstants(0);
-        constants.set("tessellationRange", GFX::PushConstantType::VEC2, _descriptor->getTessellationRange());
+        constants.set("tessellationRange", GFX::PushConstantType::VEC2, _descriptor->getTessellationRange().xy());
         pkg.pushConstants(0, constants);
     }
 
@@ -170,7 +180,7 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
                                 RenderPackage& pkgInOut) {
 
     PushConstants constants = pkgInOut.pushConstants(0);
-    constants.set("tessellationRange", GFX::PushConstantType::VEC2, _descriptor->getTessellationRange());
+    constants.set("tessellationRange", GFX::PushConstantType::VEC2, _descriptor->getTessellationRange().xy());
     constants.set("diffuseScale", GFX::PushConstantType::VEC4, _terrainTextures->getDiffuseScales());
     constants.set("detailScale",  GFX::PushConstantType::VEC4, _terrainTextures->getDetailScales());
     pkgInOut.pushConstants(0, constants);
@@ -316,8 +326,9 @@ void Terrain::saveToXML(boost::property_tree::ptree& pt) const {
     pt.put("terrainHeight", _descriptor->getDimensions().height);
     pt.put("altitudeRange.<xmlattr>.min", _descriptor->getAltitudeRange().min);
     pt.put("altitudeRange.<xmlattr>.max", _descriptor->getAltitudeRange().max);
-    pt.put("tessellationRange.<xmlattr>.min", _descriptor->getTessellationRange().min);
-    pt.put("tessellationRange.<xmlattr>.max", _descriptor->getTessellationRange().max);
+    pt.put("tessellationRange.<xmlattr>.min", _descriptor->getTessellationRange().x);
+    pt.put("tessellationRange.<xmlattr>.max", _descriptor->getTessellationRange().y);
+    pt.put("tessellationRange.<xmlattr>.chunkSize", _descriptor->getTessellationRange().z);
     pt.put("textureLocation", _descriptor->getVariable("textureLocation"));
     pt.put("waterCaustics", _descriptor->getVariable("waterCaustics"));
     pt.put("underwaterAlbedoTexture", _descriptor->getVariable("underwaterAlbedoTexture"));
