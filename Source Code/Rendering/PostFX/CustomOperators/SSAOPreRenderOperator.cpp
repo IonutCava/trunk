@@ -65,10 +65,8 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
 
     stringImpl attachmentName("SSAOPreRenderOperator_NoiseTexture");
 
-    TextureDescriptor noiseDescriptor(TextureType::TEXTURE_2D,
-                                      GFXImageFormat::RGB16F);
+    TextureDescriptor noiseDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGB, GFXDataFormat::FLOAT_16);
     noiseDescriptor.setSampler(noiseSampler);
-    noiseDescriptor._srgb = true;
 
     ResourceDescriptor textureAttachment(attachmentName);
     textureAttachment.setThreadedLoading(false);
@@ -88,7 +86,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     screenSampler._magFilter = TextureFilter::LINEAR;
     screenSampler._anisotropyLevel = 0;
 
-    TextureDescriptor outputDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RED16);
+    TextureDescriptor outputDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RED, GFXDataFormat::UNSIGNED_SHORT);
     outputDescriptor.setSampler(screenSampler);
 
     {

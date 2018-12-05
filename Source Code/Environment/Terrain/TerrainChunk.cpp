@@ -69,7 +69,7 @@ void TerrainChunk::load(U8 depth, const vec2<U32>& pos, U32 _targetChunkDimensio
     }
 
     _heightBounds.set(tempMin, tempMax);
-    _vegetation->initialize(this);
+    //_vegetation->initialize(this);
     Attorney::TerrainChunk::registerTerrainChunk(*_parentTerrain, this);
 }
 

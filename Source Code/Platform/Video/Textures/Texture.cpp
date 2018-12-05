@@ -224,7 +224,8 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name, Imag
         _descriptor._type = _textureData._textureType;
         _descriptor._mipLevels.max = to_U16(fileData.mipCount());
         _descriptor._compressed = fileData.compressed();
-        _descriptor.internalFormat(fileData.format(), fileData.bgra());
+        _descriptor.baseFormat(fileData.format());
+        _descriptor.dataType(fileData.dataType());
     } else {
         DIVIDE_ASSERT(_descriptor._type == _textureData._textureType, "Texture::loadFile error: Texture Layer with different type detected!");
     }
@@ -241,68 +242,29 @@ void Texture::setCurrentSampler(const SamplerDescriptor& descriptor) {
     _descriptor.setSampler(descriptor);
 }
 
-namespace {
-    bool baseFormat(GFXImageFormat format) {
-        switch (format) {
-            case GFXImageFormat::COUNT:
-            case GFXImageFormat::RED:
-            case GFXImageFormat::GREEN:
-            case GFXImageFormat::BLUE:
-            case GFXImageFormat::RG:
-            case GFXImageFormat::RGB:
-            case GFXImageFormat::BGR:
-            case GFXImageFormat::RGBA:
-            case GFXImageFormat::BGRA:
-            case GFXImageFormat::DEPTH_COMPONENT:
-                return true;
-        };
-
-        return false;
-    }
-};
 void Texture::validateDescriptor() {
-    
-    assert(!baseFormat(_descriptor.internalFormat()));
     
     // Select the proper colour space internal format
     bool srgb = _descriptor._srgb;
     // We only support 8 bit per pixel - 3 & 4 channel textures
     if (_descriptor.baseFormat() == GFXImageFormat::RED ||
-        _descriptor.baseFormat() == GFXImageFormat::GREEN ||
-        _descriptor.baseFormat() == GFXImageFormat::BLUE ||
         _descriptor.baseFormat() == GFXImageFormat::RG ||
         _descriptor.baseFormat() == GFXImageFormat::DEPTH_COMPONENT)             
     {
         assert(!srgb);
     }
 
-    bool bgra = _descriptor.baseFormat() == GFXImageFormat::BGR || _descriptor.baseFormat() == GFXImageFormat::BGRA;
-
-    switch (_descriptor.internalFormat()) {
-        case GFXImageFormat::RGB8: {
-            _descriptor.internalFormat(srgb ? GFXImageFormat::SRGB8 : GFXImageFormat::RGB8, bgra);
-        }break;
-        case GFXImageFormat::RGBA8: {
-            _descriptor.internalFormat(srgb ? GFXImageFormat::SRGB_ALPHA8 : GFXImageFormat::RGBA8, bgra);
-        }break;
+    switch (_descriptor.baseFormat()) {
         case GFXImageFormat::COMPRESSED_RGB_DXT1: {
-            _descriptor.internalFormat(srgb ? GFXImageFormat::COMPRESSED_SRGB_DXT1 :
-                                              GFXImageFormat::COMPRESSED_RGB_DXT1, bgra);
             _descriptor._compressed = true;
         } break;
         case GFXImageFormat::COMPRESSED_RGBA_DXT1: {
-            _descriptor.internalFormat(srgb ? GFXImageFormat::COMPRESSED_SRGB_ALPHA_DXT1 :
-                                              GFXImageFormat::COMPRESSED_RGBA_DXT1, bgra);
             _descriptor._compressed = true;
         } break;
         case GFXImageFormat::COMPRESSED_RGBA_DXT3: {
-            _descriptor.internalFormat(srgb ? GFXImageFormat::COMPRESSED_SRGB_ALPHA_DXT3 :
-                                              GFXImageFormat::COMPRESSED_RGBA_DXT3, bgra);
             _descriptor._compressed = true;
         } break;
         case GFXImageFormat::COMPRESSED_RGBA_DXT5: {
-            _descriptor.internalFormat(srgb ? GFXImageFormat::COMPRESSED_SRGB_ALPHA_DXT5 :
-                                              GFXImageFormat::COMPRESSED_RGBA_DXT5, bgra);
             _descriptor._compressed = true;
         } break;
     }

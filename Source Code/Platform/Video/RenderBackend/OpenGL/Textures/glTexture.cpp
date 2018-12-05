@@ -120,7 +120,7 @@ void glTexture::reserveStorage() {
         !(_textureData._textureType == TextureType::TEXTURE_CUBE_MAP && _width != _height) &&
         "glTexture::reserverStorage error: width and height for cube map texture do not match!");
 
-    GLenum glInternalFormat = GLUtil::glImageFormatTable[to_U32(_descriptor.internalFormat())];
+    GLenum glInternalFormat = GLUtil::internalFormat(_descriptor.baseFormat(), _descriptor.dataType(), _descriptor._srgb);
     GLuint handle = _textureData.getHandle();
     GLuint msaaSamples = static_cast<GLuint>(_descriptor.msaaSamples());
     GLushort mipMaxLevel = _descriptor._mipLevels.max;
@@ -273,7 +273,7 @@ void glTexture::loadData(const TextureLoadInfo& info,
 void glTexture::loadDataCompressed(const TextureLoadInfo& info,
                                    const vector<ImageTools::ImageLayer>& imageLayers) {
 
-    GLenum glFormat = GLUtil::glImageFormatTable[to_U32(_descriptor.baseFormat())];
+    GLenum glFormat = GLUtil::internalFormat(_descriptor.baseFormat(), _descriptor.dataType(), _descriptor._srgb);
     GLint numMips = static_cast<GLint>(imageLayers.size());
 
     GL_API::getStateTracker().setPixelPackUnpackAlignment();
@@ -418,8 +418,9 @@ bool glTexture::resourceLoadComplete() {
 void glTexture::bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write) {
     GLenum access = read ? (write ? GL_READ_WRITE : GL_READ_ONLY)
                             : (write ? GL_WRITE_ONLY : GL_NONE);
-    GL_API::getStateTracker().bindTextureImage(slot, _textureData.getHandle(), level, layered, layer, access,
-                                               GLUtil::glImageFormatTable[to_U32(_descriptor.internalFormat())]);
+
+    GLenum glInternalFormat = GLUtil::internalFormat(_descriptor.baseFormat(), _descriptor.dataType(), _descriptor._srgb);
+    GL_API::getStateTracker().bindTextureImage(slot, _textureData.getHandle(), level, layered, layer, access, glInternalFormat);
 }
 
 };

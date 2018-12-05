@@ -73,7 +73,7 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
                 depthMapSampler._cmpFunc = ComparisonFunction::LEQUAL;
 
                 // Default filters, LINEAR is OK for this
-                TextureDescriptor depthMapDescriptor(TextureType::TEXTURE_2D_ARRAY, GFXImageFormat::DEPTH_COMPONENT32);
+                TextureDescriptor depthMapDescriptor(TextureType::TEXTURE_2D_ARRAY, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
                 depthMapDescriptor.setLayerCount(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
                 depthMapDescriptor.setSampler(depthMapSampler);
 
@@ -101,7 +101,7 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
                 depthMapSampler._magFilter = TextureFilter::LINEAR;
                 depthMapSampler._anisotropyLevel = settings.anisotropicFilteringLevel;
 
-                TextureDescriptor depthMapDescriptor(TextureType::TEXTURE_2D_ARRAY, GFXImageFormat::RG32F);
+                TextureDescriptor depthMapDescriptor(TextureType::TEXTURE_2D_ARRAY, GFXImageFormat::RG, GFXDataFormat::FLOAT_32);
                 depthMapDescriptor.setLayerCount(Config::Lighting::MAX_SPLITS_PER_LIGHT * Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
                 depthMapDescriptor.setSampler(depthMapSampler);
 
@@ -132,7 +132,7 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
                 depthMapSampler._useRefCompare = true;  //< Use compare function
                 depthMapSampler._cmpFunc = ComparisonFunction::LEQUAL;  //< Use less or equal
 
-                TextureDescriptor depthMapDescriptor(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::DEPTH_COMPONENT32);
+                TextureDescriptor depthMapDescriptor(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
                 depthMapDescriptor.setSampler(depthMapSampler);
                 depthMapDescriptor.setLayerCount(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
 

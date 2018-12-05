@@ -50,7 +50,6 @@ class glPixelBuffer final : public PixelBuffer {
     ~glPixelBuffer();
 
     bool create(GLushort width, GLushort height, GLushort depth = 0,
-                GFXImageFormat internalFormatEnum = GFXImageFormat::RGBA8,
                 GFXImageFormat formatEnum = GFXImageFormat::RGBA,
                 GFXDataFormat dataTypeEnum = GFXDataFormat::FLOAT_32) override;
 

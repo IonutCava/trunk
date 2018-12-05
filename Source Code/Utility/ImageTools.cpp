@@ -26,11 +26,11 @@ ImageData::ImageData() : _compressed(false),
                          _16Bit(false),
                          _isHDR(false),
                          _alpha(false),
-                         _bgra(false),
                          _bpp(0)
 
 {
     _format = GFXImageFormat::COUNT;
+    _dataType = GFXDataFormat::COUNT;
     _compressedTextureType = TextureType::COUNT;
 }
 
@@ -74,25 +74,27 @@ bool ImageData::create(const stringImpl& filename) {
 
     switch (comp) {
         case 1 : {
-            _format = is16Bit() ? GFXImageFormat::RED16 : isHDR() ? GFXImageFormat::RED32F : GFXImageFormat::RED8;
+            _format = GFXImageFormat::RED;
             _bpp = 8;
         } break;
         case 2: {
-            _format = is16Bit() ? GFXImageFormat::RG16 : isHDR() ? GFXImageFormat::RG32F : GFXImageFormat::RG;
+            _format = GFXImageFormat::RG;
             _bpp = 16;
         } break;
         case 3: {
-            _format = is16Bit() ? GFXImageFormat::RGB16 : isHDR() ? GFXImageFormat::RGB32F : GFXImageFormat::RGB8;
+            _format = GFXImageFormat::RGB;
             _bpp = 24;
         } break;
         case 4: {
-            _format = is16Bit() ? GFXImageFormat::RGBA16 : isHDR() ? GFXImageFormat::RGBA32F : GFXImageFormat::RGBA8;
+            _format = GFXImageFormat::RGBA;
             _bpp = 32;
         } break;
         default:
             DIVIDE_UNEXPECTED_CALL("Invalid file format!");
             break;
     };
+
+    _dataType = is16Bit() ? GFXDataFormat::UNSIGNED_SHORT : isHDR() ? GFXDataFormat::FLOAT_32 : GFXDataFormat::UNSIGNED_BYTE;
 
     if (_isHDR) {
         _bpp *= 4;
@@ -184,14 +186,16 @@ bool ImageData::loadDDS_IL(const stringImpl& filename) {
         I32 format = ilGetInteger(IL_IMAGE_FORMAT);
         switch (format) {
             case IL_BGR:
-            case IL_RGB: {
-                _bgra = format = IL_BGR;
-                _format = GFXImageFormat::RGB8;
-            } break;
+                _format = GFXImageFormat::BGR;
+                break;
+            case IL_RGB:
+                _format = GFXImageFormat::RGB;
+                break;
             case IL_BGRA:
+                _format = GFXImageFormat::BGRA;
+                break;
             case IL_RGBA: {
-                _bgra = format = IL_BGRA;
-                _format = GFXImageFormat::RGBA8;
+                _format = GFXImageFormat::RGBA;
             } break;
             case IL_LUMINANCE: {
                 assert(false && "LUMINANCE image format is no longer supported!");
@@ -204,6 +208,7 @@ bool ImageData::loadDDS_IL(const stringImpl& filename) {
         };
     }
 
+    _dataType = GFXDataFormat::UNSIGNED_BYTE;
     _data.resize(numMips);
     for (U8 i = 0; i < numMips; ++i) {
         ilBindImage(ilTexture);
@@ -278,16 +283,13 @@ bool ImageData::loadDDS_NV(const stringImpl& filename) {
     } else {
         switch(image.get_format()) {
             case nv_dds::Format::BGR:
-                _bgra = true;
             case nv_dds::Format::RGB: {
                 _bpp = 24;
-                
-                _format = GFXImageFormat::RGB8;
+                _format = GFXImageFormat::RGB;
             } break;
             case nv_dds::Format::BGRA:
-                _bgra = true;
             case nv_dds::Format::RGBA: {
-                _format = GFXImageFormat::RGBA8;
+                _format = GFXImageFormat::RGBA;
                 _bpp = 32;
             } break;
             case nv_dds::Format::LUMINANCE: {
@@ -298,6 +300,7 @@ bool ImageData::loadDDS_NV(const stringImpl& filename) {
                 break;
         };
     }
+    _dataType = GFXDataFormat::UNSIGNED_BYTE;
 
     U32 numMips = image.get_num_mipmaps();
     _data.resize(numMips + 1);

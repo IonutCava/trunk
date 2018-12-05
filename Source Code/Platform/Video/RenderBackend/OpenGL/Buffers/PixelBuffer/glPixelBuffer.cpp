@@ -113,11 +113,10 @@ void glPixelBuffer::end() const {
 }
 
 bool glPixelBuffer::create(GLushort width, GLushort height, GLushort depth,
-                           GFXImageFormat internalFormatEnum,
                            GFXImageFormat formatEnum,
                            GFXDataFormat dataTypeEnum) {
     GLenum textureTypeEnum = GLUtil::glTextureTypeTable[to_U32(_textureType)];
-    _internalFormat = GLUtil::glImageFormatTable[to_U32(internalFormatEnum)];
+    _internalFormat = GLUtil::internalFormat(formatEnum, dataTypeEnum, false);
     _format = GLUtil::glImageFormatTable[to_U32(formatEnum)];
     _dataType = GLUtil::glDataFormat[to_U32(dataTypeEnum)];
 

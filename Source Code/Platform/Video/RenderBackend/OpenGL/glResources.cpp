@@ -148,61 +148,16 @@ void fillEnumTables() {
     glTextureTypeTable[to_base(TextureType::TEXTURE_2D_MS)] = GL_TEXTURE_2D_MULTISAMPLE;
     glTextureTypeTable[to_base(TextureType::TEXTURE_2D_ARRAY_MS)] = GL_TEXTURE_2D_MULTISAMPLE_ARRAY;
     glImageFormatTable[to_base(GFXImageFormat::RED)] = GL_RED;
-    glImageFormatTable[to_base(GFXImageFormat::RED8)] = GL_R8;
-    glImageFormatTable[to_base(GFXImageFormat::RED8I)] = GL_R8I;
-    glImageFormatTable[to_base(GFXImageFormat::RED16)] = GL_R16;
-    glImageFormatTable[to_base(GFXImageFormat::RED16F)] = GL_R16F;
-    glImageFormatTable[to_base(GFXImageFormat::RED16I)] = GL_R16I;
-    glImageFormatTable[to_base(GFXImageFormat::RED32)] = GL_R32UI;
-    glImageFormatTable[to_base(GFXImageFormat::RED32F)] = GL_R32F;
-    glImageFormatTable[to_base(GFXImageFormat::RED32I)] = GL_R32I;
-    glImageFormatTable[to_base(GFXImageFormat::BLUE)] = GL_BLUE;
-    glImageFormatTable[to_base(GFXImageFormat::GREEN)] = GL_GREEN;
     glImageFormatTable[to_base(GFXImageFormat::RG)] = GL_RG;
-    glImageFormatTable[to_base(GFXImageFormat::RG8)] = GL_RG8;
-    glImageFormatTable[to_base(GFXImageFormat::RG8I)] = GL_RG8I;
-    glImageFormatTable[to_base(GFXImageFormat::RG16)] = GL_RG16;
-    glImageFormatTable[to_base(GFXImageFormat::RG16F)] = GL_RG16F;
-    glImageFormatTable[to_base(GFXImageFormat::RG16I)] = GL_RG16I;
-    glImageFormatTable[to_base(GFXImageFormat::RG32)] = GL_RG32UI;
-    glImageFormatTable[to_base(GFXImageFormat::RG32F)] = GL_RG32F;
-    glImageFormatTable[to_base(GFXImageFormat::RG32I)] = GL_RG32I;
     glImageFormatTable[to_base(GFXImageFormat::RGB)] = GL_RGB;
     glImageFormatTable[to_base(GFXImageFormat::BGR)] = GL_BGR;
-    glImageFormatTable[to_base(GFXImageFormat::RGB8)] = GL_RGB8;
-    glImageFormatTable[to_base(GFXImageFormat::SRGB8)] = GL_SRGB8;
-    glImageFormatTable[to_base(GFXImageFormat::RGB8I)] = GL_RGB8I;
-    glImageFormatTable[to_base(GFXImageFormat::RGB16)] = GL_RGB16;
-    glImageFormatTable[to_base(GFXImageFormat::RGB32)] = GL_RGB32UI;
-    glImageFormatTable[to_base(GFXImageFormat::RGB16F)] = GL_RGB16F;
-    glImageFormatTable[to_base(GFXImageFormat::RGB16I)] = GL_RGB16I;
-    glImageFormatTable[to_base(GFXImageFormat::RGB32F)] = GL_RGB32F;
-    glImageFormatTable[to_base(GFXImageFormat::RGB32I)] = GL_RGB32I;
     glImageFormatTable[to_base(GFXImageFormat::BGRA)] = GL_BGRA;
     glImageFormatTable[to_base(GFXImageFormat::RGBA)] = GL_RGBA;
-    glImageFormatTable[to_base(GFXImageFormat::RGBA4)] = GL_RGBA4;
-    glImageFormatTable[to_base(GFXImageFormat::RGBA8)] = GL_RGBA8;
-    glImageFormatTable[to_base(GFXImageFormat::RGBA16)] = GL_RGBA16;
-    glImageFormatTable[to_base(GFXImageFormat::RGBA32)] = GL_RGBA32UI;
-    glImageFormatTable[to_base(GFXImageFormat::SRGB_ALPHA8)] = GL_SRGB8_ALPHA8;
-    glImageFormatTable[to_base(GFXImageFormat::RGBA8I)] = GL_RGBA8I;
-    glImageFormatTable[to_base(GFXImageFormat::RGBA16F)] = GL_RGBA16F;
-    glImageFormatTable[to_base(GFXImageFormat::RGBA16I)] = GL_RGBA16I;
-    glImageFormatTable[to_base(GFXImageFormat::RGBA32F)] = GL_RGBA32F;
-    glImageFormatTable[to_base(GFXImageFormat::RGBA32I)] = GL_RGBA32I;
     glImageFormatTable[to_base(GFXImageFormat::DEPTH_COMPONENT)] = GL_DEPTH_COMPONENT;
-    glImageFormatTable[to_base(GFXImageFormat::DEPTH_COMPONENT16)] = GL_DEPTH_COMPONENT16;
-    glImageFormatTable[to_base(GFXImageFormat::DEPTH_COMPONENT24)] = GL_DEPTH_COMPONENT24;
-    glImageFormatTable[to_base(GFXImageFormat::DEPTH_COMPONENT32)] = GL_DEPTH_COMPONENT32;
-    glImageFormatTable[to_base(GFXImageFormat::DEPTH_COMPONENT32F)] = GL_DEPTH_COMPONENT32F;
     glImageFormatTable[to_base(GFXImageFormat::COMPRESSED_RGB_DXT1)] = gl::GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
-    glImageFormatTable[to_base(GFXImageFormat::COMPRESSED_SRGB_DXT1)] = gl::GL_COMPRESSED_SRGB_S3TC_DXT1_EXT;
     glImageFormatTable[to_base(GFXImageFormat::COMPRESSED_RGBA_DXT1)] = gl::GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
-    glImageFormatTable[to_base(GFXImageFormat::COMPRESSED_SRGB_ALPHA_DXT1)] = gl::GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT;
     glImageFormatTable[to_base(GFXImageFormat::COMPRESSED_RGBA_DXT3)] = gl::GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
-    glImageFormatTable[to_base(GFXImageFormat::COMPRESSED_SRGB_ALPHA_DXT3)] = gl::GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT;
     glImageFormatTable[to_base(GFXImageFormat::COMPRESSED_RGBA_DXT5)] = gl::GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-    glImageFormatTable[to_base(GFXImageFormat::COMPRESSED_SRGB_ALPHA_DXT5)] = gl::GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT;
     
     glPrimitiveTypeTable[to_base(PrimitiveType::API_POINTS)] = GL_POINTS;
     glPrimitiveTypeTable[to_base(PrimitiveType::LINES)] = GL_LINES;
@@ -275,6 +230,114 @@ void fillEnumTables() {
     glQueryTypeTable[to_base(QueryType::PRIMITIVES_GENERATED)] = GL_PRIMITIVES_GENERATED;
     glQueryTypeTable[to_base(QueryType::XFORM_FDBK_PRIMITIVES_GENERATED)] = GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN;
     glQueryTypeTable[to_base(QueryType::GPU_TIME)] = GL_TIMESTAMP;
+}
+
+GLenum internalFormat(GFXImageFormat baseFormat, GFXDataFormat dataType, bool srgb) {
+    switch (baseFormat) {
+        case GFXImageFormat::RED:{
+            assert(!srgb);
+            switch (dataType) {
+                case GFXDataFormat::UNSIGNED_BYTE: return GL_R8;
+                case GFXDataFormat::UNSIGNED_SHORT: return GL_R16;
+                case GFXDataFormat::UNSIGNED_INT: return GL_R32UI;
+                case GFXDataFormat::SIGNED_BYTE: return GL_R8I;
+                case GFXDataFormat::SIGNED_SHORT: return GL_R16I;
+                case GFXDataFormat::SIGNED_INT: return GL_R32I;
+                case GFXDataFormat::FLOAT_16: return GL_R16F;
+                case GFXDataFormat::FLOAT_32: return GL_R32F;
+            };
+        }break;
+        case GFXImageFormat::RG: {
+            assert(!srgb);
+            switch (dataType) {
+                case GFXDataFormat::UNSIGNED_BYTE: return GL_RG8;
+                case GFXDataFormat::UNSIGNED_SHORT: return GL_RG16;
+                case GFXDataFormat::UNSIGNED_INT: return GL_RG32UI;
+                case GFXDataFormat::SIGNED_BYTE: return GL_RG8I;
+                case GFXDataFormat::SIGNED_SHORT: return GL_RG16I;
+                case GFXDataFormat::SIGNED_INT: return GL_RG32I;
+                case GFXDataFormat::FLOAT_16: return GL_RG16F;
+                case GFXDataFormat::FLOAT_32: return GL_RG32F;
+            };
+        }break;
+        case GFXImageFormat::BGR:
+        case GFXImageFormat::RGB:
+        {
+            assert(!srgb || srgb == (dataType == GFXDataFormat::UNSIGNED_BYTE));
+            switch (dataType) {
+                case GFXDataFormat::UNSIGNED_BYTE: return srgb ? GL_SRGB8 : GL_RGB8;
+                case GFXDataFormat::UNSIGNED_SHORT: return GL_RGB16;
+                case GFXDataFormat::UNSIGNED_INT: return GL_RGB32UI;
+                case GFXDataFormat::SIGNED_BYTE: return GL_RGB8I;
+                case GFXDataFormat::SIGNED_SHORT: return GL_RGB16I;
+                case GFXDataFormat::SIGNED_INT: return GL_RGB32I;
+                case GFXDataFormat::FLOAT_16: return GL_RGB16F;
+                case GFXDataFormat::FLOAT_32: return GL_RGB32F;
+            };
+        }break;
+        case GFXImageFormat::BGRA:
+        case GFXImageFormat::RGBA:
+        {
+            assert(!srgb || srgb == (dataType == GFXDataFormat::UNSIGNED_BYTE));
+            switch (dataType) {
+                case GFXDataFormat::UNSIGNED_BYTE: return srgb ? GL_SRGB8_ALPHA8 : GL_RGBA8;
+                case GFXDataFormat::UNSIGNED_SHORT: return GL_RGBA16;
+                case GFXDataFormat::UNSIGNED_INT: return GL_RGBA32UI;
+                case GFXDataFormat::SIGNED_BYTE: return GL_RGBA8I;
+                case GFXDataFormat::SIGNED_SHORT: return GL_RGBA16I;
+                case GFXDataFormat::SIGNED_INT: return GL_RGBA32I;
+                case GFXDataFormat::FLOAT_16: return GL_RGBA16F;
+                case GFXDataFormat::FLOAT_32: return GL_RGBA32F;
+            };
+        }break;
+        case GFXImageFormat::DEPTH_COMPONENT:
+        {
+            switch (dataType) {
+                case GFXDataFormat::SIGNED_BYTE:
+                case GFXDataFormat::UNSIGNED_BYTE: return GL_DEPTH_COMPONENT16;
+                case GFXDataFormat::SIGNED_SHORT:
+                case GFXDataFormat::UNSIGNED_SHORT: return GL_DEPTH_COMPONENT24;
+                case GFXDataFormat::SIGNED_INT:
+                case GFXDataFormat::UNSIGNED_INT: return GL_DEPTH_COMPONENT32;
+                case GFXDataFormat::FLOAT_16:
+                case GFXDataFormat::FLOAT_32: return GL_DEPTH_COMPONENT32F;
+            };
+        }break;
+        case GFXImageFormat::COMPRESSED_RGB_DXT1:
+        {
+            if (srgb) {
+                return gl::GL_COMPRESSED_SRGB_S3TC_DXT1_EXT;
+            }
+
+            return glImageFormatTable[to_base(baseFormat)];
+        }break;
+        case GFXImageFormat::COMPRESSED_RGBA_DXT1:
+        {
+            if (srgb) {
+                return gl::GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT;
+            }
+
+            return glImageFormatTable[to_base(baseFormat)];
+        }break;
+        case GFXImageFormat::COMPRESSED_RGBA_DXT3:
+        {
+            if (srgb) {
+                return gl::GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT;
+            }
+
+            return glImageFormatTable[to_base(baseFormat)];
+        }break;
+        case GFXImageFormat::COMPRESSED_RGBA_DXT5:
+        {
+            if (srgb) {
+                return gl::GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT;
+            }
+
+            return glImageFormatTable[to_base(baseFormat)];
+        }break;
+    }
+
+    return GL_NONE;
 }
 
 namespace {

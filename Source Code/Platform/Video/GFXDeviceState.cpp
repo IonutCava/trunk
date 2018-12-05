@@ -135,11 +135,9 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 
     U8 msaaSamples = _parent.platformContext().config().rendering.msaaSamples;
 
-    TextureDescriptor screenDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGB16F);
-
-    TextureDescriptor normalAndVelocityDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RG16F);
-
-    TextureDescriptor depthDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::DEPTH_COMPONENT32F);
+    TextureDescriptor screenDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGB, GFXDataFormat::FLOAT_16);
+    TextureDescriptor normalAndVelocityDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RG, GFXDataFormat::FLOAT_16);
+    TextureDescriptor depthDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::FLOAT_32);
 
     SamplerDescriptor defaultSampler = {};
     defaultSampler._wrapU = TextureWrap::CLAMP_TO_EDGE;
@@ -178,7 +176,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     }
 
     {
-        TextureDescriptor hiZDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::DEPTH_COMPONENT32F);
+        TextureDescriptor hiZDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::FLOAT_32);
         SamplerDescriptor hiZSampler = {};
         hiZSampler._wrapU = TextureWrap::CLAMP_TO_EDGE;
         hiZSampler._wrapV = TextureWrap::CLAMP_TO_EDGE;
@@ -211,7 +209,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
         editorSampler._wrapW = TextureWrap::CLAMP_TO_EDGE;
         editorSampler._anisotropyLevel = 0;
 
-        TextureDescriptor editorDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGB8);
+        TextureDescriptor editorDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGB, GFXDataFormat::UNSIGNED_BYTE);
         editorDescriptor.setSampler(editorSampler);
 
         vector<RTAttachmentDescriptor> attachments = {
@@ -227,7 +225,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     }
 
     {
-        TextureDescriptor accumulationDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGBA16F);
+        TextureDescriptor accumulationDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGBA, GFXDataFormat::FLOAT_16);
         accumulationDescriptor.automaticMipMapGeneration(false);
 
         SamplerDescriptor accumulationSampler = {};
@@ -239,7 +237,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 
         accumulationDescriptor.setSampler(accumulationSampler);
 
-        TextureDescriptor revealageDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RED16F);
+        TextureDescriptor revealageDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RED, GFXDataFormat::FLOAT_16);
         revealageDescriptor.setSampler(accumulationSampler);
 
         vector<RTAttachmentDescriptor> attachments = {
@@ -280,17 +278,17 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     reflectionSampler._minFilter = TextureFilter::NEAREST;
     reflectionSampler._magFilter = TextureFilter::NEAREST;
 
-    TextureDescriptor environmentDescriptorCube(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::RGBA8);
+    TextureDescriptor environmentDescriptorCube(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::RGBA, GFXDataFormat::UNSIGNED_BYTE);
     environmentDescriptorCube.setSampler(reflectionSampler);
 
-    TextureDescriptor depthDescriptorCube(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::DEPTH_COMPONENT32F);
+    TextureDescriptor depthDescriptorCube(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::FLOAT_32);
 
     depthDescriptorCube.setSampler(reflectionSampler);
 
-    TextureDescriptor environmentDescriptorPlanar(TextureType::TEXTURE_2D, GFXImageFormat::RGBA8);
+    TextureDescriptor environmentDescriptorPlanar(TextureType::TEXTURE_2D, GFXImageFormat::RGBA, GFXDataFormat::UNSIGNED_BYTE);
     environmentDescriptorPlanar.setSampler(reflectionSampler);
 
-    TextureDescriptor depthDescriptorPlanar(TextureType::TEXTURE_2D, GFXImageFormat::DEPTH_COMPONENT32F);
+    TextureDescriptor depthDescriptorPlanar(TextureType::TEXTURE_2D, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::FLOAT_32);
     depthDescriptorPlanar.setSampler(reflectionSampler);
 
     RenderTargetHandle tempHandle;

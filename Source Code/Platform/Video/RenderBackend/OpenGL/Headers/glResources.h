@@ -150,6 +150,8 @@ void submitRenderCommand(const GenericDrawCommand& drawCommand,
 /// Populate enumeration tables with appropriate API values
 void fillEnumTables();
 
+GLenum internalFormat(GFXImageFormat baseFormat, GFXDataFormat dataType, bool srgb);
+
 extern std::array<GLenum, to_base(BlendProperty::COUNT)> glBlendTable;
 extern std::array<GLenum, to_base(BlendOperation::COUNT)> glBlendOpTable;
 extern std::array<GLenum, to_base(ComparisonFunction::COUNT)> glCompareFuncTable;

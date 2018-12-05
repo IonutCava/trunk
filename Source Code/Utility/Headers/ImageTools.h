@@ -38,6 +38,7 @@
 
 namespace Divide {
 enum class GFXImageFormat : U8;
+enum class GFXDataFormat : U8;
 enum class TextureType : U8;
 
 namespace ImageTools {
@@ -129,11 +130,12 @@ class ImageData : private NonCopyable {
     inline bool alpha() const { return _alpha; }
     /// image depth information
     inline U8 bpp() const { return _bpp; }
-    inline bool bgra() const { return _bgra;  }
     /// the filename from which the image is created
     inline const stringImpl& name() const { return _name; }
     /// the image format as given by STB/NV_DDS
     inline GFXImageFormat format() const { return _format; }
+
+    inline GFXDataFormat dataType() const { return _dataType; }
     /// get the texel colour at the specified offset from the origin
     UColour getColour(I32 x, I32 y, U32 mipLevel = 0) const;
     void getColour(I32 x, I32 y, U8& r, U8& g, U8& b, U8& a, U32 mipLevel = 0) const;
@@ -169,13 +171,14 @@ class ImageData : private NonCopyable {
     bool _alpha;
     /// the image format
     GFXImageFormat _format;
+    /// the image date type
+    GFXDataFormat _dataType;
     /// used by compressed images to load 2D/3D/cubemap textures etc
     TextureType _compressedTextureType;
     /// the actual image filename
     stringImpl _name;
     /// image's bits per pixel
     U8 _bpp;
-    bool _bgra;
 };
 
 class ImageDataInterface {

@@ -98,31 +98,30 @@ struct SamplerDescriptor : public Hashable {
 class TextureDescriptor final : public PropertyDescriptor {
    public:
     TextureDescriptor() noexcept
-        : TextureDescriptor(TextureType::COUNT,
-                            GFXImageFormat::COUNT)
+        : TextureDescriptor(TextureType::TEXTURE_2D)
     {
     }
 
     TextureDescriptor(TextureType type) noexcept
          : TextureDescriptor(type,
-                             GFXImageFormat::COUNT)
+                             GFXImageFormat::RGB,
+                             GFXDataFormat::UNSIGNED_BYTE)
     {
     }
 
     TextureDescriptor(TextureType type,
-                      GFXImageFormat internalFmt) noexcept
+                      GFXImageFormat format,
+                      GFXDataFormat dataType) noexcept
         : PropertyDescriptor(DescriptorType::DESCRIPTOR_TEXTURE),
           _layerCount(1),
           _type(type),
+          _baseFormat(format),
+          _dataType(dataType),
           _compressed(false),
           _autoMipMaps(true),
           _mipLevels(0u, 1u),
           _msaaSamples(-1)
     {
-        // If we don't have a valid format yet, that means that the texture loading process determines the type on load
-        if (internalFmt != GFXImageFormat::COUNT) {
-            internalFormat(internalFmt, false);
-        }
     }
 
     virtual ~TextureDescriptor()
@@ -156,17 +155,6 @@ class TextureDescriptor final : public PropertyDescriptor {
         _samplerDescriptor = descriptor;
     }
 
-    inline GFXImageFormat internalFormat() const {
-        return _internalFormat;
-    }
-
-    inline void internalFormat(GFXImageFormat internalFormat, bool bgra) {
-        _internalFormat = internalFormat;
-        _baseFormat = baseFromInternalFormat(internalFormat, bgra);
-        // Use dummy data for compressed formats since it doesn't really matter
-        _dataType = dataTypeForInternalFormat(_compressed ? GFXImageFormat::RED8 : internalFormat);
-    }
-
     inline const SamplerDescriptor& getSampler() const {
         return _samplerDescriptor;
     }
@@ -176,10 +164,17 @@ class TextureDescriptor final : public PropertyDescriptor {
         return _dataType;
     }
 
+    inline void dataType(GFXDataFormat type) {
+        _dataType = type;
+    }
+
     inline GFXImageFormat baseFormat() const {
         assert(_baseFormat != GFXImageFormat::COUNT);
-
         return _baseFormat;
+    }
+
+    inline void baseFormat(GFXImageFormat format) {
+        _baseFormat = format;
     }
 
     inline void type(TextureType type) { _type = type; }
@@ -197,8 +192,6 @@ class TextureDescriptor final : public PropertyDescriptor {
     inline U8 numChannels() const {
         switch (baseFormat()) {
                 case GFXImageFormat::RED:
-                case GFXImageFormat::BLUE:
-                case GFXImageFormat::GREEN:
                 case GFXImageFormat::DEPTH_COMPONENT:
                     return 1;
                 case GFXImageFormat::RG:
@@ -233,7 +226,6 @@ class TextureDescriptor final : public PropertyDescriptor {
   private:
      GFXImageFormat _baseFormat = GFXImageFormat::RGB;
      GFXDataFormat  _dataType = GFXDataFormat::UNSIGNED_BYTE;
-     GFXImageFormat _internalFormat = GFXImageFormat::RGBA8;
 
    private:
      friend class Texture;

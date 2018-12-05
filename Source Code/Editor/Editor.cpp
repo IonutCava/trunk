@@ -171,7 +171,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
     sampler._minFilter = TextureFilter::LINEAR;
     sampler._magFilter = TextureFilter::LINEAR;
 
-    TextureDescriptor texDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGBA8);
+    TextureDescriptor texDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGBA, GFXDataFormat::UNSIGNED_BYTE);
     texDescriptor.setSampler(sampler);
 
     ResourceDescriptor resDescriptor("IMGUI_font_texture");

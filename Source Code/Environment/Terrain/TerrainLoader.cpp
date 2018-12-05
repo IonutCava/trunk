@@ -277,7 +277,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     heightMapTexture.setResourceName(terrainDescriptor->getVariable("heightTexture"));
 
 
-    TextureDescriptor heightMapDescriptor(TextureType::TEXTURE_2D, terrainDescriptor->is16Bit() ? GFXImageFormat::RGB16 : GFXImageFormat::RGB8);
+    TextureDescriptor heightMapDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGB, terrainDescriptor->is16Bit() ? GFXDataFormat::UNSIGNED_SHORT : GFXDataFormat::UNSIGNED_BYTE);
     heightMapDescriptor.setSampler(heightMapSampler);
     heightMapTexture.setPropertyDescriptor(heightMapDescriptor);
 

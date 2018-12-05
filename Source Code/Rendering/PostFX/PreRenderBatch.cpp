@@ -54,7 +54,7 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
     screenSampler._magFilter = TextureFilter::LINEAR;
     screenSampler._anisotropyLevel = 0;
 
-    TextureDescriptor outputDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGB8);
+    TextureDescriptor outputDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGB, GFXDataFormat::UNSIGNED_BYTE);
     outputDescriptor.setSampler(screenSampler);
     
     {
@@ -79,7 +79,7 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
     lumaSampler._minFilter = TextureFilter::LINEAR_MIPMAP_LINEAR;
     lumaSampler._magFilter = TextureFilter::LINEAR;
 
-    TextureDescriptor lumaDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RED16F);
+    TextureDescriptor lumaDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RED, GFXDataFormat::FLOAT_16);
     lumaDescriptor.setSampler(lumaSampler);
     lumaDescriptor.automaticMipMapGeneration(true);
     {

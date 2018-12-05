@@ -61,7 +61,6 @@ class NOINITVTABLE PixelBuffer : public GUIDWrapper, public GraphicsResource {
 
     virtual bool create(
         U16 width, U16 height, U16 depth = 0,
-        GFXImageFormat internalFormatEnum = GFXImageFormat::RGBA8,
         GFXImageFormat formatEnum = GFXImageFormat::RGBA,
         GFXDataFormat dataTypeEnum = GFXDataFormat::FLOAT_32) = 0;
 

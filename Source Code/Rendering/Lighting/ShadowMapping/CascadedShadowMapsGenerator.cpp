@@ -72,12 +72,12 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
     {
         // MSAA rendering is supported
         TextureType texType = g_shadowSettings.msaaSamples > 0 ? TextureType::TEXTURE_2D_ARRAY_MS : TextureType::TEXTURE_2D_ARRAY;
-        TextureDescriptor depthMapDescriptor(texType, GFXImageFormat::RG32F);
+        TextureDescriptor depthMapDescriptor(texType, GFXImageFormat::RG, GFXDataFormat::FLOAT_32);
         depthMapDescriptor.msaaSamples(g_shadowSettings.msaaSamples);
         depthMapDescriptor.setLayerCount(Config::Lighting::MAX_SPLITS_PER_LIGHT);
         depthMapDescriptor.setSampler(sampler);
 
-        TextureDescriptor depthDescriptor(texType, GFXImageFormat::DEPTH_COMPONENT32);
+        TextureDescriptor depthDescriptor(texType, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
         depthDescriptor.setLayerCount(Config::Lighting::MAX_SPLITS_PER_LIGHT);
         depthDescriptor.setSampler(sampler);
         depthDescriptor.msaaSamples(g_shadowSettings.msaaSamples);
@@ -98,7 +98,7 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
 
     //Blur FBO
     {
-        TextureDescriptor blurMapDescriptor(TextureType::TEXTURE_2D_ARRAY, GFXImageFormat::RG32F);
+        TextureDescriptor blurMapDescriptor(TextureType::TEXTURE_2D_ARRAY, GFXImageFormat::RG, GFXDataFormat::FLOAT_32);
         blurMapDescriptor.setLayerCount(Config::Lighting::MAX_SPLITS_PER_LIGHT);
         blurMapDescriptor.setSampler(sampler);
 

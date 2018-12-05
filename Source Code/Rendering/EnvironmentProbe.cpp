@@ -67,12 +67,12 @@ void EnvironmentProbe::onStartup(GFXDevice& context) {
     reflectionSampler._minFilter = TextureFilter::NEAREST;
     reflectionSampler._magFilter = TextureFilter::NEAREST;
 
-    TextureDescriptor environmentDescriptor(TextureType::TEXTURE_CUBE_MAP, GFXImageFormat::RGB8);
+    TextureDescriptor environmentDescriptor(TextureType::TEXTURE_CUBE_MAP, GFXImageFormat::RGB, GFXDataFormat::UNSIGNED_BYTE);
     environmentDescriptor.setSampler(reflectionSampler);
     environmentDescriptor.setLayerCount(g_maxEnvironmentProbes);
 
 
-    TextureDescriptor depthDescriptor(TextureType::TEXTURE_CUBE_MAP, GFXImageFormat::DEPTH_COMPONENT32);
+    TextureDescriptor depthDescriptor(TextureType::TEXTURE_CUBE_MAP, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
 
     depthDescriptor.setSampler(reflectionSampler);
 
