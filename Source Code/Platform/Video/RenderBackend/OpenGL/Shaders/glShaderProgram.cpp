@@ -118,12 +118,10 @@ bool glShaderProgram::validateInternal() {
     // the validation log is only retrieved if we request it. (i.e. in release,
     // if the shader is validated, it isn't retrieved)
     if (status == 0) {
-        Console::errorfn(Locale::get(_ID("GLSL_VALIDATING_PROGRAM")),
-                         _shaderProgramID, name().c_str(), getLog().c_str());
+        Console::errorfn(Locale::get(_ID("GLSL_VALIDATING_PROGRAM")), _shaderProgramID, resourceName().c_str(), getLog().c_str());
         shaderError = true;
     } else {
-        Console::d_printfn(Locale::get(_ID("GLSL_VALIDATING_PROGRAM")),
-                           _shaderProgramID, name().c_str(), getLog().c_str());
+        Console::d_printfn(Locale::get(_ID("GLSL_VALIDATING_PROGRAM")), _shaderProgramID, resourceName().c_str(), getLog().c_str());
     }
     _validated = true;
 
@@ -154,14 +152,14 @@ bool glShaderProgram::update(const U64 deltaTimeUS) {
             if (_binaryFormat != GL_NONE) {
                 // dump the buffer to file
                 if (writeFile(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationBin,
-                              name() + ".bin",
+                              resourceName() + ".bin",
                               binary,
                               (size_t)binaryLength,
                               FileType::BINARY))
                 {
                     // dump the format to a separate file (highly non-optimised. Should dump formats to a database instead)
                     writeFile(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationBin,
-                              name() + ".fmt",
+                              resourceName() + ".fmt",
                               &_binaryFormat,
                               sizeof(GLenum),
                               FileType::BINARY);
@@ -299,7 +297,7 @@ void glShaderProgram::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoa
 
 /// Linking a shader program also sets up all pre-link properties for the shader (varying locations, attrib bindings, etc)
 bool glShaderProgram::link() {
-    Console::d_printfn(Locale::get(_ID("GLSL_LINK_PROGRAM")), name().c_str(), _shaderProgramIDTemp, getGUID());
+    Console::d_printfn(Locale::get(_ID("GLSL_LINK_PROGRAM")), resourceName().c_str(), _shaderProgramIDTemp, getGUID());
 
     // Link the program
     glLinkProgram(_shaderProgramIDTemp);
@@ -316,11 +314,11 @@ bool glShaderProgram::link() {
     // If linking failed, show an error, else print the result in debug builds.
     // Same getLog() method is used
     if (linkStatus == GL_FALSE) {
-        Console::errorfn(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG")), name().c_str(), getLog().c_str(), getGUID());
+        Console::errorfn(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG")), resourceName().c_str(), getLog().c_str(), getGUID());
     } else {
-        Console::d_printfn(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG_OK")), name().c_str(), getLog().c_str(), getGUID());
+        Console::d_printfn(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG_OK")), resourceName().c_str(), getLog().c_str(), getGUID());
         if (Config::ENABLE_GPU_VALIDATION) {
-            glObjectLabel(GL_PROGRAM, _shaderProgramIDTemp, -1, name().c_str());
+            glObjectLabel(GL_PROGRAM, _shaderProgramIDTemp, -1, resourceName().c_str());
         }
         // The linked flag is set to true only if linking succeeded
         return true;
@@ -336,11 +334,11 @@ bool glShaderProgram::loadFromBinary() {
     if (s_useShaderBinaryCache) {
         // Load the program's binary format from file
         vector<Byte> data;
-        if (readFile(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationBin, _resourceName + ".fmt", data, FileType::BINARY) && !data.empty()) {
+        if (readFile(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationBin, resourceName() + ".fmt", data, FileType::BINARY) && !data.empty()) {
             _binaryFormat = *reinterpret_cast<GLenum*>(data.data());
             if (_binaryFormat != GL_NONE) {
                 data.resize(0);
-                if (readFile(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationBin, _resourceName + ".bin", data, FileType::BINARY) && !data.empty()) {
+                if (readFile(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationBin, resourceName() + ".bin", data, FileType::BINARY) && !data.empty()) {
                     // Load binary code on the GPU
                     glProgramBinary(_shaderProgramIDTemp, _binaryFormat, (bufferPtr)data.data(), (GLint)data.size());
                     // Check if the program linked successfully on load
@@ -361,27 +359,33 @@ bool glShaderProgram::loadFromBinary() {
 glShaderProgram::glShaderProgramLoadInfo glShaderProgram::buildLoadInfo() {
 
     glShaderProgramLoadInfo loadInfo;
-    loadInfo._resourcePath = getResourceLocation() + "/" + Paths::Shaders::GLSL::g_parentShaderLoc;
+    loadInfo._resourcePath = assetLocation() + "/" + Paths::Shaders::GLSL::g_parentShaderLoc;
 
     // Split the shader name to get the effect file name and the effect properties
     // The effect file name is the part up until the first period or comma symbol
-    loadInfo._programName = _resourceName.substr(0, _resourceName.find_first_of(".,"));
+    loadInfo._programName = assetName().substr(0, assetName().find_first_of(".,"));
+
+    size_t idx = resourceName().find_last_of('_');
+
+    if (idx != stringImpl::npos) {
+        loadInfo._programNameSuffix = resourceName().substr(idx+1);
+    }
 
     // We also differentiate between general properties, and vertex properties
     // Get the position of the first "," symbol. Must be added at the end of the program's name!!
-    stringAlg::stringSize propPositionVertex = _resourceName.find_first_of(",");
+    stringAlg::stringSize propPositionVertex = assetName().find_first_of(",");
     // Get the position of the first "." symbol
-    stringAlg::stringSize propPosition = _resourceName.find_first_of(".");
+    stringAlg::stringSize propPosition = assetName().find_first_of(".");
     // If we have effect properties, we extract them from the name
     // (starting from the first "." symbol to the first "," symbol)
     if (propPosition != stringImpl::npos) {
-        loadInfo._programProperties = "." + _resourceName.substr(propPosition + 1, propPositionVertex - propPosition - 1);
+        loadInfo._programProperties = "." + assetName().substr(propPosition + 1, propPositionVertex - propPosition - 1);
     }
     // Vertex properties start off identically to the rest of the stages' names
     loadInfo._vertexStageProperties = loadInfo._programProperties;
     // But we also add the shader specific properties
     if (propPositionVertex != stringImpl::npos) {
-        loadInfo._vertexStageProperties += "." + _resourceName.substr(propPositionVertex + 1);
+        loadInfo._vertexStageProperties += "." + assetName().substr(propPositionVertex + 1);
     }
 
     // Get all of the preprocessor defines and add them to the general shader header for this program
@@ -428,9 +432,8 @@ void glShaderProgram::loadSourceCode(ShaderType stage,
 /// Creation of a new shader program. Pass in a shader token and use glsw to
 /// load the corresponding effects
 bool glShaderProgram::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) {
-    // NULL shader means use shaderProgram(0), so bypass the normal
-    // loading routine
-    if (_resourceName.compare("NULL") == 0) {
+    // NULL shader means use shaderProgram(0), so bypass the normal loading routine
+    if (resourceName().compare("NULL") == 0) {
         _validationQueued = false;
         _shaderProgramID = 0;
         return ShaderProgram::load(onLoadCallback);
@@ -464,7 +467,8 @@ void glShaderProgram::reloadShaders(bool reparseShaderSource) {
         stringImpl shaderCompileName(info._programName +
                                      "." +
                                      GLUtil::glShaderStageNameTable[i] +
-                                     info._vertexStageProperties);
+                                     info._vertexStageProperties + 
+                                     info._programNameSuffix);
         glShader*& shader = _shaderStage[i];
 
         // We ask the shader manager to see if it was previously loaded elsewhere
@@ -509,7 +513,7 @@ bool glShaderProgram::recompileInternal() {
         unbind();
     }
 
-    if (_resourceName.compare("NULL") == 0) {
+    if (resourceName().compare("NULL") == 0) {
         _validationQueued = false;
         _shaderProgramID = 0;
         return true;

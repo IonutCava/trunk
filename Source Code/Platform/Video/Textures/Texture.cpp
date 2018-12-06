@@ -71,8 +71,8 @@ void Texture::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallbac
     TextureLoadInfo info;
 
     // Each texture face/layer must be in a comma separated list
-    stringstreamImpl textureLocationList(getResourceLocation());
-    stringstreamImpl textureFileList(getResourceName());
+    stringstreamImpl textureLocationList(assetLocation());
+    stringstreamImpl textureFileList(assetName());
 
     bool loadFromFile = false;
 
@@ -125,7 +125,7 @@ void Texture::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallbac
             if (info._layerIndex != 6) {
                 Console::errorfn(
                     Locale::get(_ID("ERROR_TEXTURE_LOADER_CUBMAP_INIT_COUNT")),
-                    getResourceLocation().c_str());
+                    resourceName().c_str());
                 return;
             }
         }
@@ -135,7 +135,7 @@ void Texture::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallbac
             if (info._layerIndex != _numLayers) {
                 Console::errorfn(
                     Locale::get(_ID("ERROR_TEXTURE_LOADER_ARRAY_INIT_COUNT")),
-                    getResourceLocation().c_str());
+                    resourceName().c_str());
                 return;
             }
         }
@@ -144,7 +144,7 @@ void Texture::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallbac
             if (info._cubeMapCount != _numLayers) {
                 Console::errorfn(
                     Locale::get(_ID("ERROR_TEXTURE_LOADER_ARRAY_INIT_COUNT")),
-                    getResourceLocation().c_str());
+                    resourceName().c_str());
                 return;
             }
         }

@@ -86,7 +86,7 @@ class QuadtreeNode {
 
     inline bool isALeaf() const { return _children == nullptr; }
 
-    inline BoundingBox& getBoundingBox() { return _boundingBox; }
+    inline const BoundingBox& getBoundingBox() const { return _boundingBox; }
     inline void setBoundingBox(const BoundingBox& bbox) { _boundingBox = bbox; }
     inline TerrainChunk* getChunk() { return _terrainChunk.get(); }
 

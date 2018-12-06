@@ -55,8 +55,8 @@ bool InfinitePlane::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCa
     miscTexDescriptor._srgb = true;
 
     ResourceDescriptor textureWaterCaustics("Plane Water Caustics");
-    textureWaterCaustics.setResourceLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
-    textureWaterCaustics.setResourceName("terrain_water_caustics.jpg");
+    textureWaterCaustics.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
+    textureWaterCaustics.assetName("terrain_water_caustics.jpg");
     textureWaterCaustics.setPropertyDescriptor(miscTexDescriptor);
 
     planeMaterial->setTexture(ShaderProgram::TextureUsage::UNIT0, CreateResource<Texture>(_parentCache, textureWaterCaustics));

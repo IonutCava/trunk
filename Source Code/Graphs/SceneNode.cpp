@@ -97,6 +97,12 @@ bool SceneNode::onRender(SceneGraphNode& sgn,
     return false;
 }
 
+void SceneNode::onRefreshNodeData(SceneGraphNode& sgn,
+                                  GFX::CommandBuffer& bufferInOut) {
+    ACKNOWLEDGE_UNUSED(sgn);
+    ACKNOWLEDGE_UNUSED(bufferInOut);
+}
+
 void SceneNode::updateBoundsInternal() {
 }
 
@@ -137,8 +143,8 @@ void SceneNode::setMaterialTpl(const Material_ptr& material) {
             // if the old material isn't the same as the new one
             if (_materialTemplate->getGUID() != material->getGUID()) {
                 Console::printfn(Locale::get(_ID("REPLACE_MATERIAL")),
-                                 _materialTemplate->name().c_str(),
-                                 material->name().c_str());
+                                 _materialTemplate->resourceName().c_str(),
+                                 material->resourceName().c_str());
                 _materialTemplate = material;  // set the new material
             }
         } else {
@@ -191,7 +197,7 @@ void SceneNode::saveCache(ByteBuffer& outputBuffer) const {
         if (static_cast<const Object3D*>(this)->isPrimitive()) {
             outputBuffer << static_cast<const Object3D*>(this)->getObjectType()._to_string();
         } else {
-            outputBuffer << name();
+            outputBuffer << resourceName();
         }
     }
 }

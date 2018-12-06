@@ -447,7 +447,7 @@ void WarScene::startSimulation(I64 btnGUID) {
             _aiManager->destroyNavMesh(aiEntity->getAgentRadiusCategory());
         }
         navMesh = MemoryManager_NEW AI::Navigation::NavigationMesh(_context);
-        navMesh->setFileName(name());
+        navMesh->setFileName(resourceName());
 
         if (!navMesh->load(_sceneGraph->getRoot())) {
             loadedFromFile = false;

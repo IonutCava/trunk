@@ -83,7 +83,7 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescr
     _children.reserve(INITIAL_CHILD_COUNT);
     RegisterEventCallbacks();
     
-    name(descriptor._name.empty() ? Util::StringFormat("%s_SGN", _node->name().c_str()) : descriptor._name);
+    name(descriptor._name.empty() ? Util::StringFormat("%s_SGN", _node->resourceName().c_str()) : descriptor._name);
 
     AddMissingComponents(descriptor._componentMask);
 
@@ -93,7 +93,7 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescr
 /// If we are destroying the current graph node
 SceneGraphNode::~SceneGraphNode()
 {
-    Console::printfn(Locale::get(_ID("REMOVE_SCENEGRAPH_NODE")), name().c_str(), _node->name().c_str());
+    Console::printfn(Locale::get(_ID("REMOVE_SCENEGRAPH_NODE")), name().c_str(), _node->resourceName().c_str());
 
     if (Attorney::SceneNodeSceneGraph::parentCount(*_node) == 0) {
         assert(_node.use_count() == Attorney::SceneNodeSceneGraph::maxReferenceCount(*_node));
@@ -344,7 +344,7 @@ SceneGraphNode* SceneGraphNode::findChild(I64 GUID, bool recursive) const {
 SceneGraphNode* SceneGraphNode::findChild(const stringImpl& name, bool sceneNodeName, bool recursive) const {
     SharedLock r_lock(_childLock);
     for (auto& child : _children) {
-        if (sceneNodeName ? child->getNode()->name().compare(name) == 0
+        if (sceneNodeName ? child->getNode()->resourceName().compare(name) == 0
                           : child->name().compare(name) == 0)
         {
             return child;
@@ -488,6 +488,10 @@ bool SceneGraphNode::prepareRender(const SceneRenderState& sceneRenderState,
         rComp->onRender(renderStagePass);
     }
     return _node->onRender(*this, sceneRenderState, renderStagePass);
+}
+
+void SceneGraphNode::onRefreshNodeData(GFX::CommandBuffer& bufferInOut) {
+    _node->onRefreshNodeData(*this, bufferInOut);
 }
 
 void SceneGraphNode::onCameraUpdate(I64 cameraGUID,

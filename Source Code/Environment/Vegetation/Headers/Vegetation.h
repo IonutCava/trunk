@@ -60,10 +60,10 @@ struct VegetationDetails {
     F32 treeDensity;
     F32 treeScale;
     stringImpl name;
-    stringImpl grassShaderName;
     std::shared_ptr<ImageTools::ImageData> map;
     std::weak_ptr<Terrain> parentTerrain;
     Texture_ptr grassBillboards;
+    Material_ptr vegetationMaterialPtr;
 };
 
 struct GrassData {
@@ -96,8 +96,8 @@ class Vegetation : public SceneNode {
                   const SceneRenderState& sceneRenderState,
                   RenderStagePass renderStagePass)  override;
 
-    void gpuCull(RenderStagePass renderStagePass, const SceneRenderState& sceneRenderState, const Camera& cam);
-
+    void onRefreshNodeData(SceneGraphNode& sgn,
+                           GFX::CommandBuffer& bufferInOut) override;
    private:
     void generateTrees(const Task& parentTask);
     void uploadGrassData();
@@ -114,7 +114,6 @@ class Vegetation : public SceneNode {
     GFXDevice& _context;
     TerrainChunk& _terrainChunk;
     // variables
-    U8 _parentLoD;
     bool _render;  ///< Toggle vegetation rendering On/Off
     bool _success;
     std::atomic_bool _threadedLoadComplete;
@@ -127,9 +126,7 @@ class Vegetation : public SceneNode {
     U64 _stateRefreshIntervalUS = 0ULL;
     U64 _stateRefreshIntervalBufferUS = 0ULL;
     std::shared_ptr<ImageTools::ImageData> _map;  ///< Dispersion map for vegetation placement
-    Texture_ptr _grassBillboards;
     ShaderProgram_ptr _cullShader;
-    stringImpl _grassShaderName;
     bool _shadowMapped;
     size_t  _grassStateBlockHash;
     U32 _instanceCountGrass;
@@ -138,9 +135,7 @@ class Vegetation : public SceneNode {
 
     ShaderBuffer* _grassData;
     GenericDrawCommand _cullDrawCommand;
-    RenderStagePass _prevRenderStagePass;
 
-    static bool s_staticDataUpdated;
     static vector<mat3<F32> > s_rotationMatrices;
     static vector<vec3<F32> > s_grassBlades;
     static vector<vec2<F32> > s_texCoord;

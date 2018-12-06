@@ -189,7 +189,7 @@ void SceneManager::setActiveScene(Scene* const scene) {
     ShadowMap::resetShadowMaps();
 
     _platformContext->gui().onChangeScene(scene);
-    ParamHandler::instance().setParam(_ID("activeScene"), scene->name());
+    ParamHandler::instance().setParam(_ID("activeScene"), scene->resourceName());
 
     if (_camUpdateListenerID != 0) {
         Camera::removeUpdateListener(_camUpdateListenerID);
@@ -237,7 +237,7 @@ bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious, bool
                     btn->setEventCallback(GUIButton::Event::MouseClick,
                         [this](I64 btnGUID)
                         {
-                            _sceneSwitchTarget.set(_scenePool->defaultScene().name(), true, false);
+                            _sceneSwitchTarget.set(_scenePool->defaultScene().resourceName(), true, false);
                         });
                 }
             }
@@ -723,7 +723,7 @@ bool LoadSave::loadScene(Scene& activeScene) {
         return true;
     }
 
-    const stringImpl& sceneName = activeScene.name();
+    const stringImpl& sceneName = activeScene.resourceName();
 
     stringImpl path = Paths::g_saveLocation +  sceneName + "/";
     stringImpl saveFile = "current_save.sav";
@@ -762,7 +762,7 @@ bool LoadSave::saveScene(const Scene& activeScene, bool toCache) {
         return true;
     }
 
-    const stringImpl& sceneName = activeScene.name();
+    const stringImpl& sceneName = activeScene.resourceName();
     stringImpl path = Paths::g_saveLocation + sceneName + "/";
     stringImpl saveFile = "current_save.sav";
     stringImpl bakSaveFile = "save.bak";

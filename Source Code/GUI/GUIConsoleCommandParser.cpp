@@ -143,8 +143,8 @@ void GUIConsoleCommandParser::handlePlaySoundCommand(const stringImpl& args) {
 
         // The file is valid, so create a descriptor for it
         ResourceDescriptor sound("consoleFilePlayback");
-        sound.setResourceName(name);
-        sound.setResourceLocation(path);
+        sound.assetName(name);
+        sound.assetLocation(path);
         sound.setFlag(false);
         _sound = CreateResource<AudioDescriptor>(_resCache, sound);
         if (filename.find("music") != stringImpl::npos) {
@@ -178,7 +178,7 @@ void GUIConsoleCommandParser::handleNavMeshCommand(const stringImpl& args) {
         temp = MemoryManager_NEW AI::Navigation::NavigationMesh(_context);
     }
     // Set it's file name
-    temp->setFileName(_context.gui().activeScene()->name());
+    temp->setFileName(_context.gui().activeScene()->resourceName());
     // Try to load it from file
     bool loaded = temp->load(sceneGraph.getRoot());
     if (!loaded) {

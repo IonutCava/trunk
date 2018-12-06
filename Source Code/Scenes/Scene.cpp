@@ -154,7 +154,7 @@ bool Scene::idle() {  // Called when application is idle
 
     if (_cookCollisionMeshesScheduled && checkLoadFlag()) {
         if (_context.gfx().getFrameCount() > 1) {
-            _sceneGraph->getRoot().get<RigidBodyComponent>()->cookCollisionMesh(_name);
+            _sceneGraph->getRoot().get<RigidBodyComponent>()->cookCollisionMesh(resourceName());
             _cookCollisionMeshesScheduled = false;
         }
     }
@@ -180,8 +180,8 @@ void Scene::addMusic(MusicType type, const stringImpl& name, const stringImpl& s
     const stringImpl& musicFilePath = fileResult._path;
 
     ResourceDescriptor music(name);
-    music.setResourceName(musicFile);
-    music.setResourceLocation(musicFilePath);
+    music.assetName(musicFile);
+    music.assetLocation(musicFilePath);
     music.setFlag(true);
     hashAlg::insert(state().music(type),
                     _ID(name.c_str()),
@@ -195,8 +195,8 @@ bool Scene::saveXML() const {
     const stringImpl& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
     const boost::property_tree::xml_writer_settings<std::string> settings(' ', 4);
 
-    Console::printfn(Locale::get(_ID("XML_SAVE_SCENE")), name().c_str());
-    stringImpl sceneLocation(scenePath + "/" + name().c_str());
+    Console::printfn(Locale::get(_ID("XML_SAVE_SCENE")), resourceName().c_str());
+    stringImpl sceneLocation(scenePath + "/" + resourceName().c_str());
     stringImpl sceneDataFile(sceneLocation + ".xml");
 
     createDirectory((sceneLocation + "/collisionMeshes/").c_str());
@@ -225,8 +225,8 @@ bool Scene::saveXML() const {
         }
 
         pt.put("options.visibility", state().renderState().generalVisibility());
-        pt.put("options.cameraSpeed.<xmlattr>.move", par.getParam<F32>(_ID((name() + ".options.cameraSpeed.move").c_str())));
-        pt.put("options.cameraSpeed.<xmlattr>.turn", par.getParam<F32>(_ID((name() + ".options.cameraSpeed.turn").c_str())));
+        pt.put("options.cameraSpeed.<xmlattr>.move", par.getParam<F32>(_ID((resourceName() + ".options.cameraSpeed.move").c_str())));
+        pt.put("options.cameraSpeed.<xmlattr>.turn", par.getParam<F32>(_ID((resourceName() + ".options.cameraSpeed.turn").c_str())));
         pt.put("options.autoCookPhysicsAssets", true);
 
         pt.put("fog.fogDensity", state().fogDescriptor().density());
@@ -234,7 +234,7 @@ bool Scene::saveXML() const {
         pt.put("fog.fogColour.<xmlattr>.g", state().fogDescriptor().colour().g);
         pt.put("fog.fogColour.<xmlattr>.b", state().fogDescriptor().colour().b);
 
-        copyFile(scenePath, name() + ".xml", scenePath, name() + ".xml.bak", true);
+        copyFile(scenePath, resourceName() + ".xml", scenePath, resourceName() + ".xml.bak", true);
         write_xml(sceneDataFile.c_str(), pt, std::locale(), settings);
     }
     sceneGraph().saveToXML();
@@ -272,7 +272,7 @@ void Scene::loadAsset(const XML::SceneNode& sceneNode, SceneGraphNode* parent) {
     assert(parent != nullptr);
 
     const stringImpl& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
-    stringImpl sceneLocation(scenePath + "/" + name().c_str());
+    stringImpl sceneLocation(scenePath + "/" + resourceName().c_str());
     stringImpl nodePath = sceneLocation + "/nodes/" + parent->name() + "_" + sceneNode.name + ".xml";
 
     SceneGraphNode* crtNode = parent;
@@ -304,7 +304,7 @@ void Scene::loadAsset(const XML::SceneNode& sceneNode, SceneGraphNode* parent) {
                 ++_loadingTasks;
                 ResourceDescriptor item(sceneNode.name);
                 item.setOnLoadCallback(loadModelComplete);
-                item.setResourceLocation(modelName);
+                item.assetName(modelName);
                 if (Util::CompareIgnoreCase(modelName, "BOX_3D")) {
                     ret = CreateResource<Box3D>(_resCache, item);
                 } else if (Util::CompareIgnoreCase(modelName, "SPHERE_3D")) {
@@ -343,8 +343,8 @@ void Scene::loadAsset(const XML::SceneNode& sceneNode, SceneGraphNode* parent) {
             if (!modelName.empty()) {
                 ++_loadingTasks;
                 ResourceDescriptor model(modelName);
-                model.setResourceLocation(Paths::g_assetsLocation);
-                model.setResourceName(modelName);
+                model.assetLocation(Paths::g_assetsLocation);
+                model.assetName(modelName);
                 model.setFlag(true);
                 model.setThreadedLoading(true);
                 model.setOnLoadCallback(loadModelComplete);
@@ -894,24 +894,24 @@ void Scene::loadDefaultCamera() {
     
     
     // Camera position is overridden in the scene's XML configuration file
-    if (!_paramHandler.isParam<bool>(_ID((name() + ".options.cameraStartPositionOverride").c_str()))) {
+    if (!_paramHandler.isParam<bool>(_ID((resourceName() + ".options.cameraStartPositionOverride").c_str()))) {
         return;
     }
 
-    if (_paramHandler.getParam<bool>(_ID((name() + ".options.cameraStartPositionOverride").c_str()))) {
+    if (_paramHandler.getParam<bool>(_ID((resourceName() + ".options.cameraStartPositionOverride").c_str()))) {
         baseCamera->setEye(vec3<F32>(
-            _paramHandler.getParam<F32>(_ID((name() + ".options.cameraStartPosition.x").c_str())),
-            _paramHandler.getParam<F32>(_ID((name() + ".options.cameraStartPosition.y").c_str())),
-            _paramHandler.getParam<F32>(_ID((name() + ".options.cameraStartPosition.z").c_str()))));
-        vec2<F32> camOrientation(_paramHandler.getParam<F32>(_ID((name() + ".options.cameraStartOrientation.xOffsetDegrees").c_str())),
-            _paramHandler.getParam<F32>(_ID((name() + ".options.cameraStartOrientation.yOffsetDegrees").c_str())));
+            _paramHandler.getParam<F32>(_ID((resourceName() + ".options.cameraStartPosition.x").c_str())),
+            _paramHandler.getParam<F32>(_ID((resourceName() + ".options.cameraStartPosition.y").c_str())),
+            _paramHandler.getParam<F32>(_ID((resourceName() + ".options.cameraStartPosition.z").c_str()))));
+        vec2<F32> camOrientation(_paramHandler.getParam<F32>(_ID((resourceName() + ".options.cameraStartOrientation.xOffsetDegrees").c_str())),
+            _paramHandler.getParam<F32>(_ID((resourceName() + ".options.cameraStartOrientation.yOffsetDegrees").c_str())));
         baseCamera->setGlobalRotation(camOrientation.y /*yaw*/, camOrientation.x /*pitch*/);
     } else {
         baseCamera->setEye(vec3<F32>(0, 50, 0));
     }
 
-    baseCamera->setMoveSpeedFactor(_paramHandler.getParam<F32>(_ID((name() + ".options.cameraSpeed.move").c_str()), 1.0f));
-    baseCamera->setTurnSpeedFactor(_paramHandler.getParam<F32>(_ID((name() + ".options.cameraSpeed.turn").c_str()), 1.0f));
+    baseCamera->setMoveSpeedFactor(_paramHandler.getParam<F32>(_ID((resourceName() + ".options.cameraSpeed.move").c_str()), 1.0f));
+    baseCamera->setTurnSpeedFactor(_paramHandler.getParam<F32>(_ID((resourceName() + ".options.cameraSpeed.turn").c_str()), 1.0f));
     baseCamera->setProjection(_context.gfx().renderingData().aspectRatio(),
                               _context.config().runtime.verticalFOV,
                               vec2<F32>(_context.config().runtime.zNear, _context.config().runtime.zFar));
@@ -926,7 +926,7 @@ bool Scene::loadXML(const stringImpl& name) {
 bool Scene::load(const stringImpl& name) {
     setState(ResourceState::RES_LOADING);
 
-    _name = name;
+    _resourceName = name;
 
     loadDefaultCamera();
     while (!_xmlSceneGraph.empty()) {
@@ -1008,7 +1008,7 @@ void Scene::postLoad() {
     }
 
     // Cook geometry
-    if (_paramHandler.getParam<bool>(_ID((name() + ".options.autoCookPhysicsAssets").c_str()), true)) {
+    if (_paramHandler.getParam<bool>(_ID((resourceName() + ".options.autoCookPhysicsAssets").c_str()), true)) {
         _cookCollisionMeshesScheduled = true;
     }
 }
@@ -1078,7 +1078,7 @@ void Scene::onSetActive() {
     addPlayerInternal(false);
 
     static stringImpl originalTitle = _context.activeWindow().title();
-    _context.activeWindow().title(originalTitle + " - " + name());
+    _context.activeWindow().title(originalTitle + " - " + resourceName());
 }
 
 void Scene::onRemoveActive() {

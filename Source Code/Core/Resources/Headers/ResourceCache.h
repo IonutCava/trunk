@@ -92,7 +92,7 @@ public:
         ResourceLoadLock res_lock(loadingHash);
 
         /// Check cache first to avoid loading the same resource twice
-        std::shared_ptr<T> ptr = std::static_pointer_cast<T>(loadResource(loadingHash, descriptor.name()));
+        std::shared_ptr<T> ptr = std::static_pointer_cast<T>(loadResource(loadingHash, descriptor.resourceName()));
         /// If the cache did not contain our resource ...
         wasInCache = ptr != nullptr;
         if (!ptr) {

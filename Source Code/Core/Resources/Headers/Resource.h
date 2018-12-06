@@ -74,11 +74,11 @@ class Resource : public GUIDWrapper
 {
    public:
     explicit Resource(ResourceType type,
-                      const stringImpl& name);
+                      const stringImpl& resourceName);
     virtual ~Resource();
 
     /// Name management
-    const stringImpl& name() const;
+    const stringImpl& resourceName() const;
     ResourceType getType() const;
     ResourceState getState() const;
 
@@ -86,7 +86,7 @@ class Resource : public GUIDWrapper
     virtual void setState(ResourceState currentState);
 
    protected:
-    stringImpl   _name;
+    stringImpl   _resourceName;
     ResourceType _resourceType;
     std::atomic<ResourceState> _resourceState;
 };
@@ -102,16 +102,16 @@ class CachedResource : public Resource,
 public:
     explicit CachedResource(ResourceType type,
                             size_t descriptorHash,
-                            const stringImpl& name);
-    explicit CachedResource(ResourceType type,
-                            size_t descriptorHash,
-                            const stringImpl& name,
                             const stringImpl& resourceName);
     explicit CachedResource(ResourceType type,
                             size_t descriptorHash,
-                            const stringImpl& name,
                             const stringImpl& resourceName,
-                            const stringImpl& resourceLocation);
+                            const stringImpl& assetName);
+    explicit CachedResource(ResourceType type,
+                            size_t descriptorHash,
+                            const stringImpl& resourceName,
+                            const stringImpl& assetName,
+                            const stringImpl& assetLocation);
 
     virtual ~CachedResource();
 
@@ -123,21 +123,23 @@ public:
 
     size_t getDescriptorHash() const;
     /// Physical file location
-    const stringImpl& getResourceLocation() const;
+    const stringImpl& assetLocation() const;
     /// Physical file name
-    const stringImpl& getResourceName() const;
+    const stringImpl& assetName() const;
+
+    inline stringImpl assetPath() const { return assetLocation() + "/" + assetName(); }
 
     void setStateCallback(ResourceState targetState, const DELEGATE_CBK<void, Resource_wptr>& cbk);
 
 protected:
     void setState(ResourceState currentState) override;
-    void setResourceName(const stringImpl& name);
-    void setResourceLocation(const stringImpl& location);
+    void assetName(const stringImpl& name);
+    void assetLocation(const stringImpl& location);
 
 protected:
     size_t _descriptorHash;
-    stringImpl   _resourceLocation;  ///< Physical file location
-    stringImpl   _resourceName;      ///< Physical file name
+    stringImpl   _assetLocation;  ///< Physical file location
+    stringImpl   _assetName;      ///< Physical file name
     std::array<DELEGATE_CBK<void, Resource_wptr>, to_base(ResourceState::COUNT)> _loadingCallbacks;
     mutable std::mutex _callbackLock;
 };

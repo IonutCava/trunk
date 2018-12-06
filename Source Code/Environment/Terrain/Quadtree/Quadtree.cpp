@@ -82,7 +82,7 @@ void Quadtree::build(GFXDevice& context,
     _root->build(context, 0, vec2<U16>(0u), HMsize, targetChunkDimension, terrain, _chunkCount);
 }
 
-BoundingBox& Quadtree::computeBoundingBox() {
+const BoundingBox& Quadtree::computeBoundingBox() {
     assert(_root);
     _root->computeBoundingBox();
     return _root->getBoundingBox();

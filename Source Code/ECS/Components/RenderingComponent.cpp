@@ -65,7 +65,7 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
     bool isSubMesh = node->getObjectType()._value == ObjectType::SUBMESH;
     bool nodeSkinned = node->getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED);
 
-    assert(_materialInstance && !_materialInstance->name().empty());
+    assert(_materialInstance && !_materialInstance->resourceName().empty());
 
     if (!isSubMesh) {
         for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
@@ -276,6 +276,10 @@ void RenderingComponent::onRender(RenderStagePass renderStagePass) {
     {
         getDrawPackage(renderStagePass).descriptorSet(0, _descriptorSetCache);
     }
+}
+
+void RenderingComponent::onRefreshNodeData(GFX::CommandBuffer& bufferInOut) {
+    _parentSGN.onRefreshNodeData(bufferInOut);
 }
 
 void RenderingComponent::getMaterialColourMatrix(mat4<F32>& matOut) const {

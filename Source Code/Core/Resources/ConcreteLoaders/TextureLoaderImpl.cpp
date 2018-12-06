@@ -22,9 +22,6 @@ CachedResource_ptr ImplResourceLoader<Texture>::operator()() {
     assert(_descriptor.getEnumValue() >= to_base(TextureType::TEXTURE_1D) &&
            _descriptor.getEnumValue() < to_base(TextureType::COUNT));
 
-    assert((!_descriptor.getResourceLocation().empty() && !_descriptor.getResourceName().empty()) ||
-            _descriptor.getResourceLocation().empty());
-
     // Samplers are not optional!
     assert(_descriptor.hasPropertyDescriptor());
 
@@ -34,10 +31,10 @@ CachedResource_ptr ImplResourceLoader<Texture>::operator()() {
         Texture::s_missingTextureFileName = "missing_texture.jpg";
     }
 
-    stringImpl resourceLocation = _descriptor.getResourceLocation();
+    stringImpl resourceLocation = _descriptor.assetLocation();
 
-    size_t numCommas = std::count(std::cbegin(_descriptor.getResourceName()),
-                                  std::cend(_descriptor.getResourceName()),
+    size_t numCommas = std::count(std::cbegin(_descriptor.assetName()),
+                                  std::cend(_descriptor.assetName()),
                                   ',');
     size_t crtNumCommas = std::count(std::cbegin(resourceLocation),
                           std::cend(resourceLocation),
@@ -55,13 +52,13 @@ CachedResource_ptr ImplResourceLoader<Texture>::operator()() {
             resourceLocation.append("," + resourceLocation);
         }
 
-        _descriptor.setResourceLocation(resourceLocation);
+        _descriptor.assetLocation(resourceLocation);
     }
 
     Texture_ptr ptr(_context.gfx().newTexture(_loadingDescriptorHash,
-                                              _descriptor.name(),
-                                              _descriptor.getResourceName(),
-                                              _descriptor.getResourceLocation(),
+                                              _descriptor.resourceName(),
+                                              _descriptor.assetName(),
+                                              _descriptor.assetLocation(),
                                               !_descriptor.getFlag(),
                                               _descriptor.getThreaded(),
                                               *texDescriptor),
@@ -69,8 +66,9 @@ CachedResource_ptr ImplResourceLoader<Texture>::operator()() {
 
     if (!load(ptr, _descriptor.onLoadCallback())) {
         Console::errorfn(Locale::get(_ID("ERROR_TEXTURE_LOADER_FILE")),
-                         _descriptor.getResourceLocation().c_str(),
-                         _descriptor.name().c_str());
+                         _descriptor.assetLocation().c_str(),
+                         _descriptor.assetName().c_str(),
+                         _descriptor.resourceName().c_str());
         ptr.reset();
     }
 

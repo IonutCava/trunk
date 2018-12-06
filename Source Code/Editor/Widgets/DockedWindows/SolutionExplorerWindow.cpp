@@ -37,7 +37,7 @@ namespace Divide {
         }
 
         ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_Leaf;
-        if (ImGui::TreeNodeEx((void*)(intptr_t)camera->getGUID(), node_flags, camera->name().c_str())) {
+        if (ImGui::TreeNodeEx((void*)(intptr_t)camera->getGUID(), node_flags, camera->resourceName().c_str())) {
             if (ImGui::IsItemClicked()) {
                 sceneManager.resetSelection(0);
                 Attorney::EditorSolutionExplorerWindow::setSelectedCamera(_parent, camera);
@@ -81,7 +81,7 @@ namespace Divide {
 
         ImGui::PushItemWidth(200);
         ImGui::BeginChild("SceneGraph", ImVec2(ImGui::GetWindowContentRegionWidth(), ImGui::GetWindowHeight() * .5f), true, 0);
-        if (ImGui::TreeNodeEx(activeScene.name().c_str(), ImGuiTreeNodeFlags_DefaultOpen))
+        if (ImGui::TreeNodeEx(activeScene.resourceName().c_str(), ImGuiTreeNodeFlags_DefaultOpen))
         {
             ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, ImGui::GetFontSize() * 3); // Increase spacing to differentiate leaves from expanded contents.
             for (PlayerIndex i = 0; i < static_cast<PlayerIndex>(Config::MAX_LOCAL_PLAYER_COUNT); ++i) {
@@ -100,7 +100,7 @@ namespace Divide {
 
         const vector<stringImpl>& scenes = sceneManager.sceneNameList();
         for (const stringImpl& scene : scenes) {
-            if (scene != activeScene.name()) {
+            if (scene != activeScene.resourceName()) {
                 if (ImGui::TreeNodeEx(scene.c_str(), ImGuiTreeNodeFlags_Leaf)) {
                     ImGui::TreePop();
                 }

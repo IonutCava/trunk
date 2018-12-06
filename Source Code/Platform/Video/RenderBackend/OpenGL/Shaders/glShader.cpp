@@ -205,10 +205,8 @@ stringImpl glShader::preprocessIncludes(const stringImpl& name,
 // ============================ static data =========================== //
 /// Remove a shader entity. The shader is deleted only if it isn't referenced by a program
 void glShader::removeShader(glShader* s) {
-    // Keep a copy of it's name
-    stringImpl name(s->name());
     // Try to find it
-    U64 nameHash = _ID(name.c_str());
+    U64 nameHash = _ID(s->name().c_str());
     UniqueLockShared w_lock(_shaderNameLock);
     ShaderMap::iterator it = _shaderNameMap.find(nameHash);
     if (it != std::end(_shaderNameMap)) {

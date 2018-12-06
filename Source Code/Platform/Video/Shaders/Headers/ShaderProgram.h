@@ -98,9 +98,9 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
    public:
     explicit ShaderProgram(GFXDevice& context,
                            size_t descriptorHash,
-                           const stringImpl& name,
-                           const stringImpl& resourceName,
-                           const stringImpl& resourceLocation,
+                           const stringImpl& shaderName,
+                           const stringImpl& shaderFileName,
+                           const stringImpl& shaderFileLocation,
                            bool asyncLoad);
     virtual ~ShaderProgram();
 

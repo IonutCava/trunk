@@ -243,7 +243,7 @@ void RenderPassManager::refreshNodeData(RenderStage stage,
             if (Attorney::RenderingCompRenderPass::hasDrawCommands(renderable, stage)) {
                 Attorney::RenderingCompRenderPass::setDataIndex(renderable, stage, to_U32(g_nodeData.size()));
                 Attorney::RenderingCompRenderPass::updateDrawCommands(renderable, stage, g_drawCommands);
-
+                Attorney::RenderingCompRenderPass::onRefreshNodeData(renderable, bufferInOut);
                 g_nodeData.push_back(processVisibleNode(node, renderable.renderOptionEnabled(RenderingComponent::RenderOptions::IS_OCCLUSION_CULLABLE), playAnimations, viewMatrix));
             }
         }

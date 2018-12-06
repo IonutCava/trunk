@@ -14,7 +14,7 @@ size_t PropertyDescriptor::getHash() const {
 
 ResourceDescriptor::ResourceDescriptor(const stringImpl& resourceName)
     : _propertyDescriptor(nullptr),
-      _name(resourceName),
+      _resourceName(resourceName),
       _flag(false),
       _ID(0),
       _enumValue(0),
@@ -30,9 +30,9 @@ ResourceDescriptor::~ResourceDescriptor()
 
 ResourceDescriptor::ResourceDescriptor(const ResourceDescriptor& old)
     : _propertyDescriptor(nullptr),
-      _name(old._name),
+      _assetName(old._assetName),
+      _assetLocation(old._assetLocation),
       _resourceName(old._resourceName),
-      _resourceLocation(old._resourceLocation),
       _flag(old._flag),
       _threaded(old._threaded),
       _ID(old._ID),
@@ -46,9 +46,9 @@ ResourceDescriptor::ResourceDescriptor(const ResourceDescriptor& old)
 
 ResourceDescriptor& ResourceDescriptor::operator=(ResourceDescriptor const& old) {
     if (this != &old) {
-        _name = old._name;
+        _assetName = old._assetName;
         _resourceName = old._resourceName;
-        _resourceLocation = old._resourceLocation;
+        _assetLocation = old._assetLocation;
         _flag = old._flag;
         _threaded = old._threaded;
         _ID = old._ID;
@@ -63,9 +63,9 @@ ResourceDescriptor& ResourceDescriptor::operator=(ResourceDescriptor const& old)
 }
 
 ResourceDescriptor::ResourceDescriptor(ResourceDescriptor&& old) noexcept 
-    :  _name(std::move(old._name)),
+    :  _assetName(std::move(old._assetName)),
        _resourceName(std::move(old._resourceName)),
-       _resourceLocation(std::move(old._resourceLocation)),
+       _assetLocation(std::move(old._assetLocation)),
        _flag(std::move(old._flag)),
        _threaded(std::move(old._threaded)),
        _ID(std::move(old._ID)),
@@ -79,9 +79,9 @@ ResourceDescriptor::ResourceDescriptor(ResourceDescriptor&& old) noexcept
 }
 
 size_t ResourceDescriptor::getHash() const {
-    Util::Hash_combine(_hash, _name);
     Util::Hash_combine(_hash, _resourceName);
-    Util::Hash_combine(_hash, _resourceLocation);
+    Util::Hash_combine(_hash, _assetName);
+    Util::Hash_combine(_hash, _assetLocation);
     Util::Hash_combine(_hash, _flag);
     //Util::Hash_combine(_hash, _threaded); //Loading specific
     Util::Hash_combine(_hash, _ID);

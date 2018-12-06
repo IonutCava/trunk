@@ -75,6 +75,7 @@ FWD_DECLARE_MANAGED_CLASS(CachedResource);
 
 class ResourceDescriptor : public Hashable {
    public:
+    ///resourceName is the name of the resource instance, not an actual asset name! Use "assetName" for that
     explicit ResourceDescriptor(const stringImpl& resourceName);
 
     ~ResourceDescriptor();
@@ -83,13 +84,8 @@ class ResourceDescriptor : public Hashable {
     ResourceDescriptor& operator=(ResourceDescriptor const& old);
     ResourceDescriptor(ResourceDescriptor&& old) noexcept;
 
-    inline const stringImpl& getResourceName() const {
-        return _resourceName;
-    }
-    inline const stringImpl& getResourceLocation() const {
-        return _resourceLocation;
-    }
-    inline const stringImpl& name() const { return _name; }
+    inline const stringImpl& resourceName() const { return _resourceName; }
+    inline void resourceName(const stringImpl& name) { _resourceName = name; }
 
     template <typename T>
     inline const std::shared_ptr<T> getPropertyDescriptor() const {
@@ -100,6 +96,9 @@ class ResourceDescriptor : public Hashable {
     inline bool hasPropertyDescriptor() const {
         return _propertyDescriptor != nullptr;
     }
+    inline const stringImpl& assetName() const { return _assetName; }
+    inline const stringImpl& assetLocation() const { return _assetLocation; }
+
     inline bool getFlag() const { return _flag; }
     inline bool getThreaded() const { return _threaded; }
     inline U32  getEnumValue() const { return _enumValue; }
@@ -111,18 +110,15 @@ class ResourceDescriptor : public Hashable {
         return _onLoadCallback;
     }
 
-    inline void setResourceLocation(const stringImpl& resourceLocation) {
-        _resourceLocation = resourceLocation;
-        while (_resourceLocation.back() == '/') {
-            _resourceLocation.pop_back();
+    inline void assetLocation(const stringImpl& assetLocation) {
+        _assetLocation = assetLocation;
+        while (_assetLocation.back() == '/') {
+            _assetLocation.pop_back();
         }
     }
 
-    inline void setResourceName(const stringImpl& resourceName) {
-        _resourceName = resourceName;
-    }
     inline void setEnumValue(U32 enumValue) { _enumValue = enumValue; }
-    inline void name(const stringImpl& name) { _name = name; }
+    inline void assetName(const stringImpl& name) { _assetName = name; }
     inline void setFlag(bool flag) { _flag = flag; }
     inline void setID(U32 ID) { _ID = ID; }
     inline void setBoolMask(P32 mask) { _mask = mask; }
@@ -145,12 +141,12 @@ class ResourceDescriptor : public Hashable {
     size_t getHash() const override;
 
    private:
-    /// Item name
-    stringImpl _name;
-    /// Physical file location
-    stringImpl _resourceLocation;
-    /// Physical file name
+    /// Resource instance name (for lookup)
     stringImpl _resourceName;
+    /// Asset file name
+    stringImpl _assetName;
+    /// Asset file location
+    stringImpl _assetLocation;
     bool _flag = false;
     bool _threaded = true;
     U32 _ID = 0;

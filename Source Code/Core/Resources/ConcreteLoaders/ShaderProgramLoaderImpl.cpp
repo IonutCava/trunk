@@ -18,18 +18,18 @@ namespace Divide {
 
 template<>
 CachedResource_ptr ImplResourceLoader<ShaderProgram>::operator()() {
-    if (_descriptor.getResourceName().empty()) {
-        _descriptor.setResourceName(_descriptor.name());
+    if (_descriptor.assetName().empty()) {
+        _descriptor.assetName(_descriptor.resourceName());
     }
 
-    if (_descriptor.getResourceLocation().empty()) {
-        _descriptor.setResourceLocation(Paths::g_assetsLocation + Paths::g_shadersLocation);
+    if (_descriptor.assetLocation().empty()) {
+        _descriptor.assetLocation(Paths::g_assetsLocation + Paths::g_shadersLocation);
     }
 
     ShaderProgram_ptr ptr(_context.gfx().newShaderProgram(_loadingDescriptorHash,
-                                                          _descriptor.name(),
-                                                          _descriptor.getResourceName(),
-                                                          _descriptor.getResourceLocation(),
+                                                          _descriptor.resourceName(),
+                                                          _descriptor.assetName(),
+                                                          _descriptor.assetLocation(),
                                                           USE_THREADED_SHADER_LOAD ? _descriptor.getThreaded()
                                                                                    : false),
                           DeleteResource(_cache));

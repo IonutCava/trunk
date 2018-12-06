@@ -40,12 +40,14 @@ namespace Divide {
 
 class Mesh;
 class Terrain;
-class Vegetation;
+class BoundingBox;
 class QuadtreeNode;
 class ShaderProgram;
 class SceneGraphNode;
 class SceneRenderState;
 struct FileData;
+
+FWD_DECLARE_MANAGED_CLASS(Vegetation);
 
 namespace Attorney {
     class TerrainChunkTerrain;
@@ -55,7 +57,7 @@ class TerrainChunk {
     friend class Attorney::TerrainChunkTerrain;
 
    public:
-    TerrainChunk(GFXDevice& context, Terrain* const parentTerrain, QuadtreeNode* const parentNode);
+    TerrainChunk(GFXDevice& context, Terrain* const parentTerrain, const QuadtreeNode& parentNode);
     ~TerrainChunk();
 
     void load(U8 depth, const vec2<U32>& pos, U32 targetChunkDimension, const vec2<U32>& HMsize);
@@ -69,15 +71,19 @@ class TerrainChunk {
     }
 
     inline const Terrain& parent() const { return *_terrain; }
+    inline const QuadtreeNode& quadtreeNode() const { return _quadtreeNode; };
+
+    const BoundingBox& bounds() const;
 
    protected:
-    Vegetation* const getVegetation() const { return _vegetation.get(); }
+    const Vegetation_ptr& getVegetation() const { return _vegetation; }
 
    private:
     void computeIndicesArray(U8 depth, const vec2<U32>& position, const vec2<U32>& heightMapSize);
 
    private:
     GFXDevice& _context;
+    const QuadtreeNode& _quadtreeNode;
 
     U32 _ID;
     U32 _lodIndOffset;
@@ -90,16 +96,15 @@ class TerrainChunk {
     F32 _sizeY;
     vec2<F32> _heightBounds;  //< 0 = minHeight, 1 = maxHeight
     Terrain* _terrain;
-    QuadtreeNode* _parentNode;
     Terrain* _parentTerrain;
     static U32 _chunkID;
-    std::unique_ptr<Vegetation> _vegetation;
+    Vegetation_ptr _vegetation;
 };
 
 namespace Attorney {
 class TerrainChunkTerrain {
    private:
-    static Vegetation* const getVegetation(Divide::TerrainChunk& chunk) {
+    static const Vegetation_ptr& getVegetation(Divide::TerrainChunk& chunk) {
         return chunk.getVegetation();
     }
     friend class Divide::Terrain;

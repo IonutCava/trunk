@@ -310,8 +310,8 @@ void SceneGraph::saveToXML() const {
     const stringImpl& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
     const boost::property_tree::xml_writer_settings<std::string> settings(' ', 4);
 
-    Console::printfn(Locale::get(_ID("XML_SAVE_SCENE")), parentScene().name().c_str());
-    stringImpl sceneLocation(scenePath + "/" + parentScene().name());
+    Console::printfn(Locale::get(_ID("XML_SAVE_SCENE")), parentScene().resourceName().c_str());
+    stringImpl sceneLocation(scenePath + "/" + parentScene().resourceName());
 
     {
         boost::property_tree::ptree pt;

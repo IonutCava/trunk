@@ -96,7 +96,7 @@ Camera* Camera::createCamera(const stringImpl& cameraName, CameraType type) {
 
     if (camera != nullptr) {
         UniqueLockShared w_lock(s_cameraPoolLock);
-        hashAlg::insert(s_cameraPool, _ID(camera->name().c_str()), camera);
+        hashAlg::insert(s_cameraPool, _ID(camera->resourceName().c_str()), camera);
     }
 
     return camera;
@@ -105,7 +105,7 @@ Camera* Camera::createCamera(const stringImpl& cameraName, CameraType type) {
 bool Camera::destroyCamera(Camera*& camera) {
     if (camera != nullptr && camera->unload()) {
         UniqueLockShared w_lock(s_cameraPoolLock);
-        s_cameraPool.erase(_ID(camera->name().c_str()));
+        s_cameraPool.erase(_ID(camera->resourceName().c_str()));
         MemoryManager::DELETE(camera);
         return true;
     }

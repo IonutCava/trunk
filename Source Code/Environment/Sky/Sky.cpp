@@ -58,8 +58,8 @@ bool Sky::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) {
     skyboxTexture._srgb = true;
 
     ResourceDescriptor skyboxTextures("SkyboxTextures");
-    skyboxTextures.setResourceName("skybox_1.jpg, skybox_2.jpg, skybox_3.jpg, skybox_4.jpg, skybox_5.jpg, skybox_6.jpg");
-    skyboxTextures.setResourceLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
+    skyboxTextures.assetName("skybox_1.jpg, skybox_2.jpg, skybox_3.jpg, skybox_4.jpg, skybox_5.jpg, skybox_6.jpg");
+    skyboxTextures.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
     skyboxTextures.setPropertyDescriptor(skyboxTexture);
 
     _skybox = CreateResource<Texture>(_parentCache, skyboxTextures);

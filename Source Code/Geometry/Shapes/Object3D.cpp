@@ -292,7 +292,7 @@ void Object3D::saveToXML(boost::property_tree::ptree& pt) const {
     if (static_cast<const Object3D*>(this)->isPrimitive()) {
         pt.put("model", static_cast<const Object3D*>(this)->getObjectType()._to_string());
     } else {
-        pt.put("model", name());
+        pt.put("model", resourceName());
     }
 
     SceneNode::saveToXML(pt);

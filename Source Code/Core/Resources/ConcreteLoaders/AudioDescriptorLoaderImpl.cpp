@@ -9,9 +9,9 @@ namespace Divide {
 template <>
 CachedResource_ptr ImplResourceLoader<AudioDescriptor>::operator()() {
     AudioDescriptor_ptr ptr(MemoryManager_NEW AudioDescriptor(_loadingDescriptorHash,
-                                                              _descriptor.name(),
-                                                              _descriptor.getResourceName(),
-                                                              _descriptor.getResourceLocation()),
+                                                              _descriptor.resourceName(),
+                                                              _descriptor.assetName(),
+                                                              _descriptor.assetLocation()),
                             DeleteResource(_cache));
     if (!load(ptr, _descriptor.onLoadCallback())) {
         ptr.reset();

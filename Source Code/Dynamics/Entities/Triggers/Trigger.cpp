@@ -28,7 +28,7 @@ void Trigger::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn,
                           SceneState& sceneState) {
     if (_drawImpostor) {
         if (!_triggerImpostor) {
-            ResourceDescriptor impostorDesc(_name + "_impostor");
+            ResourceDescriptor impostorDesc(resourceName() + "_impostor");
             _triggerImpostor = CreateResource<ImpostorSphere>(_parentCache, impostorDesc);
 
             SceneGraphNodeDescriptor triggerImpostorDescriptor;

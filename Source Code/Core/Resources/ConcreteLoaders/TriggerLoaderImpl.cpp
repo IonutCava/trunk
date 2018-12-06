@@ -8,7 +8,7 @@ namespace Divide {
 
 template<>
 CachedResource_ptr ImplResourceLoader<Trigger>::operator()() {
-    std::shared_ptr<Trigger> ptr(MemoryManager_NEW Trigger(_cache, _loadingDescriptorHash, _descriptor.name()),
+    std::shared_ptr<Trigger> ptr(MemoryManager_NEW Trigger(_cache, _loadingDescriptorHash, _descriptor.resourceName()),
                                  DeleteResource(_cache));
 
     if (!load(ptr, _descriptor.onLoadCallback())) {

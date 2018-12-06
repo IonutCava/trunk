@@ -17,9 +17,9 @@ U32 TerrainChunk::_chunkID = 0;
 
 TerrainChunk::TerrainChunk(GFXDevice& context,
                            Terrain* const parentTerrain,
-                           QuadtreeNode* const parentNode)
+                           const QuadtreeNode& parentNode)
     : _context(context),
-      _parentNode(parentNode), 
+      _quadtreeNode(parentNode),
       _parentTerrain(parentTerrain),
       _ID(_chunkID++),
       _terrain(parentTerrain),
@@ -68,7 +68,7 @@ void TerrainChunk::load(U8 depth, const vec2<U32>& pos, U32 _targetChunkDimensio
     }
 
     _heightBounds.set(tempMin, tempMax);
-    _vegetation = std::make_unique<Vegetation>(_context, *this, Attorney::TerrainChunk::vegetationDetails(parent()));
+    _vegetation = std::make_shared<Vegetation>(_context, *this, Attorney::TerrainChunk::vegetationDetails(parent()));
     Attorney::TerrainChunk::registerTerrainChunk(*_parentTerrain, this);
 }
 
@@ -106,6 +106,10 @@ void TerrainChunk::computeIndicesArray(U8 depth,
 
     _lodIndCount = to_U32(indices.size());
     assert(nIndice == _lodIndCount);
+}
+
+const BoundingBox& TerrainChunk::bounds() const {
+    return _quadtreeNode.getBoundingBox();
 }
 
 };

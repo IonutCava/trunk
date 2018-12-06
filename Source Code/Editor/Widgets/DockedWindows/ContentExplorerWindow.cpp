@@ -203,8 +203,8 @@ namespace Divide {
         ResourceDescriptor textureResource(textureName);
         textureResource.setThreadedLoading(true);
         textureResource.setFlag(true);
-        textureResource.setResourceName(textureName);
-        textureResource.setResourceLocation(Paths::g_assetsLocation + "/" + texturePath);
+        textureResource.assetName(textureName);
+        textureResource.assetLocation(Paths::g_assetsLocation + "/" + texturePath);
         textureResource.setPropertyDescriptor(texturePreviewDescriptor);
 
         return CreateResource<Texture>(_parent.context().kernel().resourceCache(), textureResource);

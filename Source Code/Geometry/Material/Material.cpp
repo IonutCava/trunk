@@ -127,7 +127,7 @@ Material_ptr Material::clone(const stringImpl& nameSuffix) {
                   "Material error: clone called without a valid name suffix!");
 
     const Material& base = *this;
-    Material_ptr cloneMat = CreateResource<Material>(_parentCache, ResourceDescriptor(name() + nameSuffix));
+    Material_ptr cloneMat = CreateResource<Material>(_parentCache, ResourceDescriptor(resourceName() + nameSuffix));
 
     cloneMat->_shadingMode = base._shadingMode;
     cloneMat->_translucencyCheck = base._translucencyCheck;
@@ -244,29 +244,13 @@ void Material::setShaderProgramInternal(const ShaderProgram_ptr& shader,
     }
 }
 
-namespace {
-    stringImpl getDefinesHash(const vector<std::pair<stringImpl, bool>>& defines) {
-        size_t hash = 17;
-        for (auto entry : defines) {
-            Util::Hash_combine(hash, _ID(entry.first.c_str()));
-            Util::Hash_combine(hash, entry.second);
-        }
-        return to_stringImpl(hash);
-    }
-};
-
 void Material::setShaderProgramInternal(const stringImpl& shader,
                                         RenderStagePass renderStagePass,
                                         const bool computeOnAdd) {
     ShaderProgramInfo& info = shaderInfo(renderStagePass);
 
     stringImpl shaderName = shader.empty() ? "NULL" : shader;
-    if (!info._shaderDefines.empty()) {
-        shaderName.append("_" + getDefinesHash(info._shaderDefines));
-    }
-
     ResourceDescriptor shaderDescriptor(shaderName);
-
     ShaderProgramDescriptor shaderPropertyDescriptor;
     shaderPropertyDescriptor._defines = info._shaderDefines;
     shaderPropertyDescriptor._defines.push_back(std::make_pair("DEFINE_PLACEHOLDER", false));
@@ -274,11 +258,11 @@ void Material::setShaderProgramInternal(const stringImpl& shader,
     shaderDescriptor.setThreadedLoading(_shaderThreadedLoad);
 
     // if we already have a different shader assigned ...
-    if (info._shaderRef != nullptr && info._shaderRef->name().compare(shader) != 0)
+    if (info._shaderRef != nullptr && info._shaderRef->resourceName().compare(shader) != 0)
     {
         // We cannot replace a shader that is still loading in the background
         WAIT_FOR_CONDITION(info._shaderRef->getState() == ResourceState::RES_LOADED);
-        Console::printfn(Locale::get(_ID("REPLACE_SHADER")), info._shaderRef->name().c_str(), shader.c_str());
+        Console::printfn(Locale::get(_ID("REPLACE_SHADER")), info._shaderRef->resourceName().c_str(), shader.c_str());
     }
 
     ShaderComputeQueue::ShaderQueueElement queueElement(shaderDescriptor);
@@ -910,8 +894,8 @@ namespace {
         texDesc.setSampler(sampDesc);
 
         ResourceDescriptor texture(pathName + "/" + img_name);
-        texture.setResourceName(img_name);
-        texture.setResourceLocation(pathName);
+        texture.assetName(img_name);
+        texture.assetLocation(pathName);
         texture.setPropertyDescriptor(texDesc);
         texture.setFlag(!pt.get(textureNode + ".flipped", false));
 
@@ -954,8 +938,8 @@ void Material::saveToXML(const stringImpl& entryName, boost::property_tree::ptre
             stringImpl textureNode = entryName + ".texture.";
             textureNode += getTexUsageName(usage);
 
-            pt.put(textureNode + ".name", texture->getResourceName());
-            pt.put(textureNode + ".path", texture->getResourceLocation());
+            pt.put(textureNode + ".name", texture->assetName());
+            pt.put(textureNode + ".path", texture->assetLocation());
             pt.put(textureNode + ".flipped", texture->flipped());
 
             if (usage == ShaderProgram::TextureUsage::UNIT1) {

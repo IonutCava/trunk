@@ -9,6 +9,7 @@
 #include "Platform/Video/Headers/RenderPackage.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
 #include "Geometry/Material/Headers/Material.h"
+#include "Platform/Headers/PlatformRuntime.h"
 #include "Environment/Terrain/Headers/Terrain.h"
 #include "Environment/Terrain/Headers/TerrainChunk.h"
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
@@ -20,6 +21,7 @@
 namespace Divide {
 
 namespace {
+    static F32 g_grassDistance = 100.0f;
     thread_local vectorEASTL<GrassData> g_tempData;
 };
 
@@ -28,9 +30,9 @@ vector<vec3<F32> > Vegetation::s_grassBlades;
 vector<vec2<F32> > Vegetation::s_texCoord;
 GenericVertexData* Vegetation::s_grassGPUBuffer = nullptr;
 
-bool Vegetation::s_staticDataUpdated = false;
-
-Vegetation::Vegetation(GFXDevice& context, TerrainChunk& parentChunk, const VegetationDetails& details)
+Vegetation::Vegetation(GFXDevice& context, 
+                       TerrainChunk& parentChunk,
+                       const VegetationDetails& details)
     : SceneNode(context.parent().resourceCache(), parentChunk.parent().getDescriptorHash() + parentChunk.ID(), details.name + "_" + to_stringImpl(parentChunk.ID()), SceneNodeType::TYPE_VEGETATION_GRASS),
       _context(context),
       _terrainChunk(parentChunk),
@@ -39,7 +41,6 @@ Vegetation::Vegetation(GFXDevice& context, TerrainChunk& parentChunk, const Vege
       _grassScale(details.grassScale),
       _treeScale(details.treeScale),
       _treeDensity(details.treeDensity),
-      _grassBillboards(details.grassBillboards),
       _terrain(details.parentTerrain),
       _render(false),
       _success(false),
@@ -53,11 +54,8 @@ Vegetation::Vegetation(GFXDevice& context, TerrainChunk& parentChunk, const Vege
 {
     _threadedLoadComplete = false;
     _stopLoadingRequest = false;
-    _parentLoD = 0;
 
     _map = details.map;
-    _grassShaderName = details.grassShaderName;
-
     _cullDrawCommand = GenericDrawCommand(PrimitiveType::API_POINTS, 0, 1);
 
     _instanceRoutineIdx.fill(0);
@@ -80,22 +78,9 @@ Vegetation::Vegetation(GFXDevice& context, TerrainChunk& parentChunk, const Vege
     RenderStateBlock transparentRenderState;
     transparentRenderState.setCullMode(CullMode::CW);
     _grassStateBlockHash = transparentRenderState.getHash();
+    setMaterialTpl(details.vegetationMaterialPtr);
 
-    ResourceDescriptor vegetationMaterial("vegetationMaterial" + name());
-    Material_ptr vegMaterial = CreateResource<Material>(_parentCache, vegetationMaterial);
-
-    vegMaterial->setShaderLoadThreaded(false);
-    vegMaterial->setDiffuse(DefaultColours::WHITE);
-    vegMaterial->setSpecular(FColour(0.1f, 0.1f, 0.1f, 1.0f));
-    vegMaterial->setShininess(5.0f);
-    vegMaterial->setShadingMode(Material::ShadingMode::BLINN_PHONG);
-    vegMaterial->addShaderDefine("SKIP_TEXTURES");
-    vegMaterial->setShaderProgram(_grassShaderName, RenderStage::DISPLAY, true);
-    vegMaterial->setShaderProgram(_grassShaderName + ".PrePass", RenderPassType::DEPTH_PASS, true);
-    vegMaterial->setShaderProgram(_grassShaderName + ".Shadow", RenderStage::SHADOW, true);
-    vegMaterial->setTexture(ShaderProgram::TextureUsage::UNIT0, _grassBillboards);
-    vegMaterial->dumpToFile(false);
-    setMaterialTpl(vegMaterial);
+    _boundingBox.set(parentChunk.bounds());
 
     CreateTask(_context.parent().platformContext(),
         [this](const Task& parentTask) {
@@ -109,7 +94,7 @@ Vegetation::Vegetation(GFXDevice& context, TerrainChunk& parentChunk, const Vege
 
 Vegetation::~Vegetation()
 {
-    Console::printfn(Locale::get(_ID("UNLOAD_VEGETATION_BEGIN")), name().c_str());
+    Console::printfn(Locale::get(_ID("UNLOAD_VEGETATION_BEGIN")), resourceName().c_str());
     _stopLoadingRequest = true;
     U32 timer = 0;
     while (!_threadedLoadComplete) {
@@ -126,79 +111,78 @@ Vegetation::~Vegetation()
 
 
 void Vegetation::uploadGrassData() {
-    if (s_grassGPUBuffer != nullptr) {
-        return;
-    }
+    // Make sure this is ONLY CALLED FROM THE MAIN LOADING THREAD. All instances should call this in a serialized fashion
+    if (s_grassGPUBuffer == nullptr) {
+        static const vec2<F32> pos000(cosf(Angle::to_RADIANS(0.000f)), sinf(Angle::to_RADIANS(0.000f)));
+        static const vec2<F32> pos120(cosf(Angle::to_RADIANS(120.0f)), sinf(Angle::to_RADIANS(120.0f)));
+        static const vec2<F32> pos240(cosf(Angle::to_RADIANS(240.0f)), sinf(Angle::to_RADIANS(240.0f)));
 
-    static const vec2<F32> pos000(cosf(Angle::to_RADIANS(0.000f)), sinf(Angle::to_RADIANS(0.000f)));
-    static const vec2<F32> pos120(cosf(Angle::to_RADIANS(120.0f)), sinf(Angle::to_RADIANS(120.0f)));
-    static const vec2<F32> pos240(cosf(Angle::to_RADIANS(240.0f)), sinf(Angle::to_RADIANS(240.0f)));
+        static const vec3<F32> vertices[] = {vec3<F32>(-pos000.x, 0.0f, -pos000.y),
+                                             vec3<F32>(-pos000.x, 1.0f, -pos000.y),
+                                             vec3<F32>(pos000.x, 1.0f, pos000.y),
+                                             vec3<F32>(pos000.x, 0.0f, pos000.y),
 
-    static const vec3<F32> vertices[] = {vec3<F32>(-pos000.x, 0.0f, -pos000.y),
-                                         vec3<F32>(-pos000.x, 1.0f, -pos000.y),
-                                         vec3<F32>(pos000.x, 1.0f, pos000.y),
-                                         vec3<F32>(pos000.x, 0.0f, pos000.y),
+                                             vec3<F32>(-pos120.x, 0.0f, -pos120.y),
+                                             vec3<F32>(-pos120.x, 1.0f, -pos120.y),
+                                             vec3<F32>(pos120.x, 1.0f, pos120.y),
+                                             vec3<F32>(pos120.x, 0.0f, pos120.y),
 
-                                         vec3<F32>(-pos120.x, 0.0f, -pos120.y),
-                                         vec3<F32>(-pos120.x, 1.0f, -pos120.y),
-                                         vec3<F32>(pos120.x, 1.0f, pos120.y),
-                                         vec3<F32>(pos120.x, 0.0f, pos120.y),
+                                             vec3<F32>(-pos240.x, 0.0f, -pos240.y),
+                                             vec3<F32>(-pos240.x, 1.0f, -pos240.y),
+                                             vec3<F32>(pos240.x, 1.0f, pos240.y),
+                                             vec3<F32>(pos240.x, 0.0f, pos240.y)};
 
-                                         vec3<F32>(-pos240.x, 0.0f, -pos240.y),
-                                         vec3<F32>(-pos240.x, 1.0f, -pos240.y),
-                                         vec3<F32>(pos240.x, 1.0f, pos240.y),
-                                         vec3<F32>(pos240.x, 0.0f, pos240.y)};
+        static const U32 indices[] = {2, 1, 0, 2, 0, 1, 2, 0, 3, 2, 3, 0};
 
-    static const U32 indices[] = {2, 1, 0, 2, 0, 1, 2, 0, 3, 2, 3, 0};
+        static const vec2<F32> texcoords[] = {vec2<F32>(0.0f, 0.99f),
+                                              vec2<F32>(0.0f, 0.01f),
+                                              vec2<F32>(1.0f, 0.01f),
+                                              vec2<F32>(1.0f, 0.99f)};
 
-    static const vec2<F32> texcoords[] = {vec2<F32>(0.0f, 0.99f),
-                                          vec2<F32>(0.0f, 0.01f),
-                                          vec2<F32>(1.0f, 0.01f),
-                                          vec2<F32>(1.0f, 0.99f)};
+        s_grassGPUBuffer = _context.newGVD(1);
 
-    s_grassGPUBuffer = _context.newGVD(1);
-
-    if (s_grassBlades.empty()) {
-        U32 indexOffset = 0;
-        for (U8 j = 0; j < 3; ++j) {
-            indexOffset = (j * 4);
-            for (U8 l = 0; l < 12; ++l) {
-                s_grassBlades.push_back(vertices[indices[l] + indexOffset]);
-                s_texCoord.push_back(texcoords[(indices[l] + indexOffset) % 4]);
+        if (s_grassBlades.empty()) {
+            U32 indexOffset = 0;
+            for (U8 j = 0; j < 3; ++j) {
+                indexOffset = (j * 4);
+                for (U8 l = 0; l < 12; ++l) {
+                    s_grassBlades.push_back(vertices[indices[l] + indexOffset]);
+                    s_texCoord.push_back(texcoords[(indices[l] + indexOffset) % 4]);
+                }
             }
         }
-    }
 
-    if (s_rotationMatrices.empty()) {
-        vector<F32> angles;
-        angles.resize(18, 0.0f);
-        for (U8 i = 0; i < 18; ++i) {
-            F32 temp = Random(360.0f);
-            while (std::find(std::begin(angles), std::end(angles), temp) !=
-                   std::end(angles)) {
-                temp = Random(360.0f);
+        if (s_rotationMatrices.empty()) {
+            vector<F32> angles;
+            angles.resize(18, 0.0f);
+            for (U8 i = 0; i < 18; ++i) {
+                F32 temp = Random(360.0f);
+                while (std::find(std::begin(angles), std::end(angles), temp) !=
+                       std::end(angles)) {
+                    temp = Random(360.0f);
+                }
+                angles[i] = temp;
             }
-            angles[i] = temp;
+
+            mat3<F32> temp;
+            for (U8 i = 0; i < 18; ++i) {
+                temp.identity();
+                temp.fromYRotation(angles[i]);
+                s_rotationMatrices.push_back(temp);
+            }
         }
 
-        mat3<F32> temp;
-        for (U8 i = 0; i < 18; ++i) {
-            temp.identity();
-            temp.fromYRotation(angles[i]);
-            s_rotationMatrices.push_back(temp);
-        }
-    }
-
-    s_grassGPUBuffer->create(1);
-    s_grassGPUBuffer->setBuffer(0, _instanceCountGrass * 3, sizeof(I32), true, NULL, BufferUpdateFrequency::OCASSIONAL);
-    s_grassGPUBuffer->attribDescriptor(12)
-        .set(0, //buffer
-                1, //component per element
-                GFXDataFormat::SIGNED_INT,//element type 
-                false, //normalized
-                0,//stride in bytes
-                1); //instance div
+        s_grassGPUBuffer->create(1);
+        s_grassGPUBuffer->setBuffer(0, _instanceCountGrass * 3, sizeof(I32), true, NULL, BufferUpdateFrequency::OCASSIONAL);
+        s_grassGPUBuffer->attribDescriptor(12)
+            .set(0, //buffer
+                    1, //component per element
+                    GFXDataFormat::SIGNED_INT,//element type 
+                    false, //normalized
+                    0,//stride in bytes
+                    1); //instance div
     
+    }
 
     U32 elementCount = to_U32(g_tempData.size());
     ShaderBufferDescriptor bufferDescriptor = {};
@@ -212,6 +196,7 @@ void Vegetation::uploadGrassData() {
     if (elementCount > 0) {
         _grassData = _context.newSB(bufferDescriptor);
         _render = true;
+        g_tempData.clear();
     }
     _threadedLoadComplete = true;
     setState(ResourceState::RES_LOADED);
@@ -230,24 +215,18 @@ void Vegetation::sceneUpdate(const U64 deltaTimeUS,
     if (_render && _success) {
         // Query shadow state every "_stateRefreshInterval" microseconds
         if (_stateRefreshIntervalBufferUS >= _stateRefreshIntervalUS) {
-            if (!s_staticDataUpdated) {
-                _windX = sceneState.windDirX();
-                _windZ = sceneState.windDirZ();
-                _windS = sceneState.windSpeed();
-                _stateRefreshIntervalBufferUS -= _stateRefreshIntervalUS;
-                s_staticDataUpdated = true;
-            }
+            _windX = sceneState.windDirX();
+            _windZ = sceneState.windDirZ();
+            _windS = sceneState.windSpeed();
+            _stateRefreshIntervalBufferUS -= _stateRefreshIntervalUS;
         }
         _stateRefreshIntervalBufferUS += deltaTimeUS;
     }
 
     SceneNode::sceneUpdate(deltaTimeUS, sgn, sceneState);
 }
-
-void Vegetation::gpuCull(RenderStagePass renderStagePass, const SceneRenderState& sceneRenderState, const Camera& cam) {
-    _prevRenderStagePass = renderStagePass;
-
-    _parentLoD = 0;
+void Vegetation::onRefreshNodeData(SceneGraphNode& sgn,
+                                   GFX::CommandBuffer& bufferInOut){
     if (_threadedLoadComplete) {
         //_cullShader->SetSubroutine(VERTEX, _instanceRoutineIdx[HI_Z_CULL]);
 
@@ -260,61 +239,60 @@ void Vegetation::gpuCull(RenderStagePass renderStagePass, const SceneRenderState
         
         enableOption(_cullDrawCommand, CmdRenderOptions::RENDER_NO_RASTERIZE);
 
-        GFX::ScopedCommandBuffer sBuffer = GFX::allocateScopedCommandBuffer();
-        GFX::CommandBuffer& cmdBuffer = sBuffer();
-
         Texture_ptr depthTex = _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Depth, 0).texture();
 
         GFX::BindDescriptorSetsCommand descriptorSetCmd;
         descriptorSetCmd._set = _context.newDescriptorSet();
         descriptorSetCmd._set->_textureData.addTexture(depthTex->getData(), to_U8(ShaderProgram::TextureUsage::UNIT0));
-        GFX::EnqueueCommand(cmdBuffer, descriptorSetCmd);
+        GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
         GFX::BindPipelineCommand pipelineCmd;
         pipelineCmd._pipeline = _context.newPipeline(pipeDesc);
-        GFX::EnqueueCommand(cmdBuffer, pipelineCmd);
+        GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
         GFX::SendPushConstantsCommand pushConstantsCommand;
         pushConstantsCommand._constants.set("ObjectExtent", GFX::PushConstantType::VEC3, vec3<F32>(1.0f, 1.0f, 1.0f));
-        pushConstantsCommand._constants.set("dvd_visibilityDistance", GFX::PushConstantType::FLOAT, sceneRenderState.grassVisibility());
+        pushConstantsCommand._constants.set("dvd_visibilityDistance", GFX::PushConstantType::FLOAT, g_grassDistance);
         pushConstantsCommand._constants.set("cullType", GFX::PushConstantType::UINT, /*queryID*/ to_base(CullType::INSTANCE_CLOUD_REDUCTION));
-        GFX::EnqueueCommand(cmdBuffer, pushConstantsCommand);
+        GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
         GFX::DrawCommand drawCmd;
         drawCmd._drawCommands.push_back(_cullDrawCommand);
-        GFX::EnqueueCommand(cmdBuffer, drawCmd);
-        _context.flushCommandBuffer(cmdBuffer);
+        GFX::EnqueueCommand(bufferInOut, drawCmd);
     }
+
+    SceneNode::onRefreshNodeData(sgn, bufferInOut);
 }
 
 void Vegetation::buildDrawCommands(SceneGraphNode& sgn,
                                    RenderStagePass renderStagePass,
                                    RenderPackage& pkgInOut) {
+    if (_render) {
+        sgn.get<RenderingComponent>()->registerShaderBuffer(ShaderBufferLocation::GRASS_DATA,
+                                                            vec2<U32>(0, _grassData->getPrimitiveCount()),
+                                                            *_grassData);
 
-    sgn.get<RenderingComponent>()->registerShaderBuffer(ShaderBufferLocation::GRASS_DATA,
-                                                        vec2<U32>(0, _grassData->getPrimitiveCount()),
-                                                        *_grassData);
+        GenericDrawCommand cmd;
+        cmd._primitiveType = PrimitiveType::TRIANGLE_STRIP;
+        cmd._cmd.firstIndex = 0;
+        cmd._cmd.indexCount = 36;
+        cmd._sourceBuffer = s_grassGPUBuffer;
+        GFX::DrawCommand drawCommand;
+        drawCommand._drawCommands.push_back(cmd);
+        pkgInOut.addDrawCommand(drawCommand);
 
-    GenericDrawCommand cmd;
-    cmd._primitiveType = PrimitiveType::TRIANGLE_STRIP;
-    cmd._cmd.firstIndex = 0;
-    cmd._cmd.indexCount = 36;
-    cmd._sourceBuffer = s_grassGPUBuffer;
-    GFX::DrawCommand drawCommand;
-    drawCommand._drawCommands.push_back(cmd);
-    pkgInOut.addDrawCommand(drawCommand);
+        const Pipeline* pipeline = pkgInOut.pipeline(0);
+        PipelineDescriptor pipeDesc = pipeline->descriptor();
+        pipeDesc._stateHash = _grassStateBlockHash;
+        pkgInOut.pipeline(0, *_context.newPipeline(pipeDesc));
 
-    const Pipeline* pipeline = pkgInOut.pipeline(0);
-    PipelineDescriptor pipeDesc = pipeline->descriptor();
-    pipeDesc._stateHash = _grassStateBlockHash;
-    pkgInOut.pipeline(0, *_context.newPipeline(pipeDesc));
-
-    PushConstants constants = pkgInOut.pushConstants(0);
-    constants.set("positionOffsets", GFX::PushConstantType::VEC3, s_grassBlades);
-    constants.set("texCoordOffsets", GFX::PushConstantType::VEC2, s_texCoord);
-    constants.set("rotationMatrices", GFX::PushConstantType::MAT3, s_rotationMatrices, true);
-    constants.set("dvd_visibilityDistance", GFX::PushConstantType::FLOAT, 100.0f);
-    pkgInOut.pushConstants(0, constants);
+        PushConstants constants = pkgInOut.pushConstants(0);
+        constants.set("positionOffsets", GFX::PushConstantType::VEC3, s_grassBlades);
+        constants.set("texCoordOffsets", GFX::PushConstantType::VEC2, s_texCoord);
+        constants.set("rotationMatrices", GFX::PushConstantType::MAT3, s_rotationMatrices, true);
+        constants.set("dvd_visibilityDistance", GFX::PushConstantType::FLOAT, 100.0f);
+        pkgInOut.pushConstants(0, constants);
+    }
 
     SceneNode::buildDrawCommands(sgn, renderStagePass, pkgInOut);
 }
@@ -322,19 +300,22 @@ void Vegetation::buildDrawCommands(SceneGraphNode& sgn,
 bool Vegetation::onRender(SceneGraphNode& sgn,
                           const SceneRenderState& sceneRenderState,
                           RenderStagePass renderStagePass) {
-    RenderingComponent* renderComp = sgn.get<RenderingComponent>();
-    RenderPackage& pkg = renderComp->getDrawPackage(renderStagePass);
+    if (_render && _success && _threadedLoadComplete) {
+        RenderingComponent* renderComp = sgn.get<RenderingComponent>();
+        RenderPackage& pkg = renderComp->getDrawPackage(renderStagePass);
 
-    gpuCull(renderStagePass, sceneRenderState, *sceneRenderState.parentScene().playerCamera());
+        GenericDrawCommand cmd = pkg.drawCommand(0, 0);
+        cmd._cmd.primCount = _instanceCountGrass;
+        cmd._sourceBuffer = s_grassGPUBuffer;
+        cmd._bufferIndex = renderStagePass.index();
+        pkg.drawCommand(0, 0, cmd);
 
-    GenericDrawCommand cmd = pkg.drawCommand(0, 0);
-    cmd._cmd.primCount = _instanceCountGrass;
-    cmd._sourceBuffer = s_grassGPUBuffer;
-    cmd._bufferIndex = renderStagePass.index();
-    pkg.drawCommand(0, 0, cmd);
-    
-    s_staticDataUpdated = false;
-    return !(!_render || !_success || !_threadedLoadComplete || _parentLoD > 0);
+        g_grassDistance = sceneRenderState.grassVisibility();
+
+        return true;
+    }
+
+    return false;
 }
 
 void Vegetation::generateTrees(const Task& parentTask) {

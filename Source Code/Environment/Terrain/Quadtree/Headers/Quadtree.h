@@ -58,7 +58,7 @@ class Quadtree {
                const vec2<U16>& HMSize,
                U32 targetChunkDimension,
                Terrain* const terrain);
-    BoundingBox& computeBoundingBox();
+    const BoundingBox& computeBoundingBox();
 
     inline U32 getChunkCount() const { return _chunkCount; }
 

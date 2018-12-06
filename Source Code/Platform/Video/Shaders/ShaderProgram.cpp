@@ -34,12 +34,21 @@ SharedMutex ShaderProgram::s_programLock;
 
 I64 ShaderProgram::s_shaderFileWatcherID = -1;
 
-ShaderProgram::ShaderProgram(GFXDevice& context, size_t descriptorHash, const stringImpl& name, const stringImpl& resourceName, const stringImpl& resourceLocation, bool asyncLoad)
-    : CachedResource(ResourceType::GPU_OBJECT, descriptorHash, name, resourceName, resourceLocation),
+ShaderProgram::ShaderProgram(GFXDevice& context, 
+                             size_t descriptorHash,
+                             const stringImpl& shaderName,
+                             const stringImpl& shaderFileName,
+                             const stringImpl& shaderFileLocation,
+                             bool asyncLoad)
+    : CachedResource(ResourceType::GPU_OBJECT, descriptorHash, shaderName, shaderFileName, shaderFileLocation),
       GraphicsResource(context, GraphicsResource::Type::SHADER_PROGRAM, getGUID()),
       _asyncLoad(asyncLoad),
       _shouldRecompile(false)
 {
+    if (shaderFileName.empty()) {
+        assetName(resourceName());
+    }
+
     _linked = false;
     // Override in concrete implementations with appropriate invalid values
     _shaderProgramID = 0;
@@ -47,7 +56,7 @@ ShaderProgram::ShaderProgram(GFXDevice& context, size_t descriptorHash, const st
 
 ShaderProgram::~ShaderProgram()
 {
-    Console::d_printfn(Locale::get(_ID("SHADER_PROGRAM_REMOVE")), name().c_str());
+    Console::d_printfn(Locale::get(_ID("SHADER_PROGRAM_REMOVE")), resourceName().c_str());
 }
 
 bool ShaderProgram::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) {
@@ -80,7 +89,7 @@ void ShaderProgram::addShaderDefine(const stringImpl& define, bool appendPrefix)
         _shouldRecompile = getState() == ResourceState::RES_LOADED;
     } else {
         // If we did find it, we'll show an error message in debug builds about double add
-        Console::d_errorfn(Locale::get(_ID("ERROR_INVALID_DEFINE_ADD")), define.c_str(), name().c_str());
+        Console::d_errorfn(Locale::get(_ID("ERROR_INVALID_DEFINE_ADD")), define.c_str(), resourceName().c_str());
     }
 }
 
@@ -97,7 +106,7 @@ void ShaderProgram::removeShaderDefine(const stringImpl& define) {
         _shouldRecompile = getState() == ResourceState::RES_LOADED;
     } else {
         // If we did not find it, we'll show an error message in debug builds
-        Console::d_errorfn(Locale::get(_ID("ERROR_INVALID_DEFINE_DELETE")), define.c_str(), name().c_str());
+        Console::d_errorfn(Locale::get(_ID("ERROR_INVALID_DEFINE_DELETE")), define.c_str(), resourceName().c_str());
     }
 }
 
@@ -143,7 +152,7 @@ bool ShaderProgram::recompileShaderProgram(const stringImpl& name) {
     for (const ShaderProgramMapEntry& shader : s_shaderPrograms) {
         assert(!std::get<0>(shader).expired());
         
-        const stringImpl& shaderName = std::get<0>(shader).lock()->name();
+        const stringImpl& shaderName = std::get<0>(shader).lock()->resourceName();
         // Check if the name matches any of the program's name components    
         if (shaderName.find(name) != stringImpl::npos || shaderName.compare(name) == 0) {
             // We process every partial match. So add it to the recompilation queue
@@ -428,5 +437,4 @@ vector<stringImpl> ShaderProgram::getAllAtomLocations() {
 
     return atomLocations;
 }
-
 };

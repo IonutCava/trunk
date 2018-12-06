@@ -80,7 +80,7 @@ Scene* ScenePool::getOrCreateScene(PlatformContext& context, ResourceCache& cach
 
     UniqueLockShared lock(_sceneLock);
     for (Scene* scene : _createdScenes) {
-        if (scene->name().compare(name) == 0) {
+        if (scene->resourceName().compare(name) == 0) {
             ret = scene;
             foundInCache = true;
             break;

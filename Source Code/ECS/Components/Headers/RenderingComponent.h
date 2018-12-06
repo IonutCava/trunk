@@ -119,8 +119,6 @@ class RenderingComponent : public BaseComponentType<RenderingComponent, Componen
                                 PlatformContext& context);
     ~RenderingComponent();
 
-    void onRender(RenderStagePass renderStagePass);
-
     void Update(const U64 deltaTimeUS) override;
 
     inline PushConstants& pushConstants() { return _globalPushConstants; }
@@ -158,8 +156,10 @@ class RenderingComponent : public BaseComponentType<RenderingComponent, Componen
     inline void setRefractionCallback(RenderCallback cbk) { _refractionCallback = cbk; }
 
     void drawDebugAxis();
+    void onRender(RenderStagePass renderStagePass);
 
-   protected:
+   protected:    
+    void onRefreshNodeData(GFX::CommandBuffer& bufferInOut);
     bool canDraw(RenderStagePass renderStagePass);
     void updateLoDLevel(const Camera& camera, RenderStagePass renderStagePass);
 
@@ -280,6 +280,10 @@ class RenderingCompRenderPass {
 
         static bool hasDrawCommands(RenderingComponent& renderable, RenderStage stage) {
             return renderable.hasDrawCommands(stage);
+        }
+
+        static void onRefreshNodeData(RenderingComponent& renderable, GFX::CommandBuffer& bufferInOut) {
+            renderable.onRefreshNodeData(bufferInOut);
         }
 
     friend class Divide::RenderPass;

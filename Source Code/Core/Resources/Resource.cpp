@@ -8,10 +8,10 @@ namespace Divide {
 
 //---------------------------- Resource ------------------------------------------//
 Resource::Resource(ResourceType type,
-                   const stringImpl& name)
+                   const stringImpl& resourceName)
     : GUIDWrapper(),
       _resourceType(type),
-      _name(name),
+      _resourceName(resourceName),
       _resourceState(ResourceState::RES_CREATED)
 {
 }
@@ -21,8 +21,8 @@ Resource::~Resource()
 }
 
 /// Name management
-const stringImpl& Resource::name() const {
-    return _name;
+const stringImpl& Resource::resourceName() const {
+    return _resourceName;
 }
 
 ResourceType Resource::getType() const {
@@ -40,29 +40,29 @@ void Resource::setState(ResourceState currentState) {
 //---------------------------- Cached Resource ------------------------------------//
 CachedResource::CachedResource(ResourceType type,
                                size_t descriptorHash,
-                               const stringImpl& name)
-    : Resource(type, name),
-      _descriptorHash(descriptorHash)
-{
-}
-
-CachedResource::CachedResource(ResourceType type,
-                               size_t descriptorHash,
-                               const stringImpl& name,
                                const stringImpl& resourceName)
-    : CachedResource(type, descriptorHash, name)
+    : CachedResource(type, descriptorHash, resourceName, "", "")
 {
-    _resourceName = resourceName;
 }
 
 CachedResource::CachedResource(ResourceType type,
                                size_t descriptorHash,
-                               const stringImpl& name,
                                const stringImpl& resourceName,
-                               const stringImpl& resourceLocation)
-    : CachedResource(type, descriptorHash, name, resourceName)
+                               const stringImpl& assetName)
+    : CachedResource(type, descriptorHash, resourceName, assetName, "")
 {
-    _resourceLocation = resourceLocation;
+}
+
+CachedResource::CachedResource(ResourceType type,
+                               size_t descriptorHash,
+                               const stringImpl& resourceName,
+                               const stringImpl& assetName,
+                               const stringImpl& assetLocation)
+    : Resource(type, resourceName),
+      _descriptorHash(descriptorHash),
+      _assetName(assetName),
+      _assetLocation(assetLocation)
+{
 }
 
 CachedResource::~CachedResource()
@@ -91,21 +91,21 @@ size_t CachedResource::getDescriptorHash() const {
 }
 
 /// Physical file path
-const stringImpl& CachedResource::getResourceLocation() const {
-    return _resourceLocation;
+const stringImpl& CachedResource::assetLocation() const {
+    return _assetLocation;
 }
 
-void CachedResource::setResourceLocation(const stringImpl& location) {
-    _resourceLocation = location;
+void CachedResource::assetLocation(const stringImpl& location) {
+    _assetLocation = location;
 }
 
 /// Physical file name
-const stringImpl& CachedResource::getResourceName() const {
-    return _resourceName;
+const stringImpl& CachedResource::assetName() const {
+    return _assetName;
 }
 
-void CachedResource::setResourceName(const stringImpl& name) {
-    _resourceName = name;
+void CachedResource::assetName(const stringImpl& name) {
+    _assetName = name;
 }
 
 void CachedResource::setStateCallback(ResourceState targetState, const DELEGATE_CBK<void, Resource_wptr>& cbk) {

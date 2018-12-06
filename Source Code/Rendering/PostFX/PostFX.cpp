@@ -77,22 +77,22 @@ PostFX::PostFX(GFXDevice& context, ResourceCache& cache)
     texDescriptor.setSampler(defaultSampler);
 
     ResourceDescriptor textureWaterCaustics("Underwater Caustics");
-    textureWaterCaustics.setResourceName("terrain_water_NM.jpg");
-    textureWaterCaustics.setResourceLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
+    textureWaterCaustics.assetName("terrain_water_NM.jpg");
+    textureWaterCaustics.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
     textureWaterCaustics.setPropertyDescriptor(texDescriptor);
     textureWaterCaustics.setThreadedLoading(false);
     _underwaterTexture = CreateResource<Texture>(cache, textureWaterCaustics);
 
     ResourceDescriptor noiseTexture("noiseTexture");
-    noiseTexture.setResourceName("bruit_gaussien.jpg");
-    noiseTexture.setResourceLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
+    noiseTexture.assetName("bruit_gaussien.jpg");
+    noiseTexture.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
     noiseTexture.setPropertyDescriptor(texDescriptor);
     noiseTexture.setThreadedLoading(false);
     _noise = CreateResource<Texture>(cache, noiseTexture);
 
     ResourceDescriptor borderTexture("borderTexture");
-    borderTexture.setResourceName("vignette.jpeg");
-    borderTexture.setResourceLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
+    borderTexture.assetName("vignette.jpeg");
+    borderTexture.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
     borderTexture.setPropertyDescriptor(texDescriptor);
     borderTexture.setThreadedLoading(false);
     _screenBorder = CreateResource<Texture>(cache, borderTexture);

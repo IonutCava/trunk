@@ -317,8 +317,8 @@ namespace Import {
                 textureDescriptor._srgb = tex._srgbSpace;
 
                 ResourceDescriptor texture(tex._textureName);
-                texture.setResourceName(tex._textureName);
-                texture.setResourceLocation(tex._texturePath);
+                texture.assetName(tex._textureName);
+                texture.assetLocation(tex._texturePath);
                 texture.setPropertyDescriptor(textureDescriptor);
                 
                 Texture_ptr textureRes = CreateResource<Texture>(cache, texture);
@@ -333,7 +333,10 @@ namespace Import {
         if (!importData._ignoreAlpha && importData._textures[to_base(ShaderProgram::TextureUsage::OPACITY)]._textureName.empty()) {
             Texture_ptr diffuse = tempMaterial->getTexture(ShaderProgram::TextureUsage::UNIT0).lock();
             if (diffuse && diffuse->hasTransparency()) {
-                ResourceDescriptor opacityDesc(diffuse->name());
+                ResourceDescriptor opacityDesc(diffuse->resourceName());
+                //These should not be needed. We should be able to just find the resource in cache!
+                opacityDesc.assetName(diffuse->assetName());
+                opacityDesc.assetLocation(diffuse->assetLocation());
                 opacityDesc.setPropertyDescriptor(diffuse->getDescriptor());
 
                 Texture_ptr textureRes = CreateResource<Texture>(cache, opacityDesc);

@@ -114,8 +114,8 @@ void LightPool::init() {
 
     ResourceDescriptor iconImage("LightIconTexture");
     iconImage.setThreadedLoading(false);
-    iconImage.setResourceLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
-    iconImage.setResourceName("lightIcons.png");
+    iconImage.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
+    iconImage.assetName("lightIcons.png");
     iconImage.setPropertyDescriptor(iconDescriptor);
 
     _lightIconsTexture = CreateResource<Texture>(_parentScene.resourceCache(), iconImage);

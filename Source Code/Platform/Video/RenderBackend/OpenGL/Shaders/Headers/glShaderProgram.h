@@ -52,6 +52,7 @@ class glShaderProgram final : public ShaderProgram, public glObject {
            stringImpl _resourcePath;
            stringImpl _header;
            stringImpl _programName;
+           stringImpl _programNameSuffix;
            stringImpl _programProperties;
            stringImpl _vertexStageProperties;
        };

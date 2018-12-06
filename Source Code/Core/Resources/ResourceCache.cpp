@@ -40,7 +40,7 @@ void ResourceCache::printContents() const {
         if (!it->second.expired())
         {
             CachedResource_ptr res = it->second.lock();
-            Console::printfn(Locale::get(_ID("RESOURCE_INFO")), res->name().c_str(), res->getGUID());
+            Console::printfn(Locale::get(_ID("RESOURCE_INFO")), res->resourceName().c_str(), res->getGUID());
         }
     }
 }
@@ -55,7 +55,7 @@ void ResourceCache::clear() {
         {
             CachedResource_ptr res = it->second.lock();
             if (res->getType() != ResourceType::GPU_OBJECT) {
-                Console::warnfn(Locale::get(_ID("WARN_RESOURCE_LEAKED")), res->name().c_str(), res->getGUID());
+                Console::warnfn(Locale::get(_ID("WARN_RESOURCE_LEAKED")), res->resourceName().c_str(), res->getGUID());
             }
         }
     }
@@ -74,7 +74,7 @@ void ResourceCache::add(CachedResource_wptr res) {
     size_t hash = resource->getDescriptorHash();
     DIVIDE_ASSERT(hash != 0, "ResourceCache add error: Invalid resource hash!");
 
-    Console::printfn(Locale::get(_ID("RESOURCE_CACHE_ADD")), resource->name().c_str(), resource->getGUID(), hash);
+    Console::printfn(Locale::get(_ID("RESOURCE_CACHE_ADD")), resource->resourceName().c_str(), resource->getGUID(), hash);
     UniqueLockShared w_lock(_creationMutex);
     hashAlg::insert(_resDB, hashAlg::make_pair(hash, CachedResource_wptr(resource)));
 }
@@ -106,7 +106,7 @@ void ResourceCache::remove(CachedResource* resource) {
     WAIT_FOR_CONDITION(resource->getState() != ResourceState::RES_LOADING);
 
     size_t resourceHash = resource->getDescriptorHash();
-    const stringImpl& name = resource->name();
+    const stringImpl& name = resource->resourceName();
     I64 guid = resource->getGUID();
 
     DIVIDE_ASSERT(resourceHash != 0, Locale::get(_ID("ERROR_RESOURCE_CACHE_INVALID_NAME")));

@@ -78,7 +78,7 @@ namespace Divide {
 
         Camera* selectedCamera = Attorney::EditorPropertyWindow::getSelectedCamera(_parent);
         if (selectedCamera != nullptr) {
-            if (ImGui::CollapsingHeader(selectedCamera->name().c_str())) {
+            if (ImGui::CollapsingHeader(selectedCamera->resourceName().c_str())) {
                 vec3<F32> eye = selectedCamera->getEye();
                 if (ImGui::InputFloat3("Eye", eye._v)) {
                     selectedCamera->setEye(eye);

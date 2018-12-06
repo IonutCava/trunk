@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include "Headers/Terrain.h"
+#include "Headers/TerrainChunk.h"
 #include "Headers/TerrainDescriptor.h"
 
 #include "Core/Headers/PlatformContext.h"
@@ -38,6 +39,22 @@ bool Terrain::unload() {
 }
 
 void Terrain::postLoad(SceneGraphNode& sgn) {
+
+    SceneGraphNodeDescriptor vegetationNodeDescriptor;
+    vegetationNodeDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
+    vegetationNodeDescriptor._componentMask = to_base(ComponentType::TRANSFORM) |
+                                              to_base(ComponentType::BOUNDS) |
+                                              to_base(ComponentType::RENDERING);
+
+    for (TerrainChunk* chunk : _terrainChunks) {
+        const Vegetation_ptr& veg = Attorney::TerrainChunkTerrain::getVegetation(*chunk);
+        assert(veg != nullptr);
+        vegetationNodeDescriptor._node = veg;
+        vegetationNodeDescriptor._name = Util::StringFormat("Grass_chunk_%d", chunk->ID());
+
+        sgn.addNode(vegetationNodeDescriptor);
+    }
+
     ShaderBufferDescriptor bufferDescriptor;
     bufferDescriptor._elementCount = Terrain::MAX_RENDER_NODES * to_base(RenderStage::COUNT);
     bufferDescriptor._elementSize = sizeof(TessellatedNodeData);

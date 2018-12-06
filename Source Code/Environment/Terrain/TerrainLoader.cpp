@@ -32,17 +32,17 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     // Blend map
     ResourceDescriptor textureBlendMap("Terrain Blend Map_" + name);
-    textureBlendMap.setResourceLocation(terrainMapLocation);
+    textureBlendMap.assetLocation(terrainMapLocation);
     textureBlendMap.setFlag(true);
 
     // Albedo map
     ResourceDescriptor textureTileMaps("Terrain Tile Maps_" + name);
-    textureTileMaps.setResourceLocation(terrainMapLocation);
+    textureTileMaps.assetLocation(terrainMapLocation);
     textureTileMaps.setFlag(true);
 
     // Normal map
     ResourceDescriptor textureNormalMaps("Terrain Normal Maps_" + name);
-    textureNormalMaps.setResourceLocation(terrainMapLocation);
+    textureNormalMaps.assetLocation(terrainMapLocation);
     textureNormalMaps.setFlag(true);
 
     //temp data
@@ -194,13 +194,13 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     normalDescriptor.setSampler(normalSampler);
     normalDescriptor._layerCount = std::accumulate(std::cbegin(normalCount), std::cend(normalCount), 0u);
 
-    textureBlendMap.setResourceName(blendMapArray);
+    textureBlendMap.assetName(blendMapArray);
     textureBlendMap.setPropertyDescriptor(blendMapDescriptor);
 
-    textureTileMaps.setResourceName(albedoMapArray);
+    textureTileMaps.assetName(albedoMapArray);
     textureTileMaps.setPropertyDescriptor(albedoDescriptor);
     
-    textureNormalMaps.setResourceName(normalMapArray);
+    textureNormalMaps.assetName(normalMapArray);
     textureNormalMaps.setPropertyDescriptor(normalDescriptor);
 
     textureLayer->setBlendMaps(CreateResource<Texture>(terrain->parentResourceCache(), textureBlendMap));
@@ -254,27 +254,27 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     miscTexDescriptor.setSampler(albedoSampler);
 
     ResourceDescriptor textureWaterCaustics("Terrain Water Caustics_" + name);
-    textureWaterCaustics.setResourceLocation(terrainMapLocation);
-    textureWaterCaustics.setResourceName(terrainDescriptor->getVariable("waterCaustics"));
+    textureWaterCaustics.assetLocation(terrainMapLocation);
+    textureWaterCaustics.assetName(terrainDescriptor->getVariable("waterCaustics"));
     textureWaterCaustics.setPropertyDescriptor(miscTexDescriptor);
     
     terrainMaterial->setTexture(ShaderProgram::TextureUsage::UNIT0, CreateResource<Texture>(terrain->parentResourceCache(), textureWaterCaustics));
 
     ResourceDescriptor underwaterAlbedoTexture("Terrain Underwater Albedo_" + name);
-    underwaterAlbedoTexture.setResourceLocation(terrainMapLocation);
-    underwaterAlbedoTexture.setResourceName(terrainDescriptor->getVariable("underwaterAlbedoTexture"));
+    underwaterAlbedoTexture.assetLocation(terrainMapLocation);
+    underwaterAlbedoTexture.assetName(terrainDescriptor->getVariable("underwaterAlbedoTexture"));
     underwaterAlbedoTexture.setPropertyDescriptor(miscTexDescriptor);
     terrainMaterial->setTexture(ShaderProgram::TextureUsage::UNIT1, CreateResource<Texture>(terrain->parentResourceCache(), underwaterAlbedoTexture));
 
     ResourceDescriptor underwaterDetailTexture("Terrain Underwater Detail_" + name);
-    underwaterDetailTexture.setResourceLocation(terrainMapLocation);
-    underwaterDetailTexture.setResourceName(terrainDescriptor->getVariable("underwaterDetailTexture"));
+    underwaterDetailTexture.assetLocation(terrainMapLocation);
+    underwaterDetailTexture.assetName(terrainDescriptor->getVariable("underwaterDetailTexture"));
     underwaterDetailTexture.setPropertyDescriptor(miscTexDescriptor);
     terrainMaterial->setTexture(ShaderProgram::TextureUsage::NORMALMAP, CreateResource<Texture>(terrain->parentResourceCache(), underwaterDetailTexture));
 
     ResourceDescriptor heightMapTexture("Terrain Heightmap_" + name);
-    heightMapTexture.setResourceLocation(Paths::g_assetsLocation + terrainDescriptor->getVariable("heightmapLocation"));
-    heightMapTexture.setResourceName(terrainDescriptor->getVariable("heightTexture"));
+    heightMapTexture.assetLocation(Paths::g_assetsLocation + terrainDescriptor->getVariable("heightmapLocation"));
+    heightMapTexture.assetName(terrainDescriptor->getVariable("heightTexture"));
 
 
     TextureDescriptor heightMapDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGB, terrainDescriptor->is16Bit() ? GFXDataFormat::UNSIGNED_SHORT : GFXDataFormat::UNSIGNED_BYTE);
@@ -512,7 +512,7 @@ bool TerrainLoader::loadThreadedResources(Terrain_ptr terrain,
     initializeVegetation(terrain, terrainDescriptor);
     Attorney::TerrainLoader::postBuild(*terrain);
 
-    Console::printfn(Locale::get(_ID("TERRAIN_LOAD_END")), terrain->name().c_str());
+    Console::printfn(Locale::get(_ID("TERRAIN_LOAD_END")), terrain->resourceName().c_str());
     return terrain->load(onLoadCallback);
 }
 
@@ -561,21 +561,35 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     grassTexDescriptor._srgb = true;
 
     ResourceDescriptor textureDetailMaps("Vegetation Billboards");
-    textureDetailMaps.setResourceLocation(Paths::g_assetsLocation + terrainDescriptor->getVariable("grassMapLocation"));
-    textureDetailMaps.setResourceName(textureName);
+    textureDetailMaps.assetLocation(Paths::g_assetsLocation + terrainDescriptor->getVariable("grassMapLocation"));
+    textureDetailMaps.assetName(textureName);
     textureDetailMaps.setPropertyDescriptor(grassTexDescriptor);
     Texture_ptr grassBillboardArray = CreateResource<Texture>(terrain->parentResourceCache(), textureDetailMaps);
 
     VegetationDetails& vegDetails = Attorney::TerrainLoader::vegetationDetails(*terrain);
     vegDetails.billboardCount = textureCount;
-    vegDetails.name = terrain->name() + "_grass";
+    vegDetails.name = terrain->resourceName() + "_grass";
     vegDetails.grassDensity = terrainDescriptor->getGrassDensity();
     vegDetails.grassScale = terrainDescriptor->getGrassScale();
     vegDetails.treeDensity = terrainDescriptor->getTreeDensity();
     vegDetails.treeScale = terrainDescriptor->getTreeScale();
-    vegDetails.grassBillboards = grassBillboardArray;
-    vegDetails.grassShaderName = "grass";
     vegDetails.parentTerrain = terrain;
+
+    ResourceDescriptor vegetationMaterial("grassMaterial");
+    Material_ptr vegMaterial = CreateResource<Material>(terrain->parentResourceCache(), vegetationMaterial);
+
+    vegMaterial->setShaderLoadThreaded(false);
+    vegMaterial->setDiffuse(DefaultColours::WHITE);
+    vegMaterial->setSpecular(FColour(0.1f, 0.1f, 0.1f, 1.0f));
+    vegMaterial->setShininess(5.0f);
+    vegMaterial->setShadingMode(Material::ShadingMode::BLINN_PHONG);
+    vegMaterial->addShaderDefine("SKIP_TEXTURES");
+    vegMaterial->setShaderProgram("grass", RenderStage::DISPLAY, true);
+    vegMaterial->setShaderProgram("grass.PrePass", RenderPassType::DEPTH_PASS, true);
+    vegMaterial->setShaderProgram("grass.Shadow", RenderStage::SHADOW, true);
+    vegMaterial->setTexture(ShaderProgram::TextureUsage::UNIT0, grassBillboardArray);
+    vegMaterial->dumpToFile(false);
+    vegDetails.vegetationMaterialPtr = vegMaterial;
 
     vegDetails.map.reset(new ImageTools::ImageData);
     ImageTools::ImageDataInterface::CreateImageData(

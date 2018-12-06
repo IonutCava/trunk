@@ -258,7 +258,7 @@ void MenuBar::drawToolsMenu() {
                                     for (U8 k = 0; k < count; ++k) {
                                         const RTAttachment& attachment = rt->getAttachment(type, k);
                                         const Texture_ptr& tex = attachment.texture();
-                                        if (tex != nullptr && ImGui::MenuItem(attachment.texture()->name().c_str())) {
+                                        if (tex != nullptr && ImGui::MenuItem(attachment.texture()->resourceName().c_str())) {
                                             _previewTexture = tex;
                                         }
                                     }

@@ -31,8 +31,8 @@ GUISplash::GUISplash(ResourceCache& cache,
 
     ResourceDescriptor splashImage("SplashScreen Texture");
     splashImage.setThreadedLoading(false);
-    splashImage.setResourceName(splashImageName);
-    splashImage.setResourceLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
+    splashImage.assetName(splashImageName);
+    splashImage.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
     splashImage.setPropertyDescriptor(splashDescriptor);
 
     _splashImage = CreateResource<Texture>(cache, splashImage);

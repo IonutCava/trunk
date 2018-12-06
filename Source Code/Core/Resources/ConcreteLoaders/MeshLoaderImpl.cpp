@@ -38,7 +38,7 @@ void threadedMeshLoad(MeshLoadData loadData, Import::ImportData tempMeshData) {
     } else {
         loadData._mesh.reset();
         //handle error
-        DIVIDE_UNEXPECTED_CALL(Util::StringFormat("Failed to import mesh [ %s ]!", loadData._descriptor.getResourceLocation().c_str()).c_str());
+        DIVIDE_UNEXPECTED_CALL(Util::StringFormat("Failed to import mesh [ %s ]!", loadData._descriptor.assetName().c_str()).c_str());
     }
 
     if (!loadData._mesh->load(loadData._descriptor.onLoadCallback())) {
@@ -48,11 +48,11 @@ void threadedMeshLoad(MeshLoadData loadData, Import::ImportData tempMeshData) {
 
 template<>
 CachedResource_ptr ImplResourceLoader<Mesh>::operator()() {
-    Import::ImportData tempMeshData(_descriptor.getResourceLocation() + "/" + _descriptor.getResourceName());
+    Import::ImportData tempMeshData(_descriptor.assetLocation() + "/" + _descriptor.assetName());
     Mesh_ptr ptr(MemoryManager_NEW Mesh(_context.gfx(),
                                         _cache,
                                         _loadingDescriptorHash,
-                                        _descriptor.name(),
+                                        _descriptor.resourceName(),
                                         tempMeshData._modelName,
                                         tempMeshData._modelPath),
                                 DeleteResource(_cache));
