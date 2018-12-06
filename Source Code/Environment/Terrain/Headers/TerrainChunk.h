@@ -77,6 +77,8 @@ class TerrainChunk {
     void computeIndicesArray(U8 depth, const vec2<U32>& position, const vec2<U32>& heightMapSize);
 
    private:
+    GFXDevice& _context;
+
     U32 _ID;
     U32 _lodIndOffset;
     U32 _lodIndCount;

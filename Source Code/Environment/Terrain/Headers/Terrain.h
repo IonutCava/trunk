@@ -211,7 +211,7 @@ class Terrain : public Object3D {
 namespace Attorney {
 class TerrainChunk {
 private:
-    static VegetationDetails& vegetationDetails(Terrain& terrain) {
+    static const VegetationDetails& vegetationDetails(const Terrain& terrain) {
         return terrain._vegDetails;
     }
 
