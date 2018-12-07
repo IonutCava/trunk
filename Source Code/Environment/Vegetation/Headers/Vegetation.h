@@ -41,6 +41,7 @@
 namespace Divide {
 
 class SceneState;
+class VertexBuffer;
 class RenderTarget;
 class ShaderBuffer;
 class TerrainChunk;
@@ -57,8 +58,6 @@ struct VegetationDetails {
     U16 billboardCount;
     F32 grassDensity;
     F32 grassScale;
-    F32 treeDensity;
-    F32 treeScale;
     stringImpl name;
     std::shared_ptr<ImageTools::ImageData> map;
     std::weak_ptr<Terrain> parentTerrain;
@@ -69,12 +68,12 @@ struct VegetationDetails {
 struct GrassData {
     mat4<F32> _transform;
     vec4<F32> _positionAndIndex;
-    vec4<F32> _render = { 1.0f };
+    vec4<F32> _extentAndRender = { 1.0f };
 };
+//RenderDoc: mat4 transform; vec4 posAndIndex; vec4 extentAndRender;
 
-/// Generates grass and trees on the terrain.
+/// Generates grass on the terrain.
 /// Grass VB's + all resources are stored locally in the class.
-/// Trees are added to the SceneGraph and handled by the scene.
 class Vegetation : public SceneNode {
    public:
     explicit Vegetation(GFXDevice& context, TerrainChunk& parentChunk, const VegetationDetails& details);
@@ -99,7 +98,6 @@ class Vegetation : public SceneNode {
     void onRefreshNodeData(SceneGraphNode& sgn,
                            GFX::CommandBuffer& bufferInOut) override;
    private:
-    void generateTrees(const Task& parentTask);
     void uploadGrassData();
     void computeGrassTransforms(const Task& parentTask);
 
@@ -119,9 +117,9 @@ class Vegetation : public SceneNode {
     std::atomic_bool _threadedLoadComplete;
     std::atomic_bool _stopLoadingRequest;
     std::weak_ptr<Terrain> _terrain;
-    F32 _grassDensity, _treeDensity;
+    F32 _grassDensity;
     U16 _billboardCount;  ///< Vegetation cumulated density
-    F32 _grassScale, _treeScale;
+    F32 _grassScale;
     F32 _windX = 0.0f, _windZ = 0.0f, _windS = 0.0f, _time = 0.0f;
     U64 _stateRefreshIntervalUS = 0ULL;
     U64 _stateRefreshIntervalBufferUS = 0ULL;
@@ -130,16 +128,11 @@ class Vegetation : public SceneNode {
     bool _shadowMapped;
     size_t  _grassStateBlockHash;
     U32 _instanceCountGrass;
-    U32 _instanceCountTrees;
     std::array<U32, to_base(CullType::COUNT)> _instanceRoutineIdx;
 
     ShaderBuffer* _grassData;
-    GenericDrawCommand _cullDrawCommand;
 
-    static vector<mat3<F32> > s_rotationMatrices;
-    static vector<vec3<F32> > s_grassBlades;
-    static vector<vec2<F32> > s_texCoord;
-    static GenericVertexData* s_grassGPUBuffer;
+    static VertexBuffer* s_buffer;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_TYPE(Vegetation);

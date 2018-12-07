@@ -30,8 +30,9 @@ DEFINE_POOL(BeginDebugScopeCommand, 4096);
 DEFINE_POOL(EndDebugScopeCommand, 4096);
 DEFINE_POOL(DrawTextCommand, 4096);
 DEFINE_POOL(DrawIMGUICommand, 4096);
-DEFINE_POOL(DispatchComputeCommand, 4096);
-DEFINE_POOL(ReadAtomicCounterCommand, 4096);
+DEFINE_POOL(DispatchComputeCommand, 1024);
+DEFINE_POOL(MemoryBarrierCommand, 1024);
+DEFINE_POOL(ReadAtomicCounterCommand, 1024);
 DEFINE_POOL(ExternalCommand, 4096);
 
 CommandBuffer::CommandBuffer()
@@ -100,6 +101,7 @@ void CommandBuffer::batch() {
             } break;
             case GFX::CommandType::READ_ATOMIC_COUNTER:
             case GFX::CommandType::DISPATCH_COMPUTE:
+            case GFX::CommandType::MEMORY_BARRIER:
             case GFX::CommandType::DRAW_TEXT:
             case GFX::CommandType::DRAW_COMMANDS:
             case GFX::CommandType::DRAW_IMGUI:
@@ -197,22 +199,7 @@ void CommandBuffer::clean() {
                     skip = true;
                 }
             }break;
-            case GFX::CommandType::BEGIN_RENDER_PASS:
-            case GFX::CommandType::END_RENDER_PASS:
-            case GFX::CommandType::BEGIN_RENDER_SUB_PASS:
-            case GFX::CommandType::END_RENDER_SUB_PASS:
-            case GFX::CommandType::BEGIN_DEBUG_SCOPE:
-            case GFX::CommandType::END_DEBUG_SCOPE:
-            case GFX::CommandType::BEGIN_PIXEL_BUFFER:
-            case GFX::CommandType::END_PIXEL_BUFFER:
-            case GFX::CommandType::DISPATCH_COMPUTE:
-            case GFX::CommandType::READ_ATOMIC_COUNTER:
-            case GFX::CommandType::DRAW_IMGUI:
-            case GFX::CommandType::BLIT_RT:
-            case GFX::CommandType::RESET_RT:
-            case GFX::CommandType::SWITCH_WINDOW: 
-            case GFX::CommandType::EXTERNAL: {
-            }break;
+            default: break;
         };
 
 
@@ -307,10 +294,7 @@ bool CommandBuffer::validate() const {
                 case GFX::CommandType::BLIT_RT: {
                     needsDescriptorSets = true;
                 }break;
-                case GFX::CommandType::RESET_RT:
-                case GFX::CommandType::READ_ATOMIC_COUNTER:
-                case GFX::CommandType::SWITCH_WINDOW:
-                case GFX::CommandType::EXTERNAL: {
+                default: {
                     // no requirements yet
                 }break;
             };

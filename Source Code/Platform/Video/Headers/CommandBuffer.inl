@@ -94,7 +94,8 @@ inline bool CommandBuffer::tryMergeCommands(DrawCommand* prevCommand, DrawComman
     auto batch = [](GenericDrawCommand& previousIDC, GenericDrawCommand& currentIDC)  -> bool {
         if (compatible(previousIDC, currentIDC) &&
             // Batchable commands must share the same buffer
-            previousIDC._sourceBuffer->getGUID() == currentIDC._sourceBuffer->getGUID())
+            (previousIDC._sourceBuffer == nullptr && currentIDC._sourceBuffer == nullptr ||
+            previousIDC._sourceBuffer->getGUID() == currentIDC._sourceBuffer->getGUID()))
         {
             U32 prevCount = previousIDC._drawCount;
             if (previousIDC._cmd.baseInstance + prevCount != currentIDC._cmd.baseInstance) {

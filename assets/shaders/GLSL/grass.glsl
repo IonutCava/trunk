@@ -3,51 +3,40 @@
 #include "vbInputData.vert"
 #include "lightingDefaults.vert"
 
-layout(location = 12) in int  instanceID;
-
 struct GrassData {
     mat4 transform;
     vec4 positionAndIndex;
-    vec4 render;
+    vec4 extentAndRender;
 };
 
 layout(std430, binding = BUFFER_GRASS_DATA) coherent readonly buffer dvd_transformBlock{
     GrassData grassData[];
 };
 
-uniform vec3 positionOffsets[36];
-uniform vec2 texCoordOffsets[36];
-uniform mat3 rotationMatrices[18];
-uniform float dvd_visibilityDistance;
-
 flat out int _arrayLayer;
 
 void main()
 {
-    VAR.dvd_instanceID = gl_BaseInstanceARB;
-    GrassData data = grassData[gl_InstanceID];
+    computeDataMinimal();
 
-    vec3 posOffset = positionOffsets[gl_VertexID];
+    GrassData data = grassData[gl_InstanceID];
     _arrayLayer = int(data.positionAndIndex.w);
 
-    VAR._texCoord = texCoordOffsets[gl_VertexID];
-    VAR._vertexW = data.transform[gl_InstanceID]* vec4(rotationMatrices[instanceID % 18] * posOffset, 1.0);
+    VAR._vertexW = data.transform * dvd_Vertex;
+    VAR._normalWV = mat3(dvd_ViewMatrix * data.transform) * dvd_Normal;
 
-    dvd_Normal = vec3(1.0, 1.0, 1.0);
-    VAR._normalWV = dvd_NormalMatrixWV(VAR.dvd_instanceID) * dvd_Normal;
+    //if (posOffset.y > 0.75) {
+    //    computeFoliageMovementGrass(VAR._vertexW);
+    //}
 
-    if (posOffset.y > 0.75) {
-        computeFoliageMovementGrass(VAR._vertexW);
-    }
-
-    setClipPlanes(VAR._vertexW);
+    //setClipPlanes(VAR._vertexW);
 
     //computeLightVectors();
 
     gl_Position = dvd_ViewProjectionMatrix * VAR._vertexW;
 }
 
--- Fragment
+-- Fragment.Colour
 
 #include "BRDF.frag"
 #include "velocityCalc.frag"
@@ -61,9 +50,9 @@ layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuseGrass;
 
 void main (void){
     vec4 colour = texture(texDiffuseGrass, vec3(VAR._texCoord, _arrayLayer));
-    if (colour.a < 1.0 - Z_TEST_SIGMA) {
+    /*if (colour.a < 1.0 - Z_TEST_SIGMA) {
         discard;
-    }
+    }*/
 
     _colourOut = colour;
     _normalOut = packNormal(normalize(VAR._normalWV));
@@ -94,6 +83,8 @@ void main(void){
 }
 
 --Fragment.PrePass
+
+layout(early_fragment_tests) in;
 
 flat in int _arrayLayer;
 

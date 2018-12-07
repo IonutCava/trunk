@@ -186,7 +186,6 @@ private:
 
     bool bindPipeline(const Pipeline& pipeline);
     void sendPushConstants(const PushConstants& pushConstants);
-    void dispatchCompute(const ComputeParams& computeParams);
 
     ErrorCode createGLContext(const DisplayWindow& window);
     ErrorCode destroyGLContext();

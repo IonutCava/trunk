@@ -41,24 +41,18 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-enum class MemoryBarrierType : U8 {
-    BUFFER = 0,
-    TEXTURE = 1,
-    RENDER_TARGET = 2,
-    TRANSFORM_FEEDBACK = 3,
-    COUNTER = 4,
-    QUERY = 5,
-    SHADER_BUFFER = 6,
-    ALL = 7,
-    COUNT
-};
-
-struct ComputeParams {
-    MemoryBarrierType _barrierType = MemoryBarrierType::COUNT;
-    vec3<U32> _groupSize = vec3<U32>(1);
-};
-
 typedef std::array<vector<U32>, to_base(ShaderType::COUNT)> ShaderFunctions;
+
+enum class MemoryBarrierType : U8 {
+    BUFFER = toBit(1),
+    TEXTURE = toBit(2),
+    RENDER_TARGET = toBit(3),
+    TRANSFORM_FEEDBACK = toBit(4),
+    COUNTER = toBit(5),
+    QUERY = toBit(6),
+    SHADER_BUFFER = toBit(7),
+    COUNT = 7
+};
 
 class PipelineDescriptor : public Hashable {
   public:

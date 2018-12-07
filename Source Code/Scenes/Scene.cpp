@@ -335,6 +335,9 @@ void Scene::loadAsset(const XML::SceneNode& sceneNode, SceneGraphNode* parent) {
         else if (sceneNode.type == "TERRAIN") {
             addTerrain(*parent, nodeTree, sceneNode.name);
         }
+        else if (sceneNode.type == "VEGETATION_GRASS") {
+            NOP(); //we rebuild grass everytime
+        }
         else if (sceneNode.type == "INFINITE_PLANE") {
             addInfPlane(*parent, nodeTree, sceneNode.name);
         }

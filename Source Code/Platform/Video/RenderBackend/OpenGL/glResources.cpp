@@ -366,18 +366,23 @@ void submitIndirectCommand(U32 cmdOffset,
 }
 
 void sumitDirectCommand(const IndirectDrawCommand& cmd,
+                        GLuint drawCount,
                         GLenum mode,
                         GLenum internalFormat,
                         bool drawIndexed) {
 
     if (drawIndexed) {
-         glDrawElementsInstanced(mode,
-                                 cmd.indexCount,
-                                 internalFormat,
-                                 (GLvoid*)(cmd.firstIndex * (internalFormat == GL_UNSIGNED_SHORT ? sizeof(GLushort) : sizeof(GLuint))),
-                                 cmd.primCount);
+         for (GLuint i = 0; i < drawCount; ++i) {
+             glDrawElementsInstanced(mode,
+                                     cmd.indexCount,
+                                     internalFormat,
+                                     (GLvoid*)(cmd.firstIndex * (internalFormat == GL_UNSIGNED_SHORT ? sizeof(GLushort) : sizeof(GLuint))),
+                                     cmd.primCount);
+         }
     } else {
-        glDrawArraysInstanced(mode, cmd.firstIndex, cmd.indexCount, cmd.primCount);
+        for (GLuint i = 0; i < drawCount; ++i) {
+            glDrawArraysInstanced(mode, cmd.firstIndex, cmd.indexCount, cmd.primCount);
+        }
     }
 }
 
@@ -389,12 +394,16 @@ void submitDirectMultiCommand(const IndirectDrawCommand& cmd,
                               GLsizei* countData,
                               bufferPtr indexData) {
     STUBBED("ToDo: I need a work around for this scenario. Use case: Terrain. -Ionut");
-    assert(cmd.baseInstance == 0);
+    //assert(cmd.baseInstance == 0);
 
-    if (drawIndexed) {
-        glMultiDrawElements(mode, countData, internalFormat, (void* const*)indexData, drawCount);
+    if (cmd.primCount == 1) {
+        if (drawIndexed) {
+            glMultiDrawElements(mode, countData, internalFormat, (void* const*)indexData, drawCount);
+        } else {
+            glMultiDrawArrays(mode, (GLint*)indexData, (GLsizei*)countData, drawCount);
+        }
     } else {
-        glMultiDrawArrays(mode, (GLint*)indexData, (GLsizei*)countData, drawCount);
+        sumitDirectCommand(cmd, drawCount, mode, internalFormat, drawIndexed);
     }
 }
 
@@ -435,11 +444,7 @@ void submitRenderCommand(const GenericDrawCommand& drawCommand,
             submitIndirectCommand(drawCommand._commandOffset, mode, internalFormat, drawIndexed);
         }
     } else {
-        if (drawCommand._drawCount > 1) {
-            submitDirectMultiCommand(drawCommand._cmd, drawCommand._drawCount, mode, internalFormat, drawIndexed, countData, indexData);
-        } else if (drawCommand._drawCount == 1) {
-            sumitDirectCommand(drawCommand._cmd, mode, internalFormat, drawIndexed);
-        }
+        submitDirectMultiCommand(drawCommand._cmd, drawCommand._drawCount, mode, internalFormat, drawIndexed, countData, indexData);
     }
 
     if (queryPrimitives) {

@@ -57,7 +57,7 @@ bool ShaderComputeQueue::stepQueue() {
         stringImpl resourceName = currentItem._shaderDescriptor.resourceName();
         currentItem._shaderDescriptor.assetName(resourceName);
         if (!info._shaderDefines.empty()) {
-            currentItem._shaderDescriptor.resourceName(resourceName + "_" + getDefinesHash(info._shaderDefines));
+            currentItem._shaderDescriptor.resourceName(resourceName + "-" + getDefinesHash(info._shaderDefines));
         }
         
         info._shaderRef = CreateResource<ShaderProgram>(_cache, currentItem._shaderDescriptor);

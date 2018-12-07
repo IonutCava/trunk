@@ -68,6 +68,7 @@ BETTER_ENUM(CommandType, U8,
     DRAW_TEXT,
     DRAW_IMGUI,
     DISPATCH_COMPUTE,
+    MEMORY_BARRIER,
     READ_ATOMIC_COUNTER,
     BEGIN_DEBUG_SCOPE,
     END_DEBUG_SCOPE,
@@ -253,11 +254,15 @@ BEGIN_COMMAND(DrawIMGUICommand, CommandType::DRAW_IMGUI, 4096);
     I64 _windowGUID = 0;
 END_COMMAND();
 
-BEGIN_COMMAND(DispatchComputeCommand, CommandType::DISPATCH_COMPUTE, 4096);
-    ComputeParams _params;
+BEGIN_COMMAND(DispatchComputeCommand, CommandType::DISPATCH_COMPUTE, 1024);
+    vec3<U32> _computeGroupSize;
 END_COMMAND();
 
-BEGIN_COMMAND(ReadAtomicCounterCommand, CommandType::READ_ATOMIC_COUNTER, 4096);
+BEGIN_COMMAND(MemoryBarrierCommand, CommandType::MEMORY_BARRIER, 1024);
+    U32 _barrierMask = 0;
+END_COMMAND();
+
+BEGIN_COMMAND(ReadAtomicCounterCommand, CommandType::READ_ATOMIC_COUNTER, 1024);
     ShaderBuffer* _buffer = nullptr;
     U32* _target = nullptr;
     U8   _offset = 0;

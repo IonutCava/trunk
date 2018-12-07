@@ -34,6 +34,10 @@ GenericDrawCommand::GenericDrawCommand(PrimitiveType type,
 }
 
 bool compatible(const GenericDrawCommand& lhs, const GenericDrawCommand& rhs) {
+    // Instancing is not compatible with MDI. Well, it might be, but I can't be bothered a.t.m. to implement it -Ionut
+    if (lhs._cmd.primCount > 1 || rhs._cmd.primCount > 1)
+        return false;
+
     return
         lhs._bufferIndex == rhs._bufferIndex &&
         lhs._renderOptions == rhs._renderOptions &&

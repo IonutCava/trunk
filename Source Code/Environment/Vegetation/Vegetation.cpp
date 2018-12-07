@@ -25,10 +25,7 @@ namespace {
     thread_local vectorEASTL<GrassData> g_tempData;
 };
 
-vector<mat3<F32> > Vegetation::s_rotationMatrices;
-vector<vec3<F32> > Vegetation::s_grassBlades;
-vector<vec2<F32> > Vegetation::s_texCoord;
-GenericVertexData* Vegetation::s_grassGPUBuffer = nullptr;
+VertexBuffer*      Vegetation::s_buffer = nullptr;
 
 Vegetation::Vegetation(GFXDevice& context, 
                        TerrainChunk& parentChunk,
@@ -39,15 +36,12 @@ Vegetation::Vegetation(GFXDevice& context,
       _billboardCount(details.billboardCount),
       _grassDensity(details.grassDensity),
       _grassScale(details.grassScale),
-      _treeScale(details.treeScale),
-      _treeDensity(details.treeDensity),
       _terrain(details.parentTerrain),
       _render(false),
       _success(false),
       _shadowMapped(true),
       _grassData(nullptr),
       _instanceCountGrass(0),
-      _instanceCountTrees(0),
       _grassStateBlockHash(0),
       _stateRefreshIntervalBufferUS(0ULL),
       _stateRefreshIntervalUS(Time::SecondsToMicroseconds(1))  ///<Every second?
@@ -56,28 +50,27 @@ Vegetation::Vegetation(GFXDevice& context,
     _stopLoadingRequest = false;
 
     _map = details.map;
-    _cullDrawCommand = GenericDrawCommand(PrimitiveType::API_POINTS, 0, 1);
 
     _instanceRoutineIdx.fill(0);
 
-    auto setShaderData = [this](Resource_wptr res) {
+    /*auto setShaderData = [this](Resource_wptr res) {
         ShaderProgram_ptr shader = std::dynamic_pointer_cast<ShaderProgram>(res.lock());
-        _instanceRoutineIdx[to_base(CullType::PASS_THROUGH)] = shader->GetSubroutineIndex(ShaderType::VERTEX, "PassThrough");
-        _instanceRoutineIdx[to_base(CullType::INSTANCE_CLOUD_REDUCTION)] = shader->GetSubroutineIndex(ShaderType::VERTEX, "InstanceCloudReduction");
-        _instanceRoutineIdx[to_base(CullType::HI_Z_CULL)] = shader->GetSubroutineIndex(ShaderType::VERTEX, "HiZOcclusionCull");
-    };
+        _instanceRoutineIdx[to_base(CullType::PASS_THROUGH)] = shader->GetSubroutineIndex(ShaderType::COMPUTE, "PassThrough");
+        _instanceRoutineIdx[to_base(CullType::INSTANCE_CLOUD_REDUCTION)] = shader->GetSubroutineIndex(ShaderType::COMPUTE, "InstanceCloudReduction");
+        _instanceRoutineIdx[to_base(CullType::HI_Z_CULL)] = shader->GetSubroutineIndex(ShaderType::COMPUTE, "HiZOcclusionCull");
+    };*/
 
-    ResourceDescriptor instanceCullShader("instanceCull");
+    ResourceDescriptor instanceCullShader("instanceCullGrass");
     instanceCullShader.setThreadedLoading(true);
-    instanceCullShader.setID(3);
-    instanceCullShader.setOnLoadCallback(setShaderData);
+    //instanceCullShader.setOnLoadCallback(setShaderData);
     _cullShader = CreateResource<ShaderProgram>(context.parent().resourceCache(), instanceCullShader);
 
     assert(_map->data() != nullptr);
 
     RenderStateBlock transparentRenderState;
     transparentRenderState.setCullMode(CullMode::CW);
-    _grassStateBlockHash = transparentRenderState.getHash();
+    //_grassStateBlockHash = transparentRenderState.getHash();
+    _grassStateBlockHash = _context.getDefaultStateBlock(false);
     setMaterialTpl(details.vegetationMaterialPtr);
 
     _boundingBox.set(parentChunk.bounds());
@@ -112,76 +105,54 @@ Vegetation::~Vegetation()
 
 void Vegetation::uploadGrassData() {
     // Make sure this is ONLY CALLED FROM THE MAIN LOADING THREAD. All instances should call this in a serialized fashion
-    if (s_grassGPUBuffer == nullptr) {
-        static const vec2<F32> pos000(cosf(Angle::to_RADIANS(0.000f)), sinf(Angle::to_RADIANS(0.000f)));
-        static const vec2<F32> pos120(cosf(Angle::to_RADIANS(120.0f)), sinf(Angle::to_RADIANS(120.0f)));
-        static const vec2<F32> pos240(cosf(Angle::to_RADIANS(240.0f)), sinf(Angle::to_RADIANS(240.0f)));
+    if (s_buffer == nullptr) {
+        const vec2<F32> pos000(cosf(Angle::to_RADIANS(0.000f)), sinf(Angle::to_RADIANS(0.000f)));
+        const vec2<F32> pos120(cosf(Angle::to_RADIANS(120.0f)), sinf(Angle::to_RADIANS(120.0f)));
+        const vec2<F32> pos240(cosf(Angle::to_RADIANS(240.0f)), sinf(Angle::to_RADIANS(240.0f)));
 
-        static const vec3<F32> vertices[] = {vec3<F32>(-pos000.x, 0.0f, -pos000.y),
-                                             vec3<F32>(-pos000.x, 1.0f, -pos000.y),
-                                             vec3<F32>(pos000.x, 1.0f, pos000.y),
-                                             vec3<F32>(pos000.x, 0.0f, pos000.y),
+        const vec3<F32> vertices[] = {vec3<F32>(-pos000.x, 0.0f, -pos000.y),
+                                      vec3<F32>(-pos000.x, 1.0f, -pos000.y),
+                                      vec3<F32>( pos000.x, 1.0f,  pos000.y),
+                                      vec3<F32>( pos000.x, 0.0f,  pos000.y),
 
-                                             vec3<F32>(-pos120.x, 0.0f, -pos120.y),
-                                             vec3<F32>(-pos120.x, 1.0f, -pos120.y),
-                                             vec3<F32>(pos120.x, 1.0f, pos120.y),
-                                             vec3<F32>(pos120.x, 0.0f, pos120.y),
+                                      vec3<F32>(-pos120.x, 0.0f, -pos120.y),
+                                      vec3<F32>(-pos120.x, 1.0f, -pos120.y),
+                                      vec3<F32>( pos120.x, 1.0f,  pos120.y),
+                                      vec3<F32>( pos120.x, 0.0f,  pos120.y),
+            
+                                      vec3<F32>(-pos240.x, 0.0f, -pos240.y),
+                                      vec3<F32>(-pos240.x, 1.0f, -pos240.y),
+                                      vec3<F32>( pos240.x, 1.0f,  pos240.y),
+                                      vec3<F32>( pos240.x, 0.0f,  pos240.y)};
 
-                                             vec3<F32>(-pos240.x, 0.0f, -pos240.y),
-                                             vec3<F32>(-pos240.x, 1.0f, -pos240.y),
-                                             vec3<F32>(pos240.x, 1.0f, pos240.y),
-                                             vec3<F32>(pos240.x, 0.0f, pos240.y)};
+        const U16 indices[] = {2, 1, 0, 2, 0, 1, 2, 0, 3, 2, 3, 0};
+        
+        const vec2<F32> texcoords[] = {vec2<F32>(0.0f, 0.99f),
+                                       vec2<F32>(0.0f, 0.01f),
+                                       vec2<F32>(1.0f, 0.01f),
+                                       vec2<F32>(1.0f, 0.99f)};
 
-        static const U32 indices[] = {2, 1, 0, 2, 0, 1, 2, 0, 3, 2, 3, 0};
-
-        static const vec2<F32> texcoords[] = {vec2<F32>(0.0f, 0.99f),
-                                              vec2<F32>(0.0f, 0.01f),
-                                              vec2<F32>(1.0f, 0.01f),
-                                              vec2<F32>(1.0f, 0.99f)};
-
-        s_grassGPUBuffer = _context.newGVD(1);
-
-        if (s_grassBlades.empty()) {
-            U32 indexOffset = 0;
-            for (U8 j = 0; j < 3; ++j) {
-                indexOffset = (j * 4);
-                for (U8 l = 0; l < 12; ++l) {
-                    s_grassBlades.push_back(vertices[indices[l] + indexOffset]);
-                    s_texCoord.push_back(texcoords[(indices[l] + indexOffset) % 4]);
-                }
-            }
+        s_buffer = _context.newVB();
+        s_buffer->useLargeIndices(false);
+        s_buffer->setVertexCount(12);
+        for (U8 i = 0; i < 12; ++i) {
+            s_buffer->modifyPositionValue(i, vertices[i]);
+            s_buffer->modifyTexCoordValue(i, texcoords[i % 4]);
+            s_buffer->modifyNormalValue(i , vec3<F32>(vertices[i].x, 0.0f, vertices[i].y));
         }
 
-        if (s_rotationMatrices.empty()) {
-            vector<F32> angles;
-            angles.resize(18, 0.0f);
-            for (U8 i = 0; i < 18; ++i) {
-                F32 temp = Random(360.0f);
-                while (std::find(std::begin(angles), std::end(angles), temp) !=
-                       std::end(angles)) {
-                    temp = Random(360.0f);
-                }
-                angles[i] = temp;
+        for (U8 i = 0; i < 3; ++i) {
+            if (i > 0) {
+                s_buffer->addRestartIndex();
             }
-
-            mat3<F32> temp;
-            for (U8 i = 0; i < 18; ++i) {
-                temp.identity();
-                temp.fromYRotation(angles[i]);
-                s_rotationMatrices.push_back(temp);
+            for (U8 j = 0; j < 12; ++j) {
+                s_buffer->addIndex(indices[j] + (4 * i));
             }
+            
         }
 
-        s_grassGPUBuffer->create(1);
-        s_grassGPUBuffer->setBuffer(0, _instanceCountGrass * 3, sizeof(I32), true, NULL, BufferUpdateFrequency::OCASSIONAL);
-        s_grassGPUBuffer->attribDescriptor(12)
-            .set(0, //buffer
-                    1, //component per element
-                    GFXDataFormat::SIGNED_INT,//element type 
-                    false, //normalized
-                    0,//stride in bytes
-                    1); //instance div
-    
+        s_buffer->create();
+        s_buffer->keepData(false);
     }
 
     U32 elementCount = to_U32(g_tempData.size());
@@ -208,7 +179,6 @@ void Vegetation::sceneUpdate(const U64 deltaTimeUS,
     static const Task updateTask;
 
     if (_threadedLoadComplete && !_success) {
-        generateTrees(updateTask);
         _success = true;
     }
 
@@ -228,22 +198,17 @@ void Vegetation::sceneUpdate(const U64 deltaTimeUS,
 void Vegetation::onRefreshNodeData(SceneGraphNode& sgn,
                                    GFX::CommandBuffer& bufferInOut){
     if (_threadedLoadComplete) {
-        //_cullShader->SetSubroutine(VERTEX, _instanceRoutineIdx[HI_Z_CULL]);
+        constexpr U32 GROUP_SIZE_AABB = 64;
 
         PipelineDescriptor pipeDesc;
         pipeDesc._shaderProgramHandle = _cullShader->getID();
-
-        _cullDrawCommand._cmd.primCount = _instanceCountGrass;
-        _cullDrawCommand._bufferIndex = 0;
-        _cullDrawCommand._sourceBuffer = s_grassGPUBuffer;
-        
-        enableOption(_cullDrawCommand, CmdRenderOptions::RENDER_NO_RASTERIZE);
 
         Texture_ptr depthTex = _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Depth, 0).texture();
 
         GFX::BindDescriptorSetsCommand descriptorSetCmd;
         descriptorSetCmd._set = _context.newDescriptorSet();
         descriptorSetCmd._set->_textureData.addTexture(depthTex->getData(), to_U8(ShaderProgram::TextureUsage::UNIT0));
+        descriptorSetCmd._set->_shaderBuffers.emplace_back(ShaderBufferLocation::GRASS_DATA, _grassData);
         GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
         GFX::BindPipelineCommand pipelineCmd;
@@ -251,14 +216,19 @@ void Vegetation::onRefreshNodeData(SceneGraphNode& sgn,
         GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
         GFX::SendPushConstantsCommand pushConstantsCommand;
-        pushConstantsCommand._constants.set("ObjectExtent", GFX::PushConstantType::VEC3, vec3<F32>(1.0f, 1.0f, 1.0f));
+        
         pushConstantsCommand._constants.set("dvd_visibilityDistance", GFX::PushConstantType::FLOAT, g_grassDistance);
-        pushConstantsCommand._constants.set("cullType", GFX::PushConstantType::UINT, /*queryID*/ to_base(CullType::INSTANCE_CLOUD_REDUCTION));
+        pushConstantsCommand._constants.set("cullType", GFX::PushConstantType::UINT, to_base(CullType::INSTANCE_CLOUD_REDUCTION));
+        pushConstantsCommand._constants.set("instanceCount", GFX::PushConstantType::UINT, _instanceCountGrass);
         GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
-        GFX::DrawCommand drawCmd;
-        drawCmd._drawCommands.push_back(_cullDrawCommand);
-        GFX::EnqueueCommand(bufferInOut, drawCmd);
+        GFX::DispatchComputeCommand computeCmd;
+        computeCmd._computeGroupSize.set((_instanceCountGrass + GROUP_SIZE_AABB - 1) / GROUP_SIZE_AABB, 1, 1);
+        GFX::EnqueueCommand(bufferInOut, computeCmd);
+
+        GFX::MemoryBarrierCommand memCmd;
+        memCmd._barrierMask = to_base(MemoryBarrierType::SHADER_BUFFER);
+        GFX::EnqueueCommand(bufferInOut, memCmd);
     }
 
     SceneNode::onRefreshNodeData(sgn, bufferInOut);
@@ -274,9 +244,10 @@ void Vegetation::buildDrawCommands(SceneGraphNode& sgn,
 
         GenericDrawCommand cmd;
         cmd._primitiveType = PrimitiveType::TRIANGLE_STRIP;
-        cmd._cmd.firstIndex = 0;
-        cmd._cmd.indexCount = 36;
-        cmd._sourceBuffer = s_grassGPUBuffer;
+        cmd._cmd.indexCount = s_buffer->getIndexCount();
+        cmd._sourceBuffer = s_buffer;
+        cmd._cmd.primCount = _instanceCountGrass;
+
         GFX::DrawCommand drawCommand;
         drawCommand._drawCommands.push_back(cmd);
         pkgInOut.addDrawCommand(drawCommand);
@@ -285,13 +256,6 @@ void Vegetation::buildDrawCommands(SceneGraphNode& sgn,
         PipelineDescriptor pipeDesc = pipeline->descriptor();
         pipeDesc._stateHash = _grassStateBlockHash;
         pkgInOut.pipeline(0, *_context.newPipeline(pipeDesc));
-
-        PushConstants constants = pkgInOut.pushConstants(0);
-        constants.set("positionOffsets", GFX::PushConstantType::VEC3, s_grassBlades);
-        constants.set("texCoordOffsets", GFX::PushConstantType::VEC2, s_texCoord);
-        constants.set("rotationMatrices", GFX::PushConstantType::MAT3, s_rotationMatrices, true);
-        constants.set("dvd_visibilityDistance", GFX::PushConstantType::FLOAT, 100.0f);
-        pkgInOut.pushConstants(0, constants);
     }
 
     SceneNode::buildDrawCommands(sgn, renderStagePass, pkgInOut);
@@ -301,13 +265,11 @@ bool Vegetation::onRender(SceneGraphNode& sgn,
                           const SceneRenderState& sceneRenderState,
                           RenderStagePass renderStagePass) {
     if (_render && _success && _threadedLoadComplete) {
-        RenderingComponent* renderComp = sgn.get<RenderingComponent>();
-        RenderPackage& pkg = renderComp->getDrawPackage(renderStagePass);
+        RenderPackage& pkg = sgn.get<RenderingComponent>()->getDrawPackage(renderStagePass);
 
         GenericDrawCommand cmd = pkg.drawCommand(0, 0);
-        cmd._cmd.primCount = _instanceCountGrass;
-        cmd._sourceBuffer = s_grassGPUBuffer;
         cmd._bufferIndex = renderStagePass.index();
+        disableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
         pkg.drawCommand(0, 0, cmd);
 
         g_grassDistance = sceneRenderState.grassVisibility();
@@ -316,9 +278,6 @@ bool Vegetation::onRender(SceneGraphNode& sgn,
     }
 
     return false;
-}
-
-void Vegetation::generateTrees(const Task& parentTask) {
 }
 
 void Vegetation::computeGrassTransforms(const Task& parentTask) {
@@ -345,7 +304,7 @@ void Vegetation::computeGrassTransforms(const Task& parentTask) {
     place the index of p0 (zero) to the background grid cell
     while active list is not empty do
         choose a random point p from active list
-        for attemp = 1:maxAttemp
+        for attempt = 1:maxAttemp
             get new sample p? around p between r and 2r
             for each non-empty neighbor cell around p?
                 if p? is closer than r

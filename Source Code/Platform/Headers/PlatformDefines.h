@@ -379,6 +379,8 @@ inline bool AlmostEqualRelativeAndAbs(D64 A, D64 B, D64 maxDiff, D64 maxRelDiff)
     return (diff <= largest * maxRelDiff);
 }
 
+FORCE_INLINE void NOP(void) {}
+
 #define ACKNOWLEDGE_UNUSED(p) ((void)p)
 
 #if defined(_MSC_VER)

@@ -387,12 +387,8 @@ void glVertexArray::draw(const GenericDrawCommand& command) {
 
     // Bind the vertex array object that in turn activates all of the bindings and pointers set on creation
     GLuint vao = _vaoCaches[command._bufferIndex];
-    if (GL_API::getStateTracker().setActiveVAO(vao)) {
-        // If this is the first time the VAO is bound in the current loop, check
-        // for primitive restart requests
-        GL_API::getStateTracker().togglePrimitiveRestart(_primitiveRestartEnabled);
-    }
-
+    GL_API::getStateTracker().setActiveVAO(vao);
+    GL_API::getStateTracker().togglePrimitiveRestart(_primitiveRestartEnabled);
     // VAOs store vertex formats and are reused by multiple 3d objects, so the Index Buffer and Vertex Buffers need to be double checked
     GL_API::getStateTracker().setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _IBid);
     GL_API::getStateTracker().bindActiveBuffer(vao, 0, _VBHandle._id, _VBHandle._offset * GLUtil::VBO::MAX_VBO_CHUNK_SIZE_BYTES, _effectiveEntrySize);
@@ -418,17 +414,21 @@ void glVertexArray::rebuildCountAndIndexData(U32 drawCount, U32 indexCount, U32 
 
     if (_lastDrawCount != drawCount || _lastIndexCount != indexCount) {
         if (_countData.size() < drawCount) {
-            _countData.resize(drawCount);
+            _countData.resize(drawCount, indexCount);
         }
-        eastl::fill(eastl::begin(_countData), eastl::end(_countData), indexCount);
+        if (_lastIndexCount != indexCount) {
+            eastl::fill(eastl::begin(_countData), eastl::end(_countData), indexCount);
+        }
     }
 
     if (_lastDrawCount != drawCount || _lastFirstIndex != firstIndex) {
         U32 idxCount = drawCount * getIndexCount();
         if (_indexOffsetData.size() < idxCount) {
-            _indexOffsetData.resize(idxCount);
+            _indexOffsetData.resize(idxCount, firstIndex);
         }
-        eastl::fill(eastl::begin(_indexOffsetData), eastl::end(_indexOffsetData), firstIndex);
+        if (_lastFirstIndex != firstIndex) {
+            eastl::fill(eastl::begin(_indexOffsetData), eastl::end(_indexOffsetData), firstIndex);
+        }
     }
 
     _lastDrawCount = drawCount;

@@ -571,8 +571,6 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     vegDetails.name = terrain->resourceName() + "_grass";
     vegDetails.grassDensity = terrainDescriptor->getGrassDensity();
     vegDetails.grassScale = terrainDescriptor->getGrassScale();
-    vegDetails.treeDensity = terrainDescriptor->getTreeDensity();
-    vegDetails.treeScale = terrainDescriptor->getTreeScale();
     vegDetails.parentTerrain = terrain;
 
     ResourceDescriptor vegetationMaterial("grassMaterial");
@@ -584,7 +582,7 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     vegMaterial->setShininess(5.0f);
     vegMaterial->setShadingMode(Material::ShadingMode::BLINN_PHONG);
     vegMaterial->addShaderDefine("SKIP_TEXTURES");
-    vegMaterial->setShaderProgram("grass", RenderStage::DISPLAY, true);
+    vegMaterial->setShaderProgram("grass.Colour", RenderStage::DISPLAY, true);
     vegMaterial->setShaderProgram("grass.PrePass", RenderPassType::DEPTH_PASS, true);
     vegMaterial->setShaderProgram("grass.Shadow", RenderStage::SHADOW, true);
     vegMaterial->setTexture(ShaderProgram::TextureUsage::UNIT0, grassBillboardArray);

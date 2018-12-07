@@ -288,6 +288,11 @@ void RenderPassManager::buildDrawCommands(RenderStagePass stagePass, const PassP
 
     if (refresh) {
         const mat4<F32>& viewMatrix = params._camera->getViewMatrix();
+
+        GFX::MemoryBarrierCommand memCmd;
+        memCmd._barrierMask = to_base(MemoryBarrierType::SHADER_BUFFER);
+        GFX::EnqueueCommand(bufferInOut, memCmd);
+
         refreshNodeData(stagePass._stage, stagePass._passType, params._passIndex, sceneRenderState, viewMatrix, sortedQueues, bufferInOut);
     }
 }
@@ -316,9 +321,7 @@ void RenderPassManager::prepareRenderQueues(RenderStagePass stagePass, const Pas
                                                    ? RenderBinType::RBT_TRANSLUCENT
                                                    : RenderBinType::RBT_COUNT,
                                packageQueue);
-    
     buildDrawCommands(stagePass, params, refreshNodeData, bufferInOut);
-    
 }
 
 bool RenderPassManager::prePass(const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
@@ -563,6 +566,10 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
                                params._camera->getZPlanes(),
                                bufferInOut);
         if (params._stage == RenderStage::DISPLAY) {
+            GFX::MemoryBarrierCommand memCmd;
+            memCmd._barrierMask = to_base(MemoryBarrierType::COUNTER);
+            GFX::EnqueueCommand(bufferInOut, memCmd);
+
             _context.updateCullCount(bufferInOut);
         }
     }

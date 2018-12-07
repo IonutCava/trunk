@@ -904,45 +904,6 @@ void GL_API::sendPushConstants(const PushConstants& pushConstants) {
     program->UploadPushConstants(pushConstants);
 }
 
-void GL_API::dispatchCompute(const ComputeParams& computeParams) {
-    assert(s_activeStateTracker->_activePipeline != nullptr);
-
-    glDispatchCompute(computeParams._groupSize.x,
-                      computeParams._groupSize.y,
-                      computeParams._groupSize.z);
-
-    if (computeParams._barrierType != MemoryBarrierType::COUNT) {
-        MemoryBarrierMask barrierType = MemoryBarrierMask::GL_ALL_BARRIER_BITS;
-        switch (computeParams._barrierType) {
-            case MemoryBarrierType::ALL:
-                break;
-            case MemoryBarrierType::BUFFER:
-                barrierType = MemoryBarrierMask::GL_BUFFER_UPDATE_BARRIER_BIT;
-                break;
-            case MemoryBarrierType::SHADER_BUFFER:
-                barrierType = MemoryBarrierMask::GL_SHADER_STORAGE_BARRIER_BIT;
-                break;
-            case MemoryBarrierType::COUNTER:
-                barrierType = MemoryBarrierMask::GL_ATOMIC_COUNTER_BARRIER_BIT;
-                break;
-            case MemoryBarrierType::QUERY:
-                barrierType = MemoryBarrierMask::GL_QUERY_BUFFER_BARRIER_BIT;
-                break;
-            case MemoryBarrierType::RENDER_TARGET:
-                barrierType = MemoryBarrierMask::GL_FRAMEBUFFER_BARRIER_BIT;
-                break;
-            case MemoryBarrierType::TEXTURE:
-                barrierType = MemoryBarrierMask::GL_TEXTURE_UPDATE_BARRIER_BIT;
-                break;
-            case MemoryBarrierType::TRANSFORM_FEEDBACK:
-                barrierType = MemoryBarrierMask::GL_TRANSFORM_FEEDBACK_BARRIER_BIT;
-                break;
-        }
-
-        glMemoryBarrier(barrierType);
-    }
-}
-
 bool GL_API::draw(const GenericDrawCommand& cmd) {
     if (cmd._sourceBuffer == nullptr) {
         getStateTracker().setActiveVAO(s_dummyVAO);
@@ -1085,11 +1046,48 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
         }break;
         case GFX::CommandType::DISPATCH_COMPUTE: {
             const GFX::DispatchComputeCommand& crtCmd = commandBuffer.getCommand<GFX::DispatchComputeCommand>(entry);
-            dispatchCompute(crtCmd._params);
+            assert(s_activeStateTracker->_activePipeline != nullptr);
+            glDispatchCompute(crtCmd._computeGroupSize.x, crtCmd._computeGroupSize.y, crtCmd._computeGroupSize.z);
+           
         }break;
-
+        case GFX::CommandType::MEMORY_BARRIER: {
+            const GFX::MemoryBarrierCommand& crtCmd = commandBuffer.getCommand<GFX::MemoryBarrierCommand>(entry);
+            MemoryBarrierMask glMask = MemoryBarrierMask::GL_NONE_BIT;
+            U32 barrierMask = crtCmd._barrierMask;
+            if (barrierMask != 0) {
+                for (U8 i = 0; i < to_U8(MemoryBarrierType::COUNT); ++i) {
+                    if (BitCompare(barrierMask, 1 << i)) {
+                        switch (static_cast<MemoryBarrierType>(1 << i)) {
+                            case MemoryBarrierType::BUFFER:
+                                glMask |= MemoryBarrierMask::GL_BUFFER_UPDATE_BARRIER_BIT;
+                                break;
+                            case MemoryBarrierType::SHADER_BUFFER:
+                                glMask |= MemoryBarrierMask::GL_SHADER_STORAGE_BARRIER_BIT;
+                                break;
+                            case MemoryBarrierType::COUNTER:
+                                glMask |= MemoryBarrierMask::GL_ATOMIC_COUNTER_BARRIER_BIT;
+                                break;
+                            case MemoryBarrierType::QUERY:
+                                glMask |= MemoryBarrierMask::GL_QUERY_BUFFER_BARRIER_BIT;
+                                break;
+                            case MemoryBarrierType::RENDER_TARGET:
+                                glMask |= MemoryBarrierMask::GL_FRAMEBUFFER_BARRIER_BIT;
+                                break;
+                            case MemoryBarrierType::TEXTURE:
+                                glMask |= MemoryBarrierMask::GL_TEXTURE_UPDATE_BARRIER_BIT;
+                                break;
+                            case MemoryBarrierType::TRANSFORM_FEEDBACK:
+                                glMask |= MemoryBarrierMask::GL_TRANSFORM_FEEDBACK_BARRIER_BIT;
+                                break;
+                        }
+                    }
+                }
+               glMemoryBarrier(glMask);
+            }
+        } break;
     };
 }
+
 void GL_API::postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
     if (!s_bufferBindsNeedsFlush) {
         return;

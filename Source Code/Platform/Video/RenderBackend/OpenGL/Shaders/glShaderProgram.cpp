@@ -365,7 +365,7 @@ glShaderProgram::glShaderProgramLoadInfo glShaderProgram::buildLoadInfo() {
     // The effect file name is the part up until the first period or comma symbol
     loadInfo._programName = assetName().substr(0, assetName().find_first_of(".,"));
 
-    size_t idx = resourceName().find_last_of('_');
+    size_t idx = resourceName().find_last_of('-');
 
     if (idx != stringImpl::npos) {
         loadInfo._programNameSuffix = resourceName().substr(idx+1);
@@ -468,6 +468,7 @@ void glShaderProgram::reloadShaders(bool reparseShaderSource) {
                                      "." +
                                      GLUtil::glShaderStageNameTable[i] +
                                      info._vertexStageProperties + 
+                                     "." +
                                      info._programNameSuffix);
         glShader*& shader = _shaderStage[i];
 
