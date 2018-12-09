@@ -67,8 +67,8 @@ struct VegetationDetails {
 
 struct GrassData {
     mat4<F32> _transform;
-    vec4<F32> _positionAndIndex;
-    vec4<F32> _extentAndRender = { 1.0f };
+    //x - width extent, y = height extent, z = array index, w - render
+    vec4<F32> _data = { 1.0f };
 };
 //RenderDoc: mat4 transform; vec4 posAndIndex; vec4 extentAndRender;
 
@@ -128,7 +128,6 @@ class Vegetation : public SceneNode {
     bool _shadowMapped;
     size_t  _grassStateBlockHash;
     U32 _instanceCountGrass;
-    std::array<U32, to_base(CullType::COUNT)> _instanceRoutineIdx;
 
     ShaderBuffer* _grassData;
 

@@ -885,9 +885,6 @@
     <None Include="../../../assets\shaders\GLSL\ImmediateModeEmulation.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="../../../assets\shaders\GLSL\instanceCull.glsl">
-      <Filter>Video\ShaderSource\GLSL</Filter>
-    </None>
     <None Include="../../../assets\shaders\GLSL\particles.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
@@ -956,9 +953,6 @@
     </None>
     <None Include="../../../assets\shaders\GLSL\fragmentAtoms\utility.frag">
       <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
-    </None>
-    <None Include="../../../assets\shaders\GLSL\geometryAtoms\inOut.geom">
-      <Filter>Video\ShaderSource\GLSL\geometryAtoms</Filter>
     </None>
     <None Include="../../../assets\shaders\GLSL\vertexAtoms\boneTransforms.vert">
       <Filter>Video\ShaderSource\GLSL\vertexAtoms</Filter>
@@ -1052,6 +1046,9 @@
     </None>
     <None Include="../../../Source Code\Platform\Headers\PlatformRuntime.inl">
       <Filter>Headers</Filter>
+    </None>
+    <None Include="..\..\..\assets\shaders\GLSL\instanceCullGrass.glsl">
+      <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

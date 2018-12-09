@@ -21,6 +21,7 @@
 namespace Divide {
 
 namespace {
+    static U8 g_billboardsPlaneCount = 1; /*3*/
     static F32 g_grassDistance = 100.0f;
     thread_local vectorEASTL<GrassData> g_tempData;
 };
@@ -30,7 +31,7 @@ VertexBuffer*      Vegetation::s_buffer = nullptr;
 Vegetation::Vegetation(GFXDevice& context, 
                        TerrainChunk& parentChunk,
                        const VegetationDetails& details)
-    : SceneNode(context.parent().resourceCache(), parentChunk.parent().getDescriptorHash() + parentChunk.ID(), details.name + "_" + to_stringImpl(parentChunk.ID()), SceneNodeType::TYPE_VEGETATION_GRASS),
+    : SceneNode(context.parent().resourceCache(), parentChunk.parent().getDescriptorHash() + parentChunk.ID(), details.name + "_" + to_stringImpl(parentChunk.ID()), SceneNodeType::TYPE_VEGETATION),
       _context(context),
       _terrainChunk(parentChunk),
       _billboardCount(details.billboardCount),
@@ -51,26 +52,15 @@ Vegetation::Vegetation(GFXDevice& context,
 
     _map = details.map;
 
-    _instanceRoutineIdx.fill(0);
-
-    /*auto setShaderData = [this](Resource_wptr res) {
-        ShaderProgram_ptr shader = std::dynamic_pointer_cast<ShaderProgram>(res.lock());
-        _instanceRoutineIdx[to_base(CullType::PASS_THROUGH)] = shader->GetSubroutineIndex(ShaderType::COMPUTE, "PassThrough");
-        _instanceRoutineIdx[to_base(CullType::INSTANCE_CLOUD_REDUCTION)] = shader->GetSubroutineIndex(ShaderType::COMPUTE, "InstanceCloudReduction");
-        _instanceRoutineIdx[to_base(CullType::HI_Z_CULL)] = shader->GetSubroutineIndex(ShaderType::COMPUTE, "HiZOcclusionCull");
-    };*/
-
     ResourceDescriptor instanceCullShader("instanceCullGrass");
     instanceCullShader.setThreadedLoading(true);
-    //instanceCullShader.setOnLoadCallback(setShaderData);
     _cullShader = CreateResource<ShaderProgram>(context.parent().resourceCache(), instanceCullShader);
 
     assert(_map->data() != nullptr);
 
     RenderStateBlock transparentRenderState;
     transparentRenderState.setCullMode(CullMode::CW);
-    //_grassStateBlockHash = transparentRenderState.getHash();
-    _grassStateBlockHash = _context.getDefaultStateBlock(false);
+    _grassStateBlockHash = transparentRenderState.getHash();
     setMaterialTpl(details.vegetationMaterialPtr);
 
     _boundingBox.set(parentChunk.bounds());
@@ -110,9 +100,13 @@ void Vegetation::uploadGrassData() {
         const vec2<F32> pos120(cosf(Angle::to_RADIANS(120.0f)), sinf(Angle::to_RADIANS(120.0f)));
         const vec2<F32> pos240(cosf(Angle::to_RADIANS(240.0f)), sinf(Angle::to_RADIANS(240.0f)));
 
-        const vec3<F32> vertices[] = {vec3<F32>(-pos000.x, 0.0f, -pos000.y),
-                                      vec3<F32>(-pos000.x, 1.0f, -pos000.y),
+        const vec3<F32> vertices[] = {vec3<F32>(-1, 1, 0),
+                                      vec3<F32>(1, 1, 0),
+                                      vec3<F32>(-1, -1, 0),
+                                      vec3<F32>(1, -1, 0)
+                                    /*vec3<F32>(-pos000.x, 1.0f, -pos000.y),
                                       vec3<F32>( pos000.x, 1.0f,  pos000.y),
+                                      vec3<F32>(-pos000.x, 0.0f, -pos000.y),
                                       vec3<F32>( pos000.x, 0.0f,  pos000.y),
 
                                       vec3<F32>(-pos120.x, 0.0f, -pos120.y),
@@ -123,48 +117,49 @@ void Vegetation::uploadGrassData() {
                                       vec3<F32>(-pos240.x, 0.0f, -pos240.y),
                                       vec3<F32>(-pos240.x, 1.0f, -pos240.y),
                                       vec3<F32>( pos240.x, 1.0f,  pos240.y),
-                                      vec3<F32>( pos240.x, 0.0f,  pos240.y)};
+                                      vec3<F32>( pos240.x, 0.0f,  pos240.y)*/};
 
-        const U16 indices[] = {2, 1, 0, 2, 0, 1, 2, 0, 3, 2, 3, 0};
+        const U16 indices[] = { 2, 0, 1, 1, 2, 3, 1, 0, 2, 2, 1, 3 };
         
-        const vec2<F32> texcoords[] = {vec2<F32>(0.0f, 0.99f),
-                                       vec2<F32>(0.0f, 0.01f),
-                                       vec2<F32>(1.0f, 0.01f),
-                                       vec2<F32>(1.0f, 0.99f)};
+        const vec2<F32> texcoords[] = {vec2<F32>(0.0f, 1.0f), // 0
+                                       vec2<F32>(1.0f, 1.0f), // 1
+                                       vec2<F32>(0.0f, 0.0f), // 2
+                                       vec2<F32>(1.0f, 0.0f)}; //3
 
         s_buffer = _context.newVB();
         s_buffer->useLargeIndices(false);
-        s_buffer->setVertexCount(12);
-        for (U8 i = 0; i < 12; ++i) {
+        s_buffer->setVertexCount(g_billboardsPlaneCount * 4);
+        for (U8 i = 0; i < g_billboardsPlaneCount * 4; ++i) {
             s_buffer->modifyPositionValue(i, vertices[i]);
             s_buffer->modifyTexCoordValue(i, texcoords[i % 4]);
             s_buffer->modifyNormalValue(i , vec3<F32>(vertices[i].x, 0.0f, vertices[i].y));
         }
 
-        for (U8 i = 0; i < 3; ++i) {
+        for (U8 i = 0; i < g_billboardsPlaneCount; ++i) {
             if (i > 0) {
                 s_buffer->addRestartIndex();
             }
             for (U8 j = 0; j < 12; ++j) {
-                s_buffer->addIndex(indices[j] + (4 * i));
+                s_buffer->addIndex(indices[j] + (i * 4));
             }
             
         }
 
-        s_buffer->create();
+        s_buffer->create(true);
         s_buffer->keepData(false);
     }
 
-    U32 elementCount = to_U32(g_tempData.size());
-    ShaderBufferDescriptor bufferDescriptor = {};
-    bufferDescriptor._elementCount = elementCount;
-    bufferDescriptor._elementSize = sizeof(GrassData);
-    bufferDescriptor._ringBufferLength = 1;
-    bufferDescriptor._updateFrequency = BufferUpdateFrequency::ONCE;
-    bufferDescriptor._initialData = (bufferPtr)g_tempData.data();
-    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE);
-    bufferDescriptor._name = Util::StringFormat("Grass_data_chunk_%d", _terrainChunk.ID());
-    if (elementCount > 0) {
+    _instanceCountGrass = to_U32(g_tempData.size());
+    if (_instanceCountGrass > 0) {
+        ShaderBufferDescriptor bufferDescriptor = {};
+        bufferDescriptor._elementCount = _instanceCountGrass;
+        bufferDescriptor._elementSize = sizeof(GrassData);
+        bufferDescriptor._ringBufferLength = 1;
+        bufferDescriptor._updateFrequency = BufferUpdateFrequency::ONCE;
+        bufferDescriptor._initialData = (bufferPtr)g_tempData.data();
+        bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE);
+        bufferDescriptor._name = Util::StringFormat("Grass_data_chunk_%d", _terrainChunk.ID());
+    
         _grassData = _context.newSB(bufferDescriptor);
         _render = true;
         g_tempData.clear();
@@ -268,7 +263,6 @@ bool Vegetation::onRender(SceneGraphNode& sgn,
         RenderPackage& pkg = sgn.get<RenderingComponent>()->getDrawPackage(renderStagePass);
 
         GenericDrawCommand cmd = pkg.drawCommand(0, 0);
-        cmd._bufferIndex = renderStagePass.index();
         disableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
         pkg.drawCommand(0, 0, cmd);
 
@@ -353,46 +347,42 @@ void Vegetation::computeGrassTransforms(const Task& parentTask) {
     for (I32 index = 0; index < currentCount; ++index) {
         densityFactor += 0.1f;
         GrassData entry = {};
-        for (F32 width = 0; width < chunkSize.x - densityFactor; width += densityFactor) {
+        for (F32 width = chunkPos.x; width < chunkSize.x + chunkPos.x - densityFactor; width += Random(0.01f, densityFactor)) {
             if (parentTask._stopRequested) {
                 break;
             }
 
-            for (F32 height = 0; height < chunkSize.y - densityFactor; height += densityFactor) {
+            for (F32 height = chunkPos.y; height < chunkSize.y + chunkPos.y - densityFactor; height += Random(0.01f, densityFactor)) {
                 if (_stopLoadingRequest || parentTask._stopRequested) {
                     break;
                 }
-                F32 x = width + Random(densityFactor) + chunkPos.x;
-                F32 y = height + Random(densityFactor) + chunkPos.y;
-                CLAMP<F32>(x, 0.0f, to_F32(mapWidth) - 1.0f);
-                CLAMP<F32>(y, 0.0f, to_F32(mapHeight) - 1.0f);
-                F32 x_fac = x / mapWidth;
-                F32 y_fac = y / mapHeight;
 
-                I32 map_colour = _map->getColour((U16)x, (U16)y)[index];
+                F32 x_fac = width / mapWidth;
+                F32 y_fac = height / mapHeight;
+
+                I32 map_colour = _map->getColour((U16)width, (U16)height)[index];
                 if (map_colour < 150) {
                     continue;
                 }
-                const vec3<F32>& P = terrain.getPosition(x_fac, y_fac);
-                if (P.y < waterLevel) {
+                Terrain::Vert vert = terrain.getVert(x_fac, y_fac);
+                if (vert._position.y < waterLevel) {
                     continue;
                 }
-                const vec3<F32>& N = terrain.getNormal(x_fac, y_fac);
-                if (N.y < 0.7f) {
+                if (vert._normal.y < 0.7f) {
                     continue;
                 }
 
-                entry._positionAndIndex.set(P, to_F32(index));
-                entry._transform.identity();
-                entry._transform.setScale(vec3<F32>(((map_colour + 1) / 256.0f)));
-
-                mat3<F32> rotationMatrix = GetMatrix(RotationFromVToU(WORLD_Y_AXIS, N) * Quaternion<F32>(WORLD_Y_AXIS, Random(360.0f)));
-                entry._transform *= mat4<F32>(rotationMatrix, true);
+                mat4<F32> transform;
+                mat3<F32> rotationMatrix = GetMatrix(RotationFromVToU(WORLD_Y_AXIS, vert._normal) * Quaternion<F32>(WORLD_Y_AXIS, Random(360.0f)));
+                transform.setScale(vec3<F32>(((map_colour + 1) / 256.0f)));
+                transform *= mat4<F32>(rotationMatrix, false);
+                transform.setTranslation(vert._position);
 
 #pragma omp critical
                 {
+                    entry._data.z = to_F32(index);
+                    entry._transform.set(transform);
                     g_tempData.push_back(entry);
-                    _instanceCountGrass++;
                 }
             }
         }

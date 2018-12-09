@@ -553,17 +553,19 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     grassSampler._wrapU = TextureWrap::CLAMP;
     grassSampler._wrapV = TextureWrap::CLAMP;
     grassSampler._wrapW = TextureWrap::CLAMP;
-    grassSampler._anisotropyLevel = 0;
+    grassSampler._anisotropyLevel = 8;
 
     TextureDescriptor grassTexDescriptor(TextureType::TEXTURE_2D_ARRAY);
     grassTexDescriptor._layerCount = textureCount;
     grassTexDescriptor.setSampler(grassSampler);
     grassTexDescriptor._srgb = true;
+    grassTexDescriptor.automaticMipMapGeneration(true);
 
     ResourceDescriptor textureDetailMaps("Vegetation Billboards");
     textureDetailMaps.assetLocation(Paths::g_assetsLocation + terrainDescriptor->getVariable("grassMapLocation"));
     textureDetailMaps.assetName(textureName);
     textureDetailMaps.setPropertyDescriptor(grassTexDescriptor);
+    
     Texture_ptr grassBillboardArray = CreateResource<Texture>(terrain->parentResourceCache(), textureDetailMaps);
 
     VegetationDetails& vegDetails = Attorney::TerrainLoader::vegetationDetails(*terrain);

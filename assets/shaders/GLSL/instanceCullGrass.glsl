@@ -6,8 +6,8 @@ uniform float dvd_visibilityDistance;
 
 struct GrassData {
     mat4 transform;
-    vec4 positionAndIndex;
-    vec4 extentAndRender;
+    //x - width extent, y = height extent, z = array index, w - render
+    vec4 data;
 };
 
 layout(std430, binding = BUFFER_GRASS_DATA) coherent buffer dvd_transformBlock {
@@ -29,18 +29,18 @@ int occlusionCull(in GrassData data) {
 
     switch (cullType) {
         case 0 :
-            return PassThrough(positionW.xyz, data.extentAndRender.xyz);
+            return PassThrough(positionW.xyz, data.data.xxy);
         case 1 : 
-            return InstanceCloudReduction(positionW.xyz, data.extentAndRender.xyz);
+            return InstanceCloudReduction(positionW.xyz, data.data.xxy);
     };
 
-    return zBufferCull(positionW.xyz, data.extentAndRender.xyz);
+    return zBufferCull(positionW.xyz, data.data.xxy);
                            
 }
 
 void main(void) {
     for (uint i = 0; i < instanceCount; ++i) {
         GrassData data = grassData[i];
-        data.extentAndRender.w = occlusionCull(data);
+        data.data.w = occlusionCull(data);
     }
 }

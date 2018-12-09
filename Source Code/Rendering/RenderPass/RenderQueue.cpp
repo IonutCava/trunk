@@ -114,7 +114,9 @@ RenderBin* RenderQueue::getBinForNode(const SceneGraphNode& node, const Material
             }*/
             return nullptr;
         }
-        case SceneNodeType::TYPE_VEGETATION_GRASS:
+        case SceneNodeType::TYPE_VEGETATION:
+            return getOrCreateBin(RenderBinType::RBT_OPAQUE); //Temp
+
         case SceneNodeType::TYPE_PARTICLE_EMITTER:
             return getOrCreateBin(RenderBinType::RBT_TRANSLUCENT);
 
@@ -128,7 +130,6 @@ RenderBin* RenderQueue::getBinForNode(const SceneGraphNode& node, const Material
         // We may want to break this stuff up into mesh rendering components and not care about specifics anymore (i.e. just material checks)
         case SceneNodeType::TYPE_WATER:
         case SceneNodeType::TYPE_OBJECT3D: {
-        case SceneNodeType::TYPE_VEGETATION_TREES:
             if (node.getNode()->type() == SceneNodeType::TYPE_OBJECT3D) {
                 ObjectType type = static_cast<Object3D*>(node.getNode().get())->getObjectType();
                 switch (type) {

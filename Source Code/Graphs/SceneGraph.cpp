@@ -14,14 +14,6 @@
 
 namespace Divide {
 
-namespace {
-    U32 ignoredNodeType = to_base(SceneNodeType::TYPE_ROOT) |
-                          to_base(SceneNodeType::TYPE_PARTICLE_EMITTER) |
-                          to_base(SceneNodeType::TYPE_TRIGGER) |
-                          to_base(SceneNodeType::TYPE_SKY) |
-                          to_base(SceneNodeType::TYPE_VEGETATION_GRASS);
-};
-
 SceneGraph::SceneGraph(Scene& parentScene)
     : FrameListener(),
       SceneComponent(parentScene),
@@ -50,7 +42,7 @@ SceneGraph::SceneGraph(Scene& parentScene)
     U32 octreeNodeMask = to_base(SceneNodeType::TYPE_ROOT) |
                          to_base(SceneNodeType::TYPE_SKY) |
                          to_base(SceneNodeType::TYPE_INFINITEPLANE) |
-                         to_base(SceneNodeType::TYPE_VEGETATION_GRASS);
+                         to_base(SceneNodeType::TYPE_VEGETATION);
 
     _octree.reset(new Octree(octreeNodeMask));
     _octreeUpdating = false;

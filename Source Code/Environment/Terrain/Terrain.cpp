@@ -79,11 +79,11 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
 
     _editorComponent.registerField(
         "Tessellation Range",
-        [this]() { return _descriptor->getTessellationRange(); },
-        [this](void* data) {_descriptor->setTessellationRange(*(vec3<F32>*)data); },
+        [this]() { return _descriptor->getTessellationRange().xy(); },
+        [this](void* data) {_descriptor->setTessellationRange(vec3<F32>(*(vec2<F32>*)data, _descriptor->getTessellationRange().z)); },
         EditorComponentFieldType::PUSH_TYPE,
         false,
-        GFX::PushConstantType::VEC3);
+        GFX::PushConstantType::VEC2);
 
     SceneNode::postLoad(sgn);
 }
@@ -231,7 +231,7 @@ vec3<F32> Terrain::getPositionFromGlobal(F32 x, F32 z) const {
     return temp;
 }
 
-vec3<F32> Terrain::getPosition(F32 x_clampf, F32 z_clampf) const {
+Terrain::Vert Terrain::getVert(F32 x_clampf, F32 z_clampf) const {
     assert(!(x_clampf < .0f || z_clampf < .0f || x_clampf > 1.0f || z_clampf > 1.0f));
 
     const vec2<U16>& dim = _descriptor->getDimensions();
@@ -250,87 +250,70 @@ vec3<F32> Terrain::getPosition(F32 x_clampf, F32 z_clampf) const {
         posI.y = dim.y - 2;
     }
 
-    assert(posI.x >= 0 && posI.x < to_I32(dim.x) - 1 &&  posI.y >= 0 && posI.y < to_I32(dim.y) - 1);
+    assert(posI.x >= 0 && posI.x < to_I32(dim.x) - 1 && posI.y >= 0 && posI.y < to_I32(dim.y) - 1);
 
-    return vec3<F32>(
+    VertexBuffer::Vertex tempVert1 = _physicsVerts[TER_COORD(posI.x, posI.y, to_I32(dim.x))];
+    VertexBuffer::Vertex tempVert2 = _physicsVerts[TER_COORD(posI.x + 1, posI.y, to_I32(dim.x))];
+    VertexBuffer::Vertex tempVert3 = _physicsVerts[TER_COORD(posI.x, posI.y + 1, to_I32(dim.x))];
+    VertexBuffer::Vertex tempVert4 = _physicsVerts[TER_COORD(posI.x + 1, posI.y + 1, to_I32(dim.x))];
+
+    vec3<F32> normals[4];
+    Util::UNPACK_VEC3(tempVert1._normal, normals[0]);
+    Util::UNPACK_VEC3(tempVert2._normal, normals[1]);
+    Util::UNPACK_VEC3(tempVert3._normal, normals[2]);
+    Util::UNPACK_VEC3(tempVert4._normal, normals[3]);
+
+    vec3<F32> tangents[4];
+    Util::UNPACK_VEC3(tempVert1._tangent, tangents[0]);
+    Util::UNPACK_VEC3(tempVert2._tangent, tangents[1]);
+    Util::UNPACK_VEC3(tempVert3._tangent, tangents[2]);
+    Util::UNPACK_VEC3(tempVert4._tangent, tangents[3]);
+
+    Vert ret = {};
+    ret._position.set(
         // X
         bbMin.x + x_clampf * (bbMax.x - bbMin.x),
 
         //Y
-        _physicsVerts[TER_COORD(posI.x, posI.y, to_I32(dim.x))]._position.y,
-        /*_physicsVerts[TER_COORD(posI.x, posI.y, to_I32(dim.x))]._position.y *  (1.0f - posD.x) * (1.0f - posD.y) +
-        _physicsVerts[TER_COORD(posI.x + 1, posI.y, to_I32(dim.x))]._position.y * posD.x * (1.0f - posD.y) +
-        _physicsVerts[TER_COORD(posI.x, posI.y + 1, to_I32(dim.x))]._position.y * (1.0f - posD.x) * posD.y +
-        _physicsVerts[TER_COORD(posI.x + 1, posI.y + 1,to_I32(dim.x))]._position.y * posD.x * posD.y,*/
+        tempVert1._position.y *  (1.0f - posD.x) * (1.0f - posD.y) +
+        tempVert2._position.y * posD.x * (1.0f - posD.y) +
+        tempVert3._position.y * (1.0f - posD.x) * posD.y +
+        tempVert4._position.y * posD.x * posD.y,
 
         //Z
         bbMin.z + z_clampf * (bbMax.z - bbMin.z));
+
+    ret._normal.set(normals[0] * (1.0f - posD.x) * (1.0f - posD.y) +
+                    normals[1] * posD.x * (1.0f - posD.y) +
+                    normals[2] * (1.0f - posD.x) * posD.y +
+                    normals[3] * posD.x * posD.y);
+
+    ret._tangent.set(tangents[0] * (1.0f - posD.x) * (1.0f - posD.y) +
+                     tangents[1] * posD.x * (1.0f - posD.y) +
+                     tangents[2] * (1.0f - posD.x) * posD.y +
+                     tangents[3] * posD.x * posD.y);
+    return ret;
+
+}
+vec3<F32> Terrain::getPosition(F32 x_clampf, F32 z_clampf) const {
+    return getVert(x_clampf, z_clampf)._position;
 }
 
 vec3<F32> Terrain::getNormal(F32 x_clampf, F32 z_clampf) const {
-    assert(!(x_clampf < .0f || z_clampf < .0f || x_clampf > 1.0f || z_clampf > 1.0f));
-
-    vec2<F32> posF(x_clampf * _descriptor->getDimensions().x, z_clampf * _descriptor->getDimensions().y);
-
-    vec2<I32> posI(to_I32(x_clampf * _descriptor->getDimensions().x), to_I32(z_clampf * _descriptor->getDimensions().y));
-
-    vec2<F32> posD(posF.x - posI.x, posF.y - posI.y);
-
-    if (posI.x >= to_I32(_descriptor->getDimensions().x) - 1) {
-        posI.x = to_I32(_descriptor->getDimensions().x) - 2;
-    }
-    if (posI.y >= to_I32(_descriptor->getDimensions().y) - 1) {
-        posI.y = to_I32(_descriptor->getDimensions().y) - 2;
-    }
-    assert(posI.x >= 0 && posI.x < to_I32(_descriptor->getDimensions().x) - 1 &&
-           posI.y >= 0 && posI.y < to_I32(_descriptor->getDimensions().y) - 1);
-
-    vec3<F32> normals[4];
-
-    Util::UNPACK_VEC3(_physicsVerts[TER_COORD(posI.x, posI.y, to_I32(_descriptor->getDimensions().x))]._normal, normals[0]);
-    Util::UNPACK_VEC3(_physicsVerts[TER_COORD(posI.x + 1, posI.y, to_I32(_descriptor->getDimensions().x))]._normal, normals[1]);
-    Util::UNPACK_VEC3(_physicsVerts[TER_COORD(posI.x, posI.y + 1, to_I32(_descriptor->getDimensions().x))]._normal, normals[2]);
-    Util::UNPACK_VEC3(_physicsVerts[TER_COORD(posI.x + 1, posI.y + 1, to_I32(_descriptor->getDimensions().x))]._normal, normals[3]);
-
-    return normals[0] * (1.0f - posD.x) * (1.0f - posD.y) +
-           normals[1] * posD.x * (1.0f - posD.y) +
-           normals[2] * (1.0f - posD.x) * posD.y + 
-           normals[3] * posD.x * posD.y;
+    return getVert(x_clampf, z_clampf)._normal;
 }
 
 vec3<F32> Terrain::getTangent(F32 x_clampf, F32 z_clampf) const {
-    assert(!(x_clampf < .0f || z_clampf < .0f || x_clampf > 1.0f || z_clampf > 1.0f));
+    return getVert(x_clampf, z_clampf)._tangent;
 
-    vec2<F32> posF(x_clampf * _descriptor->getDimensions().x, z_clampf * _descriptor->getDimensions().y);
-    vec2<I32> posI(to_I32(x_clampf * _descriptor->getDimensions().x), to_I32(z_clampf * _descriptor->getDimensions().y));
-    vec2<F32> posD(posF.x - posI.x, posF.y - posI.y);
-
-    if (posI.x >= to_I32(_descriptor->getDimensions().x) - 1) {
-        posI.x = to_I32(_descriptor->getDimensions().x) - 2;
-    }
-
-    if (posI.y >= to_I32(_descriptor->getDimensions().y) - 1) {
-        posI.y = to_I32(_descriptor->getDimensions().y) - 2;
-    }
-
-    assert(posI.x >= 0 && posI.x < to_I32(_descriptor->getDimensions().x) - 1 &&
-           posI.y >= 0 && posI.y < to_I32(_descriptor->getDimensions().y) - 1);
-
-    vec3<F32> tangents[4];
-
-    Util::UNPACK_VEC3(_physicsVerts[TER_COORD(posI.x, posI.y, to_I32(_descriptor->getDimensions().x))]._tangent, tangents[0]);
-    Util::UNPACK_VEC3(_physicsVerts[TER_COORD(posI.x + 1, posI.y, to_I32(_descriptor->getDimensions().x))]._tangent, tangents[1]);
-    Util::UNPACK_VEC3(_physicsVerts[TER_COORD(posI.x, posI.y + 1, to_I32(_descriptor->getDimensions().x))]._tangent, tangents[2]);
-    Util::UNPACK_VEC3(_physicsVerts[TER_COORD(posI.x + 1, posI.y + 1, to_I32(_descriptor->getDimensions().x))]._tangent, tangents[3]);
-
-    return tangents[0] * (1.0f - posD.x) * (1.0f - posD.y) +
-           tangents[1] * posD.x * (1.0f - posD.y) +
-           tangents[2] * (1.0f - posD.x) * posD.y +
-           tangents[3] * posD.x * posD.y;
 }
 
 vec2<U16> Terrain::getDimensions() const {
     return _descriptor->getDimensions();
+}
+
+vec2<F32> Terrain::getAltitudeRange() const {
+    return _descriptor->getAltitudeRange();
 }
 
 void Terrain::saveToXML(boost::property_tree::ptree& pt) const {

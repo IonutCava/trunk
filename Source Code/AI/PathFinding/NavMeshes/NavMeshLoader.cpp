@@ -327,11 +327,10 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode& sgn) {
                               to_base(SceneNodeType::TYPE_PARTICLE_EMITTER) |
                               to_base(SceneNodeType::TYPE_TRIGGER) |
                               to_base(SceneNodeType::TYPE_SKY) |
-                              to_base(SceneNodeType::TYPE_VEGETATION_GRASS);
+                              to_base(SceneNodeType::TYPE_VEGETATION);
 
         U32 allowedNodeType = to_base(SceneNodeType::TYPE_WATER) |
-                              to_base(SceneNodeType::TYPE_OBJECT3D) |
-                              to_base(SceneNodeType::TYPE_VEGETATION_TREES);
+                              to_base(SceneNodeType::TYPE_OBJECT3D);
 
         if (!BitCompare(allowedNodeType, to_U32(nodeType))) {
             if (!BitCompare(ignoredNodeType, to_U32(nodeType))) {
