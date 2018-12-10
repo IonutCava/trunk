@@ -115,7 +115,7 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
     }
     _particleShader = CreateResource<ShaderProgram>(_parentCache, particleShader);
 
-    ResourceDescriptor particleDepthShaderDescriptor("particles.Depth");
+    ResourceDescriptor particleDepthShaderDescriptor("particles.PrePass");
     _particleDepthShader = CreateResource<ShaderProgram>(_parentCache, particleDepthShaderDescriptor);
 
     if (_particleShader != nullptr) {

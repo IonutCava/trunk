@@ -19,7 +19,7 @@ void main() {
 #   define HAS_TRANSPARENCY
 #endif
 
-#if !defined(HAS_TRANSPARENCY)
+#if defined(SHADOW_PASS) && !defined(HAS_TRANSPARENCY)
 layout(early_fragment_tests) in;
 #endif
 

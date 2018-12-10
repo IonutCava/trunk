@@ -101,15 +101,13 @@ void main (void){
 
 --Fragment.PrePass
 
-layout(early_fragment_tests) in;
-
 void main() {
 }
 
 
 --Fragment.Shadow
 
-flat in int _arrayLayer;
+flat in int _arrayLayerFrag;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuseGrass;
 
@@ -124,7 +122,7 @@ vec2 computeMoments(in float depth) {
 }
 
 void main(void) {
-    vec4 colour = texture(texDiffuseGrass, vec3(VAR._texCoord, _arrayLayer));
+    vec4 colour = texture(texDiffuseGrass, vec3(VAR._texCoord, _arrayLayerFrag));
     if (colour.a < 1.0 - Z_TEST_SIGMA) discard;
 
     _colourOut = computeMoments(gl_FragCoord.z);

@@ -63,7 +63,7 @@ bool InfinitePlane::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCa
 
     planeMaterial->addShaderDefine("UNDERWATER_DIFFUSE_SCALE 100", true);
     planeMaterial->setShaderProgram("terrainPlane.Colour", RenderStage::DISPLAY, true);
-    planeMaterial->setShaderProgram("terrainPlane.Depth", RenderPassType::DEPTH_PASS, true);
+    planeMaterial->setShaderProgram("terrainPlane.PrePass", RenderPassType::DEPTH_PASS, true);
     setMaterialTpl(planeMaterial);
 
     ResourceDescriptor infinitePlane("infinitePlane");

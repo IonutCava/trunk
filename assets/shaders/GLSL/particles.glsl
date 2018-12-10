@@ -24,7 +24,7 @@ void main()
     particleColour = inColourData;
 }
 
--- Fragment.Depth
+-- Fragment.PrePass
 // Ouput data
 out vec4 colour;
 

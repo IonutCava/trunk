@@ -421,7 +421,7 @@ bool Material::computeShader(RenderStagePass renderStagePass, const bool compute
     }
 
     if (depthPassShader) {
-        shader += renderStagePass._stage == RenderStage::SHADOW ? ".Shadow" : ".Depth";
+        shader += renderStagePass._stage == RenderStage::SHADOW ? ".Shadow" : ".PrePass";
     }
 
     if (renderStagePass._passType == RenderPassType::OIT_PASS) {

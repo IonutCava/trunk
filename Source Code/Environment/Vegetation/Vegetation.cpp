@@ -23,10 +23,10 @@ namespace Divide {
 namespace {
     static U8 g_billboardsPlaneCount = 1; /*3*/
     static F32 g_grassDistance = 100.0f;
-    thread_local vectorEASTL<GrassData> g_tempData;
 };
 
-VertexBuffer*      Vegetation::s_buffer = nullptr;
+VertexBuffer* Vegetation::s_buffer = nullptr;
+std::atomic_uint Vegetation::s_bufferUsage = 0;
 
 Vegetation::Vegetation(GFXDevice& context, 
                        TerrainChunk& parentChunk,
@@ -89,6 +89,10 @@ Vegetation::~Vegetation()
         }
     }
     assert(_threadedLoadComplete);
+
+    if (s_bufferUsage.fetch_sub(1) == 1) {
+    }
+
     Console::printfn(Locale::get(_ID("UNLOAD_VEGETATION_END")));
 }
 
@@ -148,21 +152,21 @@ void Vegetation::uploadGrassData() {
         s_buffer->create(true);
         s_buffer->keepData(false);
     }
+    s_bufferUsage.fetch_add(1);
 
-    _instanceCountGrass = to_U32(g_tempData.size());
+    _instanceCountGrass = to_U32(_tempData.size());
     if (_instanceCountGrass > 0) {
         ShaderBufferDescriptor bufferDescriptor = {};
         bufferDescriptor._elementCount = _instanceCountGrass;
         bufferDescriptor._elementSize = sizeof(GrassData);
-        bufferDescriptor._ringBufferLength = 1;
         bufferDescriptor._updateFrequency = BufferUpdateFrequency::ONCE;
-        bufferDescriptor._initialData = (bufferPtr)g_tempData.data();
+        bufferDescriptor._initialData = (bufferPtr)_tempData.data();
         bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE);
         bufferDescriptor._name = Util::StringFormat("Grass_data_chunk_%d", _terrainChunk.ID());
     
         _grassData = _context.newSB(bufferDescriptor);
         _render = true;
-        g_tempData.clear();
+        _tempData.clear();
     }
     _threadedLoadComplete = true;
     setState(ResourceState::RES_LOADED);
@@ -203,7 +207,7 @@ void Vegetation::onRefreshNodeData(SceneGraphNode& sgn,
         GFX::BindDescriptorSetsCommand descriptorSetCmd;
         descriptorSetCmd._set = _context.newDescriptorSet();
         descriptorSetCmd._set->_textureData.addTexture(depthTex->getData(), to_U8(ShaderProgram::TextureUsage::UNIT0));
-        descriptorSetCmd._set->_shaderBuffers.emplace_back(ShaderBufferLocation::GRASS_DATA, _grassData);
+        descriptorSetCmd._set->_shaderBuffers.emplace_back(ShaderBufferLocation::GRASS_DATA, _grassData, vec2<U32>(0, _grassData->getPrimitiveCount()));
         GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
         GFX::BindPipelineCommand pipelineCmd;
@@ -339,14 +343,13 @@ void Vegetation::computeGrassTransforms(const Task& parentTask) {
     */
     
     F32 densityFactor = 1.0f / _grassDensity;
-    g_tempData.resize(0);
-    g_tempData.reserve(static_cast<size_t>(currentCount * chunkSize.x * chunkSize.y));
+    assert(_tempData.empty());
+    _tempData.reserve(static_cast<size_t>(currentCount * chunkSize.x * chunkSize.y));
     const Terrain& terrain = _terrainChunk.parent();
 
 #pragma omp parallel for
     for (I32 index = 0; index < currentCount; ++index) {
         densityFactor += 0.1f;
-        GrassData entry = {};
         for (F32 width = chunkPos.x; width < chunkSize.x + chunkPos.x - densityFactor; width += Random(0.01f, densityFactor)) {
             if (parentTask._stopRequested) {
                 break;
@@ -380,9 +383,10 @@ void Vegetation::computeGrassTransforms(const Task& parentTask) {
 
 #pragma omp critical
                 {
-                    entry._data.z = to_F32(index);
+                    GrassData entry = {};
+                    entry._data.set(1.0f, 1.0f, to_F32(index), 1.0f);
                     entry._transform.set(transform);
-                    g_tempData.push_back(entry);
+                    _tempData.push_back(entry);
                 }
             }
         }

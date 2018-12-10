@@ -51,9 +51,6 @@
 #include <Carbon/Carbon.h>
 void checkMacEvents();
 
-#ifndef thread_local
-#define thread_local __thread
-#endif //thread_local
 
 namespace Divide {
     struct WindowHandle {

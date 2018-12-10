@@ -471,38 +471,6 @@ void main(void)
     EndPrimitive();
 }
 
---Fragment.Depth
-
-layout(early_fragment_tests) in;
-
-void main()
-{
-}
-
---Fragment.Shadow
-
-out vec2 _colourOut;
-in vec4 geom_vertexWVP;
-
-#include "nodeBufferedInput.cmn"
-
-vec2 computeMoments(in float depth) {
-    // Compute partial derivatives of depth.  
-    float dx = dFdx(depth);
-    float dy = dFdy(depth);
-    // Compute second moment over the pixel extents.  
-    return vec2(depth, depth*depth + 0.25*(dx*dx + dy*dy));
-}
-
-void main()
-{
-    // Adjusting moments (this is sort of bias per pixel) using partial derivative
-    float depth = geom_vertexWVP.z / geom_vertexWVP.w;
-    depth = depth * 0.5 + 0.5;
-    //_colourOut = computeMoments(exp(DEPTH_EXP_WARP * depth));
-    _colourOut = computeMoments(depth);
-}
-
 --Fragment
 
 #define CUSTOM_MATERIAL_ALBEDO
@@ -578,4 +546,33 @@ void main(void)
     _normalOut = packNormal(getProcessedNormal());
     // Why would terrain have a velocity?
     _velocityOut = vec2(1.0); //velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
+}
+
+
+--Fragment.Shadow
+
+out vec2 _colourOut;
+in vec4 geom_vertexWVP;
+
+#include "nodeBufferedInput.cmn"
+
+vec2 computeMoments(in float depth) {
+    // Compute partial derivatives of depth.  
+    float dx = dFdx(depth);
+    float dy = dFdy(depth);
+    // Compute second moment over the pixel extents.  
+    return vec2(depth, depth*depth + 0.25*(dx*dx + dy * dy));
+}
+
+void main() {
+    // Adjusting moments (this is sort of bias per pixel) using partial derivative
+    float depth = geom_vertexWVP.z / geom_vertexWVP.w;
+    depth = depth * 0.5 + 0.5;
+    //_colourOut = computeMoments(exp(DEPTH_EXP_WARP * depth));
+    _colourOut = computeMoments(depth);
+}
+
+--Fragment.PrePass
+
+void main() {
 }

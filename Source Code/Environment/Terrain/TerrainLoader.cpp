@@ -285,9 +285,9 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     terrainMaterial->setTexture(ShaderProgram::TextureUsage::OPACITY, CreateResource<Texture>(terrain->parentResourceCache(), heightMapTexture));
 
-    terrainMaterial->setShaderProgram("terrainTess." + name, RenderStage::DISPLAY, true);
-    terrainMaterial->setShaderProgram("terrainTess." + name, RenderStage::REFLECTION, true);
-    terrainMaterial->setShaderProgram("terrainTess." + name, RenderStage::REFRACTION, true);
+    terrainMaterial->setShaderProgram("terrainTess.Colour" + name, RenderStage::DISPLAY, true);
+    terrainMaterial->setShaderProgram("terrainTess.Colour" + name, RenderStage::REFLECTION, true);
+    terrainMaterial->setShaderProgram("terrainTess.Colour" + name, RenderStage::REFRACTION, true);
     terrainMaterial->setShaderProgram("terrainTess.PrePass." + name, RenderPassType::DEPTH_PASS, true);
     terrainMaterial->setShaderProgram("terrainTess.Shadow." + name, RenderStage::SHADOW, true);
 

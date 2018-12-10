@@ -59,14 +59,7 @@ RenderingOrder::List RenderQueue::getSortOrder(RenderStagePass stagePass, Render
                                                  : RenderingOrder::List::NONE;
         } break;
         case RenderBinType::RBT_TRANSLUCENT: {
-            // Translucent items should be rendered by material in depth passes to avoid useless material switches
-            // Small cost for bypassing early-Z checks, but translucent items should be in the minority on the screen anyway
-            // and the Opaque pass should have finished by now
-            /*sortOrder = !stagePass.isDepthPass()  ? RenderingOrder::List::BACK_TO_FRONT
-                                                    : RenderingOrder::List::BY_STATE;*/
-
-
-            // We are using weighted blended OIT. State is fine (and faster)
+             // We are using weighted blended OIT. State is fine (and faster)
             sortOrder = RenderingOrder::List::BY_STATE;
         } break;
         default: {
@@ -115,7 +108,7 @@ RenderBin* RenderQueue::getBinForNode(const SceneGraphNode& node, const Material
             return nullptr;
         }
         case SceneNodeType::TYPE_VEGETATION:
-            return getOrCreateBin(RenderBinType::RBT_OPAQUE); //Temp
+            return getOrCreateBin(RenderBinType::RBT_TRANSLUCENT); //Temp
 
         case SceneNodeType::TYPE_PARTICLE_EMITTER:
             return getOrCreateBin(RenderBinType::RBT_TRANSLUCENT);

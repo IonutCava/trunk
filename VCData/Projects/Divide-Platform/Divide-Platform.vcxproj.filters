@@ -614,6 +614,9 @@
     <ClCompile Include="..\..\..\Source Code\Platform\Input\InputHandler.cpp">
       <Filter>Input</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Source Code\Platform\Video\Commands.cpp">
+      <Filter>Video</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Audio">

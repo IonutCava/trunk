@@ -130,7 +130,9 @@ class Vegetation : public SceneNode {
     U32 _instanceCountGrass;
 
     ShaderBuffer* _grassData;
+    vectorEASTL<GrassData> _tempData;
 
+    static std::atomic_uint s_bufferUsage;
     static VertexBuffer* s_buffer;
 };
 

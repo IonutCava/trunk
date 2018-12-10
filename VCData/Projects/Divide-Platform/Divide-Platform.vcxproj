@@ -260,6 +260,7 @@
     <ClCompile Include="..\..\..\Source Code\Platform\Input\Input.cpp" />
     <ClCompile Include="..\..\..\Source Code\Platform\SDLEventListener.cpp" />
     <ClCompile Include="..\..\..\Source Code\Platform\SDLEventManager.cpp" />
+    <ClCompile Include="..\..\..\Source Code\Platform\Video\Commands.cpp" />
     <ClCompile Include="..\..\..\Source Code\Platform\Video\RenderBackend\OpenGL\GLStateTracker.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -145,28 +145,14 @@ END_COMMAND();
 
 BEGIN_COMMAND(DrawCommand, CommandType::DRAW_COMMANDS, 4096);
     vectorEASTL<GenericDrawCommand> _drawCommands;
-    stringImpl toString(U16 indent) const override {
-        stringImpl ret = CommandBase::toString(indent);
-        ret.append("\n");
-        size_t i = 0;
-        for (const GenericDrawCommand& cmd : _drawCommands) {
-            for (U16 j = 0; j < indent; ++j) {
-                ret.append(" ");
-            }
-            ret.append(Util::StringFormat("%d: Count: %d Base: %d\n", i++, cmd._drawCount, cmd._cmd.baseInstance));
-        }
-
-        return ret;
-    }
+    stringImpl toString(U16 indent) const override;
 END_COMMAND();
 
 
 BEGIN_COMMAND(SetViewportCommand, CommandType::SET_VIEWPORT, 4096);
     Rect<I32> _viewport;
 
-    stringImpl toString(U16 indent) const override {
-        return CommandBase::toString(indent) + Util::StringFormat(" [%d, %d, %d, %d]", _viewport.x, _viewport.y, _viewport.z, _viewport.w);
-    }
+    stringImpl toString(U16 indent) const override;
 END_COMMAND();
 
 BEGIN_COMMAND(BeginRenderPassCommand, CommandType::BEGIN_RENDER_PASS, 4096);
@@ -174,9 +160,7 @@ BEGIN_COMMAND(BeginRenderPassCommand, CommandType::BEGIN_RENDER_PASS, 4096);
     RTDrawDescriptor _descriptor;
     eastl::fixed_string<char, 128 + 1, true> _name = "";
 
-    stringImpl toString(U16 indent) const override {
-        return CommandBase::toString(indent) + ": " + stringImpl(_name.c_str());
-    }
+    stringImpl toString(U16 indent) const override;
  END_COMMAND();
 
 BEGIN_COMMAND(EndRenderPassCommand, CommandType::END_RENDER_PASS, 4096);
@@ -215,6 +199,8 @@ END_COMMAND();
 
 BEGIN_COMMAND(SetScissorCommand, CommandType::SET_SCISSOR, 4096);
     Rect<I32> _rect;
+
+    stringImpl toString(U16 indent) const override;
 END_COMMAND();
 
 BEGIN_COMMAND(SetBlendCommand, CommandType::SET_BLEND, 4096);
@@ -231,15 +217,16 @@ END_COMMAND();
 
 BEGIN_COMMAND(BindDescriptorSetsCommand, CommandType::BIND_DESCRIPTOR_SETS, 4096);
     DescriptorSet_ptr _set = nullptr;
+
+    stringImpl toString(U16 indent) const override;
+
 END_COMMAND();
 
 BEGIN_COMMAND(BeginDebugScopeCommand, CommandType::BEGIN_DEBUG_SCOPE, 4096);
     eastl::fixed_string<char, 128 + 1, true> _scopeName;
     I32 _scopeID = -1;
 
-    stringImpl toString(U16 indent) const override {
-        return CommandBase::toString(indent) + ": " + stringImpl(_scopeName.c_str());
-    }
+    stringImpl toString(U16 indent) const override;
 END_COMMAND();
 
 BEGIN_COMMAND(EndDebugScopeCommand, CommandType::END_DEBUG_SCOPE, 4096);
@@ -247,6 +234,9 @@ END_COMMAND();
 
 BEGIN_COMMAND(DrawTextCommand, CommandType::DRAW_TEXT, 4096);
     TextElementBatch _batch;
+
+    stringImpl toString(U16 indent) const override;
+
 END_COMMAND();
 
 BEGIN_COMMAND(DrawIMGUICommand, CommandType::DRAW_IMGUI, 4096);
@@ -260,6 +250,9 @@ END_COMMAND();
 
 BEGIN_COMMAND(MemoryBarrierCommand, CommandType::MEMORY_BARRIER, 1024);
     U32 _barrierMask = 0;
+
+    stringImpl toString(U16 indent) const override;
+
 END_COMMAND();
 
 BEGIN_COMMAND(ReadAtomicCounterCommand, CommandType::READ_ATOMIC_COUNTER, 1024);

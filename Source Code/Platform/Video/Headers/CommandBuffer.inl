@@ -85,7 +85,7 @@ inline bool CommandBuffer::empty() const {
 }
 
 template<>
-inline bool CommandBuffer::tryMergeCommands(DrawCommand* prevCommand, DrawCommand* crtCommand) const {
+inline bool CommandBuffer::tryMergeCommands(DrawCommand* prevCommand, DrawCommand* crtCommand, bool& partial) const {
 
     prevCommand->_drawCommands.insert(eastl::cend(prevCommand->_drawCommands),
         eastl::cbegin(crtCommand->_drawCommands),
@@ -131,34 +131,35 @@ inline bool CommandBuffer::tryMergeCommands(DrawCommand* prevCommand, DrawComman
                                     return cmd._drawCount == 0;
                                 }),
                   eastl::end(commands));
+    partial = true;
     return true;
 }
 
 template<>
-inline bool CommandBuffer::tryMergeCommands(BindDescriptorSetsCommand* prevCommand, BindDescriptorSetsCommand* crtCommand) const {
-    return Merge(*prevCommand->_set, *crtCommand->_set);
+inline bool CommandBuffer::tryMergeCommands(BindDescriptorSetsCommand* prevCommand, BindDescriptorSetsCommand* crtCommand, bool& partial) const {
+    return Merge(*prevCommand->_set, *crtCommand->_set, partial);
 }
 
 template<>
-inline bool CommandBuffer::tryMergeCommands(SendPushConstantsCommand* prevCommand, SendPushConstantsCommand* crtCommand) const {
-    return Merge(prevCommand->_constants, crtCommand->_constants);
+inline bool CommandBuffer::tryMergeCommands(SendPushConstantsCommand* prevCommand, SendPushConstantsCommand* crtCommand, bool& partial) const {
+    return Merge(prevCommand->_constants, crtCommand->_constants, partial);
 }
 
 template<typename T>
-inline bool CommandBuffer::tryMergeCommands(T* prevCommand, T* crtCommand) const {
+inline bool CommandBuffer::tryMergeCommands(T* prevCommand, T* crtCommand, bool& partial) const {
     return false;
 }
 
 template<>
-inline bool CommandBuffer::tryMergeCommands(GFX::CommandBase* prevCommand, GFX::CommandBase* crtCommand) const {
+inline bool CommandBuffer::tryMergeCommands(GFX::CommandBase* prevCommand, GFX::CommandBase* crtCommand, bool& partial) const {
     assert(prevCommand != nullptr && crtCommand != nullptr);
     switch (prevCommand->_type) {
     case GFX::CommandType::DRAW_COMMANDS:
-        return tryMergeCommands(static_cast<DrawCommand*>(prevCommand), static_cast<DrawCommand*>(crtCommand));
+        return tryMergeCommands(static_cast<DrawCommand*>(prevCommand), static_cast<DrawCommand*>(crtCommand), partial);
     case GFX::CommandType::BIND_DESCRIPTOR_SETS:
-        return tryMergeCommands(static_cast<BindDescriptorSetsCommand*>(prevCommand), static_cast<BindDescriptorSetsCommand*>(crtCommand));
+        return tryMergeCommands(static_cast<BindDescriptorSetsCommand*>(prevCommand), static_cast<BindDescriptorSetsCommand*>(crtCommand), partial);
     case GFX::CommandType::SEND_PUSH_CONSTANTS:
-        return tryMergeCommands(static_cast<SendPushConstantsCommand*>(prevCommand), static_cast<SendPushConstantsCommand*>(crtCommand));
+        return tryMergeCommands(static_cast<SendPushConstantsCommand*>(prevCommand), static_cast<SendPushConstantsCommand*>(crtCommand), partial);
     }
     return false;
 }

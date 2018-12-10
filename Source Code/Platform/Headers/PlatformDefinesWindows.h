@@ -109,10 +109,6 @@
 
 LRESULT DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-#ifndef thread_local
-#define thread_local __declspec( thread )
-#endif //thread_local
-
 namespace Divide {
     struct WindowHandle {
         HWND _handle = 0;

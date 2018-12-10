@@ -19,6 +19,8 @@ void main(void) {
 
 --Fragment.Colour
 
+layout(early_fragment_tests) in;
+
 #include "utility.frag"
 #include "velocityCalc.frag"
 
@@ -38,9 +40,7 @@ void main(void) {
     _velocityOut = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
 }
 
---Fragment.Depth
-
-layout(early_fragment_tests) in;
+--Fragment.PrePass
 
 void main() {
 
