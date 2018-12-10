@@ -7,13 +7,13 @@
 <terrainWidth>2048</terrainWidth>
 <terrainHeight>2048</terrainHeight>
 <altitudeRange min="-33.5999985" max="68.8000031"/>
-<tessellationRange min="5" max="500" chunkSize="256"/>
+<tessellationRange min="5" max="500" chunkSize="512"/>
 <textureLocation>misc_images</textureLocation>
 <waterCaustics>terrain_water_caustics.jpg</waterCaustics>
 <underwaterAlbedoTexture>sandfloor009a.jpg</underwaterAlbedoTexture>
 <underwaterDetailTexture>terrain_detail_NM.png</underwaterDetailTexture>
 <underwaterDiffuseScale>100</underwaterDiffuseScale>
-<vegetation grassDensity="0.00999999978" treeDensity="0" grassScale="0.174999997" treeScale="0.699999988">
+<vegetation grassDensity="0.25" treeDensity="0" grassScale="0.174999997" treeScale="0.699999988">
     <vegetationTextureLocation>misc_images</vegetationTextureLocation>
     <map>warTerrainAlpha_Alpha1.tga</map>
     <grassBillboard1>billboardgrass0001.png</grassBillboard1>

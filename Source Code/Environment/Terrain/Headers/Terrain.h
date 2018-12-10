@@ -188,7 +188,6 @@ class Terrain : public Object3D {
 
 
    public:
-    hashMap<U32, vector<U32>> _physicsIndices;
     vector<VertexBuffer::Vertex> _physicsVerts;
 
    protected:
@@ -225,8 +224,7 @@ private:
         return terrain._vegDetails;
     }
 
-    static void registerTerrainChunk(Terrain& terrain,
-        Divide::TerrainChunk* const chunk) {
+    static void registerTerrainChunk(Terrain& terrain, Divide::TerrainChunk* const chunk) {
         terrain._terrainChunks.push_back(chunk);
     }
 

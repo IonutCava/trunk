@@ -34,7 +34,7 @@ void QuadtreeNode::build(GFXDevice& context,
                          Terrain* const terrain,
                          U32& chunkCount)
 {
-    _targetChunkDimension = targetChunkDimension;
+    _targetChunkDimension = std::min(targetChunkDimension, to_U32(HMsize.width));
     U32 div = to_U32(std::pow(2.0f, to_F32(depth)));
     vec2<U16> nodesize = HMsize / div;
     if (nodesize.x % 2 == 0) {
@@ -45,7 +45,7 @@ void QuadtreeNode::build(GFXDevice& context,
     }
     vec2<U16> newsize = nodesize / 2;
 
-    if (std::max(newsize.x, newsize.y) <= _targetChunkDimension) {
+    if (std::max(newsize.x, newsize.y) < _targetChunkDimension) {
         _terrainChunk = std::make_unique<TerrainChunk>(context, terrain, *this);
         _terrainChunk->load(depth, pos, _targetChunkDimension, HMsize);
         chunkCount++;

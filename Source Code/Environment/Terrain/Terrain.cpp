@@ -47,12 +47,12 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
                                               to_base(ComponentType::RENDERING);
 
     for (TerrainChunk* chunk : _terrainChunks) {
-        const Vegetation_ptr& veg = Attorney::TerrainChunkTerrain::getVegetation(*chunk);
-        assert(veg != nullptr);
-        vegetationNodeDescriptor._node = veg;
+        vegetationNodeDescriptor._node = Attorney::TerrainChunkTerrain::getVegetation(*chunk);
         vegetationNodeDescriptor._name = Util::StringFormat("Grass_chunk_%d", chunk->ID());
 
-        sgn.addNode(vegetationNodeDescriptor);
+        SceneGraphNode* vegNode = sgn.addNode(vegetationNodeDescriptor);
+        assert(vegNode != nullptr);
+        //vegNode->lockVisibility(true);
     }
 
     ShaderBufferDescriptor bufferDescriptor;
