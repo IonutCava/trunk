@@ -186,7 +186,6 @@ class Terrain : public Object3D {
 
     void onEditorChange(EditorComponentField& field);
 
-    void buildQuadtree();
 
    public:
     hashMap<U32, vector<U32>> _physicsIndices;

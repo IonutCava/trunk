@@ -108,7 +108,7 @@ RenderBin* RenderQueue::getBinForNode(const SceneGraphNode& node, const Material
             return nullptr;
         }
         case SceneNodeType::TYPE_VEGETATION:
-            return getOrCreateBin(RenderBinType::RBT_TRANSLUCENT); //Temp
+            return getOrCreateBin(RenderBinType::RBT_TERRAIN); //Temp
 
         case SceneNodeType::TYPE_PARTICLE_EMITTER:
             return getOrCreateBin(RenderBinType::RBT_TRANSLUCENT);

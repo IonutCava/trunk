@@ -41,6 +41,6 @@ int occlusionCull(in GrassData data) {
 void main(void) {
     for (uint i = 0; i < instanceCount; ++i) {
         GrassData data = grassData[i];
-        data.data.w = occlusionCull(data);
+        data.data.w = 1.0f;//occlusionCull(data);
     }
 }

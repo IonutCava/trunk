@@ -48,6 +48,12 @@ in flat int _arrayLayerGS[];
 in flat int _cullFlag[];
 out flat int _arrayLayerFrag;
 
+const vec2[4] texCoord = vec2[](
+    vec2(0.0, 0.0),
+    vec2(0.0, 1.0),
+    vec2(1.0, 0.0),
+    vec2(1.0, 1.0));
+
 void PerVertex(int idx) {
     PassData(idx);
     _arrayLayerFrag = _arrayLayerGS[idx];
@@ -55,6 +61,7 @@ void PerVertex(int idx) {
 #if !defined(SHADOW_PASS)
     setClipPlanes(gl_in[idx].gl_Position);
 #endif
+    _out._texCoord = texCoord[idx];
 }
 
 void main(void) {
@@ -74,8 +81,8 @@ void main(void) {
 
 layout(early_fragment_tests) in;
 
-//#include "BRDF.frag"
-//#include "velocityCalc.frag"
+#include "BRDF.frag"
+#include "velocityCalc.frag"
 
 #include "utility.frag"
 
@@ -88,14 +95,9 @@ flat in int _arrayLayerFrag;
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuseGrass;
 
 void main (void){
-    //vec4 colour = texture(texDiffuseGrass, vec3(VAR._texCoord, 0/*_arrayLayerFrag*/));
-    /*if (colour.a < 1.0 - Z_TEST_SIGMA) {
-        discard;
-    }*/
-
-    _colourOut = vec4(1.0, 0.0, 0.0, 1.0);// vec4(colour.rgb, 1.0);
-    _normalOut = packNormal(vec3(1.0, 0.0, 0.0)/*normalize(VAR._normalWV)*/);
-    _velocityOut = vec2(1.0, 1.0);//velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
+    _colourOut = texture(texDiffuseGrass, vec3(VAR._texCoord, _arrayLayerFrag));
+    _normalOut = packNormal(normalize(VAR._normalWV));
+    _velocityOut = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
 }
 
 
