@@ -637,8 +637,8 @@ void GLStateTracker::activateStateBlock(const RenderStateBlock& newBlock,
     if (oldBlock.stencilEnable() != newBlock.stencilEnable()) {
         toggle(newBlock.stencilEnable(), GL_STENCIL_TEST);
     }
-    if (oldBlock.zEnable() != newBlock.zEnable()) {
-        toggle(newBlock.zEnable(), GL_DEPTH_TEST);
+    if (oldBlock.depthTestEnabled() != newBlock.depthTestEnabled()) {
+        toggle(newBlock.depthTestEnabled(), GL_DEPTH_TEST);
     }
     if (oldBlock.scissorTestEnable() != newBlock.scissorTestEnable()) {
         toggle(newBlock.scissorTestEnable(), GL_SCISSOR_TEST);
@@ -708,7 +708,7 @@ void GLStateTracker::activateStateBlock(const RenderStateBlock& newBlock) {
 
     toggle(newBlock.cullEnabled(), GL_CULL_FACE);
     toggle(newBlock.stencilEnable(), GL_STENCIL_TEST);
-    toggle(newBlock.zEnable(), GL_DEPTH_TEST);
+    toggle(newBlock.depthTestEnabled(), GL_DEPTH_TEST);
 
     if (newBlock.cullMode() != CullMode::NONE) {
         glCullFace(GLUtil::glCullModeTable[to_U32(newBlock.cullMode())]);

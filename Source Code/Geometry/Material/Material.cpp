@@ -66,12 +66,12 @@ Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descri
     stateDescriptor.setZFunc(ComparisonFunction::LEQUAL);
 
     RenderStateBlock oitDescriptor(stateDescriptor);
-    oitDescriptor.setZRead(true);
+    oitDescriptor.depthTestEnabled(true);
 
     /// the reflection descriptor is the same as the normal descriptor
     RenderStateBlock reflectorDescriptor(stateDescriptor);
     RenderStateBlock reflectorOitDescriptor(stateDescriptor);
-    reflectorOitDescriptor.setZRead(false);
+    reflectorOitDescriptor.depthTestEnabled(false);
     /// the z-pre-pass descriptor does not process colours
     RenderStateBlock zPrePassDescriptor(stateDescriptor);
     zPrePassDescriptor.setColourWrites(true, true, true, false);

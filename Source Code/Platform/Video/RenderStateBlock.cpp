@@ -25,7 +25,7 @@ RenderStateBlock::RenderStateBlock(const RenderStateBlock& other)
      _colourWrite(other._colourWrite),
      _cullMode(other._cullMode),
      _cullEnabled(other._cullEnabled),
-     _zEnable(other._zEnable),
+     _depthTestEnabled(other._depthTestEnabled),
      _zFunc(other._zFunc),
      _zBias(other._zBias),
      _zUnits(other._zUnits),
@@ -66,8 +66,8 @@ void RenderStateBlock::setCullMode(CullMode mode) {
     _dirty = true;
 }
 
-void RenderStateBlock::setZRead(const bool enable) {
-    _zEnable = enable;
+void RenderStateBlock::depthTestEnabled(const bool enable) {
+    _depthTestEnabled = enable;
     _dirty = true;
 }
 
@@ -129,7 +129,7 @@ void RenderStateBlock::setDefaultValues() {
     _zUnits = 0.0f;
     _zFunc = ComparisonFunction::LEQUAL;
     _colourWrite.b[0] = _colourWrite.b[1] = _colourWrite.b[2] = _colourWrite.b[3] = 1;
-    _zEnable = true;
+    _depthTestEnabled = true;
     _cullMode = CullMode::CW;
     _cullEnabled = true;
     _fillMode = FillMode::SOLID;
@@ -189,7 +189,7 @@ size_t RenderStateBlock::getHash() const {
         Util::Hash_combine(_hash, _colourWrite.i);
         Util::Hash_combine(_hash, to_U32(_cullMode));
         Util::Hash_combine(_hash, _cullEnabled);
-        Util::Hash_combine(_hash, _zEnable);
+        Util::Hash_combine(_hash, _depthTestEnabled);
         Util::Hash_combine(_hash, to_U32(_zFunc));
         Util::Hash_combine(_hash, zBias);
         Util::Hash_combine(_hash, zUnits);

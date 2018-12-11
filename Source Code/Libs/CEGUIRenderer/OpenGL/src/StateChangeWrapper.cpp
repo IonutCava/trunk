@@ -170,7 +170,7 @@ void OpenGL3StateChangeWrapper::reset()
         Divide::RenderStateBlock defaultState;
         defaultState.setCullMode(Divide::CullMode::NONE);
         defaultState.setFillMode(Divide::FillMode::SOLID);
-        defaultState.setZRead(false);
+        defaultState.depthTestEnabled(false);
 
         defaultState.setScissorTest(true);
         d_defaultStateHashScissor = defaultState.getHash();

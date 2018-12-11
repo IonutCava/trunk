@@ -112,7 +112,7 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
 
     if (nodeSkinned) {
         RenderStateBlock primitiveStateBlockNoZRead;
-        primitiveStateBlockNoZRead.setZRead(false);
+        primitiveStateBlockNoZRead.depthTestEnabled(false);
         pipelineDescriptor._stateHash = primitiveStateBlockNoZRead.getHash();
         Pipeline* pipelineNoZRead = _context.newPipeline(pipelineDescriptor);
 

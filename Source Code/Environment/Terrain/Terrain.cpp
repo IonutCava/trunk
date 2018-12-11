@@ -187,6 +187,7 @@ bool Terrain::onRender(SceneGraphNode& sgn,
     }
 
     cmd._drawCount = tessellator.getRenderDepth();
+    disableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
     pkg.drawCommand(0, 0, cmd);
 
     return Object3D::onRender(sgn, sceneRenderState, renderStagePass);
@@ -208,8 +209,9 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
     cmd._bufferIndex = renderStagePass.index();
     cmd._patchVertexCount = 4;
     cmd._cmd.indexCount = getGeometryVB()->getIndexCount();
-    enableOption(cmd, CmdRenderOptions::RENDER_TESSELLATED);
+    disableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
     enableOption(cmd, CmdRenderOptions::CONVERT_TO_INDIRECT);
+    enableOption(cmd, CmdRenderOptions::RENDER_TESSELLATED);
     
     GFX::DrawCommand drawCommand = {};
     drawCommand._drawCommands.push_back(cmd);
