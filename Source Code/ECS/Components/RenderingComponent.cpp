@@ -463,6 +463,7 @@ void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
     if (canDraw(renderStagePass)) {
 
         if (_renderPackagesDirty[to_base(renderStagePass._stage)]) {
+            pkg.setDrawOption(CmdRenderOptions::RENDER_INDIRECT, true);
             for (U8 i = 0; i < to_U8(RenderPassType::COUNT); ++i) {
                 rebuildDrawCommands(RenderStagePass(renderStagePass._stage,
                                                     static_cast<RenderPassType>(i),
@@ -472,7 +473,6 @@ void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
             _renderPackagesDirty[to_base(renderStagePass._stage)] = false;
         }
 
-        pkg.setDrawOption(CmdRenderOptions::RENDER_INDIRECT, true);
         if (_parentSGN.prepareRender(sceneRenderState, renderStagePass)) {
             updateLoDLevel(camera, renderStagePass);
 

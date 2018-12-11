@@ -52,8 +52,7 @@ RenderingOrder::List RenderQueue::getSortOrder(RenderStagePass stagePass, Render
             sortOrder = RenderingOrder::List::NONE;
         } break;
         case RenderBinType::RBT_IMPOSTOR:
-        case RenderBinType::RBT_TERRAIN:
-        case RenderBinType::RBT_DECAL: {
+        case RenderBinType::RBT_TERRAIN: {
             // No need to sort decals in depth passes as they're small on screen and processed post-opaque pass
             sortOrder = !stagePass.isDepthPass() ? RenderingOrder::List::FRONT_TO_BACK
                                                  : RenderingOrder::List::NONE;
@@ -107,9 +106,8 @@ RenderBin* RenderQueue::getBinForNode(const SceneGraphNode& node, const Material
             }*/
             return nullptr;
         }
-        case SceneNodeType::TYPE_VEGETATION:
-            return getOrCreateBin(RenderBinType::RBT_TERRAIN); //Temp
 
+        case SceneNodeType::TYPE_VEGETATION:
         case SceneNodeType::TYPE_PARTICLE_EMITTER:
             return getOrCreateBin(RenderBinType::RBT_TRANSLUCENT);
 
@@ -130,7 +128,7 @@ RenderBin* RenderQueue::getBinForNode(const SceneGraphNode& node, const Material
                         return getOrCreateBin(RenderBinType::RBT_TERRAIN);
 
                     case ObjectType::DECAL:
-                        return getOrCreateBin(RenderBinType::RBT_DECAL);
+                        return getOrCreateBin(RenderBinType::RBT_TRANSLUCENT);
                 }
             }
             // Check if the object has a material with transparency/translucency

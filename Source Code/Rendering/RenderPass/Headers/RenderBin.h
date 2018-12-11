@@ -82,7 +82,6 @@ BETTER_ENUM(RenderBinType, U32,
     RBT_OPAQUE,      //< Opaque geometry will be occluded by terrain but will often occlude most of the sky (e.g.: indoors)
     RBT_SKY,         //< Sky needs to be drawn after ALL opque geometry to save on fillrate
     RBT_TRANSLUCENT, //< Translucent items use a [0.0...1.0] alpha values supplied via an opacity map or the albedo's alpha channel
-    RBT_DECAL,       //< Decals are drawn over everything
     RBT_IMPOSTOR,    //< Impostors should be overlayed over everything since they are a debugging tool
     RBT_COUNT);
 

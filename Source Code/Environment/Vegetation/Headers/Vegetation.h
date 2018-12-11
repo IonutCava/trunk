@@ -91,10 +91,6 @@ class Vegetation : public SceneNode {
                      SceneGraphNode& sgn,
                      SceneState& sceneState) override;
 
-    bool onRender(SceneGraphNode& sgn,
-                  const SceneRenderState& sceneRenderState,
-                  RenderStagePass renderStagePass)  override;
-
     void onRefreshNodeData(SceneGraphNode& sgn,
                            GFX::CommandBuffer& bufferInOut) override;
    private:
@@ -114,8 +110,6 @@ class Vegetation : public SceneNode {
     // variables
     bool _render;  ///< Toggle vegetation rendering On/Off
     bool _success;
-    std::atomic_bool _threadedLoadComplete;
-    std::atomic_bool _stopLoadingRequest;
     std::weak_ptr<Terrain> _terrain;
     F32 _grassDensity;
     U16 _billboardCount;  ///< Vegetation cumulated density
@@ -126,7 +120,6 @@ class Vegetation : public SceneNode {
     std::shared_ptr<ImageTools::ImageData> _map;  ///< Dispersion map for vegetation placement
     ShaderProgram_ptr _cullShader;
     bool _shadowMapped;
-    size_t  _grassStateBlockHash;
     U32 _instanceCountGrass;
 
     ShaderBuffer* _grassData;

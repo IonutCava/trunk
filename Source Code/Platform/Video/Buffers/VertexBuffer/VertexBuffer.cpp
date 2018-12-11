@@ -106,6 +106,13 @@ void VertexBuffer::computeTangents() {
     for (U32 i = 0; i < indexCount; i += 3) {
         // get the three vertices that make the faces
         U32 idx0 = getIndex(i + 0);
+        if (idx0 == Config::PRIMITIVE_RESTART_INDEX_L ||
+            idx0 == Config::PRIMITIVE_RESTART_INDEX_S) {
+            assert(i > 2);
+            i -= 2;
+            continue;
+        }
+
         U32 idx1 = getIndex(i + 1);
         U32 idx2 = getIndex(i + 2);
 

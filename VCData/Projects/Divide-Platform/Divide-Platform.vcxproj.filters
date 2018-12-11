@@ -1053,6 +1053,9 @@
     <None Include="..\..\..\assets\shaders\GLSL\instanceCullGrass.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
+    <None Include="..\..\..\assets\shaders\GLSL\fragmentAtoms\output.frag">
+      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="../../../assets\shaders\GLSL\toneMap.glsl">

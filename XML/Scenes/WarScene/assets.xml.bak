@@ -50,6 +50,18 @@
             <node name="Grass_chunk_1" type="VEGETATION_GRASS"/>
             <node name="Grass_chunk_2" type="VEGETATION_GRASS"/>
             <node name="Grass_chunk_3" type="VEGETATION_GRASS"/>
+            <node name="Grass_chunk_4" type="VEGETATION_GRASS"/>
+            <node name="Grass_chunk_5" type="VEGETATION_GRASS"/>
+            <node name="Grass_chunk_6" type="VEGETATION_GRASS"/>
+            <node name="Grass_chunk_7" type="VEGETATION_GRASS"/>
+            <node name="Grass_chunk_8" type="VEGETATION_GRASS"/>
+            <node name="Grass_chunk_9" type="VEGETATION_GRASS"/>
+            <node name="Grass_chunk_10" type="VEGETATION_GRASS"/>
+            <node name="Grass_chunk_11" type="VEGETATION_GRASS"/>
+            <node name="Grass_chunk_12" type="VEGETATION_GRASS"/>
+            <node name="Grass_chunk_13" type="VEGETATION_GRASS"/>
+            <node name="Grass_chunk_14" type="VEGETATION_GRASS"/>
+            <node name="Grass_chunk_15" type="VEGETATION_GRASS"/>
         </node>
     </node>
 </entities>

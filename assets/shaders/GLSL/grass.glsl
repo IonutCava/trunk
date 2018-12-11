@@ -61,7 +61,7 @@ void PerVertex(int idx) {
 #if !defined(SHADOW_PASS)
     setClipPlanes(gl_in[idx].gl_Position);
 #endif
-    _out._texCoord = texCoord[idx];
+    //_out._texCoord = texCoord[idx];
 }
 
 void main(void) {
@@ -85,19 +85,14 @@ layout(early_fragment_tests) in;
 #include "velocityCalc.frag"
 
 #include "utility.frag"
-
-layout(location = 0) out vec4 _colourOut;
-layout(location = 1) out vec2 _normalOut;
-layout(location = 2) out vec2 _velocityOut;
+#include "output.frag"
 
 flat in int _arrayLayerFrag;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuseGrass;
 
 void main (void){
-    _colourOut = texture(texDiffuseGrass, vec3(VAR._texCoord, _arrayLayerFrag));
-    _normalOut = packNormal(normalize(VAR._normalWV));
-    _velocityOut = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
+    writeOutput(texture(texDiffuseGrass, vec3(VAR._texCoord, _arrayLayerFrag)),  packNormal(normalize(VAR._normalWV)));
 }
 
 
