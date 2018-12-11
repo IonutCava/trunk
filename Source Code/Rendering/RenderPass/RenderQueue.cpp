@@ -52,21 +52,13 @@ RenderingOrder::List RenderQueue::getSortOrder(RenderStagePass stagePass, Render
             sortOrder = RenderingOrder::List::NONE;
         } break;
         case RenderBinType::RBT_IMPOSTOR:
-        case RenderBinType::RBT_TERRAIN:
-        case RenderBinType::RBT_DECAL: {
+        case RenderBinType::RBT_TERRAIN: {
             // No need to sort decals in depth passes as they're small on screen and processed post-opaque pass
             sortOrder = !stagePass.isDepthPass() ? RenderingOrder::List::FRONT_TO_BACK
                                                  : RenderingOrder::List::NONE;
         } break;
         case RenderBinType::RBT_TRANSLUCENT: {
-            // Translucent items should be rendered by material in depth passes to avoid useless material switches
-            // Small cost for bypassing early-Z checks, but translucent items should be in the minority on the screen anyway
-            // and the Opaque pass should have finished by now
-            /*sortOrder = !stagePass.isDepthPass()  ? RenderingOrder::List::BACK_TO_FRONT
-                                                    : RenderingOrder::List::BY_STATE;*/
-
-
-            // We are using weighted blended OIT. State is fine (and faster)
+             // We are using weighted blended OIT. State is fine (and faster)
             sortOrder = RenderingOrder::List::BY_STATE;
         } break;
         default: {
@@ -114,7 +106,8 @@ RenderBin* RenderQueue::getBinForNode(const SceneGraphNode& node, const Material
             }*/
             return nullptr;
         }
-        case SceneNodeType::TYPE_VEGETATION_GRASS:
+
+        case SceneNodeType::TYPE_VEGETATION:
         case SceneNodeType::TYPE_PARTICLE_EMITTER:
             return getOrCreateBin(RenderBinType::RBT_TRANSLUCENT);
 
@@ -128,7 +121,6 @@ RenderBin* RenderQueue::getBinForNode(const SceneGraphNode& node, const Material
         // We may want to break this stuff up into mesh rendering components and not care about specifics anymore (i.e. just material checks)
         case SceneNodeType::TYPE_WATER:
         case SceneNodeType::TYPE_OBJECT3D: {
-        case SceneNodeType::TYPE_VEGETATION_TREES:
             if (node.getNode()->type() == SceneNodeType::TYPE_OBJECT3D) {
                 ObjectType type = static_cast<Object3D*>(node.getNode().get())->getObjectType();
                 switch (type) {
@@ -136,7 +128,7 @@ RenderBin* RenderQueue::getBinForNode(const SceneGraphNode& node, const Material
                         return getOrCreateBin(RenderBinType::RBT_TERRAIN);
 
                     case ObjectType::DECAL:
-                        return getOrCreateBin(RenderBinType::RBT_DECAL);
+                        return getOrCreateBin(RenderBinType::RBT_TRANSLUCENT);
                 }
             }
             // Check if the object has a material with transparency/translucency
@@ -163,16 +155,21 @@ void RenderQueue::addNodeToQueue(const SceneGraphNode& sgn, RenderStagePass stag
     }
 }
 
-void RenderQueue::populateRenderQueues(RenderStagePass stagePass, RenderBinType rbType, vectorEASTL<RenderPackage*>& queueInOut) {
-    if (rbType._value == RenderBinType::RBT_COUNT) {
-        for (RenderBin* renderBin : _activeBins) {
-            renderBin->populateRenderQueue(stagePass, queueInOut);
+void RenderQueue::populateRenderQueues(RenderStagePass stagePass, std::pair<RenderBinType, bool> binAndFlag, vectorEASTL<RenderPackage*>& queueInOut) {
+    if (binAndFlag.first._value == RenderBinType::RBT_COUNT) {
+        // If flag == false, do we just not get packages? I guess so.
+        if (binAndFlag.second) {
+            for (RenderBin* renderBin : _activeBins) {
+                renderBin->populateRenderQueue(stagePass, queueInOut);
+            }
         }
     } else {
         for (RenderBin* renderBin : _activeBins) {
-            if (renderBin->getType() == rbType) {
+            if ((renderBin->getType() == binAndFlag.first) == binAndFlag.second) {
                 renderBin->populateRenderQueue(stagePass, queueInOut);
-                break;
+                if (binAndFlag.second) {
+                    break;
+                }
             }
         }
     }

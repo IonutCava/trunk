@@ -53,7 +53,8 @@ class RenderQueue : public KernelComponent {
     RenderQueue(Kernel& parent);
     ~RenderQueue();
 
-    void populateRenderQueues(RenderStagePass stagePass, RenderBinType rbType, vectorEASTL<RenderPackage*>& queueInOut);
+    //binAndFlag: if true, populate from bin, if false, populate from everything except bin
+    void populateRenderQueues(RenderStagePass stagePass, std::pair<RenderBinType, bool> binAndFlag, vectorEASTL<RenderPackage*>& queueInOut);
     void postRender(const SceneRenderState& renderState, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut);
     void sort(RenderStagePass stagePass);
     void refresh(RenderStage stage);

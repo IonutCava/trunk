@@ -19,6 +19,9 @@
 #include "ECS/Components/Headers/TransformComponent.h"
 #include "ECS/Components/Headers/AnimationComponent.h"
 
+
+//#define DISABLE_WOIT
+
 #ifndef USE_COLOUR_WOIT
 //#define USE_COLOUR_WOIT
 #endif
@@ -315,12 +318,20 @@ void RenderPassManager::prepareRenderQueues(RenderStagePass stagePass, const Pas
     vectorEASTL<RenderPackage*>& packageQueue = _renderQueues[to_base(stage)];
     packageQueue.resize(0);
     packageQueue.reserve(Config::MAX_VISIBLE_NODES);
+    
+    if (stagePass._passType == RenderPassType::DEPTH_PASS) {
+        // Draw everything in the depth pass
+        queue.populateRenderQueues(stagePass, std::make_pair(RenderBinType::RBT_COUNT, true), packageQueue);
+    } else {
+#if defined(DISABLE_WOIT)
+        queue.populateRenderQueues(stagePass, std::make_pair(RenderBinType::RBT_COUNT, true), packageQueue);
+#else
+        // Only draw stuff from the translucent bin in the OIT Pass and everything else in the colour pass
+        bool oitPass = stagePass._passType == RenderPassType::OIT_PASS;
+        queue.populateRenderQueues(stagePass, std::make_pair(RenderBinType::RBT_TRANSLUCENT, oitPass), packageQueue);
+#endif
+    }
 
-    queue.populateRenderQueues(stagePass,
-                               stagePass._passType == RenderPassType::OIT_PASS
-                                                   ? RenderBinType::RBT_TRANSLUCENT
-                                                   : RenderBinType::RBT_COUNT,
-                               packageQueue);
     buildDrawCommands(stagePass, params, refreshNodeData, bufferInOut);
 }
 
@@ -576,9 +587,11 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
 
     mainPass(params, target, bufferInOut, prePassExecuted);
 
+#if !defined(DISABLE_WOIT)
     if (params._stage != RenderStage::SHADOW) {
         woitPass(params, target, bufferInOut);
     }
+#endif
 
     GFX::EndDebugScopeCommand endDebugScopeCmd;
     GFX::EnqueueCommand(bufferInOut, endDebugScopeCmd);

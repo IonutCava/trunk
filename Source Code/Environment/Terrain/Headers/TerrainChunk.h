@@ -54,6 +54,7 @@ namespace Attorney {
 };
 
 class TerrainChunk {
+    static U32 _chunkID;
     friend class Attorney::TerrainChunkTerrain;
 
    public:
@@ -70,7 +71,7 @@ class TerrainChunk {
         return vec4<F32>(_xOffset, _yOffset, _sizeX, _sizeY);
     }
 
-    inline const Terrain& parent() const { return *_terrain; }
+    inline const Terrain& parent() const { return *_parentTerrain; }
     inline const QuadtreeNode& quadtreeNode() const { return _quadtreeNode; };
 
     const BoundingBox& bounds() const;
@@ -79,25 +80,16 @@ class TerrainChunk {
     const Vegetation_ptr& getVegetation() const { return _vegetation; }
 
    private:
-    void computeIndicesArray(U8 depth, const vec2<U32>& position, const vec2<U32>& heightMapSize);
-
-   private:
     GFXDevice& _context;
     const QuadtreeNode& _quadtreeNode;
 
     U32 _ID;
-    U32 _lodIndOffset;
-    U32 _lodIndCount;
-
-    U32 _chunkIndOffset;
     F32 _xOffset;
     F32 _yOffset;
     F32 _sizeX;
     F32 _sizeY;
     vec2<F32> _heightBounds;  //< 0 = minHeight, 1 = maxHeight
-    Terrain* _terrain;
     Terrain* _parentTerrain;
-    static U32 _chunkID;
     Vegetation_ptr _vegetation;
 };
 

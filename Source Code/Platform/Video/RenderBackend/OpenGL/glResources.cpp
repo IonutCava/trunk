@@ -396,7 +396,7 @@ void submitDirectMultiCommand(const IndirectDrawCommand& cmd,
     STUBBED("ToDo: I need a work around for this scenario. Use case: Terrain. -Ionut");
     //assert(cmd.baseInstance == 0);
 
-    if (cmd.primCount == 1) {
+    if (drawCount > 1 && cmd.primCount != 1) {
         if (drawIndexed) {
             glMultiDrawElements(mode, countData, internalFormat, (void* const*)indexData, drawCount);
         } else {
@@ -491,7 +491,7 @@ void submitRenderCommand(const GenericDrawCommand& drawCommand,
         GL_API::getStateTracker().setPatchVertexCount(drawCommand._patchVertexCount);
     }
     if (isEnabledOption(drawCommand, CmdRenderOptions::RENDER_GEOMETRY)) {
-        GLenum mode = glPrimitiveTypeTable[to_U32(drawCommand._primitiveType)];
+        GLenum mode = glPrimitiveTypeTable[to_base(drawCommand._primitiveType)];
         submitRenderCommand(drawCommand, mode, drawIndexed, useIndirectBuffer, internalFormat, countData, indexData);
     }
     if (isEnabledOption(drawCommand, CmdRenderOptions::RENDER_WIREFRAME)) {

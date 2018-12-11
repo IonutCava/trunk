@@ -38,7 +38,7 @@ void PushConstants::clear() {
     _data.clear();
 }
 
-bool PushConstants::merge(const PushConstants& other) {
+bool PushConstants::merge(const PushConstants& other, bool& partial) {
     const vectorEASTL<GFX::PushConstant>& ourConstants = _data;
     const vectorEASTL<GFX::PushConstant>& otherConstants = other._data;
 
@@ -56,12 +56,13 @@ bool PushConstants::merge(const PushConstants& other) {
     }
 
     // Merge stage
+    partial = true;
     insert_unique(_data, other._data);
 
     return true;
 }
 
-bool Merge(PushConstants& lhs, const PushConstants& rhs) {
-    return lhs.merge(rhs);
+bool Merge(PushConstants& lhs, const PushConstants& rhs, bool& partial) {
+    return lhs.merge(rhs, partial);
 }
 }; //namespace Divide

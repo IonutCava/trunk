@@ -101,13 +101,13 @@ class PushConstants {
 
     inline const vectorEASTL<GFX::PushConstant>& data() const { return _data; }
 
-    bool merge(const PushConstants& other);
+    bool merge(const PushConstants& other, bool& partial);
 
   protected:
       vectorEASTL<GFX::PushConstant> _data;
 };
 
-bool Merge(PushConstants& lhs, const PushConstants& rhs);
+bool Merge(PushConstants& lhs, const PushConstants& rhs, bool& partial);
 
 }; //namespace Divide
 

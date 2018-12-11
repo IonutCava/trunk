@@ -68,6 +68,12 @@ bool glTexture::unload() {
 
 void glTexture::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallback) {
     Texture::threadedLoad(onLoadCallback);
+
+    // Loading from file usually involves data that doesn't change, so call this here.
+    if (automaticMipMapGeneration() && _descriptor.getSampler().generateMipMaps()) {
+        GL_API::queueComputeMipMap(_context.context(), _textureData.getHandle(), _asyncLoad);
+    }
+
     {
         UniqueLock lock(_lockManagerMutex);
         _lockManager->Lock(!Runtime::isMainThread());
@@ -113,6 +119,10 @@ void glTexture::resize(const bufferPtr ptr,
 
     TextureLoadInfo info;
     loadData(info, ptr, dimensions);
+
+    if (automaticMipMapGeneration() && _descriptor.getSampler().generateMipMaps()) {
+        GL_API::queueComputeMipMap(_context.context(), _textureData.getHandle(), _asyncLoad);
+    }
 }
 
 void glTexture::reserveStorage() {
@@ -260,11 +270,6 @@ void glTexture::loadData(const TextureLoadInfo& info,
             texData = (bufferPtr)imageLayers[0]._data.data();
         }
         loadDataUncompressed(info, texData);
-    }
-
-    // Loading from file usually involves data that doesn't change, so call this here.
-    if (automaticMipMapGeneration() && _descriptor.getSampler().generateMipMaps()) {
-        GL_API::queueComputeMipMap(_context.context(), _textureData.getHandle(), _asyncLoad);
     }
 
     assert(_width > 0 && _height > 0 && "glTexture error: Invalid texture dimensions!");

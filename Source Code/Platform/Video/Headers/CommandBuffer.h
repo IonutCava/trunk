@@ -70,7 +70,7 @@ class CommandBuffer {
 
     // Return true if merge is successful
     template<typename T>
-    bool tryMergeCommands(T* prevCommand, T* crtCommand) const;
+    bool tryMergeCommands(T* prevCommand, T* crtCommand, bool& partial) const;
 
     template<typename T>
     typename std::enable_if<std::is_base_of<CommandBase, T>::value, const T&>::type

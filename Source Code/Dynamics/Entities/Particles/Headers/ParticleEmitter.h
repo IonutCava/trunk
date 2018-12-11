@@ -86,8 +86,8 @@ class ParticleEmitter : public SceneNode {
                      SceneState& sceneState) override;
 
     void buildDrawCommands(SceneGraphNode& sgn,
-                                RenderStagePass renderStagePass,
-                                RenderPackage& pkgInOut) override;
+                           RenderStagePass renderStagePass,
+                           RenderPackage& pkgInOut) override;
 
     void prepareForRender(RenderStagePass renderStagePass, const Camera& crtCamera);
 

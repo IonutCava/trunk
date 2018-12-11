@@ -12,17 +12,6 @@ extern "C" {
 #include "Headers/bstrlib.h"
 #include "Headers/glsw.h"
 
-#ifndef thread_local
-#if defined(_WIN32)
-#define thread_local __declspec( thread )
-#elif defined(__APPLE_CC__) 
-#define thread_local __thread
-#else //defined(__linux) || defined (__unix)
-#define thread_local __thread
-#endif
-
-#endif //thread_local
-
 #ifdef WIN32
 #pragma warning(disable:4996) // allow "fopen"
 #endif

@@ -86,6 +86,9 @@ namespace Divide {
         ShaderBufferList _shaderBuffers;
         TextureDataContainer _textureData;
 
+        const ShaderBufferBinding* findBinding(ShaderBufferLocation slot) const;
+        const TextureData* findTexture(U8 binding) const;
+
     private:
         template<typename T, size_t BlockSize>
         friend class MemoryPool;
@@ -93,7 +96,7 @@ namespace Divide {
         DescriptorSet() = default;
     };
 
-    bool Merge(DescriptorSet &lhs, const DescriptorSet &rhs);
+    bool Merge(DescriptorSet &lhs, DescriptorSet &rhs, bool& partial);
 
     typedef MemoryPool<DescriptorSet, 1024> DescriptorSetPool;
 

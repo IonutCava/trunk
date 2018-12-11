@@ -69,10 +69,6 @@
 #undef Success
 #endif //Success
 
-#ifndef thread_local
-#define thread_local __thread
-#endif //thread_local
-
 namespace Divide {
     struct WindowHandle {
         Window _handle;

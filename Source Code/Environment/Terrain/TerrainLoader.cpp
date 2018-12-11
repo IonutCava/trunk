@@ -285,9 +285,9 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     terrainMaterial->setTexture(ShaderProgram::TextureUsage::OPACITY, CreateResource<Texture>(terrain->parentResourceCache(), heightMapTexture));
 
-    terrainMaterial->setShaderProgram("terrainTess." + name, RenderStage::DISPLAY, true);
-    terrainMaterial->setShaderProgram("terrainTess." + name, RenderStage::REFLECTION, true);
-    terrainMaterial->setShaderProgram("terrainTess." + name, RenderStage::REFRACTION, true);
+    terrainMaterial->setShaderProgram("terrainTess.Colour" + name, RenderStage::DISPLAY, true);
+    terrainMaterial->setShaderProgram("terrainTess.Colour" + name, RenderStage::REFLECTION, true);
+    terrainMaterial->setShaderProgram("terrainTess.Colour" + name, RenderStage::REFRACTION, true);
     terrainMaterial->setShaderProgram("terrainTess.PrePass." + name, RenderPassType::DEPTH_PASS, true);
     terrainMaterial->setShaderProgram("terrainTess.Shadow." + name, RenderStage::SHADOW, true);
 
@@ -553,17 +553,19 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     grassSampler._wrapU = TextureWrap::CLAMP;
     grassSampler._wrapV = TextureWrap::CLAMP;
     grassSampler._wrapW = TextureWrap::CLAMP;
-    grassSampler._anisotropyLevel = 0;
+    grassSampler._anisotropyLevel = 8;
 
     TextureDescriptor grassTexDescriptor(TextureType::TEXTURE_2D_ARRAY);
     grassTexDescriptor._layerCount = textureCount;
     grassTexDescriptor.setSampler(grassSampler);
     grassTexDescriptor._srgb = true;
+    grassTexDescriptor.automaticMipMapGeneration(true);
 
     ResourceDescriptor textureDetailMaps("Vegetation Billboards");
     textureDetailMaps.assetLocation(Paths::g_assetsLocation + terrainDescriptor->getVariable("grassMapLocation"));
     textureDetailMaps.assetName(textureName);
     textureDetailMaps.setPropertyDescriptor(grassTexDescriptor);
+    
     Texture_ptr grassBillboardArray = CreateResource<Texture>(terrain->parentResourceCache(), textureDetailMaps);
 
     VegetationDetails& vegDetails = Attorney::TerrainLoader::vegetationDetails(*terrain);
@@ -582,6 +584,7 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     vegMaterial->setShininess(5.0f);
     vegMaterial->setShadingMode(Material::ShadingMode::BLINN_PHONG);
     vegMaterial->addShaderDefine("SKIP_TEXTURES");
+    vegMaterial->addShaderDefine(RenderPassType::OIT_PASS, "OIT_PASS", true);
     vegMaterial->setShaderProgram("grass.Colour", RenderStage::DISPLAY, true);
     vegMaterial->setShaderProgram("grass.PrePass", RenderPassType::DEPTH_PASS, true);
     vegMaterial->setShaderProgram("grass.Shadow", RenderStage::SHADOW, true);

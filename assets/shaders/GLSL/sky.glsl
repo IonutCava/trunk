@@ -16,6 +16,8 @@ void main(void){
 
 -- Fragment.Display
 
+layout(early_fragment_tests) in;
+
 layout(location = 0) out vec4 _skyColour;
 layout(location = 1) out vec2 _normalOut;
 layout(location = 2) out vec2 _velocityOut;
@@ -48,4 +50,9 @@ void main() {
     _skyColour = vec4(enable_sun ? sky_colour * sunColour() : sky_colour, 1.0);
     _normalOut = packNormal(normalize(VAR._normalWV));
     _velocityOut = vec2(1.0);
+}
+
+--Fragment.PrePass
+
+void main() {
 }

@@ -681,7 +681,7 @@ void Editor::renderDrawList(ImDrawData* pDrawData, bool overlayOnScene, I64 wind
 
     RenderStateBlock state = {};
     state.setCullMode(CullMode::CCW);
-    state.setZRead(false);
+    state.depthTestEnabled(false);
     state.setScissorTest(true);
 
     PipelineDescriptor pipelineDesc = {};

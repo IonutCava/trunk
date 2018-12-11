@@ -93,9 +93,10 @@ void WarScene::processGUI(const U64 deltaTimeUS) {
         const vec3<F32>& eyePos = cam.getEye();
         const vec3<F32>& euler = cam.getEuler();
         _GUI->modifyText(_ID("fpsDisplay"),
-                         Util::StringFormat("FPS: %3.0f. FrameTime: %3.1f",
+                         Util::StringFormat("FPS: %3.0f. FrameTime: %3.1f. FrameIndex : %d",
                                             Time::ApplicationTimer::instance().getFps(),
-                                            Time::ApplicationTimer::instance().getFrameTime()));
+                                            Time::ApplicationTimer::instance().getFrameTime(),
+                                            _context.gfx().getFrameCount()));
         _GUI->modifyText(_ID("RenderBinCount"),
             Util::StringFormat("Number of items in Render Bin: %d. Number of HiZ culled items: %d",
                                _context.gfx().parent().renderPassManager().getLastTotalBinSize(RenderStage::DISPLAY),

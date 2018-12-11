@@ -132,10 +132,18 @@ namespace Attorney {
 class Terrain : public Object3D {
     friend class Attorney::TerrainChunk;
     friend class Attorney::TerrainLoader;
+
    public:
      static constexpr U32 MAX_RENDER_NODES = 384;
      static constexpr size_t NODE_DATA_SIZE = sizeof(TessellatedNodeData) * Terrain::MAX_RENDER_NODES * to_base(RenderStage::COUNT);
      static constexpr bool USE_TERRAIN_UBO = false;//NODE_DATA_SIZE < (64 * 1024);
+
+   public:
+       struct Vert {
+           vec3<F32> _position;
+           vec3<F32> _normal;
+           vec3<F32> _tangent;
+       };
 
    public:
     explicit Terrain(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name);
@@ -145,11 +153,14 @@ class Terrain : public Object3D {
 
     inline void toggleBoundingBoxes() { _drawBBoxes = !_drawBBoxes; }
 
+    Vert getVert(F32 x_clampf, F32 z_clampf) const;
+
     vec3<F32> getPositionFromGlobal(F32 x, F32 z) const;
     vec3<F32> getPosition(F32 x_clampf, F32 z_clampf) const;
     vec3<F32> getNormal(F32 x_clampf, F32 z_clampf) const;
     vec3<F32> getTangent(F32 x_clampf, F32 z_clampf) const;
     vec2<U16> getDimensions() const;
+    vec2<F32> getAltitudeRange() const;
 
     inline const Quadtree& getQuadtree() const { return _terrainQuadtree; }
 
@@ -175,10 +186,8 @@ class Terrain : public Object3D {
 
     void onEditorChange(EditorComponentField& field);
 
-    void buildQuadtree();
 
    public:
-    hashMap<U32, vector<U32>> _physicsIndices;
     vector<VertexBuffer::Vertex> _physicsVerts;
 
    protected:
@@ -215,8 +224,7 @@ private:
         return terrain._vegDetails;
     }
 
-    static void registerTerrainChunk(Terrain& terrain,
-        Divide::TerrainChunk* const chunk) {
+    static void registerTerrainChunk(Terrain& terrain, Divide::TerrainChunk* const chunk) {
         terrain._terrainChunks.push_back(chunk);
     }
 

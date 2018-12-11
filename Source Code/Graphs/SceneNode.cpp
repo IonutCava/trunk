@@ -61,8 +61,7 @@ const char* SceneNode::getTypeName() const {
         case SceneNodeType::TYPE_PARTICLE_EMITTER: return "PARTICLE_EMITTER";
         case SceneNodeType::TYPE_SKY: return "SKY";
         case SceneNodeType::TYPE_INFINITEPLANE: return "INFINITE_PLANE";
-        case SceneNodeType::TYPE_VEGETATION_GRASS: return "VEGETATION_GRASS";
-        case SceneNodeType::TYPE_VEGETATION_TREES: return "VEGETATION_TREES";
+        case SceneNodeType::TYPE_VEGETATION: return "VEGETATION_GRASS";
     }
 
     return "";

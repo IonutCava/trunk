@@ -260,6 +260,7 @@
     <ClCompile Include="..\..\..\Source Code\Platform\Input\Input.cpp" />
     <ClCompile Include="..\..\..\Source Code\Platform\SDLEventListener.cpp" />
     <ClCompile Include="..\..\..\Source Code\Platform\SDLEventManager.cpp" />
+    <ClCompile Include="..\..\..\Source Code\Platform\Video\Commands.cpp" />
     <ClCompile Include="..\..\..\Source Code\Platform\Video\RenderBackend\OpenGL\GLStateTracker.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -293,13 +294,11 @@
     <None Include="../../../assets\shaders\GLSL\fragmentAtoms\utility.frag" />
     <None Include="../../../assets\shaders\GLSL\fragmentAtoms\velocityCalc.frag" />
     <None Include="../../../assets\shaders\GLSL\FXAA.glsl" />
-    <None Include="../../../assets\shaders\GLSL\geometryAtoms\inOut.geom" />
     <None Include="../../../assets\shaders\GLSL\grass.glsl" />
     <None Include="../../../assets\shaders\GLSL\HiZConstruct.glsl" />
     <None Include="../../../assets\shaders\GLSL\HiZOcclusionCull.glsl" />
     <None Include="../../../assets\shaders\GLSL\IMGUI.glsl" />
     <None Include="../../../assets\shaders\GLSL\ImmediateModeEmulation.glsl" />
-    <None Include="../../../assets\shaders\GLSL\instanceCull.glsl" />
     <None Include="../../../assets\shaders\GLSL\lightCull.glsl" />
     <None Include="../../../assets\shaders\GLSL\lightImpostorShader.glsl" />
     <None Include="../../../assets\shaders\GLSL\material.glsl" />
@@ -331,6 +330,8 @@
     <None Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Headers\glResources.inl" />
     <None Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Shaders\Headers\glShaderProgram.inl" />
     <None Include="../../../Source Code\Platform\Headers\PlatformRuntime.inl" />
+    <None Include="..\..\..\assets\shaders\GLSL\fragmentAtoms\output.frag" />
+    <None Include="..\..\..\assets\shaders\GLSL\instanceCullGrass.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="../../../assets\shaders\GLSL\toneMap.glsl" />

@@ -24,7 +24,7 @@ void main()
     particleColour = inColourData;
 }
 
--- Fragment.Depth
+-- Fragment.PrePass
 // Ouput data
 out vec4 colour;
 
@@ -41,16 +41,14 @@ void main(){
 
 #include "utility.frag"
 #include "velocityCalc.frag"
+#include "output.frag"
 
 // Interpolated values from the vertex shaders
 in vec4 particleColour;
 
-// Ouput data
-layout(location = 0) out vec4 colour;
-layout(location = 1) out vec2 normal;
-layout(location = 2) out vec2 velocity;
-
+#ifdef HAS_TEXTURE
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
+#endif
 
 void main(){
    
@@ -63,6 +61,6 @@ void main(){
     float d = texture(texDepthMap, gl_FragCoord.xy * ivec2(dvd_ViewPort.zw)).r - gl_FragCoord.z;
     float softness = pow(1.0 - min(1.0, 200.0 * d), 2.0);
     colour.a *= max(0.1, 1.0 - pow(softness, 2.0));
-    normal = packNormal(vec3(0.0, 0.0, 1.0));
-    velocity = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
+    writeOutput(colour, packNormal(vec3(0.0, 0.0, 1.0)));
+
 }

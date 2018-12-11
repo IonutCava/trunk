@@ -39,6 +39,7 @@ void SubMesh::buildDrawCommands(SceneGraphNode& sgn,
 
     cmd._sourceBuffer = _parentMesh->getGeometryVB();
     cmd._bufferIndex = renderStagePass.index();
+    enableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
 
     GFX::DrawCommand drawCommand;
     drawCommand._drawCommands.push_back(cmd);

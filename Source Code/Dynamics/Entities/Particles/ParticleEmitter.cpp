@@ -115,7 +115,7 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
     }
     _particleShader = CreateResource<ShaderProgram>(_parentCache, particleShader);
 
-    ResourceDescriptor particleDepthShaderDescriptor("particles.Depth");
+    ResourceDescriptor particleDepthShaderDescriptor("particles.PrePass");
     _particleDepthShader = CreateResource<ShaderProgram>(_parentCache, particleDepthShaderDescriptor);
 
     if (_particleShader != nullptr) {
@@ -225,6 +225,7 @@ void ParticleEmitter::buildDrawCommands(SceneGraphNode& sgn,
     }
 
     GenericDrawCommand cmd(_particles->particleGeometryType(), 0, indexCount);
+    enableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
     GFX::DrawCommand drawCommand;
     drawCommand._drawCommands.push_back(cmd);
     pkgInOut.addDrawCommand(drawCommand);

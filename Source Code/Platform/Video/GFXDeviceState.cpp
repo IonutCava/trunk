@@ -105,12 +105,12 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     _defaultStateBlockHash = defaultState.getHash();
 
     RenderStateBlock defaultStateNoDepth;
-    defaultStateNoDepth.setZRead(false);
+    defaultStateNoDepth.depthTestEnabled(false);
     _defaultStateNoDepthHash = defaultStateNoDepth.getHash();
 
     RenderStateBlock state2DRendering;
     state2DRendering.setCullMode(CullMode::NONE);
-    state2DRendering.setZRead(false);
+    state2DRendering.depthTestEnabled(false);
     _state2DRenderingHash = state2DRendering.getHash();
 
     RenderStateBlock stateDepthOnlyRendering;
@@ -477,6 +477,9 @@ void GFXDevice::idle() {
 
 void GFXDevice::beginFrame(DisplayWindow& window, bool global) {
     if (global && Config::ENABLE_GPU_VALIDATION) {
+        if (FRAME_COUNT == 400) {
+            Console::printfn(" ------------- BEGIN FRAME ---------------");
+        }
         if (_renderDocManager) {
             _renderDocManager->StartFrameCapture();
         }
@@ -503,6 +506,10 @@ void GFXDevice::beginFrame(DisplayWindow& window, bool global) {
 
 void GFXDevice::endFrame(DisplayWindow& window, bool global) {
     if (global) {
+        if (FRAME_COUNT == 400) {
+            Console::printfn(" ------------- END FRAME ---------------");
+        }
+
         FRAME_COUNT++;
         FRAME_DRAW_CALLS_PREV = FRAME_DRAW_CALLS;
         FRAME_DRAW_CALLS = 0;

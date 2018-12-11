@@ -62,28 +62,30 @@ vec3 getFinalTBN4(const in vec4 blendMap, const in uint index, const in vec4 nor
 vec4 getTerrainAlbedo(int detailLevel){
     vec4 blendMap;
     vec4 colour = vec4(0.0);
-    
+
     for (uint i = 0; i < MAX_TEXTURE_LAYERS; ++i) {
         blendMap = texture(texBlendMaps, vec3(VAR._texCoord, i));
 
         const uint currentCount = CURRENT_LAYER_COUNT[i];
 
         if (currentCount == 1) {
-            colour += getFinalColour1(blendMap, i * 1, diffuseScale[i]);
+            colour += getFinalColour1(blendMap, i * currentCount, diffuseScale[i]);
         } else if (currentCount == 2) {
-            colour += getFinalColour2(blendMap, i * 2, diffuseScale[i]);
+            colour += getFinalColour2(blendMap, i * currentCount, diffuseScale[i]);
         } else if (currentCount == 3) {
-            colour += getFinalColour3(blendMap, i * 3, diffuseScale[i]);
+            colour += getFinalColour3(blendMap, i * currentCount, diffuseScale[i]);
         } else {
-            colour += getFinalColour4(blendMap, i * 4, diffuseScale[i]);
+            colour += getFinalColour4(blendMap, i * currentCount, diffuseScale[i]);
         }
 
         if (detailLevel < 3) {
             break;
         }
-    }
 
-    return colour / MAX_TEXTURE_LAYERS;
+    }
+    float invCount = 1.0f / MAX_TEXTURE_LAYERS;
+
+    return vec4(colour.r * invCount, colour.g * invCount, colour.b * invCount, max(1.0f, colour.a));
 }
 
 vec3 getTerrainNormal(int detailLevel) {

@@ -145,7 +145,8 @@ void Object3D::buildDrawCommands(SceneGraphNode& sgn,
         cmd._sourceBuffer = vb;
         cmd._bufferIndex = renderStagePass.index();
         cmd._cmd.indexCount = to_U32(vb->getIndexCount());
-        
+        enableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
+
         GFX::DrawCommand drawCommand;
         drawCommand._drawCommands.push_back(cmd);
         pkgInOut.addDrawCommand(drawCommand);

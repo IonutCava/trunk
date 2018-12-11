@@ -67,8 +67,8 @@ struct VegetationDetails {
 
 struct GrassData {
     mat4<F32> _transform;
-    vec4<F32> _positionAndIndex;
-    vec4<F32> _extentAndRender = { 1.0f };
+    //x - width extent, y = height extent, z = array index, w - render
+    vec4<F32> _data = { 1.0f };
 };
 //RenderDoc: mat4 transform; vec4 posAndIndex; vec4 extentAndRender;
 
@@ -91,10 +91,6 @@ class Vegetation : public SceneNode {
                      SceneGraphNode& sgn,
                      SceneState& sceneState) override;
 
-    bool onRender(SceneGraphNode& sgn,
-                  const SceneRenderState& sceneRenderState,
-                  RenderStagePass renderStagePass)  override;
-
     void onRefreshNodeData(SceneGraphNode& sgn,
                            GFX::CommandBuffer& bufferInOut) override;
    private:
@@ -114,8 +110,6 @@ class Vegetation : public SceneNode {
     // variables
     bool _render;  ///< Toggle vegetation rendering On/Off
     bool _success;
-    std::atomic_bool _threadedLoadComplete;
-    std::atomic_bool _stopLoadingRequest;
     std::weak_ptr<Terrain> _terrain;
     F32 _grassDensity;
     U16 _billboardCount;  ///< Vegetation cumulated density
@@ -126,12 +120,12 @@ class Vegetation : public SceneNode {
     std::shared_ptr<ImageTools::ImageData> _map;  ///< Dispersion map for vegetation placement
     ShaderProgram_ptr _cullShader;
     bool _shadowMapped;
-    size_t  _grassStateBlockHash;
     U32 _instanceCountGrass;
-    std::array<U32, to_base(CullType::COUNT)> _instanceRoutineIdx;
 
     ShaderBuffer* _grassData;
+    vectorEASTL<GrassData> _tempData;
 
+    static std::atomic_uint s_bufferUsage;
     static VertexBuffer* s_buffer;
 };
 

@@ -112,7 +112,7 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
 
     if (nodeSkinned) {
         RenderStateBlock primitiveStateBlockNoZRead;
-        primitiveStateBlockNoZRead.setZRead(false);
+        primitiveStateBlockNoZRead.depthTestEnabled(false);
         pipelineDescriptor._stateHash = primitiveStateBlockNoZRead.getHash();
         Pipeline* pipelineNoZRead = _context.newPipeline(pipelineDescriptor);
 
@@ -472,7 +472,6 @@ void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
             _renderPackagesDirty[to_base(renderStagePass._stage)] = false;
         }
 
-        pkg.setDrawOption(CmdRenderOptions::RENDER_INDIRECT, true);
         if (_parentSGN.prepareRender(sceneRenderState, renderStagePass)) {
             updateLoDLevel(camera, renderStagePass);
 
@@ -495,7 +494,7 @@ void RenderingComponent::updateDrawCommands(RenderStage stage, vectorEASTL<Indir
 
     std::unique_ptr<RenderPackage>& pkg = packagesPerPass.front();
     for (I32 i = 0; i < pkg->drawCommandCount(); ++i) {
-        const GenericDrawCommand& cmd = pkg->drawCommand(i, 0);
+        GenericDrawCommand cmd = pkg->drawCommand(i, 0);
         if (cmd._drawCount > 1 && isEnabledOption(cmd, CmdRenderOptions::CONVERT_TO_INDIRECT)) {
             std::fill_n(std::back_inserter(drawCmdsInOut), cmd._drawCount, cmd._cmd);
         } else {

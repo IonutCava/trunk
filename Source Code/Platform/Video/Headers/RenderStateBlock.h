@@ -64,7 +64,7 @@ class RenderStateBlock : public GUIDWrapper, public Hashable {
     bool _scissorTest;
 
     /// Depth
-    bool _zEnable;
+    bool _depthTestEnabled;
     ComparisonFunction _zFunc;
     F32 _zBias;
     F32 _zUnits;
@@ -98,7 +98,7 @@ class RenderStateBlock : public GUIDWrapper, public Hashable {
     void setZFunc(ComparisonFunction zFunc = ComparisonFunction::LEQUAL);
     void flipCullMode();
     void setCullMode(CullMode mode);
-    void setZRead(const bool enable);
+    void depthTestEnabled(const bool enable);
     void setScissorTest(const bool enable);
 
     void setStencil(bool enable,
@@ -122,8 +122,8 @@ class RenderStateBlock : public GUIDWrapper, public Hashable {
     inline bool cullEnabled() const {
         return _cullEnabled;
     }
-    inline bool zEnable() const {
-        return _zEnable;
+    inline bool depthTestEnabled() const {
+        return _depthTestEnabled;
     }
     inline ComparisonFunction zFunc() const {
         return _zFunc;

@@ -15,7 +15,7 @@ Quad3D::Quad3D(GFXDevice& context,
                 name,
                 ObjectType::QUAD_3D)
 {
-    U16 indices[] = { 2, 0, 1, 1, 2, 3, 1, 0, 2, 2, 1, 3 };
+    const U16 indices[] = { 2, 0, 1, 1, 2, 3, 1, 0, 2, 2, 1, 3 };
 
     getGeometryVB()->setVertexCount(4);
     getGeometryVB()->keepData(true);

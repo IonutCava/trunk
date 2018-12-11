@@ -4,6 +4,23 @@
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 
 namespace Divide {
+
+    const ShaderBufferBinding* DescriptorSet::findBinding(ShaderBufferLocation slot) const {
+        for (const ShaderBufferBinding& it : _shaderBuffers) {
+            if (it._binding == slot)
+                return &it;
+        }
+        return nullptr;
+    }
+
+    const TextureData* DescriptorSet::findTexture(U8 binding) const {
+        for (auto& it : _textureData.textures()) {
+            if (it.second == binding)
+                return &it.first;
+        }
+        return nullptr;
+    }
+
     ShaderBufferBinding::ShaderBufferBinding()
         : ShaderBufferBinding(ShaderBufferLocation::COUNT, nullptr)
     {
@@ -54,39 +71,56 @@ namespace Divide {
         _range.set(range);
     }
 
-    bool Merge(DescriptorSet &lhs, const DescriptorSet &rhs) {
-        // Check stage
-        for (const ShaderBufferBinding& ourBinding : lhs._shaderBuffers) {
-            for (const ShaderBufferBinding& otherBinding : rhs._shaderBuffers) {
-                // Make sure the bindings are different
-                if (ourBinding._binding == otherBinding._binding) {
-                    if (ourBinding._range != otherBinding._range ||
-                        ourBinding._atomicCounter != otherBinding._atomicCounter ||
-                        ourBinding._buffer->getGUID() != otherBinding._buffer->getGUID())
-                    {
-                        return false;
-                    }
+    bool Merge(DescriptorSet &lhs, DescriptorSet &rhs, bool& partial) {
+        vector<vec_size> bufferEraseList;
+        for (size_t i = 0; i < rhs._shaderBuffers.size(); ++i) {
+            const ShaderBufferBinding& otherBinding = rhs._shaderBuffers[i];
+
+            const ShaderBufferBinding* binding = lhs.findBinding(otherBinding._binding);
+            bool erase = false;
+            if (binding == nullptr) {
+                //ToDo: This is problematic because we don't know what the current state is
+                // If the current descriptor set doesn't set a binding, that doesn't mean that that binding is empty
+                /*lhs._shaderBuffers.push_back(otherBinding);
+                erase = true;*/
+            } else {
+                if (*binding == otherBinding) {
+                    erase = true;
                 }
             }
-        }
 
-        auto& ourTextureData = lhs._textureData.textures();
-        auto otherTextureData = rhs._textureData.textures();
-
-        for (const eastl::pair<TextureData, U8>& ourTexture : ourTextureData) {
-            for (const eastl::pair<TextureData, U8>& otherTexture : otherTextureData) {
-                // Make sure the bindings are different
-                if (ourTexture.second == otherTexture.second && ourTexture.first != otherTexture.first) {
-                    return false;
-                }
+            if (erase) {
+                bufferEraseList.push_back(i);
+                partial = true;
             }
         }
+        rhs._shaderBuffers = erase_indices(rhs._shaderBuffers, bufferEraseList);
 
-        // Merge stage
-        insert_unique(lhs._shaderBuffers, rhs._shaderBuffers);
-        // The incoming texture data is either identical or new at this point, so only insert unique items
-        insert_unique(ourTextureData, otherTextureData);
-        return true;
+        auto& otherTextureData = rhs._textureData.textures();
+
+        vector<vec_size> textureEraseList;
+        for (size_t i = 0; i < otherTextureData.size(); ++i) {
+            const eastl::pair<TextureData, U8>& otherTexture = otherTextureData[i];
+
+            const TextureData* texData = lhs.findTexture(otherTexture.second);
+            bool erase = false;
+            if (texData == nullptr) {
+                // See explanation above (buffers) for why this is commented out
+                /*lhs._textureData.addTexture(otherTexture);
+                erase = true;*/
+            } else {
+                if (*texData == otherTexture.first) {
+                    erase = true;
+                }
+            }
+            if (erase) {
+                textureEraseList.push_back(i);
+                partial = true;
+            }
+        }
+        otherTextureData = erase_indices(otherTextureData, textureEraseList);
+
+        return rhs._shaderBuffers.empty() && rhs._textureData.textures().empty();
     }
 
     bool ShaderBufferBinding::operator==(const ShaderBufferBinding& other) const {

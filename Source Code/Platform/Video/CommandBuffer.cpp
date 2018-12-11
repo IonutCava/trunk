@@ -54,6 +54,7 @@ void CommandBuffer::batch() {
 
     bool tryMerge = true;
 
+    bool partial = false;
     while (tryMerge) {
         prevCommands.fill(nullptr);
         tryMerge = false;
@@ -70,10 +71,12 @@ void CommandBuffer::batch() {
             CommandBase*& prevCommand = prevCommands[to_U16(cmd.type<GFX::CommandType::_enumerated>())];
             
             if (prevCommand != nullptr && prevCommand->_type._value == cmd.type<GFX::CommandType::_enumerated>()) {
-                if (tryMergeCommands(prevCommand, crtCommand)) {
+                if (tryMergeCommands(prevCommand, crtCommand, partial)) {
                     it = _commandOrder.erase(it);
                     skip = true;
                     tryMerge = true;
+                } else {
+                    prevCommands.fill(nullptr);
                 }
             }
             if (!skip) {
