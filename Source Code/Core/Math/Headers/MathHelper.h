@@ -391,6 +391,13 @@ constexpr T SecondsToNanoseconds(const U a) noexcept;
 
 namespace Util {
 
+struct Circle {
+    F32 center[2] = {0.0f, 0.0f};
+    F32 radius = 1.f;
+};
+
+bool IntersectCircles(const Circle& cA, const Circle& cB, vec2<F32>* pointsOut);
+
 /// a la Boost
 template <typename T>
 void Hash_combine(size_t& seed, const T& v);

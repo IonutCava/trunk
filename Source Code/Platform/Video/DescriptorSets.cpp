@@ -72,6 +72,8 @@ namespace Divide {
     }
 
     bool Merge(DescriptorSet &lhs, DescriptorSet &rhs, bool& partial) {
+        return false;
+
         vector<vec_size> bufferEraseList;
         for (size_t i = 0; i < rhs._shaderBuffers.size(); ++i) {
             const ShaderBufferBinding& otherBinding = rhs._shaderBuffers[i];

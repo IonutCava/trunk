@@ -6,6 +6,76 @@
 namespace Divide {
 namespace Util {
 
+bool IntersectCircles(const Circle& cA, const Circle& cB, vec2<F32>* pointsOut) {
+    assert(pointsOut != nullptr);
+
+    F32 x0 = cA.center[0];
+    F32 y0 = cA.center[1];
+    F32 r0 = cA.radius;
+
+    F32 x1 = cB.center[0];
+    F32 y1 = cB.center[1];
+    F32 r1 = cB.radius;
+    
+    F32 a, dx, dy, d, h, rx, ry;
+    F32 x2, y2;
+
+    /* dx and dy are the vertical and horizontal distances between
+     * the circle centers.
+     */
+    dx = x1 - x0;
+    dy = y1 - y0;
+
+    /* Determine the straight-line distance between the centers. */
+    //d = sqrt((dy*dy) + (dx*dx));
+    d = hypot(dx, dy); // Suggested by Keith Briggs
+
+    /* Check for solvability. */
+    if (d > (r0 + r1))
+    {
+        /* no solution. circles do not intersect. */
+        return false;
+    }
+    if (d < fabs(r0 - r1))
+    {
+        /* no solution. one circle is contained in the other */
+        return false;
+    }
+
+    /* 'point 2' is the point where the line through the circle
+     * intersection points crosses the line between the circle
+     * centers.
+     */
+
+     /* Determine the distance from point 0 to point 2. */
+    a = ((r0*r0) - (r1*r1) + (d*d)) / (2.0f * d);
+
+    /* Determine the coordinates of point 2. */
+    x2 = x0 + (dx * a / d);
+    y2 = y0 + (dy * a / d);
+
+    /* Determine the distance from point 2 to either of the
+     * intersection points.
+     */
+    h = sqrt((r0*r0) - (a*a));
+
+    /* Now determine the offsets of the intersection points from
+     * point 2.
+     */
+    rx = -dy * (h / d);
+    ry = dx * (h / d);
+
+    /* Determine the absolute intersection points. */
+    
+    pointsOut[0].x = x2 + rx;
+    pointsOut[1].x = x2 - rx;
+
+    pointsOut[0].y = y2 + ry;
+    pointsOut[1].y = y2 - ry;
+
+    return true;
+}
+
 void ToByteColour(const FColour& floatColour, UColour& colourOut) {
     colourOut.set(FLOAT_TO_CHAR(floatColour.r),
                   FLOAT_TO_CHAR(floatColour.g),

@@ -1,6 +1,7 @@
 -- Vertex
 
 #include "vbInputData.vert"
+#include "foliage.vert"
 
 struct GrassData {
     mat4 transform;
@@ -27,11 +28,9 @@ void main()
     VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
     VAR._normalWV = mat3(dvd_ViewMatrix * data.transform) * dvd_Normal;
 
-    //if (posOffset.y > 0.75) {
-    //    computeFoliageMovementGrass(VAR._vertexW);
-    //}
-
-    //setClipPlanes(VAR._vertexW);
+    if (dvd_Vertex.y > 0.75) {
+        computeFoliageMovementGrass(VAR._vertexW, data.data.y);
+    }
 
     //computeLightVectors();
 
@@ -48,12 +47,6 @@ in flat int _arrayLayerGS[];
 in flat int _cullFlag[];
 out flat int _arrayLayerFrag;
 
-const vec2[4] texCoord = vec2[](
-    vec2(0.0, 0.0),
-    vec2(0.0, 1.0),
-    vec2(1.0, 0.0),
-    vec2(1.0, 1.0));
-
 void PerVertex(int idx) {
     PassData(idx);
     _arrayLayerFrag = _arrayLayerGS[idx];
@@ -61,7 +54,6 @@ void PerVertex(int idx) {
 #if !defined(SHADOW_PASS)
     setClipPlanes(gl_in[idx].gl_Position);
 #endif
-    //_out._texCoord = texCoord[idx];
 }
 
 void main(void) {

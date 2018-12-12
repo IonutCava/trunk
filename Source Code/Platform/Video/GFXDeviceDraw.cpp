@@ -151,10 +151,6 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
     computeCmd._computeGroupSize.set((cmdCount + GROUP_SIZE_AABB - 1) / GROUP_SIZE_AABB, 1, 1);
     GFX::EnqueueCommand(bufferInOut, computeCmd);
 
-    /*GFX::MemoryBarrierCommand memCmd;
-    memCmd._barrierMask = to_base(MemoryBarrierType::COUNTER);
-    GFX::EnqueueCommand(bufferInOut, memCmd);*/
-
     GFX::EndDebugScopeCommand endDebugScopeCmd;
     GFX::EnqueueCommand(bufferInOut, endDebugScopeCmd);
 }

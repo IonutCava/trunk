@@ -98,13 +98,6 @@ class Vegetation : public SceneNode {
     void computeGrassTransforms(const Task& parentTask);
 
    private:
-    enum class CullType : U8 {
-        PASS_THROUGH = 0,
-        INSTANCE_CLOUD_REDUCTION = 1,
-        HI_Z_CULL = 2,
-        COUNT
-    };
-
     GFXDevice& _context;
     TerrainChunk& _terrainChunk;
     // variables

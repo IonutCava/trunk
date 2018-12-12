@@ -137,8 +137,7 @@ inline bool CommandBuffer::tryMergeCommands(DrawCommand* prevCommand, DrawComman
 
 template<>
 inline bool CommandBuffer::tryMergeCommands(BindDescriptorSetsCommand* prevCommand, BindDescriptorSetsCommand* crtCommand, bool& partial) const {
-    //return Merge(*prevCommand->_set, *crtCommand->_set, partial);
-    return false;
+    return Merge(*prevCommand->_set, *crtCommand->_set, partial);
 }
 
 template<>

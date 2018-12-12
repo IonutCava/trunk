@@ -22,9 +22,9 @@
 namespace Divide {
 
 namespace {
-    constexpr bool g_disableLoadFromCache = true;
+    constexpr U32 WORK_GROUP_SIZE = 64;
+    constexpr bool g_disableLoadFromCache = false;
     static U8 g_billboardsPlaneCount = 4;
-    static F32 g_grassDistance = 100.0f;
 };
 
 VertexBuffer* Vegetation::s_buffer = nullptr;
@@ -52,6 +52,11 @@ Vegetation::Vegetation(GFXDevice& context,
 
     ResourceDescriptor instanceCullShader("instanceCullGrass");
     instanceCullShader.setThreadedLoading(true);
+
+    ShaderProgramDescriptor shaderDescriptor = {};
+    shaderDescriptor._defines.push_back(std::make_pair(Util::StringFormat("WORK_GROUP_SIZE %d", WORK_GROUP_SIZE), true));
+    instanceCullShader.setPropertyDescriptor(shaderDescriptor);
+
     _cullShader = CreateResource<ShaderProgram>(context.parent().resourceCache(), instanceCullShader);
 
     assert(_map->data() != nullptr);
@@ -139,6 +144,11 @@ void Vegetation::uploadGrassData() {
     }
     s_bufferUsage.fetch_add(1);
 
+    U32 dif = _tempData.size() % WORK_GROUP_SIZE;
+    if (dif > 0) {
+        _tempData.insert(eastl::end(_tempData), dif, GrassData{});
+    }
+
     _instanceCountGrass = to_U32(_tempData.size());
     if (_instanceCountGrass > 0) {
         ShaderBufferDescriptor bufferDescriptor = {};
@@ -182,8 +192,7 @@ void Vegetation::sceneUpdate(const U64 deltaTimeUS,
 void Vegetation::onRefreshNodeData(SceneGraphNode& sgn,
                                    GFX::CommandBuffer& bufferInOut){
     if (_render) {
-        constexpr U32 GROUP_SIZE_AABB = 64;
-
+        // This will always lag one frame
         PipelineDescriptor pipeDesc;
         pipeDesc._shaderProgramHandle = _cullShader->getID();
 
@@ -201,14 +210,12 @@ void Vegetation::onRefreshNodeData(SceneGraphNode& sgn,
 
         GFX::SendPushConstantsCommand pushConstantsCommand;
         
-        g_grassDistance = _context.parent().sceneManager().getActiveScene().renderState().grassVisibility();
-        pushConstantsCommand._constants.set("dvd_visibilityDistance", GFX::PushConstantType::FLOAT, g_grassDistance);
-        pushConstantsCommand._constants.set("cullType", GFX::PushConstantType::UINT, to_base(CullType::INSTANCE_CLOUD_REDUCTION));
-        pushConstantsCommand._constants.set("instanceCount", GFX::PushConstantType::UINT, _instanceCountGrass);
+        float grassDistance = _context.parent().sceneManager().getActiveScene().renderState().grassVisibility();
+        pushConstantsCommand._constants.set("dvd_visibilityDistance", GFX::PushConstantType::FLOAT, grassDistance);
         GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
         GFX::DispatchComputeCommand computeCmd;
-        computeCmd._computeGroupSize.set((_instanceCountGrass + GROUP_SIZE_AABB - 1) / GROUP_SIZE_AABB, 1, 1);
+        computeCmd._computeGroupSize.set(_instanceCountGrass / WORK_GROUP_SIZE, 1, 1);
         GFX::EnqueueCommand(bufferInOut, computeCmd);
 
         GFX::MemoryBarrierCommand memCmd;
@@ -254,7 +261,20 @@ namespace {
 
         return bestIndex;
     }
+
+    FORCE_INLINE bool ScaleAndCheckBounds(const vec2<F32>& chunkPos, const vec2<F32>& chunkSize, vec2<F32>& point) {
+        if (point.x > -0.999f && point.x < 0.999f && point.y > -0.999f && point.y < 0.999f) {
+            // [-1,1] to [0,1]
+            point = (point + 1.0f) * 0.5f;
+            point *= chunkSize;
+            point += chunkPos;
+            return true;
+        }
+
+        return false;
+    }
 };
+
 void Vegetation::computeGrassTransforms(const Task& parentTask) {
     const Terrain& terrain = _terrainChunk.parent();
 
@@ -276,104 +296,79 @@ void Vegetation::computeGrassTransforms(const Task& parentTask) {
         const U16 mapWidth = _map->dimensions().width;
         const U16 mapHeight = _map->dimensions().height;
 
-        STUBBED("We really need blue noise or casey muratori's special circle/hex for a nice distribution. Use Poisson disk sampling and optimise from there? -Ionut");
-        /*
-        ref: https://github.com/corporateshark/poisson-disk-generator/blob/master/Poisson.cpp
-        ref: http://yutingye.info/OtherProjects_files/report.pdf
-        ref: http://mollyrocket.com/casey/stream_0016.html
-        THIS:
+        //ref: http://mollyrocket.com/casey/stream_0016.html
+        F32 PointRadius = 0.01f;
+        F32 ArBase = 1.0f; // Starting radius of circle A
+        F32 BrBase = 1.0f; // Starting radius of circle B
+        F32 dR = 1.5f*PointRadius; // Distance between concentric rings
 
-        generate the first random point p0
-        insert p0 into active list
-        place the index of p0 (zero) to the background grid cell
-        while active list is not empty do
-            choose a random point p from active list
-            for attempt = 1:maxAttemp
-                get new sample p? around p between r and 2r
-                for each non-empty neighbor cell around p?
-                    if p? is closer than r
-                        break
-                    end if
-                end for
-                if p? is far from all neighbors
-                    insert p? to active list
-                    place the index of p? to background grid cell
-                    break
-                end if
-            end for
-            if maxAttemp exceed
-                remove p from active list
-            end if
-        end while
-        return
+        vectorFast<vec2<F32>> grassPositions;
+        grassPositions.reserve(static_cast<size_t>(chunkSize.x * chunkSize.y));
 
-        OR THIS:
-        real32 PointRadius = 0.025f;
-        v2 Ac = { -2, -2 }; // Center of circle A
-        real32 ArBase = 1.0f; // Starting radius of circle A
-        v2 Bc = { -2, 2 }; // Center of circle B
-        real32 BrBase = 1.0f; // Starting radius of circle B
-        real32 dR = 2.5f*PointRadius; // Distance between concentric rings
-        for (int32x RadiusStepA = 0; RadiusStepA < 128; ++RadiusStepA) {
-            real32 Ar = ArBase + dR*(real32)RadiusStepA;
-            for (int32x RadiusStepB = 0; RadiusStepB < 128; ++RadiusStepB) {
-                real32 Br = BrBase + dR*(real32)RadiusStepB;
-                real32 UseAr = Ar + ((RadiusStepB % 3) ? 0.0f : 0.3f*dR);
-                real32 UseBr = Br + ((RadiusStepA % 3) ? 0.0f : 0.3f*dR);
+        vec2<F32> intersections[2];
+        Util::Circle circleA, circleB;
+        circleA.center[0] = circleB.center[0] = -2.0f;
+        circleA.center[1] = -2.0f;
+        circleB.center[1] = 2.0f;
+        for (U8 RadiusStepA = 0; RadiusStepA < 128; ++RadiusStepA) {
+            if (parentTask._stopRequested) {
+                goto end;
+            }
 
+            F32 Ar = ArBase + dR * (F32)RadiusStepA;
+            for (U8 RadiusStepB = 0; RadiusStepB < 128; ++RadiusStepB) {
+                F32 Br = BrBase + dR * (F32)RadiusStepB;
+                circleA.radius = Ar + ((RadiusStepB % 3) ? 0.0f : 0.3f*dR);
+                circleB.radius = Br + ((RadiusStepA % 3) ? 0.0f : 0.3f*dR);
                 // Intersect circle Ac,UseAr and Bc,UseBr
-                // Add the resulting points if they are within the pattern bounds
-                // (the bounds were [-1,1] on both axes for all prior screenshots)
-            }
-        }
-        */
-
-        F32 densityFactor = 1.0f / _grassDensity;
-        assert(_tempData.empty());
-        _tempData.reserve(static_cast<size_t>(currentCount * chunkSize.x * chunkSize.y));
-
-        const F32 minDensityFactor = densityFactor * 0.1f;
-        const F32 maxDensityFactor = densityFactor * 1.9f;
-
-        for (F32 x = 0; x < chunkSize.x; x += Random(minDensityFactor, maxDensityFactor)) {
-
-            F32 width = CLAMPED(x, 0.0f, chunkSize.x) + chunkPos.x;
-            for (F32 y = 0; y < chunkSize.y; y += Random(minDensityFactor, maxDensityFactor)) {
-                if (parentTask._stopRequested) {
-                    goto end;
-                }
-                F32 height = CLAMPED(y, 0.0f, chunkSize.y) + chunkPos.y;
-
-                F32 x_fac = width  / mapWidth;
-                F32 y_fac = height / mapHeight;
-
-                Terrain::Vert vert = terrain.getVert(x_fac, y_fac);
-                if (vert._position.y < waterLevel) {
-                    continue;
-                }
-                if (vert._normal.y < 0.7f) {
-                    continue;
-                }
-
-                UColour colour = _map->getColour((U16)width, (U16)height);
-                U8 index = bestIndex(colour);
-                {
-                    GrassData entry = {};
-                    entry._data.set(1.0f, 1.0f, to_F32(index), 1.0f);
-                    entry._transform.setScale(vec3<F32>(((colour[index] + 1) / 256.0f)));
-                    mat3<F32> rotationMatrix = GetMatrix(Quaternion<F32>(WORLD_Y_AXIS, Random(360.0f)) * RotationFromVToU(vert._normal, WORLD_Y_AXIS));
-                    entry._transform = mat4<F32>(rotationMatrix, false) * entry._transform;
-                    entry._transform.setTranslation(vert._position);
-                    _tempData.push_back(entry);
+                if (Util::IntersectCircles(circleA, circleB, intersections)) {
+                    // Add the resulting points if they are within the pattern bounds
+                    for (U8 i = 0; i < 2; ++i) {
+                        if (ScaleAndCheckBounds(chunkPos, chunkSize, intersections[i])) {
+                            grassPositions.push_back(intersections[i]);
+                        }
+                    }
                 }
             }
         }
-        
+
+        _tempData.reserve(grassPositions.size());
+        for (const vec2<F32>& pos : grassPositions) {
+            F32 x_fac = pos.x / mapWidth;
+            F32 y_fac = pos.y / mapHeight;
+
+            Terrain::Vert vert = terrain.getVert(x_fac, y_fac);
+
+            // terrain slope should be taken into account
+            if (std::acos(Dot(vert._normal, WORLD_Y_AXIS)) > 45.0f) {
+                continue;
+            }
+
+            const F32 heightExtent = 1.0f;
+            const F32 heightHalfExtent = heightExtent * 0.5f;
+            UColour colour = _map->getColour((U16)pos.x, (U16)pos.y);
+            U8 index = bestIndex(colour);
+            float scale = (colour[index] + 1) / 256.0f;
+
+            F32 heightPos = vert._position.y;
+            heightPos -= (heightHalfExtent * scale);
+            {
+                GrassData entry = {};
+                entry._data.set(1.0f, heightExtent, to_F32(index), 1.0f);
+                entry._transform.setScale(vec3<F32>(scale));
+                mat3<F32> rotationMatrix = GetMatrix(Quaternion<F32>(WORLD_Y_AXIS, Random(360.0f)) * RotationFromVToU(vert._normal, WORLD_Y_AXIS));
+                entry._transform = mat4<F32>(rotationMatrix, false) * entry._transform;
+                entry._transform.setTranslation(vert._position.x, heightPos, vert._position.z);
+                _tempData.push_back(entry);
+            }
+        }
+
 
         chunkCache << _tempData.size();
         chunkCache.append(_tempData.data(), _tempData.size());
         chunkCache.dumpToFile(Paths::g_cacheLocation + Paths::g_terrainCacheLocation, cacheFileName);
     }
+    
 end:
     Console::printfn(Locale::get(_ID("CREATE_GRASS_END")));
 }

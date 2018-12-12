@@ -79,6 +79,18 @@ layout(binding = BUFFER_SCENE_DATA, std140) uniform dvd_SceneData
 #define dvd_showDebugInfo int(dvd_otherData2.x)
 #define dvd_renderDetailLevel (int(dvd_otherData2.y))
 
+bool IsUnderWater(vec3 positionWorld) {
+    for (int i = 0; i < 1/*MAX_WATER_BODIES*/; ++i) {
+        float height = dvd_waterPositionsW.y;/*[i].y*/;
+        float depth = -dvd_waterDetails.y + height; /*[i].y*/
+        if (positionWorld.y < height && positionWorld.y > depth) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 #if defined(VERT_SHADER) || defined(GEOM_SHADER)
 out float gl_ClipDistance[MAX_CLIP_PLANES];
 

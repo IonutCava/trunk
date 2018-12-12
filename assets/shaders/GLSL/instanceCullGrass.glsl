@@ -14,33 +14,29 @@ layout(std430, binding = BUFFER_GRASS_DATA) coherent buffer dvd_transformBlock {
     GrassData grassData[];
 };
 
-uniform uint instanceCount = 1;
-uniform uint cullType = 0;
-
-layout(local_size_x = 64) in;
-
-int occlusionCull(in GrassData data) {
-    
-    vec4 positionW = data.transform * vec4(0, 0, 0, 1);
-
-    if (distance(dvd_ViewMatrix * positionW, vec4(0.0, 0.0, 0.0, 1.0)) > dvd_visibilityDistance) {
-        return 0;
-    }
-
-    switch (cullType) {
-        case 0 :
-            return PassThrough(positionW.xyz, data.data.xxy);
-        case 1 : 
-            return InstanceCloudReduction(positionW.xyz, data.data.xxy);
-    };
-
-    return zBufferCull(positionW.xyz, data.data.xxy);
-                           
-}
+layout(local_size_x = WORK_GROUP_SIZE) in;
 
 void main(void) {
-    for (uint i = 0; i < instanceCount; ++i) {
-        GrassData data = grassData[i];
-        data.data.w = 1.0f;//occlusionCull(data);
+    GrassData instance = grassData[gl_GlobalInvocationID.x];
+    instance.data.w = 0.0f;
+    return;
+
+    vec4 positionW = instance.transform * vec4(0, 0, 0, 1);
+
+    // Too far away
+    //if (distance(positionW.xyz, dvd_cameraPosition.xyz) > 1) {
+        instance.data.w = 0.0f;
+        return;
+    //}
+
+    // ToDo: underwater check:
+    if (IsUnderWater(positionW.xyz)) {
+        //instance.data.w = 0.0f;
+        //continue;
     }
+
+    //instance.data.w = PassThrough(positionW.xyz, instance.data.xxy);
+    //instance.data.w = InstanceCloudReduction(positionW.xyz, instance.data.xxy);
+    instance.data.w = zBufferCull(positionW.xyz, instance.data.xxy);
+    
 }
