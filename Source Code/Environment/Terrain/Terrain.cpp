@@ -219,7 +219,7 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
     Object3D::buildDrawCommands(sgn, renderStagePass, pkgInOut);
 }
 
-vec3<F32> Terrain::getPositionFromGlobal(F32 x, F32 z) const {
+vec3<F32> Terrain::getPositionFromGlobal(F32 x, F32 z, bool smooth) const {
     x -= _boundingBox.getCenter().x;
     z -= _boundingBox.getCenter().z;
     F32 xClamp = (0.5f * _descriptor->getDimensions().x) + x;
@@ -227,12 +227,20 @@ vec3<F32> Terrain::getPositionFromGlobal(F32 x, F32 z) const {
     xClamp /= _descriptor->getDimensions().x;
     zClamp /= _descriptor->getDimensions().y;
     zClamp = 1 - zClamp;
-    vec3<F32> temp = getPosition(xClamp, zClamp);
+    vec3<F32> temp = getPosition(xClamp, zClamp, smooth);
 
     return temp;
 }
 
-Terrain::Vert Terrain::getVert(F32 x_clampf, F32 z_clampf) const {
+Terrain::Vert Terrain::getVert(F32 x_clampf, F32 z_clampf, bool smooth) const {
+    if (smooth) {
+        return getSmoothVert(x_clampf, z_clampf);
+    }
+
+    return getVert(x_clampf, z_clampf);
+}
+
+Terrain::Vert Terrain::getSmoothVert(F32 x_clampf, F32 z_clampf) const {
     assert(!(x_clampf < .0f || z_clampf < .0f || x_clampf > 1.0f || z_clampf > 1.0f));
 
     const vec2<U16>& dim = _descriptor->getDimensions();
@@ -253,10 +261,10 @@ Terrain::Vert Terrain::getVert(F32 x_clampf, F32 z_clampf) const {
 
     assert(posI.x >= 0 && posI.x < to_I32(dim.x) - 1 && posI.y >= 0 && posI.y < to_I32(dim.y) - 1);
 
-    VertexBuffer::Vertex tempVert1 = _physicsVerts[TER_COORD(posI.x, posI.y, to_I32(dim.x))];
-    VertexBuffer::Vertex tempVert2 = _physicsVerts[TER_COORD(posI.x + 1, posI.y, to_I32(dim.x))];
-    VertexBuffer::Vertex tempVert3 = _physicsVerts[TER_COORD(posI.x, posI.y + 1, to_I32(dim.x))];
-    VertexBuffer::Vertex tempVert4 = _physicsVerts[TER_COORD(posI.x + 1, posI.y + 1, to_I32(dim.x))];
+    const VertexBuffer::Vertex& tempVert1 = _physicsVerts[TER_COORD(posI.x, posI.y, to_I32(dim.x))];
+    const VertexBuffer::Vertex& tempVert2 = _physicsVerts[TER_COORD(posI.x + 1, posI.y, to_I32(dim.x))];
+    const VertexBuffer::Vertex& tempVert3 = _physicsVerts[TER_COORD(posI.x, posI.y + 1, to_I32(dim.x))];
+    const VertexBuffer::Vertex& tempVert4 = _physicsVerts[TER_COORD(posI.x + 1, posI.y + 1, to_I32(dim.x))];
 
     vec3<F32> normals[4];
     Util::UNPACK_VEC3(tempVert1._normal, normals[0]);
@@ -290,22 +298,51 @@ Terrain::Vert Terrain::getVert(F32 x_clampf, F32 z_clampf) const {
                     normals[3] * posD.x * posD.y);
 
     ret._tangent.set(tangents[0] * (1.0f - posD.x) * (1.0f - posD.y) +
-                     tangents[1] * posD.x * (1.0f - posD.y) +
-                     tangents[2] * (1.0f - posD.x) * posD.y +
-                     tangents[3] * posD.x * posD.y);
+                        tangents[1] * posD.x * (1.0f - posD.y) +
+                        tangents[2] * (1.0f - posD.x) * posD.y +
+                        tangents[3] * posD.x * posD.y);
+    
     return ret;
 
 }
-vec3<F32> Terrain::getPosition(F32 x_clampf, F32 z_clampf) const {
-    return getVert(x_clampf, z_clampf)._position;
+
+Terrain::Vert Terrain::getVert(F32 x_clampf, F32 z_clampf) const {
+    assert(!(x_clampf < .0f || z_clampf < .0f || x_clampf > 1.0f || z_clampf > 1.0f));
+
+    const vec2<U16>& dim = _descriptor->getDimensions();
+    vec2<I32> posI(to_I32(x_clampf * dim.x), to_I32(z_clampf * dim.y));
+
+    if (posI.x >= (I32)dim.x - 1) {
+        posI.x = dim.x - 2;
+    }
+
+    if (posI.y >= (I32)dim.y - 1) {
+        posI.y = dim.y - 2;
+    }
+
+    assert(posI.x >= 0 && posI.x < to_I32(dim.x) - 1 && posI.y >= 0 && posI.y < to_I32(dim.y) - 1);
+
+    const VertexBuffer::Vertex& tempVert1 = _physicsVerts[TER_COORD(posI.x, posI.y, to_I32(dim.x))];
+
+    Vert ret = {};
+    ret._position.set(tempVert1._position);
+    Util::UNPACK_VEC3(tempVert1._normal, ret._normal);
+    Util::UNPACK_VEC3(tempVert1._tangent, ret._tangent);
+
+    return ret;
+
 }
 
-vec3<F32> Terrain::getNormal(F32 x_clampf, F32 z_clampf) const {
-    return getVert(x_clampf, z_clampf)._normal;
+vec3<F32> Terrain::getPosition(F32 x_clampf, F32 z_clampf, bool smooth) const {
+    return getVert(x_clampf, z_clampf, smooth)._position;
 }
 
-vec3<F32> Terrain::getTangent(F32 x_clampf, F32 z_clampf) const {
-    return getVert(x_clampf, z_clampf)._tangent;
+vec3<F32> Terrain::getNormal(F32 x_clampf, F32 z_clampf, bool smooth) const {
+    return getVert(x_clampf, z_clampf, smooth)._normal;
+}
+
+vec3<F32> Terrain::getTangent(F32 x_clampf, F32 z_clampf, bool smooth) const {
+    return getVert(x_clampf, z_clampf, smooth)._tangent;
 
 }
 
@@ -322,7 +359,6 @@ void Terrain::saveToXML(boost::property_tree::ptree& pt) const {
     pt.put("heightmapLocation", _descriptor->getVariable("heightmapLocation"));
     pt.put("heightmap", _descriptor->getVariable("heightmap"));
     pt.put("is16Bit", _descriptor->is16Bit());
-    pt.put("heightTexture", _descriptor->getVariable("heightTexture"));
     pt.put("terrainWidth", _descriptor->getDimensions().width);
     pt.put("terrainHeight", _descriptor->getDimensions().height);
     pt.put("altitudeRange.<xmlattr>.min", _descriptor->getAltitudeRange().min);

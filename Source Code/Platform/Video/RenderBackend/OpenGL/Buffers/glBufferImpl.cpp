@@ -45,17 +45,11 @@ glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
     if (_target == GL_ATOMIC_COUNTER_BUFFER) {
         _usage = GL_STREAM_READ;
     } else {
-        _usage = _target == GL_TRANSFORM_FEEDBACK
-                            ? _updateFrequency == BufferUpdateFrequency::ONCE
-                                                ? GL_STATIC_COPY
-                                                : _updateFrequency == BufferUpdateFrequency::OCASSIONAL
-                                                                    ? GL_DYNAMIC_COPY
-                                                                    : GL_STREAM_COPY
-                            : _updateFrequency == BufferUpdateFrequency::ONCE
-                                                ? GL_STATIC_DRAW
-                                                : _updateFrequency == BufferUpdateFrequency::OCASSIONAL
-                                                                    ? GL_DYNAMIC_DRAW
-                                                                    : GL_STREAM_DRAW;
+        _usage = _updateFrequency == BufferUpdateFrequency::ONCE
+                                   ? GL_STATIC_DRAW
+                                   : _updateFrequency == BufferUpdateFrequency::OCASSIONAL
+                                                       ? GL_DYNAMIC_DRAW
+                                                       : GL_STREAM_DRAW;
     }
 
     bool usePersistentMapping = !Config::Profile::DISABLE_PERSISTENT_BUFFER &&  // For debugging

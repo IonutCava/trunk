@@ -64,8 +64,7 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
     virtual void setIndexBuffer(const IndexBuffer& indices, BufferUpdateFrequency updateFrequency) = 0;
     virtual void updateIndexBuffer(const IndexBuffer& indices) = 0;
 
-    virtual void create(U8 numBuffers = 1, U8 numQueries = 1) = 0;
-    virtual void setFeedbackBuffer(U32 buffer, U32 bindPoint) = 0;
+    virtual void create(U8 numBuffers = 1) = 0;
 
     virtual void draw(const GenericDrawCommand& command) = 0;
 
@@ -84,23 +83,12 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
                               const bufferPtr data) = 0;
 
     virtual void setBufferBindOffset(U32 buffer, U32 elementCountOffset) = 0;
-
-    virtual void bindFeedbackBufferRange(U32 buffer, U32 elementCountOffset, size_t elementCount) = 0;
-
-    virtual U32 getFeedbackPrimitiveCount(U8 queryID) = 0;
-
-    virtual void incQueryQueue() = 0;
-
-    void toggleDoubleBufferedQueries(const bool state);
+    
     AttributeDescriptor& attribDescriptor(U32 attribIndex);
-    AttributeDescriptor& fdbkAttribDescriptor(U32 attribIndex);
 
    protected:
     typedef hashMap<U32, AttributeDescriptor> attributeMap;
-    bool _doubleBufferedQuery;
-    vector<std::pair<U32 /*buffer*/, U32/*bind point*/>> _feedbackBuffers;
     attributeMap _attributeMapDraw;
-    attributeMap _attributeMapFdbk;
 
     stringImpl _name;
 };

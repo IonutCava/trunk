@@ -89,10 +89,6 @@ namespace Divide {
         /// Switch the current framebuffer by binding it as either a R/W buffer, read
         /// buffer or write buffer
         bool setActiveFB(RenderTarget::RenderTargetUsage usage, GLuint ID, GLuint& previousID);
-        /// Bind the specified transform feedback object
-        bool setActiveTransformFeedback(GLuint ID);
-        /// Bind the specified transform feedback object
-        bool setActiveTransformFeedback(GLuint ID, GLuint& previousID);
         /// Change the currently active shader program.
         bool setActiveProgram(GLuint programHandle);
         /// A state block should contain all rendering state changes needed for the next draw call.
@@ -172,7 +168,6 @@ namespace Divide {
                                       GLUtil::_invalidObjectID };
         hashMap<GLuint, GLuint> _activeVAOIB;
 
-        GLuint _activeTransformFeedback = GLUtil::_invalidObjectID;
         GLint  _activePackUnpackAlignments[2] = { 1 , 1 };
         GLint  _activePackUnpackRowLength[2] = { 0 , 0 };
         GLint  _activePackUnpackSkipPixels[2] = { 0 , 0 };

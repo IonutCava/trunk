@@ -37,10 +37,6 @@ void GFXDevice::uploadGPUBlock() {
 
 void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
     if (Config::ENABLE_GPU_VALIDATION) {
-        if (FRAME_COUNT == 400) {
-            Console::printfn(commandBuffer.toString().c_str());
-        }
-
         DIVIDE_ASSERT(Runtime::isMainThread(), "GFXDevice::flushCommandBuffer called from worker thread!");
     }
 

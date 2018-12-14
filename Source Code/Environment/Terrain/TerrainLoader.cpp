@@ -274,7 +274,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     ResourceDescriptor heightMapTexture("Terrain Heightmap_" + name);
     heightMapTexture.assetLocation(Paths::g_assetsLocation + terrainDescriptor->getVariable("heightmapLocation"));
-    heightMapTexture.assetName(terrainDescriptor->getVariable("heightTexture"));
+    heightMapTexture.assetName(terrainDescriptor->getVariable("heightmap"));
 
 
     TextureDescriptor heightMapDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGB, terrainDescriptor->is16Bit() ? GFXDataFormat::UNSIGNED_SHORT : GFXDataFormat::UNSIGNED_BYTE);
@@ -341,75 +341,23 @@ bool TerrainLoader::loadThreadedResources(Terrain_ptr terrain,
     }
 
     if (terrain->_physicsVerts.empty()) {
-        U8 componentCount = 1;
-        vector<U16> heightValues;
-        if (terrainDescriptor->is16Bit()) {
-            assert(terrainDimensions.x != 0 && terrainDimensions.y != 0);
-            // only raw files for 16 bit support
-            assert(hasExtension(terrainRawFile, "raw"));
-            // Read File Data
+        ImageTools::ImageData img;
+        img.set16Bit(terrainDescriptor->is16Bit());
+        //img.flip(true);
+        ImageTools::ImageDataInterface::CreateImageData(terrainMapLocation + "/" + terrainRawFile, img);
 
-            vector<Byte> data;
-            readFile(terrainMapLocation, terrainRawFile, data, FileType::BINARY);
-            if (data.empty()) {
-                return false;
-            }
+        assert(terrainDimensions == img.dimensions());
+        U8 componentCount = img.bpp() / (img.is16Bit() ? 16 : 8);
+        assert(componentCount > 0);
 
-            size_t positionCount = data.size() / sizeof(Byte);
-            assert(positionCount % 2 == 0);
-
-            heightValues.reserve(positionCount / 2);
-            for (size_t i = 0; i < positionCount; i += 2) {
-                heightValues.push_back((data[i] & 0xff) + (static_cast<U32>(data[i + 1]) << 8));
-            }
-
-        } else {
-            ImageTools::ImageData img;
-            //img.flip(true);
-            ImageTools::ImageDataInterface::CreateImageData(terrainMapLocation + "/" + terrainRawFile, img);
-            assert(terrainDimensions == img.dimensions());
-            componentCount = img.bpp() / 8;
-
-            // data will be destroyed when img gets out of scope
-            const U8* data = (const U8*)img.data();
-            assert(data);
-            size_t positionCount = (size_t)(terrainDimensions.x * terrainDimensions.y);
-            heightValues.resize(positionCount);
-            assert(componentCount > 0);
-
-            switch (componentCount) {
-                case 1: {
-                    for (size_t i = 0; i < positionCount; ++i) {
-                        heightValues[i] = to_U16(data[i]);
-                    }
-                } break;
-                case 2:
-                {
-                    for (size_t i = 0; i < positionCount; ++i) {
-                        heightValues[i] = to_U16((data[i * 2 + 0] + data[i * 2 + 1] ) / 2.0f);
-                    }
-                } break;
-                case 3:
-                {
-                    for (size_t i = 0; i < positionCount; ++i) {
-                        heightValues[i] = to_U16((data[i * 3 + 0] + data[i * 3 + 1] + data[i * 3 + 2]) / 3.0f);
-                    }
-                } break;
-                case 4:
-                {
-                    for (size_t i = 0; i < positionCount; ++i) {
-                        heightValues[i] = to_U16((data[i * 4 + 0] + data[i * 4 + 1] + data[i * 4 + 2] + data[i * 4 + 3]) / 4.0f);
-                    }
-                } break;
-            }
-        }
-
+        constexpr F32 ushortMax = std::numeric_limits<U16>::max() + 1.0f;
+        constexpr F32 ubyteMax = std::numeric_limits<U8>::max() + 1.0f;
 
         I32 terrainWidth = to_I32(terrainDimensions.x);
         I32 terrainHeight = to_I32(terrainDimensions.y);
 
+        bool is16Bit = terrainDescriptor->is16Bit();
         terrain->_physicsVerts.resize(terrainWidth * terrainHeight);
-
 
         // scale and translate all heights by half to convert from 0-255 (0-65335) to -127 - 128 (-32767 - 32768)
         F32 altitudeRange = maxAltitude - minAltitude;
@@ -417,35 +365,45 @@ bool TerrainLoader::loadThreadedResources(Terrain_ptr terrain,
         F32 bXRange = bMax.x - bMin.x;
         F32 bZRange = bMax.z - bMin.z;
 
-        constexpr F32 byteMax = std::numeric_limits<U8>::max() + 1.0f;
-        constexpr F32 fMax = std::numeric_limits<U16>::max() + 1.0f;
-
-        const bool highDetail = terrainDescriptor->is16Bit();
-
         #pragma omp parallel for
-        for (I32 height = 0; height < terrainHeight ; height++) {
-            for (I32 width = 0; width < terrainWidth; width++) {
+        for (I32 height = 0; height < terrainHeight ; ++height) {
+            for (I32 width = 0; width < terrainWidth; ++width) {
                 I32 idxIMG = TER_COORD(width < terrainWidth - 1 ? width : width - 1,
                                        height < terrainHeight - 1 ? height : height - 1,
                                        terrainWidth);
 
                 vec3<F32>& vertexData = terrain->_physicsVerts[TER_COORD(width, height, terrainWidth)]._position;
 
+
+                F32 yOffset = 0.0f;
+                if (is16Bit) {
+                    U16* data = static_cast<U16*>(img.data16(0));
+                    for (U8 j = 0; j < componentCount; ++j) {
+                        yOffset += data[idxIMG * componentCount + j];
+                    }
+                    yOffset /= componentCount;
+                    yOffset = (altitudeRange * (yOffset / ushortMax)) + minAltitude;
+                } else {
+                    Byte* data = static_cast<Byte*>(img.data(0));
+                    for (U8 j = 0; j < componentCount; ++j) {
+                        yOffset += data[idxIMG * componentCount + j];
+                    }
+                    yOffset /= componentCount;
+                    yOffset = (altitudeRange * (yOffset / ubyteMax)) + minAltitude;
+                }
+
                 //#pragma omp critical
                 //Surely the id is unique and memory has also been allocated beforehand
-                vertexData.set(bMin.x + (to_F32(width)) * bXRange / (terrainWidth - 1),      //X
-                                (altitudeRange * (heightValues[idxIMG] / (highDetail ? fMax : byteMax))) + minAltitude,         //Y
+                vertexData.set(bMin.x + (to_F32(width)) * bXRange / (terrainWidth - 1),       //X
+                                yOffset,                                                      //Y
                                 bMin.z + (to_F32(height)) * (bZRange) / (terrainHeight - 1)); //Z
-
             }
         }
-        heightValues.clear();
 
         I32 offset = 2;
-   
         #pragma omp parallel for
-        for (I32 j = offset; j < terrainHeight - offset; j++) {
-            for (I32 i = offset; i < terrainWidth - offset; i++) {
+        for (I32 j = offset; j < terrainHeight - offset; ++j) {
+            for (I32 i = offset; i < terrainWidth - offset; ++i) {
                 vec3<F32> vU, vV, vUV;
 
                 vU.set(terrain->_physicsVerts[TER_COORD(i + offset, j + 0, terrainWidth)]._position -
@@ -469,8 +427,8 @@ bool TerrainLoader::loadThreadedResources(Terrain_ptr terrain,
             }
         }
         
-        for (I32 j = 0; j < offset; j++) {
-            for (I32 i = 0; i < terrainWidth; i++) {
+        for (I32 j = 0; j < offset; ++j) {
+            for (I32 i = 0; i < terrainWidth; ++i) {
                 I32 idx0 = TER_COORD(i, j, terrainWidth);
                 I32 idx1 = TER_COORD(i, offset, terrainWidth);
 
@@ -485,8 +443,8 @@ bool TerrainLoader::loadThreadedResources(Terrain_ptr terrain,
             }
         }
 
-        for (I32 i = 0; i < offset; i++) {
-            for (I32 j = 0; j < terrainHeight; j++) {
+        for (I32 i = 0; i < offset; ++i) {
+            for (I32 j = 0; j < terrainHeight; ++j) {
                 I32 idx0 = TER_COORD(i, j, terrainWidth);
                 I32 idx1 = TER_COORD(offset, j, terrainWidth);
 

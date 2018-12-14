@@ -407,25 +407,6 @@ bool GLStateTracker::setActiveVAO(GLuint ID, GLuint& previousID) {
     return false;
 }
 
-bool GLStateTracker::setActiveTransformFeedback(GLuint ID) {
-    GLuint temp = 0;
-    return setActiveTransformFeedback(ID, temp);
-}
-
-/// Bind the specified transform feedback object
-bool GLStateTracker::setActiveTransformFeedback(GLuint ID, GLuint& previousID) {
-    previousID = _activeTransformFeedback;
-    // Prevent double bind
-    if (_activeTransformFeedback != ID) {
-        // Remember the new binding for future reference
-        _activeTransformFeedback = ID;
-        // Activate the specified TFO
-        glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, ID);
-        return true;
-    }
-
-    return false;
-}
 
 /// Single place to change buffer objects for every target available
 bool GLStateTracker::setActiveBuffer(GLenum target, GLuint ID, GLuint& previousID) {

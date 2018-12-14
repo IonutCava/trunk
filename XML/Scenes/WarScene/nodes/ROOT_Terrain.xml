@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <static>true</static>
 <heightmapLocation>terrain/</heightmapLocation>
-<heightmap>warTerrain.raw</heightmap>
+<heightmap>warTerrain_preview.png</heightmap>
 <is16Bit>true</is16Bit>
-<heightTexture>warTerrain_preview.png</heightTexture>
 <terrainWidth>2048</terrainWidth>
 <terrainHeight>2048</terrainHeight>
 <altitudeRange min="-33.5999985" max="68.8000031"/>

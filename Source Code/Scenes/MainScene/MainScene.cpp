@@ -82,7 +82,7 @@ void MainScene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
                            ter->getDimensions().height * 0.5f);
 
                 vec3<F32> position = terrainNode->get<TransformComponent>()->getWorldMatrix() *
-                                     ter->getPositionFromGlobal(eyePosition.x, eyePosition.z);
+                                     ter->getPositionFromGlobal(eyePosition.x, eyePosition.z, true);
                 terrainHeight = position.y;
                 if (!IS_ZERO(terrainHeight)) {
                     eyePosition.y = terrainHeight + 1.85f;

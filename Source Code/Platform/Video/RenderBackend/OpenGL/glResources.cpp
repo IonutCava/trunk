@@ -228,7 +228,6 @@ void fillEnumTables() {
 
     glQueryTypeTable[to_base(QueryType::TIME)] = GL_TIME_ELAPSED;
     glQueryTypeTable[to_base(QueryType::PRIMITIVES_GENERATED)] = GL_PRIMITIVES_GENERATED;
-    glQueryTypeTable[to_base(QueryType::XFORM_FDBK_PRIMITIVES_GENERATED)] = GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN;
     glQueryTypeTable[to_base(QueryType::GPU_TIME)] = GL_TIMESTAMP;
 }
 

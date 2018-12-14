@@ -438,7 +438,6 @@ void Scene::addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree p
     ter->addVariable("terrainName", name.c_str());
     ter->addVariable("heightmap", pt.get<stringImpl>("heightmap"));
     ter->addVariable("heightmapLocation", pt.get<stringImpl>("heightmapLocation", Paths::g_heightmapLocation));
-    ter->addVariable("heightTexture", pt.get<stringImpl>("heightTexture", ter->getVariable("heightmap")));
     ter->addVariable("textureLocation", pt.get<stringImpl>("textureLocation", Paths::g_imagesLocation));
     ter->addVariable("waterCaustics", pt.get<stringImpl>("waterCaustics"));
     ter->addVariable("underwaterAlbedoTexture", pt.get<stringImpl>("underwaterAlbedoTexture"));

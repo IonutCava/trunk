@@ -153,12 +153,12 @@ class Terrain : public Object3D {
 
     inline void toggleBoundingBoxes() { _drawBBoxes = !_drawBBoxes; }
 
-    Vert getVert(F32 x_clampf, F32 z_clampf) const;
+    Vert getVert(F32 x_clampf, F32 z_clampf, bool smooth) const;
 
-    vec3<F32> getPositionFromGlobal(F32 x, F32 z) const;
-    vec3<F32> getPosition(F32 x_clampf, F32 z_clampf) const;
-    vec3<F32> getNormal(F32 x_clampf, F32 z_clampf) const;
-    vec3<F32> getTangent(F32 x_clampf, F32 z_clampf) const;
+    vec3<F32> getPositionFromGlobal(F32 x, F32 z, bool smooth) const;
+    vec3<F32> getPosition(F32 x_clampf, F32 z_clampf, bool smooth) const;
+    vec3<F32> getNormal(F32 x_clampf, F32 z_clampf, bool smooth) const;
+    vec3<F32> getTangent(F32 x_clampf, F32 z_clampf, bool smooth) const;
     vec2<U16> getDimensions() const;
     vec2<F32> getAltitudeRange() const;
 
@@ -168,6 +168,9 @@ class Terrain : public Object3D {
     void loadFromXML(const boost::property_tree::ptree& pt)  override;
 
    protected:
+    Vert getVert(F32 x_clampf, F32 z_clampf) const;
+    Vert getSmoothVert(F32 x_clampf, F32 z_clampf) const;
+
     void frameStarted(SceneGraphNode& sgn) override;
 
     void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState) override;

@@ -9,27 +9,15 @@ GenericVertexData::GenericVertexData(GFXDevice& context, const U32 ringBufferLen
     RingBuffer(ringBufferLength),
     _name(name == nullptr ? "" : name)
 {
-    _doubleBufferedQuery = true;
 }
 
 GenericVertexData::~GenericVertexData()
 {
     _attributeMapDraw.clear();
-    _attributeMapFdbk.clear();
-}
-
-void GenericVertexData::toggleDoubleBufferedQueries(const bool state) {
-    _doubleBufferedQuery = state;
 }
 
 AttributeDescriptor& GenericVertexData::attribDescriptor(U32 attribIndex) {
     AttributeDescriptor& desc = _attributeMapDraw[attribIndex];
-    desc.attribIndex(attribIndex);
-    return desc;
-}
-
-AttributeDescriptor& GenericVertexData::fdbkAttribDescriptor(U32 attribIndex) {
-    AttributeDescriptor& desc = _attributeMapFdbk[attribIndex];
     desc.attribIndex(attribIndex);
     return desc;
 }

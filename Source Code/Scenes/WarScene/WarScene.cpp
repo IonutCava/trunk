@@ -308,9 +308,9 @@ void WarScene::updateSceneStateInternal(const U64 deltaTimeUS) {
             if (g_terrain->get<BoundsComponent>()->getBoundingBox().containsPoint(camPos)) {   
                 const Terrain_ptr& ter = g_terrain->getNode<Terrain>();
 
-                F32 headHeight = state().playerState(state().playerPass()).headHeight();
+                F32 headHeight = 0.0f;// state().playerState(state().playerPass()).headHeight();
                 camPos -= g_terrain->get<TransformComponent>()->getPosition();
-                playerCamera()->setEye(ter->getPositionFromGlobal(camPos.x, camPos.z) + vec3<F32>(0.0f, headHeight, 0.0f));
+                playerCamera()->setEye(ter->getPositionFromGlobal(camPos.x, camPos.z, true) + vec3<F32>(0.0f, headHeight, 0.0f));
             }
         }
     }

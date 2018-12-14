@@ -44,12 +44,6 @@ namespace Divide {
 
 class glGenericVertexData final : public GenericVertexData {
     USE_CUSTOM_ALLOCATOR
-    enum class GVDUsage : U8 {
-        DRAW = 0,
-        FDBCK = 1,
-        COUNT
-    };
-
     struct BufferBindConfig {
         BufferBindConfig() : BufferBindConfig(0, 0, 0)
         {
@@ -84,8 +78,7 @@ class glGenericVertexData final : public GenericVertexData {
     glGenericVertexData(GFXDevice& context, const U32 ringBufferLength, const char* name = nullptr);
     ~glGenericVertexData();
 
-    void create(U8 numBuffers = 1, U8 numQueries = 1) override;
-    U32 getFeedbackPrimitiveCount(U8 queryID) override;
+    void create(U8 numBuffers = 1) override;
 
     void setIndexBuffer(const IndexBuffer& indices, BufferUpdateFrequency updateFrequency) override;
 
@@ -102,38 +95,22 @@ class glGenericVertexData final : public GenericVertexData {
 
     void setBufferBindOffset(U32 buffer, U32 elementCountOffset) override;
 
-    void bindFeedbackBufferRange(U32 buffer, U32 elementCountOffset, size_t elementCount) override;
-
-    void setFeedbackBuffer(U32 buffer, U32 bindPoint) override;
-
    protected:
     friend class GFXDevice;
     void draw(const GenericDrawCommand& command) override;
 
    protected:
-    void setBufferBindings(GLuint activeVAO);
-    void setAttributes(GLuint activeVAO, bool feedbackPass);
-    void setAttributeInternal(GLuint activeVAO, AttributeDescriptor& descriptor);
-
-    bool isFeedbackBuffer(U32 index);
-    U32 feedbackBindPoint(U32 buffer);
-
-    void incQueryQueue() override;
+    void setBufferBindings();
+    void setAttributes();
+    void setAttributeInternal(AttributeDescriptor& descriptor);
     
    private:
     bool _smallIndices;
     GLuint _indexBuffer;
     GLuint _indexBufferSize;
     GLenum _indexBufferUsage;
-    GLuint _transformFeedback;
-    GLuint _numQueries;
-    GLuint* _prevResult;
-    std::array<GLuint*, 2> _feedbackQueries;
-    std::array<bool*, 2> _resultAvailable;
-    GLuint _currentWriteQuery;
-    GLuint _currentReadQuery;
+    GLuint _vertexArray;
     vector<glGenericBuffer*> _bufferObjects;
-    std::array<GLuint, to_base(GVDUsage::COUNT)> _vertexArray;
 };
 
 };  // namespace Divide

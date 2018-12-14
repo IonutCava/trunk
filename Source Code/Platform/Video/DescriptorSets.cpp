@@ -72,6 +72,32 @@ namespace Divide {
     }
 
     bool Merge(DescriptorSet &lhs, DescriptorSet &rhs, bool& partial) {
+        auto& otherTextureData = rhs._textureData.textures();
+
+        vector<vec_size> textureEraseList;
+        for (size_t i = 0; i < otherTextureData.size(); ++i) {
+            const eastl::pair<TextureData, U8>& otherTexture = otherTextureData[i];
+
+            const TextureData* texData = lhs.findTexture(otherTexture.second);
+            bool erase = false;
+            if (texData == nullptr) {
+                // See explanation above (buffers) for why this is commented out
+                /*lhs._textureData.addTexture(otherTexture);
+                erase = true;*/
+            }
+            else {
+                if (*texData == otherTexture.first) {
+                    erase = true;
+                }
+            }
+            if (erase) {
+                textureEraseList.push_back(i);
+                partial = true;
+            }
+        }
+        otherTextureData = erase_indices(otherTextureData, textureEraseList);
+
+        // Buffers are ... weird... for now
         return false;
 
         vector<vec_size> bufferEraseList;
@@ -97,30 +123,6 @@ namespace Divide {
             }
         }
         rhs._shaderBuffers = erase_indices(rhs._shaderBuffers, bufferEraseList);
-
-        auto& otherTextureData = rhs._textureData.textures();
-
-        vector<vec_size> textureEraseList;
-        for (size_t i = 0; i < otherTextureData.size(); ++i) {
-            const eastl::pair<TextureData, U8>& otherTexture = otherTextureData[i];
-
-            const TextureData* texData = lhs.findTexture(otherTexture.second);
-            bool erase = false;
-            if (texData == nullptr) {
-                // See explanation above (buffers) for why this is commented out
-                /*lhs._textureData.addTexture(otherTexture);
-                erase = true;*/
-            } else {
-                if (*texData == otherTexture.first) {
-                    erase = true;
-                }
-            }
-            if (erase) {
-                textureEraseList.push_back(i);
-                partial = true;
-            }
-        }
-        otherTextureData = erase_indices(otherTextureData, textureEraseList);
 
         return rhs._shaderBuffers.empty() && rhs._textureData.textures().empty();
     }

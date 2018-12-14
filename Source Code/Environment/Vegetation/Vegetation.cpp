@@ -297,12 +297,13 @@ void Vegetation::computeGrassTransforms(const Task& parentTask) {
         const U16 mapHeight = _map->dimensions().height;
 
         //ref: http://mollyrocket.com/casey/stream_0016.html
-        F32 PointRadius = 0.01f;
+        F32 PointRadius = 0.009f;
         F32 ArBase = 1.0f; // Starting radius of circle A
         F32 BrBase = 1.0f; // Starting radius of circle B
         F32 dR = 1.5f*PointRadius; // Distance between concentric rings
 
         vectorFast<vec2<F32>> grassPositions;
+        
         grassPositions.reserve(static_cast<size_t>(chunkSize.x * chunkSize.y));
 
         vec2<F32> intersections[2];
@@ -337,7 +338,7 @@ void Vegetation::computeGrassTransforms(const Task& parentTask) {
             F32 x_fac = pos.x / mapWidth;
             F32 y_fac = pos.y / mapHeight;
 
-            Terrain::Vert vert = terrain.getVert(x_fac, y_fac);
+            Terrain::Vert vert = terrain.getVert(x_fac, y_fac, true);
 
             // terrain slope should be taken into account
             if (std::acos(Dot(vert._normal, WORLD_Y_AXIS)) > 45.0f) {
@@ -348,17 +349,16 @@ void Vegetation::computeGrassTransforms(const Task& parentTask) {
             const F32 heightHalfExtent = heightExtent * 0.5f;
             UColour colour = _map->getColour((U16)pos.x, (U16)pos.y);
             U8 index = bestIndex(colour);
-            float scale = (colour[index] + 1) / 256.0f;
-
-            F32 heightPos = vert._position.y;
-            heightPos -= (heightHalfExtent * scale);
+            
+            F32 scale = (colour[index] + 1) / 256.0f;
+            //vert._position.y = (((0.0f*heightExtent) + vert._position.y) - ((0.0f*scale) + vert._position.y)) + vert._position.y;
             {
                 GrassData entry = {};
                 entry._data.set(1.0f, heightExtent, to_F32(index), 1.0f);
                 entry._transform.setScale(vec3<F32>(scale));
                 mat3<F32> rotationMatrix = GetMatrix(Quaternion<F32>(WORLD_Y_AXIS, Random(360.0f)) * RotationFromVToU(vert._normal, WORLD_Y_AXIS));
                 entry._transform = mat4<F32>(rotationMatrix, false) * entry._transform;
-                entry._transform.setTranslation(vert._position.x, heightPos, vert._position.z);
+                entry._transform.setTranslation(vert._position);
                 _tempData.push_back(entry);
             }
         }
