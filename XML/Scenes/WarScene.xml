@@ -2,7 +2,7 @@
 <assets>assets.xml</assets>
 <musicPlaylist>musicPlaylist.xml</musicPlaylist>
 <vegetation>
-    <grassVisibility>40</grassVisibility>
+    <grassVisibility>100</grassVisibility>
     <treeVisibility>1500</treeVisibility>
 </vegetation>
 <wind>
@@ -16,7 +16,7 @@
 </water>
 <options>
     <visibility>2000</visibility>
-    <cameraSpeed move="20.2000008" turn="20.75"/>
+    <cameraSpeed move="20.2000008" turn="40.75"/>
     <autoCookPhysicsAssets>true</autoCookPhysicsAssets>
 </options>
 <fog>

@@ -40,8 +40,15 @@ namespace Divide {
 class GFXDevice;
 class ShaderBuffer;
 
+constexpr U8 MAX_WATER_BODIES = 6;
+
 class SceneShaderData {
   private:
+    struct WaterBodyData {
+        vec4<F32> _positionW;
+        vec4<F32> _details;
+    };
+
     struct SceneShaderBufferData {
         // x,y,z - colour, w - density
         vec4<F32> _fogDetails;
@@ -53,8 +60,7 @@ class SceneShaderData {
         vec4<F32> _otherData;
         // x - debug render, y - detail level, z - reserved, w - reserved
         vec4<F32> _otherData2;
-        vec4<F32> _waterPositionsW/*[MAX_WATER_BODIES]*/;
-        vec4<F32> _waterDetails/*[MAX_WATER_BODIES]*/;
+        WaterBodyData _waterEntities[MAX_WATER_BODIES];
     };
 
   public:
@@ -106,11 +112,17 @@ class SceneShaderData {
         _dirty = true;
     }
 
-    inline void waterDetails(U8 index, const vec3<F32>& positionW, const vec3<F32>& dimensions) {
-        ACKNOWLEDGE_UNUSED(index);
-        _bufferData._waterPositionsW/*[index]*/.set(positionW);
-        _bufferData._waterDetails/*[index]*/.set(dimensions);
-        _dirty = true;
+    inline bool waterDetails(U8 index, const vec3<F32>& positionW, const vec3<F32>& dimensions) {
+        if (index < MAX_WATER_BODIES) {
+            WaterBodyData& waterBody = _bufferData._waterEntities[index];
+            waterBody._positionW.set(positionW);
+            waterBody._details.set(dimensions);
+            _dirty = true;
+
+            return true;
+        }
+
+        return false;
     }
 
     void uploadToGPU();

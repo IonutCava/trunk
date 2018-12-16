@@ -206,7 +206,7 @@ void WarScene::processTasks(const U64 deltaTimeUS) {
         PushConstants& constants = _currentSky->get<RenderingComponent>()->pushConstants();
         constants.set("enable_sun", GFX::PushConstantType::BOOL, true);
         constants.set("sun_vector", GFX::PushConstantType::VEC3, sunVector);
-        constants.set("sun_colour", GFX::PushConstantType::VEC3, _sun->get<DirectionalLightComponent>()->getDiffuseColour());
+        constants.set("sun_colour", GFX::PushConstantType::VEC3, sunColour);
 
         _taskTimers[0] = 0.0;
     }
@@ -308,7 +308,7 @@ void WarScene::updateSceneStateInternal(const U64 deltaTimeUS) {
             if (g_terrain->get<BoundsComponent>()->getBoundingBox().containsPoint(camPos)) {   
                 const Terrain_ptr& ter = g_terrain->getNode<Terrain>();
 
-                F32 headHeight = 0.0f;// state().playerState(state().playerPass()).headHeight();
+                F32 headHeight = state().playerState(state().playerPass()).headHeight();
                 camPos -= g_terrain->get<TransformComponent>()->getPosition();
                 playerCamera()->setEye(ter->getPositionFromGlobal(camPos.x, camPos.z, true) + vec3<F32>(0.0f, headHeight, 0.0f));
             }

@@ -1,13 +1,9 @@
 #ifndef _BUMP_MAPPING_FRAG_
 #define _BUMP_MAPPING_FRAG_
 
-uniform int bumpMapLightID = 0;
-Light dvd_private_bump_light;
-
 mat3 _privateTBNMatrix;
 
 void bumpInit() {
-    dvd_private_bump_light = dvd_LightSource[bumpMapLightID];
     _privateTBNMatrix = mat3(VAR._tangentWV, VAR._bitangentWV, VAR._normalWV);
 }
 
@@ -53,7 +49,9 @@ float ReliefMapping_RayIntersection(in vec2 A, in vec2 AB){
     return best_depth;
 }
 
-vec4 ParallaxMapping(in vec2 uv){
+vec4 ParallaxMapping(in vec2 uv, uint lightID){
+    Light dvd_private_bump_light = dvd_LightSource[lightID];
+
     vec3 lightVecTBN = vec3(0.0);
     switch (dvd_private_bump_light._options.x){
         case LIGHT_DIRECTIONAL      : 

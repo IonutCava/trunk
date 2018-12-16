@@ -4,12 +4,12 @@
 #include "lightInput.cmn"
 
 void computeLightVectors() {
-    mat3 normalMatrix = dvd_NormalMatrixWV(VAR.dvd_instanceID);
+    mat3 normalMatrixWV = dvd_NormalMatrixWV(VAR.dvd_instanceID);
 
     VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
-    VAR._normalWV = normalize(normalMatrix * dvd_Normal);
+    VAR._normalWV = normalize(normalMatrixWV * dvd_Normal);
 #if defined(COMPUTE_TBN)
-    VAR._tangentWV = normalize(normalMatrix * dvd_Tangent);
+    VAR._tangentWV = normalize(normalMatrixWV * dvd_Tangent);
     VAR._bitangentWV = normalize(cross(VAR._normalWV, VAR._tangentWV));
 #endif
 }

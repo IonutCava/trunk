@@ -399,29 +399,22 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
                             activeSceneState.windDirZ(),
                             activeSceneState.windSpeed());
 
-    // ToDo: unify this with the cliping stuff
-    const vectorEASTL<SceneGraphNode*>& waterNodes = activeScene.sceneGraph().getNodesByType(SceneNodeType::TYPE_WATER);
     U8 index = 0;
-    for (SceneGraphNode* body : waterNodes) {
-        const SceneGraphNode* water(body);
-            
-        _sceneData->waterDetails(index,
-                                 water->get<TransformComponent>()->getPosition(),
-                                 water->getNode<WaterPlane>()->getDimensions());
-        ++index;
-        if (index == 1) {//<- temp
-            break;
-        }
+    
+    vector<WaterDetails>& waterBodies = activeScene.state().globalWaterBodies();
+    for (auto body : waterBodies) {
+        vec3<F32> posW (0.0f, body._heightOffset, 0.0f);
+        vec3<F32> dim(std::numeric_limits<I16>::max(),
+                      std::numeric_limits<I16>::max(),
+                      body._depth);
+        _sceneData->waterDetails(index++, posW, dim);
     }
 
-    vector<WaterDetails>& waterBodies = activeScene.state().globalWaterBodies();
-    SceneRenderState& renderState = activeScene.renderState();
-    index = to_U8(ClipPlaneIndex::CLIP_PLANE_0);
-    renderState.clippingPlanes().resetAll();
-    for (auto body : waterBodies) {
-        if (index < to_U32(ClipPlaneIndex::COUNT)) {
-            renderState.clippingPlanes().set(index, Plane<F32>(body._normal, body._heightOffset), true);
-        }
+    const vectorEASTL<SceneGraphNode*>& waterNodes = activeScene.sceneGraph().getNodesByType(SceneNodeType::TYPE_WATER);
+    for (SceneGraphNode* body : waterNodes) {
+        _sceneData->waterDetails(index++,
+                                 body->get<TransformComponent>()->getPosition(),
+                                 body->getNode<WaterPlane>()->getDimensions());
     }
 
     activeScene.updateSceneState(deltaTimeUS);

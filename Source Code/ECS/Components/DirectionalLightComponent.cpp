@@ -25,6 +25,13 @@ DirectionalLightComponent::DirectionalLightComponent(SceneGraphNode& sgn, Platfo
     _shadowProperties._lightDetails.y = to_U32(_csmSplitCount);
     csmSplitCount(context.config().rendering.shadowMapping.defaultCSMSplitCount);
     getEditorComponent().registerField("Range and Cone", &_rangeAndCones, EditorComponentFieldType::PUSH_TYPE, false, GFX::PushConstantType::VEC3);
+
+    getEditorComponent().registerField("Direction",
+                                        [this]() { return getDirection(); },
+                                        [this](void* data) { /*NOP*/},
+                                        EditorComponentFieldType::PUSH_TYPE,
+                                        true,
+                                        GFX::PushConstantType::VEC3);
 }
 
 DirectionalLightComponent::~DirectionalLightComponent()

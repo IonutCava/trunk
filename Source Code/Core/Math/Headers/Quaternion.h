@@ -160,6 +160,8 @@ class Quaternion {
     inline T Z() const noexcept;
     inline T W() const noexcept;
 
+    inline vec3<T> XYZ() const noexcept;
+
     inline void X(T x) noexcept;
     inline void Y(T y) noexcept;
     inline void Z(T z) noexcept;
@@ -187,6 +189,11 @@ inline mat3<T> GetMatrix(const Quaternion<T>& q);
 template <typename T>
 inline vec3<Angle::RADIANS<T>> GetEuler(const Quaternion<T>& q);
 
+template <typename T>
+inline vec3<T> operator*(vec3<T> const & v, Quaternion<T> const & q);
+
+template <typename T>
+inline vec3<T> rotate(vec3<T> const & v, Quaternion<T> const q);
 };  // namespace Divide
 
 #endif

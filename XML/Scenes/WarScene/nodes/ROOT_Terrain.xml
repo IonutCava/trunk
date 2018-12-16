@@ -11,7 +11,7 @@
 <waterCaustics>terrain_water_caustics.jpg</waterCaustics>
 <underwaterAlbedoTexture>sandfloor009a.jpg</underwaterAlbedoTexture>
 <underwaterDetailTexture>terrain_detail_NM.png</underwaterDetailTexture>
-<underwaterDiffuseScale>100</underwaterDiffuseScale>
+<underwaterTileScale>100</underwaterTileScale>
 <vegetation grassDensity="0.800000012" treeDensity="0" grassScale="0.174999997" treeScale="0.699999988">
     <vegetationTextureLocation>misc_images</vegetationTextureLocation>
     <map>warTerrainAlpha_Alpha1.tga</map>
@@ -24,40 +24,32 @@
     <layer0>
         <blendMap>warTerrainAlpha_Alpha1.tga</blendMap>
         <redAlbedo>riverdalegrass.jpg</redAlbedo>
-        <redDiffuseScale>250</redDiffuseScale>
-        <greenAlbedo>riverdalegrassdead.jpg</greenAlbedo>
-        <greenDiffuseScale>250</greenDiffuseScale>
-        <blueAlbedo>redsand1a.jpg</blueAlbedo>
-        <blueDiffuseScale>250</blueDiffuseScale>
-        <alphaAlbedo>rock3.jpg</alphaAlbedo>
-        <alphaDiffuseScale>250</alphaDiffuseScale>
         <redDetail>riverdalegrass_bump.jpg</redDetail>
-        <redDetailScale>650</redDetailScale>
+        <redTileScale>250</redTileScale>
+        <greenAlbedo>riverdalegrassdead.jpg</greenAlbedo>
         <greenDetail>riverdalegrass_bump.jpg</greenDetail>
-        <greenDetailScale>650</greenDetailScale>
+        <greenTileScale>250</greenTileScale>
+        <blueAlbedo>redsand1a.jpg</blueAlbedo>
         <blueDetail>redsand1a_bump.jpg</blueDetail>
-        <blueDetailScale>650</blueDetailScale>
+        <blueTileScale>250</blueTileScale>
+        <alphaAlbedo>rock3.jpg</alphaAlbedo>
         <alphaDetail>rock3_bump.jpg</alphaDetail>
-        <alphaDetailScale>650</alphaDetailScale>
+        <alphaTileScale>250</alphaTileScale>
     </layer0>
     <layer1>
         <blendMap>warTerrainAlpha_Alpha2.tga</blendMap>
         <redAlbedo>yellowsand1.jpg</redAlbedo>
-        <redDiffuseScale>250</redDiffuseScale>
-        <greenAlbedo>grass1-dry.jpg</greenAlbedo>
-        <greenDiffuseScale>250</greenDiffuseScale>
-        <blueAlbedo>rocks1-grey.jpg</blueAlbedo>
-        <blueDiffuseScale>250</blueDiffuseScale>
-        <alphaAlbedo>murcim049.jpg</alphaAlbedo>
-        <alphaDiffuseScale>250</alphaDiffuseScale>
         <redDetail>terrain_detail_NM.png</redDetail>
-        <redDetailScale>1000</redDetailScale>
+        <redTileScale>250</redTileScale>
+        <greenAlbedo>grass1-dry.jpg</greenAlbedo>
         <greenDetail>hillside_bump.jpg</greenDetail>
-        <greenDetailScale>250</greenDetailScale>
+        <greenTileScale>250</greenTileScale>
+        <blueAlbedo>rocks1-grey.jpg</blueAlbedo>
         <blueDetail>rocks1_bump.jpg</blueDetail>
-        <blueDetailScale>250</blueDetailScale>
+        <blueTileScale>250</blueTileScale>
+        <alphaAlbedo>murcim049.jpg</alphaAlbedo>
         <alphaDetail>terrain_detail_NM.png</alphaDetail>
-        <alphaDetailScale>1000</alphaDetailScale>
+        <alphaTileScale>250</alphaTileScale>
     </layer1>
 </textureLayers>
 <model>Terrain</model>

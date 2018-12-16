@@ -3,22 +3,9 @@
 #include "vbInputData.vert"
 #include "lightingDefaults.vert"
 
-#if defined(ADD_FOLIAGE)
-#include "foliage.vert"
-#endif
-
-#ifndef USE_COLOURDE_WOIT
-//#define USE_COLOURED_WOIT
-#endif //USE_COLOURED_WOIT
-
 void main(void){
 
     computeData();
-
-#if defined(ADD_FOLIAGE) && defined(IS_TREE)
-    computeFoliageMovementTree(dvd_Vertex);
-#endif
-    
     computeLightVectors();
 
     //Compute the final vert position
@@ -73,7 +60,7 @@ vec4 mappingRelief(){
 
 //subroutine(MappingRoutineType)
 vec4 mappingParallax(){
-    return mix(ParallaxMapping(VAR._texCoord),
+    return mix(ParallaxMapping(VAR._texCoord, 0),
                mappingFlat(),
                vec4(dvd_lodLevel > 1));
 }

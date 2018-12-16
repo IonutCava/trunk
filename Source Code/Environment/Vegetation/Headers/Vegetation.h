@@ -46,6 +46,7 @@ class RenderTarget;
 class ShaderBuffer;
 class TerrainChunk;
 class SceneGraphNode;
+class PlatformContext;
 class RenderStateBlock;
 class GenericVertexData;
 enum class RenderStage : U8;
@@ -86,6 +87,8 @@ class Vegetation : public SceneNode {
                            RenderStagePass renderStagePass,
                            RenderPackage& pkgInOut) override;
 
+    static void precomputeStaticData(PlatformContext& context, U32 chunkSize);
+
   protected:
     void sceneUpdate(const U64 deltaTimeUS,
                      SceneGraphNode& sgn,
@@ -120,6 +123,7 @@ class Vegetation : public SceneNode {
 
     static std::atomic_uint s_bufferUsage;
     static VertexBuffer* s_buffer;
+    static vectorFast<vec2<F32>> s_grassPositions;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_TYPE(Vegetation);

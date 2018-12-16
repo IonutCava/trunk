@@ -61,7 +61,7 @@ bool InfinitePlane::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCa
 
     planeMaterial->setTexture(ShaderProgram::TextureUsage::UNIT0, CreateResource<Texture>(_parentCache, textureWaterCaustics));
 
-    planeMaterial->addShaderDefine("UNDERWATER_DIFFUSE_SCALE 100", true);
+    planeMaterial->addShaderDefine("UNDERWATER_TILE_SCALE 100", true);
     planeMaterial->setShaderProgram("terrainPlane.Colour", RenderStage::DISPLAY, true);
     planeMaterial->setShaderProgram("terrainPlane.PrePass", RenderPassType::DEPTH_PASS, true);
     setMaterialTpl(planeMaterial);
@@ -113,7 +113,7 @@ void InfinitePlane::buildDrawCommands(SceneGraphNode& sgn,
                                       RenderStagePass renderStagePass,
                                       RenderPackage& pkgInOut) {
    
-     //infinite plane
+    //infinite plane
     GenericDrawCommand planeCmd = {};
     planeCmd._primitiveType = PrimitiveType::TRIANGLE_STRIP;
     planeCmd._cmd.firstIndex = 0;

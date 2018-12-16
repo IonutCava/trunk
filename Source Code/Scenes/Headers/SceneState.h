@@ -158,10 +158,6 @@ class SceneRenderState : public SceneComponent {
     inline void treeVisibility(F32 distance) { _treeVisibility = distance; }
     inline F32  treeVisibility()       const { return _treeVisibility; }
 
-    inline FrustumClipPlanes& clippingPlanes() { return _clippingPlanes; }
-    inline const FrustumClipPlanes& clippingPlanes() const { return _clippingPlanes; }
-
-
     inline void renderPass(U8 renderPass) { _renderPass = renderPass; }
     inline U8   renderPass()      const { return _renderPass; }
 
@@ -172,7 +168,6 @@ class SceneRenderState : public SceneComponent {
     F32 _grassVisibility;
     F32 _treeVisibility;
     F32 _generalVisibility;
-    FrustumClipPlanes _clippingPlanes;
 };
 
 class Camera;

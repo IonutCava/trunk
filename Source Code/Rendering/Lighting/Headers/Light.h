@@ -180,6 +180,8 @@ class Light : public GUIDWrapper
     inline       SceneGraphNode& getSGN()       { return _sgn; }
     inline const SceneGraphNode& getSGN() const { return _sgn; }
 
+    vec3<F32> getPosition() const;
+    vec3<F32> getDirection() const;
    protected:
     SceneGraphNode& _sgn;
     /// x - range, y = iner cone, z - cos outer cone

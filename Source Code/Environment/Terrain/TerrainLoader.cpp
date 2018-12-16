@@ -71,9 +71,9 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
             albedoMapArray += ((i != 0) ? (",") : ("")) + currentEntry;
             ++albedoCount[i];
 
-            textureLayer->setDiffuseScale(TerrainTextureLayer::TerrainTextureChannel::TEXTURE_RED_CHANNEL,
+            textureLayer->setTileScale(TerrainTextureLayer::TerrainTextureChannel::TEXTURE_RED_CHANNEL,
                                           i,
-                                          terrainDescriptor->getVariablef("diffuseScaleR" + layerOffsetStr));
+                                          terrainDescriptor->getVariablef("redTileScale" + layerOffsetStr));
         }
 
         currentEntry = terrainDescriptor->getVariable("greenAlbedo" + layerOffsetStr);
@@ -82,9 +82,9 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
             ++albedoCount[i];
 
             
-            textureLayer->setDiffuseScale(TerrainTextureLayer::TerrainTextureChannel::TEXTURE_GREEN_CHANNEL,
+            textureLayer->setTileScale(TerrainTextureLayer::TerrainTextureChannel::TEXTURE_GREEN_CHANNEL,
                                           i,
-                                          terrainDescriptor->getVariablef("diffuseScaleG" + layerOffsetStr));
+                                          terrainDescriptor->getVariablef("greenTileScale" + layerOffsetStr));
         }
 
         currentEntry = terrainDescriptor->getVariable("blueAlbedo" + layerOffsetStr);
@@ -92,9 +92,9 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
             albedoMapArray += "," + currentEntry;
             ++albedoCount[i];
             
-            textureLayer->setDiffuseScale(TerrainTextureLayer::TerrainTextureChannel::TEXTURE_BLUE_CHANNEL,
+            textureLayer->setTileScale(TerrainTextureLayer::TerrainTextureChannel::TEXTURE_BLUE_CHANNEL,
                                           i,
-                                          terrainDescriptor->getVariablef("diffuseScaleB" + layerOffsetStr));
+                                          terrainDescriptor->getVariablef("blueTileScale" + layerOffsetStr));
         }
 
         currentEntry = terrainDescriptor->getVariable("alphaAlbedo" + layerOffsetStr);
@@ -102,9 +102,9 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
             albedoMapArray += "," + currentEntry;
             ++albedoCount[i];
             
-            textureLayer->setDiffuseScale(TerrainTextureLayer::TerrainTextureChannel::TEXTURE_ALPHA_CHANNEL,
+            textureLayer->setTileScale(TerrainTextureLayer::TerrainTextureChannel::TEXTURE_ALPHA_CHANNEL,
                                           i,
-                                          terrainDescriptor->getVariablef("diffuseScaleA" + layerOffsetStr));
+                                          terrainDescriptor->getVariablef("alphaTileScale" + layerOffsetStr));
         }
 
 
@@ -112,40 +112,24 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
         if (!currentEntry.empty()) {
             normalMapArray += ((i != 0) ? (",") : ("")) + currentEntry;
             ++normalCount[i];
-
-            textureLayer->setDetailScale(TerrainTextureLayer::TerrainTextureChannel::TEXTURE_RED_CHANNEL,
-                                         i,
-                                         terrainDescriptor->getVariablef("detailScaleR" + layerOffsetStr));
         }
 
         currentEntry = terrainDescriptor->getVariable("greenDetail" + layerOffsetStr);
         if (!currentEntry.empty()) {
             normalMapArray += "," + currentEntry;
             ++normalCount[i];
-
-            textureLayer->setDetailScale(TerrainTextureLayer::TerrainTextureChannel::TEXTURE_GREEN_CHANNEL,
-                                         i,
-                                         terrainDescriptor->getVariablef("detailScaleG" + layerOffsetStr));
         }
 
         currentEntry = terrainDescriptor->getVariable("blueDetail" + layerOffsetStr);
         if (!currentEntry.empty()) {
             normalMapArray += "," + currentEntry;
             ++normalCount[i];
-
-            textureLayer->setDetailScale(TerrainTextureLayer::TerrainTextureChannel::TEXTURE_BLUE_CHANNEL,
-                                         i,
-                                         terrainDescriptor->getVariablef("detailScaleB" + layerOffsetStr));
         }
 
         currentEntry = terrainDescriptor->getVariable("alphaDetail" + layerOffsetStr);
         if (!currentEntry.empty()) {
             normalMapArray += "," + currentEntry;
             ++normalCount[i];
-
-            textureLayer->setDetailScale(TerrainTextureLayer::TerrainTextureChannel::TEXTURE_ALPHA_CHANNEL,
-                                         i,
-                                         terrainDescriptor->getVariablef("detailScaleA" + layerOffsetStr));
         }
     }
 
@@ -217,7 +201,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     Console::d_printfn(Locale::get(_ID("TERRAIN_INFO")), terrainDimensions.width, terrainDimensions.height);
 
-    F32 underwaterDiffuseScale = terrainDescriptor->getVariablef("underwaterDiffuseScale");
+    F32 underwaterTileScale = terrainDescriptor->getVariablef("underwaterTileScale");
     terrainMaterial->setDiffuse(FColour(DefaultColours::WHITE.rgb() * 0.5f, 1.0f));
     terrainMaterial->setSpecular(FColour(0.1f, 0.1f, 0.1f, 1.0f));
     terrainMaterial->setShininess(20.0f);
@@ -248,7 +232,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     terrainMaterial->addShaderDefine("TERRAIN_LENGTH " + to_stringImpl(terrainDimensions.height));
     terrainMaterial->addShaderDefine("TERRAIN_MIN_HEIGHT " + to_stringImpl(altitudeRange.x));
     terrainMaterial->addShaderDefine("TERRAIN_HEIGHT_RANGE " + to_stringImpl(altitudeRange.y - altitudeRange.x));
-    terrainMaterial->addShaderDefine("UNDERWATER_DIFFUSE_SCALE " + to_stringImpl(underwaterDiffuseScale));
+    terrainMaterial->addShaderDefine("UNDERWATER_TILE_SCALE " + to_stringImpl(underwaterTileScale));
 
     TextureDescriptor miscTexDescriptor(TextureType::TEXTURE_2D);
     miscTexDescriptor.setSampler(albedoSampler);

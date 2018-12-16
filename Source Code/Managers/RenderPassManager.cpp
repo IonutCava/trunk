@@ -199,23 +199,27 @@ GFXDevice::NodeData RenderPassManager::processVisibleNode(SceneGraphNode* node, 
     if (transform) {
         // ... get the node's world matrix properly interpolated
         dataOut._worldMatrix.set(transform->getWorldMatrix(_context.getFrameInterpolationFactor()));
-        dataOut._normalMatrixWV.set(dataOut._worldMatrix);
+        dataOut._normalMatrixW.set(dataOut._worldMatrix);
         if (!transform->isUniformScaled()) {
             // Non-uniform scaling requires an inverseTranspose to negate
             // scaling contribution but preserve rotation
-            dataOut._normalMatrixWV.setRow(3, 0.0f, 0.0f, 0.0f, 1.0f);
-            dataOut._normalMatrixWV.inverseTranspose();
-            dataOut._normalMatrixWV.mat[15] = 0.0f;
+            dataOut._normalMatrixW.setRow(3, 0.0f, 0.0f, 0.0f, 1.0f);
+            dataOut._normalMatrixW.inverseTranspose();
         }
-        dataOut._normalMatrixWV.setRow(3, 0.0f, 0.0f, 0.0f, 0.0f);
     }
-    dataOut._normalMatrixWV *= viewMatrix;
+
+    dataOut._normalMatrixW.setRow(3, 0.0f, 0.0f, 0.0f, 0.0f);
+    mat4<F32>::Multiply(dataOut._normalMatrixW, viewMatrix, dataOut._normalMatrixWV);
+
+    // Get the material property matrix (alpha test, texture count, texture operation, etc.)
+    dataOut._normalMatrixW.element(0, 3) = playAnimations ? to_F32((animComp && animComp->playAnimations()) ? animComp->boneCount() : 0) : 0.0f;
+    renderable->getRenderingProperties(dataOut._properties,
+                                       dataOut._normalMatrixW.element(1, 3),
+                                       dataOut._normalMatrixW.element(2, 3));
 
     // Since the normal matrix is 3x3, we can use the extra row and column to store additional data
-    dataOut._normalMatrixWV.element(0, 3) = playAnimations ? to_F32((animComp && animComp->playAnimations()) ? animComp->boneCount() : 0) : 0.0f;
-    dataOut._normalMatrixWV.setRow(3, bounds->getBoundingSphere().asVec4());
-    // Get the material property matrix (alpha test, texture count, texture operation, etc.)
-    renderable->getRenderingProperties(dataOut._properties, dataOut._normalMatrixWV.element(1, 3), dataOut._normalMatrixWV.element(2, 3));
+    dataOut._normalMatrixW.setRow(3, bounds->getBoundingSphere().asVec4());
+
     // Get the colour matrix (diffuse, specular, etc.)
     renderable->getMaterialColourMatrix(dataOut._colourMatrix);
     //set properties.w to -1 to skip occlusion culling for the node
@@ -388,10 +392,8 @@ void RenderPassManager::mainPass(const PassParams& params, RenderTarget& target,
     prepareRenderQueues(stagePass, params, !prePassExecuted, bufferInOut);
 
     if (params._target._usage != RenderTargetUsage::COUNT) {
-        if (params._stage != RenderStage::SHADOW) {
-            Attorney::SceneManagerRenderPass::preRender(sceneManager, stagePass, *params._camera, target, bufferInOut);
-        }
-
+        Attorney::SceneManagerRenderPass::preRender(sceneManager, stagePass, *params._camera, target, bufferInOut);
+    
         if (params._stage == RenderStage::DISPLAY) {
             GFX::BindDescriptorSetsCommand bindDescriptorSets;
             bindDescriptorSets._set = _context.newDescriptorSet();

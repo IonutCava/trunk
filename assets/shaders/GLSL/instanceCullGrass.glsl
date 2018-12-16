@@ -31,14 +31,14 @@ void main(void) {
     }
     // ToDo: underwater check:
     if (IsUnderWater(positionW.xyz)) {
-        //grassData[gl_GlobalInvocationID.x].data.w = 3.0f;
-        //continue;
+        grassData[gl_GlobalInvocationID.x].data.w = 3.0f;
+        return;
     }
 
-    //grassData[gl_GlobalInvocationID.x].data.w = PassThrough(positionW.xyz, instance.data.xxy);
-    //grassData[gl_GlobalInvocationID.x].data.w = InstanceCloudReduction(positionW.xyz, instance.data.xxy);
+    grassData[gl_GlobalInvocationID.x].data.w = PassThrough(positionW.xyz, instance.data.xxy);
+    grassData[gl_GlobalInvocationID.x].data.w = InstanceCloudReduction(positionW.xyz, instance.data.xxy);
     if (zBufferCull(positionW.xyz, instance.data.xxy) > 0) {
-        grassData[gl_GlobalInvocationID.x].data.w = 0.0f;// saturate((dist - minDist) / (dvd_visibilityDistance - minDist));
+        grassData[gl_GlobalInvocationID.x].data.w = saturate((dist - minDist) / (dvd_visibilityDistance - minDist));
     } else {
         grassData[gl_GlobalInvocationID.x].data.w = 3.0f;
     }

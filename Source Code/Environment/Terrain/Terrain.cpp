@@ -124,10 +124,13 @@ void Terrain::postBuild() {
     _boundingBox.setMin(-halfWidth, _descriptor->getAltitudeRange().min, -halfWidth);
     _boundingBox.setMax(halfWidth, _descriptor->getAltitudeRange().max, halfWidth);
 
+    U32 chunkSize = to_U32(_descriptor->getTessellationRange().z);
+    Vegetation::precomputeStaticData(_context.context(), chunkSize);
+
     _terrainQuadtree.build(_context,
         _boundingBox,
         _descriptor->getDimensions(),
-        to_U32(_descriptor->getTessellationRange().z),
+        chunkSize,
         this);
 
     // The terrain's final bounding box is the QuadTree's root bounding box
@@ -198,8 +201,7 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
 
     PushConstants constants = pkgInOut.pushConstants(0);
     constants.set("tessellationRange", GFX::PushConstantType::VEC2, _descriptor->getTessellationRange().xy());
-    constants.set("diffuseScale", GFX::PushConstantType::VEC4, _terrainTextures->getDiffuseScales());
-    constants.set("detailScale",  GFX::PushConstantType::VEC4, _terrainTextures->getDetailScales());
+    constants.set("tileScale", GFX::PushConstantType::VEC4, _terrainTextures->getTileScales());
     pkgInOut.pushConstants(0, constants);
 
     GenericDrawCommand cmd = {};
@@ -370,7 +372,7 @@ void Terrain::saveToXML(boost::property_tree::ptree& pt) const {
     pt.put("waterCaustics", _descriptor->getVariable("waterCaustics"));
     pt.put("underwaterAlbedoTexture", _descriptor->getVariable("underwaterAlbedoTexture"));
     pt.put("underwaterDetailTexture", _descriptor->getVariable("underwaterDetailTexture"));
-    pt.put("underwaterDiffuseScale", _descriptor->getVariablef("underwaterDiffuseScale"));
+    pt.put("underwaterTileScale", _descriptor->getVariablef("underwaterTileScale"));
     pt.put("vegetation.<xmlattr>.grassDensity", _descriptor->getGrassDensity());
     pt.put("vegetation.<xmlattr>.treeDensity", _descriptor->getTreeDensity());
     pt.put("vegetation.<xmlattr>.grassScale", _descriptor->getGrassScale());
@@ -404,39 +406,31 @@ void Terrain::saveToXML(boost::property_tree::ptree& pt) const {
         if (albedoCount > 0) {
             //R
             pt.put(crtLayerPrefix + ".redAlbedo", _terrainTextures->tileMaps()->getDescriptor().sourceFileList()[0 + prevAlbedoCount]);
-            pt.put(crtLayerPrefix + ".redDiffuseScale", _terrainTextures->getDiffuseScales()[layer].r);
+            if (detailCount > 0) {
+                pt.put(crtLayerPrefix + ".redDetail", _terrainTextures->normalMaps()->getDescriptor().sourceFileList()[0 + prevDetailCount]);
+            }
+            pt.put(crtLayerPrefix + ".redTileScale", _terrainTextures->getTileScales()[layer].r);
             if (albedoCount > 1) {
                 //G
                 pt.put(crtLayerPrefix + ".greenAlbedo", _terrainTextures->tileMaps()->getDescriptor().sourceFileList()[1 + prevAlbedoCount]);
-                pt.put(crtLayerPrefix + ".greenDiffuseScale", _terrainTextures->getDiffuseScales()[layer].g);
+                if (detailCount > 1) {
+                    pt.put(crtLayerPrefix + ".greenDetail", _terrainTextures->normalMaps()->getDescriptor().sourceFileList()[1 + prevDetailCount]);
+                }
+                pt.put(crtLayerPrefix + ".greenTileScale", _terrainTextures->getTileScales()[layer].g);
                 if (albedoCount > 2) {
                     //B
                     pt.put(crtLayerPrefix + ".blueAlbedo", _terrainTextures->tileMaps()->getDescriptor().sourceFileList()[2 + prevAlbedoCount]);
-                    pt.put(crtLayerPrefix + ".blueDiffuseScale", _terrainTextures->getDiffuseScales()[layer].b);
+                    if (detailCount > 2) {
+                        pt.put(crtLayerPrefix + ".blueDetail", _terrainTextures->normalMaps()->getDescriptor().sourceFileList()[2 + prevDetailCount]);
+                    }
+                    pt.put(crtLayerPrefix + ".blueTileScale", _terrainTextures->getTileScales()[layer].b);
                     if (albedoCount > 3) {
                         //A
                         pt.put(crtLayerPrefix + ".alphaAlbedo", _terrainTextures->tileMaps()->getDescriptor().sourceFileList()[3 + prevAlbedoCount]);
-                        pt.put(crtLayerPrefix + ".alphaDiffuseScale", _terrainTextures->getDiffuseScales()[layer].a);
-                    }
-                }
-            }
-        }
-        
-        if (detailCount > 0) {
-            pt.put(crtLayerPrefix + ".redDetail", _terrainTextures->normalMaps()->getDescriptor().sourceFileList()[0 + prevDetailCount]);
-            pt.put(crtLayerPrefix + ".redDetailScale", _terrainTextures->getDetailScales()[layer].r);
-
-            if (detailCount > 1) {
-                pt.put(crtLayerPrefix + ".greenDetail", _terrainTextures->normalMaps()->getDescriptor().sourceFileList()[1 + prevDetailCount]);
-                pt.put(crtLayerPrefix + ".greenDetailScale", _terrainTextures->getDetailScales()[layer].g);
-
-                if (detailCount > 2) {
-                    pt.put(crtLayerPrefix + ".blueDetail", _terrainTextures->normalMaps()->getDescriptor().sourceFileList()[2 + prevDetailCount]);
-                    pt.put(crtLayerPrefix + ".blueDetailScale", _terrainTextures->getDetailScales()[layer].b);
-
-                    if (detailCount > 3) {
-                        pt.put(crtLayerPrefix + ".alphaDetail", _terrainTextures->normalMaps()->getDescriptor().sourceFileList()[3 + prevDetailCount]);
-                        pt.put(crtLayerPrefix + ".alphaDetailScale", _terrainTextures->getDetailScales()[layer].a);
+                        if (detailCount > 3) {
+                            pt.put(crtLayerPrefix + ".alphaDetail", _terrainTextures->normalMaps()->getDescriptor().sourceFileList()[3 + prevDetailCount]);
+                        }
+                        pt.put(crtLayerPrefix + ".alphaTileScale", _terrainTextures->getTileScales()[layer].a);
                     }
                 }
             }

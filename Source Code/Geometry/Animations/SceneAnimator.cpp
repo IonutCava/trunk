@@ -122,8 +122,7 @@ void SceneAnimator::calculate(I32 animationIndex, const D64 pTime) {
 }
 
 /// ------------------------------------------------------------------------------------------------
-/// Recursively updates the internal node transformations from the given matrix
-/// array
+/// Recursively updates the internal node transformations from the given matrix array
 void SceneAnimator::updateTransforms(Bone* pNode) {
     calculateBoneToWorldTransform(pNode);  // update global transform as well
     /// continue for all children

@@ -8,6 +8,9 @@ struct NodeData {
     // [1][3] = reflection index
     // [2][3] = refraction index
     // [3][0] ... [3][3] = bounding sphere
+    mat4 _normalMatrixW;
+    // [0][0] ... [2][2] = normal matrix in view space
+    // [][] = everything else is zero
     mat4 _normalMatrixWV;
     // [0][0] ... [0][3] = albedo
     // [1][0] ... [1][3] = specular
@@ -41,12 +44,16 @@ mat3 dvd_NormalMatrixWV(in uint index) {
     return mat3(dvd_Matrices[index]._normalMatrixWV);
 }
 
+mat3 dvd_NormalMatrixW(in uint index) {
+    return mat3(dvd_Matrices[index]._normalMatrixW);
+}
+
 ivec4 dvd_BufferIntegerValues(in uint index) {
     return ivec4(dvd_Matrices[index]._properties);
 }
 
 #if defined(VERT_SHADER)
-#define dvd_boneCount     uint(dvd_Matrices[VAR.dvd_instanceID]._normalMatrixWV[0][3])
+#define dvd_boneCount     uint(dvd_Matrices[VAR.dvd_instanceID]._normalMatrixW[0][3])
 #endif
 
 // x - isSelected/isHighlighted; y - isShadowMapped; z - lodLevel, w - occlusion cull data
@@ -66,8 +73,8 @@ NodeData dvd_private_node_data = dvd_Matrices[VAR.dvd_instanceID];
 #define dvd_texOperation    uint(buffer_matProperties.y)
 #define dvd_parallaxFactor  buffer_matProperties.z
 #define dvd_reliefFactor    dvd_parallaxFactor
-#define dvd_reflectionIndex uint(dvd_private_node_data._normalMatrixWV[1][3])
-#define dvd_refractionIndex uint(dvd_private_node_data._normalMatrixWV[2][3])
+#define dvd_reflectionIndex uint(dvd_private_node_data._normalMatrixW[1][3])
+#define dvd_refractionIndex uint(dvd_private_node_data._normalMatrixW[2][3])
 
 #endif
 

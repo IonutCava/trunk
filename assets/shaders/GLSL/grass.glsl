@@ -1,7 +1,8 @@
 -- Vertex
 
+invariant gl_Position;
+
 #include "vbInputData.vert"
-#include "foliage.vert"
 
 struct GrassData {
     mat4 transform;
@@ -16,11 +17,25 @@ layout(std430, binding = BUFFER_GRASS_DATA) coherent readonly buffer dvd_transfo
 flat out int _arrayLayerGS;
 flat out float _lod;
 
+void computeFoliageMovementGrass(inout vec4 vertex, in float scaleFactor) {
+    float timeGrass = dvd_windDetails.w * dvd_time * 0.00025; //to seconds
+    float cosX = cos(vertex.x);
+    float sinX = sin(vertex.x);
+    float halfScale = 0.5*scaleFactor;
+    vertex.x += (halfScale*cos(timeGrass) * cosX * sinX) *dvd_windDetails.x;
+    vertex.z += (halfScale*sin(timeGrass) * cosX * sinX) *dvd_windDetails.z;
+}
+
 void main()
 {
-    computeDataMinimal();
-
     GrassData data = grassData[gl_InstanceID];
+
+    computeDataMinimal();
+    if (dvd_Vertex.y > 0.5)
+    {
+        computeFoliageMovementGrass(dvd_Vertex, data.data.y);
+    }
+
     _arrayLayerGS = int(data.data.z);
     _lod = data.data.w;
 
@@ -28,9 +43,6 @@ void main()
     VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
     VAR._normalWV = mat3(dvd_ViewMatrix * data.transform) * dvd_Normal;
 
-    if (dvd_Vertex.y > 0.75) {
-        computeFoliageMovementGrass(VAR._vertexW, data.data.y);
-    }
 
     //computeLightVectors();
 
@@ -126,6 +138,6 @@ vec2 computeMoments(in float depth) {
 void main(void) {
     vec4 colour = texture(texDiffuseGrass, vec3(VAR._texCoord, _arrayLayerFrag));
     if (colour.a *  (1.0 - _alphaFactor) < 1.0 - Z_TEST_SIGMA) discard;
-
+    
     _colourOut = computeMoments(gl_FragCoord.z);
 }

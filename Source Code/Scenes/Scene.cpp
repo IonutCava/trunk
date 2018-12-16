@@ -192,10 +192,11 @@ void Scene::addMusic(MusicType type, const stringImpl& name, const stringImpl& s
 bool Scene::saveXML() const {
     using boost::property_tree::ptree;
 
+    Console::printfn(Locale::get(_ID("XML_SAVE_SCENE_START")), resourceName().c_str());
+
     const stringImpl& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
     const boost::property_tree::xml_writer_settings<std::string> settings(' ', 4);
 
-    Console::printfn(Locale::get(_ID("XML_SAVE_SCENE")), resourceName().c_str());
     stringImpl sceneLocation(scenePath + "/" + resourceName().c_str());
     stringImpl sceneDataFile(sceneLocation + ".xml");
 
@@ -245,6 +246,8 @@ bool Scene::saveXML() const {
         copyFile(sceneLocation + "/", "musicPlaylist.xml", sceneLocation + "/", "musicPlaylist.xml.bak", true);
         write_xml((sceneLocation + "/" + "musicPlaylist.xml.dev").c_str(), pt, std::locale(), settings);
     }
+
+    Console::printfn(Locale::get(_ID("XML_SAVE_SCENE_END")), resourceName().c_str());
 
     return true;
 }
@@ -442,7 +445,7 @@ void Scene::addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree p
     ter->addVariable("waterCaustics", pt.get<stringImpl>("waterCaustics"));
     ter->addVariable("underwaterAlbedoTexture", pt.get<stringImpl>("underwaterAlbedoTexture"));
     ter->addVariable("underwaterDetailTexture", pt.get<stringImpl>("underwaterDetailTexture"));
-    ter->addVariable("underwaterDiffuseScale", pt.get<F32>("underwaterDiffuseScale"));
+    ter->addVariable("underwaterTileScale", pt.get<F32>("underwaterTileScale"));
 
     I32 i = 0;
     stringImpl temp;
@@ -498,14 +501,10 @@ void Scene::addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree p
             ter->addVariable("alphaDetail" + layerOffsetStr, temp);
         }
 
-        ter->addVariable("diffuseScaleR" + layerOffsetStr, pt.get<F32>(layerName + ".redDiffuseScale", 0.0f));
-        ter->addVariable("detailScaleR" + layerOffsetStr, pt.get<F32>(layerName + ".redDetailScale", 0.0f));
-        ter->addVariable("diffuseScaleG" + layerOffsetStr, pt.get<F32>(layerName + ".greenDiffuseScale", 0.0f));
-        ter->addVariable("detailScaleG" + layerOffsetStr, pt.get<F32>(layerName + ".greenDetailScale", 0.0f));
-        ter->addVariable("diffuseScaleB" + layerOffsetStr, pt.get<F32>(layerName + ".blueDiffuseScale", 0.0f));
-        ter->addVariable("detailScaleB" + layerOffsetStr, pt.get<F32>(layerName + ".blueDetailScale", 0.0f));
-        ter->addVariable("diffuseScaleA" + layerOffsetStr, pt.get<F32>(layerName + ".alphaDiffuseScale", 0.0f));
-        ter->addVariable("detailScaleA" + layerOffsetStr, pt.get<F32>(layerName + ".alphaDetailScale", 0.0f));
+        ter->addVariable("redTileScale" + layerOffsetStr, pt.get<F32>(layerName + ".redTileScale", 1.0f));
+        ter->addVariable("greenTileScale" + layerOffsetStr, pt.get<F32>(layerName + ".greenTileScale", 1.0f));
+        ter->addVariable("blueTileScale" + layerOffsetStr, pt.get<F32>(layerName + ".blueTileScale", 1.0f));
+        ter->addVariable("alphaTileScale" + layerOffsetStr, pt.get<F32>(layerName + ".alphaTileScale", 1.0f));
     }
     
     ter->setTextureLayerCount(to_U8(i));

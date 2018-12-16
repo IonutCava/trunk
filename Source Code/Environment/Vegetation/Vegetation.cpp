@@ -24,9 +24,12 @@ namespace Divide {
 namespace {
     constexpr U32 WORK_GROUP_SIZE = 64;
     constexpr bool g_disableLoadFromCache = false;
-    static U8 g_billboardsPlaneCount = 4;
+    constexpr U8 g_billboardsPlaneCount = 4;
+    constexpr I16 g_maxRadiusSteps = 254;
+
 };
 
+vectorFast<vec2<F32>> Vegetation::s_grassPositions;
 VertexBuffer* Vegetation::s_buffer = nullptr;
 std::atomic_uint Vegetation::s_bufferUsage = 0;
 
@@ -94,8 +97,7 @@ Vegetation::~Vegetation()
     Console::printfn(Locale::get(_ID("UNLOAD_VEGETATION_END")));
 }
 
-
-void Vegetation::uploadGrassData() {
+void Vegetation::precomputeStaticData(PlatformContext& context, U32 chunkSize) {
     // Make sure this is ONLY CALLED FROM THE MAIN LOADING THREAD. All instances should call this in a serialized fashion
     if (s_buffer == nullptr) {
         const vec2<F32> pos000(cosf(Angle::to_RADIANS(0.000f)), sinf(Angle::to_RADIANS(0.000f)));
@@ -109,7 +111,7 @@ void Vegetation::uploadGrassData() {
         };
 
 
-        const U16 indices[] = { 0, 1, 2, 0, 2, 3, 
+        const U16 indices[] = { 0, 1, 2, 0, 2, 3,
                                 2, 1, 0, 3, 2, 0 };
 
         const vec2<F32> texcoords[] = {
@@ -119,13 +121,13 @@ void Vegetation::uploadGrassData() {
             vec2<F32>(1.0f, 0.0f)
         };
 
-        s_buffer = _context.newVB();
+        s_buffer = context.gfx().newVB();
         s_buffer->useLargeIndices(false);
         s_buffer->setVertexCount(g_billboardsPlaneCount * 4);
         for (U8 i = 0; i < g_billboardsPlaneCount * 4; ++i) {
             s_buffer->modifyPositionValue(i, vertices[i]);
             s_buffer->modifyTexCoordValue(i, texcoords[i % 4].s, texcoords[i % 4].t);
-            s_buffer->modifyNormalValue(i , vec3<F32>(vertices[i].x, 0.0f, vertices[i].y));
+            s_buffer->modifyNormalValue(i, vec3<F32>(vertices[i].x, 0.0f, vertices[i].y));
         }
 
         for (U8 i = 0; i < g_billboardsPlaneCount; ++i) {
@@ -135,13 +137,60 @@ void Vegetation::uploadGrassData() {
             for (U8 j = 0; j < 12; ++j) {
                 s_buffer->addIndex(indices[j] + (i * 4));
             }
-            
+
         }
 
         s_buffer->computeTangents();
         s_buffer->create(true);
         s_buffer->keepData(false);
     }
+
+    if (!g_disableLoadFromCache) {
+        return;
+    }
+
+    //ref: http://mollyrocket.com/casey/stream_0016.html
+    F32 PointRadius = 1.0f;
+    F32 ArBase = 1.0f; // Starting radius of circle A
+    F32 BrBase = 1.0f; // Starting radius of circle B
+    F32 dR = 2.5f*PointRadius; // Distance between concentric rings
+
+    s_grassPositions.reserve(static_cast<size_t>(chunkSize * chunkSize));
+
+    F32 posOffset = to_F32(chunkSize * 2);
+
+    vec2<F32> intersections[2];
+    Util::Circle circleA, circleB;
+    circleA.center[0] = circleB.center[0] = -posOffset;
+    circleA.center[1] = -posOffset;
+    circleB.center[1] = posOffset;
+
+#   pragma omp parallel for
+    for (I16 RadiusStepA = 0; RadiusStepA < g_maxRadiusSteps; ++RadiusStepA) {
+        F32 Ar = ArBase + dR * (F32)RadiusStepA;
+        for (I16 RadiusStepB = 0; RadiusStepB < g_maxRadiusSteps; ++RadiusStepB) {
+            F32 Br = BrBase + dR * (F32)RadiusStepB;
+            circleA.radius = Ar + ((RadiusStepB % 3) ? 0.0f : 0.3f*dR);
+            circleB.radius = Br + ((RadiusStepA % 3) ? 0.0f : 0.3f*dR);
+            // Intersect circle Ac,UseAr and Bc,UseBr
+            if (Util::IntersectCircles(circleA, circleB, intersections)) {
+                // Add the resulting points if they are within the pattern bounds
+                for (U8 i = 0; i < 2; ++i) {
+                    if (IS_IN_RANGE_EXCLUSIVE(intersections[i].x, chunkSize * -1.0f, chunkSize * 1.0f) &&
+                        IS_IN_RANGE_EXCLUSIVE(intersections[i].y, chunkSize * -1.0f, chunkSize * 1.0f))
+                    {
+#                       pragma omp critical
+                        s_grassPositions.push_back(intersections[i]);
+                    }
+                }
+            }
+        }
+    }
+}
+
+void Vegetation::uploadGrassData() {
+    assert(s_buffer != nullptr);
+
     s_bufferUsage.fetch_add(1);
 
     U32 dif = _tempData.size() % WORK_GROUP_SIZE;
@@ -263,10 +312,11 @@ namespace {
     }
 
     FORCE_INLINE bool ScaleAndCheckBounds(const vec2<F32>& chunkPos, const vec2<F32>& chunkSize, vec2<F32>& point) {
-        if (point.x > -0.999f && point.x < 0.999f && point.y > -0.999f && point.y < 0.999f) {
-            // [-1,1] to [0,1]
-            point = (point + 1.0f) * 0.5f;
-            point *= chunkSize;
+        if (point.x > chunkSize.x * -1.0f && point.x < chunkSize.y * 1.0f && 
+            point.y > chunkSize.y * -1.0f && point.y < chunkSize.y * 1.0f) 
+        {
+            // [-chunkSize * 0.5f, chunkSize * 0.5f] to [0, chunkSize]
+            point = (point + chunkSize) * 0.5f;
             point += chunkPos;
             return true;
         }
@@ -296,45 +346,16 @@ void Vegetation::computeGrassTransforms(const Task& parentTask) {
         const U16 mapWidth = _map->dimensions().width;
         const U16 mapHeight = _map->dimensions().height;
 
-        //ref: http://mollyrocket.com/casey/stream_0016.html
-        F32 PointRadius = 0.009f;
-        F32 ArBase = 1.0f; // Starting radius of circle A
-        F32 BrBase = 1.0f; // Starting radius of circle B
-        F32 dR = 1.5f*PointRadius; // Distance between concentric rings
+        _tempData.reserve(s_grassPositions.size());
+        for (vec2<F32> pos : s_grassPositions) {
+            if (!ScaleAndCheckBounds(chunkPos, chunkSize, pos)) {
+                continue;
+            }
 
-        vectorFast<vec2<F32>> grassPositions;
-        
-        grassPositions.reserve(static_cast<size_t>(chunkSize.x * chunkSize.y));
-
-        vec2<F32> intersections[2];
-        Util::Circle circleA, circleB;
-        circleA.center[0] = circleB.center[0] = -2.0f;
-        circleA.center[1] = -2.0f;
-        circleB.center[1] = 2.0f;
-        for (U8 RadiusStepA = 0; RadiusStepA < 128; ++RadiusStepA) {
             if (parentTask._stopRequested) {
                 goto end;
             }
 
-            F32 Ar = ArBase + dR * (F32)RadiusStepA;
-            for (U8 RadiusStepB = 0; RadiusStepB < 128; ++RadiusStepB) {
-                F32 Br = BrBase + dR * (F32)RadiusStepB;
-                circleA.radius = Ar + ((RadiusStepB % 3) ? 0.0f : 0.3f*dR);
-                circleB.radius = Br + ((RadiusStepA % 3) ? 0.0f : 0.3f*dR);
-                // Intersect circle Ac,UseAr and Bc,UseBr
-                if (Util::IntersectCircles(circleA, circleB, intersections)) {
-                    // Add the resulting points if they are within the pattern bounds
-                    for (U8 i = 0; i < 2; ++i) {
-                        if (ScaleAndCheckBounds(chunkPos, chunkSize, intersections[i])) {
-                            grassPositions.push_back(intersections[i]);
-                        }
-                    }
-                }
-            }
-        }
-
-        _tempData.reserve(grassPositions.size());
-        for (const vec2<F32>& pos : grassPositions) {
             F32 x_fac = pos.x / mapWidth;
             F32 y_fac = pos.y / mapHeight;
 

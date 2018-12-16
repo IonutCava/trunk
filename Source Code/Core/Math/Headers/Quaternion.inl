@@ -202,8 +202,11 @@ inline Quaternion<T>& Quaternion<T>::operator/=(const Quaternion& rq) {
 template <typename T>
 vec3<T> Quaternion<T>::operator*(const vec3<T>& vec) const {
     // nVidia SDK implementation
-    vec3<T> uv(Cross(_elements.xyz(), vec));
-    return vec + (uv * (2.0f * W())) + (Cross(_elements.xyz(), uv) * 2.0f);
+    vec3<T> uv = Cross(_elements.xyz(), vec);
+    vec3<T> uuv = Cross(_elements.xyz(), uv);
+    uv *= (W() * 2);
+
+    return vec + uv + (uuv * 2);
 }
 
 template <typename T>
@@ -590,6 +593,11 @@ inline T Quaternion<T>::W() const noexcept {
 }
 
 template <typename T>
+inline vec3<T> Quaternion<T>::XYZ() const noexcept {
+    return _elements.xyz();
+}
+
+template <typename T>
 inline void Quaternion<T>::X(T x) noexcept {
     _elements.x = x;
 }
@@ -685,6 +693,18 @@ inline vec3<Angle::RADIANS<T>> GetEuler(const Quaternion<T>& q) {
     q.getEuler(euler);
     return euler;
 }
+
+template <typename T>
+inline vec3<T> operator*(vec3<T> const & v, Quaternion<T> const & q) {
+    return q.inverse() * v;
+}
+
+template <typename T>
+inline vec3<T> Rotate(vec3<T> const & v, Quaternion<T> const & q) {
+    vec3<T> t = Cross(q.XYZ(), v) * 2;
+    return v + q.W() * t + Cross(q.XYZ(), t);
+}
+
 };  // namespace Divide
 
 #endif  //_QUATERNION_INL_

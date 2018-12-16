@@ -171,7 +171,7 @@ namespace Divide {
                             for (EditorComponentField& field : fields) {
                                 ImGui::Text(field._name.c_str());
                                 ImGui::Spacing();
-                                if (processField(field)) {
+                                if (processField(field) && !field._readOnly) {
                                     Attorney::EditorComponentEditor::onChanged(*comp, field);
                                 }
                             }

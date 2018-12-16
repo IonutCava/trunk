@@ -19,6 +19,8 @@ vec3 UNPACK_FLOAT(in float value) {
 void computeDataMinimal() {
     VAR.dvd_instanceID = gl_BaseInstanceARB;
     VAR.dvd_drawID = gl_DrawIDARB;
+    VAR._texCoord = inTexCoordData;
+
     dvd_Vertex = vec4(inVertexData, 1.0);
     dvd_Normal = UNPACK_FLOAT(inNormalData);
     dvd_Colour = inColourData;
@@ -31,8 +33,6 @@ void computeDataMinimal() {
     applyBoneTransforms(dvd_Vertex, dvd_Normal, dvd_lodLevel);
 #       endif
 #   endif
-
-    VAR._texCoord = inTexCoordData;
 }
 
 void computeData() {
@@ -40,6 +40,7 @@ void computeData() {
 
     VAR._texCoord = inTexCoordData;
     VAR._vertexW  = dvd_WorldMatrix(VAR.dvd_instanceID) * dvd_Vertex;
+    VAR._normalW = dvd_NormalMatrixW(VAR.dvd_instanceID) * dvd_Normal;
 
     setClipPlanes(VAR._vertexW);
 }

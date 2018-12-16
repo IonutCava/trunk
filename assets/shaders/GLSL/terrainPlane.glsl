@@ -9,7 +9,7 @@ void main(void) {
     computeData();
 
     float time2 = float(dvd_time) * 0.0001;
-    vec2 noiseUV = VAR._texCoord * UNDERWATER_DIFFUSE_SCALE;
+    vec2 noiseUV = VAR._texCoord * UNDERWATER_TILE_SCALE;
     _scrollingUV.st = noiseUV;
     _scrollingUV.pq = noiseUV + time2;
     _scrollingUV.s -= time2;

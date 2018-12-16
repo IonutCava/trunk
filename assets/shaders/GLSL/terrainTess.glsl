@@ -294,10 +294,13 @@ void main()
     _out._vertexW = dvd_WorldMatrix(VAR[0].dvd_instanceID) * vec4(gl_Position.xyz + offset, gl_Position.w);
 
 #if !defined(SHADOW_PASS)
-    mat3 normalMatrix = dvd_NormalMatrixWV(VAR[0].dvd_instanceID);
+    mat3 normalMatrixW = dvd_NormalMatrixW(VAR[0].dvd_instanceID);
+    mat3 normalMatrixWV = dvd_NormalMatrixWV(VAR[0].dvd_instanceID);
     vec3 normal = getNormal(sampleHeight, heightOffsets);
-    _out._normalWV = normalize(normalMatrix * normal);
-    _out._tangentWV = normalize(normalMatrix * getTangent(normal));
+
+    _out._normalW =  normalize(normalMatrixW * normal);
+    _out._normalWV = normalize(normalMatrixWV * normal);
+    _out._tangentWV = normalize(normalMatrixWV * getTangent(normal));
     _out._bitangentWV = normalize(cross(_out._normalWV, _out._tangentWV));
 #endif
 
@@ -334,16 +337,20 @@ noperspective out vec3 gs_edgeDist;
 out vec4 geom_vertexWVP;
 #endif
 
-void waterDetails(in int index, in float minHeight) {
+void waterDetails(in int index) {
+
     vec3 vertexW = VAR[index]._vertexW.xyz;
 
-    float maxDistance = 0.0;
+    float maxDistance = 0.0f;
     float minDepth = 1.0;
 
-    //for (int i = 0; i < MAX_WATER_BODIES; ++i)
+    for (int i = 0; i < dvd_waterEntities.length(); ++i)
     {
-        vec4 details = dvd_waterDetails/*[i]*/;
-        vec4 position = dvd_waterPositionsW/*[i]*/;
+        WaterBodyData data = dvd_waterEntities[i];
+        
+        vec4 details = data.details;
+        vec4 position = data.positionW;
+
         float waterWidth = details.x + position.x;
         float waterLength = details.y + position.z;
         float halfWidth = waterWidth * 0.5;
@@ -351,12 +358,14 @@ void waterDetails(in int index, in float minHeight) {
         if (vertexW.x >= -halfWidth && vertexW.x <= halfWidth &&
             vertexW.z >= -halfLength && vertexW.z <= halfLength)
         {
+            float depth = -details.y + position.y;
 
             // Distance
-            maxDistance = max(maxDistance, 1.0 - clamp(gl_ClipDistance[0], 0.0, 1.0));
+            maxDistance = max(maxDistance, 1.0 - smoothstep(position.y - 0.05f, position.y + 0.05f, vertexW.y));
+
 
             // Current water depth in relation to the minimum possible depth
-            minDepth = min(minDepth, clamp(1.0 - (position.y - vertexW.y) / (position.y - minHeight), 0.0, 1.0));
+            minDepth = min(minDepth, clamp(1.0 - (position.y - vertexW.y) / (position.y - TERRAIN_MIN_HEIGHT), 0.0, 1.0));
         }
     }
         
@@ -365,7 +374,7 @@ void waterDetails(in int index, in float minHeight) {
 
 void scrollingUV(int index) {
     float time2 = float(dvd_time) * 0.0001;
-    vec2 noiseUV = VAR[index]._texCoord * UNDERWATER_DIFFUSE_SCALE;
+    vec2 noiseUV = VAR[index]._texCoord * UNDERWATER_TILE_SCALE;
     
     _scrollingUV.st = noiseUV;
     _scrollingUV.pq = noiseUV + time2;
@@ -376,7 +385,7 @@ vec4 getWVPPositon(int index) {
     return dvd_ViewProjectionMatrix * gl_in[index].gl_Position;
 }
 
-void PerVertex(in int i, in vec3 edge_dist, in float minHeight) {
+void PerVertex(in int i, in vec3 edge_dist) {
     PassData(i);
     if (tes_tessLevel[0] >= 64.0) {
         detailLevel = 4;
@@ -415,7 +424,7 @@ void PerVertex(in int i, in vec3 edge_dist, in float minHeight) {
     setClipPlanes(gl_in[i].gl_Position);
 
 
-    waterDetails(i, minHeight);
+    waterDetails(i);
     scrollingUV(i);
 
 #   if defined(TOGGLE_WIREFRAME)
@@ -456,16 +465,14 @@ void main(void)
     }
 #endif
 
-    float minHeight = (dvd_WorldMatrix(VAR[0].dvd_instanceID) * vec4(0.0, TERRAIN_MIN_HEIGHT, 0.0, 1.0)).y;
-
     // Output verts
     for (int i = 0; i < gl_in.length(); ++i) {
-        PerVertex(i, edge_dist, minHeight);
+        PerVertex(i, edge_dist);
         EmitVertex();
     }
 
     // This closes the triangle
-    PerVertex(0, edge_dist, minHeight);
+    PerVertex(0, edge_dist);
     EmitVertex();
 
     EndPrimitive();
@@ -507,11 +514,13 @@ vec4 getAlbedo() {
 vec4 CausticsColour() {
     return texture(texWaterCaustics, _scrollingUV.st) +
            texture(texWaterCaustics, _scrollingUV.pq) * 0.5;
+
+    setProcessedNormal(VAR._normalWV);
 }
 
 vec4 UnderwaterColour() {
 
-    vec2 coords = VAR._texCoord * UNDERWATER_DIFFUSE_SCALE;
+    vec2 coords = VAR._texCoord * UNDERWATER_TILE_SCALE;
     setAlbedo(texture(texUnderwaterAlbedo, coords));
 
     vec3 tbn = normalize(2.0 * texture(texUnderwaterDetail, coords).rgb - 1.0);
@@ -526,6 +535,7 @@ vec4 UnderwaterMappingRoutine() {
 
 vec4 TerrainMappingRoutine() {
     setAlbedo(getTerrainAlbedo(detailLevel));
+    setProcessedNormal(getTBNMatrix() * getTerrainNormalTBN(detailLevel));
 
     return getPixelColour();
 }
@@ -533,10 +543,8 @@ vec4 TerrainMappingRoutine() {
 void main(void)
 {
     bumpInit();
-
-    setProcessedNormal(getTerrainNormal(detailLevel));
     _colourOut = mix(TerrainMappingRoutine(), UnderwaterMappingRoutine(), _waterDetails.x);
-
+ 
 #if defined(TOGGLE_WIREFRAME)
     const float LineWidth = 0.75;
     float d = min(min(gs_edgeDist.x, gs_edgeDist.y), gs_edgeDist.z);
@@ -544,8 +552,7 @@ void main(void)
 #endif
 
     _normalOut = packNormal(getProcessedNormal());
-    // Why would terrain have a velocity?
-    _velocityOut = vec2(1.0); //velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
+    _velocityOut = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
 }
 
 

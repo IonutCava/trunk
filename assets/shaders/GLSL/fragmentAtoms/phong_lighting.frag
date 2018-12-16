@@ -2,6 +2,8 @@
 #define _PHONG_LIGHTING_FRAG_
 
 void Phong(in vec3 normalWV, in vec3 albedo, in vec3 specular, in float reflectivity, inout vec3 colourInOut, inout float reflectionCoeff) {
+    const vec3 ambientTerm = vec3(0.01);
+
     // direction is NOT normalized
     vec3 lightDirection = getLightDirection();
     float att = getLightAttenuation(lightDirection);
@@ -25,6 +27,7 @@ void Phong(in vec3 normalWV, in vec3 albedo, in vec3 specular, in float reflecti
 
         reflectionCoeff = saturate(reflectionCoeff + shininess);
     }
+    colourInOut = max(colourInOut, ambientTerm);
 }
 
 

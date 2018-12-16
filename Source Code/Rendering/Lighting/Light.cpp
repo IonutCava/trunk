@@ -8,6 +8,7 @@
 #include "Geometry/Material/Headers/Material.h"
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
 #include "Geometry/Shapes/Predefined/Headers/Sphere3D.h"
+#include "ECS/Components/Headers/TransformComponent.h"
 
 namespace Divide {
 
@@ -55,4 +56,16 @@ void Light::setDiffuseColour(const vec3<U8>& newDiffuseColour) {
     _colour.rgb(newDiffuseColour);
 }
 
+vec3<F32> Light::getPosition() const {
+    TransformComponent* lightTransform = getSGN().get<TransformComponent>();
+    assert(lightTransform != nullptr);
+
+    return lightTransform->getPosition();
+}
+
+vec3<F32> Light::getDirection() const {
+    TransformComponent* lightTransform = getSGN().get<TransformComponent>();
+    assert(lightTransform != nullptr);
+    return Normalize(Rotate(WORLD_Z_NEG_AXIS, lightTransform->getOrientation()));
+}
 };

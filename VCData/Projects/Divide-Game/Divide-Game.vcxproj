@@ -200,24 +200,16 @@
     </Xml>
     <Xml Include="../../../XML\defaultMaterial.xml" />
     <Xml Include="../../../XML\keyBindings.xml" />
-    <Xml Include="../../../XML\Scenes\CubeScene\assets.xml" />
     <Xml Include="../../../XML\Scenes\defaultScene.xml" />
     <Xml Include="../../../XML\Scenes\defaultScene\musicPlaylist.xml" />
-    <Xml Include="../../../XML\Scenes\FlashScene\assets.xml" />
-    <Xml Include="../../../XML\Scenes\MainScene\assets.xml" />
-    <Xml Include="../../../XML\Scenes\MainScene\terrain.xml" />
-    <Xml Include="../../../XML\Scenes\NetworkScene\assets.xml" />
-    <Xml Include="../../../XML\Scenes\PhysXScene\assets.xml" />
-    <Xml Include="../../../XML\Scenes\PingPongScene\assets.xml" />
-    <Xml Include="../../../XML\Scenes\TenisScene\assets.xml" />
     <Xml Include="../../../XML\Scenes\WarScene\assets.xml" />
+    <Xml Include="..\..\..\XML\Editor\Editor.xml" />
+    <Xml Include="..\..\..\XML\Scenes\WarScene.xml" />
   </ItemGroup>
   <ItemGroup>
     <None Include="../../../assets\Scripts\atoms\defines.chai" />
     <None Include="../../../assets\Scripts\atoms\utility.chai" />
     <None Include="../../../assets\Scripts\main.chai" />
-    <None Include="../../../XML\Scenes\MainScene\navMeshConfig.ini" />
-    <None Include="../../../XML\Scenes\TenisScene\navMeshConfig.ini" />
     <None Include="../../../XML\Scenes\WarScene\navMeshConfig.ini" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

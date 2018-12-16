@@ -57,25 +57,18 @@ class LightPool : public SceneComponent,
       struct LightProperties {
           /// rgb = diffuse
           /// w = cosOuterConeAngle;
-          FColour _diffuse;
+          FColour _diffuse = { DefaultColours::WHITE.rgb(), 0.0f };
           /// light position (or direction for Directional lights)
           /// w = range
-          vec4<F32> _position;
+          vec4<F32> _position = { 0.0f, 0.0f, 0.0f, 0.0f };
           /// xyz = spot direction
           /// w = spot angle
-          vec4<F32> _direction;
+          vec4<F32> _direction = { 0.0f, 0.0f, 0.0f, 45.0f };
           /// x = light type: 0 - directional, 1 - point, 2 - spot
           /// y = casts shadows, 
           /// z - reserved
           /// w = reserved
-          vec4<I32> _options;
-
-          inline void set(const LightProperties& other) {
-              _diffuse.set(other._diffuse);
-              _position.set(other._position);
-              _direction.set(other._direction);
-              _options.set(other._options);
-          }
+          vec4<I32> _options = { 0, 1, 0, 0 };
       };
 
   public:
@@ -144,7 +137,6 @@ class LightPool : public SceneComponent,
     }
     
   protected:
-    typedef vectorEASTL<LightProperties> LightPropertiesVec;
     typedef vectorEASTL<Light::ShadowProperties> LightShadowProperties;
     typedef vector<Light*> LightVec;
 
@@ -167,19 +159,21 @@ class LightPool : public SceneComponent,
 
   private:
       void init();
-      void waitForTasks(U8 stageIndex);
-      void uploadLightBuffers(const vec3<F32>& eyePos, U8 stageIndex);
 
   private:
+     struct BufferData {
+         vec4<I32> _globalData;
+         std::array<LightProperties, Config::Lighting::MAX_POSSIBLE_LIGHTS> _lightProperties;
+     };
+
     std::array<std::array<U32, to_base(LightType::COUNT)>, to_base(RenderStage::COUNT)> _activeLightCount;
     std::array<LightVec, to_base(RenderStage::COUNT)> _sortedLights;
-    std::array<LightPropertiesVec, to_base(RenderStage::COUNT)> _sortedLightProperties;
     std::array<TaskHandle, to_base(RenderStage::COUNT)> _lightUpdateTask;
+
+    std::array<BufferData, to_base(RenderStage::COUNT)> _sortedLightProperties;
 
     std::array<ShaderBuffer*, to_base(RenderStage::COUNT)> _lightShaderBuffer;
     ShaderBuffer* _shadowBuffer;
-
-    std::array<bool, to_base(RenderStage::COUNT)> _buffersUpdated;
 
     LightShadowProperties _sortedShadowProperties;
 

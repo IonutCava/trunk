@@ -2,15 +2,19 @@
 
 #include "vbInputData.vert"
 
+#if defined(SHADOW_PASS)
 out vec4 vert_vertexWVP;
+#endif
 
 void main() {
 
     computeData();
 
     gl_Position = dvd_ViewProjectionMatrix * VAR._vertexW;
+
+#if defined(SHADOW_PASS)
     vert_vertexWVP = gl_Position;
-    VAR._normalWV = dvd_NormalMatrixWV(VAR.dvd_instanceID) * dvd_Normal;
+#endif
 }
 
 
@@ -19,11 +23,11 @@ void main() {
 #   define HAS_TRANSPARENCY
 #endif
 
-#if defined(SHADOW_PASS) && !defined(HAS_TRANSPARENCY)
+#if defined(SHADOW_PASS)
+#if !defined(HAS_TRANSPARENCY)
 layout(early_fragment_tests) in;
 #endif
 
-#if defined(SHADOW_PASS)
 out vec2 _colourOut;
 in vec4 vert_vertexWVP;
 #endif

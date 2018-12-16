@@ -16,6 +16,9 @@ SceneShaderData::SceneShaderData(GFXDevice& context)
     bufferDescriptor._ringBufferLength = 1;
     bufferDescriptor._initialData = &_bufferData;
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
+    bufferDescriptor._flags = (to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE) |
+                               to_U32(ShaderBuffer::Flags::AUTO_RANGE_FLUSH) |
+                               to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES));
     bufferDescriptor._name = "SCENE_SHADER_DATA";
     _sceneShaderData = _context.newSB(bufferDescriptor);
     _sceneShaderData->bind(ShaderBufferLocation::SCENE_DATA);

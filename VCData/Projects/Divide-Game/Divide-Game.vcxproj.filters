@@ -193,29 +193,8 @@
     <Filter Include="Scripts\atoms">
       <UniqueIdentifier>{ff42f9d9-6fd3-4676-a930-8c5f1e1968dd}</UniqueIdentifier>
     </Filter>
-    <Filter Include="XML\Scenes\CubeScene">
-      <UniqueIdentifier>{d5a0aa12-834f-4c4d-8aba-5ae09a5ad84d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="XML\Scenes\FlashScene">
-      <UniqueIdentifier>{2d4a0b74-2bba-47d3-b25e-f79540288f87}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="XML\Scenes\MainScene">
-      <UniqueIdentifier>{f0b31b2a-1a56-45c1-9f76-b48ad729b3a8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="XML\Scenes\NetworkScene">
-      <UniqueIdentifier>{2783f3d5-0b31-40c1-91fa-6f46c9199a3c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="XML\Scenes\PhysXScene">
-      <UniqueIdentifier>{7da172e1-5a55-46b3-b9db-8da4cdb7a9f8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="XML\Scenes\PingPongScene">
-      <UniqueIdentifier>{34a43372-c353-449f-9518-7770cdb0ece3}</UniqueIdentifier>
-    </Filter>
     <Filter Include="XML\Scenes\WarScene">
       <UniqueIdentifier>{b2db6cf4-8308-4bf2-a0d6-809d7d54c763}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="XML\Scenes\TenisScene">
-      <UniqueIdentifier>{3f9a8456-b72e-48e4-b259-6ec4028965d3}</UniqueIdentifier>
     </Filter>
     <Filter Include="XML\Scenes\defaultScene">
       <UniqueIdentifier>{22f56340-4c62-4735-99a3-9a457f55668a}</UniqueIdentifier>
@@ -225,6 +204,9 @@
     </Filter>
     <Filter Include="Environment\Terrain\Quadtree\Headers">
       <UniqueIdentifier>{6c4aad94-05c0-4d70-83f2-21c71a2dab7b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="XML\Editor">
+      <UniqueIdentifier>{3a971fc7-9112-4c6d-82be-a9a114176786}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -715,38 +697,20 @@
     <Xml Include="../../../XML\keyBindings.xml">
       <Filter>XML</Filter>
     </Xml>
-    <Xml Include="../../../XML\Scenes\TenisScene\assets.xml">
-      <Filter>XML\Scenes\TenisScene</Filter>
-    </Xml>
-    <Xml Include="../../../XML\Scenes\CubeScene\assets.xml">
-      <Filter>XML\Scenes\CubeScene</Filter>
-    </Xml>
     <Xml Include="../../../XML\Scenes\defaultScene\musicPlaylist.xml">
       <Filter>XML\Scenes\defaultScene</Filter>
-    </Xml>
-    <Xml Include="../../../XML\Scenes\FlashScene\assets.xml">
-      <Filter>XML\Scenes\FlashScene</Filter>
-    </Xml>
-    <Xml Include="../../../XML\Scenes\MainScene\assets.xml">
-      <Filter>XML\Scenes\MainScene</Filter>
-    </Xml>
-    <Xml Include="../../../XML\Scenes\MainScene\terrain.xml">
-      <Filter>XML\Scenes\MainScene</Filter>
-    </Xml>
-    <Xml Include="../../../XML\Scenes\NetworkScene\assets.xml">
-      <Filter>XML\Scenes\NetworkScene</Filter>
-    </Xml>
-    <Xml Include="../../../XML\Scenes\PhysXScene\assets.xml">
-      <Filter>XML\Scenes\PhysXScene</Filter>
-    </Xml>
-    <Xml Include="../../../XML\Scenes\PingPongScene\assets.xml">
-      <Filter>XML\Scenes\PingPongScene</Filter>
     </Xml>
     <Xml Include="../../../XML\Scenes\WarScene\assets.xml">
       <Filter>XML\Scenes\WarScene</Filter>
     </Xml>
     <Xml Include="../../../XML\Scenes\defaultScene.xml">
       <Filter>XML\Scenes\defaultScene</Filter>
+    </Xml>
+    <Xml Include="..\..\..\XML\Scenes\WarScene.xml">
+      <Filter>XML\Scenes</Filter>
+    </Xml>
+    <Xml Include="..\..\..\XML\Editor\Editor.xml">
+      <Filter>XML\Editor</Filter>
     </Xml>
   </ItemGroup>
   <ItemGroup>
@@ -758,12 +722,6 @@
     </None>
     <None Include="../../../assets\Scripts\atoms\utility.chai">
       <Filter>Scripts\atoms</Filter>
-    </None>
-    <None Include="../../../XML\Scenes\TenisScene\navMeshConfig.ini">
-      <Filter>XML\Scenes\TenisScene</Filter>
-    </None>
-    <None Include="../../../XML\Scenes\MainScene\navMeshConfig.ini">
-      <Filter>XML\Scenes\MainScene</Filter>
     </None>
     <None Include="../../../XML\Scenes\WarScene\navMeshConfig.ini">
       <Filter>XML\Scenes\WarScene</Filter>

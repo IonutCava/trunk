@@ -174,7 +174,7 @@ constexpr unsigned int MAX_SHADOW_CASTING_LIGHTS = 4;
 /// Used for cube map shadows and for CSM or PSSM to determine the maximum number of frustum splits
 constexpr unsigned int MAX_SPLITS_PER_LIGHT = 6;
 /// Used mainly for caching/memory efficiency reasons
-constexpr unsigned int MAX_POSSIBLE_LIGHTS = 1024;
+constexpr unsigned int MAX_POSSIBLE_LIGHTS = 4096;
 /// The following parameters control the behaviour of the Forward+ renderer
 constexpr unsigned int FORWARD_PLUS_TILE_RES = 16;
 constexpr unsigned int FORWARD_PLUS_MAX_LIGHTS_PER_TILE = 544;
