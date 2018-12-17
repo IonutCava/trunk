@@ -360,9 +360,8 @@ void LightPool::uploadLightData(RenderStage stage,
     GFX::EnqueueCommand(bufferInOut, externalCmd);
 
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
-    descriptorSetCmd._set = _context.gfx().newDescriptorSet();
-    descriptorSetCmd._set->_shaderBuffers.emplace_back(lightDataLocation, _lightShaderBuffer[to_base(stage)]);
-    descriptorSetCmd._set->_shaderBuffers.emplace_back(shadowDataLocation, _shadowBuffer);
+    descriptorSetCmd._set._shaderBuffers.emplace_back(lightDataLocation, _lightShaderBuffer[to_base(stage)]);
+    descriptorSetCmd._set._shaderBuffers.emplace_back(shadowDataLocation, _shadowBuffer);
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 }
 
@@ -392,9 +391,8 @@ void LightPool::drawLightImpostors(RenderStage stage, GFX::CommandBuffer& buffer
         GFX::EnqueueCommand(bufferInOut, bindPipeline);
         
         GFX::BindDescriptorSetsCommand descriptorSetCmd;
-        descriptorSetCmd._set = _context.gfx().newDescriptorSet();
-        descriptorSetCmd._set->_textureData.addTexture(TextureData(_lightIconsTexture->getTextureType(), _lightIconsTexture->getHandle()),
-                                                       to_U8(ShaderProgram::TextureUsage::UNIT0));
+        descriptorSetCmd._set._textureData.addTexture(TextureData(_lightIconsTexture->getTextureType(), _lightIconsTexture->getHandle()),
+                                                      to_U8(ShaderProgram::TextureUsage::UNIT0));
         GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
         GFX::DrawCommand drawCommand;

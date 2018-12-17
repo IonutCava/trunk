@@ -216,8 +216,7 @@ class RenderingComponent : public BaseComponentType<RenderingComponent, Componen
     IMPrimitive* _axisGizmo;
 
     ReflectorType _reflectorType;
-    DescriptorSet_ptr _descriptorSetCache;
-
+    
     ShaderProgram_ptr _previewRenderTargetColour;
     ShaderProgram_ptr _previewRenderTargetDepth;
 

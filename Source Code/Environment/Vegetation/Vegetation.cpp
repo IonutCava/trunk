@@ -186,9 +186,6 @@ void Vegetation::precomputeStaticData(PlatformContext& context, U32 chunkSize) {
             }
         }
     }
-
-    int a;
-    a = 5;
 }
 
 void Vegetation::uploadGrassData() {
@@ -251,9 +248,8 @@ void Vegetation::onRefreshNodeData(SceneGraphNode& sgn,
         Texture_ptr depthTex = _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Depth, 0).texture();
 
         GFX::BindDescriptorSetsCommand descriptorSetCmd;
-        descriptorSetCmd._set = _context.newDescriptorSet();
-        descriptorSetCmd._set->_textureData.addTexture(depthTex->getData(), to_U8(ShaderProgram::TextureUsage::UNIT0));
-        descriptorSetCmd._set->_shaderBuffers.emplace_back(ShaderBufferLocation::GRASS_DATA, _grassData, vec2<U32>(0, _grassData->getPrimitiveCount()));
+        descriptorSetCmd._set._textureData.addTexture(depthTex->getData(), to_U8(ShaderProgram::TextureUsage::UNIT0));
+        descriptorSetCmd._set._shaderBuffers.emplace_back(ShaderBufferLocation::GRASS_DATA, _grassData, vec2<U32>(0, _grassData->getPrimitiveCount()));
         GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
         GFX::BindPipelineCommand pipelineCmd;
@@ -282,9 +278,10 @@ void Vegetation::buildDrawCommands(SceneGraphNode& sgn,
                                    RenderStagePass renderStagePass,
                                    RenderPackage& pkgInOut) {
     if (_render) {
-        sgn.get<RenderingComponent>()->registerShaderBuffer(ShaderBufferLocation::GRASS_DATA,
-                                                            vec2<U32>(0, _grassData->getPrimitiveCount()),
-                                                            *_grassData);
+        RenderPackage& pkg = sgn.get<RenderingComponent>()->getDrawPackage(renderStagePass);
+        pkg.registerShaderBuffer(ShaderBufferLocation::GRASS_DATA,
+                                 vec2<U32>(0, _grassData->getPrimitiveCount()),
+                                 *_grassData);
 
         GenericDrawCommand cmd;
         cmd._primitiveType = PrimitiveType::TRIANGLES;

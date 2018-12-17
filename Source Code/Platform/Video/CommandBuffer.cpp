@@ -35,11 +35,6 @@ DEFINE_POOL(MemoryBarrierCommand, 1024);
 DEFINE_POOL(ReadAtomicCounterCommand, 1024);
 DEFINE_POOL(ExternalCommand, 4096);
 
-CommandBuffer::CommandBuffer()
-{
-    //_commands.reserve(4);
-}
-
 void CommandBuffer::add(const CommandBuffer& other) {
     for (const CommandEntry& cmd : other._commandOrder) {
         other.getCommand<CommandBase>(cmd).addToBuffer(*this);
@@ -140,7 +135,7 @@ void CommandBuffer::clean() {
 
     bool skip = false;
     const Pipeline* prevPipeline = nullptr;
-    DescriptorSet_ptr prevDescriptorSet;
+    const DescriptorSet* prevDescriptorSet = nullptr;
 
     vectorEASTL<CommandEntry>::iterator it;
     for (it = std::begin(_commandOrder); it != std::cend(_commandOrder);) {
@@ -181,12 +176,12 @@ void CommandBuffer::clean() {
                 }
             }break;
             case GFX::CommandType::BIND_DESCRIPTOR_SETS: {
-                const DescriptorSet_ptr& set = getCommandInternal<BindDescriptorSetsCommand>(cmd)->_set;
-                if (prevDescriptorSet != nullptr && *prevDescriptorSet == *set) {
+                const DescriptorSet& set = getCommandInternal<BindDescriptorSetsCommand>(cmd)->_set;
+                if (prevDescriptorSet != nullptr && *prevDescriptorSet == set) {
                     it = _commandOrder.erase(it);
                     skip = true;
                 }
-                prevDescriptorSet = set;
+                prevDescriptorSet = &set;
             }break;
             case GFX::CommandType::DRAW_TEXT: {
                 const TextElementBatch& batch = getCommandInternal<DrawTextCommand>(cmd)->_batch;

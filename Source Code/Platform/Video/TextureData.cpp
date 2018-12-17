@@ -21,7 +21,6 @@ namespace {
 };
 
 TextureDataContainer::TextureDataContainer() noexcept
-    : _textureCount(0)
 {
     _textures.reserve(to_base(ShaderProgram::TextureUsage::COUNT));
 }
@@ -35,7 +34,6 @@ bool TextureDataContainer::set(const TextureDataContainer& other) {
     const vectorEASTL<eastl::pair<TextureData, U8>>& otherTextures = other.textures();
     if (_textures != otherTextures) {
         _textures = otherTextures;
-        _textureCount = other._textureCount;
         return true;
     }
 
@@ -54,7 +52,6 @@ bool TextureDataContainer::addTexture(const TextureData& data, U8 binding) {
                         }) == eastl::cend(_textures))
     
     {
-        ++_textureCount;
         _textures.emplace_back(data, binding);
         return true;
     }
@@ -80,7 +77,6 @@ bool TextureDataContainer::removeTexture(U8 binding) {
     });
 
     if (it != eastl::end(_textures)) {
-        --_textureCount;
         _textures.erase(it);
         return true;
     }
@@ -98,7 +94,6 @@ bool TextureDataContainer::removeTexture(const TextureData& data) {
                       });
 
     if (it != eastl::end(_textures)) {
-        --_textureCount;
         _textures.erase(it);
         return true;
     }
@@ -120,7 +115,6 @@ void TextureDataContainer::clear(bool clearMemory) {
     } else {
         _textures.resize(0);
     }
-    _textureCount = 0;
 }
 
 }; //namespace Divide

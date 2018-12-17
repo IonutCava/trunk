@@ -45,7 +45,9 @@
         <node name="InfPlane" type="INFINITE_PLANE"/>
         <node name="DefaultLight" type=""/>
         <node name="Player_1" type=""/>
-        <node name="Water" type="WATER" />
+        <node name="Water" type="WATER">
+            <node name="waterPlane_SGN" type="QUAD_3D"/>
+        </node>
         <node name="Terrain" type="TERRAIN">
             <node name="Grass_chunk_0" type="VEGETATION_GRASS"/>
             <node name="Grass_chunk_1" type="VEGETATION_GRASS"/>

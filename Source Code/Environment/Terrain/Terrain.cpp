@@ -182,7 +182,7 @@ bool Terrain::onRender(SceneGraphNode& sgn,
 
             STUBBED("This may cause stalls. Profile! -Ionut");
             _shaderData->writeData(offset, depth, data);
-            sgn.get<RenderingComponent>()->registerShaderBuffer(ShaderBufferLocation::TERRAIN_DATA, vec2<U32>(offset, Terrain::MAX_RENDER_NODES), *_shaderData);
+            pkg.registerShaderBuffer(ShaderBufferLocation::TERRAIN_DATA, vec2<U32>(offset, Terrain::MAX_RENDER_NODES), *_shaderData);
         }
 
         wasUpdated = true;

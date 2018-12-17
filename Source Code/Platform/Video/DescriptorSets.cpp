@@ -50,25 +50,37 @@ namespace Divide {
     {
     }
 
-    void ShaderBufferBinding::set(const ShaderBufferBinding& other) {
-        set(other._binding, other._buffer, other._range, other._atomicCounter);
+    bool ShaderBufferBinding::set(const ShaderBufferBinding& other) {
+        return set(other._binding, other._buffer, other._range, other._atomicCounter);
     }
 
-    void ShaderBufferBinding::set(ShaderBufferLocation binding,
+    bool ShaderBufferBinding::set(ShaderBufferLocation binding,
                                   ShaderBuffer* buffer,
                                   const vec2<U16>& range)
     {
-        set(binding, buffer, range, std::make_pair(false, vec2<U32>(0u)));
+        return set(binding, buffer, range, std::make_pair(false, vec2<U32>(0u)));
     }
 
-    void ShaderBufferBinding::set(ShaderBufferLocation binding,
+    bool ShaderBufferBinding::set(ShaderBufferLocation binding,
                                   ShaderBuffer* buffer,
                                   const vec2<U16>& range,
                                   const std::pair<bool, vec2<U32>>& atomicCounter) {
         ACKNOWLEDGE_UNUSED(atomicCounter);
-        _binding = binding;
-        _buffer = buffer;
-        _range.set(range);
+        bool ret = false;
+        if (_binding != binding) {
+            _binding = binding;
+            ret = true;
+        }
+        if (_buffer != buffer) {
+            _buffer = buffer;
+            ret = true;
+        }
+        if (_range != range) {
+            _range.set(range);
+            ret = true;
+        }
+
+        return ret;
     }
 
     bool Merge(DescriptorSet &lhs, DescriptorSet &rhs, bool& partial) {
@@ -81,11 +93,9 @@ namespace Divide {
             const TextureData* texData = lhs.findTexture(otherTexture.second);
             bool erase = false;
             if (texData == nullptr) {
-                // See explanation above (buffers) for why this is commented out
-                /*lhs._textureData.addTexture(otherTexture);
-                erase = true;*/
-            }
-            else {
+                lhs._textureData.addTexture(otherTexture);
+                erase = true;
+            } else {
                 if (*texData == otherTexture.first) {
                     erase = true;
                 }
@@ -96,9 +106,6 @@ namespace Divide {
             }
         }
         otherTextureData = erase_indices(otherTextureData, textureEraseList);
-
-        // Buffers are ... weird... for now
-        return false;
 
         vector<vec_size> bufferEraseList;
         for (size_t i = 0; i < rhs._shaderBuffers.size(); ++i) {

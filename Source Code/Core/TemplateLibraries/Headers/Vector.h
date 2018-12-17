@@ -193,6 +193,7 @@ inline vectorEASTL<T> erase_indices(const vectorEASTL<T>& data, vector<vec_size>
     if (indicesToDelete.empty()) {
         return data;
     }
+    assert(indicesToDelete.size() <= data.size());
 
     vectorEASTL<T> ret;
     ret.reserve(data.size() - indicesToDelete.size());

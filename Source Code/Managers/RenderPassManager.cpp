@@ -270,8 +270,7 @@ void RenderPassManager::refreshNodeData(RenderStage stage,
     shaderBufferData._buffer->writeData(shaderBufferData._range.x, shaderBufferData._range.y, g_nodeData.data());
 
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
-    descriptorSetCmd._set = _context.newDescriptorSet();
-    descriptorSetCmd._set->_shaderBuffers = { shaderBufferCmds, shaderBufferData };
+    descriptorSetCmd._set._shaderBuffers = { shaderBufferCmds, shaderBufferData };
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 }
 
@@ -396,16 +395,15 @@ void RenderPassManager::mainPass(const PassParams& params, RenderTarget& target,
     
         if (params._stage == RenderStage::DISPLAY) {
             GFX::BindDescriptorSetsCommand bindDescriptorSets;
-            bindDescriptorSets._set = _context.newDescriptorSet();
             // Bind the depth buffers
             TextureData depthBufferTextureData = target.getAttachment(RTAttachmentType::Depth, 0).texture()->getData();
-            bindDescriptorSets._set->_textureData.addTexture(depthBufferTextureData, to_U8(ShaderProgram::TextureUsage::DEPTH));
+            bindDescriptorSets._set._textureData.addTexture(depthBufferTextureData, to_U8(ShaderProgram::TextureUsage::DEPTH));
 
             const RTAttachment& velocityAttachment = target.getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::VELOCITY));
             if (velocityAttachment.used()) {
                 const Texture_ptr& prevDepthTexture = _context.getPrevDepthBuffer();
                 TextureData prevDepthData = (prevDepthTexture ? prevDepthTexture->getData() : depthBufferTextureData);
-                bindDescriptorSets._set->_textureData.addTexture(prevDepthData, to_U8(ShaderProgram::TextureUsage::DEPTH_PREV));
+                bindDescriptorSets._set._textureData.addTexture(prevDepthData, to_U8(ShaderProgram::TextureUsage::DEPTH_PREV));
             }
 
             GFX::EnqueueCommand(bufferInOut, bindDescriptorSets);
@@ -504,7 +502,7 @@ void RenderPassManager::woitPass(const PassParams& params, const RenderTarget& t
 
             GFX::BeginRenderPassCommand beginRenderPassCompCmd;
             beginRenderPassCompCmd._name = Util::StringFormat("DO_OIT_PASS_2_%s", (i == 0 ? "HIGH" : "LOW")).c_str();
-            beginRenderPassCompCmd._target = RenderTargetID(RenderTargetUsage::SCREEN);
+            beginRenderPassCompCmd._target = params._target;
             beginRenderPassCompCmd._descriptor.disableState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER);
             beginRenderPassCompCmd._descriptor.disableState(RTDrawDescriptor::State::CLEAR_COLOUR_BUFFERS);
             beginRenderPassCompCmd._descriptor.drawMask().setEnabled(RTAttachmentType::Depth, 0, false);
@@ -529,9 +527,8 @@ void RenderPassManager::woitPass(const PassParams& params, const RenderTarget& t
             TextureData revealage = oitTarget.getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::REVEALAGE)).texture()->getData();
 
             GFX::BindDescriptorSetsCommand descriptorSetCmd;
-            descriptorSetCmd._set = _context.newDescriptorSet();
-            descriptorSetCmd._set->_textureData.addTexture(accum, to_base(ShaderProgram::TextureUsage::UNIT0));
-            descriptorSetCmd._set->_textureData.addTexture(revealage, to_base(ShaderProgram::TextureUsage::UNIT1));
+            descriptorSetCmd._set._textureData.addTexture(accum, to_base(ShaderProgram::TextureUsage::UNIT0));
+            descriptorSetCmd._set._textureData.addTexture(revealage, to_base(ShaderProgram::TextureUsage::UNIT1));
             GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
             GenericDrawCommand drawCommand;

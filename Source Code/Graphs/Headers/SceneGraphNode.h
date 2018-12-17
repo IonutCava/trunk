@@ -345,7 +345,8 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     SceneGraph& _sceneGraph;
 
     U64 _lockToCamera = 0;
-    mutable I8 _frustPlaneCache;
+    //ToDo: make this work in a multi-threaded environment
+    //mutable I8 _frustPlaneCache;
     U64 _elapsedTimeUS;
     U32 _componentMask;
     stringImpl _name;

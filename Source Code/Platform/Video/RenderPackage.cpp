@@ -54,6 +54,83 @@ size_t RenderPackage::getSortKeyHash() const {
     return 0;
 }
 
+void RenderPackage::registerShaderBuffer(ShaderBufferLocation slot,
+                                         vec2<U32> bindRange,
+                                         ShaderBuffer& shaderBuffer) {
+    if (_descriptorSets.empty()) {
+        GFX::BindDescriptorSetsCommand cmd;
+        addDescriptorSetsCommand(cmd);
+    }
+
+    ShaderBufferList& shaderBuffersCache = _descriptorSets[0]._set._shaderBuffers;
+
+    ShaderBufferList::iterator it = std::find_if(std::begin(shaderBuffersCache),
+                                                 std::end(shaderBuffersCache),
+                                                 [slot](const ShaderBufferBinding& binding)
+                                                 -> bool { return binding._binding == slot; });
+
+    if (it == std::end(shaderBuffersCache)) {
+        shaderBuffersCache.emplace_back(slot, &shaderBuffer, bindRange);
+        SetBit(_dirtyFlags, CommandType::DESCRIPTOR_SETS);
+    } else {
+        if (it->set(slot, &shaderBuffer, bindRange)) {
+            SetBit(_dirtyFlags, CommandType::DESCRIPTOR_SETS);
+        }
+    }
+}
+
+void RenderPackage::unregisterShaderBuffer(ShaderBufferLocation slot) {
+    if (_descriptorSets.empty()) {
+        return;
+    }
+
+    ShaderBufferList& shaderBuffersCache = _descriptorSets[0]._set._shaderBuffers;
+
+    ShaderBufferList::iterator it = std::find_if(std::begin(shaderBuffersCache),
+                                                 std::end(shaderBuffersCache),
+                                                 [slot](const ShaderBufferBinding& binding)
+                                                 -> bool { return binding._binding == slot; });
+
+    if (it != std::cend(shaderBuffersCache)) {
+        shaderBuffersCache.erase(it);
+        SetBit(_dirtyFlags, CommandType::DESCRIPTOR_SETS);
+    }
+}
+
+void RenderPackage::registerTextureDependency(const TextureData& additionalTexture, U8 binding) {
+    if (_descriptorSets.empty()) {
+        GFX::BindDescriptorSetsCommand cmd;
+        addDescriptorSetsCommand(cmd);
+    }
+
+    TextureDataContainer& texCache = _descriptorSets[0]._set._textureData;
+    if (texCache.addTexture(eastl::make_pair(additionalTexture, binding))) {
+        SetBit(_dirtyFlags, CommandType::DESCRIPTOR_SETS);
+    }
+}
+
+void RenderPackage::removeTextureDependency(U8 binding) {
+    if (_descriptorSets.empty()) {
+        return;
+    }
+
+    TextureDataContainer& texCache = _descriptorSets[0]._set._textureData;
+    if (texCache.removeTexture(binding)) {
+        SetBit(_dirtyFlags, CommandType::DESCRIPTOR_SETS);
+    }
+}
+
+void RenderPackage::removeTextureDependency(const TextureData& additionalTexture) {
+    if (_descriptorSets.empty()) {
+        return;
+    }
+
+    TextureDataContainer& texCache = _descriptorSets[0]._set._textureData;
+    if (texCache.removeTexture(additionalTexture)) {
+        SetBit(_dirtyFlags, CommandType::DESCRIPTOR_SETS);
+    }
+}
+
 I32 RenderPackage::drawCommandCount() const {
     return to_I32(_drawCommands.size());
 }
@@ -158,17 +235,17 @@ void RenderPackage::addPushConstantsCommand(const GFX::SendPushConstantsCommand&
     SetBit(_dirtyFlags, CommandType::PUSH_CONSTANTS);
 }
 
-const DescriptorSet_ptr& RenderPackage::descriptorSet(I32 index) const {
+const DescriptorSet& RenderPackage::descriptorSet(I32 index) const {
     DIVIDE_ASSERT(index < to_I32(_descriptorSets.size()), "RenderPackage::descriptorSet error: Invalid descriptor set index!");
-    assert(_descriptorSets[index]._set != nullptr);
     return _descriptorSets[index]._set;
 }
 
-void RenderPackage::descriptorSet(I32 index, const DescriptorSet_ptr& descriptorSets) {
+void RenderPackage::descriptorSet(I32 index, const DescriptorSet& descriptorSets) {
     DIVIDE_ASSERT(index < to_I32(_descriptorSets.size()), "RenderPackage::descriptorSet error: Invalid descriptor set index!");
-    assert(descriptorSets != nullptr);
-    _descriptorSets[index]._set = descriptorSets;
-    SetBit(_dirtyFlags, CommandType::DESCRIPTOR_SETS);
+    if (_descriptorSets[index]._set != descriptorSets) {
+        _descriptorSets[index]._set = descriptorSets;
+        SetBit(_dirtyFlags, CommandType::DESCRIPTOR_SETS);
+    }
 }
 
 void RenderPackage::addDescriptorSetsCommand(const GFX::BindDescriptorSetsCommand& descriptorSets) {
@@ -176,7 +253,6 @@ void RenderPackage::addDescriptorSetsCommand(const GFX::BindDescriptorSetsComman
     entry._typeIndex = static_cast<vec_size_eastl>(GFX::CommandType::BIND_DESCRIPTOR_SETS);
     entry._elementIndex = _descriptorSets.size();
     _commandOrdering.push_back(entry);
-    assert(descriptorSets._set != nullptr);
     _descriptorSets.push_back(descriptorSets);
     SetBit(_dirtyFlags, CommandType::DESCRIPTOR_SETS);
 }

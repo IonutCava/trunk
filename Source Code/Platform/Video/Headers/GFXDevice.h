@@ -90,7 +90,6 @@ struct SizeChangeParams;
 struct ShaderBufferDescriptor;
 
 FWD_DECLARE_MANAGED_CLASS(Texture);
-FWD_DECLARE_MANAGED_STRUCT(DescriptorSet);
 
 namespace Time {
     class ProfileTimer;
@@ -329,7 +328,6 @@ public:
     ShaderBuffer*      newSB(const ShaderBufferDescriptor& descriptor) const;
 
     Pipeline*          newPipeline(const PipelineDescriptor& descriptor) const;
-    DescriptorSet_ptr  newDescriptorSet() const;
 
     // Shortcuts
     void drawText(const TextElementBatch& batch, GFX::CommandBuffer& bufferInOut) const;
@@ -471,6 +469,7 @@ protected:
     std::array<U32, to_base(RenderStage::COUNT) - 1> _lastCommandCount;
     std::array<U32, to_base(RenderStage::COUNT) - 1> _lastNodeCount;
 
+    std::mutex _debugViewLock;
     vector<DebugView_ptr> _debugViews;
     
     ShaderBuffer* _gfxDataBuffer;

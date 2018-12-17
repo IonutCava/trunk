@@ -433,7 +433,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
             texture._textureName = img_name;
             texture._texturePath = img_path;
             // The first texture is always "Replace"
-            texture._operation = count == 0 ? Material::TextureOperation::REPLACE
+            texture._operation = count == 0 ? Material::TextureOperation::NONE
                                             : aiTextureOperationTable[op];
             texture._srgbSpace = true;
             material._textures[to_U32(usage)] = texture;

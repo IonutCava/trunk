@@ -216,7 +216,7 @@ BEGIN_COMMAND(SetClipPlanesCommand, CommandType::SET_CLIP_PLANES, 4096);
 END_COMMAND();
 
 BEGIN_COMMAND(BindDescriptorSetsCommand, CommandType::BIND_DESCRIPTOR_SETS, 4096);
-    DescriptorSet_ptr _set = nullptr;
+    DescriptorSet _set;
 
     stringImpl toString(U16 indent) const override;
 

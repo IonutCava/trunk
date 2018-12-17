@@ -90,7 +90,7 @@ void WaterPlane::updateBoundsInternal() {
     F32 halfWidth = _dimensions.width * 0.5f;
     F32 halfLength = _dimensions.height * 0.5f;
 
-    _boundingBox.set(vec3<F32>(-halfWidth, _dimensions.depth, -halfLength), vec3<F32>(halfWidth, 0, halfLength));
+    _boundingBox.set(vec3<F32>(-halfWidth, -_dimensions.depth, -halfLength), vec3<F32>(halfWidth, 0, halfLength));
 
     SceneNode::updateBoundsInternal();
 }
@@ -189,9 +189,9 @@ const vec3<U16>& WaterPlane::getDimensions() const {
 }
 
 void WaterPlane::saveToXML(boost::property_tree::ptree& pt) const {
-    pt.put("dimensions.<xmlattr>.width", _dimensions.x);
-    pt.put("dimensions.<xmlattr>.length", _dimensions.y);
-    pt.put("dimensions.<xmlattr>.depth", _dimensions.z);
+    pt.put("dimensions.<xmlattr>.width", _dimensions.width);
+    pt.put("dimensions.<xmlattr>.length", _dimensions.height);
+    pt.put("dimensions.<xmlattr>.depth", _dimensions.depth);
 
     SceneNode::saveToXML(pt);
 }

@@ -575,26 +575,26 @@ bool Material::getTextureData(ShaderProgram::TextureUsage slot,
 }
 
 bool Material::getTextureData(RenderStagePass renderStagePass, TextureDataContainer& textureData) {
-    const U32 textureCount = to_base(ShaderProgram::TextureUsage::COUNT);
+    
     const bool depthstage = renderStagePass.isDepthPass();
 
     bool ret = false;
-    ret = ret || getTextureData(ShaderProgram::TextureUsage::UNIT0, textureData);
-    ret = ret || getTextureData(ShaderProgram::TextureUsage::OPACITY, textureData);
-    ret = ret || getTextureData(ShaderProgram::TextureUsage::NORMALMAP, textureData);
+    ret = getTextureData(ShaderProgram::TextureUsage::UNIT0, textureData) || ret;
+    ret = getTextureData(ShaderProgram::TextureUsage::OPACITY, textureData) || ret;
+    ret = getTextureData(ShaderProgram::TextureUsage::NORMALMAP, textureData) || ret;
 
     if (!depthstage) {
-        ret = ret || getTextureData(ShaderProgram::TextureUsage::UNIT1, textureData);
-        ret = ret || getTextureData(ShaderProgram::TextureUsage::SPECULAR, textureData);
-        ret = ret || getTextureData(ShaderProgram::TextureUsage::REFLECTION_PLANAR, textureData);
-        ret = ret || getTextureData(ShaderProgram::TextureUsage::REFRACTION_PLANAR, textureData);
-        ret = ret || getTextureData(ShaderProgram::TextureUsage::REFLECTION_CUBE, textureData);
-        ret = ret || getTextureData(ShaderProgram::TextureUsage::REFRACTION_CUBE, textureData);
+        ret = getTextureData(ShaderProgram::TextureUsage::UNIT1, textureData) || ret;
+        ret = getTextureData(ShaderProgram::TextureUsage::SPECULAR, textureData) || ret;
+        ret = getTextureData(ShaderProgram::TextureUsage::REFLECTION_PLANAR, textureData) || ret;
+        ret = getTextureData(ShaderProgram::TextureUsage::REFRACTION_PLANAR, textureData) || ret;
+        ret = getTextureData(ShaderProgram::TextureUsage::REFLECTION_CUBE, textureData) || ret;
+        ret = getTextureData(ShaderProgram::TextureUsage::REFRACTION_CUBE, textureData) || ret;
     }
 
     for (const ExternalTexture& tex : _externalTextures) {
         if (!depthstage || (depthstage && tex._activeForDepth)) {
-            ret = ret || textureData.addTexture(tex._texture->getData(), to_U8(tex._bindSlot));
+            ret = textureData.addTexture(tex._texture->getData(), to_U8(tex._bindSlot)) || ret;
         }
     }
 

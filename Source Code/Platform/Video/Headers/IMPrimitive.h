@@ -144,7 +144,7 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
     const Texture* _texture;
     // render in wireframe mode
     bool _forceWireframe;
-    DescriptorSet_ptr _descriptorSet;
+    DescriptorSet _descriptorSet;
     Rect<I32> _viewport;
 
    private:

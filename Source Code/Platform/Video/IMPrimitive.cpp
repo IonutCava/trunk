@@ -16,7 +16,6 @@ IMPrimitive::IMPrimitive(GFXDevice& context)
       _cmdBufferDirty(true)
 {
     _cmdBuffer = GFX::allocateCommandBuffer();
-    _descriptorSet = context.newDescriptorSet();
 }
 
 IMPrimitive::~IMPrimitive() 
@@ -28,7 +27,7 @@ IMPrimitive::~IMPrimitive()
 void IMPrimitive::clear() {
     _worldMatrix.identity();
     _texture = nullptr;
-    _descriptorSet->_textureData.clear();
+    _descriptorSet._textureData.clear();
     _cmdBufferDirty = true;
     _viewport.set(-1);
 }
@@ -200,8 +199,8 @@ void IMPrimitive::pipeline(const Pipeline& pipeline) {
 
 void IMPrimitive::texture(const Texture& texture) {
     _texture = &texture;
-    _descriptorSet->_textureData.clear();
-    _descriptorSet->_textureData.addTexture(_texture->getData(), to_U8(ShaderProgram::TextureUsage::UNIT0));
+    _descriptorSet._textureData.clear();
+    _descriptorSet._textureData.addTexture(_texture->getData(), to_U8(ShaderProgram::TextureUsage::UNIT0));
     _cmdBufferDirty = true;
 }
 };

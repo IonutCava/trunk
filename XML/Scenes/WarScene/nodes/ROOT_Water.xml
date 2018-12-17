@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <static>true</static>
-<dimensions width="4096" height="4096" depth="500"/>
+<dimensions width="4096" length="4096" depth="500"/>
+<NAVIGATION/>
 <TRANSFORM>
     <Transform>
         <position x="0" y="0" z="0"/>
@@ -19,7 +20,27 @@
         <doubleSided>false</doubleSided>
         <bumpMethod>NONE</bumpMethod>
         <shadingMode>BLINN_PHONG</shadingMode>
-        <parallaxFactor>1</parallaxFactor>
+        <parallaxFactor>0.00999999978</parallaxFactor>
+        <texture>
+            <UNIT0>
+                <name>terrain_water_NM.jpg</name>
+                <path>assets/misc_images</path>
+                <flipped>true</flipped>
+                <Map U="REPEAT" V="REPEAT" W="REPEAT"/>
+                <Filter min="LINEAR" mag="LINEAR"/>
+                <anisotropy>255</anisotropy>
+            </UNIT0>
+            <UNIT1>
+                <name>water_dudv.jpg</name>
+                <path>assets/misc_images</path>
+                <flipped>true</flipped>
+                <usage>TEX_OP_REPLACE</usage>
+                <Map U="REPEAT" V="REPEAT" W="REPEAT"/>
+                <Filter min="LINEAR" mag="LINEAR"/>
+                <anisotropy>255</anisotropy>
+            </UNIT1>
+        </texture>
     </Material>
 </RENDERING>
-<VEGETATION_GRASS/>
+<NETWORKING/>
+<WATER/>

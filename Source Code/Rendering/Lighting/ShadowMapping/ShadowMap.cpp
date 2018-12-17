@@ -180,7 +180,6 @@ void ShadowMap::resetShadowMaps() {
 
 void ShadowMap::bindShadowMaps(GFXDevice& context, GFX::CommandBuffer& bufferInOut) {
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
-    descriptorSetCmd._set = context.newDescriptorSet();
     for (U8 i = 0; i < to_base(ShadowType::COUNT); ++i) {
         RTAttachmentType attachment = static_cast<ShadowType>(i) == ShadowType::LAYERED
                                                                   ? RTAttachmentType::Colour
@@ -188,7 +187,7 @@ void ShadowMap::bindShadowMaps(GFXDevice& context, GFX::CommandBuffer& bufferInO
 
         U8 bindSlot = LightPool::getShadowBindSlotOffset(static_cast<ShadowType>(i));
         RTAttachment& shadowTexture = context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SHADOW, i)).getAttachment(attachment, 0);
-        descriptorSetCmd._set->_textureData.addTexture(shadowTexture.texture()->getData(), bindSlot);
+        descriptorSetCmd._set._textureData.addTexture(shadowTexture.texture()->getData(), bindSlot);
     }
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 }

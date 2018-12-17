@@ -84,18 +84,16 @@ namespace {
             case RenderStage::SHADOW: {
                 // One buffer per light, but split into multiple pieces
                 bufferSizeFactor = Config::Lighting::MAX_SHADOW_CASTING_LIGHTS;
-                bufferSizeFactor *= Config::MAX_VISIBLE_NODES;
             }; break;
 
             case RenderStage::DISPLAY: {
                 // PrePass, MainPass and OitPass should share buffers
-                bufferSizeFactor = Config::MAX_VISIBLE_NODES;
                 // We MIGHT need new buffer data for each pass type (prepass, main, oit, etc)
-                bufferSizeFactor *= to_base(RenderPassType::COUNT);
+                bufferSizeFactor = to_base(RenderPassType::COUNT);
             }; break;
         };
 
-        return bufferSizeFactor;
+        return bufferSizeFactor * Config::MAX_VISIBLE_NODES;
     }
 
     U32 getCmdBufferCount(RenderStage stage) {

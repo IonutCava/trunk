@@ -40,14 +40,13 @@ namespace Divide {
 
 namespace GFX {
 
-class CommandBuffer {
+class CommandBuffer : private GUIDWrapper {
     friend class CommandBufferPool;
   public:
       typedef PolyContainerEntry CommandEntry;
 
   public:
-    CommandBuffer();
-
+    CommandBuffer() = default;
     ~CommandBuffer() = default;
 
     // Just a big ol' collection of vectors, so these should be fine

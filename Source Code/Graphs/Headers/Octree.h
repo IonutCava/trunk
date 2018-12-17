@@ -90,7 +90,8 @@ class Octree : public std::enable_shared_from_this<Octree> {
         
 
     private:
-        mutable I8 _frustPlaneCache;
+        //ToDo: make this work in a multi-threaded environment
+        //mutable I8 _frustPlaneCache;
         U32 _nodeMask;
         I32 _curLife;
         I32 _maxLifespan;

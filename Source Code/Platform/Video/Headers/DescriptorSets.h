@@ -56,11 +56,11 @@ namespace Divide {
                             const vec2<U32>& range,
                             const std::pair<bool, vec2<U32>>& atomicCounter);
 
-        void set(const ShaderBufferBinding& other);
-        void set(ShaderBufferLocation binding,
+        bool set(const ShaderBufferBinding& other);
+        bool set(ShaderBufferLocation binding,
                  ShaderBuffer* buffer,
                  const vec2<U16>& range);
-        void set(ShaderBufferLocation binding,
+        bool set(ShaderBufferLocation binding,
                  ShaderBuffer* buffer,
                  const vec2<U16>& range,
                  const std::pair<bool, vec2<U32>>& atomicCounter);
@@ -72,6 +72,10 @@ namespace Divide {
     typedef vectorEASTL<ShaderBufferBinding> ShaderBufferList;
 
     struct DescriptorSet {
+        //This needs a lot more work!
+        ShaderBufferList _shaderBuffers = {};
+        TextureDataContainer _textureData = {};
+
         FORCE_INLINE bool operator==(const DescriptorSet &other) const {
             return _shaderBuffers == other._shaderBuffers &&
                    _textureData == other._textureData;
@@ -82,18 +86,8 @@ namespace Divide {
                    _textureData != other._textureData;
         }
 
-        //This needs a lot more work!
-        ShaderBufferList _shaderBuffers;
-        TextureDataContainer _textureData;
-
         const ShaderBufferBinding* findBinding(ShaderBufferLocation slot) const;
         const TextureData* findTexture(U8 binding) const;
-
-    private:
-        template<typename T, size_t BlockSize>
-        friend class MemoryPool;
-        friend struct DeleteDescriptorSet;
-        DescriptorSet() = default;
     };
 
     bool Merge(DescriptorSet &lhs, DescriptorSet &rhs, bool& partial);
@@ -116,7 +110,6 @@ namespace Divide {
         DescriptorSetPool& _context;
     };
 
-    FWD_DECLARE_MANAGED_STRUCT(DescriptorSet);
 }; //namespace Divide
 
 #endif //_DESCRIPTOR_SETS_H_

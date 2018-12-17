@@ -37,7 +37,6 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
       _context(context.gfx()),
       _lodLevel(0),
       _renderMask(0),
-      _descriptorSetCache(_context.newDescriptorSet()),
       _reflectorType(ReflectorType::PLANAR_REFLECTOR),
       _materialInstance(nullptr),
       _skeletonPrimitive(nullptr)
@@ -196,7 +195,6 @@ void RenderingComponent::rebuildDrawCommands(RenderStagePass stagePass) {
     pkg.addPushConstantsCommand(pushConstantsCommand);
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCommand;
-    bindDescriptorSetsCommand._set = _context.newDescriptorSet();
     pkg.addDescriptorSetsCommand(bindDescriptorSetsCommand);
 
     _parentSGN.getNode()->buildDrawCommands(_parentSGN, stagePass, pkg);
@@ -251,30 +249,36 @@ void RenderingComponent::rebuildMaterial() {
 }
 
 void RenderingComponent::registerTextureDependency(const TextureData& additionalTexture, U8 binding) {
-    _descriptorSetCache->_textureData.addTexture(eastl::make_pair(additionalTexture, binding));
+    for (RenderPackagesPerPassType& packagesPerPass : _renderPackages) {
+        for (std::unique_ptr<RenderPackage>& pkg : packagesPerPass) {
+            pkg->registerTextureDependency(additionalTexture, binding);
+        }
+    }
 }
 
 void RenderingComponent::removeTextureDependency(U8 binding) {
-    _descriptorSetCache->_textureData.removeTexture(binding);
+    for (RenderPackagesPerPassType& packagesPerPass : _renderPackages) {
+        for (std::unique_ptr<RenderPackage>& pkg : packagesPerPass) {
+            pkg->removeTextureDependency(binding);
+        }
+    }
 }
 
 void RenderingComponent::removeTextureDependency(const TextureData& additionalTexture) {
-    _descriptorSetCache->_textureData.removeTexture(additionalTexture);
+    for (RenderPackagesPerPassType& packagesPerPass : _renderPackages) {
+        for (std::unique_ptr<RenderPackage>& pkg : packagesPerPass) {
+            pkg->removeTextureDependency(additionalTexture);
+        }
+    }
 }
 
 void RenderingComponent::onRender(RenderStagePass renderStagePass) {
     const Material_ptr& mat = getMaterialInstance();
-    bool texturesChanged = false;
     if (mat) {
-        texturesChanged = mat->getTextureData(renderStagePass, _descriptorSetCache->_textureData);
-    }
-
-    const DescriptorSet_ptr& existingDescriptorSet = getDrawPackage(renderStagePass).descriptorSet(0);
-    if (texturesChanged || 
-        _descriptorSetCache->_shaderBuffers != existingDescriptorSet->_shaderBuffers ||
-        _descriptorSetCache->_textureData != existingDescriptorSet->_textureData)
-    {
-        getDrawPackage(renderStagePass).descriptorSet(0, _descriptorSetCache);
+        DescriptorSet set = getDrawPackage(renderStagePass).descriptorSet(0);
+        if (mat->getTextureData(renderStagePass, set._textureData)) {
+            getDrawPackage(renderStagePass).descriptorSet(0, set);
+        }
     }
 }
 
@@ -410,31 +414,19 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
 void RenderingComponent::registerShaderBuffer(ShaderBufferLocation slot,
                                               vec2<U32> bindRange,
                                               ShaderBuffer& shaderBuffer) {
-
-    ShaderBufferList& shaderBuffersCache = _descriptorSetCache->_shaderBuffers;
-
-    ShaderBufferList::iterator it = std::find_if(std::begin(shaderBuffersCache),
-                                                 std::end(shaderBuffersCache),
-                                                 [slot](const ShaderBufferBinding& binding)
-                                                 -> bool { return binding._binding == slot; });
-
-    if (it == std::end(shaderBuffersCache)) {
-        shaderBuffersCache.emplace_back(slot, &shaderBuffer, bindRange);
-    } else {
-        it->set(slot, &shaderBuffer, bindRange);
+    for (RenderPackagesPerPassType& packagesPerPass : _renderPackages) {
+        for (std::unique_ptr<RenderPackage>& pkg : packagesPerPass) {
+            pkg->registerShaderBuffer(slot, bindRange, shaderBuffer);
+        }
     }
 }
 
 void RenderingComponent::unregisterShaderBuffer(ShaderBufferLocation slot) {
-    ShaderBufferList& shaderBuffersCache = _descriptorSetCache->_shaderBuffers;
-
-    ShaderBufferList::iterator it = std::find_if(std::begin(shaderBuffersCache),
-                                                 std::end(shaderBuffersCache),
-                                                 [slot](const ShaderBufferBinding& binding)
-                                                  -> bool { return binding._binding == slot; });
-
-    if (it != std::cend(shaderBuffersCache)) {
-        shaderBuffersCache.erase(it);
+    
+    for (RenderPackagesPerPassType& packagesPerPass : _renderPackages) {
+        for (std::unique_ptr<RenderPackage>& pkg : packagesPerPass) {
+            pkg->unregisterShaderBuffer(slot);
+        }
     }
 }
 

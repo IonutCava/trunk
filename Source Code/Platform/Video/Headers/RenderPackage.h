@@ -77,6 +77,15 @@ public:
     inline void qualityRequirement(MinQuality state) { _qualityRequirement = state; }
     inline MinQuality qualityRequirement() const { return  _qualityRequirement; }
 
+    void registerShaderBuffer(ShaderBufferLocation slot,
+                              vec2<U32> bindRange,
+                              ShaderBuffer& shaderBuffer);
+
+    void unregisterShaderBuffer(ShaderBufferLocation slot);
+    void registerTextureDependency(const TextureData& additionalTexture, U8 binding);
+    void removeTextureDependency(U8 binding);
+    void removeTextureDependency(const TextureData& additionalTexture);
+
     size_t getSortKeyHash() const;
 
     I32 drawCommandCount() const;
@@ -94,8 +103,8 @@ public:
     const PushConstants& pushConstants(I32 index) const;
     void pushConstants(I32 index, const PushConstants& constants);
 
-    const DescriptorSet_ptr& descriptorSet(I32 index) const;
-    void descriptorSet(I32 index, const DescriptorSet_ptr& descriptorSets);
+    const DescriptorSet& descriptorSet(I32 index) const;
+    void descriptorSet(I32 index, const DescriptorSet& descriptorSets);
 
     void addDrawCommand(const GFX::DrawCommand& cmd);
     void addPipelineCommand(const GFX::BindPipelineCommand& clipPlanes);

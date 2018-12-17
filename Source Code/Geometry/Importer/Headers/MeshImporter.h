@@ -48,7 +48,7 @@ namespace Divide {
                 _wrapU(TextureWrap::REPEAT),
                 _wrapV(TextureWrap::REPEAT),
                 _wrapW(TextureWrap::REPEAT),
-                _operation(Material::TextureOperation::REPLACE)
+                _operation(Material::TextureOperation::NONE)
             {
             }
 

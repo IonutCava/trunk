@@ -34,23 +34,36 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _COMMAND_BUFFER_INL_
 #define _COMMAND_BUFFER_INL_
 
+
 namespace Divide {
 namespace GFX {
+
+namespace {
+    constexpr bool DISABLE_MEM_POOL = false;
+};
 
 template<typename T>
 inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, void>::type
 CommandBuffer::add(const T& command) {
     T* ptr = nullptr;
     {
-        UniqueLockShared w_lock(T::s_PoolMutex);
-        ptr = T::s_Pool.newElement(command);
+        if (DISABLE_MEM_POOL) {
+            ptr = MemoryManager_NEW T(command);
+        } else {
+            UniqueLockShared w_lock(T::s_PoolMutex);
+            ptr = T::s_Pool.newElement(command);
+        }
     }
 
     _commandOrder.emplace_back(_commands.insert(static_cast<vec_size_eastl>(command._type),
-                                                std::shared_ptr<T>(ptr, [](T* cmd)
+                                                std::shared_ptr<T>(ptr, [](T*& cmd)
                                                 {
-                                                    UniqueLockShared w_lock(T::s_PoolMutex);
-                                                    T::s_Pool.deleteElement(cmd);
+                                                    if (DISABLE_MEM_POOL) {
+                                                        MemoryManager::SAFE_DELETE(cmd);
+                                                    } else {
+                                                        UniqueLockShared w_lock(T::s_PoolMutex);
+                                                        T::s_Pool.deleteElement(cmd);
+                                                    }
                                                     cmd = nullptr;
                                                 })));
 }
@@ -137,7 +150,7 @@ inline bool CommandBuffer::tryMergeCommands(DrawCommand* prevCommand, DrawComman
 
 template<>
 inline bool CommandBuffer::tryMergeCommands(BindDescriptorSetsCommand* prevCommand, BindDescriptorSetsCommand* crtCommand, bool& partial) const {
-    return Merge(*prevCommand->_set, *crtCommand->_set, partial);
+    return Merge(prevCommand->_set, crtCommand->_set, partial);
 }
 
 template<>

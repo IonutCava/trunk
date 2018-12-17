@@ -244,12 +244,6 @@ Pipeline* GFXDevice::newPipeline(const PipelineDescriptor& descriptor) const {
     return &it->second;
 }
 
-DescriptorSet_ptr GFXDevice::newDescriptorSet() const {
-    UniqueLock w_lock(_descriptorSetPoolLock);
-    return std::shared_ptr<DescriptorSet>(_descriptorSetPool.newElement(),
-                                          DeleteDescriptorSet(_descriptorSetPoolLock, _descriptorSetPool));
-}
-
 ShaderProgram* GFXDevice::newShaderProgram(size_t descriptorHash,
                                            const stringImpl& name,
                                            const stringImpl& resourceName,

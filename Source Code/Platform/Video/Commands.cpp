@@ -33,23 +33,23 @@ stringImpl SetScissorCommand::toString(U16 indent) const {
 
 stringImpl BindDescriptorSetsCommand::toString(U16 indent) const {
     stringImpl ret = CommandBase::toString(indent);
-    if (_set != nullptr) {
-        ret.append(Util::StringFormat(" [ Buffers: %d, Textures: %d ]\n", _set->_shaderBuffers.size(), _set->_textureData.textures().size()));
-        for (auto it : _set->_shaderBuffers) {
+
+    ret.append(Util::StringFormat(" [ Buffers: %d, Textures: %d ]\n", _set._shaderBuffers.size(), _set._textureData.textures().size()));
+    for (auto it : _set._shaderBuffers) {
+        ret.append("    ");
+        for (U16 j = 0; j < indent; ++j) {
             ret.append("    ");
-            for (U16 j = 0; j < indent; ++j) {
-                ret.append("    ");
-            }
-            ret.append(Util::StringFormat("Buffer [ %d - %d ]\n", to_base(it._binding), it._buffer->getGUID()));
         }
-        for (auto it : _set->_textureData.textures()) {
-            ret.append("    ");
-            for (U16 j = 0; j < indent; ++j) {
-                ret.append("    ");
-            }
-            ret.append(Util::StringFormat("Texture [ %d - %d ]\n", it.second, it.first.getHandle()));
-        }
+        ret.append(Util::StringFormat("Buffer [ %d - %d ]\n", to_base(it._binding), it._buffer->getGUID()));
     }
+    for (auto it : _set._textureData.textures()) {
+        ret.append("    ");
+        for (U16 j = 0; j < indent; ++j) {
+            ret.append("    ");
+        }
+        ret.append(Util::StringFormat("Texture [ %d - %d ]\n", it.second, it.first.getHandle()));
+    }
+
     return ret;
 }
 

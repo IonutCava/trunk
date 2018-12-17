@@ -16,8 +16,8 @@ namespace Divide {
 QuadtreeNode::QuadtreeNode()
     : _terrainChunk(nullptr),
       _bbPrimitive(nullptr),
-      _children(nullptr),
-      _frustPlaneCache(-1)
+      _children(nullptr)
+      //,_frustPlaneCache(-1)
 {
     _targetChunkDimension = 0;
 }
@@ -142,6 +142,8 @@ bool QuadtreeNode::isInView(U32 options, const SceneRenderState& sceneRenderStat
                 }
             }
         }
+        STUBBED("ToDo: make this work in a multi-threaded environment -Ionu");
+        I8 _frustPlaneCache = -1;
 
         if (!_boundingBox.containsPoint(cam.getEye())) {
 

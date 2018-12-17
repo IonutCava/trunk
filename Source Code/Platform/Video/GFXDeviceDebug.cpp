@@ -150,7 +150,6 @@ void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
         GFX::SetViewportCommand setViewport = {};
         GFX::SendPushConstantsCommand pushConstants = {};
         GFX::BindPipelineCommand bindPipeline = {};
-        GFX::BindDescriptorSetsCommand bindDescriptorSets = {};
         GFX::DrawCommand drawCommand = {};
         drawCommand._drawCommands.push_back(triangleCmd);
 
@@ -172,8 +171,8 @@ void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
             setViewport._viewport.set(viewport);
             GFX::EnqueueCommand(bufferInOut, setViewport);
 
-            bindDescriptorSets._set = newDescriptorSet();
-            bindDescriptorSets._set->_textureData.addTexture(view._texture->getData(), view._textureBindSlot);
+            GFX::BindDescriptorSetsCommand bindDescriptorSets = {};
+            bindDescriptorSets._set._textureData.addTexture(view._texture->getData(), view._textureBindSlot);
             GFX::EnqueueCommand(bufferInOut, bindDescriptorSets);
 
             GFX::EnqueueCommand(bufferInOut, drawCommand);
@@ -205,6 +204,8 @@ void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
 
 
 DebugView* GFXDevice::addDebugView(const std::shared_ptr<DebugView>& view) {
+    UniqueLock lock(_debugViewLock);
+
     _debugViews.push_back(view);
     if (_debugViews.back()->_sortIndex == -1) {
         _debugViews.back()->_sortIndex = to_I16(_debugViews.size());

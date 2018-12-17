@@ -13,6 +13,7 @@
 #include "Geometry/Shapes/Headers/SkinnedSubMesh.h"
 #include "Environment/Water/Headers/Water.h"
 #include "Environment/Terrain/Headers/Terrain.h"
+#include "Platform/Video/Headers/RenderPackage.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 
 #include "Editor/Headers/Editor.h"
@@ -63,7 +64,7 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescr
       _usageContext(descriptor._usageContext),
       _selectionFlag(SelectionFlag::SELECTION_NONE),
       _parent(nullptr),
-      _frustPlaneCache(-1),
+      //_frustPlaneCache(-1),
       _elapsedTimeUS(0ULL),
       _updateFlags(0U),
       _active(true),
@@ -482,7 +483,8 @@ bool SceneGraphNode::prepareRender(const SceneRenderState& sceneRenderState,
         if (aComp) {
             std::pair<vec2<U32>, ShaderBuffer*> data = aComp->getAnimationData();
             if (data.second != nullptr) {
-                rComp->registerShaderBuffer(ShaderBufferLocation::BONE_TRANSFORMS, data.first, *data.second);
+                RenderPackage& pkg = rComp->getDrawPackage(renderStagePass);
+                pkg.registerShaderBuffer(ShaderBufferLocation::BONE_TRANSFORMS, data.first, *data.second);
             }
         }
         rComp->onRender(renderStagePass);
@@ -552,6 +554,8 @@ bool SceneGraphNode::cullNode(const Camera& currentCamera,
     if (minDistanceSq > maxDistanceFromCameraSq) {
         return true;
     }
+    STUBBED("ToDo: make this work in a multi-threaded environment -Ionu");
+    I8 _frustPlaneCache = -1;
 
     // Sphere is in range, so check bounds primitives againts the frustum
     if (!boundingBox.containsPoint(eye)) {

@@ -97,7 +97,8 @@ class QuadtreeNode {
     bool isInView(U32 options, const SceneRenderState& sceneState) const;
 
    private:
-    mutable I8 _frustPlaneCache;
+    //ToDo: make this work in a multi-threaded environment
+    //mutable I8 _frustPlaneCache;
     U32 _targetChunkDimension;
     BoundingBox _boundingBox;        ///< Node BoundingBox
     BoundingSphere _boundingSphere;  ///< Node BoundingSphere

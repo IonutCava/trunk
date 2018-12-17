@@ -164,7 +164,7 @@ class Material : public CachedResource {
 
     bool setTexture(ShaderProgram::TextureUsage textureUsageSlot,
                     const Texture_ptr& tex,
-                    const TextureOperation& op = TextureOperation::REPLACE);
+                    const TextureOperation& op = TextureOperation::NONE);
     /// Add a texture <-> bind slot pair to be bound with the default textures
     /// on each "bindTexture" call
     void addExternalTexture(const Texture_ptr& texture, U8 slot, bool activeForDepth = false);

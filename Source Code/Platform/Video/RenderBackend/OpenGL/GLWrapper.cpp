@@ -978,12 +978,12 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
         
         case GFX::CommandType::BIND_DESCRIPTOR_SETS: {
             const GFX::BindDescriptorSetsCommand& crtCmd = commandBuffer.getCommand<GFX::BindDescriptorSetsCommand>(entry);
-            const DescriptorSet_ptr& set = crtCmd._set;
+            const DescriptorSet& set = crtCmd._set;
 
-            if (makeTexturesResident(set->_textureData)) {
+            if (makeTexturesResident(set._textureData)) {
                 
             }
-            for (const ShaderBufferBinding& shaderBufCmd : set->_shaderBuffers) {
+            for (const ShaderBufferBinding& shaderBufCmd : set._shaderBuffers) {
                 if (shaderBufCmd._binding == ShaderBufferLocation::CMD_BUFFER) {
                     const glUniformBuffer* cmdBuffer = static_cast<glUniformBuffer*>(shaderBufCmd._buffer);
                     getStateTracker().setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, cmdBuffer->bufferID());

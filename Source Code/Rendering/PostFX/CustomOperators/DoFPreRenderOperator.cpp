@@ -67,9 +67,8 @@ void DoFPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& buf
     GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
-    descriptorSetCmd._set = _context.newDescriptorSet();
-    descriptorSetCmd._set->_textureData.addTexture(data0, to_U8(ShaderProgram::TextureUsage::UNIT0));
-    descriptorSetCmd._set->_textureData.addTexture(depthData, to_U8(ShaderProgram::TextureUsage::UNIT1));
+    descriptorSetCmd._set._textureData.addTexture(data0, to_U8(ShaderProgram::TextureUsage::UNIT0));
+    descriptorSetCmd._set._textureData.addTexture(depthData, to_U8(ShaderProgram::TextureUsage::UNIT1));
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     GFX::BeginRenderPassCommand beginRenderPassCmd;
