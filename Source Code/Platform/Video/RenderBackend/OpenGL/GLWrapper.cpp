@@ -1109,7 +1109,9 @@ void GL_API::registerBufferBind(const BufferWriteData& data) {
         return;
     }
 
-    s_bufferBinds.enqueue(data);
+    if (!s_bufferBinds.enqueue(data)) {
+        assert(false && "GL_API::registerBufferBind failure!");
+    }
 }
 
 GenericVertexData* GL_API::getOrCreateIMGUIBuffer(I64 windowGUID) {
