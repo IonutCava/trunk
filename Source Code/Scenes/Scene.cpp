@@ -343,6 +343,9 @@ void Scene::loadAsset(const XML::SceneNode& sceneNode, SceneGraphNode* parent) {
         }
         else if (sceneNode.type == "INFINITE_PLANE") {
             addInfPlane(*parent, nodeTree, sceneNode.name);
+        } 
+        else if (sceneNode.type == "WATER") {
+            addWater(*parent, nodeTree, sceneNode.name);
         }
         // Mesh types
         else if (Util::CompareIgnoreCase(sceneNode.type, "MESH")) {
@@ -616,6 +619,33 @@ SceneGraphNode* Scene::addSky(SceneGraphNode& parentNode, boost::property_tree::
     skyNode->loadFromXML(pt);
 
     return skyNode;
+}
+
+SceneGraphNode* Scene::addWater(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const stringImpl& nodeName) {
+    U16 width = pt.get<U16>("dimensions.<xmlattr>.width", 500u);
+    U16 length = pt.get<U16>("dimensions.<xmlattr>.length", 500u);
+    U16 depth = pt.get<U16>("dimensions.<xmlattr>.depth", 500u);
+
+
+    ResourceDescriptor waterDescriptor("Water_" + nodeName);
+    waterDescriptor.setData(vec3<U16>(width, length, depth));
+    std::shared_ptr<WaterPlane> waterItem = CreateResource<WaterPlane>(_resCache, waterDescriptor);
+
+    waterItem->loadFromXML(pt);
+
+    SceneGraphNodeDescriptor waterNodeDescriptor;
+    waterNodeDescriptor._name = nodeName;
+    waterNodeDescriptor._node = waterItem;
+    waterNodeDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
+    waterNodeDescriptor._componentMask = to_base(ComponentType::NAVIGATION) |
+                                         to_base(ComponentType::TRANSFORM) |
+                                         to_base(ComponentType::BOUNDS) |
+                                         to_base(ComponentType::RENDERING) |
+                                         to_base(ComponentType::NETWORKING);
+    SceneGraphNode* waterNode = _sceneGraph->getRoot().addNode(waterNodeDescriptor);
+    waterNode->loadFromXML(pt);
+
+    return waterNode;
 }
 
 SceneGraphNode* Scene::addInfPlane(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const stringImpl& nodeName) {

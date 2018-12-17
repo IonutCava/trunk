@@ -72,9 +72,11 @@ bool ImplResourceLoader<WaterPlane>::load(std::shared_ptr<WaterPlane> res, const
 
 template<>
 CachedResource_ptr ImplResourceLoader<WaterPlane>::operator()() {
-    vec3<F32> dimensions = *reinterpret_cast<vec3<F32>*>(_descriptor.getUserPtr());
 
-    std::shared_ptr<WaterPlane> ptr(MemoryManager_NEW WaterPlane(_cache, _loadingDescriptorHash, _descriptor.resourceName(), dimensions),
+    std::shared_ptr<WaterPlane> ptr(MemoryManager_NEW WaterPlane(_cache,
+                                                                 _loadingDescriptorHash,
+                                                                 _descriptor.resourceName(),
+                                                                 _descriptor.getData()),
                                     DeleteResource(_cache));
 
     if (!load(ptr, _descriptor.onLoadCallback())) {

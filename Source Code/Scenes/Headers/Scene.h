@@ -133,6 +133,7 @@ class Scene : public Resource, public PlatformContextComponent {
     void addMusic(MusicType type, const stringImpl& name, const stringImpl& srcFile);
 
     SceneGraphNode* addSky(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const stringImpl& nodeName = "");
+    SceneGraphNode* addWater(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const stringImpl& nodeName = "");
     SceneGraphNode* addInfPlane(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const stringImpl& nodeName = "");
     void addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const stringImpl& nodeName = "");
 

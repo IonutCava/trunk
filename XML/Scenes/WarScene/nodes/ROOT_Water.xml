@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <static>true</static>
-<model>Pattern2D_87062</model>
-<NAVIGATION/>
+<dimensions width="4096" height="4096" depth="500"/>
 <TRANSFORM>
     <Transform>
         <position x="0" y="0" z="0"/>
@@ -13,14 +12,14 @@
 <BOUNDS/>
 <RENDERING>
     <Material>
-        <colour r="0.588235021" g="0.588235021" b="0.588235021" a="1"/>
+        <colour r="1" g="1" b="1" a="1"/>
         <emissive r="0" g="0" b="0"/>
-        <specular r="0" g="0" b="0"/>
-        <shininess>9.99999905</shininess>
+        <specular r="0.100000001" g="0.100000001" b="0.100000001"/>
+        <shininess>5</shininess>
         <doubleSided>false</doubleSided>
         <bumpMethod>NONE</bumpMethod>
-        <shadingMode>PHONG</shadingMode>
-        <parallaxFactor>0.00999999978</parallaxFactor>
+        <shadingMode>BLINN_PHONG</shadingMode>
+        <parallaxFactor>1</parallaxFactor>
     </Material>
 </RENDERING>
-<SUBMESH/>
+<VEGETATION_GRASS/>

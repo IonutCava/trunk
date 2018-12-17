@@ -33,8 +33,8 @@
 #ifndef RESOURCE_DESCRIPTOR_H_
 #define RESOURCE_DESCRIPTOR_H_
 
-#include "Platform/Headers/PlatformDefines.h"
 #include "Core/Headers/Hashable.h"
+#include "Core/Math/Headers/MathVectors.h"
 
 namespace Divide {
 
@@ -104,7 +104,7 @@ class ResourceDescriptor : public Hashable {
     inline U32  getEnumValue() const { return _enumValue; }
     inline U32  getID() const { return _ID; }
     inline P32  getMask() const { return _mask; }
-    inline void* getUserPtr() const { return _userPtr; }
+    inline const vec3<U16>& getData() const { return _data; }
 
     const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback() const {
         return _onLoadCallback;
@@ -122,7 +122,7 @@ class ResourceDescriptor : public Hashable {
     inline void setFlag(bool flag) { _flag = flag; }
     inline void setID(U32 ID) { _ID = ID; }
     inline void setBoolMask(P32 mask) { _mask = mask; }
-    inline void setUserPtr(void* ptr) { _userPtr = ptr; }
+    inline void setData(const vec3<U16>& data) { _data.set(data); }
 
     inline void setThreadedLoading(const bool threaded) {
         _threaded = threaded;
@@ -157,8 +157,8 @@ class ResourceDescriptor : public Hashable {
     std::shared_ptr<PropertyDescriptor> _propertyDescriptor;
     /// Callback to use when the resource finished loading (includes threaded loading)
     DELEGATE_CBK<void, CachedResource_wptr> _onLoadCallback;
-    /// General Data
-    void *_userPtr = nullptr;
+    /// general data
+    vec3<U16> _data;
 };
 
 };  // namespace Divide

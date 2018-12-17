@@ -444,9 +444,6 @@
     <ClCompile Include="../../../Source Code/Geometry\Shapes\Predefined\Box3D.cpp">
       <Filter>Geometry\Shapes\Predefined</Filter>
     </ClCompile>
-    <ClCompile Include="../../../Source Code/Geometry\Shapes\Predefined\Patch3D.cpp">
-      <Filter>Geometry\Shapes\Predefined</Filter>
-    </ClCompile>
     <ClCompile Include="../../../Source Code/Geometry\Shapes\Predefined\Quad3D.cpp">
       <Filter>Geometry\Shapes\Predefined</Filter>
     </ClCompile>
@@ -858,9 +855,6 @@
       <Filter>Geometry\Shapes\Headers</Filter>
     </ClInclude>
     <ClInclude Include="../../../Source Code/Geometry\Shapes\Predefined\Headers\Box3D.h">
-      <Filter>Geometry\Shapes\Predefined\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="../../../Source Code/Geometry\Shapes\Predefined\Headers\Patch3D.h">
       <Filter>Geometry\Shapes\Predefined\Headers</Filter>
     </ClInclude>
     <ClInclude Include="../../../Source Code/Geometry\Shapes\Predefined\Headers\Quad3D.h">

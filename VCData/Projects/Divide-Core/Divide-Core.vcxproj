@@ -61,9 +61,6 @@
     <ClCompile Include="../../../Source Code/Core\Resources\ConcreteLoaders\MeshLoaderImpl.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="../../../Source Code/Core\Resources\ConcreteLoaders\Patch3DLoaderImpl.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="../../../Source Code/Core\Resources\ConcreteLoaders\Quad3DLoaderImpl.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
     </ClCompile>

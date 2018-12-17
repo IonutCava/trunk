@@ -24,7 +24,6 @@
 namespace Divide {
 
 namespace {
-    vec3<F32> g_waterDimensions(500, 500, 500);
     TaskHandle g_boxMoveTaskID;
 };
 
@@ -170,10 +169,8 @@ bool MainScene::load(const stringImpl& name) {
                                   to_base(ComponentType::RENDERING) |
                                   to_base(ComponentType::NAVIGATION);
 
-    g_waterDimensions.x = baseCamera->getZPlanes().y;
-    g_waterDimensions.z = baseCamera->getZPlanes().y;
     ResourceDescriptor infiniteWater("waterEntity");
-    infiniteWater.setUserPtr(g_waterDimensions);
+    infiniteWater.setData(vec3<U16>(baseCamera->getZPlanes().y));
     WaterPlane_ptr water = CreateResource<WaterPlane>(_resCache, infiniteWater);
 
     SceneGraphNodeDescriptor waterNodeDescriptor;

@@ -35,6 +35,7 @@ uniform vec2 _noiseFactor;
 uniform float _waterShininess;
 
 #include "lightInput.cmn"
+#include "lightData.frag"
 #include "materialData.frag"
 #include "shadowMapping.frag"
 #include "velocityCalc.frag"

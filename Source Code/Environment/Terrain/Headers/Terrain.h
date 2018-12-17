@@ -114,7 +114,6 @@ class TerrainChunk;
 class TerrainDescriptor;
 
 FWD_DECLARE_MANAGED_CLASS(Quad3D);
-FWD_DECLARE_MANAGED_CLASS(Patch3D);
 FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
 
 namespace Attorney {

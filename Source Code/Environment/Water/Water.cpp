@@ -32,8 +32,7 @@ WaterPlane::WaterPlane(ResourceCache& parentCache, size_t descriptorHash, const 
     waterPlane.setBoolMask(quadMask);
     _plane = CreateResource<Quad3D>(parentCache, waterPlane);
 
-    // The water doesn't cast shadows, doesn't need ambient occlusion and
-    // doesn't have real "depth"
+    // The water doesn't cast shadows, doesn't need ambient occlusion and doesn't have real "depth"
     renderState().addToDrawExclusionMask(RenderStage::SHADOW);
 
     U32 sideLength = nextPOW2(std::max(to_U32(dimensions.width), to_U32(dimensions.height)));
@@ -185,8 +184,20 @@ void WaterPlane::updatePlaneEquation(const SceneGraphNode& sgn, Plane<F32>& plan
     plane.set(normal, -waterLevel);
 }
 
-const vec3<F32>& WaterPlane::getDimensions() const {
+const vec3<U16>& WaterPlane::getDimensions() const {
     return _dimensions;
+}
+
+void WaterPlane::saveToXML(boost::property_tree::ptree& pt) const {
+    pt.put("dimensions.<xmlattr>.width", _dimensions.x);
+    pt.put("dimensions.<xmlattr>.length", _dimensions.y);
+    pt.put("dimensions.<xmlattr>.depth", _dimensions.z);
+
+    SceneNode::saveToXML(pt);
+}
+
+void WaterPlane::loadFromXML(const boost::property_tree::ptree& pt) {
+    SceneNode::loadFromXML(pt);
 }
 
 };

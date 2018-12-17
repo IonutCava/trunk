@@ -145,9 +145,9 @@ void Vegetation::precomputeStaticData(PlatformContext& context, U32 chunkSize) {
         s_buffer->keepData(false);
     }
 
-    if (!g_disableLoadFromCache) {
+    /*if (!g_disableLoadFromCache) {
         return;
-    }
+    }*/
 
     //ref: http://mollyrocket.com/casey/stream_0016.html
     F32 PointRadius = 1.0f;
@@ -186,6 +186,9 @@ void Vegetation::precomputeStaticData(PlatformContext& context, U32 chunkSize) {
             }
         }
     }
+
+    int a;
+    a = 5;
 }
 
 void Vegetation::uploadGrassData() {

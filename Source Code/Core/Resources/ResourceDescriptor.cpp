@@ -18,7 +18,7 @@ ResourceDescriptor::ResourceDescriptor(const stringImpl& resourceName)
       _flag(false),
       _ID(0),
       _enumValue(0),
-      _userPtr(nullptr)
+      _data(0u)
 {
     _mask.i = 0;
     _threaded = true;
@@ -38,7 +38,7 @@ ResourceDescriptor::ResourceDescriptor(const ResourceDescriptor& old)
       _ID(old._ID),
       _mask(old._mask),
       _enumValue(old._enumValue),
-      _userPtr(old._userPtr),
+      _data(old._data),
       _onLoadCallback(old._onLoadCallback)
 {
     _propertyDescriptor.reset(old._propertyDescriptor ? old._propertyDescriptor->clone() : nullptr);
@@ -54,7 +54,7 @@ ResourceDescriptor& ResourceDescriptor::operator=(ResourceDescriptor const& old)
         _ID = old._ID;
         _mask = old._mask;
         _enumValue = old._enumValue;
-        _userPtr = old._userPtr;
+        _data = old._data;
         _onLoadCallback = old._onLoadCallback;
         _propertyDescriptor.reset(old._propertyDescriptor ? old._propertyDescriptor->clone() : nullptr);
     }
@@ -71,7 +71,7 @@ ResourceDescriptor::ResourceDescriptor(ResourceDescriptor&& old) noexcept
        _ID(std::move(old._ID)),
        _mask(std::move(old._mask)),
        _enumValue(std::move(old._enumValue)),
-       _userPtr(std::move(old._userPtr)),
+       _data(std::move(old._data)),
        _onLoadCallback(std::move(old._onLoadCallback)),
        _propertyDescriptor(std::move(old._propertyDescriptor))
 {
@@ -83,11 +83,13 @@ size_t ResourceDescriptor::getHash() const {
     Util::Hash_combine(_hash, _assetName);
     Util::Hash_combine(_hash, _assetLocation);
     Util::Hash_combine(_hash, _flag);
-    //Util::Hash_combine(_hash, _threaded); //Loading specific
     Util::Hash_combine(_hash, _ID);
     Util::Hash_combine(_hash, _mask.i);
     Util::Hash_combine(_hash, _enumValue);
-    //Util::Hash_combine(_hash, _userPtr); //Loading specific
+    Util::Hash_combine(_hash, _data.x);
+    Util::Hash_combine(_hash, _data.y);
+    Util::Hash_combine(_hash, _data.z);
+    //Util::Hash_combine(_hash, _threaded); //Loading specific
     //Util::Hash_combine(_hash, _onLoadCallback); //Loading specific
     if (_propertyDescriptor) {
         Util::Hash_combine(_hash, _propertyDescriptor->getHash());

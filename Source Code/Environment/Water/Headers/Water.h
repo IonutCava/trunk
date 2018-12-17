@@ -64,7 +64,10 @@ class WaterPlane : public SceneNode {
                              bool reflection);
 
     // width, length, depth
-    const vec3<F32>& getDimensions() const;
+    const vec3<U16>& getDimensions() const;
+
+    void saveToXML(boost::property_tree::ptree& pt) const override;
+    void loadFromXML(const boost::property_tree::ptree& pt)  override;
 
    protected:
     void buildDrawCommands(SceneGraphNode& sgn,
@@ -79,8 +82,7 @@ class WaterPlane : public SceneNode {
     void updateRefraction(RenderCbkParams& renderParams, GFX::CommandBuffer& bufferInOut);
 
    private:
-    /// cached far plane value
-    vec3<F32> _dimensions;
+    vec3<U16> _dimensions;
     /// the water's "geometry"
     std::shared_ptr<Quad3D> _plane;
 

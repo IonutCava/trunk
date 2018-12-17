@@ -13,7 +13,6 @@
 #include "Geometry/Material/Headers/Material.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
-#include "Geometry/Shapes/Predefined/Headers/Patch3D.h"
 
 namespace Divide {
 
