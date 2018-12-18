@@ -26,10 +26,6 @@ in flat int _underwater;
 in vec3 _pixToEye;
 in vec4 _vertexWVP;
 
-layout(location = 0) out vec4 _colourOut;
-layout(location = 1) out vec2 _normalOut;
-layout(location = 2) out vec2 _velocityOut;
-
 uniform vec2 _noiseTile;
 uniform vec2 _noiseFactor;
 uniform float _waterShininess;
@@ -39,6 +35,7 @@ uniform float _waterShininess;
 #include "materialData.frag"
 #include "shadowMapping.frag"
 #include "velocityCalc.frag"
+#include "output.frag"
 
 float Fresnel(in vec3 viewDir, in vec3 normal) {
     return _underwater == 1 ? 1.0 : 1.0 / pow(1.0 + dot(viewDir, normal), 5);
@@ -73,13 +70,14 @@ void main (void)
 
     float iSpecular = pow(clamp(dot(normalize(reflect(-L, N)), V), 0.0, 1.0), _waterShininess);
 
+    vec4 colour = vec4(1.0);
     // add Diffuse
-    _colourOut.rgb = mix(texture(texWaterReflection, uvFinalReflect).rgb,
-                         texture(texWaterRefraction, uvFinalRefract).rgb,
-                         vec3(clamp(Fresnel(V, normalize(VAR._normalWV)), 0.0, 1.0)));
+    colour.rgb = mix(texture(texWaterReflection, uvFinalReflect).rgb,
+                     texture(texWaterRefraction, uvFinalRefract).rgb,
+                     vec3(clamp(Fresnel(V, normalize(VAR._normalWV)), 0.0, 1.0)));
 
     // add Specular
-    _colourOut.rgb = texture(texWaterRefraction, uvFinalRefract).rgb * 10.2;//clamp(_colourOut.rgb + dvd_private_light._colour.rgb * getSpecular() * iSpecular, vec3(0.0), vec3(1.0));
-    _normalOut = packNormal(N);
-    _velocityOut = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
+    colour = vec4(texture(texWaterReflection, uvFinalReflect).rgb, 1.0);//texture(texWaterRefraction, uvFinalRefract).rgb * 10.2;//clamp(colour.rgb + dvd_private_light._colour.rgb * getSpecular() * iSpecular, vec3(0.0), vec3(1.0));
+
+    writeOutput(colour, packNormal(N));
 }

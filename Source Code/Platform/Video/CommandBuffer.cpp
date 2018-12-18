@@ -210,6 +210,7 @@ void CommandBuffer::clean() {
     vec_size size = _commandOrder.size();
 
     vector<vec_size> redundantEntries;
+    redundantEntries.reserve(size);
     for (vec_size i = 1; i < size; ++i) {
         if (_commandOrder[i - 1].type<GFX::CommandType::_enumerated>() == _commandOrder[i].type<GFX::CommandType::_enumerated>() &&
             _commandOrder[i].type<GFX::CommandType::_enumerated>() == CommandType::BIND_PIPELINE) {
@@ -217,7 +218,7 @@ void CommandBuffer::clean() {
         }
     }
 
-    erase_indices(_commandOrder, redundantEntries);
+    erase_sorted_indices(_commandOrder, redundantEntries);
 }
 
 // New use cases that emerge from production work should be checked here.

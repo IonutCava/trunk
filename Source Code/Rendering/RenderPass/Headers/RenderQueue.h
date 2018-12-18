@@ -84,6 +84,8 @@ class RenderQueue : public KernelComponent {
 
   private:
     RenderBinArray _renderBins;
+
+    mutable SharedMutex _activeBinsLock;
     vector<RenderBin*> _activeBins;
 };
 

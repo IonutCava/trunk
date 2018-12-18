@@ -554,7 +554,7 @@ bool SceneGraphNode::cullNode(const Camera& currentCamera,
     if (minDistanceSq > maxDistanceFromCameraSq) {
         return true;
     }
-    STUBBED("ToDo: make this work in a multi-threaded environment -Ionu");
+    STUBBED("ToDo: make this work in a multi-threaded environment -Ionut");
     I8 _frustPlaneCache = -1;
 
     // Sphere is in range, so check bounds primitives againts the frustum

@@ -689,7 +689,7 @@ bool Octree::isStatic(const SceneGraphNode& node) const {
 bool Octree::getIntersection(SceneGraphNode& node, const Frustum& frustum, IntersectionRecord& irOut) const {
     const BoundingBox& bb = node.get<BoundsComponent>()->getBoundingBox();
 
-    STUBBED("ToDo: make this work in a multi-threaded environment -Ionu");
+    STUBBED("ToDo: make this work in a multi-threaded environment -Ionut");
     I8 _frustPlaneCache = -1;
     if (frustum.ContainsBoundingBox(bb, _frustPlaneCache) != Frustum::FrustCollision::FRUSTUM_OUT) {
         irOut.reset();

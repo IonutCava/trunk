@@ -87,6 +87,7 @@ namespace Divide {
         auto& otherTextureData = rhs._textureData.textures();
 
         vector<vec_size> textureEraseList;
+        textureEraseList.reserve(otherTextureData.size());
         for (size_t i = 0; i < otherTextureData.size(); ++i) {
             const eastl::pair<TextureData, U8>& otherTexture = otherTextureData[i];
 
@@ -105,9 +106,10 @@ namespace Divide {
                 partial = true;
             }
         }
-        otherTextureData = erase_indices(otherTextureData, textureEraseList);
+        otherTextureData = erase_sorted_indices(otherTextureData, textureEraseList);
 
         vector<vec_size> bufferEraseList;
+        bufferEraseList.reserve(rhs._shaderBuffers.size());
         for (size_t i = 0; i < rhs._shaderBuffers.size(); ++i) {
             const ShaderBufferBinding& otherBinding = rhs._shaderBuffers[i];
 
@@ -129,7 +131,7 @@ namespace Divide {
                 partial = true;
             }
         }
-        rhs._shaderBuffers = erase_indices(rhs._shaderBuffers, bufferEraseList);
+        rhs._shaderBuffers = erase_sorted_indices(rhs._shaderBuffers, bufferEraseList);
 
         return rhs._shaderBuffers.empty() && rhs._textureData.textures().empty();
     }

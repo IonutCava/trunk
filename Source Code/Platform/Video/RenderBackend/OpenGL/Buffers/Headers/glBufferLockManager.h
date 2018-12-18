@@ -68,9 +68,6 @@ class glBufferLockManager : public glLockManager {
     void LockRange(size_t lockBeginBytes, size_t lockLength, bool flush);
 
    private:
-    void cleanup(BufferLock* bufferLock);
-
-   private:
     mutable std::mutex _lock;
     vector<BufferLock> _bufferLocks;
     vector<BufferLock> _swapLocks;

@@ -142,7 +142,7 @@ bool QuadtreeNode::isInView(U32 options, const SceneRenderState& sceneRenderStat
                 }
             }
         }
-        STUBBED("ToDo: make this work in a multi-threaded environment -Ionu");
+        STUBBED("ToDo: make this work in a multi-threaded environment -Ionut");
         I8 _frustPlaneCache = -1;
 
         if (!_boundingBox.containsPoint(cam.getEye())) {

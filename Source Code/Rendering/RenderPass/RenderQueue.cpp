@@ -29,11 +29,15 @@ RenderQueue::~RenderQueue()
         MemoryManager::DELETE(bin);
     }
     _renderBins.fill(nullptr);
+
+    UniqueLockShared lock(_activeBinsLock);
     _activeBins.clear();
 }
 
 U16 RenderQueue::getRenderQueueStackSize(RenderStage stage) const {
     U16 temp = 0;
+
+    UniqueLockShared r_lock(_activeBinsLock);
     for (RenderBin* bin : _activeBins) {
         temp += bin->getBinSize(stage);
     }
@@ -79,10 +83,13 @@ RenderBin* RenderQueue::getOrCreateBin(RenderBinType rbType) {
     // Bins are sorted by their type
     _renderBins[rbType._to_integral()] = temp;
     
-    _activeBins.resize(0);
-    std::back_insert_iterator<vector<RenderBin*>> back_it(_activeBins);
-    auto const usedPredicate = [](RenderBin* ptr) { return ptr != nullptr; };
-    std::copy_if(std::begin(_renderBins), std::end(_renderBins), back_it, usedPredicate);
+    {
+        UniqueLockShared lock(_activeBinsLock);
+        _activeBins.resize(0);
+        std::back_insert_iterator<vector<RenderBin*>> back_it(_activeBins);
+        auto const usedPredicate = [](RenderBin* ptr) { return ptr != nullptr; };
+        std::copy_if(std::begin(_renderBins), std::end(_renderBins), back_it, usedPredicate);
+    }
 
     return temp;
 }
@@ -159,11 +166,13 @@ void RenderQueue::populateRenderQueues(RenderStagePass stagePass, std::pair<Rend
     if (binAndFlag.first._value == RenderBinType::RBT_COUNT) {
         // If flag == false, do we just not get packages? I guess so.
         if (binAndFlag.second) {
+            SharedLock r_lock(_activeBinsLock);
             for (RenderBin* renderBin : _activeBins) {
                 renderBin->populateRenderQueue(stagePass, queueInOut);
             }
         }
     } else {
+        SharedLock r_lock(_activeBinsLock);
         for (RenderBin* renderBin : _activeBins) {
             if ((renderBin->getType() == binAndFlag.first) == binAndFlag.second) {
                 renderBin->populateRenderQueue(stagePass, queueInOut);
@@ -176,6 +185,7 @@ void RenderQueue::populateRenderQueues(RenderStagePass stagePass, std::pair<Rend
 }
 
 void RenderQueue::postRender(const SceneRenderState& renderState, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut) {
+    SharedLock r_lock(_activeBinsLock);
     for (RenderBin* renderBin : _activeBins) {
         renderBin->postRender(renderState, stagePass, bufferInOut);
     }
@@ -187,6 +197,8 @@ void RenderQueue::sort(RenderStagePass stagePass) {
 
     TaskPool& pool = parent().platformContext().taskPool();
     TaskHandle sortTask = CreateTask(pool, DELEGATE_CBK<void, const Task&>());
+
+    SharedLock r_lock(_activeBinsLock);
     for (RenderBin* renderBin : _activeBins) {
         if (!renderBin->empty(stagePass._stage)) {
             RenderingOrder::List sortOrder = getSortOrder(stagePass, renderBin->getType());
@@ -206,12 +218,14 @@ void RenderQueue::sort(RenderStagePass stagePass) {
 }
 
 void RenderQueue::refresh(RenderStage stage) {
+    SharedLock r_lock(_activeBinsLock);
     for (RenderBin* renderBin : _activeBins) {
         renderBin->refresh(stage);
     }
 }
 
 void RenderQueue::getSortedQueues(RenderStage stage, SortedQueues& queuesOut, U16& countOut) const {
+    SharedLock r_lock(_activeBinsLock);
     for (RenderBin* renderBin : _activeBins) {
         vectorEASTL<SceneGraphNode*>& nodes = queuesOut[renderBin->getType()._to_integral()];
         renderBin->getSortedNodes(stage, nodes, countOut);

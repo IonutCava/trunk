@@ -19,7 +19,7 @@ glBufferLockManager::glBufferLockManager() noexcept
 glBufferLockManager::~glBufferLockManager() {
     UniqueLock w_lock(_lock);
     for (BufferLock& lock : _bufferLocks) {
-        cleanup(&lock);
+        glDeleteSync(lock._syncObj);
     }
 
     _bufferLocks.clear();
@@ -31,13 +31,12 @@ void glBufferLockManager::WaitForLockedRange(size_t lockBeginBytes,
                                              bool blockClient) {
     BufferRange testRange = {lockBeginBytes, lockLength};
 
-    _swapLocks.resize(0);
-
     UniqueLock w_lock(_lock);
+    _swapLocks.resize(0);
     for (BufferLock& lock : _bufferLocks) {
         if (testRange.Overlaps(lock._range)) {
             wait(&lock._syncObj, blockClient);
-            cleanup(&lock);
+            glDeleteSync(lock._syncObj);
         } else {
             _swapLocks.push_back(lock);
         }
@@ -50,28 +49,21 @@ void glBufferLockManager::WaitForLockedRange(size_t lockBeginBytes,
 void glBufferLockManager::LockRange(size_t lockBeginBytes,
                                     size_t lockLength,
                                     bool flush) {
+    UniqueLock w_lock(_lock);
     GLsync sync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, UnusedMask::GL_UNUSED_BIT);
     // Make forward progress in worker thread so that we don't deadlock
     if (flush) {
         glFlush();
     }
-
-    {
-        UniqueLock w_lock(_lock);
-        _bufferLocks.push_back(
+    _bufferLocks.push_back(
+        {
             {
-                {
-                    lockBeginBytes,
-                    lockLength
-                },
-                sync
-            });
-    }
+                lockBeginBytes,
+                lockLength
+            },
+            sync
+        });
 }
 
-// --------------------------------------------------------------------------------------------------------------------
-void glBufferLockManager::cleanup(BufferLock* bufferLock) {
-    glDeleteSync(bufferLock->_syncObj);
-}
 
 };
