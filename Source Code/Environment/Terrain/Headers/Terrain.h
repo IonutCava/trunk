@@ -170,11 +170,11 @@ class Terrain : public Object3D {
     void postBuild();
 
     void buildDrawCommands(SceneGraphNode& sgn,
-                                RenderStagePass renderStagePass,
-                                RenderPackage& pkgInOut) override;
+                           RenderStagePass renderStagePass,
+                           RenderPackage& pkgInOut) override;
 
     bool onRender(SceneGraphNode& sgn,
-                  const SceneRenderState& sceneRenderState,
+                  const Camera& camera,
                   RenderStagePass renderStagePass) override;
 
     void postLoad(SceneGraphNode& sgn);

@@ -151,7 +151,7 @@ void Terrain::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState
 }
 
 bool Terrain::onRender(SceneGraphNode& sgn,
-                       const SceneRenderState& sceneRenderState,
+                       const Camera& camera,
                        RenderStagePass renderStagePass) {
     RenderPackage& pkg = sgn.get<RenderingComponent>()->getDrawPackage(renderStagePass);
 
@@ -171,7 +171,7 @@ bool Terrain::onRender(SceneGraphNode& sgn,
 
     if (!wasUpdated) 
     {
-        const vec3<F32>& newEye = sceneRenderState.parentScene().playerCamera()->getEye();
+        const vec3<F32>& newEye = camera.getEye();
         const vec3<F32>& crtPos = sgn.get<TransformComponent>()->getPosition();
 
         if (tessellator.getEye() != newEye || tessellator.getOrigin() != crtPos)
@@ -192,7 +192,7 @@ bool Terrain::onRender(SceneGraphNode& sgn,
 
     pkg.drawCommand(0, 0, cmd);
 
-    return Object3D::onRender(sgn, sceneRenderState, renderStagePass);
+    return Object3D::onRender(sgn, camera, renderStagePass);
 }
 
 void Terrain::buildDrawCommands(SceneGraphNode& sgn,

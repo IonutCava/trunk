@@ -108,13 +108,6 @@ void Sky::postLoad(SceneGraphNode& sgn) {
 
     SceneNode::postLoad(sgn);
 }
-
-bool Sky::onRender(SceneGraphNode& sgn,
-                   const SceneRenderState& sceneRenderState,
-                   RenderStagePass renderStagePass) {
-    return _sky->onRender(sgn, sceneRenderState, renderStagePass);
-}
-
 void Sky::buildDrawCommands(SceneGraphNode& sgn,
                             RenderStagePass renderStagePass,
                             RenderPackage& pkgInOut) {

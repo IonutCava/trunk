@@ -16,10 +16,9 @@ namespace {
     ClipPlaneIndex g_refractionClipID = ClipPlaneIndex::CLIP_PLANE_5;
 };
 
-WaterPlane::WaterPlane(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, const vec3<F32>& dimensions)
+WaterPlane::WaterPlane(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name)
     : SceneNode(parentCache, descriptorHash, name, SceneNodeType::TYPE_WATER),
       _plane(nullptr),
-      _dimensions(dimensions),
       _reflectionCam(nullptr)
 {
     // Set water plane to be single-sided
@@ -34,10 +33,6 @@ WaterPlane::WaterPlane(ResourceCache& parentCache, size_t descriptorHash, const 
 
     // The water doesn't cast shadows, doesn't need ambient occlusion and doesn't have real "depth"
     renderState().addToDrawExclusionMask(RenderStage::SHADOW);
-
-    U32 sideLength = nextPOW2(std::max(to_U32(dimensions.width), to_U32(dimensions.height)));
-
-    Console::printfn(Locale::get(_ID("REFRACTION_INIT_FB")), sideLength, sideLength);
 
     setBoundsChanged();
 
@@ -78,7 +73,7 @@ void WaterPlane::postLoad(SceneGraphNode& sgn) {
     });
 
     renderable->setRefractionCallback([this](RenderCbkParams& params, GFX::CommandBuffer& commandsInOut) {
-        updateRefraction(params, commandsInOut);
+        //updateRefraction(params, commandsInOut);
     });
 
     renderable->setReflectionAndRefractionType(ReflectorType::PLANAR_REFLECTOR);
@@ -95,20 +90,8 @@ void WaterPlane::updateBoundsInternal() {
     SceneNode::updateBoundsInternal();
 }
 
-bool WaterPlane::unload() {
-    bool state = false;
-    state = SceneNode::unload();
-    return state;
-}
-
 bool WaterPlane::pointUnderwater(const SceneGraphNode& sgn, const vec3<F32>& point) {
     return sgn.get<BoundsComponent>()->getBoundingBox().containsPoint(point);
-}
-
-bool WaterPlane::onRender(SceneGraphNode& sgn, 
-                          const SceneRenderState& sceneRenderState,
-                          RenderStagePass renderStagePass) {
-    return _plane->onRender(sgn, sceneRenderState, renderStagePass);
 }
 
 void WaterPlane::buildDrawCommands(SceneGraphNode& sgn,
@@ -197,6 +180,10 @@ void WaterPlane::saveToXML(boost::property_tree::ptree& pt) const {
 }
 
 void WaterPlane::loadFromXML(const boost::property_tree::ptree& pt) {
+    _dimensions.width = pt.get<U16>("dimensions.<xmlattr>.width", 500u);
+    _dimensions.height = pt.get<U16>("dimensions.<xmlattr>.length", 500u);
+    _dimensions.depth = pt.get<U16>("dimensions.<xmlattr>.depth", 500u);
+
     SceneNode::loadFromXML(pt);
 }
 

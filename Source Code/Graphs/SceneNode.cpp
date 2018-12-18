@@ -84,16 +84,13 @@ void SceneNode::sceneUpdate(const U64 deltaTimeUS,
 }
 
 bool SceneNode::onRender(SceneGraphNode& sgn,
-                         const SceneRenderState& sceneRenderState,
+                         const Camera& camera,
                          RenderStagePass renderStagePass) {
     ACKNOWLEDGE_UNUSED(sgn);
-    ACKNOWLEDGE_UNUSED(sceneRenderState);
+    ACKNOWLEDGE_UNUSED(camera);
     ACKNOWLEDGE_UNUSED(renderStagePass);
 
-    if (getState() == ResourceState::RES_LOADED) {
-        return true;
-    }
-    return false;
+    return getState() == ResourceState::RES_LOADED;
 }
 
 void SceneNode::onRefreshNodeData(SceneGraphNode& sgn,

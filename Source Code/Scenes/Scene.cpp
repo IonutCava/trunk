@@ -622,13 +622,7 @@ SceneGraphNode* Scene::addSky(SceneGraphNode& parentNode, boost::property_tree::
 }
 
 SceneGraphNode* Scene::addWater(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const stringImpl& nodeName) {
-    U16 width = pt.get<U16>("dimensions.<xmlattr>.width", 500u);
-    U16 length = pt.get<U16>("dimensions.<xmlattr>.length", 500u);
-    U16 depth = pt.get<U16>("dimensions.<xmlattr>.depth", 500u);
-
-
     ResourceDescriptor waterDescriptor("Water_" + nodeName);
-    waterDescriptor.setData(vec3<U16>(width, length, depth));
     std::shared_ptr<WaterPlane> waterItem = CreateResource<WaterPlane>(_resCache, waterDescriptor);
 
     waterItem->loadFromXML(pt);

@@ -465,7 +465,7 @@ void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
             _renderPackagesDirty[to_base(renderStagePass._stage)] = false;
         }
 
-        if (_parentSGN.prepareRender(sceneRenderState, renderStagePass)) {
+        if (_parentSGN.prepareRender(camera, renderStagePass)) {
             updateLoDLevel(camera, renderStagePass);
 
             bool renderGeometry = renderOptionEnabled(RenderOptions::RENDER_GEOMETRY);
@@ -573,13 +573,14 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
             viewPtr->_shader = _previewRenderTargetColour;
             viewPtr->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, 0.0f);
             viewPtr->_shaderData.set("linearSpace", GFX::PushConstantType::BOOL, false);
-            viewPtr->_shaderData.set("unpack2Channel", GFX::PushConstantType::BOOL, false);
+            viewPtr->_shaderData.set("unpack1Channel", GFX::PushConstantType::UINT, 0u);
+            viewPtr->_shaderData.set("unpack2Channel", GFX::PushConstantType::UINT, 0u);
 
             viewPtr->_name = Util::StringFormat("REFLECTION_%d", reflectRTID._index);
             debugView = _context.addDebugView(viewPtr);
             s_debugViews[0][reflectionIndex] = debugView;
         } else {
-            if (_context.getFrameCount() % (Config::TARGET_FRAME_RATE * 15) == 0) {
+            /*if (_context.getFrameCount() % (Config::TARGET_FRAME_RATE * 15) == 0) {
                 if (debugView->_shader->getGUID() == _previewRenderTargetColour->getGUID()) {
                     debugView->_texture = target.getAttachment(RTAttachmentType::Depth, 0).texture();
                     debugView->_shader = _previewRenderTargetDepth;
@@ -588,7 +589,7 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
                     debugView->_texture = target.getAttachment(RTAttachmentType::Colour, 0).texture();
                     debugView->_shader = _previewRenderTargetColour;
                 }
-            }
+            }*/
         }
     }
 
@@ -655,13 +656,14 @@ bool RenderingComponent::updateRefraction(U32 refractionIndex,
             viewPtr->_texture = target.getAttachment(RTAttachmentType::Colour, 0).texture();
             viewPtr->_shader = _previewRenderTargetColour;
             viewPtr->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, 0.0f);
-            viewPtr->_shaderData.set("linearSpace", GFX::PushConstantType::BOOL, false);
-            viewPtr->_shaderData.set("unpack2Channel", GFX::PushConstantType::BOOL, false);
+            viewPtr->_shaderData.set("linearSpace", GFX::PushConstantType::UINT, 0u);
+            viewPtr->_shaderData.set("unpack1Channel", GFX::PushConstantType::UINT, 0u);
+            viewPtr->_shaderData.set("unpack2Channel", GFX::PushConstantType::UINT, 0u);
             viewPtr->_name = Util::StringFormat("REFRACTION_%d", refractRTID._index);
             debugView = _context.addDebugView(viewPtr);
             s_debugViews[1][refractionIndex] = debugView;
         } else {
-            if (_context.getFrameCount() % (Config::TARGET_FRAME_RATE * 15) == 0) {
+            /*if (_context.getFrameCount() % (Config::TARGET_FRAME_RATE * 15) == 0) {
                 if (debugView->_shader->getGUID() == _previewRenderTargetColour->getGUID()) {
                     debugView->_texture = target.getAttachment(RTAttachmentType::Depth, 0).texture();
                     debugView->_shader = _previewRenderTargetDepth;
@@ -670,7 +672,7 @@ bool RenderingComponent::updateRefraction(U32 refractionIndex,
                     debugView->_texture = target.getAttachment(RTAttachmentType::Colour, 0).texture();
                     debugView->_shader = _previewRenderTargetColour;
                 }
-            } 
+            } */
         }
     }
 

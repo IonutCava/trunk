@@ -22,8 +22,7 @@ bool ImplResourceLoader<WaterPlane>::load(std::shared_ptr<WaterPlane> res, const
     defaultSampler._wrapW = TextureWrap::REPEAT;
     defaultSampler._minFilter = TextureFilter::LINEAR;
     defaultSampler._magFilter = TextureFilter::LINEAR;
-
-    ResourceDescriptor waterShader("water");
+    
     ResourceDescriptor waterMaterial("waterMaterial_" + name);
     ResourceDescriptor waterTexture("waterTexture_" + name);
     ResourceDescriptor waterTextureDUDV("waterTextureDUDV_" + name);
@@ -44,22 +43,17 @@ bool ImplResourceLoader<WaterPlane>::load(std::shared_ptr<WaterPlane> res, const
 
     Texture_ptr waterDUDV = CreateResource<Texture>(_cache, waterTextureDUDV);
     assert(waterDUDV != nullptr);
-
-    ShaderProgram_ptr waterShaderProgram = CreateResource<ShaderProgram>(_cache, waterShader);
-    assert(waterShaderProgram != nullptr);
-
+       
     Material_ptr waterMat = CreateResource<Material>(_cache, waterMaterial);
     assert(waterMat != nullptr);
-    // The material is responsible for the destruction of the textures and
-    // shaders it receives!!!!
-    res->setMaterialTpl(waterMat);
-
+    
     waterMat->dumpToFile(false);
     waterMat->setShadingMode(Material::ShadingMode::BLINN_PHONG);
     waterMat->setTexture(ShaderProgram::TextureUsage::UNIT0, waterNM);
     waterMat->setTexture(ShaderProgram::TextureUsage::UNIT1, waterDUDV);
-    waterMat->setShaderProgram(waterShaderProgram->resourceName(), RenderPassType::COLOUR_PASS, true);
-    waterMat->setShaderProgram(waterShaderProgram->resourceName(), RenderPassType::OIT_PASS, true);
+    waterMat->addShaderDefine("COMPUTE_TBN");
+    waterMat->setShaderProgram("water", RenderPassType::COLOUR_PASS, true);
+    waterMat->setShaderProgram("water", RenderPassType::OIT_PASS, true);
     waterMat->setShaderProgram("depthPass.PrePass", RenderPassType::DEPTH_PASS, true);
 
     size_t hash = waterMat->getRenderStateBlock(RenderStagePass(RenderStage::DISPLAY, RenderPassType::COLOUR_PASS));
@@ -67,6 +61,7 @@ bool ImplResourceLoader<WaterPlane>::load(std::shared_ptr<WaterPlane> res, const
     waterMatDesc.setCullMode(CullMode::NONE);
     waterMat->setRenderStateBlock(waterMatDesc.getHash());
 
+    res->setMaterialTpl(waterMat);
     return res->load(onLoadCallback);
 }
 
@@ -75,8 +70,7 @@ CachedResource_ptr ImplResourceLoader<WaterPlane>::operator()() {
 
     std::shared_ptr<WaterPlane> ptr(MemoryManager_NEW WaterPlane(_cache,
                                                                  _loadingDescriptorHash,
-                                                                 _descriptor.resourceName(),
-                                                                 _descriptor.getData()),
+                                                                 _descriptor.resourceName()),
                                     DeleteResource(_cache));
 
     if (!load(ptr, _descriptor.onLoadCallback())) {

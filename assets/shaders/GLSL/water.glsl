@@ -33,12 +33,13 @@ uniform float _waterShininess;
 #include "lightInput.cmn"
 #include "lightData.frag"
 #include "materialData.frag"
+#include "bumpMapping.frag"
 #include "shadowMapping.frag"
 #include "velocityCalc.frag"
 #include "output.frag"
 
 float Fresnel(in vec3 viewDir, in vec3 normal) {
-    return _underwater == 1 ? 1.0 : 1.0 / pow(1.0 + dot(viewDir, normal), 5);
+    return /*_underwater == 1 ? 1.0 : */1.0 / pow(1.0 + dot(viewDir, normal), 5);
 }
 
 void main (void)
@@ -48,36 +49,37 @@ void main (void)
 #   define texWaterNoiseNM texDiffuse0
 #   define texWaterNoiseDUDV texDiffuse1
 
-    dvd_private_light = dvd_LightSource[0];
+    //dvd_private_light = dvd_LightSource[0];
     float time2 = float(dvd_time) * 0.00001;
     const float kDistortion = 1.0;// 0.015;
     vec4 distOffset = texture(texWaterNoiseDUDV, VAR._texCoord + vec2(time2)) * kDistortion;
 
-    vec4 uvReflection = _vertexWVP / _vertexWVP.w;
+    /*vec4 uvReflection = _vertexWVP / _vertexWVP.w;
     uvReflection += vec4(1.0);
     uvReflection *= vec4(0.5);
-    uvReflection = clamp(uvReflection, vec4(0.001), vec4(0.999));
+    uvReflection = clamp(uvReflection, vec4(0.001), vec4(0.999));*/
 
     vec3 normal = texture(texWaterNoiseNM, vec2(VAR._texCoord + distOffset.xy)).rgb;
     normal = normalize(normal * 2.0 - 1.0);
-
+    /*
     vec2 uvFinalReflect = uvReflection.xy;// +_noiseFactor * normal.xy;
     vec2 uvFinalRefract = uvReflection.xy;// +_noiseFactor * normal.xy;
 
-    vec3 N = normalize(dvd_NormalMatrixWV(VAR.dvd_instanceID) * normal);
+    vec3 N = normalize(getTBNMatrix() * normal);
     vec3 L = getLightDirection();
     vec3 V = normalize(_pixToEye);
 
     float iSpecular = pow(clamp(dot(normalize(reflect(-L, N)), V), 0.0, 1.0), _waterShininess);
-
+    */
     vec4 colour = vec4(1.0);
     // add Diffuse
-    colour.rgb = mix(texture(texWaterReflection, uvFinalReflect).rgb,
+    /*colour.rgb = mix(texture(texWaterReflection, uvFinalReflect).rgb,
                      texture(texWaterRefraction, uvFinalRefract).rgb,
-                     vec3(clamp(Fresnel(V, normalize(VAR._normalWV)), 0.0, 1.0)));
+                     vec3(clamp(Fresnel(V, normalize(VAR._normalWV)), 0.0, 1.0)));*/
 
+    //colour.rgb = vec3(clamp(Fresnel(V, normalize(VAR._normalWV)), 0.0, 1.0));
     // add Specular
-    colour = vec4(texture(texWaterReflection, uvFinalReflect).rgb, 1.0);//texture(texWaterRefraction, uvFinalRefract).rgb * 10.2;//clamp(colour.rgb + dvd_private_light._colour.rgb * getSpecular() * iSpecular, vec3(0.0), vec3(1.0));
-
+    //colour.rgb = clamp(colour.rgb + dvd_private_light._colour.rgb * getSpecular() * iSpecular, vec3(0.0), vec3(1.0));
+    colour.rgb = vec3(1.0, 0.0, 0.0);
     writeOutput(colour, packNormal(N));
 }

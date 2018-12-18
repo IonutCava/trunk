@@ -49,6 +49,7 @@ float ReliefMapping_RayIntersection(in vec2 A, in vec2 AB){
     return best_depth;
 }
 
+#if defined(_BRDF_FRAG_)
 vec4 ParallaxMapping(in vec2 uv, uint lightID){
     Light dvd_private_bump_light = dvd_LightSource[lightID];
 
@@ -99,6 +100,7 @@ vec4 ReliefMapping(in vec2 uv){
     setProcessedNormal(getTBNMatrix() * getBump(uv + uv_offset));
     return getPixelColour();
 }
+#endif
 
 // http://www.thetenthplanet.de/archives/1180
 mat3 cotangent_frame(vec3 N, vec3 p, vec2 uv)

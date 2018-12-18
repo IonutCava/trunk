@@ -42,11 +42,6 @@ public:
     explicit InfinitePlane(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, const vec2<U16>& dimensions);
     ~InfinitePlane();
 
-    bool onRender(SceneGraphNode& sgn,
-                  const SceneRenderState& sceneRenderState,
-                  RenderStagePass renderStagePass) override;
-
-
 protected:
     void postLoad(SceneGraphNode& sgn) override;
 

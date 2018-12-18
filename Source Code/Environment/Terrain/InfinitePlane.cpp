@@ -101,14 +101,6 @@ void InfinitePlane::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, Scen
     tComp->setPositionZ(newEye.z);
 }
 
-bool InfinitePlane::onRender(SceneGraphNode& sgn,
-                             const SceneRenderState& sceneRenderState,
-                             RenderStagePass renderStagePass) {
-
-    return _plane->onRender(sgn, sceneRenderState, renderStagePass);
-}
-
-
 void InfinitePlane::buildDrawCommands(SceneGraphNode& sgn,
                                       RenderStagePass renderStagePass,
                                       RenderPackage& pkgInOut) {

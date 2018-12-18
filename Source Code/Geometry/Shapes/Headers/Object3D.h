@@ -94,7 +94,7 @@ class Object3D : public SceneNode {
     virtual void postLoad(SceneGraphNode& sgn);
 
     virtual bool onRender(SceneGraphNode& sgn,
-                          const SceneRenderState& sceneRenderState,
+                          const Camera& camera,
                           RenderStagePass renderStagePass) override;
                         
     virtual void onAnimationChange(SceneGraphNode& sgn, I32 newIndex) { 

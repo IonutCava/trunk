@@ -45,15 +45,8 @@ class ShaderProgram;
 
 class WaterPlane : public SceneNode {
    public:
-    explicit WaterPlane(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, const vec3<F32>& dimenions);
+    explicit WaterPlane(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name);
     ~WaterPlane();
-
-    /// Resource inherited "unload"
-    bool unload() override;
-    /// General SceneNode stuff
-    bool onRender(SceneGraphNode& sgn,
-                  const SceneRenderState& sceneRenderState,
-                  RenderStagePass renderStagePass) override;
 
     bool pointUnderwater(const SceneGraphNode& sgn, const vec3<F32>& point);
 
