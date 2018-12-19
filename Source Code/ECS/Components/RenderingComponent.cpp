@@ -181,6 +181,10 @@ void RenderingComponent::rebuildDrawCommands(RenderStagePass stagePass) {
     RenderPackage& pkg = getDrawPackage(stagePass);
     pkg.clear();
 
+    if (_parentSGN.name() == "Water") {
+        int a;
+        a = 5;
+    }
     // We also have a pipeline
     PipelineDescriptor pipelineDescriptor;
     pipelineDescriptor._stateHash = getMaterialInstance()->getRenderStateBlock(stagePass);

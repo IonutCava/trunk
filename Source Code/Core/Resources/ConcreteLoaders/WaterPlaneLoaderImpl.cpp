@@ -5,65 +5,9 @@
 #include "Environment/Water/Headers/Water.h"
 #include "Platform/File/Headers/FileManagement.h"
 #include "Platform/Video/Headers/GFXDevice.h"
-#include "Platform/Video/Headers/RenderStateBlock.h"
 #include "Geometry/Material/Headers/Material.h"
 
 namespace Divide {
-
-template <>
-bool ImplResourceLoader<WaterPlane>::load(std::shared_ptr<WaterPlane> res, const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) {
-    const stringImpl& name = res->resourceName();
-
-    res->setState(ResourceState::RES_LOADING);
-
-    SamplerDescriptor defaultSampler = {};
-    defaultSampler._wrapU = TextureWrap::REPEAT;
-    defaultSampler._wrapV = TextureWrap::REPEAT;
-    defaultSampler._wrapW = TextureWrap::REPEAT;
-    defaultSampler._minFilter = TextureFilter::LINEAR;
-    defaultSampler._magFilter = TextureFilter::LINEAR;
-    
-    ResourceDescriptor waterMaterial("waterMaterial_" + name);
-    ResourceDescriptor waterTexture("waterTexture_" + name);
-    ResourceDescriptor waterTextureDUDV("waterTextureDUDV_" + name);
-
-    TextureDescriptor texDescriptor(TextureType::TEXTURE_2D);
-    texDescriptor.setSampler(defaultSampler);
-
-    waterTexture.assetName("terrain_water_NM.jpg");
-    waterTexture.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
-    waterTexture.setPropertyDescriptor(texDescriptor);
-
-    waterTextureDUDV.assetName("water_dudv.jpg");
-    waterTextureDUDV.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
-    waterTextureDUDV.setPropertyDescriptor(texDescriptor);
-
-    Texture_ptr waterNM = CreateResource<Texture>(_cache, waterTexture);
-    assert(waterNM != nullptr);
-
-    Texture_ptr waterDUDV = CreateResource<Texture>(_cache, waterTextureDUDV);
-    assert(waterDUDV != nullptr);
-       
-    Material_ptr waterMat = CreateResource<Material>(_cache, waterMaterial);
-    assert(waterMat != nullptr);
-    
-    waterMat->dumpToFile(false);
-    waterMat->setShadingMode(Material::ShadingMode::BLINN_PHONG);
-    waterMat->setTexture(ShaderProgram::TextureUsage::UNIT0, waterNM);
-    waterMat->setTexture(ShaderProgram::TextureUsage::UNIT1, waterDUDV);
-    waterMat->addShaderDefine("COMPUTE_TBN");
-    waterMat->setShaderProgram("water", RenderPassType::COLOUR_PASS, true);
-    waterMat->setShaderProgram("water", RenderPassType::OIT_PASS, true);
-    waterMat->setShaderProgram("depthPass.PrePass", RenderPassType::DEPTH_PASS, true);
-
-    size_t hash = waterMat->getRenderStateBlock(RenderStagePass(RenderStage::DISPLAY, RenderPassType::COLOUR_PASS));
-    RenderStateBlock waterMatDesc(RenderStateBlock::get(hash));
-    waterMatDesc.setCullMode(CullMode::NONE);
-    waterMat->setRenderStateBlock(waterMatDesc.getHash());
-
-    res->setMaterialTpl(waterMat);
-    return res->load(onLoadCallback);
-}
 
 template<>
 CachedResource_ptr ImplResourceLoader<WaterPlane>::operator()() {
@@ -73,6 +17,7 @@ CachedResource_ptr ImplResourceLoader<WaterPlane>::operator()() {
                                                                  _descriptor.resourceName()),
                                     DeleteResource(_cache));
 
+    ptr->setState(ResourceState::RES_LOADING);
     if (!load(ptr, _descriptor.onLoadCallback())) {
         ptr.reset();
     }

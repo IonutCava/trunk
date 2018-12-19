@@ -305,8 +305,7 @@ bool Material::canDraw(RenderStagePass renderStage) {
         U8 passIndex = RenderStagePass::index(renderStage._stage, static_cast<RenderPassType>(i));
 
         if (_shaderInfo[passIndex].computeStage() != ShaderProgramInfo::BuildStage::READY) {
-            computeShader(RenderStagePass::stagePass(passIndex), _highPriority);
-            return false;
+            return computeShader(RenderStagePass::stagePass(passIndex), _highPriority);
         }
     }
 

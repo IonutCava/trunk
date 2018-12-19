@@ -69,6 +69,12 @@ class WaterPlane : public SceneNode {
 
     void postLoad(SceneGraphNode& sgn) override;
 
+    protected:
+    template <typename T>
+    friend class ImplResourceLoader;
+
+    bool load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) override;
+
    private:
     void updateBoundsInternal() override;
     void updateReflection(RenderCbkParams& renderParams, GFX::CommandBuffer& bufferInOut);

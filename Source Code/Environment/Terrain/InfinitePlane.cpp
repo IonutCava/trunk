@@ -34,7 +34,9 @@ bool InfinitePlane::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCa
     if (_plane != nullptr) {
         return false;
     }
-    
+
+    setState(ResourceState::RES_LOADING);
+
     ResourceDescriptor planeMaterialDescriptor("infinitePlaneMaterial");
     Material_ptr planeMaterial = CreateResource<Material>(_parentCache, planeMaterialDescriptor);
     planeMaterial->setDiffuse(FColour(DefaultColours::WHITE.rgb() * 0.5f, 1.0f));
