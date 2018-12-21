@@ -22,6 +22,8 @@ void main(void)
 
 -- Fragment
 
+#define CUSTOM_MATERIAL_ALBEDO
+
 in flat int _underwater;
 in vec3 _pixToEye;
 in vec4 _vertexWVP;
@@ -30,16 +32,23 @@ uniform vec2 _noiseTile;
 uniform vec2 _noiseFactor;
 uniform float _waterShininess;
 
-#include "lightInput.cmn"
-#include "lightData.frag"
-#include "materialData.frag"
+#include "BRDF.frag"
 #include "bumpMapping.frag"
 #include "shadowMapping.frag"
 #include "velocityCalc.frag"
 #include "output.frag"
 
+vec4 private_albedo = vec4(1.0);
+void setAlbedo(in vec4 albedo) {
+    private_albedo = albedo;
+}
+
+vec4 getAlbedo() {
+    return private_albedo;
+}
+
 float Fresnel(in vec3 viewDir, in vec3 normal) {
-    return /*_underwater == 1 ? 1.0 : */1.0 / pow(1.0 + dot(viewDir, normal), 5);
+    return _underwater == 1 ? 1.0 : 1.0 / pow(1.0 + dot(viewDir, normal), 5);
 }
 
 void main (void)
@@ -49,37 +58,26 @@ void main (void)
 #   define texWaterNoiseNM texDiffuse0
 #   define texWaterNoiseDUDV texDiffuse1
 
-    //dvd_private_light = dvd_LightSource[0];
-    float time2 = float(dvd_time) * 0.00001;
+    float time2 = float(dvd_time) * 0.001;
     const float kDistortion = 1.0;// 0.015;
     vec4 distOffset = texture(texWaterNoiseDUDV, VAR._texCoord + vec2(time2)) * kDistortion;
 
-    /*vec4 uvReflection = _vertexWVP / _vertexWVP.w;
+    vec4 uvReflection = _vertexWVP / _vertexWVP.w;
     uvReflection += vec4(1.0);
     uvReflection *= vec4(0.5);
-    uvReflection = clamp(uvReflection, vec4(0.001), vec4(0.999));*/
+    uvReflection = clamp(uvReflection, vec4(0.001), vec4(0.999));
 
     vec3 normal = texture(texWaterNoiseNM, vec2(VAR._texCoord + distOffset.xy)).rgb;
     normal = normalize(normal * 2.0 - 1.0);
-    /*
-    vec2 uvFinalReflect = uvReflection.xy;// +_noiseFactor * normal.xy;
-    vec2 uvFinalRefract = uvReflection.xy;// +_noiseFactor * normal.xy;
 
-    vec3 N = normalize(getTBNMatrix() * normal);
-    vec3 L = getLightDirection();
-    vec3 V = normalize(_pixToEye);
+    vec2 uvFinalReflect = normalize(uvReflection.xy + (_noiseFactor * normal.xy));
+    vec2 uvFinalRefract = normalize(uvReflection.xy + (_noiseFactor * normal.xy));
 
-    float iSpecular = pow(clamp(dot(normalize(reflect(-L, N)), V), 0.0, 1.0), _waterShininess);
-    */
-    vec4 colour = vec4(1.0);
-    // add Diffuse
-    /*colour.rgb = mix(texture(texWaterReflection, uvFinalReflect).rgb,
-                     texture(texWaterRefraction, uvFinalRefract).rgb,
-                     vec3(clamp(Fresnel(V, normalize(VAR._normalWV)), 0.0, 1.0)));*/
+    setProcessedNormal(normalize(getTBNMatrix() * normal));
+    
+    setAlbedo(mix(texture(texWaterReflection, uvFinalReflect),
+                  texture(texWaterRefraction, uvFinalRefract),
+                  vec4(clamp(Fresnel(normalize(_pixToEye), normalize(VAR._normalWV)), 0.0, 1.0))));
 
-    //colour.rgb = vec3(clamp(Fresnel(V, normalize(VAR._normalWV)), 0.0, 1.0));
-    // add Specular
-    //colour.rgb = clamp(colour.rgb + dvd_private_light._colour.rgb * getSpecular() * iSpecular, vec3(0.0), vec3(1.0));
-    colour.rgb = vec3(1.0, 0.0, 0.0);
-    writeOutput(colour, packNormal(N));
+    writeOutput(/*getPixelColour()*/getAlbedo(), packNormal(getProcessedNormal()));
 }

@@ -1,3 +1,5 @@
+#ifndef _OUTPUT_FRAG_
+#define _OUTPUT_FRAG_
 
 #if defined(OIT_PASS)
 layout(location = 0) out vec4  _accum;
@@ -89,3 +91,9 @@ void writeOutput(vec4 colour, vec2 normal) {
 
 #endif //OIT_PASS
 }
+
+void writeOutput(vec3 colour, vec2 normal) {
+    writeOutput(vec4(colour, 1.0), normal);
+}
+
+#endif //_OUTPUT_FRAG_

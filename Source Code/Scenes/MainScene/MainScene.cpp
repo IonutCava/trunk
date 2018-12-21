@@ -185,10 +185,6 @@ bool MainScene::load(const stringImpl& name) {
     
     waterGraphNode->get<NavigationComponent>()->navigationContext(NavigationComponent::NavigationContext::NODE_IGNORE);
     waterGraphNode->get<TransformComponent>()->setPositionY(state().globalWaterBodies()[0]._heightOffset);
-    PushConstants& constants = waterGraphNode->get<RenderingComponent>()->pushConstants();
-    constants.set("_waterShininess", GFX::PushConstantType::FLOAT, 50.0f);
-    constants.set("_noiseFactor", GFX::PushConstantType::VEC2, vec2<F32>(10.0f, 10.0f));
-    constants.set("_noiseTile", GFX::PushConstantType::VEC2, vec2<F32>(0.1f, 0.1f));
 
 
     if (loadState) {

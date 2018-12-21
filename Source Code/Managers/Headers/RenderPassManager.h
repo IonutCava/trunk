@@ -50,6 +50,10 @@ enum class RenderStage : U8;
 class RenderPassManager : public KernelComponent {
 public:
     struct PassParams {
+        // source node is used to determine if the current pass is triggered by a specific node:
+        // e.g. a light node for shadow mapping, a reflector for reflection (or refraction), etc
+        // safe to be set to null
+        const SceneGraphNode* _sourceNode = nullptr;
         Camera* _camera = nullptr;
         RenderTargetID _target;
         const RTDrawDescriptor* _drawPolicy = nullptr;

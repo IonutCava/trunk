@@ -485,6 +485,7 @@ void main(void)
 #include "BRDF.frag"
 #include "terrainSplatting.frag"
 #include "velocityCalc.frag"
+#include "output.frag"
 
 in vec4 _scrollingUV;
 
@@ -497,10 +498,6 @@ in flat int detailLevel;
 in vec3 gs_wireColor;
 noperspective in vec3 gs_edgeDist;
 #endif
-
-layout(location = 0) out vec4 _colourOut;
-layout(location = 1) out vec2 _normalOut;
-layout(location = 2) out vec2 _velocityOut;
 
 vec4 private_albedo = vec4(1.0);
 void setAlbedo(in vec4 albedo) {
@@ -524,7 +521,7 @@ vec4 UnderwaterColour() {
     setAlbedo(texture(texUnderwaterAlbedo, coords));
 
     vec3 tbn = normalize(2.0 * texture(texUnderwaterDetail, coords).rgb - 1.0);
-    setProcessedNormal(getTBNMatrix() * tbn);
+    setProcessedNormal(normalize(getTBNMatrix() * tbn));
 
     return getPixelColour();
 }
@@ -535,7 +532,7 @@ vec4 UnderwaterMappingRoutine() {
 
 vec4 TerrainMappingRoutine() {
     setAlbedo(getTerrainAlbedo(detailLevel));
-    setProcessedNormal(getTBNMatrix() * getTerrainNormalTBN(detailLevel));
+    setProcessedNormal(normalize(getTBNMatrix() * getTerrainNormalTBN(detailLevel)));
 
     return getPixelColour();
 }
@@ -543,16 +540,15 @@ vec4 TerrainMappingRoutine() {
 void main(void)
 {
     bumpInit();
-    _colourOut = mix(TerrainMappingRoutine(), UnderwaterMappingRoutine(), _waterDetails.x);
+    vec4 colourOut = mix(TerrainMappingRoutine(), UnderwaterMappingRoutine(), _waterDetails.x);
  
 #if defined(TOGGLE_WIREFRAME)
     const float LineWidth = 0.75;
     float d = min(min(gs_edgeDist.x, gs_edgeDist.y), gs_edgeDist.z);
-    _colourOut = mix(vec4(gs_wireColor, 1.0), _colourOut, smoothstep(LineWidth - 1, LineWidth + 1, d));
+    colourOut = mix(vec4(gs_wireColor, 1.0), colourOut, smoothstep(LineWidth - 1, LineWidth + 1, d));
 #endif
 
-    _normalOut = packNormal(getProcessedNormal());
-    _velocityOut = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
+    writeOutput(colourOut, packNormal(getProcessedNormal()));
 }
 
 

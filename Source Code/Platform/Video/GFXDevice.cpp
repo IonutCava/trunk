@@ -171,6 +171,7 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
                                 RenderStagePass stagePass,
                                 U32 passIndex,
                                 GFX::CommandBuffer& bufferInOut,
+                                SceneGraphNode* sourceNode,
                                 Camera* camera) {
 
     if (!camera) {
@@ -226,6 +227,7 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
 
     RenderPassManager& passMgr = parent().renderPassManager();
     RenderPassManager::PassParams params;
+    params._sourceNode = sourceNode;
     params._occlusionCull = true;
     params._camera = camera;
     params._stage = stagePass._stage;
@@ -268,6 +270,7 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
                                           RenderStagePass stagePass,
                                           U32 passIndex,
                                           GFX::CommandBuffer& bufferInOut,
+                                          SceneGraphNode* sourceNode,
                                           Camera* camera)
 {
     if (!camera) {
@@ -300,6 +303,7 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
 
     RenderPassManager& passMgr = parent().renderPassManager();
     RenderPassManager::PassParams params;
+    params._sourceNode = sourceNode;
     params._occlusionCull = true;
     params._camera = camera;
     params._stage = stagePass._stage;

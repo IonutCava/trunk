@@ -210,6 +210,7 @@ public:  // GPU interface
         RenderStagePass stagePass,
         U32 passIndex,
         GFX::CommandBuffer& commandsInOut,
+        SceneGraphNode* sourceNode = nullptr,
         Camera* camera = nullptr);
 
     void generateDualParaboloidMap(RenderTargetID targetBuffer,
@@ -219,6 +220,7 @@ public:  // GPU interface
         RenderStagePass stagePass,
         U32 passIndex,
         GFX::CommandBuffer& commandsInOut,
+        SceneGraphNode* sourceNode = nullptr,
         Camera* camera = nullptr);
 
     /// Access (Read Only) rendering data used by the GFX

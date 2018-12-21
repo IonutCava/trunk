@@ -47,17 +47,15 @@ bool WaterPlane::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallb
     defaultSampler._minFilter = TextureFilter::LINEAR;
     defaultSampler._magFilter = TextureFilter::LINEAR;
 
-    ResourceDescriptor waterMaterial("waterMaterial_" + name);
-    ResourceDescriptor waterTexture("waterTexture_" + name);
-    ResourceDescriptor waterTextureDUDV("waterTextureDUDV_" + name);
-
     TextureDescriptor texDescriptor(TextureType::TEXTURE_2D);
     texDescriptor.setSampler(defaultSampler);
 
+    ResourceDescriptor waterTexture("waterTexture_" + name);
     waterTexture.assetName("terrain_water_NM.jpg");
     waterTexture.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
     waterTexture.setPropertyDescriptor(texDescriptor);
 
+    ResourceDescriptor waterTextureDUDV("waterTextureDUDV_" + name);
     waterTextureDUDV.assetName("water_dudv.jpg");
     waterTextureDUDV.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
     waterTextureDUDV.setPropertyDescriptor(texDescriptor);
@@ -68,6 +66,7 @@ bool WaterPlane::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallb
     Texture_ptr waterDUDV = CreateResource<Texture>(_parentCache, waterTextureDUDV);
     assert(waterDUDV != nullptr);
 
+    ResourceDescriptor waterMaterial("waterMaterial_" + name);
     Material_ptr waterMat = CreateResource<Material>(_parentCache, waterMaterial);
     assert(waterMat != nullptr);
 
@@ -87,7 +86,6 @@ bool WaterPlane::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallb
 
     setMaterialTpl(waterMat);
     
-
     // Set water plane to be single-sided
     P32 quadMask;
     quadMask.i = 0;
@@ -131,7 +129,7 @@ void WaterPlane::postLoad(SceneGraphNode& sgn) {
     });
 
     renderable->setRefractionCallback([this](RenderCbkParams& params, GFX::CommandBuffer& commandsInOut) {
-        //updateRefraction(params, commandsInOut);
+        updateRefraction(params, commandsInOut);
     });
 
     renderable->setReflectionAndRefractionType(ReflectorType::PLANAR_REFLECTOR);
@@ -153,9 +151,28 @@ bool WaterPlane::pointUnderwater(const SceneGraphNode& sgn, const vec3<F32>& poi
     return sgn.get<BoundsComponent>()->getBoundingBox().containsPoint(point);
 }
 
+bool WaterPlane::getDrawState(const SceneGraphNode& sgn, RenderStagePass renderStage) const {
+    if (renderStage._stage == RenderStage::REFLECTION || renderStage._stage == RenderStage::REFRACTION) {
+        RenderingComponent* renderable = sgn.get<RenderingComponent>();
+        const Material_ptr& mat = renderable->getMaterialInstance();
+        if (mat != nullptr) {
+          
+        }
+    }
+
+    return SceneNode::getDrawState(sgn, renderStage);
+}
+
 void WaterPlane::buildDrawCommands(SceneGraphNode& sgn,
                                    RenderStagePass renderStagePass,
                                    RenderPackage& pkgInOut) {
+
+    PushConstants constants = pkgInOut.pushConstants(0);
+    constants.set("_waterShininess", GFX::PushConstantType::FLOAT, 50.0f);
+    constants.set("_noiseFactor", GFX::PushConstantType::VEC2, vec2<F32>(10.0f, 10.0f));
+    constants.set("_noiseTile", GFX::PushConstantType::VEC2, vec2<F32>(0.1f, 0.1f));
+    pkgInOut.pushConstants(0, constants);
+
     GenericDrawCommand cmd = {};
     cmd._primitiveType = PrimitiveType::TRIANGLE_STRIP;
     cmd._sourceBuffer = _plane->getGeometryVB();
@@ -179,6 +196,7 @@ void WaterPlane::updateRefraction(RenderCbkParams& renderParams, GFX::CommandBuf
     updatePlaneEquation(renderParams._sgn, refractionPlane, underwater);
 
     RenderPassManager::PassParams params;
+    params._sourceNode = &renderParams._sgn;
     params._occlusionCull = false;
     params._camera = renderParams._camera;
     params._stage = RenderStage::REFRACTION;
@@ -206,6 +224,7 @@ void WaterPlane::updateReflection(RenderCbkParams& renderParams, GFX::CommandBuf
     }
 
     RenderPassManager::PassParams params;
+    params._sourceNode = &renderParams._sgn;
     params._occlusionCull = false;
     params._camera = _reflectionCam;
     params._stage = RenderStage::REFLECTION;

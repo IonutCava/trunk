@@ -225,7 +225,7 @@ void RenderingComponent::Update(const U64 deltaTimeUS) {
 }
 
 bool RenderingComponent::canDraw(RenderStagePass renderStagePass) {
-    if (_parentSGN.getNode()->getDrawState(renderStagePass)) {
+    if (_parentSGN.getDrawState(renderStagePass)) {
         const Material_ptr& mat = getMaterialInstance();
         if (mat) {
             if (!mat->canDraw(renderStagePass)) {

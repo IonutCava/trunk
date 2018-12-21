@@ -288,6 +288,10 @@ void RenderPassManager::buildDrawCommands(RenderStagePass stagePass, const PassP
     getQueue().getSortedQueues(stagePass._stage, sortedQueues, queueSize);
     for (const vectorEASTL<SceneGraphNode*>& queue : sortedQueues) {
         for (SceneGraphNode* node : queue) {
+            if (params._sourceNode != nullptr && *params._sourceNode == *node) {
+                continue;
+            }
+
             Attorney::RenderingCompRenderPass::prepareDrawPackage(*node->get<RenderingComponent>(), *params._camera, sceneRenderState, stagePass);
         }
     }

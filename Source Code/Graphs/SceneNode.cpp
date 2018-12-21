@@ -121,7 +121,9 @@ void SceneNode::setBoundsChanged() {
     }
 }
 
-bool SceneNode::getDrawState(RenderStagePass currentStagePass) {
+bool SceneNode::getDrawState(const SceneGraphNode& sgn, RenderStagePass currentStagePass) const {
+    ACKNOWLEDGE_UNUSED(sgn);
+
     return _renderState.getDrawState(currentStagePass);
 }
 

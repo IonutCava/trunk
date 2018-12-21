@@ -252,8 +252,7 @@ void RenderPass::render(const SceneRenderState& renderState, GFX::CommandBuffer&
         } break;
         case RenderStage::REFLECTION: {
             SceneManager& mgr = _parent.parent().sceneManager();
-            RenderPassManager::PassParams params;
-            params._camera = Attorney::SceneManagerCameraAccessor::playerCamera(_parent.parent().sceneManager());
+            Camera* camera = Attorney::SceneManagerCameraAccessor::playerCamera(_parent.parent().sceneManager());
 
             {
                 GFX::BeginDebugScopeCommand beginDebugScopeCmd;
@@ -285,31 +284,21 @@ void RenderPass::render(const SceneRenderState& renderState, GFX::CommandBuffer&
 
                 //Part 2 - update classic reflectors (e.g. mirrors, water, etc)
                 //Get list of reflective nodes from the scene manager
-                RenderPassCuller::VisibleNodeList nodes = mgr.getSortedReflectiveNodes(*params._camera, RenderStage::REFLECTION, true);
+                RenderPassCuller::VisibleNodeList nodes = mgr.getSortedReflectiveNodes(*camera, RenderStage::REFLECTION, true);
 
                 // While in budget, update reflections
                 ReflectionUtil::resetBudget();
                 for (RenderPassCuller::VisibleNode& node : nodes) {
                     RenderingComponent* const rComp = node._node->get<RenderingComponent>();
                     if (ReflectionUtil::isInBudget()) {
-
-                        GFX::SetClipPlanesCommand setClipPlanesCommand;
-                        //ToDo: Propery grab clip planes
-                        //setClipPlanesCommand._clippingPlanes = node.clipPlanes();
-                        GFX::EnqueueCommand(bufferInOut, setClipPlanesCommand);
-
-                        // Exclude node from rendering itself into the pass
-                        bool isVisile = rComp->renderOptionEnabled(RenderingComponent::RenderOptions::IS_VISIBLE);
-                        rComp->toggleRenderOption(RenderingComponent::RenderOptions::IS_VISIBLE, false);
                         if (Attorney::RenderingCompRenderPass::updateReflection(*rComp,
                                                                                  ReflectionUtil::currentEntry(),
-                                                                                 params._camera,
+                                                                                 camera,
                                                                                  renderState,
                                                                                  bufferInOut)) {
 
                             ReflectionUtil::updateBudget();
                         }
-                        rComp->toggleRenderOption(RenderingComponent::RenderOptions::IS_VISIBLE, isVisile);
                     } else {
                         Attorney::RenderingCompRenderPass::clearReflection(*rComp);
                     }
@@ -321,8 +310,7 @@ void RenderPass::render(const SceneRenderState& renderState, GFX::CommandBuffer&
         case RenderStage::REFRACTION: {
             // Get list of refractive nodes from the scene manager
             SceneManager& mgr = _parent.parent().sceneManager();
-            RenderPassManager::PassParams params;
-            params._camera = Attorney::SceneManagerCameraAccessor::playerCamera(_parent.parent().sceneManager());
+            Camera* camera = Attorney::SceneManagerCameraAccessor::playerCamera(_parent.parent().sceneManager());
             {
                 GFX::BeginDebugScopeCommand beginDebugScopeCmd;
                 beginDebugScopeCmd._scopeID = 50;
@@ -338,30 +326,20 @@ void RenderPass::render(const SceneRenderState& renderState, GFX::CommandBuffer&
                 beginDebugScopeCmd._scopeName = "Planar Refraction Render Stage";
                 GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
-                RenderPassCuller::VisibleNodeList nodes = mgr.getSortedRefractiveNodes(*params._camera, RenderStage::REFRACTION, true);
+                RenderPassCuller::VisibleNodeList nodes = mgr.getSortedRefractiveNodes(*camera, RenderStage::REFRACTION, true);
                 // While in budget, update refractions
                 RefractionUtil::resetBudget();
                 for (RenderPassCuller::VisibleNode& node : nodes) {
-                    RenderingComponent* const rComp = node._node->get<RenderingComponent>();
-                    if (RefractionUtil::isInBudget()) {
-
-                        GFX::SetClipPlanesCommand setClipPlanesCommand;
-                        //ToDo: Propery grab clip planes
-                        //setClipPlanesCommand._clippingPlanes = node.clipPlanes();
-                        GFX::EnqueueCommand(bufferInOut, setClipPlanesCommand);
-
-
-                        bool isVisile = rComp->renderOptionEnabled(RenderingComponent::RenderOptions::IS_VISIBLE);
-                        rComp->toggleRenderOption(RenderingComponent::RenderOptions::IS_VISIBLE, false);
+                     RenderingComponent* const rComp = node._node->get<RenderingComponent>();
+                     if (RefractionUtil::isInBudget()) {
                         if (Attorney::RenderingCompRenderPass::updateRefraction(*rComp,
                                                                                 RefractionUtil::currentEntry(),
-                                                                                params._camera,
+                                                                                camera,
                                                                                 renderState,
                                                                                 bufferInOut))
                         {
                             RefractionUtil::updateBudget();
                         }
-                        rComp->toggleRenderOption(RenderingComponent::RenderOptions::IS_VISIBLE, isVisile);
                     }  else {
                         Attorney::RenderingCompRenderPass::clearRefraction(*rComp);
                     }

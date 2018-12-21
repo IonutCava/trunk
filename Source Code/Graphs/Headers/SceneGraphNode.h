@@ -265,6 +265,8 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     friend class RenderingComponent;
     bool prepareRender(const Camera& camera, RenderStagePass renderStagePass);
     void onRefreshNodeData(GFX::CommandBuffer& bufferInOut);
+    bool getDrawState(RenderStagePass stagePass) const;
+
    protected:
     friend class SceneGraph;
     void onCameraUpdate(const I64 cameraGUID,
