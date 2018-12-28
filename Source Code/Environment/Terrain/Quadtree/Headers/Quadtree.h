@@ -62,13 +62,11 @@ class Quadtree {
 
     inline U32 getChunkCount() const { return _chunkCount; }
 
-    void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn,
-                     SceneState& sceneState);
-
     void drawBBox(GFXDevice& context, RenderPackage& packageOut);
 
     QuadtreeNode* findLeaf(const vec2<F32>& pos);
 
+    void updateVisibility(const Camera& camera, F32 maxDistance);
    private:
     U32 _chunkCount;
     VertexBuffer* _parentVB;  //<Pointer to the terrain VB

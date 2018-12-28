@@ -238,6 +238,15 @@ void Vegetation::sceneUpdate(const U64 deltaTimeUS,
 
     SceneNode::sceneUpdate(deltaTimeUS, sgn, sceneState);
 }
+
+bool Vegetation::getDrawState(const SceneGraphNode& sgn, RenderStagePass renderStage) const {
+    if (_grassData != nullptr && _terrainChunk.isInView()) {
+        return SceneNode::getDrawState(sgn, renderStage);
+    }
+
+    return false;
+}
+
 void Vegetation::onRefreshNodeData(SceneGraphNode& sgn,
                                    GFX::CommandBuffer& bufferInOut){
     if (_render) {

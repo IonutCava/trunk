@@ -218,7 +218,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     if (!Terrain::USE_TERRAIN_UBO) {
         terrainMaterial->addShaderDefine("USE_SSBO_DATA_BUFFER");
     }
-    //terrainMaterial->setShaderLoadThreaded(false);
+
     //terrainMaterial->addShaderDefine("TOGGLE_WIREFRAME");
     terrainMaterial->addShaderDefine("COMPUTE_TBN");
     terrainMaterial->addShaderDefine("SKIP_TEXTURES");
@@ -268,9 +268,12 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     terrainMaterial->setTexture(ShaderProgram::TextureUsage::OPACITY, CreateResource<Texture>(terrain->parentResourceCache(), heightMapTexture));
 
+    terrainMaterial->addShaderDefine(RenderStage::REFLECTION, "LOW_QUALITY", true);
+    terrainMaterial->addShaderDefine(RenderStage::REFRACTION, "LOW_QUALITY", true);
+
     terrainMaterial->setShaderProgram("terrainTess.Colour" + name, RenderStage::DISPLAY, true);
-    terrainMaterial->setShaderProgram("terrainTess.Colour" + name, RenderStage::REFLECTION, true);
-    terrainMaterial->setShaderProgram("terrainTess.Colour" + name, RenderStage::REFRACTION, true);
+    terrainMaterial->setShaderProgram("terrainTess.Colour.LowQuality" + name, RenderStage::REFLECTION, true);
+    terrainMaterial->setShaderProgram("terrainTess.Colour.LowQuality" + name, RenderStage::REFRACTION, true);
     terrainMaterial->setShaderProgram("terrainTess.PrePass." + name, RenderPassType::DEPTH_PASS, true);
     terrainMaterial->setShaderProgram("terrainTess.Shadow." + name, RenderStage::SHADOW, true);
 
@@ -519,7 +522,6 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     ResourceDescriptor vegetationMaterial("grassMaterial");
     Material_ptr vegMaterial = CreateResource<Material>(terrain->parentResourceCache(), vegetationMaterial);
 
-    vegMaterial->setShaderLoadThreaded(false);
     vegMaterial->setDiffuse(DefaultColours::WHITE);
     vegMaterial->setSpecular(FColour(0.1f, 0.1f, 0.1f, 1.0f));
     vegMaterial->setShininess(5.0f);

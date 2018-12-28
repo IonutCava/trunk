@@ -4,6 +4,7 @@
 #include "Headers/TerrainChunk.h"
 #include "Headers/TerrainDescriptor.h"
 
+#include "Core/Headers/Kernel.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Managers/Headers/SceneManager.h"
@@ -186,6 +187,11 @@ bool Terrain::onRender(SceneGraphNode& sgn,
         }
 
         wasUpdated = true;
+    }
+
+    if (renderStagePass == RenderStagePass(RenderStage::DISPLAY, RenderPassType::DEPTH_PASS)) {
+        F32 drawDistance = _context.parent().sceneManager().getActiveScene().renderState().generalVisibility();
+        _terrainQuadtree.updateVisibility(camera, drawDistance);
     }
 
     cmd._drawCount = tessellator.getRenderDepth();

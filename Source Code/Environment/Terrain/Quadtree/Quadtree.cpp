@@ -21,10 +21,8 @@ Quadtree::~Quadtree()
 {
 }
 
-void Quadtree::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn,
-                           SceneState& sceneState) {
-    assert(_root);
-    _root->sceneUpdate(deltaTimeUS, sgn, sceneState);
+void Quadtree::updateVisibility(const Camera& camera, F32 maxDistance) {
+    _root->updateVisiblity(to_U32(ChunkBit::CHUNK_BIT_TESTCHILDREN), camera, maxDistance);
 }
 
 void Quadtree::drawBBox(GFXDevice& context, RenderPackage& packageOut) {

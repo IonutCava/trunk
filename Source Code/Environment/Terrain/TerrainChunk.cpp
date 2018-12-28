@@ -88,4 +88,8 @@ const BoundingBox& TerrainChunk::bounds() const {
     return _quadtreeNode.getBoundingBox();
 }
 
+bool TerrainChunk::isInView() const {
+    return _quadtreeNode.isVisible();
+}
+
 };

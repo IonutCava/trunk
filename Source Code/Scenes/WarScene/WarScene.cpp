@@ -585,7 +585,6 @@ bool WarScene::load(const stringImpl& name) {
     rComp->onCollisionCbk(collision);
     flagRComp = firstPersonFlag->getChild(0).get<RenderingComponent>();
     flagRComp->getMaterialInstance()->setDiffuse(DefaultColours::GREEN);
-    flagRComp->getMaterialInstance()->setHighPriority(true);
 
     firstPersonFlag->get<RigidBodyComponent>()->physicsGroup(PhysicsGroup::GROUP_KINEMATIC);
 

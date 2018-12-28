@@ -487,6 +487,13 @@ void main(void)
 #include "velocityCalc.frag"
 #include "output.frag"
 
+
+#if defined(LOW_QUALITY)
+#if defined(MAX_TEXTURE_LAYERS)
+#undef MAX_TEXTURE_LAYERS
+#define MAX_TEXTURE_LAYERS 1
+#endif
+#endif
 in vec4 _scrollingUV;
 
 // x = distance, y = depth
@@ -531,8 +538,13 @@ vec4 UnderwaterMappingRoutine() {
 }
 
 vec4 TerrainMappingRoutine() {
+#if defined(LOW_QUALITY)
+    setAlbedo(getTerrainAlbedo(0));
+    setProcessedNormal(VAR._normalWV);
+#else
     setAlbedo(getTerrainAlbedo(detailLevel));
     setProcessedNormal(normalize(getTBNMatrix() * getTerrainNormalTBN(detailLevel)));
+#endif
 
     return getPixelColour();
 }

@@ -96,6 +96,8 @@ class Vegetation : public SceneNode {
 
     void onRefreshNodeData(SceneGraphNode& sgn,
                            GFX::CommandBuffer& bufferInOut) override;
+
+    bool getDrawState(const SceneGraphNode& sgn, RenderStagePass renderStage) const override;
    private:
     void uploadGrassData();
     void computeGrassTransforms(const Task& parentTask);

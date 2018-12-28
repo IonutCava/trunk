@@ -76,6 +76,8 @@ class TerrainChunk {
 
     const BoundingBox& bounds() const;
 
+    bool isInView() const;
+
    protected:
     const Vegetation_ptr& getVegetation() const { return _vegetation; }
 

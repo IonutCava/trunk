@@ -16,7 +16,8 @@ namespace Divide {
 QuadtreeNode::QuadtreeNode()
     : _terrainChunk(nullptr),
       _bbPrimitive(nullptr),
-      _children(nullptr)
+      _children(nullptr),
+      _isVisible(false)
       //,_frustPlaneCache(-1)
 {
     _targetChunkDimension = 0;
@@ -114,40 +115,49 @@ bool QuadtreeNode::computeBoundingBox() {
     return true;
 }
 
-void QuadtreeNode::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState) {
-    if (isALeaf()) {
-        ACKNOWLEDGE_UNUSED(deltaTimeUS);
-        ACKNOWLEDGE_UNUSED(sgn);
-        ACKNOWLEDGE_UNUSED(sceneState);
-    } else {
-        getChild(ChildPosition::CHILD_NW).sceneUpdate(deltaTimeUS, sgn, sceneState);
-        getChild(ChildPosition::CHILD_NE).sceneUpdate(deltaTimeUS, sgn, sceneState);
-        getChild(ChildPosition::CHILD_SW).sceneUpdate(deltaTimeUS, sgn, sceneState);
-        getChild(ChildPosition::CHILD_SE).sceneUpdate(deltaTimeUS, sgn, sceneState);
+void QuadtreeNode::setVisibility(bool state) {
+    _isVisible = state;
+    if (!isALeaf()) {
+        getChild(ChildPosition::CHILD_NW).setVisibility(state);
+        getChild(ChildPosition::CHILD_NE).setVisibility(state);
+        getChild(ChildPosition::CHILD_SW).setVisibility(state);
+        getChild(ChildPosition::CHILD_SE).setVisibility(state);
     }
 }
 
-bool QuadtreeNode::isInView(U32 options, const SceneRenderState& sceneRenderState) const {
+bool QuadtreeNode::updateVisiblity(U32 options, const Camera& camera, F32 maxDistance) {
+    _isVisible = isInView(options, camera, maxDistance);
+    if (!_isVisible) {
+        setVisibility(false);
+    }  else if (!isALeaf()) {
+        getChild(ChildPosition::CHILD_NW).updateVisiblity(options, camera, maxDistance);
+        getChild(ChildPosition::CHILD_NE).updateVisiblity(options, camera, maxDistance);
+        getChild(ChildPosition::CHILD_SW).updateVisiblity(options, camera, maxDistance);
+        getChild(ChildPosition::CHILD_SE).updateVisiblity(options, camera, maxDistance);
+    }
+
+    return _isVisible;
+}
+
+bool QuadtreeNode::isInView(U32 options, const Camera& camera, F32 maxDistance) const {
     if (BitCompare(options, to_base(ChunkBit::CHUNK_BIT_TESTCHILDREN))) {
-        const Camera& cam = *sceneRenderState.parentScene().playerCamera();
         F32 boundingRadius = _boundingSphere.getRadius();
         const vec3<F32>& boundingCenter = _boundingSphere.getCenter();
 
-        if (!BitCompare(options, to_base(ChunkBit::CHUNK_BIT_SHADOWMAP))) {
-            const vec3<F32>& eye = cam.getEye();
-            F32 visibilityDistance = sceneRenderState.generalVisibility() + boundingRadius;
-            if (boundingCenter.distance(eye) > visibilityDistance) {
-                if (_boundingBox.nearestDistanceFromPointSquared(eye) > std::min(visibilityDistance, cam.getZPlanes().y)) {
-                    return false;
-                }
+        const vec3<F32>& eye = camera.getEye();
+        F32 visibilityDistance = maxDistance + boundingRadius;
+        if (boundingCenter.distance(eye) > visibilityDistance) {
+            if (_boundingBox.nearestDistanceFromPointSquared(eye) > std::min(visibilityDistance, camera.getZPlanes().y)) {
+                return false;
             }
         }
+        
         STUBBED("ToDo: make this work in a multi-threaded environment -Ionut");
         I8 _frustPlaneCache = -1;
 
-        if (!_boundingBox.containsPoint(cam.getEye())) {
+        if (!_boundingBox.containsPoint(camera.getEye())) {
 
-            const Frustum& frust = cam.getFrustum();
+            const Frustum& frust = camera.getFrustum();
             switch (frust.ContainsSphere(boundingCenter, boundingRadius, _frustPlaneCache)) {
                 case Frustum::FrustCollision::FRUSTUM_OUT:
                     return false;
