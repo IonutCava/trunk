@@ -210,9 +210,7 @@ void RenderingComponent::Update(const U64 deltaTimeUS) {
         mat->update(deltaTimeUS);
     }
 
-    ObjectType type = _parentSGN.getNode<Object3D>()->getObjectType();
-    if (type._value == ObjectType::SUBMESH)
-    {
+    if (_parentSGN.getNode<Object3D>()->getObjectType()._value == ObjectType::SUBMESH) {
         StateTracker<bool>& parentStates = _parentSGN.getParent()->getTrackedBools();
         parentStates.setTrackedValue(StateTracker<bool>::State::BOUNDING_BOX_RENDERED, false);
 

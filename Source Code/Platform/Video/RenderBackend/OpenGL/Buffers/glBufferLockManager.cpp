@@ -49,12 +49,13 @@ void glBufferLockManager::WaitForLockedRange(size_t lockBeginBytes,
 void glBufferLockManager::LockRange(size_t lockBeginBytes,
                                     size_t lockLength,
                                     bool flush) {
-    UniqueLock w_lock(_lock);
     GLsync sync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, UnusedMask::GL_UNUSED_BIT);
     // Make forward progress in worker thread so that we don't deadlock
     if (flush) {
         glFlush();
     }
+
+    UniqueLock w_lock(_lock);
     _bufferLocks.push_back(
         {
             {

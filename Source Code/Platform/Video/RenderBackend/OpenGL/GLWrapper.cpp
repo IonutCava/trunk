@@ -1095,10 +1095,14 @@ void GL_API::postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
     }
 
     BufferWriteData data;
+    bool flush = false;
     while (s_bufferBinds.try_dequeue(data)) {
-        data._lockManager->LockRange(data._offset, data._range, data._flush);
+        data._lockManager->LockRange(data._offset, data._range, false);
+        flush = flush || data._flush;
     }
-
+    if (flush) {
+        glFlush();
+    }
     s_bufferBindsNeedsFlush = false;
 }
 
