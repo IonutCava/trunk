@@ -277,9 +277,6 @@
     <ClCompile Include="../../../Source Code/Geometry\Shapes\SkinnedSubMesh.cpp">
       <Filter>Geometry\Shapes</Filter>
     </ClCompile>
-    <ClCompile Include="../../../Source Code/Rendering\DeferredShadingRenderer.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
     <ClCompile Include="../../../Source Code/Rendering\RenderPass\RenderBin.cpp">
       <Filter>Rendering\RenderPass</Filter>
     </ClCompile>
@@ -392,9 +389,6 @@
     </ClCompile>
     <ClCompile Include="../../../Source Code/Geometry\Material\ShaderProgramInfo.cpp">
       <Filter>Geometry\Material</Filter>
-    </ClCompile>
-    <ClCompile Include="../../../Source Code/Rendering\TiledForwardShadingRenderer.cpp">
-      <Filter>Rendering</Filter>
     </ClCompile>
     <ClCompile Include="../../../Source Code/Rendering\Camera\CameraPool.cpp">
       <Filter>Rendering\Camera</Filter>
@@ -682,9 +676,6 @@
     <ClInclude Include="../../../Source Code/Graphs\Headers\SceneNodeRenderState.h">
       <Filter>Graphs\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="../../../Source Code/Rendering\Headers\DeferredShadingRenderer.h">
-      <Filter>Rendering\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="../../../Source Code/Rendering\Headers\Renderer.h">
       <Filter>Rendering\Headers</Filter>
     </ClInclude>
@@ -793,9 +784,6 @@
     </ClInclude>
     <ClInclude Include="../../../Source Code/Geometry\Material\Headers\ShaderProgramInfo.h">
       <Filter>Geometry\Material\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="../../../Source Code/Rendering\Headers\TiledForwardShadingRenderer.h">
-      <Filter>Rendering\Headers</Filter>
     </ClInclude>
     <ClInclude Include="../../../Source Code/Core\Headers\Kernel.h">
       <Filter>Core\Headers</Filter>

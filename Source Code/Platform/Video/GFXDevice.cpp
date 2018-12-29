@@ -16,9 +16,6 @@
 #include "Rendering/PostFX/Headers/PostFX.h"
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
 
-#include "Rendering/Headers/TiledForwardShadingRenderer.h"
-#include "Rendering/Headers/DeferredShadingRenderer.h"
-
 #include "Platform/Headers/PlatformRuntime.h"
 #include "Platform/Video/Headers/IMPrimitive.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
@@ -687,23 +684,6 @@ Renderer& GFXDevice::getRenderer() const {
     DIVIDE_ASSERT(_renderer != nullptr,
         "GFXDevice error: Renderer requested but not created!");
     return *_renderer;
-}
-
-void GFXDevice::setRenderer(RendererType rendererType) {
-    DIVIDE_ASSERT(rendererType != RendererType::COUNT,
-        "GFXDevice error: Tried to create an invalid renderer!");
-
-    PlatformContext& context = parent().platformContext();
-    ResourceCache& cache = parent().resourceCache();
-
-    switch (rendererType) {
-        case RendererType::RENDERER_TILED_FORWARD_SHADING: {
-            MemoryManager::SAFE_UPDATE(_renderer, MemoryManager_NEW TiledForwardShadingRenderer(context, cache));
-        } break;
-        case RendererType::RENDERER_DEFERRED_SHADING: {
-            MemoryManager::SAFE_UPDATE(_renderer, MemoryManager_NEW DeferredShadingRenderer(context, cache));
-        } break;
-    }
 }
 
 ShaderComputeQueue& GFXDevice::shaderComputeQueue() {

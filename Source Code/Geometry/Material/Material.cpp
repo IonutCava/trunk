@@ -23,7 +23,6 @@ namespace Divide {
 namespace {
     const char* g_DepthPassMaterialShaderName = "depthPass";
     const char* g_ForwardMaterialShaderName = "material";
-    const char* g_DeferredMaterialShaderName = "DeferredShadingPass1";
     const char* g_PassThroughMaterialShaderName = "passThrough";
 };
 
@@ -403,15 +402,10 @@ bool Material::computeShader(RenderStagePass renderStagePass, const bool compute
         }
     }
 
-    bool deferredPassShader = _context.getRenderer().getType() !=
-                              RendererType::RENDERER_TILED_FORWARD_SHADING;
     bool depthPassShader = renderStagePass._stage == RenderStage::SHADOW ||
                            renderStagePass._passType == RenderPassType::DEPTH_PASS;
 
-    // the base shader is either for a Deferred Renderer or a Forward  one ...
-    stringImpl shader =
-        (deferredPassShader ? g_DeferredMaterialShaderName
-                            : (depthPassShader ? g_DepthPassMaterialShaderName : g_ForwardMaterialShaderName));
+    stringImpl shader = depthPassShader ? g_DepthPassMaterialShaderName : g_ForwardMaterialShaderName;
 
     if (Config::Profile::DISABLE_SHADING) {
         shader = g_PassThroughMaterialShaderName;

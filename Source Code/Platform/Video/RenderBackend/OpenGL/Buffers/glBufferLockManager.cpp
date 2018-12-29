@@ -29,7 +29,7 @@ glBufferLockManager::~glBufferLockManager() {
 void glBufferLockManager::WaitForLockedRange(size_t lockBeginBytes,
                                              size_t lockLength,
                                              bool blockClient) {
-    BufferRange testRange = {lockBeginBytes, lockLength};
+    BufferRange testRange{lockBeginBytes, lockLength};
 
     UniqueLock w_lock(_lock);
     _swapLocks.resize(0);

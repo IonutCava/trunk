@@ -414,10 +414,8 @@
     <ClCompile Include="../../../Source Code/Rendering\Camera\OrbitCamera.cpp" />
     <ClCompile Include="../../../Source Code/Rendering\Camera\ScriptedCamera.cpp" />
     <ClCompile Include="../../../Source Code/Rendering\Camera\ThirdPersonCamera.cpp" />
-    <ClCompile Include="../../../Source Code/Rendering\DeferredShadingRenderer.cpp" />
     <ClCompile Include="../../../Source Code/Rendering\EnvironmentProbe.cpp" />
     <ClCompile Include="../../../Source Code/Rendering\Renderer.cpp" />
-    <ClCompile Include="../../../Source Code/Rendering\TiledForwardShadingRenderer.cpp" />
     <ClCompile Include="../../../Source Code/Rendering\Camera\Camera.cpp" />
     <ClCompile Include="../../../Source Code/Rendering\Lighting\LightPool.cpp" />
     <ClCompile Include="../../../Source Code\ECS\Components\SelectionComponent.cpp" />
@@ -568,9 +566,7 @@
     <ClInclude Include="../../../Source Code/Rendering\Camera\Headers\ScriptedCamera.h" />
     <ClInclude Include="../../../Source Code/Rendering\Camera\Headers\ThirdPersonCamera.h" />
     <ClInclude Include="../../../Source Code/Rendering\Headers\ClipRegion.h" />
-    <ClInclude Include="../../../Source Code/Rendering\Headers\DeferredShadingRenderer.h" />
     <ClInclude Include="../../../Source Code/Rendering\Headers\EnvironmentProbe.h" />
-    <ClInclude Include="../../../Source Code/Rendering\Headers\TiledForwardShadingRenderer.h" />
     <ClInclude Include="../../../Source Code/Rendering\Headers\FrameListener.h" />
     <ClInclude Include="../../../Source Code/Rendering\Headers\Renderer.h" />
     <ClInclude Include="../../../Source Code/Rendering\Lighting\Headers\LightPool.h" />

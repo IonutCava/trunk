@@ -43,18 +43,17 @@ void glLockManager::Lock(bool flush) {
 void glLockManager::wait(GLsync* syncObj, bool blockClient) {
     if (blockClient) {
         SyncObjectMask waitFlags = SyncObjectMask::GL_NONE_BIT;
-        GLuint64 waitDuration = 0;
         U8 retryCount = 0;
         while (true) {
-            GLenum waitRet = glClientWaitSync(*syncObj, waitFlags, waitDuration);
+            GLenum waitRet = glClientWaitSync(*syncObj, waitFlags, retryCount > 0 ? kOneSecondInNanoSeconds : 0);
             if (waitRet == GL_ALREADY_SIGNALED || waitRet == GL_CONDITION_SATISFIED) {
                 return;
             }
 
             DIVIDE_ASSERT(waitRet != GL_WAIT_FAILED, "glLockManager::wait error: Not sure what to do here. Probably raise an exception or something.");
+
             // After the first time, need to start flushing, and wait for a looong time.
             waitFlags = GL_SYNC_FLUSH_COMMANDS_BIT;
-            waitDuration = kOneSecondInNanoSeconds;
 
             if (++retryCount > kMaxWaitRetry) {
                 DIVIDE_ASSERT(waitRet != GL_TIMEOUT_EXPIRED, "glLockManager::wait error: Lock timeout");

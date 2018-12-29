@@ -59,7 +59,6 @@ class RenderDocManager;
 
 namespace Divide {
 
-enum class RendererType : U8;
 enum class SceneNodeType : U16;
 enum class WindowEvent : U8;
 
@@ -242,7 +241,6 @@ public:  // GPU interface
     void Screenshot(const stringImpl& filename);
 
     Renderer& getRenderer() const;
-    void setRenderer(RendererType rendererType);
 
     ShaderComputeQueue& shaderComputeQueue();
     const ShaderComputeQueue& shaderComputeQueue() const;
@@ -407,7 +405,7 @@ private:
 private:
     std::unique_ptr<RenderAPIWrapper> _api;
     std::unique_ptr<PostFX> _postFX;
-    Renderer* _renderer;
+    std::unique_ptr<Renderer> _renderer;
 
     /// Pointer to a shader creation queue
     ShaderComputeQueue* _shaderComputeQueue;

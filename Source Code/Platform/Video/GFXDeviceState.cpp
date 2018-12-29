@@ -410,6 +410,8 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     params.winGUID = context().app().windowManager().getMainWindow().getGUID();
     context().app().onSizeChange(params);
 
+    _renderer = std::make_unique<Renderer>(context(), cache);
+
     // Everything is ready from the rendering point of view
     return ErrorCode::NO_ERR;
 }
@@ -441,8 +443,7 @@ void GFXDevice::closeRenderingAPI() {
     _textRenderShader = nullptr;
 
     _prevDepthBuffers.clear();
-
-    MemoryManager::DELETE(_renderer);
+    _renderer.reset(nullptr);
 
     // Close the shader manager
     MemoryManager::DELETE(_shaderComputeQueue);

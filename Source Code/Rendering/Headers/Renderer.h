@@ -37,45 +37,47 @@
 
 namespace Divide {
 
-enum class RendererType : U8 {
-    RENDERER_TILED_FORWARD_SHADING = 0,
-    RENDERER_DEFERRED_SHADING = 1,
-    COUNT
-};
-
 class LightPool;
 class ResourceCache;
 class PlatformContext;
-/// An abstract renderer used to switch between different rendering techniques:
-/// TiledForwardShading, Deferred Shading, etc
-class NOINITVTABLE Renderer : public PlatformContextComponent {
+
+/// TiledForwardShading
+class Renderer : public PlatformContextComponent {
    public:
-    Renderer(PlatformContext& context, ResourceCache& cache, RendererType type);
-    virtual ~Renderer();
+    Renderer(PlatformContext& context, ResourceCache& cache);
+    ~Renderer();
 
-    virtual void preRender(RenderStagePass stagePass,
-                           RenderTarget& target,
-                           LightPool& lightPool,
-                           GFX::CommandBuffer& bufferInOut);
+    void preRender(RenderStagePass stagePass,
+                   RenderTarget& target,
+                   LightPool& lightPool,
+                   GFX::CommandBuffer& bufferInOut);
 
-    virtual void render(RenderStagePass stagePass,
-                        const DELEGATE_CBK<void, GFX::CommandBuffer&>& renderCallback,
-                        const SceneRenderState& sceneRenderState,
-                        GFX::CommandBuffer& bufferInOut) = 0;
+    void render(RenderStagePass stagePass,
+                const DELEGATE_CBK<void, GFX::CommandBuffer&>& renderCallback,
+                const SceneRenderState& sceneRenderState,
+                GFX::CommandBuffer& bufferInOut);
 
-    virtual void updateResolution(U16 width, U16 height) = 0;
+    void updateResolution(U16 width, U16 height);
 
-    inline RendererType getType() const { return _type; }
     inline void toggleDebugView() { _debugView = !_debugView; }
 
     inline U32 getFlag() const { return _flag; }
 
-   protected:
+  private:
+    U32 getMaxNumLightsPerTile() const;
+    U32 getNumTilesX() const;
+    U32 getNumTilesY() const;
+
+  private:
     ResourceCache& _resCache;
     // General purpose flag
     U32 _flag;
     bool _debugView;
-    RendererType _type;
+
+    vec2<U16> _resolution;
+    ShaderProgram_ptr _lightCullComputeShader;
+    ShaderBuffer*     _perTileLightIndexBuffer;
+
 };
 
 };  // namespace Divide

@@ -625,8 +625,6 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
     Script::onStartup();
     SceneManager::onStartup();
-    // We start of with a forward plus renderer
-    _platformContext->gfx().setRenderer(RendererType::RENDERER_TILED_FORWARD_SHADING);
     Attorney::ShaderProgramKernel::useShaderTextCache(config.debug.useShaderTextCache);
     Attorney::ShaderProgramKernel::useShaderBinaryCache(config.debug.useShaderBinaryCache);
 

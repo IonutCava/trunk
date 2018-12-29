@@ -169,10 +169,19 @@ static void glfons__renderDraw(void* userPtr, const FONSvert* verts, int nverts)
         return;
 
     static size_t writeOffsetBytes = 0;
+    static size_t prevWriteOffsetBytes = 0;
+
     size_t dataSize = nverts * sizeof(FONSvert);
 
     // Not enough space left in the buffer. Start from the beginning
+    if (prevWriteOffsetBytes > writeOffsetBytes) {
+        { //Wait
+            g_lockManager->Wait(true);
+        }
+    }
+
     if (writeOffsetBytes + dataSize > GLFONS_VB_BUFFER_SIZE) {
+        prevWriteOffsetBytes = writeOffsetBytes;
         writeOffsetBytes = 0;
     }
 
@@ -180,9 +189,7 @@ static void glfons__renderDraw(void* userPtr, const FONSvert* verts, int nverts)
         Divide::GL_API::getStateTracker().bindTexture(0, gl->tex);
         Divide::GL_API::getStateTracker().setActiveVAO(gl->glfons_vaoID);
     }
-    { //Wait
-        g_lockManager->WaitForLockedRange(writeOffsetBytes, dataSize, true);
-    }
+
     { //Update
         memcpy((Divide::Byte*)gl->glfons_vboData + writeOffsetBytes, verts, dataSize);
 
@@ -195,8 +202,11 @@ static void glfons__renderDraw(void* userPtr, const FONSvert* verts, int nverts)
         glDrawArrays(GL_TRIANGLES, startIndex, nverts);
     }
     { //Lock
-        g_lockManager->LockRange(writeOffsetBytes, dataSize);
+        prevWriteOffsetBytes = writeOffsetBytes;
         writeOffsetBytes = (writeOffsetBytes + dataSize) % GLFONS_VB_BUFFER_SIZE;
+        if (prevWriteOffsetBytes > writeOffsetBytes) {
+            g_lockManager->Lock(true);
+        }
     }
 }
 
