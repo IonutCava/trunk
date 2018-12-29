@@ -31,16 +31,13 @@ Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descri
       _context(context),
       _parentCache(parentCache),
       _parallaxFactor(1.0f),
-      _dirty(false),
+      _needsNewShader(false),
       _doubleSided(false),
       _isReflective(false),
       _isRefractive(false),
       _shaderThreadedLoad(true),
       _hardwareSkinning(false),
-      _dumpToFile(true),
       _ignoreXMLData(false),
-      _translucencyCheck(true),
-      _highPriority(false),
       _reflectionIndex(-1),
       _refractionIndex(-1),
       _shadingMode(ShadingMode::COUNT),
@@ -129,8 +126,6 @@ Material_ptr Material::clone(const stringImpl& nameSuffix) {
     Material_ptr cloneMat = CreateResource<Material>(_parentCache, ResourceDescriptor(resourceName() + nameSuffix));
 
     cloneMat->_shadingMode = base._shadingMode;
-    cloneMat->_translucencyCheck = base._translucencyCheck;
-    cloneMat->_dumpToFile = base._dumpToFile;
     cloneMat->_doubleSided = base._doubleSided;
     cloneMat->_isReflective = base._isReflective;
     cloneMat->_isRefractive = base._isRefractive;
@@ -176,10 +171,18 @@ Material_ptr Material::clone(const stringImpl& nameSuffix) {
 
 void Material::update(const U64 deltaTimeUS) {
     for (ShaderProgramInfo& info : _shaderInfo) {
-        _dirty = _dirty || info.update();
+        if (info._shaderCompStage == ShaderProgramInfo::BuildStage::COMPUTED) {
+            if (info._shaderRef != nullptr && info._shaderRef->getState() == ResourceState::RES_LOADED) {
+                info._shaderCompStage = ShaderProgramInfo::BuildStage::READY;
+                break;
+            }
+        }
     }
 
-    clean();
+    if (_needsNewShader) {
+        recomputeShaders();
+        _needsNewShader = false;
+    }
 }
 
 // base = base texture
@@ -193,12 +196,6 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
 
     if (textureUsageSlot == ShaderProgram::TextureUsage::UNIT1) {
         _operation = op;
-    }
-
-    if (!_translucencyCheck) {
-         _translucencyCheck =
-            (textureUsageSlot == ShaderProgram::TextureUsage::UNIT0 ||
-             textureUsageSlot == ShaderProgram::TextureUsage::OPACITY);
     }
 
     if (!_textures[slot]) {
@@ -218,14 +215,14 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
 
     _textures[slot] = texture;
 
-    if (computeShaders) {
-        recomputeShaders();
+    if (textureUsageSlot == ShaderProgram::TextureUsage::UNIT0 || textureUsageSlot == ShaderProgram::TextureUsage::OPACITY) {
+        updateTranslucency();
     }
 
-    _dirty = textureUsageSlot != ShaderProgram::TextureUsage::REFLECTION_PLANAR &&
-             textureUsageSlot != ShaderProgram::TextureUsage::REFRACTION_PLANAR &&
-             textureUsageSlot != ShaderProgram::TextureUsage::REFLECTION_CUBE &&
-             textureUsageSlot != ShaderProgram::TextureUsage::REFRACTION_CUBE;
+    _needsNewShader = textureUsageSlot != ShaderProgram::TextureUsage::REFLECTION_PLANAR &&
+                      textureUsageSlot != ShaderProgram::TextureUsage::REFRACTION_PLANAR &&
+                      textureUsageSlot != ShaderProgram::TextureUsage::REFLECTION_CUBE &&
+                      textureUsageSlot != ShaderProgram::TextureUsage::REFRACTION_CUBE;
 
     return true;
 }
@@ -237,7 +234,7 @@ void Material::setShaderProgramInternal(const ShaderProgram_ptr& shader,
     if (shader != nullptr) {
         info._customShader = true;
         info._shaderRef = shader;
-        info.computeStage(ShaderProgramInfo::BuildStage::COMPUTED);
+        info._shaderCompStage = ShaderProgramInfo::BuildStage::COMPUTED;
     } else {
         setShaderProgramInternal("", renderStagePass, true);
     }
@@ -280,31 +277,20 @@ void Material::setShaderProgramInternal(const stringImpl& shader,
     
 }
 
-void Material::clean() {
-    if (_dirty && _dumpToFile) {
-        updateTranslucency();
-        if (!Config::Build::IS_DEBUG_BUILD) {
-            //ToDo: Save to XML ... 
-        }
-    }
-
-    _dirty = false;
-}
-
 void Material::recomputeShaders() {
     for (ShaderProgramInfo& info : _shaderInfo) {
         if (!info._customShader) {
-            info.computeStage(ShaderProgramInfo::BuildStage::REQUESTED);
+            info._shaderCompStage = ShaderProgramInfo::BuildStage::REQUESTED;
         }
     }
 }
 
-bool Material::canDraw(RenderStagePass renderStage) {
+bool Material::canDraw(RenderStage renderStage) {
     for (U8 i = 0; i < to_U8(RenderPassType::COUNT); ++i) {
-        U8 passIndex = RenderStagePass::index(renderStage._stage, static_cast<RenderPassType>(i));
+        U8 passIndex = RenderStagePass::index(renderStage, static_cast<RenderPassType>(i));
 
-        if (_shaderInfo[passIndex].computeStage() != ShaderProgramInfo::BuildStage::READY) {
-            return computeShader(RenderStagePass::stagePass(passIndex), _highPriority);
+        if (_shaderInfo[passIndex]._shaderCompStage != ShaderProgramInfo::BuildStage::READY) {
+            return computeShader(RenderStagePass::stagePass(passIndex));
         }
     }
 
@@ -365,21 +351,22 @@ void Material::defaultRefractionTexture(const Texture_ptr& refractionPtr, U32 ar
 }
 
 /// If the current material doesn't have a shader associated with it, then add the default ones.
-bool Material::computeShader(RenderStagePass renderStagePass, const bool computeOnAdd){
+bool Material::computeShader(RenderStagePass renderStagePass) {
+
     ShaderProgramInfo& info = shaderInfo(renderStagePass);
     // If shader's invalid, try to request a recompute as it might fix it
-    if (info.computeStage() == ShaderProgramInfo::BuildStage::COUNT) {
-        info.computeStage(ShaderProgramInfo::BuildStage::REQUESTED);
+    if (info._shaderCompStage == ShaderProgramInfo::BuildStage::COUNT) {
+        info._shaderCompStage = ShaderProgramInfo::BuildStage::REQUESTED;
         return false;
     }
 
     // If the shader is valid and a recompute wasn't requested, just return true
-    if (info.computeStage() != ShaderProgramInfo::BuildStage::REQUESTED) {
-        return info.computeStage() == ShaderProgramInfo::BuildStage::READY;
+    if (info._shaderCompStage != ShaderProgramInfo::BuildStage::REQUESTED) {
+        return info._shaderCompStage == ShaderProgramInfo::BuildStage::READY;
     }
 
     // At this point, only computation requests are processed
-    assert(info.computeStage() == ShaderProgramInfo::BuildStage::REQUESTED);
+    assert(info._shaderCompStage == ShaderProgramInfo::BuildStage::REQUESTED);
 
     const U32 slot0 = to_base(ShaderProgram::TextureUsage::UNIT0);
     const U32 slot1 = to_base(ShaderProgram::TextureUsage::UNIT1);
@@ -398,22 +385,19 @@ bool Material::computeShader(RenderStagePass renderStagePass, const bool compute
     if (_textures[slot1]) {
         if (!_textures[slot0]) {
             std::swap(_textures[slot0], _textures[slot1]);
-            _translucencyCheck = true;
+            updateTranslucency();
         }
     }
 
-    bool depthPassShader = renderStagePass._stage == RenderStage::SHADOW ||
-                           renderStagePass._passType == RenderPassType::DEPTH_PASS;
-
-    stringImpl shader = depthPassShader ? g_DepthPassMaterialShaderName : g_ForwardMaterialShaderName;
+    stringImpl shader = renderStagePass.isDepthPass() ? g_DepthPassMaterialShaderName : g_ForwardMaterialShaderName;
 
     if (Config::Profile::DISABLE_SHADING) {
         shader = g_PassThroughMaterialShaderName;
-        setShaderProgramInternal(shader, renderStagePass, computeOnAdd);
+        setShaderProgramInternal(shader, renderStagePass, false);
         return false;
     }
 
-    if (depthPassShader) {
+    if (renderStagePass.isDepthPass()) {
         shader += renderStagePass._stage == RenderStage::SHADOW ? ".Shadow" : ".PrePass";
     }
 
@@ -448,8 +432,8 @@ bool Material::computeShader(RenderStagePass renderStagePass, const bool compute
         addShaderDefine(renderStagePass, "USE_SPECULAR_MAP");
     }
 
-    updateTranslucency(false);
-
+    // Shouldn't be needed
+    updateTranslucency();
     switch (_translucencySource) {
         case TranslucencySource::OPACITY_MAP: {
             shader += ".OpacityMap";
@@ -532,7 +516,7 @@ bool Material::computeShader(RenderStagePass renderStagePass, const bool compute
         shader += modifier;
     }
 
-    setShaderProgramInternal(shader, renderStagePass, computeOnAdd);
+    setShaderProgramInternal(shader, renderStagePass, false);
 
     return false;
 }
@@ -608,8 +592,7 @@ void Material::setReflective(const bool state) {
     }
 
     _isReflective = state;
-
-    _dirty = true;
+    _needsNewShader = true;
 }
 
 void Material::setRefractive(const bool state) {
@@ -618,8 +601,7 @@ void Material::setRefractive(const bool state) {
     }
 
     _isRefractive = state;
-
-    _dirty = true;
+    _needsNewShader = true;
 }
 
 void Material::setDoubleSided(const bool state) {
@@ -642,41 +624,38 @@ void Material::setDoubleSided(const bool state) {
         }
     }
 
-    _dirty = true;
+    _needsNewShader = true;
 }
 
-void Material::updateTranslucency(bool requestRecomputeShaders) {
-    if (_translucencyCheck) {
-        _translucencySource = TranslucencySource::COUNT;
+void Material::updateTranslucency() {
+    TranslucencySource oldSource = _translucencySource;
+    _translucencySource = TranslucencySource::COUNT;
 
-        // In order of importance (less to more)!
-        // diffuse channel alpha
-        if (_colourData._diffuse.a < 0.95f) {
-            _translucencySource = TranslucencySource::DIFFUSE;
-        }
+    // In order of importance (less to more)!
+    // diffuse channel alpha
+    if (_colourData._diffuse.a < 0.95f) {
+        _translucencySource = TranslucencySource::DIFFUSE;
+    }
 
-        // base texture is translucent
-        Texture_ptr albedo = _textures[to_base(ShaderProgram::TextureUsage::UNIT0)];
-        if (albedo && albedo->hasTransparency()) {
-            _translucencySource = TranslucencySource::DIFFUSE_MAP;
-        }
+    // base texture is translucent
+    Texture_ptr albedo = _textures[to_base(ShaderProgram::TextureUsage::UNIT0)];
+    if (albedo && albedo->hasTransparency()) {
+        _translucencySource = TranslucencySource::DIFFUSE_MAP;
+    }
 
-        // opacity map
-        Texture_ptr opacity = _textures[to_base(ShaderProgram::TextureUsage::OPACITY)];
-        if (opacity && opacity->hasTransparency()) {
-            _translucencySource = TranslucencySource::OPACITY_MAP;
-        }
+    // opacity map
+    Texture_ptr opacity = _textures[to_base(ShaderProgram::TextureUsage::OPACITY)];
+    if (opacity && opacity->hasTransparency()) {
+        _translucencySource = TranslucencySource::OPACITY_MAP;
+    }
 
-        _translucencyCheck = false;
+    // Disable culling for translucent items
+    if (!isDoubleSided() && _translucencySource != TranslucencySource::COUNT) {
+        setDoubleSided(true);
+    }
 
-        // Disable culling for translucent items
-        if (_translucencySource != TranslucencySource::COUNT) {
-            setDoubleSided(true);
-        } else {
-            if (requestRecomputeShaders) {
-                recomputeShaders();
-            }
-        }
+    if (oldSource != _translucencySource) {
+        _needsNewShader = true;
     }
 }
 
@@ -703,7 +682,7 @@ void Material::rebuild() {
     recomputeShaders();
 
     for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
-        computeShader(RenderStagePass::stagePass(i), _highPriority);
+        computeShader(RenderStagePass::stagePass(i));
         _shaderInfo[i]._shaderRef->recompile();
     }
 }

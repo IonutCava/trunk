@@ -61,7 +61,7 @@ bool ShaderComputeQueue::stepQueue() {
         }
         
         info._shaderRef = CreateResource<ShaderProgram>(_cache, currentItem._shaderDescriptor);
-        info.computeStage(ShaderProgramInfo::BuildStage::COMPUTED);
+        info._shaderCompStage = ShaderProgramInfo::BuildStage::COMPUTED;
         _shaderComputeQueue.pop_front();
         return true;
     }
@@ -71,13 +71,13 @@ bool ShaderComputeQueue::stepQueue() {
 
 void ShaderComputeQueue::addToQueueFront(const ShaderQueueElement& element) {
     UniqueLock w_lock(_queueLock);
-    element._shaderData->computeStage(ShaderProgramInfo::BuildStage::QUEUED);
+    element._shaderData->_shaderCompStage = ShaderProgramInfo::BuildStage::QUEUED;
     _shaderComputeQueue.push_front(element);
 }
 
 void ShaderComputeQueue::addToQueueBack(const ShaderQueueElement& element) {
     UniqueLock w_lock(_queueLock);
-    element._shaderData->computeStage(ShaderProgramInfo::BuildStage::QUEUED);
+    element._shaderData->_shaderCompStage = ShaderProgramInfo::BuildStage::QUEUED;
     _shaderComputeQueue.push_back(element);
 }
 

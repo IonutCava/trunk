@@ -387,9 +387,6 @@
     <ClCompile Include="../../../Source Code/Geometry\Material\ShaderComputeQueue.cpp">
       <Filter>Geometry\Material</Filter>
     </ClCompile>
-    <ClCompile Include="../../../Source Code/Geometry\Material\ShaderProgramInfo.cpp">
-      <Filter>Geometry\Material</Filter>
-    </ClCompile>
     <ClCompile Include="../../../Source Code/Rendering\Camera\CameraPool.cpp">
       <Filter>Rendering\Camera</Filter>
     </ClCompile>

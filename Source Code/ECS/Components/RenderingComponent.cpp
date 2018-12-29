@@ -189,7 +189,7 @@ void RenderingComponent::rebuildDrawCommands(RenderStagePass stagePass) {
     if (mat != nullptr) {
         PipelineDescriptor pipelineDescriptor;
         pipelineDescriptor._stateHash = mat->getRenderStateBlock(stagePass);
-        pipelineDescriptor._shaderProgramHandle = mat->getShaderInfo(stagePass).getProgram()->getID();
+        pipelineDescriptor._shaderProgramHandle = mat->getShaderInfo(stagePass)._shaderRef->getID();
 
         GFX::BindPipelineCommand pipelineCommand;
         pipelineCommand._pipeline = _context.newPipeline(pipelineDescriptor);
@@ -231,7 +231,7 @@ void RenderingComponent::Update(const U64 deltaTimeUS) {
 bool RenderingComponent::canDraw(RenderStagePass renderStagePass) {
     if (_parentSGN.getDrawState(renderStagePass)) {
         const Material_ptr& mat = getMaterialInstance();
-        if (mat && !mat->canDraw(renderStagePass)) {
+        if (mat && !mat->canDraw(renderStagePass._stage)) {
             return false;
         }
         return renderOptionEnabled(RenderOptions::IS_VISIBLE);

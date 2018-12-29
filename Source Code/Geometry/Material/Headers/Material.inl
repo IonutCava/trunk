@@ -35,48 +35,37 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 inline void Material::setColourData(const ColourData& other) {
-    _dirty = true;
     _colourData = other;
-    _translucencyCheck = true;
+    updateTranslucency();
 }
 
 inline void Material::setDiffuse(const FColour& value) {
-    _dirty = true;
     _colourData._diffuse = value;
     if (value.a < 0.95f) {
-        _translucencyCheck = true;
+        updateTranslucency();
     }
 }
 
 inline void Material::setSpecular(const FColour& value) {
-    _dirty = true;
     _colourData._specular = value;
 }
 
 inline void Material::setEmissive(const vec3<F32>& value) {
-    _dirty = true;
     _colourData._emissive = value;
 }
 
 inline void Material::setHardwareSkinning(const bool state) {
-    _dirty = true;
+    _needsNewShader = true;
     _hardwareSkinning = state;
 }
 
 inline void Material::setOpacity(F32 value) {
-    _dirty = true;
     _colourData._diffuse.a = value;
-    _translucencyCheck = true;
+    updateTranslucency();
 }
 
 inline void Material::setShininess(F32 value) {
-    _dirty = true;
     _colourData._shininess = value;
-}
-
-// Should the shaders be computed on add? Should reflections be always parsed? Etc
-inline void Material::setHighPriority(const bool state) {
-    _highPriority = state;
 }
 
 inline void Material::addShaderModifier(RenderStagePass renderStagePass, const stringImpl& shaderModifier) {
@@ -236,14 +225,6 @@ inline const Material::BumpMethod&  Material::getBumpMethod()  const {
 
 inline bool Material::hasTransparency() const {
     return _translucencySource != TranslucencySource::COUNT;
-}
-
-inline void Material::dumpToFile(bool state) {
-    _dumpToFile = state;
-}
-
-inline bool Material::isDirty() const {
-    return _dirty;
 }
 
 inline bool Material::isDoubleSided() const {

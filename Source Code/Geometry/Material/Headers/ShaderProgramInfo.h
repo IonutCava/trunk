@@ -37,34 +37,20 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-class ShaderProgramInfo {
+struct ShaderProgramInfo {
 public:
     enum class BuildStage : U8 {
         QUEUED = 0,
-        COMPUTED = 1,
-        READY = 2,
-        REQUESTED = 3,
+        REQUESTED,
+        COMPUTED,
+        READY,
         COUNT
     };
     
-public:
-    explicit ShaderProgramInfo();
-    ShaderProgramInfo(const ShaderProgramInfo& other);
-    ShaderProgramInfo& operator=(const ShaderProgramInfo& other);
-
-    const ShaderProgram_ptr& getProgram() const;
-
-    bool update();
-
-    BuildStage computeStage() const;
-    void computeStage(BuildStage stage);
-
-    bool _customShader;
-    ShaderProgram_ptr _shaderRef;
+    bool _customShader = false;
+    ShaderProgram_ptr _shaderRef = nullptr;
+    BuildStage _shaderCompStage = BuildStage::COUNT;
     vector<std::pair<stringImpl, bool>> _shaderDefines;
-
-private:
-    std::atomic<BuildStage> _shaderCompStage;
 };
 
 }; //namespace Divide

@@ -377,7 +377,6 @@
     <ClCompile Include="../../../Source Code/Geometry\Animations\AnimationUtils.cpp" />
     <ClCompile Include="../../../Source Code/Geometry\Importer\MeshImporter.cpp" />
     <ClCompile Include="../../../Source Code/Geometry\Material\ShaderComputeQueue.cpp" />
-    <ClCompile Include="../../../Source Code/Geometry\Material\ShaderProgramInfo.cpp" />
     <ClCompile Include="../../../Source Code/Geometry\Shapes\Predefined\Box3D.cpp" />
     <ClCompile Include="../../../Source Code/Geometry\Shapes\Predefined\Quad3D.cpp" />
     <ClCompile Include="../../../Source Code/Geometry\Shapes\Predefined\Sphere3D.cpp" />

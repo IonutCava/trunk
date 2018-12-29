@@ -70,7 +70,6 @@ bool WaterPlane::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallb
     Material_ptr waterMat = CreateResource<Material>(_parentCache, waterMaterial);
     assert(waterMat != nullptr);
 
-    waterMat->dumpToFile(false);
     waterMat->setShadingMode(Material::ShadingMode::BLINN_PHONG);
     waterMat->setTexture(ShaderProgram::TextureUsage::UNIT0, waterNM);
     waterMat->setTexture(ShaderProgram::TextureUsage::UNIT1, waterDUDV);

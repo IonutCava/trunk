@@ -155,8 +155,6 @@ class Material : public CachedResource {
     void setOpacity(F32 value);
     void setShininess(F32 value);
     void setShadingMode(const ShadingMode& mode);
-    // Should the shaders be computed on add? Should reflections be always parsed? Etc
-    void setHighPriority(const bool state);
 
     void setDoubleSided(const bool state);
     void setReflective(const bool state);
@@ -265,21 +263,17 @@ class Material : public CachedResource {
     bool getTextureData(RenderStagePass renderStagePass, TextureDataContainer& textureData);
 
     void rebuild();
-    void clean();
-    void updateTranslucency(bool requestRecomputeShaders = true);
     bool hasTransparency() const;
 
-    void dumpToFile(bool state);
-    bool isDirty() const;
     bool isDoubleSided() const;
     bool isReflective() const;
     bool isRefractive() const;
 
     // Checks if the shader needed for the current stage is already constructed.
     // Returns false if the shader was already ready.
-    bool computeShader(RenderStagePass renderStagePass, const bool computeOnAdd);
+    bool computeShader(RenderStagePass renderStagePass);
 
-    bool canDraw(RenderStagePass renderStagePass);
+    bool canDraw(RenderStage renderStage);
 
     void updateReflectionIndex(ReflectorType type, I32 index);
     void updateRefractionIndex(ReflectorType type, I32 index);
@@ -298,6 +292,8 @@ class Material : public CachedResource {
     void loadFromXML(const stringImpl& entryName, const boost::property_tree::ptree& pt);
 
    private:
+    void updateTranslucency();
+
     bool getTextureData(ShaderProgram::TextureUsage slot, TextureDataContainer& container);
 
     void recomputeShaders();
@@ -326,9 +322,7 @@ class Material : public CachedResource {
     TranslucencySource _translucencySource;
     /// parallax/relief factor (higher value > more pronounced effect)
     F32 _parallaxFactor;
-    bool _dirty;
-    bool _dumpToFile;
-    bool _translucencyCheck;
+    bool _needsNewShader;
     bool _doubleSided;
     bool _isReflective;
     bool _isRefractive;
@@ -339,7 +333,6 @@ class Material : public CachedResource {
     std::array<std::array<size_t, 3>,  to_base(RenderStagePass::count())> _defaultRenderStates;
 
     bool _shaderThreadedLoad;
-    bool _highPriority;
     /// use this map to add textures to the material
     std::array<Texture_ptr, to_base(ShaderProgram::TextureUsage::COUNT)> _textures;
     std::array<bool, to_base(ShaderProgram::TextureUsage::COUNT)> _textureExtenalFlag;

@@ -277,7 +277,6 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     terrainMaterial->setShaderProgram("terrainTess.PrePass." + name, RenderPassType::DEPTH_PASS, true);
     terrainMaterial->setShaderProgram("terrainTess.Shadow." + name, RenderStage::SHADOW, true);
 
-    terrainMaterial->dumpToFile(false);
     terrain->setMaterialTpl(terrainMaterial);
 
     // Generate a render state
@@ -533,7 +532,6 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     vegMaterial->setShaderProgram("grass.Shadow", RenderStage::SHADOW, true);
 
     vegMaterial->setTexture(ShaderProgram::TextureUsage::UNIT0, grassBillboardArray);
-    vegMaterial->dumpToFile(false);
     vegDetails.vegetationMaterialPtr = vegMaterial;
 
     vegDetails.map.reset(new ImageTools::ImageData);

@@ -74,7 +74,7 @@ void LightPool::init() {
     bufferDescriptor._elementCount = 1;
     bufferDescriptor._elementSize = sizeof(vec4<I32>) + (Config::Lighting::MAX_POSSIBLE_LIGHTS * sizeof(LightProperties));
     bufferDescriptor._ringBufferLength = 3;
-    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE) | to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
+    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE) /*| to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES)*/;
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
 
     // NORMAL holds general info about the currently active lights: position, colour, etc.
@@ -339,8 +339,8 @@ void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, con
             to_I32(sortedLights.size())
         );
 
-        _lightShaderBuffer[stageIndex]->writeBytes(0, sizeof(vec4<I32>) + totalLightCount * sizeof(LightProperties), (bufferPtr)(&crtData));
-        _lightShaderBuffer[stageIndex]->incQueue();
+        /*_lightShaderBuffer[stageIndex]->writeBytes(0, sizeof(vec4<I32>) + totalLightCount * sizeof(LightProperties), (bufferPtr)(&crtData));
+        _lightShaderBuffer[stageIndex]->incQueue();*/
     };
 
     // Sort all lights (Sort in parallel by type)
@@ -355,7 +355,13 @@ void LightPool::uploadLightData(RenderStage stage,
 
     GFX::ExternalCommand externalCmd;
     externalCmd._cbk = [this, stage]() {
-        _lightUpdateTask[to_U8(stage)].wait();
+        U8 stageIndex = to_U8(stage);
+
+        _lightUpdateTask[stageIndex].wait();
+
+        const BufferData& crtData = _sortedLightProperties[stageIndex];
+        _lightShaderBuffer[stageIndex]->writeBytes(0, sizeof(vec4<I32>) + to_I32(crtData._globalData.x) * sizeof(LightProperties), (bufferPtr)(&crtData));
+        _lightShaderBuffer[stageIndex]->incQueue();
     };
     GFX::EnqueueCommand(bufferInOut, externalCmd);
 
