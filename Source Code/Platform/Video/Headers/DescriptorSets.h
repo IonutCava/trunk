@@ -76,6 +76,9 @@ namespace Divide {
         ShaderBufferList _shaderBuffers = {};
         TextureDataContainer _textureData = {};
 
+        void addShaderBuffer(const ShaderBufferBinding& entry);
+        void addShaderBuffers(const ShaderBufferList& entries);
+
         FORCE_INLINE bool operator==(const DescriptorSet &other) const {
             return _shaderBuffers == other._shaderBuffers &&
                    _textureData == other._textureData;

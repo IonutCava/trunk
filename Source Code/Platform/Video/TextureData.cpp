@@ -59,10 +59,14 @@ bool TextureDataContainer::addTexture(const TextureData& data, U8 binding) {
     return false;
 }
 
+bool TextureDataContainer::addTextures(const TextureDataContainer& textureEntries) {
+    return addTextures(textureEntries._textures);
+}
+
 bool TextureDataContainer::addTextures(const vectorEASTL<eastl::pair<TextureData, U8 /*binding*/>>& textureEntries) {
     bool ret = false;
     for (auto entry : textureEntries) {
-        ret = ret || addTexture(entry);
+        ret = addTexture(entry) || ret;
     }
 
     return ret;

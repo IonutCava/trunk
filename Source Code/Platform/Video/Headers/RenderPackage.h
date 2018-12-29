@@ -77,15 +77,6 @@ public:
     inline void qualityRequirement(MinQuality state) { _qualityRequirement = state; }
     inline MinQuality qualityRequirement() const { return  _qualityRequirement; }
 
-    void registerShaderBuffer(ShaderBufferLocation slot,
-                              vec2<U32> bindRange,
-                              ShaderBuffer& shaderBuffer);
-
-    void unregisterShaderBuffer(ShaderBufferLocation slot);
-    void registerTextureDependency(const TextureData& additionalTexture, U8 binding);
-    void removeTextureDependency(U8 binding);
-    void removeTextureDependency(const TextureData& additionalTexture);
-
     size_t getSortKeyHash() const;
 
     I32 drawCommandCount() const;

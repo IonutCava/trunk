@@ -309,6 +309,13 @@ inline void Material::setShaderProgram(const ShaderProgram_ptr& shader,
 }
 
 inline void Material::setShaderProgram(const stringImpl& shader,
+                                       const bool computeOnAdd) {
+    for (U8 stage = 0; stage < to_base(RenderStage::COUNT); ++stage) {
+        setShaderProgram(shader, static_cast<RenderStage>(stage), computeOnAdd);
+    }
+}
+
+inline void Material::setShaderProgram(const stringImpl& shader,
                                        RenderStage stage,
                                        const bool computeOnAdd) {
     for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {

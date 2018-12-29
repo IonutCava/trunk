@@ -616,7 +616,6 @@ void Material::setReflective(const bool state) {
     _isReflective = state;
 
     _dirty = true;
-    recomputeShaders();
 }
 
 void Material::setRefractive(const bool state) {
@@ -627,7 +626,6 @@ void Material::setRefractive(const bool state) {
     _isRefractive = state;
 
     _dirty = true;
-    recomputeShaders();
 }
 
 void Material::setDoubleSided(const bool state) {
@@ -651,7 +649,6 @@ void Material::setDoubleSided(const bool state) {
     }
 
     _dirty = true;
-    recomputeShaders();
 }
 
 void Material::updateTranslucency(bool requestRecomputeShaders) {

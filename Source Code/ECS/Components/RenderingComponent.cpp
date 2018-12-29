@@ -64,20 +64,21 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
     bool isSubMesh = node->getObjectType()._value == ObjectType::SUBMESH;
     bool nodeSkinned = node->getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED);
 
-    assert(_materialInstance && !_materialInstance->resourceName().empty());
+    if (_materialInstance != nullptr) {
+        assert(!_materialInstance->resourceName().empty());
 
-    if (!isSubMesh) {
-        for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
-            _materialInstance->addShaderModifier(RenderStagePass(RenderStage::SHADOW, static_cast<RenderPassType>(pass)), "TriangleStrip");
-            _materialInstance->addShaderDefine(RenderStagePass(RenderStage::SHADOW, static_cast<RenderPassType>(pass)), "USE_TRIANGLE_STRIP");
+        if (!isSubMesh) {
+            for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
+                _materialInstance->addShaderModifier(RenderStagePass(RenderStage::SHADOW, static_cast<RenderPassType>(pass)), "TriangleStrip");
+                _materialInstance->addShaderDefine(RenderStagePass(RenderStage::SHADOW, static_cast<RenderPassType>(pass)), "USE_TRIANGLE_STRIP");
+            }
         }
+
+        _editorComponent.registerField("Material", 
+                                       _materialInstance.get(),
+                                       EditorComponentFieldType::MATERIAL,
+                                       false);
     }
-
-    _editorComponent.registerField("Material", 
-                                   _materialInstance.get(),
-                                   EditorComponentFieldType::MATERIAL,
-                                   false);
-
 
     for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
         RenderPackagesPerPassType& packages = _renderPackages[to_base(RenderStagePass::stage(i))];
@@ -181,14 +182,17 @@ void RenderingComponent::rebuildDrawCommands(RenderStagePass stagePass) {
     RenderPackage& pkg = getDrawPackage(stagePass);
     pkg.clear();
 
-    if (_parentSGN.name() == "Water") {
-        int a;
-        a = 5;
-    }
+    const Material_ptr& mat = getMaterialInstance();
+
     // We also have a pipeline
     PipelineDescriptor pipelineDescriptor;
-    pipelineDescriptor._stateHash = getMaterialInstance()->getRenderStateBlock(stagePass);
-    pipelineDescriptor._shaderProgramHandle = getMaterialInstance()->getShaderInfo(stagePass).getProgram()->getID();
+    if (mat != nullptr) {
+        pipelineDescriptor._stateHash = mat->getRenderStateBlock(stagePass);
+        pipelineDescriptor._shaderProgramHandle = mat->getShaderInfo(stagePass).getProgram()->getID();
+    } else {
+        pipelineDescriptor._stateHash = _context.getDefaultStateBlock(false);
+        pipelineDescriptor._shaderProgramHandle = ShaderProgram::defaultShader()->getID();
+    }
 
     GFX::BindPipelineCommand pipelineCommand;
     pipelineCommand._pipeline = _context.newPipeline(pipelineDescriptor);
@@ -225,10 +229,8 @@ void RenderingComponent::Update(const U64 deltaTimeUS) {
 bool RenderingComponent::canDraw(RenderStagePass renderStagePass) {
     if (_parentSGN.getDrawState(renderStagePass)) {
         const Material_ptr& mat = getMaterialInstance();
-        if (mat) {
-            if (!mat->canDraw(renderStagePass)) {
-                return false;
-            }
+        if (mat && !mat->canDraw(renderStagePass)) {
+            return false;
         }
         return renderOptionEnabled(RenderOptions::IS_VISIBLE);
     }
@@ -248,30 +250,6 @@ void RenderingComponent::rebuildMaterial() {
             renderable->rebuildMaterial();
         }
     });
-}
-
-void RenderingComponent::registerTextureDependency(const TextureData& additionalTexture, U8 binding) {
-    for (RenderPackagesPerPassType& packagesPerPass : _renderPackages) {
-        for (std::unique_ptr<RenderPackage>& pkg : packagesPerPass) {
-            pkg->registerTextureDependency(additionalTexture, binding);
-        }
-    }
-}
-
-void RenderingComponent::removeTextureDependency(U8 binding) {
-    for (RenderPackagesPerPassType& packagesPerPass : _renderPackages) {
-        for (std::unique_ptr<RenderPackage>& pkg : packagesPerPass) {
-            pkg->removeTextureDependency(binding);
-        }
-    }
-}
-
-void RenderingComponent::removeTextureDependency(const TextureData& additionalTexture) {
-    for (RenderPackagesPerPassType& packagesPerPass : _renderPackages) {
-        for (std::unique_ptr<RenderPackage>& pkg : packagesPerPass) {
-            pkg->removeTextureDependency(additionalTexture);
-        }
-    }
 }
 
 void RenderingComponent::onRender(RenderStagePass renderStagePass) {
@@ -409,25 +387,6 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
 
                 bufferInOut.add(_skeletonPrimitive->toCommandBuffer());
             //}
-        }
-    }
-}
-
-void RenderingComponent::registerShaderBuffer(ShaderBufferLocation slot,
-                                              vec2<U32> bindRange,
-                                              ShaderBuffer& shaderBuffer) {
-    for (RenderPackagesPerPassType& packagesPerPass : _renderPackages) {
-        for (std::unique_ptr<RenderPackage>& pkg : packagesPerPass) {
-            pkg->registerShaderBuffer(slot, bindRange, shaderBuffer);
-        }
-    }
-}
-
-void RenderingComponent::unregisterShaderBuffer(ShaderBufferLocation slot) {
-    
-    for (RenderPackagesPerPassType& packagesPerPass : _renderPackages) {
-        for (std::unique_ptr<RenderPackage>& pkg : packagesPerPass) {
-            pkg->unregisterShaderBuffer(slot);
         }
     }
 }

@@ -483,7 +483,12 @@ bool SceneGraphNode::prepareRender(const Camera& camera, RenderStagePass renderS
             std::pair<vec2<U32>, ShaderBuffer*> data = aComp->getAnimationData();
             if (data.second != nullptr) {
                 RenderPackage& pkg = rComp->getDrawPackage(renderStagePass);
-                pkg.registerShaderBuffer(ShaderBufferLocation::BONE_TRANSFORMS, data.first, *data.second);
+
+                DescriptorSet set = pkg.descriptorSet(0);
+                set.addShaderBuffer({ ShaderBufferLocation::BONE_TRANSFORMS,
+                                     data.second,
+                                     data.first });
+                pkg.descriptorSet(0, set);
             }
         }
         rComp->onRender(renderStagePass);

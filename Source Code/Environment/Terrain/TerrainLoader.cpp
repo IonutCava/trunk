@@ -528,7 +528,7 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     vegMaterial->setShadingMode(Material::ShadingMode::BLINN_PHONG);
     vegMaterial->addShaderDefine("SKIP_TEXTURES");
     vegMaterial->addShaderDefine(RenderPassType::OIT_PASS, "OIT_PASS", true);
-    vegMaterial->setShaderProgram("grass.Colour", RenderStage::DISPLAY, true);
+    vegMaterial->setShaderProgram("grass.Colour", true);
     vegMaterial->setShaderProgram("grass.PrePass", RenderPassType::DEPTH_PASS, true);
     vegMaterial->setShaderProgram("grass.Shadow", RenderStage::SHADOW, true);
     vegMaterial->setTexture(ShaderProgram::TextureUsage::UNIT0, grassBillboardArray);
@@ -536,12 +536,11 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     vegDetails.vegetationMaterialPtr = vegMaterial;
 
     vegDetails.map.reset(new ImageTools::ImageData);
-    ImageTools::ImageDataInterface::CreateImageData(
-        Paths::g_assetsLocation + 
-        terrainDescriptor->getVariable("grassMapLocation") +
-        "/" +
-        terrainDescriptor->getVariable("grassMap"),
-        *vegDetails.map);
+    ImageTools::ImageDataInterface::CreateImageData(Paths::g_assetsLocation + 
+                                                    terrainDescriptor->getVariable("grassMapLocation") +
+                                                    "/" +
+                                                    terrainDescriptor->getVariable("grassMap"),
+                                                    *vegDetails.map);
 }
 
 bool TerrainLoader::Save(const char* fileName) { return true; }

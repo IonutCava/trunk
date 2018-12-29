@@ -204,6 +204,8 @@ class Material : public CachedResource {
     void setShaderProgram(const ShaderProgram_ptr& shader,
                           RenderStagePass renderStagePass);
 
+    void setShaderProgram(const stringImpl& shader,
+                          const bool computeOnAdd);
     /// Add the specified shader to the specified render stage (for all pass types)
     void setShaderProgram(const stringImpl& shader,
                           RenderStage stage,

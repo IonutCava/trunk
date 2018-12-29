@@ -84,6 +84,7 @@ class TextureDataContainer {
       bool set(const TextureDataContainer& other);
       bool addTexture(const TextureData& data, U8 binding);
       bool addTexture(const eastl::pair<TextureData, U8 /*binding*/>& textureEntry);
+      bool addTextures(const TextureDataContainer& textureEntries);
       bool addTextures(const vectorEASTL<eastl::pair<TextureData, U8 /*binding*/>>& textureEntries);
 
       bool removeTexture(U8 binding);

@@ -139,17 +139,7 @@ class RenderingComponent : public BaseComponentType<RenderingComponent, Componen
 
     inline const Material_ptr& getMaterialInstance() const { return _materialInstance; }
 
-    void registerShaderBuffer(ShaderBufferLocation slot,
-                              vec2<U32> bindRange,
-                              ShaderBuffer& shaderBuffer);
-
-    void unregisterShaderBuffer(ShaderBufferLocation slot);
-
     void rebuildMaterial();
-
-    void registerTextureDependency(const TextureData& additionalTexture, U8 binding);
-    void removeTextureDependency(U8 binding);
-    void removeTextureDependency(const TextureData& additionalTexture);
 
     inline void setReflectionAndRefractionType(ReflectorType type) { _reflectorType = type; }
     inline void setReflectionCallback(RenderCallback cbk) { _reflectionCallback = cbk; }

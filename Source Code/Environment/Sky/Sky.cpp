@@ -102,8 +102,6 @@ void Sky::postLoad(SceneGraphNode& sgn) {
     RenderingComponent* renderable = sgn.get<RenderingComponent>();
     if (renderable) {
         renderable->toggleRenderOption(RenderingComponent::RenderOptions::CAST_SHADOWS, false);
-        renderable->registerTextureDependency(_skybox->getData(),
-                                              to_U8(ShaderProgram::TextureUsage::UNIT0));
     }
 
     SceneNode::postLoad(sgn);
@@ -124,6 +122,10 @@ void Sky::buildDrawCommands(SceneGraphNode& sgn,
     GFX::DrawCommand drawCommand;
     drawCommand._drawCommands.push_back(cmd);
     pkgInOut.addDrawCommand(drawCommand);
+
+    DescriptorSet set = pkgInOut.descriptorSet(0);
+    set._textureData.addTexture(_skybox->getData(), to_U8(ShaderProgram::TextureUsage::UNIT0));
+    pkgInOut.descriptorSet(0, set);
 
     const Pipeline* pipeline = pkgInOut.pipeline(0);
     PipelineDescriptor pipeDesc = pipeline->descriptor();

@@ -70,9 +70,6 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
 
     bufferDescriptor._name = "TERRAIN_RENDER_NODES";
     _shaderData = _context.newSB(bufferDescriptor);
-    sgn.get<RenderingComponent>()->registerShaderBuffer(ShaderBufferLocation::TERRAIN_DATA,
-                                                        vec2<U32>(0, Terrain::MAX_RENDER_NODES),
-                                                        *_shaderData);
 
     sgn.get<RigidBodyComponent>()->physicsGroup(PhysicsGroup::GROUP_STATIC);
 
@@ -183,7 +180,12 @@ bool Terrain::onRender(SceneGraphNode& sgn,
 
             STUBBED("This may cause stalls. Profile! -Ionut");
             _shaderData->writeData(offset, depth, data);
-            pkg.registerShaderBuffer(ShaderBufferLocation::TERRAIN_DATA, vec2<U32>(offset, Terrain::MAX_RENDER_NODES), *_shaderData);
+
+            DescriptorSet set = pkg.descriptorSet(0);
+            set.addShaderBuffer({ ShaderBufferLocation::TERRAIN_DATA,
+                                 _shaderData,
+                                 vec2<U32>(offset, Terrain::MAX_RENDER_NODES) });
+            pkg.descriptorSet(0, set);
         }
 
         wasUpdated = true;

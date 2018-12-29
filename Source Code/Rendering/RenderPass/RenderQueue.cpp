@@ -95,7 +95,7 @@ RenderBin* RenderQueue::getOrCreateBin(RenderBinType rbType) {
 }
 
 RenderBin* RenderQueue::getBinForNode(const SceneGraphNode& node, const Material_ptr& matInstance) {
-    assert(node.getNode() != nullptr && matInstance != nullptr);
+    assert(node.getNode() != nullptr);
 
     switch (node.getNode()->type()) {
         case SceneNodeType::TYPE_EMPTY:
@@ -139,7 +139,7 @@ RenderBin* RenderQueue::getBinForNode(const SceneGraphNode& node, const Material
                 }
             }
             // Check if the object has a material with transparency/translucency
-            if (matInstance->hasTransparency()) {
+            if (matInstance != nullptr && matInstance->hasTransparency()) {
                 // Add it to the appropriate bin if so ...
                 return getOrCreateBin(RenderBinType::RBT_TRANSLUCENT);
             }

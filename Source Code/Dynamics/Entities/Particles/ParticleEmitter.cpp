@@ -206,10 +206,6 @@ bool ParticleEmitter::unload() {
 }
 
 void ParticleEmitter::postLoad(SceneGraphNode& sgn) {
-    if (_particleTexture) {
-        sgn.get<RenderingComponent>()->registerTextureDependency(_particleTexture->getData(),
-                                                                 to_U8(ShaderProgram::TextureUsage::UNIT0));
-    }
     sgn.get<BoundsComponent>()->ignoreTransform(true);
     setBoundsChanged();
     SceneNode::postLoad(sgn);
@@ -229,6 +225,12 @@ void ParticleEmitter::buildDrawCommands(SceneGraphNode& sgn,
     GFX::DrawCommand drawCommand;
     drawCommand._drawCommands.push_back(cmd);
     pkgInOut.addDrawCommand(drawCommand);
+
+    if (_particleTexture) {
+        DescriptorSet set = pkgInOut.descriptorSet(0);
+        set._textureData.addTexture(_particleTexture->getData(), to_U8(ShaderProgram::TextureUsage::UNIT0));
+        pkgInOut.descriptorSet(0, set);
+    }
 
     const Pipeline* pipeline = pkgInOut.pipeline(0);
     PipelineDescriptor pipeDesc = pipeline->descriptor();
