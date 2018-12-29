@@ -27,13 +27,16 @@ Sky::Sky(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, 
     // Generate a render state
     RenderStateBlock skyboxRenderState;
     skyboxRenderState.setCullMode(CullMode::CCW);
-    skyboxRenderState.setZFunc(ComparisonFunction::LESS);
-    _skyboxRenderStateHashPrePass = skyboxRenderState.getHash();
     skyboxRenderState.setZFunc(ComparisonFunction::LEQUAL);
     _skyboxRenderStateHash = skyboxRenderState.getHash();
 
     skyboxRenderState.setCullMode(CullMode::CW);
     _skyboxRenderStateReflectedHash = skyboxRenderState.getHash();
+
+    skyboxRenderState.setCullMode(CullMode::CCW);
+    skyboxRenderState.setZFunc(ComparisonFunction::LESS);
+    skyboxRenderState.setColourWrites(false, false, false, false);
+    _skyboxRenderStateHashPrePass = skyboxRenderState.getHash();
 }
 
 Sky::~Sky()
@@ -113,6 +116,25 @@ void Sky::buildDrawCommands(SceneGraphNode& sgn,
         return;
     }
 
+    PipelineDescriptor pipelineDescriptor;
+    if (renderStagePass._passType == RenderPassType::DEPTH_PASS) {
+        pipelineDescriptor._stateHash = _skyboxRenderStateHashPrePass;
+        pipelineDescriptor._shaderProgramHandle = _skyShaderPrePass->getID();
+    } else {
+        pipelineDescriptor._stateHash = (renderStagePass._stage == RenderStage::REFLECTION
+                                                      ? _skyboxRenderStateReflectedHash
+                                                      : _skyboxRenderStateHash);
+        pipelineDescriptor._shaderProgramHandle = _skyShader->getID();
+    }
+
+    GFX::BindPipelineCommand pipelineCommand;
+    pipelineCommand._pipeline = _context.newPipeline(pipelineDescriptor);
+    pkgInOut.addPipelineCommand(pipelineCommand);
+
+    GFX::BindDescriptorSetsCommand bindDescriptorSetsCommand;
+    bindDescriptorSetsCommand._set._textureData.addTexture(_skybox->getData(), to_U8(ShaderProgram::TextureUsage::UNIT0));
+    pkgInOut.addDescriptorSetsCommand(bindDescriptorSetsCommand);
+
     GenericDrawCommand cmd;
     cmd._sourceBuffer = _sky->getGeometryVB();
     cmd._bufferIndex = renderStagePass.index();
@@ -122,24 +144,6 @@ void Sky::buildDrawCommands(SceneGraphNode& sgn,
     GFX::DrawCommand drawCommand;
     drawCommand._drawCommands.push_back(cmd);
     pkgInOut.addDrawCommand(drawCommand);
-
-    DescriptorSet set = pkgInOut.descriptorSet(0);
-    set._textureData.addTexture(_skybox->getData(), to_U8(ShaderProgram::TextureUsage::UNIT0));
-    pkgInOut.descriptorSet(0, set);
-
-    const Pipeline* pipeline = pkgInOut.pipeline(0);
-    PipelineDescriptor pipeDesc = pipeline->descriptor();
-    if (renderStagePass._passType == RenderPassType::DEPTH_PASS) {
-        pipeDesc._stateHash = _skyboxRenderStateHashPrePass;
-        pipeDesc._shaderProgramHandle = _skyShaderPrePass->getID();
-    } else {
-        pipeDesc._stateHash = (renderStagePass._stage == RenderStage::REFLECTION
-                                                      ? _skyboxRenderStateReflectedHash
-                                                      : _skyboxRenderStateHash);
-        pipeDesc._shaderProgramHandle = _skyShader->getID();
-    }
-
-    pkgInOut.pipeline(0, *_context.newPipeline(pipeDesc));
 
     SceneNode::buildDrawCommands(sgn, renderStagePass, pkgInOut);
 }

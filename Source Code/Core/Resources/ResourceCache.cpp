@@ -9,7 +9,7 @@
 
 namespace Divide {
 
-std::mutex ResourceLoadLock::_hashLock;
+SharedMutex ResourceLoadLock::_hashLock;
 vector<size_t> ResourceLoadLock::_loadingHashes;
 
 void DeleteResource::operator()(CachedResource* res) {

@@ -46,25 +46,27 @@ public:
     explicit ResourceLoadLock(size_t hash)
         : _loadingHash(hash)
     {
-        UniqueLock u_lock(_hashLock);
         WAIT_FOR_CONDITION(notLoading(_loadingHash));
+
+        UniqueLockShared w_lock(_hashLock);
         _loadingHashes.push_back(_loadingHash);
     }
 
     ~ResourceLoadLock()
     {
-        UniqueLock u_lock(_hashLock);
+        UniqueLockShared u_lock(_hashLock);
         _loadingHashes.erase(std::find(std::cbegin(_loadingHashes), std::cend(_loadingHashes), _loadingHash));
     }
 
 private:
     static bool notLoading(size_t hash) {
+        SharedLock r_lock(_hashLock);
         return std::find(std::cbegin(_loadingHashes), std::cend(_loadingHashes), hash) == std::cend(_loadingHashes);
     }
 
 private:
     size_t _loadingHash;
-    static std::mutex _hashLock;
+    static SharedMutex _hashLock;
     static vector<size_t> _loadingHashes;
 };
 /// Resource Cache responsibilities:

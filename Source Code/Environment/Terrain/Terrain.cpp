@@ -207,10 +207,10 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
                                 RenderStagePass renderStagePass,
                                 RenderPackage& pkgInOut) {
 
-    PushConstants constants = pkgInOut.pushConstants(0);
-    constants.set("tessellationRange", GFX::PushConstantType::VEC2, _descriptor->getTessellationRange().xy());
-    constants.set("tileScale", GFX::PushConstantType::VEC4, _terrainTextures->getTileScales());
-    pkgInOut.pushConstants(0, constants);
+    GFX::SendPushConstantsCommand pushConstantsCommand = {};
+    pushConstantsCommand._constants.set("tessellationRange", GFX::PushConstantType::VEC2, _descriptor->getTessellationRange().xy());
+    pushConstantsCommand._constants.set("tileScale", GFX::PushConstantType::VEC4, _terrainTextures->getTileScales());
+    pkgInOut.addPushConstantsCommand(pushConstantsCommand);
 
     GenericDrawCommand cmd = {};
     cmd._primitiveType = PrimitiveType::PATCH;

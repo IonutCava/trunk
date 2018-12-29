@@ -74,7 +74,7 @@ Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descri
     reflectorOitDescriptor.depthTestEnabled(false);
     /// the z-pre-pass descriptor does not process colours
     RenderStateBlock zPrePassDescriptor(stateDescriptor);
-    zPrePassDescriptor.setColourWrites(true, true, true, false);
+    zPrePassDescriptor.setColourWrites(false, false, false, false);
     zPrePassDescriptor.setZFunc(ComparisonFunction::LESS);
 
     /// A descriptor used for rendering to depth map

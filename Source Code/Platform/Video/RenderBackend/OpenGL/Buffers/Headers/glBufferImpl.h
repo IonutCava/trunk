@@ -61,7 +61,7 @@ public:
     GLuint bufferID() const;
 
     bool bindRange(GLuint bindIndex, size_t offsetInBytes, size_t rangeInBytes);
-    void lockRange(size_t offsetInBytes, size_t rangeInBytes, bool flush);
+    void lockRange(size_t offsetInBytes, size_t rangeInBytes);
     void waitRange(size_t offsetInBytes, size_t rangeInBytes, bool blockClient);
 
     void writeData(size_t offsetInBytes, size_t rangeInBytes, bufferPtr data);

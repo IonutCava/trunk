@@ -43,6 +43,7 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
 {
     const Material_ptr& materialTpl = parentSGN.getNode()->getMaterialTpl();
     if (!materialTpl) {
+        //ToDo: REMOVE THIS HACK!
         Console::printfn(Locale::get(_ID("LOAD_DEFAULT_MATERIAL")));
         Material_ptr materialTemplate = CreateResource<Material>(context.kernel().resourceCache(), ResourceDescriptor("defaultMaterial_" + parentSGN.name()));
         materialTemplate->setShadingMode(Material::ShadingMode::BLINN_PHONG);
@@ -183,27 +184,28 @@ void RenderingComponent::rebuildDrawCommands(RenderStagePass stagePass) {
     pkg.clear();
 
     const Material_ptr& mat = getMaterialInstance();
-
-    // We also have a pipeline
-    PipelineDescriptor pipelineDescriptor;
+    // The following commands are needed for material rendering
+    // In the absence of a material, use the SceneNode buildDrawCommands to add all of the needed commands
     if (mat != nullptr) {
+        PipelineDescriptor pipelineDescriptor;
         pipelineDescriptor._stateHash = mat->getRenderStateBlock(stagePass);
         pipelineDescriptor._shaderProgramHandle = mat->getShaderInfo(stagePass).getProgram()->getID();
+
+        GFX::BindPipelineCommand pipelineCommand;
+        pipelineCommand._pipeline = _context.newPipeline(pipelineDescriptor);
+        pkg.addPipelineCommand(pipelineCommand);
+
+        GFX::BindDescriptorSetsCommand bindDescriptorSetsCommand;
+        pkg.addDescriptorSetsCommand(bindDescriptorSetsCommand);
+
+        if (!_globalPushConstants.empty()) {
+            GFX::SendPushConstantsCommand pushConstantsCommand;
+            pushConstantsCommand._constants = _globalPushConstants;
+            pkg.addPushConstantsCommand(pushConstantsCommand);
+        }
     } else {
-        pipelineDescriptor._stateHash = _context.getDefaultStateBlock(false);
-        pipelineDescriptor._shaderProgramHandle = ShaderProgram::defaultShader()->getID();
+        assert(_globalPushConstants.empty());
     }
-
-    GFX::BindPipelineCommand pipelineCommand;
-    pipelineCommand._pipeline = _context.newPipeline(pipelineDescriptor);
-    pkg.addPipelineCommand(pipelineCommand);
-    
-    GFX::SendPushConstantsCommand pushConstantsCommand;
-    pushConstantsCommand._constants = _globalPushConstants;
-    pkg.addPushConstantsCommand(pushConstantsCommand);
-
-    GFX::BindDescriptorSetsCommand bindDescriptorSetsCommand;
-    pkg.addDescriptorSetsCommand(bindDescriptorSetsCommand);
 
     _parentSGN.getNode()->buildDrawCommands(_parentSGN, stagePass, pkg);
 }

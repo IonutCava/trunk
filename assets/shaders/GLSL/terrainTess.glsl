@@ -104,8 +104,11 @@ float dlodCameraDistance(vec4 p0, vec4 p1, vec2 t0, vec2 t1)
     float d0 = clamp((abs(p0.z) - tessellationRange.x) / (tessellationRange.y - tessellationRange.x), 0.0, 1.0);
     float d1 = clamp((abs(p1.z) - tessellationRange.x) / (tessellationRange.y - tessellationRange.x), 0.0, 1.0);
 
+#if defined(LOW_QUALITY)
+    float t = mix(32, 2, (d0 + d1) * 0.5);
+#else
     float t = mix(64, 2, (d0 + d1) * 0.5);
-
+#endif
     if (t <= 2.0) {
         return 2.0;
     }

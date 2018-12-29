@@ -167,11 +167,11 @@ void WaterPlane::buildDrawCommands(SceneGraphNode& sgn,
                                    RenderStagePass renderStagePass,
                                    RenderPackage& pkgInOut) {
 
-    PushConstants constants = pkgInOut.pushConstants(0);
-    constants.set("_waterShininess", GFX::PushConstantType::FLOAT, 50.0f);
-    constants.set("_noiseFactor", GFX::PushConstantType::VEC2, vec2<F32>(1.0f, 1.0f));
-    constants.set("_noiseTile", GFX::PushConstantType::VEC2, vec2<F32>(1.0f, 1.0f));
-    pkgInOut.pushConstants(0, constants);
+    GFX::SendPushConstantsCommand pushConstantsCommand = {};
+    pushConstantsCommand._constants.set("_waterShininess", GFX::PushConstantType::FLOAT, 50.0f);
+    pushConstantsCommand._constants.set("_noiseFactor", GFX::PushConstantType::VEC2, vec2<F32>(1.0f, 1.0f));
+    pushConstantsCommand._constants.set("_noiseTile", GFX::PushConstantType::VEC2, vec2<F32>(1.0f, 1.0f));
+    pkgInOut.addPushConstantsCommand(pushConstantsCommand);
 
     GenericDrawCommand cmd = {};
     cmd._primitiveType = PrimitiveType::TRIANGLE_STRIP;
@@ -180,7 +180,7 @@ void WaterPlane::buildDrawCommands(SceneGraphNode& sgn,
     cmd._bufferIndex = renderStagePass.index();
     enableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
     {
-        GFX::DrawCommand drawCommand;
+        GFX::DrawCommand drawCommand = {};
         drawCommand._drawCommands.push_back(cmd);
         pkgInOut.addDrawCommand(drawCommand);
     }

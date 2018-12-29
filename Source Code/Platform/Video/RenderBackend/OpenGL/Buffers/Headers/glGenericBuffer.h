@@ -88,8 +88,7 @@ class glGenericBuffer {
 
       void lockData(GLuint elementCount,
                     GLuint elementOffset,
-                    GLuint ringReadOffset,
-                    bool flush);
+                    GLuint ringReadOffset);
 
        GLintptr getBindOffset(GLuint ringReadOffset);
 

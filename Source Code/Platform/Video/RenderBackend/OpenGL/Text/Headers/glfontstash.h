@@ -195,7 +195,7 @@ static void glfons__renderDraw(void* userPtr, const FONSvert* verts, int nverts)
         glDrawArrays(GL_TRIANGLES, startIndex, nverts);
     }
     { //Lock
-        g_lockManager->LockRange(writeOffsetBytes, dataSize, false);
+        g_lockManager->LockRange(writeOffsetBytes, dataSize);
         writeOffsetBytes = (writeOffsetBytes + dataSize) % GLFONS_VB_BUFFER_SIZE;
     }
 }

@@ -531,6 +531,7 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     vegMaterial->setShaderProgram("grass.Colour", true);
     vegMaterial->setShaderProgram("grass.PrePass", RenderPassType::DEPTH_PASS, true);
     vegMaterial->setShaderProgram("grass.Shadow", RenderStage::SHADOW, true);
+
     vegMaterial->setTexture(ShaderProgram::TextureUsage::UNIT0, grassBillboardArray);
     vegMaterial->dumpToFile(false);
     vegDetails.vegetationMaterialPtr = vegMaterial;

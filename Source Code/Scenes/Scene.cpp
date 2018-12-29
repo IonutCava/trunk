@@ -281,10 +281,9 @@ void Scene::loadAsset(const XML::SceneNode& sceneNode, SceneGraphNode* parent) {
     SceneGraphNode* crtNode = parent;
     if (fileExists(nodePath.c_str())) {
 
-        static const U32 normalMask = to_base(ComponentType::TRANSFORM) |
-                                      to_base(ComponentType::BOUNDS) |
-                                      to_base(ComponentType::RENDERING) |
-                                      to_base(ComponentType::NETWORKING);
+        U32 normalMask = to_base(ComponentType::TRANSFORM) |
+                         to_base(ComponentType::BOUNDS) |
+                         to_base(ComponentType::NETWORKING);
 
 
         auto loadModelComplete = [this](Resource_wptr res) {
@@ -303,6 +302,8 @@ void Scene::loadAsset(const XML::SceneNode& sceneNode, SceneGraphNode* parent) {
         if (sceneNode.type == "ROOT") {
             // Nothing to do with the root. It's good that it exists
         } else if (isPrimitive(sceneNode.type)) {// Primitive types (only top level)
+            normalMask |= to_base(ComponentType::RENDERING);
+
             if (!modelName.empty()) {
                 ++_loadingTasks;
                 ResourceDescriptor item(sceneNode.name);
@@ -336,19 +337,25 @@ void Scene::loadAsset(const XML::SceneNode& sceneNode, SceneGraphNode* parent) {
         }
         // Terrain types
         else if (sceneNode.type == "TERRAIN") {
+            normalMask |= to_base(ComponentType::RENDERING);
             addTerrain(*parent, nodeTree, sceneNode.name);
         }
         else if (sceneNode.type == "VEGETATION_GRASS") {
+            normalMask |= to_base(ComponentType::RENDERING);
             NOP(); //we rebuild grass everytime
         }
         else if (sceneNode.type == "INFINITE_PLANE") {
+            normalMask |= to_base(ComponentType::RENDERING);
             addInfPlane(*parent, nodeTree, sceneNode.name);
         } 
         else if (sceneNode.type == "WATER") {
+            normalMask |= to_base(ComponentType::RENDERING);
             addWater(*parent, nodeTree, sceneNode.name);
         }
         // Mesh types
         else if (Util::CompareIgnoreCase(sceneNode.type, "MESH")) {
+            // No rendering component for meshes. Only for submeshes
+            //normalMask |= to_base(ComponentType::RENDERING);
             if (!modelName.empty()) {
                 ++_loadingTasks;
                 ResourceDescriptor model(modelName);
@@ -364,6 +371,7 @@ void Scene::loadAsset(const XML::SceneNode& sceneNode, SceneGraphNode* parent) {
         }
         // Submesh (change component properties, as the meshes should already be loaded)
         else if (Util::CompareIgnoreCase(sceneNode.type, "SUBMESH")) {
+            normalMask |= to_base(ComponentType::RENDERING);
             SceneGraphNode* subMesh = parent->findChild(sceneNode.name, false, false);
             if (subMesh != nullptr) {
                 subMesh->loadFromXML(nodeTree);
@@ -372,6 +380,7 @@ void Scene::loadAsset(const XML::SceneNode& sceneNode, SceneGraphNode* parent) {
         // Sky
         else if (Util::CompareIgnoreCase(sceneNode.type, "SKY")) {
             //ToDo: Change this - Currently, just load the default sky.
+            normalMask |= to_base(ComponentType::RENDERING);
             addSky(*parent, nodeTree, sceneNode.name);
         }
         // Everything else

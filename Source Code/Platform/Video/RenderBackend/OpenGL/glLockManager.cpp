@@ -50,13 +50,8 @@ void glLockManager::wait(GLsync* syncObj, bool blockClient) {
             if (waitRet == GL_ALREADY_SIGNALED || waitRet == GL_CONDITION_SATISFIED) {
                 return;
             }
-#if 0
+
             DIVIDE_ASSERT(waitRet != GL_WAIT_FAILED, "glLockManager::wait error: Not sure what to do here. Probably raise an exception or something.");
-#else
-            if (waitRet == GL_WAIT_FAILED) {
-                return;
-            }
-#endif
             // After the first time, need to start flushing, and wait for a looong time.
             waitFlags = GL_SYNC_FLUSH_COMMANDS_BIT;
             waitDuration = kOneSecondInNanoSeconds;

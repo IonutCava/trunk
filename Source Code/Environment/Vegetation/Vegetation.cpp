@@ -24,7 +24,6 @@ namespace Divide {
 namespace {
     constexpr U32 WORK_GROUP_SIZE = 64;
     constexpr bool g_disableLoadFromCache = false;
-    constexpr U8 g_billboardsPlaneCount = 4;
     constexpr I16 g_maxRadiusSteps = 254;
 
 };
@@ -110,6 +109,7 @@ void Vegetation::precomputeStaticData(PlatformContext& context, U32 chunkSize) {
             vec3<F32>(-pos240.x, 0.0f, -pos240.y),	vec3<F32>(-pos240.x, 1.0f, -pos240.y),	vec3<F32>(pos240.x, 1.0f, pos240.y), vec3<F32>(pos240.x, 0.0f, pos240.y)
         };
 
+        const size_t billboardsPlaneCount = sizeof(vertices) / (sizeof(vec3<F32>) * 4);
 
         const U16 indices[] = { 0, 1, 2, 0, 2, 3,
                                 2, 1, 0, 3, 2, 0 };
@@ -123,14 +123,14 @@ void Vegetation::precomputeStaticData(PlatformContext& context, U32 chunkSize) {
 
         s_buffer = context.gfx().newVB();
         s_buffer->useLargeIndices(false);
-        s_buffer->setVertexCount(g_billboardsPlaneCount * 4);
-        for (U8 i = 0; i < g_billboardsPlaneCount * 4; ++i) {
+        s_buffer->setVertexCount(billboardsPlaneCount * 4);
+        for (U8 i = 0; i < billboardsPlaneCount * 4; ++i) {
             s_buffer->modifyPositionValue(i, vertices[i]);
             s_buffer->modifyTexCoordValue(i, texcoords[i % 4].s, texcoords[i % 4].t);
             s_buffer->modifyNormalValue(i, vec3<F32>(vertices[i].x, 0.0f, vertices[i].y));
         }
 
-        for (U8 i = 0; i < g_billboardsPlaneCount; ++i) {
+        for (U8 i = 0; i < billboardsPlaneCount; ++i) {
             if (i > 0) {
                 s_buffer->addRestartIndex();
             }
@@ -219,8 +219,6 @@ void Vegetation::uploadGrassData() {
 void Vegetation::sceneUpdate(const U64 deltaTimeUS,
                              SceneGraphNode& sgn,
                              SceneState& sceneState) {
-    static const Task updateTask;
-
     if (!_success && getState() == ResourceState::RES_LOADED) {
         _success = true;
     }

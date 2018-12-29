@@ -117,9 +117,9 @@ void glBufferImpl::waitRange(size_t offsetInBytes, size_t rangeInBytes, bool blo
     }
 }
 
-void glBufferImpl::lockRange(size_t offsetInBytes, size_t rangeInBytes, bool flush) {
+void glBufferImpl::lockRange(size_t offsetInBytes, size_t rangeInBytes) {
     if (_lockManager != nullptr) {
-        _lockManager->LockRange(offsetInBytes, rangeInBytes, flush);
+        _lockManager->LockRange(offsetInBytes, rangeInBytes);
     }
 }
 

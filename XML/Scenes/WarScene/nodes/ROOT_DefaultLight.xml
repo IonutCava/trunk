@@ -9,18 +9,7 @@
     <WorldMat 00="0.707106709" 01="-0.122787803" 02="0.696364284" 03="0" 10="3.7252903e-09" 11="0.98480773" 12="0.173648179" 13="0" 20="-0.707106829" 21="-0.122787803" 22="0.696364224" 23="0" 30="0" 31="0" 32="0" 33="1"/>
 </TRANSFORM>
 <BOUNDS/>
-<RENDERING>
-    <Material>
-        <colour r="0.666666687" g="0.666666687" b="0.666666687" a="1"/>
-        <emissive r="0" g="0" b="0"/>
-        <specular r="0.800000012" g="0.800000012" b="0.800000012"/>
-        <shininess>5</shininess>
-        <doubleSided>false</doubleSided>
-        <bumpMethod>NONE</bumpMethod>
-        <shadingMode>BLINN_PHONG</shadingMode>
-        <parallaxFactor>1</parallaxFactor>
-    </Material>
-</RENDERING>
+<RENDERING/>
 <NETWORKING/>
 <DIRECTIONAL_LIGHT>
     <Range__and__Cone x="500" y="45" z="0"/>
