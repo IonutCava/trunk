@@ -123,7 +123,8 @@ void Terrain::postBuild() {
     _boundingBox.setMax(halfWidth, _descriptor->getAltitudeRange().max, halfWidth);
 
     U32 chunkSize = to_U32(_descriptor->getTessellationRange().z);
-    Vegetation::precomputeStaticData(_context.context(), chunkSize);
+    U32 maxChunkCount = to_U32(std::ceil((terrainWidth * terrainHeight) / (chunkSize * chunkSize * 1.0f)));
+    Vegetation::precomputeStaticData(_context.context(), chunkSize, maxChunkCount);
 
     _terrainQuadtree.build(_context,
         _boundingBox,

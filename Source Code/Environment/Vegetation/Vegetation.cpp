@@ -29,8 +29,11 @@ namespace {
 };
 
 vectorFast<vec2<F32>> Vegetation::s_grassPositions;
+ShaderBuffer* Vegetation::s_grassData = nullptr;
 VertexBuffer* Vegetation::s_buffer = nullptr;
 std::atomic_uint Vegetation::s_bufferUsage = 0;
+U32 Vegetation::s_maxGrassChunks = 0;
+U32 Vegetation::s_maxGrassInstancesPerChunk = 0;
 
 Vegetation::Vegetation(GFXDevice& context, 
                        TerrainChunk& parentChunk,
@@ -45,7 +48,6 @@ Vegetation::Vegetation(GFXDevice& context,
       _render(false),
       _success(false),
       _shadowMapped(true),
-      _grassData(nullptr),
       _instanceCountGrass(0),
       _stateRefreshIntervalBufferUS(0ULL),
       _stateRefreshIntervalUS(Time::SecondsToMicroseconds(1))  ///<Every second?
@@ -96,7 +98,7 @@ Vegetation::~Vegetation()
     Console::printfn(Locale::get(_ID("UNLOAD_VEGETATION_END")));
 }
 
-void Vegetation::precomputeStaticData(PlatformContext& context, U32 chunkSize) {
+void Vegetation::precomputeStaticData(PlatformContext& context, U32 chunkSize, U32 maxChunkCount) {
     // Make sure this is ONLY CALLED FROM THE MAIN LOADING THREAD. All instances should call this in a serialized fashion
     if (s_buffer == nullptr) {
         const vec2<F32> pos000(cosf(Angle::to_RADIANS(0.000f)), sinf(Angle::to_RADIANS(0.000f)));
@@ -186,6 +188,20 @@ void Vegetation::precomputeStaticData(PlatformContext& context, U32 chunkSize) {
             }
         }
     }
+
+    if (s_grassData == nullptr) {
+        s_maxGrassInstancesPerChunk = to_U32(s_grassPositions.size());
+        s_maxGrassChunks = maxChunkCount;
+
+        ShaderBufferDescriptor bufferDescriptor = {};
+        bufferDescriptor._elementCount = s_maxGrassInstancesPerChunk * s_maxGrassChunks;
+        bufferDescriptor._elementSize = sizeof(GrassData);
+        bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
+        bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE);
+        bufferDescriptor._name = Util::StringFormat("Grass_data");
+
+        s_grassData = context.gfx().newSB(bufferDescriptor);
+    }
 }
 
 void Vegetation::uploadGrassData() {
@@ -198,18 +214,14 @@ void Vegetation::uploadGrassData() {
         _tempData.insert(eastl::end(_tempData), dif, GrassData{});
     }
 
-    _instanceCountGrass = to_U32(_tempData.size());
+    _instanceCountGrass = std::min(to_U32(_tempData.size()), s_maxGrassInstancesPerChunk);
     if (_instanceCountGrass > 0) {
-        ShaderBufferDescriptor bufferDescriptor = {};
-        bufferDescriptor._elementCount = _instanceCountGrass;
-        bufferDescriptor._elementSize = sizeof(GrassData);
-        bufferDescriptor._updateFrequency = BufferUpdateFrequency::ONCE;
-        bufferDescriptor._initialData = (bufferPtr)_tempData.data();
-        bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE);
-        bufferDescriptor._name = Util::StringFormat("Grass_data_chunk_%d", _terrainChunk.ID());
-    
-        _grassData = _context.newSB(bufferDescriptor);
-        _render = true;
+        if (_terrainChunk.ID() < s_maxGrassChunks) {
+            s_grassData->writeData(_terrainChunk.ID() *  s_maxGrassInstancesPerChunk, _instanceCountGrass, (bufferPtr)_tempData.data());
+            _render = true;
+        } else {
+            Console::errorfn("Vegetation::uploadGrassData: insufficient buffer space for grass data");
+        }
         _tempData.clear();
     }
 
@@ -238,7 +250,7 @@ void Vegetation::sceneUpdate(const U64 deltaTimeUS,
 }
 
 bool Vegetation::getDrawState(const SceneGraphNode& sgn, RenderStagePass renderStage) const {
-    if (_grassData != nullptr && _terrainChunk.isInView()) {
+    if (_render && _terrainChunk.isInView()) {
         return SceneNode::getDrawState(sgn, renderStage);
     }
 
@@ -256,7 +268,10 @@ void Vegetation::onRefreshNodeData(SceneGraphNode& sgn,
 
         GFX::BindDescriptorSetsCommand descriptorSetCmd;
         descriptorSetCmd._set._textureData.addTexture(depthTex->getData(), to_U8(ShaderProgram::TextureUsage::UNIT0));
-        descriptorSetCmd._set._shaderBuffers.emplace_back(ShaderBufferLocation::GRASS_DATA, _grassData);
+        descriptorSetCmd._set.addShaderBuffer(
+            { ShaderBufferLocation::GRASS_DATA,
+             s_grassData,
+            vec2<U32>(_terrainChunk.ID() * s_maxGrassInstancesPerChunk, _instanceCountGrass)});
         GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
         GFX::BindPipelineCommand pipelineCmd;
@@ -286,7 +301,10 @@ void Vegetation::buildDrawCommands(SceneGraphNode& sgn,
                                    RenderPackage& pkgInOut) {
     if (_render) {
         DescriptorSet set = pkgInOut.descriptorSet(0);
-        set.addShaderBuffer({ ShaderBufferLocation::GRASS_DATA, _grassData});
+        set.addShaderBuffer(
+            { ShaderBufferLocation::GRASS_DATA,
+             s_grassData,
+            vec2<U32>(_terrainChunk.ID() * s_maxGrassInstancesPerChunk, _instanceCountGrass) });
         pkgInOut.descriptorSet(0, set);
 
         GenericDrawCommand cmd;

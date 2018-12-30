@@ -75,14 +75,14 @@ namespace Divide {
 
     bool ShaderBufferBinding::set(ShaderBufferLocation binding,
                                   ShaderBuffer* buffer,
-                                  const vec2<U16>& range)
+                                  const vec2<U32>& range)
     {
         return set(binding, buffer, range, std::make_pair(false, vec2<U32>(0u)));
     }
 
     bool ShaderBufferBinding::set(ShaderBufferLocation binding,
                                   ShaderBuffer* buffer,
-                                  const vec2<U16>& range,
+                                  const vec2<U32>& range,
                                   const std::pair<bool, vec2<U32>>& atomicCounter) {
         ACKNOWLEDGE_UNUSED(atomicCounter);
         bool ret = false;

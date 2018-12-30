@@ -87,7 +87,7 @@ class Vegetation : public SceneNode {
                            RenderStagePass renderStagePass,
                            RenderPackage& pkgInOut) override;
 
-    static void precomputeStaticData(PlatformContext& context, U32 chunkSize);
+    static void precomputeStaticData(PlatformContext& context, U32 chunkSize, U32 maxChunkCount);
 
   protected:
     void sceneUpdate(const U64 deltaTimeUS,
@@ -120,12 +120,15 @@ class Vegetation : public SceneNode {
     bool _shadowMapped;
     U32 _instanceCountGrass;
 
-    ShaderBuffer* _grassData;
     vectorEASTL<GrassData> _tempData;
 
     static std::atomic_uint s_bufferUsage;
     static VertexBuffer* s_buffer;
+    static ShaderBuffer* s_grassData;
     static vectorFast<vec2<F32>> s_grassPositions;
+
+    static U32 s_maxGrassChunks;
+    static U32 s_maxGrassInstancesPerChunk;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_TYPE(Vegetation);
