@@ -298,7 +298,7 @@ void WarScene::updateSceneStateInternal(const U64 deltaTimeUS) {
         if (g_terrain == nullptr) {
             auto objects = sceneGraph().getNodesByType(SceneNodeType::TYPE_OBJECT3D);
             for (SceneGraphNode* object : objects) {
-                if (object->getNode<Object3D>()->getObjectType()._value == ObjectType::TERRAIN) {
+                if (object->getNode<Object3D>().getObjectType()._value == ObjectType::TERRAIN) {
                     g_terrain = object;
                     break;
                 }
@@ -306,11 +306,11 @@ void WarScene::updateSceneStateInternal(const U64 deltaTimeUS) {
         } else {
             vec3<F32> camPos = playerCamera()->getEye();
             if (g_terrain->get<BoundsComponent>()->getBoundingBox().containsPoint(camPos)) {   
-                const Terrain_ptr& ter = g_terrain->getNode<Terrain>();
+                const Terrain& ter = g_terrain->getNode<Terrain>();
 
                 F32 headHeight = state().playerState(state().playerPass()).headHeight();
                 camPos -= g_terrain->get<TransformComponent>()->getPosition();
-                playerCamera()->setEye(ter->getPositionFromGlobal(camPos.x, camPos.z, true) + vec3<F32>(0.0f, headHeight, 0.0f));
+                playerCamera()->setEye(ter.getPositionFromGlobal(camPos.x, camPos.z, true) + vec3<F32>(0.0f, headHeight, 0.0f));
             }
         }
     }
@@ -410,7 +410,7 @@ bool WarScene::load(const stringImpl& name) {
     for (U8 i = 0; i < 5; ++i) {
         RenderingComponent* const renderable = cylinder[i]->getChild(0).get<RenderingComponent>();
         renderable->getMaterialInstance()->setDoubleSided(true);
-        cylinder[i]->getChild(0).getNode()->getMaterialTpl()->setDoubleSided(true);
+        cylinder[i]->getChild(0).getNode().getMaterialTpl()->setDoubleSided(true);
     }
 
     // Make the center cylinder reflective

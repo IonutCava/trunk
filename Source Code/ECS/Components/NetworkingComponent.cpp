@@ -46,7 +46,7 @@ void NetworkingComponent::onNetworkSend(U32 frameCountIn)  {
     dataOut << _parentSGN.getGUID();
     dataOut << frameCountIn;
 
-    Attorney::SceneNodeNetworkComponent::onNetworkSend(_parentSGN, *_parentSGN.getNode(), dataOut);
+    Attorney::SceneNodeNetworkComponent::onNetworkSend(_parentSGN, _parentSGN.getNode(), dataOut);
 
     WorldPacket p = deltaCompress(dataOut, _previousSent);
     _previousSent = p;
@@ -58,7 +58,7 @@ void NetworkingComponent::onNetworkReceive(WorldPacket& dataIn) {
     WorldPacket p = deltaDecompress(dataIn, _previousReceived);
     _previousReceived = p;
 
-    Attorney::SceneNodeNetworkComponent::onNetworkReceive(_parentSGN, *_parentSGN.getNode(), dataIn);
+    Attorney::SceneNodeNetworkComponent::onNetworkReceive(_parentSGN, _parentSGN.getNode(), dataIn);
 }
 
 NetworkingComponent* NetworkingComponent::getReceiver(I64 guid) {

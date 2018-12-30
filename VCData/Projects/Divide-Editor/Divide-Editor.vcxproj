@@ -369,6 +369,7 @@
       </AdditionalOptions>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <EnableModules>false</EnableModules>
     </ClCompile>
     <Lib>
       <OutputFile>$(SolutionDir)../Source Code/Libs/lib\$(ProjectName)$(TargetExt)</OutputFile>
@@ -412,6 +413,7 @@
       <LanguageStandard>stdcpp14</LanguageStandard>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <EnableModules>false</EnableModules>
     </ClCompile>
     <Lib>
       <OutputFile>$(SolutionDir)../Source Code/Libs/lib\$(ProjectName)_p$(TargetExt)</OutputFile>

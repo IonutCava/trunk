@@ -414,7 +414,7 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
     for (SceneGraphNode* body : waterNodes) {
         _sceneData->waterDetails(index++,
                                  body->get<TransformComponent>()->getPosition(),
-                                 body->getNode<WaterPlane>()->getDimensions());
+                                 body->getNode<WaterPlane>().getDimensions());
     }
 
     activeScene.updateSceneState(deltaTimeUS);
@@ -531,11 +531,11 @@ namespace {
     // Return true if this node should be removed from a shadow pass
     bool doesNotCastShadows(RenderStage stage, const SceneGraphNode& node) {
         if (stage == RenderStage::SHADOW) {
-            SceneNodeType type = node.getNode()->type();
+            SceneNodeType type = node.getNode().type();
             if (type == SceneNodeType::TYPE_SKY || type == SceneNodeType::TYPE_INFINITEPLANE) {
                 return true;
             }
-            if (type == SceneNodeType::TYPE_OBJECT3D && node.getNode<Object3D>()->getObjectType()._value == ObjectType::DECAL) {
+            if (type == SceneNodeType::TYPE_OBJECT3D && node.getNode<Object3D>().getObjectType()._value == ObjectType::DECAL) {
                 return true;
             }
             RenderingComponent* rComp = node.get<RenderingComponent>();
@@ -568,7 +568,7 @@ const RenderPassCuller::VisibleNodeList& SceneManager::cullSceneGraph(RenderStag
     }
     // Cull everything except 3D objects
     cullParams._cullFunction = [stage](const SceneGraphNode& node) -> bool {
-        if (generatesDrawCommands(node.getNode()->type())) {
+        if (generatesDrawCommands(node.getNode().type())) {
             // only checks nodes and can return true for a shadow stage
             return doesNotCastShadows(stage, node);
         }

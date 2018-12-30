@@ -71,7 +71,7 @@ class SceneGraph : private NonCopyable,
     }
 
     inline SceneGraphNode* findNode(const stringImpl& name, bool sceneNodeName = false) const {
-        if (sceneNodeName ? _root->getNode()->resourceName().compare(name) == 0
+        if (sceneNodeName ? _root->getNode().resourceName().compare(name) == 0
                           : _root->name().compare(name) == 0) {
             return _root;
         }

@@ -83,7 +83,7 @@ class Object3D : public SceneNode {
         ClearBit(_geometryFlagMask, to_U32(flag));
     }
 
-    inline bool getObjectFlag(ObjectFlag flag) {
+    inline bool getObjectFlag(ObjectFlag flag) const {
         return BitCompare(_geometryFlagMask, to_U32(flag));
     }
 

@@ -168,7 +168,6 @@ class LightPool : public SceneComponent,
 
     std::array<std::array<U32, to_base(LightType::COUNT)>, to_base(RenderStage::COUNT)> _activeLightCount;
     std::array<LightVec, to_base(RenderStage::COUNT)> _sortedLights;
-    std::array<TaskHandle, to_base(RenderStage::COUNT)> _lightUpdateTask;
 
     std::array<BufferData, to_base(RenderStage::COUNT)> _sortedLightProperties;
 

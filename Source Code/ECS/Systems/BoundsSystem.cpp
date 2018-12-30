@@ -25,9 +25,9 @@ namespace Divide {
         SceneGraphNode* parent = static_cast<SceneGraphNode*>(entity);
 
         if (parent != nullptr) {
-            const SceneNode_ptr& node = parent->getNode();
-            node->updateBoundsInternal();
-            bComp->onBoundsChange(node->getBoundsInternal());
+            SceneNode& node = parent->getNode();
+            node.updateBoundsInternal();
+            bComp->onBoundsChange(node.getBoundsInternal());
         }
     }
 

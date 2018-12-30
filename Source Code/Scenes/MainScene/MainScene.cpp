@@ -71,17 +71,17 @@ void MainScene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
             vectorEASTL<SceneGraphNode*> terrains = Object3D::filterByType(_sceneGraph->getNodesByType(SceneNodeType::TYPE_OBJECT3D), ObjectType::TERRAIN);
 
             for (SceneGraphNode* terrainNode : terrains) {
-                const std::shared_ptr<Terrain>& ter = terrainNode->getNode<Terrain>();
-                assert(ter != nullptr);
+                const Terrain& ter = terrainNode->getNode<Terrain>();
+
                 CLAMP<F32>(eyePosition.x,
-                           ter->getDimensions().width * 0.5f * -1.0f,
-                           ter->getDimensions().width * 0.5f);
+                           ter.getDimensions().width * 0.5f * -1.0f,
+                           ter.getDimensions().width * 0.5f);
                 CLAMP<F32>(eyePosition.z,
-                           ter->getDimensions().height * 0.5f * -1.0f,
-                           ter->getDimensions().height * 0.5f);
+                           ter.getDimensions().height * 0.5f * -1.0f,
+                           ter.getDimensions().height * 0.5f);
 
                 vec3<F32> position = terrainNode->get<TransformComponent>()->getWorldMatrix() *
-                                     ter->getPositionFromGlobal(eyePosition.x, eyePosition.z, true);
+                                     ter.getPositionFromGlobal(eyePosition.x, eyePosition.z, true);
                 terrainHeight = position.y;
                 if (!IS_ZERO(terrainHeight)) {
                     eyePosition.y = terrainHeight + 1.85f;
@@ -257,7 +257,7 @@ U16 MainScene::registerInputActions() {
         vectorEASTL<SceneGraphNode*> terrains = Object3D::filterByType(_sceneGraph->getNodesByType(SceneNodeType::TYPE_OBJECT3D), ObjectType::TERRAIN);
 
         for (SceneGraphNode* terrainNode : terrains) {
-            terrainNode->getNode<Terrain>()->toggleBoundingBoxes();
+            terrainNode->getNode<Terrain>().toggleBoundingBoxes();
         }
     });
     actions.actionID(PressReleaseActions::Action::RELEASE, actionID);
@@ -280,11 +280,7 @@ void MainScene::test(const Task& parentTask, AnyParam a, CallbackParam b) {
         vec3<F32> pos;
         SceneGraphNode* boxNode(_sceneGraph->findNode("box"));
 
-        std::shared_ptr<Object3D> box;
         if (boxNode) {
-            box = boxNode->getNode<Object3D>();
-        }
-        if (box) {
             pos = boxNode->get<TransformComponent>()->getPosition();
         }
 
@@ -307,7 +303,9 @@ void MainScene::test(const Task& parentTask, AnyParam a, CallbackParam b) {
                 }
             }
         }
-        if (box) boxNode->get<TransformComponent>()->setPosition(pos);
+        if (boxNode) {
+            boxNode->get<TransformComponent>()->setPosition(pos);
+        }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(30));
         if (g_boxMoveTaskID()) {

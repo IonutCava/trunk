@@ -72,6 +72,8 @@ class GenericVertexData;
 class glHardwareQueryRing;
 class glBufferLockManager;
 
+struct BufferWriteData;
+
 namespace GLUtil {
     class glVAOCache;
 };

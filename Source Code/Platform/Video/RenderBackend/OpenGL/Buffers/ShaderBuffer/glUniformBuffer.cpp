@@ -115,7 +115,7 @@ void glUniformBuffer::readData(ptrdiff_t offsetElementCount,
             "glUniformBuffer::UpdateData error: was called with an "
             "invalid range (buffer overflow)!");
 
-        offset += queueIndex() * _allignedBufferSize;
+        offset += queueReadIndex() * _allignedBufferSize;
 
         _buffer->readData(offset, range, result);
     }
@@ -140,7 +140,7 @@ void glUniformBuffer::writeData(ptrdiff_t offsetElementCount,
         "glUniformBuffer::UpdateData error: was called with an "
         "invalid range (buffer overflow)!");
 
-    offset += queueIndex() * _allignedBufferSize;
+    offset += queueWriteIndex() * _allignedBufferSize;
 
     _buffer->writeData(offset, range, data);
 }
@@ -161,31 +161,38 @@ void glUniformBuffer::writeBytes(ptrdiff_t offsetInBytes,
         "glUniformBuffer::UpdateData error: was called with an "
         "invalid range (buffer overflow)!");
 
-    offsetInBytes += queueIndex() * _allignedBufferSize;
+    offsetInBytes += queueWriteIndex() * _allignedBufferSize;
 
     _buffer->writeData(offsetInBytes, rangeInBytes, data);
 }
 
 bool glUniformBuffer::bindRange(U8 bindIndex, U32 offsetElementCount, U32 rangeElementCount) {
+    BufferWriteData data = {};
+    bool ret = bindRange(bindIndex, offsetElementCount, rangeElementCount, data);
+    GL_API::registerBufferBind(data);
+    return ret;
+}
+
+bool glUniformBuffer::bindRange(U8 bindIndex,
+                                U32 offsetElementCount,
+                                U32 rangeElementCount,
+                                BufferWriteData& dataOut) {
     if (rangeElementCount == 0) {
         rangeElementCount = _elementCount;
     }
 
-    BufferWriteData data = {};
-    data._lockManager = bufferImpl()->lockManager();
+    dataOut._lockManager = bufferImpl()->lockManager();
 
-    data._range = static_cast<size_t>(rangeElementCount * _buffer->elementSize());
-    data._offset = static_cast<size_t>(offsetElementCount * _buffer->elementSize());
-    data._offset += static_cast<size_t>(queueIndex() * _allignedBufferSize);
-    data._flush = BitCompare(_flags, ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
+    dataOut._range = static_cast<size_t>(rangeElementCount * _buffer->elementSize());
+    dataOut._offset = static_cast<size_t>(offsetElementCount * _buffer->elementSize());
+    dataOut._offset += static_cast<size_t>(queueReadIndex() * _allignedBufferSize);
+    dataOut._flush = BitCompare(_flags, ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
 
-    assert(data._range <= _maxSize &&
+    assert(dataOut._range <= _maxSize &&
            "glUniformBuffer::bindRange: attempted to bind a larger shader block than is allowed on the current platform");
 
-    GL_API::registerBufferBind(data);
-
-    assert(data._offset % alignmentRequirement(_unbound) == 0);
-    return _buffer->bindRange(bindIndex, data._offset, data._range);
+    assert(dataOut._offset % alignmentRequirement(_unbound) == 0);
+    return _buffer->bindRange(bindIndex, dataOut._offset, dataOut._range);
 }
 
 bool glUniformBuffer::bind(U8 bindIndex) {

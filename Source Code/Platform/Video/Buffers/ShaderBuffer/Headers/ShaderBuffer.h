@@ -43,6 +43,7 @@ struct ShaderBufferDescriptor {
     U32 _flags = 0;
     U32 _ringBufferLength = 1;
     U32 _elementCount = 0;
+    bool _separateReadWrite = false; //< Use a separate read/write index based on queue length
     size_t _elementSize = 0; //< Primitive size in bytes
     BufferUpdateFrequency _updateFrequency = BufferUpdateFrequency::ONCE;
     bufferPtr _initialData = NULL;
@@ -52,7 +53,7 @@ struct ShaderBufferDescriptor {
 class ShaderProgram;
 class NOINITVTABLE ShaderBuffer : public GUIDWrapper,
                                   public GraphicsResource,
-                                  public RingBuffer
+                                  public RingBufferSeparateWrite
 {
     USE_CUSTOM_ALLOCATOR
    public:

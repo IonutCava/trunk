@@ -44,6 +44,13 @@ class glBufferImpl;
 class glGenericBuffer;
 class glBufferLockManager;
 
+struct BufferWriteData {
+    glBufferLockManager* _lockManager = nullptr;
+    size_t _offset = 0;
+    size_t _range = 0;
+    bool _flush = false;
+};
+
 /// Base class for shader uniform blocks
 class glUniformBuffer final : public ShaderBuffer {
     USE_CUSTOM_ALLOCATOR
@@ -67,6 +74,11 @@ class glUniformBuffer final : public ShaderBuffer {
     bool bindRange(U8 bindIndex,
                    U32 offsetElementCount,
                    U32 rangeElementCount) override;
+
+    bool bindRange(U8 bindIndex,
+                   U32 offsetElementCount,
+                   U32 rangeElementCount,
+                   BufferWriteData& dataOut);
 
     bool bind(U8 bindIndex) override;
 

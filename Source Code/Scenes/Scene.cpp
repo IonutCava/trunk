@@ -1369,7 +1369,7 @@ bool Scene::checkCameraUnderwater(PlayerIndex idx) const {
 
     if (!waterBodies.empty()) {
         for (SceneGraphNode* node : waterBodies) {
-            if (node->getNode<WaterPlane>()->pointUnderwater(*node, eyePos)) {
+            if (node->getNode<WaterPlane>().pointUnderwater(*node, eyePos)) {
                 return true;
             }
         }

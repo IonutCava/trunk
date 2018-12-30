@@ -16,15 +16,20 @@ namespace Divide {
 QuadtreeNode::QuadtreeNode()
     : _terrainChunk(nullptr),
       _bbPrimitive(nullptr),
-      _children(nullptr),
       _isVisible(false)
       //,_frustPlaneCache(-1)
 {
+    _children.fill(nullptr),
     _targetChunkDimension = 0;
 }
 
 QuadtreeNode::~QuadtreeNode()
 {
+    if (!isALeaf()) {
+        for (U8 i = 0; i < 4; ++i) {
+            MemoryManager::SAFE_DELETE(_children[i]);
+        }
+    }
 }
 
 void QuadtreeNode::build(GFXDevice& context,
@@ -52,16 +57,20 @@ void QuadtreeNode::build(GFXDevice& context,
         chunkCount++;
     } else {
         // Create 4 children
-        _children = std::make_unique<QuadtreeChildren>();
-
-        QuadtreeChildren::QuadtreeNodes& childNodes = (*_children)();
 
         // Compute children bounding boxes
         const vec3<F32>& center = _boundingBox.getCenter();
-        childNodes[to_base(ChildPosition::CHILD_NW)].setBoundingBox(BoundingBox(_boundingBox.getMin(), center));
-        childNodes[to_base(ChildPosition::CHILD_NE)].setBoundingBox(BoundingBox(vec3<F32>(center.x, 0.0f, _boundingBox.getMin().z), vec3<F32>(_boundingBox.getMax().x, 0.0f, center.z)));
-        childNodes[to_base(ChildPosition::CHILD_SW)].setBoundingBox(BoundingBox(vec3<F32>(_boundingBox.getMin().x, 0.0f, center.z), vec3<F32>(center.x, 0.0f, _boundingBox.getMax().z)));
-        childNodes[to_base(ChildPosition::CHILD_SE)].setBoundingBox(BoundingBox(center, _boundingBox.getMax()));
+        _children[to_base(ChildPosition::CHILD_NW)] = MemoryManager_NEW QuadtreeNode();
+        _children[to_base(ChildPosition::CHILD_NW)]->setBoundingBox(BoundingBox(_boundingBox.getMin(), center));
+
+        _children[to_base(ChildPosition::CHILD_NE)] = MemoryManager_NEW QuadtreeNode();
+        _children[to_base(ChildPosition::CHILD_NE)]->setBoundingBox(BoundingBox(vec3<F32>(center.x, 0.0f, _boundingBox.getMin().z), vec3<F32>(_boundingBox.getMax().x, 0.0f, center.z)));
+
+        _children[to_base(ChildPosition::CHILD_SW)] = MemoryManager_NEW QuadtreeNode();
+        _children[to_base(ChildPosition::CHILD_SW)]->setBoundingBox(BoundingBox(vec3<F32>(_boundingBox.getMin().x, 0.0f, center.z), vec3<F32>(center.x, 0.0f, _boundingBox.getMax().z)));
+
+        _children[to_base(ChildPosition::CHILD_SE)] = MemoryManager_NEW QuadtreeNode();
+        _children[to_base(ChildPosition::CHILD_SE)]->setBoundingBox(BoundingBox(center, _boundingBox.getMax()));
 
         // Compute children positions
         vec2<U16> tNewHMpos[4];
@@ -70,10 +79,10 @@ void QuadtreeNode::build(GFXDevice& context,
         tNewHMpos[to_base(ChildPosition::CHILD_SW)] = pos + vec2<U16>(0, newsize.y);
         tNewHMpos[to_base(ChildPosition::CHILD_SE)] = pos + vec2<U16>(newsize.x, newsize.y);
 
-        childNodes[to_base(ChildPosition::CHILD_NW)].build(context, depth + 1, tNewHMpos[to_base(ChildPosition::CHILD_NW)], HMsize, _targetChunkDimension, terrain, chunkCount);
-        childNodes[to_base(ChildPosition::CHILD_NE)].build(context, depth + 1, tNewHMpos[to_base(ChildPosition::CHILD_NE)], HMsize, _targetChunkDimension, terrain, chunkCount);
-        childNodes[to_base(ChildPosition::CHILD_SW)].build(context, depth + 1, tNewHMpos[to_base(ChildPosition::CHILD_SW)], HMsize, _targetChunkDimension, terrain, chunkCount);
-        childNodes[to_base(ChildPosition::CHILD_SE)].build(context, depth + 1, tNewHMpos[to_base(ChildPosition::CHILD_SE)], HMsize, _targetChunkDimension, terrain, chunkCount);
+        _children[to_base(ChildPosition::CHILD_NW)]->build(context, depth + 1, tNewHMpos[to_base(ChildPosition::CHILD_NW)], HMsize, _targetChunkDimension, terrain, chunkCount);
+        _children[to_base(ChildPosition::CHILD_NE)]->build(context, depth + 1, tNewHMpos[to_base(ChildPosition::CHILD_NE)], HMsize, _targetChunkDimension, terrain, chunkCount);
+        _children[to_base(ChildPosition::CHILD_SW)]->build(context, depth + 1, tNewHMpos[to_base(ChildPosition::CHILD_SW)], HMsize, _targetChunkDimension, terrain, chunkCount);
+        _children[to_base(ChildPosition::CHILD_SE)]->build(context, depth + 1, tNewHMpos[to_base(ChildPosition::CHILD_SE)], HMsize, _targetChunkDimension, terrain, chunkCount);
     }
 }
 
@@ -89,7 +98,7 @@ bool QuadtreeNode::computeBoundingBox() {
 
     if (!isALeaf()) {
         for (I8 i = 0; i < 4; i++) {
-            QuadtreeNode& child = getChild(i);
+            QuadtreeNode& child = *_children[i];
 
             child.computeBoundingBox();
 

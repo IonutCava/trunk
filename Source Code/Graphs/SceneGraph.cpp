@@ -82,7 +82,7 @@ void SceneGraph::onNodeDestroy(SceneGraphNode& oldNode) {
         return;
     }
 
-    vectorEASTL<SceneGraphNode*>& nodesByType = _nodesByType[to_base(oldNode.getNode()->type())];
+    vectorEASTL<SceneGraphNode*>& nodesByType = _nodesByType[to_base(oldNode.getNode().type())];
 
     nodesByType.erase(eastl::remove_if(eastl::begin(nodesByType), eastl::end(nodesByType), 
                                      [guid](SceneGraphNode* node)-> bool
@@ -105,7 +105,7 @@ void SceneGraph::onNodeAdd(SceneGraphNode& newNode) {
     SceneGraphNode* newNodePtr = &newNode;
 
     _allNodes.push_back(newNodePtr);
-    _nodesByType[to_base(newNodePtr->getNode()->type())].push_back(newNodePtr);
+    _nodesByType[to_base(newNodePtr->getNode().type())].push_back(newNodePtr);
     
     if (_loadComplete) {
         WAIT_FOR_CONDITION(!_octreeUpdating);
@@ -288,7 +288,7 @@ namespace {
     boost::property_tree::ptree dumpSGNtoAssets(const SceneGraphNode& node) {
         boost::property_tree::ptree entry;
         entry.put("<xmlattr>.name", node.name());
-        entry.put("<xmlattr>.type", node.getNode()->getTypeName());
+        entry.put("<xmlattr>.type", node.getNode().getTypeName());
 
         node.forEachChild([&entry](const SceneGraphNode& child) {
             entry.add_child("node", dumpSGNtoAssets(child));

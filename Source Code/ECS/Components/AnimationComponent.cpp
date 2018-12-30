@@ -98,7 +98,7 @@ bool AnimationComponent::playAnimation(I32 pAnimIndex) {
     resetTimers();
 
     if (oldIndex != _currentAnimIndex) {
-        _parentSGN.getNode<Object3D>()->onAnimationChange(_parentSGN, _currentAnimIndex);
+        _parentSGN.getNode<Object3D>().onAnimationChange(_parentSGN, _currentAnimIndex);
         return true;
     }
 
@@ -170,13 +170,12 @@ const vectorBest<mat4<F32>>& AnimationComponent::transformsByIndex(U32 animation
 }
 
 mat4<F32> AnimationComponent::getBoneTransform(U32 animationID, const D64 timeStamp, const stringImpl& name) {
-    const Object3D_ptr& node = _parentSGN.getNode<Object3D>();
-    assert(node != nullptr);
+    const Object3D& node = _parentSGN.getNode<Object3D>();
     assert(_animator != nullptr);
 
-    if (node->getObjectType()._value != ObjectType::SUBMESH ||
-        (node->getObjectType()._value == ObjectType::SUBMESH &&
-         !node->getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED))) {
+    if (node.getObjectType()._value != ObjectType::SUBMESH ||
+        (node.getObjectType()._value == ObjectType::SUBMESH &&
+         !node.getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED))) {
         return _parentSGN.get<TransformComponent>()->getWorldMatrix();
     }
 

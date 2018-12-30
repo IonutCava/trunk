@@ -244,7 +244,7 @@ bool SceneGraphNode::removeNodesByType(SceneNodeType nodeType) {
 
     SharedLock r_lock(_childLock);
     for (U32 i = 0; i < getChildCountLocked(); ++i) {
-        if (_children[i]->getNode()->type() == nodeType) {
+        if (_children[i]->getNode().type() == nodeType) {
             {
                 addToDeleteQueue(i);
                 ++removalCount;
@@ -294,7 +294,7 @@ bool SceneGraphNode::isChildOfType(U32 typeMask, bool ignoreRoot) const {
     }
     SceneGraphNode* parent = getParent();
     while (parent != nullptr) {
-        if (BitCompare(typeMask, to_U32(parent->getNode<>()->type()))) {
+        if (BitCompare(typeMask, to_U32(parent->getNode<>().type()))) {
             return true;
         }
         parent = parent->getParent();
@@ -345,7 +345,7 @@ SceneGraphNode* SceneGraphNode::findChild(I64 GUID, bool recursive) const {
 SceneGraphNode* SceneGraphNode::findChild(const stringImpl& name, bool sceneNodeName, bool recursive) const {
     SharedLock r_lock(_childLock);
     for (auto& child : _children) {
-        if (sceneNodeName ? child->getNode()->resourceName().compare(name) == 0
+        if (sceneNodeName ? child->getNode().resourceName().compare(name) == 0
                           : child->name().compare(name) == 0)
         {
             return child;
@@ -703,7 +703,7 @@ bool SceneGraphNode::forEachChildInterruptible(const DELEGATE_CBK<bool, const Sc
 }
 
 bool SceneGraphNode::saveCache(ByteBuffer& outputBuffer) const {
-    getNode()->saveCache(outputBuffer);
+    getNode().saveCache(outputBuffer);
 
     for (EditorComponent* editorComponent : _editorComponents) {
         if (!Attorney::EditorComponentSceneGraphNode::saveCache(*editorComponent, outputBuffer)) {
@@ -721,7 +721,7 @@ bool SceneGraphNode::saveCache(ByteBuffer& outputBuffer) const {
 }
 
 bool SceneGraphNode::loadCache(ByteBuffer& inputBuffer) {
-    getNode()->loadCache(inputBuffer);
+    getNode().loadCache(inputBuffer);
 
     for (EditorComponent* editorComponent : _editorComponents) {
         if (!Attorney::EditorComponentSceneGraphNode::loadCache(*editorComponent, inputBuffer)) {
@@ -744,7 +744,7 @@ void SceneGraphNode::saveToXML(const stringImpl& sceneLocation) const {
     boost::property_tree::ptree pt;
     pt.put("static", usageContext() == NodeUsageContext::NODE_STATIC);
 
-    getNode()->saveToXML(pt);
+    getNode().saveToXML(pt);
 
     for (EditorComponent* editorComponent : _editorComponents) {
         Attorney::EditorComponentSceneGraphNode::saveToXML(*editorComponent, pt);

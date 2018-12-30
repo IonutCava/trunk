@@ -95,9 +95,7 @@ RenderBin* RenderQueue::getOrCreateBin(RenderBinType rbType) {
 }
 
 RenderBin* RenderQueue::getBinForNode(const SceneGraphNode& node, const Material_ptr& matInstance) {
-    assert(node.getNode() != nullptr);
-
-    switch (node.getNode()->type()) {
+    switch (node.getNode().type()) {
         case SceneNodeType::TYPE_EMPTY:
         {
             if (BitCompare(node.componentMask(), ComponentType::SPOT_LIGHT) ||
@@ -128,8 +126,8 @@ RenderBin* RenderQueue::getBinForNode(const SceneGraphNode& node, const Material
         // We may want to break this stuff up into mesh rendering components and not care about specifics anymore (i.e. just material checks)
         case SceneNodeType::TYPE_WATER:
         case SceneNodeType::TYPE_OBJECT3D: {
-            if (node.getNode()->type() == SceneNodeType::TYPE_OBJECT3D) {
-                ObjectType type = static_cast<Object3D*>(node.getNode().get())->getObjectType();
+            if (node.getNode().type() == SceneNodeType::TYPE_OBJECT3D) {
+                ObjectType type = node.getNode<Object3D>().getObjectType();
                 switch (type) {
                     case ObjectType::TERRAIN:
                         return getOrCreateBin(RenderBinType::RBT_TERRAIN);

@@ -773,7 +773,7 @@ bool NavigationMesh::save(SceneGraphNode& sgn) {
 }
 
 stringImpl NavigationMesh::generateMeshName(SceneGraphNode& sgn) {
-    return (sgn.getNode()->type() != SceneNodeType::TYPE_ROOT)
+    return (sgn.getNode().type() != SceneNodeType::TYPE_ROOT)
                ? "_node_[_" + sgn.name() + "_]"
                : "_root_node";
 }

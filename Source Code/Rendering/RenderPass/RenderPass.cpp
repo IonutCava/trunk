@@ -190,6 +190,7 @@ void RenderPass::initBufferData() {
     bufferDescriptor._elementCount = _dataBufferSize;
     bufferDescriptor._elementSize = sizeof(GFXDevice::NodeData);
     bufferDescriptor._ringBufferLength = g_cmdBufferFrameCount;
+    bufferDescriptor._separateReadWrite = true;
     bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE) | to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
     bufferDescriptor._name = Util::StringFormat("RENDER_DATA_%s", TypeUtil::renderStageToString(_stageFlag)).c_str();
@@ -201,6 +202,7 @@ void RenderPass::initBufferData() {
     bufferDescriptor._elementCount = Config::MAX_VISIBLE_NODES;
     bufferDescriptor._elementSize = sizeof(IndirectDrawCommand);
     bufferDescriptor._ringBufferLength = 1;
+    bufferDescriptor._separateReadWrite = false;
 
     U32 cmdCount = getCmdBufferCount(_stageFlag) * g_cmdBufferFrameCount /*RAM, Driver, VRAM*/;
     _cmdBuffers.reserve(cmdCount);

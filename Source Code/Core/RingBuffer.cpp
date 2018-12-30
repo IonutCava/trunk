@@ -4,11 +4,11 @@
 
 namespace Divide {
 
-RingBufferSeparateWrite::RingBufferSeparateWrite(U32 queueLength) :
+RingBufferSeparateWrite::RingBufferSeparateWrite(U32 queueLength, bool separateReadWrite) :
     _queueLength(std::max(queueLength, 1U))
 {
     _queueReadIndex = 0;
-    _queueWriteIndex = _queueLength - 1;
+    _queueWriteIndex = (separateReadWrite ? _queueLength - 1 : 0);
 }
 
 RingBufferSeparateWrite::RingBufferSeparateWrite(const RingBufferSeparateWrite& other)
@@ -33,8 +33,13 @@ RingBufferSeparateWrite& RingBufferSeparateWrite::operator=(const RingBufferSepa
 void RingBufferSeparateWrite::resize(U32 queueLength) {
     if (_queueLength != std::max(queueLength, 1U)) {
         _queueLength = std::max(queueLength, 1U);
+        if (_queueReadIndex == _queueWriteIndex) {
+            _queueWriteIndex = 0;
+        } else {
+            _queueWriteIndex = _queueLength - 1;
+        }
+
         _queueReadIndex = 0;
-        _queueWriteIndex = _queueLength - 1;
     }
 }
 RingBuffer::RingBuffer(U32 queueLength) :

@@ -253,7 +253,7 @@ vector<SceneGraphNode*> Object3D::filterByType(const vector<SceneGraphNode*>& no
     result.reserve(nodes.size());
 
     for (SceneGraphNode* ptr : nodes) {
-        if (ptr && ptr->getNode<Object3D>()->getObjectType() == filter) {
+        if (ptr && ptr->getNode<Object3D>().getObjectType() == filter) {
             result.push_back(ptr);
         }
     };
@@ -266,7 +266,7 @@ vectorEASTL<SceneGraphNode*> Object3D::filterByType(const vectorEASTL<SceneGraph
     result.reserve(nodes.size());
 
     for (SceneGraphNode* ptr : nodes) {
-        if (ptr && ptr->getNode<Object3D>()->getObjectType() == filter) {
+        if (ptr && ptr->getNode<Object3D>().getObjectType() == filter) {
             result.push_back(ptr);
         }
     };

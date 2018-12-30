@@ -79,15 +79,15 @@ class QuadtreeNode {
     
     void drawBBox(GFXDevice& context, RenderPackage& packageOut);
 
-    inline bool isALeaf() const { return _children == nullptr; }
+    inline bool isALeaf() const { return _children[0] == nullptr; }
 
     inline const BoundingBox& getBoundingBox() const { return _boundingBox; }
     inline void setBoundingBox(const BoundingBox& bbox) { _boundingBox = bbox; }
     inline TerrainChunk* getChunk() { return _terrainChunk.get(); }
     inline bool isVisible() const { return _isVisible; }
 
-    inline QuadtreeNode& getChild(ChildPosition pos) const;
-    inline QuadtreeNode& getChild(U32 index) const;
+    inline QuadtreeNode& getChild(ChildPosition pos) const { return *_children[to_base(pos)]; }
+    inline QuadtreeNode& getChild(U32 index) const { return *_children[index]; }
 
     bool updateVisiblity(U32 options, const Camera& camera, F32 maxDistance);
 
@@ -103,32 +103,9 @@ class QuadtreeNode {
     BoundingBox _boundingBox;        ///< Node BoundingBox
     BoundingSphere _boundingSphere;  ///< Node BoundingSphere
     IMPrimitive*  _bbPrimitive;
-    std::unique_ptr<QuadtreeChildren> _children;     ///< Node children
+    std::array<QuadtreeNode*, 4> _children;      ///< Node children
     std::unique_ptr<TerrainChunk> _terrainChunk;     ///< Terrain Chunk contained in node
 };
-
-class QuadtreeChildren {
-private:
-    friend class QuadtreeNode;
-
-    typedef std::array<QuadtreeNode, 4> QuadtreeNodes;
-
-    inline QuadtreeNodes& operator()() { return _nodes; }
-    inline QuadtreeNode& operator[](ChildPosition pos) { return _nodes[to_U32(pos)]; }
-
-    inline const QuadtreeNodes& operator()() const { return _nodes; }
-    inline const QuadtreeNode& operator[](ChildPosition pos) const { return _nodes[to_U32(pos)]; }
-
-    QuadtreeNodes _nodes;
-};
-
-inline QuadtreeNode& QuadtreeNode::getChild(ChildPosition pos) const {
-    return (*_children)[pos];
-}
-
-inline QuadtreeNode& QuadtreeNode::getChild(U32 index) const {
-    return (*_children)[static_cast<ChildPosition>(index)];
-}
 
 };  // namespace Divide
 

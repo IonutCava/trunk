@@ -74,7 +74,8 @@ void LightPool::init() {
     bufferDescriptor._elementCount = 1;
     bufferDescriptor._elementSize = sizeof(vec4<I32>) + (Config::Lighting::MAX_POSSIBLE_LIGHTS * sizeof(LightProperties));
     bufferDescriptor._ringBufferLength = 3;
-    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE) /*| to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES)*/;
+    bufferDescriptor._separateReadWrite = true;
+    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE) | to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
 
     // NORMAL holds general info about the currently active lights: position, colour, etc.
@@ -268,84 +269,77 @@ Light* LightPool::getLight(I64 lightGUID, LightType type) {
     return *it;
 }
 
+// This should be called in a separate thread for each RenderStage
 void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, const mat4<F32>& viewMatrix) {
     U8 stageIndex = to_U8(stage);
-    _lightUpdateTask[stageIndex].wait();
-
     // Create and upload light data for current pass
-    auto lightUpdate = [this, stageIndex, &eyePos, &viewMatrix](const Task& parentTask) mutable
+    _sortedLights[stageIndex].resize(0);
     {
-        _sortedLights[stageIndex].resize(0);
-        {
-            SharedLock r_lock(_lightLock);
-            for (U8 i = 0; i < to_base(LightType::COUNT); ++i) {
-                _sortedLights[stageIndex].insert(std::end(_sortedLights[stageIndex]),
-                                                 std::cbegin(_lights[i]),
-                                                 std::cend(_lights[i]));
-            }
+        SharedLock r_lock(_lightLock);
+        for (U8 i = 0; i < to_base(LightType::COUNT); ++i) {
+            _sortedLights[stageIndex].insert(std::end(_sortedLights[stageIndex]),
+                                                std::cbegin(_lights[i]),
+                                                std::cend(_lights[i]));
         }
-        std::sort(std::begin(_sortedLights[stageIndex]),
-                  std::end(_sortedLights[stageIndex]),
-                  [&eyePos](Light* a, Light* b) -> bool
-                  {
-                      TransformComponent* lightTransformA = a->getSGN().get<TransformComponent>();
-                      TransformComponent* lightTransformB = b->getSGN().get<TransformComponent>();
-                      assert(lightTransformA != nullptr && lightTransformB != nullptr);
+    }
+    std::sort(std::begin(_sortedLights[stageIndex]),
+                std::end(_sortedLights[stageIndex]),
+                [&eyePos](Light* a, Light* b) -> bool
+                {
+                    TransformComponent* lightTransformA = a->getSGN().get<TransformComponent>();
+                    TransformComponent* lightTransformB = b->getSGN().get<TransformComponent>();
+                    assert(lightTransformA != nullptr && lightTransformB != nullptr);
 
-                       return lightTransformA->getPosition().distanceSquared(eyePos) <
-                              lightTransformB->getPosition().distanceSquared(eyePos);
-                  });
+                    return lightTransformA->getPosition().distanceSquared(eyePos) <
+                            lightTransformB->getPosition().distanceSquared(eyePos);
+                });
 
-        U32 totalLightCount = 0;
-        vec3<F32> tempColour;
-        _activeLightCount[stageIndex].fill(0);
+    U32 totalLightCount = 0;
+    vec3<F32> tempColour;
+    _activeLightCount[stageIndex].fill(0);
         
-        BufferData& crtData = _sortedLightProperties[stageIndex];
-        for (Light* light : _sortedLights[stageIndex]) {
-            LightType type = static_cast<LightType>(light->getLightType());
-            I32 typeIndex = to_I32(type);
+    BufferData& crtData = _sortedLightProperties[stageIndex];
+    for (Light* light : _sortedLights[stageIndex]) {
+        LightType type = static_cast<LightType>(light->getLightType());
+        I32 typeIndex = to_I32(type);
 
-            if (!light->getEnabled() || !_lightTypeState[typeIndex]) {
-                continue;
-            }
-            if (totalLightCount++ >= Config::Lighting::MAX_POSSIBLE_LIGHTS) {
-                break;
-            }
-
-            LightProperties& temp = crtData._lightProperties[totalLightCount - 1];
-            light->getDiffuseColour(tempColour);
-            temp._diffuse.set(tempColour, light->getSpotCosOuterConeAngle());
-            // Non directional lights are positioned at specific point in space
-            // So we need W = 1 for a valid positional transform
-            // Directional lights use position for the light direction. 
-            // So we need W = 0 for an infinite distance.
-            temp._position.set(viewMatrix.transform(light->getPosition(), type != LightType::DIRECTIONAL), light->getRange());
-            // spot direction is not considered a point in space, so W = 0
-            temp._direction.set(viewMatrix.transformNonHomogeneous(light->getDirection()), light->getConeAngle());
-
-            temp._options.x = typeIndex;
-            temp._options.y = light->castsShadows();
-
-            ++_activeLightCount[stageIndex][typeIndex];
+        if (!light->getEnabled() || !_lightTypeState[typeIndex]) {
+            continue;
         }
+        if (totalLightCount++ >= Config::Lighting::MAX_POSSIBLE_LIGHTS) {
+            break;
+        }
+
+        LightProperties& temp = crtData._lightProperties[totalLightCount - 1];
+        light->getDiffuseColour(tempColour);
+        temp._diffuse.set(tempColour, light->getSpotCosOuterConeAngle());
+        // Non directional lights are positioned at specific point in space
+        // So we need W = 1 for a valid positional transform
+        // Directional lights use position for the light direction. 
+        // So we need W = 0 for an infinite distance.
+        temp._position.set(viewMatrix.transform(light->getPosition(), type != LightType::DIRECTIONAL), light->getRange());
+        // spot direction is not considered a point in space, so W = 0
+        temp._direction.set(viewMatrix.transformNonHomogeneous(light->getDirection()), light->getConeAngle());
+
+        temp._options.x = typeIndex;
+        temp._options.y = light->castsShadows();
+
+        ++_activeLightCount[stageIndex][typeIndex];
+    }
         
-        LightVec sortedLights;
-        shadowCastingLights(eyePos, sortedLights);
+    LightVec sortedLights;
+    shadowCastingLights(eyePos, sortedLights);
 
-        crtData._globalData.set(
-            to_I32(totalLightCount),
-            to_I32(_activeLightCount[stageIndex][to_base(LightType::DIRECTIONAL)]),
-            to_I32(_activeLightCount[stageIndex][to_base(LightType::POINT)]),
-            to_I32(sortedLights.size())
-        );
+    crtData._globalData.set(
+        to_I32(totalLightCount),
+        to_I32(_activeLightCount[stageIndex][to_base(LightType::DIRECTIONAL)]),
+        to_I32(_activeLightCount[stageIndex][to_base(LightType::POINT)]),
+        to_I32(sortedLights.size())
+    );
 
-        /*_lightShaderBuffer[stageIndex]->writeBytes(0, sizeof(vec4<I32>) + totalLightCount * sizeof(LightProperties), (bufferPtr)(&crtData));
-        _lightShaderBuffer[stageIndex]->incQueue();*/
-    };
-
-    // Sort all lights (Sort in parallel by type)
-    _lightUpdateTask[stageIndex] = CreateTask(_context.taskPool(), lightUpdate);
-    _lightUpdateTask[stageIndex].startTask();
+    _lightShaderBuffer[stageIndex]->writeBytes(0, sizeof(vec4<I32>) + totalLightCount * sizeof(LightProperties), (bufferPtr)(&crtData));
+    //_lightShaderBuffer[stageIndex]->writeData((bufferPtr)(&crtData));
+    _lightShaderBuffer[stageIndex]->incQueue();
 }
 
 void LightPool::uploadLightData(RenderStage stage,
@@ -353,21 +347,9 @@ void LightPool::uploadLightData(RenderStage stage,
                                 ShaderBufferLocation shadowDataLocation,
                                 GFX::CommandBuffer& bufferInOut) {
 
-    GFX::ExternalCommand externalCmd;
-    externalCmd._cbk = [this, stage]() {
-        U8 stageIndex = to_U8(stage);
-
-        _lightUpdateTask[stageIndex].wait();
-
-        const BufferData& crtData = _sortedLightProperties[stageIndex];
-        _lightShaderBuffer[stageIndex]->writeBytes(0, sizeof(vec4<I32>) + to_I32(crtData._globalData.x) * sizeof(LightProperties), (bufferPtr)(&crtData));
-        _lightShaderBuffer[stageIndex]->incQueue();
-    };
-    GFX::EnqueueCommand(bufferInOut, externalCmd);
-
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
-    descriptorSetCmd._set._shaderBuffers.emplace_back(lightDataLocation, _lightShaderBuffer[to_base(stage)]);
-    descriptorSetCmd._set._shaderBuffers.emplace_back(shadowDataLocation, _shadowBuffer);
+    descriptorSetCmd._set.addShaderBuffer({ lightDataLocation, _lightShaderBuffer[to_base(stage)] });
+    descriptorSetCmd._set.addShaderBuffer({ shadowDataLocation, _shadowBuffer });
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 }
 

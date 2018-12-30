@@ -21,9 +21,9 @@ namespace {
     // Return true if the node can't be drawn but contains command generating children but 
     bool isParentNode(const RenderPassCuller::VisibleNode& node) {
         const SceneGraphNode* sgn = node._node;
-        const SceneNode_ptr& sceneNode = sgn->getNode();
-        if (sceneNode->type() == SceneNodeType::TYPE_OBJECT3D) {
-            return sgn->getNode<Object3D>()->getObjectType()._value == ObjectType::MESH;
+        const SceneNode& sceneNode = sgn->getNode();
+        if (sceneNode.type() == SceneNodeType::TYPE_OBJECT3D) {
+            return sgn->getNode<Object3D>().getObjectType()._value == ObjectType::MESH;
         }
         return false;
     }

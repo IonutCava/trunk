@@ -44,13 +44,6 @@ namespace Divide {
     class RenderStateBlock;
     class glBufferLockManager;
 
-    struct BufferWriteData {
-        glBufferLockManager* _lockManager = nullptr;
-        size_t _offset = 0;
-        size_t _range = 0;
-        bool _flush = false;
-    };
-
     struct GLStateTracker {
       public:
         void init(GLStateTracker* base);

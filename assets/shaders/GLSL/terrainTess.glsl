@@ -124,12 +124,16 @@ float dlodCameraDistance(vec4 p0, vec4 p1, vec2 t0, vec2 t1)
     if (t <= 16.0) {
         return 16.0;
     }
+#if defined(LOW_QUALITY)
+    return 32.0;
+#else
 
     if (t <= 32.0){
         return 32.0;
     }
 
     return 64.0;
+#endif
 }
 
 void main(void)

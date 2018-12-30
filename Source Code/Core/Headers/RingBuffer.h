@@ -37,7 +37,8 @@ namespace Divide {
 
 class RingBufferSeparateWrite {
 public:
-    explicit RingBufferSeparateWrite(U32 queueLength);
+    // If separateReadWrite is true, this behaves exactly like a RingBuffer
+    explicit RingBufferSeparateWrite(U32 queueLength, bool separateReadWrite);
     RingBufferSeparateWrite(const RingBufferSeparateWrite& other);
     virtual ~RingBufferSeparateWrite();
 

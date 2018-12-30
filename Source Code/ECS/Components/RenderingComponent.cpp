@@ -41,7 +41,7 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
       _materialInstance(nullptr),
       _skeletonPrimitive(nullptr)
 {
-    const Material_ptr& materialTpl = parentSGN.getNode()->getMaterialTpl();
+    const Material_ptr& materialTpl = parentSGN.getNode().getMaterialTpl();
     if (!materialTpl) {
         //ToDo: REMOVE THIS HACK!
         Console::printfn(Locale::get(_ID("LOAD_DEFAULT_MATERIAL")));
@@ -58,12 +58,12 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
     toggleRenderOption(RenderOptions::CAST_SHADOWS, true);
     toggleRenderOption(RenderOptions::RECEIVE_SHADOWS, true);
     toggleRenderOption(RenderOptions::IS_VISIBLE, true);
-    toggleRenderOption(RenderOptions::IS_OCCLUSION_CULLABLE, _parentSGN.getNode<Object3D>()->type() != SceneNodeType::TYPE_SKY);
+    toggleRenderOption(RenderOptions::IS_OCCLUSION_CULLABLE, _parentSGN.getNode<Object3D>().type() != SceneNodeType::TYPE_SKY);
 
-    const Object3D_ptr& node = parentSGN.getNode<Object3D>();
+    const Object3D& node = parentSGN.getNode<Object3D>();
 
-    bool isSubMesh = node->getObjectType()._value == ObjectType::SUBMESH;
-    bool nodeSkinned = node->getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED);
+    bool isSubMesh = node.getObjectType()._value == ObjectType::SUBMESH;
+    bool nodeSkinned = node.getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED);
 
     if (_materialInstance != nullptr) {
         assert(!_materialInstance->resourceName().empty());
@@ -207,7 +207,7 @@ void RenderingComponent::rebuildDrawCommands(RenderStagePass stagePass) {
         assert(_globalPushConstants.empty());
     }
 
-    _parentSGN.getNode()->buildDrawCommands(_parentSGN, stagePass, pkg);
+    _parentSGN.getNode().buildDrawCommands(_parentSGN, stagePass, pkg);
 }
 
 void RenderingComponent::Update(const U64 deltaTimeUS) {
@@ -216,11 +216,11 @@ void RenderingComponent::Update(const U64 deltaTimeUS) {
         mat->update(deltaTimeUS);
     }
 
-    if (_parentSGN.getNode<Object3D>()->getObjectType()._value == ObjectType::SUBMESH) {
+    if (_parentSGN.getNode<Object3D>().getObjectType()._value == ObjectType::SUBMESH) {
         StateTracker<bool>& parentStates = _parentSGN.getParent()->getTrackedBools();
         parentStates.setTrackedValue(StateTracker<bool>::State::BOUNDING_BOX_RENDERED, false);
 
-        if (_parentSGN.getNode<Object3D>()->getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED)) {
+        if (_parentSGN.getNode<Object3D>().getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED)) {
             parentStates.setTrackedValue(StateTracker<bool>::State::SKELETON_RENDERED, false);
         }
     }
@@ -304,13 +304,13 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
         return;
     }
 
-    const SceneNode_ptr& node = _parentSGN.getNode();
+    const SceneNode& node = _parentSGN.getNode();
 
     if (Config::Build::IS_DEBUG_BUILD) {
         switch(sceneRenderState.gizmoState()){
             case SceneRenderState::GizmoState::ALL_GIZMO: {
-                if (node->type() == SceneNodeType::TYPE_OBJECT3D) {
-                    if (_parentSGN.getNode<Object3D>()->getObjectType()._value == ObjectType::SUBMESH) {
+                if (node.type() == SceneNodeType::TYPE_OBJECT3D) {
+                    if (_parentSGN.getNode<Object3D>().getObjectType()._value == ObjectType::SUBMESH) {
                         drawDebugAxis();
                         bufferInOut.add(_axisGizmo->toCommandBuffer());
                     }
@@ -343,7 +343,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
         _boundingBoxPrimitive[0]->fromBox(bb.getMin(), bb.getMax(), UColour(0, 0, 255, 255));
         bufferInOut.add(_boundingBoxPrimitive[0]->toCommandBuffer());
 
-        bool isSubMesh = _parentSGN.getNode<Object3D>()->getObjectType()._value == ObjectType::SUBMESH;
+        bool isSubMesh = _parentSGN.getNode<Object3D>().getObjectType()._value == ObjectType::SUBMESH;
         if (isSubMesh) {
             bool renderParentBBFlagInitialized = false;
             bool renderParentBB = parentStates.getTrackedValue(StateTracker<bool>::State::BOUNDING_BOX_RENDERED,
@@ -372,7 +372,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
 
     if (renderSkeleton) {
         // Continue only for skinned 3D objects
-        if (_parentSGN.getNode<Object3D>()->getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED))
+        if (_parentSGN.getNode<Object3D>().getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED))
         {
             //bool renderSkeletonFlagInitialized = false;
             //bool renderParentSkeleton = parentStates.getTrackedValue(StateTracker<bool>::State::SKELETON_RENDERED, renderSkeletonFlagInitialized);
@@ -397,7 +397,7 @@ void RenderingComponent::updateLoDLevel(const Camera& camera, RenderStagePass re
     static const U32 SCENE_NODE_LOD0_SQ = Config::SCENE_NODE_LOD0 * Config::SCENE_NODE_LOD0;
     static const U32 SCENE_NODE_LOD1_SQ = Config::SCENE_NODE_LOD1 * Config::SCENE_NODE_LOD1;
 
-    _lodLevel = to_U8(_parentSGN.getNode()->getLODcount() - 1);
+    _lodLevel = to_U8(_parentSGN.getNode().getLODcount() - 1);
 
     // ToDo: Hack for lower LoD rendering in reflection and refraction passes
     if (renderStagePass._stage != RenderStage::REFLECTION && renderStagePass._stage != RenderStage::REFRACTION) {

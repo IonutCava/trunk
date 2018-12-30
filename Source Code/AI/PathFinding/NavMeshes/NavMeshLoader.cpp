@@ -320,9 +320,9 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode& sgn) {
         navComp->navigationContext() != NavigationComponent::NavigationContext::NODE_IGNORE &&  // Ignore if specified
         box.getHeight() > 0.05f)  // Skip small objects
     {
-        const SceneNode_ptr& sn = sgn.getNode();
+        SceneNode& sn = sgn.getNode();
 
-        SceneNodeType nodeType = sn->type();
+        SceneNodeType nodeType = sn.type();
         U32 ignoredNodeType = to_base(SceneNodeType::TYPE_ROOT) |
                               to_base(SceneNodeType::TYPE_PARTICLE_EMITTER) |
                               to_base(SceneNodeType::TYPE_TRIGGER) |
@@ -335,13 +335,13 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode& sgn) {
         if (!BitCompare(allowedNodeType, to_U32(nodeType))) {
             if (!BitCompare(ignoredNodeType, to_U32(nodeType))) {
                 Console::printfn(Locale::get(_ID("WARN_NAV_UNSUPPORTED")),
-                                 sn->resourceName().c_str());
+                                 sn.resourceName().c_str());
                 goto next;
             }
         }
 
         if (nodeType == SceneNodeType::TYPE_OBJECT3D) {
-            ObjectType crtType = static_cast<Object3D*>(sn.get())->getObjectType();
+            ObjectType crtType = static_cast<const Object3D&>(sn).getObjectType();
             if (crtType._value == ObjectType::MESH) {
                 goto next;
             }
@@ -362,8 +362,7 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode& sgn) {
                      sgn.usageContext() == NodeUsageContext::NODE_STATIC) {
                     level = MeshDetailLevel::BOUNDINGBOX;
                 }
-                if (static_cast<Object3D*>(sn.get())->getObjectType()._value ==
-                    ObjectType::TERRAIN) {
+                if (static_cast<const Object3D&>(sn).getObjectType()._value == ObjectType::TERRAIN) {
                     areaType = SamplePolyAreas::SAMPLE_POLYAREA_GROUND;
                 }
             } break;
@@ -380,15 +379,15 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode& sgn) {
         }
 
         Console::d_printfn(Locale::get(_ID("NAV_MESH_CURRENT_NODE")),
-                           sn->resourceName().c_str(), to_U32(level));
+                           sn.resourceName().c_str(), to_U32(level));
 
         U32 currentTriangleIndexOffset = outData.getVertCount();
 
         if (level == MeshDetailLevel::MAXIMUM) {
             if (nodeType == SceneNodeType::TYPE_OBJECT3D) {
-                geometry = static_cast<Object3D*>(sn.get())->getGeometryVB();
+                geometry = static_cast<const Object3D&>(sn).getGeometryVB();
             } else /*nodeType == TYPE_WATER*/ {
-                geometry = static_cast<WaterPlane*>(sn.get())->getQuad()->getGeometryVB();
+                geometry = static_cast<const WaterPlane&>(sn).getQuad()->getGeometryVB();
             }
             assert(geometry != nullptr);
 
@@ -397,12 +396,11 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode& sgn) {
                 return false;
             }
 
-            static_cast<Object3D*>(sn.get())->computeTriangleList();
-            const vector<vec3<U32> >& triangles =
-                static_cast<Object3D*>(sn.get())->getTriangles();
+            static_cast<Object3D&>(sn).computeTriangleList();
+            const vector<vec3<U32> >& triangles = static_cast<const Object3D&>(sn).getTriangles();
             if (nodeType != SceneNodeType::TYPE_OBJECT3D ||
                (nodeType == SceneNodeType::TYPE_OBJECT3D &&
-                static_cast<Object3D*>(sn.get())->getObjectType()._value != ObjectType::TERRAIN))
+                static_cast<const Object3D&>(sn).getObjectType()._value != ObjectType::TERRAIN))
             {
                 mat4<F32> nodeTransform = nodeSGN->get<TransformComponent>()->getWorldMatrix();
                 for (U32 i = 0; i < vertices.size(); ++i) {
@@ -442,7 +440,7 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode& sgn) {
         }
 
         Console::printfn(Locale::get(_ID("NAV_MESH_ADD_NODE")),
-                         sn->resourceName().c_str());
+                         sn.resourceName().c_str());
     }
 // although labels are bad, skipping here using them is the easiest solution to
 // follow -Ionut

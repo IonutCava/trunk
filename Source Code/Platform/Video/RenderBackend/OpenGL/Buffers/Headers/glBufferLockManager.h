@@ -43,8 +43,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 struct BufferRange {
-    size_t _startOffset;
-    size_t _length;
+    size_t _startOffset = 0;
+    size_t _length = 0;
 
     inline bool Overlaps(const BufferRange& _rhs) const {
         return _startOffset < (_rhs._startOffset + _rhs._length) &&
@@ -54,8 +54,8 @@ struct BufferRange {
 
 // --------------------------------------------------------------------------------------------------------------------
 struct BufferLock {
-    BufferRange _range;
-    GLsync _syncObj;
+    BufferRange _range = {};
+    GLsync _syncObj = nullptr;
 };
 
 // --------------------------------------------------------------------------------------------------------------------

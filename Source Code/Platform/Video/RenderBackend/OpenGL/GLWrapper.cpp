@@ -984,13 +984,14 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
                 
             }
             for (const ShaderBufferBinding& shaderBufCmd : set._shaderBuffers) {
+                glUniformBuffer* buffer = static_cast<glUniformBuffer*>(shaderBufCmd._buffer);
+
                 if (shaderBufCmd._binding == ShaderBufferLocation::CMD_BUFFER) {
-                    const glUniformBuffer* cmdBuffer = static_cast<glUniformBuffer*>(shaderBufCmd._buffer);
-                    getStateTracker().setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, cmdBuffer->bufferID());
+                    getStateTracker().setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, buffer->bufferID());
                 } else {
-                    shaderBufCmd._buffer->bindRange(shaderBufCmd._binding,
-                                                    shaderBufCmd._range.x,
-                                                    shaderBufCmd._range.y);
+                    buffer->bindRange(to_U8(shaderBufCmd._binding),
+                                      shaderBufCmd._range.x,
+                                      shaderBufCmd._range.y);
 
                     if (shaderBufCmd._atomicCounter.first) {
                         shaderBufCmd._buffer->bindAtomicCounter(shaderBufCmd._atomicCounter.second.x,

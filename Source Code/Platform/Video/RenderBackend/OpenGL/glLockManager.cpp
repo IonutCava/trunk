@@ -45,7 +45,7 @@ void glLockManager::wait(GLsync* syncObj, bool blockClient) {
         SyncObjectMask waitFlags = SyncObjectMask::GL_NONE_BIT;
         U8 retryCount = 0;
         while (true) {
-            GLenum waitRet = glClientWaitSync(*syncObj, waitFlags, retryCount > 0 ? kOneSecondInNanoSeconds : 0);
+            GLenum waitRet = glClientWaitSync(*syncObj, waitFlags, retryCount > 1 ? kOneSecondInNanoSeconds : 0);
             if (waitRet == GL_ALREADY_SIGNALED || waitRet == GL_CONDITION_SATISFIED) {
                 return;
             }
