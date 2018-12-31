@@ -1,5 +1,7 @@
 -- Vertex
 
+invariant gl_Position;
+
 #include "vbInputData.vert"
 #include "lightingDefaults.vert"
 
@@ -61,7 +63,7 @@ void main (void)
     const float kDistortion = 0.015;
     const float kRefraction = 0.09;
 
-    vec4 uvReflection = _vertexWVP * vec4(1.0 / _vertexWVP.w);
+    vec4 uvReflection = _vertexWVP / _vertexWVP.w;
     uvReflection += vec4(1.0);
     uvReflection *= vec4(0.5);
     uvReflection = clamp(uvReflection, vec4(0.001), vec4(0.999));
@@ -78,6 +80,7 @@ void main (void)
     vec3 normal0 = texture(texWaterNoiseNM, uvNormal0).rgb * 2.0 - 1.0;
     vec3 normal1 = texture(texWaterNoiseNM, uvNormal1).rgb * 2.0 - 1.0;
     vec3 normal = normalize(normal0 + normal1);
+
 
     vec2 uvFinalReflect = uvReflection.xy /*+ _noiseFactor * normal.xy*/;
     vec2 uvFinalRefract = uvReflection.xy /*+ _noiseFactor * normal.xy*/;
@@ -101,12 +104,20 @@ void main (void)
 
     setProcessedNormal(normalize(getTBNMatrix() * normal));
     
-    setAlbedo(mix(texture(texWaterReflection, uvFinalReflect),
-                  texture(texWaterRefraction, uvFinalRefract),
-                  vec4(clamp(Fresnel(normalize(_pixToEye), normalize(VAR._normalWV)), 0.0, 1.0))));
+    vec4 mixFactor = vec4(clamp(Fresnel(normalize(_pixToEye), normalize(VAR._normalWV)), 0.0, 1.0));
+    vec4 texColour = mix(texture(texWaterReflection, uvFinalReflect),
+                         texture(texWaterRefraction, uvFinalRefract),
+                         mixFactor);
+    setAlbedo(texColour);
 
     //writeOutput(getPixelColour(), packNormal(getProcessedNormal()));
     writeOutput(getAlbedo(), packNormal(getProcessedNormal()));
 
+
+}
+
+--Fragment.PrePass
+
+void main() {
 
 }

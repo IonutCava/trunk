@@ -25,7 +25,7 @@ namespace Divide {
 
 namespace {
     // How many cmd buffers should we create (as a factor) so that we can swap them between frames
-    constexpr U32 g_cmdBufferFrameCount = 1;// 3;
+    constexpr U32 g_cmdBufferFrameCount = 3;
 
     // We need a proper, time-based system, to check reflection budget
     namespace ReflectionUtil {
@@ -191,10 +191,10 @@ void RenderPass::initBufferData() {
     bufferDescriptor._elementSize = sizeof(GFXDevice::NodeData);
 
     bufferDescriptor._ringBufferLength = g_cmdBufferFrameCount;
-    bufferDescriptor._separateReadWrite = g_cmdBufferFrameCount > 1;
+    bufferDescriptor._separateReadWrite = false;
     
     bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE) | to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
-    bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
+    bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
     bufferDescriptor._name = Util::StringFormat("RENDER_DATA_%s", TypeUtil::renderStageToString(_stageFlag)).c_str();
     // This do not need to be persistently mapped as, hopefully, they will only be update once per frame
     // Each pass should have its own set of buffers (shadows, reflection, etc)

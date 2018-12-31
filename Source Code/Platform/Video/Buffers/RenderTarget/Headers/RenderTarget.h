@@ -141,6 +141,7 @@ class NOINITVTABLE RenderTarget : public GUIDWrapper, public GraphicsResource {
     /// Resize all attachments
     virtual bool resize(U16 width, U16 height) = 0;
 
+    virtual bool hasAttachment(RTAttachmentType type, U8 index) const;
     virtual const RTAttachment_ptr& getAttachmentPtr(RTAttachmentType type, U8 index) const;
     virtual const RTAttachment& getAttachment(RTAttachmentType type, U8 index) const;
     virtual RTAttachment& getAttachment(RTAttachmentType type, U8 index);

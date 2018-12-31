@@ -245,13 +245,12 @@ void Texture::setCurrentSampler(const SamplerDescriptor& descriptor) {
 void Texture::validateDescriptor() {
     
     // Select the proper colour space internal format
-    bool srgb = _descriptor._srgb;
-    // We only support 8 bit per pixel - 3 & 4 channel textures
     if (_descriptor.baseFormat() == GFXImageFormat::RED ||
         _descriptor.baseFormat() == GFXImageFormat::RG ||
         _descriptor.baseFormat() == GFXImageFormat::DEPTH_COMPONENT)             
     {
-        assert(!srgb);
+        // We only support 8 bit per pixel - 3 & 4 channel textures
+        assert(!_descriptor._srgb);
     }
 
     switch (_descriptor.baseFormat()) {

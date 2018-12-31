@@ -69,8 +69,6 @@ class WaterPlane : public SceneNode {
 
     void postLoad(SceneGraphNode& sgn) override;
 
-    bool getDrawState(const SceneGraphNode& sgn, RenderStagePass renderStage) const override;
-
    protected:
     template <typename T>
     friend class ImplResourceLoader;

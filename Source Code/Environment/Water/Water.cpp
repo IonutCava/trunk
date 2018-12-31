@@ -36,6 +36,9 @@ bool WaterPlane::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallb
     if (_plane != nullptr) {
         return false;
     }
+
+    setState(ResourceState::RES_LOADING);
+
     _reflectionCam = Camera::createCamera(resourceName() + "_reflectionCam", Camera::CameraType::FREE_FLY);
 
     const stringImpl& name = resourceName();
@@ -73,56 +76,37 @@ bool WaterPlane::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallb
     waterMat->setShadingMode(Material::ShadingMode::BLINN_PHONG);
     waterMat->setTexture(ShaderProgram::TextureUsage::UNIT0, waterNM);
     waterMat->setTexture(ShaderProgram::TextureUsage::UNIT1, waterDUDV);
+
     waterMat->addShaderDefine("COMPUTE_TBN");
     waterMat->setShaderProgram("water", RenderPassType::COLOUR_PASS, true);
-    waterMat->setShaderProgram("water", RenderPassType::OIT_PASS, true);
-    waterMat->setShaderProgram("depthPass.PrePass", RenderPassType::DEPTH_PASS, true);
-
-    size_t hash = waterMat->getRenderStateBlock(RenderStagePass(RenderStage::DISPLAY, RenderPassType::COLOUR_PASS));
-    RenderStateBlock waterMatDesc(RenderStateBlock::get(hash));
-    waterMatDesc.setCullMode(CullMode::NONE);
-    waterMat->setRenderStateBlock(waterMatDesc.getHash());
+    waterMat->setShaderProgram("water.PrePass", RenderPassType::DEPTH_PASS, true);
 
     setMaterialTpl(waterMat);
     
-    // Set water plane to be single-sided
-    P32 quadMask;
-    quadMask.i = 0;
-    quadMask.b[0] = true;
-
     ResourceDescriptor waterPlane("waterPlane");
     waterPlane.setFlag(true);  // No default material
-    waterPlane.setBoolMask(quadMask);
+    waterPlane.setThreadedLoading(false);
+
     _plane = CreateResource<Quad3D>(_parentCache, waterPlane);
+    
     setBoundsChanged();
 
     return SceneNode::load(onLoadCallback);
 }
 
 void WaterPlane::postLoad(SceneGraphNode& sgn) {
+
     F32 halfWidth = _dimensions.width * 0.5f;
     F32 halfLength = _dimensions.height * 0.5f;
 
-    _plane->setCorner(Quad3D::CornerLocation::TOP_LEFT,     vec3<F32>(-halfWidth, 0, -halfLength));
-    _plane->setCorner(Quad3D::CornerLocation::TOP_RIGHT,    vec3<F32>( halfWidth, 0, -halfLength));
-    _plane->setCorner(Quad3D::CornerLocation::BOTTOM_LEFT,  vec3<F32>(-halfWidth, 0,  halfLength));
-    _plane->setCorner(Quad3D::CornerLocation::BOTTOM_RIGHT, vec3<F32>( halfWidth, 0,  halfLength));
+    _plane->setCorner(Quad3D::CornerLocation::TOP_LEFT, vec3<F32>(-halfWidth, 0, -halfLength));
+    _plane->setCorner(Quad3D::CornerLocation::TOP_RIGHT, vec3<F32>(halfWidth, 0, -halfLength));
+    _plane->setCorner(Quad3D::CornerLocation::BOTTOM_LEFT, vec3<F32>(-halfWidth, 0, halfLength));
+    _plane->setCorner(Quad3D::CornerLocation::BOTTOM_RIGHT, vec3<F32>(halfWidth, 0, halfLength));
     _plane->setNormal(Quad3D::CornerLocation::CORNER_ALL, WORLD_Y_AXIS);
-    _plane->renderState().setDrawState(false);
-    
-    SceneGraphNodeDescriptor waterNodeDescriptor;
-    waterNodeDescriptor._node = _plane;
-    waterNodeDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
-    waterNodeDescriptor._componentMask = to_base(ComponentType::NAVIGATION) |
-                                         to_base(ComponentType::TRANSFORM) |
-                                         to_base(ComponentType::BOUNDS) |
-                                         to_base(ComponentType::RENDERING) |
-                                         to_base(ComponentType::NETWORKING);
-
-    sgn.addNode(waterNodeDescriptor);
+    _boundingBox.set(vec3<F32>(-halfWidth, -_dimensions.depth, -halfLength), vec3<F32>(halfWidth, 0, halfLength));
 
     RenderingComponent* renderable = sgn.get<RenderingComponent>();
-
     renderable->setReflectionCallback([this](RenderCbkParams& params, GFX::CommandBuffer& commandsInOut) {
         updateReflection(params, commandsInOut);
     });
@@ -150,18 +134,6 @@ bool WaterPlane::pointUnderwater(const SceneGraphNode& sgn, const vec3<F32>& poi
     return sgn.get<BoundsComponent>()->getBoundingBox().containsPoint(point);
 }
 
-bool WaterPlane::getDrawState(const SceneGraphNode& sgn, RenderStagePass renderStage) const {
-    if (renderStage._stage == RenderStage::REFLECTION || renderStage._stage == RenderStage::REFRACTION) {
-        RenderingComponent* renderable = sgn.get<RenderingComponent>();
-        const Material_ptr& mat = renderable->getMaterialInstance();
-        if (mat != nullptr) {
-          
-        }
-    }
-
-    return SceneNode::getDrawState(sgn, renderStage);
-}
-
 void WaterPlane::buildDrawCommands(SceneGraphNode& sgn,
                                    RenderStagePass renderStagePass,
                                    RenderPackage& pkgInOut) {
@@ -174,8 +146,8 @@ void WaterPlane::buildDrawCommands(SceneGraphNode& sgn,
 
     GenericDrawCommand cmd = {};
     cmd._primitiveType = PrimitiveType::TRIANGLE_STRIP;
+    cmd._cmd.indexCount = _plane->getGeometryVB()->getIndexCount();
     cmd._sourceBuffer = _plane->getGeometryVB();
-    cmd._cmd.indexCount = to_U32(_plane->getGeometryVB()->getIndexCount());
     cmd._bufferIndex = renderStagePass.index();
     enableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
     {

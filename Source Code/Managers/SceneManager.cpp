@@ -167,7 +167,8 @@ Scene* SceneManager::load(stringImpl sceneName) {
 
 bool SceneManager::unloadScene(Scene* scene) {
     assert(scene != nullptr);
-    
+    _saveTask.wait();
+
     _platformContext->gui().onUnloadScene(scene);
     Attorney::SceneManager::onRemoveActive(*scene);
     return Attorney::SceneManager::unload(*scene);
@@ -532,7 +533,9 @@ namespace {
     bool doesNotCastShadows(RenderStage stage, const SceneGraphNode& node) {
         if (stage == RenderStage::SHADOW) {
             SceneNodeType type = node.getNode().type();
-            if (type == SceneNodeType::TYPE_SKY || type == SceneNodeType::TYPE_INFINITEPLANE) {
+            if (type == SceneNodeType::TYPE_SKY || 
+                type == SceneNodeType::TYPE_WATER ||
+                type == SceneNodeType::TYPE_INFINITEPLANE) {
                 return true;
             }
             if (type == SceneNodeType::TYPE_OBJECT3D && node.getNode<Object3D>().getObjectType()._value == ObjectType::DECAL) {

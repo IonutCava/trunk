@@ -229,12 +229,12 @@ GFXDevice::NodeData RenderPassManager::processVisibleNode(SceneGraphNode* node, 
 }
 
 void RenderPassManager::refreshNodeData(RenderStage stage,
-                                        RenderPassType pass,
-                                        U32 passIndex,
-                                        const SceneRenderState& renderState,
-                                        const mat4<F32>& viewMatrix,
-                                        const RenderQueue::SortedQueues& sortedQueues,
-                                        GFX::CommandBuffer& bufferInOut)
+    RenderPassType pass,
+    U32 passIndex,
+    const SceneRenderState& renderState,
+    const mat4<F32>& viewMatrix,
+    const RenderQueue::SortedQueues& sortedQueues,
+    GFX::CommandBuffer& bufferInOut)
 {
     bool playAnimations = renderState.isEnabledOption(SceneRenderState::RenderOptions::PLAY_ANIMATIONS);
 
@@ -262,15 +262,21 @@ void RenderPassManager::refreshNodeData(RenderStage stage,
     U32 nodeCount = to_U32(g_nodeData.size());
     assert(*bufferData._lastCommandCount >= nodeCount);
 
-    ShaderBufferBinding shaderBufferCmds(ShaderBufferLocation::CMD_BUFFER, bufferData._cmdBuffer);
-    shaderBufferCmds._buffer->writeData(0, *bufferData._lastCommandCount, g_drawCommands.data());
-
-    ShaderBufferBinding shaderBufferData(ShaderBufferLocation::NODE_INFO, bufferData._renderData);
-    shaderBufferData._range = { bufferData._renderDataElementOffset, nodeCount };
-    shaderBufferData._buffer->writeData(shaderBufferData._range.x, shaderBufferData._range.y, g_nodeData.data());
+    bufferData._cmdBuffer->writeData(0, *bufferData._lastCommandCount, (bufferPtr)g_drawCommands.data());
+    bufferData._renderData->writeData(bufferData._renderDataElementOffset, nodeCount, (bufferPtr)g_nodeData.data());
 
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
-    descriptorSetCmd._set._shaderBuffers = { shaderBufferCmds, shaderBufferData };
+    descriptorSetCmd._set._shaderBuffers = {
+        {
+            ShaderBufferLocation::CMD_BUFFER,
+            bufferData._cmdBuffer
+        },
+        {
+            ShaderBufferLocation::NODE_INFO,
+            bufferData._renderData,
+            vec2<U32>(bufferData._renderDataElementOffset, nodeCount)
+        }
+    };
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 }
 
@@ -397,18 +403,20 @@ void RenderPassManager::mainPass(const PassParams& params, RenderTarget& target,
     if (params._target._usage != RenderTargetUsage::COUNT) {
         Attorney::SceneManagerRenderPass::preRender(sceneManager, stagePass, *params._camera, target, bufferInOut);
     
-        if (params._stage == RenderStage::DISPLAY) {
+        if (params._stage != RenderStage::SHADOW) {
             GFX::BindDescriptorSetsCommand bindDescriptorSets;
             // Bind the depth buffers
             TextureData depthBufferTextureData = target.getAttachment(RTAttachmentType::Depth, 0).texture()->getData();
             bindDescriptorSets._set._textureData.addTexture(depthBufferTextureData, to_U8(ShaderProgram::TextureUsage::DEPTH));
 
-            const RTAttachment& velocityAttachment = target.getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::VELOCITY));
-            if (velocityAttachment.used()) {
+            TextureData prevDepthData = depthBufferTextureData;
+            if (target.hasAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::VELOCITY))) {
+                const RTAttachment_ptr& velocityAttachment = target.getAttachmentPtr(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::VELOCITY));
                 const Texture_ptr& prevDepthTexture = _context.getPrevDepthBuffer();
-                TextureData prevDepthData = (prevDepthTexture ? prevDepthTexture->getData() : depthBufferTextureData);
-                bindDescriptorSets._set._textureData.addTexture(prevDepthData, to_U8(ShaderProgram::TextureUsage::DEPTH_PREV));
+                prevDepthData = (velocityAttachment->used() && prevDepthTexture) ? prevDepthTexture->getData() : depthBufferTextureData;
             }
+            
+            bindDescriptorSets._set._textureData.addTexture(prevDepthData, to_U8(ShaderProgram::TextureUsage::DEPTH_PREV));
 
             GFX::EnqueueCommand(bufferInOut, bindDescriptorSets);
         }

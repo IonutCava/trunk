@@ -70,6 +70,7 @@ bool InfinitePlane::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCa
 
     ResourceDescriptor infinitePlane("infinitePlane");
     infinitePlane.setFlag(true);  // No default material
+    infinitePlane.setThreadedLoading(false);
 
     _plane = CreateResource<Quad3D>(_parentCache, infinitePlane);
     

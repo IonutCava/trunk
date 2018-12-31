@@ -54,6 +54,7 @@ public:
     // Return true if the attachment was used. False if the call had no effect
     bool clear(RTAttachmentType type, U8 index);
 
+    bool exists(RTAttachmentType type, U8 index) const;
     RTAttachment_ptr& get(RTAttachmentType type, U8 index);
     const RTAttachment_ptr& get(RTAttachmentType type, U8 index) const;
 

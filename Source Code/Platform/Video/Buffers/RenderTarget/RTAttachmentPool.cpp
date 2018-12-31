@@ -185,6 +185,16 @@ const RTAttachment_ptr& RTAttachmentPool::getInternal(const AttachmentPool& pool
     return pool[0][0];
 }
 
+bool RTAttachmentPool::exists(RTAttachmentType type, U8 index) const {
+    switch (type) {
+        case RTAttachmentType::Depth:
+        case RTAttachmentType::Stencil: return index == 0;
+        case RTAttachmentType::Colour:  return index < to_U8(_attachment[to_U32(type)].size());
+    }
+
+    return false;
+}
+
 RTAttachment_ptr& RTAttachmentPool::get(RTAttachmentType type, U8 index) {
     return getInternal(_attachment, type, index);
 }

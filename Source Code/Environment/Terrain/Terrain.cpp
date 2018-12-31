@@ -51,10 +51,7 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
     for (TerrainChunk* chunk : _terrainChunks) {
         vegetationNodeDescriptor._node = Attorney::TerrainChunkTerrain::getVegetation(*chunk);
         vegetationNodeDescriptor._name = Util::StringFormat("Grass_chunk_%d", chunk->ID());
-
-        SceneGraphNode* vegNode = sgn.addNode(vegetationNodeDescriptor);
-        assert(vegNode != nullptr);
-        //vegNode->lockVisibility(true);
+        sgn.addNode(vegetationNodeDescriptor);
     }
 
     ShaderBufferDescriptor bufferDescriptor;
