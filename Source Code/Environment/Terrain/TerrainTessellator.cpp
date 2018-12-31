@@ -22,7 +22,7 @@ namespace {
         return false;
     }
 
-    TessellatedTerrainNode* terrainTreeTail = nullptr;
+    thread_local TessellatedTerrainNode* terrainTreeTail = nullptr;
 };
 
 TerrainTessellator::TerrainTessellator()

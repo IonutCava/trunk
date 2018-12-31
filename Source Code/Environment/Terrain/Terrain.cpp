@@ -26,6 +26,7 @@ Terrain::Terrain(GFXDevice& context, ResourceCache& parentCache, size_t descript
     : Object3D(context, parentCache, descriptorHash, name, ObjectType::TERRAIN),
       _shaderData(nullptr),
       _drawBBoxes(false),
+      _drawDistance(0.0f),
       _editorDataDirtyState(EditorDataState::IDLE)
 {
 }
@@ -146,22 +147,22 @@ void Terrain::frameStarted(SceneGraphNode& sgn) {
 
 void Terrain::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState) {
     _terrainTessellatorFlags[sgn.getGUID()].fill(false);
+    _drawDistance = sceneState.renderState().generalVisibility();
+
     Object3D::sceneUpdate(deltaTimeUS, sgn, sceneState);
 }
 
 bool Terrain::onRender(SceneGraphNode& sgn,
                        const Camera& camera,
                        RenderStagePass renderStagePass) {
-    RenderPackage& pkg = sgn.get<RenderingComponent>()->getDrawPackage(renderStagePass);
-
     const U8 stageIndex = to_U8(renderStagePass._stage);
-    GenericDrawCommand cmd = pkg.drawCommand(0, 0);
 
     TerrainTessellator& tessellator = _terrainTessellator[stageIndex];
     bool& wasUpdated = _terrainTessellatorFlags[sgn.getGUID()][stageIndex];
 
     U32 offset = to_U32(stageIndex * Terrain::MAX_RENDER_NODES);
 
+    RenderPackage& pkg = sgn.get<RenderingComponent>()->getDrawPackage(renderStagePass);
     if (_editorDataDirtyState == EditorDataState::CHANGED) {
         PushConstants constants = pkg.pushConstants(0);
         constants.set("tessellationRange", GFX::PushConstantType::VEC2, _descriptor->getTessellationRange().xy());
@@ -192,14 +193,13 @@ bool Terrain::onRender(SceneGraphNode& sgn,
         wasUpdated = true;
     }
 
-    if (renderStagePass == RenderStagePass(RenderStage::DISPLAY, RenderPassType::DEPTH_PASS)) {
-        F32 drawDistance = _context.parent().sceneManager().getActiveScene().renderState().generalVisibility();
-        _terrainQuadtree.updateVisibility(camera, drawDistance);
-    }
-
+    GenericDrawCommand cmd = pkg.drawCommand(0, 0);
     cmd._drawCount = tessellator.getRenderDepth();
-
     pkg.drawCommand(0, 0, cmd);
+
+    if (renderStagePass == RenderStagePass(RenderStage::DISPLAY, RenderPassType::DEPTH_PASS)) {
+        _terrainQuadtree.updateVisibility(camera, _drawDistance);
+    }
 
     return Object3D::onRender(sgn, camera, renderStagePass);
 }

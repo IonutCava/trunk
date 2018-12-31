@@ -192,6 +192,7 @@ class Terrain : public Object3D {
         IDLE
     };
 
+    F32 _drawDistance;
     ShaderBuffer* _shaderData;
     VegetationDetails _vegDetails;
 
