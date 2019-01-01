@@ -50,7 +50,7 @@ class ShaderComputeQueue : public FrameListener {
 public:
     class ShaderQueueElement {
       public:
-          explicit ShaderQueueElement(ResourceDescriptor& descriptor)
+          explicit ShaderQueueElement(const ResourceDescriptor& descriptor)
               : _shaderDescriptor(descriptor)
         {
         }

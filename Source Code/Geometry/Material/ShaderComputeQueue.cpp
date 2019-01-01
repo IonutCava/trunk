@@ -9,16 +9,6 @@ namespace Divide {
 
 namespace {
     const U32 g_MaxShadersComputedPerFrame = Config::Build::IS_DEBUG_BUILD ? 8 : 12;
-
-    stringImpl getDefinesHash(const vector<std::pair<stringImpl, bool>>& defines) {
-        size_t hash = 17;
-        for (auto entry : defines) {
-            Util::Hash_combine(hash, _ID(entry.first.c_str()));
-            Util::Hash_combine(hash, entry.second);
-        }
-        return to_stringImpl(hash);
-    }
-    
 };
 
 ShaderComputeQueue::ShaderComputeQueue(ResourceCache& cache)
@@ -54,12 +44,6 @@ bool ShaderComputeQueue::stepQueue() {
     if (!_shaderComputeQueue.empty()) {
         ShaderQueueElement& currentItem = _shaderComputeQueue.front();
         ShaderProgramInfo& info = *currentItem._shaderData;
-        stringImpl resourceName = currentItem._shaderDescriptor.resourceName();
-        currentItem._shaderDescriptor.assetName(resourceName);
-        if (!info._shaderDefines.empty()) {
-            currentItem._shaderDescriptor.resourceName(resourceName + "-" + getDefinesHash(info._shaderDefines));
-        }
-        
         info._shaderRef = CreateResource<ShaderProgram>(_cache, currentItem._shaderDescriptor);
         info._shaderCompStage = ShaderProgramInfo::BuildStage::COMPUTED;
         _shaderComputeQueue.pop_front();

@@ -174,8 +174,6 @@ class Material : public CachedResource {
     /// Set the desired bump mapping method.
     void setBumpMethod(const BumpMethod& newBumpMethod);
 
-    void addShaderDefine(RenderStagePass renderStagePass, const stringImpl& shaderDefines, bool addPrefix = true);
-
     /// toggle multi-threaded shader loading on or off for this material
     void setShaderLoadThreaded(const bool state);
 
@@ -251,7 +249,7 @@ class Material : public CachedResource {
     bool getTextureData(ShaderProgram::TextureUsage slot, TextureDataContainer& container);
 
     void recomputeShaders();
-    void setShaderProgramInternal(const stringImpl& shader,
+    void setShaderProgramInternal(const ResourceDescriptor& shaderDescriptor,
                                   RenderStagePass renderStagePass,
                                   const bool computeOnAdd);
 

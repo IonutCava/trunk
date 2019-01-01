@@ -68,24 +68,11 @@ inline void Material::setShininess(F32 value) {
     _colourData._shininess = value;
 }
 
-inline void Material::addShaderDefine(RenderStagePass renderStagePass, const stringImpl& shaderDefines, bool addPrefix) {
-    auto& defines = shaderInfo(renderStagePass)._shaderDefines;
-    if (std::find(std::cbegin(defines), std::cend(defines), std::make_pair(shaderDefines, addPrefix)) == std::cend(defines)) {
-        defines.push_back(std::make_pair(shaderDefines, addPrefix));
-    }
-}
 
 /// toggle multi-threaded shader loading on or off for this material
 inline void Material::setShaderLoadThreaded(const bool state) {
     _shaderThreadedLoad = state;
 }
-
-/*inline void Material::setShaderProgram(const stringImpl& shader,
-                                       const bool computeOnAdd) {
-    for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
-        setShaderProgram(shader, RenderStagePass::stagePass(i), computeOnAdd);
-    }
-}*/
 
 inline void Material::setShaderProgram(const ShaderProgram_ptr& shader) {
     for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
