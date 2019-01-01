@@ -75,8 +75,14 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
 
     _editorComponent.registerField(
         "Tessellation Range",
-        [this]() { return _descriptor->getTessellationRange().xy(); },
-        [this](void* data) {_descriptor->setTessellationRange(vec3<F32>(*(vec2<F32>*)data, _descriptor->getTessellationRange().z)); },
+        [this]() {
+            return _descriptor->getTessellationRange().xy();
+        },
+
+        [this](void* data) {
+            vec2<F32> newTess = *(vec2<F32>*)data;
+            _descriptor->setTessellationRange(vec3<F32>(newTess, _descriptor->getTessellationRange().z));
+        },
         EditorComponentFieldType::PUSH_TYPE,
         false,
         GFX::PushConstantType::VEC2);

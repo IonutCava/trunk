@@ -4,18 +4,18 @@
 
 namespace Divide {
 
-RingBufferSeparateWrite::RingBufferSeparateWrite(U32 queueLength, bool separateReadWrite) :
-    _queueLength(std::max(queueLength, 1U))
+RingBufferSeparateWrite::RingBufferSeparateWrite(I32 queueLength, bool separateReadWrite) :
+        _queueLength(std::max(queueLength, 1)),
+        _separateReadWrite(separateReadWrite)
 {
-    _queueReadIndex = 0;
-    _queueWriteIndex = (separateReadWrite ? _queueLength - 1 : 0);
+    _queueIndex = 0;
 }
 
 RingBufferSeparateWrite::RingBufferSeparateWrite(const RingBufferSeparateWrite& other)
-    : _queueLength(other._queueLength)
+    : _queueLength(other._queueLength),
+      _separateReadWrite(other._separateReadWrite)
 {
-    _queueReadIndex = other.queueReadIndex();
-    _queueWriteIndex = other.queueWriteIndex();
+    _queueIndex = other.queueReadIndex();
 }
 
 RingBufferSeparateWrite::~RingBufferSeparateWrite()
@@ -24,26 +24,20 @@ RingBufferSeparateWrite::~RingBufferSeparateWrite()
 
 RingBufferSeparateWrite& RingBufferSeparateWrite::operator=(const RingBufferSeparateWrite& other) {
     _queueLength = other._queueLength;
-    _queueReadIndex = other.queueReadIndex();
-    _queueWriteIndex = other.queueWriteIndex();
+    _separateReadWrite = other._separateReadWrite;
+    _queueIndex = other.queueReadIndex();
 
     return *this;
 }
 
-void RingBufferSeparateWrite::resize(U32 queueLength) {
-    if (_queueLength != std::max(queueLength, 1U)) {
-        _queueLength = std::max(queueLength, 1U);
-        if (_queueReadIndex == _queueWriteIndex) {
-            _queueWriteIndex = 0;
-        } else {
-            _queueWriteIndex = _queueLength - 1;
-        }
-
-        _queueReadIndex = 0;
+void RingBufferSeparateWrite::resize(I32 queueLength) {
+    if (_queueLength != std::max(queueLength, 1)) {
+        _queueLength = std::max(queueLength, 1);
+        _queueIndex = std::min(_queueIndex.load(), _queueLength - 1);
     }
 }
-RingBuffer::RingBuffer(U32 queueLength) :
-    _queueLength(std::max(queueLength, 1U))
+RingBuffer::RingBuffer(I32 queueLength) :
+    _queueLength(std::max(queueLength, 1))
 {
     _queueIndex = 0;
 }
@@ -65,8 +59,8 @@ RingBuffer& RingBuffer::operator=(const RingBuffer& other) {
     return *this;
 }
 
-void RingBuffer::resize(U32 queueLength) {
-    _queueLength = std::max(queueLength, 1U);
+void RingBuffer::resize(I32 queueLength) {
+    _queueLength = std::max(queueLength, 1);
     _queueIndex = 0;
 }
 

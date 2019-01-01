@@ -54,14 +54,14 @@ glHardwareQuery& glHardwareQueryRing::writeQuery() {
     return *_queries[queueWriteIndex()];
 }
 
-void glHardwareQueryRing::resize(U32 queueLength) {
+void glHardwareQueryRing::resize(I32 queueLength) {
     RingBufferSeparateWrite::resize(queueLength);
 
-    while (queueLength < to_U32(_queries.size())) {
+    while (queueLength < to_I32(_queries.size())) {
         _queries.pop_back();
     }
     
-    while (queueLength > to_U32(_queries.size())) {
+    while (queueLength > to_I32(_queries.size())) {
         _queries.push_back(std::make_shared<glHardwareQuery>(_context));
         _queries.back()->create();
     }

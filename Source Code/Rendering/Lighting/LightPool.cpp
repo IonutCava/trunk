@@ -36,6 +36,7 @@ LightPool::LightPool(Scene& parentScene, PlatformContext& context)
       _init(false),
       _lightImpostorShader(nullptr),
       _lightIconsTexture(nullptr),
+      _lightShaderBuffer(nullptr),
       _shadowBuffer(nullptr),
      // shadowPassTimer is used to measure the CPU-duration of shadow map generation step
      _shadowPassTimer(Time::ADD_TIMER("Shadow Pass Timer"))
@@ -43,7 +44,6 @@ LightPool::LightPool(Scene& parentScene, PlatformContext& context)
 
     for (U8 i = 0; i < to_U8(RenderStage::COUNT); ++i) {
         _activeLightCount[i].fill(0);
-        _lightShaderBuffer.fill(nullptr);
         _sortedLights[i].reserve(Config::Lighting::MAX_POSSIBLE_LIGHTS);
     }
 
@@ -71,18 +71,17 @@ void LightPool::init() {
     }
 
     ShaderBufferDescriptor bufferDescriptor = {};
-    bufferDescriptor._elementCount = 1;
+    bufferDescriptor._elementCount = to_base(RenderStage::COUNT) - 1; //< no shadows
     bufferDescriptor._elementSize = sizeof(vec4<I32>) + (Config::Lighting::MAX_POSSIBLE_LIGHTS * sizeof(LightProperties));
     bufferDescriptor._ringBufferLength = 3;
-    bufferDescriptor._separateReadWrite = true;
-    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE) | to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
+    bufferDescriptor._separateReadWrite = false;
+    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE) |
+                              to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES) |
+                              to_U32(ShaderBuffer::Flags::AUTO_RANGE_FLUSH);
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
-
+    bufferDescriptor._name = "LIGHT_BUFFER";
     // NORMAL holds general info about the currently active lights: position, colour, etc.
-    for (U8 i = 0; i < to_U8(RenderStage::COUNT); ++i) {
-        bufferDescriptor._name = Util::StringFormat("LIGHT_BUFFER_%s", TypeUtil::renderStageToString(static_cast<RenderStage>(i))).c_str();
-        _lightShaderBuffer[i] = _context.gfx().newSB(bufferDescriptor);
-    }
+    _lightShaderBuffer = _context.gfx().newSB(bufferDescriptor);
 
     // SHADOWS holds info about the currently active shadow casting lights:
     // ViewProjection Matrices, View Space Position, etc
@@ -337,9 +336,9 @@ void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, con
         to_I32(sortedLights.size())
     );
 
-    _lightShaderBuffer[stageIndex]->writeBytes(0, sizeof(vec4<I32>) + totalLightCount * sizeof(LightProperties), (bufferPtr)(&crtData));
-    //_lightShaderBuffer[stageIndex]->writeData((bufferPtr)(&crtData));
-    _lightShaderBuffer[stageIndex]->incQueue();
+    _lightShaderBuffer->writeBytes((stageIndex - 1) * _lightShaderBuffer->getPrimitiveSize(),
+                                   sizeof(vec4<I32>) + totalLightCount * sizeof(LightProperties),
+                                   (bufferPtr)(&crtData));
 }
 
 void LightPool::uploadLightData(RenderStage stage,
@@ -348,9 +347,15 @@ void LightPool::uploadLightData(RenderStage stage,
                                 GFX::CommandBuffer& bufferInOut) {
 
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
-    descriptorSetCmd._set.addShaderBuffer({ lightDataLocation, _lightShaderBuffer[to_base(stage)] });
+    descriptorSetCmd._set.addShaderBuffer({ lightDataLocation, _lightShaderBuffer, vec2<U32>(to_base(stage) - 1, 1) });
     descriptorSetCmd._set.addShaderBuffer({ shadowDataLocation, _shadowBuffer });
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
+}
+
+void LightPool::postRenderAllPasses() {
+    // Move backwards so that we don't step on our own toes with the lockmanager
+    _lightShaderBuffer->decQueue();
+    _shadowBuffer->decQueue();
 }
 
 void LightPool::drawLightImpostors(RenderStage stage, GFX::CommandBuffer& bufferInOut) const {

@@ -53,36 +53,36 @@ namespace Divide {
 
     ShaderBufferBinding::ShaderBufferBinding(ShaderBufferLocation slot,
                                              ShaderBuffer* buffer,
-                                             const vec2<U32>& range)
-        : ShaderBufferBinding(slot, buffer, range, std::make_pair(false, vec2<U32>(0u)))
+                                             const vec2<U32>& elementRange)
+        : ShaderBufferBinding(slot, buffer, elementRange, std::make_pair(false, vec2<U32>(0u)))
     {
     }
 
     ShaderBufferBinding::ShaderBufferBinding(ShaderBufferLocation slot,
                                              ShaderBuffer* buffer,
-                                             const vec2<U32>& range,
+                                             const vec2<U32>& elementRange,
                                              const std::pair<bool, vec2<U32>>& atomicCounter)
       : _binding(slot),
         _buffer(buffer),
-        _range(range),
+        _elementRange(elementRange),
         _atomicCounter(atomicCounter)
     {
     }
 
     bool ShaderBufferBinding::set(const ShaderBufferBinding& other) {
-        return set(other._binding, other._buffer, other._range, other._atomicCounter);
+        return set(other._binding, other._buffer, other._elementRange, other._atomicCounter);
     }
 
     bool ShaderBufferBinding::set(ShaderBufferLocation binding,
                                   ShaderBuffer* buffer,
-                                  const vec2<U32>& range)
+                                  const vec2<U32>& elementRange)
     {
-        return set(binding, buffer, range, std::make_pair(false, vec2<U32>(0u)));
+        return set(binding, buffer, elementRange, std::make_pair(false, vec2<U32>(0u)));
     }
 
     bool ShaderBufferBinding::set(ShaderBufferLocation binding,
                                   ShaderBuffer* buffer,
-                                  const vec2<U32>& range,
+                                  const vec2<U32>& elementRange,
                                   const std::pair<bool, vec2<U32>>& atomicCounter) {
         ACKNOWLEDGE_UNUSED(atomicCounter);
         bool ret = false;
@@ -94,8 +94,8 @@ namespace Divide {
             _buffer = buffer;
             ret = true;
         }
-        if (_range != range) {
-            _range.set(range);
+        if (_elementRange != elementRange) {
+            _elementRange.set(elementRange);
             ret = true;
         }
 
@@ -157,13 +157,13 @@ namespace Divide {
 
     bool ShaderBufferBinding::operator==(const ShaderBufferBinding& other) const {
         return _binding == other._binding &&
-               _range == other._range &&
+               _elementRange == other._elementRange &&
                _buffer->getGUID() == other._buffer->getGUID();
     }
 
     bool ShaderBufferBinding::operator!=(const ShaderBufferBinding& other) const {
         return _binding != other._binding ||
-               _range != other._range ||
+               _elementRange != other._elementRange ||
                _buffer->getGUID() != other._buffer->getGUID();
     }
 }; //namespace Divide

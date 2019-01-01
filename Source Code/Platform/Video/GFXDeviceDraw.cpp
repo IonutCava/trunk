@@ -127,7 +127,7 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
     ShaderBufferBinding shaderBuffer;
     shaderBuffer._binding = ShaderBufferLocation::GPU_COMMANDS;
     shaderBuffer._buffer = bufferData._cmdBuffer;
-    shaderBuffer._range.set(0, to_U16(bufferData._cmdBuffer->getPrimitiveCount()));
+    shaderBuffer._elementRange.set(0, to_U16(bufferData._cmdBuffer->getPrimitiveCount()));
     shaderBuffer._atomicCounter.first = true;
     
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd;

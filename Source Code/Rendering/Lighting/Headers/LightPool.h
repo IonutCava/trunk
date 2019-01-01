@@ -113,6 +113,8 @@ class LightPool : public SceneComponent,
 
     void drawLightImpostors(RenderStage stage, GFX::CommandBuffer& bufferInOut) const;
 
+    void postRenderAllPasses();
+
     static void idle();
     /// shadow mapping
     static void bindShadowMaps(GFXDevice& context, GFX::CommandBuffer& bufferInOut);
@@ -171,7 +173,7 @@ class LightPool : public SceneComponent,
 
     std::array<BufferData, to_base(RenderStage::COUNT)> _sortedLightProperties;
 
-    std::array<ShaderBuffer*, to_base(RenderStage::COUNT)> _lightShaderBuffer;
+    ShaderBuffer* _lightShaderBuffer;
     ShaderBuffer* _shadowBuffer;
 
     LightShadowProperties _sortedShadowProperties;

@@ -41,7 +41,7 @@ namespace Divide {
     class ShaderBuffer;
     struct ShaderBufferBinding {
         ShaderBuffer* _buffer = nullptr;
-        vec2<U32>     _range;
+        vec2<U32>     _elementRange;
         std::pair<bool, vec2<U8>> _atomicCounter;
         ShaderBufferLocation _binding = ShaderBufferLocation::COUNT;
 
@@ -50,19 +50,19 @@ namespace Divide {
                             ShaderBuffer* buffer);
         ShaderBufferBinding(ShaderBufferLocation slot,
                             ShaderBuffer* buffer,
-                            const vec2<U32>& range);
+                            const vec2<U32>& elementRange);
         ShaderBufferBinding(ShaderBufferLocation slot,
                             ShaderBuffer* buffer,
-                            const vec2<U32>& range,
+                            const vec2<U32>& elementRange,
                             const std::pair<bool, vec2<U32>>& atomicCounter);
 
         bool set(const ShaderBufferBinding& other);
         bool set(ShaderBufferLocation binding,
                  ShaderBuffer* buffer,
-                 const vec2<U32>& range);
+                 const vec2<U32>& elementRange);
         bool set(ShaderBufferLocation binding,
                  ShaderBuffer* buffer,
-                 const vec2<U32>& range,
+                 const vec2<U32>& elementRange,
                  const std::pair<bool, vec2<U32>>& atomicCounter);
 
         bool operator==(const ShaderBufferBinding& other) const;

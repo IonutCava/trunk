@@ -44,7 +44,8 @@ class glLockManager {
     void Wait(bool blockClient);
     void Lock(bool flush);
 
-    static void wait(GLsync* syncObj, bool blockClient);
+    // returns the number of retries
+    static U8 wait(GLsync* syncObj, bool blockClient);
 
    protected:
     std::mutex _syncMutex;

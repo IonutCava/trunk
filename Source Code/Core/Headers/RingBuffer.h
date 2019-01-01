@@ -38,61 +38,64 @@ namespace Divide {
 class RingBufferSeparateWrite {
 public:
     // If separateReadWrite is true, this behaves exactly like a RingBuffer
-    explicit RingBufferSeparateWrite(U32 queueLength, bool separateReadWrite);
+    explicit RingBufferSeparateWrite(I32 queueLength, bool separateReadWrite);
     RingBufferSeparateWrite(const RingBufferSeparateWrite& other);
     virtual ~RingBufferSeparateWrite();
 
     RingBufferSeparateWrite& operator=(const RingBufferSeparateWrite& other);
 
-    virtual void resize(U32 queueLength);
+    virtual void resize(I32 queueLength);
 
-    const inline U32 queueLength() const {
+    const inline I32 queueLength() const {
         return _queueLength;
     }
 
-    const inline U32 queueWriteIndex() const {
-        return _queueWriteIndex;
+    const inline I32 queueWriteIndex() const {
+        return _separateReadWrite ? (_queueIndex + (_queueLength - 1)) % _queueLength 
+                                  : _queueIndex;
     }
 
-    const inline U32 queueReadIndex() const {
-        return _queueReadIndex;
+    const inline I32 queueReadIndex() const {
+        return _queueIndex;
     }
 
     inline void incQueue() {
         if (queueLength() > 1) {
-            _queueWriteIndex = (_queueWriteIndex + 1) % _queueLength;
-            _queueReadIndex = (_queueReadIndex + 1) % _queueLength;
+            _queueIndex = (_queueIndex + 1) % _queueLength;
         }
     }
 
     inline void decQueue() {
         if (queueLength() > 1) {
-            _queueWriteIndex = (_queueWriteIndex - 1) % _queueLength;
-            _queueReadIndex = (_queueReadIndex - 1) % _queueLength;
+            if (_queueIndex == 0) {
+                _queueIndex = _queueLength;
+            }
+
+            _queueIndex = (_queueIndex - 1) % _queueLength;
         }
     }
 
 private:
-    U32 _queueLength;
-    std::atomic_uint _queueReadIndex;
-    std::atomic_uint _queueWriteIndex;
+    I32 _queueLength;
+    bool _separateReadWrite;
+    std::atomic_int _queueIndex;
 };
 
 class RingBuffer {
 public:
-    explicit RingBuffer(U32 queueLength);
+    explicit RingBuffer(I32 queueLength);
     RingBuffer(const RingBuffer& other);
     virtual ~RingBuffer();
 
     RingBuffer& operator=(const RingBuffer& other);
 
-    virtual void resize(U32 queueLength);
+    virtual void resize(I32 queueLength);
 
-    const inline U32 queueLength() const {
+    const inline I32 queueLength() const {
         return _queueLength;
     }
 
-    const inline U32 queueIndex() const {
+    const inline I32 queueIndex() const {
         return _queueIndex;
     }
 
@@ -109,8 +112,8 @@ public:
     }
 
 private:
-    U32 _queueLength;
-    std::atomic_uint _queueIndex;
+    I32 _queueLength;
+    std::atomic_int _queueIndex;
 };
 
 }; //namespace Divide

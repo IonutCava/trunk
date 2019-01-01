@@ -40,14 +40,15 @@ void glLockManager::Lock(bool flush) {
     }
 }
 
-void glLockManager::wait(GLsync* syncObj, bool blockClient) {
+U8 glLockManager::wait(GLsync* syncObj, bool blockClient) {
+    U8 retryCount = 0;
+
     if (blockClient) {
         SyncObjectMask waitFlags = SyncObjectMask::GL_NONE_BIT;
-        U8 retryCount = 0;
         while (true) {
             GLenum waitRet = glClientWaitSync(*syncObj, waitFlags, retryCount > 1 ? kOneSecondInNanoSeconds : 0);
             if (waitRet == GL_ALREADY_SIGNALED || waitRet == GL_CONDITION_SATISFIED) {
-                return;
+                break;
             }
 
             DIVIDE_ASSERT(waitRet != GL_WAIT_FAILED, "glLockManager::wait error: Not sure what to do here. Probably raise an exception or something.");
@@ -57,12 +58,14 @@ void glLockManager::wait(GLsync* syncObj, bool blockClient) {
 
             if (++retryCount > kMaxWaitRetry) {
                 DIVIDE_ASSERT(waitRet != GL_TIMEOUT_EXPIRED, "glLockManager::wait error: Lock timeout");
-                return;
+                break;
             }
         }
     } else {
         glWaitSync(*syncObj, UnusedMask::GL_UNUSED_BIT, GL_TIMEOUT_IGNORED);
     }
+
+    return retryCount;
 }
 
 };//namespace Divide

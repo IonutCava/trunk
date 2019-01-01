@@ -117,6 +117,8 @@ void RenderPassManager::render(SceneRenderState& sceneRenderState, Time::Profile
     for (U8 i = 0; i < renderPassCount; ++i) {
         _renderPasses[i]->postRender();
     }
+
+    Attorney::SceneManagerRenderPass::postRenderAllPasses(parent().sceneManager());
 }
 
 RenderPass& RenderPassManager::addRenderPass(const stringImpl& renderPassName,

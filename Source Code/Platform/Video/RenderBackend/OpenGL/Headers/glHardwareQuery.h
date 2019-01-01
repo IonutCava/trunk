@@ -66,7 +66,7 @@ public:
     glHardwareQuery& readQuery();
     glHardwareQuery& writeQuery();
 
-    void resize(U32 queueLength) override;
+    void resize(I32 queueLength) override;
 
     inline U32 id() const { return _id; }
 

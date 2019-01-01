@@ -3,6 +3,8 @@
 #include "Headers/glBufferLockManager.h"
 #include "Platform/Headers/PlatformRuntime.h"
 
+#include "Core/Headers/Console.h"
+
 namespace Divide {
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -26,28 +28,40 @@ glBufferLockManager::~glBufferLockManager() {
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void glBufferLockManager::WaitForLockedRange(size_t lockBeginBytes,
+bool glBufferLockManager::WaitForLockedRange(size_t lockBeginBytes,
                                              size_t lockLength,
                                              bool blockClient) {
+    bool ret = false;
     BufferRange testRange{lockBeginBytes, lockLength};
 
     UniqueLock w_lock(_lock);
     _swapLocks.resize(0);
     for (BufferLock& lock : _bufferLocks) {
         if (testRange.Overlaps(lock._range)) {
-            wait(&lock._syncObj, blockClient);
+            U8 retryCount = wait(&lock._syncObj, blockClient);
             glDeleteSync(lock._syncObj);
+            if (retryCount > 0) {
+                //Console::printfn("Wait (%p) [%d - %d] %s - %d retries", this, lockBeginBytes, lockLength, blockClient ? "true" : "false", retryCount);
+            }
+            ret = true;
         } else {
             _swapLocks.push_back(lock);
         }
     }
 
     _bufferLocks.swap(_swapLocks);
+
+    return ret;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 void glBufferLockManager::LockRange(size_t lockBeginBytes,
                                     size_t lockLength) {
+
+    if (WaitForLockedRange(lockBeginBytes, lockLength, false)) {
+        //Console::printfn("Duplicate lock (%p) [%d - %d]", this, lockBeginBytes, lockLength);
+    }
+
     UniqueLock w_lock(_lock);
     _bufferLocks.push_back(
         {

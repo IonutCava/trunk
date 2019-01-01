@@ -104,6 +104,7 @@ class NOINITVTABLE ShaderBuffer : public GUIDWrapper,
     }
 
     inline U32 getPrimitiveCount() const { return _elementCount; }
+    inline size_t getPrimitiveSize() const { return _elementSize; }
 
     virtual void addAtomicCounter(U32 sizeFactor, U16 ringSizeFactor = 1) = 0;
     virtual U32  getAtomicCounter(U8 offset, U8 counterIndex = 0) = 0;
@@ -115,6 +116,7 @@ class NOINITVTABLE ShaderBuffer : public GUIDWrapper,
    protected:
     size_t _bufferSize;
     size_t _maxSize;
+    size_t _elementSize;
     U32 _elementCount;
 
     static size_t _boundAlignmentRequirement;

@@ -990,8 +990,8 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
                     getStateTracker().setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, buffer->bufferID());
                 } else {
                     buffer->bindRange(to_U8(shaderBufCmd._binding),
-                                      shaderBufCmd._range.x,
-                                      shaderBufCmd._range.y);
+                                      shaderBufCmd._elementRange.x,
+                                      shaderBufCmd._elementRange.y);
 
                     if (shaderBufCmd._atomicCounter.first) {
                         shaderBufCmd._buffer->bindAtomicCounter(shaderBufCmd._atomicCounter.second.x,
