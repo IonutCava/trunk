@@ -44,9 +44,14 @@ class glLockManager {
     void Wait(bool blockClient);
     void Lock(bool flush);
 
-    // returns the number of retries
-    static U8 wait(GLsync* syncObj, bool blockClient);
+    // returns true if the sync object was signaled. retryCount is the number of retries it took to wait for the object
+    // if quickCheck is true, we don't retry if the initial check fails 
+    static bool wait(GLsync* syncObj, bool blockClient, bool quickCheck, U8& retryCount);
 
+    inline static bool wait(GLsync* syncObj, bool blockClient) {
+        U8 retryCount = 0;
+        return wait(syncObj, blockClient, false, retryCount);
+    }
    protected:
     std::mutex _syncMutex;
     GLsync _defaultSync;

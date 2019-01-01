@@ -30,7 +30,8 @@ glBufferLockManager::~glBufferLockManager() {
 // --------------------------------------------------------------------------------------------------------------------
 bool glBufferLockManager::WaitForLockedRange(size_t lockBeginBytes,
                                              size_t lockLength,
-                                             bool blockClient) {
+                                             bool blockClient,
+                                             bool quickCheck) {
     bool ret = false;
     BufferRange testRange{lockBeginBytes, lockLength};
 
@@ -38,10 +39,12 @@ bool glBufferLockManager::WaitForLockedRange(size_t lockBeginBytes,
     _swapLocks.resize(0);
     for (BufferLock& lock : _bufferLocks) {
         if (testRange.Overlaps(lock._range)) {
-            U8 retryCount = wait(&lock._syncObj, blockClient);
-            glDeleteSync(lock._syncObj);
+            U8 retryCount = 0;
+            if (wait(&lock._syncObj, blockClient, quickCheck, retryCount)) {
+                glDeleteSync(lock._syncObj);
+            }
             if (retryCount > 0) {
-                //Console::printfn("Wait (%p) [%d - %d] %s - %d retries", this, lockBeginBytes, lockLength, blockClient ? "true" : "false", retryCount);
+                Console::d_errorfn("glBufferLockManager::WaitForLockedRange: Wait (%p) [%d - %d] %s - %d retries", this, lockBeginBytes, lockLength, blockClient ? "true" : "false", retryCount);
             }
             ret = true;
         } else {
@@ -58,7 +61,7 @@ bool glBufferLockManager::WaitForLockedRange(size_t lockBeginBytes,
 void glBufferLockManager::LockRange(size_t lockBeginBytes,
                                     size_t lockLength) {
 
-    if (WaitForLockedRange(lockBeginBytes, lockLength, false)) {
+    if (WaitForLockedRange(lockBeginBytes, lockLength, true, true)) {
         //Console::printfn("Duplicate lock (%p) [%d - %d]", this, lockBeginBytes, lockLength);
     }
 
