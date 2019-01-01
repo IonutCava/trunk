@@ -28,10 +28,9 @@ void glLockManager::Wait(bool blockClient) {
 }
  
 void glLockManager::Lock(bool flush) {
-    assert(_defaultSync == nullptr);
-
     {
         UniqueLock lock(_syncMutex);
+        assert(_defaultSync == nullptr);
         _defaultSync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, UnusedMask::GL_UNUSED_BIT);
     }
     // A glFlush call is needed after creating a new fence to make sure we don't end up with an infinite wait issue
