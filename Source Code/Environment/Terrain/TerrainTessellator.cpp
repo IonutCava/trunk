@@ -53,9 +53,9 @@ U16 TerrainTessellator::getRenderDepth() const {
     return _renderDepth;
 }
 
-bufferPtr TerrainTessellator::updateAndGetRenderData(U16& renderDepth) {
+bufferPtr TerrainTessellator::updateAndGetRenderData(U16& renderDepth, U8 LoD) {
     renderDepth = 0;
-    renderRecursive(_tree.data(), renderDepth);
+    renderRecursive(_tree.data(), renderDepth, LoD);
     _renderDepth = renderDepth;
     return _renderData.data();
 }
@@ -173,25 +173,25 @@ TessellatedTerrainNode* TerrainTessellator::createNode(TessellatedTerrainNode* p
     return terrainTreeTail;
 }
 
-void TerrainTessellator::renderNode(TessellatedTerrainNode* node, U16 renderDepth) {
+void TerrainTessellator::renderNode(TessellatedTerrainNode* node, U16 renderDepth, U8 LoD) {
     // Calculate the tess scale factor
     calcTessScale(node);
 
     TessellatedNodeData& data = _renderData[renderDepth];
     data._positionAndTileScale.set(node->origin, node->dim.width * 0.5f);
-    data._tScale.set(node->tscale);
+    data._tScale.set(LoD == 0 ? node->tscale : 2.0);
 }
 
-void TerrainTessellator::renderRecursive(TessellatedTerrainNode* node, U16& renderDepth) {
+void TerrainTessellator::renderRecursive(TessellatedTerrainNode* node, U16& renderDepth, U8 LoD) {
     // If all children are null, render this node
     if (!hasChildren(*node)) {
-        renderNode(node, renderDepth);
+        renderNode(node, renderDepth, LoD);
         renderDepth++;
     } else {
         // Otherwise, recurse to the children.
         for (U8 i = 0; i < 4; ++i) {
             assert(node->c[i] != nullptr);
-            renderRecursive(node->c[i], renderDepth);
+            renderRecursive(node->c[i], renderDepth, LoD);
         }
     }
 }

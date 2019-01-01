@@ -156,6 +156,7 @@ class Material : public CachedResource {
     void setShininess(F32 value);
     void setShadingMode(const ShadingMode& mode);
 
+    void useTriangleStrip(const bool state);
     void setDoubleSided(const bool state);
     void setReflective(const bool state);
     void setRefractive(const bool state);
@@ -172,73 +173,25 @@ class Material : public CachedResource {
 
     /// Set the desired bump mapping method.
     void setBumpMethod(const BumpMethod& newBumpMethod);
-    /// Shader modifiers add tokens to the end of the shader name.
-    /// Add as many tokens as needed but separate them with a ".". i.e:
-    /// "Tree.NoWind.Glow"
-    void addShaderModifier(RenderStagePass renderStagePass, const stringImpl& shaderModifier);
 
-    void addShaderModifier(const stringImpl& shaderModifier);
-
-    /// Shader defines, are added to the generated shader
-    /// addPrefix = true: The shader generator appends "#define " to the start of each define
-    /// For example, to define max light count and max shadow casters add these strings:
-    ///"MAX_LIGHT_COUNT 4" & "MAX_SHADOW_CASTERS 2"
-    /// The above strings becomes, in the shader:
-    ///#define MAX_LIGHT_COUNT 4
-    ///#define MAX_SHADOW_CASTERS 2
-    void addShaderDefine(RenderPassType passType, const stringImpl& shaderDefines, bool addPrefix = true);
-    void addShaderDefine(RenderStage renderStage, const stringImpl& shaderDefines, bool addPrefix = true);
     void addShaderDefine(RenderStagePass renderStagePass, const stringImpl& shaderDefines, bool addPrefix = true);
-    void addShaderDefine(const stringImpl& shaderDefines, bool addPrefix = true);
 
     /// toggle multi-threaded shader loading on or off for this material
     void setShaderLoadThreaded(const bool state);
 
-    /// Add the specified shader to the specified Stage Pass (stage and pass type)
-    void setShaderProgram(const stringImpl& shader,
-                          RenderStagePass renderStagePass,
-                          const bool computeOnAdd);
-
-    void setShaderProgram(const ShaderProgram_ptr& shader,
-                          RenderStagePass renderStagePass);
-
-    void setShaderProgram(const stringImpl& shader,
-                          const bool computeOnAdd);
-    /// Add the specified shader to the specified render stage (for all pass types)
-    void setShaderProgram(const stringImpl& shader,
-                          RenderStage stage,
-                          const bool computeOnAdd);
-
-    void setShaderProgram(const ShaderProgram_ptr& shader,
-                          RenderStage stage);
-
-    /// Add the specified shader to the specified pass type (for all render stages)
-    void setShaderProgram(const stringImpl& shader,
-                          RenderPassType passType,
-                          const bool computeOnAdd);
-
-    void setShaderProgram(const ShaderProgram_ptr& shader,
-                          RenderPassType passType);
-
-    /*void setShaderProgram(const stringImpl& shader,
-                          const bool computeOnAdd);*/
-
+    /// Add the specified shader to all of the available stage passes
     void setShaderProgram(const ShaderProgram_ptr& shader);
+    /// Add the specified shader to the specified Stage Pass (stage and pass type)
+    void setShaderProgram(const ShaderProgram_ptr& shader, RenderStagePass renderStagePass);
+    /// Add the specified shader to the specified render stage (for all pass types)
+    void setShaderProgram(const ShaderProgram_ptr& shader, RenderStage stage);
+    /// Add the specified shader to the specified pass type (for all render stages)
+    void setShaderProgram(const ShaderProgram_ptr& shader, RenderPassType passType);
 
-    void setRenderStateBlock(size_t renderStateBlockHash,
-                             I32 variant = -1);
-
-    void setRenderStateBlock(size_t renderStateBlockHash,
-                             RenderStage renderStage,
-                             I32 variant = -1);
-
-    void setRenderStateBlock(size_t renderStateBlockHash,
-                             RenderPassType renderPassType,
-                             I32 variant = -1);
-
-    void setRenderStateBlock(size_t renderStateBlockHash,
-                             RenderStagePass renderStagePass,
-                              I32 variant = -1);
+    void setRenderStateBlock(size_t renderStateBlockHash, I32 variant = -1);
+    void setRenderStateBlock(size_t renderStateBlockHash, RenderStage renderStage, I32 variant = -1);
+    void setRenderStateBlock(size_t renderStateBlockHash, RenderPassType renderPassType, I32 variant = -1);
+    void setRenderStateBlock(size_t renderStateBlockHash, RenderStagePass renderStagePass, I32 variant = -1);
 
     void setParallaxFactor(F32 factor);
 
@@ -268,6 +221,7 @@ class Material : public CachedResource {
     bool isDoubleSided() const;
     bool isReflective() const;
     bool isRefractive() const;
+    bool useTriangleStrip() const;
 
     // Checks if the shader needed for the current stage is already constructed.
     // Returns false if the shader was already ready.
@@ -317,11 +271,10 @@ class Material : public CachedResource {
     GFXDevice& _context;
     ResourceCache& _parentCache;
     ShadingMode _shadingMode;
-    /// use for special shader tokens, such as "Tree"
-    std::array<stringImpl, to_base(RenderStagePass::count())> _shaderModifier;
     TranslucencySource _translucencySource;
     /// parallax/relief factor (higher value > more pronounced effect)
     F32 _parallaxFactor;
+    bool _useTriangleStrip;
     bool _needsNewShader;
     bool _doubleSided;
     bool _isReflective;

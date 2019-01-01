@@ -215,27 +215,9 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     }
     layerCountData += "};";
 
-    if (!Terrain::USE_TERRAIN_UBO) {
-        terrainMaterial->addShaderDefine("USE_SSBO_DATA_BUFFER");
-    }
-
-    //terrainMaterial->addShaderDefine("TOGGLE_WIREFRAME");
-    terrainMaterial->addShaderDefine("COMPUTE_TBN");
-    terrainMaterial->addShaderDefine("SKIP_TEXTURES");
-    terrainMaterial->addShaderDefine("USE_SHADING_PHONG");
-    terrainMaterial->addShaderDefine("MAX_TEXTURE_LAYERS " + to_stringImpl(Attorney::TerrainLoader::textureLayerCount(*terrain)));
-    
-    terrainMaterial->addShaderDefine(layerCountData, false);
-    terrainMaterial->addShaderDefine("MAX_RENDER_NODES " + to_stringImpl(Terrain::MAX_RENDER_NODES));
-    terrainMaterial->addShaderDefine("TERRAIN_WIDTH " + to_stringImpl(terrainDimensions.width));
-    terrainMaterial->addShaderDefine("TERRAIN_LENGTH " + to_stringImpl(terrainDimensions.height));
-    terrainMaterial->addShaderDefine("TERRAIN_MIN_HEIGHT " + to_stringImpl(altitudeRange.x));
-    terrainMaterial->addShaderDefine("TERRAIN_HEIGHT_RANGE " + to_stringImpl(altitudeRange.y - altitudeRange.x));
-    terrainMaterial->addShaderDefine("UNDERWATER_TILE_SCALE " + to_stringImpl(underwaterTileScale));
-
     TextureDescriptor miscTexDescriptor(TextureType::TEXTURE_2D);
     miscTexDescriptor.setSampler(albedoSampler);
-
+     
     ResourceDescriptor textureWaterCaustics("Terrain Water Caustics_" + name);
     textureWaterCaustics.assetLocation(terrainMapLocation);
     textureWaterCaustics.assetName(terrainDescriptor->getVariable("waterCaustics"));
@@ -268,14 +250,49 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     terrainMaterial->setTexture(ShaderProgram::TextureUsage::OPACITY, CreateResource<Texture>(terrain->parentResourceCache(), heightMapTexture));
 
-    terrainMaterial->addShaderDefine(RenderStage::REFLECTION, "LOW_QUALITY", true);
-    terrainMaterial->addShaderDefine(RenderStage::REFRACTION, "LOW_QUALITY", true);
+    ShaderProgramDescriptor shaderDescriptor;
 
-    terrainMaterial->setShaderProgram("terrainTess.Colour" + name, RenderStage::DISPLAY, true);
-    terrainMaterial->setShaderProgram("terrainTess.Colour.LowQuality" + name, RenderStage::REFLECTION, true);
-    terrainMaterial->setShaderProgram("terrainTess.Colour.LowQuality" + name, RenderStage::REFRACTION, true);
-    terrainMaterial->setShaderProgram("terrainTess.PrePass." + name, RenderPassType::DEPTH_PASS, true);
-    terrainMaterial->setShaderProgram("terrainTess.Shadow." + name, RenderStage::SHADOW, true);
+    if (!Terrain::USE_TERRAIN_UBO) {
+        shaderDescriptor._defines.push_back(std::make_pair("USE_SSBO_DATA_BUFFER", true));
+    }
+
+    //shaderDescriptor._defines.push_back(std::make_pair("TOGGLE_WIREFRAME", true));
+    shaderDescriptor._defines.push_back(std::make_pair("COMPUTE_TBN", true));
+    shaderDescriptor._defines.push_back(std::make_pair("SKIP_TEXTURES", true));
+    shaderDescriptor._defines.push_back(std::make_pair("USE_SHADING_PHONG", true));
+    shaderDescriptor._defines.push_back(std::make_pair("MAX_TEXTURE_LAYERS " + to_stringImpl(Attorney::TerrainLoader::textureLayerCount(*terrain)), true));
+
+    shaderDescriptor._defines.push_back(std::make_pair(layerCountData, false));
+    shaderDescriptor._defines.push_back(std::make_pair("MAX_RENDER_NODES " + to_stringImpl(Terrain::MAX_RENDER_NODES), true));
+    shaderDescriptor._defines.push_back(std::make_pair("TERRAIN_WIDTH " + to_stringImpl(terrainDimensions.width), true));
+    shaderDescriptor._defines.push_back(std::make_pair("TERRAIN_LENGTH " + to_stringImpl(terrainDimensions.height), true));
+    shaderDescriptor._defines.push_back(std::make_pair("TERRAIN_MIN_HEIGHT " + to_stringImpl(altitudeRange.x), true));
+    shaderDescriptor._defines.push_back(std::make_pair("TERRAIN_HEIGHT_RANGE " + to_stringImpl(altitudeRange.y - altitudeRange.x), true));
+    shaderDescriptor._defines.push_back(std::make_pair("UNDERWATER_TILE_SCALE " + to_stringImpl(underwaterTileScale), true));
+
+    ResourceDescriptor terrainShaderColour("terrainTess.Colour" + name);
+    terrainShaderColour.setPropertyDescriptor(shaderDescriptor);
+    ShaderProgram_ptr terrainColourShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderColour);
+
+    ResourceDescriptor terrainShaderPrePass("terrainTess.PrePass" + name);
+    terrainShaderPrePass.setPropertyDescriptor(shaderDescriptor);
+    ShaderProgram_ptr terrainPrePassShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderPrePass);
+
+    ResourceDescriptor terrainShaderShadow("terrainTess.Shadow" + name);
+    terrainShaderShadow.setPropertyDescriptor(shaderDescriptor);
+    ShaderProgram_ptr terrainShadowShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderShadow);
+
+    ResourceDescriptor terrainShaderColourLQ("terrainTess.Colour.LowQuality" + name);
+    ShaderProgramDescriptor lowQualityShaderDescriptor = shaderDescriptor;
+    lowQualityShaderDescriptor._defines.push_back(std::make_pair("LOW_QUALITY", true));
+    terrainShaderColourLQ.setPropertyDescriptor(lowQualityShaderDescriptor);
+    ShaderProgram_ptr terrainColourShaderLQ = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderColourLQ);
+
+    terrainMaterial->setShaderProgram(terrainColourShader, RenderStage::DISPLAY);
+    terrainMaterial->setShaderProgram(terrainColourShaderLQ, RenderStage::REFLECTION);
+    terrainMaterial->setShaderProgram(terrainColourShaderLQ, RenderStage::REFRACTION);
+    terrainMaterial->setShaderProgram(terrainPrePassShader, RenderPassType::DEPTH_PASS);
+    terrainMaterial->setShaderProgram(terrainShadowShader, RenderStage::SHADOW);
 
     terrain->setMaterialTpl(terrainMaterial);
 
@@ -525,11 +542,33 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     vegMaterial->setSpecular(FColour(0.1f, 0.1f, 0.1f, 1.0f));
     vegMaterial->setShininess(5.0f);
     vegMaterial->setShadingMode(Material::ShadingMode::BLINN_PHONG);
-    vegMaterial->addShaderDefine("SKIP_TEXTURES");
-    vegMaterial->addShaderDefine(RenderPassType::OIT_PASS, "OIT_PASS", true);
-    vegMaterial->setShaderProgram("grass.Colour", true);
-    vegMaterial->setShaderProgram("grass.PrePass", RenderPassType::DEPTH_PASS, true);
-    vegMaterial->setShaderProgram("grass.Shadow", RenderStage::SHADOW, true);
+    
+    ShaderProgramDescriptor shaderDescriptor;
+    shaderDescriptor._defines.push_back(std::make_pair("SKIP_TEXTURES", true));
+
+    ShaderProgramDescriptor shaderOitDescriptor = shaderDescriptor;
+    shaderOitDescriptor._defines.push_back(std::make_pair("OIT_PASS", true));
+
+    ResourceDescriptor grassColourShader("grass.Colour");
+    grassColourShader.setPropertyDescriptor(shaderDescriptor);
+    ShaderProgram_ptr grassColour = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassColourShader);
+
+    ResourceDescriptor grassColourOITShader("grass.Colour.OIT");
+    grassColourOITShader.setPropertyDescriptor(shaderOitDescriptor);
+    ShaderProgram_ptr grassColourOIT = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassColourOITShader);
+
+    ResourceDescriptor grassPrePassShader("grass.PrePass");
+    grassColourShader.setPropertyDescriptor(shaderDescriptor);
+    ShaderProgram_ptr grassPrePass = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassPrePassShader);
+
+    ResourceDescriptor grassShadowShader("grass.Shadow");
+    grassColourShader.setPropertyDescriptor(shaderDescriptor);
+    ShaderProgram_ptr grassShadow = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassShadowShader);
+
+    vegMaterial->setShaderProgram(grassColour);
+    vegMaterial->setShaderProgram(grassColourOIT, RenderPassType::OIT_PASS);
+    vegMaterial->setShaderProgram(grassPrePass, RenderPassType::DEPTH_PASS);
+    vegMaterial->setShaderProgram(grassShadow, RenderStage::SHADOW);
 
     vegMaterial->setTexture(ShaderProgram::TextureUsage::UNIT0, grassBillboardArray);
     vegDetails.vegetationMaterialPtr = vegMaterial;

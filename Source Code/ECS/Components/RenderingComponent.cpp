@@ -62,23 +62,16 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
 
     const Object3D& node = parentSGN.getNode<Object3D>();
 
-    bool isSubMesh = node.getObjectType()._value == ObjectType::SUBMESH;
     bool nodeSkinned = node.getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED);
 
     if (_materialInstance != nullptr) {
         assert(!_materialInstance->resourceName().empty());
-
-        if (!isSubMesh) {
-            for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
-                _materialInstance->addShaderModifier(RenderStagePass(RenderStage::SHADOW, static_cast<RenderPassType>(pass)), "TriangleStrip");
-                _materialInstance->addShaderDefine(RenderStagePass(RenderStage::SHADOW, static_cast<RenderPassType>(pass)), "USE_TRIANGLE_STRIP");
-            }
-        }
-
         _editorComponent.registerField("Material", 
                                        _materialInstance.get(),
                                        EditorComponentFieldType::MATERIAL,
                                        false);
+
+        _materialInstance->useTriangleStrip(node.getObjectType()._value != ObjectType::SUBMESH);
     }
 
     for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {

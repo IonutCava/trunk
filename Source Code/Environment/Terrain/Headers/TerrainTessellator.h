@@ -91,7 +91,7 @@ public:
     void createTree(const vec3<F32>& camPos, const vec3<F32>& origin, const vec2<U16>& terrainDimensions);
 
     // Prepare data to draw the terrain. Returns the final render depth
-    bufferPtr updateAndGetRenderData(U16& renderDepth);
+    bufferPtr updateAndGetRenderData(U16& renderDepth, U8 LoD);
 
     // Search for a node in the tree.
     // x, z == the point we are searching for (trying to find the node with an origin closest to that point)
@@ -122,10 +122,10 @@ protected:
     void calcTessScale(TessellatedTerrainNode* node);
 
     // Pushes a node (patch) to the GPU to be drawn.
-    void renderNode(TessellatedTerrainNode* node, U16 crtDepth);
+    void renderNode(TessellatedTerrainNode* node, U16 crtDepth, U8 LoD);
 
     // Traverses the terrain quadtree to draw nodes with no children.
-    void renderRecursive(TessellatedTerrainNode* node, U16& renderDepth);
+    void renderRecursive(TessellatedTerrainNode* node, U16& renderDepth, U8 LoD);
 
 protected:
     static void initTessellationPatch(VertexBuffer* vb);

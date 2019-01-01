@@ -180,8 +180,9 @@ bool Terrain::onRender(SceneGraphNode& sgn,
         if (tessellator.getEye() != newEye || tessellator.getOrigin() != crtPos)
         {
             tessellator.createTree(newEye, crtPos, _descriptor->getDimensions());
+            U8 LoD = (renderStagePass._stage == RenderStage::REFLECTION || renderStagePass._stage == RenderStage::REFRACTION) ? 1 : 0;
             U16 depth = 0;
-            bufferPtr data = (bufferPtr)tessellator.updateAndGetRenderData(depth);
+            bufferPtr data = (bufferPtr)tessellator.updateAndGetRenderData(depth, LoD);
 
             STUBBED("This may cause stalls. Profile! -Ionut");
             _shaderData->writeData(offset, depth, data);

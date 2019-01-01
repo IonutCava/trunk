@@ -302,6 +302,7 @@ namespace Import {
         tempMaterial->setBumpMethod(importData._bumpMethod);
         tempMaterial->setDoubleSided(importData._doubleSided);
 
+        tempMaterial->useTriangleStrip(false);
         SamplerDescriptor textureSampler = {};
 
         TextureDescriptor textureDescriptor(TextureType::TEXTURE_2D);

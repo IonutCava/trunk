@@ -38,6 +38,7 @@ Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descri
       _shaderThreadedLoad(true),
       _hardwareSkinning(false),
       _ignoreXMLData(false),
+      _useTriangleStrip(true),
       _reflectionIndex(-1),
       _refractionIndex(-1),
       _shadingMode(ShadingMode::COUNT),
@@ -107,16 +108,11 @@ Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descri
     setRenderStateBlock(shadowDescriptor.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::DEPTH_PASS), 0);
     setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::DEPTH_PASS), 1);
     setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::DEPTH_PASS), 2);
-
-    addShaderDefine(RenderStage::SHADOW, "SHADOW_PASS", true);
-    addShaderDefine(RenderPassType::DEPTH_PASS, "DEPTH_PASS", true);
-    addShaderDefine(RenderPassType::OIT_PASS, "OIT_PASS", true);
 }
 
 Material::~Material()
 {
 }
-
 
 Material_ptr Material::clone(const stringImpl& nameSuffix) {
     DIVIDE_ASSERT(!nameSuffix.empty(),
@@ -126,6 +122,7 @@ Material_ptr Material::clone(const stringImpl& nameSuffix) {
     Material_ptr cloneMat = CreateResource<Material>(_parentCache, ResourceDescriptor(resourceName() + nameSuffix));
 
     cloneMat->_shadingMode = base._shadingMode;
+    cloneMat->_useTriangleStrip = base._useTriangleStrip;
     cloneMat->_doubleSided = base._doubleSided;
     cloneMat->_isReflective = base._isReflective;
     cloneMat->_isRefractive = base._isRefractive;
@@ -142,7 +139,6 @@ Material_ptr Material::clone(const stringImpl& nameSuffix) {
     cloneMat->_translucencySource = base._translucencySource;
 
     for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
-        cloneMat->_shaderModifier[i] = base._shaderModifier[i];
         cloneMat->_shaderInfo[i] = _shaderInfo[i];
         for (U8 j = 0; j < _defaultRenderStates[i].size(); ++j) {
             cloneMat->_defaultRenderStates[i][j] = _defaultRenderStates[i][j];
@@ -286,6 +282,18 @@ void Material::recomputeShaders() {
 }
 
 bool Material::canDraw(RenderStage renderStage) {
+    /*if (_needsNewShader) {
+        recomputeShaders();
+        _needsNewShader = false;
+    }*/
+    /*for (ShaderProgramInfo& info : _shaderInfo) {
+        if (info._shaderCompStage == ShaderProgramInfo::BuildStage::COMPUTED) {
+            if (info._shaderRef != nullptr && info._shaderRef->getState() == ResourceState::RES_LOADED) {
+                info._shaderCompStage = ShaderProgramInfo::BuildStage::READY;
+                return false;
+            }
+        }
+    }*/
     for (U8 i = 0; i < to_U8(RenderPassType::COUNT); ++i) {
         U8 passIndex = RenderStagePass::index(renderStage, static_cast<RenderPassType>(i));
 
@@ -380,7 +388,15 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
     DIVIDE_ASSERT(_shadingMode != ShadingMode::COUNT,
                   "Material computeShader error: Invalid shading mode specified!");
 
-    //info._shaderDefines.clear();
+    if (renderStagePass._stage == RenderStage::SHADOW) {
+        addShaderDefine(renderStagePass, "SHADOW_PASS", true);
+    }
+
+    if (renderStagePass._passType == RenderPassType::DEPTH_PASS) {
+        addShaderDefine(renderStagePass, "DEPTH_PASS", true);
+    } else if (renderStagePass._passType == RenderPassType::OIT_PASS) {
+        addShaderDefine(renderStagePass, "OIT_PASS", true);
+    }
 
     if (_textures[slot1]) {
         if (!_textures[slot0]) {
@@ -481,6 +497,11 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
         shader += ",Skinned";  //<Use "," instead of "." will add a Vertex only property
     }
 
+    if (_useTriangleStrip) {
+        shader += ".TriangleSrip";
+        addShaderDefine(renderStagePass, "USE_TRIANGLE_STRIP");
+    }
+
     switch (_shadingMode) {
         default:
         case ShadingMode::FLAT: {
@@ -507,13 +528,6 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
             addShaderDefine(renderStagePass, "USE_SHADING_COOK_TORRANCE");
             shader += ".CookTorrance";
         } break;
-    }
-
-    // Add any modifiers you wish
-    stringImpl& modifier = _shaderModifier[renderStagePass.index()];
-    if (!modifier.empty()) {
-        shader += ".";
-        shader += modifier;
     }
 
     setShaderProgramInternal(shader, renderStagePass, false);
@@ -601,6 +615,14 @@ void Material::setRefractive(const bool state) {
     }
 
     _isRefractive = state;
+    _needsNewShader = true;
+}
+
+void Material::useTriangleStrip(const bool state) {
+    if (_useTriangleStrip == state) {
+        return;
+    }
+    _useTriangleStrip = state;
     _needsNewShader = true;
 }
 

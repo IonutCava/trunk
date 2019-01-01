@@ -68,38 +68,10 @@ inline void Material::setShininess(F32 value) {
     _colourData._shininess = value;
 }
 
-inline void Material::addShaderModifier(RenderStagePass renderStagePass, const stringImpl& shaderModifier) {
-    _shaderModifier[renderStagePass.index()] = shaderModifier;
-}
-
-inline void Material::addShaderModifier(const stringImpl& shaderModifier) {
-    for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
-        addShaderModifier(RenderStagePass::stagePass(i), shaderModifier);
-    }
-}
-
-inline void Material::addShaderDefine(RenderPassType passType, const stringImpl& shaderDefines, bool addPrefix) {
-    for (U8 i = 0; i < to_U8(RenderStage::COUNT); ++i) {
-        addShaderDefine(RenderStagePass(static_cast<RenderStage>(i), passType), shaderDefines, addPrefix);
-    }
-}
-
-inline void Material::addShaderDefine(RenderStage renderStage, const stringImpl& shaderDefines, bool addPrefix) {
-    for (U8 i = 0; i < to_U8(RenderPassType::COUNT); ++i) {
-        addShaderDefine(RenderStagePass(renderStage, static_cast<RenderPassType>(i)), shaderDefines, addPrefix);
-    }
-}
-
 inline void Material::addShaderDefine(RenderStagePass renderStagePass, const stringImpl& shaderDefines, bool addPrefix) {
     auto& defines = shaderInfo(renderStagePass)._shaderDefines;
     if (std::find(std::cbegin(defines), std::cend(defines), std::make_pair(shaderDefines, addPrefix)) == std::cend(defines)) {
         defines.push_back(std::make_pair(shaderDefines, addPrefix));
-    }
-}
-
-inline void Material::addShaderDefine(const stringImpl& shaderDefines, bool addPrefix) {
-    for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
-        addShaderDefine(RenderStagePass::stagePass(i), shaderDefines, addPrefix);
     }
 }
 
@@ -231,6 +203,10 @@ inline bool Material::isDoubleSided() const {
     return _doubleSided;
 }
 
+inline bool Material::useTriangleStrip() const {
+    return _useTriangleStrip;
+}
+
 inline bool Material::isReflective() const {
     return _colourData._shininess > 100 || _isReflective;
 }
@@ -275,52 +251,18 @@ inline const ShaderProgramInfo& Material::shaderInfo(RenderStagePass renderStage
     return _shaderInfo[renderStagePass.index()];
 }
 
-// Here we set the shader's name
-inline void Material::setShaderProgram(const stringImpl& shader,
-                                       RenderStagePass renderStagePass,
-                                       const bool computeOnAdd) {
-    shaderInfo(renderStagePass)._customShader = true;
-    setShaderProgramInternal(shader, renderStagePass, computeOnAdd);
-}
-
-inline void Material::setShaderProgram(const ShaderProgram_ptr& shader,
-                                       RenderStagePass renderStagePass) {
+inline void Material::setShaderProgram(const ShaderProgram_ptr& shader, RenderStagePass renderStagePass) {
     shaderInfo(renderStagePass)._customShader = true;
     setShaderProgramInternal(shader, renderStagePass);
 }
 
-inline void Material::setShaderProgram(const stringImpl& shader,
-                                       const bool computeOnAdd) {
-    for (U8 stage = 0; stage < to_base(RenderStage::COUNT); ++stage) {
-        setShaderProgram(shader, static_cast<RenderStage>(stage), computeOnAdd);
-    }
-}
-
-inline void Material::setShaderProgram(const stringImpl& shader,
-                                       RenderStage stage,
-                                       const bool computeOnAdd) {
-    for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
-        setShaderProgram(shader, RenderStagePass(stage, static_cast<RenderPassType>(pass)), computeOnAdd);
-    }
-}
-
-inline void Material::setShaderProgram(const ShaderProgram_ptr& shader,
-                                       RenderStage stage) {
+inline void Material::setShaderProgram(const ShaderProgram_ptr& shader, RenderStage stage) {
     for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
         setShaderProgram(shader, RenderStagePass(stage, static_cast<RenderPassType>(pass)));
     }
 }
 
-inline void Material::setShaderProgram(const stringImpl& shader,
-                                       RenderPassType passType,
-                                       const bool computeOnAdd) {
-    for (U8 stage = 0; stage < to_base(RenderStage::COUNT); ++stage) {
-        setShaderProgram(shader, RenderStagePass(static_cast<RenderStage>(stage), passType), computeOnAdd);
-    }
-}
-
-inline void Material::setShaderProgram(const ShaderProgram_ptr& shader,
-                                       RenderPassType passType) {
+inline void Material::setShaderProgram(const ShaderProgram_ptr& shader, RenderPassType passType) {
     for (U8 stage = 0; stage < to_base(RenderStage::COUNT); ++stage) {
         setShaderProgram(shader, RenderStagePass(static_cast<RenderStage>(stage), passType));
     }

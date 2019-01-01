@@ -63,9 +63,20 @@ bool InfinitePlane::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCa
 
     planeMaterial->setTexture(ShaderProgram::TextureUsage::UNIT0, CreateResource<Texture>(_parentCache, textureWaterCaustics));
 
-    planeMaterial->addShaderDefine("UNDERWATER_TILE_SCALE 100", true);
-    planeMaterial->setShaderProgram("terrainPlane.Colour", RenderStage::DISPLAY, true);
-    planeMaterial->setShaderProgram("terrainPlane.PrePass", RenderPassType::DEPTH_PASS, true);
+    ShaderProgramDescriptor shaderDescriptor;
+    shaderDescriptor._defines.push_back(std::make_pair("UNDERWATER_TILE_SCALE 100", true));
+
+    ResourceDescriptor terrainShader("terrainPlane.Colour");
+    terrainShader.setPropertyDescriptor(shaderDescriptor);
+    ShaderProgram_ptr terrainColourShader = CreateResource<ShaderProgram>(_parentCache, terrainShader);
+
+    planeMaterial->setShaderProgram(terrainColourShader, RenderStage::DISPLAY);
+
+    ResourceDescriptor terrainShaderPrePass("terrainPlane.PrePass");
+    terrainShaderPrePass.setPropertyDescriptor(shaderDescriptor);
+    ShaderProgram_ptr terrainPrePassShader = CreateResource<ShaderProgram>(_parentCache, terrainShaderPrePass);
+    planeMaterial->setShaderProgram(terrainPrePassShader, RenderPassType::DEPTH_PASS);
+
     setMaterialTpl(planeMaterial);
 
     ResourceDescriptor infinitePlane("infinitePlane");

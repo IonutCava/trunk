@@ -77,9 +77,19 @@ bool WaterPlane::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallb
     waterMat->setTexture(ShaderProgram::TextureUsage::UNIT0, waterNM);
     waterMat->setTexture(ShaderProgram::TextureUsage::UNIT1, waterDUDV);
 
-    waterMat->addShaderDefine("COMPUTE_TBN");
-    waterMat->setShaderProgram("water", RenderPassType::COLOUR_PASS, true);
-    waterMat->setShaderProgram("water.PrePass", RenderPassType::DEPTH_PASS, true);
+    ShaderProgramDescriptor shaderDescriptor;
+    shaderDescriptor._defines.push_back(std::make_pair("COMPUTE_TBN", true));
+
+    ResourceDescriptor waterColourShader("water");
+    waterColourShader.setPropertyDescriptor(shaderDescriptor);
+    ShaderProgram_ptr waterColour = CreateResource<ShaderProgram>(_parentCache, waterColourShader);
+
+    ResourceDescriptor waterPrePassShader("water.PrePass");
+    waterPrePassShader.setPropertyDescriptor(shaderDescriptor);
+    ShaderProgram_ptr waterPrePass = CreateResource<ShaderProgram>(_parentCache, waterPrePassShader);
+
+    waterMat->setShaderProgram(waterColour, RenderPassType::COLOUR_PASS);
+    waterMat->setShaderProgram(waterPrePass, RenderPassType::DEPTH_PASS);
 
     setMaterialTpl(waterMat);
     

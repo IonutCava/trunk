@@ -134,11 +134,15 @@ void Console::output(const char* text, const bool newline, const EntryType type)
 
 void Console::outThread() {
 
+    constexpr U32 appUpdateRate = Config::TARGET_FRAME_RATE / Config::TICK_DIVISOR;
+    constexpr U32 appUpdateRateInMS = 1000 / appUpdateRate;
+
     //moodycamel::ConsumerToken ctok(outBuffer());
     OutputEntry entry;
     while (_running) {
 #if defined(USE_BLOCKING_QUEUE)
-        if (outBuffer().wait_dequeue_timed(/*ctok, */entry, Time::Milliseconds(1000.0f / (Config::TARGET_FRAME_RATE / Config::TICK_DIVISOR)))) {
+
+        if (outBuffer().wait_dequeue_timed(/*ctok, */entry, Time::Milliseconds(appUpdateRateInMS))) {
 #else
         Lock lk(condMutex());
         entryEnqueCV().wait(lk, []() -> bool { return entryAdded(); });
