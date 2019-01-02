@@ -279,7 +279,9 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     ShaderProgram_ptr terrainPrePassShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderPrePass);
 
     ResourceDescriptor terrainShaderShadow("terrainTess.Shadow" + name);
-    terrainShaderShadow.setPropertyDescriptor(shaderDescriptor);
+    ShaderProgramDescriptor shadowShaderDescriptor = shaderDescriptor;
+    shadowShaderDescriptor._defines.push_back(std::make_pair("SHADOW_PASS", true));
+    terrainShaderShadow.setPropertyDescriptor(shadowShaderDescriptor);
     ShaderProgram_ptr terrainShadowShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderShadow);
 
     ResourceDescriptor terrainShaderColourLQ("terrainTess.Colour.LowQuality" + name);

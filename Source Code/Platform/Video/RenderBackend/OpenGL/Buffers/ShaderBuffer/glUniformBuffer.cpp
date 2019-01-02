@@ -141,12 +141,12 @@ void glUniformBuffer::writeBytes(ptrdiff_t offsetInBytes,
     if (rangeInBytes == static_cast<ptrdiff_t>(_elementCount * _elementSize)) {
         rangeInBytes = _allignedBufferSize;
     }
-
     DIVIDE_ASSERT(offsetInBytes + rangeInBytes <= (ptrdiff_t)_allignedBufferSize,
         "glUniformBuffer::UpdateData error: was called with an "
         "invalid range (buffer overflow)!");
 
     offsetInBytes += queueWriteIndex() * _allignedBufferSize;
+    offsetInBytes += (offsetInBytes % alignmentRequirement(_unbound));
 
     _buffer->writeData(offsetInBytes, rangeInBytes, data);
 }
@@ -171,6 +171,7 @@ bool glUniformBuffer::bindRange(U8 bindIndex,
     dataOut._range = static_cast<size_t>(rangeElementCount * _elementSize);
     dataOut._offset = static_cast<size_t>(offsetElementCount * _elementSize);
     dataOut._offset += static_cast<size_t>(queueReadIndex() * _allignedBufferSize);
+    dataOut._offset += (dataOut._offset % alignmentRequirement(_unbound));
     dataOut._flush = BitCompare(_flags, ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
 
     assert(dataOut._range <= _maxSize &&
