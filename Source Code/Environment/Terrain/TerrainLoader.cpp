@@ -17,6 +17,7 @@
 namespace Divide {
 
 namespace {
+    constexpr bool g_showWireFrame = false;
     constexpr bool g_disableLoadFromCache = false;
 };
 
@@ -256,7 +257,9 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
         shaderDescriptor._defines.push_back(std::make_pair("USE_SSBO_DATA_BUFFER", true));
     }
 
-    //shaderDescriptor._defines.push_back(std::make_pair("TOGGLE_WIREFRAME", true));
+    if (g_showWireFrame) {
+        shaderDescriptor._defines.push_back(std::make_pair("TOGGLE_WIREFRAME", true));
+    }
     shaderDescriptor._defines.push_back(std::make_pair("COMPUTE_TBN", true));
     shaderDescriptor._defines.push_back(std::make_pair("SKIP_TEXTURES", true));
     shaderDescriptor._defines.push_back(std::make_pair("USE_SHADING_PHONG", true));
@@ -270,21 +273,26 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     shaderDescriptor._defines.push_back(std::make_pair("TERRAIN_HEIGHT_RANGE " + to_stringImpl(altitudeRange.y - altitudeRange.x), true));
     shaderDescriptor._defines.push_back(std::make_pair("UNDERWATER_TILE_SCALE " + to_stringImpl(underwaterTileScale), true));
 
-    ResourceDescriptor terrainShaderColour("terrainTess.Colour" + name);
+    stringImpl shaderName("terrainTess");
+    if (g_showWireFrame) {
+        shaderName.append(".Wireframe");
+    }
+
+    ResourceDescriptor terrainShaderColour(shaderName + ".Colour-" + name);
     terrainShaderColour.setPropertyDescriptor(shaderDescriptor);
     ShaderProgram_ptr terrainColourShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderColour);
 
-    ResourceDescriptor terrainShaderPrePass("terrainTess.PrePass" + name);
+    ResourceDescriptor terrainShaderPrePass(shaderName + ".PrePass-" + name);
     terrainShaderPrePass.setPropertyDescriptor(shaderDescriptor);
     ShaderProgram_ptr terrainPrePassShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderPrePass);
 
-    ResourceDescriptor terrainShaderShadow("terrainTess.Shadow" + name);
+    ResourceDescriptor terrainShaderShadow(shaderName + ".Shadow-" + name);
     ShaderProgramDescriptor shadowShaderDescriptor = shaderDescriptor;
     shadowShaderDescriptor._defines.push_back(std::make_pair("SHADOW_PASS", true));
     terrainShaderShadow.setPropertyDescriptor(shadowShaderDescriptor);
     ShaderProgram_ptr terrainShadowShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderShadow);
 
-    ResourceDescriptor terrainShaderColourLQ("terrainTess.Colour.LowQuality" + name);
+    ResourceDescriptor terrainShaderColourLQ(shaderName + ".Colour.LowQuality-" + name);
     ShaderProgramDescriptor lowQualityShaderDescriptor = shaderDescriptor;
     lowQualityShaderDescriptor._defines.push_back(std::make_pair("LOW_QUALITY", true));
     terrainShaderColourLQ.setPropertyDescriptor(lowQualityShaderDescriptor);
@@ -300,13 +308,13 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     // Generate a render state
     RenderStateBlock terrainRenderState;
-    terrainRenderState.setCullMode(CullMode::CW);
+    terrainRenderState.setCullMode(g_showWireFrame ? CullMode::CW : CullMode::CCW);
     // Generate a render state for drawing reflections
     RenderStateBlock terrainRenderStateReflection;
-    terrainRenderStateReflection.setCullMode(CullMode::CCW);
+    terrainRenderStateReflection.setCullMode(g_showWireFrame ? CullMode::CCW : CullMode::CW);
     // Generate a shadow render state
     RenderStateBlock terrainRenderStateDepth;
-    terrainRenderStateDepth.setCullMode(CullMode::CCW);
+    terrainRenderStateDepth.setCullMode(g_showWireFrame ? CullMode::CCW : CullMode::CW);
     // terrainDescDepth.setZBias(1.0f, 1.0f);
     terrainRenderStateDepth.setColourWrites(true, true, false, false);
 

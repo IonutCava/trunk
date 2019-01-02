@@ -40,7 +40,6 @@ void computeData() {
 
     VAR._texCoord = inTexCoordData;
     VAR._vertexW  = dvd_WorldMatrix(VAR.dvd_instanceID) * dvd_Vertex;
-    VAR._normalW = dvd_NormalMatrixW(VAR.dvd_instanceID) * dvd_Normal;
 
     setClipPlanes(VAR._vertexW);
 }

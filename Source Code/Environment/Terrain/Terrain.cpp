@@ -81,6 +81,8 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
 
         [this](void* data) {
             vec2<F32> newTess = *(vec2<F32>*)data;
+            //assert(newTess.x == 5 && newTess.y == 500);
+
             _descriptor->setTessellationRange(vec3<F32>(newTess, _descriptor->getTessellationRange().z));
         },
         EditorComponentFieldType::PUSH_TYPE,
@@ -370,6 +372,8 @@ vec2<F32> Terrain::getAltitudeRange() const {
 }
 
 void Terrain::saveToXML(boost::property_tree::ptree& pt) const {
+
+    //assert(_descriptor->getTessellationRange().x == 5 && _descriptor->getTessellationRange().y == 500);
 
     pt.put("heightmapLocation", _descriptor->getVariable("heightmapLocation"));
     pt.put("heightmap", _descriptor->getVariable("heightmap"));

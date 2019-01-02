@@ -217,6 +217,16 @@ in float tcs_tessLevel[];
 
 out float tes_tessLevel;
 
+#if !defined(TOGGLE_WIREFRAME)
+out vec4 _scrollingUV;
+// x = distance, y = depth
+smooth out vec2 _waterDetails;
+
+#if defined(SHADOW_PASS)
+out vec4 geom_vertexWVP;
+#endif
+#endif
+
 vec4 interpolate(in vec4 v0, in vec4 v1, in vec4 v2, in vec4 v3)
 {
     vec4 a = mix(v0, v1, gl_TessCoord.x);
@@ -274,46 +284,99 @@ vec3 getTangent(in vec3 normal) {
     return tangent;
 }
 
+#if !defined(TOGGLE_WIREFRAME)
+void waterDetails() {
+
+    vec3 vertexW = _out._vertexW.xyz;
+
+    float maxDistance = 0.0f;
+    float minDepth = 1.0;
+
+    for (int i = 0; i < dvd_waterEntities.length(); ++i)
+    {
+        WaterBodyData data = dvd_waterEntities[i];
+
+        vec4 details = data.details;
+        vec4 position = data.positionW;
+
+        float waterWidth = details.x + position.x;
+        float waterLength = details.y + position.z;
+        float halfWidth = waterWidth * 0.5;
+        float halfLength = waterLength * 0.5;
+        if (vertexW.x >= -halfWidth && vertexW.x <= halfWidth &&
+            vertexW.z >= -halfLength && vertexW.z <= halfLength)
+        {
+            float depth = -details.y + position.y;
+
+            // Distance
+            maxDistance = max(maxDistance, 1.0 - smoothstep(position.y - 0.05f, position.y + 0.05f, vertexW.y));
+
+
+            // Current water depth in relation to the minimum possible depth
+            minDepth = min(minDepth, clamp(1.0 - (position.y - vertexW.y) / (position.y - TERRAIN_MIN_HEIGHT), 0.0, 1.0));
+        }
+    }
+
+    _waterDetails = vec2(maxDistance, minDepth);
+}
+
+void scrollingUV() {
+    float time2 = float(dvd_time) * 0.0001;
+    vec2 noiseUV = _out._texCoord * UNDERWATER_TILE_SCALE;
+
+    _scrollingUV.st = noiseUV;
+    _scrollingUV.pq = noiseUV + time2;
+    _scrollingUV.s -= time2;
+}
+
+#endif
+
 void main()
 {
     PassData(0);
 
     // Calculate the vertex position using the four original points and interpolate depending on the tessellation coordinates.	
-    gl_Position = interpolate(gl_in[0].gl_Position, gl_in[1].gl_Position, gl_in[2].gl_Position, gl_in[3].gl_Position);
+    vec4 pos = interpolate(gl_in[0].gl_Position, gl_in[1].gl_Position, gl_in[2].gl_Position, gl_in[3].gl_Position);
 
     // Terrain heightmap coords
-    vec2 terrainTexCoord = interpolate2(VAR[0]._texCoord, VAR[1]._texCoord, VAR[2]._texCoord, VAR[3]._texCoord);
+    _out._texCoord = interpolate2(VAR[0]._texCoord, VAR[1]._texCoord, VAR[2]._texCoord, VAR[3]._texCoord);
 
-    vec4 heightOffsets = getHeightOffsets(terrainTexCoord);
+    vec4 heightOffsets = getHeightOffsets(_out._texCoord);
 
     // Sample the heightmap and offset y position of vertex
     float sampleHeight = getHeight(heightOffsets);
-    gl_Position.y = (TERRAIN_HEIGHT_RANGE * sampleHeight) + TERRAIN_MIN_HEIGHT;
+    pos.y = (TERRAIN_HEIGHT_RANGE * sampleHeight) + TERRAIN_MIN_HEIGHT;
 
     // Project the vertex to clip space and send it along
     vec3 offset = dvd_TerrainData[VAR[0].dvd_drawID]._positionAndTileScale.xyz;
-    _out._vertexW = dvd_WorldMatrix(VAR[0].dvd_instanceID) * vec4(gl_Position.xyz + offset, gl_Position.w);
+    _out._vertexW = dvd_WorldMatrix(VAR[0].dvd_instanceID) * vec4(pos.xyz + offset, pos.w);
 
 #if !defined(SHADOW_PASS)
-    mat3 normalMatrixW = dvd_NormalMatrixW(VAR[0].dvd_instanceID);
     mat3 normalMatrixWV = dvd_NormalMatrixWV(VAR[0].dvd_instanceID);
     vec3 normal = getNormal(sampleHeight, heightOffsets);
 
-    _out._normalW =  normalize(normalMatrixW * normal);
     _out._normalWV = normalize(normalMatrixWV * normal);
     _out._tangentWV = normalize(normalMatrixWV * getTangent(normal));
     _out._bitangentWV = normalize(cross(_out._normalWV, _out._tangentWV));
 #endif
-
-    gl_Position = _out._vertexW;
-
-    _out._texCoord = terrainTexCoord;
     _out._vertexWV = dvd_ViewMatrix * _out._vertexW;
 
     tes_tessLevel = tcs_tessLevel[0];
+#if defined(TOGGLE_WIREFRAME)
+    gl_Position = _out._vertexW;
+#else
+    gl_Position = dvd_ViewProjectionMatrix * _out._vertexW;
+
+#if defined(SHADOW_PASS)
+    geom_vertexWVP = gl_Position;
+#else
+    waterDetails();
+#endif //SHADOW_PASS
+
+#endif
 }
 
---Geometry
+--Geometry.Wireframe
 
 #include "nodeBufferedInput.cmn"
 
@@ -323,20 +386,11 @@ in float tes_tessLevel[];
 
 layout(triangle_strip, max_vertices = 4) out;
 
-out vec4 _scrollingUV;
-
 // x = distance, y = depth
 smooth out vec2 _waterDetails;
 
-out flat int detailLevel;
-#if defined(TOGGLE_WIREFRAME)
 out vec3 gs_wireColor;
 noperspective out vec3 gs_edgeDist;
-#endif
-
-#if defined(SHADOW_PASS)
-out vec4 geom_vertexWVP;
-#endif
 
 void waterDetails(in int index) {
 
@@ -373,15 +427,6 @@ void waterDetails(in int index) {
     _waterDetails = vec2(maxDistance, minDepth);
 }
 
-void scrollingUV(int index) {
-    float time2 = float(dvd_time) * 0.0001;
-    vec2 noiseUV = VAR[index]._texCoord * UNDERWATER_TILE_SCALE;
-    
-    _scrollingUV.st = noiseUV;
-    _scrollingUV.pq = noiseUV + time2;
-    _scrollingUV.s -= time2;
-}
-
 vec4 getWVPPositon(int index) {
     return dvd_ViewProjectionMatrix * gl_in[index].gl_Position;
 }
@@ -389,63 +434,31 @@ vec4 getWVPPositon(int index) {
 void PerVertex(in int i, in vec3 edge_dist) {
     PassData(i);
     if (tes_tessLevel[0] >= 64.0) {
-        detailLevel = 4;
-#if defined(TOGGLE_WIREFRAME)
         gs_wireColor = vec3(0.0, 0.0, 1.0);
-#endif
     } else if (tes_tessLevel[0] >= 32.0) {
-        detailLevel = 3;
-#if defined(TOGGLE_WIREFRAME)
         gs_wireColor = vec3(0.0, 1.0, 0.0);
-#endif
     } else if (tes_tessLevel[0] >= 16.0) {
-        detailLevel = 2;
-#if defined(TOGGLE_WIREFRAME)
         gs_wireColor = vec3(1.0, 0.0, 0.0);
-#endif
     } else if (tes_tessLevel[0] >= 8.0) {
-        detailLevel = 1;
-#if defined(TOGGLE_WIREFRAME)
         gs_wireColor = vec3(0.25, 0.50, 0.75);
-#endif
     } else {
-        detailLevel = 0; 
-#if defined(TOGGLE_WIREFRAME)
         gs_wireColor = vec3(1.0, 1.0, 1.0);
-#endif
     }
-
-#if defined(SHADOW_PASS)
-    geom_vertexWVP = gl_in[i].gl_Position;
-#endif //SHADOW_PASS
 
     gl_Position = getWVPPositon(i);
-
-#if !defined(SHADOW_PASS)
     setClipPlanes(gl_in[i].gl_Position);
 
-
     waterDetails(i);
-    scrollingUV(i);
 
-#   if defined(TOGGLE_WIREFRAME)
-    if (i == 0) {
-        gs_edgeDist = vec3(edge_dist.x, 0, 0);
-    } else if (i == 1) {
-        gs_edgeDist = vec3(0, edge_dist.y, 0);
-    } else {
-        gs_edgeDist = vec3(0, 0, edge_dist.z);
-    }
-#   endif //_DEBUG
-#endif //SHADOW_PASS
+    gs_edgeDist = vec3(i == 0 ? edge_dist.x : 0.0,
+                       i == 1 ? edge_dist.y : 0.0,
+                       i >= 2 ? edge_dist.z : 0.0);
 }
 
 void main(void)
 {
     // Calculate edge distances for wireframe
     vec3 edge_dist = vec3(0.0);
-
-#if defined(TOGGLE_WIREFRAME)
     {
         vec4 pos0 = getWVPPositon(0);
         vec4 pos1 = getWVPPositon(1);
@@ -464,7 +477,6 @@ void main(void)
         edge_dist.y = abs(c * sin(alpha));
         edge_dist.z = abs(b * sin(alpha));
     }
-#endif
 
     // Output verts
     for (int i = 0; i < gl_in.length(); ++i) {
@@ -495,13 +507,10 @@ void main(void)
 #define MAX_TEXTURE_LAYERS 1
 #endif
 #endif
-in vec4 _scrollingUV;
 
 // x = distance, y = depth
 smooth in vec2 _waterDetails;
 
-//4 = high .... 0 = very low
-in flat int detailLevel;
 #if defined(TOGGLE_WIREFRAME)
 in vec3 gs_wireColor;
 noperspective in vec3 gs_edgeDist;
@@ -516,9 +525,21 @@ vec4 getAlbedo() {
     return private_albedo;
 }
 
+vec4 scrollingUV() {
+    float time2 = float(dvd_time) * 0.0001;
+    vec2 noiseUV = _in._texCoord * UNDERWATER_TILE_SCALE;
+
+    vec4 scrollingUV = vec4(noiseUV, noiseUV + time2);
+    scrollingUV.s -= time2;
+
+    return scrollingUV;
+}
+
 vec4 CausticsColour() {
-    return texture(texWaterCaustics, _scrollingUV.st) +
-           texture(texWaterCaustics, _scrollingUV.pq) * 0.5;
+    
+    vec4 scrollingUV = scrollingUV();
+    return texture(texWaterCaustics, scrollingUV.st) +
+           texture(texWaterCaustics, scrollingUV.pq) * 0.5;
 
     setProcessedNormal(VAR._normalWV);
 }
@@ -540,11 +561,11 @@ vec4 UnderwaterMappingRoutine() {
 
 vec4 TerrainMappingRoutine() {
 #if defined(LOW_QUALITY)
-    setAlbedo(getTerrainAlbedo(0));
+    setAlbedo(getTerrainAlbedo());
     setProcessedNormal(VAR._normalWV);
 #else
-    setAlbedo(getTerrainAlbedo(detailLevel));
-    setProcessedNormal(normalize(getTBNMatrix() * getTerrainNormalTBN(detailLevel)));
+    setAlbedo(getTerrainAlbedo());
+    setProcessedNormal(normalize(getTBNMatrix() * getTerrainNormalTBN()));
 #endif
 
     return getPixelColour();

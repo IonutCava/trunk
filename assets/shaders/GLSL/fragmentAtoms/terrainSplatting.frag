@@ -14,7 +14,7 @@ layout(binding = TEXTURE_COUNT + 0) uniform sampler2DArray texBlendMaps;
 layout(binding = TEXTURE_COUNT + 1) uniform sampler2DArray texTileMaps;
 layout(binding = TEXTURE_COUNT + 2) uniform sampler2DArray texNormalMaps;
 
-vec4 getTerrainAlbedo(int detailLevel){
+vec4 getTerrainAlbedo(){
     vec4 colour = vec4(0.0, 0.0, 0.0, 1.0);
 
     uint offset = 0;
@@ -31,7 +31,7 @@ vec4 getTerrainAlbedo(int detailLevel){
     return colour;
 }
 
-vec3 getTerrainNormalTBN(int detailLevel) {
+vec3 getTerrainNormalTBN() {
     vec3 tbn = vec3(1.0);
 
     uint offset = 0;

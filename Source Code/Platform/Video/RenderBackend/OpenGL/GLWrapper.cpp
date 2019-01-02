@@ -256,7 +256,6 @@ bool GL_API::initGLSW() {
         { "vec2" , "_texCoord"},
         { "vec4" , "_vertexW"},
         { "vec4" , "_vertexWV"},
-        { "vec3" , "_normalW"},
         { "vec3" , "_normalWV"},
         { "vec3" , "_tangentWV"},
         { "vec3" , "_bitangentWV"}
