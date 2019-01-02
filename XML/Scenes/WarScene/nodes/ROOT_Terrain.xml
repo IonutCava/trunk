@@ -113,5 +113,5 @@
 <NETWORKING/>
 <RIGID_BODY/>
 <TERRAIN>
-    <Tessellation__Range x="5" y="500"/>
+    <Tessellation__Range x="-10103.4688" y="1.3732725e-43"/>
 </TERRAIN>

@@ -133,7 +133,7 @@ protected:
 
     void flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) override;
     void postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer);
-
+    
     /// Return the time it took to render a single frame (in nanoseconds). Only
     /// works in GPU validation builds
     F32 getFrameDurationGPU() const override;
@@ -176,6 +176,9 @@ public:
     static bool deleteShaderPrograms(GLuint count, GLuint* programs);
 
     static void registerBufferBind(const BufferWriteData& data);
+
+    // Return true if we need to flush
+    static bool lockBuffers();
 
 private:
     /// Prepare our shader loading system

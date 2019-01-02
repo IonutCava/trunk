@@ -1034,6 +1034,8 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             const vectorEASTL<GenericDrawCommand>& drawCommands = commandBuffer.getCommand<GFX::DrawCommand>(entry)._drawCommands;
             for (const GenericDrawCommand& currentDrawCommand : drawCommands) {
                 if (draw(currentDrawCommand)) {
+                    // Lock all buffers as soon as we issue a draw command since we should've flushed the command queue by now
+                    lockBuffers();
                     if (isEnabledOption(currentDrawCommand, CmdRenderOptions::RENDER_GEOMETRY)) {
                         if (isEnabledOption(currentDrawCommand, CmdRenderOptions::RENDER_WIREFRAME)) {
                             _context.registerDrawCalls(2);
@@ -1091,21 +1093,25 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
 }
 
 void GL_API::postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
-    if (!s_bufferBindsNeedsFlush) {
-        return;
+    ACKNOWLEDGE_UNUSED(commandBuffer);
+    if (s_bufferBindsNeedsFlush) {
+        if (lockBuffers()) {
+            // Make forward progress in worker thread so that we don't deadlock
+            glFlush();
+        }
+        s_bufferBindsNeedsFlush = false;
     }
+}
 
+bool GL_API::lockBuffers() {
     BufferWriteData data;
     bool flush = false;
     while (s_bufferBinds.try_dequeue(data)) {
         data._lockManager->LockRange(data._offset, data._range);
         flush = data._flush || flush;
-    }   
-    // Make forward progress in worker thread so that we don't deadlock
-    if (flush) {
-        glFlush();
     }
-    s_bufferBindsNeedsFlush = false;
+
+    return flush;
 }
 
 void GL_API::registerBufferBind(const BufferWriteData& data) {
