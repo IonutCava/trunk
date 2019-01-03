@@ -41,11 +41,6 @@ namespace Divide {
 class Camera;
 class BoundingBox;
 class Frustum {
-   protected:
-    friend class Camera;
-    Frustum(Camera& parentCamera);
-    void Extract(const mat4<F32>& viewMatrix, const mat4<F32>& projectionMatrix);
-
    public:
     enum class FrustCollision : U8 {
         FRUSTUM_OUT = 0,
@@ -76,6 +71,11 @@ class Frustum {
     };
 
    public:
+    Frustum();
+    void Extract(const mat4<F32>& viewMatrix, const mat4<F32>& projectionMatrix);
+
+    void set(const Frustum& other);
+
     FrustCollision ContainsPoint(const vec3<F32>& point, I8& lastPlaneCache) const;
     FrustCollision ContainsBoundingBox(const BoundingBox& bbox, I8& lastPlaneCache) const;
     FrustCollision ContainsSphere(const vec3<F32>& center, F32 radius, I8& lastPlaneCache) const;
@@ -96,12 +96,33 @@ class Frustum {
     // Get the frustum corners in WorldSpace. cornerWS must be a vector with at least 8 allocated slots
     void getCornersWorldSpace(std::array<vec3<F32>, 8>& cornersWS) const;
     // Get the frustum corners in ViewSpace. cornerVS must be a vector with at least 8 allocated slots
-    void getCornersViewSpace(std::array<vec3<F32>, 8>& cornersVS) const;
+    void getCornersViewSpace(const mat4<F32>& viewMatrix, std::array<vec3<F32>, 8>& cornersVS) const;
 
     void computePlanes(const mat4<F32>& viewProjMatrix);
 
     static void computePlanes(const mat4<F32>& viewProjMatrix, vec4<F32>* planesOut);
     static void computePlanes(const mat4<F32>& viewProjMatrix, Plane<F32>* planesOut);
+
+
+    inline bool operator==(const Frustum& other) const {
+        for (U8 i = 0; i < to_U8(FrustPlane::COUNT); ++i) {
+            if (_frustumPlanes[i] != other._frustumPlanes[i]) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    inline bool operator!=(const Frustum& other) const {
+        for (U8 i = 0; i < to_U8(FrustPlane::COUNT); ++i) {
+            if (_frustumPlanes[i] != other._frustumPlanes[i]) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
    private:
      FrustCollision PlaneBoundingBoxIntersect(const Plane<F32>& frustumPlane,
@@ -118,9 +139,6 @@ class Frustum {
     void updatePoints();
 
    private:
-    Camera& _parentCamera;
-    bool _pointsDirty;
-
     std::array<Plane<F32>, to_base(FrustPlane::COUNT)>  _frustumPlanes;
     std::array<vec3<F32>,  to_base(FrustPoints::COUNT)> _frustumPoints;
 };

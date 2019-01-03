@@ -250,7 +250,7 @@ void Vegetation::sceneUpdate(const U64 deltaTimeUS,
 }
 
 bool Vegetation::getDrawState(const SceneGraphNode& sgn, RenderStagePass renderStage) const {
-    if (_render && _terrainChunk.isInView()) {
+    if (_render && _terrainChunk.isInView() && _terrainChunk.LoD() < 2) {
         return SceneNode::getDrawState(sgn, renderStage);
     }
 

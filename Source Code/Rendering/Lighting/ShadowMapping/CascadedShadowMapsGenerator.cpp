@@ -132,7 +132,7 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
 
     U8 numSplits = dirLight.csmSplitCount();
     playerCamera.getFrustum().getCornersWorldSpace(frustumCornersWS);
-    playerCamera.getFrustum().getCornersViewSpace(frustumCornersVS);
+    playerCamera.getFrustum().getCornersViewSpace(playerCamera.getViewMatrix(), frustumCornersVS);
 
     const vec2<F32>& nearFarPlanes = playerCamera.getZPlanes();
     SplitDepths splitDepths = calculateSplitDepths(playerCamera.getProjectionMatrix(), dirLight, nearFarPlanes);

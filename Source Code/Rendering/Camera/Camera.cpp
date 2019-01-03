@@ -33,12 +33,10 @@ Camera::Camera(const stringImpl& name, const CameraType& type, const vec3<F32>& 
     _data._projectionMatrix.identity();
     _data._zPlanes.set(0.1f, 1.0f);
     _data._orientation.identity();
-    _frustum = MemoryManager_NEW Frustum(*this);
 }
 
 Camera::~Camera()
 {
-    MemoryManager::DELETE(_frustum);
 }
 
 const CameraSnapshot& Camera::snapshot() {
@@ -422,7 +420,7 @@ bool Camera::updateFrustum() {
         return false;
     }
 
-    _frustum->Extract(getViewMatrix(), getProjectionMatrix());
+    _frustum.Extract(getViewMatrix(), getProjectionMatrix());
 
     _frustumDirty = false;
 

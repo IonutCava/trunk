@@ -237,10 +237,10 @@ bool GFXDevice::removeDebugView(DebugView* view) {
     return false;
 }
 
-void GFXDevice::drawDebugFrustum(GFX::CommandBuffer& bufferInOut) {
+void GFXDevice::drawDebugFrustum(const mat4<F32>& viewMatrix, GFX::CommandBuffer& bufferInOut) {
     if (_debugFrustum != nullptr) {
         std::array<vec3<F32>, 8> corners;
-        _debugFrustum->getCornersViewSpace(corners);
+        _debugFrustum->getCornersViewSpace(viewMatrix, corners);
 
         vector<Line> lines;
         for (U8 i = 0; i < 4; ++i) {
@@ -261,7 +261,7 @@ void GFXDevice::drawDebugFrustum(GFX::CommandBuffer& bufferInOut) {
 /// most are recreated per frame!
 void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState, const Camera& activeCamera, GFX::CommandBuffer& bufferInOut) {
     if (Config::Build::IS_DEBUG_BUILD) {
-        drawDebugFrustum(bufferInOut);
+        drawDebugFrustum(activeCamera.getViewMatrix(), bufferInOut);
 
         // Debug axis form the axis arrow gizmo in the corner of the screen
         // This is toggleable, so check if it's actually requested

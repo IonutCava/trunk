@@ -14,7 +14,7 @@ layout(binding = BUFFER_TERRAIN_DATA, std140) uniform
 #endif
 dvd_TerrainBlock
 {
-    TerrainNodeData dvd_TerrainData[MAX_RENDER_NODES];
+    TerrainNodeData dvd_TerrainData[];
 };
 
 vec2 calcTerrainTexCoord(in vec4 pos)
@@ -59,7 +59,7 @@ layout(binding = BUFFER_TERRAIN_DATA, std140) uniform
 #endif
 dvd_TerrainBlock
 {
-    TerrainNodeData dvd_TerrainData[MAX_RENDER_NODES];
+    TerrainNodeData dvd_TerrainData[];
 };
 
 #define tscale_negx tScale.x
@@ -205,7 +205,7 @@ layout(binding = BUFFER_TERRAIN_DATA, std140) uniform
 #endif
 dvd_TerrainBlock
 {
-    TerrainNodeData dvd_TerrainData[MAX_RENDER_NODES];
+    TerrainNodeData dvd_TerrainData[];
 };
 
 layout(quads, fractional_even_spacing) in;
@@ -564,11 +564,14 @@ vec4 TerrainMappingRoutine() {
     setAlbedo(getTerrainAlbedo());
     setProcessedNormal(VAR._normalWV);
 #else
-    setAlbedo(getTerrainAlbedo());
-    setProcessedNormal(normalize(getTBNMatrix() * getTerrainNormalTBN()));
+    vec4 albedo;
+    vec3 normalTBN = getTerrainAlbedoAndNormalTBN(albedo);
+    setAlbedo(albedo);
+    setProcessedNormal(normalize(getTBNMatrix() * normalTBN));
 #endif
 
     return getPixelColour();
+    //return getAlbedo();
 }
 
 void main(void)
@@ -576,6 +579,7 @@ void main(void)
     bumpInit();
     vec4 colourOut = mix(TerrainMappingRoutine(), UnderwaterMappingRoutine(), _waterDetails.x);
  
+    //vec4 colourOut = TerrainMappingRoutine();
 #if defined(TOGGLE_WIREFRAME)
     const float LineWidth = 0.75;
     float d = min(min(gs_edgeDist.x, gs_edgeDist.y), gs_edgeDist.z);

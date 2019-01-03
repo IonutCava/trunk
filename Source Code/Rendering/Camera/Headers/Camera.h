@@ -314,9 +314,9 @@ class Camera : public Resource {
     /// Extract the frustum associated with our current PoV
     virtual bool updateFrustum();
     /// Get the camera's current frustum
-    inline const Frustum& getFrustum() const { return *_frustum; }
+    inline const Frustum& getFrustum() const { return _frustum; }
 
-    inline Frustum& getFrustum() { return *_frustum; }
+    inline Frustum& getFrustum() { return _frustum; }
 
     inline void lockMovement(bool state) { _movementLocked = state; }
 
@@ -373,7 +373,7 @@ class Camera : public Resource {
     bool _yawFixed;
     bool _isOrthoCamera;
     bool _frustumDirty;
-    Frustum* _frustum;
+    Frustum _frustum;
 
     // Since quaternion reflection is complicated and not really needed now, 
     // handle reflections a-la Ogre -Ionut

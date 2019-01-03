@@ -45,10 +45,6 @@ enum class ChildPosition :U32 {
     CHILD_SE = 3
 };
 
-enum class ChunkBit : U8 {
-    CHUNK_BIT_TESTCHILDREN = toBit(1)
-};
-
 class Terrain;
 class TerrainChunk;
 class SceneState;
@@ -80,6 +76,7 @@ class QuadtreeNode {
     void drawBBox(GFXDevice& context, RenderPackage& packageOut);
 
     inline bool isALeaf() const { return _children[0] == nullptr; }
+    inline U8 LoD() const { return _LoD; }
 
     inline const BoundingBox& getBoundingBox() const { return _boundingBox; }
     inline void setBoundingBox(const BoundingBox& bbox) { _boundingBox = bbox; }
@@ -89,15 +86,16 @@ class QuadtreeNode {
     inline QuadtreeNode& getChild(ChildPosition pos) const { return *_children[to_base(pos)]; }
     inline QuadtreeNode& getChild(U32 index) const { return *_children[index]; }
 
-    bool updateVisiblity(U32 options, const Camera& camera, F32 maxDistance);
+    bool updateVisiblity(const Camera& camera, F32 maxDistance);
 
    protected:
     void setVisibility(bool state);
-    bool isInView(U32 options, const Camera& camera, F32 maxDistance) const;
+    bool isInView(const Camera& camera, F32 maxDistance, U8& LoD) const;
 
    private:
     //ToDo: make this work in a multi-threaded environment
     //mutable I8 _frustPlaneCache;
+    U8 _LoD;
     bool _isVisible;
     U32 _targetChunkDimension;
     BoundingBox _boundingBox;        ///< Node BoundingBox

@@ -32,7 +32,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _TERRAIN_TESSELLATOR_H_
 #define _TERRAIN_TESSELLATOR_H_
 
-#include "Core/Math/Headers/MathVectors.h"
+#include "Rendering/Camera/Headers/Frustum.h"
 
 //reference: https://victorbush.com/2015/01/tessellated-terrain/
 namespace Divide {
@@ -88,7 +88,7 @@ public:
     ~TerrainTessellator();
 
     // Builds a terrain quadtree based on specified parameters and current camera position.
-    void createTree(const vec3<F32>& camPos, const vec3<F32>& origin, const vec2<U16>& terrainDimensions);
+    void createTree(const vec3<F32>& camPos, const Frustum& frust, const vec3<F32>& origin, const vec2<U16>& terrainDimensions);
 
     // Prepare data to draw the terrain. Returns the final render depth
     bufferPtr updateAndGetRenderData(U16& renderDepth, U8 LoD);
@@ -100,8 +100,8 @@ public:
 
     const RenderDataVector& renderData() const;
 
-    const vec3<F32>& getEye() const;
     const vec3<F32>& getOrigin() const;
+    const Frustum& getFrustum() const;
     U16 getRenderDepth() const;
 
 protected:
@@ -121,9 +121,6 @@ protected:
     // Calculate the tessellation scale factor for a node depending on the neighboring patches.
     void calcTessScale(TessellatedTerrainNode* node);
 
-    // Pushes a node (patch) to the GPU to be drawn.
-    void renderNode(TessellatedTerrainNode* node, U16 crtDepth, U8 LoD);
-
     // Traverses the terrain quadtree to draw nodes with no children.
     void renderRecursive(TessellatedTerrainNode* node, U16& renderDepth, U8 LoD);
 
@@ -135,6 +132,7 @@ private:
     U16 _renderDepth;
     vec3<F32> _cameraEyeCache;
     vec3<F32> _originiCache;
+    Frustum _frustumCache;
     TreeVector _tree;
     RenderDataVector _renderData;
 

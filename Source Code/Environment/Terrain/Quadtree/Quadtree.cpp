@@ -22,7 +22,7 @@ Quadtree::~Quadtree()
 }
 
 void Quadtree::updateVisibility(const Camera& camera, F32 maxDistance) {
-    _root->updateVisiblity(to_U32(ChunkBit::CHUNK_BIT_TESTCHILDREN), camera, maxDistance);
+    _root->updateVisiblity(camera, maxDistance);
 }
 
 void Quadtree::drawBBox(GFXDevice& context, RenderPackage& packageOut) {

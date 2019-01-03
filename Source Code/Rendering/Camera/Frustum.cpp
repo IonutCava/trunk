@@ -8,9 +8,10 @@
 
 namespace Divide {
 
-Frustum::Frustum(Camera& parentCamera)
-    : _parentCamera(parentCamera)
+Frustum::Frustum()
 {
+    _frustumPlanes.fill(Plane<F32>(0.0f));
+    _frustumPoints.fill(vec3<F32>(0.0f));
 }
 
 Frustum::FrustCollision Frustum::PlanePointIntersect(const Plane<F32>& frustumPlane,
@@ -137,6 +138,11 @@ Frustum::FrustCollision Frustum::ContainsBoundingBox(const BoundingBox& bbox, I8
     return res;
 }
 
+void Frustum::set(const Frustum& other) {
+    _frustumPlanes = other._frustumPlanes;
+    _frustumPoints = other._frustumPoints;
+}
+
 void Frustum::Extract(const mat4<F32>& viewMatrix, const mat4<F32>& projectionMatrix) {
     computePlanes(viewMatrix * projectionMatrix);
 }
@@ -173,10 +179,9 @@ void Frustum::getCornersWorldSpace(std::array<vec3<F32>, 8 >& cornersWS) const {
 }
 
 // Get the frustum corners in ViewSpace.
-void Frustum::getCornersViewSpace(std::array<vec3<F32>, 8 >& cornersVS) const {
+void Frustum::getCornersViewSpace(const mat4<F32>& viewMatrix, std::array<vec3<F32>, 8 >& cornersVS) const {
     getCornersWorldSpace(cornersVS);
 
-    const mat4<F32>& viewMatrix = _parentCamera.getViewMatrix();
     std::transform(std::begin(cornersVS), std::end(cornersVS), std::begin(cornersVS),
                    [&viewMatrix](vec3<F32>& pt) {
                        return viewMatrix.transformHomogeneous(pt);

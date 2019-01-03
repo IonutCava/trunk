@@ -16,7 +16,8 @@ namespace Divide {
 QuadtreeNode::QuadtreeNode()
     : _terrainChunk(nullptr),
       _bbPrimitive(nullptr),
-      _isVisible(false)
+      _isVisible(false),
+      _LoD(0u)
       //,_frustPlaneCache(-1)
 {
     _children.fill(nullptr),
@@ -134,58 +135,63 @@ void QuadtreeNode::setVisibility(bool state) {
     }
 }
 
-bool QuadtreeNode::updateVisiblity(U32 options, const Camera& camera, F32 maxDistance) {
-    _isVisible = isInView(options, camera, maxDistance);
+bool QuadtreeNode::updateVisiblity(const Camera& camera, F32 maxDistance) {
+    _isVisible = isInView(camera, maxDistance, _LoD);
     if (!_isVisible) {
         setVisibility(false);
     }  else if (!isALeaf()) {
-        getChild(ChildPosition::CHILD_NW).updateVisiblity(options, camera, maxDistance);
-        getChild(ChildPosition::CHILD_NE).updateVisiblity(options, camera, maxDistance);
-        getChild(ChildPosition::CHILD_SW).updateVisiblity(options, camera, maxDistance);
-        getChild(ChildPosition::CHILD_SE).updateVisiblity(options, camera, maxDistance);
+        getChild(ChildPosition::CHILD_NW).updateVisiblity(camera, maxDistance);
+        getChild(ChildPosition::CHILD_NE).updateVisiblity(camera, maxDistance);
+        getChild(ChildPosition::CHILD_SW).updateVisiblity(camera, maxDistance);
+        getChild(ChildPosition::CHILD_SE).updateVisiblity(camera, maxDistance);
     }
 
     return _isVisible;
 }
 
-bool QuadtreeNode::isInView(U32 options, const Camera& camera, F32 maxDistance) const {
-    if (BitCompare(options, to_base(ChunkBit::CHUNK_BIT_TESTCHILDREN))) {
-        F32 boundingRadius = _boundingSphere.getRadius();
-        const vec3<F32>& boundingCenter = _boundingSphere.getCenter();
+bool QuadtreeNode::isInView(const Camera& camera, F32 maxDistance, U8& LoD) const {
+    F32 boundingRadius = _boundingSphere.getRadius();
+    const vec3<F32>& boundingCenter = _boundingSphere.getCenter();
+    const vec3<F32>& eye = camera.getEye();
+     
+    F32 visibilityDistance = maxDistance + boundingRadius;
+     
+    F32 distanceToCenter = boundingCenter.distance(eye);
 
-        const vec3<F32>& eye = camera.getEye();
-        F32 visibilityDistance = maxDistance + boundingRadius;
-        if (boundingCenter.distance(eye) > visibilityDistance) {
-            if (_boundingBox.nearestDistanceFromPointSquared(eye) > std::min(visibilityDistance, camera.getZPlanes().y)) {
-                return false;
-            }
-        }
+    if (distanceToCenter > visibilityDistance &&
+        _boundingBox.nearestDistanceFromPointSquared(eye) > std::min(visibilityDistance, camera.getZPlanes().y))
+    {
+        return false;
+    }
         
-        STUBBED("ToDo: make this work in a multi-threaded environment -Ionut");
-        I8 _frustPlaneCache = -1;
+    STUBBED("ToDo: make this work in a multi-threaded environment -Ionut");
+    I8 _frustPlaneCache = -1;
 
-        if (!_boundingBox.containsPoint(camera.getEye())) {
+    if (!_boundingBox.containsPoint(camera.getEye())) {
+        const Frustum& frust = camera.getFrustum();
+        switch (frust.ContainsSphere(boundingCenter, boundingRadius, _frustPlaneCache)) {
+            case Frustum::FrustCollision::FRUSTUM_OUT:
+                return false;
+            case Frustum::FrustCollision::FRUSTUM_IN:
+                break;
+            case Frustum::FrustCollision::FRUSTUM_INTERSECT: {
+                switch (frust.ContainsBoundingBox(_boundingBox, _frustPlaneCache)) {
+                    case Frustum::FrustCollision::FRUSTUM_IN:
+                    case Frustum::FrustCollision::FRUSTUM_INTERSECT:
+                        break;
+                    case Frustum::FrustCollision::FRUSTUM_OUT:
+                        return false;
+                };
+            };
+        };
+    }
 
-            const Frustum& frust = camera.getFrustum();
-            switch (frust.ContainsSphere(boundingCenter, boundingRadius, _frustPlaneCache)) {
-                case Frustum::FrustCollision::FRUSTUM_OUT:
-                    return false;
-                case Frustum::FrustCollision::FRUSTUM_IN:
-                    options &= ~to_base(ChunkBit::CHUNK_BIT_TESTCHILDREN);
-                    break;
-                case Frustum::FrustCollision::FRUSTUM_INTERSECT: {
-                    switch (frust.ContainsBoundingBox(_boundingBox, _frustPlaneCache)) {
-                        case Frustum::FrustCollision::FRUSTUM_IN:
-                            options &= ~to_base(ChunkBit::CHUNK_BIT_TESTCHILDREN);
-                            break;
-                        case Frustum::FrustCollision::FRUSTUM_OUT:
-                            return false;
-                    };  // inner switch
-                };      // case Frustum::FrustCollision::FRUSTUM_INTERSECT
-            };          // outer case
-        }               // if
-    }                   // ChunkBit::CHUNK_BIT_TESTCHILDREN option
-
+    LoD = 2;
+    if (distanceToCenter <= boundingRadius) {
+        LoD = 0;
+    } else if (distanceToCenter <= 2 * boundingRadius) {
+        LoD = 1;
+    }
     return true;
 }
 

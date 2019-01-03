@@ -358,7 +358,7 @@ public:  // Direct API calls
 protected:
     RenderTarget* newRT(const RenderTargetDescriptor& descriptor) const;
 
-    void drawDebugFrustum(GFX::CommandBuffer& bufferInOut);
+    void drawDebugFrustum(const mat4<F32>& viewMatrix, GFX::CommandBuffer& bufferInOut);
 
     void drawText(const TextElementBatch& batch);
 

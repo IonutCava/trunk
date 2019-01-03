@@ -92,4 +92,8 @@ bool TerrainChunk::isInView() const {
     return _quadtreeNode.isVisible();
 }
 
+U8 TerrainChunk::LoD() const {
+    return _quadtreeNode.LoD();
+}
+
 };

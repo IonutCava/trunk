@@ -133,6 +133,10 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
         }
     }
 
+    U32 totalNormalCount = std::accumulate(std::cbegin(normalCount), std::cend(normalCount), 0u);
+    U32 totalAlbedoCount = std::accumulate(std::cbegin(normalCount), std::cend(normalCount), 0u);
+    assert(totalNormalCount == totalAlbedoCount);
+
     SamplerDescriptor heightMapSampler = {};
     heightMapSampler._wrapU = TextureWrap::CLAMP;
     heightMapSampler._wrapV = TextureWrap::CLAMP;
@@ -149,34 +153,30 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     blendMapSampler._magFilter = TextureFilter::LINEAR;
     blendMapSampler._anisotropyLevel = 0;
     
-    SamplerDescriptor albedoSampler = {};
-    albedoSampler._wrapU = TextureWrap::REPEAT;
-    albedoSampler._wrapV = TextureWrap::REPEAT;
-    albedoSampler._wrapW = TextureWrap::REPEAT;
-    albedoSampler._minFilter = TextureFilter::LINEAR;
-    albedoSampler._magFilter = TextureFilter::LINEAR;
-    albedoSampler._anisotropyLevel = 8;
+    SamplerDescriptor tileAlbedoSampler = {};
+    tileAlbedoSampler._wrapU = TextureWrap::REPEAT;
+    tileAlbedoSampler._wrapV = TextureWrap::REPEAT;
+    tileAlbedoSampler._wrapW = TextureWrap::REPEAT;
+    tileAlbedoSampler._minFilter = TextureFilter::LINEAR_MIPMAP_LINEAR;
+    tileAlbedoSampler._magFilter = TextureFilter::LINEAR;
+    tileAlbedoSampler._anisotropyLevel = 8;
 
-    SamplerDescriptor normalSampler = {};
-    normalSampler._wrapU = TextureWrap::REPEAT;
-    normalSampler._wrapV = TextureWrap::REPEAT;
-    normalSampler._wrapW = TextureWrap::REPEAT;
-    normalSampler._minFilter = TextureFilter::LINEAR;
-    normalSampler._magFilter = TextureFilter::LINEAR;
-    normalSampler._anisotropyLevel = 8;
+    SamplerDescriptor tileNormalSampler = tileAlbedoSampler;
+    tileNormalSampler._minFilter = TextureFilter::LINEAR;
+    tileNormalSampler._anisotropyLevel = 0;
 
     TextureDescriptor blendMapDescriptor(TextureType::TEXTURE_2D_ARRAY);
     blendMapDescriptor.setSampler(blendMapSampler);
     blendMapDescriptor._layerCount = layerCount;
 
     TextureDescriptor albedoDescriptor(TextureType::TEXTURE_2D_ARRAY);
-    albedoDescriptor.setSampler(albedoSampler);
-    albedoDescriptor._layerCount = std::accumulate(std::cbegin(albedoCount), std::cend(albedoCount), 0u);
+    albedoDescriptor.setSampler(tileAlbedoSampler);
+    albedoDescriptor._layerCount = totalAlbedoCount;
     albedoDescriptor._srgb = true;
 
     TextureDescriptor normalDescriptor(TextureType::TEXTURE_2D_ARRAY);
-    normalDescriptor.setSampler(normalSampler);
-    normalDescriptor._layerCount = std::accumulate(std::cbegin(normalCount), std::cend(normalCount), 0u);
+    normalDescriptor.setSampler(tileNormalSampler);
+    normalDescriptor._layerCount = totalNormalCount;
 
     textureBlendMap.assetName(blendMapArray);
     textureBlendMap.setPropertyDescriptor(blendMapDescriptor);
@@ -217,7 +217,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     layerCountData += "};";
 
     TextureDescriptor miscTexDescriptor(TextureType::TEXTURE_2D);
-    miscTexDescriptor.setSampler(albedoSampler);
+    miscTexDescriptor.setSampler(tileAlbedoSampler);
      
     ResourceDescriptor textureWaterCaustics("Terrain Water Caustics_" + name);
     textureWaterCaustics.assetLocation(terrainMapLocation);

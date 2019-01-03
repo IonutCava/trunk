@@ -58,9 +58,10 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
     bufferDescriptor._elementCount = Terrain::MAX_RENDER_NODES * to_base(RenderStage::COUNT);
     bufferDescriptor._elementSize = sizeof(TessellatedNodeData);
     bufferDescriptor._ringBufferLength = 1;
+    bufferDescriptor._separateReadWrite = false;
     bufferDescriptor._flags = USE_TERRAIN_UBO ? to_U32(ShaderBuffer::Flags::NONE) 
                                               : (to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE) |
-                                                 to_U32(ShaderBuffer::Flags::AUTO_RANGE_FLUSH) |
+                                                 //to_U32(ShaderBuffer::Flags::AUTO_RANGE_FLUSH) |
                                                  to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES));
                               
     //Should be once per frame
@@ -151,8 +152,9 @@ void Terrain::frameStarted(SceneGraphNode& sgn) {
 }
 
 void Terrain::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState) {
-    _terrainTessellatorFlags[sgn.getGUID()].fill(false);
+     _terrainTessellatorFlags[sgn.getGUID()].fill(false);
     _drawDistance = sceneState.renderState().generalVisibility();
+    _shaderData->incQueue();
 
     Object3D::sceneUpdate(deltaTimeUS, sgn, sceneState);
 }
@@ -174,33 +176,31 @@ bool Terrain::onRender(SceneGraphNode& sgn,
         pkg.pushConstants(0, constants);
     }
 
-    if (!wasUpdated) 
+    U16 depth = tessellator.getRenderDepth();
+    if (!wasUpdated)
     {
-        const vec3<F32>& newEye = camera.getEye();
+        const Frustum& frustum = camera.getFrustum();
         const vec3<F32>& crtPos = sgn.get<TransformComponent>()->getPosition();
 
-        if (tessellator.getEye() != newEye || tessellator.getOrigin() != crtPos)
+        if (tessellator.getOrigin() != crtPos || tessellator.getFrustum() != frustum)
         {
-            tessellator.createTree(newEye, crtPos, _descriptor->getDimensions());
+            tessellator.createTree(camera.getEye(), frustum, crtPos, _descriptor->getDimensions());
             U8 LoD = (renderStagePass._stage == RenderStage::REFLECTION || renderStagePass._stage == RenderStage::REFRACTION) ? 1 : 0;
-            U16 depth = 0;
+
             bufferPtr data = (bufferPtr)tessellator.updateAndGetRenderData(depth, LoD);
 
-            STUBBED("This may cause stalls. Profile! -Ionut");
             _shaderData->writeData(offset, depth, data);
-
-            DescriptorSet set = pkg.descriptorSet(0);
-            set.addShaderBuffer({ ShaderBufferLocation::TERRAIN_DATA,
-                                 _shaderData,
-                                 vec2<U32>(offset, Terrain::MAX_RENDER_NODES) });
-            pkg.descriptorSet(0, set);
         }
 
         wasUpdated = true;
     }
+     
+    DescriptorSet set = pkg.descriptorSet(0);
+    set.addShaderBuffer({ ShaderBufferLocation::TERRAIN_DATA, _shaderData, vec2<U32>(offset, depth) });
+    pkg.descriptorSet(0, set);
 
     GenericDrawCommand cmd = pkg.drawCommand(0, 0);
-    cmd._drawCount = tessellator.getRenderDepth();
+    cmd._drawCount = depth;
     pkg.drawCommand(0, 0, cmd);
 
     if (renderStagePass == RenderStagePass(RenderStage::DISPLAY, RenderPassType::DEPTH_PASS)) {

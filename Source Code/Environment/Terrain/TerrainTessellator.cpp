@@ -9,8 +9,8 @@
 namespace Divide {
 
 namespace {
-    // The size of a patch in meters at which point to stop subdividing a terrain patch once 
-    // it's width is less than the cutoff
+    constexpr bool g_useViewFrustumCulling = true;
+    // The size of a patch in meters at which point to stop subdividing a terrain patch once it's width is less than the cutoff
     constexpr U32 TERRAIN_CUTOFF_DISTANCE = 100;
 
     FORCE_INLINE bool hasChildren(TessellatedTerrainNode& node) {
@@ -41,12 +41,12 @@ TerrainTessellator::~TerrainTessellator()
     _renderData.clear();
 }
 
-const vec3<F32>& TerrainTessellator::getEye() const {
-    return _cameraEyeCache;
-}
-
 const vec3<F32>& TerrainTessellator::getOrigin() const {
     return _originiCache;
+}
+
+const Frustum& TerrainTessellator::getFrustum() const {
+    return _frustumCache;
 }
 
 U16 TerrainTessellator::getRenderDepth() const {
@@ -72,7 +72,7 @@ void TerrainTessellator::clearTree() {
 
 bool TerrainTessellator::checkDivide(TessellatedTerrainNode* node) {
     // Distance from current origin to camera
-    F32 d = _cameraEyeCache.xz().distanceSquared(node->origin.xz());
+    F32 d = std::abs(_cameraEyeCache.xz().distanceSquared(node->origin.xz()));
 
     // Check base case:
     // Distance to camera is greater than twice the length of the diagonal
@@ -133,9 +133,11 @@ bool TerrainTessellator::divideNode(TessellatedTerrainNode* node) {
     return divided;
 }
 
-void TerrainTessellator::createTree(const vec3<F32>& camPos, const vec3<F32>& origin, const vec2<U16>& terrainDimensions) {
+void TerrainTessellator::createTree(const vec3<F32>& camPos, const Frustum& frust, const vec3<F32>& origin, const vec2<U16>& terrainDimensions) {
     _cameraEyeCache.set(camPos);
     _originiCache.set(origin);
+    _frustumCache.set(frust);
+
 
     clearTree();
     TessellatedTerrainNode* terrainTree = _tree.data();
@@ -173,20 +175,16 @@ TessellatedTerrainNode* TerrainTessellator::createNode(TessellatedTerrainNode* p
     return terrainTreeTail;
 }
 
-void TerrainTessellator::renderNode(TessellatedTerrainNode* node, U16 renderDepth, U8 LoD) {
-    // Calculate the tess scale factor
-    calcTessScale(node);
-
-    TessellatedNodeData& data = _renderData[renderDepth];
-    data._positionAndTileScale.set(node->origin, node->dim.width * 0.5f);
-    data._tScale.set(LoD == 0 ? node->tscale : 2.0);
-}
-
 void TerrainTessellator::renderRecursive(TessellatedTerrainNode* node, U16& renderDepth, U8 LoD) {
     // If all children are null, render this node
     if (!hasChildren(*node)) {
-        renderNode(node, renderDepth, LoD);
-        renderDepth++;
+        if (!g_useViewFrustumCulling || _frustumCache.ContainsSphere(node->origin, std::max(node->dim.width * 0.5f, node->dim.height * 0.5f)) != Frustum::FrustCollision::FRUSTUM_OUT) {
+            calcTessScale(node);
+
+            TessellatedNodeData& data = _renderData[renderDepth++];
+            data._positionAndTileScale.set(node->origin, node->dim.width * 0.5f);
+            data._tScale.set(LoD == 0 ? node->tscale : 2.0);
+        }
     } else {
         // Otherwise, recurse to the children.
         for (U8 i = 0; i < 4; ++i) {
