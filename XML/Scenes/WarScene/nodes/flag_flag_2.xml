@@ -20,7 +20,7 @@
         <doubleSided>false</doubleSided>
         <bumpMethod>NONE</bumpMethod>
         <shadingMode>PHONG</shadingMode>
-        <parallaxFactor>1</parallaxFactor>
+        <parallaxFactor>0.00999999978</parallaxFactor>
     </Material>
 </RENDERING>
 <SUBMESH/>

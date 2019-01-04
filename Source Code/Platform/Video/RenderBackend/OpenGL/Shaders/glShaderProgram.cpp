@@ -651,11 +651,13 @@ U32 glShaderProgram::GetSubroutineIndex(ShaderType type, const char* name) const
 }
 
 I32 glShaderProgram::cachedValueUpdate(const GFX::PushConstant& constant) {
+    if (constant._binding.empty() || constant._type == GFX::PushConstantType::COUNT) {
+        return -1;
+    }
 
-    const char* location = constant._binding.c_str();
-    U64 locationHash = _ID(location);
+    U64 locationHash = constant._bindingHash;
 
-    I32 binding = Binding(location);
+    I32 binding = Binding(constant._binding.c_str());
 
     if (binding == -1 || _shaderProgramID == 0) {
         return -1;
@@ -779,10 +781,10 @@ void glShaderProgram::UploadPushConstant(const GFX::PushConstant& constant) {
 }
 
 void glShaderProgram::UploadPushConstants(const PushConstants& constants) {
-    for (const GFX::PushConstant& constant : constants.data()) {
-        if (!constant._binding.empty() && constant._type != GFX::PushConstantType::COUNT) {
-            UploadPushConstant(constant);
-        }
+    const vectorEASTL<GFX::PushConstant>& data = constants.data();
+
+    for (const GFX::PushConstant& constant : data) {
+        UploadPushConstant(constant);
     }
 }
 

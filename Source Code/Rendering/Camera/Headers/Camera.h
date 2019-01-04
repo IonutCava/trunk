@@ -336,6 +336,9 @@ class Camera : public Resource {
     virtual bool rotateRelative(const vec3<I32>& relRotation);
     virtual bool zoom(I32 zoomFactor);
 
+    bool removeUpdateListener(U32 id);
+    U32 addUpdateListener(const DELEGATE_CBK<void, const Camera& /*updated camera*/>& f);
+
    protected:
     virtual bool updateViewMatrix();
     virtual bool updateProjection();
@@ -379,6 +382,9 @@ class Camera : public Resource {
     // handle reflections a-la Ogre -Ionut
     bool _reflectionActive;
     Plane<F32> _reflectionPlane;
+    U32 _updateCameraId;
+    typedef hashMap<U32, DELEGATE_CBK<void, const Camera&> > ListenerMap;
+    ListenerMap _updateCameraListeners;
 
     // Camera pool
     public:
@@ -394,25 +400,16 @@ class Camera : public Resource {
        static bool    destroyCamera(Camera*& camera);
        static Camera* findCamera(U64 nameHash);
 
-       /// Informs all listeners of a new event
-       static void onUpdate(const Camera& cam);
-
        static bool removeChangeListener(U32 id);
        static U32 addChangeListener(const DELEGATE_CBK<void, const Camera& /*new camera*/>& f);
-       static bool removeUpdateListener(U32 id);
-       static U32 addUpdateListener(const DELEGATE_CBK<void, const Camera& /*updated camera*/>& f);
 
     private:
       typedef hashMap<U64, Camera*> CameraPool;
 
       static std::array<Camera*, to_base(UtilityCamera::COUNT)> _utilityCameras;
 
-      typedef hashMap<U32, DELEGATE_CBK<void, const Camera&> > ListenerMap;
-
       static U32 s_changeCameraId;
-      static U32 s_updateCameraId;
       static ListenerMap s_changeCameraListeners;
-      static ListenerMap s_updateCameraListeners;
 
       static CameraPool s_cameraPool;
       static SharedMutex s_cameraPoolLock;

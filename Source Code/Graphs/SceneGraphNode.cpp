@@ -504,17 +504,6 @@ bool SceneGraphNode::getDrawState(RenderStagePass stagePass) const {
     return _node->getDrawState(*this, stagePass);
 }
 
-void SceneGraphNode::onCameraUpdate(I64 cameraGUID,
-                                    const vec3<F32>& cameraEye,
-                                    const mat4<F32>& cameraView) {
-
-    forEachChild([cameraGUID, &cameraEye, &cameraView](SceneGraphNode& child) {
-        child.onCameraUpdate(cameraGUID, cameraEye, cameraView);
-    });
-    
-    Attorney::SceneNodeSceneGraph::onCameraUpdate(*this, *_node, cameraGUID, cameraEye, cameraView);
-}
-
 void SceneGraphNode::onNetworkSend(U32 frameCount) {
     forEachChild([frameCount](SceneGraphNode& child) {
         child.onNetworkSend(frameCount);

@@ -79,7 +79,7 @@
                 <path>assets/misc_images</path>
                 <flipped>true</flipped>
                 <Map U="REPEAT" V="REPEAT" W="REPEAT"/>
-                <Filter min="LINEAR" mag="LINEAR"/>
+                <Filter min="LINEAR_MIPMAP_LINEAR" mag="LINEAR"/>
                 <anisotropy>8</anisotropy>
             </UNIT0>
             <UNIT1>
@@ -88,7 +88,7 @@
                 <flipped>true</flipped>
                 <usage>TEX_OP_REPLACE</usage>
                 <Map U="REPEAT" V="REPEAT" W="REPEAT"/>
-                <Filter min="LINEAR" mag="LINEAR"/>
+                <Filter min="LINEAR_MIPMAP_LINEAR" mag="LINEAR"/>
                 <anisotropy>8</anisotropy>
             </UNIT1>
             <NORMALMAP>
@@ -96,7 +96,7 @@
                 <path>assets/misc_images</path>
                 <flipped>true</flipped>
                 <Map U="REPEAT" V="REPEAT" W="REPEAT"/>
-                <Filter min="LINEAR" mag="LINEAR"/>
+                <Filter min="LINEAR_MIPMAP_LINEAR" mag="LINEAR"/>
                 <anisotropy>8</anisotropy>
             </NORMALMAP>
             <OPACITY>

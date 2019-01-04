@@ -49,8 +49,10 @@ vec4 getAlbedo() {
     return private_albedo;
 }
 
+const float Eta = 0.15; //water
+
 float Fresnel(in vec3 viewDir, in vec3 normal) {
-    return _underwater == 1 ? 1.0 : 1.0 / pow(1.0 + dot(viewDir, normal), 5);
+    return _underwater == 1 ? 1.0 : 1.0 / pow(1.0 + dot(viewDir, normal), 5.0);
 }
 
 void main (void)
@@ -81,9 +83,8 @@ void main (void)
     vec3 normal1 = texture(texWaterNoiseNM, uvNormal1).rgb * 2.0 - 1.0;
     vec3 normal = normalize(normal0 + normal1);
 
-
-    vec2 uvFinalReflect = uvReflection.xy /*+ _noiseFactor * normal.xy*/;
-    vec2 uvFinalRefract = uvReflection.xy /*+ _noiseFactor * normal.xy*/;
+    vec2 uvFinalReflect = uvReflection.xy + _noiseFactor * normal.xy;
+    vec2 uvFinalRefract = uvReflection.xy + _noiseFactor * normal.xy;
 
 
     /*vec4 distOffset = texture(texWaterNoiseDUDV, VAR._texCoord + vec2(time2)) * kDistortion;
@@ -91,27 +92,19 @@ void main (void)
     dudvColor = normalize(dudvColor * 2.0 - 1.0) * kRefraction;
 
     vec3 normal = texture(texWaterNoiseNM, vec2(VAR._texCoord + distOffset.xy)).rgb;
-    normal = normalize(normal * 2.0 - 1.0);
+    normal = normalize(normal * 2.0 - 1.0);*/
 
-    vec4 uvReflection = _vertexWVP / _vertexWVP.w;
-    uvReflection += vec4(1.0);
-    uvReflection *= vec4(0.5);
-    uvReflection += dudvColor;
-    uvReflection = clamp(uvReflection, vec4(0.001), vec4(0.999));
-
-    vec2 uvFinalReflect = normalize(uvReflection.xy);
-    vec2 uvFinalRefract = normalize(uvReflection.xy);*/
-
-    setProcessedNormal(normalize(getTBNMatrix() * normal));
-    
     vec4 mixFactor = vec4(clamp(Fresnel(normalize(_pixToEye), normalize(VAR._normalWV)), 0.0, 1.0));
     vec4 texColour = mix(texture(texWaterReflection, uvFinalReflect),
                          texture(texWaterRefraction, uvFinalRefract),
                          mixFactor);
+#if 0
     setAlbedo(texColour);
-
-    //writeOutput(getPixelColour(), packNormal(getProcessedNormal()));
-    writeOutput(getAlbedo(), packNormal(getProcessedNormal()));
+    setProcessedNormal(normalize(getTBNMatrix() * normal));
+    writeOutput(getPixelColour(), packNormal(getProcessedNormal()));
+#else
+    writeOutput(texColour, packNormal(normalize(getTBNMatrix() * normal)));
+#endif
 
 
 }

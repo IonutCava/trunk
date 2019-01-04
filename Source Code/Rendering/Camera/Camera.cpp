@@ -21,7 +21,8 @@ Camera::Camera(const stringImpl& name, const CameraType& type, const vec3<F32>& 
       _cameraMoveSpeed(35.0f),
       _cameraZoomSpeed(35.0f),
       _cameraTurnSpeed(35.0f),
-      _type(type)
+      _type(type),
+      _updateCameraId(0)
 {
     _yawFixed = false;
     _fixedYawAxis.set(WORLD_Y_AXIS);
@@ -301,10 +302,27 @@ bool Camera::updateLookAt() {
     cameraUpdated = updateFrustum() || cameraUpdated;
     
     if (cameraUpdated) {
-        onUpdate(*this);
+        for (ListenerMap::value_type it : _updateCameraListeners) {
+            it.second(*this);
+        }
     }
 
     return cameraUpdated;
+}
+
+bool Camera::removeUpdateListener(U32 id) {
+    ListenerMap::const_iterator it = _updateCameraListeners.find(id);
+    if (it != std::cend(_updateCameraListeners)) {
+        _updateCameraListeners.erase(it);
+        return true;
+    }
+
+    return false;
+}
+
+U32 Camera::addUpdateListener(const DELEGATE_CBK<void, const Camera&>& f) {
+    hashAlg::insert(_updateCameraListeners, ++_updateCameraId, f);
+    return _updateCameraId;
 }
 
 void Camera::setReflection(const Plane<F32>& reflectionPlane) {

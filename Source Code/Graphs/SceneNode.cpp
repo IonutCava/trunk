@@ -170,16 +170,6 @@ void SceneNode::buildDrawCommands(SceneGraphNode& sgn,
     ACKNOWLEDGE_UNUSED(pkgInOut);
 }
 
-void SceneNode::onCameraUpdate(SceneGraphNode& sgn,
-                               I64 cameraGUID,
-                               const vec3<F32>& posOffset,
-                               const mat4<F32>& rotationOffset) {
-    ACKNOWLEDGE_UNUSED(sgn);
-    ACKNOWLEDGE_UNUSED(cameraGUID);
-    ACKNOWLEDGE_UNUSED(posOffset);
-    ACKNOWLEDGE_UNUSED(rotationOffset);
-}
-
 void SceneNode::onNetworkSend(SceneGraphNode& sgn, WorldPacket& dataOut) const {
     ACKNOWLEDGE_UNUSED(sgn);
     ACKNOWLEDGE_UNUSED(dataOut);

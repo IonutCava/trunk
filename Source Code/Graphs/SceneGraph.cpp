@@ -211,10 +211,6 @@ void SceneGraph::onStartUpdateLoop(const U8 loopNumber) {
     GetECSEngine().OnUpdateLoop();
 }
 
-void SceneGraph::onCameraUpdate(const Camera& camera) {
-    _root->onCameraUpdate(camera.getGUID(), camera.getEye(), camera.getViewMatrix());
-}
-
 void SceneGraph::onNetworkSend(U32 frameCount) {
     _root->onNetworkSend(frameCount);
 }

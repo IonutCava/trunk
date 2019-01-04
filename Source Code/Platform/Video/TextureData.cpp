@@ -25,10 +25,6 @@ TextureDataContainer::TextureDataContainer() noexcept
     _textures.reserve(to_base(ShaderProgram::TextureUsage::COUNT));
 }
 
-TextureDataContainer::~TextureDataContainer()
-{
-}
-
 bool TextureDataContainer::set(const TextureDataContainer& other) {
     // EASTL should be fast enough to handle this
     const vectorEASTL<eastl::pair<TextureData, U8>>& otherTextures = other.textures();
@@ -105,14 +101,6 @@ bool TextureDataContainer::removeTexture(const TextureData& data) {
     }
 
     return false;
-}
-
-vectorEASTL<eastl::pair<TextureData, U8>>& TextureDataContainer::textures() {
-    return _textures;
-}
-
-const vectorEASTL<eastl::pair<TextureData, U8>>& TextureDataContainer::textures() const {
-    return _textures;
 }
 
 void TextureDataContainer::clear(bool clearMemory) {

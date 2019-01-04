@@ -199,7 +199,6 @@ protected:
 protected:
     bool frameStarted(const FrameEvent& evt) override;
     bool frameEnded(const FrameEvent& evt) override;
-    void onCameraUpdate(const Camera& camera);
     void preRender(RenderStagePass stagePass, const Camera& camera, RenderTarget& target, GFX::CommandBuffer& bufferInOut);
     void postRender(RenderStagePass stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut);
     void postRenderAllPasses();
@@ -224,7 +223,6 @@ private:
 
     TaskHandle _saveTask;
     PlayerIndex _currentPlayerPass;
-    U32 _camUpdateListenerID;
     ScenePool* _scenePool;
     SceneShaderData* _sceneData;
     U64 _elapsedTime;

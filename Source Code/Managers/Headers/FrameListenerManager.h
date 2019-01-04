@@ -44,7 +44,7 @@ namespace Divide {
 
 DEFINE_SINGLETON(FrameListenerManager)
 
-    typedef vectorFast<U64> EventTimeMap;
+    typedef vectorEASTL<U64> EventTimeMap;
 
   public:
     void registerFrameListener(FrameListener* listener, U32 callOrder);

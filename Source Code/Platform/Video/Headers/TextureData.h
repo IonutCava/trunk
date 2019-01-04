@@ -41,8 +41,11 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <MemoryPool/C-11/MemoryPool.h>
 
 namespace Divide {
-class TextureData {
-public:
+struct TextureData {
+    TextureType _textureType = TextureType::COUNT;
+    U32 _samplerHandle = 0u;
+    U32 _textureHandle = 0u;
+
     TextureData(TextureType type, U32 handle)
       : _textureType(type),
         _textureHandle(handle),
@@ -58,7 +61,6 @@ public:
 
     inline U32  getHandle()     const { return _textureHandle; }
     inline void setHandle(U32 handle) { _textureHandle = handle; }
-
     inline const TextureType& type() const { return _textureType; }
 
     inline bool operator==(const TextureData& other) const {
@@ -72,16 +74,12 @@ public:
                _textureHandle != other._textureHandle ||
                _samplerHandle != other._samplerHandle;
     }
-    
-    U32 _samplerHandle = 0u;
-    U32 _textureHandle = 0u;
-    TextureType _textureType = TextureType::COUNT;
 };
 
 class TextureDataContainer {
     public:
       TextureDataContainer() noexcept;
-      ~TextureDataContainer();
+      ~TextureDataContainer() = default;
 
       bool set(const TextureDataContainer& other);
       bool addTexture(const TextureData& data, U8 binding);
@@ -92,17 +90,13 @@ class TextureDataContainer {
       bool removeTexture(U8 binding);
       bool removeTexture(const TextureData& data);
 
-      vectorEASTL<eastl::pair<TextureData, U8>>& textures();
-      const vectorEASTL<eastl::pair<TextureData, U8>>& textures() const;
       void clear(bool clearMemory = false);
 
-      FORCE_INLINE bool operator==(const TextureDataContainer &other) const {
-          return  _textures == other._textures;
-      }
+      inline vectorEASTL<eastl::pair<TextureData, U8>>& textures() { return _textures; }
+      inline const vectorEASTL<eastl::pair<TextureData, U8>>& textures() const { return _textures; }
 
-      FORCE_INLINE bool operator!=(const TextureDataContainer &other) const {
-          return _textures != other._textures;
-      }
+      inline bool operator==(const TextureDataContainer &other) const { return _textures == other._textures; }
+      inline bool operator!=(const TextureDataContainer &other) const { return _textures != other._textures; }
 
     private:
       vectorEASTL<eastl::pair<TextureData, U8 /*binding*/>> _textures;

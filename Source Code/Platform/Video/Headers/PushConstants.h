@@ -52,7 +52,7 @@ class PushConstants {
     void set(const GFX::PushConstant& constant);
 
     template<typename T>
-    inline void set(const stringImplFast& binding,
+    inline void set(const eastl::string& binding,
                     GFX::PushConstantType type,
                     const T& value,
                     bool flag = false) {
@@ -60,7 +60,7 @@ class PushConstants {
     }
 
     template<typename T>
-    inline void set(const stringImplFast& binding,
+    inline void set(const eastl::string& binding,
                     GFX::PushConstantType type,
                     const vectorEASTL<T>& values,
                     bool flag = false) {
@@ -77,7 +77,7 @@ class PushConstants {
     }
 
     template<typename T, size_t N>
-    inline void set(const stringImplFast& binding,
+    inline void set(const eastl::string& binding,
                     GFX::PushConstantType type,
                     const std::array<T, N>& values,
                     bool flag = false) {

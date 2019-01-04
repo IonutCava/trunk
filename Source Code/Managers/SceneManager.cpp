@@ -53,8 +53,7 @@ SceneManager::SceneManager(Kernel& parentKernel)
       _elapsedTimeMS(0),
       _activePlayerCount(0),
       _currentPlayerPass(0),
-      _saveTimer(0ULL),
-      _camUpdateListenerID(0)
+      _saveTimer(0ULL)
 {
 }
 
@@ -191,13 +190,6 @@ void SceneManager::setActiveScene(Scene* const scene) {
 
     _platformContext->gui().onChangeScene(scene);
     ParamHandler::instance().setParam(_ID("activeScene"), scene->resourceName());
-
-    if (_camUpdateListenerID != 0) {
-        Camera::removeUpdateListener(_camUpdateListenerID);
-    }
-    _camUpdateListenerID = Camera::addUpdateListener([this](const Camera& cam) {
-        onCameraUpdate(cam);
-    });
 }
 
 bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious, bool threaded) {
@@ -363,10 +355,6 @@ bool SceneManager::frameStarted(const FrameEvent& evt) {
 
 bool SceneManager::frameEnded(const FrameEvent& evt) {
     return Attorney::SceneManager::frameEnded(getActiveScene());
-}
-
-void SceneManager::onCameraUpdate(const Camera& camera) {
-    getActiveScene().sceneGraph().onCameraUpdate(camera);
 }
 
 void SceneManager::updateSceneState(const U64 deltaTimeUS) {

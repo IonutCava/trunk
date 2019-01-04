@@ -4,10 +4,6 @@
 
 namespace Divide {
 namespace GFX {
-    PushConstant::~PushConstant()
-    {
-    }
-
     void PushConstant::clear() {
         _buffer.clear();
         _binding.clear();

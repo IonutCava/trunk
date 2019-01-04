@@ -27,6 +27,9 @@ SceneGUIElements::~SceneGUIElements()
 
 void SceneGUIElements::draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) {
     TextElementBatch batch;
+    const GUIMap& map = _guiElements[to_base(GUIType::GUI_TEXT)];
+    batch._data.reserve(map.size());
+
     for (const GUIMap::value_type& guiStackIterator : _guiElements[to_base(GUIType::GUI_TEXT)]) {
         GUIText& textElement = static_cast<GUIText&>(*guiStackIterator.second.first);
         if (textElement.isVisible() && !textElement.text().empty()) {

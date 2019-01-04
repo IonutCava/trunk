@@ -38,18 +38,35 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
     struct CameraSnapshot {
-        mat4<F32> _viewMatrix;
-        mat4<F32> _projectionMatrix;
-        vec3<F32> _eye;
         Angle::DEGREES<F32> _FoV = 0.0f;
-        vec2<F32> _zPlanes;
         F32 _aspectRatio = 0.0f;
+        vec2<F32> _zPlanes;
+        vec3<F32> _eye;
         F32 _padding_ = 0.0f;
         Quaternion<F32> _orientation;
+        mat4<F32> _viewMatrix;
+        mat4<F32> _projectionMatrix;
     };
 
-    bool operator==(const CameraSnapshot& lhs, const CameraSnapshot& rhs);
-    bool operator!=(const CameraSnapshot& lhs, const CameraSnapshot& rhs);
+    inline bool operator==(const CameraSnapshot& lhs, const CameraSnapshot& rhs) {
+        return lhs._FoV == rhs._FoV &&
+               lhs._aspectRatio == rhs._aspectRatio &&
+               lhs._zPlanes == rhs._zPlanes &&
+               lhs._eye == rhs._eye &&
+               lhs._orientation == rhs._orientation &&
+               lhs._viewMatrix == rhs._viewMatrix &&
+               lhs._projectionMatrix == rhs._projectionMatrix;
+    }
+
+    inline bool operator!=(const CameraSnapshot& lhs, const CameraSnapshot& rhs) {
+        return lhs._FoV != rhs._FoV ||
+               lhs._aspectRatio != rhs._aspectRatio ||
+               lhs._zPlanes != rhs._zPlanes ||
+               lhs._eye != rhs._eye ||
+               lhs._orientation != rhs._orientation ||
+               lhs._viewMatrix != rhs._viewMatrix ||
+               lhs._projectionMatrix != rhs._projectionMatrix;
+    }
 };
 
 #endif //_CAMERA_SNAPSHOT_H_

@@ -16,9 +16,7 @@ namespace Divide {
 std::array<Camera*, to_base(Camera::UtilityCamera::COUNT)> Camera::_utilityCameras;
 
 U32 Camera::s_changeCameraId = 0;
-U32 Camera::s_updateCameraId = 0;
 Camera::ListenerMap Camera::s_changeCameraListeners;
-Camera::ListenerMap Camera::s_updateCameraListeners;
 
 SharedMutex Camera::s_cameraPoolLock;
 Camera::CameraPool Camera::s_cameraPool;
@@ -27,12 +25,6 @@ void Camera::update(const U64 deltaTimeUS) {
     SharedLock r_lock(s_cameraPoolLock);
     for (CameraPool::value_type& it : s_cameraPool) {
         it.second->updateInternal(deltaTimeUS);
-    }
-}
-
-void Camera::onUpdate(const Camera& cam) {
-    for (ListenerMap::value_type it : s_updateCameraListeners) {
-        it.second(cam);
     }
 }
 
@@ -136,21 +128,6 @@ bool Camera::removeChangeListener(U32 id) {
 U32 Camera::addChangeListener(const DELEGATE_CBK<void, const Camera&>& f) {
     hashAlg::insert(s_changeCameraListeners, ++s_changeCameraId, f);
     return s_changeCameraId;
-}
-
-bool Camera::removeUpdateListener(U32 id) {
-    ListenerMap::const_iterator it = s_updateCameraListeners.find(id);
-    if (it != std::cend(s_updateCameraListeners)) {
-        s_updateCameraListeners.erase(it);
-        return true;
-    }
-
-    return false;
-}
-
-U32 Camera::addUpdateListener(const DELEGATE_CBK<void, const Camera&>& f) {
-    hashAlg::insert(s_updateCameraListeners, ++s_updateCameraId, f);
-    return s_updateCameraId;
 }
 
 }; //namespace Divide

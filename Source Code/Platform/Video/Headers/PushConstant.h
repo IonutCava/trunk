@@ -78,9 +78,15 @@ namespace GFX {
 
     struct PushConstant {
         PushConstant() = default;
+        ~PushConstant() = default;
+
+        PushConstant(const PushConstant& other) = default;
+        PushConstant& operator=(const PushConstant& other) = default;
+        PushConstant(PushConstant&& other) = default;
+        PushConstant& operator=(PushConstant&& other) = default;
 
         template<typename T>
-        PushConstant(const stringImplFast& binding,
+        PushConstant(const eastl::string& binding,
                      PushConstantType type,
                      const vectorEASTL<T>& values,
                      bool flag = false)
@@ -97,7 +103,7 @@ namespace GFX {
         }
 
         template<>
-        PushConstant(const stringImplFast& binding,
+        PushConstant(const eastl::string& binding,
                      PushConstantType type,
                      const vectorEASTL<bool>& values,
                      bool flag)
@@ -116,7 +122,7 @@ namespace GFX {
         }
 
         template<typename T, size_t N>
-        PushConstant(const stringImplFast& binding,
+        PushConstant(const eastl::string& binding,
                      PushConstantType type,
                      const std::array<T, N>& values,
                      bool flag = false)
@@ -133,7 +139,7 @@ namespace GFX {
         }
 
         template<size_t N>
-        PushConstant(const stringImplFast& binding,
+        PushConstant(const eastl::string& binding,
                      PushConstantType type,
                      const std::array<bool, N>& values,
                      bool flag)
@@ -151,13 +157,6 @@ namespace GFX {
             }
         }
 
-        ~PushConstant();
-
-        PushConstant(const PushConstant& other) = default;
-        PushConstant& operator=(const PushConstant& other) = default;
-        PushConstant(PushConstant&& other) = default;
-        PushConstant& operator=(PushConstant&& other) = default;
-
         void clear();
 
         inline bool operator==(const PushConstant& rhs) const {
@@ -174,14 +173,15 @@ namespace GFX {
                    _buffer != rhs._buffer;
         }
 
-        U64              _bindingHash;
-        stringImplFast   _binding;
-        PushConstantType _type = PushConstantType::COUNT;
-        vectorEASTL<char> _buffer;
         union {
             bool _flag = false;
             bool _transpose;
         };
+
+        U64               _bindingHash;
+        PushConstantType  _type = PushConstantType::COUNT;
+        eastl::string     _binding;
+        vectorEASTL<char> _buffer;
     };
 }; //namespace GFX
 }; //namespace Divide

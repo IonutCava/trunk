@@ -5,21 +5,20 @@
         "commandLine": "--enableGPUMessageGroups",
         "environment": [
         ],
-        "executable": "D:\\Stuff\\Divide\\Divide-Executable_d.exe",
+        "executable": "D:\\Divide-Framework\\Divide-Executable_d.exe",
         "inject": false,
         "options": {
             "allowFullscreen": true,
             "allowVSync": true,
-            "apiValidation": false,
+            "apiValidation": true,
             "captureAllCmdLists": false,
-            "captureCallstacks": false,
-            "captureCallstacksOnlyDraws": false,
+            "captureCallstacks": true,
+            "captureCallstacksOnlyDraws": true,
             "debugOutputMute": true,
             "delayForDebugger": 0,
             "hookIntoChildren": false,
             "refAllResources": false,
-            "saveAllInitials": false,
-            "verifyMapWrites": false
+            "verifyBufferAccess": true
         },
         "workingDir": ""
     }

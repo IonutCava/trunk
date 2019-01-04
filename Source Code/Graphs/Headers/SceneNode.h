@@ -152,11 +152,6 @@ class SceneNode : public CachedResource {
     virtual void postLoad(SceneGraphNode& sgn);
     virtual void updateBoundsInternal();
 
-    virtual void onCameraUpdate(SceneGraphNode& sgn,
-                                I64 cameraGUID,
-                                const vec3<F32>& posOffset,
-                                const mat4<F32>& rotationOffset);
-
     virtual void setBoundsChanged();
 
     EditorComponent& getEditorComponent() { return _editorComponent; }
@@ -218,14 +213,6 @@ class SceneNodeSceneGraph {
 
     static size_t maxReferenceCount(const SceneNode& node) {
         return node.maxReferenceCount();
-    }
-
-    static void onCameraUpdate(SceneGraphNode& sgn,
-                               SceneNode& node,
-                               I64 cameraGUID,
-                               const vec3<F32>& posOffset,
-                               const mat4<F32>& rotationOffset) {
-        node.onCameraUpdate(sgn, cameraGUID, posOffset, rotationOffset);
     }
 
     static EditorComponent& getEditorComponent(SceneNode& node) {
