@@ -16,6 +16,10 @@ vec4 positionFromDepth(in float depth,
     return pos;
 }
 
+vec3 UNPACK_FLOAT(in float value) {
+    return (fract(vec3(1.0, 256.0, 65536.0) * value)* 2.0) - 1.0;
+}
+
 #if defined(COMPUTE_SHADER)
 struct IndirectDrawCommand {
     uint count;
@@ -68,10 +72,8 @@ layout(binding = BUFFER_SCENE_DATA, std430) coherent readonly buffer dvd_SceneDa
     vec4   dvd_windDetails;
     //x - light bleed bias, y - min shadow variance, z - fade distance, w - max distance
     vec4   dvd_shadowingSettings;
-    //x - elapsed time, y - delta time, z - renderer flag, w - reserved
+    //x - elapsed time, y - delta time, z - renderer flag, w - packed: w.x - debug render, w.y - detail level, w.z - reserved
     vec4   dvd_otherData;
-    // x - debug render, y - detail level, z - reserved, w - reserved
-    vec4   dvd_otherData2;
     WaterBodyData dvd_waterEntities[];
 };
 
@@ -79,8 +81,9 @@ layout(binding = BUFFER_SCENE_DATA, std430) coherent readonly buffer dvd_SceneDa
 #define dvd_fogDensity dvd_fogDetails.w
 #define dvd_time int(dvd_otherData.x)
 #define dvd_deltaTime (int(dvd_otherData.y))
-#define dvd_showDebugInfo int(dvd_otherData2.x)
-#define dvd_renderDetailLevel (int(dvd_otherData2.y))
+#define dvd_numLightsPerTile (uint(dvd_otherData.z))
+#define dvd_showDebugInfo (uint(UNPACK_FLOAT(dvd_otherData.w).x))
+#define dvd_renderDetailLevel (uint(UNPACK_FLOAT(dvd_otherData.w).y))
 
 bool IsUnderWater(vec3 positionWorld) {
     for (int i = 0; i < dvd_waterEntities.length(); ++i) {

@@ -241,7 +241,7 @@ void OpenGL3Renderer::endRendering()
 //----------------------------------------------------------------------------//
 void OpenGL3Renderer::setupExtraStates()
 {
-    Divide::GL_API::getStateTracker().bindTexture(0, 0);
+    Divide::GL_API::getStateTracker().bindTexture(0, Divide::TextureType::TEXTURE_2D, 0);
     Divide::GL_API::getStateTracker().setActiveProgram(0);
 
     d_openGLStateChanger->blendFunc(GL_ONE, GL_ZERO);
@@ -271,6 +271,7 @@ void OpenGL3Renderer::setupRenderingBlendMode(const BlendMode mode,
     if (d_activeBlendMode == BM_RTT_PREMULTIPLIED)
     {
         Divide::GL_API::getStateTracker().setBlending(Divide::BlendingProperties{
+                                                      true,
                                                       Divide::BlendProperty::ONE,
                                                       Divide::BlendProperty::INV_SRC_ALPHA,
                                                       Divide::BlendOperation::ADD
@@ -279,6 +280,7 @@ void OpenGL3Renderer::setupRenderingBlendMode(const BlendMode mode,
     else
     {
         Divide::GL_API::getStateTracker().setBlending(Divide::BlendingProperties{
+                                                      true,
                                                       Divide::BlendProperty::SRC_ALPHA,
                                                       Divide::BlendProperty::INV_SRC_ALPHA,
                                                       Divide::BlendOperation::ADD,

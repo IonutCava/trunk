@@ -6,6 +6,7 @@
 #include "Headers/TerrainTessellator.h"
 
 #include "Core/Headers/PlatformContext.h"
+#include "Core/Headers/Configuration.h"
 #include "Platform/File/Headers/FileManagement.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
@@ -260,6 +261,10 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     if (g_showWireFrame) {
         shaderDescriptor._defines.push_back(std::make_pair("TOGGLE_WIREFRAME", true));
     }
+    if (!context.config().rendering.shadowMapping.enabled) {
+        shaderDescriptor._defines.push_back(std::make_pair("DISABLE_SHADOW_MAPPING", true));
+    }
+
     shaderDescriptor._defines.push_back(std::make_pair("COMPUTE_TBN", true));
     shaderDescriptor._defines.push_back(std::make_pair("SKIP_TEXTURES", true));
     shaderDescriptor._defines.push_back(std::make_pair("USE_SHADING_PHONG", true));

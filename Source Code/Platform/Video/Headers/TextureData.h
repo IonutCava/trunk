@@ -59,6 +59,8 @@ public:
     inline U32  getHandle()     const { return _textureHandle; }
     inline void setHandle(U32 handle) { _textureHandle = handle; }
 
+    inline const TextureType& type() const { return _textureType; }
+
     inline bool operator==(const TextureData& other) const {
         return _textureType == other._textureType &&
                _textureHandle == other._textureHandle &&

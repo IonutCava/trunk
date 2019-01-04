@@ -340,6 +340,7 @@ GLenum internalFormat(GFXImageFormat baseFormat, GFXDataFormat dataType, bool sr
 }
 
 namespace {
+
 void submitMultiIndirectCommand(U32 cmdOffset,
                                 U32 drawCount,
                                 GLenum mode,

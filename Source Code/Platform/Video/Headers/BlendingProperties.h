@@ -38,16 +38,18 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 struct BlendingProperties {
+    bool _enabled = false;
     BlendProperty  _blendSrc = BlendProperty::ONE;
-    BlendProperty  _blendDest = BlendProperty::ONE;
-    BlendOperation _blendOp = BlendOperation::COUNT;
+    BlendProperty  _blendDest = BlendProperty::ZERO;
+    BlendOperation _blendOp = BlendOperation::ADD;
 
-    BlendProperty  _blendSrcAlpha = BlendProperty::COUNT;
-    BlendProperty  _blendDestAlpha = BlendProperty::COUNT;
+    BlendProperty  _blendSrcAlpha = BlendProperty::ONE;
+    BlendProperty  _blendDestAlpha = BlendProperty::ZERO;
     BlendOperation _blendOpAlpha = BlendOperation::COUNT;
 
     inline bool operator==(const BlendingProperties& rhs) const {
-        return _blendSrc == rhs._blendSrc &&
+        return _enabled == rhs._enabled &&
+               _blendSrc == rhs._blendSrc &&
                _blendDest == rhs._blendDest &&
                _blendOp == rhs._blendOp &&
                _blendSrcAlpha == rhs._blendSrcAlpha &&
@@ -56,7 +58,8 @@ struct BlendingProperties {
     }
 
     inline bool operator!=(const BlendingProperties& rhs) const {
-        return _blendSrc != rhs._blendSrc ||
+        return _enabled != rhs._enabled ||
+               _blendSrc != rhs._blendSrc ||
                _blendDest != rhs._blendDest ||
                _blendOp != rhs._blendOp ||
                _blendSrcAlpha != rhs._blendSrcAlpha ||
@@ -65,18 +68,19 @@ struct BlendingProperties {
     }
 
     inline bool blendEnabled() const {
-        return _blendOp != BlendOperation::COUNT ||
-               _blendOpAlpha != BlendOperation::COUNT;
+        return _enabled;
     }
 
     inline void reset() {
-        _blendSrc = BlendProperty::ONE;
-        _blendDest = BlendProperty::ONE;
-        _blendOp = BlendOperation::COUNT;
+        _enabled = false;
 
-        _blendSrcAlpha = BlendProperty::COUNT;
-        _blendDestAlpha = BlendProperty::COUNT;
-        _blendOpAlpha = BlendOperation::COUNT;
+        _blendSrc = BlendProperty::ONE;
+        _blendDest = BlendProperty::ZERO;
+        _blendOp = BlendOperation::ADD;
+
+        _blendSrcAlpha = BlendProperty::ONE;
+        _blendDestAlpha = BlendProperty::ZERO;
+        _blendOpAlpha = BlendOperation::ADD;
     }
 };
 

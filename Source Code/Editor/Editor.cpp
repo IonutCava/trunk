@@ -710,6 +710,7 @@ void Editor::renderDrawList(ImDrawData* pDrawData, bool overlayOnScene, I64 wind
 
     GFX::SetBlendCommand blendCmd = {};
     blendCmd._blendProperties = BlendingProperties{
+        true,
         BlendProperty::SRC_ALPHA,
         BlendProperty::INV_SRC_ALPHA,
         BlendOperation::ADD

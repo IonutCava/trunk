@@ -135,6 +135,7 @@ void GUI::draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) {
 
             GFX::SetBlendCommand blendCmd;
             blendCmd._blendProperties = BlendingProperties{
+                true,
                 BlendProperty::SRC_ALPHA,
                 BlendProperty::INV_SRC_ALPHA,
                 BlendOperation::ADD
@@ -487,6 +488,8 @@ TextureData GUI::getCEGUIRenderTextureData() const {
     if (_ceguiRenderTextureTarget != nullptr) {
         const GFXDevice& gfx = _context->parent().platformContext().gfx();
         ret.setHandle(gfx.getHandleFromCEGUITexture(_ceguiRenderTextureTarget->getTexture()));
+        ret._textureType = TextureType::TEXTURE_2D;
+
     }
 
     return ret;

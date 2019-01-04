@@ -186,7 +186,7 @@ static void glfons__renderDraw(void* userPtr, const FONSvert* verts, int nverts)
     }
 
     { //Prep
-        Divide::GL_API::getStateTracker().bindTexture(0, gl->tex);
+        Divide::GL_API::getStateTracker().bindTexture(0, Divide::TextureType::TEXTURE_2D, gl->tex);
         Divide::GL_API::getStateTracker().setActiveVAO(gl->glfons_vaoID);
     }
 
@@ -213,7 +213,7 @@ static void glfons__renderDraw(void* userPtr, const FONSvert* verts, int nverts)
 static void glfons__renderDelete(void* userPtr) {
     struct GLFONScontext* gl = (struct GLFONScontext*)userPtr;
     if (gl->tex)
-        Divide::GL_API::deleteTextures(1, &gl->tex);
+        Divide::GL_API::deleteTextures(1, &gl->tex, Divide::TextureType::TEXTURE_2D);
     if (gl->glfons_vaoID)
         Divide::GL_API::deleteVAOs(1, &gl->glfons_vaoID);
     gl->tex = 0;

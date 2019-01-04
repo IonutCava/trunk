@@ -45,6 +45,8 @@ bool TextureDataContainer::addTexture(const eastl::pair<TextureData, U8 /*bindin
 }
 
 bool TextureDataContainer::addTexture(const TextureData& data, U8 binding) {
+    assert(data.type() != TextureType::COUNT);
+
     if (eastl::find_if(eastl::cbegin(_textures),
                         eastl::cend(_textures),
                         [&binding](const eastl::pair<TextureData, U8>& textureData) {

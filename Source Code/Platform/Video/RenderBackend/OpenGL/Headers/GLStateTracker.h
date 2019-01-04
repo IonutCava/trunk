@@ -99,12 +99,12 @@ namespace Divide {
         bool setPixelUnpackAlignment(GLint unpackAlignment = 4, GLint rowLength = 0, GLint skipRows = 0, GLint skipPixels = 0);
         /// Bind a texture specified by a GL handle and GL type to the specified unit
         /// using the sampler object defined by handle value
-        bool bindTexture(GLushort unit, GLuint handle, GLuint samplerHandle = 0u);
-        bool bindTextureImage(GLushort unit, GLuint handle, GLint level,
+        bool bindTexture(GLushort unit, TextureType type, GLuint handle, GLuint samplerHandle = 0u);
+        bool bindTextureImage(GLushort unit, TextureType type, GLuint handle, GLint level,
             bool layered, GLint layer, GLenum access,
             GLenum format);
         /// Bind multiple textures specified by an array of handles and an offset unit
-        bool bindTextures(GLushort unitOffset, GLuint textureCount, GLuint* textureHandles, GLuint* samplerHandles);
+        bool bindTextures(GLushort unitOffset, GLuint textureCount, TextureType* textureTypes, GLuint* textureHandles, GLuint* samplerHandles);
 
         size_t setStateBlock(size_t stateBlockHash);
 
@@ -138,7 +138,7 @@ namespace Divide {
         /// Change the current viewport area. Redundancy check is performed in GFXDevice class
         bool setViewport(I32 x, I32 y, I32 width, I32 height);
 
-        GLuint getBoundTextureHandle(GLuint slot);
+        U32 getBoundTextureHandle(U8 slot, TextureType type);
 
         void getActiveViewport(GLint* vp);
 
@@ -168,14 +168,15 @@ namespace Divide {
         GLuint _activeShaderProgram = 0; //GLUtil::_invalidObjectID;
         GLfloat _depthNearVal = .1f;
         GLfloat _depthFarVal = 1.f;
-        BlendingProperties _blendPropertiesGlobal = { BlendProperty::ONE,
+        BlendingProperties _blendPropertiesGlobal = { false,
+                                                      BlendProperty::ONE,
                                                       BlendProperty::ONE,
                                                       BlendOperation::ADD };
         GLboolean _blendEnabledGlobal = GL_FALSE;
 
         vector<BlendingProperties> _blendProperties;
         vector<GLboolean> _blendEnabled;
-
+        GLenum    _currentCullMode;
         UColour   _blendColour = UColour(0u);
         Rect<I32> _activeViewport = Rect<I32>(-1);
         Rect<I32> _activeScissor = Rect<I32>(-1);
@@ -189,8 +190,8 @@ namespace Divide {
         size_t _currentStateBlockHash = 0;
         size_t _previousStateBlockHash = 0;
 
-        /// /*texture slot*/ /*texture handle*/
-        typedef std::array<GLuint, MAX_ACTIVE_TEXTURE_SLOTS> textureBoundMapDef;
+        /// /*hash: texture slot  - array /*texture handle - texture type*/ hash
+        typedef std::array<std::array<U32, to_base(TextureType::COUNT)>, MAX_ACTIVE_TEXTURE_SLOTS> textureBoundMapDef;
         textureBoundMapDef _textureBoundMap;
 
         typedef std::array<ImageBindSettings, MAX_ACTIVE_TEXTURE_SLOTS> imageBoundMapDef;

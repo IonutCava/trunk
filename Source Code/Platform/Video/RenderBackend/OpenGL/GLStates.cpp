@@ -43,7 +43,7 @@ void GL_API::clearStates(const DisplayWindow& window, GLStateTracker& stateTrack
     static GLint defaultPatchCount = GLUtil::getIntegerv(GL_PATCH_VERTICES);
 
     if (global) {
-        stateTracker.bindTextures(0, s_maxTextureUnits, nullptr, nullptr);
+        stateTracker.bindTextures(0, s_maxTextureUnits, nullptr, nullptr, nullptr);
         stateTracker.setPixelPackUnpackAlignment();
         stateTracker.setActiveBuffer(GL_TEXTURE_BUFFER, 0);
         stateTracker.setActiveBuffer(GL_UNIFORM_BUFFER, 0);
@@ -60,7 +60,7 @@ void GL_API::clearStates(const DisplayWindow& window, GLStateTracker& stateTrack
     stateTracker.setActiveFB(RenderTarget::RenderTargetUsage::RT_READ_WRITE, 0);
     stateTracker._activeClearColour.set(window.clearColour());
     for (vec_size i = 0; i < stateTracker._blendEnabled.size(); ++i) {
-        stateTracker.setBlending((GLuint)i, BlendingProperties(), true);
+        stateTracker.setBlending((GLuint)i, BlendingProperties());
     }
     stateTracker.setBlendColour(UColour(0u), true);
 
@@ -167,18 +167,20 @@ bool GL_API::deleteShaderPrograms(GLuint count, GLuint* programs) {
     return false;
 }
 
-bool GL_API::deleteTextures(GLuint count, GLuint* textures) {
+bool GL_API::deleteTextures(GLuint count, GLuint* textures, TextureType texType) {
     if (count > 0 && textures != nullptr) {
         
         for (GLuint i = 0; i < count; ++i) {
             GLuint crtTex = textures[i];
             if (crtTex != 0) {
                 for (auto it : s_stateTrackers) {
-                    for (GLuint& boundTex : it.second._textureBoundMap) {
-                        if (boundTex == crtTex) {
-                            boundTex = 0;
+                    for (auto bindingIt : it.second._textureBoundMap) {
+                        U32& handle = bindingIt[to_base(texType)];
+                        if (handle == crtTex) {
+                            handle = 0u;
                         }
                     }
+
                     for (ImageBindSettings& settings : it.second._imageBoundMap) {
                         if (settings._texture == crtTex) {
                             settings.reset();

@@ -748,6 +748,7 @@ void GL_API::drawText(const TextElementBatch& batch) {
 
     getStateTracker().setBlending(0,
                         BlendingProperties {
+                            true,
                             BlendProperty::SRC_ALPHA,
                             BlendProperty::INV_SRC_ALPHA,
                             BlendOperation::ADD
@@ -851,7 +852,7 @@ void GL_API::drawIMGUI(ImDrawData* data, I64 windowGUID) {
 
                         cmd._cmd.indexCount = to_U32(pcmd->ElemCount);
 
-                        getStateTracker().bindTexture(0, (GLuint)((intptr_t)pcmd->TextureId));
+                        getStateTracker().bindTexture(0, TextureType::TEXTURE_2D, (GLuint)((intptr_t)pcmd->TextureId));
                         buffer->draw(cmd);
                     }
                 }
@@ -1185,29 +1186,39 @@ size_t GL_API::setStateBlock(size_t stateBlockHash) {
 }
 
 bool GL_API::makeTexturesResident(const TextureDataContainer& textureData) {
-    STUBBED("ToDo: Optimise this: If over n textures, get max binding slot, create [0...maxSlot] bindings, fill unused with 0 and send as one command with glBindTextures -Ionut")
-    if (false) {
-        constexpr vec_size k_textureThreshold = 3;
-        if (textureData.textures().size() > k_textureThreshold) {
-            GLushort offset = 0;
-            vector<GLuint> handles;
-            vector<GLuint> samplers;
-            ///etc
+    bool bound = false;
 
-            getStateTracker().bindTextures(offset, (GLuint)handles.size(), handles.data(), samplers.data());
+    STUBBED("ToDo: Optimise this: If over n textures, get max binding slot, create [0...maxSlot] bindings, fill unused with 0 and send as one command with glBindTextures -Ionut")
+    constexpr vec_size k_textureThreshold = 3;
+    size_t texCount = textureData.textures().size();
+    if (texCount > k_textureThreshold && false) {
+        GLushort offset = 0;
+        vector<TextureType> types;
+        vector<GLuint> handles;
+        vector<GLuint> samplers;
+        
+        types.reserve(texCount);
+        handles.reserve(texCount);
+        samplers.reserve(texCount);
+
+        for (auto data : textureData.textures()) {
+            types.push_back(data.first.type());
+            handles.push_back(data.first.getHandle());
+            samplers.push_back(data.first._samplerHandle);
+        }
+
+        bound = getStateTracker().bindTextures(offset, (GLuint)texCount, types.data(), handles.data(), samplers.data());
+    } else {
+        for (auto data : textureData.textures()) {
+            bound = makeTextureResident(data.first, data.second) || bound;
         }
     }
-
-    bool bound = false;
-    for (auto data : textureData.textures()) {
-        bound = makeTextureResident(data.first, data.second) || bound;
-    }
-
     return bound;
 }
 
 bool GL_API::makeTextureResident(const TextureData& textureData, U8 binding) {
     return getStateTracker().bindTexture(static_cast<GLushort>(binding),
+                                         textureData.type(),
                                          textureData.getHandle(),
                                          textureData._samplerHandle);
 }

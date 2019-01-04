@@ -224,6 +224,18 @@ GFXDevice::NodeData RenderPassManager::processVisibleNode(SceneGraphNode* node, 
 
     // Get the colour matrix (diffuse, specular, etc.)
     renderable->getMaterialColourMatrix(dataOut._colourMatrix);
+
+    // Temp: Make the hovered/selected node brighter. 
+    if (dataOut._properties.x > 0.5f || dataOut._properties.y < -0.5f) {
+        FColour matColour = dataOut._colourMatrix.getRow(0);
+        if (dataOut._properties.x < -0.5f) {
+            matColour *= 3;
+        } else {
+            matColour *= 2;
+        }
+        dataOut._colourMatrix.setRow(0, matColour);
+    }
+
     //set properties.w to -1 to skip occlusion culling for the node
     dataOut._properties.w = isOcclusionCullable ? 1.0f : -1.0f;
 
@@ -486,11 +498,13 @@ void RenderPassManager::woitPass(const PassParams& params, const RenderTarget& t
             beginRenderPassOitCmd._target = RenderTargetID(rtUsage);
             {
                 RTBlendState& state0 = beginRenderPassOitCmd._descriptor.blendState(to_U8(GFXDevice::ScreenTargets::ACCUMULATION));
+                state0._blendProperties._enabled = true;
                 state0._blendProperties._blendSrc = BlendProperty::ONE;
                 state0._blendProperties._blendDest = BlendProperty::ONE;
                 state0._blendProperties._blendOp = BlendOperation::ADD;
 
                 RTBlendState& state1 = beginRenderPassOitCmd._descriptor.blendState(to_U8(GFXDevice::ScreenTargets::REVEALAGE));
+                state1._blendProperties._enabled = true;
                 state1._blendProperties._blendSrc = BlendProperty::ZERO;
                 state1._blendProperties._blendDest = BlendProperty::INV_SRC_COLOR;
                 state1._blendProperties._blendOp = BlendOperation::ADD;
@@ -522,6 +536,7 @@ void RenderPassManager::woitPass(const PassParams& params, const RenderTarget& t
             beginRenderPassCompCmd._descriptor.drawMask().setEnabled(RTAttachmentType::Depth, 0, false);
             {
                 RTBlendState& state0 = beginRenderPassCompCmd._descriptor.blendState(to_U8(GFXDevice::ScreenTargets::ALBEDO));
+                state0._blendProperties._enabled = true;
                 state0._blendProperties._blendOp = BlendOperation::ADD;
 #if defined(USE_COLOUR_WOIT)
                 state0._blendProperties._blendSrc = BlendProperty::INV_SRC_ALPHA;

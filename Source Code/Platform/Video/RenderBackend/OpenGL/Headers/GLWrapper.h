@@ -168,7 +168,7 @@ public:
     static void pushDebugMessage(const char* message, I32 id);
     static void popDebugMessage();
 
-    static bool deleteTextures(GLuint count, GLuint* textures);
+    static bool deleteTextures(GLuint count, GLuint* textures, TextureType texType);
     static bool deleteSamplers(GLuint count, GLuint* samplers);
     static bool deleteBuffers(GLuint count, GLuint* buffers);
     static bool deleteVAOs(GLuint count, GLuint* vaos);

@@ -107,7 +107,7 @@ void OpenGL3GeometryBuffer::draw() const
 
             d_glStateChanger->bindDefaultState(currentBatch.clip);
 
-            Divide::GL_API::getStateTracker().bindTexture(0, currentBatch.texture);
+            Divide::GL_API::getStateTracker().bindTexture(0, Divide::TextureType::TEXTURE_2D, currentBatch.texture);
 
             // draw the geometry
             const unsigned int numVertices = currentBatch.vertexCount;

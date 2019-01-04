@@ -59,7 +59,7 @@ bool glTexture::unload() {
         if (_lockManager) {
             _lockManager->Wait(false);
         }
-        Divide::GL_API::deleteTextures(1, &textureID);
+        Divide::GL_API::deleteTextures(1, &textureID, _descriptor.type());
         _textureData.setHandle(0U);
     }
 
@@ -105,7 +105,7 @@ void glTexture::resize(const bufferPtr ptr,
         glCreateTextures(_type, 1, &tempHandle);
         assert(tempHandle != 0 && "glTexture error: failed to generate new texture handle!");
 
-        Divide::GL_API::deleteTextures(1, &textureID);
+        Divide::GL_API::deleteTextures(1, &textureID, _descriptor.type());
         textureID = tempHandle;
     }
 
@@ -425,7 +425,7 @@ void glTexture::bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, 
                             : (write ? GL_WRITE_ONLY : GL_NONE);
 
     GLenum glInternalFormat = GLUtil::internalFormat(_descriptor.baseFormat(), _descriptor.dataType(), _descriptor._srgb);
-    GL_API::getStateTracker().bindTextureImage(slot, _textureData.getHandle(), level, layered, layer, access, glInternalFormat);
+    GL_API::getStateTracker().bindTextureImage(slot, _descriptor.type(), _textureData.getHandle(), level, layered, layer, access, glInternalFormat);
 }
 
 };
