@@ -1,5 +1,5 @@
-#ifndef _LIGHTING_DEFAULTS_FRAG_
-#define _LIGHTING_DEFAULTS_FRAG_
+#ifndef _UTILITY_FRAG_
+#define _UTILITY_FRAG_
 
 #include "nodeBufferedInput.cmn"
 
@@ -168,4 +168,4 @@ float getDepthValue(vec2 screenNormalisedPos) {
 
     return private_depth;
 }
-#endif //_LIGHTING_DEFAULTS_FRAG_
+#endif //_UTILITY_FRAG_

@@ -5,7 +5,8 @@ invariant gl_Position;
 #include "vbInputData.vert"
 
 struct GrassData {
-    mat4 transform;
+    vec4 positionAndScale;
+    vec4 orientationQuad;
     //x - width extent, y = height extent, z = array index, w - render
     vec4 data;
 };
@@ -39,10 +40,12 @@ void main()
     _arrayLayerGS = int(data.data.z);
     _lod = data.data.w;
 
-    VAR._vertexW = data.transform * dvd_Vertex;
-    VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
-    VAR._normalWV = mat3(dvd_ViewMatrix * data.transform) * dvd_Normal;
+    dvd_Vertex.xyz = rotate_vertex_position(dvd_Vertex.xyz * data.positionAndScale.w, data.orientationQuad);
+    VAR._vertexW = dvd_Vertex + vec4(data.positionAndScale.xyz, 0.0f);
 
+    VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
+    VAR._normalWV = rotate_vertex_position(mat3(dvd_ViewMatrix) * dvd_Normal, data.orientationQuad);
+    
 
     //computeLightVectors();
 

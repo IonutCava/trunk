@@ -152,7 +152,7 @@ void Vegetation::precomputeStaticData(PlatformContext& context, U32 chunkSize, U
     }*/
 
     //ref: http://mollyrocket.com/casey/stream_0016.html
-    F32 PointRadius = 1.0f;
+    F32 PointRadius = 0.75f;
     F32 ArBase = 1.0f; // Starting radius of circle A
     F32 BrBase = 1.0f; // Starting radius of circle B
     F32 dR = 2.5f*PointRadius; // Distance between concentric rings
@@ -257,8 +257,7 @@ bool Vegetation::getDrawState(const SceneGraphNode& sgn, RenderStagePass renderS
     return false;
 }
 
-void Vegetation::onRefreshNodeData(SceneGraphNode& sgn,
-                                   GFX::CommandBuffer& bufferInOut){
+void Vegetation::onRefreshNodeData(SceneGraphNode& sgn, GFX::CommandBuffer& bufferInOut){
     if (_render) {
         // This will always lag one frame
         PipelineDescriptor pipeDesc;
@@ -386,7 +385,7 @@ void Vegetation::computeGrassTransforms(const Task& parentTask) {
             Terrain::Vert vert = terrain.getVert(x_fac, y_fac, true);
 
             // terrain slope should be taken into account
-            if (std::acos(Dot(vert._normal, WORLD_Y_AXIS)) > 45.0f) {
+            if (Angle::to_DEGREES(std::acos(Dot(vert._normal, WORLD_Y_AXIS))) > 45.0f) {
                 continue;
             }
 
@@ -399,11 +398,12 @@ void Vegetation::computeGrassTransforms(const Task& parentTask) {
             //vert._position.y = (((0.0f*heightExtent) + vert._position.y) - ((0.0f*scale) + vert._position.y)) + vert._position.y;
             {
                 GrassData entry = {};
-                entry._data.set(1.0f, heightExtent, to_F32(index), 1.0f);
-                entry._transform.setScale(vec3<F32>(scale));
-                mat3<F32> rotationMatrix = GetMatrix(Quaternion<F32>(WORLD_Y_AXIS, Random(360.0f)) * RotationFromVToU(vert._normal, WORLD_Y_AXIS));
-                entry._transform = mat4<F32>(rotationMatrix, false) * entry._transform;
-                entry._transform.setTranslation(vert._position);
+                entry._data.set(1.0f, heightExtent, to_F32(index), 0.0f);
+                entry._positionAndScale.set(vert._position, scale);
+                entry._orientationQuat = 
+                    (Quaternion<F32>(WORLD_Y_AXIS, Random(360.0f)) * 
+                     RotationFromVToU(vert._normal, WORLD_Y_AXIS)).asVec4();
+                
                 _tempData.push_back(entry);
             }
         }
