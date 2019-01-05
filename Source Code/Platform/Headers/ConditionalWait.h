@@ -94,17 +94,17 @@ namespace Divide {
                 WAIT_FOR_CONDITION_TIMEOUT_3)(__VA_ARGS__)
 
 #define WAIT_FOR_CONDITION_CALLBACK_1(condition, cbk, yield) \
-{                                                           \
+{                                                            \
     assert_type<bool>(yield);                                \
-    assert_type<std::function>(cbk);                        \
-                                                            \
-    while (!(condition)) {                                  \
-        cbk();                                              \
-                                                            \
+    assert_type<std::function>(cbk);                         \
+                                                             \
+    while (!(condition)) {                                   \
+        cbk();                                               \
+                                                             \
         if (yield) {                                         \
-            std::this_thread::yield();                      \
-        }                                                   \
-    }                                                       \
+            std::this_thread::yield();                       \
+        }                                                    \
+    }                                                        \
 }                                                         
 
 #define WAIT_FOR_CONDITION_CALLBACK_2(condition, cbk) \
@@ -120,29 +120,29 @@ namespace Divide {
                 WAIT_FOR_CONDITION_CALLBACK_3)(__VA_ARGS__)
 
 #define WAIT_FOR_CONDITION_CALLBACK_TIMEOUT_1(condition, cbk, timeoutMS, yield) \
-{                                                                              \
+{                                                                               \
     assert_type<bool>(yield);                                                   \
-    assert_type<std::function>(cbk);                                           \
-    assert_type<D64>(timeoutMS);                                               \
-                                                                               \
-    if (timeoutMS >= 0.0) {                                                    \
-        const D64 start = Time::ElapsedMilliseconds(true);                     \
-                                                                               \
-        while (!(condition)) {                                                 \
-            cbk();                                                             \
-                                                                               \
-            D64 end = Time::ElapsedMilliseconds(true);                         \
-            if (end - start >= timeoutMS) {                                    \
-                break;                                                         \
-            }                                                                  \
-                                                                               \
+    assert_type<std::function>(cbk);                                            \
+    assert_type<D64>(timeoutMS);                                                \
+                                                                                \
+    if (timeoutMS >= 0.0) {                                                     \
+        const D64 start = Time::ElapsedMilliseconds(true);                      \
+                                                                                \
+        while (!(condition)) {                                                  \
+            cbk();                                                              \
+                                                                                \
+            D64 end = Time::ElapsedMilliseconds(true);                          \
+            if (end - start >= timeoutMS) {                                     \
+                break;                                                          \
+            }                                                                   \
+                                                                                \
             if (yield) {                                                        \
-                std::this_thread::yield();                                     \
-            }                                                                  \
-        }                                                                      \
-    } else {                                                                   \
+                std::this_thread::yield();                                      \
+            }                                                                   \
+        }                                                                       \
+    } else {                                                                    \
         WAIT_FOR_CONDITION(condition, yield);                                   \
-    }                                                                          \
+    }                                                                           \
 }
 
 #define WAIT_FOR_CONDITION_CALLBACK_TIMEOUT_2(condition, cbk, timeoutMS) \

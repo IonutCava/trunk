@@ -59,8 +59,15 @@ namespace Input {
     class InputHandler;
 };
 
+enum class TaskPoolType : U8 {
+    Engine = 0,
+    Render,
+    COUNT
+};
+
 class PlatformContext {
     friend class Attorney::PlatformContextKernel;
+public:
 
 public:
     explicit PlatformContext(Application& app, Kernel& kernel);
@@ -103,8 +110,8 @@ public:
     inline Editor& editor() { return *_editor; }
     inline const Editor& editor() const { return *_editor; }
 
-    inline TaskPool& taskPool() {return *_taskPool; }
-    inline const TaskPool& taskPool() const { return *_taskPool; }
+    inline TaskPool& taskPool(TaskPoolType type) {return *_taskPool[to_base(type)]; }
+    inline const TaskPool& taskPool(TaskPoolType type) const { return *_taskPool[to_base(type)]; }
 
     inline Input::InputHandler& input() { return *_inputHandler; }
     inline const Input::InputHandler& input() const { return *_inputHandler; }
@@ -123,8 +130,8 @@ public:
     /// Main app's kernel
     Kernel& _kernel;
 
-    /// TaskPool
-    std::unique_ptr<TaskPool> _taskPool;
+    /// Task pools
+    std::unique_ptr<TaskPool> _taskPool[to_base(TaskPoolType::COUNT)];
     /// Access to the GPU
     std::unique_ptr<GFXDevice> _gfx;
     /// The graphical user interface

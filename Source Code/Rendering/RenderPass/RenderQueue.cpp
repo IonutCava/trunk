@@ -194,7 +194,7 @@ void RenderQueue::sort(RenderStagePass stagePass) {
     // How many elements should a renderbin contain before we decide that sorting should happen on a separate thread
     static const U16 threadBias = 32;
 
-    TaskPool& pool = parent().platformContext().taskPool();
+    TaskPool& pool = parent().platformContext().taskPool(TaskPoolType::Render);
     TaskHandle sortTask = CreateTask(pool, DELEGATE_CBK<void, const Task&>());
 
     SharedLock r_lock(_activeBinsLock);

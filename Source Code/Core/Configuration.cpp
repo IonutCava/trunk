@@ -19,6 +19,7 @@ Configuration::Configuration() : XML::IXMLSerializable()
     runtime.targetDisplay = 0;
     runtime.targetRenderingAPI = to_U8(RenderAPI::OpenGL);
     runtime.useFixedTimestep = true;
+    runtime.maxWorkerThreads = -1;
     runtime.windowedMode = true;
     runtime.windowResizable = false;
     runtime.enableVSync = false;
@@ -84,6 +85,7 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(runtime.targetDisplay);
         GET_PARAM(runtime.targetRenderingAPI);
         GET_PARAM(runtime.useFixedTimestep);
+        GET_PARAM(runtime.maxWorkerThreads);
         GET_PARAM(runtime.windowedMode);
         GET_PARAM(runtime.windowResizable);
         GET_PARAM(runtime.frameRateLimit);
@@ -152,6 +154,7 @@ bool Configuration::toXML(const char* xmlFile) const {
     PUT_PARAM(runtime.targetDisplay);
     PUT_PARAM(runtime.targetRenderingAPI);
     PUT_PARAM(runtime.useFixedTimestep);
+    PUT_PARAM(runtime.maxWorkerThreads);
     PUT_PARAM(runtime.windowedMode);
     PUT_PARAM(runtime.windowResizable);
     PUT_PARAM(runtime.frameRateLimit);

@@ -68,6 +68,7 @@ public:
         U8 targetDisplay;
         U8 targetRenderingAPI;
         bool useFixedTimestep;
+        I16 maxWorkerThreads;
         bool windowedMode;
         bool windowResizable;
         bool enableVSync;

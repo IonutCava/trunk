@@ -21,8 +21,11 @@
   <targetRenderingAPI>1</targetRenderingAPI>
   <!-- Fixed time step on/off as described here: https://gafferongames.com/post/fix_your_timestep/ -->
   <useFixedTimestep>true</useFixedTimestep>
+  <!-- The maximum number of worker threads that we want to spawn. -1 = (CPU thread count - 1). We will always spawn a minimum of 5 threads-->
+  <maxWorkerThreads>-1</maxWorkerThreads>
   <!-- set to true to start the application in windowed mode -->
   <windowedMode>true</windowedMode>
+  <!-- do we allow window resizing if running in windowed mode? -->
   <windowResizable>true</windowResizable>
   <!-- cap framerate. Set to 0 or less to disable -->
   <frameRateLimit>0</frameRateLimit>
@@ -78,13 +81,13 @@
   </postFX>
   
   <shadowMapping>
-    <enabled>true</enabled>
+    <enabled>false</enabled>
     <!-- Will be rounded up to the next POW_2. Cube/Dual paraboloid will be 1/2 resolution per face/slice -->
     <shadowMapResolution>1024</shadowMapResolution>
     <MSAAsamples>0</MSAAsamples>
     <anisotropicFilteringLevel>8</anisotropicFilteringLevel>
     <enableBlurring>false</enableBlurring>
-    <defaultCSMSplitCount>3</defaultCSMSplitCount>
+    <defaultCSMSplitCount>1</defaultCSMSplitCount>
   </shadowMapping>
 </rendering>
 

@@ -36,6 +36,7 @@ DEFINE_POOL(ReadAtomicCounterCommand, 1024);
 DEFINE_POOL(ExternalCommand, 4096);
 
 void CommandBuffer::add(const CommandBuffer& other) {
+    _commandOrder.reserve(_commandOrder.size() + other._commandOrder.size());
     for (const CommandEntry& cmd : other._commandOrder) {
         other.getCommand<CommandBase>(cmd).addToBuffer(*this);
     }

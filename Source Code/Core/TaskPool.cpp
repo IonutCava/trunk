@@ -134,10 +134,6 @@ void TaskPool::taskCompleted(U32 taskIndex, TaskPriority priority, const DELEGAT
 
 Task* TaskPool::createTask(Task* parentTask, const DELEGATE_CBK<void, const Task&>& threadedFunction) 
 {
-    if (parentTask != nullptr) {
-        parentTask->_unfinishedJobs.fetch_add(1);
-    }
-
     Task* task = nullptr;
     while (task == nullptr) {
         const U32 index = g_allocatedTasks++;
@@ -147,8 +143,11 @@ Task* TaskPool::createTask(Task* parentTask, const DELEGATE_CBK<void, const Task
         }
     }
 
-    task->_parentPool = this;
+    if (parentTask != nullptr) {
+        parentTask->_unfinishedJobs.fetch_add(1);
+    }
     task->_parent = parentTask;
+    task->_parentPool = this;
     task->_callback = threadedFunction;
     task->_unfinishedJobs = 1;
 
@@ -182,40 +181,44 @@ void WaitForAllTasks(TaskPool& pool, bool yield, bool flushCallbacks, bool foceC
     pool.waitForAllTasks(yield, flushCallbacks, foceClear);
 }
 
-TaskHandle parallel_for(TaskPool& pool, 
-                        const DELEGATE_CBK<void, const Task&, U32, U32>& cbk,
-                        U32 count,
-                        U32 partitionSize,
-                        TaskPriority priority)
+void parallel_for(TaskPool& pool, 
+                  const DELEGATE_CBK<void, const Task&, U32, U32>& cbk,
+                  U32 count,
+                  U32 partitionSize,
+                  TaskPriority priority,
+                  bool noWait)
 {
-    TaskHandle updateTask = CreateTask(pool, DELEGATE_CBK<void, const Task&>());
     if (count > 0) {
 
         U32 crtPartitionSize = std::min(partitionSize, count);
         U32 partitionCount = count / crtPartitionSize;
         U32 remainder = count % crtPartitionSize;
 
+        std::atomic_uint remaining = partitionCount + remainder;
+
         for (U32 i = 0; i < partitionCount; ++i) {
             U32 start = i * crtPartitionSize;
             U32 end = start + crtPartitionSize;
             CreateTask(pool,
-                       &updateTask,
-                       [&cbk, start, end](const Task& parentTask) {
+                       nullptr,
+                       [&cbk, &remaining, start, end](const Task& parentTask) {
                            cbk(parentTask, start, end);
+                           remaining.fetch_sub(1);
                        }).startTask(priority);
         }
         if (remainder > 0) {
             CreateTask(pool,
-                       &updateTask,
-                       [&cbk, count, remainder](const Task& parentTask) {
+                       nullptr,
+                       [&cbk, &remaining, count, remainder](const Task& parentTask) {
                            cbk(parentTask, count - remainder, count);
+                           remaining.fetch_sub(1);
                        }).startTask(priority);
         }
+
+        if (!noWait) {
+            WAIT_FOR_CONDITION(remaining.load() == 0);
+        }
     }
-
-    updateTask.startTask(Runtime::isMainThread() ? priority : TaskPriority::REALTIME).wait();
-
-    return updateTask;
 }
 
 };

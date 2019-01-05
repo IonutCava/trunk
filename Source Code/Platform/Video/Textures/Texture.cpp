@@ -191,7 +191,9 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name, Imag
                 for (U32 i = start; i < end; ++i) {
                     for (I32 j = 0; j < height; ++j) {
                         if (_hasTransparency && _hasTranslucency) {
-                            Stop(*parent._parent);
+                            if (parent._parent) {
+                                Stop(*parent._parent);
+                            }
                             return;
                         }
                         fileData.getAlpha(i, j, tempA);
@@ -199,12 +201,14 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name, Imag
                             _hasTransparency = true;
                             _hasTranslucency = tempA > 1;
                             if (_hasTranslucency) {
-                                Stop(*parent._parent);
+                                if (parent._parent) {
+                                    Stop(*parent._parent);
+                                }
                                 return;
                             }
                         }
                     }
-                    if (StopRequested(*parent._parent) || StopRequested(parent)) {
+                    if ((parent._parent && StopRequested(*parent._parent)) || StopRequested(parent)) {
                         break;
                     }
                 }

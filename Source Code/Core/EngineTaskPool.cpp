@@ -15,26 +15,27 @@ namespace Divide {
 TaskHandle CreateTask(PlatformContext& context, 
                       const DELEGATE_CBK<void, const Task&>& threadedFunction)
 {
-    return CreateTask(context.taskPool(), threadedFunction);
+    return CreateTask(context.taskPool(TaskPoolType::Engine), threadedFunction);
 }
 
 TaskHandle CreateTask(PlatformContext& context,
                      TaskHandle* parentTask,
                      const DELEGATE_CBK<void, const Task&>& threadedFunction)
 {
-    return CreateTask(context.taskPool(), parentTask, threadedFunction);
+    return CreateTask(context.taskPool(TaskPoolType::Engine), parentTask, threadedFunction);
 }
 
 void WaitForAllTasks(PlatformContext& context, bool yield, bool flushCallbacks, bool foceClear) {
-    WaitForAllTasks(context.taskPool(), yield, flushCallbacks, foceClear);
+    WaitForAllTasks(context.taskPool(TaskPoolType::Engine), yield, flushCallbacks, foceClear);
 }
 
-TaskHandle parallel_for(PlatformContext& context,
-                        const DELEGATE_CBK<void, const Task&, U32, U32>& cbk,
-                        U32 count,
-                        U32 partitionSize,
-                        TaskPriority priority) {
-    return parallel_for(context.taskPool(), cbk, count, partitionSize, priority);
+void parallel_for(PlatformContext& context,
+                  const DELEGATE_CBK<void, const Task&, U32, U32>& cbk,
+                  U32 count,
+                  U32 partitionSize,
+                  TaskPriority priority,
+                  bool noWait) {
+    parallel_for(context.taskPool(TaskPoolType::Engine), cbk, count, partitionSize, priority, noWait);
 }
 
 }; //namespace Divide

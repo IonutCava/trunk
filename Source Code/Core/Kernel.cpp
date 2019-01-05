@@ -268,7 +268,9 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTimeUS) {
             _sceneManager->processGUI(deltaTimeUS);
 
             // Flush any pending threaded callbacks
-            _platformContext->taskPool().flushCallbackQueue();
+            for (U32 i = 0; i < to_U32(TaskPoolType::COUNT); ++i) {
+                _platformContext->taskPool(static_cast<TaskPoolType>(i)).flushCallbackQueue();
+            }
 
             // Update scene based on input
             for (U8 i = 0; i < playerCount; ++i) {
@@ -593,14 +595,32 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     vec2<U16> renderResolution(mainWindow.getDimensions());
     initError = _platformContext->gfx().initRenderingAPI(_argc, _argv, renderResolution);
 
-    U32 hardwareThreads = HARDWARE_THREAD_COUNT();
-    if (!_platformContext->taskPool().init(
-        static_cast<U8>(std::max(hardwareThreads, 5u) - 1),
+    U32 hardwareThreads = config.runtime.maxWorkerThreads < 0 ? HARDWARE_THREAD_COUNT() : to_U32(config.runtime.maxWorkerThreads);
+
+    // Use half of our desired thread count for engine stuff
+    U8 threadCount = static_cast<U8>(std::max(hardwareThreads / 2, 5u) - 1);
+
+    if (!_platformContext->taskPool(TaskPoolType::Engine).init(
+        threadCount,
         TaskPool::TaskPoolType::TYPE_BLOCKING,
         [this](const std::thread::id& threadID) {
             Attorney::PlatformContextKernel::onThreadCreated(platformContext(), threadID);
         },
         "DIVIDE_WORKER_THREAD_"))
+    {
+        return ErrorCode::CPU_NOT_SUPPORTED;
+    }
+
+    // Use all of our threads for rendering
+    U32 minThreads = to_U32(RenderStage::COUNT) * 2; // One main thread and one worker thread per stage
+    threadCount = static_cast<U8>(std::max(hardwareThreads, minThreads));
+    if (!_platformContext->taskPool(TaskPoolType::Render).init(
+        threadCount,
+        TaskPool::TaskPoolType::TYPE_BLOCKING,
+        [this](const std::thread::id& threadID) {
+            Attorney::PlatformContextKernel::onThreadCreated(platformContext(), threadID);
+        },
+        "DIVIDE_RENDER_THREAD_"))
     {
         return ErrorCode::CPU_NOT_SUPPORTED;
     }
@@ -682,7 +702,10 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
 void Kernel::shutdown() {
     Console::printfn(Locale::get(_ID("STOP_KERNEL")));
-    WaitForAllTasks(_platformContext->taskPool(), true, true, true);
+    for (U32 i = 0; i < to_U32(TaskPoolType::COUNT); ++i) {
+        WaitForAllTasks(_platformContext->taskPool(static_cast<TaskPoolType>(i)), true, true, true);
+    }
+    
     if (Config::Build::ENABLE_EDITOR) {
         _platformContext->editor().toggle(false);
     }

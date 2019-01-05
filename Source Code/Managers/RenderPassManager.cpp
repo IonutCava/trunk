@@ -71,35 +71,37 @@ void RenderPassManager::render(SceneRenderState& sceneRenderState, Time::Profile
 
     TaskPriority priority = g_threadedCommandGeneration ? TaskPriority::DONT_CARE : TaskPriority::REALTIME;
 
-    TaskPool& pool = parent().platformContext().taskPool();
-    TaskHandle renderTask = CreateTask(pool, DELEGATE_CBK<void, const Task&>());
+    TaskPool& pool = parent().platformContext().taskPool(TaskPoolType::Render);
 
     U8 renderPassCount = to_U8(_renderPasses.size());
+    std::atomic_uint remainingTasks = renderPassCount + 1;
     {
         Time::ScopedTimer timeAll(*_renderPassTimer);
 
         for (U8 i = 0; i < renderPassCount; ++i) {
             CreateTask(pool,
-                       &renderTask,
-                       [this, i, &sceneRenderState](const Task& parentTask) {
+                       nullptr,
+                       [this, i, &sceneRenderState, &remainingTasks](const Task& parentTask) {
                            GFX::CommandBuffer& buf = *_renderPassCommandBuffer[i];
                            buf.clear();
                            _renderPasses[i]->render(sceneRenderState, buf);
                            buf.batch();
+                           remainingTasks.fetch_sub(1);
                        }).startTask(priority);
         }
 
         CreateTask(pool,
-                   &renderTask,
-                   [this, &cam](const Task& parentTask) {
+                   nullptr,
+                   [this, &cam, &remainingTasks](const Task& parentTask) {
                       Time::ScopedTimer time(*_postFxRenderTimer);
                       GFX::CommandBuffer& buf = *_renderPassCommandBuffer.back();
                       buf.clear();
                       parent().platformContext().gfx().postFX().apply(cam, buf);
                       buf.batch();
+                      remainingTasks.fetch_sub(1);
                    }).startTask(priority);
 
-        renderTask.startTask(priority).wait();
+        WAIT_FOR_CONDITION(remainingTasks.load() == 0);
     }
     {
         Time::ScopedTimer timeCommands(*_buildCommandBufferTimer);

@@ -31,7 +31,9 @@ PlatformContext::~PlatformContext()
 }
 
 void PlatformContext::init() {
-    _taskPool = std::make_unique<TaskPool>();
+    for (U32 i = 0; i < to_U32(TaskPoolType::COUNT); ++i) {
+        _taskPool[i] = std::make_unique<TaskPool>();
+    }
     _gfx = std::make_unique<GFXDevice>(_kernel);        // Video
     _sfx = std::make_unique<SFXDevice>(_kernel);        // Audio
     _pfx = std::make_unique<PXDevice>(_kernel);         // Physics
@@ -48,8 +50,10 @@ void PlatformContext::init() {
 }
 
 void PlatformContext::terminate() {
-    _taskPool->shutdown();
-    _taskPool.reset();
+    for (U32 i = 0; i < to_U32(TaskPoolType::COUNT); ++i) {
+        _taskPool[i]->shutdown();
+        _taskPool[i].reset();
+    }
     _editor.reset();
     _inputHandler.reset();
     _entryData.reset();
@@ -77,7 +81,9 @@ void PlatformContext::beginFrame() {
 }
 
 void PlatformContext::idle() {
-    _taskPool->flushCallbackQueue();
+    for (U32 i = 0; i < to_U32(TaskPoolType::COUNT); ++i) {
+        _taskPool[i]->flushCallbackQueue();
+    }
 
     _app.idle();
     _gfx->idle();

@@ -104,7 +104,7 @@ class CommandBuffer : private GUIDWrapper {
 template<typename T>
 inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, void>::type
 EnqueueCommand(CommandBuffer& buffer, T& cmd) {
-    cmd.addToBuffer(buffer);
+    buffer.add(cmd);
 }
 
 }; //namespace GFX

@@ -72,10 +72,12 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
     {
         // MSAA rendering is supported
         TextureType texType = g_shadowSettings.msaaSamples > 0 ? TextureType::TEXTURE_2D_ARRAY_MS : TextureType::TEXTURE_2D_ARRAY;
+
+
         TextureDescriptor depthMapDescriptor(texType, GFXImageFormat::RG, GFXDataFormat::FLOAT_32);
-        depthMapDescriptor.msaaSamples(g_shadowSettings.msaaSamples);
         depthMapDescriptor.setLayerCount(Config::Lighting::MAX_SPLITS_PER_LIGHT);
         depthMapDescriptor.setSampler(sampler);
+        depthMapDescriptor.msaaSamples(g_shadowSettings.msaaSamples);
 
         TextureDescriptor depthDescriptor(texType, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
         depthDescriptor.setLayerCount(Config::Lighting::MAX_SPLITS_PER_LIGHT);
@@ -174,7 +176,7 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
 
         params._passIndex = i;
         params._camera = light.shadowCameras()[i];
-        //rpm.doCustomPass(params, bufferInOut);
+        rpm.doCustomPass(params, bufferInOut);
 
         GFX::EnqueueCommand(bufferInOut, endRenderSubPassCommand);
         GFX::EnqueueCommand(bufferInOut, endDebugScopeCommand);
@@ -363,7 +365,7 @@ void CascadedShadowMapsGenerator::postRender(const DirectionalLightComponent& li
             blitEntry._outputLayer = light.getShadowOffset() + i;
             blitRenderTargetCommand._blitColours.emplace_back(blitEntry);
         }
-        GFX::EnqueueCommand(bufferInOut, blitRenderTargetCommand);
+        //GFX::EnqueueCommand(bufferInOut, blitRenderTargetCommand);
     }
 }
 
