@@ -117,7 +117,7 @@ void Sky::buildDrawCommands(SceneGraphNode& sgn,
     }
 
     PipelineDescriptor pipelineDescriptor;
-    if (renderStagePass._passType == RenderPassType::DEPTH_PASS) {
+    if (renderStagePass._passType == RenderPassType::PRE_PASS) {
         pipelineDescriptor._stateHash = _skyboxRenderStateHashPrePass;
         pipelineDescriptor._shaderProgramHandle = _skyShaderPrePass->getID();
     } else {

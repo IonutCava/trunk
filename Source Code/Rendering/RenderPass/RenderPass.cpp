@@ -146,7 +146,7 @@ namespace {
                 ret *= to_base(type);
             }break;
             case RenderStage::SHADOW: {
-                assert(type == RenderPassType::COUNT && "getBufferOffset error: make sure shadow rendering doesn't specify a pass type!");
+                assert(type == RenderPassType::MAIN_PASS && "getBufferOffset error: make sure shadow rendering doesn't specify a different type!");
                 ret = Config::MAX_VISIBLE_NODES * passIndex;
             }break;
             case RenderStage::DISPLAY: {

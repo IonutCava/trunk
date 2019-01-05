@@ -96,13 +96,13 @@ Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descri
     RenderStateBlock shadowDescriptorNoColour(shadowDescriptor);
     shadowDescriptorNoColour.setColourWrites(false, false, false, false);
 
-    setRenderStateBlock(stateDescriptor.getHash(), RenderStagePass(RenderStage::DISPLAY, RenderPassType::COLOUR_PASS));
-    setRenderStateBlock(stateDescriptor.getHash(), RenderStagePass(RenderStage::REFRACTION, RenderPassType::COLOUR_PASS));
-    setRenderStateBlock(reflectorDescriptor.getHash(), RenderStagePass(RenderStage::REFLECTION, RenderPassType::COLOUR_PASS));
+    setRenderStateBlock(stateDescriptor.getHash(), RenderStagePass(RenderStage::DISPLAY, RenderPassType::MAIN_PASS));
+    setRenderStateBlock(stateDescriptor.getHash(), RenderStagePass(RenderStage::REFRACTION, RenderPassType::MAIN_PASS));
+    setRenderStateBlock(reflectorDescriptor.getHash(), RenderStagePass(RenderStage::REFLECTION, RenderPassType::MAIN_PASS));
 
-    setRenderStateBlock(shadowDescriptor.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::COLOUR_PASS), 0);
-    setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::COLOUR_PASS), 1);
-    setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::COLOUR_PASS), 2);
+    setRenderStateBlock(shadowDescriptor.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::MAIN_PASS), 0);
+    setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::MAIN_PASS), 1);
+    setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::MAIN_PASS), 2);
 
     setRenderStateBlock(oitDescriptor.getHash(), RenderStagePass(RenderStage::DISPLAY, RenderPassType::OIT_PASS));
     setRenderStateBlock(oitDescriptor.getHash(), RenderStagePass(RenderStage::REFRACTION, RenderPassType::OIT_PASS));
@@ -112,13 +112,13 @@ Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descri
     setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::OIT_PASS), 1);
     setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::OIT_PASS), 2);
 
-    setRenderStateBlock(zPrePassDescriptor.getHash(), RenderStagePass(RenderStage::DISPLAY, RenderPassType::DEPTH_PASS));
-    setRenderStateBlock(zPrePassDescriptor.getHash(), RenderStagePass(RenderStage::REFRACTION, RenderPassType::DEPTH_PASS));
-    setRenderStateBlock(zPrePassDescriptor.getHash(), RenderStagePass(RenderStage::REFLECTION, RenderPassType::DEPTH_PASS));
+    setRenderStateBlock(zPrePassDescriptor.getHash(), RenderStagePass(RenderStage::DISPLAY, RenderPassType::PRE_PASS));
+    setRenderStateBlock(zPrePassDescriptor.getHash(), RenderStagePass(RenderStage::REFRACTION, RenderPassType::PRE_PASS));
+    setRenderStateBlock(zPrePassDescriptor.getHash(), RenderStagePass(RenderStage::REFLECTION, RenderPassType::PRE_PASS));
 
-    setRenderStateBlock(shadowDescriptor.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::DEPTH_PASS), 0);
-    setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::DEPTH_PASS), 1);
-    setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::DEPTH_PASS), 2);
+    setRenderStateBlock(shadowDescriptor.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::PRE_PASS), 0);
+    setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::PRE_PASS), 1);
+    setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::PRE_PASS), 2);
 }
 
 Material::~Material()
@@ -399,8 +399,8 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
         shaderPropertyDescriptor._defines.push_back(std::make_pair("SHADOW_PASS", true));
     }
 
-    if (renderStagePass._passType == RenderPassType::DEPTH_PASS) {
-        shaderPropertyDescriptor._defines.push_back(std::make_pair("DEPTH_PASS", true));
+    if (renderStagePass._passType == RenderPassType::PRE_PASS) {
+        shaderPropertyDescriptor._defines.push_back(std::make_pair("PRE_PASS", true));
     } else if (renderStagePass._passType == RenderPassType::OIT_PASS) {
         shaderPropertyDescriptor._defines.push_back(std::make_pair("OIT_PASS", true));
     }

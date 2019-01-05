@@ -48,7 +48,7 @@ enum class RenderStage : U8;
 
 // A RenderPass may contain multiple linked stages.
 // Useful to avoid having multiple renderqueues per pass if 2 stages depend on one:
-// E.g.: DEPTH_PASS + DISPLAY share the same renderqueue
+// E.g.: PRE_PASS + MAIN_PASS share the same renderqueue
 class RenderPass : private NonCopyable {
    public:
        struct BufferData {

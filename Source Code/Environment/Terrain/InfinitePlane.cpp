@@ -75,7 +75,7 @@ bool InfinitePlane::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCa
     ResourceDescriptor terrainShaderPrePass("terrainPlane.PrePass");
     terrainShaderPrePass.setPropertyDescriptor(shaderDescriptor);
     ShaderProgram_ptr terrainPrePassShader = CreateResource<ShaderProgram>(_parentCache, terrainShaderPrePass);
-    planeMaterial->setShaderProgram(terrainPrePassShader, RenderPassType::DEPTH_PASS);
+    planeMaterial->setShaderProgram(terrainPrePassShader, RenderPassType::PRE_PASS);
 
     setMaterialTpl(planeMaterial);
 

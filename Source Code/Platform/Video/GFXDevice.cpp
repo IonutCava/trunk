@@ -43,10 +43,10 @@ namespace TypeUtil {
 
     const char* renderPassTypeToString(RenderPassType pass) {
         switch (pass) {
-            case RenderPassType::DEPTH_PASS:
-                return "DEPTH_PASS";
-            case RenderPassType::COLOUR_PASS:
-                return "COLOUR_PASS";
+            case RenderPassType::PRE_PASS:
+                return "PRE_PASS";
+            case RenderPassType::MAIN_PASS:
+                return "MAIN_PASS";
             case RenderPassType::OIT_PASS:
                 return "OIT_PASS";
         };
@@ -69,10 +69,10 @@ namespace TypeUtil {
     }
 
     RenderPassType stringToRenderPassType(const char* pass) {
-        if (strcmp(pass, "DEPTH_PASS") == 0) {
-            return RenderPassType::DEPTH_PASS;
-        } else if (strcmp(pass, "COLOUR_PASS") == 0) {
-            return RenderPassType::COLOUR_PASS;
+        if (strcmp(pass, "PRE_PASS") == 0) {
+            return RenderPassType::PRE_PASS;
+        } else if (strcmp(pass, "MAIN_PASS") == 0) {
+            return RenderPassType::MAIN_PASS;
         } else if (strcmp(pass, "OIT_PASS") == 0) {
             return RenderPassType::OIT_PASS;
         }
@@ -148,7 +148,7 @@ GFXDevice::GFXDevice(Kernel& parent)
     flags[to_base(VertexAttribute::ATTRIB_COLOR)] = false;
     flags[to_base(VertexAttribute::ATTRIB_TANGENT)] = false;
     for (U8 stage = 0; stage < to_base(RenderStage::COUNT); ++stage) {
-        VertexBuffer::setAttribMask(RenderStagePass(static_cast<RenderStage>(stage), RenderPassType::DEPTH_PASS).index(), flags);
+        VertexBuffer::setAttribMask(RenderStagePass(static_cast<RenderStage>(stage), RenderPassType::PRE_PASS).index(), flags);
     }
     flags[to_base(VertexAttribute::ATTRIB_NORMAL)] = false;
     for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
@@ -671,7 +671,7 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::Comm
 }
 
 void GFXDevice::updateCullCount(GFX::CommandBuffer& cmdBufferInOut) {
-    const RenderPass::BufferData& bufferData = parent().renderPassManager().getBufferData(RenderStage::DISPLAY, RenderPassType::DEPTH_PASS, 0);
+    const RenderPass::BufferData& bufferData = parent().renderPassManager().getBufferData(RenderStage::DISPLAY, RenderPassType::PRE_PASS, 0);
 
     GFX::ReadAtomicCounterCommand readAtomicCounter;
     readAtomicCounter._buffer = bufferData._cmdBuffer;

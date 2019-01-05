@@ -78,13 +78,13 @@
   </postFX>
   
   <shadowMapping>
-    <enabled>false</enabled>
+    <enabled>true</enabled>
     <!-- Will be rounded up to the next POW_2. Cube/Dual paraboloid will be 1/2 resolution per face/slice -->
-    <shadowMapResolution>512</shadowMapResolution>
+    <shadowMapResolution>1024</shadowMapResolution>
     <MSAAsamples>0</MSAAsamples>
     <anisotropicFilteringLevel>8</anisotropicFilteringLevel>
     <enableBlurring>false</enableBlurring>
-    <defaultCSMSplitCount>1</defaultCSMSplitCount>
+    <defaultCSMSplitCount>3</defaultCSMSplitCount>
   </shadowMapping>
 </rendering>
 

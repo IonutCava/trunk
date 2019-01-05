@@ -181,12 +181,12 @@ void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
                 labelStack.emplace_back(view._name, viewport);
             }
 
-            viewport.x -= viewportWidth;
-            
-            if (idx > 0 && idx % columnCount == 0) {
+            if (idx > 0 && idx % (columnCount - 1) == 0) {
                 viewport.y += viewportHeight;
                 viewport.x += viewportWidth * columnCount;
             }
+             
+            viewport.x -= viewportWidth;
         }
 
         TextElement text(labelStyleHash, RelativePosition2D(RelativeValue(0.1f, 0.0f), RelativeValue(0.1f, 0.0f)));

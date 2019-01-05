@@ -174,7 +174,7 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
 
         params._passIndex = i;
         params._camera = light.shadowCameras()[i];
-        rpm.doCustomPass(params, bufferInOut);
+        //rpm.doCustomPass(params, bufferInOut);
 
         GFX::EnqueueCommand(bufferInOut, endRenderSubPassCommand);
         GFX::EnqueueCommand(bufferInOut, endDebugScopeCommand);

@@ -123,9 +123,9 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
 
         mat->setShaderProgram(_particleShader);
         mat->setShaderProgram(_particleDepthShader, RenderStage::SHADOW);
-        mat->setRenderStateBlock(_particleStateBlockHash, RenderPassType::COLOUR_PASS);
+        mat->setRenderStateBlock(_particleStateBlockHash, RenderPassType::MAIN_PASS);
         mat->setRenderStateBlock(_particleStateBlockHash, RenderPassType::OIT_PASS);
-        mat->setRenderStateBlock(_particleStateBlockHashDepth, RenderPassType::DEPTH_PASS);
+        mat->setRenderStateBlock(_particleStateBlockHashDepth, RenderPassType::PRE_PASS);
         setMaterialTpl(mat);
 
         return true;
@@ -244,7 +244,7 @@ void ParticleEmitter::buildDrawCommands(SceneGraphNode& sgn,
 }
 
 void ParticleEmitter::prepareForRender(RenderStagePass renderStagePass, const Camera& crtCamera) {
-    if (renderStagePass._passType != RenderPassType::DEPTH_PASS) {
+    if (renderStagePass._passType != RenderPassType::PRE_PASS) {
         return;
     }
 
@@ -280,7 +280,7 @@ bool ParticleEmitter::onRender(SceneGraphNode& sgn,
     if ( _enabled &&  getAliveParticleCount() > 0) {
         _bufferUpdate.wait();
 
-        if (renderStagePass._passType != RenderPassType::DEPTH_PASS && _buffersDirty[to_U32(renderStagePass._stage)]) {
+        if (renderStagePass._passType != RenderPassType::PRE_PASS && _buffersDirty[to_U32(renderStagePass._stage)]) {
             GenericVertexData& buffer = getDataBuffer(renderStagePass._stage, 0);
             buffer.updateBuffer(g_particlePositionBuffer, to_U32(_particles->_renderingPositions.size()), 0, _particles->_renderingPositions.data());
             buffer.updateBuffer(g_particleColourBuffer, to_U32(_particles->_renderingColours.size()), 0, _particles->_renderingColours.data());

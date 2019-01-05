@@ -44,7 +44,7 @@ bool glBufferLockManager::WaitForLockedRange(size_t lockBeginBytes,
                 glDeleteSync(lock._syncObj);
             }
             if (retryCount > 0) {
-                Console::d_errorfn("glBufferLockManager::WaitForLockedRange: Wait (%p) [%d - %d] %s - %d retries", this, lockBeginBytes, lockLength, blockClient ? "true" : "false", retryCount);
+                //Console::d_errorfn("glBufferLockManager::WaitForLockedRange: Wait (%p) [%d - %d] %s - %d retries", this, lockBeginBytes, lockLength, blockClient ? "true" : "false", retryCount);
             }
             ret = true;
         } else {

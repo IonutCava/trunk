@@ -17,9 +17,9 @@ CachedResource_ptr ImplResourceLoader<ImpostorSphere>::operator()() {
     if (!_descriptor.getFlag()) {
         Material_ptr matTemp = CreateResource<Material>(_cache, ResourceDescriptor("Material_" + _descriptor.resourceName()));
 
-        RenderStateBlock dummyDesc(RenderStateBlock::get(matTemp->getRenderStateBlock(RenderStagePass(RenderStage::DISPLAY, RenderPassType::COLOUR_PASS))));
+        RenderStateBlock dummyDesc(RenderStateBlock::get(matTemp->getRenderStateBlock(RenderStagePass(RenderStage::DISPLAY, RenderPassType::MAIN_PASS))));
         dummyDesc.setFillMode(FillMode::WIREFRAME);
-        matTemp->setRenderStateBlock(dummyDesc.getHash(), RenderStagePass(RenderStage::DISPLAY, RenderPassType::COLOUR_PASS));
+        matTemp->setRenderStateBlock(dummyDesc.getHash(), RenderStagePass(RenderStage::DISPLAY, RenderPassType::MAIN_PASS));
         matTemp->setRenderStateBlock(dummyDesc.getHash(), RenderStagePass(RenderStage::DISPLAY, RenderPassType::OIT_PASS));
         matTemp->setShadingMode(Material::ShadingMode::FLAT);
 
@@ -41,9 +41,9 @@ CachedResource_ptr ImplResourceLoader<ImpostorBox>::operator()() {
     if (!_descriptor.getFlag()) {
         Material_ptr matTemp = CreateResource<Material>(_cache, ResourceDescriptor("Material_" + _descriptor.resourceName()));
 
-        RenderStateBlock dummyDesc(RenderStateBlock::get(matTemp->getRenderStateBlock(RenderStagePass(RenderStage::DISPLAY, RenderPassType::COLOUR_PASS))));
+        RenderStateBlock dummyDesc(RenderStateBlock::get(matTemp->getRenderStateBlock(RenderStagePass(RenderStage::DISPLAY, RenderPassType::MAIN_PASS))));
         dummyDesc.setFillMode(FillMode::WIREFRAME);
-        matTemp->setRenderStateBlock(dummyDesc.getHash(), RenderStagePass(RenderStage::DISPLAY, RenderPassType::COLOUR_PASS));
+        matTemp->setRenderStateBlock(dummyDesc.getHash(), RenderStagePass(RenderStage::DISPLAY, RenderPassType::MAIN_PASS));
         matTemp->setRenderStateBlock(dummyDesc.getHash(), RenderStagePass(RenderStage::DISPLAY, RenderPassType::OIT_PASS));
         matTemp->setShadingMode(Material::ShadingMode::FLAT);
 

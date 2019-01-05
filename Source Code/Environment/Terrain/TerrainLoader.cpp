@@ -306,7 +306,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     terrainMaterial->setShaderProgram(terrainColourShader, RenderStage::DISPLAY);
     terrainMaterial->setShaderProgram(terrainColourShaderLQ, RenderStage::REFLECTION);
     terrainMaterial->setShaderProgram(terrainColourShaderLQ, RenderStage::REFRACTION);
-    terrainMaterial->setShaderProgram(terrainPrePassShader, RenderPassType::DEPTH_PASS);
+    terrainMaterial->setShaderProgram(terrainPrePassShader, RenderPassType::PRE_PASS);
     terrainMaterial->setShaderProgram(terrainShadowShader, RenderStage::SHADOW);
 
     terrain->setMaterialTpl(terrainMaterial);
@@ -582,7 +582,7 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
 
     vegMaterial->setShaderProgram(grassColour);
     vegMaterial->setShaderProgram(grassColourOIT, RenderPassType::OIT_PASS);
-    vegMaterial->setShaderProgram(grassPrePass, RenderPassType::DEPTH_PASS);
+    vegMaterial->setShaderProgram(grassPrePass, RenderPassType::PRE_PASS);
     vegMaterial->setShaderProgram(grassShadow, RenderStage::SHADOW);
 
     vegMaterial->setTexture(ShaderProgram::TextureUsage::UNIT0, grassBillboardArray);

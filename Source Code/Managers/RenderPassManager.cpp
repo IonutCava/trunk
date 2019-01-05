@@ -346,7 +346,7 @@ void RenderPassManager::prepareRenderQueues(RenderStagePass stagePass, const Pas
     packageQueue.resize(0);
     packageQueue.reserve(Config::MAX_VISIBLE_NODES);
     
-    if (stagePass._passType == RenderPassType::DEPTH_PASS) {
+    if (stagePass._passType == RenderPassType::PRE_PASS) {
         // Draw everything in the depth pass
         queue.populateRenderQueues(stagePass, std::make_pair(RenderBinType::RBT_COUNT, true), packageQueue);
     } else {
@@ -375,7 +375,7 @@ bool RenderPassManager::prePass(const PassParams& params, const RenderTarget& ta
         beginDebugScopeCmd._scopeName = " - PrePass";
         GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
-        RenderStagePass stagePass(params._stage, RenderPassType::DEPTH_PASS, params._passVariant);
+        RenderStagePass stagePass(params._stage, RenderPassType::PRE_PASS, params._passVariant);
         prepareRenderQueues(stagePass, params, true, bufferInOut);
 
         if (params._bindTargets) {
@@ -410,7 +410,7 @@ void RenderPassManager::mainPass(const PassParams& params, RenderTarget& target,
 
     SceneManager& sceneManager = parent().sceneManager();
 
-    RenderStagePass stagePass(params._stage, RenderPassType::COLOUR_PASS, params._passVariant);
+    RenderStagePass stagePass(params._stage, RenderPassType::MAIN_PASS, params._passVariant);
 
     prepareRenderQueues(stagePass, params, !prePassExecuted, bufferInOut);
 
@@ -600,7 +600,7 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
 
     if (prePassExecuted && params._occlusionCull) {
         const Texture_ptr& HiZTex = _context.constructHIZ(params._target, bufferInOut);
-        _context.occlusionCull(getBufferData(params._stage, RenderPassType::DEPTH_PASS, params._passIndex),
+        _context.occlusionCull(getBufferData(params._stage, RenderPassType::PRE_PASS, params._passIndex),
                                HiZTex,
                                params._camera->getZPlanes(),
                                bufferInOut);

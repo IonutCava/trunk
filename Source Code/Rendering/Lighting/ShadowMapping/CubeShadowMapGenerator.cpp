@@ -26,7 +26,7 @@ void CubeShadowMapGenerator::render(const Camera& playerCamera, Light& light, U3
                              light.getShadowOffset(),
                              light.getSGN().get<TransformComponent>()->getPosition(),
                              vec2<F32>(0.1f, light.getRange()),
-                             RenderStagePass(RenderStage::SHADOW, RenderPassType::DEPTH_PASS, to_U8(light.getLightType())),
+                             RenderStagePass(RenderStage::SHADOW, RenderPassType::PRE_PASS, to_U8(light.getLightType())),
                              lightIndex,
                              bufferInOut,
                              &light.getSGN(),

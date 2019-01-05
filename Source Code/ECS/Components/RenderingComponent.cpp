@@ -293,7 +293,7 @@ void RenderingComponent::getRenderingProperties(vec4<F32>& propertiesOut, F32& r
 /// Called after the current node was rendered
 void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, RenderStagePass renderStagePass, GFX::CommandBuffer& bufferInOut) {
     
-    if (renderStagePass._stage != RenderStage::DISPLAY || renderStagePass._passType == RenderPassType::DEPTH_PASS) {
+    if (renderStagePass._stage != RenderStage::DISPLAY || renderStagePass._passType == RenderPassType::PRE_PASS) {
         return;
     }
 
@@ -559,7 +559,7 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
                                      0,
                                      camera->getEye(),
                                      vec2<F32>(zPlanes.x, zPlanes.y * 0.25f),
-                                     RenderStagePass(RenderStage::REFLECTION, RenderPassType::COLOUR_PASS),
+                                     RenderStagePass(RenderStage::REFLECTION, RenderPassType::MAIN_PASS),
                                      reflectionIndex,
                                      bufferInOut);
         }

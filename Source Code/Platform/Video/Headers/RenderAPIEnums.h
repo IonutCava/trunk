@@ -109,8 +109,8 @@ enum class RenderStage : U8 {
 };
 
 enum class RenderPassType : U8 {
-    DEPTH_PASS = 0,
-    COLOUR_PASS = 1,
+    PRE_PASS = 0,
+    MAIN_PASS = 1,
     OIT_PASS = 2,
     COUNT
 };
