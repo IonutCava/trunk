@@ -54,6 +54,7 @@ public:
         /// If true, load shader source code from cache files
         /// If false, materials recompute shader source code from shader atoms
         /// If true, clear shader cache to apply changes to shader atom source code
+        I32 flushCommandBuffersOnFrame;
         bool useShaderBinaryCache;
         bool useShaderTextCache;
         stringImpl memFile;

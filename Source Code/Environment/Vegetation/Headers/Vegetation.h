@@ -96,6 +96,7 @@ class Vegetation : public SceneNode {
                      SceneState& sceneState) override;
 
     void onRefreshNodeData(SceneGraphNode& sgn,
+                           RenderStagePass renderStagePass,
                            GFX::CommandBuffer& bufferInOut) override;
 
     bool getDrawState(const SceneGraphNode& sgn, RenderStagePass renderStage) const override;
@@ -130,6 +131,7 @@ class Vegetation : public SceneNode {
 
     static U32 s_maxGrassChunks;
     static U32 s_maxGrassInstancesPerChunk;
+    static std::array<bool, to_base(RenderStage::COUNT)> s_stageRefreshed;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_TYPE(Vegetation);

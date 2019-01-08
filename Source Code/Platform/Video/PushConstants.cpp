@@ -62,7 +62,4 @@ bool PushConstants::merge(const PushConstants& other, bool& partial) {
     return true;
 }
 
-bool Merge(PushConstants& lhs, const PushConstants& rhs, bool& partial) {
-    return lhs.merge(rhs, partial);
-}
 }; //namespace Divide

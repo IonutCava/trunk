@@ -75,6 +75,7 @@ void CommandBuffer::batch() {
                     prevCommands.fill(nullptr);
                 }
             }
+
             if (!skip) {
                 prevCommand = crtCommand;
                 ++it;
@@ -182,7 +183,12 @@ void CommandBuffer::clean() {
                     it = _commandOrder.erase(it);
                     skip = true;
                 }
-                prevDescriptorSet = &set;
+                if (!skip && set._shaderBuffers.empty() && set._textureData.textures().empty()) {
+                    it = _commandOrder.erase(it);
+                    skip = true;
+                } else {
+                    prevDescriptorSet = &set;
+                }
             }break;
             case GFX::CommandType::DRAW_TEXT: {
                 const TextElementBatch& batch = getCommandInternal<DrawTextCommand>(cmd)->_batch;
@@ -312,9 +318,23 @@ bool CommandBuffer::validate() const {
 }
 
 bool CommandBuffer::resetMerge(GFX::CommandType type) const {
-    return type._value != GFX::CommandType::DRAW_COMMANDS &&
-           type._value != GFX::CommandType::BIND_DESCRIPTOR_SETS &&
-           type._value != GFX::CommandType::SEND_PUSH_CONSTANTS;
+    constexpr GFX::CommandType commands[] = {
+        GFX::CommandType::DRAW_COMMANDS,
+        GFX::CommandType::BIND_DESCRIPTOR_SETS,
+        GFX::CommandType::SEND_PUSH_CONSTANTS,
+        GFX::CommandType::DRAW_TEXT,
+        GFX::CommandType::SET_SCISSOR,
+        GFX::CommandType::SET_VIEWPORT,
+        GFX::CommandType::BIND_PIPELINE
+    };
+
+    for (auto it : commands) {
+        if (type._value == it) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 void CommandBuffer::toString(const GFX::CommandBase& cmd, I32& crtIndent, stringImpl& out) const {

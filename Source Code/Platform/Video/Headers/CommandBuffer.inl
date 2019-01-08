@@ -29,8 +29,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
-#include "Platform/Video/Buffers/VertexBuffer/Headers/VertexDataInterface.h"
-
 #ifndef _COMMAND_BUFFER_INL_
 #define _COMMAND_BUFFER_INL_
 
@@ -99,18 +97,25 @@ inline bool CommandBuffer::empty() const {
     return _commandOrder.empty();
 }
 
+
 template<>
 inline bool CommandBuffer::tryMergeCommands(DrawCommand* prevCommand, DrawCommand* crtCommand, bool& partial) const {
 
-    prevCommand->_drawCommands.insert(eastl::cend(prevCommand->_drawCommands),
-        eastl::cbegin(crtCommand->_drawCommands),
-        eastl::cend(crtCommand->_drawCommands));
+    vectorEASTL<GenericDrawCommand>& commands = prevCommand->_drawCommands;
+    commands.insert(eastl::cend(commands),
+                    eastl::cbegin(crtCommand->_drawCommands),
+                    eastl::cend(crtCommand->_drawCommands));
+
+    std::sort(std::begin(commands),
+             std::end(commands),
+             [](const GenericDrawCommand& a, const GenericDrawCommand& b) -> bool
+             {
+                return a._cmd.baseInstance < b._cmd.baseInstance;
+             });
 
     auto batch = [](GenericDrawCommand& previousIDC, GenericDrawCommand& currentIDC)  -> bool {
-        if (compatible(previousIDC, currentIDC) &&
-            // Batchable commands must share the same buffer
-            (previousIDC._sourceBuffer == nullptr && currentIDC._sourceBuffer == nullptr ||
-            previousIDC._sourceBuffer->getGUID() == currentIDC._sourceBuffer->getGUID()))
+        // Batchable commands must share the same buffer
+        if (compatible(previousIDC, currentIDC))
         {
             U32 prevCount = previousIDC._drawCount;
             if (previousIDC._cmd.baseInstance + prevCount != currentIDC._cmd.baseInstance) {
@@ -127,7 +132,6 @@ inline bool CommandBuffer::tryMergeCommands(DrawCommand* prevCommand, DrawComman
         return false;
     };
 
-    vectorEASTL<GenericDrawCommand>& commands = prevCommand->_drawCommands;
     vec_size previousCommandIndex = 0;
     vec_size currentCommandIndex = 1;
     const vec_size commandCount = commands.size();
@@ -157,7 +161,34 @@ inline bool CommandBuffer::tryMergeCommands(BindDescriptorSetsCommand* prevComma
 
 template<>
 inline bool CommandBuffer::tryMergeCommands(SendPushConstantsCommand* prevCommand, SendPushConstantsCommand* crtCommand, bool& partial) const {
-    return Merge(prevCommand->_constants, crtCommand->_constants, partial);
+    return prevCommand->_constants.merge(crtCommand->_constants, partial);
+}
+
+template<>
+inline bool CommandBuffer::tryMergeCommands(DrawTextCommand* prevCommand, DrawTextCommand* crtCommand, bool& partial) const {
+    partial = false;
+    prevCommand->_batch._data.insert(std::cend(prevCommand->_batch._data),
+                                     std::cbegin(crtCommand->_batch._data),
+                                     std::cend(crtCommand->_batch._data));
+    return true;
+}
+
+template<>
+inline bool CommandBuffer::tryMergeCommands(SetScissorCommand* prevCommand, SetScissorCommand* crtCommand, bool& partial) const {
+    partial = false;
+    return prevCommand->_rect == crtCommand->_rect;
+}
+
+template<>
+inline bool CommandBuffer::tryMergeCommands(SetViewportCommand* prevCommand, SetViewportCommand* crtCommand, bool& partial) const {
+    partial = false;
+    return prevCommand->_viewport == crtCommand->_viewport;
+}
+
+template<>
+inline bool CommandBuffer::tryMergeCommands(BindPipelineCommand* prevCommand, BindPipelineCommand* crtCommand, bool& partial) const {
+    partial = false;
+    return *prevCommand->_pipeline == *crtCommand->_pipeline;
 }
 
 template<typename T>
@@ -169,12 +200,20 @@ template<>
 inline bool CommandBuffer::tryMergeCommands(GFX::CommandBase* prevCommand, GFX::CommandBase* crtCommand, bool& partial) const {
     assert(prevCommand != nullptr && crtCommand != nullptr);
     switch (prevCommand->_type) {
-    case GFX::CommandType::DRAW_COMMANDS:
-        return tryMergeCommands(static_cast<DrawCommand*>(prevCommand), static_cast<DrawCommand*>(crtCommand), partial);
-    case GFX::CommandType::BIND_DESCRIPTOR_SETS:
-        return tryMergeCommands(static_cast<BindDescriptorSetsCommand*>(prevCommand), static_cast<BindDescriptorSetsCommand*>(crtCommand), partial);
-    case GFX::CommandType::SEND_PUSH_CONSTANTS:
-        return tryMergeCommands(static_cast<SendPushConstantsCommand*>(prevCommand), static_cast<SendPushConstantsCommand*>(crtCommand), partial);
+        case GFX::CommandType::DRAW_COMMANDS:
+            return tryMergeCommands(static_cast<DrawCommand*>(prevCommand), static_cast<DrawCommand*>(crtCommand), partial);
+        case GFX::CommandType::BIND_DESCRIPTOR_SETS:
+            return tryMergeCommands(static_cast<BindDescriptorSetsCommand*>(prevCommand), static_cast<BindDescriptorSetsCommand*>(crtCommand), partial);
+        case GFX::CommandType::SEND_PUSH_CONSTANTS:
+            return tryMergeCommands(static_cast<SendPushConstantsCommand*>(prevCommand), static_cast<SendPushConstantsCommand*>(crtCommand), partial);
+        case GFX::CommandType::DRAW_TEXT:
+            return tryMergeCommands(static_cast<DrawTextCommand*>(prevCommand), static_cast<DrawTextCommand*>(crtCommand), partial);
+        case GFX::CommandType::SET_SCISSOR:
+            return tryMergeCommands(static_cast<SetScissorCommand*>(prevCommand), static_cast<SetScissorCommand*>(crtCommand), partial);
+        case GFX::CommandType::SET_VIEWPORT:
+            return tryMergeCommands(static_cast<SetViewportCommand*>(prevCommand), static_cast<SetViewportCommand*>(crtCommand), partial);
+        case GFX::CommandType::BIND_PIPELINE:
+            return tryMergeCommands(static_cast<BindPipelineCommand*>(prevCommand), static_cast<BindPipelineCommand*>(crtCommand), partial);
     }
     return false;
 }

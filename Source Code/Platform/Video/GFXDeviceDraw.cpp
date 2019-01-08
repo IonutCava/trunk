@@ -14,6 +14,7 @@
 #include "Managers/Headers/RenderPassManager.h"
 
 #include "Core/Headers/Kernel.h"
+#include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Time/Headers/ProfileTimer.h"
 
@@ -45,7 +46,12 @@ void GFXDevice::preRender(RenderStagePass stagePass, U16 numLightsPerTile, GFX::
 void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
     if (Config::ENABLE_GPU_VALIDATION) {
         DIVIDE_ASSERT(Runtime::isMainThread(), "GFXDevice::flushCommandBuffer called from worker thread!");
+
+        if (FRAME_COUNT == _context.config().debug.flushCommandBuffersOnFrame) {
+            Console::errorfn(commandBuffer.toString().c_str());
+        }
     }
+
 
     commandBuffer.batch();
 

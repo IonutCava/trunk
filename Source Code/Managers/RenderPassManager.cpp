@@ -245,12 +245,12 @@ GFXDevice::NodeData RenderPassManager::processVisibleNode(SceneGraphNode* node, 
 }
 
 void RenderPassManager::refreshNodeData(RenderStage stage,
-    RenderPassType pass,
-    U32 passIndex,
-    const SceneRenderState& renderState,
-    const mat4<F32>& viewMatrix,
-    const RenderQueue::SortedQueues& sortedQueues,
-    GFX::CommandBuffer& bufferInOut)
+                                        RenderPassType pass,
+                                        U32 passIndex,
+                                        const SceneRenderState& renderState,
+                                        const mat4<F32>& viewMatrix,
+                                        const RenderQueue::SortedQueues& sortedQueues,
+                                        GFX::CommandBuffer& bufferInOut)
 {
     bool playAnimations = renderState.isEnabledOption(SceneRenderState::RenderOptions::PLAY_ANIMATIONS);
 
@@ -266,7 +266,7 @@ void RenderPassManager::refreshNodeData(RenderStage stage,
             if (Attorney::RenderingCompRenderPass::hasDrawCommands(renderable, stage)) {
                 Attorney::RenderingCompRenderPass::setDataIndex(renderable, stage, to_U32(g_nodeData.size()));
                 Attorney::RenderingCompRenderPass::updateDrawCommands(renderable, stage, g_drawCommands);
-                Attorney::RenderingCompRenderPass::onRefreshNodeData(renderable, bufferInOut);
+                Attorney::RenderingCompRenderPass::onRefreshNodeData(renderable, RenderStagePass(stage, pass, passIndex), bufferInOut);
                 g_nodeData.push_back(processVisibleNode(node, renderable.renderOptionEnabled(RenderingComponent::RenderOptions::IS_OCCLUSION_CULLABLE), playAnimations, viewMatrix));
             }
         }

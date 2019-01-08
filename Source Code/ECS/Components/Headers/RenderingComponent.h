@@ -149,7 +149,7 @@ class RenderingComponent : public BaseComponentType<RenderingComponent, Componen
     void onRender(RenderStagePass renderStagePass);
 
    protected:    
-    void onRefreshNodeData(GFX::CommandBuffer& bufferInOut);
+    void onRefreshNodeData(RenderStagePass renderStagePass, GFX::CommandBuffer& bufferInOut);
     bool canDraw(RenderStagePass renderStagePass);
     void updateLoDLevel(const Camera& camera, RenderStagePass renderStagePass);
 
@@ -271,8 +271,8 @@ class RenderingCompRenderPass {
             return renderable.hasDrawCommands(stage);
         }
 
-        static void onRefreshNodeData(RenderingComponent& renderable, GFX::CommandBuffer& bufferInOut) {
-            renderable.onRefreshNodeData(bufferInOut);
+        static void onRefreshNodeData(RenderingComponent& renderable, RenderStagePass renderStagePass, GFX::CommandBuffer& bufferInOut) {
+            renderable.onRefreshNodeData(renderStagePass, bufferInOut);
         }
 
     friend class Divide::RenderPass;

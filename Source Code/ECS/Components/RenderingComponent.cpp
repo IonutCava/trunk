@@ -257,8 +257,8 @@ void RenderingComponent::onRender(RenderStagePass renderStagePass) {
     }
 }
 
-void RenderingComponent::onRefreshNodeData(GFX::CommandBuffer& bufferInOut) {
-    _parentSGN.onRefreshNodeData(bufferInOut);
+void RenderingComponent::onRefreshNodeData(RenderStagePass renderStagePass, GFX::CommandBuffer& bufferInOut) {
+    _parentSGN.onRefreshNodeData(renderStagePass, bufferInOut);
 }
 
 void RenderingComponent::getMaterialColourMatrix(mat4<F32>& matOut) const {

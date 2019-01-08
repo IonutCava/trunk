@@ -34,6 +34,7 @@ VertexBuffer* Vegetation::s_buffer = nullptr;
 std::atomic_uint Vegetation::s_bufferUsage = 0;
 U32 Vegetation::s_maxGrassChunks = 0;
 U32 Vegetation::s_maxGrassInstancesPerChunk = 0;
+std::array<bool, to_base(RenderStage::COUNT)> Vegetation::s_stageRefreshed;
 
 Vegetation::Vegetation(GFXDevice& context, 
                        TerrainChunk& parentChunk,
@@ -145,6 +146,8 @@ void Vegetation::precomputeStaticData(PlatformContext& context, U32 chunkSize, U
         s_buffer->computeTangents();
         s_buffer->create(true);
         s_buffer->keepData(false);
+
+        s_stageRefreshed.fill(false);
     }
 
     /*if (!g_disableLoadFromCache) {
@@ -246,6 +249,8 @@ void Vegetation::sceneUpdate(const U64 deltaTimeUS,
         _stateRefreshIntervalBufferUS += deltaTimeUS;
     }
 
+    s_stageRefreshed.fill(false);
+
     SceneNode::sceneUpdate(deltaTimeUS, sgn, sceneState);
 }
 
@@ -257,31 +262,32 @@ bool Vegetation::getDrawState(const SceneGraphNode& sgn, RenderStagePass renderS
     return false;
 }
 
-void Vegetation::onRefreshNodeData(SceneGraphNode& sgn, GFX::CommandBuffer& bufferInOut){
+void Vegetation::onRefreshNodeData(SceneGraphNode& sgn, RenderStagePass renderStagePass, GFX::CommandBuffer& bufferInOut){
     if (_render) {
         // This will always lag one frame
         PipelineDescriptor pipeDesc;
         pipeDesc._shaderProgramHandle = _cullShader->getID();
 
-        Texture_ptr depthTex = _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Depth, 0).texture();
-
-        GFX::BindDescriptorSetsCommand descriptorSetCmd;
-        descriptorSetCmd._set._textureData.addTexture(depthTex->getData(), to_U8(ShaderProgram::TextureUsage::UNIT0));
-        descriptorSetCmd._set.addShaderBuffer(
-            { ShaderBufferLocation::GRASS_DATA,
-             s_grassData,
-            vec2<U32>(_terrainChunk.ID() * s_maxGrassInstancesPerChunk, _instanceCountGrass)});
-        GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
-
         GFX::BindPipelineCommand pipelineCmd;
         pipelineCmd._pipeline = _context.newPipeline(pipeDesc);
         GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
-        GFX::SendPushConstantsCommand pushConstantsCommand;
-        
-        float grassDistance = _context.parent().sceneManager().getActiveScene().renderState().grassVisibility();
-        pushConstantsCommand._constants.set("dvd_visibilityDistance", GFX::PushConstantType::FLOAT, grassDistance);
-        GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
+        GFX::BindDescriptorSetsCommand descriptorSetCmd;
+        descriptorSetCmd._set.addShaderBuffer({ ShaderBufferLocation::GRASS_DATA, s_grassData, vec2<U32>(_terrainChunk.ID() * s_maxGrassInstancesPerChunk, _instanceCountGrass) });
+
+        if (!s_stageRefreshed[to_base(renderStagePass._stage)]) {
+            GFX::SendPushConstantsCommand pushConstantsCommand;
+            float grassDistance = _context.parent().sceneManager().getActiveScene().renderState().grassVisibility();
+            pushConstantsCommand._constants.set("dvd_visibilityDistance", GFX::PushConstantType::FLOAT, grassDistance);
+            GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
+
+            Texture_ptr depthTex = _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Depth, 0).texture();
+            descriptorSetCmd._set._textureData.addTexture(depthTex->getData(), to_U8(ShaderProgram::TextureUsage::UNIT0));
+
+            s_stageRefreshed[to_base(renderStagePass._stage)] = true;
+        }
+
+        GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
         GFX::DispatchComputeCommand computeCmd;
         computeCmd._computeGroupSize.set(_instanceCountGrass / WORK_GROUP_SIZE, 1, 1);
@@ -292,7 +298,7 @@ void Vegetation::onRefreshNodeData(SceneGraphNode& sgn, GFX::CommandBuffer& buff
         GFX::EnqueueCommand(bufferInOut, memCmd);
     }
 
-    SceneNode::onRefreshNodeData(sgn, bufferInOut);
+    SceneNode::onRefreshNodeData(sgn, renderStagePass, bufferInOut);
 }
 
 void Vegetation::buildDrawCommands(SceneGraphNode& sgn,

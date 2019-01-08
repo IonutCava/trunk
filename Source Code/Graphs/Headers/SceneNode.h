@@ -98,6 +98,7 @@ class SceneNode : public CachedResource {
                           const Camera& camera,
                           RenderStagePass renderStagePass);
     virtual void onRefreshNodeData(SceneGraphNode& sgn,
+                                   RenderStagePass renderStagePass,
                                    GFX::CommandBuffer& bufferInOut);
     virtual bool getDrawState(const SceneGraphNode& sgn) const {
         ACKNOWLEDGE_UNUSED(sgn);

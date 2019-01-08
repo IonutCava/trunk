@@ -1,5 +1,8 @@
 <!-- DEBUG: General purpose settings needed while the application is loading -->
 <debug>
+  <!-- if this is not set to -1, then all command buffers used in that frame number will be dumped to the error log for inspection -->
+  <!-- requires a build with ENABLE_GPU_VALIDATION set-->
+  <flushCommandBuffersOnFrame>-1</flushCommandBuffersOnFrame>
   <useShaderBinaryCache>false</useShaderBinaryCache>
   <!-- this is only taken into consideration if binary cache is disabled-->
   <useShaderTextCache>false</useShaderTextCache>

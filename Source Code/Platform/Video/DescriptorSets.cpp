@@ -1,6 +1,8 @@
 #include "stdafx.h"
 
 #include "Headers/DescriptorSets.h"
+
+#include "Core/Headers/Console.h"
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 
 namespace Divide {
@@ -135,10 +137,9 @@ namespace Divide {
             const ShaderBufferBinding* binding = lhs.findBinding(otherBinding._binding);
             bool erase = false;
             if (binding == nullptr) {
-                //ToDo: This is problematic because we don't know what the current state is
-                // If the current descriptor set doesn't set a binding, that doesn't mean that that binding is empty
-                /*lhs._shaderBuffers.push_back(otherBinding);
-                erase = true;*/
+                STUBBED("ToDo: This is problematic because we don't know what the current state is. If the current descriptor set doesn't set a binding, that doesn't mean that that binding is empty");
+                //lhs._shaderBuffers.push_back(otherBinding);
+                //erase = true;
             } else {
                 if (*binding == otherBinding) {
                     erase = true;

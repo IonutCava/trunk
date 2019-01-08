@@ -5,6 +5,39 @@
 
 namespace Divide {
 namespace GFX {
+
+stringImpl BindPipelineCommand::toString(U16 indent) const {
+    assert(_pipeline != nullptr);
+
+    stringImpl ret = CommandBase::toString(indent) + "\n";
+    ret.append("    ");
+    for (U16 j = 0; j < indent; ++j) {
+        ret.append("    ");
+    }
+    ret.append(Util::StringFormat("Shader handle : %d\n",_pipeline->shaderProgramHandle()));
+    ret.append("    ");
+    for (U16 j = 0; j < indent; ++j) {
+        ret.append("    ");
+    }
+    ret.append(Util::StringFormat("State hash : %zu\n", _pipeline->stateHash()));
+
+    return ret;
+}
+
+stringImpl SendPushConstantsCommand::toString(U16 indent) const {
+    stringImpl ret = CommandBase::toString(indent) + "\n";
+
+    for (auto it : _constants.data()) {
+        ret.append("    ");
+        for (U16 j = 0; j < indent; ++j) {
+            ret.append("    ");
+        }
+        ret.append(Util::StringFormat("Constant binding: %s\n", it._binding.c_str()));
+    }
+
+    return ret;
+}
+
 stringImpl DrawCommand::toString(U16 indent) const {
     stringImpl ret = CommandBase::toString(indent);
     ret.append("\n");
@@ -31,6 +64,22 @@ stringImpl SetScissorCommand::toString(U16 indent) const {
     return CommandBase::toString(indent) + Util::StringFormat(" [%d, %d, %d, %d]", _rect.x, _rect.y, _rect.z, _rect.w);
 }
 
+stringImpl SetClipPlanesCommand::toString(U16 indent) const {
+    stringImpl ret = CommandBase::toString(indent) + "\n";
+    for (U8 i = 0; i < _clippingPlanes._planes.size(); ++i) {
+        ret.append("    ");
+        for (U16 j = 0; j < indent; ++j) {
+            ret.append("    ");
+        }
+
+        const vec4<F32>& eq = _clippingPlanes._planes[i].getEquation();
+
+        ret.append(Util::StringFormat("Plane [%d] [ %5.2f %5.2f %5.2f - %5.2f ] is %s\n", i, eq.x, eq.y, eq.z, eq.w, _clippingPlanes._active[i] ? "active" : "not active"));
+    }
+
+    return ret;
+}
+
 stringImpl BindDescriptorSetsCommand::toString(U16 indent) const {
     stringImpl ret = CommandBase::toString(indent);
 
@@ -40,7 +89,7 @@ stringImpl BindDescriptorSetsCommand::toString(U16 indent) const {
         for (U16 j = 0; j < indent; ++j) {
             ret.append("    ");
         }
-        ret.append(Util::StringFormat("Buffer [ %d - %d ]\n", to_base(it._binding), it._buffer->getGUID()));
+        ret.append(Util::StringFormat("Buffer [ %d - %d ] Range [%d - %d] ]\n", to_base(it._binding), it._buffer->getGUID(), it._elementRange.x, it._elementRange.y));
     }
     for (auto it : _set._textureData.textures()) {
         ret.append("    ");
@@ -74,6 +123,10 @@ stringImpl DrawTextCommand::toString(U16 indent) const {
         ret.append(Util::StringFormat("%d: Text: [ %s ]", i++, string.c_str()));
     }
     return ret;
+}
+
+stringImpl DispatchComputeCommand::toString(U16 indent) const {
+    return CommandBase::toString(indent) + Util::StringFormat(" [ Group sizes: %d %d %d]", _computeGroupSize.x, _computeGroupSize.y, _computeGroupSize.z);
 }
 
 stringImpl MemoryBarrierCommand::toString(U16 indent) const {

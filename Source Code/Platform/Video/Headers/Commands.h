@@ -135,16 +135,21 @@ DECLARE_POOL(Name, PoolSize)
 
 BEGIN_COMMAND(BindPipelineCommand, CommandType::BIND_PIPELINE, 4096);
     const Pipeline* _pipeline = nullptr;
+
+    stringImpl toString(U16 indent) const override;
 END_COMMAND();
 
 
 BEGIN_COMMAND(SendPushConstantsCommand, CommandType::SEND_PUSH_CONSTANTS, 4096);
     PushConstants _constants;
+
+    stringImpl toString(U16 indent) const override;
 END_COMMAND();
 
 
 BEGIN_COMMAND(DrawCommand, CommandType::DRAW_COMMANDS, 4096);
     vectorEASTL<GenericDrawCommand> _drawCommands;
+
     stringImpl toString(U16 indent) const override;
 END_COMMAND();
 
@@ -213,6 +218,8 @@ END_COMMAND();
 
 BEGIN_COMMAND(SetClipPlanesCommand, CommandType::SET_CLIP_PLANES, 4096);
     FrustumClipPlanes _clippingPlanes;
+
+    stringImpl toString(U16 indent) const override;
 END_COMMAND();
 
 BEGIN_COMMAND(BindDescriptorSetsCommand, CommandType::BIND_DESCRIPTOR_SETS, 4096);
@@ -246,6 +253,8 @@ END_COMMAND();
 
 BEGIN_COMMAND(DispatchComputeCommand, CommandType::DISPATCH_COMPUTE, 1024);
     vec3<U32> _computeGroupSize;
+
+    stringImpl toString(U16 indent) const override;
 END_COMMAND();
 
 BEGIN_COMMAND(MemoryBarrierCommand, CommandType::MEMORY_BARRIER, 1024);

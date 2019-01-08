@@ -107,8 +107,6 @@ class PushConstants {
       vectorEASTL<GFX::PushConstant> _data;
 };
 
-bool Merge(PushConstants& lhs, const PushConstants& rhs, bool& partial);
-
 }; //namespace Divide
 
 #endif //_PUSH_CONSTANTS_H_
