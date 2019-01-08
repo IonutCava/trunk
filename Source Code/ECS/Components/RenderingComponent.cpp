@@ -182,7 +182,7 @@ void RenderingComponent::rebuildDrawCommands(RenderStagePass stagePass) {
     if (mat != nullptr) {
         PipelineDescriptor pipelineDescriptor;
         pipelineDescriptor._stateHash = mat->getRenderStateBlock(stagePass);
-        pipelineDescriptor._shaderProgramHandle = mat->getShaderInfo(stagePass)._shaderRef->getID();
+        pipelineDescriptor._shaderProgramHandle = mat->getProgramID(stagePass);
 
         GFX::BindPipelineCommand pipelineCommand;
         pipelineCommand._pipeline = _context.newPipeline(pipelineDescriptor);
@@ -224,7 +224,7 @@ void RenderingComponent::Update(const U64 deltaTimeUS) {
 bool RenderingComponent::canDraw(RenderStagePass renderStagePass) {
     if (_parentSGN.getDrawState(renderStagePass)) {
         const Material_ptr& mat = getMaterialInstance();
-        if (mat && !mat->canDraw(renderStagePass._stage)) {
+        if (mat && !mat->canDraw(renderStagePass)) {
             return false;
         }
         return renderOptionEnabled(RenderOptions::IS_VISIBLE);
@@ -410,15 +410,11 @@ void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
     RenderPackage& pkg = getDrawPackage(renderStagePass);
     if (canDraw(renderStagePass)) {
 
-        if (_renderPackagesDirty[to_base(renderStagePass._stage)]) {
+        bool& dirty = _renderPackagesDirty[renderStagePass.index()];
+        if (dirty) {
             pkg.setDrawOption(CmdRenderOptions::RENDER_INDIRECT, true);
-            for (U8 i = 0; i < to_U8(RenderPassType::COUNT); ++i) {
-                rebuildDrawCommands(RenderStagePass(renderStagePass._stage,
-                                                    static_cast<RenderPassType>(i),
-                                                    renderStagePass._variant));
-            }
-
-            _renderPackagesDirty[to_base(renderStagePass._stage)] = false;
+            rebuildDrawCommands(renderStagePass);
+            dirty = false;
         }
 
         if (_parentSGN.prepareRender(camera, renderStagePass)) {

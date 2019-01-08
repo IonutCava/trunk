@@ -10,6 +10,8 @@ SceneShaderData::SceneShaderData(GFXDevice& context)
       _sceneShaderData(nullptr),
       _dirty(true)
 {
+    shadowingSettings(0.0000002f, 0.0002f, 200.0f, 350.0f);
+
     ShaderBufferDescriptor bufferDescriptor;
     bufferDescriptor._elementCount = 1;
     bufferDescriptor._elementSize = sizeof(SceneShaderBufferData);
@@ -22,18 +24,19 @@ SceneShaderData::SceneShaderData(GFXDevice& context)
     bufferDescriptor._name = "SCENE_SHADER_DATA";
     _sceneShaderData = _context.newSB(bufferDescriptor);
     _sceneShaderData->bind(ShaderBufferLocation::SCENE_DATA);
-    shadowingSettings(0.0000002f, 0.0002f, 200.0f, 350.0f);
 }
 
 SceneShaderData::~SceneShaderData()
 {
 }
 
-void SceneShaderData::uploadToGPU() {
+ShaderBuffer* SceneShaderData::uploadToGPU() {
     if (_dirty) {
         _sceneShaderData->writeData(&_bufferData);
         _dirty = false;
     }
+
+    return _sceneShaderData;
 }
 
 }; //namespace Divide

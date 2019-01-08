@@ -51,6 +51,7 @@ vec3 getLightColour(vec3 albedo, vec3 normal) {
         getBRDFFactors(lightIdx, normal, albedo, specular, reflectivity, lightColour, reflectionCoeff);
     }
 
+#if !defined(DISABLED_FORWARD_PLUS)
     offset += DIRECTIONAL_LIGHT_COUNT;
     // Point lights
     uint nIndex = dvd_numLightsPerTile * GetTileIndex(gl_FragCoord.xy);
@@ -61,7 +62,7 @@ vec3 getLightColour(vec3 albedo, vec3 normal) {
         getBRDFFactors(int(nLightIndex - 1 + offset), normal, albedo, specular, reflectivity, lightColour, reflectionCoeff);
     }
 
-    /*offset += POINT_LIGHT_COUNT;
+    offset += POINT_LIGHT_COUNT;
     // Spot lights
     // Moves past the first sentinel to get to the spot lights.
     nNextLightIndex = perTileLightIndices[++nIndex];
@@ -69,7 +70,8 @@ vec3 getLightColour(vec3 albedo, vec3 normal) {
         uint nLightIndex = nNextLightIndex;
         nNextLightIndex = perTileLightIndices[++nIndex];
         getBRDFFactors(int(nLightIndex - 1 + offset), normal, albedo, specular, reflectivity, lightColour, reflectionCoeff);
-    }*/
+    }
+#endif
 
     return mix(getEmissive(), lightColour, DIST_TO_ZERO(length(lightColour)));
 #endif
@@ -92,7 +94,9 @@ vec4 getPixelColour(vec4 albedo, vec3 normal) {
 
     // Apply shadowing
 #if !defined(DISABLE_SHADOW_MAPPING)
-    colour *= (dvd_receivesShadows ? 1.0 : shadow_loop());
+    if (dvd_receivesShadows) {
+        colour *= shadow_loop();
+    }
 
 #if defined(DEBUG_SHADOWMAPPING)
     if (dvd_showDebugInfo == 1) {

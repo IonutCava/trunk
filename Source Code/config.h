@@ -170,14 +170,14 @@ namespace Assert {
 
 namespace Lighting {
 // How many lights (in order as passed to the shader for the node) should cast shadows
-constexpr unsigned int MAX_SHADOW_CASTING_LIGHTS = 4;
+constexpr unsigned short MAX_SHADOW_CASTING_LIGHTS = 4;
 /// Used for cube map shadows and for CSM or PSSM to determine the maximum number of frustum splits
-constexpr unsigned int MAX_SPLITS_PER_LIGHT = 6;
+constexpr unsigned short MAX_SPLITS_PER_LIGHT = 6;
 /// Used mainly for caching/memory efficiency reasons
-constexpr unsigned int MAX_POSSIBLE_LIGHTS = 1024;
+constexpr unsigned short MAX_POSSIBLE_LIGHTS = 1024;
 /// The following parameters control the behaviour of the Forward+ renderer
-constexpr unsigned int FORWARD_PLUS_TILE_RES = 16;
-constexpr unsigned int FORWARD_PLUS_MAX_LIGHTS_PER_TILE = 544;
+constexpr unsigned short FORWARD_PLUS_TILE_RES = 32;
+constexpr unsigned short FORWARD_PLUS_MAX_LIGHTS_PER_TILE = 544;
 constexpr unsigned int FORWARD_PLUS_LIGHT_INDEX_BUFFER_SENTINEL = 0x7fffffff;
 };  // namespace Lighting
 

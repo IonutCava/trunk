@@ -273,7 +273,7 @@ TEST(TestCharRemove) {
 
 TEST(HashIsConstantExpr)
 {
-    constexpr char* str = "TEST test TEST";
+    constexpr const char* const str = "TEST test TEST";
 
     constexpr U64 value = test_const<_ID(str)>::value;
     CHECK_EQUAL(value, _ID(str));

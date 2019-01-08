@@ -57,24 +57,22 @@ class Renderer : public PlatformContextComponent {
                 const SceneRenderState& sceneRenderState,
                 GFX::CommandBuffer& bufferInOut);
 
-    void updateResolution(U16 width, U16 height);
-
     inline void toggleDebugView() { _debugView = !_debugView; }
 
-    inline U32 getFlag() const { return _flag; }
+    inline U16 numLightsPerTile() const { return _numLightsPerTile; }
 
   private:
-    U32 getMaxNumLightsPerTile() const;
-    U32 getNumTilesX() const;
-    U32 getNumTilesY() const;
+    U16 getMaxNumLightsPerTile(U16 height) const;
+    U16 getNumTilesX(U16 width) const;
+    U16 getNumTilesY(U16 height) const;
 
   private:
     ResourceCache& _resCache;
-    // General purpose flag
-    U32 _flag;
+    U16 _numLightsPerTile;
     bool _debugView;
 
-    vec2<U16> _resolution;
+    U32 _perStageElementCount;
+
     ShaderProgram_ptr _lightCullComputeShader;
     ShaderBuffer*     _perTileLightIndexBuffer;
 

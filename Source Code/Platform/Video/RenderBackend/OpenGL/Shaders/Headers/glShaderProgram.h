@@ -137,7 +137,8 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     /// Remove a shader stage from this program
     void detachShader(glShader* const shader);
 
-    void reloadShaders(bool reparseShaderSource);
+    /// Returns true if at least one shader linked succesfully
+    bool reloadShaders(bool reparseShaderSource);
 
     void reuploadUniforms();
 
@@ -187,6 +188,13 @@ namespace Attorney {
         static bool bind(glShaderProgram& program, bool& wasBound) {
             return program.bind(wasBound);
         }
+        static void queueValidation(glShaderProgram& program) {
+            // After using the shader at least once, validate the shader if needed
+            if (!program._validated) {
+                program._validationQueued = true;
+            }
+        }
+
         static bool unbind() {
             return glShaderProgram::unbind();
         }

@@ -93,8 +93,7 @@ namespace GFX {
             : _binding(binding),
               _bindingHash(_ID(binding.c_str())),
               _type(type),
-              _flag(flag),
-              _transpose(false)
+              _flag(flag)
         {
             _buffer.resize(values.size() * (sizeof(T)));
             if (!values.empty()) {
@@ -110,8 +109,7 @@ namespace GFX {
             : _binding(binding),
               _bindingHash(_ID(binding.c_str())),
               _type(type),
-              _flag(flag),
-              _transpose(false)
+              _flag(flag)
         {
             _buffer.reserve(values.size());
             if (!values.empty()) {
@@ -129,8 +127,7 @@ namespace GFX {
             : _binding(binding),
               _bindingHash(_ID(binding.c_str())),
               _type(type),
-              _flag(flag),
-              _transpose(false)
+              _flag(flag)
         {
             _buffer.resize(values.size() * (sizeof(T)));
             if (!values.empty()) {
@@ -146,8 +143,7 @@ namespace GFX {
             : _binding(binding),
               _bindingHash(_ID(binding.c_str())),
               _type(type),
-              _flag(flag),
-              _transpose(false)
+              _flag(flag)
         {
             _buffer.reserve(N);
             if (!values.empty()) {

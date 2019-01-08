@@ -254,7 +254,7 @@ private:
     FONScontext* _fonsContext;
 
     static SharedMutex s_mipmapQueueSetLock;
-    static hashMap<GLuint, GLsync> GL_API::s_mipmapQueueSync;
+    static hashMap<GLuint, GLsync> s_mipmapQueueSync;
     /// The main VAO pool. We use a pool to avoid multithreading issues with VAO states
     static GLUtil::glVAOPool s_vaoPool;
 

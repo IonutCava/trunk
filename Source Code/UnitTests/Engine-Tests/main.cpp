@@ -10,8 +10,8 @@ bool PreparePlatform() {
     static Divide::ErrorCode err = Divide::ErrorCode::PLATFORM_INIT_ERROR;
     if (err != Divide::ErrorCode::NO_ERR) {
         Divide::PlatformClose();
-        vector<char*> args = { "--disableCopyright" };
-        err = Divide::PlatformInit(static_cast<int>(args.size()), args.data());
+        const char* data[] = { "--disableCopyright" };
+        err = Divide::PlatformInit(1, const_cast<char**>(data));
         if (err != Divide::ErrorCode::NO_ERR) {
             std::cout << "Platform error code: " << static_cast<int>(err) << std::endl;
         }

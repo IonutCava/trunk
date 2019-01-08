@@ -30,22 +30,24 @@ struct Light {
 
 layout(binding = BUFFER_LIGHT_NORMAL, std430) coherent ACCESS buffer dvd_LightBlock
 {
-    // x = total light count, y = directional light count, z = point light count, w = shadow light count
+    // x = directional light count, y = point light count, z = spot light count, w = shadow light count
     ivec4 dvd_LightData;
     Light dvd_LightSource[];
 
     //RenderDoc: vec3 colour; float cosOuterCone; vec3 positionWV; float range; vec3 directionWV; float spotAngle; int lightType; int castsShadows; ivec2 null;
 };
 
+#if !defined(DISABLED_FORWARD_PLUS)
 layout(binding = BUFFER_LIGHT_INDICES, std430) coherent ACCESS buffer perTileLightIndexBuffer
 {
     uint perTileLightIndices[];
 };
+#endif
 
-#define TOTAL_LIGHT_COUNT       dvd_LightData.x
-#define DIRECTIONAL_LIGHT_COUNT dvd_LightData.y
-#define POINT_LIGHT_COUNT       dvd_LightData.z
-#define SPOT_LIGHT_COUNT        (TOTAL_LIGHT_COUNT - DIRECTIONAL_LIGHT_COUNT - POINT_LIGHT_COUNT)
+#define DIRECTIONAL_LIGHT_COUNT dvd_LightData.x
+#define POINT_LIGHT_COUNT       dvd_LightData.y
+#define SPOT_LIGHT_COUNT        dvd_LightData.z
+#define TOTAL_LIGHT_COUNT       (DIRECTIONAL_LIGHT_COUNT + POINT_LIGHT_COUNT + SPOT_LIGHT_COUNT+)
 #define TOTAL_SHADOW_LIGHTS     dvd_LightData.w
 
 #if defined(FRAG_SHADER)
@@ -81,8 +83,12 @@ uint GetNumTilesY()
 
 uint GetTileIndex(in vec2 ScreenPos)
 {
+#if defined(DISABLED_FORWARD_PLUS)
+    return 0;
+#else
     float fTileRes = float(FORWARD_PLUS_TILE_RES);
     return uint(floor(ScreenPos.x / fTileRes) + floor(ScreenPos.y / fTileRes) * GetNumTilesX());
+#endif
 }
 
 Light dvd_private_light;

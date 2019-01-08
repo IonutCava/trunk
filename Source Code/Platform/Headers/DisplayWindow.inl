@@ -124,10 +124,6 @@ namespace Divide {
         return _title;
     }
 
-    inline const WindowHandle& DisplayWindow::handle() const { 
-        return _handle;
-    }
-
     inline I64 DisplayWindow::addEventListener(WindowEvent windowEvent, const EventListener& listener) {
         EventListeners& listeners = _eventListeners[to_base(windowEvent)];
         listeners.emplace_back(std::make_shared<GUID_DELEGATE_CBK<bool, WindowEventArgs>>(listener));

@@ -304,7 +304,6 @@ bool GL_API::initGLSW() {
     appendToShaderHeader(ShaderType::COUNT, "/*Copyright 2009-2018 DIVIDE-Studio*/", lineOffsets);
     appendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_shader_draw_parameters : require", lineOffsets);
     appendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_gpu_shader5 : require", lineOffsets);
-    appendToShaderHeader(ShaderType::VERTEX, "invariant gl_Position;", lineOffsets);
     appendToShaderHeader(ShaderType::COUNT, crossTypeGLSLHLSL,lineOffsets);
     appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define GPU_VENDOR_AMD %d", to_base(GPUVendor::AMD)), lineOffsets);
     appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define GPU_VENDOR_NVIDIA %d", to_base(GPUVendor::NVIDIA)), lineOffsets);
@@ -316,6 +315,7 @@ bool GL_API::initGLSW() {
     appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define DETAIL_MED   %d", to_base(RenderDetailLevel::MEDIUM)), lineOffsets);
     appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define DETAIL_HIGH  %d", to_base(RenderDetailLevel::HIGH)), lineOffsets);
     appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define DETAIL_ULTRA %d", to_base(RenderDetailLevel::ULTRA)), lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define DETAIL_COUNT %d", to_base(RenderDetailLevel::COUNT)), lineOffsets);
 
     // Add current build environment information to the shaders
     if (Config::Build::IS_DEBUG_BUILD) {
@@ -356,7 +356,8 @@ bool GL_API::initGLSW() {
 
     appendToShaderHeader(
         ShaderType::COUNT,
-        "#define MAX_CLIP_PLANES " + to_stringImpl(to_base(Frustum::FrustPlane::COUNT)),
+        "#define MAX_CLIP_PLANES " + 
+        to_stringImpl(to_base(Frustum::FrustPlane::COUNT)),
         lineOffsets);
 
     appendToShaderHeader(
@@ -426,22 +427,26 @@ bool GL_API::initGLSW() {
         lineOffsets);
     appendToShaderHeader(
         ShaderType::COUNT,
-        "#define FORWARD_PLUS_TILE_RES " + to_stringImpl(Config::Lighting::FORWARD_PLUS_TILE_RES),
+        "#define FORWARD_PLUS_TILE_RES " + 
+        to_stringImpl(Config::Lighting::FORWARD_PLUS_TILE_RES),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
-        "#define MAX_NUM_LIGHTS_PER_TILE " + to_stringImpl(Config::Lighting::FORWARD_PLUS_MAX_LIGHTS_PER_TILE),
+        "#define MAX_NUM_LIGHTS_PER_TILE " + 
+        to_stringImpl(Config::Lighting::FORWARD_PLUS_MAX_LIGHTS_PER_TILE),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
-        "#define LIGHT_INDEX_BUFFER_SENTINEL " + to_stringImpl(Config::Lighting::FORWARD_PLUS_LIGHT_INDEX_BUFFER_SENTINEL),
+        "#define LIGHT_INDEX_BUFFER_SENTINEL " + 
+        to_stringImpl(Config::Lighting::FORWARD_PLUS_LIGHT_INDEX_BUFFER_SENTINEL),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
-        "#define MAX_TEXTURE_SLOTS " + to_stringImpl(GL_API::s_maxTextureUnits),
+        "#define MAX_TEXTURE_SLOTS " + 
+        to_stringImpl(GL_API::s_maxTextureUnits),
         lineOffsets);
 
     appendToShaderHeader(
@@ -888,6 +893,9 @@ bool GL_API::bindPipeline(const Pipeline& pipeline) {
         for (U8 type = 0; type < to_U8(ShaderType::COUNT); ++type) {
             Attorney::GLAPIShaderProgram::SetSubroutines(*program, static_cast<ShaderType>(type), functions[type]);
         }
+        if (!wasBound) {
+            Attorney::GLAPIShaderProgram::queueValidation(*program);
+        }
         return true;
     }
 
@@ -1059,34 +1067,38 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             MemoryBarrierMask glMask = MemoryBarrierMask::GL_NONE_BIT;
             U32 barrierMask = crtCmd._barrierMask;
             if (barrierMask != 0) {
-                for (U8 i = 0; i < to_U8(MemoryBarrierType::COUNT); ++i) {
-                    if (BitCompare(barrierMask, 1 << i)) {
-                        switch (static_cast<MemoryBarrierType>(1 << i)) {
-                            case MemoryBarrierType::BUFFER:
-                                glMask |= MemoryBarrierMask::GL_BUFFER_UPDATE_BARRIER_BIT;
-                                break;
-                            case MemoryBarrierType::SHADER_BUFFER:
-                                glMask |= MemoryBarrierMask::GL_SHADER_STORAGE_BARRIER_BIT;
-                                break;
-                            case MemoryBarrierType::COUNTER:
-                                glMask |= MemoryBarrierMask::GL_ATOMIC_COUNTER_BARRIER_BIT;
-                                break;
-                            case MemoryBarrierType::QUERY:
-                                glMask |= MemoryBarrierMask::GL_QUERY_BUFFER_BARRIER_BIT;
-                                break;
-                            case MemoryBarrierType::RENDER_TARGET:
-                                glMask |= MemoryBarrierMask::GL_FRAMEBUFFER_BARRIER_BIT;
-                                break;
-                            case MemoryBarrierType::TEXTURE:
-                                glMask |= MemoryBarrierMask::GL_TEXTURE_UPDATE_BARRIER_BIT;
-                                break;
-                            case MemoryBarrierType::TRANSFORM_FEEDBACK:
-                                glMask |= MemoryBarrierMask::GL_TRANSFORM_FEEDBACK_BARRIER_BIT;
-                                break;
+                if (barrierMask == to_base(MemoryBarrierType::ALL)) {
+                    glMemoryBarrier(MemoryBarrierMask::GL_ALL_BARRIER_BITS);
+                } else {
+                    for (U8 i = 0; i < to_U8(MemoryBarrierType::COUNT); ++i) {
+                        if (BitCompare(barrierMask, 1 << i)) {
+                            switch (static_cast<MemoryBarrierType>(1 << i)) {
+                                case MemoryBarrierType::BUFFER:
+                                    glMask |= MemoryBarrierMask::GL_BUFFER_UPDATE_BARRIER_BIT;
+                                    break;
+                                case MemoryBarrierType::SHADER_BUFFER:
+                                    glMask |= MemoryBarrierMask::GL_SHADER_STORAGE_BARRIER_BIT;
+                                    break;
+                                case MemoryBarrierType::COUNTER:
+                                    glMask |= MemoryBarrierMask::GL_ATOMIC_COUNTER_BARRIER_BIT;
+                                    break;
+                                case MemoryBarrierType::QUERY:
+                                    glMask |= MemoryBarrierMask::GL_QUERY_BUFFER_BARRIER_BIT;
+                                    break;
+                                case MemoryBarrierType::RENDER_TARGET:
+                                    glMask |= MemoryBarrierMask::GL_FRAMEBUFFER_BARRIER_BIT;
+                                    break;
+                                case MemoryBarrierType::TEXTURE:
+                                    glMask |= MemoryBarrierMask::GL_TEXTURE_UPDATE_BARRIER_BIT;
+                                    break;
+                                case MemoryBarrierType::TRANSFORM_FEEDBACK:
+                                    glMask |= MemoryBarrierMask::GL_TRANSFORM_FEEDBACK_BARRIER_BIT;
+                                    break;
+                            }
                         }
                     }
-                }
-               glMemoryBarrier(glMask);
+                   glMemoryBarrier(glMask);
+               }
             }
         } break;
     };

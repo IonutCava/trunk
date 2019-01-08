@@ -3,6 +3,7 @@
 #include "config.h"
 
 #include "Headers/glShaderProgram.h"
+#include "Core/Headers/PlatformContext.h"
 
 #include "Platform/Video/RenderBackend/OpenGL/glsw/Headers/glsw.h"
 #include "Platform/Video/RenderBackend/OpenGL/Headers/glLockManager.h"
@@ -264,12 +265,10 @@ void glShaderProgram::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoa
         _shaderProgramIDTemp = _shaderProgramID;
     }
 
-    if (!loadFromBinary()) {
-        reloadShaders(false);
-    }
-
     // Loading from binary gives us a linked program ready for usage.
-    if (!_loadedFromBinary) {
+    if (!loadFromBinary()) {
+        bool shouldLink = reloadShaders(false);
+
         _stageMask = UseProgramStageMask::GL_NONE_BIT;
         // For every possible stage that the program might use
         for (glShader* shader : _shaderStage) {
@@ -280,7 +279,7 @@ void glShaderProgram::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoa
             glUseProgramStages(_shaderProgramIDTemp, _stageMask, _shaderProgramIDTemp);
         }
         // Link the program
-        _linked = link();
+        _linked = shouldLink ? link() : true;
     }
 
     // This was once an atomic swap. Might still be in the future
@@ -443,14 +442,16 @@ bool glShaderProgram::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoad
     _linked = false;
 
     // try to link the program in a separate thread
-     CreateTask(_context.parent().platformContext(),
+    CreateTask(_context.parent().platformContext().taskPool(TaskPoolType::Render),
                 [this, onLoadCallback](const Task& parent) {
                     threadedLoad(std::move(onLoadCallback), false);
                 }).startTask((!_loadedFromBinary && _asyncLoad) ? TaskPriority::DONT_CARE : TaskPriority::REALTIME);
     return true;
 }
 
-void glShaderProgram::reloadShaders(bool reparseShaderSource) {
+bool glShaderProgram::reloadShaders(bool reparseShaderSource) {
+    bool ret = false;
+
     glShaderProgramLoadInfo info = buildLoadInfo();
     registerAtomFile(info._programName + ".glsl");
 
@@ -501,10 +502,13 @@ void glShaderProgram::reloadShaders(bool reparseShaderSource) {
             for (const stringImpl& atoms : shader->usedAtoms()) {
                 registerAtomFile(atoms);
             }
+            ret = true;
         } else {
             Console::d_printfn(Locale::get(_ID("WARN_GLSL_LOAD")), shaderCompileName.c_str());
         }
     }
+
+    return ret;
 }
 
 bool glShaderProgram::recompileInternal() {
@@ -584,10 +588,7 @@ bool glShaderProgram::bind(bool& wasBound) {
 
     // Set this program as the currently active one
     wasBound = GL_API::getStateTracker().setActiveProgram(_shaderProgramID);
-    // After using the shader at least once, validate the shader if needed
-    if (!_validated) {
-        _validationQueued = true;
-    }
+
     return true;
 }
 

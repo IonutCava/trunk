@@ -42,7 +42,7 @@ enum class FileUpdateEvent : U8;
 
 namespace Locale {
 static const char* DEFAULT_LANG = "enGB";
-constexpr char* g_languageFileExtension = ".ini";
+constexpr const char* const g_languageFileExtension = ".ini";
 
 class LanguageData {
 public:

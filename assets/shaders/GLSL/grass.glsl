@@ -1,7 +1,5 @@
 -- Vertex
 
-invariant gl_Position;
-
 #include "vbInputData.vert"
 
 struct GrassData {

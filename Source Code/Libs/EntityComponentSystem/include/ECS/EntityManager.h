@@ -72,7 +72,7 @@ namespace ECS
 
 		public:
 
-			EntityContainer() : MemoryChunkAllocator("EntityManager")
+			EntityContainer() : Memory::MemoryChunkAllocator<T, ENITY_T_CHUNK_SIZE>("EntityManager")
 			{}
 
 			virtual ~EntityContainer()

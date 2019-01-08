@@ -1320,7 +1320,7 @@ extern vec3<I32> iWORLD_Z_NEG_AXIS;
 template<typename T>
 class Rect : public vec4<T> {
   public:
-    using vec4::vec4;
+    using vec4<T>::vec4;
 
     inline bool contains(const vec2<T>& coords) const {
         return contains(coords.x, coords.y);

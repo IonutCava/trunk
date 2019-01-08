@@ -97,6 +97,9 @@ public:
      std::atomic_bool _stopRequested = false;
      hashMap<U32, DELEGATE_CBK<void>> _taskCallbacks;
      U8 _workerThreadCount;
+
+
+     std::atomic_uint _threadCount;
 };
 
 TaskHandle CreateTask(TaskPool& pool,

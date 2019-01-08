@@ -73,7 +73,7 @@ struct selectionQueueDistanceFrontToBack {
     vec3<F32> _eyePos;
 };
 
-constexpr char* g_defaultPlayerName = "Player_%d";
+constexpr const char* const g_defaultPlayerName = "Player_%d";
 };
 
 Scene::Scene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name)

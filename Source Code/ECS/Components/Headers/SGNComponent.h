@@ -119,14 +119,14 @@ private:
 
 template <class Base, class... Args>
 template <class T, ComponentType::_enumerated C>
-bool Factory<Base, Args...>::Registrar<T, C>::s_registered = Factory<Base, Args...>::Registrar<T, C>::registerComponentType();
+bool Factory<Base, Args...>::Registrar<T, C>::s_registered = Factory<Base, Args...>::template Registrar<T, C>::registerComponentType();
 
 struct EntityOnUpdate;
 struct EntityActiveStateChange;
 
 class SGNComponent : private PlatformContextComponent,
                      public Factory<SGNComponent>,
-                     protected ECS::Event::IEventListener
+                     public ECS::Event::IEventListener
 {
    public:
 

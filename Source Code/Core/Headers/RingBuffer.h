@@ -52,7 +52,7 @@ public:
 
     const inline I32 queueWriteIndex() const {
         return _separateReadWrite ? (_queueIndex + (_queueLength - 1)) % _queueLength 
-                                  : _queueIndex;
+                                  : _queueIndex.load();
     }
 
     const inline I32 queueReadIndex() const {

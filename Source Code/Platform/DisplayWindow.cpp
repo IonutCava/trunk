@@ -92,7 +92,6 @@ ErrorCode DisplayWindow::init(U32 windowFlags,
                                   windowFlags);
 
     _windowID = SDL_GetWindowID(_sdlWindow);
-    getWindowHandle(_sdlWindow, _handle);
 
     // Check if we have a valid window
     if (!_sdlWindow) {
@@ -104,6 +103,13 @@ ErrorCode DisplayWindow::init(U32 windowFlags,
     }
 
     return ErrorCode::NO_ERR;
+}
+
+WindowHandle DisplayWindow::handle() const {
+    // Varies from OS to OS
+    WindowHandle handle = {};
+    getWindowHandle(_sdlWindow, handle);
+    return handle;
 }
 
 void DisplayWindow::update(const U64 deltaTimeUS) {

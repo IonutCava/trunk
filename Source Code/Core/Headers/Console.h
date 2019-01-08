@@ -141,6 +141,7 @@ class Console : private NonCopyable {
     static void output(std::ostream& outStream, const char* text, const bool newline, const EntryType type);
     static void decorate(std::ostream& outStream, const char* text, const bool newline, const EntryType type);
     static void outThread();
+    static void printToFile(const OutputEntry& entry);
 
    private:
     static vector<ConsolePrintCallback> _guiConsoleCallbacks;

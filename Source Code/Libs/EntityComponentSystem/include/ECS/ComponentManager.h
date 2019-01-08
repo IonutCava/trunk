@@ -54,7 +54,7 @@ namespace ECS
 
 		public:
 		
-			ComponentContainer() : MemoryChunkAllocator("ComponentManager")
+			ComponentContainer() : Memory::MemoryChunkAllocator<T, COMPONENT_T_CHUNK_SIZE>("ComponentManager")
 			{}
 
 			virtual ~ComponentContainer()

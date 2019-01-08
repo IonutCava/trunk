@@ -45,25 +45,29 @@ constexpr U8 MAX_WATER_BODIES = 6;
 class SceneShaderData {
   private:
     struct WaterBodyData {
-        vec4<F32> _positionW;
-        vec4<F32> _details;
+        vec4<F32> _positionW = {0.0f};
+        vec4<F32> _details = {0.0f};
     };
 
     struct SceneShaderBufferData {
         // x,y,z - colour, w - density
-        vec4<F32> _fogDetails;
+        vec4<F32> _fogDetails = { 0.0f};
         // x,y,z - direction, w - speed
-        vec4<F32> _windDetails;
+        vec4<F32> _windDetails = {0.0f};
         //x - light bleed bias, y - min shadow variance, z - fade distance, w - max distance
-        vec4<F32> _shadowingSettings;
-        //x - elapsed time, y - delta time, z - renderer flag, ww - packed: w.x - debug render, w.y - detail level, w.z - reserved
-        vec4<F32> _otherData;
-        WaterBodyData _waterEntities[MAX_WATER_BODIES];
+        vec4<F32> _shadowingSettings = {0.0f};
+        //x - elapsed time, y - delta time, z - lights per tile, w - packed: [ w.x - debug render, w.y - detail level, w.z - reserved ]
+        vec4<F32> _otherData = {0.0f};
+        WaterBodyData _waterEntities[MAX_WATER_BODIES] = {};
     };
 
   public:
     SceneShaderData(GFXDevice& context);
     ~SceneShaderData();
+
+    inline ShaderBuffer* buffer() const {
+        return _sceneShaderData;
+    }
 
     inline void fogDetails(F32 colourR, F32 colourG, F32 colourB, F32 density) {
         _bufferData._fogDetails.set(colourR, colourG, colourB, density / 1000.0f);
@@ -95,22 +99,22 @@ class SceneShaderData {
         _dirty = true;
     }
 
+    inline void setNumLightsPerTile(U16 count) {
+        _bufferData._otherData.z = to_F32(count);
+        _dirty = true;
+    }
+
     inline void enableDebugRender(bool state) {
         vec3<F32> wData = Util::UNPACK_VEC3(_bufferData._otherData.w);
-        wData.x = to_F32(state ? 1.0f : 0.0f);
+        wData.x = state ? 1.0f : 0.0f;
         _bufferData._otherData.w = Util::PACK_VEC3(wData);
 
         _dirty = true;
     }
 
-    inline void setRendererFlag(U32 flag) {
-        _bufferData._otherData.z = to_F32(flag);
-        _dirty = true;
-    }
-
     inline void detailLevel(RenderDetailLevel renderDetailLevel) {
         vec3<F32> wData = Util::UNPACK_VEC3(_bufferData._otherData.w);
-        wData.y = to_F32(renderDetailLevel);
+        wData.y = to_F32(renderDetailLevel) / to_F32(RenderDetailLevel::COUNT);
         _bufferData._otherData.w = Util::PACK_VEC3(wData);
         _dirty = true;
     }
@@ -128,7 +132,7 @@ class SceneShaderData {
         return false;
     }
 
-    void uploadToGPU();
+    ShaderBuffer* uploadToGPU();
 
   private:
       GFXDevice& _context;

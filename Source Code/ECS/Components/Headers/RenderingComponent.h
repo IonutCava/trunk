@@ -191,7 +191,7 @@ class RenderingComponent : public BaseComponentType<RenderingComponent, Componen
     typedef std::array<std::unique_ptr<RenderPackage>, to_base(RenderPassType::COUNT)> RenderPackagesPerPassType;
     std::array<RenderPackagesPerPassType, to_base(RenderStage::COUNT)> _renderPackages;
     
-    std::array<bool, to_base(RenderStage::COUNT)> _renderPackagesDirty;
+    std::array<bool, RenderStagePass::count()> _renderPackagesDirty;
     PushConstants _globalPushConstants;
 
     IMPrimitive* _boundingBoxPrimitive[2];

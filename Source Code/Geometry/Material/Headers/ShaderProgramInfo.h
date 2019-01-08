@@ -48,8 +48,10 @@ public:
     };
     
     bool _customShader = false;
+    size_t _shaderRefHash = 0;
     ShaderProgram_ptr _shaderRef = nullptr;
     BuildStage _shaderCompStage = BuildStage::COUNT;
+    ShaderProgram* _shaderCache = nullptr;
 };
 
 }; //namespace Divide

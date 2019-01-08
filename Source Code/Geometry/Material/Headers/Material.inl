@@ -68,12 +68,6 @@ inline void Material::setShininess(F32 value) {
     _colourData._shininess = value;
 }
 
-
-/// toggle multi-threaded shader loading on or off for this material
-inline void Material::setShaderLoadThreaded(const bool state) {
-    _shaderThreadedLoad = state;
-}
-
 inline void Material::setShaderProgram(const ShaderProgram_ptr& shader) {
     for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
         setShaderProgram(shader, RenderStagePass::stagePass(i));
@@ -218,12 +212,12 @@ inline bool Material::isExternalTexture(ShaderProgram::TextureUsage slot) const 
 
 inline void Material::setBumpMethod(const BumpMethod& newBumpMethod) {
     _bumpMethod = newBumpMethod;
-    recomputeShaders();
+    _needsNewShader = true;
 }
 
 inline void Material::setShadingMode(const ShadingMode& mode) {
     _shadingMode = mode;
-    recomputeShaders();
+    _needsNewShader = true;
 }
 
 inline ShaderProgramInfo& Material::getShaderInfo(RenderStagePass renderStagePass) {

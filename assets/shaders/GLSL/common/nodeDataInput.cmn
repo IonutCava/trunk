@@ -42,7 +42,8 @@ layout(binding = BUFFER_GPU_BLOCK, std140) uniform dvd_GPUBlock
     mat4  dvd_InvProjectionMatrix;
     mat4  dvd_ViewMatrix;
     mat4  dvd_ViewProjectionMatrix;
-    vec4  dvd_cameraPosition; ///xyz - position, w - aspect ratio
+    ///xyz - position, w - aspect ratio
+    vec4  dvd_cameraPosition; 
     //x - nearPlane, y - farPlane, z - FoV, w - tan half FoV
     vec4  dvd_renderProperties;
     vec4  dvd_ViewPort;
@@ -72,7 +73,7 @@ layout(binding = BUFFER_SCENE_DATA, std430) coherent readonly buffer dvd_SceneDa
     vec4   dvd_windDetails;
     //x - light bleed bias, y - min shadow variance, z - fade distance, w - max distance
     vec4   dvd_shadowingSettings;
-    //x - elapsed time, y - delta time, z - renderer flag, w - packed: w.x - debug render, w.y - detail level, w.z - reserved
+    //x - elapsed time, y - delta time, z - lights per tile, w - packed: w.x - debug render, w.y - detail level, w.z - reserved
     vec4   dvd_otherData;
     WaterBodyData dvd_waterEntities[];
 };
@@ -83,7 +84,7 @@ layout(binding = BUFFER_SCENE_DATA, std430) coherent readonly buffer dvd_SceneDa
 #define dvd_deltaTime (int(dvd_otherData.y))
 #define dvd_numLightsPerTile (uint(dvd_otherData.z))
 #define dvd_showDebugInfo (uint(UNPACK_FLOAT(dvd_otherData.w).x))
-#define dvd_renderDetailLevel (uint(UNPACK_FLOAT(dvd_otherData.w).y))
+#define dvd_renderDetailLevel (uint(UNPACK_FLOAT(dvd_otherData.w).y * DETAIL_COUNT))
 
 bool IsUnderWater(vec3 positionWorld) {
     for (int i = 0; i < dvd_waterEntities.length(); ++i) {
@@ -109,7 +110,12 @@ bool IsUnderWater(vec3 positionWorld) {
 }
 
 #if defined(VERT_SHADER) || defined(GEOM_SHADER)
-out float gl_ClipDistance[MAX_CLIP_PLANES];
+out gl_PerVertex
+{
+  invariant vec4 gl_Position;
+  float gl_PointSize;
+  float gl_ClipDistance[MAX_CLIP_PLANES];
+};
 
 void setClipPlanes(in vec4 worldSpaceVertex) {
     for(int i = 0; i < MAX_CLIP_PLANES; ++i) {

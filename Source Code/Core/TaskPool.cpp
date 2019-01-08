@@ -12,8 +12,6 @@ namespace {
 
     thread_local Task g_taskAllocator[Config::MAX_POOLED_TASKS];
     thread_local U32  g_allocatedTasks = 0u;
-
-    std::atomic_uint g_threadCount = 0;
 };
 
 TaskPool::TaskPool() noexcept
@@ -23,6 +21,7 @@ TaskPool::TaskPool() noexcept
       _workerThreadCount(0u),
       _stopRequested(false)
 {
+    _threadCount = 0u;
 }
 
 TaskPool::~TaskPool()
@@ -57,7 +56,7 @@ void TaskPool::shutdown() {
 }
 
 void TaskPool::onThreadCreate(const std::thread::id& threadID) {
-    setThreadName((_threadNamePrefix + to_stringImpl(g_threadCount.fetch_add(1))).c_str());
+    setThreadName((_threadNamePrefix + to_stringImpl(_threadCount.fetch_add(1))).c_str());
     if (_threadCreateCbk) {
         _threadCreateCbk(threadID);
     }
@@ -194,7 +193,7 @@ void parallel_for(TaskPool& pool,
         U32 partitionCount = count / crtPartitionSize;
         U32 remainder = count % crtPartitionSize;
 
-        std::atomic_uint remaining = partitionCount + remainder;
+        std::atomic_uint remaining = partitionCount + (remainder > 0 ? 1 : 0);
 
         for (U32 i = 0; i < partitionCount; ++i) {
             U32 start = i * crtPartitionSize;

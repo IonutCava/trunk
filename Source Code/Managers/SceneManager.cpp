@@ -31,11 +31,19 @@
 namespace Divide {
 
 bool SceneManager::onStartup() {
-    return Attorney::SceneManager::onStartup();
+    if (Material::onStartup()) {
+        return Attorney::SceneManager::onStartup();
+    }
+
+    return false;
 }
 
 bool SceneManager::onShutdown() {
-    return Attorney::SceneManager::onShutdown();
+    if (Material::onShutdown()) {
+        return Attorney::SceneManager::onShutdown();
+    }
+
+    return false;
 }
 
 SceneManager::SceneManager(Kernel& parentKernel)
@@ -350,6 +358,7 @@ void SceneManager::removePlayerInternal(Scene& parentScene, Player_ptr& player) 
 
 bool SceneManager::frameStarted(const FrameEvent& evt) {
     _sceneData->uploadToGPU();
+
     return Attorney::SceneManager::frameStarted(getActiveScene());
 }
 
@@ -369,7 +378,7 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
     // Time, fog, etc
     _sceneData->elapsedTime(_elapsedTimeMS);
     _sceneData->deltaTime(Time::MicrosecondsToSeconds<F32>(deltaTimeUS));
-    _sceneData->setRendererFlag(_platformContext->gfx().getRenderer().getFlag());
+    _sceneData->setNumLightsPerTile(_platformContext->gfx().getRenderer().numLightsPerTile());
     _sceneData->detailLevel(_platformContext->config().rendering.renderDetailLevel);
 
     FogDescriptor& fog = activeScene.state().fogDescriptor();
@@ -417,6 +426,10 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
 }
 
 void SceneManager::preRender(RenderStagePass stagePass, const Camera& camera, RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
+    GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd;
+    bindDescriptorSetsCmd._set.addShaderBuffer({ ShaderBufferLocation::SCENE_DATA,  _sceneData->buffer()});
+    GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
+
     _platformContext->gfx().getRenderer().preRender(stagePass, target, getActiveScene().lightPool(), bufferInOut);
 }
 

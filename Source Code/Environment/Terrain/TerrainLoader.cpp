@@ -252,7 +252,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     terrainMaterial->setTexture(ShaderProgram::TextureUsage::OPACITY, CreateResource<Texture>(terrain->parentResourceCache(), heightMapTexture));
 
-    ShaderProgramDescriptor shaderDescriptor;
+    ShaderProgramDescriptor shaderDescriptor = {};
 
     if (!Terrain::USE_TERRAIN_UBO) {
         shaderDescriptor._defines.push_back(std::make_pair("USE_SSBO_DATA_BUFFER", true));
@@ -303,11 +303,11 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     terrainShaderColourLQ.setPropertyDescriptor(lowQualityShaderDescriptor);
     ShaderProgram_ptr terrainColourShaderLQ = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderColourLQ);
 
-    terrainMaterial->setShaderProgram(terrainColourShader, RenderStage::DISPLAY);
-    terrainMaterial->setShaderProgram(terrainColourShaderLQ, RenderStage::REFLECTION);
-    terrainMaterial->setShaderProgram(terrainColourShaderLQ, RenderStage::REFRACTION);
     terrainMaterial->setShaderProgram(terrainPrePassShader, RenderPassType::PRE_PASS);
-    terrainMaterial->setShaderProgram(terrainShadowShader, RenderStage::SHADOW);
+    terrainMaterial->setShaderProgram(terrainColourShader, RenderStagePass(RenderStage::DISPLAY, RenderPassType::MAIN_PASS));
+    terrainMaterial->setShaderProgram(terrainColourShaderLQ, RenderStagePass(RenderStage::REFLECTION, RenderPassType::MAIN_PASS));
+    terrainMaterial->setShaderProgram(terrainColourShaderLQ, RenderStagePass(RenderStage::REFRACTION, RenderPassType::MAIN_PASS));
+    terrainMaterial->setShaderProgram(terrainShadowShader, RenderStagePass(RenderStage::SHADOW, RenderPassType::MAIN_PASS));
 
     terrain->setMaterialTpl(terrainMaterial);
 

@@ -330,14 +330,14 @@ void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, con
     shadowCastingLights(eyePos, sortedLights);
 
     crtData._globalData.set(
-        to_I32(totalLightCount),
         to_I32(_activeLightCount[stageIndex][to_base(LightType::DIRECTIONAL)]),
         to_I32(_activeLightCount[stageIndex][to_base(LightType::POINT)]),
+        to_I32(_activeLightCount[stageIndex][to_base(LightType::SPOT)]),
         to_I32(sortedLights.size())
     );
 
     _lightShaderBuffer->writeBytes((stageIndex - 1) * _lightShaderBuffer->getPrimitiveSize(),
-                                   sizeof(vec4<I32>) + totalLightCount * sizeof(LightProperties),
+                                   sizeof(vec4<I32>) + (totalLightCount * sizeof(LightProperties)),
                                    (bufferPtr)(&crtData));
 }
 

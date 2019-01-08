@@ -140,6 +140,9 @@ class Material : public CachedResource {
     explicit Material(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name);
     ~Material();
 
+    static bool onStartup();
+    static bool onShutdown();
+
     /// Return a new instance of this material with the name composed of the
     /// base material's name and the give name suffix.
     /// clone calls CreateResource internally!)
@@ -174,9 +177,6 @@ class Material : public CachedResource {
     /// Set the desired bump mapping method.
     void setBumpMethod(const BumpMethod& newBumpMethod);
 
-    /// toggle multi-threaded shader loading on or off for this material
-    void setShaderLoadThreaded(const bool state);
-
     /// Add the specified shader to all of the available stage passes
     void setShaderProgram(const ShaderProgram_ptr& shader);
     /// Add the specified shader to the specified Stage Pass (stage and pass type)
@@ -200,6 +200,8 @@ class Material : public CachedResource {
     F32 getParallaxFactor() const;
 
     size_t getRenderStateBlock(RenderStagePass renderStagePass);
+
+    U32 getProgramID(RenderStagePass renderStagePass) const;
 
     std::weak_ptr<Texture> getTexture(ShaderProgram::TextureUsage textureUsage) const;
 
@@ -225,7 +227,7 @@ class Material : public CachedResource {
     // Returns false if the shader was already ready.
     bool computeShader(RenderStagePass renderStagePass);
 
-    bool canDraw(RenderStage renderStage);
+    bool canDraw(RenderStagePass renderStagePass);
 
     void updateReflectionIndex(ReflectorType type, I32 index);
     void updateRefractionIndex(ReflectorType type, I32 index);
@@ -265,6 +267,7 @@ class Material : public CachedResource {
     size_t& defaultRenderState(RenderStagePass renderStagePass);
     std::array<size_t, 3>& defaultRenderStates(RenderStagePass renderStagePass);
 
+    void waitForShader(const ShaderProgram_ptr& shader, RenderStagePass stagePass, const char* newShader);
    private:
     GFXDevice& _context;
     ResourceCache& _parentCache;
@@ -283,7 +286,6 @@ class Material : public CachedResource {
     std::array<ShaderProgramInfo, to_base(RenderStagePass::count())> _shaderInfo;
     std::array<std::array<size_t, 3>,  to_base(RenderStagePass::count())> _defaultRenderStates;
 
-    bool _shaderThreadedLoad;
     /// use this map to add textures to the material
     std::array<Texture_ptr, to_base(ShaderProgram::TextureUsage::COUNT)> _textures;
     std::array<bool, to_base(ShaderProgram::TextureUsage::COUNT)> _textureExtenalFlag;
@@ -299,6 +301,9 @@ class Material : public CachedResource {
     I32 _refractionIndex;
     std::pair<Texture_ptr, U32> _defaultReflection;
     std::pair<Texture_ptr, U32> _defaultRefraction;
+
+    static SharedMutex s_shaderDBLock;
+    static hashMap<size_t, ShaderProgram_ptr> s_shaderDB;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_TYPE(Material);

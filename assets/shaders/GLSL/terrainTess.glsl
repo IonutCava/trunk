@@ -74,9 +74,6 @@ uniform vec2 tessellationRange;
 //
 layout(vertices = 4) out;
 
-patch out float gl_TessLevelOuter[4];
-patch out float gl_TessLevelInner[2];
-
 out float tcs_tessLevel[];
 
 bool offscreen(vec4 vertex) {
@@ -209,9 +206,6 @@ dvd_TerrainBlock
 };
 
 layout(quads, fractional_even_spacing) in;
-
-patch in float gl_TessLevelOuter[4];
-patch in float gl_TessLevelInner[2];
 
 in float tcs_tessLevel[];
 
@@ -538,10 +532,10 @@ vec4 scrollingUV() {
 vec4 CausticsColour() {
     
     vec4 scrollingUV = scrollingUV();
+    setProcessedNormal(VAR._normalWV);
+
     return texture(texWaterCaustics, scrollingUV.st) +
            texture(texWaterCaustics, scrollingUV.pq) * 0.5;
-
-    setProcessedNormal(VAR._normalWV);
 }
 
 vec4 UnderwaterColour() {
@@ -575,14 +569,15 @@ vec4 TerrainMappingRoutine() {
 
 void main(void)
 {
+    
     bumpInit();
-    vec4 colourOut = mix(TerrainMappingRoutine(), UnderwaterMappingRoutine(), _waterDetails.x);
+   vec4 colourOut = mix(TerrainMappingRoutine(), UnderwaterMappingRoutine(), _waterDetails.x);
 #if defined(TOGGLE_WIREFRAME)
     const float LineWidth = 0.75;
     float d = min(min(gs_edgeDist.x, gs_edgeDist.y), gs_edgeDist.z);
     colourOut = mix(vec4(gs_wireColor, 1.0), colourOut, smoothstep(LineWidth - 1, LineWidth + 1, d));
 #endif
-
+    
     writeOutput(colourOut, packNormal(getProcessedNormal()));
 }
 

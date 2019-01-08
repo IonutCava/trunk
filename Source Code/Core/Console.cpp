@@ -23,6 +23,8 @@ vector<Console::ConsolePrintCallback> Console::_guiConsoleCallbacks;
 //Use moodycamel's implementation of a concurent queue due to its "Knock-your-socks-off blazing fast performance."
 //https://github.com/cameron314/concurrentqueue
 namespace {
+    constexpr bool g_useImmediatePrint = false;
+
     thread_local char textBuffer[CONSOLE_OUTPUT_BUFFER_SIZE + 1];
 
 #if defined(USE_BLOCKING_QUEUE)
@@ -118,17 +120,31 @@ void Console::output(const char* text, const bool newline, const EntryType type)
         OutputEntry entry;
         entry._text = outStream.str();
         entry._type = type;
-
-        //moodycamel::ProducerToken ptok(outBuffer());
-        if (!outBuffer().enqueue(/*ptok, */entry)) {
-            // ToDo: Something happened. Handle it, maybe? -Ionut
-        }
+        if (g_useImmediatePrint) {
+            printToFile(entry);
+        } else {
+            //moodycamel::ProducerToken ptok(outBuffer());
+            if (!outBuffer().enqueue(/*ptok, */entry)) {
+                // ToDo: Something happened. Handle it, maybe? -Ionut
+            }
 
 #if !defined(USE_BLOCKING_QUEUE)
-        Lock lk(condMutex());
-        entryAdded() = true;
-        entryEnqueCV().notify_one();
+            Lock lk(condMutex());
+            entryAdded() = true;
+            entryEnqueCV().notify_one();
 #endif
+        }
+    }
+}
+
+void Console::printToFile(const OutputEntry& entry) {
+    ((entry._type == EntryType::Error && _errorStreamEnabled) ? std::cerr : std::cout) << entry._text.c_str();
+
+    for (const Console::ConsolePrintCallback& cbk : _guiConsoleCallbacks) {
+        if (!_running) {
+            break;
+        }
+        cbk(entry);
     }
 }
 
@@ -149,16 +165,9 @@ void Console::outThread() {
 
         while (outBuffer().try_dequeue(/*ctok, */entry)) {
 #endif
-            ((entry._type == EntryType::Error && _errorStreamEnabled) ? std::cerr : std::cout) << entry._text.c_str();
+            printToFile(entry);
             if (!_running) {
                 break;
-            }
-
-            for (const Console::ConsolePrintCallback& cbk : _guiConsoleCallbacks) {
-                if (!_running) {
-                    break;
-                }
-                cbk(entry);
             }
         } 
         //else {

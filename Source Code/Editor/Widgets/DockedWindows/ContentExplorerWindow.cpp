@@ -19,7 +19,7 @@ namespace Divide {
     namespace {
         constexpr size_t MAX_TEXTURE_LOADS_PER_FRAME = 1;
 
-        char* g_extensions[] = {
+        const char* const g_extensions[] = {
             "glsl", "cmn", "frag", "vert", "cmp", "geom", "tesc", "tese",  //Shaders
             "ogg", "wav", //Sounds
             "png", "jpg", "jpeg", "tga", "raw", "dds", //Images
@@ -30,7 +30,7 @@ namespace Divide {
             "xml" //General
         };
 
-        char* g_imageExtensions[] = {
+        const char* const g_imageExtensions[] = {
             "png", "jpg", "jpeg", "tga", "raw", "dds"
         };
     };
@@ -72,7 +72,7 @@ namespace Divide {
             directoryOut._path = p.filename().generic_string();
             for (auto&& x : directory_iterator(p)) {
                 if (is_regular_file(x.path())) {
-                    for (char* extension : g_extensions) {
+                    for (const char* extension : g_extensions) {
                         if (hasExtension(x.path().generic_string(), extension)) {
                             directoryOut._files.push_back({directoryOut._path, x.path().filename().generic_string()});
                             break;
@@ -141,7 +141,7 @@ namespace Divide {
             if (_selectedDir != nullptr) {
                 for (auto file : _selectedDir->_files) {
                     Texture_ptr tex = nullptr;
-                    for (char* extension : g_imageExtensions) {
+                    for (const char* extension : g_imageExtensions) {
                         if (hasExtension(file.second, extension)) {
                             auto it = _loadedTextures.find(_ID((file.first + "/" + file.second).c_str()));
                             if (it == std::cend(_loadedTextures) || it->second == nullptr) {

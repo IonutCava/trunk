@@ -1446,8 +1446,7 @@ mat4<T>::mat4() noexcept
 template<typename T>
 template<typename U>
 mat4<T>::mat4(U value) noexcept
-    : _comp{}
-    , mat{ static_cast<T>(value), static_cast<T>(value), static_cast<T>(value), static_cast<T>(value),
+    : mat{ static_cast<T>(value), static_cast<T>(value), static_cast<T>(value), static_cast<T>(value),
            static_cast<T>(value), static_cast<T>(value), static_cast<T>(value), static_cast<T>(value),
            static_cast<T>(value), static_cast<T>(value), static_cast<T>(value), static_cast<T>(value),
            static_cast<T>(value), static_cast<T>(value), static_cast<T>(value), static_cast<T>(value)}

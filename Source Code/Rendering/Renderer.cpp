@@ -15,7 +15,8 @@ namespace Divide {
 Renderer::Renderer(PlatformContext& context, ResourceCache& cache)
     : PlatformContextComponent(context),
       _resCache(cache),
-      _flag(0),
+      _numLightsPerTile(1u),
+      _perStageElementCount(0u),
       _debugView(false)
 {
     ResourceDescriptor cullShaderDesc("lightCull");
@@ -24,13 +25,14 @@ Renderer::Renderer(PlatformContext& context, ResourceCache& cache)
 
     RenderTarget& screenRT = _context.gfx().renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
 
-    updateResolution(screenRT.getWidth(), screenRT.getHeight());
+    const U32 numTiles = getNumTilesX(screenRT.getWidth()) * getNumTilesY(screenRT.getHeight());
+    _numLightsPerTile = getMaxNumLightsPerTile(screenRT.getHeight());
+    _perStageElementCount = _numLightsPerTile * numTiles;
+    assert(_numLightsPerTile > 1);
 
-    const U32 numTiles = getNumTilesX() * getNumTilesY();
-    const U32 maxNumLightsPerTile = getMaxNumLightsPerTile();
 
     ShaderBufferDescriptor bufferDescriptor;
-    bufferDescriptor._elementCount = maxNumLightsPerTile * numTiles;
+    bufferDescriptor._elementCount = _perStageElementCount;
     bufferDescriptor._elementSize = sizeof(U32);
     bufferDescriptor._ringBufferLength = 1;
     bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE);
@@ -48,62 +50,60 @@ void Renderer::preRender(RenderStagePass stagePass,
                          RenderTarget& target,
                          LightPool& lightPool,
                          GFX::CommandBuffer& bufferInOut) {
+
     lightPool.uploadLightData(stagePass._stage, ShaderBufferLocation::LIGHT_NORMAL, ShaderBufferLocation::LIGHT_SHADOW, bufferInOut);
 
-    _flag = getMaxNumLightsPerTile();
+    _numLightsPerTile = getMaxNumLightsPerTile(target.getHeight());
 
-    GFX::BindPipelineCommand bindPipelineCmd;
-    PipelineDescriptor pipelineDescriptor;
+    TextureData data = target.getAttachment(RTAttachmentType::Depth, 0).texture()->getData();
+
+    GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd = {};
+    bindDescriptorSetsCmd._set._textureData.addTexture(data, to_U8(ShaderProgram::TextureUsage::DEPTH));
+    GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
+
+    if (stagePass._stage == RenderStage::SHADOW) {
+        return;
+    }
+
+    GFX::BindPipelineCommand bindPipelineCmd = {};
+    PipelineDescriptor pipelineDescriptor = {};
     pipelineDescriptor._shaderProgramHandle = _lightCullComputeShader->getID();
     bindPipelineCmd._pipeline = _context.gfx().newPipeline(pipelineDescriptor);
     GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
 
-    TextureData data = target.getAttachment(RTAttachmentType::Depth, 0).texture()->getData();
-
-    GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd;
-    bindDescriptorSetsCmd._set._textureData.addTexture(data, to_U8(ShaderProgram::TextureUsage::DEPTH));
-    GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
-
-    GFX::SendPushConstantsCommand sendPushConstantsCmd;
-    PushConstants constants;
-    constants.set("maxNumLightsPerTile", GFX::PushConstantType::UINT, _flag);
-    constants.set("numDirLights", GFX::PushConstantType::UINT, lightPool.getActiveLightCount(stagePass._stage, LightType::DIRECTIONAL));
-    constants.set("numPointLights", GFX::PushConstantType::UINT, lightPool.getActiveLightCount(stagePass._stage, LightType::POINT));
-    constants.set("numSpotLights", GFX::PushConstantType::UINT, lightPool.getActiveLightCount(stagePass._stage, LightType::SPOT));
-
-    sendPushConstantsCmd._constants = constants;
+    GFX::SendPushConstantsCommand sendPushConstantsCmd = {};
+    sendPushConstantsCmd._constants.set("maxNumLightsPerTile", GFX::PushConstantType::UINT, to_U32(_numLightsPerTile));
+    sendPushConstantsCmd._constants.set("numDirLights", GFX::PushConstantType::UINT, lightPool.getActiveLightCount(stagePass._stage, LightType::DIRECTIONAL));
+    sendPushConstantsCmd._constants.set("numPointLights", GFX::PushConstantType::UINT, stagePass._stage == RenderStage::DISPLAY ? lightPool.getActiveLightCount(stagePass._stage, LightType::POINT) : 0);
+    sendPushConstantsCmd._constants.set("numSpotLights", GFX::PushConstantType::UINT, stagePass._stage == RenderStage::DISPLAY ? lightPool.getActiveLightCount(stagePass._stage, LightType::SPOT) : 0);
     GFX::EnqueueCommand(bufferInOut, sendPushConstantsCmd);
 
-    GFX::DispatchComputeCommand computeCmd;
-    computeCmd._computeGroupSize.set(getNumTilesX(), getNumTilesY(), 1);
+    GFX::DispatchComputeCommand computeCmd = {};
+    computeCmd._computeGroupSize.set(getNumTilesX(target.getWidth()), getNumTilesY(target.getHeight()), 1);
     assert(computeCmd._computeGroupSize.lengthSquared() > 0);
     GFX::EnqueueCommand(bufferInOut, computeCmd);
 
-    GFX::MemoryBarrierCommand memCmd;
+    GFX::MemoryBarrierCommand memCmd = {};
     memCmd._barrierMask = to_base(MemoryBarrierType::SHADER_BUFFER);
     GFX::EnqueueCommand(bufferInOut, memCmd);
 }
 
-void Renderer::updateResolution(U16 width, U16 height) {
-    _resolution.set(width, height);
-}
-
-U32 Renderer::getMaxNumLightsPerTile() const {
-    const U32 adjustmentMultipier = 32;
+U16 Renderer::getMaxNumLightsPerTile(U16 height) const {
+    const U16 adjustmentMultipier = 32;
 
     // I haven't tested at greater than 1080p, so cap it
-    U16 height = std::min(_resolution.height, to_U16(1080));
+    height = std::min(height, to_U16(1080));
     // adjust max lights per tile down as height increases
     return (Config::Lighting::FORWARD_PLUS_MAX_LIGHTS_PER_TILE - (adjustmentMultipier * (height / 120)));
 }
 
-U32 Renderer::getNumTilesX() const {
-    return to_U32((_resolution.width + Config::Lighting::FORWARD_PLUS_TILE_RES - 1) /
-        to_F32(Config::Lighting::FORWARD_PLUS_TILE_RES));
+U16 Renderer::getNumTilesX(U16 width) const {
+    return to_U16((width + Config::Lighting::FORWARD_PLUS_TILE_RES - 1) /
+           to_F32(Config::Lighting::FORWARD_PLUS_TILE_RES));
 }
 
-U32 Renderer::getNumTilesY() const {
-    return to_U32((_resolution.height + Config::Lighting::FORWARD_PLUS_TILE_RES - 1) /
-        to_F32(Config::Lighting::FORWARD_PLUS_TILE_RES));
+U16 Renderer::getNumTilesY(U16 height) const {
+    return to_U16((height + Config::Lighting::FORWARD_PLUS_TILE_RES - 1) /
+           to_F32(Config::Lighting::FORWARD_PLUS_TILE_RES));
 }
 };

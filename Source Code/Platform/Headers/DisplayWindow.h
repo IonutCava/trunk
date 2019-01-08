@@ -188,7 +188,7 @@ public:
     inline const stringImpl& title() const;
                         void title(const stringImpl& title);
 
-    inline const WindowHandle& handle() const;
+    WindowHandle handle() const;
 
     /// Mouse positioning is handled by SDL
     void setCursorPosition(I32 x, I32 y);
@@ -246,12 +246,10 @@ private:
     Uint32 _windowID;
 
     DELEGATE_CBK<void> _destroyCbk;
-
-    static I64 s_cursorWindowGUID;
+    
     void *_userData = nullptr;
 
-    // Varies from OS to OS
-    WindowHandle _handle;
+    static I64 s_cursorWindowGUID;
 
 }; //DisplayWindow
 

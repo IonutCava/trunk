@@ -60,7 +60,9 @@ ShaderProgram::~ShaderProgram()
 }
 
 bool ShaderProgram::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) {
-    registerShaderProgram(std::dynamic_pointer_cast<ShaderProgram>(shared_from_this()));
+    if (!weak_from_this().expired()) {
+        registerShaderProgram(std::dynamic_pointer_cast<ShaderProgram>(shared_from_this()));
+    }
 
     return CachedResource::load(onLoadCallback);
 }

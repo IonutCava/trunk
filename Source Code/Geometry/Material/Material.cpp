@@ -24,9 +24,6 @@ namespace {
     const char* g_DepthPassMaterialShaderName = "depthPass";
     const char* g_ForwardMaterialShaderName = "material";
     const char* g_PassThroughMaterialShaderName = "passThrough";
-
-    const U32 g_MaxShadersComputedPerFrame = Config::Build::IS_DEBUG_BUILD ? 8 : 12;
-
     stringImpl getDefinesHash(const vector<std::pair<stringImpl, bool>>& defines) {
         size_t hash = 17;
         for (auto entry : defines) {
@@ -37,6 +34,19 @@ namespace {
     }
 };
 
+SharedMutex Material::s_shaderDBLock;
+hashMap<size_t, ShaderProgram_ptr> Material::s_shaderDB;
+
+bool Material::onStartup() {
+    return true;
+}
+
+bool Material::onShutdown() {
+    UniqueLockShared w_lock(s_shaderDBLock);
+    s_shaderDB.clear();
+    return true;
+}
+
 Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name)
     : CachedResource(ResourceType::DEFAULT, descriptorHash, name),
       _context(context),
@@ -46,7 +56,6 @@ Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descri
       _doubleSided(false),
       _isReflective(false),
       _isRefractive(false),
-      _shaderThreadedLoad(true),
       _hardwareSkinning(false),
       _ignoreXMLData(false),
       _useTriangleStrip(true),
@@ -138,7 +147,6 @@ Material_ptr Material::clone(const stringImpl& nameSuffix) {
     cloneMat->_isReflective = base._isReflective;
     cloneMat->_isRefractive = base._isRefractive;
     cloneMat->_hardwareSkinning = base._hardwareSkinning;
-    cloneMat->_shaderThreadedLoad = base._shaderThreadedLoad;
     cloneMat->_operation = base._operation;
     cloneMat->_bumpMethod = base._bumpMethod;
     cloneMat->_ignoreXMLData = base._ignoreXMLData;
@@ -177,15 +185,6 @@ Material_ptr Material::clone(const stringImpl& nameSuffix) {
 }
 
 void Material::update(const U64 deltaTimeUS) {
-    for (ShaderProgramInfo& info : _shaderInfo) {
-        if (info._shaderCompStage == ShaderProgramInfo::BuildStage::COMPUTED) {
-            if (info._shaderRef != nullptr && info._shaderRef->getState() == ResourceState::RES_LOADED) {
-                info._shaderCompStage = ShaderProgramInfo::BuildStage::READY;
-                break;
-            }
-        }
-    }
-
     if (_needsNewShader) {
         recomputeShaders();
         _needsNewShader = false;
@@ -234,18 +233,60 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
     return true;
 }
 
+void Material::waitForShader(const ShaderProgram_ptr& shader, RenderStagePass stagePass, const char* newShader) {
+    if (shader == nullptr) {
+        return;
+    }
+
+    ShaderProgram* oldShader = shader.get();
+    /*{
+        SharedLock r_lock(s_shaderDBLock);
+        auto it = s_shaderDB.find(shaderHash);
+        if (it != std::cend(s_shaderDB)) {
+            oldShader = it->second.get();
+        }
+    }*/
+
+    if (oldShader == nullptr) {
+        return;
+    }
+
+    if (newShader == nullptr || strlen(newShader) == 0 || oldShader->resourceName().compare(newShader) != 0) {
+        // We cannot replace a shader that is still loading in the background
+        WAIT_FOR_CONDITION(oldShader->getState() == ResourceState::RES_LOADED);
+        Console::printfn(Locale::get(_ID("REPLACE_SHADER")),
+            oldShader->resourceName().c_str(),
+            newShader != nullptr ? newShader : "NULL",
+            TypeUtil::renderStageToString(stagePass._stage),
+            TypeUtil::renderPassTypeToString(stagePass._passType));
+    }
+}
 
 void Material::setShaderProgramInternal(const ShaderProgram_ptr& shader,
                                         RenderStagePass renderStagePass) {
     ShaderProgramInfo& info = shaderInfo(renderStagePass);
     info._shaderRef = shader;
+    // if we already have a different shader assigned ...
+    waitForShader(info._shaderRef, renderStagePass, shader == nullptr ? nullptr : shader->resourceName().c_str());
+
+    //info._shaderRefHash = shader == nullptr ? 0 : shader->getDescriptorHash();
+
+    /*if (info._shaderRefHash != 0) {
+        UniqueLockShared w_lock(s_shaderDBLock);
+        hashAlg::insert(s_shaderDB, info._shaderRefHash, shader);
+    }*/
+
     info._shaderCompStage = ShaderProgramInfo::BuildStage::COMPUTED;
+    if (shader == nullptr || shader->getState() == ResourceState::RES_LOADED) {
+        info._shaderCompStage = ShaderProgramInfo::BuildStage::READY;
+        info._shaderCache = shader.get();
+    }
 }
 
 void Material::setShaderProgramInternal(const ResourceDescriptor& shaderDescriptor,
                                         RenderStagePass renderStagePass,
                                         const bool computeOnAdd) {
-    const ShaderProgramInfo& info = shaderInfo(renderStagePass);
+    ShaderProgramInfo& info = shaderInfo(renderStagePass);
     // if we already have a different shader assigned ...
     if (info._shaderRef != nullptr && info._shaderRef->resourceName().compare(shaderDescriptor.resourceName()) != 0)
     {
@@ -256,48 +297,71 @@ void Material::setShaderProgramInternal(const ResourceDescriptor& shaderDescript
             shaderDescriptor.resourceName().c_str());
     }
 
-    ShaderComputeQueue::ShaderQueueElement queueElement(shaderDescriptor);
-    queueElement._shaderData = &shaderInfo(renderStagePass);
-    
+    //UniqueLockShared w_lock(s_shaderDBLock);
+    //auto ret = hashAlg::insert(s_shaderDB, info._shaderRefHash, ShaderProgram_ptr());
+
     ShaderComputeQueue& shaderQueue = _context.shaderComputeQueue();
+    
     if (computeOnAdd)
     {
-        shaderQueue.addToQueueFront(queueElement);
+        shaderQueue.addToQueueFront(ShaderComputeQueue::ShaderQueueElement{info._shaderRef/*ret.first->second*/, shaderDescriptor});
         shaderQueue.stepQueue();
+        info._shaderCompStage = ShaderProgramInfo::BuildStage::COMPUTED;
     }
     else
     {
-        shaderQueue.addToQueueBack(queueElement);
+        shaderQueue.addToQueueBack(ShaderComputeQueue::ShaderQueueElement{ info._shaderRef/*ret.first->second*/, shaderDescriptor });
+        info._shaderCompStage = ShaderProgramInfo::BuildStage::QUEUED;
     }
-    
 }
 
 void Material::recomputeShaders() {
-    for (ShaderProgramInfo& info : _shaderInfo) {
+    for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
+        ShaderProgramInfo& info = _shaderInfo[i];
         if (!info._customShader) {
             info._shaderCompStage = ShaderProgramInfo::BuildStage::REQUESTED;
+            computeShader(RenderStagePass::stagePass(i));
         }
     }
 }
 
-bool Material::canDraw(RenderStage renderStage) {
-    /*if (_needsNewShader) {
-        recomputeShaders();
-        _needsNewShader = false;
+U32 Material::getProgramID(RenderStagePass renderStagePass) const {
+    const ShaderProgramInfo& info = shaderInfo(renderStagePass);
+    /*if (info._shaderCache == nullptr) {
+        return info._shaderCache->getID();
     }*/
-    /*for (ShaderProgramInfo& info : _shaderInfo) {
+    if (info._shaderRef != nullptr && info._shaderRef->getState() == ResourceState::RES_LOADED) {
+        return info._shaderRef->getID();
+    }
+    /*size_t hash = shaderInfo(renderStagePass)._shaderRefHash;
+
+    SharedLock r_lock(s_shaderDBLock);
+    auto it = s_shaderDB.find(hash);
+    if (it != std::cend(s_shaderDB)) {
+        return it->second->getID();
+    }*/
+
+    return ShaderProgram::defaultShader()->getID();
+}
+
+bool Material::canDraw(RenderStagePass renderStagePass) {
+    for (U8 i = 0; i < to_U8(RenderPassType::COUNT); ++i) {
+        RenderStagePass stagePassIt(renderStagePass._stage, static_cast<RenderPassType>(i));
+        ShaderProgramInfo& info = shaderInfo(stagePassIt);
+
+        if (info._shaderCompStage == ShaderProgramInfo::BuildStage::QUEUED && info._shaderRef != nullptr) {
+            info._shaderCompStage = ShaderProgramInfo::BuildStage::COMPUTED;
+        }
+
         if (info._shaderCompStage == ShaderProgramInfo::BuildStage::COMPUTED) {
             if (info._shaderRef != nullptr && info._shaderRef->getState() == ResourceState::RES_LOADED) {
                 info._shaderCompStage = ShaderProgramInfo::BuildStage::READY;
                 return false;
             }
         }
-    }*/
-    for (U8 i = 0; i < to_U8(RenderPassType::COUNT); ++i) {
-        U8 passIndex = RenderStagePass::index(renderStage, static_cast<RenderPassType>(i));
 
-        if (_shaderInfo[passIndex]._shaderCompStage != ShaderProgramInfo::BuildStage::READY) {
-            return computeShader(RenderStagePass::stagePass(passIndex));
+        if (info._shaderCompStage != ShaderProgramInfo::BuildStage::READY) {
+            return computeShader(stagePassIt);
         }
     }
 
@@ -385,11 +449,6 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
     const U32 slot1 = to_base(ShaderProgram::TextureUsage::UNIT1);
     const U32 slotOpacity = to_base(ShaderProgram::TextureUsage::OPACITY);
 
-    if ((_textures[slot0] && _textures[slot0]->getState() != ResourceState::RES_LOADED) ||
-        (_textures[slotOpacity] && _textures[slotOpacity]->getState() != ResourceState::RES_LOADED)) {
-        return false;
-    }
-
     DIVIDE_ASSERT(_shadingMode != ShadingMode::COUNT,
                   "Material computeShader error: Invalid shading mode specified!");
 
@@ -411,7 +470,6 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
             updateTranslucency();
         }
     }
-
 
     stringImpl shader = renderStagePass.isDepthPass() ? g_DepthPassMaterialShaderName : g_ForwardMaterialShaderName;
 
@@ -493,6 +551,7 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
         shaderPropertyDescriptor._defines.push_back(std::make_pair("DISABLE_SHADOW_MAPPING", true));
     }
 
+    
     // Add the GPU skinning module to the vertex shader?
     if (_hardwareSkinning) {
         shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_GPU_SKINNING", true));
@@ -542,7 +601,7 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
     shaderDescriptor.assetName(shader);
     shaderPropertyDescriptor._defines.push_back(std::make_pair("DEFINE_PLACEHOLDER", false));
     shaderDescriptor.setPropertyDescriptor(shaderPropertyDescriptor);
-    shaderDescriptor.setThreadedLoading(_shaderThreadedLoad);
+    shaderDescriptor.setThreadedLoading(true);
 
     setShaderProgramInternal(shaderDescriptor, renderStagePass, false);
 
@@ -717,9 +776,10 @@ void Material::getMaterialMatrix(mat4<F32>& retMatrix) const {
 void Material::rebuild() {
     recomputeShaders();
 
-    for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
-        computeShader(RenderStagePass::stagePass(i));
-        _shaderInfo[i]._shaderRef->recompile();
+    for (ShaderProgramInfo& info : _shaderInfo) {
+        if (info._shaderRef != nullptr && info._shaderRef->getState() == ResourceState::RES_LOADED) {
+           info._shaderRef->recompile();
+        }
     }
 }
 

@@ -8,7 +8,7 @@
 namespace Divide {
 
 namespace {
-    const U32 g_MaxShadersComputedPerFrame = Config::Build::IS_DEBUG_BUILD ? 8 : 12;
+    const U32 g_MaxShadersComputedPerFrame = 8;
 };
 
 ShaderComputeQueue::ShaderComputeQueue(ResourceCache& cache)
@@ -27,41 +27,35 @@ ShaderComputeQueue::~ShaderComputeQueue()
 void ShaderComputeQueue::idle() {
     Time::ScopedTimer timer(_queueComputeTimer);
 
-    if (_shadersComputedThisFrame) {
-        return;
+    if (!_shadersComputedThisFrame) {
+        _totalShaderComputeCountThisFrame = 0;
+
+        WAIT_FOR_CONDITION(!(stepQueue() &&
+            ++_totalShaderComputeCountThisFrame < g_MaxShadersComputedPerFrame));
+
+        _shadersComputedThisFrame = _totalShaderComputeCountThisFrame > 0;
     }
-
-    _totalShaderComputeCountThisFrame = 0;
-
-    WAIT_FOR_CONDITION(!(stepQueue() &&
-                         ++_totalShaderComputeCountThisFrame < g_MaxShadersComputedPerFrame));
-
-    _shadersComputedThisFrame = _totalShaderComputeCountThisFrame > 0;
 }
 
 bool ShaderComputeQueue::stepQueue() {
     UniqueLock lock(_queueLock);
-    if (!_shaderComputeQueue.empty()) {
-        ShaderQueueElement& currentItem = _shaderComputeQueue.front();
-        ShaderProgramInfo& info = *currentItem._shaderData;
-        info._shaderRef = CreateResource<ShaderProgram>(_cache, currentItem._shaderDescriptor);
-        info._shaderCompStage = ShaderProgramInfo::BuildStage::COMPUTED;
-        _shaderComputeQueue.pop_front();
-        return true;
+    if (_shaderComputeQueue.empty()) {
+        return false;
     }
 
-    return false;
+    ShaderQueueElement& currentItem = _shaderComputeQueue.front();
+    currentItem._shaderRef = CreateResource<ShaderProgram>(_cache, currentItem._shaderDescriptor);
+    _shaderComputeQueue.pop_front();
+    return true;
 }
 
 void ShaderComputeQueue::addToQueueFront(const ShaderQueueElement& element) {
     UniqueLock w_lock(_queueLock);
-    element._shaderData->_shaderCompStage = ShaderProgramInfo::BuildStage::QUEUED;
     _shaderComputeQueue.push_front(element);
 }
 
 void ShaderComputeQueue::addToQueueBack(const ShaderQueueElement& element) {
     UniqueLock w_lock(_queueLock);
-    element._shaderData->_shaderCompStage = ShaderProgramInfo::BuildStage::QUEUED;
     _shaderComputeQueue.push_back(element);
 }
 

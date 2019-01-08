@@ -51,6 +51,7 @@ enum class MemoryBarrierType : U8 {
     COUNTER = toBit(5),
     QUERY = toBit(6),
     SHADER_BUFFER = toBit(7),
+    ALL = BUFFER | TEXTURE | RENDER_TARGET | TRANSFORM_FEEDBACK | COUNTER | QUERY | SHADER_BUFFER,
     COUNT = 7
 };
 
