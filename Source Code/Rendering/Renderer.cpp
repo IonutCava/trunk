@@ -16,7 +16,6 @@ Renderer::Renderer(PlatformContext& context, ResourceCache& cache)
     : PlatformContextComponent(context),
       _resCache(cache),
       _numLightsPerTile(1u),
-      _perStageElementCount(0u),
       _debugView(false)
 {
     ResourceDescriptor cullShaderDesc("lightCull");
@@ -27,12 +26,11 @@ Renderer::Renderer(PlatformContext& context, ResourceCache& cache)
 
     const U32 numTiles = getNumTilesX(screenRT.getWidth()) * getNumTilesY(screenRT.getHeight());
     _numLightsPerTile = getMaxNumLightsPerTile(screenRT.getHeight());
-    _perStageElementCount = _numLightsPerTile * numTiles;
     assert(_numLightsPerTile > 1);
 
 
     ShaderBufferDescriptor bufferDescriptor;
-    bufferDescriptor._elementCount = _perStageElementCount;
+    bufferDescriptor._elementCount = _numLightsPerTile * numTiles;
     bufferDescriptor._elementSize = sizeof(U32);
     bufferDescriptor._ringBufferLength = 1;
     bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE);
@@ -55,11 +53,12 @@ void Renderer::preRender(RenderStagePass stagePass,
 
     _numLightsPerTile = getMaxNumLightsPerTile(target.getHeight());
 
-    TextureData data = target.getAttachment(RTAttachmentType::Depth, 0).texture()->getData();
-
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd = {};
+    TextureData data = target.getAttachment(RTAttachmentType::Depth, 0).texture()->getData();
     bindDescriptorSetsCmd._set._textureData.addTexture(data, to_U8(ShaderProgram::TextureUsage::DEPTH));
     GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
+
+    _context.gfx().preRender(stagePass, _numLightsPerTile, bufferInOut);
 
     if (stagePass._stage == RenderStage::SHADOW) {
         return;
@@ -72,7 +71,6 @@ void Renderer::preRender(RenderStagePass stagePass,
     GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
 
     GFX::SendPushConstantsCommand sendPushConstantsCmd = {};
-    sendPushConstantsCmd._constants.set("maxNumLightsPerTile", GFX::PushConstantType::UINT, to_U32(_numLightsPerTile));
     sendPushConstantsCmd._constants.set("numDirLights", GFX::PushConstantType::UINT, lightPool.getActiveLightCount(stagePass._stage, LightType::DIRECTIONAL));
     sendPushConstantsCmd._constants.set("numPointLights", GFX::PushConstantType::UINT, stagePass._stage == RenderStage::DISPLAY ? lightPool.getActiveLightCount(stagePass._stage, LightType::POINT) : 0);
     sendPushConstantsCmd._constants.set("numSpotLights", GFX::PushConstantType::UINT, stagePass._stage == RenderStage::DISPLAY ? lightPool.getActiveLightCount(stagePass._stage, LightType::SPOT) : 0);

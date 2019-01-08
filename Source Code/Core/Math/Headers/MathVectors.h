@@ -686,9 +686,9 @@ class vec3 {
     }
 
     /// set the 3 components of the vector manually using a source pointer to a (large enough) array
-    inline void set(const T* v) noexcept { std::memcpy(&_v[0], &v[0], sizeof(T) * 3); }
+    inline void set(const T* v) noexcept { std::memcpy(&_v[0], &v[0], 3 * sizeof(T)); }
     /// set the 3 components of the vector manually
-    inline void set(T value) { this->set(value, value, value); }
+    inline void set(T value) { x = value; y = value; z = value; }
     /// set the 3 components of the vector manually
     inline void set(T _x, T _y, T _z)  noexcept {
         this->x = _x;
@@ -702,14 +702,13 @@ class vec3 {
         this->z = static_cast<T>(_z);
     }
     /// set the 3 components of the vector using a smaller source vector
-    inline void set(const vec2<T> &v) { this->set(v.x, v.y, z); }
+    inline void set(const vec2<T> &v) { std::memcpy(_v, v._v, 2 * sizeof(T)); }
     /// set the 3 components of the vector using a source vector
-    inline void set(const vec3 &v) { this->set(&v._v[0]); }
-    /// set the 3 components of the vector using the first 3 components of the
-    /// source vector
-    inline void set(const vec4<T> &v) { this->set(v.x, v.y, v.z); }
+    inline void set(const vec3 &v) { std::memcpy(_v, v._v, 3 * sizeof(T)); }
+    /// set the 3 components of the vector using the first 3 components of the source vector
+    inline void set(const vec4<T> &v) { std::memcpy(_v, v._v, 3 * sizeof(T)); }
     /// set all the components back to 0
-    inline void reset() { this->set((T)0); }
+    inline void reset() { std::memset(_v, 0, 3 * sizeof(T)); }
     /// return the vector's length
     inline T length() const { return Divide::Sqrt(lengthSquared()); }
     /// return true if length is zero
@@ -1190,9 +1189,9 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
         this->xyz(xyzw.x, xyzw.y, xyzw.z);
     }
     /// set the 4 components of the vector manually using a source pointer to a (large enough) array
-    inline void set(const T* v) noexcept { std::memcpy(&_v[0], &v[0], sizeof(T) * 4); }
+    inline void set(const T* v) noexcept { std::memcpy(&_v[0], &v[0], 4 * sizeof(T)); }
     /// set the 4 components of the vector manually
-    inline void set(T value) { this->set(value, value, value, value); }
+    inline void set(T value) { x = value; y = value; z = value; w = value; }
     /// set the 4 components of the vector manually
     inline void set(T _x, T _y, T _z, T _w) noexcept {
         this->x = _x;
@@ -1203,17 +1202,20 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
 
     template <typename U>
     inline void set(U _x, U _y, U _z, U _w) {
-        set(static_cast<T>(_x), static_cast<T>(_y), static_cast<T>(_z), static_cast<T>(_w));
+        x = static_cast<T>(_x);
+        y = static_cast<T>(_y);
+        z = static_cast<T>(_z);
+        w = static_cast<T>(_w);
     }
 
     /// set the 4 components of the vector using a source vector
-    inline void set(const vec4 &v) { this->set(&v._v[0]); }
+    inline void set(const vec4 &v) { std::memcpy(&_v[0], &v._v[0], 4 * sizeof(T)); }
     /// set the 4 components of the vector using a smaller source vector
-    inline void set(const vec3<T> &v) { this->set(v, w); }
+    inline void set(const vec3<T> &v) { std::memcpy(&_v[0], &v._v[0], 3 * sizeof(T)); }
     /// set the 4 components of the vector using a smaller source vector
-    inline void set(const vec3<T> &v, T w_) { this->set(v.x, v.y, v.z, w_); }
+    inline void set(const vec3<T> &v, T _w) { std::memcpy(&_v[0], &v._v[0], 3 * sizeof(T)); w = _w; }
     /// set the 4 components of the vector using a smaller source vector
-    inline void set(const vec2<T> &v) { this->set(v.x, v.y, z, w); }
+    inline void set(const vec2<T> &v) { std::memcpy(&_v[0], &v._v[0], 2 * sizeof(T)); }
     /// set the 4 components of the vector using smallers source vectors
     inline void set(const vec2<T> &v1, const vec2<T> &v2) {
         this->set(v1.x, v1.y, v2.x, v2.y);

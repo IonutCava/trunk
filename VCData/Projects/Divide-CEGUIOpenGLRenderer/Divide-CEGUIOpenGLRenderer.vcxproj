@@ -251,6 +251,7 @@
       <LanguageStandard>stdcpp14</LanguageStandard>
       <EnableModules>false</EnableModules>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalOptions> /Zc:twoPhase-</AdditionalOptions>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;CEGUI_STATIC;CEGUI_BUILD_STATIC_FACTORY_MODULE;_CRT_SECURE_NO_WARNINGS;NOMINMAX;GLEW_STATIC;CMAKE_INTDIR=\"Profile\";%(PreprocessorDefinitions)</PreprocessorDefinitions>

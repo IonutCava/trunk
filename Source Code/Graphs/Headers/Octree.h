@@ -44,14 +44,14 @@ class Octree : public std::enable_shared_from_this<Octree> {
     public:
         Octree(U32 nodeMask);
         Octree(U32 nodeMask, const BoundingBox& rootAABB);
-        Octree(U32 nodeMask, const BoundingBox& rootAABB, const vector<SceneGraphNode*>& nodes);
+        Octree(U32 nodeMask, const BoundingBox& rootAABB, const vectorEASTL<SceneGraphNode*>& nodes);
 
         ~Octree();
 
         void update(const U64 deltaTimeUS);
         bool addNode(SceneGraphNode* node);
-        bool addNodes(const vector<SceneGraphNode*>& nodes);
-        void getAllRegions(vector<BoundingBox>& regionsOut) const;
+        bool addNodes(const vectorEASTL<SceneGraphNode*>& nodes);
+        void getAllRegions(vectorEASTL<BoundingBox>& regionsOut) const;
 
         inline const BoundingBox& getRegion() const {
             return _region;
@@ -59,10 +59,10 @@ class Octree : public std::enable_shared_from_this<Octree> {
 
         void updateTree();
 
-        vector<IntersectionRecord> allIntersections(const Frustum& region, U32 typeFilterMask);
-        vector<IntersectionRecord> allIntersections(const Ray& intersectionRay, F32 start, F32 end);
+        vectorEASTL<IntersectionRecord> allIntersections(const Frustum& region, U32 typeFilterMask);
+        vectorEASTL<IntersectionRecord> allIntersections(const Ray& intersectionRay, F32 start, F32 end);
         IntersectionRecord nearestIntersection(const Ray& intersectionRay, F32 start, F32 end, U32 typeFilterMask);
-        vector<IntersectionRecord> allIntersections(const Ray& intersectionRay, F32 start, F32 end, U32 typeFilterMask);
+        vectorEASTL<IntersectionRecord> allIntersections(const Ray& intersectionRay, F32 start, F32 end, U32 typeFilterMask);
         
     private:
         U8 activeNodes() const;
@@ -71,17 +71,17 @@ class Octree : public std::enable_shared_from_this<Octree> {
         void findEnclosingBox();
         void findEnclosingCube();
         std::shared_ptr<Octree>
-        createNode(const BoundingBox& region, const vector<SceneGraphNode*>& objects);
+        createNode(const BoundingBox& region, const vectorEASTL<SceneGraphNode*>& objects);
 
         std::shared_ptr<Octree>
         createNode(const BoundingBox& region, SceneGraphNode* object);
 
         bool isStatic(const SceneGraphNode& node) const;
-        vector<IntersectionRecord> getIntersection(const Frustum& frustum, U32 typeFilterMask) const;
-        vector<IntersectionRecord> getIntersection(const Ray& intersectRay, F32 start, F32 end, U32 typeFilterMask) const;
+        vectorEASTL<IntersectionRecord> getIntersection(const Frustum& frustum, U32 typeFilterMask) const;
+        vectorEASTL<IntersectionRecord> getIntersection(const Ray& intersectRay, F32 start, F32 end, U32 typeFilterMask) const;
 
         size_t getTotalObjectCount() const;
-        void updateIntersectionCache(vector<SceneGraphNode*>& parentObjects, U32 typeFilterMask);
+        void updateIntersectionCache(vectorEASTL<SceneGraphNode*>& parentObjects, U32 typeFilterMask);
         
         void handleIntersection(const IntersectionRecord& intersection) const;
         bool getIntersection(SceneGraphNode& node, const Frustum& frustum, IntersectionRecord& irOut) const;
@@ -98,13 +98,13 @@ class Octree : public std::enable_shared_from_this<Octree> {
         BoundingBox _region;
         std::shared_ptr<Octree> _parent;
         std::array<bool, 8> _activeNodes;
-        vector<SceneGraphNode*> _objects;
+        vectorEASTL<SceneGraphNode*> _objects;
         std::array<std::shared_ptr<Octree>, 8> _childNodes;
-        vector<SceneGraphNode*> _movedObjects;
+        vectorEASTL<SceneGraphNode*> _movedObjects;
 
-        vector<IntersectionRecord> _intersectionsCache;
+        vectorEASTL<IntersectionRecord> _intersectionsCache;
 
-        static vector<SceneGraphNode*> s_intersectionsObjectCache;
+        static vectorEASTL<SceneGraphNode*> s_intersectionsObjectCache;
         static std::queue<SceneGraphNode*> s_pendingInsertion;
         static std::mutex s_pendingInsertLock;
         static bool s_treeReady;

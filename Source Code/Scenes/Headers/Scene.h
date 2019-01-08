@@ -296,11 +296,11 @@ class Scene : public Resource, public PlatformContextComponent {
        SceneEnvironmentProbePool* _envProbePool;
 
        IMPrimitive* _linesPrimitive;
-       vector<IMPrimitive*> _octreePrimitives;
-       vector<BoundingBox> _octreeBoundingBoxes;
+       vectorEASTL<IMPrimitive*> _octreePrimitives;
+       vectorEASTL<BoundingBox> _octreeBoundingBoxes;
 
        mutable std::mutex _perFrameArenaMutex;
-       mutable MyArena<Config::REQUIRED_RAM_SIZE / 2> _perFrameArena;
+       mutable MyArena<Config::REQUIRED_RAM_SIZE / 3> _perFrameArena;
 };
 
 namespace Attorney {

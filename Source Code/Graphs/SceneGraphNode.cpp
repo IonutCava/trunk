@@ -410,7 +410,7 @@ void SceneGraphNode::setActive(const bool state) {
     }
 }
 
-void SceneGraphNode::getOrderedNodeList(vector<SceneGraphNode*>& nodeList) {
+void SceneGraphNode::getOrderedNodeList(vectorEASTL<SceneGraphNode*>& nodeList) {
     // Compute from leaf to root to ensure proper calculations
     {
         SharedLock r_lock(_childLock);
@@ -438,19 +438,15 @@ void SceneGraphNode::addToDeleteQueue(U32 idx) {
 }
 
 void SceneGraphNode::frameStarted() {
-    assert(_node->getState() == ResourceState::RES_LOADED);
     Attorney::SceneNodeSceneGraph::frameStarted(*_node, *this);
 }
 
 void SceneGraphNode::frameEnded() {
-    assert(_node->getState() == ResourceState::RES_LOADED);
     Attorney::SceneNodeSceneGraph::frameEnded(*_node, *this);
 }
 
 /// Please call in MAIN THREAD! Nothing is thread safe here (for now) -Ionut
 void SceneGraphNode::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) {
-    assert(_node->getState() == ResourceState::RES_LOADED);
-
     // update local time
     _elapsedTimeUS += deltaTimeUS;
 

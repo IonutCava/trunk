@@ -378,7 +378,6 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
     // Time, fog, etc
     _sceneData->elapsedTime(_elapsedTimeMS);
     _sceneData->deltaTime(Time::MicrosecondsToSeconds<F32>(deltaTimeUS));
-    _sceneData->setNumLightsPerTile(_platformContext->gfx().getRenderer().numLightsPerTile());
     _sceneData->detailLevel(_platformContext->config().rendering.renderDetailLevel);
 
     FogDescriptor& fog = activeScene.state().fogDescriptor();
@@ -426,10 +425,6 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
 }
 
 void SceneManager::preRender(RenderStagePass stagePass, const Camera& camera, RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
-    GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd;
-    bindDescriptorSetsCmd._set.addShaderBuffer({ ShaderBufferLocation::SCENE_DATA,  _sceneData->buffer()});
-    GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
-
     _platformContext->gfx().getRenderer().preRender(stagePass, target, getActiveScene().lightPool(), bufferInOut);
 }
 

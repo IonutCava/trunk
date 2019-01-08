@@ -71,8 +71,6 @@ class Renderer : public PlatformContextComponent {
     U16 _numLightsPerTile;
     bool _debugView;
 
-    U32 _perStageElementCount;
-
     ShaderProgram_ptr _lightCullComputeShader;
     ShaderBuffer*     _perTileLightIndexBuffer;
 

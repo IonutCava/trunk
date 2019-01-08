@@ -70,8 +70,8 @@ class glBufferLockManager : public glLockManager {
 
    private:
     mutable std::mutex _lock;
-    vector<BufferLock> _bufferLocks;
-    vector<BufferLock> _swapLocks;
+    vectorEASTL<BufferLock> _bufferLocks;
+    vectorEASTL<BufferLock> _swapLocks;
 };
 
 };  // namespace Divide

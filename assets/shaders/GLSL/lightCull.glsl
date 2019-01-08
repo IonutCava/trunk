@@ -1,5 +1,5 @@
 -- Compute
-uniform uint maxNumLightsPerTile;
+
 uniform uint numDirLights;
 uniform uint numPointLights;
 uniform uint numSpotLights;
@@ -187,7 +187,7 @@ void main(void)
     barrier();
 
     {   // write back
-        uint startOffset = maxNumLightsPerTile * tileIdxFlattened;
+        uint startOffset = dvd_numLightsPerTile * tileIdxFlattened;
 
         for (uint i = localIdxFlattened; i < uNumPointLightsInThisTile; i += NUM_THREADS_PER_TILE)
         {

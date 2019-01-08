@@ -420,6 +420,7 @@ $(OutDir)Test-Engine.exe nopause</Command>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp14</LanguageStandard>
       <EnableModules>false</EnableModules>
+      <AdditionalOptions> /Zc:twoPhase-</AdditionalOptions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

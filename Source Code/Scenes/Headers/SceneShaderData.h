@@ -56,7 +56,7 @@ class SceneShaderData {
         vec4<F32> _windDetails = {0.0f};
         //x - light bleed bias, y - min shadow variance, z - fade distance, w - max distance
         vec4<F32> _shadowingSettings = {0.0f};
-        //x - elapsed time, y - delta time, z - lights per tile, w - packed: [ w.x - debug render, w.y - detail level, w.z - reserved ]
+        //x - elapsed time, y - delta time, z - reserved, w - packed: [ w.x - debug render, w.y - detail level, w.z - reserved ]
         vec4<F32> _otherData = {0.0f};
         WaterBodyData _waterEntities[MAX_WATER_BODIES] = {};
     };
@@ -96,11 +96,6 @@ class SceneShaderData {
 
     inline void deltaTime(F32 deltaTimeSeconds) {
         _bufferData._otherData.y = deltaTimeSeconds;
-        _dirty = true;
-    }
-
-    inline void setNumLightsPerTile(U16 count) {
-        _bufferData._otherData.z = to_F32(count);
         _dirty = true;
     }
 

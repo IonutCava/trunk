@@ -152,8 +152,8 @@ class SceneGraph : private NonCopyable,
     SceneGraphNode* _root;
     std::shared_ptr<Octree> _octree;
     std::atomic_bool _octreeUpdating;
-    vector<SceneGraphNode*> _allNodes;
-    vector<SceneGraphNode*> _orderedNodeList;
+    vectorEASTL<SceneGraphNode*> _allNodes;
+    vectorEASTL<SceneGraphNode*> _orderedNodeList;
 
     std::array<vectorEASTL<SceneGraphNode*>, to_base(SceneNodeType::COUNT)> _nodesByType;
 

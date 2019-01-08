@@ -26,19 +26,21 @@ SceneGUIElements::~SceneGUIElements()
 }
 
 void SceneGUIElements::draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) {
-    TextElementBatch batch;
+    GFX::DrawTextCommand drawTextCommand;
+    drawTextCommand._batch;
+
     const GUIMap& map = _guiElements[to_base(GUIType::GUI_TEXT)];
-    batch._data.reserve(map.size());
+    drawTextCommand._batch._data.reserve(map.size());
 
     for (const GUIMap::value_type& guiStackIterator : _guiElements[to_base(GUIType::GUI_TEXT)]) {
         GUIText& textElement = static_cast<GUIText&>(*guiStackIterator.second.first);
         if (textElement.isVisible() && !textElement.text().empty()) {
-            batch._data.emplace_back(textElement);
+            drawTextCommand._batch._data.emplace_back(textElement);
         }
     }
 
-    if (!batch().empty()) {
-        Attorney::GFXDeviceGUI::drawText(context, batch, bufferInOut);
+    if (!drawTextCommand._batch().empty()) {
+        Attorney::GFXDeviceGUI::drawText(context, drawTextCommand, bufferInOut);
     }
 }
 

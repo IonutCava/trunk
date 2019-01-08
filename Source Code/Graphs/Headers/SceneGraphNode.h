@@ -281,7 +281,7 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
         SetBit(_updateFlags, to_base(flag));
     }
 
-    void getOrderedNodeList(vector<SceneGraphNode*>& nodeList);
+    void getOrderedNodeList(vectorEASTL<SceneGraphNode*>& nodeList);
 
     void processDeleteQueue(vector<vec_size>& childList);
 

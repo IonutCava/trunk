@@ -105,7 +105,7 @@ namespace Divide {
     bool Merge(DescriptorSet &lhs, DescriptorSet &rhs, bool& partial) {
         auto& otherTextureData = rhs._textureData.textures();
 
-        vector<vec_size> textureEraseList;
+        vectorFast<vec_size> textureEraseList;
         textureEraseList.reserve(otherTextureData.size());
         for (size_t i = 0; i < otherTextureData.size(); ++i) {
             const eastl::pair<TextureData, U8>& otherTexture = otherTextureData[i];

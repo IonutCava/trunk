@@ -42,14 +42,17 @@ struct PolyContainerEntry
     inline T type() const { return static_cast<T>(_typeIndex); }
 };
 
+template<typename T>
+using deleted_unique_ptr = std::unique_ptr<T, std::function<void(T*)>>;
+
 template<typename T, size_t N>
 struct PolyContainer {
     template<typename U>
     inline typename std::enable_if<std::is_base_of<T, U>::value, PolyContainerEntry>::type
-        insert(vec_size_eastl index, const std::shared_ptr<U>& cmd) {
+        insert(vec_size_eastl index, deleted_unique_ptr<T>&& cmd) {
         assert(index < N);
 
-        _collection[index].push_back(cmd);
+        _collection[index].push_back(std::move(cmd));
 
         return PolyContainerEntry{ index, _collection[index].size() - 1 };
     }
@@ -127,7 +130,7 @@ struct PolyContainer {
         return true;
     }
 
-    std::array<vectorEASTL<std::shared_ptr<T>>, N> _collection;
+    std::array<vectorEASTL<deleted_unique_ptr<T>>, N> _collection;
 };
 
 #endif //_POLY_CONTAINER_H_

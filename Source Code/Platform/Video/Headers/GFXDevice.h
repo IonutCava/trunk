@@ -194,6 +194,8 @@ public:  // GPU interface
     void beginFrame(DisplayWindow& window, bool global);
     void endFrame(DisplayWindow& window, bool global);
 
+    void preRender(RenderStagePass stagePass, U16 numLightsPerTile, GFX::CommandBuffer& bufferInOut);
+
     void debugDraw(const SceneRenderState& sceneRenderState, const Camera& activeCamera, GFX::CommandBuffer& bufferInOut);
 
     void flushCommandBuffer(GFX::CommandBuffer& commandBuffer);
@@ -330,6 +332,7 @@ public:
     Pipeline*          newPipeline(const PipelineDescriptor& descriptor) const;
 
     // Shortcuts
+    void drawText(const GFX::DrawTextCommand& cmd, GFX::CommandBuffer& bufferInOut) const;
     void drawText(const TextElementBatch& batch, GFX::CommandBuffer& bufferInOut) const;
 
     // Render the texture over the full window dimensions regardless of the actual active rendering viewport 
@@ -494,6 +497,10 @@ protected:
 namespace Attorney {
     class GFXDeviceGUI {
     private:
+        static void drawText(GFXDevice& device, const GFX::DrawTextCommand& cmd, GFX::CommandBuffer& bufferInOut) {
+            return device.drawText(cmd, bufferInOut);
+        }
+
         static void drawText(GFXDevice& device, const TextElementBatch& batch, GFX::CommandBuffer& bufferInOut) {
             return device.drawText(batch, bufferInOut);
         }

@@ -98,12 +98,11 @@ namespace Divide {
     }
 
     void TransformSystem::OnUpdateLoop() {
-        vector<TransformComponent*> transforms;
+        
         auto transform = _engine.GetComponentManager()->begin<TransformComponent>();
         auto transformEnd = _engine.GetComponentManager()->end<TransformComponent>();
         for (; transform != transformEnd; ++transform)
         {
-            //transforms.push_back(transform.operator->());
             transform->OnUpdateLoop();
         }
     }

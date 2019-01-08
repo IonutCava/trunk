@@ -42,30 +42,32 @@ namespace {
     constexpr bool DISABLE_MEM_POOL = false;
 };
 
+
 template<typename T>
 inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, void>::type
 CommandBuffer::add(const T& command) {
-    T* ptr = nullptr;
-    {
-        if (DISABLE_MEM_POOL) {
-            ptr = MemoryManager_NEW T(command);
-        } else {
-            UniqueLockShared w_lock(T::s_PoolMutex);
-            ptr = T::s_Pool.newElement(command);
-        }
-    }
 
-    _commandOrder.emplace_back(_commands.insert(static_cast<vec_size_eastl>(command._type),
-                                                std::shared_ptr<T>(ptr, [](T*& cmd)
-                                                {
-                                                    if (DISABLE_MEM_POOL) {
-                                                        MemoryManager::SAFE_DELETE(cmd);
-                                                    } else {
-                                                        UniqueLockShared w_lock(T::s_PoolMutex);
-                                                        T::s_Pool.deleteElement(cmd);
-                                                    }
-                                                    cmd = nullptr;
-                                                })));
+    T* mem = nullptr;
+    
+    if (DISABLE_MEM_POOL) {
+        mem = MemoryManager_NEW T(command);
+    } else {
+        UniqueLockShared w_lock(T::s_PoolMutex);
+        mem = T::s_Pool.newElement(command);
+    }
+    
+    _commandOrder.emplace_back(
+        _commands.insert<T>(
+            static_cast<vec_size_eastl>(command._type),
+            deleted_unique_ptr<CommandBase>(mem,
+                                    [](CommandBase* cmd) {
+                                        if (DISABLE_MEM_POOL) {
+                                            MemoryManager::DELETE(cmd);
+                                        } else {
+                                            UniqueLockShared w_lock(T::s_PoolMutex);
+                                            T::s_Pool.deleteElement((T*)cmd);
+                                        }
+                                    })));
 }
 
 template<typename T>

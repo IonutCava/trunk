@@ -44,7 +44,7 @@ layout(binding = BUFFER_GPU_BLOCK, std140) uniform dvd_GPUBlock
     mat4  dvd_ViewProjectionMatrix;
     ///xyz - position, w - aspect ratio
     vec4  dvd_cameraPosition; 
-    //x - nearPlane, y - farPlane, z - FoV, w - tan half FoV
+    //x - nearPlane, y - farPlane, z - FoV, w - number of lights per tile
     vec4  dvd_renderProperties;
     vec4  dvd_ViewPort;
     vec4  dvd_frustumPlanes[MAX_CLIP_PLANES];
@@ -58,7 +58,7 @@ vec2 dvd_invScreenDimensions() {
 #define dvd_zPlanes vec2(dvd_renderProperties.xy)
 #define dvd_aspectRatio dvd_cameraPosition.w
 #define dvd_fieldOfView dvd_renderProperties.z
-#define dvd_tanHalfFieldOfView dvd_renderProperties.w
+#define dvd_numLightsPerTile (uint(dvd_renderProperties.w))
 
 struct WaterBodyData {
     vec4 positionW;
@@ -73,7 +73,7 @@ layout(binding = BUFFER_SCENE_DATA, std430) coherent readonly buffer dvd_SceneDa
     vec4   dvd_windDetails;
     //x - light bleed bias, y - min shadow variance, z - fade distance, w - max distance
     vec4   dvd_shadowingSettings;
-    //x - elapsed time, y - delta time, z - lights per tile, w - packed: w.x - debug render, w.y - detail level, w.z - reserved
+    //x - elapsed time, y - delta time, z - reserved, w - packed: w.x - debug render, w.y - detail level, w.z - reserved
     vec4   dvd_otherData;
     WaterBodyData dvd_waterEntities[];
 };
@@ -82,7 +82,6 @@ layout(binding = BUFFER_SCENE_DATA, std430) coherent readonly buffer dvd_SceneDa
 #define dvd_fogDensity dvd_fogDetails.w
 #define dvd_time int(dvd_otherData.x)
 #define dvd_deltaTime (int(dvd_otherData.y))
-#define dvd_numLightsPerTile (uint(dvd_otherData.z))
 #define dvd_showDebugInfo (uint(UNPACK_FLOAT(dvd_otherData.w).x))
 #define dvd_renderDetailLevel (uint(UNPACK_FLOAT(dvd_otherData.w).y * DETAIL_COUNT))
 

@@ -46,8 +46,8 @@ inline F32 GFXShaderData::GPUData::FoV() const {
     return _renderProperties.z;
 }
 
-inline F32 GFXShaderData::GPUData::tanHFoV() const {
-    return _renderProperties.w;
+inline U32  GFXShaderData::GPUData::numLightsPerTile() const {
+    return to_U32(_renderProperties.w);
 }
 
 }; //namespace Divide

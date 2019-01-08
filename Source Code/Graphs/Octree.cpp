@@ -17,7 +17,7 @@ bool Octree::s_treeBuilt = false;
 
 std::mutex Octree::s_pendingInsertLock;
 std::queue<SceneGraphNode*> Octree::s_pendingInsertion;
-vector<SceneGraphNode*> Octree::s_intersectionsObjectCache;
+vectorEASTL<SceneGraphNode*> Octree::s_intersectionsObjectCache;
 
 Octree::Octree(U32 nodeMask)
     : _nodeMask(nodeMask),
@@ -38,11 +38,11 @@ Octree::Octree(U32 nodeMask, const BoundingBox& rootAABB)
 
 Octree::Octree(U32 nodeMask,
                const BoundingBox& rootAABB,
-               const vector<SceneGraphNode*>& nodes)
+               const vectorEASTL<SceneGraphNode*>& nodes)
     :  Octree(nodeMask, rootAABB)
 {
     _objects.reserve(nodes.size());
-    _objects.insert(std::cend(_objects), std::cbegin(nodes), std::cend(nodes));
+    _objects.insert(eastl::cend(_objects), eastl::cbegin(nodes), eastl::cend(nodes));
 }
 
 Octree::~Octree()
@@ -72,13 +72,13 @@ void Octree::update(const U64 deltaTimeUS) {
     }
 
     // prune any dead objects from the tree
-    _objects.erase(std::remove_if(std::begin(_objects),
-                                  std::end(_objects),
-                                  [](SceneGraphNode* crtNode) -> bool {
-                                      SceneGraphNode* node = crtNode;
-                                      return !node || !node->isActive();
-                                  }),
-                   std::end(_objects));
+    _objects.erase(eastl::remove_if(eastl::begin(_objects),
+                                    eastl::end(_objects),
+                                    [](SceneGraphNode* crtNode) -> bool {
+                                        SceneGraphNode* node = crtNode;
+                                        return !node || !node->isActive();
+                                    }),
+        eastl::end(_objects));
 
     //go through and update every object in the current tree node
     _movedObjects.resize(0);
@@ -119,13 +119,13 @@ void Octree::update(const U64 deltaTimeUS) {
 
         //now, remove the object from the current node and insert it into the current containing node.
         I64 guid = movedObj->getGUID();
-        _objects.erase(std::remove_if(std::begin(_objects),
-                                      std::end(_objects),
-                                      [guid](SceneGraphNode* updatedNode) -> bool {
-                                          SceneGraphNode* node = updatedNode;
-                                          return node && node->getGUID() == guid;
-                                      }),
-                       std::end(_objects));
+        _objects.erase(eastl::remove_if(eastl::begin(_objects),
+                                        eastl::end(_objects),
+                                        [guid](SceneGraphNode* updatedNode) -> bool {
+                                            SceneGraphNode* node = updatedNode;
+                                            return node && node->getGUID() == guid;
+                                        }),
+            eastl::end(_objects));
 
         //this will try to insert the object as deep into the tree as we can go.
         current->insert(movedObj);
@@ -166,7 +166,7 @@ bool Octree::addNode(SceneGraphNode* node) {
     return false;
 }
 
-bool Octree::addNodes(const vector<SceneGraphNode*>& nodes) {
+bool Octree::addNodes(const vectorEASTL<SceneGraphNode*>& nodes) {
     bool changed = false;
     for (SceneGraphNode* node : nodes) {
         if (addNode(node)) {
@@ -275,13 +275,13 @@ void Octree::buildTree() {
     octant[7].set(vec3<F32>(regionMin.x, center.y, center.z), vec3<F32>(center.x, regionMax.y, regionMax.z));
 
     //This will contain all of our objects which fit within each respective octant.
-    vector<SceneGraphNode*> octList[8];
+    vectorEASTL<SceneGraphNode*> octList[8];
     for (U8 i = 0; i < 8; ++i) {
         octList[i].reserve(8);
     }
 
     //this list contains all of the objects which got moved down the tree and can be delisted from this node.
-    vector<I64> delist;
+    vectorEASTL<I64> delist;
     delist.reserve(8);
 
     for (SceneGraphNode* obj : _objects) {
@@ -299,9 +299,9 @@ void Octree::buildTree() {
     }
 
     //delist every moved object from this node.
-    _objects.erase(std::remove_if(std::begin(_objects),
-                                  std::end(_objects),
-                                  [&delist](SceneGraphNode* movedNode) -> bool {
+    _objects.erase(eastl::remove_if(eastl::begin(_objects),
+                                    eastl::end(_objects),
+                                   [&delist](SceneGraphNode* movedNode) -> bool {
                                       if (movedNode) {
                                           for (I64 guid : delist) {
                                               if (guid == movedNode->getGUID()) {
@@ -311,7 +311,7 @@ void Octree::buildTree() {
                                       }
                                       return false;
                                     }),
-        std::end(_objects));
+        eastl::end(_objects));
 
     //Create child nodes where there are items contained in the bounding region
     for (U8 i = 0; i < 8; ++i) {
@@ -329,7 +329,7 @@ void Octree::buildTree() {
 
 std::shared_ptr<Octree>
 Octree::createNode(const BoundingBox& region,
-                   const vector<SceneGraphNode*>& objects) {
+                   const vectorEASTL<SceneGraphNode*>& objects) {
     if (objects.empty()) {
         return nullptr;
     }
@@ -340,7 +340,7 @@ Octree::createNode(const BoundingBox& region,
 
 std::shared_ptr<Octree>
 Octree::createNode(const BoundingBox& region, SceneGraphNode* object) {
-    vector<SceneGraphNode*> objList;
+    vectorEASTL<SceneGraphNode*> objList;
     objList.push_back(object);
     return createNode(region, objList);
 }
@@ -434,7 +434,7 @@ void Octree::updateTree() {
     s_treeReady = true;
 }
 
-void Octree::getAllRegions(vector<BoundingBox>& regionsOut) const {
+void Octree::getAllRegions(vectorEASTL<BoundingBox>& regionsOut) const {
     for (U8 i = 0; i < 8; ++i) {
         if (_activeNodes[i]) {
             assert(_childNodes[i]);
@@ -467,14 +467,14 @@ size_t Octree::getTotalObjectCount() const {
 }
 
 /// Gives you a list of all intersection records which intersect or are contained within the given frustum area
-vector<IntersectionRecord> Octree::getIntersection(const Frustum& frustum, U32 typeFilterMask) const
-{
+vectorEASTL<IntersectionRecord> Octree::getIntersection(const Frustum& frustum, U32 typeFilterMask) const {
+
+    vectorEASTL<IntersectionRecord> ret{};
+
     //terminator for any recursion
     if (_objects.empty() == 0 && activeNodes() == 0) {   
-        return vector<IntersectionRecord>();
+        return ret;
     }
-
-    vector<IntersectionRecord> ret;
 
     //test each object in the list for intersection
     for(SceneGraphNode* objPtr : _objects) {
@@ -497,22 +497,23 @@ vector<IntersectionRecord> Octree::getIntersection(const Frustum& frustum, U32 t
         if (_childNodes[i] != nullptr &&
             frustum.ContainsBoundingBox(_childNodes[i]->_region, frustPlaneCache) != Frustum::FrustCollision::FRUSTUM_OUT)
         {
-            vector<IntersectionRecord> hitList = _childNodes[i]->getIntersection(frustum, typeFilterMask);
-            ret.insert(std::cend(ret), std::cbegin(hitList), std::cend(hitList));
+            vectorEASTL<IntersectionRecord> hitList = _childNodes[i]->getIntersection(frustum, typeFilterMask);
+            ret.insert(eastl::cend(ret), eastl::cbegin(hitList), eastl::cend(hitList));
         }
     }
     return ret;
 }
 
 /// Gives you a list of intersection records for all objects which intersect with the given ray
-vector<IntersectionRecord> Octree::getIntersection(const Ray& intersectRay, F32 start, F32 end, U32 typeFilterMask) const
-{
+vectorEASTL<IntersectionRecord> Octree::getIntersection(const Ray& intersectRay, F32 start, F32 end, U32 typeFilterMask) const {
+
+    vectorEASTL<IntersectionRecord> ret{};
+
     //terminator for any recursion
     if (_objects.empty() == 0 && activeNodes() == 0) {
-        return vector<IntersectionRecord>();
+        return ret;
     }
 
-    vector<IntersectionRecord> ret;
 
     //the ray is intersecting this region, so we have to check for intersection with all of our contained objects and child regions.
 
@@ -535,15 +536,15 @@ vector<IntersectionRecord> Octree::getIntersection(const Ray& intersectRay, F32 
     // test each child octant for intersection
     for (I32 i = 0; i < 8; ++i) {
         if (_childNodes[i] != nullptr && std::get<0>(_childNodes[i]->_region.intersect(intersectRay, start, end))) {
-            vector<IntersectionRecord> hitList = _childNodes[i]->getIntersection(intersectRay, start, end, typeFilterMask);
-            ret.insert(std::cend(ret), std::cbegin(hitList), std::cend(hitList));
+            vectorEASTL<IntersectionRecord> hitList = _childNodes[i]->getIntersection(intersectRay, start, end, typeFilterMask);
+            ret.insert(eastl::cend(ret), eastl::cbegin(hitList), eastl::cend(hitList));
         }
     }
 
     return ret;
 }
 
-void Octree::updateIntersectionCache(vector<SceneGraphNode*>& parentObjects, U32 typeFilterMask)
+void Octree::updateIntersectionCache(vectorEASTL<SceneGraphNode*>& parentObjects, U32 typeFilterMask)
 {
     _intersectionsCache.resize(0);
     //assume all parent objects have already been processed for collisions against each other.
@@ -574,7 +575,7 @@ void Octree::updateIntersectionCache(vector<SceneGraphNode*>& parentObjects, U32
 
     //now, check all our local objects against all other local objects in the node
     if (_objects.size() > 1) {
-        vector<SceneGraphNode*> tmp(_objects);
+        vectorEASTL<SceneGraphNode*> tmp(_objects);
         while (!tmp.empty()) {
             for(SceneGraphNode* lObj2Ptr : tmp) {
                 assert(lObj2Ptr);
@@ -607,14 +608,14 @@ void Octree::updateIntersectionCache(vector<SceneGraphNode*>& parentObjects, U32
         if (_activeNodes[i]) {
             assert(_childNodes[i]);
             _childNodes[i]->updateIntersectionCache(parentObjects, typeFilterMask);
-            const vector<IntersectionRecord>& hitList = _childNodes[i]->_intersectionsCache;
-            _intersectionsCache.insert(std::cend(_intersectionsCache), std::cbegin(hitList), std::cend(hitList));
+            const vectorEASTL<IntersectionRecord>& hitList = _childNodes[i]->_intersectionsCache;
+            _intersectionsCache.insert(eastl::cend(_intersectionsCache), eastl::cbegin(hitList), eastl::cend(hitList));
         }
     }
 }
 
 /// This gives you a list of every intersection record created with the intersection ray
-vector<IntersectionRecord> Octree::allIntersections(const Ray& intersectionRay, F32 start, F32 end)
+vectorEASTL<IntersectionRecord> Octree::allIntersections(const Ray& intersectionRay, F32 start, F32 end)
 {
     return allIntersections(intersectionRay, start, end, _nodeMask);
 }
@@ -626,7 +627,7 @@ IntersectionRecord Octree::nearestIntersection(const Ray& intersectionRay, F32 s
         updateTree();
     }
 
-    vector<IntersectionRecord> intersections = getIntersection(intersectionRay, start, end, typeFilterMask);
+    vectorEASTL<IntersectionRecord> intersections = getIntersection(intersectionRay, start, end, typeFilterMask);
 
     IntersectionRecord nearest;
 
@@ -645,7 +646,7 @@ IntersectionRecord Octree::nearestIntersection(const Ray& intersectionRay, F32 s
 }
 
 /// This gives you a list of all intersections, filtered by a specific type of object
-vector<IntersectionRecord> Octree::allIntersections(const Ray& intersectionRay, F32 start, F32 end, U32 typeFilterMask)
+vectorEASTL<IntersectionRecord> Octree::allIntersections(const Ray& intersectionRay, F32 start, F32 end, U32 typeFilterMask)
 {
     if (!s_treeReady) {
         updateTree();
@@ -655,7 +656,7 @@ vector<IntersectionRecord> Octree::allIntersections(const Ray& intersectionRay, 
 }
 
 /// This gives you a list of all objects which [intersect or are contained within] the given frustum and meet the given object type
-vector<IntersectionRecord> Octree::allIntersections(const Frustum& region, U32 typeFilterMask)
+vectorEASTL<IntersectionRecord> Octree::allIntersections(const Frustum& region, U32 typeFilterMask)
 {
     if (!s_treeReady) {
         updateTree();

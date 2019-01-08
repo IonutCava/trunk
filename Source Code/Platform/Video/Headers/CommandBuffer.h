@@ -40,7 +40,7 @@ namespace Divide {
 
 namespace GFX {
 
-class CommandBuffer : private GUIDWrapper {
+class CommandBuffer : private GUIDWrapper, private NonCopyable {
     friend class CommandBufferPool;
   public:
       typedef PolyContainerEntry CommandEntry;

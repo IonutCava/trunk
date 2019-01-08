@@ -35,6 +35,13 @@ void GFXDevice::uploadGPUBlock() {
     }
 }
 
+void GFXDevice::preRender(RenderStagePass stagePass, U16 numLightsPerTile, GFX::CommandBuffer& bufferInOut) {
+    ACKNOWLEDGE_UNUSED(bufferInOut);
+
+    _gpuBlock._data._renderProperties.w = to_F32(numLightsPerTile);
+    _gpuBlock._needsUpload = true;
+}
+
 void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
     if (Config::ENABLE_GPU_VALIDATION) {
         DIVIDE_ASSERT(Runtime::isMainThread(), "GFXDevice::flushCommandBuffer called from worker thread!");
@@ -151,22 +158,25 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
 }
 
 void GFXDevice::drawText(const TextElementBatch& batch, GFX::CommandBuffer& bufferInOut) const {
+    GFX::DrawTextCommand drawTextCommand;
+    drawTextCommand._batch = batch;
+    drawText(drawTextCommand, bufferInOut);
+}
+
+void GFXDevice::drawText(const GFX::DrawTextCommand& cmd, GFX::CommandBuffer& bufferInOut) const {
     GFX::BindPipelineCommand bindPipelineCmd;
     bindPipelineCmd._pipeline = _textRenderPipeline;
+    GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
 
     GFX::SendPushConstantsCommand pushConstantsCommand;
     pushConstantsCommand._constants = _textRenderConstants;
-
-    GFX::DrawTextCommand drawTextCommand;
-    drawTextCommand._batch = batch;
+    GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
     GFX::SetCameraCommand setCameraCommand;
     setCameraCommand._cameraSnapshot = Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot();
     GFX::EnqueueCommand(bufferInOut, setCameraCommand);
     
-    GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
-    GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
-    GFX::EnqueueCommand(bufferInOut, drawTextCommand);
+    GFX::EnqueueCommand(bufferInOut, cmd);
 }
 
 void GFXDevice::drawText(const TextElementBatch& batch) {

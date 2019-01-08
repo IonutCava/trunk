@@ -584,7 +584,7 @@ bool glShaderProgram::bind(bool& wasBound) {
         return false;
     }
     // This should almost always end up as a NOP
-    _lockManager->Wait(true);
+    _lockManager->Wait(false);
 
     // Set this program as the currently active one
     wasBound = GL_API::getStateTracker().setActiveProgram(_shaderProgramID);
