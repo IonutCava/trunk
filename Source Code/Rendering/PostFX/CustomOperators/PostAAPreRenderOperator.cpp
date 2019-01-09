@@ -33,11 +33,9 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, PreRenderBa
 
     
     ResourceDescriptor fxaa("FXAA");
-    fxaa.setThreadedLoading(false);
     _fxaa = CreateResource<ShaderProgram>(cache, fxaa);
 
     ResourceDescriptor smaa("SMAA");
-    smaa.setThreadedLoading(false);
     _smaa = CreateResource<ShaderProgram>(cache, smaa);
 }
 

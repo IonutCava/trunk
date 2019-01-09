@@ -68,14 +68,34 @@ enum class TaskPoolType : U8 {
 class PlatformContext {
     friend class Attorney::PlatformContextKernel;
 public:
-
+    enum class ComponentType : U32 {
+        Application = 1 << 1,
+        GFXDevice = 1 << 2,
+        SFXDevice = 1 << 3,
+        PXDevice = 1 << 4,
+        GUI = 1 << 5,
+        XMLData = 1 << 6,
+        Configuration = 1 << 7,
+        LocalClient = 1 << 8,
+        DebugInterface = 1 << 9,
+        Editor = 1 << 10,
+        InputHandler = 1 << 11,
+        COUNT = 11,
+        ALL = Application | GFXDevice | SFXDevice | PXDevice | GUI | XMLData |
+              Configuration | LocalClient | DebugInterface | Editor | InputHandler
+    };
 public:
     explicit PlatformContext(Application& app, Kernel& kernel);
     ~PlatformContext();
 
-    void beginFrame();
-    void idle();
-    void endFrame();
+    void beginFrame(U32 mask = to_base(ComponentType::ALL));
+    void idle(U32 mask = to_base(ComponentType::ALL));
+    void endFrame(U32 mask = to_base(ComponentType::ALL));
+
+    inline void beginFrame(ComponentType component) { beginFrame(to_base(component)); }
+    inline void idle(ComponentType component) { idle(to_base(component)); }
+    inline void endFrame(ComponentType component) { endFrame(to_base(component)); }
+
     void init();
     void terminate();
 

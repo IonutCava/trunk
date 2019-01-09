@@ -99,6 +99,21 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 
     _shaderComputeQueue = MemoryManager_NEW ShaderComputeQueue(cache);
 
+    ResourceDescriptor previewNormalsShader("fbPreview");
+    previewNormalsShader.setThreadedLoading(false);
+    _renderTargetDraw = CreateResource<ShaderProgram>(cache, previewNormalsShader);
+    assert(_renderTargetDraw != nullptr);
+
+    ResourceDescriptor immediateModeShader("ImmediateModeEmulation.GUI");
+    immediateModeShader.setThreadedLoading(false);
+    _textRenderShader = CreateResource<ShaderProgram>(cache, immediateModeShader);
+    assert(_textRenderShader != nullptr);
+
+    PipelineDescriptor descriptor = {};
+    descriptor._shaderProgramHandle = _textRenderShader->getID();
+    descriptor._stateHash = get2DStateBlock();
+    _textRenderPipeline = newPipeline(descriptor);
+
     // Create general purpose render state blocks
     RenderStateBlock::init();
     RenderStateBlock defaultState;
@@ -133,7 +148,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     // Start with the screen render target: Try a half float, multisampled
     // buffer (MSAA + HDR rendering if possible)
 
-    U8 msaaSamples = _parent.platformContext().config().rendering.msaaSamples;
+    U8 msaaSamples = config.rendering.msaaSamples;
 
     TextureDescriptor screenDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGB, GFXDataFormat::FLOAT_16);
     TextureDescriptor normalAndVelocityDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RG, GFXDataFormat::FLOAT_16);
@@ -336,16 +351,20 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
         tempHandle = _rtPool->allocateRT(RenderTargetUsage::REFRACTION_CUBE, refDesc);
     }
 
+    return ErrorCode::NO_ERR;
+}
+
+ErrorCode GFXDevice::postInitRenderingAPI() {
+    ResourceCache& cache = parent().resourceCache();
+    Configuration& config = _parent.platformContext().config();
+
     // Initialized our HierarchicalZ construction shader (takes a depth
     // attachment and down-samples it for every mip level)
     ResourceDescriptor descriptor1("HiZConstruct");
-    descriptor1.setThreadedLoading(false);
     _HIZConstructProgram = CreateResource<ShaderProgram>(cache, descriptor1);
     ResourceDescriptor descriptor2("HiZOcclusionCull");
-    descriptor2.setThreadedLoading(false);
     _HIZCullProgram = CreateResource<ShaderProgram>(cache, descriptor2);
     ResourceDescriptor descriptor3("display");
-    descriptor3.setThreadedLoading(false);
     _displayShader = CreateResource<ShaderProgram>(cache, descriptor3);
 
     ParamHandler::instance().setParam<bool>(_ID("rendering.previewDebugViews"), false);
@@ -388,24 +407,9 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     _debugFrustumPrimitive->name("DebugFrustum");
     _debugFrustumPrimitive->pipeline(*primitivePipeline);
 
-    ResourceDescriptor previewNormalsShader("fbPreview");
-    previewNormalsShader.setThreadedLoading(false);
-    _renderTargetDraw = CreateResource<ShaderProgram>(cache, previewNormalsShader);
-    assert(_renderTargetDraw != nullptr);
-
-    ResourceDescriptor immediateModeShader("ImmediateModeEmulation.GUI");
-    immediateModeShader.setThreadedLoading(false);
-    _textRenderShader = CreateResource<ShaderProgram>(cache, immediateModeShader);
-    assert(_textRenderShader != nullptr);
-    PipelineDescriptor descriptor;
-    descriptor._shaderProgramHandle = _textRenderShader->getID();
-    descriptor._stateHash = get2DStateBlock();
-    _textRenderPipeline = newPipeline(descriptor);
-
-
     SizeChangeParams params;
-    params.width = renderResolution.width;
-    params.height = renderResolution.height;
+    params.width = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getWidth();
+    params.height = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getHeight();
     params.isWindowResize = false;
     params.winGUID = context().app().windowManager().getMainWindow().getGUID();
     context().app().onSizeChange(params);

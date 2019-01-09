@@ -311,14 +311,6 @@ namespace Attorney {
             kernel.onLoop();
         }
 
-        static void startSplashScreen(Kernel& kernel) {
-            kernel.startSplashScreen();
-        }
-
-        static void stopSplashScreen(Kernel& kernel) {
-            kernel.stopSplashScreen();
-        }
-
         friend class Divide::Application;
         friend class Divide::Attorney::ApplicationTask;
     };

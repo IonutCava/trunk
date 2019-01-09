@@ -45,11 +45,9 @@ BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, PreRenderBatc
     _bloomOutput = _context.renderTargetPool().allocateRT(desc);
 
     ResourceDescriptor bloomCalc("bloom.BloomCalc");
-    bloomCalc.setThreadedLoading(false);
     _bloomCalc = CreateResource<ShaderProgram>(cache, bloomCalc);
 
     ResourceDescriptor bloomApply("bloom.BloomApply");
-    bloomApply.setThreadedLoading(false);
     _bloomApply = CreateResource<ShaderProgram>(cache, bloomApply);
 
     ResourceDescriptor blur("blur");

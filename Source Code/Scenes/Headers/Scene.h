@@ -283,7 +283,7 @@ class Scene : public Resource, public PlatformContextComponent {
 
    private:
        SharedMutex _tasksMutex;
-       vector<TaskHandle> _tasks;
+       vectorEASTL<TaskHandle> _tasks;
        /// Contains all game related info for the scene (wind speed, visibility ranges, etc)
        SceneState* _sceneState;
        vector<DELEGATE_CBK<void, U8 /*player index*/, SceneGraphNode* /*node*/> > _selectionChangeCallbacks;

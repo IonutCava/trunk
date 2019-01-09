@@ -95,6 +95,12 @@ Kernel::~Kernel()
 }
 
 void Kernel::startSplashScreen() {
+
+    DisplayWindow& window = _platformContext->activeWindow();
+    WAIT_FOR_CONDITION(window.setDimensions(_platformContext->config().runtime.splashScreen));
+    window.changeType(WindowType::SPLASH);
+    window.hidden(false);
+    
     bool expected = false;
     if (!_splashScreenUpdating.compare_exchange_strong(expected, true)) {
         return;
@@ -111,20 +117,28 @@ void Kernel::startSplashScreen() {
         while (_splashScreenUpdating) {
             U64 deltaTimeUS = currentTimeUS - previousTimeUS;
             previousTimeUS = currentTimeUS;
-            _platformContext->beginFrame();
+            _platformContext->beginFrame(PlatformContext::ComponentType::GFXDevice);
             splash.render(_platformContext->gfx(), deltaTimeUS);
-            _platformContext->endFrame();
+            _platformContext->endFrame(PlatformContext::ComponentType::GFXDevice);
             std::this_thread::sleep_for(std::chrono::milliseconds(15));
 
             break;
         }
     });
     _splashTask.startTask(TaskPriority::REALTIME/*HIGH*/);
+
+    window.swapBuffers(false);
 }
 
 void Kernel::stopSplashScreen() {
+    DisplayWindow& window = _platformContext->activeWindow();
+    window.swapBuffers(true);
+    vec2<U16> previousDimensions = window.getPreviousDimensions();
     _splashScreenUpdating = false;
     _splashTask.wait();
+    window.changeToPreviousType();
+    WAIT_FOR_CONDITION(window.setDimensions(previousDimensions));
+    window.setPosition(vec2<I32>(-1));
 }
 
 void Kernel::idle() {
@@ -532,6 +546,8 @@ void Kernel::warmup() {
     Attorney::SceneManagerKernel::initPostLoadState(*_sceneManager);
 
     _timingData.update(Time::ElapsedMicroseconds(true));
+
+    stopSplashScreen();
 }
 
 ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
@@ -590,10 +606,16 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     }
 
     Camera::initPool();
+
     // Match initial rendering resolution to window/screen size
-    const DisplayWindow& mainWindow  = winManager.getMainWindow();
+    const DisplayWindow& mainWindow = winManager.getMainWindow();
     vec2<U16> renderResolution(mainWindow.getDimensions());
     initError = _platformContext->gfx().initRenderingAPI(_argc, _argv, renderResolution);
+
+    // If we could not initialize the graphics device, exit
+    if (initError != ErrorCode::NO_ERR) {
+        return initError;
+    }
 
     U32 hardwareThreads = config.runtime.maxWorkerThreads < 0 ? HARDWARE_THREAD_COUNT() : to_U32(config.runtime.maxWorkerThreads);
 
@@ -625,6 +647,8 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
         return ErrorCode::CPU_NOT_SUPPORTED;
     }
 
+    initError = _platformContext->gfx().postInitRenderingAPI();
+
     // If we could not initialize the graphics device, exit
     if (initError != ErrorCode::NO_ERR) {
         return initError;
@@ -648,9 +672,9 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     Attorney::ShaderProgramKernel::useShaderTextCache(config.debug.useShaderTextCache);
     Attorney::ShaderProgramKernel::useShaderBinaryCache(config.debug.useShaderBinaryCache);
 
-    DisplayWindow& window = winManager.getMainWindow();
-    window.setDimensions(config.runtime.splashScreen);
-    window.changeType(WindowType::SPLASH);
+    // Initialize GUI with our current resolution
+    _platformContext->gui().init(*_platformContext, *_resCache, renderResolution);
+    startSplashScreen();
 
     Console::printfn(Locale::get(_ID("START_SOUND_INTERFACE")));
     initError = _platformContext->sfx().initAudioAPI(*_platformContext);
@@ -664,8 +688,6 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
         return initError;
     }
 
-    // Initialize GUI with our current resolution
-    _platformContext->gui().init(*_platformContext, *_resCache, renderResolution);
     _platformContext->gui().addText("ProfileData",                                 // Unique ID
                                     RelativePosition2D(RelativeValue(0.75f, 0.0f),
                                                        RelativeValue(0.2f, 0.0f)), // Position

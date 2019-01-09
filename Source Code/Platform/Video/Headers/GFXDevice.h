@@ -185,6 +185,7 @@ public:  // GPU interface
     static_assert(MaxFrameQueueSize > 0, "FrameQueueSize is invalid!");
 
     ErrorCode initRenderingAPI(I32 argc, char** argv, const vec2<U16>& renderResolution);
+    ErrorCode postInitRenderingAPI();
     void closeRenderingAPI();
 
     inline void setAPI(RenderAPI API) { _API_ID = API; }

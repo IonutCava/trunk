@@ -27,7 +27,6 @@ DoFPreRenderOperator::DoFPreRenderOperator(GFXDevice& context, PreRenderBatch& p
     _samplerCopy = _context.renderTargetPool().allocateRT(desc);
 
     ResourceDescriptor dof("DepthOfField");
-    dof.setThreadedLoading(false);
     _dofShader = CreateResource<ShaderProgram>(cache, dof);
 }
 

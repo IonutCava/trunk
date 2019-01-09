@@ -47,7 +47,8 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
     if (Config::ENABLE_GPU_VALIDATION) {
         DIVIDE_ASSERT(Runtime::isMainThread(), "GFXDevice::flushCommandBuffer called from worker thread!");
 
-        if (FRAME_COUNT == _context.config().debug.flushCommandBuffersOnFrame) {
+        I32 debugFrame = _context.config().debug.flushCommandBuffersOnFrame;
+        if (debugFrame >= 0 && to_U32(FRAME_COUNT) == to_U32(debugFrame)) {
             Console::errorfn(commandBuffer.toString().c_str());
         }
     }

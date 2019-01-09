@@ -64,7 +64,8 @@ ErrorCode Application::start(const stringImpl& entryPoint, I32 argc, char** argv
         throwError(err);
         stop();
     } else {
-        warmup(_kernel->platformContext().config());
+        Attorney::KernelApplication::warmup(*_kernel);
+        Console::printfn(Locale::get(_ID("START_MAIN_LOOP")));
         mainLoopActive(true);
     }
 
@@ -101,27 +102,6 @@ void Application::stop() {
             memLog.close();
         }
     }
-}
-
-void Application::warmup(const Configuration& config) {
-    DisplayWindow& window = _windowManager.getMainWindow();
-
-    vec2<U16> previousDimensions = window.getPreviousDimensions();
-    Console::printfn(Locale::get(_ID("START_MAIN_LOOP")));
-    //Make sure we are displaying a splash screen
-    vec2<U16> splashDimensions(config.runtime.splashScreen.w, config.runtime.splashScreen.h);
-    while (!window.setDimensions(splashDimensions)) { }
-    window.changeType(WindowType::SPLASH);
-    window.hidden(false);
-    Attorney::KernelApplication::startSplashScreen(*_kernel);
-    window.swapBuffers(false);
-    Attorney::KernelApplication::warmup(*_kernel);
-    //Restore to normal window
-    window.swapBuffers(true);
-    Attorney::KernelApplication::stopSplashScreen(*_kernel);
-    window.changeToPreviousType();
-    while (!window.setDimensions(previousDimensions)) {}
-    window.setPosition(vec2<I32>(-1));
 }
 
 void Application::idle() {

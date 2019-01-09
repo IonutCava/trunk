@@ -163,12 +163,12 @@ bool Scene::idle() {  // Called when application is idle
 
     UniqueLockShared r_lock(_tasksMutex);
     if (!_tasks.empty()) {
-        _tasks.erase(std::remove_if(std::begin(_tasks),
-                                    std::end(_tasks),
+        _tasks.erase(std::remove_if(eastl::begin(_tasks),
+                                    eastl::end(_tasks),
                                     [](const TaskHandle& handle) -> bool { 
                                         return !handle.taskRunning();
                                     }),
-                    std::end(_tasks));
+                    eastl::end(_tasks));
     }
     return true;
 }
@@ -1285,8 +1285,8 @@ void Scene::clearTasks() {
 
 void Scene::removeTask(TaskHandle& task) {
     UniqueLockShared w_lock(_tasksMutex);
-    vector<TaskHandle>::iterator it;
-    for (it = std::begin(_tasks); it != std::end(_tasks); ++it) {
+    vectorEASTL<TaskHandle>::iterator it;
+    for (it = eastl::begin(_tasks); it != eastl::end(_tasks); ++it) {
         if ((*it) == task) {
             Stop(*(*it)._task);
             _tasks.erase(it);

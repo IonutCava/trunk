@@ -106,9 +106,6 @@ class Application : public SDLEventListener {
     inline void registerShutdownCallback(const DELEGATE_CBK<void>& cbk);
 
   private:
-
-    //ToDo: Remove this hack - Ionut
-    void warmup(const Configuration& config);
     bool onSDLEvent(SDL_Event event) override;
 
   private:

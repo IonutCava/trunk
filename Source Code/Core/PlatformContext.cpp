@@ -75,30 +75,55 @@ void PlatformContext::terminate() {
     _gfx.reset();
 }
 
-void PlatformContext::beginFrame() {
-    _gfx->beginFrame(app().windowManager().getMainWindow(), true);
-    _sfx->beginFrame();
+void PlatformContext::beginFrame(U32 componentMask) {
+    if (BitCompare(componentMask, ComponentType::GFXDevice)) {
+        _gfx->beginFrame(app().windowManager().getMainWindow(), true);
+    }
+
+    if (BitCompare(componentMask, ComponentType::SFXDevice)) {
+        _sfx->beginFrame();
+    }
 }
 
-void PlatformContext::idle() {
+void PlatformContext::idle(U32 componentMask) {
     for (U32 i = 0; i < to_U32(TaskPoolType::COUNT); ++i) {
         _taskPool[i]->flushCallbackQueue();
     }
 
-    _app.idle();
-    _gfx->idle();
-    //_sfx->idle();
-    _pfx->idle();
-    //_gui->idle();
-    _debug->idle();
+    if (BitCompare(componentMask, ComponentType::Application)) {
+        _app.idle();
+    }
+
+    if (BitCompare(componentMask, ComponentType::GFXDevice)) {
+        _gfx->idle();
+    }
+    if (BitCompare(componentMask, ComponentType::SFXDevice)) {
+        //_sfx->idle();
+    }
+    if (BitCompare(componentMask, ComponentType::PXDevice)) {
+        _pfx->idle();
+    }
+    if (BitCompare(componentMask, ComponentType::GUI)) {
+        //_gui->idle();
+    }
+    if (BitCompare(componentMask, ComponentType::DebugInterface)) {
+        _debug->idle();
+    }
     if (Config::Build::ENABLE_EDITOR) {
-        _editor->idle();
+        if (BitCompare(componentMask, ComponentType::Editor)) {
+            _editor->idle();
+        }
     }
 }
 
-void PlatformContext::endFrame() {
-    _gfx->endFrame(app().windowManager().getMainWindow(), true);
-    _sfx->endFrame();
+void PlatformContext::endFrame(U32 componentMask) {
+    if (BitCompare(componentMask, ComponentType::GFXDevice)) {
+        _gfx->endFrame(app().windowManager().getMainWindow(), true);
+    }
+
+    if (BitCompare(componentMask, ComponentType::SFXDevice)) {
+        _sfx->endFrame();
+    }
 }
 
 DisplayWindow& PlatformContext::activeWindow() {

@@ -69,7 +69,6 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     noiseDescriptor.setSampler(noiseSampler);
 
     ResourceDescriptor textureAttachment(attachmentName);
-    textureAttachment.setThreadedLoading(false);
     textureAttachment.setPropertyDescriptor(noiseDescriptor);
     _noiseTexture = CreateResource<Texture>(cache, textureAttachment);
 
@@ -107,7 +106,6 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
         _ssaoOutputBlurred = _context.renderTargetPool().allocateRT(desc);
     }
     ResourceDescriptor ssaoGenerate("SSAOPass.SSAOCalc");
-    ssaoGenerate.setThreadedLoading(false);
 
     ShaderProgramDescriptor ssaoGenerateDescriptor;
     ssaoGenerateDescriptor._defines.push_back(std::make_pair(Util::StringFormat("KERNEL_SIZE %d", kernelSize), true));
@@ -115,7 +113,6 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     _ssaoGenerateShader = CreateResource<ShaderProgram>(cache, ssaoGenerate);
 
     ResourceDescriptor ssaoBlur("SSAOPass.SSAOBlur");
-    ssaoBlur.setThreadedLoading(false);
     ShaderProgramDescriptor ssaoBlurDescriptor;
     ssaoBlurDescriptor._defines.push_back(std::make_pair(Util::StringFormat("BLUR_SIZE %d", ssaoNoiseSize), true));
     ssaoBlur.setPropertyDescriptor(ssaoBlurDescriptor);
@@ -123,7 +120,6 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     _ssaoBlurShader = CreateResource<ShaderProgram>(cache, ssaoBlur);
     
     ResourceDescriptor ssaoApply("SSAOPass.SSAOApply");
-    ssaoApply.setThreadedLoading(false);
     _ssaoApplyShader = CreateResource<ShaderProgram>(cache, ssaoApply);
 
     _ssaoGenerateConstants.set("sampleKernel", GFX::PushConstantType::VEC3, kernel);
