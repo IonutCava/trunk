@@ -9,30 +9,19 @@
 #include "Geometry/Material/Headers/Material.h"
 #include "Rendering/Lighting/ShadowMapping/Headers/ShadowMap.h"
 #include "Platform/Video/Headers/GFXDevice.h"
-#include "Platform/File/Headers/FileUpdateMonitor.h"
-#include "Platform/File/Headers/FileWatcherManager.h"
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 
 namespace Divide {
     bool ShaderProgram::s_useShaderTextCache = false;
     bool ShaderProgram::s_useShaderBinaryCache = false;
 
-namespace {
-    UpdateListener s_fileWatcherListener([](const char* atomName, FileUpdateEvent evt) {
-        ShaderProgram::onAtomChange(atomName, evt);
-    });
-};
 
 ShaderProgram_ptr ShaderProgram::s_imShader;
 ShaderProgram_ptr ShaderProgram::s_nullShader;
-ShaderProgram::AtomMap ShaderProgram::s_atoms;
 ShaderProgram::ShaderQueue ShaderProgram::s_recompileQueue;
 ShaderProgram::ShaderProgramMap ShaderProgram::s_shaderPrograms;
 
-SharedMutex ShaderProgram::s_atomLock;
 SharedMutex ShaderProgram::s_programLock;
-
-I64 ShaderProgram::s_shaderFileWatcherID = -1;
 
 ShaderProgram::ShaderProgram(GFXDevice& context, 
                              size_t descriptorHash,
@@ -117,17 +106,12 @@ bool ShaderProgram::recompile() {
     if (getState() != ResourceState::RES_LOADED) {
         return true;
     }
-    _usedAtoms.clear();
     if (recompileInternal()) {
         _shouldRecompile = false;
         return true;
     }
 
     return false;
-}
-
-void ShaderProgram::registerAtomFile(const stringImpl& atomFile) {
-    _usedAtoms.push_back(atomFile);
 }
 
 //================================ static methods ========================================
@@ -171,79 +155,7 @@ bool ShaderProgram::recompileShaderProgram(const stringImpl& name) {
     return state;
 }
 
-/// Open the file found at 'filePath' matching 'atomName' and return it's source code
-const stringImpl& ShaderProgram::shaderFileRead(const stringImpl& filePath, const stringImpl& atomName) {
-    U64 atomNameHash = _ID(atomName.c_str());
-    // See if the atom was previously loaded and still in cache
-    UniqueLockShared lock(s_atomLock);
-    AtomMap::iterator it = s_atoms.find(atomNameHash);
-    // If that's the case, return the code from cache
-    if (it != std::cend(s_atoms)) {
-        return it->second;
-    }
-
-    // If we forgot to specify an atom location, we have nothing to return
-    assert(!filePath.empty());
-
-    // Open the atom file and add the code to the atom cache for future reference
-    stringImpl output;
-    readFile(filePath, atomName, output, FileType::TEXT);
-
-    auto result = hashAlg::insert(s_atoms, atomNameHash, output);
-    assert(result.second);
-
-    // Return the source code
-    return result.first->second;
-}
-
-void ShaderProgram::shaderFileRead(const stringImpl& filePath,
-                                   const stringImpl& fileName,
-                                   stringImpl& sourceCodeOut) {
-    stringImpl variant = fileName;
-    if (Config::Build::IS_DEBUG_BUILD) {
-        variant.append(".debug");
-    } else if (Config::Build::IS_PROFILE_BUILD) {
-        variant.append(".profile");
-    } else {
-        variant.append(".release");
-    }
-    readFile(filePath, variant, sourceCodeOut, FileType::TEXT);
-}
-
-/// Dump the source code 's' of atom file 'atomName' to file
-void ShaderProgram::shaderFileWrite(const stringImpl& filePath,
-                                    const stringImpl& fileName,
-                                    const char* sourceCode) {
-    stringImpl variant = fileName;
-    if (Config::Build::IS_DEBUG_BUILD) {
-        variant.append(".debug");
-    } else if (Config::Build::IS_PROFILE_BUILD) {
-        variant.append(".profile");
-    } else {
-        variant.append(".release");
-    }
-
-    writeFile(filePath,
-              variant,
-              (bufferPtr)sourceCode,
-              strlen(sourceCode),
-              FileType::TEXT);
-}
-
 void ShaderProgram::onStartup(GFXDevice& context, ResourceCache& parentCache) {
-    if (!Config::Build::IS_SHIPPING_BUILD) {
-        FileWatcher& watcher = FileWatcherManager::allocateWatcher();
-        s_shaderFileWatcherID = watcher.getGUID();
-        s_fileWatcherListener.addIgnoredEndCharacter('~');
-        s_fileWatcherListener.addIgnoredExtension("tmp");
-
-        vector<stringImpl> atomLocations = getAllAtomLocations();
-        for (const stringImpl& loc : atomLocations) {
-            createDirectories(loc.c_str());
-            watcher().addWatch(loc, &s_fileWatcherListener);
-        }
-    }
-
     // Create an immediate mode rendering shader that simulates the fixed function pipeline
     ResourceDescriptor immediateModeShader("ImmediateModeEmulation");
     immediateModeShader.setThreadedLoading(false);
@@ -267,8 +179,6 @@ void ShaderProgram::onShutdown() {
     while (!s_recompileQueue.empty()) {
         s_recompileQueue.pop();
     }
-    FileWatcherManager::deallocateWatcher(s_shaderFileWatcherID);
-    s_shaderFileWatcherID = -1;
 }
 
 bool ShaderProgram::updateAll(const U64 deltaTimeUS) {
@@ -352,36 +262,6 @@ void ShaderProgram::rebuildAllShaders() {
     SharedLock r_lock(s_programLock);
     for (const ShaderProgramMapEntry& shader : s_shaderPrograms) {
         s_recompileQueue.push(std::get<0>(shader).lock());
-    }
-}
-
-void ShaderProgram::onAtomChange(const char* atomName, FileUpdateEvent evt) {
-    if (evt == FileUpdateEvent::DELETE) {
-        // Do nothing if the specified file is "deleted"
-        // We do not want to break running programs
-        return;
-    }
-    // ADD and MODIFY events should get processed as usual
-
-    // Clear the atom from the cache
-
-    {
-        UniqueLockShared w_lock(s_atomLock);
-        AtomMap::iterator it = s_atoms.find(_ID(atomName));
-        if (it != std::cend(s_atoms)) {
-            it = s_atoms.erase(it);
-        }
-    }
-    //Get list of shader programs that use the atom and rebuild all shaders in list;
-    SharedLock r_lock(s_programLock);
-    for (const ShaderProgramMapEntry& shader : s_shaderPrograms) {
-        const ShaderProgram_ptr& shaderProgram = std::get<0>(shader).lock();
-        for (const stringImpl& atom : shaderProgram->_usedAtoms) {
-            if (Util::CompareIgnoreCase(atom, atomName)) {
-                s_recompileQueue.push(shaderProgram);
-                break;
-            }
-        }
     }
 }
 

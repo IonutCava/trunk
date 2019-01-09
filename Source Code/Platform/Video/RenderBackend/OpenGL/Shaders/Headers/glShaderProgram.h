@@ -83,6 +83,8 @@ class glShaderProgram final : public ShaderProgram, public glObject {
 
     static void initStaticData();
     static void destroyStaticData();
+    static void onStartup(GFXDevice& context, ResourceCache& parentCache);
+    static void onShutdown();
 
     /// Make sure this program is ready for deletion
     bool unload() override;
@@ -105,6 +107,14 @@ class glShaderProgram final : public ShaderProgram, public glObject {
 
     void UploadPushConstant(const GFX::PushConstant& constant);
     void UploadPushConstants(const PushConstants& constants);
+
+    static void onAtomChange(const char* atomName, FileUpdateEvent evt);
+    static const stringImpl& shaderFileRead(const stringImpl& filePath, const stringImpl& atomName, bool recurse, U32 level, vector<stringImpl>& foundAtoms, bool& wasParsed);
+    static const stringImpl& shaderFileReadLocked(const stringImpl& filePath, const stringImpl& atomName, bool recurse, U32 level, vector<stringImpl>& foundAtoms, bool& wasParsed);
+
+    static void shaderFileRead(const stringImpl& filePath, const stringImpl& fileName, stringImpl& sourceCodeOut);
+    static void shaderFileWrite(const stringImpl& filePath, const stringImpl& fileName, const char* sourceCode);
+    static stringImpl preprocessIncludes(const stringImpl& name, const stringImpl& source, GLint level, vector<stringImpl>& foundAtoms, bool lock);
 
    protected:
     glShaderProgramLoadInfo buildLoadInfo();
@@ -174,6 +184,19 @@ class glShaderProgram final : public ShaderProgram, public glObject {
 
     UseProgramStageMask _stageMask;
     glLockManager* _lockManager;
+
+    /// A list of atoms used by this program. (All stages are added toghether)
+    vector<stringImpl> _usedAtoms;
+
+    static I64 s_shaderFileWatcherID;
+
+    /// Shaders loaded from files are kept as atoms
+    static SharedMutex s_atomLock;
+    static AtomMap s_atoms;
+
+    //extra entry for "common" location
+    static stringImpl shaderAtomLocationPrefix[to_base(ShaderType::COUNT) + 1];
+    static U64 shaderAtomExtensionHash[to_base(ShaderType::COUNT) + 1];
 };
 
 namespace Attorney {

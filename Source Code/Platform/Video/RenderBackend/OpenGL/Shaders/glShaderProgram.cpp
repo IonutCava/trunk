@@ -10,6 +10,8 @@
 
 #include "Platform/Headers/PlatformRuntime.h"
 #include "Platform/File/Headers/FileManagement.h"
+#include "Platform/File/Headers/FileUpdateMonitor.h"
+#include "Platform/File/Headers/FileWatcherManager.h"
 
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/RenderBackend/OpenGL/Headers/GLWrapper.h"
@@ -25,18 +27,64 @@ namespace Divide {
 namespace {
     constexpr bool g_useSeparateShaderObjects = false;
     size_t g_validationBufferMaxSize = 4096 * 16;
+    UpdateListener s_fileWatcherListener([](const char* atomName, FileUpdateEvent evt) {
+        glShaderProgram::onAtomChange(atomName, evt);
+    });
 };
 
+SharedMutex glShaderProgram::s_atomLock;
+ShaderProgram::AtomMap glShaderProgram::s_atoms;
+I64 glShaderProgram::s_shaderFileWatcherID = -1;
 std::array<U32, to_base(ShaderType::COUNT)> glShaderProgram::_lineOffset;
+stringImpl glShaderProgram::shaderAtomLocationPrefix[to_base(ShaderType::COUNT) + 1];
+U64 glShaderProgram::shaderAtomExtensionHash[to_base(ShaderType::COUNT) + 1];
 
 IMPLEMENT_CUSTOM_ALLOCATOR(glShaderProgram, 0, 0);
 
 void glShaderProgram::initStaticData() {
+    stringImpl locPrefix(Paths::g_assetsLocation + Paths::g_shadersLocation + Paths::Shaders::GLSL::g_parentShaderLoc);
+
+    shaderAtomLocationPrefix[to_base(ShaderType::FRAGMENT)] = locPrefix + Paths::Shaders::GLSL::g_fragAtomLoc;
+    shaderAtomLocationPrefix[to_base(ShaderType::VERTEX)] = locPrefix + Paths::Shaders::GLSL::g_vertAtomLoc;
+    shaderAtomLocationPrefix[to_base(ShaderType::GEOMETRY)] = locPrefix + Paths::Shaders::GLSL::g_geomAtomLoc;
+    shaderAtomLocationPrefix[to_base(ShaderType::TESSELATION_CTRL)] = locPrefix + Paths::Shaders::GLSL::g_tescAtomLoc;
+    shaderAtomLocationPrefix[to_base(ShaderType::TESSELATION_EVAL)] = locPrefix + Paths::Shaders::GLSL::g_teseAtomLoc;
+    shaderAtomLocationPrefix[to_base(ShaderType::COMPUTE)] = locPrefix + Paths::Shaders::GLSL::g_compAtomLoc;
+    shaderAtomLocationPrefix[to_base(ShaderType::COUNT)] = locPrefix + Paths::Shaders::GLSL::g_comnAtomLoc;
+
+    shaderAtomExtensionHash[to_base(ShaderType::FRAGMENT)] = _ID(Paths::Shaders::GLSL::g_fragAtomExt.c_str());
+    shaderAtomExtensionHash[to_base(ShaderType::VERTEX)] = _ID(Paths::Shaders::GLSL::g_vertAtomExt.c_str());
+    shaderAtomExtensionHash[to_base(ShaderType::GEOMETRY)] = _ID(Paths::Shaders::GLSL::g_geomAtomExt.c_str());
+    shaderAtomExtensionHash[to_base(ShaderType::TESSELATION_CTRL)] = _ID(Paths::Shaders::GLSL::g_tescAtomExt.c_str());
+    shaderAtomExtensionHash[to_base(ShaderType::TESSELATION_EVAL)] = _ID(Paths::Shaders::GLSL::g_teseAtomExt.c_str());
+    shaderAtomExtensionHash[to_base(ShaderType::COMPUTE)] = _ID(Paths::Shaders::GLSL::g_compAtomExt.c_str());
+    shaderAtomExtensionHash[to_base(ShaderType::COUNT)] = _ID(Paths::Shaders::GLSL::g_comnAtomExt.c_str());
+
     glShader::initStaticData();
 }
 
 void glShaderProgram::destroyStaticData() {
     glShader::destroyStaticData();
+}
+
+void glShaderProgram::onStartup(GFXDevice& context, ResourceCache& parentCache) {
+    if (!Config::Build::IS_SHIPPING_BUILD) {
+        FileWatcher& watcher = FileWatcherManager::allocateWatcher();
+        s_shaderFileWatcherID = watcher.getGUID();
+        s_fileWatcherListener.addIgnoredEndCharacter('~');
+        s_fileWatcherListener.addIgnoredExtension("tmp");
+
+        vector<stringImpl> atomLocations = getAllAtomLocations();
+        for (const stringImpl& loc : atomLocations) {
+            createDirectories(loc.c_str());
+            watcher().addWatch(loc, &s_fileWatcherListener);
+        }
+    }
+}
+
+void glShaderProgram::onShutdown() {
+    FileWatcherManager::deallocateWatcher(s_shaderFileWatcherID);
+    s_shaderFileWatcherID = -1;
 }
 
 glShaderProgram::glShaderProgram(GFXDevice& context,
@@ -409,9 +457,9 @@ void glShaderProgram::loadSourceCode(ShaderType stage,
     sourceCodeOut.second.resize(0);
 
     if (s_useShaderTextCache && !forceReParse) {
-        ShaderProgram::shaderFileRead(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationText,
-                                      stageName,
-                                      sourceCodeOut.second);
+        glShaderProgram::shaderFileRead(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationText,
+                                        stageName,
+                                        sourceCodeOut.second);
     }
 
     if (sourceCodeOut.second.empty()) {
@@ -453,7 +501,7 @@ bool glShaderProgram::reloadShaders(bool reparseShaderSource) {
     bool ret = false;
 
     glShaderProgramLoadInfo info = buildLoadInfo();
-    registerAtomFile(info._programName + ".glsl");
+    _usedAtoms.push_back(info._programName + ".glsl");
 
     //glswClearCurrentContext();
     // The program wasn't loaded from binary, so process shaders
@@ -499,8 +547,8 @@ bool glShaderProgram::reloadShaders(bool reparseShaderSource) {
         }
 
         if (shader) {
-            for (const stringImpl& atoms : shader->usedAtoms()) {
-                registerAtomFile(atoms);
+            for (const stringImpl& atom : shader->usedAtoms()) {
+                _usedAtoms.push_back(atom);
             }
             ret = true;
         } else {
@@ -512,6 +560,8 @@ bool glShaderProgram::reloadShaders(bool reparseShaderSource) {
 }
 
 bool glShaderProgram::recompileInternal() {
+    _usedAtoms.clear();
+
     // Remember bind state
     bool wasBound = isBound();
     if (wasBound) {
@@ -792,6 +842,166 @@ void glShaderProgram::UploadPushConstants(const PushConstants& constants) {
 void glShaderProgram::reuploadUniforms() {
     for (UniformsByNameHash::ShaderVarMap::value_type it : _uniformsByNameHash._shaderVars) {
         UploadPushConstant(it.second);
+    }
+}
+
+stringImpl glShaderProgram::preprocessIncludes(const stringImpl& name,
+                                               const stringImpl& source,
+                                               GLint level,
+                                               vector<stringImpl>& foundAtoms,
+                                               bool lock) {
+    if (level > 32) {
+        Console::errorfn(Locale::get(_ID("ERROR_GLSL_INCLUD_LIMIT")));
+    }
+
+    size_t line_number = 1;
+    std::smatch matches;
+
+    stringImpl output, line;
+    stringImpl include_file, include_string;
+
+    istringstreamImpl input(source);
+
+    while (std::getline(input, line)) {
+        if (!std::regex_search(line, matches, Paths::g_includePattern)) {
+            output.append(line);
+        } else {
+            include_file = Util::Trim(matches[1].str().c_str());
+            foundAtoms.push_back(include_file);
+
+            ShaderType typeIndex = ShaderType::COUNT;
+            bool found = false;
+            // switch will throw warnings due to promotion to int
+            U64 extHash = _ID(Util::GetTrailingCharacters(include_file, 4).c_str());
+            for (U8 i = 0; i < to_base(ShaderType::COUNT) + 1; ++i) {
+                if (extHash == shaderAtomExtensionHash[i]) {
+                    typeIndex = static_cast<ShaderType>(i);
+                    found = true;
+                    break;
+                }
+            }
+
+            DIVIDE_ASSERT(found, "Invalid shader include type");
+            bool wasParsed = false;
+            if (lock) {
+                include_string = glShaderProgram::shaderFileRead(shaderAtomLocationPrefix[to_U32(typeIndex)], include_file, true, level, foundAtoms, wasParsed);
+            } else {
+                include_string = glShaderProgram::shaderFileReadLocked(shaderAtomLocationPrefix[to_U32(typeIndex)], include_file, true, level, foundAtoms, wasParsed);
+            }
+            if (include_string.empty()) {
+                Console::errorfn(Locale::get(_ID("ERROR_GLSL_NO_INCLUDE_FILE")),
+                    name.c_str(),
+                    line_number,
+                    include_file.c_str());
+            }
+            if (wasParsed) {
+                output.append(include_string);
+            } else {
+                output.append(preprocessIncludes(name, include_string, level + 1, foundAtoms, lock));
+            }
+        }
+        output.append("\n");
+        ++line_number;
+    }
+
+    return output;
+}
+
+const stringImpl& glShaderProgram::shaderFileRead(const stringImpl& filePath, const stringImpl& atomName, bool recurse, U32 level, vector<stringImpl>& foundAtoms, bool& wasParsed) {
+    UniqueLockShared w_lock(s_atomLock);
+    return shaderFileReadLocked(filePath, atomName, recurse, level, foundAtoms, wasParsed);
+}
+
+/// Open the file found at 'filePath' matching 'atomName' and return it's source code
+const stringImpl& glShaderProgram::shaderFileReadLocked(const stringImpl& filePath, const stringImpl& atomName, bool recurse, U32 level, vector<stringImpl>& foundAtoms, bool& wasParsed) {
+    U64 atomNameHash = _ID(atomName.c_str());
+    // See if the atom was previously loaded and still in cache
+    AtomMap::iterator it = s_atoms.find(atomNameHash);
+    // If that's the case, return the code from cache
+    if (it != std::cend(s_atoms)) {
+        wasParsed = true;
+        return it->second;
+    }
+
+    wasParsed = false;
+    // If we forgot to specify an atom location, we have nothing to return
+    assert(!filePath.empty());
+
+    // Open the atom file and add the code to the atom cache for future reference
+    stringImpl output;
+    readFile(filePath, atomName, output, FileType::TEXT);
+
+    if (recurse) {
+        output = preprocessIncludes(atomName, output, 0, foundAtoms, false);
+    }
+
+    
+    auto result = hashAlg::insert(s_atoms, atomNameHash, output);
+    assert(result.second);
+
+    // Return the source code
+    return result.first->second;
+}
+
+void glShaderProgram::shaderFileRead(const stringImpl& filePath,
+                                     const stringImpl& fileName,
+                                     stringImpl& sourceCodeOut) {
+    stringImpl variant = fileName;
+    if (Config::Build::IS_DEBUG_BUILD) {
+        variant.append(".debug");
+    }
+    else if (Config::Build::IS_PROFILE_BUILD) {
+        variant.append(".profile");
+    }
+    else {
+        variant.append(".release");
+    }
+    readFile(filePath, variant, sourceCodeOut, FileType::TEXT);
+}
+
+
+/// Dump the source code 's' of atom file 'atomName' to file
+void glShaderProgram::shaderFileWrite(const stringImpl& filePath, const stringImpl& fileName, const char* sourceCode) {
+    stringImpl variant = fileName;
+    if (Config::Build::IS_DEBUG_BUILD) {
+        variant.append(".debug");
+    } else if (Config::Build::IS_PROFILE_BUILD) {
+        variant.append(".profile");
+    } else {
+        variant.append(".release");
+    }
+
+    writeFile(filePath, variant, (bufferPtr)sourceCode, strlen(sourceCode), FileType::TEXT);
+}
+
+void glShaderProgram::onAtomChange(const char* atomName, FileUpdateEvent evt) {
+    if (evt == FileUpdateEvent::DELETE) {
+        // Do nothing if the specified file is "deleted"
+        // We do not want to break running programs
+        return;
+    }
+    // ADD and MODIFY events should get processed as usual
+
+    // Clear the atom from the cache
+
+    {
+        UniqueLockShared w_lock(s_atomLock);
+        AtomMap::iterator it = s_atoms.find(_ID(atomName));
+        if (it != std::cend(s_atoms)) {
+            it = s_atoms.erase(it);
+        }
+    }
+    //Get list of shader programs that use the atom and rebuild all shaders in list;
+    SharedLock r_lock(s_programLock);
+    for (const ShaderProgramMapEntry& shader : s_shaderPrograms) {
+        const ShaderProgram_ptr& programPtr = std::get<0>(shader).lock();
+        glShaderProgram* shaderProgram = static_cast<glShaderProgram*>(programPtr.get());
+        for (const stringImpl& atom : shaderProgram->_usedAtoms) {
+            if (Util::CompareIgnoreCase(atom, atomName)) {
+                s_recompileQueue.push(programPtr);
+                break;
+            }
+        }
     }
 }
 

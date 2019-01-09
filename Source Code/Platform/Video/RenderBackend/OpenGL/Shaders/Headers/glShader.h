@@ -83,11 +83,6 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
                                 const bool parseCode,
                                 U32 lineOffset);
 
-    static stringImpl preprocessIncludes(const stringImpl& name,
-                                         const stringImpl& source,
-                                         GLint level,
-                                         vector<stringImpl>& foundAtoms);
-
    private:
     friend class glShaderProgram;
     
@@ -109,9 +104,6 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
     std::atomic_flag _compiled = ATOMIC_FLAG_INIT;
     vector<stringImpl> _usedAtoms;
 
-    //extra entry for "common" location
-    static stringImpl shaderAtomLocationPrefix[to_base(ShaderType::COUNT) + 1];
-    
    private:
     /// Shader cache
     static ShaderMap _shaderNameMap;

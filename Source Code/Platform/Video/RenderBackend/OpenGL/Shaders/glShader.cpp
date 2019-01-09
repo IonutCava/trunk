@@ -15,20 +15,12 @@ namespace Divide {
 
 SharedMutex glShader::_shaderNameLock;
 glShader::ShaderMap glShader::_shaderNameMap;
-stringImpl glShader::shaderAtomLocationPrefix[to_base(ShaderType::COUNT) + 1];
+
 
 IMPLEMENT_CUSTOM_ALLOCATOR(glShader, 0, 0);
 
 void glShader::initStaticData() {
-    stringImpl locPrefix(Paths::g_assetsLocation + Paths::g_shadersLocation + Paths::Shaders::GLSL::g_parentShaderLoc);
 
-    shaderAtomLocationPrefix[to_base(ShaderType::FRAGMENT)] = locPrefix + Paths::Shaders::GLSL::g_fragAtomLoc;
-    shaderAtomLocationPrefix[to_base(ShaderType::VERTEX)] = locPrefix + Paths::Shaders::GLSL::g_vertAtomLoc;
-    shaderAtomLocationPrefix[to_base(ShaderType::GEOMETRY)] = locPrefix + Paths::Shaders::GLSL::g_geomAtomLoc;
-    shaderAtomLocationPrefix[to_base(ShaderType::TESSELATION_CTRL)] = locPrefix + Paths::Shaders::GLSL::g_tescAtomLoc;
-    shaderAtomLocationPrefix[to_base(ShaderType::TESSELATION_EVAL)] = locPrefix + Paths::Shaders::GLSL::g_teseAtomLoc;
-    shaderAtomLocationPrefix[to_base(ShaderType::COMPUTE)] = locPrefix + Paths::Shaders::GLSL::g_compAtomLoc;
-    shaderAtomLocationPrefix[to_base(ShaderType::COUNT)] = locPrefix + Paths::Shaders::GLSL::g_comnAtomLoc;
 }
 
 void glShader::destroyStaticData() {
@@ -87,7 +79,7 @@ bool glShader::load(const stringImpl& source, U32 lineOffset) {
 
     _usedAtoms.clear();
     stringImpl parsedSource = _skipIncludes ? source
-                                            : preprocessIncludes(name(), source, 0, _usedAtoms);
+                                            : glShaderProgram::preprocessIncludes(name(), source, 0, _usedAtoms, true);
 
     Util::ReplaceStringInPlace(parsedSource, "//__LINE_OFFSET_",
                                Util::StringFormat("#line %d", lineOffset));
@@ -98,7 +90,7 @@ bool glShader::load(const stringImpl& source, U32 lineOffset) {
     glShaderSource(_shader, 1, &src, &sourceLength);
 
     if (!_skipIncludes) {
-        ShaderProgram::shaderFileWrite(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationText, name(), src);
+       glShaderProgram::shaderFileWrite(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationText, name(), src);
     }
 
     _compiled.clear();
@@ -139,67 +131,6 @@ bool glShader::validate() {
     }
 
     return true;
-}
-
-stringImpl glShader::preprocessIncludes(const stringImpl& name,
-                                        const stringImpl& source,
-                                        GLint level,
-                                        vector<stringImpl>& foundAtoms) {
-    if (level > 32) {
-        Console::errorfn(Locale::get(_ID("ERROR_GLSL_INCLUD_LIMIT")));
-    }
-
-    size_t line_number = 1;
-    std::smatch matches;
-
-    stringImpl output, line;
-    stringImpl include_file, include_string;
-
-    istringstreamImpl input(source);
-
-    while (std::getline(input, line)) {
-        if (std::regex_search(line, matches, Paths::g_includePattern)) {
-            include_file = Util::Trim(matches[1].str().c_str());
-            foundAtoms.push_back(include_file);
-
-            ShaderType typeIndex = ShaderType::COUNT;
-            // switch will throw warnings due to promotion to int
-            U64 extHash = _ID(Util::GetTrailingCharacters(include_file, 4).c_str());
-            if (extHash == _ID(Paths::Shaders::GLSL::g_fragAtomExt.c_str())) {
-                typeIndex = ShaderType::FRAGMENT;
-            } else if (extHash == _ID(Paths::Shaders::GLSL::g_vertAtomExt.c_str())){
-                typeIndex = ShaderType::VERTEX;
-            } else if (extHash == _ID(Paths::Shaders::GLSL::g_geomAtomExt.c_str())) {
-                typeIndex = ShaderType::GEOMETRY;
-            } else if (extHash == _ID(Paths::Shaders::GLSL::g_tescAtomExt.c_str())) {
-                typeIndex = ShaderType::TESSELATION_CTRL;
-            } else if (extHash == _ID(Paths::Shaders::GLSL::g_teseAtomExt.c_str())) {
-                typeIndex = ShaderType::TESSELATION_EVAL;
-            } else if (extHash == _ID(Paths::Shaders::GLSL::g_compAtomExt.c_str())) {
-                typeIndex = ShaderType::COMPUTE;
-            } else if (extHash == _ID(Paths::Shaders::GLSL::g_comnAtomExt.c_str())) {
-                typeIndex = ShaderType::COUNT;
-            } else {
-                DIVIDE_UNEXPECTED_CALL("Invalid shader include type");
-            }
-
-            include_string = ShaderProgram::shaderFileRead(shaderAtomLocationPrefix[to_U32(typeIndex)], include_file);
-            if (include_string.empty()) {
-                Console::errorfn(Locale::get(_ID("ERROR_GLSL_NO_INCLUDE_FILE")),
-                                 name.c_str(),
-                                 line_number,
-                                 include_file.c_str());
-            }
-
-            output.append(preprocessIncludes(name, include_string, level + 1, foundAtoms));
-        } else {
-            output.append(line);
-        }
-        output.append("\n");
-        ++line_number;
-    }
-
-    return output;
 }
 
 // ============================ static data =========================== //

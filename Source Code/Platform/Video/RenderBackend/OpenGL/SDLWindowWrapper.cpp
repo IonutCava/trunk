@@ -327,6 +327,8 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     GL_API::s_hardwareQueryPool->init(g_maxQueryRings);
     // Initialize shader buffers
     glUniformBuffer::onGLInit();
+    // Init static program data
+    glShaderProgram::onStartup(_context, _context.parent().resourceCache());
     // We need a dummy VAO object for point rendering
     s_dummyVAO = GL_API::s_vaoPool.allocate();
 
@@ -356,6 +358,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
 
 /// Clear everything that was setup in initRenderingAPI()
 void GL_API::closeRenderingAPI() {
+    glShaderProgram::onShutdown();
     if (!deInitShaders()) {
         DIVIDE_UNEXPECTED_CALL("GLSL failed to shutdown!");
     } else {

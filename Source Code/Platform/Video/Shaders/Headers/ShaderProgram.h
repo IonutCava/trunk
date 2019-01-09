@@ -186,9 +186,6 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     static bool updateAll(const U64 deltaTimeUS);
     /// Queue a shaderProgram recompile request
     static bool recompileShaderProgram(const stringImpl& name);
-    static const stringImpl& shaderFileRead(const stringImpl& filePath, const stringImpl& atomName);
-    static void shaderFileRead(const stringImpl& filePath, const stringImpl& fileName, stringImpl& sourceCodeOut);
-    static void shaderFileWrite(const stringImpl& filePath, const stringImpl& fileName, const char* sourceCode);
     /// Remove a shaderProgram from the program cache
     static bool unregisterShaderProgram(size_t shaderHash);
     /// Add a shaderProgram to the program cache
@@ -200,8 +197,6 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     static const ShaderProgram_ptr& defaultShader();
 
     static const ShaderProgram_ptr& nullShader();
-
-    static void onAtomChange(const char* atomName, FileUpdateEvent evt);
 
     static void rebuildAllShaders();
 
@@ -215,9 +210,6 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
      static void useShaderBinaryCache(bool state) { s_useShaderBinaryCache = state; if (state) { useShaderTextCache(false); } }
 
    protected:
-    /// Shaders loaded from files are kept as atoms
-    static SharedMutex s_atomLock;
-    static AtomMap s_atoms;
     /// Used to render geometry without valid materials.
     /// Should emulate the basic fixed pipeline functions (no lights, just colour and texture)
     static ShaderProgram_ptr s_imShader;
@@ -240,8 +232,6 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     // with a mutex or something
     /// A list of preprocessor defines (if the bool in the pair is true, #define is automatically added
     vector<std::pair<stringImpl, bool>> _definesList;
-    /// A list of atoms used by this program. (All stages are added toghether)
-    vector<stringImpl> _usedAtoms;
 
     static bool s_useShaderTextCache;
     static bool s_useShaderBinaryCache;
@@ -249,8 +239,6 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
    private:
     std::array<std::array<vector<U32>, Config::SCENE_NODE_LOD>, to_base(ShaderType::COUNT)> _functionIndex;
     std::array<vector<U32>, to_base(ShaderType::COUNT)>  _availableFunctionIndex;
-
-    static I64 s_shaderFileWatcherID;
 };
 
 namespace Attorney {
