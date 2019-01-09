@@ -99,21 +99,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 
     _shaderComputeQueue = MemoryManager_NEW ShaderComputeQueue(cache);
 
-    ResourceDescriptor previewNormalsShader("fbPreview");
-    previewNormalsShader.setThreadedLoading(false);
-    _renderTargetDraw = CreateResource<ShaderProgram>(cache, previewNormalsShader);
-    assert(_renderTargetDraw != nullptr);
-
-    ResourceDescriptor immediateModeShader("ImmediateModeEmulation.GUI");
-    immediateModeShader.setThreadedLoading(false);
-    _textRenderShader = CreateResource<ShaderProgram>(cache, immediateModeShader);
-    assert(_textRenderShader != nullptr);
-
-    PipelineDescriptor descriptor = {};
-    descriptor._shaderProgramHandle = _textRenderShader->getID();
-    descriptor._stateHash = get2DStateBlock();
-    _textRenderPipeline = newPipeline(descriptor);
-
     // Create general purpose render state blocks
     RenderStateBlock::init();
     RenderStateBlock defaultState;
@@ -357,6 +342,21 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 ErrorCode GFXDevice::postInitRenderingAPI() {
     ResourceCache& cache = parent().resourceCache();
     Configuration& config = _parent.platformContext().config();
+
+    ResourceDescriptor previewNormalsShader("fbPreview");
+    previewNormalsShader.setThreadedLoading(false);
+    _renderTargetDraw = CreateResource<ShaderProgram>(cache, previewNormalsShader);
+    assert(_renderTargetDraw != nullptr);
+
+    ResourceDescriptor immediateModeShader("ImmediateModeEmulation.GUI");
+    immediateModeShader.setThreadedLoading(false);
+    _textRenderShader = CreateResource<ShaderProgram>(cache, immediateModeShader);
+    assert(_textRenderShader != nullptr);
+
+    PipelineDescriptor descriptor = {};
+    descriptor._shaderProgramHandle = _textRenderShader->getID();
+    descriptor._stateHash = get2DStateBlock();
+    _textRenderPipeline = newPipeline(descriptor);
 
     // Initialized our HierarchicalZ construction shader (takes a depth
     // attachment and down-samples it for every mip level)

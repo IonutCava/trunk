@@ -74,7 +74,7 @@ Vegetation::Vegetation(GFXDevice& context,
         [this](const Task& parentTask) {
             computeGrassTransforms(parentTask);
         }
-        ).startTask(TaskPriority::REALTIME, [this]() {
+        ).startTask(TaskPriority::DONT_CARE, [this]() {
             uploadGrassData();
         }
     );

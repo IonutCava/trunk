@@ -46,6 +46,13 @@ inline ByteBuffer& ByteBuffer::operator<<(const stringImpl &value) {
     return *this;
 }
 
+template <typename U>
+inline ByteBuffer& ByteBuffer::operator<<(const vectorEASTL<U>& value) {
+    append(to_U32(value.size()));
+    append(value.data(), value.size());
+    return *this;
+}
+
 template <typename T>
 inline ByteBuffer& ByteBuffer::operator>>(T& value) {
     value = read<T>();
@@ -69,6 +76,15 @@ inline ByteBuffer& ByteBuffer::operator>>(stringImpl& value) {
         }
         value += c;
     }
+    return *this;
+}
+
+template <typename U>
+inline ByteBuffer& ByteBuffer::operator>>(vectorEASTL<U>& value) {
+    U32 count = read<U32>();
+    value = vectorEASTL<U>(count, {});
+
+    read((Byte*)value.data(), count * sizeof(U));
     return *this;
 }
 
@@ -98,7 +114,7 @@ void ByteBuffer::read_noskip(stringImpl& value) {
 }
 
 template <typename T>
-inline ByteBuffer& ByteBuffer::operator>>(const Unused<T>& unused) {
+inline ByteBuffer& ByteBuffer::operator>>(Unused<T>& unused) {
     ACKNOWLEDGE_UNUSED(unused);
 
     read_skip<T>();

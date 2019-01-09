@@ -397,7 +397,7 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode& sgn) {
             }
 
             static_cast<Object3D&>(sn).computeTriangleList();
-            const vector<vec3<U32> >& triangles = static_cast<const Object3D&>(sn).getTriangles();
+            const vectorEASTL<vec3<U32> >& triangles = static_cast<const Object3D&>(sn).getTriangles();
             if (nodeType != SceneNodeType::TYPE_OBJECT3D ||
                (nodeType == SceneNodeType::TYPE_OBJECT3D &&
                 static_cast<const Object3D&>(sn).getObjectType()._value != ObjectType::TERRAIN))
@@ -415,8 +415,7 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode& sgn) {
             }
 
             for (U32 i = 0; i < triangles.size(); ++i) {
-                addTriangle(&outData, triangles[i], currentTriangleIndexOffset,
-                            areaType);
+                addTriangle(&outData, triangles[i], currentTriangleIndexOffset, areaType);
             }
         } else if (level == MeshDetailLevel::BOUNDINGBOX) {
             std::array<vec3<F32>, 8> vertices = box.getPoints();

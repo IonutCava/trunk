@@ -150,7 +150,7 @@ bool Scene::frameEnded() {
 bool Scene::idle() {  // Called when application is idle
     _sceneGraph->idle();
 
-    Attorney::SceneRenderStateScene::playAnimations(renderState(), _context.config().debug.mesh.playAnimations);
+    Attorney::SceneRenderStateScene::playAnimations(renderState(), _context.configPtr()->debug.mesh.playAnimations);
 
     if (_cookCollisionMeshesScheduled && checkLoadFlag()) {
         if (_context.gfx().getFrameCount() > 1) {
@@ -161,15 +161,21 @@ bool Scene::idle() {  // Called when application is idle
 
     _lightPool->idle();
 
-    UniqueLockShared r_lock(_tasksMutex);
-    if (!_tasks.empty()) {
-        _tasks.erase(std::remove_if(eastl::begin(_tasks),
-                                    eastl::end(_tasks),
-                                    [](const TaskHandle& handle) -> bool { 
-                                        return !handle.taskRunning();
-                                    }),
-                    eastl::end(_tasks));
+    {
+        SharedLock r_lock(_tasksMutex);
+        if (_tasks.empty()) {
+            return true;
+        }
     }
+
+    UniqueLockShared r_lock(_tasksMutex);
+    _tasks.erase(std::remove_if(eastl::begin(_tasks),
+                                eastl::end(_tasks),
+                                [](const TaskHandle& handle) -> bool { 
+                                    return !handle.taskRunning();
+                                }),
+                eastl::end(_tasks));
+
     return true;
 }
 

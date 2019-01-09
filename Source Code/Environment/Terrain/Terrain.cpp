@@ -104,7 +104,7 @@ void Terrain::postBuild() {
     reserveTriangleCount((terrainWidth - 1) * (terrainHeight - 1) * 2);
 
     // Generate index buffer
-    vector<vec3<U32>>& triangles = getTriangles();
+    vectorEASTL<vec3<U32>>& triangles = getTriangles();
     triangles.resize(terrainHeight * terrainWidth * 2);
 
     // ToDo: Use parallel_for for this

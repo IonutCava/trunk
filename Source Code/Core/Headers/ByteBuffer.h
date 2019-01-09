@@ -70,6 +70,8 @@ class ByteBuffer {
     ByteBuffer& operator<<(const bool& value);
     template <> 
     ByteBuffer& operator<<(const stringImpl& value);
+    template <typename U>
+    ByteBuffer& operator<<(const vectorEASTL<U>& value);
 
     /// read_noskip calls don't move the read head
     template <typename T>
@@ -85,8 +87,10 @@ class ByteBuffer {
     ByteBuffer& operator>>(bool& value);
     template<>
     ByteBuffer& operator>>(stringImpl& value);
+    template <typename U>
+    ByteBuffer& operator>>(vectorEASTL<U>& value);
     template <typename T>
-    ByteBuffer& operator>>(const Unused<T>& value);
+    ByteBuffer& operator>>(Unused<T>& value);
 
     template <typename T>
     void read_skip();
