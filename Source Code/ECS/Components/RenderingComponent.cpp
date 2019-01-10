@@ -279,8 +279,8 @@ void RenderingComponent::getRenderingProperties(vec4<F32>& propertiesOut, F32& r
                                                                                       ? 1.0f
                                                                                       : 0.0f,
                       (shadowMappingEnabled && renderOptionEnabled(RenderOptions::RECEIVE_SHADOWS)) ? 1.0f : 0.0f,
-                      _lodLevel,
-                      0.0);
+                      to_F32(_lodLevel),
+                      0.0f);
     const Material_ptr& mat = getMaterialInstance();
     if (mat) {
         reflectionIndex = to_F32(mat->defaultReflectionTextureIndex());
@@ -386,23 +386,34 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
     }
 }
 
-void RenderingComponent::updateLoDLevel(const Camera& camera, RenderStagePass renderStagePass) {
-    static const U32 SCENE_NODE_LOD0_SQ = Config::SCENE_NODE_LOD0 * Config::SCENE_NODE_LOD0;
-    static const U32 SCENE_NODE_LOD1_SQ = Config::SCENE_NODE_LOD1 * Config::SCENE_NODE_LOD1;
+void RenderingComponent::updateLoDLevel(const Camera& camera, RenderStagePass renderStagePass, const vec4<U16>& lodThresholds) {
+    const U32 SCENE_NODE_LOD0_SQ = lodThresholds.x * lodThresholds.x;
+    const U32 SCENE_NODE_LOD1_SQ = lodThresholds.y * lodThresholds.y;
+    const U32 SCENE_NODE_LOD2_SQ = lodThresholds.z * lodThresholds.z;
+    const U32 SCENE_NODE_LOD3_SQ = lodThresholds.w * lodThresholds.w;
 
-    _lodLevel = to_U8(_parentSGN.getNode().getLODcount() - 1);
+    const vec3<F32>& eyePos = camera.getEye();
+    const BoundingSphere& bSphere = _parentSGN.get<BoundsComponent>()->getBoundingSphere();
+    F32 cameraDistanceSQ = bSphere.getCenter().distanceSquared(eyePos);
+
+    _lodLevel = 0;
+    if (cameraDistanceSQ > SCENE_NODE_LOD0_SQ) {
+        _lodLevel = 1;
+        if (cameraDistanceSQ > SCENE_NODE_LOD1_SQ) {
+            _lodLevel = 2;
+            if (cameraDistanceSQ > SCENE_NODE_LOD2_SQ) {
+                _lodLevel = 3;
+                if (cameraDistanceSQ > SCENE_NODE_LOD3_SQ) {
+                    _lodLevel = 4;
+                }
+            }
+        }
+        
+    }
 
     // ToDo: Hack for lower LoD rendering in reflection and refraction passes
-    if (renderStagePass._stage != RenderStage::REFLECTION && renderStagePass._stage != RenderStage::REFRACTION) {
-        const vec3<F32>& eyePos = camera.getEye();
-        const BoundingSphere& bSphere = _parentSGN.get<BoundsComponent>()->getBoundingSphere();
-        F32 cameraDistanceSQ = bSphere.getCenter().distanceSquared(eyePos);
-
-        U8 lodLevelTemp = cameraDistanceSQ > SCENE_NODE_LOD0_SQ
-                                           ? cameraDistanceSQ > SCENE_NODE_LOD1_SQ ? 2 : 1
-                                           : 0;
-
-        _lodLevel = std::min(_lodLevel, std::max(lodLevelTemp, to_U8(0)));
+    if (renderStagePass._stage == RenderStage::REFLECTION || renderStagePass._stage == RenderStage::REFRACTION) {
+        _lodLevel += 1;
     }
 }
 
@@ -418,7 +429,7 @@ void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
         }
 
         if (_parentSGN.prepareRender(camera, renderStagePass)) {
-            updateLoDLevel(camera, renderStagePass);
+            updateLoDLevel(camera, renderStagePass, sceneRenderState.lodThresholds());
 
             bool renderGeometry = renderOptionEnabled(RenderOptions::RENDER_GEOMETRY);
             renderGeometry = renderGeometry || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY);

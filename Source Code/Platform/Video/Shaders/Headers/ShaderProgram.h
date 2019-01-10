@@ -131,33 +131,25 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     void removeShaderDefine(const stringImpl& define);
 
     /** ------ BEGIN EXPERIMENTAL CODE ----- **/
-    inline vec_size getFunctionCount(ShaderType shader, U8 LoD) {
-        return _functionIndex[to_U32(shader)][LoD].size();
+    inline vec_size getFunctionCount(ShaderType shader) {
+        return _functionIndex[to_U32(shader)].size();
     }
 
     inline void setFunctionCount(ShaderType shader,
-                                 U8 LoD,
                                  vec_size count) {
-        _functionIndex[to_U32(shader)][LoD].resize(count, 0);
-    }
-
-    inline void setFunctionCount(ShaderType shader, vec_size count) {
-        for (U8 i = 0; i < Config::SCENE_NODE_LOD; ++i) {
-            setFunctionCount(shader, i, count);
-        }
+        _functionIndex[to_U32(shader)].resize(count, 0);
     }
 
     inline void setFunctionIndex(ShaderType shader,
-                                 U8 LoD,
                                  U32 index,
                                  U32 functionEntry) {
         const U32 shaderTypeValue = to_U32(shader);
 
-        if (_functionIndex[shaderTypeValue][LoD].empty()) {
+        if (_functionIndex[shaderTypeValue].empty()) {
             return;
         }
 
-        DIVIDE_ASSERT(index < _functionIndex[shaderTypeValue][LoD].size(),
+        DIVIDE_ASSERT(index < _functionIndex[shaderTypeValue].size(),
                       "ShaderProgram error: Invalid function index specified "
                       "for update!");
         if (_availableFunctionIndex[shaderTypeValue].empty()) {
@@ -167,7 +159,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
         DIVIDE_ASSERT(
             functionEntry < _availableFunctionIndex[shaderTypeValue].size(),
             "ShaderProgram error: Specified function entry does not exist!");
-        _functionIndex[shaderTypeValue][LoD][index] =
+        _functionIndex[shaderTypeValue][index] =
             _availableFunctionIndex[shaderTypeValue][functionEntry];
     }
 
@@ -237,7 +229,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     static bool s_useShaderBinaryCache;
 
    private:
-    std::array<std::array<vector<U32>, Config::SCENE_NODE_LOD>, to_base(ShaderType::COUNT)> _functionIndex;
+    std::array<vector<U32>, to_base(ShaderType::COUNT)> _functionIndex;
     std::array<vector<U32>, to_base(ShaderType::COUNT)>  _availableFunctionIndex;
 };
 

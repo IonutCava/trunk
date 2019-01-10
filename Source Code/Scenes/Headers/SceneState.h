@@ -161,7 +161,15 @@ class SceneRenderState : public SceneComponent {
     inline void renderPass(U8 renderPass) { _renderPass = renderPass; }
     inline U8   renderPass()      const { return _renderPass; }
 
+    inline vec4<U16>& lodThresholds() { return _lod; }
+    inline FogDescriptor& fogDescriptor() { return _fog; }
+    inline const vec4<U16>& lodThresholds() const { return _lod; }
+    inline const FogDescriptor& fogDescriptor() const { return _fog; }
+
    protected:
+       
+    vec4<U16> _lod;
+    FogDescriptor _fog;
     U8 _renderPass;
     U32 _stateMask;
     GizmoState _gizmoState;
@@ -269,7 +277,6 @@ class SceneState : public SceneComponent {
           _windDirX(0.0f),
           _windDirZ(1.0f)
     {
-        _fog.set(vec3<F32>(0.2f, 0.2f, 0.2f), 0.01f);
     }
 
     virtual ~SceneState()
@@ -304,11 +311,9 @@ class SceneState : public SceneComponent {
         return _playerState[index];
     }
 
-    inline FogDescriptor& fogDescriptor()   { return _fog; }
     inline SceneRenderState& renderState()  { return _renderState; }
     inline MusicPlaylist& music(MusicType type) { return _music[to_U32(type)]; }
 
-    inline const FogDescriptor& fogDescriptor() const { return _fog; }
     inline const SceneRenderState& renderState() const { return _renderState; }
     inline const MusicPlaylist& music(MusicType type) const { return _music[to_U32(type)]; }
 
@@ -339,7 +344,6 @@ protected:
 
     vector<WaterDetails> _globalWaterBodies;
 
-    FogDescriptor _fog;
     /// saves all the rendering information for the scene
     /// (camera position, light info, draw states)
     SceneRenderState _renderState;

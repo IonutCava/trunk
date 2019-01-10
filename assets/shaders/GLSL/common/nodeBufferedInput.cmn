@@ -9,9 +9,6 @@ struct NodeData {
     // [2][3] = refraction index
     // [3][0] ... [3][3] = bounding sphere
     mat4 _normalMatrixW;
-    // [0][0] ... [2][2] = normal matrix in view space
-    // [][] = everything else is zero
-    mat4 _normalMatrixWV;
     // [0][0] ... [0][3] = albedo
     // [1][0] ... [1][3] = specular
     // [2][0] ... [2][3] = emissive
@@ -41,7 +38,7 @@ mat4 dvd_WorldViewMatrix(in uint index) {
 }
 
 mat3 dvd_NormalMatrixWV(in uint index) {
-    return mat3(dvd_Matrices[index]._normalMatrixWV);
+    return mat3(dvd_ViewMatrix) * mat3(dvd_Matrices[index]._normalMatrixW);
 }
 
 mat3 dvd_NormalMatrixW(in uint index) {

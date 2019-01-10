@@ -160,17 +160,15 @@ public:
     };
 
     struct NodeData : private NonCopyable {
-        mat4<F32> _worldMatrix;
-        mat4<F32> _normalMatrixW;
-        mat4<F32> _normalMatrixWV;
-        mat4<F32> _colourMatrix;
-        vec4<F32> _properties;
+        mat4<F32> _worldMatrix = {};
+        mat4<F32> _normalMatrixW = {};
+        mat4<F32> _colourMatrix = {};
+        vec4<F32> _properties = {};
 
         NodeData()
         {
             _worldMatrix.identity();
             _normalMatrixW.identity();
-            _normalMatrixWV.identity();
             _colourMatrix.zero();
         }
 

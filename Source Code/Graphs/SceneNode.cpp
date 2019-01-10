@@ -37,7 +37,6 @@ SceneNode::SceneNode(ResourceCache& parentCache, size_t descriptorHash, const st
      _parentCache(parentCache),
      _materialTemplate(nullptr),
      _type(type),
-     _LODcount(1),
      _editorComponent("")
 {
     getEditorComponent().name(getTypeName());

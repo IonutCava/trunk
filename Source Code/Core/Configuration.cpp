@@ -51,6 +51,7 @@ Configuration::Configuration() : XML::IXMLSerializable()
     rendering.enableFog = true;
     rendering.fogDensity = 0.01f; 
     rendering.fogColour.set(0.2f);
+    rendering.lodThresholds.set(25, 45, 85, 165);
     rendering.postFX.postAAType = "FXAA";
     rendering.postFX.postAASamples = 0;
     rendering.postFX.enableDepthOfField = false;
@@ -122,6 +123,10 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM_ATTRIB(rendering.fogColour, r);
         GET_PARAM_ATTRIB(rendering.fogColour, g);
         GET_PARAM_ATTRIB(rendering.fogColour, b);
+        GET_PARAM_ATTRIB(rendering.lodThresholds, x);
+        GET_PARAM_ATTRIB(rendering.lodThresholds, y);
+        GET_PARAM_ATTRIB(rendering.lodThresholds, z);
+        GET_PARAM_ATTRIB(rendering.lodThresholds, w);
         GET_PARAM(rendering.postFX.postAAType);
         GET_PARAM(rendering.postFX.postAASamples);
         GET_PARAM(rendering.postFX.enableDepthOfField);
@@ -189,6 +194,10 @@ bool Configuration::toXML(const char* xmlFile) const {
     PUT_PARAM_ATTRIB(rendering.fogColour, r);
     PUT_PARAM_ATTRIB(rendering.fogColour, g);
     PUT_PARAM_ATTRIB(rendering.fogColour, b);
+    PUT_PARAM_ATTRIB(rendering.lodThresholds, x);
+    PUT_PARAM_ATTRIB(rendering.lodThresholds, y);
+    PUT_PARAM_ATTRIB(rendering.lodThresholds, z);
+    PUT_PARAM_ATTRIB(rendering.lodThresholds, w);
     PUT_PARAM(rendering.postFX.postAAType);
     PUT_PARAM(rendering.postFX.postAASamples);
     PUT_PARAM(rendering.postFX.enableDepthOfField);

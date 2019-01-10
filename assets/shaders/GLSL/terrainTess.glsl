@@ -215,7 +215,7 @@ out float tes_tessLevel;
 out vec4 _scrollingUV;
 // x = distance, y = depth
 smooth out vec2 _waterDetails;
-
+out float LoD;
 #if defined(SHADOW_PASS)
 out vec4 geom_vertexWVP;
 #endif
@@ -358,6 +358,7 @@ void main()
     tes_tessLevel = tcs_tessLevel[0];
 #if defined(TOGGLE_WIREFRAME)
     gl_Position = _out._vertexW;
+
 #else
     gl_Position = dvd_ViewProjectionMatrix * _out._vertexW;
 
@@ -365,6 +366,17 @@ void main()
     geom_vertexWVP = gl_Position;
 #else
     waterDetails();
+    if (tes_tessLevel >= 64.0) {
+        LoD = 0;
+    } else if (tes_tessLevel >= 32.0) {
+        LoD = 1;
+    } else if (tes_tessLevel >= 16.0) {
+        LoD = 2;
+    } else if (tes_tessLevel >= 8.0) {
+        LoD = 3;
+    } else {
+        LoD = 4;
+    }
 #endif //SHADOW_PASS
 
 #endif
@@ -384,6 +396,8 @@ layout(triangle_strip, max_vertices = 4) out;
 smooth out vec2 _waterDetails;
 
 out vec3 gs_wireColor;
+out float LoD;
+
 noperspective out vec3 gs_edgeDist;
 
 void waterDetails(in int index) {
@@ -429,14 +443,19 @@ void PerVertex(in int i, in vec3 edge_dist) {
     PassData(i);
     if (tes_tessLevel[0] >= 64.0) {
         gs_wireColor = vec3(0.0, 0.0, 1.0);
+        LoD = 0;
     } else if (tes_tessLevel[0] >= 32.0) {
         gs_wireColor = vec3(0.0, 1.0, 0.0);
+        LoD = 1;
     } else if (tes_tessLevel[0] >= 16.0) {
         gs_wireColor = vec3(1.0, 0.0, 0.0);
+        LoD = 2;
     } else if (tes_tessLevel[0] >= 8.0) {
         gs_wireColor = vec3(0.25, 0.50, 0.75);
+        LoD = 3;
     } else {
         gs_wireColor = vec3(1.0, 1.0, 1.0);
+        LoD = 4;
     }
 
     gl_Position = getWVPPositon(i);
@@ -489,19 +508,7 @@ void main(void)
 
 #define CUSTOM_MATERIAL_ALBEDO
 
-#include "BRDF.frag"
-#include "terrainSplatting.frag"
-#include "velocityCalc.frag"
-#include "output.frag"
-
-
-#if defined(LOW_QUALITY)
-#if defined(MAX_TEXTURE_LAYERS)
-#undef MAX_TEXTURE_LAYERS
-#define MAX_TEXTURE_LAYERS 1
-#endif
-#endif
-
+in float LoD;
 // x = distance, y = depth
 smooth in vec2 _waterDetails;
 
@@ -509,6 +516,20 @@ smooth in vec2 _waterDetails;
 in vec3 gs_wireColor;
 noperspective in vec3 gs_edgeDist;
 #endif
+
+#include "BRDF.frag"
+#include "terrainSplatting.frag"
+#include "velocityCalc.frag"
+#include "output.frag"
+
+// ToDo: Move this above the includes
+#if defined(LOW_QUALITY)
+#if defined(MAX_TEXTURE_LAYERS)
+#undef MAX_TEXTURE_LAYERS
+#define MAX_TEXTURE_LAYERS 1
+#endif
+#endif
+
 
 vec4 private_albedo = vec4(1.0);
 void setAlbedo(in vec4 albedo) {

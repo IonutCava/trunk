@@ -161,6 +161,7 @@ bool QuadtreeNode::isInView(const Camera& camera, F32 maxDistance, U8& LoD) cons
     if (distanceToCenter > visibilityDistance &&
         _boundingBox.nearestDistanceFromPointSquared(eye) > std::min(visibilityDistance, camera.getZPlanes().y))
     {
+        LoD = 4;
         return false;
     }
         
@@ -186,12 +187,20 @@ bool QuadtreeNode::isInView(const Camera& camera, F32 maxDistance, U8& LoD) cons
         };
     }
 
-    LoD = 2;
-    if (distanceToCenter <= boundingRadius) {
-        LoD = 0;
-    } else if (distanceToCenter <= 2 * boundingRadius) {
+    LoD = 0;
+    if (distanceToCenter > boundingRadius) {
         LoD = 1;
+        if (distanceToCenter > 2 * boundingRadius) {
+            LoD = 2;
+            if (distanceToCenter > 3 * boundingRadius) {
+                LoD = 3;
+                if (distanceToCenter > 2 * boundingRadius) {
+                    LoD = 4;
+                }
+            }
+        }
     }
+
     return true;
 }
 

@@ -418,21 +418,12 @@ glShaderProgram::glShaderProgramLoadInfo glShaderProgram::buildLoadInfo() {
         loadInfo._programNameSuffix = resourceName().substr(idx+1);
     }
 
-    // We also differentiate between general properties, and vertex properties
-    // Get the position of the first "," symbol. Must be added at the end of the program's name!!
-    stringAlg::stringSize propPositionVertex = assetName().find_first_of(",");
     // Get the position of the first "." symbol
     stringAlg::stringSize propPosition = assetName().find_first_of(".");
     // If we have effect properties, we extract them from the name
     // (starting from the first "." symbol to the first "," symbol)
     if (propPosition != stringImpl::npos) {
-        loadInfo._programProperties = "." + assetName().substr(propPosition + 1, propPositionVertex - propPosition - 1);
-    }
-    // Vertex properties start off identically to the rest of the stages' names
-    loadInfo._vertexStageProperties = loadInfo._programProperties;
-    // But we also add the shader specific properties
-    if (propPositionVertex != stringImpl::npos) {
-        loadInfo._vertexStageProperties += "." + assetName().substr(propPositionVertex + 1);
+        loadInfo._programProperties = "." + assetName().substr(propPosition + 1, assetName().length()-1);
     }
 
     // Get all of the preprocessor defines and add them to the general shader header for this program
@@ -516,7 +507,7 @@ bool glShaderProgram::reloadShaders(bool reparseShaderSource) {
         stringImpl shaderCompileName(info._programName +
                                      "." +
                                      GLUtil::glShaderStageNameTable[i] +
-                                     info._vertexStageProperties + 
+                                     info._programProperties +
                                      "." +
                                      info._programNameSuffix);
         glShader*& shader = _shaderStage[i];

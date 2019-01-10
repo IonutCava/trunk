@@ -123,10 +123,6 @@ class SceneNode : public CachedResource {
 
     inline SceneNodeRenderState& renderState() { return _renderState; }
 
-    inline void incLODcount() { _LODcount++; }
-    inline void decLODcount() { _LODcount--; }
-    inline U8   getLODcount() const { return _LODcount; }
-
     virtual const char* getTypeName() const;
 
     ResourceCache& parentResourceCache() { return _parentCache; }
@@ -171,8 +167,6 @@ class SceneNode : public CachedResource {
     ResourceCache& _parentCache;
     /// The various states needed for rendering
     SceneNodeRenderState _renderState;
-    /// Maximum available LOD levels
-    U8 _LODcount;
     /// The initial bounding box as it was at object's creation (i.e. no transforms applied)
     BoundingBox _boundingBox;
 

@@ -103,13 +103,6 @@ constexpr unsigned int PRIMITIVE_RESTART_INDEX_S = 0xFFFF;
 
 /// Maximum number of players we support locally
 constexpr unsigned int MAX_LOCAL_PLAYER_COUNT = 4;
-/// SceneNode LOD selection
-/// Distance computation is identical to the of the terrain (using SceneNode's bounding box)
-constexpr unsigned int SCENE_NODE_LOD = 3;
-/// Relative distance for LOD0->LOD1 selection
-constexpr unsigned int SCENE_NODE_LOD0 = 100;
-/// Relative distance for LOD1->LOD2 selection
-constexpr unsigned int SCENE_NODE_LOD1 = 180;
 /// If true, Hi-Z based occlusion culling is used
 constexpr bool USE_HIZ_CULLING = true;
 

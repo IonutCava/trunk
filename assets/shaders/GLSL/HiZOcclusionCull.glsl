@@ -5,7 +5,6 @@
 struct NodeData {
     mat4 _worldMatrix;
     mat4 _normalMatrix;
-    mat4 _normalMatrixWV;
     mat4 _colourMatrix;
     vec4 _properties;
 };

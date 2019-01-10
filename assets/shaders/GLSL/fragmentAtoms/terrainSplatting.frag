@@ -20,7 +20,7 @@ vec4 getTerrainAlbedo() {
     uint offset = 0;
     for (uint i = 0; i < MAX_TEXTURE_LAYERS; ++i) {
         vec4 blendColour = texture(texBlendMaps, vec3(VAR._texCoord, i));
-        vec4 texScale = tileScale[i];
+        vec4 texScale = tileScale[i] / (LoD + 1);
         for (uint j = 0; j < CURRENT_LAYER_COUNT[i]; ++j) {
             colour = mix(colour,
                          texture(texTileMaps, vec3(scaledTextureCoords(VAR._texCoord, texScale[j]), offset + j)),
@@ -43,7 +43,7 @@ vec3 getTerrainAlbedoAndNormalTBN(out vec4 colour) {
         const uint layerCount = CURRENT_LAYER_COUNT[i];
 
         vec3 tbnTemp = tbn;
-        vec4 texScale = tileScale[i];
+        vec4 texScale = tileScale[i] / (LoD + 1);
         vec4 blendColour = texture(texBlendMaps, vec3(VAR._texCoord, i));
 
 

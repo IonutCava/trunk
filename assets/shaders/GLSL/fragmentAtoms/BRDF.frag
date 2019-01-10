@@ -50,24 +50,26 @@ vec3 getLightColour(vec3 albedo, vec3 normal) {
         getBRDFFactors(lightIdx, normal, albedo, specular, reflectivity, lightColour, reflectionCoeff);
     }
 
-    // Point lights
+    if (dvd_lodLevel < 2) {
+        // Point lights
 
-    uint offset = DIRECTIONAL_LIGHT_COUNT;
-    uint nIndex = GetTileIndex(gl_FragCoord.xy) * LIGHT_NUM_LIGHTS_PER_TILE;
-   
-    uint nNextLightIndex = perTileLightIndices[nIndex];
-    while (nNextLightIndex != LIGHT_INDEX_BUFFER_SENTINEL) {
-        getBRDFFactors(int(nNextLightIndex - 1 + offset), normal, albedo, specular, reflectivity, lightColour, reflectionCoeff);
-        nNextLightIndex = perTileLightIndices[++nIndex];
-    }
+        uint offset = DIRECTIONAL_LIGHT_COUNT;
+        uint nIndex = GetTileIndex(gl_FragCoord.xy) * LIGHT_NUM_LIGHTS_PER_TILE;
 
-    // Spot lights
-    offset += POINT_LIGHT_COUNT;
-    // Moves past the first sentinel to get to the spot lights.
-    nNextLightIndex = perTileLightIndices[++nIndex];
-    while (nNextLightIndex != LIGHT_INDEX_BUFFER_SENTINEL) {
-        getBRDFFactors(int(nNextLightIndex - 1 + offset), normal, albedo, specular, reflectivity, lightColour, reflectionCoeff);
+        uint nNextLightIndex = perTileLightIndices[nIndex];
+        while (nNextLightIndex != LIGHT_INDEX_BUFFER_SENTINEL) {
+            getBRDFFactors(int(nNextLightIndex - 1 + offset), normal, albedo, specular, reflectivity, lightColour, reflectionCoeff);
+            nNextLightIndex = perTileLightIndices[++nIndex];
+        }
+
+        // Spot lights
+        offset += POINT_LIGHT_COUNT;
+        // Moves past the first sentinel to get to the spot lights.
         nNextLightIndex = perTileLightIndices[++nIndex];
+        while (nNextLightIndex != LIGHT_INDEX_BUFFER_SENTINEL) {
+            getBRDFFactors(int(nNextLightIndex - 1 + offset), normal, albedo, specular, reflectivity, lightColour, reflectionCoeff);
+            nNextLightIndex = perTileLightIndices[++nIndex];
+        }
     }
 
     return mix(getEmissive(), lightColour, DIST_TO_ZERO(length(lightColour)));

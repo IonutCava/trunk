@@ -107,6 +107,7 @@ public:
         bool enableFog;
         F32 fogDensity;
         vec3<F32> fogColour;
+        vec4<U16> lodThresholds;
         struct PostFX {
             stringImpl postAAType;
             U8 postAASamples;

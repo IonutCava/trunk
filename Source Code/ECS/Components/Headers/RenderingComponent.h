@@ -151,7 +151,7 @@ class RenderingComponent : public BaseComponentType<RenderingComponent, Componen
    protected:    
     void onRefreshNodeData(RenderStagePass renderStagePass, GFX::CommandBuffer& bufferInOut);
     bool canDraw(RenderStagePass renderStagePass);
-    void updateLoDLevel(const Camera& camera, RenderStagePass renderStagePass);
+    void updateLoDLevel(const Camera& camera, RenderStagePass renderStagePass, const vec4<U16>& lodThresholds);
 
     /// Called after the parent node was rendered
     void postRender(const SceneRenderState& sceneRenderState,

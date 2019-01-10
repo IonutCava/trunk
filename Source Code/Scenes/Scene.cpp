@@ -236,10 +236,15 @@ bool Scene::saveXML() const {
         pt.put("options.cameraSpeed.<xmlattr>.turn", par.getParam<F32>(_ID((resourceName() + ".options.cameraSpeed.turn").c_str())));
         pt.put("options.autoCookPhysicsAssets", true);
 
-        pt.put("fog.fogDensity", state().fogDescriptor().density());
-        pt.put("fog.fogColour.<xmlattr>.r", state().fogDescriptor().colour().r);
-        pt.put("fog.fogColour.<xmlattr>.g", state().fogDescriptor().colour().g);
-        pt.put("fog.fogColour.<xmlattr>.b", state().fogDescriptor().colour().b);
+        pt.put("fog.fogDensity", state().renderState().fogDescriptor().density());
+        pt.put("fog.fogColour.<xmlattr>.r", state().renderState().fogDescriptor().colour().r);
+        pt.put("fog.fogColour.<xmlattr>.g", state().renderState().fogDescriptor().colour().g);
+        pt.put("fog.fogColour.<xmlattr>.b", state().renderState().fogDescriptor().colour().b);
+
+        pt.put("lod.lodThresholds.<xmlattr>.x", state().renderState().lodThresholds().x);
+        pt.put("lod.lodThresholds.<xmlattr>.y", state().renderState().lodThresholds().y);
+        pt.put("lod.lodThresholds.<xmlattr>.z", state().renderState().lodThresholds().z);
+        pt.put("lod.lodThresholds.<xmlattr>.w", state().renderState().lodThresholds().w);
 
         copyFile(scenePath, resourceName() + ".xml", scenePath, resourceName() + ".xml.bak", true);
         write_xml(sceneDataFile.c_str(), pt, std::locale(), settings);

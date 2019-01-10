@@ -486,17 +486,14 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
         // Bump mapping?
         if (_textures[to_base(ShaderProgram::TextureUsage::NORMALMAP)] &&  _bumpMethod != BumpMethod::NONE) {
             shaderPropertyDescriptor._defines.push_back(std::make_pair("COMPUTE_TBN", true));
-            shader += ".Bump";  // Normal Mapping
+            shader += ".NormalMap";  // Normal Mapping
             if (_bumpMethod == BumpMethod::PARALLAX) {
-                shader += ".Parallax";
                 shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_PARALLAX_MAPPING", true));
+                shader += ".ParallaxMap";
             } else if (_bumpMethod == BumpMethod::RELIEF) {
-                shader += ".Relief";
                 shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_RELIEF_MAPPING", true));
+                shader += ".ReliefMap";
             }
-        } else {
-            // Or simple texture mapping?
-            shader += ".Texture";
         }
     } else {
         shaderPropertyDescriptor._defines.push_back(std::make_pair("SKIP_TEXTURES", true));
@@ -504,7 +501,7 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
     }
 
     if (_textures[to_base(ShaderProgram::TextureUsage::SPECULAR)]) {
-        shader += ".Specular";
+        shader += ".SpecularMap";
         shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_SPECULAR_MAP", true));
     }
 

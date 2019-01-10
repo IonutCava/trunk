@@ -213,7 +213,6 @@ GFXDevice::NodeData RenderPassManager::processVisibleNode(SceneGraphNode* node, 
     }
 
     dataOut._normalMatrixW.setRow(3, 0.0f, 0.0f, 0.0f, 0.0f);
-    mat4<F32>::Multiply(dataOut._normalMatrixW, viewMatrix, dataOut._normalMatrixWV);
 
     // Get the material property matrix (alpha test, texture count, texture operation, etc.)
     dataOut._normalMatrixW.element(0, 3) = playAnimations ? to_F32((animComp && animComp->playAnimations()) ? animComp->boneCount() : 0) : 0.0f;

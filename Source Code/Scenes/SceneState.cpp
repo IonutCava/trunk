@@ -27,6 +27,9 @@ SceneRenderState::SceneRenderState(Scene& parentScene)
 {
     enableOption(RenderOptions::RENDER_GEOMETRY);
 
+    _lod.set(25, 45, 85, 165);
+    _fog.set(vec3<F32>(0.2f, 0.2f, 0.2f), 0.01f);
+
     _gizmoState = GizmoState::NO_GIZMO;
 }
 

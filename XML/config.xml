@@ -71,7 +71,7 @@
   <enableFog>true</enableFog>
   <fogDensity>3</fogDensity>
   <fogColour r="0.5" g="0.5" b="0.55"/>
-
+  <lodThresholds x="25" y="45" z="85" w="165"/>
   <postFX>
     <!-- Select the type of post processing AA: FXAA or SMAA -->
     <!-- Defaults to FXAA -->

@@ -182,12 +182,22 @@ void loadScene(const stringImpl& scenePath, const stringImpl &sceneName, Scene* 
     F32 fogDensity = config.rendering.fogDensity;
 
     if (boost::optional<ptree &> fog = pt.get_child_optional("fog")) {
-        fogDensity = pt.get("fog.fogDensity", 0.01f);
-        fogColour.set(pt.get<F32>("fog.fogColour.<xmlattr>.r", 0.2f),
-                      pt.get<F32>("fog.fogColour.<xmlattr>.g", 0.2f),
-                      pt.get<F32>("fog.fogColour.<xmlattr>.b", 0.2f));
+        fogDensity = pt.get("fog.fogDensity", fogDensity);
+        fogColour.set(pt.get<F32>("fog.fogColour.<xmlattr>.r", fogColour.r),
+                      pt.get<F32>("fog.fogColour.<xmlattr>.g", fogColour.g),
+                      pt.get<F32>("fog.fogColour.<xmlattr>.b", fogColour.b));
     }
-    scene->state().fogDescriptor().set(fogColour, fogDensity);
+    scene->state().renderState().fogDescriptor().set(fogColour, fogDensity);
+
+    vec4<U16> lodThresholds(config.rendering.lodThresholds);
+
+    if (boost::optional<ptree &> fog = pt.get_child_optional("lod")) {
+        lodThresholds.set(pt.get<U16>("lod.lodThresholds.<xmlattr>.x", lodThresholds.x),
+                          pt.get<U16>("lod.lodThresholds.<xmlattr>.y", lodThresholds.y),
+                          pt.get<U16>("lod.lodThresholds.<xmlattr>.z", lodThresholds.z),
+                          pt.get<U16>("lod.lodThresholds.<xmlattr>.w", lodThresholds.w));
+    }
+    scene->state().renderState().lodThresholds().set(lodThresholds);
 
     loadSceneGraph(sceneLocation, pt.get("assets", ""), scene);
     loadMusicPlaylist(sceneLocation, pt.get("musicPlaylist", ""), scene, config);

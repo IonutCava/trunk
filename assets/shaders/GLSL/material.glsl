@@ -38,21 +38,23 @@ vec4 mappingFlat(){
 
 
 vec4 getFinalPixelColour() {
-
 #if defined(COMPUTE_TBN)
+    if (dvd_lodLevel == 0) {
 #   if defined(USE_PARALLAX_MAPPING)
-    return mix(ParallaxMapping(VAR._texCoord, 0), mappingFlat(), vec4(dvd_lodLevel > 1));
-#    elif defined(USE_RELIEF_MAPPING)
-    return mix(ReliefMapping(VAR._texCoord), mappingFlat(), vec4(dvd_lodLevel > 1));
-#    else
-    setProcessedNormal(getTBNMatrix() * getBump(VAR._texCoord));
-    return mix(getPixelColour(), mappingFlat(), vec4(dvd_lodLevel > 1));
-#    endif
-#else
-   return mappingFlat();
+        return ParallaxMapping(VAR._texCoord, 0);
+#   elif defined(USE_RELIEF_MAPPING)
+        return ReliefMapping(VAR._texCoord);
+#   else
+        setProcessedNormal(getTBNMatrix() * getBump(VAR._texCoord));
+        return getPixelColour();
+#   endif
+    }
 #endif
+
+   return mappingFlat();
 }
 
 void main (void) {
-    writeOutput(getFinalPixelColour(), packNormal(getProcessedNormal()));
+    vec4 colour = getFinalPixelColour();
+    writeOutput(colour, packNormal(getProcessedNormal()));
 }

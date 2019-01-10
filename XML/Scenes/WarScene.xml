@@ -23,3 +23,6 @@
     <fogDensity>4</fogDensity>
     <fogColour r="0.800000012" g="0.800000012" b="0.800000012"/>
 </fog>
+<lod>
+    <lodThresholds x="15" y="45" z="85" w="165"/>
+</lod>

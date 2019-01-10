@@ -71,12 +71,4 @@ void Renderer::preRender(RenderStagePass stagePass,
     GFX::EnqueueCommand(bufferInOut, memCmd);
 }
 
-U16 Renderer::getMaxNumLightsPerTile() const {
-    const U16 adjustmentMultipier = 32;
-
-    U16 height = Config::Lighting::ForwardPlus::MAX_HEIGHT;
-    // adjust max lights per tile down as height increases
-    return (Config::Lighting::ForwardPlus::MAX_LIGHTS_PER_TILE - (adjustmentMultipier * (height / 120)));
-}
-
 };
