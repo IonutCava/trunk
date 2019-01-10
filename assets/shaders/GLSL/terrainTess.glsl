@@ -569,8 +569,6 @@ vec4 TerrainMappingRoutine() {
 
 void main(void)
 {
-    
-    bumpInit();
    vec4 colourOut = mix(TerrainMappingRoutine(), UnderwaterMappingRoutine(), _waterDetails.x);
 #if defined(TOGGLE_WIREFRAME)
     const float LineWidth = 0.75;

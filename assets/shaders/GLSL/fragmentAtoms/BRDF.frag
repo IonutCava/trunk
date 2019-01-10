@@ -45,33 +45,30 @@ vec3 getLightColour(vec3 albedo, vec3 normal) {
     vec3 lightColour = vec3(0.0);
     // Apply all lighting contributions
 
-    uint offset = 0;
     // Directional lights
     for (int lightIdx = 0; lightIdx < DIRECTIONAL_LIGHT_COUNT; ++lightIdx) {
         getBRDFFactors(lightIdx, normal, albedo, specular, reflectivity, lightColour, reflectionCoeff);
     }
 
-#if !defined(DISABLED_FORWARD_PLUS)
-    offset += DIRECTIONAL_LIGHT_COUNT;
     // Point lights
-    uint nIndex = dvd_numLightsPerTile * GetTileIndex(gl_FragCoord.xy);
+
+    uint offset = DIRECTIONAL_LIGHT_COUNT;
+    uint nIndex = GetTileIndex(gl_FragCoord.xy) * LIGHT_NUM_LIGHTS_PER_TILE;
+   
     uint nNextLightIndex = perTileLightIndices[nIndex];
     while (nNextLightIndex != LIGHT_INDEX_BUFFER_SENTINEL) {
-        uint nLightIndex = nNextLightIndex;
+        getBRDFFactors(int(nNextLightIndex - 1 + offset), normal, albedo, specular, reflectivity, lightColour, reflectionCoeff);
         nNextLightIndex = perTileLightIndices[++nIndex];
-        getBRDFFactors(int(nLightIndex - 1 + offset), normal, albedo, specular, reflectivity, lightColour, reflectionCoeff);
     }
 
-    offset += POINT_LIGHT_COUNT;
     // Spot lights
+    offset += POINT_LIGHT_COUNT;
     // Moves past the first sentinel to get to the spot lights.
     nNextLightIndex = perTileLightIndices[++nIndex];
     while (nNextLightIndex != LIGHT_INDEX_BUFFER_SENTINEL) {
-        uint nLightIndex = nNextLightIndex;
+        getBRDFFactors(int(nNextLightIndex - 1 + offset), normal, albedo, specular, reflectivity, lightColour, reflectionCoeff);
         nNextLightIndex = perTileLightIndices[++nIndex];
-        getBRDFFactors(int(nLightIndex - 1 + offset), normal, albedo, specular, reflectivity, lightColour, reflectionCoeff);
     }
-#endif
 
     return mix(getEmissive(), lightColour, DIST_TO_ZERO(length(lightColour)));
 #endif
@@ -79,6 +76,12 @@ vec3 getLightColour(vec3 albedo, vec3 normal) {
 
 
 vec4 getPixelColour(vec4 albedo, vec3 normal) {
+#if defined(_DEBUG)
+    if (dvd_NormalsOnly) {
+        return vec4(getProcessedNormal(), 1.0);
+    }
+#endif
+
     vec3 colour = getLightColour(albedo.rgb, normal);
 
 #if defined(IS_REFLECTIVE)

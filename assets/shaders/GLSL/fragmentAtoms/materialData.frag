@@ -18,10 +18,6 @@ layout(binding = TEXTURE_REFRACTION_PLANAR) uniform sampler2D texRefractPlanar;
 
 layout(binding = TEXTURE_REFLECTION_CUBE) uniform samplerCubeArray texEnvironmentCube;
 layout(binding = TEXTURE_REFRACTION_CUBE) uniform samplerCubeArray texEnvRefractCube;
-//Normal or BumpMap
-#if defined(COMPUTE_TBN)
-layout(binding = TEXTURE_NORMALMAP) uniform sampler2D texNormalMap;
-#endif
 
 //Specular and opacity maps are available even for non-textured geometry
 #if defined(USE_OPACITY_MAP)

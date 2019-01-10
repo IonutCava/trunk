@@ -195,7 +195,7 @@ public:  // GPU interface
     void beginFrame(DisplayWindow& window, bool global);
     void endFrame(DisplayWindow& window, bool global);
 
-    void preRender(RenderStagePass stagePass, U16 numLightsPerTile, GFX::CommandBuffer& bufferInOut);
+    void preRender(RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut);
 
     void debugDraw(const SceneRenderState& sceneRenderState, const Camera& activeCamera, GFX::CommandBuffer& bufferInOut);
 

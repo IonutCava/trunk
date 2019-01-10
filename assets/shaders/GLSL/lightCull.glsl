@@ -1,9 +1,6 @@
 -- Compute
 
-uniform uint numDirLights;
-uniform uint numPointLights;
-uniform uint numSpotLights;
-
+//ToDo: change to this: https://github.com/bcrusco/Forward-Plus-Renderer/blob/master/Forward-Plus/Forward-Plus/source/shaders/light_culling.comp.glsl
 #include "lightInput.cmn"
 
 #define NUM_THREADS_PER_TILE (FORWARD_PLUS_TILE_RES * FORWARD_PLUS_TILE_RES)
@@ -14,8 +11,9 @@ shared uint ldsLightIdxCounter;
 shared uint ldsLightIdx[MAX_NUM_LIGHTS_PER_TILE];
 shared uint ldsZMax;
 shared uint ldsZMin;
+//shared vec4 frustumEqn[6];
 
-layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D HiZBuffer;
+layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D depthBuffer;
 
 vec4 ConvertProjToView(in mat4 invProjection, vec4 p)
 {
@@ -50,7 +48,7 @@ float GetSignedDistanceFromPlane(in vec4 p, in vec4 eqn)
 
 void CalculateMinMaxDepthInLds(uvec3 globalThreadIdx)
 {
-    float depth = textureLod(HiZBuffer, globalThreadIdx.xy, 0).r;
+    float depth = textureLod(depthBuffer, globalThreadIdx.xy, 0).r;
     uint z = floatBitsToUint(depth);
 
     if (depth != 0.f)
@@ -69,7 +67,7 @@ void main(void)
     uvec3 groupIdx = gl_WorkGroupID;
 
     uint localIdxFlattened = localIdx.x + localIdx.y * FORWARD_PLUS_TILE_RES;
-    uint tileIdxFlattened = groupIdx.x + groupIdx.y * GetNumTilesX();
+    uint tileIdxFlattened = groupIdx.x + groupIdx.y * LIGHT_NUM_TILES_X;
 
     if (localIdxFlattened == 0)
     {
@@ -79,6 +77,22 @@ void main(void)
     }
     barrier();
 
+
+    /*
+    // calculate the min and max depth for this tile, 
+    // to form the front and back of the frustum
+
+    float minZ = FLT_MAX;
+    float maxZ = 0.0f;
+
+    CalculateMinMaxDepthInLds(globalIdx);
+
+    minZ = uintBitsToFloat(ldsZMin);
+    maxZ = uintBitsToFloat(ldsZMax);
+
+    barrier();
+
+    if (localIdxFlattened == 0) {*/
     vec4 frustumEqn[4];
     {
         // construct frustum for this tile
@@ -87,8 +101,8 @@ void main(void)
         uint pxp = FORWARD_PLUS_TILE_RES * (groupIdx.x + 1);
         uint pyp = FORWARD_PLUS_TILE_RES * (groupIdx.y + 1);
 
-        uint uWindowWidthEvenlyDivisibleByTileRes = FORWARD_PLUS_TILE_RES * GetNumTilesX();
-        uint uWindowHeightEvenlyDivisibleByTileRes = FORWARD_PLUS_TILE_RES * GetNumTilesY();
+        uint uWindowWidthEvenlyDivisibleByTileRes = FORWARD_PLUS_TILE_RES * LIGHT_NUM_TILES_X;
+        uint uWindowHeightEvenlyDivisibleByTileRes = FORWARD_PLUS_TILE_RES * LIGHT_NUM_TILES_Y;
 
         // four corners of the tile, clockwise from top-left
         mat4 invProjection = inverse(dvd_ProjectionMatrix);
@@ -106,6 +120,15 @@ void main(void)
         {
             frustumEqn[i] = CreatePlaneEquation(frustum[i], frustum[(i + 1) & 3]);
         }
+
+        /*frustumEqn[4] = vec4(0.0, 0.0, -1.0, -minZ); // Near
+        frustumEqn[5] = vec4(0.0, 0.0, 1.0, maxZ); // Far
+
+        // Transform the depth planes
+        frustumEqn[4] *= dvd_ViewMatrix;
+        frustumEqn[4] /= length(frustumEqn[4].xyz);
+        frustumEqn[5] *= dvd_ViewMatrix;
+        frustumEqn[5] /= length(frustumEqn[5].xyz);*/
     }
 
     barrier();
@@ -125,12 +148,12 @@ void main(void)
 
     // loop over the point lights and do a sphere vs. frustum intersection test
 
-    uint lightIDXOffset = numDirLights;
-    for (uint i = 0; i < numPointLights; i += NUM_THREADS_PER_TILE)
+    uint lightIDXOffset = DIRECTIONAL_LIGHT_COUNT;
+    for (uint i = 0; i < POINT_LIGHT_COUNT; i += NUM_THREADS_PER_TILE)
     {
         uint il = localIdxFlattened + i;
 
-        if (il < numPointLights)
+        if (il < POINT_LIGHT_COUNT)
         {
             vec4 center = dvd_LightSource[il + lightIDXOffset]._positionWV;
             float r = center.w;
@@ -154,14 +177,14 @@ void main(void)
     barrier();
 
     // Spot lights.
-    lightIDXOffset += numPointLights;
+    lightIDXOffset += POINT_LIGHT_COUNT;
     uint uNumPointLightsInThisTile = ldsLightIdxCounter;
 
-    for (uint i = 0; i < numSpotLights; i += NUM_THREADS_PER_TILE)
+    for (uint i = 0; i < SPOT_LIGHT_COUNT; i += NUM_THREADS_PER_TILE)
     {
         uint il = localIdxFlattened + i;
 
-        if (il < numSpotLights)
+        if (il < SPOT_LIGHT_COUNT)
         {
             vec4 center = dvd_LightSource[il + lightIDXOffset]._positionWV;
             vec3 direction = dvd_LightSource[il + lightIDXOffset]._directionWV.xyz;
@@ -187,7 +210,7 @@ void main(void)
     barrier();
 
     {   // write back
-        uint startOffset = dvd_numLightsPerTile * tileIdxFlattened;
+        uint startOffset = LIGHT_NUM_LIGHTS_PER_TILE * tileIdxFlattened;
 
         for (uint i = localIdxFlattened; i < uNumPointLightsInThisTile; i += NUM_THREADS_PER_TILE)
         {

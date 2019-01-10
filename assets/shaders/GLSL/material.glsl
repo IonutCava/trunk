@@ -19,9 +19,7 @@ void main(void){
 #   define HAS_TRANSPARENCY
 #endif
 
-#if !defined(HAS_TRANSPARENCY)
 layout(early_fragment_tests) in;
-#endif
 
 #include "BRDF.frag"
 
@@ -32,68 +30,29 @@ layout(early_fragment_tests) in;
 #include "velocityCalc.frag"
 
 #include "output.frag"
-//subroutine vec4 MappingRoutineType();
 
-//layout(location = 0) subroutine uniform MappingRoutineType MappingRoutine;
-
-//subroutine(MappingRoutineType)
 vec4 mappingFlat(){
     setProcessedNormal(VAR._normalWV);
     return getPixelColour();
 }
 
-#if defined(COMPUTE_TBN)
-//subroutine(MappingRoutineType)
-vec4 mappingNormal(){
-    setProcessedNormal(getTBNMatrix() * getBump(VAR._texCoord));
-    return mix(getPixelColour(),
-               mappingFlat(),
-               vec4(dvd_lodLevel > 1));
-}
-
-//subroutine(MappingRoutineType)
-vec4 mappingRelief(){
-    return mix(ReliefMapping(VAR._texCoord),
-               mappingFlat(),
-               vec4(dvd_lodLevel > 1));
-}
-
-//subroutine(MappingRoutineType)
-vec4 mappingParallax(){
-    return mix(ParallaxMapping(VAR._texCoord, 0),
-               mappingFlat(),
-               vec4(dvd_lodLevel > 1));
-}
-#endif
 
 vec4 getFinalPixelColour() {
-//return MappingRoutine();
+
 #if defined(COMPUTE_TBN)
-    bumpInit();
-#    if defined(USE_PARALLAX_MAPPING)
-    return mappingParallax();
+#   if defined(USE_PARALLAX_MAPPING)
+    return mix(ParallaxMapping(VAR._texCoord, 0), mappingFlat(), vec4(dvd_lodLevel > 1));
 #    elif defined(USE_RELIEF_MAPPING)
-    return mappingRelief();
+    return mix(ReliefMapping(VAR._texCoord), mappingFlat(), vec4(dvd_lodLevel > 1));
 #    else
-    return mappingNormal();
+    setProcessedNormal(getTBNMatrix() * getBump(VAR._texCoord));
+    return mix(getPixelColour(), mappingFlat(), vec4(dvd_lodLevel > 1));
 #    endif
 #else
    return mappingFlat();
 #endif
 }
 
-void main (void){
-    vec4 colourOut = vec4(0.0);
-
-#if defined(_DEBUG)
-    if (dvd_NormalsOnly) {
-        colourOut.rgb = getProcessedNormal();
-    } else {
-        colourOut = getFinalPixelColour();
-    }
-#else
-    colourOut = getFinalPixelColour();
-#endif
-
-    writeOutput(colourOut, packNormal(getProcessedNormal()));
+void main (void) {
+    writeOutput(getFinalPixelColour(), packNormal(getProcessedNormal()));
 }

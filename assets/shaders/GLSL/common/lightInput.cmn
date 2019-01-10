@@ -3,8 +3,10 @@
 
 #if defined(COMPUTE_SHADER)
 #   define ACCESS
+#   define COMP_RW writeonly
 #else
 #   define ACCESS readonly
+#   define COMP_RW readonly
 #endif
 
 const int LIGHT_DIRECTIONAL = 0;
@@ -31,18 +33,16 @@ struct Light {
 layout(binding = BUFFER_LIGHT_NORMAL, std430) coherent ACCESS buffer dvd_LightBlock
 {
     // x = directional light count, y = point light count, z = spot light count, w = shadow light count
-    ivec4 dvd_LightData;
+    uvec4 dvd_LightData;
     Light dvd_LightSource[];
 
     //RenderDoc: vec3 colour; float cosOuterCone; vec3 positionWV; float range; vec3 directionWV; float spotAngle; int lightType; int castsShadows; ivec2 null;
 };
 
-#if !defined(DISABLED_FORWARD_PLUS)
-layout(binding = BUFFER_LIGHT_INDICES, std430) coherent ACCESS buffer perTileLightIndexBuffer
+layout(binding = BUFFER_LIGHT_INDICES, std430) coherent COMP_RW buffer perTileLightIndexBuffer
 {
     uint perTileLightIndices[];
 };
-#endif
 
 #define DIRECTIONAL_LIGHT_COUNT dvd_LightData.x
 #define POINT_LIGHT_COUNT       dvd_LightData.y
@@ -69,26 +69,10 @@ layout(binding = BUFFER_LIGHT_SHADOW, std430) coherent ACCESS buffer dvd_ShadowB
 #define windowWidth int(dvd_ViewPort.z)
 #define windowHeight int(dvd_ViewPort.w)
 
-// calculate the number of tiles in the horizontal direction
-uint GetNumTilesX()
-{
-    return uint((windowWidth + FORWARD_PLUS_TILE_RES - 1) / float(FORWARD_PLUS_TILE_RES));
-}
-
-// calculate the number of tiles in the vertical direction
-uint GetNumTilesY()
-{
-    return uint((windowHeight + FORWARD_PLUS_TILE_RES - 1) / float(FORWARD_PLUS_TILE_RES));
-}
-
 uint GetTileIndex(in vec2 ScreenPos)
 {
-#if defined(DISABLED_FORWARD_PLUS)
-    return 0;
-#else
     float fTileRes = float(FORWARD_PLUS_TILE_RES);
-    return uint(floor(ScreenPos.x / fTileRes) + floor(ScreenPos.y / fTileRes) * GetNumTilesX());
-#endif
+    return uint(floor(ScreenPos.x / fTileRes) + floor(ScreenPos.y / fTileRes) * LIGHT_NUM_TILES_Y);
 }
 
 Light dvd_private_light;

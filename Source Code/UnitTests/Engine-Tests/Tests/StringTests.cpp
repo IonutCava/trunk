@@ -12,14 +12,6 @@ namespace Divide {
 // We are using third party string libraries (STL, Boost, EASTL) that went through proper testing
 // This list of tests only verifies utility functions
 
-namespace {
-    template <U64 NUM>
-    struct test_const
-    {
-        static const U64 value = NUM;
-    };
-};
-
 vector<stringImpl> getFiles(const stringImpl& input, const std::regex& pattern) {
     std::smatch matches;
     istringstreamImpl inputStream(input);
@@ -274,8 +266,8 @@ TEST(TestCharRemove) {
 TEST(HashIsConstantExpr)
 {
     constexpr const char* const str = "TEST test TEST";
+    constexpr U64 value = _ID(str);
 
-    constexpr U64 value = test_const<_ID(str)>::value;
     CHECK_EQUAL(value, _ID(str));
 }
 

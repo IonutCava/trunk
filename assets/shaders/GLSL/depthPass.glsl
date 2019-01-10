@@ -24,9 +24,7 @@ void main() {
 #endif
 
 #if defined(SHADOW_PASS)
-#if !defined(HAS_TRANSPARENCY)
 layout(early_fragment_tests) in;
-#endif
 
 out vec2 _colourOut;
 in vec4 vert_vertexWVP;

@@ -59,16 +59,8 @@ class Renderer : public PlatformContextComponent {
 
     inline void toggleDebugView() { _debugView = !_debugView; }
 
-    inline U16 numLightsPerTile() const { return _numLightsPerTile; }
-
-  private:
-    U16 getMaxNumLightsPerTile(U16 height) const;
-    U16 getNumTilesX(U16 width) const;
-    U16 getNumTilesY(U16 height) const;
-
   private:
     ResourceCache& _resCache;
-    U16 _numLightsPerTile;
     bool _debugView;
 
     ShaderProgram_ptr _lightCullComputeShader;

@@ -72,7 +72,7 @@ void LightPool::init() {
 
     ShaderBufferDescriptor bufferDescriptor = {};
     bufferDescriptor._elementCount = to_base(RenderStage::COUNT) - 1; //< no shadows
-    bufferDescriptor._elementSize = sizeof(vec4<I32>) + (Config::Lighting::MAX_POSSIBLE_LIGHTS * sizeof(LightProperties));
+    bufferDescriptor._elementSize = sizeof(vec4<U32>) + (Config::Lighting::MAX_POSSIBLE_LIGHTS * sizeof(LightProperties));
     bufferDescriptor._ringBufferLength = 3;
     bufferDescriptor._separateReadWrite = false;
     bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE) |
@@ -330,9 +330,9 @@ void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, con
     shadowCastingLights(eyePos, sortedLights);
 
     crtData._globalData.set(
-        to_I32(_activeLightCount[stageIndex][to_base(LightType::DIRECTIONAL)]),
-        to_I32(_activeLightCount[stageIndex][to_base(LightType::POINT)]),
-        to_I32(_activeLightCount[stageIndex][to_base(LightType::SPOT)]),
+        _activeLightCount[stageIndex][to_base(LightType::DIRECTIONAL)],
+        _activeLightCount[stageIndex][to_base(LightType::POINT)],
+        _activeLightCount[stageIndex][to_base(LightType::SPOT)],
         to_I32(sortedLights.size())
     );
 

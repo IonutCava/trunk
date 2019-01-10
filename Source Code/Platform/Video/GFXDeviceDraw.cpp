@@ -36,11 +36,9 @@ void GFXDevice::uploadGPUBlock() {
     }
 }
 
-void GFXDevice::preRender(RenderStagePass stagePass, U16 numLightsPerTile, GFX::CommandBuffer& bufferInOut) {
+void GFXDevice::preRender(RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut) {
+    ACKNOWLEDGE_UNUSED(stagePass);
     ACKNOWLEDGE_UNUSED(bufferInOut);
-
-    _gpuBlock._data._renderProperties.w = to_F32(numLightsPerTile);
-    _gpuBlock._needsUpload = true;
 }
 
 void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {

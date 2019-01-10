@@ -428,19 +428,49 @@ bool GL_API::initGLSW() {
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define FORWARD_PLUS_TILE_RES " + 
-        to_stringImpl(Config::Lighting::FORWARD_PLUS_TILE_RES),
+        to_stringImpl(Config::Lighting::ForwardPlus::TILE_RES),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define MAX_NUM_LIGHTS_PER_TILE " + 
-        to_stringImpl(Config::Lighting::FORWARD_PLUS_MAX_LIGHTS_PER_TILE),
+        to_stringImpl(Config::Lighting::ForwardPlus::MAX_LIGHTS_PER_TILE),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define LIGHT_INDEX_BUFFER_SENTINEL " + 
-        to_stringImpl(Config::Lighting::FORWARD_PLUS_LIGHT_INDEX_BUFFER_SENTINEL),
+        to_stringImpl(Config::Lighting::ForwardPlus::LIGHT_INDEX_BUFFER_SENTINEL),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::COUNT,
+        "#define LIGHT_NUM_LIGHTS_PER_TILE " +
+        to_stringImpl(Config::Lighting::ForwardPlus::NUM_LIGTHS_PER_TILE),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::COUNT,
+        "#define LIGHT_NUM_TILES_X " +
+        to_stringImpl(Config::Lighting::ForwardPlus::NUM_TILES_X),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::COUNT,
+        "#define LIGHT_NUM_TILES_Y " +
+        to_stringImpl(Config::Lighting::ForwardPlus::NUM_TILES_Y),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::COUNT,
+        "#define LIGHT_MAX_WIDTH " +
+        to_stringImpl(Config::Lighting::ForwardPlus::MAX_WIDTH),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::COUNT,
+        "#define LIGHT_MAX_HEIGHT " +
+        to_stringImpl(Config::Lighting::ForwardPlus::MAX_HEIGHT),
         lineOffsets);
 
     appendToShaderHeader(

@@ -44,7 +44,7 @@ layout(binding = BUFFER_GPU_BLOCK, std140) uniform dvd_GPUBlock
     mat4  dvd_ViewProjectionMatrix;
     ///xyz - position, w - aspect ratio
     vec4  dvd_cameraPosition; 
-    //x - nearPlane, y - farPlane, z - FoV, w - number of lights per tile
+    //x - nearPlane, y - farPlane, z - FoV, w - reserved
     vec4  dvd_renderProperties;
     vec4  dvd_ViewPort;
     vec4  dvd_frustumPlanes[MAX_CLIP_PLANES];
@@ -58,7 +58,6 @@ vec2 dvd_invScreenDimensions() {
 #define dvd_zPlanes vec2(dvd_renderProperties.xy)
 #define dvd_aspectRatio dvd_cameraPosition.w
 #define dvd_fieldOfView dvd_renderProperties.z
-#define dvd_numLightsPerTile (uint(dvd_renderProperties.w))
 
 struct WaterBodyData {
     vec4 positionW;

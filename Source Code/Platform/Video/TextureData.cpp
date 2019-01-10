@@ -21,6 +21,7 @@ namespace {
 };
 
 TextureDataContainer::TextureDataContainer() noexcept
+    : _textures{}
 {
     _textures.reserve(to_base(ShaderProgram::TextureUsage::COUNT));
 }

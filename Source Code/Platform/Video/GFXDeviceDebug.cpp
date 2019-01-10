@@ -56,14 +56,18 @@ void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
             NormalPreview->_shader = _renderTargetDraw;
             NormalPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS)).texture();
             NormalPreview->_name = "Normals";
+            NormalPreview->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, 0.0f);
             NormalPreview->_shaderData.set("linearSpace", GFX::PushConstantType::UINT, 0u);
+            NormalPreview->_shaderData.set("unpack1Channel", GFX::PushConstantType::UINT, 0u);
             NormalPreview->_shaderData.set("unpack2Channel", GFX::PushConstantType::UINT, 1u);
 
             DebugView_ptr VelocityPreview = std::make_shared<DebugView>();
             VelocityPreview->_shader = _renderTargetDraw;
             VelocityPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::VELOCITY)).texture();
             VelocityPreview->_name = "Velocity Map";
+            VelocityPreview->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, 0.0f);
             VelocityPreview->_shaderData.set("linearSpace", GFX::PushConstantType::UINT, 0u);
+            VelocityPreview->_shaderData.set("unpack1Channel", GFX::PushConstantType::UINT, 0u);
             VelocityPreview->_shaderData.set("unpack2Channel", GFX::PushConstantType::UINT, 0u);
 
             DebugView_ptr AlphaAccumulationHigh = std::make_shared<DebugView>();

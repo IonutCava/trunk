@@ -1,14 +1,11 @@
 #ifndef _BUMP_MAPPING_FRAG_
 #define _BUMP_MAPPING_FRAG_
 
-mat3 _privateTBNMatrix;
-
-void bumpInit() {
-    _privateTBNMatrix = mat3(VAR._tangentWV, VAR._bitangentWV, VAR._normalWV);
-}
+//Normal or BumpMap
+layout(binding = TEXTURE_NORMALMAP) uniform sampler2D texNormalMap;
 
 mat3 getTBNMatrix() {
-    return _privateTBNMatrix;
+    return mat3(VAR._tangentWV, VAR._bitangentWV, VAR._normalWV);
 }
 
 vec3 getBump(in vec2 uv) {

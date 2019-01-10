@@ -175,10 +175,20 @@ constexpr unsigned short MAX_SHADOW_CASTING_LIGHTS = 4;
 constexpr unsigned short MAX_SPLITS_PER_LIGHT = 6;
 /// Used mainly for caching/memory efficiency reasons
 constexpr unsigned short MAX_POSSIBLE_LIGHTS = 1024;
-/// The following parameters control the behaviour of the Forward+ renderer
-constexpr unsigned short FORWARD_PLUS_TILE_RES = 32;
-constexpr unsigned short FORWARD_PLUS_MAX_LIGHTS_PER_TILE = 544;
-constexpr unsigned int FORWARD_PLUS_LIGHT_INDEX_BUFFER_SENTINEL = 0x7fffffff;
+
+namespace ForwardPlus {
+    /// The following parameters control the behaviour of the Forward+ renderer
+    constexpr unsigned short TILE_RES = 32u;
+    constexpr unsigned short MAX_LIGHTS_PER_TILE = 544u;
+    constexpr unsigned int   LIGHT_INDEX_BUFFER_SENTINEL = 0x7fffffff;
+
+    constexpr unsigned short MAX_HEIGHT = 1080u;
+    constexpr unsigned short MAX_WIDTH = 1920u;
+
+    constexpr unsigned int NUM_TILES_X = (MAX_WIDTH + TILE_RES - 1) / TILE_RES;
+    constexpr unsigned int NUM_TILES_Y = (MAX_HEIGHT + TILE_RES - 1) / TILE_RES;
+    constexpr unsigned int NUM_LIGTHS_PER_TILE = MAX_LIGHTS_PER_TILE - (32 * (MAX_HEIGHT / 120));
+};
 };  // namespace Lighting
 
 namespace Networking {
