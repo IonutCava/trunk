@@ -101,7 +101,9 @@ void RenderPassManager::render(SceneRenderState& sceneRenderState, Time::Profile
                       remainingTasks.fetch_sub(1);
                    }).startTask(priority);
 
-        WAIT_FOR_CONDITION(remainingTasks.load() == 0);
+        while(remainingTasks.load() > 0) {
+            parent().idle();
+        }
     }
     {
         Time::ScopedTimer timeCommands(*_buildCommandBufferTimer);

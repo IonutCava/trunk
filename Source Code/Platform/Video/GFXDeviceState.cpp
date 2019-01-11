@@ -472,7 +472,6 @@ void GFXDevice::closeRenderingAPI() {
 /// After a swap buffer call, the CPU may be idle waiting for the GPU to draw to
 /// the screen, so we try to do some processing
 void GFXDevice::idle() {
-    static const Task idleTask;
     _shaderComputeQueue->idle();
     // Pass the idle call to the post processing system
     postFX().idle(_parent.platformContext().config());
