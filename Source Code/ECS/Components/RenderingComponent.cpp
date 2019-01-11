@@ -400,9 +400,16 @@ void RenderingComponent::updateLoDLevel(const Camera& camera, RenderStagePass re
     const U32 SCENE_NODE_LOD3_SQ = lodThresholds.w * lodThresholds.w;
 
     const vec3<F32>& eyePos = camera.getEye();
-    const BoundingSphere& bSphere = _parentSGN.get<BoundsComponent>()->getBoundingSphere();
+    BoundsComponent* bounds = _parentSGN.get<BoundsComponent>();
+
+    const BoundingSphere& bSphere = bounds->getBoundingSphere();
     F32 cameraDistanceSQ = bSphere.getCenter().distanceSquared(eyePos);
 
+    if (cameraDistanceSQ <= SCENE_NODE_LOD0_SQ) {
+        return;
+    }
+
+    cameraDistanceSQ = bounds->getBoundingBox().nearestDistanceFromPointSquared(eyePos);
     if (cameraDistanceSQ > SCENE_NODE_LOD0_SQ) {
         _lodLevel = 1;
         if (cameraDistanceSQ > SCENE_NODE_LOD1_SQ) {
