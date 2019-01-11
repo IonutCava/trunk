@@ -178,7 +178,10 @@ TessellatedTerrainNode* TerrainTessellator::createNode(TessellatedTerrainNode* p
 void TerrainTessellator::renderRecursive(TessellatedTerrainNode* node, U16& renderDepth, U8 LoD) {
     // If all children are null, render this node
     if (!hasChildren(*node)) {
-        if (!g_useViewFrustumCulling || _frustumCache.ContainsSphere(node->origin, std::max(node->dim.width * 0.5f, node->dim.height * 0.5f)) != Frustum::FrustCollision::FRUSTUM_OUT) {
+        // Just in we used a N x sized buffer, we should allow for some margin in frustum culling
+        const F32 radiusAdjustmentFactor = 1.35f;
+
+        if (!g_useViewFrustumCulling || _frustumCache.ContainsSphere(node->origin, radiusAdjustmentFactor * std::max(node->dim.width * 0.5f, node->dim.height * 0.5f)) != Frustum::FrustCollision::FRUSTUM_OUT) {
             calcTessScale(node);
 
             TessellatedNodeData& data = _renderData[renderDepth++];

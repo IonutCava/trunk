@@ -48,14 +48,12 @@ glTexture::~glTexture()
 {
     unload();
 
-    UniqueLock lock(_lockManagerMutex);
     MemoryManager::DELETE(_lockManager);
 }
 
 bool glTexture::unload() {
     U32 textureID = _textureData.getHandle();
     if (textureID > 0) {
-        UniqueLock lock(_lockManagerMutex);
         if (_lockManager) {
             _lockManager->Wait(false);
         }
@@ -71,13 +69,10 @@ void glTexture::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallb
 
     // Loading from file usually involves data that doesn't change, so call this here.
     if (automaticMipMapGeneration() && _descriptor.getSampler().generateMipMaps()) {
-        GL_API::queueComputeMipMap(_context.context(), _textureData.getHandle(), _asyncLoad);
+        GL_API::queueComputeMipMap(_textureData.getHandle());
     }
+    _lockManager->Lock(!Runtime::isMainThread());
 
-    {
-        UniqueLock lock(_lockManagerMutex);
-        _lockManager->Lock(!Runtime::isMainThread());
-    }
     CachedResource::load(onLoadCallback);
 }
 
@@ -121,7 +116,7 @@ void glTexture::resize(const bufferPtr ptr,
     loadData(info, ptr, dimensions);
 
     if (automaticMipMapGeneration() && _descriptor.getSampler().generateMipMaps()) {
-        GL_API::queueComputeMipMap(_context.context(), _textureData.getHandle(), _asyncLoad);
+        GL_API::queueComputeMipMap(_textureData.getHandle());
     }
 }
 
@@ -363,12 +358,7 @@ void glTexture::loadDataUncompressed(const TextureLoadInfo& info, bufferPtr data
 }
 
 void glTexture::copy(const Texture_ptr& other) {
-    {
-        UniqueLock lock(_lockManagerMutex);
-        if (_lockManager) {
-            _lockManager->Wait(false);
-        }
-    }
+    _lockManager->Wait(false);
 
     U32 numFaces = 1;
     TextureType type = other->getTextureType();
@@ -408,14 +398,6 @@ void glTexture::setCurrentSampler(const SamplerDescriptor& descriptor) {
 
 bool glTexture::resourceLoadComplete() {
     WAIT_FOR_CONDITION(getState() == ResourceState::RES_LOADED);
-
-    {
-        UniqueLock lock(_lockManagerMutex);
-        if (_lockManager) {
-            _lockManager->Wait(true);
-            MemoryManager::DELETE(_lockManager);
-        }
-    }
 
     return Texture::resourceLoadComplete();
 }

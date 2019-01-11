@@ -237,34 +237,16 @@ bool GLStateTracker::bindTextures(GLushort unitOffset,
         unitOffset + textureCount < static_cast<GLuint>(GL_API::s_maxTextureUnits))
     {
         if (textureHandles != nullptr) {
-
-            bool mipMapsQueued = false;
-            {
-                SharedLock r_lock(GL_API::s_mipmapQueueSetLock);
-                mipMapsQueued = !GL_API::s_mipmapQueueSync.empty();
-            }
-
-            if (mipMapsQueued) {
-                for (GLuint i = 0; i < textureCount; ++i) {
-                    GLuint crtHandle = textureHandles[i];
-                    if (crtHandle > 0) {
-                        GLsync entry = nullptr;
-                        {
-                            UniqueLockShared w_lock(GL_API::s_mipmapQueueSetLock);
-                            auto it = GL_API::s_mipmapQueueSync.find(crtHandle);
-                            if (it == std::cend(GL_API::s_mipmapQueueSync) || it->second == nullptr) {
-                                continue;
-                            }
-                            entry = it->second;
-                            GL_API::s_mipmapQueueSync.erase(it);
-                        }
-
-                        // entry shouldn't be null by this point;
-                        assert(entry != nullptr);
-                        // do this here so that we don't hold the mutex lock for too long
-                        glLockManager::wait(&entry, false /*this should work, right?*/);
-                        glDeleteSync(entry);
+            UniqueLockShared w_lock(GL_API::s_mipmapQueueSetLock);
+            for (GLuint i = 0; i < textureCount; ++i) {
+                GLuint crtHandle = textureHandles[i];
+                if (crtHandle > 0) {
+                    auto it = GL_API::s_mipmapQueue.find(crtHandle);
+                    if (it == std::cend(GL_API::s_mipmapQueue)) {
+                        continue;
                     }
+                    glGenerateTextureMipmap(crtHandle);
+                    GL_API::s_mipmapQueue.erase(crtHandle);
                 }
             }
         }

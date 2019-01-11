@@ -89,7 +89,6 @@ class glTexture final : public Texture,
     GLenum _type;
     std::atomic_bool _allocatedStorage;
 
-    mutable std::mutex _lockManagerMutex;
     glLockManager* _lockManager;
 };
 

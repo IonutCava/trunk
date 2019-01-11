@@ -163,7 +163,7 @@ public:
     static void createOrValidateContextForCurrentThread(GFXDevice& context);
 
     /// Queue a mipmap recalculation
-    static void queueComputeMipMap(PlatformContext& context, GLuint textureHandle, bool threaded);
+    static void queueComputeMipMap(GLuint textureHandle);
 
     static void pushDebugMessage(const char* message, I32 id);
     static void popDebugMessage();
@@ -254,7 +254,7 @@ private:
     FONScontext* _fonsContext;
 
     static SharedMutex s_mipmapQueueSetLock;
-    static hashMap<GLuint, GLsync> s_mipmapQueueSync;
+    static std::set<GLuint> s_mipmapQueue;
     /// The main VAO pool. We use a pool to avoid multithreading issues with VAO states
     static GLUtil::glVAOPool s_vaoPool;
 

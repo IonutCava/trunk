@@ -27,7 +27,8 @@ GLint  GL_API::s_maxFBOAttachments = 0;
 GLuint GL_API::s_anisoLevel = 0;
 
 SharedMutex GL_API::s_mipmapQueueSetLock;
-hashMap<GLuint, GLsync> GL_API::s_mipmapQueueSync;
+std::set<GLuint> GL_API::s_mipmapQueue;
+
 GL_API::samplerObjectMap GL_API::s_samplerMap;
 std::mutex GL_API::s_samplerMapLock;
 GLUtil::glVAOPool GL_API::s_vaoPool;
