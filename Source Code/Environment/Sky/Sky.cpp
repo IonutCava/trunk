@@ -104,6 +104,7 @@ void Sky::postLoad(SceneGraphNode& sgn) {
 
     RenderingComponent* renderable = sgn.get<RenderingComponent>();
     if (renderable) {
+        renderable->lockLoD(true);
         renderable->toggleRenderOption(RenderingComponent::RenderOptions::CAST_SHADOWS, false);
     }
 

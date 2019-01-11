@@ -128,6 +128,9 @@ class RenderingComponent : public BaseComponentType<RenderingComponent, Componen
     bool renderOptionEnabled(RenderOptions option) const;
     bool renderOptionsEnabled(U32 mask) const;
 
+    inline void lockLoD(bool state) { _lodLocked = state; }
+    inline bool lodLocked() const { return _lodLocked; }
+
     void getMaterialColourMatrix(mat4<F32>& matOut) const;
 
     void getRenderingProperties(vec4<F32>& propertiesOut, F32& reflectionIndex, F32& refractionIndex) const;
@@ -187,6 +190,7 @@ class RenderingComponent : public BaseComponentType<RenderingComponent, Componen
     /// LOD level is updated at every visibility check
     U8  _lodLevel;  ///<Relative to camera distance
     U32 _renderMask;
+    bool _lodLocked;
 
     typedef std::array<std::unique_ptr<RenderPackage>, to_base(RenderPassType::COUNT)> RenderPackagesPerPassType;
     std::array<RenderPackagesPerPassType, to_base(RenderStage::COUNT)> _renderPackages;

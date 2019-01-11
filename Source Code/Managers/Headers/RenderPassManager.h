@@ -55,11 +55,11 @@ public:
         // safe to be set to null
         const SceneGraphNode* _sourceNode = nullptr;
         Camera* _camera = nullptr;
-        RenderTargetID _target;
+        RenderTargetID _target = {};
         const RTDrawDescriptor* _drawPolicy = nullptr;
         RenderStage _stage = RenderStage::COUNT;
         RenderPassType _pass = RenderPassType::COUNT;
-        FrustumClipPlanes _clippingPlanes;
+        FrustumClipPlanes _clippingPlanes = {};
         U8  _passVariant = 0;
         U32 _passIndex = 0;
         bool _occlusionCull = false;

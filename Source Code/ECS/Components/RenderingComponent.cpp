@@ -36,6 +36,7 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
     : BaseComponentType<RenderingComponent, ComponentType::RENDERING>(parentSGN, context),
       _context(context.gfx()),
       _lodLevel(0),
+      _lodLocked(false),
       _renderMask(0),
       _reflectorType(ReflectorType::PLANAR_REFLECTOR),
       _materialInstance(nullptr),
@@ -387,6 +388,12 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
 }
 
 void RenderingComponent::updateLoDLevel(const Camera& camera, RenderStagePass renderStagePass, const vec4<U16>& lodThresholds) {
+    _lodLevel = 0;
+
+    if (_lodLocked) {
+        return;
+    
+    }
     const U32 SCENE_NODE_LOD0_SQ = lodThresholds.x * lodThresholds.x;
     const U32 SCENE_NODE_LOD1_SQ = lodThresholds.y * lodThresholds.y;
     const U32 SCENE_NODE_LOD2_SQ = lodThresholds.z * lodThresholds.z;
@@ -396,7 +403,6 @@ void RenderingComponent::updateLoDLevel(const Camera& camera, RenderStagePass re
     const BoundingSphere& bSphere = _parentSGN.get<BoundsComponent>()->getBoundingSphere();
     F32 cameraDistanceSQ = bSphere.getCenter().distanceSquared(eyePos);
 
-    _lodLevel = 0;
     if (cameraDistanceSQ > SCENE_NODE_LOD0_SQ) {
         _lodLevel = 1;
         if (cameraDistanceSQ > SCENE_NODE_LOD1_SQ) {
@@ -511,7 +517,7 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
                                           GFX::CommandBuffer& bufferInOut)
 {
     // Low lod entities don't need up to date reflections
-    if (_lodLevel > 1) {
+    if (_lodLevel > 2) {
         return false;
     }
     // If we lake a material, we don't use reflections
@@ -596,7 +602,7 @@ bool RenderingComponent::updateRefraction(U32 refractionIndex,
         return false;
     }
     // Low lod entities don't need up to date reflections
-    if (_lodLevel > 1) {
+    if (_lodLevel > 2) {
         return false;
     }
     const Material_ptr& mat = getMaterialInstance();

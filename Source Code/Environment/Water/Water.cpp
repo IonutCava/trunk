@@ -3,6 +3,9 @@
 #include "Headers/Water.h"
 
 #include "Core/Headers/Kernel.h"
+#include "Core/Headers/PlatformContext.h"
+#include "Core/Headers/Configuration.h"
+
 #include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/RenderPassManager.h"
 #include "Geometry/Material/Headers/Material.h"
@@ -117,6 +120,12 @@ void WaterPlane::postLoad(SceneGraphNode& sgn) {
     _boundingBox.set(vec3<F32>(-halfWidth, -_dimensions.depth, -halfLength), vec3<F32>(halfWidth, 0, halfLength));
 
     RenderingComponent* renderable = sgn.get<RenderingComponent>();
+
+    // If the reflector is reasonibly sized, we should keep LoD fixed so that we always update reflections
+    if (sgn.context().config().rendering.lodThresholds.x < std::max(halfWidth, halfLength)) {
+        renderable->lockLoD(true);
+    }
+
     renderable->setReflectionCallback([this](RenderCbkParams& params, GFX::CommandBuffer& commandsInOut) {
         updateReflection(params, commandsInOut);
     });
@@ -176,7 +185,7 @@ void WaterPlane::updateRefraction(RenderCbkParams& renderParams, GFX::CommandBuf
     Plane<F32> refractionPlane;
     updatePlaneEquation(renderParams._sgn, refractionPlane, underwater);
 
-    RenderPassManager::PassParams params;
+    RenderPassManager::PassParams params = {};
     params._sourceNode = &renderParams._sgn;
     params._occlusionCull = false;
     params._camera = renderParams._camera;
@@ -204,7 +213,7 @@ void WaterPlane::updateReflection(RenderCbkParams& renderParams, GFX::CommandBuf
         _reflectionCam->setReflection(reflectionPlane);
     }
 
-    RenderPassManager::PassParams params;
+    RenderPassManager::PassParams params = {};
     params._sourceNode = &renderParams._sgn;
     params._occlusionCull = false;
     params._camera = _reflectionCam;
