@@ -93,6 +93,7 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
             } break;
 
             case ShadowType::LAYERED: {
+
                 SamplerDescriptor depthMapSampler = {};
                 depthMapSampler._wrapU = TextureWrap::CLAMP_TO_EDGE;
                 depthMapSampler._wrapV = TextureWrap::CLAMP_TO_EDGE;
@@ -104,6 +105,7 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
                 TextureDescriptor depthMapDescriptor(TextureType::TEXTURE_2D_ARRAY, GFXImageFormat::RG, GFXDataFormat::FLOAT_32);
                 depthMapDescriptor.setLayerCount(Config::Lighting::MAX_SPLITS_PER_LIGHT * Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
                 depthMapDescriptor.setSampler(depthMapSampler);
+                depthMapDescriptor.automaticMipMapGeneration(false);
 
                 vector<RTAttachmentDescriptor> att = {
                     { depthMapDescriptor, RTAttachmentType::Colour }

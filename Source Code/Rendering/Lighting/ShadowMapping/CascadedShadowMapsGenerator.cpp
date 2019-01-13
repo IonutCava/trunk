@@ -364,6 +364,13 @@ void CascadedShadowMapsGenerator::postRender(const DirectionalLightComponent& li
         }
         GFX::EnqueueCommand(bufferInOut, blitRenderTargetCommand);
     }
+
+    const RenderTarget& rt = _context.renderTargetPool().renderTarget(depthMapID);
+
+    GFX::ComputeMipMapsCommand computeMipMapsCommand = {};
+    computeMipMapsCommand._texture = rt.getAttachment(RTAttachmentType::Colour, 0).texture().get();
+    computeMipMapsCommand._layerRange = vec2<U32>(light.getShadowOffset(), light.csmSplitCount());
+    GFX::EnqueueCommand(bufferInOut, computeMipMapsCommand);
 }
 
 };

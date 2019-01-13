@@ -1060,6 +1060,32 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
         case GFX::CommandType::END_DEBUG_SCOPE: {
             popDebugMessage();
         } break;
+        case GFX::CommandType::COMPUTE_MIPMAPS: {
+            const GFX::ComputeMipMapsCommand& crtCmd = commandBuffer.getCommand<GFX::ComputeMipMapsCommand>(entry);
+            if (crtCmd._layerRange.x == 0 && crtCmd._layerRange.y <= 1) {
+                glGenerateTextureMipmap(crtCmd._texture->getData().getHandle());
+            } else {
+                static GLuint handle = 0;
+                if (handle == 0) {
+                    glGenTextures(1, &handle);
+                }
+
+                Texture* tex = crtCmd._texture;
+                TextureData data = tex->getData();
+                const TextureDescriptor& descriptor = tex->getDescriptor();
+                
+                GLenum glInternalFormat = GLUtil::internalFormat(descriptor.baseFormat(), descriptor.dataType(), descriptor._srgb);
+                glTextureView(handle,
+                              GLUtil::glTextureTypeTable[to_base(data.type())],
+                              data.getHandle(),
+                              glInternalFormat,
+                              (GLuint)descriptor._mipLevels.x,
+                              (GLuint)descriptor._mipLevels.y,
+                              (GLuint)crtCmd._layerRange.x,
+                              (GLuint)crtCmd._layerRange.y);
+                glGenerateTextureMipmap(handle);
+            }
+        }break;
         case GFX::CommandType::DRAW_TEXT: {
             const GFX::DrawTextCommand& crtCmd = commandBuffer.getCommand<GFX::DrawTextCommand>(entry);
             drawText(crtCmd._batch);

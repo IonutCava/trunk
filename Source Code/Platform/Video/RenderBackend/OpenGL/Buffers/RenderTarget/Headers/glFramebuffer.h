@@ -128,7 +128,6 @@ class glFramebuffer : public RenderTarget,
 
 
     void fastBlit(GLuint inputFB,
-                  GLuint outputFB,
                   const vec2<GLuint>& inputDim,
                   const vec2<GLuint>& outputDim,
                   GLenum colourAttIn,
@@ -139,6 +138,7 @@ class glFramebuffer : public RenderTarget,
     void begin(const RTDrawDescriptor& drawPolicy);
     void end();
     void queueMipMapRecomputation();
+    void queueMipMapRecomputation(const RTAttachment_ptr& attachment, const vec2<U32>& layerRange);
 
    protected:
     bool _resolved;

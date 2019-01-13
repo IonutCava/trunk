@@ -245,7 +245,6 @@ void glFramebuffer::resolve(bool colours, bool depth) {
 }
 
 void glFramebuffer::fastBlit(GLuint inputFB,
-                             GLuint outputFB,
                              const vec2<GLuint>& inputDim,
                              const vec2<GLuint>& outputDim,
                              GLenum colourAttIn,
@@ -254,11 +253,11 @@ void glFramebuffer::fastBlit(GLuint inputFB,
 {
     if (colourAttIn != GL_NONE) {
         assert(colourAttOut != GL_NONE);
-        glNamedFramebufferDrawBuffer(outputFB, colourAttOut);
+        glNamedFramebufferDrawBuffer(_framebufferHandle, colourAttOut);
         glNamedFramebufferReadBuffer(inputFB, colourAttIn);
     }
 
-    glBlitNamedFramebuffer(inputFB, outputFB,
+    glBlitNamedFramebuffer(inputFB, _framebufferHandle,
                            0, 0,
                            inputDim.w, inputDim.h,
                            0, 0,
@@ -267,8 +266,6 @@ void glFramebuffer::fastBlit(GLuint inputFB,
                            GL_NEAREST);
 
     _context.registerDrawCall();
-
-    queueMipMapRecomputation();
 }
 
 void glFramebuffer::blitFrom(const RTBlitParams& params)
@@ -323,13 +320,15 @@ void glFramebuffer::blitFrom(const RTBlitParams& params)
                 const BindingState& outState = this->getAttachmentState(static_cast<GLenum>(outAtt->binding()));
                 this->toggleAttachment(outAtt, outState._attState, false);
             }
+
+            queueMipMapRecomputation(outAtt, vec2<U32>(0, entry._outputLayer));
         }
 
-        fastBlit(input->_framebufferHandle, this->_framebufferHandle, inputDim, outputDim, colourAttIn, colourAttOut, clearMask);
+        fastBlit(input->_framebufferHandle, inputDim, outputDim, colourAttIn, colourAttOut, clearMask);
+        
         return;
     }
 
-    bool mipMapsDirty = false;
     std::set<vec_size_eastl> blitDepthEntry;
     // Multiple attachments, multiple layers, multiple everything ... what a mess ... -Ionut
     if (!params._blitColours.empty() && hasColour()) {
@@ -406,9 +405,8 @@ void glFramebuffer::blitFrom(const RTBlitParams& params)
                                                    : GL_COLOR_BUFFER_BIT,
                                    GL_NEAREST);
             _context.registerDrawCall();
-            mipMapsDirty = true;
+            queueMipMapRecomputation(outAtt, vec2<U32>(0, entry._outputLayer));
         }
-
     }
 
     if (!params._blitDepth.empty() && hasDepth()) {
@@ -441,12 +439,8 @@ void glFramebuffer::blitFrom(const RTBlitParams& params)
                                    GL_DEPTH_BUFFER_BIT,
                                    GL_NEAREST);
             _context.registerDrawCall();
-            mipMapsDirty = true;
+            queueMipMapRecomputation(outDepthAtt, vec2<U32>(0, entry._outputLayer));
         }
-    }
-
-    if (mipMapsDirty) {
-        queueMipMapRecomputation();
     }
 }
 
@@ -625,19 +619,20 @@ void glFramebuffer::queueMipMapRecomputation() {
     if (hasColour()) {
         const vector<RTAttachment_ptr>& colourAttachments = _attachmentPool->get(RTAttachmentType::Colour);
         for (const RTAttachment_ptr& att : colourAttachments) {
-            const Texture_ptr& texture = att->texture();
-            if (att->used() && texture->automaticMipMapGeneration() && texture->getCurrentSampler().generateMipMaps()) {
-                GL_API::queueComputeMipMap(att->texture()->getHandle());
-            }
+            queueMipMapRecomputation(att, vec2<U32>(0, att->descriptor()._texDescriptor._layerCount));
         }
     }
 
     if (hasDepth()) {
         const RTAttachment_ptr& attDepth = _attachmentPool->get(RTAttachmentType::Depth, 0);
-        const Texture_ptr& texture = attDepth->texture();
-        if (attDepth->used() && texture->automaticMipMapGeneration() && texture->getCurrentSampler().generateMipMaps()) {
-            GL_API::queueComputeMipMap(attDepth->texture()->getHandle());
-        }
+        queueMipMapRecomputation(attDepth, vec2<U32>(0, attDepth->descriptor()._texDescriptor._layerCount));
+    }
+}
+
+void glFramebuffer::queueMipMapRecomputation(const RTAttachment_ptr& attachment, const vec2<U32>& layerRange) {
+    const Texture_ptr& texture = attachment->texture();
+    if (attachment->used() && texture->automaticMipMapGeneration() && texture->getCurrentSampler().generateMipMaps()) {
+        GL_API::queueComputeMipMap(texture->getHandle());
     }
 }
 

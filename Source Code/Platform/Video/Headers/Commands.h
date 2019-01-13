@@ -59,6 +59,7 @@ BETTER_ENUM(CommandType, U8,
     SET_BLEND,
     BLIT_RT,
     RESET_RT,
+    COMPUTE_MIPMAPS,
     SET_CAMERA,
     SET_CLIP_PLANES,
     BIND_PIPELINE,
@@ -200,6 +201,11 @@ END_COMMAND();
 BEGIN_COMMAND(ResetRenderTargetCommand, CommandType::RESET_RT, 4096);
     RenderTargetID _source;
     RTDrawDescriptor _descriptor;
+END_COMMAND();
+
+BEGIN_COMMAND(ComputeMipMapsCommand, CommandType::COMPUTE_MIPMAPS, 2048);
+    Texture* _texture;
+    vec2<U32> _layerRange = { 0, 1 };
 END_COMMAND();
 
 BEGIN_COMMAND(SetScissorCommand, CommandType::SET_SCISSOR, 4096);

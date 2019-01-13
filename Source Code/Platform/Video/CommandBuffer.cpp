@@ -21,6 +21,7 @@ DEFINE_POOL(BeginRenderSubPassCommand, 4096);
 DEFINE_POOL(EndRenderSubPassCommand, 4096);
 DEFINE_POOL(BlitRenderTargetCommand, 4096);
 DEFINE_POOL(ResetRenderTargetCommand, 4096);
+DEFINE_POOL(ComputeMipMapsCommand, 2048);
 DEFINE_POOL(SetScissorCommand, 4096);
 DEFINE_POOL(SetBlendCommand, 4096);
 DEFINE_POOL(SetCameraCommand, 4096);
