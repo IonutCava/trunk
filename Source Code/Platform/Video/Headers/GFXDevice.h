@@ -151,12 +151,11 @@ class GFXDevice : public KernelComponent, public PlatformContextComponent {
 public:
     enum class ScreenTargets : U8 {
         ALBEDO = 0,
-        NORMALS = 1,
-        VELOCITY = 2,
+        NORMALS_AND_VELOCITY = 1,
+        MODULATE = 2,
         COUNT,
         ACCUMULATION = ALBEDO,
-        REVEALAGE = NORMALS,
-        MODULATE = VELOCITY
+        REVEALAGE = NORMALS_AND_VELOCITY,
     };
 
     struct NodeData : private NonCopyable {

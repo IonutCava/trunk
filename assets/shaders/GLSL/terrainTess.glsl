@@ -519,7 +519,6 @@ noperspective in vec3 gs_edgeDist;
 
 #include "BRDF.frag"
 #include "terrainSplatting.frag"
-#include "velocityCalc.frag"
 #include "output.frag"
 
 // ToDo: Move this above the includes

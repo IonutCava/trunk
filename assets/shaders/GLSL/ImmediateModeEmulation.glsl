@@ -76,18 +76,14 @@ void main(void) {
 --Fragment.EnvironmentProbe
 
 #include "utility.frag"
-#include "velocityCalc.frag"
+#include "output.frag"
 
 uniform uint dvd_LayerIndex;
 layout(binding = TEXTURE_REFLECTION_CUBE) uniform samplerCubeArray texEnvironmentCube;
 
-layout(location = 0) out vec4 _colourOut;
-layout(location = 1) out vec2 _normalOut;
-layout(location = 2) out vec2 _velocityOut;
-
 void main() {
     vec3 reflectDirection = reflect(normalize(VAR._vertexWV.xyz), VAR._normalWV);
-    _colourOut = vec4(texture(texEnvironmentCube, vec4(reflectDirection, dvd_LayerIndex)).rgb, 1.0);
-    _normalOut = packNormal(normalize(VAR._normalWV));
-    _velocityOut = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
+    vec4 colour = vec4(texture(texEnvironmentCube, vec4(reflectDirection, dvd_LayerIndex)).rgb, 1.0);
+
+    writeOutput(colour);
 }

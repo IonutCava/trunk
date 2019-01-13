@@ -446,12 +446,10 @@ void SceneManager::debugDraw(RenderStagePass stagePass, const Camera& camera, GF
     _platformContext->gfx().debugDraw(activeSceneRenderState, camera, bufferInOut);
 }
 
-bool SceneManager::generateShadowMaps(GFX::CommandBuffer& bufferInOut) {
+void SceneManager::generateShadowMaps(GFX::CommandBuffer& bufferInOut) {
     if (_platformContext->config().rendering.shadowMapping.enabled) {
-        return getActiveScene().lightPool().generateShadowMaps(*playerCamera(), bufferInOut);
+        getActiveScene().lightPool().generateShadowMaps(*playerCamera(), bufferInOut);
     }
-
-    return true;
 }
 
 Camera* SceneManager::playerCamera(PlayerIndex idx) const {

@@ -40,7 +40,6 @@ void main(){
 -- Fragment
 
 #include "utility.frag"
-#include "velocityCalc.frag"
 #include "output.frag"
 
 // Interpolated values from the vertex shaders

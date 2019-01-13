@@ -89,7 +89,6 @@ void main(void) {
 layout(early_fragment_tests) in;
 
 #include "BRDF.frag"
-#include "velocityCalc.frag"
 
 #include "utility.frag"
 #include "output.frag"
@@ -103,7 +102,7 @@ void main (void){
     vec4 colour = texture(texDiffuseGrass, vec3(VAR._texCoord, _arrayLayerFrag));
     colour.a *= (1.0 - _alphaFactor);
 
-    writeOutput(colour,  packNormal(normalize(VAR._normalWV)));
+    writeOutput(colour);
 }
 
 --Fragment.PrePass

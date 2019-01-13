@@ -22,22 +22,25 @@ void main(void)
 
 out vec4 _colourOut;
 uniform float lodLevel = 0;
-uniform bool linearSpace = false;
 uniform bool unpack2Channel = false;
 uniform bool unpack1Channel = false;
+uniform bool startOnBlue = false;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 
 void main()
 {
     _colourOut = textureLod(texDiffuse0, VAR._texCoord, lodLevel);
-    if (!linearSpace) {
-        _colourOut = _colourOut;
-    }
+
     if (unpack2Channel) {
-        _colourOut.rgb = unpackNormal(_colourOut.rg);
+        _colourOut.rgb = unpackNormal((startOnBlue ? _colourOut.ba : _colourOut.rg));
     } else if (unpack1Channel) {
-        _colourOut.rgb = vec3(_colourOut.r);
+        _colourOut.rgb = vec3((startOnBlue ? _colourOut.b : _colourOut.r));
+    } else {
+        if (startOnBlue) {
+            _colourOut.rg = _colourOut.ba;
+            _colourOut.b = 0.0;
+        }
     }
 
     _colourOut.a = 1.0;

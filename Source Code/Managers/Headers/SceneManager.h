@@ -204,7 +204,7 @@ protected:
     void postRenderAllPasses();
     void debugDraw(RenderStagePass stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut);
     void prepareLightData(RenderStage stage, const Camera& camera);
-    bool generateShadowMaps(GFX::CommandBuffer& bufferInOut);
+    void generateShadowMaps(GFX::CommandBuffer& bufferInOut);
 
     Camera* playerCamera() const;
     Camera* playerCamera(PlayerIndex idx) const;
@@ -381,8 +381,8 @@ class SceneManagerRenderPass {
         mgr.debugDraw(stagePass, camera, bufferInOut);
     }
 
-    static bool generateShadowMaps(Divide::SceneManager& mgr, GFX::CommandBuffer& bufferInOut) {
-        return mgr.generateShadowMaps(bufferInOut);
+    static void generateShadowMaps(Divide::SceneManager& mgr, GFX::CommandBuffer& bufferInOut) {
+        mgr.generateShadowMaps(bufferInOut);
     }
 
     static const Camera& playerCamera(Divide::SceneManager& mgr) {

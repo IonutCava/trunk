@@ -1,6 +1,8 @@
 #ifndef _OUTPUT_FRAG_
 #define _OUTPUT_FRAG_
 
+#include "velocityCalc.frag"
+
 #if defined(OIT_PASS)
 layout(location = 0) out vec4  _accum;
 layout(location = 1) out float _revealage;
@@ -66,15 +68,12 @@ void nvidiaSample(in vec4 color, in float linearDepth) {
 }
 #else
 layout(location = 0) out vec4 _colourOut;
-layout(location = 1) out vec2 _normalOut;
-layout(location = 2) out vec2 _velocityOut;
+layout(location = 1) out vec4 _normalAndVelocityOut;
 #endif
 
-void writeOutput(vec4 colour, vec2 normal) {
-    vec2 screenPositionNormalised = getScreenPositionNormalised();
-
+void writeOutput(vec4 colour, vec2 normal, vec2 velocity) {
 #if defined(OIT_PASS)
-    float linearDepth = ToLinearDepth(getDepthValue(screenPositionNormalised));
+    float linearDepth = ToLinearDepth(getDepthValue(getScreenPositionNormalised()));
 
 #if defined(USE_COLOURED_WOIT)
     //writePixel(colour, colour.rgb - vec3(0.2), linearDepth);
@@ -86,14 +85,22 @@ void writeOutput(vec4 colour, vec2 normal) {
 #else //OIT_PASS
 
     _colourOut = colour;
-    _normalOut = normal;
-    _velocityOut = velocityCalc(dvd_InvProjectionMatrix, screenPositionNormalised);
+    _normalAndVelocityOut.rg = normal;
+    _normalAndVelocityOut.ba = velocity;
 
 #endif //OIT_PASS
 }
 
+void writeOutput(vec4 colour, vec2 normal) {
+    writeOutput(colour, normal, velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised()));
+}
+
 void writeOutput(vec3 colour, vec2 normal) {
     writeOutput(vec4(colour, 1.0), normal);
+}
+
+void writeOutput(vec4 colour) {
+    writeOutput(colour, packNormal(normalize(VAR._normalWV)));
 }
 
 #endif //_OUTPUT_FRAG_

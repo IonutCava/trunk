@@ -430,8 +430,8 @@ void RenderPassManager::mainPass(const PassParams& params, RenderTarget& target,
             bindDescriptorSets._set._textureData.addTexture(depthBufferTextureData, to_U8(ShaderProgram::TextureUsage::DEPTH));
 
             TextureData prevDepthData = depthBufferTextureData;
-            if (target.hasAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::VELOCITY))) {
-                const RTAttachment_ptr& velocityAttachment = target.getAttachmentPtr(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::VELOCITY));
+            if (target.hasAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY))) {
+                const RTAttachment_ptr& velocityAttachment = target.getAttachmentPtr(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY));
                 const Texture_ptr& prevDepthTexture = _context.getPrevDepthBuffer();
                 prevDepthData = (velocityAttachment->used() && prevDepthTexture) ? prevDepthTexture->getData() : depthBufferTextureData;
             }

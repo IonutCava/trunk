@@ -173,7 +173,7 @@ void SSAOPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& bu
     data = screen._rt->getAttachment(RTAttachmentType::Depth, 0).texture()->getData();
     descriptorSetCmd._set._textureData.addTexture(data, to_U8(ShaderProgram::TextureUsage::DEPTH));
 
-    data = screen._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS)).texture()->getData();
+    data = screen._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY)).texture()->getData();
     descriptorSetCmd._set._textureData.addTexture(data, to_U8(ShaderProgram::TextureUsage::NORMALMAP));
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 

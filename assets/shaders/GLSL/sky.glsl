@@ -18,10 +18,6 @@ void main(void){
 
 layout(early_fragment_tests) in;
 
-layout(location = 0) out vec4 _skyColour;
-layout(location = 1) out vec2 _normalOut;
-layout(location = 2) out vec2 _velocityOut;
-
 layout(binding = TEXTURE_UNIT0) uniform samplerCubeArray texSky;
 
 uniform bool enable_sun;
@@ -29,6 +25,7 @@ uniform vec3 sun_vector;
 uniform vec3 sun_colour;
 
 #include "utility.frag"
+#include "output.frag"
 
 vec3 sunColour(){
     vec3 vert = normalize(_in._vertexW.xyz);
@@ -47,9 +44,8 @@ vec3 sunColour(){
 
 void main() {
     vec3 sky_colour = textureLod(texSky, vec4(VAR._vertexW.xyz - dvd_cameraPosition.xyz, 0), 0).rgb;
-    _skyColour = vec4(enable_sun ? sky_colour * sunColour() : sky_colour, 1.0);
-    _normalOut = packNormal(normalize(VAR._normalWV));
-    _velocityOut = vec2(1.0);
+    vec4 skyColour = vec4(enable_sun ? sky_colour * sunColour() : sky_colour, 1.0);
+    writeOutput(skyColour, packNormal(normalize(VAR._normalWV)), vec2(1.0));
 }
 
 --Fragment.PrePass

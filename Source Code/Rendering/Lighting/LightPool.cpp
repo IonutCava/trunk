@@ -161,20 +161,18 @@ bool LightPool::removeLight(Light& light) {
 void LightPool::idle() {
 }
 
-/// When pre-rendering is done, the Light Manager will generate the shadow maps
-/// Returning false in any of the FrameListener methods will exit the entire application!
-bool LightPool::generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffer& bufferInOut) {
+void LightPool::generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffer& bufferInOut) {
     Time::ScopedTimer timer(_shadowPassTimer);
 
     ShadowMap::clearShadowMapBuffers(bufferInOut);
     ShadowMap::resetShadowMaps();
 
     LightVec sortedLights;
-    U32 shadowLightCount = 0;
     shadowCastingLights(playerCamera.getEye(), sortedLights);
 
     _sortedShadowProperties.clear();
 
+    U32 shadowLightCount = 0;
     for (Light* light : sortedLights) {
         if (_sortedShadowProperties.size() >= Config::Lighting::MAX_SHADOW_CASTING_LIGHTS) {
             break;
@@ -186,8 +184,6 @@ bool LightPool::generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffe
     }
 
     _shadowBuffer->writeData(0, _sortedShadowProperties.size(), _sortedShadowProperties.data());
-
-    return true;
 }
 
 U32 LightPool::shadowCastingLightsCount() const {

@@ -27,8 +27,6 @@ layout(early_fragment_tests) in;
     #include "bumpMapping.frag"
 #endif
 
-#include "velocityCalc.frag"
-
 #include "output.frag"
 
 vec4 mappingFlat(){

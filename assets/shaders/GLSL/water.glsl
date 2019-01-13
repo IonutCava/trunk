@@ -35,7 +35,6 @@ uniform float _waterShininess;
 #include "BRDF.frag"
 #include "bumpMapping.frag"
 #include "shadowMapping.frag"
-#include "velocityCalc.frag"
 #include "output.frag"
 
 vec4 private_albedo = vec4(1.0);

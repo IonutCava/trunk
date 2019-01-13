@@ -143,7 +143,7 @@ class LightPool : public SceneComponent,
     typedef vector<Light*> LightVec;
 
     friend class SceneManager;
-    bool generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffer& bufferInOut);
+    void generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffer& bufferInOut);
 
     inline LightList::const_iterator findLight(I64 GUID, LightType type) const {
         SharedLock r_lock(_lightLock);

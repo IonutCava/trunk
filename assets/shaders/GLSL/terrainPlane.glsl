@@ -22,7 +22,6 @@ void main(void) {
 layout(early_fragment_tests) in;
 
 #include "utility.frag"
-#include "velocityCalc.frag"
 #include "output.frag"
 
 in vec4 _scrollingUV;

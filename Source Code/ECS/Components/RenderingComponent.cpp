@@ -531,9 +531,9 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
             viewPtr->_texture = target.getAttachment(RTAttachmentType::Colour, 0).texture();
             viewPtr->_shader = _previewRenderTargetColour;
             viewPtr->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, 0.0f);
-            viewPtr->_shaderData.set("linearSpace", GFX::PushConstantType::BOOL, false);
             viewPtr->_shaderData.set("unpack1Channel", GFX::PushConstantType::UINT, 0u);
             viewPtr->_shaderData.set("unpack2Channel", GFX::PushConstantType::UINT, 0u);
+            viewPtr->_shaderData.set("startOnBlue", GFX::PushConstantType::UINT, 0u);
 
             viewPtr->_name = Util::StringFormat("REFLECTION_%d", reflectRTID._index);
             debugView = _context.addDebugView(viewPtr);
@@ -612,9 +612,10 @@ bool RenderingComponent::updateRefraction(U32 refractionIndex,
             viewPtr->_texture = target.getAttachment(RTAttachmentType::Colour, 0).texture();
             viewPtr->_shader = _previewRenderTargetColour;
             viewPtr->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, 0.0f);
-            viewPtr->_shaderData.set("linearSpace", GFX::PushConstantType::UINT, 0u);
             viewPtr->_shaderData.set("unpack1Channel", GFX::PushConstantType::UINT, 0u);
             viewPtr->_shaderData.set("unpack2Channel", GFX::PushConstantType::UINT, 0u);
+            viewPtr->_shaderData.set("startOnBlue", GFX::PushConstantType::UINT, 0u);
+
             viewPtr->_name = Util::StringFormat("REFRACTION_%d", refractRTID._index);
             debugView = _context.addDebugView(viewPtr);
             s_debugViews[1][refractionIndex] = debugView;
