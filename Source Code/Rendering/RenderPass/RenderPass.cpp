@@ -57,103 +57,66 @@ namespace {
         U32 bufferSizeFactor = 1;
         //We only care about the first parameter as it will determine the properties for the rest of the stages
         switch (stage) {
-            case RenderStage::REFLECTION: { //Both planar and cube
-                // Planar reflectors
+            // PrePass, MainPass and OitPass should share buffers
+            case RenderStage::DISPLAY: break;
+            // Planar, cube & environment
+            case RenderStage::REFRACTION:
+            case RenderStage::REFLECTION: {
                 bufferSizeFactor = Config::MAX_REFLECTIVE_NODES_IN_VIEW;
-                // Cube reflectors
                 bufferSizeFactor *= 2;
-                //Add an extra buffer for environment maps
                 bufferSizeFactor += 1;
-
-                // We MIGHT need new buffer data for each pass type (prepass, main, oit, etc)
-                bufferSizeFactor *= to_base(RenderPassType::COUNT);
             }; break;
-
-            case RenderStage::REFRACTION: { //Both planar and cube
-                // Planar refractions
-                bufferSizeFactor = Config::MAX_REFRACTIVE_NODES_IN_VIEW;
-                // Cube refractions
-                bufferSizeFactor *= 2;
-                //Add an extra buffer for environment maps
-                bufferSizeFactor += 1;
-
-                // We MIGHT need new buffer data for each pass type (prepass, main, oit, etc)
-                bufferSizeFactor *= to_base(RenderPassType::COUNT);
-            } break;
-
             case RenderStage::SHADOW: {
                 // One buffer per light, but split into multiple pieces
-                bufferSizeFactor = Config::Lighting::MAX_SHADOW_CASTING_LIGHTS;
-            }; break;
-
-            case RenderStage::DISPLAY: {
-                // PrePass, MainPass and OitPass should share buffers
-                // We MIGHT need new buffer data for each pass type (prepass, main, oit, etc)
-                bufferSizeFactor = to_base(RenderPassType::COUNT);
+                bufferSizeFactor = Config::Lighting::MAX_SHADOW_CASTING_LIGHTS * Config::Lighting::MAX_SPLITS_PER_LIGHT;
             }; break;
         };
 
         return bufferSizeFactor * Config::MAX_VISIBLE_NODES;
     }
 
-    U32 getCmdBufferCount(RenderStage stage) {
-        U32 ret = 0;
-
-        switch (stage) {
-            case RenderStage::REFLECTION: ret = to_base(RenderPassType::COUNT) * 3; break;
-            case RenderStage::REFRACTION: ret = to_base(RenderPassType::COUNT) * 3; break;
-            case RenderStage::SHADOW: ret = Config::Lighting::MAX_SHADOW_CASTING_LIGHTS;  break;
-            // Display stage should ALWAYS execute a depth prepass, otherwise a lot of stuff stops working
-            case RenderStage::DISPLAY: ret = 1;  break;
-        };
-
-        return ret;
-    }
-
-    U32 getCmdBufferIndex(RenderStage stage, RenderPassType type, I32 passIndex, U32 frameCount) {
-        U32 ret = 0;
-        switch(stage){
-            case RenderStage::REFLECTION:
-            case RenderStage::REFRACTION: ret = to_U32(type); break;
-            case RenderStage::SHADOW:     ret = passIndex; break;
-            case RenderStage::DISPLAY: break;
-        }
-
-        ret += frameCount % g_cmdBufferFrameCount;
-        return ret;
-    }
-
     U32 getBufferOffset(RenderStage stage, RenderPassType type, U32 passIndex) {
         U32 ret = 0;
 
         switch (stage) {
-            case RenderStage::REFLECTION: {
-                switch (passIndex) {
-                    case 0: break; //planar
-                    case 1: ret = Config::MAX_REFLECTIVE_NODES_IN_VIEW; // cube
-                    case 2: ret = Config::MAX_REFLECTIVE_NODES_IN_VIEW * 2; // environment
-                    default: assert(false && "getBufferOffset error: invalid pass index"); break;
-                };
-                ret *= to_base(type);
-            }break;
+            case RenderStage::DISPLAY: break;
+            case RenderStage::REFLECTION:
             case RenderStage::REFRACTION: {
                 switch (passIndex) {
-                    case 0: break; //planar
-                    case 1: ret = Config::MAX_REFRACTIVE_NODES_IN_VIEW; // cube
-                    case 2: ret = Config::MAX_REFRACTIVE_NODES_IN_VIEW * 2; // environment
+                    case 0: ret = Config::MAX_REFLECTIVE_NODES_IN_VIEW * 0; break; // planar
+                    case 1: ret = Config::MAX_REFLECTIVE_NODES_IN_VIEW * 1; break; // cube
+                    case 2: ret = Config::MAX_REFLECTIVE_NODES_IN_VIEW * 2; break; // environment
                     default: assert(false && "getBufferOffset error: invalid pass index"); break;
                 };
-                ret *= to_base(type);
             }break;
             case RenderStage::SHADOW: {
-                assert(type == RenderPassType::MAIN_PASS && "getBufferOffset error: make sure shadow rendering doesn't specify a different type!");
                 ret = Config::MAX_VISIBLE_NODES * passIndex;
             }break;
-            case RenderStage::DISPLAY: {
-                assert(passIndex == 0 && "getBufferOffset error: invalid pass index");
-                ret = Config::MAX_VISIBLE_NODES * to_base(type);
-            }break;
+
         }
+        return ret;
+    }
+
+    U32 getCmdBufferCount(RenderStage stage) {
+        U32 ret = 0;
+
+        switch (stage) {
+            case RenderStage::REFLECTION: // planar, cube & environment
+            case RenderStage::REFRACTION: ret = 3; break;
+            case RenderStage::DISPLAY: ret = 1;  break;
+            case RenderStage::SHADOW: ret = Config::Lighting::MAX_SHADOW_CASTING_LIGHTS * Config::Lighting::MAX_SPLITS_PER_LIGHT;  break;
+        };
+
+        return ret * g_cmdBufferFrameCount /*RAM, Driver, VRAM*/;
+    }
+
+    U32 getCmdBufferIndex(RenderStage stage, I32 passIndex, U32 frameCount) {
+        U32 ret = 0;
+        if (stage == RenderStage::SHADOW) {
+            ret = passIndex;
+        }
+
+        ret += frameCount % g_cmdBufferFrameCount;
         return ret;
     }
 };
@@ -174,7 +137,7 @@ RenderPass::~RenderPass()
 }
 
 RenderPass::BufferData RenderPass::getBufferData(RenderPassType type, I32 passIndex) const {
-    U32 idx = getCmdBufferIndex(_stageFlag, type, passIndex, _context.FRAME_COUNT);
+    U32 idx = getCmdBufferIndex(_stageFlag, passIndex, _context.FRAME_COUNT);
 
     BufferData ret = {};
     ret._renderDataElementOffset = getBufferOffset(_stageFlag, type, passIndex);
@@ -196,8 +159,6 @@ void RenderPass::initBufferData() {
     bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE) | to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
     bufferDescriptor._name = Util::StringFormat("RENDER_DATA_%s", TypeUtil::renderStageToString(_stageFlag)).c_str();
-    // This do not need to be persistently mapped as, hopefully, they will only be update once per frame
-    // Each pass should have its own set of buffers (shadows, reflection, etc)
     _renderData = _context.newSB(bufferDescriptor);
 
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
@@ -206,7 +167,7 @@ void RenderPass::initBufferData() {
     bufferDescriptor._ringBufferLength = 1;
     bufferDescriptor._separateReadWrite = false;
 
-    U32 cmdCount = getCmdBufferCount(_stageFlag) * g_cmdBufferFrameCount /*RAM, Driver, VRAM*/;
+    U32 cmdCount = getCmdBufferCount(_stageFlag);
     _cmdBuffers.reserve(cmdCount);
 
     for (U32 i = 0; i < cmdCount; ++i) {

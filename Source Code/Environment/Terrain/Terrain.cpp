@@ -203,7 +203,9 @@ bool Terrain::onRender(SceneGraphNode& sgn,
     cmd._drawCount = depth;
     pkg.drawCommand(0, 0, cmd);
 
-    if (renderStagePass == RenderStagePass(RenderStage::DISPLAY, RenderPassType::PRE_PASS)) {
+    if (renderStagePass._stage == RenderStage::DISPLAY &&
+        renderStagePass._passType == RenderPassType::PRE_PASS)
+    {
         _terrainQuadtree.updateVisibility(camera, _drawDistance);
     }
 

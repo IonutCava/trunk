@@ -557,6 +557,7 @@ bool SceneGraphNode::cullNode(const Camera& currentCamera,
         collisionTypeOut = frust.ContainsSphere(center, radius, _frustPlaneCache);
         if (collisionTypeOut == Frustum::FrustCollision::FRUSTUM_INTERSECT) {
             // If the sphere is not completely in the frustum, check the AABB
+            _frustPlaneCache = -1;
             collisionTypeOut = frust.ContainsBoundingBox(boundingBox, _frustPlaneCache);
         }
     } else {

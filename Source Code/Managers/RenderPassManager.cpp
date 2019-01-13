@@ -103,6 +103,7 @@ void RenderPassManager::render(SceneRenderState& sceneRenderState, Time::Profile
 
         while(remainingTasks.load() > 0) {
             parent().idle();
+            std::this_thread::yield();
         }
     }
     {
@@ -187,12 +188,12 @@ const RenderPass& RenderPassManager::getPassForStage(RenderStage renderStage) co
     return *_renderPasses.front();
 }
 
-RenderPass::BufferData RenderPassManager::getBufferData(RenderStage renderStage, RenderPassType type, I32 passIndex) const {
-    return getPassForStage(renderStage).getBufferData(type, passIndex);
+RenderPass::BufferData RenderPassManager::getBufferData(RenderStagePass stagePass) const {
+    return getPassForStage(stagePass._stage).getBufferData(stagePass._passType, stagePass._passIndex);
 }
 
 /// Prepare the list of visible nodes for rendering
-GFXDevice::NodeData RenderPassManager::processVisibleNode(SceneGraphNode* node, bool isOcclusionCullable, bool playAnimations, const mat4<F32>& viewMatrix) const {
+GFXDevice::NodeData RenderPassManager::processVisibleNode(SceneGraphNode* node, RenderStagePass stagePass, bool isOcclusionCullable, bool playAnimations, const mat4<F32>& viewMatrix) const {
     GFXDevice::NodeData dataOut;
 
     BoundsComponent*    const bounds = node->get<BoundsComponent>();
@@ -218,7 +219,8 @@ GFXDevice::NodeData RenderPassManager::processVisibleNode(SceneGraphNode* node, 
 
     // Get the material property matrix (alpha test, texture count, texture operation, etc.)
     dataOut._normalMatrixW.element(0, 3) = playAnimations ? to_F32((animComp && animComp->playAnimations()) ? animComp->boneCount() : 0) : 0.0f;
-    renderable->getRenderingProperties(dataOut._properties,
+    renderable->getRenderingProperties(stagePass,
+                                       dataOut._properties,
                                        dataOut._normalMatrixW.element(1, 3),
                                        dataOut._normalMatrixW.element(2, 3));
 
@@ -245,9 +247,7 @@ GFXDevice::NodeData RenderPassManager::processVisibleNode(SceneGraphNode* node, 
     return dataOut;
 }
 
-void RenderPassManager::refreshNodeData(RenderStage stage,
-                                        RenderPassType pass,
-                                        U32 passIndex,
+void RenderPassManager::refreshNodeData(RenderStagePass stagePass,
                                         const SceneRenderState& renderState,
                                         const mat4<F32>& viewMatrix,
                                         const RenderQueue::SortedQueues& sortedQueues,
@@ -264,25 +264,28 @@ void RenderPassManager::refreshNodeData(RenderStage stage,
     for (const vectorEASTL<SceneGraphNode*>& queue : sortedQueues) {
         for (SceneGraphNode* node : queue) {
             RenderingComponent& renderable = *node->get<RenderingComponent>();
-            if (Attorney::RenderingCompRenderPass::hasDrawCommands(renderable, stage)) {
-                Attorney::RenderingCompRenderPass::setDataIndex(renderable, stage, to_U32(g_nodeData.size()));
-                Attorney::RenderingCompRenderPass::updateDrawCommands(renderable, stage, g_drawCommands);
-                Attorney::RenderingCompRenderPass::onRefreshNodeData(renderable, RenderStagePass(stage, pass, to_U8(passIndex)), bufferInOut);
-                g_nodeData.push_back(processVisibleNode(node, renderable.renderOptionEnabled(RenderingComponent::RenderOptions::IS_OCCLUSION_CULLABLE), playAnimations, viewMatrix));
+
+            RefreshNodeDataParams params(g_drawCommands, bufferInOut);
+            params._stagePass = stagePass;
+            params._nodeCount = to_U32(g_nodeData.size());
+
+            if (Attorney::RenderingCompRenderPass::onRefreshNodeData(renderable, params)) {
+                g_nodeData.push_back(processVisibleNode(node, stagePass, renderable.renderOptionEnabled(RenderingComponent::RenderOptions::IS_OCCLUSION_CULLABLE), playAnimations, viewMatrix));
             }
         }
     }
 
-    RenderPass::BufferData bufferData = getBufferData(stage, pass, passIndex);
-    *bufferData._lastCommandCount = to_U32(g_drawCommands.size());
-
     U32 nodeCount = to_U32(g_nodeData.size());
-    assert(*bufferData._lastCommandCount >= nodeCount);
+    U32 cmdCount = to_U32(g_drawCommands.size());
+    assert(cmdCount >= nodeCount);
 
-    bufferData._cmdBuffer->writeData(0, *bufferData._lastCommandCount, (bufferPtr)g_drawCommands.data());
+    RenderPass::BufferData bufferData = getBufferData(stagePass);
+    *bufferData._lastCommandCount = cmdCount;
+
+    bufferData._cmdBuffer->writeData(0, cmdCount, (bufferPtr)g_drawCommands.data());
     bufferData._renderData->writeData(bufferData._renderDataElementOffset, nodeCount, (bufferPtr)g_nodeData.data());
 
-    GFX::BindDescriptorSetsCommand descriptorSetCmd;
+    GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
     descriptorSetCmd._set._shaderBuffers = {
         {
             ShaderBufferLocation::CMD_BUFFER,
@@ -326,7 +329,7 @@ void RenderPassManager::buildDrawCommands(RenderStagePass stagePass, const PassP
         memCmd._barrierMask = to_base(MemoryBarrierType::SHADER_BUFFER);
         GFX::EnqueueCommand(bufferInOut, memCmd);
 
-        refreshNodeData(stagePass._stage, stagePass._passType, params._passIndex, sceneRenderState, viewMatrix, sortedQueues, bufferInOut);
+        refreshNodeData(stagePass, sceneRenderState, viewMatrix, sortedQueues, bufferInOut);
     }
 }
 
@@ -349,7 +352,7 @@ void RenderPassManager::prepareRenderQueues(RenderStagePass stagePass, const Pas
     packageQueue.resize(0);
     packageQueue.reserve(Config::MAX_VISIBLE_NODES);
     
-    if (stagePass._passType == RenderPassType::PRE_PASS) {
+    if (stagePass._passType == RenderPassType::PRE_PASS || stagePass._stage == RenderStage::SHADOW) {
         // Draw everything in the depth pass
         queue.populateRenderQueues(stagePass, std::make_pair(RenderBinType::RBT_COUNT, true), packageQueue);
     } else {
@@ -378,7 +381,7 @@ bool RenderPassManager::prePass(const PassParams& params, const RenderTarget& ta
         beginDebugScopeCmd._scopeName = " - PrePass";
         GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
-        RenderStagePass stagePass(params._stage, RenderPassType::PRE_PASS, params._passVariant);
+        RenderStagePass stagePass(params._stage, RenderPassType::PRE_PASS, params._passVariant, params._passIndex);
         prepareRenderQueues(stagePass, params, true, bufferInOut);
 
         if (params._bindTargets) {
@@ -413,7 +416,7 @@ void RenderPassManager::mainPass(const PassParams& params, RenderTarget& target,
 
     SceneManager& sceneManager = parent().sceneManager();
 
-    RenderStagePass stagePass(params._stage, RenderPassType::MAIN_PASS, params._passVariant);
+    RenderStagePass stagePass(params._stage, RenderPassType::MAIN_PASS, params._passVariant, params._passIndex);
 
     prepareRenderQueues(stagePass, params, !prePassExecuted, bufferInOut);
 
@@ -479,7 +482,7 @@ void RenderPassManager::woitPass(const PassParams& params, const RenderTarget& t
     pipelineDescriptor._shaderProgramHandle = _OITCompositionShader->getID();
     Pipeline* pipeline = _context.newPipeline(pipelineDescriptor);
 
-    RenderStagePass stagePass(params._stage, RenderPassType::OIT_PASS, params._passVariant);
+    RenderStagePass stagePass(params._stage, RenderPassType::OIT_PASS, params._passVariant, params._passIndex);
     prepareRenderQueues(stagePass, params, false, bufferInOut);
 
     // Weighted Blended Order Independent Transparency
@@ -603,7 +606,7 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
 
     if (prePassExecuted && params._occlusionCull) {
         const Texture_ptr& HiZTex = _context.constructHIZ(params._target, bufferInOut);
-        _context.occlusionCull(getBufferData(params._stage, RenderPassType::PRE_PASS, params._passIndex),
+        _context.occlusionCull(getBufferData(RenderStagePass(params._stage, RenderPassType::PRE_PASS, params._passVariant, params._passIndex)),
                                HiZTex,
                                params._camera->getZPlanes(),
                                bufferInOut);

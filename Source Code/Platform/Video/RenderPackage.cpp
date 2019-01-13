@@ -8,7 +8,8 @@
 namespace Divide {
 
 RenderPackage::RenderPackage(bool useSecondaryBuffers)
-    : _qualityRequirement(MinQuality::FULL),
+    : _lodLevel(0u),
+      _qualityRequirement(MinQuality::FULL),
       _secondaryCommandPool(useSecondaryBuffers),
       _commands(nullptr),
       _dirtyFlags(to_base(CommandType::ALL))
@@ -207,6 +208,14 @@ void RenderPackage::addCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
             } break;
         };
     }
+}
+
+U8 RenderPackage::lodLevel() const {
+    return _lodLevel;
+}
+
+void RenderPackage::setLoDLevel(U8 LoD) {
+    _lodLevel = LoD;
 }
 
 void RenderPackage::setDataIndex(U32 dataIndex) {

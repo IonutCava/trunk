@@ -1,9 +1,7 @@
 #ifndef _SHADOW_POINT_FRAG_
 #define _SHADOW_POINT_FRAG_
 
-float applyShadowPoint(int shadowIndex) {
-
-    Shadow currentShadowSource = dvd_ShadowSource[shadowIndex];
+float applyShadowPoint(Shadow currentShadowSource, in float fragDepth) {
 
     // SHADOW MAPS
     vec3 position_ls = currentShadowSource._lightPosition[0].xyz;

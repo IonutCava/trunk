@@ -671,7 +671,7 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::Comm
 }
 
 void GFXDevice::updateCullCount(GFX::CommandBuffer& cmdBufferInOut) {
-    const RenderPass::BufferData& bufferData = parent().renderPassManager().getBufferData(RenderStage::DISPLAY, RenderPassType::PRE_PASS, 0);
+    const RenderPass::BufferData& bufferData = parent().renderPassManager().getBufferData(RenderStagePass(RenderStage::DISPLAY, RenderPassType::PRE_PASS));
 
     GFX::ReadAtomicCounterCommand readAtomicCounter;
     readAtomicCounter._buffer = bufferData._cmdBuffer;

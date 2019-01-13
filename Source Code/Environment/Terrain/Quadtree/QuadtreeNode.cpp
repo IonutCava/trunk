@@ -176,6 +176,7 @@ bool QuadtreeNode::isInView(const Camera& camera, F32 maxDistance, U8& LoD) cons
             case Frustum::FrustCollision::FRUSTUM_IN:
                 break;
             case Frustum::FrustCollision::FRUSTUM_INTERSECT: {
+                _frustPlaneCache = -1;
                 switch (frust.ContainsBoundingBox(_boundingBox, _frustPlaneCache)) {
                     case Frustum::FrustCollision::FRUSTUM_IN:
                     case Frustum::FrustCollision::FRUSTUM_INTERSECT:

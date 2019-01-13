@@ -56,7 +56,7 @@ class SceneShaderData {
         vec4<F32> _windDetails = {0.0f};
         //x - light bleed bias, y - min shadow variance, z - fade distance, w - max distance
         vec4<F32> _shadowingSettings = {0.0f};
-        //x - elapsed time, y - delta time, z - reserved, w - packed: [ w.x - debug render, w.y - detail level, w.z - reserved ]
+        //x - elapsed time, y - delta time, z - debug render, w.x - detail level
         vec4<F32> _otherData = {0.0f};
         WaterBodyData _waterEntities[MAX_WATER_BODIES] = {};
     };
@@ -100,18 +100,12 @@ class SceneShaderData {
     }
 
     inline void enableDebugRender(bool state) {
-        vec3<F32> wData = Util::UNPACK_VEC3(_bufferData._otherData.w);
-        wData.x = state ? 1.0f : 0.0f;
-        _bufferData._otherData.w = Util::PACK_VEC3(wData);
-
+        _bufferData._otherData.z = state ? 1.0f : 0.0f;
         _dirty = true;
     }
 
     inline void detailLevel(RenderDetailLevel renderDetailLevel) {
-        vec3<F32> wData = Util::UNPACK_VEC3(_bufferData._otherData.w);
-        wData.y = to_F32(renderDetailLevel) / to_F32(RenderDetailLevel::COUNT);
-        _bufferData._otherData.w = Util::PACK_VEC3(wData);
-        _dirty = true;
+        _bufferData._otherData.w = to_F32(renderDetailLevel) / to_F32(RenderDetailLevel::COUNT);
     }
 
     inline bool waterDetails(U8 index, const vec3<F32>& positionW, const vec3<F32>& dimensions) {

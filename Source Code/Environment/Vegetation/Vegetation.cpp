@@ -255,7 +255,11 @@ void Vegetation::sceneUpdate(const U64 deltaTimeUS,
 }
 
 bool Vegetation::getDrawState(const SceneGraphNode& sgn, RenderStagePass renderStage) const {
-    if (_render && _terrainChunk.isInView() && _terrainChunk.LoD() < 2) {
+    if (_render && 
+        _terrainChunk.isInView() &&
+        _terrainChunk.LoD() < 2 &&
+        renderStage._passIndex == 0)
+    {
         return SceneNode::getDrawState(sgn, renderStage);
     }
 
@@ -263,7 +267,8 @@ bool Vegetation::getDrawState(const SceneGraphNode& sgn, RenderStagePass renderS
 }
 
 void Vegetation::onRefreshNodeData(SceneGraphNode& sgn, RenderStagePass renderStagePass, GFX::CommandBuffer& bufferInOut){
-    if (_render) {
+    if (_render && renderStagePass._passIndex == 0) {
+
         // This will always lag one frame
         PipelineDescriptor pipeDesc;
         pipeDesc._shaderProgramHandle = _cullShader->getID();
@@ -304,7 +309,7 @@ void Vegetation::onRefreshNodeData(SceneGraphNode& sgn, RenderStagePass renderSt
 void Vegetation::buildDrawCommands(SceneGraphNode& sgn,
                                    RenderStagePass renderStagePass,
                                    RenderPackage& pkgInOut) {
-    if (_render) {
+    if (_render && renderStagePass._passIndex == 0) {
         DescriptorSet set = pkgInOut.descriptorSet(0);
         set.addShaderBuffer(
             { ShaderBufferLocation::GRASS_DATA,

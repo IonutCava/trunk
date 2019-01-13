@@ -245,7 +245,7 @@ bool glVertexArray::refresh() {
     std::array<AttribFlags, to_base(RenderStagePass::count())> attributesPerStage;
 
     vaoCachesDirty.fill(false);
-    for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
+    for (RenderStagePass::StagePassIndex i = 0; i < RenderStagePass::count(); ++i) {
         const AttribFlags& stageMask = _attribMasks[i];
 
         AttribFlags& stageUsage = attributesPerStage[i];
@@ -310,7 +310,7 @@ bool glVertexArray::refresh() {
     vectorEASTL<GLuint> vaos;
     vaos.reserve(RenderStagePass::count());
 
-    for (RenderStagePass::PassIndex pass = 0; pass < RenderStagePass::count(); ++pass) {
+    for (RenderStagePass::StagePassIndex pass = 0; pass < RenderStagePass::count(); ++pass) {
         if (vaoCachesDirty[pass]) {
             GLuint crtVao = _vaoCaches[pass];
             if (eastl::find_if(eastl::cbegin(vaos),

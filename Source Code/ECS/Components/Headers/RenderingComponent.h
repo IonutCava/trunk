@@ -63,6 +63,22 @@ struct RenderParams {
     Pipeline _pipeline;
 };
 
+struct RefreshNodeDataParams {
+    explicit RefreshNodeDataParams(vectorEASTL<IndirectDrawCommand>& commands, GFX::CommandBuffer& bufferInOut)
+        : _drawCommandsInOut(commands),
+        _bufferInOut(bufferInOut)
+    {
+
+    }
+
+    RenderStagePass _stagePass = {};
+    U32 _nodeCount = 0;
+
+    vectorEASTL<IndirectDrawCommand>& _drawCommandsInOut;
+    GFX::CommandBuffer& _bufferInOut;
+
+};
+
 struct RenderCbkParams {
     explicit RenderCbkParams(GFXDevice& context,
                              const SceneGraphNode& sgn,
@@ -133,7 +149,7 @@ class RenderingComponent : public BaseComponentType<RenderingComponent, Componen
 
     void getMaterialColourMatrix(mat4<F32>& matOut) const;
 
-    void getRenderingProperties(vec4<F32>& propertiesOut, F32& reflectionIndex, F32& refractionIndex) const;
+    void getRenderingProperties(RenderStagePass& stagePass, vec4<F32>& propertiesOut, F32& reflectionIndex, F32& refractionIndex) const;
 
     RenderPackage& getDrawPackage(RenderStagePass renderStagePass);
     const RenderPackage& getDrawPackage(RenderStagePass renderStagePass) const;
@@ -152,9 +168,9 @@ class RenderingComponent : public BaseComponentType<RenderingComponent, Componen
     void onRender(RenderStagePass renderStagePass);
 
    protected:    
-    void onRefreshNodeData(RenderStagePass renderStagePass, GFX::CommandBuffer& bufferInOut);
+    bool onRefreshNodeData(RefreshNodeDataParams& refreshParams);
     bool canDraw(RenderStagePass renderStagePass);
-    void updateLoDLevel(const Camera& camera, RenderStagePass renderStagePass, const vec4<U16>& lodThresholds);
+    U8 getLoDLevel(const Camera& camera, RenderStagePass renderStagePass, const vec4<U16>& lodThresholds);
 
     /// Called after the parent node was rendered
     void postRender(const SceneRenderState& sceneRenderState,
@@ -164,9 +180,6 @@ class RenderingComponent : public BaseComponentType<RenderingComponent, Componen
     void rebuildDrawCommands(RenderStagePass stagePass);
 
     void prepareDrawPackage(const Camera& camera, const SceneRenderState& sceneRenderState, RenderStagePass renderStagePass);
-    void updateDrawCommands(RenderStage stage, vectorEASTL<IndirectDrawCommand>& drawCmdsInOut);
-    void setDataIndex(RenderStage stage, U32 dataIndex);
-    bool hasDrawCommands(RenderStage stage);
 
     // This returns false if the node is not reflective, otherwise it generates a new reflection cube map
     // and saves it in the appropriate material slot
@@ -187,8 +200,6 @@ class RenderingComponent : public BaseComponentType<RenderingComponent, Componen
     GFXDevice& _context;
     Material_ptr _materialInstance;
 
-    /// LOD level is updated at every visibility check
-    U8  _lodLevel;  ///<Relative to camera distance
     U32 _renderMask;
     bool _lodLocked;
 
@@ -263,20 +274,8 @@ class RenderingCompRenderPass {
             renderable.prepareDrawPackage(camera, sceneRenderState, renderStagePass);
         }
 
-        static void updateDrawCommands(RenderingComponent& renderable, RenderStage stage, vectorEASTL<IndirectDrawCommand>& drawCmdsInOut) {
-            renderable.updateDrawCommands(stage, drawCmdsInOut);
-        }
-
-        static void setDataIndex(RenderingComponent& renderable, RenderStage stage, U32 dataIndex) {
-            renderable.setDataIndex(stage, dataIndex);
-        }
-
-        static bool hasDrawCommands(RenderingComponent& renderable, RenderStage stage) {
-            return renderable.hasDrawCommands(stage);
-        }
-
-        static void onRefreshNodeData(RenderingComponent& renderable, RenderStagePass renderStagePass, GFX::CommandBuffer& bufferInOut) {
-            renderable.onRefreshNodeData(renderStagePass, bufferInOut);
+        static bool onRefreshNodeData(RenderingComponent& renderable, RefreshNodeDataParams& refreshParams) {
+            return renderable.onRefreshNodeData(refreshParams);
         }
 
     friend class Divide::RenderPass;

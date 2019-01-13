@@ -113,9 +113,7 @@ void Sky::postLoad(SceneGraphNode& sgn) {
 void Sky::buildDrawCommands(SceneGraphNode& sgn,
                             RenderStagePass renderStagePass,
                             RenderPackage& pkgInOut) {
-    if (renderStagePass._stage == RenderStage::SHADOW) {
-        return;
-    }
+    assert(renderStagePass._stage != RenderStage::SHADOW);
 
     PipelineDescriptor pipelineDescriptor;
     if (renderStagePass._passType == RenderPassType::PRE_PASS) {

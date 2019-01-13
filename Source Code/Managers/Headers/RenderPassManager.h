@@ -82,7 +82,7 @@ public:
 
     inline RenderQueue& getQueue() { return _renderQueue; }
 
-    RenderPass::BufferData getBufferData(RenderStage renderStage, RenderPassType type, I32 passIndex) const;
+    RenderPass::BufferData getBufferData(RenderStagePass stagePass) const;
 
     void doCustomPass(PassParams& params, GFX::CommandBuffer& bufferInOut);
 
@@ -96,8 +96,8 @@ private:
     const RenderPass& getPassForStage(RenderStage renderStage) const;
     void prepareRenderQueues(RenderStagePass stagePass, const PassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut);
     void buildDrawCommands(RenderStagePass stagePass, const PassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut);
-    void refreshNodeData(RenderStage stage, RenderPassType pass, U32 passIndex, const SceneRenderState& renderState, const mat4<F32>& viewMatrix, const RenderQueue::SortedQueues& sortedQueues, GFX::CommandBuffer& bufferInOut);
-    GFXDevice::NodeData processVisibleNode(SceneGraphNode* node, bool isOcclusionCullable, bool playAnimations, const mat4<F32>& viewMatrix) const;
+    void refreshNodeData(RenderStagePass stagePass, const SceneRenderState& renderState, const mat4<F32>& viewMatrix, const RenderQueue::SortedQueues& sortedQueues, GFX::CommandBuffer& bufferInOut);
+    GFXDevice::NodeData processVisibleNode(SceneGraphNode* node, RenderStagePass stagePass, bool isOcclusionCullable, bool playAnimations, const mat4<F32>& viewMatrix) const;
 
 private: //TEMP
     friend class RenderBin;

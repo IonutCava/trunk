@@ -190,6 +190,28 @@ bool LightPool::generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffe
     return true;
 }
 
+U32 LightPool::shadowCastingLightsCount() const {
+    U32 ret = 0;
+
+    SharedLock r_lock(_lightLock);
+    for (U8 i = 0; i < to_base(LightType::COUNT); ++i) {
+        for (Light* light : _lights[i]) {
+            if (!light->getEnabled() ||
+                !light->castsShadows() ||
+                !_lightTypeState[to_base(light->getLightType())])
+            {
+                continue;
+            }
+
+            if (++ret == Config::Lighting::MAX_SHADOW_CASTING_LIGHTS) {
+                break;
+            }
+        }
+    }
+
+    return ret;
+}
+
 void LightPool::shadowCastingLights(const vec3<F32>& eyePos, LightVec& sortedShadowLights) const {
 
     sortedShadowLights.resize(0);
@@ -290,7 +312,7 @@ void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, con
                     assert(lightTransformA != nullptr && lightTransformB != nullptr);
 
                     return lightTransformA->getPosition().distanceSquared(eyePos) <
-                            lightTransformB->getPosition().distanceSquared(eyePos);
+                           lightTransformB->getPosition().distanceSquared(eyePos);
                 });
 
     U32 totalLightCount = 0;
@@ -326,14 +348,11 @@ void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, con
         ++_activeLightCount[stageIndex][typeIndex];
     }
         
-    LightVec sortedLights;
-    shadowCastingLights(eyePos, sortedLights);
-
     crtData._globalData.set(
         _activeLightCount[stageIndex][to_base(LightType::DIRECTIONAL)],
         _activeLightCount[stageIndex][to_base(LightType::POINT)],
         _activeLightCount[stageIndex][to_base(LightType::SPOT)],
-        to_I32(sortedLights.size())
+        to_I32(shadowCastingLightsCount())
     );
 
     _lightShaderBuffer->writeBytes((stageIndex - 1) * _lightShaderBuffer->getPrimitiveSize(),

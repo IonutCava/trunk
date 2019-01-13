@@ -38,28 +38,34 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 struct RenderStagePass {
-    typedef U8 PassIndex;
+    typedef U8 StagePassIndex;
 
     RenderStagePass() noexcept : RenderStagePass(RenderStage::COUNT, RenderPassType::COUNT)
     {
     }
 
-    RenderStagePass(RenderStage stage, RenderPassType passType) noexcept : RenderStagePass(stage, passType, 0)
+    RenderStagePass(RenderStage stage, RenderPassType passType) noexcept : RenderStagePass(stage, passType, 0u)
     {
     }
 
-    RenderStagePass(RenderStage stage, RenderPassType passType, U8 variant) noexcept
+    RenderStagePass(RenderStage stage, RenderPassType passType, U8 variant) noexcept : RenderStagePass(stage, passType, variant, 0u)
+    {
+    }
+
+    RenderStagePass(RenderStage stage, RenderPassType passType, U8 variant, U32 passIndex) noexcept
         : _stage(stage),
           _passType(passType),
-          _variant(variant)
+          _variant(variant),
+          _passIndex(passIndex)
     {
     }
 
     U8 _variant = 0;
+    U32 _passIndex = 0;
     RenderStage _stage = RenderStage::COUNT;
     RenderPassType _passType = RenderPassType::COUNT;
 
-    inline PassIndex index() const {
+    inline StagePassIndex index() const {
         return index(_stage, _passType);
     }
 
@@ -68,36 +74,26 @@ struct RenderStagePass {
                _passType == RenderPassType::PRE_PASS;
     }
 
-    constexpr static PassIndex count() {
-        return static_cast<PassIndex>(to_base(RenderStage::COUNT) * to_base(RenderPassType::COUNT));
+    constexpr static StagePassIndex count() {
+        return static_cast<StagePassIndex>(to_base(RenderStage::COUNT) * to_base(RenderPassType::COUNT));
     }
 
-    static PassIndex index(const RenderStage stage, const RenderPassType type) {
-        return static_cast<PassIndex>(to_base(stage) + to_base(type) * to_base(RenderStage::COUNT));
+    static StagePassIndex index(const RenderStage stage, const RenderPassType type) {
+        return static_cast<StagePassIndex>(to_base(stage) + to_base(type) * to_base(RenderStage::COUNT));
     }
 
-    static RenderStage stage(PassIndex index) {
+    static RenderStage stage(StagePassIndex index) {
         return static_cast<RenderStage>(index % to_base(RenderStage::COUNT));
     }
 
-    static RenderPassType pass(PassIndex index) {
+    static RenderPassType pass(StagePassIndex index) {
         return static_cast<RenderPassType>(index / to_base(RenderStage::COUNT));
     }
 
-    static RenderStagePass stagePass(PassIndex index) {
+    static RenderStagePass stagePass(StagePassIndex index) {
         return RenderStagePass(RenderStagePass::stage(index), RenderStagePass::pass(index));
     }
 };
-
-inline bool operator==(const RenderStagePass& lhs, const RenderStagePass& rhs) {
-    return lhs._stage == rhs._stage &&
-           lhs._passType == rhs._passType;
-}
-
-inline bool operator!=(const RenderStagePass& lhs, const RenderStagePass& rhs) {
-    return lhs._stage != rhs._stage ||
-           lhs._passType != rhs._passType;
-}
 
 }; //namespace Divide
 

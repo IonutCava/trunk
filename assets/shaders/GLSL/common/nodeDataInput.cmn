@@ -72,7 +72,7 @@ layout(binding = BUFFER_SCENE_DATA, std430) coherent readonly buffer dvd_SceneDa
     vec4   dvd_windDetails;
     //x - light bleed bias, y - min shadow variance, z - fade distance, w - max distance
     vec4   dvd_shadowingSettings;
-    //x - elapsed time, y - delta time, z - reserved, w - packed: w.x - debug render, w.y - detail level, w.z - reserved
+    //x - elapsed time, y - delta time, z - debug render, w.x - detail level
     vec4   dvd_otherData;
     WaterBodyData dvd_waterEntities[];
 };
@@ -81,8 +81,8 @@ layout(binding = BUFFER_SCENE_DATA, std430) coherent readonly buffer dvd_SceneDa
 #define dvd_fogDensity dvd_fogDetails.w
 #define dvd_time int(dvd_otherData.x)
 #define dvd_deltaTime (int(dvd_otherData.y))
-#define dvd_showDebugInfo (uint(UNPACK_FLOAT(dvd_otherData.w).x))
-#define dvd_renderDetailLevel (uint(UNPACK_FLOAT(dvd_otherData.w).y * DETAIL_COUNT))
+#define dvd_showDebugInfo (uint(dvd_otherData.z) == 1)
+#define dvd_renderDetailLevel (uint(dvd_otherData.w) * DETAIL_COUNT))
 
 bool IsUnderWater(vec3 positionWorld) {
     for (int i = 0; i < dvd_waterEntities.length(); ++i) {

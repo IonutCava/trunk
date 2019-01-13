@@ -79,6 +79,8 @@ public:
 
     size_t getSortKeyHash() const;
 
+    U8 lodLevel() const;
+
     I32 drawCommandCount() const;
     const GenericDrawCommand& drawCommand(I32 index, I32 cmdIndex) const;
     void drawCommand(I32 index, I32 cmdIndex, const GenericDrawCommand& cmd);
@@ -107,11 +109,13 @@ public:
     void setDrawOption(CmdRenderOptions option, bool state);
 
 protected:
+    void setLoDLevel(U8 LoD);
     void setDataIndex(U32 dataIndex);
     void updateDrawCommands(U32 startOffset);
     GFX::CommandBuffer& buildAndGetCommandBuffer(bool cacheMiss);
 
 private:
+    U8 _lodLevel;
     bool _secondaryCommandPool;
     MinQuality _qualityRequirement;
 
@@ -150,6 +154,11 @@ namespace Attorney {
         static void setDataIndex(RenderPackage& pkg, U32 dataIndex) {
             pkg.setDataIndex(dataIndex);
         }
+
+        static void setLoDLevel(RenderPackage& pkg, U8 LoD) {
+            pkg.setLoDLevel(LoD);
+        }
+
         friend class Divide::RenderingComponent;
     };
 }; // namespace Attorney

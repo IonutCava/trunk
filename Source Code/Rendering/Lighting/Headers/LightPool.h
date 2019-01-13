@@ -158,7 +158,7 @@ class LightPool : public SceneComponent,
     }
 
     void shadowCastingLights(const vec3<F32>& eyePos, LightVec& sortedShadowLights) const;
-
+    U32 shadowCastingLightsCount() const;
   private:
       void init();
 

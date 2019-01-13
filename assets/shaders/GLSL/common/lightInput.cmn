@@ -47,7 +47,7 @@ layout(binding = BUFFER_LIGHT_INDICES, std430) coherent COMP_RW buffer perTileLi
 #define DIRECTIONAL_LIGHT_COUNT dvd_LightData.x
 #define POINT_LIGHT_COUNT       dvd_LightData.y
 #define SPOT_LIGHT_COUNT        dvd_LightData.z
-#define TOTAL_LIGHT_COUNT       (DIRECTIONAL_LIGHT_COUNT + POINT_LIGHT_COUNT + SPOT_LIGHT_COUNT+)
+#define TOTAL_LIGHT_COUNT       (DIRECTIONAL_LIGHT_COUNT + POINT_LIGHT_COUNT + SPOT_LIGHT_COUNT)
 #define TOTAL_SHADOW_LIGHTS     dvd_LightData.w
 
 #if defined(FRAG_SHADER)

@@ -157,7 +157,7 @@ Material_ptr Material::clone(const stringImpl& nameSuffix) {
     cloneMat->_defaultRefraction = base._defaultRefraction;
     cloneMat->_translucencySource = base._translucencySource;
 
-    for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
+    for (RenderStagePass::StagePassIndex i = 0; i < RenderStagePass::count(); ++i) {
         cloneMat->_shaderInfo[i] = _shaderInfo[i];
         for (U8 j = 0; j < _defaultRenderStates[i].size(); ++j) {
             cloneMat->_defaultRenderStates[i][j] = _defaultRenderStates[i][j];
@@ -316,7 +316,7 @@ void Material::setShaderProgramInternal(const ResourceDescriptor& shaderDescript
 }
 
 void Material::recomputeShaders() {
-    for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
+    for (RenderStagePass::StagePassIndex i = 0; i < RenderStagePass::count(); ++i) {
         ShaderProgramInfo& info = _shaderInfo[i];
         if (!info._customShader) {
             info._shaderCompStage = ShaderProgramInfo::BuildStage::REQUESTED;
@@ -704,7 +704,7 @@ void Material::setDoubleSided(const bool state) {
     _doubleSided = state;
     // Update all render states for this item
     if (_doubleSided) {
-        for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
+        for (RenderStagePass::StagePassIndex i = 0; i < RenderStagePass::count(); ++i) {
             const U8 variantCount = to_U8(_defaultRenderStates[i].size());
 
             for (U8 variant = 0; variant < variantCount; ++variant) {

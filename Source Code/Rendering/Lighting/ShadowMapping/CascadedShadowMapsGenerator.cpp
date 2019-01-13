@@ -146,7 +146,6 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
     params._target = _drawBuffer._targetID;
     params._bindTargets = false;
     params._pass = RenderPassType::COUNT;
-    params._passIndex = lightIndex;
 
     GFX::BeginRenderPassCommand beginRenderPassCmd = {};
     beginRenderPassCmd._target = params._target;
@@ -164,7 +163,6 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
     drawParams._index = 0;
     drawParams._layer = 0;
 
-
     RenderPassManager& rpm = _context.parent().renderPassManager();
     for (U8 i = 0; i < numSplits; ++i) {
         beginDebugScopeCommand._scopeName = Util::StringFormat("CSM_PASS_%d", i).c_str();
@@ -174,7 +172,7 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
         beginRenderSubPassCmd._writeLayers.push_back(drawParams);
         GFX::EnqueueCommand(bufferInOut, beginRenderSubPassCmd);
 
-        params._passIndex = i;
+        params._passIndex = (lightIndex * Config::Lighting::MAX_SHADOW_CASTING_LIGHTS) + i;
         params._camera = light.shadowCameras()[i];
         rpm.doCustomPass(params, bufferInOut);
 
@@ -197,7 +195,7 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
 }
 
 CascadedShadowMapsGenerator::SplitDepths CascadedShadowMapsGenerator::calculateSplitDepths(const mat4<F32>& projMatrix, DirectionalLightComponent& light, const vec2<F32>& nearFarPlanes) {
-    SplitDepths depths;
+    SplitDepths depths = {};
 
     F32 fd = nearFarPlanes.y;//std::min(_sceneZPlanes.y, _previousFrustumBB.getExtent().z);
     F32 nd = nearFarPlanes.x;//std::max(_sceneZPlanes.x, std::fabs(_previousFrustumBB.nearestDistanceFromPoint(cam.getEye())));
@@ -263,8 +261,7 @@ void CascadedShadowMapsGenerator::applyFrustumSplits(DirectionalLightComponent& 
         // and backed up in the direction of the sunlight
         F32 distFromCentroid = std::max((maxZ - minZ), splitFrustumCornersVS[4].distance(splitFrustumCornersVS[5])) + nearClipOffset;
     
-        const vec3<F32>& lightPosition = light.getSGN().get<TransformComponent>()->getPosition();
-        vec3<F32> currentEye = frustumCentroid - (lightPosition * distFromCentroid);
+        vec3<F32> currentEye = frustumCentroid - (light.getDirection() * distFromCentroid);
 
         const mat4<F32>& viewMatrix = light.shadowCameras()[pass]->lookAt(currentEye, Normalize(frustumCentroid - currentEye));
         // Determine the position of the frustum corners in light space
@@ -365,7 +362,7 @@ void CascadedShadowMapsGenerator::postRender(const DirectionalLightComponent& li
             blitEntry._outputLayer = light.getShadowOffset() + i;
             blitRenderTargetCommand._blitColours.emplace_back(blitEntry);
         }
-        //GFX::EnqueueCommand(bufferInOut, blitRenderTargetCommand);
+        GFX::EnqueueCommand(bufferInOut, blitRenderTargetCommand);
     }
 }
 

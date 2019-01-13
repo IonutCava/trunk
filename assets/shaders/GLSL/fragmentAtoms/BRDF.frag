@@ -104,7 +104,7 @@ vec4 getPixelColour(vec4 albedo, vec3 normal) {
     }
 
 #if defined(DEBUG_SHADOWMAPPING)
-    if (dvd_showDebugInfo == 1) {
+    if (dvd_showDebugInfo) {
         switch (g_shadowTempInt){
             case -1: colour = vec3(1.0); break;
             case  0: colour.r += 0.15; break;

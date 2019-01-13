@@ -35,7 +35,6 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
                                        PlatformContext& context)
     : BaseComponentType<RenderingComponent, ComponentType::RENDERING>(parentSGN, context),
       _context(context.gfx()),
-      _lodLevel(0),
       _lodLocked(false),
       _renderMask(0),
       _reflectorType(ReflectorType::PLANAR_REFLECTOR),
@@ -75,7 +74,7 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
         _materialInstance->useTriangleStrip(node.getObjectType()._value != ObjectType::SUBMESH);
     }
 
-    for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
+    for (RenderStagePass::StagePassIndex i = 0; i < RenderStagePass::count(); ++i) {
         RenderPackagesPerPassType& packages = _renderPackages[to_base(RenderStagePass::stage(i))];
         std::unique_ptr<RenderPackage>& pkg = packages[to_base(RenderStagePass::pass(i))];
 
@@ -258,8 +257,29 @@ void RenderingComponent::onRender(RenderStagePass renderStagePass) {
     }
 }
 
-void RenderingComponent::onRefreshNodeData(RenderStagePass renderStagePass, GFX::CommandBuffer& bufferInOut) {
-    _parentSGN.onRefreshNodeData(renderStagePass, bufferInOut);
+bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams) {
+    RenderPackagesPerPassType& packages = _renderPackages[to_base(refreshParams._stagePass._stage)];
+    std::unique_ptr<RenderPackage>& pkg = packages[to_base(refreshParams._stagePass._passType)];
+    if (pkg->drawCommandCount() > 0) {
+        for (std::unique_ptr<RenderPackage>& package : packages) {
+            Attorney::RenderPackageRenderingComponent::setDataIndex(*package, refreshParams._nodeCount);
+            Attorney::RenderPackageRenderingComponent::updateDrawCommands(*package, to_U32(refreshParams._drawCommandsInOut.size()));
+        }
+        
+        for (I32 i = 0; i < pkg->drawCommandCount(); ++i) {
+            GenericDrawCommand cmd = pkg->drawCommand(i, 0);
+            if (cmd._drawCount > 1 && isEnabledOption(cmd, CmdRenderOptions::CONVERT_TO_INDIRECT)) {
+                std::fill_n(std::back_inserter(refreshParams._drawCommandsInOut), cmd._drawCount, cmd._cmd);
+            } else {
+                refreshParams._drawCommandsInOut.push_back(cmd._cmd);
+            }
+        }
+
+        _parentSGN.onRefreshNodeData(refreshParams._stagePass, refreshParams._bufferInOut);
+        return true;
+    }
+
+    return false;
 }
 
 void RenderingComponent::getMaterialColourMatrix(mat4<F32>& matOut) const {
@@ -271,7 +291,7 @@ void RenderingComponent::getMaterialColourMatrix(mat4<F32>& matOut) const {
     }
 }
 
-void RenderingComponent::getRenderingProperties(vec4<F32>& propertiesOut, F32& reflectionIndex, F32& refractionIndex) const {
+void RenderingComponent::getRenderingProperties(RenderStagePass& stagePass, vec4<F32>& propertiesOut, F32& reflectionIndex, F32& refractionIndex) const {
     bool shadowMappingEnabled = _context.parent().platformContext().config().rendering.shadowMapping.enabled;
 
     propertiesOut.set(_parentSGN.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTION_SELECTED
@@ -280,7 +300,7 @@ void RenderingComponent::getRenderingProperties(vec4<F32>& propertiesOut, F32& r
                                                                                       ? 1.0f
                                                                                       : 0.0f,
                       (shadowMappingEnabled && renderOptionEnabled(RenderOptions::RECEIVE_SHADOWS)) ? 1.0f : 0.0f,
-                      to_F32(_lodLevel),
+                      to_F32(getDrawPackage(stagePass).lodLevel()),
                       0.0f);
     const Material_ptr& mat = getMaterialInstance();
     if (mat) {
@@ -387,11 +407,11 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
     }
 }
 
-void RenderingComponent::updateLoDLevel(const Camera& camera, RenderStagePass renderStagePass, const vec4<U16>& lodThresholds) {
-    _lodLevel = 0;
+U8 RenderingComponent::getLoDLevel(const Camera& camera, RenderStagePass renderStagePass, const vec4<U16>& lodThresholds) {
+    U8 lodLevel = 0;
 
     if (_lodLocked) {
-        return;
+        return lodLevel;
     
     }
     const U32 SCENE_NODE_LOD0_SQ = lodThresholds.x * lodThresholds.x;
@@ -406,18 +426,18 @@ void RenderingComponent::updateLoDLevel(const Camera& camera, RenderStagePass re
     F32 cameraDistanceSQ = bSphere.getCenter().distanceSquared(eyePos);
 
     if (cameraDistanceSQ <= SCENE_NODE_LOD0_SQ) {
-        return;
+        return lodLevel;
     }
 
     cameraDistanceSQ = bounds->getBoundingBox().nearestDistanceFromPointSquared(eyePos);
     if (cameraDistanceSQ > SCENE_NODE_LOD0_SQ) {
-        _lodLevel = 1;
+        lodLevel = 1;
         if (cameraDistanceSQ > SCENE_NODE_LOD1_SQ) {
-            _lodLevel = 2;
+            lodLevel = 2;
             if (cameraDistanceSQ > SCENE_NODE_LOD2_SQ) {
-                _lodLevel = 3;
+                lodLevel = 3;
                 if (cameraDistanceSQ > SCENE_NODE_LOD3_SQ) {
-                    _lodLevel = 4;
+                    lodLevel = 4;
                 }
             }
         }
@@ -426,8 +446,10 @@ void RenderingComponent::updateLoDLevel(const Camera& camera, RenderStagePass re
 
     // ToDo: Hack for lower LoD rendering in reflection and refraction passes
     if (renderStagePass._stage == RenderStage::REFLECTION || renderStagePass._stage == RenderStage::REFRACTION) {
-        _lodLevel += 1;
+        lodLevel += 1;
     }
+
+    return lodLevel;
 }
 
 void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRenderState& sceneRenderState, RenderStagePass renderStagePass) {
@@ -442,7 +464,7 @@ void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
         }
 
         if (_parentSGN.prepareRender(camera, renderStagePass)) {
-            updateLoDLevel(camera, renderStagePass, sceneRenderState.lodThresholds());
+            Attorney::RenderPackageRenderingComponent::setLoDLevel(pkg, getLoDLevel(camera, renderStagePass, sceneRenderState.lodThresholds()));
 
             bool renderGeometry = renderOptionEnabled(RenderOptions::RENDER_GEOMETRY);
             renderGeometry = renderGeometry || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY);
@@ -453,41 +475,6 @@ void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
             pkg.setDrawOption(CmdRenderOptions::RENDER_WIREFRAME, renderWireframe);
         }
     }
-}
-
-void RenderingComponent::updateDrawCommands(RenderStage stage, vectorEASTL<IndirectDrawCommand>& drawCmdsInOut) {
-    RenderPackagesPerPassType& packagesPerPass = _renderPackages[to_base(stage)];
-    for (std::unique_ptr<RenderPackage>& pkg : packagesPerPass) {
-        Attorney::RenderPackageRenderingComponent::updateDrawCommands(*pkg, to_U32(drawCmdsInOut.size()));
-    }
-
-    std::unique_ptr<RenderPackage>& pkg = packagesPerPass.front();
-    for (I32 i = 0; i < pkg->drawCommandCount(); ++i) {
-        GenericDrawCommand cmd = pkg->drawCommand(i, 0);
-        if (cmd._drawCount > 1 && isEnabledOption(cmd, CmdRenderOptions::CONVERT_TO_INDIRECT)) {
-            std::fill_n(std::back_inserter(drawCmdsInOut), cmd._drawCount, cmd._cmd);
-        } else {
-            drawCmdsInOut.push_back(cmd._cmd);
-        }
-    }
-}
-
-void RenderingComponent::setDataIndex(RenderStage stage, U32 dataIndex) {
-    RenderPackagesPerPassType& packagesPerPassType = _renderPackages[to_base(stage)];
-    for (std::unique_ptr<RenderPackage>& package : packagesPerPassType) {
-        Attorney::RenderPackageRenderingComponent::setDataIndex(*package, dataIndex);
-    }
-}
-
-bool RenderingComponent::hasDrawCommands(RenderStage stage) {
-    RenderPackagesPerPassType& packagesPerPass = _renderPackages[to_base(stage)];
-    for (std::unique_ptr<RenderPackage>& pkg : packagesPerPass) {
-        if (pkg->drawCommandCount() > 0) {
-            return true;
-        }
-    }
-
-    return false;
 }
 
 RenderPackage& RenderingComponent::getDrawPackage(RenderStagePass renderStagePass) {
@@ -523,10 +510,6 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
                                           const SceneRenderState& renderState,
                                           GFX::CommandBuffer& bufferInOut)
 {
-    // Low lod entities don't need up to date reflections
-    if (_lodLevel > 2) {
-        return false;
-    }
     // If we lake a material, we don't use reflections
     const Material_ptr& mat = getMaterialInstance();
     if (mat == nullptr) {
@@ -608,10 +591,7 @@ bool RenderingComponent::updateRefraction(U32 refractionIndex,
     if (!_refractionCallback) {
         return false;
     }
-    // Low lod entities don't need up to date reflections
-    if (_lodLevel > 2) {
-        return false;
-    }
+
     const Material_ptr& mat = getMaterialInstance();
     if (mat == nullptr) {
         return false;

@@ -556,7 +556,7 @@ const RenderPassCuller::VisibleNodeList& SceneManager::cullSceneGraph(RenderStag
     Scene& activeScene = getActiveScene();
     SceneState& sceneState = activeScene.state();
 
-    RenderPassCuller::CullParams cullParams;
+    RenderPassCuller::CullParams cullParams = {};
     cullParams._context = &activeScene.context();
     cullParams._sceneGraph = &activeScene.sceneGraph();
     cullParams._sceneState = &sceneState;

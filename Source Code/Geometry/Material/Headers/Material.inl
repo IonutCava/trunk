@@ -69,14 +69,14 @@ inline void Material::setShininess(F32 value) {
 }
 
 inline void Material::setShaderProgram(const ShaderProgram_ptr& shader) {
-    for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
+    for (RenderStagePass::StagePassIndex i = 0; i < RenderStagePass::count(); ++i) {
         setShaderProgram(shader, RenderStagePass::stagePass(i));
     }
 }
 
 inline void Material::setRenderStateBlock(size_t renderStateBlockHash,
                                           I32 variant) {
-    for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
+    for (RenderStagePass::StagePassIndex i = 0; i < RenderStagePass::count(); ++i) {
         setRenderStateBlock(renderStateBlockHash, RenderStagePass::stagePass(i), variant);
     }
 }
