@@ -53,6 +53,8 @@ GLConfig GL_API::s_glConfig;
 GLStateTracker* GL_API::s_activeStateTracker = nullptr;
 GL_API::stateTrackerMap GL_API::s_stateTrackers;
 bool GL_API::s_bufferBindsNeedsFlush = false;
+GLUtil::glTexturePool<256> GL_API::s_texturePool;
+
 moodycamel::ConcurrentQueue<BufferWriteData> GL_API::s_bufferBinds;
 
 GL_API::GL_API(GFXDevice& context, const bool glES)
@@ -91,6 +93,10 @@ bool GL_API::createFonsContext() {
 void GL_API::deleteFonsContext() {
     glfonsDelete(_fonsContext);
     _fonsContext = nullptr;
+}
+
+void GL_API::idle() {
+    s_texturePool.clean();
 }
 
 /// Prepare the GPU for rendering a frame
@@ -1065,10 +1071,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             if (crtCmd._layerRange.x == 0 && crtCmd._layerRange.y <= 1) {
                 glGenerateTextureMipmap(crtCmd._texture->getData().getHandle());
             } else {
-                static GLuint handle = 0;
-                if (handle == 0) {
-                    glGenTextures(1, &handle);
-                }
+                GLuint handle = s_texturePool.allocate();
 
                 Texture* tex = crtCmd._texture;
                 TextureData data = tex->getData();
@@ -1084,6 +1087,8 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
                               (GLuint)crtCmd._layerRange.x,
                               (GLuint)crtCmd._layerRange.y);
                 glGenerateTextureMipmap(handle);
+
+                s_texturePool.deallocate(handle);
             }
         }break;
         case GFX::CommandType::DRAW_TEXT: {

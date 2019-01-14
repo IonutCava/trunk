@@ -46,6 +46,7 @@ class NONE_API final : public RenderAPIWrapper {
     ~NONE_API();
 
   protected:
+      void idle() override;
       void beginFrame(DisplayWindow& window, bool global = false) override;
       void endFrame(DisplayWindow& window, bool global = false) override;
       ErrorCode initRenderingAPI(I32 argc, char** argv, Configuration& config) override;

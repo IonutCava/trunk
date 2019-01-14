@@ -12,6 +12,10 @@ namespace Divide {
     {
     }
 
+    void NONE_API::idle() {
+
+    }
+
     void NONE_API::beginFrame(DisplayWindow& window, bool global) {
         ACKNOWLEDGE_UNUSED(window);
         ACKNOWLEDGE_UNUSED(global);

@@ -212,12 +212,13 @@ in float tcs_tessLevel[];
 out float tes_tessLevel;
 
 #if !defined(TOGGLE_WIREFRAME)
+#if defined(SHADOW_PASS)
+out vec4 geom_vertexWVP;
+#else
 out vec4 _scrollingUV;
 // x = distance, y = depth
 smooth out vec2 _waterDetails;
 out float LoD;
-#if defined(SHADOW_PASS)
-out vec4 geom_vertexWVP;
 #endif
 #endif
 
@@ -310,17 +311,20 @@ void waterDetails() {
             minDepth = min(minDepth, clamp(1.0 - (position.y - vertexW.y) / (position.y - TERRAIN_MIN_HEIGHT), 0.0, 1.0));
         }
     }
-
+#if !defined(SHADOW_PASS)
     _waterDetails = vec2(maxDistance, minDepth);
+#endif
 }
 
 void scrollingUV() {
+#if !defined(SHADOW_PASS)
     float time2 = float(dvd_time) * 0.0001;
     vec2 noiseUV = _out._texCoord * UNDERWATER_TILE_SCALE;
 
     _scrollingUV.st = noiseUV;
     _scrollingUV.pq = noiseUV + time2;
     _scrollingUV.s -= time2;
+#endif
 }
 
 #endif
@@ -392,6 +396,11 @@ in float tes_tessLevel[];
 
 layout(triangle_strip, max_vertices = 4) out;
 
+
+#if !defined(TOGGLE_WIREFRAME)
+#if defined(SHADOW_PASS)
+out vec4 geom_vertexWVP;
+#else
 // x = distance, y = depth
 smooth out vec2 _waterDetails;
 
@@ -399,6 +408,8 @@ out vec3 gs_wireColor;
 out float LoD;
 
 noperspective out vec3 gs_edgeDist;
+#endif
+#endif
 
 void waterDetails(in int index) {
 
@@ -459,6 +470,9 @@ void PerVertex(in int i, in vec3 edge_dist) {
     }
 
     gl_Position = getWVPPositon(i);
+#if defined(SHADOW_PASS)
+    geom_vertexWVP = gl_Position;
+#endif
     setClipPlanes(gl_in[i].gl_Position);
 
     waterDetails(i);

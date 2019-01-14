@@ -125,6 +125,27 @@ private:
 
 namespace GLUtil {
 
+// Not thread-safe!
+template<size_t N>
+class glTexturePool {
+private:
+    enum class State : U8 {
+        USED = 0,
+        FREE,
+        CLEAN
+    };
+public:
+    void clean();
+    void init();
+    void destroy();
+
+    GLuint allocate();
+    void deallocate(GLuint& handle);
+
+private:
+    std::array<State, N> _usageMap;
+    std::array<GLuint, N> _handles;
+};
 /// Wrapper for glGetIntegerv
 GLint getIntegerv(GLenum param);
 

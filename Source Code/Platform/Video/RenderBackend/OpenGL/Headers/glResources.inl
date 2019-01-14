@@ -36,6 +36,57 @@
 namespace Divide {
 namespace GLUtil {
 
+template<size_t N>
+void glTexturePool<N>::init()
+{
+    glGenTextures(N, _handles.data());
+    _usageMap.fill(State::FREE);
+}
+
+template<size_t N>
+void glTexturePool<N>::clean() {
+    for (size_t i = 0; i < N; ++i) {
+        if (_usageMap[i] == State::CLEAN) {
+            glDeleteTextures(1, &_handles[i]);
+            glGenTextures(1, &_handles[i]);
+            _usageMap[i] = State::FREE;
+        }
+    }
+}
+
+template<size_t N>
+void glTexturePool<N>::destroy() {
+    glDeleteTextures(N, _handles.data());
+    _handles.fill(0);
+    _usageMap.fill(State::CLEAN);
+}
+
+template<size_t N>
+GLuint glTexturePool<N>::allocate() {
+    for (size_t i = 0; i < N; ++i) {
+        if (_usageMap[i] == State::FREE) {
+            _usageMap[i] = State::USED;
+            return _handles[i];
+        }
+    }
+
+    DIVIDE_UNEXPECTED_CALL();
+    return 0;
+}
+
+template<size_t N>
+void glTexturePool<N>::deallocate(GLuint& handle) {
+    for (size_t i = 0; i < N; ++i) {
+        if (_handles[i] == handle) {
+            handle = 0;
+            _usageMap[i] = State::CLEAN;
+            return;
+        }
+    }
+
+    DIVIDE_UNEXPECTED_CALL();
+}
+
 }; // namespace GLUtil
 }; // namespace Divide
 #endif  //_GL_RESOURCES_INL_

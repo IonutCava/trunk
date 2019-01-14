@@ -7,10 +7,10 @@
 
 namespace Divide {
 
-RenderPackage::RenderPackage(bool useSecondaryBuffers)
+RenderPackage::RenderPackage()
     : _lodLevel(0u),
       _qualityRequirement(MinQuality::FULL),
-      _secondaryCommandPool(useSecondaryBuffers),
+      _secondaryCommandPool(true),
       _commands(nullptr),
       _dirtyFlags(to_base(CommandType::ALL))
 {

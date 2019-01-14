@@ -68,7 +68,7 @@ public:
     };
 
 public:
-    explicit RenderPackage(bool useSecondaryBuffers);
+    explicit RenderPackage();
     ~RenderPackage();
 
     void clear();

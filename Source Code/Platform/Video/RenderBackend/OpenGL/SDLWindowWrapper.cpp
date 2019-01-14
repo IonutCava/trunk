@@ -222,7 +222,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     s_activeStateTracker = &s_stateTrackers[window.getGUID()];
     *s_activeStateTracker = {};
     s_activeStateTracker->init(nullptr);
-
+    s_texturePool.init();
     // Cap max anisotropic level to what the hardware supports
     CLAMP(config.rendering.anisotropicFilteringLevel,
           to_U8(0),
@@ -383,6 +383,7 @@ void GL_API::closeRenderingAPI() {
     if (s_dummyVAO > 0) {
         GL_API::deleteVAOs(1, &s_dummyVAO);
     }
+    s_texturePool.destroy();
     glVertexArray::cleanup();
     GLUtil::clearVBOs();
     GL_API::s_vaoPool.destroy();

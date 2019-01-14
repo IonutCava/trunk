@@ -75,8 +75,10 @@ struct GFXConfig {
 };
 /// Renderer Programming Interface
 class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
-   protected:
-    friend class GFXDevice;
+  protected:
+   friend class GFXDevice;
+    virtual void idle() = 0;
+
     /*Application display frame*/
     /// Clear buffers, set default states, etc
     virtual void beginFrame(DisplayWindow& window, bool global = false) = 0;

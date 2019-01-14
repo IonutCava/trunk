@@ -106,6 +106,8 @@ protected:
     ErrorCode initRenderingAPI(I32 argc, char** argv, Configuration& config) override;
     /// Clear everything that was setup in initRenderingAPI()
     void closeRenderingAPI() override;
+
+    void idle() override;
     /// Prepare the GPU for rendering a frame
     void beginFrame(DisplayWindow& window, bool global = false) override;
     /// Finish rendering the current frame
@@ -275,6 +277,7 @@ private:
     static stateTrackerMap s_stateTrackers;
     static GLStateTracker* s_activeStateTracker;
 
+    static GLUtil::glTexturePool<256> s_texturePool;
 
     std::pair<I64, SDL_GLContext> _currentContext;
 };

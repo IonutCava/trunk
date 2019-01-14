@@ -12,6 +12,10 @@ namespace Divide {
     {
     }
 
+    void VK_API::idle() {
+
+    }
+
     void VK_API::beginFrame(DisplayWindow& window, bool global) {
         ACKNOWLEDGE_UNUSED(window);
         ACKNOWLEDGE_UNUSED(global);
