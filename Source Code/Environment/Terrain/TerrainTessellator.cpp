@@ -42,7 +42,7 @@ TerrainTessellator::~TerrainTessellator()
 }
 
 const vec3<F32>& TerrainTessellator::getOrigin() const {
-    return _originiCache;
+    return _originCache;
 }
 
 const Frustum& TerrainTessellator::getFrustum() const {
@@ -135,7 +135,7 @@ bool TerrainTessellator::divideNode(TessellatedTerrainNode* node) {
 
 void TerrainTessellator::createTree(const vec3<F32>& camPos, const Frustum& frust, const vec3<F32>& origin, const vec2<U16>& terrainDimensions) {
     _cameraEyeCache.set(camPos);
-    _originiCache.set(origin);
+    _originCache.set(origin);
     _frustumCache.set(frust);
 
 

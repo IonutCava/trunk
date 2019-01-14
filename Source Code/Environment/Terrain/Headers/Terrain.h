@@ -128,7 +128,6 @@ class Terrain : public Object3D {
    public:
      static constexpr U32 MAX_RENDER_NODES = 384;
      static constexpr size_t NODE_DATA_SIZE = sizeof(TessellatedNodeData) * Terrain::MAX_RENDER_NODES * to_base(RenderStage::COUNT);
-     static constexpr bool USE_TERRAIN_UBO = false;//NODE_DATA_SIZE < (64 * 1024);
 
    public:
        struct Vert {
@@ -197,13 +196,15 @@ class Terrain : public Object3D {
     VegetationDetails _vegDetails;
 
     typedef std::array<bool, to_base(RenderStage::COUNT)> TessellatorArrayFlags;
-    typedef std::array<TerrainTessellator, to_base(RenderStage::COUNT)> TessellatorArray;
+    typedef std::array<TerrainTessellator, to_base(RenderStage::COUNT)-1> TessellatorArray;
     typedef hashMap<I64, bool> CameraUpdateFlagArray;
 
     Quadtree _terrainQuadtree;
     vector<TerrainChunk*> _terrainChunks;
 
     TessellatorArray _terrainTessellator;
+    std::array<TerrainTessellator, Config::Lighting::MAX_SHADOW_CASTING_LIGHTS * Config::Lighting::MAX_SPLITS_PER_LIGHT> _shadowTessellators;
+
     hashMap<I64, TessellatorArrayFlags> _terrainTessellatorFlags;
 
     EditorDataState _editorDataDirtyState;

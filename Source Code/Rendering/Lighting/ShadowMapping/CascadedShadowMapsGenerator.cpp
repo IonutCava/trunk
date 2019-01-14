@@ -172,7 +172,8 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
         beginRenderSubPassCmd._writeLayers.push_back(drawParams);
         GFX::EnqueueCommand(bufferInOut, beginRenderSubPassCmd);
 
-        params._passIndex = (lightIndex * Config::Lighting::MAX_SHADOW_CASTING_LIGHTS) + i;
+        constexpr U32 stride = std::max(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS, Config::Lighting::MAX_SPLITS_PER_LIGHT);
+        params._passIndex = (lightIndex * stride) + i;
         params._camera = light.shadowCameras()[i];
         rpm.doCustomPass(params, bufferInOut);
 

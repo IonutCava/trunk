@@ -61,7 +61,14 @@ public:
         RenderPassType _pass = RenderPassType::COUNT;
         FrustumClipPlanes _clippingPlanes = {};
         U8  _passVariant = 0;
-        U32 _passIndex = 0;
+        union {
+            U32 _passIndex = 0;
+            struct {
+                U16 _indexA;
+                U16 _indexB;
+            };
+        };
+
         bool _occlusionCull = false;
         bool _bindTargets = true;
     };

@@ -131,7 +131,7 @@ private:
     I32 _numNodes;
     U16 _renderDepth;
     vec3<F32> _cameraEyeCache;
-    vec3<F32> _originiCache;
+    vec3<F32> _originCache;
     Frustum _frustumCache;
     TreeVector _tree;
     RenderDataVector _renderData;

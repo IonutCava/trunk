@@ -108,6 +108,8 @@ public:
 
     void setDrawOption(CmdRenderOptions option, bool state);
 
+    inline bool empty() const { return _commandOrdering.empty(); }
+
 protected:
     void setLoDLevel(U8 LoD);
     void setDataIndex(U32 dataIndex);

@@ -254,9 +254,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     ShaderProgramDescriptor shaderDescriptor = {};
 
-    if (!Terrain::USE_TERRAIN_UBO) {
-        shaderDescriptor._defines.push_back(std::make_pair("USE_SSBO_DATA_BUFFER", true));
-    }
+    shaderDescriptor._defines.push_back(std::make_pair("USE_SSBO_DATA_BUFFER", true));
 
     if (g_showWireFrame) {
         shaderDescriptor._defines.push_back(std::make_pair("TOGGLE_WIREFRAME", true));

@@ -19,7 +19,7 @@
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Headers/IMPrimitive.h"
-#include "Platform/Video/Headers/RenderPackage.h"
+
 #include "Platform/Video/Headers/RenderStateBlock.h"
 #include "Geometry/Shapes/Headers/Mesh.h"
 #include "Geometry/Material/Headers/Material.h"
@@ -52,8 +52,6 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
         _materialInstance = materialTpl->clone("_instance_" + parentSGN.name());
     }
 
-    _renderPackagesDirty.fill(true);
-
     toggleRenderOption(RenderOptions::RENDER_GEOMETRY, true);
     toggleRenderOption(RenderOptions::CAST_SHADOWS, true);
     toggleRenderOption(RenderOptions::RECEIVE_SHADOWS, true);
@@ -72,16 +70,6 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
                                        false);
 
         _materialInstance->useTriangleStrip(node.getObjectType()._value != ObjectType::SUBMESH);
-    }
-
-    for (RenderStagePass::StagePassIndex i = 0; i < RenderStagePass::count(); ++i) {
-        RenderPackagesPerPassType& packages = _renderPackages[to_base(RenderStagePass::stage(i))];
-        std::unique_ptr<RenderPackage>& pkg = packages[to_base(RenderStagePass::pass(i))];
-
-        pkg = std::make_unique<RenderPackage>(true);
-
-        STUBBED("ToDo: Use quality requirements for rendering packages! -Ionut");
-        pkg->qualityRequirement(RenderPackage::MinQuality::FULL);
     }
 
     // Prepare it for rendering lines
@@ -258,16 +246,20 @@ void RenderingComponent::onRender(RenderStagePass renderStagePass) {
 }
 
 bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams) {
-    RenderPackagesPerPassType& packages = _renderPackages[to_base(refreshParams._stagePass._stage)];
-    std::unique_ptr<RenderPackage>& pkg = packages[to_base(refreshParams._stagePass._passType)];
-    if (pkg->drawCommandCount() > 0) {
-        for (std::unique_ptr<RenderPackage>& package : packages) {
-            Attorney::RenderPackageRenderingComponent::setDataIndex(*package, refreshParams._nodeCount);
-            Attorney::RenderPackageRenderingComponent::updateDrawCommands(*package, to_U32(refreshParams._drawCommandsInOut.size()));
+    RenderPackage& pkg = getDrawPackage(refreshParams._stagePass);
+    if (pkg.drawCommandCount() > 0) {
+        if (refreshParams._stagePass._stage == RenderStage::SHADOW) {
+            Attorney::RenderPackageRenderingComponent::setDataIndex(pkg, refreshParams._nodeCount);
+            Attorney::RenderPackageRenderingComponent::updateDrawCommands(pkg, to_U32(refreshParams._drawCommandsInOut.size()));
+        } else {
+            RenderPackagesPerPassType& packages = _renderPackagesNormal[to_base(refreshParams._stagePass._stage) - 1];
+            for (RenderPackage& package : packages) {
+                Attorney::RenderPackageRenderingComponent::setDataIndex(package, refreshParams._nodeCount);
+                Attorney::RenderPackageRenderingComponent::updateDrawCommands(package, to_U32(refreshParams._drawCommandsInOut.size()));
+            }
         }
-        
-        for (I32 i = 0; i < pkg->drawCommandCount(); ++i) {
-            GenericDrawCommand cmd = pkg->drawCommand(i, 0);
+        for (I32 i = 0; i < pkg.drawCommandCount(); ++i) {
+            GenericDrawCommand cmd = pkg.drawCommand(i, 0);
             if (cmd._drawCount > 1 && isEnabledOption(cmd, CmdRenderOptions::CONVERT_TO_INDIRECT)) {
                 std::fill_n(std::back_inserter(refreshParams._drawCommandsInOut), cmd._drawCount, cmd._cmd);
             } else {
@@ -455,12 +447,9 @@ U8 RenderingComponent::getLoDLevel(const Camera& camera, RenderStagePass renderS
 void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRenderState& sceneRenderState, RenderStagePass renderStagePass) {
     RenderPackage& pkg = getDrawPackage(renderStagePass);
     if (canDraw(renderStagePass)) {
-
-        bool& dirty = _renderPackagesDirty[renderStagePass.index()];
-        if (dirty) {
+        if (pkg.empty()) {
             pkg.setDrawOption(CmdRenderOptions::RENDER_INDIRECT, true);
             rebuildDrawCommands(renderStagePass);
-            dirty = false;
         }
 
         if (_parentSGN.prepareRender(camera, renderStagePass)) {
@@ -478,15 +467,27 @@ void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
 }
 
 RenderPackage& RenderingComponent::getDrawPackage(RenderStagePass renderStagePass) {
-    RenderPackage& ret = *_renderPackages[to_base(renderStagePass._stage)][to_base(renderStagePass._passType)].get();
-    //ToDo: Some validation? -Ionut
-    return ret;
+    if (renderStagePass._stage == RenderStage::SHADOW) {
+        constexpr U32 stride = std::max(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS, Config::Lighting::MAX_SPLITS_PER_LIGHT);
+
+        U32 passIndex = renderStagePass._passIndex % stride;
+        U32 lightIndex = (renderStagePass._passIndex - passIndex) / stride;
+        return _renderPackagesShadow[lightIndex][passIndex];
+    } else {
+        return _renderPackagesNormal[to_base(renderStagePass._stage) - 1][to_base(renderStagePass._passType)];
+    }
 }
 
 const RenderPackage& RenderingComponent::getDrawPackage(RenderStagePass renderStagePass) const {
-    const RenderPackage& ret = *_renderPackages[to_base(renderStagePass._stage)][to_base(renderStagePass._passType)].get();
-    //ToDo: Some validation? -Ionut
-    return ret;
+    if (renderStagePass._stage == RenderStage::SHADOW) {
+        constexpr U32 stride = std::max(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS, Config::Lighting::MAX_SPLITS_PER_LIGHT);
+
+        U32 passIndex = renderStagePass._passIndex % stride;
+        U32 lightIndex = (renderStagePass._passIndex - passIndex) / stride;
+        return _renderPackagesShadow[lightIndex][passIndex];
+    } else {
+        return _renderPackagesNormal[to_base(renderStagePass._stage) - 1][to_base(renderStagePass._passType)];
+    }
 }
 
 

@@ -62,6 +62,7 @@ struct RenderStagePass {
 
     U8 _variant = 0;
     U32 _passIndex = 0;
+
     RenderStage _stage = RenderStage::COUNT;
     RenderPassType _passType = RenderPassType::COUNT;
 
