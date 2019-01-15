@@ -60,22 +60,19 @@ void CommandBuffer::batch() {
             skip = false;
 
             const CommandEntry& cmd = *it;
-            if (resetMerge(cmd.type<GFX::CommandType::_enumerated>())) {
-                prevCommands.fill(nullptr);
-            }
-
             CommandBase* crtCommand = getCommandInternal<CommandBase>(cmd);
             CommandBase*& prevCommand = prevCommands[to_U16(cmd.type<GFX::CommandType::_enumerated>())];
             
-            if (prevCommand != nullptr && prevCommand->_type._value == cmd.type<GFX::CommandType::_enumerated>()) {
-                if (tryMergeCommands(prevCommand, crtCommand, partial)) {
-                    it = _commandOrder.erase(it);
-                    skip = true;
-                    tryMerge = true;
-                } else {
-                    prevCommands.fill(nullptr);
-                }
+            assert(prevCommand == nullptr || prevCommand->_type._value == cmd.type<GFX::CommandType::_enumerated>());
+
+            if (prevCommand != nullptr && tryMergeCommands(prevCommand, crtCommand, partial)) {
+                it = _commandOrder.erase(it);
+                skip = true;
+                tryMerge = true;
+            } else {
+                prevCommands.fill(nullptr);
             }
+            
 
             if (!skip) {
                 prevCommand = crtCommand;
@@ -319,26 +316,6 @@ bool CommandBuffer::validate() const {
     }
 
     return valid;
-}
-
-bool CommandBuffer::resetMerge(GFX::CommandType type) const {
-    constexpr GFX::CommandType commands[] = {
-        GFX::CommandType::DRAW_COMMANDS,
-        GFX::CommandType::BIND_DESCRIPTOR_SETS,
-        GFX::CommandType::SEND_PUSH_CONSTANTS,
-        GFX::CommandType::DRAW_TEXT,
-        GFX::CommandType::SET_SCISSOR,
-        GFX::CommandType::SET_VIEWPORT,
-        GFX::CommandType::BIND_PIPELINE
-    };
-
-    for (auto it : commands) {
-        if (type._value == it) {
-            return false;
-        }
-    }
-
-    return true;
 }
 
 void CommandBuffer::toString(const GFX::CommandBase& cmd, I32& crtIndent, stringImpl& out) const {

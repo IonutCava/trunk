@@ -2,7 +2,7 @@
 <debug>
   <!-- if this is not set to -1, then all command buffers used in that frame number will be dumped to the error log for inspection -->
   <!-- requires a build with ENABLE_GPU_VALIDATION set-->
-  <flushCommandBuffersOnFrame>100</flushCommandBuffersOnFrame>
+  <flushCommandBuffersOnFrame>-1</flushCommandBuffersOnFrame>
   <useShaderBinaryCache>false</useShaderBinaryCache>
   <!-- this is only taken into consideration if binary cache is disabled-->
   <useShaderTextCache>false</useShaderTextCache>
@@ -68,8 +68,8 @@
   <MSAAsamples>0</MSAAsamples>
   <anisotropicFilteringLevel>8</anisotropicFilteringLevel>
   <renderDetailLevel>4</renderDetailLevel>
-  <multithreadedCommandGeneration>false</multithreadedCommandGeneration>
-  <batchPassBuffers>false</batchPassBuffers>
+  <multithreadedCommandGeneration>true</multithreadedCommandGeneration>
+  <batchPassBuffers>true</batchPassBuffers>
   <enableFog>true</enableFog>
   <fogDensity>3</fogDensity>
   <fogColour r="0.5" g="0.5" b="0.55"/>

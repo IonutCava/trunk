@@ -90,7 +90,6 @@ class CommandBuffer : private GUIDWrapper, private NonCopyable {
     friend struct Command;
 
     void toString(const GFX::CommandBase& cmd, I32& crtIndent, stringImpl& out) const;
-    bool resetMerge(GFX::CommandType type) const;
 
     template<typename T>
     typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
