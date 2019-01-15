@@ -165,9 +165,6 @@ void Terrain::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState
 bool Terrain::onRender(SceneGraphNode& sgn,
                        const Camera& camera,
                        RenderStagePass renderStagePass) {
-    if (renderStagePass._stage == RenderStage::SHADOW && renderStagePass._passIndex > 0) {
-        return false;
-    }
 
     const U8 stageIndex = to_U8(renderStagePass._stage);
 

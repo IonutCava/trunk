@@ -6,6 +6,25 @@
 namespace Divide {
 namespace GFX {
 
+namespace {
+    const char* primitiveTypeToString(PrimitiveType type) {
+        switch (type) {
+            case PrimitiveType::API_POINTS: return "POINTS";
+            case PrimitiveType::LINES: return "LINES";
+            case PrimitiveType::LINE_LOOP: return "LINE_LOOP";
+            case PrimitiveType::LINE_STRIP: return "LINE_STRIP";
+            case PrimitiveType::PATCH: return "PATCH";
+            case PrimitiveType::POLYGON: return "POLYGON";
+            case PrimitiveType::QUAD_STRIP: return "QUAD_STRIP";
+            case PrimitiveType::TRIANGLES: return "TRIANGLES";
+            case PrimitiveType::TRIANGLE_FAN: return "TRIANGLE_FAN";
+            case PrimitiveType::TRIANGLE_STRIP: return "TRIANGLE_STRIP";
+        };
+
+        return "ERROR";
+    }
+};
+
 stringImpl BindPipelineCommand::toString(U16 indent) const {
     assert(_pipeline != nullptr);
 
@@ -47,7 +66,7 @@ stringImpl DrawCommand::toString(U16 indent) const {
         for (U16 j = 0; j < indent; ++j) {
             ret.append("    ");
         }
-        ret.append(Util::StringFormat("%d: Draw count: %d Base instance: %d Instance count: %d\n", i++, cmd._drawCount, cmd._cmd.baseInstance, cmd._cmd.primCount));
+        ret.append(Util::StringFormat("%d: Draw count: %d Type: %s Base instance: %d Instance count: %d Index count: %d\n", i++, cmd._drawCount, primitiveTypeToString(cmd._primitiveType), cmd._cmd.baseInstance, cmd._cmd.primCount, cmd._cmd.indexCount));
     }
 
     return ret;

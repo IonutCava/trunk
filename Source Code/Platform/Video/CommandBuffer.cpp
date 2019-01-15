@@ -307,11 +307,14 @@ bool CommandBuffer::validate() const {
             };
         }
 
-        valid = !pushedPass && !pushedSubPass && !pushedPixelBuffer &&
-                pushedDebugScope == 0 &&
-                (hasPipeline == needsPipeline);
+        valid = !pushedPass && !pushedSubPass && !pushedPixelBuffer && pushedDebugScope == 0;
+
         if (needsDescriptorSets) {
             valid = hasDescriptorSets && valid;
+        }
+
+        if (needsPipeline && !hasPipeline) {
+            valid = false;
         }
     }
 

@@ -107,16 +107,14 @@ namespace {
             case RenderStage::SHADOW: ret = Config::Lighting::MAX_SHADOW_CASTING_LIGHTS * Config::Lighting::MAX_SPLITS_PER_LIGHT;  break;
         };
 
-        return ret * g_cmdBufferFrameCount /*RAM, Driver, VRAM*/;
+        return ret;
     }
 
-    U32 getCmdBufferIndex(RenderStage stage, I32 passIndex, U32 frameCount) {
+    U32 getCmdBufferIndex(RenderStage stage, I32 passIndex) {
         U32 ret = 0;
         if (stage == RenderStage::SHADOW) {
             ret = passIndex;
         }
-
-        ret += frameCount % g_cmdBufferFrameCount;
         return ret;
     }
 };
@@ -137,7 +135,8 @@ RenderPass::~RenderPass()
 }
 
 RenderPass::BufferData RenderPass::getBufferData(RenderPassType type, I32 passIndex) const {
-    U32 idx = getCmdBufferIndex(_stageFlag, passIndex, _context.FRAME_COUNT);
+    U32 idx = getCmdBufferIndex(_stageFlag, passIndex);
+    idx += getCmdBufferCount(_stageFlag) * (_context.FRAME_COUNT % g_cmdBufferFrameCount);
 
     BufferData ret = {};
     ret._renderDataElementOffset = getBufferOffset(_stageFlag, type, passIndex);
@@ -167,7 +166,7 @@ void RenderPass::initBufferData() {
     bufferDescriptor._ringBufferLength = 1;
     bufferDescriptor._separateReadWrite = false;
 
-    U32 cmdCount = getCmdBufferCount(_stageFlag);
+    U32 cmdCount = getCmdBufferCount(_stageFlag) * g_cmdBufferFrameCount;
     _cmdBuffers.reserve(cmdCount);
 
     for (U32 i = 0; i < cmdCount; ++i) {

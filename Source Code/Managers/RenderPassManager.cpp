@@ -5,6 +5,7 @@
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/TaskPool.h"
 #include "Core/Headers/StringHelper.h"
+#include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Time/Headers/ProfileTimer.h"
 #include "Managers/Headers/SceneManager.h"
@@ -29,9 +30,6 @@
 namespace Divide {
 
 namespace {
-    constexpr bool g_threadedCommandGeneration = true;
-    static_assert(!Config::Profile::DISABLE_PERSISTENT_BUFFER || !g_threadedCommandGeneration, "Threaded command generation does not work without persistently mapped buffers!");
-
     thread_local vectorEASTL<GFXDevice::NodeData> g_nodeData;
     thread_local vectorEASTL<IndirectDrawCommand> g_drawCommands;
 };
@@ -61,6 +59,8 @@ RenderPassManager::~RenderPassManager()
 }
 
 void RenderPassManager::render(SceneRenderState& sceneRenderState, Time::ProfileTimer* parentTimer) {
+    const Configuration& config = parent().platformContext().config();
+
     if (parentTimer != nullptr && !parentTimer->hasChildTimer(*_renderPassTimer)) {
         parentTimer->addChildTimer(*_renderPassTimer);
         parentTimer->addChildTimer(*_postFxRenderTimer);
@@ -69,7 +69,7 @@ void RenderPassManager::render(SceneRenderState& sceneRenderState, Time::Profile
 
     const Camera& cam = Attorney::SceneManagerRenderPass::playerCamera(parent().sceneManager());
 
-    TaskPriority priority = g_threadedCommandGeneration ? TaskPriority::DONT_CARE : TaskPriority::REALTIME;
+    TaskPriority priority = config.rendering.multithreadedCommandGeneration ? TaskPriority::DONT_CARE : TaskPriority::REALTIME;
 
     TaskPool& pool = parent().platformContext().taskPool(TaskPoolType::Render);
 
@@ -106,18 +106,30 @@ void RenderPassManager::render(SceneRenderState& sceneRenderState, Time::Profile
             std::this_thread::yield();
         }
     }
-    {
-        Time::ScopedTimer timeCommands(*_buildCommandBufferTimer);
-        _mainCommandBuffer->clear();
 
-        for (GFX::CommandBuffer* buffer : _renderPassCommandBuffer) {
-            _mainCommandBuffer->add(*buffer);
+    if (config.rendering.batchPassBuffers) {
+        if (config.rendering.batchPassBuffers) {
+            {            
+                Time::ScopedTimer timeCommands(*_buildCommandBufferTimer);
+                _mainCommandBuffer->clear();
+                for (GFX::CommandBuffer* buf : _renderPassCommandBuffer) {
+                    _mainCommandBuffer->add(*buf);
+                }
+            }
+
+            Time::ScopedTimer timeCommands(*_flushCommandBufferTimer);
+            _context.flushCommandBuffer(*_mainCommandBuffer);
+        }
+    } else {
+        for (U8 i = 0; i < renderPassCount + 1; ++i) {
+            {
+                Time::ScopedTimer timeCommands(*_buildCommandBufferTimer);
+            }
+
+            Time::ScopedTimer timeCommands(*_flushCommandBufferTimer);
+            _context.flushCommandBuffer(*_renderPassCommandBuffer[i]);
         }
     }
-
-    Time::ScopedTimer timeCommands(*_flushCommandBufferTimer);
-    _context.flushCommandBuffer(*_mainCommandBuffer);
-
 
     for (U8 i = 0; i < renderPassCount; ++i) {
         _renderPasses[i]->postRender();

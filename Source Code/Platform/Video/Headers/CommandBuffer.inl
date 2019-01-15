@@ -213,7 +213,7 @@ inline bool CommandBuffer::tryMergeCommands(GFX::CommandBase* prevCommand, GFX::
         case GFX::CommandType::SET_VIEWPORT:
             return tryMergeCommands(static_cast<SetViewportCommand*>(prevCommand), static_cast<SetViewportCommand*>(crtCommand), partial);
         case GFX::CommandType::BIND_PIPELINE:
-            return tryMergeCommands(static_cast<BindPipelineCommand*>(prevCommand), static_cast<BindPipelineCommand*>(crtCommand), partial);
+            return false;//return tryMergeCommands(static_cast<BindPipelineCommand*>(prevCommand), static_cast<BindPipelineCommand*>(crtCommand), partial);
     }
     return false;
 }
