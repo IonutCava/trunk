@@ -7,12 +7,7 @@ struct TerrainNodeData {
     vec4 _tScale;
 };
 
-#if defined(USE_SSBO_DATA_BUFFER)
-layout(binding = BUFFER_TERRAIN_DATA, std430) coherent readonly buffer 
-#else
-layout(binding = BUFFER_TERRAIN_DATA, std140) uniform
-#endif
-dvd_TerrainBlock
+layout(binding = BUFFER_TERRAIN_DATA, std430) coherent readonly buffer dvd_TerrainBlock
 {
     TerrainNodeData dvd_TerrainData[];
 };
@@ -23,11 +18,15 @@ vec2 calcTerrainTexCoord(in vec4 pos)
     return vec2(abs(pos.x - TerrainOrigin.x) / TERRAIN_WIDTH, abs(pos.z - TerrainOrigin.y) / TERRAIN_LENGTH);
 }
 
+out flat int nodeDataIndex;
+
 void main(void)
 {
     computeData();
 
-    vec4 posAndScale = dvd_TerrainData[VAR.dvd_drawID]._positionAndTileScale;
+    nodeDataIndex = gl_InstanceID;
+
+    vec4 posAndScale = dvd_TerrainData[nodeDataIndex]._positionAndTileScale;
 
     vec4 patchPosition = vec4(dvd_Vertex.xyz * posAndScale.w, 1.0);
     
@@ -52,12 +51,7 @@ struct TerrainNodeData {
 };
 
 
-#if defined(USE_SSBO_DATA_BUFFER)
-layout(binding = BUFFER_TERRAIN_DATA, std430) coherent readonly buffer
-#else
-layout(binding = BUFFER_TERRAIN_DATA, std140) uniform
-#endif
-dvd_TerrainBlock
+layout(binding = BUFFER_TERRAIN_DATA, std430) coherent readonly buffer dvd_TerrainBlock
 {
     TerrainNodeData dvd_TerrainData[];
 };
@@ -73,6 +67,9 @@ uniform vec2 tessellationRange;
 // Outputs
 //
 layout(vertices = 4) out;
+
+in flat int nodeDataIndex[];
+out flat int nodeDataIndexTC[];
 
 out float tcs_tessLevel[];
 
@@ -153,7 +150,7 @@ void main(void)
         gl_TessLevelOuter[2] = dlodCameraDistance(gl_in[1].gl_Position, gl_in[2].gl_Position, _in[1]._texCoord, _in[2]._texCoord);
         gl_TessLevelOuter[3] = dlodCameraDistance(gl_in[2].gl_Position, gl_in[3].gl_Position, _in[2]._texCoord, _in[3]._texCoord);
 
-        vec4 tScale = dvd_TerrainData[VAR.dvd_drawID]._tScale;
+        vec4 tScale = dvd_TerrainData[nodeDataIndex[id]]._tScale;
 
         if (tscale_negx == 2.0) {
             gl_TessLevelOuter[0] = max(2.0, gl_TessLevelOuter[0] * 0.5);
@@ -179,6 +176,7 @@ void main(void)
     // Pass the patch verts along
     gl_out[id].gl_Position = gl_in[id].gl_Position;
 
+    nodeDataIndexTC[id] = nodeDataIndex[id];
     // Output tessellation level (used for wireframe coloring)
     tcs_tessLevel[id] = gl_TessLevelOuter[0];
 }
@@ -195,17 +193,14 @@ struct TerrainNodeData {
 };
 
 
-#if defined(USE_SSBO_DATA_BUFFER)
-layout(binding = BUFFER_TERRAIN_DATA, std430) coherent readonly buffer
-#else
-layout(binding = BUFFER_TERRAIN_DATA, std140) uniform
-#endif
-dvd_TerrainBlock
+layout(binding = BUFFER_TERRAIN_DATA, std430) coherent readonly buffer dvd_TerrainBlock
 {
     TerrainNodeData dvd_TerrainData[];
 };
 
 layout(quads, fractional_even_spacing) in;
+
+in flat int nodeDataIndexTC[];
 
 in float tcs_tessLevel[];
 
@@ -346,7 +341,7 @@ void main()
     pos.y = (TERRAIN_HEIGHT_RANGE * sampleHeight) + TERRAIN_MIN_HEIGHT;
 
     // Project the vertex to clip space and send it along
-    vec3 offset = dvd_TerrainData[VAR[0].dvd_drawID]._positionAndTileScale.xyz;
+    vec3 offset = dvd_TerrainData[nodeDataIndexTC[0]]._positionAndTileScale.xyz;
     _out._vertexW = dvd_WorldMatrix(VAR[0].dvd_instanceID) * vec4(pos.xyz + offset, pos.w);
 
 #if !defined(SHADOW_PASS)

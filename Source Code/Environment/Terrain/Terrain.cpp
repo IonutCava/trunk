@@ -213,7 +213,8 @@ bool Terrain::onRender(SceneGraphNode& sgn,
     pkg.descriptorSet(0, set);
 
     GenericDrawCommand cmd = pkg.drawCommand(0, 0);
-    cmd._drawCount = depth;
+    //cmd._drawCount = depth;
+    cmd._cmd.primCount = depth;
     pkg.drawCommand(0, 0, cmd);
 
     if (renderStagePass._stage == RenderStage::DISPLAY && renderStagePass._passType == RenderPassType::PRE_PASS)
@@ -238,9 +239,9 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
     cmd._sourceBuffer = getGeometryVB();
     cmd._bufferIndex = renderStagePass.index();
     cmd._patchVertexCount = 4;
+    cmd._cmd.primCount = Terrain::MAX_RENDER_NODES;
     cmd._cmd.indexCount = getGeometryVB()->getIndexCount();
     enableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
-    enableOption(cmd, CmdRenderOptions::CONVERT_TO_INDIRECT);
     enableOption(cmd, CmdRenderOptions::RENDER_TESSELLATED);
     
     GFX::DrawCommand drawCommand = {};
