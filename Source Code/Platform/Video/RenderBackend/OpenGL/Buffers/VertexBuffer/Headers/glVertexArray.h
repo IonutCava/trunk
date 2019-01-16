@@ -39,6 +39,7 @@
 #include "Platform/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 #include "Platform/Video/RenderBackend/OpenGL/Buffers/Headers/glMemoryManager.h"
 
+#include <EASTL/fixed_vector.h>
 
 /// Always bind a shader, even a dummy one when rendering geometry. No more
 /// fixed matrix API means no more VBs or VAs
@@ -118,8 +119,8 @@ class glVertexArray final : public VertexBuffer {
     U32 _lastIndexCount = 0;
     U32 _lastFirstIndex = 0;
 
-    vectorEASTL<GLsizei> _countData;
-    vectorEASTL<GLuint> _indexOffsetData;
+    std::array<GLsizei, Config::MAX_VISIBLE_NODES> _countData;
+    eastl::fixed_vector<GLuint, Config::MAX_VISIBLE_NODES * 256> _indexOffsetData;
 };
 
 };  // namespace Divide

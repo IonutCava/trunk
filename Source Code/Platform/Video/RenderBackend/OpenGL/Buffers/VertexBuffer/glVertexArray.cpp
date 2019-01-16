@@ -413,12 +413,7 @@ void glVertexArray::rebuildCountAndIndexData(U32 drawCount, U32 indexCount, U32 
     }
 
     if (_lastDrawCount != drawCount || _lastIndexCount != indexCount) {
-        if (_countData.size() < drawCount) {
-            _countData.resize(drawCount, indexCount);
-        }
-        if (_lastIndexCount != indexCount) {
-            eastl::fill(eastl::begin(_countData), eastl::end(_countData), indexCount);
-        }
+        eastl::fill(eastl::begin(_countData), eastl::begin(_countData) + drawCount, indexCount);
     }
 
     if (_lastDrawCount != drawCount || _lastFirstIndex != firstIndex) {
@@ -430,7 +425,6 @@ void glVertexArray::rebuildCountAndIndexData(U32 drawCount, U32 indexCount, U32 
             eastl::fill(eastl::begin(_indexOffsetData), eastl::end(_indexOffsetData), firstIndex);
         }
     }
-
     _lastDrawCount = drawCount;
     _lastIndexCount = indexCount;
     _lastFirstIndex = firstIndex;

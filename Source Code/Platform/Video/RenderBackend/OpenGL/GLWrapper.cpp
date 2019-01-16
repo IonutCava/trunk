@@ -96,7 +96,7 @@ void GL_API::deleteFonsContext() {
 }
 
 void GL_API::idle() {
-    s_texturePool.clean();
+    //s_texturePool.clean();
 }
 
 /// Prepare the GPU for rendering a frame

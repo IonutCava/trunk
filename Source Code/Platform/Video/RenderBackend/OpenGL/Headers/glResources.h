@@ -140,7 +140,7 @@ public:
     void init();
     void destroy();
 
-    GLuint allocate();
+    GLuint allocate(bool retry = false);
     void deallocate(GLuint& handle);
 
 private:
