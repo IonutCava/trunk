@@ -7,9 +7,9 @@ struct TerrainNodeData {
     vec4 _tScale;
 };
 
-layout(binding = BUFFER_TERRAIN_DATA, std430) coherent readonly buffer dvd_TerrainBlock
+layout(binding = BUFFER_TERRAIN_DATA, std140) uniform dvd_TerrainBlock
 {
-    TerrainNodeData dvd_TerrainData[];
+    TerrainNodeData dvd_TerrainData[MAX_RENDER_NODES];
 };
 
 vec2 calcTerrainTexCoord(in vec4 pos)
@@ -51,9 +51,9 @@ struct TerrainNodeData {
 };
 
 
-layout(binding = BUFFER_TERRAIN_DATA, std430) coherent readonly buffer dvd_TerrainBlock
+layout(binding = BUFFER_TERRAIN_DATA, std140) uniform dvd_TerrainBlock
 {
-    TerrainNodeData dvd_TerrainData[];
+    TerrainNodeData dvd_TerrainData[MAX_RENDER_NODES];
 };
 
 #define tscale_negx tScale.x
@@ -185,7 +185,7 @@ void main(void)
 
 #include "nodeBufferedInput.cmn"
 
-layout(binding = TEXTURE_OPACITY)   uniform sampler2D TexTerrainHeight;
+layout(binding = TEXTURE_OPACITY) uniform sampler2D TexTerrainHeight;
 
 struct TerrainNodeData {
     vec4 _positionAndTileScale;
@@ -193,9 +193,9 @@ struct TerrainNodeData {
 };
 
 
-layout(binding = BUFFER_TERRAIN_DATA, std430) coherent readonly buffer dvd_TerrainBlock
+layout(binding = BUFFER_TERRAIN_DATA, std140) uniform dvd_TerrainBlock
 {
-    TerrainNodeData dvd_TerrainData[];
+    TerrainNodeData dvd_TerrainData[MAX_RENDER_NODES];
 };
 
 layout(quads, fractional_even_spacing) in;

@@ -59,6 +59,7 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescr
       ECS::Event::IEventListener(&sceneGraph.GetECSEngine()),
       PlatformContextComponent(sceneGraph.parentScene().context()),
       _sceneGraph(sceneGraph),
+      _serialize(descriptor._serialize),
       _node(descriptor._node),
       _componentMask(0),
       _usageContext(descriptor._usageContext),
@@ -725,6 +726,10 @@ bool SceneGraphNode::loadCache(ByteBuffer& inputBuffer) {
 }
 
 void SceneGraphNode::saveToXML(const stringImpl& sceneLocation) const {
+    if (!serialize()) {
+        return;
+    }
+
     static boost::property_tree::xml_writer_settings<std::string> settings(' ', 4);
 
     boost::property_tree::ptree pt;
@@ -744,6 +749,10 @@ void SceneGraphNode::saveToXML(const stringImpl& sceneLocation) const {
 }
 
 void SceneGraphNode::loadFromXML(const boost::property_tree::ptree& pt) {
+    if (!serialize()) {
+        return;
+    }
+
     usageContext(pt.get("static", false) ? NodeUsageContext::NODE_STATIC : NodeUsageContext::NODE_DYNAMIC);
 
     U32 componentsToLoad = 0;

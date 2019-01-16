@@ -77,8 +77,6 @@ glUniformBuffer::glUniformBuffer(GFXDevice& context,
 
     _allignedBufferSize = realign_offset(_bufferSize, alignmentRequirement(_unbound));
 
-    assert(_allignedBufferSize < _maxSize);
-
     BufferImplParams implParams = {};
     implParams._dataSize = _allignedBufferSize * queueLength();
     implParams._elementSize = _elementSize;

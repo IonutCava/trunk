@@ -326,6 +326,7 @@ bool WarScene::addUnits() {
             }
 
             SceneGraphNodeDescriptor npcNodeDescriptor;
+            npcNodeDescriptor._serialize = false;
             npcNodeDescriptor._node = currentMesh;
             npcNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
             npcNodeDescriptor._componentMask = normalMask | to_base(ComponentType::SELECTION);

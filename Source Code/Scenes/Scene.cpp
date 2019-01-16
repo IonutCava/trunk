@@ -589,6 +589,7 @@ void Scene::toggleFlashlight(PlayerIndex idx) {
     SceneGraphNode*& flashLight = _flashLight[idx];
     if (!flashLight) {
         SceneGraphNodeDescriptor lightNodeDescriptor;
+        lightNodeDescriptor._serialize = false;
         lightNodeDescriptor._name = Util::StringFormat("Flashlight_%d", idx);
         lightNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
         lightNodeDescriptor._componentMask = to_base(ComponentType::TRANSFORM) |
@@ -1149,6 +1150,7 @@ void Scene::addPlayerInternal(bool queue) {
         SceneGraphNode& root = _sceneGraph->getRoot();
 
         SceneGraphNodeDescriptor playerNodeDescriptor;
+        playerNodeDescriptor._serialize = false;
         playerNodeDescriptor._node = std::make_shared<SceneNode>(_resCache, static_cast<size_t>(GUIDWrapper::generateGUID() + _parent.getActivePlayerCount()), playerName);
         playerNodeDescriptor._name = playerName;
         playerNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;

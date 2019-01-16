@@ -93,6 +93,7 @@ void Sky::postLoad(SceneGraphNode& sgn) {
     assert(_sky != nullptr);
 
     SceneGraphNodeDescriptor skyNodeDescriptor;
+    skyNodeDescriptor._serialize = false;
     skyNodeDescriptor._node = _sky;
     skyNodeDescriptor._name = sgn.name() + "_geometry";
     skyNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;

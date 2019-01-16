@@ -32,6 +32,7 @@ void Trigger::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn,
             _triggerImpostor = CreateResource<ImpostorSphere>(_parentCache, impostorDesc);
 
             SceneGraphNodeDescriptor triggerImpostorDescriptor;
+            triggerImpostorDescriptor._serialize = false;
             triggerImpostorDescriptor._node = _triggerImpostor;
             triggerImpostorDescriptor._componentMask = to_base(ComponentType::TRANSFORM) |
                                                        to_base(ComponentType::BOUNDS) |

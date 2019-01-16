@@ -54,6 +54,7 @@ struct SceneGraphNodeDescriptor {
     SceneNode_ptr    _node = nullptr;
     stringImpl       _name = "";
     U32              _componentMask = 0;
+    bool             _serialize = true;
     NodeUsageContext _usageContext = NodeUsageContext::NODE_STATIC;
 };
 
@@ -255,6 +256,8 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
         return _sceneGraph;
     }
 
+    inline bool serialize() const { return _serialize; }
+
     void saveToXML(const stringImpl& sceneLocation) const;
     void loadFromXML(const boost::property_tree::ptree& pt);
 
@@ -346,7 +349,7 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
    private:
     // An SGN doesn't exist outside of a scene graph
     SceneGraph& _sceneGraph;
-
+    bool _serialize = true;
     U64 _lockToCamera = 0;
     //ToDo: make this work in a multi-threaded environment
     //mutable I8 _frustPlaneCache;

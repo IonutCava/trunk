@@ -287,7 +287,9 @@ namespace {
         entry.put("<xmlattr>.type", node.getNode().getTypeName());
 
         node.forEachChild([&entry](const SceneGraphNode& child) {
-            entry.add_child("node", dumpSGNtoAssets(child));
+            if (child.serialize()) {
+                entry.add_child("node", dumpSGNtoAssets(child));
+            }
         });
 
         return entry;

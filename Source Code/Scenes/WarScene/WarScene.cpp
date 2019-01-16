@@ -428,6 +428,7 @@ bool WarScene::load(const stringImpl& name) {
     SceneGraphNode* baseNode;
 
     SceneGraphNodeDescriptor sceneryNodeDescriptor;
+    sceneryNodeDescriptor._serialize = false;
     sceneryNodeDescriptor._componentMask = normalMask;
 
     U8 locationFlag = 0;

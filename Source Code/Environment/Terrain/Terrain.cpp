@@ -47,6 +47,7 @@ bool Terrain::unload() {
 void Terrain::postLoad(SceneGraphNode& sgn) {
 
     SceneGraphNodeDescriptor vegetationNodeDescriptor;
+    vegetationNodeDescriptor._serialize = false;
     vegetationNodeDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
     vegetationNodeDescriptor._componentMask = to_base(ComponentType::TRANSFORM) |
                                               to_base(ComponentType::BOUNDS) |
@@ -58,14 +59,16 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
         sgn.addNode(vegetationNodeDescriptor);
     }
 
+    static_assert(MAX_RENDER_NODES * sizeof(TessellatedTerrainNode) < 64 * 1024 * 1024, "Too many terrain nodes to fit in an UBO!");
+
     ShaderBufferDescriptor bufferDescriptor;
     bufferDescriptor._elementCount = Terrain::MAX_RENDER_NODES * ((to_base(RenderStage::COUNT) - 1) + shadowSizeFactor);
     bufferDescriptor._elementSize = sizeof(TessellatedNodeData);
     bufferDescriptor._ringBufferLength = 1;
     bufferDescriptor._separateReadWrite = false;
-    bufferDescriptor._flags = (to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE) |
+    bufferDescriptor._flags = //(to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE) |
                              //to_U32(ShaderBuffer::Flags::AUTO_RANGE_FLUSH) |
-                               to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES));
+                               to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
                               
     //Should be once per frame
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
@@ -208,17 +211,11 @@ bool Terrain::onRender(SceneGraphNode& sgn,
         wasUpdated = true;
     }
      
-    DescriptorSet set = pkg.descriptorSet(0);
-    set.addShaderBuffer({ ShaderBufferLocation::TERRAIN_DATA, _shaderData, vec2<U32>(offset, depth) });
-    pkg.descriptorSet(0, set);
-
     GenericDrawCommand cmd = pkg.drawCommand(0, 0);
-    //cmd._drawCount = depth;
     cmd._cmd.primCount = depth;
     pkg.drawCommand(0, 0, cmd);
 
-    if (renderStagePass._stage == RenderStage::DISPLAY && renderStagePass._passType == RenderPassType::PRE_PASS)
-    {
+    if (renderStagePass._stage == RenderStage::DISPLAY && renderStagePass._passType == RenderPassType::PRE_PASS) {
         _terrainQuadtree.updateVisibility(camera, _drawDistance);
     }
 
@@ -228,6 +225,19 @@ bool Terrain::onRender(SceneGraphNode& sgn,
 void Terrain::buildDrawCommands(SceneGraphNode& sgn,
                                 RenderStagePass renderStagePass,
                                 RenderPackage& pkgInOut) {
+
+    U32 offset = 0;
+    if (renderStagePass._stage == RenderStage::SHADOW) {
+        offset = Terrain::MAX_RENDER_NODES * renderStagePass._passIndex;
+    } else {
+        const U8 stageIndex = to_U8(renderStagePass._stage);
+        offset = shadowSizeFactor * Terrain::MAX_RENDER_NODES;
+        offset += (to_U32((stageIndex - 1) * Terrain::MAX_RENDER_NODES));
+    }
+
+    DescriptorSet set = pkgInOut.descriptorSet(0);
+    set.addShaderBuffer({ ShaderBufferLocation::TERRAIN_DATA, _shaderData, vec2<U32>(offset, MAX_RENDER_NODES) });
+    pkgInOut.descriptorSet(0, set);
 
     GFX::SendPushConstantsCommand pushConstantsCommand = {};
     pushConstantsCommand._constants.set("tessellationRange", GFX::PushConstantType::VEC2, _descriptor->getTessellationRange().xy());

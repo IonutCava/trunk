@@ -38,12 +38,13 @@
 #define GLBINDING_STATIC
 #endif
 
+#include "Platform/Video/Headers/RenderAPIWrapper.h"
+
 #include <glbinding/gl45/gl.h>
 using namespace gl45;
 
 #include <glbinding/Binding.h>
-
-#include "Platform/Video/Headers/RenderAPIWrapper.h"
+#include <EASTL/array.h>
 
 struct SDL_Window;
 typedef void *SDL_GLContext;
@@ -143,8 +144,8 @@ public:
     void deallocate(GLuint& handle);
 
 private:
-    std::array<State, N> _usageMap;
-    std::array<GLuint, N> _handles;
+    eastl::array<State, N> _usageMap;
+    eastl::array<GLuint, N> _handles;
 };
 /// Wrapper for glGetIntegerv
 GLint getIntegerv(GLenum param);
