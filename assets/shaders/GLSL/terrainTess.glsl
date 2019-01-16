@@ -18,15 +18,11 @@ vec2 calcTerrainTexCoord(in vec4 pos)
     return vec2(abs(pos.x - TerrainOrigin.x) / TERRAIN_WIDTH, abs(pos.z - TerrainOrigin.y) / TERRAIN_LENGTH);
 }
 
-out flat int nodeDataIndex;
-
 void main(void)
 {
     computeData();
 
-    nodeDataIndex = gl_InstanceID;
-
-    vec4 posAndScale = dvd_TerrainData[nodeDataIndex]._positionAndTileScale;
+    vec4 posAndScale = dvd_TerrainData[VAR.dvd_instanceID]._positionAndTileScale;
 
     vec4 patchPosition = vec4(dvd_Vertex.xyz * posAndScale.w, 1.0);
     
@@ -67,9 +63,6 @@ uniform vec2 tessellationRange;
 // Outputs
 //
 layout(vertices = 4) out;
-
-in flat int nodeDataIndex[];
-out flat int nodeDataIndexTC[];
 
 out float tcs_tessLevel[];
 
@@ -128,7 +121,7 @@ void main(void)
 {
     PassData(id);
 
-    mat4 mvMatrix = dvd_WorldViewMatrix(VAR.dvd_instanceID);
+    mat4 mvMatrix = dvd_WorldViewMatrix(VAR.dvd_baseInstance);
 
     mat4 mvp = dvd_ProjectionMatrix * mvMatrix;
     vec4 v0 = project(mvp, gl_in[0].gl_Position);
@@ -150,7 +143,7 @@ void main(void)
         gl_TessLevelOuter[2] = dlodCameraDistance(gl_in[1].gl_Position, gl_in[2].gl_Position, _in[1]._texCoord, _in[2]._texCoord);
         gl_TessLevelOuter[3] = dlodCameraDistance(gl_in[2].gl_Position, gl_in[3].gl_Position, _in[2]._texCoord, _in[3]._texCoord);
 
-        vec4 tScale = dvd_TerrainData[nodeDataIndex[id]]._tScale;
+        vec4 tScale = dvd_TerrainData[VAR.dvd_instanceID]._tScale;
 
         if (tscale_negx == 2.0) {
             gl_TessLevelOuter[0] = max(2.0, gl_TessLevelOuter[0] * 0.5);
@@ -176,7 +169,6 @@ void main(void)
     // Pass the patch verts along
     gl_out[id].gl_Position = gl_in[id].gl_Position;
 
-    nodeDataIndexTC[id] = nodeDataIndex[id];
     // Output tessellation level (used for wireframe coloring)
     tcs_tessLevel[id] = gl_TessLevelOuter[0];
 }
@@ -200,17 +192,13 @@ layout(binding = BUFFER_TERRAIN_DATA, std140) uniform dvd_TerrainBlock
 
 layout(quads, fractional_even_spacing) in;
 
-in flat int nodeDataIndexTC[];
-
 in float tcs_tessLevel[];
-
 out float tes_tessLevel;
 
 #if !defined(TOGGLE_WIREFRAME)
 #if defined(SHADOW_PASS)
-out vec4 geom_vertexWVP;
+out vec4 dvd_vertexWVP;
 #else
-out vec4 _scrollingUV;
 // x = distance, y = depth
 smooth out vec2 _waterDetails;
 out float LoD;
@@ -311,17 +299,6 @@ void waterDetails() {
 #endif
 }
 
-void scrollingUV() {
-#if !defined(SHADOW_PASS)
-    float time2 = float(dvd_time) * 0.0001;
-    vec2 noiseUV = _out._texCoord * UNDERWATER_TILE_SCALE;
-
-    _scrollingUV.st = noiseUV;
-    _scrollingUV.pq = noiseUV + time2;
-    _scrollingUV.s -= time2;
-#endif
-}
-
 #endif
 
 void main()
@@ -341,11 +318,11 @@ void main()
     pos.y = (TERRAIN_HEIGHT_RANGE * sampleHeight) + TERRAIN_MIN_HEIGHT;
 
     // Project the vertex to clip space and send it along
-    vec3 offset = dvd_TerrainData[nodeDataIndexTC[0]]._positionAndTileScale.xyz;
-    _out._vertexW = dvd_WorldMatrix(VAR[0].dvd_instanceID) * vec4(pos.xyz + offset, pos.w);
+    vec3 offset = dvd_TerrainData[VAR[0].dvd_instanceID]._positionAndTileScale.xyz;
+    _out._vertexW = dvd_WorldMatrix(VAR[0].dvd_baseInstance) * vec4(pos.xyz + offset, pos.w);
 
 #if !defined(SHADOW_PASS)
-    mat3 normalMatrixWV = dvd_NormalMatrixWV(VAR[0].dvd_instanceID);
+    mat3 normalMatrixWV = dvd_NormalMatrixWV(VAR[0].dvd_baseInstance);
     vec3 normal = getNormal(sampleHeight, heightOffsets);
 
     _out._normalWV = normalize(normalMatrixWV * normal);
@@ -362,7 +339,7 @@ void main()
     gl_Position = dvd_ViewProjectionMatrix * _out._vertexW;
 
 #if defined(SHADOW_PASS)
-    geom_vertexWVP = gl_Position;
+    dvd_vertexWVP = gl_Position;
 #else
     waterDetails();
     if (tes_tessLevel >= 64.0) {
@@ -394,7 +371,7 @@ layout(triangle_strip, max_vertices = 4) out;
 
 #if !defined(TOGGLE_WIREFRAME)
 #if defined(SHADOW_PASS)
-out vec4 geom_vertexWVP;
+out vec4 dvd_vertexWVP;
 #else
 // x = distance, y = depth
 smooth out vec2 _waterDetails;
@@ -466,7 +443,7 @@ void PerVertex(in int i, in vec3 edge_dist) {
 
     gl_Position = getWVPPositon(i);
 #if defined(SHADOW_PASS)
-    geom_vertexWVP = gl_Position;
+    dvd_vertexWVP = gl_Position;
 #endif
     setClipPlanes(gl_in[i].gl_Position);
 
@@ -548,19 +525,14 @@ vec4 getAlbedo() {
     return private_albedo;
 }
 
-vec4 scrollingUV() {
+vec4 CausticsColour() {
+    
     float time2 = float(dvd_time) * 0.0001;
     vec2 noiseUV = _in._texCoord * UNDERWATER_TILE_SCALE;
 
     vec4 scrollingUV = vec4(noiseUV, noiseUV + time2);
     scrollingUV.s -= time2;
 
-    return scrollingUV;
-}
-
-vec4 CausticsColour() {
-    
-    vec4 scrollingUV = scrollingUV();
     setProcessedNormal(VAR._normalWV);
 
     return texture(texWaterCaustics, scrollingUV.st) +
@@ -612,7 +584,7 @@ void main(void)
 --Fragment.Shadow
 
 out vec2 _colourOut;
-in vec4 geom_vertexWVP;
+in vec4 dvd_vertexWVP;
 
 #include "nodeBufferedInput.cmn"
 
@@ -626,7 +598,7 @@ vec2 computeMoments(in float depth) {
 
 void main() {
     // Adjusting moments (this is sort of bias per pixel) using partial derivative
-    float depth = geom_vertexWVP.z / geom_vertexWVP.w;
+    float depth = dvd_vertexWVP.z / dvd_vertexWVP.w;
     depth = depth * 0.5 + 0.5;
     //_colourOut = computeMoments(exp(DEPTH_EXP_WARP * depth));
     _colourOut = computeMoments(depth);

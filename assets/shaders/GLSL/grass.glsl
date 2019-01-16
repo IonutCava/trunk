@@ -9,7 +9,7 @@ struct GrassData {
     vec4 data;
 };
 
-layout(std430, binding = BUFFER_GRASS_DATA) coherent readonly buffer dvd_transformBlock{
+layout(std430, binding = BUFFER_GRASS_DATA) coherent readonly buffer dvd_transformBlock {
     GrassData grassData[];
 };
 
@@ -27,7 +27,7 @@ void computeFoliageMovementGrass(inout vec4 vertex, in float scaleFactor) {
 
 void main()
 {
-    GrassData data = grassData[gl_InstanceID];
+    GrassData data = grassData[VAR.dvd_instanceID];
 
     computeDataMinimal();
     if (dvd_Vertex.y > 0.5)

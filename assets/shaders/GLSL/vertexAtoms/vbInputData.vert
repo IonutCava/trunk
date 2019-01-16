@@ -13,7 +13,8 @@ vec3   dvd_Normal;
 vec3   dvd_Tangent;
 
 void computeDataMinimal() {
-    VAR.dvd_instanceID = gl_BaseInstanceARB;
+    VAR.dvd_baseInstance = gl_BaseInstanceARB;
+    VAR.dvd_instanceID = gl_InstanceID;
     VAR.dvd_drawID = gl_DrawIDARB;
     VAR._texCoord = inTexCoordData;
 
@@ -35,7 +36,7 @@ void computeData() {
     computeDataMinimal();
 
     VAR._texCoord = inTexCoordData;
-    VAR._vertexW  = dvd_WorldMatrix(VAR.dvd_instanceID) * dvd_Vertex;
+    VAR._vertexW  = dvd_WorldMatrix(VAR.dvd_baseInstance) * dvd_Vertex;
 
     setClipPlanes(VAR._vertexW);
 }

@@ -257,12 +257,19 @@ bool GL_API::initShaders() {
 bool GL_API::initGLSW() {
     static const std::pair<stringImpl, stringImpl>  shaderVaryings[] =
     {
-        {"flat uint" , "dvd_instanceID"},
-        {"flat uint" , "dvd_drawID"},
-        { "vec2" , "_texCoord"},
-        { "vec4" , "_vertexW"},
-        { "vec4" , "_vertexWV"},
-        { "vec3" , "_normalWV"},
+        { "vec4"       , "_vertexW"},
+        { "vec4"       , "_vertexWV"},
+        { "vec3"       , "_normalWV"},
+        { "vec2"       , "_texCoord"},
+        { "flat uvec3" , "dvd_drawParams"},
+    };
+    static const stringImpl drawParams = ""
+        "#define dvd_baseInstance dvd_drawParams.x\n"
+        "#define dvd_instanceID dvd_drawParams.y\n"
+        "#define dvd_drawID dvd_drawParams.z\n";
+
+    static const std::pair<stringImpl, stringImpl> shaderVaryingsBump[] =
+    {
         { "vec3" , "_tangentWV"},
         { "vec3" , "_bitangentWV"}
     };
@@ -289,6 +296,14 @@ bool GL_API::initGLSW() {
             passData.append(Util::StringFormat(baseString.c_str(), var.second.c_str(), var.second.c_str()));
             passData.append("\n");
         }
+        passData.append("#if defined(COMPUTE_TBN)\n");
+        for (const std::pair<stringImpl, stringImpl>& var : shaderVaryingsBump) {
+            passData.append(Util::StringFormat(baseString.c_str(), var.second.c_str(), var.second.c_str()));
+            passData.append("\n");
+        }
+        passData.append("#endif\n");
+
+            
         passData.append("}\n");
 
         return passData;
@@ -359,6 +374,7 @@ bool GL_API::initGLSW() {
     appendToShaderHeader(ShaderType::COUNT,    "const float Z_TEST_SIGMA = 0.0001;", lineOffsets);
     appendToShaderHeader(ShaderType::FRAGMENT, "const uint DEPTH_EXP_WARP = 32;", lineOffsets);
     appendToShaderHeader(ShaderType::VERTEX,   "const uint MAX_BONE_COUNT_PER_NODE = " + to_stringImpl(Config::MAX_BONE_COUNT_PER_NODE) + ";", lineOffsets);
+    static_assert(Config::MAX_BONE_COUNT_PER_NODE <= 1024, "GLWrapper error: too many bones per vert. Can't fit inside UBO");
 
     appendToShaderHeader(
         ShaderType::COUNT,
@@ -663,56 +679,86 @@ bool GL_API::initGLSW() {
         ") in vec2 inGenericData;",
         lineOffsets);
 
-    auto addVaryings = [&](ShaderType type, ShaderOffsetArray& lineOffsets) {
-        for (const std::pair<stringImpl, stringImpl>& entry : shaderVaryings) {
-            appendToShaderHeader(type, Util::StringFormat("    %s %s;", entry.first.c_str(), entry.second.c_str()), lineOffsets);
+    auto addVaryings = [&](ShaderType type, ShaderOffsetArray& lineOffsets, bool bump) {
+        if (bump) {
+            for (const std::pair<stringImpl, stringImpl>& entry : shaderVaryingsBump) {
+                appendToShaderHeader(type, Util::StringFormat("    %s %s;", entry.first.c_str(), entry.second.c_str()), lineOffsets);
+            }
+        } else {
+            for (const std::pair<stringImpl, stringImpl>& entry : shaderVaryings) {
+                appendToShaderHeader(type, Util::StringFormat("    %s %s;", entry.first.c_str(), entry.second.c_str()), lineOffsets);
+            }
         }
     };
 
     // Vertex shader output
     appendToShaderHeader(ShaderType::VERTEX, "out Data {", lineOffsets);
-    addVaryings(ShaderType::VERTEX, lineOffsets);
+    addVaryings(ShaderType::VERTEX, lineOffsets, false);
+    appendToShaderHeader(ShaderType::VERTEX, "#if defined(COMPUTE_TBN)", lineOffsets);
+    addVaryings(ShaderType::VERTEX, lineOffsets, true);
+    appendToShaderHeader(ShaderType::VERTEX, "#endif", lineOffsets);
     appendToShaderHeader(ShaderType::VERTEX, "} _out;\n", lineOffsets);
 
     // Tessellation Control shader input
     appendToShaderHeader(ShaderType::TESSELATION_CTRL, "in Data {", lineOffsets);
-    addVaryings(ShaderType::TESSELATION_CTRL, lineOffsets);
+    addVaryings(ShaderType::TESSELATION_CTRL, lineOffsets, false);
+    appendToShaderHeader(ShaderType::TESSELATION_CTRL, "#if defined(COMPUTE_TBN)", lineOffsets);
+    addVaryings(ShaderType::TESSELATION_CTRL, lineOffsets, true);
+    appendToShaderHeader(ShaderType::TESSELATION_CTRL, "#endif", lineOffsets);
     appendToShaderHeader(ShaderType::TESSELATION_CTRL, "} _in[];\n", lineOffsets);
 
     // Tessellation Control shader output
     appendToShaderHeader(ShaderType::TESSELATION_CTRL, "out Data {", lineOffsets);
-    addVaryings(ShaderType::TESSELATION_CTRL, lineOffsets);
+    addVaryings(ShaderType::TESSELATION_CTRL, lineOffsets, false);
+    appendToShaderHeader(ShaderType::TESSELATION_CTRL, "#if defined(COMPUTE_TBN)", lineOffsets);
+    addVaryings(ShaderType::TESSELATION_CTRL, lineOffsets, true);
+    appendToShaderHeader(ShaderType::TESSELATION_CTRL, "#endif", lineOffsets);
     appendToShaderHeader(ShaderType::TESSELATION_CTRL, "} _out[];\n", lineOffsets);
 
     appendToShaderHeader(ShaderType::TESSELATION_CTRL, getPassData(ShaderType::TESSELATION_CTRL), lineOffsets);
 
     // Tessellation Eval shader input
     appendToShaderHeader(ShaderType::TESSELATION_EVAL, "in Data {", lineOffsets);
-    addVaryings(ShaderType::TESSELATION_EVAL, lineOffsets);
+    addVaryings(ShaderType::TESSELATION_EVAL, lineOffsets,false);
+    appendToShaderHeader(ShaderType::TESSELATION_EVAL, "#if defined(COMPUTE_TBN)", lineOffsets);
+    addVaryings(ShaderType::TESSELATION_EVAL, lineOffsets, true);
+    appendToShaderHeader(ShaderType::TESSELATION_EVAL, "#endif", lineOffsets);
     appendToShaderHeader(ShaderType::TESSELATION_EVAL, "} _in[];\n", lineOffsets);
 
     // Tessellation Eval shader output
     appendToShaderHeader(ShaderType::TESSELATION_EVAL, "out Data {", lineOffsets);
-    addVaryings(ShaderType::TESSELATION_EVAL, lineOffsets);
+    addVaryings(ShaderType::TESSELATION_EVAL, lineOffsets, false);
+    appendToShaderHeader(ShaderType::TESSELATION_EVAL, "#if defined(COMPUTE_TBN)", lineOffsets);
+    addVaryings(ShaderType::TESSELATION_EVAL, lineOffsets, true);
+    appendToShaderHeader(ShaderType::TESSELATION_EVAL, "#endif", lineOffsets);
     appendToShaderHeader(ShaderType::TESSELATION_EVAL, "} _out;\n", lineOffsets);
 
     appendToShaderHeader(ShaderType::TESSELATION_EVAL, getPassData(ShaderType::TESSELATION_EVAL), lineOffsets);
 
     // Geometry shader input
     appendToShaderHeader(ShaderType::GEOMETRY, "in Data {", lineOffsets);
-    addVaryings(ShaderType::GEOMETRY, lineOffsets);
+    addVaryings(ShaderType::GEOMETRY, lineOffsets, false);
+    appendToShaderHeader(ShaderType::GEOMETRY, "#if defined(COMPUTE_TBN)", lineOffsets);
+    addVaryings(ShaderType::GEOMETRY, lineOffsets, true);
+    appendToShaderHeader(ShaderType::GEOMETRY, "#endif", lineOffsets);
     appendToShaderHeader(ShaderType::GEOMETRY, "} _in[];\n", lineOffsets);
 
     // Geometry shader output
     appendToShaderHeader(ShaderType::GEOMETRY, "out Data {", lineOffsets);
-    addVaryings(ShaderType::GEOMETRY, lineOffsets);
+    addVaryings(ShaderType::GEOMETRY, lineOffsets, false);
+    appendToShaderHeader(ShaderType::GEOMETRY, "#if defined(COMPUTE_TBN)", lineOffsets);
+    addVaryings(ShaderType::GEOMETRY, lineOffsets, true);
+    appendToShaderHeader(ShaderType::GEOMETRY, "#endif", lineOffsets);
     appendToShaderHeader(ShaderType::GEOMETRY, "} _out;\n", lineOffsets);
 
     appendToShaderHeader(ShaderType::GEOMETRY, getPassData(ShaderType::GEOMETRY), lineOffsets);
 
     // Fragment shader input
     appendToShaderHeader(ShaderType::FRAGMENT, "in Data {", lineOffsets);
-    addVaryings(ShaderType::FRAGMENT, lineOffsets);
+    addVaryings(ShaderType::FRAGMENT, lineOffsets, false);
+    appendToShaderHeader(ShaderType::FRAGMENT, "#if defined(COMPUTE_TBN)", lineOffsets);
+    addVaryings(ShaderType::FRAGMENT, lineOffsets, true);
+    appendToShaderHeader(ShaderType::FRAGMENT, "#endif", lineOffsets);
     appendToShaderHeader(ShaderType::FRAGMENT, "} _in;\n", lineOffsets);
 
     appendToShaderHeader(ShaderType::VERTEX, "#define VAR _out", lineOffsets);
@@ -720,6 +766,7 @@ bool GL_API::initGLSW() {
     appendToShaderHeader(ShaderType::TESSELATION_EVAL, "#define VAR _in", lineOffsets);
     appendToShaderHeader(ShaderType::GEOMETRY, "#define VAR _in", lineOffsets);
     appendToShaderHeader(ShaderType::FRAGMENT, "#define VAR _in", lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT, drawParams, lineOffsets);
 
     // GPU specific data, such as GFXDevice's main uniform block and clipping
     // planes are defined in an external file included in every shader

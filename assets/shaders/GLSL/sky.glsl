@@ -8,7 +8,7 @@ void main(void){
     computeData();
     VAR._vertexW.xyz += dvd_cameraPosition.xyz;
 
-    VAR._normalWV = normalize(dvd_NormalMatrixWV(VAR.dvd_instanceID) * dvd_Normal);
+    VAR._normalWV = normalize(dvd_NormalMatrixWV(VAR.dvd_baseInstance) * dvd_Normal);
 
     gl_Position = dvd_ViewProjectionMatrix * VAR._vertexW;
     gl_Position.z = gl_Position.w - 0.0001;

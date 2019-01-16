@@ -67,15 +67,13 @@ AnimEvaluator::~AnimEvaluator()
 }
 
 bool AnimEvaluator::initBuffers(GFXDevice& context) {
-    const bool useUnboundBuffer = true;
-
     DIVIDE_ASSERT(_boneTransformBuffer == nullptr && !_transforms.empty(),
                   "AnimEvaluator error: can't create bone buffer at current stage!");
 
     DIVIDE_ASSERT(_transforms.size() <= Config::MAX_BONE_COUNT_PER_NODE,
         "AnimEvaluator error: Too many bones for current node! "
         "Increase MAX_BONE_COUNT_PER_NODE in Config!");
-    size_t paddingFactor = ShaderBuffer::alignmentRequirement(useUnboundBuffer);
+    size_t paddingFactor = ShaderBuffer::alignmentRequirement(false);
 
     U32 bonePadding = 0;
     size_t boneCount = _transforms.front().size();
@@ -102,9 +100,6 @@ bool AnimEvaluator::initBuffers(GFXDevice& context) {
     bufferDescriptor._elementSize = bufferSize;
     bufferDescriptor._ringBufferLength = 1;
     bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
-    if (useUnboundBuffer) {
-        bufferDescriptor._flags |= to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE);
-    }
     bufferDescriptor._initialData = animationData.data();
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::ONCE;
     bufferDescriptor._name = Util::StringFormat("BONE_BUFFER_%d_BONES", boneCount);
