@@ -139,7 +139,7 @@ class LightPool : public SceneComponent,
     }
     
   protected:
-    typedef vectorEASTL<Light::ShadowProperties> LightShadowProperties;
+    typedef std::array<Light::ShadowProperties, Config::Lighting::MAX_SHADOW_CASTING_LIGHTS> LightShadowProperties;
     typedef vector<Light*> LightVec;
 
     friend class SceneManager;

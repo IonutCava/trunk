@@ -240,7 +240,12 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
     pkgInOut.descriptorSet(0, set);
 
     GFX::SendPushConstantsCommand pushConstantsCommand = {};
-    pushConstantsCommand._constants.set("tessellationRange", GFX::PushConstantType::VEC2, _descriptor->getTessellationRange().xy());
+    if (renderStagePass._stage == RenderStage::SHADOW) {
+        pushConstantsCommand._constants.set("tessellationRange", GFX::PushConstantType::VEC2, vec2<F32>(10.0f, 0.5f) * _descriptor->getTessellationRange().xy());
+    } else {
+        pushConstantsCommand._constants.set("tessellationRange", GFX::PushConstantType::VEC2, _descriptor->getTessellationRange().xy());
+    }
+
     pushConstantsCommand._constants.set("tileScale", GFX::PushConstantType::VEC4, _terrainTextures->getTileScales());
     pkgInOut.addPushConstantsCommand(pushConstantsCommand);
 

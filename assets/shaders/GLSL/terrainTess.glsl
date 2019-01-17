@@ -91,7 +91,7 @@ float dlodCameraDistance(vec4 p0, vec4 p1, vec2 t0, vec2 t1)
     float d0 = clamp((abs(p0.z) - tessellationRange.x) / (tessellationRange.y - tessellationRange.x), 0.0, 1.0);
     float d1 = clamp((abs(p1.z) - tessellationRange.x) / (tessellationRange.y - tessellationRange.x), 0.0, 1.0);
 
-    float t = mix(64, 2, (d0 + d1) * 0.5);
+    float t = mix(MAX_TESS_SCALE, MIN_TESS_SCALE, (d0 + d1) * 0.5);
 
     if (t <= 2.0) {
         return 2.0;
@@ -113,8 +113,7 @@ float dlodCameraDistance(vec4 p0, vec4 p1, vec2 t0, vec2 t1)
         return 32.0;
     }
 
-    return 64.0;
-
+    return MAX_TESS_SCALE;
 }
 
 void main(void)
@@ -143,6 +142,7 @@ void main(void)
         gl_TessLevelOuter[2] = dlodCameraDistance(gl_in[1].gl_Position, gl_in[2].gl_Position, _in[1]._texCoord, _in[2]._texCoord);
         gl_TessLevelOuter[3] = dlodCameraDistance(gl_in[2].gl_Position, gl_in[3].gl_Position, _in[2]._texCoord, _in[3]._texCoord);
 
+#if !defined(SHADOW_PASS)
         vec4 tScale = dvd_TerrainData[VAR.dvd_instanceID]._tScale;
 
         if (tscale_negx == 2.0) {
@@ -160,7 +160,7 @@ void main(void)
         if (tscale_posz == 2.0) {
             gl_TessLevelOuter[3] = max(2.0, gl_TessLevelOuter[3] * 0.5);
         }
-
+#endif
         // Inner tessellation level
         gl_TessLevelInner[0] = 0.5 * (gl_TessLevelOuter[0] + gl_TessLevelOuter[3]);
         gl_TessLevelInner[1] = 0.5 * (gl_TessLevelOuter[2] + gl_TessLevelOuter[1]);
@@ -570,13 +570,13 @@ vec4 TerrainMappingRoutine() {
 
 void main(void)
 {
-   vec4 colourOut = mix(TerrainMappingRoutine(), UnderwaterMappingRoutine(), _waterDetails.x);
+    vec4 colourOut = mix(TerrainMappingRoutine(), UnderwaterMappingRoutine(), _waterDetails.x);
 #if defined(TOGGLE_WIREFRAME)
     const float LineWidth = 0.75;
     float d = min(min(gs_edgeDist.x, gs_edgeDist.y), gs_edgeDist.z);
     colourOut = mix(vec4(gs_wireColor, 1.0), colourOut, smoothstep(LineWidth - 1, LineWidth + 1, d));
 #endif
-    
+
     writeOutput(colourOut, packNormal(getProcessedNormal()));
 }
 

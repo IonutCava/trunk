@@ -310,16 +310,15 @@ void glFramebuffer::blitFrom(const RTBlitParams& params)
             const RTAttachment_ptr& outAtt = outputAttachments[entry._outputIndex];
 
             inAtt->writeLayer(entry._inputLayer);
-            {
-                const BindingState& inState = input->getAttachmentState(static_cast<GLenum>(inAtt->binding()));
-                input->toggleAttachment(inAtt, inState._attState, false);
-            }
+            
+            const BindingState& inState = input->getAttachmentState(static_cast<GLenum>(inAtt->binding()));
+            input->toggleAttachment(inAtt, inState._attState, true);
+            
 
             outAtt->writeLayer(entry._outputLayer);
-            {
-                const BindingState& outState = this->getAttachmentState(static_cast<GLenum>(outAtt->binding()));
-                this->toggleAttachment(outAtt, outState._attState, false);
-            }
+            const BindingState& outState = this->getAttachmentState(static_cast<GLenum>(outAtt->binding()));
+            this->toggleAttachment(outAtt, outState._attState, true);
+            
 
             queueMipMapRecomputation(outAtt, vec2<U32>(0, entry._outputLayer));
         }
@@ -355,31 +354,28 @@ void glFramebuffer::blitFrom(const RTBlitParams& params)
                 prevWriteAtt = crtWriteAtt;
             }
 
-            if (inAtt->writeLayer(entry._inputLayer)) {
-                const BindingState& inState = input->getAttachmentState(static_cast<GLenum>(crtReadAtt));
-                input->toggleAttachment(inAtt, inState._attState, entry._inputLayer > 0);
-            }
+            inAtt->writeLayer(entry._inputLayer);
+            const BindingState& inState = input->getAttachmentState(static_cast<GLenum>(crtReadAtt));
+            input->toggleAttachment(inAtt, inState._attState, true);
+            
 
-            if (outAtt->writeLayer(entry._outputLayer)) {
-                const BindingState& outState = this->getAttachmentState(static_cast<GLenum>(crtWriteAtt));
-                this->toggleAttachment(outAtt, outState._attState, entry._outputLayer > 0);
-            }
+            outAtt->writeLayer(entry._outputLayer);
+            const BindingState& outState = this->getAttachmentState(static_cast<GLenum>(crtWriteAtt));
+            this->toggleAttachment(outAtt, outState._attState, true);
 
             // If we change layers, then the depth buffer should match that ... I guess ... this sucks!
             if (input->hasDepth()) {
                 const RTAttachment_ptr& inDepthAtt = input->_attachmentPool->get(RTAttachmentType::Depth, 0);
-                if (inDepthAtt->writeLayer(entry._inputLayer)) {
-                    const BindingState& inDepthState = input->getAttachmentState(GL_DEPTH_ATTACHMENT);
-                    input->toggleAttachment(inDepthAtt, inDepthState._attState, entry._inputLayer > 0);
-                }
+                inDepthAtt->writeLayer(entry._inputLayer);
+                const BindingState& inDepthState = input->getAttachmentState(GL_DEPTH_ATTACHMENT);
+                input->toggleAttachment(inDepthAtt, inDepthState._attState, true);
             }
 
             if (this->hasDepth()) {
                 const RTAttachment_ptr& outDepthAtt = this->_attachmentPool->get(RTAttachmentType::Depth, 0);
-                if (outDepthAtt->writeLayer(entry._outputLayer)) {
-                    const BindingState& outDepthState = this->getAttachmentState(GL_DEPTH_ATTACHMENT);
-                    this->toggleAttachment(outDepthAtt, outDepthState._attState, entry._outputLayer > 0);
-                }
+                outDepthAtt->writeLayer(entry._outputLayer);
+                const BindingState& outDepthState = this->getAttachmentState(GL_DEPTH_ATTACHMENT);
+                this->toggleAttachment(outDepthAtt, outDepthState._attState, true);
             }
 
             // We always change depth layers to satisfy whatever f**ked up completion requirements the OpenGL driver has (looking at you Nvidia)

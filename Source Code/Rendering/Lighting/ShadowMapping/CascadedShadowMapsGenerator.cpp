@@ -157,10 +157,11 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
     RenderTarget::DrawLayerParams drawParams = {};
     drawParams._type = RTAttachmentType::Colour;
     drawParams._index = 0;
-    drawParams._layer = 0;
 
     RenderPassManager& rpm = _context.parent().renderPassManager();
-    for (U8 i = 0; i < numSplits; ++i) {
+    for (I16 i = to_I16(numSplits) - 1; i >= 0; i--) {
+        drawParams._layer = i;
+
         beginDebugScopeCommand._scopeName = Util::StringFormat("CSM_PASS_%d", i).c_str();
         GFX::EnqueueCommand(bufferInOut, beginDebugScopeCommand);
 
@@ -175,15 +176,13 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
 
         GFX::EnqueueCommand(bufferInOut, endRenderSubPassCommand);
         GFX::EnqueueCommand(bufferInOut, endDebugScopeCommand);
-
-        ++drawParams._layer;
     }
     
-    GFX::BeginRenderSubPassCommand beginRenderSubPassCmd = {};
+    /*GFX::BeginRenderSubPassCommand beginRenderSubPassCmd = {};
     drawParams._layer = 0;
     beginRenderSubPassCmd._writeLayers.push_back(drawParams);
     GFX::EnqueueCommand(bufferInOut, beginRenderSubPassCmd);
-    GFX::EnqueueCommand(bufferInOut, endRenderSubPassCommand);
+    GFX::EnqueueCommand(bufferInOut, endRenderSubPassCommand);*/
 
     GFX::EndRenderPassCommand endRenderPassCmd = {};
     GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
@@ -302,7 +301,7 @@ void CascadedShadowMapsGenerator::applyFrustumSplits(DirectionalLightComponent& 
         orthoRect.bottom = minExtents.y;
         orthoRect.top = maxExtents.y;
 
-        vec2<F32> clipPlanes(0.01f, cascadeExtents.z);
+        vec2<F32> clipPlanes(0.001f, cascadeExtents.z);
 
         mat4<F32> shadowMatrix{};
         mat4<F32> lightOrthoMatrix(orthoRect, clipPlanes);

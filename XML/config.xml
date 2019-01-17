@@ -65,7 +65,7 @@
 </GUI>
 
 <rendering>
-  <MSAAsamples>0</MSAAsamples>
+  <MSAAsamples>2</MSAAsamples>
   <anisotropicFilteringLevel>8</anisotropicFilteringLevel>
   <renderDetailLevel>4</renderDetailLevel>
   <multithreadedCommandGeneration>true</multithreadedCommandGeneration>
@@ -88,13 +88,13 @@
   <shadowMapping>
     <enabled>true</enabled>
     <!-- Will be rounded up to the next POW_2. Cube/Dual paraboloid will be 1/2 resolution per face/slice -->
-    <shadowMapResolution>512</shadowMapResolution>
-    <MSAAsamples>0</MSAAsamples>
+    <shadowMapResolution>1024</shadowMapResolution>
+    <MSAAsamples>2</MSAAsamples>
     <anisotropicFilteringLevel>8</anisotropicFilteringLevel>
     <enableBlurring>false</enableBlurring>
     <defaultCSMSplitCount>3</defaultCSMSplitCount>
     <softness>0.25</softness>
-    <splitLambda>0.65</splitLambda>
+    <splitLambda>0.75</splitLambda>
   </shadowMapping>
 </rendering>
 

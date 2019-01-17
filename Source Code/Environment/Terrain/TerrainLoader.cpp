@@ -281,19 +281,23 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
         shaderName.append(".Wireframe");
     }
 
+    ResourceDescriptor terrainShaderShadow(shaderName + ".Shadow-" + name);
+    ShaderProgramDescriptor shadowShaderDescriptor = shaderDescriptor;
+    shadowShaderDescriptor._defines.push_back(std::make_pair("SHADOW_PASS", true));
+    shadowShaderDescriptor._defines.push_back(std::make_pair("MAX_TESS_SCALE 32", true));
+    shadowShaderDescriptor._defines.push_back(std::make_pair("MIN_TESS_SCALE 16", true));
+    terrainShaderShadow.setPropertyDescriptor(shadowShaderDescriptor);
+    ShaderProgram_ptr terrainShadowShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderShadow);
+
     ResourceDescriptor terrainShaderColour(shaderName + ".Colour-" + name);
+    shaderDescriptor._defines.push_back(std::make_pair("MAX_TESS_SCALE 64", true));
+    shaderDescriptor._defines.push_back(std::make_pair("MIN_TESS_SCALE 2", true));
     terrainShaderColour.setPropertyDescriptor(shaderDescriptor);
     ShaderProgram_ptr terrainColourShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderColour);
 
     ResourceDescriptor terrainShaderPrePass(shaderName + ".PrePass-" + name);
     terrainShaderPrePass.setPropertyDescriptor(shaderDescriptor);
     ShaderProgram_ptr terrainPrePassShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderPrePass);
-
-    ResourceDescriptor terrainShaderShadow(shaderName + ".Shadow-" + name);
-    ShaderProgramDescriptor shadowShaderDescriptor = shaderDescriptor;
-    shadowShaderDescriptor._defines.push_back(std::make_pair("SHADOW_PASS", true));
-    terrainShaderShadow.setPropertyDescriptor(shadowShaderDescriptor);
-    ShaderProgram_ptr terrainShadowShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderShadow);
 
     ResourceDescriptor terrainShaderColourLQ(shaderName + ".Colour.LowQuality-" + name);
     ShaderProgramDescriptor lowQualityShaderDescriptor = shaderDescriptor;
@@ -317,7 +321,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     terrainRenderStateReflection.setCullMode(g_showWireFrame ? CullMode::CCW : CullMode::CW);
     // Generate a shadow render state
     RenderStateBlock terrainRenderStateDepth;
-    terrainRenderStateDepth.setCullMode(g_showWireFrame ? CullMode::CCW : CullMode::CW);
+    terrainRenderStateDepth.setCullMode(g_showWireFrame ? CullMode::CW : CullMode::CCW);
     // terrainDescDepth.setZBias(1.0f, 1.0f);
     terrainRenderStateDepth.setColourWrites(true, true, false, false);
 

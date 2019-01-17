@@ -25,17 +25,9 @@ float applyShadowDirectional(Shadow currentShadowSource, int splitCount, in floa
 
     // find the appropriate depth map to look up in based on the depth of this fragment
     g_shadowTempInt = 0;
-
-    /*for (; g_shadowTempInt < splitCount; ++g_shadowTempInt) {
-        if (fragDepth < currentShadowSource._floatValues[g_shadowTempInt]) {
-            break;
-        }
-    }*/
     // Figure out which cascade to sample from
-    for (int i = 0; i < splitCount - 1; ++i)
-    {
-        if (fragDepth < currentShadowSource._floatValues[i])
-        {
+    for (int i = 0; i < splitCount - 1; ++i) {
+        if (fragDepth < currentShadowSource._floatValues[i]) {
             g_shadowTempInt = i + 1;
         }
     }

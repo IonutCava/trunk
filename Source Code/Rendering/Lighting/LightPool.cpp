@@ -47,8 +47,6 @@ LightPool::LightPool(Scene& parentScene, PlatformContext& context)
         _sortedLights[i].reserve(Config::Lighting::MAX_POSSIBLE_LIGHTS);
     }
 
-    _sortedShadowProperties.reserve(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
-
     _lightTypeState.fill(true);
     ParamHandler::instance().setParam<bool>(_ID("rendering.debug.displayShadowDebugInfo"), false);
 
@@ -89,7 +87,6 @@ void LightPool::init() {
     bufferDescriptor._elementCount = Config::Lighting::MAX_SHADOW_CASTING_LIGHTS;
     bufferDescriptor._elementSize = sizeof(Light::ShadowProperties);
     bufferDescriptor._name = "LIGHT_SHADOW_BUFFER";
-
     _shadowBuffer = _context.gfx().newSB(bufferDescriptor);
 
     ResourceDescriptor lightImpostorShader("lightImpostorShader");
@@ -170,20 +167,19 @@ void LightPool::generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffe
     LightVec sortedLights;
     shadowCastingLights(playerCamera.getEye(), sortedLights);
 
-    _sortedShadowProperties.clear();
-
     U32 shadowLightCount = 0;
     for (Light* light : sortedLights) {
-        if (_sortedShadowProperties.size() >= Config::Lighting::MAX_SHADOW_CASTING_LIGHTS) {
+        if (shadowLightCount >= Config::Lighting::MAX_SHADOW_CASTING_LIGHTS) {
             break;
         } 
 
-        U32 offset = shadowLightCount++ * Config::Lighting::MAX_SPLITS_PER_LIGHT;
+        U32 offset = shadowLightCount * Config::Lighting::MAX_SPLITS_PER_LIGHT;
         ShadowMap::generateShadowMaps(playerCamera, *light, offset, bufferInOut);
-        _sortedShadowProperties.emplace_back(light->getShadowProperties());
+        _sortedShadowProperties[shadowLightCount] = light->getShadowProperties();
+        shadowLightCount++;
     }
 
-    _shadowBuffer->writeData(0, _sortedShadowProperties.size(), _sortedShadowProperties.data());
+    _shadowBuffer->writeData(_sortedShadowProperties.data());
 }
 
 U32 LightPool::shadowCastingLightsCount() const {

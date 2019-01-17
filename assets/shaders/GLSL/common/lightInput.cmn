@@ -61,7 +61,7 @@ struct Shadow {
 
 layout(binding = BUFFER_LIGHT_SHADOW, std430) coherent ACCESS buffer dvd_ShadowBlock
 {
-    Shadow dvd_ShadowSource[];
+    Shadow dvd_ShadowSource[MAX_SHADOW_CASTING_LIGHTS];
 };
 
 #endif 

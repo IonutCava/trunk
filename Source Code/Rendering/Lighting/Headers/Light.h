@@ -74,6 +74,9 @@ class Light : public GUIDWrapper
                memcpy(_lightPosition, other._lightPosition, Config::Lighting::MAX_SPLITS_PER_LIGHT * sizeof(vec4<F32>));
                memcpy(_floatValues,   other._floatValues,   Config::Lighting::MAX_SPLITS_PER_LIGHT * sizeof(F32));
            }
+
+           // Renderdoc:
+           //uvec4 details; mat4 vp[6]; vec4 pos[6]; float f[6]
        };
 
     /// Create a new light assigned to the specified slot with the specified range

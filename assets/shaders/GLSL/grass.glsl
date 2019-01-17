@@ -27,9 +27,11 @@ void computeFoliageMovementGrass(inout vec4 vertex, in float scaleFactor) {
 
 void main()
 {
-    GrassData data = grassData[VAR.dvd_instanceID];
 
     computeDataMinimal();
+
+    GrassData data = grassData[VAR.dvd_instanceID];
+
     if (dvd_Vertex.y > 0.5)
     {
         computeFoliageMovementGrass(dvd_Vertex, data.data.y);
