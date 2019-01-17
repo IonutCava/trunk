@@ -1567,6 +1567,14 @@ mat4<T>::mat4(const vec3<U> &eye, const vec3<U> &target, const vec3<U> &up) noex
 
 template<typename T>
 template<typename U>
+mat4<T>::mat4(const Rect<U> &orthoRect, const vec2<U> &clip) noexcept
+    : mat4()
+{
+    ortho(orthoRect.left, orthoRect.right, orthoRect.bottom, orthoRect.top, clip.x, clip.y);
+}
+
+template<typename T>
+template<typename U>
 mat4<T>::mat4(const Plane<U>& reflectionPlane) noexcept
     : mat4()
 {

@@ -396,7 +396,6 @@ bool WarScene::load(const stringImpl& name) {
     Camera::utilityCamera(Camera::UtilityCamera::DEFAULT)->setGlobalRotation(-90.0f /*yaw*/, 59.21f /*pitch*/);
 
     //_sun->get<DirectionalLightComponent>()->csmSplitCount(3);  // 3 splits
-    _sun->get<DirectionalLightComponent>()->csmSplitLogFactor(0.85f);
     _sun->get<DirectionalLightComponent>()->csmNearClipOffset(25.0f);
     // Add some obstacles
 

@@ -32,6 +32,16 @@ namespace {
         }
         return to_stringImpl(hash);
     }
+    
+    constexpr ShaderProgram::TextureUsage g_materialTextures[] = {
+        ShaderProgram::TextureUsage::UNIT0,
+        ShaderProgram::TextureUsage::UNIT1,
+        ShaderProgram::TextureUsage::NORMALMAP,
+        ShaderProgram::TextureUsage::OPACITY,
+        ShaderProgram::TextureUsage::SPECULAR,
+    };
+
+    constexpr U32 g_materialTexturesCount = 5;
 };
 
 SharedMutex Material::s_shaderDBLock;
@@ -989,8 +999,10 @@ void Material::saveToXML(const stringImpl& entryName, boost::property_tree::ptre
 
     pt.put(entryName + ".parallaxFactor", getParallaxFactor());
 
-    for (U8 i = 0; i <= to_U8(ShaderProgram::TextureUsage::PROJECTION); ++i) {
-        ShaderProgram::TextureUsage usage = static_cast<ShaderProgram::TextureUsage>(i);
+
+    for (U8 i = 0; i <= g_materialTexturesCount; ++i) {
+        ShaderProgram::TextureUsage usage = g_materialTextures[i];
+
         Texture_wptr tex = getTexture(usage);
         if (!tex.expired()) {
             Texture_ptr texture = tex.lock();
@@ -1048,8 +1060,8 @@ void Material::loadFromXML(const stringImpl& entryName, const boost::property_tr
 
     STUBBED("ToDo: Set texture is currently disabled!");
 
-    for (U8 i = 0; i <= to_U8(ShaderProgram::TextureUsage::PROJECTION); ++i) {
-        ShaderProgram::TextureUsage usage = static_cast<ShaderProgram::TextureUsage>(i);
+    for (U8 i = 0; i <= g_materialTexturesCount; ++i) {
+        ShaderProgram::TextureUsage usage = g_materialTextures[i];
 
         if (auto child = pt.get_child_optional(((entryName + ".texture.") + getTexUsageName(usage)) + ".name")) {
             stringImpl textureNode = entryName + ".texture.";

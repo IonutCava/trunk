@@ -339,10 +339,10 @@ void Camera::clearReflection() {
 bool Camera::updateProjection() {
     if (_projectionDirty) {
         if (_isOrthoCamera) {
-            _data._projectionMatrix.ortho(_orthoRect.x,
-                                          _orthoRect.y,
-                                          _orthoRect.z,
-                                          _orthoRect.w,
+            _data._projectionMatrix.ortho(_orthoRect.left,
+                                          _orthoRect.right,
+                                          _orthoRect.bottom,
+                                          _orthoRect.top,
                                           _data._zPlanes.x,
                                           _data._zPlanes.y);
         } else {
@@ -378,6 +378,15 @@ const mat4<F32>& Camera::setProjection(const vec4<F32>& rect, const vec2<F32>& z
     _isOrthoCamera = true;
     _projectionDirty = true;
     updateProjection();
+
+    return getProjectionMatrix();
+}
+
+const mat4<F32>& Camera::setProjection(const mat4<F32>& projection, const vec2<F32>& zPlanes) {
+    _data._projectionMatrix.set(projection);
+    _data._zPlanes = zPlanes;
+    _projectionDirty = false;
+    _frustumDirty = true;
 
     return getProjectionMatrix();
 }

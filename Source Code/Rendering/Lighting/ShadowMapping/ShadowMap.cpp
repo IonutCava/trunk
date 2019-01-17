@@ -306,7 +306,7 @@ void ShadowMap::enableShadowDebugViewForLight(GFXDevice& context, Light& light) 
                     shadow->_shader = previewDepthMapShader;
                     shadow->_shaderData.set("layer", GFX::PushConstantType::INT, i + light.getShadowOffset());
                     shadow->_shaderData.set("useScenePlanes", GFX::PushConstantType::BOOL, false);
-                    shadow->_shaderData.set("zPlanes", GFX::PushConstantType::VEC2, light.shadowCameras()[0]->getZPlanes());
+                    shadow->_shaderData.set("zPlanes", GFX::PushConstantType::VEC2, light.shadowCameras()[i]->getZPlanes());
                     shadow->_name = Util::StringFormat("CSM_%d", i + light.getShadowOffset());
                     s_debugViews.push_back(shadow);
                 }

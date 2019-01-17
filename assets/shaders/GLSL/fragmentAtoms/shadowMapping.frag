@@ -32,8 +32,9 @@ float getShadowFactor(in uint index, in float fragDepth) {
 
 float shadow_loop(){
     float shadow = 1.0;
+    float fragDepth = VAR._vertexWV.z;
     for (uint i = 0; i < TOTAL_SHADOW_LIGHTS; ++i) {
-        shadow *= getShadowFactor(i, gl_FragCoord.z);
+        shadow *= getShadowFactor(i, fragDepth);
     }
 
     return saturate(shadow);

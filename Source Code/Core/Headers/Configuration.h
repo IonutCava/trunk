@@ -125,6 +125,8 @@ public:
             U8 anisotropicFilteringLevel;
             bool enableBlurring;
             U8 defaultCSMSplitCount;
+            F32 softness;
+            F32 splitLambda;
         } shadowMapping;
     } rendering;
 

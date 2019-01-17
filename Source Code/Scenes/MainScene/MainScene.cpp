@@ -160,7 +160,6 @@ bool MainScene::load(const stringImpl& name) {
     baseCamera->setMoveSpeedFactor(10.0f);
 
     _sun->get<DirectionalLightComponent>()->csmSplitCount(3);  // 3 splits
-    _sun->get<DirectionalLightComponent>()->csmSplitLogFactor(0.965f);
     _sun->get<DirectionalLightComponent>()->csmNearClipOffset(25.0f);
 
     static const U32 normalMask = to_base(ComponentType::NAVIGATION) |

@@ -1258,6 +1258,9 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
             T r, g, b, a;
         };
         struct {
+            T left, right, bottom, top;
+        };
+        struct {
             T fov, ratio, znear, zfar;
         };
         struct {

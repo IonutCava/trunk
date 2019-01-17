@@ -72,23 +72,24 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     typedef vector<ShaderProgramMapEntry> ShaderProgramMap;
     typedef hashMap<U64, stringImpl> AtomMap;
     typedef std::stack<ShaderProgram_ptr, vector<ShaderProgram_ptr> > ShaderQueue;
-    /// A list of built-in sampler slots. Use these if possible
+
+    /// A list of built-in sampler slots. Use these if possible and keep them sorted by how often they are used
     enum class TextureUsage : U8 {
         UNIT0 = 0,
-        UNIT1 = 1,
-        NORMALMAP = 2,
-        OPACITY = 3,
-        SPECULAR = 4,
-        PROJECTION = 5,
-        DEPTH = 6,
-        DEPTH_PREV = 7,
-        REFLECTION_PLANAR = 8,
-        REFRACTION_PLANAR = 9,
-        REFLECTION_CUBE = 10,
-        REFRACTION_CUBE = 11,
-        SHADOW_CUBE = 12,
-        SHADOW_LAYERED = 13,
-        SHADOW_SINGLE = 14,
+        NORMALMAP = 1,
+        SHADOW_LAYERED = 2,
+        DEPTH = 3,
+        SHADOW_SINGLE = 4,
+        REFLECTION_CUBE = 5,
+        SHADOW_CUBE = 6,
+        OPACITY = 7,
+        SPECULAR = 8,
+        UNIT1 = 9,
+        PROJECTION = 10,
+        REFLECTION_PLANAR = 11,
+        REFRACTION_PLANAR = 12,
+        REFRACTION_CUBE = 13,
+        DEPTH_PREV = 14,
         COUNT,
 
         GLOSS = SPECULAR,

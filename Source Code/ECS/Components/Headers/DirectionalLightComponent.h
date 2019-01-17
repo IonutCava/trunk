@@ -53,14 +53,9 @@ class DirectionalLightComponent : public BaseComponentType<DirectionalLightCompo
     inline F32 csmNearClipOffset() const { return _csmNearClipOffset; }
     inline void csmNearClipOffset(F32 offset) { _csmNearClipOffset = offset; }
 
-    inline F32 csmSplitLogFactor() const { return _csmSplitLogFactor; }
-    inline void csmSplitLogFactor(F32 factor) { _csmSplitLogFactor = factor; }
-
    protected:
     /// CSM split count
     U8 _csmSplitCount;
-    /// CSM split weight
-    F32 _csmSplitLogFactor;
     /// CSM extra back up distance for light position
     F32 _csmNearClipOffset;
 };

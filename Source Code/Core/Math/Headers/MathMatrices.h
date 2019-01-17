@@ -485,6 +485,8 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     template<typename U>
     mat4(const vec3<U> &eye, const vec3<U> &target, const vec3<U> &up) noexcept;
     template<typename U>
+    mat4(const Rect<U> &orthoRect, const vec2<U> &clip) noexcept;
+    template<typename U>
     mat4(const Plane<U>& reflectionPlane) noexcept;
 
     mat4 &operator=(const mat4& other) noexcept;

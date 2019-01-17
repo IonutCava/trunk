@@ -65,12 +65,10 @@ class CascadedShadowMapsGenerator : public ShadowMapGenerator {
                                      DirectionalLightComponent& light,
                                      const vec2<F32>& nearFarPlanes);
     void applyFrustumSplits(DirectionalLightComponent& light,
-                            const mat4<F32>& invViewMatrix,
-                            U8 numSplits,
-                            const SplitDepths& splitDepths,
+                            const Camera& cam,
                             const vec2<F32>& nearFarPlanes,
-                            std::array<vec3<F32>, 8>& frustumWS,
-                            std::array<vec3<F32>, 8>& frustumVS);
+                            U8 numSplits,
+                            const SplitDepths& splitDepths);
 
    protected:
     U32 _vertBlur;
