@@ -58,7 +58,7 @@ class CascadedShadowMapsGenerator : public ShadowMapGenerator {
     void render(const Camera& playerCamera, Light& light, U32 lightIndex, GFX::CommandBuffer& bufferInOut) override;
 
    protected:
-    typedef std::array<F32, Config::Lighting::MAX_SPLITS_PER_LIGHT> SplitDepths;
+    typedef std::array<F32, Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT> SplitDepths;
 
     void postRender(const DirectionalLightComponent& light, GFX::CommandBuffer& bufferInOut);
     SplitDepths calculateSplitDepths(const mat4<F32>& projMatrix,

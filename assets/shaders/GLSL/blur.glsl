@@ -108,7 +108,7 @@ void main(void)
 --Geometry.GaussBlur
 
 #ifndef GS_MAX_INVOCATIONS
-#define GS_MAX_INVOCATIONS MAX_SPLITS_PER_LIGHT
+#define GS_MAX_INVOCATIONS 6
 #endif
 
 layout(points, invocations = GS_MAX_INVOCATIONS) in;

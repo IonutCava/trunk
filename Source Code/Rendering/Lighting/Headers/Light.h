@@ -39,7 +39,7 @@
 
 namespace Divide {
 
-typedef std::array<Camera*, Config::Lighting::MAX_SPLITS_PER_LIGHT> ShadowCameraPool;
+typedef std::array<Camera*, 6> ShadowCameraPool;
 
 /// The different types of lights supported
 enum class LightType : U8 {
@@ -58,21 +58,22 @@ class SceneRenderState;
 class Light : public GUIDWrapper
 {
    public:
+       //Note: 6 - cube faces. CSM splits must always be less than 6!
        struct ShadowProperties {
            // x = light type,  y = csm split count, z = arrayOffset
            vec4<U32> _lightDetails;
            /// light viewProjection matrices
-           mat4<F32> _lightVP[Config::Lighting::MAX_SPLITS_PER_LIGHT];
+           mat4<F32> _lightVP[6];
            /// light's position in world space
-           vec4<F32> _lightPosition[Config::Lighting::MAX_SPLITS_PER_LIGHT];
+           vec4<F32> _lightPosition[6];
            /// random float values (e.g. split distances)
-           F32 _floatValues[Config::Lighting::MAX_SPLITS_PER_LIGHT];
+           F32 _floatValues[6];
 
            inline void set(const ShadowProperties& other) {
                _lightDetails.set(other._lightDetails);
-               memcpy(_lightVP,       other._lightVP,       Config::Lighting::MAX_SPLITS_PER_LIGHT * sizeof(mat4<F32>));
-               memcpy(_lightPosition, other._lightPosition, Config::Lighting::MAX_SPLITS_PER_LIGHT * sizeof(vec4<F32>));
-               memcpy(_floatValues,   other._floatValues,   Config::Lighting::MAX_SPLITS_PER_LIGHT * sizeof(F32));
+               memcpy(_lightVP,       other._lightVP,       6 * sizeof(mat4<F32>));
+               memcpy(_lightPosition, other._lightPosition, 6 * sizeof(vec4<F32>));
+               memcpy(_floatValues,   other._floatValues,   6 * sizeof(F32));
            }
 
            // Renderdoc:
@@ -136,19 +137,19 @@ class Light : public GUIDWrapper
     }
 
     inline const mat4<F32>& getShadowVPMatrix(U8 index) const {
-        assert(index < Config::Lighting::MAX_SPLITS_PER_LIGHT);
+        assert(index < 6);
 
         return _shadowProperties._lightVP[index];
     }
 
     inline F32 getShadowFloatValues(U8 index) const {
-        assert(index < Config::Lighting::MAX_SPLITS_PER_LIGHT);
+        assert(index < 6);
 
         return _shadowProperties._floatValues[index];
     }
 
     inline const vec4<F32>& getShadowLightPos(U8 index) const {
-        assert(index < Config::Lighting::MAX_SPLITS_PER_LIGHT);
+        assert(index < 6);
 
         return _shadowProperties._lightPosition[index];
     }
@@ -158,13 +159,13 @@ class Light : public GUIDWrapper
     }
 
     inline void setShadowVPMatrix(U8 index, const mat4<F32>& newValue) {
-        assert(index < Config::Lighting::MAX_SPLITS_PER_LIGHT);
+        assert(index < 6);
 
         _shadowProperties._lightVP[index].set(newValue);
     }
 
     inline void setShadowFloatValue(U8 index, F32 newValue) {
-        assert(index < Config::Lighting::MAX_SPLITS_PER_LIGHT);
+        assert(index < 6);
 
         _shadowProperties._floatValues[index] = newValue;
     }

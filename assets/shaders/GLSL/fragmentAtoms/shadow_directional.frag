@@ -21,14 +21,15 @@ float chebyshevUpperBound(vec2 moments, float distance, float minVariance) {
     return p_max;
 }
 
-float applyShadowDirectional(Shadow currentShadowSource, int splitCount, in float fragDepth) {
+float applyShadowDirectional(Shadow currentShadowSource, in float fragDepth) {
 
     // find the appropriate depth map to look up in based on the depth of this fragment
     g_shadowTempInt = 0;
     // Figure out which cascade to sample from
-    for (int i = 0; i < splitCount - 1; ++i) {
+    for (int i = 0; i < int(MAX_CSM_SPLITS_PER_LIGHT); ++i) {
         if (fragDepth < currentShadowSource._floatValues[i]) {
             g_shadowTempInt = i + 1;
+            break;
         }
     }
 
@@ -44,10 +45,6 @@ float applyShadowDirectional(Shadow currentShadowSource, int splitCount, in floa
     int SplitXY = int(abs(dFdx(SplitY)));
     int SplitMax = max(SplitXY, max(SplitX, SplitY));
     g_shadowTempInt = SplitMax > 0 ? SplitPowLookup[SplitMax - 1] : g_shadowTempInt;
-
-    if (g_shadowTempInt < 0 || g_shadowTempInt > splitCount) {
-        return 1.0;
-    }
 
     vec4 sc = currentShadowSource._lightVP[g_shadowTempInt] * VAR._vertexW;
     vec4 scPostW = (sc / sc.w) * 0.5 + 0.5;

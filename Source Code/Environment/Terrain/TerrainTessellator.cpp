@@ -27,7 +27,8 @@ namespace {
 
 TerrainTessellator::TerrainTessellator()
    : _numNodes(0),
-     _renderDepth(0)
+     _renderDepth(0),
+     _prevRenderDepth(0)
 {
     _tree.resize(Terrain::MAX_RENDER_NODES);
     _renderData.resize(Terrain::MAX_RENDER_NODES);
@@ -53,9 +54,14 @@ U16 TerrainTessellator::getRenderDepth() const {
     return _renderDepth;
 }
 
+U16 TerrainTessellator::getPrevRenderDepth() const {
+    return _prevRenderDepth;
+}
+
 bufferPtr TerrainTessellator::updateAndGetRenderData(U16& renderDepth, U8 LoD) {
     renderDepth = 0;
     renderRecursive(_tree.data(), renderDepth, LoD);
+    _prevRenderDepth = _renderDepth;
     _renderDepth = renderDepth;
     return _renderData.data();
 }

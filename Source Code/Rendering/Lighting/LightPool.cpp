@@ -168,15 +168,22 @@ void LightPool::generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffe
     shadowCastingLights(playerCamera.getEye(), sortedLights);
 
     U32 shadowLightCount = 0;
+    U32 directionalLightCount = 0;
     for (Light* light : sortedLights) {
         if (shadowLightCount >= Config::Lighting::MAX_SHADOW_CASTING_LIGHTS) {
             break;
         } 
 
-        U32 offset = shadowLightCount * Config::Lighting::MAX_SPLITS_PER_LIGHT;
-        ShadowMap::generateShadowMaps(playerCamera, *light, offset, bufferInOut);
-        _sortedShadowProperties[shadowLightCount] = light->getShadowProperties();
-        shadowLightCount++;
+        bool isDirLight = light->getLightType() == LightType::DIRECTIONAL;
+        if (!isDirLight || directionalLightCount < Config::Lighting::MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS) {
+            ShadowMap::generateShadowMaps(playerCamera, *light, shadowLightCount, bufferInOut);
+            _sortedShadowProperties[shadowLightCount] = light->getShadowProperties();
+
+            shadowLightCount++;
+            if (isDirLight) {
+                directionalLightCount++;
+            }
+        }
     }
 
     _shadowBuffer->writeData(_sortedShadowProperties.data());

@@ -54,9 +54,9 @@ layout(binding = BUFFER_LIGHT_INDICES, std430) coherent COMP_RW buffer perTileLi
 struct Shadow {
     // x = light type, y = csm split count, z = arrayOffset
     uvec4 _lightDetails;
-    mat4  _lightVP[MAX_SPLITS_PER_LIGHT];
-    vec4  _lightPosition[MAX_SPLITS_PER_LIGHT];
-    float _floatValues[MAX_SPLITS_PER_LIGHT];
+    mat4  _lightVP[6];
+    vec4  _lightPosition[6];
+    float _floatValues[6];
 };
 
 layout(binding = BUFFER_LIGHT_SHADOW, std430) coherent ACCESS buffer dvd_ShadowBlock

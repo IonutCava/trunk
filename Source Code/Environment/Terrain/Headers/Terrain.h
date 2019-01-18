@@ -203,7 +203,7 @@ class Terrain : public Object3D {
     vector<TerrainChunk*> _terrainChunks;
 
     TessellatorArray _terrainTessellator;
-    std::array<TerrainTessellator, Config::Lighting::MAX_SHADOW_CASTING_LIGHTS * Config::Lighting::MAX_SPLITS_PER_LIGHT> _shadowTessellators;
+    std::array<TerrainTessellator, Config::Lighting::MAX_SHADOW_CASTING_LIGHTS * 6> _shadowTessellators;
 
     hashMap<I64, TessellatorArrayFlags> _terrainTessellatorFlags;
 

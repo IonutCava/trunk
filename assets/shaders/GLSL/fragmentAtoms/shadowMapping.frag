@@ -22,7 +22,7 @@ float getShadowFactor(in uint index, in float fragDepth) {
     uvec4 lightDetails = currentShadowSource._lightDetails;
 
     switch (lightDetails.x) {
-        case LIGHT_DIRECTIONAL     : return applyShadowDirectional(currentShadowSource, int(lightDetails.y), fragDepth);
+        case LIGHT_DIRECTIONAL     : return applyShadowDirectional(currentShadowSource, fragDepth);
         case LIGHT_OMNIDIRECTIONAL : return applyShadowPoint(currentShadowSource, fragDepth);
         case LIGHT_SPOT            : return applyShadowSpot(currentShadowSource, fragDepth);
     }

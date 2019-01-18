@@ -124,7 +124,7 @@ void glFramebuffer::toggleAttachment(const RTAttachment_ptr& attachment, Attachm
     BindingState bState{ state,
                          attachment->mipWriteLevel(),
                          attachment->writeLayer(),
-                         layeredRendering};
+                         layeredRendering };
 
     BindingState oldState = getAttachmentState(binding);
     if (bState != oldState) {
@@ -309,16 +309,17 @@ void glFramebuffer::blitFrom(const RTBlitParams& params)
             const RTAttachment_ptr& inAtt = inputAttachments[entry._inputIndex];
             const RTAttachment_ptr& outAtt = outputAttachments[entry._outputIndex];
 
-            inAtt->writeLayer(entry._inputLayer);
-            
-            const BindingState& inState = input->getAttachmentState(static_cast<GLenum>(inAtt->binding()));
-            input->toggleAttachment(inAtt, inState._attState, true);
-            
+            bool layerChanged = inAtt->writeLayer(entry._inputLayer);
+            if (layerChanged || inAtt->numLayers() > 0) {
+                const BindingState& inState = input->getAttachmentState(static_cast<GLenum>(inAtt->binding()));
+                input->toggleAttachment(inAtt, inState._attState, inAtt->numLayers() > 0 || entry._inputLayer > 0);
+            }
 
-            outAtt->writeLayer(entry._outputLayer);
-            const BindingState& outState = this->getAttachmentState(static_cast<GLenum>(outAtt->binding()));
-            this->toggleAttachment(outAtt, outState._attState, true);
-            
+            layerChanged = outAtt->writeLayer(entry._outputLayer);
+            if (layerChanged || outAtt->numLayers() > 0) {
+                const BindingState& outState = this->getAttachmentState(static_cast<GLenum>(outAtt->binding()));
+                this->toggleAttachment(outAtt, outState._attState, outAtt->numLayers() > 0 || entry._outputLayer > 0);
+            }
 
             queueMipMapRecomputation(outAtt, vec2<U32>(0, entry._outputLayer));
         }
@@ -354,28 +355,35 @@ void glFramebuffer::blitFrom(const RTBlitParams& params)
                 prevWriteAtt = crtWriteAtt;
             }
 
-            inAtt->writeLayer(entry._inputLayer);
+            bool layerChanged = inAtt->writeLayer(entry._inputLayer);
             const BindingState& inState = input->getAttachmentState(static_cast<GLenum>(crtReadAtt));
-            input->toggleAttachment(inAtt, inState._attState, true);
-            
+            if (layerChanged || inAtt->numLayers() > 0) {
+                input->toggleAttachment(inAtt, inState._attState, inAtt->numLayers() > 0 || entry._inputLayer > 0);
+            }
 
-            outAtt->writeLayer(entry._outputLayer);
+            layerChanged = outAtt->writeLayer(entry._outputLayer);
             const BindingState& outState = this->getAttachmentState(static_cast<GLenum>(crtWriteAtt));
-            this->toggleAttachment(outAtt, outState._attState, true);
+            if (layerChanged || outAtt->numLayers() > 0) {
+                this->toggleAttachment(outAtt, outState._attState, outAtt->numLayers() > 0 || entry._outputLayer > 0);
+            }
 
             // If we change layers, then the depth buffer should match that ... I guess ... this sucks!
             if (input->hasDepth()) {
                 const RTAttachment_ptr& inDepthAtt = input->_attachmentPool->get(RTAttachmentType::Depth, 0);
-                inDepthAtt->writeLayer(entry._inputLayer);
+                layerChanged = inDepthAtt->writeLayer(entry._inputLayer);
                 const BindingState& inDepthState = input->getAttachmentState(GL_DEPTH_ATTACHMENT);
-                input->toggleAttachment(inDepthAtt, inDepthState._attState, true);
+                if (layerChanged || inDepthAtt->numLayers() > 0) {
+                    input->toggleAttachment(inDepthAtt, inDepthState._attState, inDepthAtt->numLayers() > 0 || entry._inputLayer > 0);
+                }
             }
 
             if (this->hasDepth()) {
                 const RTAttachment_ptr& outDepthAtt = this->_attachmentPool->get(RTAttachmentType::Depth, 0);
-                outDepthAtt->writeLayer(entry._outputLayer);
+                layerChanged = outDepthAtt->writeLayer(entry._outputLayer);
                 const BindingState& outDepthState = this->getAttachmentState(GL_DEPTH_ATTACHMENT);
-                this->toggleAttachment(outDepthAtt, outDepthState._attState, true);
+                if (layerChanged || outDepthAtt->numLayers() > 0) {
+                    this->toggleAttachment(outDepthAtt, outDepthState._attState, outDepthAtt->numLayers() > 0 || entry._outputLayer > 0);
+                }
             }
 
             // We always change depth layers to satisfy whatever f**ked up completion requirements the OpenGL driver has (looking at you Nvidia)
@@ -418,14 +426,18 @@ void glFramebuffer::blitFrom(const RTBlitParams& params)
             const RTAttachment_ptr& outDepthAtt = this->_attachmentPool->get(RTAttachmentType::Depth, 0);
 
             const BindingState& inState = input->getAttachmentState(GL_DEPTH_ATTACHMENT);
-            if (inDepthAtt->writeLayer(entry._inputLayer)) {
-                input->toggleAttachment(inDepthAtt, inState._attState, entry._inputLayer > 0);
+            bool layerChanged = inDepthAtt->writeLayer(entry._inputLayer);
+            if (layerChanged || inDepthAtt->numLayers() > 0) {
+                input->toggleAttachment(inDepthAtt, inState._attState, inDepthAtt->numLayers() > 0 || entry._inputLayer > 0);
             }
+            
 
             const BindingState& outState = this->getAttachmentState(GL_DEPTH_ATTACHMENT);
-            if (outDepthAtt->writeLayer(entry._outputLayer)) {
-                this->toggleAttachment(outDepthAtt, outState._attState, entry._outputLayer > 0);
+            layerChanged = outDepthAtt->writeLayer(entry._outputLayer);
+            if (layerChanged || outDepthAtt->numLayers() > 0) {
+                this->toggleAttachment(outDepthAtt, outState._attState, outDepthAtt->numLayers() > 0 || entry._outputLayer > 0);
             }
+            
 
             glBlitNamedFramebuffer(input->_framebufferHandle, this->_framebufferHandle,
                                    0, 0,

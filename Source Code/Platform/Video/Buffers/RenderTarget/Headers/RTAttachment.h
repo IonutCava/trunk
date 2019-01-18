@@ -91,6 +91,8 @@ class RTAttachment {
         U32 binding() const;
         void binding(U32 binding);
 
+        U16 numLayers() const;
+
         const RTAttachmentDescriptor& descriptor() const;
 
     protected:

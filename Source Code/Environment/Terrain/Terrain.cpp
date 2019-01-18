@@ -23,7 +23,7 @@
 namespace Divide {
 
 namespace {
-    constexpr U32 shadowSizeFactor = Config::Lighting::MAX_SHADOW_CASTING_LIGHTS * Config::Lighting::MAX_SPLITS_PER_LIGHT;
+    constexpr U32 shadowSizeFactor = Config::Lighting::MAX_SHADOW_CASTING_LIGHTS * 6;
 }
 
 Terrain::Terrain(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name)
@@ -66,9 +66,7 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
     bufferDescriptor._elementSize = sizeof(TessellatedNodeData);
     bufferDescriptor._ringBufferLength = 1;
     bufferDescriptor._separateReadWrite = false;
-    bufferDescriptor._flags = //(to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE) |
-                             //to_U32(ShaderBuffer::Flags::AUTO_RANGE_FLUSH) |
-                               to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
+    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
                               
     //Should be once per frame
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;

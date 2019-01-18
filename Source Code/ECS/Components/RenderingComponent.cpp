@@ -468,7 +468,7 @@ void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
 
 RenderPackage& RenderingComponent::getDrawPackage(RenderStagePass renderStagePass) {
     if (renderStagePass._stage == RenderStage::SHADOW) {
-        constexpr U32 stride = std::max(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS, Config::Lighting::MAX_SPLITS_PER_LIGHT);
+        constexpr U32 stride = std::max(to_U32(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS), 6u);
 
         U32 passIndex = renderStagePass._passIndex % stride;
         U32 lightIndex = (renderStagePass._passIndex - passIndex) / stride;
@@ -480,7 +480,7 @@ RenderPackage& RenderingComponent::getDrawPackage(RenderStagePass renderStagePas
 
 const RenderPackage& RenderingComponent::getDrawPackage(RenderStagePass renderStagePass) const {
     if (renderStagePass._stage == RenderStage::SHADOW) {
-        constexpr U32 stride = std::max(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS, Config::Lighting::MAX_SPLITS_PER_LIGHT);
+        constexpr U32 stride = std::max(to_U32(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS), 6u);
 
         U32 passIndex = renderStagePass._passIndex % stride;
         U32 lightIndex = (renderStagePass._passIndex - passIndex) / stride;

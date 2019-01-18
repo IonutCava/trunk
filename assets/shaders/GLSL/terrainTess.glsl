@@ -603,8 +603,3 @@ void main() {
     //_colourOut = computeMoments(exp(DEPTH_EXP_WARP * depth));
     _colourOut = computeMoments(depth);
 }
-
---Fragment.PrePass
-
-void main() {
-}

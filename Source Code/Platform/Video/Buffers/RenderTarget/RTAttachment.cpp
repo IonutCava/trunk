@@ -65,7 +65,7 @@ U16 RTAttachment::mipWriteLevel() const {
 }
 
 bool RTAttachment::writeLayer(U16 layer) {
-    if (_descriptor._texDescriptor._layerCount > layer && _writeLayer != layer) {
+    if (numLayers() > layer && _writeLayer != layer) {
         _writeLayer = layer;
         return true;
     }
@@ -77,6 +77,9 @@ U16 RTAttachment::writeLayer() const {
     return _writeLayer;
 }
 
+U16 RTAttachment::numLayers() const {
+    return to_U16(_descriptor._texDescriptor._layerCount);
+}
 bool RTAttachment::changed() const {
     return _changed;
 }

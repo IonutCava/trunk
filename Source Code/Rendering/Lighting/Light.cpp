@@ -21,7 +21,7 @@ Light::Light(SceneGraphNode& sgn, const F32 range, LightType type, LightPool& pa
     _rangeAndCones.set(1.0f, 45.0f, 0.0f);
 
     _shadowCameras.fill(nullptr);
-    for (U32 i = 0; i < Config::Lighting::MAX_SPLITS_PER_LIGHT; ++i) {
+    for (U32 i = 0; i < 6; ++i) {
         _shadowCameras[i] = Camera::createCamera(sgn.name() + "_shadowCamera_" + to_stringImpl(i), Camera::CameraType::FREE_FLY);
 
         _shadowCameras[i]->setMoveSpeedFactor(0.0f);
@@ -32,7 +32,7 @@ Light::Light(SceneGraphNode& sgn, const F32 range, LightType type, LightPool& pa
         //assert?
     }
 
-    for (U8 i = 0; i < Config::Lighting::MAX_SPLITS_PER_LIGHT; ++i) {
+    for (U8 i = 0; i < 6; ++i) {
         _shadowProperties._lightVP[i].identity();
         _shadowProperties._floatValues[i] = std::numeric_limits<F32>::max();
     }
@@ -46,7 +46,7 @@ Light::Light(SceneGraphNode& sgn, const F32 range, LightType type, LightPool& pa
 
 Light::~Light()
 {
-    for (U32 i = 0; i < Config::Lighting::MAX_SPLITS_PER_LIGHT; ++i) {
+    for (U32 i = 0; i < 6; ++i) {
         Camera::destroyCamera(_shadowCameras[i]);
     }
     _parentPool.removeLight(*this);

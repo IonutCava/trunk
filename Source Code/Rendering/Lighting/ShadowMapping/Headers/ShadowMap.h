@@ -87,7 +87,7 @@ class NOINITVTABLE ShadowMap {
     static void resetShadowMaps();
 
     static void bindShadowMaps(GFXDevice& context, GFX::CommandBuffer& bufferInOut);
-    static U16  findDepthMapOffset(ShadowType shadowType);
+    static U16  findDepthMapOffset(ShadowType shadowType, bool allocate);
     static void commitDepthMapOffset(ShadowType shadowType, U32 layer);
     static bool freeDepthMapOffset(ShadowType shadowType, U32 layer);
     static void clearShadowMapBuffers(GFX::CommandBuffer& bufferInOut);
@@ -102,6 +102,7 @@ class NOINITVTABLE ShadowMap {
 
   protected:
     typedef vector<bool> LayerUsageMask;
+    static std::mutex s_depthMapUsageLock;
     static std::array<LayerUsageMask, to_base(ShadowType::COUNT)> s_depthMapUsage;
     static std::array<ShadowMapGenerator*, to_base(ShadowType::COUNT)> s_shadowMapGenerators;
 

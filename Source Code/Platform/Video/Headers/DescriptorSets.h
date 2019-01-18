@@ -38,6 +38,14 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Core/Math/Headers/MathVectors.h"
 
 namespace Divide {
+    class Texture;
+
+    struct TextureView {
+        Texture* _texture = nullptr;
+        vec2<U32> _mipLevels = {};
+        vec2<U32> _layerRange = {};
+    };
+
     class ShaderBuffer;
     struct ShaderBufferBinding {
         ShaderBuffer* _buffer = nullptr;
@@ -75,6 +83,7 @@ namespace Divide {
         //This needs a lot more work!
         ShaderBufferList _shaderBuffers = {};
         TextureDataContainer _textureData = {};
+        vectorEASTL<std::pair<U8/*binding*/, TextureView>> _textureLayers = {};
 
         void addShaderBuffer(const ShaderBufferBinding& entry);
         void addShaderBuffers(const ShaderBufferList& entries);

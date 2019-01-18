@@ -35,15 +35,15 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
     Console::printfn(Locale::get(_ID("LIGHT_CREATE_SHADOW_FB")), "EVCSM");
 
     g_shadowSettings = context.parent().platformContext().config().rendering.shadowMapping;
-    ResourceDescriptor blurDepthMapShader(Util::StringFormat("blur.GaussBlur_%d_invocations", Config::Lighting::MAX_SPLITS_PER_LIGHT));
+    ResourceDescriptor blurDepthMapShader(Util::StringFormat("blur.GaussBlur_%d_invocations", Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT));
     blurDepthMapShader.setThreadedLoading(false);
 
     ShaderProgramDescriptor shaderPropertyDescriptor;
-    shaderPropertyDescriptor._defines.push_back(std::make_pair(Util::StringFormat("GS_MAX_INVOCATIONS %d", Config::Lighting::MAX_SPLITS_PER_LIGHT), true));
+    shaderPropertyDescriptor._defines.push_back(std::make_pair(Util::StringFormat("GS_MAX_INVOCATIONS %d", Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT), true));
     blurDepthMapShader.setPropertyDescriptor(shaderPropertyDescriptor);
 
     _blurDepthMapShader = CreateResource<ShaderProgram>(context.parent().resourceCache(), blurDepthMapShader);
-    _blurDepthMapConstants.set("layerCount", GFX::PushConstantType::INT, Config::Lighting::MAX_SPLITS_PER_LIGHT);
+    _blurDepthMapConstants.set("layerCount", GFX::PushConstantType::INT, Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
     _blurDepthMapConstants.set("layerOffsetRead", GFX::PushConstantType::INT, (I32)0);
     _blurDepthMapConstants.set("layerOffsetWrite", GFX::PushConstantType::INT, (I32)0);
     _horizBlur = 0;
@@ -52,9 +52,9 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
     _horizBlur = _blurDepthMapShader->GetSubroutineIndex(ShaderType::GEOMETRY, "computeCoordsH");
     _vertBlur = _blurDepthMapShader->GetSubroutineIndex(ShaderType::GEOMETRY, "computeCoordsV");
 
-    vector<vec2<F32>> blurSizes(Config::Lighting::MAX_SPLITS_PER_LIGHT);
+    vector<vec2<F32>> blurSizes(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
     blurSizes[0].set(1.0f / g_shadowSettings.shadowMapResolution);
-    for (U8 i = 1; i < Config::Lighting::MAX_SPLITS_PER_LIGHT; ++i) {
+    for (U8 i = 1; i < Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT; ++i) {
         blurSizes[i].set(blurSizes[i - 1] * 0.5f);
     }
 
@@ -75,12 +75,12 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
 
 
         TextureDescriptor depthMapDescriptor(texType, GFXImageFormat::RG, GFXDataFormat::FLOAT_32);
-        depthMapDescriptor.setLayerCount(Config::Lighting::MAX_SPLITS_PER_LIGHT);
+        depthMapDescriptor.setLayerCount(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
         depthMapDescriptor.setSampler(sampler);
         depthMapDescriptor.msaaSamples(g_shadowSettings.msaaSamples);
 
         TextureDescriptor depthDescriptor(texType, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
-        depthDescriptor.setLayerCount(Config::Lighting::MAX_SPLITS_PER_LIGHT);
+        depthDescriptor.setLayerCount(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
         depthDescriptor.setSampler(sampler);
         depthDescriptor.msaaSamples(g_shadowSettings.msaaSamples);
 
@@ -101,7 +101,7 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
     //Blur FBO
     {
         TextureDescriptor blurMapDescriptor(TextureType::TEXTURE_2D_ARRAY, GFXImageFormat::RG, GFXDataFormat::FLOAT_32);
-        blurMapDescriptor.setLayerCount(Config::Lighting::MAX_SPLITS_PER_LIGHT);
+        blurMapDescriptor.setLayerCount(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
         blurMapDescriptor.setSampler(sampler);
 
         vector<RTAttachmentDescriptor> att = {
@@ -169,7 +169,7 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
         beginRenderSubPassCmd._writeLayers.push_back(drawParams);
         GFX::EnqueueCommand(bufferInOut, beginRenderSubPassCmd);
 
-        constexpr U32 stride = std::max(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS, Config::Lighting::MAX_SPLITS_PER_LIGHT);
+        constexpr U32 stride = std::max(to_U32(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS), 6u);
         params._passIndex = (lightIndex * stride) + i;
         params._camera = light.shadowCameras()[i];
         rpm.doCustomPass(params, bufferInOut);
@@ -177,12 +177,6 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
         GFX::EnqueueCommand(bufferInOut, endRenderSubPassCommand);
         GFX::EnqueueCommand(bufferInOut, endDebugScopeCommand);
     }
-    
-    /*GFX::BeginRenderSubPassCommand beginRenderSubPassCmd = {};
-    drawParams._layer = 0;
-    beginRenderSubPassCmd._writeLayers.push_back(drawParams);
-    GFX::EnqueueCommand(bufferInOut, beginRenderSubPassCmd);
-    GFX::EnqueueCommand(bufferInOut, endRenderSubPassCommand);*/
 
     GFX::EndRenderPassCommand endRenderPassCmd = {};
     GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
@@ -217,7 +211,7 @@ CascadedShadowMapsGenerator::SplitDepths CascadedShadowMapsGenerator::calculateS
         light.setShadowFloatValue(i, (nearClip + depths[i] * clipRange) * -1.0f);
     }
 
-    for (; i < Config::Lighting::MAX_SPLITS_PER_LIGHT; ++i) {
+    for (; i < Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT; ++i) {
         depths[i] = std::numeric_limits<F32>::max();
         light.setShadowFloatValue(i, depths[i] * -1.0f);
     }

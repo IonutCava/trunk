@@ -207,7 +207,7 @@ class RenderingComponent : public BaseComponentType<RenderingComponent, Componen
     typedef std::array<RenderPackage, to_base(RenderPassType::COUNT)> RenderPackagesPerPassType;
     std::array<RenderPackagesPerPassType, to_base(RenderStage::COUNT) - 1> _renderPackagesNormal;
     
-    typedef std::array<RenderPackage, Config::Lighting::MAX_SPLITS_PER_LIGHT> RenderPacakgesPerSplit;
+    typedef std::array<RenderPackage, 6> RenderPacakgesPerSplit;
     std::array<RenderPacakgesPerSplit, Config::Lighting::MAX_SHADOW_CASTING_LIGHTS> _renderPackagesShadow;
 
     PushConstants _globalPushConstants;

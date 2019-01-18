@@ -369,7 +369,8 @@ bool GL_API::initGLSW() {
         appendToShaderHeader(ShaderType::COUNT, "//#pragma optionNV(unroll all)", lineOffsets);
     }
 
-    appendToShaderHeader(ShaderType::COUNT,    "const uint MAX_SPLITS_PER_LIGHT = " + to_stringImpl(Config::Lighting::MAX_SPLITS_PER_LIGHT) + ";", lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT,    "const uint MAX_CSM_SPLITS_PER_LIGHT = " + to_stringImpl(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT) + ";", lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT,    "const uint MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS = " + to_stringImpl(Config::Lighting::MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS) + ";", lineOffsets);
     appendToShaderHeader(ShaderType::COUNT,    "const uint MAX_SHADOW_CASTING_LIGHTS = " + to_stringImpl(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS) + ";", lineOffsets);
     appendToShaderHeader(ShaderType::COUNT,    "const int MAX_VISIBLE_NODES = " + to_stringImpl(Config::MAX_VISIBLE_NODES) + ";", lineOffsets);
     appendToShaderHeader(ShaderType::COUNT,    "const float Z_TEST_SIGMA = 0.0001;", lineOffsets);
@@ -1072,7 +1073,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             const GFX::BindDescriptorSetsCommand& crtCmd = commandBuffer.getCommand<GFX::BindDescriptorSetsCommand>(entry);
             const DescriptorSet& set = crtCmd._set;
 
-            if (makeTexturesResident(set._textureData)) {
+            if (makeTexturesResident(set._textureData, set._textureLayers)) {
                 
             }
             for (const ShaderBufferBinding& shaderBufCmd : set._shaderBuffers) {
@@ -1119,23 +1120,14 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             if (crtCmd._layerRange.x == 0 && crtCmd._layerRange.y <= 1) {
                 glGenerateTextureMipmap(crtCmd._texture->getData().getHandle());
             } else {
-                GLuint handle = s_texturePool.allocate();
 
                 Texture* tex = crtCmd._texture;
                 TextureData data = tex->getData();
                 const TextureDescriptor& descriptor = tex->getDescriptor();
-                
                 GLenum glInternalFormat = GLUtil::internalFormat(descriptor.baseFormat(), descriptor.dataType(), descriptor._srgb);
-                glTextureView(handle,
-                              GLUtil::glTextureTypeTable[to_base(data.type())],
-                              data.getHandle(),
-                              glInternalFormat,
-                              (GLuint)descriptor._mipLevels.x,
-                              (GLuint)descriptor._mipLevels.y,
-                              (GLuint)crtCmd._layerRange.x,
-                              (GLuint)crtCmd._layerRange.y);
-                glGenerateTextureMipmap(handle);
 
+                GLuint handle = getTextureView(data, descriptor._mipLevels, crtCmd._layerRange, glInternalFormat);
+                glGenerateTextureMipmap(handle);
                 s_texturePool.deallocate(handle);
             }
         }break;
@@ -1247,6 +1239,21 @@ void GL_API::registerBufferBind(const BufferWriteData& data) {
     }
 }
 
+GLuint GL_API::getTextureView(TextureData& data, vec2<U32> mipLevels, vec2<U32> layerRange, GLenum internalFormat) {
+    GLuint handle = s_texturePool.allocate();
+
+    glTextureView(handle,
+        GLUtil::glTextureTypeTable[to_base(data.type())],
+        data.getHandle(),
+        internalFormat,
+        (GLuint)mipLevels.x,
+        (GLuint)mipLevels.y,
+        (GLuint)layerRange.x,
+        (GLuint)layerRange.y);
+
+    return handle;
+}
+
 GenericVertexData* GL_API::getOrCreateIMGUIBuffer(I64 windowGUID) {
     GenericVertexData* ret = nullptr;
 
@@ -1306,7 +1313,7 @@ size_t GL_API::setStateBlock(size_t stateBlockHash) {
     return getStateTracker().setStateBlock(stateBlockHash);
 }
 
-bool GL_API::makeTexturesResident(const TextureDataContainer& textureData) {
+bool GL_API::makeTexturesResident(const TextureDataContainer& textureData, const vectorEASTL<std::pair<U8, TextureView>>& textureLayers) {
     bool bound = false;
 
     STUBBED("ToDo: Optimise this: If over n textures, get max binding slot, create [0...maxSlot] bindings, fill unused with 0 and send as one command with glBindTextures -Ionut")
@@ -1334,6 +1341,17 @@ bool GL_API::makeTexturesResident(const TextureDataContainer& textureData) {
             bound = makeTextureResident(data.first, data.second) || bound;
         }
     }
+
+    for (auto it : textureLayers) {
+        Texture* tex = it.second._texture;
+        TextureData data = tex->getData();
+        const TextureDescriptor& descriptor = tex->getDescriptor();
+        GLenum glInternalFormat = GLUtil::internalFormat(descriptor.baseFormat(), descriptor.dataType(), descriptor._srgb);
+
+        GLuint handle = getTextureView(data, it.second._mipLevels, it.second._layerRange, glInternalFormat);
+        getStateTracker().bindTexture(static_cast<GLushort>(it.first), data.type(), handle, data._samplerHandle);
+    }
+
     return bound;
 }
 

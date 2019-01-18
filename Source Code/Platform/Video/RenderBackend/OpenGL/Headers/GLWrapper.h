@@ -153,7 +153,7 @@ protected:
     /// Reset as much of the GL default state as possible within the limitations given
     void clearStates(const DisplayWindow& window, GLStateTracker& stateTracker, bool global);
 
-    bool makeTexturesResident(const TextureDataContainer& textureData);
+    bool makeTexturesResident(const TextureDataContainer& textureData, const vectorEASTL<std::pair<U8, TextureView>>& textureLayers);
     bool makeTextureResident(const TextureData& textureData, U8 binding);
 
     bool setViewport(const Rect<I32>& viewport) override;
@@ -207,6 +207,7 @@ private:
 
     GenericVertexData* getOrCreateIMGUIBuffer(I64 windowGUID);
 
+    GLuint getTextureView(TextureData& data, vec2<U32> mipLevels, vec2<U32> layerRange, GLenum internalFormat = GL_NONE);
 protected:
     /// Number of available texture units
     static GLint s_maxTextureUnits;

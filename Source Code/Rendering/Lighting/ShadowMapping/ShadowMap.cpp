@@ -21,6 +21,7 @@
 
 namespace Divide {
 
+std::mutex ShadowMap::s_depthMapUsageLock;
 std::array<ShadowMap::LayerUsageMask, to_base(ShadowType::COUNT)> ShadowMap::s_depthMapUsage;
 std::array<ShadowMapGenerator*, to_base(ShadowType::COUNT)> ShadowMap::s_shadowMapGenerators;
 
@@ -103,7 +104,7 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
                 depthMapSampler._anisotropyLevel = settings.anisotropicFilteringLevel;
 
                 TextureDescriptor depthMapDescriptor(TextureType::TEXTURE_2D_ARRAY, GFXImageFormat::RG, GFXDataFormat::FLOAT_32);
-                depthMapDescriptor.setLayerCount(Config::Lighting::MAX_SPLITS_PER_LIGHT * Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
+                depthMapDescriptor.setLayerCount(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT * Config::Lighting::MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS);
                 depthMapDescriptor.setSampler(depthMapSampler);
                 depthMapDescriptor.automaticMipMapGeneration(false);
 
@@ -175,6 +176,7 @@ void ShadowMap::destroyShadowMaps(GFXDevice& context) {
 }
 
 void ShadowMap::resetShadowMaps() {
+    UniqueLock w_lock(s_depthMapUsageLock);
     for (U32 i = 0; i < to_base(ShadowType::COUNT); ++i) {
         s_depthMapUsage[i].resize(0);
     }
@@ -183,13 +185,31 @@ void ShadowMap::resetShadowMaps() {
 void ShadowMap::bindShadowMaps(GFXDevice& context, GFX::CommandBuffer& bufferInOut) {
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
     for (U8 i = 0; i < to_base(ShadowType::COUNT); ++i) {
+        U16 offset = findDepthMapOffset(static_cast<ShadowType>(i), false);
+        if (offset == 0) {
+            continue;
+        }
+
         RTAttachmentType attachment = static_cast<ShadowType>(i) == ShadowType::LAYERED
                                                                   ? RTAttachmentType::Colour
                                                                   : RTAttachmentType::Depth;
 
         U8 bindSlot = LightPool::getShadowBindSlotOffset(static_cast<ShadowType>(i));
         RTAttachment& shadowTexture = context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SHADOW, i)).getAttachment(attachment, 0);
-        descriptorSetCmd._set._textureData.addTexture(shadowTexture.texture()->getData(), bindSlot);
+
+        const TextureData& data = shadowTexture.texture()->getData();
+        const TextureDescriptor& texDescriptor = shadowTexture.descriptor()._texDescriptor;
+
+        if (offset < texDescriptor._layerCount) {
+            TextureView view = {};
+            view._texture = shadowTexture.texture().get();
+            view._mipLevels.set(texDescriptor._mipLevels.min, texDescriptor._mipLevels.max);
+            view._layerRange.set(0, offset);
+
+            descriptorSetCmd._set._textureLayers.push_back(std::make_pair(bindSlot, view));
+        } else {
+            descriptorSetCmd._set._textureData.addTexture(data, bindSlot);
+        }
     }
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 }
@@ -203,7 +223,9 @@ void ShadowMap::clearShadowMapBuffers(GFX::CommandBuffer& bufferInOut) {
     }
 }
 
-U16 ShadowMap::findDepthMapOffset(ShadowType shadowType) {
+U16 ShadowMap::findDepthMapOffset(ShadowType shadowType, bool allocate) {
+    UniqueLock w_lock(s_depthMapUsageLock);
+
     LayerUsageMask& usageMask = s_depthMapUsage[to_U32(shadowType)];
     U16 layer = std::numeric_limits<U16>::max();
     U16 usageCount = (U16)usageMask.size();
@@ -214,20 +236,27 @@ U16 ShadowMap::findDepthMapOffset(ShadowType shadowType) {
         }
     }
 
-    if (layer > usageCount) {
-        layer = usageCount;
-        usageMask.push_back(true);
+    if (allocate) {
+        if (layer > usageCount) {
+            layer = usageCount;
+            usageMask.push_back(false);
+        }
+        return layer;
     }
 
-    return layer;
+    return 0;
 }
 
 void ShadowMap::commitDepthMapOffset(ShadowType shadowType, U32 layer) {
+    UniqueLock w_lock(s_depthMapUsageLock);
+
     LayerUsageMask& usageMask = s_depthMapUsage[to_U32(shadowType)];
     usageMask[layer] = true;
 }
 
 bool ShadowMap::freeDepthMapOffset(ShadowType shadowType, U32 layer) {
+    UniqueLock w_lock(s_depthMapUsageLock);
+
     LayerUsageMask& usageMask = s_depthMapUsage[to_U32(shadowType)];
     usageMask[layer] = false;
 
@@ -236,7 +265,7 @@ bool ShadowMap::freeDepthMapOffset(ShadowType shadowType, U32 layer) {
 
 void ShadowMap::generateShadowMaps(const Camera& playerCamera, Light& light, U32 lightIndex, GFX::CommandBuffer& bufferInOut) {
     ShadowType sType = getShadowTypeForLightType(light.getLightType());
-    U16 offset = findDepthMapOffset(sType);
+    U16 offset = findDepthMapOffset(sType, true);
     light.setShadowOffset(offset);
     commitDepthMapOffset(sType, offset);
 

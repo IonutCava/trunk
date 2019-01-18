@@ -103,6 +103,7 @@ public:
     const vec3<F32>& getOrigin() const;
     const Frustum& getFrustum() const;
     U16 getRenderDepth() const;
+    U16 getPrevRenderDepth() const;
 
 protected:
     // Resets the terrain quadtree.
@@ -130,6 +131,7 @@ protected:
 private:
     I32 _numNodes;
     U16 _renderDepth;
+    U16 _prevRenderDepth;
     vec3<F32> _cameraEyeCache;
     vec3<F32> _originCache;
     Frustum _frustumCache;
