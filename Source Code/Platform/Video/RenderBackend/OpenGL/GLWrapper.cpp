@@ -172,6 +172,7 @@ void GL_API::endFrame(DisplayWindow& window, bool global) {
 
         if (global) {
             _swapBufferTimer.stop();
+            s_texturePool.onFrameEnd();
         }
     }
 
@@ -190,6 +191,7 @@ void GL_API::endFrame(DisplayWindow& window, bool global) {
         _elapsedTimeQuery->incQueue();
 
         g_frameTimeRequested = false;
+
     }
 }
 
@@ -1073,7 +1075,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             const GFX::BindDescriptorSetsCommand& crtCmd = commandBuffer.getCommand<GFX::BindDescriptorSetsCommand>(entry);
             const DescriptorSet& set = crtCmd._set;
 
-            if (makeTexturesResident(set._textureData, set._textureLayers)) {
+            if (makeTexturesResident(set._textureData, set._textureViews)) {
                 
             }
             for (const ShaderBufferBinding& shaderBufCmd : set._shaderBuffers) {
@@ -1128,7 +1130,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
 
                 GLuint handle = getTextureView(data, descriptor._mipLevels, crtCmd._layerRange, glInternalFormat);
                 glGenerateTextureMipmap(handle);
-                s_texturePool.deallocate(handle);
+                s_texturePool.deallocate(handle, 0);
             }
         }break;
         case GFX::CommandType::DRAW_TEXT: {
@@ -1313,7 +1315,7 @@ size_t GL_API::setStateBlock(size_t stateBlockHash) {
     return getStateTracker().setStateBlock(stateBlockHash);
 }
 
-bool GL_API::makeTexturesResident(const TextureDataContainer& textureData, const vectorEASTL<std::pair<U8, TextureView>>& textureLayers) {
+bool GL_API::makeTexturesResident(const TextureDataContainer& textureData, const vectorEASTL<TextureViewEntry>& textureViews) {
     bool bound = false;
 
     STUBBED("ToDo: Optimise this: If over n textures, get max binding slot, create [0...maxSlot] bindings, fill unused with 0 and send as one command with glBindTextures -Ionut")
@@ -1342,14 +1344,15 @@ bool GL_API::makeTexturesResident(const TextureDataContainer& textureData, const
         }
     }
 
-    for (auto it : textureLayers) {
-        Texture* tex = it.second._texture;
+    for (auto it : textureViews) {
+        Texture* tex = it._view._texture;
         TextureData data = tex->getData();
         const TextureDescriptor& descriptor = tex->getDescriptor();
         GLenum glInternalFormat = GLUtil::internalFormat(descriptor.baseFormat(), descriptor.dataType(), descriptor._srgb);
 
-        GLuint handle = getTextureView(data, it.second._mipLevels, it.second._layerRange, glInternalFormat);
-        getStateTracker().bindTexture(static_cast<GLushort>(it.first), data.type(), handle, data._samplerHandle);
+        GLuint handle = getTextureView(data, it._view._mipLevels, it._view._layerRange, glInternalFormat);
+        getStateTracker().bindTexture(static_cast<GLushort>(it._binding), data.type(), handle, data._samplerHandle);
+        s_texturePool.deallocate(handle, 3);
     }
 
     return bound;

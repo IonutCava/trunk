@@ -187,6 +187,8 @@ void LightPool::generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffe
     }
 
     _shadowBuffer->writeData(_sortedShadowProperties.data());
+
+    ShadowMap::bindShadowMaps(bufferInOut);
 }
 
 U32 LightPool::shadowCastingLightsCount() const {
@@ -269,14 +271,6 @@ void LightPool::togglePreviewShadowMaps(GFXDevice& context, Light& light) {
         ShadowMap::enableShadowDebugViewForLight(context, light);
     } else {
         ShadowMap::disableShadowDebugViews(context);
-    }
-}
-
-// If we have computed shadowmaps, bind them before rendering any geometry;
-void LightPool::bindShadowMaps(GFXDevice& context, GFX::CommandBuffer& bufferInOut) {
-    // Skip applying shadows if we are rendering to depth map, or we have shadows disabled
-    if (context.parent().platformContext().config().rendering.shadowMapping.enabled) {
-        ShadowMap::bindShadowMaps(context, bufferInOut);
     }
 }
 

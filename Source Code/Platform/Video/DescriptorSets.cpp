@@ -23,6 +23,15 @@ namespace Divide {
         return nullptr;
     }
 
+    const TextureView* DescriptorSet::findTextureView(U8 binding) const {
+        for (auto& it : _textureViews) {
+            if (it._binding == binding) {
+                return &it._view;
+            }
+        }
+
+        return nullptr;
+    }
     void DescriptorSet::addShaderBuffers(const ShaderBufferList& entries) {
         for (auto entry : entries) {
             addShaderBuffer(entry);
@@ -129,6 +138,30 @@ namespace Divide {
         }
         otherTextureData = erase_sorted_indices(otherTextureData, textureEraseList);
 
+        auto& otherViewList = rhs._textureViews;
+        vectorFast<vec_size> viewEraseList;
+        viewEraseList.reserve(otherViewList.size());
+        for (size_t i = 0; i < otherViewList.size(); ++i) {
+            const TextureViewEntry& otherView = otherViewList[i];
+
+            const TextureView* texViewData = lhs.findTextureView(otherView._binding);
+            bool erase = false;
+            if (texViewData == nullptr) {
+                lhs._textureViews.push_back(otherView);
+                erase = true;
+            } else {
+                if (*texViewData == otherView._view) {
+                    erase = true;
+                }
+            }
+
+            if (erase) {
+                viewEraseList.push_back(i);
+                partial = true;
+            }
+        }
+        otherViewList = erase_sorted_indices(otherViewList, viewEraseList);
+
         vector<vec_size> bufferEraseList;
         bufferEraseList.reserve(rhs._shaderBuffers.size());
         for (size_t i = 0; i < rhs._shaderBuffers.size(); ++i) {
@@ -153,7 +186,7 @@ namespace Divide {
         }
         rhs._shaderBuffers = erase_sorted_indices(rhs._shaderBuffers, bufferEraseList);
 
-        return rhs._shaderBuffers.empty() && rhs._textureData.textures().empty();
+        return rhs._shaderBuffers.empty() && rhs._textureData.textures().empty() && rhs._textureViews.empty();
     }
 
     bool ShaderBufferBinding::operator==(const ShaderBufferBinding& other) const {

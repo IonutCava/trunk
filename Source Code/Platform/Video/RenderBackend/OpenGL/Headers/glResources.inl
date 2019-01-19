@@ -44,12 +44,21 @@ void glTexturePool<N>::init()
 }
 
 template<size_t N>
-void glTexturePool<N>::clean() {
-    U32 count = to_U32(eastl::count_if(eastl::begin(_usageMap), eastl::end(_usageMap), [](State state) { return state == State::CLEAN; }));
-    if (count > to_U32(_usageMap.size() / 2)) {
-        glDeleteTextures(count, _handles.data());
-        glGenTextures(count, _handles.data());
-        eastl::fill(eastl::begin(_usageMap), eastl::begin(_usageMap) + count, State::FREE);
+void glTexturePool<N>::onFrameEnd() {
+    for (size_t i = 0; i < N; ++i) {
+        if (_usageMap[i] != State::CLEAN) {
+            continue;
+        }
+
+        if (_lifeLeft[i] > 0) {
+            _lifeLeft[i] -= 1u;
+        }
+
+        if (_lifeLeft[i] == 0) {
+            glDeleteTextures(1, &_handles[i]);
+            glGenTextures(1, &_handles[i]);
+            _usageMap[i] = State::FREE;
+        }
     }
 }
 
@@ -57,6 +66,7 @@ template<size_t N>
 void glTexturePool<N>::destroy() {
     glDeleteTextures(N, _handles.data());
     _handles.fill(0);
+    _lifeLeft.fill(0u);
     _usageMap.fill(State::CLEAN);
 }
 
@@ -69,7 +79,7 @@ GLuint glTexturePool<N>::allocate(bool retry) {
         }
     }
     if (!retry) {
-        clean();
+        onFrameEnd();
         return allocate(true);
     }
 
@@ -78,10 +88,11 @@ GLuint glTexturePool<N>::allocate(bool retry) {
 }
 
 template<size_t N>
-void glTexturePool<N>::deallocate(GLuint& handle) {
+void glTexturePool<N>::deallocate(GLuint& handle,  U32 frameDelay) {
     for (size_t i = 0; i < N; ++i) {
         if (_handles[i] == handle) {
             handle = 0;
+            _lifeLeft[i] = frameDelay;
             _usageMap[i] = State::CLEAN;
             return;
         }

@@ -44,6 +44,33 @@ namespace Divide {
         Texture* _texture = nullptr;
         vec2<U32> _mipLevels = {};
         vec2<U32> _layerRange = {};
+
+        inline bool operator==(const TextureView& other) const {
+            return _mipLevels == other._mipLevels &&
+                   _layerRange == other._layerRange &&
+                   _texture == other._texture;
+        }
+
+        inline bool operator!=(const TextureView& other) const {
+            return _mipLevels != other._mipLevels ||
+                   _layerRange != other._layerRange ||
+                   _texture != other._texture;
+        }
+    };
+
+    struct TextureViewEntry {
+        U8 _binding = 0;
+        TextureView _view = {};
+
+        inline bool operator==(const TextureViewEntry& other) const {
+            return _binding == other._binding &&
+                   _view == other._view;
+        }
+
+        inline bool operator!=(const TextureViewEntry& other) const {
+            return _binding != other._binding ||
+                   _view != other._view;
+        }
     };
 
     class ShaderBuffer;
@@ -78,28 +105,32 @@ namespace Divide {
     };
 
     typedef vectorEASTL<ShaderBufferBinding> ShaderBufferList;
+    typedef vectorEASTL<TextureViewEntry> TextureViews;
 
     struct DescriptorSet {
         //This needs a lot more work!
         ShaderBufferList _shaderBuffers = {};
         TextureDataContainer _textureData = {};
-        vectorEASTL<std::pair<U8/*binding*/, TextureView>> _textureLayers = {};
+        TextureViews _textureViews = {};
 
         void addShaderBuffer(const ShaderBufferBinding& entry);
         void addShaderBuffers(const ShaderBufferList& entries);
 
         FORCE_INLINE bool operator==(const DescriptorSet &other) const {
             return _shaderBuffers == other._shaderBuffers &&
-                   _textureData == other._textureData;
+                   _textureData == other._textureData &&
+                   _textureViews == other._textureViews;
         }
 
         FORCE_INLINE bool operator!=(const DescriptorSet &other) const {
             return _shaderBuffers != other._shaderBuffers ||
-                   _textureData != other._textureData;
+                   _textureData != other._textureData ||
+                   _textureViews != other._textureViews;
         }
 
         const ShaderBufferBinding* findBinding(ShaderBufferLocation slot) const;
         const TextureData* findTexture(U8 binding) const;
+        const TextureView* findTextureView(U8 binding) const;
     };
 
     bool Merge(DescriptorSet &lhs, DescriptorSet &rhs, bool& partial);

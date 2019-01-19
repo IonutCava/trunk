@@ -181,7 +181,7 @@ void CommandBuffer::clean() {
                     it = _commandOrder.erase(it);
                     skip = true;
                 }
-                if (!skip && set._shaderBuffers.empty() && set._textureData.textures().empty()) {
+                if (!skip && set._shaderBuffers.empty() && set._textureData.textures().empty() && set._textureViews.empty()) {
                     it = _commandOrder.erase(it);
                     skip = true;
                 } else {

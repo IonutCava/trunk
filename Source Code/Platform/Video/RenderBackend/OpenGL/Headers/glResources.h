@@ -135,16 +135,18 @@ private:
         FREE,
         CLEAN
     };
+
 public:
-    void clean();
+    void onFrameEnd();
     void init();
     void destroy();
 
     GLuint allocate(bool retry = false);
-    void deallocate(GLuint& handle);
+    void deallocate(GLuint& handle, U32 frameDelay);
 
 private:
-    eastl::array<State, N> _usageMap;
+    eastl::array<State, N>  _usageMap;
+    eastl::array<U32, N>    _lifeLeft;
     eastl::array<GLuint, N> _handles;
 };
 /// Wrapper for glGetIntegerv

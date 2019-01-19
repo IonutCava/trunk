@@ -177,10 +177,6 @@ void RenderPass::initBufferData() {
 }
 
 void RenderPass::render(const SceneRenderState& renderState, GFX::CommandBuffer& bufferInOut) {
-    if (_stageFlag != RenderStage::SHADOW) {
-        LightPool::bindShadowMaps(_context, bufferInOut);
-    }
-
     switch(_stageFlag) {
         case RenderStage::DISPLAY: {
             GFX::BeginDebugScopeCommand beginDebugScopeCmd;

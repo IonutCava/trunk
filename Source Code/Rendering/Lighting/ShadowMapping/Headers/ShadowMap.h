@@ -86,14 +86,17 @@ class NOINITVTABLE ShadowMap {
     // Reset usage flags
     static void resetShadowMaps();
 
-    static void bindShadowMaps(GFXDevice& context, GFX::CommandBuffer& bufferInOut);
-    static U16  findDepthMapOffset(ShadowType shadowType, bool allocate);
-    static void commitDepthMapOffset(ShadowType shadowType, U32 layer);
-    static bool freeDepthMapOffset(ShadowType shadowType, U32 layer);
+    static void bindShadowMaps(GFX::CommandBuffer& bufferInOut);
+    static U16  lastUsedDepthMapOffset(ShadowType shadowType);
+    static U16  findFreeDepthMapOffset(ShadowType shadowType, U32 layerCount);
+    static U32  getLigthLayerRequirements(const Light& light);
+    static void commitDepthMapOffset(ShadowType shadowType, U32 layerOffest, U32 layerCount);
+    static bool freeDepthMapOffset(ShadowType shadowType, U32 layerOffest, U32 layerCount);
     static void clearShadowMapBuffers(GFX::CommandBuffer& bufferInOut);
     static void generateShadowMaps(const Camera& playerCamera, Light& light, U32 lightIndex, GFX::CommandBuffer& bufferInOut);
 
     static ShadowType getShadowTypeForLightType(LightType type);
+    static LightType getLightTypeForShadowType(ShadowType type);
 
     static const RenderTargetHandle& getDepthMap(LightType type);
 

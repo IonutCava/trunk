@@ -116,8 +116,6 @@ class LightPool : public SceneComponent,
     void postRenderAllPasses();
 
     static void idle();
-    /// shadow mapping
-    static void bindShadowMaps(GFXDevice& context, GFX::CommandBuffer& bufferInOut);
     static void togglePreviewShadowMaps(GFXDevice& context, Light& light);
 
     /// Get the appropriate shadow bind slot for every light's shadow

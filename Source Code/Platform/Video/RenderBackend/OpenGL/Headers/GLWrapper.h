@@ -153,7 +153,7 @@ protected:
     /// Reset as much of the GL default state as possible within the limitations given
     void clearStates(const DisplayWindow& window, GLStateTracker& stateTracker, bool global);
 
-    bool makeTexturesResident(const TextureDataContainer& textureData, const vectorEASTL<std::pair<U8, TextureView>>& textureLayers);
+    bool makeTexturesResident(const TextureDataContainer& textureData, const vectorEASTL<TextureViewEntry>& textureViews);
     bool makeTextureResident(const TextureData& textureData, U8 binding);
 
     bool setViewport(const Rect<I32>& viewport) override;
