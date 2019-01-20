@@ -198,11 +198,8 @@ void ShadowMap::bindShadowMaps(GFX::CommandBuffer& bufferInOut) {
         ShadowType shadowType = static_cast<ShadowType>(i);
         LightType lightType = getLightTypeForShadowType(shadowType);
 
-        U16 offset = lastUsedDepthMapOffset(shadowType);
-        if (offset == 0) {
-            continue;
-        }
-
+        U16 useCount = lastUsedDepthMapOffset(shadowType);
+   
         RTAttachmentType attachment = shadowType == ShadowType::LAYERED
                                                   ? RTAttachmentType::Colour
                                                   : RTAttachmentType::Depth;
@@ -213,12 +210,12 @@ void ShadowMap::bindShadowMaps(GFX::CommandBuffer& bufferInOut) {
         const TextureData& data = shadowTexture.texture()->getData();
         const TextureDescriptor& texDescriptor = shadowTexture.descriptor()._texDescriptor;
 
-        if (offset < texDescriptor._layerCount) {
+        if (useCount > 0 && useCount < texDescriptor._layerCount) {
             TextureViewEntry entry = {};
             entry._binding = bindSlot;
             entry._view._texture = shadowTexture.texture().get();
             entry._view._mipLevels.set(texDescriptor._mipLevels.min, texDescriptor._mipLevels.max);
-            entry._view._layerRange.set(0, offset);
+            entry._view._layerRange.set(0, useCount);
             descriptorSetCmd._set._textureViews.push_back(entry);
         } else {
             descriptorSetCmd._set._textureData.addTexture(data, bindSlot);

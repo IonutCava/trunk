@@ -45,6 +45,10 @@ void glTexturePool<N>::init()
 
 template<size_t N>
 void glTexturePool<N>::onFrameEnd() {
+
+    GLuint count = 0;
+    _tempBuffer.fill(0u);
+
     for (size_t i = 0; i < N; ++i) {
         if (_usageMap[i] != State::CLEAN) {
             continue;
@@ -55,9 +59,21 @@ void glTexturePool<N>::onFrameEnd() {
         }
 
         if (_lifeLeft[i] == 0) {
-            glDeleteTextures(1, &_handles[i]);
-            glGenTextures(1, &_handles[i]);
-            _usageMap[i] = State::FREE;
+            _tempBuffer[count++] = _handles[i];
+        }
+    }
+
+    if (count > 0) {
+        size_t newIndex = 0;
+        glDeleteTextures(count, _tempBuffer.data());
+        glGenTextures(count, _tempBuffer.data());
+
+        for (size_t i = 0; i < N; ++i) {
+            if (_usageMap[i] == State::CLEAN && _lifeLeft[i] == 0) {
+                _handles[i] = _tempBuffer[newIndex++];
+                _usageMap[i] = State::FREE;
+            }
+            
         }
     }
 }

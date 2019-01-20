@@ -70,6 +70,8 @@ Vegetation::Vegetation(GFXDevice& context,
 
     _boundingBox.set(parentChunk.bounds());
 
+    renderState().addToDrawExclusionMask(RenderPassType::MAIN_PASS);
+
     CreateTask(_context.parent().platformContext(),
         [this](const Task& parentTask) {
             computeGrassTransforms(parentTask);

@@ -19,8 +19,13 @@ namespace Divide {
 RenderQueue::RenderQueue(Kernel& parent)
     : KernelComponent(parent)
 {
-    _renderBins.fill(nullptr);
-    _activeBins.reserve(RenderBinType::_size_constant);
+    for (RenderBinType rbType : RenderBinType::_values()) {
+        if (rbType._value == RenderBinType::RBT_COUNT) {
+            continue;
+        }
+
+        _renderBins[rbType._value] = MemoryManager_NEW RenderBin(rbType);
+    }
 }
 
 RenderQueue::~RenderQueue()
@@ -28,18 +33,16 @@ RenderQueue::~RenderQueue()
     for (RenderBin* bin : _renderBins) {
         MemoryManager::DELETE(bin);
     }
-    _renderBins.fill(nullptr);
 
-    UniqueLockShared lock(_activeBinsLock);
-    _activeBins.clear();
+    _renderBins.fill(nullptr);
 }
 
 U16 RenderQueue::getRenderQueueStackSize(RenderStage stage) const {
     U16 temp = 0;
-
-    UniqueLockShared r_lock(_activeBinsLock);
-    for (RenderBin* bin : _activeBins) {
-        temp += bin->getBinSize(stage);
+    for (RenderBin* bin : _renderBins) {
+        if (bin != nullptr) {
+            temp += bin->getBinSize(stage);
+        }
     }
     return temp;
 }
@@ -73,27 +76,6 @@ RenderingOrder::List RenderQueue::getSortOrder(RenderStagePass stagePass, Render
     return sortOrder;
 }
 
-RenderBin* RenderQueue::getOrCreateBin(RenderBinType rbType) {
-    RenderBin* temp = getBin(rbType);
-    if (temp != nullptr) {
-        return temp;
-    }
-
-    temp = MemoryManager_NEW RenderBin(rbType);
-    // Bins are sorted by their type
-    _renderBins[rbType._to_integral()] = temp;
-    
-    {
-        UniqueLockShared lock(_activeBinsLock);
-        _activeBins.resize(0);
-        std::back_insert_iterator<vector<RenderBin*>> back_it(_activeBins);
-        auto const usedPredicate = [](RenderBin* ptr) { return ptr != nullptr; };
-        std::copy_if(std::begin(_renderBins), std::end(_renderBins), back_it, usedPredicate);
-    }
-
-    return temp;
-}
-
 RenderBin* RenderQueue::getBinForNode(const SceneGraphNode& node, const Material_ptr& matInstance) {
     switch (node.getNode().type()) {
         case SceneNodeType::TYPE_EMPTY:
@@ -102,26 +84,26 @@ RenderBin* RenderQueue::getBinForNode(const SceneGraphNode& node, const Material
                 BitCompare(node.componentMask(), ComponentType::POINT_LIGHT) ||
                 BitCompare(node.componentMask(), ComponentType::DIRECTIONAL_LIGHT))
             {
-                return getOrCreateBin(RenderBinType::RBT_IMPOSTOR);
+                return _renderBins[RenderBinType::RBT_IMPOSTOR];
             }
             /*if (BitCompare(node.componentMask(), ComponentType::PARTICLE_EMITTER_COMPONENT) ||
                 BitCompare(node.componentMask(), ComponentType::GRASS_COMPONENT))
             {
-                return getOrCreateBin(RenderBinType::RBT_TRANSLUCENT);
+                return _renderBins[RenderBinType::RBT_TRANSLUCENT];
             }*/
             return nullptr;
         }
 
         case SceneNodeType::TYPE_VEGETATION:
         case SceneNodeType::TYPE_PARTICLE_EMITTER:
-            return getOrCreateBin(RenderBinType::RBT_TRANSLUCENT);
+            return _renderBins[RenderBinType::RBT_TRANSLUCENT];
 
         case SceneNodeType::TYPE_SKY:
-            return getOrCreateBin(RenderBinType::RBT_SKY);
+            return _renderBins[RenderBinType::RBT_SKY];
 
         case SceneNodeType::TYPE_WATER:
         case SceneNodeType::TYPE_INFINITEPLANE:
-            return getOrCreateBin(RenderBinType::RBT_TERRAIN);
+            return _renderBins[RenderBinType::RBT_TERRAIN];
 
         // Water is also opaque as refraction and reflection are separate textures
         // We may want to break this stuff up into mesh rendering components and not care about specifics anymore (i.e. just material checks)
@@ -131,20 +113,20 @@ RenderBin* RenderQueue::getBinForNode(const SceneGraphNode& node, const Material
                 ObjectType type = node.getNode<Object3D>().getObjectType();
                 switch (type) {
                     case ObjectType::TERRAIN:
-                        return getOrCreateBin(RenderBinType::RBT_TERRAIN);
+                        return _renderBins[RenderBinType::RBT_TERRAIN];
 
                     case ObjectType::DECAL:
-                        return getOrCreateBin(RenderBinType::RBT_TRANSLUCENT);
+                        return _renderBins[RenderBinType::RBT_TRANSLUCENT];
                 }
             }
             // Check if the object has a material with transparency/translucency
             if (matInstance != nullptr && matInstance->hasTransparency()) {
                 // Add it to the appropriate bin if so ...
-                return getOrCreateBin(RenderBinType::RBT_TRANSLUCENT);
+                return _renderBins[RenderBinType::RBT_TRANSLUCENT];
             }
 
             //... else add it to the general geometry bin
-            return getOrCreateBin(RenderBinType::RBT_OPAQUE);
+            return _renderBins[RenderBinType::RBT_OPAQUE];
         }
     }
     return nullptr;
@@ -161,31 +143,18 @@ void RenderQueue::addNodeToQueue(const SceneGraphNode& sgn, RenderStagePass stag
     }
 }
 
-void RenderQueue::populateRenderQueues(RenderStagePass stagePass, std::pair<RenderBinType, bool> binAndFlag, vectorEASTL<RenderPackage*>& queueInOut) {
-    if (binAndFlag.first._value == RenderBinType::RBT_COUNT) {
-        // If flag == false, do we just not get packages? I guess so.
-        if (binAndFlag.second) {
-            SharedLock r_lock(_activeBinsLock);
-            for (RenderBin* renderBin : _activeBins) {
-                renderBin->populateRenderQueue(stagePass, queueInOut);
-            }
+void RenderQueue::populateRenderQueues(RenderStagePass stagePass, RenderBinType binType, vectorEASTL<RenderPackage*>& queueInOut) {
+    if (binType._value == RenderBinType::RBT_COUNT) {
+        for (RenderBin* renderBin : _renderBins) {
+            renderBin->populateRenderQueue(stagePass, queueInOut);
         }
     } else {
-        SharedLock r_lock(_activeBinsLock);
-        for (RenderBin* renderBin : _activeBins) {
-            if ((renderBin->getType() == binAndFlag.first) == binAndFlag.second) {
-                renderBin->populateRenderQueue(stagePass, queueInOut);
-                if (binAndFlag.second) {
-                    break;
-                }
-            }
-        }
+        _renderBins[binType]->populateRenderQueue(stagePass, queueInOut);
     }
 }
 
 void RenderQueue::postRender(const SceneRenderState& renderState, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut) {
-    SharedLock r_lock(_activeBinsLock);
-    for (RenderBin* renderBin : _activeBins) {
+    for (RenderBin* renderBin : _renderBins) {
         renderBin->postRender(renderState, stagePass, bufferInOut);
     }
 }
@@ -197,8 +166,7 @@ void RenderQueue::sort(RenderStagePass stagePass) {
     TaskPool& pool = parent().platformContext().taskPool(TaskPoolType::Render);
     TaskHandle sortTask = CreateTask(pool, DELEGATE_CBK<void, const Task&>());
 
-    SharedLock r_lock(_activeBinsLock);
-    for (RenderBin* renderBin : _activeBins) {
+    for (RenderBin* renderBin : _renderBins) {
         if (!renderBin->empty(stagePass._stage)) {
             RenderingOrder::List sortOrder = getSortOrder(stagePass, renderBin->getType());
 
@@ -217,17 +185,31 @@ void RenderQueue::sort(RenderStagePass stagePass) {
 }
 
 void RenderQueue::refresh(RenderStage stage) {
-    SharedLock r_lock(_activeBinsLock);
-    for (RenderBin* renderBin : _activeBins) {
+    for (RenderBin* renderBin : _renderBins) {
         renderBin->refresh(stage);
     }
 }
 
-void RenderQueue::getSortedQueues(RenderStage stage, SortedQueues& queuesOut, U16& countOut) const {
-    SharedLock r_lock(_activeBinsLock);
-    for (RenderBin* renderBin : _activeBins) {
-        vectorEASTL<SceneGraphNode*>& nodes = queuesOut[renderBin->getType()._to_integral()];
-        renderBin->getSortedNodes(stage, nodes, countOut);
+void RenderQueue::getSortedQueues(RenderStagePass stagePass, SortedQueues& queuesOut, U16& countOut) const {
+    if (stagePass._passType == RenderPassType::PRE_PASS) {
+        constexpr RenderBinType rbTypes[] = {
+            RenderBinType::RBT_OPAQUE,
+            RenderBinType::RBT_IMPOSTOR,
+            RenderBinType::RBT_TERRAIN,
+            RenderBinType::RBT_SKY,
+            RenderBinType::RBT_TRANSLUCENT
+        };
+         
+        for (RenderBinType type : rbTypes) {
+            RenderBin* renderBin = _renderBins[type];
+            vectorEASTL<SceneGraphNode*>& nodes = queuesOut[type];
+            renderBin->getSortedNodes(stagePass._stage, nodes, countOut);
+        }
+    } else {
+        for (RenderBin* renderBin : _renderBins) {
+            vectorEASTL<SceneGraphNode*>& nodes = queuesOut[renderBin->getType()];
+            renderBin->getSortedNodes(stagePass._stage, nodes, countOut);
+        }
     }
 }
 

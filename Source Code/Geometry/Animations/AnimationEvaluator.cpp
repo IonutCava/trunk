@@ -73,31 +73,25 @@ bool AnimEvaluator::initBuffers(GFXDevice& context) {
     DIVIDE_ASSERT(_transforms.size() <= Config::MAX_BONE_COUNT_PER_NODE,
         "AnimEvaluator error: Too many bones for current node! "
         "Increase MAX_BONE_COUNT_PER_NODE in Config!");
-    size_t paddingFactor = ShaderBuffer::alignmentRequirement(false);
 
-    U32 bonePadding = 0;
     size_t boneCount = _transforms.front().size();
-    size_t bufferSize = sizeof(mat4<F32>) * boneCount;
-    while (bufferSize % paddingFactor != 0) {
-        bufferSize += sizeof(mat4<F32>);
-        bonePadding++;
-    }
+    U32 numberOfFrames = frameCount();
 
-    vectorBest<mat4<F32>> animationData;
-    animationData.reserve((boneCount + bonePadding) * frameCount());
+    vectorBest<std::array<mat4<F32>, Config::MAX_BONE_COUNT_PER_NODE>> animationData;
+    animationData.resize(numberOfFrames, {MAT4_IDENTITY});
 
-    for (const vectorBest<mat4<F32>>& frameTransforms : _transforms) {
-        animationData.insert(std::cend(animationData), std::cbegin(frameTransforms), std::cend(frameTransforms));
-        for (U32 i = 0; i < bonePadding; ++i) {
-            animationData.push_back(MAT4_IDENTITY);
+    for (U32 i = 0; i < numberOfFrames; ++i) {
+        std::array<mat4<F32>, Config::MAX_BONE_COUNT_PER_NODE>& anim = animationData[i];
+        const vectorBest<mat4<F32>>& frameTransforms = _transforms[i];
+        size_t numberOfTransforms = frameTransforms.size();
+        for (U32 j = 0; j < numberOfTransforms; ++j) {
+            anim[j].set(frameTransforms[j]);
         }
     }
 
-    animationData.shrink_to_fit();
-
     ShaderBufferDescriptor bufferDescriptor;
     bufferDescriptor._elementCount = frameCount();
-    bufferDescriptor._elementSize = bufferSize;
+    bufferDescriptor._elementSize = sizeof(mat4<F32>) * Config::MAX_BONE_COUNT_PER_NODE;
     bufferDescriptor._ringBufferLength = 1;
     bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
     bufferDescriptor._initialData = animationData.data();
@@ -106,7 +100,7 @@ bool AnimEvaluator::initBuffers(GFXDevice& context) {
 
     _boneTransformBuffer = context.newSB(bufferDescriptor);
 
-    return !animationData.empty();
+    return numberOfFrames > 0;
 }
 
 I32 AnimEvaluator::frameIndexAt(const D64 elapsedTime) const {

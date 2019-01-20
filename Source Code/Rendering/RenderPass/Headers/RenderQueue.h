@@ -46,15 +46,15 @@ FWD_DECLARE_MANAGED_CLASS(SceneNode);
 /// This class manages all of the RenderBins and renders them in the correct order
 class RenderQueue : public KernelComponent {
    public:
-    typedef std::array<RenderBin*, RenderBinType::_size_constant> RenderBinArray;
-    typedef std::array<vectorEASTL<SceneGraphNode*>, RenderBinType::_size_constant> SortedQueues;
+    typedef std::array<RenderBin*, RenderBinType::RBT_COUNT> RenderBinArray;
+    typedef std::array<vectorEASTL<SceneGraphNode*>, RenderBinType::RBT_COUNT> SortedQueues;
 
   public:
     RenderQueue(Kernel& parent);
     ~RenderQueue();
 
     //binAndFlag: if true, populate from bin, if false, populate from everything except bin
-    void populateRenderQueues(RenderStagePass stagePass, std::pair<RenderBinType, bool> binAndFlag, vectorEASTL<RenderPackage*>& queueInOut);
+    void populateRenderQueues(RenderStagePass stagePass, RenderBinType binType, vectorEASTL<RenderPackage*>& queueInOut);
     void postRender(const SceneRenderState& renderState, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut);
     void sort(RenderStagePass stagePass);
     void refresh(RenderStage stage);
@@ -73,20 +73,15 @@ class RenderQueue : public KernelComponent {
         return _renderBins;
     }
 
-    void getSortedQueues(RenderStage stage, SortedQueues& queuesOut, U16& countOut) const;
+    void getSortedQueues(RenderStagePass stagePass, SortedQueues& queuesOut, U16& countOut) const;
 
   private:
     RenderingOrder::List getSortOrder(RenderStagePass stagePass, RenderBinType rbType);
 
     RenderBin* getBinForNode(const SceneGraphNode& nodeType, const Material_ptr& matInstance);
 
-    RenderBin* getOrCreateBin(RenderBinType rbType);
-
   private:
     RenderBinArray _renderBins;
-
-    mutable SharedMutex _activeBinsLock;
-    vector<RenderBin*> _activeBins;
 };
 
 };  // namespace Divide

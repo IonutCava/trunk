@@ -393,17 +393,13 @@ void glVertexArray::draw(const GenericDrawCommand& command) {
     GL_API::getStateTracker().setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _IBid);
     GL_API::getStateTracker().bindActiveBuffer(vao, 0, _VBHandle._id, _VBHandle._offset * GLUtil::VBO::MAX_VBO_CHUNK_SIZE_BYTES, _effectiveEntrySize);
 
-    rebuildCountAndIndexData(command._drawCount, command._cmd.indexCount, command._cmd.firstIndex);
-
-    GLUtil::submitRenderCommand(
-        command,
-        _drawIndexed,
-        useCmdBuffer,
-        _formatInternal,
-        _countData.data(),
-        (bufferPtr)_indexOffsetData.data());
+    if (useCmdBuffer) {
+        GLUtil::submitRenderCommand(command, _drawIndexed, useCmdBuffer, _formatInternal);
+    } else {
+        rebuildCountAndIndexData(command._drawCount, command._cmd.indexCount, command._cmd.firstIndex);
+        GLUtil::submitRenderCommand(command, _drawIndexed, useCmdBuffer, _formatInternal, _countData.data(), (bufferPtr)_indexOffsetData.data());
+    }
 }
-
 
 void glVertexArray::rebuildCountAndIndexData(U32 drawCount, U32 indexCount, U32 firstIndex) {
     STUBBED("ToDo: Move all of this somewhere outside of glVertexArray so that we can gather proper data from all of the batched commands -Ionut");

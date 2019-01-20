@@ -182,7 +182,10 @@ bool glFramebuffer::create() {
         _resolveBuffer = MemoryManager_NEW glFramebuffer(context(), desc);
     }
 
-    setDefaultState(RenderTarget::defaultPolicy());
+    RTDrawDescriptor defaultDescriptor = RenderTarget::defaultPolicy();
+    defaultDescriptor.clearExternalColour(false);
+    defaultDescriptor.clearExternalDepth(false);
+    setDefaultState(defaultDescriptor);
 
     if (_resolveBuffer) {
         if (!_resolveBuffer->create()) {
@@ -649,6 +652,11 @@ void glFramebuffer::clear(const RTDrawDescriptor& drawPolicy, const vector<RTAtt
         for (const RTAttachment_ptr& att : activeAttachments) {
             U32 binding = att->binding();
             if (static_cast<GLenum>(binding) != GL_NONE) {
+
+                if (!drawPolicy.clearExternalColour() && att->isExternal()) {
+                    continue;
+                }
+
                 GLint buffer = static_cast<GLint>(binding - static_cast<GLint>(GL_COLOR_ATTACHMENT0));
                 if (!drawPolicy.clearColour(to_U8(buffer))) {
                     continue;
@@ -667,6 +675,10 @@ void glFramebuffer::clear(const RTDrawDescriptor& drawPolicy, const vector<RTAtt
     }
 
     if (drawPolicy.isEnabledState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER) && hasDepth()) {
+        if (drawPolicy.clearExternalDepth() && _attachmentPool->get(RTAttachmentType::Depth, 0)->isExternal()) {
+            return;
+        }
+
         glClearNamedFramebufferfv(_framebufferHandle, GL_DEPTH, 0, &_descriptor._depthValue);
         _context.registerDrawCall();
     }

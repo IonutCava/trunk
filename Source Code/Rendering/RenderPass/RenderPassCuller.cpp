@@ -89,15 +89,14 @@ RenderPassCuller::VisibleNodeList& RenderPassCuller::frustumCull(const CullParam
         U32 childCount = root.getChildCount();
         vectorEASTL<VisibleNodeList> nodes(childCount);
 
-        auto cullIterFunction = [this, &root, &camera, &nodes, &stage, cullMaxDistanceSq](const Task& parentTask, U32 start, U32 end) {
-            auto perChildCull = [this, &parentTask, &camera, &nodes, start, &stage, cullMaxDistanceSq](const SceneGraphNode& child, I32 i) {
-                frustumCullNode(parentTask, child, camera, stage, cullMaxDistanceSq, nodes[i], true);
-            };
-            root.forEachChild(perChildCull, start, end);
-        };
-
         parallel_for(*params._context,
-                     cullIterFunction,
+                     [this, &root, &camera, &nodes, &stage, cullMaxDistanceSq](const Task& parentTask, U32 start, U32 end) {
+                        root.forEachChild([this, &parentTask, &camera, &nodes, start, &stage, cullMaxDistanceSq](const SceneGraphNode& child, I32 i) {
+                            frustumCullNode(parentTask, child, camera, stage, cullMaxDistanceSq, nodes[i], true);
+                        },
+                        start,
+                        end);
+                     },
                      childCount,
                      g_nodesPerCullingPartition,
                      params._threaded ? TaskPriority::DONT_CARE : TaskPriority::REALTIME);

@@ -91,6 +91,9 @@ RTDrawDescriptor::RTDrawDescriptor()
 
     _drawMask.enableAll();
     _clearColourAttachment.fill(true);
+
+    _clearExternalColour = false;
+    _clearExternalDepth = false;
 }
 
 void RTDrawDescriptor::stateMask(U32 stateMask) {

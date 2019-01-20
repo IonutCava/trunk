@@ -88,10 +88,10 @@
   <shadowMapping>
     <enabled>true</enabled>
     <!-- Will be rounded up to the next POW_2. Cube/Dual paraboloid will be 1/2 resolution per face/slice -->
-    <shadowMapResolution>1024</shadowMapResolution>
+    <shadowMapResolution>512</shadowMapResolution>
     <MSAAsamples>2</MSAAsamples>
     <anisotropicFilteringLevel>8</anisotropicFilteringLevel>
-    <enableBlurring>false</enableBlurring>
+    <enableBlurring>true</enableBlurring>
     <defaultCSMSplitCount>3</defaultCSMSplitCount>
     <softness>0.25</softness>
     <splitLambda>0.75</splitLambda>

@@ -146,8 +146,9 @@ public:
 
 private:
     eastl::array<State, N>  _usageMap;
-    eastl::array<U32, N>    _lifeLeft;
+    eastl::array<U32,   N>  _lifeLeft;
     eastl::array<GLuint, N> _handles;
+    eastl::array<GLuint, N> _tempBuffer;
 };
 /// Wrapper for glGetIntegerv
 GLint getIntegerv(GLenum param);

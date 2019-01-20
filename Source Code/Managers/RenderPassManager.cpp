@@ -323,7 +323,7 @@ void RenderPassManager::buildDrawCommands(RenderStagePass stagePass, const PassP
         queue.reserve(Config::MAX_VISIBLE_NODES);
     }
 
-    getQueue().getSortedQueues(stagePass._stage, sortedQueues, queueSize);
+    getQueue().getSortedQueues(stagePass, sortedQueues, queueSize);
     for (const vectorEASTL<SceneGraphNode*>& queue : sortedQueues) {
         for (SceneGraphNode* node : queue) {
             if (params._sourceNode != nullptr && *params._sourceNode == *node) {
@@ -366,14 +366,14 @@ void RenderPassManager::prepareRenderQueues(RenderStagePass stagePass, const Pas
     
     if (stagePass._passType == RenderPassType::PRE_PASS || stagePass._stage == RenderStage::SHADOW) {
         // Draw everything in the depth pass
-        queue.populateRenderQueues(stagePass, std::make_pair(RenderBinType::RBT_COUNT, true), packageQueue);
+        queue.populateRenderQueues(stagePass,RenderBinType::RBT_COUNT, packageQueue);
     } else {
 #if defined(DISABLE_WOIT)
-        queue.populateRenderQueues(stagePass, std::make_pair(RenderBinType::RBT_COUNT, true), packageQueue);
+        queue.populateRenderQueues(stagePass, RenderBinType::RBT_COUNT, packageQueue);
 #else
         // Only draw stuff from the translucent bin in the OIT Pass and everything else in the colour pass
         bool oitPass = stagePass._passType == RenderPassType::OIT_PASS;
-        queue.populateRenderQueues(stagePass, std::make_pair(RenderBinType::RBT_TRANSLUCENT, oitPass), packageQueue);
+        queue.populateRenderQueues(stagePass, oitPass ? RenderBinType::RBT_TRANSLUCENT : RenderBinType::RBT_COUNT, packageQueue);
 #endif
     }
 

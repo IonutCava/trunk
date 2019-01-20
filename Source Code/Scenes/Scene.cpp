@@ -868,7 +868,7 @@ U16 Scene::registerInputActions() {
     };
 
     auto toggleEditor = [this](InputParams param) {
-        if (Config::Build::IS_DEBUG_BUILD) {
+        if (Config::Build::ENABLE_EDITOR) {
             _context.editor().toggle(!_context.editor().running());
         }
     };
@@ -1061,11 +1061,6 @@ void Scene::postLoad() {
 
 void Scene::postLoadMainThread() {
     assert(Runtime::isMainThread());
-
-    if (!saveXML()) {
-        //ToDo: Handle this?
-    }
-
     setState(ResourceState::RES_LOADED);
 }
 

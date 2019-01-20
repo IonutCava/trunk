@@ -22,7 +22,6 @@ float chebyshevUpperBound(vec2 moments, float distance, float minVariance) {
 }
 
 float applyShadowDirectional(Shadow currentShadowSource, in float fragDepth) {
-
     // find the appropriate depth map to look up in based on the depth of this fragment
     g_shadowTempInt = 0;
     // Figure out which cascade to sample from

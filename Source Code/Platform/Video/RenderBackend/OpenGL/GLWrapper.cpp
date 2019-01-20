@@ -1130,7 +1130,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
 
                 GLuint handle = getTextureView(data, descriptor._mipLevels, crtCmd._layerRange, glInternalFormat);
                 glGenerateTextureMipmap(handle);
-                s_texturePool.deallocate(handle, 0);
+                s_texturePool.deallocate(handle, 3);
             }
         }break;
         case GFX::CommandType::DRAW_TEXT: {
