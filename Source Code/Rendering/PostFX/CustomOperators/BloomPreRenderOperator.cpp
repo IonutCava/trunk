@@ -50,7 +50,7 @@ BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, PreRenderBatc
     ResourceDescriptor bloomApply("bloom.BloomApply");
     _bloomApply = CreateResource<ShaderProgram>(cache, bloomApply);
 
-    ResourceDescriptor blur("blur");
+    ResourceDescriptor blur("blur.Generic");
     blur.setThreadedLoading(false);
     _blur = CreateResource<ShaderProgram>(cache, blur);
 

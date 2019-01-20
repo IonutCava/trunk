@@ -93,8 +93,8 @@
     <anisotropicFilteringLevel>8</anisotropicFilteringLevel>
     <enableBlurring>true</enableBlurring>
     <defaultCSMSplitCount>3</defaultCSMSplitCount>
-    <softness>0.25</softness>
-    <splitLambda>0.75</splitLambda>
+    <softness>0.5</softness>
+    <splitLambda>0.975</splitLambda>
   </shadowMapping>
 </rendering>
 

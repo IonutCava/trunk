@@ -48,7 +48,10 @@ const CameraSnapshot& Camera::snapshot() {
 
 void Camera::fromCamera(Camera& camera) {
     camera.updateLookAt();
+    fromCamera(static_cast<const Camera&>(camera));
+}
 
+void Camera::fromCamera(const Camera& camera) {
     setMoveSpeedFactor(camera.getMoveSpeedFactor());
     setTurnSpeedFactor(camera.getTurnSpeedFactor());
     setZoomSpeedFactor(camera.getZoomSpeedFactor());
@@ -382,11 +385,12 @@ const mat4<F32>& Camera::setProjection(const vec4<F32>& rect, const vec2<F32>& z
     return getProjectionMatrix();
 }
 
-const mat4<F32>& Camera::setProjection(const mat4<F32>& projection, const vec2<F32>& zPlanes) {
+const mat4<F32>& Camera::setProjection(const mat4<F32>& projection, const vec2<F32>& zPlanes, bool isOrtho) {
     _data._projectionMatrix.set(projection);
     _data._zPlanes = zPlanes;
     _projectionDirty = false;
     _frustumDirty = true;
+    _isOrthoCamera = isOrtho;
 
     return getProjectionMatrix();
 }

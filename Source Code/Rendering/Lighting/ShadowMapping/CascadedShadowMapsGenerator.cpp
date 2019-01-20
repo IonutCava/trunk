@@ -52,10 +52,11 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
     _horizBlur = _blurDepthMapShader->GetSubroutineIndex(ShaderType::GEOMETRY, "computeCoordsH");
     _vertBlur = _blurDepthMapShader->GetSubroutineIndex(ShaderType::GEOMETRY, "computeCoordsV");
 
-    vector<vec2<F32>> blurSizes(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
-    blurSizes[0].set(1.0f / g_shadowSettings.shadowMapResolution);
+    std::array<vec2<F32>, Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT> blurSizes;
+    blurSizes.fill(vec2<F32>(1.0f / g_shadowSettings.shadowMapResolution) /** g_shadowSettings.softness*/);
+
     for (U8 i = 1; i < Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT; ++i) {
-        blurSizes[i].set(blurSizes[i - 1] * 0.5f);
+        //blurSizes[i] = blurSizes[i - 1] / 2;
     }
 
     _blurDepthMapConstants.set("blurSizes", GFX::PushConstantType::VEC2, blurSizes);
@@ -118,8 +119,6 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
 
         _blurBuffer = _context.renderTargetPool().allocateRT(desc);
     }
-
-    STUBBED("Migrate to this: http://www.ogldev.org/www/tutorial49/tutorial49.html");
 }
 
 CascadedShadowMapsGenerator::~CascadedShadowMapsGenerator()
@@ -187,7 +186,7 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
 }
 
 //Between 0 and 1, change these to check the results
-F32 minDistance = 0.0f;
+F32 minDistance = 0.005f;
 F32 maxDistance = 1.0f;
 CascadedShadowMapsGenerator::SplitDepths CascadedShadowMapsGenerator::calculateSplitDepths(const mat4<F32>& projMatrix, DirectionalLightComponent& light, const vec2<F32>& nearFarPlanes) {
     SplitDepths depths = {};
@@ -319,7 +318,7 @@ void CascadedShadowMapsGenerator::applyFrustumSplits(DirectionalLightComponent& 
         roundOffset.w = 0.0f;
 
         lightOrthoMatrix.translate(roundOffset.xyz());
-        lightCam->setProjection(lightOrthoMatrix, clipPlanes);
+        lightCam->setProjection(lightOrthoMatrix, clipPlanes, true);
 
         mat4<F32>::Multiply(lightViewMatrix, lightOrthoMatrix, shadowMatrix);
 

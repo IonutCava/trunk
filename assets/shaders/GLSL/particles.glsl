@@ -24,9 +24,9 @@ void main()
     particleColour = inColourData;
 }
 
--- Fragment.PrePass
+-- Fragment.Shadow
 // Ouput data
-out vec4 colour;
+out vec2 colour;
 
 void main(){
     //VAR._vertexWV is actually VAR._vertexWVP
@@ -34,7 +34,7 @@ void main(){
     // Adjusting moments (this is sort of bias per pixel) using partial derivative
     float dx = dFdx(depth);
     float dy = dFdy(depth);
-    colour = vec4(depth, (depth * depth) + 0.25 * (dx * dx + dy * dy), 0.0, 0.0);
+    colour = vec2(depth, pow(depth, 2.0) + 0.25 * (dx * dx + dy * dy));
 }
 
 -- Fragment

@@ -40,7 +40,7 @@ vec2 computeMoments(in float depth) {
     float dx = dFdx(depth);
     float dy = dFdy(depth);
     // Compute second moment over the pixel extents.
-    return vec2(depth, (depth * depth) + 0.25 * (dx*dx + dy*dy));
+    return vec2(depth, pow(depth, 2.0) + 0.25 * (dx*dx + dy*dy));
 }
 
 void main() {
@@ -51,7 +51,7 @@ void main() {
 #endif
 
     // Adjusting moments (this is sort of bias per pixel) using partial derivative
-    float depth = vert_vertexWVP.z;// gl_FragCoord.z;//vert_vertexWVP.z / vert_vertexWVP.w;
+    float depth = vert_vertexWVP.z / vert_vertexWVP.w;
     //depth = depth * 0.5 + 0.5;
     //_colourOut = computeMoments(exp(DEPTH_EXP_WARP * depth));
     _colourOut = computeMoments(depth);

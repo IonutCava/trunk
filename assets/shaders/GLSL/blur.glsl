@@ -1,4 +1,4 @@
--- Vertex
+-- Vertex.Generic
 
 void main(void)
 {
@@ -16,7 +16,7 @@ void main(void)
     gl_Position.zw = vec2(0,1);
 }
 
--- Fragment
+-- Fragment.Generic
 
 out vec4 _colourOut;
 
@@ -101,20 +101,14 @@ void main() {
 
 void main(void)
 {
-
 }
-
 
 --Geometry.GaussBlur
 
-#ifndef GS_MAX_INVOCATIONS
-#define GS_MAX_INVOCATIONS 6
-#endif
-
-layout(points, invocations = GS_MAX_INVOCATIONS) in;
+layout(points, invocations = MAX_CSM_SPLITS_PER_LIGHT) in;
 layout(triangle_strip, max_vertices = 4) out;
 
-uniform vec2 blurSizes[GS_MAX_INVOCATIONS];
+uniform vec2 blurSizes[MAX_CSM_SPLITS_PER_LIGHT];
 uniform int layerCount;
 uniform int layerOffsetRead;
 uniform int layerOffsetWrite;
@@ -221,13 +215,13 @@ layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texScreen;
 void main(void)
 {
     if (_blurred == 1) {
-        _outColour  = texture(texScreen, _blurCoords[0]).rg * (1.0  / 64.0);
-        _outColour += texture(texScreen, _blurCoords[1]).rg * (6.0  / 64.0);
-        _outColour += texture(texScreen, _blurCoords[2]).rg * (15.0 / 64.0);
-        _outColour += texture(texScreen, _blurCoords[3]).rg * (20.0 / 64.0);
-        _outColour += texture(texScreen, _blurCoords[4]).rg * (15.0 / 64.0);
-        _outColour += texture(texScreen, _blurCoords[5]).rg * (6.0  / 64.0);
-        _outColour += texture(texScreen, _blurCoords[6]).rg * (1.0  / 64.0);
+        _outColour  = texture(texScreen, _blurCoords[0]).rg * 0.015625f; //(1.0  / 64.0);
+        _outColour += texture(texScreen, _blurCoords[1]).rg * 0.09375f;  //(6.0  / 64.0);
+        _outColour += texture(texScreen, _blurCoords[2]).rg * 0.234375f; //(15.0 / 64.0);
+        _outColour += texture(texScreen, _blurCoords[3]).rg * 0.3125f;   //(20.0 / 64.0);
+        _outColour += texture(texScreen, _blurCoords[4]).rg * 0.234375f; //(15.0 / 64.0);
+        _outColour += texture(texScreen, _blurCoords[5]).rg * 0.09375f;  //(6.0  / 64.0);
+        _outColour += texture(texScreen, _blurCoords[6]).rg * 0.015625f; //(1.0  / 64.0);
     } else {
         _outColour = texture(texScreen, _blurCoords[0]).rg;
     }

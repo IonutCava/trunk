@@ -64,6 +64,7 @@ class Camera : public Resource {
    public:
 
     virtual void fromCamera(Camera& camera);
+    virtual void fromCamera(const Camera& camera);
     virtual void fromSnapshot(const CameraSnapshot& snapshot);
 
     const CameraSnapshot& snapshot();
@@ -311,7 +312,7 @@ class Camera : public Resource {
 
     const mat4<F32>& setProjection(const vec4<F32>& rect, const vec2<F32>& zPlanes);
 
-    const mat4<F32>& setProjection(const mat4<F32>& projection, const vec2<F32>& zPlanes);
+    const mat4<F32>& setProjection(const mat4<F32>& projection, const vec2<F32>& zPlanes, bool isOrtho);
 
     /// Extract the frustum associated with our current PoV
     virtual bool updateFrustum();

@@ -285,7 +285,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     ShaderProgramDescriptor shadowShaderDescriptor = shaderDescriptor;
     shadowShaderDescriptor._defines.push_back(std::make_pair("SHADOW_PASS", true));
     shadowShaderDescriptor._defines.push_back(std::make_pair("MAX_TESS_SCALE 32", true));
-    shadowShaderDescriptor._defines.push_back(std::make_pair("MIN_TESS_SCALE 16", true));
+    shadowShaderDescriptor._defines.push_back(std::make_pair("MIN_TESS_SCALE 8", true));
     terrainShaderShadow.setPropertyDescriptor(shadowShaderDescriptor);
     ShaderProgram_ptr terrainShadowShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderShadow);
 

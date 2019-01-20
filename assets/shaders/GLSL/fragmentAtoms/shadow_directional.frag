@@ -21,13 +21,20 @@ float chebyshevUpperBound(vec2 moments, float distance, float minVariance) {
     return p_max;
 }
 
+float VSM(vec2 moments, float compare) {
+    float p = smoothstep(compare - 0.02, compare, moments.x);
+    float variance = max(moments.y - moments.x*moments.x, -0.001);
+    float d = compare - moments.x;
+    float p_max = linstep(0.2, 1.0, variance / (variance + d * d));
+    return clamp(max(p, p_max), 0.0, 1.0);
+}
+
 float applyShadowDirectional(Shadow currentShadowSource, in float fragDepth) {
     // find the appropriate depth map to look up in based on the depth of this fragment
     g_shadowTempInt = 0;
     // Figure out which cascade to sample from
-    for (int i = 0; i < int(MAX_CSM_SPLITS_PER_LIGHT); ++i) {
-        if (fragDepth < currentShadowSource._floatValues[i]) {
-            g_shadowTempInt = i + 1;
+    for (g_shadowTempInt = 0; g_shadowTempInt < int(MAX_CSM_SPLITS_PER_LIGHT); g_shadowTempInt++) {
+        if (fragDepth > currentShadowSource._floatValues[g_shadowTempInt]) {
             break;
         }
     }
@@ -57,7 +64,8 @@ float applyShadowDirectional(Shadow currentShadowSource, in float fragDepth) {
         //return mix(chebyshevUpperBound(moments, shadowWarpedz1, dvd_shadowingSettings.y), 
         //             1.0, 
         //             clamp(((gl_FragCoord.z + dvd_shadowingSettings.z) - dvd_shadowingSettings.w) / dvd_shadowingSettings.z, 0.0, 1.0));
-        return reduceLightBleeding(chebyshevUpperBound(moments, sc.z, dvd_shadowingSettings.y), 0.1);
+        return reduceLightBleeding(chebyshevUpperBound(moments, sc.z, dvd_shadowingSettings.y), 0.2);
+        //return VSM(moments, sc.z);
     }
     
     return 1.0;
