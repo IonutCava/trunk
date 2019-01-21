@@ -86,7 +86,7 @@ vec2 screen_space(vec4 vertex) {
 }
 
 // Dynamic level of detail using camera distance algorithm.
-float dlodCameraDistance(vec4 p0, vec4 p1, vec2 t0, vec2 t1)
+float dlodCameraDistance(vec4 p0, vec4 p1)
 {
     float d0 = clamp((abs(p0.z) - tessellationRange.x) / (tessellationRange.y - tessellationRange.x), 0.0, 1.0);
     float d1 = clamp((abs(p1.z) - tessellationRange.x) / (tessellationRange.y - tessellationRange.x), 0.0, 1.0);
@@ -118,11 +118,7 @@ float dlodCameraDistance(vec4 p0, vec4 p1, vec2 t0, vec2 t1)
 
 void main(void)
 {
-    PassData(id);
-
-    mat4 mvMatrix = dvd_WorldViewMatrix(VAR.dvd_baseInstance);
-
-    mat4 mvp = dvd_ProjectionMatrix * mvMatrix;
+    mat4 mvp = dvd_ProjectionMatrix * dvd_WorldViewMatrix(VAR.dvd_baseInstance);
     vec4 v0 = project(mvp, gl_in[0].gl_Position);
     vec4 v1 = project(mvp, gl_in[1].gl_Position);
     vec4 v2 = project(mvp, gl_in[2].gl_Position);
@@ -135,14 +131,17 @@ void main(void)
         gl_TessLevelOuter[1] = 0;
         gl_TessLevelOuter[2] = 0;
         gl_TessLevelOuter[3] = 0;
-    } else {
-        // Outer tessellation level
-        gl_TessLevelOuter[0] = dlodCameraDistance(gl_in[3].gl_Position, gl_in[0].gl_Position, _in[3]._texCoord, _in[0]._texCoord);
-        gl_TessLevelOuter[1] = dlodCameraDistance(gl_in[0].gl_Position, gl_in[1].gl_Position, _in[0]._texCoord, _in[1]._texCoord);
-        gl_TessLevelOuter[2] = dlodCameraDistance(gl_in[1].gl_Position, gl_in[2].gl_Position, _in[1]._texCoord, _in[2]._texCoord);
-        gl_TessLevelOuter[3] = dlodCameraDistance(gl_in[2].gl_Position, gl_in[3].gl_Position, _in[2]._texCoord, _in[3]._texCoord);
 
-#if !defined(SHADOW_PASS)
+    } else {
+        
+        PassData(id);
+
+        // Outer tessellation level
+        gl_TessLevelOuter[0] = dlodCameraDistance(gl_in[3].gl_Position, gl_in[0].gl_Position);
+        gl_TessLevelOuter[1] = dlodCameraDistance(gl_in[0].gl_Position, gl_in[1].gl_Position);
+        gl_TessLevelOuter[2] = dlodCameraDistance(gl_in[1].gl_Position, gl_in[2].gl_Position);
+        gl_TessLevelOuter[3] = dlodCameraDistance(gl_in[2].gl_Position, gl_in[3].gl_Position);
+
         vec4 tScale = dvd_TerrainData[VAR.dvd_instanceID]._tScale;
 
         if (tscale_negx == 2.0) {
@@ -160,7 +159,7 @@ void main(void)
         if (tscale_posz == 2.0) {
             gl_TessLevelOuter[3] = max(2.0, gl_TessLevelOuter[3] * 0.5);
         }
-#endif
+
         // Inner tessellation level
         gl_TessLevelInner[0] = 0.5 * (gl_TessLevelOuter[0] + gl_TessLevelOuter[3]);
         gl_TessLevelInner[1] = 0.5 * (gl_TessLevelOuter[2] + gl_TessLevelOuter[1]);
@@ -184,7 +183,6 @@ struct TerrainNodeData {
     vec4 _tScale;
 };
 
-
 layout(binding = BUFFER_TERRAIN_DATA, std140) uniform dvd_TerrainBlock
 {
     TerrainNodeData dvd_TerrainData[MAX_RENDER_NODES];
@@ -195,14 +193,14 @@ layout(quads, fractional_even_spacing) in;
 in float tcs_tessLevel[];
 out float tes_tessLevel;
 
-#if !defined(TOGGLE_WIREFRAME)
 #if defined(SHADOW_PASS)
 out vec4 dvd_vertexWVP;
-#else
+#endif
+
+#if !defined(TOGGLE_WIREFRAME)
 // x = distance, y = depth
 smooth out vec2 _waterDetails;
 out float LoD;
-#endif
 #endif
 
 vec4 interpolate(in vec4 v0, in vec4 v1, in vec4 v2, in vec4 v3)
@@ -369,20 +367,18 @@ in float tes_tessLevel[];
 layout(triangle_strip, max_vertices = 4) out;
 
 
-#if !defined(TOGGLE_WIREFRAME)
 #if defined(SHADOW_PASS)
 out vec4 dvd_vertexWVP;
 #else
 // x = distance, y = depth
 smooth out vec2 _waterDetails;
-
 out vec3 gs_wireColor;
 out float LoD;
-
 noperspective out vec3 gs_edgeDist;
 #endif
-#endif
 
+
+#if !defined(SHADOW_PASS)
 void waterDetails(in int index) {
 
     vec3 vertexW = VAR[index]._vertexW.xyz;
@@ -417,6 +413,7 @@ void waterDetails(in int index) {
         
     _waterDetails = vec2(maxDistance, minDepth);
 }
+#endif
 
 vec4 getWVPPositon(int index) {
     return dvd_ViewProjectionMatrix * gl_in[index].gl_Position;
@@ -424,6 +421,10 @@ vec4 getWVPPositon(int index) {
 
 void PerVertex(in int i, in vec3 edge_dist) {
     PassData(i);
+    gl_Position = getWVPPositon(i);
+#if defined(SHADOW_PASS)
+    dvd_vertexWVP = gl_Position;
+#else
     if (tes_tessLevel[0] >= 64.0) {
         gs_wireColor = vec3(0.0, 0.0, 1.0);
         LoD = 0;
@@ -440,18 +441,14 @@ void PerVertex(in int i, in vec3 edge_dist) {
         gs_wireColor = vec3(1.0, 1.0, 1.0);
         LoD = 4;
     }
-
-    gl_Position = getWVPPositon(i);
-#if defined(SHADOW_PASS)
-    dvd_vertexWVP = gl_Position;
-#endif
-    setClipPlanes(gl_in[i].gl_Position);
-
     waterDetails(i);
+
 
     gs_edgeDist = vec3(i == 0 ? edge_dist.x : 0.0,
                        i == 1 ? edge_dist.y : 0.0,
                        i >= 2 ? edge_dist.z : 0.0);
+#endif
+    setClipPlanes(gl_in[i].gl_Position);
 }
 
 void main(void)
@@ -525,7 +522,7 @@ vec4 getAlbedo() {
     return private_albedo;
 }
 
-vec4 CausticsColour() {
+vec4 CausticsColour(out vec3 normalWV) {
     
     float time2 = float(dvd_time) * 0.0001;
     vec2 noiseUV = _in._texCoord * UNDERWATER_TILE_SCALE;
@@ -533,44 +530,48 @@ vec4 CausticsColour() {
     vec4 scrollingUV = vec4(noiseUV, noiseUV + time2);
     scrollingUV.s -= time2;
 
-    setProcessedNormal(VAR._normalWV);
+    normalWV = VAR._normalWV;
 
     return texture(texWaterCaustics, scrollingUV.st) +
            texture(texWaterCaustics, scrollingUV.pq) * 0.5;
 }
 
-vec4 UnderwaterColour() {
+vec4 UnderwaterColour(out vec3 normalWV) {
 
     vec2 coords = VAR._texCoord * UNDERWATER_TILE_SCALE;
-    setAlbedo(texture(texUnderwaterAlbedo, coords));
 
     vec3 tbn = normalize(2.0 * texture(texUnderwaterDetail, coords).rgb - 1.0);
-    setProcessedNormal(normalize(getTBNMatrix() * tbn));
+    normalWV = normalize(getTBNMatrix() * tbn);
 
-    return getPixelColour();
+    return texture(texUnderwaterAlbedo, coords);
 }
 
-vec4 UnderwaterMappingRoutine() {
-    return mix(CausticsColour(), UnderwaterColour(), _waterDetails.y);
+vec4 UnderwaterMappingRoutine(out vec3 normalWV) {
+    return mix(CausticsColour(normalWV), UnderwaterColour(normalWV), _waterDetails.y);
 }
 
-vec4 TerrainMappingRoutine() {
-#if defined(LOW_QUALITY)
-    setAlbedo(getTerrainAlbedo());
-    setProcessedNormal(VAR._normalWV);
-#else
+vec4 TerrainMappingRoutine(out vec3 normalWV) {
     vec4 albedo;
+#if defined(LOW_QUALITY)
+    albedo = getTerrainAlbedo();
+    normalWV = VAR._normalWV;
+#else
     vec3 normalTBN = getTerrainAlbedoAndNormalTBN(albedo);
-    setAlbedo(albedo);
-    setProcessedNormal(normalize(getTBNMatrix() * normalTBN));
+    normalWV = normalize(getTBNMatrix() * normalTBN);
 #endif
 
-    return getPixelColour();
+    return albedo;
 }
 
 void main(void)
 {
-    vec4 colourOut = mix(TerrainMappingRoutine(), UnderwaterMappingRoutine(), _waterDetails.x);
+    vec3 normalWV = vec3(0.0);
+    vec4 albedo = mix(TerrainMappingRoutine(normalWV), UnderwaterMappingRoutine(normalWV), _waterDetails.x);
+
+    setAlbedo(albedo);
+    setProcessedNormal(normalWV);
+    vec4 colourOut = getPixelColour();
+
 #if defined(TOGGLE_WIREFRAME)
     const float LineWidth = 0.75;
     float d = min(min(gs_edgeDist.x, gs_edgeDist.y), gs_edgeDist.z);

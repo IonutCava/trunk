@@ -277,9 +277,6 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     shaderDescriptor._defines.push_back(std::make_pair("UNDERWATER_TILE_SCALE " + to_stringImpl(underwaterTileScale), true));
 
     stringImpl shaderName("terrainTess");
-    if (g_showWireFrame) {
-        shaderName.append(".Wireframe");
-    }
 
     ResourceDescriptor terrainShaderShadow(shaderName + ".Shadow-" + name);
     ShaderProgramDescriptor shadowShaderDescriptor = shaderDescriptor;
@@ -288,6 +285,10 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     shadowShaderDescriptor._defines.push_back(std::make_pair("MIN_TESS_SCALE 8", true));
     terrainShaderShadow.setPropertyDescriptor(shadowShaderDescriptor);
     ShaderProgram_ptr terrainShadowShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderShadow);
+
+    if (g_showWireFrame) {
+        shaderName.append(".Wireframe");
+    }
 
     ResourceDescriptor terrainShaderColour(shaderName + ".Colour-" + name);
     shaderDescriptor._defines.push_back(std::make_pair("MAX_TESS_SCALE 64", true));
