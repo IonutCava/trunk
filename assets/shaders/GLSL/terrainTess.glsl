@@ -118,6 +118,8 @@ float dlodCameraDistance(vec4 p0, vec4 p1)
 
 void main(void)
 {
+    PassData(id);
+
     mat4 mvp = dvd_ProjectionMatrix * dvd_WorldViewMatrix(VAR.dvd_baseInstance);
     vec4 v0 = project(mvp, gl_in[0].gl_Position);
     vec4 v1 = project(mvp, gl_in[1].gl_Position);
@@ -131,11 +133,7 @@ void main(void)
         gl_TessLevelOuter[1] = 0;
         gl_TessLevelOuter[2] = 0;
         gl_TessLevelOuter[3] = 0;
-
     } else {
-        
-        PassData(id);
-
         // Outer tessellation level
         gl_TessLevelOuter[0] = dlodCameraDistance(gl_in[3].gl_Position, gl_in[0].gl_Position);
         gl_TessLevelOuter[1] = dlodCameraDistance(gl_in[0].gl_Position, gl_in[1].gl_Position);
