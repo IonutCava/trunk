@@ -17,24 +17,25 @@ int g_shadowTempInt = -2;
 #include "shadow_point.frag"
 #include "shadow_spot.frag"
 
-float getShadowFactor(in uint index, in float fragDepth) {
-    Shadow currentShadowSource = dvd_ShadowSource[index];
-    uvec4 lightDetails = currentShadowSource._lightDetails;
+float shadow_loop() {
 
-    switch (lightDetails.x) {
-        case LIGHT_DIRECTIONAL     : return applyShadowDirectional(currentShadowSource, fragDepth);
-        case LIGHT_OMNIDIRECTIONAL : return applyShadowPoint(currentShadowSource, fragDepth);
-        case LIGHT_SPOT            : return applyShadowSpot(currentShadowSource, fragDepth);
-    }
-
-    return 1.0;
-}
-
-float shadow_loop(){
     float shadow = 1.0;
     float fragDepth = VAR._vertexWV.z;
-    for (uint i = 0; i < TOTAL_SHADOW_LIGHTS; ++i) {
-        shadow *= getShadowFactor(i, fragDepth);
+
+    for (uint i = 0; i < MAX_SHADOW_CASTING_LIGHTS; ++i) {
+        uvec4 details = dvd_shadowLightDetails[i];
+
+        switch (details.x) {
+            case LIGHT_DIRECTIONAL:
+                shadow *= applyShadowDirectional(i, details, fragDepth);
+                break;
+            case LIGHT_OMNIDIRECTIONAL:
+                shadow *= applyShadowPoint(i, details, fragDepth);
+                break;
+            case LIGHT_SPOT:
+                shadow *= applyShadowSpot(i, details, fragDepth);
+                break;
+        }
     }
 
     return saturate(shadow);

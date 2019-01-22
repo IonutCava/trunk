@@ -12,6 +12,7 @@
 const int LIGHT_DIRECTIONAL = 0;
 const int LIGHT_OMNIDIRECTIONAL = 1;
 const int LIGHT_SPOT = 2;
+const int LIGHT_NONE = 3;
 
 struct Light {
     /// rgb = colour
@@ -44,23 +45,16 @@ layout(binding = BUFFER_LIGHT_INDICES, std430) coherent COMP_RW buffer perTileLi
     uint perTileLightIndices[];
 };
 
-#define DIRECTIONAL_LIGHT_COUNT dvd_LightData.x
-#define POINT_LIGHT_COUNT       dvd_LightData.y
-#define SPOT_LIGHT_COUNT        dvd_LightData.z
-#define TOTAL_LIGHT_COUNT       (DIRECTIONAL_LIGHT_COUNT + POINT_LIGHT_COUNT + SPOT_LIGHT_COUNT)
-#define TOTAL_SHADOW_LIGHTS     dvd_LightData.w
-
 #if defined(FRAG_SHADER)
 struct Shadow {
-    // x = light type, y = csm split count, z = arrayOffset
-    uvec4 _lightDetails;
     mat4  _lightVP[6];
     vec4  _lightPosition[6];
-    float _floatValues[6];
 };
 
-layout(binding = BUFFER_LIGHT_SHADOW, std430) coherent ACCESS buffer dvd_ShadowBlock
+layout(binding = BUFFER_LIGHT_SHADOW, std140) uniform dvd_ShadowBlock
 {
+    // x = light type, y =  arrayOffset
+    uvec4 dvd_shadowLightDetails[MAX_SHADOW_CASTING_LIGHTS];
     Shadow dvd_ShadowSource[MAX_SHADOW_CASTING_LIGHTS];
 };
 

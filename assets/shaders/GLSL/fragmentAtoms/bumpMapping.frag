@@ -59,6 +59,8 @@ vec4 ParallaxMapping(in vec2 uv, uint lightID){
         case LIGHT_SPOT             : 
             lightVecTBN = normalize(-VAR._vertexWV.xyz + dvd_private_bump_light._positionWV.xyz);
             break;
+        case LIGHT_NONE :
+            return vec4(0.0);
     };
 
     vec3 viewVecTBN = normalize(-VAR._vertexWV.xyz);

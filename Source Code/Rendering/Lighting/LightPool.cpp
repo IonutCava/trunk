@@ -83,10 +83,10 @@ void LightPool::init() {
 
     // SHADOWS holds info about the currently active shadow casting lights:
     // ViewProjection Matrices, View Space Position, etc
-    // Should be SSBO (not UBO) to use std430 alignment. Structures should not be padded
-    bufferDescriptor._elementCount = Config::Lighting::MAX_SHADOW_CASTING_LIGHTS;
-    bufferDescriptor._elementSize = sizeof(Light::ShadowProperties);
+    bufferDescriptor._elementCount = 1;
+    bufferDescriptor._elementSize = sizeof(_shadowBufferData);
     bufferDescriptor._name = "LIGHT_SHADOW_BUFFER";
+    ClearBit(bufferDescriptor._flags, to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE));
     _shadowBuffer = _context.gfx().newSB(bufferDescriptor);
 
     ResourceDescriptor lightImpostorShader("lightImpostorShader");
@@ -164,99 +164,46 @@ void LightPool::generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffe
     ShadowMap::clearShadowMapBuffers(bufferInOut);
     ShadowMap::resetShadowMaps();
 
-    LightVec sortedLights;
-    shadowCastingLights(playerCamera.getEye(), sortedLights);
-
-    U32 shadowLightCount = 0;
-    U32 directionalLightCount = 0;
-    for (Light* light : sortedLights) {
-        if (shadowLightCount >= Config::Lighting::MAX_SHADOW_CASTING_LIGHTS) {
-            break;
-        } 
-
-        bool isDirLight = light->getLightType() == LightType::DIRECTIONAL;
-        if (!isDirLight || directionalLightCount < Config::Lighting::MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS) {
-            ShadowMap::generateShadowMaps(playerCamera, *light, shadowLightCount, bufferInOut);
-            _sortedShadowProperties[shadowLightCount] = light->getShadowProperties();
-
-            shadowLightCount++;
-            if (isDirLight) {
-                directionalLightCount++;
-            }
-        }
+    for (vec4<U32>& details : _shadowBufferData._lightDetails) {
+        details.x = to_U32(LightType::COUNT);
     }
 
-    _shadowBuffer->writeData(_sortedShadowProperties.data());
+    if (!_sortedShadowLights.empty()) {
 
-    ShadowMap::bindShadowMaps(bufferInOut);
-}
-
-U32 LightPool::shadowCastingLightsCount() const {
-    U32 ret = 0;
-
-    SharedLock r_lock(_lightLock);
-    for (U8 i = 0; i < to_base(LightType::COUNT); ++i) {
-        for (Light* light : _lights[i]) {
-            if (!light->getEnabled() ||
-                !light->castsShadows() ||
-                !_lightTypeState[to_base(light->getLightType())])
-            {
-                continue;
-            }
-
-            if (++ret == Config::Lighting::MAX_SHADOW_CASTING_LIGHTS) {
+        U32 shadowLightCount = 0;
+        U32 directionalLightCount = 0;
+        for (Light* light : _sortedShadowLights) {
+            if (shadowLightCount >= Config::Lighting::MAX_SHADOW_CASTING_LIGHTS) {
                 break;
             }
-        }
-    }
 
-    return ret;
-}
+            bool isDirLight = light->getLightType() == LightType::DIRECTIONAL;
+            if (!isDirLight || directionalLightCount < Config::Lighting::MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS) {
+                ShadowMap::generateShadowMaps(playerCamera, *light, shadowLightCount, bufferInOut);
+                const Light::ShadowProperties& shadowProp = light->getShadowProperties();
 
-void LightPool::shadowCastingLights(const vec3<F32>& eyePos, LightVec& sortedShadowLights) const {
+                _shadowBufferData._lightDetails[shadowLightCount].set(shadowProp._lightDetails);
+                ShadowTransforms& transform = _shadowBufferData._lightTransforms[shadowLightCount];
+                std::memcpy(&transform._lightPos[0], &shadowProp._lightPosition[0], sizeof(vec4<F32>) * 6);
+                std::memcpy(&transform._lightVP[0], &shadowProp._lightVP[0], sizeof(mat4<F32>) * 6);
 
-    sortedShadowLights.resize(0);
-    sortedShadowLights.reserve(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
-
-    LightVec sortedLights;
-    {
-        SharedLock r_lock(_lightLock);
-        sortedLights.reserve(_lights.size());
-
-        for (U8 i = 0; i < to_base(LightType::COUNT); ++i) {
-            for (Light* light : _lights[i]) {
-                sortedLights.push_back(light);
+                shadowLightCount++;
+                if (isDirLight) {
+                    directionalLightCount++;
+                }
             }
         }
-    }
-    std::sort(std::begin(sortedLights),
-              std::end(sortedLights),
-              [&eyePos](Light* a, Light* b) -> bool
-              {
-                 TransformComponent* lightTransformA = a->getSGN().get<TransformComponent>();
-                 TransformComponent* lightTransformB = b->getSGN().get<TransformComponent>();
-                 assert(lightTransformA != nullptr && lightTransformB != nullptr);
 
-                  return a->getLightType() == LightType::DIRECTIONAL ||
-                          (lightTransformA->getPosition().distanceSquared(eyePos) <
-                           lightTransformB->getPosition().distanceSquared(eyePos));
-              });
 
-    for (Light* light : sortedLights) {
-        if (!light->getEnabled() ||
-            !light->castsShadows() ||
-            !_lightTypeState[to_base(light->getLightType())])
-        {
-            continue;
-        }
+        _shadowBuffer->writeData(_shadowBufferData.data());
 
-        sortedShadowLights.push_back(light);
-
-        if (sortedShadowLights.size() == Config::Lighting::MAX_SHADOW_CASTING_LIGHTS) {
-            break;
-        }
     }
 
+    GFX::BindDescriptorSetsCommand descriptorSetCmd;
+    descriptorSetCmd._set.addShaderBuffer({ ShaderBufferLocation::LIGHT_SHADOW, _shadowBuffer });
+    GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
+
+    ShadowMap::bindShadowMaps(bufferInOut);
 }
 
 void LightPool::togglePreviewShadowMaps(GFXDevice& context, Light& light) {
@@ -345,7 +292,7 @@ void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, con
         _activeLightCount[stageIndex][to_base(LightType::DIRECTIONAL)],
         _activeLightCount[stageIndex][to_base(LightType::POINT)],
         _activeLightCount[stageIndex][to_base(LightType::SPOT)],
-        to_I32(shadowCastingLightsCount())
+        to_U32(_sortedShadowLights.size())
     );
 
     _lightShaderBuffer->writeBytes((stageIndex - 1) * _lightShaderBuffer->getPrimitiveSize(),
@@ -353,18 +300,62 @@ void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, con
                                    (bufferPtr)(&crtData));
 }
 
-void LightPool::uploadLightData(RenderStage stage,
-                                ShaderBufferLocation lightDataLocation,
-                                ShaderBufferLocation shadowDataLocation,
-                                GFX::CommandBuffer& bufferInOut) {
+void LightPool::uploadLightData(RenderStage stage, GFX::CommandBuffer& bufferInOut) {
 
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
-    descriptorSetCmd._set.addShaderBuffer({ lightDataLocation, _lightShaderBuffer, vec2<U32>(to_base(stage) - 1, 1) });
-    descriptorSetCmd._set.addShaderBuffer({ shadowDataLocation, _shadowBuffer });
+    descriptorSetCmd._set.addShaderBuffer({ ShaderBufferLocation::LIGHT_NORMAL, _lightShaderBuffer, vec2<U32>(to_base(stage) - 1, 1) });
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 }
 
-void LightPool::postRenderAllPasses() {
+void LightPool::preRenderAllPasses(const Camera& playerCamera) {
+    const vec3<F32>& eyePos = playerCamera.getEye();
+
+    _sortedShadowLights.resize(0);
+    _sortedShadowLights.reserve(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
+
+    LightVec sortedLights;
+    {
+        SharedLock r_lock(_lightLock);
+        sortedLights.reserve(_lights.size());
+
+        for (U8 i = 0; i < to_base(LightType::COUNT); ++i) {
+            for (Light* light : _lights[i]) {
+                sortedLights.push_back(light);
+            }
+        }
+    }
+    std::sort(std::begin(sortedLights),
+        std::end(sortedLights),
+        [&eyePos](Light* a, Light* b) -> bool
+        {
+            TransformComponent* lightTransformA = a->getSGN().get<TransformComponent>();
+            TransformComponent* lightTransformB = b->getSGN().get<TransformComponent>();
+            assert(lightTransformA != nullptr && lightTransformB != nullptr);
+
+            return a->getLightType() == LightType::DIRECTIONAL ||
+                (lightTransformA->getPosition().distanceSquared(eyePos) <
+                    lightTransformB->getPosition().distanceSquared(eyePos));
+        });
+
+    for (Light* light : sortedLights) {
+        if (!light->getEnabled() ||
+            !light->castsShadows() ||
+            !_lightTypeState[to_base(light->getLightType())])
+        {
+            continue;
+        }
+
+        _sortedShadowLights.push_back(light);
+
+        if (_sortedShadowLights.size() == Config::Lighting::MAX_SHADOW_CASTING_LIGHTS) {
+            break;
+        }
+    }
+}
+
+void LightPool::postRenderAllPasses(const Camera& playerCamera) {
+    ACKNOWLEDGE_UNUSED(playerCamera);
+
     // Move backwards so that we don't step on our own toes with the lockmanager
     _lightShaderBuffer->decQueue();
     _shadowBuffer->decQueue();

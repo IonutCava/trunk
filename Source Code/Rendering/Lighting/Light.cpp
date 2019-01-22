@@ -34,7 +34,7 @@ Light::Light(SceneGraphNode& sgn, const F32 range, LightType type, LightPool& pa
 
     for (U8 i = 0; i < 6; ++i) {
         _shadowProperties._lightVP[i].identity();
-        _shadowProperties._floatValues[i] = std::numeric_limits<F32>::max();
+        _shadowProperties._lightPosition[i].w = std::numeric_limits<F32>::max();
     }
     
     _shadowProperties._lightDetails.x = to_U32(type);

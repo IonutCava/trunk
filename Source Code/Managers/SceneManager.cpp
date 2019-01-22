@@ -433,8 +433,12 @@ void SceneManager::postRender(RenderStagePass stagePass, const Camera& camera, G
     parent().renderPassManager().getQueue().postRender(activeSceneRenderState, stagePass, bufferInOut);
 }
 
-void SceneManager::postRenderAllPasses() {
-    getActiveScene().lightPool().postRenderAllPasses();
+void SceneManager::preRenderAllPasses(const Camera& playerCamera) {
+    getActiveScene().lightPool().preRenderAllPasses(playerCamera);
+}
+
+void SceneManager::postRenderAllPasses(const Camera& playerCamera) {
+    getActiveScene().lightPool().postRenderAllPasses(playerCamera);
 }
 
 void SceneManager::debugDraw(RenderStagePass stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut) {

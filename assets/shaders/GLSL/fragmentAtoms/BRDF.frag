@@ -35,7 +35,7 @@ void getBRDFFactors(in int lightIndex,
 #endif
 }
 
-vec3 getLightColour(vec3 albedo, vec3 normal) {
+vec3 getLightColour(vec3 albedo, vec3 normal, uint dirLightCount, uint pointLightCount) {
 #   if defined(USE_SHADING_FLAT)
     return albedo;
 #   else
@@ -46,14 +46,14 @@ vec3 getLightColour(vec3 albedo, vec3 normal) {
     // Apply all lighting contributions
 
     // Directional lights
-    for (int lightIdx = 0; lightIdx < DIRECTIONAL_LIGHT_COUNT; ++lightIdx) {
+    for (int lightIdx = 0; lightIdx < dirLightCount; ++lightIdx) {
         getBRDFFactors(lightIdx, normal, albedo, specular, reflectivity, lightColour, reflectionCoeff);
     }
 
     if (dvd_lodLevel < 2) {
         // Point lights
 
-        uint offset = DIRECTIONAL_LIGHT_COUNT;
+        uint offset = dirLightCount;
         uint nIndex = GetTileIndex(gl_FragCoord.xy) * LIGHT_NUM_LIGHTS_PER_TILE;
 
         uint nNextLightIndex = perTileLightIndices[nIndex];
@@ -63,7 +63,7 @@ vec3 getLightColour(vec3 albedo, vec3 normal) {
         }
 
         // Spot lights
-        offset += POINT_LIGHT_COUNT;
+        offset += pointLightCount;
         // Moves past the first sentinel to get to the spot lights.
         nNextLightIndex = perTileLightIndices[++nIndex];
         while (nNextLightIndex != LIGHT_INDEX_BUFFER_SENTINEL) {
@@ -83,8 +83,8 @@ vec4 getPixelColour(vec4 albedo, vec3 normal) {
         return vec4(getProcessedNormal(), 1.0);
     }
 #endif
-
-    vec3 colour = getLightColour(albedo.rgb, normal);
+    uvec4 lightData = dvd_LightData;
+    vec3 colour = getLightColour(albedo.rgb, normal, lightData.x, lightData.y);
 
 #if defined(IS_REFLECTIVE)
         /*if (dvd_lodLevel < 1) {

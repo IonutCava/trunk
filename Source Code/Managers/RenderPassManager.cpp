@@ -69,6 +69,8 @@ void RenderPassManager::render(SceneRenderState& sceneRenderState, Time::Profile
 
     const Camera& cam = Attorney::SceneManagerRenderPass::playerCamera(parent().sceneManager());
 
+    Attorney::SceneManagerRenderPass::preRenderAllPasses(parent().sceneManager(), cam);
+
     TaskPriority priority = config.rendering.multithreadedCommandGeneration ? TaskPriority::DONT_CARE : TaskPriority::REALTIME;
 
     TaskPool& pool = parent().platformContext().taskPool(TaskPoolType::Render);
@@ -135,7 +137,7 @@ void RenderPassManager::render(SceneRenderState& sceneRenderState, Time::Profile
         _renderPasses[i]->postRender();
     }
 
-    Attorney::SceneManagerRenderPass::postRenderAllPasses(parent().sceneManager());
+    Attorney::SceneManagerRenderPass::postRenderAllPasses(parent().sceneManager(), cam);
 }
 
 RenderPass& RenderPassManager::addRenderPass(const stringImpl& renderPassName,

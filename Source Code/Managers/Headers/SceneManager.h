@@ -201,7 +201,8 @@ protected:
     bool frameEnded(const FrameEvent& evt) override;
     void preRender(RenderStagePass stagePass, const Camera& camera, RenderTarget& target, GFX::CommandBuffer& bufferInOut);
     void postRender(RenderStagePass stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut);
-    void postRenderAllPasses();
+    void preRenderAllPasses(const Camera& playerCamera);
+    void postRenderAllPasses(const Camera& playerCamera);
     void debugDraw(RenderStagePass stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut);
     void prepareLightData(RenderStage stage, const Camera& camera);
     void generateShadowMaps(GFX::CommandBuffer& bufferInOut);
@@ -373,8 +374,12 @@ class SceneManagerRenderPass {
         mgr.postRender(stagePass, camera, bufferInOut);
     }
 
-    static void postRenderAllPasses(Divide::SceneManager& mgr) {
-        mgr.postRenderAllPasses();
+    static void preRenderAllPasses(Divide::SceneManager& mgr, const Camera& playerCamera) {
+        mgr.preRenderAllPasses(playerCamera);
+    }
+
+    static void postRenderAllPasses(Divide::SceneManager& mgr, const Camera& playerCamera) {
+        mgr.postRenderAllPasses(playerCamera);
     }
 
     static void debugDraw(Divide::SceneManager& mgr, RenderStagePass stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut) {

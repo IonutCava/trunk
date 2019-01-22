@@ -60,20 +60,17 @@ class Light : public GUIDWrapper
    public:
        //Note: 6 - cube faces. CSM splits must always be less than 6!
        struct ShadowProperties {
-           // x = light type,  y = csm split count, z = arrayOffset
-           vec4<U32> _lightDetails;
            /// light viewProjection matrices
            mat4<F32> _lightVP[6];
-           /// light's position in world space
+           // x = light type, y = arrayOffset
+           vec4<U32> _lightDetails;
+           /// light's position in world space. w - csm split distances (or whatever else might be needed)
            vec4<F32> _lightPosition[6];
-           /// random float values (e.g. split distances)
-           F32 _floatValues[6];
 
            inline void set(const ShadowProperties& other) {
                _lightDetails.set(other._lightDetails);
                memcpy(_lightVP,       other._lightVP,       6 * sizeof(mat4<F32>));
                memcpy(_lightPosition, other._lightPosition, 6 * sizeof(vec4<F32>));
-               memcpy(_floatValues,   other._floatValues,   6 * sizeof(F32));
            }
 
            // Renderdoc:
@@ -145,7 +142,7 @@ class Light : public GUIDWrapper
     inline F32 getShadowFloatValues(U8 index) const {
         assert(index < 6);
 
-        return _shadowProperties._floatValues[index];
+        return _shadowProperties._lightPosition[index].w;
     }
 
     inline const vec4<F32>& getShadowLightPos(U8 index) const {
@@ -155,7 +152,7 @@ class Light : public GUIDWrapper
     }
 
     inline U16 getShadowOffset() const {
-        return to_U16(_shadowProperties._lightDetails.z);
+        return to_U16(_shadowProperties._lightDetails.y);
     }
 
     inline void setShadowVPMatrix(U8 index, const mat4<F32>& newValue) {
@@ -167,15 +164,16 @@ class Light : public GUIDWrapper
     inline void setShadowFloatValue(U8 index, F32 newValue) {
         assert(index < 6);
 
-        _shadowProperties._floatValues[index] = newValue;
+        _shadowProperties._lightPosition[index].w = newValue;
     }
 
     inline void setShadowLightPos(U8 index, const vec3<F32>& newValue) {
-        _shadowProperties._lightPosition[index].set(newValue, 1.0f);
+        vec4<F32>& lightPos = _shadowProperties._lightPosition[index];
+        lightPos.set(newValue, lightPos.w);
     }
 
     inline void setShadowOffset(U16 offset) {
-        _shadowProperties._lightDetails.z = offset;
+        _shadowProperties._lightDetails.y = offset;
     }
 
     inline ShadowCameraPool& shadowCameras() { return _shadowCameras; }

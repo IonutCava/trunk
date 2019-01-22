@@ -1,7 +1,8 @@
 #ifndef _SHADOW_POINT_FRAG_
 #define _SHADOW_POINT_FRAG_
 
-float applyShadowPoint(Shadow currentShadowSource, in float fragDepth) {
+float applyShadowPoint(in uint idx, in uvec4 details, in float fragDepth) {
+    Shadow currentShadowSource = dvd_ShadowSource[idx];
 
     // SHADOW MAPS
     vec3 position_ls = currentShadowSource._lightPosition[0].xyz;
@@ -9,7 +10,7 @@ float applyShadowPoint(Shadow currentShadowSource, in float fragDepth) {
     float fs_z = -max(abs_position.x, max(abs_position.y, abs_position.z));
     vec4 clip = (currentShadowSource._lightVP[0] * VAR._vertexW) * vec4(0.0, 0.0, fs_z, 1.0);
     float depth = (clip.z / clip.w) * 0.5 + 0.5;
-    return texture(texDepthMapFromLightCube, vec4(position_ls.xyz, currentShadowSource._lightDetails.z), depth).r;
+    return texture(texDepthMapFromLightCube, vec4(position_ls.xyz, details.y), depth).r;
 }
 
 #endif //_SHADOW_POINT_FRAG_

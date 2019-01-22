@@ -3,6 +3,10 @@
 //ToDo: change to this: https://github.com/bcrusco/Forward-Plus-Renderer/blob/master/Forward-Plus/Forward-Plus/source/shaders/light_culling.comp.glsl
 #include "lightInput.cmn"
 
+#define DIRECTIONAL_LIGHT_COUNT dvd_LightData.x
+#define POINT_LIGHT_COUNT       dvd_LightData.y
+#define SPOT_LIGHT_COUNT        dvd_LightData.z
+
 #define NUM_THREADS_PER_TILE (FORWARD_PLUS_TILE_RES * FORWARD_PLUS_TILE_RES)
 #define FLT_MAX 3.402823466e+38F
 

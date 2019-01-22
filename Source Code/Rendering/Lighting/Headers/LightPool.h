@@ -71,6 +71,19 @@ class LightPool : public SceneComponent,
           vec4<I32> _options = { 0, 1, 0, 0 };
       };
 
+      struct ShadowTransforms {
+          std::array<mat4<F32>, 6> _lightVP;
+          std::array<vec4<F32>, 6> _lightPos;
+      };
+
+      struct ShadowProperties {
+          std::array<vec4<U32>, Config::Lighting::MAX_SHADOW_CASTING_LIGHTS> _lightDetails;
+          std::array<ShadowTransforms, Config::Lighting::MAX_SHADOW_CASTING_LIGHTS> _lightTransforms;
+
+          inline bufferPtr data() const {
+              return (bufferPtr)&_lightDetails[0][0];
+          }
+      };
   public:
     typedef vector<Light*> LightList;
 
@@ -104,16 +117,14 @@ class LightPool : public SceneComponent,
 
     Light* getLight(I64 lightGUID, LightType type);
 
-    void prepareLightData(RenderStage stage,
-                          const vec3<F32>& eyePos, const mat4<F32>& viewMatrix);
-    void uploadLightData(RenderStage stage,
-                         ShaderBufferLocation lightDataLocation,
-                         ShaderBufferLocation shadowDataLocation,
-                         GFX::CommandBuffer& bufferInOut);
+    void prepareLightData(RenderStage stage, const vec3<F32>& eyePos, const mat4<F32>& viewMatrix);
+
+    void uploadLightData(RenderStage stage, GFX::CommandBuffer& bufferInOut);
 
     void drawLightImpostors(RenderStage stage, GFX::CommandBuffer& bufferInOut) const;
 
-    void postRenderAllPasses();
+    void preRenderAllPasses(const Camera& playerCamera);
+    void postRenderAllPasses(const Camera& playerCamera);
 
     static void idle();
     static void togglePreviewShadowMaps(GFXDevice& context, Light& light);
@@ -155,8 +166,6 @@ class LightPool : public SceneComponent,
                             });
     }
 
-    void shadowCastingLights(const vec3<F32>& eyePos, LightVec& sortedShadowLights) const;
-    U32 shadowCastingLightsCount() const;
   private:
       void init();
 
@@ -175,7 +184,8 @@ class LightPool : public SceneComponent,
     ShaderBuffer* _lightShaderBuffer;
     ShaderBuffer* _shadowBuffer;
 
-    LightShadowProperties _sortedShadowProperties;
+    LightVec _sortedShadowLights;
+    ShadowProperties _shadowBufferData;
 
     mutable SharedMutex _lightLock;
     std::array<bool, to_base(LightType::COUNT)> _lightTypeState;
