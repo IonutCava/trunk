@@ -56,7 +56,7 @@ PostFX::PostFX(GFXDevice& context, ResourceCache& cache)
     postFXShaderDescriptor._defines.push_back(std::make_pair(Util::StringFormat("TEX_BIND_POINT_UNDERWATER %d", to_base(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER)), true));
     postFXShader.setPropertyDescriptor(postFXShaderDescriptor);
     _postProcessingShader = CreateResource<ShaderProgram>(cache, postFXShader);
-    _drawConstants.set("_noiseTile", GFX::PushConstantType::FLOAT, 0.05f);
+    _drawConstants.set("_noiseTile", GFX::PushConstantType::FLOAT, 0.1f);
     _drawConstants.set("_noiseFactor", GFX::PushConstantType::FLOAT, 0.02f);
     _drawConstants.set("_fadeActive", GFX::PushConstantType::BOOL, false);
 

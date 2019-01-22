@@ -75,30 +75,6 @@ vec4 ParallaxMapping(in vec2 uv, uint lightID){
     setProcessedNormal(getTBNMatrix() * getBump(vTexCoord));
     return getPixelColour();
 }
-
-vec4 ReliefMapping(in vec2 uv){
-    vec3 viewVecTBN = normalize(-VAR._vertexWV.xyz);
-    //Size and search starting position in texture space
-    vec2 AB = dvd_reliefFactor * vec2(-viewVecTBN.x, viewVecTBN.y)/viewVecTBN.z;
-
-    float h = ReliefMapping_RayIntersection(uv, AB);
-    
-    vec2 uv_offset = h * AB;
-    
-    vec3 p = VAR._vertexWV.xyz;
-    vec3 v = normalize(p);
-    //Compute light direction
-    p += v*h*viewVecTBN.z;    
-    
-    vec2 planes;
-    planes.x = -dvd_zPlanes.y / (dvd_zPlanes.y - dvd_zPlanes.x);
-    planes.y = -dvd_zPlanes.y * dvd_zPlanes.x / (dvd_zPlanes.y - dvd_zPlanes.x);
-
-    gl_FragDepth =((planes.x * p.z + planes.y) / -p.z);
-    
-    setProcessedNormal(getTBNMatrix() * getBump(uv + uv_offset));
-    return getPixelColour();
-}
 #endif
 
 // http://www.thetenthplanet.de/archives/1180

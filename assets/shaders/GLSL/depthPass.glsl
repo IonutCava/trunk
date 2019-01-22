@@ -23,8 +23,6 @@ void main() {
 #   define HAS_TRANSPARENCY
 #endif
 
-layout(early_fragment_tests) in;
-
 out vec2 _colourOut;
 in vec4 vert_vertexWVP;
 

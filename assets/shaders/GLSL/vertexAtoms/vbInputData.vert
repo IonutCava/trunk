@@ -32,12 +32,15 @@ void computeDataMinimal() {
 #   endif
 }
 
-void computeData() {
+void computeDataNoClip() {
     computeDataMinimal();
 
     VAR._texCoord = inTexCoordData;
-    VAR._vertexW  = dvd_WorldMatrix(VAR.dvd_baseInstance) * dvd_Vertex;
+    VAR._vertexW = dvd_WorldMatrix(VAR.dvd_baseInstance) * dvd_Vertex;
+}
 
+void computeData() {
+    computeDataNoClip();
     setClipPlanes(VAR._vertexW);
 }
 

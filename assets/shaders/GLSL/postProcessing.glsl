@@ -59,18 +59,20 @@ vec4 Noise(in vec4 colourIn){
 
 subroutine(ScreenRoutineType)
 vec4 screenUnderwater(){
-    float time2 = float(dvd_time) * 0.0001;
-    vec2 noiseUV = VAR._texCoord * _noiseTile;
-    vec2 uvNormal0 = noiseUV + time2;
-    vec2 uvNormal1 = noiseUV;
+    float time2 = float(dvd_time) * 0.00001;
+    vec2 uvNormal0 = VAR._texCoord * _noiseTile;
+    uvNormal0.s += time2;
+    uvNormal0.t += time2;
+    vec2 uvNormal1 = VAR._texCoord * _noiseTile;
     uvNormal1.s -= time2;
     uvNormal1.t += time2;
-        
-    vec3 normal0 = texture(texWaterNoiseNM, uvNormal0).rgb;
-    vec3 normal1 = texture(texWaterNoiseNM, uvNormal1).rgb;
-    vec3 normal = normalize(2.0 * ((normal0 + normal1) * 0.5) - 1.0);
-    
-    return clamp(texture(texScreen, VAR._texCoord + _noiseFactor * normal.st), vec4(0.0), vec4(1.0));
+
+    vec3 normal0 = texture(texWaterNoiseNM, uvNormal0).rgb * 2.0 - 1.0;
+    vec3 normal1 = texture(texWaterNoiseNM, uvNormal1).rgb * 2.0 - 1.0;
+    vec3 normal = normalize(normal0 + normal1);
+
+    vec2 coords = VAR._texCoord + (normal.xy * _noiseFactor);
+    return clamp(texture(texScreen, coords) * vec4(0.35), vec4(0.0), vec4(1.0));
 }
 
 subroutine(ScreenRoutineType)

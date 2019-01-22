@@ -46,10 +46,10 @@ class Texture;
 class PostFX {
 private:
     enum class TexOperatorBindPoint : U8 {
-        TEX_BIND_POINT_SCREEN = 0,
-        TEX_BIND_POINT_BORDER = 1,
-        TEX_BIND_POINT_NOISE = 2,
-        TEX_BIND_POINT_UNDERWATER = 3,
+        TEX_BIND_POINT_SCREEN = to_base(ShaderProgram::TextureUsage::UNIT0),
+        TEX_BIND_POINT_BORDER = to_base(ShaderProgram::TextureUsage::UNIT1),
+        TEX_BIND_POINT_NOISE = to_base(ShaderProgram::TextureUsage::NORMALMAP),
+        TEX_BIND_POINT_UNDERWATER = to_base(ShaderProgram::TextureUsage::OPACITY),
         COUNT
     };
 

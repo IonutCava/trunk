@@ -107,7 +107,7 @@ bool IsUnderWater(vec3 positionWorld) {
     return false;
 }
 
-#if defined(VERT_SHADER) || defined(GEOM_SHADER)
+#if !defined(COMPUTE_SHADER) && !defined(FRAG_SHADER) && !defined(TESS_CTRL_SHADER)
 out gl_PerVertex
 {
   invariant vec4 gl_Position;

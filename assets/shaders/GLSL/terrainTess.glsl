@@ -20,7 +20,7 @@ vec2 calcTerrainTexCoord(in vec4 pos)
 
 void main(void)
 {
-    computeData();
+    computeDataNoClip();
 
     vec4 posAndScale = dvd_TerrainData[VAR.dvd_instanceID]._positionAndTileScale;
 
@@ -333,6 +333,7 @@ void main()
 
 #else
     gl_Position = dvd_ViewProjectionMatrix * _out._vertexW;
+    setClipPlanes(_out._vertexW);
 
 #if defined(SHADOW_PASS)
     dvd_vertexWVP = gl_Position;
@@ -487,6 +488,8 @@ void main(void)
 
 --Fragment
 
+layout(early_fragment_tests) in;
+
 #define CUSTOM_MATERIAL_ALBEDO
 
 in float LoD;
@@ -520,32 +523,22 @@ vec4 getAlbedo() {
     return private_albedo;
 }
 
-vec4 CausticsColour(out vec3 normalWV) {
-    
-    float time2 = float(dvd_time) * 0.0001;
-    vec2 noiseUV = _in._texCoord * UNDERWATER_TILE_SCALE;
-
-    vec4 scrollingUV = vec4(noiseUV, noiseUV + time2);
-    scrollingUV.s -= time2;
-
-    normalWV = VAR._normalWV;
-
-    return texture(texWaterCaustics, scrollingUV.st) +
-           texture(texWaterCaustics, scrollingUV.pq) * 0.5;
-}
-
-vec4 UnderwaterColour(out vec3 normalWV) {
-
+vec4 UnderwaterMappingRoutine(out vec3 normalWV) {
     vec2 coords = VAR._texCoord * UNDERWATER_TILE_SCALE;
-
     vec3 tbn = normalize(2.0 * texture(texUnderwaterDetail, coords).rgb - 1.0);
     normalWV = normalize(getTBNMatrix() * tbn);
 
+#if defined(LOW_QUALITY)
     return texture(texUnderwaterAlbedo, coords);
-}
+#else
+    float time2 = float(dvd_time) * 0.0001;
+    vec4 scrollingUV = vec4(coords, coords + time2);
+    scrollingUV.s -= time2;
 
-vec4 UnderwaterMappingRoutine(out vec3 normalWV) {
-    return mix(CausticsColour(normalWV), UnderwaterColour(normalWV), _waterDetails.y);
+    return mix(texture(texWaterCaustics, scrollingUV.st) + texture(texWaterCaustics, scrollingUV.pq) * 0.5,
+               texture(texUnderwaterAlbedo, coords),
+               _waterDetails.y);
+#endif
 }
 
 vec4 TerrainMappingRoutine(out vec3 normalWV) {

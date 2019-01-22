@@ -41,7 +41,7 @@ vec4 getFinalPixelColour() {
 #   if defined(USE_PARALLAX_MAPPING)
         return ParallaxMapping(VAR._texCoord, 0);
 #   elif defined(USE_RELIEF_MAPPING)
-        return ReliefMapping(VAR._texCoord);
+        return vec4(1.0, 0.0, 0.0, 1.0);
 #   else
         setProcessedNormal(getTBNMatrix() * getBump(VAR._texCoord));
         return getPixelColour();

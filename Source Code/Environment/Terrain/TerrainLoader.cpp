@@ -318,6 +318,9 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     RenderStateBlock terrainRenderState;
     terrainRenderState.setCullMode(g_showWireFrame ? CullMode::CW : CullMode::CCW);
     // Generate a render state for drawing reflections
+    RenderStateBlock terrainRenderStatePrePass = terrainRenderState;
+    terrainRenderStatePrePass.setZFunc(ComparisonFunction::LESS);
+
     RenderStateBlock terrainRenderStateReflection;
     terrainRenderStateReflection.setCullMode(g_showWireFrame ? CullMode::CCW : CullMode::CW);
     // Generate a shadow render state
@@ -327,6 +330,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     terrainRenderStateDepth.setColourWrites(true, true, false, false);
 
     terrainMaterial->setRenderStateBlock(terrainRenderState.getHash());
+    terrainMaterial->setRenderStateBlock(terrainRenderStatePrePass.getHash(), RenderPassType::PRE_PASS);
     terrainMaterial->setRenderStateBlock(terrainRenderStateReflection.getHash(), RenderStage::REFLECTION);
     terrainMaterial->setRenderStateBlock(terrainRenderStateDepth.getHash(), RenderStage::SHADOW);
 
