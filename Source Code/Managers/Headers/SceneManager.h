@@ -144,7 +144,7 @@ public:
         return factory.register_creator(id, new_ptr<T>());
     }
 
-    bool saveActiveScene(bool toCache);
+    bool saveActiveScene(bool toCache, bool deferred = true);
 
 public:  /// Input
   /// Key pressed: return true if input was consumed

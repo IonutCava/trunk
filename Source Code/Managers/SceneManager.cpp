@@ -777,7 +777,7 @@ bool LoadSave::saveScene(const Scene& activeScene, bool toCache) {
     return false;
 }
 
-bool SceneManager::saveActiveScene(bool toCache) {
+bool SceneManager::saveActiveScene(bool toCache, bool deferred) {
     _saveTask.wait();
     Scene& activeScene = getActiveScene();
     _saveTask = CreateTask(*_platformContext,
@@ -786,7 +786,7 @@ bool SceneManager::saveActiveScene(bool toCache) {
                 LoadSave::saveScene(activeScene, toCache);
             }
     );
-    _saveTask.startTask();
+    _saveTask.startTask(deferred ? TaskPriority::DONT_CARE : TaskPriority::REALTIME);
 
     return true;
 }

@@ -166,6 +166,7 @@ void Kernel::onLoop() {
     if (!_timingData._keepAlive) {
         // exiting the rendering loop will return us to the last control point
         _platformContext->app().mainLoopActive(false);
+        sceneManager().saveActiveScene(true, false);
         return;
     }
 

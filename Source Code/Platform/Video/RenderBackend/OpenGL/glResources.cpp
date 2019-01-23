@@ -354,14 +354,16 @@ void submitMultiIndirectCommand(U32 cmdOffset,
     }
 }
 
-void submitIndirectCommand(U32 cmdOffset,
+void submitIndirectCommand(const IndirectDrawCommand& cmd,
+                           U32 cmdOffset,
                            GLenum mode,
                            GLenum internalFormat,
                            bool drawIndexed) {
     if (drawIndexed) {
         glDrawElementsIndirect(mode, internalFormat, (bufferPtr)(cmdOffset * sizeof(IndirectDrawCommand)));
     } else {
-        glDrawArraysIndirect(mode, (bufferPtr)(cmdOffset * sizeof(IndirectDrawCommand)));
+        // This needs a different command buffer and different IndirectDrawCommand (16byte instead of 20)
+        glDrawArraysInstancedBaseInstance(mode, cmd.firstIndex, cmd.indexCount, cmd.primCount, cmd.baseInstance);
     }
 }
 
@@ -438,7 +440,7 @@ void submitRenderCommand(const GenericDrawCommand& drawCommand,
         if (drawCommand._drawCount > 1) {
             submitMultiIndirectCommand(drawCommand._commandOffset, drawCommand._drawCount, mode, internalFormat, drawIndexed);
         } else if (drawCommand._drawCount == 1) {
-            submitIndirectCommand(drawCommand._commandOffset, mode, internalFormat, drawIndexed);
+            submitIndirectCommand(drawCommand._cmd, drawCommand._commandOffset, mode, internalFormat, drawIndexed);
         }
     } else {
         submitDirectMultiCommand(drawCommand._cmd, drawCommand._drawCount, mode, internalFormat, drawIndexed, countData, indexData);
