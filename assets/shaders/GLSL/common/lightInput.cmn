@@ -46,16 +46,13 @@ layout(binding = BUFFER_LIGHT_INDICES, std430) coherent COMP_RW buffer perTileLi
 };
 
 #if defined(FRAG_SHADER)
-struct Shadow {
-    mat4  _lightVP[6];
-    vec4  _lightPosition[6];
-};
 
 layout(binding = BUFFER_LIGHT_SHADOW, std140) uniform dvd_ShadowBlock
 {
     // x = light type, y =  arrayOffset
     uvec4 dvd_shadowLightDetails[MAX_SHADOW_CASTING_LIGHTS];
-    Shadow dvd_ShadowSource[MAX_SHADOW_CASTING_LIGHTS];
+    vec4  dvd_shadowLightPosition[MAX_SHADOW_CASTING_LIGHTS * 6];
+    mat4  dvd_shadowLightVP[MAX_SHADOW_CASTING_LIGHTS * 6];
 };
 
 #endif 

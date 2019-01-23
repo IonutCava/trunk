@@ -30,13 +30,11 @@ float VSM(vec2 moments, float compare) {
 }
 
 float applyShadowDirectional(in uint idx, in uvec4 details, in float fragDepth) {
-    Shadow currentShadowSource = dvd_ShadowSource[idx];
-
     // find the appropriate depth map to look up in based on the depth of this fragment
     g_shadowTempInt = 0;
     // Figure out which cascade to sample from
     for (g_shadowTempInt = 0; g_shadowTempInt < int(MAX_CSM_SPLITS_PER_LIGHT); g_shadowTempInt++) {
-        if (fragDepth > currentShadowSource._lightPosition[g_shadowTempInt].w) {
+        if (fragDepth > dvd_shadowLightPosition[g_shadowTempInt + (idx * 6)].w) {
             break;
         }
     }
@@ -54,7 +52,7 @@ float applyShadowDirectional(in uint idx, in uvec4 details, in float fragDepth) 
     int SplitMax = max(SplitXY, max(SplitX, SplitY));
     g_shadowTempInt = SplitMax > 0 ? SplitPowLookup[SplitMax - 1] : g_shadowTempInt;
 
-    vec4 sc = currentShadowSource._lightVP[g_shadowTempInt] * VAR._vertexW;
+    vec4 sc = dvd_shadowLightVP[g_shadowTempInt + (idx * 6)] * VAR._vertexW;
     vec4 scPostW = (sc / sc.w) * 0.5 + 0.5;
     if (!(sc.w <= 0 || (scPostW.x < 0 || scPostW.y < 0) || (scPostW.x >= 1 || scPostW.y >= 1))){
         float layer = float(g_shadowTempInt + details.y);

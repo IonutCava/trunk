@@ -183,9 +183,8 @@ void LightPool::generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffe
                 const Light::ShadowProperties& shadowProp = light->getShadowProperties();
 
                 _shadowBufferData._lightDetails[shadowLightCount].set(shadowProp._lightDetails);
-                ShadowTransforms& transform = _shadowBufferData._lightTransforms[shadowLightCount];
-                std::memcpy(&transform._lightPos[0], &shadowProp._lightPosition[0], sizeof(vec4<F32>) * 6);
-                std::memcpy(&transform._lightVP[0], &shadowProp._lightVP[0], sizeof(mat4<F32>) * 6);
+                std::memcpy(_shadowBufferData._lightPosition[shadowLightCount * 6], shadowProp._lightPosition, 6 * sizeof(vec4<F32>));
+                std::memcpy(_shadowBufferData._lightVP[shadowLightCount * 6], shadowProp._lightVP, 6 * sizeof(mat4<F32>));
 
                 shadowLightCount++;
                 if (isDirLight) {

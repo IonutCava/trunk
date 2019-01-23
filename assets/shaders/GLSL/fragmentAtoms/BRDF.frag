@@ -40,9 +40,9 @@ vec3 getLightColour(vec3 albedo, vec3 normal, uint dirLightCount, uint pointLigh
     return albedo;
 #   else
     float reflectionCoeff = 0.0;
+    vec3 lightColour = vec3(0.0);
     vec3 specular = getSpecular();
     float reflectivity = getReflectivity();
-    vec3 lightColour = vec3(0.0);
     // Apply all lighting contributions
 
     // Directional lights
@@ -83,8 +83,8 @@ vec4 getPixelColour(vec4 albedo, vec3 normal) {
         return vec4(getProcessedNormal(), 1.0);
     }
 #endif
-    uvec4 lightData = dvd_LightData;
-    vec3 colour = getLightColour(albedo.rgb, normal, lightData.x, lightData.y);
+
+    vec3 colour = getLightColour(albedo.rgb, normal, dvd_LightData.x, dvd_LightData.y);
 
 #if defined(IS_REFLECTIVE)
         /*if (dvd_lodLevel < 1) {
@@ -98,12 +98,7 @@ vec4 getPixelColour(vec4 albedo, vec3 normal) {
 #endif
 
     // Apply shadowing
-#if !defined(DISABLE_SHADOW_MAPPING)
-    if (dvd_receivesShadows) {
-        colour *= shadow_loop();
-    }
-
-#if defined(DEBUG_SHADOWMAPPING)
+#if !defined(DISABLE_SHADOW_MAPPING) && defined(DEBUG_SHADOWMAPPING)
     if (dvd_showDebugInfo) {
         switch (g_shadowTempInt){
             case -1: colour = vec3(1.0); break;
@@ -113,10 +108,16 @@ vec4 getPixelColour(vec4 albedo, vec3 normal) {
             case  3: colour += vec3(0.15, 0.25, 0.40); break;
         };
     }
-#endif //DEBUG_SHADOWMAPPING
-#endif //DISABLE_SHADOW_MAPPING
+#endif
+
+#if !defined(DISABLE_SHADOW_MAPPING)
+    if (dvd_receivesShadows) {
+        return vec4(colour * getShadowFactor(), albedo.a);
+    }
+#endif
 
     return vec4(colour, albedo.a);
+    
 }
 
 vec4 getPixelColour() {

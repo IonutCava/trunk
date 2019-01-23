@@ -99,6 +99,7 @@ Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descri
     RenderStateBlock reflectorDescriptor(stateDescriptor);
     RenderStateBlock reflectorOitDescriptor(stateDescriptor);
     reflectorOitDescriptor.depthTestEnabled(false);
+
     /// the z-pre-pass descriptor does not process colours
     RenderStateBlock zPrePassDescriptor(stateDescriptor);
     zPrePassDescriptor.setColourWrites(false, false, false, false);
@@ -107,6 +108,7 @@ Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descri
     /// A descriptor used for rendering to depth map
     RenderStateBlock shadowDescriptor(stateDescriptor);
     shadowDescriptor.setCullMode(CullMode::CCW);
+    shadowDescriptor.setZFunc(ComparisonFunction::LESS);
     /// set a polygon offset
     shadowDescriptor.setZBias(1.0f, 1.0f);
     /// ignore half of the colours 

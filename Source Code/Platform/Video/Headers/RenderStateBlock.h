@@ -59,27 +59,27 @@ class RenderStateBlock : public GUIDWrapper, public Hashable {
     P32 _colourWrite;
 
     /// Rasterizer
-    CullMode _cullMode;
-    bool _cullEnabled;
-    bool _scissorTest;
+    CullMode _cullMode = CullMode::CW;
+    bool _cullEnabled = true;
+    bool _scissorTest = false;
 
     /// Depth
-    bool _depthTestEnabled;
-    ComparisonFunction _zFunc;
-    F32 _zBias;
-    F32 _zUnits;
+    bool _depthTestEnabled = true;
+    ComparisonFunction _zFunc = ComparisonFunction::LEQUAL;
+    F32 _zBias = 0.0f;
+    F32 _zUnits = 0.0f;
 
     /// Stencil
-    bool _stencilEnable;
-    U32 _stencilRef;
-    U32 _stencilMask;
-    U32 _stencilWriteMask;
-    StencilOperation _stencilFailOp;
-    StencilOperation _stencilZFailOp;
-    StencilOperation _stencilPassOp;
-    ComparisonFunction _stencilFunc;
+    bool _stencilEnable = false;
+    U32 _stencilRef = 0u;
+    U32 _stencilMask = 0xFFFFFFFF;
+    U32 _stencilWriteMask = 0xFFFFFFFF;
+    StencilOperation _stencilFailOp = StencilOperation::KEEP;
+    StencilOperation _stencilZFailOp = StencilOperation::KEEP;
+    StencilOperation _stencilPassOp = StencilOperation::KEEP;
+    ComparisonFunction _stencilFunc = ComparisonFunction::NEVER;
 
-    FillMode _fillMode;
+    FillMode _fillMode = FillMode::SOLID;
 
     mutable bool _dirty = true;
     static size_t s_defaultCacheValue;

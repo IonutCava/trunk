@@ -71,14 +71,10 @@ class LightPool : public SceneComponent,
           vec4<I32> _options = { 0, 1, 0, 0 };
       };
 
-      struct ShadowTransforms {
-          std::array<mat4<F32>, 6> _lightVP;
-          std::array<vec4<F32>, 6> _lightPos;
-      };
-
       struct ShadowProperties {
           std::array<vec4<U32>, Config::Lighting::MAX_SHADOW_CASTING_LIGHTS> _lightDetails;
-          std::array<ShadowTransforms, Config::Lighting::MAX_SHADOW_CASTING_LIGHTS> _lightTransforms;
+          std::array<vec4<F32>, Config::Lighting::MAX_SHADOW_CASTING_LIGHTS * 6> _lightPosition;
+          std::array<mat4<F32>, Config::Lighting::MAX_SHADOW_CASTING_LIGHTS * 6> _lightVP;
 
           inline bufferPtr data() const {
               return (bufferPtr)&_lightDetails[0][0];

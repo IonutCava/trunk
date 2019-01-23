@@ -327,6 +327,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     RenderStateBlock terrainRenderStateDepth;
     terrainRenderStateDepth.setCullMode(g_showWireFrame ? CullMode::CW : CullMode::CCW);
     // terrainDescDepth.setZBias(1.0f, 1.0f);
+    terrainRenderStateDepth.setZFunc(ComparisonFunction::LESS);
     terrainRenderStateDepth.setColourWrites(true, true, false, false);
 
     terrainMaterial->setRenderStateBlock(terrainRenderState.getHash());
