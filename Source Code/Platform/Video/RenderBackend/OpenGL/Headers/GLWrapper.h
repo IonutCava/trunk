@@ -272,7 +272,6 @@ private:
     hashMap<I64, GenericVertexData*> _IMGUIBuffers;
     Time::ProfileTimer& _swapBufferTimer;
 
-    static bool s_bufferBindsNeedsFlush;
     static moodycamel::ConcurrentQueue<BufferWriteData> s_bufferBinds;
 
     typedef std::unordered_map<I64, GLStateTracker> stateTrackerMap;

@@ -47,12 +47,19 @@ namespace Divide {
 
 namespace {
     bool g_frameTimeRequested = false;
+
+    struct BufferLockData {
+        glBufferLockManager* _lockManager = nullptr;
+        size_t _offset = 0;
+        size_t _range = 0;
+    };
+
+    vectorFast<BufferLockData> g_bufferLockData;
 };
 
 GLConfig GL_API::s_glConfig;
 GLStateTracker* GL_API::s_activeStateTracker = nullptr;
 GL_API::stateTrackerMap GL_API::s_stateTrackers;
-bool GL_API::s_bufferBindsNeedsFlush = false;
 bool GL_API::s_enabledDebugMSGGroups = false;
 GLUtil::glTexturePool<256> GL_API::s_texturePool;
 moodycamel::ConcurrentQueue<BufferWriteData> GL_API::s_bufferBinds;
@@ -1156,8 +1163,6 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
                     }
                 }
             }
-            s_bufferBindsNeedsFlush = true;
-
         }break;
         case GFX::CommandType::DISPATCH_COMPUTE: {
             const GFX::DispatchComputeCommand& crtCmd = commandBuffer.getCommand<GFX::DispatchComputeCommand>(entry);
@@ -1209,21 +1214,39 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
 
 void GL_API::postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
     ACKNOWLEDGE_UNUSED(commandBuffer);
-    if (s_bufferBindsNeedsFlush) {
-        if (lockBuffers()) {
-            // Make forward progress in worker thread so that we don't deadlock
-            glFlush();
-        }
-        s_bufferBindsNeedsFlush = false;
+    if (lockBuffers()) {
+        // Make forward progress in worker thread so that we don't deadlock
+        glFlush();
     }
 }
 
 bool GL_API::lockBuffers() {
     BufferWriteData data;
     bool flush = false;
+
+    g_bufferLockData.resize(0);
+
     while (s_bufferBinds.try_dequeue(data)) {
-        data._lockManager->LockRange(data._offset, data._range);
-        flush = data._flush || flush;
+
+        bool updatedExisting = false;
+        for (BufferLockData& existingData : g_bufferLockData) {
+            if (existingData._lockManager->getGUID() == data._lockManager->getGUID()) {
+                existingData._offset = std::min(existingData._offset, data._offset);
+                existingData._range = std::max(existingData._range, data._range);
+                updatedExisting = true;
+                flush = data._flush || flush;
+                break;
+            }
+        }
+
+        if (!updatedExisting) {
+            g_bufferLockData.push_back(BufferLockData{ data._lockManager, data._offset, data._range });
+            flush = data._flush || flush;
+        }
+    }
+
+    for (const BufferLockData& entry : g_bufferLockData) {
+        entry._lockManager->LockRange(entry._offset, entry._range);
     }
 
     return flush;

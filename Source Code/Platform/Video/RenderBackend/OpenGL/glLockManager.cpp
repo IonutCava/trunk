@@ -9,7 +9,8 @@ GLuint64 kOneSecondInNanoSeconds = 1000000000;
 U8 kMaxWaitRetry = 10;
 
 glLockManager::glLockManager() noexcept
-    : _defaultSync(nullptr)
+    : GUIDWrapper(),
+     _defaultSync(nullptr)
 {
 }
 
