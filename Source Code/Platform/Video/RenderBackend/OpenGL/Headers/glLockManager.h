@@ -36,7 +36,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-class glLockManager {
+class glLockManager : public GUIDWrapper {
    public:
     glLockManager() noexcept;
     virtual ~glLockManager();
