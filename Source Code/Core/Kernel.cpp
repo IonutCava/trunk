@@ -563,6 +563,15 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     XML::loadFromXML(entryData, entryPoint.c_str());
     XML::loadFromXML(config, (entryData.scriptLocation + "/config.xml").c_str());
 
+    //override from commandline argumenst
+    if (Util::findCommandLineArgument(_argc, _argv, "enableGPUMessageGroups")) {
+        config.debug.enableDebugMsgGroups = true;
+    }
+
+    if (Util::findCommandLineArgument(_argc, _argv, "disableRenderAPIDebugging")) {
+        config.debug.enableRenderAPIDebugging = false;
+    }
+
     if (config.runtime.targetRenderingAPI >= to_U8(RenderAPI::COUNT)) {
         config.runtime.targetRenderingAPI = to_U8(RenderAPI::OpenGL);
     }

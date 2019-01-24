@@ -53,8 +53,8 @@ GLConfig GL_API::s_glConfig;
 GLStateTracker* GL_API::s_activeStateTracker = nullptr;
 GL_API::stateTrackerMap GL_API::s_stateTrackers;
 bool GL_API::s_bufferBindsNeedsFlush = false;
+bool GL_API::s_enabledDebugMSGGroups = false;
 GLUtil::glTexturePool<256> GL_API::s_texturePool;
-
 moodycamel::ConcurrentQueue<BufferWriteData> GL_API::s_bufferBinds;
 
 GL_API::GL_API(GFXDevice& context, const bool glES)
@@ -1020,13 +1020,13 @@ bool GL_API::draw(const GenericDrawCommand& cmd) {
 }
 
 void GL_API::pushDebugMessage(const char* message, I32 id) {
-    if (Config::ENABLE_GPU_VALIDATION && config()._enableDebugMsgGroups) {
+    if (Config::ENABLE_GPU_VALIDATION && s_enabledDebugMSGGroups) {
         glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, id, -1, message);
     }
 }
 
 void GL_API::popDebugMessage() {
-    if (Config::ENABLE_GPU_VALIDATION && config()._enableDebugMsgGroups) {
+    if (Config::ENABLE_GPU_VALIDATION && s_enabledDebugMSGGroups) {
         glPopDebugGroup();
     }
 }

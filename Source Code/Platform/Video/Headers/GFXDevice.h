@@ -224,6 +224,7 @@ public:  // GPU interface
 
     /// Access (Read Only) rendering data used by the GFX
     inline const GFXShaderData::GPUData& renderingData() const;
+
     /// Returns true if the viewport was changed
     bool setViewport(const Rect<I32>& viewport);
     inline bool setViewport(I32 x, I32 y, I32 width, I32 height);

@@ -70,9 +70,6 @@ struct VideoModes {
 
 typedef std::array<bool, to_base(VertexAttribute::COUNT)> AttribFlags;
 
-struct GFXConfig {
-    bool _enableDebugMsgGroups = true;
-};
 /// Renderer Programming Interface
 class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
   protected:
@@ -100,8 +97,6 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
 
     virtual void postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) = 0;
 
-    static GFXConfig& config() { return _config; }
-
     virtual vec2<U16> getDrawableSize(const DisplayWindow& window) const = 0;
 
     // The definition of a hack. Feel free to quote this. -Ionut
@@ -111,10 +106,6 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
     virtual bool setViewport(const Rect<I32>& newViewport) = 0;
 
     virtual void onThreadCreated(const std::thread::id& threadID) = 0;
-
-protected:
-
-    static GFXConfig _config;
 };
 
 };  // namespace Divide

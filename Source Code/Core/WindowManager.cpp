@@ -401,8 +401,8 @@ ErrorCode WindowManager::configureAPISettings(U32 descriptorFlags) {
     validateAssert(SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8));
     validateAssert(SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24));
 
-    if (!Config::ENABLE_GPU_VALIDATION) {
-        //validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_NO_ERROR, 1));
+    if (!Config::ENABLE_GPU_VALIDATION || !_context->config().debug.enableRenderAPIDebugging) {
+        validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_NO_ERROR, 1));
     }
 
     // OpenGL ES is not yet supported, but when added, it will need to mirror

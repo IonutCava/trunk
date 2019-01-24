@@ -246,6 +246,7 @@ private:
     FontCache _fonts;
     hashAlg::pair<stringImpl, I32> _fontCache;
 
+    static bool s_enabledDebugMSGGroups;
     /// Current state of all available clipping planes
     std::array<bool, to_base(Frustum::FrustPlane::COUNT)> _activeClipPlanes;
     /// Hardware query objects used for performance measurements
