@@ -68,9 +68,9 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     friend class Attorney::ShaderProgramKernel;
 
    public:
-    typedef std::tuple<ShaderProgram_wptr, U32, size_t> ShaderProgramMapEntry;
-    typedef vector<ShaderProgramMapEntry> ShaderProgramMap;
-    typedef hashMap<U64, stringImpl> AtomMap;
+    typedef std::pair<ShaderProgram_wptr, size_t> ShaderProgramMapEntry;
+    typedef hashMap<U32 /*handle*/, ShaderProgramMapEntry> ShaderProgramMap;
+    typedef hashMap<U64 /*name hash*/, stringImpl> AtomMap;
     typedef std::stack<ShaderProgram_ptr, vector<ShaderProgram_ptr> > ShaderQueue;
 
     /// A list of built-in sampler slots. Use these if possible and keep them sorted by how often they are used

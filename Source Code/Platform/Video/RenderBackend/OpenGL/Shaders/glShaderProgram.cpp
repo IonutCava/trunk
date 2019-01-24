@@ -984,8 +984,8 @@ void glShaderProgram::onAtomChange(const char* atomName, FileUpdateEvent evt) {
     }
     //Get list of shader programs that use the atom and rebuild all shaders in list;
     SharedLock r_lock(s_programLock);
-    for (const ShaderProgramMapEntry& shader : s_shaderPrograms) {
-        const ShaderProgram_ptr& programPtr = std::get<0>(shader).lock();
+    for (auto it : s_shaderPrograms) {
+        const ShaderProgram_ptr& programPtr = it.second.first.lock();
         glShaderProgram* shaderProgram = static_cast<glShaderProgram*>(programPtr.get());
         for (const stringImpl& atom : shaderProgram->_usedAtoms) {
             if (Util::CompareIgnoreCase(atom, atomName)) {

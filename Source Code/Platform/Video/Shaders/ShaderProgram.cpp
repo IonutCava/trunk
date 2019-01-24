@@ -135,14 +135,16 @@ bool ShaderProgram::recompileShaderProgram(const stringImpl& name) {
     SharedLock r_lock(s_programLock);
 
     // Find the shader program
-    for (const ShaderProgramMapEntry& shader : s_shaderPrograms) {
-        assert(!std::get<0>(shader).expired());
+    for (const ShaderProgramMap::value_type& it : s_shaderPrograms) {
+        const ShaderProgramMapEntry& shader = it.second;
+        assert(!shader.first.expired());
         
-        const stringImpl& shaderName = std::get<0>(shader).lock()->resourceName();
+        ShaderProgram_ptr program = shader.first.lock();
+        const stringImpl& shaderName = program->resourceName();
         // Check if the name matches any of the program's name components    
         if (shaderName.find(name) != stringImpl::npos || shaderName.compare(name) == 0) {
             // We process every partial match. So add it to the recompilation queue
-            s_recompileQueue.push(std::get<0>(shader).lock());
+            s_recompileQueue.push(program);
             // Mark as found
             state = true;
         }
@@ -184,8 +186,8 @@ void ShaderProgram::onShutdown() {
 bool ShaderProgram::updateAll(const U64 deltaTimeUS) {
     SharedLock r_lock(s_programLock);
     // Pass the update call to all registered programs
-    for (ShaderProgramMapEntry& shader : s_shaderPrograms) {
-        if (!std::get<0>(shader).lock()->update(deltaTimeUS)) {
+    for (const ShaderProgramMap::value_type& it : s_shaderPrograms) {
+        if (!it.second.first.lock()->update(deltaTimeUS)) {
             // If an update call fails, stop updating
             return false;
         }
@@ -199,7 +201,7 @@ void ShaderProgram::registerShaderProgram(const ShaderProgram_ptr& shaderProgram
     unregisterShaderProgram(shaderHash);
 
     UniqueLockShared w_lock(s_programLock);
-    s_shaderPrograms.push_back({ shaderProgram, shaderProgram->getID(), shaderHash });
+    s_shaderPrograms[shaderProgram->getID()] = { shaderProgram, shaderHash };
 }
 
 /// Unloading/Deleting a program will unregister it from the manager
@@ -211,10 +213,11 @@ bool ShaderProgram::unregisterShaderProgram(size_t shaderHash) {
         return true;
     }
 
-    ShaderProgramMap::const_iterator it = std::find_if(std::cbegin(s_shaderPrograms),
+    ShaderProgramMap::const_iterator it = std::find_if(
+        std::cbegin(s_shaderPrograms),
         std::cend(s_shaderPrograms),
-        [shaderHash](const ShaderProgramMapEntry& item) {
-            return std::get<2>(item) == shaderHash;
+        [shaderHash](const ShaderProgramMap::value_type& item) {
+            return item.second.second == shaderHash;
         });
 
     if (it != std::cend(s_shaderPrograms)) {
@@ -228,10 +231,9 @@ bool ShaderProgram::unregisterShaderProgram(size_t shaderHash) {
 
 ShaderProgram_wptr ShaderProgram::findShaderProgram(U32 shaderHandle) {
     SharedLock r_lock(s_programLock);
-    for (const ShaderProgramMapEntry& shader : s_shaderPrograms) {
-        assert(!std::get<0>(shader).expired());
-        if (std::get<1>(shader) == shaderHandle) {
-            return std::get<0>(shader);
+    for (const ShaderProgramMap::value_type& it : s_shaderPrograms) {
+        if (it.first == shaderHandle) {
+            return it.second.first;
         }
     }
 
@@ -240,10 +242,9 @@ ShaderProgram_wptr ShaderProgram::findShaderProgram(U32 shaderHandle) {
 
 ShaderProgram_wptr ShaderProgram::findShaderProgram(size_t shaderHash) {
     SharedLock r_lock(s_programLock);
-    for (const ShaderProgramMapEntry& shader : s_shaderPrograms) {
-        assert(!std::get<0>(shader).expired());
-        if (std::get<2>(shader) == shaderHash) {
-            return std::get<0>(shader);
+    for (const ShaderProgramMap::value_type& it : s_shaderPrograms) {
+        if (it.second.second == shaderHash) {
+            return it.second.first;
         }
     }
 
@@ -260,8 +261,8 @@ const ShaderProgram_ptr& ShaderProgram::nullShader() {
 
 void ShaderProgram::rebuildAllShaders() {
     SharedLock r_lock(s_programLock);
-    for (const ShaderProgramMapEntry& shader : s_shaderPrograms) {
-        s_recompileQueue.push(std::get<0>(shader).lock());
+    for (const ShaderProgramMap::value_type& it : s_shaderPrograms) {
+        s_recompileQueue.push(it.second.first.lock());
     }
 }
 
