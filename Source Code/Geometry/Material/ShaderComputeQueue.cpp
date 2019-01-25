@@ -25,9 +25,9 @@ ShaderComputeQueue::~ShaderComputeQueue()
 }
 
 void ShaderComputeQueue::idle() {
-    Time::ScopedTimer timer(_queueComputeTimer);
-
     if (!_shadersComputedThisFrame) {
+        //Time::ScopedTimer timer(_queueComputeTimer);
+
         _totalShaderComputeCountThisFrame = 0;
 
         WAIT_FOR_CONDITION(!(stepQueue() &&

@@ -702,8 +702,11 @@ void operator delete[](void* ptr, const char* zFile, size_t nLine);
 #define MemoryManager_NEW new (__FILE__, __LINE__)
 #endif
 
+
 namespace Divide {
 namespace MemoryManager {
+
+void log_delete(void* p);
 
 template <typename T>
 inline void SAFE_FREE(T*& ptr) {
@@ -713,9 +716,11 @@ inline void SAFE_FREE(T*& ptr) {
     }
 }
 
+
 /// Deletes and nullifies the specified pointer
 template <typename T>
 inline void DELETE(T*& ptr) {
+    log_delete(ptr);
     delete ptr;
     ptr = nullptr;
 }
@@ -728,17 +733,19 @@ inline void DELETE(T*& ptr) {
 template <typename T>
 inline void SAFE_DELETE(T*& ptr) {
     if (ptr != nullptr) {
-        delete ptr;
-        ptr = nullptr;
+        DELETE(ptr);
     }
 }
 #define SET_SAFE_DELETE_FRIEND \
+    SET_DELETE_FRIEND \
     template <typename T>      \
     friend void MemoryManager::SAFE_DELETE(T*& ptr);
 
 /// Deletes and nullifies the specified array pointer
 template <typename T>
 inline void DELETE_ARRAY(T*& ptr) {
+    log_delete(ptr);
+
     delete[] ptr;
     ptr = nullptr;
 }
@@ -750,11 +757,11 @@ inline void DELETE_ARRAY(T*& ptr) {
 template <typename T>
 inline void SAFE_DELETE_ARRAY(T*& ptr) {
     if (ptr != nullptr) {
-        delete[] ptr;
-        ptr = nullptr;
+        DELETE_ARRAY(ptr);
     }
 }
 #define SET_SAFE_DELETE_ARRAY_FRIEND \
+    SET_DELETE_ARRAY_FRIEND \
     template <typename T>            \
     friend void MemoryManager::DELETE_ARRAY(T*& ptr);
 
@@ -765,13 +772,12 @@ inline bool DELETE_CHECK(T*& ptr) {
     if (ptr == nullptr) {
         return false;
     }
-
-    delete ptr;
-    ptr = nullptr;
+    DELETE(ptr);
 
     return true;
 }
 #define SET_DELETE_CHECK_FRIEND \
+    SET_DELETE_FRIEND \
     template <typename T>       \
     friend void MemoryManager::DELETE_CHECK(T*& ptr);
 
@@ -782,21 +788,22 @@ inline bool DELETE_ARRAY_CHECK(T*& ptr) {
     if (ptr == nullptr) {
         return false;
     }
-
-    delete[] ptr;
-    ptr = nullptr;
+    DELETE_ARRAY(ptr);
 
     return true;
 }
 
 #define SET_DELETE_ARRAY_CHECK_FRIEND \
+    SET_DELETE_ARRAY_FRIEND \
     template <typename T>             \
     friend void MemoryManager::DELETE_ARRAY_CHECK(T*& ptr);
+
 /// Deletes every element from the vector and clears it at the end
 template <typename T>
 inline void DELETE_VECTOR(vector<T*>& vec) {
     if (!vec.empty()) {
         for (T* iter : vec) {
+            log_delete(iter);
             delete iter;
         }
         vec.clear();
@@ -807,6 +814,7 @@ template <typename T>
 inline void DELETE_VECTOR(vectorEASTL<T*>& vec) {
     if (!vec.empty()) {
         for (T* iter : vec) {
+            log_delete(iter);
             delete iter;
         }
         vec.clear();
@@ -824,6 +832,7 @@ template <typename K, typename V, typename HashFun = hashAlg::hash<K> >
 inline void DELETE_HASHMAP(hashMap<K, V, HashFun>& map) {
     if (!map.empty()) {
         for (typename hashMap<K, V, HashFun>::value_type iter : map) {
+            log_delete(iter.second);
             delete iter.second;
         }
         map.clear();
@@ -841,7 +850,7 @@ template <typename Base, typename Derived>
 inline void SAFE_UPDATE(Base*& OLD, Derived* const NEW) {
     static_assert(std::is_base_of<Base, Derived>::value,
                   "SAFE_UPDATE error: New must be a descendant of Old");
-
+    log_delete(OLD);
     delete OLD;
     OLD = NEW;
 }

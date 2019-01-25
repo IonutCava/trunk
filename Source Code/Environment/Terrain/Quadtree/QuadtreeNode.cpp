@@ -26,10 +26,8 @@ QuadtreeNode::QuadtreeNode()
 
 QuadtreeNode::~QuadtreeNode()
 {
-    if (!isALeaf()) {
-        for (U8 i = 0; i < 4; ++i) {
-            MemoryManager::SAFE_DELETE(_children[i]);
-        }
+    for (U8 i = 0; i < 4; ++i) {
+        MemoryManager::SAFE_DELETE(_children[i]);
     }
 }
 

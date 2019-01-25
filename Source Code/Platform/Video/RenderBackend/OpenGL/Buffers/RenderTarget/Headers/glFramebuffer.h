@@ -107,9 +107,9 @@ class glFramebuffer : public RenderTarget,
     void queueCheckStatus();
     bool checkStatus();
 
-    void setBlendState(const RTDrawDescriptor& drawPolicy, const vector<RTAttachment_ptr>& activeAttachments);
-    void prepareBuffers(const RTDrawDescriptor& drawPolicy, const vector<RTAttachment_ptr>& activeAttachments);
-    void clear(const RTDrawDescriptor& drawPolicy, const vector<RTAttachment_ptr>& activeAttachments) const;
+    void setBlendState(const RTDrawDescriptor& drawPolicy, const RTAttachmentPool::PoolEntry& activeAttachments);
+    void prepareBuffers(const RTDrawDescriptor& drawPolicy, const RTAttachmentPool::PoolEntry& activeAttachments);
+    void clear(const RTDrawDescriptor& drawPolicy, const RTAttachmentPool::PoolEntry& activeAttachments) const;
 
     void initAttachment(RTAttachmentType type, U8 index);
 

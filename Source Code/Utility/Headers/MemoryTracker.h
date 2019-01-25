@@ -123,7 +123,7 @@ class MemoryTracker {
                 if (it != std::cend(_map)) {
                     _map.erase(it);
                 } else {
-                    assert(false && "Called custom delete on non-custom allocated pointer!");
+                    //assert(false && "Called custom delete on non-custom allocated pointer!");
                 }
             }
         }

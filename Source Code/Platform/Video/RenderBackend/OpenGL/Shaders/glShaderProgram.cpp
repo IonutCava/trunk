@@ -136,6 +136,7 @@ bool glShaderProgram::unload() {
             glShader::removeShader(shader);
         }
     }
+    _shaderStage.fill(nullptr);
 
     return ShaderProgram::unload();
 }
@@ -985,8 +986,8 @@ void glShaderProgram::onAtomChange(const char* atomName, FileUpdateEvent evt) {
     //Get list of shader programs that use the atom and rebuild all shaders in list;
     SharedLock r_lock(s_programLock);
     for (auto it : s_shaderPrograms) {
-        const ShaderProgram_ptr& programPtr = it.second.first.lock();
-        glShaderProgram* shaderProgram = static_cast<glShaderProgram*>(programPtr.get());
+        ShaderProgram* programPtr = it.second.first;
+        glShaderProgram* shaderProgram = static_cast<glShaderProgram*>(programPtr);
         for (const stringImpl& atom : shaderProgram->_usedAtoms) {
             if (Util::CompareIgnoreCase(atom, atomName)) {
                 s_recompileQueue.push(programPtr);

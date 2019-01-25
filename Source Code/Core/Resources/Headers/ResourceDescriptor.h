@@ -40,7 +40,7 @@ namespace Divide {
 
 /// Dummy class so that resource loaders can have fast access to extra
 /// information in a general format
-class NOINITVTABLE PropertyDescriptor : public Hashable {
+class PropertyDescriptor : public Hashable {
    public:
     enum class DescriptorType : U8 {
         DESCRIPTOR_TEXTURE = 0,
@@ -63,7 +63,7 @@ class NOINITVTABLE PropertyDescriptor : public Hashable {
    protected:
     friend class ResourceDescriptor;
     /// Used to clone the property descriptor pointer
-    virtual PropertyDescriptor* clone() const = 0;
+    virtual void clone(std::shared_ptr<PropertyDescriptor>& target) const = 0;
 
    protected:
     /// useful for switch statements
@@ -131,7 +131,7 @@ class ResourceDescriptor : public Hashable {
     template <typename T>
     inline void setPropertyDescriptor(const T& descriptor) {
         static_assert(std::is_base_of<PropertyDescriptor, T>::value, "Invalid Property Descriptor");
-        _propertyDescriptor.reset(MemoryManager_NEW T(descriptor));
+        _propertyDescriptor.reset(new T(descriptor));
     }
 
     void setOnLoadCallback(const DELEGATE_CBK<void, CachedResource_wptr>& callback) {

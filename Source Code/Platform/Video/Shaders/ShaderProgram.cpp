@@ -50,7 +50,7 @@ ShaderProgram::~ShaderProgram()
 
 bool ShaderProgram::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) {
     if (!weak_from_this().expired()) {
-        registerShaderProgram(std::dynamic_pointer_cast<ShaderProgram>(shared_from_this()));
+        registerShaderProgram(std::dynamic_pointer_cast<ShaderProgram>(shared_from_this()).get());
     }
 
     return CachedResource::load(onLoadCallback);
@@ -137,9 +137,8 @@ bool ShaderProgram::recompileShaderProgram(const stringImpl& name) {
     // Find the shader program
     for (const ShaderProgramMap::value_type& it : s_shaderPrograms) {
         const ShaderProgramMapEntry& shader = it.second;
-        assert(!shader.first.expired());
         
-        ShaderProgram_ptr program = shader.first.lock();
+        ShaderProgram* program = shader.first;
         const stringImpl& shaderName = program->resourceName();
         // Check if the name matches any of the program's name components    
         if (shaderName.find(name) != stringImpl::npos || shaderName.compare(name) == 0) {
@@ -187,7 +186,7 @@ bool ShaderProgram::updateAll(const U64 deltaTimeUS) {
     SharedLock r_lock(s_programLock);
     // Pass the update call to all registered programs
     for (const ShaderProgramMap::value_type& it : s_shaderPrograms) {
-        if (!it.second.first.lock()->update(deltaTimeUS)) {
+        if (!it.second.first->update(deltaTimeUS)) {
             // If an update call fails, stop updating
             return false;
         }
@@ -196,7 +195,7 @@ bool ShaderProgram::updateAll(const U64 deltaTimeUS) {
 }
 
 /// Whenever a new program is created, it's registered with the manager
-void ShaderProgram::registerShaderProgram(const ShaderProgram_ptr& shaderProgram) {
+void ShaderProgram::registerShaderProgram(ShaderProgram* shaderProgram) {
     size_t shaderHash = shaderProgram->getDescriptorHash();
     unregisterShaderProgram(shaderHash);
 
@@ -229,26 +228,30 @@ bool ShaderProgram::unregisterShaderProgram(size_t shaderHash) {
     return false;
 }
 
-ShaderProgram_wptr ShaderProgram::findShaderProgram(U32 shaderHandle) {
+ShaderProgram& ShaderProgram::findShaderProgram(U32 shaderHandle, bool& success) {
     SharedLock r_lock(s_programLock);
     for (const ShaderProgramMap::value_type& it : s_shaderPrograms) {
         if (it.first == shaderHandle) {
-            return it.second.first;
+            success = true;
+            return *it.second.first;
         }
     }
 
-    return ShaderProgram_wptr();
+    success = false;
+    return *defaultShader().get();
 }
 
-ShaderProgram_wptr ShaderProgram::findShaderProgram(size_t shaderHash) {
+ShaderProgram& ShaderProgram::findShaderProgram(size_t shaderHash, bool& success) {
     SharedLock r_lock(s_programLock);
     for (const ShaderProgramMap::value_type& it : s_shaderPrograms) {
         if (it.second.second == shaderHash) {
-            return it.second.first;
+            success = true;
+            return *it.second.first;
         }
     }
 
-    return ShaderProgram_wptr();
+    success = false;
+    return *defaultShader().get();
 }
 
 const ShaderProgram_ptr& ShaderProgram::defaultShader() {
@@ -262,7 +265,7 @@ const ShaderProgram_ptr& ShaderProgram::nullShader() {
 void ShaderProgram::rebuildAllShaders() {
     SharedLock r_lock(s_programLock);
     for (const ShaderProgramMap::value_type& it : s_shaderPrograms) {
-        s_recompileQueue.push(it.second.first.lock());
+        s_recompileQueue.push(it.second.first);
     }
 }
 

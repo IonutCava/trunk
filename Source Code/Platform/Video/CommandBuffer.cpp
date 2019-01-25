@@ -147,13 +147,9 @@ void CommandBuffer::clean() {
             {
                 vectorEASTL<GenericDrawCommand>& cmds = getCommandInternal<DrawCommand>(cmd)->_drawCommands;
 
-                cmds.erase(eastl::remove_if(eastl::begin(cmds),
-                                          eastl::end(cmds),
-                                          [](const GenericDrawCommand& cmd) -> bool {
-                                              return cmd._drawCount == 0;
-                                          }),
-                           eastl::end(cmds));
-
+                auto beginIt = eastl::begin(cmds);
+                auto endIt = eastl::end(cmds);
+                cmds.erase(eastl::remove_if(beginIt, endIt, [](const GenericDrawCommand& cmd) -> bool { return cmd._drawCount == 0; }), endIt);
                 if (cmds.empty()) {
                     it = _commandOrder.erase(it);
                     skip = true;
@@ -223,7 +219,9 @@ void CommandBuffer::clean() {
         }
     }
 
-    erase_sorted_indices(_commandOrder, redundantEntries);
+    if (!redundantEntries.empty()) {
+        _commandOrder = erase_sorted_indices(_commandOrder, redundantEntries);
+    }
 }
 
 // New use cases that emerge from production work should be checked here.

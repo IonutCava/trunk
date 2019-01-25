@@ -41,7 +41,9 @@ ResourceDescriptor::ResourceDescriptor(const ResourceDescriptor& old)
       _data(old._data),
       _onLoadCallback(old._onLoadCallback)
 {
-    _propertyDescriptor.reset(old._propertyDescriptor ? old._propertyDescriptor->clone() : nullptr);
+    if (old._propertyDescriptor != nullptr) {
+        old._propertyDescriptor->clone(_propertyDescriptor);
+    }
 }
 
 ResourceDescriptor& ResourceDescriptor::operator=(ResourceDescriptor const& old) {
@@ -56,7 +58,9 @@ ResourceDescriptor& ResourceDescriptor::operator=(ResourceDescriptor const& old)
         _enumValue = old._enumValue;
         _data = old._data;
         _onLoadCallback = old._onLoadCallback;
-        _propertyDescriptor.reset(old._propertyDescriptor ? old._propertyDescriptor->clone() : nullptr);
+        if (old._propertyDescriptor != nullptr) {
+            old._propertyDescriptor->clone(_propertyDescriptor);
+        }
     }
 
     return *this;

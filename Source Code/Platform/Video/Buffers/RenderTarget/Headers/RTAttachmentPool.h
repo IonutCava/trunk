@@ -40,7 +40,8 @@ namespace Divide {
 class RenderTarget;
 class RTAttachmentPool {
 public:
-    typedef std::array<vector<RTAttachment_ptr>, to_base(RTAttachmentType::COUNT)> AttachmentPool;
+    typedef vectorFast<RTAttachment_ptr> PoolEntry;
+    typedef std::array<PoolEntry, to_base(RTAttachmentType::COUNT)> AttachmentPool;
 
 public:
     explicit RTAttachmentPool(RenderTarget& parent, U8 colourAttCount);
@@ -58,7 +59,7 @@ public:
     RTAttachment_ptr& get(RTAttachmentType type, U8 index);
     const RTAttachment_ptr& get(RTAttachmentType type, U8 index) const;
 
-    const vector<RTAttachment_ptr>& get(RTAttachmentType type) const;
+    const PoolEntry& get(RTAttachmentType type) const;
 
     U8 attachmentCount(RTAttachmentType type) const;
 

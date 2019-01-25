@@ -68,10 +68,10 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     friend class Attorney::ShaderProgramKernel;
 
    public:
-    typedef std::pair<ShaderProgram_wptr, size_t> ShaderProgramMapEntry;
+    typedef std::pair<ShaderProgram*, size_t> ShaderProgramMapEntry;
     typedef hashMap<U32 /*handle*/, ShaderProgramMapEntry> ShaderProgramMap;
     typedef hashMap<U64 /*name hash*/, stringImpl> AtomMap;
-    typedef std::stack<ShaderProgram_ptr, vector<ShaderProgram_ptr> > ShaderQueue;
+    typedef std::stack<ShaderProgram*, vectorFast<ShaderProgram*> > ShaderQueue;
 
     /// A list of built-in sampler slots. Use these if possible and keep them sorted by how often they are used
     enum class TextureUsage : U8 {
@@ -182,9 +182,11 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     /// Remove a shaderProgram from the program cache
     static bool unregisterShaderProgram(size_t shaderHash);
     /// Add a shaderProgram to the program cache
-    static void registerShaderProgram(const ShaderProgram_ptr& shaderProgram);
-    static ShaderProgram_wptr findShaderProgram(U32 shaderHandle);
-    static ShaderProgram_wptr findShaderProgram(size_t shaderHash);
+    static void registerShaderProgram(ShaderProgram* shaderProgram);
+    /// Find a specific shader program by handle. Returns the default shader on failure
+    static ShaderProgram& findShaderProgram(U32 shaderHandle, bool& success);
+    /// Find a specific shader program by descriptor hash. Returns the default shader on failure;
+    static ShaderProgram& findShaderProgram(size_t shaderHash, bool& success);
 
     /// Return a default shader used for general purpose rendering
     static const ShaderProgram_ptr& defaultShader();
@@ -197,7 +199,6 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
 
    protected:
      virtual bool recompileInternal() = 0;
-     void registerAtomFile(const stringImpl& atomFile);
 
      static void useShaderTextCache(bool state) { if (s_useShaderBinaryCache) { state = false; } s_useShaderTextCache = state; }
      static void useShaderBinaryCache(bool state) { s_useShaderBinaryCache = state; if (state) { useShaderTextCache(false); } }
@@ -256,8 +257,8 @@ public:
 
     }
 
-    ShaderProgramDescriptor* clone() const {
-        return MemoryManager_NEW ShaderProgramDescriptor(*this);
+    void clone(std::shared_ptr<PropertyDescriptor>& target) const override {
+        target.reset(new ShaderProgramDescriptor(*this));
     }
 
     vector<std::pair<stringImpl, bool>> _defines;

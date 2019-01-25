@@ -62,7 +62,7 @@ WindowManager::WindowManager()  noexcept
 
 WindowManager::~WindowManager()
 {
-    MemoryManager::DELETE_VECTOR(_windows);
+    close();
 }
 
 vec2<U16> WindowManager::getFullscreenResolution() const {
@@ -167,22 +167,22 @@ ErrorCode WindowManager::init(PlatformContext& context,
     }
 
     ErrorCode err = ErrorCode::NO_ERR;
-    DisplayWindow* window = createWindow(descriptor, err);
+    DisplayWindow& window = createWindow(descriptor, err);
 
     if (err == ErrorCode::NO_ERR) {
-        _mainWindowGUID = window->getGUID();
+        _mainWindowGUID = window.getGUID();
 
-        window->addEventListener(WindowEvent::MINIMIZED, [this](const DisplayWindow::WindowEventArgs& args) {
+        window.addEventListener(WindowEvent::MINIMIZED, [this](const DisplayWindow::WindowEventArgs& args) {
             ACKNOWLEDGE_UNUSED(args);
             _context->app().mainLoopPaused(true);
             return true;
         });
-        window->addEventListener(WindowEvent::MAXIMIZED, [this](const DisplayWindow::WindowEventArgs& args) {
+        window.addEventListener(WindowEvent::MAXIMIZED, [this](const DisplayWindow::WindowEventArgs& args) {
             ACKNOWLEDGE_UNUSED(args);
             _context->app().mainLoopPaused(false);
             return true;
         });
-        window->addEventListener(WindowEvent::RESTORED, [this](const DisplayWindow::WindowEventArgs& args) {
+        window.addEventListener(WindowEvent::RESTORED, [this](const DisplayWindow::WindowEventArgs& args) {
             ACKNOWLEDGE_UNUSED(args);
             _context->app().mainLoopPaused(false);
             return true;
@@ -224,7 +224,8 @@ void WindowManager::close() {
     for (DisplayWindow* window : _windows) {
         window->destroyWindow();
     }
-    _windows.clear();
+    MemoryManager::DELETE_VECTOR(_windows);
+
     for (auto it : s_cursors) {
         SDL_FreeCursor(it.second);
     }
@@ -232,7 +233,7 @@ void WindowManager::close() {
     SDL_QuitSubSystem(SDL_INIT_VIDEO);
 }
 
-DisplayWindow* WindowManager::createWindow(const WindowDescriptor& descriptor, ErrorCode& err, U32& windowIndex ) {
+DisplayWindow& WindowManager::createWindow(const WindowDescriptor& descriptor, ErrorCode& err, U32& windowIndex ) {
     windowIndex = std::numeric_limits<U32>::max();
 
     DisplayWindow* window = MemoryManager_NEW DisplayWindow(*this, *_context);
@@ -314,7 +315,7 @@ DisplayWindow* WindowManager::createWindow(const WindowDescriptor& descriptor, E
             return true;
         });
     }
-    return window;
+    return *window;
 }
 
 bool WindowManager::destroyWindow(DisplayWindow*& window) {

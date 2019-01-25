@@ -90,11 +90,9 @@ void Application::stop() {
             MemoryManager::MemoryTracker::Ready = false;
             bool leakDetected = false;
             size_t sizeLeaked = 0;
-            stringImpl allocLog =
-                MemoryManager::AllocTracer.Dump(leakDetected, sizeLeaked);
+            stringImpl allocLog = MemoryManager::AllocTracer.Dump(leakDetected, sizeLeaked);
             if (leakDetected) {
-                Console::errorfn(Locale::get(_ID("ERROR_MEMORY_NEW_DELETE_MISMATCH")),
-                    to_I32(std::ceil(sizeLeaked / 1024.0f)));
+                Console::errorfn(Locale::get(_ID("ERROR_MEMORY_NEW_DELETE_MISMATCH")), to_I32(std::ceil(sizeLeaked / 1024.0f)));
             }
             std::ofstream memLog;
             memLog.open((Paths::g_logPath + _memLogBuffer).c_str());

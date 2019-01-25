@@ -52,7 +52,7 @@ void SceneAnimator::release(bool releaseAnimations)
         _transforms.clear();
     }
     // This node will delete all children recursively
-    MemoryManager::DELETE(_skeleton);
+    MemoryManager::SAFE_DELETE(_skeleton);
 }
 
 bool SceneAnimator::init(PlatformContext& context) {

@@ -128,8 +128,8 @@ class TextureDescriptor final : public PropertyDescriptor {
     {
     }
 
-    TextureDescriptor* clone() const {
-        return MemoryManager_NEW TextureDescriptor(*this);
+    void clone(std::shared_ptr<PropertyDescriptor>& target) const {
+        return target.reset(new TextureDescriptor(*this));
     }
 
     inline void setLayerCount(U32 layerCount) { 

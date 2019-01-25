@@ -971,24 +971,22 @@ bool GL_API::bindPipeline(const Pipeline& pipeline) {
     // Set the proper render states
     setStateBlock(pipeline.stateHash());
 
-    ShaderProgram_wptr wSP = ShaderProgram::findShaderProgram(pipeline.shaderProgramHandle());
-    if (wSP.expired()) {
-        //DIVIDE_ASSERT(program != nullptr, "GFXDevice error: Draw shader state is not valid for the current draw operation!");
-        wSP = ShaderProgram::defaultShader();
-    }
+    bool success = false;
+    ShaderProgram& program = ShaderProgram::findShaderProgram(pipeline.shaderProgramHandle(), success);
+    assert(success && "GL_API::bindPipeline error: invalid shader program handle");
 
-    glShaderProgram* program = static_cast<glShaderProgram*>(wSP.lock().get());
+    glShaderProgram& glProgram = static_cast<glShaderProgram&>(program);
     // We need a valid shader as no fixed function pipeline is available
     
     // Try to bind the shader program. If it failed to load, or isn't loaded yet, cancel the draw request for this frame
     bool wasBound = false;
-    if (Attorney::GLAPIShaderProgram::bind(*program, wasBound)) {
+    if (Attorney::GLAPIShaderProgram::bind(glProgram, wasBound)) {
         const ShaderFunctions& functions = pipeline.shaderFunctions();
         for (U8 type = 0; type < to_U8(ShaderType::COUNT); ++type) {
-            Attorney::GLAPIShaderProgram::SetSubroutines(*program, static_cast<ShaderType>(type), functions[type]);
+            Attorney::GLAPIShaderProgram::SetSubroutines(glProgram, static_cast<ShaderType>(type), functions[type]);
         }
         if (!wasBound) {
-            Attorney::GLAPIShaderProgram::queueValidation(*program);
+            Attorney::GLAPIShaderProgram::queueValidation(glProgram);
         }
         return true;
     }
@@ -998,13 +996,12 @@ bool GL_API::bindPipeline(const Pipeline& pipeline) {
 
 void GL_API::sendPushConstants(const PushConstants& pushConstants) {
     assert(s_activeStateTracker->_activePipeline != nullptr);
-    ShaderProgram_wptr wSP = ShaderProgram::findShaderProgram(s_activeStateTracker->_activePipeline->shaderProgramHandle());
-    if (wSP.expired()) {
-        //DIVIDE_ASSERT(program != nullptr, "GFXDevice error: Draw shader state is not valid for the current draw operation!");
-        wSP = ShaderProgram::defaultShader();
-    }
-    glShaderProgram* program = static_cast<glShaderProgram*>(wSP.lock().get());
-    program->UploadPushConstants(pushConstants);
+
+    bool success = false;
+    ShaderProgram& program = ShaderProgram::findShaderProgram(s_activeStateTracker->_activePipeline->shaderProgramHandle(), success);
+    assert(success && "GL_API::bindPipeline error: invalid shader program handle");
+
+    static_cast<glShaderProgram&>(program).UploadPushConstants(pushConstants);
 }
 
 bool GL_API::draw(const GenericDrawCommand& cmd) {

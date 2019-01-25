@@ -42,13 +42,7 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
       _skeletonPrimitive(nullptr)
 {
     const Material_ptr& materialTpl = parentSGN.getNode().getMaterialTpl();
-    if (!materialTpl) {
-        //ToDo: REMOVE THIS HACK!
-        Console::printfn(Locale::get(_ID("LOAD_DEFAULT_MATERIAL")));
-        Material_ptr materialTemplate = CreateResource<Material>(context.kernel().resourceCache(), ResourceDescriptor("defaultMaterial_" + parentSGN.name()));
-        materialTemplate->setShadingMode(Material::ShadingMode::BLINN_PHONG);
-        _materialInstance = materialTemplate->clone("_instance_" + parentSGN.name());
-    } else {
+    if (materialTpl) {
         _materialInstance = materialTpl->clone("_instance_" + parentSGN.name());
     }
 

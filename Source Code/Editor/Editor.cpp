@@ -247,7 +247,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
             winDescriptor.position.set(viewport->Pos.x, viewport->Pos.y);
             winDescriptor.externalClose = true;
 
-            data->_window = g_windowManager->createWindow(winDescriptor);
+            data->_window = &g_windowManager->createWindow(winDescriptor);
             data->_window->hidden(false);
             data->_window->bringToFront();
             data->_window->addEventListener(WindowEvent::CLOSE_REQUESTED, [viewport](const DisplayWindow::WindowEventArgs& args) { ACKNOWLEDGE_UNUSED(args); viewport->PlatformRequestClose = true; return true; });

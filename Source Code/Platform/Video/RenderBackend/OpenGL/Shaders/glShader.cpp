@@ -144,7 +144,7 @@ void glShader::removeShader(glShader* s) {
         // Subtract one reference from it.
         if (s->SubRef()) {
             // If the new reference count is 0, delete the shader
-            MemoryManager::DELETE(it->second);
+            MemoryManager::DELETE(s);
             _shaderNameMap.erase(nameHash);
         }
     }

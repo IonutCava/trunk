@@ -48,8 +48,8 @@ class TerrainDescriptor final : public PropertyDescriptor {
         _variables.clear();
     }
 
-    TerrainDescriptor* clone() const {
-        return MemoryManager_NEW TerrainDescriptor(*this);
+    void clone(std::shared_ptr<PropertyDescriptor>& target) const override {
+        target.reset(new TerrainDescriptor(*this));
     }
 
     void addVariable(const stringImpl& name, const stringImpl& value) {
