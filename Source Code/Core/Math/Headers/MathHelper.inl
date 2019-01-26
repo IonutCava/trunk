@@ -280,6 +280,11 @@ void CLAMP(T& n, const T min, const T max) {
 }
 
 template <typename T>
+void CLAMP_01(T& n) {
+    return CLAMP(n, (T)0, (T)1);
+}
+
+template <typename T>
 T CLAMPED(const T& n, const T min, const T max) {
     static_assert(std::is_arithmetic<T>::value, "Only arithmetic values can be clamped!");
 

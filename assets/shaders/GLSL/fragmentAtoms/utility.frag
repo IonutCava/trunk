@@ -70,14 +70,14 @@ vec3 bpcem(in vec3 v, vec3 Emax, vec3 Emin, vec3 Epos)
     return posonbox - Epos;
 }
 
-vec3 applyFogColour(in float depth, in vec3 colour){
+vec3 applyFogColour(in float depth, in vec3 colour, in vec2 depthRange) {
     const float LOG2 = 1.442695;
-    float zDepth = ToLinearDepth(depth);
+    float zDepth = ToLinearDepth(depth, depthRange);
     return mix(dvd_fogColour, colour, clamp(exp2(-dvd_fogDensity * dvd_fogDensity * zDepth * zDepth * LOG2), 0.0, 1.0));
 }
 
-vec4 applyFog(in float depth, in vec4 colour) {
-    return vec4(mix(applyFogColour(depth, colour.rgb), colour.rgb, dvd_fogDensity), colour.a);
+vec4 applyFog(in float depth, in vec4 colour, in vec2 depthRange) {
+    return vec4(applyFogColour(depth, colour.rgb, depthRange), colour.a);
 }
 
 float ToLinearDepth(in float depthIn, in vec2 depthRange) {

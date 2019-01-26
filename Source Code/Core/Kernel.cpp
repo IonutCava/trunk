@@ -321,7 +321,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTimeUS) {
     D64 interpolationFactor = 1.0;
     if (fixedTimestep && !_timingData.freezeTime()) {
         interpolationFactor = static_cast<D64>(_timingData.currentTimeUS() + deltaTimeUS - _timingData.nextGameTickUS()) / deltaTimeUS;
-        CLAMP(interpolationFactor, 0.0, 1.0);
+        CLAMP_01(interpolationFactor);
     }
 
     GFXDevice::setFrameInterpolationFactor(interpolationFactor);
@@ -628,6 +628,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     }
 
     U32 hardwareThreads = config.runtime.maxWorkerThreads < 0 ? HARDWARE_THREAD_COUNT() : to_U32(config.runtime.maxWorkerThreads);
+    U32 minRenderThreads = to_U32(RenderStage::COUNT) * 2; // One main thread and one worker thread per stage
 
     // Use half of our desired thread count for engine stuff
     U8 threadCount = static_cast<U8>(std::max(hardwareThreads / 2, 5u) - 1);
@@ -643,9 +644,9 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
         return ErrorCode::CPU_NOT_SUPPORTED;
     }
 
-    // Use all of our threads for rendering
-    U32 minThreads = to_U32(RenderStage::COUNT) * 2; // One main thread and one worker thread per stage
-    threadCount = static_cast<U8>(std::max(hardwareThreads, minThreads));
+    // Use the other half of our threads for rendering
+    
+    threadCount = static_cast<U8>(std::max(hardwareThreads / 2, minRenderThreads));
     if (!_platformContext->taskPool(TaskPoolType::Render).init(
         threadCount,
         TaskPool::TaskPoolType::TYPE_BLOCKING,

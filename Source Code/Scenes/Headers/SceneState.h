@@ -67,6 +67,7 @@ struct FogDescriptor {
     inline const vec3<F32>& colour() const { return _colour; }
 
     inline void set(const vec3<F32>& colour, F32 density) {
+        CLAMP_01(density);
         _colour.set(colour);
         _density = density;
         _dirty = true;

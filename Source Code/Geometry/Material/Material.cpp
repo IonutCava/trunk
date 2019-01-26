@@ -768,8 +768,9 @@ void Material::getSortKeys(RenderStagePass renderStagePass, I32& shaderKey, I32&
 
     const ShaderProgramInfo& info = shaderInfo(renderStagePass);
 
-    shaderKey = info._shaderRef ? info._shaderRef->getID()
-                                : invalidShaderKey;
+    shaderKey = info._shaderRef && info._shaderCompStage == ShaderProgramInfo::BuildStage::READY
+                                                          ? info._shaderRef->getID()
+                                                          : invalidShaderKey;
 
     std::weak_ptr<Texture> albedoTex = getTexture(ShaderProgram::TextureUsage::UNIT0);
     textureKey = albedoTex.expired() ? invalidShaderKey : albedoTex.lock()->getHandle();

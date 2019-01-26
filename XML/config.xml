@@ -73,7 +73,7 @@
   <multithreadedCommandGeneration>true</multithreadedCommandGeneration>
   <batchPassBuffers>true</batchPassBuffers>
   <enableFog>true</enableFog>
-  <fogDensity>3</fogDensity>
+  <fogDensity>0.001</fogDensity>
   <fogColour r="0.5" g="0.5" b="0.55"/>
   <lodThresholds x="25" y="45" z="85" w="165"/>
   <postFX>

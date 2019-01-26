@@ -59,6 +59,8 @@ class SceneShaderData {
         //x - elapsed time, y - delta time, z - debug render, w.x - detail level
         vec4<F32> _otherData = {0.0f};
         WaterBodyData _waterEntities[MAX_WATER_BODIES] = {};
+
+        //RenderDoc: vec4 fogDetails; vec4 windDetails; vec4 shadowSettings; vec4 otherData;
     };
 
   public:
@@ -70,11 +72,12 @@ class SceneShaderData {
     }
 
     inline void fogDetails(F32 colourR, F32 colourG, F32 colourB, F32 density) {
-        _bufferData._fogDetails.set(colourR, colourG, colourB, density / 1000.0f);
+        _bufferData._fogDetails.set(colourR, colourG, colourB, density);
         _dirty = true;
     }
 
     inline void fogDensity(F32 density) {
+        CLAMP_01(density);
         _bufferData._fogDetails.w = density;
         _dirty = true;
     }

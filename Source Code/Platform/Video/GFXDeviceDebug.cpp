@@ -115,6 +115,8 @@ void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
             addDebugView(AlphaRevealageHigh);
             //addDebugView(AlphaAccumulationLow);
             //addDebugView(AlphaRevealageLow);
+
+            WAIT_FOR_CONDITION(_previewDepthMapShader->getState() == ResourceState::RES_LOADED);
         }
 
         if (HiZPtr) {

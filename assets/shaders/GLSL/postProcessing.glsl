@@ -33,6 +33,8 @@ uniform float _fadeStrength = 0.0;
 uniform bool _fadeActive = false;
 uniform vec4 _fadeColour;
 
+uniform vec2 _zPlanes;
+
 subroutine vec4 VignetteRoutineType(in vec4 colourIn);
 subroutine vec4 NoiseRoutineType(in vec4 colourIn);
 subroutine vec4 ScreenRoutineType();
@@ -92,6 +94,6 @@ void main(void){
     }
 
     float depth = textureLod(texDepthMap, getScreenPositionNormalised(), 0).r;
-    _colourOut = applyFog(depth, colour);
+    _colourOut = applyFog(depth, colour, _zPlanes);
     //_colourOut = screenNormal();
 }

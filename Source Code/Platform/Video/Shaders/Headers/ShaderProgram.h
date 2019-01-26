@@ -120,7 +120,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     virtual U32 GetSubroutineUniformCount(ShaderType type) const = 0;
 
     /// ShaderProgram object id (i.e.: for OGL _shaderProgramID = glCreateProgram())
-    inline U32 getID() const { return _shaderProgramID; }
+    inline U32 getID() const { assert(isValid());  return _shaderProgramID; }
     ///  Calling recompile will re-create the marked shaders from source files
     ///  and update them in the ShaderManager if needed
     bool recompile();

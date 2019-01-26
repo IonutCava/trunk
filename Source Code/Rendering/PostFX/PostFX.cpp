@@ -59,6 +59,7 @@ PostFX::PostFX(GFXDevice& context, ResourceCache& cache)
     _drawConstants.set("_noiseTile", GFX::PushConstantType::FLOAT, 0.1f);
     _drawConstants.set("_noiseFactor", GFX::PushConstantType::FLOAT, 0.02f);
     _drawConstants.set("_fadeActive", GFX::PushConstantType::BOOL, false);
+    _drawConstants.set("_zPlanes", GFX::PushConstantType::VEC2, vec2<F32>(0.01f, 500.0f));
 
     _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(ShaderType::FRAGMENT, "Vignette"));  // 0
     _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(ShaderType::FRAGMENT, "Noise"));  // 1
@@ -171,6 +172,7 @@ void PostFX::apply(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
     GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
 
     GFX::SendPushConstantsCommand sendPushConstantsCmd;
+    _drawConstants.set("_zPlanes", GFX::PushConstantType::VEC2, camera.getZPlanes());
     sendPushConstantsCmd._constants = _drawConstants;
     GFX::EnqueueCommand(bufferInOut, sendPushConstantsCmd);
 

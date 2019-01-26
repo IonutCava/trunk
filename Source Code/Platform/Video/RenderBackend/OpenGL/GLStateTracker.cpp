@@ -439,8 +439,8 @@ bool GLStateTracker::setActiveProgram(GLuint programHandle) {
 }
 
 void GLStateTracker::setDepthRange(F32 nearVal, F32 farVal) {
-    CLAMP(nearVal, 0.0f, 1.0f);
-    CLAMP(farVal, 0.0f, 1.0f);
+    CLAMP_01(nearVal);
+    CLAMP_01(farVal);
     if (!COMPARE(nearVal, _depthNearVal) && !COMPARE(farVal, _depthFarVal)) {
         glDepthRange(nearVal, farVal);
         _depthNearVal = nearVal;
@@ -619,23 +619,23 @@ void GLStateTracker::getActiveViewport(GLint* vp) {
 /// Some may be redundant, so we check each one individually
 void GLStateTracker::activateStateBlock(const RenderStateBlock& newBlock,
                                         const RenderStateBlock& oldBlock) {
-    auto toggle = [](bool flag, GLenum state) {
-        flag ? glEnable(state) : glDisable(state);
-    };
 
-  
     if (oldBlock.cullEnabled() != newBlock.cullEnabled()) {
-        toggle(newBlock.cullEnabled(), GL_CULL_FACE);
+        newBlock.cullEnabled() ? glEnable(GL_CULL_FACE) : glDisable(GL_CULL_FACE);
     }
+
     if (oldBlock.stencilEnable() != newBlock.stencilEnable()) {
-        toggle(newBlock.stencilEnable(), GL_STENCIL_TEST);
+        newBlock.stencilEnable() ? glEnable(GL_STENCIL_TEST) : glDisable(GL_STENCIL_TEST);
     }
+
     if (oldBlock.depthTestEnabled() != newBlock.depthTestEnabled()) {
-        toggle(newBlock.depthTestEnabled(), GL_DEPTH_TEST);
+        newBlock.depthTestEnabled() ? glEnable(GL_DEPTH_TEST) : glDisable(GL_DEPTH_TEST);
     }
+
     if (oldBlock.scissorTestEnable() != newBlock.scissorTestEnable()) {
-        toggle(newBlock.scissorTestEnable(), GL_SCISSOR_TEST);
+        newBlock.scissorTestEnable() ? glEnable(GL_SCISSOR_TEST) : glDisable(GL_SCISSOR_TEST);
     }
+
     // Check culling mode (back (CW) / front (CCW) by default)
     if (oldBlock.cullMode() != newBlock.cullMode()) {
         if (newBlock.cullMode() != CullMode::NONE) {
@@ -699,13 +699,10 @@ void GLStateTracker::activateStateBlock(const RenderStateBlock& newBlock,
 }
 
 void GLStateTracker::activateStateBlock(const RenderStateBlock& newBlock) {
-    auto toggle = [](bool flag, GLenum state) {
-        flag ? glEnable(state) : glDisable(state);
-    };
-
-    toggle(newBlock.cullEnabled(), GL_CULL_FACE);
-    toggle(newBlock.stencilEnable(), GL_STENCIL_TEST);
-    toggle(newBlock.depthTestEnabled(), GL_DEPTH_TEST);
+    newBlock.cullEnabled() ? glEnable(GL_CULL_FACE) : glDisable(GL_CULL_FACE);
+    newBlock.stencilEnable() ? glEnable(GL_STENCIL_TEST) : glDisable(GL_STENCIL_TEST);
+    newBlock.depthTestEnabled() ? glEnable(GL_DEPTH_TEST) : glDisable(GL_DEPTH_TEST);
+    newBlock.scissorTestEnable() ? glEnable(GL_SCISSOR_TEST) : glDisable(GL_SCISSOR_TEST);
 
     if (newBlock.cullMode() != CullMode::NONE) {
         GLenum targetMode = GLUtil::glCullModeTable[to_U32(newBlock.cullMode())];
