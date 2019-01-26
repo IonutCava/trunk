@@ -21,9 +21,6 @@
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 
-#if !defined(CEGUI_STATIC)
-#define CEGUI_STATIC
-#endif
 #include <CEGUI/CEGUI.h>
 
 #include <stdarg.h>

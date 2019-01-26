@@ -12,9 +12,6 @@
 
 #include "Platform/Headers/PlatformRuntime.h"
 
-#if !defined(CEGUI_STATIC)
-#define CEGUI_STATIC
-#endif
 #include <CEGUI/CEGUI.h>
 
 namespace Divide {

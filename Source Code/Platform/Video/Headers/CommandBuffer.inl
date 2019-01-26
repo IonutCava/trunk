@@ -50,7 +50,7 @@ CommandBuffer::add(const T& command) {
     if (DISABLE_MEM_POOL) {
         mem = MemoryManager_NEW T(command);
     } else {
-        UniqueLockShared w_lock(T::s_PoolMutex);
+        UniqueLock w_lock(T::s_PoolMutex);
         mem = T::s_Pool.newElement(command);
     }
     
@@ -62,7 +62,7 @@ CommandBuffer::add(const T& command) {
                                         if (DISABLE_MEM_POOL) {
                                             MemoryManager::DELETE(cmd);
                                         } else {
-                                            UniqueLockShared w_lock(T::s_PoolMutex);
+                                            UniqueLock w_lock(T::s_PoolMutex);
                                             T::s_Pool.deleteElement((T*)cmd);
                                         }
                                     })));

@@ -20,9 +20,6 @@
 #include "Platform/Video/RenderBackend/OpenGL/Buffers/VertexBuffer/Headers/glVertexArray.h"
 #include "Platform/Video/Buffers/VertexBuffer/GenericBuffer/Headers/GenericVertexData.h"
 
-#if !defined(CEGUI_STATIC)
-#define CEGUI_STATIC
-#endif
 #include <CEGUI/CEGUI.h>
 #include <GL3Renderer.h>
 

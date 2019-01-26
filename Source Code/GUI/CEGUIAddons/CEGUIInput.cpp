@@ -2,9 +2,6 @@
 
 #include "Headers/CEGUIInput.h"
 
-#if !defined(CEGUI_STATIC)
-#define CEGUI_STATIC
-#endif
 #include <CEGUI/CEGUI.h>
 
 #include "GUI/Headers/GUI.h"

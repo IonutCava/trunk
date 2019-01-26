@@ -34,9 +34,6 @@
 #define CEGUI_FORMATTED_LIST_BOX_H_
 
 // Code adapted from http://www.cegui.org.uk/phpBB2/viewtopic.php?f=10&t=4322
-#if !defined(CEGUI_STATIC)
-#define CEGUI_STATIC
-#endif
 #include <CEGUI/CEGUI.h>
 
 namespace CEGUI {
