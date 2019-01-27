@@ -35,6 +35,11 @@
 
 namespace Divide {
 
+namespace {
+    constexpr U32 g_printTimerBase = 15u;
+    U32 g_printTimer = g_printTimerBase;
+};
+
 LoopTimingData::LoopTimingData() : _updateLoops(0),
                                    _previousTimeUS(0ULL),
                                    _currentTimeUS(0ULL),
@@ -149,6 +154,11 @@ void Kernel::idle() {
     _sceneManager->idle();
     Locale::idle();
     Script::idle();
+
+    if (--g_printTimer == 0) {
+        Console::printAll();
+        g_printTimer = g_printTimerBase;
+    }
     FrameListenerManager::instance().idle();
 
     bool freezeLoopTime = ParamHandler::instance().getParam(_ID("freezeLoopTime"), false);
@@ -630,8 +640,8 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     U32 hardwareThreads = config.runtime.maxWorkerThreads < 0 ? HARDWARE_THREAD_COUNT() : to_U32(config.runtime.maxWorkerThreads);
     U32 minRenderThreads = to_U32(RenderStage::COUNT) * 2; // One main thread and one worker thread per stage
 
-    // Use half of our desired thread count for engine stuff
-    U8 threadCount = static_cast<U8>(std::max(hardwareThreads / 2, 5u) - 1);
+    // Use half (inc main thread) of our desired thread count for engine stuff
+    U8 threadCount = static_cast<U8>(std::max(hardwareThreads / 2 - 1, 4u));
 
     if (!_platformContext->taskPool(TaskPoolType::Engine).init(
         threadCount,

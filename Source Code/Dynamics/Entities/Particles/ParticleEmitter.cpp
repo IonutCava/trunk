@@ -260,9 +260,9 @@ void ParticleEmitter::prepareForRender(RenderStagePass renderStagePass, const Ca
         }
     };
 
-    parallel_for(_context.parent().platformContext(), updateDistToCamera, aliveCount, 1000);
+    parallel_for(_context.context(), updateDistToCamera, aliveCount, 1000);
 
-    _bufferUpdate = CreateTask(_context.parent().platformContext(),
+    _bufferUpdate = CreateTask(_context.context(),
         [this, aliveCount, &renderStagePass](const Task& parentTask) {
         // invalidateCache means that the existing particle data is no longer partially sorted
         _particles->sort(true);
@@ -339,7 +339,7 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTimeUS,
             }
         };
 
-        parallel_for(_context.parent().platformContext(), updateSize, aliveCount, s_particlesPerThread);
+        parallel_for(_context.context(), updateSize, aliveCount, s_particlesPerThread);
 
         ParticleData& data = *_particles;
         for (std::shared_ptr<ParticleUpdater>& up : _updaters) {
@@ -348,7 +348,7 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTimeUS,
 
         _bbUpdate.wait();
 
-        _bbUpdate = CreateTask(_context.parent().platformContext(), 
+        _bbUpdate = CreateTask(_context.context(), 
               [this, aliveCount, averageEmitRate](const Task& parentTask)
         {
             _tempBB.reset();

@@ -87,10 +87,16 @@ void TaskPool::runCbkAndClearTask(U32 taskIdentifier) {
 
 
 void TaskPool::flushCallbackQueue() {
-    U32 taskIndex = 0;
-    while (_threadedCallbackBuffer.try_dequeue(taskIndex)) {
-        runCbkAndClearTask(taskIndex);
-    }
+    constexpr I32 maxDequeueItems = 20;
+
+    U32 taskIndex[maxDequeueItems] = { 0 };
+    size_t count = 0;
+    do {
+        count = _threadedCallbackBuffer.try_dequeue_bulk(taskIndex, maxDequeueItems);
+        for (size_t i = 0; i < count; ++i) {
+            runCbkAndClearTask(taskIndex[i]);
+        }
+    } while (count > 0);
 }
 
 void TaskPool::waitForAllTasks(bool yield, bool flushCallbacks, bool forceClear) {

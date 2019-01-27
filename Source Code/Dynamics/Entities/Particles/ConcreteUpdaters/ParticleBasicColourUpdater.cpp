@@ -19,6 +19,6 @@ void ParticleBasicColourUpdater::update(const U64 deltaTimeUS, ParticleData& p) 
         }
     };
 
-    parallel_for(_context.parent().platformContext(), parseRange, p.aliveCount(), g_partitionSize);
+    parallel_for(_context.context(), parseRange, p.aliveCount(), g_partitionSize);
 }
 };

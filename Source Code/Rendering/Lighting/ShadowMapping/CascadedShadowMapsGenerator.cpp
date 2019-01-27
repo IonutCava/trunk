@@ -34,7 +34,7 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
 {
     Console::printfn(Locale::get(_ID("LIGHT_CREATE_SHADOW_FB")), "EVCSM");
 
-    g_shadowSettings = context.parent().platformContext().config().rendering.shadowMapping;
+    g_shadowSettings = context.context().config().rendering.shadowMapping;
     ResourceDescriptor blurDepthMapShader(Util::StringFormat("blur.GaussBlur_%d_invocations", Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT));
     blurDepthMapShader.setThreadedLoading(false);
 

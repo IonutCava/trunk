@@ -72,7 +72,7 @@ Vegetation::Vegetation(GFXDevice& context,
 
     renderState().addToDrawExclusionMask(RenderPassType::MAIN_PASS);
 
-    CreateTask(_context.parent().platformContext(),
+    CreateTask(_context.context(),
         [this](const Task& parentTask) {
             computeGrassTransforms(parentTask);
         }
@@ -279,8 +279,13 @@ void Vegetation::onRefreshNodeData(SceneGraphNode& sgn, RenderStagePass renderSt
         pipelineCmd._pipeline = _context.newPipeline(pipeDesc);
         GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
+        ShaderBufferBinding buffer = {};
+        buffer._binding = ShaderBufferLocation::GRASS_DATA;
+        buffer._buffer = s_grassData;
+        buffer._elementRange = { _terrainChunk.ID() * s_maxGrassInstancesPerChunk, _instanceCountGrass };
+
         GFX::BindDescriptorSetsCommand descriptorSetCmd;
-        descriptorSetCmd._set.addShaderBuffer({ ShaderBufferLocation::GRASS_DATA, s_grassData, vec2<U32>(_terrainChunk.ID() * s_maxGrassInstancesPerChunk, _instanceCountGrass) });
+        descriptorSetCmd._set.addShaderBuffer(buffer);
 
         if (!s_stageRefreshed[to_base(renderStagePass._stage)]) {
             GFX::SendPushConstantsCommand pushConstantsCommand;
@@ -312,11 +317,14 @@ void Vegetation::buildDrawCommands(SceneGraphNode& sgn,
                                    RenderStagePass renderStagePass,
                                    RenderPackage& pkgInOut) {
     if (_render && renderStagePass._passIndex == 0) {
+
+        ShaderBufferBinding buffer = {};
+        buffer._binding = ShaderBufferLocation::GRASS_DATA;
+        buffer._buffer = s_grassData;
+        buffer._elementRange = { _terrainChunk.ID() * s_maxGrassInstancesPerChunk, _instanceCountGrass };
+
         DescriptorSet set = pkgInOut.descriptorSet(0);
-        set.addShaderBuffer(
-            { ShaderBufferLocation::GRASS_DATA,
-             s_grassData,
-            vec2<U32>(_terrainChunk.ID() * s_maxGrassInstancesPerChunk, _instanceCountGrass) });
+        set.addShaderBuffer(buffer);
         pkgInOut.descriptorSet(0, set);
 
         GenericDrawCommand cmd;

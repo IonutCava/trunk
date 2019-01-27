@@ -149,6 +149,8 @@ class SceneGraph : private NonCopyable,
 
     bool _loadComplete;
     bool _octreeChanged;
+    bool _nodeListChanged;
+
     SceneGraphNode* _root;
     std::shared_ptr<Octree> _octree;
     std::atomic_bool _octreeUpdating;

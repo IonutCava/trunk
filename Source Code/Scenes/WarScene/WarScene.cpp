@@ -99,7 +99,7 @@ void WarScene::processGUI(const U64 deltaTimeUS) {
                                             _context.gfx().getFrameCount()));
         _GUI->modifyText(_ID("RenderBinCount"),
             Util::StringFormat("Number of items in Render Bin: %d. Number of HiZ culled items: %d",
-                               _context.gfx().parent().renderPassManager().getLastTotalBinSize(RenderStage::DISPLAY),
+                               _context.kernel().renderPassManager().getLastTotalBinSize(RenderStage::DISPLAY),
                                _context.gfx().getLastCullCount()));
 
         _GUI->modifyText(_ID("camPosition"),

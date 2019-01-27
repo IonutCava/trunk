@@ -51,44 +51,8 @@ namespace Divide {
         }
     }
 
-    ShaderBufferBinding::ShaderBufferBinding()
-        : ShaderBufferBinding(ShaderBufferLocation::COUNT, nullptr)
-    {
-    }
-
-    ShaderBufferBinding::ShaderBufferBinding(ShaderBufferLocation slot,
-                                             ShaderBuffer* buffer)
-        : ShaderBufferBinding(slot, buffer, vec2<U32>(0u, buffer != nullptr ? buffer->getPrimitiveCount() : 0u))
-    {
-    }
-
-    ShaderBufferBinding::ShaderBufferBinding(ShaderBufferLocation slot,
-                                             ShaderBuffer* buffer,
-                                             const vec2<U32>& elementRange)
-        : ShaderBufferBinding(slot, buffer, elementRange, std::make_pair(false, vec2<U32>(0u)))
-    {
-    }
-
-    ShaderBufferBinding::ShaderBufferBinding(ShaderBufferLocation slot,
-                                             ShaderBuffer* buffer,
-                                             const vec2<U32>& elementRange,
-                                             const std::pair<bool, vec2<U32>>& atomicCounter)
-      : _binding(slot),
-        _buffer(buffer),
-        _elementRange(elementRange),
-        _atomicCounter(atomicCounter)
-    {
-    }
-
     bool ShaderBufferBinding::set(const ShaderBufferBinding& other) {
         return set(other._binding, other._buffer, other._elementRange, other._atomicCounter);
-    }
-
-    bool ShaderBufferBinding::set(ShaderBufferLocation binding,
-                                  ShaderBuffer* buffer,
-                                  const vec2<U32>& elementRange)
-    {
-        return set(binding, buffer, elementRange, std::make_pair(false, vec2<U32>(0u)));
     }
 
     bool ShaderBufferBinding::set(ShaderBufferLocation binding,

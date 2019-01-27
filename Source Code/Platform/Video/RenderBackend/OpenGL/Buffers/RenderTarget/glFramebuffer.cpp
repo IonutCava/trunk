@@ -231,7 +231,7 @@ void glFramebuffer::resolve(bool colours, bool depth) {
                     ColourBlitEntry entry = {};
                     entry._inputIndex = entry._outputIndex = to_U16(att->binding() - to_U32(GL_COLOR_ATTACHMENT0));
 
-                    const std::set<U16, std::greater<U16>>& layers = _attachmentDirtyLayers[static_cast<GLenum>(att->binding())];
+                    const eastl::set<U16, eastl::greater<U16>>& layers = _attachmentDirtyLayers[static_cast<GLenum>(att->binding())];
                     for (U16 layer : layers) {
                         entry._inputLayer = entry._outputLayer = layer;
                         params._blitColours.push_back(entry);
@@ -240,7 +240,7 @@ void glFramebuffer::resolve(bool colours, bool depth) {
             }
 
             if (depth) {
-                const std::set<U16, std::greater<U16>>& layers = _attachmentDirtyLayers[GL_DEPTH_ATTACHMENT];
+                const eastl::set<U16, eastl::greater<U16>>& layers = _attachmentDirtyLayers[GL_DEPTH_ATTACHMENT];
                 for (U16 layer : layers) {
                     params._blitDepth.push_back({ layer, layer });
                 }

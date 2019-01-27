@@ -30,7 +30,7 @@ void ParticleSource::emit(const U64 deltaTimeUS, std::shared_ptr<ParticleData> p
     const U32 startID = data.aliveCount();
     const U32 endID = std::min(startID + maxNewParticles, data.totalCount() - 1);
 
-    TaskHandle generateTask = CreateTask(_context.parent().platformContext(), DELEGATE_CBK<void, const Task&>());
+    TaskHandle generateTask = CreateTask(_context.context(), DELEGATE_CBK<void, const Task&>());
     for (std::shared_ptr<ParticleGenerator>& gen : _particleGenerators) {
         gen->generate(generateTask, deltaTimeUS, data, startID, endID);
     }

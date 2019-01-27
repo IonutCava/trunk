@@ -59,7 +59,7 @@ LightType ShadowMap::getLightTypeForShadowType(ShadowType type) {
 }
 
 void ShadowMap::initShadowMaps(GFXDevice& context) {
-    Configuration::Rendering::ShadowMapping& settings = context.parent().platformContext().config().rendering.shadowMapping;
+    Configuration::Rendering::ShadowMapping& settings = context.context().config().rendering.shadowMapping;
     
     if (!isPowerOfTwo(settings.shadowMapResolution)) {
         settings.shadowMapResolution = nextPOW2(settings.shadowMapResolution);

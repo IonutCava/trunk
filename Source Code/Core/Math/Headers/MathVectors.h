@@ -95,6 +95,19 @@ public:
     {
     }
 
+    simd_vector(T reg)  noexcept : _reg(_mm_set_ps(reg, reg, reg, reg))
+    {
+    }
+
+    simd_vector(T reg0, T reg1, T reg2, T reg3)  noexcept :
+        _reg(_mm_set_ps(reg3, reg2, reg1, reg0))
+    {
+    }
+
+    simd_vector(T reg[4])  noexcept : _reg(_mm_set_ps(reg[3], reg[2], reg[1], reg[0]))
+    {
+    }
+
     simd_vector(__m128 reg)  noexcept : _reg(reg)
     {
     }
@@ -117,7 +130,14 @@ class simd_vector<T, std::enable_if_t<!std::is_same<T, F32>::value>> {
     {
     }
 
-    simd_vector(T val) noexcept : _reg(val)
+    simd_vector(T val) noexcept : 
+        _reg { val, val, val, val }
+    {
+    }
+
+
+    simd_vector(T reg0, T reg1, T reg2, T reg3)  noexcept : 
+        _reg{reg0, reg1, reg2, reg3}
     {
     }
 
@@ -1189,27 +1209,24 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
         this->xyz(xyzw.x, xyzw.y, xyzw.z);
     }
     /// set the 4 components of the vector manually using a source pointer to a (large enough) array
-    inline void set(const T* v) noexcept { std::memcpy(&_v[0], &v[0], 4 * sizeof(T)); }
+    inline void set(const T* v) noexcept { std::memcpy(_v, v, 4 * sizeof(T)); }
     /// set the 4 components of the vector manually
-    inline void set(T value) { x = value; y = value; z = value; w = value; }
+    inline void set(T value) { _reg = simd_vector<T>(value); }
     /// set the 4 components of the vector manually
     inline void set(T _x, T _y, T _z, T _w) noexcept {
-        this->x = _x;
-        this->y = _y;
-        this->z = _z;
-        this->w = _w;
+        _reg = simd_vector<T>(_x, _y, _z, _w);
     }
 
     template <typename U>
     inline void set(U _x, U _y, U _z, U _w) {
-        x = static_cast<T>(_x);
-        y = static_cast<T>(_y);
-        z = static_cast<T>(_z);
-        w = static_cast<T>(_w);
+        set(static_cast<T>(_x),
+            static_cast<T>(_y),
+            static_cast<T>(_z),
+            static_cast<T>(_w));
     }
 
     /// set the 4 components of the vector using a source vector
-    inline void set(const vec4 &v) { std::memcpy(&_v[0], &v._v[0], 4 * sizeof(T)); }
+    inline void set(const vec4 &v) { _reg = v._reg; }
     /// set the 4 components of the vector using a smaller source vector
     inline void set(const vec3<T> &v) { std::memcpy(&_v[0], &v._v[0], 3 * sizeof(T)); }
     /// set the 4 components of the vector using a smaller source vector

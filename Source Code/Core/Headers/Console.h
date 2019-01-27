@@ -55,6 +55,7 @@ class Console : private NonCopyable {
     typedef std::function<void(const Console::OutputEntry&)> ConsolePrintCallback;
 
    public:
+    static void printAll();
     static void start();
     static void stop();
 
@@ -120,6 +121,9 @@ class Console : private NonCopyable {
     static bool enabled() noexcept { return _enabled; }
     static void toggle(const bool state) noexcept { _enabled = state; }
 
+    static bool immediateModeEnabled() noexcept { return _immediateMode; }
+    static void toggleImmediateMode(const bool state) noexcept { _immediateMode = state; }
+
     static bool errorStreamEnabled() noexcept { return _errorStreamEnabled; }
     static void toggleErrorStream(const bool state) noexcept { _errorStreamEnabled = state; }
     static size_t bindConsoleOutput(const ConsolePrintCallback& guiConsoleCallback) {
@@ -140,7 +144,6 @@ class Console : private NonCopyable {
     static void output(const char* text, const bool newline, const EntryType type);
     static void output(std::ostream& outStream, const char* text, const bool newline, const EntryType type);
     static void decorate(std::ostream& outStream, const char* text, const bool newline, const EntryType type);
-    static void outThread();
     static void printToFile(const OutputEntry& entry);
 
    private:
@@ -148,10 +151,11 @@ class Console : private NonCopyable {
     static bool _timestamps;
     static bool _threadID;
     static bool _enabled;
+    static bool _immediateMode;
     static bool _errorStreamEnabled;
 
     static std::atomic_bool _running;
-    static std::thread _printThread;
+
 };
 
 };  // namespace Divide

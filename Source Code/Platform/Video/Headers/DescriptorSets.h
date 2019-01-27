@@ -42,8 +42,8 @@ namespace Divide {
 
     struct TextureView {
         Texture* _texture = nullptr;
-        vec2<U32> _mipLevels = {};
-        vec2<U32> _layerRange = {};
+        vec2<U16> _mipLevels = {};
+        vec2<U16> _layerRange = {};
 
         inline bool operator==(const TextureView& other) const {
             return _mipLevels == other._mipLevels &&
@@ -75,30 +75,13 @@ namespace Divide {
 
     class ShaderBuffer;
     struct ShaderBufferBinding {
-        ShaderBuffer* _buffer = nullptr;
-        vec2<U32>     _elementRange;
-        std::pair<bool, vec2<U8>> _atomicCounter;
         ShaderBufferLocation _binding = ShaderBufferLocation::COUNT;
-
-        ShaderBufferBinding();
-        ShaderBufferBinding(ShaderBufferLocation slot,
-                            ShaderBuffer* buffer);
-        ShaderBufferBinding(ShaderBufferLocation slot,
-                            ShaderBuffer* buffer,
-                            const vec2<U32>& elementRange);
-        ShaderBufferBinding(ShaderBufferLocation slot,
-                            ShaderBuffer* buffer,
-                            const vec2<U32>& elementRange,
-                            const std::pair<bool, vec2<U32>>& atomicCounter);
+        std::pair<bool, vec2<U8>> _atomicCounter = { false, {0u, 0u} };
+        vec2<U32>     _elementRange = {};
+        ShaderBuffer* _buffer = nullptr;
 
         bool set(const ShaderBufferBinding& other);
-        bool set(ShaderBufferLocation binding,
-                 ShaderBuffer* buffer,
-                 const vec2<U32>& elementRange);
-        bool set(ShaderBufferLocation binding,
-                 ShaderBuffer* buffer,
-                 const vec2<U32>& elementRange,
-                 const std::pair<bool, vec2<U32>>& atomicCounter);
+        bool set(ShaderBufferLocation binding, ShaderBuffer* buffer, const vec2<U32>& elementRange, const std::pair<bool, vec2<U32>>& atomicCounter = std::make_pair(false, vec2<U32>(0u)));
 
         bool operator==(const ShaderBufferBinding& other) const;
         bool operator!=(const ShaderBufferBinding& other) const;
@@ -115,22 +98,21 @@ namespace Divide {
 
         void addShaderBuffer(const ShaderBufferBinding& entry);
         void addShaderBuffers(const ShaderBufferList& entries);
-
-        FORCE_INLINE bool operator==(const DescriptorSet &other) const {
-            return _shaderBuffers == other._shaderBuffers &&
-                   _textureData == other._textureData &&
-                   _textureViews == other._textureViews;
-        }
-
-        FORCE_INLINE bool operator!=(const DescriptorSet &other) const {
-            return _shaderBuffers != other._shaderBuffers ||
-                   _textureData != other._textureData ||
-                   _textureViews != other._textureViews;
-        }
-
         const ShaderBufferBinding* findBinding(ShaderBufferLocation slot) const;
         const TextureData* findTexture(U8 binding) const;
         const TextureView* findTextureView(U8 binding) const;
+
+        inline bool operator==(const DescriptorSet &other) const {
+            return _shaderBuffers == other._shaderBuffers &&
+                _textureData == other._textureData &&
+                _textureViews == other._textureViews;
+        }
+
+        inline bool operator!=(const DescriptorSet &other) const {
+            return _shaderBuffers != other._shaderBuffers ||
+                _textureData != other._textureData ||
+                _textureViews != other._textureViews;
+        }
     };
 
     bool Merge(DescriptorSet &lhs, DescriptorSet &rhs, bool& partial);

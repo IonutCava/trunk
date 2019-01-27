@@ -143,7 +143,7 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
     shaderBuffer._atomicCounter.first = true;
     
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd;
-    bindDescriptorSetsCmd._set._shaderBuffers.push_back(shaderBuffer);
+    bindDescriptorSetsCmd._set.addShaderBuffer(shaderBuffer);
     bindDescriptorSetsCmd._set._textureData.addTexture(depthBuffer->getData(), to_U8(ShaderProgram::TextureUsage::DEPTH));
     GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
     

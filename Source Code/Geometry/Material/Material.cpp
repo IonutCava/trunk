@@ -555,7 +555,7 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
         shaderPropertyDescriptor._defines.push_back(std::make_pair("IS_REFLECTIVE", true));
     }
 
-    if (!_context.parent().platformContext().config().rendering.shadowMapping.enabled) {
+    if (!_context.context().config().rendering.shadowMapping.enabled) {
         shader += ".NoShadows";
         shaderPropertyDescriptor._defines.push_back(std::make_pair("DISABLE_SHADOW_MAPPING", true));
     }

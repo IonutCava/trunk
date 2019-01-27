@@ -299,18 +299,19 @@ void RenderPassManager::refreshNodeData(RenderStagePass stagePass,
     bufferData._cmdBuffer->writeData(0, cmdCount, (bufferPtr)g_drawCommands.data());
     bufferData._renderData->writeData(bufferData._renderDataElementOffset, nodeCount, (bufferPtr)g_nodeData.data());
 
+    ShaderBufferBinding cmdBuffer = {};
+    cmdBuffer._binding = ShaderBufferLocation::CMD_BUFFER;
+    cmdBuffer._buffer = bufferData._cmdBuffer;
+    cmdBuffer._elementRange = { 0u, cmdCount };
+
+    ShaderBufferBinding dataBuffer = {};
+    dataBuffer._binding = ShaderBufferLocation::NODE_INFO;
+    dataBuffer._buffer = bufferData._renderData;
+    dataBuffer._elementRange = { bufferData._renderDataElementOffset, nodeCount };
+
     GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-    descriptorSetCmd._set._shaderBuffers = {
-        {
-            ShaderBufferLocation::CMD_BUFFER,
-            bufferData._cmdBuffer
-        },
-        {
-            ShaderBufferLocation::NODE_INFO,
-            bufferData._renderData,
-            vec2<U32>(bufferData._renderDataElementOffset, nodeCount)
-        }
-    };
+    descriptorSetCmd._set.addShaderBuffer(cmdBuffer);
+    descriptorSetCmd._set.addShaderBuffer(dataBuffer);
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 }
 

@@ -198,8 +198,13 @@ void LightPool::generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffe
 
     }
 
+    ShaderBufferBinding buffer = {};
+    buffer._binding = ShaderBufferLocation::LIGHT_SHADOW;
+    buffer._buffer = _shadowBuffer;
+    buffer._elementRange = { 0u, _shadowBuffer->getPrimitiveCount() };
+
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
-    descriptorSetCmd._set.addShaderBuffer({ ShaderBufferLocation::LIGHT_SHADOW, _shadowBuffer });
+    descriptorSetCmd._set.addShaderBuffer(buffer);
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     ShadowMap::bindShadowMaps(bufferInOut);
@@ -208,7 +213,7 @@ void LightPool::generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffe
 void LightPool::togglePreviewShadowMaps(GFXDevice& context, Light& light) {
     _previewShadowMaps = !_previewShadowMaps;
     // Stop if we have shadows disabled
-    if (!context.parent().platformContext().config().rendering.shadowMapping.enabled) {
+    if (!context.context().config().rendering.shadowMapping.enabled) {
         _previewShadowMaps = false;
     }
 
@@ -301,8 +306,13 @@ void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, con
 
 void LightPool::uploadLightData(RenderStage stage, GFX::CommandBuffer& bufferInOut) {
 
+    ShaderBufferBinding buffer = {};
+    buffer._binding = ShaderBufferLocation::LIGHT_NORMAL;
+    buffer._buffer = _lightShaderBuffer;
+    buffer._elementRange = { to_base(stage) - 1, 1 };
+
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
-    descriptorSetCmd._set.addShaderBuffer({ ShaderBufferLocation::LIGHT_NORMAL, _lightShaderBuffer, vec2<U32>(to_base(stage) - 1, 1) });
+    descriptorSetCmd._set.addShaderBuffer(buffer);
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 }
 

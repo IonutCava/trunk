@@ -231,8 +231,13 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
         offset += (to_U32((stageIndex - 1) * Terrain::MAX_RENDER_NODES));
     }
 
+    ShaderBufferBinding buffer = {};
+    buffer._binding = ShaderBufferLocation::TERRAIN_DATA;
+    buffer._buffer = _shaderData;
+    buffer._elementRange = { offset, MAX_RENDER_NODES };
+
     DescriptorSet set = pkgInOut.descriptorSet(0);
-    set.addShaderBuffer({ ShaderBufferLocation::TERRAIN_DATA, _shaderData, vec2<U32>(offset, MAX_RENDER_NODES) });
+    set.addShaderBuffer(buffer);
     pkgInOut.descriptorSet(0, set);
 
     GFX::SendPushConstantsCommand pushConstantsCommand = {};

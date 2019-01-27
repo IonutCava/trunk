@@ -36,7 +36,7 @@ void ParticleEulerUpdater::update(const U64 deltaTimeUS, ParticleData& p) {
         }
     };
 
-    parallel_for(_context.parent().platformContext(), parseRange, endID, g_partitionSize);
+    parallel_for(_context.context(), parseRange, endID, g_partitionSize);
 }
 
 };

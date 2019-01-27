@@ -47,6 +47,7 @@ ErrorCode Application::start(const stringImpl& entryPoint, I32 argc, char** argv
     // Don't log parameter requests
     ParamHandler::instance().setDebugOutput(false);
 
+    Console::toggleImmediateMode(true);
     Console::printfn(Locale::get(_ID("START_APPLICATION")));
     for (U8 i = 1; i < argc; ++i) {
         Console::printfn(Locale::get(_ID("START_APPLICATION_CMD_ARGUMENTS")));
@@ -66,6 +67,7 @@ ErrorCode Application::start(const stringImpl& entryPoint, I32 argc, char** argv
     } else {
         Attorney::KernelApplication::warmup(*_kernel);
         Console::printfn(Locale::get(_ID("START_MAIN_LOOP")));
+        Console::toggleImmediateMode(false);
         mainLoopActive(true);
     }
 

@@ -5,55 +5,28 @@
 #include "Core/Time/Headers/ApplicationTimer.h"
 #include <iomanip>
 
-#ifndef USE_BLOCKING_QUEUE
-#define USE_BLOCKING_QUEUE
-#endif //USE_BLOCKING_QUEUE
-
 namespace Divide {
 
 bool Console::_timestamps = false;
 bool Console::_threadID = false;
 bool Console::_enabled = true;
+bool Console::_immediateMode = true;
 bool Console::_errorStreamEnabled = true;
 
-std::thread Console::_printThread;
 std::atomic_bool Console::_running = false;
 vector<Console::ConsolePrintCallback> Console::_guiConsoleCallbacks;
 
 //Use moodycamel's implementation of a concurent queue due to its "Knock-your-socks-off blazing fast performance."
 //https://github.com/cameron314/concurrentqueue
 namespace {
-    constexpr bool g_useImmediatePrint = false;
-
     thread_local char textBuffer[CONSOLE_OUTPUT_BUFFER_SIZE + 1];
 
-#if defined(USE_BLOCKING_QUEUE)
+    std::array<Console::OutputEntry, 16> g_outputCache;
+
     moodycamel::BlockingConcurrentQueue<Console::OutputEntry>& outBuffer() {
         static moodycamel::BlockingConcurrentQueue<Console::OutputEntry> buf;
         return buf;
     }
-#else
-    moodycamel::ConcurrentQueue<Console::OutputEntry>& outBuffer() {
-        static moodycamel::ConcurrentQueue<Console::OutputEntry> buf;
-        return buf;
-    }
-
-    std::mutex& condMutex() noexcept {
-        static std::mutex condMutex;
-        return condMutex;
-    }
-
-    std::condition_variable& entryEnqueCV() {
-        static std::condition_variable entryEnqueCV;
-        return entryEnqueCV;
-    }
-
-    std::atomic_bool& entryAdded() noexcept {
-        static std::atomic_bool entryAdded;
-        return entryAdded;
-    }
-
-#endif
 };
 
 //! Do not remove the following license without express permission granted by DIVIDE-Studio
@@ -117,22 +90,16 @@ void Console::output(const char* text, const bool newline, const EntryType type)
         stringstreamImplBest outStream;
         decorate(outStream, text, newline, type);
 
-        OutputEntry entry;
+        OutputEntry entry = {};
         entry._text = outStream.str();
         entry._type = type;
-        if (g_useImmediatePrint) {
+        if (_immediateMode) {
             printToFile(entry);
         } else {
-            //moodycamel::ProducerToken ptok(outBuffer());
-            if (!outBuffer().enqueue(/*ptok, */entry)) {
+            if (!outBuffer().enqueue(entry)) {
                 // ToDo: Something happened. Handle it, maybe? -Ionut
+                printToFile(entry);
             }
-
-#if !defined(USE_BLOCKING_QUEUE)
-            Lock lk(condMutex());
-            entryAdded() = true;
-            entryEnqueCV().notify_one();
-#endif
         }
     }
 }
@@ -148,59 +115,38 @@ void Console::printToFile(const OutputEntry& entry) {
     }
 }
 
-void Console::outThread() {
-
-    constexpr U32 appUpdateRate = Config::TARGET_FRAME_RATE / Config::TICK_DIVISOR;
-    constexpr U32 appUpdateRateInMS = 1000 / appUpdateRate;
-
-    //moodycamel::ConsumerToken ctok(outBuffer());
-    OutputEntry entry;
-    while (_running) {
-#if defined(USE_BLOCKING_QUEUE)
-
-        if (outBuffer().wait_dequeue_timed(/*ctok, */entry, Time::Milliseconds(appUpdateRateInMS))) {
-#else
-        Lock lk(condMutex());
-        entryEnqueCV().wait(lk, []() -> bool { return entryAdded(); });
-
-        while (outBuffer().try_dequeue(/*ctok, */entry)) {
-#endif
-            printToFile(entry);
-            if (!_running) {
-                break;
-            }
-        } 
-        //else {
-            //std::this_thread::yield();
-        //}
+void Console::printAll() {
+    if (!_enabled) {
+        return;
     }
-    std::cout << "------------------------------------------" << std::endl
-              << std::endl << std::endl << std::endl;
 
-    std::cerr << std::flush;
-    std::cout << std::flush;
+    size_t count = 0;
+    do {
+        count = outBuffer().try_dequeue_bulk(std::begin(g_outputCache), g_outputCache.size());
+
+        for (size_t i = 0; i < count; ++i) {
+            printToFile(g_outputCache[i]);
+        }
+    } while (count > 0);
 }
 
 void Console::start() {
     if (!_running) {
         _running = true;
-        _printThread = std::thread(&Console::outThread);
-        setThreadName(&_printThread, "CONSOLE_OUT_THREAD");
     }
 }
 
 void Console::stop() {
     if (_running) {
+        _immediateMode = true;
+        printAll();
         _enabled = false;
         _running = false;
-#if !defined(USE_BLOCKING_QUEUE)
-        {
-            Lock lk(condMutex());
-            entryAdded() = true;
-            entryEnqueCV().notify_one();
-        }
-#endif
-        _printThread.join();
+        std::cout << "------------------------------------------" << std::endl
+                  << std::endl << std::endl << std::endl;
+
+        std::cerr << std::flush;
+        std::cout << std::flush;
     }
 }
 };

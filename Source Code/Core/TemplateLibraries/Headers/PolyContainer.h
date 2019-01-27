@@ -47,28 +47,35 @@ using deleted_unique_ptr = std::unique_ptr<T, std::function<void(T*)>>;
 
 template<typename T, size_t N>
 struct PolyContainer {
+    typedef vectorEASTL<deleted_unique_ptr<T>> EntryList;
+
     template<typename U>
     inline typename std::enable_if<std::is_base_of<T, U>::value, PolyContainerEntry>::type
         insert(vec_size_eastl index, deleted_unique_ptr<T>&& cmd) {
         assert(index < N);
 
-        _collection[index].push_back(std::move(cmd));
+        EntryList& collection = _collection[index];
+        collection.push_back(std::move(cmd));
 
-        return PolyContainerEntry{ index, _collection[index].size() - 1 };
+        return PolyContainerEntry{ index, collection.size() - 1 };
     }
 
     inline T& get(vec_size_eastl index, size_t entry) {
         assert(index < N);
-        assert(entry < _collection[index].size());
 
-        return *_collection[index][entry];
+        const EntryList& collection = _collection[index];
+        assert(entry < collection.size());
+
+        return *collection[entry];
     }
 
     inline const T& get(vec_size_eastl index, size_t entry) const {
         assert(index < N);
-        assert(entry < _collection[index].size());
 
-        return *_collection[index][entry];
+        const EntryList& collection = _collection[index];
+        assert(entry < collection.size());
+
+        return *collection[entry];
     }
 
     inline T& get(const PolyContainerEntry& entry) {
@@ -130,7 +137,7 @@ struct PolyContainer {
         return true;
     }
 
-    std::array<vectorEASTL<deleted_unique_ptr<T>>, N> _collection;
+    std::array<EntryList, N> _collection;
 };
 
 #endif //_POLY_CONTAINER_H_

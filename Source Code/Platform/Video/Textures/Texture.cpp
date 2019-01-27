@@ -58,7 +58,7 @@ Texture::~Texture()
 }
 
 bool Texture::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) {
-    CreateTask(_context.parent().platformContext().taskPool(TaskPoolType::Render),
+    CreateTask(_context.context().taskPool(TaskPoolType::Render),
                [this, onLoadCallback](const Task& parent) {
                     threadedLoad(std::move(onLoadCallback));
               }).startTask(_asyncLoad ? TaskPriority::DONT_CARE : TaskPriority::REALTIME);
@@ -214,7 +214,7 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name, Imag
                 }
             };
 
-            parallel_for(_context.parent().platformContext(), findAlpha, width, g_partitionSize);
+            parallel_for(_context.context(), findAlpha, width, g_partitionSize);
         }
 
         Console::d_printfn(Locale::get(_ID("TEXTURE_HAS_TRANSPARENCY_TRANSLUCENCY")),

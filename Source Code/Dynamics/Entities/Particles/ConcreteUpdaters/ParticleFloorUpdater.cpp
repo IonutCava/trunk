@@ -33,7 +33,7 @@ void ParticleFloorUpdater::update(const U64 deltaTimeUS, ParticleData& p) {
         }
     };
 
-    parallel_for(_context.parent().platformContext(), updateFloor, endID, s_particlesPerThread);
+    parallel_for(_context.context(), updateFloor, endID, s_particlesPerThread);
 }
 
 };

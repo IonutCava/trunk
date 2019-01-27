@@ -19,6 +19,7 @@ SceneGraph::SceneGraph(Scene& parentScene)
       SceneComponent(parentScene),
      _loadComplete(false),
      _octreeChanged(false),
+     _nodeListChanged(false),
      _ecsEngine(new ECS::ECSEngine())
 {
     _ecsManager = std::make_unique<ECSManager>(parentScene.context(), GetECSEngine());
@@ -99,6 +100,8 @@ void SceneGraph::onNodeDestroy(SceneGraphNode& oldNode) {
                                        return node && node->getGUID() == guid;
                                    }),
                     std::end(_allNodes));
+
+    _nodeListChanged = true;
 }
 
 void SceneGraph::onNodeAdd(SceneGraphNode& newNode) {
@@ -106,7 +109,9 @@ void SceneGraph::onNodeAdd(SceneGraphNode& newNode) {
 
     _allNodes.push_back(newNodePtr);
     _nodesByType[to_base(newNodePtr->getNode().type())].push_back(newNodePtr);
-    
+
+    _nodeListChanged = true;
+
     if (_loadComplete) {
         WAIT_FOR_CONDITION(!_octreeUpdating);
         _octreeChanged = _octree->addNode(newNodePtr);
@@ -158,8 +163,12 @@ bool SceneGraph::frameStarted(const FrameEvent& evt) {
     }
 
     // Gather all nodes in order
-    _orderedNodeList.resize(0);
-    _root->getOrderedNodeList(_orderedNodeList);
+    if (_nodeListChanged)
+    {
+        _orderedNodeList.resize(0);
+        _root->getOrderedNodeList(_orderedNodeList);
+        _nodeListChanged = false;
+    }
 
     for (SceneGraphNode* node : _orderedNodeList) {
         node->frameStarted();

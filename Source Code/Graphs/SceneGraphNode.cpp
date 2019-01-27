@@ -481,10 +481,13 @@ bool SceneGraphNode::prepareRender(const Camera& camera, RenderStagePass renderS
             if (data.second != nullptr) {
                 RenderPackage& pkg = rComp->getDrawPackage(renderStagePass);
 
+                ShaderBufferBinding buffer = {};
+                buffer._binding = ShaderBufferLocation::BONE_TRANSFORMS;
+                buffer._buffer = data.second;
+                buffer._elementRange = data.first;
+
                 DescriptorSet set = pkg.descriptorSet(0);
-                set.addShaderBuffer({ ShaderBufferLocation::BONE_TRANSFORMS,
-                                     data.second,
-                                     data.first });
+                set.addShaderBuffer(buffer);
                 pkg.descriptorSet(0, set);
             }
         }

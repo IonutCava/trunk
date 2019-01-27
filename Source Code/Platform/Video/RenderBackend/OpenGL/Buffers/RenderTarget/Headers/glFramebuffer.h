@@ -37,6 +37,8 @@
 #include "Platform/Video/Buffers/RenderTarget/Headers/RTAttachment.h"
 #include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 
+#include <EASTL/set.h>
+
 namespace Divide {
 
 class GL_API;
@@ -155,7 +157,7 @@ class glFramebuffer : public RenderTarget,
     bool _hasMultisampledColourAttachments;
 
     hashMap<GLenum, BindingState> _attachmentState;
-    hashMap<GLenum, std::set<U16, std::greater<U16>>> _attachmentDirtyLayers;
+    hashMap<GLenum, eastl::set<U16, eastl::greater<U16>>> _attachmentDirtyLayers;
 };
 
 namespace Attorney {
