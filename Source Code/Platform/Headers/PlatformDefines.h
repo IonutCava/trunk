@@ -383,6 +383,19 @@ FORCE_INLINE void NOP(void) {}
 
 #define ACKNOWLEDGE_UNUSED(p) ((void)p)
 
+
+#define CONCATENATE_IMPL(s1, s2) s1##s2
+#define CONCATENATE(s1, s2) CONCATENATE_IMPL(s1, s2)
+#ifdef __COUNTER__
+#define ANONYMOUSE_VARIABLE(str) \
+    CONCATENATE(str, __COUNTER__)
+#else
+#define ANONYMOUSE_VARIABLE(str) \
+    CONCATENATE(str, __LINE__)
+#endif
+
+
+// Multumesc Andrei A.!
 #if defined(_MSC_VER)
 #define _FUNCTION_NAME_AND_SIG_ __FUNCSIG__
 #elif defined(__GNUC__)
@@ -390,6 +403,65 @@ FORCE_INLINE void NOP(void) {}
 #else
 #define _FUNCTION_NAME_AND_SIG_ __FUNCTION__
 #endif
+
+
+namespace detail {
+    class ScopeGuardImplBase
+    {
+    public:
+        void Dismiss() const throw()
+        {    dismissed_ = true;    }
+    protected:
+        ScopeGuardImplBase() : dismissed_(false)
+        {}
+        ScopeGuardImplBase(const ScopeGuardImplBase& other)
+            : dismissed_(other.dismissed_)
+        {    other.Dismiss();    }
+        ~ScopeGuardImplBase() {} // nonvirtual (see below why)
+        mutable bool dismissed_;
+
+    private:
+        // Disable assignment
+        ScopeGuardImplBase& operator=(
+            const ScopeGuardImplBase&);
+    };
+
+    template <typename Fun, typename Parm>
+    class ScopeGuardImpl1 : public ScopeGuardImplBase
+    {
+    public:
+        ScopeGuardImpl1(const Fun& fun, const Parm& parm)
+            : fun_(fun), parm_(parm) 
+        {}
+        ~ScopeGuardImpl1()
+        {
+            if (!dismissed_) fun_(parm_);
+        }
+    private:
+        Fun fun_;
+        const Parm parm_;
+    };
+
+    template <typename Fun, typename Parm>
+    ScopeGuardImpl1<Fun, Parm>
+        MakeGuard(const Fun& fun, const Parm& parm)
+    {
+        return ScopeGuardImpl1<Fun, Parm>(fun, parm);
+    }
+
+    typedef const ScopeGuardImplBase& ScopeGuard;
+
+    enum class ScopeGuardOnExit {};
+
+    template <typename Fun>
+    ScopeGuard operator+(ScopeGuardOnExit, Fun&& fn) {
+        return ScopeGuard<Fun>(std::forward<Fun>(fn));
+    }
+};
+
+#define SCOPE_EXIT\
+    auto ANONYMOUS_VARIABLE(SCOPE_EXIT_STATE) \
+    = ::boost_optional_detail::ScopeGuardOnExit() + [&]()
 
 static const F32 EPSILON_F32 = std::numeric_limits<F32>::epsilon();
 static const D64 EPSILON_D64 = std::numeric_limits<D64>::epsilon();

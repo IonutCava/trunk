@@ -35,9 +35,11 @@ namespace {
 
 glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
     : glObject(glObjectType::TYPE_BUFFER, context),
+      GUIDWrapper(),
       _context(context),
       _alignedSize(params._dataSize),
       _target(params._target),
+      _unsynced(params._unsynced),
       _useExplicitFlush(_target == GL_ATOMIC_COUNTER_BUFFER ? false : params._explicitFlush),
       _updateFrequency(params._frequency),
       _elementSize(params._elementSize)
@@ -75,11 +77,11 @@ glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
             case BufferUpdateFrequency::OFTEN: {
                 storageMask |= GL_MAP_WRITE_BIT;
                 accessMask |= GL_MAP_WRITE_BIT;
-
+                
                 if (_useExplicitFlush) {
                     accessMask |= GL_MAP_FLUSH_EXPLICIT_BIT;
                 }
-                _lockManager = MemoryManager_NEW glBufferLockManager();
+          
             } break;
             case BufferUpdateFrequency::COUNT: {
                 DIVIDE_UNEXPECTED_CALL("Unknown buffer update frequency!");
@@ -106,19 +108,23 @@ glBufferImpl::~glBufferImpl()
 
         GLUtil::freeBuffer(_handle, _mappedBuffer);
     }
-
-    MemoryManager::SAFE_DELETE(_lockManager);
 }
 
 void glBufferImpl::waitRange(size_t offsetInBytes, size_t rangeInBytes, bool blockClient) {
-    if (_lockManager != nullptr) {
-        _lockManager->WaitForLockedRange(offsetInBytes, rangeInBytes, blockClient);
+    if (!_unsynced) {
+        GL_API::getLockManager().WaitForLockedRange(getGUID(), offsetInBytes, rangeInBytes);
     }
 }
 
-void glBufferImpl::lockRange(size_t offsetInBytes, size_t rangeInBytes) {
-    if (_lockManager != nullptr) {
-        _lockManager->LockRange(offsetInBytes, rangeInBytes);
+void glBufferImpl::lockRange(size_t offsetInBytes, size_t rangeInBytes, bool flush) {
+    if (!_unsynced) {
+        BufferWriteData data = {};
+        data._bufferGUID = getGUID();
+        data._offset = offsetInBytes;
+        data._range = rangeInBytes;
+        data._flush = flush;
+
+        GL_API::registerBufferBind(data);
     }
 }
 
@@ -215,7 +221,4 @@ size_t glBufferImpl::elementSize() const {
     return _elementSize;
 }
 
-glBufferLockManager* glBufferImpl::lockManager() const {
-    return _lockManager;
-}
 }; //namespace Divide

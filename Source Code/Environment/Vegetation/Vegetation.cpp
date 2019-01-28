@@ -202,7 +202,7 @@ void Vegetation::precomputeStaticData(PlatformContext& context, U32 chunkSize, U
         bufferDescriptor._elementCount = s_maxGrassInstancesPerChunk * s_maxGrassChunks;
         bufferDescriptor._elementSize = sizeof(GrassData);
         bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
-        bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE);
+        bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE) | to_U32(ShaderBuffer::Flags::NO_SYNC);
         bufferDescriptor._name = Util::StringFormat("Grass_data");
 
         s_grassData = context.gfx().newSB(bufferDescriptor);

@@ -49,11 +49,19 @@ struct BufferImplParams {
     const char* _name = nullptr;
     bufferPtr _initialData = NULL;
     bool _forcePersistentMap = false;
+    bool _unsynced = true;
     BufferUpdateFrequency _frequency = BufferUpdateFrequency::ONCE;
 };
 
+struct BufferWriteData {
+    I64  _bufferGUID = -1;
+    size_t _offset = 0;
+    size_t _range = 0;
+    bool _flush = false;
+};
+
 class glBufferLockManager;
-class glBufferImpl : public glObject {
+class glBufferImpl : public glObject, public GUIDWrapper {
 public:
     explicit glBufferImpl(GFXDevice& context, const BufferImplParams& params);
     virtual ~glBufferImpl();
@@ -61,7 +69,7 @@ public:
     GLuint bufferID() const;
 
     bool bindRange(GLuint bindIndex, size_t offsetInBytes, size_t rangeInBytes);
-    void lockRange(size_t offsetInBytes, size_t rangeInBytes);
+    void lockRange(size_t offsetInBytes, size_t rangeInBytes, bool flush);
     void waitRange(size_t offsetInBytes, size_t rangeInBytes, bool blockClient);
 
     void writeData(size_t offsetInBytes, size_t rangeInBytes, bufferPtr data);
@@ -71,17 +79,15 @@ public:
 
     size_t elementSize() const;
 
-    glBufferLockManager* lockManager() const;
-
 protected:
     GLenum _usage = GL_NONE;
     GLuint _handle = 0;
     bufferPtr _mappedBuffer = nullptr;
-    glBufferLockManager* _lockManager = nullptr;
     GFXDevice& _context;
     const size_t _elementSize;
     const size_t _alignedSize;
     const GLenum _target;
+    const bool _unsynced;
     const bool _useExplicitFlush;
     const BufferUpdateFrequency _updateFrequency;
 };

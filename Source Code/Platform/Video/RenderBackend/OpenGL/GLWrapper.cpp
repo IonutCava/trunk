@@ -45,13 +45,7 @@ namespace Divide {
 namespace {
     bool g_frameTimeRequested = false;
 
-    struct BufferLockData {
-        glBufferLockManager* _lockManager = nullptr;
-        size_t _offset = 0;
-        size_t _range = 0;
-    };
-
-    vectorFast<BufferLockData> g_bufferLockData;
+    vectorFast<BufferWriteData> g_bufferLockData;
 };
 
 GLConfig GL_API::s_glConfig;
@@ -59,7 +53,12 @@ GLStateTracker* GL_API::s_activeStateTracker = nullptr;
 GL_API::stateTrackerMap GL_API::s_stateTrackers;
 bool GL_API::s_enabledDebugMSGGroups = false;
 GLUtil::glTexturePool<256> GL_API::s_texturePool;
+glGlobalLockManager GL_API::s_globalLockManager;
+
 moodycamel::ConcurrentQueue<BufferWriteData> GL_API::s_bufferBinds;
+
+bool GL_API::s_syncDeleteQueueSwitchFlag = false;
+moodycamel::ConcurrentQueue<GLsync> GL_API::s_syncDeleteQueue[2];
 
 GL_API::GL_API(GFXDevice& context, const bool glES)
     : RenderAPIWrapper(),
@@ -177,6 +176,7 @@ void GL_API::endFrame(DisplayWindow& window, bool global) {
         if (global) {
             _swapBufferTimer.stop();
             s_texturePool.onFrameEnd();
+            processSyncDeleteQeueue();
         }
     }
 
@@ -1220,11 +1220,12 @@ bool GL_API::lockBuffers() {
 
     g_bufferLockData.resize(0);
 
+    BufferLockEntries entries;
     while (s_bufferBinds.try_dequeue(data)) {
 
         bool updatedExisting = false;
-        for (BufferLockData& existingData : g_bufferLockData) {
-            if (existingData._lockManager->getGUID() == data._lockManager->getGUID()) {
+        for (BufferWriteData& existingData : g_bufferLockData) {
+            if (existingData._bufferGUID == data._bufferGUID) {
                 existingData._offset = std::min(existingData._offset, data._offset);
                 existingData._range = std::max(existingData._range, data._range);
                 updatedExisting = true;
@@ -1234,13 +1235,19 @@ bool GL_API::lockBuffers() {
         }
 
         if (!updatedExisting) {
-            g_bufferLockData.push_back(BufferLockData{ data._lockManager, data._offset, data._range });
+            g_bufferLockData.push_back(BufferWriteData{ data._bufferGUID, data._offset, data._range });
             flush = data._flush || flush;
         }
     }
 
-    for (const BufferLockData& entry : g_bufferLockData) {
-        entry._lockManager->LockRange(entry._offset, entry._range);
+    bool haveEntries = false;
+    for (const BufferWriteData& entry : g_bufferLockData) {
+        entries[entry._bufferGUID].push_back({ entry._offset, entry._range });
+        haveEntries = true;
+    }
+
+    if (haveEntries) {
+        s_globalLockManager.LockBuffers(entries);
     }
 
     return flush;
@@ -1249,13 +1256,27 @@ bool GL_API::lockBuffers() {
 void GL_API::registerBufferBind(const BufferWriteData& data) {
     assert(Runtime::isMainThread());
 
-    if (data._lockManager == nullptr || data._range == 0) {
+    if (data._bufferGUID == -1 || data._range == 0) {
         return;
     }
 
     if (!s_bufferBinds.enqueue(data)) {
         assert(false && "GL_API::registerBufferBind failure!");
     }
+}
+
+void GL_API::registerSyncDelete(GLsync syncObject) {
+    if (!s_syncDeleteQueue[s_syncDeleteQueueSwitchFlag ? 1 : 0].enqueue(syncObject)) {
+        assert(false && "GL_API::registerSyncDelete failure!");
+    }
+}
+
+void GL_API::processSyncDeleteQeueue() {
+    GLsync sync;
+    while (s_syncDeleteQueue[s_syncDeleteQueueSwitchFlag ? 0 : 1].try_dequeue(sync)) {
+        glDeleteSync(sync);
+    }
+    s_syncDeleteQueueSwitchFlag = !s_syncDeleteQueueSwitchFlag;
 }
 
 GLuint GL_API::getTextureView(TextureData& data, vec2<U32> mipLevels, vec2<U32> layerRange, GLenum internalFormat) {

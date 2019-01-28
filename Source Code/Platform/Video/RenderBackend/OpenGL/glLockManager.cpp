@@ -1,7 +1,9 @@
 #include "stdafx.h"
 
 #include "Headers/glLockManager.h"
+
 #include "Platform/Headers/PlatformRuntime.h"
+#include "Platform/Video/RenderBackend/OpenGL/Headers/GLWrapper.h"
 
 namespace Divide {
 
@@ -23,7 +25,7 @@ void glLockManager::Wait(bool blockClient) {
     UniqueLock lock(_syncMutex);
     if (_defaultSync != nullptr) {
         wait(&_defaultSync, blockClient);
-        glDeleteSync(_defaultSync);
+        GL_API::registerSyncDelete(_defaultSync);
         _defaultSync = nullptr;
     }
 }

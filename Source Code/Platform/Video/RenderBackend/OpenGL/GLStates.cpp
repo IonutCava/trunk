@@ -39,6 +39,10 @@ GLStateTracker& GL_API::getStateTracker() {
     return *s_activeStateTracker;
 }
 
+glGlobalLockManager& GL_API::getLockManager() {
+    return s_globalLockManager;
+}
+
 /// Reset as much of the GL default state as possible within the limitations given
 void GL_API::clearStates(const DisplayWindow& window, GLStateTracker& stateTracker, bool global) {
     static GLint defaultPatchCount = GLUtil::getIntegerv(GL_PATCH_VERTICES);

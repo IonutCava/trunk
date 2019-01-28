@@ -74,6 +74,41 @@ class glBufferLockManager : public glLockManager {
     vectorEASTL<BufferLock> _swapLocks;
 };
 
+
+#if defined(_DEBUG)
+template <typename Type>
+using vectorImpl = std::vector<Type>;
+
+template <typename K, typename V, typename HashFun = HashType<K> >
+using hashMapImpl = std::unordered_map<K, V, HashFun>;
+#else
+template <typename Type>
+using vectorImpl = vectorEASTL<Type>;
+
+template <typename K, typename V, typename HashFun = HashType<K> >
+using hashMapImpl = hashMap<K, V, HashFun>;
+#endif
+
+typedef hashMapImpl<I64 /*bufferGUID*/, vectorImpl<BufferRange> /*ranges*/> BufferLockEntries;
+
+class glGlobalLockManager : public glLockManager {
+public:
+    glGlobalLockManager() noexcept;
+    ~glGlobalLockManager();
+
+    GLsync syncHere() const;
+    // Return true if  we found a lock to wait on
+    bool WaitForLockedRange(I64 bufferGUID, size_t lockBeginBytes, size_t lockLength, bool noWait = false);
+    void LockBuffers(BufferLockEntries entries);
+
+protected:
+    bool test(GLsync syncObject, vectorImpl<BufferRange>& ranges, BufferRange testRange, bool noWait = false);
+
+private:
+    mutable std::mutex _lock;
+    vectorImpl<std::pair<GLsync, BufferLockEntries>> _bufferLocks;
+};
+
 };  // namespace Divide
 
 #endif

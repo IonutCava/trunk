@@ -62,6 +62,7 @@ class NOINITVTABLE ShaderBuffer : public GUIDWrapper,
            UNBOUND_STORAGE = toBit(1),
            ALLOW_THREADED_WRITES = toBit(2),
            AUTO_RANGE_FLUSH = toBit(3),
+           NO_SYNC = toBit(4),
            COUNT = 2
        };
 

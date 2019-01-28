@@ -88,6 +88,10 @@ glUniformBuffer::glUniformBuffer(GFXDevice& context,
     implParams._forcePersistentMap = BitCompare(_flags, ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
     implParams._explicitFlush = !BitCompare(_flags, ShaderBuffer::Flags::AUTO_RANGE_FLUSH);
 
+    implParams._unsynced = !implParams._forcePersistentMap || 
+                            BitCompare(_flags, ShaderBuffer::Flags::NO_SYNC) ||
+                            _frequency == BufferUpdateFrequency::ONCE;
+
     _buffer = MemoryManager_NEW glBufferImpl(context, implParams);
 }
 
@@ -156,7 +160,7 @@ void glUniformBuffer::writeBytes(ptrdiff_t offsetInBytes,
 bool glUniformBuffer::bindRange(U8 bindIndex, U32 offsetElementCount, U32 rangeElementCount) {
     BufferWriteData data = {};
     bool ret = bindRange(bindIndex, offsetElementCount, rangeElementCount, data);
-    GL_API::registerBufferBind(data);
+    bufferImpl()->lockRange(data._offset, data._range, data._flush);
     return ret;
 }
 
@@ -168,8 +172,7 @@ bool glUniformBuffer::bindRange(U8 bindIndex,
         rangeElementCount = _elementCount;
     }
 
-    dataOut._lockManager = bufferImpl()->lockManager();
-
+    dataOut._bufferGUID = bufferImpl()->getGUID();
     dataOut._range = static_cast<size_t>(rangeElementCount * _elementSize);
     dataOut._offset = static_cast<size_t>(offsetElementCount * _elementSize);
     if (queueLength() > 1) {

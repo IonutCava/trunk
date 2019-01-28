@@ -42,14 +42,7 @@ namespace Divide {
 class AtomicCounter;
 class glBufferImpl;
 class glGenericBuffer;
-class glBufferLockManager;
-
-struct BufferWriteData {
-    glBufferLockManager* _lockManager = nullptr;
-    size_t _offset = 0;
-    size_t _range = 0;
-    bool _flush = false;
-};
+struct BufferWriteData;
 
 /// Base class for shader uniform blocks
 class glUniformBuffer final : public ShaderBuffer {

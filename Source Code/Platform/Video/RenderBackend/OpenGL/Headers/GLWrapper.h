@@ -70,8 +70,7 @@ class PlatformContext;
 class RenderStateBlock;
 class GenericVertexData;
 class glHardwareQueryRing;
-class glBufferLockManager;
-
+class glGlobalLockManager;
 struct BufferWriteData;
 
 namespace GLUtil {
@@ -160,6 +159,7 @@ protected:
 
 public:
     static GLStateTracker& getStateTracker();
+    static glGlobalLockManager& getLockManager();
 
     /// Makes sure that the calling thread has a valid GL context. If not, a new one is created.
     static void createOrValidateContextForCurrentThread(GFXDevice& context);
@@ -178,6 +178,7 @@ public:
     static bool deleteShaderPrograms(GLuint count, GLuint* programs);
 
     static void registerBufferBind(const BufferWriteData& data);
+    static void registerSyncDelete(GLsync syncObject);
 
     // Return true if we need to flush
     static bool lockBuffers();
@@ -193,6 +194,8 @@ private:
 
     bool bindPipeline(const Pipeline& pipeline);
     void sendPushConstants(const PushConstants& pushConstants);
+
+    static void processSyncDeleteQeueue();
 
     ErrorCode createGLContext(const DisplayWindow& window);
     ErrorCode destroyGLContext();
@@ -274,13 +277,18 @@ private:
 
     static moodycamel::ConcurrentQueue<BufferWriteData> s_bufferBinds;
 
+    static bool s_syncDeleteQueueSwitchFlag;
+    static moodycamel::ConcurrentQueue<GLsync> s_syncDeleteQueue[2];
+
     typedef std::unordered_map<I64, GLStateTracker> stateTrackerMap;
     static stateTrackerMap s_stateTrackers;
     static GLStateTracker* s_activeStateTracker;
 
     static GLUtil::glTexturePool<256> s_texturePool;
+    static glGlobalLockManager s_globalLockManager;
 
     std::pair<I64, SDL_GLContext> _currentContext;
+
 };
 
 };  // namespace Divide
