@@ -93,7 +93,7 @@ void main(void){
         colour = mix(colour, _fadeColour, _fadeStrength);
     }
 
-    float depth = textureLod(texDepthMap, getScreenPositionNormalised(), 0).r;
+    float depth = getDepthValue(getScreenPositionNormalised());
     _colourOut = applyFog(depth, colour, _zPlanes);
     //_colourOut = screenNormal();
 }

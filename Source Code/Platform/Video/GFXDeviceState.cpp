@@ -544,7 +544,7 @@ void GFXDevice::resizeHistory(U8 historySize) {
 }
 
 void GFXDevice::historyIndex(U8 index, bool copyPrevious) {
-    if (copyPrevious && index < _historyIndex) {
+    if (copyPrevious && index <= _historyIndex) {
         getPrevDepthBuffer()->copy(_rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Depth, 0).texture());
     }
 

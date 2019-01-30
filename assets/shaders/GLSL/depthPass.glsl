@@ -17,6 +17,17 @@ void main() {
 #endif
 }
 
+-- Fragment.PrePass.AlphaDiscard
+
+#include "materialData.frag"
+
+void main() {
+#if defined(HAS_TRANSPARENCY)
+    if (getOpacity() < 1.0 - Z_TEST_SIGMA) {
+        discard;
+    }
+#endif
+}
 
 -- Fragment.Shadow
 #if defined(USE_OPACITY_DIFFUSE) || defined(USE_OPACITY_MAP) || defined(USE_OPACITY_DIFFUSE_MAP)

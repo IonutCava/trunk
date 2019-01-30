@@ -50,7 +50,7 @@ void main(void)
 {
 
     vec2 rcpFrame = dvd_invScreenDimensions();
-    vec2 pos = gl_FragCoord.xy / dvd_ViewPort.zw;
+    vec2 pos = gl_FragCoord.xy * rcpFrame;
 
     vec4 ConsolePosPos = vec4(0.0, 0.0, 0.0, 0.0);
     vec4 ConsoleRcpFrameOpt = vec4(0.0, 0.0, 0.0, 0.0);

@@ -97,22 +97,23 @@ vec4 getPixelColour(vec4 albedo, vec3 normal) {
 
 #endif
 
-    // Apply shadowing
-#if !defined(DISABLE_SHADOW_MAPPING) && defined(DEBUG_SHADOWMAPPING)
-    if (dvd_showDebugInfo) {
-        switch (g_shadowTempInt){
-            case -1: colour = vec3(1.0); break;
-            case  0: colour.r += 0.15; break;
-            case  1: colour.g += 0.25; break;
-            case  2: colour.b += 0.40; break;
-            case  3: colour += vec3(0.15, 0.25, 0.40); break;
-        };
-    }
-#endif
-
+// Apply shadowing
 #if !defined(DISABLE_SHADOW_MAPPING)
+    vec4 outColour = vec4(0.0);
     if (dvd_receivesShadows) {
-        return vec4(colour * getShadowFactor(), albedo.a);
+        outColour = vec4(colour * getShadowFactor(), albedo.a);
+#       if defined(DEBUG_SHADOWMAPPING)
+        if (dvd_showDebugInfo) {
+            switch (g_shadowTempInt) {
+                case -1: outColour = vec4(1.0); break;
+                case  0: outColour.r += 0.15; break;
+                case  1: outColour.g += 0.25; break;
+                case  2: outColour.b += 0.40; break;
+                case  3: outColour += vec4(0.15, 0.25, 0.40, 0.0); break;
+            };
+        }
+#       endif
+        return outColour;
     }
 #endif
 

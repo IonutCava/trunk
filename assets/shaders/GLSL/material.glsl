@@ -29,7 +29,7 @@ layout(early_fragment_tests) in;
 
 #include "output.frag"
 
-vec4 mappingFlat(){
+vec4 mappingFlat() {
     setProcessedNormal(VAR._normalWV);
     return getPixelColour();
 }
