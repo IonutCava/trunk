@@ -294,7 +294,7 @@ void Vegetation::onRefreshNodeData(SceneGraphNode& sgn, RenderStagePass renderSt
             GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
             Texture_ptr depthTex = _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Depth, 0).texture();
-            descriptorSetCmd._set._textureData.addTexture(depthTex->getData(), to_U8(ShaderProgram::TextureUsage::UNIT0));
+            descriptorSetCmd._set._textureData.setTexture(depthTex->getData(), to_U8(ShaderProgram::TextureUsage::UNIT0));
 
             s_stageRefreshed[to_base(renderStagePass._stage)] = true;
         }

@@ -46,7 +46,7 @@ void Renderer::preRender(RenderStagePass stagePass,
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd = {};
     TextureData data = target.getAttachment(RTAttachmentType::Depth, 0).texture()->getData();
-    bindDescriptorSetsCmd._set._textureData.addTexture(data, to_U8(ShaderProgram::TextureUsage::DEPTH));
+    bindDescriptorSetsCmd._set._textureData.setTexture(data, to_U8(ShaderProgram::TextureUsage::DEPTH));
     GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
 
     _context.gfx().preRender(stagePass, bufferInOut);

@@ -82,10 +82,15 @@ class TextureDataContainer {
       ~TextureDataContainer() = default;
 
       bool set(const TextureDataContainer& other);
-      bool addTexture(const TextureData& data, U8 binding);
-      bool addTexture(const eastl::pair<TextureData, U8 /*binding*/>& textureEntry);
-      bool addTextures(const TextureDataContainer& textureEntries);
-      bool addTextures(const vectorEASTL<eastl::pair<TextureData, U8 /*binding*/>>& textureEntries);
+
+      // Returns true if an existing texture was replaced!
+      bool setTexture(const TextureData& data, U8 binding);
+      // Returns true if an existing texture was replaced!
+      bool setTexture(const eastl::pair<TextureData, U8 /*binding*/>& textureEntry);
+      // Returns true if an existing texture was replaced!
+      bool setTextures(const TextureDataContainer& textureEntries);
+      // Returns true if an existing texture was replaced!
+      bool setTextures(const vectorEASTL<eastl::pair<TextureData, U8 /*binding*/>>& textureEntries);
 
       bool removeTexture(U8 binding);
       bool removeTexture(const TextureData& data);

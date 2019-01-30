@@ -37,35 +37,35 @@ bool TextureDataContainer::set(const TextureDataContainer& other) {
     return false;
 }
 
-bool TextureDataContainer::addTexture(const eastl::pair<TextureData, U8 /*binding*/>& textureEntry) {
-    return addTexture(textureEntry.first, textureEntry.second);
+bool TextureDataContainer::setTexture(const eastl::pair<TextureData, U8 /*binding*/>& textureEntry) {
+    return setTexture(textureEntry.first, textureEntry.second);
 }
 
-bool TextureDataContainer::addTexture(const TextureData& data, U8 binding) {
+bool TextureDataContainer::setTexture(const TextureData& data, U8 binding) {
     assert(data.type() != TextureType::COUNT);
 
-    if (eastl::find_if(eastl::cbegin(_textures),
-                        eastl::cend(_textures),
-                        [&binding](const eastl::pair<TextureData, U8>& textureData) {
-                            return (textureData.second == binding);
-                        }) == eastl::cend(_textures))
-    
-    {
+    auto it = eastl::find_if(eastl::begin(_textures),
+                             eastl::end(_textures),
+                             [&binding](const eastl::pair<TextureData, U8>& textureData) {
+                                return (textureData.second == binding);
+                             });
+    if (it == eastl::cend(_textures)) {
         _textures.emplace_back(data, binding);
-        return true;
+        return false;
     }
 
-    return false;
+    it->first = data;
+    return true;
 }
 
-bool TextureDataContainer::addTextures(const TextureDataContainer& textureEntries) {
-    return addTextures(textureEntries._textures);
+bool TextureDataContainer::setTextures(const TextureDataContainer& textureEntries) {
+    return setTextures(textureEntries._textures);
 }
 
-bool TextureDataContainer::addTextures(const vectorEASTL<eastl::pair<TextureData, U8 /*binding*/>>& textureEntries) {
+bool TextureDataContainer::setTextures(const vectorEASTL<eastl::pair<TextureData, U8 /*binding*/>>& textureEntries) {
     bool ret = false;
     for (auto entry : textureEntries) {
-        ret = addTexture(entry) || ret;
+        ret = setTexture(entry) || ret;
     }
 
     return ret;

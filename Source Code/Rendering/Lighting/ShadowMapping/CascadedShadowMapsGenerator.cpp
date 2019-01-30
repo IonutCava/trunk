@@ -362,7 +362,7 @@ void CascadedShadowMapsGenerator::postRender(const DirectionalLightComponent& li
         GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
         TextureData texData = _drawBuffer._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
-        descriptorSetCmd._set._textureData.addTexture(texData, to_U8(ShaderProgram::TextureUsage::UNIT0));
+        descriptorSetCmd._set._textureData.setTexture(texData, to_U8(ShaderProgram::TextureUsage::UNIT0));
         GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
         GFX::EnqueueCommand(bufferInOut, drawCmd);
@@ -383,7 +383,7 @@ void CascadedShadowMapsGenerator::postRender(const DirectionalLightComponent& li
         GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
         texData = _blurBuffer._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
-        descriptorSetCmd._set._textureData.addTexture(texData, to_U8(ShaderProgram::TextureUsage::UNIT0));
+        descriptorSetCmd._set._textureData.setTexture(texData, to_U8(ShaderProgram::TextureUsage::UNIT0));
         GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
         GFX::EnqueueCommand(bufferInOut, drawCmd);

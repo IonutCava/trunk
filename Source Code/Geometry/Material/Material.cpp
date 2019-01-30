@@ -641,7 +641,8 @@ bool Material::getTextureData(ShaderProgram::TextureUsage slot,
     U8 slotValue = to_U8(slot);
     Texture_ptr& crtTexture = _textures[slotValue];
     if (crtTexture) {
-        return container.addTexture(crtTexture->getData(), slotValue);
+        container.setTexture(crtTexture->getData(), slotValue);
+        return true;
     }
 
     return false;
@@ -667,7 +668,8 @@ bool Material::getTextureData(RenderStagePass renderStagePass, TextureDataContai
 
     for (const ExternalTexture& tex : _externalTextures) {
         if (!depthstage || (depthstage && tex._activeForDepth)) {
-            ret = textureData.addTexture(tex._texture->getData(), to_U8(tex._bindSlot)) || ret;
+            textureData.setTexture(tex._texture->getData(), to_U8(tex._bindSlot));
+            ret = true;
         }
     }
 

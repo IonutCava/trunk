@@ -99,9 +99,8 @@ void BloomPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& b
 
      // Step 1: generate bloom
     TextureData data = screen._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData(); //screen
-
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
-    descriptorSetCmd._set._textureData.addTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT0));
+    descriptorSetCmd._set._textureData.setTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT0));
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     // render all of the "bright spots"
@@ -125,7 +124,7 @@ void BloomPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& b
     GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
     data = _bloomOutput._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
-    descriptorSetCmd._set._textureData.addTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT0));
+    descriptorSetCmd._set._textureData.setTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT0));
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     beginRenderPassCmd._target = _bloomBlurBuffer[0]._targetID;
@@ -146,7 +145,7 @@ void BloomPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& b
     GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
     data = _bloomBlurBuffer[0]._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
-    descriptorSetCmd._set._textureData.addTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT0));
+    descriptorSetCmd._set._textureData.setTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT0));
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     beginRenderPassCmd._target = _bloomBlurBuffer[1]._targetID;
@@ -167,8 +166,8 @@ void BloomPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& b
     TextureData data0 = _bloomBlurBuffer[0]._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData(); //Screen
     TextureData data1 = _bloomBlurBuffer[1]._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData(); //Bloom
 
-    descriptorSetCmd._set._textureData.addTexture(data0, to_U8(ShaderProgram::TextureUsage::UNIT0));
-    descriptorSetCmd._set._textureData.addTexture(data1, to_U8(ShaderProgram::TextureUsage::UNIT1));
+    descriptorSetCmd._set._textureData.setTexture(data0, to_U8(ShaderProgram::TextureUsage::UNIT0));
+    descriptorSetCmd._set._textureData.setTexture(data1, to_U8(ShaderProgram::TextureUsage::UNIT1));
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     pipelineDescriptor._shaderProgramHandle = _bloomApply->getID();

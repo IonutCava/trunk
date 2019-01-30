@@ -228,7 +228,7 @@ void ParticleEmitter::buildDrawCommands(SceneGraphNode& sgn,
 
     if (_particleTexture) {
         DescriptorSet set = pkgInOut.descriptorSet(0);
-        set._textureData.addTexture(_particleTexture->getData(), to_U8(ShaderProgram::TextureUsage::UNIT0));
+        set._textureData.setTexture(_particleTexture->getData(), to_U8(ShaderProgram::TextureUsage::UNIT0));
         pkgInOut.descriptorSet(0, set);
     }
 

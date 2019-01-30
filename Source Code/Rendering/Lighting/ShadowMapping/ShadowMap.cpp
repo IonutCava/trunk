@@ -218,7 +218,7 @@ void ShadowMap::bindShadowMaps(GFX::CommandBuffer& bufferInOut) {
             entry._view._layerRange.set(0, useCount);
             descriptorSetCmd._set._textureViews.push_back(entry);
         } else {
-            descriptorSetCmd._set._textureData.addTexture(data, bindSlot);
+            descriptorSetCmd._set._textureData.setTexture(data, bindSlot);
         }
     }
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);

@@ -396,7 +396,7 @@ void LightPool::drawLightImpostors(RenderStage stage, GFX::CommandBuffer& buffer
         GFX::EnqueueCommand(bufferInOut, bindPipeline);
         
         GFX::BindDescriptorSetsCommand descriptorSetCmd;
-        descriptorSetCmd._set._textureData.addTexture(TextureData(_lightIconsTexture->getTextureType(), _lightIconsTexture->getHandle()),
+        descriptorSetCmd._set._textureData.setTexture(TextureData(_lightIconsTexture->getTextureType(), _lightIconsTexture->getHandle()),
                                                       to_U8(ShaderProgram::TextureUsage::UNIT0));
         GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 

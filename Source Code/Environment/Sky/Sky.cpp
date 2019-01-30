@@ -132,7 +132,7 @@ void Sky::buildDrawCommands(SceneGraphNode& sgn,
     pkgInOut.addPipelineCommand(pipelineCommand);
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCommand;
-    bindDescriptorSetsCommand._set._textureData.addTexture(_skybox->getData(), to_U8(ShaderProgram::TextureUsage::UNIT0));
+    bindDescriptorSetsCommand._set._textureData.setTexture(_skybox->getData(), to_U8(ShaderProgram::TextureUsage::UNIT0));
     pkgInOut.addDescriptorSetsCommand(bindDescriptorSetsCommand);
 
     GenericDrawCommand cmd;

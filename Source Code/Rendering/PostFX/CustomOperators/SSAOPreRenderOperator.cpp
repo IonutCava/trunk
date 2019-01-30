@@ -168,13 +168,13 @@ void SSAOPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& bu
 
     TextureData data = _noiseTexture->getData();
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
-    descriptorSetCmd._set._textureData.addTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT0));
+    descriptorSetCmd._set._textureData.setTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT0));
 
     data = screen._rt->getAttachment(RTAttachmentType::Depth, 0).texture()->getData();
-    descriptorSetCmd._set._textureData.addTexture(data, to_U8(ShaderProgram::TextureUsage::DEPTH));
+    descriptorSetCmd._set._textureData.setTexture(data, to_U8(ShaderProgram::TextureUsage::DEPTH));
 
     data = screen._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY)).texture()->getData();
-    descriptorSetCmd._set._textureData.addTexture(data, to_U8(ShaderProgram::TextureUsage::NORMALMAP));
+    descriptorSetCmd._set._textureData.setTexture(data, to_U8(ShaderProgram::TextureUsage::NORMALMAP));
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     GFX::SendPushConstantsCommand pushConstantsCommand;
@@ -199,7 +199,7 @@ void SSAOPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& bu
     GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
     data = _ssaoOutput._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();  // AO texture
-    descriptorSetCmd._set._textureData.addTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT0));
+    descriptorSetCmd._set._textureData.setTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT0));
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     pushConstantsCommand._constants = _ssaoBlurConstants;
@@ -224,10 +224,10 @@ void SSAOPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& bu
     GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
     data = _samplerCopy._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();  // screen
-    descriptorSetCmd._set._textureData.addTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT0));
+    descriptorSetCmd._set._textureData.setTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT0));
 
     data = _ssaoOutputBlurred._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();  // AO texture
-    descriptorSetCmd._set._textureData.addTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT1));
+    descriptorSetCmd._set._textureData.setTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT1));
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     pipelineDescriptor._shaderProgramHandle = _ssaoApplyShader->getID();

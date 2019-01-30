@@ -88,7 +88,7 @@ namespace Divide {
             const TextureData* texData = lhs.findTexture(otherTexture.second);
             bool erase = false;
             if (texData == nullptr) {
-                lhs._textureData.addTexture(otherTexture);
+                lhs._textureData.setTexture(otherTexture);
                 erase = true;
             } else {
                 if (*texData == otherTexture.first) {

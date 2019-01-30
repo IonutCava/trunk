@@ -64,7 +64,7 @@ void GUISplash::render(GFXDevice& context, const U64 deltaTimeUS) {
     GFX::EnqueueCommand(buffer, viewportCommand);
 
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
-    descriptorSetCmd._set._textureData.addTexture(_splashImage->getData(), to_U8(ShaderProgram::TextureUsage::UNIT0));
+    descriptorSetCmd._set._textureData.setTexture(_splashImage->getData(), to_U8(ShaderProgram::TextureUsage::UNIT0));
     GFX::EnqueueCommand(buffer, descriptorSetCmd);
 
     GenericDrawCommand triangleCmd;

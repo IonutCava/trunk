@@ -82,7 +82,7 @@
     <PostAAType>FXAA</PostAAType>
     <PostAASamples>0</PostAASamples>
     <enableDepthOfField>false</enableDepthOfField>
-    <enableBloom>false</enableBloom>
+    <enableBloom>true</enableBloom>
     <bloomFactor>0.8</bloomFactor>
     <enableSSAO>false</enableSSAO>    
   </postFX>

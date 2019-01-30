@@ -177,11 +177,11 @@ void PostFX::apply(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
     GFX::EnqueueCommand(bufferInOut, sendPushConstantsCmd);
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd;
-    bindDescriptorSetsCmd._set._textureData.addTexture(depthData, to_U8(ShaderProgram::TextureUsage::DEPTH));
-    bindDescriptorSetsCmd._set._textureData.addTexture(output, to_U8(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN));
-    bindDescriptorSetsCmd._set._textureData.addTexture(data0, to_U8(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER));
-    bindDescriptorSetsCmd._set._textureData.addTexture(data1, to_U8(TexOperatorBindPoint::TEX_BIND_POINT_NOISE));
-    bindDescriptorSetsCmd._set._textureData.addTexture(data2, to_U8(TexOperatorBindPoint::TEX_BIND_POINT_BORDER));
+    bindDescriptorSetsCmd._set._textureData.setTexture(depthData, to_U8(ShaderProgram::TextureUsage::DEPTH));
+    bindDescriptorSetsCmd._set._textureData.setTexture(output, to_U8(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN));
+    bindDescriptorSetsCmd._set._textureData.setTexture(data0, to_U8(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER));
+    bindDescriptorSetsCmd._set._textureData.setTexture(data1, to_U8(TexOperatorBindPoint::TEX_BIND_POINT_NOISE));
+    bindDescriptorSetsCmd._set._textureData.setTexture(data2, to_U8(TexOperatorBindPoint::TEX_BIND_POINT_BORDER));
     GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
 
     GFX::DrawCommand drawCommand;

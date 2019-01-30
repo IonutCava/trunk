@@ -187,7 +187,7 @@ void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
             GFX::EnqueueCommand(bufferInOut, setViewport);
 
             GFX::BindDescriptorSetsCommand bindDescriptorSets = {};
-            bindDescriptorSets._set._textureData.addTexture(view._texture->getData(), view._textureBindSlot);
+            bindDescriptorSets._set._textureData.setTexture(view._texture->getData(), view._textureBindSlot);
             GFX::EnqueueCommand(bufferInOut, bindDescriptorSets);
 
             GFX::EnqueueCommand(bufferInOut, drawCommand);

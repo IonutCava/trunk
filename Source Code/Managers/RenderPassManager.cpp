@@ -442,7 +442,7 @@ void RenderPassManager::mainPass(const PassParams& params, RenderTarget& target,
             GFX::BindDescriptorSetsCommand bindDescriptorSets;
             // Bind the depth buffers
             TextureData depthBufferTextureData = target.getAttachment(RTAttachmentType::Depth, 0).texture()->getData();
-            bindDescriptorSets._set._textureData.addTexture(depthBufferTextureData, to_U8(ShaderProgram::TextureUsage::DEPTH));
+            bindDescriptorSets._set._textureData.setTexture(depthBufferTextureData, to_U8(ShaderProgram::TextureUsage::DEPTH));
 
             TextureData prevDepthData = depthBufferTextureData;
             if (target.hasAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY))) {
@@ -451,7 +451,7 @@ void RenderPassManager::mainPass(const PassParams& params, RenderTarget& target,
                 prevDepthData = (velocityAttachment->used() && prevDepthTexture) ? prevDepthTexture->getData() : depthBufferTextureData;
             }
             
-            bindDescriptorSets._set._textureData.addTexture(prevDepthData, to_U8(ShaderProgram::TextureUsage::DEPTH_PREV));
+            bindDescriptorSets._set._textureData.setTexture(prevDepthData, to_U8(ShaderProgram::TextureUsage::DEPTH_PREV));
 
             GFX::EnqueueCommand(bufferInOut, bindDescriptorSets);
         }
@@ -577,8 +577,8 @@ void RenderPassManager::woitPass(const PassParams& params, const RenderTarget& t
             TextureData revealage = oitTarget.getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::REVEALAGE)).texture()->getData();
 
             GFX::BindDescriptorSetsCommand descriptorSetCmd;
-            descriptorSetCmd._set._textureData.addTexture(accum, to_base(ShaderProgram::TextureUsage::UNIT0));
-            descriptorSetCmd._set._textureData.addTexture(revealage, to_base(ShaderProgram::TextureUsage::UNIT1));
+            descriptorSetCmd._set._textureData.setTexture(accum, to_base(ShaderProgram::TextureUsage::UNIT0));
+            descriptorSetCmd._set._textureData.setTexture(revealage, to_base(ShaderProgram::TextureUsage::UNIT1));
             GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
             GenericDrawCommand drawCommand;
