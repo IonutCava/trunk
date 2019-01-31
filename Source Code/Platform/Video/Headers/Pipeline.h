@@ -95,8 +95,13 @@ public:
         return _cachedHash;
     }
 
-    bool operator==(const Pipeline &other) const;
-    bool operator!=(const Pipeline &other) const;
+    inline bool operator==(const Pipeline& other) const {
+        return _cachedHash == other._cachedHash;
+    }
+
+    inline bool operator!=(const Pipeline& other) const {
+        return _cachedHash != other._cachedHash;
+    }
 
 private: //data
     size_t _cachedHash = 0;

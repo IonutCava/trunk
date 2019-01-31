@@ -430,7 +430,7 @@ void SceneGraphNode::processDeleteQueue(vector<vec_size>& childList) {
         for (vec_size childIdx : childList) {
             parentGraph().destroySceneGraphNode(_children[childIdx]);
         }
-        _children = erase_indices(_children, childList);
+        EraseIndices(_children, childList);
     }
 }
 

@@ -126,6 +126,25 @@ vector<T, A> convert(const vector<U, A>& data) {
     return vector<T, A>(std::cbegin(data), std::cend(data));
 }
 
+template<typename Cont, typename It>
+auto ToggleIndices(Cont& cont, It beg, It end) -> decltype(std::end(cont))
+{
+    int helpIndx(0);
+    return std::stable_partition(std::begin(cont), std::end(cont),
+        [&](decltype(*std::begin(cont)) const & val) -> bool {
+            return std::find(beg, end, helpIndx++) == end;
+        });
+}
+
+
+template<typename Cont, typename IndCont>
+void EraseIndices(Cont& cont, IndCont& indices) {
+    eastl::sort(indices.begin(), indices.end());
+    for (auto it = indices.rbegin(); it != indices.rend(); ++it) {
+        cont.erase(cont.begin() + *it);
+    }
+}
+
 //ref: https://stackoverflow.com/questions/7571937/how-to-delete-items-from-a-stdvector-given-a-list-of-indices
 
 template<typename T, typename Aa, typename Ab>

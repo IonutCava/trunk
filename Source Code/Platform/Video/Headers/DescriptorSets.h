@@ -88,12 +88,14 @@ namespace Divide {
     };
 
     typedef vectorEASTL<ShaderBufferBinding> ShaderBufferList;
+
     typedef vectorEASTL<TextureViewEntry> TextureViews;
 
     struct DescriptorSet {
         //This needs a lot more work!
-        ShaderBufferList _shaderBuffers = {};
         TextureDataContainer _textureData = {};
+
+        ShaderBufferList _shaderBuffers = {};
         TextureViews _textureViews = {};
 
         void addShaderBuffer(const ShaderBufferBinding& entry);
@@ -104,20 +106,20 @@ namespace Divide {
 
         inline bool operator==(const DescriptorSet &other) const {
             return _shaderBuffers == other._shaderBuffers &&
-                _textureData == other._textureData &&
-                _textureViews == other._textureViews;
+                   _textureData == other._textureData &&
+                   _textureViews == other._textureViews;
         }
 
         inline bool operator!=(const DescriptorSet &other) const {
             return _shaderBuffers != other._shaderBuffers ||
-                _textureData != other._textureData ||
-                _textureViews != other._textureViews;
+                   _textureData != other._textureData ||
+                   _textureViews != other._textureViews;
         }
     };
 
     bool Merge(DescriptorSet &lhs, DescriptorSet &rhs, bool& partial);
 
-    typedef MemoryPool<DescriptorSet, 1024> DescriptorSetPool;
+    typedef MemoryPool<DescriptorSet, nextPOW2(sizeof(DescriptorSet) * 256)> DescriptorSetPool;
 
     struct DeleteDescriptorSet {
         DeleteDescriptorSet(std::mutex& lock, DescriptorSetPool& context)

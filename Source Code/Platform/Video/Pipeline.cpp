@@ -41,12 +41,4 @@ Pipeline::Pipeline(const PipelineDescriptor& descriptor)
 {
 }
 
-bool Pipeline::operator==(const Pipeline &other) const {
-    return _cachedHash == other._cachedHash;
-}
-
-bool Pipeline::operator!=(const Pipeline &other) const {
-    return _cachedHash != other._cachedHash;
-}
-
 }; //namespace Divide

@@ -40,7 +40,6 @@ namespace {
     constexpr bool DISABLE_MEM_POOL = false;
 };
 
-
 template<typename T>
 inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, void>::type
 CommandBuffer::add(const T& command) {
@@ -50,8 +49,8 @@ CommandBuffer::add(const T& command) {
     if (DISABLE_MEM_POOL) {
         mem = MemoryManager_NEW T(command);
     } else {
-        UniqueLock w_lock(T::s_PoolMutex);
-        mem = T::s_Pool.newElement(command);
+        UniqueLock w_lock(CmdAllocator<T>::s_PoolMutex);
+        mem = CmdAllocator<T>::s_Pool.newElement(command);
     }
     
     _commandOrder.emplace_back(
@@ -62,8 +61,8 @@ CommandBuffer::add(const T& command) {
                                         if (DISABLE_MEM_POOL) {
                                             MemoryManager::DELETE(cmd);
                                         } else {
-                                            UniqueLock w_lock(T::s_PoolMutex);
-                                            T::s_Pool.deleteElement((T*)cmd);
+                                            UniqueLock w_lock(CmdAllocator<T>::s_PoolMutex);
+                                            CmdAllocator<T>::s_Pool.deleteElement((T*)cmd);
                                         }
                                     })));
 }

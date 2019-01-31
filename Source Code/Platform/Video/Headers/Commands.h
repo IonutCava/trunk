@@ -47,6 +47,22 @@ struct ImDrawData;
 namespace Divide {
 namespace GFX {
 
+constexpr size_t g_commandPoolSizeFactor = 256;
+
+template<typename T>
+struct CmdAllocator {
+    static std::mutex s_PoolMutex;
+    static MemoryPool<T, nextPOW2(sizeof(T) * g_commandPoolSizeFactor)> s_Pool;
+};
+
+#define DEFINE_POOL(Command) \
+decltype(CmdAllocator<Command>::s_PoolMutex) CmdAllocator<Command>::s_PoolMutex; \
+decltype(CmdAllocator<Command>::s_Pool) CmdAllocator<Command>::s_Pool; \
+
+#define BEGIN_COMMAND(Name, Enum) struct Name final : Command<Name, Enum> {
+
+#define END_COMMAND() }
+
 BETTER_ENUM(CommandType, U8,
     BEGIN_RENDER_PASS,
     END_RENDER_PASS,
@@ -119,49 +135,34 @@ struct Command : public CommandBase {
     virtual ~Command() = default;
 };
 
-#define DECLARE_POOL(Command, Size) \
-static std::mutex s_PoolMutex; \
-static MemoryPool<Command, Size> s_Pool;
-
-#define DEFINE_POOL(Command, Size) \
-std::mutex Command::s_PoolMutex; \
-MemoryPool<Command, Size> Command::s_Pool;
-
-
-#define BEGIN_COMMAND(Name, Enum, PoolSize) \
-struct Name final : Command<Name, Enum> {\
-DECLARE_POOL(Name, PoolSize)
-
-#define END_COMMAND() }
-
-BEGIN_COMMAND(BindPipelineCommand, CommandType::BIND_PIPELINE, 4096);
+BEGIN_COMMAND(BindPipelineCommand, CommandType::BIND_PIPELINE);
     const Pipeline* _pipeline = nullptr;
 
     stringImpl toString(U16 indent) const override;
 END_COMMAND();
 
 
-BEGIN_COMMAND(SendPushConstantsCommand, CommandType::SEND_PUSH_CONSTANTS, 4096);
+BEGIN_COMMAND(SendPushConstantsCommand, CommandType::SEND_PUSH_CONSTANTS);
     PushConstants _constants;
 
     stringImpl toString(U16 indent) const override;
 END_COMMAND();
 
 
-BEGIN_COMMAND(DrawCommand, CommandType::DRAW_COMMANDS, 4096);
+BEGIN_COMMAND(DrawCommand, CommandType::DRAW_COMMANDS);
     vectorEASTL<GenericDrawCommand> _drawCommands;
 
     stringImpl toString(U16 indent) const override;
 END_COMMAND();
 
 
-BEGIN_COMMAND(SetViewportCommand, CommandType::SET_VIEWPORT, 4096);
+BEGIN_COMMAND(SetViewportCommand, CommandType::SET_VIEWPORT);
     Rect<I32> _viewport;
 
     stringImpl toString(U16 indent) const override;
 END_COMMAND();
 
-BEGIN_COMMAND(BeginRenderPassCommand, CommandType::BEGIN_RENDER_PASS, 4096);
+BEGIN_COMMAND(BeginRenderPassCommand, CommandType::BEGIN_RENDER_PASS);
     RenderTargetID _target;
     RTDrawDescriptor _descriptor;
     eastl::fixed_string<char, 128 + 1, true> _name = "";
@@ -169,27 +170,27 @@ BEGIN_COMMAND(BeginRenderPassCommand, CommandType::BEGIN_RENDER_PASS, 4096);
     stringImpl toString(U16 indent) const override;
  END_COMMAND();
 
-BEGIN_COMMAND(EndRenderPassCommand, CommandType::END_RENDER_PASS, 4096);
+BEGIN_COMMAND(EndRenderPassCommand, CommandType::END_RENDER_PASS);
 END_COMMAND();
 
-BEGIN_COMMAND(BeginPixelBufferCommand, CommandType::BEGIN_PIXEL_BUFFER, 4096);
+BEGIN_COMMAND(BeginPixelBufferCommand, CommandType::BEGIN_PIXEL_BUFFER);
     PixelBuffer* _buffer = nullptr;
     DELEGATE_CBK<void, bufferPtr> _command;
 END_COMMAND();
 
-BEGIN_COMMAND(EndPixelBufferCommand, CommandType::END_PIXEL_BUFFER, 4096);
+BEGIN_COMMAND(EndPixelBufferCommand, CommandType::END_PIXEL_BUFFER);
 END_COMMAND();
 
-BEGIN_COMMAND(BeginRenderSubPassCommand, CommandType::BEGIN_RENDER_SUB_PASS, 4096);
+BEGIN_COMMAND(BeginRenderSubPassCommand, CommandType::BEGIN_RENDER_SUB_PASS);
     bool _validateWriteLevel = false;
     U16 _mipWriteLevel = std::numeric_limits<U16>::max();
     vectorEASTL<RenderTarget::DrawLayerParams> _writeLayers;
 END_COMMAND();
 
-BEGIN_COMMAND(EndRenderSubPassCommand, CommandType::END_RENDER_SUB_PASS, 4096);
+BEGIN_COMMAND(EndRenderSubPassCommand, CommandType::END_RENDER_SUB_PASS);
 END_COMMAND();
 
-BEGIN_COMMAND(BlitRenderTargetCommand, CommandType::BLIT_RT, 4096);
+BEGIN_COMMAND(BlitRenderTargetCommand, CommandType::BLIT_RT);
     // List of depth layers to blit
     vectorEASTL<DepthBlitEntry> _blitDepth;
     // List of colours + colour layer to blit
@@ -198,86 +199,86 @@ BEGIN_COMMAND(BlitRenderTargetCommand, CommandType::BLIT_RT, 4096);
     RenderTargetID _destination;
 END_COMMAND();
 
-BEGIN_COMMAND(ResetRenderTargetCommand, CommandType::RESET_RT, 4096);
+BEGIN_COMMAND(ResetRenderTargetCommand, CommandType::RESET_RT);
     RenderTargetID _source;
     RTDrawDescriptor _descriptor;
 END_COMMAND();
 
-BEGIN_COMMAND(ComputeMipMapsCommand, CommandType::COMPUTE_MIPMAPS, 2048);
+BEGIN_COMMAND(ComputeMipMapsCommand, CommandType::COMPUTE_MIPMAPS);
     Texture* _texture;
     vec2<U32> _layerRange = { 0, 1 };
 END_COMMAND();
 
-BEGIN_COMMAND(SetScissorCommand, CommandType::SET_SCISSOR, 4096);
+BEGIN_COMMAND(SetScissorCommand, CommandType::SET_SCISSOR);
     Rect<I32> _rect;
 
     stringImpl toString(U16 indent) const override;
 END_COMMAND();
 
-BEGIN_COMMAND(SetBlendCommand, CommandType::SET_BLEND, 4096);
+BEGIN_COMMAND(SetBlendCommand, CommandType::SET_BLEND);
     BlendingProperties _blendProperties;
 END_COMMAND();
 
-BEGIN_COMMAND(SetCameraCommand, CommandType::SET_CAMERA, 4096);
+BEGIN_COMMAND(SetCameraCommand, CommandType::SET_CAMERA);
     CameraSnapshot _cameraSnapshot;
 END_COMMAND();
 
-BEGIN_COMMAND(SetClipPlanesCommand, CommandType::SET_CLIP_PLANES, 4096);
+BEGIN_COMMAND(SetClipPlanesCommand, CommandType::SET_CLIP_PLANES);
     FrustumClipPlanes _clippingPlanes;
 
     stringImpl toString(U16 indent) const override;
 END_COMMAND();
 
-BEGIN_COMMAND(BindDescriptorSetsCommand, CommandType::BIND_DESCRIPTOR_SETS, 4096);
+BEGIN_COMMAND(BindDescriptorSetsCommand, CommandType::BIND_DESCRIPTOR_SETS);
     DescriptorSet _set;
 
     stringImpl toString(U16 indent) const override;
 
 END_COMMAND();
 
-BEGIN_COMMAND(BeginDebugScopeCommand, CommandType::BEGIN_DEBUG_SCOPE, 4096);
+BEGIN_COMMAND(BeginDebugScopeCommand, CommandType::BEGIN_DEBUG_SCOPE);
     eastl::fixed_string<char, 128 + 1, true> _scopeName;
     I32 _scopeID = -1;
 
     stringImpl toString(U16 indent) const override;
 END_COMMAND();
 
-BEGIN_COMMAND(EndDebugScopeCommand, CommandType::END_DEBUG_SCOPE, 4096);
+BEGIN_COMMAND(EndDebugScopeCommand, CommandType::END_DEBUG_SCOPE);
 END_COMMAND();
 
-BEGIN_COMMAND(DrawTextCommand, CommandType::DRAW_TEXT, 4096);
+BEGIN_COMMAND(DrawTextCommand, CommandType::DRAW_TEXT);
     TextElementBatch _batch;
 
     stringImpl toString(U16 indent) const override;
 
 END_COMMAND();
 
-BEGIN_COMMAND(DrawIMGUICommand, CommandType::DRAW_IMGUI, 4096);
+BEGIN_COMMAND(DrawIMGUICommand, CommandType::DRAW_IMGUI);
     ImDrawData* _data = nullptr;
     I64 _windowGUID = 0;
 END_COMMAND();
 
-BEGIN_COMMAND(DispatchComputeCommand, CommandType::DISPATCH_COMPUTE, 1024);
+BEGIN_COMMAND(DispatchComputeCommand, CommandType::DISPATCH_COMPUTE);
     vec3<U32> _computeGroupSize;
 
     stringImpl toString(U16 indent) const override;
 END_COMMAND();
 
-BEGIN_COMMAND(MemoryBarrierCommand, CommandType::MEMORY_BARRIER, 1024);
+BEGIN_COMMAND(MemoryBarrierCommand, CommandType::MEMORY_BARRIER);
     U32 _barrierMask = 0;
 
     stringImpl toString(U16 indent) const override;
 
 END_COMMAND();
 
-BEGIN_COMMAND(ReadAtomicCounterCommand, CommandType::READ_ATOMIC_COUNTER, 1024);
+BEGIN_COMMAND(ReadAtomicCounterCommand, CommandType::READ_ATOMIC_COUNTER);
     ShaderBuffer* _buffer = nullptr;
     U32* _target = nullptr;
     U8   _offset = 0;
     bool _resetCounter = false;
 END_COMMAND();
 
-BEGIN_COMMAND(ExternalCommand, CommandType::EXTERNAL, 4096);
+BEGIN_COMMAND(ExternalCommand, CommandType::EXTERNAL);
     std::function<void()> _cbk;
 END_COMMAND();
 

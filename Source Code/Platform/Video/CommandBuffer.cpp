@@ -9,32 +9,32 @@ namespace Divide {
 
 namespace GFX {
 
-DEFINE_POOL(BindPipelineCommand, 4096);
-DEFINE_POOL(SendPushConstantsCommand, 4096);
-DEFINE_POOL(DrawCommand, 4096);
-DEFINE_POOL(SetViewportCommand, 4096);
-DEFINE_POOL(BeginRenderPassCommand, 4096);
-DEFINE_POOL(EndRenderPassCommand, 4096);
-DEFINE_POOL(BeginPixelBufferCommand, 4096);
-DEFINE_POOL(EndPixelBufferCommand, 4096);
-DEFINE_POOL(BeginRenderSubPassCommand, 4096);
-DEFINE_POOL(EndRenderSubPassCommand, 4096);
-DEFINE_POOL(BlitRenderTargetCommand, 4096);
-DEFINE_POOL(ResetRenderTargetCommand, 4096);
-DEFINE_POOL(ComputeMipMapsCommand, 2048);
-DEFINE_POOL(SetScissorCommand, 4096);
-DEFINE_POOL(SetBlendCommand, 4096);
-DEFINE_POOL(SetCameraCommand, 4096);
-DEFINE_POOL(SetClipPlanesCommand, 4096);
-DEFINE_POOL(BindDescriptorSetsCommand, 4096);
-DEFINE_POOL(BeginDebugScopeCommand, 4096);
-DEFINE_POOL(EndDebugScopeCommand, 4096);
-DEFINE_POOL(DrawTextCommand, 4096);
-DEFINE_POOL(DrawIMGUICommand, 4096);
-DEFINE_POOL(DispatchComputeCommand, 1024);
-DEFINE_POOL(MemoryBarrierCommand, 1024);
-DEFINE_POOL(ReadAtomicCounterCommand, 1024);
-DEFINE_POOL(ExternalCommand, 4096);
+DEFINE_POOL(BindPipelineCommand);
+DEFINE_POOL(SendPushConstantsCommand);
+DEFINE_POOL(DrawCommand);
+DEFINE_POOL(SetViewportCommand);
+DEFINE_POOL(BeginRenderPassCommand);
+DEFINE_POOL(EndRenderPassCommand);
+DEFINE_POOL(BeginPixelBufferCommand);
+DEFINE_POOL(EndPixelBufferCommand);
+DEFINE_POOL(BeginRenderSubPassCommand);
+DEFINE_POOL(EndRenderSubPassCommand);
+DEFINE_POOL(BlitRenderTargetCommand);
+DEFINE_POOL(ResetRenderTargetCommand);
+DEFINE_POOL(ComputeMipMapsCommand);
+DEFINE_POOL(SetScissorCommand);
+DEFINE_POOL(SetBlendCommand);
+DEFINE_POOL(SetCameraCommand);
+DEFINE_POOL(SetClipPlanesCommand);
+DEFINE_POOL(BindDescriptorSetsCommand);
+DEFINE_POOL(BeginDebugScopeCommand);
+DEFINE_POOL(EndDebugScopeCommand);
+DEFINE_POOL(DrawTextCommand);
+DEFINE_POOL(DrawIMGUICommand);
+DEFINE_POOL(DispatchComputeCommand);
+DEFINE_POOL(MemoryBarrierCommand);
+DEFINE_POOL(ReadAtomicCounterCommand);
+DEFINE_POOL(ExternalCommand);
 
 void CommandBuffer::add(const CommandBuffer& other) {
     _commandOrder.reserve(_commandOrder.size() + other._commandOrder.size());
@@ -220,7 +220,7 @@ void CommandBuffer::clean() {
     }
 
     if (!redundantEntries.empty()) {
-        _commandOrder = erase_sorted_indices(_commandOrder, redundantEntries);
+        EraseIndices(_commandOrder, redundantEntries);
     }
 }
 

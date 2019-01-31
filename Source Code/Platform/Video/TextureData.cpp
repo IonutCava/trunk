@@ -28,7 +28,7 @@ TextureDataContainer::TextureDataContainer() noexcept
 
 bool TextureDataContainer::set(const TextureDataContainer& other) {
     // EASTL should be fast enough to handle this
-    const vectorEASTL<eastl::pair<TextureData, U8>>& otherTextures = other.textures();
+    const DataEntries& otherTextures = other.textures();
     if (_textures != otherTextures) {
         _textures = otherTextures;
         return true;
@@ -62,7 +62,7 @@ bool TextureDataContainer::setTextures(const TextureDataContainer& textureEntrie
     return setTextures(textureEntries._textures);
 }
 
-bool TextureDataContainer::setTextures(const vectorEASTL<eastl::pair<TextureData, U8 /*binding*/>>& textureEntries) {
+bool TextureDataContainer::setTextures(const DataEntries& textureEntries) {
     bool ret = false;
     for (auto entry : textureEntries) {
         ret = setTexture(entry) || ret;

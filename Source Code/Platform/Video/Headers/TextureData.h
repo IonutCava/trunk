@@ -78,6 +78,8 @@ struct TextureData {
 
 class TextureDataContainer {
     public:
+      using DataEntries = vectorEASTL<eastl::pair<TextureData, U8 /*binding*/>>;
+
       TextureDataContainer() noexcept;
       ~TextureDataContainer() = default;
 
@@ -90,21 +92,21 @@ class TextureDataContainer {
       // Returns true if an existing texture was replaced!
       bool setTextures(const TextureDataContainer& textureEntries);
       // Returns true if an existing texture was replaced!
-      bool setTextures(const vectorEASTL<eastl::pair<TextureData, U8 /*binding*/>>& textureEntries);
+      bool setTextures(const DataEntries& textureEntries);
 
       bool removeTexture(U8 binding);
       bool removeTexture(const TextureData& data);
 
       void clear(bool clearMemory = false);
 
-      inline vectorEASTL<eastl::pair<TextureData, U8>>& textures() { return _textures; }
-      inline const vectorEASTL<eastl::pair<TextureData, U8>>& textures() const { return _textures; }
+      inline DataEntries& textures() { return _textures; }
+      inline const DataEntries& textures() const { return _textures; }
 
       inline bool operator==(const TextureDataContainer &other) const { return _textures == other._textures; }
       inline bool operator!=(const TextureDataContainer &other) const { return _textures != other._textures; }
 
     private:
-      vectorEASTL<eastl::pair<TextureData, U8 /*binding*/>> _textures;
+        DataEntries _textures;
 };
 
 }; //namespace Divide
