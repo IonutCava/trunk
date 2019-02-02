@@ -88,7 +88,7 @@ class Vegetation : public SceneNode {
                            RenderStagePass renderStagePass,
                            RenderPackage& pkgInOut) override;
 
-    static void precomputeStaticData(PlatformContext& context, U32 chunkSize, U32 maxChunkCount);
+    static void precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 maxChunkCount);
 
   protected:
     void sceneUpdate(const U64 deltaTimeUS,

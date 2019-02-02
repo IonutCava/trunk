@@ -62,7 +62,7 @@ struct TessellatedTerrainNode {
     vec4<F32> tscale = { 0.0f, 0.0f, 0.0f , 0.0f }; 
 
     TessellatedTerrainNode *p  = nullptr;  // Parent
-    TessellatedTerrainNode* c[4] = { nullptr, nullptr, nullptr, nullptr }; // Children
+    std::array<TessellatedTerrainNode*, 4> c = { nullptr, nullptr, nullptr, nullptr }; // Children
 
     TessellatedTerrainNode *n = nullptr; // Neighbor to north
     TessellatedTerrainNode *s = nullptr; // Neighbor to south
@@ -81,11 +81,16 @@ public:
     typedef vector<TessellatedTerrainNode> TreeVector;
     typedef vector<TessellatedNodeData> RenderDataVector;
 
+    static constexpr U32 MAX_TESS_NODES = 1024;
+
 public:
     // Reserves memory for the terrain quadtree and initializes the data structure.
     TerrainTessellator();
     // Frees memory for the terrain quadtree.
     ~TerrainTessellator();
+
+    // The size of a patch in meters at which point to stop subdividing a terrain patch once it's width is less than the cutoff
+    void setCutoffDistance(F32 distance);
 
     // Builds a terrain quadtree based on specified parameters and current camera position.
     void createTree(const vec3<F32>& camPos, const Frustum& frust, const vec3<F32>& origin, const vec2<U16>& terrainDimensions);
@@ -106,9 +111,7 @@ public:
     U16 getPrevRenderDepth() const;
 
 protected:
-    // Resets the terrain quadtree.
-    void clearTree();
-    
+   
     // Determines whether a node should be subdivided based on its distance to the camera.
     // Returns true if the node should be subdivided.
     bool checkDivide(TessellatedTerrainNode* node);
@@ -125,6 +128,8 @@ protected:
     // Traverses the terrain quadtree to draw nodes with no children.
     void renderRecursive(TessellatedTerrainNode* node, U16& renderDepth, U8 LoD);
 
+    bool inDivideCheck(TessellatedTerrainNode* node) const;
+
 protected:
     static void initTessellationPatch(VertexBuffer* vb);
 
@@ -132,11 +137,12 @@ private:
     I32 _numNodes;
     U16 _renderDepth;
     U16 _prevRenderDepth;
+    F32 _cutoffDistance;
     vec3<F32> _cameraEyeCache;
     vec3<F32> _originCache;
     Frustum _frustumCache;
-    TreeVector _tree;
     RenderDataVector _renderData;
+    TreeVector _tree;
 
 }; //TerrainTessellator
 

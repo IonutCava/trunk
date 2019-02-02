@@ -34,10 +34,9 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _FILE_WITH_PATH_H_
 
 #include <string>
+#include "Platform/Headers/PlatformDataTypes.h"
 
 namespace Divide {
-
-typedef char Byte; //< For file I/O
 
 enum FileType : unsigned char {
     BINARY = 0,

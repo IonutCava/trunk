@@ -10,7 +10,7 @@ SceneShaderData::SceneShaderData(GFXDevice& context)
       _sceneShaderData(nullptr),
       _dirty(true)
 {
-    shadowingSettings(0.0000002f, 0.0002f, 200.0f, 350.0f);
+    shadowingSettings(0.25f, 0.00002f, 1000.0f, 1500.0f);
 
     ShaderBufferDescriptor bufferDescriptor;
     bufferDescriptor._elementCount = 1;

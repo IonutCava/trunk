@@ -115,7 +115,6 @@ GFXDevice::GFXDevice(Kernel& parent)
     _textRenderPipeline = nullptr;
 
     // Integers
-    _historyIndex = 0;
     FRAME_COUNT = 0;
     FRAME_DRAW_CALLS = 0;
     FRAME_DRAW_CALLS_PREV = FRAME_DRAW_CALLS;
@@ -436,10 +435,7 @@ void GFXDevice::onSizeChange(const SizeChangeParams& params) {
         _rtPool->resizeTargets(RenderTargetUsage::REFRACTION_PLANAR, reflectRes, reflectRes);
         _rtPool->resizeTargets(RenderTargetUsage::REFLECTION_CUBE, reflectRes, reflectRes);
         _rtPool->resizeTargets(RenderTargetUsage::REFRACTION_CUBE, reflectRes, reflectRes);
-
-        for (Texture_ptr& tex : _prevDepthBuffers) {
-            tex->resize(NULL, vec2<U16>(w, h));
-        }
+        _prevDepthBuffer->resize(NULL, vec2<U16>(w, h));
 
         // Update post-processing render targets and buffers
         postFX().updateResolution(w, h);

@@ -65,6 +65,8 @@ typedef long double D128;
 
 typedef void* bufferPtr;
 
+typedef int8_t Byte;
+
 typedef union {
     U32 i;
     U8  b[4];

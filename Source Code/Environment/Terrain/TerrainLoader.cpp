@@ -282,7 +282,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     ShaderProgramDescriptor shadowShaderDescriptor = shaderDescriptor;
     shadowShaderDescriptor._defines.push_back(std::make_pair("SHADOW_PASS", true));
     shadowShaderDescriptor._defines.push_back(std::make_pair("MAX_TESS_SCALE 32", true));
-    shadowShaderDescriptor._defines.push_back(std::make_pair("MIN_TESS_SCALE 8", true));
+    shadowShaderDescriptor._defines.push_back(std::make_pair("MIN_TESS_SCALE 16", true));
     terrainShaderShadow.setPropertyDescriptor(shadowShaderDescriptor);
     ShaderProgram_ptr terrainShadowShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderShadow);
 
@@ -292,7 +292,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     ResourceDescriptor terrainShaderColour(shaderName + ".Colour-" + name);
     shaderDescriptor._defines.push_back(std::make_pair("MAX_TESS_SCALE 64", true));
-    shaderDescriptor._defines.push_back(std::make_pair("MIN_TESS_SCALE 2", true));
+    shaderDescriptor._defines.push_back(std::make_pair("MIN_TESS_SCALE 8", true));
     terrainShaderColour.setPropertyDescriptor(shaderDescriptor);
     ShaderProgram_ptr terrainColourShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderColour);
 
@@ -325,7 +325,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     terrainRenderStateReflection.setCullMode(g_showWireFrame ? CullMode::CCW : CullMode::CW);
     // Generate a shadow render state
     RenderStateBlock terrainRenderStateDepth;
-    terrainRenderStateDepth.setCullMode(g_showWireFrame ? CullMode::CW : CullMode::CCW);
+    terrainRenderStateDepth.setCullMode(CullMode::CCW);
     // terrainDescDepth.setZBias(1.0f, 1.0f);
     terrainRenderStateDepth.setZFunc(ComparisonFunction::LESS);
     terrainRenderStateDepth.setColourWrites(true, true, false, false);
@@ -335,7 +335,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     terrainMaterial->setRenderStateBlock(terrainRenderStateReflection.getHash(), RenderStage::REFLECTION);
     terrainMaterial->setRenderStateBlock(terrainRenderStateDepth.getHash(), RenderStage::SHADOW);
 
-    CreateTask(context, [terrain, terrainDescriptor, onLoadCallback](const Task& parent) {
+    CreateTask(context.taskPool(TaskPoolType::Render), [terrain, terrainDescriptor, onLoadCallback](const Task& parent) {
         loadThreadedResources(terrain, std::move(terrainDescriptor), std::move(onLoadCallback));
     }).startTask(threadedLoading ? TaskPriority::DONT_CARE : TaskPriority::REALTIME);
 
@@ -501,6 +501,14 @@ bool TerrainLoader::loadThreadedResources(Terrain_ptr terrain,
 
 void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
                                          const std::shared_ptr<TerrainDescriptor> terrainDescriptor) {
+
+    const U32 terrainWidth = terrainDescriptor->getDimensions().width;
+    const U32 terrainHeight = terrainDescriptor->getDimensions().height;
+    U32 chunkSize = to_U32(terrainDescriptor->getTessellationRange().z);
+    U32 maxChunkCount = to_U32(std::ceil((terrainWidth * terrainHeight) / (chunkSize * chunkSize * 1.0f)));
+
+    Vegetation::precomputeStaticData(terrain->getGeometryVB()->context(), chunkSize, maxChunkCount);
+
     U8 textureCount = 0;
     stringImpl textureName;
 
@@ -533,9 +541,9 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     }
 
     SamplerDescriptor grassSampler = {};
-    grassSampler._wrapU = TextureWrap::CLAMP;
-    grassSampler._wrapV = TextureWrap::CLAMP;
-    grassSampler._wrapW = TextureWrap::CLAMP;
+    grassSampler._wrapU = TextureWrap::REPEAT;
+    grassSampler._wrapV = TextureWrap::REPEAT;
+    grassSampler._wrapW = TextureWrap::REPEAT;
     grassSampler._anisotropyLevel = 8;
 
     TextureDescriptor grassTexDescriptor(TextureType::TEXTURE_2D_ARRAY);
@@ -595,6 +603,7 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
 
     vegMaterial->setTexture(ShaderProgram::TextureUsage::UNIT0, grassBillboardArray);
     vegDetails.vegetationMaterialPtr = vegMaterial;
+    vegDetails.vegetationMaterialPtr->setDoubleSided(false);
 
     vegDetails.map.reset(new ImageTools::ImageData);
     ImageTools::ImageDataInterface::CreateImageData(Paths::g_assetsLocation + 

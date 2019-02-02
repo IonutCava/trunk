@@ -246,8 +246,7 @@ public:  // GPU interface
     ShaderComputeQueue& shaderComputeQueue();
     const ShaderComputeQueue& shaderComputeQueue() const;
 
-    void resizeHistory(U8 historySize);
-    void historyIndex(U8 index, bool copyPrevious);
+    void onPlayerPass(PlayerIndex index);
 
 public:  // Accessors and Mutators
     inline const GPUState& gpuState() const { return _state; }
@@ -266,7 +265,7 @@ public:  // Accessors and Mutators
     }
 
     inline const Texture_ptr& getPrevDepthBuffer() const {
-        return _prevDepthBuffers[_historyIndex];
+        return _prevDepthBuffer;
     }
 
     inline GFXRTPool& renderTargetPool() {
@@ -428,8 +427,7 @@ protected:
 
     std::pair<vec2<U16>, bool> _resolutionChangeQueued;
 
-    U8 _historyIndex;
-    vector<Texture_ptr> _prevDepthBuffers;
+    Texture_ptr _prevDepthBuffer;
 
     /*State management */
     bool _stateBlockByDescription;

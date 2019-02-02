@@ -383,7 +383,6 @@ FORCE_INLINE void NOP(void) {}
 
 #define ACKNOWLEDGE_UNUSED(p) ((void)p)
 
-
 #define CONCATENATE_IMPL(s1, s2) s1##s2
 #define CONCATENATE(s1, s2) CONCATENATE_IMPL(s1, s2)
 #ifdef __COUNTER__

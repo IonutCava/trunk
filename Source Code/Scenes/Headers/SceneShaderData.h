@@ -55,7 +55,7 @@ class SceneShaderData {
         // x,y,z - direction, w - speed
         vec4<F32> _windDetails = {0.0f};
         //x - light bleed bias, y - min shadow variance, z - fade distance, w - max distance
-        vec4<F32> _shadowingSettings = {0.0f};
+        vec4<F32> _shadowingSettings = {0.2f, 0.001f, 1000.0f, 1000.0f};
         //x - elapsed time, y - delta time, z - debug render, w.x - detail level
         vec4<F32> _otherData = {0.0f};
         WaterBodyData _waterEntities[MAX_WATER_BODIES] = {};

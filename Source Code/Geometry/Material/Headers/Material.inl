@@ -137,10 +137,6 @@ inline void Material::setRenderStateBlock(size_t renderStateBlockHash,
     }
 }
 
-inline size_t Material::getRenderStateBlock(RenderStagePass renderStagePass) {
-    return defaultRenderState(renderStagePass);
-}
-
 inline void Material::setParallaxFactor(F32 factor) {
     _parallaxFactor = std::min(0.01f, factor);
 }

@@ -101,7 +101,7 @@ Vegetation::~Vegetation()
     Console::printfn(Locale::get(_ID("UNLOAD_VEGETATION_END")));
 }
 
-void Vegetation::precomputeStaticData(PlatformContext& context, U32 chunkSize, U32 maxChunkCount) {
+void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 maxChunkCount) {
     // Make sure this is ONLY CALLED FROM THE MAIN LOADING THREAD. All instances should call this in a serialized fashion
     if (s_buffer == nullptr) {
         const vec2<F32> pos000(cosf(Angle::to_RADIANS(0.000f)), sinf(Angle::to_RADIANS(0.000f)));
@@ -126,7 +126,7 @@ void Vegetation::precomputeStaticData(PlatformContext& context, U32 chunkSize, U
             vec2<F32>(1.0f, 0.0f)
         };
 
-        s_buffer = context.gfx().newVB();
+        s_buffer = gfxDevice.newVB();
         s_buffer->useLargeIndices(false);
         s_buffer->setVertexCount(billboardsPlaneCount * 4);
         for (U8 i = 0; i < billboardsPlaneCount * 4; ++i) {
@@ -205,7 +205,7 @@ void Vegetation::precomputeStaticData(PlatformContext& context, U32 chunkSize, U
         bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE) | to_U32(ShaderBuffer::Flags::NO_SYNC);
         bufferDescriptor._name = Util::StringFormat("Grass_data");
 
-        s_grassData = context.gfx().newSB(bufferDescriptor);
+        s_grassData = gfxDevice.newSB(bufferDescriptor);
     }
 }
 
@@ -328,7 +328,7 @@ void Vegetation::buildDrawCommands(SceneGraphNode& sgn,
         pkgInOut.descriptorSet(0, set);
 
         GenericDrawCommand cmd;
-        cmd._primitiveType = PrimitiveType::TRIANGLES;
+        cmd._primitiveType = PrimitiveType::TRIANGLE_STRIP;
         cmd._cmd.indexCount = s_buffer->getIndexCount();
         cmd._sourceBuffer = s_buffer;
         cmd._cmd.primCount = _instanceCountGrass;

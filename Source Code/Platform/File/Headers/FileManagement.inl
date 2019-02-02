@@ -54,8 +54,10 @@ bool readFile(const stringImpl& filePath, const stringImpl& fileName, T& content
             streamIn.seekg(0, std::ios::beg);
 
             optional_reserve(contentOut, fileSize);
-            contentOut.assign((std::istreambuf_iterator<Byte>(streamIn)),
-                               std::istreambuf_iterator<Byte>());
+
+            static_assert(sizeof(char) == sizeof(Byte), "readFile: Platform error!");
+            contentOut.assign((std::istreambuf_iterator<char>(streamIn)),
+                               std::istreambuf_iterator<char>());
         }
 
         streamIn.close();
@@ -80,7 +82,9 @@ inline bool readFile(const stringImpl& filePath, const stringImpl& fileName, vec
             streamIn.seekg(0, std::ios::beg);
 
             contentOut.resize(fileSize);
-            streamIn.read(contentOut.data(), fileSize);
+
+            static_assert(sizeof(char) == sizeof(Byte), "readFile: Platform error!");
+            streamIn.read(reinterpret_cast<char*>(contentOut.data()), fileSize);
         }
 
         streamIn.close();

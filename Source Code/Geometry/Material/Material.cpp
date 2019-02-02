@@ -98,7 +98,7 @@ Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descri
     /// the reflection descriptor is the same as the normal descriptor
     RenderStateBlock reflectorDescriptor(stateDescriptor);
     RenderStateBlock reflectorOitDescriptor(stateDescriptor);
-    reflectorOitDescriptor.depthTestEnabled(false);
+    //reflectorOitDescriptor.depthTestEnabled(false);
 
     /// the z-pre-pass descriptor does not process colours
     RenderStateBlock zPrePassDescriptor(stateDescriptor);
@@ -107,39 +107,42 @@ Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descri
 
     /// A descriptor used for rendering to depth map
     RenderStateBlock shadowDescriptor(stateDescriptor);
+
     shadowDescriptor.setCullMode(CullMode::CCW);
     shadowDescriptor.setZFunc(ComparisonFunction::LESS);
     /// set a polygon offset
     shadowDescriptor.setZBias(1.0f, 1.0f);
-    /// ignore half of the colours 
-    /// Some shadowing techniques require drawing to the a colour buffer
-    shadowDescriptor.setColourWrites(true, true, false, false);
+
     RenderStateBlock shadowDescriptorNoColour(shadowDescriptor);
     shadowDescriptorNoColour.setColourWrites(false, false, false, false);
+
+    RenderStateBlock shadowDescriptorCSM(shadowDescriptor);
+    shadowDescriptorCSM.setCullMode(CullMode::CCW);
+    shadowDescriptorCSM.setColourWrites(true, true, false, false);
 
     setRenderStateBlock(stateDescriptor.getHash(), RenderStagePass(RenderStage::DISPLAY, RenderPassType::MAIN_PASS));
     setRenderStateBlock(stateDescriptor.getHash(), RenderStagePass(RenderStage::REFRACTION, RenderPassType::MAIN_PASS));
     setRenderStateBlock(reflectorDescriptor.getHash(), RenderStagePass(RenderStage::REFLECTION, RenderPassType::MAIN_PASS));
 
-    setRenderStateBlock(shadowDescriptor.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::MAIN_PASS), 0);
-    setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::MAIN_PASS), 1);
-    setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::MAIN_PASS), 2);
+    setRenderStateBlock(shadowDescriptorCSM.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::MAIN_PASS), to_base(LightType::DIRECTIONAL));
+    setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::MAIN_PASS), to_base(LightType::POINT));
+    setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::MAIN_PASS), to_base(LightType::SPOT));
 
     setRenderStateBlock(oitDescriptor.getHash(), RenderStagePass(RenderStage::DISPLAY, RenderPassType::OIT_PASS));
     setRenderStateBlock(oitDescriptor.getHash(), RenderStagePass(RenderStage::REFRACTION, RenderPassType::OIT_PASS));
     setRenderStateBlock(reflectorOitDescriptor.getHash(), RenderStagePass(RenderStage::REFLECTION, RenderPassType::OIT_PASS));
 
-    setRenderStateBlock(shadowDescriptor.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::OIT_PASS), 0);
-    setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::OIT_PASS), 1);
-    setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::OIT_PASS), 2);
+    setRenderStateBlock(shadowDescriptor.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::OIT_PASS), to_base(LightType::DIRECTIONAL));
+    setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::OIT_PASS), to_base(LightType::POINT));
+    setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::OIT_PASS), to_base(LightType::SPOT));
 
     setRenderStateBlock(zPrePassDescriptor.getHash(), RenderStagePass(RenderStage::DISPLAY, RenderPassType::PRE_PASS));
     setRenderStateBlock(zPrePassDescriptor.getHash(), RenderStagePass(RenderStage::REFRACTION, RenderPassType::PRE_PASS));
     setRenderStateBlock(zPrePassDescriptor.getHash(), RenderStagePass(RenderStage::REFLECTION, RenderPassType::PRE_PASS));
 
-    setRenderStateBlock(shadowDescriptor.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::PRE_PASS), 0);
-    setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::PRE_PASS), 1);
-    setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::PRE_PASS), 2);
+    setRenderStateBlock(shadowDescriptor.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::PRE_PASS), to_base(LightType::DIRECTIONAL));
+    setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::PRE_PASS), to_base(LightType::POINT));
+    setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::PRE_PASS), to_base(LightType::SPOT));
 }
 
 Material::~Material()
@@ -718,19 +721,6 @@ void Material::setDoubleSided(const bool state) {
     }
 
     _doubleSided = state;
-    // Update all render states for this item
-    if (_doubleSided) {
-        for (RenderStagePass::StagePassIndex i = 0; i < RenderStagePass::count(); ++i) {
-            const U8 variantCount = to_U8(_defaultRenderStates[i].size());
-
-            for (U8 variant = 0; variant < variantCount; ++variant) {
-                const size_t hash = _defaultRenderStates[i][variant];
-                RenderStateBlock descriptor(RenderStateBlock::get(hash));
-                descriptor.setCullMode(CullMode::NONE);
-                setRenderStateBlock(descriptor.getHash(), RenderStagePass::stagePass(i), variant);
-            }
-        }
-    }
 
     _needsNewShader = true;
 }
@@ -757,14 +747,19 @@ void Material::updateTranslucency() {
         _translucencySource = TranslucencySource::OPACITY_MAP;
     }
 
-    // Disable culling for translucent items
-    if (!isDoubleSided() && _translucencySource != TranslucencySource::COUNT) {
-        setDoubleSided(true);
-    }
-
     if (oldSource != _translucencySource) {
         _needsNewShader = true;
     }
+}
+
+size_t Material::getRenderStateBlock(RenderStagePass renderStagePass) {
+    size_t ret = defaultRenderState(renderStagePass);
+    if (_doubleSided) {
+        RenderStateBlock tempBlock = RenderStateBlock::get(ret);
+        tempBlock.setCullMode(CullMode::NONE);
+        return tempBlock.getHash();
+    }
+    return ret;
 }
 
 void Material::getSortKeys(RenderStagePass renderStagePass, I32& shaderKey, I32& textureKey) const {

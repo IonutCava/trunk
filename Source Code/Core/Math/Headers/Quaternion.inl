@@ -340,8 +340,8 @@ void Quaternion<T>::fromEuler(Angle::DEGREES<T> pitch, Angle::DEGREES<T> yaw, An
 
 //ref: https://gamedev.stackexchange.com/questions/15070/orienting-a-model-to-face-a-target
 template <typename T>
-void Quaternion<T>::fromLookAt(const vec3<T>& source, const vec3<T>& destination, const vec3<T>& up) {
-    F32 dot = to_F32(Dot(source, dest));
+void Quaternion<T>::fromRotation(const vec3<T>& sourceDirection, const vec3<T>& destinationDirection, const vec3<T>& up) {
+    F32 dot = to_F32(Dot(sourceDirection, destinationDirection));
 
     if (std::abs(dot - (-1.0f)) < EPSILON_F32) {
         // vector a and b point exactly in the opposite direction, 
@@ -352,7 +352,7 @@ void Quaternion<T>::fromLookAt(const vec3<T>& source, const vec3<T>& destination
         // so we return the identity quaternion
         identity();
     } else {
-        fromAxisAngle(Normalize(Cross(source, dest)), std::acos(dot));
+        fromAxisAngle(Normalize(Cross(sourceDirection, destinationDirection)), std::acos(dot));
     }
 }
 

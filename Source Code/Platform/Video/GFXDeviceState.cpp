@@ -173,6 +173,14 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
         _rtPool->allocateRT(RenderTargetUsage::SCREEN, screenDesc);
     }
 
+    ResourceDescriptor prevDepthTex("PREV_DEPTH");
+    prevDepthTex.setPropertyDescriptor(depthDescriptor);
+    prevDepthTex.setThreadedLoading(false);
+    _prevDepthBuffer = CreateResource<Texture>(parent().resourceCache(), prevDepthTex);
+    assert(_prevDepthBuffer);
+    Texture::TextureLoadInfo info;
+    _prevDepthBuffer->loadData(info, NULL, renderResolution);
+
     {
         TextureDescriptor hiZDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::FLOAT_32);
         SamplerDescriptor hiZSampler = {};
@@ -443,8 +451,8 @@ void GFXDevice::closeRenderingAPI() {
     _HIZCullProgram = nullptr;
     _displayShader = nullptr;
     _textRenderShader = nullptr;
+    _prevDepthBuffer = nullptr;
 
-    _prevDepthBuffers.clear();
     _renderer.reset(nullptr);
 
     // Close the shader manager
@@ -522,33 +530,8 @@ void GFXDevice::endFrame(DisplayWindow& window, bool global) {
     }
 }
 
-void GFXDevice::resizeHistory(U8 historySize) {
-    while (_prevDepthBuffers.size() > historySize) {
-        _prevDepthBuffers.pop_back();
-    }
-
-    while (_prevDepthBuffers.size() < historySize) {
-        const Texture_ptr& src = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Depth, 0).texture();
-
-        ResourceDescriptor prevDepthTex(Util::StringFormat("PREV_DEPTH_%d", _prevDepthBuffers.size()));
-        prevDepthTex.setPropertyDescriptor(src->getDescriptor());
-        
-        Texture_ptr tex = CreateResource<Texture>(parent().resourceCache(), prevDepthTex);
-        assert(tex);
-        Texture::TextureLoadInfo info;
-        
-        tex->loadData(info, NULL, vec2<U16>(src->getWidth(), src->getHeight()));
-
-        _prevDepthBuffers.push_back(tex);
-    }
-}
-
-void GFXDevice::historyIndex(U8 index, bool copyPrevious) {
-    if (copyPrevious && index <= _historyIndex) {
-        getPrevDepthBuffer()->copy(_rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Depth, 0).texture());
-    }
-
-    _historyIndex = index;
+void GFXDevice::onPlayerPass(PlayerIndex index) {
+    getPrevDepthBuffer()->copy(_rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Depth, 0).texture());
 }
 
 ErrorCode GFXDevice::createAPIInstance() {

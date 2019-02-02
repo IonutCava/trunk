@@ -286,10 +286,10 @@ const mat4<F32>& Camera::lookAt(const mat4<F32>& viewMatrix) {
 }
 
 const mat4<F32>& Camera::lookAt(const vec3<F32>& eye,
-                                const vec3<F32>& direction,
+                                const vec3<F32>& target,
                                 const vec3<F32>& up) {
     _data._eye.set(eye);
-    _data._orientation.fromMatrix(mat4<F32>(eye, direction, up));
+    _data._orientation.fromMatrix(mat4<F32>(eye, target, up));
     _viewMatrixDirty = true;
     _frustumDirty = true;
 
@@ -392,7 +392,7 @@ const mat4<F32>& Camera::setProjection(const mat4<F32>& projection, const vec2<F
     _frustumDirty = true;
     _isOrthoCamera = isOrtho;
 
-    return getProjectionMatrix();
+    return _data._projectionMatrix;
 }
 
 void Camera::setAspectRatio(F32 ratio) {

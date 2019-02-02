@@ -130,7 +130,7 @@ class Quaternion {
     //! Convert from Euler Angles
     void fromEuler(Angle::DEGREES<T> pitch, Angle::DEGREES<T> yaw, Angle::DEGREES<T> roll);
 
-    void fromLookAt(const vec3<T>& source, const vec3<T>& destination, const vec3<T>& up);
+    void fromRotation(const vec3<T>& sourceDirection, const vec3<T>& destinationDirection, const vec3<T>& up);
 
     // a la Ogre3D
     void fromMatrix(const mat3<T>& rotationMatrix);

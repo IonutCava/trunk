@@ -2439,6 +2439,13 @@ FORCE_INLINE void mat4<T>::Multiply(const mat4<T>& matrixA, const mat4<T>& matri
     }
 }
 
+template<typename T>
+FORCE_INLINE mat4<T> mat4<T>::Multiply(const mat4<T>& matrixA, const mat4<T>& matrixB) {
+    mat4<T> ret;
+    Multiply(matrixA, matrixB, ret);
+    return ret;
+}
+
 template<>
 FORCE_INLINE void mat4<F32>::Multiply(const mat4<F32>& matrixA, const mat4<F32>& matrixB, mat4<F32>& ret) {
     M4x4_SSE(matrixA, matrixB, ret);

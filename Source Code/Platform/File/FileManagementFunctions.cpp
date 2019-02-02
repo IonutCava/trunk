@@ -21,7 +21,7 @@ bool writeFile(const stringImpl& filePath, const stringImpl& fileName, const buf
         std::ofstream outputFile((filePath + fileName).c_str(), fileType == FileType::BINARY
                                                              ? std::ios::out | std::ios::binary
                                                              : std::ios::out);
-        outputFile.write(reinterpret_cast<Byte*>(content), length);
+        outputFile.write(reinterpret_cast<char*>(content), length);
         outputFile.close();
         return outputFile.good();
     }

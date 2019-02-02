@@ -132,8 +132,6 @@ void Terrain::postBuild() {
     _boundingBox.setMax(halfWidth, _descriptor->getAltitudeRange().max, halfWidth);
 
     U32 chunkSize = to_U32(_descriptor->getTessellationRange().z);
-    U32 maxChunkCount = to_U32(std::ceil((terrainWidth * terrainHeight) / (chunkSize * chunkSize * 1.0f)));
-    Vegetation::precomputeStaticData(_context.context(), chunkSize, maxChunkCount);
 
     _terrainQuadtree.build(_context,
         _boundingBox,
@@ -194,7 +192,7 @@ bool Terrain::onRender(SceneGraphNode& sgn,
         const Frustum& frustum = camera.getFrustum();
         const vec3<F32>& crtPos = sgn.get<TransformComponent>()->getPosition();
 
-        if (tessellator->getOrigin() != crtPos || tessellator->getFrustum() != frustum)
+        if (renderStagePass._stage == RenderStage::SHADOW || tessellator->getOrigin() != crtPos || tessellator->getFrustum() != frustum)
         {
             tessellator->createTree(camera.getEye(), frustum, crtPos, _descriptor->getDimensions());
             U8 LoD = (renderStagePass._stage == RenderStage::REFLECTION || renderStagePass._stage == RenderStage::REFRACTION) ? 1 : 0;
@@ -240,13 +238,13 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
     set.addShaderBuffer(buffer);
     pkgInOut.descriptorSet(0, set);
 
-    GFX::SendPushConstantsCommand pushConstantsCommand = {};
+    vec2<F32> tesRange = _descriptor->getTessellationRange().xy();
     if (renderStagePass._stage == RenderStage::SHADOW) {
-        pushConstantsCommand._constants.set("tessellationRange", GFX::PushConstantType::VEC2, vec2<F32>(10.0f, 0.5f) * _descriptor->getTessellationRange().xy());
-    } else {
-        pushConstantsCommand._constants.set("tessellationRange", GFX::PushConstantType::VEC2, _descriptor->getTessellationRange().xy());
+        tesRange *= 10.0f;
     }
 
+    GFX::SendPushConstantsCommand pushConstantsCommand = {};
+    pushConstantsCommand._constants.set("tessellationRange", GFX::PushConstantType::VEC2, tesRange);
     pushConstantsCommand._constants.set("tileScale", GFX::PushConstantType::VEC4, _terrainTextures->getTileScales());
     pkgInOut.addPushConstantsCommand(pushConstantsCommand);
 

@@ -85,7 +85,7 @@ class Camera : public Resource {
     const mat4<F32>& lookAt(const mat4<F32>& viewMatrix);
     /// Sets the camera's position, target and up directions
     const mat4<F32>& lookAt(const vec3<F32>& eye,
-                            const vec3<F32>& direction,
+                            const vec3<F32>& target,
                             const vec3<F32>& up);
     /// Rotates the camera (changes its orientation) by the specified quaternion
     /// (_orientation *= q)

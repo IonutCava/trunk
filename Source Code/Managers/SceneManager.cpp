@@ -208,7 +208,8 @@ bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious, bool
         sceneToUnload = &_scenePool->activeScene();
     }
 
-    CreateTask(*_platformContext,
+    // We use our rendering task pool for scene changes because we might be creating / loading GPU assets (shaders, textures, buffers, etc)
+    CreateTask(_platformContext->taskPool(TaskPoolType::Render),
         [this, name, unloadPrevious, &sceneToUnload](const Task& parentTask)
         {
             // Load first, unload after to make sure we don't reload common resources
@@ -324,7 +325,6 @@ void SceneManager::addPlayerInternal(Scene& parentScene, SceneGraphNode* playerN
         _players[i] = player;
         ++_activePlayerCount;
 
-        _platformContext->gfx().resizeHistory(_activePlayerCount);
         Attorney::SceneManager::onPlayerAdd(parentScene, player);
     }
 }
@@ -346,7 +346,6 @@ void SceneManager::removePlayerInternal(Scene& parentScene, Player_ptr& player) 
                 _players[i] = nullptr;
                 --_activePlayerCount;
 
-                _platformContext->gfx().resizeHistory(_activePlayerCount);
                 Attorney::SceneManager::onPlayerRemove(parentScene, player);
                 break;
             }
@@ -475,7 +474,7 @@ Camera* SceneManager::playerCamera() const {
 
 void SceneManager::currentPlayerPass(PlayerIndex idx) {
     _currentPlayerPass = idx;
-    _platformContext->gfx().historyIndex(_currentPlayerPass, true);
+    _platformContext->gfx().onPlayerPass(idx);
     Attorney::SceneManager::currentPlayerPass(getActiveScene(), _currentPlayerPass);
     playerCamera()->updateLookAt();
 }

@@ -669,6 +669,8 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     template<typename U>
     void extractMat3(mat3<U> &matrix3) const;
 
+    static mat4<T> Multiply(const mat4<T>& matrixA, const mat4<T>& matrixB);
+
     static void Multiply(const mat4<T>& matrixA, const mat4<T>& matrixB, mat4<T>& ret);
 
     // Copyright 2011 The Closure Library Authors. All Rights Reserved.

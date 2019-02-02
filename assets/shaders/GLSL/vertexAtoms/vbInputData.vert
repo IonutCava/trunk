@@ -13,15 +13,15 @@ vec3   dvd_Normal;
 vec3   dvd_Tangent;
 
 void computeDataMinimal() {
+    dvd_Vertex = vec4(inVertexData, 1.0);
+    dvd_Colour = inColourData;
+    dvd_Normal = UNPACK_FLOAT(inNormalData);
+    dvd_Tangent = UNPACK_FLOAT(inTangentData);
+
+    VAR._texCoord = inTexCoordData;
     VAR.dvd_baseInstance = gl_BaseInstanceARB;
     VAR.dvd_instanceID = gl_InstanceID;
     VAR.dvd_drawID = gl_DrawIDARB;
-    VAR._texCoord = inTexCoordData;
-
-    dvd_Vertex = vec4(inVertexData, 1.0);
-    dvd_Normal = UNPACK_FLOAT(inNormalData);
-    dvd_Colour = inColourData;
-    dvd_Tangent = UNPACK_FLOAT(inTangentData);
 
 #   if defined(USE_GPU_SKINNING)
 #       if defined(COMPUTE_TBN)
@@ -35,7 +35,6 @@ void computeDataMinimal() {
 void computeDataNoClip() {
     computeDataMinimal();
 
-    VAR._texCoord = inTexCoordData;
     VAR._vertexW = dvd_WorldMatrix(VAR.dvd_baseInstance) * dvd_Vertex;
 }
 

@@ -591,7 +591,7 @@ vec2 computeMoments(in float depth) {
 void main() {
     // Adjusting moments (this is sort of bias per pixel) using partial derivative
     float depth = dvd_vertexWVP.z / dvd_vertexWVP.w;
-    depth = depth * 0.5 + 0.5;
+    //depth = depth * 0.5 + 0.5;
     //_colourOut = computeMoments(exp(DEPTH_EXP_WARP * depth));
     _colourOut = computeMoments(depth);
 }
