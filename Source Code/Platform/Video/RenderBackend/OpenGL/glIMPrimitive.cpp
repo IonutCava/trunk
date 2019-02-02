@@ -14,7 +14,7 @@ glIMPrimitive::glIMPrimitive(GFXDevice& context)
     : IMPrimitive(context)
 {
     _imInterface = MemoryManager_NEW NS_GLIM::GLIM_BATCH();
-    _imInterface->SetVertexAttribLocation(to_base(AttribLocation::VERTEX_POSITION));
+    _imInterface->SetVertexAttribLocation(to_base(AttribLocation::POSITION));
 }
 
 glIMPrimitive::~glIMPrimitive()

@@ -144,12 +144,12 @@ GFXDevice::GFXDevice(Kernel& parent)
     VertexBuffer::setAttribMasks(static_cast<size_t>(RenderStagePass::count()), flags);
 
     // Don't (currently) need these for shadow passes
-    flags[to_base(VertexAttribute::ATTRIB_COLOR)] = false;
-    flags[to_base(VertexAttribute::ATTRIB_TANGENT)] = false;
+    flags[to_base(AttribLocation::COLOR)] = false;
+    flags[to_base(AttribLocation::TANGENT)] = false;
     for (U8 stage = 0; stage < to_base(RenderStage::COUNT); ++stage) {
         VertexBuffer::setAttribMask(RenderStagePass(static_cast<RenderStage>(stage), RenderPassType::PRE_PASS).index(), flags);
     }
-    flags[to_base(VertexAttribute::ATTRIB_NORMAL)] = false;
+    flags[to_base(AttribLocation::NORMAL)] = false;
     for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
         VertexBuffer::setAttribMask(RenderStagePass(RenderStage::SHADOW, static_cast<RenderPassType>(pass)).index(), flags);
     }

@@ -14,11 +14,16 @@ namespace Divide {
 namespace {
 // Once vertex buffers reach a certain size, the for loop grows really really fast up to millions of iterations.
 // Multiple if-checks per loop are not an option, so do some template hacks to speed this function up
-template<bool normals, bool tangents, bool colour, bool texcoords, bool bones>
+template<bool texCoords, bool normals, bool tangents, bool colour, bool bones>
 void fillSmallData5(const vector<VertexBuffer::Vertex>& dataIn, ByteBuffer& dataOut)
 {
     for (const VertexBuffer::Vertex& data : dataIn) {
         dataOut << data._position;
+
+        if (texCoords) {
+            dataOut << data._texcoord.s;
+            dataOut << data._texcoord.t;
+        }
 
         if (normals) {
             dataOut << data._normal;
@@ -35,11 +40,6 @@ void fillSmallData5(const vector<VertexBuffer::Vertex>& dataIn, ByteBuffer& data
             dataOut << data._colour.a;
         }
 
-        if (texcoords) {
-            dataOut << data._texcoord.s;
-            dataOut << data._texcoord.t;
-        }
-
         if (bones) {
             dataOut << data._weights.i;
             dataOut << data._indices.i;
@@ -47,52 +47,52 @@ void fillSmallData5(const vector<VertexBuffer::Vertex>& dataIn, ByteBuffer& data
     }
 }
 
-template <bool normals, bool tangents, bool colour, bool texCoords>
+template <bool texCoords, bool normals, bool tangents, bool colour>
 void fillSmallData4(const vector<VertexBuffer::Vertex>& dataIn, ByteBuffer& dataOut, bool bones)
 {
     if (bones) {
-        fillSmallData5<normals, tangents, colour, texCoords, true>(dataIn, dataOut);
+        fillSmallData5<texCoords, normals, tangents, colour, true>(dataIn, dataOut);
     } else {
-        fillSmallData5<normals, tangents, colour, texCoords, false>(dataIn, dataOut);
+        fillSmallData5<texCoords, normals, tangents, colour, false>(dataIn, dataOut);
     }
 }
 
-template <bool normals, bool tangents, bool colour>
-void fillSmallData3(const vector<VertexBuffer::Vertex>& dataIn, ByteBuffer& dataOut, bool texCoords, bool bones)
-{
-    if (texCoords) {
-        fillSmallData4<normals, tangents, colour, true>(dataIn, dataOut, bones);
-    } else {
-        fillSmallData4<normals, tangents, colour, false>(dataIn, dataOut, bones);
-    }
-}
-
-template <bool normals, bool tangents>
-void fillSmallData2(const vector<VertexBuffer::Vertex>& dataIn, ByteBuffer& dataOut, bool colour, bool texCoords, bool bones)
+template <bool texCoords, bool normals, bool tangents>
+void fillSmallData3(const vector<VertexBuffer::Vertex>& dataIn, ByteBuffer& dataOut, bool colour, bool bones)
 {
     if (colour) {
-        fillSmallData3<normals, tangents, true>(dataIn, dataOut, texCoords, bones);
+        fillSmallData4<texCoords, normals, tangents, true>(dataIn, dataOut, bones);
     } else {
-        fillSmallData3<normals, tangents, false>(dataIn, dataOut, texCoords, bones);
+        fillSmallData4<texCoords, normals, tangents, false>(dataIn, dataOut, bones);
     }
 }
 
-template <bool normals>
-void fillSmallData1(const vector<VertexBuffer::Vertex>& dataIn, ByteBuffer& dataOut, bool tangents, bool colour, bool texCoords, bool bones)
+template <bool texCoords, bool normals>
+void fillSmallData2(const vector<VertexBuffer::Vertex>& dataIn, ByteBuffer& dataOut, bool tangents, bool colour, bool bones)
 {
     if (tangents) {
-        fillSmallData2<normals, true>(dataIn, dataOut, colour, texCoords, bones);
+        fillSmallData3<texCoords, normals, true>(dataIn, dataOut, colour, bones);
     } else {
-        fillSmallData2<normals, false>(dataIn, dataOut, colour, texCoords, bones);
+        fillSmallData3<texCoords, normals, false>(dataIn, dataOut, colour, bones);
     }
 }
 
-void fillSmallData(const vector<VertexBuffer::Vertex>& dataIn, ByteBuffer& dataOut, bool normals, bool tangents, bool colour, bool texCoords, bool bones)
+template <bool texCoords>
+void fillSmallData1(const vector<VertexBuffer::Vertex>& dataIn, ByteBuffer& dataOut, bool normals, bool tangents, bool colour, bool bones)
 {
     if (normals) {
-        fillSmallData1<true>(dataIn, dataOut, tangents, colour, texCoords, bones);
+        fillSmallData2<texCoords, true>(dataIn, dataOut, tangents, colour, bones);
     } else {
-        fillSmallData1<false>(dataIn, dataOut, tangents, colour, texCoords, bones);
+        fillSmallData2<texCoords, false>(dataIn, dataOut, tangents, colour, bones);
+    }
+}
+
+void fillSmallData(const vector<VertexBuffer::Vertex>& dataIn, ByteBuffer& dataOut, bool texCoords, bool normals, bool tangents, bool colour, bool bones)
+{
+    if (texCoords) {
+        fillSmallData1<true>(dataIn, dataOut, normals, tangents, colour, bones);
+    } else {
+        fillSmallData1<false>(dataIn, dataOut, normals, tangents, colour, bones);
     }
 }
 };
@@ -144,37 +144,38 @@ void glVertexArray::reset() {
 
 /// Trim down the Vertex vector to only upload the minimal ammount of data to the GPU
 std::pair<bufferPtr, size_t> glVertexArray::getMinimalData() {
-    bool useColour    = _useAttribute[to_base(VertexAttribute::ATTRIB_COLOR)];
-    bool useNormals   = _useAttribute[to_base(VertexAttribute::ATTRIB_NORMAL)];
-    bool useTangents  = _useAttribute[to_base(VertexAttribute::ATTRIB_TANGENT)];
-    bool useTexcoords = _useAttribute[to_base(VertexAttribute::ATTRIB_TEXCOORD)];
-    bool useBoneData  = _useAttribute[to_base(VertexAttribute::ATTRIB_BONE_INDICE)];
+    bool useTexcoords = _useAttribute[to_base(AttribLocation::TEXCOORD)];
+    bool useNormals   = _useAttribute[to_base(AttribLocation::NORMAL)];
+    bool useTangents  = _useAttribute[to_base(AttribLocation::TANGENT)];
+    bool useColour    = _useAttribute[to_base(AttribLocation::COLOR)];
+    bool useBoneData  = _useAttribute[to_base(AttribLocation::BONE_INDICE)];
 
     size_t prevOffset = sizeof(vec3<F32>);
+
+    if (useTexcoords) {
+        _attributeOffset[to_base(AttribLocation::TEXCOORD)] = to_U32(prevOffset);
+        prevOffset += sizeof(vec2<F32>);
+    }
+
     if (useNormals) {
-        _attributeOffset[to_base(VertexAttribute::ATTRIB_NORMAL)] = to_U32(prevOffset);
+        _attributeOffset[to_base(AttribLocation::NORMAL)] = to_U32(prevOffset);
         prevOffset += sizeof(F32);
     }
 
     if (useTangents) {
-        _attributeOffset[to_base(VertexAttribute::ATTRIB_TANGENT)] = to_U32(prevOffset);
+        _attributeOffset[to_base(AttribLocation::TANGENT)] = to_U32(prevOffset);
         prevOffset += sizeof(F32);
     }
 
     if (useColour) {
-        _attributeOffset[to_base(VertexAttribute::ATTRIB_COLOR)] = to_U32(prevOffset);
+        _attributeOffset[to_base(AttribLocation::COLOR)] = to_U32(prevOffset);
         prevOffset += sizeof(UColour);
     }
 
-    if (useTexcoords) {
-        _attributeOffset[to_base(VertexAttribute::ATTRIB_TEXCOORD)] = to_U32(prevOffset);
-        prevOffset += sizeof(vec2<F32>);
-    }
-
     if (useBoneData) {
-        _attributeOffset[to_base(VertexAttribute::ATTRIB_BONE_WEIGHT)] = to_U32(prevOffset);
+        _attributeOffset[to_base(AttribLocation::BONE_WEIGHT)] = to_U32(prevOffset);
         prevOffset += sizeof(U32);
-        _attributeOffset[to_base(VertexAttribute::ATTRIB_BONE_INDICE)] = to_U32(prevOffset);
+        _attributeOffset[to_base(AttribLocation::BONE_INDICE)] = to_U32(prevOffset);
         prevOffset += sizeof(U32);
     }
 
@@ -182,7 +183,7 @@ std::pair<bufferPtr, size_t> glVertexArray::getMinimalData() {
 
     _smallData.reserve(_data.size() * _effectiveEntrySize);
 
-    fillSmallData(_data, _smallData, useNormals, useTangents, useColour, useTexcoords, useBoneData);
+    fillSmallData(_data, _smallData, useTexcoords, useNormals, useTangents, useColour, useBoneData);
 
     if (_staticBuffer && !keepData()) {
         _data.clear();
@@ -229,7 +230,7 @@ bool glVertexArray::refresh() {
     _refreshQueued = indicesChanged;
 
     /// Can only add attributes for now. No removal support. -Ionut
-    for (U8 i = 0; i < to_base(VertexAttribute::COUNT); ++i) {
+    for (U8 i = 0; i < to_base(AttribLocation::COUNT); ++i) {
         _useAttribute[i] = _useAttribute[i] || _attribDirty[i];
         if (!_refreshQueued) {
            if (_attribDirty[i]) {
@@ -249,7 +250,7 @@ bool glVertexArray::refresh() {
         const AttribFlags& stageMask = _attribMasks[i];
 
         AttribFlags& stageUsage = attributesPerStage[i];
-        for (U8 j = 0; j < to_base(VertexAttribute::COUNT); ++j) {
+        for (U8 j = 0; j < to_base(AttribLocation::COUNT); ++j) {
             stageUsage[j] = _useAttribute[j] && stageMask[j];
         }
 
@@ -437,24 +438,24 @@ void glVertexArray::uploadVBAttributes(GLuint VAO) {
                                                _VBHandle._offset * GLUtil::VBO::MAX_VBO_CHUNK_SIZE_BYTES,
                                                _effectiveEntrySize);
 
-    static const U32 positionLoc = to_base(AttribLocation::VERTEX_POSITION);
-    static const U32 colourLoc = to_base(AttribLocation::VERTEX_COLOR);
-    static const U32 normalLoc = to_base(AttribLocation::VERTEX_NORMAL);
-    static const U32 texCoordLoc = to_base(AttribLocation::VERTEX_TEXCOORD);
-    static const U32 tangentLoc = to_base(AttribLocation::VERTEX_TANGENT);
-    static const U32 boneWeightLoc = to_base(AttribLocation::VERTEX_BONE_WEIGHT);
-    static const U32 boneIndiceLoc = to_base(AttribLocation::VERTEX_BONE_INDICE);
-    
+    static const U32 positionLoc = to_base(AttribLocation::POSITION);
+    static const U32 texCoordLoc = to_base(AttribLocation::TEXCOORD);
+    static const U32 normalLoc   = to_base(AttribLocation::NORMAL);
+    static const U32 tangentLoc = to_base(AttribLocation::TANGENT);
+    static const U32 colourLoc     = to_base(AttribLocation::COLOR);
+    static const U32 boneWeightLoc = to_base(AttribLocation::BONE_WEIGHT);
+    static const U32 boneIndiceLoc = to_base(AttribLocation::BONE_INDICE);
+
     glEnableVertexAttribArray(positionLoc);
     glVertexAttribFormat(positionLoc, 3, GL_FLOAT, GL_FALSE, _attributeOffset[positionLoc]);
     glVertexAttribBinding(positionLoc, 0);
 
-    if (_useAttribute[colourLoc]) {
-        glEnableVertexAttribArray(colourLoc);
-        glVertexAttribFormat(colourLoc, 4, GL_UNSIGNED_BYTE, GL_TRUE, _attributeOffset[colourLoc]);
-        glVertexAttribBinding(colourLoc, 0);
+    if (_useAttribute[texCoordLoc]) {
+        glEnableVertexAttribArray(texCoordLoc);
+        glVertexAttribFormat(texCoordLoc, 2, GL_FLOAT, GL_FALSE, _attributeOffset[texCoordLoc]);
+        glVertexAttribBinding(texCoordLoc, 0);
     } else {
-        glDisableVertexAttribArray(colourLoc);
+        glDisableVertexAttribArray(texCoordLoc);
     }
 
     if (_useAttribute[normalLoc]) {
@@ -465,20 +466,20 @@ void glVertexArray::uploadVBAttributes(GLuint VAO) {
         glDisableVertexAttribArray(normalLoc);
     }
 
-    if (_useAttribute[texCoordLoc]) {
-        glEnableVertexAttribArray(texCoordLoc);
-        glVertexAttribFormat(texCoordLoc, 2, GL_FLOAT, GL_FALSE, _attributeOffset[texCoordLoc]);
-        glVertexAttribBinding(texCoordLoc, 0);
-    } else {
-        glDisableVertexAttribArray(texCoordLoc);
-    }
-
     if (_useAttribute[tangentLoc]) {
         glEnableVertexAttribArray(tangentLoc);
         glVertexAttribFormat(tangentLoc, 1, GL_FLOAT, GL_FALSE, _attributeOffset[tangentLoc]);
         glVertexAttribBinding(tangentLoc, 0);
     } else {
         glDisableVertexAttribArray(tangentLoc);
+    }
+
+    if (_useAttribute[colourLoc]) {
+        glEnableVertexAttribArray(colourLoc);
+        glVertexAttribFormat(colourLoc, 4, GL_UNSIGNED_BYTE, GL_TRUE, _attributeOffset[colourLoc]);
+        glVertexAttribBinding(colourLoc, 0);
+    } else {
+        glDisableVertexAttribArray(colourLoc);
     }
 
     if (_useAttribute[boneWeightLoc]) {

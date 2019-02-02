@@ -319,7 +319,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     }
 
     // Prepare immediate mode emulation rendering
-    NS_GLIM::glim.SetVertexAttribLocation(to_base(AttribLocation::VERTEX_POSITION));
+    NS_GLIM::glim.SetVertexAttribLocation(to_base(AttribLocation::POSITION));
     // Initialize our VAO pool
     GL_API::s_vaoPool.init(g_maxVAOS);
     // Initialize our query pool

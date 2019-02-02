@@ -627,63 +627,63 @@ bool GL_API::initGLSW() {
     appendToShaderHeader(
         ShaderType::VERTEX,
         "layout(location = " +
-        to_stringImpl(to_base(AttribLocation::VERTEX_POSITION)) +
+        to_stringImpl(to_base(AttribLocation::POSITION)) +
         ") in vec3 inVertexData;",
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::VERTEX,
         "layout(location = " +
-        to_stringImpl(to_base(AttribLocation::VERTEX_COLOR)) +
-        ") in vec4 inColourData;",
-        lineOffsets);
-
-    appendToShaderHeader(
-        ShaderType::VERTEX,
-        "layout(location = " +
-        to_stringImpl(to_base(AttribLocation::VERTEX_NORMAL)) +
-        ") in float inNormalData;",
-        lineOffsets);
-
-    appendToShaderHeader(
-        ShaderType::VERTEX,
-        "layout(location = " +
-        to_stringImpl(to_base(AttribLocation::VERTEX_TEXCOORD)) +
+        to_stringImpl(to_base(AttribLocation::TEXCOORD)) +
         ") in vec2 inTexCoordData;",
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::VERTEX,
         "layout(location = " +
-        to_stringImpl(to_base(AttribLocation::VERTEX_TANGENT)) +
+        to_stringImpl(to_base(AttribLocation::NORMAL)) +
+        ") in float inNormalData;",
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::VERTEX,
+        "layout(location = " +
+        to_stringImpl(to_base(AttribLocation::TANGENT)) +
         ") in float inTangentData;",
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::VERTEX,
         "layout(location = " +
-        to_stringImpl(to_base(AttribLocation::VERTEX_BONE_WEIGHT)) +
+        to_stringImpl(to_base(AttribLocation::COLOR)) +
+        ") in vec4 inColourData;",
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::VERTEX,
+        "layout(location = " +
+        to_stringImpl(to_base(AttribLocation::BONE_WEIGHT)) +
         ") in vec4 inBoneWeightData;",
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::VERTEX,
         "layout(location = " +
-        to_stringImpl(to_base(AttribLocation::VERTEX_BONE_INDICE)) +
+        to_stringImpl(to_base(AttribLocation::BONE_INDICE)) +
         ") in uvec4 inBoneIndiceData;",
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::VERTEX,
         "layout(location = " +
-        to_stringImpl(to_base(AttribLocation::VERTEX_WIDTH)) +
+        to_stringImpl(to_base(AttribLocation::WIDTH)) +
         ") in uint inLineWidthData;",
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::VERTEX,
         "layout(location = " +
-        to_stringImpl(to_base(AttribLocation::VERTEX_GENERIC)) +
+        to_stringImpl(to_base(AttribLocation::GENERIC)) +
         ") in vec2 inGenericData;",
         lineOffsets);
 
@@ -1312,9 +1312,9 @@ GenericVertexData* GL_API::getOrCreateIMGUIBuffer(I64 windowGUID) {
         ret->setIndexBuffer(idxBuff, BufferUpdateFrequency::OFTEN);
 
 #define OFFSETOF(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
-        AttributeDescriptor& descPos = ret->attribDescriptor(to_base(AttribLocation::VERTEX_GENERIC));
-        AttributeDescriptor& descUV = ret->attribDescriptor(to_base(AttribLocation::VERTEX_TEXCOORD));
-        AttributeDescriptor& descColour = ret->attribDescriptor(to_base(AttribLocation::VERTEX_COLOR));
+        AttributeDescriptor& descPos = ret->attribDescriptor(to_base(AttribLocation::GENERIC));
+        AttributeDescriptor& descUV = ret->attribDescriptor(to_base(AttribLocation::TEXCOORD));
+        AttributeDescriptor& descColour = ret->attribDescriptor(to_base(AttribLocation::COLOR));
 
         descPos.set(0,
                     2,

@@ -14,11 +14,11 @@ vec3   dvd_Tangent;
 
 void computeDataMinimal() {
     dvd_Vertex = vec4(inVertexData, 1.0);
-    dvd_Colour = inColourData;
+    VAR._texCoord = inTexCoordData;
     dvd_Normal = UNPACK_FLOAT(inNormalData);
     dvd_Tangent = UNPACK_FLOAT(inTangentData);
+    dvd_Colour = inColourData;
 
-    VAR._texCoord = inTexCoordData;
     VAR.dvd_baseInstance = gl_BaseInstanceARB;
     VAR.dvd_instanceID = gl_InstanceID;
     VAR.dvd_drawID = gl_DrawIDARB;

@@ -91,7 +91,7 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
                 buffer.setIndexBuffer(idxBuff, BufferUpdateFrequency::ONCE);
             }
 
-            AttributeDescriptor& desc = buffer.attribDescriptor(to_base(AttribLocation::VERTEX_POSITION));
+            AttributeDescriptor& desc = buffer.attribDescriptor(to_base(AttribLocation::POSITION));
             desc.set(g_particleGeometryBuffer, 3, GFXDataFormat::FLOAT_32);
         }
     }
@@ -136,7 +136,7 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
 
 bool ParticleEmitter::updateData(const std::shared_ptr<ParticleData>& particleData) {
     static const U32 positionAttribLocation = 13;
-    static const U32 colourAttribLocation = to_base(AttribLocation::VERTEX_COLOR);
+    static const U32 colourAttribLocation = to_base(AttribLocation::COLOR);
 
     U32 particleCount = _particles->totalCount();
 

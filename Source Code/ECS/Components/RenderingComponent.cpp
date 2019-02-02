@@ -121,12 +121,12 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
         _axisGizmo->pipeline(*_context.newPipeline(pipelineDescriptor));
         // Create the object containing all of the lines
         _axisGizmo->beginBatch(true, to_U32(_axisLines.size()) * 2, 1);
-        _axisGizmo->attribute4f(to_base(AttribLocation::VERTEX_COLOR), Util::ToFloatColour(_axisLines[0]._colourStart));
+        _axisGizmo->attribute4f(to_base(AttribLocation::COLOR), Util::ToFloatColour(_axisLines[0]._colourStart));
         // Set the mode to line rendering
         _axisGizmo->begin(PrimitiveType::LINES);
         // Add every line in the list to the batch
         for (const Line& line : _axisLines) {
-            _axisGizmo->attribute4f(to_base(AttribLocation::VERTEX_COLOR), Util::ToFloatColour(line._colourStart));
+            _axisGizmo->attribute4f(to_base(AttribLocation::COLOR), Util::ToFloatColour(line._colourStart));
             _axisGizmo->vertex(line._startPoint);
             _axisGizmo->vertex(line._endPoint);
         }

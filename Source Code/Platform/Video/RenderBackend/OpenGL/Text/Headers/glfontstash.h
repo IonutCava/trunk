@@ -45,9 +45,9 @@ constexpr bool USE_EXPLICIT_FLUSH = true;
 
 constexpr GLuint GLFONS_VB_SIZE_FACTOR = 120;
 constexpr size_t GLFONS_VB_BUFFER_SIZE = GLFONS_VB_SIZE_FACTOR * sizeof(FONSvert) * FONS_VERTEX_COUNT;
-constexpr GLuint GLFONS_VERTEX_ATTRIB = (GLuint)(Divide::AttribLocation::VERTEX_POSITION);
-constexpr GLuint GLFONS_TCOORD_ATTRIB = (GLuint)(Divide::AttribLocation::VERTEX_TEXCOORD);
-constexpr GLuint GLFONS_COLOR_ATTRIB = (GLuint)(Divide::AttribLocation::VERTEX_COLOR);
+constexpr GLuint GLFONS_VERTEX_ATTRIB = (GLuint)(Divide::AttribLocation::POSITION);
+constexpr GLuint GLFONS_TCOORD_ATTRIB = (GLuint)(Divide::AttribLocation::TEXCOORD);
+constexpr GLuint GLFONS_COLOR_ATTRIB = (GLuint)(Divide::AttribLocation::COLOR);
 
 struct GLFONScontext {
     GLuint tex;

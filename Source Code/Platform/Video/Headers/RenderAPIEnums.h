@@ -61,27 +61,16 @@ enum class RenderTargetUsage : U8 {
 
 /// State the various attribute locations to use in shaders with VAO/VB's
 enum class AttribLocation : U8 {
-    VERTEX_POSITION = 0,
-    VERTEX_COLOR = 1,
-    VERTEX_NORMAL = 2,
-    VERTEX_TEXCOORD = 3,
-    VERTEX_TANGENT = 4,
-    VERTEX_BONE_WEIGHT = 5,
-    VERTEX_BONE_INDICE = 6,
-    VERTEX_WIDTH = 7,
-    VERTEX_GENERIC = 8,
+    POSITION = 0,
+    TEXCOORD = 1,
+    NORMAL = 2,
+    TANGENT = 3,
+    COLOR = 4,
+    BONE_WEIGHT = 5,
+    BONE_INDICE = 6,
+    WIDTH = 7,
+    GENERIC = 8,
     COUNT
-};
-
-enum class VertexAttribute : U8 {
-    ATTRIB_POSITION = 0,
-    ATTRIB_COLOR = 1,
-    ATTRIB_NORMAL = 2,
-    ATTRIB_TEXCOORD = 3,
-    ATTRIB_TANGENT = 4,
-    ATTRIB_BONE_WEIGHT = 5,
-    ATTRIB_BONE_INDICE = 6,
-    COUNT = 7
 };
 
 enum class ShaderBufferLocation : U8 {
