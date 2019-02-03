@@ -61,7 +61,10 @@ bool glLockManager::wait(GLsync* syncObj, bool blockClient, bool quickCheck, U8&
             waitFlags = GL_SYNC_FLUSH_COMMANDS_BIT;
 
             if (++retryCount > kMaxWaitRetry) {
-                DIVIDE_ASSERT(waitRet != GL_TIMEOUT_EXPIRED, "glLockManager::wait error: Lock timeout");
+                if (waitRet != GL_TIMEOUT_EXPIRED) {
+                    Console::errorfn("glLockManager::wait error: Lock timeout");
+                }
+
                 return false;
             }
         }

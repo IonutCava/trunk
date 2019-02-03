@@ -76,12 +76,18 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
             GenericVertexData& buffer = getDataBuffer(static_cast<RenderStage>(j), i);
 
             buffer.create(3);
-            buffer.setBuffer(g_particleGeometryBuffer,
-                             to_U32(geometry.size()),
-                             sizeof(vec3<F32>),
-                             false,
-                             (bufferPtr)geometry.data(),
-                             BufferUpdateFrequency::ONCE);
+
+            GenericVertexData::SetBufferParams params = {};
+            params._buffer = g_particleGeometryBuffer;
+            params._elementCount = to_U32(geometry.size());
+            params._elementSize = sizeof(vec3<F32>);
+            params._useRingBuffer = false;
+            params._updateFrequency = BufferUpdateFrequency::ONCE;
+            params._sync = false;
+            params._data = (bufferPtr)geometry.data();
+            
+            buffer.setBuffer(params);
+
             if (!indices.empty()) {
                 GenericVertexData::IndexBuffer idxBuff;
                 idxBuff.smallIndices = false;
@@ -144,18 +150,22 @@ bool ParticleEmitter::updateData(const std::shared_ptr<ParticleData>& particleDa
         for (U8 j = 0; j < to_base(RenderStage::COUNT); ++j) {
             GenericVertexData& buffer = getDataBuffer(static_cast<RenderStage>(j), i);
 
-            buffer.setBuffer(g_particlePositionBuffer,
-                             particleCount,
-                             sizeof(vec4<F32>),
-                             true,
-                             NULL,
-                             BufferUpdateFrequency::OFTEN);
-            buffer.setBuffer(g_particleColourBuffer,
-                             particleCount,
-                             sizeof(UColour),
-                             true,
-                             NULL,
-                             BufferUpdateFrequency::OFTEN);
+            GenericVertexData::SetBufferParams params = {};
+            params._buffer = g_particlePositionBuffer;
+            params._elementCount = particleCount;
+            params._elementSize = sizeof(vec4<F32>);
+            params._useRingBuffer = true;
+            params._updateFrequency = BufferUpdateFrequency::OFTEN;
+            params._sync = true;
+            params._data = NULL;
+
+            buffer.setBuffer(params);
+
+            params._buffer = g_particleColourBuffer;
+            params._elementCount = particleCount;
+            params._elementSize = sizeof(UColour);
+
+            buffer.setBuffer(params);
 
             buffer.attribDescriptor(positionAttribLocation).set(g_particlePositionBuffer,
                                                                 4,

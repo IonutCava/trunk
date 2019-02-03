@@ -110,10 +110,12 @@ glBufferImpl::~glBufferImpl()
     }
 }
 
-void glBufferImpl::waitRange(size_t offsetInBytes, size_t rangeInBytes, bool blockClient) {
+bool glBufferImpl::waitRange(size_t offsetInBytes, size_t rangeInBytes, bool blockClient) {
     if (!_unsynced) {
-        GL_API::getLockManager().WaitForLockedRange(getGUID(), offsetInBytes, rangeInBytes);
+        return GL_API::getLockManager().WaitForLockedRange(getGUID(), offsetInBytes, rangeInBytes);
     }
+
+    return true;
 }
 
 void glBufferImpl::lockRange(size_t offsetInBytes, size_t rangeInBytes, bool flush) {
@@ -147,11 +149,10 @@ bool glBufferImpl::bindRange(GLuint bindIndex, size_t offsetInBytes, size_t rang
 
 void glBufferImpl::writeData(size_t offsetInBytes, size_t rangeInBytes, const bufferPtr data)
 {
-    if (_mappedBuffer) {
-        waitRange(offsetInBytes, rangeInBytes, true);
+    if (_mappedBuffer && waitRange(offsetInBytes, rangeInBytes, true)) {
         std::memcpy(((Byte*)_mappedBuffer) + offsetInBytes,
-                        data,
-                        rangeInBytes);
+            data,
+            rangeInBytes);
         if (_useExplicitFlush) {
             glFlushMappedNamedBufferRange(_handle, offsetInBytes, rangeInBytes);
         }
@@ -171,8 +172,7 @@ void glBufferImpl::readData(size_t offsetInBytes, size_t rangeInBytes, const buf
     glMemoryBarrier(_target == GL_ATOMIC_COUNTER_BUFFER ? MemoryBarrierMask::GL_ATOMIC_COUNTER_BARRIER_BIT
                                                         : MemoryBarrierMask::GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT);
 
-    if (_mappedBuffer) {
-        waitRange(offsetInBytes, rangeInBytes, true);
+    if (_mappedBuffer && waitRange(offsetInBytes, rangeInBytes, true)) {
         /*glMemoryBarrier(_target == GL_ATOMIC_COUNTER_BUFFER ? MemoryBarrierMask::GL_ATOMIC_COUNTER_BARRIER_BIT
                                                             : MemoryBarrierMask::GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT);*/
 
@@ -189,8 +189,7 @@ void glBufferImpl::readData(size_t offsetInBytes, size_t rangeInBytes, const buf
 }
 
 void glBufferImpl::clearData(size_t offsetInBytes, size_t rangeInBytes) {
-    if (_mappedBuffer) {
-        waitRange(offsetInBytes, rangeInBytes, true);
+    if (_mappedBuffer && waitRange(offsetInBytes, rangeInBytes, true)) {
         std::memset(((Byte*)_mappedBuffer) + offsetInBytes, 0, rangeInBytes);
         if (_useExplicitFlush) {
             glFlushMappedNamedBufferRange(_handle, offsetInBytes, rangeInBytes);

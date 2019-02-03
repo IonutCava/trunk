@@ -46,6 +46,7 @@ struct BufferParams {
           _frequency(BufferUpdateFrequency::ONCE),
           _data(nullptr),
           _zeroMem(false),
+          _unsynced(true),
           _forcePersistentMap(false),
           _name("")
     {
@@ -58,6 +59,7 @@ struct BufferParams {
     BufferUpdateFrequency _frequency;
     bufferPtr   _data;
     bool        _zeroMem;
+    bool        _unsynced; 
     bool        _forcePersistentMap;
     const char* _name;
 };

@@ -130,12 +130,7 @@ namespace Divide {
 
         void draw(const GenericDrawCommand& command) override {}
 
-        void setBuffer(U32 buffer,
-            U32 elementCount,
-            size_t elementSize,
-            bool useRingBuffer,
-            const bufferPtr data,
-            BufferUpdateFrequency updateFrequency) override {}
+        void setBuffer(const SetBufferParams& params) override {}
 
         void updateBuffer(U32 buffer,
             U32 elementCount,

@@ -128,12 +128,9 @@ void glGenericVertexData::updateIndexBuffer(const IndexBuffer& indices) {
 }
 
 /// Specify the structure and data of the given buffer
-void glGenericVertexData::setBuffer(U32 buffer,
-                                    U32 elementCount,
-                                    size_t elementSize,
-                                    bool useRingBuffer,
-                                    const bufferPtr data,
-                                    BufferUpdateFrequency updateFrequency) {
+void glGenericVertexData::setBuffer(const SetBufferParams& params) {
+    U32 buffer = params._buffer;
+
     // Make sure the buffer exists
     assert(buffer >= 0 && buffer < _bufferObjects.size() &&
            "glGenericVertexData error: set buffer called for invalid buffer index!");
@@ -141,15 +138,17 @@ void glGenericVertexData::setBuffer(U32 buffer,
     assert(_bufferObjects[buffer] == nullptr &&
            "glGenericVertexData::setBuffer : buffer re-purposing is not supported at the moment");
 
-    BufferParams params;
-    params._usage = GL_ARRAY_BUFFER;
-    params._elementCount = elementCount;
-    params._elementSizeInBytes = elementSize;
-    params._frequency = updateFrequency;
-    params._ringSizeFactor = useRingBuffer ? queueLength() : 1;
-    params._data = data;
-    params._name = _name.empty() ? nullptr : _name.c_str();
-    glGenericBuffer* tempBuffer = MemoryManager_NEW glGenericBuffer(_context, params);
+    BufferParams paramsOut = {};
+    paramsOut._usage = GL_ARRAY_BUFFER;
+    paramsOut._elementCount = params._elementCount;
+    paramsOut._elementSizeInBytes = params._elementSize;
+    paramsOut._frequency = params._updateFrequency;
+    paramsOut._ringSizeFactor = params._useRingBuffer ? queueLength() : 1;
+    paramsOut._data = params._data;
+    paramsOut._name = _name.empty() ? nullptr : _name.c_str();
+    paramsOut._unsynced = !params._sync;
+
+    glGenericBuffer * tempBuffer = MemoryManager_NEW glGenericBuffer(_context, paramsOut);
     _bufferObjects[buffer] = tempBuffer;
 }
 

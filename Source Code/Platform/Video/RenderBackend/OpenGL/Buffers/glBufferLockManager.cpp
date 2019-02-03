@@ -44,11 +44,12 @@ bool glBufferLockManager::WaitForLockedRange(size_t lockBeginBytes,
             U8 retryCount = 0;
             if (wait(&lock._syncObj, blockClient, quickCheck, retryCount)) {
                 GL_API::registerSyncDelete(lock._syncObj);
+
+                if (retryCount > 0) {
+                    //Console::d_errorfn("glBufferLockManager::WaitForLockedRange: Wait (%p) [%d - %d] %s - %d retries", this, lockBeginBytes, lockLength, blockClient ? "true" : "false", retryCount);
+                }
+                ret = true;
             }
-            if (retryCount > 0) {
-                //Console::d_errorfn("glBufferLockManager::WaitForLockedRange: Wait (%p) [%d - %d] %s - %d retries", this, lockBeginBytes, lockLength, blockClient ? "true" : "false", retryCount);
-            }
-            ret = true;
         } else {
             _swapLocks.push_back(lock);
         }

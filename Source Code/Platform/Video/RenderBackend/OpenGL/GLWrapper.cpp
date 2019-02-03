@@ -954,6 +954,7 @@ void GL_API::drawIMGUI(ImDrawData* data, I64 windowGUID) {
                 }
                 cmd._cmd.firstIndex += pcmd->ElemCount;
             }
+            lockBuffers();
         }
     }
 }
@@ -1308,7 +1309,17 @@ GenericVertexData* GL_API::getOrCreateIMGUIBuffer(I64 windowGUID) {
         idxBuff.count = MAX_IMGUI_VERTS * 3;
 
         ret->create(1);
-        ret->setBuffer(0, MAX_IMGUI_VERTS, sizeof(ImDrawVert), true, NULL, BufferUpdateFrequency::OFTEN); //Pos, UV and Colour
+
+        GenericVertexData::SetBufferParams params = {};
+        params._buffer = 0;
+        params._elementCount = MAX_IMGUI_VERTS;
+        params._elementSize = sizeof(ImDrawVert);
+        params._useRingBuffer = true;
+        params._updateFrequency = BufferUpdateFrequency::OFTEN;
+        params._sync = true;
+        params._data = NULL;
+
+        ret->setBuffer(params); //Pos, UV and Colour
         ret->setIndexBuffer(idxBuff, BufferUpdateFrequency::OFTEN);
 
 #define OFFSETOF(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))

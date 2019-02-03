@@ -84,12 +84,7 @@ class glGenericVertexData final : public GenericVertexData {
 
     void updateIndexBuffer(const IndexBuffer& indices) override;
 
-    void setBuffer(U32 buffer,
-                   U32 elementCount,
-                   size_t elementSize,
-                   bool useRingBuffer,
-                   const bufferPtr data,
-                   BufferUpdateFrequency updateFrequency) override;
+    void setBuffer(const SetBufferParams& params) override;
 
     void updateBuffer(U32 buffer, U32 elementCount, U32 elementCountOffset, const bufferPtr data) override;
 

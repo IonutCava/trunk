@@ -57,6 +57,16 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
          bool smallIndices = false;
      };
 
+     struct SetBufferParams {
+         U32 _buffer = 0;
+         U32 _elementCount = 0;
+         size_t _elementSize = 0;
+         bool _useRingBuffer = false;
+         bufferPtr _data = nullptr;
+         BufferUpdateFrequency _updateFrequency = BufferUpdateFrequency::COUNT;
+         bool _sync = false;
+     };
+
    public:
     GenericVertexData(GFXDevice& context, const U32 ringBufferLength, const char* name = nullptr);
     virtual ~GenericVertexData();
@@ -70,12 +80,7 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
 
     /// When reading and writing to the same buffer, we use a round-robin approach and
     /// offset the reading and writing to multiple copies of the data
-    virtual void setBuffer(U32 buffer,
-                           U32 elementCount,
-                           size_t elementSize,
-                           bool useRingBuffer,
-                           const bufferPtr data,
-                           BufferUpdateFrequency updateFrequency) = 0;
+    virtual void setBuffer(const SetBufferParams& params) = 0;
 
     virtual void updateBuffer(U32 buffer,
                               U32 elementCount,

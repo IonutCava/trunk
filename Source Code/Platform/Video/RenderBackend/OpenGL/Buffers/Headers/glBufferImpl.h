@@ -70,7 +70,7 @@ public:
 
     bool bindRange(GLuint bindIndex, size_t offsetInBytes, size_t rangeInBytes);
     void lockRange(size_t offsetInBytes, size_t rangeInBytes, bool flush);
-    void waitRange(size_t offsetInBytes, size_t rangeInBytes, bool blockClient);
+    bool waitRange(size_t offsetInBytes, size_t rangeInBytes, bool blockClient);
 
     void writeData(size_t offsetInBytes, size_t rangeInBytes, bufferPtr data);
     void readData(size_t offsetInBytes, size_t rangeInBytes, const bufferPtr data);
