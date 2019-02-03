@@ -40,18 +40,25 @@ namespace Divide {
 
 enum class RenderAPI : U8;
 
+enum class WindowMode : U8 {
+    WINDOWED = 0,
+    BORDERLESS_WINDOWED,
+    FULLSCREEN
+};
+
 struct WindowDescriptor {
     enum class Flags : U16 {
         FULLSCREEN = toBit(1),
-        DECORATED = toBit(2),
-        RESIZEABLE = toBit(3),
-        HIDDEN = toBit(4),
-        ALLOW_HIGH_DPI = toBit(5),
-        ALWAYS_ON_TOP = toBit(6),
-        CLEAR_DEPTH = toBit(7),
-        CLEAR_COLOUR = toBit(8),
-        VSYNC = toBit(9),
-        SHARE_CONTEXT = toBit(10)
+        FULLSCREEN_DESKTOP = toBit(2),
+        DECORATED = toBit(3),
+        RESIZEABLE = toBit(4),
+        HIDDEN = toBit(5),
+        ALLOW_HIGH_DPI = toBit(6),
+        ALWAYS_ON_TOP = toBit(7),
+        CLEAR_DEPTH = toBit(8),
+        CLEAR_COLOUR = toBit(9),
+        VSYNC = toBit(10),
+        SHARE_CONTEXT = toBit(11)
     };
 
     bool externalClose = false;
@@ -82,8 +89,8 @@ public:
 
     ErrorCode init(PlatformContext& context,
                    const vec2<I16>& initialPosition,
-                   const vec2<U16>& initialResolution,
-                   bool startFullScreen,
+                   const vec2<U16>& initialSize,
+                   WindowMode windowMode,
                    I32 targetDisplayIndex);
 
     void close();

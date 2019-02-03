@@ -72,12 +72,13 @@ public:
         U8 targetRenderingAPI;
         bool useFixedTimestep;
         I16 maxWorkerThreads;
-        bool windowedMode;
+        U8   windowedMode;
         bool windowResizable;
         bool enableVSync;
         bool adaptiveSync;
         I16  frameRateLimit;
         vec2<U16> splashScreen;
+        vec2<U16> windowSize;
         vec2<U16> resolution;
         F32 simSpeed;
         F32 zNear;

@@ -20,6 +20,12 @@ vec3 UNPACK_FLOAT(in float value) {
     return (fract(vec3(1.0, 256.0, 65536.0) * value)* 2.0) - 1.0;
 }
 
+vec2 UNPACK_FLOAT(in uint value) {
+    return vec2(
+        (value >> 16) / 65535.0f,
+        (value & 0xFFFF) / 65535.0f);
+}
+
 #if defined(COMPUTE_SHADER)
 struct IndirectDrawCommand {
     uint count;

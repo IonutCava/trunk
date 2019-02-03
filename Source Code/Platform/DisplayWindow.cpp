@@ -70,6 +70,12 @@ ErrorCode DisplayWindow::init(U32 windowFlags,
     _type = initialType;
     _title = descriptor.title;
     _windowDimensions = descriptor.dimensions;
+    if (BitCompare(descriptor.flags, WindowDescriptor::Flags::FULLSCREEN) ||
+        BitCompare(descriptor.flags, WindowDescriptor::Flags::FULLSCREEN_DESKTOP))
+    {
+        _windowDimensions.set(_parent.getFullscreenResolution());
+    }
+    
 
     vec2<I32> position(descriptor.position);
 
@@ -92,6 +98,9 @@ ErrorCode DisplayWindow::init(U32 windowFlags,
                                   windowFlags);
 
     _windowID = SDL_GetWindowID(_sdlWindow);
+    I32 width = -1, height = -1;
+    SDL_GetWindowSize(_sdlWindow, &width, &height);
+    _windowDimensions.set(width, height);
 
     // Check if we have a valid window
     if (!_sdlWindow) {

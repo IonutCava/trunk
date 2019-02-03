@@ -792,7 +792,7 @@ void WarScene::postLoadMainThread() {
                                      pixelPosition(resolution.width - 220, 60),
                                      pixelScale(100, 25));
     btn->setEventCallback(GUIButton::Event::MouseClick, [this](I64 btnGUID) { startSimulation(btnGUID); });
-                            
+
     btn = _GUI->addButton(_ID("ShaderReload"),
                           "Shader Reload",
                           pixelPosition(resolution.width - 220, 30),

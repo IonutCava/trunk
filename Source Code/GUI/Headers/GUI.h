@@ -75,7 +75,7 @@ public:
     ~GUI();
 
     /// Create the GUI
-    bool init(PlatformContext& context, ResourceCache& cache, const vec2<U16>& renderResolution);
+    bool init(PlatformContext& context, ResourceCache& cache);
     void destroy();
 
     void draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut);

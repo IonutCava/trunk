@@ -174,6 +174,9 @@ public:
     bool setDimensions(U16& width, U16& height);
     bool setDimensions(vec2<U16>& dimensions);
 
+    /// Centering is also easier via SDL
+    void centerWindowPosition();
+
     void bringToFront() const;
 
     vec2<U16> getDimensions() const;
@@ -212,8 +215,6 @@ public:
 
 private:
     void restore();
-    /// Centering is also easier via SDL
-    void centerWindowPosition();
     /// Changing from one window type to another
     /// should also change display dimensions and position
     void handleChangeWindowType(WindowType newWindowType);

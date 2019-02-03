@@ -455,7 +455,21 @@ inline F32 PACK_VEC3(const F32 x, const F32 y, const F32 z) {
                       FLOAT_TO_CHAR(z));
 }
 
+inline U32 PACK_VEC2(F32 x, F32 y) {
+    U32 xScaled = to_U32(x * 0xFFFF);
+    U32 yScaled = to_U32(y * 0xFFFF);
+    return (xScaled << 16) | (yScaled & 0xFFFF);
+}
+
 F32 PACK_VEC3(const vec3<F32>& value);
+
+U32 PACK_VEC2(const vec2<F32>& value);
+
+U32 PACK_HALF2x16(const vec2<F32>& value);
+void UNPACK_HALF2x16(const U32 src, vec2<F32>& value);
+
+U32 PACK_UNORM4x8(const vec4<U8>& value);
+void UNPACK_UNORM4x8(const U32 src, vec4<U8>& value);
 
 inline void UNPACK_VEC3(const F32 src, F32& x, F32& y, F32& z) {
     UNPACK_FLOAT(src, x, y, z);
@@ -464,6 +478,9 @@ inline void UNPACK_VEC3(const F32 src, F32& x, F32& y, F32& z) {
 void UNPACK_VEC3(const F32 src, vec3<F32>& res);
 
 vec3<F32> UNPACK_VEC3(const F32 src);
+
+void UNPACK_VEC2(const U32 src, F32& x, F32& y);
+void UNPACK_VEC2(const U32 src, vec2<F32>& res);
 
 U32 PACK_11_11_10(const vec3<F32>& value);
 

@@ -3,6 +3,8 @@
 #include "Headers/MathMatrices.h"
 #include "Headers/Quaternion.h"
 
+#include <glm/glm.hpp>
+
 namespace Divide {
 namespace Util {
 
@@ -205,6 +207,10 @@ F32 PACK_VEC3(const vec3<F32>& value) {
     return PACK_VEC3(value.x, value.y, value.z);
 }
 
+U32 PACK_VEC2(const vec2<F32>& value) {
+    return PACK_VEC2(value.x, value.y);
+}
+
 void UNPACK_VEC3(const F32 src, vec3<F32>& res) {
     UNPACK_FLOAT(src, res.x, res.y, res.z);
 }
@@ -213,6 +219,33 @@ vec3<F32> UNPACK_VEC3(const F32 src) {
     vec3<F32> res;
     UNPACK_VEC3(src, res);
     return res;
+}
+
+void UNPACK_VEC2(const U32 src, vec2<F32>& res) {
+    UNPACK_VEC2(src, res.x, res.y);
+}
+
+void UNPACK_VEC2(const U32 src, F32& x, F32& y) {
+    x = (src >> 16) / 65535.0f;
+    y = (src & 0xFFFF) / 65535.0f;
+}
+
+U32 PACK_HALF2x16(const vec2<F32>& value) {
+    return to_U32(glm::packHalf2x16(glm::mediump_vec2(value.x, value.y)));
+}
+
+void UNPACK_HALF2x16(const U32 src, vec2<F32>& value) {
+    glm::vec2 ret = glm::unpackHalf2x16(src);
+    value.set(ret.x, ret.y);
+}
+
+U32 PACK_UNORM4x8(const vec4<U8>& value) {
+    return to_U32(glm::packUnorm4x8(glm::mediump_vec4(value.x, value.y, value.z, value.w)));
+}
+
+void UNPACK_UNORM4x8(const U32 src, vec4<U8>& value) {
+    glm::vec4 ret = glm::unpackUnorm4x8(src);
+    value.set(ret.x, ret.y, ret.z, ret.w);
 }
 
 U32 PACK_11_11_10(const vec3<F32>& value) {

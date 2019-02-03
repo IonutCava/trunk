@@ -3,7 +3,10 @@
 #include "Headers/Configuration.h"
 
 #include "Core/Headers/Console.h"
+#include "Core/Headers/WindowManager.h"
+
 #include "Utility/Headers/Localization.h"
+
 #include "Platform/Video/Headers/RenderAPIEnums.h"
 #include "Platform/File/Headers/FileManagement.h"
 
@@ -23,12 +26,13 @@ Configuration::Configuration() : XML::IXMLSerializable()
     runtime.targetRenderingAPI = to_U8(RenderAPI::OpenGL);
     runtime.useFixedTimestep = true;
     runtime.maxWorkerThreads = -1;
-    runtime.windowedMode = true;
+    runtime.windowedMode = to_U8(WindowMode::WINDOWED);
     runtime.windowResizable = false;
     runtime.enableVSync = false;
     runtime.adaptiveSync = true;
     runtime.frameRateLimit = -1;
     runtime.splashScreen.set(400, 300);
+    runtime.windowSize.set(1280, 768);
     runtime.resolution.set(1024, 768);
     runtime.simSpeed = 1.0f;
     runtime.zNear = 0.1f;
@@ -103,6 +107,8 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(runtime.adaptiveSync);
         GET_PARAM_ATTRIB(runtime.splashScreen, w);
         GET_PARAM_ATTRIB(runtime.splashScreen, h);
+        GET_PARAM_ATTRIB(runtime.windowSize, w);
+        GET_PARAM_ATTRIB(runtime.windowSize, h);
         GET_PARAM_ATTRIB(runtime.resolution, w);
         GET_PARAM_ATTRIB(runtime.resolution, h);
         GET_PARAM(runtime.simSpeed);
@@ -183,6 +189,8 @@ bool Configuration::toXML(const char* xmlFile) const {
     PUT_PARAM(runtime.adaptiveSync);
     PUT_PARAM_ATTRIB(runtime.splashScreen, w);
     PUT_PARAM_ATTRIB(runtime.splashScreen, h);
+    PUT_PARAM_ATTRIB(runtime.windowSize, w);
+    PUT_PARAM_ATTRIB(runtime.windowSize, h);
     PUT_PARAM_ATTRIB(runtime.resolution, w);
     PUT_PARAM_ATTRIB(runtime.resolution, h);
     PUT_PARAM(runtime.simSpeed);

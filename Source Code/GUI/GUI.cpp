@@ -160,7 +160,7 @@ void GUI::update(const U64 deltaTimeUS) {
     }
 }
 
-bool GUI::init(PlatformContext& context, ResourceCache& cache, const vec2<U16>& renderResolution) {
+bool GUI::init(PlatformContext& context, ResourceCache& cache) {
     if (_init) {
         Console::d_errorfn(Locale::get(_ID("ERROR_GUI_DOUBLE_INIT")));
         return false;
@@ -205,6 +205,15 @@ bool GUI::init(PlatformContext& context, ResourceCache& cache, const vec2<U16>& 
     CEGUI::FontManager::getSingleton().createFromFile("DejaVuSans-12-NoScale.font");
     CEGUI::SchemeManager::getSingleton().createFromFile((_defaultGUIScheme + ".scheme").c_str());
 
+    const DisplayWindow& mainWindow = context.activeWindow();
+    const vec2<U16>& windowSize = mainWindow.getDimensions();
+
+    CEGUI::Sizef size(static_cast<float>(windowSize.width), static_cast<float>(windowSize.height));
+    // We create a CEGUI texture target and create a GUIContext that will use it.
+    _ceguiRenderTextureTarget = CEGUI::System::getSingleton().getRenderer()->createTextureTarget();
+    _ceguiRenderTextureTarget->declareRenderSize(size);
+    _ceguiContext = &CEGUI::System::getSingleton().createGUIContext(static_cast<CEGUI::RenderTarget&>(*_ceguiRenderTextureTarget));
+
     _rootSheet = CEGUI::WindowManager::getSingleton().createWindow("DefaultWindow", "root_window");
     _rootSheet->setMousePassThroughEnabled(true);
     _rootSheet->setUsingAutoRenderingSurface(false);
@@ -213,13 +222,6 @@ bool GUI::init(PlatformContext& context, ResourceCache& cache, const vec2<U16>& 
     if (parent().platformContext().config().gui.cegui.showDebugCursor) {
         _rootSheet->setMouseCursor("GWEN/Tree.Plus");
     }
-    
-    CEGUI::Sizef size(static_cast<float>(renderResolution.width), static_cast<float>(renderResolution.height));
-    // We create a CEGUI texture target and create a GUIContext that will use it.
-    _ceguiRenderTextureTarget = CEGUI::System::getSingleton().getRenderer()->createTextureTarget();
-    _ceguiRenderTextureTarget->declareRenderSize(size);
-    _ceguiContext = &CEGUI::System::getSingleton().createGUIContext(static_cast<CEGUI::RenderTarget&>(*_ceguiRenderTextureTarget));
-
     _ceguiContext->setRootWindow(_rootSheet);
     _ceguiContext->setDefaultTooltipType((_defaultGUIScheme + "/Tooltip").c_str());
   
@@ -237,7 +239,7 @@ bool GUI::init(PlatformContext& context, ResourceCache& cache, const vec2<U16>& 
     GUIButton::soundCallback([&context](const AudioDescriptor_ptr& sound) { context.sfx().playSound(sound); });
 
     if (parent().platformContext().config().gui.cegui.enabled) {
-        CEGUI::System::getSingleton().notifyDisplaySizeChanged(CEGUI::Sizef(renderResolution.width, renderResolution.height));
+        CEGUI::System::getSingleton().notifyDisplaySizeChanged(CEGUI::Sizef(windowSize.width, windowSize.height));
     }
 
     _init = true;

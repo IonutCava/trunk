@@ -73,8 +73,8 @@ vec2<U16> WindowManager::getFullscreenResolution() const {
 
 ErrorCode WindowManager::init(PlatformContext& context,
                               const vec2<I16>& initialPosition,
-                              const vec2<U16>& initialResolution,
-                              bool startFullScreen,
+                              const vec2<U16>& initialSize,
+                              WindowMode windowMode,
                               I32 targetDisplayIndex)
 {
     if (!_monitors.empty()) {
@@ -149,7 +149,7 @@ ErrorCode WindowManager::init(PlatformContext& context,
 
     WindowDescriptor descriptor = {};
     descriptor.position = initialPosition;
-    descriptor.dimensions = initialResolution;
+    descriptor.dimensions = initialSize;
     descriptor.targetDisplay = displayIndex;
     descriptor.title = _context->config().title;
     descriptor.externalClose = false;
@@ -159,10 +159,13 @@ ErrorCode WindowManager::init(PlatformContext& context,
 
     SetBit(descriptor.flags, WindowDescriptor::Flags::HIDDEN);
 
-    if (startFullScreen) {
+    if (windowMode == WindowMode::FULLSCREEN) {
         SetBit(descriptor.flags, WindowDescriptor::Flags::FULLSCREEN);
+    } else if (windowMode == WindowMode::BORDERLESS_WINDOWED) {
+        SetBit(descriptor.flags, WindowDescriptor::Flags::FULLSCREEN_DESKTOP);
     }
-    if (!_context->config().runtime.windowResizable) {
+
+    if (windowMode != WindowMode::WINDOWED || !_context->config().runtime.windowResizable) {
         ClearBit(descriptor.flags, WindowDescriptor::Flags::RESIZEABLE);
     }
 
@@ -258,14 +261,22 @@ DisplayWindow& WindowManager::createWindow(const WindowDescriptor& descriptor, E
     if (BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::ALWAYS_ON_TOP))) {
         mainWindowFlags |= SDL_WINDOW_ALWAYS_ON_TOP;
     }
-    bool fullscreen = BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::FULLSCREEN));
+
+    WindowType winType = WindowType::WINDOW;
+    if (BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::FULLSCREEN))) {
+        winType = WindowType::FULLSCREEN;
+        mainWindowFlags |= SDL_WINDOW_FULLSCREEN;
+    } else if (BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::FULLSCREEN_DESKTOP))) {
+        winType = WindowType::FULLSCREEN_WINDOWED;
+        mainWindowFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+    }
 
     if (err == ErrorCode::NO_ERR) {
         err = configureAPISettings(descriptor.flags);
     }
 
     err = window->init(mainWindowFlags,
-                       fullscreen ? WindowType::FULLSCREEN : WindowType::WINDOW,
+                       winType,
                        descriptor);
 
     window->clearColour(descriptor.clearColour,

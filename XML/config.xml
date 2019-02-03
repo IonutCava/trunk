@@ -28,10 +28,10 @@
   <useFixedTimestep>true</useFixedTimestep>
   <!-- The maximum number of worker threads that we want to spawn. -1 = (CPU thread count - 1). We will always spawn a minimum of 5 threads-->
   <maxWorkerThreads>-1</maxWorkerThreads>
-  <!-- set to true to start the application in windowed mode -->
-  <windowedMode>true</windowedMode>
+  <!-- 0 = windowed, 1 = borderless window, 2 = fullscreen (has some issues)-->
+  <windowedMode>0</windowedMode>
   <!-- do we allow window resizing if running in windowed mode? -->
-  <windowResizable>true</windowResizable>
+  <windowResizable>false</windowResizable>
   <!-- cap framerate. Set to 0 or less to disable -->
   <frameRateLimit>0</frameRateLimit>
   <!-- toggle Vsync on or off. This can be overridden by the display driver! -->
@@ -40,6 +40,8 @@
   <adaptiveSync>true</adaptiveSync>
   <!-- splash screen dimensions -->
   <splashScreenSize w="400" h="300"/>
+  <!-- window size. Only for windowed mode! -->
+  <windowSize w="1280" h ="720"/>
   <!-- rendering resolution -->
   <resolution w="1280" h="720" />
   <!-- Physics simulation speed multiplier. Tweak this for faster or slower simulations (ex: slow motion explosions)-->

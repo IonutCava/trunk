@@ -102,8 +102,10 @@ Kernel::~Kernel()
 void Kernel::startSplashScreen() {
 
     DisplayWindow& window = _platformContext->activeWindow();
-    WAIT_FOR_CONDITION(window.setDimensions(_platformContext->config().runtime.splashScreen));
     window.changeType(WindowType::SPLASH);
+    WAIT_FOR_CONDITION(window.setDimensions(_platformContext->config().runtime.splashScreen));
+    window.centerWindowPosition();
+
     window.hidden(false);
     
     bool expected = false;
@@ -611,14 +613,11 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     _platformContext->app().setMemoryLogFile(mem.compare("none") == 0 ? "mem.log" : mem);
     Console::printfn(Locale::get(_ID("START_RENDER_INTERFACE")));
 
-    // Fullscreen is automatically calculated
-    bool startFullScreen = !config.runtime.windowedMode;
     WindowManager& winManager = _platformContext->app().windowManager();
-
     ErrorCode initError = winManager.init(*_platformContext,
                                            vec2<I16>(-1),
-                                           config.runtime.resolution,
-                                           startFullScreen,
+                                           config.runtime.windowSize,
+                                           static_cast<WindowMode>(config.runtime.windowedMode),
                                            config.runtime.targetDisplay);
 
     if (initError != ErrorCode::NO_ERR) {
@@ -627,10 +626,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
     Camera::initPool();
 
-    // Match initial rendering resolution to window/screen size
-    const DisplayWindow& mainWindow = winManager.getMainWindow();
-    vec2<U16> renderResolution(mainWindow.getDimensions());
-    initError = _platformContext->gfx().initRenderingAPI(_argc, _argv, renderResolution);
+    initError = _platformContext->gfx().initRenderingAPI(_argc, _argv, config.runtime.resolution);
 
     // If we could not initialize the graphics device, exit
     if (initError != ErrorCode::NO_ERR) {
@@ -694,7 +690,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     Attorney::ShaderProgramKernel::useShaderBinaryCache(config.debug.useShaderBinaryCache);
 
     // Initialize GUI with our current resolution
-    _platformContext->gui().init(*_platformContext, *_resCache, renderResolution);
+    _platformContext->gui().init(*_platformContext, *_resCache);
     startSplashScreen();
 
     Console::printfn(Locale::get(_ID("START_SOUND_INTERFACE")));
@@ -730,7 +726,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
         return ErrorCode::MISSING_SCENE_LOAD_CALL;
     }
     if (Config::Build::ENABLE_EDITOR) {
-        if (!_platformContext->editor().init(renderResolution)) {
+        if (!_platformContext->editor().init(config.runtime.resolution)) {
             return ErrorCode::EDITOR_INIT_ERROR;
         }
         _sceneManager->addSelectionCallback([&](PlayerIndex idx, SceneGraphNode* node) {
