@@ -319,7 +319,7 @@ void MainScene::test(const Task& parentTask, AnyParam a, CallbackParam b) {
     }
 }
 
-void MainScene::postLoadMainThread() {
+void MainScene::postLoadMainThread(const Rect<U16>& targetRenderViewport) {
     _GUI->addText("fpsDisplay",  // Unique ID
         pixelPosition(60, 60),  // Position
         Font::DIVIDE_DEFAULT,  // Font
@@ -343,7 +343,7 @@ void MainScene::postLoadMainThread() {
         Util::StringFormat("Position [ X: %5.0f | Y: %5.0f | Z: %5.0f ] [Pitch: %5.2f | Yaw: %5.2f]",
             eyePos.x, eyePos.y, eyePos.z, euler.pitch, euler.yaw));
 
-    Scene::postLoadMainThread();
+    Scene::postLoadMainThread(targetRenderViewport);
 }
 
 };

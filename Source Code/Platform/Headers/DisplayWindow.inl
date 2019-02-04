@@ -101,7 +101,11 @@ namespace Divide {
     }
 
 
-    inline bool DisplayWindow::hidden() const {
+    inline bool DisplayWindow::decorated() const {
+        return BitCompare(_flags, WindowFlags::DECORATED);
+    }
+
+        inline bool DisplayWindow::hidden() const {
         return BitCompare(_flags, WindowFlags::HIDDEN);
     }
 

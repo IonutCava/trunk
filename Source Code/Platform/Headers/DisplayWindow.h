@@ -45,9 +45,8 @@ namespace Divide {
 
 enum class WindowType : U8 {
     WINDOW = 0,
-    SPLASH = 1,
-    FULLSCREEN = 2,
-    FULLSCREEN_WINDOWED = 3,
+    FULLSCREEN = 1,
+    FULLSCREEN_WINDOWED = 2,
     COUNT
 };
 
@@ -92,7 +91,8 @@ enum class WindowFlags : U16 {
     MINIMIZED = toBit(7),
     MAXIMIZED = toBit(8),
     HIDDEN = toBit(9),
-    OWNS_RENDER_CONTEXT = toBit(10), //BAD
+    DECORATED = toBit(10),
+    OWNS_RENDER_CONTEXT = toBit(11), //BAD
     COUNT
 };
 
@@ -154,6 +154,9 @@ public:
 
     inline bool hidden() const;
            void hidden(const bool state);
+
+    inline bool decorated() const;
+           void decorated(const bool state);
 
     inline bool fullscreen() const;
 

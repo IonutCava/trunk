@@ -80,7 +80,7 @@ public:
 
     void draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut);
 
-    void onSizeChange(const SizeChangeParams& params) override;
+    void onSizeChange(const SizeChangeParams& params);
     void onChangeScene(Scene* newScene);
     void onUnloadScene(Scene* scene);
 

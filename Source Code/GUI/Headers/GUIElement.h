@@ -106,10 +106,6 @@ class GUIElement : public GUIDWrapper {
         ACKNOWLEDGE_UNUSED(tooltipText);
     }
 
-    virtual void onSizeChange(const SizeChangeParams& params) {
-        ACKNOWLEDGE_UNUSED(params);
-    }
-
    protected:
     GUIType _guiType;
     CEGUI::Window* _parent;

@@ -174,8 +174,7 @@ bool GUI::init(PlatformContext& context, ResourceCache& cache) {
         CEGUI::Logger::getSingleton().setLoggingLevel(CEGUI::Informative);
     }
 
-    CEGUI::DefaultResourceProvider* rp
-        = static_cast<CEGUI::DefaultResourceProvider*>(CEGUI::System::getSingleton().getResourceProvider());
+    CEGUI::DefaultResourceProvider* rp = static_cast<CEGUI::DefaultResourceProvider*>(CEGUI::System::getSingleton().getResourceProvider());
 
     CEGUI::String CEGUIInstallSharePath(Paths::g_assetsLocation + Paths::g_GUILocation);
     rp->setResourceGroupDirectory("schemes", CEGUIInstallSharePath + "schemes/");
@@ -280,35 +279,25 @@ void GUI::onSizeChange(const SizeChangeParams& params) {
         return;
     }
 
-    if (parent().platformContext().config().gui.cegui.enabled) {
-        // Changing the window size 
-        if ((params.isWindowResize || params.isFullScreen)) {
-            CEGUI::Sizef windowSize(params.width, params.height);
-            CEGUI::System::getSingleton().notifyDisplaySizeChanged(windowSize);
-            if (_ceguiRenderTextureTarget) {
-                _ceguiRenderTextureTarget->declareRenderSize(windowSize);
-            }
-        }
-
-        if (_rootSheet) {
-            const Rect<I32>& renderViewport = parent().platformContext().activeWindow().renderingViewport();
-            _rootSheet->setSize(CEGUI::USize(CEGUI::UDim(0.0f, to_F32(renderViewport.z)),
-                                             CEGUI::UDim(0.0f, to_F32(renderViewport.w))));
-            _rootSheet->setPosition(CEGUI::UVector2(CEGUI::UDim(0.0f, to_F32(renderViewport.x)),
-                                                    CEGUI::UDim(0.0f, to_F32(renderViewport.y))));
-        }
+    if (!parent().platformContext().config().gui.cegui.enabled || !(params.isWindowResize || params.isFullScreen)) {
+        return;
     }
 
-    SharedLock r_lock(_guiStackLock);
-    if (!_guiStack.empty()) {
-        // scene specific
-        GUIMapPerScene::const_iterator it = _guiStack.find(_activeScene->getGUID());
-        if (it != std::cend(_guiStack)) {
-            it->second->onSizeChange(params);
-        }
+    CEGUI::Sizef windowSize(params.width, params.height);
+    CEGUI::System::getSingleton().notifyDisplaySizeChanged(windowSize);
+    if (_ceguiRenderTextureTarget) {
+        _ceguiRenderTextureTarget->declareRenderSize(windowSize);
     }
 
-    GUIInterface::onSizeChange(params);
+
+    if (_rootSheet) {
+        const Rect<I32>& renderViewport = parent().platformContext().activeWindow().renderingViewport();
+        _rootSheet->setSize(CEGUI::USize(CEGUI::UDim(0.0f, to_F32(renderViewport.z)),
+                                            CEGUI::UDim(0.0f, to_F32(renderViewport.w))));
+        _rootSheet->setPosition(CEGUI::UVector2(CEGUI::UDim(0.0f, to_F32(renderViewport.x)),
+                                                CEGUI::UDim(0.0f, to_F32(renderViewport.y))));
+    }
+
 }
 
 void GUI::selectionChangeCallback(Scene* const activeScene, PlayerIndex idx, SceneGraphNode* node) {

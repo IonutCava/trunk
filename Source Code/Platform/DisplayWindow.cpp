@@ -147,8 +147,14 @@ bool DisplayWindow::onSDLEvent(SDL_Event event) {
 
     WindowEventArgs args = {};
     args._windowGUID = getGUID();
-    args.x = event.window.data1;
-    args.y = event.window.data2;
+
+    if (fullscreen()) {
+        args.x = to_I32(_parent.getFullscreenResolution().width);
+        args.y = to_I32(_parent.getFullscreenResolution().height);
+    } else {
+        args.x = event.window.data1;
+        args.y = event.window.data2;
+    }
 
     switch (event.window.event) {
         case SDL_WINDOWEVENT_CLOSE: {
@@ -240,6 +246,10 @@ I32 DisplayWindow::currentDisplayIndex() const {
 }
 
 vec2<U16> DisplayWindow::getDrawableSize() const {
+    if (_type == WindowType::FULLSCREEN || _type == WindowType::FULLSCREEN_WINDOWED) {
+        return _parent.getFullscreenResolution();
+    }
+
     return context().gfx().getDrawableSize(*this);
 }
 
@@ -293,6 +303,13 @@ void DisplayWindow::centerWindowPosition() {
 void DisplayWindow::setCursorPosition(I32 x, I32 y) {
 
     SDL_WarpMouseInWindow(_sdlWindow, x, y);
+}
+
+void DisplayWindow::decorated(const bool state) {
+    // documentation states that this is a no-op on redundant state, so no need to bother checking
+    SDL_SetWindowBordered(_sdlWindow, state ? SDL_TRUE : SDL_FALSE);
+
+    ToggleBit(_flags, WindowFlags::DECORATED, state);
 }
 
 void DisplayWindow::hidden(const bool state) {
@@ -353,36 +370,30 @@ void DisplayWindow::grabState(bool state) {
 }
 
 void DisplayWindow::handleChangeWindowType(WindowType newWindowType) {
+    if (_type == newWindowType) {
+        return;
+    }
+
     _previousType = _type;
     _type = newWindowType;
     I32 switchState = 0;
 
     grabState(false);
     switch (newWindowType) {
-        case WindowType::SPLASH: {
-            switchState = SDL_SetWindowFullscreen(_sdlWindow, 0);
-            assert(switchState >= 0);
-
-            SDL_SetWindowBordered(_sdlWindow, SDL_FALSE);
-            
-        } break;
         case WindowType::WINDOW: {
             switchState = SDL_SetWindowFullscreen(_sdlWindow, 0);
             assert(switchState >= 0);
-
-            SDL_SetWindowBordered(_sdlWindow, SDL_TRUE);
+            decorated(true);
         } break;
         case WindowType::FULLSCREEN_WINDOWED: {
             switchState = SDL_SetWindowFullscreen(_sdlWindow, SDL_WINDOW_FULLSCREEN_DESKTOP);
             assert(switchState >= 0);
-
-            SDL_SetWindowBordered(_sdlWindow, SDL_FALSE);
+            decorated(false);
         } break;
         case WindowType::FULLSCREEN: {
             switchState = SDL_SetWindowFullscreen(_sdlWindow, SDL_WINDOW_FULLSCREEN);
             assert(switchState >= 0);
-
-            SDL_SetWindowBordered(_sdlWindow, SDL_FALSE);
+            decorated(false);
             grabState(true);
         } break;
     };
@@ -400,7 +411,7 @@ vec2<U16> DisplayWindow::getPreviousDimensions() const {
 }
 
 bool DisplayWindow::setDimensions(U16& width, U16& height) {
-    if (fullscreen() || _windowDimensions == vec2<U16>(width, height)) {
+    if (_windowDimensions == vec2<U16>(width, height)) {
         return true;
     }
 
@@ -418,15 +429,17 @@ bool DisplayWindow::setDimensions(U16& width, U16& height) {
         width = to_U16(closestMode.w);
         height = to_U16(closestMode.h);
         SDL_SetWindowDisplayMode(_sdlWindow, &closestMode);
+    } else if (_type == WindowType::FULLSCREEN_WINDOWED) {
     } else {
         SDL_SetWindowSize(_sdlWindow, newW, newH);
         SDL_GetWindowSize(_sdlWindow, &newW, &newH);
     }
 
+    SDLEventManager::pollEvents();
+
     if (newW == width && newH == height) {
         _prevDimensions.set(_windowDimensions);
         _windowDimensions.set(width, height);
-        SDLEventManager::pollEvents();
         return true;
     }
 

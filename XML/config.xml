@@ -57,7 +57,7 @@
     <ExtraStates>false</ExtraStates>
     <SkipRendering>false</SkipRendering>
     <defaultGUIScheme>GWEN</defaultGUIScheme>
-    <showDebugCursor>false</showDebugCursor>
+    <showDebugCursor>true</showDebugCursor>
   </CEGUI>
   <IMGUI>
     <multiViewportEnabled>true</multiViewportEnabled>

@@ -100,21 +100,20 @@ Kernel::~Kernel()
 }
 
 void Kernel::startSplashScreen() {
-
-    DisplayWindow& window = _platformContext->activeWindow();
-    window.changeType(WindowType::SPLASH);
-    WAIT_FOR_CONDITION(window.setDimensions(_platformContext->config().runtime.splashScreen));
-    window.centerWindowPosition();
-
-    window.hidden(false);
-    
     bool expected = false;
     if (!_splashScreenUpdating.compare_exchange_strong(expected, true)) {
         return;
     }
 
-    Configuration& config = _platformContext->config();
-    GUISplash splash(*_resCache, "divideLogo.jpg", config.runtime.splashScreen);
+    DisplayWindow& window = _platformContext->activeWindow();
+    window.changeType(WindowType::WINDOW);
+    window.decorated(false);
+    WAIT_FOR_CONDITION(window.setDimensions(_platformContext->config().runtime.splashScreenSize));
+    window.centerWindowPosition();
+    window.hidden(false);
+    SDLEventManager::pollEvents();
+
+    GUISplash splash(*_resCache, "divideLogo.jpg", _platformContext->config().runtime.splashScreenSize);
 
     // Load and render the splash screen
     _splashTask = CreateTask(*_platformContext,
@@ -143,9 +142,12 @@ void Kernel::stopSplashScreen() {
     vec2<U16> previousDimensions = window.getPreviousDimensions();
     _splashScreenUpdating = false;
     _splashTask.wait();
+
     window.changeToPreviousType();
+    window.decorated(true);
     WAIT_FOR_CONDITION(window.setDimensions(previousDimensions));
     window.setPosition(vec2<I32>(-1));
+    SDLEventManager::pollEvents();
 }
 
 void Kernel::idle() {
@@ -691,6 +693,10 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
     // Initialize GUI with our current resolution
     _platformContext->gui().init(*_platformContext, *_resCache);
+
+    const vec2<U16>& drawArea = winManager.getMainWindow().getDrawableSize();
+    Rect<U16> targetViewport(0, 0, drawArea.width, drawArea.height);
+
     startSplashScreen();
 
     Console::printfn(Locale::get(_ID("START_SOUND_INTERFACE")));
@@ -715,7 +721,8 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
     ShadowMap::initShadowMaps(_platformContext->gfx());
     _sceneManager->init(*_platformContext, *_resCache);
-    if (!_sceneManager->switchScene(entryData.startupScene, true, false)) {
+
+    if (!_sceneManager->switchScene(entryData.startupScene, true, targetViewport, false)) {
         Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD")), entryData.startupScene.c_str());
         return ErrorCode::MISSING_SCENE_DATA;
     }
@@ -765,16 +772,22 @@ void Kernel::shutdown() {
 }
 
 void Kernel::onSizeChange(const SizeChangeParams& params) const {
-    Attorney::GFXDeviceKernel::onSizeChange(_platformContext->gfx(), params);
-    _platformContext->gui().onSizeChange(params);
 
-    if (!params.isWindowResize) {
-        _sceneManager->onSizeChange(params);
+    Attorney::GFXDeviceKernel::onSizeChange(_platformContext->gfx(), params);
+
+    if (!_splashScreenUpdating) {
+        _platformContext->gui().onSizeChange(params);
     }
 
     if (Config::Build::ENABLE_EDITOR) {
         _platformContext->editor().onSizeChange(params);
     }
+
+    if (!params.isWindowResize) {
+        _sceneManager->onSizeChange(params);
+    }
+
+
 }
 
 ///--------------------------Input Management-------------------------------------///

@@ -203,7 +203,9 @@ class Scene : public Resource, public PlatformContextComponent {
     virtual bool unload();
     virtual void postLoad();
     // gets called on the main thread when the scene finishes loading (e.g. used by the GUI system)
-    virtual void postLoadMainThread();
+    // We may be rendering in a different viewport (splash screen, loading screen, etc) but we need our GUI stuff
+    // to be ready for our game viewport, so we pass it here to make sure we are using the proper one
+    virtual void postLoadMainThread(const Rect<U16>& targetRenderViewport);
     /// Check if Scene::load() was called
     bool checkLoadFlag() const { return _loadComplete; }
     /// Unload scenegraph
@@ -349,8 +351,8 @@ class SceneManager {
         scene.postLoad();
     }
 
-    static void postLoadMainThread(Scene& scene) {
-        scene.postLoadMainThread();
+    static void postLoadMainThread(Scene& scene, const Rect<U16>& targetRenderViewport) {
+        scene.postLoadMainThread(targetRenderViewport);
     }
 
     static void onSetActive(Scene& scene) {

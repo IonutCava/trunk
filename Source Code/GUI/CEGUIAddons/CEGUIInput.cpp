@@ -58,7 +58,15 @@ bool CEGUIInput::mouseMoved(const Input::MouseMoveEvent& arg) {
         return _parent.getCEGUIContext().injectMouseWheelChange(to_F32(arg.WheelV()));
     }
 
-    return _parent.getCEGUIContext().injectMousePosition(to_F32(arg.X().abs), to_F32(arg.Y().abs));
+    const DisplayWindow& window = _parent.parent().platformContext().activeWindow();
+    const vec2<U16>& winSize = window.getDimensions();
+    const Rect<I32>& renderResolution = window.renderingViewport();
+
+    vec2<I32> mousePos(to_F32(arg.X().abs), to_F32(arg.Y().abs));
+    /*Rect<I32> inRect(0, 0, _parent.);
+    Rect<I32> outRect();
+    mousePos = COORD_REMAP(mousePos, inRect, outRect);*/
+    return _parent.getCEGUIContext().injectMousePosition(to_F32(mousePos.x), to_F32(mousePos.y));
 }
 
 // Return true if input was consumed

@@ -1059,8 +1059,9 @@ void Scene::postLoad() {
     }
 }
 
-void Scene::postLoadMainThread() {
+void Scene::postLoadMainThread(const Rect<U16>& targetRenderViewport) {
     assert(Runtime::isMainThread());
+    ACKNOWLEDGE_UNUSED(targetRenderViewport);
     setState(ResourceState::RES_LOADED);
 }
 

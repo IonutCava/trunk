@@ -172,7 +172,10 @@ public:  /// Input
 
     bool onUTF8(const Input::UTF8Event& arg) override;
 
-    bool switchScene(const stringImpl& name, bool unloadPrevious, bool threaded = true);
+    bool switchScene(const stringImpl& name, 
+                     bool unloadPrevious,
+                     const Rect<U16>& targetRenderViewport,
+                     bool threaded = true);
 // networking
 protected:
     bool networkUpdate(U32 frameCount);
@@ -242,6 +245,7 @@ private:
     struct SwitchSceneTarget {
         SwitchSceneTarget() noexcept
             : _targetSceneName(""),
+            _targetViewRect(0, 0, 1, 1),
             _unloadPreviousScene(true),
             _loadInSeparateThread(true),
             _isSet(false)
@@ -250,6 +254,7 @@ private:
 
         inline void reset() {
             _targetSceneName.clear();
+            _targetViewRect.set(0, 0, 1, 1);
             _unloadPreviousScene = true;
             _loadInSeparateThread = true;
             _isSet = false;
@@ -260,9 +265,12 @@ private:
         }
 
         inline void set(const stringImpl& targetSceneName,
+            const Rect<U16>& targetViewRect,
             bool unloadPreviousScene,
-            bool loadInSeparateThread) {
+            bool loadInSeparateThread)
+        {
             _targetSceneName = targetSceneName;
+            _targetViewRect.set(targetViewRect);
             _unloadPreviousScene = unloadPreviousScene;
             _loadInSeparateThread = loadInSeparateThread;
             _isSet = true;
@@ -270,6 +278,10 @@ private:
 
         inline const stringImpl& targetSceneName() const {
             return _targetSceneName;
+        }
+
+        inline const Rect<U16>& targetViewRect() const {
+            return _targetViewRect;
         }
 
         inline bool unloadPreviousScene() const {
@@ -282,6 +294,7 @@ private:
 
     private:
         stringImpl _targetSceneName;
+        Rect<U16> _targetViewRect;
         bool _unloadPreviousScene;
         bool _loadInSeparateThread;
         bool _isSet;

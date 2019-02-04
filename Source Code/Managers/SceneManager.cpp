@@ -83,6 +83,7 @@ void SceneManager::idle() {
         _parent.platformContext().gfx().postFX().setFadeOut(UColour(0), 1000.0, 0.0);
         switchScene(_sceneSwitchTarget.targetSceneName(),
                     _sceneSwitchTarget.unloadPreviousScene(),
+                    _sceneSwitchTarget.targetViewRect(),
                     _sceneSwitchTarget.loadInSeparateThread());
         WaitForAllTasks(getActiveScene().context(), true, true, false);
         _parent.platformContext().gfx().postFX().setFadeIn(2750.0);
@@ -200,7 +201,7 @@ void SceneManager::setActiveScene(Scene* const scene) {
     ParamHandler::instance().setParam(_ID("activeScene"), scene->resourceName());
 }
 
-bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious, bool threaded) {
+bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious, const Rect<U16>& targetRenderViewport, bool threaded) {
     assert(!name.empty());
 
     Scene* sceneToUnload = nullptr;
@@ -220,14 +221,14 @@ bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious, bool
                 }
             }
         }).startTask(threaded ? TaskPriority::DONT_CARE : TaskPriority::REALTIME, 
-        [this, name, unloadPrevious, &sceneToUnload]()
+        [this, name, &targetRenderViewport, unloadPrevious, &sceneToUnload]()
         {
             bool foundInCache = false;
             Scene* loadedScene = _scenePool->getOrCreateScene(*_platformContext, parent().resourceCache(), *this, name, foundInCache);
             assert(loadedScene != nullptr && foundInCache);
 
             if(loadedScene->getState() == ResourceState::RES_LOADING) {
-                Attorney::SceneManager::postLoadMainThread(*loadedScene);
+                Attorney::SceneManager::postLoadMainThread(*loadedScene, targetRenderViewport);
                 if (loadedScene->getGUID() != _scenePool->defaultScene().getGUID())
                 {
                     SceneGUIElements* gui = Attorney::SceneManager::gui(*loadedScene);
@@ -237,9 +238,9 @@ bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious, bool
                                                     pixelScale(50, 25));
                     
                     btn->setEventCallback(GUIButton::Event::MouseClick,
-                        [this](I64 btnGUID)
+                        [this, &targetRenderViewport](I64 btnGUID)
                         {
-                            _sceneSwitchTarget.set(_scenePool->defaultScene().resourceName(), true, false);
+                            _sceneSwitchTarget.set(_scenePool->defaultScene().resourceName(), targetRenderViewport, true, false);
                         });
                 }
             }

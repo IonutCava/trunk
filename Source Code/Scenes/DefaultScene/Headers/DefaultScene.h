@@ -41,7 +41,7 @@ public:
     DefaultScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name);
 
     bool load(const stringImpl& name) override;
-    void postLoadMainThread() override;
+    void postLoadMainThread(const Rect<U16>& targetRenderViewport) override;
     void processInput(PlayerIndex idx, const U64 deltaTimeUS) override;
     void processTasks(const U64 deltaTimeUS) override;
     void processGUI(const U64 deltaTimeUS) override;

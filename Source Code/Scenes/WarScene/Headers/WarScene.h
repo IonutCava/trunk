@@ -52,7 +52,7 @@ class WarScene : public Scene {
 
     bool load(const stringImpl& name) override;
     bool unload() override;
-    void postLoadMainThread() override;
+    void postLoadMainThread(const Rect<U16>& targetRenderViewport) override;
     void processTasks(const U64 deltaTimeUS) override;
     void processGUI(const U64 deltaTimeUS) override;
     void updateSceneStateInternal(const U64 deltaTimeUS);

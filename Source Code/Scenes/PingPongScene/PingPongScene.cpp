@@ -363,13 +363,13 @@ U16 PingPongScene::registerInputActions() {
     return actionID++;
 }
 
-void PingPongScene::postLoadMainThread() {
-    const vec2<U16>& resolution = _context.gfx().renderingResolution();
+void PingPongScene::postLoadMainThread(const Rect<U16>& targetRenderViewport) {
+    
     // Buttons and text labels
     GUIButton* btn = _GUI->addButton(_ID("Serve"),
                                      "Serve",
-                                     pixelPosition(to_I32(resolution.width - 120),
-                                                   to_I32(resolution.height / 1.1f)),
+                                     pixelPosition(to_I32(targetRenderViewport.sizeX - 120),
+                                                   to_I32(targetRenderViewport.sizeY / 1.1f)),
                                      pixelScale(100, 25));
 
     btn->setEventCallback(GUIButton::Event::MouseClick, [this](I64 btnGUID) {
@@ -377,21 +377,21 @@ void PingPongScene::postLoadMainThread() {
     });
 
     _GUI->addText("Score",
-                  pixelPosition(to_I32(resolution.width - 120),
-            to_I32(resolution.height / 1.3f)),
+                  pixelPosition(to_I32(targetRenderViewport.sizeX - 120),
+                                to_I32(targetRenderViewport.sizeY / 1.3f)),
         Font::DIVIDE_DEFAULT,
                   UColour(255, 0, 0, 255),
         Util::StringFormat("Score: %d", 0));
 
     _GUI->addText("Message",
-                  pixelPosition(to_I32(resolution.width - 120),
-            to_I32(resolution.height / 1.5f)),
+                  pixelPosition(to_I32(targetRenderViewport.sizeX - 120),
+                                to_I32(targetRenderViewport.sizeY / 1.5f)),
         Font::DIVIDE_DEFAULT,
                   UColour(255, 0, 0, 255),
         "");
     _GUI->addText("insults",
-                  pixelPosition(resolution.width / 4,
-            resolution.height / 3),
+                  pixelPosition(targetRenderViewport.sizeX / 4,
+                                targetRenderViewport.sizeY / 3),
         Font::DIVIDE_DEFAULT,
                   UColour(0, 255, 0, 255),
         "");
@@ -401,7 +401,7 @@ void PingPongScene::postLoadMainThread() {
                   UColour(0, 50, 255, 255),// Colour
         Util::StringFormat("FPS: %d", 0));  // Text and arguments
 
-    Scene::postLoadMainThread();
+    Scene::postLoadMainThread(targetRenderViewport);
 }
 
 };

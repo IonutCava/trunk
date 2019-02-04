@@ -77,7 +77,7 @@ public:
         bool enableVSync;
         bool adaptiveSync;
         I16  frameRateLimit;
-        vec2<U16> splashScreen;
+        vec2<U16> splashScreenSize;
         vec2<U16> windowSize;
         vec2<U16> resolution;
         F32 simSpeed;

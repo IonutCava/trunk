@@ -46,7 +46,7 @@ class MainScene : public Scene {
     /*General Scene Requirement*/
     bool load(const stringImpl& name);
     bool unload();
-    void postLoadMainThread() override;
+    void postLoadMainThread(const Rect<U16>& targetRenderViewport) override;
 
    private:
     /*Specific Scene Requirement*/

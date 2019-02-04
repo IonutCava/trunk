@@ -31,7 +31,7 @@ Configuration::Configuration() : XML::IXMLSerializable()
     runtime.enableVSync = false;
     runtime.adaptiveSync = true;
     runtime.frameRateLimit = -1;
-    runtime.splashScreen.set(400, 300);
+    runtime.splashScreenSize.set(400, 300);
     runtime.windowSize.set(1280, 768);
     runtime.resolution.set(1024, 768);
     runtime.simSpeed = 1.0f;
@@ -105,8 +105,8 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(runtime.frameRateLimit);
         GET_PARAM(runtime.enableVSync);
         GET_PARAM(runtime.adaptiveSync);
-        GET_PARAM_ATTRIB(runtime.splashScreen, w);
-        GET_PARAM_ATTRIB(runtime.splashScreen, h);
+        GET_PARAM_ATTRIB(runtime.splashScreenSize, w);
+        GET_PARAM_ATTRIB(runtime.splashScreenSize, h);
         GET_PARAM_ATTRIB(runtime.windowSize, w);
         GET_PARAM_ATTRIB(runtime.windowSize, h);
         GET_PARAM_ATTRIB(runtime.resolution, w);
@@ -187,8 +187,8 @@ bool Configuration::toXML(const char* xmlFile) const {
     PUT_PARAM(runtime.frameRateLimit);
     PUT_PARAM(runtime.enableVSync);
     PUT_PARAM(runtime.adaptiveSync);
-    PUT_PARAM_ATTRIB(runtime.splashScreen, w);
-    PUT_PARAM_ATTRIB(runtime.splashScreen, h);
+    PUT_PARAM_ATTRIB(runtime.splashScreenSize, w);
+    PUT_PARAM_ATTRIB(runtime.splashScreenSize, h);
     PUT_PARAM_ATTRIB(runtime.windowSize, w);
     PUT_PARAM_ATTRIB(runtime.windowSize, h);
     PUT_PARAM_ATTRIB(runtime.resolution, w);

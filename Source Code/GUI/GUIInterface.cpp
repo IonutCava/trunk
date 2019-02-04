@@ -35,14 +35,6 @@ GUIInterface::~GUIInterface()
     }
 }
 
-void GUIInterface::onSizeChange(const SizeChangeParams& params) {
-    for (U8 i = 0; i < to_base(GUIType::COUNT); ++i) {
-        for (const GUIMap::value_type& guiStackIterator : _guiElements[i]) {
-            guiStackIterator.second.first->onSizeChange(params);
-        }
-    }
-}
-
 void GUIInterface::onLanguageChange(const char* newLanguage) {
     ACKNOWLEDGE_UNUSED(newLanguage);
 }

@@ -55,8 +55,6 @@ public:
     explicit GUIInterface(GUI& context);
     virtual ~GUIInterface();
 
-    virtual void onSizeChange(const SizeChangeParams& params);
-
     virtual void onLanguageChange(const char* newLanguage);
 
     inline GUI& getParentContext() { return *_context; }

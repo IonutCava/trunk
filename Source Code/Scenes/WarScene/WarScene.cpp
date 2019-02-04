@@ -784,25 +784,25 @@ void WarScene::toggleCamera(InputParams param) {
     }
 }
 
-void WarScene::postLoadMainThread() {
-    const vec2<U16>& resolution = _context.gfx().renderingResolution();
+void WarScene::postLoadMainThread(const Rect<U16>& targetRenderViewport) {
+    
 
     GUIButton* btn = _GUI->addButton(_ID("Simulate"),
                                      "Simulate",
-                                     pixelPosition(resolution.width - 220, 60),
+                                     pixelPosition(targetRenderViewport.sizeX - 220, 60),
                                      pixelScale(100, 25));
     btn->setEventCallback(GUIButton::Event::MouseClick, [this](I64 btnGUID) { startSimulation(btnGUID); });
 
     btn = _GUI->addButton(_ID("ShaderReload"),
                           "Shader Reload",
-                          pixelPosition(resolution.width - 220, 30),
+                          pixelPosition(targetRenderViewport.sizeX - 220, 30),
                           pixelScale(100, 25));
     btn->setEventCallback(GUIButton::Event::MouseClick,
                          [this](I64 btnID) { rebuildShaders(); });
 
     btn = _GUI->addButton(_ID("TerrainMode"),
                                "Terrain Mode Toggle",
-                               pixelPosition(resolution.width - 240, 90),
+                               pixelPosition(targetRenderViewport.sizeX - 240, 90),
                                pixelScale(120, 25));
     btn->setEventCallback(GUIButton::Event::MouseClick,
         [this](I64 btnID) { toggleTerrainMode(); });
@@ -858,7 +858,7 @@ void WarScene::postLoadMainThread() {
     _taskTimers.push_back(0.0); // animation team 2
     _taskTimers.push_back(0.0); // light timer
 
-    Scene::postLoadMainThread();
+    Scene::postLoadMainThread(targetRenderViewport);
 }
 
 void WarScene::onSetActive() {
