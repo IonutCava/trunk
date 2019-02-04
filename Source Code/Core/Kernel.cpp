@@ -691,12 +691,11 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     Attorney::ShaderProgramKernel::useShaderTextCache(config.debug.useShaderTextCache);
     Attorney::ShaderProgramKernel::useShaderBinaryCache(config.debug.useShaderBinaryCache);
 
-    // Initialize GUI with our current resolution
-    _platformContext->gui().init(*_platformContext, *_resCache);
-
     const vec2<U16>& drawArea = winManager.getMainWindow().getDrawableSize();
     Rect<U16> targetViewport(0, 0, drawArea.width, drawArea.height);
 
+    // Initialize GUI with our current resolution
+    _platformContext->gui().init(*_platformContext, *_resCache);
     startSplashScreen();
 
     Console::printfn(Locale::get(_ID("START_SOUND_INTERFACE")));

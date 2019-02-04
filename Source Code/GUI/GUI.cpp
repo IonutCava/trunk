@@ -167,8 +167,6 @@ bool GUI::init(PlatformContext& context, ResourceCache& cache) {
     }
     _defaultGUIScheme = context.config().gui.cegui.defaultGUIScheme;
 
-    _console = MemoryManager_NEW GUIConsole(*this, context, cache);
-
     if (Config::Build::IS_DEBUG_BUILD) {
         CEGUI::Logger::getSingleton().setLogFilename(Paths::g_logPath + "CEGUI.log", false);
         CEGUI::Logger::getSingleton().setLoggingLevel(CEGUI::Informative);
@@ -204,12 +202,13 @@ bool GUI::init(PlatformContext& context, ResourceCache& cache) {
     CEGUI::FontManager::getSingleton().createFromFile("DejaVuSans-12-NoScale.font");
     CEGUI::SchemeManager::getSingleton().createFromFile((_defaultGUIScheme + ".scheme").c_str());
 
-    const DisplayWindow& mainWindow = context.activeWindow();
-    const vec2<U16>& windowSize = mainWindow.getDimensions();
+    const vec2<U16>& renderSize = context.gfx().renderingResolution();
 
-    CEGUI::Sizef size(static_cast<float>(windowSize.width), static_cast<float>(windowSize.height));
+    CEGUI::Sizef size(static_cast<float>(renderSize.width), static_cast<float>(renderSize.height));
     // We create a CEGUI texture target and create a GUIContext that will use it.
-    _ceguiRenderTextureTarget = CEGUI::System::getSingleton().getRenderer()->createTextureTarget();
+
+    _ceguiRenderer = CEGUI::System::getSingleton().getRenderer();
+    _ceguiRenderTextureTarget = _ceguiRenderer->createTextureTarget();
     _ceguiRenderTextureTarget->declareRenderSize(size);
     _ceguiContext = &CEGUI::System::getSingleton().createGUIContext(static_cast<CEGUI::RenderTarget&>(*_ceguiRenderTextureTarget));
 
@@ -224,9 +223,9 @@ bool GUI::init(PlatformContext& context, ResourceCache& cache) {
     _ceguiContext->setRootWindow(_rootSheet);
     _ceguiContext->setDefaultTooltipType((_defaultGUIScheme + "/Tooltip").c_str());
   
-    _ceguiRenderer = CEGUI::System::getSingleton().getRenderer();
+
+    _console = MemoryManager_NEW GUIConsole(*this, context, cache);
     assert(_console);
-    
     _console->createCEGUIWindow();
 
     _defaultMsgBox = addMsgBox(_ID("AssertMsgBox"),
@@ -238,7 +237,7 @@ bool GUI::init(PlatformContext& context, ResourceCache& cache) {
     GUIButton::soundCallback([&context](const AudioDescriptor_ptr& sound) { context.sfx().playSound(sound); });
 
     if (parent().platformContext().config().gui.cegui.enabled) {
-        CEGUI::System::getSingleton().notifyDisplaySizeChanged(CEGUI::Sizef(windowSize.width, windowSize.height));
+        CEGUI::System::getSingleton().notifyDisplaySizeChanged(size);
     }
 
     _init = true;
@@ -275,11 +274,9 @@ void GUI::destroy() {
 }
 
 void GUI::onSizeChange(const SizeChangeParams& params) {
-    if (params.winGUID != _context->parent().platformContext().app().windowManager().getMainWindow().getGUID()) {
-        return;
-    }
-
-    if (!parent().platformContext().config().gui.cegui.enabled || !(params.isWindowResize || params.isFullScreen)) {
+    if (params.winGUID != _context->parent().platformContext().app().windowManager().getMainWindow().getGUID() ||
+        !parent().platformContext().config().gui.cegui.enabled)
+    {
         return;
     }
 
