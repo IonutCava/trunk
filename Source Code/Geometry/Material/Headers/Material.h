@@ -147,7 +147,7 @@ class Material : public CachedResource {
     /// base material's name and the give name suffix.
     /// clone calls CreateResource internally!)
     Material_ptr clone(const stringImpl& nameSuffix);
-    bool unload();
+    bool unload() noexcept override;
     void update(const U64 deltaTimeUS);
 
     void setColourData(const ColourData& other);

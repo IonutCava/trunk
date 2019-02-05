@@ -47,7 +47,7 @@ class BoundingSphere {
     friend class Attorney::BoundingSphereEditor;
 
    public:
-    BoundingSphere() noexcept;
+    BoundingSphere();
     BoundingSphere(const vec3<F32>& center, F32 radius) noexcept;
     BoundingSphere(const vector<vec3<F32>>& points) noexcept;
     BoundingSphere(const std::array<vec3<F32>, 8>& points) noexcept;
@@ -57,8 +57,8 @@ class BoundingSphere {
 
     void fromBoundingBox(const BoundingBox& bBox);
     void fromBoundingSphere(const BoundingSphere& bSphere);
-    bool containsPoint(const vec3<F32>& point) const;
-    bool containsBoundingBox(const BoundingBox& AABB) const;
+    bool containsPoint(const vec3<F32>& point) const noexcept;
+    bool containsBoundingBox(const BoundingBox& AABB) const noexcept;
 
     // https://code.google.com/p/qe3e/source/browse/trunk/src/BoundingSphere.h?r=28
     void add(const BoundingSphere& bSphere);
@@ -66,8 +66,8 @@ class BoundingSphere {
     void addRadius(const BoundingSphere& bSphere);
     void addRadius(const vec3<F32>& point);
 
-    void createFromPoints(const vector<vec3<F32>>& points);
-    void createFromPoints(const std::array<vec3<F32>, 8>& points);
+    void createFromPoints(const vector<vec3<F32>>& points) noexcept;
+    void createFromPoints(const std::array<vec3<F32>, 8>& points) noexcept;
 
     void setRadius(F32 radius) noexcept;
     void setCenter(const vec3<F32>& center) noexcept;
@@ -81,7 +81,7 @@ class BoundingSphere {
     void reset();
     vec4<F32> asVec4() const;
 
-    bool collision(const BoundingSphere& sphere2) const;
+    bool collision(const BoundingSphere& sphere2) const noexcept;
 
    private:
     bool _visibility, _dirty;

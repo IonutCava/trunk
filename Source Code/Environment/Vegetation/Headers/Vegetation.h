@@ -82,7 +82,7 @@ class Vegetation : public SceneNode {
     ~Vegetation();
 
 
-    inline void toggleRendering(bool state) { _render = state; }
+    inline void toggleRendering(bool state) noexcept { _render = state; }
 
     void buildDrawCommands(SceneGraphNode& sgn,
                            RenderStagePass renderStagePass,

@@ -36,14 +36,14 @@ bool IsNumber(const stringImpl& s) {
 }
 
 stringImpl GetTrailingCharacters(const stringImpl& input, size_t count) {
-    size_t inputLength = input.length();
+    const size_t inputLength = input.length();
     count = std::min(inputLength, count);
     assert(count > 0);
     return input.substr(inputLength - count, inputLength);
 }
 
 stringImpl GetStartingCharacters(const stringImpl& input, size_t count) {
-    size_t inputLength = input.length();
+    const size_t inputLength = input.length();
     count = std::min(inputLength, count);
     assert(count > 0);
     return input.substr(0, inputLength - count);
@@ -66,7 +66,7 @@ bool CompareIgnoreCase(const stringImpl& a, const stringImpl& b) {
     return false;
 }
 
-void CStringRemoveChar(char* str, char charToRemove) {
+void CStringRemoveChar(char* str, char charToRemove) noexcept {
     char *pr = str, *pw = str;
     while (*pr) {
         *pw = *pr++;

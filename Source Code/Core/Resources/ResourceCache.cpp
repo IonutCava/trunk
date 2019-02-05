@@ -94,7 +94,7 @@ CachedResource_ptr ResourceCache::find(size_t descriptorHash) {
     static CachedResource_ptr emptyResource;
     /// Search in our resource cache
     SharedLock r_lock(_creationMutex);
-    ResourceMap::const_iterator it = _resDB.find(descriptorHash);
+    const ResourceMap::const_iterator it = _resDB.find(descriptorHash);
     if (it != std::end(_resDB)) {
         return it->second.lock();
     }

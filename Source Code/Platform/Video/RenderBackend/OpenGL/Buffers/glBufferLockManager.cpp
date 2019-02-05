@@ -93,7 +93,7 @@ GLsync glGlobalLockManager::syncHere() const {
     return glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, UnusedMask::GL_UNUSED_BIT);
 }
 
-bool glGlobalLockManager::test(GLsync syncObject, vectorImpl<BufferRange>& ranges, BufferRange testRange, bool noWait) {
+bool glGlobalLockManager::test(GLsync syncObject, vectorEASTL<BufferRange>& ranges, BufferRange testRange, bool noWait) {
     for (const BufferRange& range : ranges) {
         if (testRange.Overlaps(range)) {
             U8 retryCount = 0;

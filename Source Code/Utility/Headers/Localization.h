@@ -48,7 +48,7 @@ class LanguageData {
 public:
     typedef vector<DELEGATE_CBK<void, const char* /*new language*/>> LangCallbacks;
 public:
-    LanguageData();
+    LanguageData() noexcept;
     ~LanguageData();
 
     void changeLanguage(const char* newLanguage);
@@ -69,7 +69,7 @@ private:
 /// Reset everything and load the specified language file.
 ErrorCode init(const char* newLanguage = DEFAULT_LANG);
 /// clear the language table
-void clear();
+void clear() noexcept;
 /// perform maintenance tasks
 void idle();
 /// Although the language can be set at compile time, in-game options may support
@@ -78,7 +78,7 @@ void changeLanguage(const char* newLanguage);
 /// Add a function to be called on each language change
 void addChangeLanguageCallback(const DELEGATE_CBK<void, const char* /*new language*/>& cbk);
 /// Query the current language code to detect changes
-const stringImpl& currentLanguage();
+const stringImpl& currentLanguage() noexcept;
 /// usage: Locale::get(_ID("A_B_C")) or Locale::get(_ID("A_B_C"),"X") where "A_B_C" is the language key we want
 /// and "X" is a default string in case the key does not exist in the INI file
 const char* get(U64 key, const char* defaultValue);

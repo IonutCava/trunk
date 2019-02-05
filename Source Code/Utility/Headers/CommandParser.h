@@ -40,7 +40,7 @@ namespace Divide {
 /// A utility class used to process a string input
 class NOINITVTABLE CommandParser {
    public:
-    CommandParser();           //< Constructor
+    CommandParser() noexcept;  //< Constructor
     virtual ~CommandParser();  //< Destructor
     /// If we need a parser , just override this
     virtual bool processCommand(const stringImpl& commandString) = 0;

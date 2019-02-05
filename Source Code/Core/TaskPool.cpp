@@ -14,7 +14,7 @@ namespace {
     thread_local U32  g_allocatedTasks = 0u;
 };
 
-TaskPool::TaskPool() noexcept
+TaskPool::TaskPool()
     : GUIDWrapper(),
       _taskCallbacks(Config::MAX_POOLED_TASKS),
       _runningTaskCount(0u),
@@ -164,7 +164,7 @@ Task* TaskPool::createTask(Task* parentTask, const DELEGATE_CBK<void, const Task
     return task;
 }
 
-bool TaskPool::stopRequested() const {
+bool TaskPool::stopRequested() const noexcept {
     return _stopRequested.load();
 }
 
@@ -195,15 +195,15 @@ void parallel_for(TaskPool& pool,
 {
     if (count > 0) {
 
-        U32 crtPartitionSize = std::min(partitionSize, count);
-        U32 partitionCount = count / crtPartitionSize;
-        U32 remainder = count % crtPartitionSize;
+        const U32 crtPartitionSize = std::min(partitionSize, count);
+        const U32 partitionCount = count / crtPartitionSize;
+        const U32 remainder = count % crtPartitionSize;
 
         std::atomic_uint remaining = partitionCount + (remainder > 0 ? 1 : 0);
 
         for (U32 i = 0; i < partitionCount; ++i) {
-            U32 start = i * crtPartitionSize;
-            U32 end = start + crtPartitionSize;
+            const U32 start = i * crtPartitionSize;
+            const U32 end = start + crtPartitionSize;
             CreateTask(pool,
                        nullptr,
                        [&cbk, &remaining, start, end](const Task& parentTask) {

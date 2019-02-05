@@ -65,7 +65,7 @@ class VisualSensor : public Sensor {
 
     F32 getDistanceToNodeSq(U32 containerID, U64 nodeGUID);
     inline F32 getDistanceToNode(U32 containerID, U64 nodeGUID) {
-        F32 distanceSq = getDistanceToNodeSq(containerID, nodeGUID);
+        const F32 distanceSq = getDistanceToNodeSq(containerID, nodeGUID);
         if (distanceSq < std::numeric_limits<F32>::max() - 1.0f) {
             return Divide::Sqrt(distanceSq);
         }

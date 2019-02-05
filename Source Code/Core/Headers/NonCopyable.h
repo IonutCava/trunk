@@ -48,6 +48,17 @@ class NonCopyable {
     NonCopyable& operator = (NonCopyable&&) = default;
 };
 
+class NonMovable {
+protected:
+    /*constexpr */ NonMovable() = default;
+    /*virtual*/ ~NonMovable() = default;
+
+    NonMovable(NonMovable&&) = delete;
+    NonMovable& operator = (NonMovable&&) = delete;
+
+    NonMovable(const NonMovable&) = default;
+    NonMovable& operator=(const NonMovable&) = default;
+};
 };  // namespace Divide
 
 #endif  //_CORE_NON_COPYABLE_H_

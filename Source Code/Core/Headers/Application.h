@@ -75,30 +75,30 @@ class Application : public SDLEventListener {
     bool step();
     bool onLoop();
 
-    inline void RequestShutdown();
-    inline void CancelShutdown();
-    inline bool ShutdownRequested() const;
+    inline void RequestShutdown() noexcept;
+    inline void CancelShutdown() noexcept;
+    inline bool ShutdownRequested() const noexcept;
 
-    inline Kernel& kernel() const;
-    inline WindowManager& windowManager();
-    inline const WindowManager& windowManager() const;
+    inline Kernel& kernel() const noexcept;
+    inline WindowManager& windowManager() noexcept;
+    inline const WindowManager& windowManager() const noexcept;
 
     void mainThreadTask(const DELEGATE_CBK<void>& task, bool wait = true);
 
     inline void setMemoryLogFile(const stringImpl& fileName);
 
-    inline bool mainLoopActive() const;
-    inline void mainLoopActive(bool state);
+    inline bool mainLoopActive() const noexcept;
+    inline void mainLoopActive(bool state) noexcept;
 
-    inline bool mainLoopPaused() const;
-    inline void mainLoopPaused(bool state);
+    inline bool mainLoopPaused() const noexcept;
+    inline void mainLoopPaused(bool state) noexcept;
 
     // Whenever the host window or the rendering resolution is changed, call this
     // Use "window" to determine if the window changed size or if the resolution did
     void onSizeChange(const SizeChangeParams& params) const;
 
-    inline void throwError(ErrorCode err);
-    inline ErrorCode errorCode() const;
+    inline void throwError(ErrorCode err) noexcept;
+    inline ErrorCode errorCode() const noexcept;
 
     /// Add a list of callback functions that should be called when the application
     /// instance is destroyed

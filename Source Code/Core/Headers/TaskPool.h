@@ -47,7 +47,7 @@ public:
 
   public:
 
-    explicit TaskPool() noexcept;
+    explicit TaskPool();
     ~TaskPool();
     
     bool init(U8 threadCount, TaskPoolType poolType, const DELEGATE_CBK<void, const std::thread::id&>& onThreadCreate = {}, const stringImpl& workerName = "DVD_WORKER");
@@ -62,11 +62,11 @@ public:
         return _workerThreadCount;
     }
 
-    inline bool operator==(const TaskPool& other) const {
+    inline bool operator==(const TaskPool& other) const noexcept {
         return getGUID() == other.getGUID();
     }
 
-    inline bool operator!=(const TaskPool& other) const {
+    inline bool operator!=(const TaskPool& other) const noexcept {
         return getGUID() != other.getGUID();
     }
 
@@ -81,7 +81,7 @@ public:
     void taskCompleted(U32 taskIndex, TaskPriority priority, const DELEGATE_CBK<void>& onCompletionFunction);
     
     bool enqueue(const PoolTask& task, TaskPriority priority);
-    bool stopRequested() const;
+    bool stopRequested() const noexcept;
 
     void runCbkAndClearTask(U32 taskIdentifier);
 

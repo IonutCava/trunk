@@ -52,12 +52,11 @@ U32 CRC32::mTable[0x100] = {
 
 //=====================================================
 
-U32 CRC32::Reflect(U32 v, I32 bits) {
+U32 CRC32::Reflect(U32 v, I32 bits) noexcept {
     U32 ret = 0;
-    I32 i;
 
     --bits;
-    for (i = 0; i <= bits; ++i) {
+    for (I32 i = 0; i <= bits; ++i) {
         if (v & (1 << i)) ret |= 1 << (bits - i);
     }
     return ret;
@@ -65,13 +64,15 @@ U32 CRC32::Reflect(U32 v, I32 bits) {
 
 //=====================================================
 
-void CRC32::Hash(const void* buf, size_t siz) {
+void CRC32::Hash(const void* buf, size_t siz) noexcept {
     //=============================
-    const U8* p = reinterpret_cast<const U8*>(buf);
+    const U8* p = static_cast<const U8*>(buf);
 
     //=============================
     size_t i;
-    for (i = 0; i < siz; ++i) mCrc = (mCrc >> 8) ^ mTable[(mCrc & 0xFF) ^ p[i]];
+    for (i = 0; i < siz; ++i) {
+        mCrc = (mCrc >> 8) ^ mTable[(mCrc & 0xFF) ^ p[i]];
+    }
 }
 };  // namespace Util
 };  // namespace Divide

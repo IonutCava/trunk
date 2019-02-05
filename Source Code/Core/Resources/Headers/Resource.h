@@ -75,15 +75,14 @@ class Resource : public GUIDWrapper
    public:
     explicit Resource(ResourceType type,
                       const stringImpl& resourceName);
-    virtual ~Resource();
 
     /// Name management
-    const stringImpl& resourceName() const;
-    ResourceType getType() const;
-    ResourceState getState() const;
+    const stringImpl& resourceName() const noexcept;
+    ResourceType getType() const noexcept;
+    ResourceState getState() const noexcept;
 
    protected:
-    virtual void setState(ResourceState currentState);
+    virtual void setState(ResourceState currentState) noexcept;
 
    protected:
     stringImpl   _resourceName;
@@ -113,26 +112,23 @@ public:
                             const stringImpl& assetName,
                             const stringImpl& assetLocation);
 
-    virtual ~CachedResource();
-
-
     /// Loading and unloading interface
     virtual bool load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback);
-    virtual bool unload();
-    virtual bool resourceLoadComplete();
+    virtual bool unload() noexcept;
+    virtual bool resourceLoadComplete() noexcept;
 
-    size_t getDescriptorHash() const;
+    size_t getDescriptorHash() const noexcept;
     /// Physical file location
-    const stringImpl& assetLocation() const;
+    const stringImpl& assetLocation() const noexcept;
     /// Physical file name
-    const stringImpl& assetName() const;
+    const stringImpl& assetName() const noexcept;
 
     inline stringImpl assetPath() const { return assetLocation() + "/" + assetName(); }
 
     void setStateCallback(ResourceState targetState, const DELEGATE_CBK<void, Resource_wptr>& cbk);
 
 protected:
-    void setState(ResourceState currentState) override;
+    void setState(ResourceState currentState) noexcept override;
     void assetName(const stringImpl& name);
     void assetLocation(const stringImpl& location);
 

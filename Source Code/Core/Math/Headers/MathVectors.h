@@ -621,19 +621,19 @@ class vec3 {
     }
     
     template<typename U>
-    vec3 &operator+=(U _f) {
+    vec3 &operator+=(U _f) noexcept {
         this->set(*this + _f);
         return *this;
     }
 
     template<typename U>
-    vec3 &operator-=(U _f) {
+    vec3 &operator-=(U _f) noexcept {
         this->set(*this - _f);
         return *this;
     }
 
     template<typename U>
-    vec3 &operator*=(U _f) {
+    vec3 &operator*=(U _f) noexcept {
         this->set(*this * _f);
         return *this;
     }
@@ -645,25 +645,25 @@ class vec3 {
     }
 
     template<typename U>
-    vec3 &operator*=(const vec3<U> &v) {
+    vec3 &operator*=(const vec3<U> &v) noexcept {
         this->set(*this * v);
         return *this;
     }
 
     template<typename U>
-    vec3 &operator/=(const vec3<U> &v) {
+    vec3 &operator/=(const vec3<U> &v) noexcept {
         this->set(*this / v);
         return *this;
     }
 
     template<typename U>
-    vec3 &operator+=(const vec3<U> &v) {
+    vec3 &operator+=(const vec3<U> &v) noexcept {
         this->set(*this + v);
         return *this;
     }
 
     template<typename U>
-    vec3 &operator-=(const vec3<U> &v) {
+    vec3 &operator-=(const vec3<U> &v) noexcept {
         this->set(*this - v);
         return *this;
     }
@@ -708,7 +708,7 @@ class vec3 {
     /// set the 3 components of the vector manually using a source pointer to a (large enough) array
     inline void set(const T* v) noexcept { std::memcpy(&_v[0], &v[0], 3 * sizeof(T)); }
     /// set the 3 components of the vector manually
-    inline void set(T value) { x = value; y = value; z = value; }
+    inline void set(T value)  noexcept { x = value; y = value; z = value; }
     /// set the 3 components of the vector manually
     inline void set(T _x, T _y, T _z)  noexcept {
         this->x = _x;

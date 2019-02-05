@@ -13,7 +13,7 @@
 namespace Divide {
 namespace Time {
 
-ApplicationTimer::ApplicationTimer()
+ApplicationTimer::ApplicationTimer() noexcept
     : _targetFrameRate(Config::TARGET_FRAME_RATE),
       _speedfactor(1.0f),
       _elapsedTimeUs(0UL),
@@ -25,15 +25,15 @@ ApplicationTimer::ApplicationTimer()
 }
 
 void ApplicationTimer::update() {
-    TimeValue currentTicks = getCurrentTicksInternal();
+    const TimeValue currentTicks = getCurrentTicksInternal();
     _elapsedTimeUs = getElapsedTimeInternal(currentTicks);
 
-    USec duration = std::chrono::duration_cast<USec>(currentTicks - _frameDelay);
+    const USec duration = std::chrono::duration_cast<USec>(currentTicks - _frameDelay);
     _speedfactor = Time::MicrosecondsToSeconds<F32>(static_cast<U64>(duration.count() * _targetFrameRate));
 
     _frameDelay = currentTicks;
 
-    U64 elapsedTime = getElapsedTimeInternal(currentTicks);
+    const U64 elapsedTime = getElapsedTimeInternal(currentTicks);
     _frameRateHandler.tick(elapsedTime);
     
     if (Config::Profile::BENCHMARK_PERFORMANCE) {

@@ -54,7 +54,7 @@ glHardwareQuery& glHardwareQueryRing::writeQuery() {
     return *_queries[queueWriteIndex()];
 }
 
-void glHardwareQueryRing::resize(I32 queueLength) {
+void glHardwareQueryRing::resize(I32 queueLength) noexcept {
     RingBufferSeparateWrite::resize(queueLength);
 
     while (queueLength < to_I32(_queries.size())) {

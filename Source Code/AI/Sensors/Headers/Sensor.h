@@ -46,12 +46,12 @@ enum class SensorType : U8 {
 class AIEntity;
 class NOINITVTABLE Sensor {
    public:
-    inline SensorType sensorType() const { return _type; }
+    inline SensorType sensorType() const noexcept { return _type; }
     virtual void update(const U64 deltaTimeUS) = 0;
     inline void updateRange(const vec2<F32>& range) { _range.set(range); }
 
    protected:
-    Sensor(AIEntity* const parentEntity, SensorType type) {
+    Sensor(AIEntity* const parentEntity, SensorType type) noexcept {
         _parentEntity = parentEntity;
         _type = type;
     }

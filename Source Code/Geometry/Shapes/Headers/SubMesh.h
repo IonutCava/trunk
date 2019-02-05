@@ -74,11 +74,11 @@ class SubMesh : public Object3D {
 
     virtual ~SubMesh();
 
-    inline U32 getID() { return _ID; }
+    inline U32 getID() noexcept { return _ID; }
     /// When loading a submesh, the ID is the node index from the imported scene
     /// scene->mMeshes[n] == (SubMesh with _ID == n)
-    inline void setID(U32 ID) { _ID = ID; }
-    inline Mesh* getParentMesh() { return _parentMesh; }
+    inline void setID(U32 ID) noexcept { _ID = ID; }
+    inline Mesh* getParentMesh() noexcept { return _parentMesh; }
 
    protected:
     void setParentMesh(Mesh* const parentMesh);
@@ -88,7 +88,7 @@ class SubMesh : public Object3D {
                                 RenderPackage& pkgInOut) override;
 
     // SGN node + parent mesh
-    size_t maxReferenceCount() const override { return 2; }
+    size_t maxReferenceCount() const noexcept override { return 2; }
    protected:
     bool _visibleToNetwork;
     bool _render;
@@ -112,7 +112,7 @@ class SubMeshMeshImporter {
    private:
     static void setGeometryLimits(SubMesh& submesh,
                                   const vec3<F32>& min,
-                                  const vec3<F32>& max) {
+                                  const vec3<F32>& max) noexcept {
         submesh._boundingBox.set(min, max);
     }
 

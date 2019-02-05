@@ -110,8 +110,8 @@ public:
     void snapCursorToCenter();
 
     static vec2<I32> GetCursorPosition(bool global);
-    static U32 GetMouseState(vec2<I32>& pos, bool global);
-    static void SetCaptureMouse(bool state);
+    static U32 GetMouseState(vec2<I32>& pos, bool global) noexcept;
+    static void SetCaptureMouse(bool state) noexcept;
 
     inline DisplayWindow& getMainWindow();
     inline const DisplayWindow& getMainWindow() const;
@@ -130,26 +130,26 @@ public:
     inline DisplayWindow& getWindow(U32 index);
     inline const DisplayWindow& getWindow(U32 index) const;
 
-    inline DisplayWindow* getWindowByID(U32 ID);
-    inline const DisplayWindow* getWindowByID(U32 ID) const;
+    inline DisplayWindow* getWindowByID(U32 ID) noexcept;
+    inline const DisplayWindow* getWindowByID(U32 ID) const noexcept;
 
-    inline U32 getWindowCount() const;
+    inline U32 getWindowCount() const noexcept;
 
-    inline const vector<MonitorData>& monitorData() const;
+    inline const vector<MonitorData>& monitorData() const noexcept;
 
     vec2<U16> getFullscreenResolution() const;
 
-    void captureMouse(bool state);
+    void captureMouse(bool state) noexcept;
 
     static void SetCursorStyle(CursorStyle style);
 
-    static void ToggleRelativeMouseMode(bool state);
+    static void ToggleRelativeMouseMode(bool state) noexcept;
 protected:
-    bool onSDLEvent(SDL_Event event) override;
+    bool onSDLEvent(SDL_Event event) noexcept override;
 
 protected:
     friend class DisplayWindow;
-    U32 createAPIFlags(RenderAPI api);
+    U32 createAPIFlags(RenderAPI api) noexcept;
     ErrorCode configureAPISettings(U32 descriptorFlags);
     ErrorCode applyAPISettings(DisplayWindow* window, U32 descriptorFlags);
     void destroyAPISettings(DisplayWindow* window);

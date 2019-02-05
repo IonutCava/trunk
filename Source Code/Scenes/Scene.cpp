@@ -1044,10 +1044,6 @@ bool Scene::unload() {
 void Scene::postLoad() {
     _sceneGraph->postLoad();
 
-    addSelectionCallback([this](U8 pIndex, SceneGraphNode* node) {
-        _context.gui().selectionChangeCallback(this, pIndex, node);
-    });
-
     if (_pxScene == nullptr) {
         _pxScene = _context.pfx().NewSceneInterface(*this);
         _pxScene->init();

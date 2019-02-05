@@ -60,7 +60,7 @@ U64 ProfileTimer::stop() {
     return get();
 }
 
-void ProfileTimer::reset() {
+void ProfileTimer::reset() noexcept {
     _timerAverage = 0;
     _timerCounter = 0;
 }
@@ -76,7 +76,7 @@ void ProfileTimer::addChildTimer(ProfileTimer& child) {
 }
 
 void ProfileTimer::removeChildTimer(ProfileTimer& child) {
-    U32 childID = child._globalIndex;
+    const U32 childID = child._globalIndex;
 
     _children.erase(
         std::remove_if(std::begin(_children),
@@ -89,7 +89,7 @@ void ProfileTimer::removeChildTimer(ProfileTimer& child) {
 }
 
 bool ProfileTimer::hasChildTimer(ProfileTimer& child) {
-    U32 childID = child._globalIndex;
+    const U32 childID = child._globalIndex;
 
     return std::find_if(std::cbegin(_children),
                         std::cend(_children),
@@ -100,7 +100,7 @@ bool ProfileTimer::hasChildTimer(ProfileTimer& child) {
 
 U64 ProfileTimer::getChildTotal() const {
     U64 ret = 0;
-    for (U32 child : _children) {
+    for (const U32 child : _children) {
         if (g_profileTimersState[child]) {
             ret += g_profileTimers[child].get();
         }
@@ -113,7 +113,7 @@ stringImpl ProfileTimer::print(U32 level) const {
         stringImpl ret(Util::StringFormat("[ %s ] : [ %5.3f ms]",
                                           _name.c_str(),
                                           MicrosecondsToMilliseconds<F32>(get())));
-        for (U32 child : _children) {
+        for (const U32 child : _children) {
             if (g_profileTimersState[child]) {
                 ret.append("\n    " + g_profileTimers[child].print(level + 1));
             }
@@ -133,7 +133,7 @@ U64 ProfileTimer::overhead() {
     static const U8 overheadLoopCount = 3;
     U64 overhead = 0;
     ProfileTimer test;
-    bool prevState = timersEnabled();
+    const bool prevState = timersEnabled();
 
     if (!prevState) {
         enableTimers();
@@ -200,15 +200,15 @@ void ProfileTimer::removeTimer(ProfileTimer& timer) {
     }
 }
 
-bool ProfileTimer::timersEnabled() {
+bool ProfileTimer::timersEnabled() noexcept {
     return s_enabled;
 }
 
-void ProfileTimer::enableTimers() {
+void ProfileTimer::enableTimers() noexcept {
     s_enabled = true;
 }
 
-void ProfileTimer::disableTimers() {
+void ProfileTimer::disableTimers() noexcept {
     s_enabled = false;
 }
 

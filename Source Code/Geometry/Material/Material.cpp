@@ -681,7 +681,7 @@ bool Material::getTextureData(RenderStagePass renderStagePass, TextureDataContai
     return ret;
 }
 
-bool Material::unload() {
+bool Material::unload() noexcept {
     _textures.fill(nullptr);
     _externalTextures.clear();
     _shaderInfo.fill(ShaderProgramInfo());

@@ -34,7 +34,7 @@
 
 namespace Divide {
 
-inline bool BoundingBox::containsPoint(const vec3<F32>& point) const {
+inline bool BoundingBox::containsPoint(const vec3<F32>& point) const noexcept {
     // const SharedLock r_lock(_lock);
     return (IS_GEQUAL(point.x, _min.x) && IS_GEQUAL(point.y, _min.y) && IS_GEQUAL(point.z, _min.z) &&
             IS_LEQUAL(point.x, _max.x) && IS_LEQUAL(point.y, _max.y) && IS_LEQUAL(point.z, _max.z));
@@ -46,27 +46,27 @@ inline bool BoundingBox::compare(const BoundingBox& bb) const  noexcept {
            _max == bb._max;
 }
 
-inline bool BoundingBox::operator==(const BoundingBox& B) const {
+inline bool BoundingBox::operator==(const BoundingBox& B) const noexcept {
     return compare(B);
 }
 
-inline bool BoundingBox::operator!=(const BoundingBox& B) const {
+inline bool BoundingBox::operator!=(const BoundingBox& B) const noexcept {
     return !compare(B);
 }
 
-inline void BoundingBox::createFromPoints(const vector<vec3<F32>>& points) {
+inline void BoundingBox::createFromPoints(const vector<vec3<F32>>& points) noexcept {
     for (const vec3<F32>& p : points) {
         add(p);
     }
 }
 
-inline void BoundingBox::createFromPoints(const std::array<vec3<F32>, 8>& points) {
+inline void BoundingBox::createFromPoints(const std::array<vec3<F32>, 8>& points) noexcept {
     for (const vec3<F32>& p : points) {
         add(p);
     }
 }
 
-inline void BoundingBox::createFromSphere(const vec3<F32>& center, F32 radius) {
+inline void BoundingBox::createFromSphere(const vec3<F32>& center, F32 radius) noexcept {
     _max.set(center + radius);
     _min.set(center - radius);
 }

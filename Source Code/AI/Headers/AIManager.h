@@ -77,7 +77,7 @@ class AIManager : public SceneComponent
     void unregisterEntity(AIEntity* entity);
     inline AITeam* const getTeamByID(I32 AITeamID) {
         if (AITeamID != -1) {
-            AITeamMap::const_iterator it = _aiTeams.find(AITeamID);
+            const AITeamMap::const_iterator it = _aiTeams.find(AITeamID);
             if (it != std::end(_aiTeams)) {
                 return it->second;
             }
@@ -88,7 +88,7 @@ class AIManager : public SceneComponent
     bool addNavMesh(AIEntity::PresetAgentRadius radius, Navigation::NavigationMesh* const navMesh);
 
     Navigation::NavigationMesh* getNavMesh(AIEntity::PresetAgentRadius radius) const {
-        NavMeshMap::const_iterator it = _navMeshes.find(radius);
+        const NavMeshMap::const_iterator it = _navMeshes.find(radius);
         if (it != std::end(_navMeshes)) {
             return it->second;
         }
@@ -101,22 +101,22 @@ class AIManager : public SceneComponent
         UniqueLock w_lock(_updateMutex);
         _sceneCallback = callback;
     }
-    inline void pauseUpdate(bool state) { _pauseUpdate = state; }
-    inline bool updatePaused() const { return _pauseUpdate; }
-    inline bool updating() const { return _updating; }
+    inline void pauseUpdate(bool state) noexcept { _pauseUpdate = state; }
+    inline bool updatePaused() const noexcept { return _pauseUpdate; }
+    inline bool updating() const noexcept { return _updating; }
     /// Handle any debug information rendering (nav meshes, AI paths, etc).
     /// Called by Scene::postRender after depth map preview call
     void debugDraw(GFX::CommandBuffer& bufferInOut, bool forceAll = true);
-    inline bool isDebugDraw() const { return _navMeshDebugDraw; }
+    inline bool isDebugDraw() const noexcept { return _navMeshDebugDraw; }
     /// Toggle debug draw for all NavMeshes
     void toggleNavMeshDebugDraw(bool state);
-    inline bool navMeshDebugDraw() const { return _navMeshDebugDraw; }
+    inline bool navMeshDebugDraw() const noexcept { return _navMeshDebugDraw; }
 
-    inline void stop() {
+    inline void stop() noexcept {
         _shouldStop = true;
     }
 
-    inline bool running() const {
+    inline bool running() const noexcept {
         return _running;
     }
 

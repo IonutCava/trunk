@@ -228,7 +228,7 @@ inline bool Transform::isUniformScale() const {
     return _transformValues._scale.isUniform();
 }
 
-inline void Transform::clone(Transform* const transform) {
+inline void Transform::clone(const Transform* const transform) {
     _notDirty.clear();
     _dontRebuildMatrix.clear();
 

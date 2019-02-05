@@ -34,7 +34,7 @@ namespace detail {
 
 }; //detail
 
-LanguageData::LanguageData()
+LanguageData::LanguageData() noexcept
 {
 }
 
@@ -53,7 +53,7 @@ void LanguageData::changeLanguage(const char* newLanguage) {
 const char* LanguageData::get(U64 key, const char* defaultValue) {
     typedef hashMap<U64, stringImpl>::const_iterator citer;
     // When we ask for a string for the given key, we check our language cache first
-    citer entry = _languageTable.find(key);
+    const citer entry = _languageTable.find(key);
     if (entry != std::cend(_languageTable)) {
         // Usually, the entire language table is loaded.
         return entry->second.c_str();
@@ -113,7 +113,7 @@ ErrorCode init(const char* newLanguage) {
     return ErrorCode::NO_ERR;
 }
 
-void clear() {
+void clear() noexcept {
     detail::g_data.reset();
 }
 
@@ -148,7 +148,7 @@ void addChangeLanguageCallback(const DELEGATE_CBK<void, const char* /*new langua
     detail::g_data->addLanguageChangeCallback(cbk);
 }
 
-const stringImpl& currentLanguage() {
+const stringImpl& currentLanguage() noexcept {
     return detail::g_localeFile;
 }
 

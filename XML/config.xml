@@ -29,9 +29,9 @@
   <!-- The maximum number of worker threads that we want to spawn. -1 = (CPU thread count - 1). We will always spawn a minimum of 5 threads-->
   <maxWorkerThreads>-1</maxWorkerThreads>
   <!-- 0 = windowed, 1 = borderless window, 2 = fullscreen (has some issues)-->
-  <windowedMode>0</windowedMode>
+  <windowedMode>1</windowedMode>
   <!-- do we allow window resizing if running in windowed mode? -->
-  <windowResizable>false</windowResizable>
+  <windowResizable>true</windowResizable>
   <!-- cap framerate. Set to 0 or less to disable -->
   <frameRateLimit>0</frameRateLimit>
   <!-- toggle Vsync on or off. This can be overridden by the display driver! -->

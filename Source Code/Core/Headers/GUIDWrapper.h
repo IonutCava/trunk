@@ -57,12 +57,19 @@ class GUIDWrapper {
         (void)old;
     }
 
-    inline I64 getGUID() const { return _GUID; }
+    GUIDWrapper(GUIDWrapper&& old)
+        : _GUID(old._GUID)
+    {
+    }
 
-    static I64 generateGUID();
+
+    inline I64 getGUID() const  noexcept { return _GUID; }
+
+    static I64 generateGUID() noexcept;
 
    private:
-    void operator=(const GUIDWrapper& old) = delete;
+    GUIDWrapper& operator=(const GUIDWrapper& old) = delete;
+    GUIDWrapper& operator=(GUIDWrapper&& other) = delete;
 
    protected:
     const I64 _GUID;

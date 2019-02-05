@@ -33,12 +33,12 @@ CachedResource_ptr ImplResourceLoader<Texture>::operator()() {
 
     stringImpl resourceLocation = _descriptor.assetLocation();
 
-    size_t numCommas = std::count(std::cbegin(_descriptor.assetName()),
-                                  std::cend(_descriptor.assetName()),
-                                  ',');
-    size_t crtNumCommas = std::count(std::cbegin(resourceLocation),
-                          std::cend(resourceLocation),
-                          ',');
+    const size_t numCommas = std::count(std::cbegin(_descriptor.assetName()),
+                                        std::cend(_descriptor.assetName()),
+                                        ',');
+    const size_t crtNumCommas = std::count(std::cbegin(resourceLocation),
+                                           std::cend(resourceLocation),
+                                           ',');
 
     if (crtNumCommas < numCommas ) {
         if (!resourceLocation.empty()) {

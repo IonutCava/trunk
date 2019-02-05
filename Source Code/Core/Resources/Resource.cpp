@@ -16,24 +16,20 @@ Resource::Resource(ResourceType type,
 {
 }
 
-Resource::~Resource()
-{
-}
-
 /// Name management
-const stringImpl& Resource::resourceName() const {
+const stringImpl& Resource::resourceName() const noexcept {
     return _resourceName;
 }
 
-ResourceType Resource::getType() const {
+ResourceType Resource::getType() const noexcept {
     return _resourceType;
 }
 
-ResourceState Resource::getState() const {
+ResourceState Resource::getState() const noexcept {
     return _resourceState;
 }
 
-void Resource::setState(ResourceState currentState) {
+void Resource::setState(ResourceState currentState) noexcept {
     _resourceState = currentState;
 }
 
@@ -65,10 +61,6 @@ CachedResource::CachedResource(ResourceType type,
 {
 }
 
-CachedResource::~CachedResource()
-{
-}
-
 bool CachedResource::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) {
     setState(ResourceState::RES_LOADED);
     if (onLoadCallback) {
@@ -78,20 +70,20 @@ bool CachedResource::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadC
     return resourceLoadComplete();
 }
 
-bool CachedResource::unload() {
+bool CachedResource::unload() noexcept {
     return true;
 }
 
-bool CachedResource::resourceLoadComplete() {
+bool CachedResource::resourceLoadComplete() noexcept {
     return true;
 }
 
-size_t CachedResource::getDescriptorHash() const {
+size_t CachedResource::getDescriptorHash() const noexcept {
     return _descriptorHash;
 }
 
 /// Physical file path
-const stringImpl& CachedResource::assetLocation() const {
+const stringImpl& CachedResource::assetLocation() const noexcept {
     return _assetLocation;
 }
 
@@ -100,7 +92,7 @@ void CachedResource::assetLocation(const stringImpl& location) {
 }
 
 /// Physical file name
-const stringImpl& CachedResource::assetName() const {
+const stringImpl& CachedResource::assetName() const noexcept {
     return _assetName;
 }
 
@@ -113,7 +105,7 @@ void CachedResource::setStateCallback(ResourceState targetState, const DELEGATE_
     _loadingCallbacks[to_U32(targetState)] = cbk;
 }
 
-void CachedResource::setState(ResourceState currentState) {
+void CachedResource::setState(ResourceState currentState) noexcept {
     Resource::setState(currentState);
 
     UniqueLock r_lock(_callbackLock);

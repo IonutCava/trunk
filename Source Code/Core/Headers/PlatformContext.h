@@ -120,7 +120,7 @@ public:
 
     inline Configuration& config() { return *_config; }
     inline const Configuration& config() const { return *_config; }
-    inline const std::unique_ptr<Configuration>& configPtr() { return _config; }
+    inline const std::unique_ptr<Configuration>& configPtr() noexcept { return _config; }
 
     inline LocalClient& client() { return *_client; }
     inline const LocalClient& client() const { return *_client; }

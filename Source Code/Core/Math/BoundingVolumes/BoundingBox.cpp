@@ -49,11 +49,11 @@ void BoundingBox::operator=(const BoundingBox& b) {
     this->_max.set(b._max);
 }
 
-bool BoundingBox::containsBox(const BoundingBox& AABB2) const {
+bool BoundingBox::containsBox(const BoundingBox& AABB2) const noexcept {
     return AABB2._min >= _min && AABB2._max <= _max;
 }
 
-bool BoundingBox::containsSphere(const BoundingSphere& bSphere) const {
+bool BoundingBox::containsSphere(const BoundingSphere& bSphere) const noexcept {
     const vec3<F32>& center = bSphere.getCenter();
     const F32 radius = bSphere.getRadius();
 
@@ -65,7 +65,7 @@ bool BoundingBox::containsSphere(const BoundingSphere& bSphere) const {
            _max.z - center.z > radius;
 }
 
-bool BoundingBox::collision(const BoundingBox& AABB2) const {
+bool BoundingBox::collision(const BoundingBox& AABB2) const noexcept {
     // SharedLock r_lock(_lock);
     const vec3<F32>& center = this->getCenter();
     const vec3<F32>& halfWidth = this->getHalfExtent();
@@ -82,7 +82,7 @@ bool BoundingBox::collision(const BoundingBox& AABB2) const {
     return x && y && z;
 }
 
-bool BoundingBox::collision(const BoundingSphere& bSphere) const {
+bool BoundingBox::collision(const BoundingSphere& bSphere) const noexcept {
     const vec3<F32>& center = bSphere.getCenter();
     const vec3<F32> min(getMin());
     const vec3<F32> max(getMax());
@@ -171,7 +171,7 @@ void BoundingBox::transform(const BoundingBox& initialBoundingBox,
     }
 }
 
-F32 BoundingBox::nearestDistanceFromPointSquared(const vec3<F32>& pos) const {
+F32 BoundingBox::nearestDistanceFromPointSquared(const vec3<F32>& pos) const noexcept {
     const vec3<F32>& center = getCenter();
     const vec3<F32>& hextent = getHalfExtent();
     return vec3<F32>(std::max(0.0f, std::fabsf(pos.x - center.x) - hextent.x),

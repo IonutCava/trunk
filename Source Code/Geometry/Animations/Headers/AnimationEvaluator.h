@@ -79,15 +79,15 @@ class AnimEvaluator {
     I32 frameIndexAt(const D64 elapsedTime) const;
 
     
-    inline U32 frameCount() const {
+    inline U32 frameCount() const noexcept {
         return to_U32(_transforms.size());
     }
 
-    inline vector<vectorBest<mat4<F32>>>& transforms() {
+    inline vector<vectorBest<mat4<F32>>>& transforms() noexcept {
         return _transforms;
     }
     
-    inline const vector<vectorBest<mat4<F32>>>& transforms() const {
+    inline const vector<vectorBest<mat4<F32>>>& transforms() const noexcept {
         return _transforms;
     }
 
@@ -123,27 +123,27 @@ class AnimEvaluator {
         return transforms(elapsedTime, resultingFrameIndex);
     }
 
-    inline void playAnimationForward(bool state) {
+    inline void playAnimationForward(bool state) noexcept {
         _playAnimationForward = state;
     }
 
-    inline bool playAnimationForward() const {
+    inline bool playAnimationForward() const noexcept {
         return _playAnimationForward;
     }
 
-    inline void ticksPerSecond(D64 tickCount) {
+    inline void ticksPerSecond(D64 tickCount) noexcept {
         _ticksPerSecond = tickCount;
     }
 
-    inline D64 ticksPerSecond() const {
+    inline D64 ticksPerSecond() const noexcept {
         return _ticksPerSecond;
     }
 
-    inline const stringImpl& name() const {
+    inline const stringImpl& name() const noexcept {
         return _name;
     }
 
-    inline D64 duration() const {
+    inline D64 duration() const noexcept {
         return _duration;
     }
 
@@ -152,7 +152,7 @@ class AnimEvaluator {
     static void save(const AnimEvaluator& evaluator, ByteBuffer& dataOut);
     static void load(AnimEvaluator& evaluator, ByteBuffer& dataIn);
 
-    ShaderBuffer& getBoneBuffer() const {
+    ShaderBuffer& getBoneBuffer() const noexcept {
         return *_boneTransformBuffer;
     }
 

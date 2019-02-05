@@ -74,22 +74,7 @@ class glBufferLockManager : public glLockManager {
     vectorEASTL<BufferLock> _swapLocks;
 };
 
-
-#if defined(_DEBUG)
-template <typename Type>
-using vectorImpl = std::vector<Type>;
-
-template <typename K, typename V, typename HashFun = HashType<K> >
-using hashMapImpl = std::unordered_map<K, V, HashFun>;
-#else
-template <typename Type>
-using vectorImpl = vectorEASTL<Type>;
-
-template <typename K, typename V, typename HashFun = HashType<K> >
-using hashMapImpl = hashMap<K, V, HashFun>;
-#endif
-
-typedef hashMapImpl<I64 /*bufferGUID*/, vectorImpl<BufferRange> /*ranges*/> BufferLockEntries;
+typedef hashMap<I64 /*bufferGUID*/, vectorEASTL<BufferRange> /*ranges*/> BufferLockEntries;
 
 class glGlobalLockManager : public glLockManager {
 public:
@@ -102,11 +87,11 @@ public:
     void LockBuffers(BufferLockEntries entries);
 
 protected:
-    bool test(GLsync syncObject, vectorImpl<BufferRange>& ranges, BufferRange testRange, bool noWait = false);
+    bool test(GLsync syncObject, vectorEASTL<BufferRange>& ranges, BufferRange testRange, bool noWait = false);
 
 private:
     mutable std::mutex _lock;
-    vectorImpl<std::pair<GLsync, BufferLockEntries>> _bufferLocks;
+    vectorEASTL<std::pair<GLsync, BufferLockEntries>> _bufferLocks;
 };
 
 };  // namespace Divide

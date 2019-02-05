@@ -82,19 +82,19 @@ class AIEntity : public GUIDWrapper {
 
     Sensor* getSensor(SensorType type);
 
-    inline AITeam* getTeam() const { return _teamPtr; }
+    inline AITeam* getTeam() const noexcept { return _teamPtr; }
     I32 getTeamID() const;
-    const stringImpl& name() const { return _name; }
+    const stringImpl& name() const noexcept { return _name; }
 
     void addUnitRef(NPC* const npc);
-    inline NPC* getUnitRef() { return _unitRef; }
+    inline NPC* getUnitRef() noexcept { return _unitRef; }
 
     /// PathFinding
     /// Index ID identifying the agent of this character in the crowd
-    inline I32 getAgentID() const { return _agentID; }
+    inline I32 getAgentID() const noexcept { return _agentID; }
     /// The agent that steers this character within the crowd
-    inline const dtCrowdAgent* getAgent() const { return _agent; }
-    inline bool isAgentLoaded() const { return _agentID >= 0; }
+    inline const dtCrowdAgent* getAgent() const noexcept { return _agent; }
+    inline bool isAgentLoaded() const noexcept { return _agentID >= 0; }
     /// Update the crowding system
     void resetCrowd();
     /// The height of the agent for this character.
@@ -102,7 +102,7 @@ class AIEntity : public GUIDWrapper {
     /// The radius of the agent for this character.
     D64 getAgentRadius() const;
     /// The radius category of this character
-    inline PresetAgentRadius getAgentRadiusCategory() const {
+    inline PresetAgentRadius getAgentRadiusCategory() const noexcept {
         return _agentRadiusCategory;
     }
     /**

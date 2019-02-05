@@ -46,7 +46,7 @@ class ProfileTimer {
 
     void start();
     U64 stop();
-    void reset();
+    void reset() noexcept;
     stringImpl print(U32 level = 0) const;
 
     U64 get() const;
@@ -59,9 +59,9 @@ class ProfileTimer {
 
     static U64 overhead();
 
-    static bool timersEnabled();
-    static void enableTimers();
-    static void disableTimers();
+    static bool timersEnabled() noexcept;
+    static void enableTimers() noexcept;
+    static void disableTimers() noexcept;
 
    // time data
    protected:

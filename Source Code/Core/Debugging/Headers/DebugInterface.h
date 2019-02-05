@@ -40,12 +40,12 @@ namespace Divide {
 
 class DebugInterface : public KernelComponent {
 public:
-    explicit DebugInterface(Kernel& parent);
+    explicit DebugInterface(Kernel& parent) noexcept;
     ~DebugInterface();
 
-    const stringImpl& output() const;
-    void toggle(const bool state);
-    bool enabled() const;
+    const stringImpl& output() const noexcept;
+    void toggle(const bool state) noexcept;
+    bool enabled() const noexcept;
     void idle();
 
 private:

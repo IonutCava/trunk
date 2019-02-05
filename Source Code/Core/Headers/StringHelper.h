@@ -87,7 +87,7 @@ namespace Divide {
 
         U32 LineCount(const stringImpl& str);
 
-        void CStringRemoveChar(char* str, char charToRemove);
+        void CStringRemoveChar(char* str, char charToRemove) noexcept;
     }; //namespace Util
 }; //namespace Divide
 

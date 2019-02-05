@@ -12,7 +12,7 @@
 
 namespace Divide {
 
-DebugInterface::DebugInterface(Kernel& parent)
+DebugInterface::DebugInterface(Kernel& parent) noexcept
     : KernelComponent(parent),
       _enabled(false)
 {
@@ -66,15 +66,15 @@ void DebugInterface::idle() {
     }
 }
 
-void DebugInterface::toggle(const bool state) {
+void DebugInterface::toggle(const bool state) noexcept {
     _enabled = state;
 }
 
-bool DebugInterface::enabled() const {
+bool DebugInterface::enabled() const noexcept {
     return _enabled;
 }
 
-const stringImpl& DebugInterface::output() const {
+const stringImpl& DebugInterface::output() const noexcept {
     return _output;
 }
 

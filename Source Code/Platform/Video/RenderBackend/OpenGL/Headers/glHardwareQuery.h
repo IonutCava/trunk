@@ -66,9 +66,9 @@ public:
     glHardwareQuery& readQuery();
     glHardwareQuery& writeQuery();
 
-    void resize(I32 queueLength) override;
+    void resize(I32 queueLength) noexcept override;
 
-    inline U32 id() const { return _id; }
+    inline U32 id() const noexcept { return _id; }
 
     void onBeginFrame();
     void onEndFrame();

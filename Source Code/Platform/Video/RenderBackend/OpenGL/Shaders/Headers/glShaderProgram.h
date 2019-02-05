@@ -86,7 +86,7 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     static void onShutdown();
 
     /// Make sure this program is ready for deletion
-    bool unload() override;
+    bool unload() noexcept override;
     /// Check every possible combination of flags to make sure this program can
     /// be used for rendering
     bool isValid() const override;

@@ -130,7 +130,7 @@ void Console::printAll() {
     } while (count > 0);
 }
 
-void Console::start() {
+void Console::start() noexcept {
     if (!_running) {
         _running = true;
     }

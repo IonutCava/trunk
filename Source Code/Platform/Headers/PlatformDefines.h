@@ -332,7 +332,7 @@ inline bool AlmostEqualUlpsAndAbs(F32 A, F32 B, F32 maxDiff, I32 maxUlpsDiff) {
     return (std::abs(uA.i - uB.i) <= maxUlpsDiff);
 }
 
-inline bool AlmostEqualUlpsAndAbs(D64 A, D64 B, D64 maxDiff, I32 maxUlpsDiff) {
+inline bool AlmostEqualUlpsAndAbs(D64 A, D64 B, D64 maxDiff, I32 maxUlpsDiff) noexcept {
     // Check if the numbers are really close -- needed when comparing numbers near zero.
     const D64 absDiff = std::fabs(A - B);
     if (absDiff <= maxDiff) {
@@ -379,7 +379,7 @@ inline bool AlmostEqualRelativeAndAbs(D64 A, D64 B, D64 maxDiff, D64 maxRelDiff)
     return (diff <= largest * maxRelDiff);
 }
 
-FORCE_INLINE void NOP(void) {}
+FORCE_INLINE void NOP(void) noexcept {}
 
 #define ACKNOWLEDGE_UNUSED(p) ((void)p)
 
@@ -466,27 +466,27 @@ static const F32 EPSILON_F32 = std::numeric_limits<F32>::epsilon();
 static const D64 EPSILON_D64 = std::numeric_limits<D64>::epsilon();
 
 template <typename T>
-inline bool IS_VALID_CONTAINER_RANGE(T elementCount, T min, T max) {
+inline bool IS_VALID_CONTAINER_RANGE(T elementCount, T min, T max) noexcept {
     return min >= 0 && max < elementCount;
 }
 template <typename T, typename U>
-inline bool IS_IN_RANGE_INCLUSIVE(T x, U min, U max) {
+inline bool IS_IN_RANGE_INCLUSIVE(T x, U min, U max) noexcept {
     return x >= min && x <= max;
 }
 template <typename T, typename U>
-inline bool IS_IN_RANGE_EXCLUSIVE(T x, U min, U max) {
+inline bool IS_IN_RANGE_EXCLUSIVE(T x, U min, U max) noexcept {
     return x > min && x < max;
 }
 template <typename T>
-inline bool IS_IN_RANGE_INCLUSIVE(T x, T min, T max) {
+inline bool IS_IN_RANGE_INCLUSIVE(T x, T min, T max) noexcept {
     return x >= min && x <= max;
 }
 template <typename T>
-inline bool IS_IN_RANGE_EXCLUSIVE(T x, T min, T max) {
+inline bool IS_IN_RANGE_EXCLUSIVE(T x, T min, T max) noexcept {
     return x > min && x < max;
 }
 template <typename T>
-inline bool IS_ZERO(T X) {
+inline bool IS_ZERO(T X) noexcept {
     return X == 0;
 }
 template <>
@@ -512,52 +512,52 @@ inline bool IS_TOLERANCE(D64 X, D64 TOLERANCE) noexcept {
 }
 
 template<typename T, typename U>
-inline bool COMPARE_TOLERANCE(T X, U Y, T TOLERANCE) {
+inline bool COMPARE_TOLERANCE(T X, U Y, T TOLERANCE) noexcept {
     return COMPARE_TOLERANCE(X, static_cast<T>(Y), TOLERANCE);
 }
 
 template<typename T>
-inline bool COMPARE_TOLERANCE(T X, T Y, T TOLERANCE) {
+inline bool COMPARE_TOLERANCE(T X, T Y, T TOLERANCE) noexcept {
     return std::fabs(X - Y) <= TOLERANCE;
 }
 
 template<>
-inline bool COMPARE_TOLERANCE(F32 X, F32 Y, F32 TOLERANCE) {
+inline bool COMPARE_TOLERANCE(F32 X, F32 Y, F32 TOLERANCE) noexcept {
     return AlmostEqualUlpsAndAbs(X, Y, TOLERANCE, 4);
 }
 
 template<>
-inline bool COMPARE_TOLERANCE(D64 X, D64 Y, D64 TOLERANCE) {
+inline bool COMPARE_TOLERANCE(D64 X, D64 Y, D64 TOLERANCE) noexcept {
     return AlmostEqualUlpsAndAbs(X, Y, TOLERANCE, 4);
 }
 
 template<typename T, typename U>
-inline bool COMPARE(T X, U Y) {
+inline bool COMPARE(T X, U Y) noexcept {
     return COMPARE(X, static_cast<T>(Y));
 }
 
 template<typename T>
-inline bool COMPARE(T X, T Y) {
+inline bool COMPARE(T X, T Y) noexcept {
     return X == Y;
 }
 
 template<>
-inline bool COMPARE(F32 X, F32 Y) {
+inline bool COMPARE(F32 X, F32 Y) noexcept {
     return COMPARE_TOLERANCE(X, Y, EPSILON_F32);
 }
 
 template<>
-inline bool COMPARE(D64 X, D64 Y) {
+inline bool COMPARE(D64 X, D64 Y) noexcept {
     return COMPARE_TOLERANCE(X, Y, EPSILON_D64);
 }
 
 /// should be fast enough as the first condition is almost always true
 template <typename T>
-inline bool IS_GEQUAL(T X, T Y) {
+inline bool IS_GEQUAL(T X, T Y) noexcept {
     return X > Y || COMPARE(X, Y);
 }
 template <typename T>
-inline bool IS_LEQUAL(T X, T Y) {
+inline bool IS_LEQUAL(T X, T Y) noexcept {
     return X < Y || COMPARE(X, Y);
 }
 

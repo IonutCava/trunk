@@ -38,34 +38,34 @@ namespace Divide {
 class RingBufferSeparateWrite {
 public:
     // If separateReadWrite is true, this behaves exactly like a RingBuffer
-    explicit RingBufferSeparateWrite(I32 queueLength, bool separateReadWrite);
+    explicit RingBufferSeparateWrite(I32 queueLength, bool separateReadWrite) noexcept;
     RingBufferSeparateWrite(const RingBufferSeparateWrite& other);
     virtual ~RingBufferSeparateWrite();
 
     RingBufferSeparateWrite& operator=(const RingBufferSeparateWrite& other);
 
-    virtual void resize(I32 queueLength);
+    virtual void resize(I32 queueLength) noexcept;
 
-    const inline I32 queueLength() const {
+    const inline I32 queueLength() const noexcept {
         return _queueLength;
     }
 
-    const inline I32 queueWriteIndex() const {
+    const inline I32 queueWriteIndex() const noexcept {
         return _separateReadWrite ? (_queueIndex + (_queueLength - 1)) % _queueLength 
                                   : _queueIndex.load();
     }
 
-    const inline I32 queueReadIndex() const {
+    const inline I32 queueReadIndex() const noexcept {
         return _queueIndex;
     }
 
-    inline void incQueue() {
+    inline void incQueue() noexcept {
         if (queueLength() > 1) {
             _queueIndex = (_queueIndex + 1) % _queueLength;
         }
     }
 
-    inline void decQueue() {
+    inline void decQueue() noexcept {
         if (queueLength() > 1) {
             if (_queueIndex == 0) {
                 _queueIndex = _queueLength;
@@ -83,29 +83,29 @@ private:
 
 class RingBuffer {
 public:
-    explicit RingBuffer(I32 queueLength);
-    RingBuffer(const RingBuffer& other);
+    explicit RingBuffer(I32 queueLength) noexcept;
+    RingBuffer(const RingBuffer& other) noexcept;
     virtual ~RingBuffer();
 
-    RingBuffer& operator=(const RingBuffer& other);
+    RingBuffer& operator=(const RingBuffer& other) noexcept;
 
-    virtual void resize(I32 queueLength);
+    virtual void resize(I32 queueLength) noexcept;
 
-    const inline I32 queueLength() const {
+    const inline I32 queueLength() const noexcept {
         return _queueLength;
     }
 
-    const inline I32 queueIndex() const {
+    const inline I32 queueIndex() const noexcept {
         return _queueIndex;
     }
 
-    inline void incQueue() {
+    inline void incQueue() noexcept {
         if (queueLength() > 1) {
             _queueIndex = (_queueIndex + 1) % _queueLength;
         }
     }
 
-    inline void decQueue() {
+    inline void decQueue() noexcept {
         if (queueLength() > 1) {
             _queueIndex = (_queueIndex - 1) % _queueLength;
         }

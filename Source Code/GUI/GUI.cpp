@@ -67,13 +67,13 @@ void GUI::onChangeScene(Scene* newScene) {
     assert(newScene != nullptr);
     SharedLock r_lock(_guiStackLock);
     if (_activeScene != nullptr && _activeScene->getGUID() != newScene->getGUID()) {
-        GUIMapPerScene::const_iterator it = _guiStack.find(_activeScene->getGUID());
+        const GUIMapPerScene::const_iterator it = _guiStack.find(_activeScene->getGUID());
         if (it != std::cend(_guiStack)) {
             it->second->onDisable();
         }
     }
 
-    GUIMapPerScene::const_iterator it = _guiStack.find(newScene->getGUID());
+    const GUIMapPerScene::const_iterator it = _guiStack.find(newScene->getGUID());
     if (it != std::cend(_guiStack)) {
         it->second->onEnable();
     } else {
@@ -85,10 +85,10 @@ void GUI::onChangeScene(Scene* newScene) {
     _activeScene = newScene;
 }
 
-void GUI::onUnloadScene(Scene* scene) {
+void GUI::onUnloadScene(Scene* const scene) {
     assert(scene != nullptr);
     UniqueLockShared w_lock(_guiStackLock);
-    GUIMapPerScene::const_iterator it = _guiStack.find(scene->getGUID());
+    const GUIMapPerScene::const_iterator it = _guiStack.find(scene->getGUID());
     if (it != std::cend(_guiStack)) {
         _guiStack.erase(it);
     }
@@ -101,7 +101,7 @@ void GUI::draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) {
 
     TextElementBatch textBatch;
     for (const GUIMap::value_type& guiStackIterator : _guiElements[to_base(GUIType::GUI_TEXT)]) {
-        GUIText& textLabel = static_cast<GUIText&>(*guiStackIterator.second.first);
+        const GUIText& textLabel = static_cast<GUIText&>(*guiStackIterator.second.first);
         if (textLabel.isVisible() && !textLabel.text().empty()) {
             textBatch._data.push_back(textLabel);
         }
@@ -114,7 +114,7 @@ void GUI::draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) {
     {
         SharedLock r_lock(_guiStackLock);
         // scene specific
-        GUIMapPerScene::const_iterator it = _guiStack.find(_activeScene->getGUID());
+        const GUIMapPerScene::const_iterator it = _guiStack.find(_activeScene->getGUID());
         if (it != std::cend(_guiStack)) {
             it->second->draw(context, bufferInOut);
         }
@@ -204,7 +204,7 @@ bool GUI::init(PlatformContext& context, ResourceCache& cache) {
 
     const vec2<U16>& renderSize = context.gfx().renderingResolution();
 
-    CEGUI::Sizef size(static_cast<float>(renderSize.width), static_cast<float>(renderSize.height));
+    const CEGUI::Sizef size(static_cast<float>(renderSize.width), static_cast<float>(renderSize.height));
     // We create a CEGUI texture target and create a GUIContext that will use it.
 
     _ceguiRenderer = CEGUI::System::getSingleton().getRenderer();
@@ -280,7 +280,7 @@ void GUI::onSizeChange(const SizeChangeParams& params) {
         return;
     }
 
-    CEGUI::Sizef windowSize(params.width, params.height);
+    const CEGUI::Sizef windowSize(params.width, params.height);
     CEGUI::System::getSingleton().notifyDisplaySizeChanged(windowSize);
     if (_ceguiRenderTextureTarget) {
         _ceguiRenderTextureTarget->declareRenderSize(windowSize);
@@ -295,12 +295,6 @@ void GUI::onSizeChange(const SizeChangeParams& params) {
                                                 CEGUI::UDim(0.0f, to_F32(renderViewport.y))));
     }
 
-}
-
-void GUI::selectionChangeCallback(Scene* const activeScene, PlayerIndex idx, SceneGraphNode* node) {
-    ACKNOWLEDGE_UNUSED(activeScene);
-    ACKNOWLEDGE_UNUSED(idx);
-    ACKNOWLEDGE_UNUSED(node);
 }
 
 void GUI::setCursorPosition(I32 x, I32 y) {
@@ -433,7 +427,7 @@ bool GUI::onUTF8(const Input::UTF8Event& arg) {
 GUIElement* GUI::getGUIElementImpl(I64 sceneID, U64 elementName, GUIType type) const {
     if (sceneID != 0) {
         SharedLock r_lock(_guiStackLock);
-        GUIMapPerScene::const_iterator it = _guiStack.find(sceneID);
+        const GUIMapPerScene::const_iterator it = _guiStack.find(sceneID);
         if (it != std::cend(_guiStack)) {
             return it->second->getGUIElement(elementName);
         }
@@ -447,7 +441,7 @@ GUIElement* GUI::getGUIElementImpl(I64 sceneID, U64 elementName, GUIType type) c
 GUIElement* GUI::getGUIElementImpl(I64 sceneID, I64 elementID, GUIType type) const {
     if (sceneID != 0) {
         SharedLock r_lock(_guiStackLock);
-        GUIMapPerScene::const_iterator it = _guiStack.find(sceneID);
+        const GUIMapPerScene::const_iterator it = _guiStack.find(sceneID);
         if (it != std::cend(_guiStack)) {
             return it->second->getGUIElement(elementID);
         }
@@ -457,12 +451,12 @@ GUIElement* GUI::getGUIElementImpl(I64 sceneID, I64 elementID, GUIType type) con
 
     return nullptr;
 }
-CEGUI::GUIContext& GUI::getCEGUIContext() {
+CEGUI::GUIContext& GUI::getCEGUIContext() noexcept {
     assert(_ceguiContext != nullptr);
     return *_ceguiContext;
 }
 
-const CEGUI::GUIContext& GUI::getCEGUIContext() const {
+const CEGUI::GUIContext& GUI::getCEGUIContext() const noexcept {
     assert(_ceguiContext != nullptr);
     return *_ceguiContext;
 }

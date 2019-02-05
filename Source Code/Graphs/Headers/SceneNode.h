@@ -114,7 +114,7 @@ class SceneNode : public CachedResource {
                                    RenderPackage& pkgInOut);
     /*//Rendering/Processing*/
 
-    virtual bool unload();
+    virtual bool unload() noexcept;
     virtual void setMaterialTpl(const Material_ptr& material);
     const Material_ptr& getMaterialTpl() const;
 

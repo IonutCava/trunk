@@ -129,7 +129,7 @@ glShaderProgram::~glShaderProgram()
     }
 }
 
-bool glShaderProgram::unload() {
+bool glShaderProgram::unload() noexcept {
     // Remove every shader attached to this program
     for (glShader* shader : _shaderStage) {
         if (shader) {

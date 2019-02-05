@@ -67,7 +67,7 @@ class Trigger : public SceneNode {
     }
 
     /// SceneNode concrete implementations
-    bool unload();
+    bool unload() noexcept override;
 
    private:
     /// The Task to be launched when triggered

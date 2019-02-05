@@ -8,29 +8,26 @@
 namespace Divide {
 namespace Util {
 
-bool IntersectCircles(const Circle& cA, const Circle& cB, vec2<F32>* pointsOut) {
+bool IntersectCircles(const Circle& cA, const Circle& cB, vec2<F32>* pointsOut) noexcept {
     assert(pointsOut != nullptr);
 
-    F32 x0 = cA.center[0];
-    F32 y0 = cA.center[1];
-    F32 r0 = cA.radius;
+    const F32 x0 = cA.center[0];
+    const F32 y0 = cA.center[1];
+    const F32 r0 = cA.radius;
 
-    F32 x1 = cB.center[0];
-    F32 y1 = cB.center[1];
-    F32 r1 = cB.radius;
+    const F32 x1 = cB.center[0];
+    const F32 y1 = cB.center[1];
+    const F32 r1 = cB.radius;
     
-    F32 a, dx, dy, d, h, rx, ry;
-    F32 x2, y2;
-
     /* dx and dy are the vertical and horizontal distances between
      * the circle centers.
      */
-    dx = x1 - x0;
-    dy = y1 - y0;
+    const F32 dx = x1 - x0;
+    const F32 dy = y1 - y0;
 
     /* Determine the straight-line distance between the centers. */
     //d = sqrt((dy*dy) + (dx*dx));
-    d = hypot(dx, dy); // Suggested by Keith Briggs
+    const F32 d = hypot(dx, dy); // Suggested by Keith Briggs
 
     /* Check for solvability. */
     if (d > (r0 + r1))
@@ -50,22 +47,22 @@ bool IntersectCircles(const Circle& cA, const Circle& cB, vec2<F32>* pointsOut) 
      */
 
      /* Determine the distance from point 0 to point 2. */
-    a = ((r0*r0) - (r1*r1) + (d*d)) / (2.0f * d);
+    const F32 a = ((r0*r0) - (r1*r1) + (d*d)) / (2.0f * d);
 
     /* Determine the coordinates of point 2. */
-    x2 = x0 + (dx * a / d);
-    y2 = y0 + (dy * a / d);
+    const F32 x2 = x0 + (dx * a / d);
+    const F32 y2 = y0 + (dy * a / d);
 
     /* Determine the distance from point 2 to either of the
      * intersection points.
      */
-    h = sqrt((r0*r0) - (a*a));
+    const F32 h = sqrt((r0*r0) - (a*a));
 
     /* Now determine the offsets of the intersection points from
      * point 2.
      */
-    rx = -dy * (h / d);
-    ry = dx * (h / d);
+    const F32 rx = -dy * (h / d);
+    const F32 ry = dx * (h / d);
 
     /* Determine the absolute intersection points. */
     
@@ -78,14 +75,14 @@ bool IntersectCircles(const Circle& cA, const Circle& cB, vec2<F32>* pointsOut) 
     return true;
 }
 
-void ToByteColour(const FColour& floatColour, UColour& colourOut) {
+void ToByteColour(const FColour& floatColour, UColour& colourOut) noexcept {
     colourOut.set(FLOAT_TO_CHAR(floatColour.r),
                   FLOAT_TO_CHAR(floatColour.g),
                   FLOAT_TO_CHAR(floatColour.b),
                   FLOAT_TO_CHAR(floatColour.a));
 }
 
-void ToByteColour(const vec3<F32>& floatColour, vec3<U8>& colourOut) {
+void ToByteColour(const vec3<F32>& floatColour, vec3<U8>& colourOut) noexcept {
     colourOut.set(FLOAT_TO_CHAR_SNORM(floatColour.r),
                   FLOAT_TO_CHAR_SNORM(floatColour.g),
                   FLOAT_TO_CHAR_SNORM(floatColour.b));
@@ -98,7 +95,7 @@ void ToIntColour(const FColour& floatColour, vec4<I32>& colourOut) {
                   FLOAT_TO_SCHAR_SNORM(floatColour.a));
 }
 
-void ToIntColour(const vec3<F32>& floatColour, vec3<I32>& colourOut) {
+void ToIntColour(const vec3<F32>& floatColour, vec3<I32>& colourOut) noexcept {
     colourOut.set(to_U32(FLOAT_TO_SCHAR_SNORM(floatColour.r)),
                   to_U32(FLOAT_TO_SCHAR_SNORM(floatColour.g)),
                   to_U32(FLOAT_TO_SCHAR_SNORM(floatColour.b)));
@@ -111,45 +108,45 @@ void ToUIntColour(const FColour& floatColour, vec4<U32>& colourOut) {
                   FLOAT_TO_CHAR_SNORM(floatColour.a));
 }
 
-void ToUIntColour(const vec3<F32>& floatColour, vec3<U32>& colourOut) {
+void ToUIntColour(const vec3<F32>& floatColour, vec3<U32>& colourOut) noexcept {
     colourOut.set(to_U32(FLOAT_TO_CHAR_SNORM(floatColour.r)),
                   to_U32(FLOAT_TO_CHAR_SNORM(floatColour.g)),
                   to_U32(FLOAT_TO_CHAR_SNORM(floatColour.b)));
 }
 
-void ToFloatColour(const UColour& byteColour, FColour& colourOut) {
+void ToFloatColour(const UColour& byteColour, FColour& colourOut) noexcept {
     colourOut.set(CHAR_TO_FLOAT_SNORM(byteColour.r),
                   CHAR_TO_FLOAT_SNORM(byteColour.g),
                   CHAR_TO_FLOAT_SNORM(byteColour.b),
                   CHAR_TO_FLOAT_SNORM(byteColour.a));
 }
 
-void ToFloatColour(const vec3<U8>& byteColour, vec3<F32>& colourOut) {
+void ToFloatColour(const vec3<U8>& byteColour, vec3<F32>& colourOut) noexcept {
     colourOut.set(CHAR_TO_FLOAT_SNORM(byteColour.r),
                   CHAR_TO_FLOAT_SNORM(byteColour.g),
                   CHAR_TO_FLOAT_SNORM(byteColour.b));
 }
 
-void ToFloatColour(const vec4<U32>& uintColour, FColour& colourOut) {
+void ToFloatColour(const vec4<U32>& uintColour, FColour& colourOut) noexcept {
     colourOut.set(uintColour.r / 255.0f,
                   uintColour.g / 255.0f,
                   uintColour.b / 255.0f,
                   uintColour.a / 255.0f);
 }
 
-void ToFloatColour(const vec3<U32>& uintColour, vec3<F32>& colourOut) {
+void ToFloatColour(const vec3<U32>& uintColour, vec3<F32>& colourOut) noexcept {
     colourOut.set(uintColour.r / 255.0f,
                   uintColour.g / 255.0f,
                   uintColour.b / 255.0f);
 }
 
-UColour ToByteColour(const FColour& floatColour) {
+UColour ToByteColour(const FColour& floatColour) noexcept {
     UColour tempColour;
     ToByteColour(floatColour, tempColour);
     return tempColour;
 }
 
-vec3<U8> ToByteColour(const vec3<F32>& floatColour) {
+vec3<U8> ToByteColour(const vec3<F32>& floatColour) noexcept {
     vec3<U8> tempColour;
     ToByteColour(floatColour, tempColour);
     return tempColour;
@@ -161,7 +158,7 @@ vec4<I32> ToIntColour(const FColour& floatColour) {
     return tempColour;
 }
 
-vec3<I32> ToIntColour(const vec3<F32>& floatColour) {
+vec3<I32> ToIntColour(const vec3<F32>& floatColour) noexcept {
     vec3<I32> tempColour;
     ToIntColour(floatColour, tempColour);
     return tempColour;
@@ -173,7 +170,7 @@ vec4<U32> ToUIntColour(const FColour& floatColour) {
     return tempColour;
 }
 
-vec3<U32> ToUIntColour(const vec3<F32>& floatColour) {
+vec3<U32> ToUIntColour(const vec3<F32>& floatColour) noexcept {
     vec3<U32> tempColour;
     ToUIntColour(floatColour, tempColour);
     return tempColour;
@@ -185,7 +182,7 @@ FColour ToFloatColour(const UColour& byteColour) {
     return tempColour;
 }
 
-vec3<F32> ToFloatColour(const vec3<U8>& byteColour) {
+vec3<F32> ToFloatColour(const vec3<U8>& byteColour) noexcept {
     vec3<F32> tempColour;
     ToFloatColour(byteColour, tempColour);
     return tempColour;
@@ -197,7 +194,7 @@ FColour ToFloatColour(const vec4<U32>& uintColour) {
     return tempColour;
 }
 
-vec3<F32> ToFloatColour(const vec3<U32>& uintColour) {
+vec3<F32> ToFloatColour(const vec3<U32>& uintColour) noexcept {
     vec3<F32> tempColour;
     ToFloatColour(uintColour, tempColour);
     return tempColour;
@@ -225,7 +222,7 @@ void UNPACK_VEC2(const U32 src, vec2<F32>& res) {
     UNPACK_VEC2(src, res.x, res.y);
 }
 
-void UNPACK_VEC2(const U32 src, F32& x, F32& y) {
+void UNPACK_VEC2(const U32 src, F32& x, F32& y) noexcept {
     x = (src >> 16) / 65535.0f;
     y = (src & 0xFFFF) / 65535.0f;
 }
@@ -235,7 +232,7 @@ U32 PACK_HALF2x16(const vec2<F32>& value) {
 }
 
 void UNPACK_HALF2x16(const U32 src, vec2<F32>& value) {
-    glm::vec2 ret = glm::unpackHalf2x16(src);
+    const glm::vec2 ret = glm::unpackHalf2x16(src);
     value.set(ret.x, ret.y);
 }
 
@@ -244,7 +241,7 @@ U32 PACK_UNORM4x8(const vec4<U8>& value) {
 }
 
 void UNPACK_UNORM4x8(const U32 src, vec4<U8>& value) {
-    glm::vec4 ret = glm::unpackUnorm4x8(src);
+    const glm::vec4 ret = glm::unpackUnorm4x8(src);
     value.set(ret.x, ret.y, ret.z, ret.w);
 }
 

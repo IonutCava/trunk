@@ -129,7 +129,7 @@ void loadScene(const stringImpl& scenePath, const stringImpl &sceneName, Scene* 
 
     try {
         read_xml(sceneDataFile.c_str(), pt);
-    } catch (boost::property_tree::xml_parser_error &e) {
+    } catch (const boost::property_tree::xml_parser_error &e) {
         Console::errorfn(Locale::get(_ID("ERROR_XML_INVALID_SCENE")), sceneName.c_str());
         stringImpl error(e.what());
         error += " [check error log!]";

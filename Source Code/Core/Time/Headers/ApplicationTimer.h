@@ -62,7 +62,7 @@ DEFINE_SINGLETON(ApplicationTimer)
     U64 getElapsedTime(bool forceUpdate = false) const;
 
   protected:
-    ApplicationTimer();
+    ApplicationTimer() noexcept;
     ~ApplicationTimer() = default;
     
     TimeValue getCurrentTicksInternal() const;

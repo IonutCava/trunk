@@ -58,7 +58,7 @@ class PropertyDescriptor : public Hashable {
     {
     }
 
-    virtual size_t getHash() const override;
+    virtual size_t getHash() const;
 
    protected:
     friend class ResourceDescriptor;

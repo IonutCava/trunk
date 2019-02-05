@@ -21,12 +21,13 @@ namespace ImageTools {
 
 std::mutex ImageDataInterface::_loadingMutex;
 
-ImageData::ImageData() : _compressed(false),
-                         _flip(false),
-                         _16Bit(false),
-                         _isHDR(false),
-                         _alpha(false),
-                         _bpp(0)
+ImageData::ImageData() noexcept 
+    : _compressed(false),
+      _flip(false),
+      _16Bit(false),
+      _isHDR(false),
+      _alpha(false),
+      _bpp(0)
 
 {
     _format = GFXImageFormat::COUNT;
@@ -64,7 +65,7 @@ bool ImageData::create(const stringImpl& filename) {
         }
     }
 
-    if ((_isHDR && dataf == NULL) || (!_isHDR && data == NULL && data16 == NULL)) {
+    if ((_isHDR && dataf == nullptr) || (!_isHDR && data == nullptr && data16 == nullptr)) {
         Console::errorfn(Locale::get(_ID("ERROR_IMAGETOOLS_INVALID_IMAGE_FILE")), _name.c_str());
         return false;
     }
@@ -141,10 +142,10 @@ bool ImageData::loadDDS_IL(const stringImpl& filename) {
         return false;
     }
 
-    I32 numMips = ilGetInteger(IL_NUM_MIPMAPS) + 1;
+    const I32 numMips = ilGetInteger(IL_NUM_MIPMAPS) + 1;
     assert(ilGetInteger(IL_IMAGE_TYPE) == IL_UNSIGNED_BYTE);
 
-    I32 dxtc = ilGetInteger(IL_DXTC_DATA_FORMAT);
+    const I32 dxtc = ilGetInteger(IL_DXTC_DATA_FORMAT);
     _bpp = to_U8(ilGetInteger(IL_IMAGE_BPP));
 
     if (ilGetInteger(IL_IMAGE_CUBEFLAGS) > 0) {
@@ -183,7 +184,7 @@ bool ImageData::loadDDS_IL(const stringImpl& filename) {
             }
         };
     } else {
-        I32 format = ilGetInteger(IL_IMAGE_FORMAT);
+        const I32 format = ilGetInteger(IL_IMAGE_FORMAT);
         switch (format) {
             case IL_BGR:
                 _format = GFXImageFormat::BGR;
@@ -214,18 +215,18 @@ bool ImageData::loadDDS_IL(const stringImpl& filename) {
         ilBindImage(ilTexture);
         ilActiveMipmap(i);
 
-        ILint width = ilGetInteger(IL_IMAGE_WIDTH);
-        ILint height = ilGetInteger(IL_IMAGE_HEIGHT);
-        ILint depth = ilGetInteger(IL_IMAGE_DEPTH);
+        const ILint width = ilGetInteger(IL_IMAGE_WIDTH);
+        const ILint height = ilGetInteger(IL_IMAGE_HEIGHT);
+        const ILint depth = ilGetInteger(IL_IMAGE_DEPTH);
 
         ImageLayer& layer = _data[i];
         layer._dimensions.set(width, height, depth);
 
-        I32 size = _compressed ? ilGetDXTCData(NULL, 0, dxtc)
-                               : width * height * depth * _bpp;
+        const I32 size = _compressed ? ilGetDXTCData(nullptr, 0, dxtc)
+                                     : width * height * depth * _bpp;
 
-        I32 numImagePasses = _compressedTextureType == TextureType::TEXTURE_CUBE_MAP ? 6 : 1;
-        layer._size = size * numImagePasses;
+        const I32 numImagePasses = _compressedTextureType == TextureType::TEXTURE_CUBE_MAP ? 6 : 1;
+        layer._size = static_cast<size_t>(size) * numImagePasses;
         layer._data.resize(layer._size);
 
         for (I32 j = 0, offset = 0; j < numImagePasses; ++j, offset += size) {
@@ -302,7 +303,7 @@ bool ImageData::loadDDS_NV(const stringImpl& filename) {
     }
     _dataType = GFXDataFormat::UNSIGNED_BYTE;
 
-    U32 numMips = image.get_num_mipmaps();
+    const U32 numMips = image.get_num_mipmaps();
     _data.resize(numMips + 1);
     ImageLayer& base = _data[0];
     base._dimensions.set(image.get_width(),
@@ -333,27 +334,27 @@ UColour ImageData::getColour(I32 x, I32 y, U32 mipLevel) const {
 }
 
 void ImageData::getRed(I32 x, I32 y, U8& r, U32 mipLevel) const {
-    I32 idx = (y * _data[mipLevel]._dimensions.width + x) * (_bpp / 8);
+    const I32 idx = (y * _data[mipLevel]._dimensions.width + x) * (_bpp / 8);
     r = _data[mipLevel]._data[idx + 0];
 }
 
 void ImageData::getGreen(I32 x, I32 y, U8& g, U32 mipLevel) const {
-    I32 idx = (y * _data[mipLevel]._dimensions.width + x) * (_bpp / 8);
+    const I32 idx = (y * _data[mipLevel]._dimensions.width + x) * (_bpp / 8);
     g = _data[mipLevel]._data[idx + 1];
 }
 
 void ImageData::getBlue(I32 x, I32 y, U8& b, U32 mipLevel) const {
-    I32 idx = (y * _data[mipLevel]._dimensions.width + x) * (_bpp / 8);
+    const I32 idx = (y * _data[mipLevel]._dimensions.width + x) * (_bpp / 8);
     b = _data[mipLevel]._data[idx + 2];
 }
 
 void ImageData::getAlpha(I32 x, I32 y, U8& a, U32 mipLevel) const {
-    I32 idx = (y * _data[mipLevel]._dimensions.width + x) * (_bpp / 8);
+    const I32 idx = (y * _data[mipLevel]._dimensions.width + x) * (_bpp / 8);
     a = _alpha ? _data[mipLevel]._data[idx + 3] : 255;
 }
 
 void ImageData::getColour(I32 x, I32 y, U8& r, U8& g, U8& b, U8& a, U32 mipLevel) const {
-    I32 idx = (y * _data[mipLevel]._dimensions.width + x) * (_bpp / 8);
+    const I32 idx = (y * _data[mipLevel]._dimensions.width + x) * (_bpp / 8);
     r = _data[mipLevel]._data[idx + 0];
     g = _data[mipLevel]._data[idx + 1];
     b = _data[mipLevel]._data[idx + 2];
@@ -368,11 +369,11 @@ void ImageDataInterface::CreateImageData(const stringImpl& filename, ImageData& 
     }
 }
 
-I8 SaveToTGA(const stringImpl& filename, const vec2<U16>& dimensions, U8 pixelDepth, U8* imageData) {
-    U8 cGarbage = 0, type, mode, aux;
+I8 SaveToTGA(const stringImpl& filename, const vec2<U16>& dimensions, U8 pixelDepth, U8* imageData) noexcept {
+    U8 cGarbage = 0;
     I16 iGarbage = 0;
-    U16 width = dimensions.width;
-    U16 height = dimensions.height;
+    const U16 width = dimensions.width;
+    const U16 height = dimensions.height;
 
     // open file and check for errors
     FILE* file = fopen(filename.c_str(), "wb");
@@ -381,8 +382,8 @@ I8 SaveToTGA(const stringImpl& filename, const vec2<U16>& dimensions, U8 pixelDe
     }
 
     // compute image type: 2 for RGB(A), 3 for greyscale
-    mode = pixelDepth / 8;
-    type = ((pixelDepth == 24) || (pixelDepth == 32)) ? 2 : 3;
+    U8 mode = pixelDepth / 8;
+    U8 type = ((pixelDepth == 24) || (pixelDepth == 32)) ? 2 : 3;
 
     // write the header
     fwrite(&cGarbage, sizeof(U8), 1, file);
@@ -403,7 +404,7 @@ I8 SaveToTGA(const stringImpl& filename, const vec2<U16>& dimensions, U8 pixelDe
     // convert the image data from RGB(a) to BGR(A)
     if (mode >= 3)
         for (I32 i = 0; i < width * height * mode; i += mode) {
-            aux = imageData[i];
+            const U8 aux = imageData[i];
             imageData[i] = imageData[i + 2];
             imageData[i + 2] = aux;
         }
@@ -415,15 +416,14 @@ I8 SaveToTGA(const stringImpl& filename, const vec2<U16>& dimensions, U8 pixelDe
 }
 
 /// saves a series of files with names "filenameX.tga"
-I8 SaveSeries(const stringImpl& filename, const vec2<U16>& dimensions, U8 pixelDepth,
-              U8* imageData) {
+I8 SaveSeries(const stringImpl& filename, const vec2<U16>& dimensions, U8 pixelDepth, U8* imageData) {
     static I32 savedImages = 0;
     // compute the new filename by adding the
     // series number and the extension
     stringImpl newFilename(Util::StringFormat("%s_%d.tga", filename.c_str(), savedImages));
 
     // save the image
-    I8 status = SaveToTGA(newFilename, dimensions, pixelDepth, imageData);
+    const I8 status = SaveToTGA(newFilename, dimensions, pixelDepth, imageData);
 
     // increase the counter
     if (status == 0) {

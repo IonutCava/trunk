@@ -51,7 +51,7 @@ DEFINE_SINGLETON(ParamHandler)
     typedef hashMap<U64, F32> ParamFloatMap;
 
   public:
-    void setDebugOutput(bool logState);
+    void setDebugOutput(bool logState) noexcept;
 
     template <typename T>
     T getParam(U64 paramID, T defaultValue = T()) const;

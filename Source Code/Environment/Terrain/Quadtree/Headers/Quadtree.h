@@ -60,7 +60,7 @@ class Quadtree {
                Terrain* const terrain);
     const BoundingBox& computeBoundingBox();
 
-    inline U32 getChunkCount() const { return _chunkCount; }
+    inline U32 getChunkCount() const noexcept { return _chunkCount; }
 
     void drawBBox(GFXDevice& context, RenderPackage& packageOut);
 

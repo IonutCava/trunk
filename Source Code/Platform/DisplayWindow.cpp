@@ -36,7 +36,6 @@ DisplayWindow::DisplayWindow(WindowManager& parent, PlatformContext& context)
     SetBit(_flags, WindowFlags::SWAP_BUFFER);
 
     _prevDimensions.set(1);
-    _windowDimensions.set(1);
 }
 
 DisplayWindow::~DisplayWindow() 
@@ -69,13 +68,6 @@ ErrorCode DisplayWindow::init(U32 windowFlags,
 
     _type = initialType;
     _title = descriptor.title;
-    _windowDimensions = descriptor.dimensions;
-    if (BitCompare(descriptor.flags, WindowDescriptor::Flags::FULLSCREEN) ||
-        BitCompare(descriptor.flags, WindowDescriptor::Flags::FULLSCREEN_DESKTOP))
-    {
-        _windowDimensions.set(_parent.getFullscreenResolution());
-    }
-    
 
     vec2<I32> position(descriptor.position);
 
@@ -93,14 +85,11 @@ ErrorCode DisplayWindow::init(U32 windowFlags,
     _sdlWindow = SDL_CreateWindow(_title.c_str(),
                                   position.x,
                                   position.y,
-                                  _windowDimensions.width,
-                                  _windowDimensions.height,
+                                  descriptor.dimensions.width,
+                                  descriptor.dimensions.height,
                                   windowFlags);
 
     _windowID = SDL_GetWindowID(_sdlWindow);
-    I32 width = -1, height = -1;
-    SDL_GetWindowSize(_sdlWindow, &width, &height);
-    _windowDimensions.set(width, height);
 
     // Check if we have a valid window
     if (!_sdlWindow) {
@@ -411,7 +400,8 @@ vec2<U16> DisplayWindow::getPreviousDimensions() const {
 }
 
 bool DisplayWindow::setDimensions(U16& width, U16& height) {
-    if (_windowDimensions == vec2<U16>(width, height)) {
+    vec2<U16> dim = getDimensions();
+    if (dim == vec2<U16>(width, height)) {
         return true;
     }
 
@@ -438,8 +428,7 @@ bool DisplayWindow::setDimensions(U16& width, U16& height) {
     SDLEventManager::pollEvents();
 
     if (newW == width && newH == height) {
-        _prevDimensions.set(_windowDimensions);
-        _windowDimensions.set(width, height);
+        _prevDimensions.set(dim);
         return true;
     }
 
@@ -451,7 +440,10 @@ bool DisplayWindow::setDimensions(vec2<U16>& dimensions) {
 }
 
 vec2<U16> DisplayWindow::getDimensions() const {
-    return _windowDimensions;
+    I32 width = -1, height = -1;
+    SDL_GetWindowSize(_sdlWindow, &width, &height);
+
+    return vec2<U16>(width, height);
 }
 
 void DisplayWindow::renderingViewport(const Rect<I32>& viewport) {

@@ -15,13 +15,13 @@ TransformValues::TransformValues(const TransformValues& other) noexcept
 {
 }
 
-Transform::Transform() noexcept
+Transform::Transform()
     : Transform(Quaternion<F32>(), vec3<F32>(0.0f), vec3<F32>(1.0f))
 {
 }
 
 Transform::Transform(const Quaternion<F32>& orientation,
-                     const vec3<F32>& translation, const vec3<F32>& scale) noexcept
+                     const vec3<F32>& translation, const vec3<F32>& scale)
 {
     _notDirty.clear();
     _dontRebuildMatrix.clear();

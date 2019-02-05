@@ -43,7 +43,7 @@ inline DisplayWindow& WindowManager::createWindow(const WindowDescriptor& descri
     return createWindow(descriptor, err, idx);
 }
 
-inline U32 WindowManager::getWindowCount() const {
+inline U32 WindowManager::getWindowCount() const noexcept {
     return to_U32(_windows.size());
 }
 
@@ -125,7 +125,7 @@ inline const DisplayWindow& WindowManager::getWindow(U32 index) const {
     return *_windows[index];
 }
 
-DisplayWindow* WindowManager::getWindowByID(U32 ID) {
+DisplayWindow* WindowManager::getWindowByID(U32 ID) noexcept {
     for (DisplayWindow* win : _windows) {
         if (win->_windowID == ID) {
             return win;
@@ -135,7 +135,7 @@ DisplayWindow* WindowManager::getWindowByID(U32 ID) {
     return nullptr;
 }
 
-const DisplayWindow* WindowManager::getWindowByID(U32 ID) const {
+const DisplayWindow* WindowManager::getWindowByID(U32 ID) const noexcept {
     for (const DisplayWindow* win : _windows) {
         if (win->_windowID == ID) {
             return win;
@@ -145,7 +145,7 @@ const DisplayWindow* WindowManager::getWindowByID(U32 ID) const {
     return nullptr;
 }
 
-inline const vector<WindowManager::MonitorData>& WindowManager::monitorData() const {
+inline const vector<WindowManager::MonitorData>& WindowManager::monitorData() const noexcept {
     return _monitors;
 }
 

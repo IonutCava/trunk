@@ -15,7 +15,7 @@ namespace Divide {
 
 namespace {
     
-    SDL_SystemCursor CursorToSDL(CursorStyle style) {
+    SDL_SystemCursor CursorToSDL(CursorStyle style) noexcept {
         switch (style) {
             case CursorStyle::ARROW: return SDL_SYSTEM_CURSOR_ARROW;
             case CursorStyle::HAND: return SDL_SYSTEM_CURSOR_HAND;
@@ -66,7 +66,7 @@ WindowManager::~WindowManager()
 }
 
 vec2<U16> WindowManager::getFullscreenResolution() const {
-    SysInfo& systemInfo = sysInfo();
+    const SysInfo& systemInfo = sysInfo();
     return vec2<U16>(systemInfo._systemResolutionWidth,
                      systemInfo._systemResolutionHeight);
 }
@@ -88,10 +88,10 @@ ErrorCode WindowManager::init(PlatformContext& context,
     
     _context = &context;
 
-    RenderAPI api = _context->gfx().getAPI();
+    const RenderAPI api = _context->gfx().getAPI();
 
     _monitors.resize(0);
-    I32 displayCount = SDL_GetNumVideoDisplays();
+    const I32 displayCount = SDL_GetNumVideoDisplays();
     for (I32 i = 0; i < displayCount; ++i) {
         MonitorData data = {};
 
@@ -109,7 +109,7 @@ ErrorCode WindowManager::init(PlatformContext& context,
         _monitors.push_back(data);
     }
 
-    I32 displayIndex = std::max(std::min(targetDisplayIndex, displayCount - 1), 0);
+    const I32 displayIndex = std::max(std::min(targetDisplayIndex, displayCount - 1), 0);
 
     SysInfo& systemInfo = sysInfo();
     SDL_DisplayMode displayMode;
@@ -120,8 +120,8 @@ ErrorCode WindowManager::init(PlatformContext& context,
     _apiFlags = createAPIFlags(api);
 
     // Toggle multi-sampling if requested.
-    I32 msaaSamples = to_I32(_context->config().rendering.msaaSamples);
-    I32 shadowSamples = to_I32(_context->config().rendering.shadowMapping.msaaSamples);
+    const I32 msaaSamples = to_I32(_context->config().rendering.msaaSamples);
+    const I32 shadowSamples = to_I32(_context->config().rendering.shadowMapping.msaaSamples);
 
     I32 maxSamples = 0;
     if (msaaSamples > 0 || shadowSamples > 0) {
@@ -195,7 +195,7 @@ ErrorCode WindowManager::init(PlatformContext& context,
         // Query available display modes (resolution, bit depth per channel and
         // refresh rates)
         I32 numberOfDisplayModes = 0;
-        I32 numDisplays = SDL_GetNumVideoDisplays();
+        const I32 numDisplays = SDL_GetNumVideoDisplays();
         for (I32 display = 0; display < numDisplays; ++display) {
             numberOfDisplayModes = SDL_GetNumDisplayModes(display);
             for (I32 mode = 0; mode < numberOfDisplayModes; ++mode) {
@@ -216,7 +216,7 @@ ErrorCode WindowManager::init(PlatformContext& context,
     }
 
     for (U8 i = 0; i < to_U8(CursorStyle::COUNT); ++i) {
-        CursorStyle style = static_cast<CursorStyle>(i);
+        const CursorStyle style = static_cast<CursorStyle>(i);
         s_cursors[style] = SDL_CreateSystemCursor(CursorToSDL(style));
     }
 
@@ -354,7 +354,7 @@ void WindowManager::update(const U64 deltaTimeUS) {
     }
 }
 
-bool WindowManager::onSDLEvent(SDL_Event event) {
+bool WindowManager::onSDLEvent(SDL_Event event) noexcept {
     // Nothing yet? Wow ...
     return false;
 }
@@ -363,7 +363,7 @@ bool WindowManager::anyWindowFocus() const {
     return getFocusedWindow() != nullptr;
 }
 
-U32 WindowManager::createAPIFlags(RenderAPI api) {
+U32 WindowManager::createAPIFlags(RenderAPI api) noexcept {
     U32 windowFlags = 0;
 
     if (api == RenderAPI::OpenGL || api == RenderAPI::OpenGLES) {
@@ -427,7 +427,7 @@ ErrorCode WindowManager::configureAPISettings(U32 descriptorFlags) {
     } else {
         validate(SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE));
         validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4));
-        if (true || SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6) != 0) {
+        if (SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6) != 0) {
             validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5));
         }
     }
@@ -479,7 +479,7 @@ ErrorCode WindowManager::applyAPISettings(DisplayWindow* window, U32 descriptorF
     return ErrorCode::NO_ERR;
 }
 
-void WindowManager::captureMouse(bool state) {
+void WindowManager::captureMouse(bool state) noexcept {
     SDL_CaptureMouse(state ? SDL_TRUE : SDL_FALSE);
 }
 
@@ -516,8 +516,8 @@ void WindowManager::SetCursorStyle(CursorStyle style) {
     SDL_SetCursor(s_cursors[style]);
 }
 
-void WindowManager::ToggleRelativeMouseMode(bool state) {
-    I32 result = SDL_SetRelativeMouseMode(state ? SDL_TRUE : SDL_FALSE);
+void WindowManager::ToggleRelativeMouseMode(bool state) noexcept {
+    const I32 result = SDL_SetRelativeMouseMode(state ? SDL_TRUE : SDL_FALSE);
     assert(result != -1);
     ACKNOWLEDGE_UNUSED(result);
 }
@@ -528,20 +528,20 @@ vec2<I32> WindowManager::GetCursorPosition(bool global) {
     return ret;
 }
 
-U32 WindowManager::GetMouseState(vec2<I32>& pos, bool global) {
+U32 WindowManager::GetMouseState(vec2<I32>& pos, bool global) noexcept {
     if (global) {
-        return (U32)SDL_GetGlobalMouseState(&pos.x, &pos.y);
+        return to_U32(SDL_GetGlobalMouseState(&pos.x, &pos.y));
     }
     
-    return (U32)SDL_GetMouseState(&pos.x, &pos.y);
+    return to_U32(SDL_GetMouseState(&pos.x, &pos.y));
 }
 
-void WindowManager::SetCaptureMouse(bool state) {
+void WindowManager::SetCaptureMouse(bool state) noexcept {
     SDL_CaptureMouse(state ? SDL_TRUE : SDL_FALSE);
 }
 
 void WindowManager::snapCursorToCenter() {
-    DisplayWindow* focusedWindow = getFocusedWindow();
+    const DisplayWindow* focusedWindow = getFocusedWindow();
     if (focusedWindow != nullptr) {
         const vec2<U16>& center = focusedWindow->getDimensions();
         setCursorPosition(to_I32(center.x * 0.5f), to_I32(center.y * 0.5f));

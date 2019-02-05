@@ -56,15 +56,15 @@ class Bone {
     vector<Bone*> _children;
 
     // index in the current animation's channel array.
-    Bone(const stringImpl& name)
+    Bone(const stringImpl& name) noexcept
         : _name(name),
-        _nameKey(_ID(name.c_str())),
-        _parent(0),
-        _boneID(-1)
+          _nameKey(_ID(name.c_str())),
+          _parent(nullptr),
+          _boneID(-1)
     {
     }
 
-    Bone() noexcept : Bone("")
+    Bone() : Bone("")
     {
     }
 
@@ -75,7 +75,7 @@ class Bone {
 
     inline size_t hierarchyDepth() const {
         size_t size = _children.size();
-        for (Bone* child : _children) {
+        for (const Bone* child : _children) {
             size += child->hierarchyDepth();
         }
 
@@ -108,7 +108,7 @@ class Bone {
         }
     }
 
-    inline const stringImpl& name() const {
+    inline const stringImpl& name() const noexcept {
         return _name;
     }
 

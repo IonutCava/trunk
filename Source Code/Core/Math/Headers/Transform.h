@@ -39,10 +39,10 @@ namespace Divide {
 
 class Transform : public ITransform, public GUIDWrapper, private NonCopyable {
    public:
-    Transform() noexcept;
+    Transform();
     Transform(const Quaternion<F32>& orientation,
               const vec3<F32>& translation,
-              const vec3<F32>& scale) noexcept;
+              const vec3<F32>& scale);
 
     ~Transform();
 
@@ -90,7 +90,7 @@ class Transform : public ITransform, public GUIDWrapper, private NonCopyable {
     void setTransforms(const mat4<F32>& transform);
 
     /// Set all of the internal values to match those of the specified transform
-    void clone(Transform* const transform);
+    void clone(const Transform* const transform);
 
     /// Extract the 3 transform values (position, scale, rotation) from the current instance
     void getValues(TransformValues& valuesOut) const override;

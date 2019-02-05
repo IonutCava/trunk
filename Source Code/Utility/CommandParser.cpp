@@ -4,7 +4,12 @@
 
 namespace Divide {
 
-CommandParser::CommandParser() {}
+CommandParser::CommandParser() noexcept
+{
+}
 
-CommandParser::~CommandParser() { _commandMap.clear(); }
+CommandParser::~CommandParser()
+{
+    _commandMap.clear();
+}
 };  // namespace Divide

@@ -59,23 +59,23 @@ class BoundingBox {
     BoundingBox(const BoundingBox& b);
     void operator=(const BoundingBox& b);
 
-    bool containsPoint(const vec3<F32>& point) const;
-    bool containsBox(const BoundingBox& AABB2) const;
-    bool containsSphere(const BoundingSphere& bSphere) const;
+    bool containsPoint(const vec3<F32>& point) const noexcept;
+    bool containsBox(const BoundingBox& AABB2) const noexcept;
+    bool containsSphere(const BoundingSphere& bSphere) const noexcept;
 
-    bool collision(const BoundingBox& AABB2) const;
-    bool collision(const BoundingSphere& bSphere) const;
+    bool collision(const BoundingBox& AABB2) const  noexcept;
+    bool collision(const BoundingSphere& bSphere) const noexcept;
 
     bool compare(const BoundingBox& bb) const noexcept;
-    bool operator==(const BoundingBox& B) const;
-    bool operator!=(const BoundingBox& B) const;
+    bool operator==(const BoundingBox& B) const noexcept;
+    bool operator!=(const BoundingBox& B) const noexcept;
 
     /// Optimized method
     AABBRayResult intersect(const Ray& r, F32 t0, F32 t1) const noexcept;
 
-    void createFromPoints(const vector<vec3<F32>>& points);
-    void createFromPoints(const std::array<vec3<F32>, 8>& points);
-    void createFromSphere(const vec3<F32>& center, F32 radius);
+    void createFromPoints(const vector<vec3<F32>>& points) noexcept;
+    void createFromPoints(const std::array<vec3<F32>, 8>& points) noexcept;
+    void createFromSphere(const vec3<F32>& center, F32 radius) noexcept;
 
     void add(const vec3<F32>& v) noexcept;
     void add(const BoundingBox& bb) noexcept;
@@ -119,7 +119,7 @@ class BoundingBox {
 
     std::array<vec3<F32>, 8> getPoints() const noexcept;
 
-    F32 nearestDistanceFromPointSquared(const vec3<F32>& pos) const;
+    F32 nearestDistanceFromPointSquared(const vec3<F32>& pos) const noexcept;
     F32 nearestDistanceFromPoint(const vec3<F32>& pos) const;
 
     inline vec3<F32> getPVertex(const vec3<F32>& normal) const;
@@ -131,10 +131,10 @@ class BoundingBox {
 namespace Attorney {
     class BoundingBoxEditor {
         private:
-        static F32* min(BoundingBox& bb) {
+        static F32* min(BoundingBox& bb) noexcept {
             return bb._min._v;
         }
-        static F32* max(BoundingBox& bb) {
+        static F32* max(BoundingBox& bb) noexcept {
             return bb._max._v;
         }
         friend class Divide::PropertyWindow;

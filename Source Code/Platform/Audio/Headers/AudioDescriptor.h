@@ -58,7 +58,7 @@ class AudioDescriptor : public CachedResource {
 
     }
 
-    inline bool unload() { 
+    inline bool unload() noexcept {
         return true;
     }
 

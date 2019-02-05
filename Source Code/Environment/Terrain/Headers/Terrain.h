@@ -71,7 +71,7 @@ struct TerrainTextureLayer {
         TEXTURE_ALPHA_CHANNEL = 3
     };
 
-    inline void setBlendMaps(const Texture_ptr& texture)  { _blendMaps = texture; }
+    inline void setBlendMaps(const Texture_ptr& texture) noexcept { _blendMaps = texture; }
     inline void setTileMaps(const Texture_ptr& texture, const vector<U8>& countPerLayer)   {
         _tileMaps = texture;
         _albedoCountPerLayer = countPerLayer;
@@ -86,15 +86,15 @@ struct TerrainTextureLayer {
         _tileUVScale[layer][to_U32(textureChannel)]= scale;
     }
 
-    inline const vec4<F32>& getTileScales(U8 layer) const { return _tileUVScale[layer]; }
+    inline const vec4<F32>& getTileScales(U8 layer) const noexcept { return _tileUVScale[layer]; }
 
-    inline const std::array<vec4<F32>, MAX_TEXTURE_LAYERS>& getTileScales() const { return _tileUVScale; }
+    inline const std::array<vec4<F32>, MAX_TEXTURE_LAYERS>& getTileScales() const noexcept { return _tileUVScale; }
 
-    const Texture_ptr& blendMaps()  const { return _blendMaps; }
-    const Texture_ptr& tileMaps()   const { return _tileMaps; }
-    const Texture_ptr& normalMaps() const { return _normalMaps; }
+    const Texture_ptr& blendMaps()  const noexcept { return _blendMaps; }
+    const Texture_ptr& tileMaps()   const noexcept { return _tileMaps; }
+    const Texture_ptr& normalMaps() const noexcept { return _normalMaps; }
 
-    inline U8 layerCount() const { return _layerCount; }
+    inline U8 layerCount() const noexcept { return _layerCount; }
     inline U8 albedoCountPerLayer(U8 layer) const { assert(layer < _layerCount); return _albedoCountPerLayer[layer]; }
     inline U8 detailCountPerLayer(U8 layer) const { assert(layer < _layerCount); return _detailCountPerLayer[layer]; }
 
@@ -140,9 +140,9 @@ class Terrain : public Object3D {
     explicit Terrain(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name);
     virtual ~Terrain();
 
-    bool unload() override;
+    bool unload() noexcept override;
 
-    inline void toggleBoundingBoxes() { _drawBBoxes = !_drawBBoxes; }
+    inline void toggleBoundingBoxes() noexcept { _drawBBoxes = !_drawBBoxes; }
 
     Vert getVert(F32 x_clampf, F32 z_clampf, bool smooth) const;
 
@@ -153,7 +153,7 @@ class Terrain : public Object3D {
     vec2<U16> getDimensions() const;
     vec2<F32> getAltitudeRange() const;
 
-    inline const Quadtree& getQuadtree() const { return _terrainQuadtree; }
+    inline const Quadtree& getQuadtree() const noexcept { return _terrainQuadtree; }
 
     void saveToXML(boost::property_tree::ptree& pt) const override;
     void loadFromXML(const boost::property_tree::ptree& pt)  override;
@@ -217,7 +217,7 @@ class Terrain : public Object3D {
 namespace Attorney {
 class TerrainChunk {
 private:
-    static const VegetationDetails& vegetationDetails(const Terrain& terrain) {
+    static const VegetationDetails& vegetationDetails(const Terrain& terrain) noexcept {
         return terrain._vegDetails;
     }
 
@@ -230,19 +230,19 @@ private:
 
 class TerrainLoader {
    private:
-    static void setTextureLayer(Terrain& terrain, TerrainTextureLayer* textureLayer) {
+    static void setTextureLayer(Terrain& terrain, TerrainTextureLayer* textureLayer) noexcept {
         terrain._terrainTextures = textureLayer;
     }
 
-    static U32 textureLayerCount(Terrain& terrain) {
+    static U32 textureLayerCount(Terrain& terrain) noexcept {
         return to_U32(terrain._terrainTextures->layerCount());
     }
 
-    static VegetationDetails& vegetationDetails(Terrain& terrain) {
+    static VegetationDetails& vegetationDetails(Terrain& terrain) noexcept {
         return terrain._vegDetails;
     }
 
-    static BoundingBox& boundingBox(Terrain& terrain) {
+    static BoundingBox& boundingBox(Terrain& terrain) noexcept {
         return terrain._boundingBox;
     }
 
@@ -250,7 +250,7 @@ class TerrainLoader {
         return terrain.postBuild();
     }
 
-    static void descriptor(Terrain& terrain, const std::shared_ptr<TerrainDescriptor>& descriptor) {
+    static void descriptor(Terrain& terrain, const std::shared_ptr<TerrainDescriptor>& descriptor) noexcept {
         terrain._descriptor = descriptor;
     }
 

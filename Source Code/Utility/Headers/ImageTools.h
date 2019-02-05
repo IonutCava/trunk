@@ -72,7 +72,7 @@ class ImageLayer {
 
 class ImageData : private NonCopyable {
    public:
-     ImageData();
+     ImageData() noexcept;
     ~ImageData();
 
     /// image origin information
@@ -191,11 +191,9 @@ protected:
 };
 
 /// save a single file to TGA
-I8 SaveToTGA(const stringImpl& filename, const vec2<U16>& dimensions, U8 pixelDepth,
-    U8* imageData);
+I8 SaveToTGA(const stringImpl& filename, const vec2<U16>& dimensions, U8 pixelDepth, U8* imageData) noexcept;
 /// save a single file to tga using a sequential naming pattern
-I8 SaveSeries(const stringImpl& filename, const vec2<U16>& dimensions, U8 pixelDepth,
-    U8* imageData);
+I8 SaveSeries(const stringImpl& filename, const vec2<U16>& dimensions, U8 pixelDepth, U8* imageData);
 
 };  // namespace ImageTools
 };  // namespace Divide

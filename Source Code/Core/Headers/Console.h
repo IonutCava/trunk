@@ -56,7 +56,7 @@ class Console : private NonCopyable {
 
    public:
     static void printAll();
-    static void start();
+    static void start() noexcept;
     static void stop();
 
     static void printCopyrightNotice();

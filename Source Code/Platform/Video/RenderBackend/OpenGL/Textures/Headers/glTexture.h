@@ -51,9 +51,9 @@ class glTexture final : public Texture,
                        const TextureDescriptor& texDescriptor);
     ~glTexture();
 
-    bool resourceLoadComplete() override;
+    bool resourceLoadComplete() noexcept override;
 
-    bool unload() override;
+    bool unload() noexcept override;
 
     void bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write) override;
 

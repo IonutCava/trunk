@@ -90,7 +90,7 @@ inline void BoundingSphere::addRadius(const vec3<F32>& point) {
     }
 }
 
-inline void BoundingSphere::createFromPoints(const vector<vec3<F32>>& points) {
+inline void BoundingSphere::createFromPoints(const vector<vec3<F32>>& points) noexcept {
     _radius = 0;
     const F32 numPoints = to_F32(points.size());
 
@@ -107,7 +107,7 @@ inline void BoundingSphere::createFromPoints(const vector<vec3<F32>>& points) {
     }
 }
 
-inline void BoundingSphere::createFromPoints(const std::array<vec3<F32>, 8>& points) {
+inline void BoundingSphere::createFromPoints(const std::array<vec3<F32>, 8>& points) noexcept {
     _radius = 0;
 
     for (const vec3<F32>& p : points) {

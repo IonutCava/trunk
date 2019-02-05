@@ -34,7 +34,7 @@
 
 namespace Divide {
 
-inline void ParamHandler::setDebugOutput(bool logState) {
+inline void ParamHandler::setDebugOutput(bool logState) noexcept {
     _logState = logState;
 }
 
@@ -122,7 +122,7 @@ inline void ParamHandler::delParam(U64 nameID) {
 template <>
 inline stringImpl ParamHandler::getParam(U64 paramID, stringImpl defaultValue) const {
     SharedLock r_lock(_mutex);
-    ParamStringMap::const_iterator it = _paramsStr.find(paramID);
+    const ParamStringMap::const_iterator it = _paramsStr.find(paramID);
     if (it != std::cend(_paramsStr)) {
         return it->second;
     }
@@ -134,7 +134,7 @@ inline stringImpl ParamHandler::getParam(U64 paramID, stringImpl defaultValue) c
 template <>
 inline void ParamHandler::setParam(U64 paramID, const stringImpl& value) {
     UniqueLockShared w_lock(_mutex);
-    ParamStringMap::iterator it = _paramsStr.find(paramID);
+    const ParamStringMap::iterator it = _paramsStr.find(paramID);
     if (it == std::end(_paramsStr)) {
         DIVIDE_ASSERT(hashAlg::emplace(_paramsStr, paramID, value).second,
                       "ParamHandler error: can't add specified value to map!");
@@ -178,7 +178,7 @@ inline void ParamHandler::delParam<stringImpl>(U64 paramID) {
 template <>
 inline bool ParamHandler::getParam(U64 paramID, bool defaultValue) const {
     SharedLock r_lock(_mutex);
-    ParamBoolMap::const_iterator it = _paramBool.find(paramID);
+    const ParamBoolMap::const_iterator it = _paramBool.find(paramID);
     if (it != std::cend(_paramBool)) {
         return it->second;
     }
@@ -190,7 +190,7 @@ inline bool ParamHandler::getParam(U64 paramID, bool defaultValue) const {
 template <>
 inline void ParamHandler::setParam(U64 paramID, const bool& value) {
     UniqueLockShared w_lock(_mutex);
-    ParamBoolMap::iterator it = _paramBool.find(paramID);
+    const ParamBoolMap::iterator it = _paramBool.find(paramID);
     if (it == std::end(_paramBool)) {
         DIVIDE_ASSERT(hashAlg::emplace(_paramBool, paramID, value).second,
                       "ParamHandler error: can't add specified value to map!");
@@ -221,7 +221,7 @@ inline void ParamHandler::delParam<bool>(U64 paramID) {
 template <>
 inline F32 ParamHandler::getParam(U64 paramID, F32 defaultValue) const {
     SharedLock r_lock(_mutex);
-    ParamFloatMap::const_iterator it = _paramsFloat.find(paramID);
+    const ParamFloatMap::const_iterator it = _paramsFloat.find(paramID);
     if (it != std::cend(_paramsFloat)) {
         return it->second;
     }
@@ -233,7 +233,7 @@ inline F32 ParamHandler::getParam(U64 paramID, F32 defaultValue) const {
 template <>
 inline void ParamHandler::setParam(U64 paramID, const F32& value) {
     UniqueLockShared w_lock(_mutex);
-    ParamFloatMap::iterator it = _paramsFloat.find(paramID);
+    const ParamFloatMap::iterator it = _paramsFloat.find(paramID);
     if (it == std::end(_paramsFloat)) {
         DIVIDE_ASSERT(hashAlg::emplace(_paramsFloat, paramID, value).second,
                       "ParamHandler error: can't add specified value to map!");

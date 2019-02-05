@@ -109,7 +109,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     virtual bool isValid() const = 0;
     virtual bool update(const U64 deltaTimeUS);
     virtual bool load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) override;
-    virtual bool unload() override;
+    virtual bool unload() noexcept override;
 
     // Return the binding address (or other identifier) for the push constant specified by name
     virtual I32 Binding(const char* name) = 0;

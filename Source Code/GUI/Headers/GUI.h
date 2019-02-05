@@ -82,7 +82,7 @@ public:
 
     void onSizeChange(const SizeChangeParams& params);
     void onChangeScene(Scene* newScene);
-    void onUnloadScene(Scene* scene);
+    void onUnloadScene(Scene* const scene);
 
     /// Main update call
     void update(const U64 deltaTimeUS);
@@ -104,57 +104,56 @@ public:
     }
 
     /// Get a pointer to our console window
-    inline GUIConsole& getConsole() { return *_console; }
-    inline const GUIConsole& getConsole() const { return *_console; }
+    inline GUIConsole& getConsole() noexcept { return *_console; }
+    inline const GUIConsole& getConsole() const noexcept { return *_console; }
 
-    inline CEGUI::Window* rootSheet() const { return _rootSheet; }
-    inline const stringImpl& guiScheme() const { return _defaultGUIScheme; }
+    inline CEGUI::Window* rootSheet() const noexcept { return _rootSheet; }
+    inline const stringImpl& guiScheme() const noexcept { return _defaultGUIScheme; }
 
-    void selectionChangeCallback(Scene* const activeScene, PlayerIndex idx, SceneGraphNode* node);
     /// Return a pointer to the default, general purpose message box
-    inline GUIMessageBox* const getDefaultMessageBox() const {
+    inline GUIMessageBox* const getDefaultMessageBox() const noexcept {
         return _defaultMsgBox;
     }
     /// Used to prevent text updating every frame
-    inline void setTextRenderTimer(const U64 renderIntervalUs) {
+    inline void setTextRenderTimer(const U64 renderIntervalUs) noexcept {
         _textRenderInterval = renderIntervalUs;
     }
     /// Mouse cursor forced to a certain position
     void setCursorPosition(I32 x, I32 y);
     /// Key pressed: return true if input was consumed
-    bool onKeyDown(const Input::KeyEvent& key);
+    bool onKeyDown(const Input::KeyEvent& key) override;
     /// Key released: return true if input was consumed
-    bool onKeyUp(const Input::KeyEvent& key);
+    bool onKeyUp(const Input::KeyEvent& key) override;
     /// Joystick axis change: return true if input was consumed
-    bool joystickAxisMoved(const Input::JoystickEvent& arg);
+    bool joystickAxisMoved(const Input::JoystickEvent& arg) override;
     /// Joystick direction change: return true if input was consumed
-    bool joystickPovMoved(const Input::JoystickEvent& arg);
+    bool joystickPovMoved(const Input::JoystickEvent& arg) override;
     /// Joystick button pressed: return true if input was consumed
-    bool joystickButtonPressed(const Input::JoystickEvent& arg);
+    bool joystickButtonPressed(const Input::JoystickEvent& arg) override;
     /// Joystick button released: return true if input was consumed
-    bool joystickButtonReleased(const Input::JoystickEvent& arg);
-    bool joystickBallMoved(const Input::JoystickEvent& arg);
-    bool joystickAddRemove(const Input::JoystickEvent& arg);
+    bool joystickButtonReleased(const Input::JoystickEvent& arg) override;
+    bool joystickBallMoved(const Input::JoystickEvent& arg) override;
+    bool joystickAddRemove(const Input::JoystickEvent& arg) override;
     bool joystickRemap(const Input::JoystickEvent &arg) override;
     /// Mouse moved: return true if input was consumed
-    bool mouseMoved(const Input::MouseMoveEvent& arg);
+    bool mouseMoved(const Input::MouseMoveEvent& arg) override;
     /// Mouse button pressed: return true if input was consumed
-    bool mouseButtonPressed(const Input::MouseButtonEvent& arg);
+    bool mouseButtonPressed(const Input::MouseButtonEvent& arg) override;
     /// Mouse button released: return true if input was consumed
-    bool mouseButtonReleased(const Input::MouseButtonEvent& arg);
+    bool mouseButtonReleased(const Input::MouseButtonEvent& arg) override;
 
     bool onUTF8(const Input::UTF8Event& arg) override;
 
-    Scene* activeScene() {
+    Scene* activeScene() noexcept {
         return _activeScene;
     }
 
-    const Scene* activeScene() const {
+    const Scene* activeScene() const noexcept {
         return _activeScene;
     }
 
-    CEGUI::GUIContext& getCEGUIContext();
-    const CEGUI::GUIContext& getCEGUIContext() const;
+    CEGUI::GUIContext& getCEGUIContext() noexcept ;
+    const CEGUI::GUIContext& getCEGUIContext() const noexcept;
 
 protected:
     GUIElement* getGUIElementImpl(I64 sceneID, U64 elementName, GUIType type) const;

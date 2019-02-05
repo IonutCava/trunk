@@ -70,7 +70,7 @@ class LoopTimingData {
 
     bool _keepAlive;
   
-    inline void update(const U64 elapsedTimeUS) {
+    inline void update(const U64 elapsedTimeUS) noexcept {
         _previousTimeUS = _currentTimeUS;
         _currentTimeUS = elapsedTimeUS;
         _currentTimeDeltaUS = _currentTimeUS - _previousTimeUS;
@@ -83,7 +83,7 @@ class LoopTimingData {
     }
 
     // return true on change
-    inline bool freezeTime(bool state) {
+    inline bool freezeTime(bool state) noexcept {
         if (_freezeLoopTime != state) {
             _freezeLoopTime = state;
             _currentTimeFrozenUS = _currentTimeUS;
@@ -92,7 +92,7 @@ class LoopTimingData {
         return false;
     }
 
-    inline bool runUpdateLoop() {
+    inline bool runUpdateLoop() noexcept {
         if (_currentTimeUS > _nextGameTickUS && _updateLoops < Config::MAX_FRAMESKIP) {
             return true;
         }
@@ -101,7 +101,7 @@ class LoopTimingData {
         return false;
     }
 
-    inline void endUpdateLoop(const U64 deltaTimeUS, const bool fixedTimestep) {
+    inline void endUpdateLoop(const U64 deltaTimeUS, const bool fixedTimestep) noexcept {
         _nextGameTickUS += deltaTimeUS;
         ++_updateLoops;
 
@@ -114,23 +114,23 @@ class LoopTimingData {
         }
     }
 
-    inline bool freezeTime() const {
+    inline bool freezeTime() const noexcept {
         return _freezeLoopTime;
     }
 
-    inline U64 currentTimeUS() const {
+    inline U64 currentTimeUS() const noexcept {
         return _currentTimeUS;
     }
 
-    inline U64 currentTimeDeltaUS(bool ignoreFreeze = false) const {
+    inline U64 currentTimeDeltaUS(bool ignoreFreeze = false) const noexcept {
         return (!ignoreFreeze && _freezeLoopTime) ? 0ULL : _currentTimeDeltaUS;
     }
 
-    inline U64 nextGameTickUS() const {
+    inline U64 nextGameTickUS() const noexcept {
         return _nextGameTickUS;
     }
 
-    inline U8 updateLoops() const {
+    inline U8 updateLoops() const noexcept {
         return _updateLoops;
     }
 
@@ -326,7 +326,7 @@ namespace Attorney {
 
     class KernelDebugInterface {
     protected:
-        static const LoopTimingData& timingData(const Kernel& kernel) {
+        static const LoopTimingData& timingData(const Kernel& kernel) noexcept {
             return kernel._timingData;
         }
 

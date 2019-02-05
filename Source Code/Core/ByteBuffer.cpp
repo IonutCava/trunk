@@ -26,7 +26,7 @@ void ByteBufferException::printPosError() const {
                      _size);
 }
 
-ByteBuffer::ByteBuffer() noexcept : ByteBuffer(DEFAULT_SIZE)
+ByteBuffer::ByteBuffer() : ByteBuffer(DEFAULT_SIZE)
 {
 }
 

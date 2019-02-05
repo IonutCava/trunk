@@ -44,8 +44,13 @@ class CRC32 {
    public:
     //=========================================
     //  ctors
-    inline CRC32() { Reset(); }
-    inline CRC32(const void* buf, size_t siz) {
+    inline CRC32()
+    {
+        Reset();
+    }
+
+    inline CRC32(const void* buf, size_t siz)
+    {
         Reset();
         Hash(buf, siz);
     }
@@ -56,21 +61,21 @@ class CRC32 {
 
     //=========================================
     /// getting the crc
-    inline U32 Get() const { return ~mCrc; }
+    inline U32 Get() const noexcept { return ~mCrc; }
 
     //=========================================
     // HashBase stuff
-    virtual void Reset() { mCrc = to_U32(~0); }
-    virtual void Hash(const void* buf, size_t siz);
+    virtual void Reset() noexcept { mCrc = to_U32(~0); }
+    virtual void Hash(const void* buf, size_t siz) noexcept;
 
    private:
-    U32 mCrc;
+    U32 mCrc = 0u;
     static U32 mTable[0x100];
 
    private:
     //=========================================
     // internal support
-    static U32 Reflect(U32 v, I32 bits);
+    static U32 Reflect(U32 v, I32 bits) noexcept;
 };
 };  // namespace Util
 };  // namespace Divide

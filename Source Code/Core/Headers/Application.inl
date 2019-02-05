@@ -144,28 +144,28 @@ inline const char* getErrorCodeName(ErrorCode code) noexcept {
     };
 }
 
-inline void Application::RequestShutdown() {
+inline void Application::RequestShutdown() noexcept {
     _requestShutdown = true;
 }
 
-inline void Application::CancelShutdown() {
+inline void Application::CancelShutdown() noexcept {
     _requestShutdown = false;
 }
 
-inline bool Application::ShutdownRequested() const {
+inline bool Application::ShutdownRequested() const noexcept {
     return _requestShutdown;
 }
 
-inline Kernel& Application::kernel() const {
+inline Kernel& Application::kernel() const noexcept {
     assert(_kernel != nullptr);
     return *_kernel;
 }
 
-inline WindowManager& Application::windowManager() {
+inline WindowManager& Application::windowManager() noexcept {
     return _windowManager;
 }
 
-inline const WindowManager& Application::windowManager() const {
+inline const WindowManager& Application::windowManager() const noexcept {
     return _windowManager;
 }
 
@@ -173,27 +173,27 @@ inline void Application::setMemoryLogFile(const stringImpl& fileName) {
     _memLogBuffer = fileName;
 }
 
-inline bool Application::mainLoopActive() const {
+inline bool Application::mainLoopActive() const noexcept {
     return _mainLoopActive;
 }
 
-inline void Application::mainLoopActive(bool state) {
+inline void Application::mainLoopActive(bool state) noexcept {
     _mainLoopActive = state;
 }
 
-inline bool Application::mainLoopPaused() const {
+inline bool Application::mainLoopPaused() const noexcept {
     return _mainLoopPaused;
 }
 
-inline void Application::mainLoopPaused(bool state) {
+inline void Application::mainLoopPaused(bool state) noexcept {
     _mainLoopPaused = state;
 }
 
-inline void Application::throwError(ErrorCode err) {
+inline void Application::throwError(ErrorCode err) noexcept {
     _errorCode = err;
 }
 
-inline ErrorCode Application::errorCode() const {
+inline ErrorCode Application::errorCode() const noexcept {
     return _errorCode;
 }
 

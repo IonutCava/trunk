@@ -396,7 +396,7 @@ struct Circle {
     F32 radius = 1.f;
 };
 
-bool IntersectCircles(const Circle& cA, const Circle& cB, vec2<F32>* pointsOut);
+bool IntersectCircles(const Circle& cA, const Circle& cB, vec2<F32>* pointsOut) noexcept;
 
 /// a la Boost
 template <typename T>
@@ -420,27 +420,27 @@ void Normalize(vec3<F32>& inputRotation, bool degrees = false,
                bool normYaw = true, bool normPitch = true,
                bool normRoll = true) noexcept;
 
-UColour  ToByteColour(const FColour& floatColour);
-vec3<U8>  ToByteColour(const vec3<F32>& floatColour);
+UColour  ToByteColour(const FColour& floatColour) noexcept;
+vec3<U8>  ToByteColour(const vec3<F32>& floatColour) noexcept;
 vec4<I32> ToIntColour(const vec4<F32>& floatColour);
-vec3<I32> ToIntColour(const vec3<F32>& floatColour);
+vec3<I32> ToIntColour(const vec3<F32>& floatColour) noexcept;
 vec4<U32> ToUIntColour(const vec4<F32>& floatColour);
-vec3<U32> ToUIntColour(const vec3<F32>& floatColour);
+vec3<U32> ToUIntColour(const vec3<F32>& floatColour) noexcept;
 FColour ToFloatColour(const UColour& byteColour);
-vec3<F32> ToFloatColour(const vec3<U8>& byteColour);
+vec3<F32> ToFloatColour(const vec3<U8>& byteColour) noexcept;
 FColour ToFloatColour(const vec4<U32>& uintColour);
-vec3<F32> ToFloatColour(const vec3<U32>& uintColour);
+vec3<F32> ToFloatColour(const vec3<U32>& uintColour) noexcept;
 
-void ToByteColour(const FColour& floatColour, UColour& colourOut);
-void ToByteColour(const vec3<F32>& floatColour, vec3<U8>& colourOut);
+void ToByteColour(const FColour& floatColour, UColour& colourOut) noexcept;
+void ToByteColour(const vec3<F32>& floatColour, vec3<U8>& colourOut) noexcept;
 void ToIntColour(const FColour& floatColour, vec4<I32>& colourOut);
-void ToIntColour(const vec3<F32>& floatColour, vec3<I32>& colourOut);
+void ToIntColour(const vec3<F32>& floatColour, vec3<I32>& colourOut) noexcept;
 void ToUIntColour(const FColour& floatColour, vec4<U32>& colourOut);
-void ToUIntColour(const vec3<F32>& floatColour, vec3<U32>& colourOut);
-void ToFloatColour(const UColour& byteColour, FColour& colourOut);
-void ToFloatColour(const vec3<U8>& byteColour, vec3<F32>& colourOut);
-void ToFloatColour(const vec4<U32>& uintColour, FColour& colourOut);
-void ToFloatColour(const vec3<U32>& uintColour, vec3<F32>& colourOut);
+void ToUIntColour(const vec3<F32>& floatColour, vec3<U32>& colourOut) noexcept;
+void ToFloatColour(const UColour& byteColour, FColour& colourOut) noexcept;
+void ToFloatColour(const vec3<U8>& byteColour, vec3<F32>& colourOut) noexcept;
+void ToFloatColour(const vec4<U32>& uintColour, FColour& colourOut) noexcept;
+void ToFloatColour(const vec3<U32>& uintColour, vec3<F32>& colourOut) noexcept;
 
 
 inline F32 PACK_VEC3_SNORM(const F32 x, const F32 y, const F32 z) {
@@ -479,7 +479,7 @@ void UNPACK_VEC3(const F32 src, vec3<F32>& res);
 
 vec3<F32> UNPACK_VEC3(const F32 src);
 
-void UNPACK_VEC2(const U32 src, F32& x, F32& y);
+void UNPACK_VEC2(const U32 src, F32& x, F32& y) noexcept;
 void UNPACK_VEC2(const U32 src, vec2<F32>& res);
 
 U32 PACK_11_11_10(const vec3<F32>& value);

@@ -41,6 +41,15 @@ class Hashable {
     virtual size_t getHash() const {
         return _hash;
     }
+
+    virtual Hashable& operator=(Hashable const& old) {
+        if (&old != this) {
+            _hash = old._hash;
+        }
+
+        return *this;
+    }
+
   protected:
     mutable size_t _hash = 17;
 };

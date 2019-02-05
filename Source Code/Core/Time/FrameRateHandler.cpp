@@ -6,7 +6,7 @@
 namespace Divide {
 namespace Time {
 
-FrameRateHandler::FrameRateHandler() noexcept : 
+FrameRateHandler::FrameRateHandler() : 
     _frameCount(0),
     _averageFPS(0.0f),
     _minFPS(std::numeric_limits<F32>::max()),
@@ -40,15 +40,15 @@ void FrameRateHandler::reset() {
     _maxFPS = std::numeric_limits<F32>::min();
 }
 
-void FrameRateHandler::tick(const U64 elapsedTime) {
+void FrameRateHandler::tick(const U64 elapsedTime) noexcept {
     static const F32 fpsLimitDiff = 30.0f;
 
-    F32 elapsedSeconds = Time::MicrosecondsToSeconds<F32>(elapsedTime);
-    F32 deltaSeconds = elapsedSeconds - _previousElapsedSeconds;
+    const F32 elapsedSeconds = Time::MicrosecondsToSeconds<F32>(elapsedTime);
+    const F32 deltaSeconds = elapsedSeconds - _previousElapsedSeconds;
     _framerateSecPerFrameAccum += deltaSeconds - _framerateSecPerFrame[_framerateSecPerFrameIdx];
     _framerateSecPerFrame[_framerateSecPerFrameIdx] = deltaSeconds;
     _framerateSecPerFrameIdx = (_framerateSecPerFrameIdx + 1) % FRAME_ARRAY_SIZE;
-    _framerate = 1.0f / (_framerateSecPerFrameAccum / (F32)FRAME_ARRAY_SIZE);
+    _framerate = 1.0f / (_framerateSecPerFrameAccum / to_F32(FRAME_ARRAY_SIZE));
     _previousElapsedSeconds = elapsedSeconds;
 
     _averageFPS += _framerate;

@@ -60,31 +60,31 @@ class TerrainDescriptor final : public PropertyDescriptor {
         hashAlg::insert(_variablesf, hashAlg::make_pair(_ID(name.c_str()), value));
     }
 
-    void setTextureLayerCount(U8 count) { _textureLayers = count; }
-    void setDimensions(const vec2<U16>& dim) { _dimensions = dim; }
-    void setAltitudeRange(const vec2<F32>& dim) { _altitudeRange = dim; }
-    void setTessellationRange(const vec3<F32>& rangeAndChunk) { _tessellationRange = rangeAndChunk; }
-    void setGrassDensity(F32 grassDensity) { _grassDensity = grassDensity; }
-    void setTreeDensity(F32 treeDensity) { _treeDensity = treeDensity; }
-    void setGrassScale(F32 grassScale) { _grassScale = grassScale; }
-    void setTreeScale(F32 treeScale) { _treeScale = treeScale; }
-    void setActive(bool active) { _active = active; }
-    void set16Bit(bool state) { _is16Bit = state; }
+    void setTextureLayerCount(U8 count) noexcept { _textureLayers = count; }
+    void setDimensions(const vec2<U16>& dim) noexcept { _dimensions = dim; }
+    void setAltitudeRange(const vec2<F32>& dim) noexcept { _altitudeRange = dim; }
+    void setTessellationRange(const vec3<F32>& rangeAndChunk) noexcept { _tessellationRange = rangeAndChunk; }
+    void setGrassDensity(F32 grassDensity) noexcept { _grassDensity = grassDensity; }
+    void setTreeDensity(F32 treeDensity) noexcept { _treeDensity = treeDensity; }
+    void setGrassScale(F32 grassScale) noexcept { _grassScale = grassScale; }
+    void setTreeScale(F32 treeScale) noexcept { _treeScale = treeScale; }
+    void setActive(bool active) noexcept { _active = active; }
+    void set16Bit(bool state) noexcept { _is16Bit = state; }
 
-    U8 getTextureLayerCount() const { return _textureLayers; }
-    F32 getGrassDensity() const { return _grassDensity; }
-    F32 getTreeDensity() const { return _treeDensity; }
-    F32 getGrassScale() const { return _grassScale; }
-    F32 getTreeScale() const { return _treeScale; }
-    bool getActive() const { return _active; }
-    bool is16Bit() const { return _is16Bit; }
+    U8 getTextureLayerCount() const noexcept { return _textureLayers; }
+    F32 getGrassDensity() const noexcept { return _grassDensity; }
+    F32 getTreeDensity() const noexcept { return _treeDensity; }
+    F32 getGrassScale() const noexcept { return _grassScale; }
+    F32 getTreeScale() const noexcept { return _treeScale; }
+    bool getActive() const noexcept { return _active; }
+    bool is16Bit() const noexcept { return _is16Bit; }
 
-    const vec2<F32>& getAltitudeRange() const { return _altitudeRange; }
-    const vec3<F32>& getTessellationRange() const { return _tessellationRange; }
-    const vec2<U16>& getDimensions() const { return _dimensions; }
+    const vec2<F32>& getAltitudeRange() const noexcept { return _altitudeRange; }
+    const vec3<F32>& getTessellationRange() const noexcept { return _tessellationRange; }
+    const vec2<U16>& getDimensions() const noexcept { return _dimensions; }
 
     stringImpl getVariable(const stringImpl& name) const {
-        hashMap<U64, stringImpl>::const_iterator it = _variables.find(_ID(name.c_str()));
+        const hashMap<U64, stringImpl>::const_iterator it = _variables.find(_ID(name.c_str()));
         if (it != std::end(_variables)) {
             return it->second;
         }
@@ -92,7 +92,7 @@ class TerrainDescriptor final : public PropertyDescriptor {
     }
 
     F32 getVariablef(const stringImpl& name) const {
-        hashMap<U64, F32>::const_iterator it = _variablesf.find(_ID(name.c_str()));
+        const hashMap<U64, F32>::const_iterator it = _variablesf.find(_ID(name.c_str()));
         if (it != std::end(_variablesf)) {
             return it->second;
         }

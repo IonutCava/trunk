@@ -36,7 +36,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 class Kernel;
-class KernelComponent : public NonCopyable {
+class KernelComponent : public NonCopyable, private NonMovable {
 
 public:
     KernelComponent(Kernel& parent) noexcept : _parent(parent)

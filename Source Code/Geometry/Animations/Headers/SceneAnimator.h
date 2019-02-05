@@ -73,7 +73,7 @@ class SceneAnimator {
     void save(PlatformContext& context, ByteBuffer& dataOut) const;
     void load(PlatformContext& context, ByteBuffer& dataIn);
     /// Lets the caller know if there is a skeleton present
-    inline bool hasSkeleton() const { return _skeleton != nullptr; }
+    inline bool hasSkeleton() const noexcept { return _skeleton != nullptr; }
     /// The next two functions are good if you want to change the direction of
     /// the current animation.
     /// You could use a forward walking animation and reverse it to get a
@@ -88,7 +88,7 @@ class SceneAnimator {
     /// So, passing 100, would do nothing, passing 50, would decrease the speed
     /// by half, and 150 increase it by 50%
     inline void adjustAnimationSpeedBy(I32 animationIndex, const D64 percent) {
-        std::shared_ptr<AnimEvaluator>& animation = _animations.at(animationIndex);
+        const std::shared_ptr<AnimEvaluator>& animation = _animations.at(animationIndex);
         animation->ticksPerSecond(animation->ticksPerSecond() * (percent / 100.0));
     }
     /// This will set the animation speed
@@ -130,7 +130,7 @@ class SceneAnimator {
         return _animations[animationIndex]->frameCount();
     }
 
-    inline const vector<std::shared_ptr<AnimEvaluator>>& animations() const {
+    inline const vector<std::shared_ptr<AnimEvaluator>>& animations() const noexcept {
         return _animations;
     }
 
@@ -139,7 +139,7 @@ class SceneAnimator {
     }
 
     inline I32 animationID(const stringImpl& animationName) {
-        hashMap<U64, U32>::iterator itr = _animationNameToID.find(_ID(animationName.c_str()));
+        const hashMap<U64, U32>::iterator itr = _animationNameToID.find(_ID(animationName.c_str()));
         if (itr != std::end(_animationNameToID)) {
             return itr->second;
         }
@@ -152,7 +152,7 @@ class SceneAnimator {
     /// the transform will be off
     inline const mat4<F32>& boneTransform(I32 animationIndex, const D64 dt,
                                           const stringImpl& bname) {
-        I32 boneID = boneIndex(bname);
+        const I32 boneID = boneIndex(bname);
         if (boneID != -1) {
             return boneTransform(animationIndex, dt, boneID);
         }
@@ -174,7 +174,7 @@ class SceneAnimator {
 
     /// Get the bone's global transform
     inline const mat4<F32>& boneOffsetTransform(const stringImpl& bname) {
-        Bone* bone = boneByName(bname);
+        const Bone* bone = boneByName(bname);
         if (bone != nullptr) {
             _boneTransformCache = bone->_offsetMatrix;
         }
@@ -189,11 +189,11 @@ class SceneAnimator {
     const vector<Line>& skeletonLines(I32 animationIndex, const D64 dt);
 
     /// Returns the frame count of the longest registered animation
-    inline U32 getMaxAnimationFrames() const {
+    inline U32 getMaxAnimationFrames() const noexcept {
         return _maximumAnimationFrames;
     }
 
-    inline size_t boneCount() const {
+    inline size_t boneCount() const noexcept {
         return _skeletonDepthCache;
     }
 
@@ -231,7 +231,7 @@ namespace Attorney {
     class SceneAnimatorMeshImporter {
         private:
         static void registerAnimations(SceneAnimator& animator, const vector<std::shared_ptr<AnimEvaluator>>& animations) {
-            size_t animationCount = animations.size();
+            const size_t animationCount = animations.size();
             animator._animations.reserve(animationCount);
             for (size_t i = 0; i < animationCount; ++i) {
                 animator._animations.push_back(animations[i]);

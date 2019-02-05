@@ -39,7 +39,7 @@ TextLabelStyle::TextLabelStyle(const char* font,
 
 size_t TextLabelStyle::getHash() const {
     if (_dirty) {
-        size_t previousCache = Hashable::getHash();
+        const size_t previousCache = Hashable::getHash();
 
         _hash = 17;
         Util::Hash_combine(_hash, _font);
@@ -77,7 +77,7 @@ const TextLabelStyle& TextLabelStyle::get(size_t textLabelStyleHash, bool& style
 
     SharedLock r_lock(s_textLableStyleMapMutex);
     // Find the render state block associated with the received hash value
-    TextLabelStyleMap::const_iterator it = s_textLabelStyleMap.find(textLabelStyleHash);
+    const TextLabelStyleMap::const_iterator it = s_textLabelStyleMap.find(textLabelStyleHash);
     if (it != std::cend(s_textLabelStyleMap)) {
         styleFound = true;
         return it->second;

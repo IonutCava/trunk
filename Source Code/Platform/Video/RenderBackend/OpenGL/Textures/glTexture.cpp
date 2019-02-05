@@ -51,7 +51,7 @@ glTexture::~glTexture()
     MemoryManager::DELETE(_lockManager);
 }
 
-bool glTexture::unload() {
+bool glTexture::unload() noexcept {
     U32 textureID = _textureData.getHandle();
     if (textureID > 0) {
         if (_lockManager) {
@@ -396,7 +396,7 @@ void glTexture::setCurrentSampler(const SamplerDescriptor& descriptor) {
     _textureData._samplerHandle = GL_API::getOrCreateSamplerObject(descriptor);
 }
 
-bool glTexture::resourceLoadComplete() {
+bool glTexture::resourceLoadComplete() noexcept {
     WAIT_FOR_CONDITION(getState() == ResourceState::RES_LOADED);
 
     return Texture::resourceLoadComplete();

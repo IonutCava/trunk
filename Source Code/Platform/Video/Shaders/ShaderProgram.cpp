@@ -56,7 +56,7 @@ bool ShaderProgram::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCa
     return CachedResource::load(onLoadCallback);
 }
 
-bool ShaderProgram::unload() {
+bool ShaderProgram::unload() noexcept {
     // Unregister the program from the manager
     return unregisterShaderProgram(getDescriptorHash());
 }
@@ -230,11 +230,10 @@ bool ShaderProgram::unregisterShaderProgram(size_t shaderHash) {
 
 ShaderProgram& ShaderProgram::findShaderProgram(U32 shaderHandle, bool& success) {
     SharedLock r_lock(s_programLock);
-    for (const ShaderProgramMap::value_type& it : s_shaderPrograms) {
-        if (it.first == shaderHandle) {
-            success = true;
-            return *it.second.first;
-        }
+    auto it = s_shaderPrograms.find(shaderHandle);
+    if (it != std::cend(s_shaderPrograms)) {
+        success = true;
+        return *it->second.first;
     }
 
     success = false;

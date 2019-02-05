@@ -54,7 +54,7 @@ class ByteBuffer {
     const static size_t DEFAULT_SIZE = 0x1000;
 
     // constructor
-    ByteBuffer() noexcept;
+    ByteBuffer();
 
     // constructor
     ByteBuffer(size_t res);

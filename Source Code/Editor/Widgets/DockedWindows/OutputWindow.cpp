@@ -40,8 +40,8 @@ namespace Divide {
 
         bool copy_to_clipboard = ImGui::SmallButton("Copy");
         ImGui::SameLine();
-        if (ImGui::SmallButton("Scroll to bottom")) {
-            _scrollToBottom = true;
+        if (ImGui::Checkbox("Scroll to bottom", &_scrollToBottom)) {
+            
         }
 
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
@@ -92,7 +92,6 @@ namespace Divide {
             ImGui::SetScrollHere();
         }
 
-        _scrollToBottom = false;
         ImGui::PopStyleVar();
         ImGui::EndChild();
         ImGui::Separator();
@@ -128,7 +127,6 @@ namespace Divide {
 
     void OutputWindow::printText(const Console::OutputEntry& entry) {
         _log.put(entry);
-        _scrollToBottom = true;
     }
 
     void OutputWindow::executeCommand(const char* command_line) {

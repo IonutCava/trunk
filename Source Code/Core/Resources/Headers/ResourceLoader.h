@@ -79,7 +79,7 @@ class ImplResourceLoader : public ResourceLoader {
     {
     }
 
-    CachedResource_ptr operator()();
+    CachedResource_ptr operator()() override;
 
    protected:
 

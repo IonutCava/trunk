@@ -39,7 +39,7 @@ Terrain::~Terrain()
 {
 }
 
-bool Terrain::unload() {
+bool Terrain::unload() noexcept {
     MemoryManager::DELETE(_terrainTextures);
     return Object3D::unload();
 }

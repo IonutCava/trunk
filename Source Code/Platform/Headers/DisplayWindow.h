@@ -242,7 +242,6 @@ private:
 
     U8 _opacity;
     vec2<U16> _prevDimensions;
-    vec2<U16> _windowDimensions;
     FColour   _clearColour;
     typedef vector<std::shared_ptr<GUID_DELEGATE_CBK<bool, WindowEventArgs>>> EventListeners;
     std::array<EventListeners, to_base(WindowEvent::COUNT)> _eventListeners;

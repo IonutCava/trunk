@@ -72,7 +72,7 @@ void Trigger::setParams(TaskHandle& triggeredTask,
     _triggeredTask = triggeredTask;
 }
 
-bool Trigger::unload() {
+bool Trigger::unload() noexcept {
     return SceneNode::unload();
 }
 
