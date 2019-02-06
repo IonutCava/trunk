@@ -954,7 +954,6 @@ void GL_API::drawIMGUI(ImDrawData* data, I64 windowGUID) {
                 }
                 cmd._cmd.firstIndex += pcmd->ElemCount;
             }
-            lockBuffers();
         }
     }
 }
@@ -1138,10 +1137,12 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
         case GFX::CommandType::DRAW_TEXT: {
             const GFX::DrawTextCommand& crtCmd = commandBuffer.getCommand<GFX::DrawTextCommand>(entry);
             drawText(crtCmd._batch);
+            lockBuffers();
         }break;
         case GFX::CommandType::DRAW_IMGUI: {
             const GFX::DrawIMGUICommand& crtCmd = commandBuffer.getCommand<GFX::DrawIMGUICommand>(entry);
             drawIMGUI(crtCmd._data, crtCmd._windowGUID);
+            lockBuffers();
         }break;
         case GFX::CommandType::DRAW_COMMANDS : {
             const vectorEASTL<GenericDrawCommand>& drawCommands = commandBuffer.getCommand<GFX::DrawCommand>(entry)._drawCommands;
@@ -1316,6 +1317,7 @@ GenericVertexData* GL_API::getOrCreateIMGUIBuffer(I64 windowGUID) {
         params._elementSize = sizeof(ImDrawVert);
         params._useRingBuffer = true;
         params._updateFrequency = BufferUpdateFrequency::OFTEN;
+        params._storageType = BufferStorageType::NORMAL;
         params._sync = true;
         params._data = NULL;
 

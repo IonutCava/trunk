@@ -46,10 +46,10 @@ struct BufferImplParams {
     size_t _elementSize = 0;
     bool _zeroMem = false;
     bool _explicitFlush = true;
+    bool _unsynced = true;
     const char* _name = nullptr;
     bufferPtr _initialData = NULL;
-    bool _forcePersistentMap = false;
-    bool _unsynced = true;
+    BufferStorageType _storageType = BufferStorageType::AUTO;
     BufferUpdateFrequency _frequency = BufferUpdateFrequency::ONCE;
 };
 

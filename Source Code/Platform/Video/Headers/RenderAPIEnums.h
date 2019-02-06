@@ -358,6 +358,12 @@ enum class GPURenderer : U8 {
     COUNT
 };
 
+enum class BufferStorageType : U8 {
+    AUTO = 0,
+    IMMUTABLE,
+    NORMAL
+};
+
 enum class BufferUpdateFrequency : U8 {
     ONCE = 0,       //STATIC
     OCASSIONAL = 1, //DYNAMIC

@@ -20,7 +20,7 @@ glGenericBuffer::glGenericBuffer(GFXDevice& context, const BufferParams& params)
     implParams._name = params._name;
     implParams._initialData = params._data;
     implParams._zeroMem = params._zeroMem;
-    implParams._forcePersistentMap = params._forcePersistentMap;
+    implParams._storageType = params._storageType;
     implParams._unsynced = params._unsynced;
 
     _buffer = MemoryManager_NEW glBufferImpl(context, implParams);

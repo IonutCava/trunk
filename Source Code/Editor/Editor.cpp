@@ -655,6 +655,11 @@ const Rect<I32>& Editor::scenePreviewRect(bool globalCoords) const {
     SceneViewWindow* sceneView = static_cast<SceneViewWindow*>(_dockedWindows[to_base(WindowType::SceneView)]);
     return sceneView->sceneRect(globalCoords);
 }
+
+const Rect<I32>& Editor::getTargetViewport() const {
+    return _targetViewport;
+}
+
 // Needs to be rendered immediately. *IM*GUI. IMGUI::NewFrame invalidates this data
 void Editor::renderDrawList(ImDrawData* pDrawData, bool overlayOnScene, I64 windowGUID)
 {
@@ -1015,18 +1020,19 @@ bool Editor::onUTF8(const Input::UTF8Event& arg) {
 }
 
 void Editor::onSizeChange(const SizeChangeParams& params) {
-    if (!params.isWindowResize || _mainWindow == nullptr || params.winGUID != _mainWindow->getGUID()) {
-        return;
+    if (!params.isWindowResize) {
+        _targetViewport.set(0, 0, params.width, params.height);
+    } else if (_mainWindow != nullptr && params.winGUID == _mainWindow->getGUID()) {
+
+        vec2<U16> displaySize = _mainWindow->getDrawableSize();
+
+        ImGuiIO& io = _imguiContext->IO;
+        io.DisplaySize = ImVec2((F32)params.width, (F32)params.height);
+        io.DisplayFramebufferScale = ImVec2(params.width > 0 ? ((F32)displaySize.width / params.width) : 0.f,
+                                            params.height > 0 ? ((F32)displaySize.height / params.height) : 0.f);
+
+        Attorney::GizmoEditor::onSizeChange(*_gizmo, params, displaySize);
     }
-
-    vec2<U16> displaySize = _mainWindow->getDrawableSize();
-
-    ImGuiIO& io = _imguiContext->IO;
-    io.DisplaySize = ImVec2((F32)params.width, (F32)params.height);
-    io.DisplayFramebufferScale = ImVec2(params.width > 0 ? ((F32)displaySize.width / params.width) : 0.f,
-                                        params.height > 0 ? ((F32)displaySize.height / params.height) : 0.f);
-
-    Attorney::GizmoEditor::onSizeChange(*_gizmo, params, displaySize);
 }
 
 void Editor::setSelectedCamera(Camera* camera) {

@@ -38,30 +38,16 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 struct BufferParams {
-    BufferParams()
-        : _usage(GL_NONE),
-          _ringSizeFactor(1),
-          _elementCount(0),
-          _elementSizeInBytes(0),
-          _frequency(BufferUpdateFrequency::ONCE),
-          _data(nullptr),
-          _zeroMem(false),
-          _unsynced(true),
-          _forcePersistentMap(false),
-          _name("")
-    {
-    }
-
-    GLenum _usage;
-    GLuint _ringSizeFactor;
-    GLuint _elementCount;
-    size_t _elementSizeInBytes;
-    BufferUpdateFrequency _frequency;
-    bufferPtr   _data;
-    bool        _zeroMem;
-    bool        _unsynced; 
-    bool        _forcePersistentMap;
-    const char* _name;
+    GLenum _usage = GL_NONE;
+    bool   _zeroMem = false;
+    bool   _unsynced = true;
+    GLuint _ringSizeFactor = 1;
+    GLuint _elementCount = 0;
+    size_t _elementSizeInBytes = 0;
+    BufferUpdateFrequency _frequency = BufferUpdateFrequency::ONCE;
+    BufferStorageType _storageType = BufferStorageType::AUTO;
+    const char* _name = "";
+    bufferPtr _data = nullptr;
 };
 
 class glBufferImpl;

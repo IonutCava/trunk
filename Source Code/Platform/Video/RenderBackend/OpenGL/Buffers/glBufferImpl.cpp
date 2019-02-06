@@ -54,15 +54,22 @@ glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
                                                        : GL_STREAM_DRAW;
     }
 
-    bool usePersistentMapping = !Config::Profile::DISABLE_PERSISTENT_BUFFER &&  // For debugging
-                                _alignedSize > g_persistentMapSizeThreshold;    // Driver might be faster?
+    bool usePersistentMapping = false;
+
+    if (!Config::Profile::DISABLE_PERSISTENT_BUFFER) {  // For debugging
+        if (params._storageType == BufferStorageType::IMMUTABLE) {
+            usePersistentMapping = true;
+        } else if (params._storageType == BufferStorageType::AUTO) {
+            usePersistentMapping = _alignedSize > g_persistentMapSizeThreshold;    // Driver might be faster?
+        }
+    }
 
     // Why do we need to map it?
     if (_updateFrequency == BufferUpdateFrequency::ONCE) {
         usePersistentMapping = false;
     }
 
-    if (!usePersistentMapping && !params._forcePersistentMap) {
+    if (!usePersistentMapping) {
         GLUtil::createAndAllocBuffer(_alignedSize, _usage, _handle, params._initialData, params._name);
     } else {
         gl::BufferStorageMask storageMask = GL_MAP_PERSISTENT_BIT;

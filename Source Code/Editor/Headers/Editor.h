@@ -136,6 +136,8 @@ class Editor : public PlatformContextComponent,
     const Rect<I32>& scenePreviewRect(bool globalCoords) const;
     bool scenePreviewFocused() const;
 
+    const Rect<I32>& getTargetViewport() const;
+
   protected: //frame listener
     bool frameStarted(const FrameEvent& evt);
     bool framePreRenderStarted(const FrameEvent& evt);
@@ -197,7 +199,7 @@ class Editor : public PlatformContextComponent,
 
     std::unique_ptr<MenuBar> _menuBar;
     std::unique_ptr<Gizmo> _gizmo;
-
+    Rect<I32>         _targetViewport;
     bool              _showSampleWindow;
     bool              _showMemoryEditor;
     bool              _running;

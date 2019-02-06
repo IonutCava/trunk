@@ -57,7 +57,7 @@ AtomicCounter::AtomicCounter(GFXDevice& context, U32 sizeFactor, U32 ringSizeFac
     params._ringSizeFactor = ringSizeFactor;
     params._data = NULL;
     params._zeroMem = true;
-    params._forcePersistentMap = true;
+    params._storageType = BufferStorageType::IMMUTABLE;
 
     _buffer = MemoryManager_NEW glGenericBuffer(context, params);
 }
@@ -85,10 +85,10 @@ glUniformBuffer::glUniformBuffer(GFXDevice& context,
     implParams._target = _unbound ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER;
     implParams._name = _name.empty() ? nullptr : _name.c_str();
     implParams._zeroMem = descriptor._initialData == nullptr;
-    implParams._forcePersistentMap = BitCompare(_flags, ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
     implParams._explicitFlush = !BitCompare(_flags, ShaderBuffer::Flags::AUTO_RANGE_FLUSH);
-
-    implParams._unsynced = !implParams._forcePersistentMap || 
+    implParams._storageType = BitCompare(_flags, ShaderBuffer::Flags::ALLOW_THREADED_WRITES) ? BufferStorageType::IMMUTABLE
+                                                                                             : BufferStorageType::AUTO;
+    implParams._unsynced =  implParams._storageType != BufferStorageType::IMMUTABLE || 
                             BitCompare(_flags, ShaderBuffer::Flags::NO_SYNC) ||
                             _frequency == BufferUpdateFrequency::ONCE;
 

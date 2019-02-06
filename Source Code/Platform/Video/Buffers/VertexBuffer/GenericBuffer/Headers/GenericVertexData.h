@@ -61,10 +61,11 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
          U32 _buffer = 0;
          U32 _elementCount = 0;
          size_t _elementSize = 0;
+         bool _sync = false;
          bool _useRingBuffer = false;
          bufferPtr _data = nullptr;
+         BufferStorageType _storageType = BufferStorageType::AUTO;
          BufferUpdateFrequency _updateFrequency = BufferUpdateFrequency::COUNT;
-         bool _sync = false;
      };
 
    public:

@@ -147,6 +147,7 @@ void glGenericVertexData::setBuffer(const SetBufferParams& params) {
     paramsOut._data = params._data;
     paramsOut._name = _name.empty() ? nullptr : _name.c_str();
     paramsOut._unsynced = !params._sync;
+    paramsOut._storageType = params._storageType;
 
     glGenericBuffer * tempBuffer = MemoryManager_NEW glGenericBuffer(_context, paramsOut);
     _bufferObjects[buffer] = tempBuffer;
