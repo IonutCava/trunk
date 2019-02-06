@@ -495,14 +495,15 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
     U8 playerCount = _sceneManager->getActivePlayerCount();
 
     Rect<I32> mainViewport = _platformContext->activeWindow().renderingViewport();
-    if (Config::Build::ENABLE_EDITOR && _platformContext->editor().running()) {
-        mainViewport = _platformContext->editor().getTargetViewport();
-    }
 
     if (_prevViewport != mainViewport || _prevPlayerCount != playerCount) {
         computeViewports(mainViewport, _targetViewports, playerCount);
         _prevViewport.set(mainViewport);
         _prevPlayerCount = playerCount;
+    }
+
+    if (Config::Build::ENABLE_EDITOR && _platformContext->editor().running()) {
+        computeViewports(_platformContext->editor().getTargetViewport(), _editorViewports, playerCount);
     }
 
     for (U8 i = 0; i < playerCount; ++i) {
@@ -522,11 +523,17 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
         }
         {
             Time::ScopedTimer time4(getTimer(_flushToScreenTimer, _blitToDisplayTimer, i, "Blit to screen Timer"));
+
+            GFX::ScopedCommandBuffer sBuffer(GFX::allocateScopedCommandBuffer());
+            GFX::CommandBuffer& buffer = sBuffer();
+
             if (Config::Build::ENABLE_EDITOR && _platformContext->editor().running()) {
-                Attorney::GFXDeviceKernel::blitToRenderTarget(_platformContext->gfx(), RenderTargetID(RenderTargetUsage::EDITOR), _targetViewports[i]);
+                Attorney::GFXDeviceKernel::blitToRenderTarget(_platformContext->gfx(), RenderTargetID(RenderTargetUsage::EDITOR), _editorViewports[i], buffer);
             } else {
-                Attorney::GFXDeviceKernel::blitToScreen(_platformContext->gfx(), _targetViewports[i]);
+                Attorney::GFXDeviceKernel::blitToScreen(_platformContext->gfx(), _targetViewports[i], buffer);
             }
+
+            _platformContext->gfx().flushCommandBuffer(buffer);
         }
     }
 

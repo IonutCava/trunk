@@ -372,9 +372,9 @@ protected:
     void stepResolution(bool increment);
 
 protected:
-    void blitToScreen(const Rect<I32>& targetViewport);
-
-    void blitToRenderTarget(RenderTargetID targetID, const Rect<I32>& targetViewport);
+    void renderUI(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);
+    void blitToScreen(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);
+    void blitToRenderTarget(RenderTargetID targetID, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);
     void blitToBuffer(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);
 
 protected:
@@ -508,14 +508,17 @@ namespace Attorney {
 
     class GFXDeviceKernel {
     private:
-        static void blitToScreen(GFXDevice& device, const Rect<I32>& targetViewport) {
-            device.blitToScreen(targetViewport);
+        static void blitToScreen(GFXDevice& device, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
+            device.blitToScreen(targetViewport, bufferInOut);
         }
 
-        static void blitToRenderTarget(GFXDevice& device, RenderTargetID targetID, const Rect<I32>& targetViewport) {
-            device.blitToRenderTarget(targetID, targetViewport);
+        static void blitToRenderTarget(GFXDevice& device, RenderTargetID targetID, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
+            device.blitToRenderTarget(targetID, targetViewport, bufferInOut);
         }
 
+        static void renderUI(GFXDevice& device, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
+            device.renderUI(targetViewport, bufferInOut);
+        }
         static void onSizeChange(GFXDevice& device, const SizeChangeParams& params) {
             device.onSizeChange(params);
         }

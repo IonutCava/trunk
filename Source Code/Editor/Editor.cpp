@@ -671,6 +671,13 @@ void Editor::renderDrawList(ImDrawData* pDrawData, bool overlayOnScene, I64 wind
     ImGuiIO& io = ImGui::GetIO();
     I32 fb_width = (I32)(pDrawData->DisplaySize.x * io.DisplayFramebufferScale.x);
     I32 fb_height = (I32)(pDrawData->DisplaySize.y * io.DisplayFramebufferScale.y);
+
+    if (overlayOnScene) {
+        const RenderTarget& rt = context().gfx().renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
+        fb_width = rt.getWidth();
+        fb_height = rt.getHeight();
+    }
+
     if (fb_width <= 0 || fb_height <= 0) {
         return;
     }
@@ -1030,8 +1037,7 @@ void Editor::onSizeChange(const SizeChangeParams& params) {
         io.DisplaySize = ImVec2((F32)params.width, (F32)params.height);
         io.DisplayFramebufferScale = ImVec2(params.width > 0 ? ((F32)displaySize.width / params.width) : 0.f,
                                             params.height > 0 ? ((F32)displaySize.height / params.height) : 0.f);
-
-        Attorney::GizmoEditor::onSizeChange(*_gizmo, params, displaySize);
+        Attorney::GizmoEditor::onSizeChange(*_gizmo, params, vec2<U16>(params.width, params.height));
     }
 }
 

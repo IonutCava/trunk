@@ -253,47 +253,39 @@ void GFXDevice::drawTextureInViewport(TextureData data, const Rect<I32>& viewpor
     GFX::EnqueueCommand(bufferInOut, endDebugScopeCommand);
 }
 
-void GFXDevice::blitToScreen(const Rect<I32>& targetViewport) {
-    GFX::ScopedCommandBuffer sBuffer(GFX::allocateScopedCommandBuffer());
-    GFX::CommandBuffer& buffer = sBuffer();
-
-    blitToBuffer(targetViewport, buffer);
-    
-    flushCommandBuffer(buffer);
+void GFXDevice::blitToScreen(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
+    blitToBuffer(targetViewport, bufferInOut);
 }
 
-void GFXDevice::blitToRenderTarget(RenderTargetID targetID, const Rect<I32>& targetViewport) {
-    GFX::ScopedCommandBuffer sBuffer(GFX::allocateScopedCommandBuffer());
-    GFX::CommandBuffer& buffer = sBuffer();
-
+void GFXDevice::blitToRenderTarget(RenderTargetID targetID, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
     GFX::BeginRenderPassCommand beginRenderPassCmd = {};
     beginRenderPassCmd._target = targetID;
     beginRenderPassCmd._name = "BLIT_TO_RENDER_TARGET";
-    GFX::EnqueueCommand(buffer, beginRenderPassCmd);
+    GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
-    blitToBuffer(targetViewport, buffer);
+    blitToBuffer(targetViewport, bufferInOut);
 
     GFX::EndRenderPassCommand endRenderPassCmd = {};
-    GFX::EnqueueCommand(buffer, endRenderPassCmd);
-
-    flushCommandBuffer(buffer);
+    GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
 }
 
 void GFXDevice::blitToBuffer(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
-    {
-        RenderTarget& screen = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
-        TextureData texData = screen.getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO)).texture()->getData();
+    RenderTarget& screen = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
+    TextureData texData = screen.getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO)).texture()->getData();
 
-        GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
-        beginDebugScopeCmd._scopeID = 12345;
-        beginDebugScopeCmd._scopeName = "Flush Display";
-        GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
+    GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
+    beginDebugScopeCmd._scopeID = 12345;
+    beginDebugScopeCmd._scopeName = "Flush Display";
+    GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
-        drawTextureInViewport(texData, targetViewport, bufferInOut);
+    drawTextureInViewport(texData, targetViewport, bufferInOut);
+    renderUI(targetViewport, bufferInOut);
 
-        GFX::EndDebugScopeCommand endDebugScopeCommand = {};
-        GFX::EnqueueCommand(bufferInOut, endDebugScopeCommand);
-    }
+    GFX::EndDebugScopeCommand endDebugScopeCommand = {};
+    GFX::EnqueueCommand(bufferInOut, endDebugScopeCommand);
+}
+
+void GFXDevice::renderUI(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
     {
         GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
         beginDebugScopeCmd._scopeID = 123456;
