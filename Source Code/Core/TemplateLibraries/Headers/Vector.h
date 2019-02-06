@@ -138,11 +138,16 @@ auto ToggleIndices(Cont& cont, It beg, It end) -> decltype(std::end(cont))
 
 
 template<typename Cont, typename IndCont>
-void EraseIndices(Cont& cont, IndCont& indices) {
-    eastl::sort(indices.begin(), indices.end());
+void EraseIndicesSorted(Cont& cont, IndCont& indices) {
     for (auto it = indices.rbegin(); it != indices.rend(); ++it) {
         cont.erase(cont.begin() + *it);
     }
+}
+
+template<typename Cont, typename IndCont>
+void EraseIndices(Cont& cont, IndCont& indices) {
+    eastl::sort(indices.begin(), indices.end());
+    EraseIndicesSorted(cont, indices);
 }
 
 //ref: https://stackoverflow.com/questions/7571937/how-to-delete-items-from-a-stdvector-given-a-list-of-indices

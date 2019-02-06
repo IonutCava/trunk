@@ -197,9 +197,12 @@ class RenderingComponent : public BaseComponentType<RenderingComponent, Componen
 
     void updateEnvProbeList(const EnvironmentProbeList& probes);
 
+    inline Material* getMaterialInstanceCache() const { return _materialInstanceCache; }
+
    protected:
     GFXDevice& _context;
     Material_ptr _materialInstance;
+    Material* _materialInstanceCache;
 
     U32 _renderMask;
     bool _lodLocked;

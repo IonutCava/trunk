@@ -120,7 +120,7 @@ void SceneGraph::onNodeAdd(SceneGraphNode& newNode) {
 
 void SceneGraph::onNodeTransform(SceneGraphNode& node) {
     if (_loadComplete) {
-        node.setUpdateFlag(SceneGraphNode::UpdateFlag::SPATIAL_PARTITION);
+        node.setUpdateFlag(SceneGraphNode::UpdateFlag::SPATIAL_PARTITION_UPDATE_QUEUED);
     }
 }
 

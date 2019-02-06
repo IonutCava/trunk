@@ -220,7 +220,7 @@ void CommandBuffer::clean() {
     }
 
     if (!redundantEntries.empty()) {
-        EraseIndices(_commandOrder, redundantEntries);
+        EraseIndicesSorted(_commandOrder, redundantEntries);
     }
 }
 

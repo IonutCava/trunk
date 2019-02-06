@@ -292,22 +292,24 @@ http://randomascii.wordpress.com/2012/01/11/tricks-with-the-floating-point-forma
 for the potential portability problems with the union and bit-fields below.
 */
 union Float_t {
-    Float_t(F32 num = 0.0f) noexcept : f(num) {}
+    explicit Float_t(F32 num = 0.0f) noexcept : f(num) {}
+
     // Portable extraction of components.
-    bool Negative() const noexcept { return (i >> 31) != 0; }
-    I32 RawMantissa() const noexcept { return i & ((1 << 23) - 1); }
-    I32 RawExponent() const noexcept { return (i >> 23) & 0xFF; }
+    inline bool Negative() const noexcept { return (i >> 31) != 0; }
+    inline I32 RawMantissa() const noexcept { return i & ((1 << 23) - 1); }
+    inline I32 RawExponent() const noexcept { return (i >> 23) & 0xFF; }
 
     I32 i;
     F32 f;
 };
 
 union Double_t {
-    Double_t(D64 num = 0.0) noexcept : d(num) {}
+    explicit Double_t(D64 num = 0.0) noexcept : d(num) {}
+
     // Portable extraction of components.
-    bool Negative() const noexcept { return (i >> 63) != 0; }
-    I64 RawMantissa() const noexcept { return i & ((1LL << 52) - 1); }
-    I64 RawExponent() const noexcept { return (i >> 52) & 0x7FF; }
+    inline bool Negative() const noexcept { return (i >> 63) != 0; }
+    inline I64 RawMantissa() const noexcept { return i & ((1LL << 52) - 1); }
+    inline I64 RawExponent() const noexcept { return (i >> 52) & 0x7FF; }
 
     I64 i;
     D64 d;
@@ -315,7 +317,7 @@ union Double_t {
 
 inline bool AlmostEqualUlpsAndAbs(F32 A, F32 B, F32 maxDiff, I32 maxUlpsDiff) {
     // Check if the numbers are really close -- needed when comparing numbers near zero.
-    const F32 absDiff = std::fabs(A - B);
+    const F32 absDiff = std::abs(A - B);
     if (absDiff <= maxDiff) {
         return true;
     }
@@ -334,7 +336,7 @@ inline bool AlmostEqualUlpsAndAbs(F32 A, F32 B, F32 maxDiff, I32 maxUlpsDiff) {
 
 inline bool AlmostEqualUlpsAndAbs(D64 A, D64 B, D64 maxDiff, I32 maxUlpsDiff) noexcept {
     // Check if the numbers are really close -- needed when comparing numbers near zero.
-    const D64 absDiff = std::fabs(A - B);
+    const D64 absDiff = std::abs(A - B);
     if (absDiff <= maxDiff) {
         return true;
     }
@@ -353,13 +355,13 @@ inline bool AlmostEqualUlpsAndAbs(D64 A, D64 B, D64 maxDiff, I32 maxUlpsDiff) no
 
 inline bool AlmostEqualRelativeAndAbs(F32 A, F32 B, F32 maxDiff, F32 maxRelDiff)  noexcept {
     // Check if the numbers are really close -- needed when comparing numbers near zero.
-    const F32 diff = std::fabs(A - B);
+    const F32 diff = std::abs(A - B);
     if (diff <= maxDiff) {
         return true;
     }
 
-    A = std::fabs(A);
-    B = std::fabs(B);
+    A = std::abs(A);
+    B = std::abs(B);
     const F32 largest = (B > A) ? B : A;
 
     return (diff <= largest * maxRelDiff);
@@ -367,13 +369,13 @@ inline bool AlmostEqualRelativeAndAbs(F32 A, F32 B, F32 maxDiff, F32 maxRelDiff)
 
 inline bool AlmostEqualRelativeAndAbs(D64 A, D64 B, D64 maxDiff, D64 maxRelDiff) noexcept {
     // Check if the numbers are really close -- needed when comparing numbers near zero.
-    const D64 diff = std::fabs(A - B);
+    const D64 diff = std::abs(A - B);
     if (diff <= maxDiff) {
         return true;
     }
 
-    A = std::fabs(A);
-    B = std::fabs(B);
+    A = std::abs(A);
+    B = std::abs(B);
     const D64 largest = (B > A) ? B : A;
 
     return (diff <= largest * maxRelDiff);
@@ -491,11 +493,11 @@ inline bool IS_ZERO(T X) noexcept {
 }
 template <>
 inline bool IS_ZERO(F32 X) noexcept {
-    return (std::fabs(X) < EPSILON_F32);
+    return (std::abs(X) < EPSILON_F32);
 }
 template <>
 inline bool IS_ZERO(D64 X) noexcept {
-    return (std::fabs(X) < EPSILON_D64);
+    return (std::abs(X) < EPSILON_D64);
 }
 
 template <typename T>
@@ -504,11 +506,11 @@ inline bool IS_TOLERANCE(T X, T TOLERANCE) noexcept {
 }
 template <>
 inline bool IS_TOLERANCE(F32 X, F32 TOLERANCE) noexcept {
-    return (std::fabs(X) <= TOLERANCE);
+    return (std::abs(X) <= TOLERANCE);
 }
 template <>
 inline bool IS_TOLERANCE(D64 X, D64 TOLERANCE) noexcept {
-    return (std::fabs(X) <= TOLERANCE);
+    return (std::abs(X) <= TOLERANCE);
 }
 
 template<typename T, typename U>
@@ -518,7 +520,7 @@ inline bool COMPARE_TOLERANCE(T X, U Y, T TOLERANCE) noexcept {
 
 template<typename T>
 inline bool COMPARE_TOLERANCE(T X, T Y, T TOLERANCE) noexcept {
-    return std::fabs(X - Y) <= TOLERANCE;
+    return std::abs(X - Y) <= TOLERANCE;
 }
 
 template<>

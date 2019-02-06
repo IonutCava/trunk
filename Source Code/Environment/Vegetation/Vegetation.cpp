@@ -49,6 +49,7 @@ Vegetation::Vegetation(GFXDevice& context,
       _render(false),
       _success(false),
       _shadowMapped(true),
+      _cullPipeline(nullptr),
       _instanceCountGrass(0),
       _stateRefreshIntervalBufferUS(0ULL),
       _stateRefreshIntervalUS(Time::SecondsToMicroseconds(1))  ///<Every second?
@@ -61,6 +62,11 @@ Vegetation::Vegetation(GFXDevice& context,
     ShaderProgramDescriptor shaderDescriptor = {};
     shaderDescriptor._defines.push_back(std::make_pair(Util::StringFormat("WORK_GROUP_SIZE %d", WORK_GROUP_SIZE), true));
     instanceCullShader.setPropertyDescriptor(shaderDescriptor);
+    instanceCullShader.setOnLoadCallback([this](CachedResource_wptr res) {
+        PipelineDescriptor pipeDesc;
+        pipeDesc._shaderProgramHandle = std::static_pointer_cast<ShaderProgram>(res.lock())->getID();
+        _cullPipeline = _context.newPipeline(pipeDesc);
+    });
 
     _cullShader = CreateResource<ShaderProgram>(context.parent().resourceCache(), instanceCullShader);
 
@@ -272,11 +278,8 @@ void Vegetation::onRefreshNodeData(SceneGraphNode& sgn, RenderStagePass renderSt
     if (_render && renderStagePass._passIndex == 0) {
 
         // This will always lag one frame
-        PipelineDescriptor pipeDesc;
-        pipeDesc._shaderProgramHandle = _cullShader->getID();
-
         GFX::BindPipelineCommand pipelineCmd;
-        pipelineCmd._pipeline = _context.newPipeline(pipeDesc);
+        pipelineCmd._pipeline = _cullPipeline;
         GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
         ShaderBufferBinding buffer = {};

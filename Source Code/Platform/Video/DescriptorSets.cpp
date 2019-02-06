@@ -100,7 +100,7 @@ namespace Divide {
                 partial = true;
             }
         }
-        EraseIndices(otherTextureData, textureEraseList);
+        EraseIndicesSorted(otherTextureData, textureEraseList);
 
         auto& otherViewList = rhs._textureViews;
         vectorFast<vec_size> viewEraseList;
@@ -124,7 +124,7 @@ namespace Divide {
                 partial = true;
             }
         }
-        EraseIndices(otherViewList, viewEraseList);
+        EraseIndicesSorted(otherViewList, viewEraseList);
 
         vector<vec_size> bufferEraseList;
         bufferEraseList.reserve(rhs._shaderBuffers.size());
@@ -148,7 +148,7 @@ namespace Divide {
                 partial = true;
             }
         }
-        EraseIndices(rhs._shaderBuffers, bufferEraseList);
+        EraseIndicesSorted(rhs._shaderBuffers, bufferEraseList);
 
         return rhs._shaderBuffers.empty() && rhs._textureData.textures().empty() && rhs._textureViews.empty();
     }

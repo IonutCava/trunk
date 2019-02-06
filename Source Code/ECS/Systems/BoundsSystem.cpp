@@ -34,8 +34,9 @@ namespace Divide {
     void BoundsSystem::PreUpdate(F32 dt) {
         U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
-        auto bComp = _engine.GetComponentManager()->begin<BoundsComponent>();
-        auto bCompEnd = _engine.GetComponentManager()->end<BoundsComponent>();
+        auto compManager = _engine.GetComponentManager();
+        auto bComp = compManager->begin<BoundsComponent>();
+        auto bCompEnd = compManager->end<BoundsComponent>();
         for (;bComp != bCompEnd; ++bComp)
         {
             if (bComp->isBoundsChanged()) {
@@ -49,8 +50,9 @@ namespace Divide {
     void BoundsSystem::Update(F32 dt) {
         U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
-        auto bComp = _engine.GetComponentManager()->begin<BoundsComponent>();
-        auto bCompEnd = _engine.GetComponentManager()->end<BoundsComponent>();
+        auto compManager = _engine.GetComponentManager();
+        auto bComp = compManager->begin<BoundsComponent>();
+        auto bCompEnd = compManager->end<BoundsComponent>();
         for (;bComp != bCompEnd; ++bComp)
         {
             bComp->Update(microSec);
@@ -60,8 +62,9 @@ namespace Divide {
     void BoundsSystem::PostUpdate(F32 dt) {
         U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
-        auto bComp = _engine.GetComponentManager()->begin<BoundsComponent>();
-        auto bCompEnd = _engine.GetComponentManager()->end<BoundsComponent>();
+        auto compManager = _engine.GetComponentManager();
+        auto bComp = compManager->begin<BoundsComponent>();
+        auto bCompEnd = compManager->end<BoundsComponent>();
         for (; bComp != bCompEnd; ++bComp)
         {
             bComp->PostUpdate(microSec);

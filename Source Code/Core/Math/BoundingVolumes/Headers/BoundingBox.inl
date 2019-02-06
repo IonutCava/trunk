@@ -249,15 +249,15 @@ inline F32 BoundingBox::nearestDistanceFromPoint(const vec3<F32>& pos) const {
 }
 
 inline vec3<F32> BoundingBox::getPVertex(const vec3<F32>& normal) const {
-    return vec3<F32>(IS_GEQUAL(normal.x, 0.0f) ? _max.x : _min.x,
-                     IS_GEQUAL(normal.y, 0.0f) ? _max.y : _min.y,
-                     IS_GEQUAL(normal.z, 0.0f) ? _max.z : _min.z);
+    return vec3<F32>(normal.x >= 0.0f ? _max.x : _min.x,
+                     normal.y >= 0.0f ? _max.y : _min.y,
+                     normal.z >= 0.0f ? _max.z : _min.z);
 }
 
 inline vec3<F32> BoundingBox::getNVertex(const vec3<F32>& normal) const {
-    return vec3<F32>(IS_GEQUAL(normal.x, 0.0f) ? _min.x : _max.x,
-                     IS_GEQUAL(normal.y, 0.0f) ? _min.y : _max.y,
-                     IS_GEQUAL(normal.z, 0.0f) ? _min.z : _max.z);
+    return vec3<F32>(normal.x >= 0.0f ? _min.x : _max.x,
+                     normal.y >= 0.0f ? _min.y : _max.y,
+                     normal.z >= 0.0f ? _min.z : _max.z);
 }
 
 };  // namespace Divide

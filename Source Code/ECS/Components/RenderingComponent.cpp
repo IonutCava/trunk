@@ -39,6 +39,7 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
       _renderMask(0),
       _reflectorType(ReflectorType::PLANAR_REFLECTOR),
       _materialInstance(nullptr),
+      _materialInstanceCache(nullptr),
       _skeletonPrimitive(nullptr)
 {
     const Material_ptr& materialTpl = parentSGN.getNode().getMaterialTpl();
@@ -64,6 +65,7 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
                                        false);
 
         _materialInstance->useTriangleStrip(node.getObjectType()._value != ObjectType::SUBMESH);
+        _materialInstanceCache = _materialInstance.get();
     }
 
     // Prepare it for rendering lines
@@ -158,13 +160,12 @@ void RenderingComponent::rebuildDrawCommands(RenderStagePass stagePass) {
     RenderPackage& pkg = getDrawPackage(stagePass);
     pkg.clear();
 
-    const Material_ptr& mat = getMaterialInstance();
     // The following commands are needed for material rendering
     // In the absence of a material, use the SceneNode buildDrawCommands to add all of the needed commands
-    if (mat != nullptr) {
+    if (getMaterialInstanceCache() != nullptr) {
         PipelineDescriptor pipelineDescriptor;
-        pipelineDescriptor._stateHash = mat->getRenderStateBlock(stagePass);
-        pipelineDescriptor._shaderProgramHandle = mat->getProgramID(stagePass);
+        pipelineDescriptor._stateHash = getMaterialInstanceCache()->getRenderStateBlock(stagePass);
+        pipelineDescriptor._shaderProgramHandle = getMaterialInstanceCache()->getProgramID(stagePass);
 
         GFX::BindPipelineCommand pipelineCommand;
         pipelineCommand._pipeline = _context.newPipeline(pipelineDescriptor);
@@ -186,9 +187,8 @@ void RenderingComponent::rebuildDrawCommands(RenderStagePass stagePass) {
 }
 
 void RenderingComponent::Update(const U64 deltaTimeUS) {
-    const Material_ptr& mat = getMaterialInstance();
-    if (mat) {
-        mat->update(deltaTimeUS);
+    if (getMaterialInstanceCache() != nullptr) {
+        getMaterialInstanceCache()->update(deltaTimeUS);
     }
 
     if (_parentSGN.getNode<Object3D>().getObjectType()._value == ObjectType::SUBMESH) {
@@ -205,8 +205,7 @@ void RenderingComponent::Update(const U64 deltaTimeUS) {
 
 bool RenderingComponent::canDraw(RenderStagePass renderStagePass) {
     if (_parentSGN.getDrawState(renderStagePass)) {
-        const Material_ptr& mat = getMaterialInstance();
-        if (mat && !mat->canDraw(renderStagePass)) {
+        if (getMaterialInstanceCache() != nullptr && !getMaterialInstanceCache()->canDraw(renderStagePass)) {
             return false;
         }
         return renderOptionEnabled(RenderOptions::IS_VISIBLE);
@@ -216,9 +215,8 @@ bool RenderingComponent::canDraw(RenderStagePass renderStagePass) {
 }
 
 void RenderingComponent::rebuildMaterial() {
-    const Material_ptr& mat = getMaterialInstance();
-    if (mat) {
-        mat->rebuild();
+    if (getMaterialInstanceCache() != nullptr) {
+        getMaterialInstanceCache()->rebuild();
     }
 
     _parentSGN.forEachChild([](const SceneGraphNode& child) {
@@ -230,10 +228,9 @@ void RenderingComponent::rebuildMaterial() {
 }
 
 void RenderingComponent::onRender(RenderStagePass renderStagePass) {
-    const Material_ptr& mat = getMaterialInstance();
-    if (mat) {
+    if (getMaterialInstanceCache() != nullptr) {
         DescriptorSet set = getDrawPackage(renderStagePass).descriptorSet(0);
-        if (mat->getTextureData(renderStagePass, set._textureData)) {
+        if (getMaterialInstanceCache()->getTextureData(renderStagePass, set._textureData)) {
             getDrawPackage(renderStagePass).descriptorSet(0, set);
         }
     }
@@ -271,14 +268,13 @@ bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams)
 void RenderingComponent::getMaterialColourMatrix(mat4<F32>& matOut) const {
     matOut.zero();
 
-    const Material_ptr& mat = getMaterialInstance();
-    if (mat) {
-        mat->getMaterialMatrix(matOut);
+    if (getMaterialInstanceCache() != nullptr) {
+        getMaterialInstanceCache()->getMaterialMatrix(matOut);
     }
 }
 
 void RenderingComponent::getRenderingProperties(RenderStagePass& stagePass, vec4<F32>& propertiesOut, F32& reflectionIndex, F32& refractionIndex) const {
-    bool shadowMappingEnabled = _context.context().config().rendering.shadowMapping.enabled;
+    const bool shadowMappingEnabled = _context.context().config().rendering.shadowMapping.enabled;
 
     propertiesOut.set(_parentSGN.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTION_SELECTED
                                                      ? -1.0f
@@ -288,10 +284,10 @@ void RenderingComponent::getRenderingProperties(RenderStagePass& stagePass, vec4
                       (shadowMappingEnabled && renderOptionEnabled(RenderOptions::RECEIVE_SHADOWS)) ? 1.0f : 0.0f,
                       to_F32(getDrawPackage(stagePass).lodLevel()),
                       0.0f);
-    const Material_ptr& mat = getMaterialInstance();
-    if (mat) {
-        reflectionIndex = to_F32(mat->defaultReflectionTextureIndex());
-        refractionIndex = to_F32(mat->defaultRefractionTextureIndex());
+
+    if (getMaterialInstanceCache() != nullptr) {
+        reflectionIndex = to_F32(getMaterialInstanceCache()->defaultReflectionTextureIndex());
+        refractionIndex = to_F32(getMaterialInstanceCache()->defaultRefractionTextureIndex());
     } else {
         reflectionIndex = refractionIndex = 0.0f;
     }
@@ -491,13 +487,12 @@ size_t RenderingComponent::getSortKeyHash(RenderStagePass renderStagePass) const
 
 bool RenderingComponent::clearReflection() {
     // If we lake a material, we don't use reflections
-    const Material_ptr& mat = getMaterialInstance();
-    if (mat == nullptr) {
-        return false;
+    if (getMaterialInstanceCache() != nullptr) {
+        getMaterialInstanceCache()->updateReflectionIndex(_reflectorType, -1);
+        return true;
     }
 
-    mat->updateReflectionIndex(_reflectorType, -1);
-    return true;
+    return false;
 }
 
 bool RenderingComponent::updateReflection(U32 reflectionIndex,
@@ -506,12 +501,11 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
                                           GFX::CommandBuffer& bufferInOut)
 {
     // If we lake a material, we don't use reflections
-    const Material_ptr& mat = getMaterialInstance();
-    if (mat == nullptr) {
+    if (getMaterialInstanceCache() == nullptr) {
         return false;
     }
 
-    mat->updateReflectionIndex(_reflectorType, reflectionIndex);
+    getMaterialInstanceCache()->updateReflectionIndex(_reflectorType, reflectionIndex);
 
     RenderTargetID reflectRTID(_reflectorType == ReflectorType::PLANAR_REFLECTOR ? RenderTargetUsage::REFLECTION_PLANAR
                                                                                  : RenderTargetUsage::REFRACTION_CUBE, 
@@ -567,14 +561,13 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
 }
 
 bool RenderingComponent::clearRefraction() {
-    const Material_ptr& mat = getMaterialInstance();
-    if (mat == nullptr) {
+    if (getMaterialInstanceCache() == nullptr) {
         return false;
     }
-    if (!mat->hasTransparency()) {
+    if (!getMaterialInstanceCache()->hasTransparency()) {
         return false;
     }
-    mat->updateRefractionIndex(_reflectorType, -1);
+    getMaterialInstanceCache()->updateRefractionIndex(_reflectorType, -1);
     return true;
 }
 
@@ -587,12 +580,11 @@ bool RenderingComponent::updateRefraction(U32 refractionIndex,
         return false;
     }
 
-    const Material_ptr& mat = getMaterialInstance();
-    if (mat == nullptr) {
+    if (getMaterialInstanceCache() == nullptr) {
         return false;
     }
 
-    mat->updateRefractionIndex(_reflectorType, refractionIndex);
+    getMaterialInstanceCache()->updateRefractionIndex(_reflectorType, refractionIndex);
 
     RenderTargetID refractRTID(_reflectorType == ReflectorType::PLANAR_REFLECTOR ? RenderTargetUsage::REFRACTION_PLANAR
                                                                                  : RenderTargetUsage::REFRACTION_CUBE,
@@ -651,14 +643,13 @@ void RenderingComponent::updateEnvProbeList(const EnvironmentProbeList& probes) 
 
         std::sort(std::begin(_envProbes), std::end(_envProbes), sortFunc);
     }
-    const Material_ptr& mat = getMaterialInstance();
-    if (mat == nullptr) {
+    if (getMaterialInstanceCache() == nullptr) {
         return;
     }
 
     RenderTarget* rt = EnvironmentProbe::reflectionTarget()._rt;
-    mat->defaultReflectionTexture(rt->getAttachment(RTAttachmentType::Colour, 0).texture(),
-                                  _envProbes.front()->getRTIndex());
+    getMaterialInstanceCache()->defaultReflectionTexture(rt->getAttachment(RTAttachmentType::Colour, 0).texture(),
+                                                         _envProbes.front()->getRTIndex());
 }
 
 /// Draw the axis arrow gizmo

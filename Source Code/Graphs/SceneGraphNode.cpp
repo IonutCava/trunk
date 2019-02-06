@@ -59,6 +59,8 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescr
       ECS::Event::IEventListener(&sceneGraph.GetECSEngine()),
       PlatformContextComponent(sceneGraph.parentScene().context()),
       _sceneGraph(sceneGraph),
+      _ecsEngine(sceneGraph.GetECSEngine()),
+      _compManager(sceneGraph.GetECSEngine().GetComponentManager()),
       _serialize(descriptor._serialize),
       _node(descriptor._node),
       _componentMask(0),
@@ -217,11 +219,11 @@ SceneGraphNode* SceneGraphNode::addNode(const SceneGraphNodeDescriptor& descript
     if (sceneGraphNode->_node->getState() == ResourceState::RES_LOADED) {
         postLoad(*sceneGraphNode->_node, *sceneGraphNode);
     } else if (sceneGraphNode->_node->getState() == ResourceState::RES_LOADING) {
-        setUpdateFlag(UpdateFlag::THREADED_LOAD);
+        setUpdateFlag(UpdateFlag::LOADING);
         sceneGraphNode->_node->setStateCallback(ResourceState::RES_LOADED,
             [this, sceneGraphNode](Resource_wptr res) {
                 postLoad(*(std::dynamic_pointer_cast<SceneNode>(res.lock())), *(sceneGraphNode));
-                clearUpdateFlag(UpdateFlag::THREADED_LOAD);
+                clearUpdateFlag(UpdateFlag::LOADING);
             }
         );
     }
@@ -523,7 +525,7 @@ bool SceneGraphNode::cullNode(const Camera& currentCamera,
                               F32& minDistanceSq) const {
 
     // If the node is still loading, DO NOT RENDER IT. Bad things happen :D
-    if (getFlag(UpdateFlag::THREADED_LOAD)) {
+    if (getFlag(UpdateFlag::LOADING)) {
         return true;
     }
 
@@ -585,11 +587,11 @@ void SceneGraphNode::invalidateRelationshipCache() {
 }
 
 ECS::ECSEngine& SceneGraphNode::GetECSEngine() {
-    return parentGraph().GetECSEngine();
+    return _ecsEngine;
 }
 
 const ECS::ECSEngine& SceneGraphNode::GetECSEngine() const {
-    return parentGraph().GetECSEngine();
+    return _ecsEngine;
 }
 
 ECS::EntityManager* SceneGraphNode::GetEntityManager() {
@@ -601,11 +603,11 @@ ECS::EntityManager* SceneGraphNode::GetEntityManager() const {
 }
 
 ECS::ComponentManager* SceneGraphNode::GetComponentManager() {
-    return GetECSEngine().GetComponentManager();
+    return _compManager;
 }
 
 ECS::ComponentManager* SceneGraphNode::GetComponentManager() const {
-    return GetECSEngine().GetComponentManager();
+    return _compManager;
 }
 
 void SceneGraphNode::forEachChild(const DELEGATE_CBK<void, SceneGraphNode&>& callback) {

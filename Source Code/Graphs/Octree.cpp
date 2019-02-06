@@ -85,9 +85,9 @@ void Octree::update(const U64 deltaTimeUS) {
     for (SceneGraphNode* crtNode : _objects) {
         SceneGraphNode* node = crtNode;
         //we should figure out if an object actually moved so that we know whether we need to update this node in the tree.
-        if (node->getFlag(SceneGraphNode::UpdateFlag::SPATIAL_PARTITION)) {
+        if (node->getFlag(SceneGraphNode::UpdateFlag::SPATIAL_PARTITION_UPDATE_QUEUED)) {
             _movedObjects.push_back(crtNode);
-            node->clearUpdateFlag(SceneGraphNode::UpdateFlag::SPATIAL_PARTITION);
+            node->clearUpdateFlag(SceneGraphNode::UpdateFlag::SPATIAL_PARTITION_UPDATE_QUEUED);
         }
     }
 

@@ -84,8 +84,8 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     };
 
     enum class UpdateFlag : U8 {
-        SPATIAL_PARTITION = toBit(1),
-        THREADED_LOAD = toBit(2),
+        SPATIAL_PARTITION_UPDATE_QUEUED = toBit(1),
+        LOADING = toBit(2),
         COUNT = 2
     };
 
@@ -118,13 +118,13 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     template<class E, class... ARGS>
     void SendEvent(ARGS&&... eventArgs)
     {
-        GetECSEngine().SendEvent<E>(std::forward<ARGS>(eventArgs)...);
+        _ecsEngine.SendEvent<E>(std::forward<ARGS>(eventArgs)...);
     }
 
     template<class E, class... ARGS>
     void SendAndDispatchEvent(ARGS&&... eventArgs)
     {
-        GetECSEngine().SendEventAndDispatch<E>(std::forward<ARGS>(eventArgs)...);
+        _ecsEngine.SendEventAndDispatch<E>(std::forward<ARGS>(eventArgs)...);
     }
     /// Add node increments the node's ref counter if the node was already added
     /// to the scene graph
@@ -174,7 +174,7 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     template <typename T>
     inline T* get() const {
         // ToDo: Optimise this -Ionut
-        return GetComponentManager()->GetComponent<T>(GetEntityID());
+        return _compManager->GetComponent<T>(GetEntityID());
     }
 
     inline void lockToCamera(U64 cameraNameHash) { _lockToCamera = cameraNameHash; }
@@ -349,6 +349,9 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
    private:
     // An SGN doesn't exist outside of a scene graph
     SceneGraph& _sceneGraph;
+    ECS::ECSEngine& _ecsEngine;
+    ECS::ComponentManager* _compManager;
+
     bool _serialize = true;
     U64 _lockToCamera = 0;
     //ToDo: make this work in a multi-threaded environment
@@ -359,10 +362,12 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     SceneNode_ptr _node;
     SceneGraphNode* _parent;
     vectorEASTL<SceneGraphNode*> _children;
+
+    U32 _updateFlags;
+
     mutable SharedMutex _childLock;
     std::atomic_bool _active;
     std::atomic_bool _visibilityLocked;
-    std::atomic_uint _updateFlags;
 
     SelectionFlag _selectionFlag;
 

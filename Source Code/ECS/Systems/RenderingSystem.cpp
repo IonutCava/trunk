@@ -19,8 +19,9 @@ namespace Divide {
     void RenderingSystem::PreUpdate(F32 dt) {
         U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
-        auto rComp = _engine.GetComponentManager()->begin<RenderingComponent>();
-        auto rCompEnd = _engine.GetComponentManager()->end<RenderingComponent>();
+        auto compManager = _engine.GetComponentManager();
+        auto rComp = compManager->begin<RenderingComponent>();
+        auto rCompEnd = compManager->end<RenderingComponent>();
         for (;rComp != rCompEnd; ++rComp)
         {
             rComp->PreUpdate(microSec);
@@ -30,8 +31,9 @@ namespace Divide {
     void RenderingSystem::Update(F32 dt) {
         U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
-        auto rComp = _engine.GetComponentManager()->begin<RenderingComponent>();
-        auto rCompEnd = _engine.GetComponentManager()->end<RenderingComponent>();
+        auto compManager = _engine.GetComponentManager();
+        auto rComp = compManager->begin<RenderingComponent>();
+        auto rCompEnd = compManager->end<RenderingComponent>();
         for (; rComp != rCompEnd; ++rComp)
         {
             rComp->Update(microSec);
@@ -41,8 +43,9 @@ namespace Divide {
     void RenderingSystem::PostUpdate(F32 dt) {
         U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
-        auto rComp = _engine.GetComponentManager()->begin<RenderingComponent>();
-        auto rCompEnd = _engine.GetComponentManager()->end<RenderingComponent>();
+        auto compManager = _engine.GetComponentManager();
+        auto rComp = compManager->begin<RenderingComponent>();
+        auto rCompEnd = compManager->end<RenderingComponent>();
         for (; rComp != rCompEnd; ++rComp)
         {
             rComp->PostUpdate(microSec);

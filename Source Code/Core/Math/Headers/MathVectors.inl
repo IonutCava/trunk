@@ -415,7 +415,7 @@ inline T vec3<T>::distanceSquared(const vec3 &v) const noexcept {
 template <typename T>
 inline T vec3<T>::angle(vec3 &v) const {
     T angle =
-        (T)std::fabs(std::acos(this->dot(v) / (this->length() * v.length())));
+        (T)std::abs(std::acos(this->dot(v) / (this->length() * v.length())));
 
     if (angle < EPSILON_F32) {
         return 0;

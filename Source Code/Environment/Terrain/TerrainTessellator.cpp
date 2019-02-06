@@ -72,7 +72,7 @@ bool TerrainTessellator::inDivideCheck(TessellatedTerrainNode* node) const {
     // Distance from current origin to camera
     float d = std::abs(_cameraEyeCache.xz().distance(node->origin.xz()));
 
-    return !(d > 2.5f* Sqrt(std::pow(0.5f * node->dim.width, 2.0f) + std::pow(0.5f * node->dim.height, 2.0f)));
+    return !(d > 2.5f * Sqrt(std::pow(0.5f * node->dim.width, 2.0f) + std::pow(0.5f * node->dim.height, 2.0f)));
 }
 
 bool TerrainTessellator::checkDivide(TessellatedTerrainNode* node) {
@@ -144,7 +144,7 @@ void TerrainTessellator::createTree(const vec3<F32>& camPos, const Frustum& frus
     terrainTree.origin = origin;
     terrainTree.dim.set(terrainDimensions.width, terrainDimensions.height);
     terrainTree.tscale.set(1.0f);
-    terrainTree.c.fill(nullptr);
+    std::memset(terrainTree.c, 0, sizeof(terrainTree.c));
 
     terrainTree.p = nullptr;
     terrainTree.n = nullptr;
@@ -165,7 +165,7 @@ TessellatedTerrainNode* TerrainTessellator::createNode(TessellatedTerrainNode* p
     terrainTreeTail.origin.set(x, y, z);
     terrainTreeTail.dim.set(width, height);
     terrainTreeTail.tscale.set(1.0f);
-    terrainTreeTail.c.fill(nullptr);
+    std::memset(terrainTreeTail.c, 0, sizeof(terrainTreeTail.c));
 
     terrainTreeTail.p = parent;
     terrainTreeTail.n = nullptr;
@@ -238,13 +238,13 @@ TessellatedTerrainNode* TerrainTessellator::find(TessellatedTerrainNode* n, F32 
         return n;
     }
 
-    if (IS_GEQUAL(n->origin.x, x) && IS_GEQUAL(n->origin.z, z) && n->c[0]) {
+    if        ((n->origin.x >= x) && (n->origin.z >= z) && n->c[0] != nullptr) {
         return find(n->c[0], x, z);
-    } else if (IS_LEQUAL(n->origin.x, x) && IS_GEQUAL(n->origin.z, z) && n->c[1]) {
+    } else if ((n->origin.x <= x) && (n->origin.z >= z) && n->c[1] != nullptr) {
         return find(n->c[1], x, z);
-    } else if (IS_LEQUAL(n->origin.x, x) && IS_LEQUAL(n->origin.z, z) && n->c[2]) {
+    } else if ((n->origin.x <= x) && (n->origin.z <= z) && n->c[2] != nullptr) {
         return find(n->c[2], x, z);
-    } else if (IS_GEQUAL(n->origin.x, x) && IS_LEQUAL(n->origin.z, z) && n->c[3]) {
+    } else if ((n->origin.x >= x) && (n->origin.z <= z) && n->c[3] != nullptr) {
         return find(n->c[3], x, z);
     }
 

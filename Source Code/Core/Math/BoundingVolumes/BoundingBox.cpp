@@ -174,9 +174,9 @@ void BoundingBox::transform(const BoundingBox& initialBoundingBox,
 F32 BoundingBox::nearestDistanceFromPointSquared(const vec3<F32>& pos) const noexcept {
     const vec3<F32>& center = getCenter();
     const vec3<F32>& hextent = getHalfExtent();
-    return vec3<F32>(std::max(0.0f, std::fabsf(pos.x - center.x) - hextent.x),
-                     std::max(0.0f, std::fabsf(pos.y - center.y) - hextent.y),
-                     std::max(0.0f, std::fabsf(pos.z - center.z) - hextent.z)).lengthSquared();
+    return vec3<F32>(std::max(0.0f, std::abs(pos.x - center.x) - hextent.x),
+                     std::max(0.0f, std::abs(pos.y - center.y) - hextent.y),
+                     std::max(0.0f, std::abs(pos.z - center.z) - hextent.z)).lengthSquared();
 }
 
 };  // namespace Divide

@@ -81,25 +81,30 @@ void RenderPassManager::render(SceneRenderState& sceneRenderState, Time::Profile
         Time::ScopedTimer timeAll(*_renderPassTimer);
 
         for (U8 i = 0; i < renderPassCount; ++i) {
+            RenderPass* pass = _renderPasses[i].get();
+            GFX::CommandBuffer* buf = _renderPassCommandBuffer[i];
+
             CreateTask(pool,
                        nullptr,
-                       [this, i, &sceneRenderState, &remainingTasks](const Task& parentTask) {
-                           GFX::CommandBuffer& buf = *_renderPassCommandBuffer[i];
-                           buf.clear();
-                           _renderPasses[i]->render(sceneRenderState, buf);
-                           buf.batch();
+                       [pass, buf, &sceneRenderState, &remainingTasks](const Task& parentTask) {
+                           buf->clear();
+                           pass->render(sceneRenderState, *buf);
+                           buf->batch();
                            remainingTasks.fetch_sub(1);
                        }).startTask(priority);
         }
 
+        GFX::CommandBuffer* buf = _renderPassCommandBuffer.back();
+        Time::ProfileTimer* timer = _postFxRenderTimer;
+        GFXDevice& gfx = parent().platformContext().gfx();
+
         CreateTask(pool,
                    nullptr,
-                   [this, &cam, &remainingTasks](const Task& parentTask) {
-                      Time::ScopedTimer time(*_postFxRenderTimer);
-                      GFX::CommandBuffer& buf = *_renderPassCommandBuffer.back();
-                      buf.clear();
-                      parent().platformContext().gfx().postFX().apply(cam, buf);
-                      buf.batch();
+                   [buf, timer, &gfx , &cam, &remainingTasks](const Task& parentTask) {
+                      Time::ScopedTimer time(*timer);
+                      buf->clear();
+                      gfx.postFX().apply(cam, *buf);
+                      buf->batch();
                       remainingTasks.fetch_sub(1);
                    }).startTask(priority);
 

@@ -62,7 +62,7 @@ struct TessellatedTerrainNode {
     vec4<F32> tscale = { 0.0f, 0.0f, 0.0f , 0.0f }; 
 
     TessellatedTerrainNode *p  = nullptr;  // Parent
-    std::array<TessellatedTerrainNode*, 4> c = { nullptr, nullptr, nullptr, nullptr }; // Children
+    TessellatedTerrainNode* c[4] = { nullptr, nullptr, nullptr, nullptr }; // Children
 
     TessellatedTerrainNode *n = nullptr; // Neighbor to north
     TessellatedTerrainNode *s = nullptr; // Neighbor to south
@@ -78,7 +78,7 @@ struct TessellatedNodeData {
 class TerrainTessellator {
     friend class Attorney::TerrainTessellatorLoader;
 public:
-    typedef vector<TessellatedTerrainNode> TreeVector;
+    typedef vectorEASTL<TessellatedTerrainNode> TreeVector;
     typedef vector<TessellatedNodeData> RenderDataVector;
 
     static constexpr U32 MAX_TESS_NODES = 1024;

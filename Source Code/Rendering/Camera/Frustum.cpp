@@ -61,7 +61,7 @@ Frustum::FrustCollision Frustum::PlaneSphereIntersect(const Plane<F32>& frustumP
         return FrustCollision::FRUSTUM_OUT;
     }
 
-    if (std::fabs(distance) < radius) {
+    if (std::abs(distance) < radius) {
         return FrustCollision::FRUSTUM_INTERSECT;
     }
 

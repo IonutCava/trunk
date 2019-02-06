@@ -122,6 +122,7 @@ class Vegetation : public SceneNode {
     bool _shadowMapped;
     U32 _instanceCountGrass;
 
+    Pipeline* _cullPipeline;
     vectorEASTL<GrassData> _tempData;
 
     static std::atomic_uint s_bufferUsage;
