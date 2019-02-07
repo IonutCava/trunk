@@ -55,11 +55,14 @@ void main()
 layout(triangles) in;
 layout(triangle_strip, max_vertices = 3) out;
 
-
 in flat int _arrayLayerGS[];
 in flat float _lod[];
 out flat int _arrayLayerFrag;
 out flat float _alphaFactor;
+
+#if defined(SHADOW_PASS)
+out vec4 dvd_vertexWVP;
+#endif
 
 void PerVertex(int idx) {
     PassData(idx);
@@ -68,6 +71,8 @@ void PerVertex(int idx) {
     gl_Position = gl_in[idx].gl_Position;
 #if !defined(SHADOW_PASS)
     setClipPlanes(gl_in[idx].gl_Position);
+#else
+    dvd_vertexWVP = gl_Position;
 #endif
 }
 
@@ -124,22 +129,17 @@ void main() {
 flat in int _arrayLayerFrag;
 flat in float _alphaFactor;
 
+#include "vsm.frag"
+
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuseGrass;
 
 out vec2 _colourOut;
-
-vec2 computeMoments(in float depth) {
-    // Compute partial derivatives of depth.  
-    float dx = dFdx(depth);
-    float dy = dFdy(depth);
-    // Compute second moment over the pixel extents.  
-    return vec2(depth, pow(depth, 2.0) + 0.25*(dx*dx + dy * dy));
-}
 
 void main(void) {
     vec4 colour = texture(texDiffuseGrass, vec3(VAR._texCoord, _arrayLayerFrag));
     if (colour.a* (1.0 - _alphaFactor) < 1.0 - Z_TEST_SIGMA) {
         discard;
     }
-    _colourOut = computeMoments(gl_FragCoord.z);
+
+    _colourOut = computeMoments();
 }

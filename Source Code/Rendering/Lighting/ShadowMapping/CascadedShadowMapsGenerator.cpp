@@ -291,6 +291,7 @@ void CascadedShadowMapsGenerator::applyFrustumSplits(DirectionalLightComponent& 
         orthoRect.top = maxExtents.y;
 
         vec2<F32> clipPlanes(0.0001f, cascadeExtents.z);
+
         // Lets store the ortho rect in case we need it;
         mat4<F32> lightOrthoMatrix = lightCam->setProjection(orthoRect, clipPlanes);
         mat4<F32> shadowMatrix = mat4<F32>::Multiply(lightViewMatrix, lightOrthoMatrix);
@@ -317,7 +318,7 @@ void CascadedShadowMapsGenerator::applyFrustumSplits(DirectionalLightComponent& 
 
         mat4<F32> lightViewProjection = mat4<F32>::Multiply(lightViewMatrix, lightOrthoMatrix);
         light.setShadowLightPos(cascadeIterator, lightDirection);
-        light.setShadowVPMatrix(cascadeIterator, lightViewProjection);
+        light.setShadowVPMatrix(cascadeIterator, lightViewProjection * MAT4_BIAS);
     }
 }
 

@@ -4,20 +4,30 @@
 #define LT(n) n, n, n, n, n, n, n, n, n, n, n, n, n, n, n, n
 
 //Chebyshev Upper Bound
-float VSM(vec2 moments, float compare) {
-    float p = smoothstep(compare - 0.02, compare, moments.x);
-    float variance = max(moments.y - moments.x * moments.x, -(dvd_shadowingSettings.y));
-    float d = compare - moments.x;
-    float p_max = linstep(dvd_shadowingSettings.x, 1.0, variance / (variance + d * d));
-    return clamp(max(p, p_max), 0.0, 1.0);
+float VSM(vec2 moments, float fragDepth) {
+    float lit = 0.0f;
+
+    float E_x2 = moments.y;
+    float Ex_2 = moments.x * moments.x;
+    float variance = max(E_x2 - Ex_2, -(dvd_shadowingSettings.y));
+    float mD = (moments.x - fragDepth);
+    float mD_2 = mD * mD;
+    float p = linstep(dvd_shadowingSettings.x, 1.0, variance / (variance + mD_2));
+    lit = max(p, fragDepth <= moments.x ? 1.0 : 0.0);
+
+    return clamp(lit, 0.0, 1.0);
 }
+
 
 float applyShadowDirectional(in uint idx, in uvec4 details, in float fragDepth) {
     // find the appropriate depth map to look up in based on the depth of this fragment
     g_shadowTempInt = 0;
     // Figure out which cascade to sample from
+
+    float dist = 0.0f;
     for (g_shadowTempInt = 0; g_shadowTempInt < int(MAX_CSM_SPLITS_PER_LIGHT); g_shadowTempInt++) {
-        if (fragDepth > dvd_shadowLightPosition[g_shadowTempInt + (idx * 6)].w) {
+        dist = dvd_shadowLightPosition[g_shadowTempInt + (idx * 6)].w;
+        if (fragDepth > dist) {
             break;
         }
     }
@@ -36,7 +46,7 @@ float applyShadowDirectional(in uint idx, in uvec4 details, in float fragDepth) 
     g_shadowTempInt = SplitMax > 0 ? SplitPowLookup[SplitMax - 1] : g_shadowTempInt;
 
     vec4 sc = dvd_shadowLightVP[g_shadowTempInt + (idx * 6)] * VAR._vertexW;
-    vec3 shadowCoord = (sc.xyz / sc.w) * 0.5 + 0.5;
+    vec3 shadowCoord = sc.xyz / sc.w;
 
     bool inFrustum = all(bvec4(
         shadowCoord.x >= 0.0,
@@ -56,7 +66,9 @@ float applyShadowDirectional(in uint idx, in uvec4 details, in float fragDepth) 
         //             1.0, 
         //             clamp(((gl_FragCoord.z + dvd_shadowingSettings.z) - dvd_shadowingSettings.w) / dvd_shadowingSettings.z, 0.0, 1.0));
 
-        return max(VSM(moments, sc.z / sc.w), 0.02);
+        //float bias = max(angleBias * (1.0 - dot(normal, lightDirection)), 0.0008);
+        float bias = 0.0f;
+        return max(VSM(moments, shadowCoord.z - bias), 0.2);
     }
     
     return 1.0;

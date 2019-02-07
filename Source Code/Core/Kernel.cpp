@@ -495,7 +495,7 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
     U8 playerCount = _sceneManager->getActivePlayerCount();
 
     Rect<I32> mainViewport = _platformContext->activeWindow().renderingViewport();
-
+    
     if (_prevViewport != mainViewport || _prevPlayerCount != playerCount) {
         computeViewports(mainViewport, _targetViewports, playerCount);
         _prevViewport.set(mainViewport);
@@ -532,6 +532,8 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
             } else {
                 Attorney::GFXDeviceKernel::blitToScreen(_platformContext->gfx(), _targetViewports[i], buffer);
             }
+
+            Attorney::GFXDeviceKernel::renderDebugUI(_platformContext->gfx(), _platformContext->activeWindow().windowViewport(), buffer);
 
             _platformContext->gfx().flushCommandBuffer(buffer);
         }

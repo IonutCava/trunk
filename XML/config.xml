@@ -95,7 +95,7 @@
     <shadowMapResolution>1024</shadowMapResolution>
     <MSAAsamples>4</MSAAsamples>
     <anisotropicFilteringLevel>8</anisotropicFilteringLevel>
-    <enableBlurring>false</enableBlurring>
+    <enableBlurring>true</enableBlurring>
     <defaultCSMSplitCount>3</defaultCSMSplitCount>
     <softness>0.5</softness>
     <splitLambda>0.9975</splitLambda>

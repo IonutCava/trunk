@@ -367,12 +367,13 @@ protected:
 
     void onSizeChange(const SizeChangeParams& params);
 
-    void renderDebugViews(GFX::CommandBuffer& bufferInOut);
+    void renderDebugViews(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);
     
     void stepResolution(bool increment);
 
 protected:
     void renderUI(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);
+    void renderDebugUI(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);
     void blitToScreen(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);
     void blitToRenderTarget(RenderTargetID targetID, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);
     void blitToBuffer(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);
@@ -519,6 +520,11 @@ namespace Attorney {
         static void renderUI(GFXDevice& device, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
             device.renderUI(targetViewport, bufferInOut);
         }
+
+        static void renderDebugUI(GFXDevice& device, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
+            device.renderDebugUI(targetViewport, bufferInOut);
+        }
+
         static void onSizeChange(GFXDevice& device, const SizeChangeParams& params) {
             device.onSizeChange(params);
         }

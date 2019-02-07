@@ -572,26 +572,14 @@ void main(void)
     writeOutput(colourOut, packNormal(getProcessedNormal()));
 }
 
-
 --Fragment.Shadow
 
 out vec2 _colourOut;
-in vec4 dvd_vertexWVP;
 
 #include "nodeBufferedInput.cmn"
-
-vec2 computeMoments(in float depth) {
-    // Compute partial derivatives of depth.  
-    float dx = dFdx(depth);
-    float dy = dFdy(depth);
-    // Compute second moment over the pixel extents.  
-    return vec2(depth, pow(depth, 2.0) + 0.25*(dx*dx + dy * dy));
-}
+#include "vsm.frag"
 
 void main() {
-    // Adjusting moments (this is sort of bias per pixel) using partial derivative
-    float depth = dvd_vertexWVP.z / dvd_vertexWVP.w;
-    //depth = depth * 0.5 + 0.5;
-    //_colourOut = computeMoments(exp(DEPTH_EXP_WARP * depth));
-    _colourOut = computeMoments(depth);
+
+    _colourOut = computeMoments();
 }

@@ -35,7 +35,6 @@ void main() {
 #endif
 
 out vec2 _colourOut;
-in vec4 vert_vertexWVP;
 
 #if defined(HAS_TRANSPARENCY)
 #include "materialData.frag"
@@ -44,13 +43,7 @@ in vec4 vert_vertexWVP;
 #endif
 #include "utility.frag"
 
-vec2 computeMoments(in float depth) {
-    // Compute partial derivatives of depth.
-    float dx = dFdx(depth);
-    float dy = dFdy(depth);
-    // Compute second moment over the pixel extents.
-    return vec2(depth, pow(depth, 2.0) + 0.25 * (dx*dx + dy*dy));
-}
+#include "vsm.frag"
 
 void main() {
 #if defined(HAS_TRANSPARENCY)
@@ -58,10 +51,6 @@ void main() {
         discard;
     }
 #endif
-
-    float depth = vert_vertexWVP.z / vert_vertexWVP.w;
-
-    //_colourOut = computeMoments(exp(DEPTH_EXP_WARP * depth));
-    _colourOut = computeMoments(depth);
+    _colourOut = computeMoments();
 }
 

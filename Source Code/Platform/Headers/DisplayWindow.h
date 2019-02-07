@@ -206,6 +206,8 @@ public:
 
     inline void destroyCbk(const DELEGATE_CBK<void>& destroyCbk);
 
+    inline Rect<I32> windowViewport() const;
+
     inline const Rect<I32>& renderingViewport() const;
     void renderingViewport(const Rect<I32>& viewport);
 

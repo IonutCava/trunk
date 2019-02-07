@@ -286,29 +286,38 @@ void GFXDevice::blitToBuffer(const Rect<I32>& targetViewport, GFX::CommandBuffer
 }
 
 void GFXDevice::renderUI(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
-    {
-        GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
-        beginDebugScopeCmd._scopeID = 123456;
-        beginDebugScopeCmd._scopeName = "Render GUI";
-        GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
+    GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
+    beginDebugScopeCmd._scopeID = 123456;
+    beginDebugScopeCmd._scopeName = "Render GUI";
+    GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
-        _parent.platformContext().gui().draw(*this, bufferInOut);
+    _parent.platformContext().gui().draw(*this, bufferInOut);
 
-        GFX::EndDebugScopeCommand endDebugScopeCommand = {};
-        GFX::EnqueueCommand(bufferInOut, endDebugScopeCommand);
-    }
-
-    if (Config::Build::IS_DEBUG_BUILD)
-    {
-        GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
-        beginDebugScopeCmd._scopeID = 1234567;
-        beginDebugScopeCmd._scopeName = "Render Debug Views";
-        GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
-
-        renderDebugViews(bufferInOut);
-
-        GFX::EndDebugScopeCommand endDebugScopeCommand = {};
-        GFX::EnqueueCommand(bufferInOut, endDebugScopeCommand);
-    }
+    GFX::EndDebugScopeCommand endDebugScopeCommand = {};
+    GFX::EnqueueCommand(bufferInOut, endDebugScopeCommand);
 }
+
+void GFXDevice::renderDebugUI(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
+    if (!Config::Build::IS_DEBUG_BUILD) {
+        return;
+    }
+
+    constexpr I32 padding = 5;
+
+    GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
+    beginDebugScopeCmd._scopeID = 1234567;
+    beginDebugScopeCmd._scopeName = "Render Debug Views";
+    GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
+
+    renderDebugViews(
+        Rect<I32>(targetViewport.x + padding,
+                  targetViewport.y + padding,
+                  targetViewport.z - padding * 2,
+                  targetViewport.w - padding * 2),
+        bufferInOut);
+
+    GFX::EndDebugScopeCommand endDebugScopeCommand = {};
+    GFX::EnqueueCommand(bufferInOut, endDebugScopeCommand);
+}
+
 };

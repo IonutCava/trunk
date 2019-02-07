@@ -149,6 +149,11 @@ namespace Divide {
         _destroyCbk = destroyCbk;
     }
 
+    inline Rect<I32> DisplayWindow::windowViewport() const {
+        const vec2<U16>& dim = getDimensions();
+        return Rect<I32>(0, 0, to_I32(dim.width), to_I32(dim.height));
+    }
+
     inline const Rect<I32>& DisplayWindow::renderingViewport() const {
         return _renderingViewport;
     }

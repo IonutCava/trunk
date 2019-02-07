@@ -117,7 +117,8 @@ Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descri
     shadowDescriptorNoColour.setColourWrites(false, false, false, false);
 
     RenderStateBlock shadowDescriptorCSM(shadowDescriptor);
-    shadowDescriptorCSM.setCullMode(CullMode::CCW);
+    shadowDescriptorCSM.setCullMode(CullMode::CW);
+    shadowDescriptorCSM.setZFunc(ComparisonFunction::LESS);
     shadowDescriptorCSM.setColourWrites(true, true, false, false);
 
     setRenderStateBlock(stateDescriptor.getHash(), RenderStagePass(RenderStage::DISPLAY, RenderPassType::MAIN_PASS));

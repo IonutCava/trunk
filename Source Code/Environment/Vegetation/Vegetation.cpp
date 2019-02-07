@@ -77,6 +77,8 @@ Vegetation::Vegetation(GFXDevice& context,
     _boundingBox.set(parentChunk.bounds());
 
     renderState().addToDrawExclusionMask(RenderPassType::MAIN_PASS);
+    renderState().addToDrawExclusionMask(RenderStage::REFLECTION);
+    renderState().addToDrawExclusionMask(RenderStage::REFRACTION);
 
     CreateTask(_context.context(),
         [this](const Task& parentTask) {

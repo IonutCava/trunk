@@ -171,7 +171,7 @@ bool glShaderProgram::validateInternal() {
         Console::errorfn(Locale::get(_ID("GLSL_VALIDATING_PROGRAM")), _shaderProgramID, resourceName().c_str(), getLog().c_str());
         shaderError = true;
     } else {
-        Console::d_printfn(Locale::get(_ID("GLSL_VALIDATING_PROGRAM")), _shaderProgramID, resourceName().c_str(), getLog().c_str());
+        Console::warnfn(Locale::get(_ID("GLSL_VALIDATING_PROGRAM")), _shaderProgramID, resourceName().c_str(), getLog().c_str());
     }
     _validated = true;
 
@@ -364,7 +364,7 @@ bool glShaderProgram::link() {
     if (linkStatus == GL_FALSE) {
         Console::errorfn(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG")), resourceName().c_str(), getLog().c_str(), getGUID());
     } else {
-        Console::d_printfn(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG_OK")), resourceName().c_str(), getLog().c_str(), getGUID());
+        Console::printfn(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG_OK")), resourceName().c_str(), getLog().c_str(), getGUID());
         if (Config::ENABLE_GPU_VALIDATION) {
             glObjectLabel(GL_PROGRAM, _shaderProgramIDTemp, -1, resourceName().c_str());
         }
@@ -544,7 +544,7 @@ bool glShaderProgram::reloadShaders(bool reparseShaderSource) {
             }
             ret = true;
         } else {
-            Console::d_printfn(Locale::get(_ID("WARN_GLSL_LOAD")), shaderCompileName.c_str());
+            Console::warnfn(Locale::get(_ID("WARN_GLSL_LOAD")), shaderCompileName.c_str());
         }
     }
 

@@ -20,7 +20,7 @@
 
 namespace Divide {
 
-void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
+void GFXDevice::renderDebugViews(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
     static DebugView* HiZPtr = nullptr;
     static size_t labelStyleHash = TextLabelStyle(Font::DROID_SERIF_BOLD, UColour(128), 96).getHash();
 
@@ -143,14 +143,13 @@ void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
             rowCount++;
         }
 
-        RenderTarget& screenRT = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
-        U16 screenWidth = std::max(screenRT.getWidth(), to_U16(1280));
-        U16 screenHeight = std::max(screenRT.getHeight(), to_U16(720));
+        I32 screenWidth = targetViewport.z;
+        I32 screenHeight = targetViewport.w;
         F32 aspectRatio = to_F32(screenWidth) / screenHeight;
 
-        I32 viewportWidth = screenWidth / columnCount;
-        I32 viewportHeight = to_I32(viewportWidth / aspectRatio);
-        Rect<I32> viewport(screenWidth - viewportWidth, 0, viewportWidth, viewportHeight);
+        I32 viewportWidth = (screenWidth / columnCount) - targetViewport.x;
+        I32 viewportHeight = to_I32(viewportWidth / aspectRatio) - targetViewport.y;
+        Rect<I32> viewport(screenWidth - viewportWidth, targetViewport.y, viewportWidth, viewportHeight);
 
         PipelineDescriptor pipelineDesc = {};
         pipelineDesc._stateHash = _state2DRenderingHash;
@@ -197,11 +196,11 @@ void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
             }
 
             if (idx > 0 && idx % (columnCount - 1) == 0) {
-                viewport.y += viewportHeight;
-                viewport.x += viewportWidth * columnCount;
+                viewport.y += viewportHeight + targetViewport.y;
+                viewport.x += viewportWidth * columnCount + targetViewport.x * columnCount;
             }
              
-            viewport.x -= viewportWidth;
+            viewport.x -= viewportWidth + targetViewport.x;
         }
 
         TextElement text(labelStyleHash, RelativePosition2D(RelativeValue(0.1f, 0.0f), RelativeValue(0.1f, 0.0f)));
