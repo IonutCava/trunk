@@ -77,6 +77,7 @@ class ApplicationOutput;
 class ContentExplorerWindow;
 class SolutionExplorerWindow;
 
+FWD_DECLARE_MANAGED_CLASS(Mesh);
 FWD_DECLARE_MANAGED_CLASS(Texture);
 FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
 
@@ -192,6 +193,8 @@ class Editor : public PlatformContextComponent,
     void updateCameraSnapshot();
     // Returns true if the modal window was closed
     bool modalTextureView(const char* modalName, const Texture_ptr& tex, const vec2<F32>& dimensions, bool preserveAspect);
+    // Return true if the model was spawned as a scene node
+    bool spawnGeometry(const Mesh_ptr& mesh);
 
   private:
     ImGuiStyleEnum _currentTheme;
@@ -333,6 +336,10 @@ namespace Attorney {
 
         static bool modalTextureView(Editor& editor, const char* modalName, const Texture_ptr& tex, const vec2<F32>& dimensions, bool preserveAspect) {
             return editor.modalTextureView(modalName, tex, dimensions, preserveAspect);
+        }
+
+        static bool spawnGeometry(Editor& editor, const Mesh_ptr& mesh) {
+            return editor.spawnGeometry(mesh);
         }
 
         static ImGuiContext& imguiContext(Editor& editor) {

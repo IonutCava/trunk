@@ -370,7 +370,7 @@ void Scene::loadAsset(const XML::SceneNode& sceneNode, SceneGraphNode* parent) {
             if (!modelName.empty()) {
                 ++_loadingTasks;
                 ResourceDescriptor model(modelName);
-                model.assetLocation(Paths::g_assetsLocation);
+                model.assetLocation(Paths::g_assetsLocation + "models");
                 model.assetName(modelName);
                 model.setFlag(true);
                 model.setThreadedLoading(true);

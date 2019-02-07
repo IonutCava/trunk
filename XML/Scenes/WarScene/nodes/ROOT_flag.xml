@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <static>true</static>
-<model>models/flag_obj.obj</model>
+<model>flag_obj.obj</model>
 <TRANSFORM>
     <Transform>
         <position x="150" y="14" z="0"/>

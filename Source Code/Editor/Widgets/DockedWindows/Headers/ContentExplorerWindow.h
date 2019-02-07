@@ -38,6 +38,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
     FWD_DECLARE_MANAGED_CLASS(Texture);
+    FWD_DECLARE_MANAGED_CLASS(Mesh);
 
     struct Directory {
         stringImpl _path;
@@ -47,6 +48,17 @@ namespace Divide {
 
     class ContentExplorerWindow : public DockedWindow {
     public:
+        enum class GeometryFormat : U8 {
+            _3DS = 0, //Studio max format
+            ASE, //ASCII Scene Export. Old Unreal format
+            FBX,
+            MD2,
+            MD5,
+            OBJ,
+            X, //DirectX foramt
+            COUNT
+        };
+
         ContentExplorerWindow(Editor& parent, const Descriptor& descriptor);
         ~ContentExplorerWindow();
 
@@ -59,13 +71,18 @@ namespace Divide {
         void printDirectoryStructure(const Directory& dir, bool open) const;
 
         Texture_ptr getTextureForPath(const stringImpl& texturePath, const stringImpl& textureName);
+        Mesh_ptr getModelForPath(const stringImpl& modelPath, const stringImpl& modelName);
+        
     private:
+        Texture_ptr _fileIcon;
+        std::array<Texture_ptr, to_base(GeometryFormat::COUNT)> _geometryIcons;
         mutable const Directory* _selectedDir = nullptr;
         vectorFast<Directory> _currentDirectories;
 
         hashMap<size_t, Texture_ptr> _loadedTextures;
-
+        hashMap<size_t, Mesh_ptr> _loadedModels;
         std::stack<std::pair<std::string, std::string>> _textureLoadQueue;
+        std::stack<std::pair<std::string, std::string>> _modelLoadQueue;
     };
 }; //namespace Divide
 

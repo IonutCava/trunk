@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <static>true</static>
-<model>models/cylinder.obj</model>
+<model>cylinder.obj</model>
 <TRANSFORM>
     <Transform>
         <position x="150" y="15" z="8.21257877"/>

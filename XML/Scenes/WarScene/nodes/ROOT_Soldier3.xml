@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <static>true</static>
-<model>models/Bob.md5mesh</model>
+<model>Bob.md5mesh</model>
 <TRANSFORM>
     <Transform>
         <position x="144" y="15" z="0"/>

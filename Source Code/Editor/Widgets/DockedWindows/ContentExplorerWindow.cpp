@@ -8,6 +8,7 @@
 #include "Platform/File/Headers/FileManagement.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
+#include "Geometry/Shapes/Headers/Mesh.h"
 
 #include <imgui/addons/imguifilesystem/imguifilesystem.h>
 
@@ -22,17 +23,59 @@ namespace Divide {
         const char* const g_extensions[] = {
             "glsl", "cmn", "frag", "vert", "cmp", "geom", "tesc", "tese",  //Shaders
             "ogg", "wav", //Sounds
-            "png", "jpg", "jpeg", "tga", "raw", "dds", //Images
-            "mtl", "obj", "x", "md5anim", "md5mesh", "bvh", "md2", "ase", //Models
             "chai", //Scripts
             "layout", "looknfeel", "scheme", "xsd", "imageset", "xcf", "txt", "anims",  //CEGUI
             "ttf", "font", //Fonts
+            "mtl", "md5anim", "bvh",  //Geometry support
             "xml" //General
         };
 
         const char* const g_imageExtensions[] = {
             "png", "jpg", "jpeg", "tga", "raw", "dds"
         };
+
+        const char* const g_geometryExtensions[] = {
+            "obj", "x", "md5mesh", "md2", "ase", "3ds"
+        };
+
+        bool IsValidFile(const char* name) {
+            for (const char* extension : g_extensions) {
+                if (hasExtension(name, extension)) {
+                    return true;
+                }
+            }
+            for (const char* extension : g_geometryExtensions) {
+                if (hasExtension(name, extension)) {
+                    return true;
+                }
+            }
+            for (const char* extension : g_imageExtensions) {
+                if (hasExtension(name, extension)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        ContentExplorerWindow::GeometryFormat GetGeometryFormatForExtension(const char* extension) {
+
+            if (Util::CompareIgnoreCase(extension, "obj")) {
+                return ContentExplorerWindow::GeometryFormat::OBJ;
+            } else if (Util::CompareIgnoreCase(extension, "x")) {
+                return ContentExplorerWindow::GeometryFormat::X;
+            } else if (Util::CompareIgnoreCase(extension, "md5mesh")) {
+                return ContentExplorerWindow::GeometryFormat::MD5;
+            } else if (Util::CompareIgnoreCase(extension, "md2")) {
+                return ContentExplorerWindow::GeometryFormat::MD2;
+            } else if (Util::CompareIgnoreCase(extension, "ase")) {
+                return ContentExplorerWindow::GeometryFormat::ASE;
+            } else if (Util::CompareIgnoreCase(extension, "3ds")) {
+                return ContentExplorerWindow::GeometryFormat::_3DS;
+            }
+
+            return ContentExplorerWindow::GeometryFormat::COUNT;
+        }
     };
 
     ContentExplorerWindow::ContentExplorerWindow(Editor& parent, const Descriptor& descriptor)
@@ -44,6 +87,8 @@ namespace Divide {
     ContentExplorerWindow::~ContentExplorerWindow()
     {
         _loadedTextures.clear();
+        _loadedModels.clear();
+        _geometryIcons.fill(nullptr);
     }
 
     void ContentExplorerWindow::init() {
@@ -54,6 +99,16 @@ namespace Divide {
 
         getDirectoryStructureForPath(Paths::g_xmlDataLocation, _currentDirectories[1]);
         _currentDirectories[1]._path = "XML";
+
+        _fileIcon = getTextureForPath("icons", "file_icon.png");
+
+        _geometryIcons[to_base(GeometryFormat::_3DS)] = getTextureForPath("icons", "3ds_icon.png");
+        _geometryIcons[to_base(GeometryFormat::ASE)]  = getTextureForPath("icons", "ase_icon.jpg");
+        _geometryIcons[to_base(GeometryFormat::FBX)]  = getTextureForPath("icons", "fbx_icon.png");
+        _geometryIcons[to_base(GeometryFormat::MD2)]  = getTextureForPath("icons", "md2_icon.png");
+        _geometryIcons[to_base(GeometryFormat::MD5)]  = getTextureForPath("icons", "md5_icon.jpg");
+        _geometryIcons[to_base(GeometryFormat::OBJ)]  = getTextureForPath("icons", "obj_icon.png");
+        _geometryIcons[to_base(GeometryFormat::X)]    = getTextureForPath("icons", "x_icon.png");
     }
 
     void ContentExplorerWindow::update(const U64 deltaTimeUS) {
@@ -64,19 +119,23 @@ namespace Divide {
             _textureLoadQueue.pop();
             _loadedTextures[_ID((file.first + "/" + file.second).c_str())] = getTextureForPath(file.first, file.second);
         }
+
+        if (!_modelLoadQueue.empty()) {
+            auto file = _modelLoadQueue.top();
+            _modelLoadQueue.pop();
+            _loadedModels[_ID((file.first + "/" + file.second).c_str())] = getModelForPath(file.first, file.second);
+        }
     }
-    
+
     void ContentExplorerWindow::getDirectoryStructureForPath(const stringImpl& directoryPath, Directory& directoryOut) {
         path p(directoryPath);
         if (is_directory(p)) {
             directoryOut._path = p.filename().generic_string();
             for (auto&& x : directory_iterator(p)) {
                 if (is_regular_file(x.path())) {
-                    for (const char* extension : g_extensions) {
-                        if (hasExtension(x.path().generic_string(), extension)) {
-                            directoryOut._files.push_back({directoryOut._path, x.path().filename().generic_string()});
-                            break;
-                        }
+                    if (IsValidFile(x.path().generic_string().c_str())) {
+                        directoryOut._files.push_back({ directoryOut._path, x.path().filename().generic_string() });
+
                     }
                 } else if (is_directory(x.path())) {
                     directoryOut._children.push_back(std::make_shared<Directory>());
@@ -141,40 +200,75 @@ namespace Divide {
             if (_selectedDir != nullptr) {
                 for (auto file : _selectedDir->_files) {
                     Texture_ptr tex = nullptr;
-                    for (const char* extension : g_imageExtensions) {
-                        if (hasExtension(file.second, extension)) {
-                            auto it = _loadedTextures.find(_ID((file.first + "/" + file.second).c_str()));
-                            if (it == std::cend(_loadedTextures) || it->second == nullptr) {
-                                if (_textureLoadQueue.empty()) {
-                                    _textureLoadQueue.push(file);
+                    Mesh_ptr mesh = nullptr;
+                    GeometryFormat format = GeometryFormat::COUNT;
+                    { // Textures
+                        for (const char* extension : g_imageExtensions) {
+                            if (hasExtension(file.second, extension)) {
+                                auto it = _loadedTextures.find(_ID((file.first + "/" + file.second).c_str()));
+                                if (it == std::cend(_loadedTextures) || it->second == nullptr) {
+                                    if (_textureLoadQueue.empty()) {
+                                        _textureLoadQueue.push(file);
+                                    }
+                                } else if (it->second->getState() == ResourceState::RES_LOADED) {
+                                    tex = it->second;
                                 }
-                            } else if (it->second->getState() == ResourceState::RES_LOADED) {
-                                tex = it->second;
+                                break;
                             }
-                            break;
                         }
                     }
+                    { //Geometry
+                        for (const char* extension : g_geometryExtensions) {
+                            if (hasExtension(file.second, extension)) {
+                                auto it = _loadedModels.find(_ID((file.first + "/" + file.second).c_str()));
+                                if (it == std::cend(_loadedModels) || it->second == nullptr) {
+                                    if (_modelLoadQueue.empty()) {
+                                        _modelLoadQueue.push(file);
+                                    }
+                                } else if (it->second->getState() == ResourceState::RES_LOADED) {
+                                    mesh = it->second;
+                                }
+
+                                format = GetGeometryFormatForExtension(extension);
+                                break;
+                            }
+                        }
+                    }
+
+                    ImGui::PushID(file.second.c_str());
 
                     if (tex != nullptr) {
                         U16 w = tex->getWidth();
                         U16 h = tex->getHeight();
                         F32 aspect = w / to_F32(h);
 
-                        if (ImGui::ImageButton((void *)(intptr_t)tex->getData().getHandle(), ImVec2(64, 64 / aspect))) {
+                        if (ImGui::ImageButton((void*)(intptr_t)tex->getData().getHandle(), ImVec2(64, 64 / aspect))) {
                             previewTexture = tex;
                             ImGui::OpenPopup("Image Preview");
                         }
-                        if (ImGui::IsItemHovered()) {
-                            ImGui::SetTooltip(file.second.c_str());
+                    } else if (mesh != nullptr) {
+                        const Texture_ptr& icon = _geometryIcons[to_base(format)];
+                        U16 w = icon->getWidth();
+                        U16 h = icon->getHeight();
+                        F32 aspect = w / to_F32(h);
+
+                        if (ImGui::ImageButton((void*)(intptr_t)icon->getData().getHandle(), ImVec2(64, 64 / aspect))) {
+                            Attorney::EditorGeneralWidget::spawnGeometry(_parent, mesh);
                         }
-                        ImGui::Text(file.second.c_str());
                     } else {
-                        if (ImGui::Button(file.second.c_str())) {
-                            if (ImGui::IsItemHovered()) {
-                                ImGui::SetTooltip("Image still loading!");
-                            }
+                        U16 w = _fileIcon->getWidth();
+                        U16 h = _fileIcon->getHeight();
+                        F32 aspect = w / to_F32(h);
+
+                        if (ImGui::ImageButton((void*)(intptr_t)_fileIcon->getData().getHandle(), ImVec2(64, 64 / aspect))) {
                         }
                     }
+                    if (ImGui::IsItemHovered()) {
+                        ImGui::SetTooltip(file.second.c_str());
+                    }
+                    ImGui::Text(file.second.substr(0, file.second.length() - 1).c_str());
+
+                    ImGui::PopID();
                     ImGui::NextColumn();
                 }
                 if (Attorney::EditorGeneralWidget::modalTextureView(_parent, "Image Preview", previewTexture, vec2<F32>(512, 512), true)) {
@@ -204,9 +298,19 @@ namespace Divide {
         textureResource.setThreadedLoading(true);
         textureResource.setFlag(true);
         textureResource.assetName(textureName);
-        textureResource.assetLocation(Paths::g_assetsLocation + "/" + texturePath);
+        textureResource.assetLocation(Paths::g_assetsLocation + texturePath);
         textureResource.setPropertyDescriptor(texturePreviewDescriptor);
 
         return CreateResource<Texture>(_parent.context().kernel().resourceCache(), textureResource);
+    }
+
+    Mesh_ptr ContentExplorerWindow::getModelForPath(const stringImpl& modelPath, const stringImpl& modelName) {
+        ResourceDescriptor model(modelName);
+        model.assetLocation(Paths::g_assetsLocation + modelPath);
+        model.assetName(modelName);
+        model.setFlag(true);
+        model.setThreadedLoading(true);
+        
+        return CreateResource<Mesh>(_parent.context().kernel().resourceCache(), model);
     }
 }; //namespace Divide

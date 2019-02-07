@@ -84,8 +84,7 @@ ResourceDescriptor::ResourceDescriptor(ResourceDescriptor&& old) noexcept
 
 size_t ResourceDescriptor::getHash() const {
     Util::Hash_combine(_hash, _resourceName);
-    Util::Hash_combine(_hash, _assetName);
-    Util::Hash_combine(_hash, _assetLocation);
+    Util::Hash_combine(_hash, _assetLocation + _assetName);
     Util::Hash_combine(_hash, _flag);
     Util::Hash_combine(_hash, _ID);
     Util::Hash_combine(_hash, _mask.i);

@@ -31,6 +31,10 @@
 
 #include "Rendering/Camera/Headers/Camera.h"
 
+#include "Geometry/Shapes/Headers/Mesh.h"
+
+#include "ECS/Components/Headers/TransformComponent.h"
+
 #include <imgui_internal.h>
 #include <imgui/addons/imgui_memory_editor/imgui_memory_editor.h>
 
@@ -1190,6 +1194,30 @@ bool Editor::modalTextureView(const char* modalName, const Texture_ptr& tex, con
     }
 
     return closed;
+}
+
+bool Editor::spawnGeometry(const Mesh_ptr& mesh) {
+    const U32 normalMask = to_base(ComponentType::TRANSFORM) |
+                           to_base(ComponentType::BOUNDS) |
+                           to_base(ComponentType::NETWORKING) |
+                           to_base(ComponentType::RENDERING);
+
+    SceneGraphNodeDescriptor nodeDescriptor = {};
+    nodeDescriptor._name = mesh->assetName();
+    nodeDescriptor._componentMask = normalMask;
+    nodeDescriptor._node = mesh;
+
+    Scene& activeScene = _context.kernel().sceneManager().getActiveScene();
+    SceneGraphNode* node = activeScene.sceneGraph().getRoot().addNode(nodeDescriptor);
+    if (node != nullptr) {
+        Camera* playerCam = Attorney::SceneManagerCameraAccessor::playerCamera(_context.kernel().sceneManager());
+
+        node->get<TransformComponent>()->setPosition(playerCam->getEye());
+        node->get<TransformComponent>()->setRotation(playerCam->getOrientation());
+        return true;
+    }
+
+    return false;
 }
 
 void Editor::scenePreviewFocused(bool state) {

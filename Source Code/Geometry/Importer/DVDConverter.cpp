@@ -137,7 +137,7 @@ bool DVDConverter::load(PlatformContext& context, Import::ImportData& target, co
     if (!aiScenePointer) {
         Console::errorfn(Locale::get(_ID("ERROR_IMPORTER_FILE")), file.c_str(),
                          importer.GetErrorString());
-        return nullptr;
+        return false;
     }
 
     target._hasAnimations = aiScenePointer->HasAnimations();
@@ -151,9 +151,10 @@ bool DVDConverter::load(PlatformContext& context, Import::ImportData& target, co
                 const aiBone* bone = mesh->mBones[n];
 
                 Bone* found = target._skeleton->find(bone->mName.data);
-                assert(found != nullptr);
-                AnimUtils::TransformMatrix(bone->mOffsetMatrix, found->_offsetMatrix);
-                target._bones.push_back(found);
+                if (found != nullptr) {
+                    AnimUtils::TransformMatrix(bone->mOffsetMatrix, found->_offsetMatrix);
+                    target._bones.push_back(found);
+                }
             }
         }
 
@@ -189,12 +190,15 @@ bool DVDConverter::load(PlatformContext& context, Import::ImportData& target, co
 
         Import::SubMeshData subMeshTemp;
 
+        stringImpl modelName = file.substr(file.rfind("/") + 1, file.length());
+
         subMeshTemp._name = currentMesh->mName.C_Str();
+        if (Util::CompareIgnoreCase(subMeshTemp._name, "defaultobject")) {
+            subMeshTemp._name.append("_" + modelName);
+        }
         subMeshTemp._index = to_U32(n);
         if (subMeshTemp._name.empty()) {
-            subMeshTemp._name = Util::StringFormat("%s-submesh-%d", 
-                                                   file.substr(file.rfind("/") + 1, file.length()).c_str(),
-                                                   n);
+            subMeshTemp._name = Util::StringFormat("%s-submesh-%d", modelName.c_str(), n);
         }
         if (subMeshTemp._name == prevName) {
             subMeshTemp._name += "_" + to_stringImpl(n);
@@ -404,6 +408,10 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
         if (result != AI_SUCCESS) {
             break;
         }
+        if (tName.length == 0) {
+            break;
+        }
+
         // get full path
         stringImpl path(Paths::g_assetsLocation + Paths::g_texturesLocation + tName.data);
 

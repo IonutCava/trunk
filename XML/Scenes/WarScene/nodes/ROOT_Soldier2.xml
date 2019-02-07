@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <static>true</static>
-<model>models/Testwuson.X</model>
+<model>Testwuson.X</model>
 <TRANSFORM>
     <Transform>
         <position x="125" y="15" z="6.31866407"/>

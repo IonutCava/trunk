@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <static>true</static>
-<model>models/dwarf.x</model>
+<model>dwarf.x</model>
 <TRANSFORM>
     <Transform>
         <position x="153" y="15" z="1.64406323"/>
