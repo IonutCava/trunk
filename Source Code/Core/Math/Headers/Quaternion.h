@@ -193,7 +193,7 @@ template <typename T>
 inline vec3<T> operator*(vec3<T> const & v, Quaternion<T> const & q);
 
 template <typename T>
-inline vec3<T> rotate(vec3<T> const & v, Quaternion<T> const q);
+inline vec3<T> Rotate(vec3<T> const & v, Quaternion<T> const & q);
 };  // namespace Divide
 
 #endif

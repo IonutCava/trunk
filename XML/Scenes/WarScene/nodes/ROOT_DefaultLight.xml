@@ -3,26 +3,15 @@
 <TRANSFORM>
     <Transform>
         <position x="0" y="0" z="0"/>
-        <orientation x="0" y="55" z="-34.9999962"/>
+        <orientation x="2.56194676e-06" y="55" z="-34.9999962"/>
         <scale x="1" y="1" z="1"/>
     </Transform>
-    <WorldMat 00="0.57357651" 01="-0.469846249" 02="0.671010017" 03="0" 10="0" 11="0.819152057" 12="0.573576391" 13="0" 20="-0.819151998" 21="-0.328989953" 22="0.469846368" 23="0" 30="0" 31="0" 32="0" 33="1"/>
+    <WorldMat 00="0.57368052" 01="-0.469731569" 02="0.670846283" 03="0" 10="4.47034836e-08" 11="0.819196224" 12="0.57343632" 13="0" 20="-0.818952024" 21="-0.328909516" 22="0.469975829" 23="0" 30="0" 31="0" 32="0" 33="1"/>
 </TRANSFORM>
 <BOUNDS/>
-<RENDERING>
-    <Material>
-        <colour r="0.666666687" g="0.666666687" b="0.666666687" a="1"/>
-        <emissive r="0" g="0" b="0"/>
-        <specular r="0.800000012" g="0.800000012" b="0.800000012"/>
-        <shininess>5</shininess>
-        <doubleSided>false</doubleSided>
-        <bumpMethod>NONE</bumpMethod>
-        <shadingMode>BLINN_PHONG</shadingMode>
-        <parallaxFactor>0.00999999978</parallaxFactor>
-    </Material>
-</RENDERING>
+<RENDERING/>
 <NETWORKING/>
 <DIRECTIONAL_LIGHT>
     <Range__and__Cone x="500" y="45" z="0"/>
-    <Direction x="-0.671010077" y="-0.57357645" z="-0.469846427"/>
+    <Direction x="-0.670933127" y="-0.573510587" z="-0.470036685"/>
 </DIRECTIONAL_LIGHT>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <static>true</static>
-<model>defaultobject</model>
+<model>defaultobject_cylinder.obj</model>
 <NAVIGATION/>
 <TRANSFORM>
     <Transform>

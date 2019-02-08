@@ -176,31 +176,26 @@ namespace Import {
         Time::ProfileTimer importTimer;
         importTimer.start();
 
-        stringImpl modelName = dataOut._modelPath.substr(dataOut._modelPath.find_last_of('/') + 1);
-        stringImpl path = dataOut._modelPath.substr(0, dataOut._modelPath.find_last_of('/'));
-
         bool success = false;
-        if (!dataOut.loadFromFile(context, Paths::g_cacheLocation + Paths::g_geometryCacheLocation, modelName)) {
-            Console::printfn(Locale::get(_ID("MESH_NOT_LOADED_FROM_FILE")), modelName.c_str());
+        if (!dataOut.loadFromFile(context, Paths::g_cacheLocation + Paths::g_geometryCacheLocation, dataOut._modelName)) {
+            Console::printfn(Locale::get(_ID("MESH_NOT_LOADED_FROM_FILE")), dataOut._modelName.c_str());
 
-            DVDConverter converter(context, dataOut, dataOut._modelPath, success);
+            DVDConverter converter(context, dataOut, success);
             if (success) {
-                dataOut._modelName = modelName;
-                dataOut._modelPath = path;
-                if (dataOut.saveToFile(context, Paths::g_cacheLocation + Paths::g_geometryCacheLocation, modelName)) {
-                    Console::printfn(Locale::get(_ID("MESH_SAVED_TO_FILE")), modelName.c_str());
+                if (dataOut.saveToFile(context, Paths::g_cacheLocation + Paths::g_geometryCacheLocation, dataOut._modelName)) {
+                    Console::printfn(Locale::get(_ID("MESH_SAVED_TO_FILE")), dataOut._modelName.c_str());
                 } else {
-                    Console::printfn(Locale::get(_ID("MESH_NOT_SAVED_TO_FILE")), modelName.c_str());
+                    Console::printfn(Locale::get(_ID("MESH_NOT_SAVED_TO_FILE")), dataOut._modelName.c_str());
                 }
             }
         } else {
-            Console::printfn(Locale::get(_ID("MESH_LOADED_FROM_FILE")), modelName.c_str());
+            Console::printfn(Locale::get(_ID("MESH_LOADED_FROM_FILE")), dataOut._modelName.c_str());
             success = true;
         }
 
         importTimer.stop();
         Console::d_printfn(Locale::get(_ID("LOAD_MESH_TIME")),
-                           modelName.c_str(),
+                           dataOut._modelName.c_str(),
                            Time::MicrosecondsToSeconds<F32>(importTimer.get()));
 
         return success;

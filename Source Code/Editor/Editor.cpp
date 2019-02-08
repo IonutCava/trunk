@@ -1119,101 +1119,148 @@ bool Editor::modalTextureView(const char* modalName, const Texture_ptr& tex, con
 
 
         assert(modalName != nullptr);
-        static TextureCallbackData data = {};
-        data._gfxDevice = &_context.gfx();
+static TextureCallbackData data = {};
+data._gfxDevice = &_context.gfx();
 
-        static TextureCallbackData defaultData = {};
-        defaultData._gfxDevice = &_context.gfx();
-        defaultData._isDepthTexture = false;
+static TextureCallbackData defaultData = {};
+defaultData._gfxDevice = &_context.gfx();
+defaultData._isDepthTexture = false;
 
-        static std::array<bool, 4> state = { true, true, true, true };
+static std::array<bool, 4> state = { true, true, true, true };
 
-        data._isDepthTexture = tex->getDescriptor().baseFormat() == GFXImageFormat::DEPTH_COMPONENT;
+data._isDepthTexture = tex->getDescriptor().baseFormat() == GFXImageFormat::DEPTH_COMPONENT;
 
-        U8 numChannels = tex->getDescriptor().numChannels();
+U8 numChannels = tex->getDescriptor().numChannels();
 
-        if (numChannels > 0) {
-            if (data._isDepthTexture) {
-                ImGui::Text("Depth: ");  ImGui::SameLine(); ImGui::ToggleButton("Depth", &state[0]);
-                ImGui::SameLine();
-                ImGui::Text("Range: "); ImGui::SameLine();
-                ImGui::DragFloatRange2("", &data._depthRange[0], &data._depthRange[1], 0.005f, 0.0f, 1.0f);
-            } else {
-                ImGui::Text("R: ");  ImGui::SameLine(); ImGui::ToggleButton("R", &state[0]);
-            }
+if (numChannels > 0) {
+    if (data._isDepthTexture) {
+        ImGui::Text("Depth: ");  ImGui::SameLine(); ImGui::ToggleButton("Depth", &state[0]);
+        ImGui::SameLine();
+        ImGui::Text("Range: "); ImGui::SameLine();
+        ImGui::DragFloatRange2("", &data._depthRange[0], &data._depthRange[1], 0.005f, 0.0f, 1.0f);
+    }
+    else {
+        ImGui::Text("R: ");  ImGui::SameLine(); ImGui::ToggleButton("R", &state[0]);
+    }
 
-            if (numChannels > 1) {
-                ImGui::SameLine();
-                ImGui::Text("G: ");  ImGui::SameLine(); ImGui::ToggleButton("G", &state[1]);
+    if (numChannels > 1) {
+        ImGui::SameLine();
+        ImGui::Text("G: ");  ImGui::SameLine(); ImGui::ToggleButton("G", &state[1]);
 
-                if (numChannels > 2) {
-                    ImGui::SameLine();
-                    ImGui::Text("B: ");  ImGui::SameLine(); ImGui::ToggleButton("B", &state[2]);
-                }
-
-                if (numChannels > 3)
-                {
-                    ImGui::SameLine();
-                    ImGui::Text("A: ");  ImGui::SameLine(); ImGui::ToggleButton("A", &state[3]);
-                }
-            }
-        }
-        bool nonDefaultColours = data._isDepthTexture || !state[0] || !state[1] || !state[2] || !state[3];
-        data._colourData.set(state[0] ? 1 : 0, state[1] ? 1 : 0, state[2] ? 1 : 0, state[3] ? 1 : 0);
-
-        if (nonDefaultColours) {
-            ImGui::GetWindowDrawList()->AddCallback(toggleColours, &data);
+        if (numChannels > 2) {
+            ImGui::SameLine();
+            ImGui::Text("B: ");  ImGui::SameLine(); ImGui::ToggleButton("B", &state[2]);
         }
 
-        F32 aspect = 1.0f;
-        if (preserveAspect) {
-            U16 w = tex->getWidth();
-            U16 h = tex->getHeight();
-            aspect = w / to_F32(h);
+        if (numChannels > 3)
+        {
+            ImGui::SameLine();
+            ImGui::Text("A: ");  ImGui::SameLine(); ImGui::ToggleButton("A", &state[3]);
         }
+    }
+}
+const bool nonDefaultColours = data._isDepthTexture || !state[0] || !state[1] || !state[2] || !state[3];
+data._colourData.set(state[0] ? 1 : 0, state[1] ? 1 : 0, state[2] ? 1 : 0, state[3] ? 1 : 0);
 
-        static F32 zoom = 1.0f;
-        static ImVec2 zoomCenter(0.5f, 0.5f);
-        ImGui::ImageZoomAndPan((void *)(intptr_t)tex->getData().getHandle(), ImVec2(dimensions.w, dimensions.h / aspect), aspect, zoom, zoomCenter, 2, 3);
+if (nonDefaultColours) {
+    ImGui::GetWindowDrawList()->AddCallback(toggleColours, &data);
+}
 
-        if (nonDefaultColours) {
-            ImGui::GetWindowDrawList()->AddCallback(toggleColours, &defaultData);
-        }
+F32 aspect = 1.0f;
+if (preserveAspect) {
+    const U16 w = tex->getWidth();
+    const U16 h = tex->getHeight();
+    aspect = w / to_F32(h);
+}
 
-        ImGui::Text("Mouse: Wheel = scroll | CTRL + Wheel = zoom | Hold Wheel Button = pan");
+static F32 zoom = 1.0f;
+static ImVec2 zoomCenter(0.5f, 0.5f);
+ImGui::ImageZoomAndPan((void*)(intptr_t)tex->getData().getHandle(), ImVec2(dimensions.w, dimensions.h / aspect), aspect, zoom, zoomCenter, 2, 3);
 
-        if (ImGui::Button("Close")) {
-            zoom = 1.0f;
-            zoomCenter = ImVec2(0.5f, 0.5f);
-            ImGui::CloseCurrentPopup();
-            closed = true;
-        }
-        
-        
-        ImGui::EndPopup();
+if (nonDefaultColours) {
+    ImGui::GetWindowDrawList()->AddCallback(toggleColours, &defaultData);
+}
+
+ImGui::Text("Mouse: Wheel = scroll | CTRL + Wheel = zoom | Hold Wheel Button = pan");
+
+if (ImGui::Button("Close")) {
+    zoom = 1.0f;
+    zoomCenter = ImVec2(0.5f, 0.5f);
+    ImGui::CloseCurrentPopup();
+    closed = true;
+}
+
+
+ImGui::EndPopup();
     }
 
     return closed;
 }
 
-bool Editor::spawnGeometry(const Mesh_ptr& mesh) {
-    const U32 normalMask = to_base(ComponentType::TRANSFORM) |
-                           to_base(ComponentType::BOUNDS) |
-                           to_base(ComponentType::NETWORKING) |
-                           to_base(ComponentType::RENDERING);
+bool Editor::modalModelSpawn(const char* modalName, const Mesh_ptr& mesh) {
+    static vec3<F32> scale(1.0f);
+    static char inputBuf[256] = {};
+
+    bool closed = false;
+
+    if (ImGui::BeginPopupModal(modalName, NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+        assert(mesh != nullptr);
+        if (inputBuf[0] == '\0') {
+            strcpy_s(&inputBuf[0], std::min(254, to_I32(mesh->resourceName().length())) + 1, mesh->resourceName().c_str());
+        }
+        ImGui::Text(Util::StringFormat("Spawn [ %s ]?", mesh->resourceName().c_str()).c_str());
+        ImGui::Separator();
+
+
+        if (ImGui::InputFloat3("Scale", scale._v)) {
+        }
+
+        if (ImGui::InputText("Name", inputBuf, IM_ARRAYSIZE(inputBuf), ImGuiInputTextFlags_EnterReturnsTrue)) {
+        }
+
+        ImGui::Separator();
+        if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+            ImGui::CloseCurrentPopup();
+            closed = true;
+            scale.set(1.0f);
+            inputBuf[0] = '\0';
+        }
+
+        ImGui::SetItemDefaultFocus();
+        ImGui::SameLine();
+        if (ImGui::Button("Yes", ImVec2(120, 0))) {
+            ImGui::CloseCurrentPopup();
+            closed = true;
+            spawnGeometry(mesh, scale, inputBuf);
+            scale.set(1.0f);
+            inputBuf[0] = '\0';
+        }
+        ImGui::EndPopup();
+    }
+
+    return closed;
+}
+bool Editor::spawnGeometry(const Mesh_ptr& mesh, const vec3<F32>& scale, const stringImpl& name) {
+    constexpr U32 normalMask = to_base(ComponentType::TRANSFORM) |
+                               to_base(ComponentType::BOUNDS) |
+                               to_base(ComponentType::NETWORKING) |
+                               to_base(ComponentType::RENDERING);
 
     SceneGraphNodeDescriptor nodeDescriptor = {};
-    nodeDescriptor._name = mesh->assetName();
+    nodeDescriptor._name = name;
     nodeDescriptor._componentMask = normalMask;
     nodeDescriptor._node = mesh;
 
     Scene& activeScene = _context.kernel().sceneManager().getActiveScene();
-    SceneGraphNode* node = activeScene.sceneGraph().getRoot().addNode(nodeDescriptor);
+    const SceneGraphNode* node = activeScene.sceneGraph().getRoot().addNode(nodeDescriptor);
     if (node != nullptr) {
-        Camera* playerCam = Attorney::SceneManagerCameraAccessor::playerCamera(_context.kernel().sceneManager());
+        const Camera* playerCam = Attorney::SceneManagerCameraAccessor::playerCamera(_context.kernel().sceneManager());
 
-        node->get<TransformComponent>()->setPosition(playerCam->getEye());
-        node->get<TransformComponent>()->setRotation(playerCam->getOrientation());
+        TransformComponent* tComp = node->get<TransformComponent>();
+        tComp->setPosition(playerCam->getEye());
+        tComp->rotate(RotationFromVToU(tComp->getFwdVector(), playerCam->getForwardDir()));
+        tComp->setScale(scale);
+
         return true;
     }
 

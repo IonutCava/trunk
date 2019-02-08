@@ -103,10 +103,10 @@ namespace Divide {
         _fileIcon = getTextureForPath("icons", "file_icon.png");
 
         _geometryIcons[to_base(GeometryFormat::_3DS)] = getTextureForPath("icons", "3ds_icon.png");
-        _geometryIcons[to_base(GeometryFormat::ASE)]  = getTextureForPath("icons", "ase_icon.jpg");
+        _geometryIcons[to_base(GeometryFormat::ASE)]  = getTextureForPath("icons", "ase_icon.png");
         _geometryIcons[to_base(GeometryFormat::FBX)]  = getTextureForPath("icons", "fbx_icon.png");
         _geometryIcons[to_base(GeometryFormat::MD2)]  = getTextureForPath("icons", "md2_icon.png");
-        _geometryIcons[to_base(GeometryFormat::MD5)]  = getTextureForPath("icons", "md5_icon.jpg");
+        _geometryIcons[to_base(GeometryFormat::MD5)]  = getTextureForPath("icons", "md5_icon.png");
         _geometryIcons[to_base(GeometryFormat::OBJ)]  = getTextureForPath("icons", "obj_icon.png");
         _geometryIcons[to_base(GeometryFormat::X)]    = getTextureForPath("icons", "x_icon.png");
     }
@@ -169,6 +169,7 @@ namespace Divide {
 
     void ContentExplorerWindow::drawInternal() {
         static Texture_ptr previewTexture = nullptr;
+        static Mesh_ptr spawnMesh = nullptr;
 
         ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5.0f);
 
@@ -238,9 +239,9 @@ namespace Divide {
                     ImGui::PushID(file.second.c_str());
 
                     if (tex != nullptr) {
-                        U16 w = tex->getWidth();
-                        U16 h = tex->getHeight();
-                        F32 aspect = w / to_F32(h);
+                        const U16 w = tex->getWidth();
+                        const U16 h = tex->getHeight();
+                        const F32 aspect = w / to_F32(h);
 
                         if (ImGui::ImageButton((void*)(intptr_t)tex->getData().getHandle(), ImVec2(64, 64 / aspect))) {
                             previewTexture = tex;
@@ -248,17 +249,18 @@ namespace Divide {
                         }
                     } else if (mesh != nullptr) {
                         const Texture_ptr& icon = _geometryIcons[to_base(format)];
-                        U16 w = icon->getWidth();
-                        U16 h = icon->getHeight();
-                        F32 aspect = w / to_F32(h);
+                        const U16 w = icon->getWidth();
+                        const U16 h = icon->getHeight();
+                        const F32 aspect = w / to_F32(h);
 
                         if (ImGui::ImageButton((void*)(intptr_t)icon->getData().getHandle(), ImVec2(64, 64 / aspect))) {
-                            Attorney::EditorGeneralWidget::spawnGeometry(_parent, mesh);
+                            spawnMesh = mesh;
+                            ImGui::OpenPopup("Spawn Entity");
                         }
                     } else {
-                        U16 w = _fileIcon->getWidth();
-                        U16 h = _fileIcon->getHeight();
-                        F32 aspect = w / to_F32(h);
+                        const U16 w = _fileIcon->getWidth();
+                        const U16 h = _fileIcon->getHeight();
+                        const F32 aspect = w / to_F32(h);
 
                         if (ImGui::ImageButton((void*)(intptr_t)_fileIcon->getData().getHandle(), ImVec2(64, 64 / aspect))) {
                         }
@@ -266,15 +268,18 @@ namespace Divide {
                     if (ImGui::IsItemHovered()) {
                         ImGui::SetTooltip(file.second.c_str());
                     }
-                    ImGui::Text(file.second.substr(0, file.second.length() - 1).c_str());
+                    ImGui::Text(file.second.c_str());
+
+                    if (Attorney::EditorGeneralWidget::modalTextureView(_parent, "Image Preview", previewTexture, vec2<F32>(512, 512), true)) {
+                        previewTexture = nullptr;
+                    }
+                    if (Attorney::EditorGeneralWidget::modalModelSpawn(_parent, "Spawn Entity", spawnMesh)) {
+                        spawnMesh = nullptr;
+                    }
 
                     ImGui::PopID();
                     ImGui::NextColumn();
                 }
-                if (Attorney::EditorGeneralWidget::modalTextureView(_parent, "Image Preview", previewTexture, vec2<F32>(512, 512), true)) {
-                    previewTexture = nullptr;
-                }
-                
             }
             ImGui::EndChild();
         }

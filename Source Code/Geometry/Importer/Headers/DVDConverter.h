@@ -85,10 +85,10 @@ class DVDConverter {
   public:
 
     explicit DVDConverter();
-    explicit DVDConverter(PlatformContext& context, Import::ImportData& target, const stringImpl& file, bool& result);
+    explicit DVDConverter(PlatformContext& context, Import::ImportData& target, bool& result);
     ~DVDConverter();
 
-    bool load(PlatformContext& context, Import::ImportData& target, const stringImpl& file);
+    bool load(PlatformContext& context, Import::ImportData& target);
    private:
 
     void loadSubMeshGeometry(const aiMesh* source, 
@@ -100,7 +100,6 @@ class DVDConverter {
     void loadSubMeshMaterial(Import::MaterialData& material,
                              const aiMaterial* source,
                              const stringImpl& materialName,
-                             const stringImpl& assetLocation,
                              bool skinned);
 
   private:

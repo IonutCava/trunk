@@ -193,8 +193,10 @@ class Editor : public PlatformContextComponent,
     void updateCameraSnapshot();
     // Returns true if the modal window was closed
     bool modalTextureView(const char* modalName, const Texture_ptr& tex, const vec2<F32>& dimensions, bool preserveAspect);
+    // Returns true if the modal window was closed
+    bool modalModelSpawn(const char* modalName, const Mesh_ptr& mesh);
     // Return true if the model was spawned as a scene node
-    bool spawnGeometry(const Mesh_ptr& mesh);
+    bool spawnGeometry(const Mesh_ptr& mesh, const vec3<F32>& scale, const stringImpl& name);
 
   private:
     ImGuiStyleEnum _currentTheme;
@@ -241,11 +243,11 @@ namespace Attorney {
 
     class EditorSceneViewWindow {
     private:
-        static bool editorEnabledGizmo(Editor& editor) {
+        static bool editorEnabledGizmo(const Editor& editor) {
             return editor._gizmo->enabled();
         }
 
-        static void editorEnableGizmo(Editor& editor, bool state) {
+        static void editorEnableGizmo(const Editor& editor, bool state) {
             editor._gizmo->enable(state);
         }
 
@@ -262,15 +264,15 @@ namespace Attorney {
             editor.setSelectedCamera(camera);
         }
 
-        static Camera* getSelectedCamera(Editor& editor) {
+        static Camera* getSelectedCamera(const Editor& editor) {
             return editor.getSelectedCamera();
         }
 
-        static bool editorEnableGizmo(Editor& editor) {
+        static bool editorEnableGizmo(const Editor& editor) {
             return editor._gizmo->enabled();
         }
 
-        static void editorEnableGizmo(Editor& editor, bool state) {
+        static void editorEnableGizmo(const Editor& editor, bool state) {
             editor._gizmo->enable(state);
         }
 
@@ -284,7 +286,7 @@ namespace Attorney {
             editor.setSelectedCamera(camera);
         }
 
-        static Camera* getSelectedCamera(Editor& editor) {
+        static Camera* getSelectedCamera(const Editor& editor) {
             return editor.getSelectedCamera();
         }
 
@@ -297,11 +299,11 @@ namespace Attorney {
             editor.toggleMemoryEditor(state);
         }
 
-        static bool memoryEditorEnabled(const Editor& editor) {
+        static bool memoryEditorEnabled(const Editor& editor) noexcept {
             return editor._showMemoryEditor;
         }
 
-        static bool& sampleWindowEnabled(Editor& editor) {
+        static bool& sampleWindowEnabled(Editor& editor) noexcept {
             return editor._showSampleWindow;
         }
 
@@ -316,7 +318,7 @@ namespace Attorney {
         static const TransformSettings& getTransformSettings(const Editor& editor) {
             return editor.getTransformSettings();
         }
-        static void enableGizmo(Editor& editor, bool state) {
+        static void enableGizmo(const Editor& editor, bool state) {
             return editor._gizmo->enable(state);
         }
       
@@ -330,7 +332,7 @@ namespace Attorney {
             editor.saveElement(elementGUID);
         }
 
-        static void inspectMemory(Editor& editor, std::pair<bufferPtr, size_t> data) {
+        static void inspectMemory(Editor& editor, std::pair<bufferPtr, size_t> data) noexcept {
             editor._memoryEditorData = data;
         }
 
@@ -338,8 +340,8 @@ namespace Attorney {
             return editor.modalTextureView(modalName, tex, dimensions, preserveAspect);
         }
 
-        static bool spawnGeometry(Editor& editor, const Mesh_ptr& mesh) {
-            return editor.spawnGeometry(mesh);
+        static bool modalModelSpawn(Editor& editor, const char* modalName, const Mesh_ptr& mesh) {
+            return editor.modalModelSpawn(modalName, mesh);
         }
 
         static ImGuiContext& imguiContext(Editor& editor) {

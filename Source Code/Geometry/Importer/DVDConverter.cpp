@@ -103,15 +103,18 @@ DVDConverter::DVDConverter()
 {
 }
 
-DVDConverter::DVDConverter(PlatformContext& context, Import::ImportData& target, const stringImpl& file, bool& result) {
-    result = load(context, target, file);
+DVDConverter::DVDConverter(PlatformContext& context, Import::ImportData& target, bool& result) {
+    result = load(context, target);
 }
 
 DVDConverter::~DVDConverter()
 {
 }
 
-bool DVDConverter::load(PlatformContext& context, Import::ImportData& target, const stringImpl& file) {
+bool DVDConverter::load(PlatformContext& context, Import::ImportData& target) {
+    const stringImpl& filePath = target._modelPath;
+    const stringImpl& fileName = target._modelName;
+
     Assimp::Importer importer;
 
     importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE,
@@ -132,11 +135,10 @@ bool DVDConverter::load(PlatformContext& context, Import::ImportData& target, co
         aiProcess_Triangulate | aiProcess_GenUVCoords | aiProcess_SortByPType |
         aiProcess_FindDegenerates | aiProcess_FindInvalidData | 0;
 
-    const aiScene* aiScenePointer = importer.ReadFile(file.c_str(), ppsteps);
+    const aiScene* aiScenePointer = importer.ReadFile((filePath + "/" + fileName).c_str(), ppsteps);
 
     if (!aiScenePointer) {
-        Console::errorfn(Locale::get(_ID("ERROR_IMPORTER_FILE")), file.c_str(),
-                         importer.GetErrorString());
+        Console::errorfn(Locale::get(_ID("ERROR_IMPORTER_FILE")), fileName.c_str(), importer.GetErrorString());
         return false;
     }
 
@@ -190,15 +192,13 @@ bool DVDConverter::load(PlatformContext& context, Import::ImportData& target, co
 
         Import::SubMeshData subMeshTemp;
 
-        stringImpl modelName = file.substr(file.rfind("/") + 1, file.length());
-
         subMeshTemp._name = currentMesh->mName.C_Str();
         if (Util::CompareIgnoreCase(subMeshTemp._name, "defaultobject")) {
-            subMeshTemp._name.append("_" + modelName);
+            subMeshTemp._name.append("_" + fileName);
         }
         subMeshTemp._index = to_U32(n);
         if (subMeshTemp._name.empty()) {
-            subMeshTemp._name = Util::StringFormat("%s-submesh-%d", modelName.c_str(), n);
+            subMeshTemp._name = Util::StringFormat("%s-submesh-%d", fileName.c_str(), n);
         }
         if (subMeshTemp._name == prevName) {
             subMeshTemp._name += "_" + to_stringImpl(n);
@@ -215,7 +215,6 @@ bool DVDConverter::load(PlatformContext& context, Import::ImportData& target, co
         loadSubMeshMaterial(subMeshTemp._material,
                             aiScenePointer->mMaterials[currentMesh->mMaterialIndex],
                             subMeshTemp._name + "_material",
-                            file,
                             subMeshTemp._boneCount > 0);
                             
 
@@ -322,7 +321,6 @@ void DVDConverter::loadSubMeshGeometry(const aiMesh* source,
 void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
                                        const aiMaterial* source,
                                        const stringImpl& materialName,
-                                       const stringImpl& assetLocation,
                                        bool skinned) {
 
     material._name = materialName;

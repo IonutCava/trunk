@@ -107,8 +107,9 @@ namespace Divide {
         };
 
         struct ImportData {
-            ImportData(const stringImpl& meshFile)
-                : _modelPath(meshFile)
+            ImportData(const stringImpl& modelPath, const stringImpl& modelName)
+                : _modelPath(modelPath),
+                  _modelName(modelName)
             {
                 _vertexBuffer = nullptr;
                 _hasAnimations = false;

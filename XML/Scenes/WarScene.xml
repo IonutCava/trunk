@@ -21,7 +21,7 @@
 </options>
 <fog>
     <fogDensity>0.5</fogDensity>
-    <fogColour r="0.700000012" g="0.700000012" b="0.800000012"/>
+    <fogColour r="0.699999988" g="0.699999988" b="0.800000012"/>
 </fog>
 <lod>
     <lodThresholds x="15" y="45" z="85" w="165"/>

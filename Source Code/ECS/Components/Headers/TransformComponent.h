@@ -112,6 +112,10 @@ namespace Divide {
          /// Return the local position
          vec3<F32> getLocalPosition(D64 interpolationFactor) const;
 
+         vec3<F32> getFwdVector() const;
+         vec3<F32> getUpVector() const;
+         vec3<F32> getRightVector() const;
+
          /// Return the scale factor
          vec3<F32> getScale() const;
          /// Return the local scale factor

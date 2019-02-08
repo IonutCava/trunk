@@ -555,6 +555,18 @@ namespace Divide {
         return Lerp(_prevTransformValues._scale, getLocalScale(), to_F32(interpolationFactor));
     }
 
+    vec3<F32> TransformComponent::getFwdVector() const {
+        return Rotate(WORLD_Z_NEG_AXIS, getOrientation());
+    }
+
+    vec3<F32> TransformComponent::getUpVector() const {
+        return Rotate(WORLD_Y_AXIS, getOrientation());
+    }
+
+    vec3<F32> TransformComponent::getRightVector() const {
+        return Rotate(WORLD_X_AXIS, getOrientation());
+    }
+
     Quaternion<F32> TransformComponent::getLocalOrientation(D64 interpolationFactor) const {
         return Slerp(_prevTransformValues._orientation, getLocalOrientation(), to_F32(interpolationFactor));
     }
