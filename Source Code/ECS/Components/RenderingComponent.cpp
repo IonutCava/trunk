@@ -191,11 +191,12 @@ void RenderingComponent::Update(const U64 deltaTimeUS) {
         getMaterialInstanceCache()->update(deltaTimeUS);
     }
 
-    if (_parentSGN.getNode<Object3D>().getObjectType()._value == ObjectType::SUBMESH) {
+    const Object3D& node = _parentSGN.getNode<Object3D>();
+    if (node.getObjectType()._value == ObjectType::SUBMESH) {
         StateTracker<bool>& parentStates = _parentSGN.getParent()->getTrackedBools();
         parentStates.setTrackedValue(StateTracker<bool>::State::BOUNDING_BOX_RENDERED, false);
 
-        if (_parentSGN.getNode<Object3D>().getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED)) {
+        if (node.getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED)) {
             parentStates.setTrackedValue(StateTracker<bool>::State::SKELETON_RENDERED, false);
         }
     }

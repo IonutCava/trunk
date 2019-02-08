@@ -114,7 +114,8 @@ void parallel_for(TaskPool& pool,
                   U32 count,
                   U32 partitionSize,
                   TaskPriority priority = TaskPriority::DONT_CARE,
-                  bool noWait = false);
+                  bool noWait = false,
+                  bool useCurrentThread = false);
 
 void WaitForAllTasks(TaskPool& pool, bool yield, bool flushCallbacks, bool foceClear);
 

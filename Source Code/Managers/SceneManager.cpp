@@ -524,7 +524,7 @@ RenderPassCuller::VisibleNodeList SceneManager::getSortedRefractiveNodes(const C
 
 namespace {
     // Return true if the node type is capable of generating draw commands
-    bool generatesDrawCommands(SceneNodeType nodeType) {
+    FORCE_INLINE bool generatesDrawCommands(SceneNodeType nodeType) {
         return nodeType != SceneNodeType::TYPE_ROOT &&
                nodeType != SceneNodeType::TYPE_TRANSFORM &&
                nodeType != SceneNodeType::TYPE_TRIGGER &&
@@ -532,15 +532,15 @@ namespace {
     }
 
     // Return true if this node should be removed from a shadow pass
-    bool doesNotCastShadows(RenderStage stage, const SceneGraphNode& node) {
+    bool doesNotCastShadows(RenderStage stage, const SceneGraphNode& node, const SceneNode& sceneNode) {
         if (stage == RenderStage::SHADOW) {
-            SceneNodeType type = node.getNode().type();
+            SceneNodeType type = sceneNode.type();
             if (type == SceneNodeType::TYPE_SKY || 
                 type == SceneNodeType::TYPE_WATER ||
                 type == SceneNodeType::TYPE_INFINITEPLANE) {
                 return true;
             }
-            if (type == SceneNodeType::TYPE_OBJECT3D && node.getNode<Object3D>().getObjectType()._value == ObjectType::DECAL) {
+            if (type == SceneNodeType::TYPE_OBJECT3D && static_cast<const Object3D&>(sceneNode).getObjectType()._value == ObjectType::DECAL) {
                 return true;
             }
             RenderingComponent* rComp = node.get<RenderingComponent>();
@@ -572,10 +572,10 @@ const RenderPassCuller::VisibleNodeList& SceneManager::cullSceneGraph(RenderStag
         cullParams._visibilityDistanceSq = SQUARED(sceneState.renderState().generalVisibility());
     }
     // Cull everything except 3D objects
-    cullParams._cullFunction = [stage](const SceneGraphNode& node) -> bool {
-        if (generatesDrawCommands(node.getNode().type())) {
+    cullParams._cullFunction = [stage](const SceneGraphNode& node, const SceneNode& sceneNode) -> bool {
+        if (generatesDrawCommands(sceneNode.type())) {
             // only checks nodes and can return true for a shadow stage
-            return doesNotCastShadows(stage, node);
+            return doesNotCastShadows(stage, node, sceneNode);
         }
 
         return true;

@@ -7,10 +7,6 @@
 
 namespace Divide {
 
-namespace {
-    const U32 g_MaxShadersComputedPerFrame = 8;
-};
-
 ShaderComputeQueue::ShaderComputeQueue(ResourceCache& cache)
     : FrameListener(),
       _cache(cache),
@@ -26,12 +22,12 @@ ShaderComputeQueue::~ShaderComputeQueue()
 
 void ShaderComputeQueue::idle() {
     if (!_shadersComputedThisFrame) {
-        //Time::ScopedTimer timer(_queueComputeTimer);
-
+        Time::ScopedTimer timer(_queueComputeTimer);
         _totalShaderComputeCountThisFrame = 0;
 
-        WAIT_FOR_CONDITION(!(stepQueue() &&
-            ++_totalShaderComputeCountThisFrame < g_MaxShadersComputedPerFrame));
+        while (stepQueue()) {
+            ++_totalShaderComputeCountThisFrame;
+        }
 
         _shadersComputedThisFrame = _totalShaderComputeCountThisFrame > 0;
     }

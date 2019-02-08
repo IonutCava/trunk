@@ -114,17 +114,24 @@ namespace Divide {
     void ContentExplorerWindow::update(const U64 deltaTimeUS) {
         ACKNOWLEDGE_UNUSED(deltaTimeUS);
 
-        if (!_textureLoadQueue.empty()) {
-            auto file = _textureLoadQueue.top();
-            _textureLoadQueue.pop();
-            _loadedTextures[_ID((file.first + "/" + file.second).c_str())] = getTextureForPath(file.first, file.second);
+
+        while (!_textureLoadQueue.empty() || !_modelLoadQueue.empty()) {
+            if (!_textureLoadQueue.empty()) {
+                auto file = _textureLoadQueue.top();
+                _textureLoadQueue.pop();
+                _loadedTextures[_ID((file.first + "/" + file.second).c_str())] = getTextureForPath(file.first, file.second);
+            }
+
+
+            if (!_modelLoadQueue.empty()) {
+                auto file = _modelLoadQueue.top();
+                _modelLoadQueue.pop();
+                _loadedModels[_ID((file.first + "/" + file.second).c_str())] = getModelForPath(file.first, file.second);
+            }
         }
 
-        if (!_modelLoadQueue.empty()) {
-            auto file = _modelLoadQueue.top();
-            _modelLoadQueue.pop();
-            _loadedModels[_ID((file.first + "/" + file.second).c_str())] = getModelForPath(file.first, file.second);
-        }
+        _textureLoadQueueLocked = false;
+        _modelLoadQueueLocked = false;
     }
 
     void ContentExplorerWindow::getDirectoryStructureForPath(const stringImpl& directoryPath, Directory& directoryOut) {
@@ -199,6 +206,9 @@ namespace Divide {
             }
             ImGui::Columns(4);
             if (_selectedDir != nullptr) {
+                bool lockTextureQueue = false;
+                bool lockModelQueue = false;
+
                 for (auto file : _selectedDir->_files) {
                     Texture_ptr tex = nullptr;
                     Mesh_ptr mesh = nullptr;
@@ -208,8 +218,9 @@ namespace Divide {
                             if (hasExtension(file.second, extension)) {
                                 auto it = _loadedTextures.find(_ID((file.first + "/" + file.second).c_str()));
                                 if (it == std::cend(_loadedTextures) || it->second == nullptr) {
-                                    if (_textureLoadQueue.empty()) {
+                                    if (!_textureLoadQueueLocked) {
                                         _textureLoadQueue.push(file);
+                                        lockTextureQueue = true;
                                     }
                                 } else if (it->second->getState() == ResourceState::RES_LOADED) {
                                     tex = it->second;
@@ -223,8 +234,9 @@ namespace Divide {
                             if (hasExtension(file.second, extension)) {
                                 auto it = _loadedModels.find(_ID((file.first + "/" + file.second).c_str()));
                                 if (it == std::cend(_loadedModels) || it->second == nullptr) {
-                                    if (_modelLoadQueue.empty()) {
+                                    if (!_modelLoadQueueLocked) {
                                         _modelLoadQueue.push(file);
+                                        lockModelQueue = true;
                                     }
                                 } else if (it->second->getState() == ResourceState::RES_LOADED) {
                                     mesh = it->second;
@@ -279,6 +291,12 @@ namespace Divide {
 
                     ImGui::PopID();
                     ImGui::NextColumn();
+                    if (lockTextureQueue) {
+                        _textureLoadQueueLocked = true;
+                    }
+                    if (lockModelQueue) {
+                        _modelLoadQueueLocked = true;
+                    }
                 }
             }
             ImGui::EndChild();

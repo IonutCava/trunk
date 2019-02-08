@@ -191,7 +191,8 @@ void parallel_for(TaskPool& pool,
                   U32 count,
                   U32 partitionSize,
                   TaskPriority priority,
-                  bool noWait)
+                  bool noWait,
+                  bool useCurrentThread)
 {
     if (count > 0) {
 
@@ -201,7 +202,13 @@ void parallel_for(TaskPool& pool,
 
         std::atomic_uint remaining = partitionCount + (remainder > 0 ? 1 : 0);
 
-        for (U32 i = 0; i < partitionCount; ++i) {
+        U32 adjustedCount = partitionCount;
+        if (useCurrentThread) {
+            adjustedCount -= 1;
+            remaining.fetch_sub(1);
+        }
+
+        for (U32 i = 0; i < adjustedCount; ++i) {
             const U32 start = i * crtPartitionSize;
             const U32 end = start + crtPartitionSize;
             CreateTask(pool,
@@ -218,6 +225,14 @@ void parallel_for(TaskPool& pool,
                            cbk(parentTask, count - remainder, count);
                            remaining.fetch_sub(1);
                        }).startTask(priority);
+        }
+
+        if (useCurrentThread) {
+            const U32 start = adjustedCount * crtPartitionSize;
+            const U32 end = start + crtPartitionSize;
+
+            TaskHandle threadTask = CreateTask(pool, nullptr, DELEGATE_CBK<void, const Task&>());
+            cbk(*threadTask._task, start, end);
         }
 
         if (!noWait) {

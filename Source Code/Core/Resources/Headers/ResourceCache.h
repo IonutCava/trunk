@@ -86,7 +86,7 @@ public:
     loadResource(const ResourceDescriptor& descriptor, bool& wasInCache)
     {
         // The loading process may change the resource descriptor so always use the user-specified descriptor hash for lookup!
-        size_t loadingHash = descriptor.getHash();
+        const size_t loadingHash = descriptor.getHash();
 
         // If two thread are trying to load the same resource at the same time, by the time one of them adds the resource to the cache, it's too late
         // So check if the hash is currently in the "processing" list, and if it is, just busy-spin until done

@@ -59,7 +59,8 @@ void parallel_for(PlatformContext& context,
                   U32 count,
                   U32 partitionSize,
                   TaskPriority priority = TaskPriority::DONT_CARE,
-                  bool noWait = false);
+                  bool noWait = false,
+                  bool useCurrentThread = false);
 
 void WaitForAllTasks(PlatformContext& context, bool yield, bool flushCallbacks, bool foceClear);
 

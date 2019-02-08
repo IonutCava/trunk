@@ -206,6 +206,18 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
         return getChildCount() > 0;
     }
 
+    inline void lockChildren() {
+        _childLock.lock();
+    }
+
+    inline void unlockChildren() {
+        _childLock.unlock();
+    }
+
+    inline const vectorEASTL<SceneGraphNode*>& getChildrenLocked() const {
+        return _children;
+    }
+
     inline SceneGraphNode& getChild(U32 idx) {
         SharedLock r_lock(_childLock);
         assert(idx <  getChildCountLocked());

@@ -81,7 +81,11 @@ namespace Divide {
 
         hashMap<size_t, Texture_ptr> _loadedTextures;
         hashMap<size_t, Mesh_ptr> _loadedModels;
+
+        bool _textureLoadQueueLocked = false;
         std::stack<std::pair<std::string, std::string>> _textureLoadQueue;
+
+        bool _modelLoadQueueLocked = false;
         std::stack<std::pair<std::string, std::string>> _modelLoadQueue;
     };
 }; //namespace Divide

@@ -292,6 +292,7 @@ class Material : public CachedResource {
 
     vector<ExternalTexture> _externalTextures;
 
+    I32 _textureKeyCache = -1;
     /// use the below map to define texture operation
     TextureOperation _operation;
     BumpMethod _bumpMethod;

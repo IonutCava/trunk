@@ -76,11 +76,11 @@ void RenderPassManager::render(SceneRenderState& sceneRenderState, Time::Profile
     TaskPool& pool = parent().platformContext().taskPool(TaskPoolType::Render);
 
     U8 renderPassCount = to_U8(_renderPasses.size());
-    std::atomic_uint remainingTasks = renderPassCount + 1;
+    std::atomic_uint remainingTasks = renderPassCount;
     {
         Time::ScopedTimer timeAll(*_renderPassTimer);
 
-        for (U8 i = 0; i < renderPassCount; ++i) {
+        for (U8 i = 1; i < renderPassCount; ++i) {
             RenderPass* pass = _renderPasses[i].get();
             GFX::CommandBuffer* buf = _renderPassCommandBuffer[i];
 
@@ -107,6 +107,12 @@ void RenderPassManager::render(SceneRenderState& sceneRenderState, Time::Profile
                       buf->batch();
                       remainingTasks.fetch_sub(1);
                    }).startTask(priority);
+
+        {
+            _renderPassCommandBuffer[0]->clear();
+            _renderPasses[0]->render(sceneRenderState, *_renderPassCommandBuffer[0]);
+            _renderPassCommandBuffer[0]->batch();
+        }
 
         while(remainingTasks.load() > 0) {
             parent().idle();

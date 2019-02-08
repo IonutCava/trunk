@@ -61,6 +61,7 @@ Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descri
     : CachedResource(ResourceType::DEFAULT, descriptorHash, name),
       _context(context),
       _parentCache(parentCache),
+      _textureKeyCache(-1),
       _parallaxFactor(1.0f),
       _needsNewShader(false),
       _doubleSided(false),
@@ -238,6 +239,10 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
     _textures[slot] = texture;
 
     if (textureUsageSlot == ShaderProgram::TextureUsage::UNIT0 || textureUsageSlot == ShaderProgram::TextureUsage::OPACITY) {
+        if (textureUsageSlot == ShaderProgram::TextureUsage::UNIT0) {
+            _textureKeyCache = texture == nullptr ? -1 : texture->getHandle();
+        }
+
         updateTranslucency();
     }
 
@@ -764,16 +769,14 @@ size_t Material::getRenderStateBlock(RenderStagePass renderStagePass) {
 }
 
 void Material::getSortKeys(RenderStagePass renderStagePass, I32& shaderKey, I32& textureKey) const {
-    static const I16 invalidShaderKey = -std::numeric_limits<I16>::max();
+    static const I16 invalidKey = -std::numeric_limits<I16>::max();
+    shaderKey = invalidKey;
+    textureKey = _textureKeyCache == -1 ? invalidKey : _textureKeyCache;
 
     const ShaderProgramInfo& info = shaderInfo(renderStagePass);
-
-    shaderKey = info._shaderRef && info._shaderCompStage == ShaderProgramInfo::BuildStage::READY
-                                                          ? info._shaderRef->getID()
-                                                          : invalidShaderKey;
-
-    std::weak_ptr<Texture> albedoTex = getTexture(ShaderProgram::TextureUsage::UNIT0);
-    textureKey = albedoTex.expired() ? invalidShaderKey : albedoTex.lock()->getHandle();
+    if (info._shaderCompStage == ShaderProgramInfo::BuildStage::READY && info._shaderRef) {
+        shaderKey = info._shaderRef->getID();
+    }
 }
 
 void Material::getMaterialMatrix(mat4<F32>& retMatrix) const {

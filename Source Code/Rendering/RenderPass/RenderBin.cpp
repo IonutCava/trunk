@@ -89,19 +89,19 @@ void RenderBin::sort(RenderStage stage, RenderingOrder::List renderOrder) {
 
     switch (renderOrder) {
         case RenderingOrder::List::BY_STATE: {
-            std::sort(std::begin(_renderBinStack[stageIndex]),
-                      std::end(_renderBinStack[stageIndex]),
-                      RenderQueueKeyCompare());
+            eastl::sort(eastl::begin(_renderBinStack[stageIndex]),
+                        eastl::end(_renderBinStack[stageIndex]),
+                         RenderQueueKeyCompare());
         } break;
         case RenderingOrder::List::BACK_TO_FRONT: {
-            std::sort(std::begin(_renderBinStack[stageIndex]),
-                      std::end(_renderBinStack[stageIndex]),
-                      RenderQueueDistanceBackToFront());
+            eastl::sort(eastl::begin(_renderBinStack[stageIndex]),
+                        eastl::end(_renderBinStack[stageIndex]),
+                        RenderQueueDistanceBackToFront());
         } break;
         case RenderingOrder::List::FRONT_TO_BACK: {
-            std::sort(std::begin(_renderBinStack[stageIndex]),
-                      std::end(_renderBinStack[stageIndex]),
-                      RenderQueueDistanceFrontToBack());
+            eastl::sort(eastl::begin(_renderBinStack[stageIndex]),
+                        eastl::end(_renderBinStack[stageIndex]),
+                        RenderQueueDistanceFrontToBack());
         } break;
         case RenderingOrder::List::NONE: {
             // no need to sort

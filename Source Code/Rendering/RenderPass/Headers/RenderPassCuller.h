@@ -43,6 +43,7 @@ class SceneRenderState;
 
 struct Task;
 class Camera;
+class SceneNode;
 class SceneGraph;
 class SceneGraphNode;
 class PlatformContext;
@@ -54,7 +55,7 @@ class vec3;
 class RenderPassCuller {
    public:
     //Should return true if the node is not inside the frustum
-    typedef std::function<bool(const SceneGraphNode&)> CullingFunction;
+    typedef std::function<bool(const SceneGraphNode&, const SceneNode&)> CullingFunction;
 
     // draw order, node pointer
     struct VisibleNode {
@@ -101,7 +102,8 @@ class RenderPassCuller {
                          RenderStage stage,
                          F32 cullMaxDistanceSq,
                          VisibleNodeList& nodes,
-                         bool clearList) const;
+                         bool clearList,
+                         bool threaded) const;
 
     void addAllChildren(const SceneGraphNode& currentNode,
                         RenderStage stage,

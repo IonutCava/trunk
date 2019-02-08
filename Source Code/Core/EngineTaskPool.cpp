@@ -34,8 +34,9 @@ void parallel_for(PlatformContext& context,
                   U32 count,
                   U32 partitionSize,
                   TaskPriority priority,
-                  bool noWait) {
-    parallel_for(context.taskPool(TaskPoolType::Engine), cbk, count, partitionSize, priority, noWait);
+                  bool noWait,
+                  bool useCurrentThread) {
+    parallel_for(context.taskPool(TaskPoolType::Engine), cbk, count, partitionSize, priority, noWait, useCurrentThread);
 }
 
 }; //namespace Divide
