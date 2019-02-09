@@ -95,12 +95,12 @@ void main (void)
     vec4 texColour = mix(texture(texWaterReflection, uvFinalReflect),
                          texture(texWaterRefraction, uvFinalRefract),
                          mixFactor);
+    normal = normalize(getTBNMatrix() * normal);
 #if 0
     setAlbedo(texColour);
-    setProcessedNormal(normalize(getTBNMatrix() * normal));
-    writeOutput(getPixelColour(), packNormal(getProcessedNormal()));
+    writeOutput(getPixelColour(normal), packNormal(normal));
 #else
-    writeOutput(texColour, packNormal(normalize(getTBNMatrix() * normal)));
+    writeOutput(texColour, packNormal(normal));
 #endif
 
 

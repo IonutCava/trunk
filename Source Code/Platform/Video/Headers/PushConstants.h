@@ -36,18 +36,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "PushConstant.h"
 
 namespace Divide {
-class PushConstants {
-  public:
-    PushConstants();
-    PushConstants(const GFX::PushConstant& constant);
-    PushConstants(const vectorEASTL<GFX::PushConstant>& data);
-    ~PushConstants();
-
-    PushConstants(const PushConstants& other) = default;
-    PushConstants& operator=(const PushConstants& other) = default;
-
-    PushConstants(PushConstants&& other) = default;
-    PushConstants& operator=(PushConstants&& other) = default;
+struct PushConstants {
+    vectorEASTL<GFX::PushConstant> _data;
 
     void set(const GFX::PushConstant& constant);
 
@@ -93,19 +83,18 @@ class PushConstants {
         _data.emplace_back(binding, type, values, flag);
     }
 
-    void clear();
+    inline void clear() {
+        _data.clear();
+    }
 
     inline bool empty() const { return _data.empty(); }
 
     inline vectorEASTL<GFX::PushConstant>& data() { return _data; }
 
     inline const vectorEASTL<GFX::PushConstant>& data() const { return _data; }
-
-    bool merge(const PushConstants& other, bool& partial);
-
-  protected:
-      vectorEASTL<GFX::PushConstant> _data;
 };
+
+bool Merge(PushConstants& lhs, const PushConstants& rhs, bool& partial);
 
 }; //namespace Divide
 

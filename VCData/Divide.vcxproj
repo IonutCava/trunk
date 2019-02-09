@@ -379,7 +379,7 @@
       <CompileAs>CompileAsCpp</CompileAs>
       <ConformanceMode>true</ConformanceMode>
       <EnableModules>false</EnableModules>
-      <AdditionalOptions> /Zc:twoPhase- /Zc:twoPhase-</AdditionalOptions>
+      <AdditionalOptions> /Zc:twoPhase- /Zc:twoPhase-  </AdditionalOptions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>

@@ -73,31 +73,15 @@ enum class CmdRenderOptions : U16 {
 };
 
 struct GenericDrawCommand {
-  public: //Data
-    // state hash is not size_t to avoid any platform specific awkward typedefing
-    IndirectDrawCommand _cmd;                                        // 44 bytes
+    //Data
+    IndirectDrawCommand _cmd = {};                                   // 44 bytes
     VertexDataInterface* _sourceBuffer = nullptr;                    // 24 bytes
     U32 _commandOffset = 0;                                          // 16 bytes
     U32 _renderOptions = to_base(CmdRenderOptions::RENDER_GEOMETRY); // 12 bytes
     U32 _patchVertexCount = 3;                                       // 8  bytes
     U16 _drawCount = 1;                                              // 4  bytes
     U8  _bufferIndex = 0;                                            // 2  bytes
-    PrimitiveType _primitiveType = PrimitiveType::COUNT;             // 1  bytes
-
-  public: //Rule of five
-
-    GenericDrawCommand();
-    GenericDrawCommand(PrimitiveType type,
-                       U32 firstIndex,
-                       U32 indexCount,
-                       U32 primCount = 1);
-    ~GenericDrawCommand() = default;
-    GenericDrawCommand(const GenericDrawCommand& other) = default;
-    GenericDrawCommand& operator=(const GenericDrawCommand& other) = default;
-    GenericDrawCommand(GenericDrawCommand&& other) = default;
-    GenericDrawCommand& operator=(GenericDrawCommand&& other) = default;
-
-    
+    PrimitiveType _primitiveType = PrimitiveType::TRIANGLE_STRIP;    // 1  bytes
 };
 
 bool isEnabledOption(const GenericDrawCommand& cmd, CmdRenderOptions option);

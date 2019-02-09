@@ -38,9 +38,23 @@ DEFINE_POOL(ExternalCommand);
 
 void CommandBuffer::add(const CommandBuffer& other) {
     _commandOrder.reserve(_commandOrder.size() + other._commandOrder.size());
+
+#if 0
     for (const CommandEntry& cmd : other._commandOrder) {
         other.getCommand<CommandBase>(cmd).addToBuffer(*this);
     }
+#else
+    for (const PolyContainerEntry& it : other._commandOrder) {
+        _commandOrder.emplace_back(
+            PolyContainerEntry{
+                it._typeIndex,
+                it._elementIndex + _commands._collection[it._typeIndex].size()
+            }
+        );
+    }
+
+    _commands.append(other._commands);
+#endif
 }
 
 void CommandBuffer::batch() {
@@ -61,9 +75,9 @@ void CommandBuffer::batch() {
 
             const CommandEntry& cmd = *it;
             CommandBase* crtCommand = getCommandInternal<CommandBase>(cmd);
-            CommandBase*& prevCommand = prevCommands[to_U16(cmd.type<GFX::CommandType::_enumerated>())];
+            CommandBase*& prevCommand = prevCommands[to_U16(static_cast<GFX::CommandType::_enumerated>(cmd._typeIndex))];
             
-            assert(prevCommand == nullptr || prevCommand->_type._value == cmd.type<GFX::CommandType::_enumerated>());
+            assert(prevCommand == nullptr || prevCommand->_type._value == static_cast<GFX::CommandType::_enumerated>(cmd._typeIndex));
 
             if (prevCommand != nullptr && tryMergeCommands(prevCommand, crtCommand, partial)) {
                 it = _commandOrder.erase(it);
@@ -88,7 +102,7 @@ void CommandBuffer::batch() {
             break;
         }
 
-        switch (cmd.type<GFX::CommandType::_enumerated>()) {
+        switch (static_cast<GFX::CommandType::_enumerated>(cmd._typeIndex)) {
             case GFX::CommandType::BEGIN_RENDER_PASS: {
                 // We may just wish to clear the RT
                 const GFX::BeginRenderPassCommand& crtCmd = getCommand<GFX::BeginRenderPassCommand>(cmd);
@@ -142,7 +156,7 @@ void CommandBuffer::clean() {
         skip = false;
         const CommandEntry& cmd = *it;
 
-        switch (cmd.type<GFX::CommandType::_enumerated>()) {
+        switch (static_cast<GFX::CommandType::_enumerated>(cmd._typeIndex)) {
             case CommandType::DRAW_COMMANDS :
             {
                 vectorEASTL<GenericDrawCommand>& cmds = getCommandInternal<DrawCommand>(cmd)->_drawCommands;
@@ -213,8 +227,8 @@ void CommandBuffer::clean() {
     vector<vec_size> redundantEntries;
     redundantEntries.reserve(size);
     for (vec_size i = 1; i < size; ++i) {
-        if (_commandOrder[i - 1].type<GFX::CommandType::_enumerated>() == _commandOrder[i].type<GFX::CommandType::_enumerated>() &&
-            _commandOrder[i].type<GFX::CommandType::_enumerated>() == CommandType::BIND_PIPELINE) {
+        if (static_cast<GFX::CommandType::_enumerated>(_commandOrder[i - 1]._typeIndex) == static_cast<GFX::CommandType::_enumerated>(_commandOrder[i]._typeIndex) &&
+            static_cast<GFX::CommandType::_enumerated>(_commandOrder[i]._typeIndex) == CommandType::BIND_PIPELINE) {
             redundantEntries.push_back(i - 1);
         }
     }
@@ -235,7 +249,7 @@ bool CommandBuffer::validate() const {
         U32 pushedDebugScope = 0;
 
         for (const CommandEntry& cmd : _commandOrder) {
-            switch (cmd.type<GFX::CommandType::_enumerated>()) {
+            switch (static_cast<GFX::CommandType::_enumerated>(cmd._typeIndex)) {
                 case GFX::CommandType::BEGIN_RENDER_PASS: {
                     if (pushedPass) {
                         return false;

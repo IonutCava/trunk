@@ -560,8 +560,7 @@ void main(void)
     vec4 albedo = mix(TerrainMappingRoutine(normalWV), UnderwaterMappingRoutine(normalWV), _waterDetails.x);
 
     setAlbedo(albedo);
-    setProcessedNormal(normalWV);
-    vec4 colourOut = getPixelColour();
+    vec4 colourOut = getPixelColour(normalWV);
 
 #if defined(TOGGLE_WIREFRAME)
     const float LineWidth = 0.75;
@@ -569,7 +568,7 @@ void main(void)
     colourOut = mix(vec4(gs_wireColor, 1.0), colourOut, smoothstep(LineWidth - 1, LineWidth + 1, d));
 #endif
 
-    writeOutput(colourOut, packNormal(getProcessedNormal()));
+    writeOutput(colourOut, packNormal(normalWV));
 }
 
 --Fragment.Shadow

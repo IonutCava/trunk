@@ -29,30 +29,25 @@ layout(early_fragment_tests) in;
 
 #include "output.frag"
 
-vec4 mappingFlat() {
-    setProcessedNormal(VAR._normalWV);
-    return getPixelColour();
-}
-
-
-vec4 getFinalPixelColour() {
+vec4 getFinalPixelColour(inout vec3 normal) {
 #if defined(COMPUTE_TBN)
     if (dvd_lodLevel == 0) {
 #   if defined(USE_PARALLAX_MAPPING)
-        return ParallaxMapping(VAR._texCoord, 0);
+        return ParallaxMapping(VAR._texCoord, 0, normal);
 #   elif defined(USE_RELIEF_MAPPING)
         return vec4(1.0, 0.0, 0.0, 1.0);
 #   else
-        setProcessedNormal(getTBNMatrix() * getBump(VAR._texCoord));
-        return getPixelColour();
+        normal = getTBNMatrix() * getBump(VAR._texCoord);
+        return getPixelColour(normal);
 #   endif
     }
 #endif
 
-   return mappingFlat();
+   return getPixelColour(normal);
 }
 
 void main (void) {
-    vec4 colour = getFinalPixelColour();
-    writeOutput(colour, packNormal(getProcessedNormal()));
+    vec3 normal = VAR._normalWV;
+    vec4 colour = getFinalPixelColour(normal);
+    writeOutput(colour, packNormal(normal));
 }

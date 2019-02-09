@@ -2046,8 +2046,9 @@ void mat4<T>::transpose() {
 
 template<typename T>
 void mat4<T>::inverseTranspose() {
-    inverse();
-    transpose();
+    mat4<F32> r;
+    GetInverse(*this, r);
+    r.getTranspose(*this);
 }
 
 template<typename T>

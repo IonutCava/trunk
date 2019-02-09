@@ -32,23 +32,28 @@ namespace Divide {
 
         return nullptr;
     }
-    void DescriptorSet::addShaderBuffers(const ShaderBufferList& entries) {
+
+    bool DescriptorSet::addShaderBuffers(const ShaderBufferList& entries) {
+        bool ret = false;
         for (auto entry : entries) {
-            addShaderBuffer(entry);
+            ret = addShaderBuffer(entry) || ret;
         }
+
+        return ret;
     }
 
-    void DescriptorSet::addShaderBuffer(const ShaderBufferBinding& entry) {
+    bool DescriptorSet::addShaderBuffer(const ShaderBufferBinding& entry) {
         ShaderBufferList::iterator it = std::find_if(std::begin(_shaderBuffers),
-                                                        std::end(_shaderBuffers),
-                                                        [&entry](const ShaderBufferBinding& binding)
-                                                        -> bool { return binding._binding == entry._binding; });
+                                                     std::end(_shaderBuffers),
+                                                     [&entry](const ShaderBufferBinding& binding)
+                                                      -> bool { return binding._binding == entry._binding; });
 
         if (it == std::end(_shaderBuffers)) {
             _shaderBuffers.push_back(entry);
-        } else {
-            it->set(entry);
+            return true;
         }
+         
+        return it->set(entry);
     }
 
     bool ShaderBufferBinding::set(const ShaderBufferBinding& other) {

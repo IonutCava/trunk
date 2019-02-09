@@ -3,25 +3,6 @@
 #include "Headers/PushConstants.h"
 
 namespace Divide {
-PushConstants::PushConstants()
-{
-    _data.reserve(3);
-}
-
-PushConstants::PushConstants(const GFX::PushConstant& constant)
-    : _data({constant})
-{
-}
-
-PushConstants::PushConstants(const vectorEASTL<GFX::PushConstant>& data)
-    : _data(data)
-{
-}
-
-PushConstants::~PushConstants()
-{
-    //clear();
-}
 
 void PushConstants::set(const GFX::PushConstant& constant) {
     for (GFX::PushConstant& iter : _data) {
@@ -34,13 +15,9 @@ void PushConstants::set(const GFX::PushConstant& constant) {
     _data.emplace_back(constant);
 }
 
-void PushConstants::clear() {
-    _data.clear();
-}
-
-bool PushConstants::merge(const PushConstants& other, bool& partial) {
-    const vectorEASTL<GFX::PushConstant>& ourConstants = _data;
-    const vectorEASTL<GFX::PushConstant>& otherConstants = other._data;
+bool Merge(PushConstants& lhs, const PushConstants& rhs, bool& partial) {
+    vectorEASTL<GFX::PushConstant>& ourConstants = lhs._data;
+    const vectorEASTL<GFX::PushConstant>& otherConstants = rhs._data;
 
     // Check stage
     for (const GFX::PushConstant& ourConstant : ourConstants) {
@@ -57,7 +34,7 @@ bool PushConstants::merge(const PushConstants& other, bool& partial) {
 
     // Merge stage
     partial = true;
-    insert_unique(_data, other._data);
+    insert_unique(ourConstants, otherConstants);
 
     return true;
 }

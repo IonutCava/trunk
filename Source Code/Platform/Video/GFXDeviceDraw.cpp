@@ -64,7 +64,7 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
 
     const vectorEASTL<GFX::CommandBuffer::CommandEntry>& commands = commandBuffer();
     for (const GFX::CommandBuffer::CommandEntry& cmd : commands) {
-        switch (cmd.type<GFX::CommandType::_enumerated>()) {
+        switch (static_cast<GFX::CommandType::_enumerated>(cmd._typeIndex)) {
             case GFX::CommandType::BLIT_RT: {
                 const GFX::BlitRenderTargetCommand& crtCmd = commandBuffer.getCommand<GFX::BlitRenderTargetCommand>(cmd);
                 RenderTarget& source = renderTargetPool().renderTarget(crtCmd._source);

@@ -910,7 +910,8 @@ void GL_API::drawIMGUI(ImDrawData* data, I64 windowGUID) {
     if (data != nullptr && data->Valid) {
 
         GenericVertexData::IndexBuffer idxBuffer;
-        GenericDrawCommand cmd(PrimitiveType::TRIANGLES, 0, 0);
+        GenericDrawCommand cmd = {};
+        cmd._primitiveType = PrimitiveType::TRIANGLES;
 
         ImVec2 pos = data->DisplayPos;
         for (int n = 0; n < data->CmdListsCount; n++)
@@ -1033,7 +1034,7 @@ void GL_API::popDebugMessage() {
 }
 
 void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) {
-    switch (entry.type<GFX::CommandType::_enumerated>()) {
+    switch (static_cast<GFX::CommandType::_enumerated>(entry._typeIndex)) {
         case GFX::CommandType::BEGIN_RENDER_PASS: {
             const GFX::BeginRenderPassCommand& crtCmd = commandBuffer.getCommand<GFX::BeginRenderPassCommand>(entry);
             glFramebuffer& rt = static_cast<glFramebuffer&>(_context.renderTargetPool().renderTarget(crtCmd._target));

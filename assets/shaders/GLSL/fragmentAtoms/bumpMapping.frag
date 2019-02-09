@@ -47,7 +47,7 @@ float ReliefMapping_RayIntersection(in vec2 A, in vec2 AB){
 }
 
 #if defined(_BRDF_FRAG_)
-vec4 ParallaxMapping(in vec2 uv, uint lightID){
+vec4 ParallaxMapping(in vec2 uv, uint lightID, inout vec3 normal){
     Light dvd_private_bump_light = dvd_LightSource[lightID];
 
     vec3 lightVecTBN = vec3(0.0);
@@ -72,8 +72,8 @@ vec4 ParallaxMapping(in vec2 uv, uint lightID){
                      (vec2(viewVecTBN.x, -viewVecTBN.y) / 
                      viewVecTBN.z));
 
-    setProcessedNormal(getTBNMatrix() * getBump(vTexCoord));
-    return getPixelColour();
+    normal = getTBNMatrix() * getBump(vTexCoord);
+    return getPixelColour(normal);
 }
 #endif
 

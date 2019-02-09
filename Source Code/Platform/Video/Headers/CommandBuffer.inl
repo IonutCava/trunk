@@ -36,35 +36,19 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 namespace GFX {
 
-namespace {
-    constexpr bool DISABLE_MEM_POOL = false;
-};
-
 template<typename T>
 inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, void>::type
 CommandBuffer::add(const T& command) {
 
-    T* mem = nullptr;
-    
-    if (DISABLE_MEM_POOL) {
-        mem = MemoryManager_NEW T(command);
-    } else {
-        UniqueLock w_lock(CmdAllocator<T>::s_PoolMutex);
-        mem = CmdAllocator<T>::s_Pool.newElement(command);
-    }
-    
     _commandOrder.emplace_back(
         _commands.insert<T>(
             static_cast<vec_size_eastl>(command._type),
-            deleted_unique_ptr<CommandBase>(mem,
-                                    [](CommandBase* cmd) {
-                                        if (DISABLE_MEM_POOL) {
-                                            MemoryManager::DELETE(cmd);
-                                        } else {
-                                            UniqueLock w_lock(CmdAllocator<T>::s_PoolMutex);
-                                            CmdAllocator<T>::s_Pool.deleteElement((T*)cmd);
-                                        }
-                                    })));
+            entry_ptr<CommandBase>(
+                CmdAllocator<T>::allocate(command),
+                [](CommandBase* cmd) {
+                    CmdAllocator<T>::deallocate((T*)cmd);
+                })));
+
 }
 
 template<typename T>
@@ -160,7 +144,7 @@ inline bool CommandBuffer::tryMergeCommands(BindDescriptorSetsCommand* prevComma
 
 template<>
 inline bool CommandBuffer::tryMergeCommands(SendPushConstantsCommand* prevCommand, SendPushConstantsCommand* crtCommand, bool& partial) const {
-    return prevCommand->_constants.merge(crtCommand->_constants, partial);
+    return Merge(prevCommand->_constants, crtCommand->_constants, partial);
 }
 
 template<>

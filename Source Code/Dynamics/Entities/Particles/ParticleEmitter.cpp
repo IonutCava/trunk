@@ -230,16 +230,17 @@ void ParticleEmitter::buildDrawCommands(SceneGraphNode& sgn,
         indexCount = to_U32(_particles->particleGeometryVertices().size());
     }
 
-    GenericDrawCommand cmd(_particles->particleGeometryType(), 0, indexCount);
+    GenericDrawCommand cmd = {};
+    cmd._primitiveType = _particles->particleGeometryType();
+    cmd._cmd.indexCount = indexCount;
+
     enableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
     GFX::DrawCommand drawCommand;
     drawCommand._drawCommands.push_back(cmd);
     pkgInOut.addDrawCommand(drawCommand);
 
     if (_particleTexture) {
-        DescriptorSet set = pkgInOut.descriptorSet(0);
-        set._textureData.setTexture(_particleTexture->getData(), to_U8(ShaderProgram::TextureUsage::UNIT0));
-        pkgInOut.descriptorSet(0, set);
+        pkgInOut.setTexture(0, _particleTexture->getData(), to_U8(ShaderProgram::TextureUsage::UNIT0));
     }
 
     const Pipeline* pipeline = pkgInOut.pipeline(0);

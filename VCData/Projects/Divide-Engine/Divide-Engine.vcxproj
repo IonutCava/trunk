@@ -340,7 +340,7 @@
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <LanguageStandard>stdcpp14</LanguageStandard>
-      <AdditionalOptions>/bigobj /Zc:twoPhase- /Zc:twoPhase-</AdditionalOptions>
+      <AdditionalOptions>/bigobj /Zc:twoPhase- /Zc:twoPhase-  </AdditionalOptions>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>

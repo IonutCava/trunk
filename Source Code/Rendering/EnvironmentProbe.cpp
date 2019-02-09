@@ -161,9 +161,7 @@ void EnvironmentProbe::debugDraw(GFX::CommandBuffer& bufferInOut) {
     GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
 
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
-    descriptorSetCmd._set._textureData.setTexture(TextureData(reflectTex->getTextureType(),
-                                                              reflectTex->getHandle()),
-                                                   to_U8(ShaderProgram::TextureUsage::REFLECTION_CUBE));
+    descriptorSetCmd._set._textureData.setTexture({ reflectTex->getHandle(), reflectTex->getTextureType(), 0u }, to_U8(ShaderProgram::TextureUsage::REFLECTION_CUBE));
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     GFX::SendPushConstantsCommand pushConstants;
@@ -173,7 +171,8 @@ void EnvironmentProbe::debugDraw(GFX::CommandBuffer& bufferInOut) {
     constants.set("dvd_LayerIndex", GFX::PushConstantType::UINT, to_U32(_currentArrayIndex));
     GFX::EnqueueCommand(bufferInOut, pushConstants);
 
-    GenericDrawCommand cmd(PrimitiveType::TRIANGLE_STRIP, 0, vb->getIndexCount());
+    GenericDrawCommand cmd = {};
+    cmd._cmd.indexCount = vb->getIndexCount();
     cmd._sourceBuffer = vb;
 
     GFX::DrawCommand drawCommand;

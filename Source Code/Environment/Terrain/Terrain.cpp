@@ -234,9 +234,7 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
     buffer._buffer = _shaderData;
     buffer._elementRange = { offset, MAX_RENDER_NODES };
 
-    DescriptorSet set = pkgInOut.descriptorSet(0);
-    set.addShaderBuffer(buffer);
-    pkgInOut.descriptorSet(0, set);
+    pkgInOut.addShaderBuffer(0, buffer);
 
     vec2<F32> tesRange = _descriptor->getTessellationRange().xy();
     if (renderStagePass._stage == RenderStage::SHADOW) {

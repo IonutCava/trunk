@@ -94,12 +94,11 @@ namespace Divide {
     struct DescriptorSet {
         //This needs a lot more work!
         TextureDataContainer _textureData = {};
-
         ShaderBufferList _shaderBuffers = {};
         TextureViews _textureViews = {};
 
-        void addShaderBuffer(const ShaderBufferBinding& entry);
-        void addShaderBuffers(const ShaderBufferList& entries);
+        bool addShaderBuffer(const ShaderBufferBinding& entry);
+        bool addShaderBuffers(const ShaderBufferList& entries);
         const ShaderBufferBinding* findBinding(ShaderBufferLocation slot) const;
         const TextureData* findTexture(U8 binding) const;
         const TextureView* findTextureView(U8 binding) const;

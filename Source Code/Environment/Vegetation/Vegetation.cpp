@@ -328,9 +328,7 @@ void Vegetation::buildDrawCommands(SceneGraphNode& sgn,
         buffer._buffer = s_grassData;
         buffer._elementRange = { _terrainChunk.ID() * s_maxGrassInstancesPerChunk, _instanceCountGrass };
 
-        DescriptorSet set = pkgInOut.descriptorSet(0);
-        set.addShaderBuffer(buffer);
-        pkgInOut.descriptorSet(0, set);
+        pkgInOut.addShaderBuffer(0, buffer);
 
         GenericDrawCommand cmd;
         cmd._primitiveType = PrimitiveType::TRIANGLE_STRIP;

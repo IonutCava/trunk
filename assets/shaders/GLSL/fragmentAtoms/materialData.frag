@@ -34,18 +34,12 @@ uniform bool dvd_LightingOnly = false;
 uniform bool dvd_NormalsOnly = false;
 #endif
 
-vec3 private_processedNormal = vec3(0.0, 0.0, 1.0);
-
-vec3 getProcessedNormal() {
+vec3 getProcessedNormal(vec3 normalIn) {
 #   if defined (USE_DOUBLE_SIDED)
-    return gl_FrontFacing ? private_processedNormal : -private_processedNormal;
+    return gl_FrontFacing ? normalIn : -normalIn;
 #   else
-    return private_processedNormal;
+    return normalIn;
 #   endif
-}
-
-void setProcessedNormal(vec3 normal) {
-    private_processedNormal = normal;
 }
 
 float Gloss(in vec3 bump, in vec2 texCoord)

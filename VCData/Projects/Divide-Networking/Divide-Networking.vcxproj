@@ -316,7 +316,7 @@
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <EnableModules>false</EnableModules>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalOptions> /Zc:twoPhase- /Zc:twoPhase-</AdditionalOptions>
+      <AdditionalOptions> /Zc:twoPhase- /Zc:twoPhase-  </AdditionalOptions>
     </ClCompile>
     <Lib>
       <OutputFile>$(SolutionDir)../Source Code/Libs/lib\$(ProjectName)_p$(TargetExt)</OutputFile>

@@ -488,9 +488,7 @@ bool SceneGraphNode::prepareRender(const Camera& camera, RenderStagePass renderS
                 buffer._buffer = data.second;
                 buffer._elementRange = data.first;
 
-                DescriptorSet set = pkg.descriptorSet(0);
-                set.addShaderBuffer(buffer);
-                pkg.descriptorSet(0, set);
+                pkg.addShaderBuffer(0, buffer);
             }
         }
         rComp->onRender(renderStagePass);

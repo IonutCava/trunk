@@ -230,9 +230,10 @@ void RenderingComponent::rebuildMaterial() {
 
 void RenderingComponent::onRender(RenderStagePass renderStagePass) {
     if (getMaterialInstanceCache() != nullptr) {
-        DescriptorSet set = getDrawPackage(renderStagePass).descriptorSet(0);
-        if (getMaterialInstanceCache()->getTextureData(renderStagePass, set._textureData)) {
-            getDrawPackage(renderStagePass).descriptorSet(0, set);
+        RenderPackage& pkg = getDrawPackage(renderStagePass);
+        TextureDataContainer& textures = pkg.descriptorSet(0)._textureData;
+        if (getMaterialInstanceCache()->getTextureData(renderStagePass, textures)) {
+            pkg.FlagDirty(RenderPackage::CommandType::DESCRIPTOR_SETS);
         }
     }
 }

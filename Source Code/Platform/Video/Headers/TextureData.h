@@ -42,34 +42,21 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 struct TextureData {
+    U32 _textureHandle = 0u;
     TextureType _textureType = TextureType::COUNT;
     U32 _samplerHandle = 0u;
-    U32 _textureHandle = 0u;
 
-    TextureData(TextureType type, U32 handle)
-      : _textureType(type),
-        _textureHandle(handle),
-        _samplerHandle(0u)
-    {
-    }
+    inline U32  getHandle()     const noexcept { return _textureHandle; }
+    inline void setHandle(U32 handle) noexcept { _textureHandle = handle; }
+    inline const TextureType& type() const noexcept { return _textureType; }
 
-    TextureData() noexcept = default;
-    TextureData(const TextureData& other) = default;
-    TextureData& operator=(const TextureData& other) = default;
-    TextureData(TextureData&& other) = default;
-    TextureData & operator=(TextureData&& other) = default;
-
-    inline U32  getHandle()     const { return _textureHandle; }
-    inline void setHandle(U32 handle) { _textureHandle = handle; }
-    inline const TextureType& type() const { return _textureType; }
-
-    inline bool operator==(const TextureData& other) const {
+    inline bool operator==(const TextureData& other) const noexcept {
         return _textureType == other._textureType &&
                _textureHandle == other._textureHandle &&
                _samplerHandle == other._samplerHandle;
     }
 
-    inline bool operator!=(const TextureData& other) const {
+    inline bool operator!=(const TextureData& other) const noexcept {
         return _textureType != other._textureType ||
                _textureHandle != other._textureHandle ||
                _samplerHandle != other._samplerHandle;
@@ -78,29 +65,29 @@ struct TextureData {
 
 class TextureDataContainer {
     public:
-      using DataEntries = vectorEASTL<eastl::pair<TextureData, U8 /*binding*/>>;
+      enum class UpdateState : U8 {
+          ADDED = 0,
+          REPLACED,
+          NOTHING,
+          COUNT
+      };
 
-      TextureDataContainer() noexcept;
-      ~TextureDataContainer() = default;
+      using DataEntries = vectorEASTL<eastl::pair<TextureData, U8 /*binding*/>>;
 
       bool set(const TextureDataContainer& other);
 
-      // Returns true if an existing texture was replaced!
-      bool setTexture(const TextureData& data, U8 binding);
-      // Returns true if an existing texture was replaced!
-      bool setTexture(const eastl::pair<TextureData, U8 /*binding*/>& textureEntry);
-      // Returns true if an existing texture was replaced!
-      bool setTextures(const TextureDataContainer& textureEntries);
-      // Returns true if an existing texture was replaced!
-      bool setTextures(const DataEntries& textureEntries);
+      UpdateState setTexture(const TextureData& data, U8 binding);
+      UpdateState setTexture(const eastl::pair<TextureData, U8 /*binding*/>& textureEntry);
+      UpdateState setTextures(const TextureDataContainer& textureEntries);
+      UpdateState setTextures(const DataEntries& textureEntries);
 
       bool removeTexture(U8 binding);
       bool removeTexture(const TextureData& data);
 
       void clear(bool clearMemory = false);
 
-      inline DataEntries& textures() { return _textures; }
-      inline const DataEntries& textures() const { return _textures; }
+      inline DataEntries& textures() noexcept { return _textures; }
+      inline const DataEntries& textures() const noexcept { return _textures; }
 
       inline bool operator==(const TextureDataContainer &other) const { return _textures == other._textures; }
       inline bool operator!=(const TextureDataContainer &other) const { return _textures != other._textures; }

@@ -74,7 +74,7 @@ void RenderPackage::drawCommand(I32 index, I32 cmdIndex, const GenericDrawComman
     DIVIDE_ASSERT(index < to_I32(_drawCommands.size()), "RenderPackage::drawCommand error: Invalid draw command index!");
     DIVIDE_ASSERT(cmdIndex < to_I32(_drawCommands[index]._drawCommands.size()), "RenderPackage::drawCommand error: Invalid draw command sub-index!");
     _drawCommands[index]._drawCommands[cmdIndex] = cmd;
-    SetBit(_dirtyFlags, CommandType::DRAW);
+    FlagDirty(CommandType::DRAW);
 }
 
 void RenderPackage::addDrawCommand(const GFX::DrawCommand& cmd) {
@@ -84,7 +84,7 @@ void RenderPackage::addDrawCommand(const GFX::DrawCommand& cmd) {
     _commandOrdering.push_back(entry);
 
     _drawCommands.push_back(cmd);
-    SetBit(_dirtyFlags, CommandType::DRAW);
+    FlagDirty(CommandType::DRAW);
 }
 
 void RenderPackage::setDrawOption(CmdRenderOptions option, bool state) {
@@ -103,7 +103,7 @@ const Pipeline* RenderPackage::pipeline(I32 index) const {
 void RenderPackage::pipeline(I32 index, const Pipeline& pipeline) {
     DIVIDE_ASSERT(index < to_I32(_pipelines.size()), "RenderPackage::pipeline error: Invalid pipeline index!");
     _pipelines[index]._pipeline = &pipeline;
-    SetBit(_dirtyFlags, CommandType::PIPELINE);
+    FlagDirty(CommandType::PIPELINE);
 }
 
 void RenderPackage::addPipelineCommand(const GFX::BindPipelineCommand& pipeline) {
@@ -113,7 +113,7 @@ void RenderPackage::addPipelineCommand(const GFX::BindPipelineCommand& pipeline)
     _commandOrdering.push_back(entry);
 
     _pipelines.push_back(pipeline);
-    SetBit(_dirtyFlags, CommandType::PIPELINE);
+    FlagDirty(CommandType::PIPELINE);
 }
 
 const FrustumClipPlanes& RenderPackage::clipPlanes(I32 index) const {
@@ -124,7 +124,7 @@ const FrustumClipPlanes& RenderPackage::clipPlanes(I32 index) const {
 void RenderPackage::clipPlanes(I32 index, const FrustumClipPlanes& clipPlanes) {
     DIVIDE_ASSERT(index < to_I32(_clipPlanes.size()), "RenderPackage::clipPlanes error: Invalid clip plane list index!");
     _clipPlanes[index]._clippingPlanes = clipPlanes;
-    SetBit(_dirtyFlags, CommandType::CLIP_PLANES);
+    FlagDirty(CommandType::CLIP_PLANES);
 }
 
 void RenderPackage::addClipPlanesCommand(const GFX::SetClipPlanesCommand& clipPlanes) {
@@ -134,7 +134,7 @@ void RenderPackage::addClipPlanesCommand(const GFX::SetClipPlanesCommand& clipPl
     _commandOrdering.push_back(entry);
 
     _clipPlanes.push_back(clipPlanes);
-    SetBit(_dirtyFlags, CommandType::CLIP_PLANES);
+    FlagDirty(CommandType::CLIP_PLANES);
 }
 
 const PushConstants& RenderPackage::pushConstants(I32 index) const {
@@ -145,7 +145,7 @@ const PushConstants& RenderPackage::pushConstants(I32 index) const {
 void RenderPackage::pushConstants(I32 index, const PushConstants& constants) {
     DIVIDE_ASSERT(index < to_I32(_pushConstants.size()), "RenderPackage::pushConstants error: Invalid push constants index!");
     _pushConstants[index]._constants = constants;
-    SetBit(_dirtyFlags, CommandType::PUSH_CONSTANTS);
+    FlagDirty(CommandType::PUSH_CONSTANTS);
 }
 
 void RenderPackage::addPushConstantsCommand(const GFX::SendPushConstantsCommand& pushConstants) {
@@ -156,7 +156,12 @@ void RenderPackage::addPushConstantsCommand(const GFX::SendPushConstantsCommand&
 
     _pushConstants.push_back(pushConstants);
 
-    SetBit(_dirtyFlags, CommandType::PUSH_CONSTANTS);
+    FlagDirty(CommandType::PUSH_CONSTANTS);
+}
+
+DescriptorSet& RenderPackage::descriptorSet(I32 index) {
+    DIVIDE_ASSERT(index < to_I32(_descriptorSets.size()), "RenderPackage::descriptorSet error: Invalid descriptor set index!");
+    return _descriptorSets[index]._set;
 }
 
 const DescriptorSet& RenderPackage::descriptorSet(I32 index) const {
@@ -168,7 +173,7 @@ void RenderPackage::descriptorSet(I32 index, const DescriptorSet& descriptorSets
     DIVIDE_ASSERT(index < to_I32(_descriptorSets.size()), "RenderPackage::descriptorSet error: Invalid descriptor set index!");
     if (_descriptorSets[index]._set != descriptorSets) {
         _descriptorSets[index]._set = descriptorSets;
-        SetBit(_dirtyFlags, CommandType::DESCRIPTOR_SETS);
+        FlagDirty(CommandType::DESCRIPTOR_SETS);
     }
 }
 
@@ -178,13 +183,13 @@ void RenderPackage::addDescriptorSetsCommand(const GFX::BindDescriptorSetsComman
     entry._elementIndex = _descriptorSets.size();
     _commandOrdering.push_back(entry);
     _descriptorSets.push_back(descriptorSets);
-    SetBit(_dirtyFlags, CommandType::DESCRIPTOR_SETS);
+    FlagDirty(CommandType::DESCRIPTOR_SETS);
 }
 
 void RenderPackage::addCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
    const vectorEASTL<GFX::CommandBuffer::CommandEntry>& commands = commandBuffer();
     for (const GFX::CommandBuffer::CommandEntry& cmd : commands) {
-        switch (cmd.type<GFX::CommandType::_enumerated>()) {
+        switch (static_cast<GFX::CommandType::_enumerated>(cmd._typeIndex)) {
             case GFX::CommandType::DRAW_COMMANDS: {
                 addDrawCommand(commandBuffer.getCommand<GFX::DrawCommand>(cmd));
             } break;
@@ -210,6 +215,20 @@ void RenderPackage::addCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
     }
 }
 
+void RenderPackage::addShaderBuffer(I32 descriptorSetIndex, const ShaderBufferBinding& buffer) {
+    DIVIDE_ASSERT(descriptorSetIndex < to_I32(_descriptorSets.size()), "RenderPackage::descriptorSet error: Invalid descriptor set index!");
+    if (_descriptorSets[descriptorSetIndex]._set.addShaderBuffer(buffer)) {
+        FlagDirty(CommandType::DESCRIPTOR_SETS);
+    }
+}
+
+void RenderPackage::setTexture(I32 descriptorSetIndex, const TextureData& data, U8 binding) {
+    DIVIDE_ASSERT(descriptorSetIndex < to_I32(_descriptorSets.size()), "RenderPackage::descriptorSet error: Invalid descriptor set index!");
+    if (_descriptorSets[descriptorSetIndex]._set._textureData.setTexture(data, binding) != TextureDataContainer::UpdateState::NOTHING) {
+        FlagDirty(CommandType::DESCRIPTOR_SETS);
+    }
+}
+
 U8 RenderPackage::lodLevel() const {
     return _lodLevel;
 }
@@ -229,7 +248,7 @@ void RenderPackage::setDataIndex(U32 dataIndex) {
         }
     }
     if (dirty) {
-        SetBit(_dirtyFlags, CommandType::DRAW);
+        FlagDirty(CommandType::DRAW);
     }
 }
 
@@ -246,24 +265,24 @@ void RenderPackage::updateDrawCommands(U32 startOffset) {
     }
 
     if (dirty) {
-        SetBit(_dirtyFlags, CommandType::DRAW);
+        FlagDirty(CommandType::DRAW);
     }
 }
 
-GFX::CommandBuffer& RenderPackage::buildAndGetCommandBuffer(bool cacheMiss) {
+void RenderPackage::buildAndGetCommandBuffer(GFX::CommandBuffer& bufferInOut, bool& cacheMiss) {
     cacheMiss = false;
     //ToDo: Try to rebuild only the affected bits and pieces. That's why we have multiple dirty flags -Ionut
-    if (_commands == nullptr || _dirtyFlags != 0) {
-        cacheMiss = true;
-
+    if (_dirtyFlags != 0) {
         if (_commands == nullptr) {
+            cacheMiss = true;
             _commands = GFX::allocateCommandBuffer(_secondaryCommandPool);
         }
         GFX::CommandBuffer& buffer = *_commands;
-
         buffer.clear();
+
+        cacheMiss = true;
         for (const GFX::CommandBuffer::CommandEntry& cmd : _commandOrdering) {
-            switch (cmd.type<GFX::CommandType::_enumerated>()) {
+            switch (static_cast<GFX::CommandType::_enumerated>(cmd._typeIndex)) {
                 case GFX::CommandType::DRAW_COMMANDS: {
                     GFX::EnqueueCommand(buffer, _drawCommands[cmd._elementIndex]);
                 } break;
@@ -290,8 +309,8 @@ GFX::CommandBuffer& RenderPackage::buildAndGetCommandBuffer(bool cacheMiss) {
 
         _dirtyFlags = to_base(CommandType::NONE);
     }
-
-    return *_commands;
+        
+    bufferInOut.add(*_commands);
 }
 
 }; //namespace Divide

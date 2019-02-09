@@ -357,7 +357,7 @@
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <EnableModules>false</EnableModules>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalOptions> /Zc:twoPhase- /Zc:twoPhase-</AdditionalOptions>
+      <AdditionalOptions> /Zc:twoPhase- /Zc:twoPhase-  </AdditionalOptions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

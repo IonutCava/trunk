@@ -681,12 +681,12 @@ void RenderPassManager::renderQueueToSubPasses(RenderStagePass stagePass, GFX::C
     bool cacheMiss = false;
     if (qualityRequirement == RenderPackage::MinQuality::COUNT) {
         for (RenderPackage* item : queue) {
-            commandsInOut.add(Attorney::RenderPackageRenderPassManager::buildAndGetCommandBuffer(*item, cacheMiss));
+            Attorney::RenderPackageRenderPassManager::buildAndGetCommandBuffer(*item, commandsInOut, cacheMiss);
         }
     } else {
         for (RenderPackage* item : queue) {
             if (item->qualityRequirement() == qualityRequirement) {
-                commandsInOut.add(Attorney::RenderPackageRenderPassManager::buildAndGetCommandBuffer(*item, cacheMiss));
+                Attorney::RenderPackageRenderPassManager::buildAndGetCommandBuffer(*item, commandsInOut, cacheMiss);
             }
         }
     }

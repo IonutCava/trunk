@@ -96,6 +96,7 @@ public:
     const PushConstants& pushConstants(I32 index) const;
     void pushConstants(I32 index, const PushConstants& constants);
 
+    DescriptorSet& descriptorSet(I32 index);
     const DescriptorSet& descriptorSet(I32 index) const;
     void descriptorSet(I32 index, const DescriptorSet& descriptorSets);
 
@@ -106,15 +107,20 @@ public:
     void addDescriptorSetsCommand(const GFX::BindDescriptorSetsCommand& descriptorSets);
     void addCommandBuffer(const GFX::CommandBuffer& commandBuffer);
 
+    void addShaderBuffer(I32 descriptorSetIndex, const ShaderBufferBinding& buffer);
+    void setTexture(I32 descriptorSetIndex, const TextureData& data, U8 binding);
+
     void setDrawOption(CmdRenderOptions option, bool state);
 
     inline bool empty() const { return _commandOrdering.empty(); }
+
+    inline void FlagDirty(CommandType type) { SetBit(_dirtyFlags, type); }
 
 protected:
     void setLoDLevel(U8 LoD);
     void setDataIndex(U32 dataIndex);
     void updateDrawCommands(U32 startOffset);
-    GFX::CommandBuffer& buildAndGetCommandBuffer(bool cacheMiss);
+    void buildAndGetCommandBuffer(GFX::CommandBuffer& bufferInOut, bool& cacheMiss);
 
 private:
     U8 _lodLevel;
@@ -139,9 +145,8 @@ protected:
 namespace Attorney {
     class RenderPackageRenderPassManager {
         private:
-        // Return true if the command buffer was reconstructed
-        static GFX::CommandBuffer& buildAndGetCommandBuffer(RenderPackage& pkg, bool cacheMiss) {
-            return pkg.buildAndGetCommandBuffer(cacheMiss);
+        static void buildAndGetCommandBuffer(RenderPackage& pkg, GFX::CommandBuffer& bufferInOut, bool& cacheMiss) {
+            pkg.buildAndGetCommandBuffer(bufferInOut, cacheMiss);
         }
 
         friend class Divide::RenderPassManager;

@@ -77,10 +77,12 @@ vec3 getLightColour(vec3 albedo, vec3 normal, uint dirLightCount, uint pointLigh
 }
 
 
-vec4 getPixelColour(vec4 albedo, vec3 normal) {
+vec4 getPixelColour(vec4 albedo, inout vec3 normal) {
+    normal = getProcessedNormal(normal);
+
 #if defined(_DEBUG)
     if (dvd_NormalsOnly) {
-        return vec4(getProcessedNormal(), 1.0);
+        return vec4(normal, 1.0);
     }
 #endif
 
@@ -121,8 +123,8 @@ vec4 getPixelColour(vec4 albedo, vec3 normal) {
     
 }
 
-vec4 getPixelColour() {
-    return getPixelColour(getAlbedo(), getProcessedNormal());
+vec4 getPixelColour(inout vec3 normal) {
+    return getPixelColour(getAlbedo(), normal);
 }
 
 #endif

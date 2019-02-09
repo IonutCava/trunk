@@ -20,12 +20,6 @@ namespace {
     }
 };
 
-TextureDataContainer::TextureDataContainer() noexcept
-    : _textures{}
-{
-    _textures.reserve(to_base(ShaderProgram::TextureUsage::COUNT));
-}
-
 bool TextureDataContainer::set(const TextureDataContainer& other) {
     // EASTL should be fast enough to handle this
     const DataEntries& otherTextures = other.textures();
@@ -37,11 +31,11 @@ bool TextureDataContainer::set(const TextureDataContainer& other) {
     return false;
 }
 
-bool TextureDataContainer::setTexture(const eastl::pair<TextureData, U8 /*binding*/>& textureEntry) {
+TextureDataContainer::UpdateState TextureDataContainer::setTexture(const eastl::pair<TextureData, U8 /*binding*/>& textureEntry) {
     return setTexture(textureEntry.first, textureEntry.second);
 }
 
-bool TextureDataContainer::setTexture(const TextureData& data, U8 binding) {
+TextureDataContainer::UpdateState TextureDataContainer::setTexture(const TextureData& data, U8 binding) {
     assert(data.type() != TextureType::COUNT);
 
     auto it = eastl::find_if(eastl::begin(_textures),
@@ -51,21 +45,28 @@ bool TextureDataContainer::setTexture(const TextureData& data, U8 binding) {
                              });
     if (it == eastl::cend(_textures)) {
         _textures.emplace_back(data, binding);
-        return false;
+        return UpdateState::ADDED;
+    }
+
+    if (it->first == data) {
+        return UpdateState::NOTHING;
     }
 
     it->first = data;
-    return true;
+    return UpdateState::REPLACED;
 }
 
-bool TextureDataContainer::setTextures(const TextureDataContainer& textureEntries) {
+TextureDataContainer::UpdateState TextureDataContainer::setTextures(const TextureDataContainer& textureEntries) {
     return setTextures(textureEntries._textures);
 }
 
-bool TextureDataContainer::setTextures(const DataEntries& textureEntries) {
-    bool ret = false;
+TextureDataContainer::UpdateState TextureDataContainer::setTextures(const DataEntries& textureEntries) {
+    UpdateState ret = UpdateState::COUNT;
     for (auto entry : textureEntries) {
-        ret = setTexture(entry) || ret;
+        UpdateState state = setTexture(entry);
+        if (ret == UpdateState::COUNT || state != UpdateState::NOTHING) {
+            ret = state;
+        }
     }
 
     return ret;
