@@ -146,7 +146,7 @@ struct Command : public CommandBase {
 
     virtual ~Command() = default;
 
-    static const CommandType::_enumerated Type = EnumVal;
+    static const CommandType::_enumerated EType = EnumVal;
 };
 
 BEGIN_COMMAND(BindPipelineCommand, CommandType::BIND_PIPELINE);

@@ -97,6 +97,10 @@ class CommandBuffer : private GUIDWrapper, private NonCopyable {
     // Multi-line. indented list of all commands (and params for some of them)
     stringImpl toString() const;
 
+    template<typename T>
+    typename std::enable_if<std::is_base_of<CommandBase, T>::value, size_t>::type
+    count() const;
+
   protected:
     template<typename T, CommandType::_enumerated enumVal>
     friend struct Command;

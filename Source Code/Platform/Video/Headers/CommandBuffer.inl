@@ -66,15 +66,21 @@ CommandBuffer::get(const CommandEntry& commandEntry) const {
 template<typename T>
 inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T&>::type
 CommandBuffer::get(size_t index) {
-    return get<T>(CommandEntry{T::Type._to_integral(), index});
+    return get<T>(CommandEntry{to_base(T::EType), index});
 }
 
 template<typename T>
 inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, const T&>::type
 CommandBuffer::get(size_t index) const {
-    return get<T>(CommandEntry{T::Type._to_integral(), index });
+    return get<T>(CommandEntry{to_base(T::EType), index });
 }
 
+
+template<typename T>
+inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, size_t>::type
+CommandBuffer::count() const {
+    return _commands.size(to_base(T::EType));
+}
 
 inline vectorEASTL<CommandBuffer::CommandEntry>& CommandBuffer::operator()() {
     return _commandOrder;
