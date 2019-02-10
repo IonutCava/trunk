@@ -84,7 +84,7 @@ struct PolyContainer {
     }
 
 
-    inline vec_size_eastl size(vec_size_eastl index) {
+    inline vec_size_eastl size(vec_size_eastl index) const {
         assert(index < N);
 
         return _collection[index].size();
