@@ -22,8 +22,6 @@ void main(void)
 
 -- Fragment
 
-#define CUSTOM_MATERIAL_ALBEDO
-
 in flat int _underwater;
 in vec3 _pixToEye;
 in vec4 _vertexWVP;
@@ -36,15 +34,6 @@ uniform float _waterShininess;
 #include "bumpMapping.frag"
 #include "shadowMapping.frag"
 #include "output.frag"
-
-vec4 private_albedo = vec4(1.0);
-void setAlbedo(in vec4 albedo) {
-    private_albedo = albedo;
-}
-
-vec4 getAlbedo() {
-    return private_albedo;
-}
 
 const float Eta = 0.15; //water
 
@@ -97,8 +86,7 @@ void main (void)
                          mixFactor);
     normal = normalize(getTBNMatrix() * normal);
 #if 0
-    setAlbedo(texColour);
-    writeOutput(getPixelColour(normal), packNormal(normal));
+    writeOutput(getPixelColour(texColour, normal), packNormal(normal));
 #else
     writeOutput(texColour, packNormal(normal));
 #endif

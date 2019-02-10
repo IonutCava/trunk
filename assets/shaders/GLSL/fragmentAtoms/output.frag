@@ -92,7 +92,7 @@ void writeOutput(vec4 colour, vec2 normal, vec2 velocity) {
 }
 
 void writeOutput(vec4 colour, vec2 normal) {
-    writeOutput(colour, normal, velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised()));
+    writeOutput(colour, normal, velocityCalc(dvd_ProjectionMatrix, getScreenPositionNormalised()));
 }
 
 void writeOutput(vec3 colour, vec2 normal) {

@@ -45,7 +45,6 @@ layout(binding = BUFFER_GPU_COMMANDS, std430) coherent buffer dvd_GPUCmds
 layout(binding = BUFFER_GPU_BLOCK, std140) uniform dvd_GPUBlock
 {
     mat4  dvd_ProjectionMatrix;
-    mat4  dvd_InvProjectionMatrix;
     mat4  dvd_ViewMatrix;
     mat4  dvd_ViewProjectionMatrix;
     ///xyz - position, w - aspect ratio
@@ -53,7 +52,6 @@ layout(binding = BUFFER_GPU_BLOCK, std140) uniform dvd_GPUBlock
     //x - nearPlane, y - farPlane, z - FoV, w - reserved
     vec4  dvd_renderProperties;
     vec4  dvd_ViewPort;
-    vec4  dvd_frustumPlanes[MAX_CLIP_PLANES];
     vec4  dvd_clip_plane[MAX_CLIP_PLANES];
 };
 

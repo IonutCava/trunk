@@ -150,7 +150,8 @@ vec3 Diffuse(vec3 diffuseColor, float roughness, float NdotV, float NdotL, float
 #define M_PI 3.14159265358979323846
 #define M_EPSILON 0.0000001
 
-void PBR(in vec3 normalWV,
+void PBR(in Light light,
+         in vec3 normalWV,
          in vec3 albedo,
          in vec3 specular,
          in float reflectivity,
@@ -161,7 +162,7 @@ void PBR(in vec3 normalWV,
     vec3 dvd_ViewDirNorm = normalize(-VAR._vertexWV.xyz);
 
     // direction is NOT normalized
-    vec3 lightDirection = getLightDirection();
+    vec3 lightDirection = getLightDirection(light);
     vec3 Hn = normalize(dvd_ViewDirNorm + lightDirection);
     float vdh = clamp((dot(dvd_ViewDirNorm, Hn)), M_EPSILON, 1.0);
     float ndh = clamp((dot(normalWV, Hn)), M_EPSILON, 1.0);
@@ -176,8 +177,8 @@ void PBR(in vec3 normalWV,
 
     vec3 result = diffuseFactor + specularFactor;
 
-    vec3 lightColour = dvd_private_light._colour.rgb;
-    float att = getLightAttenuation(lightDirection);
+    vec3 lightColour = light._colour.rgb;
+    float att = getLightAttenuation(light, lightDirection);
 
     reflectionCoeff = saturate(reflectionCoeff + length(specularFactor));
 

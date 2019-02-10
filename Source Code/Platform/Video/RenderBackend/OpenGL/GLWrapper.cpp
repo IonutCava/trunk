@@ -266,8 +266,8 @@ bool GL_API::initGLSW() {
         { "vec4"       , "_vertexW"},
         { "vec4"       , "_vertexWV"},
         { "vec3"       , "_normalWV"},
-        { "vec2"       , "_texCoord"},
         { "flat uvec3" , "dvd_drawParams"},
+        { "vec2"       , "_texCoord"}
     };
     static const stringImpl drawParams = ""
         "#define dvd_baseInstance dvd_drawParams.x\n"
@@ -326,21 +326,23 @@ bool GL_API::initGLSW() {
 
     // Add our engine specific defines and various code pieces to every GLSL shader
     // Add version as the first shader statement, followed by copyright notice
-    appendToShaderHeader(ShaderType::COUNT, "#version 450 core", lineOffsets);
+    GLint minGLVersion = GLUtil::getIntegerv(GL_MINOR_VERSION);
 
-    appendToShaderHeader(ShaderType::COUNT, "/*Copyright 2009-2018 DIVIDE-Studio*/", lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#version 4%d0 core", minGLVersion), lineOffsets);
+
+    appendToShaderHeader(ShaderType::COUNT, "/*Copyright 2009-2019 DIVIDE-Studio*/", lineOffsets);
     appendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_shader_draw_parameters : require", lineOffsets);
     appendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_gpu_shader5 : require", lineOffsets);
-    appendToShaderHeader(ShaderType::COUNT, crossTypeGLSLHLSL,lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT, crossTypeGLSLHLSL, lineOffsets);
     appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define GPU_VENDOR_AMD %d", to_base(GPUVendor::AMD)), lineOffsets);
     appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define GPU_VENDOR_NVIDIA %d", to_base(GPUVendor::NVIDIA)), lineOffsets);
     appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define GPU_VENDOR_INTEL %d", to_base(GPUVendor::INTEL)), lineOffsets);
     appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define GPU_VENDOR_OTHER %d", to_base(GPUVendor::OTHER)), lineOffsets);
     appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define GPU_VENDOR %d", to_U32(GFXDevice::getGPUVendor())), lineOffsets);
-    appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define DETAIL_OFF   %d", to_base(RenderDetailLevel::OFF)), lineOffsets);
-    appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define DETAIL_LOW   %d", to_base(RenderDetailLevel::LOW)), lineOffsets);
-    appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define DETAIL_MED   %d", to_base(RenderDetailLevel::MEDIUM)), lineOffsets);
-    appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define DETAIL_HIGH  %d", to_base(RenderDetailLevel::HIGH)), lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define DETAIL_OFF %d", to_base(RenderDetailLevel::OFF)), lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define DETAIL_LOW %d", to_base(RenderDetailLevel::LOW)), lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define DETAIL_MED %d", to_base(RenderDetailLevel::MEDIUM)), lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define DETAIL_HIGH %d", to_base(RenderDetailLevel::HIGH)), lineOffsets);
     appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define DETAIL_ULTRA %d", to_base(RenderDetailLevel::ULTRA)), lineOffsets);
     appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define DETAIL_COUNT %d", to_base(RenderDetailLevel::COUNT)), lineOffsets);
 
@@ -375,13 +377,13 @@ bool GL_API::initGLSW() {
         appendToShaderHeader(ShaderType::COUNT, "//#pragma optionNV(unroll all)", lineOffsets);
     }
 
-    appendToShaderHeader(ShaderType::COUNT,    "const uint MAX_CSM_SPLITS_PER_LIGHT = " + to_stringImpl(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT) + ";", lineOffsets);
-    appendToShaderHeader(ShaderType::COUNT,    "const uint MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS = " + to_stringImpl(Config::Lighting::MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS) + ";", lineOffsets);
-    appendToShaderHeader(ShaderType::COUNT,    "const uint MAX_SHADOW_CASTING_LIGHTS = " + to_stringImpl(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS) + ";", lineOffsets);
-    appendToShaderHeader(ShaderType::COUNT,    "const int MAX_VISIBLE_NODES = " + to_stringImpl(Config::MAX_VISIBLE_NODES) + ";", lineOffsets);
-    appendToShaderHeader(ShaderType::COUNT,    "const float Z_TEST_SIGMA = 0.0001;", lineOffsets);
-    appendToShaderHeader(ShaderType::FRAGMENT, "const uint DEPTH_EXP_WARP = 32;", lineOffsets);
-    appendToShaderHeader(ShaderType::VERTEX,   "const uint MAX_BONE_COUNT_PER_NODE = " + to_stringImpl(Config::MAX_BONE_COUNT_PER_NODE) + ";", lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT,    "#define MAX_CSM_SPLITS_PER_LIGHT " + to_stringImpl(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT), lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT,    "#define MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS " + to_stringImpl(Config::Lighting::MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS), lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT,    "#define MAX_SHADOW_CASTING_LIGHTS " + to_stringImpl(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS), lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT,    "#define MAX_VISIBLE_NODES " + to_stringImpl(Config::MAX_VISIBLE_NODES), lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT,    "#define Z_TEST_SIGMA 0.0001f", lineOffsets);
+    appendToShaderHeader(ShaderType::FRAGMENT, "#define DEPTH_EXP_WARP 32;", lineOffsets);
+    appendToShaderHeader(ShaderType::VERTEX,   "#define MAX_BONE_COUNT_PER_NODE " + to_stringImpl(Config::MAX_BONE_COUNT_PER_NODE), lineOffsets);
     static_assert(Config::MAX_BONE_COUNT_PER_NODE <= 1024, "GLWrapper error: too many bones per vert. Can't fit inside UBO");
 
     appendToShaderHeader(

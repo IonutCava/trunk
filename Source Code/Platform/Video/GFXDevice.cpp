@@ -153,6 +153,9 @@ GFXDevice::GFXDevice(Kernel& parent)
     for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
         VertexBuffer::setAttribMask(RenderStagePass(RenderStage::SHADOW, static_cast<RenderPassType>(pass)).index(), flags);
     }
+    for (U8 i = 0; i < to_base(Frustum::FrustPlane::COUNT); ++i) {
+        _frustumPlanes[i].set(0.0f);
+    }
 }
 
 GFXDevice::~GFXDevice()
@@ -503,7 +506,6 @@ void GFXDevice::renderFromCamera(const CameraSnapshot& cameraSnapshot) {
 
         if (cameraSnapshot._projectionMatrix != data._ProjectionMatrix) {
             data._ProjectionMatrix.set(cameraSnapshot._projectionMatrix);
-            data._ProjectionMatrix.getInverse(data._InvProjectionMatrix);
         }
 
         F32 FoV = cameraSnapshot._FoV;
@@ -512,7 +514,7 @@ void GFXDevice::renderFromCamera(const CameraSnapshot& cameraSnapshot) {
         data._renderProperties.z = FoV;
         mat4<F32>::Multiply(data._ViewMatrix, data._ProjectionMatrix, data._ViewProjectionMatrix);
         data._ViewProjectionMatrix.getInverse(_gpuBlock._viewProjMatrixInv);
-        Frustum::computePlanes(_gpuBlock._viewProjMatrixInv, data._frustumPlanes);
+        Frustum::computePlanes(_gpuBlock._viewProjMatrixInv, _frustumPlanes);
         _gpuBlock._needsUpload = true;
     }
 }

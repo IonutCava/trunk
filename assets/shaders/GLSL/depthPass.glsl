@@ -18,15 +18,14 @@ void main() {
 }
 
 -- Fragment.PrePass.AlphaDiscard
-
 #include "materialData.frag"
 
 void main() {
-#if defined(HAS_TRANSPARENCY)
-    if (getOpacity() < 1.0 - Z_TEST_SIGMA) {
+    mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;
+
+    if (getAlbedo(colourMatrix).a < 1.0 - Z_TEST_SIGMA) {
         discard;
     }
-#endif
 }
 
 -- Fragment.Shadow
@@ -47,10 +46,12 @@ out vec2 _colourOut;
 
 void main() {
 #if defined(HAS_TRANSPARENCY)
-    if (getOpacity() < 1.0 - Z_TEST_SIGMA) {
+    mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;
+    if (getAlbedo(colourMatrix).a < 1.0 - Z_TEST_SIGMA) {
         discard;
     }
 #endif
+
     _colourOut = computeMoments();
 }
 

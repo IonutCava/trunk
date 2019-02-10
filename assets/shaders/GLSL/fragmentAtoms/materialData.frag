@@ -102,88 +102,30 @@ vec4 getTextureColour(in vec2 uv) {
 }
 #endif
 
-float private_getOpacity();
-vec4 private_getAlbedo();
-vec3 private_getEmissive();
-vec3 private_getSpecular();
-float private_getShininess();
-
-#if !defined(CUSTOM_MATERIAL_OPACITY)
-float getOpacity() {
-    return private_getOpacity();
-}
-#else
-float getOpacity();
-#endif
-
-#if !defined(CUSTOM_MATERIAL_ALBEDO)
-vec4 getAlbedo() {
-    return private_getAlbedo();
-}
-#else
-vec4 getAlbedo();
-#endif
-
-#if !defined(CUSTOM_MATERIAL_EMISSIVE)
-vec3 getEmissive() {
-    return private_getEmissive();
-}
-#else
-vec3 getEmissive();
-#endif
-
-#if !defined(CUSTOM_MATERIAL_SPECULAR)
-vec3 getSpecular() {
-    return private_getSpecular();
-}
-#else
-vec3 getSpecular();
-#endif
-
-#if !defined(CUSTOM_MATERIAL_SHININESS)
-float getShininess() {
-    return private_getShininess();
-}
-#else
-float getShininess();
-#endif
-
-float getRoughness() {
-    return 1.0 - saturate(getShininess() / 255.0);
+float getShininess(mat4 colourMatrix) {
+    return colourMatrix[2].w;
 }
 
-float getReflectivity() {
+float getRoughness(mat4 colourMatrix) {
+    return 1.0 - saturate(getShininess(colourMatrix) / 255.0);
+}
+
+float getReflectivity(mat4 colourMatrix) {
 #if defined(USE_SHADING_PHONG) || defined (USE_SHADING_BLINN_PHONG)
-    return getShininess();
+    return getShininess(colourMatrix);
 #elif defined(USE_SHADING_TOON)
     // ToDo - will cause compile error
 #else //if defined(USE_SHADING_COOK_TORRANCE) || defined(USE_SHADING_OREN_NAYAR)
-    float roughness = getRoughness();
+    float roughness = getRoughness(colourMatrix);
     return roughness * roughness;
 #endif
 }
 
-vec4 private_getDiffuseColour() {
-
-#   if defined(SKIP_TEXTURES)
-        return dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix[0];
-#   else
-        return getTextureColour(VAR._texCoord);
-#   endif
-
-    return vec4(1.0);
-}
-
-#if defined(USE_OPACITY_DIFFUSE_MAP)
-float private_pixel_opacity = -1.0;
-#endif
-
-
-float private_getOpacity() {
+float getOpacity(mat4 colourMatrix, float albedoAlpha) {
 #if defined(HAS_TRANSPARENCY)
 
 #   if defined(USE_OPACITY_DIFFUSE)
-    return dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix[0].a;
+    return colourMatrix[0].a;
 #   endif
 
 #   if defined(USE_OPACITY_MAP)
@@ -192,11 +134,7 @@ float private_getOpacity() {
 #   endif
 
 #   if defined(USE_OPACITY_DIFFUSE_MAP)
-    if (private_pixel_opacity < 0) {
-        private_pixel_opacity = private_getDiffuseColour().a;
-    }
-
-    return private_pixel_opacity;
+    return albedoAlpha;
 #   endif
 
 #   endif
@@ -204,20 +142,15 @@ float private_getOpacity() {
     return 1.0;
 }
 
-vec4 private_getAlbedo() {
-    vec4 albedo = private_getDiffuseColour();
+vec4 getAlbedo(mat4 colourMatrix) {
 
-#   if defined(USE_OPACITY_DIFFUSE_MAP)
-        private_pixel_opacity = albedo.a;
-#   endif
+#if defined(SKIP_TEXTURES)
+    vec4 albedo = colourMatrix[0];
+#else
+    vec4 albedo = getTextureColour(VAR._texCoord);
+#endif
 
-#   if defined(_DEBUG)
-        if (dvd_LightingOnly) {
-            albedo.rgb = vec3(0.0);
-        }
-#   endif
-
-    albedo.a = getOpacity();
+    albedo.a = getOpacity(colourMatrix, albedo.a);
 
 #if defined(USE_ALPHA_DISCARD)
     if (albedo.a < 1.0 - Z_TEST_SIGMA) {
@@ -227,20 +160,16 @@ vec4 private_getAlbedo() {
     return albedo;
 }
 
-vec3 private_getEmissive() {
-    return dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix[2].rgb;
+vec3 getEmissive(mat4 colourMatrix) {
+    return colourMatrix[2].rgb;
 }
 
-vec3 private_getSpecular() {
+vec3 getSpecular(mat4 colourMatrix) {
 #if defined(USE_SPECULAR_MAP)
     return texture(texSpecularMap, VAR._texCoord).rgb;
 #else
-    return dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix[1].rgb;
+    return colourMatrix[1].rgb;
 #endif
-}
-
-float private_getShininess() {
-    return dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix[2].w;
 }
 
 #endif //_MATERIAL_DATA_FRAG_

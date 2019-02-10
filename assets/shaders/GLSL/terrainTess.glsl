@@ -490,8 +490,6 @@ void main(void)
 
 layout(early_fragment_tests) in;
 
-#define CUSTOM_MATERIAL_ALBEDO
-
 in float LoD;
 // x = distance, y = depth
 smooth in vec2 _waterDetails;
@@ -512,16 +510,6 @@ noperspective in vec3 gs_edgeDist;
 #define MAX_TEXTURE_LAYERS 1
 #endif
 #endif
-
-
-vec4 private_albedo = vec4(1.0);
-void setAlbedo(in vec4 albedo) {
-    private_albedo = albedo;
-}
-
-vec4 getAlbedo() {
-    return private_albedo;
-}
 
 vec4 UnderwaterMappingRoutine(out vec3 normalWV) {
     vec2 coords = VAR._texCoord * UNDERWATER_TILE_SCALE;
@@ -558,9 +546,7 @@ void main(void)
 {
     vec3 normalWV = vec3(0.0);
     vec4 albedo = mix(TerrainMappingRoutine(normalWV), UnderwaterMappingRoutine(normalWV), _waterDetails.x);
-
-    setAlbedo(albedo);
-    vec4 colourOut = getPixelColour(normalWV);
+    vec4 colourOut = getPixelColour(albedo, normalWV);
 
 #if defined(TOGGLE_WIREFRAME)
     const float LineWidth = 0.75;
