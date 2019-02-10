@@ -74,12 +74,12 @@ void CommandBuffer::batch() {
             skip = false;
 
             const CommandEntry& cmd = *it;
-            CommandBase* crtCommand = getCommandInternal<CommandBase>(cmd);
+            CommandBase& crtCommand = get<CommandBase>(cmd);
             CommandBase*& prevCommand = prevCommands[to_U16(static_cast<GFX::CommandType::_enumerated>(cmd._typeIndex))];
             
-            assert(prevCommand == nullptr || prevCommand->_type._value == static_cast<GFX::CommandType::_enumerated>(cmd._typeIndex));
+            assert(prevCommand == nullptr || prevCommand->Type._value == static_cast<GFX::CommandType::_enumerated>(cmd._typeIndex));
 
-            if (prevCommand != nullptr && tryMergeCommands(prevCommand, crtCommand, partial)) {
+            if (prevCommand != nullptr && tryMergeCommands(prevCommand, &crtCommand, partial)) {
                 it = _commandOrder.erase(it);
                 skip = true;
                 tryMerge = true;
@@ -89,7 +89,7 @@ void CommandBuffer::batch() {
             
 
             if (!skip) {
-                prevCommand = crtCommand;
+                prevCommand = &crtCommand;
                 ++it;
             }
         }
@@ -105,7 +105,7 @@ void CommandBuffer::batch() {
         switch (static_cast<GFX::CommandType::_enumerated>(cmd._typeIndex)) {
             case GFX::CommandType::BEGIN_RENDER_PASS: {
                 // We may just wish to clear the RT
-                const GFX::BeginRenderPassCommand& crtCmd = getCommand<GFX::BeginRenderPassCommand>(cmd);
+                const BeginRenderPassCommand& crtCmd = get<BeginRenderPassCommand>(cmd);
                 if (crtCmd._descriptor.stateMask() != 0) {
                     hasWork = true;
                     break;
@@ -159,7 +159,7 @@ void CommandBuffer::clean() {
         switch (static_cast<GFX::CommandType::_enumerated>(cmd._typeIndex)) {
             case CommandType::DRAW_COMMANDS :
             {
-                vectorEASTL<GenericDrawCommand>& cmds = getCommandInternal<DrawCommand>(cmd)->_drawCommands;
+                vectorEASTL<GenericDrawCommand>& cmds = get<DrawCommand>(cmd)._drawCommands;
 
                 auto beginIt = eastl::begin(cmds);
                 auto endIt = eastl::end(cmds);
@@ -170,7 +170,7 @@ void CommandBuffer::clean() {
                 }
             } break;
             case CommandType::BIND_PIPELINE : {
-                const Pipeline* pipeline = getCommandInternal<BindPipelineCommand>(cmd)->_pipeline;
+                const Pipeline* pipeline = get<BindPipelineCommand>(cmd)._pipeline;
                 // If the current pipeline is identical to the previous one, remove it
                 if (prevPipeline != nullptr && *prevPipeline == *pipeline) {
                     it = _commandOrder.erase(it);
@@ -179,14 +179,14 @@ void CommandBuffer::clean() {
                 prevPipeline = pipeline;
             }break;
             case GFX::CommandType::SEND_PUSH_CONSTANTS: {
-                PushConstants& constants = getCommandInternal<SendPushConstantsCommand>(cmd)->_constants;
+                PushConstants& constants = get<SendPushConstantsCommand>(cmd)._constants;
                 if (constants.data().empty()) {
                     it = _commandOrder.erase(it);
                     skip = true;
                 }
             }break;
             case GFX::CommandType::BIND_DESCRIPTOR_SETS: {
-                const DescriptorSet& set = getCommandInternal<BindDescriptorSetsCommand>(cmd)->_set;
+                const DescriptorSet& set = get<BindDescriptorSetsCommand>(cmd)._set;
                 if (prevDescriptorSet != nullptr && *prevDescriptorSet == set) {
                     it = _commandOrder.erase(it);
                     skip = true;
@@ -199,7 +199,7 @@ void CommandBuffer::clean() {
                 }
             }break;
             case GFX::CommandType::DRAW_TEXT: {
-                const TextElementBatch& batch = getCommandInternal<DrawTextCommand>(cmd)->_batch;
+                const TextElementBatch& batch = get<DrawTextCommand>(cmd)._batch;
                 bool hasText = !batch._data.empty();
                 if (hasText) {
                     hasText = false;
@@ -338,7 +338,7 @@ void CommandBuffer::toString(const GFX::CommandBase& cmd, I32& crtIndent, string
         target.append(text);
     };
 
-    switch (cmd._type) {
+    switch (cmd.Type) {
         case GFX::CommandType::BEGIN_RENDER_PASS:
         case GFX::CommandType::BEGIN_PIXEL_BUFFER:
         case GFX::CommandType::BEGIN_RENDER_SUB_PASS: 
@@ -363,7 +363,7 @@ stringImpl CommandBuffer::toString() const {
     I32 crtIndent = 0;
     stringImpl out = "\n\n\n\n";
     for (const CommandEntry& cmd : _commandOrder) {
-        toString(getCommand<CommandBase>(cmd), crtIndent, out);
+        toString(get<CommandBase>(cmd), crtIndent, out);
         out.append("\n");
     }
     out.append("\n\n\n\n");

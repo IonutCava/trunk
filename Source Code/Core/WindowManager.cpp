@@ -398,7 +398,10 @@ ErrorCode WindowManager::configureAPISettings(U32 descriptorFlags) {
 
     if (Config::ENABLE_GPU_VALIDATION) {
         // OpenGL error handling is available in any build configuration if the proper defines are in place.
-        OpenGLFlags |= SDL_GL_CONTEXT_ROBUST_ACCESS_FLAG /*|  SDL_GL_CONTEXT_DEBUG_FLAG*/;
+        OpenGLFlags |= SDL_GL_CONTEXT_ROBUST_ACCESS_FLAG;
+        if (_context->config().debug.enableRenderAPIDebugging) {
+            OpenGLFlags |= SDL_GL_CONTEXT_DEBUG_FLAG;
+        }
     }
 
     validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, OpenGLFlags));

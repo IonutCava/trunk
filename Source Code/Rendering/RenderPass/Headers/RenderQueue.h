@@ -58,7 +58,7 @@ class RenderQueue : public KernelComponent {
     void postRender(const SceneRenderState& renderState, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut);
     void sort(RenderStagePass stagePass);
     void refresh(RenderStage stage);
-    void addNodeToQueue(const SceneGraphNode& sgn, RenderStagePass stage, const vec3<F32>& eyePos);
+    void addNodeToQueue(const SceneGraphNode& sgn, RenderStagePass stage, F32 minDistToCameraSq);
     U16 getRenderQueueStackSize(RenderStage stage) const;
 
     inline RenderBin* getBin(RenderBinType rbType) {

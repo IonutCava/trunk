@@ -290,10 +290,6 @@ class RenderingCompRenderPass {
 
 class RenderingCompRenderBin {
    private:
-    static size_t getSortKeyHash(RenderingComponent& renderable, RenderStagePass renderStagePass) {
-        return renderable.getSortKeyHash(renderStagePass);
-    }
-
     static void postRender(RenderingComponent& renderable,
                            const SceneRenderState& sceneRenderState,
                            RenderStagePass renderStagePass,

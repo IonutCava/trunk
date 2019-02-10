@@ -40,8 +40,8 @@
 
 #include "Platform/Video/Headers/RenderAPIWrapper.h"
 
-#include <glbinding/gl45/gl.h>
-using namespace gl45;
+#include <glbinding/gl46/gl.h>
+using namespace gl46;
 
 #include <glbinding/Binding.h>
 #include <EASTL/array.h>
@@ -100,6 +100,10 @@ public:
 
 private:
     typedef vector<BufferBindingParams> VAOBufferData;
+
+    mutable VAOBufferData* _cachedData = nullptr;
+    mutable GLuint _cachedVao = 0;
+
     hashMap<GLuint /*vao ID*/, VAOBufferData> _bindings;
     U32 _maxBindings;
 };

@@ -132,14 +132,14 @@ RenderBin* RenderQueue::getBinForNode(const SceneGraphNode& node, const Material
     return nullptr;
 }
 
-void RenderQueue::addNodeToQueue(const SceneGraphNode& sgn, RenderStagePass stage, const vec3<F32>& eyePos) {
+void RenderQueue::addNodeToQueue(const SceneGraphNode& sgn, RenderStagePass stage, F32 minDistToCameraSq) {
     RenderingComponent* const renderingCmp = sgn.get<RenderingComponent>();
     // We need a rendering component to render the node
     if (renderingCmp != nullptr) {
         RenderBin* rb = getBinForNode(sgn, renderingCmp->getMaterialInstance());
         assert(rb != nullptr);
 
-        rb->addNodeToBin(sgn, stage, eyePos);
+        rb->addNodeToBin(sgn, stage, minDistToCameraSq);
     }
 }
 

@@ -56,14 +56,11 @@ namespace GFX {
 };
 
 struct RenderBinItem {
-    RenderingComponent* _renderable;
-    I32 _sortKeyA;
-    I32 _sortKeyB;
-    size_t _stateHash;
-    F32 _distanceToCameraSq;
-
-    RenderBinItem() noexcept : _sortKeyA(-1), _sortKeyB(-1), _stateHash(0), _distanceToCameraSq(-1.0f), _renderable(nullptr) {}
-    RenderBinItem(RenderStagePass currentStage, I32 sortKeyA, I32 sortKeyB, F32 distToCamSq, RenderingComponent& renderable) noexcept;
+    RenderingComponent* _renderable = nullptr;
+    I32 _sortKeyA = -1;
+    I32 _sortKeyB = -1;
+    size_t _stateHash = 0;
+    F32 _distanceToCameraSq = 0.0f;
 };
 
 struct RenderingOrder {
@@ -109,7 +106,7 @@ class RenderBin {
 
     void addNodeToBin(const SceneGraphNode& sgn,
                       RenderStagePass renderStagePass,
-                      const vec3<F32>& eyePos);
+                      F32 minDistToCameraSq);
 
     const RenderBinItem& getItem(RenderStage stage, U16 index) const;
 

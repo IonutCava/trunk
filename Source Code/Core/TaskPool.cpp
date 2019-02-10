@@ -200,43 +200,37 @@ void parallel_for(TaskPool& pool,
         const U32 partitionCount = count / crtPartitionSize;
         const U32 remainder = count % crtPartitionSize;
 
-        std::atomic_uint remaining = partitionCount + (remainder > 0 ? 1 : 0);
-
         U32 adjustedCount = partitionCount;
         if (useCurrentThread) {
             adjustedCount -= 1;
-            remaining.fetch_sub(1);
         }
 
+        TaskHandle threadTask = CreateTask(pool, nullptr, DELEGATE_CBK<void, const Task&>());
         for (U32 i = 0; i < adjustedCount; ++i) {
             const U32 start = i * crtPartitionSize;
             const U32 end = start + crtPartitionSize;
             CreateTask(pool,
-                       nullptr,
-                       [&cbk, &remaining, start, end](const Task& parentTask) {
+                       &threadTask,
+                       [&cbk, start, end](const Task& parentTask) {
                            cbk(parentTask, start, end);
-                           remaining.fetch_sub(1);
                        }).startTask(priority);
         }
         if (remainder > 0) {
             CreateTask(pool,
-                       nullptr,
-                       [&cbk, &remaining, count, remainder](const Task& parentTask) {
+                       &threadTask,
+                       [&cbk, count, remainder](const Task& parentTask) {
                            cbk(parentTask, count - remainder, count);
-                           remaining.fetch_sub(1);
                        }).startTask(priority);
         }
+        threadTask.startTask(priority);
 
         if (useCurrentThread) {
             const U32 start = adjustedCount * crtPartitionSize;
             const U32 end = start + crtPartitionSize;
-
-            TaskHandle threadTask = CreateTask(pool, nullptr, DELEGATE_CBK<void, const Task&>());
             cbk(*threadTask._task, start, end);
         }
-
         if (!noWait) {
-            WAIT_FOR_CONDITION(remaining.load() == 0);
+            threadTask.wait();
         }
     }
 }

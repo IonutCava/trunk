@@ -53,7 +53,7 @@ class glLockManager : public GUIDWrapper {
         return wait(syncObj, blockClient, false, retryCount);
     }
    protected:
-    std::mutex _syncMutex;
+    SharedMutex _syncMutex;
     GLsync _defaultSync;
 };
 

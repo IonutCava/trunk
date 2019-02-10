@@ -42,7 +42,7 @@ CommandBuffer::add(const T& command) {
 
     _commandOrder.emplace_back(
         _commands.insert<T>(
-            static_cast<vec_size_eastl>(command._type),
+            static_cast<vec_size_eastl>(command.Type),
             entry_ptr<CommandBase>(
                 CmdAllocator<T>::allocate(command),
                 [](CommandBase* cmd) {
@@ -52,16 +52,29 @@ CommandBuffer::add(const T& command) {
 }
 
 template<typename T>
-inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
-CommandBuffer::getCommandInternal(const CommandEntry& commandEntry) {
-    return static_cast<T*>(&_commands.get(commandEntry));
+inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T&>::type
+CommandBuffer::get(const CommandEntry& commandEntry) {
+    return static_cast<T&>(_commands.get(commandEntry));
 }
 
 template<typename T>
 inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, const T&>::type
-CommandBuffer::getCommand(const CommandEntry& commandEntry) const {
+CommandBuffer::get(const CommandEntry& commandEntry) const {
     return static_cast<const T&>(_commands.get(commandEntry));
 }
+
+template<typename T>
+inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T&>::type
+CommandBuffer::get(size_t index) {
+    return get<T>(CommandEntry{T::Type._to_integral(), index});
+}
+
+template<typename T>
+inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, const T&>::type
+CommandBuffer::get(size_t index) const {
+    return get<T>(CommandEntry{T::Type._to_integral(), index });
+}
+
 
 inline vectorEASTL<CommandBuffer::CommandEntry>& CommandBuffer::operator()() {
     return _commandOrder;
@@ -182,7 +195,7 @@ inline bool CommandBuffer::tryMergeCommands(T* prevCommand, T* crtCommand, bool&
 template<>
 inline bool CommandBuffer::tryMergeCommands(GFX::CommandBase* prevCommand, GFX::CommandBase* crtCommand, bool& partial) const {
     assert(prevCommand != nullptr && crtCommand != nullptr);
-    switch (prevCommand->_type) {
+    switch (prevCommand->Type) {
         case GFX::CommandType::DRAW_COMMANDS:
             return tryMergeCommands(static_cast<DrawCommand*>(prevCommand), static_cast<DrawCommand*>(crtCommand), partial);
         case GFX::CommandType::BIND_DESCRIPTOR_SETS:

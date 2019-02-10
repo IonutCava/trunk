@@ -66,7 +66,7 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
     for (const GFX::CommandBuffer::CommandEntry& cmd : commands) {
         switch (static_cast<GFX::CommandType::_enumerated>(cmd._typeIndex)) {
             case GFX::CommandType::BLIT_RT: {
-                const GFX::BlitRenderTargetCommand& crtCmd = commandBuffer.getCommand<GFX::BlitRenderTargetCommand>(cmd);
+                const GFX::BlitRenderTargetCommand& crtCmd = commandBuffer.get<GFX::BlitRenderTargetCommand>(cmd);
                 RenderTarget& source = renderTargetPool().renderTarget(crtCmd._source);
                 RenderTarget& destination = renderTargetPool().renderTarget(crtCmd._destination);
 
@@ -78,12 +78,12 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
                 destination.blitFrom(params);
             } break;
             case GFX::CommandType::RESET_RT: {
-                const GFX::ResetRenderTargetCommand& crtCmd = commandBuffer.getCommand<GFX::ResetRenderTargetCommand>(cmd);
+                const GFX::ResetRenderTargetCommand& crtCmd = commandBuffer.get<GFX::ResetRenderTargetCommand>(cmd);
                 RenderTarget& source = renderTargetPool().renderTarget(crtCmd._source);
                 source.setDefaultState(crtCmd._descriptor);
             }break;
             case GFX::CommandType::READ_ATOMIC_COUNTER: {
-                const GFX::ReadAtomicCounterCommand& crtCmd = commandBuffer.getCommand<GFX::ReadAtomicCounterCommand>(cmd);
+                const GFX::ReadAtomicCounterCommand& crtCmd = commandBuffer.get<GFX::ReadAtomicCounterCommand>(cmd);
                 if (crtCmd._buffer != nullptr && crtCmd._target != nullptr) {
                     *crtCmd._target = crtCmd._buffer->getAtomicCounter(crtCmd._offset);
                     if (*crtCmd._target > 0 && crtCmd._resetCounter) {
@@ -93,16 +93,16 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
             } break;
 
             case GFX::CommandType::SET_VIEWPORT:
-                setViewport(commandBuffer.getCommand<GFX::SetViewportCommand>(cmd)._viewport);
+                setViewport(commandBuffer.get<GFX::SetViewportCommand>(cmd)._viewport);
                 break;
             case GFX::CommandType::SET_CAMERA:
-                renderFromCamera(commandBuffer.getCommand<GFX::SetCameraCommand>(cmd)._cameraSnapshot);
+                renderFromCamera(commandBuffer.get<GFX::SetCameraCommand>(cmd)._cameraSnapshot);
                 break;
             case GFX::CommandType::SET_CLIP_PLANES:
-                setClipPlanes(commandBuffer.getCommand<GFX::SetClipPlanesCommand>(cmd)._clippingPlanes);
+                setClipPlanes(commandBuffer.get<GFX::SetClipPlanesCommand>(cmd)._clippingPlanes);
                 break;
             case GFX::CommandType::EXTERNAL:
-                commandBuffer.getCommand<GFX::ExternalCommand>(cmd)._cbk();
+                commandBuffer.get<GFX::ExternalCommand>(cmd)._cbk();
                 break;
 
             case GFX::CommandType::DRAW_TEXT:

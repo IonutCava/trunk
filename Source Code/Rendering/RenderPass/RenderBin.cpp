@@ -18,21 +18,6 @@ namespace {
     constexpr U32 AVERAGE_BIN_SIZE = 127;
 };
 
-RenderBinItem::RenderBinItem(RenderStagePass currentStage,
-                             I32 sortKeyA,
-                             I32 sortKeyB,
-                             F32 distToCamSq,
-                             RenderingComponent& renderable) noexcept
-    : _renderable(&renderable),
-      _sortKeyA(sortKeyA),
-      _sortKeyB(sortKeyB),
-      _distanceToCameraSq(distToCamSq)
-{
-    // Sort by state hash depending on the current rendering stage
-    // Save the render state hash value for sorting
-    _stateHash = Attorney::RenderingCompRenderBin::getSortKeyHash(renderable, currentStage);
-}
-
 /// Sorting opaque items is a 3 step process:
 /// 1: sort by shaders
 /// 2: if the shader is identical, sort by state hash
@@ -134,7 +119,7 @@ void RenderBin::refresh(RenderStage stage) {
     _renderBinStack[to_base(stage)].reserve(AVERAGE_BIN_SIZE);
 }
 
-void RenderBin::addNodeToBin(const SceneGraphNode& sgn, RenderStagePass stagePass, const vec3<F32>& eyePos) {
+void RenderBin::addNodeToBin(const SceneGraphNode& sgn, RenderStagePass stagePass, F32 minDistToCameraSq) {
     U8 stageIndex = to_U8(stagePass._stage);
 
     I32 keyA = to_U32(_renderBinStack[stageIndex].size() + 1);
@@ -147,11 +132,15 @@ void RenderBin::addNodeToBin(const SceneGraphNode& sgn, RenderStagePass stagePas
         nodeMaterial->getSortKeys(stagePass, keyA, keyB);
     }
 
-    _renderBinStack[stageIndex].emplace_back(stagePass,
-                                             keyA,
-                                             keyB,
-                                             sgn.get<BoundsComponent>()->getBoundingBox().nearestDistanceFromPointSquared(eyePos),
-                                             *rComp);
+    // Sort by state hash depending on the current rendering stage
+    // Save the render state hash value for sorting
+    _renderBinStack[stageIndex].emplace_back(RenderBinItem{
+                                                 rComp,
+                                                 keyA,
+                                                 keyB,
+                                                 rComp->getSortKeyHash(stagePass),
+                                                 minDistToCameraSq
+                                             });
 }
 
 void RenderBin::populateRenderQueue(RenderStagePass stagePass, vectorEASTL<RenderPackage*>& queueInOut) const {

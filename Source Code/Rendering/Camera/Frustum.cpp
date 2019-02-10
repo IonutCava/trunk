@@ -216,18 +216,16 @@ void Frustum::computePlanes(const mat4<F32>& viewProjMatrix) {
     updatePoints();
 }
 
-void Frustum::computePlanes(const mat4<F32>& viewProjMatrix, Plane<F32>* planesOut) {
+void Frustum::computePlanes(const mat4<F32>& invViewProj, Plane<F32>* planesOut) {
     std::array<vec4<F32>, to_base(Frustum::FrustPlane::COUNT)> planesTemp;
 
-    computePlanes(viewProjMatrix, planesTemp.data());
+    computePlanes(invViewProj, planesTemp.data());
     for (U8 i = 0; i < to_U8(Frustum::FrustPoints::COUNT); ++i) {
         planesOut[i].set(planesTemp[i]);
     }
 }
 
-void Frustum::computePlanes(const mat4<F32>& viewProjMatrix, vec4<F32>* planesOut) {
-    const mat4<F32> invViewProj(viewProjMatrix.getInverse());
-
+void Frustum::computePlanes(const mat4<F32>& invViewProj, vec4<F32>* planesOut) {
     static const vec4<F32> unitVecs[] = { vec4<F32>(-1, -1, -1, 1),
                                           vec4<F32>(-1 , 1, -1, 1),
                                           vec4<F32>(-1, -1,  1, 1),

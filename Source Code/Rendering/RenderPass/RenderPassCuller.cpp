@@ -165,7 +165,7 @@ void RenderPassCuller::frustumCullNode(const Task& task,
                          g_nodesPerCullingPartition,
                          threaded ? TaskPriority::DONT_CARE : TaskPriority::REALTIME,
                          false,
-                         true);
+                         false);
             for (const VisibleNodeList& nodeListEntry : nodesTemp) {
                 nodes.insert(eastl::end(nodes), eastl::cbegin(nodeListEntry), eastl::cend(nodeListEntry));
             }
@@ -177,19 +177,25 @@ void RenderPassCuller::frustumCullNode(const Task& task,
 }
 
 void RenderPassCuller::addAllChildren(const SceneGraphNode& currentNode, RenderStage stage, const vec3<F32>& cameraEye, VisibleNodeList& nodes) const {
-    currentNode.forEachChild([this, &currentNode, &stage, &cameraEye, &nodes](const SceneGraphNode& child) {
-        if (!(stage == RenderStage::SHADOW && !currentNode.get<RenderingComponent>()->renderOptionEnabled(RenderingComponent::RenderOptions::CAST_SHADOWS))) {
-            if (child.isActive() && !_cullingFunction[to_U32(stage)](child, child.getNode())) {
+    bool castsShadows = currentNode.get<RenderingComponent>()->renderOptionEnabled(RenderingComponent::RenderOptions::CAST_SHADOWS);
+
+    vectorEASTL<SceneGraphNode*> children = currentNode.getChildrenLocked();
+    for (SceneGraphNode* child : children) {
+        if (stage != RenderStage::SHADOW || castsShadows) {
+            if (child->isActive() && !_cullingFunction[to_U32(stage)](*child, child->getNode())) {
                 F32 distanceSqToCamera = std::numeric_limits<F32>::max();
-                BoundsComponent* bComp = child.get<BoundsComponent>();
+                BoundsComponent* bComp = child->get<BoundsComponent>();
                 if (bComp != nullptr) {
-                    distanceSqToCamera = bComp->getBoundingSphere().getCenter().distanceSquared(cameraEye);
+                    const BoundingSphere& bSphere = bComp->getBoundingSphere();
+                    // Check distance to sphere edge (center - radius)
+                    const vec3<F32>& center = bSphere.getCenter();
+                    distanceSqToCamera = center.distanceSquared(cameraEye) - SQUARED(bSphere.getRadius());
                 }
-                nodes.emplace_back(VisibleNode{ distanceSqToCamera, &child });
-                addAllChildren(child, stage, cameraEye, nodes);
+                nodes.emplace_back(VisibleNode{ distanceSqToCamera, child });
+                addAllChildren(*child, stage, cameraEye, nodes);
             }
         }
-    });
+    }
 }
 
 RenderPassCuller::VisibleNodeList RenderPassCuller::frustumCull(const Camera& camera, F32 maxDistanceSq, RenderStage stage, const vectorEASTL<SceneGraphNode*>& nodes) const {

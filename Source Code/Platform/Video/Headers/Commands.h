@@ -116,7 +116,7 @@ struct CommandBase
     }
 
     CommandBase(CommandType type) noexcept
-        : _type(type)
+        : Type(type)
     {
     }
 
@@ -127,10 +127,10 @@ struct CommandBase
     virtual stringImpl toString(U16 indent) const {
         ACKNOWLEDGE_UNUSED(indent);
 
-        return stringImpl(_type._to_string());
+        return stringImpl(Type._to_string());
     }
 
-    CommandType _type = CommandType::COUNT;
+    CommandType Type = CommandType::COUNT;
 };
 
 template<typename T, CommandType::_enumerated EnumVal>
@@ -145,6 +145,8 @@ struct Command : public CommandBase {
     }
 
     virtual ~Command() = default;
+
+    static const CommandType::_enumerated Type = EnumVal;
 };
 
 BEGIN_COMMAND(BindPipelineCommand, CommandType::BIND_PIPELINE);

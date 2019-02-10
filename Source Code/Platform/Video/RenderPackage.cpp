@@ -191,19 +191,19 @@ void RenderPackage::addCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
     for (const GFX::CommandBuffer::CommandEntry& cmd : commands) {
         switch (static_cast<GFX::CommandType::_enumerated>(cmd._typeIndex)) {
             case GFX::CommandType::DRAW_COMMANDS: {
-                addDrawCommand(commandBuffer.getCommand<GFX::DrawCommand>(cmd));
+                addDrawCommand(commandBuffer.get<GFX::DrawCommand>(cmd));
             } break;
             case GFX::CommandType::BIND_PIPELINE: {
-                addPipelineCommand(commandBuffer.getCommand<GFX::BindPipelineCommand>(cmd));
+                addPipelineCommand(commandBuffer.get<GFX::BindPipelineCommand>(cmd));
             } break;
             case GFX::CommandType::SET_CLIP_PLANES: {
-                addClipPlanesCommand(commandBuffer.getCommand<GFX::SetClipPlanesCommand>(cmd));
+                addClipPlanesCommand(commandBuffer.get<GFX::SetClipPlanesCommand>(cmd));
             } break;
             case GFX::CommandType::SEND_PUSH_CONSTANTS: {
-                addPushConstantsCommand(commandBuffer.getCommand<GFX::SendPushConstantsCommand>(cmd));
+                addPushConstantsCommand(commandBuffer.get<GFX::SendPushConstantsCommand>(cmd));
             } break;
             case GFX::CommandType::BIND_DESCRIPTOR_SETS: {
-                addDescriptorSetsCommand(commandBuffer.getCommand<GFX::BindDescriptorSetsCommand>(cmd));
+                addDescriptorSetsCommand(commandBuffer.get<GFX::BindDescriptorSetsCommand>(cmd));
             } break;
             default:
             case GFX::CommandType::COUNT: {
@@ -224,6 +224,8 @@ void RenderPackage::addShaderBuffer(I32 descriptorSetIndex, const ShaderBufferBi
 
 void RenderPackage::setTexture(I32 descriptorSetIndex, const TextureData& data, U8 binding) {
     DIVIDE_ASSERT(descriptorSetIndex < to_I32(_descriptorSets.size()), "RenderPackage::descriptorSet error: Invalid descriptor set index!");
+    //GFX::BindDescriptorSetsCommand& cmd = _commands->get<GFX::BindDescriptorSetsCommand>(descriptorSetIndex);
+
     if (_descriptorSets[descriptorSetIndex]._set._textureData.setTexture(data, binding) != TextureDataContainer::UpdateState::NOTHING) {
         FlagDirty(CommandType::DESCRIPTOR_SETS);
     }

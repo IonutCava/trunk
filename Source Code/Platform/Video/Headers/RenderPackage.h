@@ -122,6 +122,7 @@ protected:
     void updateDrawCommands(U32 startOffset);
     void buildAndGetCommandBuffer(GFX::CommandBuffer& bufferInOut, bool& cacheMiss);
 
+    void rebuildCommandBuffer();
 private:
     U8 _lodLevel;
     bool _secondaryCommandPool;

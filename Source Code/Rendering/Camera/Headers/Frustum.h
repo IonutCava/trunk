@@ -100,8 +100,8 @@ class Frustum {
 
     void computePlanes(const mat4<F32>& viewProjMatrix);
 
-    static void computePlanes(const mat4<F32>& viewProjMatrix, vec4<F32>* planesOut);
-    static void computePlanes(const mat4<F32>& viewProjMatrix, Plane<F32>* planesOut);
+    static void computePlanes(const mat4<F32>& invViewProj, vec4<F32>* planesOut);
+    static void computePlanes(const mat4<F32>& invViewProj, Plane<F32>* planesOut);
 
 
     inline bool operator==(const Frustum& other) const {

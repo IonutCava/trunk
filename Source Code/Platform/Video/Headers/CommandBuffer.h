@@ -73,7 +73,19 @@ class CommandBuffer : private GUIDWrapper, private NonCopyable {
 
     template<typename T>
     typename std::enable_if<std::is_base_of<CommandBase, T>::value, const T&>::type
-    getCommand(const CommandEntry& commandEntry) const;
+    get(const CommandEntry& commandEntry) const;
+
+    template<typename T>
+    typename std::enable_if<std::is_base_of<CommandBase, T>::value, T&>::type
+    get(const CommandEntry& commandEntry);
+
+    template<typename T>
+    typename std::enable_if<std::is_base_of<CommandBase, T>::value, T&>::type
+    get(size_t index);
+
+    template<typename T>
+    typename std::enable_if<std::is_base_of<CommandBase, T>::value, const T&>::type
+    get(size_t index) const;
 
     inline vectorEASTL<CommandEntry>& operator()();
     inline const vectorEASTL<CommandEntry>& operator()() const;
@@ -90,10 +102,6 @@ class CommandBuffer : private GUIDWrapper, private NonCopyable {
     friend struct Command;
 
     void toString(const GFX::CommandBase& cmd, I32& crtIndent, stringImpl& out) const;
-
-    template<typename T>
-    typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
-    getCommandInternal(const CommandEntry& commandEntry);
 
   protected:
     vectorEASTL<CommandEntry> _commandOrder;

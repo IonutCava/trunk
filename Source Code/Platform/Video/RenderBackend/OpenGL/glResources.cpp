@@ -21,7 +21,9 @@ glObject::glObject(glObjectType type, GFXDevice& context)
 }
 
 VAOBindings::VAOBindings() noexcept
-    : _maxBindings(0)
+    : _maxBindings(0),
+      _cachedData(nullptr),
+      _cachedVao(0)
 {
 }
 
@@ -34,25 +36,41 @@ void VAOBindings::init(U32 maxBindings) {
 }
 
 const VAOBindings::BufferBindingParams& VAOBindings::bindingParams(GLuint vao, GLuint index) {
-    VAOBufferData& data = _bindings[vao];
-    vec_size count = data.size();
+    VAOBufferData* data = nullptr;
+    if (vao == _cachedVao) {
+        data = _cachedData;
+    } else {
+        data = &_bindings[vao];
+        _cachedData = data;
+        _cachedVao = vao;
+    }
+    
+    vec_size count = data->size();
     if (count > 0) {
         assert(index <= count);
-        return data[index];
+        return (*data)[index];
     }
 
     assert(_maxBindings != 0);
-    data.resize(_maxBindings);
-    return data.front();
+    data->resize(_maxBindings);
+    return data->front();
 }
 
 void VAOBindings::bindingParams(GLuint vao, GLuint index, const BufferBindingParams& newParams) {
-    VAOBufferData& data = _bindings[vao];
-    vec_size count = data.size();
+    VAOBufferData* data = nullptr;
+    if (vao == _cachedVao) {
+        data = _cachedData;
+    } else {
+        data = &_bindings[vao];
+        _cachedData = data;
+        _cachedVao = vao;
+    }
+
+    vec_size count = data->size();
     assert(count > 0 && count > index);
     ACKNOWLEDGE_UNUSED(count);
 
-    data[index] = newParams;
+    (*data)[index] = newParams;
 }
 
 namespace GLUtil {

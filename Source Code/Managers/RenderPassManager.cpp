@@ -80,7 +80,7 @@ void RenderPassManager::render(SceneRenderState& sceneRenderState, Time::Profile
     {
         Time::ScopedTimer timeAll(*_renderPassTimer);
 
-        for (U8 i = 1; i < renderPassCount; ++i) {
+        for (U8 i = 0; i < renderPassCount; ++i) {
             RenderPass* pass = _renderPasses[i].get();
             GFX::CommandBuffer* buf = _renderPassCommandBuffer[i];
 
@@ -95,23 +95,11 @@ void RenderPassManager::render(SceneRenderState& sceneRenderState, Time::Profile
         }
 
         GFX::CommandBuffer* buf = _renderPassCommandBuffer.back();
-        Time::ProfileTimer* timer = _postFxRenderTimer;
-        GFXDevice& gfx = parent().platformContext().gfx();
-
-        CreateTask(pool,
-                   nullptr,
-                   [buf, timer, &gfx , &cam, &remainingTasks](const Task& parentTask) {
-                      Time::ScopedTimer time(*timer);
-                      buf->clear();
-                      gfx.postFX().apply(cam, *buf);
-                      buf->batch();
-                      remainingTasks.fetch_sub(1);
-                   }).startTask(priority);
-
         {
-            _renderPassCommandBuffer[0]->clear();
-            _renderPasses[0]->render(sceneRenderState, *_renderPassCommandBuffer[0]);
-            _renderPassCommandBuffer[0]->batch();
+            Time::ScopedTimer time(*_postFxRenderTimer);
+            buf->clear();
+            parent().platformContext().gfx().postFX().apply(cam, *buf);
+            buf->batch();
         }
 
         while(remainingTasks.load() > 0) {
@@ -367,9 +355,8 @@ void RenderPassManager::prepareRenderQueues(RenderStagePass stagePass, const Pas
 
     RenderQueue& queue = getQueue();
     queue.refresh(stage);
-    const vec3<F32>& eyePos = params._camera->getEye();
     for (const RenderPassCuller::VisibleNode& node : visibleNodes) {
-        queue.addNodeToQueue(*node._node, stagePass, eyePos);
+        queue.addNodeToQueue(*node._node, stagePass, node._distanceToCameraSq);
     }
     // Sort all bins
     queue.sort(stagePass);

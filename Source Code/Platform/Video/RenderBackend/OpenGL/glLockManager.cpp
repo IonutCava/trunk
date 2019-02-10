@@ -22,7 +22,14 @@ glLockManager::~glLockManager()
 }
 
 void glLockManager::Wait(bool blockClient) {
-    UniqueLock lock(_syncMutex);
+    {
+        SharedLock r_lock(_syncMutex);
+        if (_defaultSync == nullptr) {
+            return;
+        }
+    }
+
+    UniqueLockShared w_lock(_syncMutex);
     if (_defaultSync != nullptr) {
         wait(&_defaultSync, blockClient);
         GL_API::registerSyncDelete(_defaultSync);
@@ -32,7 +39,7 @@ void glLockManager::Wait(bool blockClient) {
  
 void glLockManager::Lock(bool flush) {
     {
-        UniqueLock lock(_syncMutex);
+        UniqueLockShared lock(_syncMutex);
         assert(_defaultSync == nullptr);
         _defaultSync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, UnusedMask::GL_UNUSED_BIT);
     }
