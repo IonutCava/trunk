@@ -10,23 +10,18 @@ namespace Divide {
 RenderPackage::RenderPackage()
     : _lodLevel(0u),
       _qualityRequirement(MinQuality::FULL),
-      _secondaryCommandPool(true),
-      _commands(nullptr),
       _dirtyFlags(to_base(CommandType::ALL))
 {
+    _commands = GFX::allocateCommandBuffer(true);
 }
 
 RenderPackage::~RenderPackage()
 {
-    if (_commands != nullptr) {
-        GFX::deallocateCommandBuffer(_commands, _secondaryCommandPool);
-    }
+    GFX::deallocateCommandBuffer(_commands, true);
 }
 
 void RenderPackage::clear() {
-    if (_commands != nullptr) {
-        _commands->clear();
-    }
+    _commands->clear();
     _commandOrdering.clear();
     _pipelines.clear();
     _clipPlanes.clear();
@@ -239,7 +234,7 @@ void RenderPackage::setLoDLevel(U8 LoD) {
     _lodLevel = LoD;
 }
 
-void RenderPackage::setDataIndex(U32 dataIndex) {
+void RenderPackage::updateDrawCommands(U32 dataIndex, U32 startOffset) {
     bool dirty = false;
     for (GFX::DrawCommand& cmd : _drawCommands) {
         for (GenericDrawCommand& drawCmd : cmd._drawCommands) {
@@ -247,17 +242,7 @@ void RenderPackage::setDataIndex(U32 dataIndex) {
                 drawCmd._cmd.baseInstance = dataIndex;
                 dirty = true;
             }
-        }
-    }
-    if (dirty) {
-        FlagDirty(CommandType::DRAW);
-    }
-}
 
-void RenderPackage::updateDrawCommands(U32 startOffset) {
-    bool dirty = false;
-    for (GFX::DrawCommand& cmd : _drawCommands) {
-        for (GenericDrawCommand& drawCmd : cmd._drawCommands) {
             if (drawCmd._commandOffset != startOffset) {
                 drawCmd._commandOffset = startOffset;
                 dirty = true;
@@ -275,30 +260,24 @@ void RenderPackage::buildAndGetCommandBuffer(GFX::CommandBuffer& bufferInOut, bo
     cacheMiss = false;
     //ToDo: Try to rebuild only the affected bits and pieces. That's why we have multiple dirty flags -Ionut
     if (_dirtyFlags != 0) {
-        if (_commands == nullptr) {
-            cacheMiss = true;
-            _commands = GFX::allocateCommandBuffer(_secondaryCommandPool);
-        }
-        GFX::CommandBuffer& buffer = *_commands;
-        buffer.clear();
-
         cacheMiss = true;
+        _commands->clear();
         for (const GFX::CommandBuffer::CommandEntry& cmd : _commandOrdering) {
             switch (static_cast<GFX::CommandType::_enumerated>(cmd._typeIndex)) {
                 case GFX::CommandType::DRAW_COMMANDS: {
-                    GFX::EnqueueCommand(buffer, _drawCommands[cmd._elementIndex]);
+                    _commands->add(_drawCommands[cmd._elementIndex]);
                 } break;
                 case GFX::CommandType::BIND_PIPELINE: {
-                    GFX::EnqueueCommand(buffer, _pipelines[cmd._elementIndex]);
+                    _commands->add(_pipelines[cmd._elementIndex]);
                 } break;
                 case GFX::CommandType::SET_CLIP_PLANES: {
-                    GFX::EnqueueCommand(buffer, _clipPlanes[cmd._elementIndex]);
+                    _commands->add(_clipPlanes[cmd._elementIndex]);
                 } break;
                 case GFX::CommandType::SEND_PUSH_CONSTANTS: {
-                    GFX::EnqueueCommand(buffer, _pushConstants[cmd._elementIndex]);
+                    _commands->add(_pushConstants[cmd._elementIndex]);
                 } break;
                 case GFX::CommandType::BIND_DESCRIPTOR_SETS: {
-                    GFX::EnqueueCommand(buffer, _descriptorSets[cmd._elementIndex]);
+                    _commands->add(_descriptorSets[cmd._elementIndex]);
                 } break;
                 default:
                 case GFX::CommandType::COUNT: {

@@ -118,14 +118,12 @@ public:
 
 protected:
     void setLoDLevel(U8 LoD);
-    void setDataIndex(U32 dataIndex);
-    void updateDrawCommands(U32 startOffset);
+
+    void updateDrawCommands(U32 dataIndex, U32 startOffset);
     void buildAndGetCommandBuffer(GFX::CommandBuffer& bufferInOut, bool& cacheMiss);
 
-    void rebuildCommandBuffer();
 private:
     U8 _lodLevel;
-    bool _secondaryCommandPool;
     MinQuality _qualityRequirement;
 
     //element 0 in all of these is reserved for the RenderingComponent stuff
@@ -139,7 +137,6 @@ protected:
     U32 _dirtyFlags = 0;
     vectorEASTL<GFX::CommandBuffer::CommandEntry> _commandOrdering;
     // Cached command buffer
-    bool _commandBufferDirty = true;
     GFX::CommandBuffer* _commands;
 };
 
@@ -155,12 +152,8 @@ namespace Attorney {
 
     class RenderPackageRenderingComponent {
         private:
-        static void updateDrawCommands(RenderPackage& pkg, U32 startOffset) {
-            pkg.updateDrawCommands(startOffset);
-        }
-
-        static void setDataIndex(RenderPackage& pkg, U32 dataIndex) {
-            pkg.setDataIndex(dataIndex);
+        static void updateDrawCommands(RenderPackage& pkg, U32 dataIndex, U32 startOffset) {
+            pkg.updateDrawCommands(dataIndex, startOffset);
         }
 
         static void setLoDLevel(RenderPackage& pkg, U8 LoD) {

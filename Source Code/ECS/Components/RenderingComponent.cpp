@@ -242,13 +242,11 @@ bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams)
     RenderPackage& pkg = getDrawPackage(refreshParams._stagePass);
     if (pkg.drawCommandCount() > 0) {
         if (refreshParams._stagePass._stage == RenderStage::SHADOW) {
-            Attorney::RenderPackageRenderingComponent::setDataIndex(pkg, refreshParams._nodeCount);
-            Attorney::RenderPackageRenderingComponent::updateDrawCommands(pkg, to_U32(refreshParams._drawCommandsInOut.size()));
+            Attorney::RenderPackageRenderingComponent::updateDrawCommands(pkg, refreshParams._nodeCount, to_U32(refreshParams._drawCommandsInOut.size()));
         } else {
             RenderPackagesPerPassType& packages = _renderPackagesNormal[to_base(refreshParams._stagePass._stage) - 1];
             for (RenderPackage& package : packages) {
-                Attorney::RenderPackageRenderingComponent::setDataIndex(package, refreshParams._nodeCount);
-                Attorney::RenderPackageRenderingComponent::updateDrawCommands(package, to_U32(refreshParams._drawCommandsInOut.size()));
+                Attorney::RenderPackageRenderingComponent::updateDrawCommands(package, refreshParams._nodeCount, to_U32(refreshParams._drawCommandsInOut.size()));
             }
         }
         for (I32 i = 0; i < pkg.drawCommandCount(); ++i) {
