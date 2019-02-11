@@ -1,7 +1,9 @@
 #ifndef _PHONG_LIGHTING_FRAG_
 #define _PHONG_LIGHTING_FRAG_
 
-void Phong(in Light light,
+void Phong(in vec3 lightColour,
+           in vec3 lightDirection,// direction is NOT normalized
+           in float att,
            in vec3 normalWV,
            in vec3 albedo,
            in vec3 specular,
@@ -9,18 +11,10 @@ void Phong(in Light light,
            inout vec3 colourInOut,
            inout float reflectionCoeff)
 {
-    const vec3 ambientTerm = vec3(0.01);
-
-    // direction is NOT normalized
-    vec3 lightDirection = getLightDirection(light);
-    float att = getLightAttenuation(light, lightDirection);
-
-    vec3 lightColour = light._colour.rgb;
-
     float NDotL = max(dot(normalize(lightDirection), normalWV), 0.0);
     colourInOut += clamp(lightColour * albedo * NDotL * att, 0.0, 1.0);
 
-    if (NDotL > 0.0) {
+    if (NDotL > 0.0f) {
         vec3 dvd_ViewDirNorm = normalize(-VAR._vertexWV.xyz);
 #if defined(USE_SHADING_BLINN_PHONG)
         vec3 halfDir = normalize(normalize(lightDirection) + dvd_ViewDirNorm);
@@ -34,7 +28,6 @@ void Phong(in Light light,
 
         reflectionCoeff = saturate(reflectionCoeff + shininess);
     }
-    colourInOut = max(colourInOut, ambientTerm);
 }
 
 

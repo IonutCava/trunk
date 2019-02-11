@@ -34,14 +34,6 @@ uniform bool dvd_LightingOnly = false;
 uniform bool dvd_NormalsOnly = false;
 #endif
 
-vec3 getProcessedNormal(vec3 normalIn) {
-#   if defined (USE_DOUBLE_SIDED)
-    return gl_FrontFacing ? normalIn : -normalIn;
-#   else
-    return normalIn;
-#   endif
-}
-
 float Gloss(in vec3 bump, in vec2 texCoord)
 {
     #if defined(USE_TOKSVIG)

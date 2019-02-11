@@ -10,7 +10,9 @@
 #include "pbr.frag"
 #include "phong_lighting.frag"
 
-void getBRDFFactors(in int lightIndex,
+void getBRDFFactors(in vec3 lightColour,
+                    in vec3 lightDirection,
+                    in float attenuation,
                     in vec3 normalWV,
                     in vec3 albedo,
                     in vec3 specular,
@@ -19,16 +21,14 @@ void getBRDFFactors(in int lightIndex,
                     inout float reflectionCoeff)
 {
 
-    Light light = dvd_LightSource[lightIndex];
-
 #if defined(USE_SHADING_PHONG) || defined (USE_SHADING_BLINN_PHONG)
-    Phong(light, normalWV, albedo, specular, reflectivity, colourInOut, reflectionCoeff);
+    Phong(lightColour, lightDirection, attenuation, normalWV, albedo, specular, reflectivity, colourInOut, reflectionCoeff);
 #elif defined(USE_SHADING_TOON)
     // ToDo
     reflectionCoeff = 0;
     colourInOut = vec3(0.6, 0.2, 0.9); //obvious pink
 #elif defined(USE_SHADING_COOK_TORRANCE) || defined(USE_SHADING_OREN_NAYAR)
-    PBR(light, normalWV, albedo, specular, reflectivity, colourInOut, reflectionCoeff);
+    PBR(lightColour, lightDirection, attenuation, normalWV, albedo, specular, reflectivity, colourInOut, reflectionCoeff);
 #else
     reflectionCoeff = 0;
     colourInOut = vec3(0.6, 1.0, 0.7); //obvious lime-green
@@ -46,8 +46,10 @@ vec3 getLightColour(vec3 albedo, vec3 normal, mat4 colourMatrix, uint dirLightCo
     // Apply all lighting contributions
 
     // Directional lights
+
     for (int lightIdx = 0; lightIdx < dirLightCount; ++lightIdx) {
-        getBRDFFactors(lightIdx, normal, albedo, specular, reflectivity, lightColour, reflectionCoeff);
+        Light light = dvd_LightSource[lightIdx];
+        getBRDFFactors(light._colour.rgb, -light._directionWV.xyz, 1.0, normal, albedo, specular, reflectivity, lightColour, reflectionCoeff);
     }
 
     if (dvd_lodLevel < 2) {
@@ -58,7 +60,10 @@ vec3 getLightColour(vec3 albedo, vec3 normal, mat4 colourMatrix, uint dirLightCo
 
         uint nNextLightIndex = perTileLightIndices[nIndex];
         while (nNextLightIndex != LIGHT_INDEX_BUFFER_SENTINEL) {
-            getBRDFFactors(int(nNextLightIndex - 1 + offset), normal, albedo, specular, reflectivity, lightColour, reflectionCoeff);
+            Light light = dvd_LightSource[int(nNextLightIndex - 1 + offset)];
+            vec3 lightDirection = light._positionWV.xyz - VAR._vertexWV.xyz;
+
+            getBRDFFactors(light._colour.rgb, lightDirection, getLightAttenuationPoint(light, lightDirection), normal, albedo, specular, reflectivity, lightColour, reflectionCoeff);
             nNextLightIndex = perTileLightIndices[++nIndex];
         }
 
@@ -67,7 +72,10 @@ vec3 getLightColour(vec3 albedo, vec3 normal, mat4 colourMatrix, uint dirLightCo
         // Moves past the first sentinel to get to the spot lights.
         nNextLightIndex = perTileLightIndices[++nIndex];
         while (nNextLightIndex != LIGHT_INDEX_BUFFER_SENTINEL) {
-            getBRDFFactors(int(nNextLightIndex - 1 + offset), normal, albedo, specular, reflectivity, lightColour, reflectionCoeff);
+            Light light = dvd_LightSource[int(nNextLightIndex - 1 + offset)];
+            vec3 lightDirection = light._positionWV.xyz - VAR._vertexWV.xyz;
+
+            getBRDFFactors(light._colour.rgb, lightDirection, getLightAttenuationSpot(light, lightDirection), normal, albedo, specular, reflectivity, lightColour, reflectionCoeff);
             nNextLightIndex = perTileLightIndices[++nIndex];
         }
     }
@@ -78,7 +86,12 @@ vec3 getLightColour(vec3 albedo, vec3 normal, mat4 colourMatrix, uint dirLightCo
 
 
 vec4 getPixelColour(vec4 albedo, mat4 colourMatrix, inout vec3 normal) {
-    normal = getProcessedNormal(normal);
+
+#   if defined (USE_DOUBLE_SIDED)
+    if (!gl_FrontFacing) {
+        normal = -normal;
+    }
+#   endif
 
 #if defined(_DEBUG)
     if (dvd_NormalsOnly) {
