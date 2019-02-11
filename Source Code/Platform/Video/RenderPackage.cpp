@@ -88,6 +88,7 @@ void RenderPackage::setDrawOption(CmdRenderOptions option, bool state) {
             setOption(drawCmd, option, state);
         }
     }
+    FlagDirty(CommandType::DRAW);
 }
 
 const Pipeline* RenderPackage::pipeline(I32 index) const {
@@ -258,26 +259,60 @@ void RenderPackage::updateDrawCommands(U32 dataIndex, U32 startOffset) {
 
 void RenderPackage::buildAndGetCommandBuffer(GFX::CommandBuffer& bufferInOut, bool& cacheMiss) {
     cacheMiss = false;
-    //ToDo: Try to rebuild only the affected bits and pieces. That's why we have multiple dirty flags -Ionut
+
+    if (_commands->empty()) {
+        FlagDirty(CommandType::ALL);
+    }
+
     if (_dirtyFlags != 0) {
         cacheMiss = true;
-        _commands->clear();
+
         for (const GFX::CommandBuffer::CommandEntry& cmd : _commandOrdering) {
             switch (static_cast<GFX::CommandType::_enumerated>(cmd._typeIndex)) {
                 case GFX::CommandType::DRAW_COMMANDS: {
-                    _commands->add(_drawCommands[cmd._elementIndex]);
+                    if (BitCompare(_dirtyFlags, CommandType::DRAW)) {
+                        if (_commands->exists(cmd)) {
+                            _commands->get<GFX::DrawCommand>(cmd) = _drawCommands[cmd._elementIndex];
+                        } else {
+                            _commands->add(_drawCommands[cmd._elementIndex]);
+                        }
+                    }
                 } break;
                 case GFX::CommandType::BIND_PIPELINE: {
-                    _commands->add(_pipelines[cmd._elementIndex]);
+                    if (BitCompare(_dirtyFlags, CommandType::PIPELINE)) {
+                        if (_commands->exists(cmd)) {
+                            _commands->get<GFX::BindPipelineCommand>(cmd) = _pipelines[cmd._elementIndex];
+                        } else {
+                            _commands->add(_pipelines[cmd._elementIndex]);
+                        }
+                    }
                 } break;
                 case GFX::CommandType::SET_CLIP_PLANES: {
-                    _commands->add(_clipPlanes[cmd._elementIndex]);
+                    if (BitCompare(_dirtyFlags, CommandType::CLIP_PLANES)) {
+                        if (_commands->exists(cmd)) {
+                            _commands->get<GFX::SetClipPlanesCommand>(cmd) = _clipPlanes[cmd._elementIndex];
+                        } else {
+                            _commands->add(_clipPlanes[cmd._elementIndex]);
+                        }
+                    }
                 } break;
                 case GFX::CommandType::SEND_PUSH_CONSTANTS: {
-                    _commands->add(_pushConstants[cmd._elementIndex]);
+                    if (BitCompare(_dirtyFlags, CommandType::PUSH_CONSTANTS)) {
+                        if (_commands->exists(cmd)) {
+                            _commands->get<GFX::SendPushConstantsCommand>(cmd) = _pushConstants[cmd._elementIndex];
+                        } else {
+                            _commands->add(_pushConstants[cmd._elementIndex]);
+                        }
+                    }
                 } break;
                 case GFX::CommandType::BIND_DESCRIPTOR_SETS: {
-                    _commands->add(_descriptorSets[cmd._elementIndex]);
+                    if (BitCompare(_dirtyFlags, CommandType::DESCRIPTOR_SETS)) {
+                        if (_commands->exists(cmd)) {
+                            _commands->get<GFX::BindDescriptorSetsCommand>(cmd) = _descriptorSets[cmd._elementIndex];
+                        } else {
+                            _commands->add(_descriptorSets[cmd._elementIndex]);
+                        }
+                    }
                 } break;
                 default:
                 case GFX::CommandType::COUNT: {

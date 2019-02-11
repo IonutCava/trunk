@@ -25,7 +25,7 @@ float applyShadowDirectional(in uint idx, in uvec4 details, in float fragDepth) 
     // Figure out which cascade to sample from
 
     float dist = 0.0f;
-    for (g_shadowTempInt = 0; g_shadowTempInt < MAX_CSM_SPLITS_PER_LIGHT; g_shadowTempInt++) {
+    for (; g_shadowTempInt < MAX_CSM_SPLITS_PER_LIGHT; g_shadowTempInt++) {
         dist = dvd_shadowLightPosition[g_shadowTempInt + (idx * 6)].w;
         if (fragDepth > dist) {
             break;

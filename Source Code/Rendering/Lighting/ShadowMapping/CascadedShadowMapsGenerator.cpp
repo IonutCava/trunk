@@ -187,7 +187,7 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
 }
 
 //Between 0 and 1, change these to check the results
-F32 minDistance = 0.005f;
+F32 minDistance = 0.025f;
 F32 maxDistance = 1.0f;
 CascadedShadowMapsGenerator::SplitDepths CascadedShadowMapsGenerator::calculateSplitDepths(const mat4<F32>& projMatrix, DirectionalLightComponent& light, const vec2<F32>& nearFarPlanes) {
     SplitDepths depths = {};
@@ -316,9 +316,10 @@ void CascadedShadowMapsGenerator::applyFrustumSplits(DirectionalLightComponent& 
         // Use our adjusted matrix for actual rendering
         lightCam->setProjection(lightOrthoMatrix, clipPlanes, true);
 
-        mat4<F32> lightViewProjection = mat4<F32>::Multiply(lightViewMatrix, lightOrthoMatrix);
+        mat4<F32>::Multiply(lightViewMatrix, lightOrthoMatrix, light.getShadowVPMatrix(cascadeIterator));
+
         light.setShadowLightPos(cascadeIterator, lightDirection);
-        light.setShadowVPMatrix(cascadeIterator, lightViewProjection * MAT4_BIAS);
+        light.setShadowVPMatrix(cascadeIterator, light.getShadowVPMatrix(cascadeIterator) * MAT4_BIAS);
     }
 }
 

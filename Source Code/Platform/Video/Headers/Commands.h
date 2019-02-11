@@ -70,7 +70,8 @@ struct CmdAllocator {
 decltype(CmdAllocator<Command>::s_PoolMutex) CmdAllocator<Command>::s_PoolMutex; \
 decltype(CmdAllocator<Command>::s_Pool) CmdAllocator<Command>::s_Pool; \
 
-#define BEGIN_COMMAND(Name, Enum) struct Name final : Command<Name, Enum> {
+#define BEGIN_COMMAND(Name, Enum) struct Name final : Command<Name, Enum> { \
+typedef Command<Name, Enum> Base;
 
 #define END_COMMAND(Name) \
 }
@@ -110,41 +111,20 @@ class CommandBuffer;
 
 struct CommandBase
 {
-    CommandBase() noexcept 
-        : CommandBase(CommandType::COUNT)
-    {
-    }
-
-    CommandBase(CommandType type) noexcept
-        : Type(type)
-    {
-    }
-
-    virtual ~CommandBase() = default;
-
     virtual void addToBuffer(CommandBuffer& buffer) const = 0;
-
-    virtual stringImpl toString(U16 indent) const {
-        ACKNOWLEDGE_UNUSED(indent);
-
-        return stringImpl(Type._to_string());
-    }
-
-    CommandType Type = CommandType::COUNT;
+    virtual stringImpl toString(U16 indent) const = 0;
 };
 
 template<typename T, CommandType::_enumerated EnumVal>
 struct Command : public CommandBase {
-    Command()
-        : CommandBase(EnumVal)
-    {
-    }
-    
     void addToBuffer(CommandBuffer& buffer) const override {
         buffer.add(reinterpret_cast<const T&>(*this));
     }
 
-    virtual ~Command() = default;
+    virtual stringImpl toString(U16 indent) const {
+        ACKNOWLEDGE_UNUSED(indent);
+        return stringImpl(CommandType::_from_integral(to_base(EType))._to_string());
+    }
 
     static const CommandType::_enumerated EType = EnumVal;
 };

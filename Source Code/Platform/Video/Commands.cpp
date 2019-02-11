@@ -28,7 +28,7 @@ namespace {
 stringImpl BindPipelineCommand::toString(U16 indent) const {
     assert(_pipeline != nullptr);
 
-    stringImpl ret = CommandBase::toString(indent) + "\n";
+    stringImpl ret = Base::toString(indent) + "\n";
     ret.append("    ");
     for (U16 j = 0; j < indent; ++j) {
         ret.append("    ");
@@ -44,7 +44,7 @@ stringImpl BindPipelineCommand::toString(U16 indent) const {
 }
 
 stringImpl SendPushConstantsCommand::toString(U16 indent) const {
-    stringImpl ret = CommandBase::toString(indent) + "\n";
+    stringImpl ret = Base::toString(indent) + "\n";
 
     for (auto it : _constants.data()) {
         ret.append("    ");
@@ -58,7 +58,7 @@ stringImpl SendPushConstantsCommand::toString(U16 indent) const {
 }
 
 stringImpl DrawCommand::toString(U16 indent) const {
-    stringImpl ret = CommandBase::toString(indent);
+    stringImpl ret = Base::toString(indent);
     ret.append("\n");
     size_t i = 0;
     for (const GenericDrawCommand& cmd : _drawCommands) {
@@ -73,18 +73,18 @@ stringImpl DrawCommand::toString(U16 indent) const {
 }
 
 stringImpl SetViewportCommand::toString(U16 indent) const {
-    return CommandBase::toString(indent) + Util::StringFormat(" [%d, %d, %d, %d]", _viewport.x, _viewport.y, _viewport.z, _viewport.w);
+    return Base::toString(indent) + Util::StringFormat(" [%d, %d, %d, %d]", _viewport.x, _viewport.y, _viewport.z, _viewport.w);
 }
 
 stringImpl BeginRenderPassCommand::toString(U16 indent) const {
-    return CommandBase::toString(indent) + " [ " + stringImpl(_name.c_str()) + " ]";
+    return Base::toString(indent) + " [ " + stringImpl(_name.c_str()) + " ]";
 }
 stringImpl SetScissorCommand::toString(U16 indent) const {
-    return CommandBase::toString(indent) + Util::StringFormat(" [%d, %d, %d, %d]", _rect.x, _rect.y, _rect.z, _rect.w);
+    return Base::toString(indent) + Util::StringFormat(" [%d, %d, %d, %d]", _rect.x, _rect.y, _rect.z, _rect.w);
 }
 
 stringImpl SetClipPlanesCommand::toString(U16 indent) const {
-    stringImpl ret = CommandBase::toString(indent) + "\n";
+    stringImpl ret = Base::toString(indent) + "\n";
     for (U8 i = 0; i < _clippingPlanes._planes.size(); ++i) {
         ret.append("    ");
         for (U16 j = 0; j < indent; ++j) {
@@ -100,7 +100,7 @@ stringImpl SetClipPlanesCommand::toString(U16 indent) const {
 }
 
 stringImpl BindDescriptorSetsCommand::toString(U16 indent) const {
-    stringImpl ret = CommandBase::toString(indent);
+    stringImpl ret = Base::toString(indent);
 
     ret.append(Util::StringFormat(" [ Buffers: %d, Textures: %d ]\n", _set._shaderBuffers.size(), _set._textureData.textures().size()));
     for (auto it : _set._shaderBuffers) {
@@ -130,11 +130,11 @@ stringImpl BindDescriptorSetsCommand::toString(U16 indent) const {
 }
 
 stringImpl BeginDebugScopeCommand::toString(U16 indent) const {
-    return CommandBase::toString(indent) + " [ " + stringImpl(_scopeName.c_str()) + " ]";
+    return Base::toString(indent) + " [ " + stringImpl(_scopeName.c_str()) + " ]";
 }
 
 stringImpl DrawTextCommand::toString(U16 indent) const {
-    stringImpl ret = CommandBase::toString(indent);
+    stringImpl ret = Base::toString(indent);
     ret.append("\n");
     size_t i = 0;
     for (const TextElement& element : _batch()) {
@@ -153,11 +153,11 @@ stringImpl DrawTextCommand::toString(U16 indent) const {
 }
 
 stringImpl DispatchComputeCommand::toString(U16 indent) const {
-    return CommandBase::toString(indent) + Util::StringFormat(" [ Group sizes: %d %d %d]", _computeGroupSize.x, _computeGroupSize.y, _computeGroupSize.z);
+    return Base::toString(indent) + Util::StringFormat(" [ Group sizes: %d %d %d]", _computeGroupSize.x, _computeGroupSize.y, _computeGroupSize.z);
 }
 
 stringImpl MemoryBarrierCommand::toString(U16 indent) const {
-    return CommandBase::toString(indent) + Util::StringFormat(" [ Mask: %d ]", _barrierMask);
+    return Base::toString(indent) + Util::StringFormat(" [ Mask: %d ]", _barrierMask);
 }
 
 

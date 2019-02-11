@@ -139,6 +139,12 @@ class Light : public GUIDWrapper
         return _shadowProperties._lightVP[index];
     }
 
+    inline mat4<F32>& getShadowVPMatrix(U8 index) {
+        assert(index < 6);
+
+        return _shadowProperties._lightVP[index];
+    }
+
     inline F32 getShadowFloatValues(U8 index) const {
         assert(index < 6);
 

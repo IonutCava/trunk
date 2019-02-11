@@ -83,6 +83,9 @@ struct PolyContainer {
         return get(entry._typeIndex, entry._elementIndex);
     }
 
+    inline bool exists(vec_size_eastl index, size_t entry) const {
+        return index < N && entry < _collection[index].size();
+    }
 
     inline vec_size_eastl size(vec_size_eastl index) const {
         assert(index < N);

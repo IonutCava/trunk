@@ -69,7 +69,8 @@ class CommandBuffer : private GUIDWrapper, private NonCopyable {
 
     // Return true if merge is successful
     template<typename T>
-    bool tryMergeCommands(T* prevCommand, T* crtCommand, bool& partial) const;
+    inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, bool>::type
+    tryMergeCommands(GFX::CommandType::_enumerated type, T* prevCommand, T* crtCommand, bool& partial) const;
 
     template<typename T>
     typename std::enable_if<std::is_base_of<CommandBase, T>::value, const T&>::type
@@ -79,6 +80,8 @@ class CommandBuffer : private GUIDWrapper, private NonCopyable {
     typename std::enable_if<std::is_base_of<CommandBase, T>::value, T&>::type
     get(const CommandEntry& commandEntry);
 
+    bool exists(const CommandEntry& commandEntry) const;
+
     template<typename T>
     typename std::enable_if<std::is_base_of<CommandBase, T>::value, T&>::type
     get(size_t index);
@@ -86,6 +89,8 @@ class CommandBuffer : private GUIDWrapper, private NonCopyable {
     template<typename T>
     typename std::enable_if<std::is_base_of<CommandBase, T>::value, const T&>::type
     get(size_t index) const;
+
+    bool exists(vec_size_eastl typeIndex, size_t index) const;
 
     inline vectorEASTL<CommandEntry>& operator()();
     inline const vectorEASTL<CommandEntry>& operator()() const;
@@ -105,7 +110,7 @@ class CommandBuffer : private GUIDWrapper, private NonCopyable {
     template<typename T, CommandType::_enumerated enumVal>
     friend struct Command;
 
-    void toString(const GFX::CommandBase& cmd, I32& crtIndent, stringImpl& out) const;
+    void toString(const GFX::CommandBase& cmd, GFX::CommandType::_enumerated type, I32& crtIndent, stringImpl& out) const;
 
   protected:
     vectorEASTL<CommandEntry> _commandOrder;

@@ -74,12 +74,12 @@ void CommandBuffer::batch() {
             skip = false;
 
             const CommandEntry& cmd = *it;
-            CommandBase& crtCommand = get<CommandBase>(cmd);
-            CommandBase*& prevCommand = prevCommands[to_U16(static_cast<GFX::CommandType::_enumerated>(cmd._typeIndex))];
-            
-            assert(prevCommand == nullptr || prevCommand->Type._value == static_cast<GFX::CommandType::_enumerated>(cmd._typeIndex));
 
-            if (prevCommand != nullptr && tryMergeCommands(prevCommand, &crtCommand, partial)) {
+            auto type = static_cast<GFX::CommandType::_enumerated>(cmd._typeIndex);
+            CommandBase& crtCommand = get<CommandBase>(cmd);
+            CommandBase*& prevCommand = prevCommands[to_U16(type)];
+
+            if (prevCommand != nullptr && tryMergeCommands(type, prevCommand, &crtCommand, partial)) {
                 it = _commandOrder.erase(it);
                 skip = true;
                 tryMerge = true;
@@ -330,7 +330,7 @@ bool CommandBuffer::validate() const {
     return valid;
 }
 
-void CommandBuffer::toString(const GFX::CommandBase& cmd, I32& crtIndent, stringImpl& out) const {
+void CommandBuffer::toString(const GFX::CommandBase& cmd, GFX::CommandType::_enumerated type, I32& crtIndent, stringImpl& out) const {
     auto append = [](stringImpl& target, const stringImpl& text, I32 indent) {
         for (I32 i = 0; i < indent; ++i) {
             target.append("    ");
@@ -338,7 +338,7 @@ void CommandBuffer::toString(const GFX::CommandBase& cmd, I32& crtIndent, string
         target.append(text);
     };
 
-    switch (cmd.Type) {
+    switch (type) {
         case GFX::CommandType::BEGIN_RENDER_PASS:
         case GFX::CommandType::BEGIN_PIXEL_BUFFER:
         case GFX::CommandType::BEGIN_RENDER_SUB_PASS: 
@@ -363,7 +363,7 @@ stringImpl CommandBuffer::toString() const {
     I32 crtIndent = 0;
     stringImpl out = "\n\n\n\n";
     for (const CommandEntry& cmd : _commandOrder) {
-        toString(get<CommandBase>(cmd), crtIndent, out);
+        toString(get<CommandBase>(cmd), static_cast<GFX::CommandType::_enumerated>(cmd._typeIndex), crtIndent, out);
         out.append("\n");
     }
     out.append("\n\n\n\n");
