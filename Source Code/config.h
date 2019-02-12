@@ -233,9 +233,4 @@ constexpr bool ENABLE_GPU_VALIDATION = false;
 #define ERROR_LOG_FILE "errors.log"
 #endif  // ERROR_LOG_FILE
 
-/// Disable or enable custom, general purpose allocators in the code
-/// (used by containers, frequently created objects, etc)
-/// This does not disable all custom allocators as some, like special object pools are very specialised 
-//#define USE_CUSTOM_MEMORY_ALLOCATORS
-
 #endif  //_DIVIDE_CONFIG_H_

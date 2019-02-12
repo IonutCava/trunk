@@ -112,9 +112,7 @@ public:
 
     void setDrawOption(CmdRenderOptions option, bool state);
 
-    inline bool empty() const { return _commandOrdering.empty(); }
-
-    inline void FlagDirty(CommandType type) { SetBit(_dirtyFlags, type); }
+    inline bool empty() const { return _commands->empty(); }
 
 protected:
     void setLoDLevel(U8 LoD);
@@ -126,16 +124,7 @@ private:
     U8 _lodLevel;
     MinQuality _qualityRequirement;
 
-    //element 0 in all of these is reserved for the RenderingComponent stuff
-    vectorEASTL<GFX::DrawCommand> _drawCommands;
-    vectorEASTL<GFX::BindPipelineCommand> _pipelines;
-    vectorEASTL<GFX::SetClipPlanesCommand> _clipPlanes;
-    vectorEASTL<GFX::SendPushConstantsCommand> _pushConstants;
-    vectorEASTL<GFX::BindDescriptorSetsCommand> _descriptorSets;
-
 protected:
-    U32 _dirtyFlags = 0;
-    vectorEASTL<GFX::CommandBuffer::CommandEntry> _commandOrdering;
     // Cached command buffer
     GFX::CommandBuffer* _commands;
 };

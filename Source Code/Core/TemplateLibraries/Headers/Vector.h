@@ -52,13 +52,11 @@ using vectorFast = std::vector<Type, dvd_allocator<Type>>;
 template <typename Type>
 using vectorEASTL = eastl::vector<Type>;
 
-#if defined(USE_CUSTOM_MEMORY_ALLOCATORS)
 template <typename Type>
-using vectorBest = vectorFast<Type>;
-#else
+using vectorEASTLFast = eastl::vector<Type/*, dvd_allocator<Type>*/>;
+
 template <typename Type>
 using vectorBest = vector<Type>;
-#endif
 
 typedef std::size_t vec_size;
 typedef eastl_size_t vec_size_eastl;

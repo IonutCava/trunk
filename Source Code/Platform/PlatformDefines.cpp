@@ -10,9 +10,7 @@
 
 #include "Core/Headers/Console.h"
 
-#if defined(USE_CUSTOM_MEMORY_ALLOCATORS)
 #include <Allocator/xallocator.h>
-#endif
 
 #include "Utility/Headers/Localization.h"
 #include "Utility/Headers/MemoryTracker.h"
@@ -199,63 +197,44 @@ bool CursorState()
 
 };  // namespace Divide
 
-#if defined(_DEBUG)
-#if defined(DEBUG_EXTERNAL_ALLOCATIONS)
-void* operator new(size_t size) {
-    static thread_local bool logged = false;
-    void* ptr = malloc(size);
-    if (!logged) {
-        Divide::MemoryManager::log_new(ptr, size, " allocation outside of macro ", 0);
-        if (Divide::MemoryManager::MemoryTracker::Ready) {
-            logged = true;
-        }
-    }
-    return ptr;
-}
-
-void operator delete(void* ptr) noexcept {
-    Divide::MemoryManager::log_delete(ptr);
-    free(ptr);
-}
-
-void* operator new[](size_t size) {
-    static thread_local bool logged = false;
-    void* ptr = malloc(size);
-    if (!logged) {
-        Divide::MemoryManager::log_new(ptr, size, " array allocation outside of macro ", 0);
-        if (Divide::MemoryManager::MemoryTracker::Ready) {
-            logged = true;
-        }
-    }
-    return ptr;
-}
-
-void operator delete[](void* ptr) noexcept {
-    Divide::MemoryManager::log_delete(ptr);
-    free(ptr);
-}
-#endif
-
 void* operator new(size_t size, const char* zFile, size_t nLine) {
     void* ptr = malloc(size);
+#if defined(_DEBUG)
     Divide::MemoryManager::log_new(ptr, size, zFile, nLine);
+#else
+    ACKNOWLEDGE_UNUSED(zFile);
+    ACKNOWLEDGE_UNUSED(nLine);
+#endif
     return ptr;
 }
 
 void operator delete(void* ptr, const char* zFile, size_t nLine) {
+#if defined(_DEBUG)
     Divide::MemoryManager::log_delete(ptr);
+#else
+    ACKNOWLEDGE_UNUSED(zFile);
+    ACKNOWLEDGE_UNUSED(nLine);
+#endif
     free(ptr);
 }
 
 void* operator new[](size_t size, const char* zFile, size_t nLine) {
     void* ptr = malloc(size);
+#if defined(_DEBUG)
     Divide::MemoryManager::log_new(ptr, size, zFile, nLine);
+#else
+ACKNOWLEDGE_UNUSED(zFile);
+ACKNOWLEDGE_UNUSED(nLine);
+#endif
     return ptr;
 }
 
 void operator delete[](void* ptr, const char* zFile, size_t nLine) {
+#if defined(_DEBUG)
     Divide::MemoryManager::log_delete(ptr);
+#else
+ACKNOWLEDGE_UNUSED(zFile);
+ACKNOWLEDGE_UNUSED(nLine);
+#endif
     free(ptr);
 }
-#else
-#endif

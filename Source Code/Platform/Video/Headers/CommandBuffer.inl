@@ -43,11 +43,12 @@ CommandBuffer::add(const T& command) {
     _commandOrder.emplace_back(
         _commands.insert<T>(
             static_cast<vec_size_eastl>(T::EType),
-            entry_ptr<CommandBase>(
+            deleted_unique_ptr<CommandBase>(
                 CmdAllocator<T>::allocate(command),
                 [](CommandBase* cmd) {
                     CmdAllocator<T>::deallocate((T*)cmd);
-                })));
+                })
+            ));
 
 }
 

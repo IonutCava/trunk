@@ -17,8 +17,6 @@ SharedMutex glShader::_shaderNameLock;
 glShader::ShaderMap glShader::_shaderNameMap;
 
 
-IMPLEMENT_CUSTOM_ALLOCATOR(glShader, 0, 0);
-
 void glShader::initStaticData() {
 
 }

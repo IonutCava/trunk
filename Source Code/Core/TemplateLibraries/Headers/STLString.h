@@ -59,31 +59,6 @@ typedef stringAlg::basic_istringstream<wchar_t, stringAlg::char_traits<wchar_t>,
 typedef stringAlg::basic_stringbuf<char, stringAlg::char_traits<char>, stringAlg::allocator<char>> stringbufImpl;
 typedef stringAlg::basic_stringbuf<wchar_t, stringAlg::char_traits<wchar_t>, stringAlg::allocator<wchar_t>> wstringbufImpl;
 
-
-#if defined(USE_CUSTOM_MEMORY_ALLOCATORS)
-typedef stringImplFast stringImplBest;
-typedef wstringImplFast wstringImplBest;
-typedef stringstreamImplFast stringstreamImplBest;
-typedef ostringstreamImplFast ostringstreamImplBest;
-typedef wstringstreamImplFast wstringstreamImplBest;
-typedef wostringstreamImplFast wostringstreamImplBest;
-typedef istringstreamImplFast istringstreamImplBest;
-typedef wistringstreamImplFast wistringstreamImplBest;
-typedef stringbufImplFast stringbufImplBest;
-typedef wstringbufImplFast wstringbufImplBest;
-#else
-typedef stringImpl stringImplBest;
-typedef wstringImpl wstringImplBest;
-typedef stringstreamImpl stringstreamImplBest;
-typedef ostringstreamImpl ostringstreamImplBest;
-typedef wstringstreamImpl wstringstreamImplBest;
-typedef wostringstreamImpl wostringstreamImplBest;
-typedef istringstreamImpl istringstreamImplBest;
-typedef wistringstreamImpl wistringstreamImplBest;
-typedef stringbufImpl stringbufImplBest;
-typedef wstringbufImpl wstringbufImplBest;
-#endif
-
 namespace std {
     typedef size_t stringSize;
 

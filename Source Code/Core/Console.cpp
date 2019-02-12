@@ -87,7 +87,7 @@ void Console::output(std::ostream& outStream, const char* text, const bool newli
 
 void Console::output(const char* text, const bool newline, const EntryType type) {
     if (_enabled) {
-        stringstreamImplBest outStream;
+        stringstreamImplFast outStream;
         decorate(outStream, text, newline, type);
 
         OutputEntry entry = {};

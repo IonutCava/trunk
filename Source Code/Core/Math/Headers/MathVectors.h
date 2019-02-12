@@ -841,8 +841,8 @@ inline void OrthoNormalize(vec3<T> &v1, vec3<T> &v2);
 (w-component)
  * or just 4 values linked together
  ************************************************************************************/
-//#pragma pack(push)
-//#pragma pack(1)
+#pragma pack(push)
+#pragma pack(1)
 //__declspec(align(alignment))
 template <typename T>
 class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<16>, non_aligned_base>::type {
@@ -1290,7 +1290,7 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
         simd_vector<T> _reg;
     };
 };
-//#pragma pack(pop)
+#pragma pack(pop)
 
 /// lerp between the 2 specified vectors by the specified amount
 template <typename T>

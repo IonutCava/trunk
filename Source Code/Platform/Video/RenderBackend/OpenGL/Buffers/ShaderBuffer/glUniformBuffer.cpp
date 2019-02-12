@@ -67,7 +67,6 @@ AtomicCounter::~AtomicCounter()
     MemoryManager::DELETE(_buffer);
 }
 
-IMPLEMENT_CUSTOM_ALLOCATOR(glUniformBuffer, 0, 0)
 glUniformBuffer::glUniformBuffer(GFXDevice& context,
                                  const ShaderBufferDescriptor& descriptor)
     : ShaderBuffer(context, descriptor),

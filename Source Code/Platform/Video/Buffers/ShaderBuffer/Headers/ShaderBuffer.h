@@ -55,7 +55,6 @@ class NOINITVTABLE ShaderBuffer : public GUIDWrapper,
                                   public GraphicsResource,
                                   public RingBufferSeparateWrite
 {
-    USE_CUSTOM_ALLOCATOR
    public:
        enum class Flags : U8 {
            NONE = 0,

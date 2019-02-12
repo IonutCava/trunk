@@ -40,15 +40,15 @@ struct PolyContainerEntry
 };
 
 template<typename T>
-using entry_ptr = std::shared_ptr<T>;
+using deleted_unique_ptr = std::unique_ptr<T, std::function<void(T*)>>;
 
 template<typename T, size_t N>
 struct PolyContainer {
-    typedef vectorEASTL<entry_ptr<T>> EntryList;
+    typedef vectorEASTLFast<deleted_unique_ptr<T>> EntryList;
 
     template<typename U>
     inline typename std::enable_if<std::is_base_of<T, U>::value, PolyContainerEntry>::type
-        insert(vec_size_eastl index, entry_ptr<T>&& cmd) {
+        insert(vec_size_eastl index, deleted_unique_ptr<T>&& cmd) {
         assert(index < N);
 
         EntryList& collection = _collection[index];
@@ -135,15 +135,6 @@ struct PolyContainer {
         }
 
         return true;
-    }
-
-    inline void append(const PolyContainer& other) {
-        for (size_t i = 0; i < N; ++i) {
-            EntryList& lhs = _collection[i];
-            const EntryList& rhs = other._collection[i];
-
-            lhs.insert(eastl::cend(lhs), eastl::cbegin(rhs), eastl::cend(rhs));
-        }
     }
 
     std::array<EntryList, N> _collection;

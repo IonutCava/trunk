@@ -45,7 +45,6 @@ namespace Attorney {
 };
 /// OpenGL implementation of the ShaderProgram entity
 class glShaderProgram final : public ShaderProgram, public glObject {
-    USE_CUSTOM_ALLOCATOR
     friend class Attorney::GLAPIShaderProgram;
    public:
        struct glShaderProgramLoadInfo {

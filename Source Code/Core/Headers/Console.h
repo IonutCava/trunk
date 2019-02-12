@@ -48,7 +48,7 @@ class Console : private NonCopyable {
     };
 
     struct OutputEntry {
-        stringImplBest _text;
+        stringImplFast _text;
         EntryType _type = EntryType::Info;
     };
 

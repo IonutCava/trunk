@@ -132,7 +132,7 @@ namespace Divide {
     void OutputWindow::executeCommand(const char* command_line) {
         printText(
             {
-                Util::StringFormat("# %s\n", command_line),
+                Util::StringFormat("# %s\n", command_line).c_str(),
                 Console::EntryType::Command
             }
         );

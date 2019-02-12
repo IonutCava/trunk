@@ -39,22 +39,9 @@ DEFINE_POOL(ExternalCommand);
 void CommandBuffer::add(const CommandBuffer& other) {
     _commandOrder.reserve(_commandOrder.size() + other._commandOrder.size());
 
-#if 0
     for (const CommandEntry& cmd : other._commandOrder) {
-        other.getCommand<CommandBase>(cmd).addToBuffer(*this);
+        other.get<CommandBase>(cmd).addToBuffer(*this);
     }
-#else
-    for (const PolyContainerEntry& it : other._commandOrder) {
-        _commandOrder.emplace_back(
-            PolyContainerEntry{
-                it._typeIndex,
-                it._elementIndex + _commands._collection[it._typeIndex].size()
-            }
-        );
-    }
-
-    _commands.append(other._commands);
-#endif
 }
 
 void CommandBuffer::batch() {

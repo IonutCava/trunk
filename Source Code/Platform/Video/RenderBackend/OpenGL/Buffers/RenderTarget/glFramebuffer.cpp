@@ -35,8 +35,6 @@ namespace {
 
 bool glFramebuffer::_zWriteEnabled = true;
 
-IMPLEMENT_CUSTOM_ALLOCATOR(glFramebuffer, 0, 0)
-
 glFramebuffer::glFramebuffer(GFXDevice& context, const RenderTargetDescriptor& descriptor)
     : RenderTarget(context, descriptor),
       glObject(glObjectType::TYPE_FRAMEBUFFER, context),

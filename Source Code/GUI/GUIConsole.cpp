@@ -191,7 +191,7 @@ void GUIConsole::OutputText(const Console::OutputEntry& text) {
 
     CEGUI::FormattedListboxTextItem* crtItem =
         new CEGUI::FormattedListboxTextItem(
-            CEGUI::String(text._text),
+            CEGUI::String(text._text.c_str()),
             (text._type == Console::EntryType::Error 
                          ? CEGUI::Colour(1.0f, 0.0f, 0.0f)
                          : text._type == Console::EntryType::Warning 

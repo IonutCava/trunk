@@ -39,8 +39,6 @@ std::array<U32, to_base(ShaderType::COUNT)> glShaderProgram::_lineOffset;
 stringImpl glShaderProgram::shaderAtomLocationPrefix[to_base(ShaderType::COUNT) + 1];
 U64 glShaderProgram::shaderAtomExtensionHash[to_base(ShaderType::COUNT) + 1];
 
-IMPLEMENT_CUSTOM_ALLOCATOR(glShaderProgram, 0, 0);
-
 void glShaderProgram::initStaticData() {
     stringImpl locPrefix(Paths::g_assetsLocation + Paths::g_shadersLocation + Paths::Shaders::GLSL::g_parentShaderLoc);
 

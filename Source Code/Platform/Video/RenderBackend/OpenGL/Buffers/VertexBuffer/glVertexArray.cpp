@@ -99,8 +99,6 @@ void fillSmallData(const vector<VertexBuffer::Vertex>& dataIn, ByteBuffer& dataO
 
 GLUtil::glVAOCache glVertexArray::_VAOMap;
 
-IMPLEMENT_CUSTOM_ALLOCATOR(glVertexArray, 0, 0)
-
 void glVertexArray::cleanup() {
     _VAOMap.clear();
 }

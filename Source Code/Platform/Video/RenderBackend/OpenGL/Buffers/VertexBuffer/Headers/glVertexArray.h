@@ -57,7 +57,6 @@
 namespace Divide {
 
 class glVertexArray final : public VertexBuffer {
-    USE_CUSTOM_ALLOCATOR
    public:
     explicit glVertexArray(GFXDevice& context);
     ~glVertexArray();

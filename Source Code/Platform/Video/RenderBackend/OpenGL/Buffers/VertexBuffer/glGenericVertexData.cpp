@@ -8,8 +8,6 @@
 
 namespace Divide {
 
-IMPLEMENT_CUSTOM_ALLOCATOR(glGenericVertexData, 0, 0)
-
 glGenericVertexData::glGenericVertexData(GFXDevice& context, const U32 ringBufferLength, const char* name)
     : GenericVertexData(context, ringBufferLength)
 {

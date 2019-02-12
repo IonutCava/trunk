@@ -50,7 +50,6 @@ namespace Attorney {
 class glFramebuffer : public RenderTarget,
                       public glObject {
 
-    USE_CUSTOM_ALLOCATOR
     friend class Attorney::GLAPIRenderTarget;
    public:
     /// if resolveBuffer is not null, we add all of our attachments to it and

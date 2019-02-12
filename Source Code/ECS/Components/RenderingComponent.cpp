@@ -232,9 +232,7 @@ void RenderingComponent::onRender(RenderStagePass renderStagePass) {
     if (getMaterialInstanceCache() != nullptr) {
         RenderPackage& pkg = getDrawPackage(renderStagePass);
         TextureDataContainer& textures = pkg.descriptorSet(0)._textureData;
-        if (getMaterialInstanceCache()->getTextureData(renderStagePass, textures)) {
-            pkg.FlagDirty(RenderPackage::CommandType::DESCRIPTOR_SETS);
-        }
+        getMaterialInstanceCache()->getTextureData(renderStagePass, textures);
     }
 }
 
@@ -438,7 +436,6 @@ void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
     RenderPackage& pkg = getDrawPackage(renderStagePass);
     if (canDraw(renderStagePass)) {
         if (pkg.empty()) {
-            pkg.setDrawOption(CmdRenderOptions::RENDER_INDIRECT, true);
             rebuildDrawCommands(renderStagePass);
         }
 

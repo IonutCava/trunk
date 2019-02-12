@@ -43,7 +43,6 @@
 namespace Divide {
 
 class glGenericVertexData final : public GenericVertexData {
-    USE_CUSTOM_ALLOCATOR
     struct BufferBindConfig {
         BufferBindConfig() : BufferBindConfig(0, 0, 0)
         {
