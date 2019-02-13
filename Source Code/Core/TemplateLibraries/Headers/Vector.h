@@ -37,7 +37,6 @@
 
 #include <EASTL/sort.h>
 #include <EASTL/vector.h>
-#include <EASTL/allocator.h>
 #include <EASTL/fixed_allocator.h>
 #include <vector>
 
@@ -53,7 +52,7 @@ template <typename Type>
 using vectorEASTL = eastl::vector<Type>;
 
 template <typename Type>
-using vectorEASTLFast = eastl::vector<Type/*, dvd_allocator<Type>*/>;
+using vectorEASTLFast = eastl::vector<Type, eastl::dvd_eastl_allocator>;
 
 template <typename Type>
 using vectorBest = vector<Type>;

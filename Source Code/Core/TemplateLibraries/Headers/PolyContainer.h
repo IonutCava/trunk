@@ -39,6 +39,8 @@ struct PolyContainerEntry
     size_t _elementIndex = 0;
 };
 
+
+
 template<typename T>
 using deleted_unique_ptr = std::unique_ptr<T, std::function<void(T*)>>;
 
@@ -55,6 +57,14 @@ struct PolyContainer {
         collection.push_back(std::move(cmd));
 
         return PolyContainerEntry{ index, collection.size() - 1 };
+    }
+
+    inline EntryList& get(vec_size_eastl index) {
+        return  _collection[index];
+    }
+
+    inline const EntryList& get(vec_size_eastl index) const {
+        return  _collection[index];
     }
 
     inline T& get(vec_size_eastl index, size_t entry) {

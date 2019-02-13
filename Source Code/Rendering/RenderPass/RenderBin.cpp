@@ -103,7 +103,7 @@ void RenderBin::sort(RenderStage stage, RenderingOrder::List renderOrder, const 
     sort(stage, renderOrder);
 }
 
-void RenderBin::getSortedNodes(RenderStage stage, vectorEASTL<SceneGraphNode*>& nodes, U16& countOut) const {
+void RenderBin::getSortedNodes(RenderStage stage, vectorEASTLFast<SceneGraphNode*>& nodes, U16& countOut) const {
     nodes.resize(0);
     nodes.reserve(getBinSize(stage));
 
@@ -143,7 +143,7 @@ void RenderBin::addNodeToBin(const SceneGraphNode& sgn, RenderStagePass stagePas
                                              });
 }
 
-void RenderBin::populateRenderQueue(RenderStagePass stagePass, vectorEASTL<RenderPackage*>& queueInOut) const {
+void RenderBin::populateRenderQueue(RenderStagePass stagePass, vectorEASTLFast<RenderPackage*>& queueInOut) const {
     for (const RenderBinItem& item : _renderBinStack[to_base(stagePass._stage)]) {
         queueInOut.push_back(&item._renderable->getDrawPackage(stagePass));
     }

@@ -69,6 +69,11 @@ void *xrealloc(void *ptr, size_t size);
 /// Output allocator statistics to the standard output
 void xalloc_stats();
 
+
+void lock_get();
+
+void lock_release();
+
 // Macro to overload new/delete with xalloc/xfree  
 #define XALLOCATOR \
     public: \

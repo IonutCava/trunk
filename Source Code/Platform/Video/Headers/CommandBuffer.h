@@ -44,7 +44,7 @@ class CommandBuffer : private GUIDWrapper, private NonCopyable {
     friend class CommandBufferPool;
   public:
       typedef PolyContainerEntry CommandEntry;
-
+      typedef PolyContainer<GFX::CommandBase, to_base(GFX::CommandType::COUNT)> Container;
   public:
     CommandBuffer() = default;
     ~CommandBuffer() = default;
@@ -56,7 +56,7 @@ class CommandBuffer : private GUIDWrapper, private NonCopyable {
     CommandBuffer & operator=(CommandBuffer&& other) = default;
 
     template<typename T>
-    inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, void>::type
+    inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T&>::type
     add(const T& command);
 
     bool validate() const;
@@ -79,6 +79,14 @@ class CommandBuffer : private GUIDWrapper, private NonCopyable {
     template<typename T>
     typename std::enable_if<std::is_base_of<CommandBase, T>::value, T&>::type
     get(const CommandEntry& commandEntry);
+
+    template<typename T>
+    typename std::enable_if<std::is_base_of<CommandBase, T>::value, Container::EntryList&>::type
+    get();
+
+    template<typename T>
+    typename std::enable_if<std::is_base_of<CommandBase, T>::value, const Container::EntryList&>::type
+    get() const;
 
     bool exists(const CommandEntry& commandEntry) const;
 

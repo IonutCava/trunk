@@ -1369,7 +1369,7 @@ size_t GL_API::setStateBlock(size_t stateBlockHash) {
     return getStateTracker().setStateBlock(stateBlockHash);
 }
 
-bool GL_API::makeTexturesResident(const TextureDataContainer& textureData, const vectorEASTL<TextureViewEntry>& textureViews) {
+bool GL_API::makeTexturesResident(const TextureDataContainer& textureData, const vectorEASTLFast<TextureViewEntry>& textureViews) {
     bool bound = false;
 
     STUBBED("ToDo: Optimise this: If over n textures, get max binding slot, create [0...maxSlot] bindings, fill unused with 0 and send as one command with glBindTextures -Ionut")

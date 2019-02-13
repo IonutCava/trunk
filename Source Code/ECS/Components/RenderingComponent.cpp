@@ -238,7 +238,9 @@ void RenderingComponent::onRender(RenderStagePass renderStagePass) {
 
 bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams) {
     RenderPackage& pkg = getDrawPackage(refreshParams._stagePass);
-    if (pkg.drawCommandCount() > 0) {
+    I32 drawCommandCount = pkg.drawCommandCount();
+
+    if (drawCommandCount > 0) {
         if (refreshParams._stagePass._stage == RenderStage::SHADOW) {
             Attorney::RenderPackageRenderingComponent::updateDrawCommands(pkg, refreshParams._nodeCount, to_U32(refreshParams._drawCommandsInOut.size()));
         } else {
@@ -247,8 +249,8 @@ bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams)
                 Attorney::RenderPackageRenderingComponent::updateDrawCommands(package, refreshParams._nodeCount, to_U32(refreshParams._drawCommandsInOut.size()));
             }
         }
-        for (I32 i = 0; i < pkg.drawCommandCount(); ++i) {
-            GenericDrawCommand cmd = pkg.drawCommand(i, 0);
+        for (I32 i = 0; i < drawCommandCount; ++i) {
+            const GenericDrawCommand& cmd = pkg.drawCommand(i, 0);
             if (cmd._drawCount > 1 && isEnabledOption(cmd, CmdRenderOptions::CONVERT_TO_INDIRECT)) {
                 std::fill_n(std::back_inserter(refreshParams._drawCommandsInOut), cmd._drawCount, cmd._cmd);
             } else {
@@ -447,8 +449,14 @@ void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
 
             bool renderWireframe = renderOptionEnabled(RenderOptions::RENDER_WIREFRAME);
             renderWireframe = renderWireframe || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME);
-            pkg.setDrawOption(CmdRenderOptions::RENDER_GEOMETRY, renderGeometry);
-            pkg.setDrawOption(CmdRenderOptions::RENDER_WIREFRAME, renderWireframe);
+            if (renderWireframe && renderGeometry) {
+                pkg.enableOptions(to_U32(CmdRenderOptions::RENDER_GEOMETRY) | to_U32(CmdRenderOptions::RENDER_WIREFRAME));
+            } else if (!renderWireframe && !renderGeometry) {
+                pkg.disableOptions(to_U32(CmdRenderOptions::RENDER_GEOMETRY) | to_U32(CmdRenderOptions::RENDER_WIREFRAME));
+            } else {
+                pkg.setDrawOption(CmdRenderOptions::RENDER_GEOMETRY, renderGeometry);
+                pkg.setDrawOption(CmdRenderOptions::RENDER_WIREFRAME, renderWireframe);
+            }
         }
     }
 }

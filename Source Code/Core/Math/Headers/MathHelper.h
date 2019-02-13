@@ -130,6 +130,7 @@ inline typename std::enable_if<std::is_enum<Type>::value, void>::type
 ToggleBit(U32& bitMask, const Type bit, bool state);
 
 constexpr bool AnyCompare(const U32 bitMask, const U32 checkMask) noexcept;
+constexpr bool AllCompare(const U32 bitMask, const U32 checkMask) noexcept;
 constexpr bool BitCompare(const U32 bitMask, const U32 bit) noexcept;
 constexpr void SetBit(U32& bitMask, const U32 bit) noexcept;
 constexpr void ClearBit(U32& bitMask, const U32 bit) noexcept;

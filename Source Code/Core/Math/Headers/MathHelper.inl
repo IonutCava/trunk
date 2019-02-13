@@ -355,6 +355,10 @@ constexpr bool AnyCompare(const U32 bitMask, const U32 checkMask) noexcept {
     return ((bitMask & checkMask) != 0);
 }
 
+constexpr bool AllCompare(const U32 bitMask, const U32 checkMask) noexcept {
+    return ((bitMask & checkMask) == checkMask);
+}
+
 constexpr bool BitCompare(const U32 bitMask, const U32 bit) noexcept {
     return ((bitMask & bit) == bit);
 }

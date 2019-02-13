@@ -37,19 +37,19 @@ namespace Divide {
 namespace GFX {
 
 template<typename T>
-inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, void>::type
+inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T&>::type
 CommandBuffer::add(const T& command) {
 
-    _commandOrder.emplace_back(
-        _commands.insert<T>(
-            static_cast<vec_size_eastl>(T::EType),
-            deleted_unique_ptr<CommandBase>(
-                CmdAllocator<T>::allocate(command),
-                [](CommandBase* cmd) {
-                    CmdAllocator<T>::deallocate((T*)cmd);
-                })
-            ));
+    T* mem = CmdAllocator<T>::allocate(command);
 
+    _commandOrder.emplace_back(
+        _commands.insert<T>(static_cast<vec_size_eastl>(T::EType),
+                            deleted_unique_ptr<CommandBase>(mem,
+                                [](CommandBase * cmd) {
+                                    CmdAllocator<T>::deallocate((T*)cmd);
+                                })));
+
+    return *mem;
 }
 
 template<typename T>
@@ -63,6 +63,19 @@ inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, const T&>
 CommandBuffer::get(const CommandEntry& commandEntry) const {
     return static_cast<const T&>(_commands.get(commandEntry));
 }
+
+template<typename T>
+inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, CommandBuffer::Container::EntryList&>::type
+CommandBuffer::get() {
+    return _commands.get(to_base(T::EType));
+}
+
+template<typename T>
+inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, const CommandBuffer::Container::EntryList&>::type
+CommandBuffer::get() const {
+    return _commands.get(to_base(T::EType));
+}
+
 
 inline bool CommandBuffer::exists(const CommandEntry& commandEntry) const {
     return _commands.exists(commandEntry._typeIndex, commandEntry._elementIndex);

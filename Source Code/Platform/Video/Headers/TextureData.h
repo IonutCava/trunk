@@ -43,8 +43,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 struct TextureData {
     U32 _textureHandle = 0u;
-    TextureType _textureType = TextureType::COUNT;
     U32 _samplerHandle = 0u;
+    TextureType _textureType = TextureType::COUNT;
 
     inline U32  getHandle()     const noexcept { return _textureHandle; }
     inline void setHandle(U32 handle) noexcept { _textureHandle = handle; }
@@ -61,6 +61,8 @@ struct TextureData {
                _textureHandle != other._textureHandle ||
                _samplerHandle != other._samplerHandle;
     }
+
+    XALLOCATOR
 };
 
 class TextureDataContainer {
@@ -72,7 +74,7 @@ class TextureDataContainer {
           COUNT
       };
 
-      using DataEntries = vectorEASTL<eastl::pair<TextureData, U8 /*binding*/>>;
+      using DataEntries = vectorEASTLFast<eastl::pair<TextureData, U8 /*binding*/>>;
 
       bool set(const TextureDataContainer& other);
 
@@ -94,6 +96,8 @@ class TextureDataContainer {
 
     private:
         DataEntries _textures;
+
+    XALLOCATOR
 };
 
 }; //namespace Divide

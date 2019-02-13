@@ -58,5 +58,13 @@ namespace Divide {
         }
     }
 
+    inline void enableOptions(GenericDrawCommand& cmd, U32 optionsMask) {
+        SetBit(cmd._renderOptions, to_U32(optionsMask));
+    }
+
+    inline void disableOptions(GenericDrawCommand& cmd, U32 optionsMask) {
+        ClearBit(cmd._renderOptions, to_U32(optionsMask));
+    }
+
 }; //namespace Divide
 #endif //_GENERIC_DRAW_COMMAND_INL

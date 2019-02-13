@@ -3,7 +3,6 @@
 #include "Headers/CommandBuffer.h"
 #include "Core/Headers/Console.h"
 #include "Platform/Video/Buffers/VertexBuffer/Headers/VertexDataInterface.h"
-#include <boost/poly_collection/algorithm.hpp>
 
 namespace Divide {
 

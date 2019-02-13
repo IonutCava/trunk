@@ -34,10 +34,107 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _TEMPLATE_ALLOCATOR_H_
 
 #include "config.h"
-
+#include <EASTL/allocator.h>
 #include <Allocator/stl_allocator.h>
 template <typename Type>
 using dvd_allocator = stl_allocator<Type>;
 
 
+namespace eastl {
+    class dvd_eastl_allocator
+    {
+    public:
+        inline dvd_eastl_allocator(const char* pName = EASTL_NAME_VAL("dvd custom eastl allocator"))
+        {
+        #if EASTL_NAME_ENABLED
+            mpName = pName ? pName : EASTL_ALLOCATOR_DEFAULT_NAME;
+        #else
+            (void)pName;
+        #endif
+        }
+
+        inline dvd_eastl_allocator(const allocator& x, const char* pName = EASTL_NAME_VAL("dvd custom eastl allocator"))
+        {
+            (void)x;
+        #if EASTL_NAME_ENABLED
+            mpName = pName ? pName : EASTL_ALLOCATOR_DEFAULT_NAME;
+        #else
+            (void)pName;
+        #endif
+        }
+
+        inline dvd_eastl_allocator& operator=(const dvd_eastl_allocator& EASTL_NAME(x))
+        {
+            #if EASTL_NAME_ENABLED
+                mpName = x.mpName;
+            #endif
+
+            return *this;
+        }
+
+        inline void* allocate(size_t n, int flags = 0)
+        {
+            #if EASTL_NAME_ENABLED
+                #define pName mpName
+            #else
+                #define pName EASTL_ALLOCATOR_DEFAULT_NAME
+            #endif
+
+            //return ::new((char*)0, flags, 0, (char*)0, 0) char[n];
+            return xmalloc(n);
+        }
+
+        inline void* allocate(size_t n, size_t alignment, size_t offset, int flags = 0)
+        {
+            return xmalloc(n);
+            //return ::new(alignment, offset, (char*)0, flags, 0, (char*)0, 0) char[n];
+            #undef pName  // See above for the definition of this.
+        }
+
+        inline void deallocate(void* p, size_t n)
+        {
+            (void)n;
+            //delete[](char*)p;
+            xfree(p);
+        }
+
+        inline const char* get_name() const
+        {
+        #if EASTL_NAME_ENABLED
+            return mpName;
+        #else
+            return "dvd custom eastl allocator";
+        #endif
+        }
+
+        inline void set_name(const char* pName)
+        {
+        #if EASTL_NAME_ENABLED
+            mpName = pName;
+        #else
+            (void)pName;
+        #endif
+        }
+
+    protected:
+        // Possibly place instance data here.
+
+#if EASTL_NAME_ENABLED
+        const char* mpName; // Debug name, used to track memory.
+#endif
+    };
+
+
+    inline bool operator==(const dvd_eastl_allocator& a, const dvd_eastl_allocator& b)
+    {
+        (void)a; (void)b;
+        return true; // All allocators are considered equal, as they merely use global new/delete.
+    }
+
+    inline bool operator!=(const dvd_eastl_allocator& a, const dvd_eastl_allocator& b)
+    {
+        (void)a; (void)b;
+        return false; // All allocators are considered equal, as they merely use global new/delete.
+    }
+}
 #endif //_TEMPLATE_ALLOCATOR_H_

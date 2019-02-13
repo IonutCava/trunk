@@ -158,20 +158,11 @@ public:
         REVEALAGE = NORMALS_AND_VELOCITY,
     };
 
-    struct NodeData : private NonCopyable {
-        mat4<F32> _worldMatrix = {};
-        mat4<F32> _normalMatrixW = {};
-        mat4<F32> _colourMatrix = {};
-        vec4<F32> _properties = {};
-
-        NodeData()
-        {
-            _worldMatrix.identity();
-            _normalMatrixW.identity();
-            _colourMatrix.zero();
-        }
-
-        void set(const NodeData& other);
+    struct NodeData {
+        mat4<F32> _worldMatrix = MAT4_IDENTITY;
+        mat4<F32> _normalMatrixW = MAT4_IDENTITY;
+        mat4<F32> _colourMatrix = MAT4_IDENTITY;
+        vec4<F32> _properties{ 0.0f };
     };
 
 public:  // GPU interface

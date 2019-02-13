@@ -59,8 +59,8 @@ namespace Divide {
     };
 
     struct TextureViewEntry {
-        U8 _binding = 0;
         TextureView _view = {};
+        U8 _binding = 0;
 
         inline bool operator==(const TextureViewEntry& other) const {
             return _binding == other._binding &&
@@ -75,21 +75,22 @@ namespace Divide {
 
     class ShaderBuffer;
     struct ShaderBufferBinding {
-        ShaderBufferLocation _binding = ShaderBufferLocation::COUNT;
-        std::pair<bool, vec2<U8>> _atomicCounter = { false, {0u, 0u} };
         vec2<U32>     _elementRange = {};
         ShaderBuffer* _buffer = nullptr;
+        std::pair<bool, vec2<U8>> _atomicCounter = { false, {0u, 0u} };
+        ShaderBufferLocation _binding = ShaderBufferLocation::COUNT;
 
         bool set(const ShaderBufferBinding& other);
         bool set(ShaderBufferLocation binding, ShaderBuffer* buffer, const vec2<U32>& elementRange, const std::pair<bool, vec2<U32>>& atomicCounter = std::make_pair(false, vec2<U32>(0u)));
 
         bool operator==(const ShaderBufferBinding& other) const;
         bool operator!=(const ShaderBufferBinding& other) const;
+
+        XALLOCATOR
     };
 
-    typedef vectorEASTL<ShaderBufferBinding> ShaderBufferList;
-
-    typedef vectorEASTL<TextureViewEntry> TextureViews;
+    typedef vectorEASTLFast<ShaderBufferBinding> ShaderBufferList;
+    typedef vectorEASTLFast<TextureViewEntry> TextureViews;
 
     struct DescriptorSet {
         //This needs a lot more work!
@@ -114,6 +115,8 @@ namespace Divide {
                    _textureData != other._textureData ||
                    _textureViews != other._textureViews;
         }
+
+        XALLOCATOR
     };
 
     bool Merge(DescriptorSet &lhs, DescriptorSet &rhs, bool& partial);

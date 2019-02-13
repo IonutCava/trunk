@@ -128,7 +128,7 @@ static void lock_destroy()
 }
 
 /// Lock the shared resource. 
-static inline void lock_get()
+extern "C" void lock_get()
 {
 	if (_xallocInitialized == FALSE)
 		return;
@@ -140,7 +140,7 @@ static inline void lock_get()
 }
 
 /// Unlock the shared resource. 
-static inline void lock_release()
+extern "C" void lock_release()
 {
 	if (_xallocInitialized == FALSE)
 		return;

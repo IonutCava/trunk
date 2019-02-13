@@ -143,7 +143,7 @@ void RenderQueue::addNodeToQueue(const SceneGraphNode& sgn, RenderStagePass stag
     }
 }
 
-void RenderQueue::populateRenderQueues(RenderStagePass stagePass, RenderBinType binType, vectorEASTL<RenderPackage*>& queueInOut) {
+void RenderQueue::populateRenderQueues(RenderStagePass stagePass, RenderBinType binType, vectorEASTLFast<RenderPackage*>& queueInOut) {
     if (binType._value == RenderBinType::RBT_COUNT) {
         for (RenderBin* renderBin : _renderBins) {
             renderBin->populateRenderQueue(stagePass, queueInOut);
@@ -202,12 +202,12 @@ void RenderQueue::getSortedQueues(RenderStagePass stagePass, SortedQueues& queue
          
         for (RenderBinType type : rbTypes) {
             RenderBin* renderBin = _renderBins[type];
-            vectorEASTL<SceneGraphNode*>& nodes = queuesOut[type];
+            vectorEASTLFast<SceneGraphNode*>& nodes = queuesOut[type];
             renderBin->getSortedNodes(stagePass._stage, nodes, countOut);
         }
     } else {
         for (RenderBin* renderBin : _renderBins) {
-            vectorEASTL<SceneGraphNode*>& nodes = queuesOut[renderBin->getType()];
+            vectorEASTLFast<SceneGraphNode*>& nodes = queuesOut[renderBin->getType()];
             renderBin->getSortedNodes(stagePass._stage, nodes, countOut);
         }
     }

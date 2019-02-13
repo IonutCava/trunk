@@ -462,7 +462,7 @@ const CEGUI::GUIContext& GUI::getCEGUIContext() const noexcept {
 }
 
 TextureData GUI::getCEGUIRenderTextureData() const {
-    TextureData ret;
+    TextureData ret = {};
 
     if (_ceguiRenderTextureTarget != nullptr) {
         const GFXDevice& gfx = _context->parent().platformContext().gfx();

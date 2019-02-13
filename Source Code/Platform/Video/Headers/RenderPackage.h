@@ -81,7 +81,8 @@ public:
 
     U8 lodLevel() const;
 
-    I32 drawCommandCount() const;
+    inline I32 drawCommandCount() const { return _drawCommandCount; }
+
     const GenericDrawCommand& drawCommand(I32 index, I32 cmdIndex) const;
     void drawCommand(I32 index, I32 cmdIndex, const GenericDrawCommand& cmd);
 
@@ -111,6 +112,8 @@ public:
     void setTexture(I32 descriptorSetIndex, const TextureData& data, U8 binding);
 
     void setDrawOption(CmdRenderOptions option, bool state);
+    void enableOptions(U32 optionMask);
+    void disableOptions(U32 optionMask);
 
     inline bool empty() const { return _commands->empty(); }
 
@@ -118,22 +121,25 @@ protected:
     void setLoDLevel(U8 LoD);
 
     void updateDrawCommands(U32 dataIndex, U32 startOffset);
-    void buildAndGetCommandBuffer(GFX::CommandBuffer& bufferInOut, bool& cacheMiss);
-
-private:
-    U8 _lodLevel;
-    MinQuality _qualityRequirement;
+    void getCommandBuffer(GFX::CommandBuffer& bufferInOut);
 
 protected:
     // Cached command buffer
     GFX::CommandBuffer* _commands;
+
+private:
+    U32 _drawCommandOptions;
+    I32 _drawCommandCount;
+    MinQuality _qualityRequirement;
+    U8 _lodLevel;
 };
+
 
 namespace Attorney {
     class RenderPackageRenderPassManager {
         private:
-        static void buildAndGetCommandBuffer(RenderPackage& pkg, GFX::CommandBuffer& bufferInOut, bool& cacheMiss) {
-            pkg.buildAndGetCommandBuffer(bufferInOut, cacheMiss);
+        static void getCommandBuffer(RenderPackage& pkg, GFX::CommandBuffer& bufferInOut) {
+            pkg.getCommandBuffer(bufferInOut);
         }
 
         friend class Divide::RenderPassManager;

@@ -30,6 +30,7 @@
 namespace Divide {
 
 namespace {
+    thread_local RenderQueue::SortedQueues g_sortedQueues;
     thread_local vectorEASTL<GFXDevice::NodeData> g_nodeData;
     thread_local vectorEASTL<IndirectDrawCommand> g_drawCommands;
 };
@@ -209,13 +210,9 @@ RenderPass::BufferData RenderPassManager::getBufferData(RenderStagePass stagePas
 GFXDevice::NodeData RenderPassManager::processVisibleNode(SceneGraphNode* node, RenderStagePass stagePass, bool isOcclusionCullable, bool playAnimations, const mat4<F32>& viewMatrix) const {
     GFXDevice::NodeData dataOut;
 
-    BoundsComponent*    const bounds = node->get<BoundsComponent>();
-    RenderingComponent* const renderable = node->get<RenderingComponent>();
-    TransformComponent* const transform = node->get<TransformComponent>();
-    AnimationComponent* const animComp = node->get<AnimationComponent>();
-
     // Extract transform data (if available)
     // (Nodes without transforms just use identity matrices)
+    TransformComponent* const transform = node->get<TransformComponent>();
     if (transform) {
         // ... get the node's world matrix properly interpolated
         dataOut._worldMatrix.set(transform->getWorldMatrix(_context.getFrameInterpolationFactor()));
@@ -231,13 +228,22 @@ GFXDevice::NodeData RenderPassManager::processVisibleNode(SceneGraphNode* node, 
     dataOut._normalMatrixW.setRow(3, 0.0f, 0.0f, 0.0f, 0.0f);
 
     // Get the material property matrix (alpha test, texture count, texture operation, etc.)
-    dataOut._normalMatrixW.element(0, 3) = playAnimations ? to_F32((animComp && animComp->playAnimations()) ? animComp->boneCount() : 0) : 0.0f;
+    AnimationComponent* animComp = nullptr;
+    if (playAnimations) {
+        animComp = node->get<AnimationComponent>();
+        if (animComp && animComp->playAnimations()) {
+            dataOut._normalMatrixW.element(0, 3) = to_F32(animComp->boneCount());
+        }
+    }
+
+    RenderingComponent* const renderable = node->get<RenderingComponent>();
     renderable->getRenderingProperties(stagePass,
                                        dataOut._properties,
                                        dataOut._normalMatrixW.element(1, 3),
                                        dataOut._normalMatrixW.element(2, 3));
 
     // Since the normal matrix is 3x3, we can use the extra row and column to store additional data
+    BoundsComponent* const bounds = node->get<BoundsComponent>();
     dataOut._normalMatrixW.setRow(3, bounds->getBoundingSphere().asVec4());
 
     // Get the colour matrix (diffuse, specular, etc.)
@@ -274,7 +280,7 @@ void RenderPassManager::refreshNodeData(RenderStagePass stagePass,
     g_drawCommands.resize(0);
     g_drawCommands.reserve(Config::MAX_VISIBLE_NODES);
 
-    for (const vectorEASTL<SceneGraphNode*>& queue : sortedQueues) {
+    for (const vectorEASTLFast<SceneGraphNode*>& queue : sortedQueues) {
         for (SceneGraphNode* node : queue) {
             RenderingComponent& renderable = *node->get<RenderingComponent>();
 
@@ -320,13 +326,13 @@ void RenderPassManager::buildDrawCommands(RenderStagePass stagePass, const PassP
 
     U16 queueSize = 0;
 
-    RenderQueue::SortedQueues sortedQueues;
-    for (auto& queue : sortedQueues) {
+    for (auto& queue : g_sortedQueues) {
+        queue.resize(0);
         queue.reserve(Config::MAX_VISIBLE_NODES);
     }
 
-    getQueue().getSortedQueues(stagePass, sortedQueues, queueSize);
-    for (const vectorEASTL<SceneGraphNode*>& queue : sortedQueues) {
+    getQueue().getSortedQueues(stagePass, g_sortedQueues, queueSize);
+    for (const vectorEASTLFast<SceneGraphNode*>& queue : g_sortedQueues) {
         for (SceneGraphNode* node : queue) {
             if (params._sourceNode != nullptr && *params._sourceNode == *node) {
                 continue;
@@ -343,7 +349,7 @@ void RenderPassManager::buildDrawCommands(RenderStagePass stagePass, const PassP
         memCmd._barrierMask = to_base(MemoryBarrierType::SHADER_BUFFER);
         GFX::EnqueueCommand(bufferInOut, memCmd);
 
-        refreshNodeData(stagePass, sceneRenderState, viewMatrix, sortedQueues, bufferInOut);
+        refreshNodeData(stagePass, sceneRenderState, viewMatrix, g_sortedQueues, bufferInOut);
     }
 }
 
@@ -361,7 +367,7 @@ void RenderPassManager::prepareRenderQueues(RenderStagePass stagePass, const Pas
     // Sort all bins
     queue.sort(stagePass);
     
-    vectorEASTL<RenderPackage*>& packageQueue = _renderQueues[to_base(stage)];
+    vectorEASTLFast<RenderPackage*>& packageQueue = _renderQueues[to_base(stage)];
     packageQueue.resize(0);
     packageQueue.reserve(Config::MAX_VISIBLE_NODES);
     
@@ -647,7 +653,7 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
 
 // TEMP
 U32 RenderPassManager::renderQueueSize(RenderStagePass stagePass, RenderPackage::MinQuality qualityRequirement) const {
-    const vectorEASTL<RenderPackage*>& queue = _renderQueues[to_base(stagePass._stage)];
+    const vectorEASTLFast<RenderPackage*>& queue = _renderQueues[to_base(stagePass._stage)];
     if (qualityRequirement == RenderPackage::MinQuality::COUNT) {
         return to_U32(queue.size());
     }
@@ -663,17 +669,16 @@ U32 RenderPassManager::renderQueueSize(RenderStagePass stagePass, RenderPackage:
 }
 
 void RenderPassManager::renderQueueToSubPasses(RenderStagePass stagePass, GFX::CommandBuffer& commandsInOut, RenderPackage::MinQuality qualityRequirement) const {
-    const vectorEASTL<RenderPackage*>& queue = _renderQueues[to_base(stagePass._stage)];
+    const vectorEASTLFast<RenderPackage*>& queue = _renderQueues[to_base(stagePass._stage)];
 
-    bool cacheMiss = false;
     if (qualityRequirement == RenderPackage::MinQuality::COUNT) {
         for (RenderPackage* item : queue) {
-            Attorney::RenderPackageRenderPassManager::buildAndGetCommandBuffer(*item, commandsInOut, cacheMiss);
+            Attorney::RenderPackageRenderPassManager::getCommandBuffer(*item, commandsInOut);
         }
     } else {
         for (RenderPackage* item : queue) {
             if (item->qualityRequirement() == qualityRequirement) {
-                Attorney::RenderPackageRenderPassManager::buildAndGetCommandBuffer(*item, commandsInOut, cacheMiss);
+                Attorney::RenderPackageRenderPassManager::getCommandBuffer(*item, commandsInOut);
             }
         }
     }

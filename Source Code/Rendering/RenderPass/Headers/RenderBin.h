@@ -89,7 +89,7 @@ class RenderPassManager;
 /// This class contains a list of "RenderBinItem"'s and stores them sorted
 /// depending on designation
 class RenderBin {
-    typedef vectorEASTL<RenderBinItem> RenderBinStack;
+    typedef vectorEASTLFast<RenderBinItem> RenderBinStack;
 
    public:
 
@@ -100,7 +100,7 @@ class RenderBin {
 
     void sort(RenderStage stage, RenderingOrder::List renderOrder);
     void sort(RenderStage stage, RenderingOrder::List renderOrder, const Task& parentTask);
-    void populateRenderQueue(RenderStagePass stagePass, vectorEASTL<RenderPackage*>& queueInOut) const;
+    void populateRenderQueue(RenderStagePass stagePass, vectorEASTLFast<RenderPackage*>& queueInOut) const;
     void postRender(const SceneRenderState& renderState, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut);
     void refresh(RenderStage stage);
 
@@ -110,7 +110,7 @@ class RenderBin {
 
     const RenderBinItem& getItem(RenderStage stage, U16 index) const;
 
-    void getSortedNodes(RenderStage stage, vectorEASTL<SceneGraphNode*>& nodes, U16& countOut) const;
+    void getSortedNodes(RenderStage stage, vectorEASTLFast<SceneGraphNode*>& nodes, U16& countOut) const;
 
     U16 getBinSize(RenderStage stage) const;
 

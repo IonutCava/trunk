@@ -56,13 +56,23 @@ struct CmdAllocator {
 
     template <class... Args>
     static T* allocate(Args&&... args) {
+#if 1
+        T* ptr = nullptr;
+        {
+            UniqueLock w_lock(s_PoolMutex);
+            ptr = s_Pool.allocate();
+        }
+        s_Pool.construct<T>(ptr, std::forward<Args>(args)...);
+        return ptr;
+#else
         UniqueLock w_lock(s_PoolMutex);
         return s_Pool.newElement(std::forward<Args>(args)...);
+#endif
     }
 
     static void deallocate(T* ptr) {
         UniqueLock w_lock(s_PoolMutex);
-        s_Pool.deallocate(ptr);
+        s_Pool.deleteElement(ptr);
     }
 };
 

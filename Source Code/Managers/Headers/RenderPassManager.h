@@ -124,7 +124,7 @@ private:
     Time::ProfileTimer* _buildCommandBufferTimer;
     Time::ProfileTimer* _flushCommandBufferTimer;
     Time::ProfileTimer* _postFxRenderTimer;
-    std::array<vectorEASTL<RenderPackage*>, to_base(RenderStage::COUNT)> _renderQueues;
+    std::array<vectorEASTLFast<RenderPackage*>, to_base(RenderStage::COUNT)> _renderQueues;
 };
 
 };  // namespace Divide

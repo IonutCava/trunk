@@ -47,14 +47,14 @@ FWD_DECLARE_MANAGED_CLASS(SceneNode);
 class RenderQueue : public KernelComponent {
    public:
     typedef std::array<RenderBin*, RenderBinType::RBT_COUNT> RenderBinArray;
-    typedef std::array<vectorEASTL<SceneGraphNode*>, RenderBinType::RBT_COUNT> SortedQueues;
+    typedef std::array<vectorEASTLFast<SceneGraphNode*>, RenderBinType::RBT_COUNT> SortedQueues;
 
   public:
     RenderQueue(Kernel& parent);
     ~RenderQueue();
 
     //binAndFlag: if true, populate from bin, if false, populate from everything except bin
-    void populateRenderQueues(RenderStagePass stagePass, RenderBinType binType, vectorEASTL<RenderPackage*>& queueInOut);
+    void populateRenderQueues(RenderStagePass stagePass, RenderBinType binType, vectorEASTLFast<RenderPackage*>& queueInOut);
     void postRender(const SceneRenderState& renderState, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut);
     void sort(RenderStagePass stagePass);
     void refresh(RenderStage stage);

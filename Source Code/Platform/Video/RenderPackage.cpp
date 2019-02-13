@@ -8,10 +8,12 @@
 namespace Divide {
 
 RenderPackage::RenderPackage()
-    : _lodLevel(0u),
-      _qualityRequirement(MinQuality::FULL)
+    : _commands(GFX::allocateCommandBuffer(true)),
+      _drawCommandOptions(to_base(CmdRenderOptions::RENDER_GEOMETRY)),
+      _drawCommandCount(0),
+      _qualityRequirement(MinQuality::FULL),
+      _lodLevel(0u)
 {
-    _commands = GFX::allocateCommandBuffer(true);
 }
 
 RenderPackage::~RenderPackage()
@@ -21,6 +23,7 @@ RenderPackage::~RenderPackage()
 
 void RenderPackage::clear() {
     _commands->clear();
+    _drawCommandCount = 0;
 }
 
 void RenderPackage::set(const RenderPackage& other) {
@@ -34,10 +37,6 @@ size_t RenderPackage::getSortKeyHash() const {
     }
 
     return 0;
-}
-
-I32 RenderPackage::drawCommandCount() const {
-    return to_I32(_commands->count<GFX::DrawCommand>());
 }
 
 const GFX::DrawCommand& RenderPackage::drawCommand(I32 index) const {
@@ -62,15 +61,58 @@ void RenderPackage::drawCommand(I32 index, I32 cmdIndex, const GenericDrawComman
 }
 
 void RenderPackage::addDrawCommand(const GFX::DrawCommand& cmd) {
-    _commands->add(cmd);
+    GFX::DrawCommand& newCmd = _commands->add(cmd);
+    for (GenericDrawCommand& drawCmd : newCmd._drawCommands) {
+        Divide::enableOptions(drawCmd, _drawCommandOptions);
+    }
+    ++_drawCommandCount;
 }
 
 void RenderPackage::setDrawOption(CmdRenderOptions option, bool state) {
-    I32 drawCmdCount = drawCommandCount();
-    for (I32 i = 0; i < drawCmdCount; ++i) {
-        GFX::DrawCommand & cmd = _commands->get<GFX::DrawCommand>(i);
-        for (GenericDrawCommand& drawCmd : cmd._drawCommands) {
+    if (BitCompare(_drawCommandOptions, option) == state) {
+        return;
+    }
+    if (state) {
+        SetBit(_drawCommandOptions, option);
+    } else {
+        ClearBit(_drawCommandOptions, option);
+    }
+
+    auto& cmds = _commands->get<GFX::DrawCommand>();
+    for (auto& cmd : cmds) {
+        auto& drawCommand = static_cast<GFX::DrawCommand&>(*cmd);
+        for (GenericDrawCommand& drawCmd : drawCommand._drawCommands) {
             setOption(drawCmd, option, state);
+        }
+    }
+}
+
+void RenderPackage::enableOptions(U32 optionMask) {
+    if (AllCompare(_drawCommandOptions, optionMask)) {
+        return;
+    }
+    SetBit(_drawCommandOptions, optionMask);
+
+    auto& cmds = _commands->get<GFX::DrawCommand>();
+    for (auto& cmd : cmds) {
+        auto& drawCommand = static_cast<GFX::DrawCommand&>(*cmd);
+        for (GenericDrawCommand& drawCmd : drawCommand._drawCommands) {
+            Divide::enableOptions(drawCmd, optionMask);
+        }
+    }
+}
+
+void RenderPackage::disableOptions(U32 optionMask) {
+    if (!AllCompare(_drawCommandOptions, optionMask)) {
+        return;
+    }
+    ClearBit(_drawCommandOptions, optionMask);
+
+    auto& cmds = _commands->get<GFX::DrawCommand>();
+    for (auto& cmd : cmds) {
+        auto& drawCommand = static_cast<GFX::DrawCommand&>(*cmd);
+        for (GenericDrawCommand& drawCmd : drawCommand._drawCommands) {
+            Divide::disableOptions(drawCmd, optionMask);
         }
     }
 }
@@ -142,6 +184,7 @@ void RenderPackage::addDescriptorSetsCommand(const GFX::BindDescriptorSetsComman
 
 void RenderPackage::addCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
     _commands->add(commandBuffer);
+    _drawCommandCount += to_I32(commandBuffer.count<GFX::DrawCommand>());
 }
 
 void RenderPackage::addShaderBuffer(I32 descriptorSetIndex, const ShaderBufferBinding& buffer) {
@@ -166,10 +209,12 @@ void RenderPackage::setLoDLevel(U8 LoD) {
 }
 
 void RenderPackage::updateDrawCommands(U32 dataIndex, U32 startOffset) {
-    I32 drawCmdCount = drawCommandCount();
-    for (I32 i = 0; i < drawCmdCount; ++i) {
-        GFX::DrawCommand & cmd = _commands->get<GFX::DrawCommand>(i);
-        for (GenericDrawCommand& drawCmd : cmd._drawCommands) {
+    I32 tempCount = 0;
+
+    GFX::CommandBuffer::Container::EntryList& cmds = _commands->get<GFX::DrawCommand>();
+    for (GFX::CommandBuffer::Container::EntryList::value_type& cmd : cmds) {
+        GFX::DrawCommand& drawCommand = static_cast<GFX::DrawCommand&>(*cmd);
+        for (GenericDrawCommand& drawCmd : drawCommand._drawCommands) {
             if (drawCmd._cmd.baseInstance != dataIndex) {
                 drawCmd._cmd.baseInstance = dataIndex;
             }
@@ -179,11 +224,13 @@ void RenderPackage::updateDrawCommands(U32 dataIndex, U32 startOffset) {
             }
             ++startOffset;
         }
+        ++tempCount;
     }
+    assert(drawCommandCount() == tempCount);
+    ACKNOWLEDGE_UNUSED(tempCount);
 }
 
-void RenderPackage::buildAndGetCommandBuffer(GFX::CommandBuffer& bufferInOut, bool& cacheMiss) {
-    cacheMiss = false;
+void RenderPackage::getCommandBuffer(GFX::CommandBuffer& bufferInOut) {
     bufferInOut.add(*_commands);
 }
 

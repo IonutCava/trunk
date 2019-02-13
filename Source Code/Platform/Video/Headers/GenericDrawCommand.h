@@ -89,6 +89,8 @@ void enableOption(GenericDrawCommand& cmd, CmdRenderOptions option);
 void disableOption(GenericDrawCommand& cmd, CmdRenderOptions option);
 void toggleOption(GenericDrawCommand& cmd, CmdRenderOptions option);
 void setOption(GenericDrawCommand& cmd, CmdRenderOptions option, const bool state);
+void enableOptions(GenericDrawCommand& cmd, U32 optionsMask);
+void disableOptions(GenericDrawCommand& cmd, U32 optionsMask);
 
 bool compatible(const GenericDrawCommand& lhs, const GenericDrawCommand& rhs);
 
