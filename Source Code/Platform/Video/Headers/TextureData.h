@@ -78,15 +78,17 @@ class TextureDataContainer {
 
       bool set(const TextureDataContainer& other);
 
-      UpdateState setTexture(const TextureData& data, U8 binding);
-      UpdateState setTexture(const eastl::pair<TextureData, U8 /*binding*/>& textureEntry);
-      UpdateState setTextures(const TextureDataContainer& textureEntries);
-      UpdateState setTextures(const DataEntries& textureEntries);
+      UpdateState setTexture(const TextureData& data, U8 binding, bool force = false);
+      UpdateState setTexture(const eastl::pair<TextureData, U8 /*binding*/>& textureEntry, bool force = false);
+      UpdateState setTextures(const TextureDataContainer& textureEntries, bool force = false);
+      UpdateState setTextures(const DataEntries& textureEntries, bool force = false);
 
       bool removeTexture(U8 binding);
       bool removeTexture(const TextureData& data);
 
       void clear(bool clearMemory = false);
+
+      inline bool empty() const noexcept { return _textures.empty(); }
 
       inline DataEntries& textures() noexcept { return _textures; }
       inline const DataEntries& textures() const noexcept { return _textures; }

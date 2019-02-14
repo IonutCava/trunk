@@ -71,8 +71,11 @@ struct CmdAllocator {
     }
 
     static void deallocate(T* ptr) {
-        UniqueLock w_lock(s_PoolMutex);
-        s_Pool.deleteElement(ptr);
+        if (ptr != nullptr) {
+            ptr->~T();
+            UniqueLock w_lock(s_PoolMutex);
+            s_Pool.deallocate(ptr);
+        }
     }
 };
 
@@ -127,7 +130,7 @@ struct CommandBase
 
 template<typename T, CommandType::_enumerated EnumVal>
 struct Command : public CommandBase {
-    void addToBuffer(CommandBuffer& buffer) const override {
+    inline void addToBuffer(CommandBuffer& buffer) const override {
         buffer.add(reinterpret_cast<const T&>(*this));
     }
 
@@ -154,7 +157,7 @@ END_COMMAND(SendPushConstantsCommand);
 
 
 BEGIN_COMMAND(DrawCommand, CommandType::DRAW_COMMANDS);
-    vectorEASTL<GenericDrawCommand> _drawCommands;
+    vectorEASTLFast<GenericDrawCommand> _drawCommands;
 
     stringImpl toString(U16 indent) const override;
 END_COMMAND(DrawCommand);

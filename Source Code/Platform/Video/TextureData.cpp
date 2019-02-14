@@ -31,16 +31,28 @@ bool TextureDataContainer::set(const TextureDataContainer& other) {
     return false;
 }
 
-TextureDataContainer::UpdateState TextureDataContainer::setTexture(const eastl::pair<TextureData, U8 /*binding*/>& textureEntry) {
-    return setTexture(textureEntry.first, textureEntry.second);
+TextureDataContainer::UpdateState TextureDataContainer::setTexture(const eastl::pair<TextureData, U8 /*binding*/>& textureEntry, bool force) {
+    return setTexture(textureEntry.first, textureEntry.second, force);
 }
 
-TextureDataContainer::UpdateState TextureDataContainer::setTexture(const TextureData& data, U8 binding) {
+TextureDataContainer::UpdateState TextureDataContainer::setTexture(const TextureData& data, U8 binding, bool force) {
+    _textures.reserve(to_base(ShaderProgram::TextureUsage::COUNT));
+
     assert(data.type() != TextureType::COUNT);
+    if (force) {
+        for (eastl::pair<TextureData, U8>& textureData : _textures) {
+            if (textureData.second == binding) {
+                textureData.first = data;
+                return UpdateState::REPLACED;
+            }
+        }
+        _textures.emplace_back(data, binding);
+        return UpdateState::ADDED;
+    }
 
     auto it = eastl::find_if(eastl::begin(_textures),
                              eastl::end(_textures),
-                             [&binding](const eastl::pair<TextureData, U8>& textureData) {
+                             [binding](const eastl::pair<TextureData, U8>& textureData) {
                                 return (textureData.second == binding);
                              });
     if (it == eastl::cend(_textures)) {
@@ -56,14 +68,14 @@ TextureDataContainer::UpdateState TextureDataContainer::setTexture(const Texture
     return UpdateState::REPLACED;
 }
 
-TextureDataContainer::UpdateState TextureDataContainer::setTextures(const TextureDataContainer& textureEntries) {
-    return setTextures(textureEntries._textures);
+TextureDataContainer::UpdateState TextureDataContainer::setTextures(const TextureDataContainer& textureEntries, bool force) {
+    return setTextures(textureEntries._textures, force);
 }
 
-TextureDataContainer::UpdateState TextureDataContainer::setTextures(const DataEntries& textureEntries) {
+TextureDataContainer::UpdateState TextureDataContainer::setTextures(const DataEntries& textureEntries, bool force) {
     UpdateState ret = UpdateState::COUNT;
     for (auto entry : textureEntries) {
-        UpdateState state = setTexture(entry);
+        UpdateState state = setTexture(entry, force);
         if (ret == UpdateState::COUNT || state != UpdateState::NOTHING) {
             ret = state;
         }

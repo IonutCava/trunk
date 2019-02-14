@@ -248,7 +248,7 @@ class Material : public CachedResource {
    private:
     void updateTranslucency();
 
-    bool getTextureData(ShaderProgram::TextureUsage slot, TextureDataContainer& container);
+    bool getTextureData(ShaderProgram::TextureUsage slot, TextureDataContainer& container, bool force = false);
 
     void recomputeShaders();
     void setShaderProgramInternal(const ResourceDescriptor& shaderDescriptor,
@@ -291,6 +291,9 @@ class Material : public CachedResource {
     std::array<bool, to_base(ShaderProgram::TextureUsage::COUNT)> _textureExtenalFlag;
 
     vector<ExternalTexture> _externalTextures;
+
+    SharedMutex _textureDataCacheLock;
+    TextureDataContainer _textureDataCache[2];
 
     I32 _textureKeyCache = -1;
     /// use the below map to define texture operation

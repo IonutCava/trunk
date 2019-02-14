@@ -62,6 +62,7 @@ class CommandBuffer : private GUIDWrapper, private NonCopyable {
     bool validate() const;
 
     void add(const CommandBuffer& other);
+    void addDestructive(CommandBuffer& other);
 
     void clean();
 
@@ -104,7 +105,8 @@ class CommandBuffer : private GUIDWrapper, private NonCopyable {
     inline const vectorEASTL<CommandEntry>& operator()() const;
 
     inline vec_size size() const { return _commandOrder.size(); }
-    inline void clear();
+    inline void clear(bool clearMemory = true);
+    inline void nuke();
     inline bool empty() const;
 
     // Multi-line. indented list of all commands (and params for some of them)
@@ -122,6 +124,8 @@ class CommandBuffer : private GUIDWrapper, private NonCopyable {
 
   protected:
     vectorEASTL<CommandEntry> _commandOrder;
+    std::array<size_t, to_base(GFX::CommandType::COUNT)> _commandCount = {0};
+
     PolyContainer<GFX::CommandBase, to_base(GFX::CommandType::COUNT)> _commands;
 };
 

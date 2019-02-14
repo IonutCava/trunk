@@ -77,18 +77,20 @@ void RenderPassManager::render(SceneRenderState& sceneRenderState, Time::Profile
     TaskPool& pool = parent().platformContext().taskPool(TaskPoolType::Render);
 
     U8 renderPassCount = to_U8(_renderPasses.size());
+
     std::atomic_uint remainingTasks = renderPassCount;
     {
         Time::ScopedTimer timeAll(*_renderPassTimer);
 
         for (U8 i = 0; i < renderPassCount; ++i) {
+
             RenderPass* pass = _renderPasses[i].get();
             GFX::CommandBuffer* buf = _renderPassCommandBuffer[i];
 
             CreateTask(pool,
                        nullptr,
                        [pass, buf, &sceneRenderState, &remainingTasks](const Task& parentTask) {
-                           buf->clear();
+                           assert(buf->empty());
                            pass->render(sceneRenderState, *buf);
                            buf->batch();
                            remainingTasks.fetch_sub(1);
@@ -98,7 +100,7 @@ void RenderPassManager::render(SceneRenderState& sceneRenderState, Time::Profile
         GFX::CommandBuffer* buf = _renderPassCommandBuffer.back();
         {
             Time::ScopedTimer time(*_postFxRenderTimer);
-            buf->clear();
+            assert(buf->empty());
             parent().platformContext().gfx().postFX().apply(cam, *buf);
             buf->batch();
         }
@@ -110,26 +112,28 @@ void RenderPassManager::render(SceneRenderState& sceneRenderState, Time::Profile
     }
 
     if (config.rendering.batchPassBuffers) {
-        if (config.rendering.batchPassBuffers) {
-            {            
-                Time::ScopedTimer timeCommands(*_buildCommandBufferTimer);
-                _mainCommandBuffer->clear();
-                for (GFX::CommandBuffer* buf : _renderPassCommandBuffer) {
-                    _mainCommandBuffer->add(*buf);
-                }
+        {            
+            Time::ScopedTimer timeCommands(*_buildCommandBufferTimer);
+            _mainCommandBuffer->clear(false);
+            for (GFX::CommandBuffer* buf : _renderPassCommandBuffer) {
+                _mainCommandBuffer->addDestructive(*buf);
             }
-
-            Time::ScopedTimer timeCommands(*_flushCommandBufferTimer);
-            _context.flushCommandBuffer(*_mainCommandBuffer);
         }
-    } else {
-        for (U8 i = 0; i < renderPassCount + 1; ++i) {
-            {
-                Time::ScopedTimer timeCommands(*_buildCommandBufferTimer);
-            }
 
-            Time::ScopedTimer timeCommands(*_flushCommandBufferTimer);
+        Time::ScopedTimer timeCommands(*_flushCommandBufferTimer);
+        _context.flushCommandBuffer(*_mainCommandBuffer);
+        
+    } else {
+        {
+            Time::ScopedTimer timeCommands(*_buildCommandBufferTimer);
+        }
+
+        Time::ScopedTimer timeCommands(*_flushCommandBufferTimer);
+        for (U8 i = 0; i < renderPassCount + 1; ++i) {
             _context.flushCommandBuffer(*_renderPassCommandBuffer[i]);
+        }
+        for (U8 i = 0; i < renderPassCount + 1; ++i) {
+            _renderPassCommandBuffer[i]->clear(false);
         }
     }
 

@@ -150,6 +150,12 @@ inline F32 Material::getParallaxFactor() const {
 inline void Material::addExternalTexture(const Texture_ptr& texture, U8 slot, bool activeForDepth) {
     // custom textures are not material dependencies!
     _externalTextures.push_back(ExternalTexture { texture, slot, activeForDepth });
+
+    UniqueLockShared w_lock(_textureDataCacheLock);
+    if (activeForDepth) {
+        _textureDataCache[0].clear();
+    }
+    _textureDataCache[1].clear();
 }
 
 inline std::weak_ptr<Texture> Material::getTexture(ShaderProgram::TextureUsage textureUsage) const {

@@ -1148,7 +1148,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             lockBuffers();
         }break;
         case GFX::CommandType::DRAW_COMMANDS : {
-            const vectorEASTL<GenericDrawCommand>& drawCommands = commandBuffer.get<GFX::DrawCommand>(entry)._drawCommands;
+            const vectorEASTLFast<GenericDrawCommand>& drawCommands = commandBuffer.get<GFX::DrawCommand>(entry)._drawCommands;
             for (const GenericDrawCommand& currentDrawCommand : drawCommands) {
                 if (draw(currentDrawCommand)) {
                     // Lock all buffers as soon as we issue a draw command since we should've flushed the command queue by now

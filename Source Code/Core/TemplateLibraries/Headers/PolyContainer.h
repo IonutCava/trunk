@@ -77,20 +77,37 @@ struct PolyContainer {
     }
 
     inline const T& get(vec_size_eastl index, size_t entry) const {
+         T* ptr = getPtr(index, entry);
+         assert(ptr != nullptr);
+         return *ptr;
+    }
+
+    inline T* getPtr(vec_size_eastl index, size_t entry) const {
         assert(index < N);
 
         const EntryList& collection = _collection[index];
-        assert(entry < collection.size());
+        if (entry < collection.size()) {
+            return collection[entry].get();
+        }
 
-        return *collection[entry];
+        return nullptr;
     }
 
     inline T& get(const PolyContainerEntry& entry) {
         return get(entry._typeIndex, entry._elementIndex);
     }
 
+    // May return nullptr if entry doesn't exist
+    inline T* getPtr(const PolyContainerEntry& entry) {
+        return getPtr(entry._typeIndex, entry._elementIndex);
+    }
+
     inline const T& get(const PolyContainerEntry& entry) const {
         return get(entry._typeIndex, entry._elementIndex);
+    }
+
+    inline bool exists(const PolyContainerEntry& entry) const {
+        return exists(entry._typeIndex, entry._elementIndex);
     }
 
     inline bool exists(vec_size_eastl index, size_t entry) const {
@@ -124,6 +141,14 @@ struct PolyContainer {
             for (auto& col : _collection) {
                 col.resize(0);
             }
+        }
+    }
+
+    inline void nuke() {
+        for (auto& col : _collection) {
+            auto size = col.size();
+            col.reset_lose_memory();
+            col.reserve(size);
         }
     }
 

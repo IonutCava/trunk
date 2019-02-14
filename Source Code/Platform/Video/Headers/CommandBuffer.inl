@@ -40,14 +40,22 @@ template<typename T>
 inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T&>::type
 CommandBuffer::add(const T& command) {
 
-    T* mem = CmdAllocator<T>::allocate(command);
+    vec_size_eastl index = static_cast<vec_size_eastl>(T::EType);
 
-    _commandOrder.emplace_back(
+    size_t cmdIndex = _commandCount[index]++;
+    _commandOrder.emplace_back(PolyContainerEntry{ index, cmdIndex });
+
+    T* mem = static_cast<T*>(_commands.getPtr(index, cmdIndex));
+    if (mem != nullptr) {
+        *mem = command;
+    } else {
+        mem = CmdAllocator<T>::allocate(command);
         _commands.insert<T>(static_cast<vec_size_eastl>(T::EType),
                             deleted_unique_ptr<CommandBase>(mem,
                                 [](CommandBase * cmd) {
                                     CmdAllocator<T>::deallocate((T*)cmd);
-                                })));
+                                }));
+    }
 
     return *mem;
 }
@@ -111,21 +119,29 @@ inline const vectorEASTL<CommandBuffer::CommandEntry>& CommandBuffer::operator()
     return _commandOrder;
 }
 
-inline void CommandBuffer::clear() {
+inline void CommandBuffer::clear(bool clearMemory) {
     _commandOrder.resize(0);
-    _commands.clear();
+    _commandCount.fill(0);
+    if (clearMemory) {
+        _commands.clear();
+    }
+}
+
+inline void CommandBuffer::nuke() {
+    _commandOrder.resize(0);
+    _commandCount.fill(0);
+    _commands.nuke();
 }
 
 inline bool CommandBuffer::empty() const {
     return _commandOrder.empty();
 }
 
-
 template<>
 inline bool CommandBuffer::tryMergeCommands(GFX::CommandType::_enumerated type, DrawCommand* prevCommand, DrawCommand* crtCommand, bool& partial) const {
     ACKNOWLEDGE_UNUSED(type);
 
-    vectorEASTL<GenericDrawCommand>& commands = prevCommand->_drawCommands;
+    vectorEASTLFast<GenericDrawCommand>& commands = prevCommand->_drawCommands;
     commands.insert(eastl::cend(commands),
                     eastl::cbegin(crtCommand->_drawCommands),
                     eastl::cend(crtCommand->_drawCommands));

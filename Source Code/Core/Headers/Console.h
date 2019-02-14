@@ -35,7 +35,7 @@
 
 namespace Divide {
 
-constexpr int CONSOLE_OUTPUT_BUFFER_SIZE = 4096 * 16;
+constexpr int CONSOLE_OUTPUT_BUFFER_SIZE = 4096 * 16 * 2;
 constexpr int MAX_CONSOLE_ENTRIES = 128;
 
 class Console : private NonCopyable {

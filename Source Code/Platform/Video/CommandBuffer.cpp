@@ -43,6 +43,11 @@ void CommandBuffer::add(const CommandBuffer& other) {
     }
 }
 
+void CommandBuffer::addDestructive(CommandBuffer& other) {
+    add(other);
+    other.clear(false);
+}
+
 void CommandBuffer::batch() {
     clean();
 
@@ -67,6 +72,7 @@ void CommandBuffer::batch() {
 
             if (prevCommand != nullptr && tryMergeCommands(type, prevCommand, &crtCommand, partial)) {
                 it = _commandOrder.erase(it);
+                --_commandCount[to_base(type)];
                 skip = true;
                 tryMerge = true;
             } else {
@@ -123,7 +129,8 @@ void CommandBuffer::batch() {
     }
 
     if (!hasWork) {
-        _commandOrder.clear();
+        _commandOrder.resize(0);
+        _commandCount.fill(0);
         return;
     }
 }
@@ -145,13 +152,14 @@ void CommandBuffer::clean() {
         switch (static_cast<GFX::CommandType::_enumerated>(cmd._typeIndex)) {
             case CommandType::DRAW_COMMANDS :
             {
-                vectorEASTL<GenericDrawCommand>& cmds = get<DrawCommand>(cmd)._drawCommands;
+                vectorEASTLFast<GenericDrawCommand>& cmds = get<DrawCommand>(cmd)._drawCommands;
 
                 auto beginIt = eastl::begin(cmds);
                 auto endIt = eastl::end(cmds);
                 cmds.erase(eastl::remove_if(beginIt, endIt, [](const GenericDrawCommand& cmd) -> bool { return cmd._drawCount == 0; }), endIt);
                 if (cmds.empty()) {
                     it = _commandOrder.erase(it);
+                    --_commandCount[cmd._typeIndex];
                     skip = true;
                 }
             } break;
@@ -160,6 +168,7 @@ void CommandBuffer::clean() {
                 // If the current pipeline is identical to the previous one, remove it
                 if (prevPipeline != nullptr && *prevPipeline == *pipeline) {
                     it = _commandOrder.erase(it);
+                    --_commandCount[cmd._typeIndex];
                     skip = true;
                 }
                 prevPipeline = pipeline;
@@ -168,6 +177,7 @@ void CommandBuffer::clean() {
                 PushConstants& constants = get<SendPushConstantsCommand>(cmd)._constants;
                 if (constants.data().empty()) {
                     it = _commandOrder.erase(it);
+                    --_commandCount[cmd._typeIndex];
                     skip = true;
                 }
             }break;
@@ -175,10 +185,12 @@ void CommandBuffer::clean() {
                 const DescriptorSet& set = get<BindDescriptorSetsCommand>(cmd)._set;
                 if (prevDescriptorSet != nullptr && *prevDescriptorSet == set) {
                     it = _commandOrder.erase(it);
+                    --_commandCount[cmd._typeIndex];
                     skip = true;
                 }
                 if (!skip && set._shaderBuffers.empty() && set._textureData.textures().empty() && set._textureViews.empty()) {
                     it = _commandOrder.erase(it);
+                    --_commandCount[cmd._typeIndex];
                     skip = true;
                 } else {
                     prevDescriptorSet = &set;
@@ -195,6 +207,7 @@ void CommandBuffer::clean() {
                 }
                 if (!hasText) {
                     it = _commandOrder.erase(it);
+                    --_commandCount[cmd._typeIndex];
                     skip = true;
                 }
             }break;
@@ -216,6 +229,7 @@ void CommandBuffer::clean() {
         if (static_cast<GFX::CommandType::_enumerated>(_commandOrder[i - 1]._typeIndex) == static_cast<GFX::CommandType::_enumerated>(_commandOrder[i]._typeIndex) &&
             static_cast<GFX::CommandType::_enumerated>(_commandOrder[i]._typeIndex) == CommandType::BIND_PIPELINE) {
             redundantEntries.push_back(i - 1);
+            --_commandCount[_commandOrder[i]._typeIndex];
         }
     }
 
