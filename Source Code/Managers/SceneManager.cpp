@@ -210,7 +210,7 @@ bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious, cons
     }
 
     // We use our rendering task pool for scene changes because we might be creating / loading GPU assets (shaders, textures, buffers, etc)
-    CreateTask(_platformContext->taskPool(TaskPoolType::Render),
+    CreateTask(_platformContext->taskPool(TaskPoolType::HIGH_PRIORITY),
         [this, name, unloadPrevious, &sceneToUnload](const Task& parentTask)
         {
             // Load first, unload after to make sure we don't reload common resources
@@ -780,7 +780,10 @@ bool LoadSave::saveScene(const Scene& activeScene, bool toCache) {
 bool SceneManager::saveActiveScene(bool toCache, bool deferred) {
     _saveTask.wait();
     Scene& activeScene = getActiveScene();
-    _saveTask = CreateTask(*_platformContext,
+
+    TaskPool& pool = parent().platformContext().taskPool(TaskPoolType::LOW_PRIORITY);
+    _saveTask = CreateTask(pool,
+            nullptr,
             [&activeScene, toCache](const Task& parentTask)
             {
                 LoadSave::saveScene(activeScene, toCache);

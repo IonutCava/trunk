@@ -15,18 +15,18 @@ namespace Divide {
 TaskHandle CreateTask(PlatformContext& context, 
                       const DELEGATE_CBK<void, const Task&>& threadedFunction)
 {
-    return CreateTask(context.taskPool(TaskPoolType::Engine), threadedFunction);
+    return CreateTask(context.taskPool(TaskPoolType::HIGH_PRIORITY), threadedFunction);
 }
 
 TaskHandle CreateTask(PlatformContext& context,
                      TaskHandle* parentTask,
                      const DELEGATE_CBK<void, const Task&>& threadedFunction)
 {
-    return CreateTask(context.taskPool(TaskPoolType::Engine), parentTask, threadedFunction);
+    return CreateTask(context.taskPool(TaskPoolType::HIGH_PRIORITY), parentTask, threadedFunction);
 }
 
 void WaitForAllTasks(PlatformContext& context, bool yield, bool flushCallbacks, bool foceClear) {
-    WaitForAllTasks(context.taskPool(TaskPoolType::Engine), yield, flushCallbacks, foceClear);
+    WaitForAllTasks(context.taskPool(TaskPoolType::HIGH_PRIORITY), yield, flushCallbacks, foceClear);
 }
 
 void parallel_for(PlatformContext& context,
@@ -36,7 +36,7 @@ void parallel_for(PlatformContext& context,
                   TaskPriority priority,
                   bool noWait,
                   bool useCurrentThread) {
-    parallel_for(context.taskPool(TaskPoolType::Engine), cbk, count, partitionSize, priority, noWait, useCurrentThread);
+    parallel_for(context.taskPool(TaskPoolType::HIGH_PRIORITY), cbk, count, partitionSize, priority, noWait, useCurrentThread);
 }
 
 }; //namespace Divide

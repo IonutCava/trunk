@@ -480,7 +480,7 @@ bool glShaderProgram::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoad
     _linked = false;
 
     // try to link the program in a separate thread
-    CreateTask(_context.context().taskPool(TaskPoolType::Render),
+    CreateTask(_context.context().taskPool(TaskPoolType::HIGH_PRIORITY),
                 [this, onLoadCallback](const Task& parent) {
                     threadedLoad(std::move(onLoadCallback), false);
                 }).startTask((!_loadedFromBinary && _asyncLoad) ? TaskPriority::DONT_CARE : TaskPriority::REALTIME);

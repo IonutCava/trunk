@@ -92,7 +92,7 @@ Scene::Scene(PlatformContext& context, ResourceCache& cache, SceneManager& paren
     _sceneState = MemoryManager_NEW SceneState(*this);
     _input = MemoryManager_NEW SceneInput(*this, _context);
     _sceneGraph = MemoryManager_NEW SceneGraph(*this);
-    _aiManager = MemoryManager_NEW AI::AIManager(*this, _context.taskPool(TaskPoolType::Engine));
+    _aiManager = MemoryManager_NEW AI::AIManager(*this, _context.taskPool(TaskPoolType::HIGH_PRIORITY));
     _lightPool = MemoryManager_NEW LightPool(*this, _context);
     _envProbePool = MemoryManager_NEW SceneEnvironmentProbePool(*this);
 

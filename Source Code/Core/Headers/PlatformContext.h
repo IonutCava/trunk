@@ -60,8 +60,8 @@ namespace Input {
 };
 
 enum class TaskPoolType : U8 {
-    Engine = 0,
-    Render,
+    HIGH_PRIORITY = 0,
+    LOW_PRIORITY,
     COUNT
 };
 
@@ -131,8 +131,8 @@ public:
     inline Editor& editor() { return *_editor; }
     inline const Editor& editor() const { return *_editor; }
 
-    inline TaskPool& taskPool(TaskPoolType type) {return *_taskPool[0/*to_base(type)*/]; }
-    inline const TaskPool& taskPool(TaskPoolType type) const { return *_taskPool[0/*to_base(type)*/]; }
+    inline TaskPool& taskPool(TaskPoolType type) {return *_taskPool[to_base(type)]; }
+    inline const TaskPool& taskPool(TaskPoolType type) const { return *_taskPool[to_base(type)]; }
 
     inline Input::InputHandler& input() { return *_inputHandler; }
     inline const Input::InputHandler& input() const { return *_inputHandler; }

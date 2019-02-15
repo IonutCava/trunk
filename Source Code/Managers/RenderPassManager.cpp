@@ -74,7 +74,7 @@ void RenderPassManager::render(SceneRenderState& sceneRenderState, Time::Profile
 
     TaskPriority priority = config.rendering.multithreadedCommandGeneration ? TaskPriority::DONT_CARE : TaskPriority::REALTIME;
 
-    TaskPool& pool = parent().platformContext().taskPool(TaskPoolType::Render);
+    TaskPool& pool = parent().platformContext().taskPool(TaskPoolType::HIGH_PRIORITY);
 
     U8 renderPassCount = to_U8(_renderPasses.size());
 

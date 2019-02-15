@@ -297,7 +297,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTimeUS) {
             _sceneManager->processGUI(deltaTimeUS);
 
             // Flush any pending threaded callbacks
-            for (U32 i = 0; i < 1/*to_U32(TaskPoolType::COUNT)*/; ++i) {
+            for (U32 i = 0; i < to_U32(TaskPoolType::COUNT); ++i) {
                 _platformContext->taskPool(static_cast<TaskPoolType>(i)).flushCallbackQueue();
             }
 
@@ -648,11 +648,13 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
         return initError;
     }
 
-    U32 hardwareThreads = config.runtime.maxWorkerThreads < 0 ? HARDWARE_THREAD_COUNT() : to_U32(config.runtime.maxWorkerThreads);
+    U32 hardwareThreads = config.runtime.maxWorkerThreads < 0 ? 
+                          HARDWARE_THREAD_COUNT() :
+                          to_U32(config.runtime.maxWorkerThreads) + 2;
 
     U8 threadCount = static_cast<U8>(std::max(hardwareThreads - 2, to_base(RenderStage::COUNT) * 2u + 2));
 
-    if (!_platformContext->taskPool(TaskPoolType::Engine).init(
+    if (!_platformContext->taskPool(TaskPoolType::HIGH_PRIORITY).init(
         threadCount,
         TaskPool::TaskPoolType::TYPE_BLOCKING,
         [this](const std::thread::id& threadID) {
@@ -663,18 +665,16 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
         return ErrorCode::CPU_NOT_SUPPORTED;
     }
 
-    // Need at least 6 threads for gpu tasks (shader load, texture load, etc). Too high a number shouldn't be an issue as these threads should be mostly idle
-    /*threadCount = static_cast<U8>(std::max(hardwareThreads / 2, 6u));
-    if (!_platformContext->taskPool(TaskPoolType::Render).init(
-        threadCount,
+    if (!_platformContext->taskPool(TaskPoolType::LOW_PRIORITY).init(
+        3,
         TaskPool::TaskPoolType::TYPE_BLOCKING,
         [this](const std::thread::id& threadID) {
             Attorney::PlatformContextKernel::onThreadCreated(platformContext(), threadID);
         },
-        "DIVIDE_RENDER_THREAD_"))
+        "DIVIDE_BACKUP_THREAD_"))
     {
         return ErrorCode::CPU_NOT_SUPPORTED;
-    }*/
+    }
 
     initError = _platformContext->gfx().postInitRenderingAPI();
 
@@ -757,7 +757,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
 void Kernel::shutdown() {
     Console::printfn(Locale::get(_ID("STOP_KERNEL")));
-    for (U32 i = 0; i < 1/*to_U32(TaskPoolType::COUNT)*/; ++i) {
+    for (U32 i = 0; i < to_U32(TaskPoolType::COUNT); ++i) {
         WaitForAllTasks(_platformContext->taskPool(static_cast<TaskPoolType>(i)), true, true, true);
     }
     
