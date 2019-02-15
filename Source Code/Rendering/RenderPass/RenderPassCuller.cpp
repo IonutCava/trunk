@@ -16,7 +16,7 @@
 namespace Divide {
 
 namespace {
-    static const U32 g_nodesPerCullingPartition = 8u;
+    static const U32 g_nodesPerCullingPartition = 16u;
 
     // Return true if the node can't be drawn but contains command generating children but 
     bool isParentNode(const RenderPassCuller::VisibleNode& node) {
@@ -165,7 +165,7 @@ void RenderPassCuller::frustumCullNode(const Task& task,
                          g_nodesPerCullingPartition,
                          threaded ? TaskPriority::DONT_CARE : TaskPriority::REALTIME,
                          false,
-                         false);
+                         true);
             for (const VisibleNodeList& nodeListEntry : nodesTemp) {
                 nodes.insert(eastl::end(nodes), eastl::cbegin(nodeListEntry), eastl::cend(nodeListEntry));
             }

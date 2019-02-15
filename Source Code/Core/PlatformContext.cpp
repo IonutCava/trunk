@@ -31,7 +31,8 @@ PlatformContext::~PlatformContext()
 }
 
 void PlatformContext::init() {
-    for (U32 i = 0; i < to_U32(TaskPoolType::COUNT); ++i) {
+    _taskPool[1] = nullptr;
+    for (U32 i = 0; i < 1/*to_U32(TaskPoolType::COUNT)*/; ++i) {
         _taskPool[i] = std::make_unique<TaskPool>();
     }
     _gfx = std::make_unique<GFXDevice>(_kernel);        // Video
@@ -50,7 +51,7 @@ void PlatformContext::init() {
 }
 
 void PlatformContext::terminate() {
-    for (U32 i = 0; i < to_U32(TaskPoolType::COUNT); ++i) {
+    for (U32 i = 0; i < 1/*to_U32(TaskPoolType::COUNT)*/; ++i) {
         _taskPool[i]->shutdown();
         _taskPool[i].reset();
     }
@@ -86,7 +87,7 @@ void PlatformContext::beginFrame(U32 componentMask) {
 }
 
 void PlatformContext::idle(U32 componentMask) {
-    for (U32 i = 0; i < to_U32(TaskPoolType::COUNT); ++i) {
+    for (U32 i = 0; i < 1/*to_U32(TaskPoolType::COUNT)*/; ++i) {
         _taskPool[i]->flushCallbackQueue();
     }
 

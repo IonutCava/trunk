@@ -205,32 +205,35 @@ void parallel_for(TaskPool& pool,
             adjustedCount -= 1;
         }
 
-        TaskHandle threadTask = CreateTask(pool, nullptr, DELEGATE_CBK<void, const Task&>());
+        std::atomic_uint jobCount = adjustedCount + (remainder > 0 ? 1 : 0);
+
         for (U32 i = 0; i < adjustedCount; ++i) {
             const U32 start = i * crtPartitionSize;
             const U32 end = start + crtPartitionSize;
             CreateTask(pool,
-                       &threadTask,
-                       [&cbk, start, end](const Task& parentTask) {
+                       nullptr,
+                       [&cbk, &jobCount, start, end](const Task& parentTask) {
                            cbk(parentTask, start, end);
+                           jobCount.fetch_sub(1);
                        }).startTask(priority);
         }
         if (remainder > 0) {
             CreateTask(pool,
-                       &threadTask,
-                       [&cbk, count, remainder](const Task& parentTask) {
+                       nullptr,
+                       [&cbk, &jobCount, count, remainder](const Task& parentTask) {
                            cbk(parentTask, count - remainder, count);
+                           jobCount.fetch_sub(1);
                        }).startTask(priority);
         }
-        threadTask.startTask(priority);
 
         if (useCurrentThread) {
+            TaskHandle threadTask = CreateTask(pool, [](const Task& parentTask) {ACKNOWLEDGE_UNUSED(parentTask); });
             const U32 start = adjustedCount * crtPartitionSize;
             const U32 end = start + crtPartitionSize;
             cbk(*threadTask._task, start, end);
         }
         if (!noWait) {
-            threadTask.wait();
+            WAIT_FOR_CONDITION(jobCount.load() == 0);
         }
     }
 }

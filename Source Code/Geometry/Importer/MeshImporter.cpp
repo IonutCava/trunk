@@ -316,7 +316,7 @@ namespace Import {
                 texture.assetName(tex._textureName);
                 texture.assetLocation(tex._texturePath);
                 texture.setPropertyDescriptor(textureDescriptor);
-                
+                texture.setThreadedLoading(false);
                 Texture_ptr textureRes = CreateResource<Texture>(cache, texture);
                 assert(textureRes != nullptr);
 
