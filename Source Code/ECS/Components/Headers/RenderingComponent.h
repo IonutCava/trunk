@@ -168,10 +168,11 @@ class RenderingComponent : public BaseComponentType<RenderingComponent, Componen
     void drawDebugAxis();
     void onRender(RenderStagePass renderStagePass);
 
+    U8 getLoDLevel(const Camera& camera, RenderStage renderStage, const vec4<U16>& lodThresholds);
+
    protected:    
     bool onRefreshNodeData(RefreshNodeDataParams& refreshParams);
     bool canDraw(RenderStagePass renderStagePass);
-    U8 getLoDLevel(const Camera& camera, RenderStagePass renderStagePass, const vec4<U16>& lodThresholds);
 
     /// Called after the parent node was rendered
     void postRender(const SceneRenderState& sceneRenderState,

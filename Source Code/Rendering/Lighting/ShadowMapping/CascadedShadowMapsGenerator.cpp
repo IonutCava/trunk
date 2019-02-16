@@ -144,6 +144,7 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
     params._bindTargets = false;
     params._pass = RenderPassType::COUNT;
     params._passVariant = to_U8(light.getLightType());
+    params._minLoD = -1;
 
     GFX::BeginRenderPassCommand beginRenderPassCmd = {};
     beginRenderPassCmd._target = params._target;
@@ -174,6 +175,7 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
         constexpr U32 stride = std::max(to_U32(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS), 6u);
         params._passIndex = (lightIndex * stride) + i;
         params._camera = light.shadowCameras()[i];
+        params._minLoD = i > 1 ? 3 : -1;
         rpm.doCustomPass(params, bufferInOut);
 
         GFX::EnqueueCommand(bufferInOut, endRenderSubPassCommand);

@@ -666,11 +666,15 @@ bool Material::getTextureData(RenderStagePass renderStagePass, TextureDataContai
     const bool depthStage = renderStagePass.isDepthPass();
 
     bool ret = false;
-    ret = getTextureData(ShaderProgram::TextureUsage::UNIT0, textureData) || ret;
-    ret = getTextureData(ShaderProgram::TextureUsage::OPACITY, textureData) || ret;
-    ret = getTextureData(ShaderProgram::TextureUsage::NORMALMAP, textureData) || ret;
+    if (!depthStage || hasTransparency()) {
+        ret = getTextureData(ShaderProgram::TextureUsage::UNIT0, textureData) || ret;
+        ret = getTextureData(ShaderProgram::TextureUsage::OPACITY, textureData) || ret;
+    }
 
+    ret = getTextureData(ShaderProgram::TextureUsage::HEIGHTMAP, textureData) || ret;
+    
     if (!depthStage) {
+        ret = getTextureData(ShaderProgram::TextureUsage::NORMALMAP, textureData) || ret;
         ret = getTextureData(ShaderProgram::TextureUsage::UNIT1, textureData) || ret;
         ret = getTextureData(ShaderProgram::TextureUsage::SPECULAR, textureData) || ret;
         ret = getTextureData(ShaderProgram::TextureUsage::REFLECTION_PLANAR, textureData) || ret;
@@ -695,13 +699,13 @@ bool Material::getTextureDataFast(RenderStagePass renderStagePass, TextureDataCo
 
     TextureDataContainer::DataEntries& textures = textureData.textures();
 
-    constexpr U8 depthSlots[] = {
+    constexpr U8 transparentSlots[] = {
         to_base(ShaderProgram::TextureUsage::UNIT0),
-        to_base(ShaderProgram::TextureUsage::OPACITY),
-        to_base(ShaderProgram::TextureUsage::NORMALMAP)
+        to_base(ShaderProgram::TextureUsage::OPACITY)
     };
 
     constexpr U8 extraSlots[] = {
+        to_base(ShaderProgram::TextureUsage::NORMALMAP),
         to_base(ShaderProgram::TextureUsage::UNIT1),
         to_base(ShaderProgram::TextureUsage::SPECULAR),
         to_base(ShaderProgram::TextureUsage::REFLECTION_PLANAR),
@@ -710,15 +714,24 @@ bool Material::getTextureDataFast(RenderStagePass renderStagePass, TextureDataCo
         to_base(ShaderProgram::TextureUsage::REFRACTION_CUBE),
     };
 
-    for (U8 slot : depthSlots) {
-        const Texture_ptr& crtTexture = _textures[slot];
-        if (crtTexture != nullptr) {
-            textures[slot] = crtTexture->getData();
-            ret = true;
-        }
+    U8 heightSlot = to_base(ShaderProgram::TextureUsage::HEIGHTMAP);
+    const Texture_ptr& crtTexture = _textures[heightSlot];
+    if (crtTexture != nullptr) {
+        textures[heightSlot] = crtTexture->getData();
+        ret = true;
     }
 
     const bool depthStage = renderStagePass.isDepthPass();
+    if (!depthStage || hasTransparency()) {
+        for (U8 slot : transparentSlots) {
+            const Texture_ptr& crtTexture = _textures[slot];
+            if (crtTexture != nullptr) {
+                textures[slot] = crtTexture->getData();
+                ret = true;
+            }
+        }
+    }
+
     if (!depthStage) {
         for (U8 slot : extraSlots) {
             const Texture_ptr& crtTexture = _textures[slot];
@@ -852,6 +865,7 @@ namespace {
     const char* getTexUsageName(ShaderProgram::TextureUsage texUsage) {
         switch (texUsage) {
             case ShaderProgram::TextureUsage::UNIT0      : return "UNIT0";
+            case ShaderProgram::TextureUsage::HEIGHTMAP  : return "HEIGHT";
             case ShaderProgram::TextureUsage::UNIT1      : return "UNIT1";
             case ShaderProgram::TextureUsage::NORMALMAP  : return "NORMALMAP";
             case ShaderProgram::TextureUsage::OPACITY    : return "OPACITY";

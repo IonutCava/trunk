@@ -516,9 +516,7 @@ void SceneGraphNode::onNetworkSend(U32 frameCount) {
 }
 
 
-bool SceneGraphNode::cullNode(const Camera& currentCamera,
-                              F32 maxDistanceFromCameraSq,
-                              RenderStage currentStage,
+bool SceneGraphNode::cullNode(const NodeCullParams& params,
                               Frustum::FrustCollision& collisionTypeOut,
                               F32& minDistanceSq) const {
 
@@ -543,20 +541,31 @@ bool SceneGraphNode::cullNode(const Camera& currentCamera,
     // Get camera info
     F32 radius = sphere.getRadius();
     F32 radiusSq = SQUARED(radius);
-    const vec3<F32>& eye = currentCamera.getEye();
+    const vec3<F32>& eye = params._currentCamera->getEye();
     
     // Check distance to sphere edge (center - radius)
     const vec3<F32>& center = sphere.getCenter();
     minDistanceSq = center.distanceSquared(eye) - radiusSq;
-    if (minDistanceSq > maxDistanceFromCameraSq) {
+    if (minDistanceSq > params._cullMaxDistanceSq) {
         return true;
     }
+
+    if (params._minLoD > -1) {
+        RenderingComponent* rComp = get<RenderingComponent>();
+        if (rComp != nullptr) {
+            U8 lodLevel = rComp->getLoDLevel(*params._currentCamera, params._stage, params._lodThresholds);
+            if (lodLevel > params._minLoD) {
+                return true;
+            }
+        }
+    }
+
     STUBBED("ToDo: make this work in a multi-threaded environment -Ionut");
     I8 _frustPlaneCache = -1;
 
     // Sphere is in range, so check bounds primitives againts the frustum
     if (!boundingBox.containsPoint(eye)) {
-        const Frustum& frust = currentCamera.getFrustum();
+        const Frustum& frust = params._currentCamera->getFrustum();
         // Check if the bounding sphere is in the frustum, as Frustum <-> Sphere check is fast
         collisionTypeOut = frust.ContainsSphere(center, radius, _frustPlaneCache);
         if (collisionTypeOut == Frustum::FrustCollision::FRUSTUM_INTERSECT) {

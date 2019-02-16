@@ -360,7 +360,7 @@ void RenderPassManager::buildDrawCommands(RenderStagePass stagePass, const PassP
 void RenderPassManager::prepareRenderQueues(RenderStagePass stagePass, const PassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut) {
     RenderStage stage = stagePass._stage;
 
-    const RenderPassCuller::VisibleNodeList& visibleNodes = refreshNodeData ? Attorney::SceneManagerRenderPass::cullScene(parent().sceneManager(), stage, *params._camera)
+    const RenderPassCuller::VisibleNodeList& visibleNodes = refreshNodeData ? Attorney::SceneManagerRenderPass::cullScene(parent().sceneManager(), stage, *params._camera, params._minLoD)
                                                                             : Attorney::SceneManagerRenderPass::getVisibleNodesCache(parent().sceneManager(), stage);
 
     RenderQueue& queue = getQueue();

@@ -33,7 +33,7 @@
 #define _RENDER_PASS_CULLER_H_
 
 #include "Platform/Video/Headers/RenderAPIEnums.h"
-#include "Platform/Headers/PlatformDefines.h"
+#include "Core/Math/Headers/MathVectors.h"
 
 /// This class performs all the necessary visibility checks on the scene's
 /// scenegraph to decide what get's rendered and what not
@@ -49,8 +49,14 @@ class SceneGraphNode;
 class PlatformContext;
 enum class RenderStage : U8;
 
-template<typename T>
-class vec3;
+struct NodeCullParams {
+    vec4<U16> _lodThresholds;
+    const Camera* _currentCamera = nullptr;
+    F32 _cullMaxDistanceSq = 0.0f;
+    I32 _minLoD = false;
+    RenderStage _stage = RenderStage::COUNT;;
+    bool _threaded = false;
+};
 
 class RenderPassCuller {
    public:
@@ -66,14 +72,16 @@ class RenderPassCuller {
     typedef vectorEASTL<VisibleNode> VisibleNodeList;
 
     struct CullParams {
-        PlatformContext* _context = nullptr;
-        SceneGraph* _sceneGraph = nullptr;
-        const Camera* _camera = nullptr;
-        SceneState* _sceneState = nullptr;
-        bool _threaded = true;
-        RenderStage _stage = RenderStage::COUNT;
-        F32 _visibilityDistanceSq = 0.0f;
         CullingFunction _cullFunction;
+        PlatformContext* _context = nullptr;
+        const SceneGraph* _sceneGraph = nullptr;
+        const Camera* _camera = nullptr;
+        const SceneState* _sceneState = nullptr;
+        F32 _visibilityDistanceSq = 0.0f;
+        I32 _minLoD = -1;
+        RenderStage _stage = RenderStage::COUNT;
+        bool _threaded = true;
+
     };
 
    public:
@@ -88,7 +96,7 @@ class RenderPassCuller {
 
     RenderPassCuller::VisibleNodeList& frustumCull(const CullParams& params);
 
-    RenderPassCuller::VisibleNodeList frustumCull(const Camera& camera, F32 maxDistanceSq, RenderStage stage, const vectorEASTL<SceneGraphNode*>& nodes) const;
+    RenderPassCuller::VisibleNodeList frustumCull(const NodeCullParams& params, const vectorEASTL<SceneGraphNode*>& nodes) const;
     RenderPassCuller::VisibleNodeList toVisibleNodes(const Camera& camera, const vectorEASTL<SceneGraphNode*>& nodes) const;
 
     bool wasNodeInView(I64 GUID, RenderStage stage) const;
@@ -98,16 +106,12 @@ class RenderPassCuller {
     // return true if the node is not currently visible
     void frustumCullNode(const Task& parentTask,
                          const SceneGraphNode& node,
-                         const Camera& currentCamera,
-                         RenderStage stage,
-                         F32 cullMaxDistanceSq,
-                         VisibleNodeList& nodes,
+                         const NodeCullParams& params,
                          bool clearList,
-                         bool threaded) const;
+                         VisibleNodeList& nodes) const;
 
     void addAllChildren(const SceneGraphNode& currentNode,
-                        RenderStage stage,
-                        const vec3<F32>& cameraEye,
+                        const NodeCullParams& params,
                         VisibleNodeList& nodes) const;
 
    protected:

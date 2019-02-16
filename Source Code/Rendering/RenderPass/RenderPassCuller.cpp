@@ -78,28 +78,29 @@ RenderPassCuller::VisibleNodeList& RenderPassCuller::frustumCull(const CullParam
 
     nodeCache.clear();
     if (params._sceneState->renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY)) {
-        const Camera& camera = *params._camera;
-
-        F32 cullMaxDistanceSq = std::min(params._visibilityDistanceSq, SQUARED(camera.getZPlanes().y));
+        NodeCullParams nodeParams = {};
+        nodeParams._currentCamera = params._camera;
+        nodeParams._lodThresholds = params._sceneState == nullptr ? vec4<U16>() : params._sceneState->renderState().lodThresholds();
+        nodeParams._cullMaxDistanceSq = std::min(params._visibilityDistanceSq, SQUARED(params._camera->getZPlanes().y));
+        nodeParams._minLoD = params._minLoD;
+        nodeParams._threaded = params._threaded;
+        nodeParams._stage = stage;
 
         _cullingFunction[to_U32(stage)] = params._cullFunction;
 
-        const SceneGraphNode& root = params._sceneGraph->getRoot();
         // Snapshot current child list. We shouldn't be modifying child list mid-frame anyway!
-        vectorEASTL<SceneGraphNode*> rootChildren = root.getChildrenLocked();
+        vectorEASTL<SceneGraphNode*> rootChildren = params._sceneGraph->getRoot().getChildrenLocked();
 
         vectorEASTL<VisibleNodeList> nodes(rootChildren.size());
-
-        bool threaded = params._threaded;
         parallel_for(*params._context,
-                     [this, &rootChildren, &camera, &nodes, &stage, cullMaxDistanceSq, threaded](const Task& parentTask, U32 start, U32 end) {
+                     [this, &rootChildren, &nodeParams, &nodes](const Task& parentTask, U32 start, U32 end) {
                         for (U32 i = start; i < end; ++i) {
-                            frustumCullNode(parentTask, *rootChildren[i], camera, stage, cullMaxDistanceSq, nodes[i], true, threaded);
+                            frustumCullNode(parentTask, *rootChildren[i], nodeParams, true, nodes[i]);
                         }
                      },
                      to_U32(rootChildren.size()),
                      g_nodesPerCullingPartition,
-                     threaded ? TaskPriority::DONT_CARE : TaskPriority::REALTIME,
+                     nodeParams._threaded ? TaskPriority::DONT_CARE : TaskPriority::REALTIME,
                      false,
                      true);
         
@@ -123,12 +124,9 @@ RenderPassCuller::VisibleNodeList& RenderPassCuller::frustumCull(const CullParam
 /// children and adds them to the RenderQueue
 void RenderPassCuller::frustumCullNode(const Task& task,
                                        const SceneGraphNode& currentNode,
-                                       const Camera& camera,
-                                       RenderStage stage,
-                                       F32 cullMaxDistanceSq,
-                                       VisibleNodeList& nodes,
+                                       const NodeCullParams& params,
                                        bool clearList,
-                                       bool threaded) const
+                                       VisibleNodeList& nodes) const
 {
     if (clearList) {
         nodes.resize(0);
@@ -138,7 +136,7 @@ void RenderPassCuller::frustumCullNode(const Task& task,
         return;
     }
     // If it fails the culling test, stop
-    if (_cullingFunction[to_U32(stage)](currentNode, currentNode.getNode())) {
+    if (_cullingFunction[to_U32(params._stage)](currentNode, currentNode.getNode())) {
         return;
     }
 
@@ -146,24 +144,25 @@ void RenderPassCuller::frustumCullNode(const Task& task,
     Frustum::FrustCollision collisionResult = Frustum::FrustCollision::FRUSTUM_OUT;
 
     // Internal node cull (check against camera frustum and all that ...)
-    bool isVisible = !currentNode.cullNode(camera, cullMaxDistanceSq, stage, collisionResult, distanceSqToCamera);
+    bool isVisible = !currentNode.cullNode(params, collisionResult, distanceSqToCamera);
 
     if (isVisible && !StopRequested(task)) {
         nodes.emplace_back(VisibleNode{ distanceSqToCamera, &currentNode });
 
         // Parent node intersects the view, so check children
         if (collisionResult == Frustum::FrustCollision::FRUSTUM_INTERSECT) {
+
             vectorEASTL<SceneGraphNode*> children = currentNode.getChildrenLocked();
             vectorEASTL<VisibleNodeList> nodesTemp(children.size());
             parallel_for(*task._parentPool,
-                         [this, &children, &camera, &nodesTemp, &stage, cullMaxDistanceSq, threaded](const Task & parentTask, U32 start, U32 end) {
+                         [this, &children, &params, &nodesTemp](const Task & parentTask, U32 start, U32 end) {
                              for (U32 i = start; i < end; ++i) {
-                                frustumCullNode(parentTask, *children[i], camera, stage, cullMaxDistanceSq, nodesTemp[i], false, threaded);
+                                frustumCullNode(parentTask, *children[i], params, false, nodesTemp[i]);
                              }
                          },
                          to_U32(children.size()),
                          g_nodesPerCullingPartition * 2,
-                         threaded ? TaskPriority::DONT_CARE : TaskPriority::REALTIME,
+                         params._threaded ? TaskPriority::DONT_CARE : TaskPriority::REALTIME,
                          false,
                          true);
             for (const VisibleNodeList& nodeListEntry : nodesTemp) {
@@ -171,41 +170,55 @@ void RenderPassCuller::frustumCullNode(const Task& task,
             }
         } else {
             // All nodes are in view entirely
-            addAllChildren(currentNode, stage, camera.getEye(), nodes);
+            addAllChildren(currentNode, params, nodes);
         }
     }
 }
 
-void RenderPassCuller::addAllChildren(const SceneGraphNode& currentNode, RenderStage stage, const vec3<F32>& cameraEye, VisibleNodeList& nodes) const {
+void RenderPassCuller::addAllChildren(const SceneGraphNode& currentNode, const NodeCullParams& params, VisibleNodeList& nodes) const {
     bool castsShadows = currentNode.get<RenderingComponent>()->renderOptionEnabled(RenderingComponent::RenderOptions::CAST_SHADOWS);
 
     vectorEASTL<SceneGraphNode*> children = currentNode.getChildrenLocked();
     for (SceneGraphNode* child : children) {
-        if (stage != RenderStage::SHADOW || castsShadows) {
-            if (child->isActive() && !_cullingFunction[to_U32(stage)](*child, child->getNode())) {
+        if (params._stage != RenderStage::SHADOW || castsShadows) {
+            if (child->isActive() && !_cullingFunction[to_U32(params._stage)](*child, child->getNode())) {
                 F32 distanceSqToCamera = std::numeric_limits<F32>::max();
                 BoundsComponent* bComp = child->get<BoundsComponent>();
                 if (bComp != nullptr) {
                     const BoundingSphere& bSphere = bComp->getBoundingSphere();
                     // Check distance to sphere edge (center - radius)
                     const vec3<F32>& center = bSphere.getCenter();
-                    distanceSqToCamera = center.distanceSquared(cameraEye) - SQUARED(bSphere.getRadius());
+                    distanceSqToCamera = center.distanceSquared(params._currentCamera->getEye()) - SQUARED(bSphere.getRadius());
                 }
-                nodes.emplace_back(VisibleNode{ distanceSqToCamera, child });
-                addAllChildren(*child, stage, cameraEye, nodes);
+                
+                bool skip = false;
+                if (params._minLoD > -1) {
+                    RenderingComponent* rComp = child->get<RenderingComponent>();
+                    if (rComp != nullptr) {
+                        U8 lodLevel = rComp->getLoDLevel(*params._currentCamera, params._stage, params._lodThresholds);
+                        if (lodLevel > params._minLoD) {
+                            skip = true;
+                        }
+                    }
+                }
+
+                if (!skip) {
+                    nodes.emplace_back(VisibleNode{ distanceSqToCamera, child });
+                    addAllChildren(*child, params, nodes);
+                }
             }
         }
     }
 }
 
-RenderPassCuller::VisibleNodeList RenderPassCuller::frustumCull(const Camera& camera, F32 maxDistanceSq, RenderStage stage, const vectorEASTL<SceneGraphNode*>& nodes) const {
+RenderPassCuller::VisibleNodeList RenderPassCuller::frustumCull(const NodeCullParams& params, const vectorEASTL<SceneGraphNode*>& nodes) const {
     RenderPassCuller::VisibleNodeList ret;
 
     F32 distanceSqToCamera = std::numeric_limits<F32>::max();
     Frustum::FrustCollision collisionResult = Frustum::FrustCollision::FRUSTUM_OUT;
     for (SceneGraphNode* node : nodes) {
         // Internal node cull (check against camera frustum and all that ...)
-        if (!node->cullNode(camera, maxDistanceSq, stage, collisionResult, distanceSqToCamera)) {
+        if (!node->cullNode(params, collisionResult, distanceSqToCamera)) {
             ret.emplace_back(VisibleNode{ distanceSqToCamera, node });
         }
     }

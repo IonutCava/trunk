@@ -174,7 +174,7 @@ void main(void)
 
 #include "nodeBufferedInput.cmn"
 
-layout(binding = TEXTURE_SPECULAR) uniform sampler2D TexTerrainHeight;
+layout(binding = TEXTURE_HEIGHT) uniform sampler2D TexTerrainHeight;
 
 struct TerrainNodeData {
     vec4 _positionAndTileScale;

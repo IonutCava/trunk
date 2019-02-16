@@ -518,6 +518,12 @@ bool GL_API::initGLSW() {
         lineOffsets);
 
     appendToShaderHeader(
+        ShaderType::COUNT,
+        "#define TEXTURE_HEIGHT " +
+        to_stringImpl(to_base(ShaderProgram::TextureUsage::HEIGHTMAP)),
+        lineOffsets);
+    
+    appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define TEXTURE_UNIT1 " +
         to_stringImpl(to_base(ShaderProgram::TextureUsage::UNIT1)),
@@ -542,7 +548,7 @@ bool GL_API::initGLSW() {
         lineOffsets);
 
     appendToShaderHeader(
-        ShaderType::COUNT,
+        ShaderType::FRAGMENT,
         "#define TEXTURE_SPECULAR " +
         to_stringImpl(to_base(ShaderProgram::TextureUsage::SPECULAR)),
         lineOffsets);

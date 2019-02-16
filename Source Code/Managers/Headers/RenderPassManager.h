@@ -55,12 +55,10 @@ public:
         // safe to be set to null
         const SceneGraphNode* _sourceNode = nullptr;
         Camera* _camera = nullptr;
-        RenderTargetID _target = {};
         const RTDrawDescriptor* _drawPolicy = nullptr;
-        RenderStage _stage = RenderStage::COUNT;
-        RenderPassType _pass = RenderPassType::COUNT;
         FrustumClipPlanes _clippingPlanes = {};
-        U8  _passVariant = 0;
+        RenderTargetID _target = {};
+        I32 _minLoD = -1; //-1 = all
         union {
             U32 _passIndex = 0;
             struct {
@@ -68,7 +66,9 @@ public:
                 U16 _indexB;
             };
         };
-
+        RenderStage _stage = RenderStage::COUNT;
+        RenderPassType _pass = RenderPassType::COUNT;
+        U8  _passVariant = 0;
         bool _occlusionCull = false;
         bool _bindTargets = true;
     };

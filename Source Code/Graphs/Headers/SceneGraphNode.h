@@ -48,6 +48,7 @@ class PropertyWindow;
 class BoundsComponent;
 class TransformComponent;
 
+struct NodeCullParams;
 struct TransformDirty;
 
 struct SceneGraphNodeDescriptor {
@@ -275,10 +276,9 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
 
    protected:
     friend class RenderPassCuller;
+
     // Returns true if the node should be culled (is not visible for the current stage)
-    bool cullNode(const Camera& currentCamera,
-                  F32 maxDistanceFromCameraSq,
-                  RenderStage currentStage,
+    bool cullNode(const NodeCullParams& params,
                   Frustum::FrustCollision& collisionTypeOut,
                   F32& minDistanceSq) const;
 

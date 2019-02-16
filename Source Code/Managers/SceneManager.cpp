@@ -495,7 +495,14 @@ RenderPassCuller::VisibleNodeList SceneManager::getSortedReflectiveNodes(const C
     allNodes.insert(eastl::end(allNodes), eastl::begin(otherNodes), eastl::end(otherNodes));
 
     if (inView) {
-        return _renderPassCuller->frustumCull(camera, camera.getZPlanes().y, stage, allNodes);
+        NodeCullParams cullParams = {};
+        cullParams._threaded = true;
+        cullParams._lodThresholds = getActiveScene().state().renderState().lodThresholds();
+        cullParams._stage = stage;
+        cullParams._currentCamera = &camera;
+        cullParams._cullMaxDistanceSq = SQUARED(camera.getZPlanes().y);
+
+        return _renderPassCuller->frustumCull(cullParams, allNodes);
     }
 
     return _renderPassCuller->toVisibleNodes(camera, allNodes);
@@ -516,7 +523,14 @@ RenderPassCuller::VisibleNodeList SceneManager::getSortedRefractiveNodes(const C
     allNodes.insert(eastl::end(allNodes), eastl::begin(otherNodes), eastl::end(otherNodes));
 
     if (inView) {
-        return _renderPassCuller->frustumCull(camera, camera.getZPlanes().y, stage, allNodes);
+        NodeCullParams cullParams = {};
+        cullParams._threaded = true;
+        cullParams._lodThresholds = getActiveScene().state().renderState().lodThresholds();
+        cullParams._stage = stage;
+        cullParams._currentCamera = &camera;
+        cullParams._cullMaxDistanceSq = SQUARED(camera.getZPlanes().y);
+
+        return _renderPassCuller->frustumCull(cullParams, allNodes);
     }
 
     return _renderPassCuller->toVisibleNodes(camera, allNodes);
@@ -552,7 +566,7 @@ namespace {
     }
 };
 
-const RenderPassCuller::VisibleNodeList& SceneManager::cullSceneGraph(RenderStage stage, const Camera& camera) {
+const RenderPassCuller::VisibleNodeList& SceneManager::cullSceneGraph(RenderStage stage, const Camera& camera, I32 minLoD) {
     Time::ScopedTimer timer(*_sceneGraphCullTimers[to_U32(stage)]);
 
     Scene& activeScene = getActiveScene();
@@ -565,6 +579,7 @@ const RenderPassCuller::VisibleNodeList& SceneManager::cullSceneGraph(RenderStag
     cullParams._stage = stage;
     cullParams._camera = &camera;
     cullParams._threaded = true;
+    cullParams._minLoD = minLoD;
 
     if (stage == RenderStage::SHADOW) {
         cullParams._visibilityDistanceSq = std::numeric_limits<F32>::max();

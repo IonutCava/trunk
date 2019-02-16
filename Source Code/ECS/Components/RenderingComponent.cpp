@@ -389,7 +389,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
     }
 }
 
-U8 RenderingComponent::getLoDLevel(const Camera& camera, RenderStagePass renderStagePass, const vec4<U16>& lodThresholds) {
+U8 RenderingComponent::getLoDLevel(const Camera& camera, RenderStage renderStage, const vec4<U16>& lodThresholds) {
     U8 lodLevel = 0;
 
     if (_lodLocked) {
@@ -427,7 +427,7 @@ U8 RenderingComponent::getLoDLevel(const Camera& camera, RenderStagePass renderS
     }
 
     // ToDo: Hack for lower LoD rendering in reflection and refraction passes
-    if (renderStagePass._stage == RenderStage::REFLECTION || renderStagePass._stage == RenderStage::REFRACTION) {
+    if (renderStage == RenderStage::REFLECTION || renderStage == RenderStage::REFRACTION) {
         lodLevel += 1;
     }
 
@@ -442,7 +442,9 @@ void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
         }
 
         if (_parentSGN.prepareRender(camera, renderStagePass)) {
-            Attorney::RenderPackageRenderingComponent::setLoDLevel(pkg, getLoDLevel(camera, renderStagePass, sceneRenderState.lodThresholds()));
+            U8 lod = getLoDLevel(camera, renderStagePass._stage, sceneRenderState.lodThresholds());
+
+            Attorney::RenderPackageRenderingComponent::setLoDLevel(pkg, lod);
 
             bool renderGeometry = renderOptionEnabled(RenderOptions::RENDER_GEOMETRY);
             renderGeometry = renderGeometry || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY);
