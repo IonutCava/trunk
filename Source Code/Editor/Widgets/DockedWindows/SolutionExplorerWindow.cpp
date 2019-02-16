@@ -149,6 +149,17 @@ namespace Divide {
                              ImVec2(0, 50));
 
         ImGui::Separator();
+
+        static U32 cullCount = 0;
+        static U32 updateCount = 3;
+        static U32 crtUpdate = 0;
+        if (crtUpdate++ == updateCount) {
+            cullCount = context().gfx().getLastCullCount();
+            crtUpdate = 0;
+        }
+
+        ImGui::Text("HiZ Cull Count: %d", cullCount);
+        ImGui::Separator();
     }
 
     void SolutionExplorerWindow::drawTransformSettings() {

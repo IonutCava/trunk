@@ -672,7 +672,10 @@ void GFXDevice::updateCullCount(GFX::CommandBuffer& cmdBufferInOut) {
 
     GFX::ReadAtomicCounterCommand readAtomicCounter;
     readAtomicCounter._buffer = bufferData._cmdBuffer;
-    readAtomicCounter._target = &LAST_CULL_COUNT;
+    if (_queueCullRead) {
+        readAtomicCounter._target = &LAST_CULL_COUNT;
+        _queueCullRead = false;
+    }
     readAtomicCounter._resetCounter = true;
     GFX::EnqueueCommand(cmdBufferInOut, readAtomicCounter);
 }

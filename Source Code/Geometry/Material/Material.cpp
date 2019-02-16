@@ -714,11 +714,13 @@ bool Material::getTextureDataFast(RenderStagePass renderStagePass, TextureDataCo
         to_base(ShaderProgram::TextureUsage::REFRACTION_CUBE),
     };
 
-    U8 heightSlot = to_base(ShaderProgram::TextureUsage::HEIGHTMAP);
-    const Texture_ptr& crtTexture = _textures[heightSlot];
-    if (crtTexture != nullptr) {
-        textures[heightSlot] = crtTexture->getData();
-        ret = true;
+    {
+        U8 heightSlot = to_base(ShaderProgram::TextureUsage::HEIGHTMAP);
+        const Texture_ptr& crtTexture = _textures[heightSlot];
+        if (crtTexture != nullptr) {
+            textures[heightSlot] = crtTexture->getData();
+            ret = true;
+        }
     }
 
     const bool depthStage = renderStagePass.isDepthPass();

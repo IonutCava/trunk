@@ -203,7 +203,7 @@ U32 glUniformBuffer::getAtomicCounter(U8 offset, U8 counterIndex) {
 
     AtomicCounter* counter = _atomicCounters[counterIndex];
     GLuint result = 0;
-    counter->_buffer->readData(1, offset, counter->queueIndex(), &result);
+    counter->_buffer->readData(1, offset, 0/*counter->queueIndex()*/, &result);
     return result;
 }
 

@@ -276,8 +276,9 @@ public:  // Accessors and Mutators
     inline U32 getFrameCount() const { return FRAME_COUNT; }
 
     inline I32 getDrawCallCount() const { return FRAME_DRAW_CALLS_PREV; }
+
     /// Return the last number of HIZ culled items
-    inline U32 getLastCullCount() const { return LAST_CULL_COUNT; }
+    inline U32 getLastCullCount() const { _queueCullRead = true; return LAST_CULL_COUNT; }
 
     inline Arena::Statistics getObjectAllocStats() const { return _gpuObjectArena.statistics_; }
 
@@ -437,6 +438,7 @@ protected:
     U32 FRAME_DRAW_CALLS_PREV;
     U32 FRAME_COUNT;
 
+    mutable bool _queueCullRead = false;
     U32 LAST_CULL_COUNT = 0;
 
     /// shader used to preview the depth buffer

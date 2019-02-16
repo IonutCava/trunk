@@ -79,9 +79,12 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
             }break;
             case GFX::CommandType::READ_ATOMIC_COUNTER: {
                 const GFX::ReadAtomicCounterCommand& crtCmd = commandBuffer.get<GFX::ReadAtomicCounterCommand>(cmd);
-                if (crtCmd._buffer != nullptr && crtCmd._target != nullptr) {
-                    *crtCmd._target = crtCmd._buffer->getAtomicCounter(crtCmd._offset);
-                    if (*crtCmd._target > 0 && crtCmd._resetCounter) {
+                if (crtCmd._buffer != nullptr) {
+                    if (crtCmd._target != nullptr) {
+                        *crtCmd._target = crtCmd._buffer->getAtomicCounter(crtCmd._offset);
+                    }
+
+                    if (crtCmd._resetCounter) {
                         crtCmd._buffer->resetAtomicCounter(crtCmd._offset);
                     }
                 }

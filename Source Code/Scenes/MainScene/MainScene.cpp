@@ -116,9 +116,8 @@ void MainScene::processGUI(const U64 deltaTimeUS) {
                                              state().playerState(0).cameraUnderwater() ? "true" : "false",
                                              state().globalWaterBodies()[0]._heightOffset));
         _GUI->modifyText(_ID("RenderBinCount"),
-                         Util::StringFormat("Number of items in Render Bin: %d. Number of HiZ culled items: %d",
-                                            _context.kernel().renderPassManager().getLastTotalBinSize(RenderStage::DISPLAY),
-                                            _context.gfx().getLastCullCount()));
+                         Util::StringFormat("Number of items in Render Bin: %d.",
+                                            _context.kernel().renderPassManager().getLastTotalBinSize(RenderStage::DISPLAY)));
         _guiTimersMS[0] = 0.0;
     }
 

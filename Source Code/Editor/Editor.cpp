@@ -1245,7 +1245,7 @@ bool Editor::modalModelSpawn(const char* modalName, const Mesh_ptr& mesh) {
         if (inputBuf[0] == '\0') {
             strcpy_s(&inputBuf[0], std::min(254, to_I32(mesh->resourceName().length())) + 1, mesh->resourceName().c_str());
         }
-        ImGui::Text(Util::StringFormat("Spawn [ %s ]?", mesh->resourceName().c_str()).c_str());
+        ImGui::Text("Spawn [ %s ]?", mesh->resourceName().c_str());
         ImGui::Separator();
 
 

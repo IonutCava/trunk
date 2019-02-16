@@ -98,9 +98,8 @@ void WarScene::processGUI(const U64 deltaTimeUS) {
                                             Time::ApplicationTimer::instance().getFrameTime(),
                                             _context.gfx().getFrameCount()));
         _GUI->modifyText(_ID("RenderBinCount"),
-            Util::StringFormat("Number of items in Render Bin: %d. Number of HiZ culled items: %d",
-                               _context.kernel().renderPassManager().getLastTotalBinSize(RenderStage::DISPLAY),
-                               _context.gfx().getLastCullCount()));
+            Util::StringFormat("Number of items in Render Bin: %d.",
+                               _context.kernel().renderPassManager().getLastTotalBinSize(RenderStage::DISPLAY)));
 
         _GUI->modifyText(_ID("camPosition"),
                          Util::StringFormat("Position [ X: %5.2f | Y: %5.2f | Z: %5.2f ] [Pitch: %5.2f | Yaw: %5.2f]",

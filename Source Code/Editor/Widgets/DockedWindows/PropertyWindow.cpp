@@ -211,7 +211,7 @@ namespace Divide {
             }
 
             if (ImGui::BeginPopupModal("Add new component", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-                ImGui::Text(Util::StringFormat("Add new %s component?", selectedType._to_string()).c_str());
+                ImGui::Text("Add new %s component?", selectedType._to_string());
                 ImGui::Separator();
 
                 if (ImGui::Button("OK", ImVec2(120, 0))) {
