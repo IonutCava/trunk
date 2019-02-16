@@ -235,12 +235,20 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
             return true;
         }
     }
-
+    
     _textures[slot] = texture;
 
-    if (textureUsageSlot == ShaderProgram::TextureUsage::UNIT0 || textureUsageSlot == ShaderProgram::TextureUsage::OPACITY) {
+    if (textureUsageSlot == ShaderProgram::TextureUsage::UNIT0 ||
+        textureUsageSlot == ShaderProgram::TextureUsage::OPACITY)
+    {
         if (textureUsageSlot == ShaderProgram::TextureUsage::UNIT0) {
             _textureKeyCache = texture == nullptr ? -1 : texture->getHandle();
+        }
+
+        // If we have the opacity texture is the albedo map, we don't need it. We can just use albedo alpha
+        const Texture_ptr& opacityTex = _textures[to_base(ShaderProgram::TextureUsage::OPACITY)];
+        if (opacityTex != nullptr && texture != nullptr && opacityTex->getData() == texture->getData()) {
+            _textures[to_base(ShaderProgram::TextureUsage::OPACITY)] = nullptr;
         }
 
         updateTranslucency();
@@ -540,13 +548,9 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
             shader += ".OpacityMap";
             shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_OPACITY_MAP", true));
         } break;
-        case TranslucencySource::DIFFUSE: {
-            shader += ".DiffuseAlpha";
-            shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_OPACITY_DIFFUSE", true));
-        } break;
-        case TranslucencySource::DIFFUSE_MAP: {
-            shader += ".DiffuseMapAlpha";
-            shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_OPACITY_DIFFUSE_MAP", true));
+        case TranslucencySource::ALBEDO: {
+            shader += ".AlbedoAlpha";
+            shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_ALBEDO_ALPHA", true));
         } break;
         default: break;
     };
@@ -707,7 +711,7 @@ bool Material::getTextureDataFast(RenderStagePass renderStagePass, TextureDataCo
     };
 
     for (U8 slot : depthSlots) {
-        Texture_ptr& crtTexture = _textures[slot];
+        const Texture_ptr& crtTexture = _textures[slot];
         if (crtTexture != nullptr) {
             textures[slot] = crtTexture->getData();
             ret = true;
@@ -717,7 +721,7 @@ bool Material::getTextureDataFast(RenderStagePass renderStagePass, TextureDataCo
     const bool depthStage = renderStagePass.isDepthPass();
     if (!depthStage) {
         for (U8 slot : extraSlots) {
-            Texture_ptr& crtTexture = _textures[slot];
+            const Texture_ptr& crtTexture = _textures[slot];
             if (crtTexture != nullptr) {
                 textures[slot] = crtTexture->getData();
                 ret = true;
@@ -786,17 +790,17 @@ void Material::updateTranslucency() {
     // In order of importance (less to more)!
     // diffuse channel alpha
     if (_colourData._diffuse.a < 0.95f) {
-        _translucencySource = TranslucencySource::DIFFUSE;
+        _translucencySource = TranslucencySource::ALBEDO;
     }
 
     // base texture is translucent
-    Texture_ptr albedo = _textures[to_base(ShaderProgram::TextureUsage::UNIT0)];
+    const Texture_ptr& albedo = _textures[to_base(ShaderProgram::TextureUsage::UNIT0)];
     if (albedo && albedo->hasTransparency()) {
-        _translucencySource = TranslucencySource::DIFFUSE_MAP;
+        _translucencySource = TranslucencySource::ALBEDO;
     }
 
     // opacity map
-    Texture_ptr opacity = _textures[to_base(ShaderProgram::TextureUsage::OPACITY)];
+    const Texture_ptr& opacity = _textures[to_base(ShaderProgram::TextureUsage::OPACITY)];
     if (opacity && opacity->hasTransparency()) {
         _translucencySource = TranslucencySource::OPACITY_MAP;
     }
