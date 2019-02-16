@@ -15,7 +15,7 @@ void main(void){
 
 -- Fragment
 
-#if defined(USE_OPACITY_DIFFUSE) || defined(USE_OPACITY_MAP) || defined(USE_OPACITY_DIFFUSE_MAP)
+#if defined(USE_ALBEDO_ALPHA) || defined(USE_OPACITY_MAP)
 #   define HAS_TRANSPARENCY
 #endif
 

@@ -4,7 +4,7 @@
 #include "utility.frag"
 
 //Ref: https://github.com/urho3d/Urho3D/blob/master/bin/CoreData/Shaders/GLSL/PBRLitSolid.glsl
-#if defined(USE_OPACITY_DIFFUSE) || defined(USE_OPACITY_MAP) || defined(USE_OPACITY_DIFFUSE_MAP)
+#if defined(USE_ALBEDO_ALPHA) || defined(USE_OPACITY_MAP)
 #   define HAS_TRANSPARENCY
 #endif
 
@@ -115,21 +115,11 @@ float getReflectivity(mat4 colourMatrix) {
 
 float getOpacity(mat4 colourMatrix, float albedoAlpha) {
 #if defined(HAS_TRANSPARENCY)
-
-#   if defined(USE_OPACITY_DIFFUSE)
-    return colourMatrix[0].a;
-#   endif
-
 #   if defined(USE_OPACITY_MAP)
-    vec4 opacityMap = texture(texOpacityMap, VAR._texCoord);
-    return max(min(opacityMap.r, opacityMap.g), min(opacityMap.b, opacityMap.a));
+    return texture(texOpacityMap, VAR._texCoord).r;
 #   endif
-
-#   if defined(USE_OPACITY_DIFFUSE_MAP)
     return albedoAlpha;
-#   endif
-
-#   endif
+#endif
 
     return 1.0;
 }
@@ -144,11 +134,6 @@ vec4 getAlbedo(mat4 colourMatrix) {
 
     albedo.a = getOpacity(colourMatrix, albedo.a);
 
-#if defined(USE_ALPHA_DISCARD)
-    if (albedo.a < 1.0 - Z_TEST_SIGMA) {
-        discard;
-    }
-#endif
     return albedo;
 }
 

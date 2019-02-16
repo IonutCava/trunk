@@ -78,8 +78,7 @@ class Material : public CachedResource {
     };
 
     enum class TranslucencySource : U8 {
-        DIFFUSE = 0,
-        DIFFUSE_MAP,
+        ALBEDO,
         OPACITY_MAP,
         COUNT
     };

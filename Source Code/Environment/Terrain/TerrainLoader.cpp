@@ -250,7 +250,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     heightMapTexture.setFlag(true);
 
-    terrainMaterial->setTexture(ShaderProgram::TextureUsage::OPACITY, CreateResource<Texture>(terrain->parentResourceCache(), heightMapTexture));
+    terrainMaterial->setTexture(ShaderProgram::TextureUsage::SPECULAR, CreateResource<Texture>(terrain->parentResourceCache(), heightMapTexture));
 
     ShaderProgramDescriptor shaderDescriptor = {};
 

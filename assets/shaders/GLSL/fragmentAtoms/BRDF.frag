@@ -87,6 +87,12 @@ vec3 getLightColour(vec3 albedo, vec3 normal, mat4 colourMatrix, uint dirLightCo
 
 vec4 getPixelColour(vec4 albedo, mat4 colourMatrix, inout vec3 normal) {
 
+#if defined(USE_ALPHA_DISCARD)
+    if (albedo.a < 1.0 - Z_TEST_SIGMA) {
+        discard;
+    }
+#endif
+
 #   if defined (USE_DOUBLE_SIDED)
     if (!gl_FrontFacing) {
         normal = -normal;
