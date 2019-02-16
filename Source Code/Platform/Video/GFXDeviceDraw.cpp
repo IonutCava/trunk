@@ -38,11 +38,6 @@ void GFXDevice::uploadGPUBlock() {
     }
 }
 
-void GFXDevice::preRender(RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut) {
-    ACKNOWLEDGE_UNUSED(stagePass);
-    ACKNOWLEDGE_UNUSED(bufferInOut);
-}
-
 void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
     if (Config::ENABLE_GPU_VALIDATION) {
         DIVIDE_ASSERT(Runtime::isMainThread(), "GFXDevice::flushCommandBuffer called from worker thread!");

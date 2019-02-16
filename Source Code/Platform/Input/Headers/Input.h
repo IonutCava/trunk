@@ -98,14 +98,15 @@ namespace Input {
     };
 
     enum class MouseButton : U8 {
-        MB_Left,
+        MB_Left = 0,
         MB_Right,
         MB_Middle,
         MB_Button3,
         MB_Button4,
         MB_Button5,
         MB_Button6,
-        MB_Button7
+        MB_Button7,
+        COUNT
     };
 
     enum class KeyModifier : U16 {

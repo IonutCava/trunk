@@ -230,7 +230,12 @@ namespace Divide {
 
         ImGuiIO& io = _imguiContext->IO;
         if (to_base(arg.button) < 5) {
-            io.MouseDown[to_base(arg.button)] = true;
+            for (U8 i = 0; i < 5; ++i) {
+                if (arg.button == Editor::g_oisButtons[i]) {
+                    io.MouseDown[i] = true;
+                    break;
+                }
+            }
         }
 
         return io.WantCaptureMouse || isOver();
@@ -245,8 +250,11 @@ namespace Divide {
         ACKNOWLEDGE_UNUSED(arg);
 
         ImGuiIO& io = _imguiContext->IO;
-        if (to_base(arg.button) < 5) {
-            io.MouseDown[to_base(arg.button)] = false;
+        for (U8 i = 0; i < 5; ++i) {
+            if (arg.button == Editor::g_oisButtons[i]) {
+                io.MouseDown[i] = false;
+                break;
+            }
         }
 
         return io.WantCaptureMouse  || isOver();

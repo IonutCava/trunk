@@ -100,6 +100,8 @@ class Editor : public PlatformContextComponent,
     friend class Attorney::EditorSolutionExplorerWindow;
 
   public:
+    static std::array<Input::MouseButton, 5> g_oisButtons;
+
     enum class WindowType : U8 {
         SolutionExplorer = 0,
         Properties,
@@ -119,7 +121,6 @@ class Editor : public PlatformContextComponent,
     void close();
     void idle();
     void update(const U64 deltaTimeUS);
-    bool needInput() const;
 
     void toggle(const bool state);
     bool running() const;
@@ -151,15 +152,15 @@ class Editor : public PlatformContextComponent,
 
   public: // input
     /// Key pressed: return true if input was consumed
-    bool onKeyDown(const Input::KeyEvent& key);
+    bool onKeyDown(const Input::KeyEvent& key) override;
     /// Key released: return true if input was consumed
-    bool onKeyUp(const Input::KeyEvent& key);
+    bool onKeyUp(const Input::KeyEvent& key) override;
     /// Mouse moved: return true if input was consumed
-    bool mouseMoved(const Input::MouseMoveEvent& arg);
+    bool mouseMoved(const Input::MouseMoveEvent& arg) override;
     /// Mouse button pressed: return true if input was consumed
-    bool mouseButtonPressed(const Input::MouseButtonEvent& arg);
+    bool mouseButtonPressed(const Input::MouseButtonEvent& arg) override;
     /// Mouse button released: return true if input was consumed
-    bool mouseButtonReleased(const Input::MouseButtonEvent& arg);
+    bool mouseButtonReleased(const Input::MouseButtonEvent& arg) override;
 
     bool joystickButtonPressed(const Input::JoystickEvent &arg) override;
     bool joystickButtonReleased(const Input::JoystickEvent &arg) override;

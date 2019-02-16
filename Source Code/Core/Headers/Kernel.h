@@ -178,26 +178,26 @@ class Kernel : public Input::InputAggregatorInterface,
     void idle();
     
     /// Key pressed
-    bool onKeyDown(const Input::KeyEvent& key);
+    bool onKeyDown(const Input::KeyEvent& key) override;
     /// Key released
-    bool onKeyUp(const Input::KeyEvent& key);
+    bool onKeyUp(const Input::KeyEvent& key) override;
     /// Joystick axis change
-    bool joystickAxisMoved(const Input::JoystickEvent& arg);
+    bool joystickAxisMoved(const Input::JoystickEvent& arg) override;
     /// Joystick direction change
-    bool joystickPovMoved(const Input::JoystickEvent& arg);
+    bool joystickPovMoved(const Input::JoystickEvent& arg) override;
     /// Joystick button pressed
-    bool joystickButtonPressed(const Input::JoystickEvent& arg);
+    bool joystickButtonPressed(const Input::JoystickEvent& arg) override;
     /// Joystick button released
-    bool joystickButtonReleased(const Input::JoystickEvent& arg);
-    bool joystickBallMoved(const Input::JoystickEvent& arg);
-    bool joystickAddRemove(const Input::JoystickEvent& arg);
+    bool joystickButtonReleased(const Input::JoystickEvent& arg) override;
+    bool joystickBallMoved(const Input::JoystickEvent& arg) override;
+    bool joystickAddRemove(const Input::JoystickEvent& arg) override;
     bool joystickRemap(const Input::JoystickEvent &arg) override;
     /// Mouse moved
-    bool mouseMoved(const Input::MouseMoveEvent& arg);
+    bool mouseMoved(const Input::MouseMoveEvent& arg) override;
     /// Mouse button pressed
-    bool mouseButtonPressed(const Input::MouseButtonEvent& arg);
+    bool mouseButtonPressed(const Input::MouseButtonEvent& arg) override;
     /// Mouse button released
-    bool mouseButtonReleased(const Input::MouseButtonEvent& arg);
+    bool mouseButtonReleased(const Input::MouseButtonEvent& arg) override;
 
     bool onUTF8(const Input::UTF8Event& arg) override;
 

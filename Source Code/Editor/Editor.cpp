@@ -49,14 +49,6 @@ namespace {
     WindowManager* g_windowManager = nullptr;
     Editor* g_editor = nullptr;
 
-    static std::array<Input::MouseButton, 5> g_oisButtons = {
-        Input::MouseButton::MB_Left,
-        Input::MouseButton::MB_Right,
-        Input::MouseButton::MB_Middle,
-        Input::MouseButton::MB_Button3,
-        Input::MouseButton::MB_Button4,
-    };
-
     struct ImGuiViewportData
     {
         DisplayWindow*  _window = nullptr;
@@ -95,6 +87,14 @@ void InitBasicImGUIState(ImGuiIO& io) {
     io.GetClipboardTextFn = GetClipboardText;
     io.ClipboardUserData = nullptr;
 }
+
+std::array<Input::MouseButton, 5> Editor::g_oisButtons = {
+        Input::MouseButton::MB_Left,
+        Input::MouseButton::MB_Right,
+        Input::MouseButton::MB_Middle,
+        Input::MouseButton::MB_Button3,
+        Input::MouseButton::MB_Button4,
+};
 
 Editor::Editor(PlatformContext& context, ImGuiStyleEnum theme, ImGuiStyleEnum dimmedTheme)
     : PlatformContextComponent(context),
@@ -212,7 +212,8 @@ bool Editor::init(const vec2<U16>& renderResolution) {
 
     io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;        // We can honor io.WantSetMousePos requests (optional, rarely used)
     io.BackendFlags |= ImGuiBackendFlags_PlatformHasViewports;  // We can create multi-viewports on the Platform side (optional)
-        
+    io.BackendPlatformName = "Divide Framework";
+
     InitBasicImGUIState(io);
 
     vec2<U16> display_size = _mainWindow->getDrawableSize();
@@ -476,7 +477,7 @@ void Editor::update(const U64 deltaTimeUS) {
     ImGuiIO& io = _imguiContext->IO;
     io.DeltaTime = Time::MicrosecondsToSeconds<F32>(deltaTimeUS);
 
-    if (!needInput()) {
+    if (!running()) {
         return;
     }
         
@@ -787,6 +788,10 @@ void Editor::selectionChangeCallback(PlayerIndex idx, SceneGraphNode* node) {
 
 /// Key pressed: return true if input was consumed
 bool Editor::onKeyDown(const Input::KeyEvent& key) {
+    if (!running()) {
+        return false;
+    }
+
     if (scenePreviewFocused()) {
         return _gizmo->onKeyDown(key);
     }
@@ -806,6 +811,10 @@ bool Editor::onKeyDown(const Input::KeyEvent& key) {
 
 /// Key released: return true if input was consumed
 bool Editor::onKeyUp(const Input::KeyEvent& key) {
+    if (!running()) {
+        return false;
+    }
+
     if (scenePreviewFocused()) {
         return _gizmo->onKeyUp(key);
     }
@@ -847,6 +856,10 @@ ImGuiViewport* Editor::findViewportByPlatformHandle(ImGuiContext* context, Displ
 
 /// Mouse moved: return true if input was consumed
 bool Editor::mouseMoved(const Input::MouseMoveEvent& arg) {
+    if (!running()) {
+        return false;
+    }
+
     if (!arg.wheelEvent()) {
         SceneViewWindow* sceneView = static_cast<SceneViewWindow*>(_dockedWindows[to_base(WindowType::SceneView)]);
         ImVec2 mousePos = _imguiContext->IO.MousePos;
@@ -879,8 +892,12 @@ bool Editor::mouseMoved(const Input::MouseMoveEvent& arg) {
 
 /// Mouse button pressed: return true if input was consumed
 bool Editor::mouseButtonPressed(const Input::MouseButtonEvent& arg) {
-    if (scenePreviewFocused()) {
-        return _gizmo->mouseButtonPressed(arg);
+    if (!running()) {
+        return false;
+    }
+
+    if (scenePreviewFocused() && _gizmo->mouseButtonPressed(arg)) {
+        return true;
     }
 
     ImGuiIO& io = _imguiContext->IO;
@@ -890,11 +907,16 @@ bool Editor::mouseButtonPressed(const Input::MouseButtonEvent& arg) {
             break;
         }
     }
+
     return io.WantCaptureMouse;
 }
 
 /// Mouse button released: return true if input was consumed
 bool Editor::mouseButtonReleased(const Input::MouseButtonEvent& arg) {
+    if (!running()) {
+        return false;
+    }
+
     if (scenePreviewFocused() != _sceneHovered) {
         ImGui::SetCurrentContext(_imguiContext);
         scenePreviewFocused(_sceneHovered);
@@ -902,8 +924,8 @@ bool Editor::mouseButtonReleased(const Input::MouseButtonEvent& arg) {
         ImGui::ResetStyle(scenePreviewFocused() ? _currentDimmedTheme : _currentTheme, style);
     }
 
-    if (scenePreviewFocused()) {
-        return _gizmo->mouseButtonReleased(arg);
+    if (scenePreviewFocused() && _gizmo->mouseButtonReleased(arg)) {
+        return true;
     }
 
     ImGuiIO& io = _imguiContext->IO;
@@ -913,10 +935,15 @@ bool Editor::mouseButtonReleased(const Input::MouseButtonEvent& arg) {
             break;
         }
     }
+
     return io.WantCaptureMouse;
 }
 
 bool Editor::joystickButtonPressed(const Input::JoystickEvent &arg) {
+    if (!running()) {
+        return false;
+    }
+
     if (scenePreviewFocused()) {
         return _gizmo->joystickButtonPressed(arg);
     }
@@ -925,6 +952,10 @@ bool Editor::joystickButtonPressed(const Input::JoystickEvent &arg) {
 }
 
 bool Editor::joystickButtonReleased(const Input::JoystickEvent &arg) {
+    if (!running()) {
+        return false;
+    }
+
     if (scenePreviewFocused()) {
         return _gizmo->joystickButtonReleased(arg);
     }
@@ -941,6 +972,10 @@ bool Editor::joystickAxisMoved(const Input::JoystickEvent &arg) {
 }
 
 bool Editor::joystickPovMoved(const Input::JoystickEvent &arg) {
+    if (!running()) {
+        return false;
+    }
+
     if (scenePreviewFocused()) {
         return _gizmo->joystickPovMoved(arg);
     }
@@ -949,6 +984,10 @@ bool Editor::joystickPovMoved(const Input::JoystickEvent &arg) {
 }
 
 bool Editor::joystickBallMoved(const Input::JoystickEvent &arg) {
+    if (!running()) {
+        return false;
+    }
+
     if (scenePreviewFocused()) {
         return _gizmo->joystickBallMoved(arg);
     }
@@ -957,6 +996,10 @@ bool Editor::joystickBallMoved(const Input::JoystickEvent &arg) {
 }
 
 bool Editor::joystickAddRemove(const Input::JoystickEvent &arg) {
+    if (!running()) {
+        return false;
+    }
+
     if (scenePreviewFocused()) {
         return _gizmo->joystickAddRemove(arg);
     }
@@ -965,6 +1008,10 @@ bool Editor::joystickAddRemove(const Input::JoystickEvent &arg) {
 }
 
 bool Editor::joystickRemap(const Input::JoystickEvent &arg) {
+    if (!running()) {
+        return false;
+    }
+
     if (scenePreviewFocused()) {
         return _gizmo->joystickRemap(arg);
     }
@@ -1014,7 +1061,7 @@ void Editor::updateMousePosAndButtons() {
 }
 
 bool Editor::onUTF8(const Input::UTF8Event& arg) {
-    if (!needInput()) {
+    if (!running()) {
         return false;
     }
 
@@ -1045,10 +1092,6 @@ void Editor::setSelectedCamera(Camera* camera) {
 
 Camera* Editor::getSelectedCamera() const {
     return _selectedCamera;
-}
-
-bool Editor::needInput() const {
-    return _running;
 }
 
 bool Editor::simulationPauseRequested() const {
@@ -1113,79 +1156,79 @@ bool Editor::modalTextureView(const char* modalName, const Texture_ptr& tex, con
 
 
         assert(modalName != nullptr);
-static TextureCallbackData data = {};
-data._gfxDevice = &_context.gfx();
+        static TextureCallbackData data = {};
+        data._gfxDevice = &_context.gfx();
 
-static TextureCallbackData defaultData = {};
-defaultData._gfxDevice = &_context.gfx();
-defaultData._isDepthTexture = false;
+        static TextureCallbackData defaultData = {};
+        defaultData._gfxDevice = &_context.gfx();
+        defaultData._isDepthTexture = false;
 
-static std::array<bool, 4> state = { true, true, true, true };
+        static std::array<bool, 4> state = { true, true, true, true };
 
-data._isDepthTexture = tex->getDescriptor().baseFormat() == GFXImageFormat::DEPTH_COMPONENT;
+        data._isDepthTexture = tex->getDescriptor().baseFormat() == GFXImageFormat::DEPTH_COMPONENT;
 
-U8 numChannels = tex->getDescriptor().numChannels();
+        U8 numChannels = tex->getDescriptor().numChannels();
 
-if (numChannels > 0) {
-    if (data._isDepthTexture) {
-        ImGui::Text("Depth: ");  ImGui::SameLine(); ImGui::ToggleButton("Depth", &state[0]);
-        ImGui::SameLine();
-        ImGui::Text("Range: "); ImGui::SameLine();
-        ImGui::DragFloatRange2("", &data._depthRange[0], &data._depthRange[1], 0.005f, 0.0f, 1.0f);
-    }
-    else {
-        ImGui::Text("R: ");  ImGui::SameLine(); ImGui::ToggleButton("R", &state[0]);
-    }
+        if (numChannels > 0) {
+            if (data._isDepthTexture) {
+                ImGui::Text("Depth: ");  ImGui::SameLine(); ImGui::ToggleButton("Depth", &state[0]);
+                ImGui::SameLine();
+                ImGui::Text("Range: "); ImGui::SameLine();
+                ImGui::DragFloatRange2("", &data._depthRange[0], &data._depthRange[1], 0.005f, 0.0f, 1.0f);
+            }
+            else {
+                ImGui::Text("R: ");  ImGui::SameLine(); ImGui::ToggleButton("R", &state[0]);
+            }
 
-    if (numChannels > 1) {
-        ImGui::SameLine();
-        ImGui::Text("G: ");  ImGui::SameLine(); ImGui::ToggleButton("G", &state[1]);
+            if (numChannels > 1) {
+                ImGui::SameLine();
+                ImGui::Text("G: ");  ImGui::SameLine(); ImGui::ToggleButton("G", &state[1]);
 
-        if (numChannels > 2) {
-            ImGui::SameLine();
-            ImGui::Text("B: ");  ImGui::SameLine(); ImGui::ToggleButton("B", &state[2]);
+                if (numChannels > 2) {
+                    ImGui::SameLine();
+                    ImGui::Text("B: ");  ImGui::SameLine(); ImGui::ToggleButton("B", &state[2]);
+                }
+
+                if (numChannels > 3)
+                {
+                    ImGui::SameLine();
+                    ImGui::Text("A: ");  ImGui::SameLine(); ImGui::ToggleButton("A", &state[3]);
+                }
+            }
+        }
+        const bool nonDefaultColours = data._isDepthTexture || !state[0] || !state[1] || !state[2] || !state[3];
+        data._colourData.set(state[0] ? 1 : 0, state[1] ? 1 : 0, state[2] ? 1 : 0, state[3] ? 1 : 0);
+
+        if (nonDefaultColours) {
+            ImGui::GetWindowDrawList()->AddCallback(toggleColours, &data);
         }
 
-        if (numChannels > 3)
-        {
-            ImGui::SameLine();
-            ImGui::Text("A: ");  ImGui::SameLine(); ImGui::ToggleButton("A", &state[3]);
+        F32 aspect = 1.0f;
+        if (preserveAspect) {
+            const U16 w = tex->getWidth();
+            const U16 h = tex->getHeight();
+            aspect = w / to_F32(h);
         }
-    }
-}
-const bool nonDefaultColours = data._isDepthTexture || !state[0] || !state[1] || !state[2] || !state[3];
-data._colourData.set(state[0] ? 1 : 0, state[1] ? 1 : 0, state[2] ? 1 : 0, state[3] ? 1 : 0);
 
-if (nonDefaultColours) {
-    ImGui::GetWindowDrawList()->AddCallback(toggleColours, &data);
-}
+        static F32 zoom = 1.0f;
+        static ImVec2 zoomCenter(0.5f, 0.5f);
+        ImGui::ImageZoomAndPan((void*)(intptr_t)tex->getData()._textureHandle, ImVec2(dimensions.w, dimensions.h / aspect), aspect, zoom, zoomCenter, 2, 3);
 
-F32 aspect = 1.0f;
-if (preserveAspect) {
-    const U16 w = tex->getWidth();
-    const U16 h = tex->getHeight();
-    aspect = w / to_F32(h);
-}
+        if (nonDefaultColours) {
+            ImGui::GetWindowDrawList()->AddCallback(toggleColours, &defaultData);
+        }
 
-static F32 zoom = 1.0f;
-static ImVec2 zoomCenter(0.5f, 0.5f);
-ImGui::ImageZoomAndPan((void*)(intptr_t)tex->getData()._textureHandle, ImVec2(dimensions.w, dimensions.h / aspect), aspect, zoom, zoomCenter, 2, 3);
+        ImGui::Text("Mouse: Wheel = scroll | CTRL + Wheel = zoom | Hold Wheel Button = pan");
 
-if (nonDefaultColours) {
-    ImGui::GetWindowDrawList()->AddCallback(toggleColours, &defaultData);
-}
-
-ImGui::Text("Mouse: Wheel = scroll | CTRL + Wheel = zoom | Hold Wheel Button = pan");
-
-if (ImGui::Button("Close")) {
-    zoom = 1.0f;
-    zoomCenter = ImVec2(0.5f, 0.5f);
-    ImGui::CloseCurrentPopup();
-    closed = true;
-}
+        if (ImGui::Button("Close")) {
+            zoom = 1.0f;
+            zoomCenter = ImVec2(0.5f, 0.5f);
+            ImGui::CloseCurrentPopup();
+            closed = true;
+        }
 
 
-ImGui::EndPopup();
+        ImGui::EndPopup();
     }
 
     return closed;

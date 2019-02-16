@@ -41,8 +41,6 @@ void Renderer::preRender(RenderStagePass stagePass,
                          LightPool& lightPool,
                          GFX::CommandBuffer& bufferInOut) {
 
-    lightPool.uploadLightData(stagePass._stage, bufferInOut);
-
     const Texture_ptr& depthTexture = target.getAttachment(RTAttachmentType::Depth, 0).texture();
 
     Image img = {};
@@ -57,9 +55,9 @@ void Renderer::preRender(RenderStagePass stagePass,
     bindDescriptorSetsCmd._set._textureData.setTexture(depthTexture->getData(), to_U8(ShaderProgram::TextureUsage::DEPTH));
     GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
 
-    _context.gfx().preRender(stagePass, bufferInOut);
-
-    if (stagePass._stage == RenderStage::SHADOW) {
+    if (stagePass._stage != RenderStage::SHADOW) {
+        lightPool.uploadLightData(stagePass._stage, bufferInOut);
+    } else {
         return;
     }
 

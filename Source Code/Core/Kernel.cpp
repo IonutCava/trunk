@@ -809,7 +809,7 @@ bool Kernel::onKeyDown(const Input::KeyEvent& key) {
     if (Config::Build::ENABLE_EDITOR) {
 
         Editor& editor = _platformContext->editor();
-        if (editor.running() && editor.onKeyDown(key)) {
+        if (editor.onKeyDown(key)) {
             return true;
         }
     }
@@ -823,7 +823,7 @@ bool Kernel::onKeyDown(const Input::KeyEvent& key) {
 bool Kernel::onKeyUp(const Input::KeyEvent& key) {
     if (Config::Build::ENABLE_EDITOR) {
         Editor& editor = _platformContext->editor();
-        if (editor.running() && editor.onKeyUp(key)) {
+        if (editor.onKeyUp(key)) {
             return true;
         }
     }
@@ -838,7 +838,7 @@ bool Kernel::onKeyUp(const Input::KeyEvent& key) {
 bool Kernel::mouseMoved(const Input::MouseMoveEvent& arg) {
     if (Config::Build::ENABLE_EDITOR) {
         Editor& editor = _platformContext->editor();
-        if (editor.running() && editor.mouseMoved(arg)) {
+        if (editor.mouseMoved(arg)) {
             return true;
         }
     }
@@ -855,7 +855,7 @@ bool Kernel::mouseButtonPressed(const Input::MouseButtonEvent& arg) {
     
     if (Config::Build::ENABLE_EDITOR) {
         Editor& editor = _platformContext->editor();
-        if (editor.running() && editor.mouseButtonPressed(arg)) {
+        if (editor.mouseButtonPressed(arg)) {
             return true;
         }
     }
@@ -872,7 +872,7 @@ bool Kernel::mouseButtonReleased(const Input::MouseButtonEvent& arg) {
     
     if (Config::Build::ENABLE_EDITOR) {
         Editor& editor = _platformContext->editor();
-        if (editor.running() && editor.mouseButtonReleased(arg)) {
+        if (editor.mouseButtonReleased(arg)) {
             return true;
         }
     }
@@ -951,7 +951,7 @@ bool Kernel::joystickRemap(const Input::JoystickEvent &arg) {
 bool Kernel::onUTF8(const Input::UTF8Event& arg) {
     if (Config::Build::ENABLE_EDITOR) {
         Editor& editor = _platformContext->editor();
-        if (editor.running() && editor.onUTF8(arg)) {
+        if (editor.onUTF8(arg)) {
             return true;
         }
     }
