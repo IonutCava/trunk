@@ -1,7 +1,9 @@
--- Compute
+--Compute
 
 //ToDo: change to this: https://github.com/bcrusco/Forward-Plus-Renderer/blob/master/Forward-Plus/Forward-Plus/source/shaders/light_culling.comp.glsl
 #include "lightInput.cmn"
+
+uniform mat4 invProjection;
 
 #define DIRECTIONAL_LIGHT_COUNT dvd_LightData.x
 #define POINT_LIGHT_COUNT       dvd_LightData.y
@@ -15,11 +17,11 @@ shared uint ldsLightIdxCounter;
 shared uint ldsLightIdx[MAX_NUM_LIGHTS_PER_TILE];
 shared uint ldsZMax;
 shared uint ldsZMin;
-//shared vec4 frustumEqn[6];
 
+//layout(r32f, binding = TEXTURE_DEPTH_MAP) uniform image2D depthBuffer;
 layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D depthBuffer;
 
-vec4 ConvertProjToView(in mat4 invProjection, vec4 p)
+vec4 ConvertProjToView(vec4 p)
 {
     p = invProjection * p;
     p /= p.w;
@@ -52,7 +54,8 @@ float GetSignedDistanceFromPlane(in vec4 p, in vec4 eqn)
 
 void CalculateMinMaxDepthInLds(uvec3 globalThreadIdx)
 {
-    float depth = textureLod(depthBuffer, globalThreadIdx.xy, 0).r;
+    //float depth = -imageLoad(depthBuffer, ivec2(globalThreadIdx.x, globalThreadIdx.y)).x;
+    float depth = -textureLod(depthBuffer, globalThreadIdx.xy, 0).r;
     uint z = floatBitsToUint(depth);
 
     if (depth != 0.f)
@@ -79,24 +82,7 @@ void main(void)
         ldsZMax = 0;
         ldsLightIdxCounter = 0;
     }
-    barrier();
 
-
-    /*
-    // calculate the min and max depth for this tile, 
-    // to form the front and back of the frustum
-
-    float minZ = FLT_MAX;
-    float maxZ = 0.0f;
-
-    CalculateMinMaxDepthInLds(globalIdx);
-
-    minZ = uintBitsToFloat(ldsZMin);
-    maxZ = uintBitsToFloat(ldsZMax);
-
-    barrier();
-
-    if (localIdxFlattened == 0) {*/
     vec4 frustumEqn[4];
     {
         // construct frustum for this tile
@@ -109,12 +95,12 @@ void main(void)
         uint uWindowHeightEvenlyDivisibleByTileRes = FORWARD_PLUS_TILE_RES * LIGHT_NUM_TILES_Y;
 
         // four corners of the tile, clockwise from top-left
-        mat4 invProjection = inverse(dvd_ProjectionMatrix);
-        vec4 frustum[4];
-        frustum[0] = ConvertProjToView(invProjection, vec4(pxm / float(uWindowWidthEvenlyDivisibleByTileRes) * 2.0f - 1.0f, (uWindowHeightEvenlyDivisibleByTileRes - pym) / float(uWindowHeightEvenlyDivisibleByTileRes) * 2.0f - 1.0f, 1.0f, 1.0f));
-        frustum[1] = ConvertProjToView(invProjection, vec4(pxp / float(uWindowWidthEvenlyDivisibleByTileRes) * 2.0f - 1.0f, (uWindowHeightEvenlyDivisibleByTileRes - pym) / float(uWindowHeightEvenlyDivisibleByTileRes) * 2.0f - 1.0f, 1.0f, 1.0f));
-        frustum[2] = ConvertProjToView(invProjection, vec4(pxp / float(uWindowWidthEvenlyDivisibleByTileRes) * 2.0f - 1.0f, (uWindowHeightEvenlyDivisibleByTileRes - pyp) / float(uWindowHeightEvenlyDivisibleByTileRes) * 2.0f - 1.0f, 1.0f, 1.0f));
-        frustum[3] = ConvertProjToView(invProjection, vec4(pxm / float(uWindowWidthEvenlyDivisibleByTileRes) * 2.0f - 1.0f, (uWindowHeightEvenlyDivisibleByTileRes - pyp) / float(uWindowHeightEvenlyDivisibleByTileRes) * 2.0f - 1.0f, 1.0f, 1.0f));
+        vec4 frustum[4] = {
+            ConvertProjToView(vec4(pxm / float(uWindowWidthEvenlyDivisibleByTileRes) * 2.0f - 1.0f, (uWindowHeightEvenlyDivisibleByTileRes - pym) / float(uWindowHeightEvenlyDivisibleByTileRes) * 2.0f - 1.0f, 1.0f, 1.0f)),
+            ConvertProjToView(vec4(pxp / float(uWindowWidthEvenlyDivisibleByTileRes) * 2.0f - 1.0f, (uWindowHeightEvenlyDivisibleByTileRes - pym) / float(uWindowHeightEvenlyDivisibleByTileRes) * 2.0f - 1.0f, 1.0f, 1.0f)),
+            ConvertProjToView(vec4(pxp / float(uWindowWidthEvenlyDivisibleByTileRes) * 2.0f - 1.0f, (uWindowHeightEvenlyDivisibleByTileRes - pyp) / float(uWindowHeightEvenlyDivisibleByTileRes) * 2.0f - 1.0f, 1.0f, 1.0f)),
+            ConvertProjToView(vec4(pxm / float(uWindowWidthEvenlyDivisibleByTileRes) * 2.0f - 1.0f, (uWindowHeightEvenlyDivisibleByTileRes - pyp) / float(uWindowHeightEvenlyDivisibleByTileRes) * 2.0f - 1.0f, 1.0f, 1.0f))
+        };
 
         // create plane equations for the four sides of the frustum, 
         // with the positive half-space outside the frustum (and remember, 
@@ -124,15 +110,6 @@ void main(void)
         {
             frustumEqn[i] = CreatePlaneEquation(frustum[i], frustum[(i + 1) & 3]);
         }
-
-        /*frustumEqn[4] = vec4(0.0, 0.0, -1.0, -minZ); // Near
-        frustumEqn[5] = vec4(0.0, 0.0, 1.0, maxZ); // Far
-
-        // Transform the depth planes
-        frustumEqn[4] *= dvd_ViewMatrix;
-        frustumEqn[4] /= length(frustumEqn[4].xyz);
-        frustumEqn[5] *= dvd_ViewMatrix;
-        frustumEqn[5] /= length(frustumEqn[5].xyz);*/
     }
 
     barrier();
@@ -147,22 +124,26 @@ void main(void)
 
     barrier();
 
+    // FIXME: swapped min and max to prevent false culling near depth discontinuities.
+    //        AMD's ForwarPlus11 sample uses reverse depth test so maybe that's why this swap is needed. [2014-07-07]
     minZ = uintBitsToFloat(ldsZMin);
     maxZ = uintBitsToFloat(ldsZMax);
 
     // loop over the point lights and do a sphere vs. frustum intersection test
 
     uint lightIDXOffset = DIRECTIONAL_LIGHT_COUNT;
-    for (uint i = 0; i < POINT_LIGHT_COUNT; i += NUM_THREADS_PER_TILE)
+    uint numPointLights = uint(POINT_LIGHT_COUNT);
+
+    for (uint i = 0; i < numPointLights; i += NUM_THREADS_PER_TILE)
     {
         uint il = localIdxFlattened + i;
 
-        if (il < POINT_LIGHT_COUNT)
+        if (il < numPointLights)
         {
             vec4 center = dvd_LightSource[il + lightIDXOffset]._positionWV;
             float r = center.w;
             // test if sphere is intersecting or inside frustum
-            if (center.z + minZ < r && center.z - maxZ < r)
+            if (-center.z + minZ < r && center.z - maxZ < r)
             {
                 if ((GetSignedDistanceFromPlane(center, frustumEqn[0]) < r) &&
                     (GetSignedDistanceFromPlane(center, frustumEqn[1]) < r) &&
@@ -183,8 +164,8 @@ void main(void)
     // Spot lights.
     lightIDXOffset += POINT_LIGHT_COUNT;
     uint uNumPointLightsInThisTile = ldsLightIdxCounter;
-
-    for (uint i = 0; i < SPOT_LIGHT_COUNT; i += NUM_THREADS_PER_TILE)
+    uint numSpotLights = uint(SPOT_LIGHT_COUNT);
+    for (uint i = 0; i < numSpotLights; i += NUM_THREADS_PER_TILE)
     {
         uint il = localIdxFlattened + i;
 
@@ -195,7 +176,7 @@ void main(void)
             float r = center.w * 0.5;
             center.xyz += direction * r;
             // test if sphere is intersecting or inside frustum
-            if (center.z + minZ < r && center.z - maxZ < r)
+            if (-center.z + minZ < r && center.z - maxZ < r)
             {
                 if ((GetSignedDistanceFromPlane(center, frustumEqn[0]) < r) &&
                     (GetSignedDistanceFromPlane(center, frustumEqn[1]) < r) &&

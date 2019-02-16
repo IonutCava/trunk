@@ -111,7 +111,7 @@ namespace eastl
 		typedef typename base_type::size_type                                     size_type;
 		typedef typename base_type::key_type                                      key_type;
 		typedef T                                                                 mapped_type;
-		typedef typename base_type::value_type                                    value_type;     // Note that this is pair<const key_type, mapped_type>.
+		typedef typename base_type::value_type                                    value_type;     // NOTE: 'value_type = pair<const key_type, mapped_type>'.
 		typedef typename base_type::allocator_type                                allocator_type;
 		typedef typename base_type::node_type                                     node_type;
 		typedef typename base_type::insert_return_type                            insert_return_type;
@@ -125,7 +125,7 @@ namespace eastl
 		///
 		/// Default constructor.
 		///
-		explicit hash_map(const allocator_type& allocator = EASTL_HASH_MAP_DEFAULT_ALLOCATOR) noexcept
+		explicit hash_map(const allocator_type& allocator = EASTL_HASH_MAP_DEFAULT_ALLOCATOR)
 			: base_type(0, Hash(), mod_range_hashing(), default_ranged_hash(), 
 						Predicate(), eastl::use_first<eastl::pair<const Key, T> >(), allocator)
 		{

@@ -188,7 +188,12 @@ void CommandBuffer::clean() {
                     --_commandCount[cmd._typeIndex];
                     skip = true;
                 }
-                if (!skip && set._shaderBuffers.empty() && set._textureData.textures().empty() && set._textureViews.empty()) {
+                if (!skip && 
+                    set._shaderBuffers.empty() &&
+                    set._textureData.textures().empty() &&
+                    set._textureViews.empty() &&
+                    set._images.empty())
+                {
                     it = _commandOrder.erase(it);
                     --_commandCount[cmd._typeIndex];
                     skip = true;

@@ -32,15 +32,13 @@ glTexture::glTexture(GFXDevice& context,
 
     _type = GLUtil::glTextureTypeTable[to_U32(_descriptor.type())];
 
-    U32 tempHandle = 0;
-    glCreateTextures(_type, 1, &tempHandle);
+     glCreateTextures(_type, 1, &_textureData._textureHandle);
 
-    assert(tempHandle != 0 && "glTexture error: failed to generate new texture handle!");
-    _textureData.setHandle(tempHandle);
+    assert(_textureData._textureHandle != 0 && "glTexture error: failed to generate new texture handle!");
     _textureData._samplerHandle = GL_API::getOrCreateSamplerObject(_descriptor._samplerDescriptor);
 
     if (Config::ENABLE_GPU_VALIDATION) {
-        glObjectLabel(GL_TEXTURE, tempHandle, -1, name.c_str());
+        glObjectLabel(GL_TEXTURE, _textureData._textureHandle, -1, name.c_str());
     }
 }
 
@@ -52,16 +50,16 @@ glTexture::~glTexture()
 }
 
 bool glTexture::unload() noexcept {
-    U32 textureID = _textureData.getHandle();
+    U32 textureID = _textureData._textureHandle;
     if (textureID > 0) {
         if (_lockManager) {
             _lockManager->Wait(false);
         }
         Divide::GL_API::deleteTextures(1, &textureID, _descriptor.type());
-        _textureData.setHandle(0U);
+        _textureData._textureHandle = 0u;
     }
 
-    return _textureData.getHandle() == 0;
+    return _textureData._textureHandle == 0;
 }
 
 void glTexture::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallback) {
@@ -69,7 +67,7 @@ void glTexture::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallb
 
     // Loading from file usually involves data that doesn't change, so call this here.
     if (automaticMipMapGeneration() && _descriptor.getSampler().generateMipMaps()) {
-        GL_API::queueComputeMipMap(_textureData.getHandle());
+        GL_API::queueComputeMipMap(_textureData._textureHandle);
     }
     _lockManager->Lock(!Runtime::isMainThread());
 
@@ -86,14 +84,14 @@ void glTexture::setMipMapRange(U16 base, U16 max) {
 }
 
 void glTexture::setMipRangeInternal(U16 base, U16 max) {
-    glTextureParameteri(_textureData.getHandle(), GL_TEXTURE_BASE_LEVEL, base);
-    glTextureParameteri(_textureData.getHandle(), GL_TEXTURE_MAX_LEVEL, max);
+    glTextureParameteri(_textureData._textureHandle, GL_TEXTURE_BASE_LEVEL, base);
+    glTextureParameteri(_textureData._textureHandle, GL_TEXTURE_MAX_LEVEL, max);
 }
 
 void glTexture::resize(const bufferPtr ptr,
                        const vec2<U16>& dimensions) {
 
-    U32 textureID = _textureData.getHandle();
+    U32 textureID = _textureData._textureHandle;
     if (textureID > 0 && _allocatedStorage) {
         // Immutable storage requires us to create a new texture object 
         U32 tempHandle = 0;
@@ -108,7 +106,7 @@ void glTexture::resize(const bufferPtr ptr,
                                 ? 1 + Texture::computeMipCount(_width, _height)
                                 : 1);
 
-    _textureData.setHandle(textureID);
+    _textureData._textureHandle = textureID;
     _allocatedStorage = false;
     _descriptor._mipLevels.set(mipLevels);
 
@@ -116,7 +114,7 @@ void glTexture::resize(const bufferPtr ptr,
     loadData(info, ptr, dimensions);
 
     if (automaticMipMapGeneration() && _descriptor.getSampler().generateMipMaps()) {
-        GL_API::queueComputeMipMap(_textureData.getHandle());
+        GL_API::queueComputeMipMap(_textureData._textureHandle);
     }
 }
 
@@ -126,7 +124,7 @@ void glTexture::reserveStorage() {
         "glTexture::reserverStorage error: width and height for cube map texture do not match!");
 
     GLenum glInternalFormat = GLUtil::internalFormat(_descriptor.baseFormat(), _descriptor.dataType(), _descriptor._srgb);
-    GLuint handle = _textureData.getHandle();
+    GLuint handle = _textureData._textureHandle;
     GLuint msaaSamples = static_cast<GLuint>(_descriptor.msaaSamples());
     GLushort mipMaxLevel = _descriptor._mipLevels.max;
 
@@ -282,7 +280,7 @@ void glTexture::loadDataCompressed(const TextureLoadInfo& info,
         switch (_textureData._textureType) {
             case TextureType::TEXTURE_1D: {
                 glCompressedTextureSubImage1D(
-                    _textureData.getHandle(),
+                    _textureData._textureHandle,
                     i,
                     0,
                     layer._dimensions.width,
@@ -292,7 +290,7 @@ void glTexture::loadDataCompressed(const TextureLoadInfo& info,
             } break;
             case TextureType::TEXTURE_2D: {
                 glCompressedTextureSubImage2D(
-                    _textureData.getHandle(),
+                    _textureData._textureHandle,
                     i,
                     0,
                     0,
@@ -307,7 +305,7 @@ void glTexture::loadDataCompressed(const TextureLoadInfo& info,
             case TextureType::TEXTURE_CUBE_MAP:
             case TextureType::TEXTURE_CUBE_ARRAY: {
                 glCompressedTextureSubImage3D(
-                    _textureData.getHandle(),
+                    _textureData._textureHandle,
                     i,
                     0,
                     0,
@@ -334,7 +332,7 @@ void glTexture::loadDataUncompressed(const TextureLoadInfo& info, bufferPtr data
     if (data) {
         GLenum format = GLUtil::glImageFormatTable[to_U32(_descriptor.baseFormat())];
         GLenum type = GLUtil::glDataFormat[to_U32(_descriptor.dataType())];
-        GLuint handle = _textureData.getHandle();
+        GLuint handle = _textureData._textureHandle;
 
         GL_API::getStateTracker().setPixelPackUnpackAlignment();
         switch (_textureData._textureType) {
@@ -368,8 +366,8 @@ void glTexture::copy(const Texture_ptr& other) {
 
     glTexture* otherTex = std::dynamic_pointer_cast<glTexture>(other).get();
 
-    GLuint srcHandle = otherTex->getData().getHandle();
-    GLuint destHandle = _textureData.getHandle();
+    GLuint srcHandle = otherTex->getData()._textureHandle;
+    GLuint destHandle = _textureData._textureHandle;
 
     glCopyImageSubData(//Source
                        srcHandle,
@@ -407,7 +405,7 @@ void glTexture::bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, 
                             : (write ? GL_WRITE_ONLY : GL_NONE);
 
     GLenum glInternalFormat = GLUtil::internalFormat(_descriptor.baseFormat(), _descriptor.dataType(), _descriptor._srgb);
-    GL_API::getStateTracker().bindTextureImage(slot, _descriptor.type(), _textureData.getHandle(), level, layered, layer, access, glInternalFormat);
+    GL_API::getStateTracker().bindTextureImage(slot, _descriptor.type(), _textureData._textureHandle, level, layered, layer, access, glInternalFormat);
 }
 
 };

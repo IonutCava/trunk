@@ -17,6 +17,12 @@
 EA_ONCE()
 
 #include <EASTL/internal/config.h>
+#include <EASTL/type_traits.h>
+
+EA_DISABLE_ALL_VC_WARNINGS()
+#include <ctype.h>              // toupper, etc.
+#include <string.h>             // memset, etc.
+EA_RESTORE_ALL_VC_WARNINGS()
 
 namespace eastl
 {
@@ -226,19 +232,15 @@ namespace eastl
 		}
 	#endif
 
-	inline size_t CharStrlen(const char8_t* p)
+	inline EA_CPP14_CONSTEXPR size_t CharStrlen(const char8_t* p)
 	{
-		#if defined(_MSC_VER) || defined(__GNUC__) 
-			return strlen(p);
-		#else
-			const char8_t* pCurrent = p;
-			while(*pCurrent)
-				++pCurrent;
-			return (size_t)(pCurrent - p);
-		#endif
+		const char8_t* pCurrent = p;
+		while(*pCurrent)
+			++pCurrent;
+		return (size_t)(pCurrent - p);
 	}
 
-	inline size_t CharStrlen(const char16_t* p)
+	inline EA_CPP14_CONSTEXPR size_t CharStrlen(const char16_t* p)
 	{
 		const char16_t* pCurrent = p;
 		while(*pCurrent)
@@ -246,7 +248,7 @@ namespace eastl
 		return (size_t)(pCurrent - p);
 	}
 
-	inline size_t CharStrlen(const char32_t* p)
+	inline EA_CPP14_CONSTEXPR size_t CharStrlen(const char32_t* p)
 	{
 		const char32_t* pCurrent = p;
 		while(*pCurrent)
@@ -255,7 +257,7 @@ namespace eastl
 	}
 
 	#if defined(EA_WCHAR_UNIQUE) && EA_WCHAR_UNIQUE
-		inline size_t CharStrlen(const wchar_t* p)
+		inline EA_CPP14_CONSTEXPR size_t CharStrlen(const wchar_t* p)
 		{
 			const wchar_t* pCurrent = p;
 			while(*pCurrent)

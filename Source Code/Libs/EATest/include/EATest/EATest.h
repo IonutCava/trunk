@@ -1076,7 +1076,7 @@ namespace EA
             /// character is reserved for separating hierarchical test suites.
             /// The test result is initialized to kTestResultNone.
             ///
-            TestSuite(const char8_t* pTestName = NULL);
+            TestSuite(const char8_t* pTestName = NULL, EA::EAMain::ReportFunction pReportFunction = EA::EAMain::GetReportFunction());
 
             /// ~TestSuite
             ///

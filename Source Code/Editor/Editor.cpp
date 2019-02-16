@@ -202,15 +202,9 @@ bool Editor::init(const vec2<U16>& renderResolution) {
 
     if (_context.config().gui.imgui.multiViewportEnabled) {
         io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
-        if (_context.config().gui.imgui.windowDecorationsEnabled) {
-            io.ConfigFlags |= ImGuiConfigFlags_ViewportsDecoration;
-        }
-
-        io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoTaskBarIcon;
-
-        if (_context.config().gui.imgui.dontMergeFloatingWindows) {
-            io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoMerge;
-        }
+        io.ConfigViewportsNoDecoration = !_context.config().gui.imgui.windowDecorationsEnabled;
+        io.ConfigViewportsNoTaskBarIcon = true;
+        io.ConfigViewportsNoAutoMerge = _context.config().gui.imgui.dontMergeFloatingWindows;
 
         io.BackendFlags |= ImGuiBackendFlags_HasMouseHoveredViewport;
         io.BackendFlags |= ImGuiBackendFlags_RendererHasViewports;
@@ -564,7 +558,7 @@ bool Editor::render(const U64 deltaTime) {
     }
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-    ImGui::Begin("", NULL, windowFlags);
+    ImGui::Begin("Editor", NULL, windowFlags);
     ImGui::PopStyleVar();
     ImGui::PopStyleVar(2);
 
@@ -1175,7 +1169,7 @@ if (preserveAspect) {
 
 static F32 zoom = 1.0f;
 static ImVec2 zoomCenter(0.5f, 0.5f);
-ImGui::ImageZoomAndPan((void*)(intptr_t)tex->getData().getHandle(), ImVec2(dimensions.w, dimensions.h / aspect), aspect, zoom, zoomCenter, 2, 3);
+ImGui::ImageZoomAndPan((void*)(intptr_t)tex->getData()._textureHandle, ImVec2(dimensions.w, dimensions.h / aspect), aspect, zoom, zoomCenter, 2, 3);
 
 if (nonDefaultColours) {
     ImGui::GetWindowDrawList()->AddCallback(toggleColours, &defaultData);

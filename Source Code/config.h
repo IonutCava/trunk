@@ -175,7 +175,7 @@ constexpr unsigned short MAX_POSSIBLE_LIGHTS = 1024;
 
 namespace ForwardPlus {
     /// The following parameters control the behaviour of the Forward+ renderer
-    constexpr unsigned short TILE_RES = 32u;
+    constexpr unsigned short TILE_RES = 16u;
     constexpr unsigned short MAX_LIGHTS_PER_TILE = 544u;
     constexpr unsigned int   LIGHT_INDEX_BUFFER_SENTINEL = 0x7fffffff;
 

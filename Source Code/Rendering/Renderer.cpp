@@ -43,10 +43,18 @@ void Renderer::preRender(RenderStagePass stagePass,
 
     lightPool.uploadLightData(stagePass._stage, bufferInOut);
 
+    const Texture_ptr& depthTexture = target.getAttachment(RTAttachmentType::Depth, 0).texture();
+
+    Image img = {};
+    img._texture = depthTexture.get();
+    img._binding = to_U8(ShaderProgram::TextureUsage::DEPTH);
+    img._layer = 0;
+    img._level = 0;
+    img._flag = Image::Flag::READ;
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd = {};
-    TextureData data = target.getAttachment(RTAttachmentType::Depth, 0).texture()->getData();
-    bindDescriptorSetsCmd._set._textureData.setTexture(data, to_U8(ShaderProgram::TextureUsage::DEPTH));
+    //bindDescriptorSetsCmd._set._images.push_back(img);
+    bindDescriptorSetsCmd._set._textureData.setTexture(depthTexture->getData(), to_U8(ShaderProgram::TextureUsage::DEPTH));
     GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
 
     _context.gfx().preRender(stagePass, bufferInOut);
@@ -60,6 +68,10 @@ void Renderer::preRender(RenderStagePass stagePass,
     pipelineDescriptor._shaderProgramHandle = _lightCullComputeShader->getID();
     bindPipelineCmd._pipeline = _context.gfx().newPipeline(pipelineDescriptor);
     GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
+
+    GFX::SendPushConstantsCommand pushConstantsCommand = {};
+    pushConstantsCommand._constants.set("invProjection", GFX::PushConstantType::MAT4, _context.gfx().renderingData()._ProjectionMatrix.getInverse());
+    GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
     GFX::DispatchComputeCommand computeCmd = {};
     computeCmd._computeGroupSize.set(Config::Lighting::ForwardPlus::NUM_TILES_X, Config::Lighting::ForwardPlus::NUM_TILES_Y, 1);

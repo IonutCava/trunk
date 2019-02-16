@@ -89,31 +89,66 @@ namespace Divide {
         XALLOCATOR
     };
 
+    struct Image {
+        enum class Flag : U8 {
+            READ = 0,
+            WRITE,
+            READ_WRITE
+        };
+
+        Texture* _texture = nullptr;
+        Flag _flag = Flag::READ;
+        U8 _layer = 0;
+        U8 _level = 0;
+        U8 _binding = 0;
+
+        inline bool operator==(const Image& other) const {
+            return _texture == other._texture &&
+                   _flag == other._flag &&
+                   _layer == other._layer &&
+                   _level == other._level &&
+                   _binding == other._binding;
+        }
+
+        inline bool operator!=(const Image& other) const {
+            return _texture != other._texture ||
+                   _flag != other._flag ||
+                   _layer != other._layer ||
+                   _level != other._level ||
+                   _binding != other._binding;
+        }
+    };
+
     typedef vectorEASTLFast<ShaderBufferBinding> ShaderBufferList;
     typedef vectorEASTLFast<TextureViewEntry> TextureViews;
+    typedef vectorEASTLFast<Image> Images;
 
     struct DescriptorSet {
         //This needs a lot more work!
         TextureDataContainer _textureData = {};
         ShaderBufferList _shaderBuffers = {};
         TextureViews _textureViews = {};
+        Images _images = {};
 
         bool addShaderBuffer(const ShaderBufferBinding& entry);
         bool addShaderBuffers(const ShaderBufferList& entries);
         const ShaderBufferBinding* findBinding(ShaderBufferLocation slot) const;
         const TextureData* findTexture(U8 binding) const;
         const TextureView* findTextureView(U8 binding) const;
+        const Image* findImage(U8 binding) const;
 
         inline bool operator==(const DescriptorSet &other) const {
             return _shaderBuffers == other._shaderBuffers &&
                    _textureData == other._textureData &&
-                   _textureViews == other._textureViews;
+                   _textureViews == other._textureViews &&
+                   _images == other._images;
         }
 
         inline bool operator!=(const DescriptorSet &other) const {
             return _shaderBuffers != other._shaderBuffers ||
                    _textureData != other._textureData ||
-                   _textureViews != other._textureViews;
+                   _textureViews != other._textureViews ||
+                   _images != other._images;
         }
 
         XALLOCATOR

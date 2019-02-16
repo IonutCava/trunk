@@ -19,7 +19,7 @@
 
 #ifndef NO_IMGUIHELPER_DRAW_METHODS
 #if !defined(alloca)
-#	if defined(__GLIBC__) || defined(__sun) || defined(__CYGWIN__)
+#	if defined(__GLIBC__) || defined(__sun) || defined(__CYGWIN__) || defined(__APPLE__)
 #		include <alloca.h>     // alloca (glibc uses <alloca.h>. Note that Cygwin may have _WIN32 defined, so the order matters here)
 #	elif defined(_WIN32)
 #       include <malloc.h>     // alloca
@@ -371,14 +371,14 @@ void ImDrawListAddCircle(ImDrawList *dl, const ImVec2 &centre, float radius, con
     if (!dl) return;
     const ImVec2 radii(radius,radius);
     const float a_max = IM_PI*2.0f * ((float)num_segments - 1.0f) / (float)num_segments;
-    ImDrawListPathArcTo(dl,centre, radii, 0.0f, a_max, num_segments);
+    ImDrawListPathArcTo(dl,centre, radii, 0.0f, a_max, num_segments-1);
     ImDrawListPathFillAndStroke(dl,fillColor,strokeColor,true,strokeThickness);
 }
 void ImDrawListAddCircleWithVerticalGradient(ImDrawList *dl, const ImVec2 &centre, float radius, const ImU32 &fillColorTop, const ImU32 &fillColorBottom, const ImU32 &strokeColor, int num_segments, float strokeThickness)   {
     if (!dl) return;
     const ImVec2 radii(radius,radius);
     const float a_max = IM_PI*2.0f * ((float)num_segments - 1.0f) / (float)num_segments;
-    ImDrawListPathArcTo(dl,centre, radii, 0.0f, a_max, num_segments);
+    ImDrawListPathArcTo(dl,centre, radii, 0.0f, a_max, num_segments-1);
     ImDrawListPathFillWithVerticalGradientAndStroke(dl,fillColorTop,fillColorBottom,strokeColor,true,strokeThickness,centre.y-radius,centre.y+radius);
 }
 void ImDrawListAddRectWithVerticalGradient(ImDrawList *dl, const ImVec2 &a, const ImVec2 &b, const ImU32 &fillColor, float fillColorGradientDeltaIn0_05, const ImU32 &strokeColor, float rounding, int rounding_corners, float strokeThickness)   {
@@ -533,7 +533,7 @@ void ImDrawListAddCircleWithHorizontalGradient(ImDrawList *dl, const ImVec2 &cen
     if (!dl) return;
     const ImVec2 radii(radius,radius);
     const float a_max = IM_PI*2.0f * ((float)num_segments - 1.0f) / (float)num_segments;
-    ImDrawListPathArcTo(dl,centre, radii, 0.0f, a_max, num_segments);
+    ImDrawListPathArcTo(dl,centre, radii, 0.0f, a_max, num_segments-1);
     ImDrawListPathFillWithHorizontalGradientAndStroke(dl,fillColorLeft,fillColorRight,strokeColor,true,strokeThickness,centre.y-radius,centre.y+radius);
 }
 void ImDrawListAddRectWithHorizontalGradient(ImDrawList *dl, const ImVec2 &a, const ImVec2 &b, const ImU32 &fillColor, float fillColorGradientDeltaIn0_05, const ImU32 &strokeColor, float rounding, int rounding_corners, float strokeThickness)   {

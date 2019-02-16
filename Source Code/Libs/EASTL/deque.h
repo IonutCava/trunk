@@ -227,9 +227,9 @@ namespace eastl
 		T*  mpEnd;              // The end of the current subarray. To consider: remove this member, as it is always equal to 'mpBegin + kDequeSubarraySize'. Given that deque subarrays usually consist of hundreds of bytes, this isn't a massive win. Also, now that we are implementing a zero-allocation new deque policy, mpEnd may in fact not be equal to 'mpBegin + kDequeSubarraySize'.
 		T** mpCurrentArrayPtr;  // Pointer to current subarray. We could alternatively implement this as a list node iterator if the deque used a linked list.
 
-		struct Increment{ };
-		struct Decrement{ };
-		struct FromConst{};
+		struct Increment {};
+		struct Decrement {};
+		struct FromConst {};
 
 		DequeIterator(T** pCurrentArrayPtr, T* pCurrent);
 		DequeIterator(const const_iterator& x, FromConst) : mpCurrent(x.mpCurrent), mpBegin(x.mpBegin), mpEnd(x.mpEnd), mpCurrentArrayPtr(x.mpCurrentArrayPtr){}
@@ -298,17 +298,17 @@ namespace eastl
 		void                  set_allocator(const allocator_type& allocator);
 
 	protected:
-		T*   DoAllocateSubarray();
-		void DoFreeSubarray(T* p);
-		void DoFreeSubarrays(T** pBegin, T** pEnd);
+		T*       DoAllocateSubarray();
+		void     DoFreeSubarray(T* p);
+		void     DoFreeSubarrays(T** pBegin, T** pEnd);
 
-		T**  DoAllocatePtrArray(size_type n);
-		void DoFreePtrArray(T** p, size_t n);
+		T**      DoAllocatePtrArray(size_type n);
+		void     DoFreePtrArray(T** p, size_t n);
 
 		iterator DoReallocSubarray(size_type nAdditionalCapacity, Side allocationSide);
 		void     DoReallocPtrArray(size_type nAdditionalCapacity, Side allocationSide);
 
-		void DoInit(size_type n);
+		void     DoInit(size_type n);
 
 	}; // DequeBase
 
@@ -1049,11 +1049,10 @@ namespace eastl
 		//        Currently we only do memcpy if the entire operation occurs within a single subarray.
 		if((first.mpBegin == last.mpBegin) && (first.mpBegin == mpBegin)) // If all operations are within the same subarray, implement the operation as a memmove.
 		{
-			// The following is equivalent to: eastl::copy(first.mpCurrent, last.mpCurrent, mpCurrent);
 			memmove(mpCurrent, first.mpCurrent, (size_t)((uintptr_t)last.mpCurrent - (uintptr_t)first.mpCurrent));
 			return *this + (last.mpCurrent - first.mpCurrent);
 		}
-		return eastl::copy(first, last, *this);
+		return eastl::copy(eastl::make_move_iterator(first), eastl::make_move_iterator(last), eastl::make_move_iterator(*this)).base();
 	}
 
 
@@ -1061,7 +1060,7 @@ namespace eastl
 	typename DequeIterator<T, Pointer, Reference, kDequeSubarraySize>::this_type
 	DequeIterator<T, Pointer, Reference, kDequeSubarraySize>::copy(const iterator& first, const iterator& last, false_type)
 	{
-		return eastl::copy(first, last, *this);
+		return eastl::copy(eastl::make_move_iterator(first), eastl::make_move_iterator(last), eastl::make_move_iterator(*this)).base();
 	}
 
 
@@ -1073,14 +1072,14 @@ namespace eastl
 		if((first.mpBegin == last.mpBegin) && (first.mpBegin == mpBegin)) // If all operations are within the same subarray, implement the operation as a memcpy.
 			memmove(mpCurrent - (last.mpCurrent - first.mpCurrent), first.mpCurrent, (size_t)((uintptr_t)last.mpCurrent - (uintptr_t)first.mpCurrent));
 		else
-			eastl::copy_backward(first, last, *this);
+			eastl::copy_backward(eastl::make_move_iterator(first), eastl::make_move_iterator(last), eastl::make_move_iterator(*this));
 	}
 
 
 	template <typename T, typename Pointer, typename Reference, unsigned kDequeSubarraySize>
 	void DequeIterator<T, Pointer, Reference, kDequeSubarraySize>::copy_backward(const iterator& first, const iterator& last, false_type)
 	{
-		eastl::copy_backward(first, last, *this);
+		eastl::copy_backward(eastl::make_move_iterator(first), eastl::make_move_iterator(last), eastl::make_move_iterator(*this)).base();
 	}
 
 
@@ -1780,7 +1779,7 @@ namespace eastl
 
 		if(i < (difference_type)(size() / 2)) // Should we insert at the front or at the back? We divide the range in half.
 		{
-			emplace_front(*mItBegin); // This operation potentially invalidates all existing iterators and so we need to assign them anew relative to mItBegin below.
+			emplace_front(eastl::move(*mItBegin)); // This operation potentially invalidates all existing iterators and so we need to assign them anew relative to mItBegin below.
 
 			itPosition = mItBegin + i;
 
@@ -1792,7 +1791,7 @@ namespace eastl
 		}
 		else
 		{
-			emplace_back(*iterator(mItEnd, typename iterator::Decrement()));
+			emplace_back(eastl::move(*iterator(mItEnd, typename iterator::Decrement())));
 
 			itPosition = mItBegin + i;
 
@@ -1925,6 +1924,9 @@ namespace eastl
 		#if EASTL_ASSERT_ENABLED
 			if(EASTL_UNLIKELY(!(validate_iterator(position) & isf_valid)))
 				EASTL_FAIL_MSG("deque::erase -- invalid iterator");
+
+			if(EASTL_UNLIKELY(position == end()))
+				EASTL_FAIL_MSG("deque::erase -- end() iterator is an invalid iterator for erase");
 		#endif
 
 		iterator itPosition(position, typename iterator::FromConst());
@@ -2077,6 +2079,7 @@ namespace eastl
 	template <typename T, typename Allocator, unsigned kDequeSubarraySize>
 	void deque<T, Allocator, kDequeSubarraySize>::swap(deque& x)
 	{
+	#if defined(EASTL_DEQUE_LEGACY_SWAP_BEHAVIOUR_REQUIRES_COPY_CTOR) && EASTL_DEQUE_LEGACY_SWAP_BEHAVIOUR_REQUIRES_COPY_CTOR
 		if(mAllocator == x.mAllocator) // If allocators are equivalent...
 			DoSwap(x);
 		else // else swap the contents.
@@ -2085,6 +2088,19 @@ namespace eastl
 			*this = x;                   // itself call this member swap function.
 			x     = temp;
 		}
+	#else
+		// NOTE(rparolin): The previous implementation required T to be copy-constructible in the fall-back case where
+		// allocators with unique instances copied elements.  This was an unnecessary restriction and prevented the common
+		// usage of deque with non-copyable types (eg. eastl::deque<non_copyable> or eastl::deque<unique_ptr>). 
+		// 
+		// The previous implementation violated the following requirements of deque::swap so the fall-back code has
+		// been removed.  EASTL implicitly defines 'propagate_on_container_swap = false' therefore the fall-back case is
+		// undefined behaviour.  We simply swap the contents and the allocator as that is the common expectation of
+		// users and does not put the container into an invalid state since it can not free its memory via its current
+		// allocator instance.
+		//
+		DoSwap(x);
+	#endif
 	}
 
 

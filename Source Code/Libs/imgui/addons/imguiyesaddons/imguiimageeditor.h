@@ -129,6 +129,20 @@ NOTES:
 */
 
 /* CHANGELOG:
+ IMGUIIMAGEEDITOR_VERSION 0.35
+ * When both lodepng and stb_image_write are available, now .png images are saved using stb_image_write (so that saved .png images are now bigger in size).
+                Reason: lodepng_encode_memory(...) is not robust for us!
+                It can use paletted colors when saving (dispite the fact that LCT_PALETTE is not passed as an argument),
+                so that, once reloaded (using stb_image), a different num_channels can be found.
+                For example, saving as an A or a RGBA texture can result in a saved RGB (paletted) texture.
+                On the other end, stb_image_write works quite well, but produces bigger images in size
+                (alleviated a bit by defining globally IMGUI_USE_ZLIB OR IMGUI_USE_MINIZIP and linking to -lz).
+
+ IMGUIIMAGEEDITOR_VERSION 0.34
+ * Fixed the error about lonepng plugin reported in version 0.33.
+ *                      (solved by defining LODEPNG_NO_COMPILE_CPP before its inclusion).
+ *                      So now it should be ok to compile with these defs: YES_IMGUIIMAGEEDITOR IMGUIIMAGEEDITOR_ENABLE_NON_STB_PLUGINS
+
  IMGUIIMAGEEDITOR_VERSION 0.33
  * Added .svg support (loading only): nanosvg.h and nanosvgrast.h added to the plugin folder.
  * TOFIX (if possible): I've just discovered that on gcc version 7.3.0, the lodepng plugin is broken:
@@ -138,6 +152,7 @@ NOTES:
  *                      #include_next <stdlib.h>
  *                                     ^~~~~~~~~~
  *                      Hard to debug... luckily I can just disable it by compiling with: YES_IMGUIIMAGEEDITOR IMGUIIMAGEEDITOR_ENABLE_NON_STB_PLUGINS IMGUIIMAGEEDITOR_NO_LODEPNG_PLUGIN
+ *                      UPDATE: FIXED in version 0.34
 
  IMGUIIMAGEEDITOR_VERSION 0.32
  * Updated stb_image_write.h
@@ -205,7 +220,7 @@ NOTES:
  * Added an optional callback SetImageEditorEventCallback(...)
 */
 
-#define IMGUIIMAGEEDITOR_VERSION 0.33
+#define IMGUIIMAGEEDITOR_VERSION 0.35
 
 namespace ImGui {
 

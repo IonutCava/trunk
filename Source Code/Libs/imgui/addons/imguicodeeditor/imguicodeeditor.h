@@ -79,10 +79,7 @@ https://github.com/ocornut/imgui/issues/200
 
 // COMPILATION NOTES FOR PEOPLE WANTING TO EXTRACT THIS ADDON:
 /*
--> It's not possible to compile codeeditor.cpp separately
-        (i.e. it must be included with IMGUI_INCLUDE_IMGUI_USER_H / IMGUI_INCLUDE_IMGUI_USER_INL).
-   UPDATE: It might be possible now to use codeeditor.h/.cpp as stand-alone files in user projects (even if I've never tested it (feedback needed)!)
-   ======
+-> It's possible now to use codeeditor.h/.cpp as stand-alone files in user projects (tested it).
 -> It depends on imguistring.h (ATM it's header-only, but please check).
 -> The cpp file currently depends on "utf8helper.h" (it's header-only (and I think it's not difficult to remove this dependency)).
 */

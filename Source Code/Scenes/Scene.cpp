@@ -874,7 +874,7 @@ U16 Scene::registerInputActions() {
     };
 
     auto toggleConsole = [this](InputParams param) {
-        if (Config::Build::IS_DEBUG_BUILD) {
+        if (Config::Build::ENABLE_EDITOR) {
             _context.gui().getConsole().setVisible(!_context.gui().getConsole().isVisible());
         }
     };

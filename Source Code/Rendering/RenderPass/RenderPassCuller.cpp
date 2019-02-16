@@ -162,7 +162,7 @@ void RenderPassCuller::frustumCullNode(const Task& task,
                              }
                          },
                          to_U32(children.size()),
-                         g_nodesPerCullingPartition,
+                         g_nodesPerCullingPartition * 2,
                          threaded ? TaskPriority::DONT_CARE : TaskPriority::REALTIME,
                          false,
                          true);

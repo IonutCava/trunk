@@ -10,8 +10,14 @@
 #include "imguifreetype.h"
 
 // Original repository: https://github.com/Vuhdo/imgui_freetype
-// (Kept up to date in: https://github.com/ocornut/imgui_club)
+// (Kept up to date in: imgui/misc/freetype/imgui_freetype.h/cpp)
 // MIT licensed
+
+// TODO: implementation is old...
+// Update it using imgui/misc/freetype/imgui_freetype.cpp
+// (or better just find a way to replace this file with 'imgui/misc/freetype/imgui_freetype.cpp' directly.
+// imgui/misc/freetype/imgui_freetype.cpp should be MUCH better than this.
+
 
 #include <stdint.h>
 #include <math.h>

@@ -1006,8 +1006,30 @@ namespace eastl
 	///////////////////////////////////////////////////////////////////////
 	// hash
 	///////////////////////////////////////////////////////////////////////
+	namespace Internal
+	{
+		// utility to disable the generic template specialization that is
+		// used for enum types only.
+		template <typename T, bool Enabled>
+		struct EnableHashIf
+		{
+		};
+
+		template <typename T>
+		struct EnableHashIf<T, true>
+		{
+			size_t operator()(const T& p) const { return size_t(p); }
+		};
+	} // namespace Internal
+
 
 	template <typename T> struct hash;
+
+	template <typename T>
+	struct hash : Internal::EnableHashIf<T, is_enum_v<T>>
+	{
+		size_t operator()(T p) const { return size_t(p); }
+	};
 
 	template <typename T> struct hash<T*> // Note that we use the pointer as-is and don't divide by sizeof(T*). This is because the table is of a prime size and this division doesn't benefit distribution.
 		{ size_t operator()(T* p) const { return size_t(uintptr_t(p)); } };
@@ -1203,12 +1225,7 @@ namespace eastl
 
 } // namespace eastl
 
-#if EASTL_FUNCTION_ENABLED
-	EA_DISABLE_VC_WARNING(4510 4512 4610)  // disable warning: function_manager not generating default constructor and default assignment operators.
-	#include <EASTL/internal/function.h>
-	EA_RESTORE_VC_WARNING()
-#endif
-
+#include <EASTL/internal/function.h>
 
 #endif // Header include guard
 

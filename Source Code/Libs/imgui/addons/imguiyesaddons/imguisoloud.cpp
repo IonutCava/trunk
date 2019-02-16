@@ -1393,6 +1393,8 @@ namespace SoLoud
 		mMaxActiveVoices = 16;
 		mHighestVoice = 0;
 		mActiveVoiceDirty = true;
+        //mResampleData = NULL;
+        //mResampleDataOwner = NULL;
 	}
 
 	Soloud::~Soloud()
@@ -1408,6 +1410,8 @@ namespace SoLoud
 		for (i = 0; i < mVoiceGroupCount; i++)
 			delete[] mVoiceGroup[i];
 		delete[] mVoiceGroup;
+        //delete[] mResampleData;
+        //delete[] mResampleDataOwner;
 	}
 
 	void Soloud::deinit()
@@ -1423,7 +1427,7 @@ namespace SoLoud
 
 	result Soloud::init(unsigned int aFlags, unsigned int aBackend, unsigned int aSamplerate, unsigned int aBufferSize, unsigned int aChannels)
 	{		
-		if (aBackend >= BACKEND_MAX || aChannels == 3 || aChannels == 5 || aChannels > 6)
+        if (aBackend >= BACKEND_MAX || aChannels == 3 || aChannels == 5 || aChannels > MAX_CHANNELS)
 			return INVALID_PARAMETER;
 
 		deinit();
@@ -1827,6 +1831,8 @@ namespace SoLoud
 		float vd = (aVolume1 - aVolume0) / aSamples;
 		float v = aVolume0;
 		unsigned int i, j, c, d;
+                unsigned int samplequads = (aSamples + 3) / 4; // rounded up
+
 		// Clip
 		if (mFlags & CLIP_ROUNDOFF)
 		{
@@ -1850,7 +1856,7 @@ namespace SoLoud
 			{
 				__m128 vol = _mm_load_ps(volumes.mData);
 
-				for (i = 0; i < aSamples / 4; i++)
+                for (i = 0; i < samplequads; i++)
 				{
 					//float f1 = origdata[c] * v;	c++; v += vd;
 					__m128 f = _mm_load_ps(&aBuffer.mData[c]);
@@ -1905,7 +1911,7 @@ namespace SoLoud
 			for (j = 0; j < mChannels; j++)
 			{
 				__m128 vol = _mm_load_ps(volumes.mData);
-				for (i = 0; i < aSamples / 4; i++)
+                for (i = 0; i < samplequads; i++)
 				{
 					//float f1 = aBuffer.mData[c] * v; c++; v += vd;
 					__m128 f = _mm_load_ps(&aBuffer.mData[c]);
@@ -1931,6 +1937,8 @@ namespace SoLoud
 		float vd = (aVolume1 - aVolume0) / aSamples;
 		float v = aVolume0;
 		unsigned int i, j, c, d;
+                unsigned int samplequads = (aSamples + 3) / 4; // rounded up
+
 		// Clip
 		if (mFlags & CLIP_ROUNDOFF)
 		{
@@ -1939,7 +1947,7 @@ namespace SoLoud
 			for (j = 0; j < mChannels; j++)
 			{
 				v = aVolume0;
-				for (i = 0; i < aSamples/4; i++)
+                for (i = 0; i < samplequads; i++)
 				{
 					float f1 = aBuffer.mData[c] * v; c++; v += vd;
 					float f2 = aBuffer.mData[c] * v; c++; v += vd;
@@ -1965,7 +1973,7 @@ namespace SoLoud
 			for (j = 0; j < mChannels; j++)
 			{
 				v = aVolume0;
-				for (i = 0; i < aSamples / 4; i++)
+                for (i = 0; i < samplequads; i++)
 				{
 					float f1 = aBuffer.mData[c] * v; c++; v += vd;
 					float f2 = aBuffer.mData[c] * v; c++; v += vd;
@@ -2068,7 +2076,7 @@ namespace SoLoud
         case 2:
             switch (aVoice->mChannels)
             {
-            case 6: // 6->2, just sum lefties and righties, add a bit of center, ignore sub?
+            case 6: // 6->2, just sum lefties and righties, add a bit of center and sub?
                 for (j = 0; j < aSamplesToRead; j++)
                 {
                     pan[0] += pani[0];
@@ -2076,11 +2084,15 @@ namespace SoLoud
                     float s1 = aScratch[j];
                     float s2 = aScratch[aBufferSize + j];
                     float s3 = aScratch[aBufferSize * 2 + j];
-                    //float s4 = aScratch[aBufferSize * 3 + j];
                     float s5 = aScratch[aBufferSize * 4 + j];
                     float s6 = aScratch[aBufferSize * 5 + j];
-                    aBuffer[j + 0] += 0.3f * (s1 + s3 + s5) * pan[0];
-                    aBuffer[j + aBufferSize] += 0.3f * (s2 + s3 + s6) * pan[1];
+                    // ignore s4:
+                    //aBuffer[j + 0] += 0.3f * (s1 + s3 + s5) * pan[0];
+                    //aBuffer[j + aBufferSize] += 0.3f * (s2 + s3 + s6) * pan[1];
+                    // do not ignore s4:
+                    float s4 = aScratch[aBufferSize * 3 + j];
+                    aBuffer[j + 0] += 0.3f * (s1 + s3 + s4 + s5) * pan[0];
+                    aBuffer[j + aBufferSize] += 0.3f * (s2 + s3 + s4 + s6) * pan[1];
                 }
                 break;
             case 4: // 4->2, just sum lefties and righties
@@ -2122,7 +2134,7 @@ namespace SoLoud
         case 4:
             switch (aVoice->mChannels)
             {
-            case 6: // 6->4, add a bit of center, ignore sub?
+            case 6: // 6->4, add a bit of center and sub?
                 for (j = 0; j < aSamplesToRead; j++)
                 {
                     pan[0] += pani[0];
@@ -2132,10 +2144,11 @@ namespace SoLoud
                     float s1 = aScratch[j];
                     float s2 = aScratch[aBufferSize + j];
                     float s3 = aScratch[aBufferSize * 2 + j];
-                    //float s4 = aScratch[aBufferSize * 3 + j];
                     float s5 = aScratch[aBufferSize * 4 + j];
                     float s6 = aScratch[aBufferSize * 5 + j];
-                    float c = s3 * 0.7f;
+                    //float c = s3 * 0.7f;  // ignore s4
+                    float s4 = aScratch[aBufferSize * 3 + j];
+                    float c = (s3 + s4) * 0.7f; // do not ignore s4
                     aBuffer[j + 0] += s1 * pan[0] + c;
                     aBuffer[j + aBufferSize] += s2 * pan[1] + c;
                     aBuffer[j + aBufferSize * 2] += s5 * pan[2];
@@ -2363,7 +2376,9 @@ namespace SoLoud
 
                         if (readcount < SAMPLE_GRANULARITY)
                         {
-                            memset(voice->mResampleData[0]->mBuffer + readcount, 0, sizeof(float) * (SAMPLE_GRANULARITY - readcount) * voice->mChannels);
+                            unsigned int i;
+                            for (i = 0; i < voice->mChannels; i++)
+                                memset(voice->mResampleData[0]->mBuffer + readcount + SAMPLE_GRANULARITY * i, 0, sizeof(float) * (SAMPLE_GRANULARITY - readcount));
                         }
 
                         // If we go past zero, crop to zero (a bit of a kludge)
@@ -4207,6 +4222,26 @@ namespace SoLoud
 			unlockAudioMutex();
 		}
 	}
+
+    int Soloud::countAudioSource(AudioSource &aSound)
+    {
+        int count = 0;
+        if (aSound.mAudioSourceID)
+        {
+            lockAudioMutex();
+            int i;
+            for (i = 0; i < (signed)mHighestVoice; i++)
+            {
+                if (mVoice[i] && mVoice[i]->mAudioSourceID == aSound.mAudioSourceID)
+                {
+                    count++;
+                }
+            }
+            unlockAudioMutex();
+        }
+        return count;
+    }
+
 
 	void Soloud::stopAll()
 	{
@@ -6528,7 +6563,7 @@ namespace SoLoud
                 /*int blockalign =*/ aReader->read16();
                 bitspersample = aReader->read16();
 
-                if (audioformat != 1 || (bitspersample != 8 && bitspersample != 16))
+                if (audioformat != 1 || (bitspersample != 8 && bitspersample != 16 && bitspersample != 24))
                 {
                     return FILE_LOAD_FAILED;
                 }
@@ -6595,6 +6630,28 @@ namespace SoLoud
                         }
                     }
                 }
+                else if (bitspersample == 24)
+                {
+                    unsigned char * dataptr = (unsigned char*)(aReader->getMemPtr() + aReader->pos());
+                    for (i = 0; i < samples; i++)
+                    {
+                        for (j = 0; j < channels; j++)
+                        {
+                            if (j == 0)
+                            {
+                                mData[i] = ((dataptr[0] << 8) | (dataptr[1] << 16) | (dataptr[2] << 24)) / (float)0x80000000;
+                            }
+                            else
+                            {
+                                if (readchannels > 1 && j == 1)
+                                {
+                                    mData[i + samples] = ((dataptr[0] << 8) | (dataptr[1] << 16) | (dataptr[2] << 24)) / (float)0x80000000;
+                                }
+                            }
+                            dataptr += 3;
+                        }
+                    }
+                }
             }
 
             // skip rest of chunk
@@ -6621,13 +6678,15 @@ namespace SoLoud
         mBaseSamplerate = (float)info.sample_rate;
         int samples = stb_vorbis_stream_length_in_samples(vorbis);
 
-        int readchannels = 1;
-        if (info.channels > 1)
+        if (info.channels > MAX_CHANNELS)
         {
-            readchannels = 2;
-            mChannels = 2;
+             mChannels = MAX_CHANNELS;
         }
-        mData = new float[samples * readchannels];
+        else
+        {
+             mChannels = info.channels;
+        }
+        mData = new float[samples * mChannels];
         mSampleCount = samples;
         samples = 0;
         while(1)
@@ -6638,15 +6697,10 @@ namespace SoLoud
             {
                 break;
             }
-            if (readchannels == 1)
-            {
-                memcpy(mData + samples, outputs[0],sizeof(float) * n);
-            }
-            else
-            {
-                memcpy(mData + samples, outputs[0],sizeof(float) * n);
-                memcpy(mData + samples + mSampleCount, outputs[1],sizeof(float) * n);
-            }
+            int ch;
+            for (ch = 0; ch < mChannels; ch++)
+                memcpy(mData + samples + mSampleCount * ch, outputs[ch], sizeof(float) * n);
+
             samples += n;
         }
         stb_vorbis_close(vorbis);
@@ -12465,7 +12519,6 @@ void klatt::parwave(short int *jwave)
     int ns;
     for (ns = 0; ns < mNspFr; ns++)
     {
-        static unsigned int seed = 5; /* Fixed staring value */
         float noise;
         int n4;
         float sourc;                   /* Sound source if all-parallel config used  */
@@ -12481,13 +12534,13 @@ void klatt::parwave(short int *jwave)
         assumes 32-bit unsigned arithmetic
         with untested code to handle larger.
         */
-        seed = seed * 1664525 + 1;
+        mSeed = mSeed * 1664525 + 1;
 
-        seed &= 0xFFFFFFFF;
+        mSeed &= 0xFFFFFFFF;
 
         /* Shift top bits of seed up to top of int then back down to LS 14 bits */
         /* Assumes 8 bits per sizeof unit i.e. a "byte" */
-        nrand = (((int) seed) << (8 * sizeof(int) - 32)) >> (8 * sizeof(int) - 14);
+        nrand = (((int) mSeed) << (8 * sizeof(int) - 32)) >> (8 * sizeof(int) - 14);
 
         /* Tilt down noise spectrum by soft ELM_FEATURE_LOW-pass filter having
         *    a pole near the origin in the z-plane, i.e.
@@ -12776,6 +12829,7 @@ void klatt::initsynth(int aElementCount,unsigned char *aElement)
     mElementCount = aElementCount;
     mElementIndex = 0;
     mLastElement = &gElement[0];
+    mSeed = 5;
     mTStress = 0;
     mNTStress = 0;
     mFrame.mF0FundamentalFreq = mBaseF0;
@@ -16291,8 +16345,6 @@ namespace SoLoud
 			Thread::wait(data->thread);
 			Thread::release(data->thread);
 		}
-        CloseHandle(data->bufferEndEvent);
-        CloseHandle(data->audioProcessingDoneEvent);
         if (0 != data->audioClient)
         {
             data->audioClient->Stop();
@@ -16301,6 +16353,8 @@ namespace SoLoud
         SAFE_RELEASE(data->audioClient);
         SAFE_RELEASE(data->device);
         SAFE_RELEASE(data->deviceEnumerator);
+        CloseHandle(data->bufferEndEvent);
+        CloseHandle(data->audioProcessingDoneEvent);
         delete data;
         aSoloud->mBackendData = 0;
         CoUninitialize();
@@ -16458,10 +16512,11 @@ namespace SoLoud
         SoLoudWinMMData *data = static_cast<SoLoudWinMMData*>(aSoloud->mBackendData);
         SetEvent(data->audioProcessingDoneEvent);
         SetEvent(data->bufferEndEvent);
+        if (data->threadHandle)
+        {
         Thread::wait(data->threadHandle);
         Thread::release(data->threadHandle);
-        CloseHandle(data->audioProcessingDoneEvent);
-        CloseHandle(data->bufferEndEvent);
+        }
         waveOutReset(data->waveOut);
         for (int i=0;i<BUFFER_COUNT;++i) 
         {
@@ -16472,6 +16527,8 @@ namespace SoLoud
             }
         }
         waveOutClose(data->waveOut);
+        CloseHandle(data->audioProcessingDoneEvent);
+        CloseHandle(data->bufferEndEvent);
         delete data;
         aSoloud->mBackendData = 0;
     }
@@ -16651,8 +16708,6 @@ namespace SoLoud
         SetEvent(data->bufferEndEvent);
         Thread::wait(data->thread);
         Thread::release(data->thread);
-        CloseHandle(data->bufferEndEvent);
-        CloseHandle(data->audioProcessingDoneEvent);
         if (0 != data->sourceVoice) 
         {
             data->sourceVoice->Stop();
@@ -16685,6 +16740,8 @@ namespace SoLoud
                 delete[] data->buffer[i];
             }
         }
+        CloseHandle(data->bufferEndEvent);
+        CloseHandle(data->audioProcessingDoneEvent);
         delete data;
         aSoloud->mBackendData = 0;
         CoUninitialize();

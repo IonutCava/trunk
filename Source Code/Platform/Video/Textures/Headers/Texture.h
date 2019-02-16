@@ -120,7 +120,7 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
     inline U16 getMaxMipLevel() const { return _descriptor._mipLevels.max; }
     /// A rendering API level handle used to uniquely identify this texture
     /// (e.g. for OpenGL, it's the texture object)
-    inline U32 getHandle() const { return _textureData.getHandle(); }
+    inline U32 getHandle() const { return _textureData._textureHandle; }
     /// If the texture has an alpha channel and at least one pixel is translucent, return true
     inline bool hasTranslucency() const { return _hasTranslucency; }
     /// If the texture has an alpha channel and at least on pixel is fully transparent and

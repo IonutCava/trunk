@@ -23,7 +23,7 @@ namespace eastl
 	///////////////////////////////////////////////////////////////////////
 	// underlying_type
 	//
-	// Defines a member typedef type of type that is the underlying type for the enumeration T. 
+	// Defines a member typedef type of type that is the underlying type for the enumeration T.
 	// Requires explicit compiler support to implement.
 	//
 	///////////////////////////////////////////////////////////////////////
@@ -31,20 +31,58 @@ namespace eastl
 	#if EASTL_COMPILER_INTRINSIC_TYPE_TRAITS_AVAILABLE && ((defined(_MSC_VER) && (_MSC_VER >= 1700)) || (defined(EA_COMPILER_GNUC) && (EA_COMPILER_VERSION >= 4007)) || defined(EA_COMPILER_CLANG)) // VS2012+
 		#define EASTL_TYPE_TRAIT_underlying_type_CONFORMANCE 1    // underlying_type is conforming.
 
-		template <typename T> 
+		template <typename T>
 		struct underlying_type{ typedef __underlying_type(T) type; };
 
 	#else
 		#define EASTL_TYPE_TRAIT_underlying_type_CONFORMANCE 0
 
-		template <typename T> 
+		template <typename T>
 		struct underlying_type{ typedef int type; };    // This is of course wrong, but we emulate libstdc++ and typedef it as int.
 	#endif
 
-
+	#if !defined(EA_COMPILER_NO_TEMPLATE_ALIASES)
+		template <typename T>
+		using underlying_type_t = typename underlying_type<T>::type;
+	#endif
 
 
 	///////////////////////////////////////////////////////////////////////
+	// has_unique_object_representations
+	//
+	// If T is TriviallyCopyable and if any two objects of type T with the same
+	// value have the same object representation, value is true. For any other
+	// type, value is false.
+	//
+	// http://en.cppreference.com/w/cpp/types/has_unique_object_representations
+	///////////////////////////////////////////////////////////////////////
+	#if EASTL_HAS_UNIQUE_OBJECT_REPRESENTATIONS_AVAILABLE
+		#define EASTL_TYPE_TRAIT_has_unique_object_representations_CONFORMANCE 1
+
+		template <typename T>
+		struct has_unique_object_representations
+			: public integral_constant<bool, __has_unique_object_representations(remove_cv_t<remove_all_extents_t<T>>)>
+		{
+		};
+
+	#else
+		#define EASTL_TYPE_TRAIT_has_unique_object_representations_CONFORMANCE 0
+
+		template <typename T>
+		struct has_unique_object_representations
+			: public integral_constant<bool, is_integral_v<remove_cv_t<remove_all_extents_t<T>>>> // only integral types (floating point types excluded).
+		{
+		};
+
+	#endif
+
+	#if EASTL_VARIABLE_TEMPLATES_ENABLED
+		template <class T>
+		EA_CONSTEXPR auto has_unique_object_representations_v = has_unique_object_representations<T>::value;
+	#endif
+
+
+    ///////////////////////////////////////////////////////////////////////
 	// is_signed
 	//
 	// is_signed<T>::value == true if and only if T is one of the following types:
@@ -57,10 +95,10 @@ namespace eastl
 	//    [const] [volatile] float
 	//    [const] [volatile] double
 	//    [const] [volatile] long double
-	// 
+	//
 	// Used to determine if a integral type is signed or unsigned.
 	// Given that there are some user-made classes which emulate integral
-	// types, we provide the EASTL_DECLARE_SIGNED macro to allow you to 
+	// types, we provide the EASTL_DECLARE_SIGNED macro to allow you to
 	// set a given class to be identified as a signed type.
 	///////////////////////////////////////////////////////////////////////
 
@@ -111,9 +149,9 @@ namespace eastl
 	//    [const] [volatile] unsigned long
 	//    [const] [volatile] unsigned long long
 	//
-	// Used to determine if a integral type is signed or unsigned. 
+	// Used to determine if a integral type is signed or unsigned.
 	// Given that there are some user-made classes which emulate integral
-	// types, we provide the EASTL_DECLARE_UNSIGNED macro to allow you to 
+	// types, we provide the EASTL_DECLARE_UNSIGNED macro to allow you to
 	// set a given class to be identified as an unsigned type.
 	///////////////////////////////////////////////////////////////////////
 
@@ -152,7 +190,7 @@ namespace eastl
 	///////////////////////////////////////////////////////////////////////
 	// alignment_of
 	//
-	// alignment_of<T>::value is an integral value representing, in bytes, 
+	// alignment_of<T>::value is an integral value representing, in bytes,
 	// the memory alignment of objects of type T.
 	//
 	// alignment_of may only be applied to complete types.
@@ -176,8 +214,8 @@ namespace eastl
     ///////////////////////////////////////////////////////////////////////
 	// is_aligned
 	//
-	// Defined as true if the type has alignment requirements greater 
-	// than default alignment, which is taken to be 8. This allows for 
+	// Defined as true if the type has alignment requirements greater
+	// than default alignment, which is taken to be 8. This allows for
 	// doing specialized object allocation and placement for such types.
 	///////////////////////////////////////////////////////////////////////
 
@@ -186,7 +224,7 @@ namespace eastl
 	template <typename T>
 	struct is_aligned_value{ static const bool value = (EASTL_ALIGN_OF(T) > 8); };
 
-	template <typename T> 
+	template <typename T>
 	struct is_aligned : public integral_constant<bool, is_aligned_value<T>::value>{};
 
 	#if EASTL_VARIABLE_TEMPLATES_ENABLED
@@ -199,9 +237,9 @@ namespace eastl
 	///////////////////////////////////////////////////////////////////////
 	// rank
 	//
-	// rank<T>::value is an integral value representing the number of 
-	// dimensions possessed by an array type. For example, given a 
-	// multi-dimensional array type T[M][N], std::tr1::rank<T[M][N]>::value == 2. 
+	// rank<T>::value is an integral value representing the number of
+	// dimensions possessed by an array type. For example, given a
+	// multi-dimensional array type T[M][N], std::tr1::rank<T[M][N]>::value == 2.
 	// For a given non-array type T, std::tr1::rank<T>::value == 0.
 	//
 	///////////////////////////////////////////////////////////////////////
@@ -210,10 +248,10 @@ namespace eastl
 
 	template<typename T>
 	struct rank : public eastl::integral_constant<size_t, 0> {};
- 
+
 	template<typename T>
 	struct rank<T[]> : public eastl::integral_constant<size_t, rank<T>::value + 1> {};
- 
+
 	template<typename T, size_t N>
 	struct rank<T[N]> : public eastl::integral_constant<size_t, rank<T>::value + 1> {};
 
@@ -221,8 +259,8 @@ namespace eastl
 	///////////////////////////////////////////////////////////////////////
 	// is_base_of
 	//
-	// Given two (possibly identical) types Base and Derived, is_base_of<Base, Derived>::value == true 
-	// if and only if Base is a direct or indirect base class of Derived, 
+	// Given two (possibly identical) types Base and Derived, is_base_of<Base, Derived>::value == true
+	// if and only if Base is a direct or indirect base class of Derived,
 	// or Base and Derived are the same type.
 	//
 	// is_base_of may only be applied to complete types.
@@ -232,11 +270,16 @@ namespace eastl
 	#if EASTL_COMPILER_INTRINSIC_TYPE_TRAITS_AVAILABLE && (defined(_MSC_VER) || defined(EA_COMPILER_GNUC) || (defined(EA_COMPILER_CLANG) && EA_COMPILER_HAS_FEATURE(is_base_of)))
 		#define EASTL_TYPE_TRAIT_is_base_of_CONFORMANCE 1    // is_base_of is conforming.
 
-		template <typename Base, typename Derived> 
+		template <typename Base, typename Derived>
 		struct is_base_of : public eastl::integral_constant<bool, __is_base_of(Base, Derived) || eastl::is_same<Base, Derived>::value>{};
+
+		#if EASTL_VARIABLE_TEMPLATES_ENABLED
+			template <typename Base, typename Derived>
+			EASTL_CPP17_INLINE_VARIABLE EA_CONSTEXPR bool is_base_of_v = is_base_of<Base, Derived>::value;
+		#endif
 	#else
 		// Not implemented yet.
-		// This appears to be implementable. 
+		// This appears to be implementable.
 		#define EASTL_TYPE_TRAIT_is_base_of_CONFORMANCE 0
 	#endif
 
@@ -274,53 +317,46 @@ namespace eastl
 	// result_of
 	//
 	///////////////////////////////////////////////////////////////////////
+	#define EASTL_TYPE_TRAIT_result_of_CONFORMANCE 1    // result_of is conforming.
 
-	#if defined(EA_COMPILER_NO_VARIADIC_TEMPLATES) || defined(EA_COMPILER_NO_DECLTYPE)
-		//  To do: come up with the best possible alternative.
-		#define EASTL_TYPE_TRAIT_result_of_CONFORMANCE 0
+	template<typename> struct result_of;
+
+	template<typename F, typename... ArgTypes>
+	struct result_of<F(ArgTypes...)>
+		{ typedef decltype(eastl::declval<F>()(eastl::declval<ArgTypes>()...)) type; };
+
+
+	// result_of_t is the C++14 using typedef for typename result_of<T>::type.
+	// We provide a backwards-compatible means to access it through a macro for pre-C++11 compilers.
+	#if defined(EA_COMPILER_NO_TEMPLATE_ALIASES)
+		#define EASTL_RESULT_OF_T(T) typename result_of<T>::type
 	#else
-		#define EASTL_TYPE_TRAIT_result_of_CONFORMANCE 1    // result_of is conforming.
-
-		template<typename> struct result_of;
- 
-		template<typename F, typename... ArgTypes>
-		struct result_of<F(ArgTypes...)>
-			{ typedef decltype(eastl::declval<F>()(eastl::declval<ArgTypes>()...)) type; };
+		template <typename T>
+		using result_of_t = typename result_of<T>::type;
+		#define EASTL_RESULT_OF_T(T) result_of_t<T>
+	#endif
 
 
-		// result_of_t is the C++14 using typedef for typename result_of<T>::type.
-		// We provide a backwards-compatible means to access it through a macro for pre-C++11 compilers.
-	   #if defined(EA_COMPILER_NO_TEMPLATE_ALIASES)
-			#define EASTL_RESULT_OF_T(T) typename result_of<T>::type
-		#else
-			template <typename T>
-			using result_of_t = typename result_of<T>::type;
-			#define EASTL_RESULT_OF_T(T) result_of_t<T>
-		#endif
+	///////////////////////////////////////////////////////////////////////
+	// has_equality
+	//
+	// Determines if the specified type can be tested for equality.
+	//
+	///////////////////////////////////////////////////////////////////////
+	template <typename, typename = eastl::void_t<>>
+	struct has_equality : eastl::false_type {};
 
+	template <typename T>
+	struct has_equality<T, eastl::void_t<decltype(eastl::declval<T>() == eastl::declval<T>())>> : eastl::true_type
+	{
+	};
+
+	#if EASTL_VARIABLE_TEMPLATES_ENABLED
+		template <class T>
+		EA_CONSTEXPR auto has_equality_v = has_equality<T>::value;
 	#endif
 
 } // namespace eastl
 
 
 #endif // Header include guard
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -2214,7 +2214,7 @@ void CodeEditor::render()   {
         ImGui::Separator();
         if (ImGui::CollapsingHeader("Load/Save File##serialization",NULL,false))   {
         ImGui::Separator();
-#       ifdef NO_IMGUIFILESYSTEM
+#       ifndef IMGUI_FILESYSTEM_H_
         const char* saveName = "myCodeEditorFile.cpp";
 #       ifndef NO_IMGUICODEEDITOR_SAVE
         if (ImGui::SmallButton("Save##saveGNE")) {
@@ -2227,7 +2227,7 @@ void CodeEditor::render()   {
             load(saveName);
         }
 #		endif //NO_IMGUICODEEDITOR_LOAD
-#       else //NO_IMGUIFILESYSTEM
+#       else //IMGUI_FILESYSTEM_H_
         const char* chosenPath = NULL;                
 #       ifndef NO_IMGUICODEEDITOR_LOAD
         static ImGuiFs::Dialog fsInstanceLoad;
@@ -2243,7 +2243,7 @@ void CodeEditor::render()   {
         chosenPath = fsInstanceSave.saveFileDialog(saveButtonPressed,fsInstanceSave.getChosenPath(),fsv ? fsv->languageExtensions: "");
         if (strlen(chosenPath)>0) save(chosenPath);
 #       endif //NO_IMGUICODEEDITOR_SAVE
-#       endif //NO_IMGUIFILESYSTEM
+#       endif //IMGUI_FILESYSTEM_H_
         }
 #       endif // (!(defined(NO_IMGUICODEEDITOR_SAVE) || !defined(NO_IMGUICODEEDITOR_LOAD)))
         ImGui::Separator();
@@ -3716,7 +3716,7 @@ bool BadCodeEditor(const char* label, char* buf, size_t buf_size,ImGuiCe::Langua
     langData.resetStateVariables();
 
     ImGuiContext& g = *GImGui;
-    const ImGuiIO& io = g.IO;
+    /*const*/ ImGuiIO& io = g.IO;
     const ImGuiStyle& style = g.Style;
     const ImGuiCe::CodeEditor::Style& ceStyle = ImGuiCe::CodeEditor::style;
     ImFont** ImFonts = const_cast<ImFont**>(ImGuiCe::CodeEditor::ImFonts);
@@ -3901,6 +3901,8 @@ bool BadCodeEditor(const char* label, char* buf, size_t buf_size,ImGuiCe::Langua
         SetActiveID(id, window);
         SetFocusID(id, window);
         FocusWindow(window);
+
+        //g.ActiveIdBlockNavInputFlags = (1 << ImGuiNavInput_Cancel);   // is this line necessary?
     }
     else if (io.MouseClicked[0])
     {
@@ -3971,22 +3973,22 @@ bool BadCodeEditor(const char* label, char* buf, size_t buf_size,ImGuiCe::Langua
         if (edit_state.SelectedAllMouseLock && !io.MouseDown[0])
             edit_state.SelectedAllMouseLock = false;
 
-        if (g.IO.InputCharacters[0])
+        if (io.InputQueueCharacters.Size > 0)
         {
             // Process text input (before we check for Return because using some IME will effectively send a Return?)
             // We ignore CTRL inputs, but need to allow CTRL+ALT as some keyboards (e.g. German) use AltGR - which is Alt+Ctrl - to input certain characters.
             bool ignore_inputs = (io.KeyCtrl && !io.KeyAlt) || (is_osx && io.KeySuper);
             if (!ignore_inputs && is_editable && !user_nav_input_start)
-                for (int n = 0; n < IM_ARRAYSIZE(io.InputCharacters) && io.InputCharacters[n]; n++)
+                for (int n = 0; n < io.InputQueueCharacters.Size; n++)
                     {
                         // Insert character if they pass filtering
-                    unsigned int c = (unsigned int)io.InputCharacters[n];
+                    unsigned int c = (unsigned int)io.InputQueueCharacters[n];
                     if (InputTextFilterCharacter(&c, flags, callback, callback_user_data))
                         edit_state.OnKeyPressed((int)c);
                     }
 
             // Consume characters
-            memset(g.IO.InputCharacters, 0, sizeof(g.IO.InputCharacters));
+            io.InputQueueCharacters.resize(0);
         }
 
         // Handle various key-presses
@@ -4253,6 +4255,7 @@ bool BadCodeEditor(const char* label, char* buf, size_t buf_size,ImGuiCe::Langua
 
             // If the underlying buffer resize was denied or not carried to the next frame, apply_new_text_length+1 may be >= buf_size.
             ImStrncpy(buf, edit_state.TempBuffer.Data, apply_new_text_length+1<(int)buf_size?apply_new_text_length+1:(int)buf_size);
+            //ImStrncpy(buf, apply_new_text,  apply_new_text_length+1<(int)buf_size?apply_new_text_length+1:(int)buf_size);    // with this replacement, ESC undos edit changes
                 value_changed = true;
             }
 
@@ -4486,13 +4489,13 @@ bool BadCodeEditor(const char* label, char* buf, size_t buf_size,ImGuiCe::Langua
         ImGui::SetCursorPosY(oldCurPosY+numLines*textLineHeight);
         //----------------------------------------
 
-        // Debug: -------------------------------
+        /*// Debug: -------------------------------
         static int prevFirstVisibleLineNumber=0;
         if (firstVisibleLineNumber!=prevFirstVisibleLineNumber) {
             prevFirstVisibleLineNumber = firstVisibleLineNumber;
             fprintf(stderr,"firstVisibleLineNumber = %d numVisibleLines = %d lastVisibleLineNumber = %d size.y = %1.2f numLines = %d\n",prevFirstVisibleLineNumber,numVisibleLines,lastVisibleLineNumber,size.y,numLines);
         }
-        // --------------------------------------
+        // --------------------------------------*/
 
         //codeEditorContentWidth = langData.textSizeX;
         ImGui::PopStyleColor();

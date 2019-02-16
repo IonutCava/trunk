@@ -154,6 +154,7 @@ protected:
 
     bool makeTexturesResident(const TextureDataContainer& textureData, const vectorEASTLFast<TextureViewEntry>& textureViews);
     bool makeTextureResident(const TextureData& textureData, U8 binding);
+    bool makeImagesResident(const vectorEASTLFast<Image>& images);
 
     bool setViewport(const Rect<I32>& viewport) override;
 

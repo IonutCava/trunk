@@ -764,6 +764,8 @@ namespace SoLoud
 		void stopAll();
 		// Stop all voices that play this sound source
 		void stopAudioSource(AudioSource &aSound);
+        // Count voices that play this audio source
+        int countAudioSource(AudioSource &aSound);
 
 		// Set a live filter parameter. Use 0 for the global filters.
 		void setFilterParameter(handle aVoiceHandle, unsigned int aFilterId, unsigned int aAttributeId, float aValue);
@@ -1732,6 +1734,8 @@ public:
     float mGlotLast;            // Previous value of glotout
     float mDecay;               // mVoicingSpectralTiltdb converted to exponential time const
     float mOneMd;               // in voicing one-pole ELM_FEATURE_LOW-pass filter
+
+    unsigned int mSeed;			// random seed
 
 
     float natural_source(int aNper);

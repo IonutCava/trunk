@@ -9,7 +9,7 @@
 
 
 #if !defined(alloca)
-#	if defined(__GLIBC__) || defined(__sun) || defined(__CYGWIN__)
+#	if defined(__GLIBC__) || defined(__sun) || defined(__CYGWIN__) || defined(__APPLE__)
 #		include <alloca.h>     // alloca (glibc uses <alloca.h>. Note that Cygwin may have _WIN32 defined, so the order matters here)
 #	elif defined(_WIN32)
 #       include <malloc.h>     // alloca
@@ -2628,9 +2628,9 @@ bool NodeGraphEditor::load(ImGuiHelper::Deserializer& d, const char ** pOptional
 
 #ifndef IMGUINODEGRAPHEDITOR_NOTESTDEMO
 
-#ifndef NO_IMGUIFILESYSTEM
+/*#ifndef NO_IMGUIFILESYSTEM
 #include "../imguifilesystem/imguifilesystem.h"
-#endif //NO_IMGUIFILESYSTEM
+#endif //NO_IMGUIFILESYSTEM */
 
 namespace ImGui	{
 
@@ -2879,7 +2879,7 @@ class TextureNode : public Node {
     virtual ~TextureNode() {if (textureID) {ImImpl_FreeTexture(textureID);}}
     static const int TYPE = MNT_TEXTURE_NODE;
     static const int TextBufferSize =
-#   ifndef NO_IMGUIFILESYSTEM
+#   ifdef IMGUI_FILESYSTEM_H_
     ImGuiFs::MAX_PATH_BYTES;
 #   else
     2049;
@@ -2889,9 +2889,9 @@ class TextureNode : public Node {
     char imagePath[TextBufferSize];				// field 1 (= the only one that is copied/serialized/handled by the Node)
     char lastValidImagePath[TextBufferSize];    // The path for which "textureID" was created
     bool startBrowseDialogNextFrame;
-#   ifndef NO_IMGUIFILESYSTEM
+#   ifdef IMGUI_FILESYSTEM_H_
     ImGuiFs::Dialog dlg;
-#   endif //NO_IMGUIFILESYSTEM
+#   endif //IMGUI_FILESYSTEM_H_
 
     virtual const char* getTooltip() const {return "TextureNode tooltip.";}
     virtual const char* getInfo() const {return "TextureNode info.\n\nThis is supposed to display some info about this node.";}
@@ -2916,11 +2916,11 @@ class TextureNode : public Node {
 
 	// 3) init fields ( this uses the node->fields variable; otherwise we should have overridden other virtual methods (to render and serialize) )
 	FieldInfo* f=NULL;
-#	ifndef NO_IMGUIFILESYSTEM
+#	ifdef IMGUI_FILESYSTEM_H_
 	f=&node->fields.addFieldTextEditAndBrowseButton(&node->imagePath[0],TextBufferSize,"Image Path:","A valid image path: press RETURN to validate or browse manually.",ImGuiInputTextFlags_EnterReturnsTrue,(void*) node);
-#	else	//NO_IMGUIFILESYSTEM
+#	else	//IMGUI_FILESYSTEM_H_
 	f=&node->fields.addFieldTextEdit(&node->imagePath[0],TextBufferSize,"Image Path:","A valid image path: press RETURN to validate or browse manually.",ImGuiInputTextFlags_EnterReturnsTrue,(void*) node);
-#	endif //NO_IMGUIFILESYSTEM
+#	endif //IMGUI_FILESYSTEM_H_
     f->editedFieldDelegate = &ThisClass::StaticEditFieldCallback;   // we set an "edited callback" to this node field. It is fired soon (as opposed to other "outer" edited callbacks), but we have chosen: ImGuiInputTextFlags_EnterReturnsTrue.
 	node->startBrowseDialogNextFrame = false;
 
@@ -2938,14 +2938,14 @@ class TextureNode : public Node {
     protected:
     bool render(float nodeWidth)   {
 	const bool changed = Base::render(nodeWidth);
-#	ifndef NO_IMGUIFILESYSTEM
+#	ifdef IMGUI_FILESYSTEM_H_
 	const char* filePath = dlg.chooseFileDialog(startBrowseDialogNextFrame,dlg.getLastDirectory(),".jpg;.jpeg;.png;.gif;.tga;.bmp");
 	if (strlen(filePath)>0) {
 	    //fprintf(stderr,"Browsed..: %s\n",filePath);
 	    strcpy(imagePath,filePath);
 	    processPath(imagePath);
 	}
-#	endif //NO_IMGUIFILESYSTEM
+#	endif //IMGUI_FILESYSTEM_H_
 	startBrowseDialogNextFrame = false;
 	//----------------------------------------------------
 	// draw textureID:

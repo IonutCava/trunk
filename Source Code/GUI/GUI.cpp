@@ -466,7 +466,7 @@ TextureData GUI::getCEGUIRenderTextureData() const {
 
     if (_ceguiRenderTextureTarget != nullptr) {
         const GFXDevice& gfx = _context->parent().platformContext().gfx();
-        ret.setHandle(gfx.getHandleFromCEGUITexture(_ceguiRenderTextureTarget->getTexture()));
+        ret._textureHandle = gfx.getHandleFromCEGUITexture(_ceguiRenderTextureTarget->getTexture());
         ret._textureType = TextureType::TEXTURE_2D;
 
     }

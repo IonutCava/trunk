@@ -2,7 +2,7 @@
 #define IMGUIFREETYPE_H_
 
 // Original repository: https://github.com/Vuhdo/imgui_freetype (MIT licensed)
-// (Kept up to date in: https://github.com/ocornut/imgui_club)
+// (Kept up to date in: imgui/misc/freetype/imgui_freetype.h/cpp)
 
 // USAGE:
 /*

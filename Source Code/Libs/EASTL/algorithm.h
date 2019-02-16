@@ -1158,27 +1158,25 @@ namespace eastl
 	///     Rand randInstance;
 	///     shuffle(pArrayBegin, pArrayEnd, randInstance);
 	///
-	#if EASTL_MOVE_SEMANTICS_ENABLED
-		// See the C++11 Standard, 26.5.1.3, Uniform random number generator requirements.
-		// Also http://en.cppreference.com/w/cpp/numeric/random/uniform_int_distribution
+	// See the C++11 Standard, 26.5.1.3, Uniform random number generator requirements.
+	// Also http://en.cppreference.com/w/cpp/numeric/random/uniform_int_distribution
 
-		template <typename RandomAccessIterator, typename UniformRandomNumberGenerator>
-		void shuffle(RandomAccessIterator first, RandomAccessIterator last, UniformRandomNumberGenerator&& urng)
+	template <typename RandomAccessIterator, typename UniformRandomNumberGenerator>
+	void shuffle(RandomAccessIterator first, RandomAccessIterator last, UniformRandomNumberGenerator&& urng)
+	{
+		if(first != last)
 		{
-			if(first != last)
-			{
-				typedef typename eastl::iterator_traits<RandomAccessIterator>::difference_type difference_type;
-				typedef typename eastl::make_unsigned<difference_type>::type                   unsigned_difference_type;
-				typedef typename eastl::uniform_int_distribution<unsigned_difference_type>     uniform_int_distribution;
-				typedef typename uniform_int_distribution::param_type                          uniform_int_distribution_param_type;
+			typedef typename eastl::iterator_traits<RandomAccessIterator>::difference_type difference_type;
+			typedef typename eastl::make_unsigned<difference_type>::type                   unsigned_difference_type;
+			typedef typename eastl::uniform_int_distribution<unsigned_difference_type>     uniform_int_distribution;
+			typedef typename uniform_int_distribution::param_type                          uniform_int_distribution_param_type;
 
-				uniform_int_distribution uid;
+			uniform_int_distribution uid;
 
-				for(RandomAccessIterator i = first + 1; i != last; ++i)
-					iter_swap(i, first + uid(urng, uniform_int_distribution_param_type(0, i - first)));
-			}
+			for(RandomAccessIterator i = first + 1; i != last; ++i)
+				iter_swap(i, first + uid(urng, uniform_int_distribution_param_type(0, i - first)));
 		}
-	#endif
+	}
 
 
 	/// random_shuffle
@@ -1199,23 +1197,18 @@ namespace eastl
 	///     Rand randInstance;
 	///     random_shuffle(pArrayBegin, pArrayEnd, randInstance);
 	///
-	#if EASTL_MOVE_SEMANTICS_ENABLED
-		template <typename RandomAccessIterator, typename RandomNumberGenerator>
-		inline void random_shuffle(RandomAccessIterator first, RandomAccessIterator last, RandomNumberGenerator&& rng)
-	#else
-		template <typename RandomAccessIterator, typename RandomNumberGenerator>
-		inline void random_shuffle(RandomAccessIterator first, RandomAccessIterator last, RandomNumberGenerator& rng)
-	#endif
-		{
-			typedef typename eastl::iterator_traits<RandomAccessIterator>::difference_type difference_type;
+	template <typename RandomAccessIterator, typename RandomNumberGenerator>
+	inline void random_shuffle(RandomAccessIterator first, RandomAccessIterator last, RandomNumberGenerator&& rng)
+	{
+		typedef typename eastl::iterator_traits<RandomAccessIterator>::difference_type difference_type;
 
-			// We must do 'rand((i - first) + 1)' here and cannot do 'rand(last - first)',
-			// as it turns out that the latter results in unequal distribution probabilities.
-			// http://www.cigital.com/papers/download/developer_gambling.php
+		// We must do 'rand((i - first) + 1)' here and cannot do 'rand(last - first)',
+		// as it turns out that the latter results in unequal distribution probabilities.
+		// http://www.cigital.com/papers/download/developer_gambling.php
 
-			for(RandomAccessIterator i = first + 1; i < last; ++i)               
-				iter_swap(i, first + (difference_type)rng((eastl_size_t)((i - first) + 1)));
-		}
+		for(RandomAccessIterator i = first + 1; i < last; ++i)               
+			iter_swap(i, first + (difference_type)rng((eastl_size_t)((i - first) + 1)));
+	}
 
 
 	/// random_shuffle
@@ -1871,6 +1864,31 @@ namespace eastl
 		return function;
 	}
 
+	/// for_each_n
+	///
+	/// Calls the Function function for each value in the range [first, first + n).
+	/// Function takes a single parameter: the current value.
+	/// 
+	/// Effects: Applies function to the result of dereferencing every iterator in 
+	/// the range [first, first + n), starting from first and proceeding to last 1.
+	///
+	/// Returns: first + n.
+	///
+	/// Complexity: Applies function exactly 'first + n' times.
+	///
+	/// Note: 
+	////  * If function returns a result, the result is ignored.
+	////  * If n < 0, behaviour is undefined.
+	///
+	template <typename InputIterator, typename Size, typename Function>
+	EA_CPP14_CONSTEXPR inline InputIterator 
+	for_each_n(InputIterator first, Size n, Function function)
+	{
+		for (Size i = 0; i < n; ++first, i++)
+			function(*first);
+		return first;
+	}
+
 
 	/// generate
 	///
@@ -1972,8 +1990,7 @@ namespace eastl
 	/// We should verify that such a thing results in an improvement.
 	///
 	template <typename InputIterator1, typename InputIterator2>
-	inline bool
-	equal(InputIterator1 first1, InputIterator1 last1, InputIterator2 first2)
+	EA_CPP14_CONSTEXPR inline bool equal(InputIterator1 first1, InputIterator1 last1, InputIterator2 first2)
 	{
 		for(; first1 != last1; ++first1, ++first2)
 		{
@@ -1998,7 +2015,7 @@ namespace eastl
 	inline bool equal(const signed char* first1, const signed char* last1, const signed char* first2)
 		{ return (memcmp(first1, first2, (size_t)((uintptr_t)last1 - (uintptr_t)first1)) == 0); }
 
-	#ifndef EA_WCHAR_T_NON_NATIVE // EABase defines this. If you are getting a compiler error here, then somebody has taken away EABase or broken it.
+	#ifndef EA_WCHAR_T_NON_NATIVE
 		inline bool equal(const wchar_t* first1, const wchar_t* last1, const wchar_t* first2)
 			{ return (memcmp(first1, first2, (size_t)((uintptr_t)last1 - (uintptr_t)first1)) == 0); }
 	#endif
@@ -2019,15 +2036,6 @@ namespace eastl
 		{ return (memcmp(first1, first2, (size_t)((uintptr_t)last1 - (uintptr_t)first1)) == 0); }
 
 	inline bool equal(const uint64_t* first1, const uint64_t* last1, const uint64_t* first2)
-		{ return (memcmp(first1, first2, (size_t)((uintptr_t)last1 - (uintptr_t)first1)) == 0); }
-
-	inline bool equal(const float* first1, const float* last1, const float* first2)
-		{ return (memcmp(first1, first2, (size_t)((uintptr_t)last1 - (uintptr_t)first1)) == 0); }
-
-	inline bool equal(const double* first1, const double* last1, const double* first2)
-		{ return (memcmp(first1, first2, (size_t)((uintptr_t)last1 - (uintptr_t)first1)) == 0); }
-
-	inline bool equal(const long double* first1, const long double* last1, const long double* first2)
 		{ return (memcmp(first1, first2, (size_t)((uintptr_t)last1 - (uintptr_t)first1)) == 0); }
 	*/
 

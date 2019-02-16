@@ -209,8 +209,6 @@ void RenderPackage::setLoDLevel(U8 LoD) {
 }
 
 void RenderPackage::updateDrawCommands(U32 dataIndex, U32 startOffset) {
-    I32 tempCount = 0;
-
     GFX::CommandBuffer::Container::EntryList& cmds = _commands->get<GFX::DrawCommand>();
     for (GFX::CommandBuffer::Container::EntryList::value_type& cmd : cmds) {
         GFX::DrawCommand& drawCommand = static_cast<GFX::DrawCommand&>(*cmd);
@@ -224,10 +222,7 @@ void RenderPackage::updateDrawCommands(U32 dataIndex, U32 startOffset) {
             }
             ++startOffset;
         }
-        ++tempCount;
     }
-    assert(drawCommandCount() == tempCount);
-    ACKNOWLEDGE_UNUSED(tempCount);
 }
 
 void RenderPackage::getCommandBuffer(GFX::CommandBuffer& bufferInOut) {

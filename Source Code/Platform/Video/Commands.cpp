@@ -115,7 +115,7 @@ stringImpl BindDescriptorSetsCommand::toString(U16 indent) const {
         for (U16 j = 0; j < indent; ++j) {
             ret.append("    ");
         }
-        ret.append(Util::StringFormat("Texture [ %d - %d ]\n", it.second, it.first.getHandle()));
+        ret.append(Util::StringFormat("Texture [ %d - %d ]\n", it.first, it.second._textureHandle));
     }
 
     for (auto it : _set._textureViews) {
@@ -126,6 +126,13 @@ stringImpl BindDescriptorSetsCommand::toString(U16 indent) const {
         ret.append(Util::StringFormat("Texture layers [ %d - [%d - %d ]]\n", it._binding, it._view._layerRange.min, it._view._layerRange.max));
     }
 
+    for (auto it : _set._images) {
+        ret.append("    ");
+        for (U16 j = 0; j < indent; ++j) {
+            ret.append("    ");
+        }
+        ret.append(Util::StringFormat("Image binds: [ %d - [%d - %d - %s]", it._binding, it._layer, it._level, it._flag == Image::Flag::READ ? "READ" : it._flag == Image::Flag::WRITE ? "WRITE" : "READ_WRITE"));
+    }
     return ret;
 }
 

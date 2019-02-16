@@ -1082,6 +1082,9 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             if (makeTexturesResident(set._textureData, set._textureViews)) {
                 
             }
+            if (makeImagesResident(set._images)) {
+
+            }
             for (const ShaderBufferBinding& shaderBufCmd : set._shaderBuffers) {
                 glUniformBuffer* buffer = static_cast<glUniformBuffer*>(shaderBufCmd._buffer);
 
@@ -1124,7 +1127,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
         case GFX::CommandType::COMPUTE_MIPMAPS: {
             const GFX::ComputeMipMapsCommand& crtCmd = commandBuffer.get<GFX::ComputeMipMapsCommand>(entry);
             if (crtCmd._layerRange.x == 0 && crtCmd._layerRange.y <= 1) {
-                glGenerateTextureMipmap(crtCmd._texture->getData().getHandle());
+                glGenerateTextureMipmap(crtCmd._texture->getData()._textureHandle);
             } else {
 
                 Texture* tex = crtCmd._texture;
@@ -1288,8 +1291,8 @@ GLuint GL_API::getTextureView(TextureData& data, vec2<U32> mipLevels, vec2<U32> 
     GLuint handle = s_texturePool.allocate();
 
     glTextureView(handle,
-        GLUtil::glTextureTypeTable[to_base(data.type())],
-        data.getHandle(),
+        GLUtil::glTextureTypeTable[to_base(data._textureType)],
+        data._textureHandle,
         internalFormat,
         (GLuint)mipLevels.x,
         (GLuint)mipLevels.y,
@@ -1369,6 +1372,16 @@ size_t GL_API::setStateBlock(size_t stateBlockHash) {
     return getStateTracker().setStateBlock(stateBlockHash);
 }
 
+bool GL_API::makeImagesResident(const vectorEASTLFast<Image>& images) {
+    for (const Image& image : images) {
+        if (image._texture != nullptr) {
+            image._texture->bindLayer(image._binding, image._level, image._layer, false, image._flag != Image::Flag::WRITE ? true : false, image._flag != Image::Flag::READ ? true : false);
+        }
+    }
+
+    return true;
+}
+
 bool GL_API::makeTexturesResident(const TextureDataContainer& textureData, const vectorEASTLFast<TextureViewEntry>& textureViews) {
     bool bound = false;
 
@@ -1386,15 +1399,15 @@ bool GL_API::makeTexturesResident(const TextureDataContainer& textureData, const
         samplers.reserve(texCount);
 
         for (auto data : textureData.textures()) {
-            types.push_back(data.first.type());
-            handles.push_back(data.first.getHandle());
-            samplers.push_back(data.first._samplerHandle);
+            types.push_back(data.second._textureType);
+            handles.push_back(data.second._textureHandle);
+            samplers.push_back(data.second._samplerHandle);
         }
 
         bound = getStateTracker().bindTextures(offset, (GLuint)texCount, types.data(), handles.data(), samplers.data());
     } else {
         for (auto data : textureData.textures()) {
-            bound = makeTextureResident(data.first, data.second) || bound;
+            bound = makeTextureResident(data.second, data.first) || bound;
         }
     }
 
@@ -1405,7 +1418,7 @@ bool GL_API::makeTexturesResident(const TextureDataContainer& textureData, const
         GLenum glInternalFormat = GLUtil::internalFormat(descriptor.baseFormat(), descriptor.dataType(), descriptor._srgb);
 
         GLuint handle = getTextureView(data, it._view._mipLevels, it._view._layerRange, glInternalFormat);
-        getStateTracker().bindTexture(static_cast<GLushort>(it._binding), data.type(), handle, data._samplerHandle);
+        getStateTracker().bindTexture(static_cast<GLushort>(it._binding), data._textureType, handle, data._samplerHandle);
         s_texturePool.deallocate(handle, 3);
     }
 
@@ -1414,8 +1427,8 @@ bool GL_API::makeTexturesResident(const TextureDataContainer& textureData, const
 
 bool GL_API::makeTextureResident(const TextureData& textureData, U8 binding) {
     return getStateTracker().bindTexture(static_cast<GLushort>(binding),
-                                         textureData.type(),
-                                         textureData.getHandle(),
+                                         textureData._textureType,
+                                         textureData._textureHandle,
                                          textureData._samplerHandle);
 }
 

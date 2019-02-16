@@ -12,11 +12,21 @@
 #ifndef EASTL_STRING_VIEW_H
 #define EASTL_STRING_VIEW_H
 
-EA_ONCE()
+#if defined(EA_PRAGMA_ONCE_SUPPORTED)
+	#pragma once // Some compilers (e.g. VC++) benefit significantly from using this. We've measured 3-4% build speed improvements in apps as a result.
+#endif
 
 #include <EASTL/internal/config.h>
 #include <EASTL/internal/char_traits.h>
+#include <EASTL/algorithm.h>
+#include <EASTL/iterator.h>
 #include <EASTL/numeric_limits.h>
+
+#if EASTL_EXCEPTIONS_ENABLED
+	EA_DISABLE_ALL_VC_WARNINGS()
+	#include <stdexcept> // std::out_of_range.
+	EA_RESTORE_ALL_VC_WARNINGS()
+#endif
 
 EA_DISABLE_VC_WARNING(4814)
 
@@ -140,7 +150,7 @@ namespace eastl
 
 			count = eastl::min(count, mnCount - pos);
 			auto* pResult = CharStringUninitializedCopy(mpBegin + pos, mpBegin + pos + count, pDestination);
-			*pResult = 0; // write null-terminator
+			// *pResult = 0; // don't write the null-terminator
 			return pResult - pDestination;
 		}
 
@@ -403,6 +413,38 @@ namespace eastl
 		EA_CONSTEXPR size_type find_last_not_of(const T* s, size_type pos = npos) const
 		{
 			return find_last_not_of(s, pos, (size_type)CharStrlen(s));
+		}
+
+		// starts_with
+		EA_CONSTEXPR bool starts_with(basic_string_view x) const EA_NOEXCEPT
+		{
+			return (size() >= x.size()) && (compare(0, x.size(), x) == 0);
+		}
+
+		EA_CONSTEXPR bool starts_with(T x) const EA_NOEXCEPT
+		{
+			return starts_with(basic_string_view(&x, 1));
+		}
+
+		EA_CONSTEXPR bool starts_with(const T* s) const
+		{
+			return starts_with(basic_string_view(s));
+		}
+
+		// ends_with
+		EA_CONSTEXPR bool ends_with(basic_string_view x) const EA_NOEXCEPT
+		{
+			return (size() >= x.size()) && (compare(size() - x.size(), npos, x) == 0);
+		}
+
+		EA_CONSTEXPR bool ends_with(T x) const EA_NOEXCEPT
+		{
+			return ends_with(basic_string_view(&x, 1));
+		}
+
+		EA_CONSTEXPR bool ends_with(const T* s) const
+		{
+			return ends_with(basic_string_view(s));
 		}
 	};
 

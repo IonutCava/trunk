@@ -37,33 +37,29 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Core/Headers/Hashable.h"
 #include "Core/TemplateLibraries/Headers/Vector.h"
 
+#include <EASTL/vector_map.h>
 #include <MemoryPool/StackAlloc.h>
 #include <MemoryPool/C-11/MemoryPool.h>
 
 namespace Divide {
+
 struct TextureData {
     U32 _textureHandle = 0u;
     U32 _samplerHandle = 0u;
     TextureType _textureType = TextureType::COUNT;
-
-    inline U32  getHandle()     const noexcept { return _textureHandle; }
-    inline void setHandle(U32 handle) noexcept { _textureHandle = handle; }
-    inline const TextureType& type() const noexcept { return _textureType; }
-
-    inline bool operator==(const TextureData& other) const noexcept {
-        return _textureType == other._textureType &&
-               _textureHandle == other._textureHandle &&
-               _samplerHandle == other._samplerHandle;
-    }
-
-    inline bool operator!=(const TextureData& other) const noexcept {
-        return _textureType != other._textureType ||
-               _textureHandle != other._textureHandle ||
-               _samplerHandle != other._samplerHandle;
-    }
-
-    XALLOCATOR
 };
+
+FORCE_INLINE bool operator==(const TextureData& lhs, const TextureData& rhs) noexcept {
+    return lhs._textureType == rhs._textureType &&
+           lhs._textureHandle == rhs._textureHandle &&
+           lhs._samplerHandle == rhs._samplerHandle;
+}
+
+FORCE_INLINE bool operator!=(const TextureData& lhs, const TextureData& rhs) noexcept {
+    return lhs._textureType != rhs._textureType ||
+           lhs._textureHandle != rhs._textureHandle ||
+           lhs._samplerHandle != rhs._samplerHandle;
+}
 
 class TextureDataContainer {
     public:
@@ -74,19 +70,18 @@ class TextureDataContainer {
           COUNT
       };
 
-      using DataEntries = vectorEASTLFast<eastl::pair<TextureData, U8 /*binding*/>>;
+      using DataEntries = eastl::vector_map<U8/*binding*/, TextureData>;
 
       bool set(const TextureDataContainer& other);
 
-      UpdateState setTexture(const TextureData& data, U8 binding, bool force = false);
-      UpdateState setTexture(const eastl::pair<TextureData, U8 /*binding*/>& textureEntry, bool force = false);
       UpdateState setTextures(const TextureDataContainer& textureEntries, bool force = false);
       UpdateState setTextures(const DataEntries& textureEntries, bool force = false);
+      UpdateState setTexture(const TextureData& data, U8 binding, bool force = false);
 
       bool removeTexture(U8 binding);
       bool removeTexture(const TextureData& data);
 
-      void clear(bool clearMemory = false);
+      inline void clear() { _textures.clear(); }
 
       inline bool empty() const noexcept { return _textures.empty(); }
 
@@ -95,6 +90,21 @@ class TextureDataContainer {
 
       inline bool operator==(const TextureDataContainer &other) const { return _textures == other._textures; }
       inline bool operator!=(const TextureDataContainer &other) const { return _textures != other._textures; }
+
+    protected:
+        inline UpdateState setTextureInternal(const TextureData& data, U8 binding, bool force) {
+            auto result = _textures.emplace(binding, data);
+            if (result.second) {
+                return UpdateState::ADDED;
+            }
+
+            if (result.first->second != data || force) {
+                result.first->second = data;
+                return UpdateState::REPLACED;
+            }
+
+            return UpdateState::NOTHING;
+        }
 
     private:
         DataEntries _textures;

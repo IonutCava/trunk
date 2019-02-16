@@ -25,7 +25,7 @@ If you have other loading/merging/adding fonts, you can post on the Dear ImGui "
 - Building Custom Glyph Ranges
 - Embedding Fonts in Source Code
 - Credits/Licences for fonts included in this folder
-- Links, Other fonts
+- Fonts Links
 
 
 ---------------------------------------
@@ -106,10 +106,13 @@ Example Usage:
  For advanced options create a ImFontConfig structure and pass it to the AddFont function (it will be copied internally):
 
    ImFontConfig config;
-   config.OversampleH = 3;
+  config.OversampleH = 2;
    config.OversampleV = 1;
    config.GlyphExtraSpacing.x = 1.0f;
    ImFont* font = io.Fonts->AddFontFromFileTTF("font.ttf", size_pixels, &config);
+
+Read about oversampling here:
+  https://github.com/nothings/stb/blob/master/tests/oversample
 
  If you have very large number of glyphs or multiple fonts, the texture may become too big for your graphics API.
  The typical result of failing to upload a texture is if every glyphs appears as white rectangles.
@@ -119,8 +122,8 @@ Example Usage:
  If you are building a PC application, mind the fact that your users may use hardware with lower limitations than yours.
  Some solutions:
 
-  - 1) Reduce glyphs ranges by calculating them from source localization data. You can use ImFont::GlyphRangesBuilder for this purpose,
-    this will be the biggest win. 
+ - 1) Reduce glyphs ranges by calculating them from source localization data.
+   You can use ImFontGlyphRangesBuilder for this purpose, this will be the biggest win!
   - 2) You may reduce oversampling, e.g. config.OversampleH = config.OversampleV = 1, this will largely reduce your texture size.
   - 3) Set io.Fonts.TexDesiredWidth to specify a texture width to minimize texture height (see comment in ImFontAtlas::Build function).
   - 4) Set io.Fonts.Flags |= ImFontAtlasFlags_NoPowerOfTwoHeight; to disable rounding the texture height to the next power of two.
@@ -177,11 +180,11 @@ Example Usage:
  BUILDING CUSTOM GLYPH RANGES
 ---------------------------------------
 
- You can use the ImFontAtlas::GlyphRangesBuilder helper to create glyph ranges based on text input.
+You can use the ImFontGlyphRangesBuilder helper to create glyph ranges based on text input.
  For example: for a game where your script is known, if you can feed your entire script to it and only build the characters the game needs. 
 
    ImVector<ImWchar> ranges;
-   ImFontAtlas::GlyphRangesBuilder builder;
+  ImFontGlyphRangesBuilder builder;
    builder.AddText("Hello world");                        // Add a string (here "Hello world" contains 7 unique characters)
    builder.AddChar(0x7262);                               // Add a specific character
    builder.AddRanges(io.Fonts->GetGlyphRangesJapanese()); // Add one of the default ranges

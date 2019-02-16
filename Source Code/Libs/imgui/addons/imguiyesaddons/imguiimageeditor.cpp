@@ -230,6 +230,9 @@ static unsigned char* ZlibCompressFromMemoryStbWrite(const unsigned char* memory
 
 #if (!defined(IMGUIIMAGEEDITOR_NO_LODEPNG_PLUGIN) && !defined(IMGUIIMAGEEDITOR_NO_LODE_PNG_PLUGIN))
 #ifndef LODEPNG_H
+#ifndef LODEPNG_NO_COMPILE_CPP
+#define LODEPNG_NO_COMPILE_CPP
+#endif //LODEPNG_NO_COMPILE_CPP
 #if (!defined(IMGUIIMAGEEDITOR_NO_LODEPNG_IMPLEMENTATION) && !defined(IMGUIIMAGEEDITOR_NO_LODE_PNG_IMPLEMENTATION))
 #include "imguiimageeditor_plugins/lodepng.cpp"
 #else //IMGUIIMAGEEDITOR_NO_LODEPNG_IMPLEMENTATION
@@ -5169,20 +5172,6 @@ struct StbImage {
 
 
         if (strcmp(feh.ext,".png")==0) {
-#           ifdef LODEPNG_H
-            // I had problems putting this branch above stbiw.
-            // The saved png was valid (and a bit smaller in size), but then stbi loaded it incorrectly
-            // (and actually even lodePng did the same! It worked if we knew the correct number of color channels before loading the png image).
-            // In any case fo me correct loading through stb_image is a priority.
-            // In any case we can still use lodePng for storing the CopiedImage and the UndoStack (to test).
-            if (!rv) {
-                unsigned char* png=NULL;size_t pngSize=0;unsigned error = 1;
-                error = lodepng_encode_memory(&png,&pngSize, image, w, h,c==4 ? LCT_RGBA : (c==3 ? LCT_RGB : (c==1 ? LCT_GREY : LCT_RGBA)), 8);
-                if (!error) rv = ImGuiIE::SetFileContent(path,png,pngSize);
-                else rv = false;
-                if (png) free(png);
-            }
-#           endif // LODEPNG_H
 #           ifdef INCLUDE_STB_IMAGE_WRITE_H
             if (!rv) {
                 FILE* f = ImFileOpen(path,"wb");
@@ -5192,6 +5181,22 @@ struct StbImage {
                 }
             }
 #           endif // INCLUDE_STB_IMAGE_WRITE_H
+#           ifdef LODEPNG_H
+            if (!rv) {
+                unsigned char* png=NULL;size_t pngSize=0;unsigned error = 1;
+                // Hey! lodepng_encode_memory(...) is not robust for us!
+                // It can use paletted colors when saving (dispite the fact that LCT_PALETTE is not passed as an argument),
+                // so that, once reloaded (using stb_image), a different num_channels can be found.
+                // For example, saving an A or a RGBA texture can result in a saved RGB (paletted) texture.
+                // On the other end, stb_image_write works quite well, but produces bigger images in size
+                // (alleviated by defining globally IMGUI_USE_ZLIB OR IMGUI_USE_MINIZIP).
+                //printf("lodepng_encode_memory(...) called with num_channels=%d\n",c);fflush(stdout);
+                error = lodepng_encode_memory(&png,&pngSize, image, w, h,c==4 ? LCT_RGBA : (c==3 ? LCT_RGB : (c==1 ? LCT_GREY : LCT_RGBA)), 8);
+                if (!error) rv = ImGuiIE::SetFileContent(path,png,(int)pngSize);
+                else rv = false;
+                if (png) free(png);
+            }
+#           endif // LODEPNG_H
         }
         else if (strcmp(feh.ext,".tga")==0) {
 #           ifdef INCLUDE_STB_IMAGE_WRITE_H
@@ -5841,7 +5846,7 @@ struct StbImage {
                     ImGui::TreePop();
                     const float step = 1.f;
                     const float stepFast = 2.f;
-                    const int precision = 0;
+                    const char* precision = "%.0f";
                     const float windowWidth = ImGui::GetWindowWidth();
                     const float itemSize = windowWidth*0.35f;
                     ImGui::BeginGroup();

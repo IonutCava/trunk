@@ -79,15 +79,18 @@ namespace eastl {
             #else
                 #define pName EASTL_ALLOCATOR_DEFAULT_NAME
             #endif
-
-            //return ::new((char*)0, flags, 0, (char*)0, 0) char[n];
+            (void)flags;
             return xmalloc(n);
         }
 
         inline void* allocate(size_t n, size_t alignment, size_t offset, int flags = 0)
         {
+            (void)flags;
+            (void)offset;
+            (void)alignment;
+
             return xmalloc(n);
-            //return ::new(alignment, offset, (char*)0, flags, 0, (char*)0, 0) char[n];
+            
             #undef pName  // See above for the definition of this.
         }
 
