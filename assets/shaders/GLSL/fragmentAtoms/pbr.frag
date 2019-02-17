@@ -150,35 +150,26 @@ vec3 Diffuse(vec3 diffuseColor, float roughness, float NdotV, float NdotL, float
 #define M_PI 3.14159265358979323846
 #define M_EPSILON 0.0000001
 
-void PBR(in vec3 lightColour,
+vec4 PBR(in vec4 lightColourAndAtt,
          in vec3 lightDirection,
-         in float att,
-         in vec3 normalWV,
          in vec3 albedo,
-         in vec3 specular,
-         in float reflectivity,
-         inout vec3 colourInOut,
-         inout float reflectionCoeff)
+         in vec4 specular)
 {
-    float roughness = reflectivity;
+    float roughness = specular.a;
     vec3 dvd_ViewDirNorm = normalize(-VAR._vertexWV.xyz);
 
     // direction is NOT normalized
     vec3 Hn = normalize(dvd_ViewDirNorm + lightDirection);
     float vdh = clamp((dot(dvd_ViewDirNorm, Hn)), M_EPSILON, 1.0);
-    float ndh = clamp((dot(normalWV, Hn)), M_EPSILON, 1.0);
-    float ndl = clamp((dot(normalWV, normalize(lightDirection))), M_EPSILON, 1.0);
-    float ndv = clamp((dot(normalWV, dvd_ViewDirNorm)), M_EPSILON, 1.0);
+    float ndh = clamp((dot(private_normalWV, Hn)), M_EPSILON, 1.0);
+    float ndl = clamp((dot(private_normalWV, normalize(lightDirection))), M_EPSILON, 1.0);
+    float ndv = clamp((dot(private_normalWV, dvd_ViewDirNorm)), M_EPSILON, 1.0);
     vec3 diffuseFactor = Diffuse(albedo, roughness, ndv, ndl, vdh);
 
-    vec3 fresnelTerm = Fresnel(specular, vdh);
+    vec3 fresnelTerm = Fresnel(specular.rgb, vdh);
     float distTerm = Distribution(ndh, roughness);
     float visTerm = Visibility(ndl, ndv, roughness);
     vec3 specularFactor = fresnelTerm * distTerm * visTerm / M_PI;
 
-    vec3 result = diffuseFactor + specularFactor;
-
-    reflectionCoeff = saturate(reflectionCoeff + length(specularFactor));
-
-    colourInOut += (lightColour * result * att) / M_PI;
+    return vec4((lightColourAndAtt.rgb * (diffuseFactor + specularFactor) * lightColourAndAtt.a) / M_PI, length(specularFactor));
 }

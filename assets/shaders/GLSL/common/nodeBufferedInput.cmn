@@ -45,27 +45,19 @@ mat3 dvd_NormalMatrixW(in uint index) {
     return mat3(dvd_Matrices[index]._normalMatrixW);
 }
 
-ivec4 dvd_BufferIntegerValues(in uint index) {
-    return ivec4(dvd_Matrices[index]._properties);
-}
-
 #if defined(VERT_SHADER)
 #define dvd_boneCount     uint(dvd_Matrices[VAR.dvd_baseInstance]._normalMatrixW[0][3])
 #endif
 
 // x - isSelected/isHighlighted; y - isShadowMapped; z - lodLevel, w - occlusion cull data
-#define dvd_lodLevel dvd_BufferIntegerValues(VAR.dvd_baseInstance).z
+#define dvd_lodLevel int(dvd_Matrices[VAR.dvd_baseInstance]._properties.z)
 #define dvd_customData dvd_Matrices[VAR.dvd_baseInstance]._properties.w
 
 #if defined(FRAG_SHADER)
 NodeData dvd_private_node_data = dvd_Matrices[VAR.dvd_baseInstance];
 // x - textureOperation; y - parallax/relief mapping factor, z - reserved, w - reserved
 #define buffer_matProperties dvd_private_node_data._colourMatrix[3]
-#define buffer_integers dvd_private_node_data._properties
 
-#define dvd_isSelected      (buffer_integers.x < -0.5)
-#define dvd_isHighlighted   (buffer_integers.x >  0.5)
-#define dvd_receivesShadows (buffer_integers.y > 0.0)
 #define dvd_texOperation    uint(buffer_matProperties.x)
 #define dvd_parallaxFactor  buffer_matProperties.y
 #define dvd_reliefFactor    dvd_parallaxFactor

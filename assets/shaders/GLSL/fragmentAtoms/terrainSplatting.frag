@@ -1,8 +1,6 @@
 #ifndef _TERRAIN_SPLATTING_FRAG_
 #define _TERRAIN_SPLATTING_FRAG_
 
-#include "bumpMapping.frag"
-
 uniform vec4 tileScale[MAX_TEXTURE_LAYERS];
 
 layout(binding = TEXTURE_UNIT0)     uniform sampler2D texWaterCaustics;

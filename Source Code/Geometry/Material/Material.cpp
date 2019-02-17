@@ -65,6 +65,7 @@ Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descri
       _parallaxFactor(1.0f),
       _needsNewShader(false),
       _doubleSided(false),
+      _receivesShadows(true),
       _isReflective(false),
       _isRefractive(false),
       _hardwareSkinning(false),
@@ -161,6 +162,7 @@ Material_ptr Material::clone(const stringImpl& nameSuffix) {
     cloneMat->_shadingMode = base._shadingMode;
     cloneMat->_useTriangleStrip = base._useTriangleStrip;
     cloneMat->_doubleSided = base._doubleSided;
+    cloneMat->_receivesShadows = base._receivesShadows;
     cloneMat->_isReflective = base._isReflective;
     cloneMat->_isRefractive = base._isRefractive;
     cloneMat->_hardwareSkinning = base._hardwareSkinning;
@@ -570,7 +572,7 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
         shaderPropertyDescriptor._defines.push_back(std::make_pair("IS_REFLECTIVE", true));
     }
 
-    if (!_context.context().config().rendering.shadowMapping.enabled) {
+    if (!receivesShadows() || !_context.context().config().rendering.shadowMapping.enabled) {
         shader += ".NoShadows";
         shaderPropertyDescriptor._defines.push_back(std::make_pair("DISABLE_SHADOW_MAPPING", true));
     }
@@ -795,6 +797,15 @@ void Material::setDoubleSided(const bool state) {
 
     _doubleSided = state;
 
+    _needsNewShader = true;
+}
+
+void Material::setReceivesShadows(const bool state) {
+    if (_receivesShadows == state) {
+        return;
+    }
+
+    _receivesShadows = state;
     _needsNewShader = true;
 }
 
@@ -1067,6 +1078,8 @@ void Material::saveToXML(const stringImpl& entryName, boost::property_tree::ptre
 
     pt.put(entryName + ".doubleSided", isDoubleSided());
 
+    pt.put(entryName + ".receivesShadows", receivesShadows());
+
     pt.put(entryName + ".bumpMethod", getBumpMethodName(getBumpMethod()));
 
     pt.put(entryName + ".shadingMode", getShadingModeName(getShadingMode()));
@@ -1124,6 +1137,8 @@ void Material::loadFromXML(const stringImpl& entryName, const boost::property_tr
     setShininess(pt.get<F32>(entryName + ".shininess", 0.0f));
 
     setDoubleSided(pt.get<bool>(entryName + ".doubleSided", false));
+
+    setReceivesShadows(pt.get<bool>(entryName + ".receivesShadows", true));
 
     setBumpMethod(getBumpMethodByName(pt.get<stringImpl>(entryName + ".bumpMethod", "NORMAL")));
 

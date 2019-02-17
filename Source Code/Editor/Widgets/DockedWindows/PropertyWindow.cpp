@@ -368,9 +368,16 @@ namespace Divide {
              ImGui::SameLine();
              bool doubleSided = material->isDoubleSided();
              if (readOnly) {
-                 ImGui::Checkbox("DobuleSided", &doubleSided);
+                 ImGui::Checkbox("DoubleSided", &doubleSided);
              }  else {
-                 material->setDoubleSided(ImGui::Checkbox("DobuleSided", &doubleSided));
+                 material->setDoubleSided(ImGui::Checkbox("DoubleSided", &doubleSided));
+             }
+
+             bool receivesShadows = material->receivesShadows();
+             if (readOnly) {
+                 ImGui::Checkbox("ReceivesShadows", &receivesShadows);
+             } else {
+                 material->setReceivesShadows(ImGui::Checkbox("ReceivesShadows", &receivesShadows));
              }
          }
 

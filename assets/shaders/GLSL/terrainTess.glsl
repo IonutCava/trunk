@@ -546,7 +546,9 @@ void main(void)
 {
     vec3 normalWV = vec3(0.0);
     vec4 albedo = mix(TerrainMappingRoutine(normalWV), UnderwaterMappingRoutine(normalWV), _waterDetails.x);
-    vec4 colourOut = getPixelColour(albedo, normalWV);
+
+    mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;
+    vec4 colourOut = getPixelColour(albedo, colourMatrix, normalWV);
 
 #if defined(TOGGLE_WIREFRAME)
     const float LineWidth = 0.75;

@@ -20,20 +20,18 @@ int g_shadowTempInt = -2;
 float getShadowFactor() {
 
     float shadow = 1.0;
-    float fragDepth = VAR._vertexWV.z;
-
     uvec4 details[MAX_SHADOW_CASTING_LIGHTS] = dvd_shadowLightDetails;
 
     for (uint i = 0; i < MAX_SHADOW_CASTING_LIGHTS; ++i) {
         switch (details[i].x) {
             case LIGHT_DIRECTIONAL:
-                shadow *= applyShadowDirectional(i, details[i], fragDepth);
+                shadow *= applyShadowDirectional(i, details[i]);
                 break;
             case LIGHT_OMNIDIRECTIONAL:
-                shadow *= applyShadowPoint(i, details[i], fragDepth);
+                shadow *= applyShadowPoint(i, details[i]);
                 break;
             case LIGHT_SPOT:
-                shadow *= applyShadowSpot(i, details[i], fragDepth);
+                shadow *= applyShadowSpot(i, details[i]);
                 break;
         }
     }

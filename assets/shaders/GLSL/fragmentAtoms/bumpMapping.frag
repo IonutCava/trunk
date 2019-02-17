@@ -1,6 +1,9 @@
 #ifndef _BUMP_MAPPING_FRAG_
 #define _BUMP_MAPPING_FRAG_
 
+#include "lightInput.cmn"
+#include "nodeBufferedInput.cmn"
+
 //Normal or BumpMap
 layout(binding = TEXTURE_NORMALMAP) uniform sampler2D texNormalMap;
 
@@ -12,42 +15,8 @@ vec3 getBump(in vec2 uv) {
     return normalize(2.0 * texture(texNormalMap, uv).rgb - 1.0);
 }
 
-float ReliefMapping_RayIntersection(in vec2 A, in vec2 AB){
-    const int num_steps_lin = 10;
-    const int num_steps_bin = 15;
-    float linear_step = 1.0 / (float(num_steps_lin));
-    //Current depth position
-    float depth = 0.0; 
-    //Best match found (starts with last position 1.0)
-    float best_depth = 1.0;
-    float step = linear_step;
-    //Search from front to back for first point inside the object
-    for(int i=0; i<num_steps_lin-1; i++){
-        depth += step;
-        if (depth >= 1.0 - texture(texNormalMap, A+AB*depth).a) {
-            best_depth = depth; //Store best depth
-            i = num_steps_lin-1;
-        }
-    }
-    //The point of intersection is found between (depth) and (depth-step)
-    //so start from (depth - step/2)
-    step = linear_step * 0.5;
-    depth = best_depth - step;
-    // binary search
-    for(int i = 0; i < num_steps_bin; ++i){
-        step *= 0.5;
-        best_depth = depth;
-        if (depth >= 1.0 - texture(texNormalMap, A + AB * depth).a) {
-            depth -= step;
-        }else {
-            depth += step;
-        }
-    }
-    return best_depth;
-}
-
 #if defined(_BRDF_FRAG_)
-vec4 ParallaxMapping(in vec2 uv, uint lightID, inout vec3 normal){
+vec3 ParallaxNormal(in vec2 uv, uint lightID){
     Light dvd_private_bump_light = dvd_LightSource[lightID];
 
     vec3 lightVecTBN = vec3(0.0);
@@ -60,7 +29,7 @@ vec4 ParallaxMapping(in vec2 uv, uint lightID, inout vec3 normal){
             lightVecTBN = normalize(-VAR._vertexWV.xyz + dvd_private_bump_light._positionWV.xyz);
             break;
         case LIGHT_NONE :
-            return vec4(0.0);
+            return VAR._normalWV;
     };
 
     vec3 viewVecTBN = normalize(-VAR._vertexWV.xyz);
@@ -72,8 +41,7 @@ vec4 ParallaxMapping(in vec2 uv, uint lightID, inout vec3 normal){
                      (vec2(viewVecTBN.x, -viewVecTBN.y) / 
                      viewVecTBN.z));
 
-    normal = getTBNMatrix() * getBump(vTexCoord);
-    return getPixelColour(normal);
+    return getTBNMatrix() * getBump(vTexCoord);
 }
 #endif
 

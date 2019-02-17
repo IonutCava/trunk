@@ -31,7 +31,6 @@ uniform vec2 _noiseFactor;
 uniform float _waterShininess;
 
 #include "BRDF.frag"
-#include "bumpMapping.frag"
 #include "shadowMapping.frag"
 #include "output.frag"
 
@@ -86,7 +85,8 @@ void main (void)
                          mixFactor);
     normal = normalize(getTBNMatrix() * normal);
 #if 0
-    writeOutput(getPixelColour(texColour, normal), packNormal(normal));
+    mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;
+    writeOutput(getPixelColour(texColour, colourMatrix, normal), packNormal(normal));
 #else
     writeOutput(texColour, packNormal(normal));
 #endif

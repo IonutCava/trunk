@@ -28,12 +28,6 @@ layout(binding = TEXTURE_OPACITY) uniform sampler2D texOpacityMap;
 layout(binding = TEXTURE_SPECULAR) uniform sampler2D texSpecularMap;
 #endif
 
-// Debug toggles
-#if defined(_DEBUG)
-uniform bool dvd_LightingOnly = false;
-uniform bool dvd_NormalsOnly = false;
-#endif
-
 float Gloss(in vec3 bump, in vec2 texCoord)
 {
     #if defined(USE_TOKSVIG)

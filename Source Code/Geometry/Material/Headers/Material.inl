@@ -180,6 +180,10 @@ inline bool Material::isDoubleSided() const {
     return _doubleSided;
 }
 
+inline bool Material::receivesShadows() const {
+    return _receivesShadows;
+}
+
 inline bool Material::useTriangleStrip() const {
     return _useTriangleStrip;
 }

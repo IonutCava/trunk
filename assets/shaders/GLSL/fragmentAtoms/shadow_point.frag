@@ -1,7 +1,7 @@
 #ifndef _SHADOW_POINT_FRAG_
 #define _SHADOW_POINT_FRAG_
 
-float applyShadowPoint(in uint idx, in uvec4 details, in float fragDepth) {
+float applyShadowPoint(in uint idx, in uvec4 details) {
     // SHADOW MAPS
     vec3 position_ls = dvd_shadowLightPosition[idx * 6].xyz;
     vec3 abs_position = abs(position_ls);

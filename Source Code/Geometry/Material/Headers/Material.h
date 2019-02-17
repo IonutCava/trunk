@@ -160,6 +160,7 @@ class Material : public CachedResource {
 
     void useTriangleStrip(const bool state);
     void setDoubleSided(const bool state);
+    void setReceivesShadows(const bool state);
     void setReflective(const bool state);
     void setRefractive(const bool state);
 
@@ -218,6 +219,7 @@ class Material : public CachedResource {
     bool hasTransparency() const;
 
     bool isDoubleSided() const;
+    bool receivesShadows() const;
     bool isReflective() const;
     bool isRefractive() const;
     bool useTriangleStrip() const;
@@ -278,6 +280,7 @@ class Material : public CachedResource {
     bool _useTriangleStrip;
     bool _needsNewShader;
     bool _doubleSided;
+    bool _receivesShadows;
     bool _isReflective;
     bool _isRefractive;
     bool _ignoreXMLData;
