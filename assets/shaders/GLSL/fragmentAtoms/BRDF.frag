@@ -29,7 +29,7 @@ vec3 private_normalWV = vec3(0.0);
 #endif
 #endif
 
-vec4 getPixelColour(in vec4 albedo, in mat4 colourMatrix, in vec3 normal) {
+vec4 getLitColour(in vec4 albedo, in mat4 colourMatrix, in vec3 normal) {
 #   if defined(USE_SHADING_FLAT)
     return albedo;
 #   endif
@@ -91,24 +91,28 @@ vec4 getPixelColour(in vec4 albedo, in mat4 colourMatrix, in vec3 normal) {
     }*/
 #endif
 
-// Apply shadowing
+    return vec4(colour, albedo.a);
+}
+
+vec4 getPixelColour(in vec4 albedo, in mat4 colourMatrix, in vec3 normal) {
+    vec4 colour = getLitColour(albedo, colourMatrix, normal);
+
+    // Apply shadowing
 #if !defined(DISABLE_SHADOW_MAPPING)
-    colour *= getShadowFactor();
+    colour.rgb *= getShadowFactor();
 #   if defined(DEBUG_SHADOWMAPPING)
     if (dvd_showDebugInfo) {
         switch (g_shadowTempInt) {
-            case -1: colour = vec3(1.0); break;
-            case  0: colour.r += 0.15; break;
-            case  1: colour.g += 0.25; break;
-            case  2: colour.b += 0.40; break;
-            case  3: colour += vec3(0.15, 0.25, 0.40); break;
+        case -1: colour.rgb = vec3(1.0); break;
+        case  0: colour.r += 0.15; break;
+        case  1: colour.g += 0.25; break;
+        case  2: colour.b += 0.40; break;
+        case  3: colour.rgb += vec3(0.15, 0.25, 0.40); break;
         };
     }
 #   endif
 #endif
-
-    return vec4(colour, albedo.a);
-    
+    return colour;
 }
 
 vec3 getNormal() {

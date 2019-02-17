@@ -331,6 +331,7 @@
     <None Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Shaders\Headers\glShaderProgram.inl" />
     <None Include="../../../Source Code\Platform\Headers\PlatformRuntime.inl" />
     <None Include="..\..\..\assets\shaders\GLSL\fragmentAtoms\output.frag" />
+    <None Include="..\..\..\assets\shaders\GLSL\fragmentAtoms\vsm.frag" />
     <None Include="..\..\..\assets\shaders\GLSL\instanceCullGrass.glsl" />
   </ItemGroup>
   <ItemGroup>

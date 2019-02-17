@@ -56,6 +56,10 @@ namespace Divide {
         ACKNOWLEDGE_UNUSED(commandBuffer);
     }
 
+    void VK_API::postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
+        ACKNOWLEDGE_UNUSED(commandBuffer);
+    }
+
     vec2<U16> VK_API::getDrawableSize(const DisplayWindow& window) const {
         ACKNOWLEDGE_UNUSED(window);
 

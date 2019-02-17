@@ -118,7 +118,7 @@ glBufferImpl::~glBufferImpl()
 }
 
 bool glBufferImpl::waitRange(size_t offsetInBytes, size_t rangeInBytes, bool blockClient) {
-    if (!_unsynced) {
+    if (_mappedBuffer != nullptr && !_unsynced) {
         return GL_API::getLockManager().WaitForLockedRange(getGUID(), offsetInBytes, rangeInBytes);
     }
 
@@ -126,7 +126,7 @@ bool glBufferImpl::waitRange(size_t offsetInBytes, size_t rangeInBytes, bool blo
 }
 
 void glBufferImpl::lockRange(size_t offsetInBytes, size_t rangeInBytes, bool flush) {
-    if (!_unsynced) {
+    if (_mappedBuffer != nullptr && !_unsynced) {
         BufferWriteData data = {};
         data._bufferGUID = getGUID();
         data._offset = offsetInBytes;

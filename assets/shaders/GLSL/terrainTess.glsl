@@ -191,10 +191,6 @@ layout(quads, fractional_even_spacing) in;
 in float tcs_tessLevel[];
 out float tes_tessLevel;
 
-#if defined(SHADOW_PASS)
-out vec4 dvd_vertexWVP;
-#endif
-
 #if !defined(TOGGLE_WIREFRAME)
 // x = distance, y = depth
 smooth out vec2 _waterDetails;
@@ -335,9 +331,7 @@ void main()
     gl_Position = dvd_ViewProjectionMatrix * _out._vertexW;
     setClipPlanes(_out._vertexW);
 
-#if defined(SHADOW_PASS)
-    dvd_vertexWVP = gl_Position;
-#else
+#if !defined(SHADOW_PASS)
     waterDetails();
     if (tes_tessLevel >= 64.0) {
         LoD = 0;
@@ -365,10 +359,6 @@ in float tes_tessLevel[];
 
 layout(triangle_strip, max_vertices = 4) out;
 
-
-#if defined(SHADOW_PASS)
-out vec4 dvd_vertexWVP;
-#else
 // x = distance, y = depth
 smooth out vec2 _waterDetails;
 out vec3 gs_wireColor;
@@ -421,9 +411,7 @@ vec4 getWVPPositon(int index) {
 void PerVertex(in int i, in vec3 edge_dist) {
     PassData(i);
     gl_Position = getWVPPositon(i);
-#if defined(SHADOW_PASS)
-    dvd_vertexWVP = gl_Position;
-#else
+#if !defined(SHADOW_PASS)
     if (tes_tessLevel[0] >= 64.0) {
         gs_wireColor = vec3(0.0, 0.0, 1.0);
         LoD = 0;

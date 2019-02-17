@@ -51,6 +51,7 @@ namespace {
 GLConfig GL_API::s_glConfig;
 GLStateTracker* GL_API::s_activeStateTracker = nullptr;
 GL_API::stateTrackerMap GL_API::s_stateTrackers;
+bool GL_API::s_glFlushQueued = false;
 bool GL_API::s_enabledDebugMSGGroups = false;
 GLUtil::glTexturePool<256> GL_API::s_texturePool;
 glGlobalLockManager GL_API::s_globalLockManager;
@@ -1157,15 +1158,11 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             lockBuffers();
         }break;
         case GFX::CommandType::DRAW_COMMANDS : {
-            bool first = true;
             const vectorEASTLFast<GenericDrawCommand>& drawCommands = commandBuffer.get<GFX::DrawCommand>(entry)._drawCommands;
             for (const GenericDrawCommand& currentDrawCommand : drawCommands) {
                 if (draw(currentDrawCommand)) {
                     // Lock all buffers as soon as we issue a draw command since we should've flushed the command queue by now
-                    if (first) {
-                        lockBuffers();
-                        first = false;
-                    }
+                    lockBuffers();
                     if (isEnabledOption(currentDrawCommand, CmdRenderOptions::RENDER_GEOMETRY)) {
                         if (isEnabledOption(currentDrawCommand, CmdRenderOptions::RENDER_WIREFRAME)) {
                             _context.registerDrawCalls(2);
@@ -1225,7 +1222,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
 }
 
 bool GL_API::lockBuffers() {
-    BufferWriteData data;
+    BufferWriteData data = {};
     bool flush = false;
 
     g_bufferLockData.resize(0);
@@ -1257,15 +1254,20 @@ bool GL_API::lockBuffers() {
     }
 
     if (haveEntries) {
-        s_globalLockManager.LockBuffers(entries);
-    }
-
-    if (flush) {
-        // Make forward progress in worker thread so that we don't deadlock
-        glFlush();
+        s_globalLockManager.LockBuffers(entries, false);
+        if (flush) {
+            s_glFlushQueued = true;
+        }
     }
 
     return flush;
+}
+
+void GL_API::postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
+    if (s_glFlushQueued) {
+        glFlush();
+        s_glFlushQueued = false;
+    }
 }
 
 void GL_API::registerBufferBind(const BufferWriteData& data) {

@@ -1,6 +1,10 @@
 #ifndef _NODE_BUFFERED_INPUT_CMN_
 #define _NODE_BUFFERED_INPUT_CMN_
 
+#if defined(PRE_PASS) || defined(SHADOW_PASS)
+#define DEPTH_PASS
+#endif
+
 struct NodeData {
     mat4 _worldMatrix;
     // [0][0] ... [2][2] = normal matrix

@@ -95,6 +95,8 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
 
     virtual void flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) = 0;
 
+    virtual void postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) = 0;
+
     virtual vec2<U16> getDrawableSize(const DisplayWindow& window) const = 0;
 
     // The definition of a hack. Feel free to quote this. -Ionut

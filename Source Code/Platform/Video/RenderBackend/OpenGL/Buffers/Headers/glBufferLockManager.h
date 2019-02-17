@@ -84,7 +84,7 @@ public:
     GLsync syncHere() const;
     // Return true if  we found a lock to wait on
     bool WaitForLockedRange(I64 bufferGUID, size_t lockBeginBytes, size_t lockLength, bool noWait = false);
-    void LockBuffers(BufferLockEntries entries);
+    void LockBuffers(BufferLockEntries entries, bool flush);
 
 protected:
     bool test(GLsync syncObject, vectorEASTL<BufferRange>& ranges, BufferRange testRange, bool noWait = false);

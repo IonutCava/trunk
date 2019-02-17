@@ -60,10 +60,6 @@ in flat float _lod[];
 out flat int _arrayLayerFrag;
 out flat float _alphaFactor;
 
-#if defined(SHADOW_PASS)
-out vec4 dvd_vertexWVP;
-#endif
-
 void PerVertex(int idx) {
     PassData(idx);
     _arrayLayerFrag = _arrayLayerGS[idx];
@@ -71,8 +67,6 @@ void PerVertex(int idx) {
     gl_Position = gl_in[idx].gl_Position;
 #if !defined(SHADOW_PASS)
     setClipPlanes(gl_in[idx].gl_Position);
-#else
-    dvd_vertexWVP = gl_Position;
 #endif
 }
 

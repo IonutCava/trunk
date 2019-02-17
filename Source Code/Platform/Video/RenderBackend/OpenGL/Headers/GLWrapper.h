@@ -133,7 +133,9 @@ protected:
     size_t setStateBlock(size_t stateBlockHash) override;
 
     void flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) override;
-    
+
+    void postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) override;
+
     /// Return the time it took to render a single frame (in nanoseconds). Only
     /// works in GPU validation builds
     F32 getFrameDurationGPU() const override;
@@ -277,6 +279,7 @@ private:
 
     static moodycamel::ConcurrentQueue<BufferWriteData> s_bufferBinds;
 
+    static bool s_glFlushQueued;
     static bool s_syncDeleteQueueSwitchFlag;
     static moodycamel::ConcurrentQueue<GLsync> s_syncDeleteQueue[2];
 

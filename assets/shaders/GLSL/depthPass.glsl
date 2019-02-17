@@ -2,19 +2,11 @@
 
 #include "vbInputData.vert"
 
-#if defined(SHADOW_PASS)
-out vec4 vert_vertexWVP;
-#endif
-
 void main() {
 
     computeData();
 
     gl_Position = dvd_ViewProjectionMatrix * VAR._vertexW;
-
-#if defined(SHADOW_PASS)
-    vert_vertexWVP = gl_Position;
-#endif
 }
 
 -- Fragment.PrePass.AlphaDiscard
