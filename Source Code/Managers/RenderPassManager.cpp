@@ -347,13 +347,11 @@ void RenderPassManager::buildDrawCommands(RenderStagePass stagePass, const PassP
     }
 
     if (refresh) {
-        const mat4<F32>& viewMatrix = params._camera->getViewMatrix();
-
         GFX::MemoryBarrierCommand memCmd;
         memCmd._barrierMask = to_base(MemoryBarrierType::SHADER_BUFFER);
         GFX::EnqueueCommand(bufferInOut, memCmd);
 
-        refreshNodeData(stagePass, sceneRenderState, viewMatrix, g_sortedQueues, bufferInOut);
+        refreshNodeData(stagePass, sceneRenderState, params._camera->getViewMatrix(), g_sortedQueues, bufferInOut);
     }
 }
 

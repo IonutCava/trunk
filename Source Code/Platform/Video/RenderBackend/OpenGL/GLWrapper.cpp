@@ -1157,11 +1157,15 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             lockBuffers();
         }break;
         case GFX::CommandType::DRAW_COMMANDS : {
+            bool first = true;
             const vectorEASTLFast<GenericDrawCommand>& drawCommands = commandBuffer.get<GFX::DrawCommand>(entry)._drawCommands;
             for (const GenericDrawCommand& currentDrawCommand : drawCommands) {
                 if (draw(currentDrawCommand)) {
                     // Lock all buffers as soon as we issue a draw command since we should've flushed the command queue by now
-                    lockBuffers();
+                    if (first) {
+                        lockBuffers();
+                        first = false;
+                    }
                     if (isEnabledOption(currentDrawCommand, CmdRenderOptions::RENDER_GEOMETRY)) {
                         if (isEnabledOption(currentDrawCommand, CmdRenderOptions::RENDER_WIREFRAME)) {
                             _context.registerDrawCalls(2);
@@ -1176,7 +1180,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             const GFX::DispatchComputeCommand& crtCmd = commandBuffer.get<GFX::DispatchComputeCommand>(entry);
             assert(s_activeStateTracker->_activePipeline != nullptr);
             glDispatchCompute(crtCmd._computeGroupSize.x, crtCmd._computeGroupSize.y, crtCmd._computeGroupSize.z);
-           
+            lockBuffers();
         }break;
         case GFX::CommandType::MEMORY_BARRIER: {
             const GFX::MemoryBarrierCommand& crtCmd = commandBuffer.get<GFX::MemoryBarrierCommand>(entry);
@@ -1220,14 +1224,6 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
     };
 }
 
-void GL_API::postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
-    ACKNOWLEDGE_UNUSED(commandBuffer);
-    if (lockBuffers()) {
-        // Make forward progress in worker thread so that we don't deadlock
-        glFlush();
-    }
-}
-
 bool GL_API::lockBuffers() {
     BufferWriteData data;
     bool flush = false;
@@ -1262,6 +1258,11 @@ bool GL_API::lockBuffers() {
 
     if (haveEntries) {
         s_globalLockManager.LockBuffers(entries);
+    }
+
+    if (flush) {
+        // Make forward progress in worker thread so that we don't deadlock
+        glFlush();
     }
 
     return flush;

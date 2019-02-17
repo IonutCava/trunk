@@ -133,7 +133,6 @@ protected:
     size_t setStateBlock(size_t stateBlockHash) override;
 
     void flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) override;
-    void postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer);
     
     /// Return the time it took to render a single frame (in nanoseconds). Only
     /// works in GPU validation builds

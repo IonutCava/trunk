@@ -55,7 +55,6 @@ class NONE_API final : public RenderAPIWrapper {
       F32 getFrameDurationGPU() const override;
       size_t setStateBlock(size_t stateBlockHash) override;
       void flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) override;
-      void postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) override;
       vec2<U16> getDrawableSize(const DisplayWindow& window) const override;
       U32 getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const override;
       bool setViewport(const Rect<I32>& newViewport) override;

@@ -44,7 +44,7 @@ bool glBufferLockManager::WaitForLockedRange(size_t lockBeginBytes,
             U8 retryCount = 0;
             if (wait(&lock._syncObj, blockClient, quickCheck, retryCount)) {
                 GL_API::registerSyncDelete(lock._syncObj);
-
+                lock._syncObj = nullptr;
                 if (retryCount > 0) {
                     //Console::d_errorfn("glBufferLockManager::WaitForLockedRange: Wait (%p) [%d - %d] %s - %d retries", this, lockBeginBytes, lockLength, blockClient ? "true" : "false", retryCount);
                 }
@@ -113,7 +113,7 @@ bool glGlobalLockManager::test(GLsync syncObject, vectorEASTL<BufferRange>& rang
 
 bool glGlobalLockManager::WaitForLockedRange(I64 bufferGUID, size_t lockBeginBytes, size_t lockLength, bool noWait) {
     BufferRange testRange{lockBeginBytes, lockLength};
-    
+
     UniqueLock w_lock(_lock);
     for (auto it = eastl::begin(_bufferLocks); it != eastl::end(_bufferLocks);) {
         BufferLockEntries& entries = it->second;
@@ -134,14 +134,13 @@ bool glGlobalLockManager::WaitForLockedRange(I64 bufferGUID, size_t lockBeginByt
 }
 
 void glGlobalLockManager::LockBuffers(BufferLockEntries entries) {
-    GLsync syncObject = syncHere();
-
     for (auto it1 : entries) {
         for (auto it2 : it1.second) {
             WaitForLockedRange(it1.first, it2._startOffset, it2._length, true);
         }
     }
 
+    GLsync syncObject = syncHere();
     UniqueLock w_lock(_lock);
     _bufferLocks.emplace_back(std::make_pair(syncObject, entries));
 }
