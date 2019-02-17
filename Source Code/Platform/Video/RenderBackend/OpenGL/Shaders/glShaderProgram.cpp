@@ -542,7 +542,7 @@ bool glShaderProgram::reloadShaders(bool reparseShaderSource) {
             }
             ret = true;
         } else {
-            Console::warnfn(Locale::get(_ID("WARN_GLSL_LOAD")), shaderCompileName.c_str());
+            Console::printfn(Locale::get(_ID("INFO_GLSL_LOAD")), shaderCompileName.c_str());
         }
     }
 

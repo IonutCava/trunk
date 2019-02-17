@@ -91,6 +91,10 @@ void BloomPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& b
     triangleCmd._drawCount = 1;
 
     RenderTargetHandle screen = _parent.inputRT();
+    TextureData data = screen._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData(); //screen
+    GFX::BindDescriptorSetsCommand descriptorSetCmd;
+    descriptorSetCmd._set._textureData.setTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT0));
+    GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     pipelineDescriptor._shaderProgramHandle = _bloomCalc->getID();
     GFX::BindPipelineCommand pipelineCmd;
@@ -98,10 +102,6 @@ void BloomPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& b
     GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
      // Step 1: generate bloom
-    TextureData data = screen._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData(); //screen
-    GFX::BindDescriptorSetsCommand descriptorSetCmd;
-    descriptorSetCmd._set._textureData.setTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT0));
-    GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     // render all of the "bright spots"
     GFX::BeginRenderPassCommand beginRenderPassCmd;
@@ -118,14 +118,15 @@ void BloomPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& b
 
     // Step 2: blur bloom
     // Blur horizontally
+    data = _bloomOutput._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
+    descriptorSetCmd._set._textureData.setTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT0));
+    GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
+
     pipelineDescriptor._shaderProgramHandle = _blur->getID();
     pipelineDescriptor._shaderFunctions[to_base(ShaderType::FRAGMENT)].push_back(_horizBlur);
     pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
     GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
-    data = _bloomOutput._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
-    descriptorSetCmd._set._textureData.setTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT0));
-    GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     beginRenderPassCmd._target = _bloomBlurBuffer[0]._targetID;
     GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);

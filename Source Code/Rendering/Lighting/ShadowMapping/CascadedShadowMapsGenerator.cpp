@@ -346,6 +346,10 @@ void CascadedShadowMapsGenerator::postRender(const DirectionalLightComponent& li
         drawCmd._drawCommands.push_back(pointsCmd);
 
         // Blur horizontally
+        TextureData texData = _drawBuffer._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
+        descriptorSetCmd._set._textureData.setTexture(texData, to_U8(ShaderProgram::TextureUsage::UNIT0));
+        GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
+
         beginRenderPassCmd._target = _blurBuffer._targetID;
         beginRenderPassCmd._name = "DO_CSM_BLUR_PASS_HORIZONTAL";
         GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
@@ -353,21 +357,20 @@ void CascadedShadowMapsGenerator::postRender(const DirectionalLightComponent& li
         pipelineDescriptor._shaderProgramHandle = _blurDepthMapShader->getID();
         pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
         GFX::EnqueueCommand(bufferInOut, pipelineCmd);
-
         _blurDepthMapConstants.set("layerCount", GFX::PushConstantType::INT, (I32)light.csmSplitCount());
 
         pushConstantsCommand._constants = _blurDepthMapConstants;
         GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
-
-        TextureData texData = _drawBuffer._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
-        descriptorSetCmd._set._textureData.setTexture(texData, to_U8(ShaderProgram::TextureUsage::UNIT0));
-        GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
         GFX::EnqueueCommand(bufferInOut, drawCmd);
 
         GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
 
         // Blur vertically
+        texData = _blurBuffer._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
+        descriptorSetCmd._set._textureData.setTexture(texData, to_U8(ShaderProgram::TextureUsage::UNIT0));
+        GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
+
         beginRenderPassCmd._target = depthMapID;
         beginRenderPassCmd._descriptor = RenderTarget::defaultPolicyNoClear();
         beginRenderPassCmd._name = "DO_CSM_BLUR_PASS_VERTICAL";
@@ -379,10 +382,6 @@ void CascadedShadowMapsGenerator::postRender(const DirectionalLightComponent& li
 
         pushConstantsCommand._constants.set("layerOffsetWrite", GFX::PushConstantType::INT, (I32)light.getShadowOffset());
         GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
-
-        texData = _blurBuffer._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
-        descriptorSetCmd._set._textureData.setTexture(texData, to_U8(ShaderProgram::TextureUsage::UNIT0));
-        GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
         GFX::EnqueueCommand(bufferInOut, drawCmd);
 

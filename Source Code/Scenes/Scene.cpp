@@ -922,11 +922,15 @@ bool Scene::lockCameraToPlayerMouse(PlayerIndex index, bool lockState) {
 
     DisplayWindow* window = _context.app().windowManager().getFocusedWindow();
     if (lockState) {
-        hadWindowGrab = window->grabState();
+        if (window != nullptr) {
+            hadWindowGrab = window->grabState();
+        }
         lastMousePosition = WindowManager::GetCursorPosition(true);
     } else {
         state().playerState(index).resetMovement();
-        window->grabState(hadWindowGrab);
+        if (window != nullptr) {
+            window->grabState(hadWindowGrab);
+        }
         _context.app().windowManager().setCursorPosition(lastMousePosition.x, lastMousePosition.y, true);
     }
 
@@ -1225,7 +1229,7 @@ bool Scene::mouseMoved(const Input::MouseMoveEvent& arg) {
             findHoverTarget(idx, arg.absolutePos());
         } else if (Config::Build::ENABLE_EDITOR) {
             Editor& editor = _context.editor();
-            if (!editor.scenePreviewHovered()) {
+            if (editor.running() && !editor.scenePreviewHovered()) {
                 lockCameraToPlayerMouse(idx, false);
             }
         }
