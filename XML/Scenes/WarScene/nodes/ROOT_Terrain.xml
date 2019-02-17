@@ -99,14 +99,6 @@
                 <Filter min="LINEAR_MIPMAP_LINEAR" mag="LINEAR"/>
                 <anisotropy>8</anisotropy>
             </NORMALMAP>
-            <OPACITY>
-                <name>warTerrain_preview.png</name>
-                <path>assets/terrain</path>
-                <flipped>false</flipped>
-                <Map U="CLAMP" V="CLAMP" W="CLAMP"/>
-                <Filter min="LINEAR" mag="LINEAR"/>
-                <anisotropy>0</anisotropy>
-            </OPACITY>
         </texture>
     </Material>
 </RENDERING>

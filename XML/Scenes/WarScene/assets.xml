@@ -438,11 +438,11 @@
             <node name="sponza.obj_SGN_391" type="SUBMESH"/>
             <node name="sponza.obj_SGN_392" type="SUBMESH"/>
         </node>
-        <node name="Terrain" type="TERRAIN"/>
         <node name="CopacelBVlablabla" type="MESH">
             <node name="CopacelBVlablabla_0" type="SUBMESH"/>
             <node name="CopacelBVlablabla_1" type="SUBMESH"/>
             <node name="CopacelBVlablabla_2" type="SUBMESH"/>
         </node>
+        <node name="Terrain" type="TERRAIN"/>
     </node>
 </entities>

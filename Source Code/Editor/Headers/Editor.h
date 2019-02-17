@@ -137,6 +137,10 @@ class Editor : public PlatformContextComponent,
 
     const Rect<I32>& scenePreviewRect(bool globalCoords) const;
     bool scenePreviewFocused() const;
+    bool scenePreviewHovered() const;
+    bool wantsMouse() const;
+    bool wantsKeyboard() const;
+    bool wantsGamepad() const;
 
     const Rect<I32>& getTargetViewport() const;
 

@@ -182,7 +182,6 @@ namespace Divide {
                 }
             }
 
-
             ImVec2 startPos = bb.Min, endPos = bb.Max;
             startPos.x += remainingWndSize.x*.5f;
             startPos.y += remainingWndSize.y*.5f;
@@ -191,10 +190,13 @@ namespace Divide {
             window->DrawList->AddImage((void *)(intptr_t)gameView->getHandle(), startPos, endPos, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
             
             DisplayWindow* displayWindow = static_cast<DisplayWindow*>(window->Viewport->PlatformHandle);
-            vec2<I32> windowPosition = displayWindow->getPosition();
+            // We might be dragging the window
+            if (displayWindow != nullptr) {
+                vec2<I32> windowPosition = displayWindow->getPosition();
 
-            _sceneRect.set(startPos.x, startPos.y, endPos.x, endPos.y);
-            _sceneRectLocal.set(_sceneRect - vec4<I32>(windowPosition.x, windowPosition.y, windowPosition.x, windowPosition.y));
+                _sceneRect.set(startPos.x, startPos.y, endPos.x, endPos.y);
+                _sceneRectLocal.set(_sceneRect - vec4<I32>(windowPosition.x, windowPosition.y, windowPosition.x, windowPosition.y));
+            }
         }
         
 
@@ -226,7 +228,7 @@ namespace Divide {
             }
             ImGui::PopItemWidth();
         }
-        ImGui::Separator();
+
         _parent.setTransformSettings(settings);
     }
 

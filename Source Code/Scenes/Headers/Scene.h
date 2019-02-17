@@ -249,7 +249,7 @@ class Scene : public Resource, public PlatformContextComponent {
     void resetSelection(PlayerIndex idx);
     void setSelected(PlayerIndex idx, SceneGraphNode& sgn);
 
-    bool editorVisible() const;
+    bool lockCameraToPlayerMouse(PlayerIndex index, bool lockState);
    protected:
        /// Global info
        SceneManager& _parent;

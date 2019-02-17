@@ -687,9 +687,6 @@ SceneGraphNode* Scene::addInfPlane(SceneGraphNode& parentNode, boost::property_t
 }
 
 U16 Scene::registerInputActions() {
-    static bool hadWindowGrab = false;
-    static vec2<I32> lastMousePosition;
-
     _input->flushCache();
 
     auto none = [](InputParams param) {};
@@ -773,26 +770,8 @@ U16 Scene::registerInputActions() {
     auto toggleOctreeRegionRendering = [this](InputParams param) {renderState().toggleOption(SceneRenderState::RenderOptions::RENDER_OCTREE_REGIONS);};
     auto select = [this](InputParams  param) {findSelection(getPlayerIndexForDevice(param._deviceIndex), true); };
     auto multiselect = [this](InputParams  param) {findSelection(getPlayerIndexForDevice(param._deviceIndex), false); };
-    auto lockCameraToMouse = [this](InputParams  param) {
-        SceneStatePerPlayer& playerState = state().playerState(getPlayerIndexForDevice(param._deviceIndex));
-        playerState.cameraLockedToMouse(true);
-        DisplayWindow* window = _context.app().windowManager().getFocusedWindow();
-        hadWindowGrab = window->grabState();
-
-        lastMousePosition = WindowManager::GetCursorPosition(true);
-        WindowManager::ToggleRelativeMouseMode(true);
-    };
-    auto releaseCameraFromMouse = [this](InputParams  param) {
-        SceneStatePerPlayer& playerState = state().playerState(getPlayerIndexForDevice(param._deviceIndex));
-
-        playerState.cameraLockedToMouse(false);
-        playerState.resetMovement();
-
-        WindowManager::ToggleRelativeMouseMode(false);
-        DisplayWindow* window = _context.app().windowManager().getFocusedWindow();
-        window->grabState(hadWindowGrab);
-        _context.app().windowManager().setCursorPosition(lastMousePosition.x, lastMousePosition.y, true);
-    };
+    auto lockCameraToMouse = [this](InputParams  param) { lockCameraToPlayerMouse(getPlayerIndexForDevice(param._deviceIndex), true); };
+    auto releaseCameraFromMouse = [this](InputParams  param) { lockCameraToPlayerMouse(getPlayerIndexForDevice(param._deviceIndex), false); };
     auto rendererDebugView = [this](InputParams param) {_context.gfx().getRenderer().toggleDebugView();};
     auto shutdown = [this](InputParams param) { _context.app().RequestShutdown();};
     auto povNavigation = [this](InputParams param) {
@@ -933,6 +912,27 @@ U16 Scene::registerInputActions() {
 
 void Scene::loadKeyBindings() {
     XML::loadDefaultKeybindings(Paths::g_xmlDataLocation + "keyBindings.xml", this);
+}
+
+bool Scene::lockCameraToPlayerMouse(PlayerIndex index, bool lockState) {
+    static bool hadWindowGrab = false;
+    static vec2<I32> lastMousePosition;
+
+    state().playerState(index).cameraLockedToMouse(lockState);
+
+    DisplayWindow* window = _context.app().windowManager().getFocusedWindow();
+    if (lockState) {
+        hadWindowGrab = window->grabState();
+        lastMousePosition = WindowManager::GetCursorPosition(true);
+    } else {
+        state().playerState(index).resetMovement();
+        window->grabState(hadWindowGrab);
+        _context.app().windowManager().setCursorPosition(lastMousePosition.x, lastMousePosition.y, true);
+    }
+
+    WindowManager::ToggleRelativeMouseMode(lockState);
+
+    return true;
 }
 
 void Scene::loadDefaultCamera() {
@@ -1223,6 +1223,11 @@ bool Scene::mouseMoved(const Input::MouseMoveEvent& arg) {
         PlayerIndex idx = getPlayerIndexForDevice(arg._deviceIndex);
         if (!state().playerState(idx).cameraLockedToMouse()) {
             findHoverTarget(idx, arg.absolutePos());
+        } else if (Config::Build::ENABLE_EDITOR) {
+            Editor& editor = _context.editor();
+            if (!editor.scenePreviewHovered()) {
+                lockCameraToPlayerMouse(idx, false);
+            }
         }
     }
     return false;
@@ -1565,7 +1570,4 @@ Camera* Scene::playerCamera(U8 index) const {
     return Attorney::SceneManagerCameraAccessor::playerCamera(_parent, index);
 }
 
-bool Scene::editorVisible() const {
-    return _context.editor().running();
-}
 };

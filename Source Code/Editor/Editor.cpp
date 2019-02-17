@@ -256,6 +256,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
             data->_windowOwned = true;
 
             viewport->PlatformHandle = (void*)data->_window;
+            assert(viewport->PlatformHandle != nullptr);
         };
 
         platform_io.Platform_DestroyWindow = [](ImGuiViewport* viewport)
@@ -691,7 +692,7 @@ void Editor::renderDrawList(ImDrawData* pDrawData, bool overlayOnScene, I64 wind
     GFX::CommandBuffer& buffer = sBuffer();
 
     RenderStateBlock state = {};
-    state.setCullMode(CullMode::CCW);
+    state.setCullMode(CullMode::NONE);
     state.depthTestEnabled(false);
     state.setScissorTest(true);
 
@@ -806,7 +807,7 @@ bool Editor::onKeyDown(const Input::KeyEvent& key) {
     io.KeyAlt = key._key == Input::KeyCode::KC_LMENU || key._key == Input::KeyCode::KC_RMENU;
     io.KeySuper = key._key == Input::KeyCode::KC_LWIN || key._key == Input::KeyCode::KC_RWIN;
 
-    return io.WantCaptureKeyboard;
+    return wantsKeyboard();
 }
 
 /// Key released: return true if input was consumed
@@ -837,7 +838,8 @@ bool Editor::onKeyUp(const Input::KeyEvent& key) {
     if (key._key == Input::KeyCode::KC_LWIN || key._key == Input::KeyCode::KC_RWIN) {
         io.KeySuper = false;
     }
-    return io.WantCaptureKeyboard;
+
+    return wantsKeyboard();
 }
 
 ImGuiViewport* Editor::findViewportByPlatformHandle(ImGuiContext* context, DisplayWindow* window) {
@@ -887,7 +889,7 @@ bool Editor::mouseMoved(const Input::MouseMoveEvent& arg) {
         }
     }
 
-    return io.WantCaptureMouse;
+    return wantsMouse();
 }
 
 /// Mouse button pressed: return true if input was consumed
@@ -908,7 +910,8 @@ bool Editor::mouseButtonPressed(const Input::MouseButtonEvent& arg) {
         }
     }
 
-    return io.WantCaptureMouse;
+
+    return wantsMouse();
 }
 
 /// Mouse button released: return true if input was consumed
@@ -936,7 +939,7 @@ bool Editor::mouseButtonReleased(const Input::MouseButtonEvent& arg) {
         }
     }
 
-    return io.WantCaptureMouse;
+    return wantsMouse();
 }
 
 bool Editor::joystickButtonPressed(const Input::JoystickEvent &arg) {
@@ -948,7 +951,7 @@ bool Editor::joystickButtonPressed(const Input::JoystickEvent &arg) {
         return _gizmo->joystickButtonPressed(arg);
     }
 
-    return false;
+    return wantsGamepad();
 }
 
 bool Editor::joystickButtonReleased(const Input::JoystickEvent &arg) {
@@ -960,7 +963,7 @@ bool Editor::joystickButtonReleased(const Input::JoystickEvent &arg) {
         return _gizmo->joystickButtonReleased(arg);
     }
 
-    return false;
+    return wantsGamepad();
 }
 
 bool Editor::joystickAxisMoved(const Input::JoystickEvent &arg) {
@@ -968,7 +971,7 @@ bool Editor::joystickAxisMoved(const Input::JoystickEvent &arg) {
         return _gizmo->joystickAxisMoved(arg);
     }
 
-    return false;
+    return wantsGamepad();
 }
 
 bool Editor::joystickPovMoved(const Input::JoystickEvent &arg) {
@@ -980,7 +983,7 @@ bool Editor::joystickPovMoved(const Input::JoystickEvent &arg) {
         return _gizmo->joystickPovMoved(arg);
     }
 
-    return false;
+    return wantsGamepad();
 }
 
 bool Editor::joystickBallMoved(const Input::JoystickEvent &arg) {
@@ -992,7 +995,7 @@ bool Editor::joystickBallMoved(const Input::JoystickEvent &arg) {
         return _gizmo->joystickBallMoved(arg);
     }
 
-    return false;
+    return wantsGamepad();
 }
 
 bool Editor::joystickAddRemove(const Input::JoystickEvent &arg) {
@@ -1004,7 +1007,7 @@ bool Editor::joystickAddRemove(const Input::JoystickEvent &arg) {
         return _gizmo->joystickAddRemove(arg);
     }
 
-    return false;
+    return wantsGamepad();
 }
 
 bool Editor::joystickRemap(const Input::JoystickEvent &arg) {
@@ -1016,7 +1019,19 @@ bool Editor::joystickRemap(const Input::JoystickEvent &arg) {
         return _gizmo->joystickRemap(arg);
     }
 
-    return false;
+    return wantsGamepad();
+}
+
+bool Editor::wantsMouse() const {
+    return !scenePreviewFocused() && _imguiContext->IO.WantCaptureMouse;
+}
+
+bool Editor::wantsKeyboard() const {
+    return !scenePreviewFocused() && _imguiContext->IO.WantCaptureKeyboard;
+}
+
+bool Editor::wantsGamepad() const {
+    return !scenePreviewFocused();
 }
 
 void Editor::updateMousePosAndButtons() {
@@ -1042,10 +1057,9 @@ void Editor::updateMousePosAndButtons() {
     for (I32 n = 0; n < platform_io.Viewports.Size; n++) {
         ImGuiViewport* viewport = platform_io.Viewports[n];
         DisplayWindow* window = (DisplayWindow*)viewport->PlatformHandle;
-        if (window != nullptr) {
-            if (window->isHovered() && !(viewport->Flags & ImGuiViewportFlags_NoInputs)) {
-                io.MouseHoveredViewport = viewport->ID;
-            }
+        assert(window != nullptr);
+        if (window->isHovered() && !(viewport->Flags & ImGuiViewportFlags_NoInputs)) {
+            io.MouseHoveredViewport = viewport->ID;
         }
     }
 
@@ -1324,6 +1338,10 @@ ImGuiContext& Editor::imguizmoContext() {
 
 bool Editor::scenePreviewFocused() const {
     return _scenePreviewFocused;
+}
+
+bool Editor::scenePreviewHovered() const {
+    return _sceneHovered;
 }
 
 void Editor::saveToXML() const {

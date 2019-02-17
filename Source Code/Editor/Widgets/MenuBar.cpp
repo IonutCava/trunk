@@ -136,12 +136,6 @@ void MenuBar::drawFileMenu() {
         {
             ImGui::MenuItem("_PLACEHOLDER_A");
             ImGui::MenuItem("_PLACEHOLDER_B");
-            if (ImGui::BeginMenu("More.."))
-            {
-                ImGui::MenuItem("_PLACEHOLDER_C");
-                ImGui::MenuItem("_PLACEHOLDER_D");
-                ImGui::EndMenu();
-            }
             ImGui::EndMenu();
         }
         showFileSaveDialog = ImGui::MenuItem(hasUnsavedElements ? "Save*" : "Save", "Ctrl+S");
@@ -157,19 +151,6 @@ void MenuBar::drawFileMenu() {
         {
             static bool enabled = true;
             ImGui::MenuItem("Enabled", "", &enabled);
-            ImGui::BeginChild("child", ImVec2(0, 60), true);
-            for (int i = 0; i < 10; i++)
-                ImGui::Text("Scrolling Text %d", i);
-            ImGui::EndChild();
-            static float f = 0.5f;
-            ImGui::SliderFloat("Value", &f, 0.0f, 1.0f);
-            ImGui::InputFloat("Input", &f, 0.1f);
-            ImGui::EndMenu();
-        }
-        if (ImGui::BeginMenu("Colors"))
-        {
-            for (int i = 0; i < ImGuiCol_COUNT; i++)
-                ImGui::MenuItem(ImGui::GetStyleColorName((ImGuiCol)i));
             ImGui::EndMenu();
         }
 
