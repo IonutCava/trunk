@@ -288,7 +288,6 @@ void RenderingComponent::getRenderingProperties(RenderStagePass& stagePass, vec4
     if (getMaterialInstanceCache() != nullptr) {
         reflectionIndex = to_F32(getMaterialInstanceCache()->defaultReflectionTextureIndex());
         refractionIndex = to_F32(getMaterialInstanceCache()->defaultRefractionTextureIndex());
-        propertiesOut.w = getMaterialInstanceCache()->hasTransparency() ? 1.0f : 0.0f;
     } else {
         reflectionIndex = refractionIndex = 0.0f;
     }

@@ -72,7 +72,7 @@ constexpr unsigned int REQUIRED_RAM_SIZE = 2 * 1024 * 1024; //2Gb
 /// How many tasks should we keep in a pool to avoid using new/delete (must be power of two)
 constexpr unsigned int MAX_POOLED_TASKS = 16384;
 /// Maximum number of bones available per node
-constexpr unsigned int MAX_BONE_COUNT_PER_NODE = 256;
+constexpr unsigned int MAX_BONE_COUNT_PER_NODE = 128;
 /// Estimated maximum number of visible objects per render pass (this includes debug primitives)
 constexpr unsigned int MAX_VISIBLE_NODES = 1024;
 /// How many clip planes should the shaders us

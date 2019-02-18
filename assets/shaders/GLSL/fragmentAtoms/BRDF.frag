@@ -29,70 +29,93 @@ vec3 private_normalWV = vec3(0.0);
 #endif
 #endif
 
+
+vec4 getDirectionalLightContribution(in uint dirLightCount, in vec3 albedo, in vec4 specular) {
+    vec4 ret = vec4(0.0f);
+
+    for (uint lightIdx = 0; lightIdx < dirLightCount; ++lightIdx) {
+        const Light light = dvd_LightSource[lightIdx];
+        ret += getBRDFFactors(vec4(light._colour.rgb, 1.0), -light._directionWV.xyz, albedo, specular);
+    }
+
+    return ret;
+}
+
+vec4 getPointLightContribution(in uint nIndex, in uint offset, in vec3 albedo, in vec4 specular) {
+    vec4 ret = vec4(0.0f);
+
+    uint nNextLightIndex = perTileLightIndices[nIndex];
+    while (nNextLightIndex != LIGHT_INDEX_BUFFER_SENTINEL) {
+        const Light light = dvd_LightSource[int(nNextLightIndex - 1 + offset)];
+        const vec3 lightDirection = light._positionWV.xyz - VAR._vertexWV.xyz;
+        const vec4 colourAndAtt = vec4(light._colour.rgb, getLightAttenuationPoint(light, lightDirection));
+
+        ret += getBRDFFactors(colourAndAtt, lightDirection, albedo, specular);
+        nNextLightIndex = perTileLightIndices[++nIndex];
+    }
+
+    return ret;
+}
+
+vec4 getSpotLightContribution(in uint nIndex, in uint offset, in vec3 albedo, in vec4 specular) {
+    vec4 ret = vec4(0.0f);
+
+    // Moves past the first sentinel to get to the spot lights.
+    uint nNextLightIndex = perTileLightIndices[++nIndex];
+    while (nNextLightIndex != LIGHT_INDEX_BUFFER_SENTINEL) {
+        const Light light = dvd_LightSource[int(nNextLightIndex - 1 + offset)];
+        const vec3 lightDirection = light._positionWV.xyz - VAR._vertexWV.xyz;
+        const vec4 colourAndAtt = vec4(light._colour.rgb, getLightAttenuationSpot(light, lightDirection));
+
+        ret += getBRDFFactors(colourAndAtt, lightDirection, albedo, specular);
+        nNextLightIndex = perTileLightIndices[++nIndex];
+    }
+
+    return ret;
+}
+
+#if defined(USE_SHADING_FLAT)
+
 vec4 getLitColour(in vec4 albedo, in mat4 colourMatrix, in vec3 normal) {
-#   if defined(USE_SHADING_FLAT)
     return albedo;
-#   endif
+}
+
+#else //USE_SHADING_FLAT
+
+vec4 getLitColour(in vec4 albedo, in mat4 colourMatrix, in vec3 normal) {
     private_normalWV = normal;
 
     const uint dirLightCount = dvd_LightData.x;
     const vec4 specular = vec4(getSpecular(colourMatrix), getReflectivity(colourMatrix));
 
-    //.a = reflectionCoeff
-    vec4 lightColour = vec4(0.0);
+    // Apply all lighting contributions (.a = reflectionCoeff)
+    vec4 lightColour = getDirectionalLightContribution(dirLightCount, albedo.rgb, specular);
 
-    // Apply all lighting contributions
-    // Directional lights
-    for (uint lightIdx = 0; lightIdx < dirLightCount; ++lightIdx) {
-        const Light light = dvd_LightSource[lightIdx];
-        lightColour += getBRDFFactors(vec4(light._colour.rgb, 1.0), -light._directionWV.xyz, albedo.rgb, specular);
-    }
-
-    //if (dvd_lodLevel < 2) 
+    if (dvd_lodLevel < 2)
     {
-        // Point lights
-
         uint nIndex = GetTileIndex(gl_FragCoord.xy) * LIGHT_NUM_LIGHTS_PER_TILE;
-
-        uint nNextLightIndex = perTileLightIndices[nIndex];
-        while (nNextLightIndex != LIGHT_INDEX_BUFFER_SENTINEL) {
-            const Light light = dvd_LightSource[int(nNextLightIndex - 1 + dirLightCount)];
-            vec3 lightDirection = light._positionWV.xyz - VAR._vertexWV.xyz;
-
-            vec4 colourAndAtt = vec4(light._colour.rgb, getLightAttenuationPoint(light, lightDirection));
-
-            lightColour += getBRDFFactors(colourAndAtt, lightDirection, albedo.rgb, specular);
-            nNextLightIndex = perTileLightIndices[++nIndex];
-        }
-
-        // Spot lights
-        const uint offset = dirLightCount + dvd_LightData.y;
-        // Moves past the first sentinel to get to the spot lights.
-        nNextLightIndex = perTileLightIndices[++nIndex];
-        while (nNextLightIndex != LIGHT_INDEX_BUFFER_SENTINEL) {
-            const Light light = dvd_LightSource[int(nNextLightIndex - 1 + offset)];
-            vec3 lightDirection = light._positionWV.xyz - VAR._vertexWV.xyz;
-            vec4 colourAndAtt = vec4(light._colour.rgb, getLightAttenuationSpot(light, lightDirection));
-
-            lightColour += getBRDFFactors(colourAndAtt, lightDirection, albedo.rgb, specular);
-            nNextLightIndex = perTileLightIndices[++nIndex];
-        }
-
+        lightColour += getPointLightContribution(nIndex, dirLightCount, albedo.rgb, specular);
+        
+        // Move past the first sentinel to get to the spot lights
+        lightColour += getSpotLightContribution(nIndex, dirLightCount + dvd_LightData.y, albedo.rgb, specular);
     }
-    vec3 colour = mix(getEmissive(colourMatrix), lightColour.rgb, DIST_TO_ZERO(length(lightColour.rgb)));
+
+    lightColour.rgb += getEmissive(colourMatrix);
 
 #if defined(IS_REFLECTIVE)
-    /*if (dvd_lodLevel < 1) {
+    if (dvd_lodLevel < 1) {
         vec3 reflectDirection = reflect(normalize(VAR._vertexWV.xyz), processedNormal);
         reflectDirection = vec3(inverse(dvd_ViewMatrix) * vec4(reflectDirection, 0.0));
-        colour = mix(texture(texEnvironmentCube, vec4(reflectDirection, dvd_reflectionIndex)).rgb,
-                    colour,
-                    vec3(saturate(lightColour.a)));
-    }*/
-#endif
+        /*lightColour.rgb = mix(texture(texEnvironmentCube, vec4(reflectDirection, dvd_reflectionIndex)).rgb,
+                          lightColour.rgb,
+                          vec3(saturate(lightColour.a)));
+        */
+    }
+#endif //IS_REFLECTIVE
 
-    return vec4(colour, albedo.a);
+    return vec4(lightColour.rgb, albedo.a);
 }
+#endif //USE_SHADING_FLAT
 
 vec4 getPixelColour(in vec4 albedo, in mat4 colourMatrix, in vec3 normal) {
     vec4 colour = getLitColour(albedo, colourMatrix, normal);
@@ -110,8 +133,8 @@ vec4 getPixelColour(in vec4 albedo, in mat4 colourMatrix, in vec3 normal) {
         case  3: colour.rgb += vec3(0.15, 0.25, 0.40); break;
         };
     }
-#   endif
-#endif
+#   endif //DEBUG_SHADOWMAPPING
+#endif //DISABLE_SHADOW_MAPPING
     return colour;
 }
 
@@ -125,15 +148,15 @@ vec3 getNormal() {
 #   elif defined(USE_RELIEF_MAPPING)
 #   else
         normal = getTBNMatrix() * getBump(VAR._texCoord);
-#   endif
+#   endif //USE_PARALLAX_MAPPING
     }
-#endif
+#endif //COMPUTE_TBN
 
 #   if defined (USE_DOUBLE_SIDED)
     if (!gl_FrontFacing) {
         normal = -normal;
     }
-#   endif
+#   endif //USE_DOUBLE_SIDED
 
     return normal;
 }
