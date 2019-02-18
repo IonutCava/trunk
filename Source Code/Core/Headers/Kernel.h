@@ -175,7 +175,7 @@ class Kernel : public Input::InputAggregatorInterface,
     /// In a GPU-bound application, the CPU will wait on the GPU to finish
     /// processing the frame
     /// so this should keep it busy (old-GLUT heritage)
-    void idle();
+    void idle(bool fast);
     
     /// Key pressed
     bool onKeyDown(const Input::KeyEvent& key) override;

@@ -120,10 +120,12 @@ inline const vectorEASTL<CommandBuffer::CommandEntry>& CommandBuffer::operator()
 }
 
 inline void CommandBuffer::clear(bool clearMemory) {
-    _commandOrder.resize(0);
     _commandCount.fill(0);
     if (clearMemory) {
-        _commands.clear();
+        _commandOrder.clear();
+        _commands.clear(true);
+    } else {
+        _commandOrder.resize(0);
     }
 }
 
@@ -187,8 +189,8 @@ inline bool CommandBuffer::tryMergeCommands(GFX::CommandType::_enumerated type, 
     commands.erase(eastl::remove_if(eastl::begin(commands),
                                     eastl::end(commands),
                                     [](const GenericDrawCommand& cmd) -> bool {
-                                    return cmd._drawCount == 0;
-                                }),
+                                        return cmd._drawCount == 0;
+                                    }),
                   eastl::end(commands));
     partial = true;
     return true;

@@ -209,6 +209,7 @@ class Terrain : public Object3D {
 
     EditorDataState _editorDataDirtyState;
     bool _drawBBoxes;
+    bool _shaderDataDirty;
     SceneGraphNode* _vegetationGrassNode;
     TerrainTextureLayer* _terrainTextures;
     std::shared_ptr<TerrainDescriptor> _descriptor;

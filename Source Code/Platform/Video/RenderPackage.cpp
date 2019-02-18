@@ -209,18 +209,12 @@ void RenderPackage::setLoDLevel(U8 LoD) {
 }
 
 void RenderPackage::updateDrawCommands(U32 dataIndex, U32 startOffset) {
-    GFX::CommandBuffer::Container::EntryList& cmds = _commands->get<GFX::DrawCommand>();
-    for (GFX::CommandBuffer::Container::EntryList::value_type& cmd : cmds) {
-        GFX::DrawCommand& drawCommand = static_cast<GFX::DrawCommand&>(*cmd);
-        for (GenericDrawCommand& drawCmd : drawCommand._drawCommands) {
-            if (drawCmd._cmd.baseInstance != dataIndex) {
-                drawCmd._cmd.baseInstance = dataIndex;
-            }
-
-            if (drawCmd._commandOffset != startOffset) {
-                drawCmd._commandOffset = startOffset;
-            }
-            ++startOffset;
+    auto& cmds = _commands->get<GFX::DrawCommand>();
+    for (auto& cmd : cmds) {
+        auto& drawCommands = static_cast<GFX::DrawCommand&>(*cmd)._drawCommands;
+        for (GenericDrawCommand& drawCmd : drawCommands) {
+            drawCmd._cmd.baseInstance = dataIndex;
+            drawCmd._commandOffset = startOffset++;
         }
     }
 }

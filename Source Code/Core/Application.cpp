@@ -104,10 +104,6 @@ void Application::stop() {
     }
 }
 
-void Application::idle() {
-
-}
-
 bool Application::step() {
     if (onLoop()) {
         Attorney::KernelApplication::onLoop(*_kernel);

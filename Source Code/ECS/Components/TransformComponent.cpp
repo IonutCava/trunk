@@ -457,18 +457,18 @@ namespace Divide {
     }
 
     mat4<F32> TransformComponent::getWorldMatrix(D64 interpolationFactor) const {
-        mat4<F32> ret(getWorldMatrix());
-
         if (_parentUsageContext != NodeUsageContext::NODE_STATIC && interpolationFactor < 0.99) {
-            ret.set(getMatrix(interpolationFactor));
+            mat4<F32> ret(getMatrix(interpolationFactor));
 
             SceneGraphNode* grandParentPtr = _parentSGN.getParent();
             if (grandParentPtr) {
                 ret *= grandParentPtr->get<TransformComponent>()->getWorldMatrix(interpolationFactor);
             }
+
+            return ret;
         }
 
-        return ret;
+        return getWorldMatrix();
     }
 
     /// Return the position

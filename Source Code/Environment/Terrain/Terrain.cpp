@@ -30,6 +30,7 @@ Terrain::Terrain(GFXDevice& context, ResourceCache& parentCache, size_t descript
     : Object3D(context, parentCache, descriptorHash, name, ObjectType::TERRAIN),
       _shaderData(nullptr),
       _drawBBoxes(false),
+      _shaderDataDirty(false),
       _drawDistance(0.0f),
       _editorDataDirtyState(EditorDataState::IDLE)
 {
@@ -64,7 +65,7 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
     ShaderBufferDescriptor bufferDescriptor;
     bufferDescriptor._elementCount = Terrain::MAX_RENDER_NODES * ((to_base(RenderStage::COUNT) - 1) + shadowSizeFactor);
     bufferDescriptor._elementSize = sizeof(TessellatedNodeData);
-    bufferDescriptor._ringBufferLength = 1;
+    bufferDescriptor._ringBufferLength = 3;
     bufferDescriptor._separateReadWrite = false;
     bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
                               
@@ -154,7 +155,10 @@ void Terrain::frameStarted(SceneGraphNode& sgn) {
 void Terrain::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState) {
      _terrainTessellatorFlags[sgn.getGUID()].fill(false);
     _drawDistance = sceneState.renderState().generalVisibility();
-    _shaderData->incQueue();
+    if (_shaderDataDirty) {
+        _shaderData->incQueue();
+        _shaderDataDirty = false;
+    }
 
     Object3D::sceneUpdate(deltaTimeUS, sgn, sceneState);
 }
@@ -192,7 +196,7 @@ bool Terrain::onRender(SceneGraphNode& sgn,
         const Frustum& frustum = camera.getFrustum();
         const vec3<F32>& crtPos = sgn.get<TransformComponent>()->getPosition();
 
-        if (renderStagePass._stage == RenderStage::SHADOW || tessellator->getOrigin() != crtPos || tessellator->getFrustum() != frustum)
+        if (tessellator->getOrigin() != crtPos || tessellator->getFrustum() != frustum)
         {
             tessellator->createTree(camera.getEye(), frustum, crtPos, _descriptor->getDimensions());
             U8 LoD = (renderStagePass._stage == RenderStage::REFLECTION || renderStagePass._stage == RenderStage::REFRACTION) ? 1 : 0;
@@ -200,14 +204,17 @@ bool Terrain::onRender(SceneGraphNode& sgn,
             bufferPtr data = (bufferPtr)tessellator->updateAndGetRenderData(depth, LoD);
 
             _shaderData->writeData(offset, depth, data);
+            _shaderDataDirty = true;
         }
 
         wasUpdated = true;
     }
      
     GenericDrawCommand cmd = pkg.drawCommand(0, 0);
-    cmd._cmd.primCount = depth;
-    pkg.drawCommand(0, 0, cmd);
+    if (cmd._cmd.primCount != depth) {
+        cmd._cmd.primCount = depth;
+        pkg.drawCommand(0, 0, cmd);
+    }
 
     if (renderStagePass._stage == RenderStage::DISPLAY && renderStagePass._passType == RenderPassType::PRE_PASS) {
         _terrainQuadtree.updateVisibility(camera, _drawDistance);

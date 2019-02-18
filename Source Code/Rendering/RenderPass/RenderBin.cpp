@@ -76,7 +76,7 @@ void RenderBin::sort(RenderStage stage, RenderingOrder::List renderOrder) {
         case RenderingOrder::List::BY_STATE: {
             eastl::sort(eastl::begin(_renderBinStack[stageIndex]),
                         eastl::end(_renderBinStack[stageIndex]),
-                         RenderQueueKeyCompare());
+                        RenderQueueKeyCompare());
         } break;
         case RenderingOrder::List::BACK_TO_FRONT: {
             eastl::sort(eastl::begin(_renderBinStack[stageIndex]),

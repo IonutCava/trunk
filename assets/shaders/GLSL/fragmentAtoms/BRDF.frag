@@ -46,7 +46,7 @@ vec4 getPointLightContribution(in uint nIndex, in uint offset, in vec3 albedo, i
 
     uint nNextLightIndex = perTileLightIndices[nIndex];
     while (nNextLightIndex != LIGHT_INDEX_BUFFER_SENTINEL) {
-        const Light light = dvd_LightSource[int(nNextLightIndex - 1 + offset)];
+        const Light light = dvd_LightSource[int(nNextLightIndex + offset)];
         const vec3 lightDirection = light._positionWV.xyz - VAR._vertexWV.xyz;
         const vec4 colourAndAtt = vec4(light._colour.rgb, getLightAttenuationPoint(light, lightDirection));
 
@@ -63,7 +63,7 @@ vec4 getSpotLightContribution(in uint nIndex, in uint offset, in vec3 albedo, in
     // Moves past the first sentinel to get to the spot lights.
     uint nNextLightIndex = perTileLightIndices[++nIndex];
     while (nNextLightIndex != LIGHT_INDEX_BUFFER_SENTINEL) {
-        const Light light = dvd_LightSource[int(nNextLightIndex - 1 + offset)];
+        const Light light = dvd_LightSource[int(nNextLightIndex + offset)];
         const vec3 lightDirection = light._positionWV.xyz - VAR._vertexWV.xyz;
         const vec4 colourAndAtt = vec4(light._colour.rgb, getLightAttenuationSpot(light, lightDirection));
 

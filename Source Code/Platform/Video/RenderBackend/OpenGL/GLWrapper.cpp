@@ -1042,6 +1042,10 @@ void GL_API::popDebugMessage() {
     }
 }
 
+namespace {
+    static bool s_firstCommandInBuffer = true;
+};
+
 void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) {
     switch (static_cast<GFX::CommandType::_enumerated>(entry._typeIndex)) {
         case GFX::CommandType::BEGIN_RENDER_PASS: {
@@ -1150,19 +1154,19 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
         case GFX::CommandType::DRAW_TEXT: {
             const GFX::DrawTextCommand& crtCmd = commandBuffer.get<GFX::DrawTextCommand>(entry);
             drawText(crtCmd._batch);
-            lockBuffers();
+            lockBuffers(false);
         }break;
         case GFX::CommandType::DRAW_IMGUI: {
             const GFX::DrawIMGUICommand& crtCmd = commandBuffer.get<GFX::DrawIMGUICommand>(entry);
             drawIMGUI(crtCmd._data, crtCmd._windowGUID);
-            lockBuffers();
+            lockBuffers(false);
         }break;
         case GFX::CommandType::DRAW_COMMANDS : {
             const vectorEASTLFast<GenericDrawCommand>& drawCommands = commandBuffer.get<GFX::DrawCommand>(entry)._drawCommands;
             for (const GenericDrawCommand& currentDrawCommand : drawCommands) {
                 if (draw(currentDrawCommand)) {
                     // Lock all buffers as soon as we issue a draw command since we should've flushed the command queue by now
-                    lockBuffers();
+                    lockBuffers(s_firstCommandInBuffer);
                     if (isEnabledOption(currentDrawCommand, CmdRenderOptions::RENDER_GEOMETRY)) {
                         if (isEnabledOption(currentDrawCommand, CmdRenderOptions::RENDER_WIREFRAME)) {
                             _context.registerDrawCalls(2);
@@ -1177,7 +1181,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             const GFX::DispatchComputeCommand& crtCmd = commandBuffer.get<GFX::DispatchComputeCommand>(entry);
             assert(s_activeStateTracker->_activePipeline != nullptr);
             glDispatchCompute(crtCmd._computeGroupSize.x, crtCmd._computeGroupSize.y, crtCmd._computeGroupSize.z);
-            lockBuffers();
+            lockBuffers(false);
         }break;
         case GFX::CommandType::MEMORY_BARRIER: {
             const GFX::MemoryBarrierCommand& crtCmd = commandBuffer.get<GFX::MemoryBarrierCommand>(entry);
@@ -1219,11 +1223,13 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             }
         } break;
     };
+
+    s_firstCommandInBuffer = false;
 }
 
-bool GL_API::lockBuffers() {
+void GL_API::lockBuffers(bool flush) {
     BufferWriteData data = {};
-    bool flush = false;
+    bool shouldFlush = false;
 
     g_bufferLockData.resize(0);
 
@@ -1236,14 +1242,14 @@ bool GL_API::lockBuffers() {
                 existingData._offset = std::min(existingData._offset, data._offset);
                 existingData._range = std::max(existingData._range, data._range);
                 updatedExisting = true;
-                flush = data._flush || flush;
+                shouldFlush = data._flush || shouldFlush;
                 break;
             }
         }
 
         if (!updatedExisting) {
             g_bufferLockData.push_back(BufferWriteData{ data._bufferGUID, data._offset, data._range });
-            flush = data._flush || flush;
+            shouldFlush = data._flush || shouldFlush;
         }
     }
 
@@ -1254,13 +1260,15 @@ bool GL_API::lockBuffers() {
     }
 
     if (haveEntries) {
-        s_globalLockManager.LockBuffers(entries, false);
-        if (flush) {
-            s_glFlushQueued = true;
+        s_globalLockManager.LockBuffers(entries, flush && shouldFlush);
+        if (!flush) {
+            s_glFlushQueued = shouldFlush;
         }
     }
+}
 
-    return flush;
+void GL_API::preFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
+    s_firstCommandInBuffer = true;
 }
 
 void GL_API::postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) {

@@ -48,7 +48,6 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
         }
     }
 
-
     commandBuffer.batch();
 
     if (!commandBuffer.validate()) {
@@ -56,6 +55,8 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
         DIVIDE_ASSERT(false, "GFXDevice::flushCommandBuffer error: Invalid command buffer. Check error log!");
         return;
     }
+
+    _api->preFlushCommandBuffer(commandBuffer);
 
     const vectorEASTL<GFX::CommandBuffer::CommandEntry>& commands = commandBuffer();
     for (const GFX::CommandBuffer::CommandEntry& cmd : commands) {

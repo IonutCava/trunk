@@ -91,7 +91,7 @@ void PlatformContext::idle(U32 componentMask) {
     }
 
     if (BitCompare(componentMask, ComponentType::Application)) {
-        _app.idle();
+       
     }
 
     if (BitCompare(componentMask, ComponentType::GFXDevice)) {

@@ -70,8 +70,6 @@ class Application : public SDLEventListener {
     ErrorCode start(const stringImpl& entryPoint, I32 argc, char** argv);
     void      stop();
 
-    void idle();
-
     bool step();
     bool onLoop();
 

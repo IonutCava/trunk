@@ -29,120 +29,147 @@
 
 namespace Divide {
 
-namespace {
-    thread_local RenderQueue::SortedQueues g_sortedQueues;
-    thread_local vectorEASTL<GFXDevice::NodeData> g_nodeData;
-    thread_local vectorEASTL<IndirectDrawCommand> g_drawCommands;
-};
+    namespace {
+        thread_local RenderQueue::SortedQueues g_sortedQueues;
+        thread_local vectorEASTL<GFXDevice::NodeData> g_nodeData;
+        thread_local vectorEASTL<IndirectDrawCommand> g_drawCommands;
+    };
 
-RenderPassManager::RenderPassManager(Kernel& parent, GFXDevice& context)
-    : KernelComponent(parent),
-     _renderQueue(parent),
-     _context(context),
-     _postFxRenderTimer(&Time::ADD_TIMER("PostFX Timer")),
-     _renderPassTimer(&Time::ADD_TIMER("RenderPasses Timer")),
-     _buildCommandBufferTimer(&Time::ADD_TIMER("BuildCommandBuffers Timer")),
-     _flushCommandBufferTimer(&Time::ADD_TIMER("FlushCommandBuffers Timer"))
-{
-    _flushCommandBufferTimer->addChildTimer(*_buildCommandBufferTimer);
-    ResourceDescriptor shaderDesc("OITComposition");
-    _OITCompositionShader = CreateResource<ShaderProgram>(parent.resourceCache(), shaderDesc);
-    _renderPassCommandBuffer.push_back(GFX::allocateCommandBuffer(true));
-    _mainCommandBuffer = GFX::allocateCommandBuffer();
-}
-
-RenderPassManager::~RenderPassManager()
-{
-    GFX::deallocateCommandBuffer(_mainCommandBuffer);
-    for (GFX::CommandBuffer*& buf : _renderPassCommandBuffer) {
-        GFX::deallocateCommandBuffer(buf, true);
-    }
-}
-
-void RenderPassManager::render(SceneRenderState& sceneRenderState, Time::ProfileTimer* parentTimer) {
-    const Configuration& config = parent().platformContext().config();
-
-    if (parentTimer != nullptr && !parentTimer->hasChildTimer(*_renderPassTimer)) {
-        parentTimer->addChildTimer(*_renderPassTimer);
-        parentTimer->addChildTimer(*_postFxRenderTimer);
-        parentTimer->addChildTimer(*_flushCommandBufferTimer);
-    }
-
-    const Camera& cam = Attorney::SceneManagerRenderPass::playerCamera(parent().sceneManager());
-
-    Attorney::SceneManagerRenderPass::preRenderAllPasses(parent().sceneManager(), cam);
-
-    TaskPriority priority = config.rendering.multithreadedCommandGeneration ? TaskPriority::DONT_CARE : TaskPriority::REALTIME;
-
-    TaskPool& pool = parent().platformContext().taskPool(TaskPoolType::HIGH_PRIORITY);
-
-    U8 renderPassCount = to_U8(_renderPasses.size());
-
-    std::atomic_uint remainingTasks = renderPassCount;
+    RenderPassManager::RenderPassManager(Kernel& parent, GFXDevice& context)
+        : KernelComponent(parent),
+        _renderQueue(parent),
+        _context(context),
+        _postFxRenderTimer(&Time::ADD_TIMER("PostFX Timer")),
+        _renderPassTimer(&Time::ADD_TIMER("RenderPasses Timer")),
+        _buildCommandBufferTimer(&Time::ADD_TIMER("BuildCommandBuffers Timer")),
+        _flushCommandBufferTimer(&Time::ADD_TIMER("FlushCommandBuffers Timer"))
     {
-        Time::ScopedTimer timeAll(*_renderPassTimer);
+        _flushCommandBufferTimer->addChildTimer(*_buildCommandBufferTimer);
+        ResourceDescriptor shaderDesc("OITComposition");
+        _OITCompositionShader = CreateResource<ShaderProgram>(parent.resourceCache(), shaderDesc);
+        _renderPassCommandBuffer.push_back(GFX::allocateCommandBuffer(true));
+        _mainCommandBuffer = GFX::allocateCommandBuffer();
+    }
 
-        for (U8 i = 0; i < renderPassCount; ++i) {
-
-            RenderPass* pass = _renderPasses[i].get();
-            GFX::CommandBuffer* buf = _renderPassCommandBuffer[i];
-
-            CreateTask(pool,
-                       nullptr,
-                       [pass, buf, &sceneRenderState, &remainingTasks](const Task& parentTask) {
-                           assert(buf->empty());
-                           pass->render(sceneRenderState, *buf);
-                           buf->batch();
-                           remainingTasks.fetch_sub(1);
-                       }).startTask(priority);
-        }
-
-        GFX::CommandBuffer* buf = _renderPassCommandBuffer.back();
-        {
-            Time::ScopedTimer time(*_postFxRenderTimer);
-            assert(buf->empty());
-            parent().platformContext().gfx().postFX().apply(cam, *buf);
-            buf->batch();
-        }
-
-        while(remainingTasks.load() > 0) {
-            parent().idle();
-            std::this_thread::yield();
+    RenderPassManager::~RenderPassManager()
+    {
+        GFX::deallocateCommandBuffer(_mainCommandBuffer);
+        for (GFX::CommandBuffer*& buf : _renderPassCommandBuffer) {
+            GFX::deallocateCommandBuffer(buf, true);
         }
     }
 
-    if (config.rendering.batchPassBuffers) {
-        {            
-            Time::ScopedTimer timeCommands(*_buildCommandBufferTimer);
-            _mainCommandBuffer->clear(false);
-            for (GFX::CommandBuffer* buf : _renderPassCommandBuffer) {
-                _mainCommandBuffer->addDestructive(*buf);
+    void RenderPassManager::render(SceneRenderState& sceneRenderState, Time::ProfileTimer* parentTimer) {
+        const Configuration& config = parent().platformContext().config();
+
+        if (parentTimer != nullptr && !parentTimer->hasChildTimer(*_renderPassTimer)) {
+            parentTimer->addChildTimer(*_renderPassTimer);
+            parentTimer->addChildTimer(*_postFxRenderTimer);
+            parentTimer->addChildTimer(*_flushCommandBufferTimer);
+        }
+
+        const Camera& cam = Attorney::SceneManagerRenderPass::playerCamera(parent().sceneManager());
+
+        Attorney::SceneManagerRenderPass::preRenderAllPasses(parent().sceneManager(), cam);
+
+        TaskPriority priority = config.rendering.multithreadedCommandGeneration ? TaskPriority::DONT_CARE : TaskPriority::REALTIME;
+
+        TaskPool& pool = parent().platformContext().taskPool(TaskPoolType::HIGH_PRIORITY);
+
+        U8 renderPassCount = to_U8(_renderPasses.size());
+
+        vector<TaskHandle> tasks(renderPassCount);
+        {
+            Time::ScopedTimer timeAll(*_renderPassTimer);
+
+            for (I8 i = 0; i < renderPassCount - 1; ++i)
+            { //All of our render passes should run in parallel
+
+                RenderPass* pass = _renderPasses[i].get();
+                GFX::CommandBuffer* buf = _renderPassCommandBuffer[i];
+                assert(buf->empty());
+
+                tasks[i] = CreateTask(pool,
+                                      nullptr,
+                                      [pass, buf, &sceneRenderState](const Task & parentTask) {
+                                          pass->render(sceneRenderState, *buf);
+                                          buf->batch();
+                                      }).startTask(priority);
+            }
+            { //PostFX should be pretty fast
+                GFX::CommandBuffer* buf = _renderPassCommandBuffer.back();
+                assert(buf->empty());
+
+                Time::ProfileTimer& timer = *_postFxRenderTimer;
+                PostFX& postFX = parent().platformContext().gfx().postFX();
+
+                tasks.back() = CreateTask(pool,
+                                            nullptr,
+                                            [buf, &postFX, &cam, &timer](const Task & parentTask) {
+                                                Time::ScopedTimer time(timer);
+                                                postFX.apply(cam, *buf);
+                                                buf->batch();
+                                            }).startTask(priority);
+            }
+            { //The main display pass can be run on this thread instead of idling
+                U8 temp = renderPassCount - 1;
+                RenderPass* pass = _renderPasses[temp].get();
+                GFX::CommandBuffer* buf = _renderPassCommandBuffer[temp];
+                assert(buf->empty());
+                pass->render(sceneRenderState, *buf);
+                buf->batch();
             }
         }
 
-        Time::ScopedTimer timeCommands(*_flushCommandBufferTimer);
-        _context.flushCommandBuffer(*_mainCommandBuffer);
-        
-    } else {
-        {
-            Time::ScopedTimer timeCommands(*_buildCommandBufferTimer);
+        bool slowIdle = true;
+        if (config.rendering.batchPassBuffers) {
+            {
+                Time::ScopedTimer timeCommands(*_buildCommandBufferTimer);
+                _mainCommandBuffer->clear(false);
+                for (U8 i = 0; i < renderPassCount; ++i) {
+                    while (tasks[i].taskRunning()) {
+                        parent().idle(!slowIdle);
+                        std::this_thread::yield();
+                        slowIdle = false;
+                    }
+
+                    GFX::CommandBuffer* buf = _renderPassCommandBuffer[i];
+                    _mainCommandBuffer->addDestructive(*buf);
+                }
+
+                GFX::CommandBuffer* buf = _renderPassCommandBuffer.back();
+                _mainCommandBuffer->addDestructive(*buf);
+            }
+
+            Time::ScopedTimer timeCommands(*_flushCommandBufferTimer);
+            _context.flushCommandBuffer(*_mainCommandBuffer);
+        } else {
+            {
+                Time::ScopedTimer timeCommands(*_buildCommandBufferTimer);
+            }
+
+            Time::ScopedTimer timeCommands(*_flushCommandBufferTimer);
+            for (U8 i = 0; i < renderPassCount; ++i) {
+                while (tasks[i].taskRunning()) {
+                    parent().idle(!slowIdle);
+                    std::this_thread::yield();
+                    slowIdle = false;
+                }
+                _context.flushCommandBuffer(*_renderPassCommandBuffer[i]);
+            }
+            _context.flushCommandBuffer(*_renderPassCommandBuffer.back());
+
+            for (U8 i = 0; i < renderPassCount + 1; ++i) {
+                _renderPassCommandBuffer[i]->clear(false);
+            }
         }
 
-        Time::ScopedTimer timeCommands(*_flushCommandBufferTimer);
-        for (U8 i = 0; i < renderPassCount + 1; ++i) {
-            _context.flushCommandBuffer(*_renderPassCommandBuffer[i]);
+        for (U8 i = 0; i < renderPassCount; ++i) {
+            _renderPasses[i]->postRender();
         }
-        for (U8 i = 0; i < renderPassCount + 1; ++i) {
-            _renderPassCommandBuffer[i]->clear(false);
-        }
+
+     Attorney::SceneManagerRenderPass::postRenderAllPasses(parent().sceneManager(), cam);
     }
-
-    for (U8 i = 0; i < renderPassCount; ++i) {
-        _renderPasses[i]->postRender();
-    }
-
-    Attorney::SceneManagerRenderPass::postRenderAllPasses(parent().sceneManager(), cam);
-}
 
 RenderPass& RenderPassManager::addRenderPass(const stringImpl& renderPassName,
                                              U8 orderKey,
@@ -334,7 +361,6 @@ void RenderPassManager::buildDrawCommands(RenderStagePass stagePass, const PassP
     const SceneRenderState& sceneRenderState = parent().sceneManager().getActiveScene().renderState();
 
     U16 queueSize = 0;
-
     for (auto& queue : g_sortedQueues) {
         queue.resize(0);
         queue.reserve(Config::MAX_VISIBLE_NODES);
@@ -365,6 +391,8 @@ void RenderPassManager::prepareRenderQueues(RenderStagePass stagePass, const Pas
 
     const RenderPassCuller::VisibleNodeList& visibleNodes = refreshNodeData ? Attorney::SceneManagerRenderPass::cullScene(parent().sceneManager(), stage, *params._camera, params._minLoD)
                                                                             : Attorney::SceneManagerRenderPass::getVisibleNodesCache(parent().sceneManager(), stage);
+
+    size_t size = visibleNodes.size();
 
     RenderQueue& queue = getQueue();
     queue.refresh(stage);

@@ -20,18 +20,21 @@ int g_shadowTempInt = -2;
 float getShadowFactor() {
 
     float shadow = 1.0;
-    uvec4 details[MAX_SHADOW_CASTING_LIGHTS] = dvd_shadowLightDetails;
+    //uvec4 details[MAX_SHADOW_CASTING_LIGHTS] = dvd_shadowLightDetails;
 
     for (uint i = 0; i < MAX_SHADOW_CASTING_LIGHTS; ++i) {
-        switch (details[i].x) {
+        //uvec4 crtDetails = details[i];
+        uvec4 crtDetails = dvd_shadowLightDetails[i];
+
+        switch (crtDetails.x) {
             case LIGHT_DIRECTIONAL:
-                shadow *= applyShadowDirectional(i, details[i]);
+                shadow *= applyShadowDirectional(i, crtDetails);
                 break;
             case LIGHT_OMNIDIRECTIONAL:
-                shadow *= applyShadowPoint(i, details[i]);
+                shadow *= applyShadowPoint(i, crtDetails);
                 break;
             case LIGHT_SPOT:
-                shadow *= applyShadowSpot(i, details[i]);
+                shadow *= applyShadowSpot(i, crtDetails);
                 break;
         }
     }

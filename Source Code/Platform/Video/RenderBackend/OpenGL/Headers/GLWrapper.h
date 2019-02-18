@@ -134,6 +134,7 @@ protected:
 
     void flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) override;
 
+    void preFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) override;
     void postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) override;
 
     /// Return the time it took to render a single frame (in nanoseconds). Only
@@ -182,8 +183,7 @@ public:
     static void registerBufferBind(const BufferWriteData& data);
     static void registerSyncDelete(GLsync syncObject);
 
-    // Return true if we need to flush
-    static bool lockBuffers();
+    static void lockBuffers(bool flush);
 
 private:
     /// Prepare our shader loading system

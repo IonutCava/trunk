@@ -150,13 +150,14 @@ void Kernel::stopSplashScreen() {
     SDLEventManager::pollEvents();
 }
 
-void Kernel::idle() {
+void Kernel::idle(bool fast) {
     _platformContext->idle();
-    if (!Config::Build::IS_SHIPPING_BUILD) {
+
+    if (!fast && !Config::Build::IS_SHIPPING_BUILD) {
         FileWatcherManager::idle();
+        Locale::idle();
     }
     _sceneManager->idle();
-    Locale::idle();
     Script::idle();
 
     if (--g_printTimer == 0) {
@@ -248,7 +249,7 @@ void Kernel::onLoop() {
     if (deltaMilliseconds < targetFrametime) {
         {
             Time::ScopedTimer timer2(_appIdleTimer);
-            idle();
+            idle(true);
         }
 
         if (frameLimit > 0) {
@@ -270,7 +271,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTimeUS) {
     }
 
     if (_platformContext->activeWindow().minimized()) {
-        idle();
+        idle(false);
         return true;
     }
 
