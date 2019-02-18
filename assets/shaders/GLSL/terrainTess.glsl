@@ -120,7 +120,8 @@ void main(void)
 {
     PassData(id);
 
-    mat4 mvp = dvd_ProjectionMatrix * dvd_WorldViewMatrix(VAR.dvd_baseInstance);
+    mat4 mvp = dvd_ProjectionMatrix * dvd_ViewMatrix * dvd_WorldMatrix(VAR.dvd_baseInstance);
+
     vec4 v0 = project(mvp, gl_in[0].gl_Position);
     vec4 v1 = project(mvp, gl_in[1].gl_Position);
     vec4 v2 = project(mvp, gl_in[2].gl_Position);

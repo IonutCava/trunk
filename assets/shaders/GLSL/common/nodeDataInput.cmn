@@ -117,6 +117,7 @@ out gl_PerVertex
   invariant vec4 gl_Position;
   float gl_PointSize;
   float gl_ClipDistance[MAX_CLIP_PLANES];
+  float gl_CullDistance[1];
 };
 
 void setClipPlanes(in vec4 worldSpaceVertex) {

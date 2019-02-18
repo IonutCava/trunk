@@ -8,8 +8,10 @@ layout(binding = BUFFER_BONE_TRANSFORMS, std140) uniform dvd_BoneTransforms
 
 #if defined(COMPUTE_TBN)
 void applyBoneTransforms(inout vec4 position, inout vec3 normal, inout vec3 tangnet, in int lod){
+#elif !defined(DEPTH_PASS)
+void applyBoneTransforms(inout vec4 position, inout vec3 normal, in int lod) {
 #else
-void applyBoneTransforms(inout vec4 position, inout vec3 normal, in int lod){
+void applyBoneTransforms(inout vec4 position, in int lod){
 #endif
     if (dvd_boneCount == 0) {
         return;
@@ -27,6 +29,7 @@ void applyBoneTransforms(inout vec4 position, inout vec3 normal, in int lod){
         return;
     }
 
+#if !defined(DEPTH_PASS)
     vec4 tempVec = vec4(normal, 0.0);
     normal = vec4(transformMatrix[0] * tempVec + transformMatrix[1] * tempVec + 
                   transformMatrix[2] * tempVec + transformMatrix[3] * tempVec).xyz;
@@ -36,7 +39,7 @@ void applyBoneTransforms(inout vec4 position, inout vec3 normal, in int lod){
     tangnet = vec4(transformMatrix[0] * tempVec + transformMatrix[1] * tempVec + 
                    transformMatrix[2] * tempVec + transformMatrix[3] * tempVec).xyz;
 #endif
-    
+#endif
 }
 
 #endif //_BONE_TRANSFORM_VERT_

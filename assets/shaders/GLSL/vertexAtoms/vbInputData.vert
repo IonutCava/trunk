@@ -34,13 +34,17 @@ void computeDataMinimal() {
     VAR.dvd_instanceID = gl_InstanceID;
     VAR.dvd_drawID = gl_DrawIDARB;
 
-#   if defined(USE_GPU_SKINNING)
-#       if defined(COMPUTE_TBN)
-    applyBoneTransforms(dvd_Vertex, dvd_Normal, dvd_Tangent, dvd_lodLevel);
+#if defined(USE_GPU_SKINNING)
+#   if !defined(DEPTH_PASS)
+#       if defined(COMPUTE_TBN) 
+            applyBoneTransforms(dvd_Vertex, dvd_Normal, dvd_Tangent, dvd_lodLevel);
 #       else
-    applyBoneTransforms(dvd_Vertex, dvd_Normal, dvd_lodLevel);
+            applyBoneTransforms(dvd_Vertex, dvd_Normal, dvd_lodLevel);
 #       endif
+#   else
+        applyBoneTransforms(dvd_Vertex, dvd_lodLevel);
 #   endif
+#endif
 }
 
 void computeDataNoClip() {
