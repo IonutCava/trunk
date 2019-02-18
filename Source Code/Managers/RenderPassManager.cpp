@@ -241,8 +241,10 @@ GFXDevice::NodeData RenderPassManager::processVisibleNode(SceneGraphNode* node, 
     }
 
     RenderingComponent* const renderable = node->get<RenderingComponent>();
+
+    vec4<F32> properties = {};
     renderable->getRenderingProperties(stagePass,
-                                       dataOut._properties,
+                                       properties,
                                        dataOut._normalMatrixW.element(1, 3),
                                        dataOut._normalMatrixW.element(2, 3));
 
@@ -253,19 +255,22 @@ GFXDevice::NodeData RenderPassManager::processVisibleNode(SceneGraphNode* node, 
     // Get the colour matrix (diffuse, specular, etc.)
     renderable->getMaterialColourMatrix(dataOut._colourMatrix);
 
+    vec4<F32> dataRow = dataOut._colourMatrix.getRow(3);
+    dataRow.z = properties.z; // lod
+    //set properties.w to -1 to skip occlusion culling for the node
+    dataRow.w = isOcclusionCullable ? 1.0f : -1.0f; 
+    dataOut._colourMatrix.setRow(3, dataRow);
+
     // Temp: Make the hovered/selected node brighter. 
-    if (dataOut._properties.x > 0.5f || dataOut._properties.x < -0.5f) {
+    if (properties.x > 0.5f || properties.x < -0.5f) {
         FColour matColour = dataOut._colourMatrix.getRow(0);
-        if (dataOut._properties.x < -0.5f) {
+        if (properties.x < -0.5f) {
             matColour *= 3;
         } else {
             matColour *= 2;
         }
         dataOut._colourMatrix.setRow(0, matColour);
     }
-
-    //set properties.w to -1 to skip occlusion culling for the node
-    dataOut._properties.w = isOcclusionCullable ? 1.0f : -1.0f;
 
     return dataOut;
 }

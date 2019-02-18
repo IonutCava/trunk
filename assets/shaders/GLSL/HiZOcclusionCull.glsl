@@ -6,7 +6,6 @@ struct NodeData {
     mat4 _worldMatrix;
     mat4 _normalMatrix;
     mat4 _colourMatrix;
-    vec4 _properties;
 };
 
 layout(binding = BUFFER_NODE_INFO, std430) coherent buffer dvd_MatrixBlock
@@ -14,8 +13,7 @@ layout(binding = BUFFER_NODE_INFO, std430) coherent buffer dvd_MatrixBlock
     NodeData dvd_Matrices[MAX_VISIBLE_NODES];
 };
 
-// x - isSelected/isHighlighted; y - isShadowMapped; z - lodLevel, w - reserved
-#define dvd_customData(X) dvd_Matrices[X]._properties.w 
+#define dvd_occlusionCullFlag(X) dvd_Matrices[X]._colourMatrix[3].w
 
 layout(location = 0) uniform uint dvd_numEntities;
 layout(location = 1) uniform float dvd_nearPlaneDistance;
@@ -27,7 +25,6 @@ layout(local_size_x = 64) in;
 void cullNode(const in uint idx) {
     atomicCounterIncrement(culledCount);
     dvd_drawCommands[idx].instanceCount = 0;
-    dvd_customData(idx) = 3.0;
 }
 
 void main()
@@ -40,7 +37,8 @@ void main()
     }
     
     uint nodeIndex = dvd_drawCommands[ident].baseInstance;
-    if (dvd_customData(nodeIndex) < 0.5) {
+    // Skip occlusion cull if the flag is negative
+    if (dvd_occlusionCullFlag(nodeIndex) < 0.0f) {
         return;
     }
 

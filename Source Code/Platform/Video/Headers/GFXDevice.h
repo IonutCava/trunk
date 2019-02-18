@@ -162,7 +162,6 @@ public:
         mat4<F32> _worldMatrix = MAT4_IDENTITY;
         mat4<F32> _normalMatrixW = MAT4_IDENTITY;
         mat4<F32> _colourMatrix = MAT4_IDENTITY;
-        vec4<F32> _properties{ 0.0f };
     };
 
 public:  // GPU interface
