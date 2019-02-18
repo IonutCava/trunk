@@ -35,7 +35,7 @@ vec4 getDirectionalLightContribution(in uint dirLightCount, in vec3 albedo, in v
 
     for (uint lightIdx = 0; lightIdx < dirLightCount; ++lightIdx) {
         const Light light = dvd_LightSource[lightIdx];
-        ret += getBRDFFactors(vec4(light._colour.rgb, 1.0), -light._directionWV.xyz, albedo, specular);
+        ret += getBRDFFactors(vec4(light._colour.rgb, 1.0), specular, -light._directionWV.xyz, albedo);
     }
 
     return ret;
@@ -50,7 +50,7 @@ vec4 getPointLightContribution(in uint nIndex, in uint offset, in vec3 albedo, i
         const vec3 lightDirection = light._positionWV.xyz - VAR._vertexWV.xyz;
         const vec4 colourAndAtt = vec4(light._colour.rgb, getLightAttenuationPoint(light, lightDirection));
 
-        ret += getBRDFFactors(colourAndAtt, lightDirection, albedo, specular);
+        ret += getBRDFFactors(colourAndAtt, specular, lightDirection, albedo);
         nNextLightIndex = perTileLightIndices[++nIndex];
     }
 
@@ -67,7 +67,7 @@ vec4 getSpotLightContribution(in uint nIndex, in uint offset, in vec3 albedo, in
         const vec3 lightDirection = light._positionWV.xyz - VAR._vertexWV.xyz;
         const vec4 colourAndAtt = vec4(light._colour.rgb, getLightAttenuationSpot(light, lightDirection));
 
-        ret += getBRDFFactors(colourAndAtt, lightDirection, albedo, specular);
+        ret += getBRDFFactors(colourAndAtt, specular, lightDirection, albedo);
         nNextLightIndex = perTileLightIndices[++nIndex];
     }
 
@@ -104,7 +104,7 @@ vec4 getLitColour(in vec4 albedo, in mat4 colourMatrix, in vec3 normal) {
 
 #if defined(IS_REFLECTIVE)
     if (dvd_lodLevel < 1) {
-        vec3 reflectDirection = reflect(normalize(VAR._vertexWV.xyz), processedNormal);
+        vec3 reflectDirection = reflect(normalize(VAR._vertexWV.xyz), normal);
         reflectDirection = vec3(inverse(dvd_ViewMatrix) * vec4(reflectDirection, 0.0));
         /*lightColour.rgb = mix(texture(texEnvironmentCube, vec4(reflectDirection, dvd_reflectionIndex)).rgb,
                           lightColour.rgb,

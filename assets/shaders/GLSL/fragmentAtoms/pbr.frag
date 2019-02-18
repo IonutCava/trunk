@@ -151,9 +151,9 @@ vec3 Diffuse(vec3 diffuseColor, float roughness, float NdotV, float NdotL, float
 #define M_EPSILON 0.0000001
 
 vec4 PBR(in vec4 lightColourAndAtt,
+         in vec4 specular,
          in vec3 lightDirection,
-         in vec3 albedo,
-         in vec4 specular)
+         in vec3 albedo)
 {
     float roughness = specular.a;
     vec3 dvd_ViewDirNorm = normalize(-VAR._vertexWV.xyz);
