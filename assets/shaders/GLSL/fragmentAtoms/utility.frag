@@ -168,4 +168,5 @@ float getDepthValue(vec2 screenNormalisedPos) {
 
     return private_depth;
 }
+
 #endif //_UTILITY_FRAG_

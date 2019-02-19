@@ -49,6 +49,9 @@ namespace Divide {
         _OITCompositionShader = CreateResource<ShaderProgram>(parent.resourceCache(), shaderDesc);
         _renderPassCommandBuffer.push_back(GFX::allocateCommandBuffer(true));
         _mainCommandBuffer = GFX::allocateCommandBuffer();
+
+        ResourceDescriptor shaderDesc2("DrawCmdReorder");
+        _DrawCmdReorderProgram = CreateResource<ShaderProgram>(parent.resourceCache(), shaderDesc2);
     }
 
     RenderPassManager::~RenderPassManager()
@@ -356,6 +359,44 @@ void RenderPassManager::refreshNodeData(RenderStagePass stagePass,
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 }
 
+void RenderPassManager::reorderDrawCommands(RenderStagePass stagePass, const RenderQueue::SortedQueues& sortedQueues, GFX::CommandBuffer& bufferInOut) {
+    constexpr U32 GROUP_SIZE_AABB = 64;
+    RenderPass::BufferData bufferData = getBufferData(stagePass);
+    U32 cmdCount = *bufferData._lastCommandCount;
+
+    GFX::BeginDebugScopeCommand beginDebugScopeCmd;
+    beginDebugScopeCmd._scopeID = 0;
+    beginDebugScopeCmd._scopeName = "Reorder Draw Commands";
+    GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
+
+    ShaderBufferBinding shaderBuffer = {};
+    shaderBuffer._binding = ShaderBufferLocation::GPU_COMMANDS;
+    shaderBuffer._buffer = bufferData._cmdBuffer;
+    shaderBuffer._elementRange.set(0, to_U16(bufferData._cmdBuffer->getPrimitiveCount()));
+    shaderBuffer._atomicCounter.first = true;
+
+    GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd;
+    bindDescriptorSetsCmd._set.addShaderBuffer(shaderBuffer);
+    GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
+
+    GFX::BindPipelineCommand bindPipelineCmd;
+    PipelineDescriptor pipelineDescriptor;
+    pipelineDescriptor._shaderProgramHandle = _DrawCmdReorderProgram->getID();
+    bindPipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
+    GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
+
+    GFX::SendPushConstantsCommand sendPushConstantsCmd;
+    sendPushConstantsCmd._constants.set("dvd_numEntities", GFX::PushConstantType::UINT, cmdCount);
+    GFX::EnqueueCommand(bufferInOut, sendPushConstantsCmd);
+
+    GFX::DispatchComputeCommand computeCmd;
+    computeCmd._computeGroupSize.set((cmdCount + GROUP_SIZE_AABB - 1) / GROUP_SIZE_AABB, 1, 1);
+    GFX::EnqueueCommand(bufferInOut, computeCmd);
+
+    GFX::EndDebugScopeCommand endDebugScopeCmd;
+    GFX::EnqueueCommand(bufferInOut, endDebugScopeCmd);
+}
+
 void RenderPassManager::buildDrawCommands(RenderStagePass stagePass, const PassParams& params, bool refresh, GFX::CommandBuffer& bufferInOut)
 {
     const SceneRenderState& sceneRenderState = parent().sceneManager().getActiveScene().renderState();
@@ -383,6 +424,11 @@ void RenderPassManager::buildDrawCommands(RenderStagePass stagePass, const PassP
         GFX::EnqueueCommand(bufferInOut, memCmd);
 
         refreshNodeData(stagePass, sceneRenderState, params._camera->getViewMatrix(), g_sortedQueues, bufferInOut);
+    } else {
+        reorderDrawCommands(stagePass, g_sortedQueues, bufferInOut);
+        GFX::MemoryBarrierCommand memCmd;
+        memCmd._barrierMask = to_base(MemoryBarrierType::SHADER_BUFFER);
+        GFX::EnqueueCommand(bufferInOut, memCmd);
     }
 }
 
@@ -391,8 +437,6 @@ void RenderPassManager::prepareRenderQueues(RenderStagePass stagePass, const Pas
 
     const RenderPassCuller::VisibleNodeList& visibleNodes = refreshNodeData ? Attorney::SceneManagerRenderPass::cullScene(parent().sceneManager(), stage, *params._camera, params._minLoD)
                                                                             : Attorney::SceneManagerRenderPass::getVisibleNodesCache(parent().sceneManager(), stage);
-
-    size_t size = visibleNodes.size();
 
     RenderQueue& queue = getQueue();
     queue.refresh(stage);

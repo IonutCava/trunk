@@ -174,6 +174,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     }
 
     ResourceDescriptor prevDepthTex("PREV_DEPTH");
+    depthDescriptor.msaaSamples(0);
     prevDepthTex.setPropertyDescriptor(depthDescriptor);
     prevDepthTex.setThreadedLoading(false);
     _prevDepthBuffer = CreateResource<Texture>(parent().resourceCache(), prevDepthTex);

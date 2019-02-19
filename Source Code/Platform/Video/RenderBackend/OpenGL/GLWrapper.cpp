@@ -381,6 +381,8 @@ bool GL_API::initGLSW() {
     appendToShaderHeader(ShaderType::COUNT,    "#define MAX_CSM_SPLITS_PER_LIGHT " + to_stringImpl(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT), lineOffsets);
     appendToShaderHeader(ShaderType::COUNT,    "#define MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS " + to_stringImpl(Config::Lighting::MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS), lineOffsets);
     appendToShaderHeader(ShaderType::COUNT,    "#define MAX_SHADOW_CASTING_LIGHTS " + to_stringImpl(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS), lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT,    "#define MAX_LIGHTS " + to_stringImpl(Config::Lighting::MAX_POSSIBLE_LIGHTS), lineOffsets);
+    
     appendToShaderHeader(ShaderType::COUNT,    "#define MAX_VISIBLE_NODES " + to_stringImpl(Config::MAX_VISIBLE_NODES), lineOffsets);
     appendToShaderHeader(ShaderType::COUNT,    "#define Z_TEST_SIGMA 0.0001f", lineOffsets);
     appendToShaderHeader(ShaderType::FRAGMENT, "#define DEPTH_EXP_WARP 32;", lineOffsets);

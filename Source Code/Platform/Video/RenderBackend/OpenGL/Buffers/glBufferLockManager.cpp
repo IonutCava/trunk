@@ -112,38 +112,43 @@ bool glGlobalLockManager::test(GLsync syncObject, vectorEASTL<BufferRange>& rang
 }
 
 bool glGlobalLockManager::WaitForLockedRange(I64 bufferGUID, size_t lockBeginBytes, size_t lockLength, bool noWait) {
-    BufferRange testRange{lockBeginBytes, lockLength};
-
-    UniqueLock w_lock(_lock);
-    for (auto it = eastl::begin(_bufferLocks); it != eastl::end(_bufferLocks);) {
-        BufferLockEntries& entries = it->second;
-        auto entry = entries.find(bufferGUID);
-        if (entry == std::cend(entries)) {
-            ++it;
-            continue;
-        }
-
-        if (test(it->first, entry->second, testRange, noWait)) {
-            it = _bufferLocks.erase(it);
-        } else {
-            ++it;
+    vectorEASTL<std::pair<GLsync, vectorEASTL<BufferRange>>> toTest = {};
+    {
+        SharedLock r_lock(_lock);
+        for (auto it = eastl::begin(_bufferLocks); it != eastl::end(_bufferLocks); ++it) {
+            const BufferLockEntries& entries = it->second;
+            auto entry = entries.find(bufferGUID);
+            if (entry != std::cend(entries)) {
+                toTest.emplace_back(it->first, entry->second);
+            }
         }
     }
 
-    return true;
+    if (!toTest.empty()) {
+        BufferRange testRange{ lockBeginBytes, lockLength };
+        for (auto& it : toTest) {
+            if (test(it.first, it.second, testRange, noWait)) {
+                UniqueLockShared w_lock(_lock);
+                _bufferLocks.erase(it.first);
+            }
+        }
+        return true;
+    }
+
+    return false;
 }
 
 void glGlobalLockManager::LockBuffers(BufferLockEntries entries, bool flush) {
-    for (auto it1 : entries) {
-        for (auto it2 : it1.second) {
+    for (auto& it1 : entries) {
+        for (auto& it2 : it1.second) {
             WaitForLockedRange(it1.first, it2._startOffset, it2._length, true);
         }
     }
 
     GLsync syncObject = syncHere();
     {
-        UniqueLock w_lock(_lock);
-        _bufferLocks.emplace_back(std::make_pair(syncObject, entries));
+        UniqueLockShared w_lock(_lock);
+        hashAlg::emplace(_bufferLocks, syncObject, entries);
     }
     if (flush) {
         glFlush();

@@ -156,7 +156,9 @@ bool glBufferImpl::bindRange(GLuint bindIndex, size_t offsetInBytes, size_t rang
 
 void glBufferImpl::writeData(size_t offsetInBytes, size_t rangeInBytes, const bufferPtr data)
 {
-    if (_mappedBuffer && waitRange(offsetInBytes, rangeInBytes, true)) {
+    waitRange(offsetInBytes, rangeInBytes, true);
+
+    if (_mappedBuffer) {
         std::memcpy(((Byte*)_mappedBuffer) + offsetInBytes,
             data,
             rangeInBytes);

@@ -45,6 +45,7 @@ class GFXShaderData {
         GPUData() noexcept;
 
         mat4<F32> _ProjectionMatrix;
+        mat4<F32> _InvProjectionMatrix;
         mat4<F32> _ViewMatrix;
         mat4<F32> _ViewProjectionMatrix;
         vec4<F32> _cameraPosition = { 0.0f, 0.0f, 0.0f, 1.0f }; // xyz - position, w - aspect ratio
@@ -55,14 +56,7 @@ class GFXShaderData {
         inline F32 aspectRatio() const;
         inline vec2<F32> cameraZPlanes() const;
         inline F32 FoV() const;
-
-        bool operator==(const GPUData& other) const;
-        bool operator!=(const GPUData& other) const;
-
     } _data;
-
-    mat4<F32> _viewMatrixInv;
-    mat4<F32> _viewProjMatrixInv;
 
     bool _needsUpload = true;
 };

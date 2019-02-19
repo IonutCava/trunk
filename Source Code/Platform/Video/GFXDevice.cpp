@@ -499,13 +499,11 @@ void GFXDevice::renderFromCamera(const CameraSnapshot& cameraSnapshot) {
         _activeCameraSnapshot = cameraSnapshot;
 
         GFXShaderData::GPUData& data = _gpuBlock._data;
-        if (cameraSnapshot._viewMatrix != data._ViewMatrix) {
-            data._ViewMatrix.set(cameraSnapshot._viewMatrix);
-            data._ViewMatrix.getInverse(_gpuBlock._viewMatrixInv);
-        }
+        data._ViewMatrix.set(cameraSnapshot._viewMatrix);
 
         if (cameraSnapshot._projectionMatrix != data._ProjectionMatrix) {
             data._ProjectionMatrix.set(cameraSnapshot._projectionMatrix);
+            data._ProjectionMatrix.getInverse(data._InvProjectionMatrix);
         }
 
         F32 FoV = cameraSnapshot._FoV;
@@ -513,8 +511,7 @@ void GFXDevice::renderFromCamera(const CameraSnapshot& cameraSnapshot) {
         data._renderProperties.xy(cameraSnapshot._zPlanes);
         data._renderProperties.z = FoV;
         mat4<F32>::Multiply(data._ViewMatrix, data._ProjectionMatrix, data._ViewProjectionMatrix);
-        data._ViewProjectionMatrix.getInverse(_gpuBlock._viewProjMatrixInv);
-        Frustum::computePlanes(_gpuBlock._viewProjMatrixInv, _frustumPlanes);
+        Frustum::computePlanes(GetInverse(data._ViewProjectionMatrix), _frustumPlanes);
         _gpuBlock._needsUpload = true;
     }
 }

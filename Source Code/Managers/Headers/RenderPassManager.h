@@ -104,6 +104,7 @@ private:
     void prepareRenderQueues(RenderStagePass stagePass, const PassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut);
     void buildDrawCommands(RenderStagePass stagePass, const PassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut);
     void refreshNodeData(RenderStagePass stagePass, const SceneRenderState& renderState, const mat4<F32>& viewMatrix, const RenderQueue::SortedQueues& sortedQueues, GFX::CommandBuffer& bufferInOut);
+    void reorderDrawCommands(RenderStagePass stagePass, const RenderQueue::SortedQueues& sortedQueues, GFX::CommandBuffer& bufferInOut);
     GFXDevice::NodeData processVisibleNode(SceneGraphNode* node, RenderStagePass stagePass, bool isOcclusionCullable, bool playAnimations, const mat4<F32>& viewMatrix) const;
 
 private: //TEMP
@@ -118,6 +119,7 @@ private:
     vectorEASTL<std::shared_ptr<RenderPass>> _renderPasses;
     vectorEASTL<GFX::CommandBuffer*> _renderPassCommandBuffer;
     GFX::CommandBuffer* _mainCommandBuffer;
+    ShaderProgram_ptr _DrawCmdReorderProgram;
 
     ShaderProgram_ptr _OITCompositionShader;
     Time::ProfileTimer* _renderPassTimer;

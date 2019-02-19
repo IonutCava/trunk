@@ -71,10 +71,9 @@ void LightPool::init() {
     ShaderBufferDescriptor bufferDescriptor = {};
     bufferDescriptor._elementCount = to_base(RenderStage::COUNT) - 1; //< no shadows
     bufferDescriptor._elementSize = sizeof(vec4<U32>) + (Config::Lighting::MAX_POSSIBLE_LIGHTS * sizeof(LightProperties));
-    bufferDescriptor._ringBufferLength = 3;
+    bufferDescriptor._ringBufferLength = 6;
     bufferDescriptor._separateReadWrite = false;
-    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE) |
-                              to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES) |
+    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES) |
                               to_U32(ShaderBuffer::Flags::AUTO_RANGE_FLUSH);
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
     bufferDescriptor._name = "LIGHT_BUFFER";

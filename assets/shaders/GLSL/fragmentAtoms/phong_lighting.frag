@@ -3,13 +3,15 @@
 
 vec4 Phong(in vec4 lightColourAndAtt,
            in vec4 specular,
-           in vec3 lightDirection,// direction is NOT normalized
-           in vec3 albedo)
+           in vec4 albedoAndShadow,
+           in vec3 lightDirection) // direction is NOT normalized
 {
+    vec3 albedo = albedoAndShadow.rgb;
+
     const float NDotL = max(dot(normalize(lightDirection), private_normalWV), 0.0);
     vec3 colourOut = clamp(lightColourAndAtt.rgb * albedo * NDotL * lightColourAndAtt.a, 0.0, 1.0);
 
-    if (NDotL > 0.0f) {
+    if (NDotL > 0.0f && albedoAndShadow.a > 0.2) {
         const vec3 dvd_ViewDirNorm = normalize(-VAR._vertexWV.xyz);
 #if defined(USE_SHADING_BLINN_PHONG)
         const vec3 halfDir = normalize(normalize(lightDirection) + dvd_ViewDirNorm);

@@ -90,8 +90,8 @@ protected:
     bool test(GLsync syncObject, vectorEASTL<BufferRange>& ranges, BufferRange testRange, bool noWait = false);
 
 private:
-    mutable std::mutex _lock;
-    vectorEASTL<std::pair<GLsync, BufferLockEntries>> _bufferLocks;
+    mutable SharedMutex _lock;
+    hashMap<GLsync, BufferLockEntries> _bufferLocks;
 };
 
 };  // namespace Divide
