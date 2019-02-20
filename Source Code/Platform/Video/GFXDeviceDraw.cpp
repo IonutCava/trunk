@@ -38,7 +38,7 @@ void GFXDevice::uploadGPUBlock() {
     }
 }
 
-void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
+void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer, bool submitToGPU) {
     if (Config::ENABLE_GPU_VALIDATION) {
         DIVIDE_ASSERT(Runtime::isMainThread(), "GFXDevice::flushCommandBuffer called from worker thread!");
 
@@ -115,7 +115,7 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
                 break;
         }
     }
-    _api->postFlushCommandBuffer(commandBuffer);
+    _api->postFlushCommandBuffer(commandBuffer, submitToGPU);
 }
 
 void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,

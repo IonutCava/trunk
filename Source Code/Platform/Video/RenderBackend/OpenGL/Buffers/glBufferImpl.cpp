@@ -119,6 +119,8 @@ glBufferImpl::~glBufferImpl()
 
 bool glBufferImpl::waitRange(size_t offsetInBytes, size_t rangeInBytes, bool blockClient) {
     if (_mappedBuffer != nullptr && !_unsynced) {
+        assert(!GL_API::s_glFlushQueued);
+
         return GL_API::getLockManager().WaitForLockedRange(getGUID(), offsetInBytes, rangeInBytes);
     }
 

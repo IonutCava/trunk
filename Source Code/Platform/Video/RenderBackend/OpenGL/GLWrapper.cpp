@@ -178,6 +178,7 @@ void GL_API::endFrame(DisplayWindow& window, bool global) {
             _swapBufferTimer.stop();
             s_texturePool.onFrameEnd();
             processSyncDeleteQeueue();
+            s_glFlushQueued = false;
         }
     }
 
@@ -1273,8 +1274,8 @@ void GL_API::preFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
     s_firstCommandInBuffer = true;
 }
 
-void GL_API::postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
-    if (s_glFlushQueued) {
+void GL_API::postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer, bool submitToGPU) {
+    if (s_glFlushQueued && submitToGPU) {
         glFlush();
         s_glFlushQueued = false;
     }

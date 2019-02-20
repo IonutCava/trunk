@@ -60,8 +60,9 @@ namespace Divide {
         ACKNOWLEDGE_UNUSED(commandBuffer);
     }
 
-    void NONE_API::postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
+    void NONE_API::postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer, bool submitToGPU) {
         ACKNOWLEDGE_UNUSED(commandBuffer);
+        ACKNOWLEDGE_UNUSED(submitToGPU);
     }
 
     vec2<U16> NONE_API::getDrawableSize(const DisplayWindow& window) const {

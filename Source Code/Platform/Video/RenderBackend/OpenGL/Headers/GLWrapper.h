@@ -135,7 +135,7 @@ protected:
     void flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) override;
 
     void preFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) override;
-    void postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) override;
+    void postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer, bool submitToGPU) override;
 
     /// Return the time it took to render a single frame (in nanoseconds). Only
     /// works in GPU validation builds
@@ -229,6 +229,7 @@ public:
     static GLuint s_SSBMaxSize;
     static glHardwareQueryPool* s_hardwareQueryPool;
     static GLConfig s_glConfig;
+    static bool s_glFlushQueued;
 
 private:
     GFXDevice& _context;
@@ -279,7 +280,6 @@ private:
 
     static moodycamel::ConcurrentQueue<BufferWriteData> s_bufferBinds;
 
-    static bool s_glFlushQueued;
     static bool s_syncDeleteQueueSwitchFlag;
     static moodycamel::ConcurrentQueue<GLsync> s_syncDeleteQueue[2];
 

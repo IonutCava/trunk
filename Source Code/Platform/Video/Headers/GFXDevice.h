@@ -184,7 +184,7 @@ public:  // GPU interface
 
     void debugDraw(const SceneRenderState& sceneRenderState, const Camera& activeCamera, GFX::CommandBuffer& bufferInOut);
 
-    void flushCommandBuffer(GFX::CommandBuffer& commandBuffer);
+    void flushCommandBuffer(GFX::CommandBuffer& commandBuffer, bool submitToGPU = false);
     
     /// Generate a cubemap from the given position
     /// It renders the entire scene graph (with culling) as default
