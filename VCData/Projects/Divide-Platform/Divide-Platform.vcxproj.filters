@@ -900,9 +900,6 @@
     <None Include="../../../assets\shaders\GLSL\SSAOPass.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="../../../assets\shaders\GLSL\terrain.glsl">
-      <Filter>Video\ShaderSource\GLSL</Filter>
-    </None>
     <None Include="../../../assets\shaders\GLSL\water.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>

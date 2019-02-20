@@ -99,7 +99,7 @@ struct TerrainTextureLayer {
     inline U8 detailCountPerLayer(U8 layer) const { assert(layer < _layerCount); return _detailCountPerLayer[layer]; }
 
    private:
-    U8 _layerCount;
+    U8 _layerCount = 0;
     std::vector<U8> _albedoCountPerLayer;
     std::vector<U8> _detailCountPerLayer;
 
@@ -174,7 +174,8 @@ class Terrain : public Object3D {
 
     bool onRender(SceneGraphNode& sgn,
                   const Camera& camera,
-                  RenderStagePass renderStagePass) override;
+                  RenderStagePass renderStagePass,
+                  bool refreshData) override;
 
     void postLoad(SceneGraphNode& sgn);
 
@@ -192,10 +193,10 @@ class Terrain : public Object3D {
     };
 
     F32 _drawDistance;
+    I32 _initBufferWriteCounter = 0;
     ShaderBuffer* _shaderData;
     VegetationDetails _vegDetails;
 
-    typedef std::array<bool, to_base(RenderStage::COUNT)> TessellatorArrayFlags;
     typedef std::array<TerrainTessellator, to_base(RenderStage::COUNT)-1> TessellatorArray;
     typedef hashMap<I64, bool> CameraUpdateFlagArray;
 
@@ -204,8 +205,6 @@ class Terrain : public Object3D {
 
     TessellatorArray _terrainTessellator;
     std::array<TerrainTessellator, Config::Lighting::MAX_SHADOW_CASTING_LIGHTS * 6> _shadowTessellators;
-
-    hashMap<I64, TessellatorArrayFlags> _terrainTessellatorFlags;
 
     EditorDataState _editorDataDirtyState;
     bool _drawBBoxes;

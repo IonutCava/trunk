@@ -473,7 +473,7 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) 
     }
 }
 
-bool SceneGraphNode::prepareRender(const Camera& camera, RenderStagePass renderStagePass) {
+bool SceneGraphNode::prepareRender(const Camera& camera, RenderStagePass renderStagePass, bool refreshData) {
     
     RenderingComponent* rComp = get<RenderingComponent>();
     if (rComp != nullptr) {
@@ -491,9 +491,9 @@ bool SceneGraphNode::prepareRender(const Camera& camera, RenderStagePass renderS
                 pkg.addShaderBuffer(0, buffer);
             }
         }
-        rComp->onRender(renderStagePass);
+        rComp->onRender(renderStagePass, refreshData);
     }
-    return _node->onRender(*this, camera, renderStagePass);
+    return _node->onRender(*this, camera, renderStagePass, refreshData);
 }
 
 void SceneGraphNode::onRefreshNodeData(RenderStagePass renderStagePass, GFX::CommandBuffer& bufferInOut) {

@@ -63,10 +63,11 @@ struct RTAttachmentDescriptor {
     FColour _clearColour = DefaultColours::WHITE;
 };
 
+class RTAttachmentPool;
 class RTAttachment {
     public:
-        explicit RTAttachment(const RTAttachmentDescriptor& descriptor);
-        explicit RTAttachment(const RTAttachmentDescriptor& descriptor, const RTAttachment_ptr& externalAtt);
+        explicit RTAttachment(RTAttachmentPool& parent, const RTAttachmentDescriptor& descriptor);
+        explicit RTAttachment(RTAttachmentPool& parent, const RTAttachmentDescriptor& descriptor, const RTAttachment_ptr& externalAtt);
         virtual ~RTAttachment();
 
         bool used() const;
@@ -85,8 +86,8 @@ class RTAttachment {
         bool writeLayer(U16 layer);
         U16  writeLayer() const;
 
-        const Texture_ptr& texture() const;
-        void texture(const Texture_ptr& tex);
+        const Texture_ptr& texture(bool autoResolve = true) const;
+        void setTexture(const Texture_ptr& tex);
 
         U32 binding() const;
         void binding(U32 binding);
@@ -95,12 +96,17 @@ class RTAttachment {
 
         const RTAttachmentDescriptor& descriptor() const;
 
+        RTAttachmentPool& parent();
+        const RTAttachmentPool& parent() const;
+
+        const RTAttachment_ptr& getExternal() const;
     protected:
         bool _changed;
         U32  _binding;
         U16  _mipWriteLevel;
         U16  _writeLayer;
         Texture_ptr _texture;
+        RTAttachmentPool& _parent;
         RTAttachment_ptr _externalAttachment;
         RTAttachmentDescriptor _descriptor;
 };

@@ -33,7 +33,7 @@ RenderTarget* GFXDevice::newRT(const RenderTargetDescriptor& descriptor) const {
         case RenderAPI::OpenGLES: {
             /// Create and return a new framebuffer.
             /// The callee is responsible for it's deletion!
-            temp =  new (_gpuObjectArena) glFramebuffer(refThis(this), descriptor);
+            temp =  new (_gpuObjectArena) glFramebuffer(refThis(this), nullptr, descriptor);
         } break;
         case RenderAPI::Vulkan: {
             temp = new (_gpuObjectArena) vkRenderTarget(refThis(this), descriptor);

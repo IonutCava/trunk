@@ -84,7 +84,7 @@ RTAttachment_ptr& RTAttachmentPool::update(const RTAttachmentDescriptor& descrip
     RTAttachmentType type = descriptor._type;
     RTAttachment_ptr& ptr = checkAndRemoveExistingAttachment(type, descriptor._index);
 
-    ptr.reset(new RTAttachment(descriptor));
+    ptr.reset(new RTAttachment(*this, descriptor));
 
     ResourceDescriptor textureAttachment(Util::StringFormat("FBO_%s_Att_%s_%d_%d",
                                                             _parent.name().c_str(),
@@ -102,7 +102,7 @@ RTAttachment_ptr& RTAttachmentPool::update(const RTAttachmentDescriptor& descrip
     Texture::TextureLoadInfo info;
     tex->loadData(info, NULL, vec2<U16>(_parent.getWidth(), _parent.getHeight()));
 
-    ptr->texture(tex);
+    ptr->setTexture(tex);
 
     ++_attachmentCount[to_U32(type)];
 
@@ -120,7 +120,7 @@ RTAttachment_ptr& RTAttachmentPool::update(const ExternalRTAttachmentDescriptor&
     RTAttachmentType type = internalDescriptor._type;
     RTAttachment_ptr& ptr = checkAndRemoveExistingAttachment(type, internalDescriptor._index);
 
-    ptr.reset(new RTAttachment(internalDescriptor, descriptor._attachment));
+    ptr.reset(new RTAttachment(descriptor._attachment->parent(), internalDescriptor, descriptor._attachment));
 
      ++_attachmentCount[to_U32(type)];
 
@@ -211,4 +211,11 @@ U8 RTAttachmentPool::attachmentCount(RTAttachmentType type) const {
     return _attachmentCount[to_U32(type)];
 }
 
+RenderTarget& RTAttachmentPool::parent() {
+    return _parent;
+}
+
+const RenderTarget& RTAttachmentPool::parent() const {
+    return _parent;
+}
 }; //namespace Divide

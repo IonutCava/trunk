@@ -96,7 +96,9 @@ class SceneNode : public CachedResource {
     /// the return value is false
     virtual bool onRender(SceneGraphNode& sgn,
                           const Camera& camera,
-                          RenderStagePass renderStagePass);
+                          RenderStagePass renderStagePass,
+                          bool refreshData);
+
     virtual void onRefreshNodeData(SceneGraphNode& sgn,
                                    RenderStagePass renderStagePass,
                                    GFX::CommandBuffer& bufferInOut);

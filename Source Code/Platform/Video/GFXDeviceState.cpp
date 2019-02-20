@@ -232,9 +232,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     }
 
     {
-        TextureDescriptor accumulationDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGBA, GFXDataFormat::FLOAT_16);
-        accumulationDescriptor.automaticMipMapGeneration(false);
-
         SamplerDescriptor accumulationSampler = {};
         accumulationSampler._wrapU = TextureWrap::CLAMP_TO_EDGE;
         accumulationSampler._wrapV = TextureWrap::CLAMP_TO_EDGE;
@@ -242,9 +239,13 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
         accumulationSampler._minFilter = TextureFilter::NEAREST;
         accumulationSampler._magFilter = TextureFilter::NEAREST;
 
+        TextureDescriptor accumulationDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGBA, GFXDataFormat::FLOAT_16);
+        accumulationDescriptor.msaaSamples(msaaSamples);
+        accumulationDescriptor.automaticMipMapGeneration(false);
         accumulationDescriptor.setSampler(accumulationSampler);
 
-        TextureDescriptor revealageDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RED, GFXDataFormat::FLOAT_16);
+        TextureDescriptor revealageDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RED, GFXDataFormat::FLOAT_16);
+        revealageDescriptor.msaaSamples(msaaSamples);
         revealageDescriptor.setSampler(accumulationSampler);
 
         vector<RTAttachmentDescriptor> attachments = {

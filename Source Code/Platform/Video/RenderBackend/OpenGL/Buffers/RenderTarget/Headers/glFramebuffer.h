@@ -54,7 +54,7 @@ class glFramebuffer : public RenderTarget,
    public:
     /// if resolveBuffer is not null, we add all of our attachments to it and
     /// initialize it with this buffer
-    explicit glFramebuffer(GFXDevice& context, const RenderTargetDescriptor& descriptor);
+    explicit glFramebuffer(GFXDevice& context, glFramebuffer* parent, const RenderTargetDescriptor& descriptor);
     ~glFramebuffer();
 
     bool resize(U16 width, U16 height) override;
@@ -102,6 +102,9 @@ class glFramebuffer : public RenderTarget,
         }
     };
 
+    RTAttachment& getInternalAttachment(RTAttachmentType type, U8 index);
+    const RTAttachment& getInternalAttachment(RTAttachmentType type, U8 index) const;
+
     /// Bake in all settings and attachments to prepare it for rendering
     bool create();
     void resolve(bool colours, bool depth);
@@ -114,7 +117,7 @@ class glFramebuffer : public RenderTarget,
 
     void initAttachment(RTAttachmentType type, U8 index);
 
-    void toggleAttachment(const RTAttachment_ptr& attachment, AttachmentState state, bool layeredRendering);
+    void toggleAttachment(const RTAttachment& attachment, AttachmentState state, bool layeredRendering);
 
     bool hasDepth() const;
 
@@ -136,10 +139,14 @@ class glFramebuffer : public RenderTarget,
                   ClearBufferMask mask);
 
    protected:
+
+    RTAttachment* getAttachmentInternal(RTAttachmentType type, U8 index);
+    RTAttachmentPool::PoolEntry& getAttachmentInternal(RTAttachmentType type);
+
     void begin(const RTDrawDescriptor& drawPolicy);
     void end();
     void queueMipMapRecomputation();
-    void queueMipMapRecomputation(const RTAttachment_ptr& attachment, const vec2<U32>& layerRange);
+    void queueMipMapRecomputation(const RTAttachment& attachment, const vec2<U32>& layerRange);
 
    protected:
     bool _resolved;
@@ -148,6 +155,7 @@ class glFramebuffer : public RenderTarget,
     Rect<I32> _prevViewport;
     GLuint _framebufferHandle;
     static bool _zWriteEnabled;
+    glFramebuffer* _parent;
     glFramebuffer* _resolveBuffer;
     RTDrawDescriptor _previousPolicy;
 

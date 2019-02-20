@@ -12,13 +12,14 @@
 
 namespace Divide {
 
-RTAttachment::RTAttachment(const RTAttachmentDescriptor& descriptor)
-    : RTAttachment(descriptor, nullptr)
+RTAttachment::RTAttachment(RTAttachmentPool& parent, const RTAttachmentDescriptor& descriptor)
+    : RTAttachment(parent, descriptor, nullptr)
 {
 }
 
-RTAttachment::RTAttachment(const RTAttachmentDescriptor& descriptor, const RTAttachment_ptr& externalAtt)
-    : _descriptor(descriptor),
+RTAttachment::RTAttachment(RTAttachmentPool& parent, const RTAttachmentDescriptor& descriptor, const RTAttachment_ptr& externalAtt)
+    : _parent(parent),
+      _descriptor(descriptor),
       _texture(nullptr),
       _externalAttachment(externalAtt),
       _changed(false),
@@ -32,12 +33,15 @@ RTAttachment::~RTAttachment()
 {
 }
 
-const Texture_ptr& RTAttachment::texture() const {
-    return isExternal() ? _externalAttachment->texture() : _texture;
+const Texture_ptr& RTAttachment::texture(bool autoResolve) const {
+    return (autoResolve && isExternal()) ? _externalAttachment->texture() : _texture;
 }
 
-void RTAttachment::texture(const Texture_ptr& tex) {
+void RTAttachment::setTexture(const Texture_ptr& tex) {
     _texture = tex;
+    if (tex != nullptr) {
+        _descriptor._texDescriptor = tex->getDescriptor();
+    }
     _changed = true;
 }
 
@@ -107,4 +111,16 @@ void RTAttachment::binding(U32 binding) {
 const RTAttachmentDescriptor& RTAttachment::descriptor() const {
     return _descriptor;
 }
+
+RTAttachmentPool& RTAttachment::parent() {
+    return _parent;
+}
+const RTAttachmentPool& RTAttachment::parent() const {
+    return _parent;
+}
+
+const RTAttachment_ptr& RTAttachment::getExternal() const {
+    return _externalAttachment;
+}
+
 }; //namespace Divide

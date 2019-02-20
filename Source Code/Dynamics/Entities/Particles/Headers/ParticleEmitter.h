@@ -50,7 +50,7 @@ class ParticleEmitter : public SceneNode {
     explicit ParticleEmitter(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name);
     ~ParticleEmitter();
 
-    bool onRender(SceneGraphNode& sgn, const Camera& camera, RenderStagePass renderStagePass) override;
+    bool onRender(SceneGraphNode& sgn, const Camera& camera, RenderStagePass renderStagePass, bool refreshData) override;
 
     /// toggle the particle emitter on or off
     inline void enableEmitter(bool state) { _enabled = state; }

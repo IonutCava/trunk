@@ -128,10 +128,10 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 m
                                 2, 1, 0, 3, 2, 0 };
 
         const vec2<F32> texcoords[] = {
-            vec2<F32>(0.0f, 0.0f),
-            vec2<F32>(0.0f, 1.0f),
-            vec2<F32>(1.0f, 1.0f),
-            vec2<F32>(1.0f, 0.0f)
+            vec2<F32>(0.002f, 0.002f),
+            vec2<F32>(0.002f, 0.998f),
+            vec2<F32>(0.998f, 0.998f),
+            vec2<F32>(0.998f, 0.002f)
         };
 
         s_buffer = gfxDevice.newVB();

@@ -228,7 +228,7 @@ void RenderingComponent::rebuildMaterial() {
     });
 }
 
-void RenderingComponent::onRender(RenderStagePass renderStagePass) {
+void RenderingComponent::onRender(RenderStagePass renderStagePass, bool refreshData) {
     if (getMaterialInstanceCache() != nullptr) {
         RenderPackage& pkg = getDrawPackage(renderStagePass);
         TextureDataContainer& textures = pkg.descriptorSet(0)._textureData;
@@ -434,14 +434,14 @@ U8 RenderingComponent::getLoDLevel(const Camera& camera, RenderStage renderStage
     return lodLevel;
 }
 
-void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRenderState& sceneRenderState, RenderStagePass renderStagePass) {
+void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRenderState& sceneRenderState, RenderStagePass renderStagePass, bool refreshData) {
     RenderPackage& pkg = getDrawPackage(renderStagePass);
     if (canDraw(renderStagePass)) {
         if (pkg.empty()) {
             rebuildDrawCommands(renderStagePass);
         }
 
-        if (_parentSGN.prepareRender(camera, renderStagePass)) {
+        if (_parentSGN.prepareRender(camera, renderStagePass, refreshData)) {
             U8 lod = getLoDLevel(camera, renderStagePass._stage, sceneRenderState.lodThresholds());
 
             Attorney::RenderPackageRenderingComponent::setLoDLevel(pkg, lod);

@@ -95,7 +95,8 @@ class Object3D : public SceneNode {
 
     virtual bool onRender(SceneGraphNode& sgn,
                           const Camera& camera,
-                          RenderStagePass renderStagePass) override;
+                          RenderStagePass renderStagePass,
+                          bool refreshData) override;
                         
     virtual void onAnimationChange(SceneGraphNode& sgn, I32 newIndex) { 
         ACKNOWLEDGE_UNUSED(sgn);

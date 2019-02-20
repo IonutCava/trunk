@@ -166,7 +166,7 @@ class RenderingComponent : public BaseComponentType<RenderingComponent, Componen
     inline void setRefractionCallback(RenderCallback cbk) { _refractionCallback = cbk; }
 
     void drawDebugAxis();
-    void onRender(RenderStagePass renderStagePass);
+    void onRender(RenderStagePass renderStagePass, bool refreshData);
 
     U8 getLoDLevel(const Camera& camera, RenderStage renderStage, const vec4<U16>& lodThresholds);
 
@@ -181,7 +181,7 @@ class RenderingComponent : public BaseComponentType<RenderingComponent, Componen
 
     void rebuildDrawCommands(RenderStagePass stagePass);
 
-    void prepareDrawPackage(const Camera& camera, const SceneRenderState& sceneRenderState, RenderStagePass renderStagePass);
+    void prepareDrawPackage(const Camera& camera, const SceneRenderState& sceneRenderState, RenderStagePass renderStagePass, bool refreshData);
 
     // This returns false if the node is not reflective, otherwise it generates a new reflection cube map
     // and saves it in the appropriate material slot
@@ -277,8 +277,9 @@ class RenderingCompRenderPass {
         static void prepareDrawPackage(RenderingComponent& renderable,
                                        const Camera& camera,
                                        const SceneRenderState& sceneRenderState,
-                                       RenderStagePass renderStagePass) {
-            renderable.prepareDrawPackage(camera, sceneRenderState, renderStagePass);
+                                       RenderStagePass renderStagePass,
+                                       bool refreshData) {
+            renderable.prepareDrawPackage(camera, sceneRenderState, renderStagePass, refreshData);
         }
 
         static bool onRefreshNodeData(RenderingComponent& renderable, RefreshNodeDataParams& refreshParams) {

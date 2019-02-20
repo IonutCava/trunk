@@ -14,7 +14,7 @@ layout(std430, binding = BUFFER_GRASS_DATA) coherent readonly buffer dvd_transfo
 };
 
 flat out int _arrayLayerFrag;
-out float _alphaFactor;
+flat out float _alphaFactor;
 
 void computeFoliageMovementGrass(inout vec4 vertex, in float scaleFactor) {
     float timeGrass = dvd_windDetails.w * dvd_time * 0.00025; //to seconds
@@ -43,6 +43,11 @@ void main()
 
     _arrayLayerFrag = int(data.data.z);
     _alphaFactor = min(LoD, 1.0f);
+    if (_alphaFactor > 0.5f) {
+        _alphaFactor = 1.0f;
+    }
+
+    _alphaFactor = 1.0f;
 
     dvd_Vertex.xyz = rotate_vertex_position(dvd_Vertex.xyz * scale, data.orientationQuad);
     VAR._vertexW = dvd_Vertex + vec4(data.positionAndScale.xyz, 0.0f);
@@ -74,7 +79,7 @@ layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuseGrass;
 
 void main (void){
     vec4 colour = texture(texDiffuseGrass, vec3(VAR._texCoord, _arrayLayerFrag));
-    colour.a *= (1.0 - _alphaFactor);
+    colour.a *= _alphaFactor;
     writeOutput(colour);
 }
 
@@ -87,7 +92,7 @@ layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuseGrass;
 
 void main() {
     vec4 colour = texture(texDiffuseGrass, vec3(VAR._texCoord, _arrayLayerFrag));
-    if (colour.a * (1.0 - _alphaFactor) < 1.0 - Z_TEST_SIGMA) {
+    if (colour.a * _alphaFactor < 1.0 - Z_TEST_SIGMA) {
         discard;
     }
 }
@@ -106,7 +111,7 @@ out vec2 _colourOut;
 
 void main(void) {
     vec4 colour = texture(texDiffuseGrass, vec3(VAR._texCoord, _arrayLayerFrag));
-    if (colour.a* (1.0 - _alphaFactor) < 1.0 - Z_TEST_SIGMA) {
+    if (colour.a * _alphaFactor < 1.0 - Z_TEST_SIGMA) {
         discard;
     }
 

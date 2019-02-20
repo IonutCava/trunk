@@ -286,12 +286,13 @@ void ParticleEmitter::prepareForRender(RenderStagePass renderStagePass, const Ca
 /// The onRender call will emit particles
 bool ParticleEmitter::onRender(SceneGraphNode& sgn,
                                const Camera& camera, 
-                               RenderStagePass renderStagePass) {
+                               RenderStagePass renderStagePass,
+                               bool refreshData) {
 
     if ( _enabled &&  getAliveParticleCount() > 0) {
         _bufferUpdate.wait();
 
-        if (renderStagePass._passType != RenderPassType::PRE_PASS && _buffersDirty[to_U32(renderStagePass._stage)]) {
+        if (refreshData && _buffersDirty[to_U32(renderStagePass._stage)]) {
             GenericVertexData& buffer = getDataBuffer(renderStagePass._stage, 0);
             buffer.updateBuffer(g_particlePositionBuffer, to_U32(_particles->_renderingPositions.size()), 0, _particles->_renderingPositions.data());
             buffer.updateBuffer(g_particleColourBuffer, to_U32(_particles->_renderingColours.size()), 0, _particles->_renderingColours.data());
@@ -310,7 +311,7 @@ bool ParticleEmitter::onRender(SceneGraphNode& sgn,
 
         prepareForRender(renderStagePass, camera);
 
-        return SceneNode::onRender(sgn, camera, renderStagePass);
+        return SceneNode::onRender(sgn, camera, renderStagePass, refreshData);
     }
 
     return false;

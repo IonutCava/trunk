@@ -414,7 +414,7 @@ void RenderPassManager::buildDrawCommands(RenderStagePass stagePass, const PassP
                 continue;
             }
 
-            Attorney::RenderingCompRenderPass::prepareDrawPackage(*node->get<RenderingComponent>(), *params._camera, sceneRenderState, stagePass);
+            Attorney::RenderingCompRenderPass::prepareDrawPackage(*node->get<RenderingComponent>(), *params._camera, sceneRenderState, stagePass, refresh);
         }
     }
 
