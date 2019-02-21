@@ -143,7 +143,8 @@ Task* TaskPool::createTask(Task* parentTask, const DELEGATE_CBK<void, const Task
     while (task == nullptr) {
         const U32 index = g_allocatedTasks++;
         Task& crtTask = g_taskAllocator[index & (Config::MAX_POOLED_TASKS - 1u)];
-        if (Finished(crtTask)) {
+        U16 expected = to_U16(0);
+        if (crtTask._unfinishedJobs.compare_exchange_strong(expected, to_U16(1))) {
             task = &crtTask;
         }
     }
@@ -151,10 +152,10 @@ Task* TaskPool::createTask(Task* parentTask, const DELEGATE_CBK<void, const Task
     if (parentTask != nullptr) {
         parentTask->_unfinishedJobs.fetch_add(1);
     }
+
     task->_parent = parentTask;
     task->_parentPool = this;
     task->_callback = threadedFunction;
-    task->_unfinishedJobs = 1;
 
     if (task->_id == 0) {
         static U32 id = 1;

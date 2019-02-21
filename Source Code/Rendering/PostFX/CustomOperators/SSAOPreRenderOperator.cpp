@@ -156,7 +156,7 @@ void SSAOPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& bu
     triangleCmd._drawCount = 1;
 
     _ssaoGenerateConstants.set("projectionMatrix", GFX::PushConstantType::MAT4, camera.getProjectionMatrix());
-    _ssaoGenerateConstants.set("invProjectionMatrix", GFX::PushConstantType::MAT4, camera.getProjectionMatrix().getInverse());
+    _ssaoGenerateConstants.set("invProjectionMatrix", GFX::PushConstantType::MAT4, GetInverse(camera.getProjectionMatrix()));
 
     RenderTargetHandle screen = _parent.inputRT();
 

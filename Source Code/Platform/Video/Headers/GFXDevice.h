@@ -153,6 +153,7 @@ public:
         ALBEDO = 0,
         NORMALS_AND_VELOCITY = 1,
         MODULATE = 2,
+        EXTRA = 3,
         COUNT,
         ACCUMULATION = ALBEDO,
         REVEALAGE = NORMALS_AND_VELOCITY,

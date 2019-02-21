@@ -19,6 +19,23 @@
 
 #include "ECS/Components/Headers/RenderingComponent.h"
 
+namespace std {
+    template<typename T>
+    struct hash<Divide::vec2<T> >
+    {
+        typedef Divide::vec2<T> argument_type;
+        typedef size_t result_type;
+
+        result_type operator()(const argument_type& a) const
+        {
+            result_type h = 17;
+            Divide::Util::Hash_combine(h, a.x);
+            Divide::Util::Hash_combine(h, a.y);
+            return h;
+        }
+    };
+};
+
 namespace Divide {
 
 namespace {
@@ -28,7 +45,7 @@ namespace {
 
 };
 
-vectorFast<vec2<F32>> Vegetation::s_grassPositions;
+std::unordered_set<vec2<F32>> Vegetation::s_grassPositions;
 ShaderBuffer* Vegetation::s_grassData = nullptr;
 VertexBuffer* Vegetation::s_buffer = nullptr;
 std::atomic_uint Vegetation::s_bufferUsage = 0;
@@ -128,10 +145,10 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 m
                                 2, 1, 0, 3, 2, 0 };
 
         const vec2<F32> texcoords[] = {
-            vec2<F32>(0.002f, 0.002f),
-            vec2<F32>(0.002f, 0.998f),
-            vec2<F32>(0.998f, 0.998f),
-            vec2<F32>(0.998f, 0.002f)
+            vec2<F32>(0.0f, 0.0f),
+            vec2<F32>(0.0f, 1.0f),
+            vec2<F32>(1.0f, 1.0f),
+            vec2<F32>(1.0f, 0.0f)
         };
 
         s_buffer = gfxDevice.newVB();
@@ -180,22 +197,20 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 m
     circleA.center[1] = -posOffset;
     circleB.center[1] = posOffset;
 
-#   pragma omp parallel for
     for (I16 RadiusStepA = 0; RadiusStepA < g_maxRadiusSteps; ++RadiusStepA) {
         F32 Ar = ArBase + dR * (F32)RadiusStepA;
         for (I16 RadiusStepB = 0; RadiusStepB < g_maxRadiusSteps; ++RadiusStepB) {
             F32 Br = BrBase + dR * (F32)RadiusStepB;
-            circleA.radius = Ar + ((RadiusStepB % 3) ? 0.0f : 0.3f*dR);
-            circleB.radius = Br + ((RadiusStepA % 3) ? 0.0f : 0.3f*dR);
+            circleA.radius = Ar + ((RadiusStepB % 3) ? 0.0f : 0.3f * dR);
+            circleB.radius = Br + ((RadiusStepA % 3) ? 0.0f : 0.3f * dR);
             // Intersect circle Ac,UseAr and Bc,UseBr
             if (Util::IntersectCircles(circleA, circleB, intersections)) {
                 // Add the resulting points if they are within the pattern bounds
                 for (U8 i = 0; i < 2; ++i) {
-                    if (IS_IN_RANGE_EXCLUSIVE(intersections[i].x, chunkSize * -1.0f, chunkSize * 1.0f) &&
-                        IS_IN_RANGE_EXCLUSIVE(intersections[i].y, chunkSize * -1.0f, chunkSize * 1.0f))
+                    if (IS_IN_RANGE_EXCLUSIVE(intersections[i].x, -to_F32(chunkSize), to_F32(chunkSize)) &&
+                        IS_IN_RANGE_EXCLUSIVE(intersections[i].y, -to_F32(chunkSize), to_F32(chunkSize)))
                     {
-#                       pragma omp critical
-                        s_grassPositions.push_back(intersections[i]);
+                        s_grassPositions.insert(intersections[i]);
                     }
                 }
             }
@@ -359,8 +374,8 @@ namespace {
     }
 
     FORCE_INLINE bool ScaleAndCheckBounds(const vec2<F32>& chunkPos, const vec2<F32>& chunkSize, vec2<F32>& point) {
-        if (point.x > chunkSize.x * -1.0f && point.x < chunkSize.y * 1.0f && 
-            point.y > chunkSize.y * -1.0f && point.y < chunkSize.y * 1.0f) 
+        if (point.x > -chunkSize.x && point.x < chunkSize.y&& 
+            point.y > -chunkSize.y && point.y < chunkSize.y) 
         {
             // [-chunkSize * 0.5f, chunkSize * 0.5f] to [0, chunkSize]
             point = (point + chunkSize) * 0.5f;
@@ -386,10 +401,8 @@ void Vegetation::computeGrassTransforms(const Task& parentTask) {
         _tempData.resize(chunkCache.read<size_t>());
         chunkCache.read(reinterpret_cast<Byte*>(_tempData.data()), sizeof(GrassData) * _tempData.size());
     } else {
-
         const vec2<F32>& chunkPos = _terrainChunk.getOffsetAndSize().xy();
         const F32 waterLevel = 0.0f;// ToDo: make this dynamic! (cull underwater points later on?)
-        const I32 currentCount = std::min((I32)_billboardCount, 4);
         const U16 mapWidth = _map->dimensions().width;
         const U16 mapHeight = _map->dimensions().height;
 
@@ -403,36 +416,34 @@ void Vegetation::computeGrassTransforms(const Task& parentTask) {
                 goto end;
             }
 
-            F32 x_fac = pos.x / mapWidth;
-            F32 y_fac = pos.y / mapHeight;
+            const F32 x_fac = pos.x / mapWidth;
+            const F32 y_fac = pos.y / mapHeight;
 
-            Terrain::Vert vert = terrain.getVert(x_fac, y_fac, true);
+            const Terrain::Vert vert = terrain.getVert(x_fac, y_fac, true);
 
             // terrain slope should be taken into account
             if (Angle::to_DEGREES(std::acos(Dot(vert._normal, WORLD_Y_AXIS))) > 45.0f) {
                 continue;
             }
 
-            const F32 heightExtent = 1.0f;
-            const F32 heightHalfExtent = heightExtent * 0.5f;
-            UColour colour = _map->getColour((U16)pos.x, (U16)pos.y);
-            U8 index = bestIndex(colour);
-            
-            F32 scale = (colour[index] + 1) / 256.0f;
+            assert(vert._position.length() > 0.0f);
+
+            const UColour colour = _map->getColour((U16)pos.x, (U16)pos.y);
+            const U8 index = bestIndex(colour);
+            const F32 scale = (colour[index] + 1) / 256.0f;
+
             //vert._position.y = (((0.0f*heightExtent) + vert._position.y) - ((0.0f*scale) + vert._position.y)) + vert._position.y;
-            {
-                GrassData entry = {};
-                entry._data.set(1.0f, heightExtent, to_F32(index), 0.0f);
-                entry._positionAndScale.set(vert._position, scale);
-                entry._orientationQuat = 
-                    (Quaternion<F32>(WORLD_Y_AXIS, Random(360.0f)) * 
-                     RotationFromVToU(vert._normal, WORLD_Y_AXIS)).asVec4();
+            GrassData entry = {};
+            entry._data.set(1.0f, 1.0f, to_F32(index), 0.0f);
+            entry._positionAndScale.set(vert._position, scale);
+            entry._orientationQuat = 
+                (Quaternion<F32>(WORLD_Y_AXIS, Random(360.0f)) * 
+                    RotationFromVToU(vert._normal, WORLD_Y_AXIS)).asVec4();
                 
-                _tempData.push_back(entry);
-            }
+            _tempData.push_back(entry);
         }
 
-
+        _tempData.shrink_to_fit();
         chunkCache << _tempData.size();
         chunkCache.append(_tempData.data(), _tempData.size());
         chunkCache.dumpToFile(Paths::g_cacheLocation + Paths::g_terrainCacheLocation, cacheFileName);

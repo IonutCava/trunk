@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<static>true</static>
+<model>sponza.obj</model>
+<TRANSFORM>
+    <Transform>
+        <position x="784.863403" y="14.730073" z="79.9280167"/>
+        <orientation x="0" y="-52.6162071" z="0"/>
+        <scale x="0.0299999993" y="0.0299999993" z="0.0299999993"/>
+    </Transform>
+    <WorldMat 00="0.018217409" 01="0" 02="-0.0238317735" 03="0" 10="0" 11="0.0299999993" 12="0" 13="0" 20="0.0238317735" 21="0" 22="0.018217409" 23="0" 30="784.863403" 31="14.730073" 32="79.9280167" 33="1"/>
+</TRANSFORM>
+<BOUNDS/>
+<RENDERING/>
+<NETWORKING/>
+<MESH/>

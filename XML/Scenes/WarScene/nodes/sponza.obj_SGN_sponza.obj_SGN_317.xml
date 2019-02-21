@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<static>true</static>
+<model>sponza_316</model>
+<NAVIGATION/>
+<TRANSFORM>
+    <Transform>
+        <position x="0" y="0" z="0"/>
+        <orientation x="0" y="0" z="0"/>
+        <scale x="1" y="1" z="1"/>
+    </Transform>
+    <WorldMat 00="0.018217409" 01="0" 02="-0.0238317735" 03="0" 10="0" 11="0.0299999993" 12="0" 13="0" 20="0.0238317735" 21="0" 22="0.018217409" 23="0" 30="784.863403" 31="14.730073" 32="79.9280167" 33="1"/>
+</TRANSFORM>
+<BOUNDS/>
+<RENDERING>
+    <Material>
+        <colour r="0.588" g="0.588" b="0.588" a="1"/>
+        <emissive r="0" g="0" b="0"/>
+        <specular r="0" g="0" b="0"/>
+        <shininess>10</shininess>
+        <doubleSided>false</doubleSided>
+        <bumpMethod>NONE</bumpMethod>
+        <shadingMode>PHONG</shadingMode>
+        <parallaxFactor>1</parallaxFactor>
+        <texture>
+            <UNIT0>
+                <name>sponza_flagpole_diff.png</name>
+                <path>assets/textures/sponza</path>
+                <flipped>true</flipped>
+                <Map U="REPEAT" V="REPEAT" W="REPEAT"/>
+                <Filter min="LINEAR_MIPMAP_LINEAR" mag="LINEAR"/>
+                <anisotropy>255</anisotropy>
+            </UNIT0>
+            <SPECULAR>
+                <name>sponza_flagpole_spec.png</name>
+                <path>assets/textures/sponza</path>
+                <flipped>true</flipped>
+                <Map U="REPEAT" V="REPEAT" W="REPEAT"/>
+                <Filter min="LINEAR_MIPMAP_LINEAR" mag="LINEAR"/>
+                <anisotropy>255</anisotropy>
+            </SPECULAR>
+        </texture>
+    </Material>
+</RENDERING>
+<SUBMESH/>

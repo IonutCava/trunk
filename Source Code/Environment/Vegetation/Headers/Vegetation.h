@@ -128,7 +128,7 @@ class Vegetation : public SceneNode {
     static std::atomic_uint s_bufferUsage;
     static VertexBuffer* s_buffer;
     static ShaderBuffer* s_grassData;
-    static vectorFast<vec2<F32>> s_grassPositions;
+    static std::unordered_set<vec2<F32>> s_grassPositions;
 
     static U32 s_maxGrassChunks;
     static U32 s_maxGrassInstancesPerChunk;
