@@ -41,7 +41,7 @@ layout(binding = BUFFER_LIGHT_NORMAL, std140) uniform dvd_LightBlock
 
 layout(binding = BUFFER_LIGHT_INDICES, std430) coherent COMP_RW buffer perTileLightIndexBuffer
 {
-    uint perTileLightIndices[];
+    int perTileLightIndices[];
 };
 
 #if defined(FRAG_SHADER)
@@ -56,13 +56,11 @@ layout(binding = BUFFER_LIGHT_SHADOW, std140) uniform dvd_ShadowBlock
 
 #endif 
 
-#define windowWidth int(dvd_ViewPort.z)
-#define windowHeight int(dvd_ViewPort.w)
-
 uint GetTileIndex(in vec2 ScreenPos)
 {
-    float fTileRes = float(FORWARD_PLUS_TILE_RES);
-    return uint(floor(ScreenPos.x / fTileRes) + floor(ScreenPos.y / fTileRes) * LIGHT_NUM_TILES_Y);
+    ivec2 location = ivec2(ScreenPos.xy);
+    ivec2 tileID = location / ivec2(FORWARD_PLUS_TILE_RES, FORWARD_PLUS_TILE_RES);
+    return uint(tileID.y * LIGHT_NUM_TILES_X + tileID.x);
 }
 
 #endif //_LIGHT_INPUT_CMN_

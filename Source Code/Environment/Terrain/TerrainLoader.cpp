@@ -507,7 +507,8 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     U32 chunkSize = to_U32(terrainDescriptor->getTessellationRange().z);
     U32 maxChunkCount = to_U32(std::ceil((terrainWidth * terrainHeight) / (chunkSize * chunkSize * 1.0f)));
 
-    Vegetation::precomputeStaticData(terrain->getGeometryVB()->context(), chunkSize, maxChunkCount);
+    U32 maxInstances = 0;
+    Vegetation::precomputeStaticData(terrain->getGeometryVB()->context(), chunkSize, maxChunkCount, maxInstances);
 
     U8 textureCount = 0;
     stringImpl textureName;
@@ -573,9 +574,12 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     vegMaterial->setSpecular(FColour(0.1f, 0.1f, 0.1f, 1.0f));
     vegMaterial->setShininess(5.0f);
     vegMaterial->setShadingMode(Material::ShadingMode::BLINN_PHONG);
-    
+    vegMaterial->setDoubleSided(false);
+
     ShaderProgramDescriptor shaderDescriptor;
     shaderDescriptor._defines.push_back(std::make_pair("SKIP_TEXTURES", true));
+    shaderDescriptor._defines.push_back(std::make_pair(Util::StringFormat("MAX_INSTANCES %d", maxInstances).c_str(), true));
+    shaderDescriptor._defines.push_back(std::make_pair("USE_DOUBLE_SIDED", true));
 
     ShaderProgramDescriptor shaderOitDescriptor = shaderDescriptor;
     shaderOitDescriptor._defines.push_back(std::make_pair("OIT_PASS", true));
@@ -589,11 +593,11 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     ShaderProgram_ptr grassColourOIT = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassColourOITShader);
 
     ResourceDescriptor grassPrePassShader("grass.PrePass");
-    grassColourShader.setPropertyDescriptor(shaderDescriptor);
+    grassPrePassShader.setPropertyDescriptor(shaderDescriptor);
     ShaderProgram_ptr grassPrePass = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassPrePassShader);
 
     ResourceDescriptor grassShadowShader("grass.Shadow");
-    grassColourShader.setPropertyDescriptor(shaderDescriptor);
+    grassShadowShader.setPropertyDescriptor(shaderDescriptor);
     ShaderProgram_ptr grassShadow = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassShadowShader);
 
     vegMaterial->setShaderProgram(grassColour);
@@ -603,7 +607,6 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
 
     vegMaterial->setTexture(ShaderProgram::TextureUsage::UNIT0, grassBillboardArray);
     vegDetails.vegetationMaterialPtr = vegMaterial;
-    vegDetails.vegetationMaterialPtr->setDoubleSided(false);
 
     vegDetails.map.reset(new ImageTools::ImageData);
     ImageTools::ImageDataInterface::CreateImageData(Paths::g_assetsLocation + 

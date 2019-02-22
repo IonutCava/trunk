@@ -84,7 +84,7 @@ void NavigationMesh::stopThreadedBuild() {
 }
 
 void NavigationMesh::freeIntermediates(bool freeAll) {
-    _navigationMeshLock.lock();
+    UniqueLock w_lock(_navigationMeshLock);
 
     rcFreeHeightField(_heightField);
     rcFreeCompactHeightfield(_compactHeightField);
@@ -99,8 +99,6 @@ void NavigationMesh::freeIntermediates(bool freeAll) {
         _polyMesh = nullptr;
         _polyMeshDetail = nullptr;
     }
-
-    _navigationMeshLock.unlock();
 }
 
 namespace {
@@ -254,8 +252,8 @@ bool NavigationMesh::buildProcess() {
     Console::printfn(Locale::get(_ID("NAV_MESH_GENERATION_COMPLETE")),
                      Time::MicrosecondsToSeconds<F32>(importTimer.get()));
 
-    _navigationMeshLock.lock();
     {
+        UniqueLock w_lock(_navigationMeshLock);
         // Copy new NavigationMesh into old.
         dtNavMesh* old = _navMesh;
         // I am trusting that this is atomic.
@@ -269,7 +267,6 @@ bool NavigationMesh::buildProcess() {
             navQueryComplete,
             "NavigationMesh Error: Navigation query creation failed!");
     }
-    _navigationMeshLock.unlock();
 
     // Free structs used during build
     freeIntermediates(false);
@@ -593,43 +590,44 @@ GFX::CommandBuffer& NavigationMesh::draw() {
 
     _debugDrawInterface->beginBatch();
 
-    _navigationMeshLock.lock();
+    {
+        UniqueLock w_lock(_navigationMeshLock);
 
-    switch (mode) {
-        case RenderMode::RENDER_NAVMESH:
-            if (_navMesh) {
-                duDebugDrawNavMesh(_debugDrawInterface, *_navMesh, 0);
-            }
-            break;
-        case RenderMode::RENDER_CONTOURS:
-            if (_countourSet) {
-                duDebugDrawContours(_debugDrawInterface, *_countourSet);
-            }
-            break;
-        case RenderMode::RENDER_POLYMESH:
-            if (_polyMesh) {
-                duDebugDrawPolyMesh(_debugDrawInterface, *_polyMesh);
-            }
-            break;
-        case RenderMode::RENDER_DETAILMESH:
-            if (_polyMeshDetail) {
-                duDebugDrawPolyMeshDetail(_debugDrawInterface, *_polyMeshDetail);
-            }
-            break;
-        case RenderMode::RENDER_PORTALS:
-            if (_navMesh) {
-                duDebugDrawNavMeshPortals(_debugDrawInterface, *_navMesh);
-            }
-            break;
-    }
-
-    if (!_building) {
-        if (_countourSet && _renderConnections) {
-            duDebugDrawRegionConnections(_debugDrawInterface, *_countourSet);
+        switch (mode) {
+            case RenderMode::RENDER_NAVMESH:
+                if (_navMesh) {
+                    duDebugDrawNavMesh(_debugDrawInterface, *_navMesh, 0);
+                }
+                break;
+            case RenderMode::RENDER_CONTOURS:
+                if (_countourSet) {
+                    duDebugDrawContours(_debugDrawInterface, *_countourSet);
+                }
+                break;
+            case RenderMode::RENDER_POLYMESH:
+                if (_polyMesh) {
+                    duDebugDrawPolyMesh(_debugDrawInterface, *_polyMesh);
+                }
+                break;
+            case RenderMode::RENDER_DETAILMESH:
+                if (_polyMeshDetail) {
+                    duDebugDrawPolyMeshDetail(_debugDrawInterface, *_polyMeshDetail);
+                }
+                break;
+            case RenderMode::RENDER_PORTALS:
+                if (_navMesh) {
+                    duDebugDrawNavMeshPortals(_debugDrawInterface, *_navMesh);
+                }
+                break;
         }
-    }
 
-    _navigationMeshLock.unlock();
+        if (!_building) {
+            if (_countourSet && _renderConnections) {
+                duDebugDrawRegionConnections(_debugDrawInterface, *_countourSet);
+            }
+        }
+
+    }
 
     _debugDrawInterface->endBatch();
 

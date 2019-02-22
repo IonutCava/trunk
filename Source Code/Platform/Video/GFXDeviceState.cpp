@@ -157,7 +157,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     {
         vector<RTAttachmentDescriptor> attachments = {
             { screenDescriptor,              RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO), DefaultColours::DIVIDE_BLUE },
-            { normalAndVelocityDescriptor,   RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_VELOCITY) },
+            { normalAndVelocityDescriptor,   RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_VELOCITY), FColour(0.0f, 0.0f, 0.0f, 0.0f) },
             { depthDescriptor,               RTAttachmentType::Depth }
         };
 
@@ -173,6 +173,8 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
         _rtPool->allocateRT(RenderTargetUsage::SCREEN, screenDesc);
     }
 
+    U16 reflectRes = std::max(renderResolution.width, renderResolution.height) / Config::REFLECTION_TARGET_RESOLUTION_DOWNSCALE_FACTOR;
+
     ResourceDescriptor prevDepthTex("PREV_DEPTH");
     depthDescriptor.msaaSamples(0);
     prevDepthTex.setPropertyDescriptor(depthDescriptor);
@@ -182,29 +184,31 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     Texture::TextureLoadInfo info;
     _prevDepthBuffer->loadData(info, NULL, renderResolution);
 
+    TextureDescriptor hiZDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::FLOAT_32);
+    SamplerDescriptor hiZSampler = {};
+    hiZSampler._wrapU = TextureWrap::CLAMP_TO_EDGE;
+    hiZSampler._wrapV = TextureWrap::CLAMP_TO_EDGE;
+    hiZSampler._wrapW = TextureWrap::CLAMP_TO_EDGE;
+    hiZSampler._minFilter = TextureFilter::NEAREST_MIPMAP_NEAREST;
+    hiZSampler._magFilter = TextureFilter::NEAREST;
+
+    hiZDescriptor.setSampler(hiZSampler);
+    hiZDescriptor.automaticMipMapGeneration(false);
+
+    vector<RTAttachmentDescriptor> hiZAttachments = {
+        { hiZDescriptor, RTAttachmentType::Depth }
+    };
+
     {
-        TextureDescriptor hiZDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::FLOAT_32);
-        SamplerDescriptor hiZSampler = {};
-        hiZSampler._wrapU = TextureWrap::CLAMP_TO_EDGE;
-        hiZSampler._wrapV = TextureWrap::CLAMP_TO_EDGE;
-        hiZSampler._wrapW = TextureWrap::CLAMP_TO_EDGE;
-        hiZSampler._minFilter = TextureFilter::NEAREST_MIPMAP_NEAREST;
-        hiZSampler._magFilter = TextureFilter::NEAREST;
-
-        hiZDescriptor.setSampler(hiZSampler);
-        hiZDescriptor.automaticMipMapGeneration(false);
-
-        vector<RTAttachmentDescriptor> attachments = {
-            { hiZDescriptor, RTAttachmentType::Depth }
-        };
-
         RenderTargetDescriptor hizRTDesc = {};
         hizRTDesc._name = "HiZ";
         hizRTDesc._resolution = renderResolution;
-        hizRTDesc._attachmentCount = to_U8(attachments.size());
-        hizRTDesc._attachments = attachments.data();
+        hizRTDesc._attachmentCount = to_U8(hiZAttachments.size());
+        hizRTDesc._attachments = hiZAttachments.data();
 
         _rtPool->allocateRT(RenderTargetUsage::HI_Z, hizRTDesc);
+        hizRTDesc._resolution = reflectRes;
+        _rtPool->allocateRT(RenderTargetUsage::HI_Z_REFLECT, hizRTDesc);
     }
 
     if (Config::Build::ENABLE_EDITOR) {
@@ -250,13 +254,15 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 
         vector<RTAttachmentDescriptor> attachments = {
             { accumulationDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::ACCUMULATION), FColour(0.0f, 0.0f, 0.0f, 0.0f) },
-            { revealageDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::REVEALAGE), FColour(1.0f, 0.0f, 0.0f, 0.0f) }
+            { revealageDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::REVEALAGE), DefaultColours::WHITE}
         };
 
-        const RTAttachment_ptr& screenAttachment = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachmentPtr(RTAttachmentType::Colour, 0);
+        const RTAttachment_ptr& screenAttachment = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachmentPtr(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO));
+        const RTAttachment_ptr& normalsAttachment = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachmentPtr(RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_VELOCITY));
         const RTAttachment_ptr& screenDepthAttachment = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachmentPtr(RTAttachmentType::Depth, 0);
 
         vector<ExternalRTAttachmentDescriptor> externalAttachments = {
+            { normalsAttachment,  RTAttachmentType::Colour, to_U8(ScreenTargets::EXTRA) },
             { screenAttachment,  RTAttachmentType::Colour, to_U8(ScreenTargets::MODULATE) },
             { screenDepthAttachment,  RTAttachmentType::Depth }
         };
@@ -268,16 +274,9 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
         oitDesc._attachments = attachments.data();
         oitDesc._externalAttachmentCount = to_U8(externalAttachments.size());
         oitDesc._externalAttachments = externalAttachments.data();
-        _rtPool->allocateRT(RenderTargetUsage::OIT_FULL_RES, oitDesc);
-
-        oitDesc._name = "OIT_QUARTER_RES";
-        oitDesc._resolution = renderResolution / 4;
-        oitDesc._attachments = attachments.data();
-        oitDesc._externalAttachmentCount = to_U8(externalAttachments.size());
-        oitDesc._externalAttachments = externalAttachments.data();
-        //ToDo: Add a quarter size depth buffer and blit it from the main depth buffer -Ionut
-        //_rtPool->allocateRT(RenderTargetUsage::OIT_QUARTER_RES, oitDesc);
+        _rtPool->allocateRT(RenderTargetUsage::OIT, oitDesc);
     }
+
     // Reflection Targets
     SamplerDescriptor reflectionSampler = {};
     reflectionSampler._wrapU = TextureWrap::CLAMP_TO_EDGE;
@@ -286,46 +285,55 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     reflectionSampler._minFilter = TextureFilter::NEAREST;
     reflectionSampler._magFilter = TextureFilter::NEAREST;
 
-    TextureDescriptor environmentDescriptorCube(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::RGBA, GFXDataFormat::UNSIGNED_BYTE);
-    environmentDescriptorCube.setSampler(reflectionSampler);
-
-    TextureDescriptor depthDescriptorCube(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::FLOAT_32);
-
-    depthDescriptorCube.setSampler(reflectionSampler);
-
-    TextureDescriptor environmentDescriptorPlanar(TextureType::TEXTURE_2D, GFXImageFormat::RGBA, GFXDataFormat::UNSIGNED_BYTE);
-    environmentDescriptorPlanar.setSampler(reflectionSampler);
-
-    TextureDescriptor depthDescriptorPlanar(TextureType::TEXTURE_2D, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::FLOAT_32);
-    depthDescriptorPlanar.setSampler(reflectionSampler);
-
     RenderTargetHandle tempHandle;
-    U16 reflectRes = std::max(renderResolution.width, renderResolution.height) / Config::REFLECTION_TARGET_RESOLUTION_DOWNSCALE_FACTOR;
+
     {
-        vector<RTAttachmentDescriptor> attachments = {
-            { environmentDescriptorPlanar, RTAttachmentType::Colour },
-            { depthDescriptorPlanar, RTAttachmentType::Depth },
-        };
+        TextureDescriptor environmentDescriptorPlanar(TextureType::TEXTURE_2D, GFXImageFormat::RGBA, GFXDataFormat::UNSIGNED_BYTE);
+        environmentDescriptorPlanar.setSampler(reflectionSampler);
 
-        RenderTargetDescriptor refDesc = {};
-        refDesc._resolution = vec2<U16>(reflectRes);
-        refDesc._attachmentCount = to_U8(attachments.size());
-        refDesc._attachments = attachments.data();
+        TextureDescriptor depthDescriptorPlanar(TextureType::TEXTURE_2D, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::FLOAT_32);
+        depthDescriptorPlanar.setSampler(reflectionSampler);
 
-        for (U32 i = 0; i < Config::MAX_REFLECTIVE_NODES_IN_VIEW; ++i) {
-            refDesc._name = Util::StringFormat("Reflection_Planar_%d", i);
+        RenderTargetDescriptor hizRTDesc = {};
+        hizRTDesc._resolution = reflectRes;
+        hizRTDesc._attachmentCount = to_U8(hiZAttachments.size());
+        hizRTDesc._attachments = hiZAttachments.data();
 
-            tempHandle = _rtPool->allocateRT(RenderTargetUsage::REFLECTION_PLANAR, refDesc);
+        {
+            vector<RTAttachmentDescriptor> attachments = {
+                { environmentDescriptorPlanar, RTAttachmentType::Colour },
+                { depthDescriptorPlanar, RTAttachmentType::Depth },
+            };
+
+            RenderTargetDescriptor refDesc = {};
+            refDesc._resolution = vec2<U16>(reflectRes);
+            refDesc._attachmentCount = to_U8(attachments.size());
+            refDesc._attachments = attachments.data();
+
+            for (U32 i = 0; i < Config::MAX_REFLECTIVE_NODES_IN_VIEW; ++i) {
+                refDesc._name = Util::StringFormat("Reflection_Planar_%d", i);
+                tempHandle = _rtPool->allocateRT(RenderTargetUsage::REFLECTION_PLANAR, refDesc);
+            }
+
+            for (U32 i = 0; i < Config::MAX_REFRACTIVE_NODES_IN_VIEW; ++i) {
+                refDesc._name = Util::StringFormat("Refraction_Planar_%d", i);
+                tempHandle = _rtPool->allocateRT(RenderTargetUsage::REFRACTION_PLANAR, refDesc);
+            }
+
         }
-
-        for (U32 i = 0; i < Config::MAX_REFRACTIVE_NODES_IN_VIEW; ++i) {
-            refDesc._name = Util::StringFormat("Refraction_Planar_%d", i);
-
-            tempHandle = _rtPool->allocateRT(RenderTargetUsage::REFRACTION_PLANAR, refDesc);
-        }
-
     }
     {
+        TextureDescriptor environmentDescriptorCube(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::RGBA, GFXDataFormat::UNSIGNED_BYTE);
+        environmentDescriptorCube.setSampler(reflectionSampler);
+
+        TextureDescriptor hiZDescriptorCube(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::FLOAT_32);
+        hiZDescriptorCube.setSampler(hiZSampler);
+        hiZDescriptorCube.automaticMipMapGeneration(false);
+
+        TextureDescriptor depthDescriptorCube(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::FLOAT_32);
+        depthDescriptorCube.setSampler(reflectionSampler);
+
+        
         vector<RTAttachmentDescriptor> attachments = {
             { environmentDescriptorCube, RTAttachmentType::Colour },
             { depthDescriptorCube, RTAttachmentType::Depth },
@@ -340,7 +348,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
         tempHandle = _rtPool->allocateRT(RenderTargetUsage::REFLECTION_CUBE, refDesc);
 
         refDesc._name = "Refraction_Cube_Array";
-
         tempHandle = _rtPool->allocateRT(RenderTargetUsage::REFRACTION_CUBE, refDesc);
     }
 

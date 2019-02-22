@@ -88,7 +88,7 @@ class Vegetation : public SceneNode {
                            RenderStagePass renderStagePass,
                            RenderPackage& pkgInOut) override;
 
-    static void precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 maxChunkCount);
+    static void precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 maxChunkCount, U32& maxGrassInstances);
 
   protected:
     void sceneUpdate(const U64 deltaTimeUS,
@@ -130,8 +130,8 @@ class Vegetation : public SceneNode {
     static ShaderBuffer* s_grassData;
     static std::unordered_set<vec2<F32>> s_grassPositions;
 
-    static U32 s_maxGrassChunks;
-    static U32 s_maxGrassInstancesPerChunk;
+    static size_t s_maxGrassChunks;
+    static size_t s_maxGrassInstancesPerChunk;
     static std::array<bool, to_base(RenderStage::COUNT)> s_stageRefreshed;
 };
 

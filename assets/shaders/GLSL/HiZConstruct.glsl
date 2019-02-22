@@ -98,11 +98,16 @@ void main() {
     -----------------------------------------------------------------------*/
 }
 
--- Fragment.RasterGrid
+--Fragment.RasterGrid
 
 //http://rastergrid.com/blog/2010/10/hierarchical-z-map-based-occlusion-culling/
 
+#if defined(CUBE_MAP)
+layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2DCube LastMip;
+uniform int faceIndex = 0;
+#else
 layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D LastMip;
+#endif
 
 void main(void)
 {

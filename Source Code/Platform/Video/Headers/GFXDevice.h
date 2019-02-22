@@ -152,8 +152,8 @@ public:
     enum class ScreenTargets : U8 {
         ALBEDO = 0,
         NORMALS_AND_VELOCITY = 1,
-        MODULATE = 2,
-        EXTRA = 3,
+        EXTRA = 2,
+        MODULATE = 3,
         COUNT,
         ACCUMULATION = ALBEDO,
         REVEALAGE = NORMALS_AND_VELOCITY,
@@ -379,7 +379,7 @@ protected:
                        GFX::CommandBuffer& bufferInOut) const;
 
     // Returns the HiZ texture that can be sent directly to occlusionCull
-    const Texture_ptr& constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmdBufferInOut) const;
+    const Texture_ptr& constructHIZ(RenderTargetID depthBuffer, RenderTargetID HiZTarget, GFX::CommandBuffer& cmdBufferInOut) const;
 
     void updateCullCount(GFX::CommandBuffer& cmdBufferInOut);
 

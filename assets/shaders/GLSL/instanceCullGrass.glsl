@@ -12,7 +12,7 @@ struct GrassData {
 };
 
 layout(std430, binding = BUFFER_GRASS_DATA) coherent buffer dvd_transformBlock {
-    GrassData grassData[];
+    GrassData grassData[MAX_INSTANCES];
 };
 
 layout(local_size_x = WORK_GROUP_SIZE) in;
@@ -25,6 +25,10 @@ vec3 rotate_vertex_position(vec3 position, vec4 q) {
 }
 
 void main(void) {
+    if (gl_GlobalInvocationID.x >= MAX_INSTANCES) {
+        return;
+    }
+
     float minDist = 0.01f;
     GrassData instance = grassData[gl_GlobalInvocationID.x];
 
@@ -45,7 +49,7 @@ void main(void) {
     //grassData[gl_GlobalInvocationID.x].data.w = PassThrough(positionW.xyz, instance.data.xxy * instance.positionAndScale.w);
     //grassData[gl_GlobalInvocationID.x].data.w = InstanceCloudReduction(positionW.xyz, instance.data.xxy * instance.positionAndScale.w);
 
-    if (zBufferCull(positionW.xyz, instance.data.xxy * instance.positionAndScale.w) > 0) {
+    if (zBufferCull(positionW.xyz, (instance.data.xxy * 1.05f) * instance.positionAndScale.w) > 0) {
         grassData[gl_GlobalInvocationID.x].data.w = saturate((dist - minDist) / (dvd_visibilityDistance - minDist));
     } else {
         grassData[gl_GlobalInvocationID.x].data.w = 3.0f;

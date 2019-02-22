@@ -4,7 +4,6 @@
 #include "lightingDefaults.vert"
 
 out flat int _underwater;
-out vec3 _pixToEye;
 out vec4 _vertexWVP;
 
 void main(void)
@@ -13,7 +12,6 @@ void main(void)
     
     computeLightVectors();
 
-    _pixToEye  = -VAR._vertexWV.xyz;
     _vertexWVP = dvd_ProjectionMatrix * VAR._vertexWV;
     _underwater = dvd_cameraPosition.y < VAR._vertexW.y ? 1 : 0;
 
@@ -23,12 +21,13 @@ void main(void)
 -- Fragment
 
 in flat int _underwater;
-in vec3 _pixToEye;
 in vec4 _vertexWVP;
 
 uniform vec2 _noiseTile;
 uniform vec2 _noiseFactor;
 uniform float _waterShininess;
+
+#define USE_SHADING_BLINN_PHONG
 
 #include "BRDF.frag"
 #include "shadowMapping.frag"
@@ -79,12 +78,12 @@ void main (void)
     vec3 normal = texture(texWaterNoiseNM, vec2(VAR._texCoord + distOffset.xy)).rgb;
     normal = normalize(normal * 2.0 - 1.0);*/
 
-    vec4 mixFactor = vec4(clamp(Fresnel(normalize(_pixToEye), normalize(VAR._normalWV)), 0.0, 1.0));
+    vec4 mixFactor = vec4(clamp(Fresnel(normalize(-VAR._vertexWV.xyz), normalize(VAR._normalWV)), 0.0, 1.0));
     vec4 texColour = mix(texture(texWaterReflection, uvFinalReflect),
                          texture(texWaterRefraction, uvFinalRefract),
                          mixFactor);
     normal = normalize(getTBNMatrix() * normal);
-#if 0
+#if 1
     mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;
     writeOutput(getPixelColour(texColour, colourMatrix, normal), packNormal(normal));
 #else

@@ -6,8 +6,14 @@
 #if defined(OIT_PASS)
 layout(location = 0) out vec4  _accum;
 layout(location = 1) out float _revealage;
-layout(location = 2) out vec4  _modulate;
+layout(location = 2) out vec4  _normalAndVelocityOut;
+layout(location = 3) out vec4  _modulate;
+#else
+layout(location = 0) out vec4 _colourOut;
+layout(location = 1) out vec4 _normalAndVelocityOut;
+#endif
 
+#if defined(OIT_PASS)
 #if USE_COLOURED_WOIT
 // Shameless copy-paste from http://casual-effects.blogspot.co.uk/2015/03/colored-blended-order-independent.html
 void writePixel(vec4 premultipliedReflect, vec3 transmit, float csZ) {
@@ -59,16 +65,15 @@ void writePixel(vec4 premultipliedReflect, float csZ) {
 }
 #endif
 
-void nvidiaSample(in vec4 color, in float linearDepth) {
+float nvidiaSample(in vec4 color, in float linearDepth) {
     // Tuned to work well with FP16 accumulation buffers and 0.001 < linearDepth < 2.5
     // See Equation (9) from http://jcgt.org/published/0002/02/09/
-    float weight = clamp(0.03 / (1e-5 + pow(linearDepth, 4.0)), 1e-2, 3e3);
+    float weight = clamp(0.03f / (1e-5f + pow(linearDepth, 4.0f)), 1e-2f, 3e3f);
     _accum = vec4(color.rgb * color.a, color.a) * weight;
     _revealage = color.a;
+
+    return weight;
 }
-#else
-layout(location = 0) out vec4 _colourOut;
-layout(location = 1) out vec4 _normalAndVelocityOut;
 #endif
 
 void writeOutput(vec4 colour, vec2 normal, vec2 velocity) {
@@ -76,18 +81,20 @@ void writeOutput(vec4 colour, vec2 normal, vec2 velocity) {
     float linearDepth = ToLinearDepth(getDepthValue(getScreenPositionNormalised()));
 
 #if defined(USE_COLOURED_WOIT)
-    //writePixel(colour, colour.rgb - vec3(0.2), linearDepth);
+    //writePixel(colour, colour.rgb - vec3(0.2f), linearDepth);
 #else //USE_COLOURED_WOIT
     //writePixel(colour, linearDepth);
 #endif //USE_COLOURED_WOIT
 
-    nvidiaSample(colour, linearDepth);
+    float weight = nvidiaSample(colour, linearDepth);
+    if (colour.a > Z_TEST_SIGMA) {
+        _normalAndVelocityOut.rg = normal;
+        _normalAndVelocityOut.ba = velocity;
+    }
 #else //OIT_PASS
-
     _colourOut = colour;
     _normalAndVelocityOut.rg = normal;
     _normalAndVelocityOut.ba = velocity;
-
 #endif //OIT_PASS
 }
 
@@ -96,7 +103,7 @@ void writeOutput(vec4 colour, vec2 normal) {
 }
 
 void writeOutput(vec3 colour, vec2 normal) {
-    writeOutput(vec4(colour, 1.0), normal);
+    writeOutput(vec4(colour, 1.0f), normal);
 }
 
 void writeOutput(vec4 colour) {

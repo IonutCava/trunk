@@ -10,7 +10,7 @@ struct GrassData {
 };
 
 layout(std430, binding = BUFFER_GRASS_DATA) coherent readonly buffer dvd_transformBlock {
-    GrassData grassData[];
+    GrassData grassData[MAX_INSTANCES];
 };
 
 flat out int _arrayLayerFrag;
@@ -37,8 +37,8 @@ void main()
         //gl_CullDistance[0] = -0.01f;
     }
 
-    if (dvd_Vertex.y > 0.5) {
-        computeFoliageMovementGrass(dvd_Vertex, data.data.y);
+    if (dvd_Vertex.y > 0.75) {
+        //computeFoliageMovementGrass(dvd_Vertex, data.data.y);
     }
 
     _arrayLayerFrag = int(data.data.z);
@@ -53,7 +53,7 @@ void main()
     VAR._vertexW = dvd_Vertex + vec4(data.positionAndScale.xyz, 0.0f);
 
     VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
-    VAR._normalWV = rotate_vertex_position(mat3(dvd_ViewMatrix) * dvd_Normal, data.orientationQuad);
+    VAR._normalWV = normalize(mat3(dvd_ViewMatrix) * /*rotate_vertex_position(dvd_Normal, data.orientationQuad)*/ -dvd_Normal);
 
     //computeLightVectors();
 #if !defined(SHADOW_PASS)
@@ -67,6 +67,9 @@ void main()
 
 layout(early_fragment_tests) in;
 
+#define USE_SHADING_BLINN_PHONG
+#define NO_SPECULAR
+
 #include "BRDF.frag"
 
 #include "utility.frag"
@@ -78,9 +81,17 @@ flat in float _alphaFactor;
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuseGrass;
 
 void main (void){
-    vec4 colour = texture(texDiffuseGrass, vec3(VAR._texCoord, _arrayLayerFrag));
-    colour.a *= _alphaFactor;
-    writeOutput(colour);
+    vec4 albedo = texture(texDiffuseGrass, vec3(VAR._texCoord, _arrayLayerFrag));
+    albedo.a *= _alphaFactor;
+
+    vec3 normal = getNormal();
+
+#if 1
+    mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;
+    writeOutput(getPixelColour(albedo, colourMatrix, normal), packNormal(normal));
+#else
+    writeOutput(albedo, packNormal(normal));
+#endif
 }
 
 --Fragment.PrePass

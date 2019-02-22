@@ -33,7 +33,6 @@ void SingleShadowMapGenerator::render(const Camera& playerCamera, Light& light, 
     RenderPassManager& passMgr = _context.parent().renderPassManager();
     RenderPassManager::PassParams params;
     params._sourceNode = &light.getSGN();
-    params._occlusionCull = false;
     params._camera = shadowCameras[0];
     params._stage = RenderStage::SHADOW;
     params._target = RenderTargetID(RenderTargetUsage::SHADOW, to_base(ShadowType::SINGLE));

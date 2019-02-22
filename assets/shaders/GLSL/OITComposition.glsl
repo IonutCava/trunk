@@ -30,7 +30,10 @@ layout(binding = TEXTURE_UNIT0) uniform sampler2D accumTexture;
 /* prod(1 - a) */
 layout(binding = TEXTURE_UNIT1) uniform sampler2D revealageTexture;
 
+//layout(binding = TEXTURE_NORMALMAP) uniform sampler2D normalAndVelocity;
+
 layout(location = 0) out vec4 _colourOut;
+//layout(location = 1) out vec4 _normalAndVelocityOut;
 
 void main() {
     ivec2 C = ivec2(gl_FragCoord.xy);
@@ -42,7 +45,7 @@ void main() {
     }
 
     vec4 accum = texelFetch(accumTexture, C, 0);
-
+    //vec4 normalData = texelFetch(normalAndVelocity, C, 0);
     // Suppress overflow
     if (isinf(maxComponent(abs(accum)))) {
         accum.rgb = vec3(accum.a);
@@ -57,7 +60,7 @@ void main() {
 #else
     _colourOut = vec4(averageColor, 1.0 - revealage);
 #endif
-
+    //_normalAndVelocityOut = normalData;
 }
 
 

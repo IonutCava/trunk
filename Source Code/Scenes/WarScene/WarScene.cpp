@@ -28,6 +28,7 @@
 #include "ECS/Components/Headers/RigidBodyComponent.h"
 #include "ECS/Components/Headers/RenderingComponent.h"
 #include "ECS/Components/Headers/TransformComponent.h"
+#include "ECS/Components/Headers/PointLightComponent.h"
 #include "ECS/Components/Headers/DirectionalLightComponent.h"
 
 #include "Environment/Terrain/Headers/Terrain.h"
@@ -173,18 +174,16 @@ void WarScene::debugDraw(const Camera& activeCamera, RenderStagePass stagePass, 
 }
 
 void WarScene::processTasks(const U64 deltaTimeUS) {
-    return;
-
     if (!_sceneReady) {
         return;
     }
 
-    D64 SunTimer = Time::Milliseconds(33);
-    D64 AnimationTimer1 = Time::SecondsToMilliseconds(5);
-    D64 AnimationTimer2 = Time::SecondsToMilliseconds(10);
+    //D64 SunTimer = Time::Milliseconds(33);
+    //D64 AnimationTimer1 = Time::SecondsToMilliseconds(5);
+    //D64 AnimationTimer2 = Time::SecondsToMilliseconds(10);
     D64 updateLights = Time::Milliseconds(16);
 
-    if (_taskTimers[0] >= SunTimer) {
+    /*if (_taskTimers[0] >= SunTimer) {
         g_sunAngle += 0.000125f * (g_direction ? 1.0f : -1.0f);
 
         if (!IS_IN_RANGE_INCLUSIVE(g_sunAngle.y, 
@@ -224,15 +223,15 @@ void WarScene::processTasks(const U64 deltaTimeUS) {
             npc->get<UnitComponent>()->getUnit<NPC>()->playNextAnimation();
         }
         _taskTimers[2] = 0.0;
-    }
+    }*/
 
     if (!initPosSetLight) {
-        for (U8 i = 0; i < 16; ++i) {
+        for (U8 i = 0; i < _lightNodes.size(); ++i) {
             initPosLight[i].set(_lightNodes[i]->get<TransformComponent>()->getPosition());
         }
-        for (U8 i = 0; i < 80; ++i) {
+        /*for (U8 i = 0; i < 80; ++i) {
             initPosLight2[i].set(_lightNodes2[i].first->get<TransformComponent>()->getPosition());
-        }
+        }*/
         initPosSetLight = true;
     }
 
@@ -246,8 +245,8 @@ void WarScene::processTasks(const U64 deltaTimeUS) {
         F32 c1 = std::cos(phiLight);
         F32 s2 = std::sin(-phiLight);
         F32 c2 = std::cos(-phiLight);
-        const F32 radius = 10;
-        for (U8 i = 0; i < 16; ++i) {
+        const F32 radius = 20;
+        for (size_t i = 0; i < _lightNodes.size(); ++i) {
             F32 c = i % 2 == 0 ? c1 : c2;
             F32 s = i % 2 == 0 ? s1 : s2;
             SceneGraphNode* light = _lightNodes[i];
@@ -257,7 +256,7 @@ void WarScene::processTasks(const U64 deltaTimeUS) {
             tComp->setPositionY((radius * 0.5f) * s + initPosLight[i].y);
         }
 
-        for (U8 i = 0; i < 80; ++i) {
+        /*for (U8 i = 0; i < 80; ++i) {
             SceneGraphNode* light = _lightNodes2[i].first;
             TransformComponent* tComp = light->get<TransformComponent>();
             F32 angle = _lightNodes2[i].second ? std::fmod(phiLight + 45.0f, 360.0f) : phiLight;
@@ -270,7 +269,7 @@ void WarScene::processTasks(const U64 deltaTimeUS) {
             SceneGraphNode* light = _lightNodes3[i];
             TransformComponent* tComp = light->get<TransformComponent>();
             tComp->rotateY(phiLight);
-        }
+        }*/
         _taskTimers[3] = 0.0;
     }
 
@@ -325,7 +324,7 @@ void WarScene::updateSceneStateInternal(const U64 deltaTimeUS) {
     const F32 radius = 20;
     
     if (particles) {
-        phi += 0.01f;
+        phi += 0.001f;
         if (phi > 360.0f) {
             phi = 0.0f;
         }
@@ -336,10 +335,10 @@ void WarScene::updateSceneStateInternal(const U64 deltaTimeUS) {
             initPosSet = true;
         }
 
-        /*tComp->setPositionX(radius * std::cos(phi) + initPos.x);
+        tComp->setPositionX(radius * std::cos(phi) + initPos.x);
         tComp->setPositionZ(radius * std::sin(phi) + initPos.z);
         tComp->setPositionY((radius * 0.5f) * std::sin(phi) + initPos.y);
-        tComp->rotateY(phi);*/
+        tComp->rotateY(phi);
     }
     
 
@@ -415,13 +414,13 @@ bool WarScene::load(const stringImpl& name) {
     const Material_ptr& matInstance = cylinder[0]->getChild(0).get<RenderingComponent>()->getMaterialInstance();
     matInstance->setShininess(200);
 
+    stringImpl currentName;
 #if 0
     SceneNode_ptr cylinderMeshNW = cylinder[1]->getNode();
     SceneNode_ptr cylinderMeshNE = cylinder[2]->getNode();
     SceneNode_ptr cylinderMeshSW = cylinder[3]->getNode();
     SceneNode_ptr cylinderMeshSE = cylinder[4]->getNode();
 
-    stringImpl currentName;
     SceneNode_ptr currentMesh;
     SceneGraphNode* baseNode;
 
@@ -478,9 +477,8 @@ bool WarScene::load(const stringImpl& name) {
         vec3<F32> position(to_F32(currentPos.first), -0.01f, to_F32(currentPos.second));
         tComp->setScale(baseNode->get<TransformComponent>()->getScale());
         tComp->setPosition(position);
-
-        /*{
-            ResourceDescriptor tempLight(Util::StringFormat("Light_point_%s_1", currentName.c_str()));
+        {
+            ResourceDescriptor tempLight(Util::StringFormat("Light_point_random_1", currentName.c_str()));
             tempLight.setEnumValue(to_base(LightType::POINT));
             tempLight.setUserPtr(_lightPool);
             std::shared_ptr<Light> light = CreateResource<Light>(_resCache, tempLight);
@@ -520,7 +518,7 @@ bool WarScene::load(const stringImpl& name) {
             lightSGN->get<TransformComponent>()->setPosition(position + vec3<F32>(0.0f, 10.0f, 0.0f));
             lightSGN->get<TransformComponent>()->rotateX(-20);
             _lightNodes3.push_back(lightSGN);
-        }*/
+        }
     }
 
     SceneGraphNode* flag;
@@ -660,23 +658,30 @@ bool WarScene::load(const stringImpl& name) {
 
     //state().renderState().generalVisibility(state().renderState().generalVisibility() * 2);
 
-    /*
-    for (U8 row = 0; row < 4; row++) {
-        for (U8 col = 0; col < 4; col++) {
-            ResourceDescriptor tempLight(Util::StringFormat("Light_point_%d_%d", row, col));
-            tempLight.setEnumValue(to_base(LightType::POINT));
-            tempLight.setUserPtr(_lightPool);
-            std::shared_ptr<Light> light = CreateResource<Light>(_resCache, tempLight);
-            light->setDrawImpostor(false);
-            light->setRange(20.0f);
-            light->setCastShadows(false);
-            light->setDiffuseColour(DefaultColours::RANDOM());
-            SceneGraphNode* lightSGN = _sceneGraph->getRoot().addNode(light, lightMask, PhysicsGroup::GROUP_IGNORE);
-            lightSGN->get<TransformComponent>()->setPosition(vec3<F32>(-215.0f + (115 * row), 15.0f, (-215.0f + (115 * col))));
+    
+    SceneGraphNodeDescriptor lightNodeDescriptor;
+    lightNodeDescriptor._serialize = false;
+    lightNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
+    lightNodeDescriptor._componentMask = to_base(ComponentType::TRANSFORM) |
+                                         to_base(ComponentType::BOUNDS) |
+                                         to_base(ComponentType::NETWORKING) |
+                                         to_base(ComponentType::POINT_LIGHT);
+
+    constexpr U8 rowCount = 10;
+    constexpr U8 colCount = 10;
+    for (U8 row = 0; row < rowCount; row++) {
+        for (U8 col = 0; col < colCount; col++) {
+            lightNodeDescriptor._name = Util::StringFormat("Light_point_%d_%d", row, col);
+            SceneGraphNode* lightSGN = _sceneGraph->getRoot().addNode(lightNodeDescriptor);
+            PointLightComponent* pointLight = lightSGN->get<PointLightComponent>();
+            pointLight->castsShadows(false);
+            pointLight->setRange(50.0f);
+            pointLight->setDiffuseColour(DefaultColours::RANDOM());
+            lightSGN->get<TransformComponent>()->setPosition(vec3<F32>(-21.0f + (115 * row), 20.0f, (-21.0f + (115 * col))));
             _lightNodes.push_back(lightSGN);
         }
     }
-    */
+    
     Camera::utilityCamera(Camera::UtilityCamera::DEFAULT)->setHorizontalFoV(110);
 
     static const bool disableEnvProbes = true;
@@ -784,7 +789,6 @@ void WarScene::toggleCamera(InputParams param) {
 }
 
 void WarScene::postLoadMainThread(const Rect<U16>& targetRenderViewport) {
-    
 
     GUIButton* btn = _GUI->addButton(_ID("Simulate"),
                                      "Simulate",

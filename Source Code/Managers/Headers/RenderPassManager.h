@@ -54,10 +54,11 @@ public:
         // e.g. a light node for shadow mapping, a reflector for reflection (or refraction), etc
         // safe to be set to null
         const SceneGraphNode* _sourceNode = nullptr;
-        Camera* _camera = nullptr;
         const RTDrawDescriptor* _drawPolicy = nullptr;
+        Camera* _camera = nullptr;
         FrustumClipPlanes _clippingPlanes = {};
         RenderTargetID _target = {};
+        RenderTargetID _targetHIZ = {};
         I32 _minLoD = -1; //-1 = all
         union {
             U32 _passIndex = 0;
@@ -69,7 +70,6 @@ public:
         RenderStage _stage = RenderStage::COUNT;
         RenderPassType _pass = RenderPassType::COUNT;
         U8  _passVariant = 0;
-        bool _occlusionCull = false;
         bool _bindTargets = true;
     };
 

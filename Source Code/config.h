@@ -103,8 +103,6 @@ constexpr unsigned int PRIMITIVE_RESTART_INDEX_S = 0xFFFF;
 
 /// Maximum number of players we support locally
 constexpr unsigned int MAX_LOCAL_PLAYER_COUNT = 4;
-/// If true, Hi-Z based occlusion culling is used
-constexpr bool USE_HIZ_CULLING = true;
 
 /// Compute related options
 namespace Compute {
@@ -176,15 +174,13 @@ constexpr unsigned short MAX_POSSIBLE_LIGHTS = 1024;
 namespace ForwardPlus {
     /// The following parameters control the behaviour of the Forward+ renderer
     constexpr unsigned short TILE_RES = 16u;
-    constexpr unsigned short MAX_LIGHTS_PER_TILE = 544u;
-    constexpr unsigned int   LIGHT_INDEX_BUFFER_SENTINEL = 0x7fffffff;
+    constexpr unsigned short MAX_LIGHTS_PER_TILE = 512u;
 
     constexpr unsigned short MAX_HEIGHT = 1080u;
     constexpr unsigned short MAX_WIDTH = 1920u;
 
-    constexpr unsigned int NUM_TILES_X = (MAX_WIDTH + TILE_RES - 1) / TILE_RES;
-    constexpr unsigned int NUM_TILES_Y = (MAX_HEIGHT + TILE_RES - 1) / TILE_RES;
-    constexpr unsigned int NUM_LIGTHS_PER_TILE = MAX_LIGHTS_PER_TILE - (32 * (MAX_HEIGHT / 120));
+    constexpr unsigned int NUM_TILES_X = (MAX_WIDTH + (MAX_WIDTH % TILE_RES)) / TILE_RES;
+    constexpr unsigned int NUM_TILES_Y = (MAX_HEIGHT + (MAX_HEIGHT % TILE_RES)) / TILE_RES;
 };
 };  // namespace Lighting
 

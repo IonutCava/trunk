@@ -41,7 +41,7 @@ namespace Divide {
 namespace {
     constexpr U32 WORK_GROUP_SIZE = 64;
     constexpr bool g_disableLoadFromCache = false;
-    constexpr I16 g_maxRadiusSteps = 254;
+    constexpr I16 g_maxRadiusSteps = 512;
 
 };
 
@@ -49,8 +49,8 @@ std::unordered_set<vec2<F32>> Vegetation::s_grassPositions;
 ShaderBuffer* Vegetation::s_grassData = nullptr;
 VertexBuffer* Vegetation::s_buffer = nullptr;
 std::atomic_uint Vegetation::s_bufferUsage = 0;
-U32 Vegetation::s_maxGrassChunks = 0;
-U32 Vegetation::s_maxGrassInstancesPerChunk = 0;
+size_t Vegetation::s_maxGrassChunks = 0;
+size_t Vegetation::s_maxGrassInstancesPerChunk = 0;
 std::array<bool, to_base(RenderStage::COUNT)> Vegetation::s_stageRefreshed;
 
 Vegetation::Vegetation(GFXDevice& context, 
@@ -78,6 +78,7 @@ Vegetation::Vegetation(GFXDevice& context,
 
     ShaderProgramDescriptor shaderDescriptor = {};
     shaderDescriptor._defines.push_back(std::make_pair(Util::StringFormat("WORK_GROUP_SIZE %d", WORK_GROUP_SIZE), true));
+    shaderDescriptor._defines.push_back(std::make_pair(Util::StringFormat("MAX_INSTANCES %d", s_maxGrassInstancesPerChunk).c_str(), true));
     instanceCullShader.setPropertyDescriptor(shaderDescriptor);
     instanceCullShader.setOnLoadCallback([this](CachedResource_wptr res) {
         PipelineDescriptor pipeDesc;
@@ -126,17 +127,19 @@ Vegetation::~Vegetation()
     Console::printfn(Locale::get(_ID("UNLOAD_VEGETATION_END")));
 }
 
-void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 maxChunkCount) {
+void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 maxChunkCount, U32& maxGrassInstances) {
     // Make sure this is ONLY CALLED FROM THE MAIN LOADING THREAD. All instances should call this in a serialized fashion
     if (s_buffer == nullptr) {
+        constexpr bool useDoubleSided = true;
+
         const vec2<F32> pos000(cosf(Angle::to_RADIANS(0.000f)), sinf(Angle::to_RADIANS(0.000f)));
         const vec2<F32> pos120(cosf(Angle::to_RADIANS(120.0f)), sinf(Angle::to_RADIANS(120.0f)));
         const vec2<F32> pos240(cosf(Angle::to_RADIANS(240.0f)), sinf(Angle::to_RADIANS(240.0f)));
 
         const vec3<F32> vertices[] = {
             vec3<F32>(-pos000.x, 0.0f, -pos000.y),  vec3<F32>(-pos000.x, 1.0f, -pos000.y),  vec3<F32>(pos000.x, 1.0f, pos000.y), vec3<F32>(pos000.x, 0.0f, pos000.y),
-            vec3<F32>(-pos120.x, 0.0f, -pos120.y),	vec3<F32>(-pos120.x, 1.0f, -pos120.y),	vec3<F32>(pos120.x, 1.0f, pos120.y), vec3<F32>(pos120.x, 0.0f, pos120.y),
-            vec3<F32>(-pos240.x, 0.0f, -pos240.y),	vec3<F32>(-pos240.x, 1.0f, -pos240.y),	vec3<F32>(pos240.x, 1.0f, pos240.y), vec3<F32>(pos240.x, 0.0f, pos240.y)
+            vec3<F32>(-pos120.x, 0.0f, -pos120.y),  vec3<F32>(-pos120.x, 1.0f, -pos120.y),  vec3<F32>(pos120.x, 1.0f, pos120.y), vec3<F32>(pos120.x, 0.0f, pos120.y),
+            vec3<F32>(-pos240.x, 0.0f, -pos240.y),  vec3<F32>(-pos240.x, 1.0f, -pos240.y),  vec3<F32>(pos240.x, 1.0f, pos240.y), vec3<F32>(pos240.x, 0.0f, pos240.y)
         };
 
         const size_t billboardsPlaneCount = sizeof(vertices) / (sizeof(vec3<F32>) * 4);
@@ -157,19 +160,19 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 m
         for (U8 i = 0; i < billboardsPlaneCount * 4; ++i) {
             s_buffer->modifyPositionValue(i, vertices[i]);
             s_buffer->modifyTexCoordValue(i, texcoords[i % 4].s, texcoords[i % 4].t);
-            s_buffer->modifyNormalValue(i, vec3<F32>(vertices[i].x, 0.0f, vertices[i].y));
         }
 
         for (U8 i = 0; i < billboardsPlaneCount; ++i) {
             if (i > 0) {
                 s_buffer->addRestartIndex();
             }
-            for (U8 j = 0; j < 12; ++j) {
+            for (U8 j = 0; j < (useDoubleSided ? 12 : 6); ++j) {
                 s_buffer->addIndex(indices[j] + (i * 4));
             }
 
         }
 
+        s_buffer->computeNormals();
         s_buffer->computeTangents();
         s_buffer->create(true);
         s_buffer->keepData(false);
@@ -177,17 +180,13 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 m
         s_stageRefreshed.fill(false);
     }
 
-    /*if (!g_disableLoadFromCache) {
-        return;
-    }*/
-
     //ref: http://mollyrocket.com/casey/stream_0016.html
-    F32 PointRadius = 0.75f;
+    F32 PointRadius = 1.0f;
     F32 ArBase = 1.0f; // Starting radius of circle A
     F32 BrBase = 1.0f; // Starting radius of circle B
     F32 dR = 2.5f*PointRadius; // Distance between concentric rings
 
-    s_grassPositions.reserve(static_cast<size_t>(chunkSize * chunkSize));
+    s_grassPositions.reserve(chunkSize * chunkSize);
 
     F32 posOffset = to_F32(chunkSize * 2);
 
@@ -218,11 +217,13 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 m
     }
 
     if (s_grassData == nullptr) {
-        s_maxGrassInstancesPerChunk = to_U32(s_grassPositions.size());
+        s_maxGrassInstancesPerChunk = s_grassPositions.size();
+        s_maxGrassInstancesPerChunk += s_maxGrassInstancesPerChunk % WORK_GROUP_SIZE;
+
         s_maxGrassChunks = maxChunkCount;
 
         ShaderBufferDescriptor bufferDescriptor = {};
-        bufferDescriptor._elementCount = s_maxGrassInstancesPerChunk * s_maxGrassChunks;
+        bufferDescriptor._elementCount = to_U32(s_maxGrassInstancesPerChunk * s_maxGrassChunks);
         bufferDescriptor._elementSize = sizeof(GrassData);
         bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
         bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE) | to_U32(ShaderBuffer::Flags::NO_SYNC);
@@ -230,6 +231,7 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 m
 
         s_grassData = gfxDevice.newSB(bufferDescriptor);
     }
+    maxGrassInstances = to_U32(s_maxGrassInstancesPerChunk);
 }
 
 void Vegetation::uploadGrassData() {
@@ -237,15 +239,16 @@ void Vegetation::uploadGrassData() {
 
     s_bufferUsage.fetch_add(1);
 
-    U32 dif = _tempData.size() % WORK_GROUP_SIZE;
-    if (dif > 0) {
-        _tempData.insert(eastl::end(_tempData), dif, GrassData{});
-    }
+    _instanceCountGrass = to_U32(std::min(_tempData.size(), s_maxGrassInstancesPerChunk));
 
-    _instanceCountGrass = std::min(to_U32(_tempData.size()), s_maxGrassInstancesPerChunk);
     if (_instanceCountGrass > 0) {
         if (_terrainChunk.ID() < s_maxGrassChunks) {
-            s_grassData->writeData(_terrainChunk.ID() *  s_maxGrassInstancesPerChunk, _instanceCountGrass, (bufferPtr)_tempData.data());
+            size_t diff = s_maxGrassInstancesPerChunk - _tempData.size();
+            if (diff > 0) {
+                _tempData.insert(eastl::end(_tempData), diff, GrassData{});
+            }
+
+            s_grassData->writeData(_terrainChunk.ID() * s_maxGrassInstancesPerChunk, s_maxGrassInstancesPerChunk, (bufferPtr)_tempData.data());
             _render = true;
         } else {
             Console::errorfn("Vegetation::uploadGrassData: insufficient buffer space for grass data");
@@ -302,7 +305,7 @@ void Vegetation::onRefreshNodeData(SceneGraphNode& sgn, RenderStagePass renderSt
         ShaderBufferBinding buffer = {};
         buffer._binding = ShaderBufferLocation::GRASS_DATA;
         buffer._buffer = s_grassData;
-        buffer._elementRange = { _terrainChunk.ID() * s_maxGrassInstancesPerChunk, _instanceCountGrass };
+        buffer._elementRange = { _terrainChunk.ID() * s_maxGrassInstancesPerChunk, s_maxGrassInstancesPerChunk };
 
         GFX::BindDescriptorSetsCommand descriptorSetCmd;
         descriptorSetCmd._set.addShaderBuffer(buffer);
@@ -313,8 +316,8 @@ void Vegetation::onRefreshNodeData(SceneGraphNode& sgn, RenderStagePass renderSt
             pushConstantsCommand._constants.set("dvd_visibilityDistance", GFX::PushConstantType::FLOAT, grassDistance);
             GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
-            Texture_ptr depthTex = _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Depth, 0).texture();
-            descriptorSetCmd._set._textureData.setTexture(depthTex->getData(), to_U8(ShaderProgram::TextureUsage::UNIT0));
+            Texture_ptr depthTex = _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::HI_Z)).getAttachment(RTAttachmentType::Depth, 0).texture();
+            descriptorSetCmd._set._textureData.setTexture(depthTex->getData(), to_U8(ShaderProgram::TextureUsage::DEPTH));
 
             s_stageRefreshed[to_base(renderStagePass._stage)] = true;
         }
@@ -341,7 +344,7 @@ void Vegetation::buildDrawCommands(SceneGraphNode& sgn,
         ShaderBufferBinding buffer = {};
         buffer._binding = ShaderBufferLocation::GRASS_DATA;
         buffer._buffer = s_grassData;
-        buffer._elementRange = { _terrainChunk.ID() * s_maxGrassInstancesPerChunk, _instanceCountGrass };
+        buffer._elementRange = { _terrainChunk.ID() * s_maxGrassInstancesPerChunk, s_maxGrassInstancesPerChunk };
 
         pkgInOut.addShaderBuffer(0, buffer);
 
@@ -422,11 +425,11 @@ void Vegetation::computeGrassTransforms(const Task& parentTask) {
             const Terrain::Vert vert = terrain.getVert(x_fac, y_fac, true);
 
             // terrain slope should be taken into account
-            if (Angle::to_DEGREES(std::acos(Dot(vert._normal, WORLD_Y_AXIS))) > 45.0f) {
+            if (Angle::to_DEGREES(std::acos(Dot(vert._normal, WORLD_Y_AXIS))) > 35.0f) {
                 continue;
             }
 
-            assert(vert._position.length() > 0.0f);
+            assert(vert._position != VECTOR3_ZERO);
 
             const UColour colour = _map->getColour((U16)pos.x, (U16)pos.y);
             const U8 index = bestIndex(colour);
@@ -436,9 +439,7 @@ void Vegetation::computeGrassTransforms(const Task& parentTask) {
             GrassData entry = {};
             entry._data.set(1.0f, 1.0f, to_F32(index), 0.0f);
             entry._positionAndScale.set(vert._position, scale);
-            entry._orientationQuat = 
-                (Quaternion<F32>(WORLD_Y_AXIS, Random(360.0f)) * 
-                    RotationFromVToU(vert._normal, WORLD_Y_AXIS)).asVec4();
+            entry._orientationQuat = (RotationFromVToU(WORLD_Y_AXIS, vert._normal, WORLD_Z_AXIS) * Quaternion<F32>(WORLD_Y_AXIS, Random(360.0f))).asVec4();
                 
             _tempData.push_back(entry);
         }

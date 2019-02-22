@@ -475,18 +475,6 @@ bool GL_API::initGLSW() {
 
     appendToShaderHeader(
         ShaderType::COUNT,
-        "#define LIGHT_INDEX_BUFFER_SENTINEL " + 
-        to_stringImpl(Config::Lighting::ForwardPlus::LIGHT_INDEX_BUFFER_SENTINEL),
-        lineOffsets);
-
-    appendToShaderHeader(
-        ShaderType::COUNT,
-        "#define LIGHT_NUM_LIGHTS_PER_TILE " +
-        to_stringImpl(Config::Lighting::ForwardPlus::NUM_LIGTHS_PER_TILE),
-        lineOffsets);
-
-    appendToShaderHeader(
-        ShaderType::COUNT,
         "#define LIGHT_NUM_TILES_X " +
         to_stringImpl(Config::Lighting::ForwardPlus::NUM_TILES_X),
         lineOffsets);
@@ -540,7 +528,7 @@ bool GL_API::initGLSW() {
         lineOffsets);
 
     appendToShaderHeader(
-        ShaderType::FRAGMENT,
+        ShaderType::COUNT,
         "#define TEXTURE_NORMALMAP " +
         to_stringImpl(to_base(ShaderProgram::TextureUsage::NORMALMAP)),
         lineOffsets);

@@ -227,7 +227,6 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
     RenderPassManager& passMgr = parent().renderPassManager();
     RenderPassManager::PassParams params;
     params._sourceNode = sourceNode;
-    params._occlusionCull = true;
     params._camera = camera;
     params._stage = stagePass._stage;
     params._pass = stagePass._passType;
@@ -303,7 +302,6 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
     RenderPassManager& passMgr = parent().renderPassManager();
     RenderPassManager::PassParams params;
     params._sourceNode = sourceNode;
-    params._occlusionCull = true;
     params._camera = camera;
     params._stage = stagePass._stage;
     params._target = targetBuffer;
@@ -425,18 +423,18 @@ void GFXDevice::onSizeChange(const SizeChangeParams& params) {
         // Update render targets with the new resolution
         _rtPool->resizeTargets(RenderTargetUsage::SCREEN, w, h);
         _rtPool->resizeTargets(RenderTargetUsage::HI_Z, w, h);
-        _rtPool->resizeTargets(RenderTargetUsage::OIT_FULL_RES, w, h);
-        //_rtPool->resizeTargets(RenderTargetUsage::OIT_QUARTER_RES, to_U16(std::ceil(w / 4.0f)), to_U16(std::ceil(h / 4.0f)));
+        _rtPool->resizeTargets(RenderTargetUsage::OIT, w, h);
         if (Config::Build::ENABLE_EDITOR) {
             _rtPool->resizeTargets(RenderTargetUsage::EDITOR, w, h);
         }
 
         U16 reflectRes = std::max(w, h) / Config::REFLECTION_TARGET_RESOLUTION_DOWNSCALE_FACTOR;
-
+        _rtPool->resizeTargets(RenderTargetUsage::HI_Z_REFLECT, reflectRes, reflectRes);
         _rtPool->resizeTargets(RenderTargetUsage::REFLECTION_PLANAR, reflectRes, reflectRes);
         _rtPool->resizeTargets(RenderTargetUsage::REFRACTION_PLANAR, reflectRes, reflectRes);
         _rtPool->resizeTargets(RenderTargetUsage::REFLECTION_CUBE, reflectRes, reflectRes);
         _rtPool->resizeTargets(RenderTargetUsage::REFRACTION_CUBE, reflectRes, reflectRes);
+
         _prevDepthBuffer->resize(NULL, vec2<U16>(w, h));
 
         // Update post-processing render targets and buffers
@@ -534,7 +532,7 @@ bool GFXDevice::setViewport(const Rect<I32>& viewport) {
 /// Transform our depth buffer to a HierarchicalZ buffer (for occlusion queries and screen space reflections)
 /// Based on RasterGrid implementation: http://rastergrid.com/blog/2010/10/hierarchical-z-map-based-occlusion-culling/
 /// Modified with nVidia sample code: https://github.com/nvpro-samples/gl_occlusion_culling
-const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmdBufferInOut) const {
+const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTargetID HiZTarget, GFX::CommandBuffer& cmdBufferInOut) const {
     static bool firstRun = true;
 
     // We use a special shader that downsamples the buffer
@@ -556,14 +554,11 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::Comm
     pipelineDesc._shaderProgramHandle = _HIZConstructProgram->getID();
 
     // The depth buffer's resolution should be equal to the screen's resolution
-    RenderTarget& renderTarget = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::HI_Z));
+    RenderTarget& renderTarget = _rtPool->renderTarget(HiZTarget);
     U16 width = renderTarget.getWidth();
     U16 height = renderTarget.getHeight();
     U16 level = 0;
     U16 dim = width > height ? width : height;
-    U16 twidth = width;
-    U16 theight = height;
-    bool wasEven = false;
 
     // Store the current width and height of each mip
     Rect<I32> previousViewport(_viewport);
@@ -582,12 +577,12 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::Comm
     // Blit the depth buffer to the HiZ target
     GFX::BlitRenderTargetCommand blitDepthBufferCmd;
     blitDepthBufferCmd._source = depthBuffer;
-    blitDepthBufferCmd._destination = RenderTargetID(RenderTargetUsage::HI_Z);
+    blitDepthBufferCmd._destination = HiZTarget;
     blitDepthBufferCmd._blitDepth.emplace_back();
     GFX::EnqueueCommand(cmdBufferInOut, blitDepthBufferCmd);
 
     GFX::BeginRenderPassCommand beginRenderPassCmd;
-    beginRenderPassCmd._target = RenderTargetID(RenderTargetUsage::HI_Z);
+    beginRenderPassCmd._target = HiZTarget;
     beginRenderPassCmd._descriptor = depthOnlyTarget;
     beginRenderPassCmd._name = "CONSTRUCT_HI_Z";
     GFX::EnqueueCommand(cmdBufferInOut, beginRenderPassCmd);
@@ -596,22 +591,27 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::Comm
     pipelineCmd._pipeline = newPipeline(pipelineDesc);
     GFX::EnqueueCommand(cmdBufferInOut, pipelineCmd);
 
-    GFX::BindDescriptorSetsCommand descriptorSetCmd;
-    descriptorSetCmd._set._textureData.setTexture(depth->getData(), to_U8(ShaderProgram::TextureUsage::DEPTH));
-    GFX::EnqueueCommand(cmdBufferInOut, descriptorSetCmd);
-
     GFX::SetViewportCommand viewportCommand;
     GFX::SendPushConstantsCommand pushConstantsCommand;
-    GFX::BeginRenderSubPassCommand beginRenderSubPassCmd;
     GFX::EndRenderSubPassCommand endRenderSubPassCmd;
 
+    GFX::BeginRenderSubPassCommand beginRenderSubPassCmd;
     beginRenderSubPassCmd._validateWriteLevel = firstRun;
 
     GenericDrawCommand triangleCmd;
     triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
     triangleCmd._drawCount = 1;
 
+    // for i > 0, use texture views?
+    GFX::BindDescriptorSetsCommand descriptorSetCmd;
+    descriptorSetCmd._set._textureData.setTexture(depth->getData(), to_U8(ShaderProgram::TextureUsage::DEPTH));
+    GFX::EnqueueCommand(cmdBufferInOut, descriptorSetCmd);
+
     // We skip the first level as that's our full resolution image
+    U16 twidth = width;
+    U16 theight = height;
+    bool wasEven = false;
+
     while (dim) {
         if (level) {
             twidth = twidth < 1 ? 1 : twidth;
@@ -651,7 +651,7 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::Comm
 
     viewportCommand._viewport.set(previousViewport);
     GFX::EnqueueCommand(cmdBufferInOut, viewportCommand);
-    
+ 
     // Unbind the render target
     GFX::EndRenderPassCommand endRenderPassCmd;
     GFX::EnqueueCommand(cmdBufferInOut, endRenderPassCmd);

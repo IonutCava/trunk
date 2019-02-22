@@ -237,33 +237,35 @@ Light* LightPool::getLight(I64 lightGUID, LightType type) {
 void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, const mat4<F32>& viewMatrix) {
     U8 stageIndex = to_U8(stage);
     // Create and upload light data for current pass
-    _sortedLights[stageIndex].resize(0);
+
+    LightVec& sortedLights = _sortedLights[stageIndex];
+
+    sortedLights.resize(0);
     {
         SharedLock r_lock(_lightLock);
-        for (U8 i = 0; i < to_base(LightType::COUNT); ++i) {
-            _sortedLights[stageIndex].insert(std::end(_sortedLights[stageIndex]),
-                                                std::cbegin(_lights[i]),
-                                                std::cend(_lights[i]));
+        for (U8 i = 1; i < to_base(LightType::COUNT); ++i) {
+            sortedLights.insert(std::end(sortedLights), std::cbegin(_lights[i]), std::cend(_lights[i]));
         }
     }
-    std::sort(std::begin(_sortedLights[stageIndex]),
-                std::end(_sortedLights[stageIndex]),
-                [&eyePos](Light* a, Light* b) -> bool
-                {
-                    TransformComponent* lightTransformA = a->getSGN().get<TransformComponent>();
-                    TransformComponent* lightTransformB = b->getSGN().get<TransformComponent>();
-                    assert(lightTransformA != nullptr && lightTransformB != nullptr);
 
-                    return lightTransformA->getPosition().distanceSquared(eyePos) <
-                           lightTransformB->getPosition().distanceSquared(eyePos);
-                });
+    std::sort(std::begin(sortedLights),
+              std::end(sortedLights),
+              [&eyePos](Light* a, Light* b) -> bool
+              {
+                  return a->getPosition().distanceSquared(eyePos) < b->getPosition().distanceSquared(eyePos);
+              });
+
+    {
+        SharedLock r_lock(_lightLock);
+        sortedLights.insert(std::begin(sortedLights), std::cbegin(_lights[0]), std::cend(_lights[0]));
+    }
 
     U32 totalLightCount = 0;
     vec3<F32> tempColour;
     _activeLightCount[stageIndex].fill(0);
         
     BufferData& crtData = _sortedLightProperties[stageIndex];
-    for (Light* light : _sortedLights[stageIndex]) {
+    for (Light* light : sortedLights) {
         LightType type = static_cast<LightType>(light->getLightType());
         I32 typeIndex = to_I32(type);
 
@@ -281,7 +283,7 @@ void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, con
         // So we need W = 1 for a valid positional transform
         // Directional lights use position for the light direction. 
         // So we need W = 0 for an infinite distance.
-        temp._position.set(viewMatrix.transform(light->getPosition(), type != LightType::DIRECTIONAL), light->getRange());
+        temp._position.set((viewMatrix * vec4<F32>(light->getPosition(), type == LightType::DIRECTIONAL ? 0.0f : 1.0f)).xyz(), light->getRange());
         // spot direction is not considered a point in space, so W = 0
         temp._direction.set(viewMatrix.transformNonHomogeneous(light->getDirection()), light->getConeAngle());
 
@@ -321,29 +323,23 @@ void LightPool::preRenderAllPasses(const Camera& playerCamera) {
     _sortedShadowLights.resize(0);
     _sortedShadowLights.reserve(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
 
-    LightVec sortedLights;
+    LightVec sortedLights = {};
     {
         SharedLock r_lock(_lightLock);
-        sortedLights.reserve(_lights.size());
-
-        for (U8 i = 0; i < to_base(LightType::COUNT); ++i) {
-            for (Light* light : _lights[i]) {
-                sortedLights.push_back(light);
-            }
+        for (U8 i = 1; i < to_base(LightType::COUNT); ++i) {
+            sortedLights.insert(std::cend(sortedLights), std::cbegin(_lights[i]), std::cend(_lights[i]));
         }
     }
-    std::sort(std::begin(sortedLights),
-        std::end(sortedLights),
-        [&eyePos](Light* a, Light* b) -> bool
-        {
-            TransformComponent* lightTransformA = a->getSGN().get<TransformComponent>();
-            TransformComponent* lightTransformB = b->getSGN().get<TransformComponent>();
-            assert(lightTransformA != nullptr && lightTransformB != nullptr);
 
-            return a->getLightType() == LightType::DIRECTIONAL ||
-                (lightTransformA->getPosition().distanceSquared(eyePos) <
-                    lightTransformB->getPosition().distanceSquared(eyePos));
-        });
+    std::sort(std::begin(sortedLights),
+              std::end(sortedLights),
+              [&eyePos](Light* a, Light* b) {
+                  return a->getPosition().distanceSquared(eyePos) < b->getPosition().distanceSquared(eyePos);
+              });
+    {
+        SharedLock r_lock(_lightLock);
+        sortedLights.insert(std::cbegin(sortedLights), std::cbegin(_lights[0]), std::cend(_lights[0]));
+    }
 
     for (Light* light : sortedLights) {
         if (!light->getEnabled() ||

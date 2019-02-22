@@ -135,6 +135,10 @@ vec3 getEmissive(mat4 colourMatrix) {
     return colourMatrix[2].rgb;
 }
 
+void setEmissive(mat4 colourMatrix, vec3 value) {
+    colourMatrix[2].rgb = value;
+}
+
 vec3 getSpecular(mat4 colourMatrix) {
 #if defined(USE_SPECULAR_MAP)
     return texture(texSpecularMap, VAR._texCoord).rgb;

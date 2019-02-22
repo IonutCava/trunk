@@ -64,19 +64,18 @@ void ResourceCache::clear() {
 }
 
 void ResourceCache::add(CachedResource_wptr res) {
-    CachedResource_ptr resource = res.lock();
-
-    if (resource == nullptr) {
+    if (res.expired()) {
         Console::errorfn(Locale::get(_ID("ERROR_RESOURCE_CACHE_LOAD_RES")));
         return;
     }
 
+    CachedResource_ptr resource = res.lock();
     size_t hash = resource->getDescriptorHash();
     DIVIDE_ASSERT(hash != 0, "ResourceCache add error: Invalid resource hash!");
 
     Console::printfn(Locale::get(_ID("RESOURCE_CACHE_ADD")), resource->resourceName().c_str(), resource->getGUID(), hash);
     UniqueLockShared w_lock(_creationMutex);
-    hashAlg::insert(_resDB, hashAlg::make_pair(hash, CachedResource_wptr(resource)));
+    hashAlg::insert(_resDB, hashAlg::make_pair(hash, res));
 }
 
 CachedResource_ptr ResourceCache::loadResource(size_t descriptorHash, const stringImpl& resourceName) {
@@ -91,7 +90,6 @@ CachedResource_ptr ResourceCache::loadResource(size_t descriptorHash, const stri
 }
 
 CachedResource_ptr ResourceCache::find(size_t descriptorHash) {
-    static CachedResource_ptr emptyResource;
     /// Search in our resource cache
     SharedLock r_lock(_creationMutex);
     const ResourceMap::const_iterator it = _resDB.find(descriptorHash);
@@ -99,7 +97,7 @@ CachedResource_ptr ResourceCache::find(size_t descriptorHash) {
         return it->second.lock();
     }
 
-    return emptyResource;
+    return {};
 }
 
 void ResourceCache::remove(CachedResource* resource) {

@@ -12,6 +12,10 @@
 
 namespace Divide {
 
+namespace {
+    constexpr U32 g_numberOfTiles = Config::Lighting::ForwardPlus::NUM_TILES_X * Config::Lighting::ForwardPlus::NUM_TILES_Y;
+};
+
 Renderer::Renderer(PlatformContext& context, ResourceCache& cache)
     : PlatformContextComponent(context),
       _resCache(cache),
@@ -21,13 +25,16 @@ Renderer::Renderer(PlatformContext& context, ResourceCache& cache)
     cullShaderDesc.setThreadedLoading(false);
     _lightCullComputeShader = CreateResource<ShaderProgram>(cache, cullShaderDesc);
 
+    vector<I32> initData(Config::Lighting::ForwardPlus::MAX_LIGHTS_PER_TILE * g_numberOfTiles, -1);
+
     ShaderBufferDescriptor bufferDescriptor;
-    bufferDescriptor._elementCount = Config::Lighting::ForwardPlus::NUM_LIGTHS_PER_TILE * Config::Lighting::ForwardPlus::NUM_TILES_X * Config::Lighting::ForwardPlus::NUM_TILES_Y;
-    bufferDescriptor._elementSize = sizeof(U32);
+    bufferDescriptor._elementCount = Config::Lighting::ForwardPlus::MAX_LIGHTS_PER_TILE * g_numberOfTiles;
+    bufferDescriptor._elementSize = sizeof(I32);
     bufferDescriptor._ringBufferLength = 1;
     bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE);
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::ONCE;
     bufferDescriptor._name = "PER_TILE_LIGHT_INDEX";
+    bufferDescriptor._initialData = initData.data();
     _perTileLightIndexBuffer = _context.gfx().newSB(bufferDescriptor);
     _perTileLightIndexBuffer->bind(ShaderBufferLocation::LIGHT_INDICES);
 }
@@ -57,9 +64,17 @@ void Renderer::preRender(RenderStagePass stagePass,
 
     if (stagePass._stage != RenderStage::SHADOW) {
         lightPool.uploadLightData(stagePass._stage, bufferInOut);
-    } else {
+        if (stagePass._stage != RenderStage::DISPLAY) {
+            return;
+        }
+
+    } else { 
         return;
     }
+
+    GFX::SetViewportCommand viewportCommand;
+    viewportCommand._viewport.set(Rect<I32>(0, 0, depthTexture->getWidth(), depthTexture->getHeight()));
+    GFX::EnqueueCommand(bufferInOut, viewportCommand);
 
     GFX::BindPipelineCommand bindPipelineCmd = {};
     PipelineDescriptor pipelineDescriptor = {};
@@ -67,12 +82,11 @@ void Renderer::preRender(RenderStagePass stagePass,
     bindPipelineCmd._pipeline = _context.gfx().newPipeline(pipelineDescriptor);
     GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
 
-    GFX::SendPushConstantsCommand pushConstantsCommand = {};
-    pushConstantsCommand._constants.set("invProjection", GFX::PushConstantType::MAT4, _context.gfx().renderingData()._ProjectionMatrix.getInverse());
-    GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
-
     GFX::DispatchComputeCommand computeCmd = {};
-    computeCmd._computeGroupSize.set(Config::Lighting::ForwardPlus::NUM_TILES_X, Config::Lighting::ForwardPlus::NUM_TILES_Y, 1);
+    computeCmd._computeGroupSize.set(
+        Config::Lighting::ForwardPlus::NUM_TILES_X,
+        Config::Lighting::ForwardPlus::NUM_TILES_Y,
+        1);
     assert(computeCmd._computeGroupSize.lengthSquared() > 0);
     GFX::EnqueueCommand(bufferInOut, computeCmd);
 

@@ -46,7 +46,7 @@ void VertexBuffer::setAttribMask(size_t index, const AttribFlags& flagMask) {
 }
 
 void VertexBuffer::computeNormals() {
-    vec3<F32> v1, v2, normal;
+    vec3<F32> U, V, normal;
     // Code from
     // http://devmaster.net/forums/topic/1065-calculating-normals-of-a-mesh/
 
@@ -59,6 +59,13 @@ void VertexBuffer::computeNormals() {
     for (U32 i = 0; i < indexCount; i += 3) {
 
         U32 idx0 = getIndex(i + 0);
+        if (idx0 == Config::PRIMITIVE_RESTART_INDEX_L ||
+            idx0 == Config::PRIMITIVE_RESTART_INDEX_S) {
+            assert(i > 2);
+            i -= 2;
+            continue;
+        }
+
         U32 idx1 = getIndex(i + 1);
         U32 idx2 = getIndex(i + 2);
         // get the three vertices that make the faces
@@ -66,9 +73,9 @@ void VertexBuffer::computeNormals() {
         const vec3<F32>& p2 = getPosition(idx1);
         const vec3<F32>& p3 = getPosition(idx2);
 
-        v1.set(p2 - p1);
-        v2.set(p3 - p1);
-        normal.cross(v1, v2);
+        U.set(p2 - p1);
+        V.set(p3 - p1);
+        normal.cross(U, V);
         normal.normalize();
 
         // Store the face's normal for each of the vertices that make up the face.
@@ -77,8 +84,7 @@ void VertexBuffer::computeNormals() {
         normalBuffer[idx2].push_back(normal);
     }
 
-    // Now loop through each vertex vector, and average out all the normals
-    // stored.
+    // Now loop through each vertex vector, and average out all the normals stored.
     vec3<F32> currentNormal;
     for (U32 i = 0; i < vertCount; ++i) {
         currentNormal.reset();

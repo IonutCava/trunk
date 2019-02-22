@@ -178,8 +178,8 @@ class Quaternion {
 /// get the shortest arc quaternion to rotate vector 'v' to the target vector 'u'
 /// (from Ogre3D!)
 template <typename T>
-inline Quaternion<T> RotationFromVToU(const vec3<T>& v, const vec3<T>& u,
-                                      const vec3<T>& fallbackAxis = VECTOR3_ZERO);
+inline Quaternion<T> RotationFromVToU(const vec3<T>& v, const vec3<T>& u, const vec3<T>& fallbackAxis = VECTOR3_ZERO);
+
 template <typename T>
 inline Quaternion<T> Slerp(const Quaternion<T>& q0, const Quaternion<T>& q1, F32 t);
 

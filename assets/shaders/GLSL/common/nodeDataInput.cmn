@@ -5,10 +5,10 @@ vec4 positionFromDepth(in float depth,
                        in mat4 invProjectionMatrix,
                        in vec2 uv) {
 
-    vec4 pos = vec4(2.0 * uv.x - 1.0,
-        2.0 * uv.y - 1.0,
-        2.0 * depth - 1.0,
-        1.0);
+    vec4 pos = vec4(2.0f * uv.x - 1.0f,
+                    2.0f * uv.y - 1.0f,
+                    2.0f * depth - 1.0f,
+                    1.0f);
 
     pos = invProjectionMatrix * pos;
     pos /= pos.w;
@@ -17,10 +17,10 @@ vec4 positionFromDepth(in float depth,
 }
 
 vec3 UNPACK_FLOAT(in float value) {
-    return (fract(vec3(1.0, 256.0, 65536.0) * value)* 2.0) - 1.0;
+    return (fract(vec3(1.0f, 256.0f, 65536.0f) * value)* 2.0f) - 1.0f;
 }
 
-vec2 UNPACK_FLOAT(in uint value) {
+vec2 UNPACK_UINT(in uint value) {
     return vec2(
         (value >> 16) / 65535.0f,
         (value & 0xFFFF) / 65535.0f);
@@ -55,6 +55,9 @@ layout(binding = BUFFER_GPU_BLOCK, std140) uniform dvd_GPUBlock
     vec4  dvd_ViewPort;
     vec4  dvd_clip_plane[MAX_CLIP_PLANES];
 };
+
+#define windowWidth int(dvd_ViewPort.z)
+#define windowHeight int(dvd_ViewPort.w)
 
 vec2 dvd_invScreenDimensions() {
     return 1.0 / dvd_ViewPort.zw;
