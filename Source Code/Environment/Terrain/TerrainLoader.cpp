@@ -507,8 +507,8 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     U32 chunkSize = to_U32(terrainDescriptor->getTessellationRange().z);
     U32 maxChunkCount = to_U32(std::ceil((terrainWidth * terrainHeight) / (chunkSize * chunkSize * 1.0f)));
 
-    U32 maxInstances = 0;
-    Vegetation::precomputeStaticData(terrain->getGeometryVB()->context(), chunkSize, maxChunkCount, maxInstances);
+    U32 maxGrassInstances = 0u, maxTreeInstances = 0u;
+    Vegetation::precomputeStaticData(terrain->getGeometryVB()->context(), chunkSize, maxChunkCount, maxGrassInstances, maxTreeInstances);
 
     U8 textureCount = 0;
     stringImpl textureName;
@@ -562,9 +562,7 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
 
     VegetationDetails& vegDetails = Attorney::TerrainLoader::vegetationDetails(*terrain);
     vegDetails.billboardCount = textureCount;
-    vegDetails.name = terrain->resourceName() + "_grass";
-    vegDetails.grassDensity = terrainDescriptor->getGrassDensity();
-    vegDetails.grassScale = terrainDescriptor->getGrassScale();
+    vegDetails.name = terrain->resourceName() + "_vegetation";
     vegDetails.parentTerrain = terrain;
 
     ResourceDescriptor vegetationMaterial("grassMaterial");
@@ -578,7 +576,7 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
 
     ShaderProgramDescriptor shaderDescriptor;
     shaderDescriptor._defines.push_back(std::make_pair("SKIP_TEXTURES", true));
-    shaderDescriptor._defines.push_back(std::make_pair(Util::StringFormat("MAX_INSTANCES %d", maxInstances).c_str(), true));
+    shaderDescriptor._defines.push_back(std::make_pair(Util::StringFormat("MAX_GRASS_INSTANCES %d", maxGrassInstances).c_str(), true));
     shaderDescriptor._defines.push_back(std::make_pair("USE_DOUBLE_SIDED", true));
 
     ShaderProgramDescriptor shaderOitDescriptor = shaderDescriptor;

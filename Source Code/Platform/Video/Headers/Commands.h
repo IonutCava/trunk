@@ -228,6 +228,7 @@ END_COMMAND(SetBlendCommand);
 
 BEGIN_COMMAND(SetCameraCommand, CommandType::SET_CAMERA);
     CameraSnapshot _cameraSnapshot;
+    RenderStage _stage = RenderStage::COUNT;
 END_COMMAND(SetCameraCommand);
 
 BEGIN_COMMAND(SetClipPlanesCommand, CommandType::SET_CLIP_PLANES);

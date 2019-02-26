@@ -102,14 +102,18 @@ class SceneNode : public CachedResource {
     virtual void onRefreshNodeData(SceneGraphNode& sgn,
                                    RenderStagePass renderStagePass,
                                    GFX::CommandBuffer& bufferInOut);
-    virtual bool getDrawState(const SceneGraphNode& sgn) const {
+    virtual bool getDrawState(const SceneGraphNode& sgn, U8 LoD) const {
         ACKNOWLEDGE_UNUSED(sgn);
+        ACKNOWLEDGE_UNUSED(LoD);
 
         return _renderState.getDrawState();
     }
+
+    virtual bool isInView() const { return true;  }
+
     /// Some SceneNodes may need special case handling. I.E. water shouldn't
     /// render itself in REFLECTION
-    virtual bool getDrawState(const SceneGraphNode& sgn, RenderStagePass renderStage) const;
+    virtual bool getDrawState(const SceneGraphNode& sgn, RenderStagePass renderStage, U8 LoD) const;
 
     virtual void buildDrawCommands(SceneGraphNode& sgn,
                                    RenderStagePass renderStage,
@@ -129,7 +133,6 @@ class SceneNode : public CachedResource {
 
     ResourceCache& parentResourceCache() { return _parentCache; }
     const ResourceCache& parentResourceCache() const { return _parentCache; }
-
 
     inline const BoundingBox& getBoundsInternal() const { return _boundingBox; }
 

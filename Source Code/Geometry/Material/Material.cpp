@@ -21,9 +21,8 @@
 namespace Divide {
 
 namespace {
-    const char* g_DepthPassMaterialShaderName = "depthPass";
-    const char* g_ForwardMaterialShaderName = "material";
     const char* g_PassThroughMaterialShaderName = "passThrough";
+
     stringImpl getDefinesHash(const vector<std::pair<stringImpl, bool>>& defines) {
         size_t hash = 17;
         for (auto entry : defines) {
@@ -78,6 +77,9 @@ Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descri
       _translucencySource(TranslucencySource::COUNT)
 {
     _textures.fill(nullptr);
+    _baseShaderName[0] = "material";
+    _baseShaderName[1] = "depthPass";
+
     _textureExtenalFlag.fill(false);
     _textureExtenalFlag[to_base(ShaderProgram::TextureUsage::REFLECTION_PLANAR)] = true;
     _textureExtenalFlag[to_base(ShaderProgram::TextureUsage::REFRACTION_PLANAR)] = true;
@@ -175,6 +177,8 @@ Material_ptr Material::clone(const stringImpl& nameSuffix) {
     cloneMat->_defaultReflection = base._defaultReflection;
     cloneMat->_defaultRefraction = base._defaultRefraction;
     cloneMat->_translucencySource = base._translucencySource;
+    cloneMat->_baseShaderName = base._baseShaderName;
+    cloneMat->_extraShaderDefines = base._extraShaderDefines;
 
     for (RenderStagePass::StagePassIndex i = 0; i < RenderStagePass::count(); ++i) {
         cloneMat->_shaderInfo[i] = _shaderInfo[i];
@@ -485,6 +489,8 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
 
     ShaderProgramDescriptor shaderPropertyDescriptor;
 
+    shaderPropertyDescriptor._defines.insert(std::cbegin(shaderPropertyDescriptor._defines), std::cbegin(_extraShaderDefines), std::cend(_extraShaderDefines));
+
     if (renderStagePass._stage == RenderStage::SHADOW) {
         shaderPropertyDescriptor._defines.push_back(std::make_pair("SHADOW_PASS", true));
     }
@@ -502,7 +508,7 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
         }
     }
 
-    stringImpl shader = renderStagePass.isDepthPass() ? g_DepthPassMaterialShaderName : g_ForwardMaterialShaderName;
+    stringImpl shader = _baseShaderName[renderStagePass.isDepthPass() ? 1 : 0];
 
     if (renderStagePass.isDepthPass()) {
         shader += renderStagePass._stage == RenderStage::SHADOW ? ".Shadow" : ".PrePass";

@@ -264,6 +264,23 @@ inline void Material::ignoreXMLData(const bool state) {
 inline bool Material::ignoreXMLData() const {
     return _ignoreXMLData;
 }
+
+inline void Material::setBaseShaderName(const stringImpl& name, bool depthPass) {
+    _baseShaderName[depthPass ? 1 : 0] = name;
+}
+
+inline const stringImpl& Material::getBaseShaderName(bool depthPass) const {
+    return _baseShaderName[depthPass ? 1 : 0];
+}
+
+inline void Material::addGlobalShaderDefine(const stringImpl& define, bool addPrefix) {
+    _extraShaderDefines.emplace_back(define, addPrefix);
+}
+
+inline const vector<std::pair<stringImpl, bool>>& Material::extraShaderDefines() const {
+    return _extraShaderDefines;
+}
+
 }; //namespace Divide
 
 #endif //_MATERIAL_INL_

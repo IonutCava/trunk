@@ -63,6 +63,7 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescr
       _compManager(sceneGraph.GetECSEngine().GetComponentManager()),
       _serialize(descriptor._serialize),
       _node(descriptor._node),
+      _instanceCount(to_U32(descriptor._instanceCount)),
       _componentMask(0),
       _usageContext(descriptor._usageContext),
       _selectionFlag(SelectionFlag::SELECTION_NONE),
@@ -90,6 +91,10 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescr
     name(descriptor._name.empty() ? Util::StringFormat("%s_SGN", _node->resourceName().c_str()) : descriptor._name);
 
     AddMissingComponents(descriptor._componentMask);
+
+    for (auto it : descriptor._externalBufferBindings) {
+        addShaderBuffer(it);
+    }
 
     Attorney::SceneNodeSceneGraph::registerSGNParent(*_node, this);
 }
@@ -198,8 +203,10 @@ SceneGraphNode* SceneGraphNode::registerNode(SceneGraphNode* node) {
     
     Attorney::SceneGraphSGN::onNodeAdd(_sceneGraph, *node);
     
-    UniqueLockShared w_lock(_childLock);
-    _children.push_back(node);
+    {
+        UniqueLockShared w_lock(_childLock);
+        _children.push_back(node);
+    }
 
     return _children.back();
 }
@@ -214,7 +221,8 @@ SceneGraphNode* SceneGraphNode::addNode(const SceneGraphNodeDescriptor& descript
 
     // Set the current node as the new node's parent
     sceneGraphNode->setParent(*this);
-    invalidateRelationshipCache();
+
+    assert(sceneGraphNode->_node->getState() != ResourceState::RES_CREATED);
 
     if (sceneGraphNode->_node->getState() == ResourceState::RES_LOADED) {
         postLoad(*sceneGraphNode->_node, *sceneGraphNode);
@@ -245,12 +253,14 @@ bool SceneGraphNode::removeNodesByType(SceneNodeType nodeType) {
         }
     });
 
-    SharedLock r_lock(_childLock);
-    for (U32 i = 0; i < getChildCountLocked(); ++i) {
-        if (_children[i]->getNode().type() == nodeType) {
-            {
-                addToDeleteQueue(i);
-                ++removalCount;
+    {
+        SharedLock r_lock(_childLock);
+        for (U32 i = 0; i < getChildCountLocked(); ++i) {
+            if (_children[i]->getNode().type() == nodeType) {
+                {
+                    addToDeleteQueue(i);
+                    ++removalCount;
+                }
             }
         }
     }
@@ -265,18 +275,19 @@ bool SceneGraphNode::removeNodesByType(SceneNodeType nodeType) {
 bool SceneGraphNode::removeNode(const SceneGraphNode& node) {
 
     I64 targetGUID = node.getGUID();
-    SharedLock r_lock(_childLock);
-    U32 childCount = getChildCountLocked();
-    for (U32 i = 0; i < childCount; ++i) {
-        if (_children[i]->getGUID() == targetGUID) {
-            {
-                addToDeleteQueue(i);
-            }
+    {
+        SharedLock r_lock(_childLock);
+        U32 childCount = getChildCountLocked();
+        for (U32 i = 0; i < childCount; ++i) {
+            if (_children[i]->getGUID() == targetGUID) {
+                {
+                    addToDeleteQueue(i);
+                }
 
-            return true;
+                return true;
+            }
         }
     }
-    
 
     // If this didn't finish, it means that we found our node
     return !forEachChildInterruptible([&node](SceneGraphNode& child) {
@@ -500,8 +511,8 @@ void SceneGraphNode::onRefreshNodeData(RenderStagePass renderStagePass, GFX::Com
     _node->onRefreshNodeData(*this, renderStagePass, bufferInOut);
 }
 
-bool SceneGraphNode::getDrawState(RenderStagePass stagePass) const {
-    return _node->getDrawState(*this, stagePass);
+bool SceneGraphNode::getDrawState(RenderStagePass stagePass, U8 LoD) const {
+    return _node->getDrawState(*this, stagePass, LoD);
 }
 
 void SceneGraphNode::onNetworkSend(U32 frameCount) {
@@ -533,6 +544,7 @@ bool SceneGraphNode::cullNode(const NodeCullParams& params,
 
     collisionTypeOut = Frustum::FrustCollision::FRUSTUM_OUT;
 
+
     // Use the bounding primitives to do camera/frustum checks
     BoundsComponent* bComp = get<BoundsComponent>();
     const BoundingBox& boundingBox = bComp->getBoundingBox();
@@ -546,7 +558,7 @@ bool SceneGraphNode::cullNode(const NodeCullParams& params,
     // Check distance to sphere edge (center - radius)
     const vec3<F32>& center = sphere.getCenter();
     minDistanceSq = center.distanceSquared(eye) - radiusSq;
-    if (minDistanceSq > params._cullMaxDistanceSq) {
+    if (minDistanceSq > params._cullMaxDistanceSq || !getNode().isInView()) {
         return true;
     }
 
@@ -581,14 +593,20 @@ bool SceneGraphNode::cullNode(const NodeCullParams& params,
     return collisionTypeOut == Frustum::FrustCollision::FRUSTUM_OUT;
 }
 
-void SceneGraphNode::invalidateRelationshipCache() {
+void SceneGraphNode::invalidateRelationshipCache(SceneGraphNode* source) {
+    if (source == this || !_relationshipCache.isValid()) {
+        return;
+    }
+
     _relationshipCache.invalidate();
 
     if (_parent && _parent->getParent()) {
-        _parent->invalidateRelationshipCache();
+        _parent->invalidateRelationshipCache(this);
 
-        forEachChild([](SceneGraphNode& child) {
-            child.invalidateRelationshipCache();
+        forEachChild([this, source](SceneGraphNode& child) {
+            if (!source || child.getGUID() != source->getGUID()) {
+                child.invalidateRelationshipCache(this);
+            }
         });
     }
 }

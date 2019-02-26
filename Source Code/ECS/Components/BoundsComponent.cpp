@@ -72,9 +72,13 @@ const BoundingBox& BoundsComponent::updateAndGetBoundingBox() {
 }
 
 void BoundsComponent::Update(const U64 deltaTimeUS) {
+    BaseComponentType<BoundsComponent, ComponentType::BOUNDS>::Update(deltaTimeUS);
+}
+
+void BoundsComponent::PostUpdate(const U64 deltaTimeUS) {
     updateAndGetBoundingBox();
 
-    BaseComponentType<BoundsComponent, ComponentType::BOUNDS>::Update(deltaTimeUS);
+    BaseComponentType<BoundsComponent, ComponentType::BOUNDS>::PostUpdate(deltaTimeUS);
 }
 
 };

@@ -79,14 +79,14 @@ namespace Divide {
         // Cleanup our dirty transforms
         if (_transformUpdatedMask.exchange(to_U32(TransformType::NONE) != to_U32(TransformType::NONE)))
         {
-            _worldMatrixUpToDate.clear();
+            updateWorldMatrix();
         }
 
         BaseComponentType<TransformComponent, ComponentType::TRANSFORM>::Update(deltaTimeUS);
     }
 
     void TransformComponent::PostUpdate(const U64 deltaTimeUS) {
-        updateWorldMatrix();
+        
         BaseComponentType<TransformComponent, ComponentType::TRANSFORM>::PostUpdate(deltaTimeUS);
     }
 
@@ -447,6 +447,7 @@ namespace Divide {
             }
 
             _parentSGN.SendEvent<TransformUpdated>(GetOwner());
+            _worldMatrixUpToDate.clear();
         }
 
         return _worldMatrix;

@@ -36,6 +36,9 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Rendering/Camera/Headers/Frustum.h"
 
 namespace Divide {
+
+enum class RenderStage : U8;
+
 class GFXShaderData {
   public:
     GFXShaderData() noexcept;
@@ -49,13 +52,14 @@ class GFXShaderData {
         mat4<F32> _ViewMatrix;
         mat4<F32> _ViewProjectionMatrix;
         vec4<F32> _cameraPosition = { 0.0f, 0.0f, 0.0f, 1.0f }; // xyz - position, w - aspect ratio
-        vec4<F32> _renderProperties = { 0.01f, 1.0f, 40.0f, 0.0f }; //x - near plane, y - far plane, z - FoV, w - reserved
+        vec4<F32> _renderProperties = { 0.01f, 1.0f, 40.0f, 0.0f }; //x - near plane, y - far plane, z - FoV, w - render stage
         vec4<F32> _ViewPort = { 0.0f, 0.0f, 1.0f, 1.0f };
         vec4<F32> _clipPlanes[to_base(Frustum::FrustPlane::COUNT)];
 
         inline F32 aspectRatio() const;
         inline vec2<F32> cameraZPlanes() const;
         inline F32 FoV() const;
+        inline RenderStage renderStage() const;
     } _data;
 
     bool _needsUpload = true;

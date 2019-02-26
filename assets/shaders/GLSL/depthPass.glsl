@@ -15,7 +15,7 @@ void main() {
 void main() {
     mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;
 
-    if (getAlbedo(colourMatrix).a < 1.0 - Z_TEST_SIGMA) {
+    if (getAlbedo(colourMatrix).a < 1.0f - Z_TEST_SIGMA) {
         discard;
     }
 }
@@ -39,7 +39,7 @@ out vec2 _colourOut;
 void main() {
 #if defined(HAS_TRANSPARENCY)
     mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;
-    if (getAlbedo(colourMatrix).a < 1.0 - Z_TEST_SIGMA) {
+    if (getAlbedo(colourMatrix).a < 1.0f - Z_TEST_SIGMA) {
         discard;
     }
 #endif

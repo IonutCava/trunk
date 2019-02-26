@@ -11,36 +11,5 @@
     <WorldMat 00="1" 01="0" 02="0" 03="0" 10="0" 11="1" 12="0" 13="0" 20="0" 21="0" 22="1" 23="0" 30="0" 31="0" 32="0" 33="1"/>
 </TRANSFORM>
 <BOUNDS/>
-<RENDERING>
-    <Material>
-        <colour r="1" g="1" b="1" a="1"/>
-        <emissive r="0" g="0" b="0"/>
-        <specular r="0.100000001" g="0.100000001" b="0.100000001"/>
-        <shininess>5</shininess>
-        <doubleSided>false</doubleSided>
-        <bumpMethod>NONE</bumpMethod>
-        <shadingMode>BLINN_PHONG</shadingMode>
-        <parallaxFactor>0.00999999978</parallaxFactor>
-        <texture>
-            <UNIT0>
-                <name>terrain_water_NM.jpg</name>
-                <path>assets/misc_images</path>
-                <flipped>true</flipped>
-                <Map U="REPEAT" V="REPEAT" W="REPEAT"/>
-                <Filter min="LINEAR" mag="LINEAR"/>
-                <anisotropy>255</anisotropy>
-            </UNIT0>
-            <UNIT1>
-                <name>water_dudv.jpg</name>
-                <path>assets/misc_images</path>
-                <flipped>true</flipped>
-                <usage>TEX_OP_REPLACE</usage>
-                <Map U="REPEAT" V="REPEAT" W="REPEAT"/>
-                <Filter min="LINEAR" mag="LINEAR"/>
-                <anisotropy>255</anisotropy>
-            </UNIT1>
-        </texture>
-    </Material>
-</RENDERING>
 <NETWORKING/>
 <WATER/>

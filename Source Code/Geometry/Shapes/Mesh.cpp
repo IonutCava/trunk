@@ -5,9 +5,11 @@
 
 #include "Managers/Headers/SceneManager.h"
 #include "Core/Headers/StringHelper.h"
+#include "Geometry/Material/Headers/Material.h"
 #include "Geometry/Animations/Headers/SceneAnimator.h"
 #include "ECS/Components/Headers/RigidBodyComponent.h"
 #include "ECS/Components/Headers/BoundsComponent.h"
+#include "ECS/Components/Headers/RenderingComponent.h"
 #include "ECS/Components/Headers/AnimationComponent.h"
 
 namespace Divide {
@@ -56,8 +58,19 @@ void Mesh::postLoad(SceneGraphNode& sgn) {
 
     SceneGraphNodeDescriptor subMeshDescriptor;
     subMeshDescriptor._usageContext = sgn.usageContext();
+    subMeshDescriptor._instanceCount = sgn.instanceCount();
+    subMeshDescriptor._externalBufferBindings = sgn.getShaderBuffers();
 
     for (const SubMesh_ptr& submesh : _subMeshList) {
+        if (getMaterialTpl() != nullptr) {
+            submesh->getMaterialTpl()->setBaseShaderName(getMaterialTpl()->getBaseShaderName(true), true);
+            submesh->getMaterialTpl()->setBaseShaderName(getMaterialTpl()->getBaseShaderName(false), false);
+
+            for (auto it : getMaterialTpl()->extraShaderDefines()) {
+                submesh->getMaterialTpl()->addGlobalShaderDefine(it.first, it.second);
+            }
+        }
+
         subMeshDescriptor._node = submesh;
         subMeshDescriptor._componentMask = submesh->getObjectFlag(ObjectFlag::OBJECT_FLAG_SKINNED) ? skinnedMask : normalMask;
         if (sgn.get<RigidBodyComponent>()) {
@@ -65,6 +78,7 @@ void Mesh::postLoad(SceneGraphNode& sgn) {
         }
         subMeshDescriptor._name = Util::StringFormat("%s_%d", sgn.name().c_str(), submesh->getID());
         SceneGraphNode* subSGN = sgn.addNode(subMeshDescriptor);
+
         if (BitCompare(subMeshDescriptor._componentMask, ComponentType::RIGID_BODY)) {
             subSGN->get<RigidBodyComponent>()->physicsGroup(sgn.get<RigidBodyComponent>()->physicsGroup());
         }

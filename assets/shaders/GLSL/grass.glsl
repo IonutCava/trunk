@@ -2,7 +2,7 @@
 
 #include "vbInputData.vert"
 
-struct GrassData {
+struct VegetationData {
     vec4 positionAndScale;
     vec4 orientationQuad;
     //x - width extent, y = height extent, z = array index, w - render
@@ -10,7 +10,7 @@ struct GrassData {
 };
 
 layout(std430, binding = BUFFER_GRASS_DATA) coherent readonly buffer dvd_transformBlock {
-    GrassData grassData[MAX_INSTANCES];
+    VegetationData grassData[MAX_GRASS_INSTANCES];
 };
 
 flat out int _arrayLayerFrag;
@@ -29,7 +29,7 @@ void main()
 {
     computeDataNoClip();
 
-    GrassData data = grassData[VAR.dvd_instanceID];
+    VegetationData data = grassData[VAR.dvd_instanceID];
     float LoD = data.data.w;
     float scale = data.positionAndScale.w;
     if (LoD > 2) {
@@ -38,7 +38,7 @@ void main()
     }
 
     if (dvd_Vertex.y > 0.75) {
-        //computeFoliageMovementGrass(dvd_Vertex, data.data.y);
+        computeFoliageMovementGrass(dvd_Vertex, data.data.y);
     }
 
     _arrayLayerFrag = int(data.data.z);
@@ -86,12 +86,8 @@ void main (void){
 
     vec3 normal = getNormal();
 
-#if 1
     mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;
     writeOutput(getPixelColour(albedo, colourMatrix, normal), packNormal(normal));
-#else
-    writeOutput(albedo, packNormal(normal));
-#endif
 }
 
 --Fragment.PrePass

@@ -326,12 +326,16 @@ void RenderPassManager::refreshNodeData(RenderStagePass stagePass,
             RefreshNodeDataParams params(g_drawCommands, bufferInOut);
             params._stagePass = stagePass;
             params._nodeCount = to_U32(g_nodeData.size());
-
+            if (params._nodeCount == Config::MAX_VISIBLE_NODES) {
+                goto skip;
+            }
             if (Attorney::RenderingCompRenderPass::onRefreshNodeData(renderable, params)) {
                 g_nodeData.push_back(processVisibleNode(node, stagePass, renderable.renderOptionEnabled(RenderingComponent::RenderOptions::IS_OCCLUSION_CULLABLE), playAnimations, viewMatrix));
             }
         }
     }
+
+skip:
 
     U32 nodeCount = to_U32(g_nodeData.size());
     U32 cmdCount = to_U32(g_drawCommands.size());
@@ -640,6 +644,7 @@ void RenderPassManager::woitPass(const PassParams& params, const RenderTarget& t
 
         GFX::SetCameraCommand setCameraCommand;
         setCameraCommand._cameraSnapshot = Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot();
+        setCameraCommand._stage = params._stage;
         GFX::EnqueueCommand(bufferInOut, setCameraCommand);
 
         GFX::BeginRenderPassCommand beginRenderPassCompCmd;
@@ -677,7 +682,6 @@ void RenderPassManager::woitPass(const PassParams& params, const RenderTarget& t
 
         GenericDrawCommand drawCommand;
         drawCommand._primitiveType = PrimitiveType::TRIANGLES;
-        drawCommand._drawCount = 1;
 
         GFX::DrawCommand drawCmd;
         drawCmd._drawCommands.push_back(drawCommand);
@@ -697,6 +701,7 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
     // Tell the Rendering API to draw from our desired PoV
     GFX::SetCameraCommand setCameraCommand;
     setCameraCommand._cameraSnapshot = params._camera->snapshot();
+    setCameraCommand._stage = params._stage;
     GFX::EnqueueCommand(bufferInOut, setCameraCommand);
 
     GFX::SetClipPlanesCommand setClipPlanesCommand;

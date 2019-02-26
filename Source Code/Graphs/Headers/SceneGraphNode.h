@@ -52,11 +52,13 @@ struct NodeCullParams;
 struct TransformDirty;
 
 struct SceneGraphNodeDescriptor {
+    vectorEASTL<ShaderBufferBinding> _externalBufferBindings;
     SceneNode_ptr    _node = nullptr;
     stringImpl       _name = "";
+    size_t           _instanceCount = 1;
     U32              _componentMask = 0;
-    bool             _serialize = true;
     NodeUsageContext _usageContext = NodeUsageContext::NODE_STATIC;
+    bool             _serialize = true;
 };
 
 namespace Attorney {
@@ -248,6 +250,13 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
         ClearBit(_updateFlags, to_base(flag));
     }
 
+    inline U32 instanceCount() const {
+        return _instanceCount;
+    }
+
+    inline void addShaderBuffer(const ShaderBufferBinding& binding) { _externalBufferBindings.push_back(binding); }
+    inline const vectorEASTL<ShaderBufferBinding>& getShaderBuffers() const { return _externalBufferBindings; }
+
    /*protected:
     SET_DELETE_FRIEND
     SET_SAFE_UPDATE_FRIEND
@@ -286,7 +295,7 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     friend class RenderingComponent;
     bool prepareRender(const Camera& camera, RenderStagePass renderStagePass, bool refreshData);
     void onRefreshNodeData(RenderStagePass renderStagePass, GFX::CommandBuffer& bufferInOut);
-    bool getDrawState(RenderStagePass stagePass) const;
+    bool getDrawState(RenderStagePass stagePass, U8 LoD) const;
 
    protected:
     friend class SceneGraph;
@@ -356,7 +365,7 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     inline const SGNRelationshipCache& relationshipCache() const {
         return _relationshipCache;
     }
-    void invalidateRelationshipCache();
+    void invalidateRelationshipCache(SceneGraphNode *source = nullptr);
 
    private:
     // An SGN doesn't exist outside of a scene graph
@@ -377,6 +386,8 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
 
     U32 _updateFlags;
 
+    const U32 _instanceCount = 1;
+
     mutable SharedMutex _childLock;
     std::atomic_bool _active;
     std::atomic_bool _visibilityLocked;
@@ -388,6 +399,8 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     StateTracker<bool> _trackedBools;
 
     SGNRelationshipCache _relationshipCache;
+
+    vectorEASTL<ShaderBufferBinding> _externalBufferBindings;
 
     // ToDo: Remove this HORRIBLE hack -Ionut
     vectorFast<EditorComponent*> _editorComponents;

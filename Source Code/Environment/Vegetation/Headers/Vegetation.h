@@ -51,13 +51,13 @@ class RenderStateBlock;
 class GenericVertexData;
 enum class RenderStage : U8;
 
+FWD_DECLARE_MANAGED_CLASS(Mesh);
 FWD_DECLARE_MANAGED_CLASS(Texture);
 FWD_DECLARE_MANAGED_CLASS(Terrain);
 FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
 
 struct VegetationDetails {
     U16 billboardCount;
-    F32 grassDensity;
     F32 grassScale;
     stringImpl name;
     std::shared_ptr<ImageTools::ImageData> map;
@@ -66,7 +66,7 @@ struct VegetationDetails {
     Material_ptr vegetationMaterialPtr;
 };
 
-struct GrassData {
+struct VegetationData {
     vec4<F32> _positionAndScale;
     vec4<F32> _orientationQuat;
     //x - width extent, y = height extent, z = array index, w - lod
@@ -88,9 +88,12 @@ class Vegetation : public SceneNode {
                            RenderStagePass renderStagePass,
                            RenderPackage& pkgInOut) override;
 
-    static void precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 maxChunkCount, U32& maxGrassInstances);
+    static void precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 maxChunkCount, U32& maxGrassInstances, U32& maxTreeInstances);
+
 
   protected:
+    void postLoad(SceneGraphNode& sgn)  override;
+
     void sceneUpdate(const U64 deltaTimeUS,
                      SceneGraphNode& sgn,
                      SceneState& sceneState) override;
@@ -99,10 +102,12 @@ class Vegetation : public SceneNode {
                            RenderStagePass renderStagePass,
                            GFX::CommandBuffer& bufferInOut) override;
 
-    bool getDrawState(const SceneGraphNode& sgn, RenderStagePass renderStage) const override;
+    bool getDrawState(const SceneGraphNode& sgn, RenderStagePass renderStage, U8 LoD) const override;
+
    private:
-    void uploadGrassData();
-    void computeGrassTransforms(const Task& parentTask);
+    void uploadVegetationData();
+    void computeVegetationTransforms(const Task& parentTask, bool treeData);
+    void updateBoundsInternal() override;
 
    private:
     GFXDevice& _context;
@@ -111,7 +116,6 @@ class Vegetation : public SceneNode {
     bool _render;  ///< Toggle vegetation rendering On/Off
     bool _success;
     std::weak_ptr<Terrain> _terrain;
-    F32 _grassDensity;
     U16 _billboardCount;  ///< Vegetation cumulated density
     F32 _grassScale;
     F32 _windX = 0.0f, _windZ = 0.0f, _windS = 0.0f, _time = 0.0f;
@@ -121,18 +125,25 @@ class Vegetation : public SceneNode {
     ShaderProgram_ptr _cullShader;
     bool _shadowMapped;
     U32 _instanceCountGrass;
+    U32 _instanceCountTrees;
 
     Pipeline* _cullPipeline;
-    vectorEASTL<GrassData> _tempData;
+    vectorEASTL<VegetationData> _tempGrassData;
+    vectorEASTL<VegetationData> _tempTreeData;
 
     static std::atomic_uint s_bufferUsage;
     static VertexBuffer* s_buffer;
+    static ShaderBuffer* s_treeData;
     static ShaderBuffer* s_grassData;
+    static std::unordered_set<vec2<F32>> s_treePositions;
     static std::unordered_set<vec2<F32>> s_grassPositions;
 
     static size_t s_maxGrassChunks;
+    static size_t s_maxTreeInstancesPerChunk;
     static size_t s_maxGrassInstancesPerChunk;
     static std::array<bool, to_base(RenderStage::COUNT)> s_stageRefreshed;
+
+    static vectorEASTL<Mesh_ptr> s_treeMeshes;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_TYPE(Vegetation);

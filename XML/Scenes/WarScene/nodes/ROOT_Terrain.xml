@@ -12,7 +12,7 @@
 <underwaterAlbedoTexture>sandfloor009a.jpg</underwaterAlbedoTexture>
 <underwaterDetailTexture>terrain_detail_NM.png</underwaterDetailTexture>
 <underwaterTileScale>100</underwaterTileScale>
-<vegetation grassDensity="0.800000012" treeDensity="0" grassScale="0.174999997" treeScale="0.699999988">
+<vegetation grassScale="0.174999997" treeScale="0.699999988">
     <vegetationTextureLocation>misc_images</vegetationTextureLocation>
     <map>warTerrainAlpha_Alpha1.tga</map>
     <grassBillboard1>billboardgrass0001.png</grassBillboard1>

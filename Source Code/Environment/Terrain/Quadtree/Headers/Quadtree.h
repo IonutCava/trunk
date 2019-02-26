@@ -66,7 +66,6 @@ class Quadtree {
 
     QuadtreeNode* findLeaf(const vec2<F32>& pos);
 
-    void updateVisibility(const Camera& camera, F32 maxDistance);
    private:
     U32 _chunkCount;
     VertexBuffer* _parentVB;  //<Pointer to the terrain VB

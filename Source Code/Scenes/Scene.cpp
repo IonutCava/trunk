@@ -537,9 +537,6 @@ void Scene::addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree p
     ter->addVariable("grassBillboard2", pt.get<stringImpl>("vegetation.grassBillboard2", ""));
     ter->addVariable("grassBillboard3", pt.get<stringImpl>("vegetation.grassBillboard3", ""));
     ter->addVariable("grassBillboard4", pt.get<stringImpl>("vegetation.grassBillboard4", ""));
-
-    ter->setGrassDensity(pt.get<F32>("vegetation.<xmlattr>.grassDensity"));
-    ter->setTreeDensity(pt.get<F32>("vegetation.<xmlattr>.treeDensity"));
     ter->setGrassScale(pt.get<F32>("vegetation.<xmlattr>.grassScale"));
     ter->setTreeScale(pt.get<F32>("vegetation.<xmlattr>.treeScale"));
     ter->set16Bit(pt.get<bool>("is16Bit", false));

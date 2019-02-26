@@ -347,6 +347,11 @@ bool GL_API::initGLSW() {
     appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define DETAIL_HIGH %d", to_base(RenderDetailLevel::HIGH)), lineOffsets);
     appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define DETAIL_ULTRA %d", to_base(RenderDetailLevel::ULTRA)), lineOffsets);
     appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define DETAIL_COUNT %d", to_base(RenderDetailLevel::COUNT)), lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define STAGE_DISPLAY %d", to_base(RenderStage::DISPLAY)), lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define STAGE_REFLECTION %d", to_base(RenderStage::REFLECTION)), lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define STAGE_REFRACTION %d", to_base(RenderStage::REFRACTION)), lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define STAGE_SHADOW %d", to_base(RenderStage::SHADOW)), lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define STAGE_OTHER %d", to_base(RenderStage::COUNT)), lineOffsets);
 
     // Add current build environment information to the shaders
     if (Config::Build::IS_DEBUG_BUILD) {

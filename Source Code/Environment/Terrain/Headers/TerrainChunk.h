@@ -76,7 +76,6 @@ class TerrainChunk {
 
     const BoundingBox& bounds() const;
 
-    bool isInView() const;
     U8 LoD() const;
 
    protected:

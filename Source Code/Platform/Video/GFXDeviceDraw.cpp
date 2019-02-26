@@ -94,9 +94,10 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer, bool submi
             case GFX::CommandType::SET_VIEWPORT:
                 setViewport(commandBuffer.get<GFX::SetViewportCommand>(cmd)._viewport);
                 break;
-            case GFX::CommandType::SET_CAMERA:
-                renderFromCamera(commandBuffer.get<GFX::SetCameraCommand>(cmd)._cameraSnapshot);
-                break;
+            case GFX::CommandType::SET_CAMERA: {
+                const GFX::SetCameraCommand& crtCmd = commandBuffer.get<GFX::SetCameraCommand>(cmd);
+                renderFromCamera(crtCmd._cameraSnapshot, crtCmd._stage);
+            } break;
             case GFX::CommandType::SET_CLIP_PLANES:
                 setClipPlanes(commandBuffer.get<GFX::SetClipPlanesCommand>(cmd)._clippingPlanes);
                 break;

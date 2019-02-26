@@ -57,6 +57,7 @@ namespace Divide {
         friend class BoundsSystem;
                 
         void Update(const U64 deltaTimeUS) override;
+        void PostUpdate(const U64 deltaTimeUS) override;
 
         // Flag the current BB as dirty and also flag all of the parents' bbs as dirty as well
         void flagBoundingBoxDirty();

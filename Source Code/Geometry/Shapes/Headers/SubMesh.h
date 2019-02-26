@@ -84,8 +84,8 @@ class SubMesh : public Object3D {
     void setParentMesh(Mesh* const parentMesh);
 
     void buildDrawCommands(SceneGraphNode& sgn,
-                                RenderStagePass renderStagePass,
-                                RenderPackage& pkgInOut) override;
+                           RenderStagePass renderStagePass,
+                           RenderPackage& pkgInOut) override;
 
     // SGN node + parent mesh
     size_t maxReferenceCount() const noexcept override { return 2; }

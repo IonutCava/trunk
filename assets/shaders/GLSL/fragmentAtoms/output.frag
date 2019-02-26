@@ -92,7 +92,12 @@ void writeOutput(vec4 colour, vec2 normal, vec2 velocity) {
         _normalAndVelocityOut.ba = velocity;
     }
 #else //OIT_PASS
+
+// write depth value to alpha for refraction?
     _colourOut = colour;
+    if (dvd_crtStage == STAGE_REFRACTION) {
+        _colourOut.a = 0.5f;
+    }
     _normalAndVelocityOut.rg = normal;
     _normalAndVelocityOut.ba = velocity;
 #endif //OIT_PASS

@@ -146,8 +146,6 @@ struct TerrainInfo {
     /// texture names,
     /// terrain name etc.
     hashMap<U64, stringImpl> variables;
-    F32 grassDensity = 1.0f;
-    F32 treeDensity = 1.0f;
     F32 grassScale = 1.0f;
     F32 treeScale = 1.0f;
     vec3<F32> position;

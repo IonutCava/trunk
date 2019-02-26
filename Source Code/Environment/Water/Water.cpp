@@ -77,8 +77,8 @@ bool WaterPlane::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallb
     assert(waterMat != nullptr);
 
     waterMat->setShadingMode(Material::ShadingMode::BLINN_PHONG);
-    waterMat->setTexture(ShaderProgram::TextureUsage::UNIT0, waterNM);
-    waterMat->setTexture(ShaderProgram::TextureUsage::UNIT1, waterDUDV);
+    waterMat->setTexture(ShaderProgram::TextureUsage::UNIT0, waterDUDV);
+    waterMat->setTexture(ShaderProgram::TextureUsage::NORMALMAP, waterNM);
 
     ShaderProgramDescriptor shaderDescriptor;
     shaderDescriptor._defines.push_back(std::make_pair("COMPUTE_TBN", true));
@@ -93,6 +93,7 @@ bool WaterPlane::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallb
 
     waterMat->setShaderProgram(waterColour, RenderPassType::MAIN_PASS);
     waterMat->setShaderProgram(waterPrePass, RenderPassType::PRE_PASS);
+    waterMat->setShininess(75.0f);
 
     setMaterialTpl(waterMat);
     
@@ -158,7 +159,6 @@ void WaterPlane::buildDrawCommands(SceneGraphNode& sgn,
                                    RenderPackage& pkgInOut) {
 
     GFX::SendPushConstantsCommand pushConstantsCommand = {};
-    pushConstantsCommand._constants.set("_waterShininess", GFX::PushConstantType::FLOAT, 50.0f);
     pushConstantsCommand._constants.set("_noiseFactor", GFX::PushConstantType::VEC2, vec2<F32>(0.15f, 0.15f));
     pushConstantsCommand._constants.set("_noiseTile", GFX::PushConstantType::VEC2, vec2<F32>(15.0f, 15.0f));
     pkgInOut.addPushConstantsCommand(pushConstantsCommand);

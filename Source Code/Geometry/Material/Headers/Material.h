@@ -246,6 +246,12 @@ class Material : public CachedResource {
     void saveToXML(const stringImpl& entryName, boost::property_tree::ptree& pt) const;
     void loadFromXML(const stringImpl& entryName, const boost::property_tree::ptree& pt);
 
+    void setBaseShaderName(const stringImpl& name, bool depthPass);
+    const stringImpl& getBaseShaderName(bool depthPass) const;
+
+    void addGlobalShaderDefine(const stringImpl& define, bool addPrefix);
+    const vector<std::pair<stringImpl, bool>>& extraShaderDefines() const;
+
    private:
     void updateTranslucency();
 
@@ -270,6 +276,7 @@ class Material : public CachedResource {
     std::array<size_t, 3>& defaultRenderStates(RenderStagePass renderStagePass);
 
     void waitForShader(const ShaderProgram_ptr& shader, RenderStagePass stagePass, const char* newShader);
+
    private:
     GFXDevice& _context;
     ResourceCache& _parentCache;
@@ -293,6 +300,8 @@ class Material : public CachedResource {
     std::array<Texture_ptr, to_base(ShaderProgram::TextureUsage::COUNT)> _textures;
     std::array<bool, to_base(ShaderProgram::TextureUsage::COUNT)> _textureExtenalFlag;
 
+    std::array<stringImpl, 2> _baseShaderName;
+
     vector<ExternalTexture> _externalTextures;
 
     I32 _textureKeyCache = -1;
@@ -305,6 +314,7 @@ class Material : public CachedResource {
     I32 _refractionIndex;
     std::pair<Texture_ptr, U32> _defaultReflection;
     std::pair<Texture_ptr, U32> _defaultRefraction;
+    vector<std::pair<stringImpl, bool>> _extraShaderDefines;
 
     static SharedMutex s_shaderDBLock;
     static hashMap<size_t, ShaderProgram_ptr> s_shaderDB;

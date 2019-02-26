@@ -288,6 +288,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     RenderTargetHandle tempHandle;
 
     {
+        // A could be used for anything. E.G. depth
         TextureDescriptor environmentDescriptorPlanar(TextureType::TEXTURE_2D, GFXImageFormat::RGBA, GFXDataFormat::UNSIGNED_BYTE);
         environmentDescriptorPlanar.setSampler(reflectionSampler);
 

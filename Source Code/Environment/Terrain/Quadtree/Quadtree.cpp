@@ -21,10 +21,6 @@ Quadtree::~Quadtree()
 {
 }
 
-void Quadtree::updateVisibility(const Camera& camera, F32 maxDistance) {
-    _root->updateVisiblity(camera, maxDistance);
-}
-
 void Quadtree::drawBBox(GFXDevice& context, RenderPackage& packageOut) {
     assert(_root);
     _root->drawBBox(context, packageOut);

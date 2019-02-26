@@ -58,7 +58,7 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
 
     for (TerrainChunk* chunk : _terrainChunks) {
         vegetationNodeDescriptor._node = Attorney::TerrainChunkTerrain::getVegetation(*chunk);
-        vegetationNodeDescriptor._name = Util::StringFormat("Grass_chunk_%d", chunk->ID());
+        vegetationNodeDescriptor._name = Util::StringFormat("Vegetation_chunk_%d", chunk->ID());
         sgn.addNode(vegetationNodeDescriptor);
     }
 
@@ -220,10 +220,6 @@ bool Terrain::onRender(SceneGraphNode& sgn,
     if (cmd._cmd.primCount != depth) {
         cmd._cmd.primCount = depth;
         pkg.drawCommand(0, 0, cmd);
-    }
-
-    if (renderStagePass._stage == RenderStage::DISPLAY && renderStagePass._passType == RenderPassType::PRE_PASS) {
-        _terrainQuadtree.updateVisibility(camera, _drawDistance);
     }
 
     return Object3D::onRender(sgn, camera, renderStagePass, refreshData);
@@ -428,8 +424,6 @@ void Terrain::saveToXML(boost::property_tree::ptree& pt) const {
     pt.put("underwaterAlbedoTexture", _descriptor->getVariable("underwaterAlbedoTexture"));
     pt.put("underwaterDetailTexture", _descriptor->getVariable("underwaterDetailTexture"));
     pt.put("underwaterTileScale", _descriptor->getVariablef("underwaterTileScale"));
-    pt.put("vegetation.<xmlattr>.grassDensity", _descriptor->getGrassDensity());
-    pt.put("vegetation.<xmlattr>.treeDensity", _descriptor->getTreeDensity());
     pt.put("vegetation.<xmlattr>.grassScale", _descriptor->getGrassScale());
     pt.put("vegetation.<xmlattr>.treeScale", _descriptor->getTreeScale());
     pt.put("vegetation.vegetationTextureLocation", _descriptor->getVariable("grassMapLocation"));

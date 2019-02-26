@@ -172,6 +172,9 @@ void RenderingComponent::rebuildDrawCommands(RenderStagePass stagePass) {
         pkg.addPipelineCommand(pipelineCommand);
 
         GFX::BindDescriptorSetsCommand bindDescriptorSetsCommand;
+        for (const ShaderBufferBinding& binding : _parentSGN.getShaderBuffers()) {
+            bindDescriptorSetsCommand._set.addShaderBuffer(binding);
+        }
         pkg.addDescriptorSetsCommand(bindDescriptorSetsCommand);
 
         if (!_globalPushConstants.empty()) {
@@ -204,8 +207,8 @@ void RenderingComponent::Update(const U64 deltaTimeUS) {
     BaseComponentType<RenderingComponent, ComponentType::RENDERING>::Update(deltaTimeUS);
 }
 
-bool RenderingComponent::canDraw(RenderStagePass renderStagePass) {
-    if (_parentSGN.getDrawState(renderStagePass)) {
+bool RenderingComponent::canDraw(RenderStagePass renderStagePass, U8 LoD) {
+    if (_parentSGN.getDrawState(renderStagePass, LoD)) {
         if (getMaterialInstanceCache() != nullptr && !getMaterialInstanceCache()->canDraw(renderStagePass)) {
             return false;
         }
@@ -435,14 +438,15 @@ U8 RenderingComponent::getLoDLevel(const Camera& camera, RenderStage renderStage
 }
 
 void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRenderState& sceneRenderState, RenderStagePass renderStagePass, bool refreshData) {
+    U8 lod = getLoDLevel(camera, renderStagePass._stage, sceneRenderState.lodThresholds());
+
     RenderPackage& pkg = getDrawPackage(renderStagePass);
-    if (canDraw(renderStagePass)) {
+    if (canDraw(renderStagePass, lod)) {
         if (pkg.empty()) {
             rebuildDrawCommands(renderStagePass);
         }
 
         if (_parentSGN.prepareRender(camera, renderStagePass, refreshData)) {
-            U8 lod = getLoDLevel(camera, renderStagePass._stage, sceneRenderState.lodThresholds());
 
             Attorney::RenderPackageRenderingComponent::setLoDLevel(pkg, lod);
 

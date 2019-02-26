@@ -66,6 +66,7 @@ vec2 dvd_invScreenDimensions() {
 #define dvd_zPlanes vec2(dvd_renderProperties.xy)
 #define dvd_aspectRatio dvd_cameraPosition.w
 #define dvd_fieldOfView dvd_renderProperties.z
+#define dvd_crtStage uint(dvd_renderProperties.w)
 
 struct WaterBodyData {
     vec4 positionW;

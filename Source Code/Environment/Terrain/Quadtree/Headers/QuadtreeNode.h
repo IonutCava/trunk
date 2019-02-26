@@ -81,22 +81,17 @@ class QuadtreeNode {
     inline const BoundingBox& getBoundingBox() const { return _boundingBox; }
     inline void setBoundingBox(const BoundingBox& bbox) { _boundingBox = bbox; }
     inline TerrainChunk* getChunk() { return _terrainChunk.get(); }
-    inline bool isVisible() const { return _isVisible; }
 
     inline QuadtreeNode& getChild(ChildPosition pos) const { return *_children[to_base(pos)]; }
     inline QuadtreeNode& getChild(U32 index) const { return *_children[index]; }
 
-    bool updateVisiblity(const Camera& camera, F32 maxDistance);
-
    protected:
-    void setVisibility(bool state);
     bool isInView(const Camera& camera, F32 maxDistance, U8& LoD) const;
 
    private:
     //ToDo: make this work in a multi-threaded environment
     //mutable I8 _frustPlaneCache;
     U8 _LoD;
-    bool _isVisible;
     U32 _targetChunkDimension;
     BoundingBox _boundingBox;        ///< Node BoundingBox
     BoundingSphere _boundingSphere;  ///< Node BoundingSphere

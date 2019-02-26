@@ -124,8 +124,9 @@ void SceneNode::setBoundsChanged() {
     }
 }
 
-bool SceneNode::getDrawState(const SceneGraphNode& sgn, RenderStagePass currentStagePass) const {
+bool SceneNode::getDrawState(const SceneGraphNode& sgn, RenderStagePass currentStagePass, U8 LoD) const {
     ACKNOWLEDGE_UNUSED(sgn);
+    ACKNOWLEDGE_UNUSED(LoD);
 
     return _renderState.getDrawState(currentStagePass);
 }
@@ -166,8 +167,8 @@ void SceneNode::editorFieldChanged(EditorComponentField& field) {
 }
 
 void SceneNode::buildDrawCommands(SceneGraphNode& sgn,
-                                       RenderStagePass renderStagePass,
-                                       RenderPackage& pkgInOut) {
+                                  RenderStagePass renderStagePass,
+                                  RenderPackage& pkgInOut) {
     ACKNOWLEDGE_UNUSED(sgn);
     ACKNOWLEDGE_UNUSED(renderStagePass);
     ACKNOWLEDGE_UNUSED(pkgInOut);

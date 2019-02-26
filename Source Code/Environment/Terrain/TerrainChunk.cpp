@@ -35,8 +35,8 @@ TerrainChunk::~TerrainChunk()
 }
 
 void TerrainChunk::load(U8 depth, const vec2<U32>& pos, U32 _targetChunkDimension, const vec2<U32>& HMsize) {
-    _xOffset = to_F32(pos.x);
-    _yOffset = to_F32(pos.y);
+    _xOffset = to_F32(pos.x) - HMsize.x * 0.5f;
+    _yOffset = to_F32(pos.y) - HMsize.y * 0.5f;
     _sizeX = _sizeY = to_F32(_targetChunkDimension);
 
     F32 tempMin = std::numeric_limits<F32>::max();
@@ -86,10 +86,6 @@ void TerrainChunk::load(U8 depth, const vec2<U32>& pos, U32 _targetChunkDimensio
 
 const BoundingBox& TerrainChunk::bounds() const {
     return _quadtreeNode.getBoundingBox();
-}
-
-bool TerrainChunk::isInView() const {
-    return _quadtreeNode.isVisible();
 }
 
 U8 TerrainChunk::LoD() const {

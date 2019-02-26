@@ -16,7 +16,6 @@ namespace Divide {
 QuadtreeNode::QuadtreeNode()
     : _terrainChunk(nullptr),
       _bbPrimitive(nullptr),
-      _isVisible(false),
       _LoD(0u)
       //,_frustPlaneCache(-1)
 {
@@ -121,30 +120,6 @@ bool QuadtreeNode::computeBoundingBox() {
 
     _boundingSphere.fromBoundingBox(_boundingBox);
     return true;
-}
-
-void QuadtreeNode::setVisibility(bool state) {
-    _isVisible = state;
-    if (!isALeaf()) {
-        getChild(ChildPosition::CHILD_NW).setVisibility(state);
-        getChild(ChildPosition::CHILD_NE).setVisibility(state);
-        getChild(ChildPosition::CHILD_SW).setVisibility(state);
-        getChild(ChildPosition::CHILD_SE).setVisibility(state);
-    }
-}
-
-bool QuadtreeNode::updateVisiblity(const Camera& camera, F32 maxDistance) {
-    _isVisible = isInView(camera, maxDistance, _LoD);
-    if (!_isVisible) {
-        setVisibility(false);
-    }  else if (!isALeaf()) {
-        getChild(ChildPosition::CHILD_NW).updateVisiblity(camera, maxDistance);
-        getChild(ChildPosition::CHILD_NE).updateVisiblity(camera, maxDistance);
-        getChild(ChildPosition::CHILD_SW).updateVisiblity(camera, maxDistance);
-        getChild(ChildPosition::CHILD_SE).updateVisiblity(camera, maxDistance);
-    }
-
-    return _isVisible;
 }
 
 bool QuadtreeNode::isInView(const Camera& camera, F32 maxDistance, U8& LoD) const {

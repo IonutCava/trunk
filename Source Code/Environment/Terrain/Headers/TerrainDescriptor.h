@@ -64,16 +64,12 @@ class TerrainDescriptor final : public PropertyDescriptor {
     void setDimensions(const vec2<U16>& dim) noexcept { _dimensions = dim; }
     void setAltitudeRange(const vec2<F32>& dim) noexcept { _altitudeRange = dim; }
     void setTessellationRange(const vec3<F32>& rangeAndChunk) noexcept { _tessellationRange = rangeAndChunk; }
-    void setGrassDensity(F32 grassDensity) noexcept { _grassDensity = grassDensity; }
-    void setTreeDensity(F32 treeDensity) noexcept { _treeDensity = treeDensity; }
     void setGrassScale(F32 grassScale) noexcept { _grassScale = grassScale; }
     void setTreeScale(F32 treeScale) noexcept { _treeScale = treeScale; }
     void setActive(bool active) noexcept { _active = active; }
     void set16Bit(bool state) noexcept { _is16Bit = state; }
 
     U8 getTextureLayerCount() const noexcept { return _textureLayers; }
-    F32 getGrassDensity() const noexcept { return _grassDensity; }
-    F32 getTreeDensity() const noexcept { return _treeDensity; }
     F32 getGrassScale() const noexcept { return _grassScale; }
     F32 getTreeScale() const noexcept { return _treeScale; }
     bool getActive() const noexcept { return _active; }
@@ -109,8 +105,6 @@ class TerrainDescriptor final : public PropertyDescriptor {
             Util::Hash_combine(hash, it.first);
             Util::Hash_combine(hash, it.second);
         }
-        Util::Hash_combine(hash, _grassDensity);
-        Util::Hash_combine(hash, _treeDensity);
         Util::Hash_combine(hash, _grassScale);
         Util::Hash_combine(hash, _treeScale);
         Util::Hash_combine(hash, _is16Bit);
@@ -131,8 +125,6 @@ class TerrainDescriptor final : public PropertyDescriptor {
    private:
     hashMap<U64, stringImpl> _variables;
     hashMap<U64, F32> _variablesf;
-    F32 _grassDensity = 0.0f;
-    F32 _treeDensity = 0.0f;
     F32 _grassScale = 1.0f;
     F32 _treeScale = 1.0f;
     bool _is16Bit = false;

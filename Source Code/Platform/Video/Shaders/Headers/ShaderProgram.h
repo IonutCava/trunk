@@ -233,7 +233,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
 
    private:
     std::array<vector<U32>, to_base(ShaderType::COUNT)> _functionIndex;
-    std::array<vector<U32>, to_base(ShaderType::COUNT)>  _availableFunctionIndex;
+    std::array<vector<U32>, to_base(ShaderType::COUNT)> _availableFunctionIndex;
 };
 
 namespace Attorney {
