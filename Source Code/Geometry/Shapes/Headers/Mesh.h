@@ -67,7 +67,9 @@ class Mesh : public Object3D {
 
     virtual ~Mesh();
 
-    void postLoad(SceneGraphNode& sgn);
+    void postLoad(SceneGraphNode& sgn) override;
+
+    void setMaterialTpl(const Material_ptr& material) override;
 
     void addSubMesh(SubMesh_ptr subMesh);
 

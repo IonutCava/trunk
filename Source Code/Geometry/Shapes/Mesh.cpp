@@ -31,7 +31,7 @@ Mesh::~Mesh()
 }
 
 void Mesh::addSubMesh(SubMesh_ptr subMesh) {
-    // Hold a reference to the submesh by ID (used for animations)
+    // Hold a reference to the submesh by ID
     _subMeshList.push_back(subMesh);
 
     Attorney::SubMeshMesh::setParentMesh(*subMesh.get(), this);
@@ -41,6 +41,24 @@ void Mesh::addSubMesh(SubMesh_ptr subMesh) {
 void Mesh::updateBoundsInternal() {
     _boundingBox.reset();
     Object3D::updateBoundsInternal();
+}
+
+void Mesh::setMaterialTpl(const Material_ptr& material) {
+    Object3D::setMaterialTpl(material);
+
+    for (const SubMesh_ptr& submesh : _subMeshList) {
+        if (material != nullptr) {
+            const Material_ptr& submeshMaterial = submesh->getMaterialTpl();
+            if (submeshMaterial != nullptr) {
+                submeshMaterial->setBaseShaderName(material->getBaseShaderName(true), true);
+                submeshMaterial->setBaseShaderName(material->getBaseShaderName(false), false);
+
+                for (auto it : material->extraShaderDefines()) {
+                    submeshMaterial->addGlobalShaderDefine(it.first, it.second);
+                }
+            }
+        }
+    }
 }
 
 /// After we loaded our mesh, we need to add submeshes as children nodes
@@ -59,21 +77,11 @@ void Mesh::postLoad(SceneGraphNode& sgn) {
     SceneGraphNodeDescriptor subMeshDescriptor;
     subMeshDescriptor._usageContext = sgn.usageContext();
     subMeshDescriptor._instanceCount = sgn.instanceCount();
-    subMeshDescriptor._externalBufferBindings = sgn.getShaderBuffers();
 
     for (const SubMesh_ptr& submesh : _subMeshList) {
-        if (getMaterialTpl() != nullptr) {
-            submesh->getMaterialTpl()->setBaseShaderName(getMaterialTpl()->getBaseShaderName(true), true);
-            submesh->getMaterialTpl()->setBaseShaderName(getMaterialTpl()->getBaseShaderName(false), false);
-
-            for (auto it : getMaterialTpl()->extraShaderDefines()) {
-                submesh->getMaterialTpl()->addGlobalShaderDefine(it.first, it.second);
-            }
-        }
-
         subMeshDescriptor._node = submesh;
         subMeshDescriptor._componentMask = submesh->getObjectFlag(ObjectFlag::OBJECT_FLAG_SKINNED) ? skinnedMask : normalMask;
-        if (sgn.get<RigidBodyComponent>()) {
+        if (sgn.get<RigidBodyComponent>() != nullptr) {
             subMeshDescriptor._componentMask |= to_base(ComponentType::RIGID_BODY);
         }
         subMeshDescriptor._name = Util::StringFormat("%s_%d", sgn.name().c_str(), submesh->getID());
@@ -82,6 +90,15 @@ void Mesh::postLoad(SceneGraphNode& sgn) {
         if (BitCompare(subMeshDescriptor._componentMask, ComponentType::RIGID_BODY)) {
             subSGN->get<RigidBodyComponent>()->physicsGroup(sgn.get<RigidBodyComponent>()->physicsGroup());
         }
+
+        RenderingComponent* rComp = sgn.get<RenderingComponent>();
+        if (rComp != nullptr) {
+            RenderingComponent* subRComp = subSGN->get<RenderingComponent>();
+            for (auto it : rComp->getShaderBuffers()) {
+                subRComp->addShaderBuffer(it);
+            }
+        }
+        
     }
 
     sgn.get<BoundsComponent>()->ignoreTransform(true);

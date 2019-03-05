@@ -630,7 +630,7 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
     }
 
     ResourceDescriptor shaderDescriptor(shader);
-    shaderDescriptor.assetName(shader);
+    shaderDescriptor.assetName(shaderName);
     shaderPropertyDescriptor._defines.push_back(std::make_pair("DEFINE_PLACEHOLDER", false));
     shaderDescriptor.setPropertyDescriptor(shaderPropertyDescriptor);
     shaderDescriptor.setThreadedLoading(true);

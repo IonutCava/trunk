@@ -334,7 +334,6 @@
     <None Include="..\..\..\assets\shaders\GLSL\fragmentAtoms\vsm.frag" />
     <None Include="..\..\..\assets\shaders\GLSL\instanceCullGrass.glsl" />
     <None Include="..\..\..\assets\shaders\GLSL\tree.glsl" />
-    <None Include="..\..\..\assets\shaders\GLSL\treeDepthPass.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="../../../assets\shaders\GLSL\toneMap.glsl" />

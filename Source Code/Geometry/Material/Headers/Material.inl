@@ -274,7 +274,9 @@ inline const stringImpl& Material::getBaseShaderName(bool depthPass) const {
 }
 
 inline void Material::addGlobalShaderDefine(const stringImpl& define, bool addPrefix) {
-    _extraShaderDefines.emplace_back(define, addPrefix);
+    if (std::find(std::cbegin(_extraShaderDefines), std::cend(_extraShaderDefines), std::make_pair(define, addPrefix)) == std::cend(_extraShaderDefines)) {
+        _extraShaderDefines.emplace_back(define, addPrefix);
+    }
 }
 
 inline const vector<std::pair<stringImpl, bool>>& Material::extraShaderDefines() const {

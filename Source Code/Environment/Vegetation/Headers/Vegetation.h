@@ -138,11 +138,12 @@ class Vegetation : public SceneNode {
     static std::unordered_set<vec2<F32>> s_treePositions;
     static std::unordered_set<vec2<F32>> s_grassPositions;
 
-    static size_t s_maxGrassChunks;
+    static size_t s_maxChunks;
     static size_t s_maxTreeInstancesPerChunk;
     static size_t s_maxGrassInstancesPerChunk;
     static std::array<bool, to_base(RenderStage::COUNT)> s_stageRefreshed;
 
+    static Material_ptr s_treeMaterial;
     static vectorEASTL<Mesh_ptr> s_treeMeshes;
 };
 

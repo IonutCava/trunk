@@ -172,7 +172,7 @@ void RenderingComponent::rebuildDrawCommands(RenderStagePass stagePass) {
         pkg.addPipelineCommand(pipelineCommand);
 
         GFX::BindDescriptorSetsCommand bindDescriptorSetsCommand;
-        for (const ShaderBufferBinding& binding : _parentSGN.getShaderBuffers()) {
+        for (const ShaderBufferBinding& binding : getShaderBuffers()) {
             bindDescriptorSetsCommand._set.addShaderBuffer(binding);
         }
         pkg.addDescriptorSetsCommand(bindDescriptorSetsCommand);

@@ -27,10 +27,10 @@ void main(void){
     computeDataNoClip();
 
     VegetationData data = treeData[VAR.dvd_instanceID];
-    float scale = data.positionAndScale.w;
+    float scale = 0.05f;//data.positionAndScale.w;
 
     if (dvd_Vertex.y > 0.75f) {
-        computeFoliageMovementGrass(dvd_Vertex, data.data.y);
+        //computeFoliageMovementGrass(dvd_Vertex, data.data.y);
     }
 
     dvd_Vertex.xyz = rotate_vertex_position(dvd_Vertex.xyz * scale, data.orientationQuad);

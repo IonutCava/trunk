@@ -1056,9 +1056,6 @@
     <None Include="..\..\..\assets\shaders\GLSL\tree.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="..\..\..\assets\shaders\GLSL\treeDepthPass.glsl">
-      <Filter>Video\ShaderSource\GLSL</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="../../../assets\shaders\GLSL\toneMap.glsl">

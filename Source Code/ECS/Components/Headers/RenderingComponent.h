@@ -170,6 +170,9 @@ class RenderingComponent : public BaseComponentType<RenderingComponent, Componen
 
     U8 getLoDLevel(const Camera& camera, RenderStage renderStage, const vec4<U16>& lodThresholds);
 
+    inline void addShaderBuffer(const ShaderBufferBinding& binding) { _externalBufferBindings.push_back(binding); }
+    inline const vectorEASTL<ShaderBufferBinding>& getShaderBuffers() const { return _externalBufferBindings; }
+
    protected:    
     bool onRefreshNodeData(RefreshNodeDataParams& refreshParams);
     bool canDraw(RenderStagePass renderStagePass, U8 LoD);
@@ -231,6 +234,8 @@ class RenderingComponent : public BaseComponentType<RenderingComponent, Componen
     
     ShaderProgram_ptr _previewRenderTargetColour;
     ShaderProgram_ptr _previewRenderTargetDepth;
+
+    vectorEASTL<ShaderBufferBinding> _externalBufferBindings;
 
     static hashMap<U32, DebugView*> s_debugViews[2];
 };

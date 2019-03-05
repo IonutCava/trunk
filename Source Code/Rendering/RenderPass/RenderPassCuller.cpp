@@ -180,15 +180,14 @@ void RenderPassCuller::addAllChildren(const SceneGraphNode& currentNode, const N
 
     vectorEASTL<SceneGraphNode*> children = currentNode.getChildrenLocked();
     for (SceneGraphNode* child : children) {
-        if (params._stage != RenderStage::SHADOW || castsShadows) {
+        if (params._stage != RenderStage::SHADOW || castsShadows || child->visibilityLocked()) {
             if (child->isActive() && !_cullingFunction[to_U32(params._stage)](*child, child->getNode())) {
                 F32 distanceSqToCamera = std::numeric_limits<F32>::max();
                 BoundsComponent* bComp = child->get<BoundsComponent>();
                 if (bComp != nullptr) {
                     const BoundingSphere& bSphere = bComp->getBoundingSphere();
                     // Check distance to sphere edge (center - radius)
-                    const vec3<F32>& center = bSphere.getCenter();
-                    distanceSqToCamera = center.distanceSquared(params._currentCamera->getEye()) - SQUARED(bSphere.getRadius());
+                    distanceSqToCamera = bSphere.getCenter().distanceSquared(params._currentCamera->getEye()) - SQUARED(bSphere.getRadius());
                 }
                 
                 bool skip = false;
@@ -213,6 +212,7 @@ void RenderPassCuller::addAllChildren(const SceneGraphNode& currentNode, const N
 
 RenderPassCuller::VisibleNodeList RenderPassCuller::frustumCull(const NodeCullParams& params, const vectorEASTL<SceneGraphNode*>& nodes) const {
     RenderPassCuller::VisibleNodeList ret;
+    ret.reserve(nodes.size());
 
     F32 distanceSqToCamera = std::numeric_limits<F32>::max();
     Frustum::FrustCollision collisionResult = Frustum::FrustCollision::FRUSTUM_OUT;
@@ -227,6 +227,7 @@ RenderPassCuller::VisibleNodeList RenderPassCuller::frustumCull(const NodeCullPa
 
 RenderPassCuller::VisibleNodeList RenderPassCuller::toVisibleNodes(const Camera& camera, const vectorEASTL<SceneGraphNode*>& nodes) const {
     RenderPassCuller::VisibleNodeList ret;
+    ret.reserve(nodes.size());
 
     const vec3<F32> cameraEye = camera.getEye();
     for (SceneGraphNode* node : nodes) {

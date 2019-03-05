@@ -92,10 +92,6 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescr
 
     AddMissingComponents(descriptor._componentMask);
 
-    for (auto it : descriptor._externalBufferBindings) {
-        addShaderBuffer(it);
-    }
-
     Attorney::SceneNodeSceneGraph::registerSGNParent(*_node, this);
 }
 
@@ -536,7 +532,7 @@ bool SceneGraphNode::cullNode(const NodeCullParams& params,
         return true;
     }
 
-    // Some nodes should always render for ... reasons
+    // Some nodes should always render for different reasons (eg, trees are instanced and bound to the parent chunk)
     if (visibilityLocked()) {
         collisionTypeOut = Frustum::FrustCollision::FRUSTUM_IN;
         return false;
@@ -547,17 +543,15 @@ bool SceneGraphNode::cullNode(const NodeCullParams& params,
 
     // Use the bounding primitives to do camera/frustum checks
     BoundsComponent* bComp = get<BoundsComponent>();
-    const BoundingBox& boundingBox = bComp->getBoundingBox();
     const BoundingSphere& sphere = bComp->getBoundingSphere();
 
     // Get camera info
-    F32 radius = sphere.getRadius();
-    F32 radiusSq = SQUARED(radius);
     const vec3<F32>& eye = params._currentCamera->getEye();
     
     // Check distance to sphere edge (center - radius)
+    F32 radius = sphere.getRadius();
     const vec3<F32>& center = sphere.getCenter();
-    minDistanceSq = center.distanceSquared(eye) - radiusSq;
+    minDistanceSq = center.distanceSquared(eye) - SQUARED(radius);
     if (minDistanceSq > params._cullMaxDistanceSq || !getNode().isInView()) {
         return true;
     }
@@ -576,6 +570,7 @@ bool SceneGraphNode::cullNode(const NodeCullParams& params,
     I8 _frustPlaneCache = -1;
 
     // Sphere is in range, so check bounds primitives againts the frustum
+    const BoundingBox& boundingBox = bComp->getBoundingBox();
     if (!boundingBox.containsPoint(eye)) {
         const Frustum& frust = params._currentCamera->getFrustum();
         // Check if the bounding sphere is in the frustum, as Frustum <-> Sphere check is fast

@@ -52,7 +52,6 @@ struct NodeCullParams;
 struct TransformDirty;
 
 struct SceneGraphNodeDescriptor {
-    vectorEASTL<ShaderBufferBinding> _externalBufferBindings;
     SceneNode_ptr    _node = nullptr;
     stringImpl       _name = "";
     size_t           _instanceCount = 1;
@@ -254,9 +253,6 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
         return _instanceCount;
     }
 
-    inline void addShaderBuffer(const ShaderBufferBinding& binding) { _externalBufferBindings.push_back(binding); }
-    inline const vectorEASTL<ShaderBufferBinding>& getShaderBuffers() const { return _externalBufferBindings; }
-
    /*protected:
     SET_DELETE_FRIEND
     SET_SAFE_UPDATE_FRIEND
@@ -399,8 +395,6 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     StateTracker<bool> _trackedBools;
 
     SGNRelationshipCache _relationshipCache;
-
-    vectorEASTL<ShaderBufferBinding> _externalBufferBindings;
 
     // ToDo: Remove this HORRIBLE hack -Ionut
     vectorFast<EditorComponent*> _editorComponents;
