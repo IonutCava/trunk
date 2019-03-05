@@ -410,6 +410,7 @@ void Vegetation::postLoad(SceneGraphNode& sgn) {
         node->forEachChild([&buffer](SceneGraphNode& child) {
             RenderingComponent* rComp = child.get<RenderingComponent>();
             rComp->addShaderBuffer(buffer);
+            rComp->toggleRenderOption(RenderingComponent::RenderOptions::IS_OCCLUSION_CULLABLE, false);
         });
     }
 
