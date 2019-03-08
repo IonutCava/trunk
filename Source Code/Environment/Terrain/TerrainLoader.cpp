@@ -510,9 +510,42 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     U32 maxGrassInstances = 0u, maxTreeInstances = 0u;
     Vegetation::precomputeStaticData(terrain->getGeometryVB()->context(), chunkSize, maxChunkCount, maxGrassInstances, maxTreeInstances);
 
+    VegetationDetails& vegDetails = Attorney::TerrainLoader::vegetationDetails(*terrain);
+    stringImpl currentMesh = terrainDescriptor->getVariable("treeMesh1");
+    if (!currentMesh.empty()) {
+        vegDetails.treeMeshes.push_back(currentMesh);
+    }
+
+    currentMesh = terrainDescriptor->getVariable("treeMesh2");
+    if (!currentMesh.empty()) {
+        vegDetails.treeMeshes.push_back(currentMesh);
+    }
+
+    currentMesh = terrainDescriptor->getVariable("treeMesh3");
+    if (!currentMesh.empty()) {
+        vegDetails.treeMeshes.push_back(currentMesh);
+    }
+
+    currentMesh = terrainDescriptor->getVariable("treeMesh4");
+    if (!currentMesh.empty()) {
+        vegDetails.treeMeshes.push_back(currentMesh);
+    }
+
     U8 textureCount = 0;
     stringImpl textureName;
 
+    vegDetails.grassScales.set(
+        terrainDescriptor->getVariablef("grassScale1"),
+        terrainDescriptor->getVariablef("grassScale2"),
+        terrainDescriptor->getVariablef("grassScale3"),
+        terrainDescriptor->getVariablef("grassScale4"));
+
+    vegDetails.treeScales.set(
+        terrainDescriptor->getVariablef("treeScale1"),
+        terrainDescriptor->getVariablef("treeScale2"),
+        terrainDescriptor->getVariablef("treeScale3"),
+        terrainDescriptor->getVariablef("treeScale4"));
+    
     stringImpl currentImage = terrainDescriptor->getVariable("grassBillboard1");
     if (!currentImage.empty()) {
         textureName += currentImage;
@@ -554,13 +587,12 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     grassTexDescriptor.automaticMipMapGeneration(true);
 
     ResourceDescriptor textureDetailMaps("Vegetation Billboards");
-    textureDetailMaps.assetLocation(Paths::g_assetsLocation + terrainDescriptor->getVariable("grassMapLocation"));
+    textureDetailMaps.assetLocation(Paths::g_assetsLocation + terrainDescriptor->getVariable("vegetationTextureLocation"));
     textureDetailMaps.assetName(textureName);
     textureDetailMaps.setPropertyDescriptor(grassTexDescriptor);
     
     Texture_ptr grassBillboardArray = CreateResource<Texture>(terrain->parentResourceCache(), textureDetailMaps);
 
-    VegetationDetails& vegDetails = Attorney::TerrainLoader::vegetationDetails(*terrain);
     vegDetails.billboardCount = textureCount;
     vegDetails.name = terrain->resourceName() + "_vegetation";
     vegDetails.parentTerrain = terrain;
@@ -606,12 +638,19 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     vegMaterial->setTexture(ShaderProgram::TextureUsage::UNIT0, grassBillboardArray);
     vegDetails.vegetationMaterialPtr = vegMaterial;
 
-    vegDetails.map.reset(new ImageTools::ImageData);
+    vegDetails.grassMap.reset(new ImageTools::ImageData);
     ImageTools::ImageDataInterface::CreateImageData(Paths::g_assetsLocation + 
-                                                    terrainDescriptor->getVariable("grassMapLocation") +
+                                                    terrainDescriptor->getVariable("vegetationTextureLocation") +
                                                     "/" +
                                                     terrainDescriptor->getVariable("grassMap"),
-                                                    *vegDetails.map);
+                                                    *vegDetails.grassMap);
+
+    vegDetails.treeMap.reset(new ImageTools::ImageData);
+    ImageTools::ImageDataInterface::CreateImageData(Paths::g_assetsLocation + 
+                                                    terrainDescriptor->getVariable("vegetationTextureLocation") +
+                                                    "/" +
+                                                    terrainDescriptor->getVariable("treeMap"),
+                                                    *vegDetails.treeMap);
 }
 
 bool TerrainLoader::Save(const char* fileName) { return true; }

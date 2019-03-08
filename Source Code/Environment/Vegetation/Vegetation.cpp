@@ -43,8 +43,8 @@ namespace {
     constexpr I16 g_maxRadiusSteps = 512;
 };
 
+bool Vegetation::s_buffersBound = false;
 Material_ptr Vegetation::s_treeMaterial = nullptr;
-vectorEASTL<Mesh_ptr> Vegetation::s_treeMeshes;
 std::unordered_set<vec2<F32>> Vegetation::s_treePositions;
 std::unordered_set<vec2<F32>> Vegetation::s_grassPositions;
 ShaderBuffer* Vegetation::s_treeData = nullptr;
@@ -63,38 +63,53 @@ Vegetation::Vegetation(GFXDevice& context,
       _context(context),
       _terrainChunk(parentChunk),
       _billboardCount(details.billboardCount),
-      _grassScale(details.grassScale),
       _terrain(details.parentTerrain),
+      _grassScales(details.grassScales),
+      _treeScales(details.treeScales),
       _render(false),
       _success(false),
       _shadowMapped(true),
-      _cullPipeline(nullptr),
+      _cullPipelineGrass(nullptr),
+      _cullPipelineTrees(nullptr),
       _instanceCountGrass(0),
       _instanceCountTrees(0),
       _stateRefreshIntervalBufferUS(0ULL),
       _stateRefreshIntervalUS(Time::SecondsToMicroseconds(1))  ///<Every second?
 {
-    _map = details.map;
+    _treeMap = details.treeMap;
+    _grassMap = details.grassMap;
 
-    ResourceDescriptor instanceCullShader("instanceCullGrass");
-    instanceCullShader.setThreadedLoading(true);
+    _treeMeshNames.insert(eastl::cend(_treeMeshNames), eastl::cbegin(details.treeMeshes), eastl::cend(details.treeMeshes));
 
+    ResourceDescriptor instanceCullShaderGrass("instanceCullVegetation.Grass");
+    instanceCullShaderGrass.setThreadedLoading(true);
     assert(s_maxGrassInstancesPerChunk != 0u && "Vegetation error: call \"precomputeStaticData\" first!");
 
     ShaderProgramDescriptor shaderDescriptor = {};
     shaderDescriptor._defines.push_back(std::make_pair(Util::StringFormat("WORK_GROUP_SIZE %d", WORK_GROUP_SIZE), true));
     shaderDescriptor._defines.push_back(std::make_pair(Util::StringFormat("MAX_TREE_INSTANCES %d", s_maxTreeInstancesPerChunk).c_str(), true));
     shaderDescriptor._defines.push_back(std::make_pair(Util::StringFormat("MAX_GRASS_INSTANCES %d", s_maxGrassInstancesPerChunk).c_str(), true));
-    instanceCullShader.setPropertyDescriptor(shaderDescriptor);
-    instanceCullShader.setOnLoadCallback([this](CachedResource_wptr res) {
+    instanceCullShaderGrass.setPropertyDescriptor(shaderDescriptor);
+    instanceCullShaderGrass.setOnLoadCallback([this](CachedResource_wptr res) {
         PipelineDescriptor pipeDesc;
         pipeDesc._shaderProgramHandle = std::static_pointer_cast<ShaderProgram>(res.lock())->getID();
-        _cullPipeline = _context.newPipeline(pipeDesc);
+        _cullPipelineGrass = _context.newPipeline(pipeDesc);
     });
 
-    _cullShader = CreateResource<ShaderProgram>(context.parent().resourceCache(), instanceCullShader);
+    _cullShaderGrass = CreateResource<ShaderProgram>(context.parent().resourceCache(), instanceCullShaderGrass);
 
-    assert(_map->data() != nullptr);
+    ResourceDescriptor instanceCullShaderTrees("instanceCullVegetation.Trees");
+    instanceCullShaderTrees.setThreadedLoading(true);
+    shaderDescriptor._defines.push_back(std::make_pair("CULL_TREES", true));
+    instanceCullShaderTrees.setPropertyDescriptor(shaderDescriptor);
+    instanceCullShaderTrees.setOnLoadCallback([this](CachedResource_wptr res) {
+        PipelineDescriptor pipeDesc;
+        pipeDesc._shaderProgramHandle = std::static_pointer_cast<ShaderProgram>(res.lock())->getID();
+        _cullPipelineTrees = _context.newPipeline(pipeDesc);
+    });
+    _cullShaderTrees = CreateResource<ShaderProgram>(context.parent().resourceCache(), instanceCullShaderTrees);
+
+    assert(_grassMap->data() != nullptr && _treeMap->data() != nullptr);
 
     setMaterialTpl(details.vegetationMaterialPtr);
 
@@ -130,7 +145,6 @@ Vegetation::~Vegetation()
     }
     assert(getState() != ResourceState::RES_LOADING);
     if (s_bufferUsage.fetch_sub(1) == 1) {
-        s_treeMeshes.clear();
         s_treeMaterial.reset();
     }
 
@@ -227,7 +241,7 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 m
         }
     }
 
-    PointRadius = 15.0f;
+    PointRadius = 7.5f;
     dR = 2.5f * PointRadius; // Distance between concentric rings
 
     for (I16 RadiusStepA = 0; RadiusStepA < g_maxRadiusSteps; ++RadiusStepA) {
@@ -260,30 +274,21 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 m
         s_maxChunks = maxChunkCount;
 
         ShaderBufferDescriptor bufferDescriptor = {};
-        bufferDescriptor._elementCount = to_U32(s_maxGrassInstancesPerChunk * s_maxChunks);
         bufferDescriptor._elementSize = sizeof(VegetationData);
         bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
         bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE) | to_U32(ShaderBuffer::Flags::NO_SYNC);
-        bufferDescriptor._name = Util::StringFormat("Grass_data");
-
-        s_grassData = gfxDevice.newSB(bufferDescriptor);
 
         bufferDescriptor._elementCount = to_U32(s_maxTreeInstancesPerChunk * s_maxChunks);
-        bufferDescriptor._name = Util::StringFormat("Tree_data");
+        bufferDescriptor._name = "Tree_data";
         s_treeData = gfxDevice.newSB(bufferDescriptor);
 
+        bufferDescriptor._elementCount = to_U32(s_maxGrassInstancesPerChunk * s_maxChunks);
+        bufferDescriptor._name = "Grass_data";
+        s_grassData = gfxDevice.newSB(bufferDescriptor);
     }
 
     maxGrassInstances = to_U32(s_maxGrassInstancesPerChunk);
     maxTreeInstances = to_U32(s_maxTreeInstancesPerChunk);
-
-    static const char* meshes[] = {
-        "copac.obj",
-        "copac.obj",
-        "copac.obj",
-        //"copacel.obj",
-        //"Pin.obj"
-    };
 
     ResourceDescriptor matDesc("Tree_material");
     s_treeMaterial = CreateResource<Material>(gfxDevice.parent().resourceCache(), matDesc);
@@ -291,18 +296,6 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 m
     s_treeMaterial->setBaseShaderName("tree", true);
     s_treeMaterial->setBaseShaderName("tree", false);
     s_treeMaterial->addGlobalShaderDefine(Util::StringFormat("MAX_TREE_INSTANCES %d", s_maxTreeInstancesPerChunk).c_str(), true);
-
-    ResourceDescriptor model("Tree");
-    model.assetLocation(Paths::g_assetsLocation + "models");
-    model.setFlag(true);
-    model.setThreadedLoading(true);
-
-    for (const char* mesh : meshes) {
-        model.assetName(mesh);
-        Mesh_ptr meshPtr = CreateResource<Mesh>(gfxDevice.parent().resourceCache(), model);
-        meshPtr->setMaterialTpl(s_treeMaterial);
-        s_treeMeshes.emplace_back(meshPtr);
-    }
 }
 
 void Vegetation::uploadVegetationData() {
@@ -365,6 +358,12 @@ void Vegetation::sceneUpdate(const U64 deltaTimeUS,
         _stateRefreshIntervalBufferUS += deltaTimeUS;
     }
 
+    if (!s_buffersBound) {
+        s_treeData->bind(ShaderBufferLocation::TREE_DATA);
+        s_grassData->bind(ShaderBufferLocation::GRASS_DATA);
+        s_buffersBound = true;
+    }
+
     s_stageRefreshed.fill(false);
 
     SceneNode::sceneUpdate(deltaTimeUS, sgn, sceneState);
@@ -380,20 +379,25 @@ void Vegetation::postLoad(SceneGraphNode& sgn) {
                                to_base(ComponentType::NETWORKING) |
                                to_base(ComponentType::RENDERING);
 
+    size_t meshID = _terrainChunk.ID() % _treeMeshNames.size();
 
-    ShaderBufferBinding buffer = {};
-    buffer._binding = ShaderBufferLocation::TREE_DATA;
-    buffer._buffer = s_treeData;
-    buffer._elementRange = { _terrainChunk.ID() * s_maxTreeInstancesPerChunk, s_maxTreeInstancesPerChunk };
 
-    size_t meshID = _terrainChunk.ID() % s_treeMeshes.size();
+    ResourceDescriptor model("Tree");
+    model.assetLocation(Paths::g_assetsLocation + "models");
+    model.setFlag(true);
+    model.setThreadedLoading(true);
+    model.assetName(_treeMeshNames[meshID]);
+    Mesh_ptr meshPtr = CreateResource<Mesh>(_context.parent().resourceCache(), model);
+    meshPtr->setMaterialTpl(s_treeMaterial);
 
     SceneGraphNodeDescriptor nodeDescriptor = {};
     nodeDescriptor._componentMask = normalMask;
     nodeDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
     nodeDescriptor._serialize = false;
-    nodeDescriptor._node = s_treeMeshes[meshID];
+    nodeDescriptor._node = meshPtr;
     nodeDescriptor._instanceCount = _instanceCountTrees;
+
+    U32 ID = _terrainChunk.ID();
 
     assert(s_grassData != nullptr);
     if (_instanceCountTrees > 0) {
@@ -407,12 +411,15 @@ void Vegetation::postLoad(SceneGraphNode& sgn) {
         tComp->setPositionZ(offset.y + offset.w * 0.5f);
         tComp->setScale(meshID == 1 ? 1.0f : 0.01f);
 
-        node->forEachChild([&buffer](SceneGraphNode& child) {
+        node->forEachChild([ID](SceneGraphNode& child) {
             RenderingComponent* rComp = child.get<RenderingComponent>();
-            rComp->addShaderBuffer(buffer);
-            rComp->toggleRenderOption(RenderingComponent::RenderOptions::IS_OCCLUSION_CULLABLE, false);
+            // negative value to disable occlusion culling
+            rComp->cullFlagValue(ID * -1.0f);
         });
     }
+
+    // positive value to keep occlusion culling happening
+    sgn.get<RenderingComponent>()->cullFlagValue(ID * 1.0f);
 
     setBoundsChanged();
 
@@ -420,38 +427,44 @@ void Vegetation::postLoad(SceneGraphNode& sgn) {
 }
 
 void Vegetation::onRefreshNodeData(SceneGraphNode& sgn, RenderStagePass renderStagePass, GFX::CommandBuffer& bufferInOut){
-    if (_render && renderStagePass._passIndex == 0) {
-
-        // This will always lag one frame
-        GFX::BindPipelineCommand pipelineCmd;
-        pipelineCmd._pipeline = _cullPipeline;
-        GFX::EnqueueCommand(bufferInOut, pipelineCmd);
-
-        ShaderBufferBinding buffer = {};
-        buffer._binding = ShaderBufferLocation::GRASS_DATA;
-        buffer._buffer = s_grassData;
-        buffer._elementRange = { _terrainChunk.ID() * s_maxGrassInstancesPerChunk, s_maxGrassInstancesPerChunk };
-
-        GFX::BindDescriptorSetsCommand descriptorSetCmd;
-        descriptorSetCmd._set.addShaderBuffer(buffer);
-
+    if (_render && (_instanceCountGrass > 0 || _instanceCountTrees > 0 ) && renderStagePass._passIndex == 0) {
         if (!s_stageRefreshed[to_base(renderStagePass._stage)]) {
-            GFX::SendPushConstantsCommand pushConstantsCommand;
-            float grassDistance = _context.parent().sceneManager().getActiveScene().renderState().grassVisibility();
-            pushConstantsCommand._constants.set("dvd_visibilityDistance", GFX::PushConstantType::FLOAT, grassDistance);
-            GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
-
+            GFX::BindDescriptorSetsCommand descriptorSetCmd;
             Texture_ptr depthTex = _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::HI_Z)).getAttachment(RTAttachmentType::Depth, 0).texture();
             descriptorSetCmd._set._textureData.setTexture(depthTex->getData(), to_U8(ShaderProgram::TextureUsage::DEPTH));
-
+            GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
             s_stageRefreshed[to_base(renderStagePass._stage)] = true;
         }
 
-        GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
+        // This will always lag one frame
+
+        //Cull grass
+        GFX::BindPipelineCommand pipelineCmd;
+        pipelineCmd._pipeline = _cullPipelineGrass;
+        GFX::EnqueueCommand(bufferInOut, pipelineCmd);
+
+        GFX::SendPushConstantsCommand pushConstantsCommand;
+        float grassDistance = _context.parent().sceneManager().getActiveScene().renderState().grassVisibility();
+        pushConstantsCommand._constants.set("dvd_visibilityDistance", GFX::PushConstantType::FLOAT, grassDistance);
+        pushConstantsCommand._constants.set("offset", GFX::PushConstantType::UINT, _terrainChunk.ID());
+        GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
         GFX::DispatchComputeCommand computeCmd;
-        computeCmd._computeGroupSize.set(_instanceCountGrass / WORK_GROUP_SIZE, 1, 1);
-        GFX::EnqueueCommand(bufferInOut, computeCmd);
+
+        if (_instanceCountGrass > 0) {
+            computeCmd._computeGroupSize.set(std::max(_instanceCountGrass, _instanceCountGrass / WORK_GROUP_SIZE), 1, 1);
+            GFX::EnqueueCommand(bufferInOut, computeCmd);
+        }
+
+        // Cull trees
+        pipelineCmd._pipeline = _cullPipelineTrees;
+        GFX::EnqueueCommand(bufferInOut, pipelineCmd);
+        GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
+
+        if (_instanceCountTrees > 0) {
+            computeCmd._computeGroupSize.set(std::max(_instanceCountTrees, _instanceCountTrees / WORK_GROUP_SIZE), 1, 1);
+            GFX::EnqueueCommand(bufferInOut, computeCmd);
+        }
 
         GFX::MemoryBarrierCommand memCmd;
         memCmd._barrierMask = to_base(MemoryBarrierType::SHADER_BUFFER);
@@ -465,14 +478,6 @@ void Vegetation::buildDrawCommands(SceneGraphNode& sgn,
                                    RenderStagePass renderStagePass,
                                    RenderPackage& pkgInOut) {
     if (_render && renderStagePass._passIndex == 0) {
-
-        ShaderBufferBinding buffer = {};
-        buffer._binding = ShaderBufferLocation::GRASS_DATA;
-        buffer._buffer = s_grassData;
-        buffer._elementRange = { _terrainChunk.ID() * s_maxGrassInstancesPerChunk, s_maxGrassInstancesPerChunk };
-
-        pkgInOut.addShaderBuffer(0, buffer);
-
         GenericDrawCommand cmd;
         cmd._primitiveType = PrimitiveType::TRIANGLE_STRIP;
         cmd._cmd.indexCount = s_buffer->getIndexCount();
@@ -531,13 +536,14 @@ void Vegetation::computeVegetationTransforms(const Task& parentTask, bool treeDa
         const vec2<F32>& chunkSize = _terrainChunk.getOffsetAndSize().zw();
         const vec2<F32>& chunkPos = _terrainChunk.getOffsetAndSize().xy();
         const F32 waterLevel = 0.0f;// ToDo: make this dynamic! (cull underwater points later on?)
-        const U16 mapWidth = _map->dimensions().width;
-        const U16 mapHeight = _map->dimensions().height;
+        const U16 mapWidth = treeData ? _treeMap->dimensions().width : _grassMap->dimensions().width;
+        const U16 mapHeight = treeData ? _treeMap->dimensions().height : _grassMap->dimensions().height;
 
         const std::unordered_set<vec2<F32>>& positions = treeData ? s_treePositions : s_grassPositions;
 
         const F32 slopeLimit = treeData ? 10.0f : 35.0f;
-        const F32 widthFactor = treeData ? 25.0f : 1.0f;
+        const F32 widthFactor = treeData ? 5.0f : 1.0f;
+        const F32 heightFactor = treeData ? 15.0f : 1.0f;
 
         for (vec2<F32> pos : positions) {
             if (!ScaleAndCheckBounds(chunkPos, chunkSize, pos)) {
@@ -562,15 +568,27 @@ void Vegetation::computeVegetationTransforms(const Task& parentTask, bool treeDa
 
             assert(vert._position != VECTOR3_ZERO);
 
-            size_t meshID = _terrainChunk.ID() % s_treeMeshes.size();
+            auto map = treeData ? _treeMap : _grassMap;
+            const UColour colour = map->getColour((U16)mapCoord.x, (U16)mapCoord.y);
+            const U8 index = bestIndex(colour);
+            const F32 colourVal = colour[index];
+            if (colourVal <= EPSILON_F32) {
+                continue;
+            }
 
-            const UColour colour = _map->getColour((U16)mapCoord.x, (U16)mapCoord.y);
-            const U8 index = treeData ? 1 : bestIndex(colour);
-            const F32 scale = treeData ? (meshID == 1 ? 1.0f : 0.01f) : (colour[index] + 1) / 256.0f;
+            const F32 xmlScale = treeData ? _treeScales[index] : _grassScales[index];
+            // Don't go under 75% of the scale specified in the data files
+            const F32 minXmlScale = (xmlScale * 7.5f) / 10.0f;
+            // Don't go over 75% of the cale specified in the data files
+            const F32 maxXmlScale = (xmlScale * 1.25f);
+
+            const F32 scale = CLAMPED(((colour[index] + 1) / 256.0f) * xmlScale, minXmlScale, maxXmlScale);
+
+            assert(scale > EPSILON_F32);
 
             //vert._position.y = (((0.0f*heightExtent) + vert._position.y) - ((0.0f*scale) + vert._position.y)) + vert._position.y;
             VegetationData entry = {};
-            entry._data.set(widthFactor, widthFactor, to_F32(treeData ? 0 : index), 0.0f);
+            entry._data.set(Util::PACK_VEC3(widthFactor, heightFactor, 0.0f), to_F32(_terrainChunk.ID()), to_F32(index), 0.0f);
             entry._positionAndScale.set(vert._position, scale);
             entry._orientationQuat = (RotationFromVToU(WORLD_Y_AXIS, vert._normal, WORLD_Z_AXIS) * Quaternion<F32>(WORLD_Y_AXIS, Random(360.0f))).asVec4();
                 

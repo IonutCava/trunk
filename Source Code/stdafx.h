@@ -59,6 +59,10 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #error "Divide Framework requires C++14 support at a minimum!."
 #endif 
 
+//#if !defined(CPP_17_SUPPORT)
+#define _ENABLE_EXTENDED_ALIGNED_STORAGE
+//#endif
+
 #ifndef _USE_MATH_DEFINES
 #define _USE_MATH_DEFINES
 #endif //_USE_MATH_DEFINES

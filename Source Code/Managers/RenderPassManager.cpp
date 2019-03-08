@@ -241,7 +241,7 @@ RenderPass::BufferData RenderPassManager::getBufferData(RenderStagePass stagePas
 }
 
 /// Prepare the list of visible nodes for rendering
-GFXDevice::NodeData RenderPassManager::processVisibleNode(SceneGraphNode* node, RenderStagePass stagePass, bool isOcclusionCullable, bool playAnimations, const mat4<F32>& viewMatrix) const {
+GFXDevice::NodeData RenderPassManager::processVisibleNode(SceneGraphNode* node, RenderStagePass stagePass, F32 cullFlagValue, bool playAnimations, const mat4<F32>& viewMatrix) const {
     GFXDevice::NodeData dataOut;
 
     // Extract transform data (if available)
@@ -287,8 +287,8 @@ GFXDevice::NodeData RenderPassManager::processVisibleNode(SceneGraphNode* node, 
 
     vec4<F32> dataRow = dataOut._colourMatrix.getRow(3);
     dataRow.z = properties.z; // lod
-    //set properties.w to -1 to skip occlusion culling for the node
-    dataRow.w = isOcclusionCullable ? 1.0f : -1.0f; 
+    //set properties.w to negative value to skip occlusion culling for the node
+    dataRow.w = cullFlagValue;
     dataOut._colourMatrix.setRow(3, dataRow);
 
     // Temp: Make the hovered/selected node brighter. 
@@ -330,7 +330,7 @@ void RenderPassManager::refreshNodeData(RenderStagePass stagePass,
                 goto skip;
             }
             if (Attorney::RenderingCompRenderPass::onRefreshNodeData(renderable, params)) {
-                g_nodeData.push_back(processVisibleNode(node, stagePass, renderable.renderOptionEnabled(RenderingComponent::RenderOptions::IS_OCCLUSION_CULLABLE), playAnimations, viewMatrix));
+                g_nodeData.push_back(processVisibleNode(node, stagePass, renderable.cullFlagValue(), playAnimations, viewMatrix));
             }
         }
     }

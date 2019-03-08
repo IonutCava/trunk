@@ -1,17 +1,8 @@
 -- Vertex
 
 #include "vbInputData.vert"
-
-struct VegetationData {
-    vec4 positionAndScale;
-    vec4 orientationQuad;
-    //x - width extent, y = height extent, z = array index, w - render
-    vec4 data;
-};
-
-layout(std430, binding = BUFFER_TREE_DATA) coherent readonly buffer dvd_transformBlock {
-    VegetationData treeData[MAX_TREE_INSTANCES];
-};
+#include "nodeBufferedInput.cmn"
+#include "vegetationData.cmn"
 
 void computeFoliageMovementGrass(inout vec4 vertex, in float scaleFactor) {
     float timeGrass = dvd_windDetails.w * dvd_time * 0.00025f; //to seconds
@@ -26,11 +17,17 @@ void main(void){
 
     computeDataNoClip();
 
-    VegetationData data = treeData[VAR.dvd_instanceID];
-    float scale = 0.05f;//data.positionAndScale.w;
+    VegetationData data = TreeData(VAR.dvd_instanceID);
+    float scale = data.positionAndScale.w;
+
+    if (data.data.w > 2.0f) {
+        scale = 0.0f;
+    }
 
     if (dvd_Vertex.y > 0.75f) {
-        //computeFoliageMovementGrass(dvd_Vertex, data.data.y);
+        vec3 dim = UNPACK_FLOAT(data.data.x);
+
+        //computeFoliageMovementGrass(dvd_Vertex, dim.y);
     }
 
     dvd_Vertex.xyz = rotate_vertex_position(dvd_Vertex.xyz * scale, data.orientationQuad);

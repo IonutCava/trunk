@@ -12,13 +12,17 @@
 <underwaterAlbedoTexture>sandfloor009a.jpg</underwaterAlbedoTexture>
 <underwaterDetailTexture>terrain_detail_NM.png</underwaterDetailTexture>
 <underwaterTileScale>100</underwaterTileScale>
-<vegetation grassScale="0.174999997" treeScale="0.699999988">
+<vegetation>
     <vegetationTextureLocation>misc_images</vegetationTextureLocation>
-    <map>warTerrainAlpha_Alpha1.tga</map>
-    <grassBillboard1>billboardgrass0001.png</grassBillboard1>
-    <grassBillboard2>grass_billboards1.png</grassBillboard2>
-    <grassBillboard3>grass_billboards2.png</grassBillboard3>
-    <grassBillboard4>grass_billboards3.png</grassBillboard4>
+    <grassMap>warTerrainAlpha_Alpha1.tga</grassMap>
+    <grassBillboard1 scale = "0.75">billboardgrass0001.png</grassBillboard1>
+    <grassBillboard2 scale = "0.5">grass_billboards1.png</grassBillboard2>
+    <grassBillboard3 scale = "1.0">grass_billboards2.png</grassBillboard3>
+    <grassBillboard4 scale = "1.0">grass_billboards3.png</grassBillboard4>
+	<treeMap>warTerrainAlpha_Alpha1.tga</treesMap>
+    <treeMesh1 scale = "0.02">copac.obj</treeMesh1>
+    <treeMesh2 scale = "1.0">copacel.obj</treeMesh2>
+	<treeMesh3 scale = "5.0">Pin.obj</treeMesh3>
 </vegetation>
 <textureLayers>
     <layer0>

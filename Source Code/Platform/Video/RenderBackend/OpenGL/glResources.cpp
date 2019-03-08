@@ -393,15 +393,23 @@ void sumitDirectCommand(const IndirectDrawCommand& cmd,
 
     if (drawIndexed) {
          for (GLuint i = 0; i < drawCount; ++i) {
-             glDrawElementsInstanced(mode,
-                                     cmd.indexCount,
-                                     internalFormat,
-                                     (GLvoid*)(cmd.firstIndex * (internalFormat == GL_UNSIGNED_SHORT ? sizeof(GLushort) : sizeof(GLuint))),
-                                     cmd.primCount);
+             glDrawElementsInstancedBaseVertexBaseInstance(
+                 mode,
+                 cmd.indexCount,
+                 internalFormat,
+                 (GLvoid*)(cmd.firstIndex * (internalFormat == GL_UNSIGNED_SHORT ? sizeof(GLushort) : sizeof(GLuint))),
+                 cmd.primCount,
+                 cmd.baseVertex,
+                 cmd.baseInstance);
          }
     } else {
         for (GLuint i = 0; i < drawCount; ++i) {
-            glDrawArraysInstanced(mode, cmd.firstIndex, cmd.indexCount, cmd.primCount);
+            glDrawArraysInstancedBaseInstance(
+                mode,
+                cmd.firstIndex,
+                cmd.indexCount,
+                cmd.primCount,
+                cmd.baseInstance);
         }
     }
 }

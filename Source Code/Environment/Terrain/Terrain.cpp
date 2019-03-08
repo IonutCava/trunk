@@ -424,23 +424,41 @@ void Terrain::saveToXML(boost::property_tree::ptree& pt) const {
     pt.put("underwaterAlbedoTexture", _descriptor->getVariable("underwaterAlbedoTexture"));
     pt.put("underwaterDetailTexture", _descriptor->getVariable("underwaterDetailTexture"));
     pt.put("underwaterTileScale", _descriptor->getVariablef("underwaterTileScale"));
-    pt.put("vegetation.<xmlattr>.grassScale", _descriptor->getGrassScale());
-    pt.put("vegetation.<xmlattr>.treeScale", _descriptor->getTreeScale());
-    pt.put("vegetation.vegetationTextureLocation", _descriptor->getVariable("grassMapLocation"));
-    pt.put("vegetation.map", _descriptor->getVariable("grassMap"));
+    pt.put("vegetation.vegetationTextureLocation", _descriptor->getVariable("vegetationTextureLocation"));
+    pt.put("vegetation.grassMap", _descriptor->getVariable("grassMap"));
     if (!_descriptor->getVariable("grassBillboard1").empty()) {
         pt.put("vegetation.grassBillboard1", _descriptor->getVariable("grassBillboard1"));
+        pt.put("vegetation.grassBillboard1.<xmlattr>.scale", _descriptor->getVariablef("grassScale1"));
     }
     if (!_descriptor->getVariable("grassBillboard2").empty()) {
         pt.put("vegetation.grassBillboard2", _descriptor->getVariable("grassBillboard2"));
+        pt.put("vegetation.grassBillboard2.<xmlattr>.scale", _descriptor->getVariablef("grassScale2"));
     }
     if (!_descriptor->getVariable("grassBillboard3").empty()) {
         pt.put("vegetation.grassBillboard3", _descriptor->getVariable("grassBillboard3"));
+        pt.put("vegetation.grassBillboard3.<xmlattr>.scale", _descriptor->getVariablef("grassScale3"));
     }
     if (!_descriptor->getVariable("grassBillboard4").empty()) {
         pt.put("vegetation.grassBillboard4", _descriptor->getVariable("grassBillboard4"));
+        pt.put("vegetation.grassBillboard4.<xmlattr>.scale", _descriptor->getVariablef("grassScale4"));
     }
-    
+    pt.put("vegetation.treeMap", _descriptor->getVariable("treeMap"));
+    if (!_descriptor->getVariable("treeMesh1").empty()) {
+        pt.put("vegetation.treeMesh1", _descriptor->getVariable("treeMesh1"));
+        pt.put("vegetation.treeMesh1.<xmlattr>.scale", _descriptor->getVariablef("treeScale1"));
+    }
+    if (!_descriptor->getVariable("treeMesh2").empty()) {
+        pt.put("vegetation.treeMesh2", _descriptor->getVariable("treeMesh2"));
+        pt.put("vegetation.treeMesh2.<xmlattr>.scale", _descriptor->getVariablef("treeScale2"));
+    }
+    if (!_descriptor->getVariable("treeMesh3").empty()) {
+        pt.put("vegetation.treeMesh3", _descriptor->getVariable("treeMesh3"));
+        pt.put("vegetation.treeMesh3.<xmlattr>.scale", _descriptor->getVariablef("treeScale3"));
+    }
+    if (!_descriptor->getVariable("treeMesh4").empty()) {
+        pt.put("vegetation.treeMesh4", _descriptor->getVariable("treeMesh4"));
+        pt.put("vegetation.treeMesh4.<xmlattr>.scale", _descriptor->getVariablef("treeScale4"));
+    }
     U8 prevAlbedoCount = 0u;
     U8 prevDetailCount = 0u;
 

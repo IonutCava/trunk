@@ -36,6 +36,7 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
     : BaseComponentType<RenderingComponent, ComponentType::RENDERING>(parentSGN, context),
       _context(context.gfx()),
       _lodLocked(false),
+      _cullFlagValue(1.0f),
       _renderMask(0),
       _reflectorType(ReflectorType::PLANAR_REFLECTOR),
       _materialInstance(nullptr),
@@ -51,7 +52,11 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
     toggleRenderOption(RenderOptions::CAST_SHADOWS, true);
     toggleRenderOption(RenderOptions::RECEIVE_SHADOWS, true);
     toggleRenderOption(RenderOptions::IS_VISIBLE, true);
-    toggleRenderOption(RenderOptions::IS_OCCLUSION_CULLABLE, _parentSGN.getNode<Object3D>().type() != SceneNodeType::TYPE_SKY);
+
+    // Do not cull the sky
+    if (_parentSGN.getNode<Object3D>().type() == SceneNodeType::TYPE_SKY) {
+        _cullFlagValue = -1.0f;
+    }
 
     const Object3D& node = parentSGN.getNode<Object3D>();
 
@@ -677,6 +682,14 @@ void RenderingComponent::drawDebugAxis() {
     } else {
         _axisGizmo->resetWorldMatrix();
     }
+}
+
+F32 RenderingComponent::cullFlagValue() const {
+    return _cullFlagValue;
+}
+
+void RenderingComponent::cullFlagValue(F32 newValue) {
+    _cullFlagValue = newValue;
 }
 
 };

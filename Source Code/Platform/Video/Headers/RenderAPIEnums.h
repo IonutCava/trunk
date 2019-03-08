@@ -75,17 +75,17 @@ enum class AttribLocation : U8 {
 
 enum class ShaderBufferLocation : U8 {
     GPU_BLOCK = 0,
-    GPU_COMMANDS = 1,
-    LIGHT_NORMAL = 2,
-    LIGHT_SHADOW = 3,
-    LIGHT_INDICES = 4,
-    NODE_INFO = 5,
-    BONE_TRANSFORMS = 6,
-    SCENE_DATA = 7,
-    TERRAIN_DATA = 8,
-    CMD_BUFFER = 9,
-    GRASS_DATA = 10,
-    TREE_DATA = 11,
+    GPU_COMMANDS,
+    LIGHT_NORMAL,
+    LIGHT_SHADOW,
+    LIGHT_INDICES,
+    NODE_INFO,
+    BONE_TRANSFORMS,
+    SCENE_DATA,
+    TERRAIN_DATA,
+    GRASS_DATA,
+    TREE_DATA,
+    CMD_BUFFER,
     COUNT
 };
 

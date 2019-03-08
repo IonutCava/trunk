@@ -58,11 +58,12 @@ FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
 
 struct VegetationDetails {
     U16 billboardCount;
-    F32 grassScale;
     stringImpl name;
-    std::shared_ptr<ImageTools::ImageData> map;
+    std::shared_ptr<ImageTools::ImageData> grassMap;
+    std::shared_ptr<ImageTools::ImageData> treeMap;
     std::weak_ptr<Terrain> parentTerrain;
-    Texture_ptr grassBillboards;
+    vectorEASTL<stringImpl> treeMeshes;
+    vec4<F32> grassScales, treeScales;
     Material_ptr vegetationMaterialPtr;
 };
 
@@ -88,6 +89,7 @@ class Vegetation : public SceneNode {
                            RenderStagePass renderStagePass,
                            RenderPackage& pkgInOut) override;
 
+    //ToDo: Multiple terrains will NOT support this! To fix! -Ionut
     static void precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 maxChunkCount, U32& maxGrassInstances, U32& maxTreeInstances);
 
 
@@ -117,17 +119,21 @@ class Vegetation : public SceneNode {
     bool _success;
     std::weak_ptr<Terrain> _terrain;
     U16 _billboardCount;  ///< Vegetation cumulated density
-    F32 _grassScale;
     F32 _windX = 0.0f, _windZ = 0.0f, _windS = 0.0f, _time = 0.0f;
     U64 _stateRefreshIntervalUS = 0ULL;
     U64 _stateRefreshIntervalBufferUS = 0ULL;
-    std::shared_ptr<ImageTools::ImageData> _map;  ///< Dispersion map for vegetation placement
-    ShaderProgram_ptr _cullShader;
+    vec4<F32> _grassScales, _treeScales;
+    vectorEASTL<stringImpl> _treeMeshNames;
+    std::shared_ptr<ImageTools::ImageData> _grassMap;  ///< Dispersion map for grass placement
+    std::shared_ptr<ImageTools::ImageData> _treeMap;  ///< Dispersion map for tree placement
+    ShaderProgram_ptr _cullShaderGrass;
+    ShaderProgram_ptr _cullShaderTrees;
     bool _shadowMapped;
     U32 _instanceCountGrass;
     U32 _instanceCountTrees;
 
-    Pipeline* _cullPipeline;
+    Pipeline* _cullPipelineGrass;
+    Pipeline* _cullPipelineTrees;
     vectorEASTL<VegetationData> _tempGrassData;
     vectorEASTL<VegetationData> _tempTreeData;
 
@@ -141,10 +147,10 @@ class Vegetation : public SceneNode {
     static size_t s_maxChunks;
     static size_t s_maxTreeInstancesPerChunk;
     static size_t s_maxGrassInstancesPerChunk;
+    static bool s_buffersBound;
     static std::array<bool, to_base(RenderStage::COUNT)> s_stageRefreshed;
 
     static Material_ptr s_treeMaterial;
-    static vectorEASTL<Mesh_ptr> s_treeMeshes;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_TYPE(Vegetation);

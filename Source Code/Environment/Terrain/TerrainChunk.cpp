@@ -79,7 +79,7 @@ void TerrainChunk::load(U8 depth, const vec2<U32>& pos, U32 _targetChunkDimensio
     }
 
     _heightBounds.set(tempMin, tempMax);
-    _vegetation = std::make_shared<Vegetation>(_context, *this, Attorney::TerrainChunk::vegetationDetails(parent()));
+    _vegetation.reset(new Vegetation(_context, *this, Attorney::TerrainChunk::vegetationDetails(parent())));
     Attorney::TerrainChunk::registerTerrainChunk(*_parentTerrain, this);
 }
 

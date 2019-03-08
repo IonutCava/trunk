@@ -19,7 +19,7 @@ struct NodeData {
     // [3][0] = texture operation
     // [3][1] = parallax factor
     // [3][2] = lod level
-    // [3][3] = occlusion cull flag
+    // [3][3] = occlusion cull flag (if negative - no culling. use value for something else. if positive - cull)
     mat4 _colourMatrix;
 };
 

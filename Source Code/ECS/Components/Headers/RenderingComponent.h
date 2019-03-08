@@ -127,8 +127,7 @@ class RenderingComponent : public BaseComponentType<RenderingComponent, Componen
            RENDER_SKELETON = toBit(5),
            CAST_SHADOWS = toBit(6),
            RECEIVE_SHADOWS = toBit(7),
-           IS_VISIBLE = toBit(8),
-           IS_OCCLUSION_CULLABLE = toBit(9)
+           IS_VISIBLE = toBit(8)
        };
 
    public:
@@ -144,6 +143,12 @@ class RenderingComponent : public BaseComponentType<RenderingComponent, Componen
     void toggleRenderOption(RenderOptions option, bool state);
     bool renderOptionEnabled(RenderOptions option) const;
     bool renderOptionsEnabled(U32 mask) const;
+
+    // If this node is occlusion cullable, this returns 1.0f. If not, it returns our specified value
+    F32 cullFlagValue() const;
+
+    // If the new value is negative, this disables occlusion culling!
+    void cullFlagValue(F32 newValue);
 
     inline void lockLoD(bool state) { _lodLocked = state; }
     inline bool lodLocked() const { return _lodLocked; }
@@ -208,6 +213,7 @@ class RenderingComponent : public BaseComponentType<RenderingComponent, Componen
     Material_ptr _materialInstance;
     Material* _materialInstanceCache;
 
+    F32 _cullFlagValue;
     U32 _renderMask;
     bool _lodLocked;
 

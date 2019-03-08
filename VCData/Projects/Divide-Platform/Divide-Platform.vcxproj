@@ -329,10 +329,11 @@
     <None Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Headers\glResources.inl" />
     <None Include="../../../Source Code/Platform\Video\RenderBackend\OpenGL\Shaders\Headers\glShaderProgram.inl" />
     <None Include="../../../Source Code\Platform\Headers\PlatformRuntime.inl" />
+    <None Include="..\..\..\assets\shaders\GLSL\common\vegetationData.cmn" />
     <None Include="..\..\..\assets\shaders\GLSL\DrawCmdReorder.glsl" />
     <None Include="..\..\..\assets\shaders\GLSL\fragmentAtoms\output.frag" />
     <None Include="..\..\..\assets\shaders\GLSL\fragmentAtoms\vsm.frag" />
-    <None Include="..\..\..\assets\shaders\GLSL\instanceCullGrass.glsl" />
+    <None Include="..\..\..\assets\shaders\GLSL\instanceCullVegetation.glsl" />
     <None Include="..\..\..\assets\shaders\GLSL\tree.glsl" />
   </ItemGroup>
   <ItemGroup>

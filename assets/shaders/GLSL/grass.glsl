@@ -1,26 +1,19 @@
 -- Vertex
 
 #include "vbInputData.vert"
-
-struct VegetationData {
-    vec4 positionAndScale;
-    vec4 orientationQuad;
-    //x - width extent, y = height extent, z = array index, w - render
-    vec4 data;
-};
-
-layout(std430, binding = BUFFER_GRASS_DATA) coherent readonly buffer dvd_transformBlock {
-    VegetationData grassData[MAX_GRASS_INSTANCES];
-};
+#include "nodeBufferedInput.cmn"
+#include "vegetationData.cmn"
 
 flat out int _arrayLayerFrag;
 flat out float _alphaFactor;
 
-void computeFoliageMovementGrass(inout vec4 vertex, in float scaleFactor) {
-    float timeGrass = dvd_windDetails.w * dvd_time * 0.00025; //to seconds
+uniform uint offset;
+
+void computeFoliageMovementGrass(inout vec4 vertex, in float heightExtent) {
+    float timeGrass = dvd_windDetails.w * dvd_time * 0.00025f; //to seconds
     float cosX = cos(vertex.x);
     float sinX = sin(vertex.x);
-    float halfScale = 0.5*scaleFactor;
+    float halfScale = 0.5f * heightExtent;
     vertex.x += (halfScale*cos(timeGrass) * cosX * sinX) *dvd_windDetails.x;
     vertex.z += (halfScale*sin(timeGrass) * cosX * sinX) *dvd_windDetails.z;
 }
@@ -29,26 +22,28 @@ void main()
 {
     computeDataNoClip();
 
-    VegetationData data = grassData[VAR.dvd_instanceID];
+    VegetationData data = GrassData(VAR.dvd_instanceID);
+
+    vec3 dim = UNPACK_FLOAT(data.data.x);
+
     float LoD = data.data.w;
     float scale = data.positionAndScale.w;
-    if (LoD > 2) {
+
+    if (LoD > 2.0f) {
         scale = 0.0f;
         //gl_CullDistance[0] = -0.01f;
     }
 
     if (dvd_Vertex.y > 0.75) {
-        computeFoliageMovementGrass(dvd_Vertex, data.data.y);
+        computeFoliageMovementGrass(dvd_Vertex, dim.y);
     }
 
     _arrayLayerFrag = int(data.data.z);
-    _alphaFactor = min(LoD, 1.0f);
+    _alphaFactor = min(1.0f - LoD, 1.0f);
     if (_alphaFactor > 0.5f) {
         _alphaFactor = 1.0f;
     }
-
-    _alphaFactor = 1.0f;
-
+    
     dvd_Vertex.xyz = rotate_vertex_position(dvd_Vertex.xyz * scale, data.orientationQuad);
     VAR._vertexW = dvd_Vertex + vec4(data.positionAndScale.xyz, 0.0f);
 

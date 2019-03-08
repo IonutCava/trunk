@@ -466,6 +466,7 @@ bool GL_API::initGLSW() {
         "#define BUFFER_TREE_DATA " +
         to_stringImpl(to_base(ShaderBufferLocation::TREE_DATA)),
         lineOffsets);
+
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define FORWARD_PLUS_TILE_RES " + 
