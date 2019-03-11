@@ -19,13 +19,12 @@ vec3 rotate_vertex_position(vec3 position, vec4 q) {
 
 #if defined(CULL_TREES)
 #   define MAX_INSTANCES MAX_TREE_INSTANCES
-#   define VegData treeData
+#   define Data treeData
 #else //CULL_TREES
 #   define MAX_INSTANCES MAX_GRASS_INSTANCES
-#   define VegData grassData
+#   define Data grassData
 #endif //CULL_TREES
 
-#define Data(X) VegData[offset * MAX_INSTANCES + X]
 
 void main(void) {
 
@@ -33,36 +32,29 @@ void main(void) {
         return;
     }
 
-    float minDist = 0.01f;
-    VegetationData instance = Data(gl_GlobalInvocationID.x);
+    uint idx = offset * MAX_INSTANCES + gl_GlobalInvocationID.x;
+
+    VegetationData instance = Data[idx];
 
     vec4 positionW = vec4(instance.positionAndScale.xyz, 1.0f);
+    Data[idx].data.w = 3.0f;
 
 #if !defined(CULL_TREES)
-    // Too far away
+    // Too far away // ToDo: underwater check:
     float dist = distance(positionW.xyz, dvd_cameraPosition.xyz);
-    if (dist > dvd_visibilityDistance) {
-        Data(gl_GlobalInvocationID.x).data.w = 3.0f;
+    if (dist > dvd_visibilityDistance || IsUnderWater(positionW.xyz)) {
         return;
     }
-    // ToDo: underwater check:
-    if (IsUnderWater(positionW.xyz)) {
-        Data(gl_GlobalInvocationID.x).data.w = 3.0f;
-        return;
-    }
-    //Data(gl_GlobalInvocationID.x).data.w = PassThrough(positionW.xyz, instance.data.xxy * instance.positionAndScale.w);
-    //Data(gl_GlobalInvocationID.x).data.w = InstanceCloudReduction(positionW.xyz, instance.data.xxy * instance.positionAndScale.w);
-
 #endif //CULL_TREES
-
     vec3 dim = UNPACK_FLOAT(instance.data.x);
     if (zBufferCull(positionW.xyz, (dim.xxy * 1.001f) * instance.positionAndScale.w) > 0) {
 #       if defined(CULL_TREES)
-            Data(gl_GlobalInvocationID.x).data.w = 1.0f;
+            Data[idx].data.w = 1.0f;
 #       else //CULL_TREES
-            Data(gl_GlobalInvocationID.x).data.w = saturate((dist - minDist) / (dvd_visibilityDistance - minDist));
+            const float minDist = 0.01f;
+            Data[idx].data.w = saturate((dist - minDist) / (dvd_visibilityDistance - minDist));
 #       endif //CULL_TREES
     } else {
-        Data(gl_GlobalInvocationID.x).data.w = 3.0f;
+        Data[idx].data.w = 3.0f;
     }
 }

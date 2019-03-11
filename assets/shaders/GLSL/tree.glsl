@@ -26,8 +26,7 @@ void main(void){
 
     if (dvd_Vertex.y > 0.75f) {
         vec3 dim = UNPACK_FLOAT(data.data.x);
-
-        //computeFoliageMovementGrass(dvd_Vertex, dim.y);
+        computeFoliageMovementGrass(dvd_Vertex, dim.y);
     }
 
     dvd_Vertex.xyz = rotate_vertex_position(dvd_Vertex.xyz * scale, data.orientationQuad);

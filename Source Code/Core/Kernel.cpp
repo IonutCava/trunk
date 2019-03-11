@@ -691,9 +691,9 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     // Add our needed app-wide render passes. RenderPassManager is responsible for deleting these!
     _renderPassManager = std::make_unique<RenderPassManager>(*this, _platformContext->gfx());
     _renderPassManager->addRenderPass("shadowPass",     0, RenderStage::SHADOW);
-    _renderPassManager->addRenderPass("reflectionPass", 1, RenderStage::REFLECTION);
-    _renderPassManager->addRenderPass("refractionPass", 2, RenderStage::REFRACTION);
-    _renderPassManager->addRenderPass("displayStage",   3, RenderStage::DISPLAY);
+    _renderPassManager->addRenderPass("reflectionPass", 1, RenderStage::REFLECTION, { 0 });
+    _renderPassManager->addRenderPass("refractionPass", 2, RenderStage::REFRACTION, { 0 });
+    _renderPassManager->addRenderPass("displayStage",   3, RenderStage::DISPLAY, { 1, 2});
 
     Console::printfn(Locale::get(_ID("SCENE_ADD_DEFAULT_CAMERA")));
 

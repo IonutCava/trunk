@@ -85,14 +85,15 @@ namespace Divide {
         {
             Time::ScopedTimer timeAll(*_renderPassTimer);
 
-            for (I8 i = 0; i < renderPassCount - 1; ++i)
+            for (I8 i = 1; i < renderPassCount; ++i)
             { //All of our render passes should run in parallel
 
                 RenderPass* pass = _renderPasses[i].get();
+
                 GFX::CommandBuffer* buf = _renderPassCommandBuffer[i];
                 assert(buf->empty());
 
-                tasks[i] = CreateTask(pool,
+                tasks[i - 1] = CreateTask(pool,
                                       nullptr,
                                       [pass, buf, &sceneRenderState](const Task & parentTask) {
                                           pass->render(sceneRenderState, *buf);
@@ -114,13 +115,13 @@ namespace Divide {
                                                 buf->batch();
                                             }).startTask(priority);
             }
-            { //The main display pass can be run on this thread instead of idling
-                U8 temp = renderPassCount - 1;
-                RenderPass* pass = _renderPasses[temp].get();
-                GFX::CommandBuffer* buf = _renderPassCommandBuffer[temp];
+            { //The shadow passes can be run on this thread instead of idling because they don't have any dependencies
+                GFX::CommandBuffer* buf = _renderPassCommandBuffer[0];
                 assert(buf->empty());
-                pass->render(sceneRenderState, *buf);
+                _renderPasses[0]->render(sceneRenderState, *buf);
                 buf->batch();
+                _context.flushCommandBuffer(*buf);
+                buf->clear(false);
             }
         }
 
@@ -129,8 +130,9 @@ namespace Divide {
             {
                 Time::ScopedTimer timeCommands(*_buildCommandBufferTimer);
                 _mainCommandBuffer->clear(false);
-                for (U8 i = 0; i < renderPassCount; ++i) {
-                    while (tasks[i].taskRunning()) {
+
+                for (U8 i = 1; i < renderPassCount + 1; ++i) {
+                    while (tasks[i - 1].taskRunning()) {
                         parent().idle(!slowIdle);
                         std::this_thread::yield();
                         slowIdle = false;
@@ -139,9 +141,6 @@ namespace Divide {
                     GFX::CommandBuffer* buf = _renderPassCommandBuffer[i];
                     _mainCommandBuffer->addDestructive(*buf);
                 }
-
-                GFX::CommandBuffer* buf = _renderPassCommandBuffer.back();
-                _mainCommandBuffer->addDestructive(*buf);
             }
 
             Time::ScopedTimer timeCommands(*_flushCommandBufferTimer);
@@ -152,17 +151,13 @@ namespace Divide {
             }
 
             Time::ScopedTimer timeCommands(*_flushCommandBufferTimer);
-            for (U8 i = 0; i < renderPassCount; ++i) {
-                while (tasks[i].taskRunning()) {
+            for (U8 i = 1; i < renderPassCount + 1; ++i) {
+                while (tasks[i - 1].taskRunning()) {
                     parent().idle(!slowIdle);
                     std::this_thread::yield();
                     slowIdle = false;
                 }
                 _context.flushCommandBuffer(*_renderPassCommandBuffer[i]);
-            }
-            _context.flushCommandBuffer(*_renderPassCommandBuffer.back());
-
-            for (U8 i = 0; i < renderPassCount + 1; ++i) {
                 _renderPassCommandBuffer[i]->clear(false);
             }
         }
@@ -171,15 +166,16 @@ namespace Divide {
             _renderPasses[i]->postRender();
         }
 
-     Attorney::SceneManagerRenderPass::postRenderAllPasses(parent().sceneManager(), cam);
+        Attorney::SceneManagerRenderPass::postRenderAllPasses(parent().sceneManager(), cam);
     }
 
 RenderPass& RenderPassManager::addRenderPass(const stringImpl& renderPassName,
                                              U8 orderKey,
-                                             RenderStage renderStage) {
+                                             RenderStage renderStage,
+                                             vector<U8> dependencies) {
     assert(!renderPassName.empty());
 
-    _renderPasses.push_back(std::make_shared<RenderPass>(*this, _context, renderPassName, orderKey, renderStage));
+    _renderPasses.push_back(std::make_shared<RenderPass>(*this, _context, renderPassName, orderKey, renderStage, dependencies));
     _renderPasses.back()->initBufferData();
 
     //Secondary command buffers. Used in a threaded fashion
@@ -199,7 +195,7 @@ RenderPass& RenderPassManager::addRenderPass(const stringImpl& renderPassName,
 void RenderPassManager::removeRenderPass(const stringImpl& name) {
     for (vectorEASTL<std::shared_ptr<RenderPass>>::iterator it = eastl::begin(_renderPasses);
          it != eastl::end(_renderPasses); ++it) {
-        if ((*it)->name().compare(name) == 0) {
+         if ((*it)->name().compare(name) == 0) {
             _renderPasses.erase(it);
             // Remove one command buffer
             GFX::CommandBuffer* buf = _renderPassCommandBuffer.back();

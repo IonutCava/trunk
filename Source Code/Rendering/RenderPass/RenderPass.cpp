@@ -119,10 +119,11 @@ namespace {
     }
 };
 
-RenderPass::RenderPass(RenderPassManager& parent, GFXDevice& context, stringImpl name, U8 sortKey, RenderStage passStageFlag)
+RenderPass::RenderPass(RenderPassManager& parent, GFXDevice& context, stringImpl name, U8 sortKey, RenderStage passStageFlag, const vector<U8>& dependencies)
     : _parent(parent),
       _context(context),
       _sortKey(sortKey),
+      _dependencies(dependencies),
       _name(name),
       _stageFlag(passStageFlag)
 {
