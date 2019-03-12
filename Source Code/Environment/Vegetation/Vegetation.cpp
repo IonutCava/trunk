@@ -426,7 +426,7 @@ void Vegetation::postLoad(SceneGraphNode& sgn) {
     SceneNode::postLoad(sgn);
 }
 
-void Vegetation::onRefreshNodeData(SceneGraphNode& sgn, RenderStagePass renderStagePass, GFX::CommandBuffer& bufferInOut){
+void Vegetation::onRefreshNodeData(SceneGraphNode& sgn, RenderStagePass renderStagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut){
     if (_render && (_instanceCountGrass > 0 || _instanceCountTrees > 0 ) && renderStagePass._passIndex == 0) {
         if (!s_stageRefreshed[to_base(renderStagePass._stage)]) {
             GFX::BindDescriptorSetsCommand descriptorSetCmd;
@@ -447,6 +447,7 @@ void Vegetation::onRefreshNodeData(SceneGraphNode& sgn, RenderStagePass renderSt
         float grassDistance = _context.parent().sceneManager().getActiveScene().renderState().grassVisibility();
         pushConstantsCommand._constants.set("dvd_visibilityDistance", GFX::PushConstantType::FLOAT, grassDistance);
         pushConstantsCommand._constants.set("offset", GFX::PushConstantType::UINT, _terrainChunk.ID());
+        pushConstantsCommand._constants.set("viewProjectionMatrix", GFX::PushConstantType::MAT4, mat4<F32>::Multiply(camera.getViewMatrix(), camera.getProjectionMatrix()));
         GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
         GFX::DispatchComputeCommand computeCmd;
@@ -465,13 +466,17 @@ void Vegetation::onRefreshNodeData(SceneGraphNode& sgn, RenderStagePass renderSt
             computeCmd._computeGroupSize.set(std::max(_instanceCountTrees, _instanceCountTrees / WORK_GROUP_SIZE), 1, 1);
             GFX::EnqueueCommand(bufferInOut, computeCmd);
         }
-
-        GFX::MemoryBarrierCommand memCmd;
-        memCmd._barrierMask = to_base(MemoryBarrierType::SHADER_BUFFER);
-        GFX::EnqueueCommand(bufferInOut, memCmd);
     }
 
-    SceneNode::onRefreshNodeData(sgn, renderStagePass, bufferInOut);
+    SceneNode::onRefreshNodeData(sgn, renderStagePass, camera, bufferInOut);
+}
+
+bool Vegetation::onRender(SceneGraphNode& sgn,
+                          const Camera& camera,
+                          RenderStagePass renderStagePass,
+                          bool refreshData) {
+
+    return SceneNode::onRender(sgn, camera, renderStagePass, refreshData);
 }
 
 void Vegetation::buildDrawCommands(SceneGraphNode& sgn,
@@ -542,8 +547,8 @@ void Vegetation::computeVegetationTransforms(const Task& parentTask, bool treeDa
         const std::unordered_set<vec2<F32>>& positions = treeData ? s_treePositions : s_grassPositions;
 
         const F32 slopeLimit = treeData ? 10.0f : 35.0f;
-        const F32 widthFactor = treeData ? 5.0f : 1.0f;
-        const F32 heightFactor = treeData ? 15.0f : 1.0f;
+        const F32 widthFactor = treeData ? 15.0f : 1.0f;
+        const F32 heightFactor = treeData ? 30.0f : 1.0f;
 
         for (vec2<F32> pos : positions) {
             if (!ScaleAndCheckBounds(chunkPos, chunkSize, pos)) {
@@ -588,7 +593,7 @@ void Vegetation::computeVegetationTransforms(const Task& parentTask, bool treeDa
 
             //vert._position.y = (((0.0f*heightExtent) + vert._position.y) - ((0.0f*scale) + vert._position.y)) + vert._position.y;
             VegetationData entry = {};
-            entry._data.set(Util::PACK_VEC3(widthFactor, heightFactor, 0.0f), to_F32(_terrainChunk.ID()), to_F32(index), 0.0f);
+            entry._data.set(Util::PACK_VEC3(widthFactor, widthFactor, heightFactor), to_F32(_terrainChunk.ID()), to_F32(index), 0.0f);
             entry._positionAndScale.set(vert._position, scale);
             entry._orientationQuat = (RotationFromVToU(WORLD_Y_AXIS, vert._normal, WORLD_Z_AXIS) * Quaternion<F32>(WORLD_Y_AXIS, Random(360.0f))).asVec4();
                 

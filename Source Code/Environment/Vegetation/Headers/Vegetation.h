@@ -102,7 +102,12 @@ class Vegetation : public SceneNode {
 
     void onRefreshNodeData(SceneGraphNode& sgn,
                            RenderStagePass renderStagePass,
+                           const Camera& camera,
                            GFX::CommandBuffer& bufferInOut) override;
+    bool onRender(SceneGraphNode& sgn,
+                  const Camera& camera,
+                  RenderStagePass renderStagePass,
+                  bool refreshData) override;
 
     bool getDrawState(const SceneGraphNode& sgn, RenderStagePass renderStage, U8 LoD) const override;
 

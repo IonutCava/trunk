@@ -75,6 +75,7 @@ struct RefreshNodeDataParams {
     RenderStagePass _stagePass = {};
     U32 _nodeCount = 0;
 
+    const Camera* _camera = nullptr;
     vectorEASTL<IndirectDrawCommand>& _drawCommandsInOut;
     GFX::CommandBuffer& _bufferInOut;
 
@@ -143,9 +144,6 @@ class RenderingComponent : public BaseComponentType<RenderingComponent, Componen
     void toggleRenderOption(RenderOptions option, bool state);
     bool renderOptionEnabled(RenderOptions option) const;
     bool renderOptionsEnabled(U32 mask) const;
-
-    // If this node is occlusion cullable, this returns 1.0f. If not, it returns our specified value
-    F32 cullFlagValue() const;
 
     // If the new value is negative, this disables occlusion culling!
     void cullFlagValue(F32 newValue);

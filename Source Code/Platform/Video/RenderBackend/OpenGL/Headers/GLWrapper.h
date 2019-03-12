@@ -118,9 +118,6 @@ protected:
 
     /// Return the OpenGL sampler object's handle for the given hash value
     static GLuint getSamplerHandle(size_t samplerHash);
-    /// Clipping planes are only enabled/disabled if they differ from the current
-    /// state
-    void updateClipPlanes(const FrustumClipPlanes& list) override;
     /// Text rendering is handled exclusively by Mikko Mononen's FontStash library
     /// (https://github.com/memononen/fontstash)
     /// with his OpenGL frontend adapted for core context profiles
@@ -253,8 +250,6 @@ private:
     hashAlg::pair<stringImpl, I32> _fontCache;
 
     static bool s_enabledDebugMSGGroups;
-    /// Current state of all available clipping planes
-    std::array<bool, to_base(Frustum::FrustPlane::COUNT)> _activeClipPlanes;
     /// Hardware query objects used for performance measurements
     std::shared_ptr<glHardwareQueryRing> _elapsedTimeQuery;
 

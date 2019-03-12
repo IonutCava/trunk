@@ -1,22 +1,24 @@
 layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D HiZBuffer;
 
+uniform mat4 viewProjectionMatrix;
+
 vec4 BoundingBox[8];
 int PassThrough(const in vec3 position, const in vec3 extents) {
     return 1;
 }
 
 int InstanceCloudReduction(const in vec3 position, const in vec3 extents) {
-    const float frustumBias = 0.5;
+    const float frustumBias = 0.5f;
 
     // create the bounding box of the object 
-    BoundingBox[0] = dvd_ViewProjectionMatrix * vec4(position + vec3( extents.x,  extents.y,  extents.z), 1.0);
-    BoundingBox[1] = dvd_ViewProjectionMatrix * vec4(position + vec3(-extents.x,  extents.y,  extents.z), 1.0);
-    BoundingBox[2] = dvd_ViewProjectionMatrix * vec4(position + vec3( extents.x, -extents.y,  extents.z), 1.0);
-    BoundingBox[3] = dvd_ViewProjectionMatrix * vec4(position + vec3(-extents.x, -extents.y,  extents.z), 1.0);
-    BoundingBox[4] = dvd_ViewProjectionMatrix * vec4(position + vec3( extents.x,  extents.y, -extents.z), 1.0);
-    BoundingBox[5] = dvd_ViewProjectionMatrix * vec4(position + vec3(-extents.x,  extents.y, -extents.z), 1.0);
-    BoundingBox[6] = dvd_ViewProjectionMatrix * vec4(position + vec3( extents.x, -extents.y, -extents.z), 1.0);
-    BoundingBox[7] = dvd_ViewProjectionMatrix * vec4(position + vec3(-extents.x, -extents.y, -extents.z), 1.0);
+    BoundingBox[0] = viewProjectionMatrix * vec4(position + vec3( extents.x,  extents.y,  extents.z), 1.0);
+    BoundingBox[1] = viewProjectionMatrix * vec4(position + vec3(-extents.x,  extents.y,  extents.z), 1.0);
+    BoundingBox[2] = viewProjectionMatrix * vec4(position + vec3( extents.x, -extents.y,  extents.z), 1.0);
+    BoundingBox[3] = viewProjectionMatrix * vec4(position + vec3(-extents.x, -extents.y,  extents.z), 1.0);
+    BoundingBox[4] = viewProjectionMatrix * vec4(position + vec3( extents.x,  extents.y, -extents.z), 1.0);
+    BoundingBox[5] = viewProjectionMatrix * vec4(position + vec3(-extents.x,  extents.y, -extents.z), 1.0);
+    BoundingBox[6] = viewProjectionMatrix * vec4(position + vec3( extents.x, -extents.y, -extents.z), 1.0);
+    BoundingBox[7] = viewProjectionMatrix * vec4(position + vec3(-extents.x, -extents.y, -extents.z), 1.0);
 
     // check how the bounding box resides regarding to the view frustum 
     uint outOfBound[6] = uint[](0, 0, 0, 0, 0, 0);

@@ -479,8 +479,6 @@ void GFXDevice::setClipPlanes(const FrustumClipPlanes& clipPlanes) {
     if (clipPlanes._active != _clippingPlanes._active ||
         clipPlanes._planes != _clippingPlanes._planes)
     {
-        _api->updateClipPlanes(clipPlanes);
-
         _clippingPlanes = clipPlanes;
 
         memcpy(&_gpuBlock._data._clipPlanes[0],

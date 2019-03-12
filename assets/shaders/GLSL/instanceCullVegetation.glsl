@@ -1,6 +1,6 @@
 -- Compute
 
-#define dvd_occlusionCullFlag 0
+#define dvd_dataFlag 0
 
 #include "HiZCullingAlgorithm.cmn";
 #include "vegetationData.cmn"
@@ -35,19 +35,20 @@ void main(void) {
     uint idx = offset * MAX_INSTANCES + gl_GlobalInvocationID.x;
 
     VegetationData instance = Data[idx];
+    Data[idx].data.w = 1.0f;
 
     vec4 positionW = vec4(instance.positionAndScale.xyz, 1.0f);
-    Data[idx].data.w = 3.0f;
-
 #if !defined(CULL_TREES)
     // Too far away // ToDo: underwater check:
     float dist = distance(positionW.xyz, dvd_cameraPosition.xyz);
     if (dist > dvd_visibilityDistance || IsUnderWater(positionW.xyz)) {
+        Data[idx].data.w = 3.0f;
         return;
     }
 #endif //CULL_TREES
+
     vec3 dim = UNPACK_FLOAT(instance.data.x);
-    if (zBufferCull(positionW.xyz, (dim.xxy * 1.001f) * instance.positionAndScale.w) > 0) {
+    if (zBufferCull(positionW.xyz, (dim.xyz * 1.1f)) > 0) {
 #       if defined(CULL_TREES)
             Data[idx].data.w = 1.0f;
 #       else //CULL_TREES

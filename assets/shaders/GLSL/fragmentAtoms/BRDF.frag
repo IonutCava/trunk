@@ -128,17 +128,13 @@ vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normal, in float
 #endif //USE_SHADING_FLAT
 
 vec4 getPixelColour(in vec4 albedo, in mat4 colourMatrix, in vec3 normal) {
-#if defined(DISABLE_SHADOW_MAPPING)
-    float shadowFactor = 1.0f;
-#else
-    float shadowFactor = getShadowFactor();
-#endif
+    const float shadowFactor = getShadowFactor();
 
     vec4 colour = vec4(getLitColour(albedo.rgb, colourMatrix, normal, shadowFactor), albedo.a);
 
 #if !defined(DISABLE_SHADOW_MAPPING) && defined(DEBUG_SHADOWMAPPING)
     if (dvd_showDebugInfo) {
-        switch (g_shadowTempInt) {
+        switch (getShadowData()) {
             case -1: colour.rgb = vec3(1.0f); break;
             case  0: colour.r += 0.15f; break;
             case  1: colour.g += 0.25f; break;

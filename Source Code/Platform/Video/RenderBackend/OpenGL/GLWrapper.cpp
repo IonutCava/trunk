@@ -75,8 +75,6 @@ GL_API::GL_API(GFXDevice& context, const bool glES)
 {
     // Only updated in Debug builds
     FRAME_DURATION_GPU = 0.f;
-    // All clip planes are disabled at first (default OpenGL state)
-    _activeClipPlanes.fill(false);
     _fontCache.second = -1;
 
     s_glConfig._glES = glES;
@@ -329,13 +327,16 @@ bool GL_API::initGLSW() {
     // Add our engine specific defines and various code pieces to every GLSL shader
     // Add version as the first shader statement, followed by copyright notice
     GLint minGLVersion = GLUtil::getIntegerv(GL_MINOR_VERSION);
+    GLint maxClipCull = GLUtil::getIntegerv(GL_MAX_COMBINED_CLIP_AND_CULL_DISTANCES);
 
     appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#version 4%d0 core", minGLVersion), lineOffsets);
 
     appendToShaderHeader(ShaderType::COUNT, "/*Copyright 2009-2019 DIVIDE-Studio*/", lineOffsets);
     appendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_shader_draw_parameters : require", lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_cull_distance : require", lineOffsets);
     appendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_gpu_shader5 : require", lineOffsets);
     appendToShaderHeader(ShaderType::COUNT, crossTypeGLSLHLSL, lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define MAX_CULL_DISTANCES %d", maxClipCull - 6), lineOffsets);
     appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define GPU_VENDOR_AMD %d", to_base(GPUVendor::AMD)), lineOffsets);
     appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define GPU_VENDOR_NVIDIA %d", to_base(GPUVendor::NVIDIA)), lineOffsets);
     appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define GPU_VENDOR_INTEL %d", to_base(GPUVendor::INTEL)), lineOffsets);

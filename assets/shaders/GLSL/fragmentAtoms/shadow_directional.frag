@@ -18,35 +18,49 @@ float VSM(vec2 moments, float fragDepth) {
     return clamp(lit, 0.0, 1.0);
 }
 
+// find the appropriate depth map to look up in based on the depth of this fragment
+int getCSMSlice(in uint idx) {
 
-float applyShadowDirectional(in uint idx, in uvec4 details) {
-    // find the appropriate depth map to look up in based on the depth of this fragment
-    g_shadowTempInt = 0;
+    int shadowTempInt = 0;
+    const float fragDepth = VAR._vertexWV.z;
     // Figure out which cascade to sample from
 
-    const float fragDepth = VAR._vertexWV.z;
     float dist = 0.0f;
-    for (; g_shadowTempInt < MAX_CSM_SPLITS_PER_LIGHT; g_shadowTempInt++) {
-        dist = dvd_shadowLightPosition[g_shadowTempInt + (idx * 6)].w;
+    for (; shadowTempInt < MAX_CSM_SPLITS_PER_LIGHT; shadowTempInt++) {
+        dist = dvd_shadowLightPosition[shadowTempInt + (idx * 6)].w;
         if (fragDepth > dist) {
             break;
         }
     }
 
     // GLOBAL
-    const int SplitPowLookup[] = { 0, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3,
-                                   LT(4), LT(5), LT(5), LT(6), LT(6), LT(6), LT(6),
-                                   LT(7), LT(7), LT(7), LT(7), LT(7), LT(7), LT(7), LT(7)};
+    const int SplitPowLookup[] = { 
+        0,
+        1, 1,
+        2, 2, 2, 2,
+        3
+#       if MAX_CSM_SPLITS_PER_LIGHT > 4
+        , 3, 3, 3, 3, 3, 3, 3,
+        LT(4),
+        LT(5), LT(5)
+#       endif //MAX_CSM_SPLITS_PER_LIGHT
+    };
+
     // Ensure that every fragment in the quad choses the same split so that derivatives
     // will be meaningful for proper texture filtering and LOD selection.
-    const int SplitPow = 1 << g_shadowTempInt;
+    const int SplitPow = 1 << shadowTempInt;
     const int SplitX = int(abs(dFdx(SplitPow)));
     const int SplitY = int(abs(dFdy(SplitPow)));
     const int SplitXY = int(abs(dFdx(SplitY)));
     const int SplitMax = max(SplitXY, max(SplitX, SplitY));
-    g_shadowTempInt = SplitMax > 0 ? SplitPowLookup[SplitMax - 1] : g_shadowTempInt;
+    
+    return SplitMax > 0 ? SplitPowLookup[SplitMax - 1] : shadowTempInt;
+}
 
-    const vec4 sc = dvd_shadowLightVP[g_shadowTempInt + (idx * 6)] * VAR._vertexW;
+float applyShadowDirectional(in uint idx, in uvec4 details) {
+    const int shadowTempInt = getCSMSlice(idx);
+
+    const vec4 sc = dvd_shadowLightVP[shadowTempInt + (idx * 6)] * VAR._vertexW;
     const vec3 shadowCoord = sc.xyz / sc.w;
 
     bool inFrustum = all(bvec4(
@@ -57,7 +71,7 @@ float applyShadowDirectional(in uint idx, in uvec4 details) {
 
     if (inFrustum && shadowCoord.z <= 1.0)
     {
-        float layer = float(g_shadowTempInt + details.y);
+        float layer = float(shadowTempInt + details.y);
 
         vec2 moments = texture(texDepthMapFromLightArray, vec3(shadowCoord.xy, layer)).rg;
        

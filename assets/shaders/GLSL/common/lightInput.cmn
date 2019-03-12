@@ -24,7 +24,7 @@ struct Light {
     /// xyz = direction(or direction for Directional lights)
     /// w = spot angle   
     vec4   _directionWV; 
-    /// x = light type: 0 - directional, 1  - point, 2 - spot
+    /// x = light type: 0 - directional, 1  - point, 2 - spot, 3 - none
     /// y = casts shadows
     /// z = reserved
     /// w = reserved

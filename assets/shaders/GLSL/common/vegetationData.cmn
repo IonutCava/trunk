@@ -14,7 +14,7 @@
 struct VegetationData {
     vec4 positionAndScale;
     vec4 orientationQuad;
-    //x - packed(0 - width extent, 1 - height extent, 2 - reserved), y = chunkID, z = array index, w - render
+    //x - packed(0 - width extent, 1 - depth extent, 2 - height extent), y = chunkID, z = array index, w - render
     vec4 data;
 };
 
@@ -24,8 +24,9 @@ layout(std430, binding = BUFFER_TREE_DATA) coherent ACCESS buffer dvd_treeTransf
 };
 
 VegetationData TreeData(in uint instanceID) {
-    return treeData[abs(int(dvd_occlusionCullFlag)) * MAX_TREE_INSTANCES + instanceID];
+    return treeData[abs(dvd_dataFlag) * MAX_TREE_INSTANCES + instanceID];
 }
+
 #endif //MAX_TREE_INSTANCES
 
 #if defined(MAX_GRASS_INSTANCES)
@@ -33,12 +34,8 @@ layout(std430, binding = BUFFER_GRASS_DATA) coherent ACCESS buffer dvd_grassTran
     VegetationData grassData[];
 };
 
-VegetationData GrassData(in uint offset, in uint instanceID) {
-    return grassData[offset * MAX_GRASS_INSTANCES + instanceID];
-}
-
 VegetationData GrassData(in uint instanceID) {
-    return GrassData(abs(int(dvd_occlusionCullFlag)), instanceID);
+    return grassData[abs(dvd_dataFlag) * MAX_GRASS_INSTANCES + instanceID];
 }
 #endif //MAX_GRASS_INSTANCES
 

@@ -51,7 +51,6 @@ class NONE_API final : public RenderAPIWrapper {
       void endFrame(DisplayWindow& window, bool global = false) override;
       ErrorCode initRenderingAPI(I32 argc, char** argv, Configuration& config) override;
       void closeRenderingAPI() override;
-      void updateClipPlanes(const FrustumClipPlanes& list) override;
       F32 getFrameDurationGPU() const override;
       size_t setStateBlock(size_t stateBlockHash) override;
       void flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) override;

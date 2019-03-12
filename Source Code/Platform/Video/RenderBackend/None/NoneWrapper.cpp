@@ -37,10 +37,6 @@ namespace Divide {
     void NONE_API::closeRenderingAPI() {
     }
 
-    void NONE_API::updateClipPlanes(const FrustumClipPlanes& list) {
-        ACKNOWLEDGE_UNUSED(list);
-    }
-
     F32 NONE_API::getFrameDurationGPU() const {
         return 0.f;
     }

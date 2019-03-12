@@ -10,9 +10,6 @@ layout(binding = SHADOW_LAYERED_MAP_ARRAY) uniform sampler2DArray          texDe
 #define DEBUG_SHADOWMAPPING
 #endif
 
-// set this to whatever (current cascade, current depth comparison result, anything)
-int g_shadowTempInt = -2;
-
 #include "shadow_directional.frag"
 #include "shadow_point.frag"
 #include "shadow_spot.frag"
@@ -20,11 +17,13 @@ int g_shadowTempInt = -2;
 float getShadowFactor() {
 
     float shadow = 1.0;
-    //uvec4 details[MAX_SHADOW_CASTING_LIGHTS] = dvd_shadowLightDetails;
+
+#if defined(DISABLE_SHADOW_MAPPING)
+    return shadow;
+#endif
 
     for (uint i = 0; i < MAX_SHADOW_CASTING_LIGHTS; ++i) {
-        //uvec4 crtDetails = details[i];
-        uvec4 crtDetails = dvd_shadowLightDetails[i];
+        const uvec4 crtDetails = dvd_shadowLightDetails[i];
 
         switch (crtDetails.x) {
             case LIGHT_DIRECTIONAL:
@@ -36,10 +35,25 @@ float getShadowFactor() {
             case LIGHT_SPOT:
                 shadow *= applyShadowSpot(i, crtDetails);
                 break;
+            case LIGHT_NONE:
+                i = MAX_SHADOW_CASTING_LIGHTS; //quit loop as these should be sorted!
+                break;
         }
     }
 
     return saturate(shadow);
 }
 
+
+int getShadowData() {
+
+    for (uint i = 0; i < MAX_SHADOW_CASTING_LIGHTS; ++i) {
+        const uvec4 crtDetails = dvd_shadowLightDetails[i];
+        switch (crtDetails.x) {
+            case LIGHT_DIRECTIONAL: return getCSMSlice(i);
+        }
+    }
+
+    return -2;
+}
 #endif //_SHADOW_MAPPING_FRAG_

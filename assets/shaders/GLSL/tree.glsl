@@ -1,10 +1,12 @@
--- Vertex
+--Vertex
+
+out flat int cull;
 
 #include "vbInputData.vert"
 #include "nodeBufferedInput.cmn"
 #include "vegetationData.cmn"
 
-void computeFoliageMovementGrass(inout vec4 vertex, in float scaleFactor) {
+void computeFoliageMovementTree(inout vec4 vertex, in float scaleFactor) {
     float timeGrass = dvd_windDetails.w * dvd_time * 0.00025f; //to seconds
     float cosX = cos(vertex.x);
     float sinX = sin(vertex.x);
@@ -18,16 +20,13 @@ void main(void){
     computeDataNoClip();
 
     VegetationData data = TreeData(VAR.dvd_instanceID);
-    float scale = data.positionAndScale.w;
-
-    if (data.data.w > 2.0f) {
-        scale = 0.0f;
-    }
-
     if (dvd_Vertex.y > 0.75f) {
         vec3 dim = UNPACK_FLOAT(data.data.x);
-        computeFoliageMovementGrass(dvd_Vertex, dim.y);
+        computeFoliageMovementTree(dvd_Vertex, dim.y);
     }
+
+    float scale = data.positionAndScale.w;
+    cull = (data.data.w > 2.0f) ? 1 : 0;
 
     dvd_Vertex.xyz = rotate_vertex_position(dvd_Vertex.xyz * scale, data.orientationQuad);
     VAR._vertexW = (dvd_Vertex + vec4(data.positionAndScale.xyz, 0.0f));
@@ -44,6 +43,26 @@ void main(void){
     //Compute the final vert position
     gl_Position = dvd_ProjectionMatrix * VAR._vertexWV;
 
+}
+
+-- Geometry
+
+in flat int cull[];
+
+layout(triangles) in;
+layout(triangle_strip, max_vertices = 3) out;
+
+void main()
+{
+    if (cull[0] == 0) {
+        for (int i = 0; i < gl_in.length(); ++i)
+        {
+            PassData(i);
+            gl_Position = gl_in[i].gl_Position;
+            EmitVertex();
+        }
+        EndPrimitive();
+    }
 }
 
 -- Fragment

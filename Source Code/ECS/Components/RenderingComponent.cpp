@@ -266,7 +266,7 @@ bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams)
             }
         }
 
-        _parentSGN.onRefreshNodeData(refreshParams._stagePass, refreshParams._bufferInOut);
+        _parentSGN.onRefreshNodeData(refreshParams._stagePass, *refreshParams._camera, refreshParams._bufferInOut);
         return true;
     }
 
@@ -291,7 +291,7 @@ void RenderingComponent::getRenderingProperties(RenderStagePass& stagePass, vec4
                                                                                       : 0.0f,
                       (shadowMappingEnabled && renderOptionEnabled(RenderOptions::RECEIVE_SHADOWS)) ? 1.0f : 0.0f,
                       to_F32(getDrawPackage(stagePass).lodLevel()),
-                      0.0f);
+                      _cullFlagValue);
 
     if (getMaterialInstanceCache() != nullptr) {
         reflectionIndex = to_F32(getMaterialInstanceCache()->defaultReflectionTextureIndex());
@@ -682,10 +682,6 @@ void RenderingComponent::drawDebugAxis() {
     } else {
         _axisGizmo->resetWorldMatrix();
     }
-}
-
-F32 RenderingComponent::cullFlagValue() const {
-    return _cullFlagValue;
 }
 
 void RenderingComponent::cullFlagValue(F32 newValue) {

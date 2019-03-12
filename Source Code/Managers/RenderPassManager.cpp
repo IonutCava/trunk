@@ -237,7 +237,7 @@ RenderPass::BufferData RenderPassManager::getBufferData(RenderStagePass stagePas
 }
 
 /// Prepare the list of visible nodes for rendering
-GFXDevice::NodeData RenderPassManager::processVisibleNode(SceneGraphNode* node, RenderStagePass stagePass, F32 cullFlagValue, bool playAnimations, const mat4<F32>& viewMatrix) const {
+GFXDevice::NodeData RenderPassManager::processVisibleNode(SceneGraphNode* node, RenderStagePass stagePass, bool playAnimations, const mat4<F32>& viewMatrix) const {
     GFXDevice::NodeData dataOut;
 
     // Extract transform data (if available)
@@ -284,7 +284,7 @@ GFXDevice::NodeData RenderPassManager::processVisibleNode(SceneGraphNode* node, 
     vec4<F32> dataRow = dataOut._colourMatrix.getRow(3);
     dataRow.z = properties.z; // lod
     //set properties.w to negative value to skip occlusion culling for the node
-    dataRow.w = cullFlagValue;
+    dataRow.w = properties.w;
     dataOut._colourMatrix.setRow(3, dataRow);
 
     // Temp: Make the hovered/selected node brighter. 
@@ -303,7 +303,7 @@ GFXDevice::NodeData RenderPassManager::processVisibleNode(SceneGraphNode* node, 
 
 void RenderPassManager::refreshNodeData(RenderStagePass stagePass,
                                         const SceneRenderState& renderState,
-                                        const mat4<F32>& viewMatrix,
+                                        const Camera& camera,
                                         const RenderQueue::SortedQueues& sortedQueues,
                                         GFX::CommandBuffer& bufferInOut)
 {
@@ -320,13 +320,14 @@ void RenderPassManager::refreshNodeData(RenderStagePass stagePass,
             RenderingComponent& renderable = *node->get<RenderingComponent>();
 
             RefreshNodeDataParams params(g_drawCommands, bufferInOut);
+            params._camera = &camera;
             params._stagePass = stagePass;
             params._nodeCount = to_U32(g_nodeData.size());
             if (params._nodeCount == Config::MAX_VISIBLE_NODES) {
                 goto skip;
             }
             if (Attorney::RenderingCompRenderPass::onRefreshNodeData(renderable, params)) {
-                g_nodeData.push_back(processVisibleNode(node, stagePass, renderable.cullFlagValue(), playAnimations, viewMatrix));
+                g_nodeData.push_back(processVisibleNode(node, stagePass, playAnimations, camera.getViewMatrix()));
             }
         }
     }
@@ -419,16 +420,9 @@ void RenderPassManager::buildDrawCommands(RenderStagePass stagePass, const PassP
     }
 
     if (refresh) {
-        GFX::MemoryBarrierCommand memCmd;
-        memCmd._barrierMask = to_base(MemoryBarrierType::SHADER_BUFFER);
-        GFX::EnqueueCommand(bufferInOut, memCmd);
-
-        refreshNodeData(stagePass, sceneRenderState, params._camera->getViewMatrix(), g_sortedQueues, bufferInOut);
+        refreshNodeData(stagePass, sceneRenderState, *params._camera, g_sortedQueues, bufferInOut);
     } else if (stagePass._stage == RenderStage::DISPLAY) {
         reorderDrawCommands(stagePass, g_sortedQueues, bufferInOut);
-        GFX::MemoryBarrierCommand memCmd;
-        memCmd._barrierMask = to_base(MemoryBarrierType::SHADER_BUFFER);
-        GFX::EnqueueCommand(bufferInOut, memCmd);
     }
 }
 
@@ -471,6 +465,11 @@ bool RenderPassManager::prePass(const PassParams& params, const RenderTarget& ta
     bool doPrePass = params._stage != RenderStage::SHADOW &&
                      params._target._usage != RenderTargetUsage::COUNT &&
                      target.getAttachment(RTAttachmentType::Depth, 0).used();
+
+    // We need to add a barrier here for various buffer updates: grass/tree culling, draw command buffer updates, etc
+    GFX::MemoryBarrierCommand memCmd;
+    memCmd._barrierMask = to_base(MemoryBarrierType::SHADER_BUFFER);
+    GFX::EnqueueCommand(bufferInOut, memCmd);
 
     if (doPrePass) {
 
@@ -717,15 +716,19 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
         const Texture_ptr& HiZTex = _context.constructHIZ(params._target, params._targetHIZ, bufferInOut);
         _context.occlusionCull(getBufferData(RenderStagePass(params._stage, RenderPassType::PRE_PASS, params._passVariant, params._passIndex)),
                                HiZTex,
-                               params._camera->getZPlanes(),
+                               *params._camera,
                                bufferInOut);
-        if (params._stage == RenderStage::DISPLAY) {
-            GFX::MemoryBarrierCommand memCmd;
-            memCmd._barrierMask = to_base(MemoryBarrierType::COUNTER);
-            GFX::EnqueueCommand(bufferInOut, memCmd);
 
+        // Occlusion culling barrier
+        GFX::MemoryBarrierCommand memCmd;
+        memCmd._barrierMask = to_base(MemoryBarrierType::SHADER_BUFFER);
+
+        if (params._stage == RenderStage::DISPLAY) {
+            memCmd._barrierMask |= to_base(MemoryBarrierType::COUNTER);
             _context.updateCullCount(bufferInOut);
         }
+
+        GFX::EnqueueCommand(bufferInOut, memCmd);
     }
 
     mainPass(params, target, bufferInOut, prePassExecuted);

@@ -77,22 +77,6 @@ void GL_API::clearStates(const DisplayWindow& window, GLStateTracker& stateTrack
     Attorney::GLAPIShaderProgram::unbind();
 }
 
-/// Clipping planes are only enabled/disabled if they differ from the current
-/// state
-void GL_API::updateClipPlanes(const FrustumClipPlanes& list) {
-    // For every clip plane that we support (usually 6)
-    for (U32 i = 0; i < to_base(ClipPlaneIndex::COUNT); ++i) {
-        // Check its state and compare it with OpenGL's current state
-        bool& activePlane = _activeClipPlanes[i];
-        if (activePlane != list._active[i]) {
-            // Update the clip plane if it differs internally
-            activePlane = !activePlane;
-            activePlane ? glEnable(GLenum((U32)GL_CLIP_DISTANCE0 + i))
-                        : glDisable(GLenum((U32)GL_CLIP_DISTANCE0 + i));
-        }
-    }
-}
-
 bool GL_API::deleteBuffers(GLuint count, GLuint* buffers) {
     if (count > 0 && buffers != nullptr) {
         for (GLuint i = 0; i < count; ++i) {

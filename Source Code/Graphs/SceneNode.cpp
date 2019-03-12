@@ -96,9 +96,11 @@ bool SceneNode::onRender(SceneGraphNode& sgn,
 
 void SceneNode::onRefreshNodeData(SceneGraphNode& sgn,
                                   RenderStagePass renderStagePass,
+                                  const Camera& camera,
                                   GFX::CommandBuffer& bufferInOut) {
     ACKNOWLEDGE_UNUSED(sgn);
     ACKNOWLEDGE_UNUSED(renderStagePass);
+    ACKNOWLEDGE_UNUSED(camera);
     ACKNOWLEDGE_UNUSED(bufferInOut);
 }
 

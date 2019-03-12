@@ -37,10 +37,6 @@ namespace Divide {
     void VK_API::closeRenderingAPI() {
     }
 
-    void VK_API::updateClipPlanes(const FrustumClipPlanes& list) {
-        ACKNOWLEDGE_UNUSED(list);
-    }
-
     F32 VK_API::getFrameDurationGPU() const {
         return 0.f;
     }

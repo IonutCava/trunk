@@ -503,8 +503,8 @@ bool SceneGraphNode::prepareRender(const Camera& camera, RenderStagePass renderS
     return _node->onRender(*this, camera, renderStagePass, refreshData);
 }
 
-void SceneGraphNode::onRefreshNodeData(RenderStagePass renderStagePass, GFX::CommandBuffer& bufferInOut) {
-    _node->onRefreshNodeData(*this, renderStagePass, bufferInOut);
+void SceneGraphNode::onRefreshNodeData(RenderStagePass renderStagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut) {
+    _node->onRefreshNodeData(*this, renderStagePass, camera, bufferInOut);
 }
 
 bool SceneGraphNode::getDrawState(RenderStagePass stagePass, U8 LoD) const {

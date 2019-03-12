@@ -104,9 +104,9 @@ private:
     const RenderPass& getPassForStage(RenderStage renderStage) const;
     void prepareRenderQueues(RenderStagePass stagePass, const PassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut);
     void buildDrawCommands(RenderStagePass stagePass, const PassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut);
-    void refreshNodeData(RenderStagePass stagePass, const SceneRenderState& renderState, const mat4<F32>& viewMatrix, const RenderQueue::SortedQueues& sortedQueues, GFX::CommandBuffer& bufferInOut);
+    void refreshNodeData(RenderStagePass stagePass, const SceneRenderState& renderState, const Camera& camera, const RenderQueue::SortedQueues& sortedQueues, GFX::CommandBuffer& bufferInOut);
     void reorderDrawCommands(RenderStagePass stagePass, const RenderQueue::SortedQueues& sortedQueues, GFX::CommandBuffer& bufferInOut);
-    GFXDevice::NodeData processVisibleNode(SceneGraphNode* node, RenderStagePass stagePass, F32 cullFlagValue, bool playAnimations, const mat4<F32>& viewMatrix) const;
+    GFXDevice::NodeData processVisibleNode(SceneGraphNode* node, RenderStagePass stagePass, bool playAnimations, const mat4<F32>& viewMatrix) const;
 
 private: //TEMP
     friend class RenderBin;

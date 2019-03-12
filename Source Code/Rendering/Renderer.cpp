@@ -62,13 +62,12 @@ void Renderer::preRender(RenderStagePass stagePass,
     bindDescriptorSetsCmd._set._textureData.setTexture(depthTexture->getData(), to_U8(ShaderProgram::TextureUsage::DEPTH));
     GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
 
-    if (stagePass._stage != RenderStage::SHADOW) {
-        lightPool.uploadLightData(stagePass._stage, bufferInOut);
-        if (stagePass._stage != RenderStage::DISPLAY) {
-            return;
-        }
+    if (stagePass._stage == RenderStage::SHADOW) {
+        return;
+    }
 
-    } else { 
+    lightPool.uploadLightData(stagePass._stage, bufferInOut);
+    if (stagePass._stage != RenderStage::DISPLAY) {
         return;
     }
 
@@ -87,6 +86,7 @@ void Renderer::preRender(RenderStagePass stagePass,
         Config::Lighting::ForwardPlus::NUM_TILES_X,
         Config::Lighting::ForwardPlus::NUM_TILES_Y,
         1);
+
     assert(computeCmd._computeGroupSize.lengthSquared() > 0);
     GFX::EnqueueCommand(bufferInOut, computeCmd);
 

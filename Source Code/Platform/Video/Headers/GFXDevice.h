@@ -162,7 +162,7 @@ public:
     struct NodeData {
         mat4<F32> _worldMatrix = MAT4_IDENTITY;
         mat4<F32> _normalMatrixW = MAT4_IDENTITY;
-        mat4<F32> _colourMatrix = MAT4_IDENTITY;
+        mat4<F32> _colourMatrix = MAT4_ZERO;
     };
 
 public:  // GPU interface
@@ -375,7 +375,7 @@ protected:
 
     void occlusionCull(const RenderPass::BufferData& bufferData,
                        const Texture_ptr& depthBuffer,
-                       const vec2<F32>& zPlanes,
+                       const Camera& camera,
                        GFX::CommandBuffer& bufferInOut) const;
 
     // Returns the HiZ texture that can be sent directly to occlusionCull
