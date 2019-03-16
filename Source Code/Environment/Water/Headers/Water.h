@@ -76,7 +76,6 @@ class WaterPlane : public SceneNode {
     bool load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) override;
 
    private:
-    void updateBoundsInternal() override;
     void updateReflection(RenderCbkParams& renderParams, GFX::CommandBuffer& bufferInOut);
     void updateRefraction(RenderCbkParams& renderParams, GFX::CommandBuffer& bufferInOut);
 

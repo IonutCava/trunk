@@ -49,7 +49,7 @@ namespace Divide {
         void PostUpdate(F32 dt) override;
 
       protected:
-        void onBoundsChanged(BoundsComponent* bComp) const;
+        void onBoundsChanged(SceneGraphNode& sgn) const;
     };
 };
 

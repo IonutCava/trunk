@@ -7,15 +7,13 @@
 flat out int _arrayLayerFrag;
 flat out float _alphaFactor;
 
-uniform uint offset;
-
 void computeFoliageMovementGrass(inout vec4 vertex, in float heightExtent) {
     float timeGrass = dvd_windDetails.w * dvd_time * 0.00025f; //to seconds
     float cosX = cos(vertex.x);
     float sinX = sin(vertex.x);
     float halfScale = 0.5f * heightExtent;
-    vertex.x += (halfScale*cos(timeGrass) * cosX * sinX) *dvd_windDetails.x;
-    vertex.z += (halfScale*sin(timeGrass) * cosX * sinX) *dvd_windDetails.z;
+    vertex.x += (halfScale * cos(timeGrass) * cosX * sinX) *dvd_windDetails.x;
+    vertex.z += (halfScale * sin(timeGrass) * cosX * sinX) *dvd_windDetails.z;
 }
 
 void main()
@@ -24,9 +22,7 @@ void main()
 
     VegetationData data = GrassData(VAR.dvd_instanceID);
 
-    vec3 dim = UNPACK_FLOAT(data.data.x);
-
-    float LoD = data.data.w;
+    float LoD = data.data.z;
     float scale = data.positionAndScale.w;
 
     if (LoD > 2.0f) {
@@ -35,10 +31,10 @@ void main()
     }
 
     if (dvd_Vertex.y > 0.75) {
-        computeFoliageMovementGrass(dvd_Vertex, dim.y);
+        computeFoliageMovementGrass(dvd_Vertex, data.data.w);
     }
 
-    _arrayLayerFrag = int(data.data.z);
+    _arrayLayerFrag = int(data.data.x);
     _alphaFactor = min(1.0f - LoD, 1.0f);
     if (_alphaFactor > 0.5f) {
         _alphaFactor = 1.0f;

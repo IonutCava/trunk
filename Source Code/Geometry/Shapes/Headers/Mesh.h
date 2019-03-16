@@ -88,7 +88,6 @@ class Mesh : public Object3D {
     virtual void sceneUpdate(const U64 deltaTimeUS,
                              SceneGraphNode& sgn,
                              SceneState& sceneState);
-    void updateBoundsInternal() override;
 
    protected:
     bool _visibleToNetwork;

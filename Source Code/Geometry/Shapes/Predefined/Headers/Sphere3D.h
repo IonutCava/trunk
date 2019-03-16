@@ -55,8 +55,6 @@ class Sphere3D : public Object3D {
     // SuperBible stuff
     void rebuildVB() override;
 
-    void updateBoundsInternal() override;
-
   protected:
     F32 _radius;
     U32 _resolution;

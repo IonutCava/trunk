@@ -88,13 +88,9 @@ void Sphere3D::rebuildVB() {
     vb->create();
     vb->queueRefresh();
     _geometryTriangles.resize(0);
-    setBoundsChanged();
-}
 
-void Sphere3D::updateBoundsInternal() {
-    // add some depth padding for collision and nav meshes
-    _boundingBox.set(vec3<F32>(-_radius), vec3<F32>(_radius));
-    Object3D::updateBoundsInternal();
+    // ToDo: add some depth padding for collision and nav meshes
+    setBounds(BoundingBox(vec3<F32>(-_radius), vec3<F32>(_radius)));
 }
 
 void Sphere3D::saveToXML(boost::property_tree::ptree& pt) const {

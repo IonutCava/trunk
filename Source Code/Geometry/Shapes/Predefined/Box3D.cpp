@@ -42,7 +42,7 @@ Box3D::Box3D(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHa
     }
 
     vb->create(false);
-    setBoundsChanged();
+    setBounds(BoundingBox(-_halfExtent * 0.5f, _halfExtent * 0.5f));
 }
 
 void Box3D::setHalfExtent(const vec3<F32>& halfExtent) {
@@ -65,7 +65,7 @@ void Box3D::setHalfExtent(const vec3<F32>& halfExtent) {
     }
 
     vb->queueRefresh();
-    setBoundsChanged();
+    setBounds(BoundingBox(-_halfExtent * 0.5f, _halfExtent * 0.5f));
 }
 
 void Box3D::fromPoints(const std::initializer_list<vec3<F32>>& points,
@@ -75,18 +75,12 @@ void Box3D::fromPoints(const std::initializer_list<vec3<F32>>& points,
     vb->modifyPositionValues(0, points);
     vb->queueRefresh();
     _halfExtent = halfExtent;
-    setBoundsChanged();
-}
-
-void Box3D::updateBoundsInternal() {
-    _boundingBox.set(-_halfExtent * 0.5f, _halfExtent * 0.5f);
-    Object3D::updateBoundsInternal();
+    setBounds(BoundingBox(-_halfExtent * 0.5f, _halfExtent * 0.5f));
 }
 
 const vec3<F32>& Box3D::getHalfExtent() const {
     return _halfExtent;
 }
-
 
 void Box3D::saveToXML(boost::property_tree::ptree& pt) const {
     pt.put("halfExtent.<xmlattr>.x", _halfExtent.x);

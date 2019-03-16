@@ -24,6 +24,7 @@ Mesh::Mesh(GFXDevice& context,
       _visibleToNetwork(true),
       _animator(nullptr)
 {
+    _boundingBox.reset();
 }
 
 Mesh::~Mesh()
@@ -35,12 +36,9 @@ void Mesh::addSubMesh(SubMesh_ptr subMesh) {
     _subMeshList.push_back(subMesh);
 
     Attorney::SubMeshMesh::setParentMesh(*subMesh.get(), this);
-    setBoundsChanged();
-}
-
-void Mesh::updateBoundsInternal() {
-    _boundingBox.reset();
-    Object3D::updateBoundsInternal();
+    _boundingBox.add(subMesh->getBounds());
+    // set our flags and everything else that might happen in this call
+    setBounds(_boundingBox);
 }
 
 void Mesh::setMaterialTpl(const Material_ptr& material) {

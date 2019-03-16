@@ -48,8 +48,6 @@ class Box3D : public Object3D {
    void fromPoints(const std::initializer_list<vec3<F32>>& points,
                    const vec3<F32>& halfExtent);
 
-   void updateBoundsInternal() override;
-
    void saveToXML(boost::property_tree::ptree& pt) const override;
    void loadFromXML(const boost::property_tree::ptree& pt)  override;
 

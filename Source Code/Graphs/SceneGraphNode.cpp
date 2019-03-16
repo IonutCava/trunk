@@ -91,7 +91,6 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescr
     name(descriptor._name.empty() ? Util::StringFormat("%s_SGN", _node->resourceName().c_str()) : descriptor._name);
 
     AddMissingComponents(descriptor._componentMask);
-
     Attorney::SceneNodeSceneGraph::registerSGNParent(*_node, this);
 }
 

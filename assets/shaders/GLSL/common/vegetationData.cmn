@@ -14,7 +14,7 @@
 struct VegetationData {
     vec4 positionAndScale;
     vec4 orientationQuad;
-    //x - packed(0 - width extent, 1 - depth extent, 2 - height extent), y = chunkID, z = array index, w - render
+    //x - array index, y - chunk ID, z - render flag, w - height scale
     vec4 data;
 };
 

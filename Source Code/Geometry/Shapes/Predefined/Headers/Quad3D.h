@@ -63,8 +63,6 @@ class Quad3D : public Object3D {
     // Remember to invert for 2D mode
     void setDimensions(const vec4<F32>& rect);
 
-    void updateBoundsInternal() override;
-
 };
 
 TYPEDEF_SMART_POINTERS_FOR_TYPE(Quad3D);

@@ -10,27 +10,22 @@ namespace Divide {
         : ECSSystem(parentEngine),
           PlatformContextComponent(context)
     {
-
     }
-
 
     BoundsSystem::~BoundsSystem()
     {
     }
 
-    void BoundsSystem::onBoundsChanged(BoundsComponent* bComp) const {
-        ECS::EntityManager* entityManager = _engine.GetEntityManager();
-        const ECS::EntityId owner = bComp->GetOwner();
-        ECS::IEntity* entity = entityManager->GetEntity(owner);
-        SceneGraphNode* parent = static_cast<SceneGraphNode*>(entity);
-
+    // Recures all the way up to the root
+    void BoundsSystem::onBoundsChanged(SceneGraphNode& sgn) const {
+        SceneGraphNode* parent = sgn.getParent();
         if (parent != nullptr) {
-            SceneNode& node = parent->getNode();
-            node.updateBoundsInternal();
-            bComp->onBoundsChange(node.getBoundsInternal());
+            Attorney::SceneNodeBoundsComponent::setBoundsChanged(parent->getNode());
+            onBoundsChanged(*parent);
         }
     }
 
+    // Set all parent nodes' bbs to dirty if any child changed his bb. This step just sets the flags!
     void BoundsSystem::PreUpdate(F32 dt) {
         U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
@@ -39,34 +34,42 @@ namespace Divide {
         auto bCompEnd = compManager->end<BoundsComponent>();
         for (;bComp != bCompEnd; ++bComp)
         {
-            if (bComp->isBoundsChanged()) {
-                onBoundsChanged(bComp.operator->());
+            SceneGraphNode& sgn = bComp->getSGN();
+            if (Attorney::SceneNodeBoundsComponent::boundsChanged(sgn.getNode())) {
+                bComp->flagBoundingBoxDirty(false);
+                onBoundsChanged(sgn);
             }
 
             bComp->PreUpdate(microSec);
         }
     }
 
+    // Grab all of the update bounding boxes where needed. This step does not clear the flags!
     void BoundsSystem::Update(F32 dt) {
         U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
         auto compManager = _engine.GetComponentManager();
         auto bComp = compManager->begin<BoundsComponent>();
         auto bCompEnd = compManager->end<BoundsComponent>();
-        for (;bComp != bCompEnd; ++bComp)
-        {
+        for (;bComp != bCompEnd; ++bComp) {
+            const SceneNode& sceneNode = bComp->getSGN().getNode();
+            if (Attorney::SceneNodeBoundsComponent::boundsChanged(sceneNode)) {
+                bComp->setRefBoundingBox(sceneNode.getBounds());
+            }
+
             bComp->Update(microSec);
         }
     }
 
+    // Everything should be up-to-date, so we could clear all of the flags. 
     void BoundsSystem::PostUpdate(F32 dt) {
         U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
         auto compManager = _engine.GetComponentManager();
         auto bComp = compManager->begin<BoundsComponent>();
         auto bCompEnd = compManager->end<BoundsComponent>();
-        for (; bComp != bCompEnd; ++bComp)
-        {
+        for (; bComp != bCompEnd; ++bComp) {
+            Attorney::SceneNodeBoundsComponent::clearBoundsChanged(bComp->getSGN().getNode());
             bComp->PostUpdate(microSec);
         }
     }

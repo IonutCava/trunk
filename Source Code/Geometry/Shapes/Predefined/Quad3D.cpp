@@ -46,7 +46,12 @@ Quad3D::Quad3D(GFXDevice& context,
 
     getGeometryVB()->computeTangents();
     getGeometryVB()->create();
-    setBoundsChanged();
+    
+
+    BoundingBox boundingBox;
+    boundingBox.setMax(getGeometryVB()->getPosition(1));
+    boundingBox.setMin(getGeometryVB()->getPosition(2) + vec3<F32>(0.0f, 0.0f, 0.0025f));
+    setBounds(boundingBox);
 }
 
 vec3<F32> Quad3D::getCorner(CornerLocation corner) {
@@ -111,7 +116,11 @@ void Quad3D::setCorner(CornerLocation corner, const vec3<F32>& value) {
             break;
     }
     getGeometryVB()->queueRefresh();
-    setBoundsChanged();
+
+    BoundingBox boundingBox;
+    boundingBox.setMax(getGeometryVB()->getPosition(1));
+    boundingBox.setMin(getGeometryVB()->getPosition(2) + vec3<F32>(0.0f, 0.0f, 0.0025f));
+    setBounds(boundingBox);
 }
 
 // rect.xy = Top Left; rect.zw = Bottom right
@@ -122,13 +131,12 @@ void Quad3D::setDimensions(const vec4<F32>& rect) {
     getGeometryVB()->modifyPositionValue(2, rect.x, rect.y, 0);
     getGeometryVB()->modifyPositionValue(3, rect.z, rect.y, 0);
     getGeometryVB()->queueRefresh();
-    setBoundsChanged();
+    
+
+    BoundingBox boundingBox;
+    boundingBox.setMax(getGeometryVB()->getPosition(1));
+    boundingBox.setMin(getGeometryVB()->getPosition(2) + vec3<F32>(0.0f, 0.0f, 0.0025f));
+    setBounds(boundingBox);
 }
 
-void Quad3D::updateBoundsInternal() {
-    // add some depth padding for collision and nav meshes
-    _boundingBox.setMax(getGeometryVB()->getPosition(1));
-    _boundingBox.setMin(getGeometryVB()->getPosition(2) + vec3<F32>(0.0f, 0.0f, 0.0025f));
-    Object3D::updateBoundsInternal();
-}
 }; //namespace Divide

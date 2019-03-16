@@ -50,8 +50,6 @@ namespace Divide {
         inline bool ignoreTransform() const { return _ignoreTransform; }
         inline void ignoreTransform(bool state) { _ignoreTransform = state; }
 
-        inline void boundsChanged() { _boundsChanged = true; }
-
     protected:
         friend class SceneGraph;
         friend class BoundsSystem;
@@ -60,14 +58,12 @@ namespace Divide {
         void PostUpdate(const U64 deltaTimeUS) override;
 
         // Flag the current BB as dirty and also flag all of the parents' bbs as dirty as well
-        void flagBoundingBoxDirty();
+        void flagBoundingBoxDirty(bool recursive);
         const BoundingBox& updateAndGetBoundingBox();
         void onTransformUpdated(const TransformUpdated* event);
-        void onBoundsChange(const BoundingBox& nodeBounds);
-        inline bool isBoundsChanged() const { return _boundsChanged; }
+        void setRefBoundingBox(const BoundingBox& nodeBounds);
 
     private:
-        std::atomic_bool _boundsChanged;
         std::atomic_bool _ignoreTransform;
         std::atomic_flag _boundingBoxNotDirty = ATOMIC_FLAG_INIT;
         BoundingBox _boundingBox;

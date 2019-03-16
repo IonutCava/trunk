@@ -37,6 +37,8 @@ SceneNode::SceneNode(ResourceCache& parentCache, size_t descriptorHash, const st
      _parentCache(parentCache),
      _materialTemplate(nullptr),
      _type(type),
+     _sgnParentCount(0),
+     _boundsChanged(true),
      _editorComponent("")
 {
     getEditorComponent().name(getTypeName());
@@ -104,26 +106,13 @@ void SceneNode::onRefreshNodeData(SceneGraphNode& sgn,
     ACKNOWLEDGE_UNUSED(bufferInOut);
 }
 
-void SceneNode::updateBoundsInternal() {
-}
-
 void SceneNode::postLoad(SceneGraphNode& sgn) {
-    BoundsComponent* bComp = sgn.get<BoundsComponent>();
-    if (bComp) {
-        bComp->boundsChanged();
-    }
     sgn.postLoad();
 }
 
-void SceneNode::setBoundsChanged() {
-    for (SceneGraphNode* parent : _sgnParents) {
-        assert(parent != nullptr);
-        
-        BoundsComponent* bComp = parent->get<BoundsComponent>();
-        if (bComp) {
-            bComp->boundsChanged();
-        }
-    }
+void SceneNode::setBounds(const BoundingBox& aabb) {
+    _boundsChanged = true;
+    _boundingBox.set(aabb);
 }
 
 bool SceneNode::getDrawState(const SceneGraphNode& sgn, RenderStagePass currentStagePass, U8 LoD) const {
@@ -206,30 +195,6 @@ void SceneNode::saveToXML(boost::property_tree::ptree& pt) const {
 
 void SceneNode::loadFromXML(const boost::property_tree::ptree& pt) {
     ACKNOWLEDGE_UNUSED(pt);
-}
-
-void Attorney::SceneNodeSceneGraph::registerSGNParent(SceneNode& node, SceneGraphNode* sgn) {
-    // prevent double add
-    I64 targetGUID = sgn ? -1 : sgn->getGUID();
-    vector<SceneGraphNode*>::const_iterator it;
-    it = std::find_if(std::cbegin(node._sgnParents), std::cend(node._sgnParents), [targetGUID](SceneGraphNode* sgn) {
-        return sgn && sgn->getGUID() == targetGUID;
-    });
-    assert(it == std::cend(node._sgnParents));
-
-    node._sgnParents.push_back(sgn);
-}
-
-void Attorney::SceneNodeSceneGraph::unregisterSGNParent(SceneNode& node, SceneGraphNode* sgn) {
-    // prevent double remove
-    I64 targetGUID = sgn ? sgn->getGUID() : -1;
-    vector<SceneGraphNode*>::const_iterator it;
-    it = std::find_if(std::cbegin(node._sgnParents), std::cend(node._sgnParents), [targetGUID](SceneGraphNode* sgn) {
-        return sgn && sgn->getGUID() == targetGUID;
-    });
-    assert(it != std::cend(node._sgnParents));
-
-    node._sgnParents.erase(it);
 }
 
 };

@@ -103,7 +103,10 @@ bool WaterPlane::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallb
 
     _plane = CreateResource<Quad3D>(_parentCache, waterPlane);
     
-    setBoundsChanged();
+    F32 halfWidth = _dimensions.width * 0.5f;
+    F32 halfLength = _dimensions.height * 0.5f;
+
+    setBounds(BoundingBox(vec3<F32>(-halfWidth, -_dimensions.depth, -halfLength), vec3<F32>(halfWidth, 0, halfLength)));
 
     return SceneNode::load(onLoadCallback);
 }
@@ -139,15 +142,6 @@ void WaterPlane::postLoad(SceneGraphNode& sgn) {
     renderable->toggleRenderOption(RenderingComponent::RenderOptions::CAST_SHADOWS, false);
 
     SceneNode::postLoad(sgn);
-}
-
-void WaterPlane::updateBoundsInternal() {
-    F32 halfWidth = _dimensions.width * 0.5f;
-    F32 halfLength = _dimensions.height * 0.5f;
-
-    _boundingBox.set(vec3<F32>(-halfWidth, -_dimensions.depth, -halfLength), vec3<F32>(halfWidth, 0, halfLength));
-
-    SceneNode::updateBoundsInternal();
 }
 
 bool WaterPlane::pointUnderwater(const SceneGraphNode& sgn, const vec3<F32>& point) {

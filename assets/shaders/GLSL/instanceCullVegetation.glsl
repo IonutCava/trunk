@@ -17,12 +17,16 @@ vec3 rotate_vertex_position(vec3 position, vec4 q) {
     return v + 2.0 * cross(q.xyz, cross(q.xyz, v) + q.w * v);
 }
 
+uniform vec4 treeExtents;
+uniform vec4 grassExtents;
 #if defined(CULL_TREES)
 #   define MAX_INSTANCES MAX_TREE_INSTANCES
 #   define Data treeData
+#   define Extents treeExtents
 #else //CULL_TREES
 #   define MAX_INSTANCES MAX_GRASS_INSTANCES
 #   define Data grassData
+#   define Extents grassExtents
 #endif //CULL_TREES
 
 
@@ -35,27 +39,30 @@ void main(void) {
     uint idx = offset * MAX_INSTANCES + gl_GlobalInvocationID.x;
 
     VegetationData instance = Data[idx];
-    Data[idx].data.w = 1.0f;
+    Data[idx].data.z = 1.0f;
 
     vec4 positionW = vec4(instance.positionAndScale.xyz, 1.0f);
 #if !defined(CULL_TREES)
     // Too far away // ToDo: underwater check:
     float dist = distance(positionW.xyz, dvd_cameraPosition.xyz);
     if (dist > dvd_visibilityDistance || IsUnderWater(positionW.xyz)) {
-        Data[idx].data.w = 3.0f;
+        Data[idx].data.z = 3.0f;
         return;
     }
 #endif //CULL_TREES
+    vec3 extents = Extents.xyz;
+    float scale = instance.positionAndScale.w;
 
-    vec3 dim = UNPACK_FLOAT(instance.data.x);
-    if (zBufferCull(positionW.xyz, (dim.xyz * 1.1f)) > 0) {
+    Data[idx].data.w = extents.y * scale;
+
+    if (zBufferCull(positionW.xyz, (extents * scale) * 1.1f) > 0) {
 #       if defined(CULL_TREES)
-            Data[idx].data.w = 1.0f;
+            Data[idx].data.z = 1.0f;
 #       else //CULL_TREES
             const float minDist = 0.01f;
-            Data[idx].data.w = saturate((dist - minDist) / (dvd_visibilityDistance - minDist));
+            Data[idx].data.z = saturate((dist - minDist) / (dvd_visibilityDistance - minDist));
 #       endif //CULL_TREES
     } else {
-        Data[idx].data.w = 3.0f;
+        Data[idx].data.z = 3.0f;
     }
 }

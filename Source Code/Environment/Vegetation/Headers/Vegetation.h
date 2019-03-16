@@ -114,7 +114,6 @@ class Vegetation : public SceneNode {
    private:
     void uploadVegetationData();
     void computeVegetationTransforms(const Task& parentTask, bool treeData);
-    void updateBoundsInternal() override;
 
    private:
     GFXDevice& _context;
@@ -128,6 +127,8 @@ class Vegetation : public SceneNode {
     U64 _stateRefreshIntervalUS = 0ULL;
     U64 _stateRefreshIntervalBufferUS = 0ULL;
     vec4<F32> _grassScales, _treeScales;
+    vec4<F32> _grassExtents;
+    vec4<F32> _treeExtents;
     vectorEASTL<stringImpl> _treeMeshNames;
     std::shared_ptr<ImageTools::ImageData> _grassMap;  ///< Dispersion map for grass placement
     std::shared_ptr<ImageTools::ImageData> _treeMap;  ///< Dispersion map for tree placement

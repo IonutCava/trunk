@@ -84,8 +84,7 @@ void SkinnedSubMesh::buildBoundingBoxesForAnim(const Task& parentTask,
 
 void SkinnedSubMesh::updateBB(I32 animIndex) {
     UniqueLock r_lock(_bbLock);
-    _boundingBox.set(_boundingBoxes[animIndex]);
-    setBoundsChanged();
+    setBounds(_boundingBoxes[animIndex]);
 }
 
 void SkinnedSubMesh::computeBBForAnimation(SceneGraphNode& sgn, I32 animIndex) {

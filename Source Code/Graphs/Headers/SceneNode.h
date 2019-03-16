@@ -50,6 +50,9 @@ class SceneState;
 class WorldPacket;
 class RenderPackage;
 class SceneRenderState;
+
+class BoundsSystem;
+class BoundsComponent;
 class NetworkingComponent;
 
 struct RenderStagePass;
@@ -59,6 +62,7 @@ FWD_DECLARE_MANAGED_CLASS(Material);
 
 namespace Attorney {
     class SceneNodeSceneGraph;
+    class SceneNodeBoundsComponent;
     class SceneNodeNetworkComponent;
 };
 
@@ -84,6 +88,7 @@ enum class SceneNodeType : U16 {
 
 class SceneNode : public CachedResource {
     friend class Attorney::SceneNodeSceneGraph;
+    friend class Attorney::SceneNodeBoundsComponent;
     friend class Attorney::SceneNodeNetworkComponent;
 
   public:
@@ -135,7 +140,7 @@ class SceneNode : public CachedResource {
     ResourceCache& parentResourceCache() { return _parentCache; }
     const ResourceCache& parentResourceCache() const { return _parentCache; }
 
-    inline const BoundingBox& getBoundsInternal() const { return _boundingBox; }
+    inline const BoundingBox& getBounds() const { return _boundingBox; }
 
     virtual void saveCache(ByteBuffer& outputBuffer) const;
     virtual void loadCache(ByteBuffer& inputBuffer);
@@ -153,9 +158,8 @@ class SceneNode : public CachedResource {
 
     // Post insertion calls (Use this to setup child objects during creation)
     virtual void postLoad(SceneGraphNode& sgn);
-    virtual void updateBoundsInternal();
 
-    virtual void setBoundsChanged();
+    virtual void setBounds(const BoundingBox& aabb);
 
     EditorComponent& getEditorComponent() { return _editorComponent; }
     const EditorComponent& getEditorComponent() const { return _editorComponent; }
@@ -173,14 +177,16 @@ class SceneNode : public CachedResource {
     ResourceCache& _parentCache;
     /// The various states needed for rendering
     SceneNodeRenderState _renderState;
+
     /// The initial bounding box as it was at object's creation (i.e. no transforms applied)
     BoundingBox _boundingBox;
+    bool _boundsChanged = false;
 
    private:
     SceneNodeType _type;
     Material_ptr _materialTemplate;
 
-    vector<SceneGraphNode*> _sgnParents;
+    std::atomic_size_t _sgnParentCount = 0;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_TYPE(SceneNode);
@@ -204,12 +210,20 @@ class SceneNodeSceneGraph {
         node.sceneUpdate(deltaTimeUS, sgn, sceneState);
     }
 
-    static void registerSGNParent(SceneNode& node, SceneGraphNode* sgn);
+    static void registerSGNParent(SceneNode& node, SceneGraphNode* sgn) {
+        ACKNOWLEDGE_UNUSED(sgn);
 
-    static void unregisterSGNParent(SceneNode& node, SceneGraphNode* sgn);
+        node._sgnParentCount.fetch_add(1);
+    }
+
+    static void unregisterSGNParent(SceneNode& node, SceneGraphNode* sgn) {
+        ACKNOWLEDGE_UNUSED(sgn);
+
+        node._sgnParentCount.fetch_sub(1);
+    }
 
     static size_t parentCount(const SceneNode& node) {
-        return node._sgnParents.size();
+        return node._sgnParentCount.load();
     }
 
     static size_t maxReferenceCount(const SceneNode& node) {
@@ -235,6 +249,24 @@ class SceneNodeNetworkComponent {
     }
 
     friend class Divide::NetworkingComponent;
+};
+
+class SceneNodeBoundsComponent {
+  private:
+    static bool boundsChanged(const SceneNode& node) {
+        return node._boundsChanged;
+    }
+
+    static void setBoundsChanged(SceneNode& node) {
+        node._boundsChanged = true;
+    }
+
+    static void clearBoundsChanged(SceneNode& node) {
+        node._boundsChanged = false;
+    }
+
+    friend class Divide::BoundsComponent;
+    friend class Divide::BoundsSystem;
 };
 
 };  // namespace Attorney

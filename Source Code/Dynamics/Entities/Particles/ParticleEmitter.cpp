@@ -45,7 +45,6 @@ ParticleEmitter::ParticleEmitter(GFXDevice& context, ResourceCache& parentCache,
       _particleShader(nullptr),
       _particleDepthShader(nullptr)
 {
-    _tempBB.set(-VECTOR3_UNIT, VECTOR3_UNIT);
     for (U8 i = 0; i < s_MaxPlayerBuffers; ++i) {
         for (U8 j = 0; j < to_base(RenderStage::COUNT); ++j) {
             _particleGPUBuffers[i][j] = _context.newGVD(g_particleBufferSizeFactor);
@@ -217,7 +216,6 @@ bool ParticleEmitter::unload() noexcept {
 
 void ParticleEmitter::postLoad(SceneGraphNode& sgn) {
     sgn.get<BoundsComponent>()->ignoreTransform(true);
-    setBoundsChanged();
     SceneNode::postLoad(sgn);
 }
 
@@ -363,11 +361,11 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTimeUS,
         _bbUpdate = CreateTask(_context.context(), 
               [this, aliveCount, averageEmitRate](const Task& parentTask)
         {
-            _tempBB.reset();
+            BoundingBox aabb;
             for (U32 i = 0; i < aliveCount; i += to_U32(averageEmitRate) / 4) {
-                _tempBB.add(_particles->_position[i]);
+                aabb.add(_particles->_position[i]);
             }
-            setBoundsChanged();
+            setBounds(aabb);
         });
         _bbUpdate.startTask();
     }
@@ -380,19 +378,6 @@ U32 ParticleEmitter::getAliveParticleCount() const {
         return 0;
     }
     return _particles->aliveCount();
-}
-
-void ParticleEmitter::updateBoundsInternal() {
-    _bbUpdate.wait();
-
-    U32 aliveCount = getAliveParticleCount();
-    if (aliveCount > 2) {
-        _boundingBox.set(_tempBB);
-    } else {
-        _boundingBox.set(-VECTOR3_UNIT, VECTOR3_UNIT);
-    }
-
-    SceneNode::updateBoundsInternal();
 }
 
 };

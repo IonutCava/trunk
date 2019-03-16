@@ -6,11 +6,11 @@ out flat int cull;
 #include "nodeBufferedInput.cmn"
 #include "vegetationData.cmn"
 
-void computeFoliageMovementTree(inout vec4 vertex, in float scaleFactor) {
+void computeFoliageMovementTree(inout vec4 vertex, in float heightExtent) {
     float timeGrass = dvd_windDetails.w * dvd_time * 0.00025f; //to seconds
     float cosX = cos(vertex.x);
     float sinX = sin(vertex.x);
-    float halfScale = 0.5 * scaleFactor;
+    float halfScale = 0.5 * heightExtent;
     vertex.x += (halfScale * cos(timeGrass) * cosX * sinX) * dvd_windDetails.x;
     vertex.z += (halfScale * sin(timeGrass) * cosX * sinX) * dvd_windDetails.z;
 }
@@ -21,12 +21,11 @@ void main(void){
 
     VegetationData data = TreeData(VAR.dvd_instanceID);
     if (dvd_Vertex.y > 0.75f) {
-        vec3 dim = UNPACK_FLOAT(data.data.x);
-        computeFoliageMovementTree(dvd_Vertex, dim.y);
+        computeFoliageMovementTree(dvd_Vertex, data.data.w);
     }
 
     float scale = data.positionAndScale.w;
-    cull = (data.data.w > 2.0f) ? 1 : 0;
+    cull = (data.data.z > 2.0f) ? 1 : 0;
 
     dvd_Vertex.xyz = rotate_vertex_position(dvd_Vertex.xyz * scale, data.orientationQuad);
     VAR._vertexW = (dvd_Vertex + vec4(data.positionAndScale.xyz, 0.0f));

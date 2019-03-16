@@ -1,6 +1,8 @@
 layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D HiZBuffer;
 
 uniform mat4 viewProjectionMatrix;
+uniform mat4 projectionMatrix;
+uniform vec2 viewportDimensions;
 
 vec4 BoundingBox[8];
 int PassThrough(const in vec3 position, const in vec3 extents) {
@@ -66,17 +68,17 @@ int zBufferCull(const in vec3 view_center, const in float radius) {
     vec2 vert1 = vert_cos_sin.xy - vert_cos_sin.zw;
 
     vec4 projected = -0.5 *
-                     vec4(dvd_ProjectionMatrix[0][0],
-                          dvd_ProjectionMatrix[0][0],
-                          dvd_ProjectionMatrix[1][1],
-                          dvd_ProjectionMatrix[1][1]) *
+                     vec4(projectionMatrix[0][0],
+                          projectionMatrix[0][0],
+                          projectionMatrix[1][1],
+                          projectionMatrix[1][1]) *
                      vec4(horiz0.x, horiz1.x, vert0.x, vert1.x) /
                      vec4(horiz0.y, horiz1.y, vert0.y, vert1.y) + 0.5;
 
     vec2 min_xy = projected.yw;
     vec2 max_xy = projected.xz;
 
-    vec2 zw = mat2(dvd_ProjectionMatrix[2].zw, dvd_ProjectionMatrix[3].zw) * vec2(nearest_z, 1.0);
+    vec2 zw = mat2(projectionMatrix[2].zw, projectionMatrix[3].zw) * vec2(nearest_z, 1.0);
     nearest_z = 0.5 * zw.x / zw.y + 0.5;
 
     vec2 diff_pix = (max_xy - min_xy) * vec2(textureSize(HiZBuffer, 0));
@@ -124,8 +126,8 @@ int zBufferCull(const in vec3 position, const in vec3 extents) {
                               min(min(BoundingBox[4].z, BoundingBox[5].z),
                                   min(BoundingBox[6].z, BoundingBox[7].z)));
     /* now we calculate the bounding rectangle size in viewport coordinates */
-    float ViewSizeX = (BoundingRect[1].x - BoundingRect[0].x) * dvd_ViewPort.z;
-    float ViewSizeY = (BoundingRect[1].y - BoundingRect[0].y) * dvd_ViewPort.w;
+    float ViewSizeX = (BoundingRect[1].x - BoundingRect[0].x) * viewportDimensions.x;
+    float ViewSizeY = (BoundingRect[1].y - BoundingRect[0].y) * viewportDimensions.y;
 
     /* now we calculate the texture LOD used for lookup in the depth buffer texture */
     float LOD = ceil(log2(max(ViewSizeX, ViewSizeY) / 2.0));
