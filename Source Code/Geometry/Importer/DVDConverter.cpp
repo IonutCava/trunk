@@ -7,9 +7,12 @@
 
 #include <assimp/types.h>
 #include <assimp/scene.h>
+#include <assimp/Logger.hpp>
 #include <assimp/Importer.hpp>
 #include <assimp/Exporter.hpp>
+#include <assimp/LogStream.hpp>
 #include <assimp/postprocess.h>
+#include <assimp/DefaultLogger.hpp>
 #include "Utility/Headers/XMLParser.h"
 #include "Core/Headers/Console.h"
 #include "Core/Headers/StringHelper.h"
@@ -25,6 +28,21 @@
 
 namespace Divide {
     namespace {
+        bool g_wasSetUp = false;
+
+        class assimpStream : public Assimp::LogStream {
+        public:
+            assimpStream() = default;
+            ~assimpStream() = default;
+
+            void write(const char* message) {
+                Console::printf("%s\n", message);
+            }
+        };
+
+        // Select the kinds of messages you want to receive on this log stream
+        const U32 severity = Config::Build::IS_DEBUG_BUILD ? Assimp::Logger::VERBOSE : Assimp::Logger::NORMAL;
+
         constexpr bool g_removeLinesAndPoints = true;
 
         struct vertexWeight {
@@ -104,6 +122,12 @@ DVDConverter::DVDConverter()
 }
 
 DVDConverter::DVDConverter(PlatformContext& context, Import::ImportData& target, bool& result) {
+    if (!g_wasSetUp) {
+        g_wasSetUp = true;
+        Assimp::DefaultLogger::create("", Assimp::Logger::VERBOSE);
+        Assimp::DefaultLogger::get()->attachStream(new assimpStream(), severity);
+    }
+
     result = load(context, target);
 }
 
@@ -124,16 +148,15 @@ bool DVDConverter::load(PlatformContext& context, Import::ImportData& target) {
     importer.SetPropertyInteger(AI_CONFIG_IMPORT_TER_MAKE_UVS, 1);
     importer.SetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, 80.0f);
 
-    U32 ppsteps =
-        aiProcess_TransformUVCoords |  // Preprocess UV transformations (scaling, translation ...)
-        aiProcess_FindInstances |      // Search for instanced meshes and remove them by references to one master
+    U32 ppsteps = aiProcessPreset_TargetRealtime_Quality | aiProcess_TransformUVCoords;// Preprocess UV transformations (scaling, translation ...)
+      /*aiProcess_FindInstances |      // Search for instanced meshes and remove them by references to one master
         aiProcess_OptimizeMeshes |     // Join small meshes, if possible;
-        /*aiProcess_OptimizeGraph |*/  // Nodes without animations/bones/lights/cameras are collapsed & joined.
+        //aiProcess_OptimizeGraph |  // Nodes without animations/bones/lights/cameras are collapsed & joined.
         aiProcess_CalcTangentSpace | aiProcess_GenSmoothNormals |
         aiProcess_JoinIdenticalVertices | aiProcess_ImproveCacheLocality |
         aiProcess_LimitBoneWeights | aiProcess_RemoveRedundantMaterials |
         aiProcess_Triangulate | aiProcess_GenUVCoords | aiProcess_SortByPType |
-        aiProcess_FindDegenerates | aiProcess_FindInvalidData | 0;
+        aiProcess_FindDegenerates | aiProcess_FindInvalidData | 0;*/
 
     const aiScene* aiScenePointer = importer.ReadFile((filePath + "/" + fileName).c_str(), ppsteps);
 
@@ -213,7 +236,8 @@ bool DVDConverter::load(PlatformContext& context, Import::ImportData& target) {
                             previousOffset);
 
         loadSubMeshMaterial(subMeshTemp._material,
-                            aiScenePointer->mMaterials[currentMesh->mMaterialIndex],
+                            aiScenePointer,
+                            to_U16(currentMesh->mMaterialIndex),
                             subMeshTemp._name + "_material",
                             subMeshTemp._boneCount > 0);
                             
@@ -319,9 +343,12 @@ void DVDConverter::loadSubMeshGeometry(const aiMesh* source,
 }
 
 void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
-                                       const aiMaterial* source,
+                                       const aiScene* source,
+                                       const U16 materialIndex,
                                        const stringImpl& materialName,
                                        bool skinned) {
+
+    const aiMaterial* mat = source->mMaterials[materialIndex];
 
     material._name = materialName;
     Material::ColourData& data = material._colourData;
@@ -329,7 +356,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
     data._diffuse.set(0.8f, 0.8f, 0.8f, 1.0f);
     // Load diffuse colour
     aiColor4D diffuse;
-    if (AI_SUCCESS == aiGetMaterialColor(source, AI_MATKEY_COLOR_DIFFUSE, &diffuse)) {
+    if (AI_SUCCESS == aiGetMaterialColor(mat, AI_MATKEY_COLOR_DIFFUSE, &diffuse)) {
         data._diffuse.set(&diffuse.r);
     } else {
         Console::d_printfn(Locale::get(_ID("MATERIAL_NO_DIFFUSE")), materialName.c_str());
@@ -338,7 +365,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
     // Ignore ambient colour
     vec4<F32> ambientTemp(0.0f, 0.0f, 0.0f, 1.0f);
     aiColor4D ambient;
-    if (AI_SUCCESS == aiGetMaterialColor(source, AI_MATKEY_COLOR_AMBIENT, &ambient)) {
+    if (AI_SUCCESS == aiGetMaterialColor(mat, AI_MATKEY_COLOR_AMBIENT, &ambient)) {
         ambientTemp.set(&ambient.r);
     } else {
         // no ambient
@@ -348,7 +375,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
     data._specular.set(1.0f, 1.0f, 1.0f, 1.0f);
     // Load specular colour
     aiColor4D specular;
-    if (AI_SUCCESS == aiGetMaterialColor(source, AI_MATKEY_COLOR_SPECULAR, &specular)) {
+    if (AI_SUCCESS == aiGetMaterialColor(mat, AI_MATKEY_COLOR_SPECULAR, &specular)) {
         data._specular.set(&specular.r);
     } else {
         Console::d_printfn(Locale::get(_ID("MATERIAL_NO_SPECULAR")), materialName.c_str());
@@ -358,32 +385,32 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
     data._emissive.set(0.0f, 0.0f, 0.0f, 1.0f);
     // Load emissive colour
     aiColor4D emissive;
-    if (AI_SUCCESS == aiGetMaterialColor(source, AI_MATKEY_COLOR_EMISSIVE, &emissive)) {
+    if (AI_SUCCESS == aiGetMaterialColor(mat, AI_MATKEY_COLOR_EMISSIVE, &emissive)) {
         data._emissive.set(&emissive.r);
     }
 
     // Load material opacity value
-    aiGetMaterialFloat(source, AI_MATKEY_OPACITY, &data._diffuse.a);
+    aiGetMaterialFloat(mat, AI_MATKEY_OPACITY, &data._diffuse.a);
 
     // default shading model
     I32 shadingModel = to_base(Material::ShadingMode::PHONG);
     // Load shading model
-    aiGetMaterialInteger(source, AI_MATKEY_SHADING_MODEL, &shadingModel);
+    aiGetMaterialInteger(mat, AI_MATKEY_SHADING_MODEL, &shadingModel);
     material._shadingMode = aiShadingModeInternalTable[shadingModel];
 
     // Default shininess values
     F32 shininess = 15, strength = 1;
     // Load shininess
-    aiGetMaterialFloat(source, AI_MATKEY_SHININESS, &shininess);
+    aiGetMaterialFloat(mat, AI_MATKEY_SHININESS, &shininess);
     // Load shininess strength
-    aiGetMaterialFloat(source, AI_MATKEY_SHININESS_STRENGTH, &strength);
+    aiGetMaterialFloat(mat, AI_MATKEY_SHININESS_STRENGTH, &strength);
     F32 finalValue = shininess * strength;
     CLAMP<F32>(finalValue, 0.0f, 255.0f);
     data._shininess = finalValue;
 
     // check if material is two sided
     I32 two_sided = 0;
-    aiGetMaterialInteger(source, AI_MATKEY_TWOSIDED, &two_sided);
+    aiGetMaterialInteger(mat, AI_MATKEY_TWOSIDED, &two_sided);
     material._doubleSided = two_sided != 0;
 
     aiString tName;
@@ -401,13 +428,22 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
     // While we still have diffuse textures
     while (result == AI_SUCCESS) {
         // Load each one
-        result = source->GetTexture(aiTextureType_DIFFUSE, count, &tName,
-                                    &mapping, &uvInd, &blend, &op, mode);
+        result = mat->GetTexture(aiTextureType_DIFFUSE, count, &tName, &mapping, &uvInd, &blend, &op, mode);
+
         if (result != AI_SUCCESS) {
             break;
         }
         if (tName.length == 0) {
             break;
+        }
+
+        // it might be an embedded texture
+        //const aiTexture* texture = mat->GetEmbeddedTexture(tName.C_Str());
+        
+        //if (texture != nullptr )
+        {
+            int a;
+            a = 5;
         }
 
         // get full path
@@ -426,16 +462,15 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
             Import::TextureEntry& texture = material._textures[to_U32(usage)];
 
             // Load the texture resource
-            if (IS_IN_RANGE_INCLUSIVE(mode[0], aiTextureMapMode_Wrap,
-                                      aiTextureMapMode_Decal) &&
-                IS_IN_RANGE_INCLUSIVE(mode[1], aiTextureMapMode_Wrap,
-                                      aiTextureMapMode_Decal) &&
-                IS_IN_RANGE_INCLUSIVE(mode[2], aiTextureMapMode_Wrap,
-                                      aiTextureMapMode_Decal)) {
+            if (IS_IN_RANGE_INCLUSIVE(mode[0], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
+                IS_IN_RANGE_INCLUSIVE(mode[1], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
+                IS_IN_RANGE_INCLUSIVE(mode[2], aiTextureMapMode_Wrap, aiTextureMapMode_Decal))
+            {
                 texture._wrapU = aiTextureMapModeTable[mode[0]];
                 texture._wrapV = aiTextureMapModeTable[mode[1]];
                 texture._wrapW = aiTextureMapModeTable[mode[2]];
             }
+
             texture._textureName = img_name;
             texture._texturePath = img_path;
             // The first texture is always "Replace"
@@ -451,11 +486,11 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
         if (count == 2) {
             break;
         }
+
         STUBBED("ToDo: Use more than 2 textures for each material. Fix This! -Ionut")
     }  // endwhile
 
-    result = source->GetTexture(aiTextureType_NORMALS, 0, &tName, &mapping,
-                                &uvInd, &blend, &op, mode);
+    result = mat->GetTexture(aiTextureType_NORMALS, 0, &tName, &mapping, &uvInd, &blend, &op, mode);
     if (result == AI_SUCCESS) {
         stringImpl path(Paths::g_assetsLocation + Paths::g_texturesLocation + tName.data);
 
@@ -483,8 +518,8 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
         }  // endif
     } // endif
 
-    result = source->GetTexture(aiTextureType_HEIGHT, 0, &tName, &mapping,
-                                &uvInd, &blend, &op, mode);
+    result = mat->GetTexture(aiTextureType_HEIGHT, 0, &tName, &mapping,&uvInd, &blend, &op, mode);
+
     if (result == AI_SUCCESS) {
         stringImpl path(Paths::g_assetsLocation + Paths::g_texturesLocation + tName.data);
 
@@ -514,12 +549,11 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
     } // endif
 
     I32 flags = 0;
-    aiGetMaterialInteger(source, AI_MATKEY_TEXFLAGS_DIFFUSE(0), &flags);
+    aiGetMaterialInteger(mat, AI_MATKEY_TEXFLAGS_DIFFUSE(0), &flags);
     material._ignoreAlpha = (flags & aiTextureFlags_IgnoreAlpha) != 0;
 
     if (!material._ignoreAlpha) {
-        result = source->GetTexture(aiTextureType_OPACITY, 0, &tName, &mapping,
-                                    &uvInd, &blend, &op, mode);
+        result = mat->GetTexture(aiTextureType_OPACITY, 0, &tName, &mapping, &uvInd, &blend, &op, mode);
         if (result == AI_SUCCESS) {
             stringImpl path(Paths::g_assetsLocation + Paths::g_texturesLocation + tName.data);
 
@@ -550,8 +584,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
         } 
     }
 
-    result = source->GetTexture(aiTextureType_SPECULAR, 0, &tName, &mapping,
-                                &uvInd, &blend, &op, mode);
+    result = mat->GetTexture(aiTextureType_SPECULAR, 0, &tName, &mapping, &uvInd, &blend, &op, mode);
     if (result == AI_SUCCESS) {
         stringImpl path(Paths::g_assetsLocation + Paths::g_texturesLocation + tName.data);
 

@@ -5,6 +5,8 @@
   <flushCommandBuffersOnFrame>-1</flushCommandBuffersOnFrame>
   <enableRenderAPIDebugging>true</enableRenderAPIDebugging>
   <enableDebugMsgGroups>false</enableDebugMsgGroups>
+  <useGeometryCache>true</useGeometryCache>
+  <useVegetationCache>true</useVegetationCache>
   <useShaderBinaryCache>false</useShaderBinaryCache>
   <!-- this is only taken into consideration if binary cache is disabled-->
   <useShaderTextCache>false</useShaderTextCache>

@@ -57,6 +57,8 @@ public:
         I32 flushCommandBuffersOnFrame;
         bool enableRenderAPIDebugging;
         bool enableDebugMsgGroups;
+        bool useGeometryCache;
+        bool useVegetationCache;
         bool useShaderBinaryCache;
         bool useShaderTextCache;
         stringImpl memFile;

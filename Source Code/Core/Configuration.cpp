@@ -17,6 +17,8 @@ Configuration::Configuration() : XML::IXMLSerializable()
     debug.flushCommandBuffersOnFrame = -1;
     debug.enableRenderAPIDebugging = true;
     debug.enableDebugMsgGroups = false;
+    debug.useGeometryCache = true;
+    debug.useVegetationCache = true;
     debug.useShaderBinaryCache = false;
     debug.useShaderTextCache = false;
     debug.memFile = "none";
@@ -91,6 +93,8 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(debug.flushCommandBuffersOnFrame);
         GET_PARAM(debug.enableRenderAPIDebugging);
         GET_PARAM(debug.enableDebugMsgGroups);
+        GET_PARAM(debug.useGeometryCache);
+        GET_PARAM(debug.useVegetationCache);
         GET_PARAM(debug.useShaderBinaryCache);
         GET_PARAM(debug.useShaderTextCache);
         GET_PARAM(debug.memFile);
@@ -173,6 +177,8 @@ bool Configuration::toXML(const char* xmlFile) const {
     PUT_PARAM(debug.flushCommandBuffersOnFrame);
     PUT_PARAM(debug.enableRenderAPIDebugging);
     PUT_PARAM(debug.enableDebugMsgGroups);
+    PUT_PARAM(debug.useGeometryCache);
+    PUT_PARAM(debug.useVegetationCache);
     PUT_PARAM(debug.useShaderBinaryCache);
     PUT_PARAM(debug.useShaderTextCache);
     PUT_PARAM(debug.memFile);

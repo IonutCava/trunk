@@ -68,6 +68,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Platform/Video/Textures/Headers/Texture.h"
 
 struct aiMesh;
+struct aiScene;
 struct aiMaterial;
 
 namespace Divide {
@@ -98,7 +99,8 @@ class DVDConverter {
                              U32& previousVertOffset);
 
     void loadSubMeshMaterial(Import::MaterialData& material,
-                             const aiMaterial* source,
+                             const aiScene* source,
+                             const U16 materialIndex,
                              const stringImpl& materialName,
                              bool skinned);
 

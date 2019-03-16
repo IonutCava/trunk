@@ -4,6 +4,7 @@
 #include "Headers/DVDConverter.h"
 
 #include "Core/Headers/Console.h"
+#include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Time/Headers/ProfileTimer.h"
 #include "Core/Resources/Headers/ResourceCache.h"
@@ -177,7 +178,7 @@ namespace Import {
         importTimer.start();
 
         bool success = false;
-        if (!dataOut.loadFromFile(context, Paths::g_cacheLocation + Paths::g_geometryCacheLocation, dataOut._modelName)) {
+        if (!context.config().debug.useGeometryCache || !dataOut.loadFromFile(context, Paths::g_cacheLocation + Paths::g_geometryCacheLocation, dataOut._modelName)) {
             Console::printfn(Locale::get(_ID("MESH_NOT_LOADED_FROM_FILE")), dataOut._modelName.c_str());
 
             DVDConverter converter(context, dataOut, success);

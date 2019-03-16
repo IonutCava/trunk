@@ -3,6 +3,7 @@
 #include "Headers/Vegetation.h"
 
 #include "Core/Headers/Kernel.h"
+#include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 
@@ -40,7 +41,6 @@ namespace Divide {
 
 namespace {
     constexpr U32 WORK_GROUP_SIZE = 64;
-    constexpr bool g_disableLoadFromCache = false;
     constexpr I16 g_maxRadiusSteps = 512;
 };
 
@@ -540,7 +540,7 @@ void Vegetation::computeVegetationTransforms(const Task& parentTask, bool treeDa
     vectorEASTL<VegetationData>& container = treeData ? _tempTreeData : _tempGrassData;
 
     ByteBuffer chunkCache;
-    if (!g_disableLoadFromCache && chunkCache.loadFromFile(Paths::g_cacheLocation + Paths::g_terrainCacheLocation, cacheFileName)) {
+    if (_context.context().config().debug.useVegetationCache && chunkCache.loadFromFile(Paths::g_cacheLocation + Paths::g_terrainCacheLocation, cacheFileName)) {
         container.resize(chunkCache.read<size_t>());
         chunkCache.read(reinterpret_cast<Byte*>(container.data()), sizeof(VegetationData) * container.size());
     } else {
