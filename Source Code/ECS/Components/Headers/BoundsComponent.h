@@ -47,6 +47,8 @@ namespace Divide {
         inline const BoundingBox& getBoundingBox() const { return _boundingBox; }
         inline const BoundingSphere& getBoundingSphere() const { return _boundingSphere; }
 
+        const BoundingBox& updateAndGetBoundingBox();
+
         inline bool ignoreTransform() const { return _ignoreTransform; }
         inline void ignoreTransform(bool state) { _ignoreTransform = state; }
 
@@ -59,16 +61,17 @@ namespace Divide {
 
         // Flag the current BB as dirty and also flag all of the parents' bbs as dirty as well
         void flagBoundingBoxDirty(bool recursive);
-        const BoundingBox& updateAndGetBoundingBox();
         void onTransformUpdated(const TransformUpdated* event);
         void setRefBoundingBox(const BoundingBox& nodeBounds);
 
     private:
         std::atomic_bool _ignoreTransform;
-        std::atomic_flag _boundingBoxNotDirty = ATOMIC_FLAG_INIT;
+        std::atomic_bool _boundingBoxDirty;
         BoundingBox _boundingBox;
         BoundingBox _refBoundingBox;
         BoundingSphere _boundingSphere;
+        std::mutex _bbLock;
+        TransformComponent* _tCompCache = nullptr;
     };
 
     INIT_COMPONENT(BoundsComponent);

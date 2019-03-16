@@ -78,7 +78,8 @@ void Quadtree::build(GFXDevice& context,
 
 const BoundingBox& Quadtree::computeBoundingBox() {
     assert(_root);
-    _root->computeBoundingBox();
+    BoundingBox rootBB = _root->getBoundingBox();
+    _root->computeBoundingBox(rootBB);
     return _root->getBoundingBox();
 }
 };

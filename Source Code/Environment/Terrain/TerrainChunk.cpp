@@ -34,7 +34,7 @@ TerrainChunk::~TerrainChunk()
 {
 }
 
-void TerrainChunk::load(U8 depth, const vec2<U32>& pos, U32 _targetChunkDimension, const vec2<U32>& HMsize) {
+void TerrainChunk::load(U8 depth, const vec2<U32>& pos, U32 _targetChunkDimension, const vec2<U32>& HMsize, BoundingBox& bbInOut) {
     _xOffset = to_F32(pos.x) - HMsize.x * 0.5f;
     _yOffset = to_F32(pos.y) - HMsize.y * 0.5f;
     _sizeX = _sizeY = to_F32(_targetChunkDimension);
@@ -78,7 +78,9 @@ void TerrainChunk::load(U8 depth, const vec2<U32>& pos, U32 _targetChunkDimensio
         }
     }
 
-    _heightBounds.set(tempMin, tempMax);
+    bbInOut.setMin(bbInOut.getMin().x, tempMin, bbInOut.getMin().z);
+    bbInOut.setMax(bbInOut.getMax().x, tempMax, bbInOut.getMax().z);
+
     _vegetation.reset(new Vegetation(_context, *this, Attorney::TerrainChunk::vegetationDetails(parent())));
     Attorney::TerrainChunk::registerTerrainChunk(*_parentTerrain, this);
 }

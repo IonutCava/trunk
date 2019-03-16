@@ -61,11 +61,9 @@ class TerrainChunk {
     TerrainChunk(GFXDevice& context, Terrain* const parentTerrain, const QuadtreeNode& parentNode);
     ~TerrainChunk();
 
-    void load(U8 depth, const vec2<U32>& pos, U32 targetChunkDimension, const vec2<U32>& HMsize);
+    void load(U8 depth, const vec2<U32>& pos, U32 targetChunkDimension, const vec2<U32>& HMsize, BoundingBox& bbInOut);
 
     inline U32 ID() const { return _ID; }
-    inline F32 getMinHeight() const { return _heightBounds.x; }
-    inline F32 getMaxHeight() const { return _heightBounds.y; }
 
     inline vec4<F32> getOffsetAndSize() const {
         return vec4<F32>(_xOffset, _yOffset, _sizeX, _sizeY);
@@ -90,7 +88,6 @@ class TerrainChunk {
     F32 _yOffset;
     F32 _sizeX;
     F32 _sizeY;
-    vec2<F32> _heightBounds;  //< 0 = minHeight, 1 = maxHeight
     Terrain* _parentTerrain;
     Vegetation_ptr _vegetation;
 };

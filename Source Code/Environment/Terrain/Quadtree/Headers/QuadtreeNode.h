@@ -71,7 +71,7 @@ class QuadtreeNode {
                Terrain* const terrain,
                U32& chunkCount);
 
-    bool computeBoundingBox();
+    bool computeBoundingBox(BoundingBox& parentBB);
     
     void drawBBox(GFXDevice& context, RenderPackage& packageOut);
 

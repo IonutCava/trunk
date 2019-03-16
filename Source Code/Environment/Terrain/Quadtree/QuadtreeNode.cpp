@@ -51,7 +51,7 @@ void QuadtreeNode::build(GFXDevice& context,
 
     if (std::max(newsize.x, newsize.y) < _targetChunkDimension) {
         _terrainChunk = std::make_unique<TerrainChunk>(context, terrain, *this);
-        _terrainChunk->load(depth, pos, _targetChunkDimension, HMsize);
+        _terrainChunk->load(depth, pos, _targetChunkDimension, HMsize, _boundingBox);
         chunkCount++;
     } else {
         // Create 4 children
@@ -84,41 +84,16 @@ void QuadtreeNode::build(GFXDevice& context,
     }
 }
 
-bool QuadtreeNode::computeBoundingBox() {
-    if (_terrainChunk != nullptr) {
-        _boundingBox.setMin(vec3<F32>(_boundingBox.getMin().x,
-                                      _terrainChunk->getMinHeight(),
-                                      _boundingBox.getMin().z));
-        _boundingBox.setMax(vec3<F32>(_boundingBox.getMax().x,
-                                      _terrainChunk->getMaxHeight(),
-                                      _boundingBox.getMax().z));
-    }
-
+bool QuadtreeNode::computeBoundingBox(BoundingBox& parentBB) {
     if (!isALeaf()) {
-        for (I8 i = 0; i < 4; i++) {
-            QuadtreeNode& child = *_children[i];
-
-            child.computeBoundingBox();
-
-            if (_boundingBox.getMin().y >
-                child._boundingBox.getMin().y) {
-                _boundingBox.setMin(
-                    vec3<F32>(_boundingBox.getMin().x,
-                              child._boundingBox.getMin().y,
-                              _boundingBox.getMin().z));
-            }
-
-            if (_boundingBox.getMax().y <
-                child._boundingBox.getMax().y) {
-                _boundingBox.setMax(
-                    vec3<F32>(_boundingBox.getMax().x,
-                              child._boundingBox.getMax().y,
-                              _boundingBox.getMax().z));
-            }
+        for (I8 i = 0; i < 4; ++i) {
+            _children[i]->computeBoundingBox(_boundingBox);
         }
     }
 
+    parentBB.add(_boundingBox);
     _boundingSphere.fromBoundingBox(_boundingBox);
+
     return true;
 }
 

@@ -11,13 +11,14 @@ namespace Divide {
 
 BoundsComponent::BoundsComponent(SceneGraphNode& sgn, PlatformContext& context)
     : BaseComponentType<BoundsComponent, ComponentType::BOUNDS>(sgn, context),
-     _ignoreTransform(false)
+     _ignoreTransform(false),
+     _tCompCache(sgn.get<TransformComponent>())
 {
     _refBoundingBox.set(sgn.getNode().getBounds());
     _boundingBox.set(_refBoundingBox);
     _boundingSphere.fromBoundingBox(_boundingBox);
 
-    _boundingBoxNotDirty.clear();
+    _boundingBoxDirty.store(true);
 
     RegisterEventCallback(&BoundsComponent::onTransformUpdated);
     _editorComponent.registerField("BoundingBox", &_boundingBox, EditorComponentFieldType::BOUNDING_BOX, true);
@@ -31,7 +32,8 @@ BoundsComponent::~BoundsComponent()
 }
 
 void BoundsComponent::flagBoundingBoxDirty(bool recursive) {
-    _boundingBoxNotDirty.clear();
+    _boundingBoxDirty.store(true);
+
     if (recursive) {
         SceneGraphNode* parent = _parentSGN.getParent();
         if (parent != nullptr) {
@@ -53,26 +55,28 @@ void BoundsComponent::onTransformUpdated(const TransformUpdated* event) {
 void BoundsComponent::setRefBoundingBox(const BoundingBox& nodeBounds) {
     // All the parents should already be dirty thanks to the bounds system
     _refBoundingBox.set(nodeBounds);
-    _boundingBoxNotDirty.clear();
+    _boundingBoxDirty.store(true);
 }
 
 const BoundingBox& BoundsComponent::updateAndGetBoundingBox() {
-    if (!_boundingBoxNotDirty.test_and_set()) {
-        _boundingBox.set(_refBoundingBox);
+    if (_boundingBoxDirty.load()) {
+        UniqueLock w_lock(_bbLock);
 
-        _parentSGN.forEachChild([this](const SceneGraphNode& child) {
-            _boundingBox.add(child.get<BoundsComponent>()->updateAndGetBoundingBox());
-        });
+        if (_boundingBoxDirty.load()) {
+            _boundingBox.set(_refBoundingBox);
 
-        if (!_ignoreTransform) {
-            TransformComponent* tComp = _parentSGN.get<TransformComponent>();
-            if (tComp) {
-                _boundingBox.transform(tComp->getWorldMatrix());
+            _parentSGN.forEachChild([this](const SceneGraphNode& child) {
+                _boundingBox.add(child.get<BoundsComponent>()->updateAndGetBoundingBox());
+            });
+
+            if (!_ignoreTransform && _tCompCache != nullptr) {
+                _boundingBox.transform(_tCompCache->getWorldMatrix());
             }
-        }
 
-        _boundingSphere.fromBoundingBox(_boundingBox);
-        _parentSGN.SendEvent<BoundsUpdated>(GetOwner());
+            _boundingSphere.fromBoundingBox(_boundingBox);
+            _parentSGN.SendEvent<BoundsUpdated>(GetOwner());
+            _boundingBoxDirty.store(false);
+        }
     }
 
     return _boundingBox;

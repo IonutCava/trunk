@@ -243,7 +243,7 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 m
         }
     }
 
-    PointRadius = 7.5f;
+    PointRadius = 7.0f;
     dR = 2.5f * PointRadius; // Distance between concentric rings
 
     for (I16 RadiusStepA = 0; RadiusStepA < g_maxRadiusSteps; ++RadiusStepA) {
@@ -382,7 +382,7 @@ void Vegetation::postLoad(SceneGraphNode& sgn) {
                                to_base(ComponentType::RENDERING);
 
     U32 ID = _terrainChunk.ID();
-    size_t meshID = ID % _treeMeshNames.size();
+    U32 meshID = to_U32(ID % _treeMeshNames.size());
 
     ResourceDescriptor model("Tree");
     model.assetLocation(Paths::g_assetsLocation + "models");
@@ -400,7 +400,7 @@ void Vegetation::postLoad(SceneGraphNode& sgn) {
     nodeDescriptor._instanceCount = _instanceCountTrees;
 
     assert(s_grassData != nullptr);
-    if (false && _instanceCountTrees > 0) {
+    if (_instanceCountTrees > 0) {
         nodeDescriptor._name = Util::StringFormat("Trees_chunk_%d", ID);
         SceneGraphNode* node = sgn.addNode(nodeDescriptor);
         node->lockVisibility(true);
@@ -409,7 +409,7 @@ void Vegetation::postLoad(SceneGraphNode& sgn) {
         const vec4<F32>& offset = _terrainChunk.getOffsetAndSize();
         tComp->setPositionX(offset.x + offset.z * 0.5f);
         tComp->setPositionZ(offset.y + offset.w * 0.5f);
-        tComp->setScale(meshID == 1 ? 1.0f : 0.01f);
+        tComp->setScale(_treeScales[meshID]);
 
         node->forEachChild([ID](SceneGraphNode& child) {
             RenderingComponent* rComp = child.get<RenderingComponent>();
@@ -417,7 +417,7 @@ void Vegetation::postLoad(SceneGraphNode& sgn) {
             rComp->cullFlagValue(ID * -1.0f);
         });
 
-        const vec3<F32>& extents = node->get<BoundsComponent>()->getBoundingBox().getExtent();
+        const vec3<F32>& extents = node->get<BoundsComponent>()->updateAndGetBoundingBox().getExtent();
         _treeExtents.set(extents, 0);
     }
 
@@ -544,6 +544,10 @@ void Vegetation::computeVegetationTransforms(const Task& parentTask, bool treeDa
         container.resize(chunkCache.read<size_t>());
         chunkCache.read(reinterpret_cast<Byte*>(container.data()), sizeof(VegetationData) * container.size());
     } else {
+
+        U32 ID = _terrainChunk.ID();
+        U32 meshID = to_U32(ID % _treeMeshNames.size());
+
         const vec2<F32>& chunkSize = _terrainChunk.getOffsetAndSize().zw();
         const vec2<F32>& chunkPos = _terrainChunk.getOffsetAndSize().xy();
         const F32 waterLevel = 0.0f;// ToDo: make this dynamic! (cull underwater points later on?)
@@ -585,7 +589,7 @@ void Vegetation::computeVegetationTransforms(const Task& parentTask, bool treeDa
                 continue;
             }
 
-            const F32 xmlScale = treeData ? _treeScales[index] : _grassScales[index];
+            const F32 xmlScale = treeData ? _treeScales[meshID] : _grassScales[index];
             // Don't go under 75% of the scale specified in the data files
             const F32 minXmlScale = (xmlScale * 7.5f) / 10.0f;
             // Don't go over 75% of the cale specified in the data files

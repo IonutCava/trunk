@@ -19,10 +19,10 @@
     <grassBillboard2 scale = "0.5">grass_billboards1.png</grassBillboard2>
     <grassBillboard3 scale = "1.0">grass_billboards2.png</grassBillboard3>
     <grassBillboard4 scale = "1.0">grass_billboards3.png</grassBillboard4>
-	<treeMap>warTerrainAlpha_Alpha1.tga</treesMap>
+    <treeMap>warTerrainAlpha_Alpha1.tga</treesMap>
     <treeMesh1 scale = "0.02">copac.obj</treeMesh1>
-	<treeMesh2 scale = "5.0">Pin.obj</treeMesh2>
-	<!--<treeMesh3 scale = "1.0">copacel.obj</treeMesh3>-->
+    <treeMesh2 scale = "0.01">Pin.obj</treeMesh2>
+    <!--<treeMesh3 scale = "1.0">copacel.obj</treeMesh3>-->
 </vegetation>
 <textureLayers>
     <layer0>
