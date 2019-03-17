@@ -217,10 +217,10 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name, Imag
             parallel_for(_context.context(), findAlpha, width, g_partitionSize);
         }
 
-        Console::d_printfn(Locale::get(_ID("TEXTURE_HAS_TRANSPARENCY_TRANSLUCENCY")),
-                                        name.c_str(),
-                                        _hasTransparency ? "yes" : "no",
-                                        _hasTranslucency ? "yes" : "no");
+        Console::printfn(Locale::get(_ID("TEXTURE_HAS_TRANSPARENCY_TRANSLUCENCY")),
+                                      name.c_str(),
+                                      _hasTransparency ? "yes" : "no",
+                                      _hasTranslucency ? "yes" : "no");
     }
 
     // Create a new Rendering API-dependent texture object

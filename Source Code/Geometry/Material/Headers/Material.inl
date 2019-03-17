@@ -153,6 +153,7 @@ inline void Material::addExternalTexture(const Texture_ptr& texture, U8 slot, bo
 }
 
 inline std::weak_ptr<Texture> Material::getTexture(ShaderProgram::TextureUsage textureUsage) const {
+    SharedLock r_lock(_textureLock);
     return _textures[to_U32(textureUsage)];
 }
 

@@ -14,6 +14,7 @@
 
 #define IL_STATIC_LIB
 #undef _UNICODE
+#include <IL/il.h>
 #include <IL/ilu.h>
 
 namespace Divide {
@@ -128,11 +129,11 @@ bool ImageData::loadDDS_IL(const stringImpl& filename) {
     ilInit();
     ilGenImages(1, &ilTexture);
     ilBindImage(ilTexture);
-
-
+    
     ilEnable(IL_TYPE_SET);
-    ilEnable(IL_ORIGIN_SET);
-    ilOriginFunc(_flip ? IL_ORIGIN_LOWER_LEFT : IL_ORIGIN_UPPER_LEFT);
+
+    //ilEnable(IL_ORIGIN_SET);
+    //ilOriginFunc(_flip ? IL_ORIGIN_LOWER_LEFT : IL_ORIGIN_UPPER_LEFT);
     ilSetInteger(IL_KEEP_DXTC_DATA, IL_TRUE);
     ilTypeFunc(IL_UNSIGNED_BYTE);
 
@@ -140,6 +141,12 @@ bool ImageData::loadDDS_IL(const stringImpl& filename) {
         Console::errorfn(Locale::get(_ID("ERROR_IMAGETOOLS_INVALID_IMAGE_FILE")), _name.c_str());
         ilDeleteImage(ilTexture);
         return false;
+    }
+
+    ILinfo imageInfo;
+    iluGetImageInfo(&imageInfo);
+    if (imageInfo.Origin == IL_ORIGIN_UPPER_LEFT) {
+        iluFlipImage();
     }
 
     const I32 numMips = ilGetInteger(IL_NUM_MIPMAPS) + 1;
@@ -162,20 +169,22 @@ bool ImageData::loadDDS_IL(const stringImpl& filename) {
                    (dxtc == IL_DXT4) ||
                    (dxtc == IL_DXT5));
 
+    const I32 channelCount = ilGetInteger(IL_IMAGE_CHANNELS);
+
+    _alpha = false;
     if (_compressed) {
         switch (dxtc) {
             case IL_DXT1: {
-                _format = 
-                    ilGetInteger(IL_IMAGE_CHANNELS) == 3
-                                                    ? GFXImageFormat::COMPRESSED_RGB_DXT1
-                                                    : GFXImageFormat::COMPRESSED_RGBA_DXT1;
-                 
+                _format = channelCount == 3 ? GFXImageFormat::COMPRESSED_RGB_DXT1 : GFXImageFormat::COMPRESSED_RGBA_DXT1;
+                _alpha = channelCount == 4;
             }  break;
             case IL_DXT3: {
                 _format = GFXImageFormat::COMPRESSED_RGBA_DXT3;
+                _alpha = true;
             } break;
             case IL_DXT5: {
                 _format = GFXImageFormat::COMPRESSED_RGBA_DXT5;
+                _alpha = true;
             } break;
             default: {
                 DIVIDE_UNEXPECTED_CALL("Unsupported compressed format!");
@@ -211,6 +220,17 @@ bool ImageData::loadDDS_IL(const stringImpl& filename) {
 
     _dataType = GFXDataFormat::UNSIGNED_BYTE;
     _data.resize(numMips);
+
+    if (_compressed && _alpha) {
+        const ILint width = ilGetInteger(IL_IMAGE_WIDTH);
+        const ILint height = ilGetInteger(IL_IMAGE_HEIGHT);
+        const ILint depth = ilGetInteger(IL_IMAGE_DEPTH);
+        _decompressedData.resize(width * height * depth * 4);
+
+        ilCopyPixels(0, 0, 0, width, height, depth, IL_RGBA, IL_UNSIGNED_BYTE, _decompressedData.data());
+        assert(ilGetError() == IL_NO_ERROR);
+    }
+
     for (U8 i = 0; i < numMips; ++i) {
         ilBindImage(ilTexture);
         ilActiveMipmap(i);
@@ -334,31 +354,43 @@ UColour ImageData::getColour(I32 x, I32 y, U32 mipLevel) const {
 }
 
 void ImageData::getRed(I32 x, I32 y, U8& r, U32 mipLevel) const {
+    assert(!_compressed || mipLevel == 0);
+
     const I32 idx = (y * _data[mipLevel]._dimensions.width + x) * (_bpp / 8);
-    r = _data[mipLevel]._data[idx + 0];
+    r = _compressed ? _decompressedData[idx + 0] : _data[mipLevel]._data[idx + 0];
 }
 
 void ImageData::getGreen(I32 x, I32 y, U8& g, U32 mipLevel) const {
+    assert(!_compressed || mipLevel == 0);
+
     const I32 idx = (y * _data[mipLevel]._dimensions.width + x) * (_bpp / 8);
-    g = _data[mipLevel]._data[idx + 1];
+    g = _compressed ? _decompressedData[idx + 1] : _data[mipLevel]._data[idx + 1];
 }
 
 void ImageData::getBlue(I32 x, I32 y, U8& b, U32 mipLevel) const {
+    assert(!_compressed || mipLevel == 0);
+
     const I32 idx = (y * _data[mipLevel]._dimensions.width + x) * (_bpp / 8);
-    b = _data[mipLevel]._data[idx + 2];
+    b = _compressed ? _decompressedData[idx + 2] : _data[mipLevel]._data[idx + 2];
 }
 
 void ImageData::getAlpha(I32 x, I32 y, U8& a, U32 mipLevel) const {
-    const I32 idx = (y * _data[mipLevel]._dimensions.width + x) * (_bpp / 8);
-    a = _alpha ? _data[mipLevel]._data[idx + 3] : 255;
+    assert(!_compressed || mipLevel == 0);
+
+    a = 255;
+    if (_alpha) {
+        const I32 idx = (y * _data[mipLevel]._dimensions.width + x) * (_bpp / 8);
+        a = _compressed ? _decompressedData[idx + 3] : _data[mipLevel]._data[idx + 3];
+    }
 }
 
 void ImageData::getColour(I32 x, I32 y, U8& r, U8& g, U8& b, U8& a, U32 mipLevel) const {
+    assert(!_compressed || mipLevel == 0);
+
     const I32 idx = (y * _data[mipLevel]._dimensions.width + x) * (_bpp / 8);
-    r = _data[mipLevel]._data[idx + 0];
-    g = _data[mipLevel]._data[idx + 1];
-    b = _data[mipLevel]._data[idx + 2];
-    a = _alpha ? _data[mipLevel]._data[idx + 3] : 255;
+    const U8* src = _compressed ? _decompressedData.data() : _data[mipLevel]._data.data();
+
+    r = src[idx + 0]; g = src[idx + 1]; b = src[idx + 2]; a = _alpha ? src[idx + 3] : 255;
 }
 
 

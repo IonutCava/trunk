@@ -227,22 +227,25 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
         _operation = op;
     }
     
-    if (!_textures[slot]) {
-        if (textureUsageSlot != ShaderProgram::TextureUsage::REFLECTION_PLANAR &&
-            textureUsageSlot != ShaderProgram::TextureUsage::REFRACTION_PLANAR &&
-            textureUsageSlot != ShaderProgram::TextureUsage::REFLECTION_CUBE &&
-            textureUsageSlot != ShaderProgram::TextureUsage::REFRACTION_CUBE) {
-            // if we add a new type of texture recompute shaders
-            computeShaders = true;
+    {
+        UniqueLockShared w_lock(_textureLock);
+        if (!_textures[slot]) {
+            if (textureUsageSlot != ShaderProgram::TextureUsage::REFLECTION_PLANAR &&
+                textureUsageSlot != ShaderProgram::TextureUsage::REFRACTION_PLANAR &&
+                textureUsageSlot != ShaderProgram::TextureUsage::REFLECTION_CUBE &&
+                textureUsageSlot != ShaderProgram::TextureUsage::REFRACTION_CUBE) {
+                // if we add a new type of texture recompute shaders
+                computeShaders = true;
+            }
+        } else {
+            // Skip adding same texture
+            if (texture != nullptr && _textures[slot]->getGUID() == texture->getGUID()) {
+                return true;
+            }
         }
-    } else {
-        // Skip adding same texture
-        if (_textures[slot]->getGUID() == texture->getGUID()) {
-            return true;
-        }
-    }
     
-    _textures[slot] = texture;
+        _textures[slot] = texture;
+    }
 
     if (textureUsageSlot == ShaderProgram::TextureUsage::UNIT0 ||
         textureUsageSlot == ShaderProgram::TextureUsage::OPACITY)
@@ -661,6 +664,8 @@ bool Material::removeCustomTexture(U8 bindslot) {
 
 bool Material::getTextureData(ShaderProgram::TextureUsage slot, TextureDataContainer& container, bool force) {
     const U8 slotValue = to_U8(slot);
+
+    SharedLock r_lock(_textureLock);
     const Texture_ptr& crtTexture = _textures[slotValue];
 
     return crtTexture != nullptr && container.setTexture(crtTexture->getData(), slotValue, force) != TextureDataContainer::UpdateState::NOTHING;
@@ -724,6 +729,7 @@ bool Material::getTextureDataFast(RenderStagePass renderStagePass, TextureDataCo
 
     {
         U8 heightSlot = to_base(ShaderProgram::TextureUsage::HEIGHTMAP);
+        SharedLock r_lock(_textureLock);
         const Texture_ptr& crtTexture = _textures[heightSlot];
         if (crtTexture != nullptr) {
             textures[heightSlot] = crtTexture->getData();
@@ -734,6 +740,7 @@ bool Material::getTextureDataFast(RenderStagePass renderStagePass, TextureDataCo
     const bool depthStage = renderStagePass.isDepthPass();
     if (!depthStage || hasTransparency()) {
         for (U8 slot : transparentSlots) {
+            SharedLock r_lock(_textureLock);
             const Texture_ptr& crtTexture = _textures[slot];
             if (crtTexture != nullptr) {
                 textures[slot] = crtTexture->getData();
@@ -744,6 +751,7 @@ bool Material::getTextureDataFast(RenderStagePass renderStagePass, TextureDataCo
 
     if (!depthStage) {
         for (U8 slot : extraSlots) {
+            SharedLock r_lock(_textureLock);
             const Texture_ptr& crtTexture = _textures[slot];
             if (crtTexture != nullptr) {
                 textures[slot] = crtTexture->getData();

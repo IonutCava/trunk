@@ -31,6 +31,7 @@
 #pragma comment(lib, "glbinding-auxd.lib")
 #pragma comment(lib, "assimp_d.lib")
 #pragma comment(lib, "IL_d.lib")
+#pragma comment(lib, "ILU_d.lib")
 #pragma comment(lib, "libpng_d.lib")
 #pragma comment(lib, "jpeg_d.lib")
 #pragma comment(lib, "libmng_d.lib")
@@ -58,6 +59,7 @@
 
 #else  //_DEBUG
 #pragma comment(lib, "IL.lib")
+#pragma comment(lib, "ILU.lib")
 #pragma comment(lib, "libpng.lib")
 #pragma comment(lib, "jpeg.lib")
 #pragma comment(lib, "libmng.lib")

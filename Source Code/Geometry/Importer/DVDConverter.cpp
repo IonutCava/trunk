@@ -438,13 +438,13 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
         }
 
         // it might be an embedded texture
-        //const aiTexture* texture = mat->GetEmbeddedTexture(tName.C_Str());
+        /*const aiTexture* texture = mat->GetEmbeddedTexture(tName.C_Str());
         
-        //if (texture != nullptr )
+        if (texture != nullptr )
         {
             int a;
             a = 5;
-        }
+        }*/
 
         // get full path
         stringImpl path(Paths::g_assetsLocation + Paths::g_texturesLocation + tName.data);

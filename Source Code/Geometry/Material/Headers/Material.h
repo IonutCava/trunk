@@ -297,6 +297,7 @@ class Material : public CachedResource {
     std::array<std::array<size_t, 3>,  to_base(RenderStagePass::count())> _defaultRenderStates;
 
     /// use this map to add textures to the material
+    mutable SharedMutex _textureLock;
     std::array<Texture_ptr, to_base(ShaderProgram::TextureUsage::COUNT)> _textures;
     std::array<bool, to_base(ShaderProgram::TextureUsage::COUNT)> _textureExtenalFlag;
 
