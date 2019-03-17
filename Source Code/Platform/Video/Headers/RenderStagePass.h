@@ -33,7 +33,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _RENDER_STAGE_PASS_H_
 #define _RENDER_STAGE_PASS_H_
 
-#include "Platform/Video/Headers/RenderAPIEnums.h"
+#include "RenderAPIEnums.h"
 
 namespace Divide {
 
@@ -94,6 +94,21 @@ struct RenderStagePass {
     static RenderStagePass stagePass(StagePassIndex index) {
         return RenderStagePass(RenderStagePass::stage(index), RenderStagePass::pass(index));
     }
+
+    inline bool operator==(const RenderStagePass& other) const {
+        return _variant == other._variant &&
+               _passIndex == other._passIndex &&
+               _stage == other._stage &&
+               _passType == other._passType;
+    }
+
+    inline bool operator!=(const RenderStagePass& other) const {
+        return _variant != other._variant ||
+               _passIndex != other._passIndex ||
+               _stage != other._stage ||
+               _passType != other._passType;
+    }
+
 };
 
 }; //namespace Divide

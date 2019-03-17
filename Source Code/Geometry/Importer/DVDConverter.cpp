@@ -145,18 +145,12 @@ bool DVDConverter::load(PlatformContext& context, Import::ImportData& target) {
                                 g_removeLinesAndPoints ? aiPrimitiveType_LINE | aiPrimitiveType_POINT
                                                        : 0);
 
+    importer.SetPropertyInteger(AI_CONFIG_IMPORT_FBX_SEARCH_EMBEDDED_TEXTURES, 1);
     importer.SetPropertyInteger(AI_CONFIG_IMPORT_TER_MAKE_UVS, 1);
     importer.SetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, 80.0f);
 
-    U32 ppsteps = aiProcessPreset_TargetRealtime_Quality | aiProcess_TransformUVCoords;// Preprocess UV transformations (scaling, translation ...)
-      /*aiProcess_FindInstances |      // Search for instanced meshes and remove them by references to one master
-        aiProcess_OptimizeMeshes |     // Join small meshes, if possible;
-        //aiProcess_OptimizeGraph |  // Nodes without animations/bones/lights/cameras are collapsed & joined.
-        aiProcess_CalcTangentSpace | aiProcess_GenSmoothNormals |
-        aiProcess_JoinIdenticalVertices | aiProcess_ImproveCacheLocality |
-        aiProcess_LimitBoneWeights | aiProcess_RemoveRedundantMaterials |
-        aiProcess_Triangulate | aiProcess_GenUVCoords | aiProcess_SortByPType |
-        aiProcess_FindDegenerates | aiProcess_FindInvalidData | 0;*/
+    U32 ppsteps = aiProcessPreset_TargetRealtime_MaxQuality |
+                  aiProcess_TransformUVCoords;// Preprocess UV transformations (scaling, translation ...)
 
     const aiScene* aiScenePointer = importer.ReadFile((filePath + "/" + fileName).c_str(), ppsteps);
 

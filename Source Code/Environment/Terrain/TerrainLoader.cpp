@@ -511,28 +511,19 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     Vegetation::precomputeStaticData(terrain->getGeometryVB()->context(), chunkSize, maxChunkCount, maxGrassInstances, maxTreeInstances);
 
     VegetationDetails& vegDetails = Attorney::TerrainLoader::vegetationDetails(*terrain);
-    stringImpl currentMesh = terrainDescriptor->getVariable("treeMesh1");
-    if (!currentMesh.empty()) {
-        vegDetails.treeMeshes.push_back(currentMesh);
-    }
 
-    currentMesh = terrainDescriptor->getVariable("treeMesh2");
-    if (!currentMesh.empty()) {
-        vegDetails.treeMeshes.push_back(currentMesh);
-    }
+    for (I32 i = 1; i < 5; ++i) {
+        stringImpl currentMesh = terrainDescriptor->getVariable(Util::StringFormat("treeMesh%d", i));
+        if (!currentMesh.empty()) {
+            vegDetails.treeMeshes.push_back(currentMesh);
+        }
 
-    currentMesh = terrainDescriptor->getVariable("treeMesh3");
-    if (!currentMesh.empty()) {
-        vegDetails.treeMeshes.push_back(currentMesh);
+        vegDetails.treeRotations[i - 1].set(
+            terrainDescriptor->getVariablef(Util::StringFormat("treeRotationX%d", i)),
+            terrainDescriptor->getVariablef(Util::StringFormat("treeRotationY%d", i)),
+            terrainDescriptor->getVariablef(Util::StringFormat("treeRotationZ%d", i))
+        );
     }
-
-    currentMesh = terrainDescriptor->getVariable("treeMesh4");
-    if (!currentMesh.empty()) {
-        vegDetails.treeMeshes.push_back(currentMesh);
-    }
-
-    U8 textureCount = 0;
-    stringImpl textureName;
 
     vegDetails.grassScales.set(
         terrainDescriptor->getVariablef("grassScale1"),
@@ -546,6 +537,9 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
         terrainDescriptor->getVariablef("treeScale3"),
         terrainDescriptor->getVariablef("treeScale4"));
     
+    
+    U8 textureCount = 0;
+    stringImpl textureName;
     stringImpl currentImage = terrainDescriptor->getVariable("grassBillboard1");
     if (!currentImage.empty()) {
         textureName += currentImage;

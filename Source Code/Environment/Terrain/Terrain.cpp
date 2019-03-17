@@ -443,22 +443,17 @@ void Terrain::saveToXML(boost::property_tree::ptree& pt) const {
         pt.put("vegetation.grassBillboard4.<xmlattr>.scale", _descriptor->getVariablef("grassScale4"));
     }
     pt.put("vegetation.treeMap", _descriptor->getVariable("treeMap"));
-    if (!_descriptor->getVariable("treeMesh1").empty()) {
-        pt.put("vegetation.treeMesh1", _descriptor->getVariable("treeMesh1"));
-        pt.put("vegetation.treeMesh1.<xmlattr>.scale", _descriptor->getVariablef("treeScale1"));
+
+    for (I32 i = 1; i < 5; ++i) {
+        if (!_descriptor->getVariable(Util::StringFormat("treeMesh%d", i)).empty()) {
+            pt.put(Util::StringFormat("treeMesh%d", i), _descriptor->getVariable(Util::StringFormat("treeMesh%d", i)));
+            pt.put(Util::StringFormat("vegetation.treeMesh%d.<xmlattr>.scale", i), _descriptor->getVariablef(Util::StringFormat("treeScale%d", i)));
+            pt.put(Util::StringFormat("vegetation.treeMesh%d.<xmlattr>.rotate_x", i), _descriptor->getVariablef(Util::StringFormat("treeRotationX%d", i)));
+            pt.put(Util::StringFormat("vegetation.treeMesh%d.<xmlattr>.rotate_y", i), _descriptor->getVariablef(Util::StringFormat("treeRotationY%d", i)));
+            pt.put(Util::StringFormat("vegetation.treeMesh%d.<xmlattr>.rotate_z", i), _descriptor->getVariablef(Util::StringFormat("treeRotationZ%d", i)));
+        }
     }
-    if (!_descriptor->getVariable("treeMesh2").empty()) {
-        pt.put("vegetation.treeMesh2", _descriptor->getVariable("treeMesh2"));
-        pt.put("vegetation.treeMesh2.<xmlattr>.scale", _descriptor->getVariablef("treeScale2"));
-    }
-    if (!_descriptor->getVariable("treeMesh3").empty()) {
-        pt.put("vegetation.treeMesh3", _descriptor->getVariable("treeMesh3"));
-        pt.put("vegetation.treeMesh3.<xmlattr>.scale", _descriptor->getVariablef("treeScale3"));
-    }
-    if (!_descriptor->getVariable("treeMesh4").empty()) {
-        pt.put("vegetation.treeMesh4", _descriptor->getVariable("treeMesh4"));
-        pt.put("vegetation.treeMesh4.<xmlattr>.scale", _descriptor->getVariablef("treeScale4"));
-    }
+
     U8 prevAlbedoCount = 0u;
     U8 prevDetailCount = 0u;
 

@@ -2,22 +2,18 @@
 #define _SCENE_NODE_RENDER_STATE_H_
 
 #include "Platform/Headers/PlatformDefines.h"
+#include "Platform/Video/Headers/RenderStagePass.h"
 
 namespace Divide {
 
 struct RenderStagePass;
-enum class RenderStage : U8;
-enum class RenderPassType : U8;
 
 class SceneNodeRenderState {
    public:
-    SceneNodeRenderState();
-    ~SceneNodeRenderState();
-
     inline void setDrawState(bool state) { _drawState = state; }
     inline bool getDrawState() const { return _drawState; }
 
-    bool getDrawState(RenderStagePass stagePass) const;
+    bool getDrawState(const RenderStagePass& stagePass) const;
 
     void addToDrawExclusionMask(RenderStagePass stagePass);
     void removeFromDrawExclusionMask(RenderStagePass stagePass);
@@ -29,8 +25,10 @@ class SceneNodeRenderState {
     void removeFromDrawExclusionMask(RenderPassType passType);
 
    protected:
-    bool _drawState;
-    vector<U32> _exclusionMask;
+    bool _drawState = true;
+    RenderStage _exclusionStage = RenderStage::COUNT;
+    RenderPassType _exclusionPassType = RenderPassType::COUNT;
+    vector<RenderStagePass> _exclusionStagePasses;
 };
 
 };  // namespace Divide

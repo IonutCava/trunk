@@ -7,51 +7,47 @@
 
 namespace Divide {
 
-SceneNodeRenderState::SceneNodeRenderState()
-  : _drawState(true),
-    _exclusionMask(to_base(RenderPassType::COUNT), 0u)
-{
-}
+bool SceneNodeRenderState::getDrawState(const RenderStagePass& stagePass) const {
+    if (!_drawState || _exclusionStage == stagePass._stage || _exclusionPassType == stagePass._passType) {
+        return false;
+    }
 
-SceneNodeRenderState::~SceneNodeRenderState()
-{
-}
+    for (const RenderStagePass& it : _exclusionStagePasses) {
+        if (it == stagePass) {
+            return false;
+        }
+    }
 
-bool SceneNodeRenderState::getDrawState(RenderStagePass stagePass) const {
-    return _drawState &&
-           !BitCompare(_exclusionMask[to_U32(stagePass._passType)], to_U32(1 << (to_U32(stagePass._stage) + 1)));
+    return true;
 }
 
 void SceneNodeRenderState::addToDrawExclusionMask(RenderStagePass stagePass) {
-    _exclusionMask[to_U32(stagePass._passType)] |= (1 << (to_U32(stagePass._stage) + 1));
+    if (std::find(std::cbegin(_exclusionStagePasses), std::cend(_exclusionStagePasses), stagePass) == std::cend(_exclusionStagePasses)) {
+        _exclusionStagePasses.push_back(stagePass);
+    }
 }
 
 void SceneNodeRenderState::removeFromDrawExclusionMask(RenderStagePass stagePass) {
-    _exclusionMask[to_U32(stagePass._passType)] &= ~(1 << (to_U32(stagePass._stage) + 1));
+    auto it = std::find(std::cbegin(_exclusionStagePasses), std::cend(_exclusionStagePasses), stagePass);
+    if (it != std::cend(_exclusionStagePasses)) {
+        _exclusionStagePasses.erase(it);
+    }
 }
 
 void SceneNodeRenderState::addToDrawExclusionMask(RenderStage stage) {
-    for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
-        addToDrawExclusionMask(RenderStagePass(stage, static_cast<RenderPassType>(pass)));
-    }
+    _exclusionStage = stage;
 }
 
 void SceneNodeRenderState::removeFromDrawExclusionMask(RenderStage stage) {
-    for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
-        removeFromDrawExclusionMask(RenderStagePass(stage, static_cast<RenderPassType>(pass)));
-    }
+    _exclusionStage = RenderStage::COUNT;
 }
 
 void SceneNodeRenderState::addToDrawExclusionMask(RenderPassType passType) {
-    for (U8 stage = 0; stage < to_base(RenderStage::COUNT); ++stage) {
-        addToDrawExclusionMask(RenderStagePass(static_cast<RenderStage>(stage), passType));
-    }
+    _exclusionPassType = passType;
 }
 
 void SceneNodeRenderState::removeFromDrawExclusionMask(RenderPassType passType) {
-    for (U8 stage = 0; stage < to_base(RenderStage::COUNT); ++stage) {
-        removeFromDrawExclusionMask(RenderStagePass(static_cast<RenderStage>(stage), passType));
-    }
+    _exclusionPassType = RenderPassType::COUNT;
 }
 
 };

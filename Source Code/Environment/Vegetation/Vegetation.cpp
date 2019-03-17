@@ -13,6 +13,7 @@
 #include "Platform/Video/Headers/RenderPackage.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
 #include "Geometry/Shapes/Headers/Mesh.h"
+#include "Geometry/Shapes/Headers/SubMesh.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Platform/Headers/PlatformRuntime.h"
 #include "Environment/Terrain/Headers/Terrain.h"
@@ -67,6 +68,7 @@ Vegetation::Vegetation(GFXDevice& context,
       _terrain(details.parentTerrain),
       _grassScales(details.grassScales),
       _treeScales(details.treeScales),
+      _treeRotations(details.treeRotations),
       _render(false),
       _success(false),
       _shadowMapped(true),
@@ -391,6 +393,11 @@ void Vegetation::postLoad(SceneGraphNode& sgn) {
     model.assetName(_treeMeshNames[meshID]);
     Mesh_ptr meshPtr = CreateResource<Mesh>(_context.parent().resourceCache(), model);
     meshPtr->setMaterialTpl(s_treeMaterial);
+    // CSM last split should probably avoid rendering trees since it would cover most of the scene :/
+    meshPtr->renderState().addToDrawExclusionMask(RenderStagePass(RenderStage::SHADOW, RenderPassType::MAIN_PASS, 0, 2));
+    for (const SubMesh_ptr& subMesh : meshPtr->subMeshList()) {
+        subMesh->renderState().addToDrawExclusionMask(RenderStagePass(RenderStage::SHADOW, RenderPassType::MAIN_PASS, 0, 2));
+    }
 
     SceneGraphNodeDescriptor nodeDescriptor = {};
     nodeDescriptor._componentMask = normalMask;
@@ -602,7 +609,14 @@ void Vegetation::computeVegetationTransforms(const Task& parentTask, bool treeDa
             //vert._position.y = (((0.0f*heightExtent) + vert._position.y) - ((0.0f*scale) + vert._position.y)) + vert._position.y;
             VegetationData entry = {};
             entry._positionAndScale.set(vert._position, scale);
-            entry._orientationQuat = (RotationFromVToU(WORLD_Y_AXIS, vert._normal, WORLD_Z_AXIS) * Quaternion<F32>(WORLD_Y_AXIS, Random(360.0f))).asVec4();
+            Quaternion<F32> modelRotation;
+            if (treeData) {
+                modelRotation.fromEuler(_treeRotations[meshID]);
+            } else {
+                modelRotation = RotationFromVToU(WORLD_Y_AXIS, vert._normal, WORLD_Z_AXIS);
+            }
+
+            entry._orientationQuat = (Quaternion<F32>(WORLD_Y_AXIS, Random(360.0f)) * modelRotation).asVec4();
             entry._data = {
                 to_F32(index),
                 to_F32(_terrainChunk.ID()),

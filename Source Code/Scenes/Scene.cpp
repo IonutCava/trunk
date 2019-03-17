@@ -533,23 +533,19 @@ void Scene::addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree p
     ter->setTextureLayerCount(to_U8(i));
     ter->addVariable("vegetationTextureLocation", pt.get<stringImpl>("vegetation.vegetationTextureLocation", Paths::g_imagesLocation));
     ter->addVariable("grassMap", pt.get<stringImpl>("vegetation.grassMap"));
-    ter->addVariable("grassBillboard1", pt.get<stringImpl>("vegetation.grassBillboard1", ""));
-    ter->addVariable("grassBillboard2", pt.get<stringImpl>("vegetation.grassBillboard2", ""));
-    ter->addVariable("grassBillboard3", pt.get<stringImpl>("vegetation.grassBillboard3", ""));
-    ter->addVariable("grassBillboard4", pt.get<stringImpl>("vegetation.grassBillboard4", ""));
-    ter->addVariable("grassScale1", pt.get<F32>("vegetation.grassBillboard1.<xmlattr>.scale", 1.0f));
-    ter->addVariable("grassScale2", pt.get<F32>("vegetation.grassBillboard2.<xmlattr>.scale", 1.0f));
-    ter->addVariable("grassScale3", pt.get<F32>("vegetation.grassBillboard3.<xmlattr>.scale", 1.0f));
-    ter->addVariable("grassScale4", pt.get<F32>("vegetation.grassBillboard4.<xmlattr>.scale", 1.0f));
     ter->addVariable("treeMap", pt.get<stringImpl>("vegetation.treeMap"));
-    ter->addVariable("treeMesh1", pt.get<stringImpl>("vegetation.treeMesh1", ""));
-    ter->addVariable("treeMesh2", pt.get<stringImpl>("vegetation.treeMesh2", ""));
-    ter->addVariable("treeMesh3", pt.get<stringImpl>("vegetation.treeMesh3", ""));
-    ter->addVariable("treeMesh4", pt.get<stringImpl>("vegetation.treeMesh4", ""));
-    ter->addVariable("treeScale1", pt.get<F32>("vegetation.treeMesh1.<xmlattr>.scale", 1.0f));
-    ter->addVariable("treeScale2", pt.get<F32>("vegetation.treeMesh2.<xmlattr>.scale", 1.0f));
-    ter->addVariable("treeScale3", pt.get<F32>("vegetation.treeMesh3.<xmlattr>.scale", 1.0f));
-    ter->addVariable("treeScale4", pt.get<F32>("vegetation.treeMesh4.<xmlattr>.scale", 1.0f));
+
+    for (I32 j = 1; j < 5; ++j) {
+        ter->addVariable(Util::StringFormat("grassBillboard%d", j), pt.get<stringImpl>(Util::StringFormat("vegetation.grassBillboard%d", j), ""));
+        ter->addVariable(Util::StringFormat("grassScale%d", j), pt.get<F32>(Util::StringFormat("vegetation.grassBillboard%d.<xmlattr>.scale", j), 1.0f));
+
+        ter->addVariable(Util::StringFormat("treeMesh%d", j), pt.get<stringImpl>(Util::StringFormat("vegetation.treeMesh%d",j), ""));
+        ter->addVariable(Util::StringFormat("treeScale%d", j), pt.get<F32>(Util::StringFormat("vegetation.treeMesh%d.<xmlattr>.scale", j), 1.0f));
+        ter->addVariable(Util::StringFormat("treeRotationX%d", j), pt.get<F32>(Util::StringFormat("vegetation.treeMesh%d.<xmlattr>.rotate_x", j), 0.0f));
+        ter->addVariable(Util::StringFormat("treeRotationY%d", j), pt.get<F32>(Util::StringFormat("vegetation.treeMesh%d.<xmlattr>.rotate_y", j), 0.0f));
+        ter->addVariable(Util::StringFormat("treeRotationZ%d", j), pt.get<F32>(Util::StringFormat("vegetation.treeMesh%d.<xmlattr>.rotate_z", j), 0.0f));
+    }
+
     ter->set16Bit(pt.get<bool>("is16Bit", false));
     ter->setDimensions(vec2<U16>(pt.get<U16>("terrainWidth", 0), pt.get<U16>("terrainHeight", 0)));
     ter->setAltitudeRange(vec2<F32>(pt.get<F32>("altitudeRange.<xmlattr>.min", 0.0f),

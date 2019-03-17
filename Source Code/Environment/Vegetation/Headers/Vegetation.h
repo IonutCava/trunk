@@ -64,6 +64,7 @@ struct VegetationDetails {
     std::weak_ptr<Terrain> parentTerrain;
     vectorEASTL<stringImpl> treeMeshes;
     vec4<F32> grassScales, treeScales;
+    std::array<vec3<F32>, 4> treeRotations;
     Material_ptr vegetationMaterialPtr;
 };
 
@@ -127,6 +128,7 @@ class Vegetation : public SceneNode {
     U64 _stateRefreshIntervalUS = 0ULL;
     U64 _stateRefreshIntervalBufferUS = 0ULL;
     vec4<F32> _grassScales, _treeScales;
+    std::array<vec3<F32>, 4> _treeRotations;
     vec4<F32> _grassExtents;
     vec4<F32> _treeExtents;
     vectorEASTL<stringImpl> _treeMeshNames;

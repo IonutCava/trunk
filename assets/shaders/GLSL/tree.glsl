@@ -7,12 +7,12 @@ out flat int cull;
 #include "vegetationData.cmn"
 
 void computeFoliageMovementTree(inout vec4 vertex, in float heightExtent) {
-    float timeGrass = dvd_windDetails.w * dvd_time * 0.00025f; //to seconds
+    float time = dvd_windDetails.w * dvd_time * 0.00025f; //to seconds
     float cosX = cos(vertex.x);
     float sinX = sin(vertex.x);
     float halfScale = 0.5 * heightExtent;
-    vertex.x += (halfScale * cos(timeGrass) * cosX * sinX) * dvd_windDetails.x;
-    vertex.z += (halfScale * sin(timeGrass) * cosX * sinX) * dvd_windDetails.z;
+    vertex.x += (halfScale * cos(time) * cosX * sinX) * dvd_windDetails.x;
+    vertex.z += (halfScale * sin(time) * cosX * sinX) * dvd_windDetails.z;
 }
 
 void main(void){
@@ -20,14 +20,16 @@ void main(void){
     computeDataNoClip();
 
     VegetationData data = TreeData(VAR.dvd_instanceID);
-    if (dvd_Vertex.y > 0.75f) {
-        computeFoliageMovementTree(dvd_Vertex, data.data.w);
-    }
 
     float scale = data.positionAndScale.w;
     cull = (data.data.z > 2.0f) ? 1 : 0;
 
-    dvd_Vertex.xyz = rotate_vertex_position(dvd_Vertex.xyz * scale, data.orientationQuad);
+    if (dvd_Vertex.y * scale > 0.85f) {
+        computeFoliageMovementTree(dvd_Vertex, data.data.w);
+    }
+    dvd_Vertex.xyz = rotate_vertex_position(dvd_Vertex.xyz, data.orientationQuad) * scale;
+    
+
     VAR._vertexW = (dvd_Vertex + vec4(data.positionAndScale.xyz, 0.0f));
 
     VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;

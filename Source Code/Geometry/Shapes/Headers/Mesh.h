@@ -83,6 +83,10 @@ class Mesh : public Object3D {
         return _animator; 
     }
 
+    inline const vector<SubMesh_ptr>& subMeshList() const {
+        return _subMeshList;
+    }
+
    protected:
     /// Called from SceneGraph "sceneUpdate"
     virtual void sceneUpdate(const U64 deltaTimeUS,
