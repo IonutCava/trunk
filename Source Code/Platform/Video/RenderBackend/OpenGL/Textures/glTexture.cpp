@@ -271,6 +271,7 @@ void glTexture::loadData(const TextureLoadInfo& info,
 void glTexture::loadDataCompressed(const TextureLoadInfo& info,
                                    const vector<ImageTools::ImageLayer>& imageLayers) {
 
+    _descriptor.automaticMipMapGeneration(false);
     GLenum glFormat = GLUtil::internalFormat(_descriptor.baseFormat(), _descriptor.dataType(), _descriptor._srgb);
     GLint numMips = static_cast<GLint>(imageLayers.size());
 

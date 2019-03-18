@@ -10,7 +10,7 @@ void computeFoliageMovementTree(inout vec4 vertex, in float heightExtent) {
     float time = dvd_windDetails.w * dvd_time * 0.00025f; //to seconds
     float cosX = cos(vertex.x);
     float sinX = sin(vertex.x);
-    float halfScale = 0.5 * heightExtent;
+    float halfScale = 0.5f * heightExtent;
     vertex.x += (halfScale * cos(time) * cosX * sinX) * dvd_windDetails.x;
     vertex.z += (halfScale * sin(time) * cosX * sinX) * dvd_windDetails.z;
 }

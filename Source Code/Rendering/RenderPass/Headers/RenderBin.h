@@ -77,9 +77,8 @@ struct RenderingOrder {
 BETTER_ENUM(RenderBinType, U32,
     RBT_TERRAIN = 0, //< Terrains should occupy most of the screen and be balanced fill/geometry cost
     RBT_OPAQUE,      //< Opaque geometry will be occluded by terrain but will often occlude most of the sky (e.g.: indoors)
-    //RBT_SKY,         //< Sky needs to be drawn after ALL opque geometry to save on fillrate
+    RBT_SKY,         //< Sky needs to be drawn after ALL opaque geometry to save on fillrate
     RBT_TRANSLUCENT, //< Translucent items use a [0.0...1.0] alpha values supplied via an opacity map or the albedo's alpha channel
-    RBT_SKY,         //< Sky needs to be drawn after ALL opque geometry to save on fillrate
     RBT_IMPOSTOR,    //< Impostors should be overlayed over everything since they are a debugging tool
     RBT_COUNT);
 

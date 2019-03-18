@@ -68,7 +68,15 @@ void writePixel(vec4 premultipliedReflect, float csZ) {
 float nvidiaSample(in vec4 color, in float linearDepth) {
     // Tuned to work well with FP16 accumulation buffers and 0.001 < linearDepth < 2.5
     // See Equation (9) from http://jcgt.org/published/0002/02/09/
-    float weight = pow(color.a, 1.0) * clamp(0.93f / (1e-5f + pow(linearDepth, 4.0f)), 1e-2f, 3e3f);
+
+    float viewDepth = abs(1.0 / gl_FragCoord.w);
+
+    // Tuned to work well with FP16 accumulation buffers and 0.001 < linearDepth < 2.5
+    // See Equation (9) from http://jcgt.org/published/0002/02/09/
+    float linearDepth2 = viewDepth * 0.5f;// uDepthScale;
+
+    //float weight = pow(color.a, 1.0) * clamp(0.03f / (1e-5f + pow(linearDepth, 4.0f)), 1e-2f, 3e3f);
+    float weight = clamp(0.03f / (1e-5f + pow(linearDepth2, 4.0f)), 1e-2f, 3e3f);
     _accum = vec4(color.rgb * color.a, color.a) * weight;
     _revealage = color.a;
 
