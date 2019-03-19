@@ -77,8 +77,7 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
     virtual void bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write) = 0;
     /// Change the texture's mip levels. This can be called at any time
     virtual void setMipMapRange(U16 base = 0, U16 max = 1000) {
-        ACKNOWLEDGE_UNUSED(base);
-        ACKNOWLEDGE_UNUSED(max);
+        _descriptor._mipLevels.set(base, max);
     }
     /// Resize the texture to the specified dimensions and upload the new data
     virtual void resize(const bufferPtr ptr,
@@ -114,10 +113,12 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
     inline U16 getWidth() const { return _width; }
     /// Texture height depth as returned by STB/DDS loader
     inline U16 getHeight() const { return _height; }
-    /// Texture min mip level
-    inline U16 getMinMipLevel() const { return _descriptor._mipLevels.min; }
-    /// Texture ax mip level
-    inline U16 getMaxMipLevel() const { return _descriptor._mipLevels.max; }
+    /// Texture base mip level
+    inline U16 getBaseMipLevel() const { return _descriptor._mipLevels.x; }
+    /// Texture max mip level
+    inline U16 getMaxMipLevel() const { return _descriptor._mipLevels.y; }
+    /// Number of loaded mip levels in VRAM
+    inline U16 getMipCount() const { return _descriptor._mipCount; }
     /// A rendering API level handle used to uniquely identify this texture
     /// (e.g. for OpenGL, it's the texture object)
     inline U32 getHandle() const { return _textureData._textureHandle; }

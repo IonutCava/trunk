@@ -245,7 +245,7 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 m
         }
     }
 
-    PointRadius = 7.0f;
+    PointRadius = 5.0f;
     dR = 2.5f * PointRadius; // Distance between concentric rings
 
     for (I16 RadiusStepA = 0; RadiusStepA < g_maxRadiusSteps; ++RadiusStepA) {
@@ -473,6 +473,9 @@ void Vegetation::onRefreshNodeData(SceneGraphNode& sgn, RenderStagePass renderSt
         // Cull trees
         pipelineCmd._pipeline = _cullPipelineTrees;
         GFX::EnqueueCommand(bufferInOut, pipelineCmd);
+
+        float treeDistance = _context.parent().sceneManager().getActiveScene().renderState().treeVisibility();
+        pushConstantsCommand._constants.set("dvd_visibilityDistance", GFX::PushConstantType::FLOAT, treeDistance);
         GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
         if (_instanceCountTrees > 0) {

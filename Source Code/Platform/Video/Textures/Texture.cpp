@@ -227,6 +227,7 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name, Imag
     if (info._layerIndex == 0) {
         _descriptor._type = _textureData._textureType;
         _descriptor._mipLevels.max = to_U16(fileData.mipCount());
+        _descriptor._mipCount = _descriptor._mipLevels.max;
         _descriptor._compressed = fileData.compressed();
         _descriptor.baseFormat(fileData.format());
         _descriptor.dataType(fileData.dataType());
@@ -276,6 +277,7 @@ void Texture::validateDescriptor() {
         if (_descriptor._samplerDescriptor.generateMipMaps()) {
             if (_descriptor._mipLevels.max <= 1) {
                 _descriptor._mipLevels.max = computeMipCount(_width, _height) + 1;
+                _descriptor._mipCount = _descriptor._mipLevels.max;
             }
         }
     }

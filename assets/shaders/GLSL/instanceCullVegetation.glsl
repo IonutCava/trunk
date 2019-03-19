@@ -42,14 +42,15 @@ void main(void) {
     Data[idx].data.z = 1.0f;
 
     vec4 positionW = vec4(instance.positionAndScale.xyz, 1.0f);
-#if !defined(CULL_TREES)
-    // Too far away // ToDo: underwater check:
+
     float dist = distance(positionW.xyz, dvd_cameraPosition.xyz);
+
+    // Too far away // ToDo: underwater check:
     if (dist > dvd_visibilityDistance || IsUnderWater(positionW.xyz)) {
         Data[idx].data.z = 3.0f;
         return;
     }
-#endif //CULL_TREES
+
     vec3 extents = Extents.xyz;
     float scale = instance.positionAndScale.w;
 
@@ -57,7 +58,7 @@ void main(void) {
 
     if (zBufferCull(positionW.xyz, (extents * scale) * 1.1f) > 0) {
 #       if defined(CULL_TREES)
-            Data[idx].data.z = 1.0f;
+            Data[idx].data.z = dist > (dvd_visibilityDistance * 0.33f) ? 2.0f : 1.0f;
 #       else //CULL_TREES
             const float minDist = 0.01f;
             Data[idx].data.z = saturate((dist - minDist) / (dvd_visibilityDistance - minDist));

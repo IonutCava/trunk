@@ -2,8 +2,8 @@
 <assets>assets.xml</assets>
 <musicPlaylist>musicPlaylist.xml</musicPlaylist>
 <vegetation>
-    <grassVisibility>100</grassVisibility>
-    <treeVisibility>1500</treeVisibility>
+    <grassVisibility>60</grassVisibility>
+    <treeVisibility>600</treeVisibility>
 </vegetation>
 <wind>
     <windDirX>1</windDirX>
@@ -15,12 +15,12 @@
     <waterDepth>0</waterDepth>
 </water>
 <options>
-    <visibility>2000</visibility>
+    <visibility>1000</visibility>
     <cameraSpeed move="20.2000008" turn="40.75"/>
     <autoCookPhysicsAssets>true</autoCookPhysicsAssets>
 </options>
 <fog>
-    <fogDensity>0.5</fogDensity>
+    <fogDensity>0.65</fogDensity>
     <fogColour r="0.699999988" g="0.699999988" b="0.800000012"/>
 </fog>
 <lod>

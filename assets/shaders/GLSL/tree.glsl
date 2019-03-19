@@ -22,11 +22,12 @@ void main(void){
     VegetationData data = TreeData(VAR.dvd_instanceID);
 
     float scale = data.positionAndScale.w;
-    cull = (data.data.z > 2.0f) ? 1 : 0;
+    cull = (data.data.z > 2.1f) ? 1 : 0;
 
-    if (dvd_Vertex.y * scale > 0.85f) {
+    if (data.data.z < 1.1f && dvd_Vertex.y * scale > 0.85f) {
         computeFoliageMovementTree(dvd_Vertex, data.data.w);
     }
+
     dvd_Vertex.xyz = rotate_vertex_position(dvd_Vertex.xyz, data.orientationQuad) * scale;
     
 

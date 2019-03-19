@@ -120,6 +120,7 @@ class TextureDescriptor final : public PropertyDescriptor {
           _compressed(false),
           _autoMipMaps(true),
           _mipLevels(0u, 1u),
+          _mipCount(1u),
           _msaaSamples(-1)
     {
     }
@@ -218,6 +219,8 @@ class TextureDescriptor final : public PropertyDescriptor {
     SamplerDescriptor _samplerDescriptor = {};
     /// Mip levels
     vec2<U16> _mipLevels = {0u, 1u};
+    U16 _mipCount = 1;
+
     /// How many MSAA samples to use: -1 (default) = max available, 0 = disabled
     I16 _msaaSamples = -1;
 

@@ -21,6 +21,7 @@
 namespace Divide {
 
 namespace {
+    const U16 g_numMipsToKeepFromAlphaTextures = 2;
     const char* g_PassThroughMaterialShaderName = "passThrough";
 
     stringImpl getDefinesHash(const vector<std::pair<stringImpl, bool>>& defines) {
@@ -834,9 +835,19 @@ void Material::updateTranslucency() {
     }
 
     // base texture is translucent
-    const Texture_ptr& albedo = _textures[to_base(ShaderProgram::TextureUsage::UNIT0)];
+    Texture_ptr& albedo = _textures[to_base(ShaderProgram::TextureUsage::UNIT0)];
     if (albedo && albedo->hasTransparency()) {
         _translucencySource = TranslucencySource::ALBEDO;
+        if (oldSource != _translucencySource) {
+            const U16 baseLevel = albedo->getBaseMipLevel();
+            const U16 maxLevel = albedo->getMaxMipLevel();
+            const U16 baseOffset = maxLevel > g_numMipsToKeepFromAlphaTextures ? g_numMipsToKeepFromAlphaTextures : maxLevel;
+
+            STUBBED("HACK! Limit mip range for textures that have alpha values used by the material -Ionut");
+            if (albedo->getMipCount() == maxLevel) {
+                albedo->setMipMapRange(baseLevel, baseOffset);
+            }
+        }
     }
 
     // opacity map

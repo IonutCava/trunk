@@ -58,11 +58,7 @@ vec4 getTextureColour(in vec2 uv) {
     #define TEX_DECAL  7
     #define TEX_REPLACE  8
 
-#if defined(USE_ALBEDO_ALPHA)
-    vec4 colour = textureLod(texDiffuse0, uv, 0);
-#else
     vec4 colour = texture(texDiffuse0, uv);
-#endif
 
     if (dvd_texOperation == TEX_NONE) {
         return colour;

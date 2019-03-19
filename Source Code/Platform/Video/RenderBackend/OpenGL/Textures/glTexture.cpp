@@ -108,7 +108,10 @@ void glTexture::resize(const bufferPtr ptr,
 
     _textureData._textureHandle = textureID;
     _allocatedStorage = false;
-    _descriptor._mipLevels.set(mipLevels);
+    _descriptor._mipLevels.x = mipLevels.x;
+    // We may have limited the number of mips
+    _descriptor._mipLevels.y = std::min(_descriptor._mipLevels.y, mipLevels.y);
+    _descriptor._mipCount = mipLevels.y;
 
     TextureLoadInfo info;
     loadData(info, ptr, dimensions);
