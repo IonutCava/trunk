@@ -42,6 +42,7 @@ enum class CacheType : U8 {
     SHADER_BIN,
     TERRAIN,
     MODELS,
+    TEXTURES,
     COUNT
 };
 
@@ -77,6 +78,10 @@ namespace Paths {
     namespace Scripts {
         extern stringImpl g_scriptsLocation;
         extern stringImpl g_scriptsAtomsLocation;
+    };
+
+    namespace Textures {
+        extern stringImpl g_metadataLocation;
     };
 
     namespace Shaders {

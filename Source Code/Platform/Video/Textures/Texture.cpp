@@ -4,6 +4,7 @@
 
 #include "Core/Headers/Console.h"
 #include "Core/Headers/Kernel.h"
+#include "Core/Headers/ByteBuffer.h"
 #include "Core/Headers/StringHelper.h"
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
@@ -184,37 +185,49 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name, Imag
         U16 height = fileData.dimensions().height;
         // If we have an alpha channel, we must check for translucency/transparency
 
-        STUBBED("ToDo: Add support for 16bit and HDR image alpha! -Ionut");
-        if (fileData.alpha()) {
-            auto findAlpha = [this, &fileData, height](const Task& parent, U32 start, U32 end) {
-                U8 tempA;
-                for (U32 i = start; i < end; ++i) {
-                    for (I32 j = 0; j < height; ++j) {
-                        if (_hasTransparency && _hasTranslucency) {
-                            if (parent._parent) {
-                                Stop(*parent._parent);
-                            }
-                            return;
-                        }
-                        fileData.getAlpha(i, j, tempA);
-                        if (IS_IN_RANGE_INCLUSIVE(tempA, 0, 254)) {
-                            _hasTransparency = true;
-                            _hasTranslucency = tempA > 1;
-                            if (_hasTranslucency) {
+        FileWithPath fwp = splitPathToNameAndLocation(name);
+        const stringImpl cachePath = Paths::g_cacheLocation + Paths::Textures::g_metadataLocation + fwp._path + "/";
+        ByteBuffer metadataCache;
+        if (metadataCache.loadFromFile(cachePath, fwp._fileName + ".cache")) {
+            metadataCache >> _hasTransparency;
+            metadataCache >> _hasTranslucency;
+        } else {
+            STUBBED("ToDo: Add support for 16bit and HDR image alpha! -Ionut");
+            if (fileData.alpha()) {
+                auto findAlpha = [this, &fileData, height](const Task& parent, U32 start, U32 end) {
+                    U8 tempA;
+                    for (U32 i = start; i < end; ++i) {
+                        for (I32 j = 0; j < height; ++j) {
+                            if (_hasTransparency && _hasTranslucency) {
                                 if (parent._parent) {
                                     Stop(*parent._parent);
                                 }
                                 return;
                             }
+                            fileData.getAlpha(i, j, tempA);
+                            if (IS_IN_RANGE_INCLUSIVE(tempA, 0, 254)) {
+                                _hasTransparency = true;
+                                _hasTranslucency = tempA > 1;
+                                if (_hasTranslucency) {
+                                    if (parent._parent) {
+                                        Stop(*parent._parent);
+                                    }
+                                    return;
+                                }
+                            }
+                        }
+                        if ((parent._parent && StopRequested(*parent._parent)) || StopRequested(parent)) {
+                            break;
                         }
                     }
-                    if ((parent._parent && StopRequested(*parent._parent)) || StopRequested(parent)) {
-                        break;
-                    }
-                }
-            };
+                };
 
-            parallel_for(_context.context(), findAlpha, width, g_partitionSize);
+                parallel_for(_context.context(), findAlpha, width, g_partitionSize);
+
+                metadataCache << _hasTransparency;
+                metadataCache << _hasTranslucency;
+                metadataCache.dumpToFile(cachePath, fwp._fileName + ".cache");
+            }
         }
 
         Console::printfn(Locale::get(_ID("TEXTURE_HAS_TRANSPARENCY_TRANSLUCENCY")),

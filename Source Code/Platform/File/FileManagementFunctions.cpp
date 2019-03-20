@@ -116,6 +116,9 @@ bool deleteAllFiles(const char* filePath, const char* extension) {
                             ret = true;
                         }
                     }
+                } else {
+                    //ToDo: check if this recurse in subfolders actually works
+                    deleteAllFiles(it->path().string().c_str(), extension);
                 }
             } catch (const std::exception &ex)
             {
@@ -149,6 +152,9 @@ bool clearCache(CacheType type) {
 
         case CacheType::MODELS:
             return deleteAllFiles((Paths::g_cacheLocation + Paths::g_geometryCacheLocation).c_str());
+
+        case CacheType::TEXTURES:
+            return deleteAllFiles((Paths::g_cacheLocation + Paths::Textures::g_metadataLocation).c_str());
     }
 
     return false;

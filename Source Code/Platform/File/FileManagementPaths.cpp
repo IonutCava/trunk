@@ -40,6 +40,10 @@ namespace Paths {
         stringImpl g_scriptsAtomsLocation;
     };
 
+    namespace Textures {
+        stringImpl g_metadataLocation;
+    };
+
     namespace Shaders {
         stringImpl g_cacheLocation;
         stringImpl g_cacheLocationText;
@@ -99,11 +103,13 @@ namespace Paths {
         Scripts::g_scriptsLocation = stringImpl(g_assetsLocation + "scripts/");
         Scripts::g_scriptsAtomsLocation = stringImpl(Scripts::g_scriptsLocation + "atoms/");
 
+        Textures::g_metadataLocation = stringImpl("textureData/");
+
         Editor::g_saveLocation = stringImpl("Editor/");
         Editor::g_tabLayoutFile = stringImpl("Tabs.layout");
         Editor::g_panelLayoutFile = stringImpl("Panels.layout");
 
-        Shaders::g_cacheLocation = stringImpl("shaderCache/");
+        Shaders::g_cacheLocation = stringImpl("shaders/");
         Shaders::g_cacheLocationText = stringImpl(Shaders::g_cacheLocation + "Text/");
         Shaders::g_cacheLocationBin = stringImpl(Shaders::g_cacheLocation + "Binary/");
         // these must match the last 4 characters of the atom file
