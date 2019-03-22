@@ -8,6 +8,8 @@
   <useGeometryCache>true</useGeometryCache>
   <useVegetationCache>true</useVegetationCache>
   <useShaderBinaryCache>false</useShaderBinaryCache>
+  <enableTreeInstances>true</enableTreeInstances>
+  <enableGrassInstances>true</enableGrassInstances>
   <!-- this is only taken into consideration if binary cache is disabled-->
   <useShaderTextCache>false</useShaderTextCache>
   <!-- memFile: file name that the application should use to write  memory allocation info -->

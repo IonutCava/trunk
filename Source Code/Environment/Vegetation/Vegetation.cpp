@@ -309,6 +309,10 @@ void Vegetation::uploadVegetationData() {
 
     _instanceCountGrass = to_U32(std::min(_tempGrassData.size(), s_maxGrassInstancesPerChunk));
 
+    if (!_context.context().config().debug.enableGrassInstances) {
+        _instanceCountGrass = 0;
+    }
+
     if (_instanceCountGrass > 0) {
         if (_terrainChunk.ID() < s_maxChunks) {
             size_t diff = s_maxGrassInstancesPerChunk - _tempGrassData.size();
@@ -325,6 +329,10 @@ void Vegetation::uploadVegetationData() {
     }
 
     _instanceCountTrees = to_U32(std::min(_tempTreeData.size(), s_maxTreeInstancesPerChunk));
+
+    if (!_context.context().config().debug.enableTreeInstances) {
+        _instanceCountTrees = 0;
+    }
 
     if (_instanceCountTrees > 0) {
         _instanceCountTrees = to_U32(std::min(_tempTreeData.size(), s_maxTreeInstancesPerChunk));
@@ -554,7 +562,6 @@ void Vegetation::computeVegetationTransforms(const Task& parentTask, bool treeDa
         container.resize(chunkCache.read<size_t>());
         chunkCache.read(reinterpret_cast<Byte*>(container.data()), sizeof(VegetationData) * container.size());
     } else {
-
         U32 ID = _terrainChunk.ID();
         U32 meshID = to_U32(ID % _treeMeshNames.size());
 

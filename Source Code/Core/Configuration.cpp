@@ -21,6 +21,8 @@ Configuration::Configuration() : XML::IXMLSerializable()
     debug.useVegetationCache = true;
     debug.useShaderBinaryCache = false;
     debug.useShaderTextCache = false;
+    debug.enableTreeInstances = true;
+    debug.enableGrassInstances = true;
     debug.memFile = "none";
     debug.mesh.playAnimations = true;
     language = "enGB";
@@ -97,6 +99,8 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(debug.useVegetationCache);
         GET_PARAM(debug.useShaderBinaryCache);
         GET_PARAM(debug.useShaderTextCache);
+        GET_PARAM(debug.enableTreeInstances);
+        GET_PARAM(debug.enableGrassInstances);
         GET_PARAM(debug.memFile);
         GET_PARAM(debug.mesh.playAnimations);
         GET_PARAM(language);
@@ -181,6 +185,8 @@ bool Configuration::toXML(const char* xmlFile) const {
     PUT_PARAM(debug.useVegetationCache);
     PUT_PARAM(debug.useShaderBinaryCache);
     PUT_PARAM(debug.useShaderTextCache);
+    PUT_PARAM(debug.enableTreeInstances);
+    PUT_PARAM(debug.enableGrassInstances);
     PUT_PARAM(debug.memFile);
     PUT_PARAM(debug.mesh.playAnimations);
     PUT_PARAM(language);

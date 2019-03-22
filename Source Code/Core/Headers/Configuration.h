@@ -61,6 +61,8 @@ public:
         bool useVegetationCache;
         bool useShaderBinaryCache;
         bool useShaderTextCache;
+        bool enableTreeInstances;
+        bool enableGrassInstances;
         stringImpl memFile;
         struct Mesh {
             bool playAnimations;

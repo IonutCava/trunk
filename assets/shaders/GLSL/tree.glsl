@@ -1,7 +1,5 @@
 --Vertex
 
-out flat int cull;
-
 #include "vbInputData.vert"
 #include "nodeBufferedInput.cmn"
 #include "vegetationData.cmn"
@@ -19,12 +17,17 @@ void main(void){
 
     computeDataNoClip();
 
-    VegetationData data = TreeData(VAR.dvd_instanceID);
+    const VegetationData data = TreeData(VAR.dvd_instanceID);
 
     float scale = data.positionAndScale.w;
-    cull = (data.data.z > 2.1f) ? 1 : 0;
 
-    if (data.data.z < 1.1f && dvd_Vertex.y * scale > 0.85f) {
+    const float LoDValue = data.data.z;
+    if (LoDValue > 2.1f) {
+        scale = 0.0f;
+        //gl_CullDistance[0] = -0.01f;
+    }
+
+    if (LoDValue < 1.1f && dvd_Vertex.y * scale > 0.85f) {
         computeFoliageMovementTree(dvd_Vertex, data.data.w);
     }
 
@@ -38,32 +41,13 @@ void main(void){
     VAR._normalWV = normalize(mat3(dvd_ViewMatrix) * -dvd_Normal);
 #endif
 
+#if !defined(SHADOW_PASS)
+    setClipPlanes(VAR._vertexW);
+#endif
+
     //Compute the final vert position
     gl_Position = dvd_ProjectionMatrix * VAR._vertexWV;
 
-}
-
--- Geometry
-
-in flat int cull[];
-
-layout(triangles) in;
-layout(triangle_strip, max_vertices = 3) out;
-
-void main()
-{
-    if (cull[0] == 0) {
-        for (int i = 0; i < gl_in.length(); ++i)
-        {
-            PassData(i);
-#if !defined(SHADOW_PASS)
-            setClipPlanes(VAR[i]._vertexW);
-#endif
-            gl_Position = gl_in[i].gl_Position;
-            EmitVertex();
-        }
-        EndPrimitive();
-    }
 }
 
 -- Fragment
