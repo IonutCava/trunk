@@ -38,10 +38,6 @@ void main(void){
     VAR._normalWV = normalize(mat3(dvd_ViewMatrix) * -dvd_Normal);
 #endif
 
-#if !defined(SHADOW_PASS)
-    setClipPlanes(VAR._vertexW);
-#endif
-
     //Compute the final vert position
     gl_Position = dvd_ProjectionMatrix * VAR._vertexWV;
 
@@ -60,6 +56,9 @@ void main()
         for (int i = 0; i < gl_in.length(); ++i)
         {
             PassData(i);
+#if !defined(SHADOW_PASS)
+            setClipPlanes(VAR[i]._vertexW);
+#endif
             gl_Position = gl_in[i].gl_Position;
             EmitVertex();
         }

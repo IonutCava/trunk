@@ -476,8 +476,7 @@ void GFXDevice::setClipPlanes(const FrustumClipPlanes& clipPlanes) {
     static_assert(std::is_same<std::remove_reference<decltype(*(_gpuBlock._data._clipPlanes))>::type, vec4<F32>>::value, "GFXDevice error: invalid clip plane type!");
     static_assert(sizeof(vec4<F32>) == sizeof(Plane<F32>), "GFXDevice error: clip plane size mismatch!");
 
-    if (clipPlanes._active != _clippingPlanes._active ||
-        clipPlanes._planes != _clippingPlanes._planes)
+    if (clipPlanes._planes != _clippingPlanes._planes)
     {
         _clippingPlanes = clipPlanes;
 

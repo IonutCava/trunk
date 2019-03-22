@@ -55,23 +55,19 @@ namespace Divide {
         ClipPlaneList(const Plane<F32>& defaultValue)
         {
             _planes.fill(defaultValue);
-            _active.fill(false);
         }
 
         void resetAll() {
             _planes.fill(Plane<F32>(0.0f, 0.0f, 0.0f, 0.0f));
-            _active.fill(false);
         }
 
-        void set(U32 index, const Plane<F32>& plane, bool active) {
+        void set(U32 index, const Plane<F32>& plane) {
             assert(index < N);
 
             _planes[index].set(plane.getEquation());
-            _active[index] = active;
         }
 
         PlaneList<N> _planes;
-        std::array<bool, N> _active;
     };
     
     typedef ClipPlaneList<to_base(ClipPlaneIndex::COUNT)> FrustumClipPlanes;

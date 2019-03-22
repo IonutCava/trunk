@@ -10,6 +10,10 @@ layout(binding = SHADOW_LAYERED_MAP_ARRAY) uniform sampler2DArray          texDe
 #define DEBUG_SHADOWMAPPING
 #endif
 
+#if !defined(SHADOW_INTENSITY_FACTOR)
+#define SHADOW_INTENSITY_FACTOR 1.0f
+#endif
+
 #include "shadow_directional.frag"
 #include "shadow_point.frag"
 #include "shadow_spot.frag"
@@ -41,7 +45,7 @@ float getShadowFactor() {
         }
     }
 
-    return saturate(shadow);
+    return saturate(shadow / SHADOW_INTENSITY_FACTOR);
 }
 
 

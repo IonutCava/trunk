@@ -20,6 +20,8 @@ void main(void)
 
 -- Fragment
 
+#define SHADOW_INTENSITY_FACTOR 0.5f
+
 in flat int _underwater;
 in vec4 _vertexWVP;
 

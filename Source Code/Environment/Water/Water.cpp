@@ -15,11 +15,6 @@
 
 namespace Divide {
 
-namespace {
-    ClipPlaneIndex g_reflectionClipID = ClipPlaneIndex::CLIP_PLANE_4;
-    ClipPlaneIndex g_refractionClipID = ClipPlaneIndex::CLIP_PLANE_5;
-};
-
 WaterPlane::WaterPlane(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name)
     : SceneNode(parentCache, descriptorHash, name, SceneNodeType::TYPE_WATER),
       _plane(nullptr),
@@ -153,7 +148,7 @@ void WaterPlane::buildDrawCommands(SceneGraphNode& sgn,
                                    RenderPackage& pkgInOut) {
 
     GFX::SendPushConstantsCommand pushConstantsCommand = {};
-    pushConstantsCommand._constants.set("_noiseFactor", GFX::PushConstantType::VEC2, vec2<F32>(0.15f, 0.15f));
+    pushConstantsCommand._constants.set("_noiseFactor", GFX::PushConstantType::VEC2, vec2<F32>(0.10f, 0.10f));
     pushConstantsCommand._constants.set("_noiseTile", GFX::PushConstantType::VEC2, vec2<F32>(15.0f, 15.0f));
     pkgInOut.addPushConstantsCommand(pushConstantsCommand);
 
@@ -186,8 +181,7 @@ void WaterPlane::updateRefraction(RenderCbkParams& renderParams, GFX::CommandBuf
     params._target = renderParams._renderTarget;
     params._drawPolicy = &RenderTarget::defaultPolicyKeepDepth();
     params._passIndex = renderParams._passIndex;
-    params._clippingPlanes._planes[to_U32(underwater ? g_reflectionClipID : g_refractionClipID)] = refractionPlane;
-    params._clippingPlanes._active[to_U32(g_refractionClipID)] = true;
+    params._clippingPlanes._planes[0] = refractionPlane;
     renderParams._context.parent().renderPassManager().doCustomPass(params, bufferInOut);
 }
 
@@ -214,8 +208,7 @@ void WaterPlane::updateReflection(RenderCbkParams& renderParams, GFX::CommandBuf
     params._target = renderParams._renderTarget;
     params._drawPolicy = &RenderTarget::defaultPolicyKeepDepth();
     params._passIndex = renderParams._passIndex;
-    params._clippingPlanes._planes[to_U32(underwater ? g_refractionClipID : g_reflectionClipID)] = reflectionPlane;
-    params._clippingPlanes._active[to_U32(g_reflectionClipID)] = true;
+    params._clippingPlanes._planes[0] = reflectionPlane;
     renderParams._context.parent().renderPassManager().doCustomPass(params, bufferInOut);
 }
 

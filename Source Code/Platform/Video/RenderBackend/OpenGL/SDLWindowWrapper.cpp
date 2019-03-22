@@ -319,6 +319,11 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     // Culling is enabled by default, but RenderStateBlocks can toggle it on a per-draw call basis
     glEnable(GL_CULL_FACE);
 
+    // Enable all 6 clip planes, I guess
+    for (U8 i = 0; i < to_U8(Frustum::FrustPlane::COUNT); ++i) {
+        glEnable(GLenum((U32)GL_CLIP_DISTANCE0 + i));
+    }
+
     // Prepare font rendering subsystem
     if (!createFonsContext()) {
         Console::errorfn(Locale::get(_ID("ERROR_FONT_INIT")));

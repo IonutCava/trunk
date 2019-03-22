@@ -93,7 +93,7 @@ stringImpl SetClipPlanesCommand::toString(U16 indent) const {
 
         const vec4<F32>& eq = _clippingPlanes._planes[i].getEquation();
 
-        ret.append(Util::StringFormat("Plane [%d] [ %5.2f %5.2f %5.2f - %5.2f ] is %s\n", i, eq.x, eq.y, eq.z, eq.w, _clippingPlanes._active[i] ? "active" : "not active"));
+        ret.append(Util::StringFormat("Plane [%d] [ %5.2f %5.2f %5.2f - %5.2f ]\n", i, eq.x, eq.y, eq.z, eq.w));
     }
 
     return ret;
