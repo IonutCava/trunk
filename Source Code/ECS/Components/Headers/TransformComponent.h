@@ -175,8 +175,8 @@ namespace Divide {
          vec3<F32> getLocalPositionLocked(D64 interpolationFactor) const;
          vec3<F32> getLocalScaleLocked(D64 interpolationFactor) const;
          Quaternion<F32> getLocalOrientationLocked(D64 interpolationFactor) const;
-         //
 
+         //Called only when transformed chaged in the main update loop!
          const mat4<F32>& updateWorldMatrix();
 
          // Local transform interface access (all are in local space)
@@ -197,9 +197,10 @@ namespace Divide {
         NodeUsageContext _parentUsageContext;
 
         bool _uniformScaled;
-        std::atomic_flag _worldMatrixUpToDate = ATOMIC_FLAG_INIT;
-        mat4<F32> _worldMatrix;
         
+        mutable SharedMutex _worldMatrixLock;
+        mat4<F32> _worldMatrix;
+
         mutable SharedMutex _lock;
     };
 

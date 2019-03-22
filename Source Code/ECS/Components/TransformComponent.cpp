@@ -12,8 +12,6 @@ namespace Divide {
         _uniformScaled(false),
         _parentUsageContext(parentSGN.usageContext())
     {
-        _worldMatrixUpToDate.clear();
-
         _transformUpdatedMask.store(to_base(TransformType::ALL));
 
         _editorComponent.registerField("Transform",
@@ -43,7 +41,7 @@ namespace Divide {
 
     void TransformComponent::onParentTransformDirty(U32 transformMask) {
         if (transformMask != to_base(TransformType::NONE)) {
-            _worldMatrixUpToDate.clear();
+            setTransformDirty(transformMask);
         }
     }
 
@@ -59,8 +57,6 @@ namespace Divide {
         while (!_transformStack.empty()) {
             _transformStack.pop();
         }
-        
-        _worldMatrixUpToDate.clear();
 
         _transformUpdatedMask.store(to_base(TransformType::ALL));
     }
@@ -77,9 +73,9 @@ namespace Divide {
 
     void TransformComponent::Update(const U64 deltaTimeUS) {
         // Cleanup our dirty transforms
-        if (_transformUpdatedMask.exchange(to_U32(TransformType::NONE) != to_U32(TransformType::NONE)))
-        {
+        if (_transformUpdatedMask.exchange(to_U32(TransformType::NONE) != to_U32(TransformType::NONE))) {
             updateWorldMatrix();
+            _parentSGN.SendEvent<TransformUpdated>(GetOwner());
         }
 
         BaseComponentType<TransformComponent, ComponentType::TRANSFORM>::Update(deltaTimeUS);
@@ -438,22 +434,20 @@ namespace Divide {
     }
 
     const mat4<F32>& TransformComponent::updateWorldMatrix() {
-        if (!_worldMatrixUpToDate.test_and_set()) {
-            _worldMatrix.set(getMatrix());
-            
-            SceneGraphNode* grandParentPtr = _parentSGN.getParent();
-            if (grandParentPtr) {
-                _worldMatrix *= grandParentPtr->get<TransformComponent>()->updateWorldMatrix();
-            }
-
-            _parentSGN.SendEvent<TransformUpdated>(GetOwner());
-            _worldMatrixUpToDate.clear();
+        mat4<F32> parentMat = {};
+        SceneGraphNode* grandParentPtr = _parentSGN.getParent();
+        if (grandParentPtr) {
+            parentMat = grandParentPtr->get<TransformComponent>()->getWorldMatrix();
         }
+
+        UniqueLockShared w_lock(_worldMatrixLock);
+        _worldMatrix.set(getMatrix() * parentMat);
 
         return _worldMatrix;
     }
 
     const mat4<F32>& TransformComponent::getWorldMatrix() const {
+        SharedLock r_lock(_worldMatrixLock);
         return _worldMatrix;
     }
 
