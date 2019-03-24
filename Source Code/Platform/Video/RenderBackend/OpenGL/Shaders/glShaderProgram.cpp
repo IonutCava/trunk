@@ -938,13 +938,13 @@ void glShaderProgram::shaderFileRead(const stringImpl& filePath,
                                      stringImpl& sourceCodeOut) {
     stringImpl variant = fileName;
     if (Config::Build::IS_DEBUG_BUILD) {
-        variant.append(".debug");
+        variant.append("debug");
     }
     else if (Config::Build::IS_PROFILE_BUILD) {
-        variant.append(".profile");
+        variant.append("profile");
     }
     else {
-        variant.append(".release");
+        variant.append("release");
     }
     readFile(filePath, variant, sourceCodeOut, FileType::TEXT);
 }
@@ -954,11 +954,11 @@ void glShaderProgram::shaderFileRead(const stringImpl& filePath,
 void glShaderProgram::shaderFileWrite(const stringImpl& filePath, const stringImpl& fileName, const char* sourceCode) {
     stringImpl variant = fileName;
     if (Config::Build::IS_DEBUG_BUILD) {
-        variant.append(".debug");
+        variant.append("debug");
     } else if (Config::Build::IS_PROFILE_BUILD) {
-        variant.append(".profile");
+        variant.append("profile");
     } else {
-        variant.append(".release");
+        variant.append("release");
     }
 
     writeFile(filePath, variant, (bufferPtr)sourceCode, strlen(sourceCode), FileType::TEXT);

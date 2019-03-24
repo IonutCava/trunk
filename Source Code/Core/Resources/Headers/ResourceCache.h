@@ -34,8 +34,8 @@
 #define RESOURCE_MANAGER_H_
 
 #include "ResourceLoader.h"
-#include "Platform/Threading/Headers/ThreadPool.h"
 
+#include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
 #include "Core/Headers/PlatformContextComponent.h"
 
@@ -94,21 +94,25 @@ public:
         ResourceLoadLock res_lock(loadingHash);
 
         /// Check cache first to avoid loading the same resource twice
-        std::shared_ptr<T> ptr = std::static_pointer_cast<T>(loadResource(loadingHash, descriptor.resourceName()));
+        std::shared_ptr<T> ptr = std::static_pointer_cast<T>(find(loadingHash));
         /// If the cache did not contain our resource ...
         wasInCache = ptr != nullptr;
-        if (!ptr) {
+        if (!wasInCache) {
+            Console::printfn(Locale::get(_ID("RESOURCE_CACHE_GET_RES")), descriptor.resourceName().c_str(), loadingHash);
+
             /// ...aquire the resource's loader
             /// and get our resource as the loader creates it
             ptr = std::static_pointer_cast<T>(ImplResourceLoader<T>(*this, _context, descriptor, loadingHash)());
-            if (ptr) {
-                /// validate it's integrity and add it to the cache
-                add(ptr);
-            }
-        } else {
-            if (descriptor.onLoadCallback()) {
-                descriptor.onLoadCallback()(ptr);
-            }
+            assert(ptr != nullptr);
+            add(ptr);
+        }
+
+        if (descriptor.waitForReady()) {
+            WAIT_FOR_CONDITION(ptr->getState() == ResourceState::RES_LOADED);
+        }
+
+        if (wasInCache && descriptor.onLoadCallback()) {
+            descriptor.onLoadCallback()(ptr);
         }
 
         return ptr;

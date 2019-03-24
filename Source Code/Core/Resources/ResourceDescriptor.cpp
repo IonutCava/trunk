@@ -16,6 +16,7 @@ ResourceDescriptor::ResourceDescriptor(const stringImpl& resourceName)
     : _propertyDescriptor(nullptr),
       _resourceName(resourceName),
       _assetName(resourceName),
+       _waitForReady(true),
       _flag(false),
       _ID(0),
       _enumValue(0),

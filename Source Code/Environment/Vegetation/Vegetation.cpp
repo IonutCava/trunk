@@ -43,6 +43,8 @@ namespace Divide {
 namespace {
     constexpr U32 WORK_GROUP_SIZE = 64;
     constexpr I16 g_maxRadiusSteps = 512;
+
+    SharedMutex g_treeMeshLock;
 };
 
 bool Vegetation::s_buffersBound = false;
@@ -52,6 +54,7 @@ std::unordered_set<vec2<F32>> Vegetation::s_grassPositions;
 ShaderBuffer* Vegetation::s_treeData = nullptr;
 ShaderBuffer* Vegetation::s_grassData = nullptr;
 VertexBuffer* Vegetation::s_buffer = nullptr;
+vector<Mesh_ptr> Vegetation::s_treeMeshes;
 std::atomic_uint Vegetation::s_bufferUsage = 0;
 size_t Vegetation::s_maxChunks = 0;
 size_t Vegetation::s_maxTreeInstancesPerChunk = 0;
@@ -85,6 +88,31 @@ Vegetation::Vegetation(GFXDevice& context,
     _grassMap = details.grassMap;
     
     _treeMeshNames.insert(eastl::cend(_treeMeshNames), eastl::cbegin(details.treeMeshes), eastl::cend(details.treeMeshes));
+
+    {
+        UniqueLockShared w_lock(g_treeMeshLock);
+        for (const stringImpl& meshName : _treeMeshNames) {
+            if (std::find_if(std::cbegin(s_treeMeshes), std::cend(s_treeMeshes),
+                [&meshName](const Mesh_ptr& ptr) {
+                    return Util::CompareIgnoreCase(ptr->assetName(), meshName);
+                }) == std::cend(s_treeMeshes))
+            {
+                ResourceDescriptor model("Tree");
+                model.assetLocation(Paths::g_assetsLocation + "models");
+                model.setFlag(true);
+                model.setThreadedLoading(false); //< we need the extents asap!
+                model.assetName(meshName);
+                Mesh_ptr meshPtr = CreateResource<Mesh>(_context.parent().resourceCache(), model);
+                meshPtr->setMaterialTpl(s_treeMaterial);
+                // CSM last split should probably avoid rendering trees since it would cover most of the scene :/
+                meshPtr->renderState().addToDrawExclusionMask(RenderStagePass(RenderStage::SHADOW, RenderPassType::MAIN_PASS, 0, 2));
+                for (const SubMesh_ptr& subMesh : meshPtr->subMeshList()) {
+                    subMesh->renderState().addToDrawExclusionMask(RenderStagePass(RenderStage::SHADOW, RenderPassType::MAIN_PASS, 0, 2));
+                }
+                s_treeMeshes.push_back(meshPtr);
+            }
+        }
+    }
 
     ResourceDescriptor instanceCullShaderGrass("instanceCullVegetation.Grass");
     instanceCullShaderGrass.setThreadedLoading(true);
@@ -149,6 +177,8 @@ Vegetation::~Vegetation()
     }
     assert(getState() != ResourceState::RES_LOADING);
     if (s_bufferUsage.fetch_sub(1) == 1) {
+        UniqueLockShared w_lock(g_treeMeshLock);
+        s_treeMeshes.clear();
         s_treeMaterial.reset();
     }
 
@@ -393,25 +423,25 @@ void Vegetation::postLoad(SceneGraphNode& sgn) {
 
     U32 ID = _terrainChunk.ID();
     U32 meshID = to_U32(ID % _treeMeshNames.size());
+    const stringImpl& meshName = _treeMeshNames[meshID];
 
-    ResourceDescriptor model("Tree");
-    model.assetLocation(Paths::g_assetsLocation + "models");
-    model.setFlag(true);
-    model.setThreadedLoading(false); //< we need the extents asap!
-    model.assetName(_treeMeshNames[meshID]);
-    Mesh_ptr meshPtr = CreateResource<Mesh>(_context.parent().resourceCache(), model);
-    meshPtr->setMaterialTpl(s_treeMaterial);
-    // CSM last split should probably avoid rendering trees since it would cover most of the scene :/
-    meshPtr->renderState().addToDrawExclusionMask(RenderStagePass(RenderStage::SHADOW, RenderPassType::MAIN_PASS, 0, 2));
-    for (const SubMesh_ptr& subMesh : meshPtr->subMeshList()) {
-        subMesh->renderState().addToDrawExclusionMask(RenderStagePass(RenderStage::SHADOW, RenderPassType::MAIN_PASS, 0, 2));
+    Mesh_ptr crtMesh = nullptr;
+    {
+        SharedLock r_lock(g_treeMeshLock);
+        crtMesh = s_treeMeshes.front();
+        for (const Mesh_ptr& mesh : s_treeMeshes) {
+            if (Util::CompareIgnoreCase(mesh->assetName(), meshName)) {
+                crtMesh = mesh;
+                break;
+            }
+        }
     }
 
     SceneGraphNodeDescriptor nodeDescriptor = {};
     nodeDescriptor._componentMask = normalMask;
     nodeDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
     nodeDescriptor._serialize = false;
-    nodeDescriptor._node = meshPtr;
+    nodeDescriptor._node = crtMesh;
     nodeDescriptor._instanceCount = _instanceCountTrees;
 
     assert(s_grassData != nullptr);

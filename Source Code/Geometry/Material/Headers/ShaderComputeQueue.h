@@ -35,7 +35,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "ShaderProgramInfo.h"
 #include "Core/Resources/Headers/ResourceCache.h"
-#include "Managers/Headers/FrameListenerManager.h"
 
 namespace Divide {
 
@@ -46,7 +45,7 @@ namespace Time {
 class ResourceCache;
 class PlatformContext;
 
-class ShaderComputeQueue : public FrameListener {
+class ShaderComputeQueue {
 public:
     class ShaderQueueElement {
       public:
@@ -77,9 +76,8 @@ public:
     // Return true if the queue wasn't empty
     bool stepQueue();
 
-protected:
-    bool frameStarted(const FrameEvent& evt) override;
-    bool frameEnded(const FrameEvent& evt) override;
+private:
+    bool stepQueueLocked();
 
 private:
     ResourceCache& _cache;
@@ -88,8 +86,6 @@ private:
 
     std::mutex _queueLock;
     std::deque<ShaderQueueElement> _shaderComputeQueue;
-    bool _shadersComputedThisFrame = false;
-    U32  _totalShaderComputeCountThisFrame = 0;
     U32  _totalShaderComputeCount = 0;
 };
 

@@ -74,7 +74,8 @@ void LightPool::init() {
     bufferDescriptor._ringBufferLength = 6;
     bufferDescriptor._separateReadWrite = false;
     bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES) |
-                              to_U32(ShaderBuffer::Flags::AUTO_RANGE_FLUSH);
+                              to_U32(ShaderBuffer::Flags::AUTO_RANGE_FLUSH) |
+                              to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE);
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
     bufferDescriptor._name = "LIGHT_BUFFER";
     // NORMAL holds general info about the currently active lights: position, colour, etc.

@@ -495,15 +495,6 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
 
     shaderPropertyDescriptor._defines.insert(std::cbegin(shaderPropertyDescriptor._defines), std::cbegin(_extraShaderDefines), std::cend(_extraShaderDefines));
 
-    if (renderStagePass._stage == RenderStage::SHADOW) {
-        shaderPropertyDescriptor._defines.push_back(std::make_pair("SHADOW_PASS", true));
-    }
-
-    if (renderStagePass._passType == RenderPassType::PRE_PASS) {
-        shaderPropertyDescriptor._defines.push_back(std::make_pair("PRE_PASS", true));
-    } else if (renderStagePass._passType == RenderPassType::OIT_PASS) {
-        shaderPropertyDescriptor._defines.push_back(std::make_pair("OIT_PASS", true));
-    }
 
     if (_textures[slot1]) {
         if (!_textures[slot0]) {
@@ -515,11 +506,18 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
     stringImpl shader = _baseShaderName[renderStagePass.isDepthPass() ? 1 : 0];
 
     if (renderStagePass.isDepthPass()) {
-        shader += renderStagePass._stage == RenderStage::SHADOW ? ".Shadow" : ".PrePass";
+        if (renderStagePass._stage == RenderStage::SHADOW) {
+            shader += ".Shadow";
+            shaderPropertyDescriptor._defines.push_back(std::make_pair("SHADOW_PASS", true));
+        } else {
+            shader += ".PrePass";
+            shaderPropertyDescriptor._defines.push_back(std::make_pair("PRE_PASS", true));
+        }
     }
 
     if (renderStagePass._passType == RenderPassType::OIT_PASS) {
         shader += ".OIT";
+        shaderPropertyDescriptor._defines.push_back(std::make_pair("OIT_PASS", true));
     }
 
     if (!renderStagePass.isDepthPass()) {
@@ -572,31 +570,15 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
         shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_DOUBLE_SIDED", true));
     }
 
-    if (isRefractive()) {
-        shader += ".Refractive";
-        shaderPropertyDescriptor._defines.push_back(std::make_pair("IS_REFRACTIVE", true));
-    }
-
-    if (isReflective()) {
-        shader += ".Reflective";
-        shaderPropertyDescriptor._defines.push_back(std::make_pair("IS_REFLECTIVE", true));
-    }
-
     if (!receivesShadows() || !_context.context().config().rendering.shadowMapping.enabled) {
         shader += ".NoShadows";
         shaderPropertyDescriptor._defines.push_back(std::make_pair("DISABLE_SHADOW_MAPPING", true));
     }
 
-    
     // Add the GPU skinning module to the vertex shader?
     if (_hardwareSkinning) {
         shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_GPU_SKINNING", true));
         shader += ",Skinned";  //<Use "," instead of "." will add a Vertex only property
-    }
-
-    if (_useTriangleStrip) {
-        shader += ".TriangleSrip";
-        shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_TRIANGLE_STRIP", true));
     }
 
     switch (_shadingMode) {
@@ -605,10 +587,11 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
             shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_SHADING_FLAT", true));
             shader += ".Flat";
         } break;
-        case ShadingMode::PHONG: {
+        /*case ShadingMode::PHONG: {
             shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_SHADING_PHONG", true));
             shader += ".Phong";
-        } break;
+        } break;*/
+        case ShadingMode::PHONG:
         case ShadingMode::BLINN_PHONG: {
             shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_SHADING_BLINN_PHONG", true));
             shader += ".BlinnPhong";

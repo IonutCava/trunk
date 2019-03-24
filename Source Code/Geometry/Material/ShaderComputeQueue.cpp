@@ -8,38 +8,37 @@
 namespace Divide {
 
 ShaderComputeQueue::ShaderComputeQueue(ResourceCache& cache)
-    : FrameListener(),
-      _cache(cache),
+    : _cache(cache),
       _queueComputeTimer(Time::ADD_TIMER("Shader Queue Timer"))
 {
-    REGISTER_FRAME_LISTENER(this, 9999);
 }
 
 ShaderComputeQueue::~ShaderComputeQueue()
 {
-    UNREGISTER_FRAME_LISTENER(this);
 }
 
 void ShaderComputeQueue::idle() {
-    if (!_shadersComputedThisFrame) {
-        Time::ScopedTimer timer(_queueComputeTimer);
-        _totalShaderComputeCountThisFrame = 0;
+    Time::ScopedTimer timer(_queueComputeTimer);
 
-        while (stepQueue()) {
-            ++_totalShaderComputeCountThisFrame;
-        }
-
-        _shadersComputedThisFrame = _totalShaderComputeCountThisFrame > 0;
+    UniqueLock lock(_queueLock);
+    while (stepQueueLocked()) {
+        ++_totalShaderComputeCount;
     }
 }
 
 bool ShaderComputeQueue::stepQueue() {
     UniqueLock lock(_queueLock);
+    return stepQueueLocked();
+}
+
+bool ShaderComputeQueue::stepQueueLocked() {
     if (_shaderComputeQueue.empty()) {
         return false;
     }
 
     ShaderQueueElement& currentItem = _shaderComputeQueue.front();
+    currentItem._shaderDescriptor.waitForReady(false);
+
     currentItem._shaderRef = CreateResource<ShaderProgram>(_cache, currentItem._shaderDescriptor);
     _shaderComputeQueue.pop_front();
     return true;
@@ -53,20 +52,6 @@ void ShaderComputeQueue::addToQueueFront(const ShaderQueueElement& element) {
 void ShaderComputeQueue::addToQueueBack(const ShaderQueueElement& element) {
     UniqueLock w_lock(_queueLock);
     _shaderComputeQueue.push_back(element);
-}
-
-bool ShaderComputeQueue::frameStarted(const FrameEvent& evt) {
-    return true;
-}
-
-bool ShaderComputeQueue::frameEnded(const FrameEvent& evt) {
-    if (_shadersComputedThisFrame) {
-        _totalShaderComputeCount += _totalShaderComputeCountThisFrame;
-        _totalShaderComputeCountThisFrame = 0;
-        _shadersComputedThisFrame = false;
-    }
-
-    return true;
 }
 
 }; //namespace Divide

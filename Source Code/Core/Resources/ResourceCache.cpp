@@ -2,8 +2,6 @@
 
 #include "Headers/ResourceCache.h"
 
-#include "Core/Headers/Console.h"
-#include "Utility/Headers/Localization.h"
 #include "Environment/Terrain/Headers/TerrainLoader.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
 
@@ -78,17 +76,6 @@ void ResourceCache::add(CachedResource_wptr res) {
     hashAlg::insert(_resDB, hashAlg::make_pair(hash, res));
 }
 
-CachedResource_ptr ResourceCache::loadResource(size_t descriptorHash, const stringImpl& resourceName) {
-    const CachedResource_ptr& resource = find(descriptorHash);
-    if (resource) {
-        WAIT_FOR_CONDITION(resource->getState() == ResourceState::RES_LOADED);
-    } else {
-        Console::printfn(Locale::get(_ID("RESOURCE_CACHE_GET_RES")), resourceName.c_str(), descriptorHash);
-    }
-
-    return resource;
-}
-
 CachedResource_ptr ResourceCache::find(size_t descriptorHash) {
     /// Search in our resource cache
     SharedLock r_lock(_creationMutex);
@@ -97,7 +84,7 @@ CachedResource_ptr ResourceCache::find(size_t descriptorHash) {
         return it->second.lock();
     }
 
-    return {};
+    return nullptr;
 }
 
 void ResourceCache::remove(CachedResource* resource) {

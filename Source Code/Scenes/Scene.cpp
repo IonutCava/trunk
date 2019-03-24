@@ -297,9 +297,9 @@ void Scene::loadAsset(const XML::SceneNode& sceneNode, SceneGraphNode* parent) {
                          to_base(ComponentType::NETWORKING);
 
 
-        auto loadModelComplete = [this](Resource_wptr res) {
+        auto loadModelComplete = [this](CachedResource_wptr res) {
             ACKNOWLEDGE_UNUSED(res);
-            --_loadingTasks;
+            _loadingTasks.fetch_sub(1);
         };
 
         boost::property_tree::ptree nodeTree;
@@ -316,7 +316,7 @@ void Scene::loadAsset(const XML::SceneNode& sceneNode, SceneGraphNode* parent) {
             normalMask |= to_base(ComponentType::RENDERING);
 
             if (!modelName.empty()) {
-                ++_loadingTasks;
+                _loadingTasks.fetch_add(1);
                 ResourceDescriptor item(sceneNode.name);
                 item.setOnLoadCallback(loadModelComplete);
                 item.assetName(modelName);
@@ -368,7 +368,7 @@ void Scene::loadAsset(const XML::SceneNode& sceneNode, SceneGraphNode* parent) {
             // No rendering component for meshes. Only for submeshes
             //normalMask |= to_base(ComponentType::RENDERING);
             if (!modelName.empty()) {
-                ++_loadingTasks;
+                _loadingTasks.fetch_add(1);
                 ResourceDescriptor model(modelName);
                 model.assetLocation(Paths::g_assetsLocation + "models");
                 model.assetName(modelName);
@@ -585,8 +585,8 @@ void Scene::addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree p
     terrainDescriptor.setThreadedLoading(true);
     terrainDescriptor.setOnLoadCallback(registerTerrain);
     terrainDescriptor.setFlag(ter->getActive());
-    CreateResource<Terrain>(_resCache, terrainDescriptor);
     _loadingTasks.fetch_add(1);
+    CreateResource<Terrain>(_resCache, terrainDescriptor);
 }
 
 void Scene::toggleFlashlight(PlayerIndex idx) {

@@ -112,8 +112,7 @@ vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normal, in float
 
     lightColour.rgb += getEmissive(colourMatrix);
 
-#if defined(IS_REFLECTIVE)
-    if (dvd_lodLevel < 1) {
+    if (dvd_lodLevel < 1 && getReflectivity(colourMatrix) > 100) {
         vec3 reflectDirection = reflect(normalize(VAR._vertexWV.xyz), normal);
         reflectDirection = vec3(inverse(dvd_ViewMatrix) * vec4(reflectDirection, 0.0f));
         /*lightColour.rgb = mix(texture(texEnvironmentCube, vec4(reflectDirection, dvd_reflectionIndex)).rgb,
@@ -121,14 +120,17 @@ vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normal, in float
                           vec3(saturate(lightColour.a)));
         */
     }
-#endif //IS_REFLECTIVE
 
     return lightColour.rgb * shadowFactor;
 }
 #endif //USE_SHADING_FLAT
 
 vec4 getPixelColour(in vec4 albedo, in mat4 colourMatrix, in vec3 normal) {
+#if defined(OIT_PASS)
+    const float shadowFactor = 1.0f;
+#else
     const float shadowFactor = getShadowFactor();
+#endif
 
     vec4 colour = vec4(getLitColour(albedo.rgb, colourMatrix, normal, shadowFactor), albedo.a);
 
