@@ -142,13 +142,23 @@ void RenderQueue::addNodeToQueue(const SceneGraphNode& sgn, RenderStagePass stag
     }
 }
 
-void RenderQueue::populateRenderQueues(RenderStagePass stagePass, RenderBinType binType, vectorEASTLFast<RenderPackage*>& queueInOut) {
-    if (binType._value == RenderBinType::RBT_COUNT) {
+void RenderQueue::populateRenderQueues(RenderStagePass stagePass, std::pair<RenderBinType, bool> binAndFlag, vectorEASTLFast<RenderPackage*>& queueInOut) {
+    if (binAndFlag.first._value == RenderBinType::RBT_COUNT) {
+        if (!binAndFlag.second) {
+            // Why are we allowed to exclude everything? idk.
+            return;
+        }
+
         for (RenderBin* renderBin : _renderBins) {
             renderBin->populateRenderQueue(stagePass, queueInOut);
         }
     } else {
-        _renderBins[binType]->populateRenderQueue(stagePass, queueInOut);
+        // Everything except the specified type or just the specified type
+        for (RenderBin* renderBin : _renderBins) {
+            if ((renderBin->getType() == binAndFlag.first) == binAndFlag.second) {
+                renderBin->populateRenderQueue(stagePass, queueInOut);
+            }
+        }
     }
 }
 

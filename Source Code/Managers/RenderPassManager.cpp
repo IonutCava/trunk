@@ -442,13 +442,13 @@ void RenderPassManager::prepareRenderQueues(RenderStagePass stagePass, const Pas
     packageQueue.resize(0);
     packageQueue.reserve(Config::MAX_VISIBLE_NODES);
     
-    if (stagePass._passType == RenderPassType::PRE_PASS || stagePass._stage == RenderStage::SHADOW) {
-        // Draw everything in the depth pass
-        queue.populateRenderQueues(stagePass,RenderBinType::RBT_COUNT, packageQueue);
+    // Draw everything in the depth pass
+    if (stagePass.isDepthPass()) {
+        queue.populateRenderQueues(stagePass, std::make_pair(RenderBinType::RBT_COUNT, true), packageQueue);
     } else {
         // Only draw stuff from the translucent bin in the OIT Pass and everything else in the colour pass
         bool oitPass = stagePass._passType == RenderPassType::OIT_PASS;
-        queue.populateRenderQueues(stagePass, oitPass ? RenderBinType::RBT_TRANSLUCENT : RenderBinType::RBT_COUNT, packageQueue);
+        queue.populateRenderQueues(stagePass, std::make_pair(RenderBinType::RBT_TRANSLUCENT, oitPass), packageQueue);
     }
 
     buildDrawCommands(stagePass, params, refreshNodeData, bufferInOut);
