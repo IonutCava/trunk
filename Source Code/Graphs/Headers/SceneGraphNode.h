@@ -285,7 +285,7 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     // Returns true if the node should be culled (is not visible for the current stage)
     bool cullNode(const NodeCullParams& params,
                   Frustum::FrustCollision& collisionTypeOut,
-                  F32& minDistanceSq) const;
+                  F32& distanceToClosestPointSQ) const;
 
    protected:
     friend class RenderingComponent;

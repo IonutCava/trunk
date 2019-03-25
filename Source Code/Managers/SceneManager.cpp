@@ -580,12 +580,12 @@ const RenderPassCuller::VisibleNodeList& SceneManager::cullSceneGraph(RenderStag
     cullParams._camera = &camera;
     cullParams._threaded = true;
     cullParams._minLoD = minLoD;
+    cullParams._visibilityDistanceSq = std::numeric_limits<F32>::max();
 
-    if (stage == RenderStage::SHADOW) {
-        cullParams._visibilityDistanceSq = std::numeric_limits<F32>::max();
-    } else {
+    if (stage != RenderStage::SHADOW) {
         cullParams._visibilityDistanceSq = SQUARED(sceneState.renderState().generalVisibility());
     }
+
     // Cull everything except 3D objects
     cullParams._cullFunction = [stage](const SceneGraphNode& node, const SceneNode& sceneNode) -> bool {
         if (generatesDrawCommands(sceneNode.type())) {
