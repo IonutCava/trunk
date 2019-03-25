@@ -157,7 +157,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     {
         vector<RTAttachmentDescriptor> attachments = {
             { screenDescriptor,              RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO), DefaultColours::DIVIDE_BLUE },
-            { normalAndVelocityDescriptor,   RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_VELOCITY), FColour(0.0f, 0.0f, 0.0f, 0.0f) },
+            { normalAndVelocityDescriptor,   RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_VELOCITY), VECTOR4_ZERO },
             { depthDescriptor,               RTAttachmentType::Depth }
         };
 
@@ -254,13 +254,14 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
         revealageDescriptor.setSampler(accumulationSampler);
 
         vector<RTAttachmentDescriptor> attachments = {
-            { accumulationDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::ACCUMULATION), FColour(0.0f, 0.0f, 0.0f, 0.0f) },
+            { accumulationDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::ACCUMULATION), VECTOR4_ZERO },
             { revealageDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::REVEALAGE), DefaultColours::WHITE}
         };
 
-        const RTAttachment_ptr& screenAttachment = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachmentPtr(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO));
-        const RTAttachment_ptr& normalsAttachment = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachmentPtr(RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_VELOCITY));
-        const RTAttachment_ptr& screenDepthAttachment = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachmentPtr(RTAttachmentType::Depth, 0);
+        const RenderTarget& screenTarget = _rtPool->renderTarget(RenderTargetUsage::SCREEN);
+        const RTAttachment_ptr& screenAttachment = screenTarget.getAttachmentPtr(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO));
+        const RTAttachment_ptr& normalsAttachment = screenTarget.getAttachmentPtr(RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_VELOCITY));
+        const RTAttachment_ptr& screenDepthAttachment = screenTarget.getAttachmentPtr(RTAttachmentType::Depth, 0);
 
         vector<ExternalRTAttachmentDescriptor> externalAttachments = {
             { normalsAttachment,  RTAttachmentType::Colour, to_U8(ScreenTargets::EXTRA) },
@@ -425,8 +426,8 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
     _debugFrustumPrimitive->pipeline(*primitivePipeline);
 
     SizeChangeParams params;
-    params.width = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getWidth();
-    params.height = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getHeight();
+    params.width = _rtPool->renderTarget(RenderTargetUsage::SCREEN).getWidth();
+    params.height = _rtPool->renderTarget(RenderTargetUsage::SCREEN).getHeight();
     params.isWindowResize = false;
     params.winGUID = context().app().windowManager().getMainWindow().getGUID();
     context().app().onSizeChange(params);

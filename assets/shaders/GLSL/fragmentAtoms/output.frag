@@ -4,6 +4,8 @@
 #include "velocityCalc.frag"
 
 #if defined(OIT_PASS)
+#define uDepthScale 0.5f
+
 layout(location = 0) out vec4  _accum;
 layout(location = 1) out float _revealage;
 layout(location = 2) out vec4  _normalAndVelocityOut;
@@ -68,15 +70,10 @@ void writePixel(vec4 premultipliedReflect, float csZ) {
 float nvidiaSample(in vec4 color, in float linearDepth) {
     // Tuned to work well with FP16 accumulation buffers and 0.001 < linearDepth < 2.5
     // See Equation (9) from http://jcgt.org/published/0002/02/09/
-
-    float viewDepth = abs(1.0 / gl_FragCoord.w);
-
-    // Tuned to work well with FP16 accumulation buffers and 0.001 < linearDepth < 2.5
-    // See Equation (9) from http://jcgt.org/published/0002/02/09/
-    float linearDepth2 = viewDepth * 0.5f;// uDepthScale;
+    linearDepth *= uDepthScale;
 
     //float weight = pow(color.a, 1.0) * clamp(0.03f / (1e-5f + pow(linearDepth, 4.0f)), 1e-2f, 3e3f);
-    float weight = clamp(0.03f / (1e-5f + pow(linearDepth2, 4.0f)), 1e-2f, 3e3f);
+    float weight = clamp(0.03f / (1e-5f + pow(linearDepth, 4.0f)), 1e-2f, 3e3f);
     _accum = vec4(color.rgb * color.a, color.a) * weight;
     _revealage = color.a;
 
@@ -86,7 +83,8 @@ float nvidiaSample(in vec4 color, in float linearDepth) {
 
 void writeOutput(vec4 colour, vec2 normal, vec2 velocity) {
 #if defined(OIT_PASS)
-    float linearDepth = ToLinearDepth(getDepthValue(getScreenPositionNormalised()));
+    float linearDepth = abs(1.0 / gl_FragCoord.w);
+    //float linearDepth = ToLinearDepth(getDepthValue(getScreenPositionNormalised()));
 
 #if defined(USE_COLOURED_WOIT)
     //writePixel(colour, colour.rgb - vec3(0.2f), linearDepth);

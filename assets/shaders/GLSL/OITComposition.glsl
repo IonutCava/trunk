@@ -39,7 +39,7 @@ void main() {
     ivec2 C = ivec2(gl_FragCoord.xy);
 
     float revealage = texelFetch(revealageTexture, C, 0).r;
-    if (revealage == 1.0) {
+    if (revealage == 1.0f) {
         // Save the blending and color texture fetch cost
         discard;
     }
@@ -54,11 +54,11 @@ void main() {
     // dst' =  (accum.rgb / accum.a) * (1 - revealage) + dst
     // [dst has already been modulated by the transmission colors and coverage and the blend mode
     // inverts revealage for us] 
-    vec3 averageColor = accum.rgb / max(accum.a, 0.00001);
+    vec3 averageColor = accum.rgb / max(accum.a, 0.00001f);
 #ifdef USE_COLOURED_WOIT
     _colourOut = vec4(averageColor, revealage);
 #else
-    _colourOut = vec4(averageColor, 1.0 - revealage);
+    _colourOut = vec4(averageColor, 1.0f - revealage);
 #endif
     //_normalAndVelocityOut = normalData;
 }

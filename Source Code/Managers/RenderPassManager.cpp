@@ -21,8 +21,6 @@
 #include "ECS/Components/Headers/AnimationComponent.h"
 
 
-//#define DISABLE_WOIT
-
 #ifndef USE_COLOUR_WOIT
 //#define USE_COLOUR_WOIT
 #endif
@@ -448,13 +446,9 @@ void RenderPassManager::prepareRenderQueues(RenderStagePass stagePass, const Pas
         // Draw everything in the depth pass
         queue.populateRenderQueues(stagePass,RenderBinType::RBT_COUNT, packageQueue);
     } else {
-#if defined(DISABLE_WOIT)
-        queue.populateRenderQueues(stagePass, RenderBinType::RBT_COUNT, packageQueue);
-#else
         // Only draw stuff from the translucent bin in the OIT Pass and everything else in the colour pass
         bool oitPass = stagePass._passType == RenderPassType::OIT_PASS;
         queue.populateRenderQueues(stagePass, oitPass ? RenderBinType::RBT_TRANSLUCENT : RenderBinType::RBT_COUNT, packageQueue);
-#endif
     }
 
     buildDrawCommands(stagePass, params, refreshNodeData, bufferInOut);
@@ -733,11 +727,9 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
 
     mainPass(params, target, bufferInOut, prePassExecuted);
 
-#if !defined(DISABLE_WOIT)
     if (params._stage != RenderStage::SHADOW) {
         woitPass(params, target, bufferInOut);
     }
-#endif
 
     GFX::EndDebugScopeCommand endDebugScopeCmd;
     GFX::EnqueueCommand(bufferInOut, endDebugScopeCmd);

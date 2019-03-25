@@ -52,17 +52,16 @@ RenderingOrder::List RenderQueue::getSortOrder(RenderStagePass stagePass, Render
     switch (rbType) {
         case RenderBinType::RBT_OPAQUE: {
             // Opaque items should be rendered front to back in depth passes for early-Z reasons
-            sortOrder = !stagePass.isDepthPass() ? RenderingOrder::List::BY_STATE
-                                                 : RenderingOrder::List::FRONT_TO_BACK;
+            sortOrder = stagePass.isDepthPass() ? RenderingOrder::List::FRONT_TO_BACK
+                                                : RenderingOrder::List::BY_STATE;
         } break;
         case RenderBinType::RBT_SKY: {
             sortOrder = RenderingOrder::List::NONE;
         } break;
         case RenderBinType::RBT_IMPOSTOR:
         case RenderBinType::RBT_TERRAIN: {
-            // No need to sort decals in depth passes as they're small on screen and processed post-opaque pass
-            sortOrder = !stagePass.isDepthPass() ? RenderingOrder::List::FRONT_TO_BACK
-                                                 : RenderingOrder::List::NONE;
+            sortOrder = stagePass.isDepthPass() ? RenderingOrder::List::NONE
+                                                : RenderingOrder::List::FRONT_TO_BACK;
         } break;
         case RenderBinType::RBT_TRANSLUCENT: {
              // We are using weighted blended OIT. State is fine (and faster)
