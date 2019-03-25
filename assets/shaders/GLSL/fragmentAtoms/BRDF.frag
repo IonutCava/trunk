@@ -126,11 +126,7 @@ vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normal, in float
 #endif //USE_SHADING_FLAT
 
 vec4 getPixelColour(in vec4 albedo, in mat4 colourMatrix, in vec3 normal) {
-#if defined(OIT_PASS)
-    const float shadowFactor = 1.0f;
-#else
     const float shadowFactor = getShadowFactor();
-#endif
 
     vec4 colour = vec4(getLitColour(albedo.rgb, colourMatrix, normal, shadowFactor), albedo.a);
 

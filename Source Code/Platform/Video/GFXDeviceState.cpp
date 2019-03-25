@@ -250,6 +250,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 
         TextureDescriptor revealageDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RED, GFXDataFormat::FLOAT_16);
         revealageDescriptor.msaaSamples(msaaSamples);
+        revealageDescriptor.automaticMipMapGeneration(false);
         revealageDescriptor.setSampler(accumulationSampler);
 
         vector<RTAttachmentDescriptor> attachments = {

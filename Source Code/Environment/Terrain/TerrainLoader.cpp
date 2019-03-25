@@ -569,9 +569,9 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     }
 
     SamplerDescriptor grassSampler = {};
-    grassSampler._wrapU = TextureWrap::REPEAT;
-    grassSampler._wrapV = TextureWrap::REPEAT;
-    grassSampler._wrapW = TextureWrap::REPEAT;
+    grassSampler._wrapU = TextureWrap::CLAMP_TO_EDGE;
+    grassSampler._wrapV = TextureWrap::CLAMP_TO_EDGE;
+    grassSampler._wrapW = TextureWrap::CLAMP_TO_EDGE;
     grassSampler._anisotropyLevel = 8;
 
     TextureDescriptor grassTexDescriptor(TextureType::TEXTURE_2D_ARRAY);
