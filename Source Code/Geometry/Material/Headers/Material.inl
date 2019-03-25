@@ -177,6 +177,12 @@ inline bool Material::hasTransparency() const {
     return _translucencySource != TranslucencySource::COUNT;
 }
 
+inline bool Material::hasTranslucency() const {
+    assert(hasTransparency());
+
+    return _translucent;
+}
+
 inline bool Material::isDoubleSided() const {
     return _doubleSided;
 }

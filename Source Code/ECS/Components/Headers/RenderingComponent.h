@@ -145,6 +145,11 @@ class RenderingComponent : public BaseComponentType<RenderingComponent, Componen
     bool renderOptionEnabled(RenderOptions option) const;
     bool renderOptionsEnabled(U32 mask) const;
 
+    void setMinRenderRange(F32 minRange);
+    void setMaxRenderRange(F32 maxRange);
+    inline void setRenderRange(F32 minRange, F32 maxRange) { setMinRenderRange(minRange); setMaxRenderRange(maxRange); }
+    inline const vec2<F32>& renderRange() const { return _renderRange; }
+
     // If the new value is negative, this disables occlusion culling!
     void cullFlagValue(F32 newValue);
 
@@ -214,6 +219,7 @@ class RenderingComponent : public BaseComponentType<RenderingComponent, Componen
     F32 _cullFlagValue;
     U32 _renderMask;
     bool _lodLocked;
+    vec2<F32> _renderRange;
 
     typedef std::array<RenderPackage, to_base(RenderPassType::COUNT)> RenderPackagesPerPassType;
     std::array<RenderPackagesPerPassType, to_base(RenderStage::COUNT) - 1> _renderPackagesNormal;

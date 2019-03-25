@@ -65,6 +65,7 @@ Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descri
       _parallaxFactor(1.0f),
       _needsNewShader(false),
       _doubleSided(false),
+      _translucent(false),
       _receivesShadows(true),
       _isReflective(false),
       _isRefractive(false),
@@ -165,6 +166,7 @@ Material_ptr Material::clone(const stringImpl& nameSuffix) {
     cloneMat->_shadingMode = base._shadingMode;
     cloneMat->_useTriangleStrip = base._useTriangleStrip;
     cloneMat->_doubleSided = base._doubleSided;
+    cloneMat->_translucent = base._translucent;
     cloneMat->_receivesShadows = base._receivesShadows;
     cloneMat->_isReflective = base._isReflective;
     cloneMat->_isRefractive = base._isRefractive;
@@ -545,7 +547,7 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
             shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_SPECULAR_MAP", true));
         }
     }
-    // Shouldn't be needed
+
     updateTranslucency();
 
     if (_translucencySource != TranslucencySource::COUNT && renderStagePass._passType != RenderPassType::OIT_PASS) {
@@ -808,6 +810,7 @@ void Material::setReceivesShadows(const bool state) {
 }
 
 void Material::updateTranslucency() {
+    bool wasTranslucent = _translucent;
     TranslucencySource oldSource = _translucencySource;
     _translucencySource = TranslucencySource::COUNT;
 
@@ -815,12 +818,15 @@ void Material::updateTranslucency() {
     // diffuse channel alpha
     if (_colourData._diffuse.a < 0.95f) {
         _translucencySource = TranslucencySource::ALBEDO;
+        _translucent = true;
     }
 
     // base texture is translucent
     Texture_ptr& albedo = _textures[to_base(ShaderProgram::TextureUsage::UNIT0)];
     if (albedo && albedo->hasTransparency()) {
         _translucencySource = TranslucencySource::ALBEDO;
+        _translucent = albedo->hasTranslucency();
+
         if (oldSource != _translucencySource) {
             const U16 baseLevel = albedo->getBaseMipLevel();
             const U16 maxLevel = albedo->getMaxMipLevel();
@@ -837,9 +843,10 @@ void Material::updateTranslucency() {
     const Texture_ptr& opacity = _textures[to_base(ShaderProgram::TextureUsage::OPACITY)];
     if (opacity && opacity->hasTransparency()) {
         _translucencySource = TranslucencySource::OPACITY_MAP;
+        _translucent = opacity->hasTranslucency();
     }
 
-    if (oldSource != _translucencySource) {
+    if (oldSource != _translucencySource || wasTranslucent != _translucent) {
         _needsNewShader = true;
     }
 }

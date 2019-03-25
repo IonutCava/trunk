@@ -305,6 +305,12 @@ T SQUARED(T input) {
     return input * input;
 }
 
+template<typename T>
+T SIGNED_SQUARED(T input) {
+    static_assert(std::is_arithmetic<T>::value, "Only arithmetic values can be squared!");
+    return std::copysign(SQUARED(input), input);
+}
+
 template <typename T>
 bool COORDS_IN_RECT(T input_x, T input_y, T rect_x, T rect_y, T rect_z, T rect_w) {
     return IS_IN_RANGE_INCLUSIVE(input_x, rect_x, rect_z) &&

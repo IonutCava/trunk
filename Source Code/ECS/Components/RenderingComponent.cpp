@@ -29,6 +29,10 @@
 
 namespace Divide {
 
+namespace {
+    constexpr I16 g_renderRangeLimit = std::numeric_limits<I16>::max();
+};
+
 hashMap<U32, DebugView*> RenderingComponent::s_debugViews[2];
 
 RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
@@ -43,6 +47,9 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
       _materialInstanceCache(nullptr),
       _skeletonPrimitive(nullptr)
 {
+    _renderRange.min = -1.0f * g_renderRangeLimit;
+    _renderRange.max =  1.0f* g_renderRangeLimit;
+
     const Material_ptr& materialTpl = parentSGN.getNode().getMaterialTpl();
     if (materialTpl) {
         _materialInstance = materialTpl->clone("_instance_" + parentSGN.name());
@@ -160,6 +167,13 @@ RenderingComponent::~RenderingComponent()
     }
 }
 
+void RenderingComponent::setMinRenderRange(F32 minRange) {
+    _renderRange.min = std::max(minRange, -1.0f * g_renderRangeLimit);
+}
+
+void RenderingComponent::setMaxRenderRange(F32 maxRange) {
+    _renderRange.max = std::min(maxRange,  1.0f * g_renderRangeLimit);
+}
 
 void RenderingComponent::rebuildDrawCommands(RenderStagePass stagePass) {
     RenderPackage& pkg = getDrawPackage(stagePass);

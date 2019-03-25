@@ -217,6 +217,7 @@ class Material : public CachedResource {
 
     void rebuild();
     bool hasTransparency() const;
+    bool hasTranslucency() const;
 
     bool isDoubleSided() const;
     bool receivesShadows() const;
@@ -283,10 +284,11 @@ class Material : public CachedResource {
     ShadingMode _shadingMode;
     TranslucencySource _translucencySource;
     /// parallax/relief factor (higher value > more pronounced effect)
-    F32 _parallaxFactor;
+    F32  _parallaxFactor;
     bool _useTriangleStrip;
     bool _needsNewShader;
     bool _doubleSided;
+    bool _translucent;
     bool _receivesShadows;
     bool _isReflective;
     bool _isRefractive;
