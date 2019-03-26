@@ -24,24 +24,22 @@ void run(Task& task, TaskPool& pool, TaskPriority priority, DELEGATE_CBK<void> o
 
     WAIT_FOR_CONDITION(task._unfinishedJobs.load() == 1);
 
-    task._callback(task);
-    //task._callback = 0; //Should we clear this?
+    if (task._callback) {
+        task._callback(task);
+        //task._callback = 0; //Should we clear this?
+    }
+
     pool.taskCompleted(task._id, priority, onCompletionFunction);
     finish(task);
 }
 
 void Start(Task& task, TaskPool& pool, TaskPriority priority, const DELEGATE_CBK<void>& onCompletionFunction) {
-    if (task._callback) {
-        PoolTask wrappedTask = [&task, &pool, priority, onCompletionFunction]() {
-            run(task, pool, priority, onCompletionFunction);
-        };
+    PoolTask wrappedTask = [&task, &pool, priority, onCompletionFunction]() {
+        run(task, pool, priority, onCompletionFunction);
+    };
 
-        while (!pool.enqueue(wrappedTask, priority)) {
-            Console::errorfn(Locale::get(_ID("TASK_SCHEDULE_FAIL")), 1);
-        }
-    } else {
-        pool.taskCompleted(task._id, priority, onCompletionFunction);
-        finish(task);
+    while (!pool.enqueue(wrappedTask, priority)) {
+        Console::errorfn(Locale::get(_ID("TASK_SCHEDULE_FAIL")), 1);
     }
 }
 
