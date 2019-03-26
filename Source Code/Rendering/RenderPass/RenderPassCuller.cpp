@@ -101,7 +101,7 @@ RenderPassCuller::VisibleNodeList& RenderPassCuller::frustumCull(const CullParam
                      to_U32(rootChildren.size()),
                      g_nodesPerCullingPartition,
                      nodeParams._threaded ? TaskPriority::DONT_CARE : TaskPriority::REALTIME,
-                     false,
+                     false, //Wait for all subtasks to finish! This means that the subtasks can run without waiting as the parent task should keep count of all running child taks
                      true);
         
         for (const VisibleNodeList& nodeListEntry : nodes) {

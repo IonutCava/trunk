@@ -136,6 +136,9 @@ class Vegetation : public SceneNode {
     std::shared_ptr<ImageTools::ImageData> _treeMap;  ///< Dispersion map for tree placement
     ShaderProgram_ptr _cullShaderGrass;
     ShaderProgram_ptr _cullShaderTrees;
+
+    GFX::SendPushConstantsCommand _cullPushConstantsCommand;
+
     bool _shadowMapped;
     U32 _instanceCountGrass;
     U32 _instanceCountTrees;

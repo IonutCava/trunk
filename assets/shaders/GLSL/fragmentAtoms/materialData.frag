@@ -28,6 +28,62 @@ layout(binding = TEXTURE_OPACITY) uniform sampler2D texOpacityMap;
 layout(binding = TEXTURE_SPECULAR) uniform sampler2D texSpecularMap;
 #endif
 
+vec2 dvd_TexCoord = VAR._texCoord;
+
+void updateTexCoord() {
+#   if defined(USE_PARALLAX_MAPPING)
+    dvd_TexCoord = ParallaxNormal(dvd_TexCoord, normalize(-VAR._vertexWV.xyz));
+#   endif //USE_PARALLAX_MAPPING
+}
+
+#if defined(USE_PARALLAX_MAPPING)
+uniform float height_scale = 0.1f;
+
+layout(binding = TEXTURE_HEIGHT) uniform sampler2D parallaxDepthMap;
+
+//ref: https://learnopengl.com/Advanced-Lighting/Parallax-Mapping
+// Returned parallaxed texCoords
+vec2 ParallaxMapping(vec2 texCoords, vec3 viewDir)
+{
+    // number of depth layers
+    const float minLayers = 8.0;
+    const float maxLayers = 32.0;
+    float numLayers = mix(maxLayers, minLayers, abs(dot(vec3(0.0, 0.0, 1.0), viewDir)));
+    // calculate the size of each layer
+    float layerDepth = 1.0 / numLayers;
+    // depth of current layer
+    float currentLayerDepth = 0.0;
+    // the amount to shift the texture coordinates per layer (from vector P)
+    vec2 P = viewDir.xy * height_scale;
+    vec2 deltaTexCoords = P / numLayers;
+
+    // get initial values
+    vec2  currentTexCoords = texCoords;
+    float currentDepthMapValue = texture(parallaxDepthMap, currentTexCoords).r;
+
+    while (currentLayerDepth < currentDepthMapValue)
+    {
+        // shift texture coordinates along direction of P
+        currentTexCoords -= deltaTexCoords;
+        // get depthmap value at current texture coordinates
+        currentDepthMapValue = texture(depthMap, currentTexCoords).r;
+        // get depth of next layer
+        currentLayerDepth += layerDepth;
+    }
+
+    vec2 prevTexCoords = currentTexCoords + deltaTexCoords;
+
+    // get depth after and before collision for linear interpolation
+    float afterDepth = currentDepthMapValue - currentLayerDepth;
+    float beforeDepth = texture(depthMap, prevTexCoords).r - currentLayerDepth + layerDepth;
+
+    // interpolation of texture coordinates
+    float weight = afterDepth / (afterDepth - beforeDepth);
+    vec2 finalTexCoords = prevTexCoords * weight + currentTexCoords * (1.0f - weight);
+
+    return finalTexCoords;
+}
+#endif
 float Gloss(in vec3 bump, in vec2 texCoord)
 {
     #if defined(USE_TOKSVIG)
@@ -110,7 +166,7 @@ float getReflectivity(mat4 colourMatrix) {
 float getOpacity(mat4 colourMatrix, float albedoAlpha) {
 #if defined(HAS_TRANSPARENCY)
 #   if defined(USE_OPACITY_MAP)
-    return texture(texOpacityMap, VAR._texCoord).r;
+    return texture(texOpacityMap, dvd_TexCoord).r;
 #   endif
     return albedoAlpha;
 #endif
@@ -123,7 +179,7 @@ vec4 getAlbedo(mat4 colourMatrix) {
 #if defined(SKIP_TEXTURES)
     vec4 albedo = colourMatrix[0];
 #else
-    vec4 albedo = getTextureColour(VAR._texCoord);
+    vec4 albedo = getTextureColour(dvd_TexCoord);
 #endif
 
     albedo.a = getOpacity(colourMatrix, albedo.a);
@@ -141,7 +197,7 @@ void setEmissive(mat4 colourMatrix, vec3 value) {
 
 vec3 getSpecular(mat4 colourMatrix) {
 #if defined(USE_SPECULAR_MAP)
-    return texture(texSpecularMap, VAR._texCoord).rgb;
+    return texture(texSpecularMap, dvd_TexCoord).rgb;
 #else
     return colourMatrix[1].rgb;
 #endif

@@ -150,12 +150,7 @@ vec3 getNormal() {
 
 #if defined(COMPUTE_TBN)
     if (dvd_lodLevel == 0) {
-#   if defined(USE_PARALLAX_MAPPING)
-        normal = ParallaxNormal(VAR._texCoord, 0);
-#   elif defined(USE_RELIEF_MAPPING)
-#   else
-        normal = getTBNMatrix() * getBump(VAR._texCoord);
-#   endif //USE_PARALLAX_MAPPING
+        normal = getTBNMatrix() * getBump(dvd_TexCoord);
     }
 #endif //COMPUTE_TBN
 

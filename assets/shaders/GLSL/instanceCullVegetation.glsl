@@ -5,7 +5,8 @@
 #include "HiZCullingAlgorithm.cmn";
 #include "vegetationData.cmn"
 
-uniform float dvd_visibilityDistance;
+uniform float dvd_treeVisibilityDistance;
+uniform float dvd_grassVisibilityDistance;
 uniform uint offset;
 
 layout(local_size_x = WORK_GROUP_SIZE) in;
@@ -23,10 +24,12 @@ uniform vec4 grassExtents;
 #   define MAX_INSTANCES MAX_TREE_INSTANCES
 #   define Data treeData
 #   define Extents treeExtents
+#   define dvd_visibilityDistance dvd_treeVisibilityDistance
 #else //CULL_TREES
 #   define MAX_INSTANCES MAX_GRASS_INSTANCES
 #   define Data grassData
 #   define Extents grassExtents
+#   define dvd_visibilityDistance dvd_grassVisibilityDistance
 #endif //CULL_TREES
 
 

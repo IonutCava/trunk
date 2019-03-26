@@ -7,6 +7,7 @@
 //Normal or BumpMap
 layout(binding = TEXTURE_NORMALMAP) uniform sampler2D texNormalMap;
 
+
 mat3 getTBNMatrix() {
     return mat3(VAR._tangentWV, VAR._bitangentWV, VAR._normalWV);
 }
@@ -14,36 +15,6 @@ mat3 getTBNMatrix() {
 vec3 getBump(in vec2 uv) {
     return normalize(2.0 * texture(texNormalMap, uv).rgb - 1.0);
 }
-
-#if defined(_BRDF_FRAG_)
-vec3 ParallaxNormal(in vec2 uv, uint lightID){
-    Light dvd_private_bump_light = dvd_LightSource[lightID];
-
-    vec3 lightVecTBN = vec3(0.0);
-    switch (dvd_private_bump_light._options.x){
-        case LIGHT_DIRECTIONAL      : 
-            lightVecTBN = -normalize(dvd_private_bump_light._directionWV.xyz);
-            break;
-        case LIGHT_OMNIDIRECTIONAL  : 
-        case LIGHT_SPOT             : 
-            lightVecTBN = normalize(-VAR._vertexWV.xyz + dvd_private_bump_light._positionWV.xyz);
-            break;
-        case LIGHT_NONE :
-            return VAR._normalWV;
-    };
-
-    vec3 viewVecTBN = normalize(-VAR._vertexWV.xyz);
-    
-    //Offset, scale and bias
-    vec2 vTexCoord = uv + 
-                    ((texture(texNormalMap, uv).a - 0.5) * 
-                     dvd_parallaxFactor * 
-                     (vec2(viewVecTBN.x, -viewVecTBN.y) / 
-                     viewVecTBN.z));
-
-    return getTBNMatrix() * getBump(vTexCoord);
-}
-#endif
 
 // http://www.thetenthplanet.de/archives/1180
 mat3 cotangent_frame(vec3 N, vec3 p, vec2 uv)

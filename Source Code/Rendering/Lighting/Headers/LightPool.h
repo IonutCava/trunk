@@ -81,7 +81,7 @@ class LightPool : public SceneComponent,
           }
       };
   public:
-    typedef vector<Light*> LightList;
+    typedef vectorEASTL<Light*> LightList;
 
     explicit LightPool(Scene& parentScene, PlatformContext& context);
     ~LightPool();
@@ -145,7 +145,7 @@ class LightPool : public SceneComponent,
     
   protected:
     typedef std::array<Light::ShadowProperties, Config::Lighting::MAX_SHADOW_CASTING_LIGHTS> LightShadowProperties;
-    typedef vector<Light*> LightVec;
+    typedef vectorEASTL<Light*> LightVec;
 
     friend class SceneManager;
     void generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffer& bufferInOut);
@@ -156,10 +156,10 @@ class LightPool : public SceneComponent,
     }
 
     inline LightList::const_iterator findLightLocked(I64 GUID, LightType type) const {
-        return std::find_if(std::cbegin(_lights[to_U32(type)]), std::cend(_lights[to_U32(type)]),
-                            [&GUID](Light* const light) {
-                                return (light && light->getGUID() == GUID);
-                            });
+        return eastl::find_if(eastl::cbegin(_lights[to_U32(type)]), eastl::cend(_lights[to_U32(type)]),
+                             [&GUID](Light* const light) {
+                                 return (light && light->getGUID() == GUID);
+                             });
     }
 
   private:

@@ -17,11 +17,11 @@ vec4 getTerrainAlbedo() {
 
     uint offset = 0;
     for (uint i = 0; i < MAX_TEXTURE_LAYERS; ++i) {
-        vec4 blendColour = texture(texBlendMaps, vec3(VAR._texCoord, i));
+        vec4 blendColour = texture(texBlendMaps, vec3(dvd_TexCoord, i));
         vec4 texScale = tileScale[i] / (LoD + 1);
         for (uint j = 0; j < CURRENT_LAYER_COUNT[i]; ++j) {
             colour = mix(colour,
-                         texture(texTileMaps, vec3(scaledTextureCoords(VAR._texCoord, texScale[j]), offset + j)),
+                         texture(texTileMaps, vec3(scaledTextureCoords(dvd_TexCoord, texScale[j]), offset + j)),
                          blendColour[j]);
         }
 
@@ -42,16 +42,16 @@ vec3 getTerrainAlbedoAndNormalTBN(out vec4 colour) {
 
         vec3 tbnTemp = tbn;
         vec4 texScale = tileScale[i] / (LoD + 1);
-        vec4 blendColour = texture(texBlendMaps, vec3(VAR._texCoord, i));
+        vec4 blendColour = texture(texBlendMaps, vec3(dvd_TexCoord, i));
 
 
         uint j = 0;
         for (j = 0; j < layerCount; ++j) {
-            vec3 scaledCoords = vec3(scaledTextureCoords(VAR._texCoord, texScale[j]), offset + j);
+            vec3 scaledCoords = vec3(scaledTextureCoords(dvd_TexCoord, texScale[j]), offset + j);
             colour = mix(colour, texture(texTileMaps, scaledCoords), blendColour[j]);
         }
         for (j = 0; j < layerCount; ++j) {
-            vec3 scaledCoords = vec3(scaledTextureCoords(VAR._texCoord, texScale[j]), offset + j);
+            vec3 scaledCoords = vec3(scaledTextureCoords(dvd_TexCoord, texScale[j]), offset + j);
             tbnTemp = mix(tbnTemp, texture(texNormalMaps, scaledCoords).rgb, blendColour[j]);
         }
         //tbn = normalUDNBlend(tbnTemp, tbn);

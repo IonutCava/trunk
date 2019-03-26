@@ -63,6 +63,7 @@ namespace Divide {
 
          const mat4<F32>& getWorldMatrix() const;
          mat4<F32> getWorldMatrix(D64 interpolationFactor) const;
+         void      getWorldMatrix(D64 interpolationFactor, mat4<F32>& matrixOut) const;
 
          /// Component <-> Transform interface
          void setPosition(const vec3<F32>& position) override;
@@ -168,8 +169,10 @@ namespace Divide {
          void onParentUsageChanged(NodeUsageContext context);
 
          mat4<F32> getMatrix() override;
+         void getMatrix(mat4<F32>& matrix) override;
 
          mat4<F32> getMatrix(D64 interpolationFactor) const;
+         void getMatrix(D64 interpolationFactor, mat4<F32>& matOut) const;
 
          //A simple lock-unlock and mutex-free matrix calculation system //
          vec3<F32> getLocalPositionLocked(D64 interpolationFactor) const;

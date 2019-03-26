@@ -326,7 +326,6 @@ void glFramebuffer::blitFrom(const RTBlitParams& params)
             colourAttIn = GL_COLOR_ATTACHMENT0 + entry._inputIndex;
             colourAttOut = GL_COLOR_ATTACHMENT0 + entry._outputIndex;
 
-
             RTAttachment* inAtt = input->_attachmentPool->get(RTAttachmentType::Colour, to_U8(entry._inputIndex)).get();
             RTAttachment* outAtt = this->_attachmentPool->get(RTAttachmentType::Colour, to_U8(entry._outputIndex)).get();
 

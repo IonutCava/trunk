@@ -84,7 +84,8 @@ class Transform : public ITransform, public GUIDWrapper, private NonCopyable {
     /// Get the local transformation matrix
     /// wasRebuilt is set to true if the matrix was just rebuilt
     mat4<F32> getMatrix() override;
-  
+    void getMatrix(mat4<F32>& matrix) override;
+
     /// Sets the transform to match a certain transformation matrix.
     /// Scale, orientation and translation are extracted from the specified matrix
     void setTransforms(const mat4<F32>& transform);
@@ -103,6 +104,9 @@ class Transform : public ITransform, public GUIDWrapper, private NonCopyable {
 
     /// Reset transform to identity
     void identity();
+
+   protected:
+       const mat4<F32>& getMatrixInternal();
 
    private:
     /// The actual scale, rotation and translation values

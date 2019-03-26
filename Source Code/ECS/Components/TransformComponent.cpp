@@ -393,26 +393,39 @@ namespace Divide {
         _transformInterface.getValues(valuesOut);
     }
 
-    mat4<F32> TransformComponent::getMatrix() {
+    void TransformComponent::getMatrix(mat4<F32>& matrix) {
         SharedLock r_lock(_lock);
-        
+        _transformInterface.getMatrix(matrix);
+
         if (_transformOffset.first) {
-            return _transformInterface.getMatrix() * _transformOffset.second;
-        } 
-        return _transformInterface.getMatrix();
+            matrix *= _transformOffset.second;
+        }
+    }
+
+    mat4<F32> TransformComponent::getMatrix() {
+        mat4<F32> ret = {};
+        getMatrix(ret);
+        return ret;
+    }
+
+    void TransformComponent::getMatrix(D64 interpolationFactor, mat4<F32>& matOut) const {
+        SharedLock r_lock(_lock);
+        matOut.set(mat4<F32>
+                   {
+                        getLocalPositionLocked(interpolationFactor),
+                        getLocalScaleLocked(interpolationFactor),
+                        GetMatrix(getLocalOrientationLocked(interpolationFactor))
+                    });
+
+        if (_transformOffset.first) {
+            matOut *= _transformOffset.second;
+        }
     }
 
     mat4<F32> TransformComponent::getMatrix(D64 interpolationFactor) const {
-        SharedLock r_lock(_lock);
-        mat4<F32> worldMatrixInterp(getLocalPositionLocked(interpolationFactor),
-                                    getLocalScaleLocked(interpolationFactor),
-                                    GetMatrix(getLocalOrientationLocked(interpolationFactor)));
-
-        if (_transformOffset.first) {
-            return worldMatrixInterp * _transformOffset.second;
-        }
-
-        return worldMatrixInterp;
+        mat4<F32> ret = {};
+        getMatrix(interpolationFactor, ret);
+        return ret;
     }
 
     vec3<F32> TransformComponent::getLocalPositionLocked(D64 interpolationFactor) const {
@@ -441,9 +454,8 @@ namespace Divide {
         }
 
         UniqueLockShared w_lock(_worldMatrixLock);
-        _worldMatrix.set(getMatrix() * parentMat);
-
-        return _worldMatrix;
+        getMatrix(_worldMatrix);
+        return _worldMatrix *= parentMat;
     }
 
     const mat4<F32>& TransformComponent::getWorldMatrix() const {
@@ -452,18 +464,22 @@ namespace Divide {
     }
 
     mat4<F32> TransformComponent::getWorldMatrix(D64 interpolationFactor) const {
-        if (_parentUsageContext != NodeUsageContext::NODE_STATIC && interpolationFactor < 0.99) {
-            mat4<F32> ret(getMatrix(interpolationFactor));
+        mat4<F32> ret = {};
+        getWorldMatrix(interpolationFactor, ret);
+        return ret;
+    }
+
+    void TransformComponent::getWorldMatrix(D64 interpolationFactor, mat4<F32>& matrixOut) const {
+        if (_parentUsageContext == NodeUsageContext::NODE_STATIC || interpolationFactor > 0.99) {
+            matrixOut.set(getWorldMatrix());
+        } else {
+            getMatrix(interpolationFactor, matrixOut);
 
             SceneGraphNode* grandParentPtr = _parentSGN.getParent();
             if (grandParentPtr) {
-                ret *= grandParentPtr->get<TransformComponent>()->getWorldMatrix(interpolationFactor);
+                matrixOut *= grandParentPtr->get<TransformComponent>()->getWorldMatrix(interpolationFactor);
             }
-
-            return ret;
         }
-
-        return getWorldMatrix();
     }
 
     /// Return the position

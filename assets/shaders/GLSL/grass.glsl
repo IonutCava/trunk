@@ -72,7 +72,7 @@ flat in float _alphaFactor;
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuseGrass;
 
 void main (void){
-    vec4 albedo = texture(texDiffuseGrass, vec3(VAR._texCoord, _arrayLayerFrag));
+    vec4 albedo = texture(texDiffuseGrass, vec3(dvd_TexCoord, _arrayLayerFrag));
     albedo.a *= _alphaFactor;
 
     vec3 normal = getNormal();

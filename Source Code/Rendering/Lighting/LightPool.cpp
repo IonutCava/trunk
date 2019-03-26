@@ -128,7 +128,7 @@ bool LightPool::addLight(Light& light) {
     const U32 lightTypeIdx = to_base(type);
 
     UniqueLockShared r_lock(_lightLock);
-    if (findLightLocked(light.getGUID(), type) != std::end(_lights[lightTypeIdx])) {
+    if (findLightLocked(light.getGUID(), type) != eastl::end(_lights[lightTypeIdx])) {
 
         Console::errorfn(Locale::get(_ID("ERROR_LIGHT_POOL_DUPLICATE")),
                          light.getGUID());
@@ -145,7 +145,7 @@ bool LightPool::removeLight(Light& light) {
     UniqueLockShared lock(_lightLock);
     LightList::const_iterator it = findLightLocked(light.getGUID(), light.getLightType());
 
-    if (it == std::end(_lights[to_U32(light.getLightType())])) {
+    if (it == eastl::end(_lights[to_U32(light.getLightType())])) {
         Console::errorfn(Locale::get(_ID("ERROR_LIGHT_POOL_REMOVE_LIGHT")),
                          light.getGUID());
         return false;
@@ -245,20 +245,20 @@ void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, con
     {
         SharedLock r_lock(_lightLock);
         for (U8 i = 1; i < to_base(LightType::COUNT); ++i) {
-            sortedLights.insert(std::end(sortedLights), std::cbegin(_lights[i]), std::cend(_lights[i]));
+            sortedLights.insert(eastl::end(sortedLights), eastl::cbegin(_lights[i]), eastl::cend(_lights[i]));
         }
     }
 
-    std::sort(std::begin(sortedLights),
-              std::end(sortedLights),
-              [&eyePos](Light* a, Light* b) -> bool
-              {
-                  return a->getPosition().distanceSquared(eyePos) < b->getPosition().distanceSquared(eyePos);
-              });
+    eastl::sort(eastl::begin(sortedLights),
+                eastl::end(sortedLights),
+                [&eyePos](Light* a, Light* b) -> bool
+                {
+                    return a->getPosition().distanceSquared(eyePos) < b->getPosition().distanceSquared(eyePos);
+                });
 
     {
         SharedLock r_lock(_lightLock);
-        sortedLights.insert(std::begin(sortedLights), std::cbegin(_lights[0]), std::cend(_lights[0]));
+        sortedLights.insert(eastl::begin(sortedLights), eastl::cbegin(_lights[0]), eastl::cend(_lights[0]));
     }
 
     U32 totalLightCount = 0;
@@ -328,18 +328,18 @@ void LightPool::preRenderAllPasses(const Camera& playerCamera) {
     {
         SharedLock r_lock(_lightLock);
         for (U8 i = 1; i < to_base(LightType::COUNT); ++i) {
-            sortedLights.insert(std::cend(sortedLights), std::cbegin(_lights[i]), std::cend(_lights[i]));
+            sortedLights.insert(eastl::cend(sortedLights), eastl::cbegin(_lights[i]), eastl::cend(_lights[i]));
         }
     }
 
-    std::sort(std::begin(sortedLights),
-              std::end(sortedLights),
-              [&eyePos](Light* a, Light* b) {
-                  return a->getPosition().distanceSquared(eyePos) < b->getPosition().distanceSquared(eyePos);
-              });
+    eastl::sort(eastl::begin(sortedLights),
+                eastl::end(sortedLights),
+                [&eyePos](Light* a, Light* b) {
+                    return a->getPosition().distanceSquared(eyePos) < b->getPosition().distanceSquared(eyePos);
+                });
     {
         SharedLock r_lock(_lightLock);
-        sortedLights.insert(std::cbegin(sortedLights), std::cbegin(_lights[0]), std::cend(_lights[0]));
+        sortedLights.insert(eastl::cbegin(sortedLights), eastl::cbegin(_lights[0]), eastl::cend(_lights[0]));
     }
 
     for (Light* light : sortedLights) {

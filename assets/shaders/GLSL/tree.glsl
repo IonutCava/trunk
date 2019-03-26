@@ -62,6 +62,8 @@ layout(early_fragment_tests) in;
 #include "output.frag"
 
 void main (void) {
+    updateTexCoord();
+
     vec3 normal = getNormal();
 
     mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;

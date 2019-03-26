@@ -243,7 +243,8 @@ GFXDevice::NodeData RenderPassManager::processVisibleNode(SceneGraphNode* node, 
     TransformComponent* const transform = node->get<TransformComponent>();
     if (transform) {
         // ... get the node's world matrix properly interpolated
-        dataOut._worldMatrix.set(transform->getWorldMatrix(_context.getFrameInterpolationFactor()));
+        transform->getWorldMatrix(_context.getFrameInterpolationFactor(), dataOut._worldMatrix);
+
         dataOut._normalMatrixW.set(dataOut._worldMatrix);
         if (!transform->isUniformScaled()) {
             // Non-uniform scaling requires an inverseTranspose to negate

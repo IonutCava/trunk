@@ -14,6 +14,8 @@
 #include "API.h"
 #include "IEventDispatcher.h"
 
+#include <EASTL/list.h>
+
 namespace ECS { namespace Event { namespace Internal {
 
 	template<class T>
@@ -21,10 +23,10 @@ namespace ECS { namespace Event { namespace Internal {
 	{
 		DECLARE_STATIC_LOGGER
 
-		using EventDelegateList			= std::list<IEventDelegate*>;
+		using EventDelegateList			= eastl::list<IEventDelegate*>;
 
-		//using PendingAddDelegates		= std::list<IEventDelegate*>;
-		using PendingRemoveDelegates	= std::list<IEventDelegate*>;
+		//using PendingAddDelegates		= eastl::list<IEventDelegate*>;
+		using PendingRemoveDelegates	= eastl::list<IEventDelegate*>;
 
 		//PendingAddDelegates		m_PendingAddDelegates;
 		PendingRemoveDelegates	m_PendingRemoveDelegates;
@@ -59,7 +61,7 @@ namespace ECS { namespace Event { namespace Internal {
 				{
 					for (auto EC : this->m_PendingRemoveDelegates)
 					{
-						auto result = std::find_if(this->m_EventCallbacks.begin(), this->m_EventCallbacks.end(),
+						auto result = eastl::find_if(this->m_EventCallbacks.begin(), this->m_EventCallbacks.end(),
 							[&](const IEventDelegate* other)
 							{
 								return other->operator==(EC);
@@ -91,7 +93,7 @@ namespace ECS { namespace Event { namespace Internal {
 		{
 			// if delegate wasn't deleted since last update, that is, delegate is still in pending list,
 			// remove it from pending list
-			auto result = std::find_if(this->m_PendingRemoveDelegates.begin(), this->m_PendingRemoveDelegates.end(),
+			auto result = eastl::find_if(this->m_PendingRemoveDelegates.begin(), this->m_PendingRemoveDelegates.end(),
 				[&](const IEventDelegate* other)
 				{
 					return other->operator==(eventDelegate);
@@ -110,7 +112,7 @@ namespace ECS { namespace Event { namespace Internal {
 		{ 
 			if (this->m_Locked == false)
 			{
-				auto result = std::find_if(this->m_EventCallbacks.begin(), this->m_EventCallbacks.end(),
+				auto result = eastl::find_if(this->m_EventCallbacks.begin(), this->m_EventCallbacks.end(),
 					[&](const IEventDelegate* other)
 					{
 						return other->operator==(eventDelegate);
@@ -128,7 +130,7 @@ namespace ECS { namespace Event { namespace Internal {
 			}
 			else
 			{
-				auto result = std::find_if(this->m_EventCallbacks.begin(), this->m_EventCallbacks.end(),
+				auto result = eastl::find_if(this->m_EventCallbacks.begin(), this->m_EventCallbacks.end(),
 					[&](const IEventDelegate* other)
 					{
 						return other->operator==(eventDelegate);

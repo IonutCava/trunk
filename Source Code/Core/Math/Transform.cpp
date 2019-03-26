@@ -34,7 +34,7 @@ Transform::~Transform()
 {
 }
 
-mat4<F32> Transform::getMatrix() {
+const mat4<F32>& Transform::getMatrixInternal() {
     if (!_notDirty.test_and_set()) {
         if (!_dontRebuildMatrix.test_and_set()) {
             // Ordering - a la Ogre:
@@ -44,11 +44,19 @@ mat4<F32> Transform::getMatrix() {
             //    2. Rotate
             _worldMatrix *= mat4<F32>(GetMatrix(_transformValues._orientation), false);
         }
-        //    3. Translate
+        //        3. Translate
         _worldMatrix.setTranslation(_transformValues._translation);
     }
 
     return _worldMatrix;
+}
+
+void Transform::getMatrix(mat4<F32>& matrix) {
+    matrix.set(getMatrixInternal());
+}
+
+mat4<F32> Transform::getMatrix() {
+    return mat4<F32>{ getMatrixInternal() };
 }
 
 void Transform::setTransforms(const mat4<F32>& transform) {

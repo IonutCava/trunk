@@ -501,7 +501,7 @@ noperspective in vec3 gs_edgeDist;
 #endif
 
 vec4 UnderwaterMappingRoutine(out vec3 normalWV) {
-    vec2 coords = VAR._texCoord * UNDERWATER_TILE_SCALE;
+    vec2 coords = dvd_TexCoord * UNDERWATER_TILE_SCALE;
     vec3 tbn = normalize(2.0 * texture(texUnderwaterDetail, coords).rgb - 1.0);
     normalWV = normalize(getTBNMatrix() * tbn);
 
@@ -533,6 +533,8 @@ vec4 TerrainMappingRoutine(out vec3 normalWV) {
 
 void main(void)
 {
+    updateTexCoord();
+
     vec3 normalWV = vec3(0.0);
     vec4 albedo = mix(TerrainMappingRoutine(normalWV), UnderwaterMappingRoutine(normalWV), _waterDetails.x);
 

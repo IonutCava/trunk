@@ -180,6 +180,7 @@ public:
     /// Get the local transformation matrix
     /// wasRebuilt is set to true if the matrix was just rebuilt
     virtual mat4<F32> getMatrix() = 0;
+    virtual void getMatrix(mat4<F32>& matrix) = 0;
 
     /// Get the current position, rotation and scale as a "TransformValues" package
     virtual void getValues(TransformValues& valuesOut) const = 0;
