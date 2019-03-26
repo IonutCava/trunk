@@ -725,8 +725,8 @@ bool Material::getTextureDataFast(RenderStagePass renderStagePass, TextureDataCo
 
     const bool depthStage = renderStagePass.isDepthPass();
     if (!depthStage || hasTransparency()) {
+        SharedLock r_lock(_textureLock);
         for (U8 slot : transparentSlots) {
-            SharedLock r_lock(_textureLock);
             const Texture_ptr& crtTexture = _textures[slot];
             if (crtTexture != nullptr) {
                 textures[slot] = crtTexture->getData();
@@ -736,8 +736,8 @@ bool Material::getTextureDataFast(RenderStagePass renderStagePass, TextureDataCo
     }
 
     if (!depthStage) {
+        SharedLock r_lock(_textureLock);
         for (U8 slot : extraSlots) {
-            SharedLock r_lock(_textureLock);
             const Texture_ptr& crtTexture = _textures[slot];
             if (crtTexture != nullptr) {
                 textures[slot] = crtTexture->getData();

@@ -282,7 +282,7 @@ namespace {
 };
 
 
-void Scene::loadAsset(const XML::SceneNode& sceneNode, SceneGraphNode* parent) {
+void Scene::loadAsset(const XML::SceneNode& sceneNode, SceneGraphNode* parent, bool waitForReady) {
     assert(parent != nullptr);
 
     const stringImpl& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
@@ -297,13 +297,14 @@ void Scene::loadAsset(const XML::SceneNode& sceneNode, SceneGraphNode* parent) {
                          to_base(ComponentType::NETWORKING);
 
 
-        auto loadModelComplete = [this](CachedResource_wptr res) {
-            ACKNOWLEDGE_UNUSED(res);
-            _loadingTasks.fetch_sub(1);
-        };
-
         boost::property_tree::ptree nodeTree;
         read_xml(nodePath, nodeTree);
+
+        auto loadModelComplete = [this, &nodeTree](CachedResource_wptr res) {
+            ACKNOWLEDGE_UNUSED(res);
+            std::static_pointer_cast<SceneNode>(res.lock())->loadFromXML(nodeTree);
+            _loadingTasks.fetch_sub(1);
+        };
 
         stringImpl modelName = nodeTree.get("model", "");
 
@@ -320,6 +321,8 @@ void Scene::loadAsset(const XML::SceneNode& sceneNode, SceneGraphNode* parent) {
                 ResourceDescriptor item(sceneNode.name);
                 item.setOnLoadCallback(loadModelComplete);
                 item.assetName(modelName);
+                //item.waitForReady(waitForReady);
+
                 if (Util::CompareIgnoreCase(modelName, "BOX_3D")) {
                     ret = CreateResource<Box3D>(_resCache, item);
                 } else if (Util::CompareIgnoreCase(modelName, "SPHERE_3D")) {
@@ -374,6 +377,7 @@ void Scene::loadAsset(const XML::SceneNode& sceneNode, SceneGraphNode* parent) {
                 model.assetName(modelName);
                 model.setFlag(true);
                 model.setThreadedLoading(true);
+                //model.waitForReady(waitForReady);
                 model.setOnLoadCallback(loadModelComplete);
                 ret = CreateResource<Mesh>(_resCache, model);
             }
@@ -403,11 +407,7 @@ void Scene::loadAsset(const XML::SceneNode& sceneNode, SceneGraphNode* parent) {
             SceneGraphNodeDescriptor nodeDescriptor = {};
             nodeDescriptor._name = sceneNode.name;
             nodeDescriptor._componentMask = normalMask;
-
-            if (ret != nullptr) {
-                ret->loadFromXML(nodeTree);
-                nodeDescriptor._node = ret;
-            }
+            nodeDescriptor._node = ret;
 
             for (U8 i = 1; i < to_U8(ComponentType::COUNT); ++i) {
                 ComponentType type = ComponentType::_from_integral(1u << i);
@@ -422,7 +422,7 @@ void Scene::loadAsset(const XML::SceneNode& sceneNode, SceneGraphNode* parent) {
     }
 
     for (const XML::SceneNode& node : sceneNode.children) {
-        loadAsset(node, crtNode);
+        loadAsset(node, crtNode, waitForReady);
     }
 }
 
@@ -983,10 +983,18 @@ bool Scene::load(const stringImpl& name) {
     _resourceName = name;
 
     loadDefaultCamera();
+
+    TaskPool& pool = _context.taskPool(TaskPoolType::HIGH_PRIORITY);
+    TaskHandle loadTask = CreateTask(pool, DELEGATE_CBK<void, const Task&>());
     while (!_xmlSceneGraph.empty()) {
-        loadAsset(_xmlSceneGraph.top(), &_sceneGraph->getRoot());
+        XML::SceneNode node = _xmlSceneGraph.top();
         _xmlSceneGraph.pop();
+
+        CreateTask(pool, &loadTask, [this, node](const Task & parentTask) -> void {
+            loadAsset(node, &_sceneGraph->getRoot(), false);
+        }).startTask();
     }
+    loadTask.startTask().wait();
 
     U32 totalLoadingTasks = _loadingTasks.load();
     Console::d_printfn(Locale::get(_ID("SCENE_LOAD_TASKS")), totalLoadingTasks);

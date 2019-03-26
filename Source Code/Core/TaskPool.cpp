@@ -8,8 +8,6 @@
 namespace Divide {
 
 namespace {
-    constexpr bool g_forceSingleThreaded = false;
-
     thread_local Task g_taskAllocator[Config::MAX_POOLED_TASKS];
     thread_local U32  g_allocatedTasks = 0u;
 };
@@ -35,8 +33,8 @@ bool TaskPool::init(U8 threadCount, TaskPoolType poolType, const DELEGATE_CBK<vo
     }
     _threadNamePrefix = workerName;
     _threadCreateCbk = onThreadCreate;
-
     _workerThreadCount = threadCount;
+
     switch (poolType) {
         case TaskPoolType::TYPE_LOCKFREE: {
             _mainTaskPool = std::make_unique<LockFreeThreadPool>(*this, _workerThreadCount);
@@ -65,16 +63,12 @@ void TaskPool::onThreadCreate(const std::thread::id& threadID) {
 bool TaskPool::enqueue(const PoolTask& task, TaskPriority priority) {
     _runningTaskCount.fetch_add(1);
 
-    if (!g_forceSingleThreaded && priority != TaskPriority::REALTIME) {
-        assert(_mainTaskPool != nullptr);
-        if (!_mainTaskPool->addTask(task)) {
-            return false;
-        }
-    } else {
+    if (priority == TaskPriority::REALTIME) {
         task();
+        return true;
     }
 
-    return true;
+    return _mainTaskPool->addTask(task);
 }
 
 void TaskPool::runCbkAndClearTask(U32 taskIdentifier) {
@@ -84,7 +78,6 @@ void TaskPool::runCbkAndClearTask(U32 taskIdentifier) {
         cbk = 0;
     }
 }
-
 
 void TaskPool::flushCallbackQueue() {
     constexpr I32 maxDequeueItems = 10;
@@ -100,11 +93,12 @@ void TaskPool::flushCallbackQueue() {
 }
 
 void TaskPool::waitForAllTasks(bool yield, bool flushCallbacks, bool forceClear) {
+    if (forceClear) {
+        _stopRequested.store(true);
+    }
+
     bool finished = _workerThreadCount == 0;
     while (!finished) {
-        if (forceClear) {
-            _stopRequested.store(true);
-        }
         finished = _runningTaskCount.load() == 0;
         if (!finished && yield) {
             std::this_thread::yield();
@@ -120,13 +114,9 @@ void TaskPool::waitForAllTasks(bool yield, bool flushCallbacks, bool forceClear)
     _mainTaskPool->join();
 }
 
-void TaskPool::taskCompleted(U32 taskIndex) {
-    _runningTaskCount.fetch_sub(1);
-}
-
 void TaskPool::taskCompleted(U32 taskIndex, TaskPriority priority, const DELEGATE_CBK<void>& onCompletionFunction) {
     if (onCompletionFunction) {
-        if (g_forceSingleThreaded || priority == TaskPriority::REALTIME) {
+        if (priority == TaskPriority::REALTIME) {
             onCompletionFunction();
         } else {
             _taskCallbacks[taskIndex] = onCompletionFunction;
@@ -134,17 +124,16 @@ void TaskPool::taskCompleted(U32 taskIndex, TaskPriority priority, const DELEGAT
         }
     }
 
-    taskCompleted(taskIndex);
+    _runningTaskCount.fetch_sub(1);
 }
 
 Task* TaskPool::createTask(Task* parentTask, const DELEGATE_CBK<void, const Task&>& threadedFunction) 
 {
     Task* task = nullptr;
     while (task == nullptr) {
-        const U32 index = g_allocatedTasks++;
-        Task& crtTask = g_taskAllocator[index & (Config::MAX_POOLED_TASKS - 1u)];
-        U16 expected = to_U16(0);
-        if (crtTask._unfinishedJobs.compare_exchange_strong(expected, to_U16(1))) {
+        Task& crtTask = g_taskAllocator[g_allocatedTasks++ & (Config::MAX_POOLED_TASKS - 1u)];
+        U16 expected = to_U16(0u);
+        if (crtTask._unfinishedJobs.compare_exchange_strong(expected, to_U16(1u))) {
             task = &crtTask;
         }
     }

@@ -398,12 +398,6 @@ void glTexture::setCurrentSampler(const SamplerDescriptor& descriptor) {
     _textureData._samplerHandle = GL_API::getOrCreateSamplerObject(descriptor);
 }
 
-bool glTexture::resourceLoadComplete() noexcept {
-    WAIT_FOR_CONDITION(getState() == ResourceState::RES_LOADED);
-
-    return Texture::resourceLoadComplete();
-}
-
 void glTexture::bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write) {
     GLenum access = read ? (write ? GL_READ_WRITE : GL_READ_ONLY)
                             : (write ? GL_WRITE_ONLY : GL_NONE);

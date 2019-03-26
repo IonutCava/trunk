@@ -213,6 +213,7 @@ class RenderingComponent : public BaseComponentType<RenderingComponent, Componen
 
    protected:
     GFXDevice& _context;
+    const Configuration& _config;
     Material_ptr _materialInstance;
     Material* _materialInstanceCache;
 

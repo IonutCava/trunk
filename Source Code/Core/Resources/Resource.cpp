@@ -67,14 +67,10 @@ bool CachedResource::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadC
         onLoadCallback(shared_from_this());
     }
 
-    return resourceLoadComplete();
-}
-
-bool CachedResource::unload() noexcept {
     return true;
 }
 
-bool CachedResource::resourceLoadComplete() noexcept {
+bool CachedResource::unload() noexcept {
     return true;
 }
 

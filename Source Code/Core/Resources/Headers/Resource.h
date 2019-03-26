@@ -115,7 +115,6 @@ public:
     /// Loading and unloading interface
     virtual bool load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback);
     virtual bool unload() noexcept;
-    virtual bool resourceLoadComplete() noexcept;
 
     size_t getDescriptorHash() const noexcept;
     /// Physical file location

@@ -39,9 +39,10 @@ namespace Divide {
 
     struct TransformUpdated: public ECS::Event::Event<TransformUpdated>
     {
+        I64 _parentGUID = -1;
         ECS::EntityId ownerID;
 
-        TransformUpdated(ECS::ECSEngine* engine, ECS::EntityId id) : Event(engine), ownerID(id)
+        TransformUpdated(ECS::ECSEngine* engine, ECS::EntityId id, I64 parentGUID) : Event(engine), ownerID(id), _parentGUID(parentGUID)
         {}
     };;
 };

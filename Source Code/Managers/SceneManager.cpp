@@ -793,18 +793,15 @@ bool LoadSave::saveScene(const Scene& activeScene, bool toCache) {
 }
 
 bool SceneManager::saveActiveScene(bool toCache, bool deferred) {
-    _saveTask.wait();
-    Scene& activeScene = getActiveScene();
+    const Scene& activeScene = getActiveScene();
 
     TaskPool& pool = parent().platformContext().taskPool(TaskPoolType::LOW_PRIORITY);
+    _saveTask.wait();
     _saveTask = CreateTask(pool,
-            nullptr,
-            [&activeScene, toCache](const Task& parentTask)
-            {
-                LoadSave::saveScene(activeScene, toCache);
-            }
-    );
-    _saveTask.startTask(deferred ? TaskPriority::DONT_CARE : TaskPriority::REALTIME);
+                           nullptr,
+                           [&activeScene, toCache](const Task& parentTask) {
+                               LoadSave::saveScene(activeScene, toCache);
+                           }).startTask(deferred ? TaskPriority::DONT_CARE : TaskPriority::REALTIME);
 
     return true;
 }

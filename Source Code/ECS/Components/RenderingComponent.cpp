@@ -39,6 +39,7 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
                                        PlatformContext& context)
     : BaseComponentType<RenderingComponent, ComponentType::RENDERING>(parentSGN, context),
       _context(context.gfx()),
+      _config(context.config()),
       _lodLocked(false),
       _cullFlagValue(1.0f),
       _renderMask(0),
@@ -296,7 +297,7 @@ void RenderingComponent::getMaterialColourMatrix(mat4<F32>& matOut) const {
 }
 
 void RenderingComponent::getRenderingProperties(RenderStagePass& stagePass, vec4<F32>& propertiesOut, F32& reflectionIndex, F32& refractionIndex) const {
-    const bool shadowMappingEnabled = _context.context().config().rendering.shadowMapping.enabled;
+    const bool shadowMappingEnabled = _config.rendering.shadowMapping.enabled;
 
     propertiesOut.set(_parentSGN.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTION_SELECTED
                                                      ? -1.0f
@@ -307,9 +308,10 @@ void RenderingComponent::getRenderingProperties(RenderStagePass& stagePass, vec4
                       to_F32(getDrawPackage(stagePass).lodLevel()),
                       _cullFlagValue);
 
-    if (getMaterialInstanceCache() != nullptr) {
-        reflectionIndex = to_F32(getMaterialInstanceCache()->defaultReflectionTextureIndex());
-        refractionIndex = to_F32(getMaterialInstanceCache()->defaultRefractionTextureIndex());
+    Material* mat = getMaterialInstanceCache();
+    if (mat != nullptr) {
+        reflectionIndex = to_F32(mat->defaultReflectionTextureIndex());
+        refractionIndex = to_F32(mat->defaultRefractionTextureIndex());
     } else {
         reflectionIndex = refractionIndex = 0.0f;
     }

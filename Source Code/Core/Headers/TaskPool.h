@@ -77,7 +77,7 @@ public:
     friend void Start(Task& task, TaskPool& pool, TaskPriority priority, const DELEGATE_CBK<void>& onCompletionFunction);
     friend bool StopRequested(const Task& task);
 
-    void taskCompleted(U32 taskIndex);
+    friend void run(Task& task, TaskPool& pool, TaskPriority priority, DELEGATE_CBK<void> onCompletionFunction);
     void taskCompleted(U32 taskIndex, TaskPriority priority, const DELEGATE_CBK<void>& onCompletionFunction);
     
     bool enqueue(const PoolTask& task, TaskPriority priority);

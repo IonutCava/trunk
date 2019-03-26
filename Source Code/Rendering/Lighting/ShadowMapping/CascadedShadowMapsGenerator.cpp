@@ -230,7 +230,7 @@ void CascadedShadowMapsGenerator::applyFrustumSplits(DirectionalLightComponent& 
                                                      const SplitDepths& splitDepths)
 {
     vec3<F32> lightInitialDirection = Normalize(light.getDirection());
-    mat4<F32> invViewProj = GetInverse(mat4<F32>::Multiply(cam.getViewMatrix(), cam.getProjectionMatrix()));
+    const mat4<F32> invViewProj = GetInverse(mat4<F32>::Multiply(cam.getViewMatrix(), cam.getProjectionMatrix()));
 
     for (U8 cascadeIterator = 0 ; cascadeIterator < numSplits; ++cascadeIterator) {
         vec3<F32> frustumCornersWS[8] =
@@ -275,15 +275,13 @@ void CascadedShadowMapsGenerator::applyFrustumSplits(DirectionalLightComponent& 
         }
         radius = std::ceil(radius * 16.0f) / 16.0f;
 
-        vec3<F32> maxExtents = vec3<F32>(radius, radius, radius);
+        vec3<F32> maxExtents(radius);
         vec3<F32> minExtents = -maxExtents;
 
         //Position the viewmatrix looking down the center of the frustum with an arbitrary lighht direction
         vec3<F32> lightDirection = frustumCenter - lightInitialDirection * -minExtents.z;
 
         Camera* lightCam = light.shadowCameras()[cascadeIterator];
-        const mat4<F32>& lightViewMatrix = lightCam->lookAt(lightDirection, frustumCenter, WORLD_Y_AXIS);
-
         vec3<F32> cascadeExtents = maxExtents - minExtents;
 
         Rect<F32> orthoRect{};
@@ -296,6 +294,8 @@ void CascadedShadowMapsGenerator::applyFrustumSplits(DirectionalLightComponent& 
 
         // Lets store the ortho rect in case we need it;
         mat4<F32> lightOrthoMatrix = lightCam->setProjection(orthoRect, clipPlanes);
+        const mat4<F32>& lightViewMatrix = lightCam->lookAt(lightDirection, frustumCenter, WORLD_Y_AXIS);
+
         mat4<F32> shadowMatrix = mat4<F32>::Multiply(lightViewMatrix, lightOrthoMatrix);
 
         // The rounding matrix that ensures that shadow edges do not shimmer
@@ -318,10 +318,11 @@ void CascadedShadowMapsGenerator::applyFrustumSplits(DirectionalLightComponent& 
         // Use our adjusted matrix for actual rendering
         lightCam->setProjection(lightOrthoMatrix, clipPlanes, true);
 
-        mat4<F32>::Multiply(lightViewMatrix, lightOrthoMatrix, light.getShadowVPMatrix(cascadeIterator));
+        mat4<F32>& lightVP = light.getShadowVPMatrix(cascadeIterator);
+        mat4<F32>::Multiply(lightViewMatrix, lightOrthoMatrix, lightVP);
 
         light.setShadowLightPos(cascadeIterator, lightDirection);
-        light.setShadowVPMatrix(cascadeIterator, light.getShadowVPMatrix(cascadeIterator) * MAT4_BIAS);
+        light.setShadowVPMatrix(cascadeIterator, mat4<F32>::Multiply(lightVP, MAT4_BIAS));
     }
 }
 

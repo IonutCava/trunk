@@ -21,13 +21,13 @@ float VSM(vec2 moments, float fragDepth) {
 // find the appropriate depth map to look up in based on the depth of this fragment
 int getCSMSlice(in uint idx) {
 
-    int shadowTempInt = 0;
+    int Split = 0;
     const float fragDepth = VAR._vertexWV.z;
     // Figure out which cascade to sample from
 
     float dist = 0.0f;
-    for (; shadowTempInt < MAX_CSM_SPLITS_PER_LIGHT; shadowTempInt++) {
-        dist = dvd_shadowLightPosition[shadowTempInt + (idx * 6)].w;
+    for (; Split < MAX_CSM_SPLITS_PER_LIGHT; Split++) {
+        dist = dvd_shadowLightPosition[Split + (idx * 6)].w;
         if (fragDepth > dist) {
             break;
         }
@@ -42,25 +42,26 @@ int getCSMSlice(in uint idx) {
 #       if MAX_CSM_SPLITS_PER_LIGHT > 4
         , 3, 3, 3, 3, 3, 3, 3,
         LT(4),
-        LT(5), LT(5)
+        LT(5), LT(5),
+        LT(6), LT(6), LT(6), LT(6)
 #       endif //MAX_CSM_SPLITS_PER_LIGHT
     };
 
     // Ensure that every fragment in the quad choses the same split so that derivatives
     // will be meaningful for proper texture filtering and LOD selection.
-    const int SplitPow = 1 << shadowTempInt;
+    const int SplitPow = 1 << Split;
     const int SplitX = int(abs(dFdx(SplitPow)));
     const int SplitY = int(abs(dFdy(SplitPow)));
     const int SplitXY = int(abs(dFdx(SplitY)));
     const int SplitMax = max(SplitXY, max(SplitX, SplitY));
     
-    return SplitMax > 0 ? SplitPowLookup[SplitMax - 1] : shadowTempInt;
+    return SplitMax > 0 ? SplitPowLookup[SplitMax - 1] : Split;
 }
 
 float applyShadowDirectional(in uint idx, in uvec4 details) {
-    const int shadowTempInt = getCSMSlice(idx);
+    const int Split = getCSMSlice(idx);
 
-    const vec4 sc = dvd_shadowLightVP[shadowTempInt + (idx * 6)] * VAR._vertexW;
+    const vec4 sc = dvd_shadowLightVP[Split + (idx * 6)] * VAR._vertexW;
     const vec3 shadowCoord = sc.xyz / sc.w;
 
     bool inFrustum = all(bvec4(
@@ -71,7 +72,7 @@ float applyShadowDirectional(in uint idx, in uvec4 details) {
 
     if (inFrustum && shadowCoord.z <= 1.0)
     {
-        float layer = float(shadowTempInt + details.y);
+        float layer = float(Split + details.y);
 
         vec2 moments = texture(texDepthMapFromLightArray, vec3(shadowCoord.xy, layer)).rg;
        

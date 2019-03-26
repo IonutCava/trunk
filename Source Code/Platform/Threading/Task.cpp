@@ -12,8 +12,6 @@
 
 namespace Divide {
 
-typedef DELEGATE_CBK<void, U32> OnFinishCbk;
-
 void finish(Task& task) {
     if (task._unfinishedJobs.fetch_sub(1) == 1) {
         if (task._parent != nullptr) {
@@ -22,49 +20,33 @@ void finish(Task& task) {
     }
 }
 
-void run(Task& task, const OnFinishCbk& onFinish) {
+void run(Task& task, TaskPool& pool, TaskPriority priority, DELEGATE_CBK<void> onCompletionFunction) {
 
-    while (task._unfinishedJobs.load() > 1) {
-        std::this_thread::yield();
-    }
+    WAIT_FOR_CONDITION(task._unfinishedJobs.load() == 1);
 
-    if (task._callback) {
-        task._callback(task);
-        task._callback = 0;
-    }
-
-    onFinish(task._id);
-
+    task._callback(task);
+    //task._callback = 0; //Should we clear this?
+    pool.taskCompleted(task._id, priority, onCompletionFunction);
     finish(task);
 }
 
 void Start(Task& task, TaskPool& pool, TaskPriority priority, const DELEGATE_CBK<void>& onCompletionFunction) {
-    PoolTask wrappedTask = 0;
-    if (!onCompletionFunction) {
-        wrappedTask = [&task, &pool]() {
-                          run(task,
-                              [&pool](U32 index) {
-                                  pool.taskCompleted(index);
-                              });
-                      };
-    } else {
-        wrappedTask = [&task, &pool, priority, onCompletionFunction]() {
-                        run(task,
-                            [&pool, priority, &onCompletionFunction](U32 index) {
-                                pool.taskCompleted(index, priority, onCompletionFunction);
-                            });
-                    };
-    }
+    if (task._callback) {
+        PoolTask wrappedTask = [&task, &pool, priority, onCompletionFunction]() {
+            run(task, pool, priority, onCompletionFunction);
+        };
 
-    while (!pool.enqueue(wrappedTask, priority)) {
-        Console::errorfn(Locale::get(_ID("TASK_SCHEDULE_FAIL")), 1);
+        while (!pool.enqueue(wrappedTask, priority)) {
+            Console::errorfn(Locale::get(_ID("TASK_SCHEDULE_FAIL")), 1);
+        }
+    } else {
+        pool.taskCompleted(task._id, priority, onCompletionFunction);
+        finish(task);
     }
 }
 
 void Wait(const Task& task) {
-    while (!Finished(task)) {
-        std::this_thread::yield();
-    }
+    WAIT_FOR_CONDITION(Finished(task));
 }
 
 void Stop(Task& task) {

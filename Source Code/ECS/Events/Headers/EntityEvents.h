@@ -37,18 +37,20 @@ namespace Divide {
 
     struct EntityPostLoad : public ECS::Event::Event<EntityPostLoad>
     {
+        I64 _parentGUID = -1;
         ECS::EntityId ownerID;
 
-        EntityPostLoad(ECS::ECSEngine* engine, ECS::EntityId id) : Event(engine), ownerID(id)
+        EntityPostLoad(ECS::ECSEngine* engine, ECS::EntityId id, I64 parentGUID) : Event(engine), ownerID(id), _parentGUID(parentGUID)
         {}
     };
 
     struct EntityActiveStateChange : public ECS::Event::Event<EntityActiveStateChange>
     {
+        I64 _parentGUID = -1;
         ECS::EntityId ownerID;
         bool _state = false;
 
-        EntityActiveStateChange(ECS::ECSEngine* engine, ECS::EntityId id, bool state) : Event(engine), ownerID(id), _state(state)
+        EntityActiveStateChange(ECS::ECSEngine* engine, ECS::EntityId id, I64 parentGUID, bool state) : Event(engine), ownerID(id), _parentGUID(parentGUID), _state(state)
         {}
     };
 
