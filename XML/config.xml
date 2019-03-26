@@ -73,7 +73,7 @@
 </GUI>
 
 <rendering>
-  <MSAAsamples>0</MSAAsamples>
+  <MSAAsamples>2</MSAAsamples>
   <anisotropicFilteringLevel>8</anisotropicFilteringLevel>
   <renderDetailLevel>4</renderDetailLevel>
   <multithreadedCommandGeneration>true</multithreadedCommandGeneration>

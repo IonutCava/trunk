@@ -74,16 +74,13 @@ inline void Material::setShaderProgram(const ShaderProgram_ptr& shader) {
     }
 }
 
-inline void Material::setRenderStateBlock(size_t renderStateBlockHash,
-                                          I32 variant) {
+inline void Material::setRenderStateBlock(size_t renderStateBlockHash, I32 variant) {
     for (RenderStagePass::StagePassIndex i = 0; i < RenderStagePass::count(); ++i) {
         setRenderStateBlock(renderStateBlockHash, RenderStagePass::stagePass(i), variant);
     }
 }
 
-inline void Material::setRenderStateBlock(size_t renderStateBlockHash,
-                                          RenderStage renderStage,
-                                          I32 variant) {
+inline void Material::setRenderStateBlock(size_t renderStateBlockHash, RenderStage renderStage, I32 variant) {
     for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
         RenderStagePass renderStagePass(renderStage, static_cast<RenderPassType>(pass));
 
@@ -101,9 +98,7 @@ inline void Material::setRenderStateBlock(size_t renderStateBlockHash,
     }
 }
 
-inline void Material::setRenderStateBlock(size_t renderStateBlockHash,
-                                          RenderPassType renderPassType,
-                                          I32 variant) {
+inline void Material::setRenderStateBlock(size_t renderStateBlockHash, RenderPassType renderPassType, I32 variant) {
     for (U8 stage = 0; stage < to_base(RenderStage::COUNT); ++stage) {
         RenderStagePass renderStagePass(static_cast<RenderStage>(stage), renderPassType);
 
@@ -121,9 +116,7 @@ inline void Material::setRenderStateBlock(size_t renderStateBlockHash,
     }
 }
 
-inline void Material::setRenderStateBlock(size_t renderStateBlockHash,
-                                          RenderStagePass renderStagePass,
-                                          I32 variant) {
+inline void Material::setRenderStateBlock(size_t renderStateBlockHash, RenderStagePass renderStagePass, I32 variant) {
     if (variant < 0) {
         renderStagePass._variant = 0;
         for (size_t& state : defaultRenderStates(renderStagePass)) {

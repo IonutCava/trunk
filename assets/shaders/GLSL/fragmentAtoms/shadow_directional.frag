@@ -12,10 +12,10 @@ float VSM(vec2 moments, float fragDepth) {
     float variance = max(E_x2 - Ex_2, -(dvd_shadowingSettings.y));
     float mD = (moments.x - fragDepth);
     float mD_2 = mD * mD;
-    float p = linstep(dvd_shadowingSettings.x, 1.0, variance / (variance + mD_2));
-    lit = max(p, fragDepth <= moments.x ? 1.0 : 0.0);
+    float p = linstep(dvd_shadowingSettings.x, 1.0f, variance / (variance + mD_2));
+    lit = max(p, fragDepth <= moments.x ? 1.0f : 0.0f);
 
-    return clamp(lit, 0.0, 1.0);
+    return clamp(lit, 0.0f, 1.0f);
 }
 
 // find the appropriate depth map to look up in based on the depth of this fragment
@@ -65,12 +65,12 @@ float applyShadowDirectional(in uint idx, in uvec4 details) {
     const vec3 shadowCoord = sc.xyz / sc.w;
 
     bool inFrustum = all(bvec4(
-        shadowCoord.x >= 0.0,
-        shadowCoord.x <= 1.0,
-        shadowCoord.y >= 0.0,
-        shadowCoord.y <= 1.0));
+        shadowCoord.x >= 0.0f,
+        shadowCoord.x <= 1.0f,
+        shadowCoord.y >= 0.0f,
+        shadowCoord.y <= 1.0f));
 
-    if (inFrustum && shadowCoord.z <= 1.0)
+    if (inFrustum && shadowCoord.z <= 1.0f)
     {
         float layer = float(Split + details.y);
 
@@ -84,7 +84,7 @@ float applyShadowDirectional(in uint idx, in uvec4 details) {
 
         //float bias = max(angleBias * (1.0 - dot(normal, lightDirection)), 0.0008);
         float bias = 0.0f;
-        return max(VSM(moments, shadowCoord.z - bias), 0.2);
+        return max(VSM(moments, shadowCoord.z - bias), 0.2f);
     }
     
     return 1.0;

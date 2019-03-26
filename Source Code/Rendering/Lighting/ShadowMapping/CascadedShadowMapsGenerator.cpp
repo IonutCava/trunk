@@ -135,7 +135,7 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
     const vec2<F32>& nearFarPlanes = playerCamera.getZPlanes();
     const mat4<F32>& projectionMatrix = playerCamera.getProjectionMatrix();
     SplitDepths splitDepths = calculateSplitDepths(projectionMatrix, dirLight, nearFarPlanes);
-    applyFrustumSplits(dirLight, playerCamera, nearFarPlanes, numSplits, splitDepths);
+    applyFrustumSplits(dirLight, playerCamera.getViewMatrix(), projectionMatrix, nearFarPlanes, numSplits, splitDepths);
     
     RenderPassManager::PassParams params = {};
     params._sourceNode = &light.getSGN();
@@ -189,14 +189,14 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
 }
 
 //Between 0 and 1, change these to check the results
-F32 minDistance = 0.025f;
+F32 minDistance = 0.07f;
 F32 maxDistance = 1.0f;
 CascadedShadowMapsGenerator::SplitDepths CascadedShadowMapsGenerator::calculateSplitDepths(const mat4<F32>& projMatrix, DirectionalLightComponent& light, const vec2<F32>& nearFarPlanes) {
     SplitDepths depths = {};
 
     U8 numSplits = light.csmSplitCount();
-    F32 nearClip = nearFarPlanes.x;
-    F32 farClip = nearFarPlanes.y;
+    F32 nearClip = nearFarPlanes.min;
+    F32 farClip = nearFarPlanes.max;
     F32 clipRange = farClip - nearClip;
 
     F32 minZ = nearClip + minDistance * clipRange;
@@ -224,13 +224,14 @@ CascadedShadowMapsGenerator::SplitDepths CascadedShadowMapsGenerator::calculateS
 }
 
 void CascadedShadowMapsGenerator::applyFrustumSplits(DirectionalLightComponent& light,
-                                                     const Camera& cam,
+                                                     const mat4<F32>& viewMatrix,
+                                                     const mat4<F32>& projectionMatrix,
                                                      const vec2<F32>& nearFarPlanes,
                                                      U8 numSplits,
                                                      const SplitDepths& splitDepths)
 {
     vec3<F32> lightInitialDirection = Normalize(light.getDirection());
-    const mat4<F32> invViewProj = GetInverse(mat4<F32>::Multiply(cam.getViewMatrix(), cam.getProjectionMatrix()));
+    const mat4<F32> invViewProj = GetInverse(mat4<F32>::Multiply(viewMatrix, projectionMatrix));
 
     for (U8 cascadeIterator = 0 ; cascadeIterator < numSplits; ++cascadeIterator) {
         vec3<F32> frustumCornersWS[8] =
@@ -274,6 +275,9 @@ void CascadedShadowMapsGenerator::applyFrustumSplits(DirectionalLightComponent& 
             radius = std::max(radius, distance);
         }
         radius = std::ceil(radius * 16.0f) / 16.0f;
+
+        //ToDo: This might not be needed anymore
+        radius *= 1.01f;
 
         vec3<F32> maxExtents(radius);
         vec3<F32> minExtents = -maxExtents;

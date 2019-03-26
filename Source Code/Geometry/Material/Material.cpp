@@ -131,25 +131,17 @@ Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descri
     setRenderStateBlock(stateDescriptor.getHash(), RenderStagePass(RenderStage::REFRACTION, RenderPassType::MAIN_PASS));
     setRenderStateBlock(reflectorDescriptor.getHash(), RenderStagePass(RenderStage::REFLECTION, RenderPassType::MAIN_PASS));
 
-    setRenderStateBlock(shadowDescriptorCSM.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::MAIN_PASS), to_base(LightType::DIRECTIONAL));
-    setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::MAIN_PASS), to_base(LightType::POINT));
-    setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::MAIN_PASS), to_base(LightType::SPOT));
+    setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStage::SHADOW, to_base(LightType::POINT));
+    setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStage::SHADOW, to_base(LightType::SPOT));
+    setRenderStateBlock(shadowDescriptorCSM.getHash(), RenderStage::SHADOW, to_base(LightType::DIRECTIONAL));
 
     setRenderStateBlock(oitDescriptor.getHash(), RenderStagePass(RenderStage::DISPLAY, RenderPassType::OIT_PASS));
     setRenderStateBlock(oitDescriptor.getHash(), RenderStagePass(RenderStage::REFRACTION, RenderPassType::OIT_PASS));
     setRenderStateBlock(reflectorOitDescriptor.getHash(), RenderStagePass(RenderStage::REFLECTION, RenderPassType::OIT_PASS));
 
-    setRenderStateBlock(shadowDescriptor.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::OIT_PASS), to_base(LightType::DIRECTIONAL));
-    setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::OIT_PASS), to_base(LightType::POINT));
-    setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::OIT_PASS), to_base(LightType::SPOT));
-
     setRenderStateBlock(zPrePassDescriptor.getHash(), RenderStagePass(RenderStage::DISPLAY, RenderPassType::PRE_PASS));
     setRenderStateBlock(zPrePassDescriptor.getHash(), RenderStagePass(RenderStage::REFRACTION, RenderPassType::PRE_PASS));
     setRenderStateBlock(zPrePassDescriptor.getHash(), RenderStagePass(RenderStage::REFLECTION, RenderPassType::PRE_PASS));
-
-    setRenderStateBlock(shadowDescriptor.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::PRE_PASS), to_base(LightType::DIRECTIONAL));
-    setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::PRE_PASS), to_base(LightType::POINT));
-    setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::PRE_PASS), to_base(LightType::SPOT));
 }
 
 Material::~Material()
