@@ -44,7 +44,7 @@ bool isSamplerSet(sampler2D sampler) {
 }
 
 vec2 scaledTextureCoords(in vec2 texCoord, in vec2 scaleFactor) {
-    return vec2(.5, .5) + ((texCoord - vec2(.5, .5)) * scaleFactor);
+    return vec2(.5f, .5f) + ((texCoord - vec2(.5f, .5f)) * scaleFactor);
 }
 
 vec2 scaledTextureCoords(in vec2 texCoord, in float scaleFactor) {

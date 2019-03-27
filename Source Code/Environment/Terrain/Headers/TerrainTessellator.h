@@ -59,7 +59,7 @@ struct TessellatedTerrainNode {
 
     // Tessellation scale
     // negative x edge (0), positive x edge (1), negative z edge (2), positive z edge (3)
-    vec4<F32> tscale = { 0.0f, 0.0f, 0.0f , 0.0f }; 
+    vec4<F32> tscale = { 1.0f, 1.0f, 1.0f , 1.0f }; 
 
     TessellatedTerrainNode *p  = nullptr;  // Parent
     TessellatedTerrainNode* c[4] = { nullptr, nullptr, nullptr, nullptr }; // Children
@@ -72,12 +72,19 @@ struct TessellatedTerrainNode {
 
 struct TessellatedNodeData {
     vec4<F32> _positionAndTileScale = { 0.0f, 0.0f, 0.0f, 0.0f };
-    vec4<F32> _tScale = {0.0f, 0.0f, 0.0f, 0.0f};
+    vec4<F32> _tScale = {1.0f, 1.0f, 1.0f, 1.0f};
 };
 
 class TerrainTessellator {
     friend class Attorney::TerrainTessellatorLoader;
 public:
+    struct Configuration {
+        // The size of a patch in meters at which point to stop subdividing a terrain patch once it's width is less than the cutoff
+        F32 _cutoffDistance = 100.0f;
+        bool _useCameraDistance = true;
+        bool _useFrustumCulling = true;
+    };
+
     typedef vectorEASTL<TessellatedTerrainNode> TreeVector;
     typedef vector<TessellatedNodeData> RenderDataVector;
 
@@ -89,9 +96,6 @@ public:
     // Frees memory for the terrain quadtree.
     ~TerrainTessellator();
 
-    // The size of a patch in meters at which point to stop subdividing a terrain patch once it's width is less than the cutoff
-    void setCutoffDistance(F32 distance);
-
     // Builds a terrain quadtree based on specified parameters and current camera position.
     void createTree(const vec3<F32>& camPos, const Frustum& frust, const vec3<F32>& origin, const vec2<U16>& terrainDimensions);
 
@@ -101,7 +105,7 @@ public:
     // Search for a node in the tree.
     // x, z == the point we are searching for (trying to find the node with an origin closest to that point)
     // n = the current node we are testing
-    TessellatedTerrainNode* find(TessellatedTerrainNode* n, F32 x, F32 z);
+    TessellatedTerrainNode* find(TessellatedTerrainNode* const n, F32 x, F32 z);
 
     const RenderDataVector& renderData() const;
 
@@ -110,6 +114,7 @@ public:
     U16 getRenderDepth() const;
     U16 getPrevRenderDepth() const;
 
+    inline void overrideConfig(const Configuration& config) { _config = config; }
 protected:
    
     // Determines whether a node should be subdivided based on its distance to the camera.
@@ -134,16 +139,15 @@ protected:
     static void initTessellationPatch(VertexBuffer* vb);
 
 private:
-    I32 _numNodes;
-    U16 _renderDepth;
-    U16 _prevRenderDepth;
-    F32 _cutoffDistance;
+    Frustum _frustumCache;
+    TreeVector _tree;
+    RenderDataVector _renderData;
     vec3<F32> _cameraEyeCache;
     vec3<F32> _originCache;
-    Frustum _frustumCache;
-    RenderDataVector _renderData;
-    TreeVector _tree;
-
+    Configuration _config = {};
+    I32 _numNodes = 0;
+    U16 _renderDepth = 0;
+    U16 _prevRenderDepth = 0;
 }; //TerrainTessellator
 
 namespace Attorney {

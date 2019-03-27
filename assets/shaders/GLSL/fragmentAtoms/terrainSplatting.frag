@@ -13,12 +13,12 @@ layout(binding = TEXTURE_COUNT + 1) uniform sampler2DArray texTileMaps;
 layout(binding = TEXTURE_COUNT + 2) uniform sampler2DArray texNormalMaps;
 
 vec4 getTerrainAlbedo() {
-    vec4 colour = vec4(0.0, 0.0, 0.0, 1.0);
+    vec4 colour = vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
     uint offset = 0;
     for (uint i = 0; i < MAX_TEXTURE_LAYERS; ++i) {
         vec4 blendColour = texture(texBlendMaps, vec3(dvd_TexCoord, i));
-        vec4 texScale = tileScale[i] / (LoD + 1);
+        vec4 texScale = tileScale[i];// / (LoD + 1);
         for (uint j = 0; j < CURRENT_LAYER_COUNT[i]; ++j) {
             colour = mix(colour,
                          texture(texTileMaps, vec3(scaledTextureCoords(dvd_TexCoord, texScale[j]), offset + j)),
@@ -32,16 +32,16 @@ vec4 getTerrainAlbedo() {
 }
 
 vec3 getTerrainAlbedoAndNormalTBN(out vec4 colour) {
-    colour = vec4(0.0, 0.0, 0.0, 1.0);
+    colour = vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
-    vec3 tbn = vec3(1.0);
+    vec3 tbn = vec3(1.0f);
 
     uint offset = 0;
     for (uint i = 0; i < MAX_TEXTURE_LAYERS; ++i) {
         const uint layerCount = CURRENT_LAYER_COUNT[i];
 
         vec3 tbnTemp = tbn;
-        vec4 texScale = tileScale[i] / (LoD + 1);
+        vec4 texScale = tileScale[i];// / (LoD + 1);
         vec4 blendColour = texture(texBlendMaps, vec3(dvd_TexCoord, i));
 
 

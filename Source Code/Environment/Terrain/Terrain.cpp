@@ -24,7 +24,6 @@ namespace Divide {
 
 namespace {
     constexpr U32 g_bufferFrameDelay = 3;
-    constexpr U32 g_shadowSizeFactor = Config::Lighting::MAX_SHADOW_CASTING_LIGHTS * 6;
 }
 
 Terrain::Terrain(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name)
@@ -32,10 +31,21 @@ Terrain::Terrain(GFXDevice& context, ResourceCache& parentCache, size_t descript
       _shaderData(nullptr),
       _drawBBoxes(false),
       _shaderDataDirty(false),
+      _terrainTextures(nullptr),
+      _vegetationGrassNode(nullptr),
       _initBufferWriteCounter(0),
       _drawDistance(0.0f),
       _editorDataDirtyState(EditorDataState::IDLE)
 {
+    TerrainTessellator::Configuration shadowConfig = {};
+    shadowConfig._useCameraDistance = false;
+
+    constexpr U32 passPerLight = ShadowMap::MAX_SHADOW_PASSES / Config::Lighting::MAX_SHADOW_CASTING_LIGHTS;
+    for (U32 i = 0; i < ShadowMap::MAX_SHADOW_PASSES; ++i) {
+        if (i % passPerLight > 0) {
+            _shadowTessellators[i].overrideConfig(shadowConfig);
+        }
+    }
 }
 
 Terrain::~Terrain()
@@ -62,13 +72,13 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
         sgn.addNode(vegetationNodeDescriptor);
     }
 
-    static_assert(MAX_RENDER_NODES * sizeof(TessellatedTerrainNode) < 64 * 1024 * 1024, "Too many terrain nodes to fit in an UBO!");
+    static_assert(MAX_RENDER_NODES * sizeof(TessellatedNodeData) < 64 * 1024 * 1024, "Too many terrain nodes to fit in an UBO!");
 
-    _initBufferWriteCounter = ((to_base(RenderStage::COUNT) - 1) + g_shadowSizeFactor);
+    _initBufferWriteCounter = ((to_base(RenderStage::COUNT) - 1) + ShadowMap::MAX_SHADOW_PASSES);
     _initBufferWriteCounter *= g_bufferFrameDelay;
 
     ShaderBufferDescriptor bufferDescriptor;
-    bufferDescriptor._elementCount = Terrain::MAX_RENDER_NODES * ((to_base(RenderStage::COUNT) - 1) + g_shadowSizeFactor);
+    bufferDescriptor._elementCount = Terrain::MAX_RENDER_NODES * ((to_base(RenderStage::COUNT) - 1) + ShadowMap::MAX_SHADOW_PASSES);
     bufferDescriptor._elementSize = sizeof(TessellatedNodeData);
     bufferDescriptor._ringBufferLength = g_bufferFrameDelay;
     bufferDescriptor._separateReadWrite = false;
@@ -106,20 +116,20 @@ void Terrain::onEditorChange(EditorComponentField& field) {
 }
 
 void Terrain::postBuild() {
-    const U32 terrainWidth = _descriptor->getDimensions().width;
-    const U32 terrainHeight = _descriptor->getDimensions().height;
+    const U16 terrainWidth = _descriptor->getDimensions().width;
+    const U16 terrainHeight = _descriptor->getDimensions().height;
 
     reserveTriangleCount((terrainWidth - 1) * (terrainHeight - 1) * 2);
 
     // Generate index buffer
     vectorEASTL<vec3<U32>>& triangles = getTriangles();
-    triangles.resize(terrainHeight * terrainWidth * 2);
+    triangles.resize(terrainHeight * terrainWidth * 2u);
 
     // ToDo: Use parallel_for for this
     I32 vectorIndex = 0;
-    for (U32 height = 0; height < (terrainHeight - 1); ++height) {
-        for (U32 width = 0; width < (terrainWidth - 1); ++width) {
-            I32 vertexIndex = TER_COORD(width, height, terrainWidth);
+    for (U16 height = 0; height < (terrainHeight - 1); ++height) {
+        for (U16 width = 0; width < (terrainWidth - 1); ++width) {
+            const U16 vertexIndex = TER_COORD(width, height, terrainWidth);
             // Top triangle (T0)
             triangles[vectorIndex++].set(vertexIndex, vertexIndex + terrainWidth + 1, vertexIndex + 1);
             // Bottom triangle (T1)
@@ -181,7 +191,7 @@ bool Terrain::onRender(SceneGraphNode& sgn,
         offset = Terrain::MAX_RENDER_NODES * renderStagePass._passIndex;
         tessellator = &_shadowTessellators[renderStagePass._passIndex];
     } else {
-        offset = g_shadowSizeFactor * Terrain::MAX_RENDER_NODES;
+        offset = ShadowMap::MAX_SHADOW_PASSES * Terrain::MAX_RENDER_NODES;
         offset += (to_U32((stageIndex - 1) * Terrain::MAX_RENDER_NODES));
         tessellator = &_terrainTessellator[stageIndex - 1];
     }
@@ -234,7 +244,7 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
         offset = Terrain::MAX_RENDER_NODES * renderStagePass._passIndex;
     } else {
         const U8 stageIndex = to_U8(renderStagePass._stage);
-        offset = g_shadowSizeFactor * Terrain::MAX_RENDER_NODES;
+        offset = ShadowMap::MAX_SHADOW_PASSES * Terrain::MAX_RENDER_NODES;
         offset += (to_U32((stageIndex - 1) * Terrain::MAX_RENDER_NODES));
     }
 

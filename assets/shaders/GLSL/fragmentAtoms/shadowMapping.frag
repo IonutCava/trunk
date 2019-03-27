@@ -6,7 +6,7 @@ layout(binding = SHADOW_CUBE_MAP_ARRAY)    uniform samplerCubeArrayShadow  texDe
 layout(binding = SHADOW_LAYERED_MAP_ARRAY) uniform sampler2DArray          texDepthMapFromLightArray;
 
 
-#if defined(_DEBUG)
+#if defined(_DEBUG) || defined(_PROFILE)
 #define DEBUG_SHADOWMAPPING
 #endif
 

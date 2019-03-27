@@ -14,7 +14,7 @@ layout(binding = BUFFER_TERRAIN_DATA, std140) uniform dvd_TerrainBlock
 
 vec2 calcTerrainTexCoord(in vec4 pos)
 {
-    vec2 TerrainOrigin = vec2(-(TERRAIN_WIDTH * 0.5), -(TERRAIN_LENGTH * 0.5));
+    vec2 TerrainOrigin = vec2(-(TERRAIN_WIDTH * 0.5f), -(TERRAIN_LENGTH * 0.5f));
     return vec2(abs(pos.x - TerrainOrigin.x) / TERRAIN_WIDTH, abs(pos.z - TerrainOrigin.y) / TERRAIN_LENGTH);
 }
 
@@ -24,9 +24,9 @@ void main(void)
 
     vec4 posAndScale = dvd_TerrainData[VAR.dvd_instanceID]._positionAndTileScale;
 
-    vec4 patchPosition = vec4(dvd_Vertex.xyz * posAndScale.w, 1.0);
+    vec4 patchPosition = vec4(dvd_Vertex.xyz * posAndScale.w, 1.0f);
     
-    VAR._vertexW = vec4(patchPosition + vec4(posAndScale.xyz, 0.0));
+    VAR._vertexW = vec4(patchPosition + vec4(posAndScale.xyz, 0.0f));
 
     // Calculate texture coordinates (u,v) relative to entire terrain
     VAR._texCoord = calcTerrainTexCoord(VAR._vertexW);
@@ -46,16 +46,10 @@ struct TerrainNodeData {
     vec4 _tScale;
 };
 
-
 layout(binding = BUFFER_TERRAIN_DATA, std140) uniform dvd_TerrainBlock
 {
     TerrainNodeData dvd_TerrainData[MAX_RENDER_NODES];
 };
-
-#define tscale_negx tScale.x
-#define tscale_negz tScale.y
-#define tscale_posx tScale.z
-#define tscale_posz tScale.w
 
 uniform vec2 tessellationRange;
 
@@ -67,12 +61,12 @@ layout(vertices = 4) out;
 out float tcs_tessLevel[];
 
 bool offscreen(vec4 vertex) {
-    if (vertex.z < -0.5) {
+    if (vertex.z < -0.5f) {
         return true;
     }
 
-    return any(lessThan(vertex.xy, vec2(-1.7))) ||
-           any(greaterThan(vertex.xy, vec2(1.7)));
+    return any(lessThan(vertex.xy, vec2(-1.7f))) ||
+           any(greaterThan(vertex.xy, vec2(1.7f)));
 }
 
 vec4 project(mat4 mvp, vec4 vertex) {
@@ -82,35 +76,39 @@ vec4 project(mat4 mvp, vec4 vertex) {
 }
 
 vec2 screen_space(vec4 vertex) {
-    return (clamp(vertex.xy, -1.3, 1.3) + 1) * (dvd_ViewPort.zw*0.5);
+    return (clamp(vertex.xy, -1.3f, 1.3f) + 1) * (dvd_ViewPort.zw*0.5f);
 }
 
 // Dynamic level of detail using camera distance algorithm.
 float dlodCameraDistance(vec4 p0, vec4 p1)
 {
-    float d0 = clamp((abs(p0.z) - tessellationRange.x) / (tessellationRange.y - tessellationRange.x), 0.0, 1.0);
-    float d1 = clamp((abs(p1.z) - tessellationRange.x) / (tessellationRange.y - tessellationRange.x), 0.0, 1.0);
+    if (MAX_TESS_SCALE != MIN_TESS_SCALE) {
+        float d0 = clamp((abs(p0.z) - tessellationRange.x) / (tessellationRange.y - tessellationRange.x), 0.0f, 1.0f);
+        float d1 = clamp((abs(p1.z) - tessellationRange.x) / (tessellationRange.y - tessellationRange.x), 0.0f, 1.0f);
 
-    float t = mix(MAX_TESS_SCALE, MIN_TESS_SCALE, (d0 + d1) * 0.5);
+        float t = mix(MAX_TESS_SCALE, MIN_TESS_SCALE, (d0 + d1) * 0.5f);
 
-    if (t <= 2.0) {
-        return 2.0;
-    }
+        if (t <= 2.0f) {
+            return 2.0f;
+        }
 
-    if (t <= 4.0) {
-        return 4.0;
-    }
+        if (t <= 4.0f) {
+            return 4.0f;
+        }
 
-    if (t <= 8.0) {
-        return 8.0;
-    }
+        if (t <= 8.0f) {
+            return 8.0f;
+        }
 
-    if (t <= 16.0) {
-        return 16.0;
-    }
+        if (t <= 16.0f) {
+            return 16.0f;
+        }
 
-    if (t <= 32.0){
-        return 32.0;
+        if (t <= 32.0f) {
+            return 32.0f;
+        }
+
+        return t;
     }
 
     return MAX_TESS_SCALE;
@@ -120,7 +118,7 @@ void main(void)
 {
     PassData(id);
 
-    mat4 mvp = dvd_ProjectionMatrix * dvd_ViewMatrix * dvd_WorldMatrix(VAR.dvd_baseInstance);
+    mat4 mvp = dvd_ViewProjectionMatrix * dvd_WorldMatrix(VAR.dvd_baseInstance);
 
     vec4 v0 = project(mvp, gl_in[0].gl_Position);
     vec4 v1 = project(mvp, gl_in[1].gl_Position);
@@ -142,26 +140,14 @@ void main(void)
         gl_TessLevelOuter[3] = dlodCameraDistance(gl_in[2].gl_Position, gl_in[3].gl_Position);
 
         vec4 tScale = dvd_TerrainData[VAR.dvd_instanceID]._tScale;
-
-        if (tscale_negx == 2.0) {
-            gl_TessLevelOuter[0] = max(2.0, gl_TessLevelOuter[0] * 0.5);
-        }
-
-        if (tscale_negz == 2.0) {
-            gl_TessLevelOuter[1] = max(2.0, gl_TessLevelOuter[1] * 0.5);
-        }
-
-        if (tscale_posx == 2.0) {
-            gl_TessLevelOuter[2] = max(2.0, gl_TessLevelOuter[2] * 0.5);
-        }
-
-        if (tscale_posz == 2.0) {
-            gl_TessLevelOuter[3] = max(2.0, gl_TessLevelOuter[3] * 0.5);
-        }
+        gl_TessLevelOuter[0] = max(2.0f, gl_TessLevelOuter[0] * tScale.x);
+        gl_TessLevelOuter[1] = max(2.0f, gl_TessLevelOuter[1] * tScale.y);
+        gl_TessLevelOuter[2] = max(2.0f, gl_TessLevelOuter[2] * tScale.z);
+        gl_TessLevelOuter[3] = max(2.0f, gl_TessLevelOuter[3] * tScale.w);
 
         // Inner tessellation level
-        gl_TessLevelInner[0] = 0.5 * (gl_TessLevelOuter[0] + gl_TessLevelOuter[3]);
-        gl_TessLevelInner[1] = 0.5 * (gl_TessLevelOuter[2] + gl_TessLevelOuter[1]);
+        gl_TessLevelInner[0] = 0.5f * (gl_TessLevelOuter[0] + gl_TessLevelOuter[3]);
+        gl_TessLevelInner[1] = 0.5f * (gl_TessLevelOuter[2] + gl_TessLevelOuter[1]);
     }
 
     // Pass the patch verts along
@@ -230,11 +216,11 @@ float getHeight(in vec4 heightOffsets) {
     float s10 = heightOffsets.b;
     float s12 = heightOffsets.a;
 
-    return (s01 + s21 + s10 + s12) * 0.25;
+    return (s01 + s21 + s10 + s12) * 0.25f;
 }
 
 vec3 getNormal(in float sampleHeight, in vec4 heightOffsets) {
-    const vec2 size = vec2(2.0, 0.0);
+    const vec2 size = vec2(2.0f, 0.0f);
 
     float s11 = sampleHeight;
     float s01 = heightOffsets.r;
@@ -249,7 +235,7 @@ vec3 getNormal(in float sampleHeight, in vec4 heightOffsets) {
 }
 
 vec3 getTangent(in vec3 normal) {
-    vec3 temp_tangent = vec3(0.0, 0.0, 1.0);
+    vec3 temp_tangent = vec3(0.0f, 0.0f, 1.0f);
     vec3 bitangent = cross(temp_tangent, normal);
     vec3 tangent = cross(normal, bitangent);
     return tangent;
@@ -261,7 +247,7 @@ void waterDetails() {
     vec3 vertexW = _out._vertexW.xyz;
 
     float maxDistance = 0.0f;
-    float minDepth = 1.0;
+    float minDepth = 1.0f;
 
     for (int i = 0; i < dvd_waterEntities.length(); ++i)
     {
@@ -272,8 +258,8 @@ void waterDetails() {
 
         float waterWidth = details.x + position.x;
         float waterLength = details.y + position.z;
-        float halfWidth = waterWidth * 0.5;
-        float halfLength = waterLength * 0.5;
+        float halfWidth = waterWidth * 0.5f;
+        float halfLength = waterLength * 0.5f;
         if (vertexW.x >= -halfWidth && vertexW.x <= halfWidth &&
             vertexW.z >= -halfLength && vertexW.z <= halfLength)
         {
@@ -284,7 +270,7 @@ void waterDetails() {
 
 
             // Current water depth in relation to the minimum possible depth
-            minDepth = min(minDepth, clamp(1.0 - (position.y - vertexW.y) / (position.y - TERRAIN_MIN_HEIGHT), 0.0, 1.0));
+            minDepth = min(minDepth, clamp(1.0 - (position.y - vertexW.y) / (position.y - TERRAIN_MIN_HEIGHT), 0.0f, 1.0f));
         }
     }
 #if !defined(SHADOW_PASS)
@@ -483,6 +469,8 @@ in float LoD;
 // x = distance, y = depth
 smooth in vec2 _waterDetails;
 
+#define SHADOW_INTENSITY_FACTOR 0.75f
+
 #if defined(TOGGLE_WIREFRAME)
 in vec3 gs_wireColor;
 noperspective in vec3 gs_edgeDist;
@@ -508,7 +496,7 @@ vec4 UnderwaterMappingRoutine(out vec3 normalWV) {
 #if defined(LOW_QUALITY)
     return texture(texUnderwaterAlbedo, coords);
 #else
-    float time2 = float(dvd_time) * 0.0001;
+    float time2 = float(dvd_time) * 0.0001f;
     vec4 scrollingUV = vec4(coords, coords + time2);
     scrollingUV.s -= time2;
 

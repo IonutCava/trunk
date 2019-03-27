@@ -68,7 +68,7 @@ namespace {
             }; break;
             case RenderStage::SHADOW: {
                 // One buffer per light, but split into multiple pieces
-                bufferSizeFactor = Config::Lighting::MAX_SHADOW_CASTING_LIGHTS * 6;
+                bufferSizeFactor = ShadowMap::MAX_SHADOW_PASSES;
             }; break;
         };
 
@@ -104,7 +104,7 @@ namespace {
             case RenderStage::REFLECTION: // planar, cube & environment
             case RenderStage::REFRACTION: ret = 3; break;
             case RenderStage::DISPLAY: ret = 1;  break;
-            case RenderStage::SHADOW: ret = Config::Lighting::MAX_SHADOW_CASTING_LIGHTS * 6;  break;
+            case RenderStage::SHADOW: ret = ShadowMap::MAX_SHADOW_PASSES;  break;
         };
 
         return ret;

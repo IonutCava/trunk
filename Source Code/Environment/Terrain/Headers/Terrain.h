@@ -38,6 +38,7 @@
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
 #include "Environment/Vegetation/Headers/Vegetation.h"
 #include "Environment/Terrain/Quadtree/Headers/Quadtree.h"
+#include "Rendering/Lighting/ShadowMapping/Headers/ShadowMap.h"
 #include "Platform/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 
 namespace Divide {
@@ -126,7 +127,7 @@ class Terrain : public Object3D {
     friend class Attorney::TerrainLoader;
 
    public:
-     static constexpr U32 MAX_RENDER_NODES = 384;
+     static constexpr U32 MAX_RENDER_NODES = 1024;
      static constexpr size_t NODE_DATA_SIZE = sizeof(TessellatedNodeData) * Terrain::MAX_RENDER_NODES * to_base(RenderStage::COUNT);
 
    public:
@@ -204,7 +205,7 @@ class Terrain : public Object3D {
     vector<TerrainChunk*> _terrainChunks;
 
     TessellatorArray _terrainTessellator;
-    std::array<TerrainTessellator, Config::Lighting::MAX_SHADOW_CASTING_LIGHTS * 6> _shadowTessellators;
+    std::array<TerrainTessellator, ShadowMap::MAX_SHADOW_PASSES> _shadowTessellators;
 
     EditorDataState _editorDataDirtyState;
     bool _drawBBoxes;

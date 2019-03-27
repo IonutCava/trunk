@@ -8,6 +8,7 @@
 namespace Divide {
 
 namespace {
+    std::atomic_uint g_taskIDCounter = 0u;
     thread_local Task g_taskAllocator[Config::MAX_POOLED_TASKS];
     thread_local U32  g_allocatedTasks = 0u;
 };
@@ -147,8 +148,7 @@ Task* TaskPool::createTask(Task* parentTask, const DELEGATE_CBK<void, const Task
     task->_callback = threadedFunction;
 
     if (task->_id == 0) {
-        static U32 id = 1;
-        task->_id = id++;
+        task->_id = g_taskIDCounter.fetch_add(1u);
     }
 
     return task;
