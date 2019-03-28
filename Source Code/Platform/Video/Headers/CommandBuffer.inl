@@ -130,7 +130,7 @@ inline void CommandBuffer::clear(bool clearMemory) {
 }
 
 inline void CommandBuffer::nuke() {
-    _commandOrder.resize(0);
+    _commandOrder.clear();
     _commandCount.fill(0);
     _commands.nuke();
 }

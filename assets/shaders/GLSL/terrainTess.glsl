@@ -1,5 +1,9 @@
 --Vertex
 
+out mat4 mvp;
+out vec4 tScale;
+out vec4 posAndTileScaleVert;
+
 #include "vbInputData.vert"
 
 struct TerrainNodeData {
@@ -22,34 +26,31 @@ void main(void)
 {
     computeDataNoClip();
 
-    vec4 posAndScale = dvd_TerrainData[VAR.dvd_instanceID]._positionAndTileScale;
+    posAndTileScaleVert = dvd_TerrainData[VAR.dvd_instanceID]._positionAndTileScale;
+    tScale = dvd_TerrainData[VAR.dvd_instanceID]._tScale;
 
-    vec4 patchPosition = vec4(dvd_Vertex.xyz * posAndScale.w, 1.0f);
+    vec4 patchPosition = vec4(dvd_Vertex.xyz * posAndTileScaleVert.w, 1.0f);
     
-    VAR._vertexW = vec4(patchPosition + vec4(posAndScale.xyz, 0.0f));
+    VAR._vertexW = vec4(patchPosition + vec4(posAndTileScaleVert.xyz, 0.0f));
 
     // Calculate texture coordinates (u,v) relative to entire terrain
     VAR._texCoord = calcTerrainTexCoord(VAR._vertexW);
 
+    mvp = dvd_ViewProjectionMatrix * dvd_WorldMatrix(VAR.dvd_baseInstance);
+    
     // Send vertex position along
     gl_Position = patchPosition;
 }
 
 --TessellationC
 
+in mat4 mvp[];
+in vec4 tScale[];
+in vec4 posAndTileScaleVert[];
+
 #define id gl_InvocationID
 
 #include "nodeBufferedInput.cmn"
-
-struct TerrainNodeData {
-    vec4 _positionAndTileScale;
-    vec4 _tScale;
-};
-
-layout(binding = BUFFER_TERRAIN_DATA, std140) uniform dvd_TerrainBlock
-{
-    TerrainNodeData dvd_TerrainData[MAX_RENDER_NODES];
-};
 
 uniform vec2 tessellationRange;
 
@@ -59,24 +60,19 @@ uniform vec2 tessellationRange;
 layout(vertices = 4) out;
 
 out float tcs_tessLevel[];
+out vec4 posAndTileScale[];
 
-bool offscreen(vec4 vertex) {
-    if (vertex.z < -0.5f) {
-        return true;
-    }
+const vec2 cmp = vec2(1.7f);
 
-    return any(lessThan(vertex.xy, vec2(-1.7f))) ||
-           any(greaterThan(vertex.xy, vec2(1.7f)));
+bool offscreen(in vec4 vertex) {
+    return vertex.z < -0.5f ||
+           any(lessThan(vertex.xy, -cmp)) ||
+           any(greaterThan(vertex.xy, cmp));
 }
 
-vec4 project(mat4 mvp, vec4 vertex) {
-    vec4 result = mvp * vertex;
-    result /= result.w;
-    return result;
-}
-
-vec2 screen_space(vec4 vertex) {
-    return (clamp(vertex.xy, -1.3f, 1.3f) + 1) * (dvd_ViewPort.zw*0.5f);
+vec4 project(in vec4 vertex) {
+    const vec4 result = mvp[0] * vertex;
+    return result / result.w;
 }
 
 // Dynamic level of detail using camera distance algorithm.
@@ -118,16 +114,15 @@ void main(void)
 {
     PassData(id);
 
-    mat4 mvp = dvd_ViewProjectionMatrix * dvd_WorldMatrix(VAR.dvd_baseInstance);
-
-    vec4 v0 = project(mvp, gl_in[0].gl_Position);
-    vec4 v1 = project(mvp, gl_in[1].gl_Position);
-    vec4 v2 = project(mvp, gl_in[2].gl_Position);
-    vec4 v3 = project(mvp, gl_in[3].gl_Position);
+    const vec4 v0 = project(gl_in[0].gl_Position);
+    const vec4 v1 = project(gl_in[1].gl_Position);
+    const vec4 v2 = project(gl_in[2].gl_Position);
+    const vec4 v3 = project(gl_in[3].gl_Position);
 
     if (gl_InvocationID == 0 && all(bvec4(offscreen(v0), offscreen(v1), offscreen(v2), offscreen(v3)))) {
         gl_TessLevelInner[0] = 0;
         gl_TessLevelInner[1] = 0;
+
         gl_TessLevelOuter[0] = 0;
         gl_TessLevelOuter[1] = 0;
         gl_TessLevelOuter[2] = 0;
@@ -139,11 +134,10 @@ void main(void)
         gl_TessLevelOuter[2] = dlodCameraDistance(gl_in[1].gl_Position, gl_in[2].gl_Position);
         gl_TessLevelOuter[3] = dlodCameraDistance(gl_in[2].gl_Position, gl_in[3].gl_Position);
 
-        vec4 tScale = dvd_TerrainData[VAR.dvd_instanceID]._tScale;
-        gl_TessLevelOuter[0] = max(2.0f, gl_TessLevelOuter[0] * tScale.x);
-        gl_TessLevelOuter[1] = max(2.0f, gl_TessLevelOuter[1] * tScale.y);
-        gl_TessLevelOuter[2] = max(2.0f, gl_TessLevelOuter[2] * tScale.z);
-        gl_TessLevelOuter[3] = max(2.0f, gl_TessLevelOuter[3] * tScale.w);
+        gl_TessLevelOuter[0] = max(2.0f, gl_TessLevelOuter[0] * tScale[id].x);
+        gl_TessLevelOuter[1] = max(2.0f, gl_TessLevelOuter[1] * tScale[id].y);
+        gl_TessLevelOuter[2] = max(2.0f, gl_TessLevelOuter[2] * tScale[id].z);
+        gl_TessLevelOuter[3] = max(2.0f, gl_TessLevelOuter[3] * tScale[id].w);
 
         // Inner tessellation level
         gl_TessLevelInner[0] = 0.5f * (gl_TessLevelOuter[0] + gl_TessLevelOuter[3]);
@@ -155,6 +149,7 @@ void main(void)
 
     // Output tessellation level (used for wireframe coloring)
     tcs_tessLevel[id] = gl_TessLevelOuter[0];
+    posAndTileScale[id] = posAndTileScaleVert[id];
 }
 
 --TessellationE
@@ -163,19 +158,11 @@ void main(void)
 
 layout(binding = TEXTURE_HEIGHT) uniform sampler2D TexTerrainHeight;
 
-struct TerrainNodeData {
-    vec4 _positionAndTileScale;
-    vec4 _tScale;
-};
-
-layout(binding = BUFFER_TERRAIN_DATA, std140) uniform dvd_TerrainBlock
-{
-    TerrainNodeData dvd_TerrainData[MAX_RENDER_NODES];
-};
-
 layout(quads, fractional_even_spacing) in;
 
 in float tcs_tessLevel[];
+in vec4 posAndTileScale[];
+
 out float tes_tessLevel;
 
 #if !defined(TOGGLE_WIREFRAME)
@@ -284,6 +271,8 @@ void main()
 {
     PassData(0);
 
+    const uint baseInstance = VAR[0].dvd_baseInstance;
+
     // Calculate the vertex position using the four original points and interpolate depending on the tessellation coordinates.	
     vec4 pos = interpolate(gl_in[0].gl_Position, gl_in[1].gl_Position, gl_in[2].gl_Position, gl_in[3].gl_Position);
 
@@ -297,11 +286,11 @@ void main()
     pos.y = (TERRAIN_HEIGHT_RANGE * sampleHeight) + TERRAIN_MIN_HEIGHT;
 
     // Project the vertex to clip space and send it along
-    vec3 offset = dvd_TerrainData[VAR[0].dvd_instanceID]._positionAndTileScale.xyz;
-    _out._vertexW = dvd_WorldMatrix(VAR[0].dvd_baseInstance) * vec4(pos.xyz + offset, pos.w);
+    vec3 offset = posAndTileScale[0].xyz;
+    _out._vertexW = dvd_WorldMatrix(baseInstance) * vec4(pos.xyz + offset, pos.w);
 
 #if !defined(SHADOW_PASS)
-    mat3 normalMatrixWV = dvd_NormalMatrixWV(VAR[0].dvd_baseInstance);
+    mat3 normalMatrixWV = dvd_NormalMatrixWV(baseInstance);
     vec3 normal = getNormal(sampleHeight, heightOffsets);
 
     _out._normalWV = normalize(normalMatrixWV * normal);
