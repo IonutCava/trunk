@@ -68,37 +68,37 @@ const RenderBinItem& RenderBin::getItem(RenderStage stage, U16 index) const {
     return _renderBinStack[to_base(stage)][index];
 }
 
-void RenderBin::sort(RenderStage stage, RenderingOrder::List renderOrder) {
+void RenderBin::sort(RenderStage stage, RenderingOrder renderOrder) {
     // Lock w_lock(_renderBinGetMutex);
     U8 stageIndex = to_U8(stage);
 
     switch (renderOrder) {
-        case RenderingOrder::List::BY_STATE: {
+        case RenderingOrder::BY_STATE: {
             eastl::sort(eastl::begin(_renderBinStack[stageIndex]),
                         eastl::end(_renderBinStack[stageIndex]),
                         RenderQueueKeyCompare());
         } break;
-        case RenderingOrder::List::BACK_TO_FRONT: {
+        case RenderingOrder::BACK_TO_FRONT: {
             eastl::sort(eastl::begin(_renderBinStack[stageIndex]),
                         eastl::end(_renderBinStack[stageIndex]),
                         RenderQueueDistanceBackToFront());
         } break;
-        case RenderingOrder::List::FRONT_TO_BACK: {
+        case RenderingOrder::FRONT_TO_BACK: {
             eastl::sort(eastl::begin(_renderBinStack[stageIndex]),
                         eastl::end(_renderBinStack[stageIndex]),
                         RenderQueueDistanceFrontToBack());
         } break;
-        case RenderingOrder::List::NONE: {
+        case RenderingOrder::NONE: {
             // no need to sort
         } break;
         default:
-        case RenderingOrder::List::COUNT: {
+        case RenderingOrder::COUNT: {
             Console::errorfn(Locale::get(_ID("ERROR_INVALID_RENDER_BIN_SORT_ORDER")), _rbType._to_string());
         } break;
     };
 }
 
-void RenderBin::sort(RenderStage stage, RenderingOrder::List renderOrder, const Task& parentTask) {
+void RenderBin::sort(RenderStage stage, RenderingOrder renderOrder, const Task& parentTask) {
     ACKNOWLEDGE_UNUSED(parentTask);
     sort(stage, renderOrder);
 }

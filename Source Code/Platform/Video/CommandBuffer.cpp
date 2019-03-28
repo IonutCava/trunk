@@ -335,6 +335,71 @@ bool CommandBuffer::validate() const {
     return valid;
 }
 
+
+bool CommandBuffer::mergeDrawCommands(vectorEASTLFast<GenericDrawCommand>& commands, bool byBaseInstance) const {
+    const size_t startSize = commands.size();
+
+    std::sort(std::begin(commands),
+                std::end(commands),
+                [byBaseInstance](const GenericDrawCommand & a, const GenericDrawCommand & b) -> bool
+                {
+                    return (byBaseInstance ? a._cmd.baseInstance < b._cmd.baseInstance
+                                           : a._commandOffset < b._commandOffset);
+                });
+
+    auto batch = [byBaseInstance](GenericDrawCommand& previousIDC, GenericDrawCommand& currentIDC)  -> bool {
+        // Batchable commands must share the same buffer and other various state
+
+        bool canBatch = compatible(previousIDC, currentIDC);
+
+        bool instanced = false;
+        // Instancing is not compatible with MDI. Well, it might be, but I can't be bothered a.t.m. to implement it -Ionut
+        if (previousIDC._cmd.primCount > 1 || currentIDC._cmd.primCount > 1) {
+            //canBatch = false;
+            instanced = true;
+        }
+
+        if (canBatch) {
+            bool merge = false;
+            if (byBaseInstance) { // Base instance compatibility
+                merge = previousIDC._cmd.baseInstance + previousIDC._drawCount == currentIDC._cmd.baseInstance;
+            } else {// Command offset compatibility
+                merge = previousIDC._commandOffset + previousIDC._drawCount == currentIDC._commandOffset;
+            }
+
+            if (merge) {
+                // If the rendering commands are batchable, increase the draw count for the previous one
+                previousIDC._drawCount += currentIDC._drawCount;
+                // And set the current command's draw count to zero so it gets removed from the list later on
+                currentIDC._drawCount = 0;
+                return true;
+            }
+        }
+
+        return false;
+    };
+
+    vec_size previousCommandIndex = 0;
+    vec_size currentCommandIndex = 1;
+    const vec_size commandCount = commands.size();
+    for (; currentCommandIndex < commandCount; ++currentCommandIndex) {
+        GenericDrawCommand& previousCommand = commands[previousCommandIndex];
+        GenericDrawCommand& currentCommand = commands[currentCommandIndex];
+        if (!batch(previousCommand, currentCommand)) {
+            previousCommandIndex = currentCommandIndex;
+        }
+    }
+
+    commands.erase(eastl::remove_if(eastl::begin(commands),
+                                eastl::end(commands),
+                                [](const GenericDrawCommand& cmd) -> bool {
+                                    return cmd._drawCount == 0;
+                                }),
+                eastl::end(commands));
+
+    return startSize - commands.size() > 0;
+}
+
 void CommandBuffer::toString(const GFX::CommandBase& cmd, GFX::CommandType::_enumerated type, I32& crtIndent, stringImpl& out) const {
     auto append = [](stringImpl& target, const stringImpl& text, I32 indent) {
         for (I32 i = 0; i < indent; ++i) {

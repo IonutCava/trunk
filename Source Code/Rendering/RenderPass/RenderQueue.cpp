@@ -16,6 +16,10 @@
 
 namespace Divide {
 
+namespace {
+    constexpr bool g_useDiffSortForPrePass = false;
+};
+
 RenderQueue::RenderQueue(Kernel& parent)
     : KernelComponent(parent)
 {
@@ -47,25 +51,33 @@ U16 RenderQueue::getRenderQueueStackSize(RenderStage stage) const {
     return temp;
 }
 
-RenderingOrder::List RenderQueue::getSortOrder(RenderStagePass stagePass, RenderBinType rbType) {
-    RenderingOrder::List sortOrder = RenderingOrder::List::COUNT;
+RenderingOrder RenderQueue::getSortOrder(RenderStagePass stagePass, RenderBinType rbType) {
+    RenderingOrder sortOrder = RenderingOrder::COUNT;
     switch (rbType) {
         case RenderBinType::RBT_OPAQUE: {
-            // Opaque items should be rendered front to back in depth passes for early-Z reasons
-            sortOrder = stagePass.isDepthPass() ? RenderingOrder::List::FRONT_TO_BACK
-                                                : RenderingOrder::List::BY_STATE;
+            if (g_useDiffSortForPrePass) {
+                // Opaque items should be rendered front to back in depth passes for early-Z reasons
+                sortOrder = stagePass.isDepthPass() ? RenderingOrder::FRONT_TO_BACK
+                                                    : RenderingOrder::BY_STATE;
+            } else {
+                sortOrder = RenderingOrder::BY_STATE;
+            }
         } break;
         case RenderBinType::RBT_SKY: {
-            sortOrder = RenderingOrder::List::NONE;
+            sortOrder = RenderingOrder::NONE;
         } break;
         case RenderBinType::RBT_IMPOSTOR:
         case RenderBinType::RBT_TERRAIN: {
-            sortOrder = stagePass.isDepthPass() ? RenderingOrder::List::NONE
-                                                : RenderingOrder::List::FRONT_TO_BACK;
+            if (g_useDiffSortForPrePass) {
+                sortOrder = stagePass.isDepthPass() ? RenderingOrder::NONE
+                                                    : RenderingOrder::FRONT_TO_BACK;
+            } else {
+                sortOrder = RenderingOrder::FRONT_TO_BACK;
+            }
         } break;
         case RenderBinType::RBT_TRANSLUCENT: {
              // We are using weighted blended OIT. State is fine (and faster)
-            sortOrder = RenderingOrder::List::BY_STATE;
+            sortOrder = RenderingOrder::BY_STATE;
         } break;
         default: {
             Console::errorfn(Locale::get(_ID("ERROR_INVALID_RENDER_BIN_CREATION")));
@@ -177,7 +189,7 @@ void RenderQueue::sort(RenderStagePass stagePass) {
 
     for (RenderBin* renderBin : _renderBins) {
         if (!renderBin->empty(stagePass._stage)) {
-            RenderingOrder::List sortOrder = getSortOrder(stagePass, renderBin->getType());
+            RenderingOrder sortOrder = getSortOrder(stagePass, renderBin->getType());
 
             if (renderBin->getBinSize(stagePass._stage) > threadBias) {
                 CreateTask(pool,

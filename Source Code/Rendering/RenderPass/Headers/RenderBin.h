@@ -63,14 +63,12 @@ struct RenderBinItem {
     F32 _distanceToCameraSq = 0.0f;
 };
 
-struct RenderingOrder {
-    enum class List : U8 {
-        NONE = 0,
-        FRONT_TO_BACK = 1,
-        BACK_TO_FRONT = 2,
-        BY_STATE = 3,
-        COUNT
-    };
+enum class RenderingOrder : U8{
+    NONE = 0,
+    FRONT_TO_BACK,
+    BACK_TO_FRONT,
+    BY_STATE,
+    COUNT
 };
 
 //Bins can hold certain node types. This is also the order in which nodes will be rendered!
@@ -98,8 +96,8 @@ class RenderBin {
     explicit RenderBin(RenderBinType rbType);
     ~RenderBin();
 
-    void sort(RenderStage stage, RenderingOrder::List renderOrder);
-    void sort(RenderStage stage, RenderingOrder::List renderOrder, const Task& parentTask);
+    void sort(RenderStage stage, RenderingOrder renderOrder);
+    void sort(RenderStage stage, RenderingOrder renderOrder, const Task& parentTask);
     void populateRenderQueue(RenderStagePass stagePass, vectorEASTLFast<RenderPackage*>& queueInOut) const;
     void postRender(const SceneRenderState& renderState, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut);
     void refresh(RenderStage stage);

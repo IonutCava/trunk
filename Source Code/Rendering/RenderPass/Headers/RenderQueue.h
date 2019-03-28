@@ -77,7 +77,7 @@ class RenderQueue : public KernelComponent {
     void getSortedQueues(RenderStagePass stagePass, SortedQueues& queuesOut, U16& countOut) const;
 
   private:
-    RenderingOrder::List getSortOrder(RenderStagePass stagePass, RenderBinType rbType);
+    RenderingOrder getSortOrder(RenderStagePass stagePass, RenderBinType rbType);
 
     RenderBin* getBinForNode(const SceneGraphNode& nodeType, const Material_ptr& matInstance);
 

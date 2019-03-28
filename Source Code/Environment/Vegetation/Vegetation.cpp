@@ -130,8 +130,8 @@ Vegetation::Vegetation(GFXDevice& context,
     });
 
     _cullShaderGrass = CreateResource<ShaderProgram>(context.parent().resourceCache(), instanceCullShaderGrass);
-    _cullPushConstantsCommand._constants.set("offset", GFX::PushConstantType::UINT, _terrainChunk.ID());
-    _cullPushConstantsCommand._constants.set("grassExtents", GFX::PushConstantType::VEC4, _grassExtents);
+    _cullPushConstants.set("offset", GFX::PushConstantType::UINT, _terrainChunk.ID());
+    _cullPushConstants.set("grassExtents", GFX::PushConstantType::VEC4, _grassExtents);
 
     ResourceDescriptor instanceCullShaderTrees("instanceCullVegetation.Trees");
     instanceCullShaderTrees.setThreadedLoading(true);
@@ -411,8 +411,8 @@ void Vegetation::sceneUpdate(const U64 deltaTimeUS,
     s_stageRefreshed.fill(false);
 
     const SceneRenderState& renderState = _context.parent().sceneManager().getActiveScene().renderState();
-    _cullPushConstantsCommand._constants.set("dvd_grassVisibilityDistance", GFX::PushConstantType::FLOAT, renderState.grassVisibility());
-    _cullPushConstantsCommand._constants.set("dvd_treeVisibilityDistance", GFX::PushConstantType::FLOAT, renderState.treeVisibility());
+    _cullPushConstants.set("dvd_grassVisibilityDistance", GFX::PushConstantType::FLOAT, renderState.grassVisibility());
+    _cullPushConstants.set("dvd_treeVisibilityDistance", GFX::PushConstantType::FLOAT, renderState.treeVisibility());
 
     SceneNode::sceneUpdate(deltaTimeUS, sgn, sceneState);
 }
@@ -470,7 +470,7 @@ void Vegetation::postLoad(SceneGraphNode& sgn) {
 
         const vec3<F32>& extents = node->get<BoundsComponent>()->updateAndGetBoundingBox().getExtent();
         _treeExtents.set(extents, 0);
-        _cullPushConstantsCommand._constants.set("treeExtents", GFX::PushConstantType::VEC4, _treeExtents);
+        _cullPushConstants.set("treeExtents", GFX::PushConstantType::VEC4, _treeExtents);
     }
 
     // positive value to keep occlusion culling happening
@@ -497,10 +497,11 @@ void Vegetation::onRefreshNodeData(SceneGraphNode& sgn, RenderStagePass renderSt
         pipelineCmd._pipeline = _cullPipelineGrass;
         GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
-        _cullPushConstantsCommand._constants.set("viewportDimensions", GFX::PushConstantType::VEC2, vec2<F32>(depthTex->getWidth(), depthTex->getHeight()));
-        _cullPushConstantsCommand._constants.set("projectionMatrix", GFX::PushConstantType::MAT4, camera.getProjectionMatrix());
-        _cullPushConstantsCommand._constants.set("viewProjectionMatrix", GFX::PushConstantType::MAT4, mat4<F32>::Multiply(camera.getViewMatrix(), camera.getProjectionMatrix()));
-        GFX::EnqueueCommand(bufferInOut, _cullPushConstantsCommand);
+        GFX::SendPushConstantsCommand cullConstants(_cullPushConstants);
+        cullConstants._constants.set("viewportDimensions", GFX::PushConstantType::VEC2, vec2<F32>(depthTex->getWidth(), depthTex->getHeight()));
+        cullConstants._constants.set("projectionMatrix", GFX::PushConstantType::MAT4, camera.getProjectionMatrix());
+        cullConstants._constants.set("viewProjectionMatrix", GFX::PushConstantType::MAT4, mat4<F32>::Multiply(camera.getViewMatrix(), camera.getProjectionMatrix()));
+        GFX::EnqueueCommand(bufferInOut, cullConstants);
 
         GFX::DispatchComputeCommand computeCmd;
 
@@ -509,13 +510,11 @@ void Vegetation::onRefreshNodeData(SceneGraphNode& sgn, RenderStagePass renderSt
             GFX::EnqueueCommand(bufferInOut, computeCmd);
         }
 
-        // Cull trees
-        pipelineCmd._pipeline = _cullPipelineTrees;
-        GFX::EnqueueCommand(bufferInOut, pipelineCmd);
-
-        GFX::EnqueueCommand(bufferInOut, _cullPushConstantsCommand);
-
         if (_instanceCountTrees > 0) {
+            // Cull trees
+            pipelineCmd._pipeline = _cullPipelineTrees;
+            GFX::EnqueueCommand(bufferInOut, pipelineCmd);
+
             computeCmd._computeGroupSize.set(std::max(_instanceCountTrees, _instanceCountTrees / WORK_GROUP_SIZE), 1, 1);
             GFX::EnqueueCommand(bufferInOut, computeCmd);
         }

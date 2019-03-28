@@ -148,51 +148,16 @@ inline bool CommandBuffer::tryMergeCommands(GFX::CommandType::_enumerated type, 
                     eastl::cbegin(crtCommand->_drawCommands),
                     eastl::cend(crtCommand->_drawCommands));
 
-    std::sort(std::begin(commands),
-             std::end(commands),
-             [](const GenericDrawCommand& a, const GenericDrawCommand& b) -> bool
-             {
-                return a._cmd.baseInstance < b._cmd.baseInstance;
-             });
-
-    auto batch = [](GenericDrawCommand& previousIDC, GenericDrawCommand& currentIDC)  -> bool {
-        // Batchable commands must share the same buffer
-        if (compatible(previousIDC, currentIDC))
-        {
-            U32 prevCount = previousIDC._drawCount;
-            if (previousIDC._cmd.baseInstance + prevCount != currentIDC._cmd.baseInstance) {
-                return false;
-            }
-            // If the rendering commands are batchable, increase the draw count for the previous one
-            previousIDC._drawCount = to_U16(prevCount + currentIDC._drawCount);
-            // And set the current command's draw count to zero so it gets removed from the list later on
-            currentIDC._drawCount = 0;
-
-            return true;
-        }
-
-        return false;
-    };
-
-    vec_size previousCommandIndex = 0;
-    vec_size currentCommandIndex = 1;
-    const vec_size commandCount = commands.size();
-    for (; currentCommandIndex < commandCount; ++currentCommandIndex) {
-        GenericDrawCommand& previousCommand = commands[previousCommandIndex];
-        GenericDrawCommand& currentCommand = commands[currentCommandIndex];
-        if (!batch(previousCommand, currentCommand))
-        {
-            previousCommandIndex = currentCommandIndex;
+    partial = false;
+    bool merged = true;
+    while (merged) {
+        merged = mergeDrawCommands(commands, true);
+        merged = mergeDrawCommands(commands, false) || merged;
+        if (merged) {
+            partial = true;
         }
     }
 
-    commands.erase(eastl::remove_if(eastl::begin(commands),
-                                    eastl::end(commands),
-                                    [](const GenericDrawCommand& cmd) -> bool {
-                                        return cmd._drawCount == 0;
-                                    }),
-                  eastl::end(commands));
-    partial = true;
     return true;
 }
 

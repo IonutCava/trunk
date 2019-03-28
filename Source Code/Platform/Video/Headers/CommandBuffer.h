@@ -123,6 +123,9 @@ class CommandBuffer : private GUIDWrapper, private NonCopyable {
     void toString(const GFX::CommandBase& cmd, GFX::CommandType::_enumerated type, I32& crtIndent, stringImpl& out) const;
 
   protected:
+    bool mergeDrawCommands(vectorEASTLFast<GenericDrawCommand>& commands, bool byBaseInstance) const;
+
+  protected:
     vectorEASTL<CommandEntry> _commandOrder;
     std::array<size_t, to_base(GFX::CommandType::COUNT)> _commandCount = {0};
 

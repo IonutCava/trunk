@@ -150,6 +150,14 @@ END_COMMAND(BindPipelineCommand);
 
 
 BEGIN_COMMAND(SendPushConstantsCommand, CommandType::SEND_PUSH_CONSTANTS);
+    SendPushConstantsCommand(const PushConstants& constants)
+        : _constants(constants)
+    {
+    }
+
+    SendPushConstantsCommand() = default;
+    ~SendPushConstantsCommand() = default;
+
     PushConstants _constants;
 
     stringImpl toString(U16 indent) const override;

@@ -137,7 +137,7 @@ class Vegetation : public SceneNode {
     ShaderProgram_ptr _cullShaderGrass;
     ShaderProgram_ptr _cullShaderTrees;
 
-    GFX::SendPushConstantsCommand _cullPushConstantsCommand;
+    PushConstants _cullPushConstants;
 
     bool _shadowMapped;
     U32 _instanceCountGrass;
