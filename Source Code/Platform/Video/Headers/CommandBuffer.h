@@ -36,6 +36,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Commands.h"
 #include "Core/TemplateLibraries/Headers/PolyContainer.h"
 
+#include <EASTL/list.h>
+
 namespace Divide {
 
 namespace GFX {
@@ -101,8 +103,8 @@ class CommandBuffer : private GUIDWrapper, private NonCopyable {
 
     bool exists(vec_size_eastl typeIndex, size_t index) const;
 
-    inline vectorEASTL<CommandEntry>& operator()();
-    inline const vectorEASTL<CommandEntry>& operator()() const;
+    inline eastl::list<CommandEntry>& operator()();
+    inline const eastl::list<CommandEntry>& operator()() const;
 
     inline vec_size size() const { return _commandOrder.size(); }
     inline void clear(bool clearMemory = true);
@@ -126,7 +128,7 @@ class CommandBuffer : private GUIDWrapper, private NonCopyable {
     bool mergeDrawCommands(vectorEASTLFast<GenericDrawCommand>& commands, bool byBaseInstance) const;
 
   protected:
-    vectorEASTL<CommandEntry> _commandOrder;
+    eastl::list<CommandEntry> _commandOrder;
     std::array<size_t, to_base(GFX::CommandType::COUNT)> _commandCount = {0};
 
     PolyContainer<GFX::CommandBase, to_base(GFX::CommandType::COUNT)> _commands;

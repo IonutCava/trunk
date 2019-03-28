@@ -111,11 +111,11 @@ CommandBuffer::count() const {
     return _commands.size(to_base(T::EType));
 }
 
-inline vectorEASTL<CommandBuffer::CommandEntry>& CommandBuffer::operator()() {
+inline eastl::list<CommandBuffer::CommandEntry>& CommandBuffer::operator()() {
     return _commandOrder;
 }
 
-inline const vectorEASTL<CommandBuffer::CommandEntry>& CommandBuffer::operator()() const {
+inline const eastl::list<CommandBuffer::CommandEntry>& CommandBuffer::operator()() const {
     return _commandOrder;
 }
 

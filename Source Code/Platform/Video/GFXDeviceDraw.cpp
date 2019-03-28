@@ -58,7 +58,7 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer, bool submi
 
     _api->preFlushCommandBuffer(commandBuffer);
 
-    const vectorEASTL<GFX::CommandBuffer::CommandEntry>& commands = commandBuffer();
+    const eastl::list<GFX::CommandBuffer::CommandEntry>& commands = commandBuffer();
     for (const GFX::CommandBuffer::CommandEntry& cmd : commands) {
         switch (static_cast<GFX::CommandType::_enumerated>(cmd._typeIndex)) {
             case GFX::CommandType::BLIT_RT: {

@@ -36,8 +36,6 @@ DEFINE_POOL(ReadAtomicCounterCommand);
 DEFINE_POOL(ExternalCommand);
 
 void CommandBuffer::add(const CommandBuffer& other) {
-    _commandOrder.reserve(_commandOrder.size() + other._commandOrder.size());
-
     for (const CommandEntry& cmd : other._commandOrder) {
         other.get<CommandBase>(cmd).addToBuffer(*this);
     }
@@ -52,7 +50,6 @@ void CommandBuffer::batch() {
     clean();
 
     std::array<CommandBase*, to_base(GFX::CommandType::COUNT)> prevCommands;
-    vectorEASTL<CommandEntry>::iterator it;
 
     bool tryMerge = true;
 
@@ -61,7 +58,7 @@ void CommandBuffer::batch() {
         prevCommands.fill(nullptr);
         tryMerge = false;
         bool skip = false;
-        for (it = std::begin(_commandOrder); it != std::cend(_commandOrder);) {
+        for (auto it = std::begin(_commandOrder); it != std::cend(_commandOrder);) {
             skip = false;
 
             const CommandEntry& cmd = *it;
@@ -144,10 +141,9 @@ void CommandBuffer::clean() {
     const Pipeline* prevPipeline = nullptr;
     const DescriptorSet* prevDescriptorSet = nullptr;
 
-    vectorEASTL<CommandEntry>::iterator it;
-    for (it = std::begin(_commandOrder); it != std::cend(_commandOrder);) {
+    for (auto it = eastl::begin(_commandOrder); it != eastl::cend(_commandOrder);) {
         skip = false;
-        const CommandEntry& cmd = *it;
+        CommandEntry cmd = *it;
 
         switch (static_cast<GFX::CommandType::_enumerated>(cmd._typeIndex)) {
             case CommandType::DRAW_COMMANDS :
@@ -226,20 +222,18 @@ void CommandBuffer::clean() {
     }
 
     // Remove redundant pipeline changes
-    vec_size size = _commandOrder.size();
 
-    vector<vec_size> redundantEntries;
-    redundantEntries.reserve(size);
-    for (vec_size i = 1; i < size; ++i) {
-        if (static_cast<GFX::CommandType::_enumerated>(_commandOrder[i - 1]._typeIndex) == static_cast<GFX::CommandType::_enumerated>(_commandOrder[i]._typeIndex) &&
-            static_cast<GFX::CommandType::_enumerated>(_commandOrder[i]._typeIndex) == CommandType::BIND_PIPELINE) {
-            redundantEntries.push_back(i - 1);
-            --_commandCount[_commandOrder[i]._typeIndex];
+    auto entry = eastl::begin(_commandOrder); ++entry;
+    for (; entry != eastl::cend(_commandOrder);) {
+        auto prev = eastl::prev(entry);
+        GFX::CommandType type = static_cast<GFX::CommandType::_enumerated>(entry->_typeIndex);
+
+        if (prev->_typeIndex == type && type._value == CommandType::BIND_PIPELINE) {
+            entry = _commandOrder.erase(entry);
+            --_commandCount[entry->_typeIndex];
+        } else {
+            ++entry;
         }
-    }
-
-    if (!redundantEntries.empty()) {
-        EraseIndicesSorted(_commandOrder, redundantEntries);
     }
 }
 
