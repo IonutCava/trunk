@@ -120,17 +120,14 @@ namespace Divide {
         {
             Time::ScopedTimer timeCommands(*_flushCommandBufferTimer);
 
-            vectorEASTL<U8> completedPasses(renderPassCount, false);
+            vectorEASTL<bool> completedPasses(renderPassCount, false);
 
             bool slowIdle = false;
-            bool keepLooping = true;
-            while (keepLooping) {
-                keepLooping = false;
-
+            while (!eastl::all_of(eastl::cbegin(completedPasses), eastl::cend(completedPasses), [](bool v) { return v; })) {
                 // For every render pass
+                bool finished = true;
                 for (U8 i = 0; i < renderPassCount; ++i) {
                     if (completedPasses[i] || tasks[i].taskRunning()) {
-                        keepLooping = !completedPasses[i];
                         continue;
                     }
 
@@ -154,17 +151,17 @@ namespace Divide {
                         }
                     }
 
-                    if (dependenciesRunning) {
-                        keepLooping = true;
-                    } else {
-                        // No running depenceny so we can flush the command buffer and add the pass to the skip list
+                    if (!dependenciesRunning) {
+                        // No running dependency so we can flush the command buffer and add the pass to the skip list
                         _context.flushCommandBuffer(*_renderPassCommandBuffer[i]);
                         _renderPassCommandBuffer[i]->clear(false);
                         completedPasses[i] = true;
+                    } else {
+                        finished = false;
                     }
                 }
 
-                if (keepLooping) {
+                if (!finished) {
                     parent().idle(!slowIdle);
                     std::this_thread::yield();
                     slowIdle = !slowIdle;
