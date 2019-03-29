@@ -118,7 +118,7 @@ private:
 
     vectorEASTL<std::shared_ptr<RenderPass>> _renderPasses;
     vectorEASTL<GFX::CommandBuffer*> _renderPassCommandBuffer;
-    GFX::CommandBuffer* _mainCommandBuffer;
+    GFX::CommandBuffer* _postFXCommandBuffer;
 
     ShaderProgram_ptr _OITCompositionShader;
     Time::ProfileTimer* _renderPassTimer;

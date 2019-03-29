@@ -77,7 +77,6 @@
   <anisotropicFilteringLevel>8</anisotropicFilteringLevel>
   <renderDetailLevel>4</renderDetailLevel>
   <multithreadedCommandGeneration>true</multithreadedCommandGeneration>
-  <batchPassBuffers>true</batchPassBuffers>
   <enableFog>true</enableFog>
   <fogDensity>0.001</fogDensity>
   <fogColour r="0.5" g="0.5" b="0.55"/>

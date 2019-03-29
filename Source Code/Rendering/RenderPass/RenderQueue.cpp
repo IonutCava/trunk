@@ -52,7 +52,7 @@ U16 RenderQueue::getRenderQueueStackSize(RenderStage stage) const {
 }
 
 RenderingOrder RenderQueue::getSortOrder(RenderStagePass stagePass, RenderBinType rbType) {
-    RenderingOrder sortOrder = RenderingOrder::COUNT;
+    RenderingOrder sortOrder = RenderingOrder::BY_STATE;
     switch (rbType) {
         case RenderBinType::RBT_OPAQUE: {
             if (g_useDiffSortForPrePass) {

@@ -45,16 +45,17 @@ namespace Divide {
         _flushCommandBufferTimer->addChildTimer(*_buildCommandBufferTimer);
         ResourceDescriptor shaderDesc("OITComposition");
         _OITCompositionShader = CreateResource<ShaderProgram>(parent.resourceCache(), shaderDesc);
-        _renderPassCommandBuffer.push_back(GFX::allocateCommandBuffer(true));
-        _mainCommandBuffer = GFX::allocateCommandBuffer();
+        _renderPassCommandBuffer.push_back(GFX::allocateCommandBuffer());
+        _postFXCommandBuffer = GFX::allocateCommandBuffer(true);
     }
 
     RenderPassManager::~RenderPassManager()
     {
-        GFX::deallocateCommandBuffer(_mainCommandBuffer);
         for (GFX::CommandBuffer*& buf : _renderPassCommandBuffer) {
-            GFX::deallocateCommandBuffer(buf, true);
+            GFX::deallocateCommandBuffer(buf);
         }
+
+        GFX::deallocateCommandBuffer(_postFXCommandBuffer);
     }
 
     void RenderPassManager::render(SceneRenderState& sceneRenderState, Time::ProfileTimer* parentTimer) {
@@ -77,85 +78,104 @@ namespace Divide {
         U8 renderPassCount = to_U8(_renderPasses.size());
 
         vector<TaskHandle> tasks(renderPassCount);
+        TaskHandle postFXTask;
+
         {
-            Time::ScopedTimer timeAll(*_renderPassTimer);
+            Time::ScopedTimer timeCommands(*_buildCommandBufferTimer);
+            {
+                Time::ScopedTimer timeAll(*_renderPassTimer);
 
-            for (I8 i = 1; i < renderPassCount; ++i)
-            { //All of our render passes should run in parallel
+                for (I8 i = 0; i < renderPassCount; ++i)
+                { //All of our render passes should run in parallel
 
-                RenderPass* pass = _renderPasses[i].get();
+                    RenderPass* pass = _renderPasses[i].get();
 
-                GFX::CommandBuffer* buf = _renderPassCommandBuffer[i];
-                assert(buf->empty());
+                    GFX::CommandBuffer* buf = _renderPassCommandBuffer[i];
+                    assert(buf->empty());
 
-                tasks[i - 1] = CreateTask(pool,
-                                      nullptr,
-                                      [pass, buf, &sceneRenderState](const Task & parentTask) {
-                                          pass->render(sceneRenderState, *buf);
-                                          buf->batch();
-                                      }).startTask(priority);
-            }
-            { //PostFX should be pretty fast
-                GFX::CommandBuffer* buf = _renderPassCommandBuffer.back();
-                assert(buf->empty());
+                    tasks[i] = CreateTask(pool,
+                                          nullptr,
+                                          [pass, buf, &sceneRenderState](const Task & parentTask) {
+                                              pass->render(sceneRenderState, *buf);
+                                              buf->batch();
+                                          }).startTask(priority);
+                }
+                { //PostFX should be pretty fast
+                    GFX::CommandBuffer* buf = _postFXCommandBuffer;
+                    assert(buf->empty());
 
-                Time::ProfileTimer& timer = *_postFxRenderTimer;
-                PostFX& postFX = parent().platformContext().gfx().postFX();
+                    Time::ProfileTimer& timer = *_postFxRenderTimer;
+                    PostFX& postFX = parent().platformContext().gfx().postFX();
 
-                tasks.back() = CreateTask(pool,
+                    postFXTask = CreateTask(pool,
                                             nullptr,
                                             [buf, &postFX, &cam, &timer](const Task & parentTask) {
                                                 Time::ScopedTimer time(timer);
                                                 postFX.apply(cam, *buf);
                                                 buf->batch();
                                             }).startTask(priority);
-            }
-            { //The shadow passes can be run on this thread instead of idling because they don't have any dependencies
-                GFX::CommandBuffer* buf = _renderPassCommandBuffer[0];
-                assert(buf->empty());
-                _renderPasses[0]->render(sceneRenderState, *buf);
-                buf->batch();
-                _context.flushCommandBuffer(*buf);
-                buf->clear(false);
+                }
             }
         }
+        {
+            Time::ScopedTimer timeCommands(*_flushCommandBufferTimer);
 
-        bool slowIdle = true;
-        if (config.rendering.batchPassBuffers) {
-            {
-                Time::ScopedTimer timeCommands(*_buildCommandBufferTimer);
-                _mainCommandBuffer->clear(false);
+            vectorEASTL<U8> completedPasses(renderPassCount, false);
 
-                for (U8 i = 1; i < renderPassCount + 1; ++i) {
-                    while (tasks[i - 1].taskRunning()) {
-                        parent().idle(!slowIdle);
-                        std::this_thread::yield();
-                        slowIdle = false;
+            bool slowIdle = false;
+            bool keepLooping = true;
+            while (keepLooping) {
+                keepLooping = false;
+
+                // For every render pass
+                for (U8 i = 0; i < renderPassCount; ++i) {
+                    if (completedPasses[i] || tasks[i].taskRunning()) {
+                        keepLooping = !completedPasses[i];
+                        continue;
                     }
 
-                    GFX::CommandBuffer* buf = _renderPassCommandBuffer[i];
-                    _mainCommandBuffer->addDestructive(*buf);
+                    // Grab the list of dependencies
+                    const vector<U8>& dependencies = _renderPasses[i]->dependencies();
+
+                    bool dependenciesRunning = false;
+                    // For every dependency in the list
+                    for (U8 dep : dependencies) {
+                        if (dependenciesRunning) {
+                            break;
+                        }
+
+                        // Try and see if it's running
+                        for (U8 j = 0; j < renderPassCount; ++j) {
+                            // If it is running, we can't render yet
+                            if (j != i && _renderPasses[j]->sortKey() == dep && tasks[j].taskRunning()) {
+                                dependenciesRunning = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (dependenciesRunning) {
+                        keepLooping = true;
+                    } else {
+                        // No running depenceny so we can flush the command buffer and add the pass to the skip list
+                        _context.flushCommandBuffer(*_renderPassCommandBuffer[i]);
+                        _renderPassCommandBuffer[i]->clear(false);
+                        completedPasses[i] = true;
+                    }
                 }
-            }
 
-            Time::ScopedTimer timeCommands(*_flushCommandBufferTimer);
-            _context.flushCommandBuffer(*_mainCommandBuffer);
-        } else {
-            {
-                Time::ScopedTimer timeCommands(*_buildCommandBufferTimer);
-            }
-
-            Time::ScopedTimer timeCommands(*_flushCommandBufferTimer);
-            for (U8 i = 1; i < renderPassCount + 1; ++i) {
-                while (tasks[i - 1].taskRunning()) {
+                if (keepLooping) {
                     parent().idle(!slowIdle);
                     std::this_thread::yield();
-                    slowIdle = false;
+                    slowIdle = !slowIdle;
                 }
-                _context.flushCommandBuffer(*_renderPassCommandBuffer[i]);
-                _renderPassCommandBuffer[i]->clear(false);
             }
         }
+
+        // Flush the postFX stack
+        postFXTask.wait();
+        _context.flushCommandBuffer(*_postFXCommandBuffer);
+        _postFXCommandBuffer->clear(false);
 
         for (U8 i = 0; i < renderPassCount; ++i) {
             _renderPasses[i]->postRender();

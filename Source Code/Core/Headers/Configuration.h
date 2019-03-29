@@ -112,7 +112,6 @@ public:
         U8 anisotropicFilteringLevel;
         RenderDetailLevel renderDetailLevel;
         bool multithreadedCommandGeneration;
-        bool batchPassBuffers;
         bool enableFog;
         F32 fogDensity;
         vec3<F32> fogColour;

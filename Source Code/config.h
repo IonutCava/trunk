@@ -211,6 +211,8 @@ constexpr bool ENABLE_GPU_VALIDATION = true;
 constexpr bool ENABLE_GPU_VALIDATION = false;
 #endif
 
+constexpr bool ENABLE_LOCALE_FILE_WATCHER = false;
+
 };  // namespace Config
 };  // namespace Divide
 

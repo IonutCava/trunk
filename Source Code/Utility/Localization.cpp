@@ -72,7 +72,7 @@ void LanguageData::addLanguageChangeCallback(const DELEGATE_CBK<void, const char
 }
 
 ErrorCode init(const char* newLanguage) {
-    if (!Config::Build::IS_SHIPPING_BUILD) {
+    if (!Config::Build::IS_SHIPPING_BUILD && Config::ENABLE_LOCALE_FILE_WATCHER) {
         if (!detail::g_LanguageFileWatcher) {
             detail::g_LanguageFileWatcher.reset(new FW::FileWatcher());
             detail::g_fileWatcherListener.addIgnoredEndCharacter('~');
