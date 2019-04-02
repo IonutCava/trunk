@@ -61,8 +61,10 @@ DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
         Console::errorfn(Util::StringFormat(Locale::get(_ID("ERROR_GENERIC_GL_DEBUG")),
                                             userParam == nullptr
                                                        ? " [Main Thread] "
-                                                       : " [Loader Thread] ",
-                                            gl_source, gl_type, id, gl_severity, message).c_str());
+                                                       : " [Worker Thread] ",
+                                            gl_source, gl_type, id, gl_severity, 
+                                            GL_API::getStateTracker()._activeShaderProgram,
+                                            message).c_str());
     }
 
 }

@@ -156,6 +156,8 @@ class RenderingComponent : public BaseComponentType<RenderingComponent, Componen
     inline void lockLoD(bool state) { _lodLocked = state; }
     inline bool lodLocked() const { return _lodLocked; }
 
+    void useUniqueMaterialInstance();
+
     void getMaterialColourMatrix(mat4<F32>& matOut) const;
 
     void getRenderingProperties(RenderStagePass& stagePass, vec4<F32>& propertiesOut, F32& reflectionIndex, F32& refractionIndex) const;
@@ -209,7 +211,18 @@ class RenderingComponent : public BaseComponentType<RenderingComponent, Componen
 
     void updateEnvProbeList(const EnvironmentProbeList& probes);
 
-    inline Material* getMaterialInstanceCache() const { return _materialInstanceCache; }
+    inline Material* getMaterialCache() const { return _materialInstanceCache; }
+
+
+    void defaultReflectionTexture(const Texture_ptr& reflectionPtr, U32 arrayIndex);
+    void defaultRefractionTexture(const Texture_ptr& reflectionPtr, U32 arrayIndex);
+
+    U32 defaultReflectionTextureIndex() const;
+    U32 defaultRefractionTextureIndex() const;
+
+   protected:
+    void updateReflectionIndex(ReflectorType type, I32 index);
+    void updateRefractionIndex(ReflectorType type, I32 index);
 
    protected:
     GFXDevice& _context;
@@ -243,10 +256,18 @@ class RenderingComponent : public BaseComponentType<RenderingComponent, Componen
 
     ReflectorType _reflectorType;
     
+    /// used to keep track of what GFXDevice::reflectionTarget we are using for this rendering pass
+    I32 _reflectionIndex;
+    I32 _refractionIndex;
+    std::pair<Texture_ptr, U32> _defaultReflection;
+    std::pair<Texture_ptr, U32> _defaultRefraction;
+
     ShaderProgram_ptr _previewRenderTargetColour;
     ShaderProgram_ptr _previewRenderTargetDepth;
 
     vectorEASTL<ShaderBufferBinding> _externalBufferBindings;
+
+    std::array<Texture_ptr, 4> _externalTextures;
 
     static hashMap<U32, DebugView*> s_debugViews[2];
 };

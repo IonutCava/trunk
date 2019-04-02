@@ -72,8 +72,6 @@ Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descri
       _hardwareSkinning(false),
       _ignoreXMLData(false),
       _useTriangleStrip(true),
-      _reflectionIndex(-1),
-      _refractionIndex(-1),
       _shadingMode(ShadingMode::COUNT),
       _bumpMethod(BumpMethod::NONE),
       _translucencySource(TranslucencySource::COUNT)
@@ -89,8 +87,6 @@ Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descri
     _textureExtenalFlag[to_base(ShaderProgram::TextureUsage::REFRACTION_CUBE)] = true;
     _textureExtenalFlag[to_base(ShaderProgram::TextureUsage::DEPTH)] = true;
     _textureExtenalFlag[to_base(ShaderProgram::TextureUsage::DEPTH_PREV)] = true;
-    defaultReflectionTexture(nullptr, 0);
-    defaultRefractionTexture(nullptr, 0);
 
     _operation = TextureOperation::NONE;
 
@@ -167,10 +163,6 @@ Material_ptr Material::clone(const stringImpl& nameSuffix) {
     cloneMat->_bumpMethod = base._bumpMethod;
     cloneMat->_ignoreXMLData = base._ignoreXMLData;
     cloneMat->_parallaxFactor = base._parallaxFactor;
-    cloneMat->_reflectionIndex = base._reflectionIndex;
-    cloneMat->_refractionIndex = base._refractionIndex;
-    cloneMat->_defaultReflection = base._defaultReflection;
-    cloneMat->_defaultRefraction = base._defaultRefraction;
     cloneMat->_translucencySource = base._translucencySource;
     cloneMat->_baseShaderName = base._baseShaderName;
     cloneMat->_extraShaderDefines = base._extraShaderDefines;
@@ -222,16 +214,16 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
         _operation = op;
     }
     
+    assert(textureUsageSlot != ShaderProgram::TextureUsage::REFLECTION_PLANAR &&
+           textureUsageSlot != ShaderProgram::TextureUsage::REFRACTION_PLANAR &&
+           textureUsageSlot != ShaderProgram::TextureUsage::REFLECTION_CUBE &&
+           textureUsageSlot != ShaderProgram::TextureUsage::REFRACTION_CUBE);
+
     {
         UniqueLockShared w_lock(_textureLock);
         if (!_textures[slot]) {
-            if (textureUsageSlot != ShaderProgram::TextureUsage::REFLECTION_PLANAR &&
-                textureUsageSlot != ShaderProgram::TextureUsage::REFRACTION_PLANAR &&
-                textureUsageSlot != ShaderProgram::TextureUsage::REFLECTION_CUBE &&
-                textureUsageSlot != ShaderProgram::TextureUsage::REFRACTION_CUBE) {
-                // if we add a new type of texture recompute shaders
-                computeShaders = true;
-            }
+            // if we add a new type of texture recompute shaders
+            computeShaders = true;
         } else {
             // Skip adding same texture
             if (texture != nullptr && _textures[slot]->getGUID() == texture->getGUID()) {
@@ -258,10 +250,7 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
         updateTranslucency();
     }
 
-    _needsNewShader = textureUsageSlot != ShaderProgram::TextureUsage::REFLECTION_PLANAR &&
-                      textureUsageSlot != ShaderProgram::TextureUsage::REFRACTION_PLANAR &&
-                      textureUsageSlot != ShaderProgram::TextureUsage::REFLECTION_CUBE &&
-                      textureUsageSlot != ShaderProgram::TextureUsage::REFRACTION_CUBE;
+    _needsNewShader = true;
 
     return true;
 }
@@ -399,59 +388,6 @@ bool Material::canDraw(RenderStagePass renderStagePass) {
     }
 
     return true;
-}
-
-void Material::updateReflectionIndex(ReflectorType type, I32 index) {
-    _reflectionIndex = index;
-    if (_reflectionIndex > -1) {
-        RenderTarget& reflectionTarget =
-            _context.renderTargetPool().renderTarget(RenderTargetID(type == ReflectorType::PLANAR_REFLECTOR
-                                                                          ? RenderTargetUsage::REFLECTION_PLANAR
-                                                                          : RenderTargetUsage::REFLECTION_CUBE,
-                                                     index));
-        const Texture_ptr& refTex = reflectionTarget.getAttachment(RTAttachmentType::Colour, 0).texture();
-        setTexture(type == ReflectorType::PLANAR_REFLECTOR
-                         ? ShaderProgram::TextureUsage::REFLECTION_PLANAR
-                         : ShaderProgram::TextureUsage::REFLECTION_CUBE,
-                   refTex);
-    } else {
-        setTexture(type == ReflectorType::PLANAR_REFLECTOR
-                         ? ShaderProgram::TextureUsage::REFLECTION_PLANAR
-                         : ShaderProgram::TextureUsage::REFLECTION_CUBE, 
-                   _defaultReflection.first);
-    }
-}
-
-void Material::updateRefractionIndex(ReflectorType type, I32 index) {
-    _refractionIndex = index;
-    if (_refractionIndex > -1) {
-        RenderTarget& refractionTarget =
-            _context.renderTargetPool().renderTarget(RenderTargetID(type == ReflectorType::PLANAR_REFLECTOR
-                                                                          ? RenderTargetUsage::REFRACTION_PLANAR
-                                                                          : RenderTargetUsage::REFRACTION_CUBE,
-                                                     index));
-        const Texture_ptr& refTex = refractionTarget.getAttachment(RTAttachmentType::Colour, 0).texture();
-        setTexture(type == ReflectorType::PLANAR_REFLECTOR
-                         ? ShaderProgram::TextureUsage::REFRACTION_PLANAR
-                         : ShaderProgram::TextureUsage::REFRACTION_CUBE,
-                   refTex);
-    } else {
-        setTexture(type == ReflectorType::PLANAR_REFLECTOR
-                         ? ShaderProgram::TextureUsage::REFRACTION_PLANAR
-                         : ShaderProgram::TextureUsage::REFRACTION_CUBE,
-                   _defaultRefraction.first);
-    }
-}
-
-
-void Material::defaultReflectionTexture(const Texture_ptr& reflectionPtr, U32 arrayIndex) {
-    _defaultReflection.first = reflectionPtr;
-    _defaultReflection.second = arrayIndex;
-}
-
-void Material::defaultRefractionTexture(const Texture_ptr& refractionPtr, U32 arrayIndex) {
-    _defaultRefraction.first = refractionPtr;
-    _defaultRefraction.second = arrayIndex;
 }
 
 /// If the current material doesn't have a shader associated with it, then add the default ones.
@@ -668,10 +604,6 @@ bool Material::getTextureData(RenderStagePass renderStagePass, TextureDataContai
         ret = getTextureData(ShaderProgram::TextureUsage::NORMALMAP, textureData) || ret;
         ret = getTextureData(ShaderProgram::TextureUsage::UNIT1, textureData) || ret;
         ret = getTextureData(ShaderProgram::TextureUsage::SPECULAR, textureData) || ret;
-        ret = getTextureData(ShaderProgram::TextureUsage::REFLECTION_PLANAR, textureData) || ret;
-        ret = getTextureData(ShaderProgram::TextureUsage::REFRACTION_PLANAR, textureData) || ret;
-        ret = getTextureData(ShaderProgram::TextureUsage::REFLECTION_CUBE, textureData) || ret;
-        ret = getTextureData(ShaderProgram::TextureUsage::REFRACTION_CUBE, textureData) || ret;
     }
 
     for (const ExternalTexture& tex : _externalTextures) {
@@ -698,11 +630,7 @@ bool Material::getTextureDataFast(RenderStagePass renderStagePass, TextureDataCo
     constexpr U8 extraSlots[] = {
         to_base(ShaderProgram::TextureUsage::NORMALMAP),
         to_base(ShaderProgram::TextureUsage::UNIT1),
-        to_base(ShaderProgram::TextureUsage::SPECULAR),
-        to_base(ShaderProgram::TextureUsage::REFLECTION_PLANAR),
-        to_base(ShaderProgram::TextureUsage::REFRACTION_PLANAR),
-        to_base(ShaderProgram::TextureUsage::REFLECTION_CUBE),
-        to_base(ShaderProgram::TextureUsage::REFRACTION_CUBE),
+        to_base(ShaderProgram::TextureUsage::SPECULAR)
     };
 
     {

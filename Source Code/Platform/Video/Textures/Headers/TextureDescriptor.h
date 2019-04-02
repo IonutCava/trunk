@@ -66,7 +66,7 @@ struct SamplerDescriptor : public Hashable {
     FColour _borderColour = DefaultColours::BLACK;
 
     inline size_t getHash() const override {
-        _hash = 17;
+        _hash = 23;
         Util::Hash_combine(_hash, to_U32(_cmpFunc));
         Util::Hash_combine(_hash, _useRefCompare);
         Util::Hash_combine(_hash, to_U32(_wrapU));

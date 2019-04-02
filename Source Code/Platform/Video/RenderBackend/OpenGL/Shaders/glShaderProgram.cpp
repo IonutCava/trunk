@@ -362,7 +362,7 @@ bool glShaderProgram::link() {
     if (linkStatus == GL_FALSE) {
         Console::errorfn(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG")), resourceName().c_str(), getLog().c_str(), getGUID());
     } else {
-        Console::printfn(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG_OK")), resourceName().c_str(), getLog().c_str(), getGUID());
+        Console::printfn(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG_OK")), resourceName().c_str(), getLog().c_str(), getGUID(), _shaderProgramIDTemp);
         if (Config::ENABLE_GPU_VALIDATION) {
             glObjectLabel(GL_PROGRAM, _shaderProgramIDTemp, -1, resourceName().c_str());
         }
@@ -624,7 +624,7 @@ bool glShaderProgram::bind(bool& wasBound) {
         return false;
     }
     // This should almost always end up as a NOP
-    _lockManager->Wait(false);
+    //_lockManager->Wait(false);
 
     // Set this program as the currently active one
     wasBound = GL_API::getStateTracker().setActiveProgram(_shaderProgramID);

@@ -196,15 +196,6 @@ inline bool Material::isRefractive() const {
     return hasTransparency() && _isRefractive;
 }
 
-inline U32 Material::defaultReflectionTextureIndex() const {
-    return _reflectionIndex > -1 ? to_U32(_reflectionIndex)
-                                 : _defaultReflection.second;
-}
-
-inline U32 Material::defaultRefractionTextureIndex() const {
-    return _refractionIndex > -1 ? to_U32(_refractionIndex)
-                                 : _defaultRefraction.second;
-}
 
 inline bool Material::isExternalTexture(ShaderProgram::TextureUsage slot) const {
     return _textureExtenalFlag[to_U32(slot)];

@@ -231,16 +231,6 @@ class Material : public CachedResource {
 
     bool canDraw(RenderStagePass renderStagePass);
 
-    void updateReflectionIndex(ReflectorType type, I32 index);
-    void updateRefractionIndex(ReflectorType type, I32 index);
-
-    void defaultReflectionTexture(const Texture_ptr& reflectionPtr, U32 arrayIndex);
-    void defaultRefractionTexture(const Texture_ptr& reflectionPtr, U32 arrayIndex);
-
-    U32 defaultReflectionTextureIndex() const;
-    U32 defaultRefractionTextureIndex() const;
-
-
     void ignoreXMLData(const bool state);
     bool ignoreXMLData() const;
 
@@ -312,11 +302,6 @@ class Material : public CachedResource {
     TextureOperation _operation;
     BumpMethod _bumpMethod;
     ColourData _colourData;
-    /// used to keep track of what GFXDevice::reflectionTarget we are using for this rendering pass
-    I32 _reflectionIndex;
-    I32 _refractionIndex;
-    std::pair<Texture_ptr, U32> _defaultReflection;
-    std::pair<Texture_ptr, U32> _defaultRefraction;
     vector<std::pair<stringImpl, bool>> _extraShaderDefines;
 
     static SharedMutex s_shaderDBLock;

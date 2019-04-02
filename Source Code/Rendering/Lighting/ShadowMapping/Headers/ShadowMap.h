@@ -107,7 +107,7 @@ class NOINITVTABLE ShadowMap {
     static void disableShadowDebugViews(GFXDevice& context);
 
   protected:
-    typedef vector<bool> LayerUsageMask;
+    typedef vectorEASTL<bool> LayerUsageMask;
     static std::mutex s_depthMapUsageLock;
     static std::array<LayerUsageMask, to_base(ShadowType::COUNT)> s_depthMapUsage;
     static std::array<ShadowMapGenerator*, to_base(ShadowType::COUNT)> s_shadowMapGenerators;

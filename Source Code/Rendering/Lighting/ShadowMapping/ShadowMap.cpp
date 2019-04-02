@@ -236,14 +236,14 @@ void ShadowMap::clearShadowMapBuffers(GFX::CommandBuffer& bufferInOut) {
 U16 ShadowMap::lastUsedDepthMapOffset(ShadowType shadowType) {
     UniqueLock w_lock(s_depthMapUsageLock);
     const LayerUsageMask& usageMask = s_depthMapUsage[to_U32(shadowType)];
-    U16 i = 0;
-    for (; i < to_U16(usageMask.size()); ++i) {
+
+    for (U16 i = 0; i < to_U16(usageMask.size()); ++i) {
         if (usageMask[i] == false) {
-            break;
+            return i;
         }
     }
 
-    return i;
+    return to_U16(usageMask.size());
 }
 
 U16 ShadowMap::findFreeDepthMapOffset(ShadowType shadowType, U32 layerCount) {

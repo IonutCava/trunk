@@ -31,6 +31,24 @@ namespace Divide {
 
 namespace {
     constexpr I16 g_renderRangeLimit = std::numeric_limits<I16>::max();
+
+    constexpr std::pair<RenderTargetUsage, ShaderProgram::TextureUsage> g_texUsage[] = {
+        { RenderTargetUsage::REFLECTION_PLANAR, ShaderProgram::TextureUsage::REFLECTION_PLANAR},
+        { RenderTargetUsage::REFRACTION_PLANAR, ShaderProgram::TextureUsage::REFRACTION_PLANAR},
+        { RenderTargetUsage::REFLECTION_CUBE, ShaderProgram::TextureUsage::REFLECTION_CUBE },
+        { RenderTargetUsage::REFRACTION_CUBE, ShaderProgram::TextureUsage::REFRACTION_CUBE}
+    };
+
+
+    I32 getUsageIndex(RenderTargetUsage usage) {
+        for (I32 i = 0; i < 4; ++i) {
+            if (g_texUsage[i].first == usage) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
 };
 
 hashMap<U32, DebugView*> RenderingComponent::s_debugViews[2];
@@ -43,6 +61,8 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
       _lodLocked(false),
       _cullFlagValue(1.0f),
       _renderMask(0),
+      _reflectionIndex(-1),
+      _refractionIndex(-1),
       _reflectorType(ReflectorType::PLANAR_REFLECTOR),
       _materialInstance(nullptr),
       _materialInstanceCache(nullptr),
@@ -51,15 +71,15 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
     _renderRange.min = -1.0f * g_renderRangeLimit;
     _renderRange.max =  1.0f* g_renderRangeLimit;
 
-    const Material_ptr& materialTpl = parentSGN.getNode().getMaterialTpl();
-    if (materialTpl) {
-        _materialInstance = materialTpl->clone("_instance_" + parentSGN.name());
-    }
+    _materialInstance = parentSGN.getNode().getMaterialTpl();
 
     toggleRenderOption(RenderOptions::RENDER_GEOMETRY, true);
     toggleRenderOption(RenderOptions::CAST_SHADOWS, true);
     toggleRenderOption(RenderOptions::RECEIVE_SHADOWS, true);
     toggleRenderOption(RenderOptions::IS_VISIBLE, true);
+
+    defaultReflectionTexture(nullptr, 0);
+    defaultRefractionTexture(nullptr, 0);
 
     // Do not cull the sky
     if (_parentSGN.getNode<Object3D>().type() == SceneNodeType::TYPE_SKY) {
@@ -168,6 +188,15 @@ RenderingComponent::~RenderingComponent()
     }
 }
 
+void RenderingComponent::useUniqueMaterialInstance() {
+    if (_materialInstance == nullptr) {
+        return;
+    }
+
+    _materialInstance = _materialInstance->clone("_instance_" + _parentSGN.name());
+    _materialInstanceCache = _materialInstance.get();
+}
+
 void RenderingComponent::setMinRenderRange(F32 minRange) {
     _renderRange.min = std::max(minRange, -1.0f * g_renderRangeLimit);
 }
@@ -182,10 +211,10 @@ void RenderingComponent::rebuildDrawCommands(RenderStagePass stagePass) {
 
     // The following commands are needed for material rendering
     // In the absence of a material, use the SceneNode buildDrawCommands to add all of the needed commands
-    if (getMaterialInstanceCache() != nullptr) {
+    if (getMaterialCache() != nullptr) {
         PipelineDescriptor pipelineDescriptor;
-        pipelineDescriptor._stateHash = getMaterialInstanceCache()->getRenderStateBlock(stagePass);
-        pipelineDescriptor._shaderProgramHandle = getMaterialInstanceCache()->getProgramID(stagePass);
+        pipelineDescriptor._stateHash = getMaterialCache()->getRenderStateBlock(stagePass);
+        pipelineDescriptor._shaderProgramHandle = getMaterialCache()->getProgramID(stagePass);
 
         GFX::BindPipelineCommand pipelineCommand;
         pipelineCommand._pipeline = _context.newPipeline(pipelineDescriptor);
@@ -210,8 +239,8 @@ void RenderingComponent::rebuildDrawCommands(RenderStagePass stagePass) {
 }
 
 void RenderingComponent::Update(const U64 deltaTimeUS) {
-    if (getMaterialInstanceCache() != nullptr) {
-        getMaterialInstanceCache()->update(deltaTimeUS);
+    if (getMaterialCache() != nullptr) {
+        getMaterialCache()->update(deltaTimeUS);
     }
 
     const Object3D& node = _parentSGN.getNode<Object3D>();
@@ -229,7 +258,7 @@ void RenderingComponent::Update(const U64 deltaTimeUS) {
 
 bool RenderingComponent::canDraw(RenderStagePass renderStagePass, U8 LoD) {
     if (_parentSGN.getDrawState(renderStagePass, LoD)) {
-        if (getMaterialInstanceCache() != nullptr && !getMaterialInstanceCache()->canDraw(renderStagePass)) {
+        if (getMaterialCache() != nullptr && !getMaterialCache()->canDraw(renderStagePass)) {
             return false;
         }
         return renderOptionEnabled(RenderOptions::IS_VISIBLE);
@@ -239,8 +268,8 @@ bool RenderingComponent::canDraw(RenderStagePass renderStagePass, U8 LoD) {
 }
 
 void RenderingComponent::rebuildMaterial() {
-    if (getMaterialInstanceCache() != nullptr) {
-        getMaterialInstanceCache()->rebuild();
+    if (getMaterialCache() != nullptr) {
+        getMaterialCache()->rebuild();
     }
 
     _parentSGN.forEachChild([](const SceneGraphNode& child) {
@@ -252,10 +281,18 @@ void RenderingComponent::rebuildMaterial() {
 }
 
 void RenderingComponent::onRender(RenderStagePass renderStagePass, bool refreshData) {
-    if (getMaterialInstanceCache() != nullptr) {
-        RenderPackage& pkg = getDrawPackage(renderStagePass);
-        TextureDataContainer& textures = pkg.descriptorSet(0)._textureData;
-        getMaterialInstanceCache()->getTextureData(renderStagePass, textures);
+    RenderPackage& pkg = getDrawPackage(renderStagePass);
+    TextureDataContainer& textures = pkg.descriptorSet(0)._textureData;
+
+    if (getMaterialCache() != nullptr) {
+        getMaterialCache()->getTextureData(renderStagePass, textures);
+    }
+
+    for (U8 i = 0; i < 4; ++i) {
+        const Texture_ptr& crtTexture = _externalTextures[i];
+        if (crtTexture != nullptr) {
+            textures.setTexture(crtTexture->getData(), to_base(g_texUsage[i].second));
+        }
     }
 }
 
@@ -291,8 +328,8 @@ bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams)
 void RenderingComponent::getMaterialColourMatrix(mat4<F32>& matOut) const {
     matOut.zero();
 
-    if (getMaterialInstanceCache() != nullptr) {
-        getMaterialInstanceCache()->getMaterialMatrix(matOut);
+    if (getMaterialCache() != nullptr) {
+        getMaterialCache()->getMaterialMatrix(matOut);
     }
 }
 
@@ -308,13 +345,8 @@ void RenderingComponent::getRenderingProperties(RenderStagePass& stagePass, vec4
                       to_F32(getDrawPackage(stagePass).lodLevel()),
                       _cullFlagValue);
 
-    Material* mat = getMaterialInstanceCache();
-    if (mat != nullptr) {
-        reflectionIndex = to_F32(mat->defaultReflectionTextureIndex());
-        refractionIndex = to_F32(mat->defaultRefractionTextureIndex());
-    } else {
-        reflectionIndex = refractionIndex = 0.0f;
-    }
+    reflectionIndex = to_F32(defaultReflectionTextureIndex());
+    refractionIndex = to_F32(defaultRefractionTextureIndex());
 }
 
 /// Called after the current node was rendered
@@ -517,14 +549,28 @@ size_t RenderingComponent::getSortKeyHash(RenderStagePass renderStagePass) const
     return getDrawPackage(renderStagePass).getSortKeyHash();
 }
 
-bool RenderingComponent::clearReflection() {
-    // If we lake a material, we don't use reflections
-    if (getMaterialInstanceCache() != nullptr) {
-        getMaterialInstanceCache()->updateReflectionIndex(_reflectorType, -1);
-        return true;
+void RenderingComponent::updateReflectionIndex(ReflectorType type, I32 index) {
+    _reflectionIndex = index;
+    if (_reflectionIndex > -1) {
+        RenderTarget& reflectionTarget =
+            _context.renderTargetPool().renderTarget(RenderTargetID(type == ReflectorType::PLANAR_REFLECTOR
+                ? RenderTargetUsage::REFLECTION_PLANAR
+                : RenderTargetUsage::REFLECTION_CUBE,
+                index));
+        const Texture_ptr& refTex = reflectionTarget.getAttachment(RTAttachmentType::Colour, 0).texture();
+        _externalTextures[getUsageIndex(type == ReflectorType::PLANAR_REFLECTOR
+                                             ? RenderTargetUsage::REFLECTION_PLANAR
+                                             : RenderTargetUsage::REFLECTION_CUBE)] = refTex;
+    } else {
+        _externalTextures[getUsageIndex(type == ReflectorType::PLANAR_REFLECTOR
+                                              ? RenderTargetUsage::REFLECTION_PLANAR
+                                              : RenderTargetUsage::REFLECTION_CUBE)] = _defaultReflection.first;
     }
+}
 
-    return false;
+bool RenderingComponent::clearReflection() {
+    updateReflectionIndex(_reflectorType, -1);
+    return true;
 }
 
 bool RenderingComponent::updateReflection(U32 reflectionIndex,
@@ -532,12 +578,7 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
                                           const SceneRenderState& renderState,
                                           GFX::CommandBuffer& bufferInOut)
 {
-    // If we lake a material, we don't use reflections
-    if (getMaterialInstanceCache() == nullptr) {
-        return false;
-    }
-
-    getMaterialInstanceCache()->updateReflectionIndex(_reflectorType, reflectionIndex);
+    updateReflectionIndex(_reflectorType, reflectionIndex);
 
     RenderTargetID reflectRTID(_reflectorType == ReflectorType::PLANAR_REFLECTOR ? RenderTargetUsage::REFLECTION_PLANAR
                                                                                  : RenderTargetUsage::REFRACTION_CUBE, 
@@ -592,14 +633,27 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
     return true;
 }
 
+void RenderingComponent::updateRefractionIndex(ReflectorType type, I32 index) {
+    _refractionIndex = index;
+    if (_refractionIndex > -1) {
+        RenderTarget& refractionTarget =
+            _context.renderTargetPool().renderTarget(RenderTargetID(type == ReflectorType::PLANAR_REFLECTOR
+                ? RenderTargetUsage::REFRACTION_PLANAR
+                : RenderTargetUsage::REFRACTION_CUBE,
+                index));
+        const Texture_ptr& refTex = refractionTarget.getAttachment(RTAttachmentType::Colour, 0).texture();
+        _externalTextures[getUsageIndex(type == ReflectorType::PLANAR_REFLECTOR
+                                              ? RenderTargetUsage::REFRACTION_PLANAR
+                                              : RenderTargetUsage::REFRACTION_CUBE)] = refTex;
+    } else {
+        _externalTextures[getUsageIndex(type == ReflectorType::PLANAR_REFLECTOR
+                                              ? RenderTargetUsage::REFRACTION_PLANAR
+                                              : RenderTargetUsage::REFRACTION_CUBE)] = _defaultRefraction.first;
+    }
+}
+
 bool RenderingComponent::clearRefraction() {
-    if (getMaterialInstanceCache() == nullptr) {
-        return false;
-    }
-    if (!getMaterialInstanceCache()->hasTransparency()) {
-        return false;
-    }
-    getMaterialInstanceCache()->updateRefractionIndex(_reflectorType, -1);
+    updateRefractionIndex(_reflectorType, -1);
     return true;
 }
 
@@ -612,11 +666,7 @@ bool RenderingComponent::updateRefraction(U32 refractionIndex,
         return false;
     }
 
-    if (getMaterialInstanceCache() == nullptr) {
-        return false;
-    }
-
-    getMaterialInstanceCache()->updateRefractionIndex(_reflectorType, refractionIndex);
+    updateRefractionIndex(_reflectorType, refractionIndex);
 
     RenderTargetID refractRTID(_reflectorType == ReflectorType::PLANAR_REFLECTOR ? RenderTargetUsage::REFRACTION_PLANAR
                                                                                  : RenderTargetUsage::REFRACTION_CUBE,
@@ -658,6 +708,24 @@ bool RenderingComponent::updateRefraction(U32 refractionIndex,
     return false;
 }
 
+U32 RenderingComponent::defaultReflectionTextureIndex() const {
+    return _reflectionIndex > -1 ? to_U32(_reflectionIndex) : _defaultReflection.second;
+}
+
+U32 RenderingComponent::defaultRefractionTextureIndex() const {
+    return _refractionIndex > -1 ? to_U32(_refractionIndex) : _defaultRefraction.second;
+}
+
+void RenderingComponent::defaultReflectionTexture(const Texture_ptr& reflectionPtr, U32 arrayIndex) {
+    _defaultReflection.first = reflectionPtr;
+    _defaultReflection.second = arrayIndex;
+}
+
+void RenderingComponent::defaultRefractionTexture(const Texture_ptr& refractionPtr, U32 arrayIndex) {
+    _defaultRefraction.first = refractionPtr;
+    _defaultRefraction.second = arrayIndex;
+}
+
 void RenderingComponent::updateEnvProbeList(const EnvironmentProbeList& probes) {
     _envProbes.resize(0);
     if (probes.empty()) {
@@ -675,13 +743,9 @@ void RenderingComponent::updateEnvProbeList(const EnvironmentProbeList& probes) 
 
         std::sort(std::begin(_envProbes), std::end(_envProbes), sortFunc);
     }
-    if (getMaterialInstanceCache() == nullptr) {
-        return;
-    }
 
     RenderTarget* rt = EnvironmentProbe::reflectionTarget()._rt;
-    getMaterialInstanceCache()->defaultReflectionTexture(rt->getAttachment(RTAttachmentType::Colour, 0).texture(),
-                                                         _envProbes.front()->getRTIndex());
+    defaultReflectionTexture(rt->getAttachment(RTAttachmentType::Colour, 0).texture(), _envProbes.front()->getRTIndex());
 }
 
 /// Draw the axis arrow gizmo
