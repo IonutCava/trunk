@@ -144,7 +144,7 @@ namespace Divide {
                         // Try and see if it's running
                         for (U8 j = 0; j < renderPassCount; ++j) {
                             // If it is running, we can't render yet
-                            if (j != i && _renderPasses[j]->sortKey() == dep && tasks[j].taskRunning()) {
+                            if (j != i && _renderPasses[j]->sortKey() == dep && !completedPasses[j]) {
                                 dependenciesRunning = true;
                                 break;
                             }
