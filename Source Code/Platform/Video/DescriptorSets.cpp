@@ -53,6 +53,8 @@ namespace Divide {
     }
 
     bool DescriptorSet::addShaderBuffer(const ShaderBufferBinding& entry) {
+        assert(entry._buffer != nullptr && entry._binding != ShaderBufferLocation::COUNT);
+
         ShaderBufferList::iterator it = std::find_if(std::begin(_shaderBuffers),
                                                      std::end(_shaderBuffers),
                                                      [&entry](const ShaderBufferBinding& binding)
@@ -67,14 +69,12 @@ namespace Divide {
     }
 
     bool ShaderBufferBinding::set(const ShaderBufferBinding& other) {
-        return set(other._binding, other._buffer, other._elementRange, other._atomicCounter);
+        return set(other._binding, other._buffer, other._elementRange);
     }
 
     bool ShaderBufferBinding::set(ShaderBufferLocation binding,
                                   ShaderBuffer* buffer,
-                                  const vec2<U32>& elementRange,
-                                  const std::pair<bool, vec2<U32>>& atomicCounter) {
-        ACKNOWLEDGE_UNUSED(atomicCounter);
+                                  const vec2<U32>& elementRange) {
         bool ret = false;
         if (_binding != binding) {
             _binding = binding;

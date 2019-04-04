@@ -1,6 +1,8 @@
 -- Compute
 #include "HiZCullingAlgorithm.cmn";
 
+layout(binding = BUFFER_ATOMIC_COUNTER, offset = 0) uniform atomic_uint culledCount;
+
 //ref: http://malideveloper.arm.com/resources/sample-code/occlusion-culling-hierarchical-z/
 struct NodeData {
     mat4 _worldMatrix;
@@ -18,7 +20,6 @@ layout(binding = BUFFER_NODE_INFO, std430) coherent buffer dvd_MatrixBlock
 layout(location = 0) uniform uint dvd_numEntities;
 layout(location = 1) uniform float dvd_nearPlaneDistance;
 
-layout(binding = 0, offset = 0) uniform atomic_uint culledCount;
 layout(local_size_x = 64) in;
 
 

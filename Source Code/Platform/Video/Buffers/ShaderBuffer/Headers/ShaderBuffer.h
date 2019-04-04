@@ -39,16 +39,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-struct ShaderBufferDescriptor {
-    U32 _flags = 0;
-    U32 _ringBufferLength = 1;
-    U32 _elementCount = 0;
-    bool _separateReadWrite = false; //< Use a separate read/write index based on queue length
-    size_t _elementSize = 0; //< Primitive size in bytes
-    BufferUpdateFrequency _updateFrequency = BufferUpdateFrequency::ONCE;
-    bufferPtr _initialData = NULL;
-    stringImpl _name = "";
-};
+struct ShaderBufferDescriptor;
 
 class ShaderProgram;
 class NOINITVTABLE ShaderBuffer : public GUIDWrapper,
@@ -56,19 +47,28 @@ class NOINITVTABLE ShaderBuffer : public GUIDWrapper,
                                   public RingBufferSeparateWrite
 {
    public:
+       enum class Usage : U8 {
+           CONSTANT_BUFFER = 0,
+           UNBOUND_BUFFER,
+           ATOMIC_COUNTER,
+           COUNT
+       };
+
        enum class Flags : U8 {
            NONE = 0,
-           UNBOUND_STORAGE = toBit(1),
-           ALLOW_THREADED_WRITES = toBit(2),
-           AUTO_RANGE_FLUSH = toBit(3),
-           NO_SYNC = toBit(4),
-           COUNT = 2
+           ALLOW_THREADED_WRITES = toBit(1),
+           AUTO_RANGE_FLUSH = toBit(2),
+           NO_SYNC = toBit(3),
+           COUNT = 6
        };
 
    public:
     explicit ShaderBuffer(GFXDevice& context, const ShaderBufferDescriptor& params);
 
     virtual ~ShaderBuffer();
+
+    virtual void clearData(ptrdiff_t offsetElementCount,
+                           ptrdiff_t rangeElementCount) = 0;
 
     virtual void writeData(ptrdiff_t offsetElementCount,
                            ptrdiff_t rangeElementCount,
@@ -106,12 +106,7 @@ class NOINITVTABLE ShaderBuffer : public GUIDWrapper,
     inline U32 getPrimitiveCount() const { return _elementCount; }
     inline size_t getPrimitiveSize() const { return _elementSize; }
 
-    virtual void addAtomicCounter(U32 sizeFactor, U16 ringSizeFactor = 1) = 0;
-    virtual U32  getAtomicCounter(U8 offset, U8 counterIndex = 0) = 0;
-    virtual void bindAtomicCounter(U8 offset, U8 counterIndex = 0, U8 bindIndex = 0) = 0;
-    virtual void resetAtomicCounter(U8 offset, U8 counterIndex = 0) = 0;
-
-    static size_t alignmentRequirement(bool unbound);
+    static size_t alignmentRequirement(Usage usage);
 
    protected:
     size_t _bufferSize;
@@ -119,14 +114,27 @@ class NOINITVTABLE ShaderBuffer : public GUIDWrapper,
     size_t _elementSize;
     U32 _elementCount;
 
-    static size_t _boundAlignmentRequirement;
-    static size_t _unboundAlignmentRequirement;
+    static size_t s_boundAlignmentRequirement;
+    static size_t s_unboundAlignmentRequirement;
 
     const U32 _flags;
+    const Usage _usage;
     const BufferUpdateFrequency _frequency;
 
     stringImpl _name;
 };
 
+
+struct ShaderBufferDescriptor {
+    ShaderBuffer::Usage _usage = ShaderBuffer::Usage::COUNT;
+    U32 _flags = 0;
+    U32 _ringBufferLength = 1;
+    U32 _elementCount = 0;
+    bool _separateReadWrite = false; //< Use a separate read/write index based on queue length
+    size_t _elementSize = 0; //< Primitive size in bytes
+    BufferUpdateFrequency _updateFrequency = BufferUpdateFrequency::ONCE;
+    bufferPtr _initialData = NULL;
+    stringImpl _name = "";
+};
 };  // namespace Divide
 #endif //_SHADER_BUFFER_H_

@@ -112,7 +112,8 @@ BETTER_ENUM(CommandType, U8,
     DRAW_IMGUI,
     DISPATCH_COMPUTE,
     MEMORY_BARRIER,
-    READ_ATOMIC_COUNTER,
+    READ_BUFFER_DATA,
+	CLEAR_BUFFER_DATA,
     BEGIN_DEBUG_SCOPE,
     END_DEBUG_SCOPE,
     SWITCH_WINDOW,
@@ -287,12 +288,19 @@ BEGIN_COMMAND(MemoryBarrierCommand, CommandType::MEMORY_BARRIER);
 
 END_COMMAND(MemoryBarrierCommand);
 
-BEGIN_COMMAND(ReadAtomicCounterCommand, CommandType::READ_ATOMIC_COUNTER);
+BEGIN_COMMAND(ReadBufferDataCommand, CommandType::READ_BUFFER_DATA);
     ShaderBuffer* _buffer = nullptr;
-    U32* _target = nullptr;
-    U8   _offset = 0;
-    bool _resetCounter = false;
-END_COMMAND(ReadAtomicCounterCommand);
+    bufferPtr     _target = nullptr;
+    size_t        _offsetElementCount = 0;
+    size_t        _elementCount = 0;
+END_COMMAND(ReadBufferDataCommand);
+
+
+BEGIN_COMMAND(ClearBufferDataCommand, CommandType::CLEAR_BUFFER_DATA);
+    ShaderBuffer* _buffer = nullptr;
+    size_t        _offsetElementCount = 0;
+    size_t        _elementCount = 0;
+END_COMMAND(ClearBufferDataCommand);
 
 BEGIN_COMMAND(ExternalCommand, CommandType::EXTERNAL);
     std::function<void()> _cbk;

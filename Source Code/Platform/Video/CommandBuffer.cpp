@@ -32,7 +32,8 @@ DEFINE_POOL(DrawTextCommand);
 DEFINE_POOL(DrawIMGUICommand);
 DEFINE_POOL(DispatchComputeCommand);
 DEFINE_POOL(MemoryBarrierCommand);
-DEFINE_POOL(ReadAtomicCounterCommand);
+DEFINE_POOL(ReadBufferDataCommand);
+DEFINE_POOL(ClearBufferDataCommand);
 DEFINE_POOL(ExternalCommand);
 
 void CommandBuffer::add(const CommandBuffer& other) {
@@ -100,7 +101,8 @@ void CommandBuffer::batch() {
                     break;
                 }
             } break;
-            case GFX::CommandType::READ_ATOMIC_COUNTER:
+            case GFX::CommandType::READ_BUFFER_DATA:
+            case GFX::CommandType::CLEAR_BUFFER_DATA:
             case GFX::CommandType::DISPATCH_COMPUTE:
             case GFX::CommandType::MEMORY_BARRIER:
             case GFX::CommandType::DRAW_TEXT:

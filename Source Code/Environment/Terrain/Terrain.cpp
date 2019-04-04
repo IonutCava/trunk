@@ -82,6 +82,7 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
     bufferDescriptor._elementSize = sizeof(TessellatedNodeData);
     bufferDescriptor._ringBufferLength = g_bufferFrameDelay;
     bufferDescriptor._separateReadWrite = false;
+    bufferDescriptor._usage = ShaderBuffer::Usage::CONSTANT_BUFFER;
     bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
                               
     //Should be once per frame

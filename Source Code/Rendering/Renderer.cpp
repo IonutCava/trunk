@@ -28,10 +28,10 @@ Renderer::Renderer(PlatformContext& context, ResourceCache& cache)
     vector<I32> initData(Config::Lighting::ForwardPlus::MAX_LIGHTS_PER_TILE * g_numberOfTiles, -1);
 
     ShaderBufferDescriptor bufferDescriptor;
+    bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
     bufferDescriptor._elementCount = Config::Lighting::ForwardPlus::MAX_LIGHTS_PER_TILE * g_numberOfTiles;
     bufferDescriptor._elementSize = sizeof(I32);
     bufferDescriptor._ringBufferLength = 1;
-    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE);
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::ONCE;
     bufferDescriptor._name = "PER_TILE_LIGHT_INDEX";
     bufferDescriptor._initialData = initData.data();

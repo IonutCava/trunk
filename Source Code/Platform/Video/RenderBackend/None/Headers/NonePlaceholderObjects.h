@@ -194,16 +194,12 @@ namespace Divide {
         void writeBytes(ptrdiff_t offsetInBytes, ptrdiff_t rangeInBytes, const bufferPtr data) override {}
         void writeData(const bufferPtr data) override {}
 
+        void clearData(ptrdiff_t offsetElementCount, ptrdiff_t rangeElementCount) override {}
         void readData(ptrdiff_t offsetElementCount, ptrdiff_t rangeElementCount, bufferPtr result) const override {}
 
         bool bindRange(U8 bindIndex, U32 offsetElementCount, U32 rangeElementCount) override { return true; }
 
-        bool bind(U8 bindIndex) override { return true;  }
-
-        void addAtomicCounter(U32 sizeFactor, U16 ringSizeFactor = 1) override {}
-        U32  getAtomicCounter(U8 offset, U8 counterIndex = 0) override { return 0; }
-        void bindAtomicCounter(U8 offset, U8 counterIndex = 0, U8 bindIndex = 0) override {}
-        void resetAtomicCounter(U8 offset, U8 counterIndex = 0) override {}
+        bool bind(U8 bindIndex) override { return true; }
     };
 };  // namespace Divide
 #endif //_NONE_PLACEHOLDER_OBJECTS_H_

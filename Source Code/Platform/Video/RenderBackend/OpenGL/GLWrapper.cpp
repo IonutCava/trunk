@@ -416,6 +416,12 @@ bool GL_API::initGLSW() {
 
     appendToShaderHeader(
         ShaderType::COUNT,
+        "#define BUFFER_ATOMIC_COUNTER " +
+        to_stringImpl(to_base(ShaderBufferLocation::ATOMIC_COUNTER)),
+        lineOffsets);
+    
+    appendToShaderHeader(
+        ShaderType::COUNT,
         "#define BUFFER_GPU_COMMANDS " +
         to_stringImpl(to_base(ShaderBufferLocation::GPU_COMMANDS)),
         lineOffsets);
@@ -1100,14 +1106,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
                 if (shaderBufCmd._binding == ShaderBufferLocation::CMD_BUFFER) {
                     getStateTracker().setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, buffer->bufferID());
                 } else {
-                    buffer->bindRange(to_U8(shaderBufCmd._binding),
-                                      shaderBufCmd._elementRange.x,
-                                      shaderBufCmd._elementRange.y);
-
-                    if (shaderBufCmd._atomicCounter.first) {
-                        shaderBufCmd._buffer->bindAtomicCounter(shaderBufCmd._atomicCounter.second.x,
-                                                                shaderBufCmd._atomicCounter.second.y);
-                    }
+                    buffer->bindRange(to_U8(shaderBufCmd._binding), shaderBufCmd._elementRange.x, shaderBufCmd._elementRange.y);
                 }
             }
         }break;

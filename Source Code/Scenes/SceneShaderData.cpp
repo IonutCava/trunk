@@ -13,14 +13,13 @@ SceneShaderData::SceneShaderData(GFXDevice& context)
     shadowingSettings(0.25f, 0.00002f, 1000.0f, 1500.0f);
 
     ShaderBufferDescriptor bufferDescriptor;
+    bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
     bufferDescriptor._elementCount = 1;
     bufferDescriptor._elementSize = sizeof(SceneShaderBufferData);
     bufferDescriptor._ringBufferLength = 1;
     bufferDescriptor._initialData = &_bufferData;
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
-    bufferDescriptor._flags = (to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE) |
-                               to_U32(ShaderBuffer::Flags::AUTO_RANGE_FLUSH) |
-                               to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES));
+    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::AUTO_RANGE_FLUSH) | to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
     bufferDescriptor._name = "SCENE_SHADER_DATA";
     _sceneShaderData = _context.newSB(bufferDescriptor);
     _sceneShaderData->bind(ShaderBufferLocation::SCENE_DATA);

@@ -75,6 +75,7 @@ enum class AttribLocation : U8 {
 
 enum class ShaderBufferLocation : U8 {
     GPU_BLOCK = 0,
+    ATOMIC_COUNTER = 0,
     GPU_COMMANDS,
     LIGHT_NORMAL,
     LIGHT_SHADOW,

@@ -310,9 +310,10 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 m
         s_maxChunks = maxChunkCount;
 
         ShaderBufferDescriptor bufferDescriptor = {};
+        bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
         bufferDescriptor._elementSize = sizeof(VegetationData);
         bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
-        bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE) | to_U32(ShaderBuffer::Flags::NO_SYNC);
+        bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::NO_SYNC);
 
         bufferDescriptor._elementCount = to_U32(s_maxTreeInstancesPerChunk * s_maxChunks);
         bufferDescriptor._name = "Tree_data";

@@ -69,13 +69,13 @@ void LightPool::init() {
     }
 
     ShaderBufferDescriptor bufferDescriptor = {};
+    bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
     bufferDescriptor._elementCount = to_base(RenderStage::COUNT) - 1; //< no shadows
     bufferDescriptor._elementSize = sizeof(vec4<U32>) + (Config::Lighting::MAX_POSSIBLE_LIGHTS * sizeof(LightProperties));
     bufferDescriptor._ringBufferLength = 6;
     bufferDescriptor._separateReadWrite = false;
-    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES) |
-                              to_U32(ShaderBuffer::Flags::AUTO_RANGE_FLUSH) |
-                              to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE);
+    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES) | to_U32(ShaderBuffer::Flags::AUTO_RANGE_FLUSH);
+
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
     bufferDescriptor._name = "LIGHT_BUFFER";
     // NORMAL holds general info about the currently active lights: position, colour, etc.
@@ -83,10 +83,11 @@ void LightPool::init() {
 
     // SHADOWS holds info about the currently active shadow casting lights:
     // ViewProjection Matrices, View Space Position, etc
+    bufferDescriptor._usage = ShaderBuffer::Usage::CONSTANT_BUFFER;
     bufferDescriptor._elementCount = 1;
     bufferDescriptor._elementSize = sizeof(_shadowBufferData);
     bufferDescriptor._name = "LIGHT_SHADOW_BUFFER";
-    ClearBit(bufferDescriptor._flags, to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE));
+    
     _shadowBuffer = _context.gfx().newSB(bufferDescriptor);
 
     ResourceDescriptor lightImpostorShader("lightImpostorShader");

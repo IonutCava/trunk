@@ -683,7 +683,8 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
 
     if (prePassExecuted && params._targetHIZ._usage != RenderTargetUsage::COUNT) {
         const Texture_ptr& HiZTex = _context.constructHIZ(params._target, params._targetHIZ, bufferInOut);
-        _context.occlusionCull(getBufferData(RenderStagePass(params._stage, RenderPassType::PRE_PASS, params._passVariant, params._passIndex)),
+        const RenderPass::BufferData& bufferData = getBufferData(RenderStagePass(params._stage, RenderPassType::PRE_PASS, params._passVariant, params._passIndex));
+        _context.occlusionCull(bufferData,
                                HiZTex,
                                *params._camera,
                                bufferInOut);
@@ -694,10 +695,19 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
 
         if (params._stage == RenderStage::DISPLAY) {
             memCmd._barrierMask |= to_base(MemoryBarrierType::COUNTER);
-            _context.updateCullCount(bufferInOut);
+            GFX::EnqueueCommand(bufferInOut, memCmd);
+            _context.updateCullCount(bufferData, bufferInOut);
+        } else {
+            GFX::EnqueueCommand(bufferInOut, memCmd);
         }
 
-        GFX::EnqueueCommand(bufferInOut, memCmd);
+        bufferData._cullCounter->incQueue();
+
+        GFX::ClearBufferDataCommand clearAtomicCounter;
+        clearAtomicCounter._buffer = bufferData._cullCounter;
+        clearAtomicCounter._offsetElementCount = 0;
+        clearAtomicCounter._elementCount = 1;
+        GFX::EnqueueCommand(bufferInOut, clearAtomicCounter);
     }
 
     mainPass(params, target, bufferInOut, prePassExecuted);

@@ -88,6 +88,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     EnvironmentProbe::onStartup(*this);
     // Create a shader buffer to store the GFX rendering info (matrices, options, etc)
     ShaderBufferDescriptor bufferDescriptor;
+    bufferDescriptor._usage = ShaderBuffer::Usage::CONSTANT_BUFFER;
     bufferDescriptor._elementCount = 1;
     bufferDescriptor._elementSize = sizeof(GFXShaderData::GPUData);
     bufferDescriptor._ringBufferLength = 1;

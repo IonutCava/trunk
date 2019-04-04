@@ -381,7 +381,7 @@ protected:
     // Returns the HiZ texture that can be sent directly to occlusionCull
     const Texture_ptr& constructHIZ(RenderTargetID depthBuffer, RenderTargetID HiZTarget, GFX::CommandBuffer& cmdBufferInOut) const;
 
-    void updateCullCount(GFX::CommandBuffer& cmdBufferInOut);
+    void updateCullCount(const RenderPass::BufferData& bufferData, GFX::CommandBuffer& cmdBufferInOut);
 
     RenderAPIWrapper& getAPIImpl() { return *_api; }
     const RenderAPIWrapper& getAPIImpl() const { return *_api; }

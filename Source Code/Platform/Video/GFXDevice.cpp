@@ -663,22 +663,21 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTar
     return depth;
 }
 
-void GFXDevice::updateCullCount(GFX::CommandBuffer& cmdBufferInOut) {
-    const RenderPass::BufferData& bufferData = parent().renderPassManager().getBufferData(RenderStagePass(RenderStage::DISPLAY, RenderPassType::PRE_PASS));
-
-    GFX::ReadAtomicCounterCommand readAtomicCounter;
-    readAtomicCounter._buffer = bufferData._cmdBuffer;
+void GFXDevice::updateCullCount(const RenderPass::BufferData& bufferData, GFX::CommandBuffer& cmdBufferInOut) {
     if (_queueCullRead) {
+        GFX::ReadBufferDataCommand readAtomicCounter;
+        readAtomicCounter._buffer = bufferData._cullCounter;
         readAtomicCounter._target = &LAST_CULL_COUNT;
+        readAtomicCounter._offsetElementCount = 0;
+        readAtomicCounter._elementCount = 1;
+        GFX::EnqueueCommand(cmdBufferInOut, readAtomicCounter);
+
         _queueCullRead = false;
     }
-    readAtomicCounter._resetCounter = true;
-    GFX::EnqueueCommand(cmdBufferInOut, readAtomicCounter);
 }
 
 Renderer& GFXDevice::getRenderer() const {
-    DIVIDE_ASSERT(_renderer != nullptr,
-        "GFXDevice error: Renderer requested but not created!");
+    DIVIDE_ASSERT(_renderer != nullptr, "GFXDevice error: Renderer requested but not created!");
     return *_renderer;
 }
 

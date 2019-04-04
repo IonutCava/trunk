@@ -142,6 +142,7 @@ RenderPass::BufferData RenderPass::getBufferData(RenderPassType type, I32 passIn
     BufferData ret = {};
     ret._renderDataElementOffset = getBufferOffset(_stageFlag, type, passIndex);
     ret._renderData = _renderData;
+	ret._cullCounter = _cullCounter;
     ret._cmdBuffer = _cmdBuffers[idx].first;
     ret._lastCommandCount = &_cmdBuffers[idx].second;
 
@@ -150,30 +151,38 @@ RenderPass::BufferData RenderPass::getBufferData(RenderPassType type, I32 passIn
 
 void RenderPass::initBufferData() {
     ShaderBufferDescriptor bufferDescriptor;
+    bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
     bufferDescriptor._elementCount = _dataBufferSize;
     bufferDescriptor._elementSize = sizeof(GFXDevice::NodeData);
 
     bufferDescriptor._ringBufferLength = g_cmdBufferFrameCount;
     bufferDescriptor._separateReadWrite = false;
     
-    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE) | to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
+    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
     bufferDescriptor._name = Util::StringFormat("RENDER_DATA_%s", TypeUtil::renderStageToString(_stageFlag)).c_str();
     _renderData = _context.newSB(bufferDescriptor);
 
+    bufferDescriptor._usage = ShaderBuffer::Usage::ATOMIC_COUNTER;
+    bufferDescriptor._name = Util::StringFormat("CULL_COUNTER_%s", TypeUtil::renderStageToString(_stageFlag)).c_str();
+    bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
+    bufferDescriptor._elementCount = 1;
+    bufferDescriptor._elementSize = sizeof(U32);
+    bufferDescriptor._ringBufferLength = 5;
+    _cullCounter = _context.newSB(bufferDescriptor);
+
+    bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
     bufferDescriptor._elementCount = Config::MAX_VISIBLE_NODES;
     bufferDescriptor._elementSize = sizeof(IndirectDrawCommand);
     bufferDescriptor._ringBufferLength = 1;
-    bufferDescriptor._separateReadWrite = false;
 
     U32 cmdCount = getCmdBufferCount(_stageFlag) * g_cmdBufferFrameCount;
     _cmdBuffers.reserve(cmdCount);
 
     for (U32 i = 0; i < cmdCount; ++i) {
         bufferDescriptor._name = Util::StringFormat("CMD_DATA_%s_%d", TypeUtil::renderStageToString(_stageFlag), i).c_str();
-        _cmdBuffers.push_back(std::make_pair(_context.newSB(bufferDescriptor), 0));
-        _cmdBuffers.back().first->addAtomicCounter(1, 5);
+        _cmdBuffers.emplace_back(std::make_pair(_context.newSB(bufferDescriptor), 0));
     }
 }
 

@@ -77,11 +77,10 @@ namespace Divide {
     struct ShaderBufferBinding {
         vec2<U32>     _elementRange = {};
         ShaderBuffer* _buffer = nullptr;
-        std::pair<bool, vec2<U8>> _atomicCounter = { false, {0u, 0u} };
         ShaderBufferLocation _binding = ShaderBufferLocation::COUNT;
 
         bool set(const ShaderBufferBinding& other);
-        bool set(ShaderBufferLocation binding, ShaderBuffer* buffer, const vec2<U32>& elementRange, const std::pair<bool, vec2<U32>>& atomicCounter = std::make_pair(false, vec2<U32>(0u)));
+        bool set(ShaderBufferLocation binding, ShaderBuffer* buffer, const vec2<U32>& elementRange);
 
         bool operator==(const ShaderBufferBinding& other) const;
         bool operator!=(const ShaderBufferBinding& other) const;

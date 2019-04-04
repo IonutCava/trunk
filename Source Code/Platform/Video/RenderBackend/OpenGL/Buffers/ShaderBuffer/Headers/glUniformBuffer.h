@@ -51,6 +51,9 @@ class glUniformBuffer final : public ShaderBuffer {
                     const ShaderBufferDescriptor& descriptor);
     ~glUniformBuffer();
 
+    void clearData(ptrdiff_t offsetElementCount,
+                   ptrdiff_t rangeElementCount) override;
+
     void readData(ptrdiff_t offsetElementCount,
                   ptrdiff_t rangeElementCount,
                   bufferPtr result) const override;
@@ -76,14 +79,6 @@ class glUniformBuffer final : public ShaderBuffer {
 
     GLuint bufferID() const;
 
-    void addAtomicCounter(U32 sizeFactor, U16 ringSizeFactor = 1) override;
-
-    U32  getAtomicCounter(U8 offset, U8 counterIndex = 0) override;
-
-    void bindAtomicCounter(U8 offset, U8 counterIndex = 0, U8 bindIndex = 0) override;
-
-    void resetAtomicCounter(U8 offset, U8 counterIndex = 0) override;
-
     static void onGLInit();
 
     glBufferImpl* bufferImpl() const;
@@ -95,10 +90,8 @@ class glUniformBuffer final : public ShaderBuffer {
     std::atomic_int _firstWriteIndex = -1;
     std::atomic_bool _writeComplete ;
 
-    const bool _unbound;
     glBufferImpl* _buffer;
     size_t _allignedBufferSize;
-    vector<AtomicCounter*> _atomicCounters;
 };
 
 };  // namespace Divide

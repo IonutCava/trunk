@@ -90,6 +90,7 @@ bool AnimEvaluator::initBuffers(GFXDevice& context) {
     }
 
     ShaderBufferDescriptor bufferDescriptor;
+    bufferDescriptor._usage = ShaderBuffer::Usage::CONSTANT_BUFFER;
     bufferDescriptor._elementCount = frameCount();
     bufferDescriptor._elementSize = sizeof(mat4<F32>) * Config::MAX_BONE_COUNT_PER_NODE;
     bufferDescriptor._ringBufferLength = 1;

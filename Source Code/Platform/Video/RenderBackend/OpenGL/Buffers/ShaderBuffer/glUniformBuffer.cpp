@@ -18,75 +18,33 @@
 
 namespace Divide {
 
-namespace {
-    typedef std::pair<GLuint, GLuint> AtomicBufferBindConfig;
-
-    hashMap<GLuint, AtomicBufferBindConfig> g_currentBindConfig;
-
-    bool SetIfDifferentBindRange(GLuint bindIndex, GLuint buffer, GLuint bindOffset) {
-        AtomicBufferBindConfig targetCfg = std::make_pair(buffer, bindOffset);
-        // If this is a new index, this will just create a default config
-        AtomicBufferBindConfig& crtConfig = g_currentBindConfig[bindIndex];
-        if (targetCfg == crtConfig) {
-            return false;
-        }
-
-        crtConfig = targetCfg;
-        glBindBufferRange(GL_ATOMIC_COUNTER_BUFFER, bindIndex, buffer, bindOffset, sizeof(GLuint));
-        return true;
-    }
-};
-
-class AtomicCounter : public RingBuffer
-{
-public:
-    AtomicCounter(GFXDevice& context, U32 sizeFactor, U32 ringSizeFactor, const char* name);
-    ~AtomicCounter();
-    glGenericBuffer* _buffer;
-};
-
-AtomicCounter::AtomicCounter(GFXDevice& context, U32 sizeFactor, U32 ringSizeFactor, const char* name)
-    : RingBuffer(ringSizeFactor)
-{
-    BufferParams params;
-    params._usage = GL_ATOMIC_COUNTER_BUFFER;
-    params._elementCount = std::max(sizeFactor, 1u);
-    params._elementSizeInBytes = sizeof(GLuint);
-    params._frequency = BufferUpdateFrequency::ONCE;
-    params._name = name;
-    params._ringSizeFactor = ringSizeFactor;
-    params._data = NULL;
-    params._zeroMem = true;
-    params._storageType = BufferStorageType::IMMUTABLE;
-
-    _buffer = MemoryManager_NEW glGenericBuffer(context, params);
-}
-
-AtomicCounter::~AtomicCounter()
-{
-    MemoryManager::DELETE(_buffer);
-}
-
 glUniformBuffer::glUniformBuffer(GFXDevice& context,
                                  const ShaderBufferDescriptor& descriptor)
-    : ShaderBuffer(context, descriptor),
-      _unbound(BitCompare(_flags, ShaderBuffer::Flags::UNBOUND_STORAGE))
+    : ShaderBuffer(context, descriptor)
 {
-    _maxSize = _unbound ? GL_API::s_SSBMaxSize : GL_API::s_UBMaxSize;
+    _maxSize = (_usage != Usage::CONSTANT_BUFFER) ? GL_API::s_SSBMaxSize : GL_API::s_UBMaxSize;
 
-    _allignedBufferSize = realign_offset(_bufferSize, alignmentRequirement(_unbound));
+    _allignedBufferSize = realign_offset(_bufferSize, alignmentRequirement(_usage));
 
     BufferImplParams implParams = {};
     implParams._dataSize = _allignedBufferSize * queueLength();
     implParams._elementSize = _elementSize;
     implParams._frequency = _frequency;
     implParams._initialData = descriptor._initialData;
-    implParams._target = _unbound ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER;
     implParams._name = _name.empty() ? nullptr : _name.c_str();
     implParams._zeroMem = descriptor._initialData == nullptr;
     implParams._explicitFlush = !BitCompare(_flags, ShaderBuffer::Flags::AUTO_RANGE_FLUSH);
-    implParams._storageType = BitCompare(_flags, ShaderBuffer::Flags::ALLOW_THREADED_WRITES) ? BufferStorageType::IMMUTABLE
-                                                                                             : BufferStorageType::AUTO;
+
+    implParams._target = _usage == Usage::UNBOUND_BUFFER 
+                                 ? GL_SHADER_STORAGE_BUFFER
+                                 : _usage == Usage::CONSTANT_BUFFER
+                                           ? GL_UNIFORM_BUFFER
+                                           : GL_ATOMIC_COUNTER_BUFFER;
+
+    implParams._storageType = BitCompare(_flags, ShaderBuffer::Flags::ALLOW_THREADED_WRITES) || _usage == Usage::ATOMIC_COUNTER
+                                ? BufferStorageType::IMMUTABLE
+                                : BufferStorageType::AUTO;
+
     implParams._unsynced =  implParams._storageType != BufferStorageType::IMMUTABLE || 
                             BitCompare(_flags, ShaderBuffer::Flags::NO_SYNC) ||
                             _frequency == BufferUpdateFrequency::ONCE;
@@ -96,7 +54,6 @@ glUniformBuffer::glUniformBuffer(GFXDevice& context,
 
 glUniformBuffer::~glUniformBuffer() 
 {
-    MemoryManager::DELETE_VECTOR(_atomicCounters);
     MemoryManager::DELETE(_buffer);
 }
 
@@ -104,23 +61,52 @@ GLuint glUniformBuffer::bufferID() const {
     return _buffer->bufferID();
 }
 
+void glUniformBuffer::clearData(ptrdiff_t offsetElementCount,
+                                ptrdiff_t rangeElementCount) {
+    if (rangeElementCount > 0) {
+        ptrdiff_t rangeInBytes = rangeElementCount * _elementSize;
+        ptrdiff_t offsetInBytes = offsetElementCount * _elementSize;
+
+        assert(offsetInBytes + rangeInBytes <= (ptrdiff_t)_allignedBufferSize &&
+            "glUniformBuffer::UpdateData error: was called with an "
+            "invalid range (buffer overflow)!");
+
+        if (queueLength() > 1) {
+            offsetInBytes += queueWriteIndex() * _allignedBufferSize;
+        }
+
+        size_t req = alignmentRequirement(_usage);
+        if (offsetInBytes % req != 0) {
+            offsetInBytes = (offsetInBytes + req - 1) / req * req;
+        }
+
+        _buffer->clearData(offsetInBytes, rangeInBytes);
+        _buffer->zeroMem(offsetInBytes, rangeInBytes);
+    }
+}
+
 void glUniformBuffer::readData(ptrdiff_t offsetElementCount,
                                ptrdiff_t rangeElementCount,
                                bufferPtr result) const {
 
     if (rangeElementCount > 0) {
-        ptrdiff_t range = rangeElementCount * _elementSize;
-        ptrdiff_t offset = offsetElementCount * _elementSize;
+        ptrdiff_t rangeInBytes = rangeElementCount * _elementSize;
+        ptrdiff_t offsetInBytes = offsetElementCount * _elementSize;
 
-        assert(offset + range <= (ptrdiff_t)_allignedBufferSize &&
+        assert(offsetInBytes + rangeInBytes <= (ptrdiff_t)_allignedBufferSize &&
             "glUniformBuffer::UpdateData error: was called with an "
             "invalid range (buffer overflow)!");
 
         if (queueLength() > 1) {
-            offset += queueReadIndex() * _allignedBufferSize;
+            offsetInBytes += queueReadIndex() * _allignedBufferSize;
         }
 
-        _buffer->readData(offset, range, result);
+        size_t req = alignmentRequirement(_usage);
+        if (offsetInBytes % req != 0) {
+            offsetInBytes = (offsetInBytes + req - 1) / req * req;
+        }
+
+        _buffer->readData(offsetInBytes, rangeInBytes, result);
     }
 }
 
@@ -152,7 +138,7 @@ void glUniformBuffer::writeBytes(ptrdiff_t offsetInBytes,
         offsetInBytes += queueWriteIndex() * _allignedBufferSize;
     }
 
-    size_t req = alignmentRequirement(_unbound);
+    size_t req = alignmentRequirement(_usage);
     if (offsetInBytes % req != 0) {
         offsetInBytes = (offsetInBytes + req - 1) / req * req;
     }
@@ -181,7 +167,7 @@ bool glUniformBuffer::bindRange(U8 bindIndex,
     if (queueLength() > 1) {
         dataOut._offset += static_cast<size_t>(queueReadIndex() * _allignedBufferSize);
     }
-    size_t req = alignmentRequirement(_unbound);
+    size_t req = alignmentRequirement(_usage);
     if (dataOut._offset % req != 0) {
         dataOut._offset = (dataOut._offset + req - 1) / req * req;
     }
@@ -198,52 +184,11 @@ bool glUniformBuffer::bind(U8 bindIndex) {
     return bindRange(bindIndex, 0, _elementCount);
 }
 
-void glUniformBuffer::addAtomicCounter(U32 sizeFactor, U16 ringSizeFactor) {
-    stringImpl name = Util::StringFormat("DVD_ATOMIC_BUFFER_%d_%d", getGUID(), _atomicCounters.size());
-    _atomicCounters.emplace_back(MemoryManager_NEW AtomicCounter(_context, std::max(sizeFactor, 1u), std::max(ringSizeFactor, to_U16(1u)), name.c_str()));
-}
-
-U32 glUniformBuffer::getAtomicCounter(U8 offset, U8 counterIndex) {
-    if (counterIndex >= to_U32(_atomicCounters.size())) {
-        return 0;
-    }
-
-    AtomicCounter* counter = _atomicCounters[counterIndex];
-    GLuint result = 0;
-    counter->_buffer->readData(1, offset, 0/*counter->queueIndex()*/, &result);
-    return result;
-}
-
-void glUniformBuffer::bindAtomicCounter(U8 offset, U8 counterIndex, U8 bindIndex) {
-    if (counterIndex >= to_U32(_atomicCounters.size())) {
-        return;
-    }
-
-    AtomicCounter* counter = _atomicCounters[counterIndex];
-
-    size_t bindOffset = offset * sizeof(GLuint);
-    bindOffset += counter->queueIndex() * (sizeof(GLuint) * counter->_buffer->elementCount());
-
-    SetIfDifferentBindRange(bindIndex,
-                            counter->_buffer->bufferHandle(),
-                            (GLuint)bindOffset);
-    counter->incQueue();
-}
-
-void glUniformBuffer::resetAtomicCounter(U8 offset, U8 counterIndex) {
-    if (counterIndex > to_U32(_atomicCounters.size())) {
-        return;
-    }
-    
-    AtomicCounter* counter = _atomicCounters[counterIndex];
-    counter->_buffer->zeroMem(offset, counter->queueIndex());
-}
-
 void glUniformBuffer::printInfo(const ShaderProgram* shaderProgram, U8 bindIndex) {
     GLuint prog = shaderProgram->getID();
     GLuint block_index = bindIndex;
 
-    if (prog <= 0 || BitCompare(_flags, ShaderBuffer::Flags::UNBOUND_STORAGE)) {
+    if (prog <= 0 || _usage != ShaderBuffer::Usage::CONSTANT_BUFFER) {
         return;
     }
 
@@ -332,8 +277,8 @@ void glUniformBuffer::printInfo(const ShaderProgram* shaderProgram, U8 bindIndex
 }
 
 void glUniformBuffer::onGLInit() {
-    ShaderBuffer::_boundAlignmentRequirement = GL_API::s_UBOffsetAlignment;
-    ShaderBuffer::_unboundAlignmentRequirement = GL_API::s_SSBOffsetAlignment;
+    ShaderBuffer::s_boundAlignmentRequirement = GL_API::s_UBOffsetAlignment;
+    ShaderBuffer::s_unboundAlignmentRequirement = GL_API::s_SSBOffsetAlignment;
 }
 
 glBufferImpl* glUniformBuffer::bufferImpl() const {

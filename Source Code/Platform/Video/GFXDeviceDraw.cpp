@@ -78,19 +78,18 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer, bool submi
                 RenderTarget& source = renderTargetPool().renderTarget(crtCmd._source);
                 source.setDefaultState(crtCmd._descriptor);
             }break;
-            case GFX::CommandType::READ_ATOMIC_COUNTER: {
-                const GFX::ReadAtomicCounterCommand& crtCmd = commandBuffer.get<GFX::ReadAtomicCounterCommand>(cmd);
-                if (crtCmd._buffer != nullptr) {
-                    if (crtCmd._target != nullptr) {
-                        *crtCmd._target = crtCmd._buffer->getAtomicCounter(crtCmd._offset);
-                    }
-
-                    if (crtCmd._resetCounter) {
-                        crtCmd._buffer->resetAtomicCounter(crtCmd._offset);
-                    }
+            case GFX::CommandType::READ_BUFFER_DATA: {
+                const GFX::ReadBufferDataCommand& crtCmd = commandBuffer.get<GFX::ReadBufferDataCommand>(cmd);
+                if (crtCmd._buffer != nullptr && crtCmd._target != nullptr) {
+                    crtCmd._buffer->readData(crtCmd._offsetElementCount, crtCmd._elementCount, crtCmd._target);
                 }
             } break;
-
+            case GFX::CommandType::CLEAR_BUFFER_DATA: {
+                const GFX::ClearBufferDataCommand& crtCmd = commandBuffer.get<GFX::ClearBufferDataCommand>(cmd);
+                if (crtCmd._buffer != nullptr) {
+                    crtCmd._buffer->clearData(crtCmd._offsetElementCount, crtCmd._elementCount);
+                }
+            } break;
             case GFX::CommandType::SET_VIEWPORT:
                 setViewport(commandBuffer.get<GFX::SetViewportCommand>(cmd)._viewport);
                 break;
@@ -141,10 +140,15 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
     shaderBuffer._binding = ShaderBufferLocation::GPU_COMMANDS;
     shaderBuffer._buffer = bufferData._cmdBuffer;
     shaderBuffer._elementRange.set(0, to_U16(bufferData._cmdBuffer->getPrimitiveCount()));
-    shaderBuffer._atomicCounter.first = true;
-    
+
+    ShaderBufferBinding atomicCount = {};
+    atomicCount._binding = ShaderBufferLocation::ATOMIC_COUNTER;
+    atomicCount._buffer = bufferData._cullCounter;
+    atomicCount._elementRange.set(0, 1);
+
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd;
     bindDescriptorSetsCmd._set.addShaderBuffer(shaderBuffer);
+    bindDescriptorSetsCmd._set.addShaderBuffer(atomicCount); // Atomic counter should be cleared by this point
     bindDescriptorSetsCmd._set._textureData.setTexture(depthBuffer->getData(), to_U8(ShaderProgram::TextureUsage::DEPTH));
     GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
     

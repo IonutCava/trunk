@@ -54,6 +54,7 @@ class RenderPass : private NonCopyable {
        struct BufferData {
            U32 _renderDataElementOffset = 0;
            ShaderBuffer* _renderData = nullptr;
+           ShaderBuffer* _cullCounter = nullptr;
 
            U32* _lastCommandCount = nullptr;
            ShaderBuffer* _cmdBuffer = nullptr;
@@ -89,6 +90,7 @@ class RenderPass : private NonCopyable {
 
     U32 _dataBufferSize = 0;
     ShaderBuffer* _renderData = nullptr;
+	ShaderBuffer* _cullCounter = nullptr;
     mutable vectorEASTL<std::pair<ShaderBuffer*, U32>> _cmdBuffers;
 };
 
