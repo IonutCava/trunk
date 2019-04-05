@@ -665,12 +665,14 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTar
 
 void GFXDevice::updateCullCount(const RenderPass::BufferData& bufferData, GFX::CommandBuffer& cmdBufferInOut) {
     if (_queueCullRead) {
-        GFX::ReadBufferDataCommand readAtomicCounter;
-        readAtomicCounter._buffer = bufferData._cullCounter;
-        readAtomicCounter._target = &LAST_CULL_COUNT;
-        readAtomicCounter._offsetElementCount = 0;
-        readAtomicCounter._elementCount = 1;
-        GFX::EnqueueCommand(cmdBufferInOut, readAtomicCounter);
+        if (bufferData._cullCounter != nullptr) {
+            GFX::ReadBufferDataCommand readAtomicCounter;
+            readAtomicCounter._buffer = bufferData._cullCounter;
+            readAtomicCounter._target = &LAST_CULL_COUNT;
+            readAtomicCounter._offsetElementCount = 0;
+            readAtomicCounter._elementCount = 1;
+            GFX::EnqueueCommand(cmdBufferInOut, readAtomicCounter);
+        }
 
         _queueCullRead = false;
     }

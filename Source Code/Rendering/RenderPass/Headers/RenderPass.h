@@ -61,7 +61,7 @@ class RenderPass : private NonCopyable {
        };
   public:
     // passStageFlags: the first stage specified will determine the data format used by the additional stages in the list
-    explicit RenderPass(RenderPassManager& parent, GFXDevice& context, stringImpl name, U8 sortKey, RenderStage passStageFlags, const vector<U8>& dependencies);
+    explicit RenderPass(RenderPassManager& parent, GFXDevice& context, stringImpl name, U8 sortKey, RenderStage passStageFlags, const vector<U8>& dependencies, bool performanceCounters = false);
     ~RenderPass();
 
     void render(const SceneRenderState& renderState, GFX::CommandBuffer& bufferInOut);
@@ -91,6 +91,7 @@ class RenderPass : private NonCopyable {
     U32 _dataBufferSize = 0;
     ShaderBuffer* _renderData = nullptr;
 	ShaderBuffer* _cullCounter = nullptr;
+	const bool _performanceCounters;
     mutable vectorEASTL<std::pair<ShaderBuffer*, U32>> _cmdBuffers;
 };
 

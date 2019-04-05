@@ -141,14 +141,17 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
     shaderBuffer._buffer = bufferData._cmdBuffer;
     shaderBuffer._elementRange.set(0, to_U16(bufferData._cmdBuffer->getPrimitiveCount()));
 
-    ShaderBufferBinding atomicCount = {};
-    atomicCount._binding = ShaderBufferLocation::ATOMIC_COUNTER;
-    atomicCount._buffer = bufferData._cullCounter;
-    atomicCount._elementRange.set(0, 1);
-
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd;
     bindDescriptorSetsCmd._set.addShaderBuffer(shaderBuffer);
-    bindDescriptorSetsCmd._set.addShaderBuffer(atomicCount); // Atomic counter should be cleared by this point
+
+    if (bufferData._cullCounter != nullptr) {
+        ShaderBufferBinding atomicCount = {};
+        atomicCount._binding = ShaderBufferLocation::ATOMIC_COUNTER;
+        atomicCount._buffer = bufferData._cullCounter;
+        atomicCount._elementRange.set(0, 1);
+        bindDescriptorSetsCmd._set.addShaderBuffer(atomicCount); // Atomic counter should be cleared by this point
+    }
+
     bindDescriptorSetsCmd._set._textureData.setTexture(depthBuffer->getData(), to_U8(ShaderProgram::TextureUsage::DEPTH));
     GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
     

@@ -80,7 +80,6 @@ void glUniformBuffer::clearData(ptrdiff_t offsetElementCount,
             offsetInBytes = (offsetInBytes + req - 1) / req * req;
         }
 
-        _buffer->clearData(offsetInBytes, rangeInBytes);
         _buffer->zeroMem(offsetInBytes, rangeInBytes);
     }
 }

@@ -119,13 +119,14 @@ namespace {
     }
 };
 
-RenderPass::RenderPass(RenderPassManager& parent, GFXDevice& context, stringImpl name, U8 sortKey, RenderStage passStageFlag, const vector<U8>& dependencies)
+RenderPass::RenderPass(RenderPassManager& parent, GFXDevice& context, stringImpl name, U8 sortKey, RenderStage passStageFlag, const vector<U8>& dependencies, bool performanceCounters)
     : _parent(parent),
       _context(context),
       _sortKey(sortKey),
       _dependencies(dependencies),
       _name(name),
-      _stageFlag(passStageFlag)
+      _stageFlag(passStageFlag),
+      _performanceCounters(performanceCounters)
 {
     _lastTotalBinSize = 0;
     _dataBufferSize = getDataBufferSize(_stageFlag);
@@ -163,19 +164,23 @@ void RenderPass::initBufferData() {
     bufferDescriptor._name = Util::StringFormat("RENDER_DATA_%s", TypeUtil::renderStageToString(_stageFlag)).c_str();
     _renderData = _context.newSB(bufferDescriptor);
 
-    bufferDescriptor._usage = ShaderBuffer::Usage::ATOMIC_COUNTER;
-    bufferDescriptor._name = Util::StringFormat("CULL_COUNTER_%s", TypeUtil::renderStageToString(_stageFlag)).c_str();
-    bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
-    bufferDescriptor._elementCount = 1;
-    bufferDescriptor._elementSize = sizeof(U32);
-    bufferDescriptor._ringBufferLength = 5;
-    _cullCounter = _context.newSB(bufferDescriptor);
+	if (_performanceCounters) {
+        bufferDescriptor._usage = ShaderBuffer::Usage::ATOMIC_COUNTER;
+        bufferDescriptor._name = Util::StringFormat("CULL_COUNTER_%s", TypeUtil::renderStageToString(_stageFlag)).c_str();
+        bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
+        bufferDescriptor._elementCount = 1;
+        bufferDescriptor._elementSize = sizeof(U32);
+        bufferDescriptor._ringBufferLength = 5;
+        bufferDescriptor._separateReadWrite = true;
+        _cullCounter = _context.newSB(bufferDescriptor);
+    }
 
     bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
     bufferDescriptor._elementCount = Config::MAX_VISIBLE_NODES;
     bufferDescriptor._elementSize = sizeof(IndirectDrawCommand);
     bufferDescriptor._ringBufferLength = 1;
+    bufferDescriptor._separateReadWrite = false;
 
     U32 cmdCount = getCmdBufferCount(_stageFlag) * g_cmdBufferFrameCount;
     _cmdBuffers.reserve(cmdCount);

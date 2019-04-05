@@ -184,10 +184,11 @@ namespace Divide {
 RenderPass& RenderPassManager::addRenderPass(const stringImpl& renderPassName,
                                              U8 orderKey,
                                              RenderStage renderStage,
-                                             vector<U8> dependencies) {
+                                             vector<U8> dependencies,
+                                             bool usePerformanceCounters) {
     assert(!renderPassName.empty());
 
-    _renderPasses.push_back(std::make_shared<RenderPass>(*this, _context, renderPassName, orderKey, renderStage, dependencies));
+    _renderPasses.push_back(std::make_shared<RenderPass>(*this, _context, renderPassName, orderKey, renderStage, dependencies, usePerformanceCounters));
     _renderPasses.back()->initBufferData();
 
     //Secondary command buffers. Used in a threaded fashion
@@ -701,13 +702,15 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
             GFX::EnqueueCommand(bufferInOut, memCmd);
         }
 
-        bufferData._cullCounter->incQueue();
+        if (bufferData._cullCounter != nullptr) {
+            bufferData._cullCounter->incQueue();
 
-        GFX::ClearBufferDataCommand clearAtomicCounter;
-        clearAtomicCounter._buffer = bufferData._cullCounter;
-        clearAtomicCounter._offsetElementCount = 0;
-        clearAtomicCounter._elementCount = 1;
-        GFX::EnqueueCommand(bufferInOut, clearAtomicCounter);
+            GFX::ClearBufferDataCommand clearAtomicCounter;
+            clearAtomicCounter._buffer = bufferData._cullCounter;
+            clearAtomicCounter._offsetElementCount = 0;
+            clearAtomicCounter._elementCount = 1;
+            GFX::EnqueueCommand(bufferInOut, clearAtomicCounter);
+        }
     }
 
     mainPass(params, target, bufferInOut, prePassExecuted);

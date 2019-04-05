@@ -83,7 +83,8 @@ public:
     RenderPass& addRenderPass(const stringImpl& renderPassName,
                               U8 orderKey,
                               RenderStage renderStage,
-                              vector<U8> dependencies = {});
+                              vector<U8> dependencies = {},
+                              bool usePerformanceCounters = false);
     /// Find a renderpass by name and remove it from the manager
     void removeRenderPass(const stringImpl& name);
     U16  getLastTotalBinSize(RenderStage renderStage) const;

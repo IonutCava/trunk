@@ -200,7 +200,10 @@ void glBufferImpl::readData(size_t offsetInBytes, size_t rangeInBytes, const buf
 }
 
 void glBufferImpl::clearData(size_t offsetInBytes, size_t rangeInBytes) {
-    if (_mappedBuffer && waitRange(offsetInBytes, rangeInBytes, true)) {
+    if (_mappedBuffer) {
+        if (!waitRange(offsetInBytes, rangeInBytes, true)) {
+            //ToDo: wait failed. Now what?
+        }
         std::memset(((Byte*)_mappedBuffer) + offsetInBytes, 0, rangeInBytes);
         if (_useExplicitFlush) {
             glFlushMappedNamedBufferRange(_handle, offsetInBytes, rangeInBytes);
@@ -219,9 +222,10 @@ void glBufferImpl::zeroMem(size_t offsetInBytes, size_t rangeInBytes) {
         clearData(offsetInBytes, rangeInBytes);
     } else {
         vector<Byte> newData(rangeInBytes, 0);
-        if (offsetInBytes == 0 && rangeInBytes == _alignedSize) {
-            glNamedBufferData(_handle, _alignedSize, newData.data(), _usage);
-        } else {
+        //if (offsetInBytes == 0 && rangeInBytes == _alignedSize) {
+        //    glNamedBufferData(_handle, _alignedSize, newData.data(), _usage);
+        //} else
+		{
             glNamedBufferSubData(_handle, offsetInBytes, rangeInBytes, newData.data());
         }
     }

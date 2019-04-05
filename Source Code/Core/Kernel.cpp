@@ -693,7 +693,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     _renderPassManager->addRenderPass("shadowPass",     0, RenderStage::SHADOW);
     _renderPassManager->addRenderPass("reflectionPass", 1, RenderStage::REFLECTION, { 0 });
     _renderPassManager->addRenderPass("refractionPass", 2, RenderStage::REFRACTION, { 0 });
-    _renderPassManager->addRenderPass("displayStage",   3, RenderStage::DISPLAY, { 1, 2});
+    _renderPassManager->addRenderPass("displayStage",   3, RenderStage::DISPLAY, { 1, 2}, true);
 
     Console::printfn(Locale::get(_ID("SCENE_ADD_DEFAULT_CAMERA")));
 
