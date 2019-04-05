@@ -59,7 +59,6 @@ std::atomic_uint Vegetation::s_bufferUsage = 0;
 size_t Vegetation::s_maxChunks = 0;
 size_t Vegetation::s_maxTreeInstancesPerChunk = 0;
 size_t Vegetation::s_maxGrassInstancesPerChunk = 0;
-std::array<bool, to_base(RenderStage::COUNT)> Vegetation::s_stageRefreshed;
 
 Vegetation::Vegetation(GFXDevice& context, 
                        TerrainChunk& parentChunk,
@@ -236,8 +235,6 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 m
         s_buffer->computeTangents();
         s_buffer->create(true);
         s_buffer->keepData(false);
-
-        s_stageRefreshed.fill(false);
     }
 
     //ref: http://mollyrocket.com/casey/stream_0016.html
@@ -409,8 +406,6 @@ void Vegetation::sceneUpdate(const U64 deltaTimeUS,
         s_buffersBound = true;
     }
 
-    s_stageRefreshed.fill(false);
-
     const SceneRenderState& renderState = _context.parent().sceneManager().getActiveScene().renderState();
     _cullPushConstants.set("dvd_grassVisibilityDistance", GFX::PushConstantType::FLOAT, renderState.grassVisibility());
     _cullPushConstants.set("dvd_treeVisibilityDistance", GFX::PushConstantType::FLOAT, renderState.treeVisibility());
@@ -482,16 +477,12 @@ void Vegetation::postLoad(SceneGraphNode& sgn) {
 
 void Vegetation::onRefreshNodeData(SceneGraphNode& sgn, RenderStagePass renderStagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut){
     if (_render && (_instanceCountGrass > 0 || _instanceCountTrees > 0 ) && renderStagePass._passIndex == 0) {
-        Texture_ptr depthTex = _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::HI_Z)).getAttachment(RTAttachmentType::Depth, 0).texture();
-
-        if (!s_stageRefreshed[to_base(renderStagePass._stage)]) {
-            GFX::BindDescriptorSetsCommand descriptorSetCmd;
-            descriptorSetCmd._set._textureData.setTexture(depthTex->getData(), to_U8(ShaderProgram::TextureUsage::DEPTH));
-            GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
-            s_stageRefreshed[to_base(renderStagePass._stage)] = true;
-        }
 
         // This will always lag one frame
+        Texture_ptr depthTex = _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::HI_Z)).getAttachment(RTAttachmentType::Depth, 0).texture();
+        GFX::BindDescriptorSetsCommand descriptorSetCmd;
+        descriptorSetCmd._set._textureData.setTexture(depthTex->getData(), to_U8(ShaderProgram::TextureUsage::DEPTH));
+        GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
         //Cull grass
         GFX::BindPipelineCommand pipelineCmd;
@@ -515,6 +506,8 @@ void Vegetation::onRefreshNodeData(SceneGraphNode& sgn, RenderStagePass renderSt
             // Cull trees
             pipelineCmd._pipeline = _cullPipelineTrees;
             GFX::EnqueueCommand(bufferInOut, pipelineCmd);
+
+            GFX::EnqueueCommand(bufferInOut, cullConstants);
 
             computeCmd._computeGroupSize.set(std::max(_instanceCountTrees, _instanceCountTrees / WORK_GROUP_SIZE), 1, 1);
             GFX::EnqueueCommand(bufferInOut, computeCmd);

@@ -21,7 +21,7 @@
 namespace Divide {
 
 namespace {
-    const U16 g_numMipsToKeepFromAlphaTextures = 2;
+    const U16 g_numMipsToKeepFromAlphaTextures = 1;
     const char* g_PassThroughMaterialShaderName = "passThrough";
 
     stringImpl getDefinesHash(const vector<std::pair<stringImpl, bool>>& defines) {

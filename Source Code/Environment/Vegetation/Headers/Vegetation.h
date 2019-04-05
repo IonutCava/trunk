@@ -160,7 +160,6 @@ class Vegetation : public SceneNode {
     static size_t s_maxTreeInstancesPerChunk;
     static size_t s_maxGrassInstancesPerChunk;
     static bool s_buffersBound;
-    static std::array<bool, to_base(RenderStage::COUNT)> s_stageRefreshed;
 
     static Material_ptr s_treeMaterial;
 };

@@ -421,7 +421,7 @@ void submitDirectMultiCommand(const IndirectDrawCommand& cmd,
                               bool drawIndexed,
                               GLsizei* countData,
                               bufferPtr indexData) {
-    if (drawCount > 1 && cmd.primCount != 1) {
+    if (drawCount > 1 && cmd.primCount == 1) {
         if (drawIndexed) {
             glMultiDrawElements(mode, countData, internalFormat, (void* const*)indexData, drawCount);
         } else {
