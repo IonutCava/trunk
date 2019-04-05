@@ -344,18 +344,14 @@ bool CommandBuffer::mergeDrawCommands(vectorEASTLFast<GenericDrawCommand>& comma
                 });
 
     auto batch = [byBaseInstance](GenericDrawCommand& previousIDC, GenericDrawCommand& currentIDC)  -> bool {
-        // Batchable commands must share the same buffer and other various state
-
-        bool canBatch = compatible(previousIDC, currentIDC);
-
         bool instanced = false;
         // Instancing is not compatible with MDI. Well, it might be, but I can't be bothered a.t.m. to implement it -Ionut
         if (previousIDC._cmd.primCount > 1 || currentIDC._cmd.primCount > 1) {
-            //canBatch = false;
-            instanced = true;
+            instanced = previousIDC._cmd.primCount != currentIDC._cmd.primCount;
         }
 
-        if (canBatch) {
+        // Batchable commands must share the same buffer and other various state
+        if (!instanced && compatible(previousIDC, currentIDC)) {
             bool merge = false;
             if (byBaseInstance) { // Base instance compatibility
                 merge = previousIDC._cmd.baseInstance + previousIDC._drawCount == currentIDC._cmd.baseInstance;

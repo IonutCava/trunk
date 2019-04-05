@@ -20,10 +20,6 @@ namespace GenericDrawCommandResults {
 };
 
 bool compatible(const GenericDrawCommand& lhs, const GenericDrawCommand& rhs) {
-    if (lhs._cmd.primCount > 1 || rhs._cmd.primCount > 1) {
-        STUBBED("ToDo:: MDI with instancing is busted a.t.m -Ionut");
-        return false;
-    }
     return
         (lhs._renderOptions & ~(to_base(CmdRenderOptions::CONVERT_TO_INDIRECT))) == (rhs._renderOptions & ~(to_base(CmdRenderOptions::CONVERT_TO_INDIRECT))) &&
         lhs._bufferIndex == rhs._bufferIndex &&
