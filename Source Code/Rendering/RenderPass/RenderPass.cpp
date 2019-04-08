@@ -164,7 +164,7 @@ void RenderPass::initBufferData() {
     bufferDescriptor._name = Util::StringFormat("RENDER_DATA_%s", TypeUtil::renderStageToString(_stageFlag)).c_str();
     _renderData = _context.newSB(bufferDescriptor);
 
-	if (_performanceCounters) {
+    if (_performanceCounters) {
         bufferDescriptor._usage = ShaderBuffer::Usage::ATOMIC_COUNTER;
         bufferDescriptor._name = Util::StringFormat("CULL_COUNTER_%s", TypeUtil::renderStageToString(_stageFlag)).c_str();
         bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
@@ -191,7 +191,9 @@ void RenderPass::initBufferData() {
     }
 }
 
-void RenderPass::render(const SceneRenderState& renderState, GFX::CommandBuffer& bufferInOut) {
+void RenderPass::render(const Task& parentTask, const SceneRenderState& renderState, GFX::CommandBuffer& bufferInOut) {
+    ACKNOWLEDGE_UNUSED(parentTask);
+
     switch(_stageFlag) {
         case RenderStage::DISPLAY: {
             RenderPassManager::PassParams params = {};
@@ -238,11 +240,11 @@ void RenderPass::render(const SceneRenderState& renderState, GFX::CommandBuffer&
             {
                 //Part 2 - update classic reflectors (e.g. mirrors, water, etc)
                 //Get list of reflective nodes from the scene manager
-                RenderPassCuller::VisibleNodeList nodes = mgr.getSortedReflectiveNodes(*camera, RenderStage::REFLECTION, true);
+                VisibleNodeList nodes = mgr.getSortedReflectiveNodes(*camera, RenderStage::REFLECTION, true);
 
                 // While in budget, update reflections
                 ReflectionUtil::resetBudget();
-                for (RenderPassCuller::VisibleNode& node : nodes) {
+                for (VisibleNode& node : nodes) {
                     RenderingComponent* const rComp = node._node->get<RenderingComponent>();
                     if (ReflectionUtil::isInBudget()) {
                         if (Attorney::RenderingCompRenderPass::updateReflection(*rComp,
@@ -266,10 +268,10 @@ void RenderPass::render(const SceneRenderState& renderState, GFX::CommandBuffer&
             {
             }
             {
-                RenderPassCuller::VisibleNodeList nodes = mgr.getSortedRefractiveNodes(*camera, RenderStage::REFRACTION, true);
+                VisibleNodeList nodes = mgr.getSortedRefractiveNodes(*camera, RenderStage::REFRACTION, true);
                 // While in budget, update refractions
                 RefractionUtil::resetBudget();
-                for (RenderPassCuller::VisibleNode& node : nodes) {
+                for (VisibleNode& node : nodes) {
                      RenderingComponent* const rComp = node._node->get<RenderingComponent>();
                      if (RefractionUtil::isInBudget()) {
                         if (Attorney::RenderingCompRenderPass::updateRefraction(*rComp,

@@ -19,7 +19,7 @@ namespace {
     static const U32 g_nodesPerCullingPartition = 16u;
 
     // Return true if the node can't be drawn but contains command generating children but 
-    bool isParentNode(const RenderPassCuller::VisibleNode& node) {
+    bool isParentNode(const VisibleNode& node) {
         const SceneGraphNode* sgn = node._node;
         const SceneNode& sceneNode = sgn->getNode();
         if (sceneNode.type() == SceneNodeType::TYPE_OBJECT3D) {
@@ -45,13 +45,11 @@ void RenderPassCuller::clear() {
     }
 }
 
-RenderPassCuller::VisibleNodeList&
-RenderPassCuller::getNodeCache(RenderStage stage) {
+VisibleNodeList& RenderPassCuller::getNodeCache(RenderStage stage) {
     return _visibleNodes[to_U32(stage)];
 }
 
-const RenderPassCuller::VisibleNodeList&
-RenderPassCuller::getNodeCache(RenderStage stage) const {
+const VisibleNodeList& RenderPassCuller::getNodeCache(RenderStage stage) const {
     return _visibleNodes[to_U32(stage)];
 }
 
@@ -68,7 +66,7 @@ bool RenderPassCuller::wasNodeInView(I64 GUID, RenderStage stage) const {
     return it != eastl::cend(cache);
 }
 
-RenderPassCuller::VisibleNodeList& RenderPassCuller::frustumCull(const CullParams& params)
+VisibleNodeList& RenderPassCuller::frustumCull(const CullParams& params)
 {
     RenderStage stage = params._stage;
     VisibleNodeList& nodeCache = getNodeCache(stage);
@@ -112,7 +110,7 @@ RenderPassCuller::VisibleNodeList& RenderPassCuller::frustumCull(const CullParam
     // Some nodes don't need to be rendered because they are an aggregate of their children (e.g. Mesh <-> SubMesh)
     nodeCache.erase(eastl::remove_if(eastl::begin(nodeCache),
                                      eastl::end(nodeCache),
-                                         [](const RenderPassCuller::VisibleNode& node) -> bool {
+                                         [](const VisibleNode& node) -> bool {
                                              return isParentNode(node);
                                          }),
                     eastl::end(nodeCache));
@@ -210,8 +208,8 @@ void RenderPassCuller::addAllChildren(const SceneGraphNode& currentNode, const N
     }
 }
 
-RenderPassCuller::VisibleNodeList RenderPassCuller::frustumCull(const NodeCullParams& params, const vectorEASTL<SceneGraphNode*>& nodes) const {
-    RenderPassCuller::VisibleNodeList ret;
+VisibleNodeList RenderPassCuller::frustumCull(const NodeCullParams& params, const vectorEASTL<SceneGraphNode*>& nodes) const {
+    VisibleNodeList ret = {};
     ret.reserve(nodes.size());
 
     F32 distanceSqToCamera = std::numeric_limits<F32>::max();
@@ -225,8 +223,8 @@ RenderPassCuller::VisibleNodeList RenderPassCuller::frustumCull(const NodeCullPa
     return ret;
 }
 
-RenderPassCuller::VisibleNodeList RenderPassCuller::toVisibleNodes(const Camera& camera, const vectorEASTL<SceneGraphNode*>& nodes) const {
-    RenderPassCuller::VisibleNodeList ret;
+VisibleNodeList RenderPassCuller::toVisibleNodes(const Camera& camera, const vectorEASTL<SceneGraphNode*>& nodes) const {
+    VisibleNodeList ret = {};
     ret.reserve(nodes.size());
 
     const vec3<F32> cameraEye = camera.getEye();

@@ -74,8 +74,10 @@ public:
     //ToDo: replace all friend class declarations with attorneys -Ionut;
     friend struct Task;
     friend struct TaskHandle;
+    friend void Wait(const Task& task);
     friend void Start(Task& task, TaskPool& pool, TaskPriority priority, const DELEGATE_CBK<void>& onCompletionFunction);
     friend bool StopRequested(const Task& task);
+    friend void parallel_for(TaskPool& pool, const DELEGATE_CBK<void, const Task&, U32, U32>& cbk, U32 count, U32 partitionSize, TaskPriority priority, bool noWait, bool useCurrentThread);
 
     friend void run(Task& task, TaskPool& pool, TaskPriority priority, DELEGATE_CBK<void> onCompletionFunction);
     void taskCompleted(U32 taskIndex, TaskPriority priority, const DELEGATE_CBK<void>& onCompletionFunction);
@@ -88,10 +90,14 @@ public:
     friend class ThreadPool;
     void onThreadCreate(const std::thread::id& threadID);
 
+    // Called by a task that isn't doing anything (e.g. waiting on child tasks).
+    // Use this to run another task (if any) and return to the previous execution point
+    void threadWaiting();
+
   private:
      stringImpl _threadNamePrefix;
      DELEGATE_CBK<void, const std::thread::id&> _threadCreateCbk;
-     std::unique_ptr<ThreadPool> _mainTaskPool;
+     std::unique_ptr<ThreadPool> _poolImpl;
      moodycamel::ConcurrentQueue<U32> _threadedCallbackBuffer;
      std::atomic_uint _runningTaskCount;
      std::atomic_bool _stopRequested = false;

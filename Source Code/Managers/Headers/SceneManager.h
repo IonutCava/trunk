@@ -104,11 +104,11 @@ public:
     void setSelected(PlayerIndex idx, SceneGraphNode& sgn);
 
     // cull the scenegraph against the current view frustum
-    const RenderPassCuller::VisibleNodeList& cullSceneGraph(RenderStage stage, const Camera& camera, I32 maxLoD);
+    const VisibleNodeList& cullSceneGraph(RenderStage stage, const Camera& camera, I32 maxLoD);
     // get the full list of reflective nodes
-    RenderPassCuller::VisibleNodeList getSortedReflectiveNodes(const Camera& camera, RenderStage stage, bool inView) const;
+    VisibleNodeList getSortedReflectiveNodes(const Camera& camera, RenderStage stage, bool inView) const;
     // get the full list of refractive nodes
-    RenderPassCuller::VisibleNodeList getSortedRefractiveNodes(const Camera& camera, RenderStage stage, bool inView) const;
+    VisibleNodeList getSortedRefractiveNodes(const Camera& camera, RenderStage stage, bool inView) const;
 
     void onLostFocus();
     /// Check if the scene was loaded properly
@@ -127,15 +127,16 @@ public:
     inline void processTasks(const U64 deltaTimeUS) {
         getActiveScene().processTasks(deltaTimeUS);
     }
+
     inline void processGUI(const U64 deltaTimeUS) {
         getActiveScene().processGUI(deltaTimeUS);
     }
+
     inline void onStartUpdateLoop(const U8 loopNumber) {
         getActiveScene().onStartUpdateLoop(loopNumber);
     }
-    void onSizeChange(const SizeChangeParams& params);
 
-    RenderPassCuller::VisibleNodeList& getVisibleNodesCache(RenderStage stage);
+    void onSizeChange(const SizeChangeParams& params);
 
     inline U8 playerPass() const { return _currentPlayerPass; }
 
@@ -362,16 +363,8 @@ class SceneManagerCameraAccessor {
 
 class SceneManagerRenderPass {
    private:
-    static const RenderPassCuller::VisibleNodeList& cullScene(Divide::SceneManager& mgr,
-                                                              RenderStage stage,
-                                                              const Camera& camera,
-                                                              I32 minLoD) {
+    static const VisibleNodeList& cullScene(Divide::SceneManager& mgr, RenderStage stage, const Camera& camera, I32 minLoD) {
         return mgr.cullSceneGraph(stage, camera, minLoD);
-    }
-
-    static const RenderPassCuller::VisibleNodeList& getVisibleNodesCache(Divide::SceneManager& mgr,
-                                                                         RenderStage stage) {
-        return mgr.getVisibleNodesCache(stage);
     }
 
     static void prepareLightData(Divide::SceneManager& mgr,

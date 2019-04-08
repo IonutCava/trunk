@@ -480,7 +480,7 @@ void SceneManager::currentPlayerPass(PlayerIndex idx) {
     playerCamera()->updateLookAt();
 }
 
-RenderPassCuller::VisibleNodeList SceneManager::getSortedReflectiveNodes(const Camera& camera, RenderStage stage, bool inView) const {
+VisibleNodeList SceneManager::getSortedReflectiveNodes(const Camera& camera, RenderStage stage, bool inView) const {
     const SceneGraph& activeSceneGraph = getActiveScene().sceneGraph();
     vectorEASTL<SceneGraphNode*> allNodes = activeSceneGraph.getNodesByType(SceneNodeType::TYPE_WATER);
     vectorEASTL<SceneGraphNode*> otherNodes = activeSceneGraph.getNodesByType(SceneNodeType::TYPE_OBJECT3D);
@@ -508,7 +508,7 @@ RenderPassCuller::VisibleNodeList SceneManager::getSortedReflectiveNodes(const C
     return _renderPassCuller->toVisibleNodes(camera, allNodes);
 }
 
-RenderPassCuller::VisibleNodeList SceneManager::getSortedRefractiveNodes(const Camera& camera, RenderStage stage, bool inView) const {
+VisibleNodeList SceneManager::getSortedRefractiveNodes(const Camera& camera, RenderStage stage, bool inView) const {
     const SceneGraph& activeSceneGraph = getActiveScene().sceneGraph();
     vectorEASTL<SceneGraphNode*> allNodes = activeSceneGraph.getNodesByType(SceneNodeType::TYPE_WATER);
     vectorEASTL<SceneGraphNode*> otherNodes = activeSceneGraph.getNodesByType(SceneNodeType::TYPE_OBJECT3D);
@@ -566,7 +566,7 @@ namespace {
     }
 };
 
-const RenderPassCuller::VisibleNodeList& SceneManager::cullSceneGraph(RenderStage stage, const Camera& camera, I32 minLoD) {
+const VisibleNodeList& SceneManager::cullSceneGraph(RenderStage stage, const Camera& camera, I32 minLoD) {
     Time::ScopedTimer timer(*_sceneGraphCullTimers[to_U32(stage)]);
 
     Scene& activeScene = getActiveScene();
@@ -597,10 +597,6 @@ const RenderPassCuller::VisibleNodeList& SceneManager::cullSceneGraph(RenderStag
     };
 
     return _renderPassCuller->frustumCull(cullParams);
-}
-
-RenderPassCuller::VisibleNodeList& SceneManager::getVisibleNodesCache(RenderStage stage) {
-    return _renderPassCuller->getNodeCache(stage);
 }
 
 void SceneManager::prepareLightData(RenderStage stage, const Camera& camera) {

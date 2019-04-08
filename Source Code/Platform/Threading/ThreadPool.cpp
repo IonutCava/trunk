@@ -65,11 +65,7 @@ namespace Divide {
                 onThreadCreate(std::this_thread::get_id());
 
                 while (_isRunning) {
-                    PoolTask task;
-                    _queue.wait_dequeue(task);
-                    task();
-
-                    _tasksLeft.fetch_sub(1);
+                    executeOneTask(true);
                 }
             }));
         }
@@ -84,6 +80,20 @@ namespace Divide {
         return false;
     }
 
+    void BlockingThreadPool::executeOneTask(bool waitForTask) {
+        PoolTask task;
+        if (waitForTask) {
+            _queue.wait_dequeue(task);
+        } else {
+            if (!_queue.try_dequeue(task)) {
+                return;
+            }
+        }
+
+        task();
+        _tasksLeft.fetch_sub(1);
+    }
+
     LockFreeThreadPool::LockFreeThreadPool(TaskPool& parent, const U8 threadCount)
         : ThreadPool(parent, threadCount)
     {
@@ -93,13 +103,7 @@ namespace Divide {
                 onThreadCreate(std::this_thread::get_id());
 
                 while (_isRunning) {
-                    PoolTask task;
-                    while (!_queue.try_dequeue(task)) {
-                        std::this_thread::yield();
-                    }
-                    task();
-
-                    _tasksLeft.fetch_sub(1);
+                    executeOneTask(true);
                 }
             }));
         }
@@ -114,4 +118,16 @@ namespace Divide {
         return false;
     }
    
+    void LockFreeThreadPool::executeOneTask(bool waitForTask) {
+        PoolTask task;
+        while (!_queue.try_dequeue(task)) {
+            std::this_thread::yield();
+            if (!waitForTask) {
+                return;
+            }
+        }
+
+        task();
+        _tasksLeft.fetch_sub(1);
+    }
 };

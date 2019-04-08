@@ -96,7 +96,7 @@ namespace Divide {
                     tasks[i] = CreateTask(pool,
                                           nullptr,
                                           [pass, buf, &sceneRenderState](const Task & parentTask) {
-                                              pass->render(sceneRenderState, *buf);
+                                              pass->render(parentTask, sceneRenderState, *buf);
                                               buf->batch();
                                           }).startTask(priority);
                 }
@@ -315,7 +315,7 @@ GFXDevice::NodeData RenderPassManager::processVisibleNode(SceneGraphNode* node, 
     return dataOut;
 }
 
-void RenderPassManager::refreshNodeData(RenderStagePass stagePass,
+void RenderPassManager::buildBufferData(RenderStagePass stagePass,
                                         const SceneRenderState& renderState,
                                         const Camera& camera,
                                         const RenderQueue::SortedQueues& sortedQueues,
@@ -396,19 +396,16 @@ void RenderPassManager::buildDrawCommands(RenderStagePass stagePass, const PassP
     }
 
     if (refresh) {
-        refreshNodeData(stagePass, sceneRenderState, *params._camera, g_sortedQueues, bufferInOut);
+        buildBufferData(stagePass, sceneRenderState, *params._camera, g_sortedQueues, bufferInOut);
     }
 }
 
-void RenderPassManager::prepareRenderQueues(RenderStagePass stagePass, const PassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut) {
+void RenderPassManager::prepareRenderQueues(RenderStagePass stagePass, const PassParams& params, const VisibleNodeList& nodes, bool refreshNodeData, GFX::CommandBuffer& bufferInOut) {
     RenderStage stage = stagePass._stage;
-
-    const RenderPassCuller::VisibleNodeList& visibleNodes = refreshNodeData ? Attorney::SceneManagerRenderPass::cullScene(parent().sceneManager(), stage, *params._camera, params._minLoD)
-                                                                            : Attorney::SceneManagerRenderPass::getVisibleNodesCache(parent().sceneManager(), stage);
 
     RenderQueue& queue = getQueue();
     queue.refresh(stage);
-    for (const RenderPassCuller::VisibleNode& node : visibleNodes) {
+    for (const VisibleNode& node : nodes) {
         queue.addNodeToQueue(*node._node, stagePass, node._distanceToCameraSq);
     }
     // Sort all bins
@@ -430,7 +427,7 @@ void RenderPassManager::prepareRenderQueues(RenderStagePass stagePass, const Pas
     buildDrawCommands(stagePass, params, refreshNodeData, bufferInOut);
 }
 
-bool RenderPassManager::prePass(const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
+bool RenderPassManager::prePass(const VisibleNodeList& nodes, const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
     // PrePass requires a depth buffer
     bool doPrePass = params._stage != RenderStage::SHADOW &&
                      params._target._usage != RenderTargetUsage::COUNT &&
@@ -449,7 +446,7 @@ bool RenderPassManager::prePass(const PassParams& params, const RenderTarget& ta
         GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
         RenderStagePass stagePass(params._stage, RenderPassType::PRE_PASS, params._passVariant, params._passIndex);
-        prepareRenderQueues(stagePass, params, true, bufferInOut);
+        prepareRenderQueues(stagePass, params, nodes, true, bufferInOut);
 
         if (params._bindTargets) {
             GFX::BeginRenderPassCommand beginRenderPassCommand;
@@ -475,7 +472,7 @@ bool RenderPassManager::prePass(const PassParams& params, const RenderTarget& ta
     return doPrePass;
 }
 
-void RenderPassManager::mainPass(const PassParams& params, RenderTarget& target, GFX::CommandBuffer& bufferInOut, bool prePassExecuted) {
+void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams& params, RenderTarget& target, GFX::CommandBuffer& bufferInOut, bool prePassExecuted) {
     GFX::BeginDebugScopeCommand beginDebugScopeCmd;
     beginDebugScopeCmd._scopeID = 1;
     beginDebugScopeCmd._scopeName = " - MainPass";
@@ -485,7 +482,7 @@ void RenderPassManager::mainPass(const PassParams& params, RenderTarget& target,
 
     RenderStagePass stagePass(params._stage, RenderPassType::MAIN_PASS, params._passVariant, params._passIndex);
 
-    prepareRenderQueues(stagePass, params, !prePassExecuted, bufferInOut);
+    prepareRenderQueues(stagePass, params, nodes, !prePassExecuted, bufferInOut);
 
     bool clearVelocity = false;
     if (params._target._usage != RenderTargetUsage::COUNT) {
@@ -552,14 +549,14 @@ void RenderPassManager::mainPass(const PassParams& params, RenderTarget& target,
     GFX::EnqueueCommand(bufferInOut, endDebugScopeCmd);
 }
 
-void RenderPassManager::woitPass(const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
+void RenderPassManager::woitPass(const VisibleNodeList& nodes, const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
     PipelineDescriptor pipelineDescriptor;
     pipelineDescriptor._stateHash = _context.get2DStateBlock();
     pipelineDescriptor._shaderProgramHandle = _OITCompositionShader->getID();
     Pipeline* pipeline = _context.newPipeline(pipelineDescriptor);
 
     RenderStagePass stagePass(params._stage, RenderPassType::OIT_PASS, params._passVariant, params._passIndex);
-    prepareRenderQueues(stagePass, params, false, bufferInOut);
+    prepareRenderQueues(stagePass, params, nodes, false, bufferInOut);
 
     GFX::BeginDebugScopeCommand beginDebugScopeCmd;
     beginDebugScopeCmd._scopeID = 2;
@@ -663,6 +660,10 @@ void RenderPassManager::woitPass(const PassParams& params, const RenderTarget& t
 void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& bufferInOut) {
     Attorney::SceneManagerRenderPass::prepareLightData(parent().sceneManager(), params._stage, *params._camera);
 
+
+    // Cull the scene and grab the visible nodes
+    const VisibleNodeList& visibleNodes = Attorney::SceneManagerRenderPass::cullScene(parent().sceneManager(), params._stage, *params._camera, params._minLoD);
+
     // Tell the Rendering API to draw from our desired PoV
     GFX::SetCameraCommand setCameraCommand;
     setCameraCommand._cameraSnapshot = params._camera->snapshot();
@@ -680,7 +681,7 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
     beginDebugScopeCmd._scopeName = Util::StringFormat("Custom pass ( %s )", TypeUtil::renderStageToString(params._stage)).c_str();
     GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
-    bool prePassExecuted = prePass(params, target, bufferInOut);
+    bool prePassExecuted = prePass(visibleNodes, params, target, bufferInOut);
 
     if (prePassExecuted && params._targetHIZ._usage != RenderTargetUsage::COUNT) {
         const Texture_ptr& HiZTex = _context.constructHIZ(params._target, params._targetHIZ, bufferInOut);
@@ -713,10 +714,10 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
         }
     }
 
-    mainPass(params, target, bufferInOut, prePassExecuted);
+    mainPass(visibleNodes, params, target, bufferInOut, prePassExecuted);
 
     if (params._stage != RenderStage::SHADOW) {
-        woitPass(params, target, bufferInOut);
+        woitPass(visibleNodes, params, target, bufferInOut);
     }
 
     GFX::EndDebugScopeCommand endDebugScopeCmd;

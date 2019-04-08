@@ -92,7 +92,7 @@ Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descri
 
     /// Normal state for final rendering
     RenderStateBlock stateDescriptor;
-    stateDescriptor.setZFunc(ComparisonFunction::LEQUAL);
+    stateDescriptor.setZFunc(ComparisonFunction::EQUAL);
 
     RenderStateBlock oitDescriptor(stateDescriptor);
     oitDescriptor.depthTestEnabled(true);

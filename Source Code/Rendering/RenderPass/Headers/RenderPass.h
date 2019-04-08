@@ -40,6 +40,7 @@ namespace Time {
     class ProfileTimer;
 };
 
+struct Task;
 class SceneGraph;
 class ShaderBuffer;
 class SceneRenderState;
@@ -64,7 +65,7 @@ class RenderPass : private NonCopyable {
     explicit RenderPass(RenderPassManager& parent, GFXDevice& context, stringImpl name, U8 sortKey, RenderStage passStageFlags, const vector<U8>& dependencies, bool performanceCounters = false);
     ~RenderPass();
 
-    void render(const SceneRenderState& renderState, GFX::CommandBuffer& bufferInOut);
+    void render(const Task& parentTask, const SceneRenderState& renderState, GFX::CommandBuffer& bufferInOut);
     void postRender();
 
     inline U8 sortKey() const { return _sortKey; }

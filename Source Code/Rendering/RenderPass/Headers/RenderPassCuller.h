@@ -58,18 +58,17 @@ struct NodeCullParams {
     bool _threaded = false;
 };
 
+struct VisibleNode {
+    F32 _distanceToCameraSq = 0.0f;
+    const SceneGraphNode* _node = nullptr;
+};
+
+typedef vectorEASTL<VisibleNode> VisibleNodeList;
+
 class RenderPassCuller {
    public:
     //Should return true if the node is not inside the frustum
     typedef std::function<bool(const SceneGraphNode&, const SceneNode&)> CullingFunction;
-
-    // draw order, node pointer
-    struct VisibleNode {
-        F32 _distanceToCameraSq = 0.0f;
-        const SceneGraphNode* _node = nullptr;
-    };
-
-    typedef vectorEASTL<VisibleNode> VisibleNodeList;
 
     struct CullParams {
         CullingFunction _cullFunction;
@@ -94,10 +93,10 @@ class RenderPassCuller {
     VisibleNodeList& getNodeCache(RenderStage stage);
     const VisibleNodeList& getNodeCache(RenderStage stage) const;
 
-    RenderPassCuller::VisibleNodeList& frustumCull(const CullParams& params);
+    VisibleNodeList& frustumCull(const CullParams& params);
 
-    RenderPassCuller::VisibleNodeList frustumCull(const NodeCullParams& params, const vectorEASTL<SceneGraphNode*>& nodes) const;
-    RenderPassCuller::VisibleNodeList toVisibleNodes(const Camera& camera, const vectorEASTL<SceneGraphNode*>& nodes) const;
+    VisibleNodeList frustumCull(const NodeCullParams& params, const vectorEASTL<SceneGraphNode*>& nodes) const;
+    VisibleNodeList toVisibleNodes(const Camera& camera, const vectorEASTL<SceneGraphNode*>& nodes) const;
 
     bool wasNodeInView(I64 GUID, RenderStage stage) const;
 

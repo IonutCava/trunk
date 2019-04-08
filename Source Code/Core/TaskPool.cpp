@@ -18,7 +18,8 @@ TaskPool::TaskPool()
       _taskCallbacks(Config::MAX_POOLED_TASKS),
       _runningTaskCount(0u),
       _workerThreadCount(0u),
-      _stopRequested(false)
+      _stopRequested(false),
+      _poolImpl(nullptr)
 {
     _threadCount = 0u;
 }
@@ -29,7 +30,7 @@ TaskPool::~TaskPool()
 }
 
 bool TaskPool::init(U8 threadCount, TaskPoolType poolType, const DELEGATE_CBK<void, const std::thread::id&>& onThreadCreate, const stringImpl& workerName) {
-    if (threadCount == 0 || _mainTaskPool != nullptr) {
+    if (threadCount == 0 || _poolImpl != nullptr) {
         return false;
     }
     _threadNamePrefix = workerName;
@@ -38,10 +39,10 @@ bool TaskPool::init(U8 threadCount, TaskPoolType poolType, const DELEGATE_CBK<vo
 
     switch (poolType) {
         case TaskPoolType::TYPE_LOCKFREE: {
-            _mainTaskPool = std::make_unique<LockFreeThreadPool>(*this, _workerThreadCount);
+            _poolImpl = std::make_unique<LockFreeThreadPool>(*this, _workerThreadCount);
         } break;
         case TaskPoolType::TYPE_BLOCKING: {
-            _mainTaskPool = std::make_unique<BlockingThreadPool>(*this, _workerThreadCount);
+            _poolImpl = std::make_unique<BlockingThreadPool>(*this, _workerThreadCount);
         }break;
     }
 
@@ -69,7 +70,7 @@ bool TaskPool::enqueue(const PoolTask& task, TaskPriority priority) {
         return true;
     }
 
-    return _mainTaskPool->addTask(task);
+    return _poolImpl->addTask(task);
 }
 
 void TaskPool::runCbkAndClearTask(U32 taskIdentifier) {
@@ -111,8 +112,8 @@ void TaskPool::waitForAllTasks(bool yield, bool flushCallbacks, bool forceClear)
     }
 
     _stopRequested.store(false);
-    _mainTaskPool->wait();
-    _mainTaskPool->join();
+    _poolImpl->wait();
+    _poolImpl->join();
 }
 
 void TaskPool::taskCompleted(U32 taskIndex, TaskPriority priority, const DELEGATE_CBK<void>& onCompletionFunction) {
@@ -156,6 +157,10 @@ Task* TaskPool::createTask(Task* parentTask, const DELEGATE_CBK<void, const Task
 
 bool TaskPool::stopRequested() const noexcept {
     return _stopRequested.load();
+}
+
+void TaskPool::threadWaiting() {
+    _poolImpl->executeOneTask(false);
 }
 
 TaskHandle CreateTask(TaskPool& pool, const DELEGATE_CBK<void, const Task&>& threadedFunction)
@@ -223,7 +228,9 @@ void parallel_for(TaskPool& pool,
             cbk(*threadTask._task, start, end);
         }
         if (!noWait) {
-            WAIT_FOR_CONDITION(jobCount.load() == 0);
+            while (jobCount.load() > 0) {
+                pool.threadWaiting();
+            }
         }
     }
 }

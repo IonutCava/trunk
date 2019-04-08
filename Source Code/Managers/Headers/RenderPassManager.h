@@ -34,8 +34,11 @@
 #define _MANAGERS_RENDER_PASS_MANAGER_H_
 
 #include "Core/Headers/KernelComponent.h"
+
 #include "Rendering/RenderPass/Headers/RenderPass.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
+#include "Rendering/RenderPass/Headers/RenderPassCuller.h"
+
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Headers/RenderPackage.h"
 
@@ -97,15 +100,15 @@ public:
 
 private:
     // Returns false if we skipped the pre-pass step
-    bool prePass(const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut);
-    void mainPass(const PassParams& params, RenderTarget& target, GFX::CommandBuffer& bufferInOut, bool prePassExecuted);
-    void woitPass(const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut);
+    bool prePass(const VisibleNodeList& nodes, const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut);
+    void mainPass(const VisibleNodeList& nodes, const PassParams& params, RenderTarget& target, GFX::CommandBuffer& bufferInOut, bool prePassExecuted);
+    void woitPass(const VisibleNodeList& nodes, const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut);
 
     RenderPass& getPassForStage(RenderStage renderStage);
     const RenderPass& getPassForStage(RenderStage renderStage) const;
-    void prepareRenderQueues(RenderStagePass stagePass, const PassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut);
+    void prepareRenderQueues(RenderStagePass stagePass, const PassParams& params, const VisibleNodeList& nodes, bool refreshNodeData, GFX::CommandBuffer& bufferInOut);
     void buildDrawCommands(RenderStagePass stagePass, const PassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut);
-    void refreshNodeData(RenderStagePass stagePass, const SceneRenderState& renderState, const Camera& camera, const RenderQueue::SortedQueues& sortedQueues, GFX::CommandBuffer& bufferInOut);
+    void buildBufferData(RenderStagePass stagePass, const SceneRenderState& renderState, const Camera& camera, const RenderQueue::SortedQueues& sortedQueues, GFX::CommandBuffer& bufferInOut);
     GFXDevice::NodeData processVisibleNode(SceneGraphNode* node, RenderStagePass stagePass, bool playAnimations, const mat4<F32>& viewMatrix) const;
 
 private: //TEMP

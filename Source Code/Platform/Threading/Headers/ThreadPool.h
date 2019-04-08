@@ -58,6 +58,8 @@ public:
     // Get all of the threads for external usage (e.g. setting affinity)
     eastl::vector<std::thread>& threads();
 
+    virtual void executeOneTask(bool waitForTask) = 0;
+
 protected:
     void onThreadCreate(const std::thread::id& threadID);
 
@@ -78,6 +80,8 @@ public:
     // Add a new task to the pool's queue
     bool addTask(const PoolTask& job) override;
 
+    void executeOneTask(bool waitForTask) override;
+
 private:
     moodycamel::BlockingConcurrentQueue<PoolTask> _queue;
 };
@@ -91,6 +95,8 @@ public:
 
     // Add a new task to the pool's queue
     bool addTask(const PoolTask& job) override;
+
+    void executeOneTask(bool waitForTask) override;
 
 private:
     moodycamel::ConcurrentQueue<PoolTask> _queue;

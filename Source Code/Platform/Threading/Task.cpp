@@ -22,7 +22,9 @@ void finish(Task& task) {
 
 void run(Task& task, TaskPool& pool, TaskPriority priority, DELEGATE_CBK<void> onCompletionFunction) {
 
-    WAIT_FOR_CONDITION(task._unfinishedJobs.load() == 1);
+    while (task._unfinishedJobs.load() > 1) {
+        task._parentPool->threadWaiting();
+    }
 
     if (task._callback) {
         task._callback(task);
@@ -44,7 +46,9 @@ void Start(Task& task, TaskPool& pool, TaskPriority priority, const DELEGATE_CBK
 }
 
 void Wait(const Task& task) {
-    WAIT_FOR_CONDITION(Finished(task));
+    while (!Finished(task)) {
+        task._parentPool->threadWaiting();
+    }
 }
 
 void Stop(Task& task) {
