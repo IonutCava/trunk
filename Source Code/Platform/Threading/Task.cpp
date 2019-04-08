@@ -28,7 +28,6 @@ void run(Task& task, TaskPool& pool, TaskPriority priority, DELEGATE_CBK<void> o
 
     if (task._callback) {
         task._callback(task);
-        //task._callback = 0; //Should we clear this?
     }
 
     pool.taskCompleted(task._id, priority, onCompletionFunction);
@@ -66,8 +65,6 @@ bool Finished(const Task& task) {
 
 TaskHandle& TaskHandle::startTask(TaskPriority prio, const DELEGATE_CBK<void>& onCompletionFunction) {
     assert(_task != nullptr);
-    assert(_task->_unfinishedJobs.load() > 0 && "StartTask error: double start call detected!");
-
     Start(*_task, *_tp, prio, onCompletionFunction);
     return *this;
 }

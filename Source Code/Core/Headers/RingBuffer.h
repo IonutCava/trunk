@@ -35,14 +35,11 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-class RingBufferSeparateWrite {
+class RingBufferSeparateWrite : public NonCopyable {
 public:
     // If separateReadWrite is true, this behaves exactly like a RingBuffer
-    explicit RingBufferSeparateWrite(I32 queueLength, bool separateReadWrite) noexcept;
-    RingBufferSeparateWrite(const RingBufferSeparateWrite& other);
-    virtual ~RingBufferSeparateWrite();
-
-    RingBufferSeparateWrite& operator=(const RingBufferSeparateWrite& other);
+    explicit RingBufferSeparateWrite(I32 queueLength, bool separateReadWrite, bool writeAhead = true) noexcept;
+    virtual ~RingBufferSeparateWrite() = default;
 
     virtual void resize(I32 queueLength) noexcept;
 
@@ -51,8 +48,13 @@ public:
     }
 
     const inline I32 queueWriteIndex() const noexcept {
-        return _separateReadWrite ? (_queueIndex + (_queueLength - 1)) % _queueLength 
-                                  : _queueIndex.load();
+        const I32 ret = _queueIndex.load();
+
+        if (_separateReadWrite) {
+            return (ret + (_writeAhead ? 1 : (_queueLength - 1))) % _queueLength;
+        }
+        
+        return ret;
     }
 
     const inline I32 queueReadIndex() const noexcept {
@@ -77,17 +79,15 @@ public:
 
 private:
     I32 _queueLength;
-    bool _separateReadWrite;
+    const bool _writeAhead;
+    const bool _separateReadWrite;
     std::atomic_int _queueIndex;
 };
 
-class RingBuffer {
+class RingBuffer : public NonCopyable {
 public:
     explicit RingBuffer(I32 queueLength) noexcept;
-    RingBuffer(const RingBuffer& other) noexcept;
-    virtual ~RingBuffer();
-
-    RingBuffer& operator=(const RingBuffer& other) noexcept;
+    virtual ~RingBuffer() = default;
 
     virtual void resize(I32 queueLength) noexcept;
 

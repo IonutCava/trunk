@@ -4,6 +4,7 @@
 #include "Headers/glMemoryManager.h"
 #include "Headers/glBufferLockManager.h"
 #include "Platform/Headers/PlatformRuntime.h"
+#include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/RenderBackend/OpenGL/Headers/GLWrapper.h"
 
 namespace Divide {
@@ -158,12 +159,10 @@ bool glBufferImpl::bindRange(GLuint bindIndex, size_t offsetInBytes, size_t rang
 
 void glBufferImpl::writeData(size_t offsetInBytes, size_t rangeInBytes, const bufferPtr data)
 {
-    waitRange(offsetInBytes, rangeInBytes, true);
-
     if (_mappedBuffer) {
-        std::memcpy(((Byte*)_mappedBuffer) + offsetInBytes,
-            data,
-            rangeInBytes);
+        waitRange(offsetInBytes, rangeInBytes, true);
+
+        std::memcpy(((Byte*)_mappedBuffer) + offsetInBytes, data, rangeInBytes);
         if (_useExplicitFlush) {
             glFlushMappedNamedBufferRange(_handle, offsetInBytes, rangeInBytes);
         }
@@ -179,18 +178,16 @@ void glBufferImpl::writeData(size_t offsetInBytes, size_t rangeInBytes, const bu
 
 void glBufferImpl::readData(size_t offsetInBytes, size_t rangeInBytes, const bufferPtr data)
 {
-
-    glMemoryBarrier(_target == GL_ATOMIC_COUNTER_BUFFER ? MemoryBarrierMask::GL_ATOMIC_COUNTER_BARRIER_BIT
-                                                        : MemoryBarrierMask::GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT);
+    if (_target == GL_ATOMIC_COUNTER_BUFFER) {
+        glMemoryBarrier(MemoryBarrierMask::GL_ATOMIC_COUNTER_BARRIER_BIT);
+    }
 
     if (_mappedBuffer && waitRange(offsetInBytes, rangeInBytes, true)) {
-        /*glMemoryBarrier(_target == GL_ATOMIC_COUNTER_BUFFER ? MemoryBarrierMask::GL_ATOMIC_COUNTER_BARRIER_BIT
-                                                            : MemoryBarrierMask::GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT);*/
-
+        if (_target != GL_ATOMIC_COUNTER_BUFFER) {
+            glMemoryBarrier(MemoryBarrierMask::GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT);
+        }
         std::memcpy(data, ((Byte*)(_mappedBuffer)+offsetInBytes), rangeInBytes);
     } else {
-        //glGetNamedBufferSubData(_handle, offsetInBytes, rangeInBytes, data);
-
         void* bufferData = glMapNamedBufferRange(_handle, offsetInBytes, rangeInBytes, BufferAccessMask::GL_MAP_READ_BIT);
         if (bufferData != nullptr) {
             std::memcpy(data, ((Byte*)(bufferData)+offsetInBytes), rangeInBytes);

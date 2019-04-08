@@ -31,7 +31,7 @@ void main()
     }
 
     if (dvd_Vertex.y > 0.75) {
-        computeFoliageMovementGrass(dvd_Vertex, data.data.w);
+        //computeFoliageMovementGrass(dvd_Vertex, data.data.w);
     }
 
     _arrayLayerFrag = int(data.data.x);

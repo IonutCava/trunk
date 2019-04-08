@@ -131,23 +131,23 @@ void TaskPool::taskCompleted(U32 taskIndex, TaskPriority priority, const DELEGAT
 
 Task* TaskPool::createTask(Task* parentTask, const DELEGATE_CBK<void, const Task&>& threadedFunction) 
 {
-    Task* task = nullptr;
-    while (task == nullptr) {
-        Task& crtTask = g_taskAllocator[g_allocatedTasks++ & (Config::MAX_POOLED_TASKS - 1u)];
-        U16 expected = to_U16(0u);
-        if (crtTask._unfinishedJobs.compare_exchange_strong(expected, to_U16(1u))) {
-            task = &crtTask;
-        }
-    }
-
     if (parentTask != nullptr) {
         parentTask->_unfinishedJobs.fetch_add(1);
     }
 
+    Task* task = nullptr;
+    do {
+        constexpr U16 target = to_U16(1u); U16 expected = to_U16(0u);
+
+        Task& crtTask = g_taskAllocator[g_allocatedTasks++ & (Config::MAX_POOLED_TASKS - 1u)];
+        if (crtTask._unfinishedJobs.compare_exchange_strong(expected, target)) {
+            task = &crtTask;
+        }
+    } while (task == nullptr);
+
     task->_parent = parentTask;
     task->_parentPool = this;
     task->_callback = threadedFunction;
-
     if (task->_id == 0) {
         task->_id = g_taskIDCounter.fetch_add(1u);
     }
