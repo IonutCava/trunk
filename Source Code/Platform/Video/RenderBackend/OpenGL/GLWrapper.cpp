@@ -416,6 +416,42 @@ bool GL_API::initGLSW() {
 
     appendToShaderHeader(
         ShaderType::COUNT,
+        "#define TARGET_ACCUMULATION " +
+        to_stringImpl(to_base(GFXDevice::ScreenTargets::ACCUMULATION)),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::COUNT,
+        "#define TARGET_ALBEDO " +
+        to_stringImpl(to_base(GFXDevice::ScreenTargets::ALBEDO)),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::COUNT,
+        "#define TARGET_EXTRA " +
+        to_stringImpl(to_base(GFXDevice::ScreenTargets::EXTRA)),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::COUNT,
+        "#define TARGET_NORMALS_AND_VELOCITY " +
+        to_stringImpl(to_base(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY)),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::COUNT,
+        "#define TARGET_REVEALAGE " +
+        to_stringImpl(to_base(GFXDevice::ScreenTargets::REVEALAGE)),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::COUNT,
+        "#define TARGET_MODULATE " +
+        to_stringImpl(to_base(GFXDevice::ScreenTargets::MODULATE)),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::COUNT,
         "#define BUFFER_ATOMIC_COUNTER " +
         to_stringImpl(to_base(ShaderBufferLocation::ATOMIC_COUNTER)),
         lineOffsets);

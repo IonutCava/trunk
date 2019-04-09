@@ -137,6 +137,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 
     TextureDescriptor screenDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGB, GFXDataFormat::FLOAT_16);
     TextureDescriptor normalAndVelocityDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGBA, GFXDataFormat::FLOAT_16);
+    TextureDescriptor lightingDetails(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGBA, GFXDataFormat::UNSIGNED_BYTE);
     TextureDescriptor depthDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::FLOAT_32);
 
     SamplerDescriptor defaultSampler = {};
@@ -155,10 +156,14 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     normalAndVelocityDescriptor.setSampler(defaultSampler);
     normalAndVelocityDescriptor.msaaSamples(msaaSamples);
 
+    lightingDetails.setSampler(defaultSampler);
+    lightingDetails.msaaSamples(msaaSamples);
+
     {
         vector<RTAttachmentDescriptor> attachments = {
             { screenDescriptor,              RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO), DefaultColours::DIVIDE_BLUE },
             { normalAndVelocityDescriptor,   RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_VELOCITY), VECTOR4_ZERO },
+            { lightingDetails,               RTAttachmentType::Colour, to_U8(ScreenTargets::EXTRA), VECTOR4_ZERO },
             { depthDescriptor,               RTAttachmentType::Depth }
         };
 
@@ -261,11 +266,9 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 
         const RenderTarget& screenTarget = _rtPool->renderTarget(RenderTargetUsage::SCREEN);
         const RTAttachment_ptr& screenAttachment = screenTarget.getAttachmentPtr(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO));
-        //const RTAttachment_ptr& normalsAttachment = screenTarget.getAttachmentPtr(RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_VELOCITY));
         const RTAttachment_ptr& screenDepthAttachment = screenTarget.getAttachmentPtr(RTAttachmentType::Depth, 0);
 
         vector<ExternalRTAttachmentDescriptor> externalAttachments = {
-            //{ normalsAttachment,  RTAttachmentType::Colour, to_U8(ScreenTargets::EXTRA) },
             { screenAttachment,  RTAttachmentType::Colour, to_U8(ScreenTargets::MODULATE) },
             { screenDepthAttachment,  RTAttachmentType::Depth }
         };

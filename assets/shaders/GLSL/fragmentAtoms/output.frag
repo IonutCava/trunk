@@ -6,11 +6,11 @@
 #if defined(OIT_PASS)
 #define uDepthScale 0.5f
 
-layout(location = 0) out vec4  _accum;
-layout(location = 1) out float _revealage;
-layout(location = 2) out vec4  _modulate;
+layout(location = TARGET_ACCUMULATION) out vec4  _accum;
+layout(location = TARGET_REVEALAGE) out float _revealage;
+layout(location = TARGET_MODULATE) out vec4  _modulate;
 #else
-layout(location = 0) out vec4 _colourOut;
+layout(location = TARGET_ALBEDO) out vec4 _colourOut;
 #endif
 
 

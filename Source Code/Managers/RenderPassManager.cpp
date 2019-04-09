@@ -440,6 +440,7 @@ bool RenderPassManager::prePass(const VisibleNodeList& nodes, const PassParams& 
 
     if (doPrePass) {
         const bool hasNormalsTarget = target.hasAttachment(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY));
+        const bool hasLightingTarget = target.hasAttachment(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::EXTRA));
 
         GFX::BeginDebugScopeCommand beginDebugScopeCmd;
         beginDebugScopeCmd._scopeID = 0;
@@ -454,6 +455,11 @@ bool RenderPassManager::prePass(const VisibleNodeList& nodes, const PassParams& 
         normalsAndDepthPolicy.clearColour(to_U8(GFXDevice::ScreenTargets::ALBEDO), false);
         normalsAndDepthPolicy.drawMask().disableAll();
         normalsAndDepthPolicy.drawMask().setEnabled(RTAttachmentType::Depth, 0, true);
+
+        if (hasLightingTarget) {
+            normalsAndDepthPolicy.clearColour(to_U8(GFXDevice::ScreenTargets::EXTRA), true);
+            normalsAndDepthPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::EXTRA), true);
+        }
 
         if (hasNormalsTarget) {
             normalsAndDepthPolicy.clearColour(to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY), true);
@@ -503,6 +509,7 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
     bool clearVelocity = false;
     if (params._target._usage != RenderTargetUsage::COUNT) {
         const bool hasNormalsTarget = target.hasAttachment(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY));
+        const bool hasLightingTarget = target.hasAttachment(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::EXTRA));
 
         Attorney::SceneManagerRenderPass::preRender(sceneManager, stagePass, *params._camera, target, bufferInOut);
     
@@ -532,6 +539,12 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
 
             drawPolicy.enableState(RTDrawDescriptor::State::CLEAR_COLOUR_BUFFERS);
             drawPolicy.clearColour(to_U8(GFXDevice::ScreenTargets::ALBEDO), false);
+
+            if (hasLightingTarget) {
+                drawPolicy.clearColour(to_U8(GFXDevice::ScreenTargets::EXTRA), false);
+                drawPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::EXTRA), false);
+            }
+
             if (hasNormalsTarget) {
                 drawPolicy.clearColour(to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY), false);
                 drawPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY), false);

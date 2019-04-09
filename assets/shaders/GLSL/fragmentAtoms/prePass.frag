@@ -1,10 +1,17 @@
 #ifndef _PRE_PASS_FRAG_
 #define _PRE_PASS_FRAG_
 
+#include "lightInput.cmn"
 #include "materialData.frag"
 #include "velocityCalc.frag"
+#include "shadowMapping.frag"
 
-layout(location = 1) out vec4 _normalAndVelocityOut;
+layout(location = TARGET_NORMALS_AND_VELOCITY) out vec4 _normalAndVelocityOut;
+layout(location = TARGET_EXTRA) out vec4 _lightDetailsOut;
+
+void _writeCSMSplit() {
+    _lightDetailsOut = vec4(getCSMSlice(0), 0, 0, 0);
+}
 
 void _output(vec3 normal, float alphaFactor) {
     updateTexCoord();
@@ -17,6 +24,7 @@ void _output(vec3 normal, float alphaFactor) {
 #endif
 
     _normalAndVelocityOut.rg = packNormal(normalize(normal));
+    _writeCSMSplit();
 }
 
 void outputNoVelocity(float alphaFactor) {

@@ -17,7 +17,7 @@ layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 
 uniform bool useTexture;
 in  vec4 _colour;
-layout(location = 0) out vec4 _colourOut;
+layout(location = TARGET_ALBEDO) out vec4 _colourOut;
 
 void main(){
     if(!useTexture){
