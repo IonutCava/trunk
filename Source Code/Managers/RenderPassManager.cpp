@@ -450,10 +450,10 @@ bool RenderPassManager::prePass(const VisibleNodeList& nodes, const PassParams& 
         prepareRenderQueues(stagePass, params, nodes, true, bufferInOut);
 
         RTDrawDescriptor normalsAndDepthPolicy = {};
-        normalsAndDepthPolicy.drawMask().setEnabled(RTAttachmentType::Depth, 0, true);
         normalsAndDepthPolicy.enableState(RTDrawDescriptor::State::CLEAR_COLOUR_BUFFERS);
         normalsAndDepthPolicy.clearColour(to_U8(GFXDevice::ScreenTargets::ALBEDO), false);
-        normalsAndDepthPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::ALBEDO), false);
+        normalsAndDepthPolicy.drawMask().disableAll();
+        normalsAndDepthPolicy.drawMask().setEnabled(RTAttachmentType::Depth, 0, true);
 
         if (hasNormalsTarget) {
             normalsAndDepthPolicy.clearColour(to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY), true);

@@ -22,7 +22,7 @@ out vec4 _colourOut;
 void main() {
     _colourOut = texture(texScreen, VAR._texCoord);
     vec3 bloom = texture(texBloom, VAR._texCoord).rgb;
-    _colourOut.rgb = 1.0 - ((1.0 - bloom * bloomFactor)*(1.0 - _colourOut.rgb));
+    _colourOut.rgb = 1.0f - ((1.0f - bloom * bloomFactor) * (1.0f - _colourOut.rgb));
 }
 
 -- Fragment.BloomCalc
@@ -34,7 +34,7 @@ layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
 
 void main() {    
     vec4 screenColour = texture(texScreen, VAR._texCoord);
-    if (luminance(screenColour.rgb) > 1.0) {
+    if (luminance(screenColour.rgb) > 0.75f) {
         _bloomOut = screenColour;
     }
 }

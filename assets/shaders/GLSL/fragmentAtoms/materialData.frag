@@ -3,6 +3,10 @@
 
 #include "utility.frag"
 
+#if defined(COMPUTE_TBN)
+#include "bumpMapping.frag"
+#endif
+
 //Ref: https://github.com/urho3d/Urho3D/blob/master/bin/CoreData/Shaders/GLSL/PBRLitSolid.glsl
 #if defined(USE_ALBEDO_ALPHA) || defined(USE_OPACITY_MAP)
 #   define HAS_TRANSPARENCY
@@ -203,4 +207,22 @@ vec3 getSpecular(mat4 colourMatrix) {
 #endif
 }
 
+vec3 getNormal() {
+    vec3 normal = VAR._normalWV;
+
+#if defined(COMPUTE_TBN)
+    //if (dvd_lodLevel == 0)
+    {
+        normal = getTBNMatrix() * getBump(dvd_TexCoord);
+    }
+#endif //COMPUTE_TBN
+
+#   if defined (USE_DOUBLE_SIDED)
+    if (!gl_FrontFacing) {
+        normal = -normal;
+    }
+#   endif //USE_DOUBLE_SIDED
+
+    return normal;
+}
 #endif //_MATERIAL_DATA_FRAG_

@@ -377,7 +377,7 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
     _sceneData->enableDebugRender(ParamHandler::instance().getParam<bool>(_ID("rendering.debug.displayShadowDebugInfo")));
     // Time, fog, etc
     _sceneData->elapsedTime(_elapsedTimeMS);
-    _sceneData->deltaTime(Time::MicrosecondsToSeconds<F32>(deltaTimeUS));
+    _sceneData->deltaTime(Time::MicrosecondsToMilliseconds<F32>(deltaTimeUS));
     _sceneData->detailLevel(_platformContext->config().rendering.renderDetailLevel);
 
     FogDescriptor& fog = activeScene.state().renderState().fogDescriptor();

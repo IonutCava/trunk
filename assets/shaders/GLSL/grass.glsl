@@ -83,15 +83,16 @@ void main (void){
 
 --Fragment.PrePass
 
-#include "BRDF.frag"
-#include "velocityCalc.frag"
+#include "prePass.frag"
 
 flat in int _arrayLayerFrag;
 flat in float _alphaFactor;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuseGrass;
 
-layout(location = 1) out vec4 _normalAndVelocityOut;
+#if defined(USE_ALPHA_DISCARD)
+#undef USE_ALPHA_DISCARD
+#endif
 
 void main() {
     vec4 colour = texture(texDiffuseGrass, vec3(VAR._texCoord, _arrayLayerFrag));
@@ -99,8 +100,7 @@ void main() {
         discard;
     }
 
-    _normalAndVelocityOut.rg = packNormal(normalize(getNormal()));
-    _normalAndVelocityOut.ba = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
+    outputNoVelocity(_alphaFactor);
 }
 
 

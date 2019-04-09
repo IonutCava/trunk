@@ -85,10 +85,9 @@ ResourceDescriptor::ResourceDescriptor(ResourceDescriptor&& old) noexcept
 }
 
 size_t ResourceDescriptor::getHash() const {
-    _hash = 23;
+    _hash = 31;
     stringImpl file = _assetLocation + "/" + _assetName;
     Util::ReplaceStringInPlace(file, "//", "/");
-    //Util::Hash_combine(_hash, _resourceName); //Loading specific
     Util::Hash_combine(_hash, file);
     Util::Hash_combine(_hash, _flag);
     Util::Hash_combine(_hash, _ID);
@@ -97,8 +96,6 @@ size_t ResourceDescriptor::getHash() const {
     Util::Hash_combine(_hash, _data.x);
     Util::Hash_combine(_hash, _data.y);
     Util::Hash_combine(_hash, _data.z);
-    //Util::Hash_combine(_hash, _threaded); //Loading specific
-    //Util::Hash_combine(_hash, _onLoadCallback); //Loading specific
     if (_propertyDescriptor) {
         Util::Hash_combine(_hash, _propertyDescriptor->getHash());
     }

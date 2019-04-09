@@ -525,19 +525,18 @@ void glFramebuffer::prepareBuffers(const RTDrawDescriptor& drawPolicy, const RTA
 
     if (_previousPolicy.drawMask() != mask) {
         // handle colour buffers first
-        vector<GLenum> activeColourBuffers(activeAttachments.size());
+        vector<GLenum> activeColourBuffers(MAX_RT_COLOUR_ATTACHMENTS, GL_NONE);
 
-        if (!activeColourBuffers.empty()) {
-            for (U8 j = 0; j < activeColourBuffers.size(); ++j) {
-                const RTAttachment_ptr& colourAtt = activeAttachments[j];
-                activeColourBuffers[j] =  mask.isEnabled(RTAttachmentType::Colour, j) ? static_cast<GLenum>(colourAtt->binding()) : GL_NONE;
-            }
-
-            glNamedFramebufferDrawBuffers(_framebufferHandle,
-                                          static_cast<GLsizei>(activeColourBuffers.size()),
-                                          activeColourBuffers.data());
-            queueCheckStatus();
+        U8 count = to_U8(std::min((size_t)MAX_RT_COLOUR_ATTACHMENTS, activeAttachments.size()));
+        for (U8 j = 0; j < count; ++j) {
+            const RTAttachment_ptr& colourAtt = activeAttachments[j];
+            activeColourBuffers[j] =  mask.isEnabled(RTAttachmentType::Colour, j) ? static_cast<GLenum>(colourAtt->binding()) : GL_NONE;
         }
+
+        glNamedFramebufferDrawBuffers(_framebufferHandle,
+                                      static_cast<GLsizei>(activeColourBuffers.size()),
+                                      activeColourBuffers.data());
+        queueCheckStatus();
 
         const RTAttachment_ptr& depthAtt = _attachmentPool->get(RTAttachmentType::Depth, 0);
         _activeDepthBuffer = depthAtt && depthAtt->used();

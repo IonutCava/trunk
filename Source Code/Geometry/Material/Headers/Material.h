@@ -158,7 +158,6 @@ class Material : public CachedResource {
     void setShininess(F32 value);
     void setShadingMode(const ShadingMode& mode);
 
-    void useTriangleStrip(const bool state);
     void setDoubleSided(const bool state);
     void setReceivesShadows(const bool state);
     void setReflective(const bool state);
@@ -223,7 +222,6 @@ class Material : public CachedResource {
     bool receivesShadows() const;
     bool isReflective() const;
     bool isRefractive() const;
-    bool useTriangleStrip() const;
 
     // Checks if the shader needed for the current stage is already constructed.
     // Returns false if the shader was already ready.
@@ -275,7 +273,6 @@ class Material : public CachedResource {
     TranslucencySource _translucencySource;
     /// parallax/relief factor (higher value > more pronounced effect)
     F32  _parallaxFactor;
-    bool _useTriangleStrip;
     bool _needsNewShader;
     bool _doubleSided;
     bool _translucent;

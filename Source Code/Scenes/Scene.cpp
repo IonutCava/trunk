@@ -585,6 +585,7 @@ void Scene::addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree p
     terrainDescriptor.setThreadedLoading(true);
     terrainDescriptor.setOnLoadCallback(registerTerrain);
     terrainDescriptor.setFlag(ter->getActive());
+    terrainDescriptor.waitForReady(false);
     _loadingTasks.fetch_add(1);
     CreateResource<Terrain>(_resCache, terrainDescriptor);
 }

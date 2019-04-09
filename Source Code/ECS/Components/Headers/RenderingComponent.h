@@ -185,7 +185,7 @@ class RenderingComponent : public BaseComponentType<RenderingComponent, Componen
 
    protected:    
     bool onRefreshNodeData(RefreshNodeDataParams& refreshParams);
-    bool canDraw(RenderStagePass renderStagePass, U8 LoD);
+    bool canDraw(RenderStagePass renderStagePass, U8 LoD, bool refreshData);
 
     /// Called after the parent node was rendered
     void postRender(const SceneRenderState& sceneRenderState,

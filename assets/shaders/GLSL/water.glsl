@@ -32,7 +32,12 @@ uniform vec2 _noiseFactor;
 
 #include "BRDF.frag"
 #include "shadowMapping.frag"
+
+#if defined(PRE_PASS)
+#include "prePass.frag"
+#else
 #include "output.frag"
+#endif
 
 const float Eta = 0.15f; //water
 
@@ -80,8 +85,7 @@ void main()
     mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;
 
 #if defined(PRE_PASS)
-    _normalAndVelocityOut.rg = packNormal(normal);
-    _normalAndVelocityOut.ba = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
+    outputWithVelocity(normal);
 #else
 
     vec4 mixFactor = vec4(clamp(Fresnel(incident, normalize(VAR._normalWV)), 0.0f, 1.0f));

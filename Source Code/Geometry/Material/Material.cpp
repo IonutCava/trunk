@@ -71,7 +71,6 @@ Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descri
       _isRefractive(false),
       _hardwareSkinning(false),
       _ignoreXMLData(false),
-      _useTriangleStrip(true),
       _shadingMode(ShadingMode::COUNT),
       _bumpMethod(BumpMethod::NONE),
       _translucencySource(TranslucencySource::COUNT)
@@ -104,7 +103,7 @@ Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descri
 
     /// the z-pre-pass descriptor does not process colours
     RenderStateBlock zPrePassDescriptor(stateDescriptor);
-    zPrePassDescriptor.setColourWrites(false, false, false, false);
+    zPrePassDescriptor.setColourWrites(true, true, true, true);
     zPrePassDescriptor.setZFunc(ComparisonFunction::LESS);
 
     /// A descriptor used for rendering to depth map
@@ -152,7 +151,6 @@ Material_ptr Material::clone(const stringImpl& nameSuffix) {
     Material_ptr cloneMat = CreateResource<Material>(_parentCache, ResourceDescriptor(resourceName() + nameSuffix));
 
     cloneMat->_shadingMode = base._shadingMode;
-    cloneMat->_useTriangleStrip = base._useTriangleStrip;
     cloneMat->_doubleSided = base._doubleSided;
     cloneMat->_translucent = base._translucent;
     cloneMat->_receivesShadows = base._receivesShadows;
@@ -367,24 +365,21 @@ U32 Material::getProgramID(RenderStagePass renderStagePass) const {
 }
 
 bool Material::canDraw(RenderStagePass renderStagePass) {
-    for (U8 i = 0; i < to_U8(RenderPassType::COUNT); ++i) {
-        RenderStagePass stagePassIt(renderStagePass._stage, static_cast<RenderPassType>(i));
-        ShaderProgramInfo& info = shaderInfo(stagePassIt);
 
-        if (info._shaderCompStage == ShaderProgramInfo::BuildStage::QUEUED && info._shaderRef != nullptr) {
-            info._shaderCompStage = ShaderProgramInfo::BuildStage::COMPUTED;
-        }
+    ShaderProgramInfo& info = shaderInfo(renderStagePass);
+    if (info._shaderCompStage == ShaderProgramInfo::BuildStage::QUEUED && info._shaderRef != nullptr) {
+        info._shaderCompStage = ShaderProgramInfo::BuildStage::COMPUTED;
+    }
 
-        if (info._shaderCompStage == ShaderProgramInfo::BuildStage::COMPUTED) {
-            if (info._shaderRef != nullptr && info._shaderRef->getState() == ResourceState::RES_LOADED) {
-                info._shaderCompStage = ShaderProgramInfo::BuildStage::READY;
-                return false;
-            }
+    if (info._shaderCompStage == ShaderProgramInfo::BuildStage::COMPUTED) {
+        if (info._shaderRef != nullptr && info._shaderRef->getState() == ResourceState::RES_LOADED) {
+            info._shaderCompStage = ShaderProgramInfo::BuildStage::READY;
+            return false;
         }
+    }
 
-        if (info._shaderCompStage != ShaderProgramInfo::BuildStage::READY) {
-            return computeShader(stagePassIt);
-        }
+    if (info._shaderCompStage != ShaderProgramInfo::BuildStage::READY) {
+        return computeShader(renderStagePass);
     }
 
     return true;
@@ -414,9 +409,9 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
     }
 
 
-    const U32 slot0 = to_base(ShaderProgram::TextureUsage::UNIT0);
-    const U32 slot1 = to_base(ShaderProgram::TextureUsage::UNIT1);
-    const U32 slotOpacity = to_base(ShaderProgram::TextureUsage::OPACITY);
+    constexpr U32 slot0 = to_base(ShaderProgram::TextureUsage::UNIT0);
+    constexpr U32 slot1 = to_base(ShaderProgram::TextureUsage::UNIT1);
+    constexpr U32 slotOpacity = to_base(ShaderProgram::TextureUsage::OPACITY);
 
     DIVIDE_ASSERT(_shadingMode != ShadingMode::COUNT,
                   "Material computeShader error: Invalid shading mode specified!");
@@ -450,30 +445,26 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
         shaderPropertyDescriptor._defines.push_back(std::make_pair("OIT_PASS", true));
     }
 
-    if (!renderStagePass.isDepthPass()) {
-        // What kind of effects do we need?
-        if (_textures[slot0]) {
-            // Bump mapping?
-            if (_textures[to_base(ShaderProgram::TextureUsage::NORMALMAP)] &&  _bumpMethod != BumpMethod::NONE) {
-                shaderPropertyDescriptor._defines.push_back(std::make_pair("COMPUTE_TBN", true));
-                shader += ".NormalMap";  // Normal Mapping
-                if (_bumpMethod == BumpMethod::PARALLAX) {
-                    shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_PARALLAX_MAPPING", true));
-                    shader += ".ParallaxMap";
-                } else if (_bumpMethod == BumpMethod::RELIEF) {
-                    shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_RELIEF_MAPPING", true));
-                    shader += ".ReliefMap";
-                }
-            }
-        } else {
-            shaderPropertyDescriptor._defines.push_back(std::make_pair("SKIP_TEXTURES", true));
-            shader += ".NoTexture";
+    // Bump mapping?
+    if (_textures[to_base(ShaderProgram::TextureUsage::NORMALMAP)] &&  _bumpMethod != BumpMethod::NONE) {
+        shaderPropertyDescriptor._defines.push_back(std::make_pair("COMPUTE_TBN", true));
+        shader += ".NormalMap";  // Normal Mapping
+        if (_bumpMethod == BumpMethod::PARALLAX) {
+            shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_PARALLAX_MAPPING", true));
+            shader += ".ParallaxMap";
+        } else if (_bumpMethod == BumpMethod::RELIEF) {
+            shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_RELIEF_MAPPING", true));
+            shader += ".ReliefMap";
         }
+    }
+    if (!_textures[slot0]) {
+        shaderPropertyDescriptor._defines.push_back(std::make_pair("SKIP_TEXTURES", true));
+        shader += ".NoTexture";
+    }
 
-        if (_textures[to_base(ShaderProgram::TextureUsage::SPECULAR)]) {
-            shader += ".SpecularMap";
-            shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_SPECULAR_MAP", true));
-        }
+    if (!renderStagePass.isDepthPass() && _textures[to_base(ShaderProgram::TextureUsage::SPECULAR)]) {
+        shader += ".SpecularMap";
+        shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_SPECULAR_MAP", true));
     }
 
     updateTranslucency();
@@ -511,35 +502,36 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
         shader += ",Skinned";  //<Use "," instead of "." will add a Vertex only property
     }
 
-    switch (_shadingMode) {
-        default:
-        case ShadingMode::FLAT: {
-            shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_SHADING_FLAT", true));
-            shader += ".Flat";
-        } break;
-        /*case ShadingMode::PHONG: {
-            shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_SHADING_PHONG", true));
-            shader += ".Phong";
-        } break;*/
-        case ShadingMode::PHONG:
-        case ShadingMode::BLINN_PHONG: {
-            shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_SHADING_BLINN_PHONG", true));
-            shader += ".BlinnPhong";
-        } break;
-        case ShadingMode::TOON: {
-            shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_SHADING_TOON", true));
-            shader += ".Toon";
-        } break;
-        case ShadingMode::OREN_NAYAR: {
-            shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_SHADING_OREN_NAYAR", true));
-            shader += ".OrenNayar";
-        } break;
-        case ShadingMode::COOK_TORRANCE: {
-            shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_SHADING_COOK_TORRANCE", true));
-            shader += ".CookTorrance";
-        } break;
+    if (!renderStagePass.isDepthPass()) {
+        switch (_shadingMode) {
+            default:
+            case ShadingMode::FLAT: {
+                shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_SHADING_FLAT", true));
+                shader += ".Flat";
+            } break;
+            /*case ShadingMode::PHONG: {
+                shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_SHADING_PHONG", true));
+                shader += ".Phong";
+            } break;*/
+            case ShadingMode::PHONG:
+            case ShadingMode::BLINN_PHONG: {
+                shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_SHADING_BLINN_PHONG", true));
+                shader += ".BlinnPhong";
+            } break;
+            case ShadingMode::TOON: {
+                shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_SHADING_TOON", true));
+                shader += ".Toon";
+            } break;
+            case ShadingMode::OREN_NAYAR: {
+                shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_SHADING_OREN_NAYAR", true));
+                shader += ".OrenNayar";
+            } break;
+            case ShadingMode::COOK_TORRANCE: {
+                shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_SHADING_COOK_TORRANCE", true));
+                shader += ".CookTorrance";
+            } break;
+        }
     }
-
     
     stringImpl shaderName = shader;
     if (!shaderPropertyDescriptor._defines.empty()) {
@@ -599,15 +591,15 @@ bool Material::getTextureData(RenderStagePass renderStagePass, TextureDataContai
     }
 
     ret = getTextureData(ShaderProgram::TextureUsage::HEIGHTMAP, textureData) || ret;
-    
+    ret = getTextureData(ShaderProgram::TextureUsage::NORMALMAP, textureData) || ret;
+
     if (!depthStage) {
-        ret = getTextureData(ShaderProgram::TextureUsage::NORMALMAP, textureData) || ret;
         ret = getTextureData(ShaderProgram::TextureUsage::UNIT1, textureData) || ret;
         ret = getTextureData(ShaderProgram::TextureUsage::SPECULAR, textureData) || ret;
     }
 
     for (const ExternalTexture& tex : _externalTextures) {
-        if (!depthStage || (depthStage && tex._activeForDepth)) {
+        if (!depthStage || tex._activeForDepth) {
             if (textureData.setTexture(tex._texture->getData(), to_U8(tex._bindSlot), true) != TextureDataContainer::UpdateState::NOTHING) {
                 ret = true;
             }
@@ -618,27 +610,31 @@ bool Material::getTextureData(RenderStagePass renderStagePass, TextureDataContai
 }
 
 bool Material::getTextureDataFast(RenderStagePass renderStagePass, TextureDataContainer& textureData) {
-    bool ret = false;
-
-    TextureDataContainer::DataEntries& textures = textureData.textures();
-
     constexpr U8 transparentSlots[] = {
         to_base(ShaderProgram::TextureUsage::UNIT0),
         to_base(ShaderProgram::TextureUsage::OPACITY)
     };
 
     constexpr U8 extraSlots[] = {
-        to_base(ShaderProgram::TextureUsage::NORMALMAP),
         to_base(ShaderProgram::TextureUsage::UNIT1),
         to_base(ShaderProgram::TextureUsage::SPECULAR)
     };
 
+
+    bool ret = false;
+    TextureDataContainer::DataEntries& textures = textureData.textures();
     {
-        U8 heightSlot = to_base(ShaderProgram::TextureUsage::HEIGHTMAP);
+        constexpr U8 heightSlot = to_base(ShaderProgram::TextureUsage::HEIGHTMAP);
+        constexpr U8 normalSlot = to_base(ShaderProgram::TextureUsage::NORMALMAP);
         SharedLock r_lock(_textureLock);
-        const Texture_ptr& crtTexture = _textures[heightSlot];
-        if (crtTexture != nullptr) {
-            textures[heightSlot] = crtTexture->getData();
+        const Texture_ptr& crtHeightTexture = _textures[heightSlot];
+        if (crtHeightTexture != nullptr) {
+            textures[heightSlot] = crtHeightTexture->getData();
+            ret = true;
+        }
+        const Texture_ptr& crtNormalTexture = _textures[normalSlot];
+        if (crtNormalTexture != nullptr) {
+            textures[normalSlot] = crtNormalTexture->getData();
             ret = true;
         }
     }
@@ -667,7 +663,7 @@ bool Material::getTextureDataFast(RenderStagePass renderStagePass, TextureDataCo
     }
 
     for (const ExternalTexture& tex : _externalTextures) {
-        if (!depthStage || (depthStage && tex._activeForDepth)) {
+        if (!depthStage || tex._activeForDepth) {
             textures[to_U8(tex._bindSlot)] = tex._texture->getData();
             ret = true;
         }
@@ -699,14 +695,6 @@ void Material::setRefractive(const bool state) {
     }
 
     _isRefractive = state;
-    _needsNewShader = true;
-}
-
-void Material::useTriangleStrip(const bool state) {
-    if (_useTriangleStrip == state) {
-        return;
-    }
-    _useTriangleStrip = state;
     _needsNewShader = true;
 }
 

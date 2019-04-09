@@ -81,7 +81,7 @@ layout(binding = BUFFER_SCENE_DATA, std430) coherent readonly buffer dvd_SceneDa
     vec4   dvd_windDetails;
     //x - light bleed bias, y - min shadow variance, z - fade distance, w - max distance
     vec4   dvd_shadowingSettings;
-    //x - elapsed time, y - delta time, z - debug render, w.x - detail level
+    //x - elapsed time (ms), y - delta time (ms), z - debug render, w.x - detail level
     vec4   dvd_otherData;
     WaterBodyData dvd_waterEntities[];
 };

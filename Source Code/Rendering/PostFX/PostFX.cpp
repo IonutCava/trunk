@@ -38,6 +38,7 @@ PostFX::PostFX(GFXDevice& context, ResourceCache& cache)
     ParamHandler::instance().setParam<bool>(_ID("postProcessing.enableVignette"), false);
 
     _postFXTarget.disableState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER);
+    _postFXTarget.disableState(RTDrawDescriptor::State::CLEAR_COLOUR_BUFFERS);
     _postFXTarget.drawMask().disableAll();
     _postFXTarget.drawMask().setEnabled(RTAttachmentType::Colour, 0, true);
 

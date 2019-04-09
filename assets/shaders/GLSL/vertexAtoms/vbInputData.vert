@@ -35,7 +35,7 @@ void computeDataMinimal() {
     VAR.dvd_drawID = gl_DrawIDARB;
 
 #if defined(USE_GPU_SKINNING)
-#   if !defined(DEPTH_PASS)
+#   if !defined(SHADOW_PASS)
 #       if defined(COMPUTE_TBN) 
             applyBoneTransforms(dvd_Vertex, dvd_Normal, dvd_Tangent, dvd_lodLevel);
 #       else

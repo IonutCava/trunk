@@ -184,10 +184,6 @@ inline bool Material::receivesShadows() const {
     return _receivesShadows;
 }
 
-inline bool Material::useTriangleStrip() const {
-    return _useTriangleStrip;
-}
-
 inline bool Material::isReflective() const {
     return _colourData._shininess > 100 || _isReflective;
 }

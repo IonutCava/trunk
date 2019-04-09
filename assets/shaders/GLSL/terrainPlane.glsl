@@ -38,12 +38,8 @@ void main(void) {
 
 --Fragment.PrePass
 
-#include "utility.frag"
-#include "velocityCalc.frag"
-
-layout(location = 1) out vec4 _normalAndVelocityOut;
+#include "prePass.frag"
 
 void main() {
-    _normalAndVelocityOut.rg = packNormal(VAR._normalWV);
-    _normalAndVelocityOut.ba = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
+    outputNoVelocity();
 }

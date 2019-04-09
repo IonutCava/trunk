@@ -1,13 +1,13 @@
 #ifndef _BRDF_FRAG_
 #define _BRDF_FRAG_
 
+vec3 private_normalWV = vec3(0.0f);
+
 #if defined(COMPUTE_TBN)
 #include "bumpMapping.frag"
-#else
-#include "lightInput.cmn"
 #endif
 
-vec3 private_normalWV = vec3(0.0f);
+#include "lightInput.cmn"
 
 #include "lightData.frag"
 #include "materialData.frag"
@@ -143,24 +143,6 @@ vec4 getPixelColour(in vec4 albedo, in mat4 colourMatrix, in vec3 normal) {
 #endif //DEBUG_SHADOWMAPPING
 
     return colour;
-}
-
-vec3 getNormal() {
-    vec3 normal = VAR._normalWV;
-
-#if defined(COMPUTE_TBN)
-    if (dvd_lodLevel == 0) {
-        normal = getTBNMatrix() * getBump(dvd_TexCoord);
-    }
-#endif //COMPUTE_TBN
-
-#   if defined (USE_DOUBLE_SIDED)
-    if (!gl_FrontFacing) {
-        normal = -normal;
-    }
-#   endif //USE_DOUBLE_SIDED
-
-    return normal;
 }
 
 #endif

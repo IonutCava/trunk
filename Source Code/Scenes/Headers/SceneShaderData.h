@@ -97,8 +97,8 @@ class SceneShaderData {
         _dirty = true;
     }
 
-    inline void deltaTime(F32 deltaTimeSeconds) {
-        _bufferData._otherData.y = deltaTimeSeconds;
+    inline void deltaTime(F32 deltaTimeMS) {
+        _bufferData._otherData.y = deltaTimeMS;
         _dirty = true;
     }
 

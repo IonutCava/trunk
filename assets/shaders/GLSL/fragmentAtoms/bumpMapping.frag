@@ -1,9 +1,6 @@
 #ifndef _BUMP_MAPPING_FRAG_
 #define _BUMP_MAPPING_FRAG_
 
-#include "lightInput.cmn"
-#include "nodeBufferedInput.cmn"
-
 //Normal or BumpMap
 layout(binding = TEXTURE_NORMALMAP) uniform sampler2D texNormalMap;
 

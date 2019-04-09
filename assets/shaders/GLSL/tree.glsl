@@ -37,11 +37,9 @@ void main(void){
     VAR._vertexW = (dvd_Vertex + vec4(data.positionAndScale.xyz, 0.0f));
 
     VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
-#if !defined(DEPTH_PASS)
-    VAR._normalWV = normalize(mat3(dvd_ViewMatrix) * -dvd_Normal);
-#endif
 
 #if !defined(SHADOW_PASS)
+    VAR._normalWV = normalize(mat3(dvd_ViewMatrix) * -dvd_Normal);
     setClipPlanes(VAR._vertexW);
 #endif
 
@@ -80,25 +78,10 @@ void main (void) {
 
 --Fragment.PrePass
 
-#include "BRDF.frag"
-#include "materialData.frag"
-#include "velocityCalc.frag"
-
-layout(location = 1) out vec4 _normalAndVelocityOut;
+#include "prePass.frag"
 
 void main() {
-    updateTexCoord();
-
-    mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;
-
-#if defined(USE_ALPHA_DISCARD)
-    if (getAlbedo(colourMatrix).a < 1.0f - Z_TEST_SIGMA) {
-        discard;
-    }
-#endif
-
-    _normalAndVelocityOut.rg = packNormal(normalize(getNormal()));
-    _normalAndVelocityOut.ba = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
+    outputWithVelocity();
 }
 
 --Fragment.Shadow

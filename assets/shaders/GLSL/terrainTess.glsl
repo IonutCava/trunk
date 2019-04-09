@@ -452,7 +452,9 @@ void main(void)
 
 --Fragment
 
+#if !defined(PRE_PASS)
 layout(early_fragment_tests) in;
+#endif
 
 in float LoD;
 // x = distance, y = depth
@@ -467,7 +469,11 @@ noperspective in vec3 gs_edgeDist;
 
 #include "BRDF.frag"
 #include "terrainSplatting.frag"
+#if defined(PRE_PASS)
+#include "prePass.frag"
+#else
 #include "output.frag"
+#endif
 
 // ToDo: Move this above the includes
 #if defined(LOW_QUALITY)
@@ -522,8 +528,7 @@ void main(void)
 #endif
 
 #if defined(PRE_PASS)
-    _normalAndVelocityOut.rg = packNormal(normalize(normalWV));
-    _normalAndVelocityOut.ba = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
+    outputWithVelocity(normalWV);
 #else
     mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;
     vec4 colourOut = getPixelColour(albedo, colourMatrix, normalWV);

@@ -18,11 +18,16 @@ ShaderComputeQueue::~ShaderComputeQueue()
 }
 
 void ShaderComputeQueue::idle() {
+    constexpr U32 maxShadersPerCall = 64;
     Time::ScopedTimer timer(_queueComputeTimer);
 
+    U32 crtShaderCount = 0;
     UniqueLock lock(_queueLock);
     while (stepQueueLocked()) {
         ++_totalShaderComputeCount;
+        if (++crtShaderCount == maxShadersPerCall) {
+            break;
+        }
     }
 }
 

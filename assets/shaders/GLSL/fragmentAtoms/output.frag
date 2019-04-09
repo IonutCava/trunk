@@ -11,9 +11,6 @@ layout(location = 1) out float _revealage;
 layout(location = 2) out vec4  _modulate;
 #else
 layout(location = 0) out vec4 _colourOut;
-#if defined(PRE_PASS)
-layout(location = 1) out vec4 _normalAndVelocityOut;
-#endif
 #endif
 
 

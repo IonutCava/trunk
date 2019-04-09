@@ -96,8 +96,6 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
                                        _materialInstance.get(),
                                        EditorComponentFieldType::MATERIAL,
                                        false);
-
-        _materialInstance->useTriangleStrip(node.getObjectType()._value != ObjectType::SUBMESH);
         _materialInstanceCache = _materialInstance.get();
     }
 
@@ -256,12 +254,13 @@ void RenderingComponent::Update(const U64 deltaTimeUS) {
     BaseComponentType<RenderingComponent, ComponentType::RENDERING>::Update(deltaTimeUS);
 }
 
-bool RenderingComponent::canDraw(RenderStagePass renderStagePass, U8 LoD) {
+bool RenderingComponent::canDraw(RenderStagePass renderStagePass, U8 LoD, bool refreshData) {
     if (_parentSGN.getDrawState(renderStagePass, LoD)) {
-        if (getMaterialCache() != nullptr && !getMaterialCache()->canDraw(renderStagePass)) {
-            return false;
+        Material* matCache = getMaterialCache();
+        // Can we render without a material? Maybe. IDK.
+        if (matCache == nullptr || matCache->canDraw(renderStagePass)) {
+            return renderOptionEnabled(RenderOptions::IS_VISIBLE);
         }
-        return renderOptionEnabled(RenderOptions::IS_VISIBLE);
     }
 
     return false;
@@ -494,7 +493,7 @@ void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
     U8 lod = getLoDLevel(camera, renderStagePass._stage, sceneRenderState.lodThresholds());
 
     RenderPackage& pkg = getDrawPackage(renderStagePass);
-    if (canDraw(renderStagePass, lod)) {
+    if (canDraw(renderStagePass, lod, refreshData)) {
         if (pkg.empty()) {
             rebuildDrawCommands(renderStagePass);
         }

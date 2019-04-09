@@ -249,6 +249,11 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
         config.rendering.msaaSamples = 0;
         config.rendering.shadowMapping.msaaSamples = 0;
     }
+
+    if (s_activeStateTracker->_opengl46Supported) {
+        Console::printfn(Locale::get(_ID("GL_SHADER_THREADS")),
+                         GLUtil::getIntegerv(gl::GL_MAX_SHADER_COMPILER_THREADS_ARB));
+    }
     // Print all of the OpenGL functionality info to the console and log
     // How many uniforms can we send to fragment shaders
     Console::printfn(Locale::get(_ID("GL_MAX_UNIFORM")),
@@ -428,6 +433,10 @@ void GL_API::createOrValidateContextForCurrentThread(GFXDevice& context) {
             // Debug callback in a separate thread requires a flag to distinguish it
             // from the main thread's callbacks
             glDebugMessageCallback((GLDEBUGPROC)GLUtil::DebugCallback, GLUtil::_glSecondaryContext);
+        }
+
+        if (s_activeStateTracker->_opengl46Supported) {
+            gl::glMaxShaderCompilerThreadsARB(0xFFFFFFFF);
         }
     }
     initGLSW();

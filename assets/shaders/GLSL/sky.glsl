@@ -48,11 +48,8 @@ void main() {
 
 --Fragment.PrePass
 
-#include "utility.frag"
-
-layout(location = 1) out vec4 _normalAndVelocityOut;
+#include "prePass.frag"
 
 void main() {
-    _normalAndVelocityOut.rg = packNormal(normalize(VAR._normalWV));
-    _normalAndVelocityOut.ba = vec2(1.0f);
+    outputNoVelocity();
 }
