@@ -19,23 +19,43 @@ void _output(vec3 normal, float alphaFactor) {
     _normalAndVelocityOut.rg = packNormal(normalize(normal));
 }
 
-void outputNoVelocity(float alphaFactor = 1.0f) {
+void outputNoVelocity(float alphaFactor) {
     _output(getNormal(), alphaFactor);
     _normalAndVelocityOut.ba = vec2(1.0f);
 }
 
-void outputWithVelocity(float alphaFactor = 1.0f) {
+void outputNoVelocity() {
+    _output(getNormal(), 1.0f);
+    _normalAndVelocityOut.ba = vec2(1.0f);
+}
+
+void outputWithVelocity(float alphaFactor) {
     _output(getNormal(), alphaFactor);
     _normalAndVelocityOut.ba = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
 }
 
-void outputNoVelocity(vec3 normal, float alphaFactor = 1.0f) {
+void outputWithVelocity() {
+    _output(getNormal(), 1.0f);
+    _normalAndVelocityOut.ba = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
+}
+
+void outputNoVelocity(vec3 normal, float alphaFactor) {
     _output(normal, alphaFactor);
     _normalAndVelocityOut.ba = vec2(1.0f);
 }
 
-void outputWithVelocity(vec3 normal, float alphaFactor = 1.0f) {
+void outputNoVelocity(vec3 normal) {
+    _output(normal, 1.0f);
+    _normalAndVelocityOut.ba = vec2(1.0f);
+}
+
+void outputWithVelocity(vec3 normal, float alphaFactor) {
     _output(normal, alphaFactor);
+    _normalAndVelocityOut.ba = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
+}
+
+void outputWithVelocity(vec3 normal) {
+    _output(normal, 1.0f);
     _normalAndVelocityOut.ba = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
 }
 #endif //_PRE_PASS_FRAG_
