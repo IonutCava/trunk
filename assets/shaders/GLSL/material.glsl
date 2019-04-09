@@ -37,5 +37,5 @@ void main (void) {
     }
 #endif
 
-    writeOutput(getPixelColour(albedo, colourMatrix, normal), packNormal(normal));
+    writeOutput(getPixelColour(albedo, colourMatrix, normal));
 }

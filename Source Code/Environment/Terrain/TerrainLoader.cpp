@@ -297,7 +297,9 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     ShaderProgram_ptr terrainColourShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderColour);
 
     ResourceDescriptor terrainShaderPrePass(shaderName + ".PrePass-" + name);
-    terrainShaderPrePass.setPropertyDescriptor(shaderDescriptor);
+    ShaderProgramDescriptor prepassShaderDescriptor = shaderDescriptor;
+    prepassShaderDescriptor._defines.push_back(std::make_pair("PRE_PASS", true));
+    terrainShaderPrePass.setPropertyDescriptor(prepassShaderDescriptor);
     ShaderProgram_ptr terrainPrePassShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderPrePass);
 
     ResourceDescriptor terrainShaderColourLQ(shaderName + ".Colour.LowQuality-" + name);

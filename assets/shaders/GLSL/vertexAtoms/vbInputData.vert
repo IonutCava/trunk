@@ -8,26 +8,26 @@
 #endif
 
 vec4   dvd_Vertex;
-
-#if !defined(DEPTH_PASS)
-vec4   dvd_Colour;
 vec3   dvd_Normal;
 #if defined(COMPUTE_TBN)
 vec3   dvd_Tangent;
 #endif
+
+#if !defined(DEPTH_PASS)
+vec4   dvd_Colour;
 #endif
 
 void computeDataMinimal() {
     dvd_Vertex = vec4(inVertexData, 1.0);
     VAR._texCoord = inTexCoordData;
+    dvd_Normal = UNPACK_FLOAT(inNormalData);
 
 #if !defined(DEPTH_PASS)
-    dvd_Normal = UNPACK_FLOAT(inNormalData);
-#if defined(COMPUTE_TBN)
-    dvd_Tangent = UNPACK_FLOAT(inTangentData);
+    dvd_Colour = inColourData;
 #endif
 
-    dvd_Colour = inColourData;
+#if defined(COMPUTE_TBN)
+    dvd_Tangent = UNPACK_FLOAT(inTangentData);
 #endif
 
     VAR.dvd_baseInstance = gl_BaseInstanceARB;

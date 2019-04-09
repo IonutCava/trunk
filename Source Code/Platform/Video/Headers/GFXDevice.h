@@ -152,8 +152,8 @@ public:
     enum class ScreenTargets : U8 {
         ALBEDO = 0,
         NORMALS_AND_VELOCITY = 1,
-        EXTRA = 2,
-        MODULATE = 3,
+        //EXTRA = 2,
+        MODULATE = 2,
         COUNT,
         ACCUMULATION = ALBEDO,
         REVEALAGE = NORMALS_AND_VELOCITY,

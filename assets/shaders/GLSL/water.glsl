@@ -44,7 +44,7 @@ float Fresnel(in vec3 viewDir, in vec3 normal) {
     return Eta + (1.0 - Eta) * pow(max(0.0f, 1.0f - dot(viewDir, normal)), 5.0f);
 }
 
-void main (void)
+void main()
 {  
     const float kDistortion = 0.015f;
     const float kRefraction = 0.09f;
@@ -76,17 +76,19 @@ void main (void)
     normal = normalize(normal * 2.0f - 1.0f);
 
     normal = normalize(getTBNMatrix() * normal);
-    vec4 mixFactor = vec4(clamp(Fresnel(incident, normalize(VAR._normalWV)), 0.0f, 1.0f));
-    vec4 texColour = mix(texture(texReflectPlanar, uvFinalReflect),
-                         texture(texRefractPlanar, uvFinalRefract),
-                         mixFactor);
 
     mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;
-    writeOutput(getPixelColour(texColour, colourMatrix, normal), packNormal(normal));
-}
 
---Fragment.PrePass
+#if defined(PRE_PASS)
+    _normalAndVelocityOut.rg = packNormal(normal);
+    _normalAndVelocityOut.ba = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
+#else
 
-void main() {
+    vec4 mixFactor = vec4(clamp(Fresnel(incident, normalize(VAR._normalWV)), 0.0f, 1.0f));
+    vec4 texColour = mix(texture(texReflectPlanar, uvFinalReflect),
+        texture(texRefractPlanar, uvFinalRefract),
+        mixFactor);
 
+    writeOutput(getPixelColour(texColour, colourMatrix, normal));
+#endif
 }

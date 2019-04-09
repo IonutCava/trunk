@@ -512,19 +512,24 @@ void main(void)
 {
     updateTexCoord();
 
-    vec3 normalWV = vec3(0.0);
+    vec3 normalWV = vec3(0.0f);
     vec4 albedo = mix(TerrainMappingRoutine(normalWV), UnderwaterMappingRoutine(normalWV), _waterDetails.x);
 
+#if defined(TOGGLE_WIREFRAME)
+    const float LineWidth = 0.75f;
+    float d = min(min(gs_edgeDist.x, gs_edgeDist.y), gs_edgeDist.z);
+    colourOut = mix(vec4(gs_wireColor, 1.0f), colourOut, smoothstep(LineWidth - 1, LineWidth + 1, d));
+#endif
+
+#if defined(PRE_PASS)
+    _normalAndVelocityOut.rg = packNormal(normalize(normalWV));
+    _normalAndVelocityOut.ba = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
+#else
     mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;
     vec4 colourOut = getPixelColour(albedo, colourMatrix, normalWV);
 
-#if defined(TOGGLE_WIREFRAME)
-    const float LineWidth = 0.75;
-    float d = min(min(gs_edgeDist.x, gs_edgeDist.y), gs_edgeDist.z);
-    colourOut = mix(vec4(gs_wireColor, 1.0), colourOut, smoothstep(LineWidth - 1, LineWidth + 1, d));
+    writeOutput(colourOut);
 #endif
-
-    writeOutput(colourOut, packNormal(normalWV));
 }
 
 --Fragment.Shadow

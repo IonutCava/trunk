@@ -8,12 +8,14 @@
 
 layout(location = 0) out vec4  _accum;
 layout(location = 1) out float _revealage;
-layout(location = 2) out vec4  _normalAndVelocityOut;
-layout(location = 3) out vec4  _modulate;
+layout(location = 2) out vec4  _modulate;
 #else
 layout(location = 0) out vec4 _colourOut;
+#if defined(PRE_PASS)
 layout(location = 1) out vec4 _normalAndVelocityOut;
 #endif
+#endif
+
 
 #if defined(OIT_PASS)
 #if USE_COLOURED_WOIT
@@ -81,7 +83,7 @@ float nvidiaSample(in vec4 color, in float linearDepth) {
 }
 #endif
 
-void writeOutput(vec4 colour, vec2 normal, vec2 velocity) {
+void writeOutput(vec4 colour) {
 #if defined(OIT_PASS)
     float linearDepth = abs(1.0 / gl_FragCoord.w);
     //float linearDepth = ToLinearDepth(getDepthValue(getScreenPositionNormalised()));
@@ -92,11 +94,7 @@ void writeOutput(vec4 colour, vec2 normal, vec2 velocity) {
     //writePixel(colour, linearDepth);
 #endif //USE_COLOURED_WOIT
 
-    float weight = nvidiaSample(colour, linearDepth);
-    if (colour.a > Z_TEST_SIGMA) {
-        _normalAndVelocityOut.rg = normal;
-        _normalAndVelocityOut.ba = velocity;
-    }
+    nvidiaSample(colour, linearDepth);
 #else //OIT_PASS
 
 // write depth value to alpha for refraction?
@@ -104,21 +102,11 @@ void writeOutput(vec4 colour, vec2 normal, vec2 velocity) {
     if (dvd_crtStage == STAGE_REFRACTION) {
         _colourOut.a = 0.5f;
     }
-    _normalAndVelocityOut.rg = normal;
-    _normalAndVelocityOut.ba = velocity;
 #endif //OIT_PASS
 }
 
-void writeOutput(vec4 colour, vec2 normal) {
-    writeOutput(colour, normal, velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised()));
-}
-
-void writeOutput(vec3 colour, vec2 normal) {
-    writeOutput(vec4(colour, 1.0f), normal);
-}
-
-void writeOutput(vec4 colour) {
-    writeOutput(colour, packNormal(normalize(VAR._normalWV)));
+void writeOutput(vec3 colour) {
+    writeOutput(vec4(colour, 1.0f));
 }
 
 #endif //_OUTPUT_FRAG_

@@ -1,5 +1,3 @@
-
-
 -- Vertex
 
 #include "vbInputData.vert"
@@ -45,10 +43,16 @@ vec3 sunColour(){
 void main() {
     vec3 sky_colour = textureLod(texSky, vec4(VAR._vertexW.xyz - dvd_cameraPosition.xyz, 0), 0).rgb;
     vec4 skyColour = vec4(enable_sun ? sky_colour * sunColour() : sky_colour, 1.0);
-    writeOutput(skyColour, packNormal(normalize(VAR._normalWV)), vec2(1.0));
+    writeOutput(skyColour);
 }
 
 --Fragment.PrePass
 
+#include "utility.frag"
+
+layout(location = 1) out vec4 _normalAndVelocityOut;
+
 void main() {
+    _normalAndVelocityOut.rg = packNormal(normalize(VAR._normalWV));
+    _normalAndVelocityOut.ba = vec2(1.0f);
 }

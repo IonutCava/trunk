@@ -439,6 +439,7 @@ bool RenderPassManager::prePass(const VisibleNodeList& nodes, const PassParams& 
     GFX::EnqueueCommand(bufferInOut, memCmd);
 
     if (doPrePass) {
+        const bool hasNormalsTarget = target.hasAttachment(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY));
 
         GFX::BeginDebugScopeCommand beginDebugScopeCmd;
         beginDebugScopeCmd._scopeID = 0;
@@ -448,10 +449,25 @@ bool RenderPassManager::prePass(const VisibleNodeList& nodes, const PassParams& 
         RenderStagePass stagePass(params._stage, RenderPassType::PRE_PASS, params._passVariant, params._passIndex);
         prepareRenderQueues(stagePass, params, nodes, true, bufferInOut);
 
+        RTDrawDescriptor normalsAndDepthPolicy = {};
+        normalsAndDepthPolicy.drawMask().setEnabled(RTAttachmentType::Depth, 0, true);
+        normalsAndDepthPolicy.enableState(RTDrawDescriptor::State::CLEAR_COLOUR_BUFFERS);
+        normalsAndDepthPolicy.clearColour(to_U8(GFXDevice::ScreenTargets::ALBEDO), false);
+        normalsAndDepthPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::ALBEDO), false);
+
+        if (hasNormalsTarget) {
+            normalsAndDepthPolicy.clearColour(to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY), true);
+            normalsAndDepthPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY), true);
+        }
+
         if (params._bindTargets) {
             GFX::BeginRenderPassCommand beginRenderPassCommand;
             beginRenderPassCommand._target = params._target;
-            beginRenderPassCommand._descriptor = RenderTarget::defaultPolicyDepthOnly();
+            if (hasNormalsTarget) {
+                beginRenderPassCommand._descriptor = normalsAndDepthPolicy;
+            } else {
+                beginRenderPassCommand._descriptor = RenderTarget::defaultPolicyDepthOnly();
+            }
             beginRenderPassCommand._name = "DO_PRE_PASS";
             GFX::EnqueueCommand(bufferInOut, beginRenderPassCommand);
         }
@@ -486,16 +502,18 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
 
     bool clearVelocity = false;
     if (params._target._usage != RenderTargetUsage::COUNT) {
+        const bool hasNormalsTarget = target.hasAttachment(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY));
+
         Attorney::SceneManagerRenderPass::preRender(sceneManager, stagePass, *params._camera, target, bufferInOut);
     
         if (params._stage != RenderStage::SHADOW) {
-            GFX::BindDescriptorSetsCommand bindDescriptorSets;
+            GFX::BindDescriptorSetsCommand bindDescriptorSets = {};
             // Bind the depth buffers
             TextureData depthBufferTextureData = target.getAttachment(RTAttachmentType::Depth, 0).texture()->getData();
             bindDescriptorSets._set._textureData.setTexture(depthBufferTextureData, to_U8(ShaderProgram::TextureUsage::DEPTH));
 
             TextureData prevDepthData = depthBufferTextureData;
-            if (target.hasAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY))) {
+            if (hasNormalsTarget) {
                 clearVelocity = true;
                 const RTAttachment_ptr& velocityAttachment = target.getAttachmentPtr(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY));
                 const Texture_ptr& prevDepthTexture = _context.getPrevDepthBuffer();
@@ -512,10 +530,11 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
             RTDrawDescriptor drawPolicy =  params._drawPolicy ? *params._drawPolicy
                                                                : RenderTarget::defaultPolicyNoClear();
 
-            if (clearVelocity) {
-                drawPolicy.enableState(RTDrawDescriptor::State::CLEAR_COLOUR_BUFFERS);
-                drawPolicy.clearColour(to_U8(GFXDevice::ScreenTargets::ALBEDO), false);
-                drawPolicy.clearColour(to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY), true);
+            drawPolicy.enableState(RTDrawDescriptor::State::CLEAR_COLOUR_BUFFERS);
+            drawPolicy.clearColour(to_U8(GFXDevice::ScreenTargets::ALBEDO), false);
+            if (hasNormalsTarget) {
+                drawPolicy.clearColour(to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY), false);
+                drawPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY), false);
             }
 
             if (prePassExecuted) {
@@ -581,11 +600,11 @@ void RenderPassManager::woitPass(const VisibleNodeList& nodes, const PassParams&
             state1._blendProperties._blendDest = BlendProperty::INV_SRC_COLOR;
             state1._blendProperties._blendOp = BlendOperation::ADD;
 
-            RTBlendState& state2 = beginRenderPassOitCmd._descriptor.blendState(to_U8(GFXDevice::ScreenTargets::EXTRA));
+            /*RTBlendState& state2 = beginRenderPassOitCmd._descriptor.blendState(to_U8(GFXDevice::ScreenTargets::EXTRA));
             state2._blendProperties._enabled = true;
             state2._blendProperties._blendSrc = BlendProperty::ONE;
             state2._blendProperties._blendDest = BlendProperty::ONE;
-            state2._blendProperties._blendOp = BlendOperation::ADD;
+            state2._blendProperties._blendOp = BlendOperation::ADD;*/
         }
 
         // Don't clear our screen target. That would be BAD.

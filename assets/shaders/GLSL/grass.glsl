@@ -78,21 +78,29 @@ void main (void){
     vec3 normal = getNormal();
 
     mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;
-    writeOutput(getPixelColour(albedo, colourMatrix, normal), packNormal(normal));
+    writeOutput(getPixelColour(albedo, colourMatrix, normal));
 }
 
 --Fragment.PrePass
+
+#include "BRDF.frag"
+#include "velocityCalc.frag"
 
 flat in int _arrayLayerFrag;
 flat in float _alphaFactor;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuseGrass;
 
+layout(location = 1) out vec4 _normalAndVelocityOut;
+
 void main() {
     vec4 colour = texture(texDiffuseGrass, vec3(VAR._texCoord, _arrayLayerFrag));
     if (colour.a * _alphaFactor < 1.0 - Z_TEST_SIGMA) {
         discard;
     }
+
+    _normalAndVelocityOut.rg = packNormal(normalize(getNormal()));
+    _normalAndVelocityOut.ba = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
 }
 
 

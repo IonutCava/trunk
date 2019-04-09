@@ -74,19 +74,31 @@ void main (void) {
     }
 #endif
 
-    writeOutput(getPixelColour(albedo, colourMatrix, normal), packNormal(normal));
+    writeOutput(getPixelColour(albedo, colourMatrix, normal));
 }
 
 
---Fragment.PrePass.AlphaDiscard
+--Fragment.PrePass
+
+#include "BRDF.frag"
 #include "materialData.frag"
+#include "velocityCalc.frag"
+
+layout(location = 1) out vec4 _normalAndVelocityOut;
 
 void main() {
+    updateTexCoord();
+
     mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;
 
+#if defined(USE_ALPHA_DISCARD)
     if (getAlbedo(colourMatrix).a < 1.0f - Z_TEST_SIGMA) {
         discard;
     }
+#endif
+
+    _normalAndVelocityOut.rg = packNormal(normalize(getNormal()));
+    _normalAndVelocityOut.ba = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
 }
 
 --Fragment.Shadow

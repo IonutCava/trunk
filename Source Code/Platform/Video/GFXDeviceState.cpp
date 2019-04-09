@@ -261,11 +261,11 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 
         const RenderTarget& screenTarget = _rtPool->renderTarget(RenderTargetUsage::SCREEN);
         const RTAttachment_ptr& screenAttachment = screenTarget.getAttachmentPtr(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO));
-        const RTAttachment_ptr& normalsAttachment = screenTarget.getAttachmentPtr(RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_VELOCITY));
+        //const RTAttachment_ptr& normalsAttachment = screenTarget.getAttachmentPtr(RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_VELOCITY));
         const RTAttachment_ptr& screenDepthAttachment = screenTarget.getAttachmentPtr(RTAttachmentType::Depth, 0);
 
         vector<ExternalRTAttachmentDescriptor> externalAttachments = {
-            { normalsAttachment,  RTAttachmentType::Colour, to_U8(ScreenTargets::EXTRA) },
+            //{ normalsAttachment,  RTAttachmentType::Colour, to_U8(ScreenTargets::EXTRA) },
             { screenAttachment,  RTAttachmentType::Colour, to_U8(ScreenTargets::MODULATE) },
             { screenDepthAttachment,  RTAttachmentType::Depth }
         };
