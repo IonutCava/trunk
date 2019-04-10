@@ -24,8 +24,8 @@ layout(binding = TEXTURE_PREPASS_SHADOWS)  uniform sampler2D               texDe
 float getShadowFactorInternal(int idx) {
 
 #if !defined(PRE_PASS)
-    if (idx == 0) {
-        //return texture(texDepthMapFromPrePass, getScreenPositionNormalised()).r;
+    if (idx >= 0 && idx < 4) {
+        return texture(texDepthMapFromPrePass, getScreenPositionNormalised())[idx];
     }
 #endif
 

@@ -11,7 +11,7 @@
 #include "shadowMapping.frag"
 
 layout(location = TARGET_NORMALS_AND_VELOCITY) out vec4 _normalAndVelocityOut;
-//r = CSM shadow factor for main light id, g - specular/roughness
+//r,g,b = CSM shadow factor for light ids 0, 1 & 2; a - specular/roughness
 layout(location = TARGET_EXTRA) out vec2 _extraDetailsOut;
 
 void _output(vec3 normal, float alphaFactor) {
@@ -25,7 +25,9 @@ void _output(vec3 normal, float alphaFactor) {
 #endif
 
     _normalAndVelocityOut.rg = packNormal(normalize(normal));
-    _extraDetailsOut.r = getShadowFactor(0);
+    for (int i = 0; i < 3; ++i) {
+        _extraDetailsOut[i] = getShadowFactor(i);
+    }
 }
 
 void outputNoVelocity(float alphaFactor) {
