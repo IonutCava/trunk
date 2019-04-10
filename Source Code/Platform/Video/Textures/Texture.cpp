@@ -186,9 +186,11 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name, Imag
         // If we have an alpha channel, we must check for translucency/transparency
 
         FileWithPath fwp = splitPathToNameAndLocation(name);
-        const stringImpl cachePath = Paths::g_cacheLocation + Paths::Textures::g_metadataLocation + fwp._path + "/";
+        Util::ReplaceStringInPlace(fwp._path, "/", "_");
+        const stringImpl cachePath = Paths::g_cacheLocation + Paths::Textures::g_metadataLocation;
+        const stringImpl cacheName = fwp._path + "_" + fwp._fileName + ".cache";
         ByteBuffer metadataCache;
-        if (metadataCache.loadFromFile(cachePath, fwp._fileName + ".cache")) {
+        if (metadataCache.loadFromFile(cachePath, cacheName)) {
             metadataCache >> _hasTransparency;
             metadataCache >> _hasTranslucency;
         } else {
@@ -226,7 +228,7 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name, Imag
 
                 metadataCache << _hasTransparency;
                 metadataCache << _hasTranslucency;
-                metadataCache.dumpToFile(cachePath, fwp._fileName + ".cache");
+                metadataCache.dumpToFile(cachePath, cacheName);
             }
         }
 

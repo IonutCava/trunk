@@ -135,9 +135,9 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 
     U8 msaaSamples = config.rendering.msaaSamples;
 
-    TextureDescriptor screenDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGB, GFXDataFormat::FLOAT_16);
+    TextureDescriptor screenDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGBA, GFXDataFormat::FLOAT_16);
     TextureDescriptor normalAndVelocityDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGBA, GFXDataFormat::FLOAT_16);
-    TextureDescriptor lightingDetails(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGBA, GFXDataFormat::UNSIGNED_BYTE);
+    TextureDescriptor lightingDetails(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGB, GFXDataFormat::FLOAT_16);
     TextureDescriptor depthDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::FLOAT_32);
 
     SamplerDescriptor defaultSampler = {};
@@ -353,9 +353,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 
         refDesc._name = "Reflection_Cube_Array";
         tempHandle = _rtPool->allocateRT(RenderTargetUsage::REFLECTION_CUBE, refDesc);
-
-        refDesc._name = "Refraction_Cube_Array";
-        tempHandle = _rtPool->allocateRT(RenderTargetUsage::REFRACTION_CUBE, refDesc);
     }
 
     return ErrorCode::NO_ERR;

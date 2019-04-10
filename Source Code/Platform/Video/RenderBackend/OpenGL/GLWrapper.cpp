@@ -632,8 +632,8 @@ bool GL_API::initGLSW() {
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
-        "#define TEXTURE_REFRACTION_CUBE " +
-        to_stringImpl(to_base(ShaderProgram::TextureUsage::REFRACTION_CUBE)),
+        "#define TEXTURE_PREPASS_SHADOWS " +
+        to_stringImpl(to_base(ShaderProgram::TextureUsage::PREPASS_SHADOWS)),
         lineOffsets);
 
     appendToShaderHeader(

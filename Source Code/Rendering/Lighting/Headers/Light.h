@@ -190,6 +190,17 @@ class Light : public GUIDWrapper
 
     vec3<F32> getPosition() const;
     vec3<F32> getDirection() const;
+
+   protected:
+     friend class LightPool;
+     inline void shadowIndex(I32 index) {
+         _shadowIndex = index;
+     }
+
+     inline I32 shadowIndex() const {
+         return _shadowIndex;
+     }
+
    protected:
     SceneGraphNode& _sgn;
     /// x - range, y = iner cone, z - cos outer cone
@@ -207,6 +218,7 @@ class Light : public GUIDWrapper
     ShadowCameraPool _shadowCameras;
     LightPool& _parentPool;
     bool _enabled;
+    I32 _shadowIndex = -1;
 };
 
 };  // namespace Divide

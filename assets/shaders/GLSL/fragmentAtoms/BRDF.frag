@@ -33,18 +33,18 @@ vec3 private_normalWV = vec3(0.0f);
 #define MAX_LIGHTS_PER_PASS MAX_NUM_LIGHTS_PER_TILE
 #endif
 
-vec4 getDirectionalLightContribution(in uint dirLightCount, in vec4 albedoAndShadow, in vec4 specular) {
+vec4 getDirectionalLightContribution(in uint dirLightCount, in vec3 albedo, in vec4 specular) {
     vec4 ret = vec4(0.0f);
 
     for (uint lightIdx = 0; lightIdx < dirLightCount; ++lightIdx) {
         const Light light = dvd_LightSource[lightIdx];
-        ret += getBRDFFactors(vec4(light._colour.rgb, 1.0f), specular, albedoAndShadow , -light._directionWV.xyz);
+        ret += getBRDFFactors(vec4(light._colour.rgb, 1.0f), specular, vec4(albedo, getShadowFactor(light._options.y)), -light._directionWV.xyz);
     }
 
     return ret;
 }
 
-vec4 getPointLightContribution(in uint tileIndex, in uint offset, in vec4 albedoAndShadow, in vec4 specular) {
+vec4 getPointLightContribution(in uint tileIndex, in uint offset, in vec3 albedo, in vec4 specular) {
     vec4 ret = vec4(0.0f);
 
     uint tileOffset = tileIndex * MAX_NUM_LIGHTS_PER_TILE;
@@ -59,13 +59,13 @@ vec4 getPointLightContribution(in uint tileIndex, in uint offset, in vec4 albedo
         const vec3 lightDirection = light._positionWV.xyz - VAR._vertexWV.xyz;
         const vec4 colourAndAtt = vec4(light._colour.rgb, getLightAttenuationPoint(light, lightDirection));
 
-        ret += getBRDFFactors(colourAndAtt, specular, albedoAndShadow, lightDirection);
+        ret += getBRDFFactors(colourAndAtt, specular, vec4(albedo, getShadowFactor(light._options.y)), lightDirection);
     }
 
     return ret;
 }
 
-vec4 getSpotLightContribution(in uint tileIndex, in uint offset, in uint pointLightCount, in vec4 albedoAndShadow, in vec4 specular) {
+vec4 getSpotLightContribution(in uint tileIndex, in uint offset, in uint pointLightCount, in vec3 albedo, in vec4 specular) {
     vec4 ret = vec4(0.0f);
 
     uint tileOffset = tileIndex * MAX_NUM_LIGHTS_PER_TILE;
@@ -79,7 +79,7 @@ vec4 getSpotLightContribution(in uint tileIndex, in uint offset, in uint pointLi
         const vec3 lightDirection = light._positionWV.xyz - VAR._vertexWV.xyz;
         const vec4 colourAndAtt = vec4(light._colour.rgb, getLightAttenuationSpot(light, lightDirection));
 
-        ret += getBRDFFactors(colourAndAtt, specular, albedoAndShadow, lightDirection);
+        ret += getBRDFFactors(colourAndAtt, specular, vec4(albedo, getShadowFactor(light._options.y)), lightDirection);
     }
 
     return ret;
@@ -93,21 +93,21 @@ vec4 getLitColour(in vec4 albedo, in mat4 colourMatrix, in vec3 normal) {
 
 #else //USE_SHADING_FLAT
 
-vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normal, in float shadowFactor) {
+vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normal) {
     private_normalWV = normal;
 
     const uint dirLightCount = dvd_LightData.x;
     const vec4 specular = vec4(getSpecular(colourMatrix), getReflectivity(colourMatrix));
 
     // Apply all lighting contributions (.a = reflectionCoeff)
-    vec4 lightColour = getDirectionalLightContribution(dirLightCount, vec4(albedo, shadowFactor), specular);
+    vec4 lightColour = getDirectionalLightContribution(dirLightCount, albedo, specular);
 
     if (dvd_lodLevel < 2)
     {
          uint tileIndex = GetTileIndex(gl_FragCoord.xy);
-         lightColour += getPointLightContribution(tileIndex, dirLightCount, vec4(albedo, shadowFactor), specular);
+         lightColour += getPointLightContribution(tileIndex, dirLightCount, albedo, specular);
          // Move past the first sentinel to get to the spot lights
-         //lightColour += getSpotLightContribution(tileIndex, dirLightCount, dvd_LightData.y, vec4(albedo, shadowFactor), specular);
+         lightColour += getSpotLightContribution(tileIndex, dirLightCount, dvd_LightData.y, albedo, specular);
     }
 
     lightColour.rgb += getEmissive(colourMatrix);
@@ -121,14 +121,12 @@ vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normal, in float
         */
     }
 
-    return lightColour.rgb * shadowFactor;
+    return lightColour.rgb;
 }
 #endif //USE_SHADING_FLAT
 
 vec4 getPixelColour(in vec4 albedo, in mat4 colourMatrix, in vec3 normal) {
-    const float shadowFactor = getShadowFactor();
-
-    vec4 colour = vec4(getLitColour(albedo.rgb, colourMatrix, normal, shadowFactor), albedo.a);
+    vec4 colour = vec4(getLitColour(albedo.rgb, colourMatrix, normal), albedo.a);
 
 #if !defined(DISABLE_SHADOW_MAPPING) && defined(DEBUG_SHADOWMAPPING)
     if (dvd_showDebugInfo) {

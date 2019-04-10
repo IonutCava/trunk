@@ -89,7 +89,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
         PROJECTION = 11,
         REFLECTION_PLANAR = 12,
         REFRACTION_PLANAR = 13,
-        REFRACTION_CUBE = 14,
+        PREPASS_SHADOWS = 14,
         DEPTH_PREV = 15,
         COUNT,
 
@@ -108,7 +108,6 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
 
     /// Is the shader ready for drawing?
     virtual bool isValid() const = 0;
-    virtual bool update(const U64 deltaTimeUS);
     virtual bool load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) override;
     virtual bool unload() noexcept override;
 

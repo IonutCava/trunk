@@ -51,11 +51,10 @@ enum class RenderTargetUsage : U8 {
     REFLECTION_PLANAR = 4,
     REFRACTION_PLANAR = 5,
     REFLECTION_CUBE = 6,
-    REFRACTION_CUBE = 7,
-    ENVIRONMENT = 8,
-    SHADOW = 9,
-    EDITOR = 10,
-    OTHER = 11,
+    ENVIRONMENT = 7,
+    SHADOW = 8,
+    EDITOR = 9,
+    OTHER = 10,
     COUNT
 };
 

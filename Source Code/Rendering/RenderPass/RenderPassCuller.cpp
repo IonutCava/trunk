@@ -81,6 +81,7 @@ VisibleNodeList& RenderPassCuller::frustumCull(const CullParams& params)
         nodeParams._lodThresholds = params._sceneState == nullptr ? vec4<U16>() : params._sceneState->renderState().lodThresholds();
         nodeParams._cullMaxDistanceSq = std::min(params._visibilityDistanceSq, SQUARED(params._camera->getZPlanes().y));
         nodeParams._minLoD = params._minLoD;
+        nodeParams._minExtents = params._minExtents;
         nodeParams._threaded = params._threaded;
         nodeParams._stage = stage;
 

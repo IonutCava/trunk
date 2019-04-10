@@ -25,7 +25,7 @@ namespace {
     const char* g_PassThroughMaterialShaderName = "passThrough";
 
     stringImpl getDefinesHash(const vector<std::pair<stringImpl, bool>>& defines) {
-        size_t hash = 17;
+        size_t hash = 31;
         for (auto entry : defines) {
             Util::Hash_combine(hash, _ID(entry.first.c_str()));
             Util::Hash_combine(hash, entry.second);
@@ -83,7 +83,6 @@ Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descri
     _textureExtenalFlag[to_base(ShaderProgram::TextureUsage::REFLECTION_PLANAR)] = true;
     _textureExtenalFlag[to_base(ShaderProgram::TextureUsage::REFRACTION_PLANAR)] = true;
     _textureExtenalFlag[to_base(ShaderProgram::TextureUsage::REFLECTION_CUBE)] = true;
-    _textureExtenalFlag[to_base(ShaderProgram::TextureUsage::REFRACTION_CUBE)] = true;
     _textureExtenalFlag[to_base(ShaderProgram::TextureUsage::DEPTH)] = true;
     _textureExtenalFlag[to_base(ShaderProgram::TextureUsage::DEPTH_PREV)] = true;
 
@@ -214,8 +213,7 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
     
     assert(textureUsageSlot != ShaderProgram::TextureUsage::REFLECTION_PLANAR &&
            textureUsageSlot != ShaderProgram::TextureUsage::REFRACTION_PLANAR &&
-           textureUsageSlot != ShaderProgram::TextureUsage::REFLECTION_CUBE &&
-           textureUsageSlot != ShaderProgram::TextureUsage::REFRACTION_CUBE);
+           textureUsageSlot != ShaderProgram::TextureUsage::REFLECTION_CUBE);
 
     {
         UniqueLockShared w_lock(_textureLock);
@@ -535,7 +533,7 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
     
     stringImpl shaderName = shader;
     if (!shaderPropertyDescriptor._defines.empty()) {
-        shaderName.append(getDefinesHash(shaderPropertyDescriptor._defines));
+        shaderName.append("_" + getDefinesHash(shaderPropertyDescriptor._defines));
     }
 
     ResourceDescriptor shaderDescriptor(shader);

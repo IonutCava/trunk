@@ -12,7 +12,7 @@ vec4 Phong(in vec4 lightColourAndAtt,
     vec3 colourOut = clamp(lightColourAndAtt.rgb * albedo * NDotL * lightColourAndAtt.a, 0.0f, 1.0f);
 
 #if !defined(NO_SPECULAR)
-    if (NDotL > 0.0f && albedoAndShadow.a > 0.2f) {
+    if (NDotL > 0.0f) {
         const vec3 dvd_ViewDirNorm = normalize(-VAR._vertexWV.xyz);
 
 #if defined(USE_SHADING_BLINN_PHONG)
@@ -29,7 +29,7 @@ vec4 Phong(in vec4 lightColourAndAtt,
     }
 #endif
 
-    return vec4(colourOut, 0.0f);
+    return vec4(colourOut * albedoAndShadow.a, 0.0f);
 }
 
 

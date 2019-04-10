@@ -176,8 +176,7 @@ bool glShaderProgram::validateInternal() {
     return shaderError;
 }
 
-/// Called once per frame. Used to update internal state
-bool glShaderProgram::update(const U64 deltaTimeUS) {
+void glShaderProgram::validate() {
     // If we haven't validated the program but used it at lease once ...
     if (_validationQueued && _shaderProgramID != 0 && _shaderProgramID != GLUtil::_invalidObjectID) {
         _lockManager->Wait(true);
@@ -219,9 +218,6 @@ bool glShaderProgram::update(const U64 deltaTimeUS) {
         // clear validation queue flag
         _validationQueued = false;
     }
-
-    // pass the update responsibility back to the parent class
-    return ShaderProgram::update(deltaTimeUS);
 }
 
 /// Retrieve the program's validation log if we need it
@@ -302,12 +298,8 @@ void glShaderProgram::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoa
         }
 
         // Loading from binary is optional, but using it does require sending the driver a hint to give us access to it later
-        if (s_useShaderBinaryCache) {
-            glProgramParameteri(_shaderProgramIDTemp, GL_PROGRAM_BINARY_RETRIEVABLE_HINT, GL_TRUE);
-        }
-        if (g_useSeparateShaderObjects) {
-            glProgramParameteri(_shaderProgramIDTemp, GL_PROGRAM_SEPARABLE, GL_TRUE);
-        }
+        glProgramParameteri(_shaderProgramIDTemp, GL_PROGRAM_BINARY_RETRIEVABLE_HINT, GL_TRUE);
+        glProgramParameteri(_shaderProgramIDTemp, GL_PROGRAM_SEPARABLE, g_useSeparateShaderObjects ? GL_TRUE : GL_FALSE);
     } else {
         _shaderProgramIDTemp = _shaderProgramID;
     }
@@ -327,6 +319,11 @@ void glShaderProgram::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoa
         }
         // Link the program
         _linked = shouldLink ? link() : true;
+
+        // Detach shaders after link so that the driver might free up some memory remove shader stages
+        for (glShader* shader : _shaderStage) {
+            detachShader(shader);
+        }
     }
 
     // This was once an atomic swap. Might still be in the future
@@ -347,10 +344,6 @@ bool glShaderProgram::link() {
 
     // Link the program
     glLinkProgram(_shaderProgramIDTemp);
-    // Detach shaders after link so that the driver might free up some memory remove shader stages
-    for (glShader* shader : _shaderStage) {
-        detachShader(shader);
-    }
 
     _shaderVarLocation.clear();
 
@@ -624,10 +617,14 @@ bool glShaderProgram::bind(bool& wasBound) {
         return false;
     }
     // This should almost always end up as a NOP
-    //_lockManager->Wait(false);
+    _lockManager->Wait(false);
 
     // Set this program as the currently active one
     wasBound = GL_API::getStateTracker().setActiveProgram(_shaderProgramID);
+
+    if (!wasBound) {
+        validate();
+    }
 
     return true;
 }

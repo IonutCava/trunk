@@ -1,17 +1,18 @@
 #ifndef _PRE_PASS_FRAG_
 #define _PRE_PASS_FRAG_
 
+#if !defined(PRE_PASS)
+#define PRE_PASS
+#endif
+
 #include "lightInput.cmn"
 #include "materialData.frag"
 #include "velocityCalc.frag"
 #include "shadowMapping.frag"
 
 layout(location = TARGET_NORMALS_AND_VELOCITY) out vec4 _normalAndVelocityOut;
-layout(location = TARGET_EXTRA) out vec4 _lightDetailsOut;
-
-void _writeCSMSplit() {
-    _lightDetailsOut = vec4(getCSMSlice(0), 0, 0, 0);
-}
+//r = CSM shadow factor for main light id, g - specular/roughness
+layout(location = TARGET_EXTRA) out vec2 _extraDetailsOut;
 
 void _output(vec3 normal, float alphaFactor) {
     updateTexCoord();
@@ -24,7 +25,7 @@ void _output(vec3 normal, float alphaFactor) {
 #endif
 
     _normalAndVelocityOut.rg = packNormal(normalize(normal));
-    _writeCSMSplit();
+    _extraDetailsOut.r = getShadowFactor(0);
 }
 
 void outputNoVelocity(float alphaFactor) {

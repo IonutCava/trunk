@@ -53,6 +53,7 @@ enum class RenderStage : U8;
 class RenderPassManager : public KernelComponent {
 public:
     struct PassParams {
+        vec3<F32> _minExtents = { 0.0f };
         // source node is used to determine if the current pass is triggered by a specific node:
         // e.g. a light node for shadow mapping, a reflector for reflection (or refraction), etc
         // safe to be set to null

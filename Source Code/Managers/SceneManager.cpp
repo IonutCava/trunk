@@ -566,7 +566,7 @@ namespace {
     }
 };
 
-const VisibleNodeList& SceneManager::cullSceneGraph(RenderStage stage, const Camera& camera, I32 minLoD) {
+const VisibleNodeList& SceneManager::cullSceneGraph(RenderStage stage, const Camera& camera, I32 minLoD, const vec3<F32>& minExtents) {
     Time::ScopedTimer timer(*_sceneGraphCullTimers[to_U32(stage)]);
 
     Scene& activeScene = getActiveScene();
@@ -580,6 +580,7 @@ const VisibleNodeList& SceneManager::cullSceneGraph(RenderStage stage, const Cam
     cullParams._camera = &camera;
     cullParams._threaded = true;
     cullParams._minLoD = minLoD;
+    cullParams._minExtents = minExtents;
     cullParams._visibilityDistanceSq = std::numeric_limits<F32>::max();
 
     if (stage != RenderStage::SHADOW) {

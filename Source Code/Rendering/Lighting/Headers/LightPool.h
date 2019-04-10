@@ -65,8 +65,8 @@ class LightPool : public SceneComponent,
           /// w = spot angle
           vec4<F32> _direction = { 0.0f, 0.0f, 0.0f, 45.0f };
           /// x = light type: 0 - directional, 1 - point, 2 - spot, 3 - none
-          /// y = casts shadows, 
-          /// z - reserved
+          /// y = shadow index (-1 = no shadows)
+          /// z = reserved
           /// w = reserved
           vec4<I32> _options = { 3, 1, 0, 0 };
       };

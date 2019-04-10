@@ -18,7 +18,7 @@ ShaderComputeQueue::~ShaderComputeQueue()
 }
 
 void ShaderComputeQueue::idle() {
-    constexpr U32 maxShadersPerCall = 64;
+    constexpr U32 maxShadersPerCall = 32;
     Time::ScopedTimer timer(_queueComputeTimer);
 
     U32 crtShaderCount = 0;

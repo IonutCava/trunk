@@ -51,6 +51,7 @@ enum class RenderStage : U8;
 
 struct NodeCullParams {
     vec4<U16> _lodThresholds;
+    vec3<F32> _minExtents = { 0.0f };
     const Camera* _currentCamera = nullptr;
     F32 _cullMaxDistanceSq = 0.0f;
     I32 _minLoD = false;
@@ -72,6 +73,7 @@ class RenderPassCuller {
 
     struct CullParams {
         CullingFunction _cullFunction;
+        vec3<F32> _minExtents = { 0.0f };
         PlatformContext* _context = nullptr;
         const SceneGraph* _sceneGraph = nullptr;
         const Camera* _camera = nullptr;

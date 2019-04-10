@@ -561,6 +561,14 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
             GFX::EnqueueCommand(bufferInOut, beginRenderPassCommand);
         }
 
+        if (hasLightingTarget) {
+            const TextureData& data = target.getAttachmentPtr(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::EXTRA))->texture()->getData();
+            constexpr U8 bindSlot = to_U8(ShaderProgram::TextureUsage::PREPASS_SHADOWS);
+
+            GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
+            descriptorSetCmd._set._textureData.setTexture(data, bindSlot);
+            GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
+        }
         // We try and render translucent items in the shadow pass and due some alpha-discard tricks
         renderQueueToSubPasses(stagePass, bufferInOut);
 
@@ -692,9 +700,8 @@ void RenderPassManager::woitPass(const VisibleNodeList& nodes, const PassParams&
 void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& bufferInOut) {
     Attorney::SceneManagerRenderPass::prepareLightData(parent().sceneManager(), params._stage, *params._camera);
 
-
-    // Cull the scene and grab the visible nodes
-    const VisibleNodeList& visibleNodes = Attorney::SceneManagerRenderPass::cullScene(parent().sceneManager(), params._stage, *params._camera, params._minLoD);
+        // Cull the scene and grab the visible nodes
+    const VisibleNodeList& visibleNodes = Attorney::SceneManagerRenderPass::cullScene(parent().sceneManager(), params._stage, *params._camera, params._minLoD, params._minExtents);
 
     // Tell the Rendering API to draw from our desired PoV
     GFX::SetCameraCommand setCameraCommand;

@@ -16,7 +16,8 @@ Light::Light(SceneGraphNode& sgn, const F32 range, LightType type, LightPool& pa
     : _parentPool(parentPool),
       _sgn(sgn),
       _type(type),
-      _castsShadows(false)
+      _castsShadows(false),
+      _shadowIndex(-1)
 {
     _rangeAndCones.set(1.0f, 45.0f, 0.0f);
 

@@ -70,6 +70,8 @@ glShader::~glShader() {
 }
 
 bool glShader::load(const stringImpl& source, U32 lineOffset) {
+    static const stringImpl textCacheLocation = Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationText;
+
     if (source.empty()) {
         Console::errorfn(Locale::get(_ID("ERROR_GLSL_NOT_FOUND")), name().c_str());
         return false;
@@ -79,8 +81,7 @@ bool glShader::load(const stringImpl& source, U32 lineOffset) {
     stringImpl parsedSource = _skipIncludes ? source
                                             : glShaderProgram::preprocessIncludes(name(), source, 0, _usedAtoms, true);
 
-    Util::ReplaceStringInPlace(parsedSource, "//__LINE_OFFSET_",
-                               Util::StringFormat("#line %d", lineOffset));
+    Util::ReplaceStringInPlace(parsedSource, "//__LINE_OFFSET_", Util::StringFormat("#line %d", lineOffset));
 
     const char* src = parsedSource.c_str();
 
@@ -88,7 +89,7 @@ bool glShader::load(const stringImpl& source, U32 lineOffset) {
     glShaderSource(_shader, 1, &src, &sourceLength);
 
     if (!_skipIncludes) {
-       glShaderProgram::shaderFileWrite(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationText, name(), src);
+       glShaderProgram::shaderFileWrite(textCacheLocation, name(), src);
     }
 
     _compiled.clear();

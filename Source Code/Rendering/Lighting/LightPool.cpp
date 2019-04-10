@@ -290,7 +290,7 @@ void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, con
         temp._direction.set(viewMatrix.transformNonHomogeneous(light->getDirection()), light->getConeAngle());
 
         temp._options.x = typeIndex;
-        temp._options.y = light->castsShadows();
+        temp._options.y = light->shadowIndex();
 
         ++_activeLightCount[stageIndex][typeIndex];
     }
@@ -343,6 +343,8 @@ void LightPool::preRenderAllPasses(const Camera& playerCamera) {
         sortedLights.insert(eastl::cbegin(sortedLights), eastl::cbegin(_lights[0]), eastl::cend(_lights[0]));
     }
 
+    eastl::for_each(eastl::begin(sortedLights), eastl::end(sortedLights), [](Light * light) { light->shadowIndex(-1); });
+
     for (Light* light : sortedLights) {
         if (!light->getEnabled() ||
             !light->castsShadows() ||
@@ -351,8 +353,9 @@ void LightPool::preRenderAllPasses(const Camera& playerCamera) {
             continue;
         }
 
+        light->shadowIndex(to_I32(_sortedShadowLights.size()));
         _sortedShadowLights.push_back(light);
-
+        
         if (_sortedShadowLights.size() == Config::Lighting::MAX_SHADOW_CASTING_LIGHTS) {
             break;
         }

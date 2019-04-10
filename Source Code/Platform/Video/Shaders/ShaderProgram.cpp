@@ -61,15 +61,6 @@ bool ShaderProgram::unload() noexcept {
     return unregisterShaderProgram(getDescriptorHash());
 }
 
-/// Called once per frame. Update common values used across programs
-bool ShaderProgram::update(const U64 deltaTimeUS) {
-    if (_shouldRecompile) {
-        recompile();
-    }
-
-    return true;
-}
-
 /// Add a define to the shader. The defined must not have been added previously
 void ShaderProgram::addShaderDefine(const stringImpl& define, bool appendPrefix) {
     // Find the string in the list of program defines
@@ -186,9 +177,9 @@ bool ShaderProgram::updateAll(const U64 deltaTimeUS) {
     SharedLock r_lock(s_programLock);
     // Pass the update call to all registered programs
     for (const ShaderProgramMap::value_type& it : s_shaderPrograms) {
-        if (!it.second.first->update(deltaTimeUS)) {
-            // If an update call fails, stop updating
-            return false;
+        if (it.second.first->_shouldRecompile) {
+            it.second.first->recompile();
+            it.second.first->_shouldRecompile = false;
         }
     }
     return true;

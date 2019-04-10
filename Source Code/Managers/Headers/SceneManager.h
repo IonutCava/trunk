@@ -104,7 +104,7 @@ public:
     void setSelected(PlayerIndex idx, SceneGraphNode& sgn);
 
     // cull the scenegraph against the current view frustum
-    const VisibleNodeList& cullSceneGraph(RenderStage stage, const Camera& camera, I32 maxLoD);
+    const VisibleNodeList& cullSceneGraph(RenderStage stage, const Camera& camera, I32 maxLoD, const vec3<F32>& minExtents);
     // get the full list of reflective nodes
     VisibleNodeList getSortedReflectiveNodes(const Camera& camera, RenderStage stage, bool inView) const;
     // get the full list of refractive nodes
@@ -363,8 +363,8 @@ class SceneManagerCameraAccessor {
 
 class SceneManagerRenderPass {
    private:
-    static const VisibleNodeList& cullScene(Divide::SceneManager& mgr, RenderStage stage, const Camera& camera, I32 minLoD) {
-        return mgr.cullSceneGraph(stage, camera, minLoD);
+    static const VisibleNodeList& cullScene(Divide::SceneManager& mgr, RenderStage stage, const Camera& camera, I32 minLoD, const vec3<F32>& minExtents) {
+        return mgr.cullSceneGraph(stage, camera, minLoD, minExtents);
     }
 
     static void prepareLightData(Divide::SceneManager& mgr,

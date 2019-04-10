@@ -29,7 +29,6 @@ namespace {
             case RenderTargetUsage::OTHER: return "Other";
             case RenderTargetUsage::REFLECTION_CUBE: return "Cube Reflection";
             case RenderTargetUsage::REFLECTION_PLANAR: return "Planar Reflection";
-            case RenderTargetUsage::REFRACTION_CUBE: return "Cube Refraction";
             case RenderTargetUsage::REFRACTION_PLANAR: return "Planar Refraction";
             case RenderTargetUsage::SCREEN: return "Screen";
             case RenderTargetUsage::SHADOW: return "Shadow";

@@ -433,7 +433,6 @@ void GFXDevice::onSizeChange(const SizeChangeParams& params) {
         _rtPool->resizeTargets(RenderTargetUsage::REFLECTION_PLANAR, reflectRes, reflectRes);
         _rtPool->resizeTargets(RenderTargetUsage::REFRACTION_PLANAR, reflectRes, reflectRes);
         _rtPool->resizeTargets(RenderTargetUsage::REFLECTION_CUBE, reflectRes, reflectRes);
-        _rtPool->resizeTargets(RenderTargetUsage::REFRACTION_CUBE, reflectRes, reflectRes);
 
         _prevDepthBuffer->resize(NULL, vec2<U16>(w, h));
 

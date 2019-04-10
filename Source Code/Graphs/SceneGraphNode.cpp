@@ -543,6 +543,7 @@ bool SceneGraphNode::cullNode(const NodeCullParams& params,
     // Use the bounding primitives to do camera/frustum checks
     BoundsComponent* bComp = get<BoundsComponent>();
     const BoundingSphere& sphere = bComp->getBoundingSphere();
+    const BoundingBox& boundingBox = bComp->getBoundingBox();
 
     // Get camera info
     const vec3<F32>& eye = params._currentCamera->getEye();
@@ -570,11 +571,17 @@ bool SceneGraphNode::cullNode(const NodeCullParams& params,
         }
     }
 
+    if (params._minExtents.lengthSquared() > 0.0f) {
+        vec3<F32> diff(boundingBox.getExtent() - params._minExtents);
+        if (diff.x < 0.0f || diff.y < 0.0f || diff.z < 0.0f) {
+            return true;
+        }
+    }
+
     STUBBED("ToDo: make this work in a multi-threaded environment -Ionut");
     I8 _frustPlaneCache = -1;
 
     // Sphere is in range, so check bounds primitives againts the frustum
-    const BoundingBox& boundingBox = bComp->getBoundingBox();
     if (!boundingBox.containsPoint(eye)) {
         const Frustum& frust = params._currentCamera->getFrustum();
         // Check if the bounding sphere is in the frustum, as Frustum <-> Sphere check is fast

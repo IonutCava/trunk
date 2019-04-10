@@ -35,8 +35,7 @@ namespace {
     constexpr std::pair<RenderTargetUsage, ShaderProgram::TextureUsage> g_texUsage[] = {
         { RenderTargetUsage::REFLECTION_PLANAR, ShaderProgram::TextureUsage::REFLECTION_PLANAR},
         { RenderTargetUsage::REFRACTION_PLANAR, ShaderProgram::TextureUsage::REFRACTION_PLANAR},
-        { RenderTargetUsage::REFLECTION_CUBE, ShaderProgram::TextureUsage::REFLECTION_CUBE },
-        { RenderTargetUsage::REFRACTION_CUBE, ShaderProgram::TextureUsage::REFRACTION_CUBE}
+        { RenderTargetUsage::REFLECTION_CUBE, ShaderProgram::TextureUsage::REFLECTION_CUBE }
     };
 
 
@@ -580,7 +579,7 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
     updateReflectionIndex(_reflectorType, reflectionIndex);
 
     RenderTargetID reflectRTID(_reflectorType == ReflectorType::PLANAR_REFLECTOR ? RenderTargetUsage::REFLECTION_PLANAR
-                                                                                 : RenderTargetUsage::REFRACTION_CUBE, 
+                                                                                 : RenderTargetUsage::REFLECTION_CUBE, 
                                reflectionIndex);
 
     if (Config::Build::IS_DEBUG_BUILD) {
@@ -636,18 +635,11 @@ void RenderingComponent::updateRefractionIndex(ReflectorType type, I32 index) {
     _refractionIndex = index;
     if (_refractionIndex > -1) {
         RenderTarget& refractionTarget =
-            _context.renderTargetPool().renderTarget(RenderTargetID(type == ReflectorType::PLANAR_REFLECTOR
-                ? RenderTargetUsage::REFRACTION_PLANAR
-                : RenderTargetUsage::REFRACTION_CUBE,
-                index));
+            _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::REFRACTION_PLANAR, index));
         const Texture_ptr& refTex = refractionTarget.getAttachment(RTAttachmentType::Colour, 0).texture();
-        _externalTextures[getUsageIndex(type == ReflectorType::PLANAR_REFLECTOR
-                                              ? RenderTargetUsage::REFRACTION_PLANAR
-                                              : RenderTargetUsage::REFRACTION_CUBE)] = refTex;
+        _externalTextures[getUsageIndex(RenderTargetUsage::REFRACTION_PLANAR)] = refTex;
     } else {
-        _externalTextures[getUsageIndex(type == ReflectorType::PLANAR_REFLECTOR
-                                              ? RenderTargetUsage::REFRACTION_PLANAR
-                                              : RenderTargetUsage::REFRACTION_CUBE)] = _defaultRefraction.first;
+        _externalTextures[getUsageIndex(RenderTargetUsage::REFRACTION_PLANAR)] = _defaultRefraction.first;
     }
 }
 
@@ -667,9 +659,7 @@ bool RenderingComponent::updateRefraction(U32 refractionIndex,
 
     updateRefractionIndex(_reflectorType, refractionIndex);
 
-    RenderTargetID refractRTID(_reflectorType == ReflectorType::PLANAR_REFLECTOR ? RenderTargetUsage::REFRACTION_PLANAR
-                                                                                 : RenderTargetUsage::REFRACTION_CUBE,
-                               refractionIndex);
+    RenderTargetID refractRTID(RenderTargetUsage::REFRACTION_PLANAR, refractionIndex);
 
     if (Config::Build::IS_DEBUG_BUILD) {
         const RenderTarget& target = _context.renderTargetPool().renderTarget(refractRTID);

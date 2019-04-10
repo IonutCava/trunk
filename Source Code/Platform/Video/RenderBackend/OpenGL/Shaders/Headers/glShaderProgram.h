@@ -89,8 +89,6 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     /// Check every possible combination of flags to make sure this program can
     /// be used for rendering
     bool isValid() const override;
-    /// Called once per frame. Used to update internal state
-    bool update(const U64 deltaTimeUS) override;
 
     /// Get the index of the specified subroutine name for the specified stage.
     /// Not cached!
@@ -121,6 +119,8 @@ class glShaderProgram final : public ShaderProgram, public glObject {
                         const stringImpl& header,
                         bool forceReParse,
                         std::pair<bool, stringImpl>& sourceCodeOut);
+
+    void validate();
 
     bool loadFromBinary();
        
