@@ -163,7 +163,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
         vector<RTAttachmentDescriptor> attachments = {
             { screenDescriptor,              RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO), DefaultColours::DIVIDE_BLUE },
             { normalAndVelocityDescriptor,   RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_VELOCITY), VECTOR4_ZERO },
-            { lightingDetails,               RTAttachmentType::Colour, to_U8(ScreenTargets::EXTRA), VECTOR4_ZERO },
+            { lightingDetails,               RTAttachmentType::Colour, to_U8(ScreenTargets::EXTRA), vec4<F32>(1.0f, 1.0f, 1.0f, 0.0f) },
             { depthDescriptor,               RTAttachmentType::Depth }
         };
 

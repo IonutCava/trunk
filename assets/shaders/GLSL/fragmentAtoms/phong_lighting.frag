@@ -25,7 +25,7 @@ vec4 Phong(in vec4 lightColourAndAtt,
         const float shininess = pow(specAngle, specular.a)* lightColourAndAtt.a;
         colourOut += clamp(lightColourAndAtt.rgb * specular.rgb * shininess, 0.0f, 1.0f);
 
-        return vec4(colourOut, shininess);
+        return vec4(colourOut, shininess) * albedoAndShadow.a;
     }
 #endif
 
