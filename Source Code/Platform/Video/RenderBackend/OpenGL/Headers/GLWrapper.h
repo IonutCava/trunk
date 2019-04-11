@@ -152,7 +152,6 @@ protected:
     void clearStates(const DisplayWindow& window, GLStateTracker& stateTracker, bool global);
 
     bool makeTexturesResident(const TextureDataContainer& textureData, const vectorEASTLFast<TextureViewEntry>& textureViews);
-    bool makeTextureResident(const TextureData& textureData, U8 binding);
     bool makeImagesResident(const vectorEASTLFast<Image>& images);
 
     bool setViewport(const Rect<I32>& viewport) override;
@@ -196,8 +195,6 @@ private:
 
     static void processSyncDeleteQeueue();
 
-    ErrorCode createGLContext(const DisplayWindow& window);
-    ErrorCode destroyGLContext();
     /// FontStash library initialization
     bool createFonsContext();
     /// FontStash library deinitialization
@@ -208,8 +205,6 @@ private:
     static void appendToShaderHeader(ShaderType type, const stringImpl& entry, ShaderOffsetArray& inOutOffset);
 
     GenericVertexData* getOrCreateIMGUIBuffer(I64 windowGUID);
-
-    void getTextureView(GLuint handle, TextureData& data, vec2<U32> mipLevels, vec2<U32> layerRange, GLenum internalFormat = GL_NONE);
 protected:
     /// Number of available texture units
     static GLint s_maxTextureUnits;
@@ -282,10 +277,7 @@ private:
     static stateTrackerMap s_stateTrackers;
     static GLStateTracker* s_activeStateTracker;
 
-    static GLUtil::glTexturePool<256, GL_NONE> s_texturePool;
-    static GLUtil::glTexturePool<1024, GL_TEXTURE_2D> s_texture2DPool;
-    static GLUtil::glTexturePool<32, GL_TEXTURE_2D_MULTISAMPLE> s_texture2DMSPool;
-    static GLUtil::glTexturePool<16, GL_TEXTURE_CUBE_MAP> s_textureCubePool;
+    static GLUtil::glTexturePool s_texturePool;
     static glGlobalLockManager s_globalLockManager;
 
     std::pair<I64, SDL_GLContext> _currentContext;

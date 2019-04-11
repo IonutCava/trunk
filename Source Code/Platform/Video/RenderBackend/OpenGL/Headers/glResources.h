@@ -131,7 +131,6 @@ private:
 namespace GLUtil {
 
 // Not thread-safe!
-template<size_t N, GLenum type>
 class glTexturePool {
 private:
     enum class State : U8 {
@@ -140,21 +139,30 @@ private:
         CLEAN
     };
 
+    struct poolImpl {
+        vectorEASTL<AtomicWrapper<State>>  _usageMap;
+
+        vectorEASTL<U32>    _lifeLeft;
+        vectorEASTL<GLuint> _handles;
+        vectorEASTL<GLuint> _tempBuffer;
+        GLenum _type = GL_NONE;
+    };
 public:
     void onFrameEnd();
-    void init();
+    void init(const vectorEASTL<std::pair<GLenum, size_t>>& poolSizes);
     void destroy();
+    inline bool typeSupported(GLenum type) const;
+    //Use GL_NONE for textures created with glGen instead of glCreate (e.g. for texture views)
+    GLuint allocate(GLenum type = GL_NONE, bool retry = false);
+    
+    void deallocate(GLuint& handle, GLenum type = GL_NONE, U32 frameDelay = 1);
 
-    GLuint allocate(bool retry = false);
-    void deallocate(GLuint& handle, U32 frameDelay = 1);
+protected:
+    void onFrameEndInternal(poolImpl& impl);
 
 private:
-    eastl::array<State, N>  _usageMap;
-    eastl::array<U32,   N>  _lifeLeft;
-    eastl::array<GLuint, N> _handles;
-    eastl::array<GLuint, N> _tempBuffer;
-
-    SharedMutex _texLock;
+    vectorEASTL<GLenum> _types;
+    hashMap<GLenum, poolImpl> _pools;
 };
 /// Wrapper for glGetIntegerv
 GLint getIntegerv(GLenum param);

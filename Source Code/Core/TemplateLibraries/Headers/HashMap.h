@@ -92,22 +92,22 @@ template <> struct hash<std::string>
 
 template <typename K, typename V, typename ... Args, typename HashFun = HashType<K> >
 inline hashPairReturn<K, V, HashFun> emplace(hashMap<K, V, HashFun>& map, K key, Args&&... args) {
-    return hashAlg::insert(map, key, std::move(V(std::forward<Args>(args)...)));
+    return map.emplace(key, std::move(V{ std::forward<Args>(args)... }));
 }
 
 template <typename K, typename V, typename HashFun = HashType<K> >
 inline hashPairReturn<K, V, HashFun> insert(hashMap<K, V, HashFun>& map, const hashAlg::pair<K, V>& valuePair) {
-    return map.insert(hashAlg::pair<K, V>(valuePair.first, valuePair.second));
+    return map.emplace(valuePair.first, valuePair.second);
 }
 
 template <typename K, typename V, typename HashFun = HashType<K> >
 inline hashPairReturn<K, V, HashFun> insert(hashMap<K, V, HashFun>& map, K key, const V& value) {
-    return hashAlg::insert(map, hashAlg::pair<K, V>(key, value));
+    return map.emplace(key, value);
 }
 
 template <typename K, typename V, typename HashFun = HashType<K> >
 inline hashPairReturn<K, V, HashFun> insert(hashMap<K, V, HashFun>& map, K key, V&& value) {
-    return hashAlg::insert(map, hashAlg::pair<K, V>(key, value));
+    return map.emplace(key, value);
 }
 
 }; //namespace hashAlg

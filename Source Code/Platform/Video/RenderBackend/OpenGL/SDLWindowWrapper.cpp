@@ -227,10 +227,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     s_activeStateTracker = &s_stateTrackers[window.getGUID()];
     *s_activeStateTracker = {};
     s_activeStateTracker->init(nullptr);
-    s_texturePool.init();
-    s_texture2DPool.init();
-    s_texture2DMSPool.init();
-    s_textureCubePool.init();
+
     if (s_activeStateTracker->_opengl46Supported) {
         gl::glMaxShaderCompilerThreadsARB(0xFFFFFFFF);
     }
@@ -331,6 +328,18 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
         glEnable(GLenum((U32)GL_CLIP_DISTANCE0 + i));
     }
 
+    vectorEASTL<std::pair<GLenum, size_t>> poolSizes = {
+        {GL_NONE, 256}, //Generic texture handles (created with glGen instead of glCreate)
+        {GL_TEXTURE_2D, 1024}, //Used by most renderable items
+        {GL_TEXTURE_2D_ARRAY, 256}, //Used mainly by shadow maps and some materials
+        {GL_TEXTURE_2D_MULTISAMPLE, 128}, //Used by render tartgets
+        {GL_TEXTURE_CUBE_MAP, 64}, //Used for reflections and environment probes
+        {GL_TEXTURE_2D_MULTISAMPLE_ARRAY, 16}, //Used by the CSM system mostly
+        {GL_TEXTURE_3D, 8} //Will eventually be usefull for volumetric stuff
+    };
+
+    s_texturePool.init(poolSizes);
+
     // Prepare font rendering subsystem
     if (!createFonsContext()) {
         Console::errorfn(Locale::get(_ID("ERROR_FONT_INIT")));
@@ -402,9 +411,6 @@ void GL_API::closeRenderingAPI() {
         GL_API::deleteVAOs(1, &s_dummyVAO);
     }
     s_texturePool.destroy();
-    s_texture2DPool.destroy();
-    s_texture2DMSPool.destroy();
-    s_textureCubePool.destroy();
     glVertexArray::cleanup();
     GLUtil::clearVBOs();
     GL_API::s_vaoPool.destroy();

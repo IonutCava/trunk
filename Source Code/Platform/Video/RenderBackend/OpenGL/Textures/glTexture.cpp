@@ -32,12 +32,8 @@ glTexture::glTexture(GFXDevice& context,
 
     _type = GLUtil::glTextureTypeTable[to_U32(_descriptor.type())];
 
-    if (_type == GL_TEXTURE_2D) {
-        _textureData._textureHandle = GL_API::s_texture2DPool.allocate();
-    } else if (_type == GL_TEXTURE_2D_MULTISAMPLE) {
-        _textureData._textureHandle = GL_API::s_texture2DMSPool.allocate();
-    } else if (_type == GL_TEXTURE_CUBE_MAP) {
-        _textureData._textureHandle = GL_API::s_textureCubePool.allocate();
+    if (GL_API::s_texturePool.typeSupported(_type)) {
+        _textureData._textureHandle = GL_API::s_texturePool.allocate(_type);
     } else {
         glCreateTextures(_type, 1, &_textureData._textureHandle);
     }
@@ -63,12 +59,8 @@ bool glTexture::unload() noexcept {
             _lockManager->Wait(false);
         }
         
-        if (_type == GL_TEXTURE_2D) {
-            GL_API::s_texture2DPool.deallocate(_textureData._textureHandle);
-        } else if (_type == GL_TEXTURE_2D_MULTISAMPLE) {
-            GL_API::s_texture2DMSPool.deallocate(_textureData._textureHandle);
-        } else if (_type == GL_TEXTURE_CUBE_MAP) {
-            GL_API::s_textureCubePool.deallocate(_textureData._textureHandle);
+        if (GL_API::s_texturePool.typeSupported(_type)) {
+            GL_API::s_texturePool.deallocate(_textureData._textureHandle, _type);
         } else {
             Divide::GL_API::deleteTextures(1, &textureID, _descriptor.type());
             _textureData._textureHandle = 0u;
