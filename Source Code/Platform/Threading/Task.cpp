@@ -46,7 +46,7 @@ void Start(Task& task, TaskPool& pool, TaskPriority priority, const DELEGATE_CBK
 
 void Wait(const Task& task) {
     while (!Finished(task)) {
-        task._parentPool->threadWaiting();
+        TaskYield(task);
     }
 }
 
@@ -61,6 +61,10 @@ bool StopRequested(const Task& task) {
 
 bool Finished(const Task& task) {
     return task._unfinishedJobs.load() == 0;
+}
+
+void TaskYield(const Task& task) {
+    task._parentPool->threadWaiting();
 }
 
 TaskHandle& TaskHandle::startTask(TaskPriority prio, const DELEGATE_CBK<void>& onCompletionFunction) {

@@ -32,7 +32,15 @@ glTexture::glTexture(GFXDevice& context,
 
     _type = GLUtil::glTextureTypeTable[to_U32(_descriptor.type())];
 
-     glCreateTextures(_type, 1, &_textureData._textureHandle);
+    if (_type == GL_TEXTURE_2D) {
+        _textureData._textureHandle = GL_API::s_texture2DPool.allocate(true);
+    } else if (_type == GL_TEXTURE_2D_MULTISAMPLE) {
+        _textureData._textureHandle = GL_API::s_texture2DMSPool.allocate(true);
+    } else if (_type == GL_TEXTURE_CUBE_MAP) {
+        _textureData._textureHandle = GL_API::s_textureCubePool.allocate(true);
+    } else {
+        glCreateTextures(_type, 1, &_textureData._textureHandle);
+    }
 
     assert(_textureData._textureHandle != 0 && "glTexture error: failed to generate new texture handle!");
     _textureData._samplerHandle = GL_API::getOrCreateSamplerObject(_descriptor._samplerDescriptor);
@@ -45,7 +53,6 @@ glTexture::glTexture(GFXDevice& context,
 glTexture::~glTexture()
 {
     unload();
-
     MemoryManager::DELETE(_lockManager);
 }
 
@@ -55,8 +62,20 @@ bool glTexture::unload() noexcept {
         if (_lockManager) {
             _lockManager->Wait(false);
         }
-        Divide::GL_API::deleteTextures(1, &textureID, _descriptor.type());
-        _textureData._textureHandle = 0u;
+        
+        if (_type == GL_TEXTURE_2D) {
+            _textureData._textureHandle = GL_API::s_texture2DPool.allocate(true);
+            GL_API::s_texture2DPool.deallocate(_textureData._textureHandle);
+        } else if (_type == GL_TEXTURE_2D_MULTISAMPLE) {
+            GL_API::s_texture2DMSPool.deallocate(_textureData._textureHandle);
+        } else if (_type == GL_TEXTURE_CUBE_MAP) {
+            GL_API::s_textureCubePool.deallocate(_textureData._textureHandle);
+        } else {
+            Divide::GL_API::deleteTextures(1, &textureID, _descriptor.type());
+            _textureData._textureHandle = 0u;
+        }
+
+        
     }
 
     return _textureData._textureHandle == 0;

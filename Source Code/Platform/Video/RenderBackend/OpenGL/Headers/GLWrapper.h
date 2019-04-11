@@ -282,7 +282,10 @@ private:
     static stateTrackerMap s_stateTrackers;
     static GLStateTracker* s_activeStateTracker;
 
-    static GLUtil::glTexturePool<256> s_texturePool;
+    static GLUtil::glTexturePool<256, GL_NONE> s_texturePool;
+    static GLUtil::glTexturePool<1024, GL_TEXTURE_2D> s_texture2DPool;
+    static GLUtil::glTexturePool<32, GL_TEXTURE_2D_MULTISAMPLE> s_texture2DMSPool;
+    static GLUtil::glTexturePool<16, GL_TEXTURE_CUBE_MAP> s_textureCubePool;
     static glGlobalLockManager s_globalLockManager;
 
     std::pair<I64, SDL_GLContext> _currentContext;

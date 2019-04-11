@@ -133,8 +133,8 @@ class Scene : public Resource, public PlatformContextComponent {
     void addMusic(MusicType type, const stringImpl& name, const stringImpl& srcFile);
 
     SceneGraphNode* addSky(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const stringImpl& nodeName = "");
-    SceneGraphNode* addWater(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const stringImpl& nodeName = "");
     SceneGraphNode* addInfPlane(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const stringImpl& nodeName = "");
+    void addWater(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const stringImpl& nodeName = "");
     void addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const stringImpl& nodeName = "");
 
     /// Object picking
@@ -199,7 +199,7 @@ class Scene : public Resource, public PlatformContextComponent {
     virtual bool loadXML(const stringImpl& name);
 
     virtual bool load(const stringImpl& name);
-    void loadAsset(const XML::SceneNode& sceneNode, SceneGraphNode* parent, bool waitForReady);
+    void loadAsset(const Task& parentTask, const XML::SceneNode& sceneNode, SceneGraphNode* parent, bool waitForReady);
     virtual bool unload();
     virtual void postLoad();
     // gets called on the main thread when the scene finishes loading (e.g. used by the GUI system)

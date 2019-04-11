@@ -80,11 +80,13 @@ bool WaterPlane::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallb
 
     ResourceDescriptor waterColourShader("water");
     waterColourShader.setPropertyDescriptor(shaderDescriptor);
+    waterColourShader.waitForReady(false);
     ShaderProgram_ptr waterColour = CreateResource<ShaderProgram>(_parentCache, waterColourShader);
 
     ResourceDescriptor waterPrePassShader("water.PrePass");
     shaderDescriptor._defines.push_back(std::make_pair("PRE_PASS", true));
     waterPrePassShader.setPropertyDescriptor(shaderDescriptor);
+    waterPrePassShader.waitForReady(false);
     ShaderProgram_ptr waterPrePass = CreateResource<ShaderProgram>(_parentCache, waterPrePassShader);
 
     waterMat->setShaderProgram(waterColour, RenderPassType::MAIN_PASS);

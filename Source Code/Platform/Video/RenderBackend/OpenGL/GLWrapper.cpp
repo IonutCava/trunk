@@ -53,7 +53,10 @@ GLStateTracker* GL_API::s_activeStateTracker = nullptr;
 GL_API::stateTrackerMap GL_API::s_stateTrackers;
 bool GL_API::s_glFlushQueued = false;
 bool GL_API::s_enabledDebugMSGGroups = false;
-GLUtil::glTexturePool<256> GL_API::s_texturePool;
+GLUtil::glTexturePool<256, GL_NONE> GL_API::s_texturePool;
+GLUtil::glTexturePool<1024, GL_TEXTURE_2D> GL_API::s_texture2DPool;
+GLUtil::glTexturePool<32, GL_TEXTURE_2D_MULTISAMPLE> GL_API::s_texture2DMSPool;
+GLUtil::glTexturePool<16, GL_TEXTURE_CUBE_MAP> GL_API::s_textureCubePool;
 glGlobalLockManager GL_API::s_globalLockManager;
 
 moodycamel::ConcurrentQueue<BufferWriteData> GL_API::s_bufferBinds;
@@ -99,6 +102,9 @@ void GL_API::deleteFonsContext() {
 
 void GL_API::idle() {
     //s_texturePool.clean();
+    //s_texture2DPool.clean();
+    //s_texture2DMSPool.clean();
+    //s_textureCubePool.clean();
 }
 
 /// Prepare the GPU for rendering a frame
@@ -175,6 +181,9 @@ void GL_API::endFrame(DisplayWindow& window, bool global) {
         if (global) {
             _swapBufferTimer.stop();
             s_texturePool.onFrameEnd();
+            s_texture2DPool.onFrameEnd();
+            s_texture2DMSPool.onFrameEnd();
+            s_textureCubePool.onFrameEnd();
             processSyncDeleteQeueue();
             s_glFlushQueued = false;
         }

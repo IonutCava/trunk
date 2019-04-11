@@ -131,7 +131,7 @@ private:
 namespace GLUtil {
 
 // Not thread-safe!
-template<size_t N>
+template<size_t N, GLenum type>
 class glTexturePool {
 private:
     enum class State : U8 {
@@ -146,13 +146,15 @@ public:
     void destroy();
 
     GLuint allocate(bool retry = false);
-    void deallocate(GLuint& handle, U32 frameDelay);
+    void deallocate(GLuint& handle, U32 frameDelay = 1);
 
 private:
     eastl::array<State, N>  _usageMap;
     eastl::array<U32,   N>  _lifeLeft;
     eastl::array<GLuint, N> _handles;
     eastl::array<GLuint, N> _tempBuffer;
+
+    SharedMutex _texLock;
 };
 /// Wrapper for glGetIntegerv
 GLint getIntegerv(GLenum param);

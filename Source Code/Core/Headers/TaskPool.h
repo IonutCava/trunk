@@ -75,6 +75,7 @@ public:
     friend struct Task;
     friend struct TaskHandle;
     friend void Wait(const Task& task);
+    friend void TaskYield(const Task& task);
     friend void Start(Task& task, TaskPool& pool, TaskPriority priority, const DELEGATE_CBK<void>& onCompletionFunction);
     friend bool StopRequested(const Task& task);
     friend void parallel_for(TaskPool& pool, const DELEGATE_CBK<void, const Task&, U32, U32>& cbk, U32 count, U32 partitionSize, TaskPriority priority, bool noWait, bool useCurrentThread);

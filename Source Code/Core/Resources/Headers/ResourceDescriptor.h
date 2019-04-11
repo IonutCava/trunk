@@ -106,6 +106,7 @@ class ResourceDescriptor : public Hashable {
     inline P32  getMask() const { return _mask; }
     inline const vec3<U16>& getData() const { return _data; }
     inline bool waitForReady() const { return _waitForReady; }
+    inline const DELEGATE_CBK<void, CachedResource_wptr>& waitForReadyCbk() const { return _waitForReadyCbk; }
 
     const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback() const {
         return _onLoadCallback;
@@ -125,6 +126,7 @@ class ResourceDescriptor : public Hashable {
     inline void setBoolMask(P32 mask) { _mask = mask; }
     inline void setData(const vec3<U16>& data) { _data.set(data); }
     inline void waitForReady(bool state) { _waitForReady = state; }
+    inline void waitForReadyCbk(const DELEGATE_CBK<void, CachedResource_wptr>& cbk) { _waitForReadyCbk = cbk; }
 
     inline void setThreadedLoading(const bool threaded) {
         _threaded = threaded;
@@ -152,6 +154,7 @@ class ResourceDescriptor : public Hashable {
     bool _flag = false;
     bool _threaded = true;
     bool _waitForReady = true;
+    DELEGATE_CBK<void, CachedResource_wptr> _waitForReadyCbk;
     U32 _ID = 0;
     /// 4 bool values representing  ... anything ...
     P32 _mask;

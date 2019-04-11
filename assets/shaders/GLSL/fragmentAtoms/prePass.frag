@@ -12,7 +12,7 @@
 
 layout(location = TARGET_NORMALS_AND_VELOCITY) out vec4 _normalAndVelocityOut;
 //r,g,b = CSM shadow factor for light ids 0, 1 & 2; a - specular/roughness
-layout(location = TARGET_EXTRA) out vec2 _extraDetailsOut;
+layout(location = TARGET_EXTRA) out vec4 _extraDetailsOut;
 
 void _output(vec3 normal, float alphaFactor) {
     updateTexCoord();

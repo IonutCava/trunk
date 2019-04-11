@@ -228,7 +228,9 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     *s_activeStateTracker = {};
     s_activeStateTracker->init(nullptr);
     s_texturePool.init();
-
+    s_texture2DPool.init();
+    s_texture2DMSPool.init();
+    s_textureCubePool.init();
     if (s_activeStateTracker->_opengl46Supported) {
         gl::glMaxShaderCompilerThreadsARB(0xFFFFFFFF);
     }
@@ -400,6 +402,9 @@ void GL_API::closeRenderingAPI() {
         GL_API::deleteVAOs(1, &s_dummyVAO);
     }
     s_texturePool.destroy();
+    s_texture2DPool.destroy();
+    s_texture2DMSPool.destroy();
+    s_textureCubePool.destroy();
     glVertexArray::cleanup();
     GLUtil::clearVBOs();
     GL_API::s_vaoPool.destroy();

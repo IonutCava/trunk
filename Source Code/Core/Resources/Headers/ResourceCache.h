@@ -108,7 +108,14 @@ public:
         }
 
         if (descriptor.waitForReady()) {
-            WAIT_FOR_CONDITION(ptr->getState() == ResourceState::RES_LOADED);
+            if (descriptor.waitForReadyCbk()) {
+                while (ptr->getState() != ResourceState::RES_LOADED) {
+                    descriptor.waitForReadyCbk()(ptr);
+                    std::this_thread::yield();
+                }
+            } else {
+                WAIT_FOR_CONDITION(ptr->getState() == ResourceState::RES_LOADED);
+            }
         }
 
         if (wasInCache && descriptor.onLoadCallback()) {

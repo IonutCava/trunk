@@ -36,20 +36,25 @@
 namespace Divide {
 namespace GLUtil {
 
-template<size_t N>
-void glTexturePool<N>::init()
+template<size_t N, GLenum type>
+void glTexturePool<N, type>::init()
 {
-    glGenTextures(N, _handles.data());
+    if (type == GL_NONE) {
+        glGenTextures(N, _handles.data());
+    } else {
+        glCreateTextures(type, N, _handles.data());
+    }
     _usageMap.fill(State::FREE);
 }
 
-template<size_t N>
-void glTexturePool<N>::onFrameEnd() {
+template<size_t N, GLenum type>
+void glTexturePool<N, type>::onFrameEnd() {
 
     GLuint count = 0;
     _tempBuffer.fill(0u);
 
     for (size_t i = 0; i < N; ++i) {
+        SharedLock r_lock(_texLock);
         if (_usageMap[i] != State::CLEAN) {
             continue;
         }
@@ -66,8 +71,13 @@ void glTexturePool<N>::onFrameEnd() {
     if (count > 0) {
         size_t newIndex = 0;
         glDeleteTextures(count, _tempBuffer.data());
-        glGenTextures(count, _tempBuffer.data());
+        if (type == GL_NONE) {
+            glGenTextures(N, _handles.data());
+        } else {
+            glCreateTextures(type, count, _tempBuffer.data());
+        }
 
+        UniqueLockShared w_lock(_texLock);
         for (size_t i = 0; i < N; ++i) {
             if (_usageMap[i] == State::CLEAN && _lifeLeft[i] == 0) {
                 _handles[i] = _tempBuffer[newIndex++];
@@ -78,22 +88,28 @@ void glTexturePool<N>::onFrameEnd() {
     }
 }
 
-template<size_t N>
-void glTexturePool<N>::destroy() {
+template<size_t N, GLenum type>
+void glTexturePool<N, type>::destroy() {
     glDeleteTextures(N, _handles.data());
     _handles.fill(0);
     _lifeLeft.fill(0u);
+
+    UniqueLockShared w_lock(_texLock);
     _usageMap.fill(State::CLEAN);
 }
 
-template<size_t N>
-GLuint glTexturePool<N>::allocate(bool retry) {
-    for (size_t i = 0; i < N; ++i) {
-        if (_usageMap[i] == State::FREE) {
-            _usageMap[i] = State::USED;
-            return _handles[i];
+template<size_t N, GLenum type>
+GLuint glTexturePool<N, type>::allocate(bool retry) {
+    {
+        UniqueLockShared w_lock(_texLock);
+        for (size_t i = 0; i < N; ++i) {
+            if (_usageMap[i] == State::FREE) {
+                _usageMap[i] = State::USED;
+                return _handles[i];
+            }
         }
     }
+
     if (!retry) {
         onFrameEnd();
         return allocate(true);
@@ -103,12 +119,15 @@ GLuint glTexturePool<N>::allocate(bool retry) {
     return 0;
 }
 
-template<size_t N>
-void glTexturePool<N>::deallocate(GLuint& handle,  U32 frameDelay) {
+template<size_t N, GLenum type>
+void glTexturePool<N, type>::deallocate(GLuint& handle,  U32 frameDelay) {
+
     for (size_t i = 0; i < N; ++i) {
         if (_handles[i] == handle) {
             handle = 0;
             _lifeLeft[i] = frameDelay;
+
+            UniqueLockShared w_lock(_texLock);
             _usageMap[i] = State::CLEAN;
             return;
         }

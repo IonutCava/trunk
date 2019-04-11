@@ -282,8 +282,12 @@ namespace {
 };
 
 
-void Scene::loadAsset(const XML::SceneNode& sceneNode, SceneGraphNode* parent, bool waitForReady) {
+void Scene::loadAsset(const Task& parentTask, const XML::SceneNode& sceneNode, SceneGraphNode* parent, bool waitForReady) {
     assert(parent != nullptr);
+
+    auto waitForReasoureTask = [&parentTask](CachedResource_wptr res) {
+        TaskYield(parentTask);
+    };
 
     const stringImpl& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
     stringImpl sceneLocation(scenePath + "/" + resourceName().c_str());
@@ -321,6 +325,7 @@ void Scene::loadAsset(const XML::SceneNode& sceneNode, SceneGraphNode* parent, b
                 ResourceDescriptor item(sceneNode.name);
                 item.setOnLoadCallback(loadModelComplete);
                 item.assetName(modelName);
+                item.waitForReadyCbk(waitForReasoureTask);
                 //item.waitForReady(waitForReady);
 
                 if (Util::CompareIgnoreCase(modelName, "BOX_3D")) {
@@ -378,6 +383,7 @@ void Scene::loadAsset(const XML::SceneNode& sceneNode, SceneGraphNode* parent, b
                 model.setFlag(true);
                 model.setThreadedLoading(true);
                 //model.waitForReady(waitForReady);
+                model.waitForReadyCbk(waitForReasoureTask);
                 model.setOnLoadCallback(loadModelComplete);
                 ret = CreateResource<Mesh>(_resCache, model);
             }
@@ -422,7 +428,7 @@ void Scene::loadAsset(const XML::SceneNode& sceneNode, SceneGraphNode* parent, b
     }
 
     for (const XML::SceneNode& node : sceneNode.children) {
-        loadAsset(node, crtNode, waitForReady);
+        loadAsset(parentTask, node, crtNode, waitForReady);
     }
 }
 
@@ -647,25 +653,39 @@ SceneGraphNode* Scene::addSky(SceneGraphNode& parentNode, boost::property_tree::
     return skyNode;
 }
 
-SceneGraphNode* Scene::addWater(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const stringImpl& nodeName) {
+void Scene::addWater(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const stringImpl& nodeName) {
+    auto registerWater = [this, nodeName, &parentNode, pt](CachedResource_wptr res) {
+        SceneGraphNodeDescriptor waterNodeDescriptor;
+        waterNodeDescriptor._name = nodeName;
+        waterNodeDescriptor._node = std::static_pointer_cast<WaterPlane>(res.lock());
+        waterNodeDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
+        waterNodeDescriptor._componentMask = to_base(ComponentType::NAVIGATION) |
+                                            to_base(ComponentType::TRANSFORM) |
+                                            to_base(ComponentType::RIGID_BODY) |
+                                            to_base(ComponentType::BOUNDS) |
+                                            to_base(ComponentType::RENDERING) |
+                                            to_base(ComponentType::NETWORKING);
+
+        waterNodeDescriptor._node->loadFromXML(pt);
+
+        SceneGraphNode* waterNode = parentNode.addNode(waterNodeDescriptor);
+
+
+        NavigationComponent* nComp = waterNode->get<NavigationComponent>();
+        nComp->navigationContext(NavigationComponent::NavigationContext::NODE_OBSTACLE);
+
+        waterNode->get<RigidBodyComponent>()->physicsGroup(PhysicsGroup::GROUP_STATIC);
+        waterNode->loadFromXML(pt);
+        _loadingTasks.fetch_sub(1);
+    };
+
     ResourceDescriptor waterDescriptor("Water_" + nodeName);
-    std::shared_ptr<WaterPlane> waterItem = CreateResource<WaterPlane>(_resCache, waterDescriptor);
+    waterDescriptor.setThreadedLoading(true);
+    waterDescriptor.setOnLoadCallback(registerWater);
+    waterDescriptor.waitForReady(false);
+    _loadingTasks.fetch_add(1);
 
-    waterItem->loadFromXML(pt);
-
-    SceneGraphNodeDescriptor waterNodeDescriptor;
-    waterNodeDescriptor._name = nodeName;
-    waterNodeDescriptor._node = waterItem;
-    waterNodeDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
-    waterNodeDescriptor._componentMask = to_base(ComponentType::NAVIGATION) |
-                                         to_base(ComponentType::TRANSFORM) |
-                                         to_base(ComponentType::BOUNDS) |
-                                         to_base(ComponentType::RENDERING) |
-                                         to_base(ComponentType::NETWORKING);
-    SceneGraphNode* waterNode = _sceneGraph->getRoot().addNode(waterNodeDescriptor);
-    waterNode->loadFromXML(pt);
-
-    return waterNode;
+    CreateResource<WaterPlane>(_resCache, waterDescriptor);
 }
 
 SceneGraphNode* Scene::addInfPlane(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const stringImpl& nodeName) {
@@ -992,7 +1012,7 @@ bool Scene::load(const stringImpl& name) {
         _xmlSceneGraph.pop();
 
         CreateTask(pool, &loadTask, [this, node](const Task & parentTask) -> void {
-            loadAsset(node, &_sceneGraph->getRoot(), false);
+            loadAsset(parentTask, node, &_sceneGraph->getRoot(), false);
         }).startTask();
     }
     loadTask.startTask().wait();

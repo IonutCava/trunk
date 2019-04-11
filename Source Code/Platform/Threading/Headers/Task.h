@@ -61,6 +61,7 @@ void Stop(Task& task);
 void Wait(const Task& task);
 bool StopRequested(const Task& task);
 bool Finished(const Task& task);
+void TaskYield(const Task& task);
 
 // A task object may be used for multiple jobs
 struct TaskHandle {
