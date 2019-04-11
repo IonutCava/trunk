@@ -181,15 +181,24 @@ void RenderPassCuller::addAllChildren(const SceneGraphNode& currentNode, const N
     for (SceneGraphNode* child : children) {
         if (params._stage != RenderStage::SHADOW || castsShadows || child->visibilityLocked()) {
             if (child->isActive() && !_cullingFunction[to_U32(params._stage)](*child, child->getNode())) {
+                bool skip = false;
+
                 F32 distanceSqToCamera = std::numeric_limits<F32>::max();
                 BoundsComponent* bComp = child->get<BoundsComponent>();
                 if (bComp != nullptr) {
                     const BoundingSphere& bSphere = bComp->getBoundingSphere();
+                    const BoundingBox& boundingBox = bComp->getBoundingBox();
                     // Check distance to sphere edge (center - radius)
                     distanceSqToCamera = bSphere.getCenter().distanceSquared(params._currentCamera->getEye()) - SQUARED(bSphere.getRadius());
+
+                    if (params._minExtents.lengthSquared() > 0.0f) {
+                        vec3<F32> diff(boundingBox.getExtent() - params._minExtents);
+                        if (diff.x < 0.0f || diff.y < 0.0f || diff.z < 0.0f) {
+                            skip = true;
+                        }
+                    }
                 }
                 
-                bool skip = false;
                 if (params._minLoD > -1) {
                     RenderingComponent* rComp = child->get<RenderingComponent>();
                     if (rComp != nullptr) {

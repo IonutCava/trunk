@@ -162,7 +162,10 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
     drawParams._index = 0;
 
     RenderPassManager& rpm = _context.parent().renderPassManager();
-    for (I16 i = to_I16(numSplits) - 1; i >= 0; i--) {
+
+    bool renderLastSplit = true;//_context.getFrameCount() % 2 == 0;
+    I16 i = to_I16(numSplits) - (renderLastSplit ? 1 : 2);
+    for (i; i >= 0; i--) {
         drawParams._layer = i;
 
         beginDebugScopeCommand._scopeName = Util::StringFormat("CSM_PASS_%d", i).c_str();
@@ -176,7 +179,7 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
         params._passIndex = (lightIndex * stride) + i;
         params._camera = light.shadowCameras()[i];
         //params._minLoD = i > 1 ? 1 : -1;
-        params._minExtents.set(i > 1 ? 1.5f : (i > 0 ? 1.0f : 0.0f));
+        params._minExtents.set(i > 1 ? 3.0f : (i > 0 ? 2.0f : 0.0f));
 
         rpm.doCustomPass(params, bufferInOut);
 
