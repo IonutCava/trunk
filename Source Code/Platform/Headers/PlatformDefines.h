@@ -683,7 +683,7 @@ FORCE_INLINE bool DIVIDE_ASSERT(const bool expression, const char* failMessage) 
     return expression;
 }
 
-FORCE_INLINE void DIVIDE_UNEXPECTED_CALL(const char* failMessage = "") {
+FORCE_INLINE void DIVIDE_UNEXPECTED_CALL(const char* failMessage = "UNEXPECTED CALL") {
     DIVIDE_ASSERT(false, failMessage);
 }
 

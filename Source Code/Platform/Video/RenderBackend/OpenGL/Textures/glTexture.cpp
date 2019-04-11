@@ -33,11 +33,11 @@ glTexture::glTexture(GFXDevice& context,
     _type = GLUtil::glTextureTypeTable[to_U32(_descriptor.type())];
 
     if (_type == GL_TEXTURE_2D) {
-        _textureData._textureHandle = GL_API::s_texture2DPool.allocate(true);
+        _textureData._textureHandle = GL_API::s_texture2DPool.allocate();
     } else if (_type == GL_TEXTURE_2D_MULTISAMPLE) {
-        _textureData._textureHandle = GL_API::s_texture2DMSPool.allocate(true);
+        _textureData._textureHandle = GL_API::s_texture2DMSPool.allocate();
     } else if (_type == GL_TEXTURE_CUBE_MAP) {
-        _textureData._textureHandle = GL_API::s_textureCubePool.allocate(true);
+        _textureData._textureHandle = GL_API::s_textureCubePool.allocate();
     } else {
         glCreateTextures(_type, 1, &_textureData._textureHandle);
     }
@@ -64,7 +64,6 @@ bool glTexture::unload() noexcept {
         }
         
         if (_type == GL_TEXTURE_2D) {
-            _textureData._textureHandle = GL_API::s_texture2DPool.allocate(true);
             GL_API::s_texture2DPool.deallocate(_textureData._textureHandle);
         } else if (_type == GL_TEXTURE_2D_MULTISAMPLE) {
             GL_API::s_texture2DMSPool.deallocate(_textureData._textureHandle);

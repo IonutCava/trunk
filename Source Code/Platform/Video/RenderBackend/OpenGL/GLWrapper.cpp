@@ -1188,7 +1188,8 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
                 const TextureDescriptor& descriptor = tex->getDescriptor();
                 GLenum glInternalFormat = GLUtil::internalFormat(descriptor.baseFormat(), descriptor.dataType(), descriptor._srgb);
 
-                GLuint handle = getTextureView(data, descriptor._mipLevels, crtCmd._layerRange, glInternalFormat);
+                GLuint handle = s_texturePool.allocate();
+                getTextureView(handle, data, descriptor._mipLevels, crtCmd._layerRange, glInternalFormat);
                 glGenerateTextureMipmap(handle);
                 s_texturePool.deallocate(handle, 3);
             }
@@ -1346,9 +1347,7 @@ void GL_API::processSyncDeleteQeueue() {
     s_syncDeleteQueueSwitchFlag = !s_syncDeleteQueueSwitchFlag;
 }
 
-GLuint GL_API::getTextureView(TextureData& data, vec2<U32> mipLevels, vec2<U32> layerRange, GLenum internalFormat) {
-    GLuint handle = s_texturePool.allocate();
-
+void GL_API::getTextureView(GLuint handle, TextureData& data, vec2<U32> mipLevels, vec2<U32> layerRange, GLenum internalFormat) {
     glTextureView(handle,
         GLUtil::glTextureTypeTable[to_base(data._textureType)],
         data._textureHandle,
@@ -1357,8 +1356,6 @@ GLuint GL_API::getTextureView(TextureData& data, vec2<U32> mipLevels, vec2<U32> 
         (GLuint)mipLevels.y,
         (GLuint)layerRange.x,
         (GLuint)layerRange.y);
-
-    return handle;
 }
 
 GenericVertexData* GL_API::getOrCreateIMGUIBuffer(I64 windowGUID) {
@@ -1476,7 +1473,8 @@ bool GL_API::makeTexturesResident(const TextureDataContainer& textureData, const
         const TextureDescriptor& descriptor = tex->getDescriptor();
         GLenum glInternalFormat = GLUtil::internalFormat(descriptor.baseFormat(), descriptor.dataType(), descriptor._srgb);
 
-        GLuint handle = getTextureView(data, it._view._mipLevels, it._view._layerRange, glInternalFormat);
+        GLuint handle = s_texturePool.allocate();
+        getTextureView(handle, data, it._view._mipLevels, it._view._layerRange, glInternalFormat);
         getStateTracker().bindTexture(static_cast<GLushort>(it._binding), data._textureType, handle, data._samplerHandle);
         s_texturePool.deallocate(handle, 3);
     }

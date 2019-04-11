@@ -209,7 +209,7 @@ private:
 
     GenericVertexData* getOrCreateIMGUIBuffer(I64 windowGUID);
 
-    GLuint getTextureView(TextureData& data, vec2<U32> mipLevels, vec2<U32> layerRange, GLenum internalFormat = GL_NONE);
+    void getTextureView(GLuint handle, TextureData& data, vec2<U32> mipLevels, vec2<U32> layerRange, GLenum internalFormat = GL_NONE);
 protected:
     /// Number of available texture units
     static GLint s_maxTextureUnits;

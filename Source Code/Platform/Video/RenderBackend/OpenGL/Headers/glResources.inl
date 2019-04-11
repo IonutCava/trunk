@@ -72,7 +72,7 @@ void glTexturePool<N, type>::onFrameEnd() {
         size_t newIndex = 0;
         glDeleteTextures(count, _tempBuffer.data());
         if (type == GL_NONE) {
-            glGenTextures(N, _handles.data());
+            glGenTextures(N, _tempBuffer.data());
         } else {
             glCreateTextures(type, count, _tempBuffer.data());
         }
