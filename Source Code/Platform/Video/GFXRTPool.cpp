@@ -30,6 +30,8 @@ GFXRTPool::GFXRTPool(GFXDevice& parent)
     _renderTargets[to_U32(RenderTargetUsage::REFRACTION_PLANAR)].resize(Config::MAX_REFRACTIVE_NODES_IN_VIEW, nullptr);
     _renderTargets[to_U32(RenderTargetUsage::REFLECTION_CUBE)].resize(1, nullptr);
 
+    _renderTargets[to_U32(RenderTargetUsage::REFLECTION_PLANAR_BLUR)].resize(1, nullptr);
+
     _renderTargets[to_U32(RenderTargetUsage::ENVIRONMENT)].resize(1, nullptr);
 
     _renderTargets[to_U32(RenderTargetUsage::OTHER)].resize(g_maxAdditionalRenderTargets, nullptr);

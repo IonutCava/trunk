@@ -49,14 +49,6 @@ BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, PreRenderBatc
 
     ResourceDescriptor bloomApply("bloom.BloomApply");
     _bloomApply = CreateResource<ShaderProgram>(cache, bloomApply);
-
-    ResourceDescriptor blur("blur.Generic");
-    blur.setThreadedLoading(false);
-    _blur = CreateResource<ShaderProgram>(cache, blur);
-
-    _bloomCalcConstants.set("kernelSize", GFX::PushConstantType::INT, 10);
-    _horizBlur = _blur->GetSubroutineIndex(ShaderType::FRAGMENT, "blurHorizontal");
-    _vertBlur = _blur->GetSubroutineIndex(ShaderType::FRAGMENT, "blurVertical");
 }
 
 BloomPreRenderOperator::~BloomPreRenderOperator() {
@@ -77,8 +69,6 @@ void BloomPreRenderOperator::reshape(U16 width, U16 height) {
     _bloomOutput._rt->resize(w, h);
     _bloomBlurBuffer[0]._rt->resize(width, height);
     _bloomBlurBuffer[1]._rt->resize(width, height);
-
-    _bloomCalcConstants.set("size", GFX::PushConstantType::VEC2, vec2<F32>(width, height));
 }
 
 // Order: luminance calc -> bloom -> tonemap
@@ -117,46 +107,14 @@ void BloomPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& b
     GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
 
     // Step 2: blur bloom
-    // Blur horizontally
-    data = _bloomOutput._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
-    descriptorSetCmd._set._textureData.setTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT0));
-    GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
+    _context.blurTarget(_bloomOutput,
+                        _bloomBlurBuffer[0],
+                        _bloomBlurBuffer[1],
+                        RTAttachmentType::Colour,
+                        0,
+                        10,
+                        bufferInOut);
 
-    pipelineDescriptor._shaderProgramHandle = _blur->getID();
-    pipelineDescriptor._shaderFunctions[to_base(ShaderType::FRAGMENT)].push_back(_horizBlur);
-    pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
-    GFX::EnqueueCommand(bufferInOut, pipelineCmd);
-
-
-    beginRenderPassCmd._target = _bloomBlurBuffer[0]._targetID;
-    GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
-
-    GFX::SendPushConstantsCommand pushConstantsCommand;
-    pushConstantsCommand._constants = _bloomCalcConstants;
-    GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
-
-    GFX::EnqueueCommand(bufferInOut, drawCmd);
-
-    GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
-
-    // Blur vertically (recycle the render target. We have a copy)
-    pipelineDescriptor._shaderProgramHandle = _blur->getID();
-    pipelineDescriptor._shaderFunctions[to_base(ShaderType::FRAGMENT)].front() = _vertBlur;
-    pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
-    GFX::EnqueueCommand(bufferInOut, pipelineCmd);
-
-    data = _bloomBlurBuffer[0]._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
-    descriptorSetCmd._set._textureData.setTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT0));
-    GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
-
-    beginRenderPassCmd._target = _bloomBlurBuffer[1]._targetID;
-    GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
-    GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
-
-    GFX::EnqueueCommand(bufferInOut, drawCmd);
-
-    GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
-        
     // Step 3: apply bloom
     GFX::BlitRenderTargetCommand blitRTCommand;
     blitRTCommand._source = screen._targetID;
@@ -177,6 +135,7 @@ void BloomPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& b
     GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
     _bloomApplyConstants.set("bloomFactor", GFX::PushConstantType::FLOAT, _bloomFactor);
+    GFX::SendPushConstantsCommand pushConstantsCommand;
     pushConstantsCommand._constants = _bloomApplyConstants;
     GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
@@ -190,7 +149,7 @@ void BloomPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& b
 }
 
 TextureData BloomPreRenderOperator::getDebugOutput() const {
-    return TextureData();
+    return _bloomBlurBuffer[1]._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData(); //Bloom
 }
 
 };

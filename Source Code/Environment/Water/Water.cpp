@@ -15,6 +15,10 @@
 
 namespace Divide {
 
+namespace {
+    constexpr bool g_occlusionCullReflection = false;
+};
+
 WaterPlane::WaterPlane(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name)
     : SceneNode(parentCache, descriptorHash, name, SceneNodeType::TYPE_WATER),
       _plane(nullptr),
@@ -206,7 +210,9 @@ void WaterPlane::updateReflection(RenderCbkParams& renderParams, GFX::CommandBuf
 
     RenderPassManager::PassParams params = {};
     params._sourceNode = &renderParams._sgn;
-    params._targetHIZ = RenderTargetID(RenderTargetUsage::HI_Z_REFLECT);
+    if (g_occlusionCullReflection) {
+        params._targetHIZ = RenderTargetID(RenderTargetUsage::HI_Z_REFLECT);
+    }
     params._camera = _reflectionCam;
     params._minExtents.set(1.25f);
     params._stage = RenderStage::REFLECTION;
@@ -215,6 +221,19 @@ void WaterPlane::updateReflection(RenderCbkParams& renderParams, GFX::CommandBuf
     params._passIndex = renderParams._passIndex;
     params._clippingPlanes._planes[0] = reflectionPlane;
     renderParams._context.parent().renderPassManager().doCustomPass(params, bufferInOut);
+
+    RenderTarget& reflectTarget = renderParams._context.renderTargetPool().renderTarget(renderParams._renderTarget);
+    RenderTarget& reflectBlurTarget = renderParams._context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::REFLECTION_PLANAR_BLUR));
+
+    RenderTargetHandle source(renderParams._renderTarget, &reflectTarget);
+    RenderTargetHandle buffer(RenderTargetID(RenderTargetUsage::REFLECTION_PLANAR_BLUR), &reflectBlurTarget);
+    renderParams._context.blurTarget(source,
+                                     buffer,
+                                     source,
+                                     RTAttachmentType::Colour,
+                                     0, 
+                                     9,
+                                     bufferInOut);
 }
 
 void WaterPlane::updatePlaneEquation(const SceneGraphNode& sgn, Plane<F32>& plane, bool reflection) {

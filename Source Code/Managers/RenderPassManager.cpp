@@ -59,8 +59,6 @@ namespace Divide {
     }
 
     void RenderPassManager::render(SceneRenderState& sceneRenderState, Time::ProfileTimer* parentTimer) {
-        const Configuration& config = parent().platformContext().config();
-
         if (parentTimer != nullptr && !parentTimer->hasChildTimer(*_renderPassTimer)) {
             parentTimer->addChildTimer(*_renderPassTimer);
             parentTimer->addChildTimer(*_postFxRenderTimer);
@@ -70,8 +68,6 @@ namespace Divide {
         const Camera& cam = Attorney::SceneManagerRenderPass::playerCamera(parent().sceneManager());
 
         Attorney::SceneManagerRenderPass::preRenderAllPasses(parent().sceneManager(), cam);
-
-        TaskPriority priority = config.rendering.multithreadedCommandGeneration ? TaskPriority::DONT_CARE : TaskPriority::REALTIME;
 
         TaskPool& pool = parent().platformContext().taskPool(TaskPoolType::HIGH_PRIORITY);
 
@@ -98,7 +94,7 @@ namespace Divide {
                                           [pass, buf, &sceneRenderState](const Task & parentTask) {
                                               pass->render(parentTask, sceneRenderState, *buf);
                                               buf->batch();
-                                          }).startTask(priority);
+                                          }).startTask(TaskPriority::DONT_CARE);
                 }
                 { //PostFX should be pretty fast
                     GFX::CommandBuffer* buf = _postFXCommandBuffer;
@@ -113,7 +109,7 @@ namespace Divide {
                                                 Time::ScopedTimer time(timer);
                                                 postFX.apply(cam, *buf);
                                                 buf->batch();
-                                            }).startTask(priority);
+                                            }).startTask(TaskPriority::DONT_CARE);
                 }
             }
         }

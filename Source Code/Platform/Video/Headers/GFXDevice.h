@@ -328,6 +328,14 @@ public:
     // Render the texture using a custom viewport
     void drawTextureInViewport(TextureData data, const Rect<I32>& viewport, GFX::CommandBuffer& bufferInOut) const;
 
+    void blurTarget(RenderTargetHandle& blurSource, 
+                    RenderTargetHandle& blurTargetH,
+                    RenderTargetHandle& blurTargetV,
+                    RTAttachmentType att,
+                    U8 index,
+                    I32 kernelSize,
+                    GFX::CommandBuffer& bufferInOut) const;
+
 public:  // Direct API calls
     // In milliseconds
     inline F32 getFrameDurationGPU() const {
@@ -448,6 +456,9 @@ protected:
     ShaderProgram_ptr _HIZCullProgram;
     ShaderProgram_ptr _displayShader;
     ShaderProgram_ptr _textRenderShader;
+    ShaderProgram_ptr _blurShader;
+    U32 _horizBlur = 0, _vertBlur = 0;
+
     PushConstants _textRenderConstants;
     Pipeline* _textRenderPipeline = nullptr;
         

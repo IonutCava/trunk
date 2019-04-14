@@ -76,7 +76,8 @@
   <MSAAsamples>2</MSAAsamples>
   <anisotropicFilteringLevel>8</anisotropicFilteringLevel>
   <renderDetailLevel>4</renderDetailLevel>
-  <multithreadedCommandGeneration>true</multithreadedCommandGeneration>
+  <!-- base reflectio resolution is 512p. Min factor 1. (e.g. factor 2 = 1024p targets) -->
+  <reflectionResolutionFactor>1</reflectionResolutionFactor>
   <enableFog>true</enableFog>
   <fogDensity>0.001</fogDensity>
   <fogColour r="0.5" g="0.5" b="0.55"/>

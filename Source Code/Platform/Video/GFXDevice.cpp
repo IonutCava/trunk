@@ -107,6 +107,7 @@ GFXDevice::GFXDevice(Kernel& parent)
     _renderTargetDraw = nullptr;
     _previewDepthMapShader = nullptr;
     _textRenderShader = nullptr;
+    _blurShader = nullptr;
     _displayShader = nullptr;
     _debugFrustum = nullptr;
     _debugFrustumPrimitive = nullptr;
@@ -427,12 +428,6 @@ void GFXDevice::onSizeChange(const SizeChangeParams& params) {
         if (Config::Build::ENABLE_EDITOR) {
             _rtPool->resizeTargets(RenderTargetUsage::EDITOR, w, h);
         }
-
-        U16 reflectRes = std::max(w, h) / Config::REFLECTION_TARGET_RESOLUTION_DOWNSCALE_FACTOR;
-        _rtPool->resizeTargets(RenderTargetUsage::HI_Z_REFLECT, reflectRes, reflectRes);
-        _rtPool->resizeTargets(RenderTargetUsage::REFLECTION_PLANAR, reflectRes, reflectRes);
-        _rtPool->resizeTargets(RenderTargetUsage::REFRACTION_PLANAR, reflectRes, reflectRes);
-        _rtPool->resizeTargets(RenderTargetUsage::REFLECTION_CUBE, reflectRes, reflectRes);
 
         _prevDepthBuffer->resize(NULL, vec2<U16>(w, h));
 

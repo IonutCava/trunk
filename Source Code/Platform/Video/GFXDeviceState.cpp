@@ -179,7 +179,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
         _rtPool->allocateRT(RenderTargetUsage::SCREEN, screenDesc);
     }
 
-    U16 reflectRes = std::max(renderResolution.width, renderResolution.height) / Config::REFLECTION_TARGET_RESOLUTION_DOWNSCALE_FACTOR;
+    U16 reflectRes = 512 * config.rendering.reflectionResolutionFactor;
 
     ResourceDescriptor prevDepthTex("PREV_DEPTH");
     depthDescriptor.msaaSamples(0);
@@ -291,8 +291,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     reflectionSampler._minFilter = TextureFilter::NEAREST;
     reflectionSampler._magFilter = TextureFilter::NEAREST;
 
-    RenderTargetHandle tempHandle;
-
     {
         // A could be used for anything. E.G. depth
         TextureDescriptor environmentDescriptorPlanar(TextureType::TEXTURE_2D, GFXImageFormat::RGBA, GFXDataFormat::UNSIGNED_BYTE);
@@ -319,13 +317,16 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 
             for (U32 i = 0; i < Config::MAX_REFLECTIVE_NODES_IN_VIEW; ++i) {
                 refDesc._name = Util::StringFormat("Reflection_Planar_%d", i);
-                tempHandle = _rtPool->allocateRT(RenderTargetUsage::REFLECTION_PLANAR, refDesc);
+                _rtPool->allocateRT(RenderTargetUsage::REFLECTION_PLANAR, refDesc);
             }
 
             for (U32 i = 0; i < Config::MAX_REFRACTIVE_NODES_IN_VIEW; ++i) {
                 refDesc._name = Util::StringFormat("Refraction_Planar_%d", i);
-                tempHandle = _rtPool->allocateRT(RenderTargetUsage::REFRACTION_PLANAR, refDesc);
+                _rtPool->allocateRT(RenderTargetUsage::REFRACTION_PLANAR, refDesc);
             }
+
+            refDesc._attachmentCount = 1; //skip depth
+            _rtPool->allocateRT(RenderTargetUsage::REFLECTION_PLANAR_BLUR, refDesc);
 
         }
     }
@@ -352,7 +353,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
         refDesc._attachments = attachments.data();
 
         refDesc._name = "Reflection_Cube_Array";
-        tempHandle = _rtPool->allocateRT(RenderTargetUsage::REFLECTION_CUBE, refDesc);
+        _rtPool->allocateRT(RenderTargetUsage::REFLECTION_CUBE, refDesc);
     }
 
     return ErrorCode::NO_ERR;
@@ -376,6 +377,12 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
     descriptor._shaderProgramHandle = _textRenderShader->getID();
     descriptor._stateHash = get2DStateBlock();
     _textRenderPipeline = newPipeline(descriptor);
+
+    ResourceDescriptor blur("blur.Generic");
+    blur.setThreadedLoading(false);
+    _blurShader = CreateResource<ShaderProgram>(cache, blur);
+    _horizBlur = _blurShader->GetSubroutineIndex(ShaderType::FRAGMENT, "blurHorizontal");
+    _vertBlur = _blurShader->GetSubroutineIndex(ShaderType::FRAGMENT, "blurVertical");
 
     // Initialized our HierarchicalZ construction shader (takes a depth
     // attachment and down-samples it for every mip level)

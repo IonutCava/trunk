@@ -255,9 +255,6 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     shaderDescriptor._defines.push_back(std::make_pair("USE_SSBO_DATA_BUFFER", true));
 
-    if (terrainDescriptor->wireframeDebug()) {
-        shaderDescriptor._defines.push_back(std::make_pair("TOGGLE_WIREFRAME", true));
-    }
     if (!context.config().rendering.shadowMapping.enabled) {
         shaderDescriptor._defines.push_back(std::make_pair("DISABLE_SHADOW_MAPPING", true));
     }
@@ -286,6 +283,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     ShaderProgram_ptr terrainShadowShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderShadow);
 
     if (terrainDescriptor->wireframeDebug()) {
+        shaderDescriptor._defines.push_back(std::make_pair("TOGGLE_WIREFRAME", true));
         shaderName.append(".Wireframe");
     }
 

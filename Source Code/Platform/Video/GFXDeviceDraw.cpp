@@ -329,4 +329,74 @@ void GFXDevice::renderDebugUI(const Rect<I32>& targetViewport, GFX::CommandBuffe
     GFX::EnqueueCommand(bufferInOut, endDebugScopeCommand);
 }
 
+
+void GFXDevice::blurTarget(RenderTargetHandle& blurSource,
+                           RenderTargetHandle& blurTargetH,
+                           RenderTargetHandle& blurTargetV,
+                           RTAttachmentType att,
+                           U8 index,
+                           I32 kernelSize,
+                           GFX::CommandBuffer& bufferInOut) const
+{
+    vec2<F32> size;
+    size.set(blurTargetH._rt->getWidth(), blurTargetH._rt->getHeight());
+
+    PipelineDescriptor pipelineDescriptor;
+    pipelineDescriptor._stateHash = get2DStateBlock();
+    pipelineDescriptor._shaderProgramHandle = _blurShader->getID();
+
+    GenericDrawCommand triangleCmd;
+    triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
+    triangleCmd._drawCount = 1;
+
+    // Blur horizontally
+    GFX::BeginRenderPassCommand beginRenderPassCmd;
+    beginRenderPassCmd._target = blurTargetH._targetID;
+    beginRenderPassCmd._name = "BLUR_RENDER_TARGET_HORIZONTAL";
+    GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
+
+    TextureData data = blurSource._rt->getAttachment(att, index).texture()->getData();
+    GFX::BindDescriptorSetsCommand descriptorSetCmd;
+    descriptorSetCmd._set._textureData.setTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT0));
+    GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
+
+    GFX::BindPipelineCommand pipelineCmd;
+    pipelineDescriptor._shaderFunctions[to_base(ShaderType::FRAGMENT)].push_back(_horizBlur);
+    pipelineCmd._pipeline = newPipeline(pipelineDescriptor);
+    GFX::EnqueueCommand(bufferInOut, pipelineCmd);
+
+    GFX::SendPushConstantsCommand pushConstantsCommand;
+    pushConstantsCommand._constants.set("kernelSize", GFX::PushConstantType::INT, kernelSize);
+    pushConstantsCommand._constants.set("size", GFX::PushConstantType::VEC2, size);
+    GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
+
+    GFX::DrawCommand drawCmd;
+    drawCmd._drawCommands.push_back(triangleCmd);
+    GFX::EnqueueCommand(bufferInOut, drawCmd);
+
+    GFX::EndRenderPassCommand endRenderPassCmd;
+    GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
+
+    // Blur vertically
+    beginRenderPassCmd._target = blurTargetV._targetID;
+    beginRenderPassCmd._name = "BLUR_RENDER_TARGET_VERTICAL";
+    GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
+
+    pipelineDescriptor._shaderFunctions[to_base(ShaderType::FRAGMENT)].front() = _vertBlur;
+    pipelineCmd._pipeline = newPipeline(pipelineDescriptor);
+    GFX::EnqueueCommand(bufferInOut, pipelineCmd);
+
+    size.set(blurTargetV._rt->getWidth(), blurTargetV._rt->getHeight());
+    pushConstantsCommand._constants.set("size", GFX::PushConstantType::VEC2, size);
+    GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
+
+    data = blurTargetH._rt->getAttachment(att, index).texture()->getData();
+    descriptorSetCmd._set._textureData.setTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT0));
+    GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
+
+    GFX::EnqueueCommand(bufferInOut, drawCmd);
+
+    GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
+}
+
 };

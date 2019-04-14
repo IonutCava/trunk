@@ -111,7 +111,7 @@ public:
         U8 msaaSamples;
         U8 anisotropicFilteringLevel;
         RenderDetailLevel renderDetailLevel;
-        bool multithreadedCommandGeneration;
+        U8 reflectionResolutionFactor;
         bool enableFog;
         F32 fogDensity;
         vec3<F32> fogColour;
