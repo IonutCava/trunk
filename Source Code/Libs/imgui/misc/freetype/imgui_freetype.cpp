@@ -336,15 +336,14 @@ bool ImFontAtlasBuildWithFreeType(FT_Library ft_library, ImFontAtlas* atlas, uns
     {
         ImFontBuildSrcDataFT& src_tmp = src_tmp_array[src_i];
         ImFontBuildDstDataFT& dst_tmp = dst_tmp_array[src_tmp.DstIndex];
-        ImFontConfig& cfg = atlas->ConfigData[src_i];
         src_tmp.GlyphsSet.Resize(src_tmp.GlyphsHighest + 1);
-        if (dst_tmp.SrcCount > 1 && dst_tmp.GlyphsSet.Storage.empty())
+        if (dst_tmp.GlyphsSet.Storage.empty())
             dst_tmp.GlyphsSet.Resize(dst_tmp.GlyphsHighest + 1);
 
         for (const ImWchar* src_range = src_tmp.SrcRanges; src_range[0] && src_range[1]; src_range += 2)
             for (int codepoint = src_range[0]; codepoint <= src_range[1]; codepoint++)
             {
-                if (cfg.MergeMode && dst_tmp.GlyphsSet.GetBit(codepoint))               // Don't overwrite existing glyphs. We could make this an option (e.g. MergeOverwrite)
+                if (dst_tmp.GlyphsSet.GetBit(codepoint))    // Don't overwrite existing glyphs. We could make this an option (e.g. MergeOverwrite)
                     continue;
                 uint32_t glyph_index = FT_Get_Char_Index(src_tmp.Font.Face, codepoint); // It is actually in the font? (FIXME-OPT: We are not storing the glyph_index..)
                 if (glyph_index == 0)
@@ -354,7 +353,6 @@ bool ImFontAtlasBuildWithFreeType(FT_Library ft_library, ImFontAtlas* atlas, uns
                 src_tmp.GlyphsCount++;
                 dst_tmp.GlyphsCount++;
                 src_tmp.GlyphsSet.SetBit(codepoint, true);
-                if (dst_tmp.SrcCount > 1)
                     dst_tmp.GlyphsSet.SetBit(codepoint, true);
                 total_glyphs_count++;
             }
@@ -400,7 +398,7 @@ bool ImFontAtlasBuildWithFreeType(FT_Library ft_library, ImFontAtlas* atlas, uns
     const int BITMAP_BUFFERS_CHUNK_SIZE = 256 * 1024;
     int buf_bitmap_current_used_bytes = 0;
     ImVector<unsigned char*> buf_bitmap_buffers;
-    buf_bitmap_buffers.push_back((unsigned char*)ImGui::MemAlloc(BITMAP_BUFFERS_CHUNK_SIZE));
+    buf_bitmap_buffers.push_back((unsigned char*)IM_ALLOC(BITMAP_BUFFERS_CHUNK_SIZE));
 
     // 4. Gather glyphs sizes so we can pack them in our virtual canvas.
     // 8. Render/rasterize font characters into the texture
@@ -442,7 +440,7 @@ bool ImFontAtlasBuildWithFreeType(FT_Library ft_library, ImFontAtlas* atlas, uns
             if (buf_bitmap_current_used_bytes + bitmap_size_in_bytes > BITMAP_BUFFERS_CHUNK_SIZE)
             {
                 buf_bitmap_current_used_bytes = 0;
-                buf_bitmap_buffers.push_back((unsigned char*)ImGui::MemAlloc(BITMAP_BUFFERS_CHUNK_SIZE));
+                buf_bitmap_buffers.push_back((unsigned char*)IM_ALLOC(BITMAP_BUFFERS_CHUNK_SIZE));
             }
 
             // Blit rasterized pixels to our temporary buffer and keep a pointer to it.
@@ -495,7 +493,7 @@ bool ImFontAtlasBuildWithFreeType(FT_Library ft_library, ImFontAtlas* atlas, uns
     // 7. Allocate texture
     atlas->TexHeight = (atlas->Flags & ImFontAtlasFlags_NoPowerOfTwoHeight) ? (atlas->TexHeight + 1) : ImUpperPowerOfTwo(atlas->TexHeight);
     atlas->TexUvScale = ImVec2(1.0f / atlas->TexWidth, 1.0f / atlas->TexHeight);
-    atlas->TexPixelsAlpha8 = (unsigned char*)ImGui::MemAlloc(atlas->TexWidth * atlas->TexHeight);
+    atlas->TexPixelsAlpha8 = (unsigned char*)IM_ALLOC(atlas->TexWidth * atlas->TexHeight);
     memset(atlas->TexPixelsAlpha8, 0, atlas->TexWidth * atlas->TexHeight);
 
     // 8. Copy rasterized font characters back into the main texture
@@ -559,7 +557,7 @@ bool ImFontAtlasBuildWithFreeType(FT_Library ft_library, ImFontAtlas* atlas, uns
 
     // Cleanup
     for (int buf_i = 0; buf_i < buf_bitmap_buffers.Size; buf_i++)
-        ImGui::MemFree(buf_bitmap_buffers[buf_i]);
+        IM_FREE(buf_bitmap_buffers[buf_i]);
     for (int src_i = 0; src_i < src_tmp_array.Size; src_i++)
         src_tmp_array[src_i].~ImFontBuildSrcDataFT();
 
@@ -569,8 +567,8 @@ bool ImFontAtlasBuildWithFreeType(FT_Library ft_library, ImFontAtlas* atlas, uns
 }
 
 // Default memory allocators
-static void* ImFreeTypeDefaultAllocFunc(size_t size, void* user_data)	{ IM_UNUSED(user_data); return ImGui::MemAlloc(size); }
-static void  ImFreeTypeDefaultFreeFunc(void* ptr, void* user_data)	    { IM_UNUSED(user_data); ImGui::MemFree(ptr); }
+static void* ImFreeTypeDefaultAllocFunc(size_t size, void* user_data)	{ IM_UNUSED(user_data); return IM_ALLOC(size); }
+static void  ImFreeTypeDefaultFreeFunc(void* ptr, void* user_data)	    { IM_UNUSED(user_data); IM_FREE(ptr); }
 
 // Current memory allocators
 static void* (*GImFreeTypeAllocFunc)(size_t size, void* user_data) = ImFreeTypeDefaultAllocFunc;

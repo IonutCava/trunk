@@ -372,7 +372,7 @@ static bool InitBinding(const ImImpl_InitParams* pOptionalInitParams=NULL,int ar
 //-ENABLE-OPENGLES COMPATIBILITY PROFILES----------------------------------
 /* // Don't know how to make this work... for sure,
  * // "custom" freeglut compiled with -legl -lglesv2 can do it,
- * // but otherwie it seems that the required profile definition is missing ATM.
+ * // but otherwise it seems that the required profile definition is missing ATM.
  * // Moreover, I'm not sure that the glutInitContextMethods (defined in freeglut_ext.h)
  * // can be called at this point...
 */

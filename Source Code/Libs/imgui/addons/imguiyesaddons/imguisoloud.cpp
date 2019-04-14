@@ -398,7 +398,12 @@ namespace SoLoud
 
 		void sleep(int aMSec)
 		{
-			usleep(aMSec * 1000);
+            //usleep(aMSec * 1000); // usleep is deprecated
+            //The line above has been replaced by:
+            struct timespec req = {0};
+            req.tv_sec = 0;
+            req.tv_nsec = aMSec * 1000000L;
+            nanosleep(&req, (struct timespec *)NULL);
 		}
 
         void wait(ThreadHandle aThreadHandle)
@@ -12238,6 +12243,7 @@ klatt::klatt() :
     mGlotLast(0),
     mDecay(0),
     mOneMd(0),
+    mSeed(5),
     mElementCount(0),
     mElement(0),
     mElementIndex(0),

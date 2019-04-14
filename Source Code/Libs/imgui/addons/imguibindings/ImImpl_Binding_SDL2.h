@@ -167,8 +167,9 @@ I think failing in SDL_Init() when a requested subsystem doesn't work properly i
                           SDL_WINDOWPOS_CENTERED,
                           pOptionalInitParams ? pOptionalInitParams->gWindowSize.x : 1270,
                           pOptionalInitParams ? pOptionalInitParams->gWindowSize.y : 720,
-                          SDL_WINDOW_RESIZABLE |
-                          SDL_WINDOW_OPENGL
+                          SDL_WINDOW_RESIZABLE
+                          | SDL_WINDOW_OPENGL
+                          //| SDL_WINDOW_ALLOW_HIGHDPI
                           );
     if (!window)
     {

@@ -452,7 +452,7 @@ private:
         if (hasPrefix) {
             snprintf(&buf[bufid], pbufsz,"%s",prefix);
             bufid = strlen(buf);
-            pbufsz-= (int)bufid;
+            pbufsz-=bufid;
         }
 
         // value:
@@ -546,7 +546,7 @@ private:
         // suffix:
         if (hasSuffix)  {
             bufid = strlen(buf);
-            pbufsz-= (int)bufid;
+            pbufsz-=bufid;
             snprintf(&buf[bufid], pbufsz,"%s",suffix);
         }
 
@@ -699,8 +699,8 @@ public:
     ImVector<ItemBase*> items;      // one per row
 public:
     virtual ~ListView() {
-        for (size_t i=0,isz=(size_t)items.size();i<isz;i++) {
-            ItemBase*& item = items[(int)i];
+        for (size_t i=0,isz=items.size();i<isz;i++) {
+            ItemBase*& item = items[i];
             item->~ItemBase();              // ImVector does not call it
             ImGui::MemFree(item);           // items MUST be allocated by the user using ImGui::MemAlloc(...)
             item=NULL;
@@ -712,7 +712,7 @@ public:
     void getHeaderData(size_t column,HeaderData& headerDataOut) const {
         // Here we just have to fill as many headerDataOut fields as we can. IMPORTANT: headerDataOut strings are only references (i.e. don't use strcpy(...)!)
         if ((int)column>=headers.size()) return;
-        const Header& h = headers[(int)column];
+        const Header& h = headers[column];
         headerDataOut = h.hd;  // To speed up this code I've added hd inside h, but this is not necessary.
         // Mandatory: headerDataOut just stores the string references:
         headerDataOut.name = h.name;
@@ -722,10 +722,10 @@ public:
     }
     void getCellData(size_t row,size_t column,CellData& cellDataOut) const  {
         if ((int)row>=items.size() || (int)column>=headers.size()) return;
-        const ItemBase& it = *(items[(int)row]);
+        const ItemBase& it = *(items[row]);
         cellDataOut.fieldPtr = it.getDataPtr(column);
         cellDataOut.selectedRowPtr = &it.selected;
-        if (headers[(int)column].hd.type.headerType==HT_CUSTOM) cellDataOut.customText = it.getCustomText(column);
+        if (headers[column].hd.type.headerType==HT_CUSTOM) cellDataOut.customText = it.getCustomText(column);
         else cellDataOut.customText = NULL;
     }
 

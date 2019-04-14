@@ -555,7 +555,7 @@ bool Editor::render(const U64 deltaTime) {
     windowFlags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
     windowFlags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 
-    if (opt_flags & ImGuiDockNodeFlags_PassthruDockspace) {
+    if (opt_flags & ImGuiDockNodeFlags_PassthruCentralNode) {
         ImGui::SetNextWindowBgAlpha(0.0f);
     }
 

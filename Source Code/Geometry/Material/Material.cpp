@@ -312,7 +312,9 @@ void Material::setShaderProgramInternal(const ResourceDescriptor& shaderDescript
         WAIT_FOR_CONDITION(info._shaderRef->getState() == ResourceState::RES_LOADED);
         Console::printfn(Locale::get(_ID("REPLACE_SHADER")),
             info._shaderRef->resourceName().c_str(), 
-            shaderDescriptor.resourceName().c_str());
+            shaderDescriptor.resourceName().c_str(),
+            TypeUtil::renderStageToString(renderStagePass._stage),
+            TypeUtil::renderPassTypeToString(renderStagePass._passType));
     }
 
     //UniqueLockShared w_lock(s_shaderDBLock);

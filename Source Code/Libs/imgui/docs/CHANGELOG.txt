@@ -94,7 +94,119 @@ Other changes:
 
 
 -----------------------------------------------------------------------
- VERSION 1.68 (In progress)
+ VERSION 1.70 WIP (In Progress)
+-----------------------------------------------------------------------
+
+Breaking Changes:
+- Examples: Vulkan: Added MinImageCount/ImageCount fields in ImGui_ImplVulkan_InitInfo, required
+  during initialization to specify the number of in-flight image requested by swap chains.
+  (was previously a hard #define IMGUI_VK_QUEUED_FRAMES 2). (#2071, #1677) [@nathanvoglsam]
+- Examples: Vulkan: Tidying up the demo/internals helpers (most engine/app should not rely
+  on them but it is possible you have!).
+
+Other Changes:
+- InputText: Fixed selection background starts rendering one frame after the cursor movement
+  when first transitioning from no-selection to has-selection. (Bug in 1.69) (#2436) [@Nazg-Gul]
+- InputText: Work-around for buggy standard libraries where isprint('\t') returns true. (#2467, #1336)
+- InputText: Fixed ImGuiInputTextFlags_AllowTabInput leading to two tabs characters being inserted
+  if the back-end provided both Key and Character input. (#2467, #1336)
+- GetMouseDragDelta(): also returns the delta on the mouse button released frame. (#2419)
+- GetMouseDragDelta(): verify that mouse positions are valid otherwise returns zero.
+- Inputs: Also add support for horizontal scroll with Shift+Mouse Wheel. (#2424, #1463) [@LucaRood]
+- PlotLines, PlotHistogram: Ignore NaN values when calculating min/max bounds. (#2485)
+- Misc: Added IM_MALLOC/IM_FREE macros mimicking IM_NEW/IM_DELETE so user doesn't need to revert
+  to using the ImGui::MemAlloc()/MemFree() calls directly.
+- Examples: OpenGL: Added a dummy GL call + comments in ImGui_ImplOpenGL3_Init() to detect uninitialized
+  GL function loaders early, and help users understand what they are missing. (#2421)
+- Examples: OpenGL3: Minor tweaks + not calling glBindBuffer more than necessary in the render loop.
+- Examples: Vulkan: Fixed in-flight buffers issues when using multi-viewports. (#2461, #2348, #2378, #2097)
+- Examples: Vulkan: Added missing support for 32-bit indices (#define ImDrawIdx unsigned int).
+- Examples: Vulkan: Avoid passing negative coordinates to vkCmdSetScissor, which debug validation layers do not like.
+- Examples: Vulkan: Added ImGui_ImplVulkan_SetMinImageCount() to change min image count at runtime. (#2071) [@nathanvoglsam]
+- Examples: DirectX9: Fixed erroneous assert in ImGui_ImplDX9_InvalidateDeviceObjects(). (#2454)
+- Examples: GLUT: Fixed existing FreeGLUT example to work with regular GLUT. (#2465) [@andrewwillmott]
+- Examples: GLUT: Renamed imgui_impl_freeglut.cpp/.h to imgui_impl_glut.cpp/.h. (#2465) [@andrewwillmott]
+- Examples: GLUT: Made io.DeltaTime always > 0. (#2430)
+
+
+-----------------------------------------------------------------------
+ VERSION 1.69 (Released 2019-03-13)
+-----------------------------------------------------------------------
+
+Breaking Changes:
+
+- Renamed ColorEdit/ColorPicker's ImGuiColorEditFlags_RGB/_HSV/_HEX flags to respectively
+  ImGuiColorEditFlags_DisplayRGB/_DisplayHSV/_DisplayHex. This is because the addition of
+  new flag ImGuiColorEditFlags_InputHSV makes the earlier one ambiguous.
+  Keep redirection enum values (will obsolete). (#2384) [@haldean]
+- Renamed GetOverlayDrawList() to GetForegroundDrawList(). Kept redirection function (will obsolete). (#2391)
+
+Other Changes:
+
+- Added GetBackgroundDrawList() helper to quickly get access to a ImDrawList that will be rendered
+  behind every other windows. (#2391, #545)
+- DragScalar, InputScalar, SliderScalar: Added support for u8/s8/u16/s16 data types (ImGuiDataType_S8, etc.)
+  We are reusing function instances of larger types to reduce code size. (#643, #320, #708, #1011)
+- Added InputTextWithHint() to display a description/hint in the text box when no text
+  has been entered. (#2400) [@Organic-Code, @ocornut]
+- Nav: Fixed a tap on AltGR (e.g. German keyboard) from navigating to the menu layer.
+- Nav: Fixed Ctrl+Tab keeping active InputText() of a previous window active after the switch. (#2380)
+- Fixed IsItemDeactivated()/IsItemDeactivatedAfterEdit() from not correctly returning true
+  when tabbing out of a focusable widget (Input/Slider/Drag) in most situations. (#2215, #1875)
+- InputInt, InputFloat, InputScalar: Fix to keep the label of the +/- buttons centered when
+  style.FramePadding.x is abnormally larger than style.FramePadding.y. Since the buttons are
+  meant to be square (to align with e.g. color button) we always use FramePadding.y. (#2367)
+- InputInt, InputScalar: +/- buttons now respects the natural type limits instead of
+  overflowing or underflowing the value.
+- InputText: Fixed an edge case crash that would happen if another widget sharing the same ID
+  is being swapped with an InputText that has yet to be activated.
+- InputText: Fixed various display corruption related to swapping the underlying buffer while
+  a input widget is active (both for writable and read-only paths). Often they would manifest
+  when manipulating the scrollbar of a multi-line input text.
+- ColorEdit, ColorPicker, ColorButton: Added ImGuiColorEditFlags_InputHSV to manipulate color
+  values encoded as HSV (in order to avoid HSV<>RGB round trips and associated singularities).
+  (#2383, #2384) [@haldean]
+- ColorPicker: Fixed a bug/assertion when displaying a color picker in a collapsed window
+  while dragging its title bar. (#2389)
+- ColorEdit: Fixed tooltip not honoring the ImGuiColorEditFlags_NoAlpha contract of never
+  reading the 4th float in the array (value was read and discarded). (#2384) [@haldean]
+- MenuItem, Selectable: Fixed disabled widget interfering with navigation (fix c2db7f63 in 1.67).
+- TabBar: Fixed a crash when using many BeginTabBar() recursively (didn't affect docking). (#2371)
+- TabBar: Added extra mis-usage error recovery. Past the assert, common mis-usage don't lead to
+  hard crashes any more, facilitating integration with scripting languages. (#1651)
+- TabBar: Fixed ImGuiTabItemFlags_SetSelected being ignored if the tab is not visible (with
+  scrolling policy enabled) or if is currently appearing.
+- TabBar: Fixed Tab tooltip code making drag and drop tooltip disappear during the frame where
+  the drag payload activate a tab.
+- TabBar: Reworked scrolling policy (when ImGuiTabBarFlags_FittingPolicyScroll is set) to
+  teleport the view when aiming at a tab far away the visible section, and otherwise accelerate
+  the scrolling speed to cap the scrolling time to 0.3 seconds.
+- Text: Fixed large Text/TextUnformatted calls not feeding their size into layout when starting
+  below the lower point of the current clipping rectangle. This bug has been there since v1.0!
+  It was hardly noticeable but would affect the scrolling range, which in turn would affect
+  some scrolling request functions when called during the appearing frame of a window.
+- Plot: Fixed divide-by-zero in PlotLines() when passing a count of 1. (#2387) [@Lectem]
+- Log/Capture: Fixed LogXXX functions emitting extraneous leading carriage return.
+- Log/Capture: Fixed an issue when empty string on a new line would not emit a carriage return.
+- Log/Capture: Fixed LogXXX functions 'auto_open_depth' parameter being treated as an absolute
+  tree depth instead of a relative one.
+- Log/Capture: Fixed CollapsingHeader trailing ascii representation being "#" instead of "##".
+- ImFont: Added GetGlyphRangesVietnamese() helper. (#2403)
+- Misc: Asserting in NewFrame() if style.WindowMinSize is zero or smaller than (1.0f,1.0f).
+- Demo: Using GetBackgroundDrawList() and GetForegroundDrawList() in "Custom Rendering" demo.
+- Demo: InputText: Demonstrating use of ImGuiInputTextFlags_CallbackResize. (#2006, #1443, #1008).
+- Examples: GLFW, SDL: Preserve DisplayFramebufferScale when main viewport is minimized.
+  (This is particularly useful for the viewport branch because we are not supporting per-viewport
+  frame-buffer scale. It fixes windows not refreshing when main viewport is minimized.) (#2416)
+- Examples: OpenGL: Fix to be able to run on ES 2.0 / WebGL 1.0. [@rmitton, @gabrielcuvillier]
+- Examples: OpenGL: Fix for OSX not supporting OpenGL 4.5, we don't try to read GL_CLIP_ORIGIN
+  even if the OpenGL headers/loader happens to define the value. (#2366, #2186)
+- Examples: Allegro: Added support for touch events (emulating mouse). (#2219) [@dos1]
+- Examples: DirectX9: Minor changes to match the other DirectX examples more closely. (#2394)
+
+
+-----------------------------------------------------------------------
+ VERSION 1.68 (Released 2019-02-19)
 -----------------------------------------------------------------------
 
 Breaking Changes:
@@ -111,12 +223,12 @@ Other Changes:
   multi-viewport feature to behave on Retina display and with multiple displays.
   If you are not using a custom binding, please update your render function code ahead of time,
   and use draw_data->FramebufferScale instead of io.DisplayFramebufferScale. (#2306, #1676)
+- Added IsItemActivated() as an extension to the IsItemDeactivated/IsItemDeactivatedAfterEdit functions
+  which are useful to implement variety of undo patterns. (#820, #956, #1875)
 - InputText: Fixed a bug where ESCAPE would not restore the initial value in all situations. (#2321) [@relick]
 - InputText: Fixed a bug where ESCAPE would be first captured by the Keyboard Navigation code. (#2321, #787)
 - InputText: Fixed redo buffer exhaustion handling (rare) which could corrupt the undo character buffer. (#2333)
   The way the redo/undo buffers work would have made it generally unnoticeable to the user.
-- Added IsItemActivated() as an extension to the IsItemDeactivated/IsItemDeactivatedAfterEdit functions
-  which are useful to implement variety of undo patterns. (#820, #956, #1875)
 - Fixed range-version of PushID() and GetID() not honoring the ### operator to restart from the seed value.
 - Fixed CloseCurrentPopup() on a child-menu of a modal incorrectly closing the modal. (#2308)
 - Tabs: Added ImGuiTabBarFlags_TabListPopupButton flag to show a popup button on manual tab bars. (#261, #351)
@@ -137,6 +249,7 @@ Other Changes:
   calculated text width. Among noticeable side-effects, it would make sequences of repeated Text/SameLine calls
   not align the same as a single call, and create mismatch between high-level size calculation and those performed
   with the lower-level ImDrawList api. (#792) [@SlNPacifist]
+- Font: Fixed building atlas when specifying duplicate/overlapping ranges within a same font. (#2353, #2233)
 - ImDrawList: Fixed AddCircle(), AddCircleFilled() angle step being off, which was visible when drawing a "circle"
   with a small number of segments (e.g. an hexagon). (#2287) [@baktery]
 - ImGuiTextBuffer: Added append() function (unformatted).
@@ -145,8 +258,8 @@ Other Changes:
 - ImFontAtlas: FreeType: Fixed using imgui_freetype.cpp in unity builds. (#2302)
 - Demo: Fixed "Log" demo not initializing properly, leading to the first line not showing before a Clear. (#2318) [@bluescan]
 - Demo: Added "Auto-scroll" option in Log/Console demos. (#2300) [@nicolasnoble, @ocornut]
-- Examples: Metal, OpenGL2, OpenGL3: Fixed offsetting of clipping rectangle with ImDrawData::DisplayPos != (0,0) when
-  the display frame-buffer scale scale is not (1,1). While this doesn't make a difference when using master branch,
+- Examples: Metal, OpenGL2, OpenGL3, Vulkan: Fixed offsetting of clipping rectangle with ImDrawData::DisplayPos != (0,0)
+  when the display frame-buffer scale scale is not (1,1). While this doesn't make a difference when using master branch,
   this is effectively fixing support for multi-viewport with Mac Retina Displays on those examples. (#2306) [@rasky, @ocornut]
   Also using ImDrawData::FramebufferScale instead of io.DisplayFramebufferScale.
 - Examples: Clarified the use the ImDrawData::DisplayPos to offset clipping rectangles.
@@ -561,7 +674,7 @@ Other Changes:
 - InputFloat,InputFloat2,InputFloat3,InputFloat4: Added variations taking a more flexible and consistent optional
   "const char* format" parameter instead of "int decimal_precision". This allow using custom formats to display values
   in scientific notation, and is generally more consistent with other API.
-  Obsoleted functions using the optional "int decimal_precision" parameter. (#648)
+  Obsoleted functions using the optional "int decimal_precision" parameter. (#648, #712)
 - DragFloat, DragInt: Cancel mouse tweak when current value is initially past the min/max boundaries and mouse is pushing
   in the same direction (keyboard/gamepad version already did this).
 - DragFloat, DragInt: Honor natural type limits (e.g. INT_MAX, FLT_MAX) instead of wrapping around. (#708, #320)

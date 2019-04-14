@@ -1610,6 +1610,7 @@ int PlotHistogram(const char* label, float (*values_getter)(void* data, int idx,
 
     ImGuiContext& g = *GImGui;
     const ImGuiStyle& style = g.Style;
+    const ImGuiID id = window->GetID(label);
 
     const ImVec2 label_size = CalcTextSize(label, NULL, true);
     if (graph_size.x == 0.0f) graph_size.x = CalcItemWidth();
@@ -1652,7 +1653,7 @@ int PlotHistogram(const char* label, float (*values_getter)(void* data, int idx,
 
         const int total_histograms = values_count * num_histograms;
 
-        const bool isItemHovered = ItemHoverable(inner_bb, 0);
+        const bool isItemHovered = ItemHoverable(inner_bb, id);
 
         if (!mustOverrideColors) col_base_embedded[0] = GetColorU32(ImGuiCol_PlotHistogram);
         const ImU32 lineCol = GetColorU32(ImGuiCol_WindowBg);
@@ -1797,6 +1798,7 @@ int PlotCurve(const char* label, float (*values_getter)(void* data, float x,int 
 
     ImGuiContext& g = *GImGui;
     const ImGuiStyle& style = g.Style;
+    const ImGuiID id = window->GetID(label);
 
     const ImVec2 label_size = CalcTextSize(label, NULL, true);
     if (graph_size.x == 0.0f) graph_size.x = CalcItemWidth();
@@ -1832,7 +1834,7 @@ int PlotCurve(const char* label, float (*values_getter)(void* data, float x,int 
         const ImU32* col_base = mustOverrideColors ? pColorsOverride : col_base_embedded;
         const int num_colors = mustOverrideColors ? numColorsOverride : num_colors_embedded;
 
-        const bool isItemHovered = ItemHoverable(inner_bb, 0);
+        const bool isItemHovered = ItemHoverable(inner_bb, id);
 
         if (!mustOverrideColors) col_base_embedded[0] = GetColorU32(ImGuiCol_PlotLines);
 
@@ -2003,6 +2005,7 @@ static void PlotMultiEx(
 
     ImGuiContext& g = *GImGui;
     const ImGuiStyle& style = g.Style;
+    const ImGuiID id = window->GetID(label);
 
     const ImVec2 label_size = ImGui::CalcTextSize(label, NULL, true);
     if (graph_size.x == 0.0f)
@@ -2044,7 +2047,7 @@ static void PlotMultiEx(
 
     // Tooltip on hover
     int v_hovered = -1;
-    if (ItemHoverable(inner_bb, 0))
+    if (ItemHoverable(inner_bb, id) && inner_bb.Contains(g.IO.MousePos))
     {
         const float t = ImClamp((g.IO.MousePos.x - inner_bb.Min.x) / (inner_bb.Max.x - inner_bb.Min.x), 0.0f, 0.9999f);
         const int v_idx = (int) (t * item_count);
@@ -3550,7 +3553,11 @@ bool TimelineEvent(const char* str_id, float* values,bool keep_range_constant)
         }
         if (active && isMouseDraggingZero)
         {
-            if (!keep_range_constant) values[i] += GetIO().MouseDelta.x / columnWidthScaled * s_max_timeline_value;
+            if (!keep_range_constant) {
+                values[i] += GetIO().MouseDelta.x / columnWidthScaled * s_max_timeline_value;
+                if (values[i]<0.f) values[i]=0.f;
+                else if (values[i]>s_max_timeline_value) values[i]=s_max_timeline_value;
+            }
             else mustMoveBothEnds = true;
             changed = hovered = true;
         }
@@ -3563,7 +3570,7 @@ bool TimelineEvent(const char* str_id, float* values,bool keep_range_constant)
     ImVec2 end(posx[1]-TIMELINE_RADIUS,start.y+row_height*0.4f);
     if (start.x<cursor_pos.x) start.x=cursor_pos.x;
     if (end.x>cursor_pos.x+columnWidth+TIMELINE_RADIUS) end.x=cursor_pos.x+columnWidth+TIMELINE_RADIUS;
-    const bool isInvisibleButtonCulled = start.x>cursor_pos.x+columnWidth || end.x<cursor_pos.x;
+    const bool isInvisibleButtonCulled = start.x>=cursor_pos.x+columnWidth || end.x<=cursor_pos.x;
 
     bool isInvisibleButtonItemActive=false;
     bool isInvisibleButtonItemHovered=false;

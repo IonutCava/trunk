@@ -1328,16 +1328,17 @@ extern "C" void GLDebugMessageCallback(GLenum source, GLenum type,
 
 void ImImpl_RenderDrawLists(ImDrawData* draw_data)
 {
-    ImGuiIO& io = ImGui::GetIO();
+    const float width = draw_data->DisplaySize.x;
+    const float height = draw_data->DisplaySize.y;
+    const float fb_height = draw_data->DisplaySize.y * draw_data->FramebufferScale.y;   // Handle cases of screen coordinates != from framebuffer coordinates (e.g. retina displays)
+    const float fb_width = draw_data->DisplaySize.x * draw_data->FramebufferScale.x;
+    if  (fb_width==0 || fb_height==0) return;
+
+    //draw_data->ScaleClipRects(draw_data->FramebufferScale);   // Removed https://github.com/ocornut/imgui/commit/a79785c0b941aa3918db0e3ce5c55c24673f0a2b
 
 #   ifdef IMGUIBINDINGS_RESTORE_GL_STATE
     GLint oldViewport[4];glGetIntegerv(GL_VIEWPORT, oldViewport);
 #   endif //IMGUIBINDINGS_RESTORE_GL_STATE
-    const float width = io.DisplaySize.x;
-    const float height = io.DisplaySize.y;
-    const float fb_height = io.DisplaySize.y * io.DisplayFramebufferScale.y;   // Handle cases of screen coordinates != from framebuffer coordinates (e.g. retina displays)
-    const float fb_width = io.DisplaySize.x * io.DisplayFramebufferScale.x;
-    draw_data->ScaleClipRects(io.DisplayFramebufferScale);
     glViewport(0, 0, (GLsizei)fb_width, (GLsizei)fb_height);
 
 #ifndef IMIMPL_SHADER_NONE
@@ -1467,7 +1468,7 @@ void ImImpl_RenderDrawLists(ImDrawData* draw_data)
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
     glLoadIdentity();
-    glOrtho(0.0f, io.DisplaySize.x, io.DisplaySize.y, 0.0f, -1.0f, +1.0f);
+    glOrtho(0.0f, draw_data->DisplaySize.x, draw_data->DisplaySize.y, 0.0f, -1.0f, +1.0f);
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
     glLoadIdentity();
@@ -1639,7 +1640,7 @@ void ImImpl_RenderDrawLists(ImDrawData* draw_data)
     D3DXMATRIX mat(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1);
     g_pd3dDevice->SetTransform( D3DTS_WORLD, &mat );
     g_pd3dDevice->SetTransform( D3DTS_VIEW, &mat );
-    D3DXMatrixOrthoOffCenterLH( &mat, 0.5f, ImGui::GetIO().DisplaySize.x+0.5f, ImGui::GetIO().DisplaySize.y+0.5f, 0.5f, -1.0f, +1.0f );
+    D3DXMatrixOrthoOffCenterLH( &mat, 0.5f, draw_data->DisplaySize.x+0.5f, draw_data->DisplaySize.y+0.5f, 0.5f, -1.0f, +1.0f );
     g_pd3dDevice->SetTransform( D3DTS_PROJECTION, &mat );
 
     // Render command lists

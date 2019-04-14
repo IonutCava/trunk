@@ -102,7 +102,7 @@ Demo Binaries
 -------------
 
 You should be able to build the examples from sources (tested on Windows/Mac/Linux). If you don't, let me know! If you want to have a quick look at some Dear ImGui features, you can download Windows binaries of the demo app here:
-- [imgui-demo-binaries-20181008.zip](http://www.miracleworld.net/imgui/binaries/imgui-demo-binaries-20181008.zip) (Windows binaries, Dear ImGui 1.66 WIP built 2018/10/08, master branch, 5 executables)
+- [imgui-demo-binaries-20190219.zip](http://www.dearimgui.org/binaries/imgui-demo-binaries-20190219.zip) (Windows binaries, Dear ImGui 1.68 built 2019/02/19, master branch, 5 executables)
 
 The demo applications are unfortunately not yet DPI aware so expect some blurriness on a 4K screen. For DPI awareness in your application, you can load/reload your font at different scale, and scale your Style with `style.ScaleAllSizes()`.
 
@@ -122,6 +122,7 @@ Languages: (third-party bindings)
 - Haxe/hxcpp: [linc_imgui](https://github.com/Aidan63/linc_imgui)
 - Java: [jimgui](https://github.com/ice1000/jimgui)
 - JavaScript: [imgui-js](https://github.com/flyover/imgui-js)
+- Julia: [CImGui.jl](https://github.com/Gnimuc/CImGui.jl)
 - Lua: [LuaJIT-ImGui](https://github.com/sonoro1234/LuaJIT-ImGui), [imgui_lua_bindings](https://github.com/patrickriordan/imgui_lua_bindings) or [lua-ffi-bindings](https://github.com/thenumbernine/lua-ffi-bindings)
 - Odin: [odin-dear_imgui](https://github.com/ThisDrunkDane/odin-dear_imgui)
 - Pascal: [imgui-pas](https://github.com/dpethes/imgui-pas)
@@ -133,7 +134,7 @@ Languages: (third-party bindings)
 
 Frameworks:
 - Renderers: DirectX 9/10/11/12, Metal, OpenGL2, OpenGL3+/ES2/ES3, Vulkan: [examples/](https://github.com/ocornut/imgui/tree/master/examples)
-- Platform: GLFW, SDL, Win32, OSX, Freeglut: [examples/](https://github.com/ocornut/imgui/tree/master/examples)
+- Platform: GLFW, SDL, Win32, OSX, GLUT: [examples/](https://github.com/ocornut/imgui/tree/master/examples)
 - Framework: Allegro 5, Marmalade: [examples/](https://github.com/ocornut/imgui/tree/master/examples)
 - Unmerged PR: SDL2 + OpenGLES + Emscripten: [#336](https://github.com/ocornut/imgui/pull/336)
 - Unmerged PR: Android: [#421](https://github.com/ocornut/imgui/pull/421)
@@ -145,7 +146,8 @@ Frameworks:
 - Ogre: [ogreimgui](https://bitbucket.org/LMCrashy/ogreimgui/src)
 - OpenFrameworks: [ofxImGui](https://github.com/jvcleave/ofxImGui)
 - OpenSceneGraph/OSG: [gist](https://gist.github.com/fulezi/d2442ca7626bf270226014501357042c)
-- ORX: [#1843](https://github.com/ocornut/imgui/pull/1843)
+- ORX: [ImGuiOrx](https://github.com/thegwydd/ImGuiOrx), [#1843](https://github.com/ocornut/imgui/pull/1843)
+- px_render: [px_render_imgui.h](https://github.com/pplux/px/blob/master/px_render_imgui.h), [#1935](https://github.com/ocornut/imgui/pull/1935)
 - LÖVE+Lua: [love-imgui](https://github.com/slages/love-imgui)
 - Magnum: [ImGuiIntegration](https://doc.magnum.graphics/magnum/namespaceMagnum_1_1ImGuiIntegration.html) ([example](https://doc.magnum.graphics/magnum/examples-imgui.html))
 - NanoRT: [syoyo/imgui](https://github.com/syoyo/imgui/tree/nanort)
@@ -217,29 +219,32 @@ Frequently Asked Question (FAQ)
 
 **Where is the documentation?**
 
-- The documentation is at the top of imgui.cpp + effectively imgui.h.
-- Example code is in imgui_demo.cpp and particularly the ImGui::ShowDemoWindow() function. It covers most features of ImGui so you can read the code and call the function itself to see its output.
-- Standalone example applications using e.g. OpenGL/DirectX are provided in the examples/ folder.
-- We obviously needs better documentation! Consider contributing or becoming a [Patron](http://www.patreon.com/imgui) to promote this effort.
-- Your programming IDE is your friend, find the type or function declaration to find comments associated to it.
+ This library is poorly documented at the moment and expects of the user to be acquainted with C/C++.
+ - Run the examples/ applications and explore them.
+ - See demo code in imgui_demo.cpp and particularly the ImGui::ShowDemoWindow() function. 
+ - The demo covers most features of Dear ImGui, so you can read the code and see its output. 
+ - See documentation and comments at the top of imgui.cpp + effectively imgui.h.
+ - Dozens of standalone example applications using e.g. OpenGL/DirectX are provided in the examples/ folder to explain how to integrate Dear ImGui with your own engine/application.
+ - Your programming IDE is your friend, find the type or function declaration to find comments associated to it.
+ - We obviously needs better documentation! Consider contributing or becoming a [Patron](http://www.patreon.com/imgui) to promote this effort.
 
 **Which version should I get?**
 
 I occasionally tag [Releases](https://github.com/ocornut/imgui/releases) but it is generally safe and recommended to sync to master/latest. The library is fairly stable and regressions tend to be fixed fast when reported.
 
-You may also peak at the [Multi-Viewport](https://github.com/ocornut/imgui/issues/1542) and [Docking](https://github.com/ocornut/imgui/issues/2109) features in the `docking` branch. Several projects are using this branch and it is kept in sync with master regularly.
+You may also peak at the [Multi-Viewport](https://github.com/ocornut/imgui/issues/1542) and [Docking](https://github.com/ocornut/imgui/issues/2109) features in the `docking` branch. Many projects are using this branch and it is kept in sync with master regularly.
 
 **Who uses Dear ImGui?**
 
-See the [Quotes](https://github.com/ocornut/imgui/wiki/Quotes) and [Software using dear imgui](https://github.com/ocornut/imgui/wiki/Software-using-dear-imgui) pages for an (incomplete) list of games/software which are publicly known to use dear imgui. Please add yours if you can!
+See the [Quotes](https://github.com/ocornut/imgui/wiki/Quotes) and [Software using dear imgui](https://github.com/ocornut/imgui/wiki/Software-using-dear-imgui) Wiki pages for a list of games/software which are publicly known to use dear imgui. Please add yours if you can!
 
 **Why the odd dual naming, "Dear ImGui" vs "ImGui"?**
 
-The library started its life as "ImGui" due to the fact that I didn't give it a proper name when I released 1.0 and had no particular expectation that it would taker off. However, the term IMGUI (immediate-mode graphical user interface) was coined before and is being used in variety of other situations (e.g. Unity uses it own implementation of the IMGUI paradigm). It seemed confusing and unfair to hog the name. To reduce the ambiguity without affecting existing codebases, I have decided on an alternate, longer name "Dear ImGui" that people can use to refer to this specific library in ambiguous situations. Please try to refer to it as "Dear ImGui".
+The library started its life as "ImGui" due to the fact that I didn't give it a proper name when I released 1.0 and had no particular expectation that it would take off. However, the term IMGUI (immediate-mode graphical user interface) was coined before and is being used in variety of other situations (e.g. Unity uses it own implementation of the IMGUI paradigm). To reduce this ambiguity without affecting existing codebases, I have decided on an alternate, longer name "Dear ImGui" that people can use to refer to this specific library. Please try to refer to this library as "Dear ImGui".
 
 **How can I tell whether to dispatch mouse/keyboard to imgui or to my application?**
 <br>**How can I display an image? What is ImTextureID, how does it works?**
-<br>**How can I have multiple widgets with the same label or with an empty label? A primer on labels and the ID Stack.**
+<br>**Why are multiple widgets reacting when I interact with a single one? How can I have multiple widgets with the same label or with an empty label? A primer on labels and the ID Stack...**
 <br>**How can I use my own math types instead of ImVec2/ImVec4?**
 <br>**How can I load a different font than the default?**
 <br>**How can I easily use icons in my application?**
@@ -252,7 +257,7 @@ The library started its life as "ImGui" due to the fact that I didn't give it a 
 <br>**I integrated Dear ImGui in my engine and some elements are disappearing when I move windows around..**
 <br>**How can I help?**
 
-See the FAQ in imgui.cpp for answers.
+See the FAQ in [imgui.cpp](https://github.com/ocornut/imgui/blob/master/imgui.cpp) for answers.
 
 **Can you create elaborate/serious tools with Dear ImGui?**
 
@@ -304,10 +309,10 @@ Ongoing dear imgui development is financially supported by users and private spo
 - Media Molecule, Mobigame, Aras Pranckevičius, Greggman, DotEmu, Nadeo, Supercell, Runner, Aiden Koss, Kylotonn.
 
 **Salty caramel supporters**
-- Recognition Robotics, ikrima, Geoffrey Evans, Mercury Labs, Singularity Demo Group, Lionel Landwerlin, Ron Gilbert, Brandon Townsend, Nikhil Deshpande, Cort Stratton, drudru, Harfang 3D, Jeff Roberts, Rainway inc, Ondra Voves, Mesh Consultants.
+- Recognition Robotics, ikrima, Geoffrey Evans, Mercury Labs, Singularity Demo Group, Lionel Landwerlin, Ron Gilbert, Brandon Townsend, Nikhil Deshpande, Cort Stratton, drudru, Harfang 3D, Jeff Roberts, Rainway inc, Ondra Voves, Mesh Consultants, Unit 2 Games.
 
 **Caramel supporters**
-- Jerome Lanquetot, Daniel Collin, Ctrl Alt Ninja, Neil Henning, Neil Blakey-Milner, Aleksei, NeiloGD, Eric, Game Atelier, Vincent Hamm, Colin Riley, Sergio Gonzales, Andrew Berridge, Roy Eltham, Game Preservation Society, Josh Faust, Martin Donlon, Codecat, Doug McNabb, Emmanuel Julien, Guillaume Chereau, Jeffrey Slutter, Jeremiah Deckard, r-lyeh, Nekith, Joshua Fisher, Malte Hoffmann, Mustafa Karaalioglu, Merlyn Morgan-Graham, Per Vognsen, Fabian Giesen, Jan Staubach, Matt Hargett, John Shearer, Jesse Chounard, kingcoopa, Jonas Bernemann, Johan Andersson, Michael Labbe, Tomasz Golebiowski, Louis Schnellbach, Jimmy Andrews, Bojan Endrovski, Robin Berg Pettersen, Rachel Crawford, Andrew Johnson, Sean Hunter, Jordan Mellow, Nefarius Software Solutions, Laura Wieme, Robert Nix, Mick Honey, Steven Kah Hien Wong, Bartosz Bielecki, Oscar Penas, A M, Liam Moynihan, Artometa, Mark Lee, Dimitri Diakopoulos, Pete Goodwin.
+- Jerome Lanquetot, Daniel Collin, Ctrl Alt Ninja, Neil Henning, Neil Blakey-Milner, Aleksei, NeiloGD, Eric, Game Atelier, Vincent Hamm, Colin Riley, Sergio Gonzales, Andrew Berridge, Roy Eltham, Game Preservation Society, Josh Faust, Martin Donlon, Codecat, Doug McNabb, Emmanuel Julien, Guillaume Chereau, Jeffrey Slutter, Jeremiah Deckard, r-lyeh, Nekith, Joshua Fisher, Malte Hoffmann, Mustafa Karaalioglu, Merlyn Morgan-Graham, Per Vognsen, Fabian Giesen, Jan Staubach, Matt Hargett, John Shearer, Jesse Chounard, kingcoopa, Jonas Bernemann, Johan Andersson, Michael Labbe, Tomasz Golebiowski, Louis Schnellbach, Jimmy Andrews, Bojan Endrovski, Robin Berg Pettersen, Rachel Crawford, Andrew Johnson, Sean Hunter, Jordan Mellow, Nefarius Software Solutions, Laura Wieme, Robert Nix, Mick Honey, Steven Kah Hien Wong, Bartosz Bielecki, Oscar Penas, A M, Liam Moynihan, Artometa, Mark Lee, Dimitri Diakopoulos, Pete Goodwin, Johnathan Roatch, nyu lea, Oswald Hurlem.
 
 And all other past and present supporters; THANK YOU!
 (Please contact me if you would like to be added or removed from this list)

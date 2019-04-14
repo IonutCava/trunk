@@ -25,8 +25,11 @@ enum ImGuiStyleEnum {
     ImGuiStyle_LightGreen,  // Posted by @ebachard here: https://github.com/ocornut/imgui/pull/1776 (hope I can use it)
     ImGuiStyle_Design,      // Posted by @usernameiwantedwasalreadytaken here: https://github.com/ocornut/imgui/issues/707 (hope I can use it)
     ImGuiStyle_Dracula,     // Posted by @ice1000 here: https://github.com/ocornut/imgui/issues/707 (hope I can use it)
-    ImGuiStyle_Greenish,    // Posted by @dertseha here: https://github.com/ocornut/imgui/issues/1902 (Hope I can use it)
-    ImGuiStyle_C64,         // Posted by @Nullious here: https://gist.github.com/Nullious/2d598963b346c49fa4500ca16b8e5c67 (Hope I can use it)
+    ImGuiStyle_Greenish,    // Posted by @dertseha here: https://github.com/ocornut/imgui/issues/1902 (hope I can use it)
+    ImGuiStyle_C64,         // Posted by @Nullious here: https://gist.github.com/Nullious/2d598963b346c49fa4500ca16b8e5c67 (hope I can use it)
+    ImGuiStyle_PhotoStore,  // Posted by @Derydoca here: https://github.com/ocornut/imgui/issues/707 (hope I can use it)
+    ImGuiStyle_CorporateGreyFlat,   // Posted by @malamanteau here: https://github.com/ocornut/imgui/issues/707 (hope I can use it)
+    ImGuiStyle_CorporateGreyFramed, // Posted by @malamanteau here: https://github.com/ocornut/imgui/issues/707 (hope I can use it)
 
     ImGuiStyle_DarkOpaqueInverse,
     ImGuiStyle_GrayCodz01Inverse,

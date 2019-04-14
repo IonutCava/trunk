@@ -156,7 +156,7 @@ inline int base64_decode_block(const char* code_in, const int length_in, char* p
 		typedef enum {step_A, step_B, step_C} base64_encodestep;
 		typedef struct {base64_encodestep step;char result;int stepcount;} base64_encodestate;
 
-const int CHARS_PER_LINE = 72;
+const int CHARS_PER_LINE = 2147483647;//72; // This was hard coded to 72 originally. But here we add '\n' at a later step. So we use MAX_INT here.
 inline void base64_init_encodestate(base64_encodestate* state_in)	{
 	state_in->step = step_A;
 	state_in->result = 0;
