@@ -522,32 +522,20 @@ void SceneGraphNode::onNetworkSend(U32 frameCount) {
 }
 
 
-bool SceneGraphNode::cullNode(const NodeCullParams& params,
-                              Frustum::FrustCollision& collisionTypeOut,
-                              F32& distanceToClosestPointSQ) const {
-
+bool SceneGraphNode::preCullNode(const NodeCullParams& params,
+                                 F32& distanceToClosestPointSQ) const {
     // If the node is still loading, DO NOT RENDER IT. Bad things happen :D
     if (getFlag(UpdateFlag::LOADING)) {
         return true;
     }
 
-    // Some nodes should always render for different reasons (eg, trees are instanced and bound to the parent chunk)
-    if (visibilityLocked()) {
-        collisionTypeOut = Frustum::FrustCollision::FRUSTUM_IN;
-        return false;
-    }
-
-    collisionTypeOut = Frustum::FrustCollision::FRUSTUM_OUT;
-
-
     // Use the bounding primitives to do camera/frustum checks
     BoundsComponent* bComp = get<BoundsComponent>();
     const BoundingSphere& sphere = bComp->getBoundingSphere();
-    const BoundingBox& boundingBox = bComp->getBoundingBox();
 
     // Get camera info
     const vec3<F32>& eye = params._currentCamera->getEye();
-    
+
     // Check distance to sphere edge (center - radius)
     F32 radius = sphere.getRadius();
     const vec3<F32>& center = sphere.getCenter();
@@ -556,8 +544,16 @@ bool SceneGraphNode::cullNode(const NodeCullParams& params,
         return true;
     }
 
+    if (params._minExtents.lengthSquared() > 0.0f) {
+        const BoundingBox& boundingBox = bComp->getBoundingBox();
+        vec3<F32> diff(boundingBox.getExtent() - params._minExtents);
+        if (diff.x < 0.0f || diff.y < 0.0f || diff.z < 0.0f) {
+            return true;
+        }
+    }
+
     RenderingComponent* rComp = get<RenderingComponent>();
-    const vec2<F32> & renderRange = rComp->renderRange();
+    const vec2<F32>& renderRange = rComp->renderRange();
     if (!IS_IN_RANGE_INCLUSIVE(distanceToClosestPointSQ, SIGNED_SQUARED(renderRange.min), SQUARED(renderRange.max))) {
         return true;
     }
@@ -571,16 +567,35 @@ bool SceneGraphNode::cullNode(const NodeCullParams& params,
         }
     }
 
-    if (params._minExtents.lengthSquared() > 0.0f) {
-        vec3<F32> diff(boundingBox.getExtent() - params._minExtents);
-        if (diff.x < 0.0f || diff.y < 0.0f || diff.z < 0.0f) {
-            return true;
-        }
+    return false;
+}
+
+bool SceneGraphNode::cullNode(const NodeCullParams& params,
+                              Frustum::FrustCollision& collisionTypeOut,
+                              F32& distanceToClosestPointSQ) const {
+    // Some nodes should always render for different reasons (eg, trees are instanced and bound to the parent chunk)
+    if (visibilityLocked()) {
+        collisionTypeOut = Frustum::FrustCollision::FRUSTUM_IN;
+        return false;
+    }
+
+    collisionTypeOut = Frustum::FrustCollision::FRUSTUM_OUT;
+
+    if (preCullNode(params, distanceToClosestPointSQ)) {
+        return true;
     }
 
     STUBBED("ToDo: make this work in a multi-threaded environment -Ionut");
     I8 _frustPlaneCache = -1;
 
+    BoundsComponent* bComp = get<BoundsComponent>();
+    const BoundingSphere& sphere = bComp->getBoundingSphere();
+    const BoundingBox& boundingBox = bComp->getBoundingBox();
+    F32 radius = sphere.getRadius();
+    const vec3<F32>& center = sphere.getCenter();
+
+    // Get camera info
+    const vec3<F32>& eye = params._currentCamera->getEye();
     // Sphere is in range, so check bounds primitives againts the frustum
     if (!boundingBox.containsPoint(eye)) {
         const Frustum& frust = params._currentCamera->getFrustum();

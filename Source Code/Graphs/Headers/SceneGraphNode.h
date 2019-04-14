@@ -287,6 +287,9 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
                   Frustum::FrustCollision& collisionTypeOut,
                   F32& distanceToClosestPointSQ) const;
 
+    bool preCullNode(const NodeCullParams& params,
+                     F32& distanceToClosestPointSQ) const;
+
    protected:
     friend class RenderingComponent;
     bool prepareRender(const Camera& camera, RenderStagePass renderStagePass, bool refreshData);
