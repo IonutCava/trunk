@@ -44,6 +44,8 @@ void main(void)
 
 --TessellationC
 
+#define USE_NEXTPOW2 1
+
 in mat4 mvp[];
 in vec4 tScale[];
 in vec4 posAndTileScaleVert[];
@@ -75,6 +77,19 @@ vec4 project(in vec4 vertex) {
     return result / result.w;
 }
 
+#if USE_NEXTPOW2
+uint nextPOW2(in uint n) {
+    n--;
+    n |= n >> 1;
+    n |= n >> 2;
+    n |= n >> 4;
+    n |= n >> 8;
+    n |= n >> 16;
+
+    return ++n;
+}
+#endif
+
 // Dynamic level of detail using camera distance algorithm.
 float dlodCameraDistance(vec4 p0, vec4 p1)
 {
@@ -82,29 +97,21 @@ float dlodCameraDistance(vec4 p0, vec4 p1)
         float d0 = clamp((abs(p0.z) - tessellationRange.x) / (tessellationRange.y - tessellationRange.x), 0.0f, 1.0f);
         float d1 = clamp((abs(p1.z) - tessellationRange.x) / (tessellationRange.y - tessellationRange.x), 0.0f, 1.0f);
 
-        float t = mix(MAX_TESS_SCALE, MIN_TESS_SCALE, (d0 + d1) * 0.5f);
+#if USE_NEXTPOW2
+        uint t = uint(mix(MAX_TESS_SCALE, MIN_TESS_SCALE, (d0 + d1) * 0.5f));
 
-        if (t <= 2.0f) {
-            return 2.0f;
-        }
+        return float(min(nextPOW2(t), MAX_TESS_SCALE));
+#else
+        float t = uint(mix(MAX_TESS_SCALE, MIN_TESS_SCALE, (d0 + d1) * 0.5f));
 
-        if (t <= 4.0f) {
-            return 4.0f;
-        }
+             if (t <= 2.0f)  return  2.0f;
+        else if (t <= 4.0f)  return  4.0f;
+        else if (t <= 8.0f)  return  8.0f;
+        else if (t <= 16.0f) return 16.0f;
+        else if (t <= 32.0f) return 32.0f;
 
-        if (t <= 8.0f) {
-            return 8.0f;
-        }
-
-        if (t <= 16.0f) {
-            return 16.0f;
-        }
-
-        if (t <= 32.0f) {
-            return 32.0f;
-        }
-
-        return t;
+        return MAX_TESS_SCALE;
+#endif
     }
 
     return MAX_TESS_SCALE;
@@ -282,7 +289,7 @@ void main()
     vec4 heightOffsets = getHeightOffsets(_out._texCoord);
 
     // Sample the heightmap and offset y position of vertex
-    float sampleHeight = getHeight(heightOffsets);
+    const float sampleHeight = getHeight(heightOffsets);
     pos.y = (TERRAIN_HEIGHT_RANGE * sampleHeight) + TERRAIN_MIN_HEIGHT;
 
     // Project the vertex to clip space and send it along
@@ -340,8 +347,6 @@ smooth out vec2 _waterDetails;
 out vec3 gs_wireColor;
 out float LoD;
 noperspective out vec3 gs_edgeDist;
-#endif
-
 
 #if !defined(SHADOW_PASS)
 void waterDetails(in int index) {
@@ -521,17 +526,17 @@ void main(void)
     vec3 normalWV = vec3(0.0f);
     vec4 albedo = mix(TerrainMappingRoutine(normalWV), UnderwaterMappingRoutine(normalWV), _waterDetails.x);
 
-#if defined(TOGGLE_WIREFRAME)
-    const float LineWidth = 0.75f;
-    float d = min(min(gs_edgeDist.x, gs_edgeDist.y), gs_edgeDist.z);
-    colourOut = mix(vec4(gs_wireColor, 1.0f), colourOut, smoothstep(LineWidth - 1, LineWidth + 1, d));
-#endif
-
 #if defined(PRE_PASS)
     outputWithVelocity(normalWV);
 #else
     mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;
     vec4 colourOut = getPixelColour(albedo, colourMatrix, normalWV);
+
+#if defined(TOGGLE_WIREFRAME)
+    const float LineWidth = 0.75f;
+    float d = min(min(gs_edgeDist.x, gs_edgeDist.y), gs_edgeDist.z);
+    colourOut = mix(vec4(gs_wireColor, 1.0f), colourOut, smoothstep(LineWidth - 1, LineWidth + 1, d));
+#endif
 
     writeOutput(colourOut);
 #endif

@@ -129,10 +129,6 @@ constexpr unsigned int MAX_PROFILE_TIMERS = 1024;
 constexpr unsigned int BENCHMARK_FREQUENCY = 500;
 /// use only a basic shader
 constexpr bool DISABLE_SHADING = false;
-/// skip all draw calls
-constexpr bool DISABLE_DRAWS = false;
-/// every viewport call is overridden with 1x1 (width x height)
-constexpr bool USE_1x1_VIEWPORT = false;
 /// textures are capped at 2x2 when uploaded to the GPU
 constexpr bool USE_2x2_TEXTURES = false;
 /// disable persistently mapped buffers

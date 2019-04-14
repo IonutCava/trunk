@@ -165,7 +165,14 @@ private:
     hashMap<GLenum, poolImpl> _pools;
 };
 /// Wrapper for glGetIntegerv
-GLint getIntegerv(GLenum param);
+template<typename T = GLint>
+void getGLValue(GLenum param, T& value, GLint index = -1);
+
+template<typename T = GLint>
+T getGLValue(GLenum param);
+
+template<typename T = GLint>
+T getGLValueIndexed(GLenum param, GLint index = -1);
 
 /// Check the current operation for errors
 void DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,

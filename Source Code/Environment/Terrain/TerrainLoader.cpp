@@ -18,7 +18,6 @@
 namespace Divide {
 
 namespace {
-    constexpr bool g_showWireFrame = false;
     constexpr bool g_disableLoadFromCache = false;
 };
 
@@ -256,7 +255,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     shaderDescriptor._defines.push_back(std::make_pair("USE_SSBO_DATA_BUFFER", true));
 
-    if (g_showWireFrame) {
+    if (terrainDescriptor->wireframeDebug()) {
         shaderDescriptor._defines.push_back(std::make_pair("TOGGLE_WIREFRAME", true));
     }
     if (!context.config().rendering.shadowMapping.enabled) {
@@ -286,7 +285,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     terrainShaderShadow.setPropertyDescriptor(shadowShaderDescriptor);
     ShaderProgram_ptr terrainShadowShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderShadow);
 
-    if (g_showWireFrame) {
+    if (terrainDescriptor->wireframeDebug()) {
         shaderName.append(".Wireframe");
     }
 
@@ -318,13 +317,13 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     // Generate a render state
     RenderStateBlock terrainRenderState;
-    terrainRenderState.setCullMode(g_showWireFrame ? CullMode::CW : CullMode::CCW);
+    terrainRenderState.setCullMode(terrainDescriptor->wireframeDebug() ? CullMode::CW : CullMode::CCW);
     // Generate a render state for drawing reflections
     RenderStateBlock terrainRenderStatePrePass = terrainRenderState;
     terrainRenderStatePrePass.setZFunc(ComparisonFunction::LESS);
 
     RenderStateBlock terrainRenderStateReflection;
-    terrainRenderStateReflection.setCullMode(g_showWireFrame ? CullMode::CCW : CullMode::CW);
+    terrainRenderStateReflection.setCullMode(terrainDescriptor->wireframeDebug() ? CullMode::CCW : CullMode::CW);
     // Generate a shadow render state
     RenderStateBlock terrainRenderStateDepth;
     terrainRenderStateDepth.setCullMode(CullMode::CCW);

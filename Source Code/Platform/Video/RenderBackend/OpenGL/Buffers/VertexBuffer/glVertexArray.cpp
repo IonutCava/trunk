@@ -367,8 +367,6 @@ bool glVertexArray::createInternal() {
 
 /// Render the current buffer data using the specified command
 void glVertexArray::draw(const GenericDrawCommand& command) {
-    bool useCmdBuffer = isEnabledOption(command, CmdRenderOptions::RENDER_INDIRECT);
-
     // Make sure the buffer is current
     // Make sure we have valid data (buffer creation is deferred to the first activate call)
     if (_IBid == 0) {
@@ -384,19 +382,20 @@ void glVertexArray::draw(const GenericDrawCommand& command) {
         }
     }
 
+    GLStateTracker& stateTracker = GL_API::getStateTracker();
     // Bind the vertex array object that in turn activates all of the bindings and pointers set on creation
     GLuint vao = _vaoCaches[command._bufferIndex];
-    GL_API::getStateTracker().setActiveVAO(vao);
-    GL_API::getStateTracker().togglePrimitiveRestart(_primitiveRestartEnabled);
+    stateTracker.setActiveVAO(vao);
+    stateTracker.togglePrimitiveRestart(_primitiveRestartEnabled);
     // VAOs store vertex formats and are reused by multiple 3d objects, so the Index Buffer and Vertex Buffers need to be double checked
-    GL_API::getStateTracker().setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _IBid);
-    GL_API::getStateTracker().bindActiveBuffer(vao, 0, _VBHandle._id, _VBHandle._offset * GLUtil::VBO::MAX_VBO_CHUNK_SIZE_BYTES, _effectiveEntrySize);
+    stateTracker.setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _IBid);
+    stateTracker.bindActiveBuffer(vao, 0, _VBHandle._id, _VBHandle._offset * GLUtil::VBO::MAX_VBO_CHUNK_SIZE_BYTES, _effectiveEntrySize);
 
-    if (useCmdBuffer) {
-        GLUtil::submitRenderCommand(command, _drawIndexed, useCmdBuffer, _formatInternal);
+    if (isEnabledOption(command, CmdRenderOptions::RENDER_INDIRECT)) {
+        GLUtil::submitRenderCommand(command, _drawIndexed, true, _formatInternal);
     } else {
         rebuildCountAndIndexData(command._drawCount, command._cmd.indexCount, command._cmd.firstIndex);
-        GLUtil::submitRenderCommand(command, _drawIndexed, useCmdBuffer, _formatInternal, _countData.data(), (bufferPtr)_indexOffsetData.data());
+        GLUtil::submitRenderCommand(command, _drawIndexed, false, _formatInternal, _countData.data(), (bufferPtr)_indexOffsetData.data());
     }
 }
 

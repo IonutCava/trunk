@@ -199,8 +199,8 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
 
     // If we got here, let's figure out what capabilities we have available
     // Maximum addressable texture image units in the fragment shader
-    s_maxTextureUnits = std::max(GLUtil::getIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS), 8);
-    s_maxAttribBindings = GLUtil::getIntegerv(GL_MAX_VERTEX_ATTRIB_BINDINGS);
+    s_maxTextureUnits = std::max(GLUtil::getGLValue(GL_MAX_TEXTURE_IMAGE_UNITS), 8);
+    GLUtil::getGLValue(GL_MAX_VERTEX_ATTRIB_BINDINGS, s_maxAttribBindings);
 
     if (to_base(ShaderProgram::TextureUsage::COUNT) >= to_U32(s_maxTextureUnits)) {
         Console::errorfn(Locale::get(_ID("ERROR_INSUFFICIENT_TEXTURE_UNITS")));
@@ -212,8 +212,8 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
         return ErrorCode::GFX_NOT_SUPPORTED;
     }
 
-    GLint majGLVersion = GLUtil::getIntegerv(GL_MAJOR_VERSION);
-    GLint minGLVersion = GLUtil::getIntegerv(GL_MINOR_VERSION);
+    GLint majGLVersion = GLUtil::getGLValue(GL_MAJOR_VERSION);
+    GLint minGLVersion = GLUtil::getGLValue(GL_MINOR_VERSION);
     Console::printfn(Locale::get(_ID("GL_MAX_VERSION")), majGLVersion, minGLVersion);
 
     if (majGLVersion <= 4 && minGLVersion < 3) {
@@ -222,7 +222,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     }
 
     // Maximum number of colour attachments per framebuffer
-    s_maxFBOAttachments = GLUtil::getIntegerv(GL_MAX_COLOR_ATTACHMENTS);
+    GLUtil::getGLValue(GL_MAX_COLOR_ATTACHMENTS, s_maxFBOAttachments);
 
     s_activeStateTracker = &s_stateTrackers[window.getGUID()];
     *s_activeStateTracker = {};
@@ -235,13 +235,13 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     // Cap max anisotropic level to what the hardware supports
     CLAMP(config.rendering.anisotropicFilteringLevel,
           to_U8(0),
-          to_U8(s_activeStateTracker->_opengl46Supported ? GLUtil::getIntegerv(gl::GL_MAX_TEXTURE_MAX_ANISOTROPY)
-                                                         : GLUtil::getIntegerv(gl::GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT)));
+          to_U8(s_activeStateTracker->_opengl46Supported ? GLUtil::getGLValue(gl::GL_MAX_TEXTURE_MAX_ANISOTROPY)
+                                                         : GLUtil::getGLValue(gl::GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT)));
     GL_API::s_anisoLevel = config.rendering.anisotropicFilteringLevel;
 
     // Number of sample buffers associated with the framebuffer & MSAA sample count
-    GLint samplerBuffers = GLUtil::getIntegerv(GL_SAMPLES);
-    GLint sampleCount = GLUtil::getIntegerv(GL_SAMPLE_BUFFERS);
+    GLint samplerBuffers = GLUtil::getGLValue(GL_SAMPLES);
+    GLint sampleCount = GLUtil::getGLValue(GL_SAMPLE_BUFFERS);
     Console::printfn(Locale::get(_ID("GL_MULTI_SAMPLE_INFO")), sampleCount, samplerBuffers);
     // If we do not support MSAA on a hardware level for whatever reason, override user set MSAA levels
     if (samplerBuffers == 0 || sampleCount == 0) {
@@ -251,21 +251,21 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
 
     if (s_activeStateTracker->_opengl46Supported) {
         Console::printfn(Locale::get(_ID("GL_SHADER_THREADS")),
-                         GLUtil::getIntegerv(gl::GL_MAX_SHADER_COMPILER_THREADS_ARB));
+                         GLUtil::getGLValue(gl::GL_MAX_SHADER_COMPILER_THREADS_ARB));
     }
     // Print all of the OpenGL functionality info to the console and log
     // How many uniforms can we send to fragment shaders
     Console::printfn(Locale::get(_ID("GL_MAX_UNIFORM")),
-                     GLUtil::getIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS));
+                     GLUtil::getGLValue(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS));
     // How many uniforms can we send to vertex shaders
     Console::printfn(Locale::get(_ID("GL_MAX_VERT_UNIFORM")),
-                     GLUtil::getIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS));
+                     GLUtil::getGLValue(GL_MAX_VERTEX_UNIFORM_COMPONENTS));
     // How many attributes can we send to a vertex shader
     Console::printfn(Locale::get(_ID("GL_MAX_VERT_ATTRIB")),
-                     GLUtil::getIntegerv(GL_MAX_VERTEX_ATTRIBS));
+                     GLUtil::getGLValue(GL_MAX_VERTEX_ATTRIBS));
     // Maximum number of texture units we can address in shaders
     Console::printfn(Locale::get(_ID("GL_MAX_TEX_UNITS")),
-                     GLUtil::getIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS),
+                     GLUtil::getGLValue(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS),
                      GL_API::s_maxTextureUnits);
     // Query shading language version support
     Console::printfn(Locale::get(_ID("GL_GLSL_SUPPORT")),
@@ -276,10 +276,10 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     // In order: Maximum number of uniform buffer binding points,
     //           maximum size in basic machine units of a uniform block and
     //           minimum required alignment for uniform buffer sizes and offset
-    GL_API::s_UBOffsetAlignment = GLUtil::getIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT);
-    GL_API::s_UBMaxSize = GLUtil::getIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE);
+    GLUtil::getGLValue(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, GL_API::s_UBOffsetAlignment);
+    GLUtil::getGLValue(GL_MAX_UNIFORM_BLOCK_SIZE, GL_API::s_UBMaxSize);
     Console::printfn(Locale::get(_ID("GL_UBO_INFO")),
-                     GLUtil::getIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS),
+                     GLUtil::getGLValue(GL_MAX_UNIFORM_BUFFER_BINDINGS),
                      GL_API::s_UBMaxSize / 1024,
                      GL_API::s_UBOffsetAlignment);
 
@@ -289,20 +289,20 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     //           be accessed by all active shaders and
     //           minimum required alignment for shader storage buffer sizes and
     //           offset.
-    GL_API::s_SSBOffsetAlignment = GLUtil::getIntegerv(GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT);
-    GL_API::s_SSBMaxSize = GLUtil::getIntegerv(GL_MAX_SHADER_STORAGE_BLOCK_SIZE);
+    GLUtil::getGLValue(GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT, GL_API::s_SSBOffsetAlignment);
+    GLUtil::getGLValue(GL_MAX_SHADER_STORAGE_BLOCK_SIZE, GL_API::s_SSBMaxSize);
     Console::printfn(
         Locale::get(_ID("GL_SSBO_INFO")),
-        GLUtil::getIntegerv(GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS),
-        (GLUtil::getIntegerv(GL_MAX_SHADER_STORAGE_BLOCK_SIZE) / 1024) / 1024,
-        GLUtil::getIntegerv(GL_MAX_COMBINED_SHADER_STORAGE_BLOCKS),
+        GLUtil::getGLValue(GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS),
+        (GLUtil::getGLValue(GL_MAX_SHADER_STORAGE_BLOCK_SIZE) / 1024) / 1024,
+        GLUtil::getGLValue(GL_MAX_COMBINED_SHADER_STORAGE_BLOCKS),
         GL_API::s_SSBOffsetAlignment);
 
     // Maximum number of subroutines and maximum number of subroutine uniform
     // locations usable in a shader
     Console::printfn(Locale::get(_ID("GL_SUBROUTINE_INFO")),
-                     GLUtil::getIntegerv(GL_MAX_SUBROUTINES),
-                     GLUtil::getIntegerv(GL_MAX_SUBROUTINE_UNIFORM_LOCATIONS));
+                     GLUtil::getGLValue(GL_MAX_SUBROUTINES),
+                     GLUtil::getGLValue(GL_MAX_SUBROUTINE_UNIFORM_LOCATIONS));
 
     // Seamless cubemaps are a nice feature to have enabled (core since 3.2)
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);

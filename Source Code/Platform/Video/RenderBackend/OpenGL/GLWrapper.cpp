@@ -112,6 +112,8 @@ void GL_API::beginFrame(DisplayWindow& window, bool global) {
         glBeginQuery(GL_TIME_ELAPSED, writeQuery);
     }
 
+    GLStateTracker& stateTracker = getStateTracker();
+
     // Clear our buffers
     if (window.swapBuffers() && !window.minimized() && !window.hidden()) {
         std::pair<I64, SDL_GLContext> targetContext = std::make_pair(window.getGUID(), (SDL_GLContext)window.userData());
@@ -120,8 +122,8 @@ void GL_API::beginFrame(DisplayWindow& window, bool global) {
             _currentContext = targetContext;
         }
 
-        bool shouldClearColour, shouldClearDepth;
-        getStateTracker().setClearColour(window.clearColour(shouldClearColour, shouldClearDepth));
+        bool shouldClearColour = false, shouldClearDepth = false;
+        stateTracker.setClearColour(window.clearColour(shouldClearColour, shouldClearDepth));
         ClearBufferMask mask = GL_NONE_BIT;
         if (shouldClearColour) {
             mask |= GL_COLOR_BUFFER_BIT;
@@ -140,14 +142,12 @@ void GL_API::beginFrame(DisplayWindow& window, bool global) {
     _context.registerDrawCall();
 
     if (global) {
-        getStateTracker().setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
+        stateTracker.setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
     }
 
-    GLStateTracker& targetTracker = s_stateTrackers[window.getGUID()];
-    targetTracker.init(s_activeStateTracker);
-    //s_activeStateTracker = &targetTracker;
+    s_stateTrackers[window.getGUID()].init(&stateTracker);
 
-    clearStates(window, *s_activeStateTracker, global);
+    clearStates(window, stateTracker, global);
 }
 
 /// Finish rendering the current frame
@@ -329,8 +329,8 @@ bool GL_API::initGLSW() {
 
     // Add our engine specific defines and various code pieces to every GLSL shader
     // Add version as the first shader statement, followed by copyright notice
-    GLint minGLVersion = GLUtil::getIntegerv(GL_MINOR_VERSION);
-    GLint maxClipCull = GLUtil::getIntegerv(GL_MAX_COMBINED_CLIP_AND_CULL_DISTANCES);
+    GLint minGLVersion = GLUtil::getGLValue(GL_MINOR_VERSION);
+    GLint maxClipCull = GLUtil::getGLValue(GL_MAX_COMBINED_CLIP_AND_CULL_DISTANCES);
 
     appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#version 4%d0 core", minGLVersion), lineOffsets);
 

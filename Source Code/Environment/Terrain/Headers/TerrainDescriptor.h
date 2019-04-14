@@ -66,10 +66,12 @@ class TerrainDescriptor final : public PropertyDescriptor {
     void setTessellationRange(const vec3<F32>& rangeAndChunk) noexcept { _tessellationRange = rangeAndChunk; }
     void setActive(bool active) noexcept { _active = active; }
     void set16Bit(bool state) noexcept { _is16Bit = state; }
+    void setWireframeDebug(bool state) noexcept { _wireframeDebug = state; }
 
     U8 getTextureLayerCount() const noexcept { return _textureLayers; }
     bool getActive() const noexcept { return _active; }
     bool is16Bit() const noexcept { return _is16Bit; }
+    bool wireframeDebug() const noexcept { return _wireframeDebug; }
 
     const vec2<F32>& getAltitudeRange() const noexcept { return _altitudeRange; }
     const vec3<F32>& getTessellationRange() const noexcept { return _tessellationRange; }
@@ -120,6 +122,7 @@ class TerrainDescriptor final : public PropertyDescriptor {
     hashMap<U64, stringImpl> _variables;
     hashMap<U64, F32> _variablesf;
     bool _is16Bit = false;
+    bool _wireframeDebug = false;
     bool _active = false;
     U8 _textureLayers = 1;
     vec3<F32> _tessellationRange = { 10.0f, 150.0f, 32.0f };

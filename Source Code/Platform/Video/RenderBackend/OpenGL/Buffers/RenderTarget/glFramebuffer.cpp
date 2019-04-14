@@ -685,13 +685,22 @@ void glFramebuffer::clear(const RTDrawDescriptor& drawPolicy, const RTAttachment
                 if (!drawPolicy.clearColour(to_U8(buffer))) {
                     continue;
                 }
-                GFXDataFormat dataType = att->texture(false)->getDescriptor().dataType();
-                if (dataType == GFXDataFormat::FLOAT_16 || dataType == GFXDataFormat::FLOAT_32) {
-                    glClearNamedFramebufferfv(_framebufferHandle, GL_COLOR, buffer, att->clearColour()._v);
-                } else if (dataType == GFXDataFormat::SIGNED_BYTE || dataType == GFXDataFormat::SIGNED_SHORT || dataType == GFXDataFormat::SIGNED_INT) {
-                    glClearNamedFramebufferiv(_framebufferHandle, GL_COLOR, buffer, Util::ToIntColour(att->clearColour())._v);
-                } else {
-                    glClearNamedFramebufferuiv(_framebufferHandle, GL_COLOR, buffer, Util::ToUIntColour(att->clearColour())._v);
+
+                switch (att->texture(false)->getDescriptor().dataType()) {
+                    case GFXDataFormat::FLOAT_16:
+                    case GFXDataFormat::FLOAT_32 :
+                        glClearNamedFramebufferfv(_framebufferHandle, GL_COLOR, buffer, att->clearColour()._v);
+                        break;
+                    
+                    case GFXDataFormat::SIGNED_BYTE:
+                    case GFXDataFormat::SIGNED_SHORT:
+                    case GFXDataFormat::SIGNED_INT :
+                        glClearNamedFramebufferiv(_framebufferHandle, GL_COLOR, buffer, Util::ToIntColour(att->clearColour())._v);
+                        break;
+
+                    default:
+                        glClearNamedFramebufferuiv(_framebufferHandle, GL_COLOR, buffer, Util::ToUIntColour(att->clearColour())._v);
+                        break;
                 }
                 _context.registerDrawCall();
             }

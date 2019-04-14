@@ -128,7 +128,7 @@ void OpenGLRendererBase::initialiseDisplaySizeWithViewportSize()
 //----------------------------------------------------------------------------//
 void OpenGLRendererBase::initialiseMaxTextureSize()
 {
-    d_maxTextureSize = Divide::GLUtil::getIntegerv(GL_MAX_TEXTURE_SIZE);
+    Divide::GLUtil::getGLValue(GL_MAX_TEXTURE_SIZE, d_maxTextureSize);
 }
 
 //----------------------------------------------------------------------------//

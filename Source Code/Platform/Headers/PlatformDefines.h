@@ -668,19 +668,16 @@ inline TO safe_static_cast(D64 from)
 /// Performes extra asserts steps (logging, message boxes, etc). 
 /// Returns true if the assert should be processed.
 bool preAssert(const bool expression, const char* failMessage);
-/// It is safe to call evaluate expressions and call functions inside the assert
-/// check as it will compile for every build type
-FORCE_INLINE bool DIVIDE_ASSERT(const bool expression, const char* failMessage) {
+
+/// It is safe to call evaluate expressions and call functions inside the assert check as it will compile for every build type
+FORCE_INLINE void DIVIDE_ASSERT(const bool expression, const char* failMessage) {
     if (!Config::Build::IS_RELEASE_BUILD) {
         if (preAssert(expression, failMessage)) {
-            if (Config::Build::IS_DEBUG_BUILD) {
-                assert(expression && failMessage);
-            }
+            assert(expression && failMessage);
         }
-    } else {
-        ACKNOWLEDGE_UNUSED(failMessage);
     }
-    return expression;
+      
+    ACKNOWLEDGE_UNUSED(failMessage);
 }
 
 FORCE_INLINE void DIVIDE_UNEXPECTED_CALL(const char* failMessage = "UNEXPECTED CALL") {
@@ -688,7 +685,7 @@ FORCE_INLINE void DIVIDE_UNEXPECTED_CALL(const char* failMessage = "UNEXPECTED C
 }
 
 FORCE_INLINE void DIVIDE_ASSERT(const bool expression) noexcept {
-    if (Config::Build::IS_DEBUG_BUILD) {
+    if (Config::Build::IS_DEBUG_BUILD && !Config::Assert::CONTINUE_ON_ASSERT) {
         assert(expression);
     }
     ACKNOWLEDGE_UNUSED(expression);

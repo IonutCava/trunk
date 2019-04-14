@@ -12,38 +12,20 @@ namespace Divide {
     
 namespace {
 
-    GLint getBufferTargetIndex(GLenum target) {
-        GLint index = -1;
+    FORCE_INLINE GLint getBufferTargetIndex(GLenum target) {
         // Select the appropriate index in the array based on the buffer target
         switch (target) {
-            case GL_TEXTURE_BUFFER: {
-                index = 0;
-            }break;
-            case GL_UNIFORM_BUFFER: {
-                index = 1;
-            }break;
-            case GL_SHADER_STORAGE_BUFFER: {
-                index = 2;
-            }break;
-            case GL_PIXEL_UNPACK_BUFFER: {
-                index = 3;
-            }break;
-            case GL_DRAW_INDIRECT_BUFFER: {
-                index = 4;
-            }break;
-            case GL_ARRAY_BUFFER: {
-                index = 5;
-            }break;
-            default:
-            case GL_ELEMENT_ARRAY_BUFFER: {
-                // Make sure the target is available. Assert if it isn't as this
-                // means that a non-supported feature is used somewhere
-                DIVIDE_ASSERT(IS_IN_RANGE_INCLUSIVE(index, 0, 5),
-                              "GLStates error: attempted to bind an invalid buffer target!");
-                return -1;
-            }
+            case GL_TEXTURE_BUFFER: return 0;
+            case GL_UNIFORM_BUFFER: return 1;
+            case GL_SHADER_STORAGE_BUFFER: return 2;
+            case GL_PIXEL_UNPACK_BUFFER: return 3;
+            case GL_DRAW_INDIRECT_BUFFER: return 4;
+            case GL_ARRAY_BUFFER: return 5;
+            //case GL_ELEMENT_ARRAY_BUFFER: return -1;
         };
-        return index;
+
+        DIVIDE_UNEXPECTED_CALL();
+        return -1;
     }
 }; //namespace 
 
@@ -52,7 +34,7 @@ void GLStateTracker::init(GLStateTracker* base) {
         return;
     } 
     if (base == nullptr) {
-        _opengl46Supported = GLUtil::getIntegerv(GL_MINOR_VERSION) == 6;
+        _opengl46Supported = GLUtil::getGLValue<GLint>(GL_MINOR_VERSION) == 6;
         _vaoBufferData.init(GL_API::s_maxAttribBindings);
         _samplerBoundMap.fill(0u);
         for (std::array<U32, to_base(TextureType::COUNT)>& it : _textureBoundMap) {
@@ -66,7 +48,7 @@ void GLStateTracker::init(GLStateTracker* base) {
         *this = *base;
     }
     _currentCullMode = GL_BACK;
-    _patchVertexCount = GLUtil::getIntegerv(GL_PATCH_VERTICES);
+    GLUtil::getGLValue(GL_PATCH_VERTICES, _patchVertexCount);
     _init = true;
 }
 
@@ -400,30 +382,29 @@ bool GLStateTracker::setActiveVAO(GLuint ID, GLuint& previousID) {
 
 /// Single place to change buffer objects for every target available
 bool GLStateTracker::setActiveBuffer(GLenum target, GLuint ID, GLuint& previousID) {
-    GLuint& crtBinding = target == GL_ELEMENT_ARRAY_BUFFER 
-                                 ? _activeVAOIB[_activeVAOID]
-                                 : _activeBufferID[getBufferTargetIndex(target)];
+    GLuint& crtBinding = target != GL_ELEMENT_ARRAY_BUFFER 
+                                 ? _activeBufferID[getBufferTargetIndex(target)]
+                                 : _activeVAOIB[_activeVAOID];
     previousID = crtBinding;
 
-    // Prevent double bind
-    if (previousID != ID) {
-        // Remember the new binding for future reference
-        crtBinding = ID;
-        // Bind the specified buffer handle to the desired buffer target
-        glBindBuffer(target, ID);
-        return true;
+    // Prevent double bind (hope that this is the most common case. Should be.)
+    if (previousID == ID) {
+        return false;
     }
 
-    return false;
+    // Remember the new binding for future reference
+    crtBinding = ID;
+    // Bind the specified buffer handle to the desired buffer target
+    glBindBuffer(target, ID);
+    return true;
 }
 
 bool GLStateTracker::setActiveBuffer(GLenum target, GLuint ID) {
-    GLuint temp = 0;
+    GLuint temp = 0u;
     return setActiveBuffer(target, ID, temp);
 }
 
-/// Change the currently active shader program. Passing null will unbind shaders
-/// (will use program 0)
+/// Change the currently active shader program. Passing null will unbind shaders (will use program 0)
 bool GLStateTracker::setActiveProgram(GLuint programHandle) {
     // Check if we are binding a new program or unbinding all shaders
     // Prevent double bind
@@ -571,14 +552,8 @@ void GLStateTracker::setBlending(GLuint drawBufferIdx,const BlendingProperties& 
 /// Change the current viewport area. Redundancy check is performed in GFXDevice class
 bool GLStateTracker::setViewport(I32 x, I32 y, I32 width, I32 height) {
     if (width > 0 && height > 0 && Rect<I32>(x, y, width, height) != _activeViewport) {
-        // Debugging and profiling the application may require setting a 1x1 viewport to exclude fill rate bottlenecks
-        if (Config::Profile::USE_1x1_VIEWPORT) {
-            glViewport(x, y, 1, 1);
-        } else {
-            glViewport(x, y, width, height);
-        }
+        glViewport(x, y, width, height);
         _activeViewport.set(x, y, width, height);
-        
         return true;
     }
 
